@@ -234,9 +234,69 @@ The proof given (2026-08-17) *does* build `I = ℂᵤ` (`suEffectusPartialForm`)
 so strengthening the statement to
 `∃ s : EffectusPartialStructure WStarCPSU.{u}ᵒᵖ, s.effectus.I = suI`
 would cost a line.  **Ruling wanted**: strengthen it (statements are not
-changed without one).  This also matters downstream: the eight examples of
-`VNExamples.lean` quantify over an *arbitrary* `s`, and what they need in
-order to compute is exactly an isomorphism `s.effectus.I ≅ ℂᵤ`.
+changed without one).
+
+**Correction (session 84), because it changes what the ruling buys.**  An
+earlier version of this entry said the strengthening "also matters
+downstream", since the eight examples of `VNExamples.lean` need
+`s.effectus.I ≅ ℂᵤ`.  They do need that — but **not one of the eight
+mentions `effectus_vn_partial`**: each takes its own arbitrary
+`s : EffectusPartialStructure WStarCPSU.{u}ᵒᵖ` as a hypothesis.  So
+strengthening `effectus_vn_partial` would unblock **none** of them; what they
+need is the *uniqueness* statement "the effect object of any
+`EffectusPartialStructure` on `vN_cpsuᵒᵖ` is isomorphic to `ℂᵤ`", which is a
+new lemma, not a stronger 180V.  (`I` is the only free datum in an
+`EffectusPartialStructure`: the coproducts and the finPAC axioms are `Prop`s,
+`homPCM` is unique by `effectusPartialStructure_homPCM_unique`, `orth` is
+pinned by `orth_unique`, and `one X` is the `≼`-greatest predicate.)  The
+ruling asked for above is therefore purely about **faithfulness of our 180V
+to the text**, with no downstream consequence — which is the right ground on
+which to decide it.  A route to the uniqueness lemma is recorded in
+`docs/BEff-survey.md`.
+
+### B14. 179III.2 `effectModule_unitInterval_representation` — **our** statement is weaker than the cited Gudder–Pulmannová theorem, and weaker than its own sibling
+
+*(Split out of A3, session 84, where it had been a one-line footnote.  The
+parking question — "is it right to leave a cited-only result unproved?" —
+stays in A3; this entry is about the separate defect that the statement we
+parked is not the statement that was cited.)*
+
+**What the source claims** (`eff.tex:737`, Examples 179III.2): "If `V` is an
+**ordered real vector space with order unit** `u`, then `[0,u]` is an effect
+module over `[0,1]`.  In fact, every effect module over `[0,1]` is of this
+form \[gudder1998representation\]."
+
+**What we state** (`EffectAlgebras.lean:3338`): for every effect module `E`
+over `[0,1]` there are `V` with `[AddCommGroup V] [Module ℝ V]
+[PartialOrder V] [IsOrderedAddMonoid V]`, a `u : V` with `0 ≤ u`, and a
+bijection `f : E → Set.Icc 0 u` preserving `⋁` and `•`.
+
+**The gap, in two parts.**
+
+1. *No scalar compatibility.*  `IsOrderedAddMonoid V` says only that `+` is
+   monotone; an **ordered real vector space** also has its positive cone
+   closed under nonnegative scalars.  This is not pedantry: the *converse*
+   half of the very same Examples point, `orderIntervalEffectModule`, could
+   not be proved until `[PosSMulMono ℝ V] [SMulPosMono ℝ V]` were added to it
+   (HANDOFF, "Open decisions", item 1, resolved).  So the two halves of one
+   Examples point currently use two different meanings of "ordered real
+   vector space", and only one of them is the source's.
+2. *`0 ≤ u` is not "order unit".*  The source requires `u` to be an order
+   unit — every `v : V` satisfies `v ≤ n • u` for some `n : ℕ` — which is what
+   makes `[0,u]` generate `V` and is the whole content of a *representation*
+   theorem.  We ask only that `u` be positive.
+
+**Consequence**: as written, 179III.2 could be discharged without proving
+Gudder–Pulmannová, because the `V` it is allowed to produce need not be an
+ordered vector space in the source's sense and `u` need not be an order unit.
+A closed `sorry` here would therefore be worth nothing, which is why it must
+not be attacked before the ruling.
+
+**Ruling wanted**: strengthen the statement (add the two `SMul` monotonicity
+hypotheses to the produced `V`, and replace `0 ≤ u` by an order-unit
+condition — no `OrderUnit` predicate exists in the file yet, so this is a real
+addition), or drop 179III.2 as out of scope.  Statements are not changed
+without a ruling.
 
 ### B8. Minor: `bsols.tex`'s `onb1` solution over-assumes
 Its solution assumes self-duality, which neither the exercise nor our statement
@@ -385,27 +445,21 @@ These have no proof to transcribe, so we have parked rather than proved them.
 Confirm that is the right treatment:
 
 * **179III.2** Gudder–Pulmannová representation (`eff.tex:739`, cited to
-  `gudder1998representation`).  Note our statement is also *weaker* than the
-  cited result — it omits both the order-unit condition and the scalar
-  compatibility — so if it is ever revived it must be strengthened first.
-* **178III.2** "every finite effect monoid comes from a Boolean algebra, hence
-  is commutative" and **178III.4** "there is a non-commutative effect monoid on
-  lexicographic `ℝ⁵`" (`eff.tex:640`/`651`, cited to `basmsc` prop. 40 /
-  cor. 51).  **Only one statement is still parked**: `finite_effectMonoid_boolean`.
-  (Updated 2026-08-17: `finite_effectMonoid_commutative` and
-  `exists_noncommutative_effectMonoid` are **proved** —
-  `EffectAlgebras.lean:2763` and `:2299` — by routes that do not need the
-  cited results, so only 178III.2's Boolean-algebra half remains.)
-  **Update (2026-08-18, session 83): `finite_effectMonoid_boolean` should
-  probably be un-parked and proved.**  It still has no proof to transcribe,
-  but most of \[basmsc, prop. 40] is now in `EffectAlgebras.lean` anyway:
-  `emon_finite_idem` gives idempotence of every element, the proof of
-  `finite_effectMonoid_commutative` shows `a ⊙ b` *is* the meet, and the MSc
-  sup/inf calculus (props 13–16) is formalized.  What is missing is the join,
-  distributivity and the structure equality — costed at ~250–400 lines.  So
-  the question here is narrower than for the other two: is it worth the
-  effort, given that its only stated corollary is already proved by a
-  different route?
+  `gudder1998representation`).  Still parked — but note our statement is *also*
+  weaker than the cited result, which is a separate defect and now has its own
+  entry, **B14** above.  Confirming the parking here does **not** settle B14.
+* ~~**178III.2**~~ "every finite effect monoid comes from a Boolean algebra,
+  hence is commutative" and **178III.4** "there is a non-commutative effect
+  monoid on lexicographic `ℝ⁵`" (`eff.tex:640`/`651`, cited to `basmsc`
+  prop. 40 / cor. 51) — **no longer parked: all three are proved.**
+  `finite_effectMonoid_commutative` and `exists_noncommutative_effectMonoid`
+  were proved on 2026-08-17 by routes not needing the cited results, and
+  **`finite_effectMonoid_boolean` was proved on 2026-08-18** (session 84,
+  `EffectAlgebras.lean`, section `FiniteBoolean`) — again independently of
+  \[basmsc, prop. 40\], which we never consulted, so this is a genuine
+  independent check that the cited claim holds.  Nothing is asked of the
+  authors here any more; the route is in PROVING-LOG and in the section note
+  in the file.
 * **192V.4** "every cancellative abstract `[0,1]`-convex set embeds affinely in
   a real vector space" (`eff.tex:2591`, cited to `statesofconvexsets` thm. 8);
   `cancellative_iso_convex`.

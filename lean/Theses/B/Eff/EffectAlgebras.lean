@@ -1858,11 +1858,12 @@ noncomputable instance unitInterval.effectMonoid : EffectMonoid I :=
 `unitInterval_effectMonoid_unique` belongs here, but its proof needs
 `exc_emonzero` (178IIIa) and hence is stated below, after that exercise. -/
 
-/-- **178III.2** (`eff-monoid-examples`, eff.tex:640, Examples): every finite
-effect monoid comes from a Boolean algebra as in `booleanEffectMonoid` — and
-is in particular commutative. -/
-theorem finite_effectMonoid_boolean (M : Type u) [em : EffectMonoid M] [Finite M] :
-    ∃ ba : BooleanAlgebra M, @booleanEffectMonoid M ba = em := sorry
+/- **178III.2** (`eff-monoid-examples`, eff.tex:640, Examples): every finite
+effect monoid comes from a Boolean algebra as in `booleanEffectMonoid`.
+`finite_effectMonoid_boolean` belongs here, but its proof needs the whole
+finite-effect-monoid development of `exc_emonzero` (178IIIa) onwards, so — as
+with `unitInterval_effectMonoid_unique` — it is stated below, in section
+`FiniteBoolean`. -/
 
 /- **178III.2** (`eff-monoid-examples`, eff.tex:640, Examples), corollary:
 `finite_effectMonoid_commutative` belongs here, but its proof needs
@@ -2728,19 +2729,35 @@ theorem emon_perp_self_zero {x : M} (hp : Perp x x) : x = 0 := by
         (lt_of_le_of_ne (toLe (emon_mul_le_self x x)) hidem) hsq)
   exact key x hp
 
-/-- Helper: every element of a finite effect monoid is idempotent: `a ⊙ aᵖ`
-is below both `a` and `aᵖ`, hence orthogonal to itself, hence `0`. -/
+/-- Helper: in a finite effect monoid `a ⊙ aᵖ = 0`, because `a ⊙ aᵖ` is below
+both `a` and `aᵖ` and is therefore orthogonal to itself. -/
+theorem emon_finite_mul_orth (a : M) : a * orth a = 0 := by
+  refine emon_perp_self_zero (eabasics_perp_iff_le_orth.mpr ?_)
+  refine pcm_preorder_trans (emon_mul_le_self_right a (orth a)) ?_
+  exact eabasics_le_iff_orth_le.mp (emon_mul_le_self a (orth a))
+
+/-- Helper: every element of a finite effect monoid is idempotent, since
+`a = (a ⊙ a) ⋁ (a ⊙ aᵖ)` and `a ⊙ aᵖ = 0` (`emon_finite_mul_orth`). -/
 theorem emon_finite_idem (a : M) : a * a = a := by
-  have hd : a * orth a = 0 := by
-    refine emon_perp_self_zero (eabasics_perp_iff_le_orth.mpr ?_)
-    refine pcm_preorder_trans (emon_mul_le_self_right a (orth a)) ?_
-    exact eabasics_le_iff_orth_le.mp (emon_mul_le_self a (orth a))
+  have hd : a * orth a = 0 := emon_finite_mul_orth a
   obtain ⟨h1, he1⟩ := emon_split_right a
   have hz : Perp (a * a) (0 : M) := PCM.perp_zero _
   have hcong : ovee (a * a) (a * orth a) h1 = ovee (a * a) 0 hz :=
     PCM.ovee_congr rfl hd h1 hz
   rw [PCM.ovee_zero] at hcong
   exact hcong.symm.trans he1
+
+/-- Helper: in a finite effect monoid `a ⊙ b` *is* the infimum of `a` and `b`
+for the algebraic order `≼`: it is a lower bound (178V), and any lower bound
+`c` satisfies `c = c ⊙ c ≼ a ⊙ b` by monotonicity, using idempotence. -/
+theorem emon_finite_isInf (a b : M) : PCM.IsInf a b (a * b) := by
+  refine ⟨emon_mul_le_self a b, emon_mul_le_self_right a b, ?_⟩
+  intro c hca hcb
+  have h1 : c ≼ c * c := by
+    rw [emon_finite_idem c]
+    exact pcm_preorder_refl c
+  exact pcm_preorder_trans h1
+    (pcm_preorder_trans (emon_mul_mono_left hca c) (emon_mul_mono_right a hcb))
 
 end FiniteEffectMonoid
 
@@ -2761,18 +2778,260 @@ and `x ⊙ x = 0` propagates back; (iii) with every element idempotent, `a ⊙ b
 `c = c ⊙ c ≼ a ⊙ b` by monotonicity — so `a ⊙ b = b ⊙ a` by uniqueness of
 infima. -/
 theorem finite_effectMonoid_commutative (M : Type u) [EffectMonoid M] [Finite M] :
-    EffectMonoid.Commutative M := by
-  have hinf : ∀ a b : M, PCM.IsInf a b (a * b) := by
-    intro a b
-    refine ⟨emon_mul_le_self a b, emon_mul_le_self_right a b, ?_⟩
-    intro c hca hcb
-    have h1 : c ≼ c * c := by
-      rw [emon_finite_idem c]
-      exact pcm_preorder_refl c
-    exact pcm_preorder_trans h1
-      (pcm_preorder_trans (emon_mul_mono_left hca c) (emon_mul_mono_right a hcb))
-  intro a b
-  exact isInf_unique (hinf a b) (isInf_comm (hinf b a))
+    EffectMonoid.Commutative M := fun a b =>
+  isInf_unique (emon_finite_isInf a b) (isInf_comm (emon_finite_isInf b a))
+
+/-! ### 178III.2: a finite effect monoid *is* a Boolean algebra
+
+The thesis (eff.tex:645) only *cites* this to \[basmsc, prop. 40\], so what
+follows is our own route — but it is short, because the two hard ingredients
+are already above: every element of a finite effect monoid is idempotent
+(`emon_finite_idem`) and `a ⊙ b` is the infimum for the algebraic order
+(`emon_finite_isInf`).  The remaining steps are
+
+* `a ⊥ b` iff `a ⊙ b = 0` (`emon_finite_perp_iff`) — right-to-left is the one
+  computation with content: `a = a ⊙ 1 = (a ⊙ b) ⋁ (a ⊙ bᵖ) = a ⊙ bᵖ ≼ bᵖ`;
+* de Morgan, `(a ⋁ b)ᵖ = aᵖ ⊙ bᵖ` (`emon_finite_orth_ovee`), so the partial
+  sum of the effect algebra *is* the join `a ⊔ b := (aᵖ ⊙ bᵖ)ᵖ`
+  (`emon_finite_ovee_eq`), and that join is the supremum
+  (`emon_finite_isSup`), being the de Morgan dual of the infimum;
+* distributivity (`emon_finite_distrib`), from `b ⊔ c = b ⋁ (c ⊙ bᵖ)`
+  (`emon_finite_sup_eq`): then `a ⊙ (b ⊔ c) = (a ⊙ b) ⋁ (a ⊙ c ⊙ bᵖ)`, whose
+  two summands are below `a ⊙ b` and `a ⊙ c`.
+
+Only `≤` in the sense of `≼` is used, so the Boolean algebra produced has
+`⊓ = ⊙`, `⊔ = (·ᵖ ⊙ ·ᵖ)ᵖ`, `⊥ = 0`, `⊤ = 1` and `·ᶜ = ·ᵖ` — which is exactly
+what makes the *structure* equality `booleanEffectMonoid M ba = em` come out
+by `rfl` in every field but `Perp` and `⋁`. -/
+
+section FiniteBoolean
+
+variable {M : Type u} [EffectMonoid M] [Finite M]
+
+/-- Helper: `aᵖ ⊙ a = 0`, the mirror of `emon_finite_mul_orth`. -/
+theorem emon_finite_orth_mul (a : M) : orth a * a = 0 := by
+  rw [finite_effectMonoid_commutative M (orth a) a]
+  exact emon_finite_mul_orth a
+
+/-- Helper: in a finite effect monoid orthogonality is *disjointness*:
+`a ⊥ b` iff `a ⊙ b = 0`.
+
+(⇒) `a ≼ bᵖ` gives `a ⊙ b ≼ bᵖ ⊙ b = 0`.  (⇐) expand `a = a ⊙ 1` along
+`1 = b ⋁ bᵖ`: `a = (a ⊙ b) ⋁ (a ⊙ bᵖ) = 0 ⋁ (a ⊙ bᵖ) = a ⊙ bᵖ ≼ bᵖ`. -/
+theorem emon_finite_perp_iff {a b : M} : Perp a b ↔ a * b = 0 := by
+  constructor
+  · intro h
+    have h1 : a ≼ orth b := eabasics_perp_iff_le_orth.mp h
+    have h2 : a * b ≼ orth b * b := emon_mul_mono_left h1 b
+    rw [emon_finite_orth_mul b] at h2
+    obtain ⟨c, hc, hce⟩ := h2
+    exact (eabasics_positivity hc hce).1
+  · intro h
+    refine eabasics_perp_iff_le_orth.mpr ?_
+    obtain ⟨h', he⟩ := emon_mul_ovee a (EffectAlgebra.perp_orth b)
+    rw [EffectAlgebra.ovee_orth b, EffectMonoid.mul_one a] at he
+    have hz : Perp (0 : M) (a * orth b) := PCM.zero_perp _
+    have hcong : ovee (a * b) (a * orth b) h' = ovee 0 (a * orth b) hz :=
+      PCM.ovee_congr h rfl h' hz
+    rw [PCM.zero_ovee] at hcong
+    have hae : a = a * orth b := he.trans hcong
+    rw [hae]
+    exact emon_mul_le_self_right a (orth b)
+
+/-- Helper (de Morgan): `(a ⋁ b)ᵖ = aᵖ ⊙ bᵖ` in a finite effect monoid.
+
+`≼` because `(a ⋁ b)ᵖ` is below `aᵖ` and `bᵖ`, whose infimum is `aᵖ ⊙ bᵖ`;
+`≽` because `(aᵖ ⊙ bᵖ) ⊙ (a ⋁ b) = ((aᵖ ⊙ bᵖ) ⊙ a) ⋁ ((aᵖ ⊙ bᵖ) ⊙ b) = 0`,
+so `aᵖ ⊙ bᵖ ⊥ a ⋁ b` by `emon_finite_perp_iff`. -/
+theorem emon_finite_orth_ovee {a b : M} (h : Perp a b) :
+    orth (ovee a b h) = orth a * orth b := by
+  refine eabasics_le_antisymm ?_ ?_
+  · refine (emon_finite_isInf (orth a) (orth b)).2.2 _ ?_ ?_
+    · exact eabasics_le_iff_orth_le.mp ⟨b, h, rfl⟩
+    · exact eabasics_le_iff_orth_le.mp
+        ⟨a, PCM.perp_comm h, (PCM.ovee_comm h).symm⟩
+  · refine eabasics_perp_iff_le_orth.mp (emon_finite_perp_iff.mpr ?_)
+    obtain ⟨h', he⟩ := emon_mul_ovee (orth a * orth b) h
+    have e1 : (orth a * orth b) * a = 0 := by
+      rw [EffectMonoid.mul_assoc, finite_effectMonoid_commutative M (orth b) a,
+        ← EffectMonoid.mul_assoc, emon_finite_orth_mul a,
+        (exc_emonzero (orth b)).2]
+    have e2 : (orth a * orth b) * b = 0 := by
+      rw [EffectMonoid.mul_assoc, emon_finite_orth_mul b,
+        (exc_emonzero (orth a)).1]
+    rw [he]
+    have hz : Perp (0 : M) (0 : M) := PCM.zero_perp _
+    have hc := PCM.ovee_congr e1 e2 h' hz
+    rw [hc, PCM.zero_ovee]
+
+/-- Helper: the partial sum of a finite effect monoid is the lattice join
+`a ⊔ b = (aᵖ ⊙ bᵖ)ᵖ`. -/
+theorem emon_finite_ovee_eq {a b : M} (h : Perp a b) :
+    ovee a b h = orth (orth a * orth b) := by
+  rw [← emon_finite_orth_ovee h, eabasics_orth_orth]
+
+/-- Helper: `(aᵖ ⊙ bᵖ)ᵖ` is the supremum of `a` and `b` for `≼`, being the
+de Morgan dual of `emon_finite_isInf`. -/
+theorem emon_finite_isSup (a b : M) : PCM.IsSup a b (orth (orth a * orth b)) := by
+  refine ⟨?_, ?_, ?_⟩
+  · refine eabasics_le_iff_orth_le.mpr ?_
+    rw [eabasics_orth_orth]
+    exact emon_mul_le_self (orth a) (orth b)
+  · refine eabasics_le_iff_orth_le.mpr ?_
+    rw [eabasics_orth_orth]
+    exact emon_mul_le_self_right (orth a) (orth b)
+  · intro c hac hbc
+    have h1 : orth c ≼ orth a * orth b :=
+      (emon_finite_isInf (orth a) (orth b)).2.2 _
+        (eabasics_le_iff_orth_le.mp hac) (eabasics_le_iff_orth_le.mp hbc)
+    have h2 := eabasics_le_iff_orth_le.mp h1
+    rwa [eabasics_orth_orth] at h2
+
+/-- Helper: a partial sum of two elements below `c` is itself below `c`
+(immediate from `emon_finite_ovee_eq` and `emon_finite_isSup`; it is *not*
+true in a general effect algebra). -/
+theorem emon_finite_ovee_le {a b : M} (h : Perp a b) {c : M}
+    (ha : a ≼ c) (hb : b ≼ c) : ovee a b h ≼ c := by
+  rw [emon_finite_ovee_eq h]
+  exact (emon_finite_isSup a b).2.2 c ha hb
+
+/-- Helper: `b ⊥ c ⊙ bᵖ`, since `b ⊙ (c ⊙ bᵖ) = c ⊙ (b ⊙ bᵖ) = 0`. -/
+theorem emon_finite_perp_mul_orth (b c : M) : Perp b (c * orth b) := by
+  refine emon_finite_perp_iff.mpr ?_
+  rw [← EffectMonoid.mul_assoc, finite_effectMonoid_commutative M b c,
+    EffectMonoid.mul_assoc, emon_finite_mul_orth b, (exc_emonzero c).1]
+
+/-- Helper: the join is a *partial sum*, `b ⊔ c = b ⋁ (c ⊙ bᵖ)`.  This is
+where finiteness pays off: `c = (c ⊙ b) ⋁ (c ⊙ bᵖ)` and both summands are
+below `b ⋁ (c ⊙ bᵖ)`, so the latter is an upper bound of `c` as well as of
+`b`, and it is the least one because any upper bound of `b` and `c` dominates
+`c ⊙ bᵖ`. -/
+theorem emon_finite_sup_eq (b c : M) :
+    ovee b (c * orth b) (emon_finite_perp_mul_orth b c)
+      = orth (orth b * orth c) := by
+  refine isSup_unique ?_ (emon_finite_isSup b c)
+  have hbd : Perp b (c * orth b) := emon_finite_perp_mul_orth b c
+  have hdc : c * orth b ≼ c := emon_mul_le_self c (orth b)
+  have hble : b ≼ ovee b (c * orth b) hbd := ⟨c * orth b, hbd, rfl⟩
+  have hdle : c * orth b ≼ ovee b (c * orth b) hbd :=
+    ⟨b, PCM.perp_comm hbd, (PCM.ovee_comm hbd).symm⟩
+  refine ⟨hble, ?_, ?_⟩
+  · obtain ⟨h', he⟩ := emon_mul_ovee c (EffectAlgebra.perp_orth b)
+    rw [EffectAlgebra.ovee_orth b, EffectMonoid.mul_one c] at he
+    have key : ovee (c * b) (c * orth b) h' ≼ ovee b (c * orth b) hbd :=
+      emon_finite_ovee_le h'
+        (pcm_preorder_trans (emon_mul_le_self_right c b) hble) hdle
+    rwa [← he] at key
+  · intro x hbx hcx
+    exact emon_finite_ovee_le hbd hbx (pcm_preorder_trans hdc hcx)
+
+/-- Helper (distributivity): `a ⊙ (b ⊔ c) ≼ (a ⊙ b) ⊔ (a ⊙ c)`.  Expand the
+join as the partial sum `b ⋁ (c ⊙ bᵖ)` and distribute `a ⊙ (-)` over it; the
+two summands `a ⊙ b` and `a ⊙ c ⊙ bᵖ` lie below `a ⊙ b` and `a ⊙ c`
+respectively.  (One inequality suffices — `DistribLattice.ofInfSupLe`.) -/
+theorem emon_finite_distrib (a b c : M) :
+    a * orth (orth b * orth c) ≼ orth (orth (a * b) * orth (a * c)) := by
+  rw [← emon_finite_sup_eq b c]
+  obtain ⟨h', he⟩ := emon_mul_ovee a (emon_finite_perp_mul_orth b c)
+  rw [he]
+  refine emon_finite_ovee_le h' (emon_finite_isSup (a * b) (a * c)).1 ?_
+  exact pcm_preorder_trans (emon_mul_mono_right a (emon_mul_le_self c (orth b)))
+    (emon_finite_isSup (a * b) (a * c)).2.1
+
+/-- The lattice of a finite effect monoid: `≤` is the algebraic order `≼`,
+`⊓` is `⊙` and `⊔` is `(·ᵖ ⊙ ·ᵖ)ᵖ`. -/
+private def emonLattice (M : Type u) [EffectMonoid M] [Finite M] : Lattice M :=
+  { emonOrder M with
+    sup := fun a b => orth (orth a * orth b)
+    inf := fun a b => a * b
+    le_sup_left := fun a b => (emon_finite_isSup a b).1
+    le_sup_right := fun a b => (emon_finite_isSup a b).2.1
+    sup_le := fun a b c ha hb => (emon_finite_isSup a b).2.2 c ha hb
+    inf_le_left := fun a b => (emon_finite_isInf a b).1
+    inf_le_right := fun a b => (emon_finite_isInf a b).2.1
+    le_inf := fun a b c ha hb => (emon_finite_isInf b c).2.2 a ha hb }
+
+/-- The Boolean algebra of a finite effect monoid, on `emonLattice`: it is
+distributive by `emon_finite_distrib`, bounded by `0` and `1`, and `ᵖ` is a
+complement because `a ⊙ aᵖ = 0` and `(aᵖ ⊙ a)ᵖ = 0ᵖ = 1`. -/
+private def emonBooleanAlgebra (M : Type u) [EffectMonoid M] [Finite M] :
+    BooleanAlgebra M :=
+  letI lat : Lattice M := emonLattice M
+  letI dl : DistribLattice M :=
+    DistribLattice.ofInfSupLe fun a b c => emon_finite_distrib a b c
+  { dl with
+    compl := orth
+    top := 1
+    bot := 0
+    inf_compl_le_bot := fun x => by
+      show x * orth x ≼ (0 : M)
+      rw [emon_finite_mul_orth x]
+      exact pcm_preorder_refl 0
+    top_le_sup_compl := fun x => by
+      show (1 : M) ≼ orth (orth x * orth (orth x))
+      rw [eabasics_orth_orth, emon_finite_orth_mul x, eabasics_orth_zero]
+      exact pcm_preorder_refl 1
+    le_top := fun a => ⟨orth a, EffectAlgebra.perp_orth a, EffectAlgebra.ovee_orth a⟩
+    bot_le := fun a => ⟨a, PCM.zero_perp a, PCM.zero_ovee a⟩ }
+
+/-- Helper: two `PCM` structures on the same carrier agree as soon as their
+zero, their orthogonality relation and their partial sum do.  (`Comparisons.lean`
+has the same statement under the name `pcm_eq_of_data`; it cannot be used here,
+since that file imports this one.) -/
+private theorem emonB_pcm_eq {N : Type u} (p q : PCM N) (hz : p.toZero = q.toZero)
+    (hperp : p.Perp = q.Perp)
+    (hovee : ∀ (a b : N) (h : p.Perp a b) (h' : q.Perp a b),
+      p.ovee a b h = q.ovee a b h') : p = q := by
+  cases p
+  cases q
+  simp only at hz hperp hovee
+  subst hz
+  subst hperp
+  congr 1
+  funext a b h
+  exact hovee a b h h
+
+/-- Helper: two effect algebra structures agree as soon as their PCM, their
+one and their orthocomplement do. -/
+private theorem emonB_ea_eq {N : Type u} (p q : EffectAlgebra N)
+    (hpcm : p.toPCM = q.toPCM) (hone : p.toOne = q.toOne)
+    (horth : p.orth = q.orth) : p = q := by
+  cases p
+  cases q
+  simp only at hpcm hone horth
+  subst hpcm; subst hone; subst horth; rfl
+
+/-- Helper: two effect monoid structures agree as soon as their effect algebra
+and their multiplication do. -/
+private theorem emonB_em_eq {N : Type u} (p q : EffectMonoid N)
+    (hea : p.toEffectAlgebra = q.toEffectAlgebra) (hmul : p.toMul = q.toMul) :
+    p = q := by
+  cases p
+  cases q
+  simp only at hea hmul
+  subst hea; subst hmul; rfl
+
+/-- **178III.2** (`eff-monoid-examples`, eff.tex:645, Examples): every finite
+effect monoid comes from a Boolean algebra as in `booleanEffectMonoid` — and
+is in particular commutative.
+
+⚠ *No proof in the thesis.*  eff.tex:645 cites \[basmsc, prop. 40\]; the route
+above is ours, and it is recorded in the section note.  Note the conclusion is
+an equality of *structures*: the Boolean algebra `emonBooleanAlgebra M` is
+built on the carrier `M` itself, with `⊓ = ⊙`, `⊥ = 0`, `⊤ = 1` and `·ᶜ = ·ᵖ`
+definitionally, so only the orthogonality relation (`emon_finite_perp_iff`)
+and the partial sum (`emon_finite_ovee_eq`) need an argument. -/
+theorem finite_effectMonoid_boolean (M : Type u) [em : EffectMonoid M] [Finite M] :
+    ∃ ba : BooleanAlgebra M, @booleanEffectMonoid M ba = em := by
+  refine ⟨emonBooleanAlgebra M, emonB_em_eq _ _ ?_ rfl⟩
+  refine emonB_ea_eq _ _ ?_ rfl rfl
+  refine emonB_pcm_eq _ _ rfl ?_ ?_
+  · funext a b
+    exact propext (emon_finite_perp_iff (a := a) (b := b)).symm
+  · intro a b _ h'
+    exact (emon_finite_ovee_eq h').symm
+
+end FiniteBoolean
 
 /-- Helper: sums are monotone termwise. -/
 theorem PCM.isSumOf_le_of_forall₂ {M : Type u} [EffectAlgebra M] {l l' : List M}

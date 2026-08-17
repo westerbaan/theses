@@ -21,6 +21,71 @@
 > `sorry`s (`VNExamples` 9, `StatesPredicates` **1**, `EffectAlgebras` 2), 0
 > errors.  See the `StatesPredicates.lean` section below.
 
+> **Session 84.**  **`effects_sea` (225V) is CLOSED**, axiom-clean, in
+> `VNExamples.lean`; B/Eff is at **11** `sorry`s (`VNExamples` **8**,
+> `StatesPredicates` 1, `EffectAlgebras` 2), 0 errors.  The costing below was
+> ~3× too high: **~230 added lines**, because the Gudder–Greechie
+> characterisation `√a b √a = √b a √b ⟺ ab = ba` is short in Mathlib
+> (`quasispectrum.mul_comm` + `nonneg_iff_isSelfAdjoint_and_quasispectrumRestricts`)
+> and the three commutation axioms are then one line each.
+>
+> **The eight hypothetical examples: how many are reachable?  Still zero, and
+> the reason is sharper than "a transport".**  Each takes an *arbitrary*
+> `s : EffectusPartialStructure WStarCPSU.{u}ᵒᵖ` and none of them mentions
+> `effectus_vn_partial`, so **closing 180V unblocked none of them** and
+> strengthening `effectus_vn_partial` (QUESTIONS **B13**) would unblock none
+> of them either.  What every one of the eight needs is a lemma that does not
+> exist: *the effect object of an `EffectusPartialStructure` on `vN_cpsuᵒᵖ` is
+> isomorphic to `ℂᵤ`*.  The other three fields of `s` are already pinned —
+> `hasFiniteCoproducts` is a `Prop` (`Subsingleton.elim`), `homPCM` is
+> `effectusPartialStructure_homPCM_unique`, `finPAC` is a `Prop` over that
+> data — and inside `EffectusPartialForm` the field `orth` is pinned by
+> `orth_unique` and `one X` is pinned as the `≼`-greatest predicate
+> (`le_truth` + `pred_le_antisymm`).  **`I` is the only free datum.**
+>
+> A route exists and is not long (~150–250 lines): `one_m_is_id`
+> (**181XIII**, `Effectus.lean:672`) says `1_I = 𝟙 I`, so `I` is *terminal in
+> `Tot`*; `Tot` is defined from `one`, hence from `I`, so the circle has to be
+> cut by an `I`-free characterisation of totality, and in `vN` there is one:
+> `f` is total iff `f` is **≼-maximal**.  (⇒ is the finPAC axioms; ⇐ is
+> concrete — if `f(1) ≠ 1` then `g = ω(·)(1 − f(1))` for a normal state `ω`
+> is a nonzero `g ⊥ f`, and `ω` exists because `np_faithful` gives a
+> separating family and `f(1) ≠ 1` forces the algebra nontrivial.)  Then
+> `1_s : ℂᵤ ⟶ I_s` and our `suOne : I_s ⟶ ℂᵤ` are mutually inverse by
+> `one_m_is_id` on both sides.  **Nobody should take one of the eight without
+> writing this first**; after it, each still costs its own 200–600 lines.
+>
+> **Two further corrections to the record** (both were wrong here and in
+> `why-open.csv`): `vn_is_dagger_category` (215VI) is **not** blocked on
+> `vn_is_andthen_eff`/A-Proc 105V — our rendering quantifies over an arbitrary
+> `hA : AndThenEffectus`, which is a `Prop` class, so it never needs 211IV;
+> and the "†-effectus development of parsecs 215–220" that `exc_purec_*` were
+> said to wait on is **not parked** — `Dagger.lean` has 0 `sorry`s and
+> `dagger_thm_sufficiency` (220II) is proved.  Only `vn_is_andthen_eff`
+> itself is blocked outside `B/Eff`.
+
+> **Session 84, second worker.**  **`finite_effectMonoid_boolean` (178III.2) is
+> CLOSED**, axiom-clean, in `EffectAlgebras.lean` (new section
+> `FiniteBoolean`).  With `effects_sea` that puts B/Eff at **10** `sorry`s
+> (`VNExamples` 8, `StatesPredicates` 1, `EffectAlgebras` **1**), 0 errors.
+> The costing below was **~2× too high**: **~185 added lines** net, not
+> 250–400.  Two reasons.  (i) The survey's route had the dependencies backwards
+> — it said the structure equality "needs `Perp a b ↔ a ⊙ b = 0` (itself a
+> consequence of distributivity)".  It is the other way round: `a ⊥ b ⟺
+> a ⊙ b = 0` follows in three lines from `a = a ⊙ 1 = (a⊙b) ⋁ (a⊙bᵖ)`, and
+> *distributivity* is what needs it (via de Morgan and `b ⊔ c = b ⋁ (c ⊙ bᵖ)`).
+> (ii) The MSc props 13–16 sup/inf calculus (`msc_*`, `:1224`–`:1400`) was
+> **not used at all** — it is stated for *ortholattices*, a structure a finite
+> effect monoid is not known to carry until after this theorem.  The three real
+> ingredients were `emon_finite_idem`, the meet (extracted from
+> `finite_effectMonoid_commutative` as the new `emon_finite_isInf`), and
+> `emon_finite_perp_iff`; everything else is de Morgan duality.
+> Also: `Mathlib`'s `DistribLattice.ofInfSupLe` means only **one** distributive
+> inequality has to be proved, and every field of the resulting Boolean algebra
+> except `Perp` and `⋁` matches `em` by `rfl`.
+> `effectModule_unitInterval_representation` was **not** attacked, deliberately;
+> its rendering gap is now **QUESTIONS B14**, split out of A3.
+
 **Headline count (session 82): B/Eff had 15 code `sorry`s.**  Per file, each source run
 through `lean` individually with `LEAN_PATH` set (never `lake env lean`), and
 each checked for **errors** as well as `sorry`s.  (`VNExamples.lean` was
@@ -30,16 +95,16 @@ import line, which is not a defect in this directory — retry, do not debug.)
 
 | file | lines | `sorry` | errors |
 |---|---|---|---|
-| `VNExamples.lean` | 408 (now 2167) | **11** (now **9**) | 0 |
+| `VNExamples.lean` | 408 (now 2387) | **11** (now **8**) | 0 |
 | `StatesPredicates.lean` | 7216 (now 7723) | **2** (now **1**) | 0 |
-| `EffectAlgebras.lean` | 3088 | **2** | 0 |
+| `EffectAlgebras.lean` | 3088 (now 3348) | **2** (now **1**) | 0 |
 | `Comparisons.lean` | 1903 | 0 | 0 |
 | `Dagger.lean` | 2572 | 0 | 0 |
 | `DiamondAmp.lean` | 1855 | 0 | 0 |
 | `Quotients.lean` | 1427 | 0 | 0 |
 | `Effectus.lean` | 2783 | 0 | 0 |
 | `WStarCat.lean` | 292 | 0 | 0 |
-| **total** | | **12** | **0** |
+| **total** | | **10** | **0** |
 
 The import chain is linear:
 `EffectAlgebras + WStarCat → Effectus → StatesPredicates → Quotients →
@@ -103,8 +168,10 @@ work upstream.
 
 5. **QUESTIONS A3 is stale in two places**: it lists
    `finite_effectMonoid_commutative` and `exists_noncommutative_effectMonoid`
-   as parked, but both are **proved** (`EffectAlgebras.lean:2763`, `:2299`).
-   Only `finite_effectMonoid_boolean` of that trio is still open.
+   as parked, but both are **proved** (`EffectAlgebras.lean:2780`, `:2300`;
+   line numbers as of session 84).
+   Only `finite_effectMonoid_boolean` of that trio was still open, and it is
+   **proved as of session 84** — the whole of A3's 178III trio is closed.
 
 ---
 
@@ -113,10 +180,11 @@ work upstream.
 | classification | statements |
 |---|---|
 | **proved (session 83)** | `exc_dm_effectus_kleisli`; `effectus_vn` + `effectus_vn_partial` |
-| **reachable, live target** | `finite_effectMonoid_boolean`; `effects_sea` (225V) |
-| **blocked on the root 180V** | the eight hypothetical vN examples below |
-| **blocked outside B/Eff** | `vn_is_andthen_eff` (A/Proc 105V + missing import); `vn_is_dagger_category` (via 211IV) |
-| **awaiting a ruling / literature park** | `effectModule_unitInterval_representation`, `cancellative_iso_convex` (both QUESTIONS **A3**) |
+| **proved (session 84)** | `effects_sea` (225V); `finite_effectMonoid_boolean` (178III.2) |
+| **reachable, live target** | *(none left outside the gated eight)* |
+| **gated on uniqueness of the effect object** | the eight hypothetical vN examples below (*not* on 180V — see the session-84 block at the top) |
+| **blocked outside B/Eff** | `vn_is_andthen_eff` (A/Proc 105V + missing import) — and **only** that one |
+| **awaiting a ruling / literature park** | `effectModule_unitInterval_representation` (QUESTIONS **A3** *and* **B14** — do not attack before the B14 ruling), `cancellative_iso_convex` (QUESTIONS **A3**) |
 | **known false** | none in this directory |
 
 Nothing in `B/Eff` is known false, and nothing is waiting on a thesis-B
@@ -238,7 +306,14 @@ Individually:
   `PureCat` and `AndThenEffectus` presuppose.  *Blocked on the root and on
   215–220.*
 
-### `effects_sea` (225V) — the one that does **not** need 180V
+### `effects_sea` (225V) — **PROVED, session 84** (the one that never needed 180V)
+
+> Closed in ~230 lines, not the ~400–600 costed below.  `bsols.tex` has
+> nothing on it (225V is an *Examples*, not an Exercise).  The whole statement
+> reduces to `√a b √a = √b a √b ⟺ ab = ba`; see PROVING-LOG, session 84, for
+> the spectral argument and for the reusable by-products
+> `nonneg_of_normal_of_swap` and `nonneg_mul_of_normal` (*a product of
+> positives is positive as soon as it is normal*).
 
 *Route.* eff.tex:7381 asserts that `[0,1]_𝒜` is a sequential effect algebra
 with `a & b = √a b √a`, without proof.  Note the neighbouring **225VI**
@@ -292,41 +367,59 @@ for anyone who does not want to build 180V.*
   cancellative convex set into a vector space), **~500–600 lines**.  Nothing
   in the tree helps beyond `MConvex.ofConvex` and the `rsum` API.
 
-## `EffectAlgebras.lean` — two
+## `EffectAlgebras.lean` — one
 
-* **`finite_effectMonoid_boolean` (178III.2, eff.tex:640)** — cited to
-  \[basmsc, prop. 40\], no proof in the thesis, but **it should not be treated
-  as a literature park**: most of `basmsc` prop. 40's ingredients are already
-  in the file.  `emon_finite_idem` (`:2731`) proves every element of a finite
-  effect monoid idempotent; the proof of `finite_effectMonoid_commutative`
-  (`:2763`) shows `a ⊙ b` *is* the meet; and the MSc sup/inf calculus
-  (`msc_prop13_*`, `msc_cor14_*`, `msc_prop15*`, `msc_cor16_*`,
-  `:1224`–`:1400`) is formalized.  What is missing is the lattice
-  (`a ⊔ b := (aᵖ ⊙ bᵖ)ᵖ`), distributivity — for which `EffectMonoid.distrib`
-  plus `b ⊔ c = b ⋁ (c ⊙ bᵖ)` is the route — and then the *structure* equality
-  `@booleanEffectMonoid M ba = em`, which needs `Perp a b ↔ a ⊙ b = 0` (itself
-  a consequence of distributivity).  **~250–400 lines; the best next target in
-  this file.**  QUESTIONS **A3** already records the two siblings as proved.
+* ~~**`finite_effectMonoid_boolean` (178III.2, eff.tex:645)**~~ — **PROVED,
+  session 84**, in the new section `FiniteBoolean`, ~185 added lines,
+  axiom-clean.  No proof exists in eff.tex (it cites \[basmsc, prop. 40\]) and
+  we did not consult `basmsc`, so this is an **independent check** that the
+  cited claim holds.  The route, for anyone comparing it with prop. 40:
+  * `emon_finite_mul_orth` (`a ⊙ aᵖ = 0`) and `emon_finite_isInf` (`a ⊙ b` is
+    the `≼`-meet) are lifted out of the existing proofs of `emon_finite_idem`
+    and `finite_effectMonoid_commutative`, which now both call them;
+  * `emon_finite_perp_iff`: `a ⊥ b ⟺ a ⊙ b = 0`.  This is the pivot, and it
+    is **not** downstream of distributivity as this survey previously said:
+    `a = a ⊙ 1 = (a ⊙ b) ⋁ (a ⊙ bᵖ) = a ⊙ bᵖ ≼ bᵖ`;
+  * de Morgan `(a ⋁ b)ᵖ = aᵖ ⊙ bᵖ` (`emon_finite_orth_ovee`), so the partial
+    sum *is* the join `(aᵖ ⊙ bᵖ)ᵖ` (`emon_finite_ovee_eq`) and that join is
+    the `≼`-supremum (`emon_finite_isSup`), being the dual of the meet;
+  * distributivity from `b ⊔ c = b ⋁ (c ⊙ bᵖ)` (`emon_finite_sup_eq`), and
+    only the `⊓`-over-`⊔` inequality is needed
+    (`DistribLattice.ofInfSupLe`);
+  * the structure equality then needs three `cases`-and-`subst` helpers
+    (`emonB_pcm_eq`, `emonB_ea_eq`, `emonB_em_eq`; the first duplicates
+    `Comparisons.lean`'s `pcm_eq_of_data`, which cannot be imported here) —
+    and `⊓ = ⊙`, `⊥ = 0`, `⊤ = 1`, `·ᶜ = ·ᵖ` all match by `rfl`.
+  * The **MSc props 13–16 calculus was not used**: it is stated for
+    `Ortholattice`, which a finite effect monoid is not known to be until this
+    theorem is proved.  Anyone re-costing similar items should discount it.
 * **`effectModule_unitInterval_representation` (179III.2, eff.tex:739)** —
-  Gudder–Pulmannová, cited only.  QUESTIONS **A3**, and additionally
-  **our statement is weaker than the cited result** (HANDOFF, "Companion gap"):
-  it produces `[PartialOrder V] [IsOrderedAddMonoid V]` and `0 ≤ u` where the
-  source needs an *ordered real vector space* with `u` an **order unit**.  As
-  written it would be provable without being the theorem.  *Awaiting a ruling:
-  strengthen first, or drop.*
+  Gudder–Pulmannová, cited only.  QUESTIONS **A3** for the parking, and
+  **QUESTIONS B14** (new, session 84) for the separate defect that
+  **our statement is weaker than the cited result**: it produces
+  `[PartialOrder V] [IsOrderedAddMonoid V]` and `0 ≤ u` where the source needs
+  an *ordered real vector space* (positive cone closed under nonnegative
+  scalars — exactly the `PosSMulMono`/`SMulPosMono` pair that the *converse*
+  half `orderIntervalEffectModule` had to be given) with `u` an **order
+  unit**.  As written it would be provable without being the theorem, so a
+  closed `sorry` here would be worth nothing.  **Do not attack before the
+  ruling.**
 
 ---
 
 ## Suggested order for the next worker
 
-1. **`effects_sea` (225V)** if you want a self-contained item — it needs
-   nothing but the CFC and touches no other statement.
-2. **`finite_effectMonoid_boolean` (178III.2)** — no author proof, but the
-   ingredients are in `EffectAlgebras.lean` already; see above.
-3. **`effectus_vn` + `effectus_vn_partial`**, the root.  Start with
-   `IsTerminal (WStarNCPU.of WStar.trivial)` and the binary product `A × B`;
-   both are mechanical and neither existed before this session.  Everything
-   else in `VNExamples.lean` except `effects_sea` waits on it.
+1. ~~`effects_sea` (225V)~~ — **proved, session 84** (~230 lines, not the
+   ~400–600 costed here); see the block at the top of this file.
+2. ~~`finite_effectMonoid_boolean` (178III.2)~~ — **proved, session 84**
+   (~185 lines, not the ~250–400 costed here); see above.
+3. ~~`effectus_vn` + `effectus_vn_partial`~~ — **proved, session 83.**
+4. **The uniqueness of the effect object** — "the `I` of any
+   `EffectusPartialStructure` on `vN_cpsuᵒᵖ` is isomorphic to `ℂᵤ`", ~150–250
+   lines, described in the session-84 block at the top.  It is now the root of
+   the whole file: all eight remaining `VNExamples` items need it, and nothing
+   else in `B/Eff` is open except `cancellative_iso_convex` (an independent
+   ~500–600-line project) and the ruling-blocked 179III.2.
 
 Do **not** start on 211IV/215VI until A/Proc's 105V is closed, and do not add
 `import Theses.A.Proc.*` to any file other than `VNExamples.lean`.

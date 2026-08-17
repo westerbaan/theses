@@ -20214,3 +20214,313 @@ reason; rather than move a seventh declaration it is inlined as a two-line
 * `docs/why-open.csv`: the `exc_dm_effectus_kleisli` row is deleted and the
   `finite_effectMonoid_boolean` row is re-costed from `cited` to `costed`.
 * Nothing for ERRATA: the author's solution is correct as printed.
+
+## Session 84 — `A/Proc`: the **hereditarily atomic slice device is built and banked** in `QuantumLambda.lean` (+471 lines, all `private`); the matrix-unit route of session 83 works as advertised, but neither 125dII nor 125eVII is closed yet (worker on `Theses/A/Proc/`)
+
+A/Proc **21 → 21** (`QuantumLambda` 9, `Measurement` 10, `Tensor` 2,
+`Duplicators` 0; **0 errors in all four**, each compiled directly).  No sorry
+was closed; the session's output is infrastructure, compiling and banked, for
+the two ha statements.  Every new name is `private`, so no public name was
+added and nothing downstream changed (`Duplicators`, the only importer, still
+0/0).
+
+### 1. The verdict asked for: **the matrix-unit slice route works**
+
+Session 83's prediction is confirmed constructively.  In
+`section HaSlice` (before parsec 1254) the file now proves, for **any** von
+Neumann algebra `𝒞` and hereditarily atomic `𝒜 ≅ ⊕_{j∈J} M_{n_j+1}`:
+
+* `haE_mem` — for every `x ∈ 𝒞 ⊗ 𝒜` and every block `j` and pair `k,l`,
+  the slice `haE j k l x := (id ⊗ κ_j)((1⊗u^j_{0k})·x·(1⊗u^j_{l0}))` is of
+  the form `c ⊗ 1` for a (unique) `c ∈ 𝒞`.  **This is the entry extraction**,
+  and it stays inside `Type u`: it never slices into `ℂ`.
+* `haSliceEq` — `(1 ⊗ z_j)·x = ∑_{k,l} (haE j k l x)·(1 ⊗ u^j_{kl})`, a
+  **finite** sum, by `tensor_linear_ext` (108II(1)) from agreement on
+  elementary tensors.
+
+Both are exactly the statements session 83 costed.  Supporting layers, all
+new: matrix units in `M_m` transported along `CStarMatrix.ofMatrixStarAlgEquiv`
+(`matU`, `matU_mul_mul`, `sum_matU_diag`, `matrix_eq_sum_matU`); their images
+in `𝒜` (`haU`, `haZ`, `haU_mul_mul`, `sum_haU_diag`, `haZ_mul`); the ultraweak
+continuity of `x ↦ u·x·v` (`continuous_uw_mulmul`, from **44II**
+`continuous_ultraweak_conj`); and `haEL`/`haEL_continuous`, the slice as an
+ultraweakly continuous linear map.
+
+**The one API gap the survey predicted was real and is now filled**: the tree
+had no `NPFunctional → NCPMap`.  `npScalarP`/`npScalar` give `a ↦ ω(a)·1` as
+an ncp-map; complete positivity is **34IX** `cp_commutative_cod` (for `ω`,
+into the commutative `ℂ`) composed by `cp_comp` with `cp_of_mi` (for
+`z ↦ z·1`), and normality is **44XV** `p_uwcont`.  It came to ~45 lines, close
+to the estimated 30.
+
+### 2. Corrections to session 83's plan, found by building it
+
+* **`(1⊗z_j)x = Σ c^j_{kl} ⊗ u^j_{kl}` cannot be proved without the
+  np-functional**, and the reason is worth recording because two shortcuts
+  look plausible and both fail.  The naive slice `(1⊗u_{0k})·x·(1⊗u_{l0})`
+  lands in `{c ⊗ u^j_{00} : c ∈ 𝒞}`, and *spreading* it by
+  `∑_p (1⊗u_{p0})(·)(1⊗u_{0p})` only reaches `{c ⊗ z_j}`.  Neither set is
+  known to be ultraweakly closed — the closedness argument available is
+  **69IVb** `nmiu_image` + **75VIII** `vnsac`, and that needs a *unital*
+  ∗-homomorphism, i.e. the target `{c ⊗ 1}`.  Reaching `1_𝒜` from `u^j_{00}`
+  needs a map that is normal but not finitely supported, and the only such
+  map is `a ↦ ω_j(a)·1`.  So the `NPFunctional → NCPMap` gap is not
+  incidental; it is what makes the device work.
+* The alternative of moving into `𝒞 ⊗ M_{n_j+1}` (where `∑_p e_{pp} = 1` is a
+  finite sum and no functional is needed) is blocked by universes:
+  `tmapM` is polymorphic, but `continuous_ultraweak_vtmul_left` — hence the
+  `c ↦ c ⊗ 1` nmiu-map — and **117III**
+  `tensor_distributes_over_sums` are single-universe, while
+  `MatAlg m : Type 0` and `𝒞 : Type u`.  Recorded because it is the obvious
+  next idea for anyone reading `haE`.
+* `StarAlgEquiv.map_smul` on `lp` blows the instance-synthesis budget
+  (`MulActionSemiHomClass` search does not terminate in 200 k heartbeats).
+  Use `map_smul Φ.symm.toStarAlgHom` instead; the section also carries
+  `set_option synthInstance.maxHeartbeats 400000`.
+
+### 3. Exactly where this stopped, and what is left
+
+The device is complete through `haSliceEq`.  **Not yet written** (in
+dependency order):
+
+1. **The approximation step.**  `∑_{j∈F} z_j ↑ 1` (this is `lpSumSA_isLUB`,
+   already in the file, transported along `Φ.symm`), so by **44VI**
+   `vna_supremum_uwlimit` and the ultraweak continuity of `b ↦ (1⊗b)·x` the
+   net `(1 ⊗ ∑_{j∈F} z_j)·x` converges ultraweakly to `x`.  Note the target
+   set must be *ultraweakly* closed: `IsVNSubalgebra` is stated with
+   **norm** closedness, and the bridge is `vnsac`.
+2. **The two membership corollaries** (the ha slice-map property): for a von
+   Neumann subalgebra `𝒮 ⊆ 𝒞`, (a) if every `haE j k l x = c ⊗ 1` has
+   `c ∈ 𝒮` then `x ∈ tensorSub 𝒜 𝒮`; (b) conversely, `haE` maps
+   `tensorSub 𝒜 𝒮` into `{s ⊗ 1 : s ∈ 𝒮}`.  (b) is the ha form of **125VIIb**
+   and is what the surjectivity half of 125eVII consumes; the route for (b)
+   is `tensor_injective` (115V) to corestrict along `𝒮 ⊆ 𝒞`, plus
+   `tensor_functor_comp` for the naturality `(ι⊗id)∘haE = haE∘(ι⊗id)`.
+3. **125eVII** then follows 125cIII's shape (uniqueness by `exists_lp_factor`,
+   existence by the universal property + `exists_lp_reindex`), with the two
+   genuinely new steps being "`F.unit` is `(·)⊗ℬ`-surjective" (proc.tex:5690,
+   which needs only the universal property and `tensor_injective`) and the
+   `tensorBsurjectivity` step, whose hard direction is corollary (b).
+4. **125dII** additionally needs `(⊕ᵢ𝒞ᵢ) ⊗ 𝒜 ≅ ⊕ᵢ(𝒞ᵢ ⊗ 𝒜)` — **117III** is
+   stated for the *second* factor, so this is 117III plus `braiding`
+   assembled by `vn_products_nmiu` — and a **trivial-`𝒜` case split**: if `𝒜`
+   is subsingleton (allowed: `HereditarilyAtomic` with `J` empty) then
+   `𝒞 ⊗ 𝒜` is trivial for every `𝒞`, the entries carry no information, and
+   the carrier has to be an initial object of `haW*_miu` instead.  This is
+   the analogue of 124III's `Nontrivial` field and was **not** anticipated in
+   session 83's costing.
+
+On the evidence of this session the remaining work is one further session for
+125eVII and one for 125dII, i.e. session 83's "2–3 sessions for the pair" is
+holding, with the device itself at the lower end of its 250–400 line estimate
+(the whole block, including the four support layers, is 471 lines).
+
+Nothing for ERRATA or QUESTIONS.  `docs/why-open.csv`: the
+`AstarhaB_concrete` and `ha_tensor_closed` rows are rewritten to say the
+device is in the file.  `docs/AProc-survey.md`: session note added, headline
+unchanged at 21.
+
+## Session 84 — `B/Eff`: **225V `effects_sea` is CLOSED** — `[0,1]_𝒜` is a sequential effect algebra; and the eight vN examples are gated on *uniqueness of the effect object*, not on 180V (worker on `Theses/B/Eff/VNExamples.lean`)
+
+`effects_sea` (**225V**, `eff.tex:7381`) is proved and `#print axioms`-clean.
+`VNExamples.lean` is at **8** `sorry`s, 0 errors (compiles in ~20 s); `B/Eff`
+is at **11**.
+
+### The mathematics had to be supplied, and it is Gudder–Greechie
+
+225V is a bare *Examples* assertion — one sentence, no proof — and there is
+**no solution in `bsols.tex`** (it is not an Exercise; checked, since that
+mistake has been made in this directory before).  The neighbouring **225VI**
+proves only (S1)–(S3), and only for a †-effectus, so it is not a route.  What
+carries all three commutation axioms is the classical characterisation
+
+> for `a, b ≥ 0`:  `√a b √a = √b a √b`  **iff**  `ab = ba`
+
+(`commute_of_sqrtConj_eq` / `sqrtConj_comm_of_commute`).  Given it, (S4a) is
+`a(1−b) = (1−b)a`, (S4b) is `√(ab) = √a√b`, and (S5) is that `c` commutes
+with `√a b √a` and with `a+b` as soon as it commutes with `a` and `b`.
+
+The hard direction is short in Mathlib and worth recording, because the
+costing (~400–600 lines) was ~3× too high — the whole block is **~230 lines**:
+with `s = √a`, `t = √b` the hypothesis says exactly that `x = st` is
+**normal** (`x x* = s b s`, `x* x = t a t`).  Writing `x = √s · (√s t)` and
+using `quasispectrum.mul_comm` (`σ(cd) = σ(dc)`, for `ℂ` *and* for `ℝ`)
+transports the spectrum of the manifestly positive `√s t √s` onto `x`; then
+`isSelfAdjoint_iff_isStarNormal_and_quasispectrumRestricts` makes `x`
+self-adjoint and `nonneg_iff_isSelfAdjoint_and_quasispectrumRestricts` makes
+it positive, so `st = x = x* = ts`.  That is `nonneg_of_normal_of_swap` +
+`nonneg_mul_of_normal`, 20 lines together, and they are of independent use
+(they say: *a product of positives is positive as soon as it is normal*).
+`Commute.cfcₙ_nnreal` gives `Commute a b → Commute (√a) b` in one line, and
+`CFC.sqrt_unique` gives `√(ab) = √a√b` for commuting positives.
+
+**Divergence from the author, recorded as required**: none, because there is
+no author argument here; the proof above is supplied.  The authors may want
+to know that the whole of 225V rests on the one lemma above, and that it is
+*not* a †-effectus fact — 225V holds for `[0,1]_𝒜` on the nose, with no
+effectus structure anywhere in the proof.  (Correspondingly `effects_sea`
+never needed the `B/Dils` import split: `CFC` was always available.)
+
+### The eight hypothetical examples: 180V unblocked **none** of them
+
+This was the round's other question, and the answer is sharper than the
+previous session's "they need a transport".
+
+* Each of the eight takes an **arbitrary** `s : EffectusPartialStructure
+  WStarCPSU.{u}ᵒᵖ` as a hypothesis and **none of them mentions
+  `effectus_vn_partial`**.  So proving 180V unblocked none of them, and — the
+  concrete evidence QUESTIONS **B13** asked for — **strengthening
+  `effectus_vn_partial` to pin `I` would unblock none of them either**.  B13's
+  "this also matters downstream" clause has been corrected accordingly; the
+  ruling it asks for is now purely about faithfulness to the text.
+* There is also **no chain** among the eight: those that need a
+  `DiamondEffectus` or an `AndThenEffectus` quantify over an *arbitrary* one
+  (both are `Prop` classes), so `diamond_effectus_vn` does not feed
+  `vn_has_dilations` and `vn_is_andthen_eff` does not feed the four `∀ hA`
+  statements.  The only thing they share is a **lemma**, not a statement.
+* That lemma is: *the effect object of an `EffectusPartialStructure` on
+  `vN_cpsuᵒᵖ` is isomorphic to `ℂᵤ`.*  `I` is the **only** free datum in such
+  a structure — `hasFiniteCoproducts` and `finPAC` are `Prop`s, `homPCM` is
+  `effectusPartialStructure_homPCM_unique`, `orth` is pinned by `orth_unique`,
+  and `one X` is pinned as the `≼`-greatest predicate (`le_truth` +
+  `pred_le_antisymm`).
+* **A route, for the next worker** (~150–250 lines).  `one_m_is_id`
+  (**181XIII**, `Effectus.lean:672`) gives `1_I = 𝟙 I`, so `I` is terminal in
+  `Tot`; but `Tot` is defined from `one`, hence from `I`, so the circle must
+  be cut by an `I`-free characterisation of totality.  In `vN` there is one:
+  **`f` is total iff `f` is `≼`-maximal**.  (⇒ from the finPAC axioms:
+  `f ⊥ g` gives `1f ⊥ 1g`, `eq_zero_of_perp_one` and `eq_zero_of_one_zero`
+  kill `g`.  ⇐ is concrete: if `f(1) ≠ 1` then the algebra is nontrivial, so
+  `np_faithful` supplies a normal state `ω`, and `g = ω(·)·(1 − f(1))` is a
+  nonzero ncpsu-map with `f ⊥ g`.)  With totality `I`-free, `1_s : ℂᵤ ⟶ I_s`
+  and our `suOne : I_s ⟶ ℂᵤ` are total both ways and mutually inverse by
+  `one_m_is_id` applied in each structure.
+
+### Two things the record had wrong
+
+* **`vn_is_dagger_category` (215VI) is not blocked on A/Proc.**  `why-open.csv`
+  and `docs/BEff-survey.md` both recorded it as inheriting
+  `vn_is_andthen_eff`'s 105V blocker, on the ground that the text derives
+  215VI from 211IV.  Our rendering does not: it quantifies over an arbitrary
+  `hA : AndThenEffectus`, which is a `Prop` class, so it never needs 211IV to
+  hold of `vN`.  The route is `dagger_thm_sufficiency` (**220II**,
+  `Dagger.lean:2193`, proved) plus `DaggerPrimeEffectus` for `vN`.  Only
+  `vn_is_andthen_eff` itself is blocked outside `B/Eff`.
+* **The "†-effectus development of parsecs 215–220" is not parked.**  Both
+  `exc_purec_*` rows said they wait on it; `Dagger.lean` has **0** `sorry`s
+  and `dagger_thm_sufficiency` is among them.  They wait only on the
+  uniqueness-of-`I` lemma and on their own (heavy) author solutions.
+
+Nothing for ERRATA.  QUESTIONS: **B13** amended as above (no new item).
+`docs/why-open.csv`: the `effects_sea` row is deleted and the
+`vn_is_dagger_category`, `exc_purec_no_biproduct` and `exc_purec_equal` rows
+are corrected.  `docs/BEff-survey.md`: session-84 header block added.
+
+## Session 84 — `B/Eff`: **178III.2 `finite_effectMonoid_boolean` is proved**, independently of \[basmsc, prop. 40\]; the survey's route had one dependency backwards and over-costed the item ~2× (worker on `Theses/B/Eff/{EffectAlgebras,StatesPredicates}.lean`)
+
+`EffectAlgebras.lean` **2 → 1** `sorry`, 0 errors; `StatesPredicates.lean`
+untouched at **1**, 0 errors.  Both counted with `lean` per file (never
+`lake env lean`) and paired with `grep -c ': error'`.
+`finite_effectMonoid_boolean` is `#print axioms`-clean
+(`propext, Classical.choice, Quot.sound`), checked *in situ* on a copy of the
+file, since another worker was mid-flight in `VNExamples.lean` and the olean
+chain was deliberately not rebuilt.
+
+### 1. There is nothing to transcribe, and that is confirmed
+
+`eff.tex:645` asserts "every finite (not necessarily commutative) effect
+monoid is of this form \cite[prop.~40]{basmsc} and thus commutative" inside an
+*Examples* point.  It is not an Exercise, so `bsols.tex` has no solution — the
+label `eff-monoid-examples` appears nowhere in it — and `basmsc` is not in the
+repository.  **We did not consult prop. 40.**  The proof below is therefore an
+independent check that the cited claim holds, in the same category as the
+178III.4 lexicographic-`ℝ⁵` construction already in the file.
+
+### 2. The route
+
+All of it is in the new section `FiniteBoolean`, after
+`finite_effectMonoid_commutative`.  Two existing proofs were opened up first,
+so that their content could be reused rather than duplicated:
+
+* `emon_finite_mul_orth` (`a ⊙ aᵖ = 0`) is the first `have` of
+  `emon_finite_idem`, promoted to a lemma; `emon_finite_idem` now calls it.
+* `emon_finite_isInf` (`a ⊙ b` is the `≼`-infimum) is the `hinf` of
+  `finite_effectMonoid_commutative`, promoted likewise; that theorem is now
+  the two-line corollary `isInf_unique (isInf a b) (isInf_comm (isInf b a))`.
+
+Then:
+
+1. **`emon_finite_perp_iff` : `a ⊥ b ↔ a ⊙ b = 0`.**  (⇒) `a ≼ bᵖ` gives
+   `a ⊙ b ≼ bᵖ ⊙ b = 0`.  (⇐) expand `a = a ⊙ 1` along `1 = b ⋁ bᵖ`:
+   `a = (a ⊙ b) ⋁ (a ⊙ bᵖ) = 0 ⋁ (a ⊙ bᵖ) = a ⊙ bᵖ ≼ bᵖ`.
+2. **`emon_finite_orth_ovee` (de Morgan) : `(a ⋁ b)ᵖ = aᵖ ⊙ bᵖ`.**  `≼` is the
+   infimum property; `≽` is `(aᵖ ⊙ bᵖ) ⊙ (a ⋁ b) = ((aᵖ⊙bᵖ)⊙a) ⋁ ((aᵖ⊙bᵖ)⊙b)
+   = 0 ⋁ 0 = 0` and step 1.  Hence `emon_finite_ovee_eq`: the *partial* sum of
+   the effect algebra is the lattice join `a ⊔ b := (aᵖ ⊙ bᵖ)ᵖ`, and
+   `emon_finite_isSup` (the dual of the meet) says that join really is the
+   supremum.  The corollary `emon_finite_ovee_le` — a partial sum of two
+   elements below `c` is below `c`, which is **false** in a general effect
+   algebra — is what makes the rest routine.
+3. **Distributivity.**  `emon_finite_sup_eq`: `b ⊔ c = b ⋁ (c ⊙ bᵖ)`, proved by
+   showing the right-hand side satisfies `PCM.IsSup b c` and appealing to
+   `isSup_unique`.  Then `a ⊙ (b ⊔ c) = (a ⊙ b) ⋁ (a ⊙ c ⊙ bᵖ)`, whose two
+   summands are below `a ⊙ b` and `a ⊙ c`, so `emon_finite_ovee_le` closes
+   `a ⊓ (b ⊔ c) ≼ (a ⊓ b) ⊔ (a ⊓ c)` — and `DistribLattice.ofInfSupLe` needs
+   nothing else.
+4. **The Boolean algebra** `emonBooleanAlgebra` (private) is built on the
+   existing private `emonOrder`, with `⊓ = ⊙`, `⊔ = (·ᵖ ⊙ ·ᵖ)ᵖ`, `⊥ = 0`,
+   `⊤ = 1`, `·ᶜ = ·ᵖ`; `inf_compl_le_bot` is `a ⊙ aᵖ = 0` and
+   `top_le_sup_compl` is `(aᵖ ⊙ a)ᵖ = 0ᵖ = 1`.
+5. **The structure equality** `@booleanEffectMonoid M ba = em` needs three
+   `cases`-then-`subst` helpers (`emonB_pcm_eq`, `emonB_ea_eq`,
+   `emonB_em_eq`, all private).  Because the carrier and all the operations
+   were chosen to match, *five of the seven data fields close by `rfl`*
+   (`zero`, `one`, `orth`, `mul`, and the `Mul` subobject); only `Perp`
+   (step 1, via `funext`+`propext`) and `ovee` (step 2) need an argument.
+
+### 3. Where the record was wrong
+
+* **The dependency order was backwards.**  `docs/BEff-survey.md` and QUESTIONS
+  A3 both said the structure equality "needs `Perp a b ↔ a ⊙ b = 0` (itself a
+  consequence of distributivity)".  It is the reverse: `emon_finite_perp_iff`
+  is three lines from the unit law and is what *distributivity* is built on.
+  Believing the recorded order would have made the item look circular.
+* **The MSc props 13–16 calculus is not usable here**, though both the survey
+  and A3 counted it among the ingredients.  `msc_prop13_*`, `msc_cor14_*`,
+  `msc_prop15*`, `msc_cor16_*` (`:1224`–`:1400`) are stated for
+  `[Ortholattice L]`; a finite effect monoid is not known to carry an
+  ortholattice structure until 178III.2 is proved, so using them would be
+  circular.  Nothing from `:1224`–`:1400` appears in the proof.
+* **The costing was ~2× too high**: ~185 added lines against ~250–400 costed.
+  Both corrections above are why.
+
+### 4. `effectModule_unitInterval_representation` (179III.2) — filed, not attacked
+
+The doc comment in the file and HANDOFF's "Companion gap" already described the
+defect, but QUESTIONS carried it only as a one-line footnote inside **A3**,
+which is the *parking* question.  These are two different questions and one
+ruling does not settle the other, so the rendering defect is split out as
+**QUESTIONS B14**, stating what `eff.tex:737` claims, what
+`EffectAlgebras.lean:3338` states, and the two components of the gap: no
+scalar compatibility on the produced `V` (an *ordered real vector space* has
+its positive cone closed under nonnegative scalars — precisely the
+`PosSMulMono`/`SMulPosMono` pair that the converse half
+`orderIntervalEffectModule` had to be given before it would go through), and
+`0 ≤ u` in place of *`u` is an order unit*.  A closed `sorry` here would not be
+the theorem, so the item stays untouched pending the ruling.  A3's bullet now
+points at B14 rather than restating it, and its 178III bullet is struck
+through — with `finite_effectMonoid_boolean` proved, the whole 178III trio is
+closed and asks nothing of the authors.
+
+### 5. Divergences and defects
+
+Nothing for ERRATA: the cited claim is true, and eff.tex's statement of it is
+accurate (note it correctly says "not necessarily commutative", i.e.
+commutativity is a *conclusion*, which is how our two theorems are arranged).
+Divergence class: **case 3** for the whole item — the thesis has no proof, so
+there is no argument to diverge from; the mathematics is ours.
+`docs/why-open.csv`: the `finite_effectMonoid_boolean` row is deleted and the
+`effectModule_unitInterval_representation` row is rewritten to point at B14
+and to say explicitly that it must not be attacked.  `docs/BEff-survey.md`:
+session-84 second-worker block added, counts and classification table updated,
+`EffectAlgebras.lean` section rewritten.

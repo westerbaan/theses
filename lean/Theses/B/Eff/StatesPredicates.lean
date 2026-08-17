@@ -16,8 +16,9 @@ Design:
 * Formal `M`-convex combinations `MConvexComb M X` are functions `X → M`
   which sum to `1` over a finite support (via `PCM.IsSumOf`).  The
   functorial action `map`, and the monad multiplication `mu`, are obtained
-  by choice from `sorry`-ed unique-existence lemmas (FIXME(choice)), since
-  their values are partial sums.
+  by choice from unique-existence lemmas (`MConvexComb.exists_map`,
+  `MConvexComb.exists_mu` — both **proved**), since their values are partial
+  sums; only the *use of choice* remains (FIXME(choice)).
 * An abstract `M`-convex set is a *structure* `MConvex M X` (the pair
   `(X, h)` of the thesis), so that statements can quantify over convex
   structures; `AConvMCat M` is the bundled category.
