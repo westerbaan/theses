@@ -1,13 +1,58 @@
-# `Theses/A/Proc/` — full survey of the remaining `sorry`s (worker 71, 2026-08-16; revised workers 72–84, sessions 47–78)
+# `Theses/A/Proc/` — full survey of the remaining `sorry`s (worker 71, 2026-08-16; revised workers 72–85, sessions 47–80)
 
-**Headline count: A/Proc has 26 code `sorry`s** after session 78.
+**Headline count: A/Proc has 23 code `sorry`s** after session 80.
 Per file: `Tensor` **2**, `QuantumLambda` **11**,
-`Measurement` **10**, `Duplicators` **3**.  **All four compiler-verified in
-session 78 (0 errors each, `lean` run per file against rebuilt oleans).**
+`Measurement` **10**, `Duplicators` **0 — the file is finished**.
+**All four compiler-verified in session 80** (`lake build` against rebuilt
+oleans; `Duplicators.lean` 0 errors, 0 sorries).
 **No statement in the project is `sorry`-tainted.**  (`grep -c sorry`
 over-counts, because the file docstrings mention `sorry` in prose; the code
 counts are the ones above.  Note `\bsorry\b` also matches "sorry-ed" in
 prose — count the compiler's `declaration uses \`sorry\`` warnings instead.)
+
+> **Session 80 — 132III.5, 132IV and 132VI are ALL CLOSED, and
+> `Duplicators.lean` is FINISHED.**  `Duplicators` **3 → 0**; A/Proc
+> **26 → 23**, `Duplicators.lean` 0 errors, all three theorems axiom-clean.
+> **+185 lines**, all in `Duplicators.lean`; no new public name.
+>
+> * **132III.5's whole content was already proved — in `QuantumLambda.lean`.**
+>   "`nsp(ℓ^∞(X)) ≅ X`" is **`cor_linf_ff_2`** and "every nmiu-map
+>   `ℓ^∞(X) → ℓ^∞(Y)` is `linfMap` of a `Y → X`" is **`cor_linf_ff_3`** —
+>   i.e. **122VI** `cor:linf-ff`, which is precisely the hint proc.tex:6715
+>   attaches to the exercise and the step proc.tex:6755 quotes for 132IV.
+>   All that was missing was the transport along **127III**, ~40 lines apiece.
+>   **The prediction that the other two would fall with 132III.5 held.**
+> * **One shared 7-line device**, `nsp_eq_linfEval`: along a bijective nmiu-map
+>   `ψ : ℬ → ℓ^∞(Y)`, every `φ ∈ nsp(ℬ)` is `η(y) ∘ ψ` (`cor_linf_ff_2`
+>   surjectivity at `φ ∘ ψ⁻¹`).  132III.5's injectivity is then separation of
+>   points and its surjectivity is **122II** `first_adjunction` at
+>   `y ↦ F(η(y) ∘ ψ)`.
+> * **132IV is the thesis's own proof**, with the mediating `k : Y → nsp(𝒜)`
+>   obtained by *currying* rather than by 122II (the thesis invokes the
+>   adjunction; `nsp(𝒜)` is by definition a set of maps out of `𝒜`, so `k` can
+>   be written down), and `ℓ^∞(k)` a monoid morphism because both
+>   multiplications are the algebras' own (**128VIII** via
+>   `uniqueness_duplicator`).  Uniqueness is `cor_linf_ff_3` and uses only the
+>   `g ∘ η = f` condition.
+> * **132VI does *not* take the thesis's route.**  proc.tex:6770 composes the
+>   two adjunctions and uses **124III** to rewrite `W*_miu(ℱ𝒜, ℂ)` as
+>   `W*_cpsu(𝒜, ℂ)`; the direct argument is 132IV's with `nsp(𝒜)` replaced by
+>   `W*_cpsu(𝒜, ℂ)` and never mentions `ℱ`, because the only property of the
+>   index set used is that the given `η` curries — the statement's own `hη`.
+> * **`hA` is unused in 132III.5**: only `ℬ` need be duplicable (fullness is
+>   the universal property of `ℓ^∞(Y)` as a right adjoint, which says nothing
+>   about the source).  Not an erratum — the thesis's `Mon(W*_miu) ≅ dW*_miu`
+>   has both objects duplicable by construction.
+> * **`ncpComp` (`Measurement.lean`) and `ncpsuCompNmiu` (`QuantumLambda.lean`)
+>   are both single-universe**, so neither builds 132VI's ncpsu-*functional*
+>   `a ↦ ψ(f a)(y)` (`ℂ : Type 0`).  Private `exists_ncpsuEval` rebuilds it;
+>   `exists_ncpComp`'s proof never uses the equal-universe assumption, so a
+>   polymorphic `ncpComp` would be ~25 lines of copy-paste in `Measurement`.
+> * **Next gate in A/Proc: 125cIII `Fha_concrete`** (`QuantumLambda.lean:1940`,
+>   proc.tex:5300), unchanged since session 76 and still the only
+>   self-contained candidate there; 125cI's `sorry` does not block it, since it
+>   takes `F : HaFreeMIU 𝒜` as a hypothesis.
+> * Nothing for ERRATA or QUESTIONS.
 
 > **Session 78 — 127III `duplicable` is CLOSED, and 132III.2 falls with it.**
 > `Duplicators` **5 → 3**; A/Proc **28 → 26**, 0 errors in all four files, both

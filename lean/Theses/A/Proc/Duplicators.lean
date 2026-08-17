@@ -4553,13 +4553,101 @@ theorem dup_vna_is_monoid_4 [VonNeumannAlgebra A] (M : MonoidInWcpsu A) :
               preservesDirSups' := M.m.toNCPMap.preservesDirSups' },
       fun _ => rfl⟩
 
+/-! ### `ℓ^∞` is full and faithful: 132III.5, 132IV and 132VI
+
+All three items run on the same two facts about a *duplicable* `ℬ`: by
+**127III** it is `ℓ^∞(Y)` for a set `Y`, and by **122VI**.2 (`cor_linf_ff_2`,
+already proved) the nmiu-functionals on `ℓ^∞(Y)` are exactly the evaluations
+`η(y)`, so — read through the presentation — every `φ ∈ nsp(ℬ)` is
+`η(y) ∘ ψ`.  Fullness of `ℓ^∞` is **122VI**.3 (`cor_linf_ff_3`, also already
+proved), which is the hint the thesis gives for 132III.5 and the step it
+quotes in the proof of 132IV. -/
+
+section FreeMonoid
+
+/-- Every nmiu-functional on an algebra presented as `ℓ^∞(Y)` is evaluation at
+a point of `Y`, read through the presentation (**122VI**.2). -/
+private theorem nsp_eq_linfEval {Y : Type u} [VonNeumannAlgebra B]
+    (ψ : NMIUMap B (linf Y)) (hψ : Function.Bijective ⇑ψ) (φ : nsp B) :
+    ∃ y : Y, φ = nmiuComp (linfEval Y y) ψ := by
+  obtain ⟨y, hy⟩ := (cor_linf_ff_2 Y).2 (nmiuComp φ (nmiuSymm ψ hψ))
+  refine ⟨y, DFunLike.coe_injective (funext fun b => ?_)⟩
+  have h := congrArg (fun χ : nsp (linf Y) => χ (ψ b)) hy
+  simpa using h.symm
+
 /-- **132III** (`prop:dup-vna-is-monoid`, proc.tex:6677, Exercise),
 part 5: `Mon(W*_miu) ≅ dW*_miu ≃ Set^op` — rendered: for duplicable
-`𝒜`, `ℬ` the functor `nsp` is bijective on nmiu-maps `𝒜 → ℬ`. -/
+`𝒜`, `ℬ` the functor `nsp` is bijective on nmiu-maps `𝒜 → ℬ`.
+
+The thesis's hint is `cor:linf-ff`, i.e. **122VI**: `nsp(ℓ^∞(X)) ≅ X` (.2) and
+`ℓ^∞` full and faithful (.3), both already proved.  *Injectivity* is .2 for
+`ℬ` alone (the evaluations separate the points of `ℓ^∞(Y)`); *surjectivity* is
+**122II** `first_adjunction` applied to `y ↦ F(η(y) ∘ ψ)`.  **Only `hB` is
+used** — the hypothesis `hA` is not needed, because `ℓ^∞` is a right adjoint
+and so is full on maps *into* it whatever the source. -/
 theorem dup_vna_is_monoid_5 [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     (hA : Duplicable A) (hB : Duplicable B) :
     Function.Bijective
-      (fun f : NMIUMap A B => (nspMap f : nsp B → nsp A)) := sorry
+      (fun f : NMIUMap A B => (nspMap f : nsp B → nsp A)) := by
+  obtain ⟨Y, ψ, hψ⟩ := (duplicable (A := B)).mp hB
+  constructor
+  · intro f g hfg
+    refine DFunLike.coe_injective (funext fun a => hψ.1 (lp.ext (funext fun y => ?_)))
+    have h := congrArg (fun χ : nsp A => χ a)
+      (congrFun hfg (nmiuComp (linfEval Y y) ψ))
+    simp only [nspMap, nmiuComp_apply] at h
+    rw [linfEval_apply, linfEval_apply] at h
+    exact h
+  · intro F
+    obtain ⟨g, hg, -⟩ :=
+      first_adjunction (A := A) Y (fun y => F (nmiuComp (linfEval Y y) ψ))
+    refine ⟨nmiuComp (nmiuSymm ψ hψ) g, funext fun φ => ?_⟩
+    obtain ⟨y, rfl⟩ := nsp_eq_linfEval ψ hψ φ
+    refine DFunLike.coe_injective (funext fun a => ?_)
+    show linfEval Y y (ψ (nmiuSymm ψ hψ (g a))) = _
+    rw [nmiuSymm_apply_apply' ψ hψ (g a), ← hg y a]
+
+/-- Extensionality for ncpsu-maps (their underlying functions determine them);
+a private copy of `B/Eff/WStarCat.lean`'s `NCPSUMap.ext'`, which is private
+there. -/
+private theorem ncpsu_ext' {A' B' : Type*} [CStarAlgebra A'] [PartialOrder A']
+    [StarOrderedRing A'] [CStarAlgebra B'] [PartialOrder B'] [StarOrderedRing B']
+    {f g : NCPSUMap A' B'} (h : ∀ a : A', f.toNCPMap a = g.toNCPMap a) : f = g := by
+  obtain ⟨f, hf⟩ := f
+  obtain ⟨g, hg⟩ := g
+  have hfg : f = g := DFunLike.coe_injective (funext h)
+  subst hfg
+  rfl
+
+/-- An ncpsu-map followed by an nmiu-functional is an ncpsu-functional.
+(`ncpComp` and `ncpsuCompNmiu` are both stated at a single universe, and `ℂ`
+lives in `Type 0`, so the composite has to be rebuilt here; the proof is
+`exists_ncpComp`'s, which never uses the equal-universe assumption.) -/
+private theorem exists_ncpsuEval [VonNeumannAlgebra A] [VonNeumannAlgebra B]
+    (f : NCPSUMap A B) (χ : NMIUMap B ℂ) :
+    ∃ ω : NCPSUMap A ℂ, ∀ a : A, ω.toNCPMap a = χ (f.toNCPMap a) := by
+  have hmono : ∀ x y : A, x ≤ y → f.toNCPMap x ≤ f.toNCPMap y := fun x y h =>
+    OrderHomClass.mono f.toNCPMap.toCompletelyPositiveMap h
+  have hsa : ∀ x : A, IsSelfAdjoint x → IsSelfAdjoint (f.toNCPMap x) := fun x hx =>
+    isSelfAdjoint_map_of_pos
+      (PositiveLinearMap.ofClass f.toNCPMap.toCompletelyPositiveMap) hx
+  refine ⟨{ toNCPMap :=
+              { toCompletelyPositiveMap :=
+                  { toLinearMap :=
+                      ((nmiuNCP χ).toCompletelyPositiveMap.toLinearMap).comp
+                        f.toNCPMap.toCompletelyPositiveMap.toLinearMap
+                    map_cstarMatrix_nonneg' := fun k M hM =>
+                      (nmiuNCP χ).toCompletelyPositiveMap.map_cstarMatrix_nonneg' k _
+                        (f.toNCPMap.toCompletelyPositiveMap.map_cstarMatrix_nonneg'
+                          k M hM) }
+                preservesDirSups' :=
+                  preservesDirSups_comp (f := ⇑f.toNCPMap) (g := ⇑(nmiuNCP χ)) hsa
+                    hmono f.toNCPMap.preservesDirSups'
+                    (nmiuNCP χ).preservesDirSups' }
+            subunital' := ?_ }, fun _ => rfl⟩
+  show χ (f.toNCPMap 1) ≤ 1
+  refine le_trans ?_ (le_of_eq (map_one χ.toStarAlgHom))
+  exact OrderHomClass.mono (nmiuNCP χ).toCompletelyPositiveMap f.subunital'
 
 /-- **132IV** (`thm:free-monoid-in-vNAMIU`, proc.tex:6719, Theorem),
 well-definedness of the unit: `η : 𝒜 → ℓ^∞(nsp(𝒜))`,
@@ -4643,7 +4731,68 @@ theorem free_monoid_in_vNAMIU [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     (M : MonoidInWmiu B) (f : NMIUMap A B) :
     ∃! g : NMIUMap (linf (nsp A)) B,
       (∀ h₁ h₂ : linf (nsp A), g (h₁ * h₂) = M.m (g h₁ ⊗ᵥ g h₂)) ∧
-        ∀ a : A, f a = g (freeMonoidUnit a) := sorry
+        ∀ a : A, f a = g (freeMonoidUnit a) := by
+  -- The thesis's proof (proc.tex:6743): `ℬ` is duplicable because its monoid
+  -- structure is a duplicator, hence `ℬ = ℓ^∞(Y)` by **127III**; the mediating
+  -- `h : Y → nsp(𝒜)` is `y ↦ (η(y) ∘ ψ) ∘ f` — currying, so **122II** is not
+  -- even needed here — and `ℓ^∞(h)` is a monoid morphism because both
+  -- multiplications are the algebras' own (**128VIII**), which an miu-map
+  -- preserves.  Uniqueness is fullness *and* faithfulness of `ℓ^∞`,
+  -- **122VI**.3, and uses only the second condition.
+  obtain ⟨Y, ψ, hψ⟩ :=
+    (duplicable (A := B)).mp ((dup_vna_is_monoid_2 (A := B)).1.mp ⟨M⟩)
+  have hmul : ∀ x y : B, M.m (x ⊗ᵥ y) = x * y := by
+    intro x y
+    exact (uniqueness_duplicator
+      ({ δ := nmiuP M.m
+         normal := M.m.preservesDirSups'
+         subunital := le_of_eq (map_one M.m.toStarAlgHom)
+         unit := 1
+         unit_mem := Set.mem_Icc.mpr ⟨zero_le_one, le_rfl⟩
+         left_unit := M.left_unit
+         right_unit := M.right_unit } : Duplicator B)).2 x y
+  have hunit : ∀ (a : A) (φ : nsp A), freeMonoidUnit a φ = φ a :=
+    (exists_freeMonoidUnit (A := A)).choose_spec
+  have hlm : ∀ (k : Y → nsp A) (u : linf (nsp A)) (y : Y),
+      ((linfMap k u : linf Y) : ∀ _ : Y, ℂ) y = (u : ∀ _ : nsp A, ℂ) (k y) :=
+    fun k => (exists_linfMap k).choose_spec
+  obtain ⟨k, hk⟩ : ∃ k : Y → nsp A,
+      ∀ (y : Y) (a : A), k y a = ((ψ (f a) : linf Y) : ∀ _ : Y, ℂ) y :=
+    ⟨fun y => nmiuComp (nmiuComp (linfEval Y y) ψ) f,
+      fun y a => linfEval_apply Y y (ψ (f a))⟩
+  -- the defining property of `ℓ^∞(k)`: it carries `η(a)` to `ψ(f(a))`
+  have hkey : ∀ (k' : Y → nsp A),
+      (∀ (y : Y) (a : A), k' y a = ((ψ (f a) : linf Y) : ∀ _ : Y, ℂ) y) →
+        ∀ a : A, linfMap k' (freeMonoidUnit a) = ψ (f a) := by
+    intro k' hk' a
+    refine lp.ext (funext fun y => ?_)
+    rw [hlm k' (freeMonoidUnit a) y, hunit a (k' y), hk' y a]
+  refine ⟨nmiuComp (nmiuSymm ψ hψ) (linfMap k), ⟨fun h₁ h₂ => ?_, fun a => ?_⟩,
+    ?_⟩
+  · rw [hmul]
+    exact map_mul (nmiuComp (nmiuSymm ψ hψ) (linfMap k)).toStarAlgHom h₁ h₂
+  · show f a = nmiuSymm ψ hψ (linfMap k (freeMonoidUnit a))
+    rw [hkey k hk a, nmiuSymm_apply_apply ψ hψ (f a)]
+  · rintro g' ⟨-, hg'⟩
+    obtain ⟨k', hk'⟩ := (cor_linf_ff_3 Y (nsp A)).2 (nmiuComp ψ g')
+    have happ : ∀ u : linf (nsp A), ψ (g' u) = linfMap k' u := fun u =>
+      congrArg (fun χ : NMIUMap (linf (nsp A)) (linf Y) =>
+        (χ : linf (nsp A) → linf Y) u) hk'
+    have hk'spec : ∀ (y : Y) (a : A),
+        k' y a = ((ψ (f a) : linf Y) : ∀ _ : Y, ℂ) y := by
+      intro y a
+      rw [← hunit a (k' y), ← hlm k' (freeMonoidUnit a) y,
+        ← happ (freeMonoidUnit a), ← hg' a]
+    have hkk : k' = k := by
+      funext y
+      apply DFunLike.coe_injective
+      funext a
+      rw [hk'spec y a, hk y a]
+    apply DFunLike.coe_injective
+    funext u
+    apply hψ.1
+    show ψ (g' u) = ψ (nmiuSymm ψ hψ (linfMap k u))
+    rw [nmiuSymm_apply_apply' ψ hψ (linfMap k u), happ u, hkk]
 
 /-- **132VI** (proc.tex:6766, Corollary), well-definedness of the unit:
 evaluation `𝒜 → ℓ^∞(W*_cpsu(𝒜, ℂ))` is an ncpsu-map. -/
@@ -4702,7 +4851,54 @@ theorem free_monoid_in_Wcpsu [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     ∃! g : NMIUMap (linf (NCPSUMap A ℂ)) B,
       (∀ h₁ h₂ : linf (NCPSUMap A ℂ),
         g (h₁ * h₂) = M.m.toNCPMap (g h₁ ⊗ᵥ g h₂)) ∧
-        ∀ a : A, f.toNCPMap a = g (η.toNCPMap a) := sorry
+        ∀ a : A, f.toNCPMap a = g (η.toNCPMap a) := by
+  -- The thesis (proc.tex:6770) deduces this from 132IV by composing the two
+  -- adjunctions, using **124III** `second_adjunction` to identify
+  -- `W*_miu(ℱ𝒜, ℂ)` with `W*_cpsu(𝒜, ℂ)`.  The direct argument is 132IV's,
+  -- verbatim, with `nsp(𝒜)` replaced by `W*_cpsu(𝒜, ℂ)` throughout: the only
+  -- thing used about the index set is that `η` curries, so `ℱ` never enters.
+  obtain ⟨Y, ψ, hψ⟩ := (duplicable (A := B)).mp (dup_vna_is_monoid_1 M)
+  have hmul : ∀ x y : B, M.m.toNCPMap (x ⊗ᵥ y) = x * y :=
+    (dup_vna_is_monoid_2 (A := B)).2.2.2 M
+  have hlm : ∀ (k : Y → NCPSUMap A ℂ) (u : linf (NCPSUMap A ℂ)) (y : Y),
+      ((linfMap k u : linf Y) : ∀ _ : Y, ℂ) y
+        = (u : ∀ _ : NCPSUMap A ℂ, ℂ) (k y) :=
+    fun k => (exists_linfMap k).choose_spec
+  obtain ⟨k, hk⟩ : ∃ k : Y → NCPSUMap A ℂ, ∀ (y : Y) (a : A),
+      (k y).toNCPMap a = ((ψ (f.toNCPMap a) : linf Y) : ∀ _ : Y, ℂ) y := by
+    choose k hk using fun y : Y => exists_ncpsuEval f (nmiuComp (linfEval Y y) ψ)
+    exact ⟨k, fun y a => (hk y a).trans (linfEval_apply Y y (ψ (f.toNCPMap a)))⟩
+  have hkey : ∀ (k' : Y → NCPSUMap A ℂ),
+      (∀ (y : Y) (a : A), (k' y).toNCPMap a
+        = ((ψ (f.toNCPMap a) : linf Y) : ∀ _ : Y, ℂ) y) →
+        ∀ a : A, linfMap k' (η.toNCPMap a) = ψ (f.toNCPMap a) := by
+    intro k' hk' a
+    refine lp.ext (funext fun y => ?_)
+    rw [hlm k' (η.toNCPMap a) y, hη a (k' y), hk' y a]
+  refine ⟨nmiuComp (nmiuSymm ψ hψ) (linfMap k), ⟨fun h₁ h₂ => ?_, fun a => ?_⟩,
+    ?_⟩
+  · rw [hmul]
+    exact map_mul (nmiuComp (nmiuSymm ψ hψ) (linfMap k)).toStarAlgHom h₁ h₂
+  · show f.toNCPMap a = nmiuSymm ψ hψ (linfMap k (η.toNCPMap a))
+    rw [hkey k hk a, nmiuSymm_apply_apply ψ hψ (f.toNCPMap a)]
+  · rintro g' ⟨-, hg'⟩
+    obtain ⟨k', hk'⟩ := (cor_linf_ff_3 Y (NCPSUMap A ℂ)).2 (nmiuComp ψ g')
+    have happ : ∀ u : linf (NCPSUMap A ℂ), ψ (g' u) = linfMap k' u := fun u =>
+      congrArg (fun χ : NMIUMap (linf (NCPSUMap A ℂ)) (linf Y) =>
+        (χ : linf (NCPSUMap A ℂ) → linf Y) u) hk'
+    have hk'spec : ∀ (y : Y) (a : A), (k' y).toNCPMap a
+        = ((ψ (f.toNCPMap a) : linf Y) : ∀ _ : Y, ℂ) y := by
+      intro y a
+      rw [← hη a (k' y), ← hlm k' (η.toNCPMap a) y, ← happ (η.toNCPMap a),
+        ← hg' a]
+    have hkk : k' = k := funext fun y =>
+      ncpsu_ext' fun a => by rw [hk'spec y a, hk y a]
+    apply DFunLike.coe_injective
+    funext u
+    apply hψ.1
+    show ψ (g' u) = ψ (nmiuSymm ψ hψ (linfMap k u))
+    rw [nmiuSymm_apply_apply' ψ hψ (linfMap k u), happ u, hkk]
 
+end FreeMonoid
 
 end Theses.A.Proc

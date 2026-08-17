@@ -18958,3 +18958,97 @@ of `ba_nonneg_iff` (which is); (ii) quotient-by-null-vectors plus
 ⚠️ For the record, and **not** an erratum: dils.tex 155II prints
 `T : Y → X` where `ksgns` has `T : X → Y`.  That is the right-module
 mirroring of this chapter, not a defect.
+
+## Session 80 — `A/Proc`: **132III.5, 132IV and 132VI are all CLOSED and `Duplicators.lean` is FINISHED** — 132III.5's entire content was already proved, in `QuantumLambda.lean` (worker on `Theses/A/Proc/`)
+
+A/Proc **26 → 23**.  Per file, counted from `lake build`'s
+``declaration uses `sorry` `` warnings against freshly rebuilt oleans:
+**`Duplicators` 3 → 0**, `QuantumLambda` 11, `Measurement` 10, `Tensor` 2;
+**0 errors in `Duplicators.lean`**, `Build completed successfully`.
+**+185 lines, all in `Duplicators.lean`**; no new public name (the three
+names closed were already public and `sorry`), so nothing downstream to
+rebuild — and nothing imports the file anyway.  All three theorems
+`#print axioms`-clean (`[propext, Classical.choice, Quot.sound]`), checked
+against the rebuilt olean.
+
+### 1. The costing was an order of magnitude too high, because 122VI is proved
+
+The handoff described 132III.5's remaining content as "`nsp(ℓ^∞(X)) ≅ X`,
+together with the claim that every nmiu-map `ℓ^∞(X) → ℓ^∞(Y)` is `linfMap` of
+a function `Y → X`", to be built.  **Both halves already exist**: they are
+`cor_linf_ff_2` and `cor_linf_ff_3` in `QuantumLambda.lean` (**122VI**
+`cor:linf-ff`) — which is exactly the hint proc.tex:6715 attaches to the
+exercise, "`ℓ^∞ : Set → (W*_miu)^op` is full and faithful by
+`\sref{cor:linf-ff}`", and exactly the step proc.tex:6755 quotes in the proof
+of 132IV.  Nothing had to be constructed; what was missing was the **transport
+of those two facts along 127III**, which is ~40 lines per item.  The three
+proofs together took one compile each.
+
+### 2. The one shared device
+
+`nsp_eq_linfEval` (private, 7 lines): if `ψ : ℬ → ℓ^∞(Y)` is a bijective
+nmiu-map then **every** `φ ∈ nsp(ℬ)` is `η(y) ∘ ψ` for some `y` — apply
+`cor_linf_ff_2`'s surjectivity to `φ ∘ ψ⁻¹`.  With it:
+
+* **132III.5** `dup_vna_is_monoid_5`.  Injectivity: the evaluations separate
+  the points of `ℓ^∞(Y)`, so `nsp(f) = nsp(g)` forces `ψ(f a) = ψ(g a)`
+  pointwise.  Surjectivity: given a set map `F : nsp(ℬ) → nsp(𝒜)`, feed
+  `y ↦ F(η(y) ∘ ψ)` to **122II** `first_adjunction` and post-compose with
+  `ψ⁻¹`; the two sides then agree on every `φ`, because every `φ` is an
+  `η(y) ∘ ψ`.
+* **132IV** `free_monoid_in_vNAMIU` is the thesis's own proof (proc.tex:6743).
+  `ℬ` is duplicable because its monoid structure is a duplicator
+  (132III.2), hence `ℓ^∞(Y)` by **127III**; `g := ψ⁻¹ ∘ ℓ^∞(k)` with
+  `k y := (η(y) ∘ ψ) ∘ f`.  Two divergences of rendering, both
+  simplifications: the mediating `k` is obtained by **currying**, not by
+  122II (the thesis invokes the adjunction here, but `nsp(𝒜)` is by
+  definition a set of maps out of `𝒜`, so `k` is written down); and `ℓ^∞(k)`
+  is a monoid morphism because *both* multiplications are the algebras' own
+  by **128VIII** — `M.m(x ⊗ y) = x·y` via `uniqueness_duplicator` — which an
+  miu-map preserves, which is the thesis's argument verbatim.  Uniqueness is
+  `cor_linf_ff_3`, i.e. fullness *and* faithfulness of `ℓ^∞`, and — as in the
+  thesis — uses only the `g ∘ η = f` condition, never the monoid condition.
+* **132VI** `free_monoid_in_Wcpsu` is 132IV's proof with `nsp(𝒜)` replaced by
+  `W*_cpsu(𝒜, ℂ)` throughout.  **The thesis's route is not taken**: proc.tex
+  :6770 composes the two adjunctions and needs **124III** `second_adjunction`
+  to rewrite `W*_miu(ℱ𝒜, ℂ)` as `W*_cpsu(𝒜, ℂ)`.  The direct argument never
+  mentions `ℱ`, because the only property of the index set it uses is that
+  the given `η` curries — which is this statement's own hypothesis `hη`.
+  (124III *is* proved, since session 76, so this is a shortening, not an
+  avoidance of a `sorry`.)
+
+### 3. Two things worth recording
+
+* **`hA` is not used by 132III.5.**  Only `ℬ` has to be duplicable:
+  faithfulness needs `nsp(ℬ)` to separate the points of `ℬ`, and fullness is
+  the universal property of `ℓ^∞(Y)` as a *right* adjoint, which constrains
+  nothing about the source.  The unused-variable warning is left in place as
+  the evidence.  This is **not** an erratum — the thesis states 132III.5 as an
+  equivalence of categories `Mon(W*_miu) ≅ dW*_miu ≃ Set^op`, in which both
+  objects are duplicable by construction.
+* **`ncpComp` and `ncpsuCompNmiu` are both stated at a single universe**
+  (`{A B C : Type u}` in `Measurement.lean`, resp. `QuantumLambda.lean`), and
+  `ℂ : Type 0`, so neither can build the ncpsu-*functional* `a ↦ ψ(f a)(y)`
+  that 132VI's `k` needs.  Private `exists_ncpsuEval` rebuilds it; the proof
+  is `exists_ncpComp`'s, which never uses the equal-universe assumption.  A
+  universe-polymorphic `ncpComp` would be a strict improvement and is ~25
+  lines of copy-paste, but it lives in `Measurement.lean`, which this worker's
+  brief puts out of bounds.  Also private: `ncpsu_ext'`, a copy of
+  `B/Eff/WStarCat.lean`'s `NCPSUMap.ext'`, private there.
+
+### 4. `Duplicators.lean` is finished; next gate
+
+The file has **0 `sorry`s**.  Every statement of parsecs 1260–1320 is proved.
+The next gate in `A/Proc` is unchanged from session 76: **125cIII
+`Fha_concrete`** (`QuantumLambda.lean:1940`, proc.tex:5300), still the only
+self-contained candidate in that file — it takes the universal arrow
+`F : HaFreeMIU 𝒜` as a *hypothesis*, so 125cI's `sorry` does not block it, and
+nothing else it needs is `sorry`.  `Measurement.lean`'s ten remain gated on
+the 104III author ruling, and `Tensor.lean`'s two are deliberate non-targets
+(116III.4 is an unsolved thesis exercise, 119II is parked).
+
+### 5. Nothing for ERRATA or QUESTIONS
+
+The thesis's proofs of 132III.5, 132IV and 132VI are correct as printed.
+`docs/why-open.csv`: the `dup_vna_is_monoid_5`, `free_monoid_in_vNAMIU` and
+`free_monoid_in_Wcpsu` rows are deleted.
