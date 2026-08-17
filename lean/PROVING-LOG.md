@@ -19580,3 +19580,113 @@ No defect in the thesis was found this session; all four corrections above are
 to *our* records, not to eff.tex.  `docs/why-open.csv`: twelve `B/Eff` rows
 rewritten (no row deleted — no `sorry` closed).  `docs/BEff-survey.md` is new
 and is the session's main output.
+
+## Session 82 — `A/Proc`: **125bII `ha_second_adjunction` is CLOSED** — proc.tex's "exactly as in 124III" is accurate, and three of the recorded ingredients (a direct sum of ha algebras, `ha_equalisers`, `vn_gns_bound`) turn out not to be needed at all (worker on `Theses/A/Proc/`)
+
+A/Proc **22 → 21**.  Per file, counted from the compiler's
+``declaration uses `sorry` `` warnings, each paired with an error count:
+**`QuantumLambda` 10 → 9, 0 errors**; `Measurement` 10, 0 errors;
+`Tensor` 2, 0 errors; `Duplicators` 0, 0 errors.  `lake build` completes
+successfully over the whole chain.  **+270 lines**, all in
+`QuantumLambda.lean`; **no new public name** — the eight auxiliaries are all
+`private`, and three existing private helpers were *moved* earlier in the same
+file (see §4).  `ha_second_adjunction` is `#print axioms`-clean
+(`[propext, Classical.choice, Quot.sound]`), checked from inside the module.
+
+### 1. Was proc.tex:5265's "exactly as in `second-adjunction-proof`" accurate?  Yes
+
+The brief asked this to be verified rather than assumed.  It holds: the proof
+is Freyd again, and 124III's own apparatus carries it —
+`exists_ncpsuCorestrict`, `vnsub_wstar_eq_top`, `ncpsuCompNmiu`, **124I**
+`vn_generation_bound`, **47IV**.3 `vn_products_ncpsu` and **47V**
+`vn_equalisers` are reused verbatim, and the shape of the argument (`F_ha(𝒜)`
+is the von Neumann subalgebra of the product over the solution set generated
+by the range of the mediating map; existence is weak initiality, uniqueness is
+47V plus minimality of `W*(G)`) is unchanged.  As in 124III, **Freyd's theorem
+itself is not invoked** — Mathlib's AFT wants bundled categories, and the
+construction collapses to two lines.
+
+### 2. Three recorded ingredients were not needed, and the proof came out *cheaper* than 124III
+
+* **"A direct sum of hereditarily atomic algebras is hereditarily atomic"** —
+  recorded as the one piece of genuinely new work — **is never used**.  The
+  product over the solution set is formed over the `Σ`-type of pairs
+  (solution-set entry, one of *its* summands), so it is *literally* a single
+  direct sum of matrix algebras and its hereditary atomicity is
+  `StarAlgEquiv.refl`.  What would have been the flattening isomorphism
+  becomes one block projection `⊕_{(i,j)} M → ⊕ⱼ M`, which is **47IV**.3
+  applied to the coordinate projections.
+* **84bV `ha_equalisers` is not used**, and neither is any equaliser statement
+  about hereditarily atomic algebras.  proc.tex:5261 cites `ha-equalisers` to
+  see that `haW*_miu` has equalisers preserved by the inclusion; in the
+  transcription, as in 124III, Freyd's equaliser step never appears — the
+  uniqueness half is **47V** `vn_equalisers` on the carrier plus
+  `vnsub_wstar_eq_top`.
+* **125II `vn_gns_bound` and `exists_smallRealization` are not used.**
+  124III has to relabel a whole von Neumann algebra onto "a subset of `κ`",
+  which it does by realising it on `ℓ²(T)`.  Here `HereditarilyAtomic`
+  (**84bII**) *already is* a direct-sum decomposition, so the solution set is
+  indexed by *presentations* `⊕_{j∈J} M_{Nⱼ+1}` with `J ⊆ K` and the only
+  relabelling is of the summand index set — `exists_lp_reindex`, written for
+  125cIII in session 81.  The index type accordingly needs only
+  `#K = 2^(2^(𝔠+#𝒜))`, **one exponential less than 124III**.  The bound
+  `#I₀ ≤ #ℬ'` comes from `i ↦ κᵢ(1)` being injective (`lpKappa_apply_self` /
+  `lpKappa_apply_ne`).
+* **No nontriviality side condition.**  124III's `SolIdx` carries a
+  `Nontrivial` field because 47IV needs nontrivial factors, and its proof
+  splits off the trivial target separately.  Here every factor is an
+  `M_{N+1}`, so both disappear; `ha_solution_set` holds for a trivial target
+  too.
+
+### 3. `hA` is unused — and provably so
+
+`ha_second_adjunction (hA : HereditarilyAtomic A)` never uses `hA`, and
+cannot: the carrier is a von Neumann subalgebra of a direct sum of matrix
+algebras whatever `𝒜` is, so `F_ha` exists for **every** von Neumann algebra.
+(The same was true of `hA` in 125cIII and in 132III.5.)  **Not an erratum** —
+the thesis states the adjunction with `haW*_cpsu` as its domain, which is the
+only place `𝒜` hereditarily atomic is wanted — but recorded here, since it
+says the left adjoint is really `W*_cpsu → haW*_miu`.
+
+### 4. One rearrangement of the file
+
+`exists_ncpsuCompNmiu'`, `lpEvalNMIU` and `exists_lp_reindex` — session 81's
+"helpers 4 and 5", written inside the `FhaAux` block for 125cIII — are needed
+by 125bII, which comes *earlier* in the file.  They were moved up, unchanged,
+into the new `section HaSecondAdjunction`, with a pointer left at their old
+site.  All three are `private`, so nothing outside the file is affected.
+
+### 5. Next root in `QuantumLambda.lean`: **121II `intersection_tensor`** (`:306`, proc.tex:4450)
+
+With 125bII closed, `intersection_tensor` is the *only* remaining sorry in the
+file with no open in-file dependency — and it is class (c′): proc.tex:4473
+gives no argument at all, only "See Corollary IV.5.10 of `Takesaki1`".  Every
+other sorry in the file hangs off it *as printed*:
+
+* **125IV** `equaliser_lemma` (`:1783`, proc.tex:4846) uses 121II for exactly
+  one step, `Ã⊗𝒞 = (Ã⊗B(ℋ)) ∩ (𝒜⊗𝒞)`; the rest of its proof (the `r_ξ`, the
+  polarisation identity, the `#𝒟·2^#𝒞` count) has all its inputs — **125II**
+  `vn_gns_bound` is proved.
+* **125VI** `tensor_equalisers` (proc.tex:4979) uses 125IV.
+* **125VIIb** `tensor_preimage` (proc.tex:5025) is an exercise whose hint is
+  "express `ϱ⁻¹(𝒮)` as a pullback", i.e. products **and equalisers**, so it
+  routes through 125VI.  **125eIII** `tensorBsurjectivity` (proc.tex:5599)
+  uses 125VIIb in its forward direction.
+* **125VIII** `tensor_closed` is Freyd again through 125IV/125VI, and
+  **125dII** `ha_tensor_closed` (proc.tex:5538) defers explicitly to
+  `tensor-closed-proof`, so 125bII does **not** unblock it on its own —
+  correcting the session-81 note, which said 125bII "unblocks 125dII".
+* **125eIIa** `tensor_map_factorisation` is "by inspecting the proof of
+  `equaliser-lemma`"; **125eVII** `AstarhaB_concrete` tops the chain and still
+  has no recorded route.
+
+So the file has one genuine root, and it is a literature citation.  A worker
+who can establish 125IV's containment step `h(𝒟) ⊆ Ã⊗𝒞` without the concrete
+Takesaki result — the Lean `intersection_tensor` is about *concrete*
+Hilbert-space tensor products, while `equaliser_lemma` is stated abstractly
+through `VNT` — would unblock the file at 125IV instead, and that looks like
+the more promising attack.
+
+Nothing for ERRATA or QUESTIONS this session.  `docs/why-open.csv`: the
+`ha_second_adjunction` row is deleted.  `docs/AProc-survey.md`: headline
+22 → 21, `QuantumLambda` 10 → 9, the 125bII row rewritten, session note added.

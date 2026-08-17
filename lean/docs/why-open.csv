@@ -35,7 +35,6 @@ exists_braiding|open||119IVc, the exercise that (a,b) maps to b tensor a is a te
 exists_tmapM|costed||needs the tmap construction made universe-polymorphic (four universes); prerequisite for all of 119V
 exists_unitors|open||119IVb, the two unitors; not attempted
 faithful_positive_map_uniqueness|blocked|positive_quotients_centrally_similar|104IX is 100VII plus 104VII, both cited by name
-ha_second_adjunction|costed||125bII: all three inputs are now proved -- vn_products_ncpsu, fdcstar (84II), and ha_equalisers (84bV) + hereditarilyAtomic_subalgebra (84bIII), closed in session 79; not yet attempted, and it is an adjoint-functor-theorem argument
 ha_tensor_closed|open||125dII, the hereditarily atomic free exponential; no route recorded
 intersection_tensor|cited||121II gives no argument, only a pointer to Corollary IV.5.10 of Takesaki I
 linf_tensor|costed||123I.3 cites 116VII, which is now proved; parts 1 and 2 of the exercise are proved above it

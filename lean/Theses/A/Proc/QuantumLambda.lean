@@ -1892,11 +1892,369 @@ structure HaFreeMIU [VonNeumannAlgebra A] : Type (u + 1) where
 attribute [instance] HaFreeMIU.cstar HaFreeMIU.po HaFreeMIU.sor
   HaFreeMIU.vna
 
+/-! ### Infrastructure for **125bII**
+
+proc.tex:5250 says the proof is "exactly as in" 124III
+(`second_adjunction`), and it is: Freyd again, with the solution set cut
+down to the *hereditarily atomic* targets.  Three things change, all of
+them simplifications.
+
+* **The solution set is indexed by direct sums of matrix algebras**, not by
+  von Neumann algebras carried on a subset of a cardinal.  A hereditarily
+  atomic algebra *is* a `⊕ⱼ M_{Nⱼ+1}` — that is **84bII**, the definition
+  used here — so the only relabelling needed is of the *index set of the
+  summands*, which is `exists_lp_reindex` (written for 125cIII, moved up to
+  here), and not of a Hilbert space.  In particular **125II**
+  `vn_gns_bound` and `exists_smallRealization` are *not* used, and the
+  index type `K` needs only `#K = 2^(2^(𝔠+#𝒜))` — one exponential less than
+  124III.
+* **The product over the solution set is formed flat.**  proc.tex:5257
+  needs "a direct sum of hereditarily atomic algebras is hereditarily
+  atomic"; here the product is taken over the `Σ`-type of pairs
+  (solution-set entry, one of its summands) from the start, so it is
+  *literally* a direct sum of matrix algebras and its hereditary atomicity
+  is `StarAlgEquiv.refl`.  What would have been the flattening isomorphism
+  becomes a single block projection `⊕_{(i,j)} M → ⊕ⱼ M`, which is just
+  **47IV** applied to the coordinate projections.
+* **No nontriviality side condition.**  124III's `SolIdx` carries a
+  `Nontrivial` field because **47IV** needs nontrivial factors, and its
+  proof splits off the trivial target; here the factors are matrix algebras
+  `M_{N+1}`, so both disappear.
+
+`ha_second_adjunction` does **not** use `hA`, and cannot: the carrier is a
+von Neumann subalgebra of a direct sum of matrix algebras whatever `𝒜` is,
+so `F_ha` exists for *every* von Neumann algebra.  The hypothesis is kept
+because the thesis states the adjunction with `haW*_cpsu` as its domain. -/
+
+section HaSecondAdjunction
+
+universe u₁ u₂ u₃ u₄
+
+variable {X : Type u₁} {Y : Type u₂} {Z : Type u₃}
+  [CStarAlgebra X] [PartialOrder X] [StarOrderedRing X]
+  [CStarAlgebra Y] [PartialOrder Y] [StarOrderedRing Y]
+  [CStarAlgebra Z] [PartialOrder Z] [StarOrderedRing Z]
+
+/-! #### Helpers shared with 125cIII
+
+The next three declarations were written for `Fha_concrete` (125cIII,
+"helpers 4 and 5" of the `FhaAux` block below) and are used again here;
+they live at this point in the file only because 125bII comes first. -/
+
+/-! ### helper 4: composing an ncpsu-map with an nmiu-map, across universes -/
+
+private theorem exists_ncpsuCompNmiu' (g : NMIUMap Y Z) (f : NCPSUMap X Y) :
+    ∃ h : NCPSUMap X Z, ∀ x : X, h.toNCPMap x = g (f.toNCPMap x) := by
+  have hmono : ∀ x y : X, x ≤ y → f.toNCPMap x ≤ f.toNCPMap y := fun x y h =>
+    OrderHomClass.mono f.toNCPMap.toCompletelyPositiveMap h
+  have hsa : ∀ x : X, IsSelfAdjoint x → IsSelfAdjoint (f.toNCPMap x) := fun x hx =>
+    isSelfAdjoint_map_of_pos
+      (PositiveLinearMap.ofClass f.toNCPMap.toCompletelyPositiveMap) hx
+  refine ⟨{ toNCPMap :=
+              { toCompletelyPositiveMap :=
+                  { toLinearMap :=
+                      ((nmiuNCP g).toCompletelyPositiveMap.toLinearMap).comp
+                        f.toNCPMap.toCompletelyPositiveMap.toLinearMap
+                    map_cstarMatrix_nonneg' := fun k M hM => by
+                      have h1 : (0 : CStarMatrix (Fin k) (Fin k) Y) ≤
+                          M.map f.toNCPMap.toCompletelyPositiveMap.toLinearMap :=
+                        f.toNCPMap.toCompletelyPositiveMap.map_cstarMatrix_nonneg' k M hM
+                      exact (nmiuNCP g).toCompletelyPositiveMap.map_cstarMatrix_nonneg'
+                        k _ h1 }
+                preservesDirSups' := by
+                  exact preservesDirSups_comp (f := ⇑f.toNCPMap) (g := ⇑(nmiuNCP g))
+                    hsa hmono f.toNCPMap.preservesDirSups' (nmiuNCP g).preservesDirSups' }
+            subunital' := ?_ }, fun _ => rfl⟩
+  show g (f.toNCPMap 1) ≤ 1
+  refine le_trans (starAlgHom_mono' g.toStarAlgHom f.subunital') ?_
+  exact le_of_eq (map_one g.toStarAlgHom)
+
+
+
+
+/-- The coordinate projection as an nmiu-map. -/
+private def lpEvalNMIU {I : Type u₁} (𝒜 : I → Type u₄) [∀ i, CStarAlgebra (𝒜 i)]
+    [∀ i, Nontrivial (𝒜 i)] [∀ i, PartialOrder (𝒜 i)] [∀ i, StarOrderedRing (𝒜 i)]
+    [∀ i, VonNeumannAlgebra (𝒜 i)] (j : I) : NMIUMap (lp 𝒜 ∞) (𝒜 j) :=
+  ⟨lpEvalSAH j, vn_products_proj_normal 𝒜 j⟩
+
+/-! ### helper 5: reindexing a direct sum along a bijection of index sets -/
+
+private theorem exists_lp_reindex {I₁ : Type u₁} {I₂ : Type u₂} {𝒜 : I₂ → Type u₄}
+    {ℬ : I₁ → Type u₄}
+    [∀ i, CStarAlgebra (𝒜 i)] [∀ i, Nontrivial (𝒜 i)] [∀ i, PartialOrder (𝒜 i)]
+    [∀ i, StarOrderedRing (𝒜 i)] [∀ i, VonNeumannAlgebra (𝒜 i)]
+    [∀ i, CStarAlgebra (ℬ i)] [∀ i, Nontrivial (ℬ i)] [∀ i, PartialOrder (ℬ i)]
+    [∀ i, StarOrderedRing (ℬ i)] [∀ i, VonNeumannAlgebra (ℬ i)]
+    (e : I₁ ≃ I₂) (u : ∀ i : I₁, NMIUMap (𝒜 (e i)) (ℬ i))
+    (hu : ∀ i, Function.Bijective ⇑(u i)) :
+    ∃ Φ : NMIUMap (lp 𝒜 ∞) (lp ℬ ∞), Function.Bijective ⇑Φ ∧
+      ∀ (x : lp 𝒜 ∞) (i : I₁),
+        ((Φ x : lp ℬ ∞) : ∀ j, ℬ j) i = u i ((x : ∀ j, 𝒜 j) (e i)) := by
+  classical
+  obtain ⟨Φ, hΦ, -⟩ := vn_products_nmiu (B := lp 𝒜 ∞) ℬ
+    (fun i => nmiuComp (u i) (lpEvalNMIU 𝒜 (e i)))
+  have hΦapp : ∀ (x : lp 𝒜 ∞) (i : I₁),
+      ((Φ x : lp ℬ ∞) : ∀ j, ℬ j) i = u i ((x : ∀ j, 𝒜 j) (e i)) := fun x i => hΦ i x
+  -- the inverse maps
+  set v : ∀ i : I₁, NMIUMap (ℬ i) (𝒜 (e i)) := fun i => nmiuSymm (u i) (hu i) with hv
+  have hvu : ∀ (i : I₁) (b : ℬ i), u i (v i b) = b := fun i b =>
+    nmiuSymm_apply_apply' (u i) (hu i) b
+  have hvnorm : ∀ (i : I₁) (b : ℬ i), ‖v i b‖ = ‖b‖ := by
+    intro i b
+    have h := NonUnitalStarAlgHom.norm_map (u i).toStarAlgHom (hu i).1 (v i b)
+    rw [show ((u i).toStarAlgHom (v i b) : ℬ i) = b from hvu i b] at h
+    exact h.symm
+  refine ⟨Φ, ⟨?_, ?_⟩, hΦapp⟩
+  · intro x y hxy
+    refine lp.ext (funext fun j => ?_)
+    obtain ⟨i, rfl⟩ := e.surjective j
+    refine (hu i).1 ?_
+    rw [← hΦapp x i, ← hΦapp y i, hxy]
+  · intro z
+    have hmem : Memℓp ((Equiv.piCongrLeft 𝒜 e)
+        (fun i : I₁ => v i ((z : ∀ j, ℬ j) i))) ∞ := by
+      refine memℓp_infty_iff.mpr ⟨‖z‖, ?_⟩
+      rintro _ ⟨j, rfl⟩
+      obtain ⟨i, rfl⟩ := e.surjective j
+      show ‖(Equiv.piCongrLeft 𝒜 e)
+        (fun i : I₁ => v i ((z : ∀ j, ℬ j) i)) (e i)‖ ≤ ‖z‖
+      rw [Equiv.piCongrLeft_apply_apply, hvnorm]
+      exact lp.norm_apply_le_norm (by simp) z i
+    refine ⟨⟨_, hmem⟩, ?_⟩
+    refine lp.ext (funext fun i => ?_)
+    rw [hΦapp]
+    show u i ((Equiv.piCongrLeft 𝒜 e)
+      (fun i' : I₁ => v i' ((z : ∀ j, ℬ j) i')) (e i)) = _
+    rw [Equiv.piCongrLeft_apply_apply, hvu]
+
+/-! #### The solution set of 125bII -/
+
+/-- A matrix algebra `M_{n+1}`, spelled exactly as in `HereditarilyAtomic`
+(**84bII**) so that the two match on the nose. -/
+private abbrev HaMat (n : ℕ) : Type :=
+  CStarMatrix (Fin (n + 1)) (Fin (n + 1)) ℂ
+
+/-- The index of the solution set of **125bII**: a hereditarily atomic von
+Neumann algebra *presented* as `⊕_{j ∈ J} M_{N j+1}` with `J` a subset of a
+fixed index type `K`, together with an ncpsu-map into it from `𝒜`.  (124III
+instead carries a von Neumann subalgebra of `B(ℓ²(T))`; the presentation is
+what makes the flat product below manifestly hereditarily atomic.) -/
+private structure HaSolIdx (A : Type u) [CStarAlgebra A] [PartialOrder A]
+    [StarOrderedRing A] (K : Type u) : Type u where
+  J : Set K
+  N : J → ℕ
+  γ : NCPSUMap A (lp (fun j : J => HaMat (N j)) ∞)
+
+/-- The algebra of a solution-set entry. -/
+@[reducible] private def HaSolAlg {A : Type u} [CStarAlgebra A]
+    [PartialOrder A] [StarOrderedRing A] {K : Type u} (i : HaSolIdx A K) :
+    Type u :=
+  lp (fun j : i.J => HaMat (i.N j)) ∞
+
+/-- The *flat* index of the product over the solution set: a pair of a
+solution-set entry and one of its summands. -/
+@[reducible] private def HaSolFlat (A : Type u) [CStarAlgebra A]
+    [PartialOrder A] [StarOrderedRing A] (K : Type u) : Type u :=
+  Σ i : HaSolIdx A K, i.J
+
+/-- The product `∏ᵢ 𝒞ᵢ` over the solution set, formed flat — a single direct
+sum of matrix algebras. -/
+@[reducible] private def haSolProd (A : Type u) [CStarAlgebra A]
+    [PartialOrder A] [StarOrderedRing A] (K : Type u) : Type u :=
+  lp (fun p : HaSolFlat A K => HaMat (p.1.N p.2)) ∞
+
+/-- Whence proc.tex:5257's "a direct sum of hereditarily atomic algebras is
+hereditarily atomic" is not needed: the product is hereditarily atomic *by
+definition*. -/
+private theorem hereditarilyAtomic_haSolProd (A : Type u) [CStarAlgebra A]
+    [PartialOrder A] [StarOrderedRing A] (K : Type u) :
+    HereditarilyAtomic (haSolProd A K) :=
+  ⟨HaSolFlat A K, fun p => p.1.N p.2,
+    ⟨StarAlgEquiv.refl (R := ℂ) (A := haSolProd A K)⟩⟩
+
+/-- The **block projection** `⊕_{(i,j)} M_{N i j+1} → ⊕ⱼ M_{N i j+1}` onto
+the summands belonging to a single solution-set entry: **47IV** applied to
+the family of coordinate projections. -/
+private theorem exists_haBlockProj (A : Type u) [CStarAlgebra A]
+    [PartialOrder A] [StarOrderedRing A] [VonNeumannAlgebra A] {K : Type u}
+    (i : HaSolIdx A K) :
+    ∃ pr : NMIUMap (haSolProd A K) (HaSolAlg i),
+      ∀ (x : haSolProd A K) (j : i.J),
+        ((pr x : HaSolAlg i) : ∀ j' : i.J, HaMat (i.N j')) j
+          = (x : ∀ q : HaSolFlat A K, HaMat (q.1.N q.2)) ⟨i, j⟩ := by
+  obtain ⟨g, hg, -⟩ := vn_products_nmiu (B := haSolProd A K)
+    (fun j : i.J => HaMat (i.N j))
+    (fun j => lpEvalNMIU (fun q : HaSolFlat A K => HaMat (q.1.N q.2)) ⟨i, j⟩)
+  exact ⟨g, fun x j => hg j x⟩
+
+/-- A hereditarily atomic von Neumann algebra no larger than `K` is
+`⊕_{j ∈ J} M_{N j+1}` for a *subset* `J ⊆ K`.  This is the relabelling step
+of 124III, one exponential cheaper: the summand index type `I₀` injects into
+the algebra by `i ↦ κᵢ(1)`, so it injects into `K`, and `exists_lp_reindex`
+moves the direct sum along that injection. -/
+private theorem exists_haPresentation {K : Type u} (W : Type u)
+    [CStarAlgebra W] [PartialOrder W] [StarOrderedRing W]
+    [VonNeumannAlgebra W] (hW : HereditarilyAtomic W) (hK : #W ≤ #K) :
+    ∃ (J : Set K) (N : J → ℕ)
+      (Θ : NMIUMap W (lp (fun j : J => HaMat (N j)) ∞)),
+      Function.Bijective ⇑Θ := by
+  classical
+  obtain ⟨I₀, N₀, ⟨Ψ⟩⟩ := hW
+  have hinj : Function.Injective
+      (fun i : I₀ => Ψ.symm (lpKappa i (1 : HaMat (N₀ i)))) := by
+    intro i i' hii'
+    by_contra hne
+    have h1 : lpKappa i (1 : HaMat (N₀ i)) = lpKappa i' (1 : HaMat (N₀ i')) :=
+      Ψ.symm.injective hii'
+    have h2 := congrArg
+      (fun x : lp (fun k : I₀ => HaMat (N₀ k)) ∞ =>
+        (x : ∀ k : I₀, HaMat (N₀ k)) i) h1
+    rw [lpKappa_apply_self, lpKappa_apply_ne _ _ hne] at h2
+    exact one_ne_zero h2
+  have hcardI : #I₀ ≤ #K :=
+    le_trans (Cardinal.mk_le_of_injective hinj) hK
+  obtain ⟨jm⟩ := (Cardinal.le_def _ _).mp hcardI
+  obtain ⟨Ψ', hΨ'⟩ : ∃ Ψ' : NMIUMap W (lp (fun i : I₀ => HaMat (N₀ i)) ∞),
+      ∀ x : W, Ψ' x = Ψ x :=
+    ⟨⟨Ψ.toStarAlgHom, starAlgEquiv_preservesDirSups Ψ⟩, fun _ => rfl⟩
+  obtain ⟨Φ, hΦbij, -⟩ := exists_lp_reindex
+    (𝒜 := fun i : I₀ => HaMat (N₀ i))
+    (ℬ := fun j : (Set.range ⇑jm : Set K) =>
+      HaMat (N₀ ((Equiv.ofInjective ⇑jm jm.injective).symm j)))
+    (Equiv.ofInjective ⇑jm jm.injective).symm
+    (fun _ => nmiuId _) (fun _ => nmiuId_bijective)
+  refine ⟨Set.range ⇑jm,
+    fun j => N₀ ((Equiv.ofInjective ⇑jm jm.injective).symm j),
+    nmiuComp Φ Ψ', ⟨fun x y hxy => ?_, fun z => ?_⟩⟩
+  · have hx : Φ (Ψ' x) = Φ (Ψ' y) := hxy
+    have := hΦbij.1 hx
+    rw [hΨ' x, hΨ' y] at this
+    exact Ψ.injective this
+  · obtain ⟨w, hw⟩ := hΦbij.2 z
+    refine ⟨Ψ.symm w, ?_⟩
+    show Φ (Ψ' (Ψ.symm w)) = z
+    rw [hΨ' (Ψ.symm w), Ψ.apply_symm_apply]
+    exact hw
+
+/-- **The solution set condition for 125bII** (proc.tex:5262): every
+ncpsu-map from `𝒜` into a *hereditarily atomic* von Neumann algebra factors
+as an nmiu-map after one of the `γᵢ`.  The algebra `ℬ' = W*(f(𝒜))` is
+hereditarily atomic by **84bIII** and has at most `2^(2^(𝔠+#𝒜))` elements by
+**124I**; `exists_haPresentation` then puts it on a subset of `K`. -/
+private theorem ha_solution_set (A : Type u) [CStarAlgebra A] [PartialOrder A]
+    [StarOrderedRing A] [VonNeumannAlgebra A] {K : Type u}
+    (hK : #K = (2 : Cardinal.{u}) ^ ((2 : Cardinal.{u}) ^
+      (Cardinal.continuum + #A)))
+    {B : Type u} [CStarAlgebra B] [PartialOrder B] [StarOrderedRing B]
+    [VonNeumannAlgebra B] (hB : HereditarilyAtomic B) (f : NCPSUMap A B) :
+    ∃ (i : HaSolIdx A K) (h : NMIUMap (HaSolAlg i) B),
+      ∀ a : A, h ((i.γ).toNCPMap a) = f.toNCPMap a := by
+  classical
+  have h2 : (2 : Cardinal.{u}) ≠ 0 := by norm_num
+  set G : Set B := Set.range (fun a : A => f.toNCPMap a) with hG
+  have hw := isVNSubalgebra_wstar (A := B) G
+  obtain ⟨f', hf'⟩ := exists_ncpsuCorestrict (wstar B G) hw.1 f (fun a => hw.2 ⟨a, rfl⟩)
+  have hgen : wstar (VNSub B (wstar B G) hw.1)
+      (VNSub.val ⁻¹' G) = ⊤ := by
+    refine vnsub_wstar_eq_top _ (isVNSubalgebra_wstar _).1 fun x hx => ?_
+    exact (isVNSubalgebra_wstar (A := VNSub B (wstar B G) hw.1)
+      (VNSub.val ⁻¹' G)).2 hx
+  have hcardG : #((VNSub.val ⁻¹' G : Set (VNSub B (wstar B G) hw.1))) ≤ #A := by
+    refine le_trans (Cardinal.mk_le_of_injective
+      (f := fun x : (VNSub.val ⁻¹' G : Set (VNSub B (wstar B G) hw.1)) =>
+        (⟨x.val.val, x.property⟩ : G)) ?_) ?_
+    · rintro ⟨x, hx⟩ ⟨y, hy⟩ h
+      exact Subtype.ext (VNSub.val_injective (congrArg Subtype.val h))
+    · exact Cardinal.mk_range_le
+  have hcard : #(VNSub B (wstar B G) hw.1) ≤
+      (2 : Cardinal.{u}) ^ (2 : Cardinal.{u}) ^ (Cardinal.continuum + #A) := by
+    refine le_trans (vn_generation_bound _ hgen) ?_
+    exact Cardinal.power_le_power_left h2 (Cardinal.power_le_power_left h2
+      (add_le_add le_rfl hcardG))
+  have hB' : HereditarilyAtomic (VNSub B (wstar B G) hw.1) :=
+    hereditarilyAtomic_subalgebra hB VNSub.valNMIU VNSub.valNMIU_injective
+  obtain ⟨J, N, Θ, hΘbij⟩ := exists_haPresentation (K := K)
+    (VNSub B (wstar B G) hw.1) hB' (by rw [hK]; exact hcard)
+  obtain ⟨γ, hγ⟩ : ∃ γ : NCPSUMap A (lp (fun j : J => HaMat (N j)) ∞),
+      ∀ a : A, γ.toNCPMap a = Θ (f'.toNCPMap a) :=
+    ⟨ncpsuCompNmiu Θ f', fun a => ncpsuCompNmiu_apply Θ f' a⟩
+  refine ⟨⟨J, N, γ⟩, nmiuComp VNSub.valNMIU (nmiuSymm Θ hΘbij), fun a => ?_⟩
+  show VNSub.valNMIU (nmiuSymm Θ hΘbij (γ.toNCPMap a)) = f.toNCPMap a
+  rw [hγ a, nmiuSymm_apply_apply]
+  exact hf' a
+
+end HaSecondAdjunction
+
+
+set_option maxHeartbeats 1000000 in
 variable (A) in
 /-- **125bII** (proc.tex:5240, Proposition): the inclusion
-`haW*_miu → haW*_cpsu` has a left adjoint `F_ha`. -/
+`haW*_miu → haW*_cpsu` has a left adjoint `F_ha`.
+
+Freyd, exactly as in 124III `second_adjunction`: `F_ha(𝒜)` is the von
+Neumann subalgebra of the product over the solution set generated by the
+range of the mediating map `η`.  Existence of the factorisation is weak
+initiality of the product (`ha_solution_set` followed by the block
+projection); uniqueness is **47V** `vn_equalisers` together with
+`vnsub_wstar_eq_top`.  Hereditary atomicity of the carrier is **84bIII**
+applied to `hereditarilyAtomic_haSolProd`.
+
+`hA` is not used; see the note above `section HaSecondAdjunction`. -/
 theorem ha_second_adjunction [VonNeumannAlgebra A]
-    (hA : HereditarilyAtomic A) : Nonempty (HaFreeMIU A) := sorry
+    (hA : HereditarilyAtomic A) : Nonempty (HaFreeMIU A) := by
+  classical
+  obtain ⟨K, hK⟩ : ∃ K : Type u, #K = (2 : Cardinal.{u}) ^ ((2 : Cardinal.{u}) ^
+      (Cardinal.continuum + #A)) := ⟨_, Cardinal.mk_out _⟩
+  choose γ' hγ' using fun p : HaSolFlat A K =>
+    exists_ncpsuCompNmiu' (lpEvalNMIU (fun j : p.1.J => HaMat (p.1.N j)) p.2) p.1.γ
+  obtain ⟨η, hη, -⟩ := vn_products_ncpsu
+    (fun p : HaSolFlat A K => HaMat (p.1.N p.2)) γ'
+  have hw := isVNSubalgebra_wstar (A := haSolProd A K)
+    (Set.range (fun a : A => η.toNCPMap a))
+  obtain ⟨η', hη'⟩ :=
+    exists_ncpsuCorestrict
+      (wstar (haSolProd A K) (Set.range (fun a : A => η.toNCPMap a)))
+      hw.1 η (fun a => hw.2 ⟨a, rfl⟩)
+  refine ⟨{ carrier := VNSub (haSolProd A K)
+              (wstar (haSolProd A K) (Set.range (fun a : A => η.toNCPMap a))) hw.1
+            ha := hereditarilyAtomic_subalgebra (hereditarilyAtomic_haSolProd A K)
+              VNSub.valNMIU VNSub.valNMIU_injective
+            unit := η'
+            universal := fun B _ _ _ _ hB f => ?_ }⟩
+  -- weak initiality: factor through the solution set, then block-project
+  obtain ⟨i, h, hh⟩ := ha_solution_set A hK hB f
+  obtain ⟨pr, hpr⟩ := exists_haBlockProj A i
+  obtain ⟨g, hgeq⟩ : ∃ g : NMIUMap (VNSub (haSolProd A K)
+        (wstar (haSolProd A K) (Set.range (fun a : A => η.toNCPMap a))) hw.1) B,
+      ∀ x, g x = h (pr x.val) :=
+    ⟨nmiuComp h (nmiuComp pr VNSub.valNMIU), fun _ => rfl⟩
+  have hprη : ∀ a : A, pr (η.toNCPMap a) = (i.γ).toNCPMap a := by
+    intro a
+    refine lp.ext (funext fun j => ?_)
+    rw [hpr, hη ⟨i, j⟩ a, hγ' ⟨i, j⟩ a]
+    rfl
+  have hgval : ∀ a : A, f.toNCPMap a = g (η'.toNCPMap a) := by
+    intro a
+    rw [hgeq (η'.toNCPMap a), hη' a, hprη a]
+    exact (hh a).symm
+  refine ⟨g, hgval, fun g' hg' => ?_⟩
+  -- uniqueness: the equaliser (**47V**) is a von Neumann subalgebra
+  -- containing the range of the unit, which generates the whole algebra
+  obtain ⟨E, hE, hEset⟩ := vn_equalisers g' g
+  have hEtop : E = ⊤ := by
+    refine vnsub_wstar_eq_top E hE fun x hx => ?_
+    obtain ⟨a, ha⟩ := hx
+    have hx' : x = η'.toNCPMap a := VNSub.val_injective (by rw [hη' a]; exact ha.symm)
+    have hgg : g' x = g x := by rw [hx', ← hg' a, ← hgval a]
+    rw [← SetLike.mem_coe, hEset]
+    exact hgg
+  refine DFunLike.coe_injective (funext fun x => ?_)
+  have hxE : x ∈ (E : Set (VNSub (haSolProd A K)
+      (wstar (haSolProd A K) (Set.range (fun a : A => η.toNCPMap a))) hw.1)) := by
+    rw [hEtop]; trivial
+  rw [hEset] at hxE
+  exact hxE
 
 /-! ## Parsec 1253: concrete description of `F_ha` -/
 
@@ -2109,93 +2467,12 @@ private theorem isVNSubalgebra_comap [VonNeumannAlgebra X] [VonNeumannAlgebra Y]
       obtain ⟨e, he, rfl⟩ := hd
       exact hDS e he) hGne hGdir hlubG
 
-/-! ### helper 4: composing an ncpsu-map with an nmiu-map, across universes -/
+/-! ### helpers 4 and 5 have moved
 
-private theorem exists_ncpsuCompNmiu' (g : NMIUMap Y Z) (f : NCPSUMap X Y) :
-    ∃ h : NCPSUMap X Z, ∀ x : X, h.toNCPMap x = g (f.toNCPMap x) := by
-  have hmono : ∀ x y : X, x ≤ y → f.toNCPMap x ≤ f.toNCPMap y := fun x y h =>
-    OrderHomClass.mono f.toNCPMap.toCompletelyPositiveMap h
-  have hsa : ∀ x : X, IsSelfAdjoint x → IsSelfAdjoint (f.toNCPMap x) := fun x hx =>
-    isSelfAdjoint_map_of_pos
-      (PositiveLinearMap.ofClass f.toNCPMap.toCompletelyPositiveMap) hx
-  refine ⟨{ toNCPMap :=
-              { toCompletelyPositiveMap :=
-                  { toLinearMap :=
-                      ((nmiuNCP g).toCompletelyPositiveMap.toLinearMap).comp
-                        f.toNCPMap.toCompletelyPositiveMap.toLinearMap
-                    map_cstarMatrix_nonneg' := fun k M hM => by
-                      have h1 : (0 : CStarMatrix (Fin k) (Fin k) Y) ≤
-                          M.map f.toNCPMap.toCompletelyPositiveMap.toLinearMap :=
-                        f.toNCPMap.toCompletelyPositiveMap.map_cstarMatrix_nonneg' k M hM
-                      exact (nmiuNCP g).toCompletelyPositiveMap.map_cstarMatrix_nonneg'
-                        k _ h1 }
-                preservesDirSups' := by
-                  exact preservesDirSups_comp (f := ⇑f.toNCPMap) (g := ⇑(nmiuNCP g))
-                    hsa hmono f.toNCPMap.preservesDirSups' (nmiuNCP g).preservesDirSups' }
-            subunital' := ?_ }, fun _ => rfl⟩
-  show g (f.toNCPMap 1) ≤ 1
-  refine le_trans (starAlgHom_mono' g.toStarAlgHom f.subunital') ?_
-  exact le_of_eq (map_one g.toStarAlgHom)
-
-
-
-
-/-- The coordinate projection as an nmiu-map. -/
-private def lpEvalNMIU {I : Type u₁} (𝒜 : I → Type u₄) [∀ i, CStarAlgebra (𝒜 i)]
-    [∀ i, Nontrivial (𝒜 i)] [∀ i, PartialOrder (𝒜 i)] [∀ i, StarOrderedRing (𝒜 i)]
-    [∀ i, VonNeumannAlgebra (𝒜 i)] (j : I) : NMIUMap (lp 𝒜 ∞) (𝒜 j) :=
-  ⟨lpEvalSAH j, vn_products_proj_normal 𝒜 j⟩
-
-/-! ### helper 5: reindexing a direct sum along a bijection of index sets -/
-
-private theorem exists_lp_reindex {I₁ : Type u₁} {I₂ : Type u₂} {𝒜 : I₂ → Type u₄}
-    {ℬ : I₁ → Type u₄}
-    [∀ i, CStarAlgebra (𝒜 i)] [∀ i, Nontrivial (𝒜 i)] [∀ i, PartialOrder (𝒜 i)]
-    [∀ i, StarOrderedRing (𝒜 i)] [∀ i, VonNeumannAlgebra (𝒜 i)]
-    [∀ i, CStarAlgebra (ℬ i)] [∀ i, Nontrivial (ℬ i)] [∀ i, PartialOrder (ℬ i)]
-    [∀ i, StarOrderedRing (ℬ i)] [∀ i, VonNeumannAlgebra (ℬ i)]
-    (e : I₁ ≃ I₂) (u : ∀ i : I₁, NMIUMap (𝒜 (e i)) (ℬ i))
-    (hu : ∀ i, Function.Bijective ⇑(u i)) :
-    ∃ Φ : NMIUMap (lp 𝒜 ∞) (lp ℬ ∞), Function.Bijective ⇑Φ ∧
-      ∀ (x : lp 𝒜 ∞) (i : I₁),
-        ((Φ x : lp ℬ ∞) : ∀ j, ℬ j) i = u i ((x : ∀ j, 𝒜 j) (e i)) := by
-  classical
-  obtain ⟨Φ, hΦ, -⟩ := vn_products_nmiu (B := lp 𝒜 ∞) ℬ
-    (fun i => nmiuComp (u i) (lpEvalNMIU 𝒜 (e i)))
-  have hΦapp : ∀ (x : lp 𝒜 ∞) (i : I₁),
-      ((Φ x : lp ℬ ∞) : ∀ j, ℬ j) i = u i ((x : ∀ j, 𝒜 j) (e i)) := fun x i => hΦ i x
-  -- the inverse maps
-  set v : ∀ i : I₁, NMIUMap (ℬ i) (𝒜 (e i)) := fun i => nmiuSymm (u i) (hu i) with hv
-  have hvu : ∀ (i : I₁) (b : ℬ i), u i (v i b) = b := fun i b =>
-    nmiuSymm_apply_apply' (u i) (hu i) b
-  have hvnorm : ∀ (i : I₁) (b : ℬ i), ‖v i b‖ = ‖b‖ := by
-    intro i b
-    have h := NonUnitalStarAlgHom.norm_map (u i).toStarAlgHom (hu i).1 (v i b)
-    rw [show ((u i).toStarAlgHom (v i b) : ℬ i) = b from hvu i b] at h
-    exact h.symm
-  refine ⟨Φ, ⟨?_, ?_⟩, hΦapp⟩
-  · intro x y hxy
-    refine lp.ext (funext fun j => ?_)
-    obtain ⟨i, rfl⟩ := e.surjective j
-    refine (hu i).1 ?_
-    rw [← hΦapp x i, ← hΦapp y i, hxy]
-  · intro z
-    have hmem : Memℓp ((Equiv.piCongrLeft 𝒜 e)
-        (fun i : I₁ => v i ((z : ∀ j, ℬ j) i))) ∞ := by
-      refine memℓp_infty_iff.mpr ⟨‖z‖, ?_⟩
-      rintro _ ⟨j, rfl⟩
-      obtain ⟨i, rfl⟩ := e.surjective j
-      show ‖(Equiv.piCongrLeft 𝒜 e)
-        (fun i : I₁ => v i ((z : ∀ j, ℬ j) i)) (e i)‖ ≤ ‖z‖
-      rw [Equiv.piCongrLeft_apply_apply, hvnorm]
-      exact lp.norm_apply_le_norm (by simp) z i
-    refine ⟨⟨_, hmem⟩, ?_⟩
-    refine lp.ext (funext fun i => ?_)
-    rw [hΦapp]
-    show u i ((Equiv.piCongrLeft 𝒜 e)
-      (fun i' : I₁ => v i' ((z : ∀ j, ℬ j) i')) (e i)) = _
-    rw [Equiv.piCongrLeft_apply_apply, hvu]
-
+`exists_ncpsuCompNmiu'` (composing an ncpsu-map with an nmiu-map across
+universes), `lpEvalNMIU` and `exists_lp_reindex` (reindexing a direct sum
+along a bijection of index sets) are stated above, before 125bII, whose
+proof needs them too. -/
 
 
 
@@ -2656,3 +2933,4 @@ theorem AstarhaB_concrete [VonNeumannAlgebra A] [VonNeumannAlgebra B]
         ∀ a : A, tmapM πΦ (nmiuId B) (F.unit a) = s i a := sorry
 
 end Theses.A.Proc
+
