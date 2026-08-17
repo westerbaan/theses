@@ -18627,3 +18627,176 @@ transport from `𝒜`, `ℬ` to their `ℓ^∞`s is `exists_nmiu_mul`'s pattern.
 The thesis's proof of 127III is correct as printed; every divergence in this
 session is one of rendering (the subtype in place of `restrict`, corners in
 place of an `lp`-sum, the `μ(X) = 0` case the thesis does not mention).
+
+## Session 79 — `A/VN`: **84bIII and 84bV are CLOSED, and `Division.lean` is finished** — the corner-as-a-type problem was avoidable twice over (worker on `Theses/A/VN/`)
+
+A/VN **3 → 1** code `sorry`s.  Per file, each source run through `lean`
+individually against rebuilt oleans, paired with an error count, **0 errors
+everywhere**: `Basic` **1**, `Projections` **0**, `Division` **0**,
+`NormalFunctionals` **0**, `Completeness` **0**.  Closed this session, both
+`#print axioms`-clean (`[propext, Classical.choice, Quot.sound]`):
+
+* **84bIII** `hereditarilyAtomic_subalgebra` — a von Neumann subalgebra of a
+  hereditarily atomic von Neumann algebra is hereditarily atomic;
+* **84bV** `ha_equalisers` — the equaliser of two nmiu-maps between
+  hereditarily atomic von Neumann algebras is hereditarily atomic.
+
+About **460 new lines** in `Division.lean` (plus a 366-line block moved into
+it, see §4).  The item was costed at **1000–1600 lines** and called "not a
+tail-end job" by two workers; the costing was wrong because *both* of its
+recorded obstacles dissolve.
+
+### 1. The `range (πⱼ ∘ e)` suggestion works, and it is two lines
+
+The survey's untested idea — use the **range** of `gⱼ := πⱼ ∘ e : ℬ → M_{Nⱼ}`
+as a closed `StarSubalgebra` instead of building the corner `dⱼℬ` as a type —
+is correct, and the instance plumbing it needs is exactly:
+
+```lean
+private theorem finiteDimensional_starSubalgebra (S : StarSubalgebra ℂ M) :
+    FiniteDimensional ℂ S :=
+  FiniteDimensional.of_injective (S.subtype : S →ₗ[ℂ] M) Subtype.val_injective
+
+private noncomputable def cstarAlgebra_starSubalgebra (S : StarSubalgebra ℂ M) :
+    CStarAlgebra S := { complete := (FiniteDimensional.complete ℂ S).1 }
+```
+
+with both attached by `attribute [local instance]` (so nothing leaks
+downstream).  Two traps: the `CStarAlgebra` def **must** be marked
+`@[instance_reducible]`, or `FiniteDimensional ℂ ↥S` is no longer found once
+the `Module ℂ ↥S` path runs through the new `CStarAlgebra` instance (a
+semireducible class def blocks the unifier); and the two must be *local
+instances*, not `haveI`s, so that synthesis re-derives them for whichever
+`Module` path is in play.  With those, `fdcstar ↥(g.range)` typechecks
+directly.
+
+### 2. Neither Zorn nor the `lp`-of-`lp` regrouping is needed
+
+The survey warned that the range trick removes neither.  It removes both.
+
+* **Regrouping.**  Do not decompose `ℬ ≅ ⊕ⱼ dⱼℬ` and then each `dⱼℬ` into
+  matrix blocks.  Refine in one step: take the **minimal central projections**
+  `Q_{j,m}` of `ℬ` below `dⱼ` — obtained by pulling the block units of
+  `range gⱼ ≅ ∏ₘ M_{n_{j,m}}` back through `gⱼ` — and index the final `lp` by
+  those directly.  There is only ever one `lp`.
+* **Zorn.**  Two *minimal* central projections are equal or orthogonal (`pq`
+  is a central projection below both, so if non-zero it equals both).  So the
+  maximal orthogonal subfamily is not a choice at all: it is the **set of
+  distinct non-zero values** of `(j,m) ↦ Q_{j,m}`, and `↥S` for
+  `S : Set ℬ` lands in the right universe for free.  The thesis needs Zorn
+  because it works with the `dⱼ`, which are not minimal; refining first makes
+  the family canonical.
+
+The whole projection algebra then stays **inside `ℬ`**, where `carrier`
+(**63I**) and **69IV** `carrier_miu` already live.  Only one carrier is ever
+taken, `dⱼ = ⌈gⱼ⌉`; every property of `Q_{j,m}` (idempotent, self-adjoint,
+central, minimal, kernel) is proved by the single pattern *"`x ∈ dⱼℬ` and
+`gⱼ x = 0` imply `x = 0`"*, i.e. by `carrier_miu`.  Minimality uses that a
+central idempotent of `M_n(ℂ)` is `0` or `1`
+(`Matrix.mem_range_scalar_of_commute_single`, the same lemma 84II used).
+
+The pieces, all private, in a new `section HABlocks`/`section HAMain` at the
+end of `Division.lean`:
+
+* `starAlgHom_norm_corner` — a ∗-hom whose kernel is `c^⊥ℬ` for a central
+  projection `c` is contractive, and **isometric on `cℬ`**.  This is the
+  `b ↦ (ρ b, (1−c)b)`-is-injective trick already used inside `nmiu_image`
+  (`Projections.lean`), extracted; `NonUnitalStarAlgHom.norm_map` does the
+  work.  It is what makes the surjectivity half of the final isomorphism
+  norm-bounded, hence `central_projections_sums_2` applicable.
+* `exists_surj_matprod` — an nmiu-map into a finite-dimensional C*-algebra
+  factors as a *surjection* onto `∏ₘ M_{nₘ}` with the same kernel (§1).
+* `exists_blocks` — the block package: `Q`, `ρ`, and
+  `g b = 0 ↔ ∀ m, Q m · b = 0`.
+* `central_idem_matrix`, `block_minimal` — minimality.
+* `lpProj`, `cstarMatrixCongr` (transport along `n = n' + 1`), and
+  universe-polymorphic copies `starAlgHom_nonneg₂`, `starAlgHom_mono₂`,
+  `preservesDirSups_comp₂` of three `Basic.lean` lemmas — needed because
+  `Basic.lean` states them for two algebras in **one** universe, while here
+  `ℬ : Type u` maps into `CStarMatrix (Fin n) (Fin n) ℂ : Type 0`.
+  (`A/Proc/Tensor.lean` already carries `starAlgHom_nonneg'`/`_mono'` for the
+  same reason; that file is downstream.)
+
+Injectivity of the final map is **67IV**.2's public half
+`central_family_separating`; surjectivity is `central_projections_sums_2`
+itself, with the bound supplied by `starAlgHom_norm_corner`.  Both were used
+exactly as the brief predicted.
+
+### 3. `⋁ⱼ dⱼ = 1` does not need `⌈πⱼ⌉`
+
+The thesis argues `⌈πⱼ⌉ ≤ dⱼ` and `∑ⱼ⌈πⱼ⌉ = 1`.  Under our rendering
+(`e : ℬ → 𝒜` an injective nmiu-map) that would read `zⱼ ≤ e(dⱼ)` and needs
+`e` to reflect suprema.  It is cheaper to take `q := 1 − ⋁ⱼdⱼ` and observe
+`gⱼ q = 0` for every `j` directly, whence `Φ(e(q)) = 0` coordinatewise, whence
+`q = 0`.  Recorded as a (small) divergence.
+
+### 4. 84bV needed a von Neumann subalgebra **as a type** — so `VNSub` moved upstream
+
+84bV is `∃ C, … ∃ e : NMIUMap C 𝒜, HereditarilyAtomic C ∧ … ∧ range e = E`,
+so it does need a carrier for the equaliser, and 47V `vn_equalisers` returns a
+`StarSubalgebra ℂ 𝒜` with `IsVNSubalgebra`.  That carrier already exists —
+`VNSub A S hS`, with `CStarAlgebra`, `PartialOrder`, `StarOrderedRing` **and**
+`VonNeumannAlgebra` instances — but it lived in `NormalFunctionals.lean`,
+which is *downstream* of `Division.lean`.
+
+**The 366-line `section VNSubalgebra` block was moved, unchanged, from
+`NormalFunctionals.lean` into `Division.lean`** (just before the 84bIII
+machinery, so that `cceil_sum_relative` still sits after `cceil_sum`).  It
+compiles there without a single edit — everything it needs, including
+`Theses.A.CStar.Matrices`, is already in `Division.lean`'s transitive imports.
+Nothing downstream is affected: the name stays `Theses.A.VN.VNSub`, still
+public, still reachable from every file that imports `NormalFunctionals`, and
+the only other `VNSub` in the tree is `A/Proc/Tensor.lean`'s own shadowing
+copy.  (`B/Dils/SelfDual.lean` and `A/Proc/{QuantumLambda,Duplicators}.lean`
+mention only the *predicate* `IsVNSubalgebra`, which never moved.)
+
+84bV is then 25 lines: build the inclusion `VNSub A S hS →⋆ₐ[ℂ] A` from
+`VNSub.val` (every field `rfl` except `commutes'`, which is
+`Algebra.algebraMap_eq_smul_one` twice because the instance comes from
+`Algebra.ofModule`), get its normality from the block's own
+`VNSub.isLUB_saMap_image`, and feed it to 84bIII.
+
+### 5. What the brief got wrong
+
+* **The ~1000–1600 line costing, and its split.**  ~460 new lines.  The three
+  costed obstacles were: the corner as a type (avoided entirely, §1–2), Zorn
+  (not needed, §2), and the `lp`-of-`lp` regrouping (not needed, §2).  The one
+  cost *not* in the brief — the universe mismatch between `ℬ : Type u` and
+  `CStarMatrix … ℂ : Type 0`, which forces polymorphic copies of three
+  `Basic.lean` lemmas — was small.
+* **"84bV is ~150–300 lines on top."**  25 lines, plus a file move.
+* **"the assembly needs the corner `cℬ` as a type carrying `VonNeumannAlgebra`
+  instances".**  Two independent escapes existed: 84bIII needs no corner at
+  all, and where a subalgebra-as-a-type *is* genuinely needed (84bV) one was
+  already built and merely in the wrong file.  Worth remembering: before
+  costing a carrier, `grep -rn "structure VNSub\|def Corner"` — the tree has
+  **three** such wrappers (`A/VN`'s `VNSub`, `A/Proc/Tensor.lean`'s copy, and
+  `Corner A e` in `A/Proc/Measurement.lean`).
+
+### 6. `A/Proc`'s `exists_contRep` should **not** be lifted for 51IX
+
+The brief asked whether `A/Proc/Duplicators.lean`'s `exists_contRep` /
+`exists_isLinftyOf_of_starAlgEquiv` should move into `A/VN` for 51IX
+`Linfty_vn`.  **No — they run the other way.**  Those two take a C*-algebra
+`𝒞` that is *already given*, together with a ∗-iso `𝒞 ≃⋆ₐ C(X, ℂ)` and the
+hypothesis `MeasurableSet s ↔ AlmostClopen s` on the *spectrum* `X` (plus
+"null = meagre"), and manufacture a presentation `q : 𝓛^∞(X) → 𝒞`.  51IX
+starts from an arbitrary finite complete measure space and must **construct**
+the algebra; its `X` satisfies none of those hypotheses.  What *is* shared is
+the shape of the conclusion — see §7.
+
+### 7. QUESTIONS A9: 51IX's rendering is missing the `ℂ`-homogeneity clause
+
+`IsLinftyOf` (`A/Proc/Duplicators.lean`) is, field for field, 51IX's list of
+conditions on `q` — **except** that it carries `smul` (`q (z • f) = z • q f`),
+added on 2026-08-16 under QUESTIONS D1 (ruled by Bas) precisely because
+without it the fields make `q` only a ∗-*ring* map.  51IX's own rendering
+says `q` is "a surjective miu-map on `𝓛^∞(X)`" in its comment but lists only
+additivity, multiplicativity, `star`, `q 1 = 1` and the kernel condition.  The
+same objection applies verbatim, so this is filed as **QUESTIONS A9** rather
+than fixed; 51IX is still `sorry`, so adding the clause costs nothing later.
+
+### 8. Nothing for ERRATA
+
+Both printed proofs are correct; the divergences above (§2, §3) are
+Lean-side simplifications, not defects.

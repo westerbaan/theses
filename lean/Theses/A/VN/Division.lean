@@ -4255,14 +4255,952 @@ def HereditarilyAtomic : Prop :=
     Nonempty (A ≃⋆ₐ[ℂ]
       lp (fun i : I => CStarMatrix (Fin (N i + 1)) (Fin (N i + 1)) ℂ) ∞)
 
+/-! ## Von Neumann subalgebras as bundled algebras
+
+`VNSub A S hS` bundles a von Neumann subalgebra `S ⊆ A` as a von Neumann
+algebra in its own right.  It is what makes the *relative* forms of the
+comparison theory of parsecs 600–830 available: results such as **83V**
+`cceil-sum` are proved for a von Neumann algebra **as a type**, while the
+thesis applies them inside `ϱ(𝒜)^□`, which here is a subalgebra-as-a-set
+(see `cceil_sum_relative` below, which **89IX** needs).
+
+⚠️ This block is a verbatim copy of the one in `A/Proc/Tensor.lean`
+(session 45), which is *downstream* of this file and so cannot be imported
+from here (it lived in `NormalFunctionals.lean` until session 79, when
+**84bV** `ha_equalisers` needed it here, one file earlier); the copy there should be deleted by whoever next touches that
+file — a name in the current namespace takes precedence over one reached
+through `open`, so `Theses.A.Proc.VNSub` still wins inside `A/Proc` (the
+same manoeuvre as for `CU`, session 47). -/
+
+noncomputable section VNSubalgebra
+
+
+variable (A) in
+/-- Wrapper: a von Neumann subalgebra `S ⊆ A` bundled as an algebra in its
+own right, with proved instances (cf. `Corner` in `Measurement.lean`).
+The witness `hS : IsVNSubalgebra A S` (42V, `A/VN/Basic.lean`) is carried
+as an index: a bare `StarSubalgebra ℂ A` need not be norm-closed, hence
+need not be complete, hence need not be a C*-algebra at all. -/
+structure VNSub (S : StarSubalgebra ℂ A) (hS : IsVNSubalgebra A S) :
+    Type u where
+  val : A
+  property : val ∈ S
+
+namespace VNSub
+
+variable {S : StarSubalgebra ℂ A} {hS : IsVNSubalgebra A S}
+
+theorem val_injective :
+    Function.Injective (VNSub.val (A := A) (S := S) (hS := hS)) := by
+  rintro ⟨a, ha⟩ ⟨b, hb⟩ h
+  cases h; rfl
+
+instance : Zero (VNSub A S hS) := ⟨⟨0, zero_mem S⟩⟩
+instance : Add (VNSub A S hS) :=
+  ⟨fun a b => ⟨a.val + b.val, add_mem a.property b.property⟩⟩
+instance : Neg (VNSub A S hS) := ⟨fun a => ⟨-a.val, neg_mem a.property⟩⟩
+instance : Sub (VNSub A S hS) :=
+  ⟨fun a b => ⟨a.val - b.val, sub_mem a.property b.property⟩⟩
+instance : SMul ℕ (VNSub A S hS) := ⟨fun n a => ⟨n • a.val, nsmul_mem a.property n⟩⟩
+instance : SMul ℤ (VNSub A S hS) := ⟨fun n a => ⟨n • a.val, zsmul_mem a.property n⟩⟩
+instance : SMul ℂ (VNSub A S hS) :=
+  ⟨fun z a => ⟨z • a.val, SMulMemClass.smul_mem z a.property⟩⟩
+instance : One (VNSub A S hS) := ⟨⟨1, one_mem S⟩⟩
+instance : Mul (VNSub A S hS) :=
+  ⟨fun a b => ⟨a.val * b.val, mul_mem a.property b.property⟩⟩
+instance : Star (VNSub A S hS) := ⟨fun a => ⟨star a.val, star_mem a.property⟩⟩
+
+@[simp] theorem val_zero : (0 : VNSub A S hS).val = 0 := rfl
+@[simp] theorem val_add (a b : VNSub A S hS) : (a + b).val = a.val + b.val := rfl
+@[simp] theorem val_neg (a : VNSub A S hS) : (-a).val = -a.val := rfl
+@[simp] theorem val_sub (a b : VNSub A S hS) : (a - b).val = a.val - b.val := rfl
+@[simp] theorem val_one : (1 : VNSub A S hS).val = 1 := rfl
+@[simp] theorem val_mul (a b : VNSub A S hS) : (a * b).val = a.val * b.val := rfl
+@[simp] theorem val_star (a : VNSub A S hS) : (star a).val = star a.val := rfl
+@[simp] theorem val_smul (z : ℂ) (a : VNSub A S hS) : (z • a).val = z • a.val := rfl
+
+instance instAddCommGroup : AddCommGroup (VNSub A S hS) :=
+  Function.Injective.addCommGroup VNSub.val val_injective rfl (fun _ _ => rfl)
+    (fun _ => rfl) (fun _ _ => rfl) (fun _ _ => rfl) (fun _ _ => rfl)
+
+instance instRing : Ring (VNSub A S hS) where
+  __ := instAddCommGroup
+  mul_assoc a b c := val_injective (mul_assoc _ _ _)
+  one_mul a := val_injective (one_mul _)
+  mul_one a := val_injective (mul_one _)
+  left_distrib a b c := val_injective (mul_add _ _ _)
+  right_distrib a b c := val_injective (add_mul _ _ _)
+  zero_mul a := val_injective (zero_mul _)
+  mul_zero a := val_injective (mul_zero _)
+
+/-- `VNSub.val` as an additive monoid homomorphism. -/
+def valAddHom : VNSub A S hS →+ A where
+  toFun := VNSub.val
+  map_zero' := rfl
+  map_add' _ _ := rfl
+
+instance instModule : Module ℂ (VNSub A S hS) :=
+  Function.Injective.module ℂ valAddHom val_injective (fun _ _ => rfl)
+
+instance instAlgebra : Algebra ℂ (VNSub A S hS) :=
+  Algebra.ofModule (fun r x y => val_injective (smul_mul_assoc r x.val y.val))
+    (fun r x y => val_injective (mul_smul_comm r x.val y.val))
+
+instance instStarRing : StarRing (VNSub A S hS) where
+  star_involutive a := val_injective (star_star a.val)
+  star_mul a b := val_injective (star_mul a.val b.val)
+  star_add a b := val_injective (star_add a.val b.val)
+
+instance instStarModule : StarModule ℂ (VNSub A S hS) where
+  star_smul r a := val_injective (star_smul r a.val)
+
+/-- `VNSub.val` as a non-unital ring homomorphism. -/
+def valNonUnitalRingHom : VNSub A S hS →ₙ+* A where
+  toFun := VNSub.val
+  map_zero' := rfl
+  map_add' _ _ := rfl
+  map_mul' _ _ := rfl
+
+instance instNormedRing : NormedRing (VNSub A S hS) :=
+  NormedRing.induced (VNSub A S hS) A valNonUnitalRingHom val_injective
+
+@[simp] theorem norm_def (a : VNSub A S hS) : ‖a‖ = ‖a.val‖ := rfl
+
+instance instNormedAlgebra : NormedAlgebra ℂ (VNSub A S hS) where
+  norm_smul_le r a := by simpa [norm_def] using (norm_smul_le r a.val)
+
+theorem isometry_val : Isometry (VNSub.val (A := A) (S := S) (hS := hS)) :=
+  AddMonoidHomClass.isometry_of_norm valAddHom (fun _ => rfl)
+
+theorem range_val :
+    Set.range (VNSub.val (A := A) (S := S) (hS := hS)) = (S : Set A) := by
+  ext a
+  constructor
+  · rintro ⟨b, rfl⟩; exact b.property
+  · intro ha; exact ⟨⟨a, ha⟩, rfl⟩
+
+instance instCompleteSpace : CompleteSpace (VNSub A S hS) := by
+  refine (isometry_val (S := S) (hS := hS)).isUniformInducing.completeSpace ?_
+  rw [range_val]
+  exact hS.isClosed.isComplete
+
+instance instCStarRing : CStarRing (VNSub A S hS) where
+  norm_mul_self_le a := CStarRing.norm_star_mul_self (x := a.val) |>.symm.le
+
+end VNSub
+
+noncomputable instance (S : StarSubalgebra ℂ A) (hS : IsVNSubalgebra A S) :
+    CStarAlgebra (VNSub A S hS) where
+
+noncomputable instance (S : StarSubalgebra ℂ A) (hS : IsVNSubalgebra A S) :
+    PartialOrder (VNSub A S hS) :=
+  PartialOrder.lift VNSub.val VNSub.val_injective
+
+namespace VNSub
+
+variable {S : StarSubalgebra ℂ A} {hS : IsVNSubalgebra A S}
+
+theorem le_def (a b : VNSub A S hS) : a ≤ b ↔ a.val ≤ b.val := Iff.rfl
+
+/-- The square root of a positive element of a *closed* star subalgebra
+again lies in it: `√a = cfcₙ √ a`, and the non-unital continuous functional
+calculus of an element stays inside every closed star subalgebra
+containing it (Mathlib's `cfcₙ_mem`). -/
+theorem sqrt_mem (hcl : IsClosed (S : Set A)) (a : A) (ha : 0 ≤ a)
+    (hmem : a ∈ S) : CFC.sqrt a ∈ S := by
+  have : IsClosed (S : Set A) := hcl
+  rw [CFC.sqrt_eq_real_sqrt a ha]
+  exact cfcₙ_mem (𝕜 := ℝ) (𝕜' := ℂ) Real.sqrt hmem
+
+end VNSub
+
+instance (S : StarSubalgebra ℂ A) (hS : IsVNSubalgebra A S) :
+    StarOrderedRing (VNSub A S hS) := by
+  refine StarOrderedRing.of_nonneg_iff' (fun {x y} hxy z => ?_) (fun x => ?_)
+  · show z.val + x.val ≤ z.val + y.val
+    exact add_le_add le_rfl (show x.val ≤ y.val from hxy)
+  · constructor
+    · intro hx
+      have hx' : (0 : A) ≤ x.val := hx
+      refine ⟨⟨CFC.sqrt x.val, VNSub.sqrt_mem hS.isClosed x.val hx' x.property⟩, ?_⟩
+      refine VNSub.val_injective ?_
+      have hsa : IsSelfAdjoint (CFC.sqrt x.val) :=
+        IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg x.val)
+      show x.val = star (CFC.sqrt x.val) * CFC.sqrt x.val
+      rw [hsa.star_eq, CFC.sqrt_mul_sqrt_self x.val hx']
+    · rintro ⟨s, rfl⟩
+      show (0 : A) ≤ star s.val * s.val
+      exact star_mul_self_nonneg s.val
+
+namespace VNSub
+
+variable {S : StarSubalgebra ℂ A} {hS : IsVNSubalgebra A S} [VonNeumannAlgebra A]
+
+/-- A self-adjoint element of `S`, viewed in `A`. -/
+def saMap (d : selfAdjoint (VNSub A S hS)) : selfAdjoint A :=
+  ⟨d.1.val, congrArg VNSub.val (show star d.1 = d.1 from d.2)⟩
+
+@[simp] theorem saMap_coe (d : selfAdjoint (VNSub A S hS)) :
+    ((saMap d : selfAdjoint A) : A) = d.1.val := rfl
+
+/-- Suprema of nonempty directed sets of self-adjoint elements are computed
+in a von Neumann subalgebra exactly as they are in `A` (42V part 4). -/
+theorem isLUB_saMap_image {D : Set (selfAdjoint (VNSub A S hS))}
+    {s : selfAdjoint (VNSub A S hS)} (hne : D.Nonempty)
+    (hdir : DirectedOn (· ≤ ·) D) (hlub : IsLUB D s) :
+    IsLUB (saMap '' D) (saMap s) := by
+  set D' : Set (selfAdjoint A) := saMap '' D with hD'
+  have hne' : D'.Nonempty := hne.image _
+  have hdir' : DirectedOn (· ≤ ·) D' := by
+    rintro _ ⟨x, hx, rfl⟩ _ ⟨z, hz, rfl⟩
+    obtain ⟨u, hu, hxu, hzu⟩ := hdir x hx z hz
+    exact ⟨saMap u, ⟨u, hu, rfl⟩, hxu, hzu⟩
+  have hbdd' : BddAbove D' := by
+    refine ⟨saMap s, ?_⟩
+    rintro _ ⟨x, hx, rfl⟩
+    exact hlub.1 hx
+  obtain ⟨s₀, hs₀⟩ :=
+    VonNeumannAlgebra.isLUB_of_bddAbove_directed D' hne' hdir' hbdd'
+  have hmem : (s₀ : A) ∈ S :=
+    hS.dirSup_mem D' s₀ (by rintro _ ⟨x, hx, rfl⟩; exact x.1.property) hne' hdir' hs₀
+  set t : VNSub A S hS := ⟨(s₀ : A), hmem⟩ with ht
+  have htsa : IsSelfAdjoint t := val_injective s₀.2
+  have hlubt : IsLUB D ⟨t, htsa⟩ := by
+    constructor
+    · intro d hd
+      exact hs₀.1 ⟨d, hd, rfl⟩
+    · intro u hu
+      have hub : saMap u ∈ upperBounds D' := by
+        rintro _ ⟨x, hx, rfl⟩
+        exact hu hx
+      exact hs₀.2 hub
+  have hst : s = ⟨t, htsa⟩ := hlub.unique hlubt
+  have hsm : saMap (⟨t, htsa⟩ : selfAdjoint (VNSub A S hS)) = s₀ := Subtype.ext rfl
+  rw [hst, hsm]
+  exact hs₀
+
+/-- Restriction of an np-functional on `A` to a von Neumann subalgebra. -/
+def restrictNP (ω : NPFunctional A) : NPFunctional (VNSub A S hS) where
+  toPositiveLinearMap :=
+    { toFun := fun a => ω a.val
+      map_add' := fun x y => map_add ω.toPositiveLinearMap _ _
+      map_smul' := fun c x => map_smul ω.toPositiveLinearMap _ _
+      monotone' := fun x y hxy => ω.toPositiveLinearMap.monotone hxy }
+  preservesDirSups' := by
+    intro D s hne hdir hlub
+    have hkey := ω.preservesDirSups' (saMap '' D) (saMap s) (hne.image _)
+      (by
+        rintro _ ⟨x, hx, rfl⟩ _ ⟨z, hz, rfl⟩
+        obtain ⟨u, hu, hxu, hzu⟩ := hdir x hx z hz
+        exact ⟨saMap u, ⟨u, hu, rfl⟩, hxu, hzu⟩)
+      (isLUB_saMap_image hne hdir hlub)
+    rw [← Set.image_comp] at hkey
+    exact hkey
+
+@[simp] theorem restrictNP_apply (ω : NPFunctional A) (a : VNSub A S hS) :
+    (restrictNP ω : NPFunctional (VNSub A S hS)) a = ω a.val := rfl
+
+end VNSub
+
+instance (S : StarSubalgebra ℂ A) (hS : IsVNSubalgebra A S)
+    [VonNeumannAlgebra A] : VonNeumannAlgebra (VNSub A S hS) where
+  isLUB_of_bddAbove_directed := by
+    intro D hne hdir hbdd
+    obtain ⟨u, hu⟩ := hbdd
+    have hne' : (VNSub.saMap '' D).Nonempty := hne.image _
+    have hdir' : DirectedOn (· ≤ ·) (VNSub.saMap (S := S) (hS := hS) '' D) := by
+      rintro _ ⟨x, hx, rfl⟩ _ ⟨z, hz, rfl⟩
+      obtain ⟨v, hv, hxv, hzv⟩ := hdir x hx z hz
+      exact ⟨VNSub.saMap v, ⟨v, hv, rfl⟩, hxv, hzv⟩
+    have hbdd' : BddAbove (VNSub.saMap (S := S) (hS := hS) '' D) := by
+      refine ⟨VNSub.saMap u, ?_⟩
+      rintro _ ⟨x, hx, rfl⟩
+      exact hu hx
+    obtain ⟨s₀, hs₀⟩ :=
+      VonNeumannAlgebra.isLUB_of_bddAbove_directed _ hne' hdir' hbdd'
+    have hmem : (s₀ : A) ∈ S :=
+      hS.dirSup_mem _ s₀ (by rintro _ ⟨x, hx, rfl⟩; exact x.1.property) hne' hdir' hs₀
+    refine ⟨⟨⟨(s₀ : A), hmem⟩, VNSub.val_injective s₀.2⟩, ?_, ?_⟩
+    · intro d hd
+      exact hs₀.1 ⟨d, hd, rfl⟩
+    · intro v hv
+      have hub : VNSub.saMap v ∈ upperBounds (VNSub.saMap (S := S) (hS := hS) '' D) := by
+        rintro _ ⟨x, hx, rfl⟩
+        exact hv hx
+      exact hs₀.2 hub
+  np_faithful := by
+    intro a ha hω
+    refine VNSub.val_injective ?_
+    exact VonNeumannAlgebra.np_faithful a.val ha (fun ω => hω (VNSub.restrictNP ω))
+
+
+namespace VNSub
+
+variable {S : StarSubalgebra ℂ A} {hS : IsVNSubalgebra A S}
+
+theorem isStarProjection_val {x : VNSub A S hS} (hx : IsStarProjection x) :
+    IsStarProjection x.val :=
+  ⟨congrArg VNSub.val hx.isIdempotentElem, congrArg VNSub.val hx.isSelfAdjoint⟩
+
+theorem isStarProjection_mk {x : A} (hx : IsStarProjection x) (h : x ∈ S) :
+    IsStarProjection (⟨x, h⟩ : VNSub A S hS) :=
+  ⟨val_injective hx.isIdempotentElem, val_injective hx.isSelfAdjoint⟩
+
+end VNSub
+
+variable [VonNeumannAlgebra A]
+
+/-- **83V** (`cceil-sum`, vn.tex:5706, Lemma) **relative to a von Neumann
+subalgebra** `S`, in the form 89IX needs it: if the least central projection
+of `S` above a projection `e ∈ S` is `1`, then there are partial isometries
+`(vᵢ)` in `S` with `∑ᵢ vᵢ*vᵢ = 1` (as a supremum of projections) and
+`vᵢvᵢ* ≤ e`.
+
+This is `cceil_sum` applied inside the bundled von Neumann algebra `VNSub`;
+the thesis simply writes `⌈⌈·⌉⌉_{S}` and uses `cceil-sum` there. -/
+theorem cceil_sum_relative (S : StarSubalgebra ℂ A) (hS : IsVNSubalgebra A S)
+    (e : A) (heS : e ∈ S) (he : IsStarProjection e)
+    (hone : IsLeast {p : A | p ∈ S ∧ IsStarProjection p ∧
+      (∀ b ∈ S, p * b = b * p) ∧ e ≤ p} 1) :
+    ∃ (ι : Type u) (v : ι → A), (∀ i, v i ∈ S) ∧
+      (∀ i, IsStarProjection (star (v i) * v i)) ∧
+      (Pairwise fun i j => (star (v i) * v i) * (star (v j) * v j) = 0) ∧
+      projSup (Set.range fun i => star (v i) * v i) = 1 ∧
+      ∀ i, v i * star (v i) ≤ e := by
+  classical
+  set E : VNSub A S hS := ⟨e, heS⟩ with hEdef
+  have hEproj : IsStarProjection E := VNSub.isStarProjection_mk he heS
+  -- the central carrier of `E` inside `S` is `1`
+  have hcc : cceil E = 1 := by
+    refine le_antisymm ?_ ?_
+    · exact (cceil_isLeast E).2 ⟨IsStarProjection.one _, fun b => by
+        rw [one_mul, mul_one], one_mul _⟩
+    · have hspec := (cceil_isLeast E).1
+      have hcproj : IsStarProjection (cceil E).val :=
+        VNSub.isStarProjection_val hspec.1
+      have hle : E ≤ cceil E :=
+        ((projection_below_effect (cceil E) E ⟨hspec.1.nonneg, hspec.1.le_one⟩
+          hEproj).out 6 0).mp hspec.2.2
+      have hmem : (cceil E).val ∈ {p : A | p ∈ S ∧ IsStarProjection p ∧
+          (∀ b ∈ S, p * b = b * p) ∧ e ≤ p} :=
+        ⟨(cceil E).property, hcproj,
+          fun b hb => congrArg VNSub.val (hspec.2.1 ⟨b, hb⟩), hle⟩
+      exact (VNSub.le_def _ _).mpr (hone.2 hmem)
+  obtain ⟨ι, f, hf, hforth, hfsup⟩ := cceil_sum E hEproj
+  choose u hupi hu1 hu2 using fun i => (hf i).2.2
+  refine ⟨ι, fun i => (u i).val, fun i => (u i).property, ?_, ?_, ?_, ?_⟩
+  · intro i
+    have : star ((u i).val) * (u i).val = (f i).val := congrArg VNSub.val (hu1 i)
+    rw [this]
+    exact VNSub.isStarProjection_val (hf i).1
+  · intro i j hij
+    have h1 : star ((u i).val) * (u i).val = (f i).val := congrArg VNSub.val (hu1 i)
+    have h2 : star ((u j).val) * (u j).val = (f j).val := congrArg VNSub.val (hu1 j)
+    rw [h1, h2]
+    exact congrArg VNSub.val (hforth hij)
+  · -- the supremum of the `fᵢ`, computed in `A`, is again `1`
+    have hval : (fun i => star ((u i).val) * (u i).val) = fun i => (f i).val := by
+      funext i; exact congrArg VNSub.val (hu1 i)
+    rw [hval]
+    set P : Set A := Set.range fun i => (f i).val with hP
+    have hPproj : ∀ p ∈ P, IsStarProjection p := by
+      rintro _ ⟨i, rfl⟩; exact VNSub.isStarProjection_val (hf i).1
+    have hPS : ∀ p ∈ P, p ∈ S := by rintro _ ⟨i, rfl⟩; exact (f i).property
+    have hq : projSup P ∈ S :=
+      (projSup_mem_of_np hS P hPproj hPS zeroNP (fun _ _ => rfl)).1
+    obtain ⟨hqproj, hqub, hqleast⟩ := projSup_spec hPproj
+    set Q : VNSub A S hS := ⟨projSup P, hq⟩ with hQdef
+    have hQproj : IsStarProjection Q := VNSub.isStarProjection_mk hqproj hq
+    have hub : ∀ x ∈ Set.range f, x ≤ Q := by
+      rintro _ ⟨i, rfl⟩
+      exact (VNSub.le_def _ _).mpr (hqub _ ⟨i, rfl⟩)
+    obtain ⟨-, -, hleast⟩ := projSup_spec (P := Set.range f)
+      (by rintro _ ⟨i, rfl⟩; exact (hf i).1)
+    have h1 : (1 : VNSub A S hS) ≤ Q := by
+      rw [← hcc, hfsup]; exact hleast Q hQproj hub
+    exact le_antisymm hqproj.le_one ((VNSub.le_def _ _).mp h1)
+  · intro i
+    exact (VNSub.le_def _ _).mp (hu2 i)
+
+end VNSubalgebra
+
+/-! ### Machinery for **84bIII**
+
+The corner `dⱼℬ` is never constructed as a type.  Instead the *range* of
+`πⱼ ∘ e` is used: it is a closed `StarSubalgebra` of a finite-dimensional
+C*-algebra, hence a finite-dimensional C*-algebra itself, so **84II**
+`fdcstar` applies to it directly, and all the projection algebra stays
+inside `ℬ`, where `carrier` (**63I**) and **69IV** `carrier_miu` are
+available. -/
+
+section HABlocks
+
+variable [VonNeumannAlgebra B]
+
+-- several of the auxiliaries below use only part of the ambient structure
+set_option linter.unusedSectionVars false
+
+/-- A ∗-homomorphism whose kernel is the orthocomplement of a central
+projection `c` is contractive, and isometric on the corner `cB`. -/
+private theorem starAlgHom_norm_corner {M : Type*} [CStarAlgebra M]
+    (ρ : B →⋆ₐ[ℂ] M) {c : B} (hc : IsStarProjection c) (hcen : IsCentral B c)
+    (hker : ∀ b : B, ρ b = 0 ↔ c * b = 0) :
+    (∀ b : B, ‖ρ b‖ ≤ ‖b‖) ∧ (∀ b : B, c * b = b → ‖ρ b‖ = ‖b‖) := by
+  have hcc : c * c = c := hc.isIdempotentElem.eq
+  have hone : (1 - c) * ((1 : B) - c) = 1 - c := by
+    have h1 : (1 - c) * ((1 : B) - c) = 1 - c - c + c * c := by noncomm_ring
+    rw [h1, hcc]; abel
+  have hcomm : ∀ x : B, (1 - c) * x = x * (1 - c) := by
+    intro x
+    have h1 : (1 - c) * x = x - c * x := by noncomm_ring
+    have h2 : x * ((1 : B) - c) = x - x * c := by noncomm_ring
+    rw [h1, h2, hcen x]
+  set φ : B →⋆ₙₐ[ℂ] M × B :=
+    { toFun := fun x => (ρ x, (1 - c) * x)
+      map_smul' := fun r x => by
+        refine Prod.ext (map_smul ρ r x) ?_
+        show (1 - c) * (r • x) = r • ((1 - c) * x)
+        rw [mul_smul_comm]
+      map_zero' := by
+        refine Prod.ext (map_zero ρ) ?_
+        show (1 - c) * (0 : B) = 0
+        rw [mul_zero]
+      map_add' := fun x y => by
+        refine Prod.ext (map_add ρ x y) ?_
+        show (1 - c) * (x + y) = (1 - c) * x + (1 - c) * y
+        rw [mul_add]
+      map_mul' := fun x y => by
+        refine Prod.ext (map_mul ρ x y) ?_
+        show (1 - c) * (x * y) = ((1 - c) * x) * ((1 - c) * y)
+        calc (1 - c) * (x * y) = ((1 - c) * (1 - c)) * (x * y) := by rw [hone]
+          _ = (1 - c) * ((1 - c) * x) * y := by noncomm_ring
+          _ = (1 - c) * (x * (1 - c)) * y := by rw [hcomm x]
+          _ = ((1 - c) * x) * ((1 - c) * y) := by noncomm_ring
+      map_star' := fun x => by
+        refine Prod.ext (map_star ρ x) ?_
+        show (1 - c) * star x = star ((1 - c) * x)
+        rw [star_mul, star_sub, star_one, hc.isSelfAdjoint.star_eq, hcomm (star x)] }
+    with hφ
+  have hinj : Function.Injective φ := by
+    intro x y hxy
+    have h1 : ρ x = ρ y := congrArg Prod.fst hxy
+    have h2 : (1 - c) * x = (1 - c) * y := congrArg Prod.snd hxy
+    have h3 : ρ (x - y) = 0 := by rw [map_sub, h1, sub_self]
+    have h4 : c * (x - y) = 0 := (hker _).mp h3
+    have h5 : (1 - c) * (x - y) = 0 := by rw [mul_sub, h2, sub_self]
+    refine sub_eq_zero.mp ?_
+    have h6 : c * (x - y) + (1 - c) * (x - y) = x - y := by noncomm_ring
+    rw [h4, h5, add_zero] at h6
+    exact h6.symm
+  have hn : ∀ b : B, max ‖ρ b‖ ‖(1 - c) * b‖ = ‖b‖ := fun b =>
+    NonUnitalStarAlgHom.norm_map φ hinj b
+  refine ⟨fun b => ?_, fun b hb => ?_⟩
+  · rw [← hn b]; exact le_max_left _ _
+  · have hz : (1 - c) * b = 0 := by rw [sub_mul, one_mul, hb, sub_self]
+    have h := hn b
+    rw [hz, norm_zero, max_eq_left (norm_nonneg _)] at h
+    exact h
+
+/-- Auxiliary: a star subalgebra of a finite-dimensional C*-algebra is
+finite-dimensional. -/
+private theorem finiteDimensional_starSubalgebra {M : Type*} [CStarAlgebra M]
+    [FiniteDimensional ℂ M] (S : StarSubalgebra ℂ M) : FiniteDimensional ℂ S :=
+  FiniteDimensional.of_injective (S.subtype : S →ₗ[ℂ] M) Subtype.val_injective
+
+attribute [local instance] finiteDimensional_starSubalgebra
+
+/-- Auxiliary: a star subalgebra of a finite-dimensional C*-algebra is a
+C*-algebra (it is complete because it is finite-dimensional). -/
+@[instance_reducible]
+private noncomputable def cstarAlgebra_starSubalgebra {M : Type*} [CStarAlgebra M]
+    [FiniteDimensional ℂ M] (S : StarSubalgebra ℂ M) : CStarAlgebra S :=
+  { complete := (FiniteDimensional.complete ℂ S).1 }
+
+attribute [local instance] cstarAlgebra_starSubalgebra
+
+/-- Auxiliary: a ∗-homomorphism from `B` into a finite-dimensional C*-algebra
+factors as a *surjection* onto a finite product of full matrix algebras with
+the same kernel — its range is a star subalgebra of a finite-dimensional
+C*-algebra, hence itself a finite-dimensional C*-algebra, so **84II**
+`fdcstar` applies to it.  (No corner of `B` is constructed.) -/
+private theorem exists_surj_matprod {M : Type*} [CStarAlgebra M]
+    [FiniteDimensional ℂ M] (g : B →⋆ₐ[ℂ] M) :
+    ∃ (k : ℕ) (n : Fin k → ℕ)
+      (Ψ : B →⋆ₐ[ℂ] ∀ m : Fin k, Matrix (Fin (n m)) (Fin (n m)) ℂ),
+      Function.Surjective Ψ ∧ ∀ x : B, Ψ x = 0 ↔ g x = 0 := by
+  classical
+  obtain ⟨k, n, ⟨ψ⟩⟩ := fdcstar (g.range)
+  refine ⟨k, n, ψ.toStarAlgHom.comp g.rangeRestrict, ψ.surjective.comp g.rangeRestrict_surjective,
+    fun x => ?_⟩
+  constructor
+  · intro h
+    have h1 : g.rangeRestrict x = 0 := by
+      have h2 := congrArg ψ.symm h
+      simpa using h2
+    exact congrArg Subtype.val h1
+  · intro h
+    have h1 : g.rangeRestrict x = 0 := Subtype.ext h
+    show ψ (g.rangeRestrict x) = 0
+    rw [h1, map_zero]
+
+/-- The **block decomposition** attached to an nmiu-map `g : B → M` into a
+finite-dimensional von Neumann algebra: finitely many *central* projections
+`Qₘ` of `B` (the minimal central projections of the corner `⌈g⌉B`, obtained
+without ever constructing that corner), each carrying a surjective
+∗-homomorphism `ρₘ : B → M_{nₘ}` whose kernel is `Qₘ^⊥B`, and such that
+`g b = 0` exactly when every `Qₘ b = 0`. -/
+private theorem exists_blocks {M : Type*} [CStarAlgebra M] [PartialOrder M]
+    [StarOrderedRing M] [VonNeumannAlgebra M] [FiniteDimensional ℂ M]
+    (g : NMIUMap B M) :
+    ∃ (k : ℕ) (n : Fin k → ℕ) (Q : Fin k → B)
+      (ρ : ∀ m : Fin k, B →⋆ₐ[ℂ] CStarMatrix (Fin (n m)) (Fin (n m)) ℂ),
+      (∀ m, IsStarProjection (Q m) ∧ IsCentral B (Q m)) ∧
+      (∀ (m : Fin k) (b : B), ρ m b = 0 ↔ Q m * b = 0) ∧
+      (∀ m, Function.Surjective (ρ m)) ∧
+      (∀ m, ρ m (Q m) = 1) ∧
+      (∀ b : B, g b = 0 ↔ ∀ m, Q m * b = 0) := by
+  classical
+  obtain ⟨hdcen, hdker⟩ := carrier_miu g (nmiuP g) g.preservesDirSups' (fun a => rfl)
+  set d : B := carrier (nmiuP g) g.preservesDirSups' with hddef
+  have hdproj : IsStarProjection d := (carrier_spec (nmiuP g) g.preservesDirSups').1
+  have hdd : d * d = d := hdproj.isIdempotentElem.eq
+  obtain ⟨k, n, Ψ, hsurj, hker⟩ := exists_surj_matprod (M := M) g.toStarAlgHom
+  have hkerg : ∀ x : B, Ψ x = 0 ↔ d * x = 0 := fun x => (hker x).trans (hdker x)
+  -- `Ψ d = 1`
+  have hd1 : Ψ d = 1 := by
+    have h0 : Ψ (1 - d) = 0 := (hkerg _).mpr (by rw [mul_sub, mul_one, hdd, sub_self])
+    rw [map_sub, map_one, sub_eq_zero] at h0
+    exact h0.symm
+  -- injectivity of `Ψ` on the corner `dB`
+  have hinj : ∀ x : B, d * x = x → Ψ x = 0 → x = 0 := by
+    intro x hx h0
+    rw [← hx]; exact (hkerg x).mp h0
+  -- the block projections
+  have hQex : ∀ m : Fin k, ∃ q : B, d * q = q ∧ Ψ q = Pi.single m 1 := by
+    intro m
+    obtain ⟨b, hb⟩ := hsurj (Pi.single m 1)
+    refine ⟨d * b, by rw [← mul_assoc, hdd], ?_⟩
+    rw [map_mul, hd1, hb, one_mul]
+  choose Q hQd hQΨ using hQex
+  -- the master identity
+  have hmaster : ∀ (m : Fin k) (b : B), Ψ (Q m * b) = Pi.single m (Ψ b m) := by
+    intro m b
+    rw [map_mul, hQΨ]
+    funext m'
+    rcases eq_or_ne m' m with rfl | h
+    · simp [Pi.mul_apply]
+    · simp [Pi.mul_apply, Pi.single_eq_of_ne h]
+  have hdQb : ∀ (m : Fin k) (b : B), d * (Q m * b) = Q m * b := by
+    intro m b; rw [← mul_assoc, hQd]
+  have hQker : ∀ (m : Fin k) (b : B), Q m * b = 0 ↔ Ψ b m = 0 := by
+    intro m b
+    constructor
+    · intro h
+      have h1 := hmaster m b
+      rw [h, map_zero] at h1
+      have h2 := congrFun h1.symm m
+      simpa using h2
+    · intro h
+      refine hinj _ (hdQb m b) ?_
+      rw [hmaster, h, Pi.single_zero]
+  have hdbQ : ∀ (m : Fin k) (b : B), d * (b * Q m) = b * Q m := by
+    intro m b
+    calc d * (b * Q m) = (d * b) * Q m := by rw [mul_assoc]
+      _ = (b * d) * Q m := by rw [hdcen b]
+      _ = b * (d * Q m) := by rw [mul_assoc]
+      _ = b * Q m := by rw [hQd]
+  have hsinglecen : ∀ (m : Fin k) (y : ∀ m : Fin k, Matrix (Fin (n m)) (Fin (n m)) ℂ),
+      Pi.single m 1 * y = y * Pi.single m 1 := by
+    intro m y
+    funext m'
+    rcases eq_or_ne m' m with rfl | h
+    · simp [Pi.mul_apply]
+    · simp [Pi.mul_apply, Pi.single_eq_of_ne h]
+  set ρ : ∀ m : Fin k, B →⋆ₐ[ℂ] CStarMatrix (Fin (n m)) (Fin (n m)) ℂ :=
+    fun m => CStarMatrix.ofMatrixStarAlgEquiv.toStarAlgHom.comp
+      ((Pi.evalStarAlgHom ℂ _ m).comp Ψ) with hρdef
+  have hρapply : ∀ (m : Fin k) (b : B), ρ m b = CStarMatrix.ofMatrixStarAlgEquiv (Ψ b m) :=
+    fun _ _ => rfl
+  have hρ0 : ∀ (m : Fin k) (b : B), ρ m b = 0 ↔ Ψ b m = 0 := by
+    intro m b
+    rw [hρapply]
+    constructor
+    · intro h
+      have := congrArg CStarMatrix.ofMatrixStarAlgEquiv.symm h
+      simpa using this
+    · intro h; rw [h, map_zero]
+  refine ⟨k, n, Q, ρ, ?_, ?_, ?_, ?_, ?_⟩
+  · -- projections and centrality
+    intro m
+    have hp : Q m * Q m = Q m := by
+      refine sub_eq_zero.mp (hinj _ ?_ ?_)
+      · rw [mul_sub, hdQb, hQd]
+      · rw [map_sub, map_mul, hQΨ, sub_eq_zero]
+        funext m'
+        rcases eq_or_ne m' m with rfl | h
+        · simp [Pi.mul_apply]
+        · simp [Pi.mul_apply, Pi.single_eq_of_ne h]
+    have hs : star (Q m) = Q m := by
+      have hdstar : d * star (Q m) = star (Q m) := by
+        have h := congrArg star (hQd m)
+        rw [star_mul, hdproj.isSelfAdjoint.star_eq] at h
+        rw [hdcen (star (Q m))]
+        exact h
+      refine sub_eq_zero.mp (hinj _ ?_ ?_)
+      · rw [mul_sub, hdstar, hQd]
+      · rw [map_sub, map_star, hQΨ, sub_eq_zero]
+        funext m'
+        rcases eq_or_ne m' m with rfl | h
+        · simp [Pi.star_apply]
+        · simp [Pi.star_apply, Pi.single_eq_of_ne h]
+    refine ⟨isStarProjection_iff'.mpr ⟨hp, hs⟩, fun b => ?_⟩
+    refine sub_eq_zero.mp (hinj _ ?_ ?_)
+    · rw [mul_sub, hdQb, hdbQ]
+    · rw [map_sub, map_mul, map_mul, hQΨ, sub_eq_zero, hsinglecen]
+  · intro m b; rw [hρ0, ← hQker]
+  · intro m y
+    obtain ⟨b, hb⟩ := hsurj (Pi.single m (CStarMatrix.ofMatrixStarAlgEquiv.symm y))
+    refine ⟨b, ?_⟩
+    rw [hρapply, hb]
+    simp
+  · intro m
+    rw [hρapply, hQΨ]
+    simp
+  · intro b
+    rw [hdker b, ← hkerg b]
+    constructor
+    · intro h m
+      refine (hQker m b).mpr ?_
+      rw [h]; rfl
+    · intro h
+      funext m
+      have := (hQker m b).mp (h m)
+      simpa using this
+
+/-- A central idempotent of a full matrix algebra is `0` or `1`
+(it is a scalar by `Matrix.mem_range_scalar_of_commute_single`). -/
+private theorem central_idem_matrix {p : ℕ} {x : CStarMatrix (Fin p) (Fin p) ℂ}
+    (hx : x * x = x) (hcen : ∀ y, x * y = y * x) : x = 0 ∨ x = 1 := by
+  classical
+  rcases isEmpty_or_nonempty (Fin p) with he | hne
+  · left
+    have : Subsingleton (CStarMatrix (Fin p) (Fin p) ℂ) := by
+      constructor
+      intro a b
+      funext i
+      exact he.elim i
+    exact Subsingleton.elim _ _
+  · set X : Matrix (Fin p) (Fin p) ℂ := CStarMatrix.ofMatrixStarAlgEquiv.symm x with hX
+    have hXcen : ∀ y : Matrix (Fin p) (Fin p) ℂ, X * y = y * X := by
+      intro y
+      have h := hcen (CStarMatrix.ofMatrixStarAlgEquiv y)
+      have h1 := congrArg CStarMatrix.ofMatrixStarAlgEquiv.symm h
+      rw [map_mul, map_mul] at h1
+      simpa [hX] using h1
+    have hXX : X * X = X := by
+      have h1 := congrArg CStarMatrix.ofMatrixStarAlgEquiv.symm hx
+      rw [map_mul] at h1
+      simpa [hX] using h1
+    obtain ⟨c, hc⟩ := Matrix.mem_range_scalar_of_commute_single
+      (M := X) (fun i j _ => (hXcen (Matrix.single i j 1)).symm)
+    have hcc : (Matrix.scalar (Fin p)) (c * c) = (Matrix.scalar (Fin p)) c := by
+      rw [map_mul, hc, hXX]
+    have hc2 : c * c = c := by
+      obtain ⟨i⟩ := hne
+      have h4 := congrFun (congrFun hcc i) i
+      simpa [Matrix.scalar_apply, Matrix.diagonal_apply_eq] using h4
+    have : c = 0 ∨ c = 1 := by
+      rcases eq_or_ne c 0 with h | h
+      · exact Or.inl h
+      · right
+        field_simp at hc2
+        exact hc2
+    rcases this with h | h
+    · left
+      have : X = 0 := by rw [← hc, h, map_zero]
+      rw [hX] at this
+      have := congrArg CStarMatrix.ofMatrixStarAlgEquiv this
+      simpa using this
+    · right
+      have : X = 1 := by rw [← hc, h, map_one]
+      rw [hX] at this
+      have := congrArg CStarMatrix.ofMatrixStarAlgEquiv this
+      simpa using this
+
+/-- Each block projection is a *minimal* central projection: a non-zero
+central projection below `q` equals `q`. -/
+private theorem block_minimal {p : ℕ} (ρ : B →⋆ₐ[ℂ] CStarMatrix (Fin p) (Fin p) ℂ)
+    (hsurj : Function.Surjective ρ) {q : B} (hqproj : IsStarProjection q)
+    (hker : ∀ b : B, ρ b = 0 ↔ q * b = 0) (hq1 : ρ q = 1)
+    {c : B} (hcproj : IsStarProjection c) (hccen : IsCentral B c)
+    (hcq : c * q = c) (hc0 : c ≠ 0) : c = q := by
+  have hidem : ρ c * ρ c = ρ c := by rw [← map_mul, hcproj.isIdempotentElem.eq]
+  have hcenρ : ∀ y, ρ c * y = y * ρ c := by
+    intro y
+    obtain ⟨b, rfl⟩ := hsurj y
+    rw [← map_mul, ← map_mul, hccen b]
+  have hne : ρ c ≠ 0 := by
+    intro h
+    refine hc0 ?_
+    calc c = c * q := hcq.symm
+      _ = q * c := hccen q
+      _ = 0 := (hker c).mp h
+  have h1 : ρ c = 1 := (central_idem_matrix hidem hcenρ).resolve_left hne
+  have h2 : ρ (c - q) = 0 := by rw [map_sub, h1, hq1, sub_self]
+  have h3 : q * (c - q) = 0 := (hker _).mp h2
+  rw [mul_sub, hqproj.isIdempotentElem.eq, sub_eq_zero] at h3
+  calc c = c * q := hcq.symm
+    _ = q * c := hccen q
+    _ = q := h3
+
+
+end HABlocks
+
+section HAMain
+
+/-- The coordinate projection `⊕ᵢ𝒜ᵢ → 𝒜ⱼ` as a ∗-homomorphism. -/
+private def lpProj {I : Type*} (𝒜 : I → Type u) [∀ i, CStarAlgebra (𝒜 i)]
+    [∀ i, Nontrivial (𝒜 i)] (i : I) :
+    lp 𝒜 ∞ →⋆ₐ[ℂ] 𝒜 i where
+  toFun a := (a : ∀ i, 𝒜 i) i
+  map_one' := rfl
+  map_mul' _ _ := rfl
+  map_zero' := rfl
+  map_add' _ _ := rfl
+  commutes' _ := rfl
+  map_star' _ := rfl
+
+
+/-- Universe-polymorphic form of `starAlgHom_nonneg`. -/
+private theorem starAlgHom_nonneg₂ {X Y : Type*} [CStarAlgebra X] [PartialOrder X]
+    [StarOrderedRing X] [CStarAlgebra Y] [PartialOrder Y] [StarOrderedRing Y]
+    (φ : X →⋆ₐ[ℂ] Y) {a : X} (ha : 0 ≤ a) : 0 ≤ φ a := by
+  have hsa : IsSelfAdjoint (CFC.sqrt a) := IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg a)
+  have h : a = star (CFC.sqrt a) * CFC.sqrt a := by
+    rw [hsa.star_eq, CFC.sqrt_mul_sqrt_self a ha]
+  rw [h, map_mul, map_star]
+  exact star_mul_self_nonneg _
+
+/-- Universe-polymorphic form of `starAlgHom_mono`. -/
+private theorem starAlgHom_mono₂ {X Y : Type*} [CStarAlgebra X] [PartialOrder X]
+    [StarOrderedRing X] [CStarAlgebra Y] [PartialOrder Y] [StarOrderedRing Y]
+    (φ : X →⋆ₐ[ℂ] Y) {x y : X} (h : x ≤ y) : φ x ≤ φ y := by
+  have h0 := starAlgHom_nonneg₂ φ (sub_nonneg.mpr h)
+  rw [map_sub] at h0
+  exact sub_nonneg.mp h0
+
+/-- Universe-polymorphic form of `preservesDirSups_pmap_comp` for
+∗-homomorphisms. -/
+private theorem preservesDirSups_comp₂ {X Y Z : Type*} [CStarAlgebra X] [PartialOrder X]
+    [StarOrderedRing X] [CStarAlgebra Y] [PartialOrder Y] [StarOrderedRing Y]
+    [CStarAlgebra Z] [PartialOrder Z] [StarOrderedRing Z]
+    (φ : X →⋆ₐ[ℂ] Y) (hφ : PreservesDirSups ⇑φ)
+    (ψ : Y →⋆ₐ[ℂ] Z) (hψ : PreservesDirSups ⇑ψ) :
+    PreservesDirSups (fun x => ψ (φ x)) := by
+  intro D s hne hdir hlub
+  have hsa : ∀ d : selfAdjoint X, IsSelfAdjoint (φ (d : X)) := by
+    intro d
+    show star (φ (d : X)) = φ (d : X)
+    rw [← map_star, d.2.star_eq]
+  set G : Set (selfAdjoint Y) :=
+    (fun d : selfAdjoint X => (⟨φ (d : X), hsa d⟩ : selfAdjoint Y)) '' D with hG
+  have hval : Subtype.val '' G = (fun d : selfAdjoint X => φ (d : X)) '' D := by
+    rw [hG, ← Set.image_comp]; rfl
+  have hlubG : IsLUB G (⟨φ (s : X), hsa s⟩ : selfAdjoint Y) := by
+    refine isLUB_sa_of_isLUB ?_
+    rw [hval]
+    exact hφ D s hne hdir hlub
+  have hGne : G.Nonempty := hne.image _
+  have hGdir : DirectedOn (· ≤ ·) G := by
+    rintro _ ⟨x, hx, rfl⟩ _ ⟨y, hy, rfl⟩
+    obtain ⟨z, hz, hxz, hyz⟩ := hdir x hx y hy
+    exact ⟨_, ⟨z, hz, rfl⟩,
+      Subtype.coe_le_coe.mp (starAlgHom_mono₂ φ (Subtype.coe_le_coe.mpr hxz)),
+      Subtype.coe_le_coe.mp (starAlgHom_mono₂ φ (Subtype.coe_le_coe.mpr hyz))⟩
+  have hkey := hψ G _ hGne hGdir hlubG
+  rw [hG, ← Set.image_comp] at hkey
+  exact hkey
+
+/-- `M_n(ℂ)` is finite-dimensional. -/
+private theorem finiteDimensional_cstarMatrix (p : ℕ) :
+    FiniteDimensional ℂ (CStarMatrix (Fin p) (Fin p) ℂ) :=
+  Module.Finite.equiv (CStarMatrix.ofMatrixₗ (R := ℂ) (A := ℂ)
+    (m := Fin p) (n := Fin p))
+
+attribute [local instance] finiteDimensional_cstarMatrix
+
+/-- Transporting a matrix algebra along an equality of dimensions. -/
+private def cstarMatrixCongr {a b : ℕ} (h : a = b) :
+    CStarMatrix (Fin a) (Fin a) ℂ ≃⋆ₐ[ℂ] CStarMatrix (Fin b) (Fin b) ℂ := by
+  subst h; exact StarAlgEquiv.refl (R := ℂ) (A := CStarMatrix (Fin a) (Fin a) ℂ)
+
 /-- **84bIII** (vn.tex:6157, Proposition): a von Neumann subalgebra of a
 hereditarily atomic von Neumann algebra is hereditarily atomic — rendered:
 if `B` embeds into hereditarily atomic `A` by an injective nmiu-map, then
 `B` is hereditarily atomic. -/
 theorem hereditarilyAtomic_subalgebra [VonNeumannAlgebra A]
     [VonNeumannAlgebra B] (hA : HereditarilyAtomic A) (f : NMIUMap B A)
-    (hf : Function.Injective f) : HereditarilyAtomic B :=
-  sorry
+    (hf : Function.Injective f) : HereditarilyAtomic B := by
+  classical
+  obtain ⟨I, N, ⟨Φ⟩⟩ := hA
+  set 𝒜 : I → Type := fun i => CStarMatrix (Fin (N i + 1)) (Fin (N i + 1)) ℂ with h𝒜
+  have hgn : ∀ i : I, PreservesDirSups
+      (fun b : B => (lpProj 𝒜 i) ((Φ.toStarAlgHom.comp f.toStarAlgHom) b)) := by
+    intro i
+    have h1 : PreservesDirSups ⇑(Φ.toStarAlgHom.comp f.toStarAlgHom) :=
+      preservesDirSups_pmap_comp (nmiuP f) f.preservesDirSups'
+        (starAlgHomP Φ.toStarAlgHom) (starAlgEquiv_preservesDirSups Φ)
+    exact preservesDirSups_comp₂ (Φ.toStarAlgHom.comp f.toStarAlgHom) h1
+      (lpProj 𝒜 i) (vn_products_proj_normal 𝒜 i)
+  set g : ∀ i : I, NMIUMap B (𝒜 i) := fun i =>
+    ⟨(lpProj 𝒜 i).comp (Φ.toStarAlgHom.comp f.toStarAlgHom), hgn i⟩ with hgdef
+  have hgapply : ∀ (i : I) (b : B), g i b = (Φ (f b) : ∀ i, 𝒜 i) i := fun _ _ => rfl
+  -- `g i b = 0` for every `i` forces `b = 0`
+  have hgsep : ∀ b : B, (∀ i, g i b = 0) → b = 0 := by
+    intro b hb
+    have hz : (f (0 : B) : A) = 0 := map_zero f.toStarAlgHom
+    refine hf ?_
+    rw [hz]
+    refine Φ.injective ?_
+    rw [map_zero]
+    exact Subtype.ext (funext fun i => hb i)
+  -- the block decomposition of each `g i`
+  choose k n Q ρ hQc hQker hρsurj hρ1 hgz using fun i : I => exists_blocks (g i)
+  -- the set of non-zero block projections: minimal central projections of `B`
+  set S : Set B := {x | x ≠ 0 ∧ ∃ (i : I) (m : Fin (k i)), Q i m = x} with hSdef
+  have hSproj : ∀ x ∈ S, IsStarProjection x := by
+    rintro _ ⟨-, i, m, rfl⟩; exact (hQc i m).1
+  have hScen : ∀ x ∈ S, IsCentral B x := by
+    rintro _ ⟨-, i, m, rfl⟩; exact (hQc i m).2
+  -- minimality
+  have hSmin : ∀ x ∈ S, ∀ c : B, IsStarProjection c → IsCentral B c → c * x = c →
+      c ≠ 0 → c = x := by
+    rintro _ ⟨-, i, m, rfl⟩ c hcp hcc hcx hc0
+    exact block_minimal (ρ i m) (hρsurj i m) (hQc i m).1 (hQker i m) (hρ1 i m) hcp hcc hcx hc0
+  -- distinct minimal central projections are orthogonal
+  have hSorth : ∀ x ∈ S, ∀ y ∈ S, x ≠ y → x * y = 0 := by
+    intro x hx y hy hxy
+    by_contra h0
+    have hxp := hSproj x hx
+    have hyp := hSproj y hy
+    have hxc := hScen x hx
+    have hyc := hScen y hy
+    have hprod : IsStarProjection (x * y) := by
+      refine isStarProjection_iff'.mpr ⟨?_, ?_⟩
+      · calc x * y * (x * y) = x * (y * x) * y := by noncomm_ring
+          _ = x * (x * y) * y := by rw [hyc x]
+          _ = (x * x) * (y * y) := by noncomm_ring
+          _ = x * y := by rw [hxp.isIdempotentElem.eq, hyp.isIdempotentElem.eq]
+      · rw [star_mul, hxp.isSelfAdjoint.star_eq, hyp.isSelfAdjoint.star_eq, hyc x]
+    have hprodc : IsCentral B (x * y) := by
+      intro b
+      calc x * y * b = x * (y * b) := by rw [mul_assoc]
+        _ = x * (b * y) := by rw [hyc b]
+        _ = (x * b) * y := by rw [mul_assoc]
+        _ = (b * x) * y := by rw [hxc b]
+        _ = b * (x * y) := by rw [mul_assoc]
+    have h1 : x * y * x = x * y := by
+      calc x * y * x = x * (y * x) := by rw [mul_assoc]
+        _ = x * (x * y) := by rw [hyc x]
+        _ = (x * x) * y := by rw [← mul_assoc]
+        _ = x * y := by rw [hxp.isIdempotentElem.eq]
+    have h2 : x * y * y = x * y := by
+      rw [mul_assoc, hyp.isIdempotentElem.eq]
+    exact hxy ((hSmin x hx _ hprod hprodc h1 h0).symm.trans (hSmin y hy _ hprod hprodc h2 h0))
+  -- the supremum of `S` is `1`
+  have hSsum : projSup S = 1 := by
+    set r : B := projSup S with hr
+    have hrp : IsStarProjection r := (projSup_spec hSproj).1
+    have hq : ∀ x ∈ S, x * (1 - r) = 0 := by
+      intro x hx
+      have hle : x ≤ r := (projSup_spec hSproj).2.1 x hx
+      have := ((orthogonal_tuple_of_projections_1 x (1 - r) (hSproj x hx) hrp.one_sub).out 4 0).mp
+        (by rwa [sub_sub_cancel])
+      exact this
+    have hQq : ∀ (i : I) (m : Fin (k i)), Q i m * (1 - r) = 0 := by
+      intro i m
+      rcases eq_or_ne (Q i m) 0 with h | h
+      · rw [h, zero_mul]
+      · exact hq _ ⟨h, i, m, rfl⟩
+    have hz : (1 : B) - r = 0 := hgsep _ fun i => (hgz i (1 - r)).mpr (hQq i)
+    rw [sub_eq_zero] at hz
+    exact hz.symm
+  -- for each `p ∈ S` a surjective ∗-homomorphism onto a full matrix algebra
+  have hpack : ∀ p : S, ∃ (m : ℕ) (θ : B →⋆ₐ[ℂ] CStarMatrix (Fin (m + 1)) (Fin (m + 1)) ℂ),
+      Function.Surjective θ ∧ (∀ b : B, θ b = 0 ↔ (p : B) * b = 0) ∧ θ (p : B) = 1 := by
+    rintro ⟨x, hx0, i, m, rfl⟩
+    have hne : n i m ≠ 0 := by
+      intro h
+      refine hx0 ?_
+      have hemp : IsEmpty (Fin (n i m)) := by rw [h]; infer_instance
+      have hsub : Subsingleton (CStarMatrix (Fin (n i m)) (Fin (n i m)) ℂ) :=
+        ⟨fun a b => funext fun j => (hemp.false j).elim⟩
+      have h1 : ρ i m (Q i m) = 0 := by
+        rw [hρ1 i m]; exact Subsingleton.elim _ _
+      have h2 : Q i m * Q i m = 0 := (hQker i m _).mp h1
+      rw [(hQc i m).1.isIdempotentElem.eq] at h2
+      exact h2
+    obtain ⟨j, hj⟩ : ∃ j, n i m = j + 1 := ⟨n i m - 1, (Nat.succ_pred_eq_of_pos
+      (Nat.pos_of_ne_zero hne)).symm⟩
+    refine ⟨j, (cstarMatrixCongr hj).toStarAlgHom.comp (ρ i m), ?_, ?_, ?_⟩
+    · exact (cstarMatrixCongr hj).surjective.comp (hρsurj i m)
+    · intro b
+      show (cstarMatrixCongr hj) (ρ i m b) = 0 ↔ _
+      rw [← hQker i m b]
+      constructor
+      · intro h
+        have := congrArg (cstarMatrixCongr hj).symm h
+        simpa using this
+      · intro h; rw [h, map_zero]
+    · show (cstarMatrixCongr hj) (ρ i m (Q i m)) = 1
+      rw [hρ1 i m, map_one]
+  choose NN θ hθsurj hθker hθ1 using hpack
+  -- assembling the isomorphism
+  have hcen' : ∀ p : S, IsStarProjection ((p : B)) ∧ IsCentral B ((p : B)) :=
+    fun p => ⟨hSproj _ p.2, hScen _ p.2⟩
+  have hrange : Set.range (fun p : S => (p : B)) = S := Subtype.range_coe
+  have hsum' : projSup (Set.range (fun p : S => (p : B))) = 1 := by rw [hrange]; exact hSsum
+  have horth' : Pairwise fun p q : S => (p : B) * (q : B) = 0 := by
+    intro p q hpq
+    exact hSorth _ p.2 _ q.2 (fun h => hpq (Subtype.ext h))
+  obtain ⟨Ψ, hΨ, -⟩ := cstar_product_2_miu
+    (𝒜 := fun p : S => CStarMatrix (Fin (NN p + 1)) (Fin (NN p + 1)) ℂ) θ
+  refine ⟨S, NN, ⟨StarAlgEquiv.ofBijective Ψ ⟨?_, ?_⟩⟩⟩
+  · -- injectivity
+    intro b b' hbb
+    refine sub_eq_zero.mp (central_family_separating (fun p : S => (p : B))
+      (fun p => hSproj _ p.2) hsum' (a := b - b') fun p => ?_)
+    refine (hθker p _).mp ?_
+    rw [map_sub]
+    have h1 : θ p b = (Ψ b : ∀ p : S, CStarMatrix (Fin (NN p + 1)) (Fin (NN p + 1)) ℂ) p :=
+      (hΨ p b).symm
+    have h2 : θ p b' = (Ψ b' : ∀ p : S, CStarMatrix (Fin (NN p + 1)) (Fin (NN p + 1)) ℂ) p :=
+      (hΨ p b').symm
+    rw [h1, h2, hbb, sub_self]
+  · -- surjectivity
+    intro x
+    have hpre : ∀ p : S, ∃ y : B, (p : B) * y = y ∧ θ p y =
+        (x : ∀ p : S, CStarMatrix (Fin (NN p + 1)) (Fin (NN p + 1)) ℂ) p ∧
+        ‖y‖ ≤ ‖x‖ := by
+      intro p
+      obtain ⟨y, hy⟩ := hθsurj p ((x : ∀ p : S, _) p)
+      refine ⟨(p : B) * y, ?_, ?_, ?_⟩
+      · rw [← mul_assoc, (hSproj _ p.2).isIdempotentElem.eq]
+      · rw [map_mul, hθ1 p, one_mul, hy]
+      · have hiso := (starAlgHom_norm_corner (θ p) (hSproj _ p.2) (hScen _ p.2)
+          (hθker p)).2 ((p : B) * y) (by rw [← mul_assoc, (hSproj _ p.2).isIdempotentElem.eq])
+        rw [← hiso, map_mul, hθ1 p, one_mul, hy]
+        exact lp.norm_apply_le_norm (by simp) x p
+    choose y hy1 hy2 hy3 using hpre
+    obtain ⟨a, ha, -⟩ := central_projections_sums_2 (fun p : S => (p : B)) hcen' horth' hsum'
+      y hy1 ⟨‖x‖, by rintro _ ⟨p, rfl⟩; exact hy3 p⟩
+    refine ⟨a, ?_⟩
+    refine Subtype.ext (funext fun p => ?_)
+    rw [hΨ p a]
+    have h1 : θ p a = θ p ((p : B) * a) := by rw [map_mul, hθ1 p, one_mul]
+    rw [h1, ha p, hy2 p]
+
+end HAMain
 
 /-- **84bV** (`ha-equalisers`, vn.tex:6209, Corollary): for nmiu-maps
 `f, g : A → B` between hereditarily atomic von Neumann algebras, the
@@ -4275,8 +5213,33 @@ theorem ha_equalisers [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     ∃ (C : Type u) (_ : CStarAlgebra C) (_ : PartialOrder C)
       (_ : StarOrderedRing C),
       ∃ e : NMIUMap C A, HereditarilyAtomic C ∧ Function.Injective e ∧
-        Set.range ⇑e = {a : A | f a = g a} :=
-  sorry
+        Set.range ⇑e = {a : A | f a = g a} := by
+  classical
+  -- **47V**: the equaliser is a von Neumann subalgebra `S ⊆ A`; `VNSub A S hS`
+  -- bundles it as a von Neumann algebra, and **84bIII** makes it hereditarily
+  -- atomic because its inclusion is an injective nmiu-map into `A`.
+  obtain ⟨S, hS, hSet⟩ := vn_equalisers f g
+  set e₀ : VNSub A S hS →⋆ₐ[ℂ] A :=
+    { toFun := VNSub.val
+      map_one' := rfl
+      map_mul' := fun _ _ => rfl
+      map_zero' := rfl
+      map_add' := fun _ _ => rfl
+      commutes' := fun r => by
+        show (algebraMap ℂ (VNSub A S hS) r).val = algebraMap ℂ A r
+        rw [Algebra.algebraMap_eq_smul_one, Algebra.algebraMap_eq_smul_one]
+        rfl
+      map_star' := fun _ => rfl } with he₀
+  have hnorm : PreservesDirSups ⇑e₀ := by
+    intro D s hne hdir hlub
+    have h := isLUB_coe_of_isLUB (hne.image _) (VNSub.isLUB_saMap_image hne hdir hlub)
+    rw [← Set.image_comp] at h
+    exact h
+  refine ⟨VNSub A S hS, inferInstance, inferInstance, inferInstance, ⟨e₀, hnorm⟩,
+    hereditarilyAtomic_subalgebra hA ⟨e₀, hnorm⟩ VNSub.val_injective,
+    VNSub.val_injective, ?_⟩
+  rw [← hSet]
+  exact VNSub.range_val
 
 /-! **84bVI** (vn.tex:6224, Remark): `haW*_miu` is the least full
 subcategory of `W*_miu` closed under limits containing the

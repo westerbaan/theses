@@ -1,6 +1,6 @@
-# `Theses/A/VN/` — full survey of the remaining `sorry`s (updated session 78)
+# `Theses/A/VN/` — full survey of the remaining `sorry`s (updated session 79)
 
-**Headline count: A/VN has 3 code `sorry`s** after session 78 (was 4).
+**Headline count: A/VN has 1 code `sorry`** after session 79 (was 3).
 Per file, compiler-counted (`declaration uses 'sorry'` warnings, *not* grep),
 each paired with an error count of **0**:
 
@@ -8,10 +8,10 @@ each paired with an error count of **0**:
 |---|---|
 | `Basic.lean` | **1** |
 | `Projections.lean` | **0** |
-| `Division.lean` | 2 |
+| `Division.lean` | **0** |
 | `NormalFunctionals.lean` | **0** |
 | `Completeness.lean` | **0** |
-| **total** | **3** |
+| **total** | **1** |
 
 (Every file compiles with **0 errors**; counts are compiler-counted.)
 
@@ -27,6 +27,59 @@ done
 
 (This bare `lean` invocation does **not** report `linter.style.show`; only
 `lake build` does.  Check with `lake build` before handing off.)
+
+> **Session 79 headline — 84bIII and 84bV are CLOSED, `Division.lean` is
+> finished, and A/VN is down to `Basic.lean`'s 51IX alone.**  Both are
+> `#print axioms`-clean; ~460 new lines against a ~1000–1600 line costing.
+>
+> * **The `range (πⱼ ∘ e)` suggestion below is correct**, and needs exactly two
+>   local instances (`FiniteDimensional ℂ ↥S` by `FiniteDimensional.of_injective`
+>   on `S.subtype`, and `CStarAlgebra ↥S` by `complete :=
+>   (FiniteDimensional.complete ℂ S).1`).  The `CStarAlgebra` one **must** be
+>   `@[instance_reducible]`, or `FiniteDimensional ℂ ↥S` stops being found once
+>   the `Module ℂ ↥S` path goes through it; and both must be `attribute [local
+>   instance]`, not `haveI`, so synthesis re-derives them (and so nothing leaks
+>   downstream).  Then `fdcstar ↥(g.range)` applies directly.
+> * **Neither the Zorn step nor the `lp`-of-`lp` regrouping is needed**, against
+>   what this survey predicted.  Refine to the **minimal central projections**
+>   `Q_{j,m}` of `ℬ` in one step (pull the block units of `range gⱼ` back through
+>   `gⱼ`) and index the final `lp` by those: there is only ever one `lp`.  And
+>   two minimal central projections are equal or orthogonal, so the maximal
+>   orthogonal subfamily is *canonical* — the set of distinct non-zero values —
+>   and no Zorn argument arises.  The thesis needs Zorn only because it works
+>   with the non-minimal `dⱼ`.
+> * **No corner of `ℬ` is ever built.**  One carrier is taken, `dⱼ = ⌈gⱼ⌉`, and
+>   every property of `Q_{j,m}` follows from *"`x ∈ dⱼℬ` and `gⱼ x = 0` imply
+>   `x = 0`"*, i.e. from **69IV** `carrier_miu`.  67IV.2 and
+>   `central_family_separating` are used for surjectivity and injectivity of the
+>   final map, exactly as recorded.  The one new ingredient is
+>   `starAlgHom_norm_corner` (a ∗-hom with kernel `c^⊥ℬ` is isometric on `cℬ`),
+>   which is the `b ↦ (ρ b, (1−c)b)` trick already inside `nmiu_image`.
+> * **`⋁ⱼdⱼ = 1` does not need `⌈πⱼ⌉`**: take `q := 1 − ⋁ⱼdⱼ`, note `gⱼ q = 0`
+>   for all `j`, and conclude `q = 0` from injectivity of `e` — no reflection of
+>   suprema.
+> * **84bV needed a von Neumann subalgebra as a type, and one already existed.**
+>   The 366-line `section VNSubalgebra` block (`VNSub A S hS`, with
+>   `CStarAlgebra`/`PartialOrder`/`StarOrderedRing`/`VonNeumannAlgebra`
+>   instances) was **moved unchanged from `NormalFunctionals.lean` into
+>   `Division.lean`**, where it compiles with no edits.  Nothing downstream
+>   changes — the name is still `Theses.A.VN.VNSub`, and outside `A/VN` only
+>   `A/Proc/Tensor.lean`'s own shadowing copy exists; the other three files that
+>   grep for "VNSub" mention only the predicate `IsVNSubalgebra`.  84bV is then
+>   25 lines.
+> * Three `Basic.lean` lemmas (`starAlgHom_nonneg`, `starAlgHom_mono`,
+>   `preservesDirSups_pmap_comp`) are stated for two algebras in **one**
+>   universe and had to be copied universe-polymorphically (as
+>   `…₂`), because `ℬ : Type u` maps into `CStarMatrix (Fin n) (Fin n) ℂ :
+>   Type 0`.  `A/Proc/Tensor.lean` already carries `'`-versions for the same
+>   reason.
+> * **51IX**: `A/Proc`'s `exists_contRep` / `exists_isLinftyOf_of_starAlgEquiv`
+>   should **not** be lifted here — they take an algebra that is already given
+>   plus a ∗-iso to `C(X,ℂ)` on an extremally disconnected `X` with
+>   "null = meagre", and produce a presentation; 51IX must *construct* the
+>   algebra from an arbitrary finite complete measure space.  What they do show
+>   is that 51IX's rendering is missing the `ℂ`-homogeneity clause that
+>   `IsLinftyOf` gained under QUESTIONS D1 — filed as **QUESTIONS A9**.
 
 > **Session 78 headline — 84II `fdcstar` is CLOSED, by Mathlib's
 > Wedderburn–Artin plus a hand-rolled Skolem–Noether, not by the thesis's
@@ -409,81 +462,32 @@ lines, plus six reusable helpers — `uwTendsto_unique`, `UWTendsto.add`/`.smul`
 `isClosed_ultraweak_closedBall`, `uw_map_of_cont` — placed just above them and
 usable anywhere in `A/VN` and downstream.)
 
-## `Division.lean` — 2
+## `Division.lean` — 0
 
-| point | decl | class |
-|---|---|---|
-| **84bIII** | `hereditarilyAtomic_subalgebra` | [S] but real work |
-| **84bV** | `ha_equalisers` | [B] on 84bIII only (47V `vn_equalisers` is proved) |
+**Nothing left.**  **84bIII** `hereditarilyAtomic_subalgebra` and **84bV**
+`ha_equalisers` were proved in session 79 (see the headline); the survey's
+`range (πⱼ ∘ e)` suggestion is what made 84bIII cheap, and its two warnings
+(Zorn, `lp`-of-`lp`) were both unnecessary.
 
-**A suggestion for 84bIII, untested, from session 78's experience.**  The
-corner `dⱼℬ`-as-a-type may be avoidable the same way corners were avoided in
-84II.  Write `gⱼ := πⱼ ∘ e : ℬ → CStarMatrix (Fin (Nⱼ+1)) (Fin (Nⱼ+1)) ℂ`
-(unital, ∗-preserving, normal) and `dⱼ := ⌈gⱼ⌉` (central by **63IV**-era
-`carrier_miu`).  Then `dⱼℬ ≅ range gⱼ` — and `range gⱼ` is a **closed
-`StarSubalgebra` of a `CStarAlgebra`**, for which Mathlib already supplies the
-`CStarAlgebra` instance (`StarSubalgebra.cstarAlgebra`, closedness free in
-finite dimensions), so `fdcstar` applies to it directly with no instance
-plumbing.  Surjectivity of `b ↦ (gⱼ b)ⱼ` onto the `lp ∞` of the ranges is
-exactly **67IV**.2 `central_projections_sums_2`, which is stated concretely
-*inside* `ℬ` — precisely the shape wanted.  What this does **not** remove is
-the Zorn step (the `dⱼ` are not orthogonal as they stand; the thesis passes to
-a maximal orthogonal subfamily) nor the `lp`-of-`lp` regrouping.
-
-**84II** `fdcstar` was proved in session 78 (see the headline).  Its private
-by-products, all in the new `section FDCStar`, are reusable:
-`cstar_jacobson_eq_bot` (a C*-algebra has trivial Jacobson radical),
+**84II** `fdcstar` was proved in session 78.  Its private by-products, all in
+`section FDCStar`, are reusable: `cstar_jacobson_eq_bot`,
 `matrix_exists_intertwiner` (**Skolem–Noether for `Matrix n n ℂ`**),
-`matrix_exists_algEquiv_conj` (a conjugate-linear involutive anti-automorphism
-of `Matrix n n ℂ` satisfying `J x · x = 0 ⇒ x = 0` is `star` up to an inner
-automorphism), and `central_idempotent_isSelfAdjoint`.  Promote them if 84bIII
-wants them.
+`matrix_exists_algEquiv_conj`, `central_idempotent_isSelfAdjoint`.
+
+Session 79 added, private, at the end of the file: `starAlgHom_norm_corner`
+(a ∗-hom whose kernel is `c^⊥ℬ` for a central projection `c` is contractive,
+and isometric on `cℬ` — **promote this if anything else wants it**),
+`exists_surj_matprod`, `exists_blocks`, `central_idem_matrix`,
+`block_minimal`, `lpProj`, `cstarMatrixCongr`, and universe-polymorphic
+copies `starAlgHom_nonneg₂`, `starAlgHom_mono₂`, `preservesDirSups_comp₂`.
+
+**`VNSub` now lives here**, not in `NormalFunctionals.lean` (moved unchanged
+in session 79 for 84bV; see the headline).
 
 (`pseudoinverse_basic_2'_4` and `div_usc` — both false as printed — have since
 been retired with their `sorry`s; see HANDOFF.)
 
-**Costings, re-derived in session 77.**
-
-* ~~**84II `fdcstar` — ~500–800 lines, and Mathlib does half of it.**~~
-  *(Superseded — proved in session 78; the line estimate was right, the split
-  of the work was not.  See the headline.)*
-  `IsSemisimpleRing.exists_algEquiv_pi_matrix_of_isAlgClosed`
-  (`Mathlib/RingTheory/SimpleModule/IsAlgClosed.lean`) gives exactly the
-  conclusion's shape for a finite-dimensional semisimple ℂ-algebra, and its
-  hypothesis is cheap (`IsArtinianRing.isSemisimpleRing_iff_jacobson` +
-  `IsArtinianRing.isNilpotent_jacobson_bot`, then "`x` in the radical ⟹
-  `x*x` nilpotent self-adjoint ⟹ `0`", ~60–100 lines).  **What Mathlib does
-  not give is the star**: Wedderburn yields `≃ₐ[ℂ]`, we want `≃⋆ₐ[ℂ]`, and
-  there is **no Skolem–Noether in Mathlib**, so either the involution-
-  transport upgrade (`x♯ = h⁻¹x*h`, conjugate by `h^{1/2}`) is built or the
-  thesis's own matrix-unit construction (83V `cceil_sum` + polar
-  decomposition, both proved) is used, which is `∗`-preserving by
-  construction.  The thesis's first two pages ("`𝒜` is a von Neumann
-  algebra") are free in Lean: finite-dimensional normed spaces are proper and
-  `LinearMap.continuous_of_finiteDimensional` is Mathlib's.
-* **84bIII — ~1000–1600 lines; not a tail-end job.**  The mathematics is
-  short (`dⱼ := ⌈πⱼ∘e⌉` central by `carrier_miu`, `⌈πⱼ⌉ ≤ dⱼ` by leastness,
-  `⋃ⱼdⱼ = 1`, `dᵢℬ ↪ M_{Nᵢ}` finite-dimensional), but every step of the
-  assembly needs a carrier the tree lacks: the corner `cℬ` as a **type** with
-  `CStarAlgebra`/`PartialOrder`/`StarOrderedRing`/`VonNeumannAlgebra`
-  instances (67IV.2 is stated concretely, in `A`, precisely to avoid it), 84II
-  applied to each corner, a Zorn argument for the maximal orthogonal
-  subfamily, and a regrouping `lp (fun j => lp (fun m => M) ∞) ∞ ≃⋆ₐ
-  lp (fun (j,m) => M) ∞`.  It is downstream of 84II.
-* **84bV — ~150–300 lines given 84bIII.**
-* The `⌈π_j⌉ ≤ ⌈π_j∘e⌉` step of vn.tex 84bIII is **not** a type error: the
-  thesis has `ℬ ⊆ 𝒜` literally, so both projections live in `𝒜`; under our
-  rendering (injective nmiu `e : B → A`) it reads `⌈π_j⌉ ≤ e(d_j)`.
-* Mathematically (not in Lean) `A/Proc`'s **125bII** `ha_second_adjunction`
-  wants 84bV and 84bIII — see `docs/why-open.csv`.  Since it is itself a
-  `sorry`, no Lean declaration outside `A/VN` depends on `Division.lean`.
-
-**81VIII**.2 `sequential_quotient_2` is **proved** (it was still listed here
-after session 57 and was not).
-
-**Note for the next worker:** 84bV's chief ingredient, "the equaliser of two
-nmiu-maps is a von Neumann subalgebra", is 47V and was proved this session,
-so 84bV is now only blocked on 84bIII.
+**81VIII**.2 `sequential_quotient_2` is **proved**.
 
 ## `Projections.lean` — 0
 
@@ -562,7 +566,10 @@ one-line corollaries of it.
 
 ## What `A/Proc` needs from here
 
-**Nothing, as of session 75.**  54XI.1 `cvn_faithful_1` — the last A/VN
+**Nothing, as of session 75** — and as of session 79 `A/Proc`'s **125bII**
+`ha_second_adjunction` is *unblocked*: its inputs `vn_products_ncpsu`,
+**84II** `fdcstar`, **84bV** `ha_equalisers` and **84bIII**
+`hereditarilyAtomic_subalgebra` are all proved.  54XI.1 `cvn_faithful_1` — the last A/VN
 blocker of `A/Proc`'s **127III** `duplicable` (`Duplicators.lean`) — is
 proved, together with 54XI.2 and .3.  What 127III still needs is `A/Proc`-local
 (its `ℓ^∞`/direct-sum carrier — which mirrors 51IX's rendering but does not

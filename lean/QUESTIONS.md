@@ -324,6 +324,31 @@ done this because it changes a statement.  Nothing downstream is affected: no
 declaration in `Theses/` uses `proto_gelfand_naimark_2` (the three existing
 uses in `A/VN` are all of `proto_gelfand_naimark_`**`1`**).
 
+### A9. 51IX `Linfty-vn` — our rendering of "`q` is a miu-map" omits `ℂ`-homogeneity, exactly as `IsLinftyOf` did before D1
+
+**DISP** 51IX (`Linfty-vn`, vn.tex:1620), rendered as `Linfty_vn` in
+`Theses/A/VN/Basic.lean`.
+
+Our statement asks for `q : 𝓛^∞(X) → 𝒜` with
+
+* `q (f + g) = q f + q g`, `q (f · g) = q f · q g`, `q (star f) = star (q f)`,
+* `q 1 = 1`, `q f = 0 ↔ f =ᵐ[μ] 0`, and `q` surjective,
+
+and the surrounding comment calls this "`q` is a surjective miu-map on
+`𝓛^∞(X)`".  It is not: a miu-map is `ℂ`-**linear**, and the listed clauses
+make `q` only a ∗-*ring* homomorphism.  Complex conjugation `ℂ → ℂ` satisfies
+every one of them and is not `ℂ`-linear.
+
+This is the same defect that was found in `A/Proc/Duplicators.lean`'s
+`IsLinftyOf` and repaired on 2026-08-16 under **QUESTIONS D1** (ruled by Bas)
+by adding the field `smul : q (z • f) = z • q f`.  `IsLinftyOf` is otherwise
+field-for-field our 51IX, so the two renderings should agree.
+
+**Question.** May the clause `∀ (z : ℂ) f, IsBoundedMeasurable X f →
+q (z • f) = z • q f` be added to `Linfty_vn`?  It is true of the intended `q`
+and 51IX is still `sorry`, so nothing has to be reproved; but it strengthens a
+statement, which needs a ruling.
+
 ### A2. `parsec-340.60` (34VI.1) is an empty `\TODO{}`
 The solution slot exists but is empty, and it is the *last* entry in
 `asols.tex` — which is why solution coverage appears to stop at parsec 340.
