@@ -1694,8 +1694,66 @@ or norm continuous on `[0,1]_A` (for nontrivial `A`).  We record the norm
 discontinuity. -/
 theorem ceil_supremum_3 [Nontrivial A] :
     ¬ContinuousOn (fun a : A => ceil a) (effects A) ∧
-      ¬ContinuousOn (fun a : A => floor a) (effects A) :=
-  sorry
+      ¬ContinuousOn (fun a : A => floor a) (effects A) := by
+  -- `aₙ = (n+1)⁻¹·1 → 0` inside `[0,1]_A`, while `⌈aₙ⌉ = ⌈1⌉ = 1 ≠ 0 = ⌈0⌉`
+  set c : ℕ → ℝ := fun n => ((n : ℝ) + 1)⁻¹ with hc
+  have hc0 : ∀ n, 0 < c n := fun n => by positivity
+  have hc1 : ∀ n, c n ≤ 1 := by
+    intro n
+    rw [hc]
+    rw [inv_le_one_iff₀]
+    right
+    simp
+  set a : ℕ → A := fun n => c n • (1 : A) with hadef
+  have hmem : ∀ n, a n ∈ effects A := by
+    intro n
+    refine ⟨smul_nonneg (hc0 n).le zero_le_one, ?_⟩
+    have h : (0 : A) ≤ (1 - c n) • (1 : A) :=
+      smul_nonneg (by linarith [hc1 n]) zero_le_one
+    rw [sub_smul, one_smul, sub_nonneg] at h
+    exact h
+  have hceil1 : ceil (1 : A) = 1 :=
+    ceil_eq_of_isLeast zero_le_one (IsStarProjection.one A) (mul_one 1)
+      fun q _ hq => by rw [← hq, one_mul]
+  have hceila : ∀ n, ceil (a n) = 1 := by
+    intro n
+    rw [hadef]
+    simp only
+    rw [ceil_smul zero_le_one (hc0 n), hceil1]
+  have htend : Tendsto a atTop (𝓝 (0 : A)) := by
+    have h0 : Tendsto c atTop (𝓝 (0 : ℝ)) := by
+      rw [hc]
+      exact tendsto_inv_atTop_zero.comp (tendsto_atTop_add_const_right _ 1 tendsto_natCast_atTop_atTop)
+    simpa using h0.smul_const (1 : A)
+  have hne : (1 : A) ≠ 0 := one_ne_zero
+  have hceilcont : ¬ContinuousOn (fun a : A => ceil a) (effects A) := by
+    intro h
+    have h0 : Tendsto (fun a : A => ceil a) (nhdsWithin 0 (effects A)) (𝓝 (ceil (0 : A))) :=
+      h 0 ⟨le_rfl, zero_le_one⟩
+    have hnw : Tendsto a atTop (nhdsWithin 0 (effects A)) :=
+      tendsto_nhdsWithin_of_tendsto_nhds_of_eventually_within a htend
+        (Filter.Eventually.of_forall hmem)
+    have := h0.comp hnw
+    rw [ceil_zero] at this
+    have hconst : Tendsto (fun n : ℕ => (1 : A)) atTop (𝓝 (0 : A)) := by
+      simp only [Function.comp_def, hceila] at this
+      exact this
+    have h01 : (0 : A) = 1 :=
+      tendsto_nhds_unique (f := fun _ : ℕ => (1 : A)) hconst tendsto_const_nhds
+    exact hne h01.symm
+  refine ⟨hceilcont, fun h => hceilcont ?_⟩
+  -- `⌈a⌉ = 1 - ⌊1 - a⌋`, and `a ↦ 1 - a` is a continuous self-map of `[0,1]_A`
+  have hkey : ∀ a : A, a ∈ effects A → ceil a = 1 - floor (1 - a) := by
+    intro x hx
+    have h1 := (ceil_floor_basic_1 (1 - x) (effect_orthosupplement x hx)).2
+    rw [sub_sub_cancel] at h1
+    rw [← h1]
+  have hcomp : ContinuousOn (fun x : A => 1 - floor (1 - x)) (effects A) := by
+    refine ContinuousOn.sub continuousOn_const ?_
+    refine ContinuousOn.comp h (continuousOn_const.sub continuousOn_id) ?_
+    intro x hx
+    exact effect_orthosupplement x hx
+  exact hcomp.congr fun x hx => hkey x hx
 
 /-- **56XVIII** (`sum-of-orthogonal-projections`, vn.tex:2577, Exercise):
 for a family `(pᵢ)_{i∈I}` of pairwise orthogonal projections, the net of
@@ -1931,8 +1989,77 @@ theorem floor_difference (p a : A) (hp : IsStarProjection p)
 `⌈pqp⌉ = p ∩ (p^⊥ ∪ q)` for projections `p`, `q`. -/
 theorem ceil_sequential_product (p q : A) (hp : IsStarProjection p)
     (hq : IsStarProjection q) :
-    ceil (p * q * p) = projInf {p, projSup {1 - p, q}} :=
-  sorry
+    ceil (p * q * p) = projInf {p, projSup {1 - p, q}} := by
+  have hpe : p ∈ effects A := (projection_basic_2 p hp).2
+  have hqe : q ∈ effects A := (projection_basic_2 q hq).2
+  have hsqrtp : CFC.sqrt p = p :=
+    (CFC.sqrt_eq_iff p p hp.nonneg hp.nonneg).mpr hp.isIdempotentElem.eq
+  have hfloor_proj : ∀ t : A, IsStarProjection t → floor t = t := fun t ht =>
+    le_antisymm (floor_le (projection_basic_2 t ht).2)
+      ((floor_isGreatest (projection_basic_2 t ht).2).2 ⟨ht, le_rfl⟩)
+  -- `p ∩ b = ⌊p b p⌋` for an effect `b`, since `√p = p` and `⌊p⌋ = p`
+  have hpbp : ∀ b : A, b ∈ effects A → floor (p * b * p) = projInf {p, floor b} := by
+    intro b hb
+    have h := floor_sequential_product p b hpe hb
+    rwa [hsqrtp, hfloor_proj p hp] at h
+  -- for a projection `r ≤ p`: `p ∩ r^⊥ = p - r`
+  have hinf : ∀ r : A, IsStarProjection r → r ≤ p → projInf {p, 1 - r} = p - r := by
+    intro r hr hrp
+    have hre : r ∈ effects A := (projection_basic_2 r hr).2
+    have hpr : p * r = r := ((projection_below_effect p r hpe hr).out 0 6).mp hrp
+    have hrp' : r * p = r := ((projection_below_effect p r hpe hr).out 0 7).mp hrp
+    have hcalc : p * (1 - r) * p = p - r := by
+      rw [mul_sub, mul_one, sub_mul, hp.isIdempotentElem.eq, hpr, hrp']
+    have h := hpbp (1 - r) (effect_orthosupplement r hre)
+    rw [hcalc, hfloor_proj (p - r) (projection_below_projection _ _ hr hp hrp),
+      hfloor_proj (1 - r) hr.one_sub] at h
+    exact h.symm
+  -- `m = p ∩ q^⊥`
+  have hPq : ∀ x ∈ ({p, 1 - q} : Set A), IsStarProjection x := by
+    rintro x hx
+    rcases hx with rfl | rfl
+    · exact hp
+    · exact hq.one_sub
+  obtain ⟨hmproj, hmlb, hmgreat⟩ := projInf_spec hPq
+  set m : A := projInf {p, 1 - q} with hm
+  have hmp : m ≤ p := hmlb p (Set.mem_insert _ _)
+  have hmq : m ≤ 1 - q := hmlb _ (Set.mem_insert_of_mem _ rfl)
+  -- De Morgan: `p^⊥ ∪ q = (p ∩ q^⊥)^⊥`
+  have hsup : projSup {1 - p, q} = 1 - m := by
+    refine projSup_eq ?_ hmproj.one_sub ?_ ?_
+    · rintro x hx
+      rcases hx with rfl | rfl
+      · exact hp.one_sub
+      · exact hq
+    · rintro x hx
+      rcases hx with rfl | rfl
+      · exact sub_le_sub_left hmp 1
+      · exact le_sub_comm.mp hmq
+    · intro u hu hub
+      have h1 : (1 : A) - u ≤ p := sub_le_comm.mp (hub _ (Set.mem_insert _ _))
+      have h2 : (1 : A) - u ≤ 1 - q := sub_le_sub_left (hub _ (Set.mem_insert_of_mem _ rfl)) 1
+      have := hmgreat (1 - u) hu.one_sub (by
+        rintro x hx
+        rcases hx with rfl | rfl
+        · exact h1
+        · exact h2)
+      exact sub_le_comm.mp this
+  rw [hsup, hinf m hmproj hmp]
+  -- `p - ⌈pqp⌉ = ⌊p - pqp⌋ = ⌊p q^⊥ p⌋ = p ∩ q^⊥ = m`
+  have hpqp_nonneg : (0 : A) ≤ p * q * p := by
+    have := star_left_conjugate_nonneg hq.nonneg p
+    rwa [hp.isSelfAdjoint.star_eq] at this
+  have hpqp_le : p * q * p ≤ p := by
+    have := star_left_conjugate_le_conjugate hq.le_one p
+    rwa [hp.isSelfAdjoint.star_eq, mul_one, hp.isIdempotentElem.eq] at this
+  have hpqpe : p * q * p ∈ effects A := ⟨hpqp_nonneg, hpqp_le.trans hp.le_one⟩
+  have hdiff := floor_difference p (p * q * p) hp hpqpe hpqp_le
+  have hcalc2 : p - p * q * p = p * (1 - q) * p := by
+    rw [mul_sub, mul_one, sub_mul, hp.isIdempotentElem.eq]
+  rw [hcalc2, hpbp (1 - q) (effect_orthosupplement q hqe),
+    hfloor_proj (1 - q) hq.one_sub, ← hm] at hdiff
+  rw [← hdiff]
+  abel
 
 /-! ## Parsec 590: Range and Support
 
@@ -2184,8 +2311,83 @@ points). -/
 theorem hilb_ceil_1 {H : Type*} [NormedAddCommGroup H]
     [InnerProductSpace ℂ H] [CompleteSpace H] (T : H →L[ℂ] H) :
     {x : H | rangeProj T x = x} = closure (Set.range T) ∧
-      {x : H | suppProj T x = x} = ((LinearMap.ker (T : H →ₗ[ℂ] H))ᗮ : Set H) :=
-  sorry
+      {x : H | suppProj T x = x} = ((LinearMap.ker (T : H →ₗ[ℂ] H))ᗮ : Set H) := by
+  classical
+  constructor
+  · -- `⌊T⌉` is the projection onto `closure (range T)`
+    set M : Submodule ℂ H := (LinearMap.range (T : H →ₗ[ℂ] H)).topologicalClosure with hMdef
+    have hOP : M.HasOrthogonalProjection := inferInstance
+    set p : H →L[ℂ] H := M.starProjection with hpdef
+    have hproj : IsStarProjection p := isStarProjection_starProjection
+    have hpT : ∀ x : H, p (T x) = T x := fun x =>
+      Submodule.starProjection_eq_self_iff.mpr (Submodule.le_topologicalClosure _ ⟨x, rfl⟩)
+    have hmem : IsStarProjection p ∧ p * T = T := by
+      refine ⟨hproj, ?_⟩
+      ext x
+      exact hpT x
+    have hleast : ∀ q : H →L[ℂ] H, IsStarProjection q ∧ q * T = T → p ≤ q := by
+      rintro q ⟨hq, hqT⟩
+      set e : H →L[ℂ] H := 1 - q with hedef
+      have heproj : IsStarProjection e := hq.one_sub
+      have hE : ∀ x : H, e (T x) = 0 := by
+        intro x
+        have : q (T x) = T x := congrArg (fun S : H →L[ℂ] H => S x) hqT
+        simp [hedef, this]
+      have hker : M ≤ LinearMap.ker (e : H →ₗ[ℂ] H) := by
+        rw [hMdef]
+        refine Submodule.topologicalClosure_minimal _ ?_ e.isClosed_ker
+        rintro _ ⟨x, rfl⟩
+        exact hE x
+      have hpe : p * e = 0 := by
+        have h1 : e * p = 0 := by
+          ext y
+          show e (p y) = 0
+          exact hker (M.starProjection_apply_mem y)
+        have h2 := congrArg star h1
+        rwa [star_mul, heproj.isSelfAdjoint.star_eq, hproj.isSelfAdjoint.star_eq,
+          star_zero] at h2
+      exact (proj_le_iff (projection_basic_2 q hq).2 hproj).mpr hpe
+    have hrp : rangeProj T = p := ((ceill_basic_2 T).unique ⟨hmem, hleast⟩)
+    have hset : ((LinearMap.range (T : H →ₗ[ℂ] H) : Submodule ℂ H) : Set H)
+        = Set.range T := by
+      ext z; simp [LinearMap.mem_range]
+    rw [hrp]
+    ext y
+    simp only [Set.mem_ofPred_eq, hpdef, Submodule.starProjection_eq_self_iff]
+    rw [hMdef, ← SetLike.mem_coe, Submodule.topologicalClosure_coe, hset]
+  · -- `⌈T⌋` is the projection onto `(ker T)^⊥`
+    set K : Submodule ℂ H := (LinearMap.ker (T : H →ₗ[ℂ] H))ᗮ with hKdef
+    have hOP : K.HasOrthogonalProjection := inferInstance
+    set p : H →L[ℂ] H := K.starProjection with hpdef
+    have hproj : IsStarProjection p := isStarProjection_starProjection
+    have hKperp : Kᗮ = LinearMap.ker (T : H →ₗ[ℂ] H) := by
+      rw [hKdef]
+      exact Submodule.orthogonal_orthogonal _
+    have hmem : IsStarProjection p ∧ T * p = T := by
+      refine ⟨hproj, ?_⟩
+      ext x
+      show T (p x) = T x
+      have hsub : x - p x ∈ Kᗮ := K.sub_starProjection_mem_orthogonal x
+      rw [hKperp] at hsub
+      have h0 : T (x - p x) = 0 := by simpa using LinearMap.mem_ker.mp hsub
+      rw [map_sub, sub_eq_zero] at h0
+      exact h0.symm
+    have hleast : ∀ q : H →L[ℂ] H, IsStarProjection q ∧ T * q = T → p ≤ q := by
+      rintro q ⟨hq, hqT⟩
+      have hpe : p * (1 - q) = 0 := by
+        ext y
+        show p (y - q y) = 0
+        refine (Submodule.starProjection_apply_eq_zero_iff K).mpr ?_
+        rw [hKperp]
+        refine LinearMap.mem_ker.mpr ?_
+        have hyq : T (q y) = T y := congrArg (fun S : H →L[ℂ] H => S y) hqT
+        simp [map_sub, hyq]
+      exact (proj_le_iff (projection_basic_2 q hq).2 hproj).mpr hpe
+    have hsp : suppProj T = p := ((ceill_basic_1 T).unique ⟨hmem, hleast⟩)
+    rw [hsp]
+    ext y
+    simp only [Set.mem_ofPred_eq, hpdef, Submodule.starProjection_eq_self_iff]
+    rfl
 
 /-- **59VII** (`hilb-ceil`, vn.tex:2796, Exercise), part 3: for an effect
 `T` on a Hilbert space, `⌊T⌋` is the projection onto
@@ -2193,8 +2395,46 @@ theorem hilb_ceil_1 {H : Type*} [NormedAddCommGroup H]
 theorem hilb_ceil_2 {H : Type*} [NormedAddCommGroup H]
     [InnerProductSpace ℂ H] [CompleteSpace H] (T : H →L[ℂ] H)
     (hT : T ∈ effects (H →L[ℂ] H)) :
-    {x : H | floor T x = x} = {x : H | T x = x} :=
-  sorry
+    {x : H | floor T x = x} = {x : H | T x = x} := by
+  classical
+  have hTsa : IsSelfAdjoint T := IsSelfAdjoint.of_nonneg hT.1
+  set V : Submodule ℂ H := LinearMap.ker (((T - 1 : H →L[ℂ] H) : H →ₗ[ℂ] H)) with hVdef
+  have hVmem : ∀ x : H, x ∈ V ↔ T x = x := by
+    intro x
+    rw [hVdef]
+    simp [LinearMap.mem_ker, sub_eq_zero]
+  have : CompleteSpace V := (ContinuousLinearMap.isClosed_ker (T - 1)).completeSpace_coe
+  have hOP : V.HasOrthogonalProjection := inferInstance
+  set p : H →L[ℂ] H := V.starProjection with hpdef
+  have hproj : IsStarProjection p := isStarProjection_starProjection
+  have hTp : T * p = p := by
+    ext x
+    show T (p x) = p x
+    exact (hVmem _).mp (V.starProjection_apply_mem x)
+  have hpT : p * T = p := by
+    have h2 := congrArg star hTp
+    rwa [star_mul, hTsa.star_eq, hproj.isSelfAdjoint.star_eq] at h2
+  have hgreat : ∀ q : H →L[ℂ] H, IsStarProjection q → q * T = q → q ≤ p := by
+    intro q hq hqT
+    have hTq : T * q = q := by
+      have h2 := congrArg star hqT
+      rwa [star_mul, hTsa.star_eq, hq.isSelfAdjoint.star_eq] at h2
+    have hone : (1 - p) * q = 0 := by
+      ext y
+      show q y - p (q y) = 0
+      have : T (q y) = q y := congrArg (fun S : H →L[ℂ] H => S y) hTq
+      rw [Submodule.starProjection_eq_self_iff.mpr ((hVmem _).mpr this), sub_self]
+    have hqe : q * (1 - p) = 0 := by
+      have h2 := congrArg star hone
+      rwa [star_mul, hproj.one_sub.isSelfAdjoint.star_eq, hq.isSelfAdjoint.star_eq,
+        star_zero] at h2
+    exact (proj_le_iff (projection_basic_2 p hproj).2 hq).mpr hqe
+  obtain ⟨hf1, hf2, hf3⟩ := floor_spec hT
+  have hfl : floor T = p := le_antisymm (hgreat _ hf1 hf2) (hf3 p hproj hpT)
+  rw [hfl]
+  ext y
+  simp only [Set.mem_ofPred_eq, hpdef, Submodule.starProjection_eq_self_iff]
+  exact hVmem y
 
 /-! ## Parsec 600 -/
 
@@ -2733,11 +2973,152 @@ theorem ncp_ceill (f : NCPMap A B) (a : A) :
 
 /-! ## Parsec 620 -/
 
+omit [VonNeumannAlgebra A] [VonNeumannAlgebra B] in
+/-- A normal positive map preserves the infima of filtered sets of
+self-adjoint elements: apply normality to `-D`. -/
+private theorem preservesDirInfs (f : A →ₚ[ℂ] B) (hf : PreservesDirSups ⇑f)
+    (D : Set (selfAdjoint A)) (s : selfAdjoint A) (hne : D.Nonempty)
+    (hdir : DirectedOn (· ≥ ·) D) (hglb : IsGLB D s) :
+    IsGLB ((fun d : selfAdjoint A => f (d : A)) '' D) (f (s : A)) := by
+  have hnegle : ∀ x y : selfAdjoint A, x ≤ y ↔ -y ≤ -x := by
+    intro x y
+    constructor <;> intro h <;>
+      exact Subtype.coe_le_coe.mp (by
+        simpa using neg_le_neg (Subtype.coe_le_coe.mpr h))
+  set E : Set (selfAdjoint A) := (fun d : selfAdjoint A => -d) '' D with hE
+  have hEne : E.Nonempty := hne.image _
+  have hEdir : DirectedOn (· ≤ ·) E := by
+    rintro _ ⟨x, hx, rfl⟩ _ ⟨y, hy, rfl⟩
+    obtain ⟨z, hz, hzx, hzy⟩ := hdir x hx y hy
+    exact ⟨-z, ⟨z, hz, rfl⟩, (hnegle z x).mp hzx, (hnegle z y).mp hzy⟩
+  have hElub : IsLUB E (-s) := by
+    constructor
+    · rintro _ ⟨d, hd, rfl⟩
+      exact (hnegle s d).mp (hglb.1 hd)
+    · intro u hu
+      have h1 : ∀ d ∈ D, -u ≤ d := by
+        intro d hd
+        exact (hnegle (-u) d).mpr (by simpa using hu ⟨d, hd, rfl⟩)
+      simpa using (hnegle (-u) s).mp (hglb.2 h1)
+  have hkey := hf E (-s) hEne hEdir hElub
+  have himg : (fun d : selfAdjoint A => f (d : A)) '' E
+      = (fun z : B => -z) '' ((fun d : selfAdjoint A => f (d : A)) '' D) := by
+    rw [hE, ← Set.image_comp, ← Set.image_comp]
+    refine Set.image_congr fun d _ => ?_
+    show f ((-d : selfAdjoint A) : A) = -f (d : A)
+    rw [show ((-d : selfAdjoint A) : A) = -(d : A) from rfl, map_neg]
+  have hfs : f ((-s : selfAdjoint A) : A) = -f (s : A) := by
+    rw [show ((-s : selfAdjoint A) : A) = -(s : A) from rfl, map_neg]
+  rw [himg, hfs] at hkey
+  constructor
+  · rintro _ ⟨d, hd, rfl⟩
+    have := hkey.1 ⟨_, ⟨d, hd, rfl⟩, rfl⟩
+    simpa using neg_le_neg this
+  · intro u hu
+    have h1 : ∀ z ∈ (fun z : B => -z) '' ((fun d : selfAdjoint A => f (d : A)) '' D), z ≤ -u := by
+      rintro _ ⟨_, ⟨d, hd, rfl⟩, rfl⟩
+      exact neg_le_neg (hu ⟨d, hd, rfl⟩)
+    have := hkey.2 h1
+    simpa using neg_le_neg this
+
+/-- floor is monotone on effects -/
+private theorem floor_mono' {u v : A} (hu : u ∈ effects A) (hv : v ∈ effects A)
+    (huv : u ≤ v) : floor u ≤ floor v :=
+  (floor_isGreatest hv).2 ⟨(floor_spec hu).1, (floor_le hu).trans huv⟩
+
+
 /-- **62I** (vn.tex:3010, Proposition): for an ncpsu-map `f : A → B` and an
 effect `a`: `⌊f(a)⌋ = ⌊f(⌊a⌋)⌋`. -/
 theorem ncpsu_floor (f : NCPSUMap A B) (a : A) (ha : a ∈ effects A) :
-    floor (f.toNCPMap a) = floor (f.toNCPMap (floor a)) :=
-  sorry
+    floor (f.toNCPMap a) = floor (f.toNCPMap (floor a)) := by
+  set g : NCPMap A B := f.toNCPMap with hg
+  have hmono : ∀ x y : A, x ≤ y → (g x : B) ≤ g y := fun x y h =>
+    (ncpPositive g).monotone h
+  have hnn : ∀ x : A, 0 ≤ x → (0 : B) ≤ g x := by
+    intro x hx
+    have h0 : ((ncpPositive g) (0 : A) : B) ≤ (ncpPositive g) x :=
+      (ncpPositive g).monotone hx
+    rwa [map_zero] at h0
+  have heff : ∀ x : A, x ∈ effects A → (g x : B) ∈ effects B := by
+    intro x hx
+    exact ⟨hnn x hx.1, (hmono x 1 hx.2).trans f.subunital'⟩
+  have hone : ‖(1 : B)‖ ≤ 1 := by
+    have h : ‖(1 : B)‖ = ‖(1 : B)‖ * ‖(1 : B)‖ := by
+      have := CStarRing.norm_star_mul_self (x := (1 : B))
+      rwa [star_one, one_mul] at this
+    nlinarith [norm_nonneg (1 : B)]
+  have hf1 : ‖(g 1 : B)‖ ≤ 1 :=
+    (CStarAlgebra.norm_le_norm_of_nonneg_of_le (hnn 1 zero_le_one) f.subunital').trans hone
+  -- `⌊f(x)⌋ = ⌊f(x²)⌋` for an effect `x`
+  have hstep : ∀ x : A, x ∈ effects A → floor (g x : B) = floor (g (x ^ 2) : B) := by
+    intro x hx
+    have hx2 : x ^ 2 ∈ effects A := sq_mem_effects hx
+    have hsq : (g x : B) ^ 2 ≤ g (x ^ 2) := by
+      have h := ncp_cp_cs g x
+      have hxsa : star x = x := (IsSelfAdjoint.of_nonneg hx.1).star_eq
+      have hgsa : star (g x : B) = g x := (IsSelfAdjoint.of_nonneg (hnn x hx.1)).star_eq
+      rw [hxsa, hgsa, ← sq, ← sq] at h
+      refine h.trans ?_
+      have hnn2 : (0 : B) ≤ g (x ^ 2) := hnn _ hx2.1
+      have : (0 : B) ≤ (1 - ‖(g 1 : B)‖) • g (x ^ 2) :=
+        smul_nonneg (by linarith) hnn2
+      rw [sub_smul, one_smul, sub_nonneg] at this
+      exact this
+    have h1 : floor (g x : B) ≤ floor (g (x ^ 2) : B) := by
+      rw [(ceil_floor_basic_3 (g x : B) (heff x hx)).1]
+      exact floor_mono' (sq_mem_effects (heff x hx)) (heff _ hx2) hsq
+    have h2 : floor (g (x ^ 2) : B) ≤ floor (g x : B) :=
+      floor_mono' (heff _ hx2) (heff x hx)
+        (hmono _ _ (by
+          have := pow_antitone_of_mem_effects hx (by norm_num : 1 ≤ 2)
+          simpa using this))
+    exact le_antisymm h1 h2
+  -- `⌊f(a)⌋ = ⌊f(a^{2ⁿ})⌋`
+  have hiter : ∀ n : ℕ, floor (g a : B) = floor (g (a ^ 2 ^ n) : B) := by
+    intro n
+    induction n with
+    | zero => simp
+    | succ k ih =>
+        rw [ih, hstep _ (pow_mem_effects ha (2 ^ k)), ← pow_mul, pow_succ]
+  -- `⌊f(a)⌋ ≤ f(a^{2ⁿ})` for every `n`
+  have hle : ∀ n : ℕ, floor (g a : B) ≤ (g (a ^ 2 ^ n) : B) := by
+    intro n
+    rw [hiter n]
+    exact floor_le (heff _ (pow_mem_effects ha (2 ^ n)))
+  -- the infimum `⌊a⌋ = ⋀ₙ a^{2ⁿ}` is preserved by normality
+  obtain ⟨-, hglbA⟩ := vna_floor a ha
+  set E : Set (selfAdjoint A) :=
+    Set.range fun n : ℕ =>
+      (⟨a ^ 2 ^ n, IsSelfAdjoint.of_nonneg (pow_mem_effects ha (2 ^ n)).1⟩ :
+        selfAdjoint A) with hEdef
+  have hEne : E.Nonempty := ⟨_, ⟨0, rfl⟩⟩
+  have hanti : ∀ m n : ℕ, m ≤ n → a ^ 2 ^ n ≤ a ^ 2 ^ m := fun m n hmn =>
+    pow_antitone_of_mem_effects ha (Nat.pow_le_pow_right (by norm_num) hmn)
+  have hEdir : DirectedOn (· ≥ ·) E := by
+    rintro _ ⟨m, rfl⟩ _ ⟨n, rfl⟩
+    exact ⟨_, ⟨max m n, rfl⟩,
+      Subtype.coe_le_coe.mp (hanti m _ (le_max_left m n)),
+      Subtype.coe_le_coe.mp (hanti n _ (le_max_right m n))⟩
+  set sfl : selfAdjoint A :=
+    ⟨floor a, (floor_spec ha).1.isSelfAdjoint⟩ with hsfl
+  have hEglb : IsGLB E sfl := by
+    constructor
+    · rintro _ ⟨n, rfl⟩
+      exact Subtype.coe_le_coe.mp (hglbA.1 ⟨n, rfl⟩)
+    · intro u hu
+      refine Subtype.coe_le_coe.mp (hglbA.2 ?_)
+      rintro _ ⟨n, rfl⟩
+      exact Subtype.coe_le_coe.mpr (hu ⟨n, rfl⟩)
+  have hglbB := preservesDirInfs (ncpPositive g) g.preservesDirSups' E sfl hEne hEdir hEglb
+  have hlow : floor (g a : B) ≤ (g (floor a) : B) := by
+    refine hglbB.2 ?_
+    rintro _ ⟨_, ⟨n, rfl⟩, rfl⟩
+    exact hle n
+  -- assemble
+  have hfa : floor a ∈ effects A := ⟨(floor_spec ha).1.nonneg, floor_le ha |>.trans ha.2⟩
+  refine le_antisymm ?_ ?_
+  · exact (floor_isGreatest (heff _ hfa)).2 ⟨(floor_spec (heff a ha)).1, hlow⟩
+  · exact floor_mono' (heff _ hfa) (heff a ha) (hmono _ _ (floor_le ha))
 
 /-! ## Parsec 630: Carrier -/
 

@@ -28,22 +28,16 @@ rigid_expansion|costed||~80-120 lines; needs neither Goursat nor 15V, using Math
 taylor|blocked|cauchy_formula|geometric-series expansion under the integral plus a uniform-convergence interchange
 Linfty_vn|costed||51IX needs an L-infinity carrier that Mathlib lacks; rendered with a quotient map, still unbuilt
 carrier_ad_operator|costed||best isolated target in Projections.lean: the Hilbert-space form of the proved carrier_ad
-ceil_sequential_product|costed||58IV, surveyed self-contained; the identity for the ceiling of pqp
-ceil_supremum_3|costed||counterexample 1, 1/2, 1/3, ...; needs a Nontrivial witness built by hand
 central_projections_sums_2|costed||no longer blocked: 67IV.1 was proved in session 56
 cvn_faithful_1|costed||54XI.1 needs a measure on the almost-clopen sigma-algebra; large
 cvn_faithful_2|blocked|cvn_faithful_1|54XI.2 is stated on top of 54XI.1
 cvn_faithful_3|blocked|cvn_faithful_1|54XI.3 is stated on top of 54XI.1
 div_usc|awaiting-ruling||QUESTIONS A5: the second conjunct is false; the ultraweak repair is proved as div_uwc, ruling pending
 fdcstar|costed||84II is Artin-Wedderburn for finite-dimensional C*-algebras; the thesis proof is long and Mathlib has none
-gns_normal|costed||the survey label cited-to-literature is stale: Mathlib now has GNS, so 48III should be re-examined
 ha_equalisers|blocked|hereditarilyAtomic_subalgebra|84bV's other input 47V was proved in session 50
 hereditarilyAtomic_subalgebra|costed||84bIII, surveyed self-contained but real work
-hilb_ceil_1|costed||59VII.1-2, range and support projections on a Hilbert space; self-contained
-hilb_ceil_2|costed||59VII.3, the floor of an effect as the projection onto its fixed points; self-contained
 mn_vna_2|costed||its third clause is available as the proved exists_isLUB_matForm; the rest is the entrywise dictionary
 mn_vna_3|open||49IV.3, normality of the amplification M_N f; recorded as genuinely open, with no route
-ncpsu_floor|costed||62I, surveyed self-contained; the thesis proof cites cp-cs, corrected by erratum 620.20
 ngelfand_normal|open||53II.2, surveyed self-contained but with no route or estimate recorded
 ngelfand_vna|open||53II.1, surveyed self-contained but with no route or estimate recorded
 normal_not_us_cont|costed||45I.2 is the transpose on B of l-two; self-contained
@@ -51,7 +45,6 @@ pseudoinverse_basic_2'_4|false||79VI.4 is false as stated; the refutation sits j
 us_cont_normal|costed||45I.1 is preservesDirSups_of_continuousOn_effects with ultraweak replaced by ultrastrong
 vn_counterexamples_11|costed||the last of the nine 43II counterexamples: an unbounded functional by Riesz on finite-dimensional subspaces
 vn_products_ncpsu|costed||47IV.3, categorical, with 47IV.1 and .2 proved; it gates 124III and 125bII in A/Proc
-vn_spectrum_extremally_disconnected|open||unblocked: ngelfand_vna is now proved; not yet attempted
 vna_of_faithful_countably_normal_1|open||51VII.1, surveyed self-contained but with no route recorded
 vna_of_faithful_countably_normal_2|blocked|vna_of_faithful_countably_normal_1|51VII.2 sits directly on 51VII.1
 weakly_closed_ideal|costed||69II, weakly closed two-sided ideals; substantial, and 170IV.1 deliberately routed around it
@@ -115,29 +108,25 @@ HaFreeExp.ha|blocked|exists_tmapM|yellow: inherited from the HaFreeExp type, who
 HaFreeExp.sor|blocked|exists_tmapM|yellow: inherited from the HaFreeExp type, whose universal field mentions tmapM
 HaFreeExp.universal|blocked|exists_tmapM|yellow: the universal property is literally stated with tmapM
 HaFreeExp.vna|blocked|exists_tmapM|yellow: inherited from the HaFreeExp type, whose universal field mentions tmapM
-ba_ext_tensor_pres|open||unblocked: tensor_characterization is now proved; not yet attempted
-dils_examples_pure_1|blocked|paschke_pure|170II.1 needs 171VII and the Stinespring classification of pure maps
-dils_examples_pure_2|blocked|h_is_corner_for_unital_map|170II.2 is derived from 169V; the other input 169XI.2a is now repaired and proved
-dils_stand_filter|cited||169X is cited to proc.tex 96V, which is proved but off B/Dils's import path, so it must be redone
+ba_ext_tensor_pres|blocked|tensor_characterization|165VI needs 116VII, which is in A/Proc/Tensor and NOT in B/Dils's import closure; re-checked session 71
+dils_examples_pure_1|costed||170II.1: 171VII is now proved; what is left is the Stinespring classification of pure maps between B(H)s
 ess_uniq_pur|awaiting-ruling||QUESTIONS B12: false without a dimension hypothesis, and which of three repairs is undecided
 ext_tensor_ketbra_dense|awaiting-ruling||QUESTIONS D6: our net form is false; the thesis's claim is proved as ext_tensor_ketbra_uwDense
 h_is_corner_for_unital_map|open||its recorded blocker existence_paschke is now proved, so 169V needs re-analysis; not attempted
 ksgns|cited||155II is Kasparov's KSGNS theorem, cited with no proof; the thesis only touches on it
-ncp_extreme_comp|blocked|pure_ncp_extreme|172XII has no proof at all in the thesis; the intended route is 172VIII plus 172X
 ncp_extreme_paschke|blocked|paschke_correspondence_surjective|172III needs the 157IV correspondence and 170II.2
 paschke_corner|open||its blockers existence_paschke and 154III.5 are now both proved; unblocked but not yet attempted
 paschke_correspondence_embedding|costed||157IV.2, ~250 lines: run on the concrete module using ordersep and ultranorm density, then transport
 paschke_correspondence_surjective|costed||157IV.3, ~300 lines; every ingredient has been in the file since session 63
 paschke_injective|costed||156II is unblocked by exists_paschke_iso_paschkeModule, but also wants A/VN's cceil-fundamental
 paschke_injective_carrier|costed||156II in carrier form; same route as paschke_injective, and the same A/VN ceiling question
-paschke_pure|open||unblocked: paschke_corner is now proved; not yet attempted
 paschke_tensor|blocked|ba_ext_tensor_pres|167I needs 165VI; its other input existence_paschke is now proved
 paschke_tensor_module|blocked|paschke_tensor|the further claim of 167I sits on 167I itself
 pure_ncp_extreme|open||unblocked: ncp_extreme_paschke is now proved; not yet attempted
 selfdual_normalish_form|blocked|total_mv_order|162IV needs 162II; its other input 161II.2 is proved
 standard_corner_dils|cited||169IV is cited to proc.tex 98I and 95II; A/Proc is off this import path, so it must be rebuilt
 surjective_nmiu_2|awaiting-ruling||FALSE: counterexample in tree; needs ncpsu on both f and f-prime (QUESTIONS D7)
-total_mv_order|costed||162II is the only self-contained item in B/Dils: comparison of projections, Zorn plus halving, genuinely hard
+total_mv_order|costed||162II is the only self-contained item in B/Dils; polar_decomposition IS on the import path, but summing-partial-isometries is in the tree under no name
 univprop_ext_tensor|costed||its 150II blocker is now proved; what is left is building l-two of the p_ij as a Hilbert module, multi-session
 kaplansky_hilbmod_A₁|false||one of 158V's four estimates, disproved and kept as documentation; 158II is proved by the linking algebra
 kaplansky_hilbmod_A₁'|false||one of 158V's four estimates, disproved and kept as documentation; 158II is proved by the linking algebra

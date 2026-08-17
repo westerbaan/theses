@@ -1,17 +1,17 @@
-# `Theses/A/VN/` — full survey of the remaining `sorry`s (updated session 68)
+# `Theses/A/VN/` — full survey of the remaining `sorry`s (updated session 70)
 
-**Headline count: A/VN has 22 code `sorry`s** after session 68 (was 29).
+**Headline count: A/VN has 15 code `sorry`s** after session 70 (was 22).
 Per file, compiler-counted (`declaration uses 'sorry'` warnings, *not* grep),
 each paired with an error count of **0**:
 
 | file | sorries |
 |---|---|
-| `Basic.lean` | **10** |
-| `Projections.lean` | **7** |
+| `Basic.lean` | **8** |
+| `Projections.lean` | **2** |
 | `Division.lean` | 5 |
 | `NormalFunctionals.lean` | **0** |
 | `Completeness.lean` | **0** |
-| **total** | **22** |
+| **total** | **15** |
 
 Refresh with (bypasses another agent's `lake build` lock):
 
@@ -22,6 +22,57 @@ for f in Basic Projections Division NormalFunctionals Completeness; do
     grep -c "declaration uses"
 done
 ```
+
+> **Session 70 headline — `gns_normal` was never [L], and `Projections.lean`
+> is down to two.**  Closed, all `#print axioms`-clean: **48III**
+> `gns_normal`, **53III** `vn_spectrum_extremally_disconnected` (`Basic.lean`);
+> **56XVII**.3 `ceil_supremum_3`, **58IV** `ceil_sequential_product`,
+> **59VII**.1–2 `hilb_ceil_1`, **59VII**.3 `hilb_ceil_2`, **62I** `ncpsu_floor`
+> (`Projections.lean`).
+>
+> * **48III re-costed at ~55 lines, not "large".**  Mathlib's
+>   `PositiveLinearMap.gnsStarAlgHom` *is* the GNS representation of a single
+>   `ω`, and everything else was already in `Basic.lean`: `gnsVec`,
+>   `gnsRep_gnsVec`, `gnsVec_inner`, `gnsVec_denseRange` (which gives both the
+>   cyclicity clause and the separating-vectors hypothesis of
+>   `starAlgHom_preservesDirSups_of_vectors`), `conjNP` for the np-functional
+>   `⟪η_ω(b), ϱ(·)η_ω(b)⟫ = b*ω`, and the `bas.repr.conjStarAlgEquiv` transport
+>   to `ℓ²(w)` copied verbatim from `ngns`.  The family block `gnsRepFam` was
+>   **not** needed — the singleton case is shorter without it.
+> * **53III is the thesis's own proof**, one obstacle removed: `C(spec 𝒜, ℂ)`
+>   is a von Neumann algebra by `ngelfand_vna` (session 68), so
+>   `D = {f : 0 ≤ f ≤ 1, f = 0 off U}` — the cofinal positive part of the
+>   thesis's `{f ≤ 𝟙_U}`, chosen so that directedness is a pointwise `max` —
+>   has a supremum, and Urysohn (`exists_continuous_zero_one_of_isClosed`,
+>   `characterSpace` being compact Hausdorff hence normal) pins it to
+>   `𝟙_{closure U}`.  `closure U = (⋁D)⁻¹{Re > ½}` is then open.  **An erratum
+>   fell out**: the second Urysohn paragraph says "let `y ∈ spec(𝒜)\U`" where
+>   it must say `y ∉ closure U`, or the `f` it asks for does not exist (filed).
+> * **59VII is 63III.2's vocabulary, reused twice**, as predicted: `⌊T⌉` is
+>   `starProjection ((range T).topologicalClosure)` and `⌈T⌋` is
+>   `starProjection ((ker T)ᗮ)`, each identified through `ceill_basic_2` /
+>   `ceill_basic_1` (least projection with `pT = T` resp. `Tp = T`) and
+>   `proj_le_iff`; part 3 is the same move at `V = ker (T − 1)`, whose
+>   `HasOrthogonalProjection` instance needs `ContinuousLinearMap.isClosed_ker`
+>   fed to `completeSpace_coe` by hand.
+> * **58IV is four lines of thesis text and about forty of Lean**, given 58II
+>   `floor_difference` and 57I `floor_sequential_product`: `√p = p` for a
+>   projection (`CFC.sqrt_eq_iff`) turns 57I into `p ∩ ⌊b⌋ = ⌊pbp⌋`, whence
+>   both `p ∩ r^⊥ = p − r` for `r ≤ p` and `⌊p q^⊥ p⌋ = p ∩ q^⊥`; De Morgan
+>   `p^⊥ ∪ q = (p ∩ q^⊥)^⊥` is three applications of `projSup_eq`.
+> * **62I needed one genuinely new reusable piece**, now `private` in
+>   `Projections.lean`: **`preservesDirInfs`** — *a normal positive map
+>   preserves filtered infima* — proved by running normality on `−D`.  There
+>   was nothing of this shape anywhere in `Theses/`.  With it 62I is the
+>   thesis's proof verbatim (`⌊f(a)⌋ = ⌊f(a²)⌋` by `ceil_floor_basic_3` plus
+>   `cp-cs`, iterate, then `⋀ₙ a^{2ⁿ} = ⌊a⌋` from `vna_floor`).  Note
+>   `‖f(1)‖ ≤ 1` cannot go through `CStarRing.norm_one`, which needs
+>   `Nontrivial B`; `‖1‖ = ‖1‖²` gives `‖1‖ ≤ 1` unconditionally.
+> * **56XVII.3** is the thesis's `1, ½, ⅓, …` at `aₙ = (n+1)⁻¹·1`: `⌈aₙ⌉ = 1`
+>   by `ceil_smul`, `⌈0⌉ = 0`, so `⌈·⌉` is discontinuous at `0`; the floor half
+>   is then free, since `⌈a⌉ = 1 − ⌊1 − a⌋` (`ceil_floor_basic_1`) and
+>   `a ↦ 1 − a` is a continuous self-map of `[0,1]_𝒜`.  No hand-built
+>   `Nontrivial` witness was needed — `1 ≠ 0` is the whole of it.
 
 > **Session 68 headline — the two "reduces to itself" gates fall, and both
 > to the same device.**  In `Basic.lean`: **45I**.1 `us_cont_normal`,
@@ -214,17 +265,17 @@ after session 57 and was not).
 nmiu-maps is a von Neumann subalgebra", is 47V and was proved this session,
 so 84bV is now only blocked on 84bIII.
 
-## `Projections.lean` — 7
+## `Projections.lean` — 2
 
-| line | point | decl | class |
-|---|---|---|---|
-| 1695 | **56XVII**.3 | `ceil_supremum_3` | [S] counterexample `1, ½, ⅓, …`; needs a `Nontrivial` witness built by hand |
-| 1932 | **58IV** | `ceil_sequential_product` | [S] `⌈pqp⌉ = p ∩ (p^⊥ ∪ q)` |
-| 2184 | **59VII**.1–2 | `hilb_ceil_1` | [S] `⌊T⌉`/`⌈T⌋` as range/support projections on a Hilbert space — now the natural sequel to 63III.2, which builds exactly this Hilbert-space vocabulary |
-| 2193 | **59VII**.3 | `hilb_ceil_2` | [S] `⌊T⌋` for an effect is the projection onto `{x | Tx = x}` |
-| 2738 | **62I** | `ncpsu_floor` | [S] `⌊f(a)⌋ = ⌊f(⌊a⌋)⌋`; the thesis's proof cites `cp-cs` (erratum 620.20) |
-| 4214 | **67IV**.2 | `central_projections_sums_2` | [S] 67IV.1 is proved (session 56); **not** cheap, see below |
-| 4796 | **69II** | `weakly_closed_ideal` | [S] weakly closed two-sided ideals are `cA`; substantial |
+| point | decl | class |
+|---|---|---|
+| **67IV**.2 | `central_projections_sums_2` | [S] 67IV.1 is proved (session 56); **not** cheap, see below |
+| **69II** | `weakly_closed_ideal` | [S] weakly closed two-sided ideals are `cA`; substantial |
+
+56XVII.3, 58IV, 59VII.1–3 and 62I were proved in session 70 (see the
+headline).  **`preservesDirInfs`** — normal positive maps preserve filtered
+infima — is now available (private, just above 62I); promote it if anything
+else needs it.
 
 **The parsec 690–700 chain is finished.**  69V → 69VII → 69IX → **70II** →
 **70III** are all proved (69V/69VII in session 53, 69IX in session 54, 70II and
@@ -250,22 +301,22 @@ orthogonal, and then use ultraweak compactness of the ball (**77III**,
 statement moves or the compactness argument is redone).  Cost that before
 starting.
 
-Line numbers in this table are as of session 68.  Locate by name.
+Locate by name; line numbers are not recorded.
 
-## `Basic.lean` — 10
+## `Basic.lean` — 8
 
-| line | point | decl | class |
-|---|---|---|---|
-| 1598 | **43II**.11 | `vn_counterexamples_11` | [S] the only survivor of the nine (unbounded functional + Riesz on finite-dimensional subspaces) |
-| 3039 | **45I**.2 | `normal_not_us_cont` | [S] the transpose on `B(ℓ²)` |
-| 4172 | **48III** | `gns_normal` | [S] *(was [L])* — Mathlib **does** have GNS, and the file's own `gnsHilbFam`/`gnsRepFam` block covers a family; what is left is the singleton instance plus cyclicity and the transport to `ℓ²(ι)` along a Hilbert basis, as `nvna_repr` does it |
-| 5025 | **51VII**.1 | `vna_of_faithful_countably_normal_1` | [S] |
-| 5035 | **51VII**.2 | `vna_of_faithful_countably_normal_2` | [B] on 51VII.1 |
-| 5056 | **51IX** | `Linfty_vn` | [L] no `L^∞` carrier in Mathlib (FIXME) |
-| 5237 | **53III** | `vn_spectrum_extremally_disconnected` | [S] *(was [B] on 53II, now proved)* — needs suprema in `C(spec A)` and Urysohn, not 53II alone |
-| 5371 | **54XI**.1 | `cvn_faithful_1` | [L] measure on the almost-clopen σ-algebra; large |
-| 5387 | **54XI**.2 | `cvn_faithful_2` | [B] on 54XI.1 |
-| 5402 | **54XI**.3 | `cvn_faithful_3` | [B] on 54XI.1 |
+| point | decl | class |
+|---|---|---|
+| **43II**.11 | `vn_counterexamples_11` | [S] the only survivor of the nine (unbounded functional + Riesz on finite-dimensional subspaces) |
+| **45I**.2 | `normal_not_us_cont` | [S] the transpose on `B(ℓ²)`, but re-costed **high** in session 70: Mathlib has no transpose for `B(ℓ²)` and no conjugation on `lp`, so `T ↦ JT*J` must be built (`J` conjugate-linear isometric involution) before either half starts |
+| **51VII**.1 | `vna_of_faithful_countably_normal_1` | [S] — the thesis's proof (vn.tex 51VIII) is complete and elementary; costed at ~200–250 lines in session 70, the work being the recursive choice of an increasing sequence `aₙ ∈ D` with `sup ₙτ(aₙ) = sup_{d∈D} τ(d)`, plus the `ℂ`-vs-`ℝ` bookkeeping for `τ` on self-adjoints.  51VII.2 falls out of the same construction — prove them together |
+| **51VII**.2 | `vna_of_faithful_countably_normal_2` | [B] on 51VII.1 |
+| **51IX** | `Linfty_vn` | [L] no `L^∞` carrier in Mathlib (FIXME) |
+| **54XI**.1 | `cvn_faithful_1` | [L] measure on the almost-clopen σ-algebra; large |
+| **54XI**.2 | `cvn_faithful_2` | [B] on 54XI.1 |
+| **54XI**.3 | `cvn_faithful_3` | [B] on 54XI.1 |
+
+48III and 53III were proved in session 70 (see the headline).
 
 ### The 43II counterexamples: eight down, one to go
 

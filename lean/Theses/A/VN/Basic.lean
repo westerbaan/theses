@@ -4165,18 +4165,73 @@ end NGNS
 
 end NGNSConstruction
 
+set_option maxHeartbeats 1000000 in
 /-- **48III** (vn.tex:1091, Proposition): the GNS representation
 `ρ_ω : A → B(H_ω)` of an np-functional `ω` on a von Neumann algebra is
-normal.  (The GNS construction, cstar.tex 30VI, is not formalized, so this
-is rendered as: `ω` admits a *normal* cyclic representation.) -/
+normal.  (Rendered as: `ω` admits a *normal* cyclic representation, on
+`ℓ²(ι)`, as `ngns` does it; the underlying GNS construction is Mathlib's
+`PositiveLinearMap.gnsStarAlgHom`.) -/
 theorem gns_normal [VonNeumannAlgebra A] (ω : NPFunctional A) :
     ∃ (ι : Type u) (ρ : MIUMap A
         (lp (fun _ : ι => ℂ) 2 →L[ℂ] lp (fun _ : ι => ℂ) 2))
       (ξ : lp (fun _ : ι => ℂ) 2),
       (∀ a : A, ω a = ⟪ξ, ρ a ξ⟫) ∧
         Dense (Set.range fun a : A => ρ a ξ) ∧
-        PreservesDirSups ⇑ρ :=
-  sorry
+        PreservesDirSups ⇑ρ := by
+  classical
+  -- the GNS representation of the single functional `ω`, with cyclic vector
+  -- `η_ω(1)`
+  set H : Type u := ω.toPositiveLinearMap.GNS with hH
+  set ρ : A →⋆ₐ[ℂ] (H →L[ℂ] H) := ω.toPositiveLinearMap.gnsStarAlgHom with hρ
+  set ξ : H := gnsVec ω 1 with hξ
+  have hdense : Dense (Set.range (gnsVec ω)) := gnsVec_denseRange ω
+  have hρξ : ∀ a : A, ρ a ξ = gnsVec ω a := by
+    intro a
+    rw [hρ, hξ, gnsRep_gnsVec, mul_one]
+  -- `ω` is the vector functional of `ξ`
+  have hvec : ∀ a : A, ω a = (⟪ξ, ρ a ξ⟫ : ℂ) := by
+    intro a
+    rw [hρξ, hξ, gnsVec_inner, star_one, one_mul]
+  -- the cyclic vector is cyclic
+  have hcyc : Dense (Set.range fun a : A => ρ a ξ) := by
+    have hset : (Set.range fun a : A => ρ a ξ) = Set.range (gnsVec ω) := by
+      ext y; constructor
+      · rintro ⟨a, rfl⟩; exact ⟨a, (hρξ a).symm⟩
+      · rintro ⟨a, rfl⟩; exact ⟨a, hρξ a⟩
+    rw [hset]; exact hdense
+  -- normality of `ρ`, by **48II** applied to the (separating) elementary
+  -- vectors `η_ω(b)`
+  have hnormal : PreservesDirSups ⇑ρ := by
+    refine starAlgHom_preservesDirSups_of_vectors ρ (Set.range (gnsVec ω)) ?_ ?_
+    · intro R hR
+      refine ContinuousLinearMap.ext ?_
+      exact fun y => congrFun (Continuous.ext_on hdense R.continuous continuous_const
+        (fun x hx => hR x hx)) y
+    · rintro _ ⟨b, rfl⟩
+      refine ⟨conjNP b ω, fun a => ?_⟩
+      rw [hρ, gnsRep_gnsVec, gnsVec_inner, conjNP_apply, mul_assoc]
+  -- transport to `ℓ²(w)` along a Hilbert basis, as in `ngns`
+  obtain ⟨w, bas, -⟩ := exists_hilbertBasis ℂ H
+  set Φ : (H →L[ℂ] H) ≃⋆ₐ[ℂ]
+      (lp (fun _ : w => ℂ) 2 →L[ℂ] lp (fun _ : w => ℂ) 2) :=
+    bas.repr.conjStarAlgEquiv with hΦ
+  set g : A →⋆ₐ[ℂ] (lp (fun _ : w => ℂ) 2 →L[ℂ] lp (fun _ : w => ℂ) 2) :=
+    Φ.toStarAlgHom.comp ρ with hg
+  have hΦP : PreservesDirSups ⇑(starAlgHomP Φ.toStarAlgHom) :=
+    starAlgEquiv_preservesDirSups Φ
+  have hgn : PreservesDirSups ⇑g :=
+    preservesDirSups_pmap_comp (starAlgHomP ρ) hnormal
+      (starAlgHomP Φ.toStarAlgHom) hΦP
+  have happ : ∀ a : A, g a (bas.repr ξ) = bas.repr (ρ a ξ) := by
+    intro a; rw [hg, hΦ]; simp
+  refine ⟨w, g, bas.repr ξ, fun a => ?_, ?_, hgn⟩
+  · rw [happ, LinearIsometryEquiv.inner_map_map, hvec]
+  · have heq : (fun a : A => g a (bas.repr ξ))
+        = (bas.repr : H → lp (fun _ : w => ℂ) 2) ∘ fun a : A => ρ a ξ := by
+      funext a; exact happ a
+    rw [heq]
+    exact DenseRange.comp bas.repr.surjective.denseRange hcyc
+      bas.repr.continuous
 
 -- as for `gnsRep_normal`, the `lp`-based `⊕_ω ℋ_ω` makes the instance defeq
 -- checks against `B(H)`'s C*-algebra structure expensive
@@ -5235,8 +5290,112 @@ theorem ngelfand_normal [VonNeumannAlgebra A] :
 Proposition): the spectrum of a commutative von Neumann algebra is
 extremally disconnected: the closure of every open set is open. -/
 theorem vn_spectrum_extremally_disconnected [VonNeumannAlgebra A] :
-    ExtremallyDisconnected (characterSpace ℂ A) :=
-  sorry
+    ExtremallyDisconnected (characterSpace ℂ A) := by
+  have hvna := ngelfand_vna A
+  refine ⟨fun U hU => ?_⟩
+  -- the real-to-complex embedding of continuous functions, into the
+  -- self-adjoint part
+  set rc : C(characterSpace ℂ A, ℝ) → selfAdjoint C(characterSpace ℂ A, ℂ) :=
+    fun f => ⟨⟨fun x => (f x : ℂ), Complex.continuous_ofReal.comp f.continuous⟩,
+      selfAdjoint.mem_iff.mpr (by ext x; simp)⟩ with hrc
+  have hrcapp : ∀ (f : C(characterSpace ℂ A, ℝ)) (x : characterSpace ℂ A),
+      ((rc f : C(characterSpace ℂ A, ℂ))) x = (f x : ℂ) := fun f x => rfl
+  -- `D = {f ∈ C(spec A) : 0 ≤ f ≤ 1, f = 0 off U}`, a cofinal subset of the
+  -- thesis's `{f : f ≤ 1_U}`
+  set D : Set (selfAdjoint C(characterSpace ℂ A, ℂ)) :=
+    {g | (∀ x, 0 ≤ (g : C(characterSpace ℂ A, ℂ)) x ∧
+            (g : C(characterSpace ℂ A, ℂ)) x ≤ 1) ∧
+          ∀ x ∉ U, (g : C(characterSpace ℂ A, ℂ)) x = 0} with hDdef
+  have hzero : (0 : selfAdjoint C(characterSpace ℂ A, ℂ)) ∈ D :=
+    ⟨fun _ => ⟨le_rfl, zero_le_one⟩, fun _ _ => rfl⟩
+  have hne : D.Nonempty := ⟨0, hzero⟩
+  set one' : selfAdjoint C(characterSpace ℂ A, ℂ) :=
+    ⟨1, selfAdjoint.mem_iff.mpr (IsSelfAdjoint.one _)⟩ with hone'
+  have hone : ∀ g ∈ D, g ≤ one' := fun g hg =>
+    Subtype.coe_le_coe.mp (ContinuousMap.le_def.mpr fun x => (hg.1 x).2)
+  have hbdd : BddAbove D := ⟨one', hone⟩
+  have hdir : DirectedOn (· ≤ ·) D := by
+    intro g hg h hh
+    have hcont : Continuous fun x => max ((g : C(characterSpace ℂ A, ℂ)) x).re
+        ((h : C(characterSpace ℂ A, ℂ)) x).re :=
+      (Complex.continuous_re.comp (g : C(characterSpace ℂ A, ℂ)).continuous).max
+        (Complex.continuous_re.comp (h : C(characterSpace ℂ A, ℂ)).continuous)
+    set mR : C(characterSpace ℂ A, ℝ) := ⟨_, hcont⟩ with hmR
+    have hmRapp : ∀ x, mR x = max ((g : C(characterSpace ℂ A, ℂ)) x).re
+        ((h : C(characterSpace ℂ A, ℂ)) x).re := fun _ => rfl
+    refine ⟨rc mR, ⟨fun x => ?_, fun x hx => ?_⟩, ?_, ?_⟩
+    · rw [hrcapp, hmRapp]
+      refine ⟨?_, ?_⟩
+      · exact_mod_cast le_max_of_le_left (Complex.nonneg_iff.mp (hg.1 x).1).1
+      · have h1 := (Complex.le_def.mp (hg.1 x).2).1
+        have h2 := (Complex.le_def.mp (hh.1 x).2).1
+        rw [Complex.one_re] at h1 h2
+        exact_mod_cast max_le h1 h2
+    · rw [hrcapp, hmRapp, hg.2 x hx, hh.2 x hx]
+      simp
+    · refine Subtype.coe_le_coe.mp (ContinuousMap.le_def.mpr fun x => ?_)
+      rw [hrcapp, hmRapp]
+      exact Complex.le_def.mpr ⟨by simp,
+        by simp [← (Complex.nonneg_iff.mp (hg.1 x).1).2]⟩
+    · refine Subtype.coe_le_coe.mp (ContinuousMap.le_def.mpr fun x => ?_)
+      rw [hrcapp, hmRapp]
+      exact Complex.le_def.mpr ⟨by simp,
+        by simp [← (Complex.nonneg_iff.mp (hh.1 x).1).2]⟩
+  set s : selfAdjoint C(characterSpace ℂ A, ℂ) := dirSup D ⟨hne, hdir, hbdd⟩ with hs
+  have hlub : IsLUB D s := isLUB_dirSup D ⟨hne, hdir, hbdd⟩
+  have hs0 : ∀ x, 0 ≤ (s : C(characterSpace ℂ A, ℂ)) x := fun x =>
+    ContinuousMap.le_def.mp (Subtype.coe_le_coe.mpr (hlub.1 hzero)) x
+  have hs1 : ∀ x, (s : C(characterSpace ℂ A, ℂ)) x ≤ 1 := fun x =>
+    ContinuousMap.le_def.mp (Subtype.coe_le_coe.mpr (hlub.2 hone)) x
+  -- Urysohn: on `U` the supremum is `1`
+  have hU1 : ∀ x ∈ U, (s : C(characterSpace ℂ A, ℂ)) x = 1 := by
+    intro x hx
+    obtain ⟨f, hf0, hf1, hf01⟩ := exists_continuous_zero_one_of_isClosed
+      (isClosed_compl_iff.mpr hU) (isClosed_singleton (x := x))
+      (Set.disjoint_singleton_right.mpr (by simpa using hx))
+    have hmem : rc f ∈ D := by
+      refine ⟨fun y => ⟨?_, ?_⟩, fun y hy => ?_⟩
+      · rw [hrcapp]; exact_mod_cast (hf01 y).1
+      · rw [hrcapp]; exact_mod_cast (hf01 y).2
+      · rw [hrcapp, hf0 hy]; simp
+    have hle := ContinuousMap.le_def.mp (Subtype.coe_le_coe.mpr (hlub.1 hmem)) x
+    rw [hrcapp, hf1 rfl] at hle
+    exact le_antisymm (hs1 x) (by exact_mod_cast hle)
+  -- off the closure of `U` the supremum is `0`
+  have hU0 : ∀ x ∉ closure U, (s : C(characterSpace ℂ A, ℂ)) x = 0 := by
+    intro x hx
+    obtain ⟨f, hf0, hf1, hf01⟩ := exists_continuous_zero_one_of_isClosed
+      (isClosed_singleton (x := x)) isClosed_closure
+      (Set.disjoint_singleton_left.mpr hx)
+    have hub : ∀ g ∈ D, g ≤ rc f := by
+      intro g hg
+      refine Subtype.coe_le_coe.mp (ContinuousMap.le_def.mpr fun y => ?_)
+      rw [hrcapp]
+      by_cases hy : y ∈ U
+      · rw [hf1 (subset_closure hy)]
+        simpa using (hg.1 y).2
+      · rw [hg.2 y hy]
+        exact_mod_cast (hf01 y).1
+    have hle := ContinuousMap.le_def.mp (Subtype.coe_le_coe.mpr (hlub.2 hub)) x
+    rw [hrcapp, hf0 rfl] at hle
+    exact le_antisymm (by simpa using hle) (hs0 x)
+  -- hence `⋁ D` is the indicator of `closure U`, which is therefore open
+  have hcl : closure U = (s : C(characterSpace ℂ A, ℂ)) ⁻¹' {z : ℂ | (1 / 2 : ℝ) < z.re} := by
+    apply Set.eq_of_subset_of_subset
+    · have hclosed : IsClosed {y | (s : C(characterSpace ℂ A, ℂ)) y = 1} :=
+        isClosed_eq (s : C(characterSpace ℂ A, ℂ)).continuous continuous_const
+      intro x hx
+      have hx1 : (s : C(characterSpace ℂ A, ℂ)) x = 1 :=
+        hclosed.closure_subset_iff.mpr hU1 hx
+      simp only [Set.mem_preimage, Set.mem_ofPred_eq, hx1, Complex.one_re]
+      norm_num
+    · intro x hx
+      by_contra hxc
+      rw [Set.mem_preimage, Set.mem_ofPred_eq, hU0 x hxc] at hx
+      norm_num at hx
+  rw [hcl]
+  exact IsOpen.preimage (s : C(characterSpace ℂ A, ℂ)).continuous
+    (isOpen_lt continuous_const Complex.continuous_re)
 
 end Gelfand
 
