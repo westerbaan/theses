@@ -8,7 +8,7 @@ arXiv:1804.02203), chapter 1: C*-algebras — cstar.tex, lines 1–1713.
                              elements, morphisms, invertibles, spectrum,
                              spectral permanence)
 
-Statements only; every proof is `sorry`.  See CONVENTIONS.md for the
+All statements of parsecs 20–110 are proved.  See CONVENTIONS.md for the
 numbering (**4V** = parsec 40, point 50) and naming conventions.
 -/
 import Theses.Common

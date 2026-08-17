@@ -28,6 +28,7 @@ time the sources are edited.
 | **11XV.3** | "`ζ^{2k+1} ∉ ℝ` when `k ≠ ½(n−1)`" | should be `k ≢ (n−1)/2 mod n`; literally false at `n=1` | OPEN (harmless) |
 | **20II.1** | proof needs `f a` self-adjoint, never stated; not part of `IsPositiveMap` | derive from `a = a⁺ − a⁻` | OPEN |
 | **32I** | definiteness stated once, but used in the *first* argument for module-linearity and the *second* for uniqueness of the adjoint | state both | OPEN |
+| **32XV**.3 (after erratum `parsec-320.150`) | the exercise says the subunital vector functionals are order separating and asks the reader to "conclude" 1/2/3. Part 3 does **not** follow: the model argument (250.30 for Hilbert spaces) reduces to `T ≥ 0` through **21VII** `order-separating-norm`, which is stated for **pu**-maps, and the erratum's whole point is that these functionals are only *subunital* (there may be no vector states at all). The step "`ω(a) ≤ ‖a‖·1` hence `a ≤ ‖a‖·1`" needs `ω(1) = 1` and is false for subunital `ω` | give part 3 a direct argument (ours: run 250.30's `‖⟨x,Tx⟩‖ = ‖T^{1/2}x‖²` separately on `a⁺` and `a⁻`, then `‖a‖ = ‖a⁺‖ ∨ ‖a⁻‖`), or restrict 21VII's use to the pu case. Both 32XV.2 and .3 are formalized and proved this way | OPEN |
 | **33I.2** | the surjectivity half never uses the adjointability hypothesis | redundant, harmless | OPEN |
 | **34VI.1** | solution slot `parsec-340.60` is an empty `\TODO{}` | — | OPEN |
 | **34XVI** | derives `cp-russo-dye` from Russo–Dye (**34aVIII**), a *later* point | forward reference; we derive it from 34XIV instead | OPEN |

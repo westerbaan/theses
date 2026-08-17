@@ -11,8 +11,10 @@ arXiv:1804.02203), chapter 1: C*-algebras — cstar.tex, lines 4959–5872.
                  Cauchy–Schwarz, Russo–Dye for cp-maps, Choi's lemma
     parsec 341:  unitaries, Russo–Dye, ‖f‖ = ‖f(1)‖ for positive maps
 
-Statements only; every proof is `sorry`.  See CONVENTIONS.md for the
-numbering (**34V** = parsec 340, point 50) and naming conventions.
+All statements of parsecs 320–341 are proved except two: **34VII**
+`ccstar_pos_mat` and the **34IX**.2 `cp_commutative_dom` that depends on it.
+See CONVENTIONS.md for the numbering (**34V** = parsec 340, point 50) and
+naming conventions.
 -/
 import Theses.A.CStar.Representation
 
@@ -439,30 +441,335 @@ theorem chilb_vector_states_1 [CompleteSpace X] (T S : X →L[ℂ] X)
     rw [hU] at hy
     simpa [sub_eq_zero] using hy
 
+/-! ### `B^a(X)` as a C*-algebra
+
+**32XIII** (`bax_cstar`) shows that the adjointable bounded module maps form a
+*closed* subalgebra of the bounded operators on `X`; combined with **32III**
+(the adjoint is an involution, and behaves well under sums, scalars and
+composites) and **32XII** (the C*-identity) that makes `B^a(X)` a C*-algebra.
+The block below packages exactly that: the subalgebra `Bax 𝒜 X` of `X →L[ℂ] X`
+carrying a `CStarAlgebra` structure whose involution is `T ↦ T*`, together with
+its spectral order.  It is the setting in which the proofs of **32XV**.2 and
+**32XV**.3 run. -/
+
+section Bax
+
+variable (𝒜 X) in
+/-- `B^a(X)`: the adjointable bounded module maps on `X`, as a subalgebra of
+`X →L[ℂ] X` (**32XIII**). -/
+private def Bax : Subalgebra ℂ (X →L[ℂ] X) where
+  carrier := {T | ModuleAdjointable 𝒜 ⇑T}
+  mul_mem' := by
+    rintro T S ⟨T', hT⟩ ⟨S', hS⟩
+    exact ⟨S' ∘ T', moduleAdjointTo_comp (⇑S) (⇑T) S' T' hS hT⟩
+  one_mem' := ⟨id, fun _ _ => rfl⟩
+  add_mem' := by
+    rintro T S ⟨T', hT⟩ ⟨S', hS⟩
+    exact ⟨fun y => T' y + S' y, (moduleAdjointTo_add_smul _ _ _ _ 0 hT hS).1⟩
+  zero_mem' := ⟨fun _ => 0, fun _ _ => by simp⟩
+  algebraMap_mem' c := ⟨fun y => star c • y, fun x y => by
+    simp only [Algebra.algebraMap_eq_smul_one, ContinuousLinearMap.coe_smul',
+      Pi.smul_apply, ContinuousLinearMap.one_apply,
+      CStarModule.inner_smul_left_complex, CStarModule.inner_smul_right_complex]⟩
+
+private theorem bax_norm_coe (T : Bax 𝒜 X) : ‖T‖ = ‖(T : X →L[ℂ] X)‖ := rfl
+
+private theorem bax_exists_adjoint (T : Bax 𝒜 X) :
+    ∃ S : X →L[ℂ] X, ModuleAdjointTo 𝒜 ⇑(T : X →L[ℂ] X) ⇑S := by
+  obtain ⟨S, hS⟩ := T.2
+  exact exists_clm_adjointTo hS
+
+private noncomputable instance : Star (Bax 𝒜 X) where
+  star T := ⟨Classical.choose (bax_exists_adjoint T),
+    ⟨_, moduleAdjointTo_symm _ _ (Classical.choose_spec (bax_exists_adjoint T))⟩⟩
+
+/-- The involution of `Bax 𝒜 X` is the adjoint. -/
+private theorem bax_star_spec (T : Bax 𝒜 X) :
+    ModuleAdjointTo 𝒜 ⇑(T : X →L[ℂ] X) ⇑((star T : Bax 𝒜 X) : X →L[ℂ] X) :=
+  Classical.choose_spec (bax_exists_adjoint T)
+
+private theorem bax_star_eq {T S : Bax 𝒜 X}
+    (h : ModuleAdjointTo 𝒜 ⇑(T : X →L[ℂ] X) ⇑(S : X →L[ℂ] X)) : star T = S :=
+  Subtype.ext (DFunLike.coe_injective
+    (moduleAdjointTo_unique _ _ _ (bax_star_spec T) h))
+
+private noncomputable instance : StarRing (Bax 𝒜 X) where
+  star_involutive T := bax_star_eq (moduleAdjointTo_symm _ _ (bax_star_spec T))
+  star_mul T S := bax_star_eq (moduleAdjointTo_comp (⇑(S : X →L[ℂ] X)) (⇑(T : X →L[ℂ] X))
+    (⇑((star S : Bax 𝒜 X) : X →L[ℂ] X)) (⇑((star T : Bax 𝒜 X) : X →L[ℂ] X))
+    (bax_star_spec S) (bax_star_spec T))
+  star_add T S :=
+    bax_star_eq (moduleAdjointTo_add_smul _ _ _ _ 0 (bax_star_spec T) (bax_star_spec S)).1
+
+private instance : StarModule ℂ (Bax 𝒜 X) where
+  star_smul c T :=
+    bax_star_eq (moduleAdjointTo_add_smul _ _ _ _ c (bax_star_spec T) (bax_star_spec T)).2
+
+private instance : CStarRing (Bax 𝒜 X) where
+  norm_mul_self_le T := by
+    have h : ‖(star T * T : Bax 𝒜 X)‖ = ‖T‖ ^ 2 :=
+      module_maps_cstar_identity (𝒜 := 𝒜) (T : X →L[ℂ] X)
+        ((star T : Bax 𝒜 X) : X →L[ℂ] X) (bax_star_spec T)
+    rw [h, sq]
+
+private instance [CompleteSpace X] : CompleteSpace (Bax 𝒜 X) :=
+  (bax_cstar (𝒜 := 𝒜) (X := X)).completeSpace_coe
+
+private noncomputable instance [CompleteSpace X] : CStarAlgebra (Bax 𝒜 X) where
+
+private noncomputable instance [CompleteSpace X] : PartialOrder (Bax 𝒜 X) :=
+  CStarAlgebra.spectralOrder _
+
+private instance [CompleteSpace X] : StarOrderedRing (Bax 𝒜 X) :=
+  CStarAlgebra.spectralOrderedRing _
+
+
+/-- `⟨x, (S* U S) x⟩ = ⟨Sx, U (Sx)⟩` in `B^a(X)`. -/
+private theorem bax_inner_conj (S U : Bax 𝒜 X) (x : X) :
+    inner 𝒜 x (((star S * U * S : Bax 𝒜 X) : X →L[ℂ] X) x)
+      = inner 𝒜 ((S : X →L[ℂ] X) x) ((U : X →L[ℂ] X) ((S : X →L[ℂ] X) x)) :=
+  (bax_star_spec S x _).symm
+
+/-- `⟨x, (S* S) x⟩ = ⟨Sx, Sx⟩` in `B^a(X)`. -/
+private theorem bax_inner_star_mul (S : Bax 𝒜 X) (x : X) :
+    inner 𝒜 x (((star S * S : Bax 𝒜 X) : X →L[ℂ] X) x)
+      = inner 𝒜 ((S : X →L[ℂ] X) x) ((S : X →L[ℂ] X) x) :=
+  (bax_star_spec S x _).symm
+
+/-- One half of **32XV**.2 inside `B^a(X)`: a positive operator has positive
+vector functionals. -/
+private theorem bax_inner_nonneg [CompleteSpace X] {U : Bax 𝒜 X} (hU : 0 ≤ U) (x : X) :
+    0 ≤ inner 𝒜 x ((U : X →L[ℂ] X) x) := by
+  obtain ⟨R, hR⟩ := CStarAlgebra.nonneg_iff_eq_star_mul_self.mp hU
+  rw [hR, bax_inner_star_mul]
+  exact CStarModule.inner_self_nonneg
+
+/-- `a⁻ a a⁻ = -(a⁻)³` for self-adjoint `a` (the negative part absorbs the
+positive part).  Cf. `exists_negPart` below, of which this is the first half;
+it is repeated here because that lemma is stated further down the file. -/
+private theorem negPart_conj_aux {M : Type*} [CStarAlgebra M] [PartialOrder M]
+    [StarOrderedRing M] {a : M} (hsa : IsSelfAdjoint a) :
+    a⁻ * a * a⁻ = -(a⁻ * a⁻ * a⁻) := by
+  conv_lhs => arg 1; arg 2; rw [← CFC.posPart_sub_negPart a hsa]
+  rw [mul_sub, sub_mul, CFC.negPart_mul_posPart, zero_mul, zero_sub]
+
+/-- A self-adjoint element whose negative part cubes to zero is positive.  Cf.
+`exists_negPart` below, of which this is the second half. -/
+private theorem nonneg_of_negPart_cube {M : Type*} [CStarAlgebra M] [PartialOrder M]
+    [StarOrderedRing M] {a : M} (hsa : IsSelfAdjoint a) (h3 : a⁻ * a⁻ * a⁻ = 0) :
+    0 ≤ a := by
+  have hsab : IsSelfAdjoint (a⁻) := (CFC.negPart_nonneg a).isSelfAdjoint
+  have h4 : star (a⁻ * a⁻) * (a⁻ * a⁻) = 0 := by
+    rw [star_mul, hsab.star_eq]
+    calc a⁻ * a⁻ * (a⁻ * a⁻) = a⁻ * (a⁻ * a⁻ * a⁻) := by noncomm_ring
+      _ = 0 := by rw [h3, mul_zero]
+  have hbb : a⁻ * a⁻ = 0 := CStarRing.star_mul_self_eq_zero_iff _ |>.mp h4
+  have hb : a⁻ = 0 := by
+    refine CStarRing.star_mul_self_eq_zero_iff _ |>.mp ?_
+    rw [hsab.star_eq, hbb]
+  exact CStarAlgebra.nonneg_iff_isSelfAdjoint_and_negPart_eq_zero.mpr ⟨hsa, hb⟩
+
+end Bax
+
 /-- **32XV** (`chilb-vector-states-order-separating`, cstar.tex:5268,
 Exercise), part 2: `0 ≤ T` in `B^a(X)` — i.e. `T = R* R` for some
 adjointable bounded `R` — iff `0 ≤ ⟨x, Tx⟩` for all `x`. -/
 theorem chilb_vector_states_2 [CompleteSpace X] (T : X →L[ℂ] X)
     (hT : ModuleAdjointable 𝒜 ⇑T) :
     (∀ x : X, 0 ≤ inner 𝒜 x (T x)) ↔
-      ∃ R R' : X →L[ℂ] X, ModuleAdjointTo 𝒜 ⇑R ⇑R' ∧ T = R'.comp R :=
-  sorry
+      ∃ R R' : X →L[ℂ] X, ModuleAdjointTo 𝒜 ⇑R ⇑R' ∧ T = R'.comp R := by
+  constructor
+  · intro hpos
+    let a : Bax 𝒜 X := ⟨T, hT⟩
+    -- `T` is self-adjoint by part 1
+    have hsa : IsSelfAdjoint a :=
+      Subtype.ext ((chilb_vector_states_1 (𝒜 := 𝒜) T _ (bax_star_spec a)).mpr
+        fun x _ => (hpos x).isSelfAdjoint).symm
+    -- write the negative part of `a` as `N = u²` and put `v = u³`, so that
+    -- `N³ = v* v`
+    have hNn : (0 : Bax 𝒜 X) ≤ a⁻ := CFC.negPart_nonneg a
+    have hNsa : star (a⁻ : Bax 𝒜 X) = a⁻ := hNn.isSelfAdjoint.star_eq
+    obtain ⟨u, hunn, huu⟩ : ∃ u : Bax 𝒜 X, 0 ≤ u ∧ u * u = a⁻ :=
+      ⟨CFC.sqrt _, CFC.sqrt_nonneg _, CFC.sqrt_mul_sqrt_self _ hNn⟩
+    have husa : star u = u := hunn.isSelfAdjoint.star_eq
+    obtain ⟨v, hvsa, hv⟩ : ∃ v : Bax 𝒜 X, star v = v ∧
+        star v * v = (a⁻ : Bax 𝒜 X) * a⁻ * a⁻ := by
+      have h1 : star (u * u * u) = u * u * u := by
+        simp only [star_mul, husa]; noncomm_ring
+      exact ⟨u * u * u, h1, by rw [h1, ← huu]; noncomm_ring⟩
+    -- `⟨x, (N a N) x⟩ = ⟨Nx, a (Nx)⟩ ≥ 0`, while `N a N = -N³ = -(v* v)`
+    have hvzero : ∀ x : X, (v : X →L[ℂ] X) x = 0 := by
+      intro x
+      have h1 : (0 : 𝒜) ≤ inner 𝒜 x ((((a⁻ : Bax 𝒜 X) * a * a⁻ : Bax 𝒜 X) : X →L[ℂ] X) x) := by
+        rw [show ((a⁻ : Bax 𝒜 X) * a * a⁻ : Bax 𝒜 X) = star (a⁻ : Bax 𝒜 X) * a * a⁻ by
+          rw [hNsa], bax_inner_conj]
+        exact hpos _
+      rw [negPart_conj_aux hsa, ← hv] at h1
+      have h2 : inner 𝒜 ((v : X →L[ℂ] X) x) ((v : X →L[ℂ] X) x) ≤ (0 : 𝒜) := by
+        rw [← bax_inner_star_mul v x]
+        simpa using h1
+      exact CStarModule.inner_self.mp
+        (le_antisymm h2 CStarModule.inner_self_nonneg)
+    have hcube : (a⁻ : Bax 𝒜 X) * a⁻ * a⁻ = 0 := by
+      have hv0 : v = 0 := Subtype.ext (ContinuousLinearMap.ext hvzero)
+      rw [← hv, hv0, star_zero, mul_zero]
+    obtain ⟨R, hR⟩ :=
+      CStarAlgebra.nonneg_iff_eq_star_mul_self.mp (nonneg_of_negPart_cube hsa hcube)
+    exact ⟨(R : X →L[ℂ] X), ((star R : Bax 𝒜 X) : X →L[ℂ] X), bax_star_spec R,
+      congrArg (fun z : Bax 𝒜 X => (z : X →L[ℂ] X)) hR⟩
+  · rintro ⟨R, R', h, rfl⟩ x
+    rw [ContinuousLinearMap.coe_comp, Function.comp_apply, ← h x (R x)]
+    exact CStarModule.inner_self_nonneg
 
+set_option maxHeartbeats 400000 in
 /-- **32XV** (`chilb-vector-states-order-separating`, cstar.tex:5268,
 Exercise), part 3: `‖T‖ = sup_{‖x‖ ≤ 1} ‖⟨x, Tx⟩‖` for self-adjoint `T`. -/
 theorem chilb_vector_states_3 [CompleteSpace X] (T : X →L[ℂ] X)
     (h : ModuleAdjointTo 𝒜 ⇑T ⇑T) :
-    ‖T‖ = ⨆ x : {x : X // ‖x‖ ≤ 1}, ‖inner 𝒜 (x : X) (T x)‖ :=
-  sorry
+    ‖T‖ = ⨆ x : {x : X // ‖x‖ ≤ 1}, ‖inner 𝒜 (x : X) (T x)‖ := by
+  haveI : Nonempty {x : X // ‖x‖ ≤ 1} := ⟨⟨0, by simp⟩⟩
+  obtain ⟨a, ha⟩ : ∃ a : Bax 𝒜 X, (a : X →L[ℂ] X) = T := ⟨⟨T, ⟨⇑T, h⟩⟩, rfl⟩
+  have hsa : IsSelfAdjoint a := bax_star_eq (by rw [ha]; exact h)
+  have hanorm : ‖a‖ = ‖T‖ := by rw [bax_norm_coe, ha]
+  set F : {x : X // ‖x‖ ≤ 1} → ℝ := fun x => ‖inner 𝒜 (x : X) (T x)‖ with hF
+  -- the supremum is bounded by `‖T‖` (**32IX**.2)
+  have hb : ∀ x : {x : X // ‖x‖ ≤ 1}, F x ≤ ‖T‖ := by
+    intro x
+    calc F x ≤ ‖(x : X)‖ * ‖T (x : X)‖ := CStarModule.norm_inner_le X
+      _ ≤ 1 * (‖T‖ * 1) := by
+          gcongr
+          · exact x.2
+          · exact (T.le_opNorm (x : X)).trans (by nlinarith [norm_nonneg T, x.2])
+      _ = ‖T‖ := by ring
+  have hbdd : BddAbove (Set.range F) := ⟨‖T‖, by rintro _ ⟨x, rfl⟩; exact hb x⟩
+  have hMle : (⨆ x : {x : X // ‖x‖ ≤ 1}, F x) ≤ ‖T‖ := ciSup_le hb
+  set M : ℝ := ⨆ x : {x : X // ‖x‖ ≤ 1}, F x with hM
+  have hM0 : 0 ≤ M := by
+    have := le_ciSup hbdd (⟨0, by simp⟩ : {x : X // ‖x‖ ≤ 1})
+    simpa [hF] using this
+  refine le_antisymm ?_ hMle
+  -- The heart of the matter: `‖p‖ ≤ M` whenever `p = s²` with `s* a s = ± p* p`
+  -- for a self-adjoint `s`, since then `‖⟨s x, a (s x)⟩‖ = ‖p x‖²` while
+  -- `‖s x‖ ≤ ‖s‖ ‖x‖` and `‖s‖² = ‖p‖`.
+  have key : ∀ p s : Bax 𝒜 X, star s = s → s * s = p →
+      (star s * a * s = star p * p ∨ star s * a * s = -(star p * p)) → ‖p‖ ≤ M := by
+    intro p s hssa hsp hcase
+    have hns : ‖s‖ ^ 2 = ‖p‖ := by
+      have hn : ‖star s * s‖ = ‖s‖ * ‖s‖ := CStarRing.norm_star_mul_self
+      rw [hssa, hsp] at hn
+      rw [sq, ← hn]
+    rcases eq_or_lt_of_le (norm_nonneg s) with h0 | h0
+    · have hp0 : ‖p‖ = 0 := by rw [← hns, ← h0]; ring
+      rw [hp0]; exact hM0
+    have hquad : ∀ x : X, ‖(p : X →L[ℂ] X) x‖ ^ 2 ≤ M * ‖p‖ * ‖x‖ ^ 2 := by
+      intro x
+      rcases eq_or_ne x 0 with rfl | hx
+      · simp
+      have hxn : (0 : ℝ) < ‖x‖ := norm_pos_iff.mpr hx
+      obtain ⟨c, hc⟩ : ∃ c : ℝ, c = (‖s‖ * ‖x‖)⁻¹ := ⟨_, rfl⟩
+      have hcpos : 0 < c := by rw [hc]; positivity
+      obtain ⟨y, hy⟩ : ∃ y : X, y = (s : X →L[ℂ] X) x := ⟨_, rfl⟩
+      have hyn : ‖y‖ ≤ ‖s‖ * ‖x‖ := by
+        rw [hy, bax_norm_coe]
+        exact (s : X →L[ℂ] X).le_opNorm x
+      have hw : ‖(c : ℂ) • y‖ ≤ 1 := by
+        rw [norm_smul, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hcpos, hc,
+          inv_mul_le_iff₀ (by positivity)]
+        simpa using hyn
+      have hle := le_ciSup hbdd (⟨(c : ℂ) • y, hw⟩ : {x : X // ‖x‖ ≤ 1})
+      -- `⟨cy, T(cy)⟩ = c² ⟨y, T y⟩ = ± c² ⟨p x, p x⟩`
+      have he1 : inner 𝒜 ((c : ℂ) • y) (T ((c : ℂ) • y))
+          = ((c : ℂ) * (c : ℂ)) • inner 𝒜 y (T y) := by
+        rw [map_smul, CStarModule.inner_smul_right_complex,
+          CStarModule.inner_smul_left_complex, smul_smul, Complex.star_def,
+          Complex.conj_ofReal]
+      have he2 : inner 𝒜 y (T y) = inner 𝒜 x (((star s * a * s : Bax 𝒜 X) : X →L[ℂ] X) x) := by
+        rw [bax_inner_conj, ← hy, ha]
+      have he3 : ‖inner 𝒜 x (((star p * p : Bax 𝒜 X) : X →L[ℂ] X) x)‖
+          = ‖(p : X →L[ℂ] X) x‖ ^ 2 := by
+        rw [bax_inner_star_mul, ← CStarModule.norm_sq_eq (A := 𝒜)]
+      have he4 : ‖inner 𝒜 y (T y)‖ = ‖(p : X →L[ℂ] X) x‖ ^ 2 := by
+        rw [he2]
+        rcases hcase with hcase | hcase <;> rw [hcase] <;> simpa using he3
+      have he5 : F (⟨(c : ℂ) • y, hw⟩ : {x : X // ‖x‖ ≤ 1})
+          = c ^ 2 * ‖(p : X →L[ℂ] X) x‖ ^ 2 := by
+        rw [hF]
+        simp only
+        rw [he1, norm_smul, he4, ← Complex.ofReal_mul, Complex.norm_real,
+          Real.norm_eq_abs, abs_of_pos (by positivity)]
+        ring
+      rw [he5] at hle
+      have hcc : c ^ 2 * (‖s‖ * ‖x‖) ^ 2 = 1 := by
+        rw [hc, ← mul_pow, inv_mul_cancel₀ (by positivity), one_pow]
+      calc ‖(p : X →L[ℂ] X) x‖ ^ 2
+          = c ^ 2 * ‖(p : X →L[ℂ] X) x‖ ^ 2 * (‖s‖ * ‖x‖) ^ 2 := by
+            rw [mul_comm (c ^ 2) _, mul_assoc, hcc, mul_one]
+        _ ≤ M * (‖s‖ * ‖x‖) ^ 2 := by
+            exact mul_le_mul_of_nonneg_right hle (by positivity)
+        _ = M * ‖p‖ * ‖x‖ ^ 2 := by rw [mul_pow, ← hns]; ring
+    -- hence `‖p‖² ≤ M ‖p‖`, so `‖p‖ ≤ M`
+    have hop : ‖p‖ ≤ Real.sqrt (M * ‖p‖) := by
+      rw [bax_norm_coe]
+      refine (p : X →L[ℂ] X).opNorm_le_bound (Real.sqrt_nonneg _) fun x => ?_
+      calc ‖(p : X →L[ℂ] X) x‖ = Real.sqrt (‖(p : X →L[ℂ] X) x‖ ^ 2) :=
+            (Real.sqrt_sq (norm_nonneg _)).symm
+        _ ≤ Real.sqrt (M * ‖p‖ * ‖x‖ ^ 2) := Real.sqrt_le_sqrt (hquad x)
+        _ = Real.sqrt (M * ‖p‖) * ‖x‖ := by
+            rw [Real.sqrt_mul (by positivity), Real.sqrt_sq (norm_nonneg _)]
+    nlinarith [Real.sq_sqrt (mul_nonneg hM0 (norm_nonneg p)), norm_nonneg p,
+      Real.sqrt_nonneg (M * ‖p‖)]
+  -- apply `key` to the positive and to the negative part of `a`
+  have hpq : (a⁺ : Bax 𝒜 X) * a⁻ = 0 := CFC.posPart_mul_negPart a
+  have hqp : (a⁻ : Bax 𝒜 X) * a⁺ = 0 := CFC.negPart_mul_posPart a
+  have hsplit : (a⁺ : Bax 𝒜 X) - a⁻ = a := CFC.posPart_sub_negPart a hsa
+  have hkey1 : ‖(a⁺ : Bax 𝒜 X)‖ ≤ M := by
+    obtain ⟨s, hsnn, hss⟩ : ∃ s : Bax 𝒜 X, 0 ≤ s ∧ s * s = a⁺ :=
+      ⟨CFC.sqrt _, CFC.sqrt_nonneg _, CFC.sqrt_mul_sqrt_self _ (CFC.posPart_nonneg a)⟩
+    have hssa : star s = s := hsnn.isSelfAdjoint.star_eq
+    have hsq : s * (a⁻ : Bax 𝒜 X) = 0 := by
+      refine CStarRing.star_mul_self_eq_zero_iff _ |>.mp ?_
+      rw [star_mul, hssa, (CFC.negPart_nonneg a).isSelfAdjoint.star_eq]
+      calc (a⁻ : Bax 𝒜 X) * s * (s * a⁻) = a⁻ * (s * s) * a⁻ := by noncomm_ring
+        _ = 0 := by rw [hss, hqp, zero_mul]
+    refine key _ s hssa hss (Or.inl ?_)
+    have e1 : star s * a * s = s * ((a⁺ : Bax 𝒜 X) - a⁻) * s := by rw [hssa, hsplit]
+    rw [e1, mul_sub, sub_mul, hsq, zero_mul, sub_zero,
+      (CFC.posPart_nonneg a).isSelfAdjoint.star_eq, ← hss]
+    noncomm_ring
+  have hkey2 : ‖(a⁻ : Bax 𝒜 X)‖ ≤ M := by
+    obtain ⟨s, hsnn, hss⟩ : ∃ s : Bax 𝒜 X, 0 ≤ s ∧ s * s = a⁻ :=
+      ⟨CFC.sqrt _, CFC.sqrt_nonneg _, CFC.sqrt_mul_sqrt_self _ (CFC.negPart_nonneg a)⟩
+    have hssa : star s = s := hsnn.isSelfAdjoint.star_eq
+    have hsp : s * (a⁺ : Bax 𝒜 X) = 0 := by
+      refine CStarRing.star_mul_self_eq_zero_iff _ |>.mp ?_
+      rw [star_mul, hssa, (CFC.posPart_nonneg a).isSelfAdjoint.star_eq]
+      calc (a⁺ : Bax 𝒜 X) * s * (s * a⁺) = a⁺ * (s * s) * a⁺ := by noncomm_ring
+        _ = 0 := by rw [hss, hpq, zero_mul]
+    refine key _ s hssa hss (Or.inr ?_)
+    have e1 : star s * a * s = s * ((a⁺ : Bax 𝒜 X) - a⁻) * s := by rw [hssa, hsplit]
+    rw [e1, mul_sub, sub_mul, hsp, zero_mul, zero_sub,
+      (CFC.negPart_nonneg a).isSelfAdjoint.star_eq, ← hss]
+    noncomm_ring
+  calc ‖T‖ = ‖a‖ := hanorm.symm
+    _ = max ‖(a⁺ : Bax 𝒜 X)‖ ‖(a⁻ : Bax 𝒜 X)‖ := hsa.norm_eq_max_norm_posPart_negPart
+    _ ≤ M := max_le hkey1 hkey2
 
 /-- **32XVI** (cstar.tex:5292, Corollary): `T* T` is positive in `B^a(X)`
-for every adjointable bounded `T : X → Y` between Hilbert 𝒜-modules — via
-**32XV**: `0 ≤ ⟨x, (T*T) x⟩` for all `x`. -/
+for every adjointable bounded `T : X → Y` between Hilbert 𝒜-modules.  The
+first conjunct is the immediate computation `⟨x, T*Tx⟩ = ⟨Tx, Tx⟩ ≥ 0`; the
+second is positivity in `B^a(X)` itself (in the form used in **32XV**.2),
+obtained from it by **32XV**.2. -/
 theorem chilb_adjoint_mul_self_nonneg [CompleteSpace X] [CompleteSpace Y]
-    (T : X →L[ℂ] Y) (S : Y →L[ℂ] X) (h : ModuleAdjointTo 𝒜 ⇑T ⇑S) (x : X) :
-    0 ≤ inner 𝒜 x ((S.comp T) x) := by
-  rw [ContinuousLinearMap.coe_comp', Function.comp_apply, ← h x (T x)]
-  exact CStarModule.inner_self_nonneg
+    (T : X →L[ℂ] Y) (S : Y →L[ℂ] X) (h : ModuleAdjointTo 𝒜 ⇑T ⇑S) :
+    (∀ x : X, 0 ≤ inner 𝒜 x ((S.comp T) x)) ∧
+      ∃ R R' : X →L[ℂ] X, ModuleAdjointTo 𝒜 ⇑R ⇑R' ∧ S.comp T = R'.comp R := by
+  have hpos : ∀ x : X, 0 ≤ inner 𝒜 x ((S.comp T) x) := by
+    intro x
+    rw [ContinuousLinearMap.coe_comp', Function.comp_apply, ← h x (T x)]
+    exact CStarModule.inner_self_nonneg
+  have hadj : ModuleAdjointable 𝒜 ⇑(S.comp T) :=
+    ⟨⇑S ∘ ⇑T, moduleAdjointTo_comp (⇑T) (⇑S) (⇑S) (⇑T) h (moduleAdjointTo_symm _ _ h)⟩
+  exact ⟨hpos, (chilb_vector_states_2 (S.comp T) hadj).mp hpos⟩
 
 end CauchySchwarz
 

@@ -358,6 +358,43 @@ that fails, and the Lean statement of 81VII does not claim it.  The thesis's
 parenthetical "(and uniformly so)" in 81VII should therefore be checked too:
 by the same counterexample it is false for the `c∖·` half.
 
+### A8. 30X `proto-gelfand-naimark` — **our** statement of clause (1) drops `ϱ_Ω`, and with it half of the equivalence
+`cstar.tex` parsec 300, point 100.  The thesis states a three-way equivalence
+for a collection `Ω` of p-maps: (1) `ϱ_Ω : 𝒜 → B(ℋ_Ω)` is **injective**;
+(2) `Ω` is centre separating; (3) `Ω'` is order separating — plus the closing
+claim that `ϱ_Ω(𝒜)` is a C\*-subalgebra and `ϱ_Ω` an miu-isomorphism onto it.
+
+We have (2) ⇔ (3) in full (`proto_gelfand_naimark_1`, **proved**).  But our
+`proto_gelfand_naimark_2` renders (2) ⇒ (1) as
+
+    ∃ H (Hilbert) (ρ : 𝒜 →⋆ₐ[ℂ] B H), Function.Injective ρ
+
+which mentions neither `Ω` nor `ϱ_Ω`.  Two consequences, both real:
+
+1. **The converse (1) ⇒ (2) becomes unstatable.**  In the existential form
+   clause (1) no longer depends on `Ω` at all, so it cannot imply anything
+   about `Ω`.  Only half of the equivalence is captured.
+2. **It collapses 30X.2 into 30XIV.**  As stated, our (2) ⇒ (1) says exactly
+   "every C\*-algebra admitting a centre separating family of p-maps has an
+   injective representation" — i.e. the Gelfand–Naimark theorem itself, which
+   is 30XIV four points later.  So 30X.2 is not a *step towards* 30XIV in our
+   formalization; it *is* 30XIV.
+
+**Both are now proved** (2026-08-17), and `ϱ_Ω` *does* now exist in Lean:
+`dsumRep` in `Theses/A/CStar/Representation.lean` is the thesis's
+`ϱ_Ω : 𝒜 → B(⊕_{ω∈Ω} ℋ_ω)`, the diagonal operator on `lp (fun ω => ω.GNS) 2`,
+built there because Mathlib has the single-`ω` GNS representation and the
+Hilbert direct sum but not the diagonal operator.  So the obstacle to stating
+30X faithfully is gone.
+
+*Decision needed*: whether to **restate 30X** as the thesis's genuine three-way
+equivalence, with clause (1) reading `Function.Injective (dsumRep …)`, and to
+add the closing claim that `ϱ_Ω` restricts to an miu-isomorphism onto its image
+(the proved `injective_miu_iso_on_image` supplies it immediately).  We have not
+done this because it changes a statement.  Nothing downstream is affected: no
+declaration in `Theses/` uses `proto_gelfand_naimark_2` (the three existing
+uses in `A/VN` are all of `proto_gelfand_naimark_`**`1`**).
+
 ### A2. `parsec-340.60` (34VI.1) is an empty `\TODO{}`
 The solution slot exists but is empty, and it is the *last* entry in
 `asols.tex` — which is why solution coverage appears to stop at parsec 340.

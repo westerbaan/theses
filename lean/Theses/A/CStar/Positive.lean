@@ -13,8 +13,11 @@ arXiv:1804.02203), chapter 1: C*-algebras — cstar.tex, lines 1714–3886.
                            positive and negative parts, a*a ≥ 0, vector
                            states, commutative C*-algebras)
 
-Statements only; every proof is `sorry`.  See CONVENTIONS.md for the
-numbering (**16II** = parsec 160, point 20) and naming conventions.
+All statements of parsecs 130 and 160–260 are proved.  Seven remain `sorry`,
+all in parsecs 140–150 and all behind **14IV** `goursat`: `goursat` itself,
+`invint_2`, `invint_2'`, `invint_3`, `invint_4`, `cauchy_formula` and `taylor`.
+See CONVENTIONS.md for the numbering (**16II** = parsec 160, point 20) and
+naming conventions.
 -/
 import Theses.A.CStar.Basic
 
@@ -83,19 +86,85 @@ power series `∑ₙ aₙ zⁿ` over `𝒜` (**13II**, `hadamard`, cstar.tex:180
 noncomputable def radiusOfConvergence (a : ℕ → 𝒜) : ℝ≥0∞ :=
   (Filter.atTop.limsup fun n : ℕ => (‖a n‖₊ : ℝ≥0∞) ^ (1 / (n : ℝ)))⁻¹
 
+/-- The power series `∑ₙ aₙ zⁿ` over `𝒜` as a Mathlib `FormalMultilinearSeries`;
+the bridge used by **13II**, **13VI** and **15VII** below. -/
+private noncomputable def fpsOfCoeffs (a : ℕ → 𝒜) : FormalMultilinearSeries ℂ ℂ 𝒜 :=
+  fun n => ContinuousMultilinearMap.mkPiRing ℂ (Fin n) (a n)
+
+private theorem fpsOfCoeffs_apply (a : ℕ → 𝒜) (n : ℕ) (y : ℂ) :
+    (fpsOfCoeffs a n fun _ => y) = y ^ n • a n := by
+  simp [fpsOfCoeffs]
+
+private theorem fpsOfCoeffs_norm (a : ℕ → 𝒜) (n : ℕ) : ‖fpsOfCoeffs a n‖ = ‖a n‖ := by
+  simp [fpsOfCoeffs]
+
+private theorem fpsOfCoeffs_coeff (a : ℕ → 𝒜) (n : ℕ) : (fpsOfCoeffs a).coeff n = a n := by
+  simp [fpsOfCoeffs, FormalMultilinearSeries.coeff]
+
+private theorem fpsOfCoeffs_nnnorm (a : ℕ → 𝒜) (n : ℕ) : ‖fpsOfCoeffs a n‖₊ = ‖a n‖₊ := by
+  ext; simpa using fpsOfCoeffs_norm a n
+
+/-- The thesis's Cauchy–Hadamard formula defining `radiusOfConvergence` is
+literally Mathlib's `FormalMultilinearSeries.radius_inv_eq_limsup`. -/
+private theorem radiusOfConvergence_eq (a : ℕ → 𝒜) :
+    radiusOfConvergence a = (fpsOfCoeffs a).radius := by
+  have hfun : (fun n : ℕ => ((‖a n‖₊ : ℝ≥0∞) ^ (1 / (n : ℝ))))
+      = fun n : ℕ => (((‖fpsOfCoeffs a n‖₊ ^ (1 / (n : ℝ)) : ℝ≥0)) : ℝ≥0∞) := by
+    funext n
+    rw [ENNReal.coe_rpow_of_nonneg _ (by positivity), fpsOfCoeffs_nnnorm]
+  rw [radiusOfConvergence, hfun, ← (fpsOfCoeffs a).radius_inv_eq_limsup, inv_inv]
+
+/-- If `∑ₙ aₙ (z - w)ⁿ` sums to `f z` throughout `ball w r`, then `f` is
+represented on that ball by the formal power series `fpsOfCoeffs a`. -/
+private theorem fpsOfCoeffs_hasFPowerSeriesOnBall (a : ℕ → 𝒜) (f : ℂ → 𝒜) (w : ℂ) (r : ℝ)
+    (hr : 0 < r)
+    (hsmall : ∀ z ∈ Metric.ball w r, HasSum (fun n : ℕ => (z - w) ^ n • a n) (f z)) :
+    HasFPowerSeriesOnBall f (fpsOfCoeffs a) w (ENNReal.ofReal r) := by
+  have key : ∀ y : ℂ, ‖y‖ < r → HasSum (fun n : ℕ => y ^ n • a n) (f (w + y)) := by
+    intro y hy
+    have := hsmall (w + y) (by simp [Metric.mem_ball, dist_eq_norm, hy])
+    simpa using this
+  refine
+    { r_le := ?_
+      r_pos := ENNReal.ofReal_pos.mpr hr
+      hasSum := ?_ }
+  · -- the thesis's own argument for **13II**.2: the terms of a convergent
+    -- series are bounded, so `r` does not exceed the radius of convergence
+    refine ENNReal.le_of_forall_nnreal_lt fun u hu => ?_
+    have hur : (u : ℝ) < r := by
+      rw [← ENNReal.ofReal_coe_nnreal] at hu
+      exact (ENNReal.ofReal_lt_ofReal_iff hr).mp hu
+    have hs := key ((u : ℝ) : ℂ) (by simpa [abs_of_nonneg u.coe_nonneg] using hur)
+    refine (fpsOfCoeffs a).le_radius_of_tendsto (l := 0) ?_
+    have h0 := hs.summable.tendsto_atTop_zero.norm
+    simpa [fpsOfCoeffs_coeff, norm_smul, abs_of_nonneg u.coe_nonneg, mul_comm] using h0
+  · intro y hy
+    rw [Metric.eball_ofReal, mem_ball_zero_iff] at hy
+    simpa [fpsOfCoeffs_coeff] using key y hy
+
 /-- **13II** (`hadamard`, cstar.tex:1806, Theorem), part 1: the series
 `∑ₙ aₙ zⁿ` converges absolutely for `|z| < R`. -/
 theorem hadamard_1 (a : ℕ → 𝒜) (z : ℂ)
     (hz : (‖z‖₊ : ℝ≥0∞) < radiusOfConvergence a) :
     Summable fun n : ℕ => ‖a n‖ * ‖z‖ ^ n :=
-  sorry
+  by
+    -- the thesis's `ε`-and-geometric-tail argument is Mathlib's
+    -- `FormalMultilinearSeries.summable_norm_mul_pow`
+    rw [radiusOfConvergence_eq] at hz
+    simpa [fpsOfCoeffs_coeff] using (fpsOfCoeffs a).summable_norm_mul_pow (r := ‖z‖₊) hz
 
 /-- **13II** (`hadamard`, cstar.tex:1806, Theorem), part 2: if `∑ₙ aₙ zⁿ`
 converges then `|z| ≤ R`. -/
 theorem hadamard_2 (a : ℕ → 𝒜) (z : ℂ)
     (hz : Summable fun n : ℕ => z ^ n • a n) :
     (‖z‖₊ : ℝ≥0∞) ≤ radiusOfConvergence a :=
-  sorry
+  by
+    -- exactly the thesis's argument: the terms `‖aₙ‖|z|ⁿ` of a convergent
+    -- series tend to `0`, hence are bounded, hence `|z| ≤ R`
+    rw [radiusOfConvergence_eq]
+    refine (fpsOfCoeffs a).le_radius_of_tendsto (r := ‖z‖₊) (l := 0) ?_
+    have h0 := hz.tendsto_atTop_zero.norm
+    simpa [fpsOfCoeffs_coeff, norm_smul, mul_comm] using h0
 
 /-- **13IV** (cstar.tex:1868, Proposition): the function given by a power
 series `∑ₙ aₙ zⁿ` is holomorphic on the disk `|z| < R`, with derivative
@@ -104,7 +173,46 @@ theorem powerSeries_hasDerivAt (a : ℕ → 𝒜) (z : ℂ)
     (hz : (‖z‖₊ : ℝ≥0∞) < radiusOfConvergence a) :
     HasDerivAt (fun w : ℂ => ∑' n : ℕ, w ^ n • a n)
       (∑' n : ℕ, ((n : ℂ) * z ^ (n - 1)) • a n) z :=
-  sorry
+  by
+    -- Divergence from the thesis's proof (cstar.tex:1868), which dominates the
+    -- difference quotients uniformly by `2 ∑ₙ n‖aₙ‖ rⁿ⁻¹`.  Here: the series
+    -- is its own power-series expansion on `ball 0 R`, so it is differentiable
+    -- there, and `HasFPowerSeriesOnBall.fderiv` identifies its derivative with
+    -- the term-wise derivative through `derivSeries_coeff_one`.
+    rw [radiusOfConvergence_eq] at hz
+    set p : FormalMultilinearSeries ℂ ℂ 𝒜 := fpsOfCoeffs a with hpdef
+    have hpos : 0 < p.radius := lt_of_le_of_lt zero_le hz
+    have hfun : (fun w : ℂ => ∑' n : ℕ, w ^ n • a n) = p.sum := by
+      funext w
+      exact (tsum_congr fun n => fpsOfCoeffs_apply a n w).symm
+    have hp : HasFPowerSeriesOnBall (fun w : ℂ => ∑' n : ℕ, w ^ n • a n) p 0 p.radius := by
+      rw [hfun]; exact p.hasFPowerSeriesOnBall hpos
+    have hzmem : z ∈ Metric.eball (0 : ℂ) p.radius := by
+      simpa [Metric.mem_eball, edist_eq_enorm_sub, enorm_eq_nnnorm] using hz
+    -- the sum is differentiable at `z`
+    have hdiff : DifferentiableAt ℂ (fun w : ℂ => ∑' n : ℕ, w ^ n • a n) z :=
+      (hp.analyticOnNhd z hzmem).differentiableAt
+    have hda := hdiff.hasFDerivAt.hasDerivAt
+    -- and its derivative is the term-wise derivative
+    have hsum := hp.fderiv.hasSum_sub hzmem
+    have hsum1 := (ContinuousLinearMap.apply ℂ 𝒜 (1 : ℂ)).hasSum hsum
+    simp only [ContinuousLinearMap.apply_apply, FormalMultilinearSeries.apply_eq_pow_smul_coeff,
+      smul_apply, FormalMultilinearSeries.derivSeries_coeff_one, sub_zero] at hsum1
+    have hg : HasSum (fun n : ℕ => ((n : ℂ) * z ^ (n - 1)) • a n)
+        ((fderiv ℂ (fun w : ℂ => ∑' n : ℕ, w ^ n • a n) z) 1) := by
+      have hshift : (fun b : ℕ => ((((b + 1) : ℕ) : ℂ) * z ^ ((b + 1) - 1)) • a (b + 1))
+          = fun b : ℕ => z ^ b • ((b + 1) • p.coeff (b + 1)) := by
+        funext b
+        rw [hpdef, fpsOfCoeffs_coeff, ← Nat.cast_smul_eq_nsmul ℂ, smul_smul]
+        push_cast
+        ring_nf
+      have h2 : HasSum (fun b : ℕ => ((((b + 1) : ℕ) : ℂ) * z ^ ((b + 1) - 1)) • a (b + 1))
+          ((fderiv ℂ (fun w : ℂ => ∑' n : ℕ, w ^ n • a n) z) 1) := by
+        rw [hshift]; exact hsum1
+      have h3 := (hasSum_nat_add_iff (f := fun n : ℕ => ((n : ℂ) * z ^ (n - 1)) • a n) 1).mp h2
+      simpa using h3
+    rw [hg.tsum_eq]
+    exact hda
 
 /-- **13VI** (`powerseries-uniqueness-coeffients`, cstar.tex:1958, Exercise):
 if a power series `∑ₙ aₙ zⁿ` sums to `0` on some disk around `0` of positive
@@ -112,7 +220,22 @@ radius, then all its coefficients vanish. -/
 theorem powerseries_uniqueness_coeffients (a : ℕ → 𝒜) (r : ℝ) (hr : 0 < r)
     (h : ∀ z : ℂ, ‖z‖ < r → HasSum (fun n : ℕ => z ^ n • a n) 0) :
     ∀ n, a n = 0 :=
-  sorry
+  by
+    -- Divergence from the thesis's proof (cstar.tex:1958): the hint there is
+    -- to differentiate the series repeatedly, which would make this depend on
+    -- **13IV** `powerSeries_hasDerivAt` (still `sorry`).  In Lean the series
+    -- represents the zero function on `ball 0 r`, and
+    -- `HasFPowerSeriesAt.eq_zero` gives the conclusion outright.
+    have hpow : HasFPowerSeriesOnBall (0 : ℂ → 𝒜) (fpsOfCoeffs a) 0 (ENNReal.ofReal r) := by
+      refine fpsOfCoeffs_hasFPowerSeriesOnBall a 0 0 r hr ?_
+      intro z hz
+      rw [Metric.mem_ball, dist_zero_right] at hz
+      simpa using h z hz
+    have hzero : fpsOfCoeffs a = 0 := hpow.hasFPowerSeriesAt.eq_zero
+    intro n
+    have hn : fpsOfCoeffs a n = 0 := by rw [hzero]; rfl
+    rw [fpsOfCoeffs, ContinuousMultilinearMap.mkPiRing_eq_zero_iff] at hn
+    exact hn
 
 /-! ## Parsec 140: integration and Goursat's theorem
 
@@ -262,7 +385,41 @@ theorem rigid_expansion {U : Set ℂ} (hU : IsOpen U) (f : ℂ → 𝒜)
     (hsmall : ∀ z ∈ Metric.ball w r, HasSum (fun n : ℕ => (z - w) ^ n • a n) (f z))
     (hball : Metric.ball w R ⊆ U) (z : ℂ) (hz : z ∈ Metric.ball w R) :
     HasSum (fun n : ℕ => (z - w) ^ n • a n) (f z) :=
-  sorry
+  by
+    -- Divergence from the thesis's proof (cstar.tex:2514): the thesis derives
+    -- this from **15V** `taylor` and **13VI**
+    -- `powerseries_uniqueness_coeffients`, both still `sorry` here.  In Lean
+    -- neither is needed: `DifferentiableOn.hasFPowerSeriesOnBall` (Cauchy's
+    -- integral formula, stated in Mathlib for any complete complex normed
+    -- space) supplies a power-series expansion of `f` on any closed ball
+    -- inside `dom(f)`, and `HasFPowerSeriesAt.eq_formalMultilinearSeries`
+    -- identifies its coefficients with `a` using `hsmall`.  The argument uses
+    -- neither `hU` nor `hrR`.
+    have hpow := fpsOfCoeffs_hasFPowerSeriesOnBall a f w r hr hsmall
+    -- `f` is also represented by `cauchyPowerSeries f w R'` on any closed ball
+    -- around `w` that lies inside `ball w R` and contains `z`
+    have hzw : ‖z - w‖ < R := by
+      simpa [Metric.mem_ball, dist_eq_norm] using hz
+    obtain ⟨R', hR'1, hR'2⟩ := exists_between hzw
+    have hR'0 : 0 < R' := lt_of_le_of_lt (norm_nonneg _) hR'1
+    set RR : ℝ≥0 := ⟨R', hR'0.le⟩ with hRR
+    have hsub : Metric.closedBall w (RR : ℝ) ⊆ U := by
+      refine subset_trans ?_ hball
+      intro v hv
+      simp only [Metric.mem_closedBall] at hv
+      simp only [Metric.mem_ball]
+      exact lt_of_le_of_lt hv hR'2
+    have hq : HasFPowerSeriesOnBall f (cauchyPowerSeries f w RR) w RR :=
+      (hf.mono hsub).hasFPowerSeriesOnBall (by exact_mod_cast hR'0)
+    -- the two power series agree, so the given one converges to `f z`
+    have heq : fpsOfCoeffs a = cauchyPowerSeries f w RR :=
+      hpow.hasFPowerSeriesAt.eq_formalMultilinearSeries hq.hasFPowerSeriesAt
+    have hzmem : z ∈ Metric.eball w (RR : ℝ≥0∞) := by
+      rw [Metric.eball_coe, Metric.mem_ball, dist_eq_norm]
+      exact hR'1
+    have hsum := hq.hasSum_sub hzmem
+    rw [← heq] at hsum
+    simpa [fpsOfCoeffs_coeff] using hsum
 
 /-! ## Parsec 160: the spectral radius -/
 
@@ -3704,6 +3861,11 @@ theorem cstar_pos_neg_part_2 (a : 𝒜) (ha : IsSelfAdjoint a) :
     exact ⟨CFC.posPart_nonneg a, CFC.negPart_nonneg a, (CFC.posPart_sub_negPart a ha).symm,
       CFC.posPart_mul_negPart a, CFC.negPart_mul_posPart a⟩
 
+/-- A `2 × 2` complex matrix as an operator on `ℂ²`. -/
+private noncomputable abbrev toCLM2 (M : Matrix (Fin 2) (Fin 2) ℂ) :
+    EuclideanSpace ℂ (Fin 2) →L[ℂ] EuclideanSpace ℂ (Fin 2) :=
+  Matrix.toEuclideanCLM (𝕜 := ℂ) M
+
 /-- **24II** (`cstar-pos-neg-part`, cstar.tex:3699, Exercise), part 3: the
 triangle inequality fails for `|·|`: there are self-adjoint `a, b` with
 `|a + b| ≰ |a| + |b|` (example among the operators on ℂ²). -/
@@ -3711,7 +3873,111 @@ theorem cstar_pos_neg_part_3 :
     ∃ a b : EuclideanSpace ℂ (Fin 2) →L[ℂ] EuclideanSpace ℂ (Fin 2),
       IsSelfAdjoint a ∧ IsSelfAdjoint b ∧
         ¬(CFC.abs (a + b) ≤ CFC.abs a + CFC.abs b) :=
-  sorry
+  by
+    -- The thesis's own witnesses: `a = ½[[1,1],[1,1]]` and `b = -[[1,0],[0,0]]`.
+    -- Then `a² = a`, so `|a| = a`; `b² = [[1,0],[0,0]] =: p`, so `|b| = p`;
+    -- and `(a+b)² = ½·1`, so `|a+b| = s·1` with `s = √2/2`.  But the `(2,2)`
+    -- entry of `|a| + |b| - |a+b|` is `½ - s < 0`.
+    have hs0 : (0:ℝ) ≤ Real.sqrt 2 / 2 := by positivity
+    set s : ℝ := Real.sqrt 2 / 2 with hsdef
+    have hs2 : (s : ℂ) * (s : ℂ) = 1 / 2 := by
+      have h : s * s = 1 / 2 := by
+        rw [hsdef]
+        nlinarith [Real.sq_sqrt (by norm_num : (0:ℝ) ≤ 2), Real.sqrt_nonneg 2]
+      have := congrArg (fun r : ℝ => (r : ℂ)) h
+      push_cast at this
+      simpa using this
+    set t : ℝ := Real.sqrt s with htdef
+    have ht2 : (t : ℂ) * (t : ℂ) = (s : ℂ) := by
+      have h : t * t = s := Real.mul_self_sqrt hs0
+      exact_mod_cast congrArg (fun r : ℝ => (r : ℂ)) h
+    -- `Matrix.toEuclideanCLM` is a star-algebra isomorphism
+    have hmul : ∀ M N : Matrix (Fin 2) (Fin 2) ℂ, toCLM2 M * toCLM2 N = toCLM2 (M * N) :=
+      fun M N => (map_mul (Matrix.toEuclideanCLM (𝕜 := ℂ) (n := Fin 2)) M N).symm
+    have hstar : ∀ M : Matrix (Fin 2) (Fin 2) ℂ, star (toCLM2 M) = toCLM2 (star M) :=
+      fun M => (map_star (Matrix.toEuclideanCLM (𝕜 := ℂ) (n := Fin 2)) M).symm
+    have hadd : ∀ M N : Matrix (Fin 2) (Fin 2) ℂ, toCLM2 M + toCLM2 N = toCLM2 (M + N) :=
+      fun M N => (map_add (Matrix.toEuclideanCLM (𝕜 := ℂ) (n := Fin 2)) M N).symm
+    have hsub : ∀ M N : Matrix (Fin 2) (Fin 2) ℂ, toCLM2 M - toCLM2 N = toCLM2 (M - N) :=
+      fun M N => (map_sub (Matrix.toEuclideanCLM (𝕜 := ℂ) (n := Fin 2)) M N).symm
+    -- the matrices
+    set MA : Matrix (Fin 2) (Fin 2) ℂ := !![1/2, 1/2; 1/2, 1/2] with hMA
+    set MB : Matrix (Fin 2) (Fin 2) ℂ := !![-1, 0; 0, 0] with hMB
+    set MP : Matrix (Fin 2) (Fin 2) ℂ := !![1, 0; 0, 0] with hMP
+    set MS : Matrix (Fin 2) (Fin 2) ℂ := !![(s:ℂ), 0; 0, (s:ℂ)] with hMS
+    set MT : Matrix (Fin 2) (Fin 2) ℂ := !![(t:ℂ), 0; 0, (t:ℂ)] with hMT
+    -- matrix computations
+    have e1 : star MA = MA := by
+      rw [hMA]; ext i j
+      fin_cases i <;> fin_cases j <;> simp
+    have e2 : star MB = MB := by
+      rw [hMB]; ext i j
+      fin_cases i <;> fin_cases j <;> simp
+    have e3 : MA * MA = MA := by
+      rw [hMA]; ext i j
+      fin_cases i <;> fin_cases j <;>
+        simp [Matrix.mul_apply, Fin.sum_univ_succ] <;> norm_num
+    have e4 : MB * MB = MP := by
+      rw [hMB, hMP]; ext i j
+      fin_cases i <;> fin_cases j <;> simp [Matrix.mul_apply, Fin.sum_univ_succ]
+    have e5 : MP * MP = MP := by
+      rw [hMP]; ext i j
+      fin_cases i <;> fin_cases j <;> simp [Matrix.mul_apply, Fin.sum_univ_succ]
+    have e6 : star MP = MP := by
+      rw [hMP]; ext i j
+      fin_cases i <;> fin_cases j <;> simp
+    have e7 : star (MA + MB) = MA + MB := by rw [star_add, e1, e2]
+    have e8 : (MA + MB) * (MA + MB) = MS * MS := by
+      rw [hMA, hMB, hMS]; ext i j
+      fin_cases i <;> fin_cases j <;>
+        simp [Matrix.mul_apply, Fin.sum_univ_succ, hs2] <;> ring_nf
+    have e9 : star MT * MT = MS := by
+      rw [hMS, hMT]; ext i j
+      fin_cases i <;> fin_cases j <;>
+        simp [Matrix.mul_apply, Fin.sum_univ_succ, Matrix.star_eq_conjTranspose,
+          Matrix.conjTranspose_apply, ht2]
+    set MQ : Matrix (Fin 2) (Fin 2) ℂ := !![3/2 - (s:ℂ), 1/2; 1/2, 1/2 - (s:ℂ)] with hMQ
+    have e10 : MA + MP - MS = MQ := by
+      rw [hMA, hMP, hMS, hMQ]; ext i j
+      fin_cases i <;> fin_cases j <;> simp <;> norm_num
+    -- positivity of the three operators involved
+    have hA0 : (0 : EuclideanSpace ℂ (Fin 2) →L[ℂ] EuclideanSpace ℂ (Fin 2)) ≤ toCLM2 MA := by
+      have h := star_mul_self_nonneg (toCLM2 MA)
+      rwa [hstar, hmul, e1, e3] at h
+    have hP0 : (0 : EuclideanSpace ℂ (Fin 2) →L[ℂ] EuclideanSpace ℂ (Fin 2)) ≤ toCLM2 MP := by
+      have h := star_mul_self_nonneg (toCLM2 MP)
+      rwa [hstar, hmul, e6, e5] at h
+    have hS0 : (0 : EuclideanSpace ℂ (Fin 2) →L[ℂ] EuclideanSpace ℂ (Fin 2)) ≤ toCLM2 MS := by
+      have h := star_mul_self_nonneg (toCLM2 MT)
+      rwa [hstar, hmul, e9] at h
+    refine ⟨toCLM2 MA, toCLM2 MB, ?_, ?_, ?_⟩
+    · show star (toCLM2 MA) = toCLM2 MA
+      rw [hstar, e1]
+    · show star (toCLM2 MB) = toCLM2 MB
+      rw [hstar, e2]
+    · have habsA : CFC.abs (toCLM2 MA) = toCLM2 MA := by
+        rw [CFC.abs]
+        exact CFC.sqrt_unique (by rw [hstar, hmul, hmul, e1, e3]) hA0
+      have habsB : CFC.abs (toCLM2 MB) = toCLM2 MP := by
+        rw [CFC.abs]
+        exact CFC.sqrt_unique (by rw [hstar, hmul, hmul, e2, e4, e5]) hP0
+      have habsAB : CFC.abs (toCLM2 MA + toCLM2 MB) = toCLM2 MS := by
+        rw [CFC.abs]
+        refine CFC.sqrt_unique ?_ hS0
+        rw [hadd, hstar, hmul, hmul, e7, e8]
+      rw [habsA, habsB, habsAB]
+      intro hle
+      rw [← sub_nonneg, hadd, hsub, e10] at hle
+      have hq := ((ContinuousLinearMap.isPositive_iff _).mp
+        ((ContinuousLinearMap.nonneg_iff_isPositive _).mp hle)).2
+        (WithLp.toLp 2 ![0, 1] : EuclideanSpace ℂ (Fin 2))
+      simp only [PiLp.inner_apply, Fin.sum_univ_succ] at hq
+      rw [hMQ] at hq
+      simp [Matrix.toEuclideanCLM_toLp] at hq
+      rw [Complex.le_def] at hq
+      have hre := hq.1
+      simp [hsdef] at hre
+      nlinarith [Real.sq_sqrt (show (0:ℝ) ≤ 2 by norm_num), Real.sqrt_nonneg 2, hre]
 
 /-- **24IV** (`astara-positive`, cstar.tex:3729, Lemma): `a* a ≥ 0` for every
 element `a` of a C*-algebra.  (Mathlib: `star_mul_self_nonneg`.) -/

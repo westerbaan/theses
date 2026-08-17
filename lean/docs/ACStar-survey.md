@@ -1,39 +1,61 @@
 # `Theses/A/CStar/` — full survey of the remaining `sorry`s (first survey of this chapter)
 
-**Headline count: A/CStar has 28 code `sorry`s.**  Per file, counted by reading
-every declaration body (each `sorry` is the whole proof of one `theorem`; no
-declaration carries two):
+**Headline count at the time of the survey: A/CStar had 28 code `sorry`s.**
+Per file, counted by reading every declaration body (each `sorry` is the whole
+proof of one `theorem`; no declaration carries two), with the **session-69**
+figures beside them (compiler-counted, each paired with an error count of 0):
 
-| file | sorries |
-|---|---|
-| `Basic.lean` | **0** |
-| `Positive.lean` | 13 |
-| `Representation.lean` | 11 |
-| `Matrices.lean` | 4 |
-| `TowardsVN.lean` | **0** |
-| **total** | **28** |
+| file | at survey | after session 69 |
+|---|---|---|
+| `Basic.lean` | **0** | **0** |
+| `Positive.lean` | 13 | 7 |
+| `Representation.lean` | 11 | **1** |
+| `Matrices.lean` | 4 | 2 |
+| `TowardsVN.lean` | **0** | **0** |
+| **total** | **28** | **10** |
 
-> **Do not count from the file headers.**  All five files still open with
-> "Statements only; every proof is `sorry`."  That is false for every one of
-> them, and flatly wrong for `Basic.lean` (1721 lines) and `TowardsVN.lean`
-> (2033 lines), which are fully proved.
+Session 69 closed **18 of the 28**: the whole parsec 270 Riesz-ideal chain,
+**30X**.2 and **30XIV** `gelfand_naimark` (the chapter's headline theorem) in
+`Representation.lean` — leaving only the do-not-touch 28II.4; the whole parsec
+130 power-series block plus 15VII and 24II.3 in `Positive.lean`; and both
+**32XV** items in `Matrices.lean`.  What is left is **two clusters and nothing
+else**: `goursat` with the six items behind it (parsecs 140–150), and `34VII`
+with `34IX.2` behind it.
+
+> **Do not count from the file headers.**  Four of the five used to open with
+> "Statements only; every proof is `sorry`", which was false in all four.
+> (`TowardsVN.lean` never carried that line — the first version of this survey
+> said "all five", wrongly.)  `Basic.lean` and `Representation.lean` were fixed
+> in session 69.
 
 Refresh with (bypasses another agent's `lake build` lock):
 
 ```sh
+export PATH="$HOME/.elan/bin:$PATH"
 LP=".lake/build/lib/lean"; for d in .lake/packages/*/.lake/build/lib/lean; do LP="$LP:$d"; done
 for f in Basic Positive Representation Matrices TowardsVN; do
-  echo -n "$f: "; env LEAN_PATH="$LP" lean Theses/A/CStar/$f.lean 2>&1 |
-    grep -c "declaration uses"
+  echo -n "$f: "
+  env LEAN_PATH="$LP" lean -DrelaxedAutoImplicit=false -DmaxSynthPendingDepth=3 \
+    Theses/A/CStar/$f.lean > /tmp/out-$f.txt 2>&1
+  echo -n "$(grep -c 'declaration uses' /tmp/out-$f.txt) sorries, "
+  echo "$(grep -c ': error' /tmp/out-$f.txt) errors"
 done
 ```
+
+⚠ **The two `-D` flags are load-bearing** (session 69).  `lakefile.toml` sets
+`relaxedAutoImplicit = false` and `maxSynthPendingDepth = 3`, and a bare `lean`
+does not read it: without `-DmaxSynthPendingDepth=3`, `Matrices.lean:1118`
+(`ad_cp_3`) reports a spurious "typeclass instance problem is stuck", so the
+recipe above claims **1 error** on a file that compiles cleanly.  The first
+version of this survey omitted them.
 
 Classification: **(a)** self-contained — a complete argument exists to
 transcribe, or (for exercises) every ingredient is already in the tree;
 **(b)** blocked on a *named* `sorry`; **(c)** cited to the literature, nothing
 to transcribe; **(d)** suspicious — looks false or mis-transcribed.
 
-**Counts: (a) 17 · (b) 10 · (c) 0 · (d) 1.**
+**Counts at the time of the survey: (a) 17 · (b) 10 · (c) 0 · (d) 1.**
+After session 69: (a) 2 (`goursat`, `34VII`) · (b) 7 · (c) 0 · (d) 1 (28II.4).
 
 **There are no (c) items in this chapter.**  Unlike A/VN (Artin–Wedderburn,
 `L^∞`) and B/Dils, A/CStar cites nothing as a black box.  14IV `goursat`
@@ -41,23 +63,39 @@ credits Moore 1900 for the *idea* but reproduces the proof in full.
 
 ---
 
-## `Positive.lean` — 13
+## `Positive.lean` — 13 (now 7)
 
-| line | point | decl | class |
+| point | decl | class | session 69 |
 |---|---|---|---|
-| 88 | **13II**.1 | `hadamard_1` | (a) small |
-| 95 | **13II**.2 | `hadamard_2` | (a) small; hypothesis slightly stronger than source |
-| 103 | **13IV** | `powerSeries_hasDerivAt` | (a) medium |
-| 112 | **13VI** | `powerseries_uniqueness_coeffients` | (a) small |
-| 159 | **14IV** | `goursat` | (a) **large — the file's gate** |
-| 180 | **14VIII**.2 | `invint_2` | (a) small–medium |
-| 190 | **14VIII**.2′ | `invint_2'` | (a) small–medium |
-| 201 | **14VIII**.3 | `invint_3` | **(b)** on `goursat` |
-| 210 | **14VIII**.4 | `invint_4` | **(b)** on `invint_3` |
-| 223 | **15I** | `cauchy_formula` | **(b)** on `goursat` + `invint_4` |
-| 239 | **15V** | `taylor` | **(b)** on `cauchy_formula` |
-| 259 | **15VII** | `rigid_expansion` | (a) — **not** blocked, see below |
-| 3710 | **24II**.3 | `cstar_pos_neg_part_3` | (a) small — **best cheap win in the chapter** |
+| **13II**.1 | `hadamard_1` | (a) small | **proved** (4 lines) |
+| **13II**.2 | `hadamard_2` | (a) small; hypothesis stronger than source | **proved** (6 lines) |
+| **13IV** | `powerSeries_hasDerivAt` | (a) medium | **proved** (~40 lines) |
+| **13VI** | `powerseries_uniqueness_coeffients` | (a) small | **proved** (~15 lines) |
+| **14IV** | `goursat` | (a) **large — the file's, and now the chapter's, only gate** | open |
+| **14VIII**.2 | `invint_2` | (a) small–medium | open |
+| **14VIII**.2′ | `invint_2'` | (a) small–medium | open |
+| **14VIII**.3 | `invint_3` | **(b)** on `goursat` | open |
+| **14VIII**.4 | `invint_4` | **(b)** on `invint_3` | open |
+| **15I** | `cauchy_formula` | **(b)** on `goursat` + `invint_4` | open |
+| **15V** | `taylor` | **(b)** on `cauchy_formula` | open |
+| **15VII** | `rigid_expansion` | (a) — **not** blocked, see below | **proved** (~35 lines) |
+| **24II**.3 | `cstar_pos_neg_part_3` | (a) small | **proved** (~105 lines) |
+
+> **Session-69 costings.**  The survey's single best call was that the
+> `radiusOfConvergence a = p.radius` bridge is the only real work in three of
+> the four power-series items: factored out as the private
+> `radiusOfConvergence_eq` + `fpsOfCoeffs_hasFPowerSeriesOnBall` (~55 lines),
+> after which each dependent item cost 4–40 lines.  Two costings were badly
+> off: **15VII** (~35 actual vs 80–120) and **13IV** (~40 vs 80–150) were
+> over-costed — 13IV was the *second cheapest* of the four, not the dearest —
+> while **24II**.3 was **under-costed roughly 2×** (~105 lines, not 40–60),
+> because `|a+b| = (√2/2)·1` puts an irrational entry in the matrix and the
+> neighbouring template's pure-`norm_num` endgame does not carry over.
+> Mathlib drift to note: `HasSum.tendsto_atTop_zero` is gone (use
+> `h.summable.tendsto_atTop_zero`); `EMetric.ball` / `Metric.emetric_ball*` are
+> deprecated for `Metric.eball*`; `Matrix.dotProduct` is now root `dotProduct`.
+> One trap: `rw [← map_mul]` on a goal containing a `!![…]` literal resolves
+> against `Matrix.of`, not `Matrix.toEuclideanCLM`.
 
 Twelve of these thirteen are the complex-analysis preamble of parsecs 120–150,
 built only to reach **16II** `norm_spectrum` — which is *already proved*, from
@@ -167,23 +205,23 @@ side are proved.
 
 ---
 
-## `Representation.lean` — 11
+## `Representation.lean` — 11 (now 1)
 
 | line | point | decl | class |
 |---|---|---|---|
-| 81 | **27VIII** | `riesz_ideal_ring_ideal` | (a) medium — **root of the 270 chain** |
-| 88 | **27X**.1 | `riesz_ideal_basic_1` | (a) medium–large |
-| 99 | **27X**.1b | `riesz_ideal_basic_1b` | **(b)** on 27X.1 |
-| 109 | **27X**.1c | `riesz_ideal_basic_1c` | **(b)** on 27X.1 |
-| 120 | **27X**.2 | `riesz_ideal_basic_2` | (a) medium — isolated |
-| 126 | **27X**.3 | `riesz_ideal_basic_3` | (a) small–medium — isolated |
-| 133 | **27XI** | `maximal_riesz_ideal_maximal_order_ideal` | **(b)** on 27VIII, 27X.1, 27X.2 |
-| 140 | **27XIII** | `riesz_ideal_miu_map` | **(b)** on 27XI |
-| 322 | **28II**.4 | `functional_calculus_4` | **(d)** weaker than source |
-| 690 | **30X**.2 | `proto_gelfand_naimark_2` | (a) large — **unblocks 30XIV** |
-| 703 | **30XIV** | `gelfand_naimark` | **(b)** on 30X.2 |
+| ~776 | **28II**.4 | `functional_calculus_4` | **(d)** weaker than source |
+| ~1290 | **30X**.2 | `proto_gelfand_naimark_2` | (a) large — see the ⚠ below |
+| ~1302 | **30XIV** | `gelfand_naimark` | **(b)** on 30X.2 — but see the ⚠ below |
 
-### The parsec 270 Riesz-ideal chain (8 sorries)
+> **✅ The parsec 270 Riesz-ideal chain is CLOSED (session 69).**  All eight —
+> `riesz_ideal_ring_ideal` (27VIII), `riesz_ideal_basic_1`/`_1b`/`_1c`/`_2`/`_3`
+> (27X.1/.1b/.1c/.2/.3), `maximal_riesz_ideal_maximal_order_ideal` (27XI) and
+> `riesz_ideal_miu_map` (27XIII) — are proved and axiom-clean, in the order this
+> survey recommended, and **27XV `inv_mult_state` has been rewritten to use them**,
+> so the maximal-ring-ideal detour that **16VIII** rejects is gone.  The section
+> below is kept as the record of what the chain needed.
+
+### The parsec 270 Riesz-ideal chain (8 sorries — all closed in session 69)
 
 Dependency shape, all edges taken from the thesis's own citations:
 
@@ -240,13 +278,30 @@ assumed that `|a| ∈ J`" and supplies a corrected proof in full
 lines — `b − f(b) ∈ ker f = I`, so `a(b − f(b)) ∈ I` by 27VIII, so
 `f(ab) = f(a)f(b)`.
 
-⚠ **What closing this chain actually buys.**  No `sorry` anywhere depends on
-it (see the downstream section).  What it buys is *honesty*: `inv_mult_state`
-(27XV, line 147) **is proved**, but its own comment at lines 150–157 records
-that the hard direction is routed through Mathlib's Gelfand theory, "which
-reaches the character space through maximal *ring* ideals — exactly the route
-**16VIII** rejects", and that it "cannot be made honest before that chain is
-proved."  27VIII–27XIII is the price of that repair.
+⚠ **What closing this chain actually bought.**  No `sorry` anywhere depended on
+it.  What it bought is *honesty*: `inv_mult_state` (27XV) was proved, but its
+own comment recorded that the hard direction went through Mathlib's Gelfand
+theory, "which reaches the character space through maximal *ring* ideals —
+exactly the route **16VIII** rejects", and that it "cannot be made honest
+before that chain is proved."  **That repair is done.**
+
+**Costings, measured.**  The chain came in at ~480 lines including helpers,
+against this survey's ~150 (27VIII) + ~200 (27X.1) + rest — i.e. the estimates
+were pessimistic, and the ordering was right.  Two things made it cheap, both
+worth reusing:
+
+* the private `orderIdealGen` skeleton of `Positive.lean:2170–2270` transfers
+  almost verbatim to `rieszIdealGen` — same submodule fields, same `ℜ`/`ℑ`
+  split, same `star_mem` computation; only the predicate changes;
+* three helpers carry nearly everything: `abs_le_iff` (`|x| ≤ y ↔ -y ≤ x ≤ y`,
+  one application of the proved **26II**.1), `abs_add_le` (the triangle
+  inequality, immediate from it), and `mem_sup_of_le_add` (the
+  Riesz-decomposition step).  All three are `private` in `Representation.lean`.
+
+One erratum-of-the-erratum: `parsec-270.120`'s step `1 ≤ (|x|+na)(|y|+mb)` is
+cited to `sqrt`(2) (**23VII**.2) but what it uses is **23VII**.1 — the product
+of *commuting positives* is positive, via `uv − 1 = u(v−1) + (u−1)`.  Harmless;
+both are proved.
 
 ### The rest
 
@@ -267,6 +322,15 @@ or at minimum add the conjunct that `cfc f a` satisfies the property.
 **30X**.2 `proto_gelfand_naimark_2` (`cstar.tex:4951` — doc says 4870; **drift
 81 lines**) — if `Ω` is centre separating then `ϱ_Ω` is injective, so `𝒜`
 embeds in `B(ℋ_Ω)`.  **(a), ~250–400 lines, and much closer than it looks:**
+
+⚠ **Reclassify (session 69): our statement is weaker than the source, and it
+is not a step towards 30XIV — it *is* 30XIV.**  The thesis's clause (1) is
+"`ϱ_Ω` is injective"; ours is the bare `∃ H (ρ : 𝒜 →⋆ₐ[ℂ] B H), Injective ρ`,
+which mentions neither `Ω` nor `ϱ_Ω`.  So (a) the converse (1) ⇒ (2) is
+unstatable and only half the three-way equivalence is captured, and (b) 30X.2
+and **30XIV** `gelfand_naimark` are the *same statement*, waiting on the *same*
+missing construction.  Filed as **QUESTIONS A8**.  Whoever takes this on should
+build `ϱ_Ω` properly and restate 30X, rather than prove the existential twice.
 
 * the (2)⇔(3) half, `proto_gelfand_naimark_1`, is **proved** directly above
   (line 634), with four private helpers (`eq_zero_of_cube_eq_zero`,
@@ -301,14 +365,40 @@ the states of `𝒜`, which lives in `Type u`).
 
 ---
 
-## `Matrices.lean` — 4
+## `Matrices.lean` — 4 (now 2)
 
-| line | point | decl | class |
+| point | decl | class | session 69 |
 |---|---|---|---|
-| 445 | **32XV**.2 | `chilb_vector_states_2` | (a) medium |
-| 453 | **32XV**.3 | `chilb_vector_states_3` | (a) medium; source gives no argument |
-| 1221 | **34VII** | `ccstar_pos_mat` | (a) **large — unblocks 34IX.2** |
-| 1286 | **34IX**.2 | `cp_commutative_dom` | **(b)** on 34VII |
+| **32XV**.2 | `chilb_vector_states_2` | (a) medium | **proved** |
+| **32XV**.3 | `chilb_vector_states_3` | (a) medium; source gives no argument | **proved** |
+| **34VII** | `ccstar_pos_mat` | (a) **large — unblocks 34IX.2** | open |
+| **34IX**.2 | `cp_commutative_dom` | **(b)** on 34VII | open |
+
+> ⚠ **Both 32XV costings were wrong in the cheap direction, for the same
+> reason: `Bᵃ(X)` as an actual `CStarAlgebra` *instance* did not exist** —
+> neither here nor in Mathlib, whose `Analysis/CStarAlgebra/Module/` is
+> `Defs` + `Constructions` + `Synonym` with **no adjointable-operator theory at
+> all**.  `bax_cstar` (32XIII) supplies only the closedness half.  Session 69
+> built it as a private `Subalgebra ℂ (X →L[ℂ] X)` — star = the chosen adjoint,
+> `CStarRing` from 32XII, completeness from 32XIII, plus the spectral order —
+> **~110 lines before either proof starts**, total insertion ~316 against the
+> ~270 forecast.  Anyone touching parsec 320 again should reuse it.
+> Also: `chilb_vector_states_3` needs `set_option maxHeartbeats 400000`
+> (`rw` inside the `Bax` subtype is expensive; whole-file compile ~63 s), and
+> `negPart_conj_aux`/`nonneg_of_negPart_cube` duplicate the two halves of
+> `exists_negPart`, which sits *below* 32XV in the file — merge if reorganising.
+>
+> ⚠ **New erratum found here** (filed in ERRATA.md): after erratum
+> `parsec-320.150` the exercise's own route to part 3 no longer works.  It asks
+> the reader to "conclude" from order separation, imitating 250.30, which
+> reduces to `T ≥ 0` via **21VII** `order-separating-norm` — stated for **pu**
+> maps, while the erratum's point is that these functionals are only
+> *subunital*.  Part 3's proof in Lean is therefore **ours**, not a
+> transcription; so is part 2's, which the source also leaves as "conclude".
+>
+> **32XVI `chilb_adjoint_mul_self_nonneg` has been strengthened** to the
+> thesis's Corollary 320.160 (`0 ≤ T*T` in `Bᵃ(X)`, not just pointwise), as
+> this survey recommended once 32XV.2 landed.  It had no callers anywhere.
 
 **32XV**.2 `chilb_vector_states_2` (`cstar.tex:5349` — doc says 5268; **drift
 81**) — `0 ≤ T` in `Bᵃ(X)` iff `0 ≤ ⟨x,Tx⟩` for all `x`.  Part 1
@@ -363,7 +453,18 @@ duality, no Urysohn.  So 34VII → 34IX.2 buys faithfulness, not reach.
 
 ## The three highest-value targets
 
-**1. 27VIII `riesz_ideal_ring_ideal`** (`Representation.lean:81`).
+> **Session 69: targets 1 and 2 are both DONE.**  The whole 270 chain, plus the
+> 27XV repair; and **30X.2 and 30XIV `gelfand_naimark`** — the chapter's
+> headline theorem — with `ϱ_Ω` built as the public `dsumRep`.  What remains of
+> target 2 is a *statement* question (**QUESTIONS A8**), not a proof: our 30X.2
+> drops `ϱ_Ω` from clause (1), so (1) ⇒ (2) is unstatable and 30X.2 is 30XIV
+> rather than a step towards it.  Now that `dsumRep` exists, restating 30X
+> faithfully is cheap — but it is an author decision.
+>
+> **The live ranking is now: 14IV `goursat` (the chapter's only gate, six items
+> behind it) and 34VII `ccstar_pos_mat`.**
+
+**1. 27VIII `riesz_ideal_ring_ideal`** (`Representation.lean:81`) — **DONE**.
 Chain-opening, and the chain is the biggest in the chapter: it is required by
 27XI and 27XIII, and together with 27X.1/.2/.3 it accounts for **8 of the 28**
 sorries.  It is the only chain here in which *every* external ingredient is
@@ -375,20 +476,28 @@ explicitly rejects.  Order of attack within the chain: 27X.3 (isolated,
 cheapest, copy `order_ideal_basic_2`) → 27VIII → 27X.2 → 27X.1 → 27XI (from
 `asols.tex`) → 27XIII → 27X.1b/.1c.
 
-**2. 30X.2 `proto_gelfand_naimark_2`** (`Representation.lean:690`).
-Chain-opening — it is the *sole* blocker of **30XIV `gelfand_naimark`**, the
+**2. 30X.2 `proto_gelfand_naimark_2`** — **DONE**, together with 30XIV.
+Chain-opening — it was the *sole* blocker of **30XIV `gelfand_naimark`**, the
 headline theorem of the chapter, which is ~30 lines behind it.  Beats an
 isolated item on two further counts: the (2)⇔(3) half is proved right above it,
 and Mathlib now supplies both missing pieces of infrastructure (single-`ω` GNS,
 `lp G 2` direct sum), so the residue is one construction (`ϱ_Ω` as a diagonal
-operator) plus a four-line argument.  Proving it also settles whether A/VN's
-**48III `gns_normal`** is still correctly classed [L] — it probably is not.
+operator) plus a four-line argument.  *All of that held.*  `ϱ_Ω` cost ~90 lines
+and its template is `amp` (`A/VN/NormalFunctionals.lean:1716–1799`), the `ℕ`-fold
+amplification built for 88V; 30X.2 and 30XIV together cost ~110 more.  Note
+A/VN's public `lp_clm_ext` forces a primed name for the A/CStar copy.  Proving
+it also settles whether A/VN's **48III `gns_normal`** is still correctly classed
+[L] — it is not; Mathlib's GNS plus `dsumRep` should now cover it.
 
-**3. 34VII `ccstar_pos_mat`** (`Matrices.lean:1221`).
+**3. 34VII `ccstar_pos_mat`** (`Matrices.lean`) — **now the chapter's only
+self-contained target besides `goursat`.**
 Chain-opening (sole blocker of 34IX.2, closing the last CP-theory gap in the
-chapter) with a complete thesis proof, but ranked third because it is the
-largest single item and the payoff is faithfulness only — `normal_russo_dye`
-already routed around it.
+chapter) with a complete thesis proof, but the payoff is faithfulness only —
+`normal_russo_dye` already routed around it.  **Re-costed in session 69 at
+450–650 lines**, and the "transport dominates" call is confirmed: Mathlib has
+neither `(𝒜 ≃⋆ₐ ℬ) → (M_N 𝒜 ≃⋆ₐ M_N ℬ)` nor any `M_N(C(X)) ≅ C(X, M_N ℂ)`
+bridge, both of which must be built.  Once inside `C(X, M_N ℂ)` the thesis's
+order computation is better replaced by a plain triangle inequality.
 
 *Warm-ups, if a short session is wanted:* **24II**.3 `cstar_pos_neg_part_3`
 (~40 lines, template 50 lines above it) and **15VII** `rigid_expansion`
@@ -470,6 +579,13 @@ would want.  When 32XV.2 lands, strengthen 32XVI to match.
   a correct one, and `parsec-320.150` (`asols.tex:255–264`) corrects 32XV's
   statement and retracts its hint.  Our 32XV statements already follow the
   erratum.
-* **Update the five file headers.**  "Statements only; every proof is `sorry`"
-  is wrong in all five files and has already produced miscounts elsewhere in
-  this project.
+* ~~**Update the five file headers.**~~  **Done for `Basic.lean` and
+  `Representation.lean` (session 69).**  Note the survey was wrong to say all
+  five carried the false line: **`TowardsVN.lean` never did** — its header
+  already read "All statements of parsecs 350–400 are proved."  So it was four
+  files, not five.
+* **Do not edit a header of a file that nothing is waiting on while other
+  agents are building.**  Touching `Basic.lean`'s header comment in session 69
+  invalidated the whole `A/CStar → A/VN → {A/Proc, B/Dils}` olean chain and
+  forced a full rebuild on a `B/Dils` worker mid-run.  Batch header fixes into
+  the end of a session.
