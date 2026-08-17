@@ -219,6 +219,25 @@ the first half, `surjective_nmiu_1`, is **true and proved** as it stands, and
 that changing `IsCornerFor` will require its existence clause to be
 re-checked (its uniqueness clause only gets easier).
 
+### B13. Minor: our `effectus_vn_partial` does not record that `I = ℂ`
+
+**180V** (`eff.tex:832`) says the partial maps of `vNᵒᵖ` "correspond to the
+ncp-maps `f` with `f(1) ≤ 1`", and our doc comment says "its effect object
+being `ℂ`" — but the statement we render,
+`Nonempty (EffectusPartialStructure WStarCPSU.{u}ᵒᵖ)`, asserts only that
+*some* effectus structure exists and says nothing about `I`.  As it stands it
+is weaker than the text and than its own doc comment, and it is weaker than the
+neighbouring `cho_thm_1`, which does pin its effect object
+(`∃ s, s.effectus.I = Par.of (⊤_ C)`).
+
+The proof given (2026-08-17) *does* build `I = ℂᵤ` (`suEffectusPartialForm`),
+so strengthening the statement to
+`∃ s : EffectusPartialStructure WStarCPSU.{u}ᵒᵖ, s.effectus.I = suI`
+would cost a line.  **Ruling wanted**: strengthen it (statements are not
+changed without one).  This also matters downstream: the eight examples of
+`VNExamples.lean` quantify over an *arbitrary* `s`, and what they need in
+order to compute is exactly an isomorphism `s.effectus.I ≅ ℂᵤ`.
+
 ### B8. Minor: `bsols.tex`'s `onb1` solution over-assumes
 Its solution assumes self-duality, which neither the exercise nor our statement
 requires.  Harmless; noted for tidiness.
@@ -396,13 +415,19 @@ Confirm that is the right treatment:
   * `effintro` is still the only citation; we did not consult it.  If it does
     contain the argument, our proof is an independent one and the entry above
     can simply be dropped.
-* **`effectus_vn`** (`eff.tex:832`, says only "adapt the proof of
-  `emod-effectus`").  Note (2026-08-14, worker 45): `emod-effectus` (191II) is
-  now fully formalized, so the analogy now has something concrete to be an
-  analogy *to* — but the two proofs share nothing beyond their shape: 191II's
-  is elementwise in `EMod_M`, and the `vNᵒᵖ` version needs the von Neumann
-  theory of thesis A, none of which is on `B/Eff`'s import path (`B/Eff`
-  imports only `Theses.Common`).
+* ~~**`effectus_vn`**~~ (`eff.tex:832`, says only "adapt the proof of
+  `emod-effectus`") — **no longer parked: `effectus_vn` and
+  `effectus_vn_partial` are both proved, 2026-08-17** (`VNExamples.lean`).  The
+  thesis gives no proof, so the mathematics had to be supplied; it is recorded
+  in PROVING-LOG.  It does follow the shape of 191II — it goes through the same
+  bridge `effectusTotalForm_of_pres` — but nothing beyond the shape is shared,
+  and the authors may want to know what the "adapt the proof" of 180V actually
+  comes to: the two 180I pullbacks are the statements that a ncpu-map out of
+  `𝒜 ⊕ ℬ` is exactly a compatible pair out of `𝒜 ⊕ ℂ` and `ℂ ⊕ ℬ`
+  (glued by `γ(a,b) = β(a,0) + α(0,b)`), and that a ncpu-map out of `𝒜` is
+  exactly one out of `𝒜 ⊕ ℬ` killing `0 ⊕ ℬ`; the only non-formal ingredient
+  is that a positive map killing `(0,1)` kills `0 ⊕ ℬ` (because
+  `b ≤ ‖b‖·1`).
 * **177Ia** — see B4 above.
 
 ### A4. 217I's independence-of-choice claim is not formalised

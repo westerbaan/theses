@@ -20,9 +20,13 @@ A-dependent statements move here, to a single leaf module.  Only this file
 sees thesis A, and only this file is exposed to churn in it.
 
 `Theses.B.Dils.Pure` transitively supplies all of `A/CStar`, all of `A/VN`
-and all of `B/Dils`.  `A/Proc` (tensor products, the symmetric monoidal
-structure) is deliberately *not* imported: nothing here has been shown to
-need it.  Add it if and when a proof does.
+and all of `B/Dils`.  `A/Proc` is deliberately *not* imported, and nothing
+proved here has needed it.  **One statement below does**: `vn_is_andthen_eff`
+(211IV) is proved in eff.tex:4859 from **105V** `positive-map-uniqueness` and
+**100III** `pure-fundamental`, both in `Theses/A/Proc/Measurement.lean` — and
+105V is itself still `sorry` there.  So that item is blocked twice over: the
+import would have to be added *and* 105V closed first.  (An earlier version of
+this header claimed nothing here needs `A/Proc`; that was wrong.)
 
 **Nothing was changed in the move**: each statement below is verbatim the
 one that stood in the file named after it, same name, same binders, same
@@ -52,9 +56,10 @@ missing from Mathlib; **`CStarAlgebra` extends `NormedRing`, not
 `CStarAlgebra (Π _ : Empty, ℂ)` synthesises from the finite-`Pi` instance.)
 
 With these, `WStar.trivial` is a bona fide object of `WStarNCPU`/`WStarCPSU`.
-What is still to be done for the gate is `IsTerminal (WStarNCPU.of
-WStar.trivial)`, i.e. the unique `NCPUMap A PUnit`; every one of its
-obligations is a `Subsingleton.elim`. -/
+That it is final in `vN` (hence initial in `vNᵒᵖ`) is `vnTrivIsTerminal`
+below, and `suTrivIsTerminal` for the ncpsu-maps.  (`WStar.trivial` was
+originally stated one universe too high — `WStar.{u+1}`, which can never be an
+object of `WStarNCPU.{u}` — and is corrected here.) -/
 
 section TrivialAlgebra
 
@@ -84,7 +89,7 @@ instance : Theses.VonNeumannAlgebra PUnit.{u + 1} where
 
 /-- The trivial von Neumann algebra `{0}` as an object of `WStar`: the
 terminal object of `vN`, hence the initial object of `vNᵒᵖ`. -/
-noncomputable def WStar.trivial : WStar.{u + 1} := WStar.of PUnit.{u + 2}
+noncomputable def WStar.trivial : WStar.{u} := WStar.of PUnit.{u + 1}
 
 end TrivialAlgebra
 
@@ -274,6 +279,1176 @@ theorem projections_orthomodularLattice (A : Type u) [CStarAlgebra A]
     show a.1 + (b.1 - a.1) = b.1
     abel
 
+/-! ## Infrastructure for the von Neumann effectus (180V)
+
+Everything `effectus_vn` needs that is not already in the tree: products and
+the scalars `ℂᵤ = ULift ℂ` as von Neumann algebras, a hand-built API for
+ncpu-maps (the identity and composition of `WStarCat.lean` are obtained by
+`Classical.choice`, so their defining equations are propositional rather than
+definitional), the concrete presentation `vnPres` of `vNᵒᵖ`, and the two
+pushout squares and the joint-monicity statement of 180I. -/
+
+section VNEffectus
+
+open Theses.A.CStar
+open scoped ComplexOrder ComplexStarModule
+
+section VNInfra
+
+/-! ### Products of von Neumann algebras -/
+
+section ProdVNA
+
+variable {A B : Type u} [CStarAlgebra A] [PartialOrder A] [StarOrderedRing A]
+  [CStarAlgebra B] [PartialOrder B] [StarOrderedRing B]
+
+set_option linter.unusedSectionVars false in
+theorem prod_sa_fst {x : A × B} (hx : IsSelfAdjoint x) : IsSelfAdjoint x.1 :=
+  congrArg Prod.fst hx
+
+set_option linter.unusedSectionVars false in
+theorem prod_sa_snd {x : A × B} (hx : IsSelfAdjoint x) : IsSelfAdjoint x.2 :=
+  congrArg Prod.snd hx
+
+/-- First component of a self-adjoint element of a product. -/
+def saFst (x : selfAdjoint (A × B)) : selfAdjoint A := ⟨x.1.1, prod_sa_fst x.2⟩
+
+/-- Second component of a self-adjoint element of a product. -/
+def saSnd (x : selfAdjoint (A × B)) : selfAdjoint B := ⟨x.1.2, prod_sa_snd x.2⟩
+
+theorem saFst_mono {x y : selfAdjoint (A × B)} (h : x ≤ y) : saFst x ≤ saFst y :=
+  Subtype.coe_le_coe.mp (Prod.le_def.mp (Subtype.coe_le_coe.mpr h)).1
+
+theorem saSnd_mono {x y : selfAdjoint (A × B)} (h : x ≤ y) : saSnd x ≤ saSnd y :=
+  Subtype.coe_le_coe.mp (Prod.le_def.mp (Subtype.coe_le_coe.mpr h)).2
+
+theorem sa_le_of_components {x y : selfAdjoint (A × B)} (h₁ : saFst x ≤ saFst y)
+    (h₂ : saSnd x ≤ saSnd y) : x ≤ y :=
+  Subtype.coe_le_coe.mp (Prod.le_def.mpr
+    ⟨Subtype.coe_le_coe.mpr h₁, Subtype.coe_le_coe.mpr h₂⟩)
+
+/-- The first component of a supremum in a product is the supremum of the
+first components (the upper bounds of a set in a product order are exactly
+the pairs of componentwise upper bounds). -/
+theorem isLUB_saFst {D : Set (selfAdjoint (A × B))} {s : selfAdjoint (A × B)}
+    (h : IsLUB D s) : IsLUB (saFst '' D) (saFst s) := by
+  constructor
+  · rintro _ ⟨d, hd, rfl⟩
+    exact saFst_mono (h.1 hd)
+  · intro x hx
+    have hsa : IsSelfAdjoint ((x : A), (saSnd s : B)) :=
+      Prod.ext x.2 (saSnd s).2
+    have hub : (⟨((x : A), (saSnd s : B)), hsa⟩ : selfAdjoint (A × B))
+        ∈ upperBounds D := by
+      intro d hd
+      refine sa_le_of_components (hx ⟨d, hd, rfl⟩) ?_
+      have hd2 : saSnd d ≤ saSnd s := saSnd_mono (h.1 hd)
+      exact hd2
+    exact saFst_mono (h.2 hub)
+
+theorem isLUB_saSnd {D : Set (selfAdjoint (A × B))} {s : selfAdjoint (A × B)}
+    (h : IsLUB D s) : IsLUB (saSnd '' D) (saSnd s) := by
+  constructor
+  · rintro _ ⟨d, hd, rfl⟩
+    exact saSnd_mono (h.1 hd)
+  · intro x hx
+    have hsa : IsSelfAdjoint ((saFst s : A), (x : B)) :=
+      Prod.ext (saFst s).2 x.2
+    have hub : (⟨((saFst s : A), (x : B)), hsa⟩ : selfAdjoint (A × B))
+        ∈ upperBounds D := by
+      intro d hd
+      refine sa_le_of_components ?_ (hx ⟨d, hd, rfl⟩)
+      have hd1 : saFst d ≤ saFst s := saFst_mono (h.1 hd)
+      exact hd1
+    exact saSnd_mono (h.2 hub)
+
+theorem directedOn_saFst {D : Set (selfAdjoint (A × B))}
+    (h : DirectedOn (· ≤ ·) D) : DirectedOn (· ≤ ·) (saFst '' D) := by
+  rintro _ ⟨d, hd, rfl⟩ _ ⟨e, he, rfl⟩
+  obtain ⟨z, hz, hdz, hez⟩ := h d hd e he
+  exact ⟨saFst z, ⟨z, hz, rfl⟩, saFst_mono hdz, saFst_mono hez⟩
+
+theorem directedOn_saSnd {D : Set (selfAdjoint (A × B))}
+    (h : DirectedOn (· ≤ ·) D) : DirectedOn (· ≤ ·) (saSnd '' D) := by
+  rintro _ ⟨d, hd, rfl⟩ _ ⟨e, he, rfl⟩
+  obtain ⟨z, hz, hdz, hez⟩ := h d hd e he
+  exact ⟨saSnd z, ⟨z, hz, rfl⟩, saSnd_mono hdz, saSnd_mono hez⟩
+
+/-- The np-functional `(a, b) ↦ ω a` on a product. -/
+noncomputable def npFst [Theses.VonNeumannAlgebra A] (ω : Theses.NPFunctional A) :
+    Theses.NPFunctional (A × B) where
+  toPositiveLinearMap :=
+    { toLinearMap := (ω.toPositiveLinearMap : A →ₗ[ℂ] ℂ).comp (LinearMap.fst ℂ A B)
+      monotone' := fun _ _ h => ω.toPositiveLinearMap.monotone' (Prod.le_def.mp h).1 }
+  preservesDirSups' := by
+    intro D s hne hdir hlub
+    have h := ω.preservesDirSups' (saFst '' D) (saFst s) (hne.image _)
+      (directedOn_saFst hdir) (isLUB_saFst hlub)
+    rwa [Set.image_image] at h
+
+/-- The np-functional `(a, b) ↦ ω b` on a product. -/
+noncomputable def npSnd [Theses.VonNeumannAlgebra B] (ω : Theses.NPFunctional B) :
+    Theses.NPFunctional (A × B) where
+  toPositiveLinearMap :=
+    { toLinearMap := (ω.toPositiveLinearMap : B →ₗ[ℂ] ℂ).comp (LinearMap.snd ℂ A B)
+      monotone' := fun _ _ h => ω.toPositiveLinearMap.monotone' (Prod.le_def.mp h).2 }
+  preservesDirSups' := by
+    intro D s hne hdir hlub
+    have h := ω.preservesDirSups' (saSnd '' D) (saSnd s) (hne.image _)
+      (directedOn_saSnd hdir) (isLUB_saSnd hlub)
+    rwa [Set.image_image] at h
+
+/-- **The product of two von Neumann algebras is a von Neumann algebra.**
+Suprema of bounded directed sets are computed componentwise (the upper
+bounds of a set in a product order form a product), and the np-functionals
+`ω ∘ π₁`, `ω ∘ π₂` are jointly faithful. -/
+instance instVonNeumannAlgebraProd [Theses.VonNeumannAlgebra A]
+    [Theses.VonNeumannAlgebra B] : Theses.VonNeumannAlgebra (A × B) where
+  isLUB_of_bddAbove_directed D hne hdir hbdd := by
+    obtain ⟨c, hc⟩ := hbdd
+    obtain ⟨s₁, hs₁⟩ := Theses.VonNeumannAlgebra.isLUB_of_bddAbove_directed
+      (saFst '' D) (hne.image _) (directedOn_saFst hdir)
+      ⟨saFst c, by rintro _ ⟨d, hd, rfl⟩; exact saFst_mono (hc hd)⟩
+    obtain ⟨s₂, hs₂⟩ := Theses.VonNeumannAlgebra.isLUB_of_bddAbove_directed
+      (saSnd '' D) (hne.image _) (directedOn_saSnd hdir)
+      ⟨saSnd c, by rintro _ ⟨d, hd, rfl⟩; exact saSnd_mono (hc hd)⟩
+    refine ⟨⟨((s₁ : A), (s₂ : B)), Prod.ext s₁.2 s₂.2⟩, ?_, ?_⟩
+    · intro d hd
+      exact sa_le_of_components (hs₁.1 ⟨d, hd, rfl⟩) (hs₂.1 ⟨d, hd, rfl⟩)
+    · intro x hx
+      refine sa_le_of_components (hs₁.2 ?_) (hs₂.2 ?_)
+      · rintro _ ⟨d, hd, rfl⟩; exact saFst_mono (hx hd)
+      · rintro _ ⟨d, hd, rfl⟩; exact saSnd_mono (hx hd)
+  np_faithful x hx hω := by
+    refine Prod.ext ?_ ?_
+    · refine Theses.VonNeumannAlgebra.np_faithful x.1 (Prod.le_def.mp hx).1 fun ω => ?_
+      exact hω (npFst ω)
+    · refine Theses.VonNeumannAlgebra.np_faithful x.2 (Prod.le_def.mp hx).2 fun ω => ?_
+      exact hω (npSnd ω)
+
+end ProdVNA
+
+end VNInfra
+
+section
+
+section ScalarsVNA
+
+/-! ### The scalars `ℂᵤ` as a von Neumann algebra -/
+
+private theorem cu_sa {x : ULift.{u} ℂ} (h : IsSelfAdjoint x) : IsSelfAdjoint x.down :=
+  congrArg ULift.down h
+
+private theorem cu_sa' {c : ℂ} (h : IsSelfAdjoint c) :
+    IsSelfAdjoint (ULift.up.{u} c) := congrArg ULift.up h
+
+/-- The self-adjoint part of `ℂᵤ`, pushed down to `ℂ`. -/
+private def saDown (x : selfAdjoint (ULift.{u} ℂ)) : selfAdjoint ℂ :=
+  ⟨x.1.down, cu_sa x.2⟩
+
+/-- The self-adjoint part of `ℂ`, lifted to `ℂᵤ`. -/
+private def saUp (c : selfAdjoint ℂ) : selfAdjoint (ULift.{u} ℂ) :=
+  ⟨⟨c.1⟩, cu_sa' c.2⟩
+
+private theorem saDown_le_iff {x y : selfAdjoint (ULift.{u} ℂ)} :
+    saDown x ≤ saDown y ↔ x ≤ y := Iff.rfl
+
+private theorem saDown_saUp (c : selfAdjoint ℂ) : saDown (saUp.{u} c) = c := rfl
+
+private theorem isLUB_saDown {D : Set (selfAdjoint (ULift.{u} ℂ))}
+    {s : selfAdjoint (ULift.{u} ℂ)} (h : IsLUB D s) :
+    IsLUB (saDown '' D) (saDown s) := by
+  constructor
+  · rintro _ ⟨d, hd, rfl⟩
+    exact saDown_le_iff.mpr (h.1 hd)
+  · intro c hc
+    have hub : saUp.{u} c ∈ upperBounds D := by
+      intro d hd
+      have h1 : saDown d ≤ saDown (saUp.{u} c) := hc ⟨d, hd, rfl⟩
+      exact saDown_le_iff.mp h1
+    have h2 : saDown s ≤ saDown (saUp.{u} c) := saDown_le_iff.mpr (h.2 hub)
+    exact h2
+
+private theorem directedOn_saDown {D : Set (selfAdjoint (ULift.{u} ℂ))}
+    (h : DirectedOn (· ≤ ·) D) : DirectedOn (· ≤ ·) (saDown '' D) := by
+  rintro _ ⟨d, hd, rfl⟩ _ ⟨e, he, rfl⟩
+  obtain ⟨z, hz, hdz, hez⟩ := h d hd e he
+  exact ⟨saDown z, ⟨z, hz, rfl⟩, saDown_le_iff.mpr hdz, saDown_le_iff.mpr hez⟩
+
+end ScalarsVNA
+
+end
+
+section
+
+variable {A B C : Type u} [CStarAlgebra A] [PartialOrder A] [StarOrderedRing A]
+  [CStarAlgebra B] [PartialOrder B] [StarOrderedRing B]
+  [CStarAlgebra C] [PartialOrder C] [StarOrderedRing C]
+
+/-- A supremum of a nonempty set of self-adjoint elements taken in the
+self-adjoint part is a supremum in the algebra: an upper bound of a nonempty
+set of self-adjoint elements is itself self-adjoint. -/
+theorem isLUB_coe_of_isLUB {D : Set (selfAdjoint A)} {s : selfAdjoint A}
+    (hne : D.Nonempty) (h : IsLUB D s) :
+    IsLUB ((fun d : selfAdjoint A => (d : A)) '' D) (s : A) := by
+  constructor
+  · rintro _ ⟨d, hd, rfl⟩
+    exact Subtype.coe_le_coe.mpr (h.1 hd)
+  · intro c hc
+    obtain ⟨d, hd⟩ := hne
+    have hdc : (d : A) ≤ c := hc ⟨d, hd, rfl⟩
+    have hsa : IsSelfAdjoint c := by
+      have h0 : (0 : A) ≤ c - d := sub_nonneg.mpr hdc
+      simpa using h0.isSelfAdjoint.add d.2
+    have hub : (⟨c, hsa⟩ : selfAdjoint A) ∈ upperBounds D := by
+      intro e he
+      have h1 : (e : A) ≤ ((⟨c, hsa⟩ : selfAdjoint A) : A) := hc ⟨e, he, rfl⟩
+      exact Subtype.coe_le_coe.mp h1
+    exact Subtype.coe_le_coe.mpr (h.2 hub)
+
+/-- A normal map is monotone on the self-adjoint part (apply normality to the
+two-element set `{d, z}`). -/
+theorem mono_of_preservesDirSups {f : A → B} (hf : Theses.PreservesDirSups f)
+    {d z : selfAdjoint A} (h : d ≤ z) : f d ≤ f z := by
+  have hlub : IsLUB ({d, z} : Set (selfAdjoint A)) z := by
+    constructor
+    · intro x hx
+      rcases hx with rfl | hx
+      · exact h
+      · rw [Set.mem_singleton_iff] at hx; subst hx; exact le_refl _
+    · intro c hc
+      exact hc (Or.inr rfl)
+  have hdir : DirectedOn (· ≤ ·) ({d, z} : Set (selfAdjoint A)) := by
+    intro x hx y hy
+    refine ⟨z, Or.inr rfl, ?_, ?_⟩
+    · rcases hx with rfl | hx
+      · exact h
+      · rw [Set.mem_singleton_iff] at hx; subst hx; exact le_refl _
+    · rcases hy with rfl | hy
+      · exact h
+      · rw [Set.mem_singleton_iff] at hy; subst hy; exact le_refl _
+  exact (hf _ z ⟨d, Or.inl rfl⟩ hdir hlub).1 ⟨d, Or.inl rfl, rfl⟩
+
+/-- Normality is preserved by pointwise addition. -/
+theorem preservesDirSups_add {f g : A → B} (hf : Theses.PreservesDirSups f)
+    (hg : Theses.PreservesDirSups g) :
+    Theses.PreservesDirSups (fun a => f a + g a) := by
+  intro D s hne hdir hlub
+  have hf' := hf D s hne hdir hlub
+  have hg' := hg D s hne hdir hlub
+  constructor
+  · rintro _ ⟨d, hd, rfl⟩
+    exact add_le_add (hf'.1 ⟨d, hd, rfl⟩) (hg'.1 ⟨d, hd, rfl⟩)
+  · intro c hc
+    have step : ∀ e ∈ D, f s + g e ≤ c := by
+      intro e he
+      have hub : c - g e ∈ upperBounds ((fun d : selfAdjoint A => f d) '' D) := by
+        rintro _ ⟨d, hd, rfl⟩
+        obtain ⟨z, hz, hdz, hez⟩ := hdir d hd e he
+        have h1 : f d + g e ≤ f z + g z :=
+          add_le_add (mono_of_preservesDirSups hf hdz) (mono_of_preservesDirSups hg hez)
+        exact le_sub_iff_add_le.mpr (h1.trans (hc ⟨z, hz, rfl⟩))
+      exact add_le_of_le_sub_right (hf'.2 hub)
+    have hub2 : c - f s ∈ upperBounds ((fun d : selfAdjoint A => g d) '' D) := by
+      rintro _ ⟨e, he, rfl⟩
+      have h2 := step e he
+      rw [add_comm] at h2
+      exact le_sub_iff_add_le.mpr h2
+    have h3 := hg'.2 hub2
+    rw [le_sub_iff_add_le, add_comm] at h3
+    exact h3
+
+end
+
+section
+
+variable {A B C : Type u} [CStarAlgebra A] [PartialOrder A] [StarOrderedRing A]
+  [CStarAlgebra B] [PartialOrder B] [StarOrderedRing B]
+  [CStarAlgebra C] [PartialOrder C] [StarOrderedRing C]
+
+/-! ### Complete positivity of the maps built from products -/
+
+theorem sa_of_cp {f : A →ₗ[ℂ] B} (hf : IsCompletelyPositiveMap f) {a : A}
+    (ha : IsSelfAdjoint a) : IsSelfAdjoint (f a) := by
+  have hi := cstar_p_implies_i f (astara_pos_basic_2_cp f hf)
+  have := hi a
+  rw [ha] at this
+  exact this.symm
+
+theorem cp_add {f g : A →ₗ[ℂ] B} (hf : IsCompletelyPositiveMap f)
+    (hg : IsCompletelyPositiveMap g) : IsCompletelyPositiveMap (f + g) := by
+  intro n a b
+  have hrw : ∀ i j : Fin n, star (b i) * (f + g) (star (a i) * a j) * b j
+      = star (b i) * f (star (a i) * a j) * b j
+        + star (b i) * g (star (a i) * a j) * b j := by
+    intro i j
+    simp [mul_add, add_mul]
+  simp_rw [hrw, Finset.sum_add_distrib]
+  exact add_nonneg (hf n a b) (hg n a b)
+
+theorem cp_prod {f : C →ₗ[ℂ] A} {g : C →ₗ[ℂ] B} (hf : IsCompletelyPositiveMap f)
+    (hg : IsCompletelyPositiveMap g) :
+    IsCompletelyPositiveMap (LinearMap.prod f g) := by
+  intro n a b
+  refine Prod.le_def.mpr ⟨?_, ?_⟩
+  · have h : (∑ i, ∑ j, star (b i) * (LinearMap.prod f g) (star (a i) * a j) * b j).1
+        = ∑ i, ∑ j, star (b i).1 * f (star (a i) * a j) * (b j).1 := by
+      simp [Prod.fst_sum]
+    rw [show (0 : A × B).1 = 0 from rfl, h]
+    exact hf n a (fun i => (b i).1)
+  · have h : (∑ i, ∑ j, star (b i) * (LinearMap.prod f g) (star (a i) * a j) * b j).2
+        = ∑ i, ∑ j, star (b i).2 * g (star (a i) * a j) * (b j).2 := by
+      simp [Prod.snd_sum]
+    rw [show (0 : A × B).2 = 0 from rfl, h]
+    exact hg n a (fun i => (b i).2)
+
+theorem cp_fstLin : IsCompletelyPositiveMap (LinearMap.fst ℂ A B) :=
+  cp_of_mi _ (fun _ _ => rfl) (fun _ => rfl)
+
+theorem cp_sndLin : IsCompletelyPositiveMap (LinearMap.snd ℂ A B) :=
+  cp_of_mi _ (fun _ _ => rfl) (fun _ => rfl)
+
+theorem cp_inlLin : IsCompletelyPositiveMap (LinearMap.inl ℂ A B) :=
+  cp_of_mi _ (fun _ _ => Prod.ext rfl (by simp)) (fun _ => Prod.ext rfl (by simp))
+
+theorem cp_inrLin : IsCompletelyPositiveMap (LinearMap.inr ℂ A B) :=
+  cp_of_mi _ (fun _ _ => Prod.ext (by simp) rfl) (fun _ => Prod.ext (by simp) rfl)
+
+/-! ### Normality of the maps built from products -/
+
+theorem preservesDirSups_fstFun :
+    Theses.PreservesDirSups (fun x : A × B => x.1) := by
+  intro D s hne hdir hlub
+  have h := isLUB_coe_of_isLUB (A := A) (hne.image _) (isLUB_saFst hlub)
+  rwa [Set.image_image] at h
+
+theorem preservesDirSups_sndFun :
+    Theses.PreservesDirSups (fun x : A × B => x.2) := by
+  intro D s hne hdir hlub
+  have h := isLUB_coe_of_isLUB (A := B) (hne.image _) (isLUB_saSnd hlub)
+  rwa [Set.image_image] at h
+
+theorem preservesDirSups_prodFun {f : A → B} {g : A → C}
+    (hf : Theses.PreservesDirSups f) (hg : Theses.PreservesDirSups g) :
+    Theses.PreservesDirSups (fun a => (f a, g a)) := by
+  intro D s hne hdir hlub
+  have hf' := hf D s hne hdir hlub
+  have hg' := hg D s hne hdir hlub
+  constructor
+  · rintro _ ⟨d, hd, rfl⟩
+    exact Prod.le_def.mpr ⟨hf'.1 ⟨d, hd, rfl⟩, hg'.1 ⟨d, hd, rfl⟩⟩
+  · intro c hc
+    refine Prod.le_def.mpr ⟨hf'.2 ?_, hg'.2 ?_⟩
+    · rintro _ ⟨d, hd, rfl⟩
+      exact (Prod.le_def.mp (hc ⟨d, hd, rfl⟩)).1
+    · rintro _ ⟨d, hd, rfl⟩
+      exact (Prod.le_def.mp (hc ⟨d, hd, rfl⟩)).2
+
+theorem preservesDirSups_inlFun :
+    Theses.PreservesDirSups (fun a : A => ((a, 0) : A × B)) := by
+  intro D s hne hdir hlub
+  have h := isLUB_coe_of_isLUB hne hlub
+  constructor
+  · rintro _ ⟨d, hd, rfl⟩
+    exact Prod.le_def.mpr ⟨h.1 ⟨d, hd, rfl⟩, le_refl _⟩
+  · intro c hc
+    obtain ⟨d₀, hd₀⟩ := hne
+    refine Prod.le_def.mpr ⟨h.2 ?_, (Prod.le_def.mp (hc ⟨d₀, hd₀, rfl⟩)).2⟩
+    rintro _ ⟨d, hd, rfl⟩
+    exact (Prod.le_def.mp (hc ⟨d, hd, rfl⟩)).1
+
+theorem preservesDirSups_inrFun :
+    Theses.PreservesDirSups (fun b : B => ((0, b) : A × B)) := by
+  intro D s hne hdir hlub
+  have h := isLUB_coe_of_isLUB hne hlub
+  constructor
+  · rintro _ ⟨d, hd, rfl⟩
+    exact Prod.le_def.mpr ⟨le_refl _, h.1 ⟨d, hd, rfl⟩⟩
+  · intro c hc
+    obtain ⟨d₀, hd₀⟩ := hne
+    refine Prod.le_def.mpr ⟨(Prod.le_def.mp (hc ⟨d₀, hd₀, rfl⟩)).1, h.2 ?_⟩
+    rintro _ ⟨d, hd, rfl⟩
+    exact (Prod.le_def.mp (hc ⟨d, hd, rfl⟩)).2
+
+/-- Normality of a composite `g ∘ f`, where `f` is normal and preserves
+self-adjointness. -/
+theorem preservesDirSups_comp' {f : A → B} {g : B → C}
+    (hf : Theses.PreservesDirSups f) (hfsa : ∀ a : selfAdjoint A, IsSelfAdjoint (f a))
+    (hg : Theses.PreservesDirSups g) :
+    Theses.PreservesDirSups (fun a => g (f a)) := by
+  intro D s hne hdir hlub
+  have hfD := hf D s hne hdir hlub
+  let F : selfAdjoint A → selfAdjoint B := fun a => ⟨f a, hfsa a⟩
+  have hne' : (F '' D).Nonempty := hne.image _
+  have hdir' : DirectedOn (· ≤ ·) (F '' D) := by
+    rintro _ ⟨d, hd, rfl⟩ _ ⟨e, he, rfl⟩
+    obtain ⟨z, hz, hdz, hez⟩ := hdir d hd e he
+    refine ⟨F z, ⟨z, hz, rfl⟩, ?_, ?_⟩
+    · exact Subtype.coe_le_coe.mp (mono_of_preservesDirSups hf hdz)
+    · exact Subtype.coe_le_coe.mp (mono_of_preservesDirSups hf hez)
+  have hlub' : IsLUB (F '' D) (F s) := by
+    constructor
+    · rintro _ ⟨d, hd, rfl⟩
+      exact Subtype.coe_le_coe.mp (hfD.1 ⟨d, hd, rfl⟩)
+    · intro b hb
+      have hbb : (b : B) ∈ upperBounds ((fun d : selfAdjoint A => f d) '' D) := by
+        rintro _ ⟨d, hd, rfl⟩
+        exact Subtype.coe_le_coe.mpr (hb ⟨d, hd, rfl⟩)
+      exact Subtype.coe_le_coe.mp (hfD.2 hbb)
+  have h := hg _ (F s) hne' hdir' hlub'
+  rwa [Set.image_image] at h
+
+end
+
+section
+
+/-! ### `ℂᵤ` is a von Neumann algebra -/
+
+private noncomputable def cuDownLin : ULift.{u} ℂ →ₗ[ℂ] ℂ where
+  toFun := ULift.down
+  map_add' _ _ := rfl
+  map_smul' _ _ := rfl
+
+private noncomputable def npDown : Theses.NPFunctional (ULift.{u} ℂ) where
+  toPositiveLinearMap := { toLinearMap := cuDownLin, monotone' := fun _ _ h => h }
+  preservesDirSups' := by
+    intro D s hne hdir hlub
+    have h := isLUB_coe_of_isLUB (A := ℂ) (hne.image _) (isLUB_saDown hlub)
+    rwa [Set.image_image] at h
+
+/-- **The scalars `ℂᵤ` form a von Neumann algebra** (transported from `ℂ`
+along `ULift.down`, which is an order isomorphism on self-adjoint parts). -/
+instance instVonNeumannAlgebraCU : Theses.VonNeumannAlgebra (ULift.{u} ℂ) where
+  isLUB_of_bddAbove_directed D hne hdir hbdd := by
+    obtain ⟨c, hc⟩ := hbdd
+    obtain ⟨s, hs⟩ := Theses.VonNeumannAlgebra.isLUB_of_bddAbove_directed
+      (saDown '' D) (hne.image _) (directedOn_saDown hdir)
+      ⟨saDown c, by rintro _ ⟨d, hd, rfl⟩; exact saDown_le_iff.mpr (hc hd)⟩
+    refine ⟨saUp s, ?_, ?_⟩
+    · intro d hd
+      have h1 : saDown d ≤ saDown (saUp.{u} s) := hs.1 ⟨d, hd, rfl⟩
+      exact saDown_le_iff.mp h1
+    · intro x hx
+      have hub : saDown x ∈ upperBounds (saDown '' D) := by
+        rintro _ ⟨d, hd, rfl⟩
+        exact saDown_le_iff.mpr (hx hd)
+      have h2 : saDown (saUp.{u} s) ≤ saDown x := hs.2 hub
+      exact saDown_le_iff.mp h2
+  np_faithful a ha h := by
+    have h0 : a.down = 0 := h npDown
+    cases a
+    exact congrArg ULift.up h0
+
+end
+
+section
+
+variable {A B C : Type u} [CStarAlgebra A] [PartialOrder A] [StarOrderedRing A]
+  [CStarAlgebra B] [PartialOrder B] [StarOrderedRing B]
+  [CStarAlgebra C] [PartialOrder C] [StarOrderedRing C]
+
+/-! ### Building ncp-, ncpu- and ncpsu-maps -/
+
+/-- The underlying linear map of an ncp-map. -/
+noncomputable def ncpLin (f : Theses.NCPMap A B) : A →ₗ[ℂ] B :=
+  f.toCompletelyPositiveMap.toLinearMap
+
+@[simp] theorem ncpLin_apply (f : Theses.NCPMap A B) (a : A) : ncpLin f a = f a := rfl
+
+theorem ncpLin_cp (f : Theses.NCPMap A B) : IsCompletelyPositiveMap (ncpLin f) :=
+  (cp_iff (ncpLin f)).out 1 0 |>.mp
+    (fun N M hM => f.toCompletelyPositiveMap.map_cstarMatrix_nonneg' N M hM)
+
+theorem ncpLin_normal (f : Theses.NCPMap A B) :
+    Theses.PreservesDirSups ⇑(ncpLin f) := f.preservesDirSups'
+
+/-- An ncp-map from a linear map that is completely positive and normal. -/
+noncomputable def mkNCP (f : A →ₗ[ℂ] B) (hcp : IsCompletelyPositiveMap f)
+    (hn : Theses.PreservesDirSups ⇑f) : Theses.NCPMap A B where
+  toCompletelyPositiveMap :=
+    { toLinearMap := f
+      map_cstarMatrix_nonneg' := (cp_iff f).out 0 1 |>.mp hcp }
+  preservesDirSups' := hn
+
+@[simp] theorem mkNCP_apply (f : A →ₗ[ℂ] B) (hcp : IsCompletelyPositiveMap f)
+    (hn : Theses.PreservesDirSups ⇑f) (a : A) : mkNCP f hcp hn a = f a := rfl
+
+/-- An ncpu-map from a linear map. -/
+noncomputable def mkNCPU (f : A →ₗ[ℂ] B) (hcp : IsCompletelyPositiveMap f)
+    (hn : Theses.PreservesDirSups ⇑f) (hu : f 1 = 1) : Theses.NCPUMap A B :=
+  ⟨mkNCP f hcp hn, hu⟩
+
+@[simp] theorem mkNCPU_apply (f : A →ₗ[ℂ] B) (hcp : IsCompletelyPositiveMap f)
+    (hn : Theses.PreservesDirSups ⇑f) (hu : f 1 = 1) (a : A) :
+    (mkNCPU f hcp hn hu).toNCPMap a = f a := rfl
+
+/-- Extensionality for ncpu-maps. -/
+theorem ncpu_ext {f g : Theses.NCPUMap A B}
+    (h : ∀ a, f.toNCPMap a = g.toNCPMap a) : f = g := by
+  obtain ⟨f, hf⟩ := f
+  obtain ⟨g, hg⟩ := g
+  have hfg : f = g := DFunLike.coe_injective (funext h)
+  subst hfg
+  rfl
+
+/-! ### The concrete ncpu-maps of the presentation -/
+
+/-- The first projection `A × B → A`. -/
+noncomputable def wFst (A B : Type u) [CStarAlgebra A] [PartialOrder A]
+    [StarOrderedRing A] [CStarAlgebra B] [PartialOrder B] [StarOrderedRing B] :
+    Theses.NCPUMap (A × B) A :=
+  mkNCPU (LinearMap.fst ℂ A B) cp_fstLin preservesDirSups_fstFun rfl
+
+/-- The second projection `A × B → B`. -/
+noncomputable def wSnd (A B : Type u) [CStarAlgebra A] [PartialOrder A]
+    [StarOrderedRing A] [CStarAlgebra B] [PartialOrder B] [StarOrderedRing B] :
+    Theses.NCPUMap (A × B) B :=
+  mkNCPU (LinearMap.snd ℂ A B) cp_sndLin preservesDirSups_sndFun rfl
+
+@[simp] theorem wFst_apply (x : A × B) : (wFst A B).toNCPMap x = x.1 := rfl
+@[simp] theorem wSnd_apply (x : A × B) : (wSnd A B).toNCPMap x = x.2 := rfl
+
+/-- The pairing `⟨f, g⟩ : C → A × B` of two ncpu-maps. -/
+noncomputable def wPair (f : Theses.NCPUMap C A) (g : Theses.NCPUMap C B) :
+    Theses.NCPUMap C (A × B) :=
+  mkNCPU (LinearMap.prod (ncpLin f.toNCPMap) (ncpLin g.toNCPMap))
+    (cp_prod (ncpLin_cp _) (ncpLin_cp _))
+    (preservesDirSups_prodFun (ncpLin_normal f.toNCPMap) (ncpLin_normal g.toNCPMap))
+    (Prod.ext f.unital' g.unital')
+
+@[simp] theorem wPair_apply (f : Theses.NCPUMap C A) (g : Theses.NCPUMap C B) (c : C) :
+    (wPair f g).toNCPMap c = (f.toNCPMap c, g.toNCPMap c) := rfl
+
+/-- The unique ncpu-map `ℂᵤ → A`, `z ↦ z·1`. -/
+noncomputable def wUnit (A : Type u) [CStarAlgebra A] [PartialOrder A]
+    [StarOrderedRing A] : Theses.NCPUMap (ULift.{u} ℂ) A :=
+  ⟨Theses.A.VN.ncpOfNonneg (zero_le_one' A), by
+    show (1 : ULift.{u} ℂ).down • (1 : A) = 1
+    simp⟩
+
+@[simp] theorem wUnit_apply (z : ULift.{u} ℂ) :
+    (wUnit A).toNCPMap z = z.down • (1 : A) := rfl
+
+end
+
+section
+
+/-! ### The category `vN` -/
+
+theorem vn_hom_ext {X Y : WStarNCPU.{u}} {f g : X ⟶ Y}
+    (h : ∀ a, f.toNCPMap a = g.toNCPMap a) : f = g := ncpu_ext h
+
+theorem vn_comp_apply {X Y Z : WStarNCPU.{u}} (f : X ⟶ Y) (g : Y ⟶ Z) (a : X.base) :
+    (f ≫ g).toNCPMap a = g.toNCPMap (f.toNCPMap a) :=
+  (NCPUMap.exists_comp f g).choose_spec a
+
+theorem vn_id_apply {X : WStarNCPU.{u}} (a : X.base) :
+    (𝟙 X : Theses.NCPUMap X.base.carrier X.base.carrier).toNCPMap a = a :=
+  (NCPUMap.exists_id X.base.carrier).choose_spec a
+
+theorem vnop_hom_ext {X Y : WStarNCPU.{u}ᵒᵖ} {f g : X ⟶ Y}
+    (h : ∀ a, f.unop.toNCPMap a = g.unop.toNCPMap a) : f = g :=
+  Quiver.Hom.unop_inj (vn_hom_ext h)
+
+theorem vnop_comp_apply {X Y Z : WStarNCPU.{u}ᵒᵖ} (f : X ⟶ Y) (g : Y ⟶ Z)
+    (a : Z.unop.base) :
+    (f ≫ g).unop.toNCPMap a = f.unop.toNCPMap (g.unop.toNCPMap a) :=
+  vn_comp_apply g.unop f.unop a
+
+theorem vnop_congr {X Y : WStarNCPU.{u}ᵒᵖ} {f g : X ⟶ Y} (h : f = g)
+    (a : Y.unop.base) : f.unop.toNCPMap a = g.unop.toNCPMap a := by rw [h]
+
+/-- Postcomposition with a fixed map, pointwise. -/
+theorem vnop_comp_congr {Z P X : WStarNCPU.{u}ᵒᵖ} {F : P ⟶ X} {a b : Z ⟶ P}
+    (h : a ≫ F = b ≫ F) (x : X.unop.base) :
+    a.unop.toNCPMap (F.unop.toNCPMap x) = b.unop.toNCPMap (F.unop.toNCPMap x) :=
+  ((vnop_comp_apply a F x).symm.trans (vnop_congr h x)).trans
+    (vnop_comp_apply b F x)
+
+/-! ### `ℂᵤ` is initial and the trivial algebra is final -/
+
+theorem wUnit_unique {A : Type u} [CStarAlgebra A] [PartialOrder A]
+    [StarOrderedRing A] (f : Theses.NCPUMap (ULift.{u} ℂ) A) : f = wUnit A := by
+  refine ncpu_ext fun z => ?_
+  have hz : (z.down • (1 : ULift.{u} ℂ)) = z :=
+    Theses.A.VN.CU.down_injective (by simp)
+  have hlin : f.toNCPMap (z.down • (1 : ULift.{u} ℂ)) = z.down • f.toNCPMap 1 :=
+    map_smul (ncpLin f.toNCPMap) z.down 1
+  rw [wUnit_apply]
+  conv_lhs => rw [← hz]
+  rw [hlin, f.unital']
+
+/-- **`ℂᵤ` is the initial object of `vN`** (the unique ncpu-map `ℂᵤ → A` is
+`z ↦ z·1`), hence the final object of `vNᵒᵖ`. -/
+noncomputable def vnScalIsInitial :
+    IsInitial (WStarNCPU.of (WStar.of (ULift.{u} ℂ))) :=
+  IsInitial.ofUniqueHom (fun X => wUnit X.base.carrier)
+    (fun _ f => wUnit_unique f)
+
+/-- The unique ncpu-map into the trivial algebra. -/
+noncomputable def wTriv (A : Type u) [CStarAlgebra A] [PartialOrder A]
+    [StarOrderedRing A] : Theses.NCPUMap A PUnit.{u + 1} :=
+  mkNCPU 0 (fun _ _ _ => le_of_eq (Subsingleton.elim _ _))
+    (fun _ _ _ _ _ => ⟨fun _ _ => le_of_eq (Subsingleton.elim _ _),
+      fun _ _ => le_of_eq (Subsingleton.elim _ _)⟩)
+    (Subsingleton.elim _ _)
+
+/-- **The trivial algebra is the final object of `vN`**, hence the initial
+object of `vNᵒᵖ`. -/
+noncomputable def vnTrivIsTerminal :
+    IsTerminal (WStarNCPU.of (WStar.of PUnit.{u + 1})) :=
+  IsTerminal.ofUniqueHom (fun X => wTriv X.base.carrier)
+    (fun _ _ => ncpu_ext fun _ => Subsingleton.elim (α := PUnit.{u + 1}) _ _)
+
+/-! ### The concrete presentation of `vNᵒᵖ` -/
+
+/-- The concrete presentation of `vNᵒᵖ`: the final object is the scalars
+`ℂᵤ` (initial in `vN`), the binary coproducts are the products `A × B`. -/
+noncomputable def vnPres : CoprodPres (WStarNCPU.{u}ᵒᵖ) where
+  T := Opposite.op (WStarNCPU.of (WStar.of (ULift.{u} ℂ)))
+  hT := IsInitial.op (WStarNCPU.{u}) vnScalIsInitial
+  P X Y := Opposite.op (WStarNCPU.of (WStar.of
+    (X.unop.base.carrier × Y.unop.base.carrier)))
+  pinl X Y := Quiver.Hom.op (wFst X.unop.base.carrier Y.unop.base.carrier)
+  pinr X Y := Quiver.Hom.op (wSnd X.unop.base.carrier Y.unop.base.carrier)
+  hP X Y := BinaryCofan.IsColimit.mk _
+    (fun {_} u v => Quiver.Hom.op (wPair u.unop v.unop))
+    (fun {_} u v => vnop_hom_ext fun a => vnop_comp_apply _ _ a)
+    (fun {_} u v => vnop_hom_ext fun a => vnop_comp_apply _ _ a)
+    (fun {W} u v m h₁ h₂ => vnop_hom_ext fun a => by
+      refine Prod.ext ?_ ?_
+      · exact (vnop_comp_apply _ m a).symm.trans (vnop_congr h₁ a)
+      · exact (vnop_comp_apply _ m a).symm.trans (vnop_congr h₂ a))
+
+end
+
+section
+
+variable {A B C : Type u} [CStarAlgebra A] [PartialOrder A] [StarOrderedRing A]
+  [CStarAlgebra B] [PartialOrder B] [StarOrderedRing B]
+  [CStarAlgebra C] [PartialOrder C] [StarOrderedRing C]
+
+/-- A linear map between C\*-algebras vanishing on the positive cone is zero
+(every element is a linear combination of four positive elements). -/
+theorem linear_eq_zero_of_nonneg {f : A →ₗ[ℂ] C}
+    (h : ∀ a : A, 0 ≤ a → f a = 0) (x : A) : f x = 0 := by
+  have hsa : ∀ a : A, IsSelfAdjoint a → f a = 0 := by
+    intro a ha
+    rw [← CFC.posPart_sub_negPart a ha, map_sub, h _ (CFC.posPart_nonneg a),
+      h _ (CFC.negPart_nonneg a), sub_zero]
+  have hx := realPart_add_I_smul_imaginaryPart x
+  rw [← hx, map_add, map_smul, hsa _ (ℜ x).2, hsa _ (ℑ x).2, smul_zero, add_zero]
+
+/-- The identity ncpu-map (built directly, not through `Classical.choice`). -/
+noncomputable def idMap (A : Type u) [CStarAlgebra A] [PartialOrder A]
+    [StarOrderedRing A] : Theses.NCPUMap A A :=
+  mkNCPU LinearMap.id (cp_of_mi _ (fun _ _ => rfl) (fun _ => rfl))
+    (fun _ _ hne _ hlub => isLUB_coe_of_isLUB hne hlub) rfl
+
+@[simp] theorem idMap_apply (a : A) : (idMap A).toNCPMap a = a := rfl
+
+/-- The product `f × g : A × B → A' × B'` of two ncpu-maps. -/
+noncomputable def wProdMap {A' B' : Type u} [CStarAlgebra A'] [PartialOrder A']
+    [StarOrderedRing A'] [CStarAlgebra B'] [PartialOrder B'] [StarOrderedRing B']
+    (f : Theses.NCPUMap A A') (g : Theses.NCPUMap B B') :
+    Theses.NCPUMap (A × B) (A' × B') :=
+  mkNCPU (LinearMap.prodMap (ncpLin f.toNCPMap) (ncpLin g.toNCPMap))
+    (cp_prod (cp_comp _ _ cp_fstLin (ncpLin_cp _))
+      (cp_comp _ _ cp_sndLin (ncpLin_cp _)))
+    (preservesDirSups_prodFun
+      (preservesDirSups_comp' (f := fun x : A × B => x.1)
+        (g := ⇑(ncpLin f.toNCPMap)) preservesDirSups_fstFun
+        (fun a => prod_sa_fst a.2) (ncpLin_normal _))
+      (preservesDirSups_comp' (f := fun x : A × B => x.2)
+        (g := ⇑(ncpLin g.toNCPMap)) preservesDirSups_sndFun
+        (fun a => prod_sa_snd a.2) (ncpLin_normal _)))
+    (Prod.ext f.unital' g.unital')
+
+@[simp] theorem wProdMap_apply {A' B' : Type u} [CStarAlgebra A'] [PartialOrder A']
+    [StarOrderedRing A'] [CStarAlgebra B'] [PartialOrder B'] [StarOrderedRing B']
+    (f : Theses.NCPUMap A A') (g : Theses.NCPUMap B B') (x : A × B) :
+    (wProdMap f g).toNCPMap x = (f.toNCPMap x.1, g.toNCPMap x.2) := rfl
+
+end
+
+section
+
+/-- Two equal ncpu-maps agree pointwise. -/
+theorem vn_congr {X Y : WStarNCPU.{u}} {f g : X ⟶ Y} (h : f = g) (a : X.base) :
+    f.toNCPMap a = g.toNCPMap a := by rw [h]
+
+/-- An algebra as an object of `vN`. -/
+noncomputable abbrev OB (A : Type u) [CStarAlgebra A] [PartialOrder A]
+    [StarOrderedRing A] [Theses.VonNeumannAlgebra A] : WStarNCPU.{u} :=
+  WStarNCPU.of (WStar.of A)
+
+variable {A B C : Type u} [CStarAlgebra A] [PartialOrder A] [StarOrderedRing A]
+  [CStarAlgebra B] [PartialOrder B] [StarOrderedRing B]
+  [CStarAlgebra C] [PartialOrder C] [StarOrderedRing C]
+
+theorem sa_prod {x : A} {y : B} (hx : IsSelfAdjoint x) (hy : IsSelfAdjoint y) :
+    IsSelfAdjoint ((x, y) : A × B) := by
+  show star ((x, y) : A × B) = (x, y)
+  exact Prod.ext hx hy
+
+/-- The mediating ncpu-map `γ(a, b) = β(a, 0) + α(0, b)` of the first
+pushout square of 180I. -/
+noncomputable def med1 (α : Theses.NCPUMap (ULift.{u} ℂ × B) C)
+    (β : Theses.NCPUMap (A × ULift.{u} ℂ) C)
+    (hc : ∀ z w : ULift.{u} ℂ,
+      α.toNCPMap (z, w.down • (1 : B)) = β.toNCPMap (z.down • (1 : A), w)) :
+    Theses.NCPUMap (A × B) C :=
+  mkNCPU ((ncpLin β.toNCPMap).comp
+        ((LinearMap.inl ℂ A (ULift.{u} ℂ)).comp (LinearMap.fst ℂ A B))
+      + (ncpLin α.toNCPMap).comp
+        ((LinearMap.inr ℂ (ULift.{u} ℂ) B).comp (LinearMap.snd ℂ A B)))
+    (cp_add (cp_comp _ _ (cp_comp _ _ cp_fstLin cp_inlLin) (ncpLin_cp _))
+      (cp_comp _ _ (cp_comp _ _ cp_sndLin cp_inrLin) (ncpLin_cp _)))
+    (preservesDirSups_add
+      (preservesDirSups_comp'
+        (f := fun x : A × B => ((x.1, 0) : A × ULift.{u} ℂ))
+        (g := ⇑(ncpLin β.toNCPMap))
+        (preservesDirSups_comp' (f := fun x : A × B => x.1)
+          (g := fun a : A => ((a, 0) : A × ULift.{u} ℂ))
+          preservesDirSups_fstFun (fun a => prod_sa_fst a.2) preservesDirSups_inlFun)
+        (fun a => sa_prod (prod_sa_fst a.2) (star_zero _)) (ncpLin_normal _))
+      (preservesDirSups_comp'
+        (f := fun x : A × B => ((0, x.2) : ULift.{u} ℂ × B))
+        (g := ⇑(ncpLin α.toNCPMap))
+        (preservesDirSups_comp' (f := fun x : A × B => x.2)
+          (g := fun b : B => ((0, b) : ULift.{u} ℂ × B))
+          preservesDirSups_sndFun (fun a => prod_sa_snd a.2) preservesDirSups_inrFun)
+        (fun a => sa_prod (star_zero _) (prod_sa_snd a.2)) (ncpLin_normal _)))
+    (by
+      have h1 : α.toNCPMap ((1 : ULift.{u} ℂ), (0 : B))
+          = β.toNCPMap ((1 : A), (0 : ULift.{u} ℂ)) := by
+        have h := hc 1 0
+        simpa using h
+      show β.toNCPMap ((1 : A), (0 : ULift.{u} ℂ))
+        + α.toNCPMap ((0 : ULift.{u} ℂ), (1 : B)) = 1
+      rw [← h1]
+      have h2 : ((1 : ULift.{u} ℂ), (0 : B)) + ((0 : ULift.{u} ℂ), (1 : B))
+          = (1 : ULift.{u} ℂ × B) := by
+        refine Prod.ext ?_ ?_ <;> simp
+      have h3 := map_add (ncpLin α.toNCPMap) ((1 : ULift.{u} ℂ), (0 : B))
+        ((0 : ULift.{u} ℂ), (1 : B))
+      rw [h2] at h3
+      exact h3.symm.trans α.unital')
+
+@[simp] theorem med1_apply (α : Theses.NCPUMap (ULift.{u} ℂ × B) C)
+    (β : Theses.NCPUMap (A × ULift.{u} ℂ) C) (hc) (x : A × B) :
+    (med1 α β hc).toNCPMap x
+      = β.toNCPMap (x.1, 0) + α.toNCPMap (0, x.2) := rfl
+
+section Med1
+
+variable (α : Theses.NCPUMap (ULift.{u} ℂ × B) C)
+  (β : Theses.NCPUMap (A × ULift.{u} ℂ) C)
+  (hc : ∀ z w : ULift.{u} ℂ,
+    α.toNCPMap (z, w.down • (1 : B)) = β.toNCPMap (z.down • (1 : A), w))
+
+/-- `γ ∘ (u × id) = α`. -/
+theorem med1_fac_left (y : ULift.{u} ℂ × B) :
+    (med1 α β hc).toNCPMap (y.1.down • (1 : A), y.2) = α.toNCPMap y := by
+  show β.toNCPMap (y.1.down • (1 : A), 0) + α.toNCPMap (0, y.2) = α.toNCPMap y
+  have h1 : α.toNCPMap (y.1, (0 : B))
+      = β.toNCPMap (y.1.down • (1 : A), (0 : ULift.{u} ℂ)) := by
+    have h := hc y.1 0
+    simpa using h
+  rw [← h1]
+  have h2 := map_add (ncpLin α.toNCPMap)
+    ((y.1, (0 : B)) : ULift.{u} ℂ × B) (((0 : ULift.{u} ℂ), y.2) : ULift.{u} ℂ × B)
+  have h3 : ((y.1, (0 : B)) : ULift.{u} ℂ × B)
+      + (((0 : ULift.{u} ℂ), y.2) : ULift.{u} ℂ × B) = y := by
+    refine Prod.ext ?_ ?_ <;> simp
+  rw [h3] at h2
+  exact h2.symm
+
+/-- `γ ∘ (id × u) = β`. -/
+theorem med1_fac_right (y : A × ULift.{u} ℂ) :
+    (med1 α β hc).toNCPMap (y.1, y.2.down • (1 : B)) = β.toNCPMap y := by
+  show β.toNCPMap (y.1, 0) + α.toNCPMap (0, y.2.down • (1 : B)) = β.toNCPMap y
+  have h1 : α.toNCPMap ((0 : ULift.{u} ℂ), y.2.down • (1 : B))
+      = β.toNCPMap ((0 : A), y.2) := by
+    have h := hc 0 y.2
+    simpa using h
+  rw [h1]
+  have h2 := map_add (ncpLin β.toNCPMap)
+    ((y.1, (0 : ULift.{u} ℂ)) : A × ULift.{u} ℂ)
+    (((0 : A), y.2) : A × ULift.{u} ℂ)
+  have h3 : ((y.1, (0 : ULift.{u} ℂ)) : A × ULift.{u} ℂ)
+      + (((0 : A), y.2) : A × ULift.{u} ℂ) = y := by
+    refine Prod.ext ?_ ?_ <;> simp
+  rw [h3] at h2
+  exact h2.symm
+
+/-- `γ` is the *only* map with those two properties. -/
+theorem med1_uniq (m : Theses.NCPUMap (A × B) C)
+    (h₁ : ∀ y : ULift.{u} ℂ × B,
+      m.toNCPMap (y.1.down • (1 : A), y.2) = α.toNCPMap y)
+    (h₂ : ∀ y : A × ULift.{u} ℂ,
+      m.toNCPMap (y.1, y.2.down • (1 : B)) = β.toNCPMap y) :
+    m = med1 α β hc := by
+  refine ncpu_ext fun x => ?_
+  show m.toNCPMap x = β.toNCPMap (x.1, 0) + α.toNCPMap (0, x.2)
+  have e₁ : m.toNCPMap ((x.1, (0 : B)) : A × B) = β.toNCPMap (x.1, 0) := by
+    have h := h₂ ((x.1, (0 : ULift.{u} ℂ)) : A × ULift.{u} ℂ)
+    simpa using h
+  have e₂ : m.toNCPMap (((0 : A), x.2) : A × B) = α.toNCPMap (0, x.2) := by
+    have h := h₁ (((0 : ULift.{u} ℂ), x.2) : ULift.{u} ℂ × B)
+    simpa using h
+  have h2 := map_add (ncpLin m.toNCPMap) ((x.1, (0 : B)) : A × B)
+    (((0 : A), x.2) : A × B)
+  have h3 : ((x.1, (0 : B)) : A × B) + (((0 : A), x.2) : A × B) = x := by
+    refine Prod.ext ?_ ?_ <;> simp
+  rw [h3] at h2
+  rw [show m.toNCPMap x = ncpLin m.toNCPMap x from rfl, h2]
+  show m.toNCPMap ((x.1, (0 : B)) : A × B) + m.toNCPMap (((0 : A), x.2) : A × B) = _
+  rw [e₁, e₂]
+
+end Med1
+
+end
+
+section
+
+variable {A B : Type u} [CStarAlgebra A] [PartialOrder A] [StarOrderedRing A]
+  [Theses.VonNeumannAlgebra A]
+  [CStarAlgebra B] [PartialOrder B] [StarOrderedRing B] [Theses.VonNeumannAlgebra B]
+
+/-! ### The left pullback square of 180I -/
+
+/-- `id × u : ℂ × ℂ ⟶ ℂ × B`. -/
+noncomputable def sq1f (B : Type u) [CStarAlgebra B] [PartialOrder B]
+    [StarOrderedRing B] [Theses.VonNeumannAlgebra B] :
+    OB (ULift.{u} ℂ × ULift.{u} ℂ) ⟶ OB (ULift.{u} ℂ × B) :=
+  wProdMap (idMap (ULift.{u} ℂ)) (wUnit B)
+
+/-- `u × id : ℂ × ℂ ⟶ A × ℂ`. -/
+noncomputable def sq1g (A : Type u) [CStarAlgebra A] [PartialOrder A]
+    [StarOrderedRing A] [Theses.VonNeumannAlgebra A] :
+    OB (ULift.{u} ℂ × ULift.{u} ℂ) ⟶ OB (A × ULift.{u} ℂ) :=
+  wProdMap (wUnit A) (idMap (ULift.{u} ℂ))
+
+/-- `u × id : ℂ × B ⟶ A × B`. -/
+noncomputable def sq1h (A B : Type u) [CStarAlgebra A] [PartialOrder A]
+    [StarOrderedRing A] [Theses.VonNeumannAlgebra A] [CStarAlgebra B]
+    [PartialOrder B] [StarOrderedRing B] [Theses.VonNeumannAlgebra B] :
+    OB (ULift.{u} ℂ × B) ⟶ OB (A × B) :=
+  wProdMap (wUnit A) (idMap B)
+
+/-- `id × u : A × ℂ ⟶ A × B`. -/
+noncomputable def sq1i (A B : Type u) [CStarAlgebra A] [PartialOrder A]
+    [StarOrderedRing A] [Theses.VonNeumannAlgebra A] [CStarAlgebra B]
+    [PartialOrder B] [StarOrderedRing B] [Theses.VonNeumannAlgebra B] :
+    OB (A × ULift.{u} ℂ) ⟶ OB (A × B) :=
+  wProdMap (idMap A) (wUnit B)
+
+@[simp] theorem sq1f_apply (B : Type u) [CStarAlgebra B] [PartialOrder B]
+    [StarOrderedRing B] [Theses.VonNeumannAlgebra B]
+    (y : ULift.{u} ℂ × ULift.{u} ℂ) :
+    (sq1f B).toNCPMap y = (y.1, y.2.down • (1 : B)) := rfl
+
+@[simp] theorem sq1g_apply (A : Type u) [CStarAlgebra A] [PartialOrder A]
+    [StarOrderedRing A] [Theses.VonNeumannAlgebra A]
+    (y : ULift.{u} ℂ × ULift.{u} ℂ) :
+    (sq1g A).toNCPMap y = (y.1.down • (1 : A), y.2) := rfl
+
+@[simp] theorem sq1h_apply (A B : Type u) [CStarAlgebra A] [PartialOrder A]
+    [StarOrderedRing A] [Theses.VonNeumannAlgebra A] [CStarAlgebra B]
+    [PartialOrder B] [StarOrderedRing B] [Theses.VonNeumannAlgebra B]
+    (y : ULift.{u} ℂ × B) :
+    (sq1h A B).toNCPMap y = (y.1.down • (1 : A), y.2) := rfl
+
+@[simp] theorem sq1i_apply (A B : Type u) [CStarAlgebra A] [PartialOrder A]
+    [StarOrderedRing A] [Theses.VonNeumannAlgebra A] [CStarAlgebra B]
+    [PartialOrder B] [StarOrderedRing B] [Theses.VonNeumannAlgebra B]
+    (y : A × ULift.{u} ℂ) :
+    (sq1i A B).toNCPMap y = (y.1, y.2.down • (1 : B)) := rfl
+
+/-- **The left pullback square of 180I in `vNᵒᵖ`**: the square
+```
+  ℂ × ℂ --id×u--> ℂ × B
+    |u×id           |u×id
+    v               v
+  A × ℂ --id×u--> A × B
+```
+is a pushout in `vN` — an ncpu-map out of `A × B` is precisely a pair of
+ncpu-maps out of `ℂ × B` and `A × ℂ` agreeing on `ℂ × ℂ`, glued by
+`γ(a, b) = β(a, 0) + α(0, b)`. -/
+theorem vn_isPushout1 (A B : Type u) [CStarAlgebra A] [PartialOrder A]
+    [StarOrderedRing A] [Theses.VonNeumannAlgebra A] [CStarAlgebra B]
+    [PartialOrder B] [StarOrderedRing B] [Theses.VonNeumannAlgebra B] :
+    IsPushout (sq1f B) (sq1g A) (sq1h A B) (sq1i A B) := by
+  have w : sq1f B ≫ sq1h A B = sq1g A ≫ sq1i A B :=
+    vn_hom_ext fun x => (vn_comp_apply _ _ x).trans (vn_comp_apply _ _ x).symm
+  have hcond : ∀ s : PushoutCocone (sq1f B) (sq1g A), ∀ z w : ULift.{u} ℂ,
+      s.inl.toNCPMap (z, w.down • (1 : B))
+        = s.inr.toNCPMap (z.down • (1 : A), w) := by
+    intro s z w
+    exact ((vn_comp_apply (sq1f B) s.inl (z, w)).symm.trans
+      (vn_congr s.condition (z, w))).trans (vn_comp_apply (sq1g A) s.inr (z, w))
+  refine IsPushout.of_isColimit' ⟨w⟩ (PushoutCocone.IsColimit.mk w
+    (fun s => med1 s.inl s.inr (hcond s)) ?_ ?_ ?_)
+  · intro s
+    exact vn_hom_ext fun y =>
+      (vn_comp_apply (sq1h A B) _ y).trans (med1_fac_left _ _ (hcond s) y)
+  · intro s
+    exact vn_hom_ext fun y =>
+      (vn_comp_apply (sq1i A B) _ y).trans (med1_fac_right _ _ (hcond s) y)
+  · intro s m h₁ h₂
+    refine med1_uniq _ _ (hcond s) m (fun y => ?_) (fun y => ?_)
+    · exact (vn_comp_apply (sq1h A B) m y).symm.trans (vn_congr h₁ y)
+    · exact (vn_comp_apply (sq1i A B) m y).symm.trans (vn_congr h₂ y)
+
+end
+
+section
+
+variable {A B C : Type u} [CStarAlgebra A] [PartialOrder A] [StarOrderedRing A]
+  [CStarAlgebra B] [PartialOrder B] [StarOrderedRing B]
+  [CStarAlgebra C] [PartialOrder C] [StarOrderedRing C]
+
+/-- A positive map on a product algebra killing `(0, 1)` kills all of
+`0 × B`: for `0 ≤ b` one has `(0, b) ≤ ‖b‖ · (0, 1)`, and every element is a
+linear combination of positive ones. -/
+theorem prod_apply_eq_zero (α : Theses.NCPUMap (A × B) C)
+    (h1 : α.toNCPMap ((0 : A), (1 : B)) = 0) (b : B) :
+    α.toNCPMap ((0 : A), b) = 0 := by
+  have hnn : ∀ c : B, 0 ≤ c → α.toNCPMap ((0 : A), c) = 0 := by
+    intro c hc
+    have hle : ((0 : A), c) ≤ ((0 : A), (‖c‖ : ℝ) • (1 : B)) :=
+      Prod.le_def.mpr ⟨le_refl _, Theses.A.VN.le_norm_smul_one hc⟩
+    have h0 : (0 : A × B) ≤ ((0 : A), c) := Prod.le_def.mpr ⟨le_refl _, hc⟩
+    have hmono := OrderHomClass.mono α.toNCPMap.toCompletelyPositiveMap hle
+    have hpos := OrderHomClass.mono α.toNCPMap.toCompletelyPositiveMap h0
+    have hsm : ((0 : A), (‖c‖ : ℝ) • (1 : B))
+        = ((‖c‖ : ℝ) : ℂ) • (((0 : A), (1 : B)) : A × B) := by
+      refine Prod.ext ?_ ?_ <;> simp [Complex.coe_smul]
+    have hz : α.toNCPMap ((0 : A), (‖c‖ : ℝ) • (1 : B)) = 0 := by
+      rw [hsm]
+      have := map_smul (ncpLin α.toNCPMap) (((‖c‖ : ℝ) : ℂ))
+        (((0 : A), (1 : B)) : A × B)
+      rw [show α.toNCPMap ((((‖c‖ : ℝ) : ℂ)) • (((0 : A), (1 : B)) : A × B))
+        = ncpLin α.toNCPMap ((((‖c‖ : ℝ) : ℂ)) • (((0 : A), (1 : B)) : A × B)) from rfl,
+        this]
+      rw [show ncpLin α.toNCPMap (((0 : A), (1 : B)) : A × B)
+        = α.toNCPMap ((0 : A), (1 : B)) from rfl, h1, smul_zero]
+    refine le_antisymm ?_ ?_
+    · rw [← hz]; exact hmono
+    · rw [map_zero] at hpos
+      exact hpos
+  exact linear_eq_zero_of_nonneg
+    (f := (ncpLin α.toNCPMap).comp (LinearMap.inr ℂ A B)) hnn b
+
+/-- The mediating ncpu-map `γ(a) = α(a, 0)` of the second pushout square. -/
+noncomputable def med2 (α : Theses.NCPUMap (A × B) C)
+    (β : Theses.NCPUMap (ULift.{u} ℂ) C)
+    (hc : ∀ z w : ULift.{u} ℂ,
+      α.toNCPMap (z.down • (1 : A), w.down • (1 : B)) = β.toNCPMap z) :
+    Theses.NCPUMap A C :=
+  mkNCPU ((ncpLin α.toNCPMap).comp (LinearMap.inl ℂ A B))
+    (cp_comp _ _ cp_inlLin (ncpLin_cp _))
+    (preservesDirSups_comp' (f := fun a : A => ((a, 0) : A × B))
+      (g := ⇑(ncpLin α.toNCPMap)) preservesDirSups_inlFun
+      (fun a => sa_prod a.2 (star_zero _)) (ncpLin_normal _))
+    (by
+      have hβ0 : β.toNCPMap 0 = 0 := by
+        have := map_zero (ncpLin β.toNCPMap)
+        exact this
+      have h01 : α.toNCPMap ((0 : A), (1 : B)) = 0 := by
+        have h := hc 0 1
+        rw [hβ0] at h
+        simpa using h
+      have h2 := map_add (ncpLin α.toNCPMap) (((1 : A), (0 : B)) : A × B)
+        (((0 : A), (1 : B)) : A × B)
+      have h3 : (((1 : A), (0 : B)) : A × B) + (((0 : A), (1 : B)) : A × B)
+          = (1 : A × B) := by
+        refine Prod.ext ?_ ?_ <;> simp
+      rw [h3] at h2
+      show α.toNCPMap ((1 : A), (0 : B)) = 1
+      have h4 : α.toNCPMap (1 : A × B)
+          = α.toNCPMap ((1 : A), (0 : B)) + α.toNCPMap ((0 : A), (1 : B)) := h2
+      rw [h01, add_zero, α.unital'] at h4
+      exact h4.symm)
+
+@[simp] theorem med2_apply (α : Theses.NCPUMap (A × B) C)
+    (β : Theses.NCPUMap (ULift.{u} ℂ) C) (hc) (a : A) :
+    (med2 α β hc).toNCPMap a = α.toNCPMap (a, 0) := rfl
+
+section Med2
+
+variable (α : Theses.NCPUMap (A × B) C) (β : Theses.NCPUMap (ULift.{u} ℂ) C)
+  (hc : ∀ z w : ULift.{u} ℂ,
+    α.toNCPMap (z.down • (1 : A), w.down • (1 : B)) = β.toNCPMap z)
+
+theorem med2_fac_left (x : A × B) :
+    (med2 α β hc).toNCPMap x.1 = α.toNCPMap x := by
+  show α.toNCPMap (x.1, 0) = α.toNCPMap x
+  have hβ0 : β.toNCPMap 0 = 0 := map_zero (ncpLin β.toNCPMap)
+  have h01 : α.toNCPMap ((0 : A), (1 : B)) = 0 := by
+    have h := hc 0 1
+    rw [hβ0] at h
+    simpa using h
+  have h2 := map_add (ncpLin α.toNCPMap) ((x.1, (0 : B)) : A × B)
+    (((0 : A), x.2) : A × B)
+  have h3 : ((x.1, (0 : B)) : A × B) + (((0 : A), x.2) : A × B) = x := by
+    refine Prod.ext ?_ ?_ <;> simp
+  rw [h3] at h2
+  have h4 : α.toNCPMap x
+      = α.toNCPMap ((x.1, (0 : B)) : A × B) + α.toNCPMap (((0 : A), x.2) : A × B) := h2
+  rw [prod_apply_eq_zero α h01 x.2, add_zero] at h4
+  exact h4.symm
+
+theorem med2_fac_right (z : ULift.{u} ℂ) :
+    (med2 α β hc).toNCPMap (z.down • (1 : A)) = β.toNCPMap z := by
+  show α.toNCPMap (z.down • (1 : A), 0) = β.toNCPMap z
+  have h := hc z 0
+  simpa using h
+
+theorem med2_uniq (m : Theses.NCPUMap A C)
+    (h₁ : ∀ x : A × B, m.toNCPMap x.1 = α.toNCPMap x) : m = med2 α β hc := by
+  refine ncpu_ext fun a => ?_
+  show m.toNCPMap a = α.toNCPMap (a, 0)
+  exact h₁ ((a, (0 : B)) : A × B)
+
+end Med2
+
+end
+
+section
+
+/-! ### The right pullback square of 180I -/
+
+/-- `u × u : ℂ × ℂ ⟶ A × B`. -/
+noncomputable def sq2f (A B : Type u) [CStarAlgebra A] [PartialOrder A]
+    [StarOrderedRing A] [Theses.VonNeumannAlgebra A] [CStarAlgebra B]
+    [PartialOrder B] [StarOrderedRing B] [Theses.VonNeumannAlgebra B] :
+    OB (ULift.{u} ℂ × ULift.{u} ℂ) ⟶ OB (A × B) :=
+  wProdMap (wUnit A) (wUnit B)
+
+/-- `π₁ : ℂ × ℂ ⟶ ℂ`. -/
+noncomputable def sq2g : OB (ULift.{u} ℂ × ULift.{u} ℂ) ⟶ OB (ULift.{u} ℂ) :=
+  wFst (ULift.{u} ℂ) (ULift.{u} ℂ)
+
+/-- `π₁ : A × B ⟶ A`. -/
+noncomputable def sq2h (A B : Type u) [CStarAlgebra A] [PartialOrder A]
+    [StarOrderedRing A] [Theses.VonNeumannAlgebra A] [CStarAlgebra B]
+    [PartialOrder B] [StarOrderedRing B] [Theses.VonNeumannAlgebra B] :
+    OB (A × B) ⟶ OB A := wFst A B
+
+/-- `u : ℂ ⟶ A`. -/
+noncomputable def sq2i (A : Type u) [CStarAlgebra A] [PartialOrder A]
+    [StarOrderedRing A] [Theses.VonNeumannAlgebra A] :
+    OB (ULift.{u} ℂ) ⟶ OB A := wUnit A
+
+/-- **The right pullback square of 180I in `vNᵒᵖ`**: the square
+```
+  ℂ × ℂ --u×u--> A × B
+    |π₁            |π₁
+    v              v
+    ℂ  ---u----->  A
+```
+is a pushout in `vN`.  The mediating map is `γ(a) = α(a, 0)`; that it is
+well defined uses that a positive map killing `(0,1)` kills `0 × B`. -/
+theorem vn_isPushout2 (A B : Type u) [CStarAlgebra A] [PartialOrder A]
+    [StarOrderedRing A] [Theses.VonNeumannAlgebra A] [CStarAlgebra B]
+    [PartialOrder B] [StarOrderedRing B] [Theses.VonNeumannAlgebra B] :
+    IsPushout (sq2f A B) sq2g (sq2h A B) (sq2i A) := by
+  have w : sq2f A B ≫ sq2h A B = sq2g ≫ sq2i A :=
+    vn_hom_ext fun x => (vn_comp_apply _ _ x).trans (vn_comp_apply _ _ x).symm
+  have hcond : ∀ s : PushoutCocone (sq2f A B) sq2g, ∀ z w : ULift.{u} ℂ,
+      s.inl.toNCPMap (z.down • (1 : A), w.down • (1 : B)) = s.inr.toNCPMap z := by
+    intro s z w
+    exact ((vn_comp_apply (sq2f A B) s.inl (z, w)).symm.trans
+      (vn_congr s.condition (z, w))).trans (vn_comp_apply sq2g s.inr (z, w))
+  refine IsPushout.of_isColimit' ⟨w⟩ (PushoutCocone.IsColimit.mk w
+    (fun s => med2 s.inl s.inr (hcond s)) ?_ ?_ ?_)
+  · intro s
+    exact vn_hom_ext fun x =>
+      (vn_comp_apply (sq2h A B) _ x).trans (med2_fac_left _ _ (hcond s) x)
+  · intro s
+    exact vn_hom_ext fun z =>
+      (vn_comp_apply (sq2i A) _ z).trans (med2_fac_right _ _ (hcond s) z)
+  · intro s m h₁ h₂
+    exact med2_uniq _ _ (hcond s) m
+      (fun x => (vn_comp_apply (sq2h A B) m x).symm.trans (vn_congr h₁ x))
+
+/-! ### Joint monicity of the two cotuples -/
+
+/-- **The third axiom of 180I in `vNᵒᵖ`**, elementwise: an ncpu-map out of
+`ℂ³` is determined by its restrictions along `(x,y) ↦ (x,y,y)` and
+`(x,y) ↦ (y,x,y)`, because those recover the images of the three minimal
+projections. -/
+theorem vn_jointlyMonic_aux {Z : Type u} [CStarAlgebra Z] [PartialOrder Z]
+    [StarOrderedRing Z]
+    (a b : Theses.NCPUMap ((ULift.{u} ℂ × ULift.{u} ℂ) × ULift.{u} ℂ) Z)
+    (h1 : ∀ x : ULift.{u} ℂ × ULift.{u} ℂ,
+      a.toNCPMap ((x.1, x.2), x.2) = b.toNCPMap ((x.1, x.2), x.2))
+    (h2 : ∀ x : ULift.{u} ℂ × ULift.{u} ℂ,
+      a.toNCPMap ((x.2, x.1), x.2) = b.toNCPMap ((x.2, x.1), x.2)) :
+    a = b := by
+  set e₁ : (ULift.{u} ℂ × ULift.{u} ℂ) × ULift.{u} ℂ := ((1, 0), 0) with he₁
+  set e₂ : (ULift.{u} ℂ × ULift.{u} ℂ) × ULift.{u} ℂ := ((0, 1), 0) with he₂
+  set e₃ : (ULift.{u} ℂ × ULift.{u} ℂ) × ULift.{u} ℂ := ((0, 0), 1) with he₃
+  have ha1 : a.toNCPMap e₁ = b.toNCPMap e₁ := h1 (1, 0)
+  have ha2 : a.toNCPMap e₂ = b.toNCPMap e₂ := h2 (1, 0)
+  have ha3 : a.toNCPMap e₃ = b.toNCPMap e₃ := by
+    have h4 := h1 (0, 1)
+    have hsum : (((0 : ULift.{u} ℂ), (1 : ULift.{u} ℂ)), (1 : ULift.{u} ℂ))
+        = e₂ + e₃ := by
+      refine Prod.ext (Prod.ext ?_ ?_) ?_ <;> simp [he₂, he₃]
+    rw [hsum] at h4
+    have hA := map_add (ncpLin a.toNCPMap) e₂ e₃
+    have hB := map_add (ncpLin b.toNCPMap) e₂ e₃
+    have h5 : a.toNCPMap e₂ + a.toNCPMap e₃ = b.toNCPMap e₂ + b.toNCPMap e₃ := by
+      rw [show a.toNCPMap e₂ + a.toNCPMap e₃
+        = ncpLin a.toNCPMap e₂ + ncpLin a.toNCPMap e₃ from rfl, ← hA,
+        show b.toNCPMap e₂ + b.toNCPMap e₃
+        = ncpLin b.toNCPMap e₂ + ncpLin b.toNCPMap e₃ from rfl, ← hB]
+      exact h4
+    rw [ha2] at h5
+    exact add_left_cancel h5
+  have key : ∀ (f : Theses.NCPUMap ((ULift.{u} ℂ × ULift.{u} ℂ) × ULift.{u} ℂ) Z)
+      (y : (ULift.{u} ℂ × ULift.{u} ℂ) × ULift.{u} ℂ),
+      f.toNCPMap y = y.1.1.down • f.toNCPMap e₁
+        + (y.1.2.down • f.toNCPMap e₂ + y.2.down • f.toNCPMap e₃) := by
+    intro f y
+    have hdec : y = y.1.1.down • e₁ + (y.1.2.down • e₂ + y.2.down • e₃) := by
+      refine Prod.ext (Prod.ext ?_ ?_) ?_ <;>
+        · apply Theses.A.VN.CU.down_injective
+          simp [he₁, he₂, he₃]
+    conv_lhs => rw [hdec]
+    rw [show f.toNCPMap (y.1.1.down • e₁ + (y.1.2.down • e₂ + y.2.down • e₃))
+      = ncpLin f.toNCPMap (y.1.1.down • e₁ + (y.1.2.down • e₂ + y.2.down • e₃))
+      from rfl, map_add, map_smul, map_add, map_smul, map_smul]
+    rfl
+  refine ncpu_ext fun y => ?_
+  rw [key a y, key b y, ha1, ha2, ha3]
+
+end
+
+section
+
+theorem vnPres_from_apply (Y : WStarNCPU.{u}ᵒᵖ) (z : ULift.{u} ℂ) :
+    (vnPres.hT.from Y).unop.toNCPMap z = z.down • (1 : Y.unop.base.carrier) := by
+  have h : vnPres.hT.from Y = Quiver.Hom.op (wUnit Y.unop.base.carrier) :=
+    vnPres.hT.hom_ext _ _
+  rw [h]
+  rfl
+
+theorem vnPres_pmap_apply {X X' Y Y' : WStarNCPU.{u}ᵒᵖ} (f : X ⟶ X') (g : Y ⟶ Y')
+    (x : (vnPres.P X' Y').unop.base.carrier) :
+    (vnPres.pmap f g).unop.toNCPMap x
+      = (f.unop.toNCPMap x.1, g.unop.toNCPMap x.2) := by
+  refine Prod.ext ?_ ?_
+  · exact vnop_comp_apply f _ x
+  · exact vnop_comp_apply g _ x
+
+end
+
+end VNEffectus
+
 /-! ## `vNᵒᵖ` is an effectus (parsec 180)
 
 Moved from `Effectus.lean`. -/
@@ -282,13 +1457,597 @@ Moved from `Effectus.lean`. -/
 (`effexamplesintro`, eff.tex:2020, Examples): the main example — the
 opposite `vNᵒᵖ` of the category of von Neumann algebras with ncpu-maps is
 an effectus in total form. -/
-theorem effectus_vn : Nonempty (EffectusTotalStructure WStarNCPU.{u}ᵒᵖ) := sorry
+theorem effectus_vn : Nonempty (EffectusTotalStructure WStarNCPU.{u}ᵒᵖ) := by
+  have : HasTerminal (WStarNCPU.{u}ᵒᵖ) := vnPres.hT.hasTerminal
+  have : HasInitial (WStarNCPU.{u}ᵒᵖ) :=
+    (IsTerminal.op (WStarNCPU.{u}) vnTrivIsTerminal).hasInitial
+  have : ∀ X Y : WStarNCPU.{u}ᵒᵖ, HasColimit (pair X Y) := fun X Y =>
+    HasColimit.mk ⟨_, vnPres.hP X Y⟩
+  have : HasBinaryCoproducts (WStarNCPU.{u}ᵒᵖ) :=
+    hasBinaryCoproducts_of_hasColimit_pair _
+  have : HasFiniteCoproducts (WStarNCPU.{u}ᵒᵖ) :=
+    hasFiniteCoproducts_of_has_binary_and_initial
+  refine ⟨{ hasFiniteCoproducts := inferInstance
+            hasTerminal := inferInstance
+            effectus := effectusTotalForm_of_pres vnPres ?_ ?_ ?_ }⟩
+  · intro X Y
+    have e₁ : vnPres.pmap (𝟙 X) (vnPres.hT.from Y)
+        = Quiver.Hom.op (sq1i X.unop.base.carrier Y.unop.base.carrier) := by
+      refine vnop_hom_ext fun x => (vnPres_pmap_apply _ _ x).trans ?_
+      refine Prod.ext ?_ ?_
+      · exact vn_id_apply x.1
+      · exact vnPres_from_apply Y x.2
+    have e₂ : vnPres.pmap (vnPres.hT.from X) (𝟙 Y)
+        = Quiver.Hom.op (sq1h X.unop.base.carrier Y.unop.base.carrier) := by
+      refine vnop_hom_ext fun x => (vnPres_pmap_apply _ _ x).trans ?_
+      refine Prod.ext ?_ ?_
+      · exact vnPres_from_apply X x.1
+      · exact vn_id_apply x.2
+    have e₃ : vnPres.pmap (vnPres.hT.from X) (𝟙 vnPres.T)
+        = Quiver.Hom.op (sq1g X.unop.base.carrier) := by
+      refine vnop_hom_ext fun x => (vnPres_pmap_apply _ _ x).trans ?_
+      refine Prod.ext ?_ ?_
+      · exact vnPres_from_apply X x.1
+      · exact vn_id_apply x.2
+    have e₄ : vnPres.pmap (𝟙 vnPres.T) (vnPres.hT.from Y)
+        = Quiver.Hom.op (sq1f Y.unop.base.carrier) := by
+      refine vnop_hom_ext fun x => (vnPres_pmap_apply _ _ x).trans ?_
+      refine Prod.ext ?_ ?_
+      · exact vn_id_apply x.1
+      · exact vnPres_from_apply Y x.2
+    rw [e₁, e₂, e₃, e₄]
+    exact (vn_isPushout1 X.unop.base.carrier Y.unop.base.carrier).op
+  · intro X Y
+    have f₁ : vnPres.hT.from X = Quiver.Hom.op (sq2i X.unop.base.carrier) :=
+      vnPres.hT.hom_ext _ _
+    have f₄ : vnPres.pmap (vnPres.hT.from X) (vnPres.hT.from Y)
+        = Quiver.Hom.op (sq2f X.unop.base.carrier Y.unop.base.carrier) := by
+      refine vnop_hom_ext fun x => (vnPres_pmap_apply _ _ x).trans ?_
+      refine Prod.ext ?_ ?_
+      · exact vnPres_from_apply X x.1
+      · exact vnPres_from_apply Y x.2
+    rw [f₄, f₁]
+    exact (vn_isPushout2 X.unop.base.carrier Y.unop.base.carrier).op
+  · intro Z a b hf hg
+    apply Quiver.Hom.unop_inj
+    refine vn_jointlyMonic_aux a.unop b.unop (fun x => ?_) (fun x => ?_)
+    · exact vnop_comp_congr hf x
+    · exact vnop_comp_congr hg x
+
+/-! ## Infrastructure for the partial form (180V)
+
+The ncpsu-map counterpart of the block above: the category `vN_cpsu`, its
+finite products, the PCM enrichment `f ⊥ g ⟺ f(1) + g(1) ≤ 1`,
+`f ⋁ g = f + g`, and the effects `Pred 𝒜 = [0,1]_𝒜`. -/
+
+section VNPartial
+
+open Theses.A.CStar
+open scoped ComplexOrder ComplexStarModule
+
+section SUMaps
+
+variable {A B C : Type u} [CStarAlgebra A] [PartialOrder A] [StarOrderedRing A]
+  [CStarAlgebra B] [PartialOrder B] [StarOrderedRing B]
+  [CStarAlgebra C] [PartialOrder C] [StarOrderedRing C]
+
+/-- Extensionality for ncpsu-maps. -/
+theorem ncpsu_ext {f g : Theses.NCPSUMap A B}
+    (h : ∀ a, f.toNCPMap a = g.toNCPMap a) : f = g := by
+  obtain ⟨f, hf⟩ := f
+  obtain ⟨g, hg⟩ := g
+  have hfg : f = g := DFunLike.coe_injective (funext h)
+  subst hfg
+  rfl
+
+/-- An ncpsu-map from a linear map that is completely positive, normal and
+subunital. -/
+noncomputable def mkNCPSU (f : A →ₗ[ℂ] B) (hcp : IsCompletelyPositiveMap f)
+    (hn : Theses.PreservesDirSups ⇑f) (hsu : f 1 ≤ 1) : Theses.NCPSUMap A B :=
+  ⟨mkNCP f hcp hn, hsu⟩
+
+@[simp] theorem mkNCPSU_apply (f : A →ₗ[ℂ] B) (hcp : IsCompletelyPositiveMap f)
+    (hn : Theses.PreservesDirSups ⇑f) (hsu : f 1 ≤ 1) (a : A) :
+    (mkNCPSU f hcp hn hsu).toNCPMap a = f a := rfl
+
+theorem ncp_add_apply (f : Theses.NCPMap A B) (x y : A) :
+    f (x + y) = f x + f y := map_add (ncpLin f) x y
+
+theorem ncp_zero_apply (f : Theses.NCPMap A B) : f 0 = 0 := map_zero (ncpLin f)
+
+theorem ncp_smul_apply (f : Theses.NCPMap A B) (r : ℂ) (x : A) :
+    f (r • x) = r • f x := map_smul (ncpLin f) r x
+
+/-- The zero map is completely positive. -/
+theorem cp_zeroLin : IsCompletelyPositiveMap (0 : A →ₗ[ℂ] B) := by
+  intro n a b
+  simp
+
+/-- The zero map is normal. -/
+theorem preservesDirSups_zeroFun :
+    Theses.PreservesDirSups (fun _ : A => (0 : B)) := by
+  intro D s hne _ _
+  constructor
+  · rintro _ ⟨d, hd, rfl⟩
+    exact le_refl 0
+  · intro c hc
+    obtain ⟨d, hd⟩ := hne
+    exact hc ⟨d, hd, rfl⟩
+
+/-- The zero ncpsu-map. -/
+noncomputable def wZeroSU (A B : Type u) [CStarAlgebra A] [PartialOrder A]
+    [StarOrderedRing A] [CStarAlgebra B] [PartialOrder B] [StarOrderedRing B] :
+    Theses.NCPSUMap A B :=
+  mkNCPSU 0 cp_zeroLin preservesDirSups_zeroFun (by simpa using zero_le_one' B)
+
+@[simp] theorem wZeroSU_apply (a : A) : (wZeroSU A B).toNCPMap a = 0 := rfl
+
+/-- The sum of two ncpsu-maps, when it is again subunital. -/
+noncomputable def wAddSU (f g : Theses.NCPSUMap A B)
+    (h : f.toNCPMap 1 + g.toNCPMap 1 ≤ 1) : Theses.NCPSUMap A B :=
+  mkNCPSU (ncpLin f.toNCPMap + ncpLin g.toNCPMap)
+    (cp_add (ncpLin_cp _) (ncpLin_cp _))
+    (preservesDirSups_add (ncpLin_normal _) (ncpLin_normal _)) h
+
+@[simp] theorem wAddSU_apply (f g : Theses.NCPSUMap A B)
+    (h : f.toNCPMap 1 + g.toNCPMap 1 ≤ 1) (a : A) :
+    (wAddSU f g h).toNCPMap a = f.toNCPMap a + g.toNCPMap a := rfl
+
+/-- The first projection as an ncpsu-map. -/
+noncomputable def wFstSU (A B : Type u) [CStarAlgebra A] [PartialOrder A]
+    [StarOrderedRing A] [CStarAlgebra B] [PartialOrder B] [StarOrderedRing B] :
+    Theses.NCPSUMap (A × B) A :=
+  mkNCPSU (LinearMap.fst ℂ A B) cp_fstLin preservesDirSups_fstFun (le_refl 1)
+
+/-- The second projection as an ncpsu-map. -/
+noncomputable def wSndSU (A B : Type u) [CStarAlgebra A] [PartialOrder A]
+    [StarOrderedRing A] [CStarAlgebra B] [PartialOrder B] [StarOrderedRing B] :
+    Theses.NCPSUMap (A × B) B :=
+  mkNCPSU (LinearMap.snd ℂ A B) cp_sndLin preservesDirSups_sndFun (le_refl 1)
+
+@[simp] theorem wFstSU_apply (x : A × B) : (wFstSU A B).toNCPMap x = x.1 := rfl
+@[simp] theorem wSndSU_apply (x : A × B) : (wSndSU A B).toNCPMap x = x.2 := rfl
+
+/-- The pairing of two ncpsu-maps. -/
+noncomputable def wPairSU (f : Theses.NCPSUMap C A) (g : Theses.NCPSUMap C B) :
+    Theses.NCPSUMap C (A × B) :=
+  mkNCPSU (LinearMap.prod (ncpLin f.toNCPMap) (ncpLin g.toNCPMap))
+    (cp_prod (ncpLin_cp _) (ncpLin_cp _))
+    (preservesDirSups_prodFun (ncpLin_normal _) (ncpLin_normal _))
+    (Prod.le_def.mpr ⟨f.subunital', g.subunital'⟩)
+
+@[simp] theorem wPairSU_apply (f : Theses.NCPSUMap C A) (g : Theses.NCPSUMap C B)
+    (c : C) : (wPairSU f g).toNCPMap c = (f.toNCPMap c, g.toNCPMap c) := rfl
+
+/-- The ncpsu-map `ℂᵤ → A`, `z ↦ z·a`, for an effect `a`. -/
+noncomputable def wEffect {a : A} (h0 : 0 ≤ a) (h1 : a ≤ 1) :
+    Theses.NCPSUMap (ULift.{u} ℂ) A :=
+  ⟨Theses.A.VN.ncpOfNonneg h0, by
+    show (1 : ULift.{u} ℂ).down • a ≤ 1
+    simpa using h1⟩
+
+@[simp] theorem wEffect_apply {a : A} (h0 : 0 ≤ a) (h1 : a ≤ 1)
+    (z : ULift.{u} ℂ) : (wEffect h0 h1).toNCPMap z = z.down • a := rfl
+
+/-- An ncpsu-map out of the scalars is determined by its value at `1`. -/
+theorem ncpsu_scal_ext {f g : Theses.NCPSUMap (ULift.{u} ℂ) A}
+    (h : f.toNCPMap 1 = g.toNCPMap 1) : f = g := by
+  refine ncpsu_ext fun z => ?_
+  have hz : (z.down • (1 : ULift.{u} ℂ)) = z :=
+    Theses.A.VN.CU.down_injective (by simp)
+  have hf : f.toNCPMap (z.down • (1 : ULift.{u} ℂ)) = z.down • f.toNCPMap 1 :=
+    map_smul (ncpLin f.toNCPMap) z.down 1
+  have hg : g.toNCPMap (z.down • (1 : ULift.{u} ℂ)) = z.down • g.toNCPMap 1 :=
+    map_smul (ncpLin g.toNCPMap) z.down 1
+  conv_lhs => rw [← hz]
+  conv_rhs => rw [← hz]
+  rw [hf, hg, h]
+
+/-- The value at `1` of an ncpsu-map out of the scalars is an effect. -/
+theorem ncpsu_scal_nonneg (f : Theses.NCPSUMap (ULift.{u} ℂ) A) :
+    0 ≤ f.toNCPMap 1 := by
+  have h := OrderHomClass.mono f.toNCPMap.toCompletelyPositiveMap
+    (show (0 : ULift.{u} ℂ) ≤ 1 from by
+      show (0 : ℂ) ≤ (1 : ℂ)
+      exact zero_le_one)
+  rwa [map_zero] at h
+
+/-- A normal completely positive map killing `1` is zero. -/
+theorem ncp_eq_zero_of_one (f : Theses.NCPMap A B) (h1 : f 1 = 0) (a : A) :
+    f a = 0 := by
+  have hnn : ∀ c : A, 0 ≤ c → f c = 0 := by
+    intro c hc
+    have hle : c ≤ (‖c‖ : ℝ) • (1 : A) := Theses.A.VN.le_norm_smul_one hc
+    have hmono := OrderHomClass.mono f.toCompletelyPositiveMap hle
+    have hpos := OrderHomClass.mono f.toCompletelyPositiveMap hc
+    rw [map_zero] at hpos
+    have hz : f ((‖c‖ : ℝ) • (1 : A)) = 0 := by
+      rw [show ((‖c‖ : ℝ) • (1 : A)) = ((‖c‖ : ℝ) : ℂ) • (1 : A) from by
+        simp [Complex.coe_smul]]
+      rw [show f (((‖c‖ : ℝ) : ℂ) • (1 : A))
+        = ncpLin f (((‖c‖ : ℝ) : ℂ) • (1 : A)) from rfl,
+        map_smul, show ncpLin f 1 = f 1 from rfl, h1, smul_zero]
+    refine le_antisymm ?_ hpos
+    rw [← hz]
+    exact hmono
+  exact linear_eq_zero_of_nonneg (f := ncpLin f) hnn a
+
+end SUMaps
+
+section SUCat
+
+/-! ### The category `vN_cpsu` and its finite coproducts (in the opposite) -/
+
+theorem su_hom_ext {X Y : WStarCPSU.{u}} {f g : X ⟶ Y}
+    (h : ∀ a, f.toNCPMap a = g.toNCPMap a) : f = g := ncpsu_ext h
+
+theorem su_comp_apply {X Y Z : WStarCPSU.{u}} (f : X ⟶ Y) (g : Y ⟶ Z)
+    (a : X.base) : (f ≫ g).toNCPMap a = g.toNCPMap (f.toNCPMap a) :=
+  (NCPSUMap.exists_comp f g).choose_spec a
+
+theorem su_id_apply {X : WStarCPSU.{u}} (a : X.base) :
+    (𝟙 X : Theses.NCPSUMap X.base.carrier X.base.carrier).toNCPMap a = a :=
+  (NCPSUMap.exists_id X.base.carrier).choose_spec a
+
+theorem suop_hom_ext {X Y : WStarCPSU.{u}ᵒᵖ} {f g : X ⟶ Y}
+    (h : ∀ a, f.unop.toNCPMap a = g.unop.toNCPMap a) : f = g :=
+  Quiver.Hom.unop_inj (su_hom_ext h)
+
+theorem suop_comp_apply {X Y Z : WStarCPSU.{u}ᵒᵖ} (f : X ⟶ Y) (g : Y ⟶ Z)
+    (a : Z.unop.base) :
+    (f ≫ g).unop.toNCPMap a = f.unop.toNCPMap (g.unop.toNCPMap a) :=
+  su_comp_apply g.unop f.unop a
+
+theorem suop_congr {X Y : WStarCPSU.{u}ᵒᵖ} {f g : X ⟶ Y} (h : f = g)
+    (a : Y.unop.base) : f.unop.toNCPMap a = g.unop.toNCPMap a := by rw [h]
+
+/-- The unique ncpsu-map into the trivial algebra. -/
+noncomputable def wTrivSU (A : Type u) [CStarAlgebra A] [PartialOrder A]
+    [StarOrderedRing A] : Theses.NCPSUMap A PUnit.{u + 1} :=
+  mkNCPSU 0 cp_zeroLin preservesDirSups_zeroFun (le_of_eq (Subsingleton.elim _ _))
+
+/-- **The trivial algebra is the final object of `vN_cpsu`**, hence the
+initial object of `vN_cpsuᵒᵖ`. -/
+noncomputable def suTrivIsTerminal :
+    IsTerminal (WStarCPSU.of (WStar.of PUnit.{u + 1})) :=
+  IsTerminal.ofUniqueHom (fun X => wTrivSU X.base.carrier)
+    (fun _ _ => ncpsu_ext fun _ => Subsingleton.elim (α := PUnit.{u + 1}) _ _)
+
+/-- The concrete binary coproduct `X + Y` of `vN_cpsuᵒᵖ`: the product
+algebra. -/
+noncomputable abbrev suP (X Y : WStarCPSU.{u}ᵒᵖ) : WStarCPSU.{u}ᵒᵖ :=
+  Opposite.op (WStarCPSU.of (WStar.of
+    (X.unop.base.carrier × Y.unop.base.carrier)))
+
+/-- The first coprojection `κ₁ : X ⟶ X + Y` (the first projection of
+`vN_cpsu`). -/
+noncomputable def suPinl (X Y : WStarCPSU.{u}ᵒᵖ) : X ⟶ suP X Y :=
+  Quiver.Hom.op (wFstSU X.unop.base.carrier Y.unop.base.carrier)
+
+/-- The second coprojection `κ₂ : Y ⟶ X + Y`. -/
+noncomputable def suPinr (X Y : WStarCPSU.{u}ᵒᵖ) : Y ⟶ suP X Y :=
+  Quiver.Hom.op (wSndSU X.unop.base.carrier Y.unop.base.carrier)
+
+/-- The cotupling `[f, g] : X + Y ⟶ Z` (the pairing of `vN_cpsu`). -/
+noncomputable def suPdesc {X Y Z : WStarCPSU.{u}ᵒᵖ} (f : X ⟶ Z) (g : Y ⟶ Z) :
+    suP X Y ⟶ Z :=
+  Quiver.Hom.op (wPairSU f.unop g.unop)
+
+/-- The product algebra is the binary coproduct of `vN_cpsuᵒᵖ`. -/
+noncomputable def suHP (X Y : WStarCPSU.{u}ᵒᵖ) :
+    IsColimit (BinaryCofan.mk (suPinl X Y) (suPinr X Y)) :=
+  BinaryCofan.IsColimit.mk _
+    (fun {_} u v => suPdesc u v)
+    (fun {_} u v => suop_hom_ext fun a => suop_comp_apply _ _ a)
+    (fun {_} u v => suop_hom_ext fun a => suop_comp_apply _ _ a)
+    (fun {_} u v m h₁ h₂ => suop_hom_ext fun a => by
+      refine Prod.ext ?_ ?_
+      · exact (suop_comp_apply _ m a).symm.trans (suop_congr h₁ a)
+      · exact (suop_comp_apply _ m a).symm.trans (suop_congr h₂ a))
+
+/-- Finite coproducts of `vN_cpsuᵒᵖ`. -/
+noncomputable def suHasFiniteCoproducts : HasFiniteCoproducts (WStarCPSU.{u}ᵒᵖ) :=
+  letI : HasInitial (WStarCPSU.{u}ᵒᵖ) :=
+    (IsTerminal.op (WStarCPSU.{u}) suTrivIsTerminal).hasInitial
+  letI : ∀ X Y : WStarCPSU.{u}ᵒᵖ, HasColimit (pair X Y) := fun X Y =>
+    HasColimit.mk ⟨_, suHP X Y⟩
+  letI : HasBinaryCoproducts (WStarCPSU.{u}ᵒᵖ) :=
+    hasBinaryCoproducts_of_hasColimit_pair _
+  hasFiniteCoproducts_of_has_binary_and_initial
+
+/-! ### The PCM enrichment -/
+
+theorem ncpsu_one_nonneg {A B : Type u} [CStarAlgebra A] [PartialOrder A]
+    [StarOrderedRing A] [CStarAlgebra B] [PartialOrder B] [StarOrderedRing B]
+    (f : Theses.NCPSUMap A B) : 0 ≤ f.toNCPMap 1 := by
+  have h := OrderHomClass.mono f.toNCPMap.toCompletelyPositiveMap
+    (zero_le_one' A)
+  rwa [map_zero] at h
+
+/-- **The PCM enrichment of `vN_cpsuᵒᵖ`**: `f ⊥ g` iff `f(1) + g(1) ≤ 1`
+(i.e. iff the sum is again subunital), and then `f ⋁ g = f + g`. -/
+noncomputable def suPCM (X Y : WStarCPSU.{u}ᵒᵖ) : PCM (X ⟶ Y) where
+  zero := Quiver.Hom.op (wZeroSU Y.unop.base.carrier X.unop.base.carrier)
+  Perp f g := f.unop.toNCPMap 1 + g.unop.toNCPMap 1 ≤ 1
+  ovee f g h := Quiver.Hom.op (wAddSU f.unop g.unop h)
+  perp_comm h := by rw [add_comm]; exact h
+  ovee_comm h := suop_hom_ext fun a => add_comm _ _
+  perp_of_ovee_perp := fun {a b c} hab h => by
+    have h0 : 0 ≤ a.unop.toNCPMap 1 := ncpsu_one_nonneg _
+    have h1 : b.unop.toNCPMap 1 ≤ a.unop.toNCPMap 1 + b.unop.toNCPMap 1 :=
+      le_add_of_nonneg_left h0
+    have h3 : b.unop.toNCPMap 1 + c.unop.toNCPMap 1
+        ≤ (a.unop.toNCPMap 1 + b.unop.toNCPMap 1) + c.unop.toNCPMap 1 := by
+      gcongr
+    have h' : a.unop.toNCPMap 1 + b.unop.toNCPMap 1 + c.unop.toNCPMap 1 ≤ 1 := h
+    exact le_trans h3 h'
+  perp_ovee_of_ovee_perp := fun {a b c} hab h => by
+    show a.unop.toNCPMap 1 + (b.unop.toNCPMap 1 + c.unop.toNCPMap 1) ≤ 1
+    rw [← add_assoc]
+    exact h
+  ovee_assoc := fun {a b c} hab h => suop_hom_ext fun x => (add_assoc _ _ _)
+  zero_perp a := by
+    show (0 : X.unop.base.carrier) + a.unop.toNCPMap 1 ≤ 1
+    rw [zero_add]
+    exact a.unop.subunital'
+  zero_ovee a := suop_hom_ext fun x => zero_add _
+
+/-! ### The finPAC axioms and the effects -/
+
+attribute [local instance] suHasFiniteCoproducts suPCM
+
+theorem ncpsu_mono {A B : Type u} [CStarAlgebra A] [PartialOrder A]
+    [StarOrderedRing A] [CStarAlgebra B] [PartialOrder B] [StarOrderedRing B]
+    (f : Theses.NCPSUMap A B) {x y : A} (h : x ≤ y) :
+    f.toNCPMap x ≤ f.toNCPMap y :=
+  OrderHomClass.mono f.toNCPMap.toCompletelyPositiveMap h
+
+theorem suPinl_desc {X Y Z : WStarCPSU.{u}ᵒᵖ} (f : X ⟶ Z) (g : Y ⟶ Z) :
+    suPinl X Y ≫ suPdesc f g = f :=
+  suop_hom_ext fun a => suop_comp_apply _ _ a
+
+theorem suPinr_desc {X Y Z : WStarCPSU.{u}ᵒᵖ} (f : X ⟶ Z) (g : Y ⟶ Z) :
+    suPinr X Y ≫ suPdesc f g = g :=
+  suop_hom_ext fun a => suop_comp_apply _ _ a
+
+/-- The comparison isomorphism between the ambient coproduct `X ⨿ Y` and the
+concrete one. -/
+noncomputable def suCoprodIso (X Y : WStarCPSU.{u}ᵒᵖ) : (X ⨿ Y) ≅ suP X Y :=
+  (coprodIsCoprod X Y).coconePointUniqueUpToIso (suHP X Y)
+
+theorem suInl_coprodIso (X Y : WStarCPSU.{u}ᵒᵖ) :
+    (coprod.inl : X ⟶ X ⨿ Y) ≫ (suCoprodIso X Y).hom = suPinl X Y :=
+  (coprodIsCoprod X Y).comp_coconePointUniqueUpToIso_hom (suHP X Y)
+    ⟨WalkingPair.left⟩
+
+theorem suInr_coprodIso (X Y : WStarCPSU.{u}ᵒᵖ) :
+    (coprod.inr : Y ⟶ X ⨿ Y) ≫ (suCoprodIso X Y).hom = suPinr X Y :=
+  (coprodIsCoprod X Y).comp_coconePointUniqueUpToIso_hom (suHP X Y)
+    ⟨WalkingPair.right⟩
+
+/-- **`vN_cpsuᵒᵖ` is a finPAC** (180VII.1): composition is bilinear for the
+pointwise sum, the compatible-sum axiom holds because `▷₁(1) + ▷₂(1) = 1` in
+`𝒜 ⊕ 𝒜`, and untying because the coprojections are subunital. -/
+theorem suFinPAC : FinPAC (WStarCPSU.{u}ᵒᵖ) where
+  comp_ovee := fun {X Y Z f g} h k => by
+    have hperp : (f ≫ k).unop.toNCPMap 1 + (g ≫ k).unop.toNCPMap 1 ≤ 1 := by
+      rw [suop_comp_apply, suop_comp_apply]
+      refine le_trans (add_le_add (ncpsu_mono f.unop k.unop.subunital')
+        (ncpsu_mono g.unop k.unop.subunital')) h
+    refine ⟨hperp, ?_⟩
+    refine suop_hom_ext fun z => ?_
+    rw [suop_comp_apply]
+    show f.unop.toNCPMap (k.unop.toNCPMap z) + g.unop.toNCPMap (k.unop.toNCPMap z)
+      = (f ≫ k).unop.toNCPMap z + (g ≫ k).unop.toNCPMap z
+    rw [suop_comp_apply, suop_comp_apply]
+  ovee_comp := fun {W X Y f g} h k => by
+    have hadd : ∀ x y : X.unop.base.carrier,
+        k.unop.toNCPMap (x + y) = k.unop.toNCPMap x + k.unop.toNCPMap y :=
+      fun x y => map_add (ncpLin k.unop.toNCPMap) x y
+    have hperp : (k ≫ f).unop.toNCPMap 1 + (k ≫ g).unop.toNCPMap 1 ≤ 1 := by
+      rw [suop_comp_apply, suop_comp_apply, ← hadd]
+      exact le_trans (ncpsu_mono k.unop h) k.unop.subunital'
+    refine ⟨hperp, ?_⟩
+    refine suop_hom_ext fun y => ?_
+    rw [suop_comp_apply]
+    show k.unop.toNCPMap (f.unop.toNCPMap y + g.unop.toNCPMap y)
+      = (k ≫ f).unop.toNCPMap y + (k ≫ g).unop.toNCPMap y
+    rw [hadd, suop_comp_apply, suop_comp_apply]
+  comp_zero := fun {X Y Z} f => by
+    refine suop_hom_ext fun z => ?_
+    rw [suop_comp_apply]
+    show f.unop.toNCPMap 0 = 0
+    exact map_zero (ncpLin f.unop.toNCPMap)
+  zero_comp := fun {X Y Z} f => by
+    refine suop_hom_ext fun z => ?_
+    rw [suop_comp_apply]
+    rfl
+  compatible_sum := fun {X Y} b => by
+    have hp₁ : pproj₁ Y Y = (suCoprodIso Y Y).hom ≫ suPdesc (𝟙 Y) 0 := by
+      refine coprod.hom_ext ?_ ?_
+      · rw [show (pproj₁ Y Y) = coprod.desc (𝟙 Y) 0 from rfl, coprod.inl_desc,
+          ← Category.assoc, suInl_coprodIso, suPinl_desc]
+      · rw [show (pproj₁ Y Y) = coprod.desc (𝟙 Y) 0 from rfl, coprod.inr_desc,
+          ← Category.assoc, suInr_coprodIso, suPinr_desc]
+    have hp₂ : pproj₂ Y Y = (suCoprodIso Y Y).hom ≫ suPdesc 0 (𝟙 Y) := by
+      refine coprod.hom_ext ?_ ?_
+      · rw [show (pproj₂ Y Y) = coprod.desc 0 (𝟙 Y) from rfl, coprod.inl_desc,
+          ← Category.assoc, suInl_coprodIso, suPinl_desc]
+      · rw [show (pproj₂ Y Y) = coprod.desc 0 (𝟙 Y) from rfl, coprod.inr_desc,
+          ← Category.assoc, suInr_coprodIso, suPinr_desc]
+    have e₁ : (pproj₁ Y Y).unop.toNCPMap 1
+        = (suCoprodIso Y Y).hom.unop.toNCPMap
+            ((1 : Y.unop.base.carrier), (0 : Y.unop.base.carrier)) := by
+      rw [hp₁, suop_comp_apply]
+      congr 1
+      refine Prod.ext ?_ ?_
+      · exact su_id_apply 1
+      · rfl
+    have e₂ : (pproj₂ Y Y).unop.toNCPMap 1
+        = (suCoprodIso Y Y).hom.unop.toNCPMap
+            ((0 : Y.unop.base.carrier), (1 : Y.unop.base.carrier)) := by
+      rw [hp₂, suop_comp_apply]
+      congr 1
+      refine Prod.ext ?_ ?_
+      · rfl
+      · exact su_id_apply 1
+    show (b ≫ pproj₁ Y Y).unop.toNCPMap 1 + (b ≫ pproj₂ Y Y).unop.toNCPMap 1 ≤ 1
+    rw [suop_comp_apply, suop_comp_apply, e₁, e₂]
+    have hsum : (suCoprodIso Y Y).hom.unop.toNCPMap
+          ((1 : Y.unop.base.carrier), (0 : Y.unop.base.carrier))
+        + (suCoprodIso Y Y).hom.unop.toNCPMap
+          ((0 : Y.unop.base.carrier), (1 : Y.unop.base.carrier))
+        = (suCoprodIso Y Y).hom.unop.toNCPMap 1 := by
+      refine (ncp_add_apply (suCoprodIso Y Y).hom.unop.toNCPMap
+        ((1 : Y.unop.base.carrier), (0 : Y.unop.base.carrier))
+        ((0 : Y.unop.base.carrier), (1 : Y.unop.base.carrier))).symm.trans ?_
+      congr 1
+      refine Prod.ext ?_ ?_
+      · show (1 : Y.unop.base.carrier) + 0 = 1
+        exact add_zero 1
+      · show (0 : Y.unop.base.carrier) + 1 = 1
+        exact zero_add 1
+    have key : b.unop.toNCPMap ((suCoprodIso Y Y).hom.unop.toNCPMap
+          ((1 : Y.unop.base.carrier), (0 : Y.unop.base.carrier)))
+        + b.unop.toNCPMap ((suCoprodIso Y Y).hom.unop.toNCPMap
+          ((0 : Y.unop.base.carrier), (1 : Y.unop.base.carrier)))
+        = b.unop.toNCPMap ((suCoprodIso Y Y).hom.unop.toNCPMap 1) :=
+      (ncp_add_apply b.unop.toNCPMap _ _).symm.trans
+        (congrArg b.unop.toNCPMap hsum)
+    refine le_trans (le_of_eq key) ?_
+    exact le_trans (ncpsu_mono b.unop (suCoprodIso Y Y).hom.unop.subunital')
+      b.unop.subunital'
+  untying := fun {X Y f g} h => by
+    show (f ≫ (coprod.inl : Y ⟶ Y ⨿ Y)).unop.toNCPMap 1
+      + (g ≫ (coprod.inr : Y ⟶ Y ⨿ Y)).unop.toNCPMap 1 ≤ 1
+    rw [suop_comp_apply, suop_comp_apply]
+    exact le_trans (add_le_add
+      (ncpsu_mono f.unop (coprod.inl : Y ⟶ Y ⨿ Y).unop.subunital')
+      (ncpsu_mono g.unop (coprod.inr : Y ⟶ Y ⨿ Y).unop.subunital')) h
+
+/-! ### The effects: `I = ℂ`, `Pred 𝒜 = [0,1]_𝒜` -/
+
+attribute [local instance] suFinPAC
+
+/-- The truth predicate `1 : 𝒜 ⟶ ℂ` of `vN_cpsuᵒᵖ`, i.e. the unit map
+`z ↦ z·1` of `vN_cpsu`. -/
+noncomputable def wUnitSU (A : Type u) [CStarAlgebra A] [PartialOrder A]
+    [StarOrderedRing A] : Theses.NCPSUMap (ULift.{u} ℂ) A :=
+  ⟨(wUnit A).toNCPMap, le_of_eq (wUnit A).unital'⟩
+
+@[simp] theorem wUnitSU_apply (A : Type u) [CStarAlgebra A] [PartialOrder A]
+    [StarOrderedRing A] (z : ULift.{u} ℂ) :
+    (wUnitSU A).toNCPMap z = z.down • (1 : A) := rfl
+
+theorem wUnitSU_one (A : Type u) [CStarAlgebra A] [PartialOrder A]
+    [StarOrderedRing A] : (wUnitSU A).toNCPMap 1 = (1 : A) := (wUnit A).unital'
+
+/-- An ncpsu-map out of the scalars is `z ↦ z·f(1)`. -/
+theorem ncpsu_scal_apply {A : Type u} [CStarAlgebra A] [PartialOrder A]
+    [StarOrderedRing A] (f : Theses.NCPSUMap (ULift.{u} ℂ) A) (z : ULift.{u} ℂ) :
+    f.toNCPMap z = z.down • f.toNCPMap 1 := by
+  have hz : (z.down • (1 : ULift.{u} ℂ)) = z :=
+    Theses.A.VN.CU.down_injective (by simp)
+  conv_lhs => rw [← hz]
+  exact ncp_smul_apply f.toNCPMap z.down 1
+
+/-- The effect object of `vN_cpsuᵒᵖ`: the scalars. -/
+noncomputable abbrev suI : WStarCPSU.{u}ᵒᵖ :=
+  Opposite.op (WStarCPSU.of (WStar.of (ULift.{u} ℂ)))
+
+/-- The truth predicate `1 : X ⟶ ℂ` as a morphism of `vN_cpsuᵒᵖ`. -/
+noncomputable def suOne (X : WStarCPSU.{u}ᵒᵖ) : X ⟶ suI :=
+  Quiver.Hom.op (wUnitSU X.unop.base.carrier)
+
+theorem suOne_unop_one (X : WStarCPSU.{u}ᵒᵖ) :
+    (suOne X).unop.toNCPMap 1 = (1 : X.unop.base.carrier) :=
+  (wUnit X.unop.base.carrier).unital'
+
+/-- **The effect structure of `vN_cpsuᵒᵖ`** (180VII.2): the effect object is
+the scalars `ℂ`, so that `Pred 𝒜 = vN_cpsu(ℂ, 𝒜) ≅ [0,1]_𝒜`; the truth
+predicate is the unit map and `p^⊥` is `1 - p`. -/
+noncomputable def suEffectusPartialForm : EffectusPartialForm (WStarCPSU.{u}ᵒᵖ) where
+  I := suI
+  one X := suOne X
+  orth {X} p := Quiver.Hom.op
+    (wEffect (sub_nonneg.mpr p.unop.subunital')
+      (sub_le_self 1 (ncpsu_one_nonneg p.unop)))
+  perp_orth := fun {X} p => by
+    show p.unop.toNCPMap 1
+      + (1 : ULift.{u} ℂ).down • ((1 : X.unop.base.carrier) - p.unop.toNCPMap 1)
+      ≤ 1
+    have h1 : (1 : ULift.{u} ℂ).down • ((1 : X.unop.base.carrier)
+        - p.unop.toNCPMap 1) = (1 : X.unop.base.carrier) - p.unop.toNCPMap 1 := by
+      simp
+    rw [h1]
+    refine le_of_eq ?_
+    abel
+  ovee_orth := fun {X} p => by
+    refine Quiver.Hom.unop_inj (ncpsu_ext fun z => ?_)
+    show p.unop.toNCPMap z
+      + z.down • ((1 : X.unop.base.carrier) - p.unop.toNCPMap 1)
+      = z.down • (1 : X.unop.base.carrier)
+    have hp : p.unop.toNCPMap z = z.down • p.unop.toNCPMap 1 :=
+      ncpsu_scal_apply p.unop z
+    rw [hp, ← smul_add]
+    congr 1
+    abel
+  orth_unique := fun {X p q} h heq => by
+    refine Quiver.Hom.unop_inj (ncpsu_scal_ext ?_)
+    have hval : p.unop.toNCPMap 1 + q.unop.toNCPMap 1
+        = (1 : X.unop.base.carrier) := by
+      have h1 := congrArg (fun k : X ⟶ suI => k.unop.toNCPMap 1) heq
+      exact h1.trans (suOne_unop_one X)
+    show q.unop.toNCPMap 1
+      = (1 : ULift.{u} ℂ).down • ((1 : X.unop.base.carrier) - p.unop.toNCPMap 1)
+    have h2 : (1 : ULift.{u} ℂ).down • ((1 : X.unop.base.carrier)
+        - p.unop.toNCPMap 1) = (1 : X.unop.base.carrier) - p.unop.toNCPMap 1 := by
+      simp
+    rw [h2, ← hval]
+    abel
+  eq_zero_of_perp_one := fun {X p} h => by
+    refine Quiver.Hom.unop_inj (ncpsu_scal_ext ?_)
+    have h1 : p.unop.toNCPMap 1 + (1 : X.unop.base.carrier) ≤ 1 := by
+      refine le_trans (le_of_eq ?_) h
+      exact congrArg (fun t => p.unop.toNCPMap 1 + t) (suOne_unop_one X).symm
+    have h2 : p.unop.toNCPMap 1 ≤ 0 := by
+      have h3 := sub_le_sub_right h1 (1 : X.unop.base.carrier)
+      simpa using h3
+    have h4 : p.unop.toNCPMap 1 = 0 :=
+      le_antisymm h2 (ncpsu_one_nonneg p.unop)
+    exact h4.trans rfl
+  perp_of_one_perp := fun {X Y f g} h => by
+    have hf : (f ≫ suOne Y).unop.toNCPMap 1 = f.unop.toNCPMap 1 := by
+      rw [suop_comp_apply]
+      exact congrArg f.unop.toNCPMap (suOne_unop_one Y)
+    have hg : (g ≫ suOne Y).unop.toNCPMap 1 = g.unop.toNCPMap 1 := by
+      rw [suop_comp_apply]
+      exact congrArg g.unop.toNCPMap (suOne_unop_one Y)
+    show f.unop.toNCPMap 1 + g.unop.toNCPMap 1 ≤ 1
+    rw [← hf, ← hg]
+    exact h
+  eq_zero_of_one_zero := fun {X Y f} h => by
+    refine Quiver.Hom.unop_inj (ncpsu_ext fun y => ?_)
+    have h1 := congrArg (fun k : X ⟶ suI => k.unop.toNCPMap 1) h
+    rw [suop_comp_apply] at h1
+    have h2 : f.unop.toNCPMap 1 = 0 := by
+      refine Eq.trans ?_ h1
+      exact congrArg f.unop.toNCPMap (suOne_unop_one Y).symm
+    exact ncp_eq_zero_of_one f.unop.toNCPMap h2 y
+
+end SUCat
+
+end VNPartial
 
 /-- **180V** (`effectus-vn`, eff.tex:827): the partial maps of the effectus
 `vNᵒᵖ` correspond to the ncpsu-maps: `(W*_ncpsu)ᵒᵖ` is an effectus in
 partial form (its effect object being `ℂ`). -/
 theorem effectus_vn_partial :
-    Nonempty (EffectusPartialStructure WStarCPSU.{u}ᵒᵖ) := sorry
+    Nonempty (EffectusPartialStructure WStarCPSU.{u}ᵒᵖ) :=
+  ⟨{ hasFiniteCoproducts := suHasFiniteCoproducts
+     homPCM := suPCM
+     finPAC := suFinPAC
+     effectus := suEffectusPartialForm }⟩
 
 /-! ## `vNᵒᵖ` is real, with separating states and predicates (parsec 190)
 

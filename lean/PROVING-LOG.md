@@ -20004,3 +20004,77 @@ appears:
 
 Nothing for ERRATA and nothing for QUESTIONS.  `docs/why-open.csv`: the
 `ksgns` row is deleted (closed).
+
+## Session 83 — `B/Eff`: **180V is CLOSED, both halves** — `vNᵒᵖ` is an effectus in total *and* in partial form; the eight examples that sat behind it are now behind nothing but a transport (worker on `Theses/B/Eff/`)
+
+`effectus_vn` and `effectus_vn_partial` (both **180V**, `eff.tex:827`) are
+proved in `VNExamples.lean`, `#print axioms`-clean.  `B/Eff` is at **13**
+code `sorry`s (`VNExamples` 9, `StatesPredicates` 2, `EffectAlgebras` 2), 0
+errors in all nine files.
+
+### What the thesis gives, and what had to be supplied
+
+eff.tex:832 says only "to see `vNᵒᵖ` is an effectus in total form, adapt the
+proof of `emod-effectus`".  That is a real pointer — the proof does go through
+the same bridge, `effectusTotalForm_of_pres` (`StatesPredicates.lean:819`), at
+the concrete presentation `T = ℂᵤ`, `P 𝒜 ℬ = 𝒜 × ℬ` — but nothing beyond the
+shape is shared with 191II, and the two 180I pullbacks had to be proved from
+scratch.  Dualised into `vN` they say:
+
+1. *(left square)* an ncpu-map out of `𝒜 ⊕ ℬ` is exactly a compatible pair of
+   ncpu-maps out of `𝒜 ⊕ ℂ` and `ℂ ⊕ ℬ`, glued by `γ(a,b) = β(a,0) + α(0,b)`;
+2. *(right square)* an ncpu-map out of `𝒜` is exactly an ncpu-map out of
+   `𝒜 ⊕ ℬ` that kills `0 ⊕ ℬ`, by `γ(a) = α(a,0)`.
+
+The only non-formal ingredient is in 2: a *positive* map killing `(0,1)` kills
+all of `0 ⊕ ℬ`, because `0 ≤ b ≤ ‖b‖·1` (thesis A's `le_norm_smul_one`) and
+every element is a linear combination of four positive ones.  The third axiom,
+joint monicity, is the observation that an ncpu-map out of `ℂ³` is determined
+by the images of the three minimal projections, and `(x,y) ↦ (x,y,y)` together
+with `(x,y) ↦ (y,x,y)` recovers all three.
+
+The partial form is built directly rather than through Cho's theorem (which
+would have required transporting an `EffectusPartialStructure` along
+`Par (vNᵒᵖ) ≌ vN_cpsuᵒᵖ`, messier than the direct construction): the PCM is
+`f ⊥ g ⟺ f(1) + g(1) ≤ 1`, `f ⋁ g = f + g`; the finPAC axioms are then
+monotonicity and subunitality, except *compatible sum*, which needs the
+comparison isomorphism `X ⨿ Y ≅ 𝒜 × ℬ` to see that `▷₁(1) + ▷₂(1) = 1`; the
+effects are `I = ℂᵤ`, `Pred 𝒜 = vN_cpsu(ℂ, 𝒜) ≅ [0,1]_𝒜` (an ncpsu-map out of
+the scalars is `z ↦ z·f(1)`, which is the workhorse lemma of that half), and
+`p^⊥ = 1 - p`.
+
+### Four things the record had wrong
+
+* **`WStar.trivial` was one universe too high.**  Added last session as
+  `WStar.{u+1} := WStar.of PUnit.{u+2}`, it could never be an object of
+  `WStarNCPU.{u}`, whose objects are `WStar.{u}` — so the gate it was meant to
+  remove was still shut.  Corrected to `WStar.{u} := WStar.of PUnit.{u+1}`.
+* **The scalars needed lifting, and that was not in the costing.**  `ℂ : Type`
+  is not an object of `WStar.{u}` either.  `ULift.{u} ℂ` already carries all
+  the C\*-structure (`A/VN/NormalFunctionals.lean`, and a duplicate in
+  `B/Dils/Pure.lean`), but **not** `Theses.VonNeumannAlgebra`; that instance,
+  and `VonNeumannAlgebra (𝒜 × ℬ)`, are new here.  The product one is the
+  observation that the upper bounds of a set in a product order form a product,
+  so suprema are componentwise, and that `ω ∘ π₁`, `ω ∘ π₂` are jointly
+  faithful.
+* **`WStarCat.lean`'s identity and composition are obtained by
+  `Classical.choice`**, so `(f ≫ g) a = g (f a)` is *propositional*, not
+  definitional.  This is the single largest cost in the file: `emod_effectus`
+  can discharge its `CoprodPres` obligations with `rfl`, and none of the
+  corresponding steps here can.  A hand-built API (`vn_comp_apply`,
+  `vnop_comp_apply`, `vn_hom_ext`, …) stands in for it.
+* **`WStar.of` is semireducible**, so `(WStar.of A).carrier` does not reduce at
+  `reducible` transparency and `rw` regularly fails to see through it where
+  `exact` succeeds.  Several proofs are written with `have`/`.trans` chains for
+  that reason alone; a `@[reducible]` on `WStar.of` in `WStarCat.lean` would
+  remove the friction, but touching that file invalidates the whole `B/Eff`
+  olean chain, so it is left for a full rebuild.
+
+### Where this leaves the eight dependants
+
+They are *not* automatically unblocked: each takes an **arbitrary**
+`s : EffectusPartialStructure WStarCPSU.{u}ᵒᵖ`, so a concrete structure has to
+be transported to `s` along `s.effectus.I ≅ ℂᵤ`.  With
+`effectusPartialStructure_homPCM_unique` (session 82) the enrichment part of
+that transport is already known to be free; the object part is the small
+lemma the previous session flagged and did not write.

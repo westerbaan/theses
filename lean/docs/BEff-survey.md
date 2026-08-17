@@ -1,6 +1,21 @@
-# `Theses/B/Eff/` — full survey of the remaining `sorry`s (worker, session 82, 2026-08-17)
+# `Theses/B/Eff/` — full survey of the remaining `sorry`s (worker, session 82, 2026-08-17; **updated session 83, 2026-08-18**)
 
-**Headline count: B/Eff has 15 code `sorry`s.**  Per file, each source run
+> **Session 83 update.**  The root, **180V**, is CLOSED — *both*
+> `effectus_vn` and `effectus_vn_partial` are proved in `VNExamples.lean` and
+> are `#print axioms`-clean.  B/Eff is now at **13** `sorry`s (`VNExamples`
+> **9**, `StatesPredicates` 2, `EffectAlgebras` 2), 0 errors.  Three further
+> corrections to what is below: `WStar.trivial` was stated one universe too
+> high (`WStar.{u+1}`) and so could never be an object of `WStarNCPU.{u}` —
+> fixed; the costing overlooked that **`ℂ` also has to be lifted** to
+> `ULift.{u} ℂ` and given a `Theses.VonNeumannAlgebra` instance; and the real
+> cost of the file is not the mathematics but that `WStarCat.lean`'s `id` and
+> `comp` come from `Classical.choice`, so every categorical step needs a
+> propositional apply-lemma where `emod_effectus` uses `rfl`.  The eight
+> hypothetical examples are *still* gated on a transport of the new concrete
+> structure to the arbitrary `s` of their statements.  See PROVING-LOG,
+> session 83.
+
+**Headline count (session 82): B/Eff had 15 code `sorry`s.**  Per file, each source run
 through `lean` individually with `LEAN_PATH` set (never `lake env lean`), and
 each checked for **errors** as well as `sorry`s.  (`VNExamples.lean` was
 re-verified against freshly built `B/Dils` oleans; while the `B/Dils` worker
@@ -9,8 +24,8 @@ import line, which is not a defect in this directory — retry, do not debug.)
 
 | file | lines | `sorry` | errors |
 |---|---|---|---|
-| `VNExamples.lean` | 408 | **11** | 0 |
-| `StatesPredicates.lean` | 7216 | **2** | 0 |
+| `VNExamples.lean` | 408 (now 2167) | **11** (now **9**) | 0 |
+| `StatesPredicates.lean` | 7500 | **1** | 0 |
 | `EffectAlgebras.lean` | 3088 | **2** | 0 |
 | `Comparisons.lean` | 1903 | 0 | 0 |
 | `Dagger.lean` | 2572 | 0 | 0 |
@@ -18,7 +33,7 @@ import line, which is not a defect in this directory — retry, do not debug.)
 | `Quotients.lean` | 1427 | 0 | 0 |
 | `Effectus.lean` | 2783 | 0 | 0 |
 | `WStarCat.lean` | 292 | 0 | 0 |
-| **total** | | **15** | **0** |
+| **total** | | **14** | **0** |
 
 The import chain is linear:
 `EffectAlgebras + WStarCat → Effectus → StatesPredicates → Quotients →
@@ -91,10 +106,11 @@ work upstream.
 
 | classification | statements |
 |---|---|
-| **reachable, live target** | `exc_dm_effectus_kleisli`; `effectus_vn` + `effectus_vn_partial` (long) |
+| **proved (session 83)** | `exc_dm_effectus_kleisli` |
+| **reachable, live target** | `effectus_vn` + `effectus_vn_partial` (long); `finite_effectMonoid_boolean` |
 | **blocked on the root 180V** | the eight hypothetical vN examples below |
 | **blocked outside B/Eff** | `vn_is_andthen_eff` (A/Proc 105V + missing import); `vn_is_dagger_category` (via 211IV) |
-| **awaiting a ruling / literature park** | `finite_effectMonoid_boolean`, `effectModule_unitInterval_representation`, `cancellative_iso_convex` (all QUESTIONS **A3**) |
+| **awaiting a ruling / literature park** | `effectModule_unitInterval_representation`, `cancellative_iso_convex` (both QUESTIONS **A3**) |
 | **known false** | none in this directory |
 
 Nothing in `B/Eff` is known false, and nothing is waiting on a thesis-B
@@ -235,39 +251,56 @@ for anyone who does not want to build 180V.*
 
 ---
 
-## `StatesPredicates.lean` — two
+## `StatesPredicates.lean` — one
 
-* **`exc_dm_effectus_kleisli` (192III.3, `exc-dm-effectus`,
-  eff.tex:2410, Exercise\*)** — `Kl(𝒟_M)` is an effectus in total form.
-  **The one straightforwardly live target in the directory.**  The author's
-  solution (`bsols.tex:1991–2170`) covers all three parts and its part 3 is
-  fully explicit: coproducts of `Kl T` are those of `Set` with coprojections
-  `η ∘ κᵢ` (the Kleisli inclusion is a left adjoint); `∅` is initial;
-  `𝒟_M 1 ≅ 1` makes `1` final; and both pullback squares plus joint monicity
-  are two-line pointwise computations on `MConvexComb M (X ⊕ Y)`.
-  * *In the tree already*: the monad itself (`exc_dm_effectus_monad`, proved,
-    with `mu_eta`, `mu_mu`, `mu_map_eta`, `map_eta`, `mu_map`), the
-    subsingleton-ness of `MConvexComb M PUnit` (`:4434`), the `supp`/`rsum`
-    `Finset` API (`:2823–2914`) — which is what makes the pointwise
-    computations tractable, the list-based `map_spec`/`mu_spec` are not —
-    and `effectusTotalForm_of_pres` with two worked instances.
-  * *Costing*: **~500–700 lines, one session.**  The three axioms are short;
-    the coproduct and terminal-object instances for a Kleisli category are the
-    bulk, and Mathlib has neither.
-  * *Classification:* **reachable, live.**
+* **`exc_dm_effectus_kleisli` (192III.3, `exc-dm-effectus`, eff.tex:2410,
+  Exercise\*)** — **PROVED, session 83**, by transcribing the author's
+  solution (`bsols.tex:1991–2170`), which is complete and usable exactly as
+  the survey described it.  The costing of ~500–700 lines was ~2× too high:
+  **~480 added lines**, of which ~190 are the `MConvexComb` glue and ~290 the
+  Kleisli plumbing and the three axioms.  Notes for anyone building on it:
+  * The new section `DMKleisli` gives `Kl(𝒟_M)` a concrete `CoprodPres`
+    (`one M = PUnit`, `P X Y = X ⊕ Y`, `pinl/pinr = kpure κᵢ`) together with
+    `HasTerminal`/`HasFiniteCoproducts`, and the three axioms go through
+    `effectusTotalForm_of_pres`, its third worked instance.
+  * The only real content is `MConvexComb.exists_glue`: given `α ∈ 𝒟_M(X+1)`
+    and `β ∈ 𝒟_M(1+Y)` agreeing in `𝒟_M(1+1)`, the glued `δ` sums to `1`
+    because `α(κ₂*) = ⋁_y β(κ₂y)`.  That is the author's own computation.
+  * Six `MConvexComb`/`PCM` helpers (`eq_eta_punit`,
+    `map_apply_of_unique_fiber`, `PCM.le_of_mem_isSumOf`,
+    `eq_zero_of_map_eq_zero`, `exists_map_inl`, `jointly_injective_of_three`)
+    were **moved up** in the file, from the `AConv_M` block (parsecs 193–194)
+    to just before the `𝒟_M` monad, because 192III.3 needs them earlier.  No
+    statement changed; the `AConv_M` uses are unaffected.
+  * `Kleisli.Adjunction.adj` is in Mathlib but was **not** used: the coproduct
+    is quicker to give by hand than to extract from the adjunction, because
+    Mathlib's `BinaryCofan.mk` does not reduce reducibly to the given
+    coprojections.  Related trap: `DMKleisli.pres` must be `@[reducible]`, or
+    `(pres M).T.of` does not unfold and every `rw` against a `kpure` lemma
+    fails with a type mismatch that the error message reports as "did not find
+    an occurrence of the pattern".
 * **`cancellative_iso_convex` (192V.4, eff.tex:2588)** — cited to
   \[statesofconvexsets, thm. 8\] and **not proved in the thesis**.  QUESTIONS
   **A3**.  *Awaiting a ruling* (confirm that parking is right); if revived it
   is an independent project (the Stone–Kakutani/Gudder embedding of a
-  cancellative convex set into a vector space), **~600 lines**.
+  cancellative convex set into a vector space), **~500–600 lines**.  Nothing
+  in the tree helps beyond `MConvex.ofConvex` and the `rsum` API.
 
 ## `EffectAlgebras.lean` — two
 
 * **`finite_effectMonoid_boolean` (178III.2, eff.tex:640)** — cited to
-  \[basmsc, prop. 40\], no proof in the thesis.  QUESTIONS **A3**.  Note its
-  two siblings, `finite_effectMonoid_commutative` (`:2763`) and
-  `exists_noncommutative_effectMonoid` (`:2299`), **are now proved**, so A3's
-  list should be trimmed to this one statement.  *Awaiting a ruling.*
+  \[basmsc, prop. 40\], no proof in the thesis, but **it should not be treated
+  as a literature park**: most of `basmsc` prop. 40's ingredients are already
+  in the file.  `emon_finite_idem` (`:2731`) proves every element of a finite
+  effect monoid idempotent; the proof of `finite_effectMonoid_commutative`
+  (`:2763`) shows `a ⊙ b` *is* the meet; and the MSc sup/inf calculus
+  (`msc_prop13_*`, `msc_cor14_*`, `msc_prop15*`, `msc_cor16_*`,
+  `:1224`–`:1400`) is formalized.  What is missing is the lattice
+  (`a ⊔ b := (aᵖ ⊙ bᵖ)ᵖ`), distributivity — for which `EffectMonoid.distrib`
+  plus `b ⊔ c = b ⋁ (c ⊙ bᵖ)` is the route — and then the *structure* equality
+  `@booleanEffectMonoid M ba = em`, which needs `Perp a b ↔ a ⊙ b = 0` (itself
+  a consequence of distributivity).  **~250–400 lines; the best next target in
+  this file.**  QUESTIONS **A3** already records the two siblings as proved.
 * **`effectModule_unitInterval_representation` (179III.2, eff.tex:739)** —
   Gudder–Pulmannová, cited only.  QUESTIONS **A3**, and additionally
   **our statement is weaker than the cited result** (HANDOFF, "Companion gap"):
@@ -282,8 +315,8 @@ for anyone who does not want to build 180V.*
 
 1. **`effects_sea` (225V)** if you want a self-contained item — it needs
    nothing but the CFC and touches no other statement.
-2. **`exc_dm_effectus_kleisli`** if you want the one item with a complete
-   author proof to transcribe.
+2. **`finite_effectMonoid_boolean` (178III.2)** — no author proof, but the
+   ingredients are in `EffectAlgebras.lean` already; see above.
 3. **`effectus_vn` + `effectus_vn_partial`**, the root.  Start with
    `IsTerminal (WStarNCPU.of WStar.trivial)` and the binary product `A × B`;
    both are mechanical and neither existed before this session.  Everything
