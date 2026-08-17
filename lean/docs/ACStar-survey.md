@@ -1,24 +1,24 @@
 # `Theses/A/CStar/` — full survey of the remaining `sorry`s (first survey of this chapter)
 
 **Headline count at the time of the survey: A/CStar had 28 code `sorry`s.**
-**Session 73 took it to 5**: the whole of parsec 140 fell — `goursat` and the
-four `invint` items — leaving `cauchy_formula` and `taylor` (parsec 150),
-`functional_calculus_4` (the do-not-touch (d) item) and the 34VII/34IX.2 pair.
-Per file, counted by reading every declaration body (each `sorry` is the whole
-proof of one `theorem`; no declaration carries two), with the **session-69**
-figures beside them (compiler-counted, each paired with an error count of 0):
+**Session 74 took it to 1.**  Session 73 closed the whole of parsec 140
+(`goursat` and the four `invint` items); session 74 closed **15I
+`cauchy_formula`**, **15V `taylor`**, **34VII `ccstar_pos_mat`** and **34IX.2
+`cp_commutative_dom`**.  What remains is `functional_calculus_4` (**28II**.4),
+the do-not-touch (d) item, which is awaiting an author decision — so **every
+statement of `cstar.tex` except that one is proved**.
 
-| file | at survey | after session 69 | after session 73 |
-|---|---|---|---|
-| `Basic.lean` | **0** | **0** | **0** |
-| `Positive.lean` | 13 | 7 | **2** |
-| `Representation.lean` | 11 | **1** | **1** |
-| `Matrices.lean` | 4 | 2 | 2 |
-| `TowardsVN.lean` | **0** | **0** | **0** |
-| **total** | **28** | **10** | **5** |
+| file | at survey | after session 69 | after session 73 | after session 74 |
+|---|---|---|---|---|
+| `Basic.lean` | **0** | **0** | **0** | **0** |
+| `Positive.lean` | 13 | 7 | 2 | **0** |
+| `Representation.lean` | 11 | **1** | **1** | **1** |
+| `Matrices.lean` | 4 | 2 | 2 | **0** |
+| `TowardsVN.lean` | **0** | **0** | **0** | **0** |
+| **total** | **28** | **10** | **5** | **1** |
 
-All five figures are compiler-counted and each is paired with an **error count
-of 0** (session 73, recipe below).
+All figures are compiler-counted and each is paired with an **error count
+of 0** (session 74, recipe below).
 
 Session 69 closed **18 of the 28**: the whole parsec 270 Riesz-ideal chain,
 **30X**.2 and **30XIV** `gelfand_naimark` (the chapter's headline theorem) in
@@ -63,7 +63,8 @@ to transcribe; **(d)** suspicious — looks false or mis-transcribed.
 **Counts at the time of the survey: (a) 17 · (b) 10 · (c) 0 · (d) 1.**
 After session 69: (a) 2 (`goursat`, `34VII`) · (b) 7 · (c) 0 · (d) 1 (28II.4).
 After session 73: (a) 2 (`15I`, `34VII`) · (b) 2 (`taylor`, `34IX.2`) · (c) 0 ·
-(d) 1 (28II.4).
+(d) 1 (28II.4).  **After session 74: (a) 0 · (b) 0 · (c) 0 · (d) 1** — only the
+28II.4 statement question is left.
 
 **There are no (c) items in this chapter.**  Unlike A/VN (Artin–Wedderburn,
 `L^∞`) and B/Dils, A/CStar cites nothing as a black box.  14IV `goursat`
@@ -84,8 +85,8 @@ credits Moore 1900 for the *idea* but reproduces the proof in full.
 | **14VIII**.2′ | `invint_2'` | (a) small–medium | **proved** (~50 lines, from 14VIII.3) |
 | **14VIII**.3 | `invint_3` | **(b)** on `goursat` — **wrongly**; it is (a) | **proved** (~75 lines, no Goursat) |
 | **14VIII**.4 | `invint_4` | **(b)** on `invint_3` | **proved** (~25 lines) |
-| **15I** | `cauchy_formula` | **(b)** on `goursat` + `invint_4` | open — now **(a)**, see below |
-| **15V** | `taylor` | **(b)** on `cauchy_formula` | open |
+| **15I** | `cauchy_formula` | **(b)** on `goursat` + `invint_4` | **proved** (~420 lines, session 74) |
+| **15V** | `taylor` | **(b)** on `cauchy_formula` | **proved** (~90 lines, session 74) |
 | **15VII** | `rigid_expansion` | (a) — **not** blocked, see below | **proved** (~35 lines) |
 | **24II**.3 | `cstar_pos_neg_part_3` | (a) small | **proved** (~105 lines) |
 
@@ -193,29 +194,36 @@ because the real part is `a ≠ 0`, resp. the imaginary part is `b ≠ 0`), usin
 two lines from `Complex.abs_arg_lt_pi_div_two_iff`, `Complex.tan_arg` and
 `Real.arctan_tan`.  4 is the thesis's own telescoping argument.
 
-**15I** `cauchy_formula` — **now (a): `goursat` and `invint_4` are both proved,
-and the asserted triangulation is avoidable.**  Route, in order:
-(1) build a primitive on a *convex open* set as `F(z) := ∫_c^z f`, with `F' = f`
-by **Goursat applied to the triangle `(c, z, z+h)`** — the step Mathlib's
-disc-only `isExactOn_ball` cannot do and that `goursat` now unlocks;
-(2) thicken the closed `N`-gon to a convex open `V ⊆ U`, so the polygon integral
-of anything holomorphic on `V` telescopes to `0`;
-(3) apply that to `dslope f z₀` — Mathlib's `Complex.differentiableOn_dslope`
-makes `(z−z₀)⁻¹•(f z − f z₀)` genuinely holomorphic across `z₀`, which is the
-thesis's "bounded near `z₀`" step made honest;
-(4) what remains is `∑_{n<N} ∫_{wₙ}^{wₙ₊₁}(z−z₀)⁻¹ dz = 2πi`, i.e. **the winding
-number of a regular `N`-gon about an interior point is 1**.  ⚠ This is where the
-thesis's unconstructed triangulation sits, and it is the only genuinely missing
-piece.  A triangulation-free route: the left-hand side is holomorphic in `z₀` on
-the connected interior and its derivative is the polygon integral of
-`(z−z₀)⁻²`, which vanishes because `−(z−z₀)⁻¹` is a **single-valued** primitive
-on `ℂ∖{z₀}`; so it is constant, and at the centre it is `∑_n 2π/N = 2π` by
-symmetry.  (The thesis's vertex formula `wₙ = c + r cos(2π/n) + i r sin(2π/n)`
-is a typo for `2πn/N`; our `hw` already writes the correct `c + r·exp(2πi·n/N)`.
-The "`‖f'(z₀)‖ + 37`" is the author's joke, and a valid bound.)
+**15I** `cauchy_formula` — **PROVED (session 74), ~420 lines,
+axiom-clean**, and *two* of the route sketched below turned out to be avoidable.
+(1) **No primitive on a convex open set is needed.**  The fan triangulation from
+the vertex `w₀` telescopes the spokes, so the closed-polygon integral is
+`∑ₙ ∫_{T(w₀,wₙ,wₙ₊₁)}`, and each of those triangles already lies in
+`convexHull(range w) ⊆ U`; `goursat` applies directly (`polygon_fan`,
+`polygon_integral_eq_zero`, ~25 lines together).  So `Metric.thickening`,
+convexity of `V` and `F(z) = ∫_c^z f` are all unnecessary.
+(2) **The winding number needs only continuity, not holomorphy.**  By `invint_3`
+the polygon integral is `i·∑ₙ arg ζₙ` with `ζₙ = (wₙ₊₁−z₀)/(wₙ−z₀)` (the
+logarithms telescope, `w_N = w₀`).  Each edge spans a supporting line of the
+`N`-gon, so an interior `z₀` satisfies
+`Re((z₀−c)·conj e^{iπ(2n+1)/N}) < r cos(π/N)` **strictly**, which is exactly
+`Im(conj(wₙ−z₀)(wₙ₊₁−z₀)) > 0`; hence every `ζₙ` is in the open upper half
+plane, `arg` is continuous there, `exp(i ∑ arg ζₙ) = ∏ ζₙ = 1`, and the
+intermediate value theorem along the segment from the centre makes the sum
+constant `= N·(2π/N) = 2π`.  That is `polygon_winding`.  The fiddliest
+ingredient is `cos(πm/N) ≤ cos(π/N)` for **odd** `m` (`cos_le_cos_of_odd`).
+Mathlib's `Complex.differentiableOn_dslope` handles the removable singularity as
+predicted.  (The thesis's vertex formula `wₙ = c + r cos(2π/n) + i r sin(2π/n)`
+is a typo for `2πn/N`; our `hw` already writes the correct
+`c + r·exp(2πi·n/N)`.  The "`‖f'(z₀)‖ + 37`" is the author's joke, and a valid
+bound.)
 
-**15V** `taylor` — **(b)** on `cauchy_formula` (geometric-series expansion of
-`1/(u−z)` under the integral, plus a uniform-convergence interchange).
+**15V** `taylor` — **PROVED (session 74), ~90 lines.**  Per edge, the geometric
+expansion of `(u−z)⁻¹` is integrated term by term with
+`intervalIntegral.hasSum_integral_of_dominated_convergence`, dominated by
+`(‖z−v‖/s)ⁿ·(M/s)`; the hypothesis `ball v s ⊆ interior(polygon)` gives
+`s ≤ ‖u−v‖` on every edge **only through `polygon_notMem_edge`**, the same
+lemma 15I needs.  Then `hasSum_sum` over the edges and `HasSum.const_smul`.
 
 **15VII** `rigid_expansion` — ⚠ **classified (a), against the thesis's own
 dependency graph.**  The thesis derives it from 15V + 13VI.  In Lean it needs
@@ -407,8 +415,8 @@ the states of `𝒜`, which lives in `Type u`).
 |---|---|---|---|
 | **32XV**.2 | `chilb_vector_states_2` | (a) medium | **proved** |
 | **32XV**.3 | `chilb_vector_states_3` | (a) medium; source gives no argument | **proved** |
-| **34VII** | `ccstar_pos_mat` | (a) **large — unblocks 34IX.2** | open |
-| **34IX**.2 | `cp_commutative_dom` | **(b)** on 34VII | open |
+| **34VII** | `ccstar_pos_mat` | (a) **large — unblocks 34IX.2** | **proved** (~150 lines, session 74) |
+| **34IX**.2 | `cp_commutative_dom` | **(b)** on 34VII | **proved** (~55 lines, session 74) |
 
 > ⚠ **Both 32XV costings were wrong in the cheap direction, for the same
 > reason: `Bᵃ(X)` as an actual `CStarAlgebra` *instance* did not exist** —
@@ -459,22 +467,34 @@ Note our statement **already incorporates the erratum** (`{x // ‖x‖ ≤ 1}`,
 functionals rather than states); part 2 quantifies over all `x` rather than the
 unit ball, which is equivalent by scaling.
 
-**34VII** `ccstar_pos_mat` (`cstar.tex:5584` — doc says 5504; **drift 80**) —
-for commutative `𝒜`, matrices `∑ₖ aₖBₖ` (`aₖ ∈ 𝒜₊`, `Bₖ ∈ Mₙ(ℂ)₊`) are dense in
-`Mₙ(𝒜)₊`.  **(a) but the largest item in the chapter, ~350–500 lines.**  The
-thesis proof (340.80) is complete: transport `𝒜 ≅ C(X)` by Gelfand — `gelfand`
-is proved at `Representation.lean:220`, and Mathlib's `gelfandStarTransform` is
-the bundled `≃⋆ₐ` — cover `X` by the open sets `{y : ‖A(x) − A(y)‖ < ε}`, take a
-finite subcover, build a partition of unity by complete regularity, and read off
-`‖A − ∑ₖ gₖ A(xₖ)‖ ≤ ε`.  The dominant cost is not the analysis but the
-*transport*: moving `Mₙ(C(X))₊` to continuous `Mₙ(ℂ)`-valued functions and back
-through `CStarMatrix`.  Budget accordingly.
+**34VII** `ccstar_pos_mat` (`cstar.tex:5584`; doc says 5504, **drift 80**) —
+**PROVED (session 74), ~150 lines.**  ⚠ **Every costing of this item in this
+survey was 3–5× too high, and for the same wrong reason.**  "The dominant cost
+is the *transport* … moving `Mₙ(C(X))₊` to continuous `Mₙ(ℂ)`-valued functions
+and back through `CStarMatrix`" is false: **no such bridge is needed**.  The
+already-proved **33II**.1 `cstar_matrix_positive_iff`
+(`0 ≤ A ↔ ∀ a, 0 ≤ ∑ᵢⱼ aᵢ* Aᵢⱼ aⱼ`) transports positivity across the character
+space by itself, in *both* directions — `⇒` by taking `aᵢ = φ(vᵢ)·1` and
+applying the (positive) character, `⇐` by feeding `vᵢ := φ(aᵢ)` to
+`nonneg_of_forall_character` — and that 15-line lemma
+(`matrix_nonneg_iff_character`) is the whole transport.  With it the thesis's
+340.80 goes through verbatim: cover the character space by the opens where all
+`N²` **entries** agree to within `δ`, `IsCompact.elim_finite_subcover`,
+`PartitionOfUnity.exists_isSubordinate` (the character space is compact
+Hausdorff, hence normal and paracompact), read off the estimate **entrywise**.
+Two `CStarMatrix` frictions worth knowing: `‖M‖ ≤ ∑ⱼ∑ᵢ‖Mᵢⱼ‖` is proved in
+Mathlib only inside a **`private`** lemma (`antilipschitzWith_toMatrixAux`) and
+had to be repeated; and `(∑ₖ Mₖ) i j = ∑ₖ Mₖ i j` needs a hand-rolled induction,
+since neither `Finset.sum_apply` nor `Matrix.sum_apply` fires through the
+synonym.  Also: bare `isClosed_nonneg` resolves to the **Banach-lattice** lemma;
+the one wanted is `CStarAlgebra.isClosed_nonneg`.
 
-**34IX**.2 `cp_commutative_dom` (`cstar.tex:5643`) — a positive map *out of* a
-commutative C*-algebra is completely positive.  **(b)** on 34VII: the thesis's
-proof is one sentence — "By `ccstar-pos-mat` the problem reduces to `A ≡ aB`,
-and `(Mₙf)(aB) ≡ f(a)B` is clearly positive" — so ~40 lines on top of 34VII.
-Its sibling **34IX**.1 `cp_commutative_cod` (line 1260) is proved.
+**34IX**.2 `cp_commutative_dom` (`cstar.tex:5643`) — **PROVED (session 74),
+~55 lines**, by the thesis's one-sentence argument: `{M | 0 ≤ ∑ᵢⱼ bᵢ* f(Mᵢⱼ) bⱼ}`
+is closed (`f` is bounded by the proved **20II**.2 `weak_russo_dye_2`, and entry
+evaluation is 1-Lipschitz by `CStarMatrix.norm_entry_le_norm`) and contains the
+generators, so 34VII applied to the Gram matrix `(aᵢ* aⱼ)` finishes it.  Its
+sibling **34IX**.1 `cp_commutative_cod` (line 1260) was already proved.
 
 ⚠ **Nothing is waiting on 34IX.2**, contrary to what its two doc-comment
 mentions might suggest.  `normal_russo_dye` (34aII, line 1559) is the only
@@ -497,11 +517,12 @@ duality, no Urysohn.  So 34VII → 34IX.2 buys faithfulness, not reach.
 > rather than a step towards it.  Now that `dsumRep` exists, restating 30X
 > faithfully is cheap — but it is an author decision.
 >
-> **Session 73: `goursat` is DONE, with the whole of 14VIII.**  The live ranking
-> is now **34VII `ccstar_pos_mat`** (the only remaining self-contained target)
-> and **15I `cauchy_formula`**, which is no longer blocked on anything proved —
-> what it needs is the winding number of a regular `N`-gon about an interior
-> point, sketched above.
+> **Session 73: `goursat` is DONE, with the whole of 14VIII.**
+>
+> **Session 74: target 3 is DONE, and so are 15I, 15V and 34IX.2.  There are no
+> targets left.**  The chapter's only open item is the *statement* question
+> **28II**.4 (`functional_calculus_4`), which needs an author decision, not a
+> proof.
 
 **1. 27VIII `riesz_ideal_ring_ideal`** (`Representation.lean:81`) — **DONE**.
 Chain-opening, and the chain is the biggest in the chapter: it is required by
@@ -528,25 +549,24 @@ A/VN's public `lp_clm_ext` forces a primed name for the A/CStar copy.  Proving
 it also settles whether A/VN's **48III `gns_normal`** is still correctly classed
 [L] — it is not; Mathlib's GNS plus `dsumRep` should now cover it.
 
-**3. 34VII `ccstar_pos_mat`** (`Matrices.lean`) — **since session 73 the
-chapter's only self-contained target.**
+**3. 34VII `ccstar_pos_mat`** (`Matrices.lean`) — **DONE (session 74).**
 Chain-opening (sole blocker of 34IX.2, closing the last CP-theory gap in the
 chapter) with a complete thesis proof, but the payoff is faithfulness only —
-`normal_russo_dye` already routed around it.  **Re-costed in session 69 at
-450–650 lines**, and the "transport dominates" call is confirmed: Mathlib has
-neither `(𝒜 ≃⋆ₐ ℬ) → (M_N 𝒜 ≃⋆ₐ M_N ℬ)` nor any `M_N(C(X)) ≅ C(X, M_N ℂ)`
-bridge, both of which must be built.  Once inside `C(X, M_N ℂ)` the thesis's
-order computation is better replaced by a plain triangle inequality.
+`normal_russo_dye` already routed around it.  ⚠ **The "transport dominates" call was wrong**, and with it every costing of
+this item (~350–500 here, 450–650 in session 69): the actual cost was ~150
+lines, because `cstar_matrix_positive_iff` *is* the transport and neither
+`(𝒜 ≃⋆ₐ ℬ) → (M_N 𝒜 ≃⋆ₐ M_N ℬ)` nor `M_N(C(X)) ≅ C(X, M_N ℂ)` has to be built.
+See the 34VII entry above.
 
-*Warm-ups:* none are left in this chapter — the four cheap items
-(**24II**.3, **15VII**, and then all of **14VIII**) are proved.
+*Warm-ups:* none are left in this chapter — **nothing is left in this chapter**
+except the 28II.4 statement question.
 
 ---
 
 ## What A/CStar gates downstream
 
 **Nothing.  No declaration anywhere in `Theses/` is blocked, directly or
-indirectly, on any of these 28 sorries.**  (Still true of the 5 that remain.)
+indirectly, on any of these 28 sorries.**  (Still true of the 1 that remains.)
 
 Who imports it:
 

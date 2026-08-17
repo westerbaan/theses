@@ -13,11 +13,12 @@ arXiv:1804.02203), chapter 1: C*-algebras — cstar.tex, lines 1714–3886.
                            positive and negative parts, a*a ≥ 0, vector
                            states, commutative C*-algebras)
 
-All statements of parsecs 130, 140 and 160–260 are proved.  Two remain `sorry`,
-both in parsec 150: `cauchy_formula` (**15I**) and `taylor` (**15V**), which is
-behind it.  Both now have `goursat` available; what 15I still needs is the
-winding number of the regular `N`-gon around an interior point, which the thesis
-obtains from a triangulation it asserts without constructing.
+**All statements of this file are proved**, parsecs 130–260 included.  The last
+two, `cauchy_formula` (**15I**) and `taylor` (**15V**), closed in session 74.
+15I needed the winding number of the regular `N`-gon around an interior point,
+which the thesis obtains from a triangulation it asserts without constructing;
+`polygon_winding` below replaces that step by a triangulation-free argument
+(ERRATA `15I`).
 See CONVENTIONS.md for the numbering (**16II** = parsec 160, point 20) and
 naming conventions.
 -/
@@ -937,6 +938,656 @@ theorem invint_4 (w₀ w₁ w₂ z₀ : ℂ)
 
 /-! ## Parsec 150: Cauchy's integral formula and Taylor expansion -/
 
+/-! ### The winding number of a regular `N`-gon about an interior point
+
+⚠ **Divergence from the thesis, forced by a gap in it.**  The thesis's proof of
+**15I** partitions the region between a small triangle around `z₀` and the
+`N`-gon "in the obvious manner into triangles `T₁,…,T_M`" and sums `invint`(4)
+over them.  That triangulation is *asserted, never constructed*, and it carries
+the entire winding-number content of the theorem (ERRATA `15I`).  We replace it
+by a triangulation-free argument, which is the one the erratum proposes with
+holomorphy weakened to continuity:
+
+* the `n`-th edge of the `N`-gon spans a supporting line of the polygon, so an
+  interior point `z₀` satisfies `Re((z₀ − c)·conj(e^{iπ(2n+1)/N})) < r cos(π/N)`
+  strictly (`polygon_halfplane`, `polygon_halfplane_strict`);
+* that bound says exactly that `Im(conj(wₙ − z₀)·(wₙ₊₁ − z₀)) > 0`
+  (`polygon_im_pos`), so each `ζₙ := (wₙ₊₁ − z₀)/(wₙ − z₀)` lies in the open
+  upper half plane, where `Complex.arg` is continuous;
+* hence `S(z₀) := ∑ₙ arg ζₙ` is continuous along the segment from the centre `c`
+  to `z₀` (which stays inside the same open half planes, by convexity), and
+  `exp(i S) = ∏ ζₙ = 1` because the product telescopes and `w_N = w₀`; so
+  `S` takes values in `2πℤ` and is therefore constant on that segment;
+* at the centre every `ζₙ` is `e^{2πi/N}`, so `S(c) = N·(2π/N) = 2π`.
+
+This replaces the thesis's asserted triangulation by a genuine argument; nothing
+else in 15I diverges. -/
+
+private theorem cos_step (N : ℕ) (hN : 0 < N) (t : ℤ) (h1 : 1 ≤ t) (h2 : t ≤ N) :
+    Real.cos (Real.pi * t / N) ≤ Real.cos (Real.pi / N) := by
+  have hNR : (0:ℝ) < N := by exact_mod_cast hN
+  have ht1 : (1:ℝ) ≤ (t:ℝ) := by exact_mod_cast h1
+  have ht2 : (t:ℝ) ≤ (N:ℝ) := by exact_mod_cast h2
+  refine Real.cos_le_cos_of_nonneg_of_le_pi (by positivity) ?_ ?_
+  · rw [div_le_iff₀ hNR]
+    nlinarith [Real.pi_pos]
+  · rw [div_le_div_iff_of_pos_right hNR]
+    nlinarith [Real.pi_pos]
+
+/-- `cos (π m / N) ≤ cos (π / N)` for every *odd* integer `m` and `N ≥ 1`. -/
+private theorem cos_le_cos_of_odd (N : ℕ) (hN : 0 < N) (m : ℤ) (hm : Odd m) :
+    Real.cos (Real.pi * m / N) ≤ Real.cos (Real.pi / N) := by
+  have hNR : (0:ℝ) < N := by exact_mod_cast hN
+  have hN2 : (0:ℤ) < 2 * N := by positivity
+  obtain ⟨s, q, hs0, hslt, hm'⟩ : ∃ s q : ℤ, 0 ≤ s ∧ s < 2 * N ∧ m = 2 * N * q + s :=
+    ⟨m % (2 * N), m / (2 * N), Int.emod_nonneg m (by omega), Int.emod_lt_of_pos m hN2, by
+      have := Int.mul_ediv_add_emod m (2 * (N:ℤ)); omega⟩
+  have hsodd : Odd s := by
+    rcases hm with ⟨k, hk⟩
+    have hfac : 2 * (N:ℤ) * q = 2 * ((N:ℤ) * q) := by ring
+    exact ⟨k - N * q, by omega⟩
+  have hcos : Real.cos (Real.pi * m / N) = Real.cos (Real.pi * s / N) := by
+    have he : Real.pi * m / N = Real.pi * s / N + (q : ℤ) * (2 * Real.pi) := by
+      rw [hm']; push_cast; field_simp; ring
+    rw [he, Real.cos_add_int_mul_two_pi]
+  rw [hcos]
+  have hs1 : 1 ≤ s := by rcases hsodd with ⟨k, hk⟩; omega
+  rcases le_or_gt s N with hcase | hcase
+  · exact cos_step N hN s hs1 hcase
+  · have he : Real.pi * s / N = -(Real.pi * ((2 * N - s : ℤ) : ℝ) / N) + (1:ℤ) * (2 * Real.pi) := by
+      push_cast; field_simp; ring
+    rw [he, Real.cos_add_int_mul_two_pi, Real.cos_neg]
+    exact cos_step N hN (2 * N - s) (by omega) (by omega)
+
+
+
+private noncomputable def cisR (θ : ℝ) : ℂ := Complex.exp ((θ : ℂ) * Complex.I)
+
+private theorem cisR_re (θ : ℝ) : (cisR θ).re = Real.cos θ := by
+  rw [cisR, Complex.exp_ofReal_mul_I_re]
+
+private theorem cisR_im (θ : ℝ) : (cisR θ).im = Real.sin θ := by
+  rw [cisR, Complex.exp_ofReal_mul_I_im]
+
+private theorem cisR_add (a b : ℝ) : cisR (a + b) = cisR a * cisR b := by
+  rw [cisR, cisR, cisR, ← Complex.exp_add]; push_cast; ring_nf
+
+private theorem cisR_conj (θ : ℝ) : (starRingEnd ℂ) (cisR θ) = cisR (-θ) := by
+  rw [cisR, cisR, ← Complex.exp_conj]
+  congr 1
+  simp [Complex.conj_I]
+
+private theorem cisR_mul_conj (θ : ℝ) : (starRingEnd ℂ) (cisR θ) * cisR θ = 1 := by
+  rw [cisR_conj, cisR, cisR, ← Complex.exp_add]
+  push_cast
+  rw [show (-(θ:ℂ)) * Complex.I + (θ:ℂ) * Complex.I = 0 by ring, Complex.exp_zero]
+
+
+/-- The vertices of the regular `N`-gon, written with `cisR`. -/
+private theorem polygon_vertex {N : ℕ} (hN : 3 ≤ N) (c : ℂ) (r : ℝ) (w : ℕ → ℂ)
+    (hw : ∀ n, w n = c + (r : ℂ) * Complex.exp (2 * (Real.pi : ℂ) * Complex.I * (n : ℂ) / (N : ℂ)))
+    (n : ℕ) : w n = c + (r : ℂ) * cisR (2 * Real.pi * n / N) := by
+  rw [hw n, cisR]
+  congr 2
+  push_cast
+  ring
+
+/-- The closed `N`-gon lies in the closed half plane bounded by the line through
+the `n`-th edge; `π(2n+1)/N` is the direction of the outward normal. -/
+private theorem polygon_halfplane {N : ℕ} (hN : 3 ≤ N) (c : ℂ) (r : ℝ) (hr : 0 < r) (w : ℕ → ℂ)
+    (hw : ∀ n, w n = c + (r : ℂ) * cisR (2 * Real.pi * n / N)) (n : ℕ) :
+    convexHull ℝ (Set.range w) ⊆
+      {z : ℂ | ((z - c) * (starRingEnd ℂ) (cisR (Real.pi * (2 * n + 1) / N))).re
+                 ≤ r * Real.cos (Real.pi / N)} := by
+  have hN0 : 0 < N := by omega
+  have hNR : (0:ℝ) < N := by exact_mod_cast hN0
+  set u : ℂ := cisR (Real.pi * (2 * n + 1) / N) with hu
+  have hlin : IsLinearMap ℝ (fun z : ℂ => (z * (starRingEnd ℂ) u).re) := by
+    constructor
+    · intro x y; simp [add_mul, Complex.add_re]
+    · intro a x
+      simp [Complex.real_smul, Complex.mul_re, Complex.mul_im]
+      ring
+  have hset : {z : ℂ | ((z - c) * (starRingEnd ℂ) u).re ≤ r * Real.cos (Real.pi / N)}
+      = {z : ℂ | (fun z : ℂ => (z * (starRingEnd ℂ) u).re) z
+          ≤ r * Real.cos (Real.pi / N) + (c * (starRingEnd ℂ) u).re} := by
+    ext z
+    simp only [Set.mem_setOf_eq, sub_mul, Complex.sub_re]
+    constructor <;> intro h <;> linarith
+  rw [hset]
+  refine convexHull_min ?_ (convex_halfSpace_le hlin _)
+  rintro _ ⟨k, rfl⟩
+  simp only [Set.mem_setOf_eq]
+  have hwk : w k - c = (r : ℂ) * cisR (2 * Real.pi * k / N) := by rw [hw k]; ring
+  have hstep : ((w k - c) * (starRingEnd ℂ) u).re
+      = r * Real.cos (2 * Real.pi * k / N - Real.pi * (2 * n + 1) / N) := by
+    rw [hwk, hu, cisR_conj, mul_assoc, ← cisR_add]
+    rw [show 2 * Real.pi * (k:ℝ) / N + -(Real.pi * (2 * (n:ℝ) + 1) / N)
+        = 2 * Real.pi * (k:ℝ) / N - Real.pi * (2 * (n:ℝ) + 1) / N by ring]
+    simp [Complex.mul_re, cisR_re, cisR_im]
+  have hangle : 2 * Real.pi * (k:ℝ) / N - Real.pi * (2 * (n:ℝ) + 1) / N
+      = Real.pi * ((2 * (k:ℤ) - 2 * (n:ℤ) - 1 : ℤ) : ℝ) / N := by
+    push_cast
+    field_simp
+    ring
+  have hodd : Odd (2 * (k:ℤ) - 2 * (n:ℤ) - 1) := ⟨(k:ℤ) - (n:ℤ) - 1, by ring⟩
+  have := cos_le_cos_of_odd N hN0 (2 * (k:ℤ) - 2 * (n:ℤ) - 1) hodd
+  have hsub : ((w k - c) * (starRingEnd ℂ) u).re ≤ r * Real.cos (Real.pi / N) := by
+    rw [hstep, hangle]
+    exact mul_le_mul_of_nonneg_left this hr.le
+  have hexp : ((w k - c) * (starRingEnd ℂ) u).re
+      = (w k * (starRingEnd ℂ) u).re - (c * (starRingEnd ℂ) u).re := by
+    rw [sub_mul, Complex.sub_re]
+  linarith [hsub, hexp.symm.le, hexp.le]
+
+/-- Interior points of the `N`-gon satisfy the half plane bound strictly. -/
+private theorem polygon_halfplane_strict {N : ℕ} (hN : 3 ≤ N) (c : ℂ) (r : ℝ) (hr : 0 < r)
+    (w : ℕ → ℂ) (hw : ∀ n, w n = c + (r : ℂ) * cisR (2 * Real.pi * n / N)) (n : ℕ)
+    (z₀ : ℂ) (hz₀ : z₀ ∈ interior (convexHull ℝ (Set.range w))) :
+    ((z₀ - c) * (starRingEnd ℂ) (cisR (Real.pi * (2 * n + 1) / N))).re
+      < r * Real.cos (Real.pi / N) := by
+  set u : ℂ := cisR (Real.pi * (2 * n + 1) / N) with hu
+  obtain ⟨ε, hε, hball⟩ := Metric.isOpen_iff.mp isOpen_interior z₀ hz₀
+  have hz : z₀ + (ε / 2 : ℝ) • u ∈ convexHull ℝ (Set.range w) := by
+    refine interior_subset (hball ?_)
+    have hnu : ‖u‖ = 1 := by
+      rw [hu, cisR, Complex.norm_exp]
+      simp
+    simp only [Metric.mem_ball, dist_eq_norm]
+    rw [show z₀ + (ε / 2 : ℝ) • u - z₀ = (ε / 2 : ℝ) • u by ring]
+    rw [norm_smul, hnu, mul_one]
+    simp only [Real.norm_eq_abs, abs_of_pos (by linarith : (0:ℝ) < ε / 2)]
+    linarith
+  have hle := polygon_halfplane hN c r hr w hw n hz
+  simp only [Set.mem_setOf_eq] at hle
+  have hexp : ((z₀ + (ε / 2 : ℝ) • u - c) * (starRingEnd ℂ) u).re
+      = ((z₀ - c) * (starRingEnd ℂ) u).re + ε / 2 := by
+    have h1 : (z₀ + (ε / 2 : ℝ) • u - c) = (z₀ - c) + ((ε / 2 : ℝ) : ℂ) * u := by
+      rw [Complex.real_smul]; ring
+    rw [h1, add_mul, Complex.add_re]
+    congr 1
+    have huu : u * (starRingEnd ℂ) u = 1 := by rw [hu, mul_comm, cisR_mul_conj]
+    rw [mul_assoc, huu, mul_one, Complex.ofReal_re]
+  linarith
+
+
+/-- Strict half plane bound at the `n`-th edge forces the triangle
+`(w n, z₀, w (n+1))` to be positively oriented. -/
+private theorem polygon_im_pos {N : ℕ} (hN : 3 ≤ N) (c : ℂ) (r : ℝ) (hr : 0 < r) (w : ℕ → ℂ)
+    (hw : ∀ n, w n = c + (r : ℂ) * cisR (2 * Real.pi * n / N)) (n : ℕ) (z₀ : ℂ)
+    (hlt : ((z₀ - c) * (starRingEnd ℂ) (cisR (Real.pi * (2 * n + 1) / N))).re
+      < r * Real.cos (Real.pi / N)) :
+    0 < ((starRingEnd ℂ) (w n - z₀) * (w (n + 1) - z₀)).im := by
+  have hN0 : 0 < N := by omega
+  have hNR : (0:ℝ) < N := by exact_mod_cast hN0
+  set A : ℂ := cisR (Real.pi / N) with hA
+  set U : ℂ := cisR (Real.pi * (2 * n + 1) / N) with hU
+  set p : ℂ := z₀ - c with hp
+  have hAe : cisR (2 * Real.pi * (n:ℝ) / N) = U * (starRingEnd ℂ) A := by
+    rw [hU, hA, cisR_conj, ← cisR_add]
+    congr 1
+    field_simp
+    ring
+  have hAe' : cisR (2 * Real.pi * ((n:ℝ) + 1) / N) = U * A := by
+    rw [hU, hA, ← cisR_add]
+    congr 1
+    field_simp
+    ring
+  have hUU : (starRingEnd ℂ) U * U = 1 := by rw [hU]; exact cisR_mul_conj _
+  have hAA : (starRingEnd ℂ) A * A = 1 := by rw [hA]; exact cisR_mul_conj _
+  have hw1 : w n - z₀ = (r : ℂ) * (U * (starRingEnd ℂ) A) - p := by
+    rw [hw n, hAe, hp]; ring
+  have hw2 : w (n + 1) - z₀ = (r : ℂ) * (U * A) - p := by
+    have : ((n + 1 : ℕ) : ℝ) = (n : ℝ) + 1 := by push_cast; ring
+    rw [hw (n + 1), this, hAe', hp]; ring
+  have hconj1 : (starRingEnd ℂ) (w n - z₀)
+      = (r : ℂ) * ((starRingEnd ℂ) U * A) - (starRingEnd ℂ) p := by
+    rw [hw1]
+    simp [map_sub, map_mul, Complex.conj_conj]
+  set V : ℝ := ((starRingEnd ℂ) U * p).re with hV
+  have hadd : (starRingEnd ℂ) U * p + U * (starRingEnd ℂ) p = ((2 * V : ℝ) : ℂ) := by
+    have h := Complex.add_conj ((starRingEnd ℂ) U * p)
+    rw [map_mul, Complex.conj_conj] at h
+    rw [hV]
+    exact h
+  have hmc : p * (starRingEnd ℂ) p = ((Complex.normSq p : ℝ) : ℂ) := Complex.mul_conj p
+  have key : (starRingEnd ℂ) (w n - z₀) * (w (n + 1) - z₀)
+      = (r : ℂ) ^ 2 * A ^ 2 - (r : ℂ) * A * ((2 * V : ℝ) : ℂ) + ((Complex.normSq p : ℝ) : ℂ) := by
+    rw [hconj1, hw2]
+    linear_combination ((r:ℂ) ^ 2 * A ^ 2) * hUU - (r:ℂ) * A * hadd + hmc
+  rw [key]
+  have hVlt : V < r * Real.cos (Real.pi / N) := by
+    rw [hV, mul_comm]
+    exact hlt
+  have hsin : 0 < Real.sin (Real.pi / N) := by
+    apply Real.sin_pos_of_pos_of_lt_pi
+    · positivity
+    · rw [div_lt_iff₀ hNR]
+      nlinarith [Real.pi_pos,
+        mul_le_mul_of_nonneg_left (show (3:ℝ) ≤ N by exact_mod_cast hN) Real.pi_pos.le]
+  simp only [Complex.add_im, Complex.sub_im, Complex.mul_im, Complex.mul_re, Complex.ofReal_re,
+    Complex.ofReal_im, pow_two, Complex.sub_re, Complex.add_re, cisR_re, cisR_im, hA,
+    zero_mul, mul_zero, zero_add, add_zero, sub_zero, zero_sub, neg_zero]
+  nlinarith [mul_pos hr (mul_pos hsin (sub_pos.mpr hVlt))]
+
+
+private theorem cisR_ne_zero (θ : ℝ) : cisR θ ≠ 0 := Complex.exp_ne_zero _
+
+private theorem cisR_sub (a b : ℝ) : cisR (a - b) = cisR a / cisR b := by
+  rw [eq_div_iff (cisR_ne_zero b), ← cisR_add]
+  congr 1
+  ring
+
+private theorem cisR_arg {θ : ℝ} (h : θ ∈ Set.Ioc (-Real.pi) Real.pi) :
+    Complex.arg (cisR θ) = θ := by
+  rw [cisR, Complex.exp_mul_I]
+  exact Complex.arg_cos_add_sin_mul_I h
+
+private theorem prod_telescope (a : ℕ → ℂ) (M : ℕ) (ha : ∀ n ≤ M, a n ≠ 0) :
+    ∏ n ∈ Finset.range M, (a (n + 1) / a n) = a M / a 0 := by
+  induction M with
+  | zero => simp [div_self (ha 0 le_rfl)]
+  | succ M ih =>
+      rw [Finset.prod_range_succ, ih (fun n hn => ha n (by omega))]
+      have h1 : a M ≠ 0 := ha M (by omega)
+      have h2 : a 0 ≠ 0 := ha 0 (by omega)
+      field_simp
+
+private theorem div_im_eq (a b : ℂ) : (a / b).im
+    = ((starRingEnd ℂ) b * a).im / Complex.normSq b := by
+  rw [Complex.div_im, Complex.mul_im, Complex.conj_re, Complex.conj_im]
+  ring
+
+/-- A continuous function on `[0,1]` all of whose values are integer multiples of
+`2π` is constant. -/
+private theorem const_of_two_pi_int {g : ℝ → ℝ} (hg : ContinuousOn g (Set.Icc 0 1))
+    (hval : ∀ t ∈ Set.Icc (0:ℝ) 1, ∃ k : ℤ, g t = 2 * Real.pi * k) : g 1 = g 0 := by
+  have hpi := Real.pi_pos
+  obtain ⟨k0, hk0⟩ := hval 0 (by norm_num)
+  obtain ⟨k1, hk1⟩ := hval 1 (by norm_num)
+  have habs : ∀ (x : ℝ), x ∈ Set.Icc (g 0) (g 1) ∪ Set.Icc (g 1) (g 0) →
+      (∃ t ∈ Set.Icc (0:ℝ) 1, g t = x) → ∃ k : ℤ, x = 2 * Real.pi * k := by
+    rintro x _ ⟨t, ht, rfl⟩
+    exact hval t ht
+  rcases lt_trichotomy (g 1) (g 0) with hlt | heq | hgt
+  · exfalso
+    have hk : (k1 : ℝ) < k0 := by
+      rw [hk0, hk1] at hlt; nlinarith
+    have hk' : k1 + 1 ≤ k0 := by exact_mod_cast (by exact_mod_cast hk : k1 < k0)
+    have hstep : g 1 ≤ g 0 - 2 * Real.pi := by
+      rw [hk0, hk1]
+      have : ((k1 : ℝ) + 1) ≤ k0 := by exact_mod_cast hk'
+      nlinarith
+    have hmem : g 0 - Real.pi ∈ Set.Icc (g 1) (g 0) := ⟨by linarith, by linarith⟩
+    obtain ⟨t, ht, hgt'⟩ := intermediate_value_Icc' (by norm_num : (0:ℝ) ≤ 1) hg hmem
+    obtain ⟨k, hk2⟩ := hval t ht
+    rw [hgt'] at hk2
+    rw [hk0] at hk2
+    have : (2 : ℝ) * k = 2 * k0 - 1 := by
+      field_simp at hk2 ⊢
+      nlinarith [hk2]
+    have hz : (2 : ℤ) * k = 2 * k0 - 1 := by exact_mod_cast this
+    omega
+  · exact heq
+  · exfalso
+    have hk : (k0 : ℝ) < k1 := by
+      rw [hk0, hk1] at hgt; nlinarith
+    have hk' : k0 + 1 ≤ k1 := by exact_mod_cast (by exact_mod_cast hk : k0 < k1)
+    have hstep : g 0 + 2 * Real.pi ≤ g 1 := by
+      rw [hk0, hk1]
+      have : ((k0 : ℝ) + 1) ≤ k1 := by exact_mod_cast hk'
+      nlinarith
+    have hmem : g 0 + Real.pi ∈ Set.Icc (g 0) (g 1) := ⟨by linarith, by linarith⟩
+    obtain ⟨t, ht, hgt'⟩ := intermediate_value_Icc (by norm_num : (0:ℝ) ≤ 1) hg hmem
+    obtain ⟨k, hk2⟩ := hval t ht
+    rw [hgt'] at hk2
+    rw [hk0] at hk2
+    have : (2 : ℝ) * k = 2 * k0 + 1 := by
+      field_simp at hk2 ⊢
+      nlinarith [hk2]
+    have hz : (2 : ℤ) * k = 2 * k0 + 1 := by exact_mod_cast this
+    omega
+
+
+/-- **The winding number of a regular `N`-gon about an interior point is 1.** -/
+private theorem polygon_winding {N : ℕ} (hN : 3 ≤ N) (c : ℂ) (r : ℝ) (hr : 0 < r) (w : ℕ → ℂ)
+    (hw : ∀ n, w n = c + (r : ℂ) * cisR (2 * Real.pi * n / N))
+    (z₀ : ℂ) (hz₀ : z₀ ∈ interior (convexHull ℝ (Set.range w))) :
+    ∑ n ∈ Finset.range N, Complex.arg ((w (n + 1) - z₀) / (w n - z₀)) = 2 * Real.pi := by
+  have hN0 : 0 < N := by omega
+  have hNR : (0:ℝ) < N := by exact_mod_cast hN0
+  have hN3 : (3:ℝ) ≤ N := by exact_mod_cast hN
+  have hpi := Real.pi_pos
+  have hposN : 0 < Real.pi / N := by positivity
+  have hpos2 : 0 < 2 * Real.pi / N := by positivity
+  have hcosp : 0 < Real.cos (Real.pi / N) := by
+    refine Real.cos_pos_of_mem_Ioo ⟨by linarith, ?_⟩
+    rw [div_lt_div_iff₀ hNR (by norm_num : (0:ℝ) < 2)]
+    nlinarith
+  set γ : ℝ → ℂ := fun t => c + (t : ℂ) * (z₀ - c) with hγ
+  have hγ0 : γ 0 = c := by simp [hγ]
+  have hγ1 : γ 1 = z₀ := by simp [hγ]
+  have hpath : ∀ t ∈ Set.Icc (0:ℝ) 1, ∀ n : ℕ,
+      ((γ t - c) * (starRingEnd ℂ) (cisR (Real.pi * (2 * n + 1) / N))).re
+        < r * Real.cos (Real.pi / N) := by
+    intro t ht n
+    obtain ⟨ht0, ht1⟩ := ht
+    have hV := polygon_halfplane_strict hN c r hr w hw n z₀ hz₀
+    have hre : ((γ t - c) * (starRingEnd ℂ) (cisR (Real.pi * (2 * n + 1) / N))).re
+        = t * ((z₀ - c) * (starRingEnd ℂ) (cisR (Real.pi * (2 * n + 1) / N))).re := by
+      have hsub : γ t - c = (t : ℂ) * (z₀ - c) := by simp [hγ]
+      rw [hsub, mul_assoc]
+      simp [Complex.mul_re]
+    rw [hre]
+    rcases eq_or_lt_of_le ht1 with rfl | hlt
+    · simpa using hV
+    · nlinarith [mul_le_mul_of_nonneg_left hV.le ht0,
+        mul_pos (sub_pos.mpr hlt) (mul_pos hr hcosp)]
+  have himpos : ∀ t ∈ Set.Icc (0:ℝ) 1, ∀ n : ℕ,
+      0 < ((starRingEnd ℂ) (w n - γ t) * (w (n + 1) - γ t)).im :=
+    fun t ht n => polygon_im_pos hN c r hr w hw n (γ t) (hpath t ht n)
+  have hne : ∀ t ∈ Set.Icc (0:ℝ) 1, ∀ n : ℕ, w n - γ t ≠ 0 := by
+    intro t ht n h
+    have h2 := himpos t ht n
+    rw [h] at h2
+    simp at h2
+  have hzim : ∀ t ∈ Set.Icc (0:ℝ) 1, ∀ n : ℕ,
+      0 < ((w (n + 1) - γ t) / (w n - γ t)).im := by
+    intro t ht n
+    rw [div_im_eq]
+    exact div_pos (himpos t ht n) (Complex.normSq_pos.mpr (hne t ht n))
+  -- continuity of the total angle along the path
+  have hcont : ContinuousOn
+      (fun t => ∑ n ∈ Finset.range N, Complex.arg ((w (n + 1) - γ t) / (w n - γ t)))
+      (Set.Icc 0 1) := by
+    refine continuousOn_finsetSum _ (fun n _ t ht => ?_)
+    refine ContinuousAt.continuousWithinAt ?_
+    have hcγ : ContinuousAt γ t := by
+      rw [hγ]
+      fun_prop
+    have hq : ContinuousAt (fun s => (w (n + 1) - γ s) / (w n - γ s)) t :=
+      (continuousAt_const.sub hcγ).div (continuousAt_const.sub hcγ) (hne t ht n)
+    have harg : ContinuousAt Complex.arg ((w (n + 1) - γ t) / (w n - γ t)) :=
+      Complex.continuousAt_arg (Complex.mem_slitPlane_iff.mpr (Or.inr (hzim t ht n).ne'))
+    exact ContinuousAt.comp (g := Complex.arg)
+      (f := fun s => (w (n + 1) - γ s) / (w n - γ s)) (x := t) harg hq
+  -- the total angle is an integer multiple of `2π`
+  have hwN : w N = w 0 := by
+    rw [hw N, hw 0]
+    congr 2
+    rw [show 2 * Real.pi * ((N:ℕ):ℝ) / N = 2 * Real.pi by field_simp,
+      show 2 * Real.pi * ((0:ℕ):ℝ) / N = 0 by simp]
+    rw [cisR, cisR]
+    push_cast
+    rw [show ((0:ℂ)) * Complex.I = 0 by ring, Complex.exp_zero]
+    exact Complex.exp_two_pi_mul_I
+  have hvals : ∀ t ∈ Set.Icc (0:ℝ) 1, ∃ k : ℤ,
+      (∑ n ∈ Finset.range N, Complex.arg ((w (n + 1) - γ t) / (w n - γ t))) = 2 * Real.pi * k := by
+    intro t ht
+    have hane : ∀ n ≤ N, w n - γ t ≠ 0 := fun n _ => hne t ht n
+    have hprod : ∏ n ∈ Finset.range N, ((w (n + 1) - γ t) / (w n - γ t)) = 1 := by
+      rw [prod_telescope (fun n => w n - γ t) N hane, hwN, div_self (hane 0 (by omega))]
+    have hexp : Complex.exp
+        (((∑ n ∈ Finset.range N, Complex.arg ((w (n + 1) - γ t) / (w n - γ t)) : ℝ) : ℂ)
+          * Complex.I) = 1 := by
+      have h1 : (((∑ n ∈ Finset.range N,
+            Complex.arg ((w (n + 1) - γ t) / (w n - γ t)) : ℝ) : ℂ) * Complex.I)
+          = ∑ n ∈ Finset.range N,
+              ((Complex.arg ((w (n + 1) - γ t) / (w n - γ t)) : ℂ) * Complex.I) := by
+        push_cast
+        rw [Finset.sum_mul]
+      rw [h1, Complex.exp_sum]
+      have h2 : ∀ n ∈ Finset.range N,
+          Complex.exp ((Complex.arg ((w (n + 1) - γ t) / (w n - γ t)) : ℂ) * Complex.I)
+            = ((w (n + 1) - γ t) / (w n - γ t))
+                / ((‖(w (n + 1) - γ t) / (w n - γ t)‖ : ℝ) : ℂ) := by
+        intro n _
+        have hz : (w (n + 1) - γ t) / (w n - γ t) ≠ 0 :=
+          div_ne_zero (hne t ht (n + 1)) (hne t ht n)
+        have hnz : ((‖(w (n + 1) - γ t) / (w n - γ t)‖ : ℝ) : ℂ) ≠ 0 := by
+          simpa using hz
+        rw [eq_div_iff hnz, mul_comm]
+        exact Complex.norm_mul_exp_arg_mul_I _
+      rw [Finset.prod_congr rfl h2, Finset.prod_div_distrib, hprod, ← Complex.ofReal_prod,
+        ← norm_prod, hprod]
+      simp
+    obtain ⟨k, hk⟩ := Complex.exp_eq_one_iff.mp hexp
+    refine ⟨k, ?_⟩
+    have him := congrArg Complex.im hk
+    simp [Complex.mul_im, Complex.mul_re] at him
+    linarith [him]
+  -- the total angle at the centre is `2π`
+  have hg0 : (∑ n ∈ Finset.range N, Complex.arg ((w (n + 1) - γ 0) / (w n - γ 0)))
+      = 2 * Real.pi := by
+    have hterm : ∀ n ∈ Finset.range N,
+        Complex.arg ((w (n + 1) - γ 0) / (w n - γ 0)) = 2 * Real.pi / N := by
+      intro n _
+      rw [hγ0, hw (n + 1), hw n]
+      rw [show c + (r:ℂ) * cisR (2 * Real.pi * ((n+1:ℕ):ℝ) / N) - c
+            = (r:ℂ) * cisR (2 * Real.pi * ((n+1:ℕ):ℝ) / N) by ring,
+        show c + (r:ℂ) * cisR (2 * Real.pi * ((n:ℕ):ℝ) / N) - c
+            = (r:ℂ) * cisR (2 * Real.pi * ((n:ℕ):ℝ) / N) by ring]
+      rw [mul_div_mul_left _ _ (by exact_mod_cast hr.ne' : (r:ℂ) ≠ 0), ← cisR_sub,
+        show 2 * Real.pi * ((n+1:ℕ):ℝ) / N - 2 * Real.pi * ((n:ℕ):ℝ) / N
+            = 2 * Real.pi / N by push_cast; field_simp; ring]
+      refine cisR_arg ⟨by linarith, ?_⟩
+      rw [div_le_iff₀ hNR]
+      nlinarith
+    rw [Finset.sum_congr rfl hterm, Finset.sum_const, Finset.card_range, nsmul_eq_mul]
+    field_simp
+  have hmain := const_of_two_pi_int hcont hvals
+  rw [hg0, hγ1] at hmain
+  exact hmain
+
+
+
+/-- The regular `N`-gon closes up: `w_N = w₀`. -/
+private theorem polygon_closed {N : ℕ} (hN : 3 ≤ N) (c : ℂ) (r : ℝ) (w : ℕ → ℂ)
+    (hw : ∀ n, w n = c + (r : ℂ) * cisR (2 * Real.pi * n / N)) : w N = w 0 := by
+  have hN0 : 0 < N := by omega
+  have hNR : (0:ℝ) < N := by exact_mod_cast hN0
+  rw [hw N, hw 0]
+  congr 2
+  rw [show 2 * Real.pi * ((N:ℕ):ℝ) / N = 2 * Real.pi by field_simp,
+    show 2 * Real.pi * ((0:ℕ):ℝ) / N = 0 by simp]
+  rw [cisR, cisR]
+  push_cast
+  rw [show ((0:ℂ)) * Complex.I = 0 by ring, Complex.exp_zero]
+  exact Complex.exp_two_pi_mul_I
+
+/-- An interior point of the `N`-gon lies on none of its edges. -/
+private theorem polygon_notMem_edge {N : ℕ} (hN : 3 ≤ N) (c : ℂ) (r : ℝ) (hr : 0 < r) (w : ℕ → ℂ)
+    (hw : ∀ n, w n = c + (r : ℂ) * cisR (2 * Real.pi * n / N)) (z₀ : ℂ)
+    (hz₀ : z₀ ∈ interior (convexHull ℝ (Set.range w))) (n : ℕ) :
+    z₀ ∉ segment ℝ (w n) (w (n + 1)) := by
+  intro hmem
+  have hpos := polygon_im_pos hN c r hr w hw n z₀
+    (polygon_halfplane_strict hN c r hr w hw n z₀ hz₀)
+  obtain ⟨a, b, ha, hb, hab, hz⟩ := hmem
+  have hac : (a : ℂ) = 1 - (b : ℂ) := by
+    have h : (a : ℝ) = 1 - b := by linarith
+    rw [h]; push_cast; ring
+  have hbc : (b : ℂ) = 1 - (a : ℂ) := by
+    have h : (b : ℝ) = 1 - a := by linarith
+    rw [h]; push_cast; ring
+  have h1 : w n - z₀ = (b : ℂ) * (w n - w (n + 1)) := by
+    rw [← hz]
+    simp only [Complex.real_smul]
+    rw [hac]; ring
+  have h2 : w (n + 1) - z₀ = (a : ℂ) * (w (n + 1) - w n) := by
+    rw [← hz]
+    simp only [Complex.real_smul]
+    rw [hbc]; ring
+  have hd : (starRingEnd ℂ) (w n - w (n + 1)) * (w n - w (n + 1))
+      = ((Complex.normSq (w n - w (n + 1)) : ℝ) : ℂ) := by
+    rw [mul_comm]; exact Complex.mul_conj _
+  have hcalc : (starRingEnd ℂ) ((b:ℂ) * (w n - w (n + 1))) * ((a:ℂ) * (w (n + 1) - w n))
+      = (((-(a * b) : ℝ) * (Complex.normSq (w n - w (n + 1)) : ℝ) : ℝ) : ℂ) := by
+    rw [map_mul, Complex.conj_ofReal, Complex.ofReal_mul, ← hd]
+    push_cast
+    ring
+  rw [h1, h2, hcalc] at hpos
+  simp at hpos
+
+/-- Fan triangulation from a point `v`: the closed polygon integral is the sum of
+the integrals over the triangles `(v, wₙ, wₙ₊₁)`. -/
+private theorem polygon_fan (g : ℂ → 𝒜) (N : ℕ) (w : ℕ → ℂ) (v : ℂ) (hwN : w N = w 0) :
+    ∑ n ∈ Finset.range N, triIntegral g v (w n) (w (n + 1))
+      = ∑ n ∈ Finset.range N, segIntegral g (w n) (w (n + 1)) := by
+  have hkey : ∀ n : ℕ, triIntegral g v (w n) (w (n + 1))
+      = segIntegral g (w n) (w (n + 1))
+        + (segIntegral g v (w n) - segIntegral g v (w (n + 1))) := by
+    intro n
+    rw [triIntegral, segIntegral_symm g v (w (n + 1))]
+    abel
+  rw [Finset.sum_congr rfl (fun n _ => hkey n), Finset.sum_add_distrib,
+    Finset.sum_range_sub' (fun n => segIntegral g v (w n)) N, hwN, sub_self, add_zero]
+
+/-- The integral of a holomorphic function around the closed polygon vanishes:
+Goursat on each triangle of the fan from `w₀`. -/
+private theorem polygon_integral_eq_zero {U : Set ℂ} (hU : IsOpen U) (g : ℂ → 𝒜)
+    (hg : DifferentiableOn ℂ g U) (N : ℕ) (w : ℕ → ℂ)
+    (hUw : convexHull ℝ (Set.range w) ⊆ U) (hwN : w N = w 0) :
+    ∑ n ∈ Finset.range N, segIntegral g (w n) (w (n + 1)) = 0 := by
+  rw [← polygon_fan g N w (w 0) hwN]
+  refine Finset.sum_eq_zero (fun n _ => goursat hU g hg _ _ _ (subset_trans ?_ hUw))
+  refine convexHull_mono ?_
+  intro x hx
+  simp only [Set.mem_insert_iff, Set.mem_singleton_iff] at hx
+  rcases hx with rfl | rfl | rfl
+  exacts [⟨0, rfl⟩, ⟨n, rfl⟩, ⟨n + 1, rfl⟩]
+
+/-- **The polygon integral of `(z − z₀)⁻¹` is `2πi`** when `z₀` is interior: the
+angles sum to `2π` by `polygon_winding` and the logarithms telescope. -/
+private theorem polygon_inv_integral {N : ℕ} (hN : 3 ≤ N) (c : ℂ) (r : ℝ) (hr : 0 < r)
+    (w : ℕ → ℂ) (hw : ∀ n, w n = c + (r : ℂ) * cisR (2 * Real.pi * n / N)) (z₀ : ℂ)
+    (hz₀ : z₀ ∈ interior (convexHull ℝ (Set.range w))) :
+    ∑ n ∈ Finset.range N, segIntegral (fun z => (z - z₀)⁻¹) (w n) (w (n + 1))
+      = 2 * (Real.pi : ℂ) * Complex.I := by
+  have hnotmem := polygon_notMem_edge hN c r hr w hw z₀ hz₀
+  have hne : ∀ n : ℕ, ‖w n - z₀‖ ≠ 0 := by
+    intro n h
+    rw [norm_eq_zero, sub_eq_zero] at h
+    exact hnotmem n (h ▸ left_mem_segment ℝ (w n) (w (n + 1)))
+  have hterm : ∀ n : ℕ, segIntegral (fun z => (z - z₀)⁻¹) (w n) (w (n + 1))
+      = (Complex.arg ((w (n + 1) - z₀) / (w n - z₀)) : ℂ) * Complex.I
+        + (((fun m => Real.log ‖w (m : ℕ) - z₀‖) (n + 1)
+              - (fun m => Real.log ‖w (m : ℕ) - z₀‖) n : ℝ) : ℂ) := by
+    intro n
+    rw [invint_3 (w n) (w (n + 1)) z₀ (hnotmem n), measuredAngle,
+      Real.log_div (hne (n + 1)) (hne n)]
+  rw [Finset.sum_congr rfl (fun n _ => hterm n), Finset.sum_add_distrib]
+  rw [← Complex.ofReal_sum, Finset.sum_range_sub (fun m => Real.log ‖w m - z₀‖) N,
+    polygon_closed hN c r w hw, sub_self, Complex.ofReal_zero, add_zero,
+    ← Finset.sum_mul, ← Complex.ofReal_sum, polygon_winding hN c r hr w hw z₀ hz₀]
+  push_cast
+  ring
+
+
+/-- **The geometric expansion of `(u − z)⁻¹` under a single edge integral.**  This
+is the analytic heart of **15V**: on an edge whose points are at distance at
+least `s` from `v`, and for `‖z − v‖ < s`, the series
+`∑ₙ (z−v)ⁿ (u−v)^{-(n+1)}` converges to `(u−z)⁻¹` uniformly, so it may be
+integrated term by term. -/
+private theorem edge_taylor (f : ℂ → 𝒜) (W W' : ℂ)
+    (hfc : ContinuousOn f (segment ℝ W W')) (v z : ℂ) (s : ℝ) (hs : 0 < s)
+    (hzv : ‖z - v‖ < s) (hfar : ∀ u ∈ segment ℝ W W', s ≤ ‖u - v‖) :
+    HasSum (fun n : ℕ => (z - v) ^ n • segIntegral (fun u => ((u - v) ^ (n + 1))⁻¹ • f u) W W')
+      (segIntegral (fun u => (u - z)⁻¹ • f u) W W') := by
+  set γ : ℝ → ℂ := fun t => W + (t : ℂ) * (W' - W) with hγ
+  have hγc : Continuous γ := by rw [hγ]; fun_prop
+  have hmemseg : ∀ t ∈ Set.Icc (0:ℝ) 1, γ t ∈ segment ℝ W W' := by
+    intro t ht
+    rw [segment_eq_image' ℝ]
+    exact ⟨t, ht, by simp [hγ, Complex.real_smul]⟩
+  have hfarγ : ∀ t ∈ Set.Icc (0:ℝ) 1, s ≤ ‖γ t - v‖ := fun t ht => hfar _ (hmemseg t ht)
+  have hnev : ∀ t ∈ Set.Icc (0:ℝ) 1, γ t - v ≠ 0 := by
+    intro t ht h
+    have hb := hfarγ t ht
+    rw [h, norm_zero] at hb
+    linarith
+  have hfγ : ContinuousOn (fun t : ℝ => f (γ t)) (Set.Icc 0 1) :=
+    segIntegrand_continuousOn f W W' hfc
+  obtain ⟨M, hM⟩ := isCompact_Icc.exists_bound_of_continuousOn hfγ
+  have hM0 : 0 ≤ M := le_trans (norm_nonneg _) (hM 0 (by norm_num))
+  have hq1 : ‖z - v‖ / s < 1 := (div_lt_one hs).mpr hzv
+  have hq0 : (0:ℝ) ≤ ‖z - v‖ / s := by positivity
+  -- the pointwise expansion
+  have hlim : ∀ t ∈ Set.Icc (0:ℝ) 1,
+      HasSum (fun n : ℕ => (z - v) ^ n • ((γ t - v) ^ (n + 1))⁻¹ • f (γ t))
+        ((γ t - z)⁻¹ • f (γ t)) := by
+    intro t ht
+    have hne := hnev t ht
+    have hqn : ‖(z - v) / (γ t - v)‖ < 1 := by
+      rw [norm_div, div_lt_one (by simpa [norm_pos_iff] using hne)]
+      exact lt_of_lt_of_le hzv (hfarγ t ht)
+    have hgeom := hasSum_geometric_of_norm_lt_one hqn
+    have hz : γ t - z ≠ 0 := by
+      intro h
+      have heq : γ t = z := by linear_combination h
+      have hb := hfarγ t ht
+      rw [heq] at hb
+      linarith
+    have hterm : (fun n : ℕ => (z - v) ^ n • ((γ t - v) ^ (n + 1))⁻¹ • f (γ t))
+        = fun n : ℕ => (((z - v) / (γ t - v)) ^ n * (γ t - v)⁻¹) • f (γ t) := by
+      funext n
+      rw [smul_smul]
+      congr 1
+      rw [div_pow, pow_succ]
+      field_simp
+    have h1 : 1 - (z - v) / (γ t - v) = (γ t - z) / (γ t - v) := by
+      field_simp
+      ring
+    have hval : (1 - (z - v) / (γ t - v))⁻¹ * (γ t - v)⁻¹ = (γ t - z)⁻¹ := by
+      rw [h1, inv_div]
+      field_simp
+    rw [hterm, ← hval]
+    exact (hgeom.mul_right _).smul_const _
+  -- dominated convergence
+  have hmain : HasSum
+      (fun n : ℕ => ∫ t in (0:ℝ)..1, ((z - v) ^ n • ((γ t - v) ^ (n + 1))⁻¹ • f (γ t)))
+      (∫ t in (0:ℝ)..1, (γ t - z)⁻¹ • f (γ t)) := by
+    have huIoc : Set.uIoc (0:ℝ) 1 ⊆ Set.Icc 0 1 :=
+      (Set.uIoc_of_le (by norm_num : (0:ℝ) ≤ 1)) ▸ Set.Ioc_subset_Icc_self
+    refine intervalIntegral.hasSum_integral_of_dominated_convergence
+      (fun n _ => (‖z - v‖ / s) ^ n * (M / s)) (fun n => ?_) (fun n => ?_) ?_ ?_ ?_
+    · refine ContinuousOn.aestronglyMeasurable ?_ measurableSet_uIoc
+      refine ContinuousOn.mono ?_ huIoc
+      refine continuousOn_const.smul (ContinuousOn.smul ?_ hfγ)
+      exact ContinuousOn.inv₀ (by fun_prop) (fun t ht => pow_ne_zero _ (hnev t ht))
+    · refine Filter.Eventually.of_forall (fun t ht => ?_)
+      have htI : t ∈ Set.Icc (0:ℝ) 1 := huIoc ht
+      have hnorm : s ≤ ‖γ t - v‖ := hfarγ t htI
+      have hsn : s ^ (n + 1) ≤ ‖γ t - v‖ ^ (n + 1) := by
+        exact pow_le_pow_left₀ hs.le hnorm _
+      calc ‖(z - v) ^ n • ((γ t - v) ^ (n + 1))⁻¹ • f (γ t)‖
+          = ‖z - v‖ ^ n * (‖γ t - v‖ ^ (n + 1))⁻¹ * ‖f (γ t)‖ := by
+            rw [norm_smul, norm_smul, norm_pow, norm_inv, norm_pow]
+            ring
+        _ ≤ ‖z - v‖ ^ n * (s ^ (n + 1))⁻¹ * M := by
+            have hsp : (0:ℝ) < s ^ (n + 1) := by positivity
+            have hinv : (‖γ t - v‖ ^ (n + 1))⁻¹ ≤ (s ^ (n + 1))⁻¹ :=
+              inv_anti₀ hsp hsn
+            refine mul_le_mul (mul_le_mul_of_nonneg_left hinv (by positivity)) (hM t htI)
+              (norm_nonneg _) (by positivity)
+        _ = (‖z - v‖ / s) ^ n * (M / s) := by
+            rw [div_pow, pow_succ]
+            field_simp
+    · exact Filter.Eventually.of_forall (fun t _ =>
+        (summable_geometric_of_lt_one hq0 hq1).mul_right _)
+    · exact intervalIntegrable_const
+    · refine Filter.Eventually.of_forall (fun t ht => hlim t (huIoc ht))
+  have hstep : ∀ n : ℕ, (z - v) ^ n • segIntegral (fun u => ((u - v) ^ (n + 1))⁻¹ • f u) W W'
+      = (W' - W) • ∫ t in (0:ℝ)..1, ((z - v) ^ n • ((γ t - v) ^ (n + 1))⁻¹ • f (γ t)) := by
+    intro n
+    rw [segIntegral_endpoints, smul_comm, ← intervalIntegral.integral_smul]
+  have heq : (fun n : ℕ => (z - v) ^ n • segIntegral (fun u => ((u - v) ^ (n + 1))⁻¹ • f u) W W')
+      = fun n : ℕ =>
+        (W' - W) • ∫ t in (0:ℝ)..1, ((z - v) ^ n • ((γ t - v) ^ (n + 1))⁻¹ • f (γ t)) :=
+    funext hstep
+  rw [heq, segIntegral_endpoints]
+  exact hmain.const_smul (W' - W)
+
 /-- **15I** (`cauchy-formula`, cstar.tex:2396, Theorem (Cauchy's Integral
 Formula)): for a holomorphic 𝒜-valued function `f` defined on (an open set
 containing) the closed regular `N`-gon with centre `c`, circumradius `r` and
@@ -951,7 +1602,75 @@ theorem cauchy_formula {U : Set ℂ} (hU : IsOpen U) (f : ℂ → 𝒜)
     f z₀ = (2 * (Real.pi : ℂ) * Complex.I)⁻¹ •
       ∑ n ∈ Finset.range N,
         segIntegral (fun z => (z - z₀)⁻¹ • f z) (w n) (w (n + 1)) :=
-  sorry
+  by
+    -- The thesis's route, with its asserted triangulation replaced by
+    -- `polygon_winding` (see the divergence note above).
+    have hw' : ∀ n, w n = c + (r : ℂ) * cisR (2 * Real.pi * n / N) :=
+      polygon_vertex hN c r w hw
+    have hwN : w N = w 0 := polygon_closed hN c r w hw'
+    have hnotmem := polygon_notMem_edge hN c r hr w hw' z₀ hz₀
+    have hz₀U : z₀ ∈ U := hUw (interior_subset hz₀)
+    -- (1) the removable singularity: `dslope f z₀` is holomorphic on all of `U`
+    have hds : DifferentiableOn ℂ (dslope f z₀) U :=
+      (Complex.differentiableOn_dslope (hU.mem_nhds hz₀U)).mpr hf
+    -- (2) its polygon integral vanishes, by Goursat on the fan from `w₀`
+    have hzero : ∑ n ∈ Finset.range N, segIntegral (dslope f z₀) (w n) (w (n + 1)) = 0 :=
+      polygon_integral_eq_zero hU _ hds N w hUw hwN
+    -- (3) split the integrand `dslope f z₀ z = (z-z₀)⁻¹ • f z - (z-z₀)⁻¹ • f z₀`
+    have hsplit : ∀ n : ℕ, segIntegral (dslope f z₀) (w n) (w (n + 1))
+        = segIntegral (fun z => (z - z₀)⁻¹ • f z) (w n) (w (n + 1))
+          - (segIntegral (fun z => (z - z₀)⁻¹) (w n) (w (n + 1))) • f z₀ := by
+      intro n
+      have hmemhull : ∀ m : ℕ, w m ∈ convexHull ℝ (Set.range w) :=
+        fun m => subset_convexHull ℝ _ ⟨m, rfl⟩
+      have hseg : segment ℝ (w n) (w (n + 1)) ⊆ U :=
+        subset_trans ((convex_convexHull ℝ (Set.range w)).segment_subset
+          (hmemhull n) (hmemhull (n + 1))) hUw
+      have hsne : ∀ z ∈ segment ℝ (w n) (w (n + 1)), z - z₀ ≠ 0 := by
+        intro z hz h
+        rw [sub_eq_zero] at h
+        exact hnotmem n (h ▸ hz)
+      have hinvc : ContinuousOn (fun z : ℂ => (z - z₀)⁻¹) (segment ℝ (w n) (w (n + 1))) :=
+        ContinuousOn.inv₀ (Continuous.continuousOn (by fun_prop)) hsne
+      have hAc : ContinuousOn (fun z : ℂ => (z - z₀)⁻¹ • f z) (segment ℝ (w n) (w (n + 1))) :=
+        hinvc.smul (hf.continuousOn.mono hseg)
+      have hBc : ContinuousOn (fun z : ℂ => (z - z₀)⁻¹ • f z₀) (segment ℝ (w n) (w (n + 1))) :=
+        hinvc.smul continuousOn_const
+      have hA : IntervalIntegrable
+          (fun t : ℝ => (w n + (t:ℂ) * (w (n + 1) - w n) - z₀)⁻¹
+            • f (w n + (t:ℂ) * (w (n + 1) - w n))) MeasureTheory.volume 0 1 := by
+        apply ContinuousOn.intervalIntegrable
+        rw [Set.uIcc_of_le (by norm_num : (0:ℝ) ≤ 1)]
+        exact segIntegrand_continuousOn _ (w n) (w (n + 1)) hAc
+      have hB : IntervalIntegrable
+          (fun t : ℝ => (w n + (t:ℂ) * (w (n + 1) - w n) - z₀)⁻¹ • f z₀)
+          MeasureTheory.volume 0 1 := by
+        apply ContinuousOn.intervalIntegrable
+        rw [Set.uIcc_of_le (by norm_num : (0:ℝ) ≤ 1)]
+        exact segIntegrand_continuousOn _ (w n) (w (n + 1)) hBc
+      have hid : Set.EqOn (fun t : ℝ => dslope f z₀ (w n + (t:ℂ) * (w (n + 1) - w n)))
+          (fun t : ℝ => (w n + (t:ℂ) * (w (n + 1) - w n) - z₀)⁻¹
+              • f (w n + (t:ℂ) * (w (n + 1) - w n))
+            - (w n + (t:ℂ) * (w (n + 1) - w n) - z₀)⁻¹ • f z₀) (Set.uIcc 0 1) := by
+        intro t ht
+        rw [Set.uIcc_of_le (by norm_num : (0:ℝ) ≤ 1)] at ht
+        have hmem : w n + (t:ℂ) * (w (n + 1) - w n) ∈ segment ℝ (w n) (w (n + 1)) := by
+          rw [segment_eq_image' ℝ]
+          exact ⟨t, ht, by simp [Complex.real_smul]⟩
+        have hne' : w n + (t:ℂ) * (w (n + 1) - w n) ≠ z₀ := fun h => hnotmem n (h ▸ hmem)
+        simp only
+        rw [dslope_of_ne _ hne', slope_def_module, smul_sub]
+      rw [segIntegral_endpoints (dslope f z₀), intervalIntegral.integral_congr hid,
+        intervalIntegral.integral_sub hA hB, smul_sub]
+      congr 1
+      rw [intervalIntegral.integral_smul_const, smul_smul, segIntegral_endpoints,
+        smul_eq_mul]
+    rw [Finset.sum_congr rfl (fun n _ => hsplit n), Finset.sum_sub_distrib, ← Finset.sum_smul,
+      polygon_inv_integral hN c r hr w hw' z₀ hz₀, sub_eq_zero] at hzero
+    rw [hzero, smul_smul, inv_mul_cancel₀ ?hne, one_smul]
+    case hne =>
+      have : (Real.pi : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr Real.pi_ne_zero
+      simp [this, Complex.I_ne_zero]
 
 /-- **15V** (`taylor`, cstar.tex:2465, Proposition): a holomorphic 𝒜-valued
 function `f` defined on the closed regular `K`-gon with vertices `w₀, …,
@@ -971,7 +1690,48 @@ theorem taylor {U : Set ℂ} (hU : IsOpen U) (f : ℂ → 𝒜)
           ∑ k ∈ Finset.range K,
             segIntegral (fun u => ((u - v) ^ (n + 1))⁻¹ • f u) (w k) (w (k + 1))))
       (f z) :=
-  sorry
+  by
+    -- The thesis's proof: expand `(u - z)⁻¹` geometrically inside Cauchy's
+    -- integral formula and integrate term by term (`edge_taylor`).
+    have hw' : ∀ n, w n = c + (r : ℂ) * cisR (2 * Real.pi * n / K) :=
+      polygon_vertex hK c r w hw
+    have hzint : z ∈ interior (convexHull ℝ (Set.range w)) := hball hz
+    have hzv : ‖z - v‖ < s := by
+      rw [Metric.mem_ball, dist_eq_norm] at hz
+      exact hz
+    have hmemhull : ∀ m : ℕ, w m ∈ convexHull ℝ (Set.range w) :=
+      fun m => subset_convexHull ℝ _ ⟨m, rfl⟩
+    have hedge : ∀ k : ℕ, HasSum
+        (fun n : ℕ => (z - v) ^ n • segIntegral (fun u => ((u - v) ^ (n + 1))⁻¹ • f u)
+          (w k) (w (k + 1)))
+        (segIntegral (fun u => (u - z)⁻¹ • f u) (w k) (w (k + 1))) := by
+      intro k
+      have hseg : segment ℝ (w k) (w (k + 1)) ⊆ U :=
+        subset_trans ((convex_convexHull ℝ (Set.range w)).segment_subset
+          (hmemhull k) (hmemhull (k + 1))) hUw
+      refine edge_taylor f (w k) (w (k + 1)) (hf.continuousOn.mono hseg) v z s hs hzv ?_
+      intro u hu
+      by_contra hcon
+      push_neg at hcon
+      exact polygon_notMem_edge hK c r hr w hw' u
+        (hball (by rw [Metric.mem_ball, dist_eq_norm]; exact hcon)) k hu
+    have hcauchy : f z = (2 * (Real.pi : ℂ) * Complex.I)⁻¹ •
+        ∑ k ∈ Finset.range K,
+          segIntegral (fun u => (u - z)⁻¹ • f u) (w k) (w (k + 1)) :=
+      cauchy_formula hU f hf K hK c r hr w hw hUw z hzint
+    have hsum := (hasSum_sum (fun k (_ : k ∈ Finset.range K) => hedge k)).const_smul
+      ((2 * (Real.pi : ℂ) * Complex.I)⁻¹)
+    have hfun : (fun n : ℕ => (z - v) ^ n •
+        ((2 * (Real.pi : ℂ) * Complex.I)⁻¹ •
+          ∑ k ∈ Finset.range K,
+            segIntegral (fun u => ((u - v) ^ (n + 1))⁻¹ • f u) (w k) (w (k + 1))))
+        = fun n : ℕ => (2 * (Real.pi : ℂ) * Complex.I)⁻¹ •
+          ∑ k ∈ Finset.range K, (z - v) ^ n •
+            segIntegral (fun u => ((u - v) ^ (n + 1))⁻¹ • f u) (w k) (w (k + 1)) := by
+      funext n
+      rw [smul_comm, Finset.smul_sum]
+    rw [hfun, hcauchy]
+    exact hsum
 
 /-- **15VII** (`rigid-expansion`, cstar.tex:2514, Proposition): if a
 holomorphic 𝒜-valued function `f` is given by a power series

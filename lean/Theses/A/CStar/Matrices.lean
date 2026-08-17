@@ -11,8 +11,8 @@ arXiv:1804.02203), chapter 1: C*-algebras — cstar.tex, lines 4959–5872.
                  Cauchy–Schwarz, Russo–Dye for cp-maps, Choi's lemma
     parsec 341:  unitaries, Russo–Dye, ‖f‖ = ‖f(1)‖ for positive maps
 
-All statements of parsecs 320–341 are proved except two: **34VII**
-`ccstar_pos_mat` and the **34IX**.2 `cp_commutative_dom` that depends on it.
+**All statements of parsecs 320–341 are proved** (the last two, **34VII**
+`ccstar_pos_mat` and **34IX**.2 `cp_commutative_dom`, in session 74).
 See CONVENTIONS.md for the numbering (**34V** = parsec 340, point 50) and
 naming conventions.
 -/
@@ -1522,19 +1522,7 @@ the C*-subalgebra `{a : f(a) = g(a)}` — which is a closed subalgebra by
 cpsu-map `h : 𝒞 → 𝒜` with `f ∘ h = g ∘ h` corestricts to it, which is
 set-theoretically immediate.  Not converted beyond **20aII**. -/
 
-/-- **34VII** (`ccstar-pos-mat`, cstar.tex:5504, Lemma): for a commutative
-C*-algebra `𝒜`, the matrices of the form `∑ₖ aₖ Bₖ` with `aₖ ∈ 𝒜₊` and
-`Bₖ ∈ M_N(ℂ)₊` are norm dense in `M_N(𝒜)₊`. -/
-theorem ccstar_pos_mat {𝒜 : Type*} [CommCStarAlgebra 𝒜] [PartialOrder 𝒜]
-    [StarOrderedRing 𝒜] (N : ℕ)
-    [PartialOrder (CStarMatrix (Fin N) (Fin N) 𝒜)]
-    [StarOrderedRing (CStarMatrix (Fin N) (Fin N) 𝒜)] :
-    closure {A : CStarMatrix (Fin N) (Fin N) 𝒜 |
-        ∃ (K : ℕ) (a : Fin K → 𝒜) (B : Fin K → CStarMatrix (Fin N) (Fin N) ℂ),
-          (∀ k, 0 ≤ a k) ∧ (∀ k, 0 ≤ B k) ∧
-          A = ∑ k, CStarMatrix.ofMatrix (Matrix.of fun i j => B k i j • a k)} =
-      {A : CStarMatrix (Fin N) (Fin N) 𝒜 | 0 ≤ A} :=
-  sorry
+section CCStarPosMat
 
 /-- An element of a commutative C*-algebra is positive as soon as every character
 maps it to a nonnegative complex number: by Gelfand duality it is `star g * g`
@@ -1561,6 +1549,309 @@ private theorem nonneg_of_forall_character {𝒞 : Type*} [CommCStarAlgebra 𝒞
     rw [← map_star, ← map_mul, hgx, StarAlgEquiv.symm_apply_apply]
   rw [hx]
   exact star_mul_self_nonneg _
+
+/-- A simple tensor `a ⊗ B` of positives is positive. -/
+private theorem tensor_nonneg {𝒟 : Type*} [CStarAlgebra 𝒟] [PartialOrder 𝒟]
+    [StarOrderedRing 𝒟] {n : ℕ}
+    [PartialOrder (CStarMatrix (Fin n) (Fin n) 𝒟)]
+    [StarOrderedRing (CStarMatrix (Fin n) (Fin n) 𝒟)]
+    {a : 𝒟} (ha : 0 ≤ a) {B : CStarMatrix (Fin n) (Fin n) ℂ} (hB : 0 ≤ B) :
+    0 ≤ CStarMatrix.ofMatrix (Matrix.of fun i j => B i j • a) := by
+  obtain ⟨x, rfl⟩ := exists_star_mul_self ha
+  obtain ⟨C, rfl⟩ := exists_star_mul_self hB
+  set M : CStarMatrix (Fin n) (Fin n) 𝒟 :=
+    CStarMatrix.ofMatrix (Matrix.of fun i j => C i j • x) with hM
+  have h : CStarMatrix.ofMatrix
+      (Matrix.of fun i j => (star C * C) i j • (star x * x)) = star M * M := by
+    ext i j
+    rw [CStarMatrix.mul_apply, CStarMatrix.ofMatrix_apply, Matrix.of_apply]
+    simp only [CStarMatrix.star_apply, hM, CStarMatrix.ofMatrix_apply, Matrix.of_apply,
+      CStarMatrix.mul_apply, Finset.sum_smul, star_smul, RCLike.star_def]
+    refine Finset.sum_congr rfl fun k _ => ?_
+    rw [smul_mul_smul_comm]
+  rw [h]
+  exact star_mul_self_nonneg M
+
+
+section Comm
+
+variable {𝒞 : Type*} [CommCStarAlgebra 𝒞] [PartialOrder 𝒞] [StarOrderedRing 𝒞]
+
+/-- Characters are positive. -/
+private theorem character_nonneg (φ : WeakDual.characterSpace ℂ 𝒞) {x : 𝒞} (hx : 0 ≤ x) :
+    0 ≤ φ x := by
+  obtain ⟨y, rfl⟩ := exists_star_mul_self hx
+  have hs : φ (star y) = star (φ y) := by
+    have := congrFun (congrArg (fun (F : C(WeakDual.characterSpace ℂ 𝒞, ℂ)) => F.toFun)
+      (map_star (gelfandStarTransform 𝒞) y)) φ
+    exact this
+  rw [map_mul, hs]
+  exact star_mul_self_nonneg _
+
+private theorem character_conj (φ : WeakDual.characterSpace ℂ 𝒞) (x : 𝒞) :
+    φ (star x) = star (φ x) :=
+  congrFun (congrArg (fun (F : C(WeakDual.characterSpace ℂ 𝒞, ℂ)) => F.toFun)
+    (map_star (gelfandStarTransform 𝒞) x)) φ
+
+variable {n : ℕ} [PartialOrder (CStarMatrix (Fin n) (Fin n) 𝒞)]
+  [StarOrderedRing (CStarMatrix (Fin n) (Fin n) 𝒞)]
+
+/-- A matrix over a commutative C*-algebra is positive iff it is pointwise positive
+on the character space. -/
+private theorem matrix_nonneg_iff_character (A : CStarMatrix (Fin n) (Fin n) 𝒞) :
+    0 ≤ A ↔ ∀ (φ : WeakDual.characterSpace ℂ 𝒞) (v : Fin n → ℂ),
+      0 ≤ ∑ i, ∑ j, star (v i) * φ (A i j) * v j := by
+  rw [cstar_matrix_positive_iff]
+  constructor
+  · intro h φ v
+    have hv := h (fun i => algebraMap ℂ 𝒞 (v i))
+    have := character_nonneg φ hv
+    rw [map_sum] at this
+    simp only [map_sum, map_mul, character_conj, AlgHomClass.commutes] at this
+    exact this
+  · intro h a
+    refine nonneg_of_forall_character fun φ => ?_
+    have := h φ (fun i => φ (a i))
+    rw [map_sum]
+    simp only [map_sum, map_mul, character_conj]
+    exact this
+
+end Comm
+
+
+open WithCStarModule CStarMatrix Finset in
+/-- The C*-matrix norm is at most the sum of the norms of the entries.  (Mathlib
+proves this inside a `private` lemma of `Analysis/CStarAlgebra/CStarMatrix.lean`;
+the proof is repeated here because it is not exported.) -/
+private theorem norm_le_sum_norm_entry {n : ℕ} {𝒟 : Type*} [CStarAlgebra 𝒟] [PartialOrder 𝒟]
+    [StarOrderedRing 𝒟] (M : CStarMatrix (Fin n) (Fin n) 𝒟) :
+    ‖M‖ ≤ ∑ j, ∑ i, ‖M i j‖ := by
+  rw [CStarMatrix.norm_def]
+  refine (CStarMatrix.toCLM M).opNorm_le_bound (by positivity) fun v => ?_
+  simp only [toCLM_apply_eq_sum, Finset.sum_mul]
+  apply pi_norm_le_sum_norm _ |>.trans
+  gcongr with i _
+  simp only [equiv_symm_pi_apply]
+  apply norm_sum_le _ _ |>.trans
+  gcongr with j _
+  apply norm_mul_le _ _ |>.trans
+  rw [mul_comm]
+  gcongr
+  exact norm_apply_le_norm v j
+
+
+section Approx
+
+private theorem cstarMatrix_sum_apply {𝒟 : Type*} [CStarAlgebra 𝒟] {n K : ℕ}
+    (s : Finset (Fin K)) (M : Fin K → CStarMatrix (Fin n) (Fin n) 𝒟) (i j : Fin n) :
+    (∑ k ∈ s, M k) i j = ∑ k ∈ s, M k i j := by
+  classical
+  induction s using Finset.induction with
+  | empty => rfl
+  | insert a s ha ih => rw [Finset.sum_insert ha, Finset.sum_insert ha, ← ih]; rfl
+
+
+
+variable {𝒞 : Type*} [CommCStarAlgebra 𝒞] [PartialOrder 𝒞] [StarOrderedRing 𝒞]
+
+/-- In a commutative C*-algebra the norm is the sup over the character space. -/
+private theorem norm_le_of_forall_character {x : 𝒞} {C : ℝ} (hC : 0 ≤ C)
+    (h : ∀ φ : WeakDual.characterSpace ℂ 𝒞, ‖φ x‖ ≤ C) : ‖x‖ ≤ C := by
+  have hiso : ‖WeakDual.gelfandTransform ℂ 𝒞 x‖ = ‖x‖ :=
+    (gelfandTransform_isometry 𝒞).norm_map_of_map_zero (map_zero _) x
+  rw [← hiso, ContinuousMap.norm_le _ hC]
+  exact h
+
+variable {n : ℕ} [PartialOrder (CStarMatrix (Fin n) (Fin n) 𝒞)]
+  [StarOrderedRing (CStarMatrix (Fin n) (Fin n) 𝒞)]
+
+private theorem exists_approx (A : CStarMatrix (Fin n) (Fin n) 𝒞) (hA : 0 ≤ A)
+    {ε : ℝ} (hε : 0 < ε) :
+    ∃ (K : ℕ) (a : Fin K → 𝒞) (B : Fin K → CStarMatrix (Fin n) (Fin n) ℂ),
+      (∀ k, 0 ≤ a k) ∧ (∀ k, 0 ≤ B k) ∧
+      ‖A - ∑ k, CStarMatrix.ofMatrix (Matrix.of fun i j => B k i j • a k)‖ ≤ ε := by
+  classical
+  set X := WeakDual.characterSpace ℂ 𝒞 with hX
+  set δ : ℝ := ε / (n * n + 1) with hδ
+  have hδ0 : 0 < δ := by rw [hδ]; positivity
+  set F : Fin n → Fin n → C(X, ℂ) := fun i j => gelfandStarTransform 𝒞 (A i j) with hF
+  have hFφ : ∀ i j (φ : X), F i j φ = φ (A i j) := fun _ _ _ => rfl
+  set U : X → Set X := fun x => ⋂ i, ⋂ j, {φ : X | ‖F i j φ - F i j x‖ < δ} with hU
+  have hUopen : ∀ x, IsOpen (U x) := by
+    intro x
+    refine isOpen_iInter_of_finite fun i => isOpen_iInter_of_finite fun j => ?_
+    exact isOpen_lt (by fun_prop) continuous_const
+  have hUmem : ∀ x, x ∈ U x := by
+    intro x
+    simp only [hU, Set.mem_iInter, Set.mem_setOf_eq, sub_self, norm_zero]
+    exact fun _ _ => hδ0
+  obtain ⟨t, ht⟩ := isCompact_univ.elim_finite_subcover U hUopen
+    (fun x _ => Set.mem_iUnion.mpr ⟨x, hUmem x⟩)
+  -- a partition of unity subordinate to the finite subcover
+  obtain ⟨pu, hpu⟩ := PartitionOfUnity.exists_isSubordinate (ι := {x // x ∈ t})
+    (isClosed_univ (X := X)) (fun k => U k.1) (fun k => hUopen k.1) (by
+      intro x _
+      obtain ⟨y, hyt, hxU⟩ := Set.mem_iUnion₂.mp (ht (Set.mem_univ x))
+      exact Set.mem_iUnion.mpr ⟨⟨y, hyt⟩, hxU⟩)
+  obtain ⟨K, ⟨e⟩⟩ : ∃ K : ℕ, Nonempty (Fin K ≃ {x // x ∈ t}) :=
+    ⟨_, ⟨(Fintype.equivFin _).symm⟩⟩
+  set cf : Fin K → C(X, ℂ) := fun k =>
+    ⟨fun φ => ((pu (e k) φ : ℝ) : ℂ),
+      Complex.continuous_ofReal.comp (pu (e k)).continuous⟩ with hcf
+  set g : Fin K → 𝒞 := fun k => (gelfandStarTransform 𝒞).symm (cf k) with hg
+  set Bm : Fin K → CStarMatrix (Fin n) (Fin n) ℂ := fun k =>
+    CStarMatrix.ofMatrix (Matrix.of fun i j => F i j (e k).1) with hBm
+  have hgφ : ∀ (k : Fin K) (φ : X), φ (g k) = ((pu (e k) φ : ℝ) : ℂ) := by
+    intro k φ
+    have h := StarAlgEquiv.apply_symm_apply (gelfandStarTransform 𝒞) (cf k)
+    exact congrFun (congrArg (fun (G : C(X, ℂ)) => G.toFun) h) φ
+  have hBmij : ∀ (k : Fin K) (i j : Fin n), Bm k i j = (e k).1 (A i j) := fun _ _ _ => rfl
+  have hsum1 : ∀ φ : X, ∑ k : Fin K, pu (e k) φ = 1 := by
+    intro φ
+    rw [Equiv.sum_comp e (fun i => pu i φ), ← finsum_eq_sum_of_fintype]
+    exact pu.sum_eq_one (Set.mem_univ φ)
+  refine ⟨K, g, Bm, ?_, ?_, ?_⟩
+  · intro k
+    refine nonneg_of_forall_character fun φ => ?_
+    rw [hgφ k φ]
+    simpa using pu.nonneg (e k) φ
+  · intro k
+    rw [cstar_matrix_positive_iff]
+    intro v
+    simp only [hBmij]
+    exact (matrix_nonneg_iff_character A).mp hA (e k).1 v
+  · have hentry : ∀ i j : Fin n,
+        ‖(A - ∑ k : Fin K,
+            CStarMatrix.ofMatrix (Matrix.of fun i j => Bm k i j • g k)) i j‖ ≤ δ := by
+      intro i j
+      refine norm_le_of_forall_character hδ0.le fun φ => ?_
+      have hij : (A - ∑ k : Fin K,
+          CStarMatrix.ofMatrix (Matrix.of fun i j => Bm k i j • g k)) i j
+          = A i j - ∑ k : Fin K, Bm k i j • g k := by
+        rw [CStarMatrix.sub_apply, cstarMatrix_sum_apply]
+        rfl
+      rw [hij, map_sub, map_sum]
+      have hterm : ∀ k : Fin K,
+          φ (Bm k i j • g k) = ((pu (e k) φ : ℝ) : ℂ) * (F i j (e k).1) := by
+        intro k
+        rw [map_smul, hgφ k φ, smul_eq_mul, hBmij k i j, mul_comm]
+        rfl
+      simp only [hterm]
+      have hAij : φ (A i j) = F i j φ := rfl
+      have hkey : φ (A i j) - ∑ k : Fin K, ((pu (e k) φ : ℝ) : ℂ) * (F i j (e k).1)
+          = ∑ k : Fin K, ((pu (e k) φ : ℝ) : ℂ) * (F i j φ - F i j (e k).1) := by
+        have h1 : (∑ k : Fin K, ((pu (e k) φ : ℝ) : ℂ)) = 1 := by
+          rw [← Complex.ofReal_sum, hsum1 φ, Complex.ofReal_one]
+        simp only [mul_sub, Finset.sum_sub_distrib, ← Finset.sum_mul, h1, one_mul, hAij]
+      rw [hkey]
+      calc ‖∑ k : Fin K, ((pu (e k) φ : ℝ) : ℂ) * (F i j φ - F i j (e k).1)‖
+          ≤ ∑ k : Fin K, ‖((pu (e k) φ : ℝ) : ℂ) * (F i j φ - F i j (e k).1)‖ :=
+            norm_sum_le _ _
+        _ ≤ ∑ k : Fin K, pu (e k) φ * δ := by
+            refine Finset.sum_le_sum fun k _ => ?_
+            rw [norm_mul, Complex.norm_real, Real.norm_eq_abs,
+              abs_of_nonneg (pu.nonneg (e k) φ)]
+            rcases eq_or_ne (pu (e k) φ) 0 with h0 | h0
+            · rw [h0]; simp
+            · refine mul_le_mul_of_nonneg_left ?_ (pu.nonneg (e k) φ)
+              have hmem : φ ∈ U (e k).1 := hpu (e k) (subset_tsupport _ (show φ ∈ Function.support (pu (e k)) from h0))
+              exact le_of_lt (Set.mem_iInter.mp (Set.mem_iInter.mp hmem i) j)
+        _ = δ := by rw [← Finset.sum_mul, hsum1 φ, one_mul]
+    calc ‖A - ∑ k : Fin K, CStarMatrix.ofMatrix (Matrix.of fun i j => Bm k i j • g k)‖
+        ≤ ∑ _j : Fin n, ∑ _i : Fin n, δ := by
+          refine le_trans (norm_le_sum_norm_entry _) ?_
+          gcongr with j _ i _
+          exact hentry i j
+      _ ≤ ε := by
+          simp only [Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul]
+          have hpos : (0:ℝ) < (n:ℝ) * n + 1 := by positivity
+          have hre : (n:ℝ) * ((n:ℝ) * (ε / ((n:ℝ) * n + 1)))
+              = ((n:ℝ) * n * ε) / ((n:ℝ) * n + 1) := by ring
+          rw [hδ, hre, div_le_iff₀ hpos]
+          nlinarith [hε.le]
+
+end Approx
+
+end CCStarPosMat
+
+/-- **34VII** (`ccstar-pos-mat`, cstar.tex:5504, Lemma): for a commutative
+C*-algebra `𝒜`, the matrices of the form `∑ₖ aₖ Bₖ` with `aₖ ∈ 𝒜₊` and
+`Bₖ ∈ M_N(ℂ)₊` are norm dense in `M_N(𝒜)₊`. -/
+theorem ccstar_pos_mat {𝒜 : Type*} [CommCStarAlgebra 𝒜] [PartialOrder 𝒜]
+    [StarOrderedRing 𝒜] (N : ℕ)
+    [PartialOrder (CStarMatrix (Fin N) (Fin N) 𝒜)]
+    [StarOrderedRing (CStarMatrix (Fin N) (Fin N) 𝒜)] :
+    closure {A : CStarMatrix (Fin N) (Fin N) 𝒜 |
+        ∃ (K : ℕ) (a : Fin K → 𝒜) (B : Fin K → CStarMatrix (Fin N) (Fin N) ℂ),
+          (∀ k, 0 ≤ a k) ∧ (∀ k, 0 ≤ B k) ∧
+          A = ∑ k, CStarMatrix.ofMatrix (Matrix.of fun i j => B k i j • a k)} =
+      {A : CStarMatrix (Fin N) (Fin N) 𝒜 | 0 ≤ A} := by
+  refine Set.Subset.antisymm ?_ ?_
+  · have hcl : IsClosed {A : CStarMatrix (Fin N) (Fin N) 𝒜 | 0 ≤ A} :=
+      CStarAlgebra.isClosed_nonneg
+    refine hcl.closure_subset_iff.mpr ?_
+    rintro A ⟨K, a, B, ha, hB, rfl⟩
+    exact Finset.sum_nonneg (s := (Finset.univ : Finset (Fin K)))
+      (f := fun k => CStarMatrix.ofMatrix (Matrix.of fun i j => B k i j • a k))
+      (fun k _ => tensor_nonneg (ha k) (hB k))
+  · intro A hA
+    rw [Metric.mem_closure_iff]
+    intro ε hε
+    obtain ⟨K, a, B, ha, hB, hnorm⟩ := exists_approx A hA (half_pos hε)
+    refine ⟨_, ⟨K, a, B, ha, hB, rfl⟩, ?_⟩
+    rw [dist_eq_norm]
+    linarith
+
+section CPDom
+
+variable {𝒞 : Type*} [CommCStarAlgebra 𝒞] [PartialOrder 𝒞] [StarOrderedRing 𝒞]
+
+private theorem gen_mem (f : 𝒞 →ₗ[ℂ] ℬ) (hf : IsPositiveMap f) {n : ℕ}
+    (b : Fin n → ℬ) (c : 𝒞) (hc : 0 ≤ c) (B : CStarMatrix (Fin n) (Fin n) ℂ) (hB : 0 ≤ B) :
+    0 ≤ ∑ i, ∑ j, star (b i) * f ((B i j) • c) * b j := by
+  obtain ⟨d, hd⟩ := exists_star_mul_self (hf c hc)
+  obtain ⟨C, rfl⟩ := exists_star_mul_self hB
+  have hexp : ∀ i j : Fin n, star (b i) * f (((star C * C) i j) • c) * b j
+      = ∑ l, ((starRingEnd ℂ) (C l i) * C l j) • (star (d * b i) * (d * b j)) := by
+    intro i j
+    rw [map_smul, mul_smul_comm, smul_mul_assoc, hd]
+    have hCC : (star C * C) i j = ∑ l, (starRingEnd ℂ) (C l i) * C l j := by
+      rw [CStarMatrix.mul_apply]
+      exact Finset.sum_congr rfl fun l _ => rfl
+    rw [hCC, Finset.sum_smul]
+    refine Finset.sum_congr rfl fun l _ => ?_
+    congr 1
+    rw [star_mul]
+    noncomm_ring
+  have hsum : ∑ i, ∑ j, star (b i) * f (((star C * C) i j) • c) * b j
+      = ∑ l, star (∑ i, (C l i) • (d * b i)) * (∑ j, (C l j) • (d * b j)) := by
+    have hswap : ∀ G : Fin n → Fin n → Fin n → ℬ,
+        ∑ i, ∑ j, ∑ l, G i j l = ∑ l, ∑ i, ∑ j, G i j l := by
+      intro G
+      calc ∑ i, ∑ j, ∑ l, G i j l = ∑ i, ∑ l, ∑ j, G i j l :=
+            Finset.sum_congr rfl fun i _ => Finset.sum_comm
+        _ = ∑ l, ∑ i, ∑ j, G i j l := Finset.sum_comm
+    simp only [hexp]
+    rw [hswap]
+    refine Finset.sum_congr rfl fun l _ => ?_
+    rw [star_sum, Finset.sum_mul]
+    refine Finset.sum_congr rfl fun i _ => ?_
+    rw [Finset.mul_sum]
+    refine Finset.sum_congr rfl fun j _ => ?_
+    rw [star_smul, smul_mul_assoc, mul_smul_comm, smul_smul]
+    rfl
+  rw [hsum]
+  exact Finset.sum_nonneg fun l _ => star_mul_self_nonneg _
+
+private theorem sum_comm3 {M : Type*} [AddCommMonoid M] {n K : ℕ}
+    (G : Fin n → Fin n → Fin K → M) :
+    ∑ i, ∑ j, ∑ l, G i j l = ∑ l, ∑ i, ∑ j, G i j l := by
+  calc ∑ i, ∑ j, ∑ l, G i j l = ∑ i, ∑ l, ∑ j, G i j l :=
+        Finset.sum_congr rfl fun i _ => Finset.sum_comm
+    _ = ∑ l, ∑ i, ∑ j, G i j l := Finset.sum_comm
+
+
+end CPDom
 
 /-- **34IX** (`cp-commutative`, cstar.tex:5563, Proposition), case 1: a
 positive map into a commutative C*-algebra is completely positive. -/
@@ -1592,8 +1883,55 @@ theorem cp_commutative_cod {𝒞 : Type*} [CommCStarAlgebra 𝒞] [PartialOrder 
 positive map out of a commutative C*-algebra is completely positive. -/
 theorem cp_commutative_dom {𝒞 : Type*} [CommCStarAlgebra 𝒞] [PartialOrder 𝒞]
     [StarOrderedRing 𝒞] (f : 𝒞 →ₗ[ℂ] ℬ) (hf : IsPositiveMap f) :
-    IsCompletelyPositiveMap f :=
-  sorry
+    IsCompletelyPositiveMap f := by
+  intro n a b
+  letI : PartialOrder (CStarMatrix (Fin n) (Fin n) 𝒞) :=
+    CStarAlgebra.spectralOrder (CStarMatrix (Fin n) (Fin n) 𝒞)
+  letI : StarOrderedRing (CStarMatrix (Fin n) (Fin n) 𝒞) :=
+    CStarAlgebra.spectralOrderedRing (CStarMatrix (Fin n) (Fin n) 𝒞)
+  have hfc : Continuous (f : 𝒞 → ℬ) := by
+    have h := (f.mkContinuous (2 * ‖f 1‖) (fun x => weak_russo_dye_2 f hf x)).continuous
+    exact h
+  have hentry : ∀ i j : Fin n,
+      Continuous (fun M : CStarMatrix (Fin n) (Fin n) 𝒞 => M i j) := by
+    intro i j
+    refine LipschitzWith.continuous (K := 1) (LipschitzWith.of_dist_le_mul fun M M' => ?_)
+    simp only [NNReal.coe_one, one_mul]
+    rw [dist_eq_norm, dist_eq_norm, ← CStarMatrix.sub_apply]
+    exact CStarMatrix.norm_entry_le_norm
+  have hΦ : Continuous (fun M : CStarMatrix (Fin n) (Fin n) 𝒞 =>
+      ∑ i, ∑ j, star (b i) * f (M i j) * b j) := by
+    refine continuous_finsetSum _ fun i _ => continuous_finsetSum _ fun j _ => ?_
+    exact (continuous_const.mul (hfc.comp (hentry i j))).mul continuous_const
+  have hclosed : IsClosed {M : CStarMatrix (Fin n) (Fin n) 𝒞 |
+      0 ≤ ∑ i, ∑ j, star (b i) * f (M i j) * b j} :=
+    (CStarAlgebra.isClosed_nonneg (A := ℬ)).preimage hΦ
+  have hgen : {A : CStarMatrix (Fin n) (Fin n) 𝒞 |
+        ∃ (K : ℕ) (c : Fin K → 𝒞) (B : Fin K → CStarMatrix (Fin n) (Fin n) ℂ),
+          (∀ k, 0 ≤ c k) ∧ (∀ k, 0 ≤ B k) ∧
+          A = ∑ k, CStarMatrix.ofMatrix (Matrix.of fun i j => B k i j • c k)}
+      ⊆ {M : CStarMatrix (Fin n) (Fin n) 𝒞 |
+        0 ≤ ∑ i, ∑ j, star (b i) * f (M i j) * b j} := by
+    rintro M ⟨K, c, B, hc, hB, rfl⟩
+    have hMij : ∀ i j : Fin n,
+        (∑ k, CStarMatrix.ofMatrix (Matrix.of fun i j => B k i j • c k) :
+          CStarMatrix (Fin n) (Fin n) 𝒞) i j = ∑ k, (B k i j) • c k := by
+      intro i j
+      rw [cstarMatrix_sum_apply]
+      rfl
+    show 0 ≤ _
+    simp only [hMij, map_sum, Finset.mul_sum, Finset.sum_mul]
+    rw [sum_comm3 (fun i j k => star (b i) * f ((B k i j) • c k) * b j)]
+    exact Finset.sum_nonneg fun k _ => gen_mem f hf b (c k) (hc k) (B k) (hB k)
+  have hmem : (CStarMatrix.ofMatrix (Matrix.of fun i j => star (a i) * a j) :
+      CStarMatrix (Fin n) (Fin n) 𝒞) ∈ closure {A : CStarMatrix (Fin n) (Fin n) 𝒞 |
+        ∃ (K : ℕ) (c : Fin K → 𝒞) (B : Fin K → CStarMatrix (Fin n) (Fin n) ℂ),
+          (∀ k, 0 ≤ c k) ∧ (∀ k, 0 ≤ B k) ∧
+          A = ∑ k, CStarMatrix.ofMatrix (Matrix.of fun i j => B k i j • c k)} := by
+    rw [ccstar_pos_mat n]
+    exact cstar_matrix_star_mul_nonneg a
+  exact hclosed.closure_subset_iff.mpr hgen hmem
+
 
 /-- **34XII** (`cstar-positive-2x2matrix`, cstar.tex:5592, Lemma): for a
 positive 2×2 matrix `[[p, a], [a*, q]]` over `𝒜` we have `a* a ≤ ‖p‖ q` and
