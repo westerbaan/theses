@@ -144,18 +144,17 @@ kaplansky_hilbmod_A₁'|false||one of 158V's four estimates, disproved and kept 
 kaplansky_hilbmod_A₂|false||one of 158V's four estimates, disproved and kept as documentation; 158II is proved by the linking algebra
 kaplansky_hilbmod_A₂'|false||one of 158V's four estimates, disproved and kept as documentation; 158II is proved by the linking algebra
 cancellative_iso_convex|cited||192V.4 is cited to statesofconvexsets thm. 8; QUESTIONS A3 asks only to confirm the parking
-diamond_effectus_vn|costed||206III needs essentially all of thesis A, which is off B/Eff's import path
+diamond_effectus_vn|costed||206III needs essentially all of thesis A; reachable since the 2026-08-17 split (moved to B/Eff/VNExamples.lean, which imports thesis A)
 effectModule_unitInterval_representation|cited||179III.2 is Gudder-Pulmannova, cited to the literature; our statement is also weaker than the source
-effects_sea|costed||225V.1 needs thesis A's continuous functional calculus, off the import path; not attempted
-effectus_vn|cited||180V says only to adapt the proof of emod-effectus; QUESTIONS A3, and the vN version shares nothing with 191II's
-effectus_vn_partial|costed||the partial form of 180V; needs the von Neumann theory of thesis A, off B/Eff's import path
-effectus_vn_real_separating|open||190III, one of the parked deep items of parsec 190; not attempted
+effects_sea|costed||225V.1 (Gudder-Greechie) needs the continuous functional calculus; now on the import path via B/Eff/VNExamples.lean, but not attempted
+effectus_vn|cited||180V says only to adapt the proof of emod-effectus; the vN version shares nothing with 191II's.  First gate: no CStarAlgebra instance for the trivial algebra, so vNᵒᵖ has no initial object yet
+effectus_vn_partial|costed||the partial form of 180V; the product in W*_cpsu is proved (47IV, vn_products_ncpsu) but needs [Nontrivial] summands, and the initial object of vNᵒᵖ (trivial algebra) has no Mathlib instance
+effectus_vn_real_separating|open||190III, one of the parked deep items of parsec 190; now on the import path via B/Eff/VNExamples.lean, but not attempted
 exc_dm_effectus_kleisli|cited||192III.3 is an Exercise* with nothing to transcribe
-exc_purec_equal|costed||224VII needs the parked dagger-effectus development of parsecs 215-220 as well as thesis A
-exc_purec_no_biproduct|costed||224VI needs the parked dagger-effectus development of parsecs 215-220 as well as thesis A
+exc_purec_equal|costed||224VII needs the parked dagger-effectus development of parsecs 215-220 as well as thesis A (now importable via B/Eff/VNExamples.lean)
+exc_purec_no_biproduct|costed||224VI needs the parked dagger-effectus development of parsecs 215-220 as well as thesis A (now importable via B/Eff/VNExamples.lean)
 finite_effectMonoid_boolean|cited||178III.2 is cited to basmsc prop. 40; the mathematics is now in the file, only a structure transport is missing
-projections_orthomodularLattice|costed||177V is an example with no proof, and Mathlib has no projection lattice for W*-algebras
-vn_dilation_order_correspondence|costed||223VI needs thesis A and B/Dils's Paschke development, both off the import path
-vn_has_dilations|costed||221III needs thesis A; parked with the other von Neumann examples
-vn_is_andthen_eff|costed||211IV needs thesis A; parked with the other von Neumann examples
-vn_is_dagger_category|costed||215VI needs thesis A and the parked dagger-effectus development
+vn_dilation_order_correspondence|costed||223VI needs thesis A and B/Dils's Paschke development, both importable since the 2026-08-17 split; gated on effectus_vn_partial-style structure identification
+vn_has_dilations|costed||221III: B/Dils's Paschke development is proved and now importable; gated on matching an arbitrary EffectusPartialStructure to the concrete one
+vn_is_andthen_eff|costed||211IV needs thesis A; importable since the 2026-08-17 split, not attempted
+vn_is_dagger_category|costed||215VI needs thesis A and the parked dagger-effectus development; thesis A importable since the 2026-08-17 split

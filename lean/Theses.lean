@@ -30,3 +30,4 @@ import Theses.B.Eff.Quotients
 import Theses.B.Eff.DiamondAmp
 import Theses.B.Eff.Dagger
 import Theses.B.Eff.Comparisons
+import Theses.B.Eff.VNExamples

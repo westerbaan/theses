@@ -1565,11 +1565,11 @@ theorem Ortholattice.compl_top {L : Type u} [Ortholattice L] : (⊤ : L)ᶜ = �
   have h := Ortholattice.inf_compl (⊤ : L)
   rwa [top_inf_eq] at h
 
-/-- **177V** (eff.tex:559, Example): the lattice of projections of a von
-Neumann algebra is an orthomodular lattice with `pᶜ = 1 - p`. -/
-theorem projections_orthomodularLattice (A : Type u) [CStarAlgebra A]
-    [PartialOrder A] [StarOrderedRing A] [Theses.VonNeumannAlgebra A] :
-    Nonempty (OrthomodularLattice { p : A // IsStarProjection p }) := sorry
+-- **177V** (eff.tex:559, Example), `projections_orthomodularLattice`: the
+-- lattice of projections of a von Neumann algebra is an orthomodular
+-- lattice.  Moved to `Theses/B/Eff/VNExamples.lean` (author ruling
+-- 2026-08-17): it needs thesis A's projection theory, and this file must
+-- keep importing only `Theses.Common`.
 
 /-- **175II.4** (`eaexamples`, eff.tex:317, Examples): any orthomodular
 lattice `L` is an effect algebra with the same orthocomplement, `x ⊥ y` iff

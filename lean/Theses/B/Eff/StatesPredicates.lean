@@ -621,18 +621,11 @@ def SeparatingStates (C : Type u) [Category.{v} C] [HasFiniteCoproducts C]
 
 end Internal
 
-/-- **190III** (eff.tex:2136, Examples): the effectus `vNᵒᵖ` (in partial
-form: `(W*_ncpsu)ᵒᵖ`, cf. `effectus_vn_partial`) is a real effectus with
-separating states and predicates.  (Its predicates on `𝒜` correspond to the
-effects `[0,1]_𝒜` and its states to the normal states.) -/
-theorem effectus_vn_real_separating
-    (s : EffectusPartialStructure WStarCPSU.{u}ᵒᵖ) :
-    letI := s.hasFiniteCoproducts
-    letI := s.homPCM
-    letI := s.finPAC
-    letI := s.effectus
-    IsRealEffectus WStarCPSU.{u}ᵒᵖ ∧ SeparatingPredicates WStarCPSU.{u}ᵒᵖ ∧
-      SeparatingStates WStarCPSU.{u}ᵒᵖ := sorry
+-- **190III** (eff.tex:2136, Examples), `effectus_vn_real_separating`:
+-- `vNᵒᵖ` is a real effectus with separating states and predicates.  Moved
+-- to `Theses/B/Eff/VNExamples.lean` (author ruling 2026-08-17): it needs
+-- thesis A's von Neumann theory, and this file must keep importing only
+-- `Theses.Common`.
 
 /-! ### A bridge from a concrete coproduct/final object to `EffectusTotalForm` -/
 

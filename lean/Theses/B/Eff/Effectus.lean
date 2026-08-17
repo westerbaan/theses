@@ -2446,17 +2446,12 @@ theorem distinction_part_tot_eff_2 {C : Type u} [Category.{v} C]
   have := distinction_part_tot_eff_1 (0 : X ⟶ ⊥_ C)
   exact ⟨asIso (0 : X ⟶ ⊥_ C)⟩
 
-/-- **180V** (`effectus-vn`, eff.tex:827) and **189aI**
-(`effexamplesintro`, eff.tex:2020, Examples): the main example — the
-opposite `vNᵒᵖ` of the category of von Neumann algebras with ncpu-maps is
-an effectus in total form. -/
-theorem effectus_vn : Nonempty (EffectusTotalStructure WStarNCPU.{u}ᵒᵖ) := sorry
-
-/-- **180V** (`effectus-vn`, eff.tex:827): the partial maps of the effectus
-`vNᵒᵖ` correspond to the ncpsu-maps: `(W*_ncpsu)ᵒᵖ` is an effectus in
-partial form (its effect object being `ℂ`). -/
-theorem effectus_vn_partial :
-    Nonempty (EffectusPartialStructure WStarCPSU.{u}ᵒᵖ) := sorry
+-- **180V** (`effectus-vn`, eff.tex:827) and **189aI**
+-- (`effexamplesintro`, eff.tex:2020, Examples), `effectus_vn` and
+-- `effectus_vn_partial`: `vNᵒᵖ` is an effectus in total resp. partial
+-- form.  Moved to `Theses/B/Eff/VNExamples.lean` (author ruling
+-- 2026-08-17): they need thesis A's von Neumann theory, and this file must
+-- keep importing only `Theses.Common` (and `Theses.B.Eff.WStarCat`).
 
 /-! ### Extensive categories (189aII.3) -/
 

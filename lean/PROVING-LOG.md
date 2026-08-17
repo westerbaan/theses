@@ -16292,3 +16292,123 @@ the file) plus ultrastrong continuity of `y ↦ ω(y* t y)`.  Estimate 150 lines
 * **119II**: not transcribed — see the gap above.
 
 Nothing new for QUESTIONS.md this session.
+
+## Session 70 — `B/Eff`: **the chapter is NOT still blocked — but the fix is a split, not an import**; 177V `projections_orthomodularLattice` is CLOSED (main session, new file `Theses/B/Eff/VNExamples.lean`)
+
+`B/Eff` **16 → 15** code `sorry`s.  Per file, each source run through `lean`
+individually against rebuilt oleans, paired with an error count, **0 errors
+everywhere**: `EffectAlgebras` **2**, `StatesPredicates` **2**, `VNExamples`
+**11**, and `Effectus` / `WStarCat` / `Quotients` / `DiamondAmp` / `Dagger` /
+`Comparisons` **0**.  `projections_orthomodularLattice` is axiom-clean.
+
+### The structural ruling (author, 2026-08-17) — do not "tidy" this back
+
+Twelve of the sixteen open `B/Eff` items are `vNᵒᵖ` examples, and the old
+judgement was that they are blocked because thesis A "is off B/Eff's import
+path".  That is a statement about the *build graph*, not about the
+mathematics, and the mathematics has moved: **47IV.3 `vn_products_ncpsu` — the
+product of von Neumann algebras in `W*_cpsu`, with its full universal property
+— is proved in `A/VN/Basic.lean`**, and B/Dils's Paschke development is
+proved.  So the blocker was real but removable.
+
+The obvious removal — `import Theses.A.VN.Basic` in `Effectus.lean` — was put
+to Bas, who ruled against it: *"Just move the theorems that depend on A in a
+separate file."*  Accordingly the twelve moved to a new leaf module
+**`Theses/B/Eff/VNExamples.lean`** (`import Theses.B.Eff.Comparisons` +
+`import Theses.B.Dils.Pure`, which transitively supplies all of A/CStar, all
+of A/VN and all of B/Dils), and the other seven `B/Eff` files still import
+only `Theses.Common`.  They therefore remain fast to build and immune to the
+A/CStar → A/VN → {A/Proc, B/Dils} workers; only `VNExamples.lean` is exposed.
+Each moved statement is **verbatim** — same name, same binders, same doc
+comment — and each origin site now carries a `--` comment naming the
+declaration, the move and the reason.  `Theses.lean` registers the new module.
+
+`A/Proc` is deliberately **not** imported: nothing among the twelve has been
+shown to need the tensor product or the symmetric monoidal structure, and
+`A/Proc` is the least-complete and most-churned chapter.  Add it only when a
+proof actually needs it.
+
+### 177V `projections_orthomodularLattice` — closed, and it was the cheap one
+
+The projection lattice needed exactly one thing from thesis A: **56XVI
+`exists_projSup`/`projSup`** (arbitrary suprema of projections in the poset of
+projections), which is *fully proved* in `A/VN/Projections.lean`.  With it the
+ortholattice is mechanical — join `p ⊔ q = ⋃{p,q}`, meet by De Morgan,
+`pᶜ = 1 − p` — and the only real content is orthomodularity, which reduces to
+**55XIII.2 `orthogonal_tuple_of_projections_2'`** (the sum of two orthogonal
+projections is their *least* upper bound among projections), also proved:
+for `p ≤ q` one gets `pᶜ ⊓ q = q − p` from `p(1−q) = 0`, and then
+`p ⊔ (q − p) = p + (q − p) = q` from `p(q−p) = 0`.  ~135 lines.
+
+*Divergence (case 4 of the four):* eff.tex:559 states 177V as an Example with
+**no proof**, so there was nothing to transcribe; the argument above is ours.
+It is the standard one and needs no author attention, but it is recorded here
+because 177V is now proved *without* having been cross-checked against the
+thesis.
+
+*Note on the statement's weakness, not repaired:* `Nonempty
+(OrthomodularLattice {p // IsStarProjection p})` does not require the lattice
+order to be the order of `A`.  Our construction does use the inherited
+`Subtype` partial order, so the theorem as proved is the intended one — but a
+future reader should know the statement alone does not pin that down.
+
+### What the other eleven now need — the gates, precisely
+
+* **`effectus_vn` / `effectus_vn_partial` (180V)** are the true root, and the
+  first gate is *not* the effectus axioms.  `Effectus.lean` already carries a
+  ready-made bridge, **`effectusTotalForm_of_pres`**, reducing
+  `EffectusTotalForm` to three conditions on any *concrete* presentation of
+  the final object and the binary coproducts.  What is missing is the
+  presentation itself, and it fails at two named points:
+  * **there is no `CStarAlgebra` instance for the trivial algebra** — checked:
+    `CStarAlgebra PUnit` does not synthesize — so `WStarNCPU` has no terminal
+    object and `vNᵒᵖ` no initial one, and `HasFiniteCoproducts vNᵒᵖ` cannot
+    even be stated to hold.  The trivial algebra *is* a C\*-algebra (every
+    axiom is vacuous at norm 0); Mathlib simply lacks the instance.  **This is
+    the next gate and it is a small, self-contained one.**
+  * thesis A's direct sum `⊕ᵢ𝒜ᵢ = lp 𝒜 ∞` carries `[∀ i, Nontrivial (𝒜 i)]`
+    — checked: the `CStarAlgebra (lp 𝒜 ∞)` instance does not synthesize
+    without it — so `vn_products_ncpsu` does not yet cover a binary product
+    with a trivial factor, which is precisely what the coproduct with the
+    initial object of `vNᵒᵖ` is.
+* **The nine hypothetical ones** (`diamond_effectus_vn`, `vn_is_andthen_eff`,
+  `vn_is_dagger_category`, `vn_has_dilations`,
+  `vn_dilation_order_correspondence`, `effectus_vn_real_separating`,
+  `exc_purec_no_biproduct`, `exc_purec_equal`) share a shape worth flagging:
+  each takes an **arbitrary** `s : EffectusPartialStructure WStarCPSU.{u}ᵒᵖ`
+  and must produce its structure for *that* `s`.  So closing them needs not
+  only the concrete mathematics (which for `vn_has_dilations` is the proved
+  Paschke development) but also an argument that any such `s` agrees with the
+  concrete one — coproducts are unique up to canonical iso, but the PCM
+  enrichment `homPCM` is a *field* of the structure and nothing in the file
+  proves it is determined.  Whoever attacks these should first prove a
+  uniqueness lemma for `EffectusPartialStructure` on `vNᵒᵖ`, or the work will
+  be done twice.
+* **`effects_sea` (225V.1)** is Gudder–Greechie for `[0,1]_𝒜`; it needs the
+  CFC, which was always available from Mathlib, so the import was never its
+  blocker.  S4 and S5 are the hard axioms.  Not attempted.
+
+### Corrections to the brief
+
+* There is **no bundled W\* category in `A/Proc`** — `CategoryTheory` occurs
+  there only in two comments, and 119V's monoidal structure is stated
+  concretely as equations between chosen structure maps, deliberately not
+  through `MonoidalCategory`.  So "`effectus_vn` served by A/VN plus A/Proc's
+  W\* category" is not available; the only bundled categories of von Neumann
+  algebras in the tree are `WStarNCPU`/`WStarCPSU` in `B/Eff/WStarCat.lean`,
+  which is indeed the intended seam and needed no change.
+* `finite_effectMonoid_boolean`, `effectModule_unitInterval_representation`,
+  `cancellative_iso_convex` and `exc_dm_effectus_kleisli` were checked and
+  need nothing from thesis A; they stayed in `EffectAlgebras.lean` and
+  `StatesPredicates.lean`.
+
+### Housekeeping
+
+`docs/why-open.csv`: the `projections_orthomodularLattice` row is **deleted**
+(proved), and the eleven surviving rows had their "off B/Eff's import path"
+reasons rewritten — that phrase is now false for all of them.
+`docs/status.txt` is **stale**: it predates the split, so it still assigns the
+moved declarations to their old modules and still lists 177V as open.
+Regenerate it with `scripts/StatusDump.lean` before the next Sorry Map run —
+that needs a full `lake build`, which was not run here because `A/Proc/Tensor`
+was being edited by another worker throughout.

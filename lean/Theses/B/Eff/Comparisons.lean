@@ -399,28 +399,13 @@ theorem pure_daggerKernelCategory (d : DaggerEffectus C)
 
 end PureDaggerKernel
 
-/-- **224VI** (`exc-purec-no-biproduct`, eff.tex:7189, Exercise\*):
-`Pure (vNᵒᵖ)` does not have finite (bi)products — in particular it has no
-binary coproducts. -/
-theorem exc_purec_no_biproduct (s : EffectusPartialStructure WStarCPSU.{u}ᵒᵖ) :
-    letI := s.hasFiniteCoproducts
-    letI := s.homPCM
-    letI := s.finPAC
-    letI := s.effectus
-    ∀ hA : AndThenEffectus WStarCPSU.{u}ᵒᵖ,
-      letI := hA
-      ¬ HasBinaryCoproducts (PureCat WStarCPSU.{u}ᵒᵖ) := sorry
-
-/-- **224VII** (`exc-purec-equal`, eff.tex:7218, Exercise\*):
-`Pure (vNᵒᵖ)` does not have all coequalizers. -/
-theorem exc_purec_equal (s : EffectusPartialStructure WStarCPSU.{u}ᵒᵖ) :
-    letI := s.hasFiniteCoproducts
-    letI := s.homPCM
-    letI := s.finPAC
-    letI := s.effectus
-    ∀ hA : AndThenEffectus WStarCPSU.{u}ᵒᵖ,
-      letI := hA
-      ¬ HasCoequalizers (PureCat WStarCPSU.{u}ᵒᵖ) := sorry
+-- **224VI** (`exc-purec-no-biproduct`, eff.tex:7189, Exercise\*) and
+-- **224VII** (`exc-purec-equal`, eff.tex:7218, Exercise\*),
+-- `exc_purec_no_biproduct` and `exc_purec_equal`: `Pure (vNᵒᵖ)` has neither
+-- binary coproducts nor all coequalizers.  Moved to
+-- `Theses/B/Eff/VNExamples.lean` (author ruling 2026-08-17): they need
+-- thesis A's von Neumann theory, and this file must keep importing only
+-- `Theses.Common`.
 
 /-! ## Sequential effect algebras (parsec 225) -/
 
@@ -449,12 +434,11 @@ class SequentialEffectAlgebra (E : Type u) [EffectAlgebra E] where
       seq c (seq a b) = seq (seq a b) c ∧
       seq c (ovee a b h) = seq (ovee a b h) c
 
-/-- **225V** (eff.tex:7381, Examples): the effect algebra `[0,1]_𝒜` of a
-von Neumann algebra is a sequential effect algebra with
-`a & b = √a b √a`. -/
-theorem effects_sea (A : Type u) [CStarAlgebra A] [PartialOrder A]
-    [StarOrderedRing A] [Theses.VonNeumannAlgebra A] :
-    Nonempty (SequentialEffectAlgebra (Theses.effects A)) := sorry
+-- **225V** (eff.tex:7381, Examples), `effects_sea`: the effect algebra
+-- `[0,1]_𝒜` of a von Neumann algebra is a sequential effect algebra with
+-- `a & b = √a b √a`.  Moved to `Theses/B/Eff/VNExamples.lean` (author
+-- ruling 2026-08-17): it needs thesis A's von Neumann theory, and this file
+-- must keep importing only `Theses.Common`.
 
 /-- **225V** (eff.tex:7381, Examples): any commutative effect monoid is a
 sequential effect algebra with `a & b = a ⊙ b`. -/

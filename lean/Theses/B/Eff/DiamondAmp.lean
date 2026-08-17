@@ -104,14 +104,10 @@ def DiamondPositive (f : X ⟶ X) : Prop :=
 
 end Diamond
 
-/-- **206III** (eff.tex:4460, Examples): `vNᵒᵖ` is a ⋄-effectus (as are
-`CvNᵒᵖ`, `EJAᵒᵖ` and `Set`, not formalized here). -/
-theorem diamond_effectus_vn (s : EffectusPartialStructure WStarCPSU.{u}ᵒᵖ) :
-    letI := s.hasFiniteCoproducts
-    letI := s.homPCM
-    letI := s.finPAC
-    letI := s.effectus
-    DiamondEffectus WStarCPSU.{u}ᵒᵖ := sorry
+-- **206III** (eff.tex:4460, Examples), `diamond_effectus_vn`: `vNᵒᵖ` is a
+-- ⋄-effectus.  Moved to `Theses/B/Eff/VNExamples.lean` (author ruling
+-- 2026-08-17): it needs thesis A's von Neumann theory, and this file must
+-- keep importing only `Theses.Common`.
 
 /-! ## Basic properties of `(–)^⋄`, `(–)_⋄`, `(–)^□` (parsecs 207–208) -/
 
@@ -1034,15 +1030,11 @@ theorem isPure_of_isQuotient {Q : C} {q : Pred X} {ξ : X ⟶ Q}
 `p & q = q ∘ asrt_p` ("`p` andthen `q`"); `p² = p & p`. -/
 noncomputable def andThen (p q : Pred X) : Pred X := asrt p ≫ q
 
-/-- **211IV** (`vn-is-andthen-eff`, eff.tex:4859, Examples): `vNᵒᵖ` is an
-&-effectus, with `asrt_a(b) = √a b √a` (as are `CvNᵒᵖ` and `EJAᵒᵖ`, not
-formalized here; these are the only known examples). -/
-theorem vn_is_andthen_eff (s : EffectusPartialStructure WStarCPSU.{u}ᵒᵖ) :
-    letI := s.hasFiniteCoproducts
-    letI := s.homPCM
-    letI := s.finPAC
-    letI := s.effectus
-    AndThenEffectus WStarCPSU.{u}ᵒᵖ := sorry
+-- **211IV** (`vn-is-andthen-eff`, eff.tex:4859, Examples),
+-- `vn_is_andthen_eff`: `vNᵒᵖ` is an &-effectus, with `asrt_a(b) = √a b √a`.
+-- Moved to `Theses/B/Eff/VNExamples.lean` (author ruling 2026-08-17): it
+-- needs thesis A's von Neumann theory, and this file must keep importing
+-- only `Theses.Common`.
 
 /-- **211V** (`sharp-prop`, eff.tex:4872, Proposition): for a predicate `p`
 in an &-effectus the following are equivalent: (1) `p` is sharp;

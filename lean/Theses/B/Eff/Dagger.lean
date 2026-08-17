@@ -137,16 +137,11 @@ class DaggerPrimeEffectus : Prop where
 -- proved after 220II (`dagger_thm_sufficiency`), which is one of its two
 -- halves; the other is 216XI (`dagger_thm_necessity`).
 
-/-- **215VI** (`vn-is-dagger-category`, eff.tex:5338, Corollary): the
-&-effectus `vNᵒᵖ` is a †-effectus. -/
-theorem vn_is_dagger_category (s : EffectusPartialStructure WStarCPSU.{u}ᵒᵖ) :
-    letI := s.hasFiniteCoproducts
-    letI := s.homPCM
-    letI := s.finPAC
-    letI := s.effectus
-    ∀ hA : AndThenEffectus WStarCPSU.{u}ᵒᵖ,
-      letI := hA
-      Nonempty (DaggerEffectus WStarCPSU.{u}ᵒᵖ) := sorry
+-- **215VI** (`vn-is-dagger-category`, eff.tex:5338, Corollary),
+-- `vn_is_dagger_category`: the &-effectus `vNᵒᵖ` is a †-effectus.  Moved to
+-- `Theses/B/Eff/VNExamples.lean` (author ruling 2026-08-17): it needs
+-- thesis A's von Neumann theory, and this file must keep importing only
+-- `Theses.Common`.
 
 end DaggerEffectus
 
@@ -2520,17 +2515,11 @@ theorem dils_abstract_basics_7 {X₁ X₂ P₁ P₂ : C}
       · rw [coprod.inl_desc, k₁]
       · rw [coprod.inr_desc, k₂]
 
-/-- **221III** (eff.tex:6805, Example): the effectus `vNᵒᵖ` has dilations
-(Paschke dilations; the full subcategory `CvNᵒᵖ` does not, 221IIIa — not
-formalized here). -/
-theorem vn_has_dilations (s : EffectusPartialStructure WStarCPSU.{u}ᵒᵖ) :
-    letI := s.hasFiniteCoproducts
-    letI := s.homPCM
-    letI := s.finPAC
-    letI := s.effectus
-    ∀ hD : DiamondEffectus WStarCPSU.{u}ᵒᵖ,
-      letI := hD
-      HasDilations WStarCPSU.{u}ᵒᵖ := sorry
+-- **221III** (eff.tex:6805, Example), `vn_has_dilations`: the effectus
+-- `vNᵒᵖ` has dilations (Paschke dilations).  Moved to
+-- `Theses/B/Eff/VNExamples.lean` (author ruling 2026-08-17): it needs the
+-- Paschke development of `B/Dils`, and this file must keep importing only
+-- `Theses.Common`.
 
 end Dilations
 
@@ -2572,19 +2561,11 @@ def DilationOrderCorrespondence (f : X ⟶ Y) (ϱ : P ⟶ Y) (h : X ⟶ P) :
     (∀ g₁ g₂ : belowSet f, g₁.1 ≼ g₂.1 ↔ (Θ g₁).1 ≼ (Θ g₂).1) ∧
     ∀ g : belowSet f, g.1 = h ≫ asrt (Θ g).1 ≫ ϱ
 
-/-- **223VI** (eff.tex:7095, Example): every dilation in `vNᵒᵖ` has the
-order correspondence (by the Paschke correspondence of the dils
-chapter). -/
-theorem vn_dilation_order_correspondence
-    (s : EffectusPartialStructure WStarCPSU.{u}ᵒᵖ) :
-    letI := s.hasFiniteCoproducts
-    letI := s.homPCM
-    letI := s.finPAC
-    letI := s.effectus
-    ∀ hA : AndThenEffectus WStarCPSU.{u}ᵒᵖ,
-      letI := hA
-      ∀ {X Y P : WStarCPSU.{u}ᵒᵖ} (f : X ⟶ Y) (ϱ : P ⟶ Y) (h : X ⟶ P),
-        IsDilation f ϱ h → DilationOrderCorrespondence f ϱ h := sorry
+-- **223VI** (eff.tex:7095, Example), `vn_dilation_order_correspondence`:
+-- every dilation in `vNᵒᵖ` has the order correspondence.  Moved to
+-- `Theses/B/Eff/VNExamples.lean` (author ruling 2026-08-17): it needs the
+-- Paschke correspondence of `B/Dils`, and this file must keep importing
+-- only `Theses.Common`.
 
 end SideEffects
 
