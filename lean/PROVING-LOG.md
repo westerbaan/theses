@@ -7211,6 +7211,9 @@ have carrier below `⌊a⌉`, so **60VIII** `mult_cancellation_2` finishes.
 
 ### **79VI**.4 is **false as stated** — new ERRATA row, in point order
 
+**[RESOLVED 2026-08-17 — the conclusion is compressed to `⌈b⌉c^∼1⌈b⌉ ≤ b^∼1`
+in vn.tex, erratum `parsec-790.60`; the parenthetical stands.  See HANDOFF.]**
+
 `c^{∼1} ≤ b^{∼1}` for positive commuting pseudoinvertible `b ≤ c` fails as
 soon as `⌈b⌉ < ⌈c⌉`.  Machine-checked witness
 `pseudoinverse_basic_2'_4_is_false`: in `ℓ^∞({0,1})` (a von Neumann algebra by
