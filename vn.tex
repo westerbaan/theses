@@ -5354,7 +5354,7 @@ the unique
 element~$c$ of~$\ceill{b}\!\scrA$
 with~$a=bc$.
 \end{point}
-\begin{point}{20}{Exercise}%
+\begin{point}{20}[division-basic]{Exercise}%
 Let~$a$ and~$b$
 be elements of a von Neumann algebra~$\scrA$.
 \begin{enumerate}
@@ -5385,6 +5385,7 @@ and let~$d$ be an element of~$a\scrA$.
 Show that~$dc\in a\scrA b$,
 and~$a\backslash (dc) / b  = (a\backslash d)\,(c/b)$.
 \item
+\label{division-basic-star}
 Let~$c$ be an element of~$\scrA b$.
 Show that~$c^* \,\in\, b^* \scrA$
 and $b^*\backslash c^* = (c/b)^*$.
@@ -5507,7 +5508,7 @@ $(\sum_{n=1}^N s_n) \,a\, (\sum_{m=1}^Nt_m)$,
 converges ultrastrongly to~$c\backslash a /b$%
 \index{*slashslash@$a\backslash c/b$!in a von Neumann algebra}
 as~$N\to\infty$
-(and uniformly so) for~$a\in c(\scrA)_1 b$.
+for~$a\in c(\scrA)_1 b$.
 \end{point}
 \begin{point}{80}[sequential-quotient]{Exercise}%
 Show that for positive elements~$a$ and~$b$ of a von Neumann
@@ -5531,32 +5532,43 @@ converges ultraweakly to such~$c$.
 \end{point}
 \begin{point}{90}[div-usc]{Lemma}%
 Given elements~$b$ and~$c$  of a von Neumann algebra~$\scrA$
-the maps 
+the map
 \begin{equation*}
 	a\mapsto a/b\colon \  (\scrA)_1b \to \scrA
-\qquad\text{and}\qquad
+\end{equation*}
+is both ultrastrongly and ultraweakly continuous,
+and the map
+\begin{equation*}
 a\mapsto c\backslash a/b\colon\  c(\scrA)_1b\to \scrA
 \end{equation*}
-are ultrastrongly continuous
+is ultraweakly continuous
 (where $(\scrA)_1$ is the unit ball).
 \begin{point}{100}{Proof}%
 By~\sref{proto-douglas}
-the series~$\sum_n at_n$ converges ultraweakly to~$a/b$,
+the series~$\sum_n at_n$ converges ultrastrongly
+(and so also ultraweakly, by~\sref{uwweaker})
+to~$a/b$,
 where~$t_1,t_2,\dotsc$
 is an approximate pseudoinverse of~$b$,
 and in fact uniformly so for~$a\in(\scrA)_1 b$
 (because $a^*a\leq b^*b$ for such~$a$).
+
 Since~$a\mapsto \sum_{n=1}^N at_n,\ (\scrA)_1b\to\scrA$
-is ultrastrongly continuous (by~\sref{mult-uws-cont})
+is ultrastrongly and ultraweakly continuous (by~\sref{mult-uws-cont})
 --- and the uniform limit of continuous functions is continuous ---
 we see that~$a\mapsto a/b,
-\ (\scrA)_1b\to\scrA$ is ultrastrongly continuous.
-It follows that
-$(\,\cdot\,)/b\colon\,c(\scrA)_1b\to c(\scrA)_1$
-and~$c\backslash(\,\cdot\,)\colon\, c(\scrA)_1\to\scrA$
-are ultrastrongly continuous;
-as must be their composition $c\backslash\,\cdot\,/b\colon\,
-c(\scrA)_1b\to\scrA$.\qed
+\ (\scrA)_1b\to\scrA$ is ultrastrongly and ultraweakly continuous.
+
+Now~$c\backslash x=(x^*/c^*)^*$
+for~$x\in c(\scrA)_1$
+by~\sref{division-basic}(\ref{division-basic-star}),
+so~$c\backslash(\,\cdot\,)\colon\, c(\scrA)_1\to\scrA$
+is ultraweakly continuous,
+$a\mapsto a^*$ being so;
+and as~$(\,\cdot\,)/b$ maps~$c(\scrA)_1b$ into~$c(\scrA)_1$,
+their composition $c\backslash\,\cdot\,/b\colon\,
+c(\scrA)_1b\to\scrA$
+is ultraweakly continuous too.\qed
 \end{point}
 \begin{point}{110}{Remark}%
 The map $a\mapsto a/b$ might not give
@@ -5570,6 +5582,22 @@ sequence  $(1,0,0,\dotsc),\ (1,1,0,\dotsc),\ \dotsc$
 we get the 
 sequence $(1,0,0,\dotsc),\ (1,2,0,\dotsc),\ \dotsc$,
 which is not ultrastrongly Cauchy.
+\begin{point}{120}%
+Moreover, the maps~$a\mapsto c\backslash a/b$
+and $a\mapsto c\backslash a$
+need not be ultrastrongly continuous,
+    even on $c(\scrA)_1b$ and $c(\scrA)_1$, respectively.
+Indeed, take~$\scrA=\scrB(\ell^2)$, $b=1$,
+and
+$c=\sum_n \frac{1}{n}\ketbra{n}{n}$.
+The elements
+$c\ketbra{n}{0} \equiv  \frac{1}{n}\ketbra{n}{0}$
+of~$c(\scrA)_1$ converge to~$0$ in norm (and thus also ultrastrongly),
+    while $c\backslash (c\ketbra{n}{0}) =  \ketbra{n}{0}$
+    does not converge ultrastrongly to~$0$,
+    since $\left\|\smash{\ketbra{n}{0}}\right\|_\omega = 1 \not\longrightarrow 0$
+for $\omega:=\left<0\right|\, \,\cdot\, \left|0\right>$.
+\end{point}
 \end{point}
 \end{point}
 \end{parsec}

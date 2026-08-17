@@ -197,7 +197,7 @@ proving log:
 * **[ERRATA.md](ERRATA.md)** — every defect in the theses, as tables grouped by
   source file and ordered by point number, each with a one-line fix and a
   status (`DONE` with its `parsec-N.M` erratum key, or `OPEN`).  Currently
-  **47 thesis-A and 23 thesis-B** entries (a few cover several points each).
+  **38 thesis-A and 36 thesis-B** entries (a few cover several points each).
   Refresh the counts with
   `awk '/^## Thesis A/,/^## Thesis B/' ERRATA.md | grep -c '^| \*\*'`.
 * **[QUESTIONS.md](QUESTIONS.md)** — the smaller set that needs a *decision*
@@ -305,7 +305,7 @@ exercise — errata are only found by *comparing* the two. When you skip the
 thesis proof, log that you skipped it (case 4 in PROVING-LOG's divergence list)
 so the gap is visible rather than invisible.
 
-### Tooling: the Lean MCP server (installed)
+### Tooling: the Lean MCP server (installed — on Linux; see the last caveat)
 
 Session 1's workers proved *blind*: to see a goal they inserted a tactic and
 recompiled the whole file; to find a Mathlib lemma they grepped the source
@@ -394,6 +394,23 @@ Operational caveats:
   in lockstep with `lean-toolchain`, and *silently falls back* to LSP when
   that pin drifts.  A matching `v4.34.0-rc1` tag does exist if it is ever
   wanted.
+* ⚠ **The committed config is Linux-only in practice** (checked 2026-08-17 on
+  Bram's Mac, where the Lean side of the 81IX ruling was done).  Two
+  independent blockers there: `uvx` is not installed, and the wrapper's `HOME`
+  fallback calls `getent`, which is glibc-only — precisely the branch that
+  fires, since the server is spawned without `HOME`.  A fallback that works on
+  both systems is `H="${HOME:-$(eval echo ~"$(id -un)")}"`.  For the launcher,
+  upstream's canonical route is `uvx lean-lsp-mcp`, but the package is an
+  ordinary PyPI wheel exposing a `lean-lsp-mcp` console script, so a stdlib
+  venv avoids installing `uv` at all
+  (`python3 -m venv DIR; DIR/bin/pip install lean-lsp-mcp==0.29.0`) provided
+  the launcher prefers a `lean-lsp-mcp` on `PATH` and falls back to `uvx`.
+  Note also that on that machine the server was still "⏸ Pending approval"
+  (`claude mcp list`), so **no `mcp__lean*` tools were exposed at all** — which
+  is why 81XII was handed off rather than proved blind.  A separate trap on any
+  fresh machine: `.lake/build` and the Mathlib cache are git-ignored, so
+  `lake build` there compiles Mathlib from source (hours) unless
+  `lake exe cache get` is run first — that cache is now warm on the Mac.
 
 ### Parallelism
 
@@ -552,6 +569,82 @@ ERRATA.md, per that file's own convention.
   identifying that factor — `b − ζ^{2k+1} = b − ζⁿ = b + 1` — was added, which
   the closing sentence had been assuming tacitly.  **No Lean-side change is
   authorised or needed**: the statement of 11XV.3 is untouched.
+* **81IX** `div-usc` — the false half is **weakened, not dropped**.  The Lemma
+  now states that `a ↦ a/b` is *both* ultrastrongly and ultraweakly continuous,
+  and that `a ↦ c∖a/b` is **ultraweakly** continuous (erratum `parsec-810.90`).
+  Note the first map's ultraweak continuity is not a consequence of its
+  ultrastrong continuity — the two topologies are complementary (42IV) — but
+  comes from the printed uniform-limit argument, the partial sums being
+  ultraweakly continuous too and the uniformity transferring by 43I(1).
+  The repaired proof is in the thesis's own idiom rather than the compactness
+  route `div_uwc` takes: `c∖x = (x*/c*)*` (81II(5), now labelled
+  `division-basic`) together with ultraweak — as against ultrastrong (43II.4) —
+  continuity of `a ↦ a*`.  The counterexample to the printed second half is now
+  **printed thesis content**, as the new sub-point **81XII**
+  (`c = ∑ₙ n⁻¹|n⟩⟨n|`, `dₙ = |n⟩⟨0|`, `b = 1`).
+  * **81VII** `div-approx` — its parenthetical "(and uniformly so)" is
+    **deleted** (erratum `parsec-810.70`).  It was false for the two-sided map
+    (uniformity would make 81IX's second map ultrastrongly continuous) and had
+    exactly one consumer in either thesis, which did not need it.
+  * **96VI** — its erratum is **withdrawn**, not applied: the thesis's own
+    route survives the repair, so the bipositivity rewrite is not needed (the
+    Lean proof of `canonical_filter` stays as it is, now one of two valid
+    routes).  proc.tex instead reads "ultraweakly" in the normality paragraph
+    and cites **44XV** `p-uwcont` for `f` in place of 45II `cp-uscont`, and
+    "pointwise" for "uniform" in the complete-positivity step (erratum
+    `parsec-960.60`).  Consequence worth keeping: normality of `g` now needs
+    only that `f` is positive and normal, so complete positivity of `f` is used
+    exactly once, in the last paragraph — and the standard filter therefore also
+    satisfies the np-analogue of 96I's universal property.
+  * **Lean side, done**: `div_uwc` (`A/VN/Division.lean`) now carries the 81IX
+    identity, and `div_usc` — the printed statement, false in its second
+    conjunct — is **retired**, its `sorry` with it (A/VN 128 → 127); its
+    counterexample survives as the section note above `div_uwc`, and
+    `div_usc_ball` is documented as the corrected first clause.  `div_approx`
+    is untouched: it never claimed uniformity.  Verified with `lake build`
+    (8718 jobs, no errors).
+
+#### Handed to Bas: formalize 81XII
+
+81XII is printed thesis content as of this ruling, so its counterexample should
+be machine-checked; **this was scoped but deliberately not attempted** (see the
+tooling note at the end).  Everything below was checked against the tree on
+2026-08-17.
+
+*Statement*, to sit beside `div_uwc` in `A/VN/Division.lean`, suggested name
+`div_usc_2_is_false`: in `A = ℓ² →L[ℂ] ℓ²` with `b = 1` there are `c ≥ 0` and
+`dₙ` with `c * dₙ → 0` in norm — hence ultrastrongly — while
+`ldiv c (c * dₙ) = dₙ` does not converge ultrastrongly to `0 = ldiv c 0`;
+conclude `¬ ContinuousOn` for `fun a => ldiv c (div a b)` on
+`{a | ∃ d, ‖d‖ ≤ 1 ∧ a = c * d * b}` in the `ultrastrong` topology.
+
+*Witness*: vn.tex prints `c = ∑_{n>0} n⁻¹|n⟩⟨n|`, but the constants are not
+load-bearing — any positive injective diagonal with eigenvalues tending to `0`
+refutes it.  In Lean prefer `c := ∑' n, ((1:ℝ)/2^n) • ketbraNat n n`, which is
+norm-summable, so the series converges with no bespoke boundedness proof;
+`dₙ := ketbraNat n 0`.
+
+*What the tree already has* (all public): `ketbraNat` (`A/VN/Basic.lean` — note
+its `ℓ²` notation is `local`), `vn_counterexamples_1` for the star and product
+rules, which is what gives `star dₙ * dₙ = |0⟩⟨0|` **independently of `n`** —
+the crux of the whole example; `ketbra_norm` (`A/CStar/Basic.lean`);
+`vectorNP` for the vector state at `lp.single 2 0 1`; `usTendsto_iff`;
+`ldiv`/`div`/`suppProj` with `ldiv_eq` and `division_basic_2`
+(`b∖(b*a) = ⌈b⌋a`); and `ceil_mono`, `ceil_smul`, `ceil_of_isStarProjection`,
+`ceil_basic_5` in `A/VN/Projections.lean`.
+
+*The one real step* is `⌈c⌋ * dₙ = dₙ`, which is what turns `ldiv c (c * dₙ)`
+into `dₙ`.  Route: `2⁻ⁿ|n⟩⟨n| ≤ c` (partial sums increase and the positive cone
+is closed), then `ceil_mono` with `ceil_smul` and `ceil_of_isStarProjection`
+gives `|n⟩⟨n| ≤ ⌈c⌋`, and `dₙ = |n⟩⟨n| * dₙ`.  Everything after that is
+mechanical: continuity at `0` within the set would force
+`omegaNorm ω dₙ → 0`, against `omegaNorm ω dₙ = 1`.
+
+*Two frictions worth knowing before starting*: neither Mathlib nor the tree has
+a diagonal operator on `lp` (hence the `tsum` of ketbras, and a `tsum`-apply
+step for `c eₙ = 2⁻ⁿ eₙ`), and most of the `ℓ²` helpers in `A/VN/Basic.lean`
+are `private` — so either re-derive the two or three needed facts locally, or
+de-privatise them and accept the A/VN rebuild.
 
 ### Still open
 

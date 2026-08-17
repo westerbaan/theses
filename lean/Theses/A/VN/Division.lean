@@ -2739,8 +2739,10 @@ ultrastrongly continuous on `(A)₁b`.  This is the thesis's own argument
 all that is needed), and each partial sum is `a ↦ a·(∑_{n<N} tₙ)`, which is
 ultrastrongly continuous because `‖yd‖_ω = ‖y‖_{d*ωd}` (**44VIII**).
 
-The *second* half of 81IX — ultrastrong continuity of `a ↦ c∖a/b` on
-`c(A)₁b` — is **false**; see the note on `div_usc` below. -/
+This is the *first* clause of 81IX as corrected on 2026-08-17; the clause's
+companion, ultraweak continuity of the same map, is the first conjunct of
+`div_uwc` below.  The printed *second* half — ultrastrong continuity of
+`a ↦ c∖a/b` on `c(A)₁b` — is **false**; see the note below. -/
 theorem div_usc_ball (b : A) :
     @ContinuousOn A A (ultrastrong A) (ultrastrong A) (fun a => div a b)
       {a : A | ∃ d : A, ‖d‖ ≤ 1 ∧ a = d * b} := by
@@ -2790,13 +2792,19 @@ theorem div_usc_ball (b : A) :
     linarith
   exact hkey
 
-/-- **81IX** (`div-usc`, vn.tex:5533, Lemma): the maps
-`a ↦ a/b : (A)₁b → A` and `a ↦ c∖a/b : c(A)₁b → A` are ultrastrongly
-continuous.  (**81XI**, Remark: this fails on the larger domain `Ab` —
-not converted.)
+/-! ### The printed 81IX, and why its second half was weakened
 
-**The second conjunct is false**, so this statement is left `sorry`; the
-first conjunct is `div_usc_ball` above.  Counterexample to the second, with
+The printed **81IX** (`div-usc`, vn.tex:5533) claimed that *both*
+`a ↦ a/b : (A)₁b → A` and `a ↦ c∖a/b : c(A)₁b → A` are ultrastrongly
+continuous.  The first conjunct is true and is `div_usc_ball` above; the
+second is **false**, so the printed statement is not transcribed.  The
+author's ruling of 2026-08-17 weakens the second map to ultraweak
+continuity — that is `div_uwc` below — and leaves the first map with both
+continuities; vn.tex now carries the counterexample itself, as the new
+sub-point **81XII** (not yet formalized).  (**81XI**, Remark: continuity
+also fails on the larger domain `Ab` — not converted.)
+
+Counterexample to the printed second conjunct, with
 `b = 1`, so that `a ↦ c∖a/b` is `a ↦ c∖a` on `c(A)₁`: in `A = B(ℓ²)` take
 `c = diag(1, ½, ⅓, …)`, which is positive and injective, so `⌈c⌋ = 1` and
 `c∖(cd) = d`.  Put `dₙ = |n⟩⟨0|`, so `‖dₙ‖ = 1` and `cdₙ = (n+1)⁻¹|n⟩⟨0| → 0`
@@ -2808,19 +2816,10 @@ ultrastrongly continuous on `c(A)₁`.  The thesis's proof factors the map as
 continuous "as follows"; it is not — left division is ultrastrongly
 continuous only in the commutative case (there `‖e‖ ≤ 2` really does bound
 `‖e‖_ω` by `c_K⁻¹‖ce‖_ω + 4ε`), and in general only for the ultrastrong-*
-topology.  See ERRATA.md.
-
-**The ultraweak form of the very same statement is true**, and is proved
-below as `div_uwc` — so 81IX is repaired by changing one word,
-"ultrastrongly" to "ultraweakly", with both maps and no extra hypothesis.
-See QUESTIONS.md **A5**. -/
-theorem div_usc (b c : A) :
-    @ContinuousOn A A (ultrastrong A) (ultrastrong A) (fun a => div a b)
-        {a : A | ∃ d : A, ‖d‖ ≤ 1 ∧ a = d * b} ∧
-      @ContinuousOn A A (ultrastrong A) (ultrastrong A)
-        (fun a => ldiv c (div a b))
-        {a : A | ∃ d : A, ‖d‖ ≤ 1 ∧ a = c * d * b} :=
-  sorry
+topology.  Its repaired proof in vn.tex takes neither route: it uses
+`c∖x = (x*/c*)*` (**81II**(5)) together with ultraweak — as against
+ultrastrong (**43II**.4) — continuity of the adjoint.
+-/
 
 /-! ### 81IX in the ultraweak topology
 
@@ -2858,10 +2857,10 @@ theorem suppProj_one : suppProj (1 : A) = 1 := by
 theorem ldiv_one (y : A) : ldiv 1 y = y :=
   ldiv_eq (one_mul y).symm (by rw [suppProj_one, one_mul])
 
-/-- **81IX** (`div-usc`, vn.tex:5533, Lemma) with "ultrastrongly" replaced
-by "ultraweakly", second map: `a ↦ c∖a/b` is **ultraweakly** continuous on
-`c(A)₁b`.  See the section note above for the argument, and `div_usc` for
-why the ultrastrong claim is false. -/
+/-- **81IX** (`div-usc`, vn.tex:5533, Lemma), second map as corrected:
+`a ↦ c∖a/b` is **ultraweakly** continuous on `c(A)₁b`.  See the section note
+above for the argument, and for why the printed ultrastrong claim is
+false. -/
 theorem div_uwc_corner (b c : A) :
     @ContinuousOn A A (ultraweak A) (ultraweak A)
       (fun a => ldiv c (div a b))
@@ -2939,12 +2938,18 @@ theorem div_uwc_corner (b c : A) :
 throughout by "ultraweakly": **both** maps `a ↦ a/b : (A)₁b → A` and
 `a ↦ c∖a/b : c(A)₁b → A` are ultraweakly continuous.
 
-This is the repair of 81IX proposed in QUESTIONS.md **A5**: one word, both
-maps kept, no hypothesis on `c`.  It is also what the one real consumer
-needs — **96V** `canonical-filter` uses 81IX only for *normality* of
-`g = d*∖f(·)/d`, and ultraweak continuity gives that, since a bounded
-increasing net converges ultraweakly to its supremum and `g` is positive.
-The ultrastrong statement `div_usc` above is false and stays `sorry`. -/
+**This is 81IX as corrected** by the author's ruling of 2026-08-17 (see
+HANDOFF.md): the second map is weakened to ultraweak continuity, while the
+first keeps its ultrastrong continuity (`div_usc_ball`) *and* gains this
+ultraweak one.  It is also what the one consumer needs — **96V**
+`canonical-filter` uses 81IX only for *normality* of `g = d*∖f(·)/d`, whose
+proof in vn.tex now runs ultraweakly throughout.  The printed second
+conjunct is false and is no longer transcribed; see the section note above.
+
+Note the thesis's repaired proof is *not* this one: it goes through
+`c∖x = (x*/c*)*` (81II(5)) and ultraweak continuity of the adjoint, whereas
+the proof below identifies the value by its characterisation and uses
+ultraweak compactness of the unit ball. -/
 theorem div_uwc (b c : A) :
     @ContinuousOn A A (ultraweak A) (ultraweak A) (fun a => div a b)
         {a : A | ∃ d : A, ‖d‖ ≤ 1 ∧ a = d * b} ∧

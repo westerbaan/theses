@@ -1981,10 +1981,13 @@ extended off the positive cone by linearity; *positivity* is **81VI**.2;
 completely positive approximants `(∑_{n<N}t_n)* f(·) (∑_{n<N}t_n)`, which
 converge pointwise to `g` by `div-approx` (**81VII**).
 
-**Divergence.**  The thesis obtains *normality* of `g` from `div-usc`
-(**81IX**) — from ultrastrong continuity of `a ↦ d*∖a/d` on `d*(𝒜)₁d`.  That
-half of 81IX is **false** (see the counterexample in the doc comment of
-`Theses.A.VN.div_usc`), so normality is proved here instead from the two
+**Divergence.**  The thesis obtained *normality* of `g` from `div-usc`
+(**81IX**) — from ultra*strong* continuity of `a ↦ d*∖a/d` on `d*(𝒜)₁d`,
+which is **false** (see the section note above `div_uwc` in
+`Theses.A.VN.Division`).  On the author's ruling of 2026-08-17 both 81IX and
+this proof in vn.tex now run *ultraweakly*, which is sound (`div_uwc`), so
+the thesis's own route is valid again and this proof is one of two.  It
+derives normality instead from the two
 elementary properties of `c = d*(·)d` that this file already has: `c` is
 normal (`exists_adFromCorner`) and **bipositive** on the corner
 (`0 ≤ d*xd ⟹ 0 ≤ x`, again 81VI.2).  Given a directed `D` with supremum `s`

@@ -346,9 +346,38 @@ in point~1.
 ``we have $0\leq a_{nm}\leq \frac{1}{2}$''
 should read ``we have $0\leq a_{nm}\leq 1$''.
 \end{erratum}
+\begin{erratum}{parsec-810.70}
+Ignore the ``(and uniformly so)'': this cannot be proven.
+\end{erratum}
+\begin{erratum}{parsec-810.90}
+The map~$a\mapsto c\backslash a/b$
+is ultraweakly,
+but in general not (as printed) ultrastrongly, continuous,
+while~$a\mapsto a/b$ is both.
+The printed proof fails at
+``$c\backslash(\,\cdot\,)\colon\, c(\scrA)_1\to\scrA$
+[is] ultrastrongly continuous''.
+To prove the corrected Lemma, use that
+$c\backslash x = (x^*/c^*)^*$
+by~\sref{parsec-810.20}(5),
+and that~$a\mapsto a^*$ is ultraweakly,
+but not ultrastrongly, continuous.
+\end{erratum}
+\begin{erratum}{parsec-960.60}
+``ultrastrongly continuous by~\sref{parsec-810.90},
+as is~$f$ by~\sref{parsec-450.20}''
+should read
+``ultraweakly continuous by~\sref{parsec-810.90},
+as is~$f$ by~\sref{parsec-440.150}'',
+and ``so that~$g$ is ultrastrongly continuous''
+should read ``so that~$g$ is ultraweakly continuous''.
+Also, ``the uniform ultrastrong limit''
+should read ``the pointwise ultrastrong limit''.
+\end{erratum}
 \begin{erratum}{parsec-990.70}
-This paragraph should read:
-Since~$ab=0$,
+This paragraph should read as follows.
+
+``Since~$ab=0$,
 we have~$\ceill{a}\ceilr{b}=0$ by~\sref{parsec-600.80},
 and so~$\ceil{f(\ceill{a})}\ceil{f(\ceilr{b})}=0$ (by~\sref{parsec-990.20}(3)).
 Now,
@@ -359,7 +388,7 @@ we get $\ceill{f(a)}\ceilr{f(b)}
 = \ceill{f(a)} \ceil{f(\ceill{a})}
 \ceil{f(\ceilr{b})}
 \ceilr{f(b)}
-=0$.
+=0$.''
 \end{erratum}
 \begin{solution}{parsec-40.30}%
 Let~$\scrX$, $\scrY$ and~$\scrZ$ be normed (complex) vector spaces.
