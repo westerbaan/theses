@@ -569,6 +569,26 @@ ERRATA.md, per that file's own convention.
   identifying that factor — `b − ζ^{2k+1} = b − ζⁿ = b + 1` — was added, which
   the closing sentence had been assuming tacitly.  **No Lean-side change is
   authorised or needed**: the statement of 11XV.3 is untouched.
+* **79VI.4** `pseudoinverse-basic-2` — repaired by **compressing the
+  conclusion**, not by adding a hypothesis: point 4 now reads
+  `⌈b⌉c^∼1⌈b⌉ ≤ b^∼1` (erratum `parsec-790.60`).  ERRATA.md proposed the
+  hypothesis `⌈b⌉ = ⌈c⌉` instead, which is the special case of this, and which
+  would have cost the parenthetical.  The parenthetical **stands**: in this
+  form the non-commuting case is the standard C\*-argument.  Write
+  `c^∼½ := (c^∼1)^½`, `b^∼½ := (b^∼1)^½`, `p := ⌈b⌉`.  From `b ≤ c`,
+  `‖c^∼½b^½‖² = ‖c^∼½ b c^∼½‖ ≤ ‖c^∼½ c c^∼½‖ = ‖⌈c⌉‖ ≤ 1`, so
+  `b^½c^∼1b^½ = (c^∼½b^½)^*(c^∼½b^½)` is positive of norm `≤ 1` and equal to
+  its own compression by `p`, hence `b^½c^∼1b^½ ≤ p`.  Conjugating by `b^∼½`
+  — using `b^∼½b^½ = p` and `b^∼½b^∼½ = b^∼1`, both from 79VI.1 — gives
+  `pc^∼1p ≤ b^∼1`.  Commutativity is used nowhere.
+  * **Lean side, authorised**: restate `pseudoinverse_basic_2'_4`
+    (`A/VN/Division.lean`) with conclusion `ceil b * pinv c * ceil b ≤ pinv b`
+    and prove it by the argument above, closing its `sorry`.  `hcomm` is not
+    needed by that argument; keep it only to match the printed statement.  The
+    refutation `pseudoinverse_basic_2'_4_is_false` and
+    `pseudoinverse_basic_2'_4_forces_eq_one` **stay** — they are what the
+    erratum's delta records — but their doc comments should say they refute the
+    *printed* conclusion, not the current one.
 * **81IX** `div-usc` — the false half is **weakened, not dropped**.  The Lemma
   now states that `a ↦ a/b` is *both* ultrastrongly and ultraweakly continuous,
   and that `a ↦ c∖a/b` is **ultraweakly** continuous (erratum `parsec-810.90`).
