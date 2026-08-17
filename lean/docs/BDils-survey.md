@@ -75,6 +75,13 @@ compiler-counted per file (each source run through `lean` individually, and
 each checked for *errors* as well as `sorry`s — see the regression noted in
 the session-61 section below).
 
+At the end of **session 69** (**169IV `standard_corner_dils`**):
+`SelfDual.lean` 7, `Pure.lean` **8**, `Paschke.lean` 1, `Kaplansky.lean` 4,
+`Stinespring.lean` 1, `SelfDualCompletion.lean` 0, `HilbertModules.lean` 0 —
+**21**, compiler-counted per file, each source run through `lean`
+individually and each with **0 errors**.  (Five of the 21 are the known-false
+items: `Kaplansky`'s four and `Stinespring`'s 139XI.)
+
 Classification key: **(a)** self-contained, **(b)** blocked on a named
 `sorry` elsewhere, **(c)** cited to the literature / another chapter,
 **(d)** suspicious/false.
@@ -237,8 +244,8 @@ module; and the **public** `paschke_tprod_dense`.
 
 | DISP | name | class | note |
 |---|---|---|---|
-| 169IV | `standard_corner_dils` | **(c)** | cited to proc.tex 98I/95II; the universal property of `b ↦ ⌊a⌋b⌊a⌋` has to be built from scratch (`A/Proc` is off this import path) |
-| 169V | `h_is_corner_for_unital_map` | **(b)** | ⚠️ row corrected session 66: `existence_paschke` **is** proved, and `exists_paschke_iso_paschkeModule` supplies the transfer, so the author's `ϑ : ℬ ≅ p𝒫p`, `p = \|e⟩⟨e\|` is now writable.  The remaining gap is the *last* sentence of 169VI — "so `h` is a corner (of `p`)" — which is **169IV**, the universal property of the standard corner, still `sorry` and cited to proc.tex |
+| **169IV** | `standard_corner_dils` | **(a)** | **CLOSED session 69**, axiom-clean, ~150 lines.  proc.tex **95II** `prop-corner` transcribes at `u = ⌊a⌋` with **no** von Neumann theory beyond what `A/VN` already exports: `⌊a⌋a⌊a⌋ = ⌊a⌋` by conjugating `⌊a⌋ ≤ a ≤ 1`; the mediating map is `f ∘ ζ` for the inclusion `ζ : ⌊a⌋𝒜⌊a⌋ ⊆ 𝒜` (ncp for **any** projection — new `cornerSet.val_normal`); `f = f ∘ ζ ∘ h_a` is **63IV** `cp_comprehension`, *already proved for C\*-algebra targets*; uniqueness is one line from `h_a c = c` on the corner.  ⚠️ The brief's "only real content is `f(b) = 0 ⟹ f(⌈b⌉) = 0`" was right, and it did **not** exist: `A/VN` has it only as **60V** `ncp_ceil`, which needs a *von Neumann* target, while `IsCornerFor` quantifies over C\*-algebras.  Proved here instead from **56I** `vna_ceil_sup` (`b^{1/2ⁿ} ↑ ⌈b⌉`) plus Kadison (`ncp_cp_cs`) for `f(b) = 0 ⟹ f(√b) = 0` — ~45 lines, private `ncp_eq_zero_sqrt`/`ncp_eq_zero_ceil` |
+| 169V | `h_is_corner_for_unital_map` | **(a)/(b)** | ⚠️ **row re-costed session 69, now that 169IV is closed** — and the re-costing says 169IV is *not* what it needs.  The remaining work is entirely concrete: in `𝒫 = 𝒷ᵃ(𝒜 ⊗_φ ℬ)ᵐᵒᵖ` with `e = 1 ⊗ 1`, build `p = \|e⟩⟨e\|` (a projection because `⟨e,e⟩ = φ(1) = 1`) and `ϑ : ℬ → 𝒫`, `b ↦ \|e·b⟩⟨e\|` as an **ncp**-map.  Then `h ∘ ϑ = id` (so `h` is surjective, which gives uniqueness) and `ϑ ∘ h = p(·)p`, so `IsCornerFor h p` follows *directly* from `cp_comprehension` — the author's miu-isomorphism `ℬ ≅ p𝒫p` and its inverse are **not** needed, and neither is 169IV.  An arbitrary Paschke dilation is transferred by `exists_paschke_iso_paschkeModule` plus a corner-transport lemma along a bijective nmiu-map (~40 lines, not yet written).  Costed ~200 lines; the risk is the mirrored inner-product convention and the `ᵐᵒᵖ`.  Superseded note from session 66: `existence_paschke` **is** proved, and `exists_paschke_iso_paschkeModule` supplies the transfer, so the author's `ϑ : ℬ ≅ p𝒫p`, `p = \|e⟩⟨e\|` is now writable.  The remaining gap is the *last* sentence of 169VI — "so `h` is a corner (of `p`)" — which is **169IV**, the universal property of the standard corner, still `sorry` and cited to proc.tex |
 | 169X | `dils_stand_filter` | **(c)** | cited to proc.tex 96V — which **is** now proved in `A/Proc/Measurement.lean` (session 47) but is not importable here.  Proving it locally means redoing 96V |
 | **169XI.1** | `dils_filter_basics_1` | **(a)** | **CLOSED this session** |
 | **169XI.2a** | `dils_filter_basics_2a` | **(a)** | was **(d)**, false under the transcribed `c 1 ≤ b`.  **CLOSED session 63**, after Bas ruled on B11 (2026-08-16): the repair is that `IsFilterFor`'s *mediating* map is **subunital**, not that `c 1 = b`.  ~25 lines, the thesis's own argument; needs only monotonicity of `c'` plus **169XII**, not faithfulness |
@@ -981,16 +988,37 @@ blocker.
 * **172X**, **170II.1**, **170II.2**, **169V** all reduce to **169IV**
   `standard_corner_dils` and **169X** `dils_stand_filter`, the two proc.tex
   roots.
-* **169IV** is the highest-value target left in this file: it gates 169V,
-  170II.2, 170IV.2's repair, 171VII and 172X.  A route was scouted this
-  session and is *not* out of reach — the mediating map is `f ∘ (inclusion
-  ⌊a⌋𝒜⌊a⌋ ⊆ 𝒜)`, which is ncp for **any** projection (`cornerSet.isLUB_mem`
-  gives normality; `pcorner_val_normal`'s centrality hypothesis is stronger
-  than needed), uniqueness is one line, and the only real content is
-  `f(a) = f(1) ⟹ f(x) = f(⌊a⌋x⌊a⌋)`: cp-Cauchy–Schwarz gives
-  `f((1−a)x) = 0`, and what is then needed is `f(b) = 0 ⟹ f(⌈b⌉) = 0` for
-  `b ≥ 0` and normal `f`, i.e. `b^{1/2ⁿ} ↑ ⌈b⌉`.  That last step is the
-  thing to check for in `A/VN/Projections.lean` first.
+* ~~**169IV** is the highest-value target left in this file~~ — **CLOSED
+  session 69** (see its row).  The scouted route held, with two corrections:
+  the last step of the mediating-map argument is **63IV** `cp_comprehension`,
+  not cp-Cauchy–Schwarz written out by hand, and `f(b) = 0 ⟹ f(⌈b⌉) = 0` was
+  **not** already in `A/VN/Projections.lean` in a usable form (its `ncp_ceil`
+  needs a von Neumann *target*, which `IsCornerFor` does not provide).
+
+**What closing 169IV actually unroots: nothing, yet.**  Re-checked against
+each dependent after the fact — this is the second session running in which
+the named gate turns out not to be the last blocker:
+
+  * **169V** does not need it at all (see its row): it needs the concrete
+    `p = \|e⟩⟨e\|` and `ϑ : ℬ → 𝒫`, and then `cp_comprehension` directly.
+  * **170II.2** needs 169V; **170II.1** needs 171VII.
+  * **171VII** ⇒ can now use 169IV to identify an abstract corner with a
+    standard one, but ⇐ still needs 170II.2, `weakly-closed-ideal` and
+    proc.tex 100III `pure-fundamental`.
+  * **172X**'s proof (dils.tex 172XI) opens with proc.tex 100III
+    `pure-fundamental` — the *standard-form* factorisation `φ = c ∘ h_p`
+    with `p = ⌈φ⌉` a projection.  `IsPureMap` gives only `φ = c ∘ h` for an
+    *abstract* corner `h`, and 169IV is exactly what could now bridge the
+    two (two corners for the same effect are ncp-isomorphic by their shared
+    universal property, and `⌊a⌋` is a projection), but that bridge — plus
+    "a filter composed with an ncp-isomorphism is a filter" — is **not
+    written**.  Everything after that opening line *is* in the tree:
+    171II `paschke_corner`, 169XI, 172III `ncp_extreme_paschke`,
+    169XII `dils_filters_injective`.  Best next target after 169V.
+  * **170IV.2** is false; its repair is an author decision (D7), not a proof.
+
+  So **169X** `dils_stand_filter` is the only *cited-to-proc.tex* root still
+  standing in this file; 169V is the cheapest open item.
 
 **170IV.2 `surjective_nmiu_2` is false** — see its row and QUESTIONS **D7**.
 The counterexample `λ·id : ℂ → ℂ` is in the tree as

@@ -304,7 +304,10 @@ def saMap (d : selfAdjoint (cornerSet A p)) : selfAdjoint A :=
 
 /-- **94II** part 6: the supremum in `A` of a nonempty directed set of
 self-adjoint elements of the corner lies again in the corner — because
-`a ↦ p·a·p` is normal (**44VIII** `ad_normal`) and fixes the set. -/
+`a ↦ p·a·p` is normal (**44VIII** `ad_normal`) and fixes the set.
+
+Stated before `saMap_isLUB`, which is the same fact read as "suprema of the
+corner are computed in `A`". -/
 theorem isLUB_mem (D : Set (selfAdjoint A)) (s : selfAdjoint A)
     (hD : ∀ d ∈ D, p * (d : A) * p = (d : A)) (hne : D.Nonempty)
     (hdir : DirectedOn (· ≤ ·) D) (hlub : IsLUB D s) :
@@ -322,6 +325,56 @@ theorem isLUB_mem (D : Set (selfAdjoint A)) (s : selfAdjoint A)
   rw [hsd]
   exact huniq
 
+/-- **94II** part 6: a directed supremum of the corner *is* the supremum
+taken in `A` — `saMap` carries an `IsLUB` in `sa(pAp)` to an `IsLUB` in
+`sa(A)`.  The supremum in `A` exists because `A` is a von Neumann algebra,
+lies in the corner by `isLUB_mem`, and is then a least upper bound there
+as well; uniqueness of least upper bounds identifies it with `s`. -/
+theorem saMap_isLUB {D : Set (selfAdjoint (cornerSet A p))}
+    {s : selfAdjoint (cornerSet A p)} (hne : D.Nonempty)
+    (hdir : DirectedOn (· ≤ ·) D) (hlub : IsLUB D s) :
+    IsLUB (saMap '' D) (saMap s) := by
+  have hne' : (saMap '' D).Nonempty := hne.image _
+  have hdir' : DirectedOn (· ≤ ·) (saMap '' D) := by
+    rintro _ ⟨x, hx, rfl⟩ _ ⟨z, hz, rfl⟩
+    obtain ⟨u, hu, hxu, hzu⟩ := hdir x hx z hz
+    exact ⟨saMap u, ⟨u, hu, rfl⟩, hxu, hzu⟩
+  have hbdd' : BddAbove (saMap '' D) := by
+    refine ⟨saMap s, ?_⟩
+    rintro _ ⟨x, hx, rfl⟩
+    exact hlub.1 hx
+  obtain ⟨s₀, hs₀⟩ :=
+    VonNeumannAlgebra.isLUB_of_bddAbove_directed _ hne' hdir' hbdd'
+  have hmem : p * (s₀ : A) * p = (s₀ : A) := by
+    refine isLUB_mem _ s₀ ?_ hne' hdir' hs₀
+    rintro _ ⟨x, hx, rfl⟩
+    exact x.1.2
+  set t : cornerSet A p := ⟨(s₀ : A), hmem⟩ with ht
+  have htsa : IsSelfAdjoint t := val_injective s₀.2
+  have hlubt : IsLUB D ⟨t, htsa⟩ := by
+    refine ⟨fun d hd => hs₀.1 ⟨d, hd, rfl⟩, fun u hu => ?_⟩
+    have hub : saMap u ∈ upperBounds (saMap '' D) := by
+      rintro _ ⟨x, hx, rfl⟩
+      exact hu hx
+    exact hs₀.2 hub
+  have hst : s = ⟨t, htsa⟩ := hlub.unique hlubt
+  have hsm : saMap (⟨t, htsa⟩ : selfAdjoint (cornerSet A p)) = s₀ :=
+    Subtype.ext rfl
+  rw [hst, hsm]
+  exact hs₀
+
+/-- The inclusion `pAp ⊆ A` preserves directed suprema, for **any**
+projection `p` — a direct consequence of `saMap_isLUB`.  (No centrality is
+needed: the point is not that the corner is a direct summand, but that its
+suprema are computed in `A`.) -/
+theorem val_normal : PreservesDirSups (fun c : cornerSet A p => c.1) := by
+  intro D s hne hdir hlub
+  have h := isLUB_coe_of_isLUB (hne.image _) (saMap_isLUB hne hdir hlub)
+  have himg : Subtype.val '' (saMap '' D)
+      = (fun d : selfAdjoint (cornerSet A p) => ((d : cornerSet A p)).1) '' D := by
+    rw [← Set.image_comp]; rfl
+  rwa [himg] at h
+
 /-- Restriction of an np-functional on `A` to the corner (**94II** part 8). -/
 noncomputable def restrictNP (p : A) [Fact (IsStarProjection p)] (ω : NPFunctional A) :
     NPFunctional (cornerSet A p) where
@@ -332,35 +385,7 @@ noncomputable def restrictNP (p : A) [Fact (IsStarProjection p)] (ω : NPFunctio
       monotone' := fun _ _ hxy => ω.toPositiveLinearMap.monotone hxy }
   preservesDirSups' := by
     intro D s hne hdir hlub
-    have hlub' : IsLUB (saMap '' D) (saMap s) := by
-      have hne' : (saMap '' D).Nonempty := hne.image _
-      have hdir' : DirectedOn (· ≤ ·) (saMap '' D) := by
-        rintro _ ⟨x, hx, rfl⟩ _ ⟨z, hz, rfl⟩
-        obtain ⟨u, hu, hxu, hzu⟩ := hdir x hx z hz
-        exact ⟨saMap u, ⟨u, hu, rfl⟩, hxu, hzu⟩
-      have hbdd' : BddAbove (saMap '' D) := by
-        refine ⟨saMap s, ?_⟩
-        rintro _ ⟨x, hx, rfl⟩
-        exact hlub.1 hx
-      obtain ⟨s₀, hs₀⟩ :=
-        VonNeumannAlgebra.isLUB_of_bddAbove_directed _ hne' hdir' hbdd'
-      have hmem : p * (s₀ : A) * p = (s₀ : A) := by
-        refine isLUB_mem _ s₀ ?_ hne' hdir' hs₀
-        rintro _ ⟨x, hx, rfl⟩
-        exact x.1.2
-      set t : cornerSet A p := ⟨(s₀ : A), hmem⟩ with ht
-      have htsa : IsSelfAdjoint t := val_injective s₀.2
-      have hlubt : IsLUB D ⟨t, htsa⟩ := by
-        refine ⟨fun d hd => hs₀.1 ⟨d, hd, rfl⟩, fun u hu => ?_⟩
-        have hub : saMap u ∈ upperBounds (saMap '' D) := by
-          rintro _ ⟨x, hx, rfl⟩
-          exact hu hx
-        exact hs₀.2 hub
-      have hst : s = ⟨t, htsa⟩ := hlub.unique hlubt
-      have hsm : saMap (⟨t, htsa⟩ : selfAdjoint (cornerSet A p)) = s₀ :=
-        Subtype.ext rfl
-      rw [hst, hsm]
-      exact hs₀
+    have hlub' : IsLUB (saMap '' D) (saMap s) := saMap_isLUB hne hdir hlub
     have hkey := ω.preservesDirSups' (saMap '' D) (saMap s) (hne.image _)
       (by
         rintro _ ⟨x, hx, rfl⟩ _ ⟨z, hz, rfl⟩
@@ -637,14 +662,286 @@ an ncp-map which is a corner for some effect. -/
 def IsCorner (h : NCPMap A B) : Prop :=
   ∃ a : A, IsCornerFor h a
 
+/-! ### Auxiliary: ncp-maps compose
+
+`Theses/B/Dils/Stinespring.lean` carries the same constructions, but as
+`private` declarations, so they are repeated here rather than exported (a
+merge is noted in that file's header).  They are placed here, before parsec
+1690, because **169IV** already needs the composite `f ∘ ζ`. -/
+
+/-- An ncp-map, as a positive linear map. -/
+private noncomputable def ncpPos {P Q : Type u} [CStarAlgebra P]
+    [PartialOrder P] [StarOrderedRing P] [CStarAlgebra Q] [PartialOrder Q]
+    [StarOrderedRing Q] (f : NCPMap P Q) : P →ₚ[ℂ] Q where
+  toLinearMap := f.toCompletelyPositiveMap.toLinearMap
+  monotone' := fun x y hxy => by
+    have hcp : IsCompletelyPositiveMap f.toCompletelyPositiveMap.toLinearMap :=
+      (cp_iff _).out 1 0 |>.mp fun N M hM =>
+        f.toCompletelyPositiveMap.map_cstarMatrix_nonneg' N M hM
+    have h := astara_pos_basic_2_cp _ hcp (y - x) (sub_nonneg.mpr hxy)
+    rw [map_sub] at h
+    exact sub_nonneg.mp h
+
+/-- The composition of two ncp-maps is an ncp-map. -/
+private theorem exists_ncpComp {P Q R : Type u} [CStarAlgebra P]
+    [PartialOrder P] [StarOrderedRing P] [CStarAlgebra Q] [PartialOrder Q]
+    [StarOrderedRing Q] [CStarAlgebra R] [PartialOrder R] [StarOrderedRing R]
+    (f : NCPMap Q R) (g : NCPMap P Q) :
+    ∃ k : NCPMap P R, ∀ a, k a = f (g a) := by
+  set Lg : P →ₗ[ℂ] Q := g.toCompletelyPositiveMap.toLinearMap with hLg
+  set Lf : Q →ₗ[ℂ] R := f.toCompletelyPositiveMap.toLinearMap with hLf
+  have hLgcp : IsCompletelyPositiveMap Lg :=
+    (cp_iff Lg).out 1 0 |>.mp fun N M hM =>
+      g.toCompletelyPositiveMap.map_cstarMatrix_nonneg' N M hM
+  have hLfcp : IsCompletelyPositiveMap Lf :=
+    (cp_iff Lf).out 1 0 |>.mp fun N M hM =>
+      f.toCompletelyPositiveMap.map_cstarMatrix_nonneg' N M hM
+  exact ⟨{ toCompletelyPositiveMap :=
+             { toLinearMap := Lf.comp Lg
+               map_cstarMatrix_nonneg' :=
+                 (cp_iff (Lf.comp Lg)).out 0 1 |>.mp
+                   (cp_comp Lg Lf hLgcp hLfcp) }
+           preservesDirSups' :=
+             preservesDirSups_pmap_comp (ncpPos g) g.preservesDirSups'
+               (ncpPos f) f.preservesDirSups' },
+    fun _ => rfl⟩
+
+/-! ### **169IV**: the standard corner `h_a : A → ⌊a⌋A⌊a⌋`
+
+dils.tex states 169IV as an Example, citing proc.tex **95II** `prop-corner`,
+which proves it for a partial isometry `u` with `⌊p⌋ = uu*`; the standard
+corner is the case `u = ⌊a⌋`, where `u*u = uu* = ⌊a⌋` and `π(b) = ⌊a⌋b⌊a⌋`.
+That proof runs:
+
+* `π` is ncp (**44X** `ad-ncp`);
+* `π(a^⊥) = 0`, i.e. `⌊a⌋a⌊a⌋ = ⌊a⌋`;
+* uniqueness of the mediating map, from surjectivity of `π`;
+* existence: the mediating map is `f ∘ ζ` for the inclusion
+  `ζ : ⌊a⌋A⌊a⌋ ⊆ A`, and `f = f ∘ ζ ∘ π` is **63IV** `cp-comprehension`,
+  whose hypothesis `f(⌊a⌋^⊥) = 0` follows from
+  `⌈f(⌊a⌋^⊥)⌉ = ⌈f(⌈a^⊥⌉)⌉ = ⌈f(a^⊥)⌉ = ⌈0⌉ = 0`.
+
+Two divergences, both forced by our `IsCornerFor` being *more general* than
+the thesis's definition, which quantifies its test object over von Neumann
+algebras where ours quantifies over C*-algebras (**a stronger statement**,
+since the universal property has to hold against more maps `f`):
+
+* the last step cannot go through **60V** `ncp_ceil`, which computes a
+  ceiling in the *target*.  We use the thesis's own construction of the
+  ceiling instead — `⌈b⌉ = ⋁ₙ b^{1/2ⁿ}` (**56I** `vna_ceil_sup`) — together
+  with Kadison's inequality (**34XIV** `cp-cs`, as `ncp_cp_cs`) to get from
+  `f(b) = 0` to `f(√b) = 0`;
+* `ζ` is ncp by `cornerSet.val_normal`, which needs no centrality and no
+  `ad-ncp`; the corner's suprema simply *are* those of `A`. -/
+
+section StandardCorner
+
+set_option linter.unusedSectionVars false
+
+variable {A C : Type u} [CStarAlgebra A] [PartialOrder A] [StarOrderedRing A]
+  [CStarAlgebra C] [PartialOrder C] [StarOrderedRing C]
+
+/-- If an ncp-map kills a positive `b`, it kills `√b`: Kadison's inequality
+gives `f(√b)* f(√b) ≤ ‖f(1)‖·f(√b* √b) = ‖f(1)‖·f(b) = 0`. -/
+private theorem ncp_eq_zero_sqrt (f : NCPMap A C) {b : A} (hb : 0 ≤ b)
+    (h : (f b : C) = 0) : (f (CFC.sqrt b) : C) = 0 := by
+  have hsa : IsSelfAdjoint (CFC.sqrt b) :=
+    IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg b)
+  have hbb : star (CFC.sqrt b) * CFC.sqrt b = b := by
+    rw [hsa.star_eq, CFC.sqrt_mul_sqrt_self b hb]
+  have hcs := ncp_cp_cs f (CFC.sqrt b)
+  rw [hbb, h, smul_zero] at hcs
+  exact (CStarRing.star_mul_self_eq_zero_iff _).mp
+    (le_antisymm hcs (star_mul_self_nonneg _))
+
+/-- **169IV**, the only real step: an ncp-map that kills an effect `b`
+kills `⌈b⌉`, because `b^{1/2ⁿ} ↑ ⌈b⌉` (**56I** `vna_ceil_sup`) and `f`
+kills every `b^{1/2ⁿ}` by `ncp_eq_zero_sqrt`. -/
+private theorem ncp_eq_zero_ceil [VonNeumannAlgebra A] (f : NCPMap A C)
+    {b : A} (hb : b ∈ effects A) (h : (f b : C) = 0) :
+    (f (ceil b) : C) = 0 := by
+  set g : ℕ → A := fun n => (fun x : A => CFC.sqrt x)^[n] b with hg
+  have hgsucc : ∀ n, g (n + 1) = CFC.sqrt (g n) := fun n =>
+    Function.iterate_succ_apply' _ _ _
+  have hgeff : ∀ n, g n ∈ effects A := by
+    intro n
+    induction n with
+    | zero => exact hb
+    | succ n ih => rw [hgsucc]; exact sqrt_mem_effects ih
+  have hgzero : ∀ n, (f (g n) : C) = 0 := by
+    intro n
+    induction n with
+    | zero => exact h
+    | succ n ih => rw [hgsucc]; exact ncp_eq_zero_sqrt f (hgeff n).1 ih
+  have hmono : Monotone g := by
+    refine monotone_nat_of_le_succ fun n => ?_
+    have hmul := mul_self_le_self (sqrt_mem_effects (hgeff n))
+    rwa [CFC.sqrt_mul_sqrt_self _ (hgeff n).1, ← hgsucc] at hmul
+  set E : ℕ → selfAdjoint A := fun n =>
+    ⟨g n, IsSelfAdjoint.of_nonneg (hgeff n).1⟩ with hE
+  set D : Set (selfAdjoint A) := Set.range E with hD
+  have hne : D.Nonempty := ⟨E 0, 0, rfl⟩
+  have hdir : DirectedOn (· ≤ ·) D := by
+    rintro _ ⟨m, rfl⟩ _ ⟨n, rfl⟩
+    exact ⟨E (max m n), ⟨max m n, rfl⟩,
+      Subtype.coe_le_coe.mp (hmono (le_max_left m n)),
+      Subtype.coe_le_coe.mp (hmono (le_max_right m n))⟩
+  have hceilsa : IsSelfAdjoint (ceil b) := (ceil_spec hb.1).1.isSelfAdjoint
+  have hlub : IsLUB D (⟨ceil b, hceilsa⟩ : selfAdjoint A) := by
+    refine isLUB_sa_of_isLUB ?_
+    have himg : Subtype.val '' D = Set.range g := by
+      rw [hD, ← Set.range_comp]; rfl
+    rw [himg]
+    exact vna_ceil_sup b hb
+  have hkey := f.preservesDirSups' D _ hne hdir hlub
+  have hub0 : (0 : C) ∈ upperBounds
+      ((fun d : selfAdjoint A => (f (d : A) : C)) '' D) := by
+    rintro _ ⟨_, ⟨n, rfl⟩, rfl⟩
+    exact le_of_eq (hgzero n)
+  have hmem0 : (f (g 0) : C) ∈ (fun d : selfAdjoint A => (f (d : A) : C)) '' D :=
+    ⟨E 0, ⟨0, rfl⟩, rfl⟩
+  have hge := hkey.1 hmem0
+  rw [hgzero 0] at hge
+  exact le_antisymm (hkey.2 hub0) hge
+
+variable [VonNeumannAlgebra A] {p : A} [Fact (IsStarProjection p)]
+
+/-- An `IsLUB` in `A` that lands in the corner is an `IsLUB` in the corner
+(the order of `pAp` being the one inherited from `A`). -/
+private theorem cornerSet_isLUB_of_isLUB {S : Set (cornerSet A p)}
+    {t : cornerSet A p} (h : IsLUB (Subtype.val '' S) t.1) : IsLUB S t :=
+  ⟨fun x hx => h.1 ⟨x, hx, rfl⟩,
+    fun u hu => h.2 (by rintro _ ⟨x, hx, rfl⟩; exact hu hx)⟩
+
+/-- The **standard corner** `h_p : A → pAp`, `b ↦ pbp`, of a projection `p`,
+as a linear map. -/
+private noncomputable def cornerLin (p : A) [Fact (IsStarProjection p)] :
+    A →ₗ[ℂ] cornerSet A p where
+  toFun b := ⟨p * b * p, by
+    have hpp : p * p = p := (cornerSet.proj p).isIdempotentElem.eq
+    calc p * (p * b * p) * p = (p * p) * b * (p * p) := by noncomm_ring
+      _ = p * b * p := by rw [hpp]⟩
+  map_add' x y := Subtype.ext (by
+    show p * (x + y) * p = p * x * p + p * y * p
+    noncomm_ring)
+  map_smul' r x := Subtype.ext (by
+    show p * (r • x) * p = r • (p * x * p)
+    rw [mul_smul_comm, smul_mul_assoc])
+
+@[simp] private theorem cornerLin_val (b : A) :
+    (cornerLin p b).1 = p * b * p := rfl
+
+/-- Complete positivity of `b ↦ pbp` into the corner is **34V**.1 `ad-cp`:
+the order of `pAp` is inherited from `A`, so the defining sum is the one of
+`ad_cp_1 p` evaluated at the underlying elements of the `bᵢ`. -/
+private theorem cornerLin_cp : IsCompletelyPositiveMap (cornerLin p) := by
+  intro n c b
+  have hsum : ∀ F : Fin n → cornerSet A p, (∑ i, F i).1 = ∑ i, (F i).1 :=
+    fun F => map_sum cornerSet.valAddHom F Finset.univ
+  have hps : star p = p := (cornerSet.proj p).isSelfAdjoint.star_eq
+  show (0 : A) ≤ (∑ i, ∑ j, star (b i) * cornerLin p (star (c i) * c j) * b j).1
+  have hval : (∑ i, ∑ j, star (b i) * cornerLin p (star (c i) * c j) * b j).1
+      = ∑ i, ∑ j, star ((b i).1) *
+          ((LinearMap.mulLeft ℂ (star p)).comp (LinearMap.mulRight ℂ p))
+            (star (c i) * c j) * (b j).1 := by
+    simp only [hsum, cornerSet.val_mul, cornerSet.val_star, cornerLin_val,
+      LinearMap.coe_comp, Function.comp_apply, LinearMap.mulLeft_apply,
+      LinearMap.mulRight_apply, hps, mul_assoc]
+  rw [hval]
+  exact ad_cp_1 p n c fun i => (b i).1
+
+/-- Normality of `b ↦ pbp` is **44VIII** `ad_normal`, read in the corner:
+the supremum `ad_normal` produces already lies there, and the order of the
+corner is the inherited one (`cornerSet_isLUB_of_isLUB`). -/
+private theorem cornerLin_normal : PreservesDirSups ⇑(cornerLin p) := by
+  intro D s hne hdir hlub
+  have h3 : D.Nonempty ∧ DirectedOn (· ≤ ·) D ∧ BddAbove D :=
+    ⟨hne, hdir, ⟨s, hlub.1⟩⟩
+  have hnat := ad_normal p D h3
+  have hsd : s = dirSup D h3 := hlub.unique (isLUB_dirSup D h3)
+  rw [← hsd, (cornerSet.proj p).isSelfAdjoint.star_eq] at hnat
+  refine cornerSet_isLUB_of_isLUB ⟨?_, fun u hu => hnat.2 ?_⟩
+  · rintro _ ⟨_, ⟨d, hd, rfl⟩, rfl⟩
+    exact hnat.1 ⟨d, hd, rfl⟩
+  · rintro _ ⟨d, hd, rfl⟩
+    exact hu ⟨cornerLin p (d : A), ⟨d, hd, rfl⟩, rfl⟩
+
+/-- The **standard corner** `h_p : A → pAp` as an ncp-map. -/
+private noncomputable def cornerNcp (p : A) [Fact (IsStarProjection p)] :
+    NCPMap A (cornerSet A p) where
+  toCompletelyPositiveMap :=
+    { toLinearMap := cornerLin p
+      map_cstarMatrix_nonneg' := (cp_iff (cornerLin p)).out 0 1 |>.mp cornerLin_cp }
+  preservesDirSups' := cornerLin_normal
+
+private theorem cornerNcp_val (b : A) : (cornerNcp p b).1 = p * b * p := rfl
+
+/-- The inclusion `pAp ⊆ A` as an ncp-map, for **any** projection `p`
+(the `ζ` of proc.tex 95II): complete positivity because `Subtype.val` is a
+non-unital ∗-homomorphism (**34IV**.3 `cp_of_mi`), normality by
+`cornerSet.val_normal`. -/
+private noncomputable def cornerInclNcp (p : A) [Fact (IsStarProjection p)] :
+    NCPMap (cornerSet A p) A where
+  toCompletelyPositiveMap :=
+    { toLinearMap :=
+        { toFun := fun c => c.1
+          map_add' := fun _ _ => rfl
+          map_smul' := fun _ _ => rfl }
+      map_cstarMatrix_nonneg' :=
+        (cp_iff _).out 0 1 |>.mp
+          (cp_of_mi _ (fun x y => cornerSet.val_mul x y)
+            (fun x => cornerSet.val_star x)) }
+  preservesDirSups' := cornerSet.val_normal
+
+private theorem cornerInclNcp_apply (c : cornerSet A p) :
+    (cornerInclNcp p c : A) = c.1 := rfl
+
+end StandardCorner
+
 /-- **169IV** (`standard-corner-dils`, dils.tex:6080, Example): the
 **standard corner** `h_a : A → ⌊a⌋A⌊a⌋`, `b ↦ ⌊a⌋b⌊a⌋`, is a corner for
 the effect `a` (see proc.tex 98I, 95II). -/
 theorem standard_corner_dils [VonNeumannAlgebra A] (a : A)
     (ha : a ∈ effects A) :
     ∃ h : NCPMap A (cornerSet A (floor a)),
-      (∀ b : A, (h b).1 = floor a * b * floor a) ∧ IsCornerFor h a :=
-  sorry
+      (∀ b : A, (h b).1 = floor a * b * floor a) ∧ IsCornerFor h a := by
+  set p : A := floor a with hp
+  have hproj : IsStarProjection p := (cornerSet.proj p)
+  have hps : star p = p := hproj.isSelfAdjoint.star_eq
+  have hpp : p * p = p := hproj.isIdempotentElem.eq
+  have hpeff : p ∈ effects A := ⟨hproj.nonneg, hproj.le_one⟩
+  -- `⌊a⌋a⌊a⌋ = ⌊a⌋`, i.e. `h(a) = h(1)`
+  have hconj : p * a * p = p := by
+    refine le_antisymm ?_ ?_
+    · have h := star_left_conjugate_le_conjugate ha.2 p
+      rw [hps, mul_one, hpp] at h
+      exact h
+    · have h := star_left_conjugate_le_conjugate (floor_le ha) p
+      rw [hps] at h
+      calc p = p * p * p := by rw [hpp, hpp]
+        _ ≤ p * a * p := h
+  refine ⟨cornerNcp p, fun b => rfl, ha, Subtype.ext ?_, ?_⟩
+  · rw [cornerNcp_val, cornerNcp_val, hconj, mul_one, hpp]
+  intro C _ _ _ f hf
+  -- `f(⌊a⌋^⊥) = f(⌈a^⊥⌉) = 0`
+  have hfa : (f (1 - a) : C) = 0 := by
+    have hL : (f (1 - a) : C) = f 1 - f a :=
+      map_sub f.toCompletelyPositiveMap.toLinearMap 1 a
+    rw [hL, hf, sub_self]
+  have hcompl : (1 - a) ∈ effects A := effect_orthosupplement a ha
+  have hceil : (f (ceil (1 - a)) : C) = 0 := ncp_eq_zero_ceil f hcompl hfa
+  have hfp : (f (1 - p) : C) = 0 := by
+    rw [hp, floor_eq_one_sub_ceil ha, sub_sub_cancel]
+    exact hceil
+  -- the mediating map is `f ∘ ζ`, and `f = f ∘ ζ ∘ h_p` by `cp-comprehension`
+  obtain ⟨f', hf'⟩ := exists_ncpComp f (cornerInclNcp p)
+  refine ⟨f', fun x => ?_, fun g hg => ?_⟩
+  · rw [hf']
+    exact ((cp_comprehension (ncpPositive f) p hpeff hfp x).2.2).symm
+  · refine DFunLike.ext _ _ fun c => ?_
+    have hc : cornerNcp p c.1 = c := Subtype.ext c.2
+    rw [← hc, hg c.1, hf', cornerInclNcp_apply, cornerNcp_val]
+    exact (cp_comprehension (ncpPositive f) p hpeff hfp c.1).2.2
 
 /-- **169V** (`h-is-corner-for-unital-map`, dils.tex:6088, Lemma): if
 `(𝒫, ϱ, h)` is a Paschke dilation of a *unital* ncp-map, then `h` is a
@@ -849,48 +1146,7 @@ theorem dils_filters_injective (c : NCPMap A B) (hc : IsFilter c) :
     rw [← hLc, map_sub, hLc, hLc, hxy, sub_self]
   exact sub_eq_zero.mp (hzero _ h)
 
-/-! ### Auxiliary: ncp-maps compose and scale
-
-`Theses/B/Dils/Stinespring.lean` carries the same three constructions, but
-as `private` declarations, so they are repeated here rather than exported
-(a merge is noted in that file's header). -/
-
-/-- An ncp-map, as a positive linear map. -/
-private noncomputable def ncpPos {P Q : Type u} [CStarAlgebra P]
-    [PartialOrder P] [StarOrderedRing P] [CStarAlgebra Q] [PartialOrder Q]
-    [StarOrderedRing Q] (f : NCPMap P Q) : P →ₚ[ℂ] Q where
-  toLinearMap := f.toCompletelyPositiveMap.toLinearMap
-  monotone' := fun x y hxy => by
-    have hcp : IsCompletelyPositiveMap f.toCompletelyPositiveMap.toLinearMap :=
-      (cp_iff _).out 1 0 |>.mp fun N M hM =>
-        f.toCompletelyPositiveMap.map_cstarMatrix_nonneg' N M hM
-    have h := astara_pos_basic_2_cp _ hcp (y - x) (sub_nonneg.mpr hxy)
-    rw [map_sub] at h
-    exact sub_nonneg.mp h
-
-/-- The composition of two ncp-maps is an ncp-map. -/
-private theorem exists_ncpComp {P Q R : Type u} [CStarAlgebra P]
-    [PartialOrder P] [StarOrderedRing P] [CStarAlgebra Q] [PartialOrder Q]
-    [StarOrderedRing Q] [CStarAlgebra R] [PartialOrder R] [StarOrderedRing R]
-    (f : NCPMap Q R) (g : NCPMap P Q) :
-    ∃ k : NCPMap P R, ∀ a, k a = f (g a) := by
-  set Lg : P →ₗ[ℂ] Q := g.toCompletelyPositiveMap.toLinearMap with hLg
-  set Lf : Q →ₗ[ℂ] R := f.toCompletelyPositiveMap.toLinearMap with hLf
-  have hLgcp : IsCompletelyPositiveMap Lg :=
-    (cp_iff Lg).out 1 0 |>.mp fun N M hM =>
-      g.toCompletelyPositiveMap.map_cstarMatrix_nonneg' N M hM
-  have hLfcp : IsCompletelyPositiveMap Lf :=
-    (cp_iff Lf).out 1 0 |>.mp fun N M hM =>
-      f.toCompletelyPositiveMap.map_cstarMatrix_nonneg' N M hM
-  exact ⟨{ toCompletelyPositiveMap :=
-             { toLinearMap := Lf.comp Lg
-               map_cstarMatrix_nonneg' :=
-                 (cp_iff (Lf.comp Lg)).out 0 1 |>.mp
-                   (cp_comp Lg Lf hLgcp hLfcp) }
-           preservesDirSups' :=
-             preservesDirSups_pmap_comp (ncpPos g) g.preservesDirSups'
-               (ncpPos f) f.preservesDirSups' },
-    fun _ => rfl⟩
+/-! ### Auxiliary: ncp-maps scale (companion of the composition block above) -/
 
 /-- Multiplication by a positive real is an order isomorphism of a
 C*-algebra (auxiliary for `exists_ncpSmul`). -/
@@ -1469,10 +1725,10 @@ end Pure
 
 /-! ### The standard corner of a central projection
 
-For a **central** projection `z` the corner `z𝒜` is a direct summand: the
-inclusion `z𝒜 ⊆ 𝒜` preserves directed suprema (an upper bound `u` of a set
-in the corner splits as `zu + (1−z)u` with both parts above the set), and
-`a ↦ zaz` is an nmiu-map onto it.  This is the `h_{⌈⌈p⌉⌉}` of **171II**. -/
+For a **central** projection `z` the corner `z𝒜` is a direct summand, and
+`a ↦ zaz` is an nmiu-map onto it.  This is the `h_{⌈⌈p⌉⌉}` of **171II**.
+(Normality of the inclusion `z𝒜 ⊆ 𝒜` is *not* special to central `z`; see
+`cornerSet.val_normal`.) -/
 
 section CentralCorner
 
@@ -1488,82 +1744,13 @@ private theorem pcorner_mem_of_central (a : A) :
   calc z * (z * a * z) * z = (z * z) * a * (z * z) := by noncomm_ring
     _ = z * a * z := by rw [hzz]
 
-/-- The inclusion `z𝒜 ⊆ 𝒜` of a central corner preserves directed suprema. -/
+/-- The inclusion `z𝒜 ⊆ 𝒜` of a central corner preserves directed suprema.
+Centrality is **not** needed: `cornerSet.val_normal` says the suprema of any
+corner are computed in `𝒜`.  The hypothesis is kept only so that the call
+sites below read as the thesis's argument does. -/
 private theorem pcorner_val_normal (hc : IsCentral A z) :
-    PreservesDirSups (fun c : cornerSet A z => c.1) := by
-  intro D s hne hdir hlub
-  have hzz : z * z = z := (cornerSet.proj z).isIdempotentElem.eq
-  have hzs : star z = z := (cornerSet.proj z).isSelfAdjoint.star_eq
-  constructor
-  · rintro _ ⟨d, hd, rfl⟩
-    exact Subtype.coe_le_coe.mpr (hlub.1 hd)
-  · intro u hu
-    obtain ⟨d₀, hd₀⟩ := hne
-    have hd₀le : ((d₀ : selfAdjoint (cornerSet A z)) : cornerSet A z).1 ≤ u :=
-      hu ⟨d₀, hd₀, rfl⟩
-    have husa : IsSelfAdjoint u := by
-      have h1 : IsSelfAdjoint (u - ((d₀ : selfAdjoint (cornerSet A z))
-          : cornerSet A z).1) := IsSelfAdjoint.of_nonneg (sub_nonneg.mpr hd₀le)
-      have h2 : IsSelfAdjoint (((d₀ : selfAdjoint (cornerSet A z))
-          : cornerSet A z).1) := congrArg Subtype.val d₀.2
-      simpa using h1.add h2
-    -- `zuz` lies in the corner and dominates `D`
-    have hmem : z * (z * u * z) * z = z * u * z := pcorner_mem_of_central u
-    set c : cornerSet A z := ⟨z * u * z, hmem⟩ with hcdef
-    have hcsa : IsSelfAdjoint c := by
-      refine Subtype.ext ?_
-      show star (z * u * z) = z * u * z
-      rw [star_mul, star_mul, hzs, husa.star_eq]
-      noncomm_ring
-    have hub : (⟨c, hcsa⟩ : selfAdjoint (cornerSet A z)) ∈ upperBounds D := by
-      intro d hd
-      refine Subtype.coe_le_coe.mp ?_
-      show ((d : selfAdjoint (cornerSet A z)) : cornerSet A z).1 ≤ z * u * z
-      have h1 : ((d : selfAdjoint (cornerSet A z)) : cornerSet A z).1 ≤ u :=
-        hu ⟨d, hd, rfl⟩
-      have h2 := star_left_conjugate_le_conjugate h1 z
-      rw [hzs] at h2
-      have h3 : z * ((d : selfAdjoint (cornerSet A z)) : cornerSet A z).1 * z
-          = ((d : selfAdjoint (cornerSet A z)) : cornerSet A z).1 :=
-        ((d : selfAdjoint (cornerSet A z)) : cornerSet A z).2
-      rwa [h3] at h2
-    have hsc : ((s : selfAdjoint (cornerSet A z)) : cornerSet A z).1 ≤ z * u * z :=
-      Subtype.coe_le_coe.mpr (hlub.2 hub)
-    -- `zuz ≤ u`, because `(1−z)u(1−z) ≥ 0`
-    have hzu : z * u * z ≤ u := by
-      have h4 : (0 : A) ≤ (1 - z) * u * (1 - z) := by
-        have h5 := star_left_conjugate_le_conjugate hd₀le (1 - z)
-        have hzs' : star (1 - z) = 1 - z := by rw [star_sub, star_one, hzs]
-        rw [hzs'] at h5
-        have h6 : (1 - z) * ((d₀ : selfAdjoint (cornerSet A z))
-            : cornerSet A z).1 * (1 - z) = 0 := by
-          have h7 : z * ((d₀ : selfAdjoint (cornerSet A z)) : cornerSet A z).1 * z
-              = ((d₀ : selfAdjoint (cornerSet A z)) : cornerSet A z).1 :=
-            ((d₀ : selfAdjoint (cornerSet A z)) : cornerSet A z).2
-          calc (1 - z) * ((d₀ : selfAdjoint (cornerSet A z)) : cornerSet A z).1
-                * (1 - z)
-              = (1 - z) * (z * ((d₀ : selfAdjoint (cornerSet A z))
-                  : cornerSet A z).1 * z) * (1 - z) := by rw [h7]
-            _ = ((1 - z) * z) * ((d₀ : selfAdjoint (cornerSet A z))
-                  : cornerSet A z).1 * (z * (1 - z)) := by noncomm_ring
-            _ = 0 := by
-                have : (1 - z) * z = 0 := by noncomm_ring [hzz]
-                rw [this]; simp
-        rwa [h6] at h5
-      have hzuz : z * u * z = z * u := by
-        rw [mul_assoc, ← hc u, ← mul_assoc, hzz]
-      have h8 : u - z * u * z = (1 - z) * u * (1 - z) := by
-        rw [hzuz]
-        have h1 : (1 - z) * u * (1 - z) = (1 - z) * u - (1 - z) * (u * z) := by
-          noncomm_ring
-        rw [h1, ← hc u, ← mul_assoc]
-        have h2 : (1 - z) * z = 0 := by noncomm_ring [hzz]
-        rw [h2, zero_mul, sub_zero]
-        noncomm_ring
-      rw [← sub_nonneg, h8]
-      exact h4
-    exact le_trans hsc hzu
-
+    PreservesDirSups (fun c : cornerSet A z => c.1) :=
+  cornerSet.val_normal
 
 /-- The **standard corner** `h_z : 𝒜 → z𝒜`, `a ↦ zaz`, of a central
 projection, as an nmiu-map (**170IV**.2 for the concrete corner). -/
