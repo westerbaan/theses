@@ -2471,14 +2471,516 @@ def IsFactor : Prop :=
 def MvNLe (p q : ℬ) : Prop :=
   ∃ u : ℬ, star u * u = p ∧ u * star u ≤ q
 
+section MvnLinking
+
+variable [VonNeumannAlgebra ℬ]
+variable (p q : ℬ)
+
+/-! ### The Zorn argument of **162III**
+
+The proof of 162II needs a fact the thesis states without proof (**89III**
+`summing-partial-isometries`, vn.tex:6928, asks only for the *Hilbert space*
+version — which is `summing_partial_isometries` in `A/VN` — and merely
+asserts the von Neumann algebra case): the ultraweak
+sum of a family of partial isometries with pairwise orthogonal initial and
+pairwise orthogonal final projections is again a partial isometry.  We do
+not build that sum.  Instead a partial isometry `u` with `u*u ≤ p` and
+`uu* ≤ q` is encoded as the *linking projection*
+
+  `½ [[u*u, u*], [u, uu*]] = ½ w* w`,   `w = [u, uu*] ∈ M₂(ℬ)`,
+
+which is a projection of `M₂(ℬ)` (**49IV**.1) precisely because `u` is a
+partial isometry, and which is monotone in `u` (extending `u` adds an
+orthogonal linking projection).  Suprema of *directed sets of projections*
+are supplied by the von Neumann axiom (**56XIV**), the corners of the
+supremum are read off by normality of `M ↦ ∑ᵢⱼ aᵢ* Mᵢⱼ aⱼ` (**49IV**.2),
+and the identity `R² = R` for the supremum gives back `v*v` and `vv*`.  So
+Zorn's lemma can be applied to the *order* of `M₂(ℬ)` directly, and the
+thesis's "maximal set `U` of partial isometries" becomes a maximal linking
+projection. -/
+
+/-- `matEmb i j x * matEmb k l y = 0` when `j ≠ k`. -/
+private theorem matEmb_mul_zero {N : ℕ} (i j k l : Fin N) (h : j ≠ k) (x y : ℬ) :
+    matEmb i j x * matEmb k l y = (0 : CStarMatrix (Fin N) (Fin N) ℬ) := by
+  ext p q
+  rw [CStarMatrix.mul_apply]
+  simp only [matEmb_apply, ite_mul, mul_ite, zero_mul, mul_zero]
+  simp only [CStarMatrix.zero_apply]
+  refine Finset.sum_eq_zero fun r _ => ?_
+  by_cases hp : p = i <;> by_cases hr : r = j <;> by_cases hr' : r = k <;>
+    simp_all
+
+/-- The row `w_u = [u, uu*]` in `M₂(ℬ)`. -/
+private noncomputable def mvW (u : ℬ) : CStarMatrix (Fin 2) (Fin 2) ℬ :=
+  matEmb 0 0 u + matEmb 0 1 (u * star u)
+
+/-- The linking matrix `S_u = [[u*u, u*], [u, uu*]] = w_u* w_u`. -/
+private noncomputable def mvMat (u : ℬ) : CStarMatrix (Fin 2) (Fin 2) ℬ :=
+  star (mvW u) * mvW u
+
+private theorem mvMat_expand {u : ℬ} (hu : IsPartialIsometry ℬ u) :
+    mvMat u = matEmb 0 0 (star u * u) + matEmb 0 1 (star u) + matEmb 1 0 u
+      + matEmb 1 1 (u * star u) := by
+  have huu : u * star u * u = u := ((partial_isometry_equivalents u).out 0 2).mp hu
+  have huu' : star u * u * star u = star u := ((partial_isometry_equivalents u).out 0 4).mp hu
+  have h1 : star u * (u * star u) = star u := by rw [← mul_assoc]; exact huu'
+  have h3 : u * star u * (u * star u) = u * star u := by
+    rw [mul_assoc, ← mul_assoc (star u), huu']
+  rw [mvMat, mvW, star_add, matEmb_star, matEmb_star, star_mul, star_star]
+  rw [add_mul, mul_add, mul_add]
+  simp only [matEmb_mul]
+  rw [h1, huu, h3]
+  abel
+
+/-- Transfer of a normal map's `PreservesDirSups` to plain sets. -/
+private theorem isLUB_image_of_preservesDirSups
+    {A B : Type*} [CStarAlgebra A] [PartialOrder A] [StarOrderedRing A]
+    [CStarAlgebra B] [PartialOrder B] [StarOrderedRing B]
+    {f : A → B} (hf : PreservesDirSups f) {D : Set A} {R : A}
+    (hne : D.Nonempty) (hdir : DirectedOn (· ≤ ·) D)
+    (hsa : ∀ x ∈ D, IsSelfAdjoint x) (hR : IsLUB D R) :
+    IsLUB (f '' D) (f R) := by
+  obtain ⟨d₀, hd₀⟩ := hne
+  have hRsa : IsSelfAdjoint R := by
+    have h := IsSelfAdjoint.of_nonneg (sub_nonneg.mpr (hR.1 hd₀))
+    simpa using h.add (hsa d₀ hd₀)
+  set D' : Set (selfAdjoint A) := {d : selfAdjoint A | (d : A) ∈ D} with hD'def
+  have hval : Subtype.val '' D' = D := by
+    ext x
+    exact ⟨by rintro ⟨d, hd, rfl⟩; exact hd,
+      fun hx => ⟨⟨x, hsa x hx⟩, hx, rfl⟩⟩
+  have hne' : D'.Nonempty := ⟨⟨d₀, hsa d₀ hd₀⟩, hd₀⟩
+  have hdir' : DirectedOn (· ≤ ·) D' := by
+    intro x hx y hy
+    obtain ⟨z, hz, hxz, hyz⟩ := hdir _ hx _ hy
+    exact ⟨⟨z, hsa z hz⟩, hz, hxz, hyz⟩
+  have hR' : IsLUB D' (⟨R, hRsa⟩ : selfAdjoint A) :=
+    isLUB_sa_of_isLUB (by rw [hval]; exact hR)
+  have h := hf D' ⟨R, hRsa⟩ hne' hdir' hR'
+  have himg : (fun d : selfAdjoint A => f (d : A)) '' D' = f '' D := by
+    rw [← hval, Set.image_image]
+  rwa [himg] at h
+
+private theorem preservesDirSups_matForm (a : Fin 2 → ℬ) :
+    PreservesDirSups (fun M : CStarMatrix (Fin 2) (Fin 2) ℬ => matForm a a M) :=
+  (mn_vna_2 (A := ℬ) 2 a a).2.2
+
+/-- The vector `√2 e_i ∈ ℬ²`. -/
+private noncomputable def dblVec (i : Fin 2) : Fin 2 → ℬ :=
+  fun k => if k = i then ((Real.sqrt 2 : ℝ) : ℂ) • (1 : ℬ) else 0
+
+private theorem matForm_dblVec (i : Fin 2) (M : CStarMatrix (Fin 2) (Fin 2) ℬ) :
+    matForm (dblVec i) (dblVec i) M = (2 : ℂ) • M i i := by
+  have hc : (((Real.sqrt 2 : ℝ) : ℂ) * ((Real.sqrt 2 : ℝ) : ℂ)) = (2 : ℂ) := by
+    rw [← Complex.ofReal_mul, ← Real.sqrt_mul_self (by norm_num : (0:ℝ) ≤ 2)]
+    norm_num
+  simp only [matForm, dblVec, apply_ite star, star_zero, star_smul, star_one,
+    Complex.star_def, Complex.conj_ofReal, ite_mul, mul_ite, zero_mul, mul_zero,
+    Finset.sum_ite_eq', Finset.mem_univ, if_true]
+  rw [smul_mul_assoc, one_mul, mul_smul_comm, mul_one, smul_smul, hc]
+
+
+/-- The linking projection `½[[u*u, u*],[u, uu*]]`. -/
+private noncomputable def mvP (u : ℬ) : CStarMatrix (Fin 2) (Fin 2) ℬ := (2 : ℂ)⁻¹ • mvMat u
+
+private theorem mvMat_mul_self (u : ℬ) (hu : IsPartialIsometry ℬ u) :
+    mvMat u * mvMat u = mvMat u + mvMat u := by
+  have huu : u * star u * u = u := ((partial_isometry_equivalents u).out 0 2).mp hu
+  have hff : u * star u * (u * star u) = u * star u := by
+    have huu' : star u * u * star u = star u :=
+      ((partial_isometry_equivalents u).out 0 4).mp hu
+    rw [mul_assoc, ← mul_assoc (star u), huu']
+  have hstarW : star (mvW u) = matEmb 0 0 (star u) + matEmb 1 0 (u * star u) := by
+    rw [mvW, star_add, matEmb_star, matEmb_star, star_mul, star_star]
+  have h1 : mvW u * star (mvW u)
+      = matEmb 0 0 (u * star u) + matEmb 0 0 (u * star u) := by
+    rw [hstarW, mvW, add_mul, mul_add, mul_add]
+    simp only [matEmb_mul, matEmb_mul_zero _ _ _ _ (by decide : (0 : Fin 2) ≠ 1),
+      matEmb_mul_zero _ _ _ _ (by decide : (1 : Fin 2) ≠ 0)]
+    rw [hff, add_zero, zero_add]
+  have hww : mvW u * star (mvW u) * mvW u = mvW u + mvW u := by
+    rw [h1, mvW]
+    simp only [add_mul, mul_add, matEmb_mul]
+    rw [huu, hff]
+    abel
+  calc mvMat u * mvMat u
+      = star (mvW u) * (mvW u * star (mvW u) * mvW u) := by
+        rw [mvMat]; noncomm_ring
+    _ = star (mvW u) * (mvW u + mvW u) := by rw [hww]
+    _ = mvMat u + mvMat u := by rw [mul_add]; rfl
+
+private theorem mvMat_star (u : ℬ) : star (mvMat u) = mvMat u := by
+  rw [mvMat, star_mul, star_star]
+
+private theorem mvP_isStarProjection {u : ℬ} (hu : IsPartialIsometry ℬ u) :
+    IsStarProjection (mvP u) := by
+  constructor
+  · show mvP u * mvP u = mvP u
+    rw [mvP, smul_mul_smul_comm, mvMat_mul_self u hu, ← two_smul ℂ (mvMat u),
+      smul_smul]
+    norm_num
+  · show star (mvP u) = mvP u
+    rw [mvP, star_smul, mvMat_star]
+    norm_num [Complex.star_def]
+
+private theorem mvP_apply {u : ℬ} (hu : IsPartialIsometry ℬ u) :
+    mvP u 0 0 = (2 : ℂ)⁻¹ • (star u * u) ∧ mvP u 0 1 = (2 : ℂ)⁻¹ • star u ∧
+      mvP u 1 0 = (2 : ℂ)⁻¹ • u ∧ mvP u 1 1 = (2 : ℂ)⁻¹ • (u * star u) := by
+  rw [mvP, mvMat_expand hu]
+  refine ⟨?_, ?_, ?_, ?_⟩ <;>
+    simp [CStarMatrix.smul_apply, CStarMatrix.add_apply, matEmb_apply]
+
+
+variable (p q : ℬ)
+
+/-- Partial isometries from a subprojection of `p` onto one of `q`, encoded
+as linking projections in `M₂(ℬ)`. -/
+private def mvSet : Set (CStarMatrix (Fin 2) (Fin 2) ℬ) :=
+  {R | ∃ u : ℬ, IsPartialIsometry ℬ u ∧ star u * u ≤ p ∧ u * star u ≤ q ∧ R = mvP u}
+
+variable {p q}
+
+set_option maxHeartbeats 1000000 in
+private theorem isLUB_entry2 (i : Fin 2) {D : Set (CStarMatrix (Fin 2) (Fin 2) ℬ)}
+    {R : CStarMatrix (Fin 2) (Fin 2) ℬ} (hne : D.Nonempty)
+    (hdir : DirectedOn (· ≤ ·) D) (hsa : ∀ x ∈ D, IsSelfAdjoint x) (hR : IsLUB D R) :
+    IsLUB ((fun M : CStarMatrix (Fin 2) (Fin 2) ℬ => (2 : ℂ) • M i i) '' D)
+      ((2 : ℂ) • R i i) := by
+  have h := isLUB_image_of_preservesDirSups
+    (A := CStarMatrix (Fin 2) (Fin 2) ℬ) (B := ℬ)
+    (f := fun M : CStarMatrix (Fin 2) (Fin 2) ℬ => matForm (dblVec i) (dblVec i) M)
+    (preservesDirSups_matForm (dblVec i)) hne hdir hsa hR
+  simpa only [matForm_dblVec] using h
+
+private theorem entry2_mono {M N : CStarMatrix (Fin 2) (Fin 2) ℬ} (h : M ≤ N) (i : Fin 2) :
+    (2 : ℂ) • M i i ≤ (2 : ℂ) • N i i := by
+  have h2 := matForm_mono h (dblVec i)
+  rwa [matForm_dblVec, matForm_dblVec] at h2
+
+private theorem mvSet_chain_bound (hp : IsStarProjection p) (hq : IsStarProjection q)
+    (c : Set (CStarMatrix (Fin 2) (Fin 2) ℬ)) (hc : c ⊆ mvSet p q)
+    (hchain : IsChain (· ≤ ·) c) :
+    ∃ R ∈ mvSet p q, ∀ z ∈ c, z ≤ R := by
+  have hzeropi : IsPartialIsometry ℬ (0 : ℬ) :=
+    ((partial_isometry_equivalents (0 : ℬ)).out 1 0).mp
+      (by simpa using (⟨by simp, by simp⟩ : IsStarProjection (0 : ℬ)))
+  rcases c.eq_empty_or_nonempty with rfl | hne
+  · exact ⟨mvP 0, ⟨0, hzeropi, by simpa using hp.nonneg, by simpa using hq.nonneg, rfl⟩,
+      by simp⟩
+  have hproj : ∀ M ∈ c, IsStarProjection M := by
+    rintro M hM
+    obtain ⟨u, hu, -, -, rfl⟩ := hc hM
+    exact mvP_isStarProjection hu
+  have hdir : DirectedOn (· ≤ ·) c := by
+    intro x hx y hy
+    rcases eq_or_ne x y with rfl | hxy
+    · exact ⟨x, hx, le_refl x, le_refl x⟩
+    rcases hchain hx hy hxy with h | h
+    · exact ⟨y, hy, h, le_refl y⟩
+    · exact ⟨x, hx, le_refl x, h⟩
+  have hRlub : IsLUB c (projSup c) := isLUB_projSup_of_directed c hproj hne hdir
+  have hRproj : IsStarProjection (projSup c) := (projSup_spec hproj).1
+  set R : CStarMatrix (Fin 2) (Fin 2) ℬ := projSup c with hRdef
+  -- the two diagonal entries, doubled
+  have hlub : ∀ i : Fin 2,
+      IsLUB ((fun M : CStarMatrix (Fin 2) (Fin 2) ℬ => (2 : ℂ) • M i i) '' c)
+        ((2 : ℂ) • R i i) := by
+    intro i
+    exact isLUB_entry2 i hne hdir (fun x hx => (hproj x hx).isSelfAdjoint) hRlub
+  have himgne : ∀ i : Fin 2,
+      ((fun M : CStarMatrix (Fin 2) (Fin 2) ℬ => (2 : ℂ) • M i i) '' c).Nonempty := by
+    intro i; exact hne.image _
+  have himgdir : ∀ i : Fin 2,
+      DirectedOn (· ≤ ·) ((fun M : CStarMatrix (Fin 2) (Fin 2) ℬ => (2 : ℂ) • M i i) '' c) := by
+    rintro i _ ⟨M, hM, rfl⟩ _ ⟨N, hN, rfl⟩
+    obtain ⟨K, hK, hMK, hNK⟩ := hdir M hM N hN
+    exact ⟨_, ⟨K, hK, rfl⟩, entry2_mono hMK i, entry2_mono hNK i⟩
+  have himg0 : ∀ x ∈ (fun M : CStarMatrix (Fin 2) (Fin 2) ℬ => (2 : ℂ) • M 0 0) '' c,
+      IsStarProjection x ∧ x ≤ p := by
+    rintro _ ⟨M, hM, rfl⟩
+    obtain ⟨u, hu, hup, huq, rfl⟩ := hc hM
+    have hval : (2 : ℂ) • mvP u 0 0 = star u * u := by
+      rw [(mvP_apply hu).1, smul_smul]; norm_num
+    show IsStarProjection ((2 : ℂ) • mvP u 0 0) ∧ (2 : ℂ) • mvP u 0 0 ≤ p
+    rw [hval]
+    exact ⟨((partial_isometry_equivalents u).out 0 1).mp hu, hup⟩
+  have himg1 : ∀ x ∈ (fun M : CStarMatrix (Fin 2) (Fin 2) ℬ => (2 : ℂ) • M 1 1) '' c,
+      IsStarProjection x ∧ x ≤ q := by
+    rintro _ ⟨M, hM, rfl⟩
+    obtain ⟨u, hu, hup, huq, rfl⟩ := hc hM
+    have hval : (2 : ℂ) • mvP u 1 1 = u * star u := by
+      rw [(mvP_apply hu).2.2.2, smul_smul]; norm_num
+    show IsStarProjection ((2 : ℂ) • mvP u 1 1) ∧ (2 : ℂ) • mvP u 1 1 ≤ q
+    rw [hval]
+    exact ⟨((partial_isometry_equivalents u).out 0 3).mp hu, huq⟩
+  have heproj : IsStarProjection ((2 : ℂ) • R 0 0) :=
+    vna_directed_supremum_projections _ _ (fun x hx => (himg0 x hx).1) (himgne 0)
+      (himgdir 0) (hlub 0)
+  have hfproj : IsStarProjection ((2 : ℂ) • R 1 1) :=
+    vna_directed_supremum_projections _ _ (fun x hx => (himg1 x hx).1) (himgne 1)
+      (himgdir 1) (hlub 1)
+  have hep : (2 : ℂ) • R 0 0 ≤ p := (hlub 0).2 fun x hx => (himg0 x hx).2
+  have hfq : (2 : ℂ) • R 1 1 ≤ q := (hlub 1).2 fun x hx => (himg1 x hx).2
+  -- the matrix identities
+  have hmul : ∀ i j : Fin 2, R i 0 * R 0 j + R i 1 * R 1 j = R i j := by
+    intro i j
+    have h := congrArg (fun M : CStarMatrix (Fin 2) (Fin 2) ℬ => M i j)
+      hRproj.isIdempotentElem.eq
+    simpa [CStarMatrix.mul_apply, Fin.sum_univ_two] using h
+  have hR01 : R 0 1 = star (R 1 0) := by
+    conv_lhs => rw [← hRproj.isSelfAdjoint.star_eq]
+    rw [CStarMatrix.star_apply]
+  have hstar2 : ∀ x : ℬ, star ((2 : ℂ) • x) = (2 : ℂ) • star x := by
+    intro x; rw [star_smul]; norm_num [Complex.star_def]
+  have hvv : star ((2 : ℂ) • R 1 0) * ((2 : ℂ) • R 1 0) = (2 : ℂ) • R 0 0 := by
+    have h00 : R 0 1 * R 1 0 = R 0 0 - R 0 0 * R 0 0 := eq_sub_of_add_eq' (hmul 0 0)
+    have hee : ((2 : ℂ) • R 0 0) * ((2 : ℂ) • R 0 0) = (2 : ℂ) • R 0 0 :=
+      heproj.isIdempotentElem.eq
+    calc star ((2 : ℂ) • R 1 0) * ((2 : ℂ) • R 1 0)
+        = ((2 : ℂ) * (2 : ℂ)) • (R 0 1 * R 1 0) := by
+          rw [hstar2, smul_mul_smul_comm, hR01]
+      _ = ((2 : ℂ) * 2) • R 0 0 - ((2 : ℂ) * 2) • (R 0 0 * R 0 0) := by
+          rw [h00, smul_sub]
+      _ = ((2 : ℂ) * 2) • R 0 0 - ((2 : ℂ) • R 0 0) * ((2 : ℂ) • R 0 0) := by
+          rw [smul_mul_smul_comm]
+      _ = (2 : ℂ) • R 0 0 := by
+          rw [hee, ← sub_smul]; norm_num
+  have hff : ((2 : ℂ) • R 1 0) * star ((2 : ℂ) • R 1 0) = (2 : ℂ) • R 1 1 := by
+    have h11 : R 1 0 * R 0 1 = R 1 1 - R 1 1 * R 1 1 := eq_sub_of_add_eq (hmul 1 1)
+    have hee : ((2 : ℂ) • R 1 1) * ((2 : ℂ) • R 1 1) = (2 : ℂ) • R 1 1 :=
+      hfproj.isIdempotentElem.eq
+    calc ((2 : ℂ) • R 1 0) * star ((2 : ℂ) • R 1 0)
+        = ((2 : ℂ) * (2 : ℂ)) • (R 1 0 * R 0 1) := by
+          rw [hstar2, smul_mul_smul_comm, hR01]
+      _ = ((2 : ℂ) * 2) • R 1 1 - ((2 : ℂ) * 2) • (R 1 1 * R 1 1) := by
+          rw [h11, smul_sub]
+      _ = ((2 : ℂ) * 2) • R 1 1 - ((2 : ℂ) • R 1 1) * ((2 : ℂ) • R 1 1) := by
+          rw [smul_mul_smul_comm]
+      _ = (2 : ℂ) • R 1 1 := by
+          rw [hee, ← sub_smul]; norm_num
+  have hvpi : IsPartialIsometry ℬ ((2 : ℂ) • R 1 0) :=
+    ((partial_isometry_equivalents _).out 1 0).mp (by rw [hvv]; exact heproj)
+  refine ⟨R, ⟨(2 : ℂ) • R 1 0, hvpi, by rw [hvv]; exact hep, by rw [hff]; exact hfq, ?_⟩,
+    fun z hz => hRlub.1 hz⟩
+  obtain ⟨h1, h2, h3, h4⟩ := mvP_apply hvpi
+  rw [hvv] at h1
+  rw [hff] at h4
+  ext i j
+  fin_cases i <;> fin_cases j
+  · show R 0 0 = mvP ((2 : ℂ) • R 1 0) 0 0
+    rw [h1, smul_smul]; norm_num
+  · show R 0 1 = mvP ((2 : ℂ) • R 1 0) 0 1
+    rw [h2, hstar2, smul_smul]; norm_num [hR01]
+  · show R 1 0 = mvP ((2 : ℂ) • R 1 0) 1 0
+    rw [h3, smul_smul]; norm_num
+  · show R 1 1 = mvP ((2 : ℂ) • R 1 0) 1 1
+    rw [h4, smul_smul]; norm_num
+
+
+private theorem mvn_proj_mul_eq {e r : ℬ} (hr : IsStarProjection r) (he : IsStarProjection e)
+    (h : e ≤ r) : r * e = e ∧ e * r = e :=
+  ⟨((projection_below_effect r e ⟨hr.nonneg, hr.le_one⟩ he).out 0 6).mp h,
+    ((projection_below_effect r e ⟨hr.nonneg, hr.le_one⟩ he).out 0 7).mp h⟩
+
+private theorem mvn_proj_sub {r e : ℬ} (hr : IsStarProjection r) (he : IsStarProjection e)
+    (h : e ≤ r) : IsStarProjection (r - e) := by
+  obtain ⟨h1, h2⟩ := mvn_proj_mul_eq hr he h
+  constructor
+  · show (r - e) * (r - e) = r - e
+    rw [sub_mul, mul_sub, mul_sub, h1, h2, hr.isIdempotentElem.eq, he.isIdempotentElem.eq]
+    abel
+  · show star (r - e) = r - e
+    rw [star_sub, hr.isSelfAdjoint.star_eq, he.isSelfAdjoint.star_eq]
+
+private theorem mvn_proj_orth {r g k : ℬ} (hr : IsStarProjection r)
+    (hg : IsStarProjection g) (hk : IsStarProjection k) (hgr : g ≤ r)
+    (hkr : k ≤ r - g) : g * k = 0 := by
+  have hsub : (0 : ℬ) ≤ r - g := sub_nonneg.mpr hgr
+  have hsub1 : r - g ≤ 1 := le_trans (sub_le_self _ hg.nonneg) hr.le_one
+  have h1 : (r - g) * k = k :=
+    ((projection_below_effect (r - g) k ⟨hsub, hsub1⟩ hk).out 0 6).mp hkr
+  have hgr' : g * r = g := (mvn_proj_mul_eq hr hg hgr).2
+  calc g * k = g * ((r - g) * k) := by rw [h1]
+    _ = (g * r - g * g) * k := by noncomm_ring
+    _ = 0 := by rw [hgr', hg.isIdempotentElem.eq, sub_self, zero_mul]
+
+private theorem mvn_proj_add {e g : ℬ} (he : IsStarProjection e) (hg : IsStarProjection g)
+    (h1 : e * g = 0) (h2 : g * e = 0) : IsStarProjection (e + g) := by
+  constructor
+  · show (e + g) * (e + g) = e + g
+    rw [add_mul, mul_add, mul_add, h1, h2, he.isIdempotentElem.eq, hg.isIdempotentElem.eq]
+    abel
+  · show star (e + g) = e + g
+    rw [star_add, he.isSelfAdjoint.star_eq, hg.isSelfAdjoint.star_eq]
+
+end MvnLinking
+
 /-- **162II** (`total-mv-order`, dils.tex:4717, Proposition): in a factor,
 any two projections are comparable: `p ≲ q` or `q ≲ p`.
 
-**162III** is the proof — not converted. -/
+**162III** is the proof; see the section note above for the one divergence
+(the thesis's `∑_{u ∈ U} u` is replaced by a maximal linking projection in
+`M₂(ℬ)`, which avoids `summing-partial-isometries`). -/
 theorem total_mv_order [VonNeumannAlgebra ℬ] (hF : IsFactor ℬ) (p q : ℬ)
     (hp : IsStarProjection p) (hq : IsStarProjection q) :
-    MvNLe p q ∨ MvNLe q p :=
-  sorry
+    MvNLe p q ∨ MvNLe q p := by
+  obtain ⟨R, hmax⟩ := zorn_le₀ (mvSet p q)
+    fun c hc hchain => mvSet_chain_bound hp hq c hc hchain
+  obtain ⟨u, hu, hup, huq, hRu⟩ := hmax.1
+  have heproj : IsStarProjection (star u * u) :=
+    ((partial_isometry_equivalents u).out 0 1).mp hu
+  have hfproj : IsStarProjection (u * star u) :=
+    ((partial_isometry_equivalents u).out 0 3).mp hu
+  by_cases hpe : star u * u = p
+  · exact Or.inl ⟨u, hpe, huq⟩
+  by_cases hqf : u * star u = q
+  · exact Or.inr ⟨star u, by rw [star_star]; exact hqf, by rw [star_star]; exact hup⟩
+  exfalso
+  have hp₀proj : IsStarProjection (p - star u * u) := mvn_proj_sub hp heproj hup
+  have hq₀proj : IsStarProjection (q - u * star u) := mvn_proj_sub hq hfproj huq
+  have hp₀ne : p - star u * u ≠ 0 := sub_ne_zero.mpr (Ne.symm hpe)
+  have hq₀ne : q - u * star u ≠ 0 := sub_ne_zero.mpr (Ne.symm hqf)
+  -- **162III**: in a factor the central carrier of `q₀` is `1`
+  obtain ⟨a, ha⟩ : ∃ a : ℬ, (q - u * star u) * a * (p - star u * u) ≠ 0 := by
+    by_contra hcon
+    push_neg at hcon
+    have hzproj : IsStarProjection (cceil (q - u * star u)) := (cceil_isLeast _).1.1
+    have hzone : cceil (q - u * star u) = 1 := by
+      obtain ⟨c, hc⟩ := hF _ (cceil_isLeast _).1.2.1
+      haveI : Nontrivial ℬ := nontrivial_of_ne _ _ hq₀ne
+      have hcc : c * c = c := by
+        have hid := hzproj.isIdempotentElem.eq
+        rw [hc, ← map_mul] at hid
+        exact (algebraMap ℂ ℬ).injective hid
+      have hc01 : c = 0 ∨ c = 1 := by
+        have h0 : c * (c - 1) = 0 := by rw [mul_sub, mul_one, hcc, sub_self]
+        rcases mul_eq_zero.mp h0 with h | h
+        · exact Or.inl h
+        · exact Or.inr (sub_eq_zero.mp h)
+      rcases hc01 with rfl | rfl
+      · exfalso
+        refine hq₀ne (le_antisymm ?_ hq₀proj.nonneg)
+        have hle : q - u * star u ≤ cceil (q - u * star u) :=
+          ((cceil_fundamental _ hq₀proj).1.1).2.2
+        rwa [hc, map_zero] at hle
+      · rw [hc, map_one]
+    have hub : cceil (q - u * star u) ≤ 1 - (p - star u * u) := by
+      have hPproj : ∀ x ∈ {x : ℬ | ∃ a : ℬ, x = ceil (star a * (q - u * star u) * a)},
+          IsStarProjection x := by
+        rintro _ ⟨b, rfl⟩
+        exact (ceil_spec (star_left_conjugate_nonneg hq₀proj.nonneg b)).1
+      rw [(cceil_fundamental _ hq₀proj).2]
+      refine (projSup_spec hPproj).2.2 _ hp₀proj.one_sub ?_
+      rintro _ ⟨b, rfl⟩
+      refine (ceil_le_iff (star_left_conjugate_nonneg hq₀proj.nonneg b)
+        hp₀proj.one_sub).mpr ?_
+      have hz : star b * (q - u * star u) * b * (p - star u * u) = 0 := by
+        calc star b * (q - u * star u) * b * (p - star u * u)
+            = star b * ((q - u * star u) * b * (p - star u * u)) := by noncomm_ring
+          _ = 0 := by rw [hcon b, mul_zero]
+      rw [mul_sub, mul_one, hz, sub_zero]
+    rw [hzone] at hub
+    refine hp₀ne (le_antisymm ?_ hp₀proj.nonneg)
+    have h := sub_nonneg.mpr hub
+    simpa using h
+  -- the new partial isometry u0 = [q0 a p0] (82I, polar decomposition)
+  obtain ⟨b, hbdef⟩ : ∃ b : ℬ, b = (q - u * star u) * a * (p - star u * u) := ⟨_, rfl⟩
+  rw [← hbdef] at ha
+  obtain ⟨v, hvdef⟩ : ∃ v : ℬ, v = polar b := ⟨_, rfl⟩
+  have hvpi : IsPartialIsometry ℬ v := by rw [hvdef]; exact (polar_decomposition_1 b).1
+  have he₀proj : IsStarProjection (star v * v) :=
+    ((partial_isometry_equivalents v).out 0 1).mp hvpi
+  have hf₀proj : IsStarProjection (v * star v) :=
+    ((partial_isometry_equivalents v).out 0 3).mp hvpi
+  have he₀le : star v * v ≤ p - star u * u := by
+    rw [hvdef, (polar_decomposition_1 b).2.1]
+    calc suppProj b ≤ suppProj (p - star u * u) := by
+          rw [hbdef]; exact suppProj_mul_le _ _
+      _ = p - star u * u := suppProj_of_isStarProjection hp₀proj
+  have hf₀le : v * star v ≤ q - u * star u := by
+    rw [hvdef, (polar_decomposition_1 b).2.2]
+    calc rangeProj b = rangeProj ((q - u * star u) * (a * (p - star u * u))) := by
+          rw [hbdef, mul_assoc]
+      _ ≤ rangeProj (q - u * star u) := rangeProj_mul_le _ _
+      _ = q - u * star u := rangeProj_of_isStarProjection hq₀proj
+  have hvne : v ≠ 0 := by
+    intro h0
+    refine ha ?_
+    -- `Theses.A.VN.polar_decomposition`; `polar_decomposition` alone resolves to
+    -- the Hilbert-module version of `HilbertModules.lean` inside this namespace
+    have hb := (Theses.A.VN.polar_decomposition b).2.1
+    rw [← hvdef, h0, zero_mul] at hb
+    exact hb
+  -- u and v have orthogonal initial and final projections
+  have hee₀ : star u * u * (star v * v) = 0 :=
+    mvn_proj_orth hp heproj he₀proj hup he₀le
+  have hff₀ : u * star u * (v * star v) = 0 :=
+    mvn_proj_orth hq hfproj hf₀proj huq hf₀le
+  have hee₀' : star v * v * (star u * u) = 0 := by
+    have h := congrArg star hee₀
+    rwa [star_mul, he₀proj.isSelfAdjoint.star_eq, heproj.isSelfAdjoint.star_eq,
+      star_zero] at h
+  have huf : star u * (u * star u) = star u := by
+    rw [← mul_assoc]; exact ((partial_isometry_equivalents u).out 0 4).mp hu
+  have hue : u * (star u * u) = u := by
+    rw [← mul_assoc]; exact ((partial_isometry_equivalents u).out 0 2).mp hu
+  have hvf : v * star v * v = v := ((partial_isometry_equivalents v).out 0 2).mp hvpi
+  have hve : star v * v * star v = star v := ((partial_isometry_equivalents v).out 0 4).mp hvpi
+  have hc1 : star u * v = 0 := by
+    calc star u * v = star u * (u * star u) * (v * star v * v) := by rw [huf, hvf]
+      _ = star u * (u * star u * (v * star v)) * v := by noncomm_ring
+      _ = 0 := by rw [hff₀, mul_zero, zero_mul]
+  have hc2 : star v * u = 0 := by
+    have h := congrArg star hc1
+    rwa [star_mul, star_star, star_zero] at h
+  have hc3 : u * star v = 0 := by
+    calc u * star v = u * (star u * u) * (star v * v * star v) := by rw [hue, hve]
+      _ = u * (star u * u * (star v * v)) * star v := by noncomm_ring
+      _ = 0 := by rw [hee₀, mul_zero, zero_mul]
+  have hc4 : v * star u = 0 := by
+    have h := congrArg star hc3
+    rwa [star_mul, star_star, star_zero] at h
+  have hsum1 : star (u + v) * (u + v) = star u * u + star v * v := by
+    rw [star_add, add_mul, mul_add, mul_add, hc1, hc2]; abel
+  have hsum2 : (u + v) * star (u + v) = u * star u + v * star v := by
+    rw [star_add, add_mul, mul_add, mul_add, hc3, hc4]; abel
+  have hupi' : IsPartialIsometry ℬ (u + v) := by
+    refine ((partial_isometry_equivalents (u + v)).out 1 0).mp ?_
+    rw [hsum1]
+    exact mvn_proj_add heproj he₀proj hee₀ hee₀'
+  have hupp : star (u + v) * (u + v) ≤ p := by
+    rw [hsum1]
+    calc star u * u + star v * v ≤ star u * u + (p - star u * u) :=
+          add_le_add le_rfl he₀le
+      _ = p := by abel
+  have hupq : (u + v) * star (u + v) ≤ q := by
+    rw [hsum2]
+    calc u * star u + v * star v ≤ u * star u + (q - u * star u) :=
+          add_le_add le_rfl hf₀le
+      _ = q := by abel
+  have hmvsum : mvP (u + v) = mvP u + mvP v := by
+    rw [mvP, mvP, mvP, ← smul_add, mvMat_expand hupi', mvMat_expand hu, mvMat_expand hvpi,
+      hsum1, hsum2, star_add]
+    simp only [matEmb_add]
+    abel
+  have hle : R ≤ mvP (u + v) := by
+    rw [hRu, hmvsum]
+    exact le_add_of_nonneg_right (mvP_isStarProjection hvpi).nonneg
+  have hge : mvP (u + v) ≤ R := hmax.2 ⟨u + v, hupi', hupp, hupq, rfl⟩ hle
+  have heq : mvP u + mvP v = mvP u := by
+    rw [← hmvsum, ← hRu]
+    exact le_antisymm hge hle
+  have hzero : mvP v = 0 := by
+    have h : mvP v = mvP u + mvP v - mvP u := by abel
+    rw [heq, sub_self] at h
+    exact h
+  refine hvne ?_
+  have h10 := (mvP_apply hvpi).2.2.1
+  rw [hzero] at h10
+  have hhalf : (2 : ℂ)⁻¹ • v = 0 := by
+    rw [← h10]; rfl
+  have h2 := congrArg (fun x : ℬ => (2 : ℂ) • x) hhalf
+  simpa [smul_smul] using h2
 
 variable {X : Type v}
   [NormedAddCommGroup X] [NormedSpace ℂ X] [SMul ℬ X] [CStarModule ℬ X]

@@ -32,14 +32,11 @@ centrally_similar_basic_3|awaiting-ruling||false as printed, one machine-checked
 centrally_similar_basic_4|awaiting-ruling||false as printed; equal carriers are not enough, and the faithfulness repair is unauthorised
 centrally_similar_basic_5|awaiting-ruling||false as printed; the equal-carrier repair awaits the author
 dup_vna_is_monoid_4|open||yellow: the proof is complete, but the statement mentions the braiding of 119IVc, which is now proved
-dup_vna_is_monoid_5|costed||132III.5: 127III is now PROVED, so the blocker is gone; what is left is the Set^op half -- that nsp(l-infinity X) is X and that every nmiu-map l-infinity(X) -> l-infinity(Y) is linfMap of a function Y -> X; the transport along the classification is exists_nmiu_mul's pattern
 equaliser_lemma|open||125IV (Kornell); no route recorded, and its statement uses the sorried tmapM
 exists_braiding|open||119IVc, the exercise that (a,b) maps to b tensor a is a tensor product; not attempted
 exists_tmapM|costed||needs the tmap construction made universe-polymorphic (four universes); prerequisite for all of 119V
 exists_unitors|open||119IVb, the two unitors; not attempted
 faithful_positive_map_uniqueness|blocked|positive_quotients_centrally_similar|104IX is 100VII plus 104VII, both cited by name
-free_monoid_in_Wcpsu|blocked|dup_vna_is_monoid_5|132VI's freeness runs through the monoid classification; only its unit is proved (127III itself is no longer the blocker)
-free_monoid_in_vNAMIU|blocked|dup_vna_is_monoid_5|132IV's freeness runs through the monoid classification; only its unit is proved (127III itself is no longer the blocker)
 ha_second_adjunction|costed||125bII: all three inputs are now proved -- vn_products_ncpsu, fdcstar (84II), and ha_equalisers (84bV) + hereditarilyAtomic_subalgebra (84bIII), closed in session 79; not yet attempted, and it is an adjoint-functor-theorem argument
 ha_tensor_closed|open||125dII, the hereditarily atomic free exponential; no route recorded
 intersection_tensor|cited||121II gives no argument, only a pointer to Corollary IV.5.10 of Takesaki I
@@ -73,7 +70,7 @@ dils_examples_pure_1|costed||170II.1: 171VII is now proved; what is left is the 
 ess_uniq_pur|awaiting-ruling||QUESTIONS B12: false without a dimension hypothesis, and which of three repairs is undecided
 ext_tensor_ketbra_dense|awaiting-ruling||QUESTIONS D6: our net form is false; the thesis's claim is proved as ext_tensor_ketbra_uwDense
 h_is_corner_for_unital_map|open||its recorded blocker existence_paschke is now proved, so 169V needs re-analysis; not attempted
-ksgns|cited||155II is Kasparov's KSGNS theorem, cited with no proof; the thesis only touches on it
+ksgns|costed||155II is Kasparov KSGNS, cited with no proof, so it is a construction and cross-checks nothing; blocked in practice on a NORM completion of a semi-inner-product Hilbert C*-module, which neither the tree (dils_completion is the ultranorm one and needs a von Neumann B) nor Mathlib has; ~1200-1600 lines, 2-3 sessions, of which the completion is reusable
 ncp_extreme_paschke|blocked|paschke_correspondence_surjective|172III needs the 157IV correspondence and 170II.2
 paschke_corner|open||its blockers existence_paschke and 154III.5 are now both proved; unblocked but not yet attempted
 paschke_correspondence_embedding|costed||157IV.2, ~250 lines: run on the concrete module using ordersep and ultranorm density, then transport
@@ -82,10 +79,9 @@ paschke_injective|costed||156II is unblocked by exists_paschke_iso_paschkeModule
 paschke_injective_carrier|costed||156II in carrier form; same route as paschke_injective, and the same A/VN ceiling question
 paschke_tensor|blocked|ba_ext_tensor_pres|167I needs 165VI and an ExtTensor to exist; univprop_ext_tensor is PROVED (session 79) and paschke_tensor_module was never downstream of it, so 165VI is the only blocker left
 pure_ncp_extreme|open||unblocked: ncp_extreme_paschke is now proved; not yet attempted
-selfdual_normalish_form|blocked|total_mv_order|162IV needs 162II; its other input 161II.2 is proved
+selfdual_normalish_form|costed||162IV is UNBLOCKED since session 80 (162II is proved) but is not session-sized: 162V-162VII are two further Zorn arguments, an infinite sum e0 = sum e*u inside the module, basis surgery and a Hilbert-hotel step; ~800-1200 lines, 2-3 sessions
 standard_corner_dils|cited||169IV is cited to proc.tex 98I and 95II; A/Proc is off this import path, so it must be rebuilt
 surjective_nmiu_2|awaiting-ruling||FALSE: counterexample in tree; needs ncpsu on both f and f-prime (QUESTIONS D7)
-total_mv_order|costed||162II is the only self-contained item in B/Dils; polar_decomposition IS on the import path, but summing-partial-isometries is in the tree under no name
 kaplansky_hilbmod_A₁|false||one of 158V's four estimates, disproved and kept as documentation; 158II is proved by the linking algebra
 kaplansky_hilbmod_A₁'|false||one of 158V's four estimates, disproved and kept as documentation; 158II is proved by the linking algebra
 kaplansky_hilbmod_A₂|false||one of 158V's four estimates, disproved and kept as documentation; 158II is proved by the linking algebra

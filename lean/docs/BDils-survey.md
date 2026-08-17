@@ -89,6 +89,14 @@ At the end of **session 79** (**164II `univprop_ext_tensor`**):
 are the known-false items: `Kaplansky`'s four and `Stinespring`'s 139XI; a
 sixth, 164II.2b, is QUESTIONS D6.)
 
+At the end of **session 80** (**162II `total_mv_order`**):
+`SelfDual.lean` **4**, `Pure.lean` 2, `Paschke.lean` 1, `Kaplansky.lean` 4,
+`Stinespring.lean` 1, `SelfDualCompletion.lean` 0, `HilbertModules.lean` 0 —
+**12**, compiler-counted per file with **0 errors** (the whole `B/Dils` chain
+was rebuilt from source after a concurrent `A/VN` change).  Six of the 12 are
+known-false or awaiting a ruling: `Kaplansky`'s four, `Stinespring`'s 139XI,
+and 164II.2b (QUESTIONS D6); a seventh, 170IV.2, is QUESTIONS D7.
+
 Classification key: **(a)** self-contained, **(b)** blocked on a named
 `sorry` elsewhere, **(c)** cited to the literature / another chapter,
 **(d)** suspicious/false.
@@ -107,8 +115,8 @@ Classification key: **(a)** self-contained, **(b)** blocked on a named
 | **161II.1** | `hilbmod_el2_inner` | **(a)** | **CLOSED this session** (polarization, see log) |
 | **161II.2** | `hilbmod_el2` | **(a)** | **CLOSED session 51**, and it cost ~90 lines, not "large": the statement never mentions the module `ℓ²((pᵢ))` (only the coordinate map), so nothing had to be constructed and `hX : SelfDual ℬ X` is not even used — the two convergence clauses of `IsONBasis` carry all three parts.  ⚠️ Our statement is therefore **weaker than the exercise**, which also asks for the right-ℬ-module structure on `ℓ²((pᵢ))` and its self-duality; neither is formalized anywhere |
 | **161IV.2** | `onb1_el2` | **(a)** | **CLOSED this session** (direct bijection, see log); the brief's assumption that it needs 161II was wrong |
-| 162II | `total_mv_order` | **(a)/(c)** | comparison of projections in a factor; proof 162III not converted.  Genuinely hard (Zorn + halving) |
-| 162IV | `selfdual_normalish_form` | **(b)** | needs 162II and 161II.2 |
+| **162II** | `total_mv_order` | **(a)** | **CLOSED session 80**, ~370 private lines, axiom-clean.  The recorded obstacle was real — the thesis sums a maximal *set* of partial isometries and cites **89III** `summing-partial-isometries`, which vn.tex only *asserts* for von Neumann algebras (it asks for the Hilbert-space case, and that one is in the tree) — but it is **avoidable**: carry a partial isometry by its linking projection `½[[u*u,u*],[u,uu*]] = ½w*w ∈ M₂(ℬ)`, which is a projection iff `u` is a partial isometry and is monotone in `u`, and Zorn runs on the *order of `M₂(ℬ)`* (`zorn_le₀`).  The chain bound is `projSup` (**56XIV**, a directed set of *projections*, which is what the Kadison axiom gives), and `v := 2R₁₀`, `v*v = 2R₀₀`, `vv* = 2R₁₁` fall out of `R² = R`.  The corners are extracted by **49IV**.2 `mn_vna_2` at the vector `√2·eᵢ` — the `√2` is what keeps every order argument about honest projections.  The second half (`⌈⌈q₀⌉⌉ = 1` in a factor, then **68I** and **82I**) transcribes verbatim, and does **not** need `ncp-union` |
+| 162IV | `selfdual_normalish_form` | **(a)** | **UNBLOCKED session 80** (162II is proved; 161II.2 has been proved since session 51) and now the only self-contained open item in the file — but **not session-sized**: 162V–162VII are two further Zorn arguments, the first over `E₀ × ℬ` producing the infinite module sum `e₀ = ∑_{(e,u)∈U₀} e·u` (`exists_unTendsto_of_l2Summable`, with the basis surgery of 161IV.2 as the model) and using 162II exactly once, the second over orthogonal families of unit vectors, finished by a Hilbert-hotel argument on a countable subfamily.  ~800–1200 lines, 2–3 sessions |
 | **163II uniq** | `selfdual_compl_defining_unique` | **(a)** | **CLOSED session 55**, ~110 lines, immediately after 151Ia: apply 151Ia four times (`E₁→E₂`, `E₂→E₁`, and once on each `Eᵢ` for the uniqueness clause, which identifies `W∘U` and `U∘W` with the identity).  ⚠️ For the inner-product clause we do **not** re-run the thesis's density argument: `U` is bundled as a CLM, **152VIII** gives `U*`, and `U*U` and `id` have equal vector states on `η₁V`, so **152IX**.2 `hilmod_fixed_on_V_eq` closes it |
 | **163II dense** | `selfdual_compl_defining_dense` | **(a)** | **CLOSED session 49**.  The survey's "needs 151Ia" was **wrong**: the statement takes the universal property as a hypothesis |
 | **164II ex.** | `univprop_ext_tensor` | **(a)** | **CLOSED session 79**, ~900 private lines, axiom-clean.  `X ⊗ Y` is the self-dual completion (**150II**) of `V = (X ⊙ Y) ⊙ 𝒞`, an honest `𝒞`-module, and `univ` is **151Ia** applied to `T̃(z ⊗ c) = c·T̂(z)`.  ⚠️ **This row's "same three-step shape as `existence_paschke`" was wrong**, and dils.tex **164VIII** says so itself: `X ⊙ Y` is only an `𝒜 ⊙ ℬ`-module, so 151Ia does not apply to it and the thesis retraces its proof.  The fourth step, which is where the work is, is `tensor_gram_le`: the `univ` field bounds `T` over *elementary* families (coefficients in `𝒜 ⊙ ℬ`) and the lift needs all of `𝒜 ⊗ ℬ`.  Three lemmas: absorb `𝒜 ⊙ ℬ`-coefficients into the families (`Σ`-indexing, no padding); the order form of the bound by 144V's own proof with `cfc_mem` putting the resolvent in the **norm closure** of `𝒜 ⊙ ℬ` (this replaces the thesis's norm-completion of the module); and the upgrade to `𝒜 ⊗ ℬ`-coefficients by GNS-seminorm continuity of the quadratic form plus `unDense_tSpan` — **Kaplansky density is not needed**.  `hX`, `hY` and both `CompleteSpace` hypotheses turn out **unused** |
@@ -1268,3 +1276,48 @@ algebraic tensor product is built with **semilinear** `TensorProduct.lift`
 (`M →ₛₗ[starRingEnd ℂ] N →ₛₗ[…] P` lifts), which is how Mathlib's
 `TensorProduct.instInner` does it, and the four nested lifts must be named
 separately or the elaborator blows the heartbeat limit.
+
+
+---
+
+## Session 80 — **162II is closed**; 162IV is unblocked but not session-sized, and 165VI is still blocked *outside* the directory
+
+`B/Dils` **13 → 12**.  Full account in PROVING-LOG session 80; the three
+things a successor needs:
+
+1. **162IV is now the only self-contained open item in `SelfDual.lean`**, and
+   it is a 2–3 session build (see its row above).  Everything else in the file
+   is 164II.2b (D6, false as transcribed), 165VI and 167I.
+2. **165VI cannot be unblocked from inside `B/Dils`** — re-checked, and the
+   session-55/67 finding stands.  `IsVNTensor.exists_productFunctional` wants a
+   product functional for *every* pair of np-functionals; the thesis gets them
+   from **116VII**, whose Lean proof (`A/Proc/Tensor.lean:7037`) rests on the
+   entire A/Proc tensor construction, so copying it here is out of the
+   question.  The textbook alternative — decompose an np-functional on
+   `𝒷ᵃ(X)` into vector functionals and multiply those — needs a decomposition
+   theorem that is **not in the tree**.  It is QUESTIONS **D3** (put A/Proc on
+   the import path) or nothing.
+3. **155II `ksgns` is costed and is not "several hundred lines"**, as the
+   session-71 bottom line guessed.  It needs a **norm** completion of a
+   semi-inner-product Hilbert C*-module: `dils_completion` is the ultranorm
+   one and hypothesises `[VonNeumannAlgebra ℬ]`, while `ksgns` is stated for
+   C*-algebras, and Mathlib's `Analysis/CStarAlgebra/Module/` has no
+   completion at all.  ~1200–1600 lines, 2–3 sessions; the completion itself
+   is reusable.  (136II is the *scalar* completion and is not a model for the
+   module case beyond the general shape.)
+
+Reusable output of this session, all `private` in `SelfDual.lean`:
+`mvW`/`mvMat`/`mvP` with `mvP_isStarProjection`/`mvP_apply` (the linking
+projection API), `mvSet_chain_bound`, `matEmb_mul_zero`,
+`dblVec`/`matForm_dblVec`/`isLUB_entry2`/`entry2_mono` (corners of a
+supremum in `M₂(ℬ)`), `isLUB_image_of_preservesDirSups` (`PreservesDirSups`
+restated for plain sets instead of `selfAdjoint` subtypes — the plumbing every
+consumer currently repeats), and `mvn_proj_mul_eq`/`mvn_proj_sub`/
+`mvn_proj_orth`/`mvn_proj_add`.  162II is really `A/VN` material (vn.tex
+parsec 830) stated in dils.tex, so promote the `mv*` block if the comparison
+theory is ever needed elsewhere.
+
+⚠️ **`polar_decomposition` is shadowed inside `namespace Theses.B.Dils`** by
+`HilbertModules.lean`'s Hilbert-module version (**80IV**); the A/VN one must
+be written `Theses.A.VN.polar_decomposition`.  A scratch file that does not
+open the namespace will not show this.

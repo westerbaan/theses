@@ -18800,3 +18800,161 @@ than fixed; 51IX is still `sorry`, so adding the clause costs nothing later.
 
 Both printed proofs are correct; the divergences above (§2, §3) are
 Lean-side simplifications, not defects.
+
+---
+
+## Session 80 — `B/Dils`: **162II `total_mv_order` is CLOSED** — the thesis's `∑_{u∈U} u` is replaced by a maximal *linking projection* in `M₂(ℬ)`, so `summing-partial-isometries` is never needed (worker on `Theses/B/Dils/`)
+
+**`B/Dils` 13 → 12** (HilbertModules 0, SelfDualCompletion 0, Paschke 1,
+Kaplansky 4, **SelfDual 4**, Pure 2, Stinespring 1; compiler-counted, whole
+chain rebuilt from source after the concurrent `A/VN` change, **0 errors**).
+`total_mv_order` is `#print axioms`-clean (`propext, Classical.choice,
+Quot.sound`), checked from an importing file against the rebuilt olean.
+**~370 lines**, all `private` except the theorem itself, in a new
+`section MvnLinking` between `MvNLe` and 162II.
+
+### 1. What it cost, and why the recorded costing was pessimistic
+
+The survey called 162II "genuinely hard (Zorn + halving)" and `why-open.csv`
+recorded the real obstacle correctly: the thesis's proof sums a maximal
+*set* of partial isometries, citing **89III** `summing-partial-isometries`
+(vn.tex:6928) — an Exercise which asks only for the Hilbert-space version
+(that one *is* in the tree, `summing_partial_isometries`,
+`A/VN/NormalFunctionals.lean:2621`) and merely *asserts* the von Neumann
+algebra case ("It is not too difficult to see that the (ultraweak) sum …").
+Building that sum means summing a bounded net of **non-self-adjoint**
+elements, which the Kadison-style `VonNeumannAlgebra` class does not
+directly support: its axiom gives suprema of directed sets of
+*self-adjoints* only.
+
+The whole difficulty disappears if the partial isometry is carried by its
+**linking projection**
+
+    S_u  =  ½ [[u*u, u*], [u, uu*]]  =  ½ w* w,   w = [u, uu*] ∈ M₂(ℬ),
+
+which is a projection of `M₂(ℬ)` exactly when `u` is a partial isometry
+(`w w* = 2·E₀₀(uu*)`, so `S_u² = S_u`), and which is *monotone* in `u`:
+extending `u` by an orthogonal partial isometry `v` adds `S_v`, because the
+cross terms `u*v`, `uv*` vanish.  So:
+
+* the thesis's poset of sets `U` becomes the set
+  `mvSet p q = {½ S_u | u*u ≤ p, uu* ≤ q}` **under the order of `M₂(ℬ)`
+  itself**, and Zorn is Mathlib's `zorn_le₀` — no bespoke order, no chain
+  unions, no finite partial sums;
+* the upper bound of a chain is `projSup` of the chain (**56XIV**
+  `vna_directed_supremum_projections` — a *directed set of projections*,
+  which is what the axiom does give), and the summed partial isometry is
+  read off the corners: `v := 2·R₁₀`, `v*v = 2·R₀₀`, `vv* = 2·R₁₁`, all three
+  from `R² = R` and `R* = R` alone;
+* the two diagonal corners are identified with the suprema of the
+  corresponding corners of the chain by **49IV**.2 `mn_vna_2` — the map
+  `M ↦ ∑ᵢⱼ aᵢ* Mᵢⱼ aⱼ` preserves directed suprema — applied at the vector
+  `a = √2·e_i`, so that it reads `M ↦ 2·M i i` and the factor ½ never has to
+  be pushed through an order argument.  (`√2` is the whole trick: with
+  `a = e_i` one would have to know that a *half*-projection's supremum is a
+  half-projection.)
+
+**Divergence from the thesis, class 2 (their proof is fine, we took another
+route):** logged here; 162III's `∑_{u ∈ U} u` and its citation of 89III are
+not transcribed.  Nothing else in 162III changes — the second half is the
+thesis's argument verbatim.
+
+### 2. The second half transcribes with no friction at all
+
+`⌈⌈q₀⌉⌉ = 1` in a factor (`cceil_isLeast` + `IsFactor` + injectivity of
+`algebraMap ℂ ℬ`, the needed `Nontrivial ℬ` coming free from `q₀ ≠ 0`), then
+`⌈⌈q₀⌉⌉ = ⋃_a ⌈a* q₀ a⌉` (**68I** `cceil_fundamental`) forces some
+`q₀ a p₀ ≠ 0`, and `u₀ = [q₀ a p₀]` is **82I** `polar_decomposition_1`.
+⚠️ The thesis's route to "some `a` works" goes through `ncp-union` applied to
+`x ↦ p₀ x p₀`; we do not need it — `q₀ a p₀ = 0` for *all* `a` gives
+`(a* q₀ a) p₀ = 0` hence `⌈a* q₀ a⌉ ≤ 1 − p₀` by `ceil_le_iff` directly, and
+`projSup` of those is `≤ 1 − p₀`.  The bounds `⌈b⌋ ≤ p₀`, `⌊b⌉ ≤ q₀` are
+`suppProj_mul_le` / `rangeProj_mul_le` plus
+`suppProj_of_isStarProjection`, not a computation.
+
+### 3. Three traps worth recording
+
+1. **`polar_decomposition` is shadowed inside `namespace Theses.B.Dils`** by
+   `HilbertModules.lean`'s *Hilbert-module* polar decomposition (**80IV**),
+   whose first explicit argument is a `BddUnComplete` proof.  The A/VN one
+   must be written `Theses.A.VN.polar_decomposition`.  This is invisible in a
+   scratch file that does not open `Theses.B.Dils`, and it was the only error
+   in the port.
+2. **A general `IsLUB (f '' D) (f R)`-from-`PreservesDirSups` helper blows the
+   heartbeat limit when applied at `A = M₂(ℬ)`** — instance-diamond
+   unification between the `CStarAlgebra (CStarMatrix …)` path in the helper's
+   binders and the one `mn_vna_2` carries.  Weakening the helper's binders to
+   `NonUnitalRing`/`StarRing`/`StarOrderedRing` makes the *helper* time out
+   instead (`isLUB_sa_of_isLUB` is stated for `CStarAlgebra`).  The fix that
+   works is to keep the general helper and interpose one matrix-specific
+   wrapper (`isLUB_entry2`) that fixes `A`, `B` and `f` explicitly, under
+   `set_option maxHeartbeats 1000000 in`.
+3. `add_le_add_left` in this Mathlib adds on the *right*
+   (`a ≤ b → a + c ≤ b + c`); `add_le_add le_rfl h` is the portable form.
+
+### 4. Reusable, currently `private`
+
+`mvW`/`mvMat`/`mvP` and `mvP_isStarProjection`/`mvP_apply` (the linking
+projection API), `mvSet_chain_bound`, `matEmb_mul_zero` (mismatched middle
+indices), `dblVec`/`matForm_dblVec`/`isLUB_entry2`/`entry2_mono` (corners of
+a supremum in `M₂`), `isLUB_image_of_preservesDirSups` (normality stated for
+plain sets rather than `selfAdjoint` subtypes — the plumbing every consumer
+of `PreservesDirSups` currently repeats), and four projection lemmas
+(`mvn_proj_mul_eq`, `mvn_proj_sub`, `mvn_proj_orth`, `mvn_proj_add`).  If
+another chapter needs the Murray–von Neumann comparison theory, promote
+`isLUB_image_of_preservesDirSups` and the `mv*` block to `A/VN` — 162II is
+`A/VN` material (vn.tex parsec 830) that happens to be stated in dils.tex.
+
+### 5. Nothing for ERRATA or QUESTIONS
+
+162II is correct as printed and its proof is correct; 89III's assertion is
+true, just unproved in the thesis (and unproved here).  No statement was
+changed.
+
+### 6. What this does and does not unblock
+
+**162IV `selfdual_normalish_form` is now unblocked** — and it is *not* a
+session-sized item.  162V–162VII are **two more Zorn arguments** on top of
+162II: the first (162VI) builds `e₀ = ∑_{(e,u) ∈ U₀} e·u`, an infinite sum
+**in the module** (`exists_unTendsto_of_l2Summable` is the tool, and the
+basis-surgery lemmas of 161IV.2 are the model), replaces two basis vectors by
+`d₀ = e₁q`, `d₁ = e₀ + e₁v*` and needs 162II exactly once; the second (162VII)
+iterates that over orthocomplements (the projection theorem **160IV**.3 is in
+the file) and finishes with a Hilbert-hotel argument
+`E₁ = {e + e₁(1−p), e₁p + e₂(1−p), …}` on a countable subfamily.  Costed
+**≈800–1200 lines, 2–3 sessions**; the surgery lemmas of `section L2` are
+what make it tractable at all.
+
+**165VI `ba_ext_tensor_pres` is still blocked outside `B/Dils`**, re-checked
+this session: `IsVNTensor.exists_productFunctional` demands a product
+functional for *every* pair of np-functionals, the thesis gets them from
+**116VII**, and 116VII (`tensor_characterization`, `A/Proc/Tensor.lean:7037`)
+rests on the whole A/Proc tensor construction (`vnTensor`, `IsTensorProduct`,
+112XI, 114I/II, 116IV.2) — far too much to copy into `B/Dils`.  The classical
+alternative (every np-functional on `𝒷ᵃ(X)` is a sum of vector functionals,
+so products can be built by hand from 152XIII) needs a decomposition theorem
+that **is not in the tree** either.  So 165VI — and with it 167I
+`paschke_tensor` — needs A/Proc on the import path (QUESTIONS **D3**).
+
+### 7. 155II `ksgns` — costed, not attempted
+
+The thesis gives **no proof** (155II cites Kasparov), so there is nothing to
+cross-check; it is a construction.  Its cost is dominated by a piece of
+infrastructure the tree does not have: `𝒜 ⊙ X` carries the ℬ-valued form
+`⟨a⊗x, a'⊗x'⟩ = ⟨x, φ(a*a') x'⟩`, and `Y` is its **norm** completion.  The
+tree's only module completion is `dils_completion` (**150II**), which is the
+*ultranorm/self-dual* one and needs `[VonNeumannAlgebra ℬ]`; `ksgns` is
+stated for C*-algebras, and Mathlib has no `CStarModule` completion either
+(`Analysis/CStarAlgebra/Module/` has `Defs`, `Constructions`, `Synonym` and
+nothing else).  Three items: (i) positivity of the Gram form from complete
+positivity of `φ`, which needs `Mₙ(𝒷ᵃ(X)) ≅ 𝒷ᵃ(Xⁿ)` (not in the tree) on top
+of `ba_nonneg_iff` (which is); (ii) quotient-by-null-vectors plus
+`UniformSpace.Completion`, with `NormedAddCommGroup`, `CStarModule`,
+`CompleteSpace` and an inner product extended by *bounded* uniform continuity
+— the pattern of `SelfDualCompletion.lean` steps 1–6, ~600 lines; (iii) `ϱ`,
+`T = (1 ⊗ ·)`, its adjoint and `φ = ad_T ∘ ϱ`, ~250.  **≈1200–1600 lines,
+2–3 sessions**, of which (ii) is reusable well beyond 155II.
+
+⚠️ For the record, and **not** an erratum: dils.tex 155II prints
+`T : Y → X` where `ksgns` has `T : X → Y`.  That is the right-module
+mirroring of this chapter, not a defect.
