@@ -16412,3 +16412,410 @@ moved declarations to their old modules and still lists 177V as open.
 Regenerate it with `scripts/StatusDump.lean` before the next Sorry Map run —
 that needs a full `lake build`, which was not run here because `A/Proc/Tensor`
 was being edited by another worker throughout.
+
+## Session 70 — `A/VN`: **48III `gns_normal` was never a literature item**, and `Projections.lean` goes 7 → 2 (worker on `Theses/A/VN/`)
+
+Seven statements closed, all `#print axioms`-clean
+(`[propext, Classical.choice, Quot.sound]`), **0 errors** in every A/VN file:
+
+| file | before | after |
+|---|---|---|
+| `Basic.lean` | 10 | **8** |
+| `Projections.lean` | 7 | **2** |
+| `Division.lean` | 5 | 5 (untouched) |
+| **A/VN total** | **22** | **15** |
+
+Closed: **48III** `gns_normal`, **53III**
+`vn_spectrum_extremally_disconnected` (`Basic.lean`); **56XVII**.3
+`ceil_supremum_3`, **58IV** `ceil_sequential_product`, **59VII**.1–2
+`hilb_ceil_1`, **59VII**.3 `hilb_ceil_2`, **62I** `ncpsu_floor`
+(`Projections.lean`).
+
+### 48III: the brief's "re-cost it" was right, and the answer is ~55 lines
+
+The survey's retired `[L]` understated the case.  Mathlib's
+`PositiveLinearMap.gnsStarAlgHom` **is** the GNS representation `ϱ_ω` of a
+single np-functional, and `Basic.lean` already had every other ingredient:
+`gnsVec` (`η_ω`), `gnsRep_gnsVec`, `gnsVec_inner`, `gnsVec_denseRange`, and
+`starAlgHom_preservesDirSups_of_vectors` (the **48II** criterion).  Density of
+`range (gnsVec ω)` serves *twice* — as the cyclicity clause of the statement,
+and as the separating-set hypothesis of that criterion — and the np-functional
+attached to `η_ω(b)` is `conjNP b ω`, already in the file.  The transport to
+`ℓ²(w)` along `bas.repr.conjStarAlgEquiv` is `ngns`'s, verbatim, with one extra
+line: cyclicity survives because `bas.repr` is a surjective isometry
+(`DenseRange.comp`).  **The `gnsHilbFam`/`gnsRepFam` family block was not
+used** — the singleton case is shorter without it, and the survey's suggestion
+to instantiate the family at a one-element index type would have been the
+longer road.
+
+### 53III: the thesis's proof, and an erratum from reading it
+
+`ngelfand_vna` (session 68) makes `C(spec 𝒜, ℂ)` a von Neumann algebra, so the
+thesis's `D = {f ∈ C(spec 𝒜) : f ≤ 𝟙_U}` has a supremum.  **Divergence (case
+2, method):** we take the cofinal subset `D = {f : 0 ≤ f ≤ 1, f = 0 off U}`
+instead.  It has the same supremum (`f ↦ f⁺` is a retraction of the thesis's
+set onto ours), and it buys the directedness argument, which is then a
+pointwise `max` of two *real-valued* continuous functions rather than a lattice
+operation on a set containing negative functions.  The rest is the thesis's:
+Urysohn (`exists_continuous_zero_one_of_isClosed`; `characterSpace ℂ 𝒜` is
+compact Hausdorff, and Mathlib supplies `NormalSpace` from that with no help)
+forces `⋁D = 1` on `U` — hence on `closure U`, that set being closed — and
+`⋁D = 0` off `closure U`.  Then `closure U = (⋁D)⁻¹{z : ½ < Re z}` is open.
+
+**Erratum filed (`53IV`, the proof point).**  The second Urysohn paragraph
+opens "let `y ∈ spec(𝒜)\U`" and then asks for `f` with `f(y) = 0` *and* `f = 1`
+on `closure U`.  For `y ∈ closure U \ U` those are contradictory — Urysohn
+separates disjoint closed sets — and the paragraph's conclusion is false
+exactly there, which matters because `⋁D` is `𝟙_{closure U}`, not `𝟙_U`.  It
+must read `y ∉ closure U`.  (Nit in the paragraph before: `spec(X)` for
+`spec(𝒜)`.)
+
+### 59VII: 63III.2's vocabulary, reused twice, exactly as the survey predicted
+
+`⌊T⌉ = starProjection ((range T).topologicalClosure)` and
+`⌈T⌋ = starProjection ((ker T)ᗮ)`, each identified by `ceill_basic_2` /
+`ceill_basic_1` (least projection with `pT = T` resp. `Tp = T`) plus
+`proj_le_iff`; minimality is `q^⊥` killing `range T` resp.
+`starProjection_apply_eq_zero_iff`.  Part 3 is the same at `V = ker (T − 1)`.
+Two Mathlib traps: `Submodule.starProjection_apply_eq_zero_iff` takes `K`
+**explicitly**, so `….mpr` does not parse; and `LinearMap.ker (T - 1)` carries
+no `HasOrthogonalProjection` instance until
+`(ContinuousLinearMap.isClosed_ker (T - 1)).completeSpace_coe` is supplied by
+hand.
+
+### 58IV and 56XVII.3: short, once the right lemma is spotted
+
+58IV is the thesis's proof.  `CFC.sqrt p = p` for a projection
+(`CFC.sqrt_eq_iff`) turns **57I** `floor_sequential_product` into
+`⌊p b p⌋ = p ∩ ⌊b⌋`, which gives both halves the thesis needs: `p ∩ r^⊥ = p − r`
+for `r ≤ p`, and `⌊p q^⊥ p⌋ = p ∩ q^⊥`.  With **58II** `floor_difference` the
+whole thing is `p − ⌈pqp⌉ = ⌊p(1−q)p⌋ = p ∩ q^⊥`, and De Morgan
+`p^⊥ ∪ q = (p ∩ q^⊥)^⊥` is one `projSup_eq`.
+
+56XVII.3 needs **no hand-built `Nontrivial` witness** (the survey expected
+one): `aₙ = (n+1)⁻¹·1` lies in `[0,1]_𝒜`, tends to `0`, and `⌈aₙ⌉ = ⌈1⌉ = 1`
+by `ceil_smul`, while `⌈0⌉ = 0`, so `1 = 0` — and `1 ≠ 0` is all that
+`Nontrivial` is for.  The floor half is then **free**: `⌈a⌉ = 1 − ⌊1 − a⌋`
+(`ceil_floor_basic_1`) and `a ↦ 1 − a` is a continuous self-map of `[0,1]_𝒜`,
+so continuity of `⌊·⌋` would give continuity of `⌈·⌉`.
+
+### 62I: one new reusable piece, `preservesDirInfs`
+
+The thesis's proof is transcribed unchanged, but it needs *"a normal map
+preserves filtered infima"*, and *nothing of that shape existed anywhere in
+`Theses/`* — every `IsGLB` in the tree is about a specific construction.  It is
+now `private theorem preservesDirInfs` in `Projections.lean`, three dozen lines:
+apply `PreservesDirSups` to `−D` and negate back.  **Promote it if a second
+caller appears.**  On top of it 62I is the thesis's chain
+`⌊f(a)⌋ = ⌊f(a)²⌋ ≤ ⌊f(a²)⌋ ≤ ⌊f(a)⌋`, iterated to `a^{2ⁿ}`, closed against
+`⌊a⌋ = ⋀ₙ a^{2ⁿ}` from `vna_floor`.
+
+Two snags worth recording.  (i) `‖f(1)‖ ≤ 1` **cannot** go through
+`CStarRing.norm_one`, which needs `[Nontrivial B]`; `‖1‖ = ‖1⋆1‖ = ‖1‖²` gives
+`‖1‖ ≤ 1` with no hypothesis, and that is what the file now uses.  (ii)
+`ncp_cp_cs`'s constant is `‖f(1)‖`, so for a *subunital* `f` the Kadison
+inequality lands on `f(a)² ≤ ‖f(1)‖·f(a²) ≤ f(a²)` only after
+`(1 − ‖f(1)‖)·f(a²) ≥ 0` — the erratum `620.20` (proof cites `cp-cs`, not
+`inner-product-basic`) is confirmed correct: `cp-cs` is exactly what is needed.
+
+### Re-costings for whoever takes A/VN next
+
+* **45I.2 `normal_not_us_cont` is not cheap.**  The survey calls it "the
+  transpose on `B(ℓ²)`, self-contained".  Mathlib has neither a transpose on
+  `B(ℓ²)` nor a conjugation on `lp`, so `T ↦ J T⋆ J` must be built first (`J`
+  the coordinatewise conjugate-linear isometric involution), before normality
+  or the failure of ultrastrong continuity is even stateable.  Estimate
+  250–400 lines, most of it infrastructure.
+* **51VII.1/.2 should be done together and are the best remaining
+  `Basic.lean` target.**  The thesis's proof (vn.tex 51VIII) is complete and
+  elementary and yields *both* parts from one construction; the cost is the
+  recursive choice of an increasing `aₙ ∈ D` with `⋁ₙ τ(aₙ) = ⋁_{d∈D} τ(d)`
+  plus the `ℂ`/`ℝ` bookkeeping for `τ` on self-adjoints.  ~200–250 lines.
+* **67IV.2 was costed, not started**, and the session-68 warning stands: the
+  existence half needs ultraweak compactness of the ball (**77III**), which
+  lives *downstream* in `Completeness.lean`.  Nothing seen this session changes
+  that; either the statement moves or the compactness argument is redone.
+* **The brief was right on every factual point checked**, with one exception:
+  `gns_normal` was described as needing "the singleton instance" of the
+  `gnsHilbFam` block, and the family block turned out to be the long way round.
+
+### Housekeeping
+
+`docs/why-open.csv`: the seven closed rows are **deleted**.
+`docs/AVN-survey.md`: counts, per-file tables and a session-70 headline
+updated.  `ERRATA.md`: one new `vn.tex` row (**53IV**).  The stale
+"Statements only; every proof is `sorry`" sentence in both file headers was
+**left alone** — it is a project-wide sweep item (HANDOFF "Known cleanups"),
+and touching a header invalidates the olean chain for the two workers building
+on A/VN.  One doc comment *was* corrected: 48III's "the GNS construction … is
+not formalized" is no longer true.
+
+## Session 71 — `B/Dils`: **169X `dils_stand_filter` was never off the import path**, and closing it takes `Pure.lean` from 6 to 2 (worker on `Theses/B/Dils/`)
+
+`B/Dils` **19 → 15** code `sorry`s.  Per file, compiled individually against
+rebuilt oleans, paired with an error count, **0 errors everywhere**:
+`HilbertModules` 0, `SelfDualCompletion` 0, `Stinespring` 1, `Kaplansky` 4,
+`Paschke` 1, `SelfDual` 7, **`Pure` 2**.  Four statements closed, all
+axiom-clean: **169X** `dils_stand_filter`, **170II**.2
+`dils_examples_pure_2`, **171VII** `paschke_pure`, **172XII**
+`ncp_extreme_comp`.  What is left in `Pure.lean` is **170II**.1
+`dils_examples_pure_1` and the known-false **170IV**.2 `surjective_nmiu_2`.
+
+### The brief was wrong about the import path, and that was the whole session
+
+Every survey since session 55 has recorded 169X as *cited to proc.tex 96V,
+which is proved but off `B/Dils`'s import path, so it must be redone*, and
+every brief has repeated it as a reason not to attempt it.  The first half
+is true; the second is a **material overstatement**, and checking it took
+five minutes:
+
+* `B/Dils/HilbertModules.lean` imports `Theses.A.VN.NormalFunctionals`,
+  and **`NormalFunctionals` imports `Theses.A.VN.Division`**.  So the entire
+  division calculus — `div`, `ldiv`, `sequential_douglas_1/2` (**81VI**),
+  `div_approx` (**81VII**), `approximate_pseudoinverse`,
+  `IsApproxPseudoinverse`, `polar_decomposition` — **is already on
+  `B/Dils`'s import path**, together with `rangeProj`, `ceill_basic_2`,
+  `mult_cancellation_3`, `suppProj_star` and `ad_cp_1`.
+* Of everything `Theses.A.Proc.canonicalFilter_factor` consumes, exactly
+  **two** items are genuinely in `A/Proc`: `ncp_uwlim_1` (**96III**.1, 25
+  lines, and its `[VonNeumannAlgebra]` binder on the *domain* is never used)
+  and the private `isApproxPseudoinverse_star` (30 lines of star-symmetry).
+  Both were re-derived here as `sfilter_cp_uwlim` and
+  `sfilter_approxPseudo_star`.
+
+So the port is ~330 private lines in `Pure.lean` and needs **no new import
+and no coupling to `A/Proc`** — the same shape of answer the author's D3
+ruling wanted.  The rest is `sfilter_ad*` (the ncp-map `x ↦ d*xd`, from
+**34V**.1 `ad_cp_1` and **44VIII** `ad_normal`), `sfilter_ldiv_div`
+(`d*∖(d*xd)/d = x` on the corner, **81II**), `sfilter_bipos`,
+`sfilter_ceil_eq` (`⌈b⌉ = ⌊√b⌉`) and `sfilter_factor`, which is
+`canonicalFilter_factor` transcribed against `cornerSet B q` instead of
+`Theses.A.Proc.Corner A e`.
+
+**Two divergences from `A/Proc`'s copy, both deliberate.**  (1) The domain
+of `f` is an arbitrary C\*-algebra, not a von Neumann algebra — `B/Dils`'s
+`IsFilterFor` quantifies over all of them, and nothing in the argument needs
+more.  (2) The `A/Proc` copy's own divergence is inherited: normality of the
+mediating map comes from bipositivity of `d*(·)d` on the corner, **not**
+from `div-usc` (**81IX**), whose relevant half is false.
+
+`dils_stand_filter` itself is then the case `d = √b`, `q = ⌈b⌉`, using
+`rangeProj √b = ⌈√b·√b⌉ = ⌈b⌉`; subunitality of the mediating map (which
+`IsFilterFor` demands since the B11 repair) is bipositivity again, and
+uniqueness is `mult_cancellation_3`.
+
+### What 169X unlocks — three statements, and each in well under an hour
+
+* **170II**.2 `dils_examples_pure_2` is the thesis's own proof
+  (dils.tex:6205) with every input now in the tree: standard filter `c'` of
+  `φ(1)` (169X), the unique unital `φ'` with `φ = c' ∘ φ'` (169XI.2a), a
+  Paschke dilation of `φ'` (154III), `h'` a **corner** by 169V
+  `h_is_corner_for_unital_map` (closed last session), `(𝒫', ϱ', c' ∘ h')` a
+  dilation of `φ` by 169XI.2b, and `paschke_unique_up_to_iso` to move it
+  onto the given `(𝒫, ϱ, h)`.  One new lemma is needed and is elementary:
+  `isCorner_comp_nmiuBij`, a corner precomposed with a bijective nmiu-map is
+  a corner.
+
+  ⚠️ **Two `[VonNeumannAlgebra]` binders were added** to 170II.2, exactly as
+  session 70 added them to **169V**: they are the chapter's standing
+  hypothesis (140II), every sibling `PaschkeTriple` statement carries them,
+  and the proof needs `existence_paschke`.  Same repair as QUESTIONS **D5**;
+  no new question raised.
+
+* **172XII** `ncp_extreme_comp` is then six lines: `φ = h ∘ ϱ` for the
+  standard dilation, `ϱ` is ncp-extreme by 172VIII `nmiu_ncp_extreme`, and
+  `h` is pure by 170II.2 hence ncp-extreme by 172X `pure_ncp_extreme`.  The
+  thesis states 172XII as a Corollary with **no proof**; this is the
+  intended one.
+
+* **171VII** `paschke_pure`.  **⇒** is the opening of 172X verbatim
+  (`pext_corner_iso` → `paschke_corner` → `pext_dilation_target_iso` →
+  `dils_filter_basics_1`) plus the observation that the resulting `ϱ`-leg is
+  the *standard* corner `h_{⌈⌈p⌉⌉}`, visibly surjective, and that
+  `paschke_unique_up_to_iso` transports surjectivity.  **⇐** is 170IV.1
+  `surjective_nmiu_1` (`ϱ` is a corner of a central projection — the tree
+  already has the conclusion of the thesis's `weakly-closed-ideal` step)
+  together with 170II.2.
+
+  **The one step the thesis takes for granted is that corners compose.**
+  dils.tex 170I *defines* pure as any composite of filters and corners and
+  appeals to proc.tex 100III `pure-fundamental` for the normal form;
+  `IsPureMap` is the normal form, so `φ = c ∘ k ∘ ϱ` has to be brought back
+  to *filter after corner*.  `isCornerFor_comp` does it directly: if `h₁` is
+  a **unital** corner for `a₁`, `h₂` a corner for `a₂`, and `e ≤ a₁` is an
+  effect with `h₁(e) = a₂`, then `h₂ ∘ h₁` is a corner for `e`.  The
+  hypothesis `f(e) = f(1)` gives `f(a₁) = f(1)` by monotonicity, so `f`
+  factors through `h₁`; the factor then kills `a₂` and factors through `h₂`;
+  uniqueness composes the two uniqueness clauses.  **No `pure-fundamental`
+  and no surjectivity of `h₁` are needed.**
+
+  The effect `e` is produced from `pext_corner_iso` applied to `ϱ`: with
+  `u₀` the ncp-inverse, `e = (u₀ a₂).1`.  It is an effect because `v₀`
+  **is** unital here (`v₀(1) = v₀(h_{⌊z⌋}1) = ϱ(1) = 1`, so `u₀ 1 = 1`) —
+  worth recording, because QUESTIONS **D7** observes that the `v` of
+  `pext_corner_iso` is *not* unital in general.  And `e ≤ ⌊z⌋ ≤ z` gives the
+  `e ≤ a₁` that `isCornerFor_comp` wants.
+
+*Code move.*  The `Infrastructure for 172X` block (`pext_exists_ncpId`,
+`pext_corner_iso`, `pext_dilation_target_iso`) was moved from inside
+`section Extreme` to just after `end PaschkeCornerAux`, so that 171VII can
+use it; all three declarations bind their own type variables, so the move is
+textual.
+
+### `ba_ext_tensor_pres` / `paschke_tensor` / `paschke_tensor_module` are **still blocked**, and the `why-open` rows saying otherwise are wrong
+
+Re-derived, as the brief asked.  116VII `tensor_characterization` being
+proved does **not** help: it lives in `A/Proc/Tensor.lean`, which `B/Dils`
+does not import and cannot cheaply import (unlike `A/VN/Division`, it is not
+already in the transitive closure), and its own proof rests on 112XI, 114I,
+114II and the *constructed* `vnTensor` — none of which `B/Dils` has, since
+`B/Dils` axiomatizes the tensor product as the hypothesis `IsVNTensor t`
+rather than building one.  The blocking clause is
+`IsVNTensor.exists_productFunctional`, which demands a product functional
+for **every** pair of np-functionals, whereas 165IX/165X supply them only
+for the vector states `Ω_X`, `Ω_Y`.  So 165VI needs either its own copy of
+116VII (not a session-sized job) or an author ruling putting `A/Proc` on
+this import path — the question the D3 ruling deliberately avoided.
+
+### The next gates in `B/Dils`
+
+* **162II `total_mv_order`** remains the only self-contained item, and it is
+  no longer as isolated as recorded: `polar_decomposition` (**80X**) *is* on
+  the import path (via `A/VN/Division`, as above), which was the one input
+  the surveys listed as external.  What it still needs is the Zorn argument
+  over sets of partial isometries with `∑u*u ≤ p`, `∑uu* ≤ q` — i.e.
+  infinite sums of orthogonal positive elements — plus
+  `summing-partial-isometries`, which is **not** in the tree under any name.
+  `selfdual_normalish_form` (162IV) sits on it and adds two more Zorn
+  arguments of its own.
+* **155II `ksgns`** is still the whole of `Paschke.lean`.
+* **170II**.1 `dils_examples_pure_1` now has 171VII, but still needs the
+  Stinespring classification of pure maps `𝒷(ℋ) → 𝒷(𝒦)`; not attempted.
+
+## Session 72 — `A/Proc/Tensor.lean`: **118IV.4 is CLOSED**, and 5 and 6 fall with it — the file is down to its two non-targets (worker on `Tensor.lean`)
+
+`Tensor.lean` **5 → 2** code `sorry`s; A/Proc **37 → 34**.  Per file, each
+source run through `lean` individually against rebuilt oleans, paired with an
+error count, **0 errors everywhere**: `Tensor` **2**, `QuantumLambda` **16**,
+`Measurement` **10**, `Duplicators` **6**.  `carrier_tensor_4`,
+`carrier_tensor_5` and `carrier_tensor_6` are all axiom-clean
+(`[propext, Classical.choice, Quot.sound]`), checked from an importing file
+against oleans rebuilt by `lake build Theses.A.Proc.Tensor` (which completes
+with zero errors, as does `lake build` of `Duplicators` and `QuantumLambda`
+afterwards — no name clash from the new helpers, all of which are `private`).
+Cost: **+490** lines, all in `Tensor.lean`.
+
+The two that remain are the two the brief named as *not* targets:
+**116III**.4 `tensor_simple_facts_4` (an unsolved thesis exercise, ERRATA
+116V) and **119II** `triple_tensor` (parked; nothing in the tree wants it).
+
+### 118IV.4 — the route, which is the thesis's, generalised in one place
+
+The exercise's steps 2 and 3 are spatial and are stated only for **vector**
+functionals on von Neumann algebras of operators; step 4 then says "let `f`
+and `g` be arbitrary again" with no hint.  The bridge is **89IX**
+`normal-functional` (already proved in `A/VN/NormalFunctionals.lean`): every
+np-functional on `𝒜 ⊆ B(ℋ)` is `∑ₙ⟨xₙ,(·)xₙ⟩` for a square-summable family.
+So the whole development was done for a **family** of vectors rather than a
+single one, which is what makes step 4 a corollary of steps 2–3 rather than a
+new argument:
+
+* **`exists_leastProj_fix`** — the family version of the geometric half of
+  **88IV** `carrier-vector-state` (`exists_cyclic_projection`, a singleton
+  `X`): for a ∗-subalgebra `S ⊆ B(ℋ)` and a set `X` of vectors there is a
+  least projection of `S^□` fixing every `x ∈ X`, namely the orthogonal
+  projection onto the closed span of `S·X`.  Its range is exported as an
+  induction principle ("`q z` lies in every closed submodule containing
+  `S·X`"), which is the only form the tensor step needs.
+* **`npCarrier_isLeast_fix`** — `ρ⌈σ⌉` *is* that least projection, for
+  `σ = ∑ᵢ⟨xᵢ,ρ(·)xᵢ⟩`: `σ(1−p) = ∑ᵢ‖(1−ρp)xᵢ‖²`, a sum of nonnegatives, so it
+  vanishes iff `ρp` fixes every `xᵢ`.
+* **`opTensor_le_of_fix`** — the thesis's steps 2–3.  `a ⊗ b ∈ (𝒜⊗ℬ)^□` for
+  `a ∈ 𝒜^□`, `b ∈ ℬ^□` (`wstar_opTensor_comm`, from **88VI**
+  `double-commutant` through `commutant_basic_3'`), so a projection `E` of
+  `𝒜⊗ℬ` fixing every `xᵢ⊗yⱼ` fixes every `a xᵢ ⊗ b yⱼ`; the fixed points of
+  `E` are a closed subspace, so by the induction principle above, twice, `E`
+  fixes `pA u ⊗ pB v` for all `u`, `v`, i.e. `E·(pA⊗pB) = pA⊗pB`.
+* **`carrier_tensor_4`** itself: realise `𝒜`, `ℬ` on Hilbert spaces (**48VIII**
+  `ngns`), build the spatial tensor product (**111VII** `special-tensor`)
+  composed with the two corestrictions, compare it with the chosen `𝒜 ⊗ ℬ`
+  by **114II** `tensor-uniqueness`, and transport carriers along the
+  resulting nmiu-isomorphism (`npCarrier_nmiu`).  The given `χ` is identified
+  with the vector-family functional of `(xₙ ⊗ yₘ)` by `eq_prodNP`.
+
+### 118IV.5 and .6
+
+**Our 118IV.5 does not follow the thesis's route and does not need
+`ultracyclic-basic`** (divergence, case 3).  The thesis writes
+`1 = ⋃_σ ⌈σ⌉` in `ℬ`, pushes it through `diamond-suprema` and
+`diamond-composition`.  We use instead the direct
+
+    ⌈h⌉ = ⋃_ν ⌈ν ∘ h⌉   (ν over the np-functionals of the codomain)
+
+— `ncpCarrier_eq_projSup`, three lines of np-faithfulness — together with
+`tensor_projSup_le`, which is exactly the supremum-through-`⊗` argument
+already used in **118II**.2 `cceil_tensor` (`ncp_union_2` against the normal
+maps `p ⊗ (·)` and `(·) ⊗ q`), and then 118IV.4 applied to `ν∘f` and `υ∘g`
+with the product functional `prodNP ν υ ∘ (f⊗g)`.  The `≤` half is 118IV.1.
+
+**118IV.6** the thesis states without any argument (case 4).  Ours reduces it
+to .5 in ~35 lines: `f_⋄(e) = ⌈Ad_e ∘ f⌉` (`diamondDown_eq_ncpCarrier`, by
+uniqueness of least elements against the already-proved
+`diamondDown_carrier`), and `Ad_{s⊗t} ∘ (f⊗g) = (Ad_s∘f) ⊗ (Ad_t∘g)` because
+both are ultraweakly continuous and agree on `a ⊗ b` (`tensor_linear_ext`).
+
+### New erratum: **118IV**.1 is false as printed
+
+Filed under `proc.tex`.  Step 1 asks for `(f⊗g)(⌈f⌉⊗⌈g⌉) = 1⊗1`; since
+`f(⌈f⌉) = f(1)`, the left side is `f(1)⊗g(1)`, so the claim needs `f`, `g`
+unital — for `f = 0` it reads `0 = 1⊗1`.  The conclusion is fine and the
+identity the carrier's minimality actually wants is
+`1 − ⌈f⌉⊗⌈g⌉ = (1−⌈f⌉)⊗1 + ⌈f⌉⊗(1−⌈g⌉)`.  The session-71 worker that proved
+`carrier_tensor_1` had noted this in the proof's comment ("see ERRATA") but
+died before filing it; the row exists now.
+
+### What 129X still needs — the next gate, named precisely
+
+**129X did *not* fall with 118IV.4.**  118IV.4 supplies exactly one of its
+inputs, the faithfulness of `ω ⊗ ω` (`⌈ω⊗ω⌉ = ⌈ω⌉⊗⌈ω⌉ = 1⊗1 = 1`).  What is
+left, re-derived against proc.tex:6363, is:
+
+* the **dyadic partition** `(X_w)_{w ∈ {1,2}*}` — a recursion on words over
+  `{1,2}`, each step an application of the already-proved
+  `continuous_measure_space` (`Duplicators.lean:1077`);
+* the **integral state** `ω(f°) = μ(X)⁻¹∫f dμ` on `L^∞(X)`, with normality,
+  unitality and faithfulness (the thesis cites `Linfty-vn`);
+* the descending sequence `q_N = ∑_{|w|=N} p_w ⊗ p_w` of projections in
+  `L^∞(X) ⊗ L^∞(X)`, its infimum, and normality of `δ` on it.
+
+`uniqueness_duplicator` (`Duplicators.lean:523`) and `continuous_measure_space`
+are both proved, so the gate is the partition plus the state; estimate
+300–600 lines.  `127III` `duplicable` therefore still waits on 129X, on
+`cvn_faithful_1` in A/VN, and on the `⊕ᵢ L^∞(Xᵢ)` carrier.
+
+### Housekeeping and two Lean traps
+
+`docs/why-open.csv`: nine rows deleted (all now proved and verified by the
+compiler — `carrier_tensor_1/4/5/6`, `cceil_tensor`, `tensor_injective`,
+`tensor_characterization`, `tensor_distributes_over_sums`,
+`exists_associator`), and five rewritten whose stated blocker is now proved
+(`continuous_finite_measure_space_not_duplicable`, `duplicable`,
+`dup_vna_is_monoid_4`, `linf_tensor`, `ba_ext_tensor_pres`).
+⚠ **`docs/status.txt` is still stale** — it predates this session, so
+`scripts/sorry_map.py` warns that `carrier_tensor_4/5/6` have "no
+classification"; that warning is the staleness, not a missing csv row.
+Regenerate with `lake env lean scripts/StatusDump.lean` after a full
+`lake build`; not done here because two other workers were building
+throughout.
+
+Two traps worth carrying:
+
+* **`set` is quadratic against big types.**  `set γ₁ := …` and
+  `set χ' := …` in the 118IV.4 assembly each blew past 2 000 000 heartbeats
+  on their own, because `set` abstracts the definition out of *every*
+  hypothesis and the tensor-product types here are pages long.  Replacing
+  each with `obtain ⟨γ₁, hγ₁, hγ₁val⟩ : ∃ γ₁, … := ⟨_, …⟩` — which introduces
+  the object opaquely — took the proof from "times out" to 12 s.  The whole
+  theorem still carries `set_option maxHeartbeats 2000000`.
+* A doc comment must come **after** `set_option … in`, not before: the
+  reverse order is a parse error ("unexpected token 'set_option'").

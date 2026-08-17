@@ -15,9 +15,9 @@ on `W*_miu`, `W*_cp`, `W*_cpu`, and `W*_cpsu` (119V).
 * A tensor product of von Neumann algebras is the Prop-valued structure
   `IsTensorProduct γ` (108II).  A *chosen* tensor product is the bundle
   `VNTensorProduct A B : Type (u+1)` (carrier + instances + map); its
-  existence (111XII) is a sorry-ed `Nonempty`, and `vnTensor A B` picks
-  one by choice (115I).  `VNT A B` is its carrier and `a ⊗ᵥ b` the tensor
-  of elements.
+  existence (111XII) is `vnTensorProduct_nonempty`, proved from the spatial
+  construction, and `vnTensor A B` picks one by choice (115I).  `VNT A B`
+  is its carrier and `a ⊗ᵥ b` the tensor of elements.
 * Similarly for Hilbert spaces: `IsHilbertTensorProduct` (109II),
   the bundle `HilbertTensor H K`, choice `hilbTensor`, carrier `HT H K`,
   elementwise `x ⊗ₕ y`, and `opTensor A B` for operators (111V).
@@ -7967,6 +7967,433 @@ theorem tensor_distributes_over_sums :
 
 end SumsTensor
 
+/-! ### Infrastructure for **118IV**.4 (`carrier-tensor`, proc.tex:3880)
+
+The exercise's steps 2 and 3 are spatial: they compute the carrier of a
+*vector* functional on a von Neumann algebra of operators as a projection
+onto a cyclic subspace (**88IV** `carrier-vector-state`, **88VI**
+`double-commutant`), and read off the tensor case from `a ⊗ b ∈ (𝒜⊗ℬ)^□`.
+What follows is that development in the form part 4 needs it: the carrier of
+an np-functional written as `∑ᵢ⟨xᵢ,(·)xᵢ⟩` (**89IX** `normal-functional`)
+is the *least projection of the algebra fixing every `xᵢ`*, and for a
+product functional on the spatial tensor product that projection is the
+tensor of the two.  The abstract case follows by transporting along the
+nmiu-isomorphism of **114II** `tensor-uniqueness`. -/
+
+section CarrierTensorAux
+
+variable {A B : Type u}
+  [CStarAlgebra A] [PartialOrder A] [StarOrderedRing A] [VonNeumannAlgebra A]
+  [CStarAlgebra B] [PartialOrder B] [StarOrderedRing B] [VonNeumannAlgebra B]
+
+/-- Carriers transport along a bijective nmiu-map. -/
+private theorem npCarrier_nmiu (φ : NMIUMap A B) (hφ : Function.Bijective ⇑φ)
+    (χ : NPFunctional B) (ω : NPFunctional A) (h : ∀ a : A, ω a = χ (φ a)) :
+    φ (npCarrier ω) = npCarrier χ := by
+  classical
+  set ψ : NMIUMap B A := nmiuSymm φ hφ with hψ
+  have hmulφ : ∀ x y : A, (φ (x * y) : B) = φ x * φ y := fun x y =>
+    map_mul φ.toStarAlgHom x y
+  have hstarφ : ∀ x : A, (φ (star x) : B) = star (φ x) := fun x =>
+    map_star φ.toStarAlgHom x
+  have hproj : ∀ p : A, IsStarProjection p → IsStarProjection (φ p) := by
+    intro p hp
+    refine ⟨?_, ?_⟩
+    · show φ p * φ p = φ p
+      rw [← hmulφ, hp.isIdempotentElem.eq]
+    · show star (φ p) = φ p
+      rw [← hstarφ, hp.isSelfAdjoint.star_eq]
+  have hone : (φ 1 : B) = 1 := map_one φ.toStarAlgHom
+  have hsub : ∀ p : A, (φ (1 - p) : B) = 1 - φ p := by
+    intro p
+    have h1 : (φ (1 - p) : B) = (φ 1 : B) - φ p := map_sub φ.toStarAlgHom 1 p
+    rw [h1, hone]
+  obtain ⟨hp0, hz0, hl0⟩ := carrier_spec ω.toPositiveLinearMap ω.preservesDirSups'
+  refine (carrier_eq χ.toPositiveLinearMap χ.preservesDirSups'
+    (hproj _ hp0) ?_ ?_).symm
+  · show (χ (1 - φ (npCarrier ω)) : ℂ) = 0
+    rw [← hsub]
+    rw [← h]
+    exact hz0
+  · intro q hq hq0
+    obtain ⟨q₀, rfl⟩ := hφ.2 q
+    have hq₀ : IsStarProjection q₀ := by
+      refine ⟨?_, ?_⟩
+      · apply hφ.1
+        show (φ (q₀ * q₀) : B) = φ q₀
+        rw [hmulφ, hq.isIdempotentElem.eq]
+      · apply hφ.1
+        show (φ (star q₀) : B) = φ q₀
+        rw [hstarφ, hq.isSelfAdjoint.star_eq]
+    have h0 : (ω (1 - q₀) : ℂ) = 0 := by rw [h, hsub]; exact hq0
+    exact starAlgHom_mono' φ.toStarAlgHom (hl0 q₀ hq₀ h0)
+
+end CarrierTensorAux
+
+section CarrierTensorSpatial
+
+variable {H K : Type u}
+  [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
+  [NormedAddCommGroup K] [InnerProductSpace ℂ K] [CompleteSpace K]
+
+/-- The least projection in `S^□` fixing every vector of a set `X`: the
+orthogonal projection onto the closed span `M` of `S·X`.  (The family
+version of `exists_cyclic_projection`, which is the case of a singleton
+`X`.) -/
+private theorem exists_leastProj_fix (S : StarSubalgebra ℂ (H →L[ℂ] H)) (X : Set H) :
+    ∃ q : H →L[ℂ] H, IsStarProjection q ∧ q ∈ commutant (H →L[ℂ] H) S ∧
+      (∀ x ∈ X, q x = x) ∧
+      (∀ N : Submodule ℂ H, IsClosed (N : Set H) →
+        (∀ T ∈ S, ∀ x ∈ X, T x ∈ N) → ∀ z : H, q z ∈ N) ∧
+      (∀ p : H →L[ℂ] H, IsStarProjection p → p ∈ commutant (H →L[ℂ] H) S →
+        (∀ x ∈ X, p x = x) → q ≤ p) := by
+  classical
+  set V : Submodule ℂ H := Submodule.span ℂ {y : H | ∃ T ∈ S, ∃ x ∈ X, y = T x} with hV
+  set M : Submodule ℂ H := V.topologicalClosure with hM
+  have hMclosed : IsClosed (M : Set H) := V.isClosed_topologicalClosure
+  have _ : CompleteSpace M := hMclosed.completeSpace_coe
+  have hgen : ∀ T ∈ S, ∀ x ∈ X, T x ∈ M :=
+    fun T hT x hx => V.le_topologicalClosure (Submodule.subset_span ⟨T, hT, x, hx, rfl⟩)
+  have hxM : ∀ x ∈ X, x ∈ M := fun x hx => by
+    have := hgen 1 (one_mem S) x hx
+    simpa using this
+  have hVle : ∀ N : Submodule ℂ H, (∀ T ∈ S, ∀ x ∈ X, T x ∈ N) → V ≤ N := by
+    intro N hN
+    rw [hV]
+    refine Submodule.span_le.mpr ?_
+    rintro _ ⟨T, hT, x, hx, rfl⟩
+    exact hN T hT x hx
+  have hMle : ∀ N : Submodule ℂ H, IsClosed (N : Set H) →
+      (∀ T ∈ S, ∀ x ∈ X, T x ∈ N) → ∀ z ∈ M, z ∈ N := by
+    intro N hNcl hN z hz
+    have h1 : (M : Set H) ⊆ (N : Set H) := by
+      rw [hM, Submodule.topologicalClosure_coe]
+      exact closure_minimal (hVle N hN) hNcl
+    exact h1 hz
+  -- `M` is invariant under `S`
+  have hinv : ∀ T ∈ S, ∀ z ∈ M, T z ∈ M := by
+    intro T hT z hz
+    refine hMle (M.comap (T : H →L[ℂ] H).toLinearMap)
+      (hMclosed.preimage T.continuous) ?_ z hz
+    intro T' hT' x hx
+    have h2 : (T * T') x = T (T' x) := rfl
+    show T (T' x) ∈ M
+    rw [← h2]
+    exact hgen (T * T') (mul_mem hT hT') x hx
+  have hinvo : ∀ T ∈ S, ∀ z ∈ Mᗮ, T z ∈ Mᗮ := by
+    intro T hT z hz
+    rw [Submodule.mem_orthogonal]
+    intro m hm
+    have hadj : ContinuousLinearMap.adjoint T ∈ S := by
+      rw [← ContinuousLinearMap.star_eq_adjoint]
+      exact star_mem_iff.mpr hT
+    have h1 : (inner ℂ ((ContinuousLinearMap.adjoint T) m) z : ℂ) = inner ℂ m (T z) :=
+      ContinuousLinearMap.adjoint_inner_left T z m
+    rw [← h1]
+    exact (Submodule.mem_orthogonal M z).mp hz _ (hinv _ hadj m hm)
+  have hPcomm : M.starProjection ∈ commutant (H →L[ℂ] H) S := by
+    intro T hT
+    ext z
+    have hz1 : M.starProjection z ∈ M := M.starProjection_apply_mem z
+    have hz2 : z - M.starProjection z ∈ Mᗮ := Submodule.sub_starProjection_mem_orthogonal z
+    have e1 : T z = T (M.starProjection z) + T (z - M.starProjection z) := by
+      rw [← map_add]; congr 1; abel
+    simp only [ContinuousLinearMap.mul_apply]
+    rw [e1, map_add,
+      (Submodule.starProjection_eq_self_iff).mpr (hinv T hT _ hz1),
+      (Submodule.starProjection_apply_eq_zero_iff M).mpr (hinvo T hT _ hz2), add_zero]
+  refine ⟨M.starProjection, isStarProjection_starProjection, hPcomm,
+    fun x hx => (Submodule.starProjection_eq_self_iff).mpr (hxM x hx),
+    fun N hNcl hN z => hMle N hNcl hN _ (M.starProjection_apply_mem z), ?_⟩
+  intro p hp hpc hpX
+  -- `Fix p` is a closed submodule containing `S·X`, hence contains `M`
+  have hFix : ∀ z ∈ M, p z = z := by
+    intro z hz
+    have := hMle (LinearMap.eqLocus (p : H →L[ℂ] H).toLinearMap LinearMap.id)
+      (isClosed_eq p.continuous continuous_id) ?_ z hz
+    · exact this
+    · intro T hT x hx
+      show p (T x) = T x
+      have hc := hpc T hT
+      calc p (T x) = (p * T) x := rfl
+        _ = (T * p) x := by rw [hc]
+        _ = T x := by show T (p x) = T x; rw [hpX x hx]
+  have hmul : p * M.starProjection = M.starProjection := by
+    ext z
+    show p (M.starProjection z) = M.starProjection z
+    exact hFix _ (M.starProjection_apply_mem z)
+  exact ((projection_below_effect p M.starProjection ⟨hp.nonneg, hp.le_one⟩
+    isStarProjection_starProjection).out 0 6).mpr hmul
+
+variable {A : Type u}
+  [CStarAlgebra A] [PartialOrder A] [StarOrderedRing A] [VonNeumannAlgebra A]
+
+/-- For a projection `P` of `B(H)` and a vector `x`, `⟪x,(1-P)x⟫ = 0` iff
+`P x = x`. -/
+private theorem inner_one_sub_eq_normSq {P : H →L[ℂ] H} (hP : IsStarProjection P) (x : H) :
+    (⟪x, (1 - P) x⟫ : ℂ) = ((‖(1 - P) x‖ ^ 2 : ℝ) : ℂ) := by
+  have hQ : IsStarProjection (1 - P) := hP.one_sub
+  have h1 : ((1 - P) : H →L[ℂ] H) ((1 - P) x) = (1 - P) x := by
+    have := hQ.isIdempotentElem.eq
+    calc ((1 - P) : H →L[ℂ] H) ((1 - P) x) = ((1 - P) * (1 - P)) x := rfl
+      _ = (1 - P) x := by rw [this]
+  have h2 : (⟪x, (1 - P) x⟫ : ℂ) = ⟪(1 - P) x, (1 - P) x⟫ := by
+    rw [← h1]
+    have hadj : ContinuousLinearMap.adjoint ((1 - P) : H →L[ℂ] H) = (1 - P) := by
+      rw [← ContinuousLinearMap.star_eq_adjoint]
+      exact hQ.isSelfAdjoint.star_eq
+    rw [← ContinuousLinearMap.adjoint_inner_left, hadj, h1]
+  rw [h2, inner_self_eq_norm_sq_to_K]
+  norm_cast
+
+/-- For an injective nmiu-map `ρ : 𝒜 → B(ℋ)` and an np-functional `σ` on
+`𝒜` written as `σ = ∑ᵢ⟨xᵢ,ρ(·)xᵢ⟩`, the image `ρ⌈σ⌉` of the carrier is the
+least projection of `ρ(𝒜)` fixing every `xᵢ`. -/
+private theorem npCarrier_isLeast_fix {ι : Type*} (ρ : NMIUMap A (H →L[ℂ] H))
+    (hρ : Function.Injective ⇑ρ) (σ : NPFunctional A) (x : ι → H)
+    (hx : ∀ a : A, HasSum (fun i => (⟪x i, ρ a (x i)⟫ : ℂ)) (σ a)) :
+    IsStarProjection (ρ (npCarrier σ)) ∧ (∀ i, ρ (npCarrier σ) (x i) = x i) ∧
+      ∀ P : H →L[ℂ] H, IsStarProjection P → P ∈ Set.range ⇑ρ →
+        (∀ i, P (x i) = x i) → ρ (npCarrier σ) ≤ P := by
+  classical
+  have hmulρ : ∀ y z : A, (ρ (y * z) : H →L[ℂ] H) = ρ y * ρ z := fun y z =>
+    map_mul ρ.toStarAlgHom y z
+  have hstarρ : ∀ y : A, (ρ (star y) : H →L[ℂ] H) = star (ρ y) := fun y =>
+    map_star ρ.toStarAlgHom y
+  have honeρ : (ρ 1 : H →L[ℂ] H) = 1 := map_one ρ.toStarAlgHom
+  have hsubρ : ∀ y : A, (ρ (1 - y) : H →L[ℂ] H) = 1 - ρ y := by
+    intro y
+    have h1 : (ρ (1 - y) : H →L[ℂ] H) = (ρ 1 : H →L[ℂ] H) - ρ y :=
+      map_sub ρ.toStarAlgHom 1 y
+    rw [h1, honeρ]
+  have hprojρ : ∀ p : A, IsStarProjection p → IsStarProjection (ρ p) := by
+    intro p hp
+    exact ⟨by show ρ p * ρ p = ρ p; rw [← hmulρ, hp.isIdempotentElem.eq],
+      by show star (ρ p) = ρ p; rw [← hstarρ, hp.isSelfAdjoint.star_eq]⟩
+  have hprojρ' : ∀ p : A, IsStarProjection (ρ p) → IsStarProjection p := by
+    intro p hp
+    refine ⟨?_, ?_⟩
+    · apply hρ; show (ρ (p * p) : H →L[ℂ] H) = ρ p; rw [hmulρ, hp.isIdempotentElem.eq]
+    · apply hρ; show (ρ (star p) : H →L[ℂ] H) = ρ p; rw [hstarρ, hp.isSelfAdjoint.star_eq]
+  -- the key equivalence
+  have hkey : ∀ p : A, IsStarProjection p →
+      ((σ (1 - p) : ℂ) = 0 ↔ ∀ i, ρ p (x i) = x i) := by
+    intro p hp
+    have hP := hprojρ p hp
+    have hterm : ∀ i, (⟪x i, ρ (1 - p) (x i)⟫ : ℂ)
+        = ((‖(1 - ρ p) (x i)‖ ^ 2 : ℝ) : ℂ) := by
+      intro i
+      rw [hsubρ]
+      exact inner_one_sub_eq_normSq hP (x i)
+    have hsum : HasSum (fun i => ((‖(1 - ρ p) (x i)‖ ^ 2 : ℝ) : ℂ)) (σ (1 - p)) := by
+      refine (hx (1 - p)).congr_fun fun i => (hterm i).symm
+    have hre : HasSum (fun i => (‖(1 - ρ p) (x i)‖ ^ 2 : ℝ)) ((σ (1 - p) : ℂ).re) := by
+      have h3 := hsum.mapL Complex.reCLM
+      exact h3.congr_fun fun i => (Complex.ofReal_re _).symm
+    constructor
+    · intro h0 i
+      have hre0 : HasSum (fun i => (‖(1 - ρ p) (x i)‖ ^ 2 : ℝ)) 0 := by
+        rw [h0] at hre; simpa using hre
+      have hle : (‖(1 - ρ p) (x i)‖ ^ 2 : ℝ) ≤ 0 :=
+        le_hasSum hre0 i fun j _ => by positivity
+      have hz : ((1 : H →L[ℂ] H) - ρ p) (x i) = 0 := by
+        have : (‖(1 - ρ p) (x i)‖ : ℝ) = 0 := by nlinarith [norm_nonneg ((1 - ρ p) (x i))]
+        exact norm_eq_zero.mp this
+      have : x i - ρ p (x i) = 0 := by
+        have h2 : ((1 : H →L[ℂ] H) - ρ p) (x i) = x i - ρ p (x i) := rfl
+        rwa [h2] at hz
+      linear_combination (norm := module) -this
+    · intro h
+      have hz : ∀ i, ((‖(1 - ρ p) (x i)‖ ^ 2 : ℝ) : ℂ) = 0 := by
+        intro i
+        have h2 : ((1 : H →L[ℂ] H) - ρ p) (x i) = x i - ρ p (x i) := rfl
+        rw [h2, h i, sub_self]
+        simp
+      have hfz : (fun i => ((‖((1 : H →L[ℂ] H) - ρ p) (x i)‖ ^ 2 : ℝ) : ℂ))
+          = fun _ : ι => (0 : ℂ) := funext hz
+      rw [hfz] at hsum
+      exact (hasSum_zero.unique hsum).symm
+  obtain ⟨hp0, hz0, hl0⟩ := carrier_spec σ.toPositiveLinearMap σ.preservesDirSups'
+  refine ⟨hprojρ _ hp0, (hkey _ hp0).mp hz0, ?_⟩
+  rintro P hP ⟨p, rfl⟩ hfix
+  exact starAlgHom_mono' ρ.toStarAlgHom (hl0 p (hprojρ' p hP) ((hkey p (hprojρ' p hP)).mpr hfix))
+
+/-- The commutant of a von Neumann subalgebra of `B(ℋ)`, as a
+∗-subalgebra, together with the double commutant identity. -/
+private theorem exists_commutant_starSubalgebra (R : StarSubalgebra ℂ (H →L[ℂ] H))
+    (hR : IsVNSubalgebra (H →L[ℂ] H) R) :
+    ∃ S : StarSubalgebra ℂ (H →L[ℂ] H),
+      (S : Set (H →L[ℂ] H)) = commutant (H →L[ℂ] H) (R : Set (H →L[ℂ] H)) ∧
+      commutant (H →L[ℂ] H) (S : Set (H →L[ℂ] H)) = (R : Set (H →L[ℂ] H)) := by
+  classical
+  obtain ⟨S, -, hSset⟩ :=
+    (commutant_basic_3' (R : Set (H →L[ℂ] H)) (fun _ ha => star_mem ha)).1
+  refine ⟨S, hSset, ?_⟩
+  rw [hSset]
+  have h1 := (double_commutant R).2.2
+  rw [h1, wstar_eq_of_isVNSubalgebra R hR]
+
+/-- `v ↦ x ⊗ v` and `u ↦ u ⊗ y` are continuous. -/
+private theorem continuous_htmul_right (x : H) : Continuous (fun v : K => x ⊗ₕ v) :=
+  AddMonoidHomClass.continuous_of_bound ((hilbTensor H K).map x) ‖x‖
+    (fun v => le_of_eq (norm_htmul x v))
+
+private theorem continuous_htmul_left (y : K) : Continuous (fun u : H => u ⊗ₕ y) :=
+  AddMonoidHomClass.continuous_of_bound (((hilbTensor H K).map).flip y) ‖y‖
+    (fun u => by rw [show (((hilbTensor H K).map).flip y) u = u ⊗ₕ y from rfl,
+      norm_htmul, mul_comm])
+
+/-- **118IV**.2–3 (proc.tex:3880), the spatial heart of the exercise: if
+`pA` is the least projection of `𝒜 ⊆ B(ℋ)` fixing every `xᵢ` and `pB` the
+least projection of `ℬ ⊆ B(𝒦)` fixing every `yⱼ`, then every projection
+`E` of `𝒜 ⊗ ℬ` fixing every `xᵢ ⊗ yⱼ` dominates `pA ⊗ pB`.
+
+The argument is the thesis's: `a ⊗ b ∈ (𝒜 ⊗ ℬ)^□` for `a ∈ 𝒜^□`,
+`b ∈ ℬ^□`, so `E` fixes `a xᵢ ⊗ b yⱼ`; and the range of `pA` (resp. `pB`)
+is the closed span of the `a xᵢ` (resp. `b yⱼ`) by **88IV**
+`carrier-vector-state`, in the family form `exists_leastProj_fix`. -/
+theorem opTensor_le_of_fix
+    (SA : StarSubalgebra ℂ (H →L[ℂ] H)) (hSA : IsVNSubalgebra (H →L[ℂ] H) SA)
+    (SB : StarSubalgebra ℂ (K →L[ℂ] K)) (hSB : IsVNSubalgebra (K →L[ℂ] K) SB)
+    {ι κ : Type*} (x : ι → H) (y : κ → K)
+    (pA : H →L[ℂ] H) (hpA : IsStarProjection pA) (hpAmem : pA ∈ SA)
+    (hpAfix : ∀ i, pA (x i) = x i)
+    (hpAleast : ∀ P : H →L[ℂ] H, IsStarProjection P → P ∈ SA →
+      (∀ i, P (x i) = x i) → pA ≤ P)
+    (pB : K →L[ℂ] K) (hpB : IsStarProjection pB) (hpBmem : pB ∈ SB)
+    (hpBfix : ∀ j, pB (y j) = y j)
+    (hpBleast : ∀ P : K →L[ℂ] K, IsStarProjection P → P ∈ SB →
+      (∀ j, P (y j) = y j) → pB ≤ P)
+    (E : HT H K →L[ℂ] HT H K) (hE : IsStarProjection E)
+    (hEcomm : ∀ a ∈ commutant (H →L[ℂ] H) (SA : Set (H →L[ℂ] H)),
+      ∀ b ∈ commutant (K →L[ℂ] K) (SB : Set (K →L[ℂ] K)),
+      E * opTensor a b = opTensor a b * E)
+    (hEfix : ∀ i j, E (x i ⊗ₕ y j) = x i ⊗ₕ y j) :
+    opTensor pA pB ≤ E := by
+  classical
+  obtain ⟨CA, hCAset, hCAcomm⟩ := exists_commutant_starSubalgebra SA hSA
+  obtain ⟨CB, hCBset, hCBcomm⟩ := exists_commutant_starSubalgebra SB hSB
+  obtain ⟨qA, hqAproj, hqAmem, hqAfix, hqAle, hqAleast⟩ :=
+    exists_leastProj_fix CA (Set.range x)
+  obtain ⟨qB, hqBproj, hqBmem, hqBfix, hqBle, hqBleast⟩ :=
+    exists_leastProj_fix CB (Set.range y)
+  -- `pA = qA` and `pB = qB`
+  have hqAmem' : qA ∈ SA := by
+    have : qA ∈ (SA : Set (H →L[ℂ] H)) := by rw [← hCAcomm]; exact hqAmem
+    exact this
+  have hqBmem' : qB ∈ SB := by
+    have : qB ∈ (SB : Set (K →L[ℂ] K)) := by rw [← hCBcomm]; exact hqBmem
+    exact this
+  have hpAmem' : pA ∈ commutant (H →L[ℂ] H) (CA : Set (H →L[ℂ] H)) := by
+    rw [hCAcomm]; exact hpAmem
+  have hpBmem' : pB ∈ commutant (K →L[ℂ] K) (CB : Set (K →L[ℂ] K)) := by
+    rw [hCBcomm]; exact hpBmem
+  have hpAeq : pA = qA :=
+    le_antisymm (hpAleast qA hqAproj hqAmem' (fun i => hqAfix _ ⟨i, rfl⟩))
+      (hqAleast pA hpA hpAmem' (fun _ ⟨i, hi⟩ => hi ▸ hpAfix i))
+  have hpBeq : pB = qB :=
+    le_antisymm (hpBleast qB hqBproj hqBmem' (fun j => hqBfix _ ⟨j, rfl⟩))
+      (hqBleast pB hpB hpBmem' (fun _ ⟨j, hj⟩ => hj ▸ hpBfix j))
+  -- the fixed points of `E`, as a closed submodule
+  set FixE : Submodule ℂ (HT H K) :=
+    LinearMap.eqLocus (E : HT H K →L[ℂ] HT H K).toLinearMap LinearMap.id with hFixE
+  have hFixEcl : IsClosed (FixE : Set (HT H K)) :=
+    isClosed_eq E.continuous continuous_id
+  have hmemFix : ∀ w : HT H K, w ∈ FixE ↔ E w = w := fun w => Iff.rfl
+  -- step 1: `E` fixes `a xᵢ ⊗ b yⱼ`
+  have hstep1 : ∀ a ∈ commutant (H →L[ℂ] H) (SA : Set (H →L[ℂ] H)),
+      ∀ b ∈ commutant (K →L[ℂ] K) (SB : Set (K →L[ℂ] K)), ∀ (i : ι) (j : κ),
+      E ((a (x i)) ⊗ₕ (b (y j))) = (a (x i)) ⊗ₕ (b (y j)) := by
+    intro a ha b hb i j
+    have h1 : (a (x i)) ⊗ₕ (b (y j)) = opTensor a b (x i ⊗ₕ y j) :=
+      (opTensor_apply a b (x i) (y j)).symm
+    rw [h1]
+    calc E (opTensor a b (x i ⊗ₕ y j)) = (E * opTensor a b) (x i ⊗ₕ y j) := rfl
+      _ = (opTensor a b * E) (x i ⊗ₕ y j) := by rw [hEcomm a ha b hb]
+      _ = opTensor a b (E (x i ⊗ₕ y j)) := rfl
+      _ = opTensor a b (x i ⊗ₕ y j) := by rw [hEfix i j]
+  -- step 2: `E` fixes `a xᵢ ⊗ pB v`
+  have hstep2 : ∀ a ∈ commutant (H →L[ℂ] H) (SA : Set (H →L[ℂ] H)), ∀ (i : ι) (v : K),
+      E ((a (x i)) ⊗ₕ (pB v)) = (a (x i)) ⊗ₕ (pB v) := by
+    intro a ha i v
+    set N : Submodule ℂ K :=
+      Submodule.comap ((hilbTensor H K).map (a (x i))) FixE with hN
+    have hNcl : IsClosed (N : Set K) :=
+      hFixEcl.preimage (continuous_htmul_right (a (x i)))
+    have hNgen : ∀ T ∈ CB, ∀ w ∈ Set.range y, T w ∈ N := by
+      rintro T hT _ ⟨j, rfl⟩
+      have hT' : T ∈ commutant (K →L[ℂ] K) (SB : Set (K →L[ℂ] K)) := by
+        rw [← hCBset]; exact hT
+      show E ((a (x i)) ⊗ₕ (T (y j))) = (a (x i)) ⊗ₕ (T (y j))
+      exact hstep1 a ha T hT' i j
+    have := hqBle N hNcl hNgen v
+    rw [← hpBeq] at this
+    exact this
+  -- step 3: `E` fixes `pA u ⊗ pB v`
+  have hstep3 : ∀ (u : H) (v : K), E ((pA u) ⊗ₕ (pB v)) = (pA u) ⊗ₕ (pB v) := by
+    intro u v
+    set N : Submodule ℂ H :=
+      Submodule.comap (((hilbTensor H K).map).flip (pB v)) FixE with hN
+    have hNcl : IsClosed (N : Set H) :=
+      hFixEcl.preimage (continuous_htmul_left (pB v))
+    have hNgen : ∀ T ∈ CA, ∀ w ∈ Set.range x, T w ∈ N := by
+      rintro T hT _ ⟨i, rfl⟩
+      have hT' : T ∈ commutant (H →L[ℂ] H) (SA : Set (H →L[ℂ] H)) := by
+        rw [← hCAset]; exact hT
+      show E ((T (x i)) ⊗ₕ (pB v)) = (T (x i)) ⊗ₕ (pB v)
+      exact hstep2 T hT' i v
+    have := hqAle N hNcl hNgen u
+    rw [← hpAeq] at this
+    exact this
+  -- conclude
+  have hprojT : IsStarProjection (opTensor pA pB) := by
+    refine ⟨?_, ?_⟩
+    · show opTensor pA pB * opTensor pA pB = opTensor pA pB
+      rw [← opTensor_mul, hpA.isIdempotentElem.eq, hpB.isIdempotentElem.eq]
+    · show star (opTensor pA pB) = opTensor pA pB
+      rw [opTensor_star, hpA.isSelfAdjoint.star_eq, hpB.isSelfAdjoint.star_eq]
+  have hmulEq : E * opTensor pA pB = opTensor pA pB := by
+    refine ext_htmul fun u v => ?_
+    show E (opTensor pA pB (u ⊗ₕ v)) = opTensor pA pB (u ⊗ₕ v)
+    rw [opTensor_apply]
+    exact hstep3 u v
+  exact ((projection_below_effect E (opTensor pA pB) ⟨hE.nonneg, hE.le_one⟩
+    hprojT).out 0 6).mpr hmulEq
+
+/-- `a ⊗ b ∈ (𝒜 ⊗ ℬ)^□` for `a ∈ 𝒜^□`, `b ∈ ℬ^□`: every element of the von
+Neumann algebra generated by the elementary tensors commutes with them. -/
+private theorem wstar_opTensor_comm (SA : StarSubalgebra ℂ (H →L[ℂ] H))
+    (SB : StarSubalgebra ℂ (K →L[ℂ] K))
+    {z : HT H K →L[ℂ] HT H K}
+    (hz : z ∈ wstar (HT H K →L[ℂ] HT H K)
+      {w : HT H K →L[ℂ] HT H K | ∃ s ∈ SA, ∃ t ∈ SB, w = opTensor s t})
+    {a : H →L[ℂ] H} (ha : a ∈ commutant (H →L[ℂ] H) (SA : Set (H →L[ℂ] H)))
+    {b : K →L[ℂ] K} (hb : b ∈ commutant (K →L[ℂ] K) (SB : Set (K →L[ℂ] K))) :
+    z * opTensor a b = opTensor a b * z := by
+  classical
+  set D : Set (HT H K →L[ℂ] HT H K) :=
+    {w : HT H K →L[ℂ] HT H K | ∃ a' ∈ commutant (H →L[ℂ] H) (SA : Set (H →L[ℂ] H)),
+      ∃ b' ∈ commutant (K →L[ℂ] K) (SB : Set (K →L[ℂ] K)), w = opTensor a' b'} with hD
+  have hDstar : ∀ d ∈ D, star d ∈ D := by
+    rintro _ ⟨a', ha', b', hb', rfl⟩
+    exact ⟨star a', star_mem_commutant_of_starSubalgebra SA ha', star b',
+      star_mem_commutant_of_starSubalgebra SB hb', opTensor_star a' b'⟩
+  obtain ⟨C, hCvn, hCset⟩ := (commutant_basic_3' D hDstar).1
+  have hgenC : {w : HT H K →L[ℂ] HT H K | ∃ s ∈ SA, ∃ t ∈ SB, w = opTensor s t} ⊆
+      (C : Set (HT H K →L[ℂ] HT H K)) := by
+    rintro _ ⟨s, hs, t, ht, rfl⟩
+    rw [hCset]
+    rintro _ ⟨a', ha', b', hb', rfl⟩
+    rw [← opTensor_mul, ← opTensor_mul, ha' s hs, hb' t ht]
+  have hle : wstar (HT H K →L[ℂ] HT H K)
+      {w : HT H K →L[ℂ] HT H K | ∃ s ∈ SA, ∃ t ∈ SB, w = opTensor s t} ≤ C :=
+    sInf_le ⟨hCvn, hgenC⟩
+  have hzC : z ∈ (C : Set (HT H K →L[ℂ] HT H K)) := hle hz
+  rw [hCset] at hzC
+  exact (hzC (opTensor a b) ⟨a, ha, b, hb, rfl⟩).symm
+
+end CarrierTensorSpatial
+
 /-! ## Parsec 1180: tensors of projections and carriers -/
 
 section Carriers
@@ -8280,20 +8707,294 @@ theorem carrier_tensor_1 (f : NCPMap A C) (g : NCPMap B D) :
     rw [h1, h2, add_zero]
   exact (exists_ncpCarrier (tmap f g)).choose_spec.1.2.2 _ hpq hzero
 
+set_option maxHeartbeats 2000000 in
 /-- **118IV** (`carrier-tensor`, proc.tex:3880, Exercise), part 4 (the
 case of functionals): `⌈σ ⊗ τ⌉ = ⌈σ⌉ ⊗ ⌈τ⌉` for np-functionals `σ`,
 `τ` — for any np-functional `χ` on `𝒜 ⊗ ℬ` restricting to the product.
-(Parts 2–3, the Hilbert-space steps toward it, are proof-steps of the
-guided exercise and are not converted separately.) -/
+(Parts 2–3, the Hilbert-space steps toward it are the spatial development
+just above; the reduction to it is by **114II** `tensor-uniqueness`.) -/
 theorem carrier_tensor_4 (σ : NPFunctional A) (τ : NPFunctional B)
     (χ : NPFunctional (VNT A B))
     (hχ : ∀ (a : A) (b : B), χ (a ⊗ᵥ b) = σ a * τ b) :
-    npCarrier χ = npCarrier σ ⊗ᵥ npCarrier τ := sorry
+    npCarrier χ = npCarrier σ ⊗ᵥ npCarrier τ := by
+  classical
+  obtain ⟨ι, f, hfinj, hfR⟩ := ngns A
+  obtain ⟨κ, g, hginj, hgR⟩ := ngns B
+  have hfmem : ∀ a, f a ∈ f.toStarAlgHom.range := fun a => ⟨a, rfl⟩
+  have hgmem : ∀ b, g b ∈ g.toStarAlgHom.range := fun b => ⟨b, rfl⟩
+  obtain ⟨γ₀, hγ₀val, hγ₀⟩ :=
+    special_tensor f.toStarAlgHom.range g.toStarAlgHom.range hfR hgR
+  have hbijA := nmiuCorestrict_bijective f _ hfR hfmem hfinj
+    (by rintro _ ⟨a, rfl⟩; exact ⟨a, rfl⟩)
+  have hbijB := nmiuCorestrict_bijective g _ hgR hgmem hginj
+    (by rintro _ ⟨b, rfl⟩; exact ⟨b, rfl⟩)
+  obtain ⟨γ₁, hγ₁, hγ₁val⟩ :
+      ∃ γ₁ : A →ₗ[ℂ] B →ₗ[ℂ] VNSub _
+        (wstar _ {w | ∃ s ∈ f.toStarAlgHom.range, ∃ t ∈ g.toStarAlgHom.range,
+          w = opTensor s t}) (isVNSubalgebra_wstar _).1,
+        IsTensorProduct γ₁ ∧
+          ∀ (a : A) (b : B), (γ₁ a b).val = opTensor (f a) (g b) :=
+    ⟨γ₀.compl₁₂ (nmiuLin (nmiuCorestrict f _ hfR hfmem))
+        (nmiuLin (nmiuCorestrict g _ hgR hgmem)),
+      isTensorProduct_comp _ hbijA _ hbijB hγ₀, by
+        intro a b
+        show (γ₀ (nmiuCorestrict f _ hfR hfmem a)
+          (nmiuCorestrict g _ hgR hgmem b)).val = _
+        rw [hγ₀val]
+        rfl⟩
+  obtain ⟨φ, hφe, hφbij, -⟩ :=
+    tensor_uniqueness γ₁ (vnTensor A B).map hγ₁ (vnTensor A B).isTensorProduct
+  obtain ⟨χ', hχ'apply⟩ : ∃ χ' : NPFunctional _, ∀ t, χ' t = χ (φ t) :=
+    ⟨compNP (nmiuP φ) φ.preservesDirSups' χ, fun _ => rfl⟩
+  have hχ'prod : ∀ (a : A) (b : B), χ' (γ₁ a b) = σ a * τ b := by
+    intro a b
+    rw [hχ'apply, hφe]
+    exact hχ a b
+  obtain ⟨x, hxsum, hx⟩ := normal_functional f hfinj hfR σ
+  obtain ⟨y, hysum, hy⟩ := normal_functional g hginj hgR τ
+  have hz : Summable fun p : ℕ × ℕ => ‖x p.1 ⊗ₕ y p.2‖ ^ 2 := by
+    refine ((hxsum.mul_of_nonneg hysum (fun n => by positivity)
+      (fun m => by positivity)).congr fun p => ?_)
+    rw [norm_htmul, mul_pow]
+  obtain ⟨ω, hω⟩ :=
+    exists_sumVectorNP (ι := ℕ × ℕ) (fun p => x p.1 ⊗ₕ y p.2) hz
+  -- `ω(f(a) ⊗ g(b)) = σ(a)τ(b)`
+  have hprod : ∀ (a : A) (b : B), ω (opTensor (f a) (g b)) = σ a * τ b := by
+    intro a b
+    have hfn : Summable fun n : ℕ => ‖(⟪x n, f a (x n)⟫ : ℂ)‖ := by
+      refine Summable.of_nonneg_of_le (fun n => norm_nonneg _)
+        (fun n => ?_) (hxsum.mul_left ‖(f a : _ →L[ℂ] _)‖)
+      calc ‖(⟪x n, f a (x n)⟫ : ℂ)‖ ≤ ‖x n‖ * ‖f a (x n)‖ := norm_inner_le_norm _ _
+        _ ≤ ‖x n‖ * (‖(f a : _ →L[ℂ] _)‖ * ‖x n‖) := by
+            gcongr
+            exact (f a).le_opNorm _
+        _ = ‖(f a : _ →L[ℂ] _)‖ * ‖x n‖ ^ 2 := by ring
+    have hgn : Summable fun m : ℕ => ‖(⟪y m, g b (y m)⟫ : ℂ)‖ := by
+      refine Summable.of_nonneg_of_le (fun m => norm_nonneg _)
+        (fun m => ?_) (hysum.mul_left ‖(g b : _ →L[ℂ] _)‖)
+      calc ‖(⟪y m, g b (y m)⟫ : ℂ)‖ ≤ ‖y m‖ * ‖g b (y m)‖ := norm_inner_le_norm _ _
+        _ ≤ ‖y m‖ * (‖(g b : _ →L[ℂ] _)‖ * ‖y m‖) := by
+            gcongr
+            exact (g b).le_opNorm _
+        _ = ‖(g b : _ →L[ℂ] _)‖ * ‖y m‖ ^ 2 := by ring
+    have hsummable : Summable fun p : ℕ × ℕ =>
+        (⟪x p.1, f a (x p.1)⟫ : ℂ) * ⟪y p.2, g b (y p.2)⟫ := by
+      refine Summable.of_norm ?_
+      refine (hfn.mul_of_nonneg hgn (fun n => norm_nonneg _)
+        (fun m => norm_nonneg _)).congr fun p => ?_
+      rw [norm_mul]
+    have h1 := hω (opTensor (f a) (g b))
+    have h2 := (hx a).mul (hy b) hsummable
+    have hterm : ∀ p : ℕ × ℕ,
+        (⟪x p.1 ⊗ₕ y p.2, opTensor (f a) (g b) (x p.1 ⊗ₕ y p.2)⟫ : ℂ)
+          = (⟪x p.1, f a (x p.1)⟫ : ℂ) * ⟪y p.2, g b (y p.2)⟫ := by
+      intro p
+      rw [opTensor_apply, htmul_inner]
+    rw [funext hterm] at h1
+    exact h1.unique h2
+  have hprod' : ∀ (a : A) (b : B), (VNSub.restrictNP ω) (γ₁ a b) = σ a * τ b := by
+    intro a b
+    show ω ((γ₁ a b).val) = _
+    rw [hγ₁val]
+    exact hprod a b
+  have hχ'eq : ∀ t, χ' t = ω t.val := by
+    intro t
+    have h1 := eq_prodNP hγ₁ σ τ χ' hχ'prod t
+    have h2 := eq_prodNP hγ₁ σ τ (VNSub.restrictNP ω) hprod' t
+    rw [h1, ← h2]
+    rfl
+  -- the three least projections
+  obtain ⟨hEproj, hEfix, hEleast⟩ :=
+    npCarrier_isLeast_fix VNSub.valNMIU VNSub.valNMIU_injective χ'
+      (fun p : ℕ × ℕ => x p.1 ⊗ₕ y p.2)
+      (fun t => by rw [hχ'eq]; exact hω t.val)
+  obtain ⟨hpAproj, hpAfix, hpAleast⟩ := npCarrier_isLeast_fix f hfinj σ x hx
+  obtain ⟨hpBproj, hpBfix, hpBleast⟩ := npCarrier_isLeast_fix g hginj τ y hy
+  have hpAmem : f (npCarrier σ) ∈ f.toStarAlgHom.range := hfmem _
+  have hpBmem : g (npCarrier τ) ∈ g.toStarAlgHom.range := hgmem _
+  have hTproj : IsStarProjection (opTensor (f (npCarrier σ)) (g (npCarrier τ))) := by
+    refine ⟨?_, ?_⟩
+    · show opTensor (f (npCarrier σ)) (g (npCarrier τ)) * opTensor (f (npCarrier σ)) (g (npCarrier τ)) = opTensor (f (npCarrier σ)) (g (npCarrier τ))
+      rw [← opTensor_mul, hpAproj.isIdempotentElem.eq, hpBproj.isIdempotentElem.eq]
+    · show star (opTensor (f (npCarrier σ)) (g (npCarrier τ))) = opTensor (f (npCarrier σ)) (g (npCarrier τ))
+      rw [opTensor_star, hpAproj.isSelfAdjoint.star_eq, hpBproj.isSelfAdjoint.star_eq]
+  have hTfix : ∀ p : ℕ × ℕ,
+      opTensor (f (npCarrier σ)) (g (npCarrier τ)) (x p.1 ⊗ₕ y p.2) = x p.1 ⊗ₕ y p.2 := by
+    intro p
+    rw [opTensor_apply, hpAfix p.1, hpBfix p.2]
+  have hTmem : opTensor (f (npCarrier σ)) (g (npCarrier τ)) ∈ Set.range ⇑(VNSub.valNMIU
+      (A := HT (lp (fun _ : ι => ℂ) 2) (lp (fun _ : κ => ℂ) 2) →L[ℂ] _)
+      (S := wstar _ {w | ∃ s ∈ f.toStarAlgHom.range, ∃ t ∈ g.toStarAlgHom.range,
+        w = opTensor s t}) (hS := (isVNSubalgebra_wstar _).1)) := by
+    refine ⟨⟨opTensor (f (npCarrier σ)) (g (npCarrier τ)), ?_⟩, rfl⟩
+    exact (isVNSubalgebra_wstar _).2 ⟨f (npCarrier σ), hpAmem, g (npCarrier τ), hpBmem, rfl⟩
+  have hle1 : (npCarrier χ').val ≤ opTensor (f (npCarrier σ)) (g (npCarrier τ)) := hEleast _ hTproj hTmem hTfix
+  have hle2 : opTensor (f (npCarrier σ)) (g (npCarrier τ)) ≤ (npCarrier χ').val := by
+    refine opTensor_le_of_fix f.toStarAlgHom.range hfR g.toStarAlgHom.range hgR
+      x y (f (npCarrier σ)) hpAproj hpAmem hpAfix ?_ (g (npCarrier τ)) hpBproj hpBmem
+      hpBfix ?_ (npCarrier χ').val hEproj ?_ ?_
+    · intro P hP hPmem hPfix
+      exact hpAleast P hP hPmem hPfix
+    · intro P hP hPmem hPfix
+      exact hpBleast P hP hPmem hPfix
+    · intro a ha b hb
+      exact wstar_opTensor_comm _ _ (npCarrier χ').property ha hb
+    · intro i j
+      exact hEfix (i, j)
+  have hvaleq : (npCarrier χ').val = (γ₁ (npCarrier σ) (npCarrier τ)).val := by
+    rw [hγ₁val]
+    exact le_antisymm hle1 hle2
+  have hcarr : npCarrier χ' = γ₁ (npCarrier σ) (npCarrier τ) :=
+    VNSub.val_injective hvaleq
+  have hmain := npCarrier_nmiu φ hφbij χ χ' hχ'apply
+  rw [← hmain, hcarr, hφe]
+  rfl
+
+
+/-- The tensor of two projections is a projection. -/
+private theorem vtmul_isStarProjection {p : A} {q : B} (hp : IsStarProjection p)
+    (hq : IsStarProjection q) : IsStarProjection (p ⊗ᵥ q) := by
+  have hmiu := (vnTensor A B).isTensorProduct.miu
+  have hmul : ∀ (u u' : A) (v v' : B),
+      (u ⊗ᵥ v) * (u' ⊗ᵥ v') = (u * u') ⊗ᵥ (v * v') :=
+    fun u u' v v' => (hmiu.2.1 u u' v v').symm
+  have hstar : ∀ (u : A) (v : B), star (u ⊗ᵥ v) = star u ⊗ᵥ star v :=
+    fun u v => hmiu.2.2 u v
+  refine ⟨?_, ?_⟩
+  · show (p ⊗ᵥ q) * (p ⊗ᵥ q) = p ⊗ᵥ q
+    rw [hmul, hp.isIdempotentElem.eq, hq.isIdempotentElem.eq]
+  · show star (p ⊗ᵥ q) = p ⊗ᵥ q
+    rw [hstar, hp.isSelfAdjoint.star_eq, hq.isSelfAdjoint.star_eq]
+
+/-- If `⌈ω⌉ ≤ q` for a projection `q` then `ω(q^⊥) = 0`. -/
+private theorem npFunctional_ortho_eq_zero (ω : NPFunctional A) {q : A}
+    (hq : IsStarProjection q) (h : npCarrier ω ≤ q) : (ω (1 - q) : ℂ) = 0 := by
+  have hz : (ω (1 - npCarrier ω) : ℂ) = 0 :=
+    (carrier_spec ω.toPositiveLinearMap ω.preservesDirSups').2.1
+  have hmono : (ω (1 - q) : ℂ) ≤ ω (1 - npCarrier ω) :=
+    ω.toPositiveLinearMap.monotone (sub_le_sub_left h 1)
+  have hnn : (0 : ℂ) ≤ ω (1 - q) := by
+    have h0 : (ω.toPositiveLinearMap (0 : A) : ℂ) ≤ ω.toPositiveLinearMap (1 - q) :=
+      ω.toPositiveLinearMap.monotone (sub_nonneg.mpr hq.le_one)
+    rwa [map_zero] at h0
+  rw [hz] at hmono
+  exact le_antisymm hmono hnn
+
+/-- The defining property of `⌈h⌉` for an ncp-map. -/
+private theorem ncpCarrier_spec (h : NCPMap A C) :
+    IsStarProjection (ncpCarrier h) ∧ (h (1 - ncpCarrier h) : C) = 0 ∧
+      ∀ q : A, IsStarProjection q → (h (1 - q) : C) = 0 → ncpCarrier h ≤ q :=
+  (exists_ncpCarrier h).choose_spec.1
+
+/-- If `⌈h⌉ ≤ q` for a projection `q` then `h(q^⊥) = 0`. -/
+private theorem ncpMap_ortho_eq_zero (h : NCPMap A C) {q : A}
+    (hq : IsStarProjection q) (hle : ncpCarrier h ≤ q) : (h (1 - q) : C) = 0 := by
+  obtain ⟨hp, hz, -⟩ := ncpCarrier_spec h
+  have hmono : (h (1 - q) : C) ≤ h (1 - ncpCarrier h) :=
+    OrderHomClass.mono h.toCompletelyPositiveMap (sub_le_sub_left hle 1)
+  have hnn : (0 : C) ≤ h (1 - q) := ncpMap_nonneg h (sub_nonneg.mpr hq.le_one)
+  rw [hz] at hmono
+  exact le_antisymm hmono hnn
+
+/-- **118IV**.5, first step: the carrier of an ncp-map is the supremum of
+the carriers of the np-functionals `ν ∘ h`. -/
+private theorem ncpCarrier_eq_projSup (h : NCPMap A C) :
+    ncpCarrier h = projSup (Set.range fun ν : NPFunctional C =>
+      npCarrier (compNP (ncpPositive h) h.preservesDirSups' ν)) := by
+  classical
+  have hP : ∀ p ∈ (Set.range fun ν : NPFunctional C =>
+      npCarrier (compNP (ncpPositive h) h.preservesDirSups' ν)), IsStarProjection p := by
+    rintro _ ⟨ν, rfl⟩
+    exact (carrier_spec _ _).1
+  obtain ⟨hcp, hcz, hcl⟩ := ncpCarrier_spec h
+  refine (projSup_eq hP (isStarProjection_ncpCarrier h) ?_ ?_).symm
+  · rintro _ ⟨ν, rfl⟩
+    refine (carrier_spec _ _).2.2 _ (isStarProjection_ncpCarrier h) ?_
+    show (ν (h (1 - ncpCarrier h)) : ℂ) = 0
+    rw [hcz, npFunctional_zero]
+  · intro q hq hub
+    refine hcl q hq ?_
+    refine VonNeumannAlgebra.np_faithful _ (ncpMap_nonneg h (sub_nonneg.mpr hq.le_one)) ?_
+    intro ν
+    exact npFunctional_ortho_eq_zero _ hq (hub _ ⟨ν, rfl⟩)
+
+/-- **118IV**.5, second step: `⊗` turns suprema of projections into suprema
+(the argument of **118II**.2, `cceil_tensor`). -/
+private theorem tensor_projSup_le {P : Set A} {Q : Set B}
+    (hP : ∀ p ∈ P, IsStarProjection p) (hQ : ∀ q ∈ Q, IsStarProjection q)
+    {z : VNT A B} (hz : IsStarProjection z)
+    (hkey : ∀ p ∈ P, ∀ q ∈ Q, p ⊗ᵥ q ≤ z) :
+    projSup P ⊗ᵥ projSup Q ≤ z := by
+  classical
+  have hcb : IsStarProjection (projSup Q) := (projSup_spec hQ).1
+  have hca : IsStarProjection (projSup P) := (projSup_spec hP).1
+  have hstep2 : ∀ p ∈ P, ceil (p ⊗ᵥ projSup Q) ≤ z := by
+    intro p hp
+    have hpp := hP p hp
+    have h := ncp_union_2 (vtmulPR (B := B) p hpp.nonneg)
+      (vtmulPR_normal (B := B) p hpp.nonneg) Q hQ
+    have himg : ∀ x ∈ ((fun q => ceil (vtmulPR (B := B) p hpp.nonneg q)) '' Q),
+        IsStarProjection x := by
+      rintro _ ⟨q, hq, rfl⟩
+      exact (ceil_spec (vtmul_nonneg _ _ hpp.nonneg (hQ q hq).nonneg)).1
+    show ceil (vtmulPR (B := B) p hpp.nonneg (projSup Q)) ≤ _
+    rw [h]
+    refine (projSup_spec himg).2.2 _ hz ?_
+    rintro _ ⟨q, hq, rfl⟩
+    show ceil (p ⊗ᵥ q) ≤ z
+    rw [ceil_of_isStarProjection (vtmul_isStarProjection hpp (hQ q hq))]
+    exact hkey p hp q hq
+  have h := ncp_union_2 (vtmulPL (A := A) (projSup Q) hcb.nonneg)
+    (vtmulPL_normal (A := A) (projSup Q) hcb.nonneg) P hP
+  have himg : ∀ x ∈ ((fun p => ceil (vtmulPL (A := A) (projSup Q) hcb.nonneg p)) '' P),
+      IsStarProjection x := by
+    rintro _ ⟨p, hp, rfl⟩
+    exact (ceil_spec (vtmul_nonneg _ _ (hP p hp).nonneg hcb.nonneg)).1
+  rw [← ceil_of_isStarProjection (vtmul_isStarProjection hca hcb)]
+  show ceil (vtmulPL (A := A) (projSup Q) hcb.nonneg (projSup P)) ≤ _
+  rw [h]
+  refine (projSup_spec himg).2.2 _ hz ?_
+  rintro _ ⟨p, hp, rfl⟩
+  exact hstep2 p hp
 
 /-- **118IV** (`carrier-tensor`, proc.tex:3880, Exercise), part 5:
 `⌈f ⊗ g⌉ = ⌈f⌉ ⊗ ⌈g⌉` for np-maps `f`, `g`. -/
 theorem carrier_tensor_5 (f : NCPMap A C) (g : NCPMap B D) :
-    ncpCarrier (tmap f g) = ncpCarrier f ⊗ᵥ ncpCarrier g := sorry
+    ncpCarrier (tmap f g) = ncpCarrier f ⊗ᵥ ncpCarrier g := by
+  classical
+  refine le_antisymm (carrier_tensor_1 f g) ?_
+  rw [ncpCarrier_eq_projSup f, ncpCarrier_eq_projSup g]
+  refine tensor_projSup_le ?_ ?_ (isStarProjection_ncpCarrier (tmap f g)) ?_
+  · rintro _ ⟨ν, rfl⟩; exact (carrier_spec _ _).1
+  · rintro _ ⟨υ, rfl⟩; exact (carrier_spec _ _).1
+  rintro _ ⟨ν, rfl⟩ _ ⟨υ, rfl⟩
+  set χ₀ := prodNP (vnTensor C D).isTensorProduct ν υ with hχ₀
+  set ψ := compNP (ncpPositive (tmap f g)) (tmap f g).preservesDirSups' χ₀ with hψ
+  have hψprod : ∀ (a : A) (b : B), ψ (a ⊗ᵥ b) = (ν (f a)) * (υ (g b)) := by
+    intro a b
+    show χ₀ (tmap f g (a ⊗ᵥ b)) = _
+    rw [tmap_apply]
+    exact prodNP_apply (vnTensor C D).isTensorProduct ν υ (f a) (g b)
+  have h4 := carrier_tensor_4 (compNP (ncpPositive f) f.preservesDirSups' ν)
+    (compNP (ncpPositive g) g.preservesDirSups' υ) ψ hψprod
+  rw [← h4]
+  refine (carrier_spec _ _).2.2 _ (isStarProjection_ncpCarrier (tmap f g)) ?_
+  show χ₀ (tmap f g (1 - ncpCarrier (tmap f g))) = 0
+  rw [(ncpCarrier_spec (tmap f g)).2.1, npFunctional_zero]
+
+/-- `f_⋄(e)` is the carrier of the ncp-map `e f(·) e` (the formula of
+**101II**, `diamondDown_carrier`, read as a carrier). -/
+private theorem diamondDown_eq_ncpCarrier (f : NCPMap A C) (e : C)
+    (he : IsStarProjection e) :
+    diamondDown f e = ncpCarrier (ncpComp (adSelf e) f) := by
+  have hval : ∀ p : A, (ncpComp (adSelf e) f (1 - p) : C) = e * f (1 - p) * e := by
+    intro p
+    rw [ncpComp_apply, adSelf_apply, he.isSelfAdjoint.star_eq]
+  obtain ⟨⟨hdp, hd0⟩, hdl⟩ := diamondDown_carrier f e he
+  obtain ⟨hcp, hc0, hcl⟩ := ncpCarrier_spec (ncpComp (adSelf e) f)
+  refine le_antisymm (hdl ⟨hcp, ?_⟩) (hcl _ hdp ?_)
+  · rw [← hval]; exact hc0
+  · rw [hval]; exact hd0
 
 /-- **118IV** (`carrier-tensor`, proc.tex:3880, Exercise), part 6:
 `(f ⊗ g)_⋄(s ⊗ t) = f_⋄(s) ⊗ g_⋄(t)` for projections `s ∈ 𝒞`,
@@ -8301,7 +9002,42 @@ theorem carrier_tensor_5 (f : NCPMap A C) (g : NCPMap B D) :
 theorem carrier_tensor_6 (f : NCPMap A C) (g : NCPMap B D) (s : C) (t : D)
     (hs : IsStarProjection s) (ht : IsStarProjection t) :
     diamondDown (tmap f g) (s ⊗ᵥ t) =
-      diamondDown f s ⊗ᵥ diamondDown g t := sorry
+      diamondDown f s ⊗ᵥ diamondDown g t := by
+  classical
+  have hst : IsStarProjection (s ⊗ᵥ t) := vtmul_isStarProjection hs ht
+  have hmiuCD := (vnTensor C D).isTensorProduct.miu
+  have hmulCD : ∀ (u u' : C) (v v' : D),
+      (u ⊗ᵥ v) * (u' ⊗ᵥ v') = (u * u') ⊗ᵥ (v * v') :=
+    fun u u' v v' => (hmiuCD.2.1 u u' v v').symm
+  have hstarCD : ∀ (u : C) (v : D), star (u ⊗ᵥ v) = star u ⊗ᵥ star v :=
+    fun u v => hmiuCD.2.2 u v
+  -- the two ncp-maps `𝒜 ⊗ ℬ → 𝒞 ⊗ 𝒟` agree on elementary tensors
+  have huw : ∀ {X Y : Type u} [CStarAlgebra X] [PartialOrder X] [StarOrderedRing X]
+      [VonNeumannAlgebra X] [CStarAlgebra Y] [PartialOrder Y] [StarOrderedRing Y]
+      [VonNeumannAlgebra Y] (h : NCPMap X Y),
+      @Continuous X Y (ultraweak X) (ultraweak Y) ⇑h := by
+    intro X _ _ _ _ Y _ _ _ _ h
+    exact ((p_uwcont (ncpPositive h)).out 2 0).mp h.preservesDirSups'
+  have hmapeq : ncpComp (adSelf (s ⊗ᵥ t)) (tmap f g)
+      = tmap (ncpComp (adSelf s) f) (ncpComp (adSelf t) g) := by
+    refine DFunLike.coe_injective ?_
+    letI : TopologicalSpace (VNT A B) := ultraweak _
+    letI : TopologicalSpace (VNT C D) := ultraweak _
+    haveI : T2Space (VNT C D) := vn_positive_basic_1.1
+    have hlin := tensor_linear_ext (vnTensor A B).isTensorProduct
+      (ncpComp (adSelf (s ⊗ᵥ t)) (tmap f g)).toCompletelyPositiveMap.toLinearMap
+      (tmap (ncpComp (adSelf s) f) (ncpComp (adSelf t) g)).toCompletelyPositiveMap.toLinearMap
+      (huw _) (huw _) ?_
+    · exact congrArg (fun L : VNT A B →ₗ[ℂ] VNT C D => ⇑L) hlin
+    · intro a b
+      show (ncpComp (adSelf (s ⊗ᵥ t)) (tmap f g) (a ⊗ᵥ b) : VNT C D)
+        = tmap (ncpComp (adSelf s) f) (ncpComp (adSelf t) g) (a ⊗ᵥ b)
+      rw [ncpComp_apply, adSelf_apply, tmap_apply, tmap_apply, ncpComp_apply,
+        ncpComp_apply, adSelf_apply, adSelf_apply, hstarCD,
+        hs.isSelfAdjoint.star_eq, ht.isSelfAdjoint.star_eq, hmulCD, hmulCD]
+  rw [diamondDown_eq_ncpCarrier _ _ hst, hmapeq, carrier_tensor_5,
+    diamondDown_eq_ncpCarrier f s hs, diamondDown_eq_ncpCarrier g t ht]
+
 
 end Carriers
 

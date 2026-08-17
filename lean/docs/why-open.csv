@@ -50,22 +50,16 @@ vna_of_faithful_countably_normal_2|blocked|vna_of_faithful_countably_normal_1|51
 weakly_closed_ideal|costed||69II, weakly closed two-sided ideals; substantial, and 170IV.1 deliberately routed around it
 AstarhaB_concrete|open||125eVII sits at the top of the parsec-1255 chain; no route recorded
 Fha_concrete|costed||long but self-contained: nothing it needs is sorry, the work is representatives and re-indexing
-carrier_tensor_1|open||118IV.1; no route recorded, and the exercise's spatial steps 2-3 are not transcribed
-carrier_tensor_4|costed||118IV.4 goes through the spatial 118IV.2-3, needing carrier-vector-state and the double commutant
-carrier_tensor_5|blocked|carrier_tensor_4|118IV.5 is the map form of the functional case 118IV.4
-carrier_tensor_6|blocked|carrier_tensor_5|118IV.6 reads off the carrier equality of 118IV.5
-cceil_tensor|open||118II.2, central carriers; part 1 is proved, but no route is recorded for part 2
 centrally_similar_basic_2a|awaiting-ruling||all three claims false as printed (ERRATA 104III.2a); the carrier repair is not yet authorised
 centrally_similar_basic_3|awaiting-ruling||false as printed, one machine-checked witness; the equal-carrier repair awaits the author
 centrally_similar_basic_4|awaiting-ruling||false as printed; equal carriers are not enough, and the faithfulness repair is unauthorised
 centrally_similar_basic_5|awaiting-ruling||false as printed; the equal-carrier repair awaits the author
-continuous_finite_measure_space_not_duplicable|blocked|carrier_tensor_4|129X needs 118IV.4 faithfulness of a product functional, plus a dyadic-partition construction
+continuous_finite_measure_space_not_duplicable|costed||129X: 118IV.4 is now proved, so the product functional is faithful; what is left is the dyadic partition of X (from the proved continuous_measure_space), the integral state on L-infinity, and the infimum of the descending projections
 dup_vna_is_monoid_2|blocked|duplicable|132III.2 restates the 127III classification of duplicable algebras
-dup_vna_is_monoid_4|blocked|exists_braiding|yellow: the proof is complete, but the statement mentions the braiding of 119IVc
+dup_vna_is_monoid_4|open||yellow: the proof is complete, but the statement mentions the braiding of 119IVc, which is now proved
 dup_vna_is_monoid_5|blocked|duplicable|132III.5 computes nmiu-maps through the l-infinity classification of 127III
-duplicable|blocked|cvn_faithful_1|127III also needs 129X, a direct-sum-of-L-infinity carrier, and the monoid side behind the tensor block
+duplicable|blocked|cvn_faithful_1|127III also needs 129X (now unblocked by 118IV.4), a direct-sum-of-L-infinity carrier, and the monoid side behind the tensor block
 equaliser_lemma|open||125IV (Kornell); no route recorded, and its statement uses the sorried tmapM
-exists_associator|blocked|triple_tensor|119IV is the thesis's corollary of the trilinear tensor product 119II
 exists_braiding|open||119IVc, the exercise that (a,b) maps to b tensor a is a tensor product; not attempted
 exists_tmapM|costed||needs the tmap construction made universe-polymorphic (four universes); prerequisite for all of 119V
 exists_unitors|open||119IVb, the two unitors; not attempted
@@ -75,7 +69,7 @@ free_monoid_in_vNAMIU|blocked|duplicable|132IV's freeness runs through the monoi
 ha_second_adjunction|open||unblocked: vn_products_ncpsu is now proved; not yet attempted
 ha_tensor_closed|open||125dII, the hereditarily atomic free exponential; no route recorded
 intersection_tensor|cited||121II gives no argument, only a pointer to Corollary IV.5.10 of Takesaki I
-linf_tensor|blocked|tensor_characterization|123I.3 cites 116VII explicitly; parts 1 and 2 of the exercise are proved above it
+linf_tensor|costed||123I.3 cites 116VII, which is now proved; parts 1 and 2 of the exercise are proved above it
 nsp_tensor_1|open||123II.1; no route recorded
 nsp_tensor_2|open||123II.2; no route recorded
 positive_map_uniqueness|blocked|faithful_positive_map_uniqueness|105V uniqueness cites 104IX; the existence half is proved
@@ -84,11 +78,8 @@ second_adjunction|open||unblocked: vn_products_ncpsu is now proved; not yet atte
 sequential_product_counterexample_3|false||clause (E) is false as printed and refuted in-tree; kept unchanged, ERRATA 106III.3 open
 sqrt_axiom|blocked|faithful_positive_map_uniqueness|105VII sits on 104IX, like the uniqueness half of 105V
 tensorBsurjectivity|open||125eIII; no route recorded
-tensor_characterization|costed||116VII: all inputs now exist (112X, 116IV.1 and .2); ~250 lines, the next gate in Tensor.lean
 tensor_closed|open||125VIII (Kornell), the free exponential; no route recorded
-tensor_distributes_over_sums|blocked|tensor_characterization|117III routes through 116VII
 tensor_equalisers|open||125VI; no route recorded
-tensor_injective|open||115V; no route recorded, although 115II is now proved
 tensor_map_factorisation|open||125eIIa; no route recorded
 tensor_preimage|open||125VIIb; no route recorded
 tensor_simple_facts_4|costed||116III.4 joint ultraweak continuity: the obstruction was re-derived twice, neither proved nor refuted
@@ -108,7 +99,7 @@ HaFreeExp.ha|blocked|exists_tmapM|yellow: inherited from the HaFreeExp type, who
 HaFreeExp.sor|blocked|exists_tmapM|yellow: inherited from the HaFreeExp type, whose universal field mentions tmapM
 HaFreeExp.universal|blocked|exists_tmapM|yellow: the universal property is literally stated with tmapM
 HaFreeExp.vna|blocked|exists_tmapM|yellow: inherited from the HaFreeExp type, whose universal field mentions tmapM
-ba_ext_tensor_pres|blocked|tensor_characterization|165VI needs 116VII, which is in A/Proc/Tensor and NOT in B/Dils's import closure; re-checked session 71
+ba_ext_tensor_pres|blocked||165VI needs 116VII (now proved), which is in A/Proc/Tensor and NOT in B/Dils import closure; re-checked session 71
 dils_examples_pure_1|costed||170II.1: 171VII is now proved; what is left is the Stinespring classification of pure maps between B(H)s
 ess_uniq_pur|awaiting-ruling||QUESTIONS B12: false without a dimension hypothesis, and which of three repairs is undecided
 ext_tensor_ketbra_dense|awaiting-ruling||QUESTIONS D6: our net form is false; the thesis's claim is proved as ext_tensor_ketbra_uwDense
