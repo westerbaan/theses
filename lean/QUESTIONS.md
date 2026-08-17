@@ -178,6 +178,47 @@ entourage form (i.e. delete the statement and keep `ext_tensor_ketbra_uwDense`
 under the 164II.2b name), or keep both with the net form restricted to a
 hypothesis that rules the degenerate case out.  We recommend the first.
 
+### D7. 170IV `surjective-nmiu`, converse half — false as printed; corners need subunital mediating maps, exactly as filters did (B11)
+`dils.tex:6223` (Exercise), solution `bsols.tex:1365`, `Pure.lean`
+(`surjective_nmiu_2`).  The exercise's second half — "any corner of a central
+projection is a surjective nmiu-map" — is **false** under **169II**
+`dils-corner` as printed, and the counterexample is machine-checked in the
+tree as `surjective_nmiu_2_false` (axiom-clean).
+
+**Witness**: `𝒜 = ℬ = ℂ`, `z = 1`, `φ = λ·id` for any `λ > 0`, `λ ≠ 1`.  A
+positive scalar multiple of a corner is again a corner under 169II, because
+the mediating map is `f' = λ⁻¹f`, which is ncp; uniqueness is unaffected,
+since `λ ≠ 0` makes `x ↦ λx` a bijection.  But `φ(1) = λ ≠ 1` and every
+nmiu-map is unital.  The same scaling breaks the claim at **every** central
+projection (take `φ = λ·h_z`), so nothing is special about `z = 1`.
+
+**Where the solution goes wrong**: it obtains `ϑ₁ : z𝒜 → 𝒞` and
+`ϑ₂ : 𝒞 → z𝒜` from the two universal properties, shows `ϑ₁ϑ₂ = id` and
+`ϑ₂ϑ₁ = id`, and then says "`ϑ₁` is an ncp-isomorphism and consequently an
+nmiu-isomorphism by `iso`".  But proc.tex **100IX** `iso` is stated for
+**ncpsu**-isomorphisms, and its proof opens with `f⁻¹(1) ≤ 1`, hence
+`1 = f(f⁻¹(1)) ≤ f(1) ≤ 1` — precisely the step that fails for `λ·id`.  The
+universal properties as printed deliver only an *ncp*-isomorphism.
+
+**This is the same defect as B11**, one point earlier in the same
+development: there the mediating map of `IsFilterFor` (**169VIII**) had to be
+made subunital, and the author ruled on 2026-08-16 that it should be.  The
+identical edit does **not** suffice here, though.  For filters the hypothesis
+`f(1) ≤ b ≤ 1` already forces the quantified `f` to be subunital, so only
+`f'` needed changing; for corners the hypothesis is `f(a) = f(1)`, which
+constrains nothing.  Requiring only `f'` subunital while `f` ranges over all
+ncp-maps would make even the standard corner `h_z` fail its own universal
+property (`f = 2·h_z` gives `f'(1) = 2·1 ≰ 1`).
+
+*Decision needed*: restrict **both** the quantified `f` and the mediating
+`f'` in 169II to ncpsu-maps — i.e. read the universal property in `W*_cpsu`,
+which is where `iso` lives and where corners are quotients — or state the
+converse of 170IV only for corners that are additionally unital.  We have
+left `surjective_nmiu_2` `sorry`ed and the definition unchanged.  Note that
+the first half, `surjective_nmiu_1`, is **true and proved** as it stands, and
+that changing `IsCornerFor` will require its existence clause to be
+re-checked (its uniqueness clause only gets easier).
+
 ### B8. Minor: `bsols.tex`'s `onb1` solution over-assumes
 Its solution assumes self-duality, which neither the exercise nor our statement
 requires.  Harmless; noted for tidiness.

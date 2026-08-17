@@ -246,9 +246,9 @@ module; and the **public** `paschke_tprod_dense`.
 | 170II.1 | `dils_examples_pure_1` | **(b)** | `ad_T` classification of pure maps `B(H) → B(K)`; needs 171VII and the Stinespring block |
 | 170II.2 | `dils_examples_pure_2` | **(b)** | the thesis derives it from 169V + 169XI.2.  ⚠️ row corrected session 66: **169XI.2a is no longer false or open** (B11 was ruled on; closed session 63) and 169XI.2b closed session 53, so the only blocker left is **169V**, i.e. **169IV** |
 | **170IV.1** | `surjective_nmiu_1` | **(a)** | **CLOSED session 53**, once D5 was ruled on and `[VonNeumannAlgebra A] [VonNeumannAlgebra B]` restored (the fix really was local to the two signatures).  ~150 lines by the costing below, and the estimate held |
-| 170IV.2 | `surjective_nmiu_2` | **(b)** | converse; the von Neumann binders are restored (D5 done), but it still needs **169IV** — the standard corner `h_z` — *and* the thesis's `iso` (an ncp-isomorphism of von Neumann algebras is nmiu), which the tree does not have either |
-| 171II | `paschke_corner` | **(b)** | ⚠️ **row rewritten session 67: the first two steps are not needed and `𝒜p` is never built.**  Everything is done inside the abstract `PaschkeModule`, because every elementary tensor is `a ⊗ 1` (`a ⊗ pbp = (pbp·a) ⊗ 1`), the tensors are ultranorm dense (**160IV**.2 + `paschkeModule_inner_tprod_separating`), the thesis's basis transports as `uᵢ ⊗ 1` (**83V** `cceil_sum`), and `|a ⊗ 1⟩⟨b ⊗ 1| = ϱ(b*pa)`.  **Step 3 is proved** (session 67, axiom-clean): `pcorner_rho_surjective` (ϱ surjective, via **159IV** `ketbra_ultraweakly_dense` — every generator is *already* in the range — plus **48VI**.1 + **73IX** `vnsac` for closedness of the range), the carrier `ϱ(a) = 0 ⟺ ⌈⌈p⌉⌉a = 0`, the injective corestriction `σ : ⌈⌈p⌉⌉𝒜 → 𝒷ᵃ(·)ᵐᵒᵖ`, and the standard corner `h_z` of a central projection as an nmiu-map.  **What is left**: `h'_p : ⌈⌈p⌉⌉𝒜 → p𝒜p` as an `NCPMap`, `σ⁻¹` as an ncp-map (`starAlgHom_nonneg_reflect` + `cp_of_mi`), and a ~40-line transport lemma (a bijective nmiu-intertwiner carries a Paschke dilation to another triple).  One short session |
-| 171VII | `paschke_pure` | **(b)** | needs 171II, 170II.2 **and** proc.tex's `square-f` and `weakly-closed-ideal` |
+| 170IV.2 | `surjective_nmiu_2` | **(d)** | ⚠️ **row rewritten session 68: FALSE as printed, and the counterexample is now in the tree** (`surjective_nmiu_2_false`, axiom-clean).  `𝒜 = ℬ = ℂ`, `z = 1`, `φ = λ·id` for `λ > 0`, `λ ≠ 1`: a positive multiple of a corner is again a corner under **169II** as printed (mediating map `λ⁻¹f`, ncp), but `φ(1) = λ ≠ 1`.  The earlier diagnosis was right that the missing ingredient is the thesis's `iso` — but `iso` (proc.tex **100IX**) is about **ncpsu**-isomorphisms and the universal properties deliver only an ncp one, so the gap is a defect, not a hole in our library.  Same defect as B11 (filters); needs an author ruling, QUESTIONS **D7** |
+| **171II** | `paschke_corner` | **(a)** | **CLOSED session 68**, axiom-clean.  Session 67 had done all the mathematics — see that row's history in git — and the three remaining items were packaging, as costed: `h'_p : ⌈⌈p⌉⌉𝒜 → p𝒜p` is `hp' ∘ (inclusion z𝒜 ⊆ 𝒜)`, both ncp (`pcorner_exists_inclNcp` — the inclusion is `cp_of_mi` plus the already-proved `pcorner_val_normal`), `σ⁻¹` is `pcorner_exists_ncpInv` (`LinearEquiv.ofBijective` for linearity, `cp_of_mi` for cp, and normality by transporting the LUB along `σ` and back), and `pcorner_transport` is the ~40-line transport lemma.  **~130 new lines in total**; the estimate ("one short session") held.  Note the transport lemma is *not* `paschke_unique_up_to_iso`, which runs the other way |
+| 171VII | `paschke_pure` | **(b)** | ⚠️ row re-costed session 68, now that 171II is closed.  **⇐** (`ϱ` surjective ⟹ `φ` pure) needs 170II.2 (`h` is pure), proc.tex's `weakly-closed-ideal`, *and* closure of pure maps under composition, which `IsPureMap` (corner-then-filter) does not give without proc.tex 100III `pure-fundamental`.  **⇒** needs the factorisation `φ = c ∘ h_{⌈φ⌉}` with `c` a filter (proc.tex `square-f`) — or, avoiding it, 169IV to identify an abstract corner with a standard one; the rest (171II + `dils_filter_basics_1` + `paschke_unique_up_to_iso`) is now in the tree.  So the blocker is **169IV/169X/proc.tex**, not 171II |
 | **172III** | `ncp_extreme_paschke` | **(a)** | **CLOSED session 66.**  This row (and session 64's) said it needs 170II.2 — **wrong**: only the *thesis's* proof of 3 ⇒ 1 does, to get `0 < λ < 1` out of purity of `h`.  Choosing `t = μa + ½` with `μ = (4(‖a‖+1))⁻¹` gives `φ_t(1) = ½φ(1)` directly, so 3 ⇒ 1 needs nothing beyond **157IV**.2/.3 (now proved).  ~200 lines + two helpers (`ncpSMul`, `isLUB_ofReal_smul`) |
 | 172X | `pure_ncp_extreme` | **(b)** | needs 171II + 169XI (172III is no longer a blocker) |
 | 172XII | `ncp_extreme_comp` | **(b)** | the thesis gives **no proof at all** (a Corollary with no proof point); the intended one is φ = h ∘ ϱ from `existence_paschke`, ϱ ncp-extreme by 172VIII (proved) and h ncp-extreme by 172X |
@@ -961,3 +961,41 @@ re-tried.
 **165VI** was re-checked: still blocked, but because `A/Proc` is off
 `B/Dils`'s import path, not because **116VII** is open (it was closed in
 session 65).
+
+## Session 68 — **171II is closed**, and 170IV.2 turns out to be false
+
+**`B/Dils` 23 → 22** (HilbertModules 0, SelfDualCompletion 0, Stinespring 1,
+Kaplansky 4, Paschke 1, SelfDual 7, **Pure 9**; 0 errors per file, compiled
+individually).  **171II `paschke_corner` is proved**, axiom-clean — the
+session-67 costing ("three items, none about modules, one short session")
+was exactly right, and the three cost ~130 lines between them.
+
+**What 171II did *not* unblock.**  The brief expected most of `Pure.lean` to
+fall with it.  It does not: of the nine left, **none** has 171II as its last
+blocker.
+
+* **171VII** `paschke_pure` needs, in the ⇐ direction, that pure maps compose
+  (`IsPureMap` is "corner then filter"; composing two such needs proc.tex
+  100III `pure-fundamental`) and 170II.2; in the ⇒ direction the standard
+  factorisation `φ = c ∘ h_{⌈φ⌉}` (proc.tex `square-f`) or 169IV.
+* **172X**, **170II.1**, **170II.2**, **169V** all reduce to **169IV**
+  `standard_corner_dils` and **169X** `dils_stand_filter`, the two proc.tex
+  roots.
+* **169IV** is the highest-value target left in this file: it gates 169V,
+  170II.2, 170IV.2's repair, 171VII and 172X.  A route was scouted this
+  session and is *not* out of reach — the mediating map is `f ∘ (inclusion
+  ⌊a⌋𝒜⌊a⌋ ⊆ 𝒜)`, which is ncp for **any** projection (`cornerSet.isLUB_mem`
+  gives normality; `pcorner_val_normal`'s centrality hypothesis is stronger
+  than needed), uniqueness is one line, and the only real content is
+  `f(a) = f(1) ⟹ f(x) = f(⌊a⌋x⌊a⌋)`: cp-Cauchy–Schwarz gives
+  `f((1−a)x) = 0`, and what is then needed is `f(b) = 0 ⟹ f(⌈b⌉) = 0` for
+  `b ≥ 0` and normal `f`, i.e. `b^{1/2ⁿ} ↑ ⌈b⌉`.  That last step is the
+  thing to check for in `A/VN/Projections.lean` first.
+
+**170IV.2 `surjective_nmiu_2` is false** — see its row and QUESTIONS **D7**.
+The counterexample `λ·id : ℂ → ℂ` is in the tree as
+`surjective_nmiu_2_false`.  This is the twenty-eighth false statement found,
+and the second instance of the *same* defect: a universal property stated
+among ncp-maps where the thesis's argument needs ncpsu-maps (the first was
+B11, `IsFilterFor`, ruled on 2026-08-16).  Worth a sweep of every universal
+property in dils.tex parsecs 1690–1700 for the same slip.

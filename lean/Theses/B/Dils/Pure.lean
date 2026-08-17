@@ -1383,13 +1383,86 @@ theorem surjective_nmiu_1 [VonNeumannAlgebra A] [VonNeumannAlgebra B]
 /-- **170IV** (`surjective-nmiu`, dils.tex:6223, Exercise), second half:
 conversely, every corner of a central projection **in a von Neumann
 algebra** is (equal as a map to) a surjective nmiu-map.  (For the
-`[VonNeumannAlgebra]` binders see the first half.) -/
+`[VonNeumannAlgebra]` binders see the first half.)
+
+⚠️ **False as stated**, and deliberately left `sorry` — see
+`surjective_nmiu_2_false` immediately below for a machine-checked
+counterexample, and QUESTIONS **D7**. -/
 theorem surjective_nmiu_2 [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     (φ : NCPMap A B) (z : A)
     (hz : IsStarProjection z) (hcentral : IsCentral A z)
     (hφ : IsCornerFor φ z) :
     ∃ ϱ : NMIUMap A B, (∀ a, ϱ a = φ a) ∧ Function.Surjective ⇑ϱ :=
   sorry
+
+/-- **Negative result**, kept in the tree (QUESTIONS **D7**): the converse
+half of **170IV** — `surjective_nmiu_2` above — is **false** under **169II**
+as printed, and so is the step of the author's solution
+(`bsols.tex`, `surjective-nmiu`) that reads "`ϑ₁` is an ncp-isomorphism and
+consequently an nmiu-isomorphism by `iso`": proc.tex **100IX** `iso` is
+about **ncpsu**-isomorphisms, and the two universal properties yield only an
+*ncp*-isomorphism.
+
+The witness is as small as it gets: `𝒜 = ℬ = ℂ`, `z = 1`, `φ = λ·id` for any
+`λ > 0`, `λ ≠ 1`.  A positive multiple of a corner is again a corner under
+169II as printed, because the mediating map `f' = λ⁻¹f` is ncp; but
+`φ 1 = λ ≠ 1`, and every nmiu-map is unital.  The same scaling breaks the
+claim at every central projection `z` (take `φ = λ·h_z`), so nothing is
+special about `z = 1`.
+
+This is the *same* defect as the one already ruled on for **filters** in
+**169VIII** (QUESTIONS **B11**, `IsFilterFor`): the mediating map of a
+universal property among ncp-maps has to be subunital.  It is not repaired by
+the same edit, though — for filters the hypothesis `f(1) ≤ b ≤ 1` makes the
+quantified `f` subunital by itself, whereas `f a = f 1` constrains nothing,
+so for corners the quantified `f` needs restricting to ncpsu as well (else
+`h_z` itself stops being a corner, `f = 2·h_z` witnessing). -/
+theorem surjective_nmiu_2_false {l : ℝ} (hl : 0 < l) (hl1 : l ≠ 1) :
+    ∃ φ : NCPMap CU.{u} CU.{u},
+      (∀ a, φ a = ((l : ℝ) : ℂ) • a) ∧
+      IsStarProjection (1 : CU.{u}) ∧ IsCentral CU.{u} (1 : CU.{u}) ∧
+      IsCornerFor φ (1 : CU.{u}) ∧
+      ¬ ∃ ϱ : NMIUMap CU.{u} CU.{u}, ∀ a, ϱ a = φ a := by
+  classical
+  have hll : ((l : ℝ) : ℂ) * ((l⁻¹ : ℝ) : ℂ) = 1 := by
+    rw [← Complex.ofReal_mul, mul_inv_cancel₀ hl.ne', Complex.ofReal_one]
+  -- the identity as an ncp-map, and `φ = λ·id`
+  obtain ⟨idm, hid⟩ : ∃ f : NCPMap CU.{u} CU.{u}, ∀ a, f a = a := by
+    refine ⟨{ toCompletelyPositiveMap :=
+                { toLinearMap := LinearMap.id
+                  map_cstarMatrix_nonneg' :=
+                    (cp_iff _).out 0 1 |>.mp
+                      (cp_of_mi _ (fun _ _ => rfl) (fun _ => rfl)) }
+              preservesDirSups' := ?_ }, fun _ => rfl⟩
+    intro D s hne _ hlub
+    exact isLUB_coe_of_isLUB hne hlub
+  obtain ⟨φ, hφ⟩ := exists_ncpSmul idm hl
+  have hφa : ∀ a : CU.{u}, φ a = ((l : ℝ) : ℂ) • a := fun a => by rw [hφ, hid]
+  refine ⟨φ, hφa, IsStarProjection.one CU.{u}, fun b => by rw [one_mul, mul_one],
+    ⟨Set.mem_Icc.mpr ⟨zero_le_one, le_refl 1⟩, rfl, ?_⟩, ?_⟩
+  · -- the universal property: `f' = λ⁻¹f` is ncp, and it is forced
+    intro C iC iP iS f _
+    letI := iC; letI := iP; letI := iS
+    obtain ⟨g, hg⟩ := exists_ncpSmul f (inv_pos.mpr hl)
+    have hfsmul : ∀ (r : ℂ) (x : CU.{u}), f (r • x) = r • f x := fun r x =>
+      map_smul f.toCompletelyPositiveMap.toLinearMap r x
+    have hy : ∀ y : CU.{u}, φ (((l⁻¹ : ℝ) : ℂ) • y) = y := by
+      intro y
+      rw [hφa, smul_smul, hll, one_smul]
+    refine ⟨g, fun x => ?_, fun g' hg' => ?_⟩
+    · rw [hg, hφa, hfsmul, smul_smul, mul_comm, hll, one_smul]
+    · refine DFunLike.ext _ _ fun y => ?_
+      have h1 := hg' (((l⁻¹ : ℝ) : ℂ) • y)
+      rw [hy] at h1
+      rw [h1, hg, hfsmul]
+  · -- but `φ` is not unital, so it is no nmiu-map
+    rintro ⟨ϱ, hϱ⟩
+    have h1 : (ϱ 1 : CU.{u}) = 1 := map_one ϱ.toStarAlgHom
+    rw [hϱ 1, hφa] at h1
+    have h3 : ((l : ℝ) : ℂ) = 1 := by
+      have := congrArg ULift.down h1
+      simpa using this
+    exact hl1 (by exact_mod_cast h3)
 
 end Pure
 
@@ -1550,6 +1623,24 @@ private noncomputable def pcorner_centralCorner (hc : IsCentral A z) :
 private theorem pcorner_centralCorner_apply (hc : IsCentral A z) (a : A) :
     (pcorner_centralCorner hc a).1 = z * a * z := rfl
 
+/-- The inclusion `z𝒜 ⊆ 𝒜` of a central corner as an **ncp**-map: complete
+positivity because `Subtype.val` is a (non-unital) ∗-homomorphism
+(**34IV**.3 `cp_of_mi`), normality by `pcorner_val_normal`.  Composing an
+ncp-map `𝒜 → p𝒜p` with it is how `h'_p : ⌈⌈p⌉⌉𝒜 → p𝒜p` of **171II** is
+obtained. -/
+private theorem pcorner_exists_inclNcp (hc : IsCentral A z) :
+    ∃ g : NCPMap (cornerSet A z) A, ∀ c : cornerSet A z, g c = c.1 :=
+  ⟨{ toCompletelyPositiveMap :=
+       { toLinearMap :=
+           { toFun := fun c => c.1
+             map_add' := fun _ _ => rfl
+             map_smul' := fun _ _ => rfl }
+         map_cstarMatrix_nonneg' :=
+           (cp_iff _).out 0 1 |>.mp
+             (cp_of_mi _ (fun x y => cornerSet.val_mul x y)
+               (fun x => cornerSet.val_star x)) }
+     preservesDirSups' := pcorner_val_normal hc }, fun _ => rfl⟩
+
 end CentralCorner
 
 /-! ### Infrastructure for **171II**: the module `𝒜 ⊗_{h_p} p𝒜p`
@@ -1615,6 +1706,118 @@ private theorem pcorner_uwTendsto_op {C : Type u} [CStarAlgebra C] [PartialOrder
   rw [uwTendsto_iff]
   intro ν
   exact (uwTendsto_iff f l c).mp h (pcorner_npUnop ν)
+
+/-! ### Auxiliary: nmiu-maps as ncp-maps, inverting a bijective one, and
+transporting a Paschke dilation along it
+
+For **171II** the mediating `σ` has to be turned round: `σ⁻¹` must again be
+an *ncp*-map.  Complete positivity is **34IV**.3 `cp_of_mi` (a ∗-homomorphism
+is completely positive), and normality of `σ⁻¹` follows from that of `σ`
+together with `starAlgHom_nonneg_reflect` (`Paschke.lean`), which makes `σ` an
+order isomorphism.  (`nmiuInv` in `Theses/A/Proc/Tensor.lean` is the same
+construction, off this import path.)
+
+`pcorner_transport` is then the transport lemma: a Paschke dilation stays one
+along a bijective nmiu-map compatible with `ϱ` and `h`.  Note this is *not*
+**140VIII** `paschke_unique_up_to_iso`, which goes the other way: it produces
+such an isomorphism between two dilations of the same map, and cannot be used
+to promote a triple that is not yet known to be a dilation. -/
+
+/-- An nmiu-map is an ncp-map (**34IV**.3 for `cp`; normality is carried). -/
+private theorem pcorner_exists_ncpOfNmiu {P Q : Type u} [CStarAlgebra P]
+    [PartialOrder P] [StarOrderedRing P] [CStarAlgebra Q] [PartialOrder Q]
+    [StarOrderedRing Q] (f : NMIUMap P Q) :
+    ∃ g : NCPMap P Q, ∀ a, g a = f a :=
+  ⟨{ toCompletelyPositiveMap :=
+       { toLinearMap := (f.toStarAlgHom : P →ₐ[ℂ] Q).toLinearMap
+         map_cstarMatrix_nonneg' :=
+           (cp_iff _).out 0 1 |>.mp
+             (cp_of_mi _ (fun x y => map_mul f.toStarAlgHom x y)
+               (fun x => map_star f.toStarAlgHom x)) }
+     preservesDirSups' := f.preservesDirSups' }, fun _ => rfl⟩
+
+/-- The inverse of a **bijective** nmiu-map is an ncp-map. -/
+private theorem pcorner_exists_ncpInv {P Q : Type u} [CStarAlgebra P]
+    [PartialOrder P] [StarOrderedRing P] [CStarAlgebra Q] [PartialOrder Q]
+    [StarOrderedRing Q] (f : NMIUMap P Q) (hbij : Function.Bijective ⇑f) :
+    ∃ g : NCPMap Q P, (∀ x : P, g (f x) = x) ∧ ∀ y : Q, f (g y) = y := by
+  classical
+  set L : P →ₗ[ℂ] Q := (f.toStarAlgHom : P →ₐ[ℂ] Q).toLinearMap with hL
+  have hLbij : Function.Bijective ⇑L := hbij
+  set E : P ≃ₗ[ℂ] Q := LinearEquiv.ofBijective L hLbij with hE
+  set g : Q →ₗ[ℂ] P := (E.symm : Q →ₗ[ℂ] P) with hg
+  have hfg : ∀ y : Q, f (g y) = y := fun y => E.apply_symm_apply y
+  have hgf : ∀ x : P, g (f x) = x := fun x => E.symm_apply_apply x
+  have hmul : ∀ x y : Q, g (x * y) = g x * g y := by
+    intro x y
+    refine hbij.1 ?_
+    have h1 : f (g x * g y) = f (g x) * f (g y) := map_mul f.toStarAlgHom _ _
+    rw [hfg, h1, hfg, hfg]
+  have hstar : ∀ y : Q, g (star y) = star (g y) := by
+    intro y
+    refine hbij.1 ?_
+    have h1 : f (star (g y)) = star (f (g y)) := map_star f.toStarAlgHom _
+    rw [hfg, h1, hfg]
+  have hcp : IsCompletelyPositiveMap g := cp_of_mi g hmul hstar
+  have hmono : ∀ x y : Q, x ≤ y → g x ≤ g y := by
+    intro x y hxy
+    have h := astara_pos_basic_2_cp g hcp (y - x) (sub_nonneg.mpr hxy)
+    rw [map_sub] at h
+    exact sub_nonneg.mp h
+  have hfmono : ∀ x y : P, x ≤ y → f x ≤ f y := by
+    intro x y hxy
+    have h := starAlgHom_nonneg f.toStarAlgHom (sub_nonneg.mpr hxy)
+    rw [map_sub] at h
+    exact sub_nonneg.mp h
+  refine ⟨{ toCompletelyPositiveMap :=
+              { toLinearMap := g
+                map_cstarMatrix_nonneg' := (cp_iff g).out 0 1 |>.mp hcp }
+            preservesDirSups' := ?_ }, hgf, hfg⟩
+  intro D s hne hdir hlub
+  have hcoe := isLUB_coe_of_isLUB hne hlub
+  refine ⟨?_, fun u hu => ?_⟩
+  · rintro _ ⟨d, hd, rfl⟩
+    exact hmono _ _ (Subtype.coe_le_coe.mpr (hlub.1 hd))
+  · have hub : f u ∈ upperBounds (Subtype.val '' D) := by
+      rintro _ ⟨d, hd, rfl⟩
+      have h1 : g ((d : selfAdjoint Q) : Q) ≤ u := hu ⟨d, hd, rfl⟩
+      have h2 := hfmono _ _ h1
+      rwa [hfg] at h2
+    have h3 := hcoe.2 hub
+    have h4 := hmono _ _ h3
+    rwa [hgf] at h4
+
+/-- **Transport**: if `D₁` is a Paschke dilation of `φ` and `ϑ : D₂.𝒫 → D₁.𝒫`
+is a *bijective* nmiu-map with `ϑ ∘ ϱ₂ = ϱ₁` and `h₁ ∘ ϑ = h₂`, then `D₂` is a
+Paschke dilation of `φ` too.  Mediate with `ϑ⁻¹ ∘ σ₁`; uniqueness comes from
+the injectivity of `ϑ`. -/
+private theorem pcorner_transport {𝒜 ℬ : Type u} [CStarAlgebra 𝒜]
+    [PartialOrder 𝒜] [StarOrderedRing 𝒜] [CStarAlgebra ℬ] [PartialOrder ℬ]
+    [StarOrderedRing ℬ] (φ : 𝒜 → ℬ) (D₁ D₂ : PaschkeTriple 𝒜 ℬ)
+    (hD₁ : IsPaschkeDilationOf D₁ φ) (ϑ : NMIUMap D₂.P D₁.P)
+    (hbij : Function.Bijective ⇑ϑ) (hρ : ∀ a, ϑ (D₂.ρ a) = D₁.ρ a)
+    (hh : ∀ c, D₁.h (ϑ c) = D₂.h c) :
+    IsPaschkeDilationOf D₂ φ := by
+  obtain ⟨ϑinv, hgf, hfg⟩ := pcorner_exists_ncpInv ϑ hbij
+  obtain ⟨ϑn, hϑn⟩ := pcorner_exists_ncpOfNmiu ϑ
+  refine ⟨fun a => ?_, fun D' hD' => ?_⟩
+  · rw [← hh (D₂.ρ a), hρ a]
+    exact hD₁.1 a
+  · obtain ⟨σ₁, ⟨hσa, hσb⟩, huniq⟩ := hD₁.2 D' hD'
+    obtain ⟨τ, hτ⟩ := exists_ncpComp ϑinv σ₁
+    have hϑτ : ∀ c, ϑ (τ c) = σ₁ c := fun c => by rw [hτ, hfg]
+    refine ⟨τ, ⟨fun a => ?_, fun c => ?_⟩, fun τ' hτ' => ?_⟩
+    · rw [hτ, hσa a, ← hρ a, hgf]
+    · rw [← hh (τ c), hϑτ c, hσb c]
+    · obtain ⟨κ, hκ⟩ := exists_ncpComp ϑn τ'
+      have hκ1 : ∀ a, κ (D'.ρ a) = D₁.ρ a := fun a => by
+        rw [hκ, hϑn, hτ'.1 a, hρ a]
+      have hκ2 : ∀ c, D₁.h (κ c) = D'.h c := fun c => by
+        rw [hκ, hϑn, hh (τ' c), hτ'.2 c]
+      have hκσ : κ = σ₁ := huniq κ ⟨hκ1, hκ2⟩
+      refine DFunLike.ext _ _ fun c => hbij.1 ?_
+      have h1 : ϑ (τ' c) = κ c := by rw [hκ, hϑn]
+      rw [h1, hκσ, hϑτ c]
 
 
 section PaschkeCornerAux
@@ -2365,6 +2568,38 @@ private theorem pcorner_sigma_injective :
   have h4 : c.1 - d.1 = 0 := by rw [← h3, h2, zero_mul]
   exact sub_eq_zero.mp h4
 
+/-- `ϱ(⌈⌈p⌉⌉a⌈⌈p⌉⌉) = ϱ(a)`: the kernel computation
+`pcorner_forall_mul_eq_zero_iff` says `ϱ` kills `a − ⌈⌈p⌉⌉a⌈⌈p⌉⌉`.  This is
+`σ ∘ h_{⌈⌈p⌉⌉} = ϱ`, and with `pcorner_rho_surjective` also the surjectivity
+of `σ`. -/
+private theorem pcorner_rho_cceil (a : A) :
+    M.ρ (cceil p * a * cceil p) = M.ρ a := by
+  have hzz : cceil p * cceil p = cceil p := (cceil_isLeast p).1.1.isIdempotentElem.eq
+  have hzc : ∀ b : A, cceil p * b = b * cceil p := (cceil_isLeast p).1.2.1
+  have h0 : M.ρ (a - cceil p * a * cceil p) = 0 := by
+    refine (pcorner_rho_eq_zero_iff hval M _).mpr ?_
+    refine (pcorner_forall_mul_eq_zero_iff hval _).mpr ?_
+    rw [mul_sub]
+    have h1 : cceil p * (cceil p * a * cceil p) = cceil p * a := by
+      calc cceil p * (cceil p * a * cceil p)
+          = (cceil p * cceil p) * a * cceil p := by noncomm_ring
+        _ = cceil p * a * cceil p := by rw [hzz]
+        _ = cceil p * (cceil p * a) := by rw [mul_assoc, ← hzc a]
+        _ = (cceil p * cceil p) * a := by noncomm_ring
+        _ = cceil p * a := by rw [hzz]
+    rw [h1, sub_self]
+  have hsub : M.ρ (a - cceil p * a * cceil p)
+      = M.ρ a - M.ρ (cceil p * a * cceil p) :=
+    map_sub M.ρ.toStarAlgHom a (cceil p * a * cceil p)
+  rw [hsub] at h0
+  exact (sub_eq_zero.mp h0).symm
+
+/-- `σ ∘ h_{⌈⌈p⌉⌉} = ϱ`. -/
+private theorem pcorner_sigma_centralCorner (a : A) :
+    pcorner_sigma hval M (pcorner_centralCorner (cceil_isLeast p).1.2.1 a)
+      = M.ρ a :=
+  pcorner_rho_cceil hval M a
+
 /-- **171II**, step 3: `ϱ` is surjective. -/
 private theorem pcorner_rho_surjective : Function.Surjective ⇑M.ρ := by
   classical
@@ -2378,29 +2613,9 @@ private theorem pcorner_rho_surjective : Function.Surjective ⇑M.ρ := by
   have hVN := injective_nmiu_iso_on_image_1 σ (pcorner_sigma_injective hval M)
   have hclosed := (vnsac _ hVN).2
   -- the range of `ϱ` and of `σ` agree
-  have hrange : ∀ a : A, M.ρ a ∈ σ.toStarAlgHom.range := by
-    intro a
-    refine ⟨pcorner_centralCorner (cceil_isLeast p).1.2.1 a, ?_⟩
-    show M.ρ (cceil p * a * cceil p) = M.ρ a
-    have hzz : cceil p * cceil p = cceil p := (cceil_isLeast p).1.1.isIdempotentElem.eq
-    have hzc : ∀ b : A, cceil p * b = b * cceil p := (cceil_isLeast p).1.2.1
-    have h0 : M.ρ (a - cceil p * a * cceil p) = 0 := by
-      refine (pcorner_rho_eq_zero_iff hval M _).mpr ?_
-      refine (pcorner_forall_mul_eq_zero_iff hval _).mpr ?_
-      rw [mul_sub]
-      have h1 : cceil p * (cceil p * a * cceil p) = cceil p * a := by
-        calc cceil p * (cceil p * a * cceil p)
-            = (cceil p * cceil p) * a * cceil p := by noncomm_ring
-          _ = cceil p * a * cceil p := by rw [hzz]
-          _ = cceil p * (cceil p * a) := by rw [mul_assoc, ← hzc a]
-          _ = (cceil p * cceil p) * a := by noncomm_ring
-          _ = cceil p * a := by rw [hzz]
-      rw [h1, sub_self]
-    have hsub : M.ρ (a - cceil p * a * cceil p)
-        = M.ρ a - M.ρ (cceil p * a * cceil p) :=
-      map_sub M.ρ.toStarAlgHom a (cceil p * a * cceil p)
-    rw [hsub] at h0
-    exact (sub_eq_zero.mp h0).symm
+  have hrange : ∀ a : A, M.ρ a ∈ σ.toStarAlgHom.range := fun a =>
+    ⟨pcorner_centralCorner (cceil_isLeast p).1.2.1 a,
+      pcorner_sigma_centralCorner hval M a⟩
   intro T
   obtain ⟨approx, hspan, htend⟩ :=
     ketbra_ultraweakly_dense M.selfDual e hbasis T.unop
@@ -2459,6 +2674,16 @@ private theorem pcorner_rho_surjective : Function.Surjective ⇑M.ρ := by
   obtain ⟨c, hc⟩ := hTmem
   exact ⟨c.1, hc⟩
 
+/-- `σ` is bijective: injective by `pcorner_sigma_injective`, surjective
+because it has the same range as `ϱ` (`pcorner_sigma_centralCorner`), which
+is everything. -/
+private theorem pcorner_sigma_bijective :
+    Function.Bijective ⇑(pcorner_sigma hval M) := by
+  refine ⟨pcorner_sigma_injective hval M, fun T => ?_⟩
+  obtain ⟨a, ha⟩ := pcorner_rho_surjective hval M T
+  exact ⟨pcorner_centralCorner (cceil_isLeast p).1.2.1 a,
+    (pcorner_sigma_centralCorner hval M a).trans ha⟩
+
 end PaschkeCornerAux
 
 /-! ## Parsec 1710: purity via the Paschke dilation
@@ -2482,7 +2707,22 @@ The hypothesis `IsStarProjection p` of the thesis is carried as an instance
 `[Fact (IsStarProjection p)]`, which is what the corner `pAp` needs to be an
 algebra at all (see `cornerSet.instCStarAlgebra`).  That `⌈⌈p⌉⌉` is a
 projection too is **68III**, now proved in `Theses.A.VN.Projections`, so it
-is supplied by `fact_isStarProjection_cceil` rather than assumed. -/
+is supplied by `fact_isStarProjection_cceil` rather than assumed.
+
+**Proof.**  The thesis (dils.tex:6237) argues in three steps: `𝒜p` is a
+self-dual Hilbert `p𝒜p`-module; `𝒜 ⊗_{h_p} p𝒜p ≅ 𝒜p`; and
+`𝒷ᵃ(𝒜p) ≅ ⌈⌈p⌉⌉𝒜`.  Steps 1 and 2 exist only to transport an orthonormal
+basis and the ketbra calculus into a concrete model, and are **not needed**:
+inside the abstract `PaschkeModule` of **154III** every elementary tensor is
+already of the form `a ⊗ 1` (`pcorner_tprod_eq_one`), the thesis's own basis
+transports as `(uᵢ ⊗ 1)ᵢ` (`pcorner_isONBasis_tprod`), and
+`|a ⊗ 1⟩⟨b ⊗ 1| = ϱ(b*pa)` (`pcorner_mketbra_tprod`) — whence
+`pcorner_rho_surjective`, step 3, with `⌈ϱ⌉ = ⌈⌈p⌉⌉`
+(`pcorner_forall_mul_eq_zero_iff`).  So the corestriction
+`σ : ⌈⌈p⌉⌉𝒜 → 𝒷ᵃ(𝒜 ⊗_{h_p} p𝒜p)ᵐᵒᵖ` is a *bijective* nmiu-map with
+`σ ∘ h_{⌈⌈p⌉⌉} = ϱ` and `h ∘ σ = h'_p`, and `pcorner_transport` carries the
+Paschke dilation of **154III**.5 across it.  See PROVING-LOG sessions 67–68;
+the divergence (steps 1 and 2 can be dropped) is recorded there. -/
 theorem paschke_corner [VonNeumannAlgebra A] (p : A)
     [Fact (IsStarProjection p)]
     (hp' : NCPMap A (cornerSet A p))
@@ -2493,8 +2733,24 @@ theorem paschke_corner [VonNeumannAlgebra A] (p : A)
       (∀ c : cornerSet A (cceil p), (h c).1 = p * c.1 * p) ∧
       IsPaschkeDilationOf
         ⟨cornerSet A (cceil p), cornerSet_vonNeumannAlgebra A (cceil p),
-          ρ, h⟩ ⇑hp' :=
-  sorry
+          ρ, h⟩ ⇑hp' := by
+  classical
+  letI : VonNeumannAlgebra (cornerSet A p) := cornerSet_vonNeumannAlgebra A p
+  letI : VonNeumannAlgebra (cornerSet A (cceil p)) :=
+    cornerSet_vonNeumannAlgebra A (cceil p)
+  obtain ⟨M⟩ := existence_paschke hp'
+  obtain ⟨incl, hincl⟩ :=
+    pcorner_exists_inclNcp (z := cceil p) (cceil_isLeast p).1.2.1
+  obtain ⟨h', hh'⟩ := exists_ncpComp hp' incl
+  refine ⟨pcorner_centralCorner (cceil_isLeast p).1.2.1, h', fun _ => rfl,
+    fun c => ?_, ?_⟩
+  · rw [hh', hincl]
+    exact hval c.1
+  · refine pcorner_transport ⇑hp' _ _ (existence_paschke_5 hp' M)
+      (pcorner_sigma hval M) (pcorner_sigma_bijective hval M)
+      (fun a => pcorner_sigma_centralCorner hval M a) (fun c => ?_)
+    show M.h (M.ρ c.1) = h' c
+    rw [paschkeModule_h_ρ, hh', hincl]
 
 /-- **171VII** (`paschke-pure`, dils.tex:6365, Theorem): an ncp-map `φ`
 with Paschke dilation `(𝒫, ϱ, h)` is pure if and only if `ϱ` is
