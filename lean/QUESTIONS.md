@@ -372,8 +372,11 @@ Confirm that is the right treatment:
 * **178III.2** "every finite effect monoid comes from a Boolean algebra, hence
   is commutative" and **178III.4** "there is a non-commutative effect monoid on
   lexicographic `ℝ⁵`" (`eff.tex:640`/`651`, cited to `basmsc` prop. 40 /
-  cor. 51).  Three parked statements: `finite_effectMonoid_boolean`,
-  `finite_effectMonoid_commutative`, `exists_noncommutative_effectMonoid`.
+  cor. 51).  **Only one statement is still parked**: `finite_effectMonoid_boolean`.
+  (Updated 2026-08-17: `finite_effectMonoid_commutative` and
+  `exists_noncommutative_effectMonoid` are **proved** —
+  `EffectAlgebras.lean:2763` and `:2299` — by routes that do not need the
+  cited results, so only 178III.2's Boolean-algebra half remains.)
 * **192V.4** "every cancellative abstract `[0,1]`-convex set embeds affinely in
   a real vector space" (`eff.tex:2591`, cited to `statesofconvexsets` thm. 8);
   `cancellative_iso_convex`.

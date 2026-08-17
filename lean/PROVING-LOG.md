@@ -19474,3 +19474,109 @@ sum) and that the generated subalgebra is again hereditarily atomic, which is
 The thesis's proof of 125cIII is correct as printed; the divergences above are
 all forced by universe polymorphism or are shortenings.
 `docs/why-open.csv`: the `Fha_concrete` row is deleted.
+
+## Session 82 — `B/Eff`: **both recorded blockers are dead**, and the hom-PCM of a finPAC turns out not to be data at all (worker on `Theses/B/Eff/`)
+
+**`B/Eff` stays at 15** (`VNExamples` 11, `StatesPredicates` 2,
+`EffectAlgebras` 2, the other six 0), **0 errors in all nine files**, each
+source run through `lean` individually with `LEAN_PATH` set.  No `sorry` was
+closed by design: the session's output is `docs/BEff-survey.md` (new) plus the
+two pieces of infrastructure that the survey identifies as the gates.
+
+### 1. `CStarAlgebra PUnit` — the blocker never existed
+
+PROVING-LOG session 69 recorded, as "the next gate and a small,
+self-contained one", that `CStarAlgebra PUnit` does not synthesize, so `vN`
+has no terminal object and `vNᵒᵖ` no finite coproducts.  The non-synthesis is
+real; the *obstruction* is not.  **Mathlib's `CStarAlgebra` extends
+`NormedRing`, not `NormOneClass`**, so `‖1‖ = 0` is admissible, and only four
+instances are missing (`StarRing`, `CStarRing`, `StarModule ℂ`, then
+`CStarAlgebra` as `{}`).  With `StarOrderedRing` (`of_le_iff`, everything
+`Subsingleton.elim`) and `Theses.VonNeumannAlgebra` (both axioms vacuous),
+`WStar.trivial` is now an object of `WStarNCPU`/`WStarCPSU`.  ~25 lines in
+`VNExamples.lean`.  Aside worth keeping: Mathlib already has a trivial
+C\*-algebra by accident — `CStarAlgebra (Π _ : Empty, ℂ)` synthesises from the
+finite-`Pi` instance.
+
+The *second* half of that gate is also gone, and by the same kind of
+correction: session 69 noted that thesis A's `⊕ᵢ𝒜ᵢ = lp 𝒜 ∞` carries
+`[∀ i, Nontrivial (𝒜 i)]`, which the coproduct with the initial object
+violates.  True — but the finite product does not have to go through `lp`:
+Mathlib's `CStarAlgebra (A × B)` and `CStarAlgebra (Π i, A i)` (`Fintype ι`)
+have no nontriviality hypothesis.
+
+### 2. The hom-PCM of a finPAC is uniquely determined — `finPAC_pcm_unique`
+
+Nine of the eleven von-Neumann examples take an **arbitrary**
+`s : EffectusPartialStructure vNᵒᵖ`, and session 69 recorded that closing them
+needs a uniqueness lemma for `EffectusPartialStructure`, since "the PCM
+enrichment `homPCM` is a *field* of the structure and nothing in the file
+proves it is determined".  It is determined, and the proof is three steps in
+the finPAC axioms alone (~150 lines, `Comparisons.lean`, axiom-clean):
+
+1. **`C(X, 0)` is a singleton.**  `𝟙` on the initial object is `0` (both are
+   maps `0 ⟶ 0` and `0` is initial), so `f = f ≫ 𝟙 = f ≫ 0 = 0`.  Hence the
+   zero morphisms agree between any two enrichments:
+   `0_{X,Y} = 0_{X,0} ≫ !`, and the middle term lies in that singleton.
+   (`Quotients.lean` already had `eq_zero_of_hom_to_initial`, but derived from
+   `eq_zero_of_one_zero`, i.e. for an effectus in *partial form*; the finPAC
+   axioms suffice, which is what the uniqueness argument needs.  The new
+   lemma is `finPAC_eq_zero_of_hom_to_initial`, deliberately named apart.)
+2. With `0` fixed the partial projections `▷₁, ▷₂ : Y + Y ⟶ Y` are fixed, and
+   **`f ⊥ g` iff `f` and `g` are the two components of a single
+   `b : X ⟶ Y + Y`** (`perp_iff_exists_bound`).  `⇐` is *compatible sum*;
+   `⇒` takes `b = κ₁f ⋁ κ₂g`, which exists by *untying*, and
+   `b ≫ ▷₁ = f ⋁ 0 = f`.
+3. **`f ⋁ g = ∇ ∘ b`** for any such `b` (`ovee_eq_bound`), because
+   `▷₁ ⋁ ▷₂ = ∇` (`ovee_pproj`, by `coprod.hom_ext`) and `⋁` commutes with
+   precomposition.
+
+`HasFiniteCoproducts` is a `Prop`, hence a subsingleton, so
+`effectusPartialStructure_homPCM_unique` follows: any two
+`EffectusPartialStructure`s on the same category carry the *same*
+enrichment.  **What is not determined is the effect object `I` of
+`EffectusPartialForm` and its truth map** — those are unique only up to
+isomorphism, so the nine statements will still need a small
+invariance-under-`I`-iso transport.  That is the honest residue of the
+recorded blocker.
+
+*Placement, deliberately wrong and flagged as such:* the section belongs in
+`Effectus.lean`, next to `FinPAC`.  It is parked at the end of
+`Comparisons.lean` — the last `B/Eff` module that does **not** import thesis
+A — because putting it where it belongs would invalidate the whole `B/Eff`
+olean chain while two other workers were running.  Move it at the next full
+rebuild.
+
+### 3. Corrections to the record
+
+* **`vn_is_andthen_eff` (211IV) needs `A/Proc`, and `A/Proc`'s 105V is still
+  `sorry`.**  `VNExamples.lean`'s header says `A/Proc` is deliberately not
+  imported because "nothing here has been shown to need it".  eff.tex:4861
+  proves the two &-effectus axioms by citing **105V**
+  `positive-map-uniqueness` and **100III** `pure-fundamental`; 100III is
+  proved, **105V is `sorry` at `A/Proc/Measurement.lean:6610`**, and both are
+  in `A/Proc`.  So 211IV — and 215VI, its Corollary — are blocked *outside*
+  `B/Eff`.  Not an erratum: the thesis is right, our import comment is what
+  is wrong.
+* **`effects_sea` (225V) never needed the 2026-08-17 import split.**
+  `why-open.csv` said it was "now on the import path"; it needs only Mathlib's
+  continuous functional calculus, and is independent of the effectus structure
+  altogether — so it does not wait on 180V and is the best isolated target in
+  the file.
+* **`exc_dm_effectus_kleisli` (192III.3) does have an author solution.**
+  `why-open.csv` said "an Exercise\* with nothing to transcribe";
+  `bsols.tex:1991–2170` covers all three parts, and part 3 is fully explicit
+  (coproducts of `Kl(𝒟_M)` are `Set`'s with `η∘κᵢ`; `𝒟_M 1 ≅ 1` makes `1`
+  final; both pullbacks and the joint-monicity step are pointwise).  This is
+  the one straightforwardly live target in the directory.
+* **QUESTIONS A3 lists two statements that are proved.**
+  `finite_effectMonoid_commutative` (`EffectAlgebras.lean:2763`) and
+  `exists_noncommutative_effectMonoid` (`:2299`) are closed; only
+  `finite_effectMonoid_boolean` of that trio is still parked.  A3 trimmed.
+
+### 4. Nothing for ERRATA
+
+No defect in the thesis was found this session; all four corrections above are
+to *our* records, not to eff.tex.  `docs/why-open.csv`: twelve `B/Eff` rows
+rewritten (no row deleted — no `sorry` closed).  `docs/BEff-survey.md` is new
+and is the session's main output.

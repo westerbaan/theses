@@ -1726,4 +1726,178 @@ theorem snake_lemma {A B C₃ A' B' C₃' : C}
 
 end Snake
 
+/-! ## The hom-PCM of a finPAC is unique (infrastructure, not a thesis point)
+
+Nothing in this section belongs to parsec 224–228; it is placed here — the
+last module of `B/Eff` that does *not* import thesis A — because it is what
+`VNExamples.lean` needs and because putting it in `Effectus.lean`, where it
+belongs, would invalidate the whole `B/Eff` olean chain.  **Move it to
+`Effectus.lean` (next to `FinPAC`) at the next convenient full rebuild.**
+
+The point.  Nine of the eleven von-Neumann examples are stated for an
+*arbitrary* `s : EffectusPartialStructure vNᵒᵖ` and must produce their
+structure for that `s`, so they were recorded as waiting on a uniqueness
+lemma for `EffectusPartialStructure`.  Here is that lemma for the part that
+matters: **the PCM-enrichment of a finPAC is not extra data at all** — it is
+determined by the category together with its finite coproducts.  Three
+steps, each using only the finPAC axioms:
+
+1. `𝟙` on the initial object is `0` (both are maps `0 ⟶ 0`, and `0` is
+   initial), so `f = f ≫ 𝟙 = f ≫ 0 = 0` for every `f : X ⟶ 0`: the hom-set
+   `C(X, 0)` is a singleton.  Hence `0 = 0_{X,0} ≫ !` is the same morphism
+   for any two enrichments (`finPAC_pcm_unique`, first step).
+2. With `0` fixed the partial projections `▷₁, ▷₂ : Y + Y ⟶ Y` are fixed,
+   and `f ⊥ g` iff `f` and `g` are the two components of a single
+   `b : X ⟶ Y + Y` (`perp_iff_exists_bound`): `⇐` is *compatible sum*, and
+   `⇒` takes `b = κ₁∘f ⋁ κ₂∘g`, which exists by *untying*.
+3. `f ⋁ g = ∇ ∘ b` for any such `b` (`ovee_eq_bound`), since
+   `▷₁ ⋁ ▷₂ = ∇` (`ovee_pproj`) and `⋁` commutes with precomposition.
+
+What is **not** determined is the effect object `I` of
+`EffectusPartialForm` and its truth map, which are unique only up to
+isomorphism — see `docs/BEff-survey.md`. -/
+
+section FinPACUnique
+
+universe u₂
+
+/-- Two `PCM` structures on the same carrier agree as soon as their zero,
+their orthogonality relation and their partial sum do. -/
+theorem pcm_eq_of_data {M : Type u₂} (p q : PCM M) (hz : p.toZero = q.toZero)
+    (hperp : p.Perp = q.Perp)
+    (hovee : ∀ (a b : M) (h : p.Perp a b) (h' : q.Perp a b),
+      p.ovee a b h = q.ovee a b h') : p = q := by
+  cases p with | mk P₁ o₁ _ _ _ _ _ _ _ =>
+  cases q with | mk P₂ o₂ _ _ _ _ _ _ _ =>
+  simp only at hz hperp hovee
+  subst hz
+  subst hperp
+  congr 1
+  funext a b h
+  exact hovee a b h h
+
+section OneEnrichment
+
+variable {D : Type u} [Category.{v} D] [HasFiniteCoproducts D]
+  [∀ X Y : D, PCM (X ⟶ Y)] [FinPAC D]
+
+/-- Every map into the initial object of a finPAC is `0`.  (`Quotients.lean`
+has the same statement for an effectus in *partial form*, deriving it from
+`eq_zero_of_one_zero`; the finPAC axioms alone already suffice, which is what
+the uniqueness argument needs.) -/
+theorem finPAC_eq_zero_of_hom_to_initial {X : D} (f : X ⟶ (⊥_ D)) : f = 0 := by
+  have h1 : (𝟙 (⊥_ D)) = (0 : (⊥_ D) ⟶ (⊥_ D)) := initialIsInitial.hom_ext _ _
+  calc f = f ≫ 𝟙 (⊥_ D) := by simp
+    _ = f ≫ (0 : (⊥_ D) ⟶ (⊥_ D)) := by rw [h1]
+    _ = 0 := FinPAC.comp_zero f
+
+/-- The two partial projections `Y + Y ⟶ Y` are orthogonal (compatible sum
+at `b = 𝟙`). -/
+theorem perp_pproj (Y : D) : Perp (pproj₁ Y Y) (pproj₂ Y Y) := by
+  have := FinPAC.compatible_sum (𝟙 (Y ⨿ Y))
+  simpa using this
+
+/-- `▷₁ ⋁ ▷₂ = ∇`. -/
+theorem ovee_pproj (Y : D) :
+    ovee (pproj₁ Y Y) (pproj₂ Y Y) (perp_pproj Y) = coprod.desc (𝟙 Y) (𝟙 Y) := by
+  refine coprod.hom_ext ?_ ?_
+  · obtain ⟨h', he⟩ := FinPAC.ovee_comp (perp_pproj Y) (coprod.inl : Y ⟶ Y ⨿ Y)
+    rw [he]
+    simp only [pproj₁, pproj₂, coprod.inl_desc]
+    rw [PCM.ovee_zero]
+  · obtain ⟨h', he⟩ := FinPAC.ovee_comp (perp_pproj Y) (coprod.inr : Y ⟶ Y ⨿ Y)
+    rw [he]
+    simp only [pproj₁, pproj₂, coprod.inr_desc]
+    rw [PCM.zero_ovee]
+
+/-- `f ⊥ g` exactly when `f` and `g` are the two components of a single
+`b : X ⟶ Y + Y`. -/
+theorem perp_iff_exists_bound {X Y : D} (f g : X ⟶ Y) :
+    Perp f g ↔ ∃ b : X ⟶ Y ⨿ Y, b ≫ pproj₁ Y Y = f ∧ b ≫ pproj₂ Y Y = g := by
+  constructor
+  · intro h
+    refine ⟨ovee (f ≫ (coprod.inl : Y ⟶ Y ⨿ Y)) (g ≫ coprod.inr)
+      (FinPAC.untying h), ?_, ?_⟩
+    · obtain ⟨h', he⟩ := FinPAC.comp_ovee (FinPAC.untying h) (pproj₁ Y Y)
+      rw [he]
+      simp only [pproj₁, Category.assoc, coprod.inl_desc, coprod.inr_desc,
+        Category.comp_id]
+      simp only [FinPAC.comp_zero]
+      exact PCM.ovee_zero f _
+    · obtain ⟨h', he⟩ := FinPAC.comp_ovee (FinPAC.untying h) (pproj₂ Y Y)
+      rw [he]
+      simp only [pproj₂, Category.assoc, coprod.inl_desc, coprod.inr_desc,
+        Category.comp_id]
+      simp only [FinPAC.comp_zero]
+      exact PCM.zero_ovee g
+  · rintro ⟨b, rfl, rfl⟩
+    exact FinPAC.compatible_sum b
+
+/-- The partial sum is computed from any bound: `f ⋁ g = ∇ ∘ b`. -/
+theorem ovee_eq_bound {X Y : D} {f g : X ⟶ Y} (h : Perp f g) (b : X ⟶ Y ⨿ Y)
+    (h1 : b ≫ pproj₁ Y Y = f) (h2 : b ≫ pproj₂ Y Y = g) :
+    ovee f g h = b ≫ coprod.desc (𝟙 Y) (𝟙 Y) := by
+  obtain ⟨h', he⟩ := FinPAC.ovee_comp (perp_pproj Y) b
+  rw [← ovee_pproj Y, he]
+  subst h1; subst h2
+  rfl
+
+end OneEnrichment
+
+variable {D : Type u} [Category.{v} D] [HasFiniteCoproducts D]
+
+/-- **The hom-PCM of a finPAC is unique**: any two PCM-enrichments of a
+category with finite coproducts satisfying the finPAC axioms are equal. -/
+theorem finPAC_pcm_unique (P₁ P₂ : ∀ X Y : D, PCM (X ⟶ Y))
+    (h₁ : @FinPAC D _ _ P₁) (h₂ : @FinPAC D _ _ P₂) : P₁ = P₂ := by
+  have hz : ∀ X Y : D,
+      @Zero.zero _ (P₁ X Y).toZero = @Zero.zero _ (P₂ X Y).toZero := by
+    intro X Y
+    have e1 : @Zero.zero _ (P₁ X Y).toZero
+        = @Zero.zero _ (P₁ X (⊥_ D)).toZero ≫ initial.to Y :=
+      (@FinPAC.zero_comp D _ _ P₁ h₁ X (⊥_ D) Y (initial.to Y)).symm
+    have e2 : @Zero.zero _ (P₂ X Y).toZero
+        = @Zero.zero _ (P₂ X (⊥_ D)).toZero ≫ initial.to Y :=
+      (@FinPAC.zero_comp D _ _ P₂ h₂ X (⊥_ D) Y (initial.to Y)).symm
+    have e3 : @Zero.zero _ (P₁ X (⊥_ D)).toZero
+        = @Zero.zero _ (P₂ X (⊥_ D)).toZero :=
+      @finPAC_eq_zero_of_hom_to_initial D _ _ P₂ h₂ X
+        (@Zero.zero _ (P₁ X (⊥_ D)).toZero)
+    rw [e1, e2, e3]
+  have hzero : ∀ X Y : D, (P₁ X Y).toZero = (P₂ X Y).toZero := fun X Y => by
+    cases h : (P₁ X Y).toZero; cases h' : (P₂ X Y).toZero
+    have hxy := hz X Y
+    rw [h, h'] at hxy
+    exact congrArg Zero.mk hxy
+  have hpp1 : ∀ X Y : D, @pproj₁ D _ _ P₁ X Y = @pproj₁ D _ _ P₂ X Y := by
+    intro X Y; simp only [pproj₁]; congr 1; exact hz Y X
+  have hpp2 : ∀ X Y : D, @pproj₂ D _ _ P₁ X Y = @pproj₂ D _ _ P₂ X Y := by
+    intro X Y; simp only [pproj₂]; congr 1; exact hz X Y
+  funext X Y
+  refine pcm_eq_of_data _ _ (hzero X Y) ?_ ?_
+  · funext f g
+    have b1 := @perp_iff_exists_bound D _ _ P₁ h₁ X Y f g
+    have b2 := @perp_iff_exists_bound D _ _ P₂ h₂ X Y f g
+    rw [hpp1, hpp2] at b1
+    exact propext (b1.trans b2.symm)
+  · intro f g hf hg
+    obtain ⟨b, hb1, hb2⟩ := (@perp_iff_exists_bound D _ _ P₁ h₁ X Y f g).mp hf
+    rw [@ovee_eq_bound D _ _ P₁ h₁ X Y f g hf b hb1 hb2]
+    rw [hpp1] at hb1
+    rw [hpp2] at hb2
+    rw [@ovee_eq_bound D _ _ P₂ h₂ X Y f g hg b hb1 hb2]
+
+/-- Consequence for the nine hypothetical von Neumann examples: the
+PCM-enrichment carried by an arbitrary `EffectusPartialStructure` is the
+canonical one, so a proof may compute with the concrete `⋁` of the intended
+structure.  (`HasFiniteCoproducts` is a `Prop`, hence a subsingleton, so the
+two structures' coproducts agree on the nose.) -/
+theorem effectusPartialStructure_homPCM_unique
+    (s s' : EffectusPartialStructure D) : s.homPCM = s'.homPCM := by
+  have hc : s'.hasFiniteCoproducts = s.hasFiniteCoproducts := Subsingleton.elim _ _
+  have h2 : @FinPAC D _ s.hasFiniteCoproducts s'.homPCM := hc ▸ s'.finPAC
+  exact @finPAC_pcm_unique D _ s.hasFiniteCoproducts s.homPCM s'.homPCM s.finPAC h2
+
+end FinPACUnique
+
 end Theses.B.Eff

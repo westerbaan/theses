@@ -39,6 +39,56 @@ namespace Theses.B.Eff
 
 universe u v
 
+/-! ## The trivial von Neumann algebra (infrastructure)
+
+`effectus_vn` needs `HasFiniteCoproducts vNᵒᵖ`, hence an *initial* object of
+`vNᵒᵖ`, i.e. a **terminal** object of `vN` — the trivial algebra `{0}`,
+which 8II of thesis A explicitly admits.  This was recorded (PROVING-LOG,
+session 69) as the next gate, on the ground that "`CStarAlgebra PUnit` does
+not synthesize".  It does not, but only because the four instances below are
+missing from Mathlib; **`CStarAlgebra` extends `NormedRing`, not
+`NormOneClass`**, so nothing about the trivial algebra is actually excluded.
+(Mathlib does already have one trivial C\*-algebra by accident:
+`CStarAlgebra (Π _ : Empty, ℂ)` synthesises from the finite-`Pi` instance.)
+
+With these, `WStar.trivial` is a bona fide object of `WStarNCPU`/`WStarCPSU`.
+What is still to be done for the gate is `IsTerminal (WStarNCPU.of
+WStar.trivial)`, i.e. the unique `NCPUMap A PUnit`; every one of its
+obligations is a `Subsingleton.elim`. -/
+
+section TrivialAlgebra
+
+instance : StarRing PUnit.{u + 1} where
+  star := id
+  star_involutive _ := rfl
+  star_mul _ _ := rfl
+  star_add _ _ := rfl
+
+instance : CStarRing PUnit.{u + 1} where
+  norm_mul_self_le _ := le_of_eq (by simp)
+
+instance : StarModule ℂ PUnit.{u + 1} where
+  star_smul _ _ := rfl
+
+noncomputable instance : CStarAlgebra PUnit.{u + 1} := {}
+
+instance : StarOrderedRing PUnit.{u + 1} :=
+  StarOrderedRing.of_le_iff fun _ _ =>
+    ⟨fun _ => ⟨0, Subsingleton.elim _ _⟩, fun _ => le_of_eq (Subsingleton.elim _ _)⟩
+
+instance : Theses.VonNeumannAlgebra PUnit.{u + 1} where
+  isLUB_of_bddAbove_directed _ _ _ _ :=
+    ⟨0, ⟨fun _ _ => le_of_eq (Subsingleton.elim _ _),
+        fun _ _ => le_of_eq (Subsingleton.elim _ _)⟩⟩
+  np_faithful _ _ _ := Subsingleton.elim _ _
+
+/-- The trivial von Neumann algebra `{0}` as an object of `WStar`: the
+terminal object of `vN`, hence the initial object of `vNᵒᵖ`. -/
+noncomputable def WStar.trivial : WStar.{u + 1} := WStar.of PUnit.{u + 2}
+
+end TrivialAlgebra
+
+
 /-! ## Projections of a von Neumann algebra (parsec 177)
 
 Moved from `EffectAlgebras.lean`. -/
