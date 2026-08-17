@@ -1071,12 +1071,20 @@ theorem measure_space_continuous_discrete [IsFiniteMeasure μ]
   exact ⟨⋃₀ 𝒞, MeasurableSet.sUnion hcount fun A hA => (hat A hA).1,
     ⟨𝒞, hat, hdisj, rfl⟩, hnoatom⟩
 
-/-- **129VIII** (`lem:continuous-measure-space`, proc.tex:6305, Lemma):
-for a continuous finite complete measure space `X` and
-`r ∈ [0, μ(X)]` there is a measurable `A ⊆ X` with `μ(A) = r`. -/
-theorem continuous_measure_space [IsFiniteMeasure μ] (hμ : μ.IsComplete)
-    (hc : ContinuousSpace μ) (r : ℝ≥0∞) (hr : r ≤ μ Set.univ) :
-    ∃ S : Set X, MeasurableSet S ∧ μ S = r := by
+/-- **129VIII** (`lem:continuous-measure-space`, proc.tex:6305, Lemma), in
+the *relative* form the dyadic partition of **129X** needs: for a
+continuous finite complete measure space `X`, a measurable `B ⊆ X` and
+`r ∈ [0, μ(B)]` there is a measurable `A ⊆ B` with `μ(A) = r`.
+
+This is the thesis's own proof, with `B` in place of `X` throughout — the
+argument never uses that the ambient set is everything.  It is stated
+separately rather than obtained from `continuous_measure_space` applied to
+`μ.restrict B` because a restriction of a complete measure is not
+complete. -/
+private theorem continuous_measure_space_subset [IsFiniteMeasure μ]
+    (hμ : μ.IsComplete) (hc : ContinuousSpace μ) (B₀ : Set X)
+    (hB₀ : MeasurableSet B₀) (r : ℝ≥0∞) (hr : r ≤ μ B₀) :
+    ∃ S : Set X, S ⊆ B₀ ∧ MeasurableSet S ∧ μ S = r := by
   have hhalf : ∀ B : Set X, MeasurableSet B → 0 < μ B →
       ∃ C : Set X, C ⊆ B ∧ MeasurableSet C ∧ 0 < μ C ∧ 2 * μ C ≤ μ B := by
     intro B hB hBpos
@@ -1134,40 +1142,51 @@ theorem continuous_measure_space [IsFiniteMeasure μ] (hμ : μ.IsComplete)
       calc (n : ℝ≥0∞) * ε ≤ 2 ^ n * μ (F n) := by gcongr
         _ ≤ μ B := hFdec n
     exact absurd hn (not_lt.mpr hchain2)
-  set 𝒮 : Set (Set X) := {S | MeasurableSet S ∧ μ S ≤ r} with h𝒮
-  have hempty : (∅ : Set X) ∈ 𝒮 := ⟨MeasurableSet.empty, by simp⟩
+  set 𝒮 : Set (Set X) := {S | S ⊆ B₀ ∧ MeasurableSet S ∧ μ S ≤ r} with h𝒮
+  have hempty : (∅ : Set X) ∈ 𝒮 :=
+    ⟨Set.empty_subset _, MeasurableSet.empty, by simp⟩
   have hchain : ∀ f : ℕ → Set X, (∀ n, f n ∈ 𝒮) → Monotone f →
       ∃ S ∈ 𝒮, ∀ n, f n ⊆ S := by
     intro f hf hmono
-    refine ⟨⋃ n, f n, ⟨MeasurableSet.iUnion fun n => (hf n).1, ?_⟩,
+    refine ⟨⋃ n, f n, ⟨Set.iUnion_subset fun n => (hf n).1,
+      MeasurableSet.iUnion fun n => (hf n).2.1, ?_⟩,
       fun n => Set.subset_iUnion f n⟩
     rw [hmono.measure_iUnion]
-    exact iSup_le fun n => (hf n).2
-  obtain ⟨A, hA𝒮, -, hAmax⟩ := measure_zorn μ hμ 𝒮 (fun S hS => hS.1) hchain ∅ hempty
-  refine ⟨A, hA𝒮.1, ?_⟩
+    exact iSup_le fun n => (hf n).2.2
+  obtain ⟨A, hA𝒮, -, hAmax⟩ := measure_zorn μ hμ 𝒮 (fun S hS => hS.2.1) hchain ∅ hempty
+  refine ⟨A, hA𝒮.1, hA𝒮.2.1, ?_⟩
   by_contra hne
-  have hlt : μ A < r := lt_of_le_of_ne hA𝒮.2 hne
+  have hlt : μ A < r := lt_of_le_of_ne hA𝒮.2.2 hne
   set ε : ℝ≥0∞ := r - μ A with hεdef
   have hεpos : 0 < ε := tsub_pos_of_lt hlt
-  have hcompl : 0 < μ (Set.univ \ A) := by
-    have h := measure_sdiff (Set.subset_univ A) hA𝒮.1.nullMeasurableSet
-      (measure_ne_top μ A)
+  have hcompl : 0 < μ (B₀ \ A) := by
+    have h := measure_sdiff hA𝒮.1 hA𝒮.2.1.nullMeasurableSet (measure_ne_top μ A)
     rw [h]
     exact lt_of_lt_of_le hεpos (tsub_le_tsub_right hr _)
   obtain ⟨C, hCsub, hCm, hCpos, hCle⟩ :=
-    hsmall (Set.univ \ A) (MeasurableSet.univ.diff hA𝒮.1) hcompl ε hεpos
+    hsmall (B₀ \ A) (hB₀.diff hA𝒮.2.1) hcompl ε hεpos
   have hdisj : Disjoint A C := Set.disjoint_left.mpr fun x hxA hxC => (hCsub hxC).2 hxA
   have hAC : μ (A ∪ C) = μ A + μ C := measure_union hdisj hCm
   have hAC𝒮 : A ∪ C ∈ 𝒮 := by
-    refine ⟨hA𝒮.1.union hCm, ?_⟩
+    refine ⟨Set.union_subset hA𝒮.1 (fun x hx => (hCsub hx).1), hA𝒮.2.1.union hCm, ?_⟩
     rw [hAC]
     calc μ A + μ C ≤ μ A + ε := by gcongr
-      _ = r := by rw [hεdef, add_tsub_cancel_of_le hA𝒮.2]
+      _ = r := by rw [hεdef, add_tsub_cancel_of_le hA𝒮.2.2]
   have heq := hAmax _ hAC𝒮 Set.subset_union_left
   rw [hAC] at heq
   have hC0 : μ C = 0 := (ENNReal.add_right_inj (measure_ne_top μ A)).mp
     (by rw [heq, add_zero])
   exact absurd hCpos (by rw [hC0]; exact lt_irrefl 0)
+
+/-- **129VIII** (`lem:continuous-measure-space`, proc.tex:6305, Lemma):
+for a continuous finite complete measure space `X` and
+`r ∈ [0, μ(X)]` there is a measurable `A ⊆ X` with `μ(A) = r`. -/
+theorem continuous_measure_space [IsFiniteMeasure μ] (hμ : μ.IsComplete)
+    (hc : ContinuousSpace μ) (r : ℝ≥0∞) (hr : r ≤ μ Set.univ) :
+    ∃ S : Set X, MeasurableSet S ∧ μ S = r := by
+  obtain ⟨S, -, hSm, hSr⟩ :=
+    continuous_measure_space_subset μ hμ hc Set.univ MeasurableSet.univ r hr
+  exact ⟨S, hSm, hSr⟩
 
 variable (𝒜 : Type u) [CStarAlgebra 𝒜] [PartialOrder 𝒜]
   [StarOrderedRing 𝒜] in
@@ -1198,6 +1217,466 @@ structure IsLinftyOf (q : (X → ℂ) → 𝒜) : Prop where
   one : q 1 = 1
   kernel : ∀ f, IsBoundedMeasurable X f → (q f = 0 ↔ f =ᵐ[μ] 0)
 
+/-! ### The `IsLinftyOf` dictionary
+
+These elementary facts about a presentation `q : L^∞(X) → 𝒜` are shared by
+**129X** below and by the **130IV** development further down (where they
+were first written): closure of `IsBoundedMeasurable` under the algebraic
+operations, and that `q` only sees the a.e.-class of its argument. -/
+
+private theorem bm_const (z : ℂ) : IsBoundedMeasurable X (fun _ : X => z) :=
+  ⟨measurable_const, ‖z‖, fun _ => le_rfl⟩
+
+private theorem bm_one : IsBoundedMeasurable X (1 : X → ℂ) := bm_const 1
+
+private theorem bm_zero : IsBoundedMeasurable X (0 : X → ℂ) := bm_const 0
+
+private theorem bm_nonneg {f : X → ℂ} (hf : IsBoundedMeasurable X f) :
+    ∃ C : ℝ, 0 ≤ C ∧ ∀ x, ‖f x‖ ≤ C := by
+  obtain ⟨-, C, hC⟩ := hf
+  exact ⟨max C 0, le_max_right _ _, fun x => (hC x).trans (le_max_left _ _)⟩
+
+private theorem bm_add {f g : X → ℂ} (hf : IsBoundedMeasurable X f)
+    (hg : IsBoundedMeasurable X g) : IsBoundedMeasurable X (f + g) := by
+  obtain ⟨hfm, Cf, hCf⟩ := hf
+  obtain ⟨hgm, Cg, hCg⟩ := hg
+  refine ⟨hfm.add hgm, Cf + Cg, fun x => ?_⟩
+  exact (norm_add_le (f x) (g x)).trans (add_le_add (hCf x) (hCg x))
+
+private theorem bm_sub {f g : X → ℂ} (hf : IsBoundedMeasurable X f)
+    (hg : IsBoundedMeasurable X g) : IsBoundedMeasurable X (f - g) := by
+  obtain ⟨hfm, Cf, hCf⟩ := hf
+  obtain ⟨hgm, Cg, hCg⟩ := hg
+  refine ⟨hfm.sub hgm, Cf + Cg, fun x => ?_⟩
+  exact (norm_sub_le (f x) (g x)).trans (add_le_add (hCf x) (hCg x))
+
+private theorem bm_mul {f g : X → ℂ} (hf : IsBoundedMeasurable X f)
+    (hg : IsBoundedMeasurable X g) : IsBoundedMeasurable X (f * g) := by
+  obtain ⟨Cf, hCf0, hCf⟩ := bm_nonneg hf
+  obtain ⟨Cg, hCg0, hCg⟩ := bm_nonneg hg
+  refine ⟨hf.1.mul hg.1, Cf * Cg, fun x => ?_⟩
+  exact (norm_mul_le (f x) (g x)).trans
+    (mul_le_mul (hCf x) (hCg x) (norm_nonneg _) hCf0)
+
+private theorem bm_star {f : X → ℂ} (hf : IsBoundedMeasurable X f) :
+    IsBoundedMeasurable X (star f) := by
+  obtain ⟨hfm, Cf, hCf⟩ := hf
+  exact ⟨continuous_star.measurable.comp hfm, Cf, fun x => by simpa using hCf x⟩
+
+private theorem bm_smul (z : ℂ) {f : X → ℂ} (hf : IsBoundedMeasurable X f) :
+    IsBoundedMeasurable X (z • f) := by
+  obtain ⟨C, hC0, hC⟩ := bm_nonneg hf
+  refine ⟨hf.1.const_smul z, ‖z‖ * C, fun x => ?_⟩
+  simpa [norm_smul] using mul_le_mul_of_nonneg_left (hC x) (norm_nonneg z)
+
+/-- Auxiliary for **130IV**: `q` only depends on the a.e.-class of its
+argument.  (This is the argument already made inline in **130II**.) -/
+private theorem linfty_congr (ν : Measure X) (𝒞 : Type u) [CStarAlgebra 𝒞]
+    [PartialOrder 𝒞] [StarOrderedRing 𝒞] (p : (X → ℂ) → 𝒞)
+    (hp : IsLinftyOf ν 𝒞 p) {f g : X → ℂ} (hf : IsBoundedMeasurable X f)
+    (hg : IsBoundedMeasurable X g) (h : f =ᵐ[ν] g) : p f = p g := by
+  have hsub := bm_sub hf hg
+  have h0 : p (f - g) = 0 := by
+    refine (hp.kernel _ hsub).mpr ?_
+    filter_upwards [h] with x hx
+    simp [hx]
+  have hadd := hp.add (f - g) g hsub hg
+  rw [sub_add_cancel, h0, zero_add] at hadd
+  exact hadd
+
+/-- Auxiliary for **130IV**: `q` is additive, hence subtractive. -/
+private theorem linfty_sub (ν : Measure X) (𝒞 : Type u) [CStarAlgebra 𝒞]
+    [PartialOrder 𝒞] [StarOrderedRing 𝒞] (p : (X → ℂ) → 𝒞)
+    (hp : IsLinftyOf ν 𝒞 p) {f g : X → ℂ} (hf : IsBoundedMeasurable X f)
+    (hg : IsBoundedMeasurable X g) : p (f - g) = p f - p g := by
+  have h := hp.add (f - g) g (bm_sub hf hg) hg
+  rw [sub_add_cancel] at h
+  rw [h, add_sub_cancel_right]
+
+private theorem linfty_zero (ν : Measure X) (𝒞 : Type u) [CStarAlgebra 𝒞]
+    [PartialOrder 𝒞] [StarOrderedRing 𝒞] (p : (X → ℂ) → 𝒞)
+    (hp : IsLinftyOf ν 𝒞 p) : p 0 = 0 :=
+  (hp.kernel _ bm_zero).mpr (Filter.EventuallyEq.refl _ _)
+
+/-- Auxiliary: `q` is bipositive, first half.  (`0 ≤ z` in `ℂ` says that
+`z` is a nonnegative real, so the hypothesis is "`f ≥ 0` a.e.".)  The
+witness is `√f`, which is bounded measurable because `√` is. -/
+private theorem linfty_nonneg (ν : Measure X) (𝒞 : Type u) [CStarAlgebra 𝒞]
+    [PartialOrder 𝒞] [StarOrderedRing 𝒞] (p : (X → ℂ) → 𝒞)
+    (hp : IsLinftyOf ν 𝒞 p) {f : X → ℂ} (hf : IsBoundedMeasurable X f)
+    (h : ∀ᵐ x ∂ν, 0 ≤ f x) : 0 ≤ p f := by
+  obtain ⟨C, hC0, hC⟩ := bm_nonneg hf
+  set g : X → ℂ := fun x => ((Real.sqrt (f x).re : ℝ) : ℂ) with hg
+  have hgm : Measurable g :=
+    Complex.measurable_ofReal.comp (Complex.measurable_re.comp hf.1).sqrt
+  have hgb : IsBoundedMeasurable X g := by
+    refine ⟨hgm, Real.sqrt C, fun x => ?_⟩
+    rw [hg]
+    simp only [Complex.norm_real, Real.norm_eq_abs,
+      abs_of_nonneg (Real.sqrt_nonneg _)]
+    exact Real.sqrt_le_sqrt (le_trans (Complex.re_le_norm _) (hC x))
+  have hae : star g * g =ᵐ[ν] f := by
+    filter_upwards [h] with x hx
+    obtain ⟨hre, him⟩ := Complex.le_def.mp hx
+    simp only [Complex.zero_re, Complex.zero_im] at hre him
+    have h1 : (star g * g) x = ((‖g x‖ ^ 2 : ℝ) : ℂ) := by
+      simpa using RCLike.conj_mul (g x)
+    rw [h1, hg]
+    simp only [Complex.norm_real, Real.norm_eq_abs,
+      abs_of_nonneg (Real.sqrt_nonneg _)]
+    rw [Real.sq_sqrt hre]
+    exact (Complex.ext rfl (by simpa using him))
+  calc (0 : 𝒞) ≤ star (p g) * p g := star_mul_self_nonneg _
+    _ = p (star g * g) := by
+        rw [hp.mul _ _ (bm_star hgb) hgb, hp.star_map _ hgb]
+    _ = p f := linfty_congr ν 𝒞 p hp (bm_mul (bm_star hgb) hgb) hf hae
+
+/-- Auxiliary: `q` is monotone for the a.e. order. -/
+private theorem linfty_mono (ν : Measure X) (𝒞 : Type u) [CStarAlgebra 𝒞]
+    [PartialOrder 𝒞] [StarOrderedRing 𝒞] (p : (X → ℂ) → 𝒞)
+    (hp : IsLinftyOf ν 𝒞 p) {f g : X → ℂ} (hf : IsBoundedMeasurable X f)
+    (hg : IsBoundedMeasurable X g) (h : ∀ᵐ x ∂ν, f x ≤ g x) : p f ≤ p g := by
+  have h0 : (0 : 𝒞) ≤ p (g - f) := by
+    refine linfty_nonneg ν 𝒞 p hp (bm_sub hg hf) ?_
+    filter_upwards [h] with x hx
+    simpa using sub_nonneg.mpr hx
+  rw [linfty_sub ν 𝒞 p hp hg hf] at h0
+  exact sub_nonneg.mp h0
+
+/-- Auxiliary: `q` is bipositive, second half — the converse of
+`linfty_nonneg`.  With `S = {x | Re f(x) < 0}` and `s = 1_S`, the element
+`q(s·f)` is *both* `≤ 0` (because `s·f ≤ 0` pointwise) and `≥ 0` (because
+it is the compression `q(s)·q(f)·q(s)` of a positive element), hence `0`;
+so `s·f` vanishes a.e., which forces `μ(S) = 0`. -/
+private theorem linfty_ae_nonneg (ν : Measure X) (𝒞 : Type u) [CStarAlgebra 𝒞]
+    [PartialOrder 𝒞] [StarOrderedRing 𝒞] (p : (X → ℂ) → 𝒞)
+    (hp : IsLinftyOf ν 𝒞 p) {f : X → ℂ} (hf : IsBoundedMeasurable X f)
+    (h : 0 ≤ p f) : ∀ᵐ x ∂ν, 0 ≤ f x := by
+  -- `q f` is self-adjoint, so `f` is a.e. real
+  have hstar : p (star f) = p f := by
+    rw [hp.star_map _ hf]
+    exact (IsSelfAdjoint.of_nonneg h).star_eq
+  have hreal : star f - f =ᵐ[ν] 0 := by
+    refine (hp.kernel _ (bm_sub (bm_star hf) hf)).mp ?_
+    rw [linfty_sub ν 𝒞 p hp (bm_star hf) hf, hstar, sub_self]
+  have him : ∀ᵐ x ∂ν, (f x).im = 0 := by
+    filter_upwards [hreal] with x hx
+    have hx' : star f x - f x = 0 := by
+      simpa using hx
+    have hx'' : (starRingEnd ℂ) (f x) = f x := sub_eq_zero.mp hx'
+    have h2 := congrArg Complex.im hx''
+    simp only [Complex.conj_im] at h2
+    linarith
+  -- the real part, as a bounded measurable function
+  set f₀ : X → ℂ := fun x => (((f x).re : ℝ) : ℂ) with hf₀
+  obtain ⟨C, hC0, hC⟩ := bm_nonneg hf
+  have hf₀b : IsBoundedMeasurable X f₀ := by
+    refine ⟨Complex.measurable_ofReal.comp (Complex.measurable_re.comp hf.1), C,
+      fun x => ?_⟩
+    rw [hf₀]
+    simp only [Complex.norm_real, Real.norm_eq_abs]
+    exact le_trans (Complex.abs_re_le_norm _) (hC x)
+  have hf₀ae : f₀ =ᵐ[ν] f := by
+    filter_upwards [him] with x hx
+    exact (Complex.ext rfl (by simp [hf₀, hx]))
+  have hpf₀ : p f₀ = p f := linfty_congr ν 𝒞 p hp hf₀b hf hf₀ae
+  -- the negative part is null
+  set S : Set X := {x | (f x).re < 0} with hS
+  have hSm : MeasurableSet S :=
+    measurableSet_lt (Complex.measurable_re.comp hf.1) measurable_const
+  set s : X → ℂ := S.indicator 1 with hs
+  have hsm : Measurable s := (measurable_const : Measurable (1 : X → ℂ)).indicator hSm
+  have hsb : IsBoundedMeasurable X s := by
+    refine ⟨hsm, 1, fun x => ?_⟩
+    by_cases hx : x ∈ S <;> simp [hs, Set.indicator_apply, hx]
+  have hss : s * s = s := by
+    funext x; by_cases hx : x ∈ S <;> simp [hs, Set.indicator_apply, hx]
+  have hsstar : star s = s := by
+    funext x; by_cases hx : x ∈ S <;> simp [hs, Set.indicator_apply, hx]
+  have hle : p (s * f₀) ≤ 0 := by
+    have h1 : p (s * f₀) ≤ p 0 := by
+      refine linfty_mono ν 𝒞 p hp (bm_mul hsb hf₀b) bm_zero (Filter.Eventually.of_forall ?_)
+      intro x
+      by_cases hx : x ∈ S
+      · have : (s * f₀) x = (((f x).re : ℝ) : ℂ) := by
+          simp [hs, hf₀, Set.indicator_apply, hx]
+        rw [this]
+        refine Complex.le_def.mpr ⟨?_, by simp⟩
+        simpa using (le_of_lt (by simpa [hS] using hx))
+      · simp [hs, hf₀, Set.indicator_apply, hx]
+    rwa [linfty_zero ν 𝒞 p hp] at h1
+  have hge : (0 : 𝒞) ≤ p (s * f₀) := by
+    have hconj : p (s * f₀) = star (p s) * p f₀ * p s := by
+      have h1 : s * f₀ = star s * f₀ * s := by
+        rw [hsstar]
+        funext x
+        by_cases hx : x ∈ S <;> simp [hs, Set.indicator_apply, hx] <;> ring
+      rw [h1, hp.mul _ _ (bm_mul (bm_star hsb) hf₀b) hsb,
+        hp.mul _ _ (bm_star hsb) hf₀b, hp.star_map _ hsb]
+    rw [hconj, hpf₀]
+    exact star_left_conjugate_nonneg h _
+  have hzero : p (s * f₀) = 0 := le_antisymm hle hge
+  have hae0 : s * f₀ =ᵐ[ν] 0 := (hp.kernel _ (bm_mul hsb hf₀b)).mp hzero
+  have hSnull : ν S = 0 := by
+    have hsub : S ⊆ {x | ¬ (s * f₀) x = (0 : X → ℂ) x} := by
+      intro x hx
+      have h1 : (s * f₀) x = (((f x).re : ℝ) : ℂ) := by
+        simp [hs, hf₀, Set.indicator_apply, hx]
+      simp only [Set.mem_setOf_eq, h1, Pi.zero_apply]
+      exact fun hcon => absurd (Complex.ofReal_eq_zero.mp hcon) (ne_of_lt (by
+        simpa [hS] using hx))
+    exact measure_mono_null hsub (ae_iff.mp hae0)
+  have hSae : ∀ᵐ x ∂ν, ¬ (f x).re < 0 := by
+    rw [ae_iff]
+    simpa [hS] using hSnull
+  filter_upwards [him, hSae] with x h1 h2
+  exact Complex.le_def.mpr ⟨by simpa using not_lt.mp h2, by simpa using h1.symm⟩
+
+/-- Auxiliary: the converse of `linfty_mono`. -/
+private theorem linfty_ae_le (ν : Measure X) (𝒞 : Type u) [CStarAlgebra 𝒞]
+    [PartialOrder 𝒞] [StarOrderedRing 𝒞] (p : (X → ℂ) → 𝒞)
+    (hp : IsLinftyOf ν 𝒞 p) {f g : X → ℂ} (hf : IsBoundedMeasurable X f)
+    (hg : IsBoundedMeasurable X g) (h : p f ≤ p g) : ∀ᵐ x ∂ν, f x ≤ g x := by
+  have h0 : (0 : 𝒞) ≤ p (g - f) := by
+    rw [linfty_sub ν 𝒞 p hp hg hf]
+    exact sub_nonneg.mpr h
+  filter_upwards [linfty_ae_nonneg ν 𝒞 p hp (bm_sub hg hf) h0] with x hx
+  simpa using sub_nonneg.mp hx
+
+/-! ### Auxiliaries for **129X**
+
+Three ingredients that the thesis's proof (proc.tex:6371) uses without
+comment: normality read as preservation of *infima* (it takes
+`δ(⋀ₙ qₙ) = ⋀ₙ δ(qₙ)`), the regrouping of a level-`N+1` sum into pairs,
+and the dyadic partition itself. -/
+
+omit [MeasurableSpace X] in
+/-- A normal positive map preserves the infima of filtered sets of
+self-adjoint elements: apply normality to `−D`.  (The same three-line
+device as the private `preservesDirInfs` of `A/VN/Projections.lean`, which
+is not exported.) -/
+private theorem dup_preservesDirInfs {A₁ : Type*} {B₁ : Type*}
+    [CStarAlgebra A₁] [PartialOrder A₁] [StarOrderedRing A₁]
+    [CStarAlgebra B₁] [PartialOrder B₁] [StarOrderedRing B₁]
+    (f : A₁ →ₚ[ℂ] B₁) (hf : PreservesDirSups ⇑f)
+    (D : Set (selfAdjoint A₁)) (s : selfAdjoint A₁) (hne : D.Nonempty)
+    (hdir : DirectedOn (· ≥ ·) D) (hglb : IsGLB D s) :
+    IsGLB ((fun d : selfAdjoint A₁ => f (d : A₁)) '' D) (f (s : A₁)) := by
+  have hnegle : ∀ x y : selfAdjoint A₁, x ≤ y ↔ -y ≤ -x := by
+    intro x y
+    constructor <;> intro h <;>
+      exact Subtype.coe_le_coe.mp (by
+        simpa using neg_le_neg (Subtype.coe_le_coe.mpr h))
+  set E : Set (selfAdjoint A₁) := (fun d : selfAdjoint A₁ => -d) '' D with hE
+  have hEne : E.Nonempty := hne.image _
+  have hEdir : DirectedOn (· ≤ ·) E := by
+    rintro _ ⟨x, hx, rfl⟩ _ ⟨y, hy, rfl⟩
+    obtain ⟨z, hz, hzx, hzy⟩ := hdir x hx y hy
+    exact ⟨-z, ⟨z, hz, rfl⟩, (hnegle z x).mp hzx, (hnegle z y).mp hzy⟩
+  have hElub : IsLUB E (-s) := by
+    constructor
+    · rintro _ ⟨d, hd, rfl⟩
+      exact (hnegle s d).mp (hglb.1 hd)
+    · intro u hu
+      have h1 : ∀ d ∈ D, -u ≤ d := by
+        intro d hd
+        exact (hnegle (-u) d).mpr (by simpa using hu ⟨d, hd, rfl⟩)
+      simpa using (hnegle (-u) s).mp (hglb.2 h1)
+  have hkey := hf E (-s) hEne hEdir hElub
+  have himg : (fun d : selfAdjoint A₁ => f (d : A₁)) '' E
+      = (fun z : B₁ => -z) '' ((fun d : selfAdjoint A₁ => f (d : A₁)) '' D) := by
+    rw [hE, ← Set.image_comp, ← Set.image_comp]
+    refine Set.image_congr fun d _ => ?_
+    show f ((-d : selfAdjoint A₁) : A₁) = -f (d : A₁)
+    rw [show ((-d : selfAdjoint A₁) : A₁) = -(d : A₁) from rfl, map_neg]
+  have hfs : f ((-s : selfAdjoint A₁) : A₁) = -f (s : A₁) := by
+    rw [show ((-s : selfAdjoint A₁) : A₁) = -(s : A₁) from rfl, map_neg]
+  rw [himg, hfs] at hkey
+  constructor
+  · rintro _ ⟨d, hd, rfl⟩
+    have := hkey.1 ⟨_, ⟨d, hd, rfl⟩, rfl⟩
+    simpa using neg_le_neg this
+  · intro u hu
+    have h1 : ∀ z ∈ (fun z : B₁ => -z) ''
+        ((fun d : selfAdjoint A₁ => f (d : A₁)) '' D), z ≤ -u := by
+      rintro _ ⟨_, ⟨d, hd, rfl⟩, rfl⟩
+      exact neg_le_neg (hu ⟨d, hd, rfl⟩)
+    have := hkey.2 h1
+    simpa using neg_le_neg this
+
+omit [MeasurableSpace X] in
+/-- Regrouping a sum over `{0,…,2n−1}` into consecutive pairs: this is how
+the level-`N+1` sum `∑_{|w|=N+1} p_w ⊗ p_w` is compared with the level-`N`
+one. -/
+private theorem sum_range_two_mul {M : Type*} [AddCommMonoid M] (f : ℕ → M) :
+    ∀ n : ℕ, ∑ j ∈ Finset.range (2 * n), f j
+      = ∑ i ∈ Finset.range n, (f (2 * i) + f (2 * i + 1)) := by
+  intro n
+  induction n with
+  | zero => simp
+  | succ k ih =>
+      have h : 2 * (k + 1) = (2 * k + 1) + 1 := by ring
+      rw [h, Finset.sum_range_succ, Finset.sum_range_succ, ih,
+        Finset.sum_range_succ]
+      abel
+
+/-- The **dyadic scale** behind the partition of **129X** (proc.tex:6382).
+Instead of indexing the halves by words `w ∈ {1,2}*` we index the level-`N`
+partition by its *initial segments*: `S N j` is the union of the first `j`
+blocks of level `N`, so that the blocks themselves are the differences
+`S N (j+1) ∖ S N j`, the level-`N` block `j` splits into the level-`N+1`
+blocks `2j` and `2j+1` (that is the clause `S (N+1) (2i) = S N i`), and
+every block of level `N` has measure `2^{-N}μ(X)`.
+
+Each halving step is one application of `continuous_measure_space_subset`
+— the thesis's `lem:continuous-measure-space`, which is where continuity
+of `X` enters. -/
+private theorem exists_dyadic_scale [IsFiniteMeasure μ] (hμ : μ.IsComplete)
+    (hc : ContinuousSpace μ) :
+    ∃ S : ℕ → ℕ → Set X,
+      (∀ N j, MeasurableSet (S N j)) ∧
+      (∀ N j, S N j ⊆ S N (j + 1)) ∧
+      (∀ N, S N 0 = ∅) ∧
+      (∀ N j, 2 ^ N ≤ j → S N j = Set.univ) ∧
+      (∀ N i, S (N + 1) (2 * i) = S N i) ∧
+      (∀ N j, j < 2 ^ N → μ (S N (j + 1) \ S N j) * 2 ^ N = μ Set.univ) := by
+  -- one halving step: a measurable set midway between `A ⊆ B`
+  have hhalf : ∀ A B : Set X, MeasurableSet A → MeasurableSet B → A ⊆ B →
+      ∃ C : Set X, MeasurableSet C ∧ A ⊆ C ∧ C ⊆ B ∧
+        μ (C \ A) + μ (C \ A) = μ (B \ A) ∧
+        μ (B \ C) + μ (B \ C) = μ (B \ A) := by
+    intro A B hA hB hAB
+    set r : ℝ≥0∞ := μ (B \ A) / 2 with hr
+    have hrr : r + r = μ (B \ A) := ENNReal.add_halves _
+    have hrle : r ≤ μ (B \ A) := by rw [← hrr]; exact le_add_self
+    have hrtop : r ≠ ⊤ := ne_top_of_le_ne_top (measure_ne_top μ _) hrle
+    obtain ⟨D, hDsub, hDm, hDr⟩ :=
+      continuous_measure_space_subset μ hμ hc (B \ A) (hB.diff hA) r hrle
+    refine ⟨A ∪ D, hA.union hDm, Set.subset_union_left,
+      Set.union_subset hAB fun x hx => (hDsub hx).1, ?_, ?_⟩
+    · have h1 : (A ∪ D) \ A = D := by
+        ext x
+        constructor
+        · rintro ⟨hx, hxA⟩
+          rcases hx with h | h
+          · exact absurd h hxA
+          · exact h
+        · intro hx
+          exact ⟨Or.inr hx, fun hxA => (hDsub hx).2 hxA⟩
+      rw [h1, hDr, hrr]
+    · have h2 : B \ (A ∪ D) = (B \ A) \ D := by
+        ext x
+        simp only [Set.mem_diff, Set.mem_union, not_or]
+        tauto
+      rw [h2, measure_diff hDsub hDm.nullMeasurableSet (measure_ne_top _ _), hDr,
+        ← hrr, ENNReal.add_sub_cancel_right hrtop, hrr]
+  choose! half hhm hhA hhB hhC1 hhC2 using hhalf
+  refine ⟨fun N => Nat.rec (motive := fun _ => ℕ → Set X)
+    (fun j => if j = 0 then ∅ else Set.univ)
+    (fun _ T j => if j % 2 = 0 then T (j / 2) else half (T (j / 2)) (T (j / 2 + 1)))
+    N, ?_⟩
+  set S : ℕ → ℕ → Set X := fun N => Nat.rec (motive := fun _ => ℕ → Set X)
+    (fun j => if j = 0 then ∅ else Set.univ)
+    (fun _ T j => if j % 2 = 0 then T (j / 2) else half (T (j / 2)) (T (j / 2 + 1)))
+    N with hSdef
+  have hS0j : ∀ j, S 0 j = if j = 0 then ∅ else Set.univ := fun _ => rfl
+  have hSsucc : ∀ N j, S (N + 1) j =
+      if j % 2 = 0 then S N (j / 2) else half (S N (j / 2)) (S N (j / 2 + 1)) :=
+    fun _ _ => rfl
+  have hSeven : ∀ N i, S (N + 1) (2 * i) = S N i := by
+    intro N i
+    rw [hSsucc]
+    simp [Nat.mul_mod_right, Nat.mul_div_cancel_left _ (by norm_num : 0 < 2)]
+  have hSodd : ∀ N i, S (N + 1) (2 * i + 1)
+      = half (S N i) (S N (i + 1)) := by
+    intro N i
+    rw [hSsucc]
+    have h1 : (2 * i + 1) % 2 = 1 := by omega
+    have h2 : (2 * i + 1) / 2 = i := by omega
+    simp [h1, h2]
+  -- the level-`N` invariants, all five at once
+  have key : ∀ N, (∀ j, MeasurableSet (S N j)) ∧ (∀ j, S N j ⊆ S N (j + 1)) ∧
+      S N 0 = ∅ ∧ (∀ j, 2 ^ N ≤ j → S N j = Set.univ) ∧
+      (∀ j, j < 2 ^ N → μ (S N (j + 1) \ S N j) * 2 ^ N = μ Set.univ) := by
+    intro N
+    induction N with
+    | zero =>
+        refine ⟨fun j => ?_, fun j => ?_, rfl, fun j hj => ?_, fun j hj => ?_⟩
+        · rw [hS0j]
+          split <;> simp
+        · rw [hS0j, hS0j]
+          split
+          · simp
+          · simp
+        · rw [hS0j]
+          have hj' : 1 ≤ j := by simpa using hj
+          have hjne : j ≠ 0 := by omega
+          simp [hjne]
+        · have hj0 : j = 0 := by simpa using Nat.lt_one_iff.mp (by simpa using hj)
+          subst hj0
+          rw [hS0j, hS0j]
+          simp
+    | succ N ih =>
+        obtain ⟨ihm, ihmono, ih0, ihtop, ihblock⟩ := ih
+        have hmeas : ∀ j, MeasurableSet (S (N + 1) j) := by
+          intro j
+          rcases Nat.even_or_odd j with ⟨i, hi⟩ | ⟨i, hi⟩
+          · rw [show j = 2 * i by omega, hSeven]; exact ihm i
+          · rw [show j = 2 * i + 1 by omega, hSodd]
+            exact hhm _ _ (ihm i) (ihm (i + 1)) (ihmono i)
+        have hmono : ∀ j, S (N + 1) j ⊆ S (N + 1) (j + 1) := by
+          intro j
+          rcases Nat.even_or_odd j with ⟨i, hi⟩ | ⟨i, hi⟩
+          · rw [show j = 2 * i by omega, show 2 * i + 1 = 2 * i + 1 from rfl,
+              hSeven, hSodd]
+            exact hhA _ _ (ihm i) (ihm (i + 1)) (ihmono i)
+          · rw [show j = 2 * i + 1 by omega, show 2 * i + 1 + 1 = 2 * (i + 1) by ring,
+              hSodd, hSeven]
+            exact hhB _ _ (ihm i) (ihm (i + 1)) (ihmono i)
+        refine ⟨hmeas, hmono, ?_, ?_, ?_⟩
+        · rw [show (0 : ℕ) = 2 * 0 by ring, hSeven]; exact ih0
+        · intro j hj
+          rcases Nat.even_or_odd j with ⟨i, hi⟩ | ⟨i, hi⟩
+          · rw [show j = 2 * i by omega, hSeven]
+            refine ihtop i ?_
+            have h2 : 2 ^ (N + 1) = 2 * 2 ^ N := by ring
+            omega
+          · rw [show j = 2 * i + 1 by omega, hSodd]
+            have hi' : 2 ^ N ≤ i := by
+              have h2 : 2 ^ (N + 1) = 2 * 2 ^ N := by ring
+              omega
+            rw [ihtop i hi', ihtop (i + 1) (le_trans hi' (Nat.le_succ i))]
+            exact Set.eq_univ_of_univ_subset
+              (hhA _ _ MeasurableSet.univ MeasurableSet.univ (subset_refl _))
+        · intro j hj
+          have hpow : (2 : ℝ≥0∞) ^ (N + 1) = 2 ^ N * 2 := by ring
+          rcases Nat.even_or_odd j with ⟨i, hi⟩ | ⟨i, hi⟩
+          · have hji : j = 2 * i := by omega
+            have hilt : i < 2 ^ N := by
+              have h2 : 2 ^ (N + 1) = 2 * 2 ^ N := by ring
+              omega
+            rw [hji, hSeven, show 2 * i + 1 = 2 * i + 1 from rfl, hSodd, hpow]
+            have hC := hhC1 (S N i) (S N (i + 1)) (ihm i) (ihm (i + 1)) (ihmono i)
+            calc μ (half (S N i) (S N (i + 1)) \ S N i) * (2 ^ N * 2)
+                = (μ (half (S N i) (S N (i + 1)) \ S N i)
+                    + μ (half (S N i) (S N (i + 1)) \ S N i)) * 2 ^ N := by ring
+              _ = μ (S N (i + 1) \ S N i) * 2 ^ N := by rw [hC]
+              _ = μ Set.univ := ihblock i hilt
+          · have hji : j = 2 * i + 1 := by omega
+            have hilt : i < 2 ^ N := by
+              have h2 : 2 ^ (N + 1) = 2 * 2 ^ N := by ring
+              omega
+            rw [hji, hSodd, show 2 * i + 1 + 1 = 2 * (i + 1) by ring, hSeven, hpow]
+            have hC := hhC2 (S N i) (S N (i + 1)) (ihm i) (ihm (i + 1)) (ihmono i)
+            calc μ (S N (i + 1) \ half (S N i) (S N (i + 1))) * (2 ^ N * 2)
+                = (μ (S N (i + 1) \ half (S N i) (S N (i + 1)))
+                    + μ (S N (i + 1) \ half (S N i) (S N (i + 1)))) * 2 ^ N := by ring
+              _ = μ (S N (i + 1) \ S N i) * 2 ^ N := by rw [hC]
+              _ = μ Set.univ := ihblock i hilt
+  exact ⟨fun N j => (key N).1 j, fun N j => (key N).2.1 j, fun N => (key N).2.2.1,
+    fun N j hj => (key N).2.2.2.1 j hj, hSeven,
+    fun N j hj => (key N).2.2.2.2 j hj⟩
+
 /-- **129X** (`lem:continuous-finite-measure-space-not-duplicable`,
 proc.tex:6363, Lemma): if `X` is a continuous finite complete measure
 space for which `L^∞(X)` is duplicable, then `μ(X) = 0`. -/
@@ -1205,7 +1684,435 @@ theorem continuous_finite_measure_space_not_duplicable
     [IsFiniteMeasure μ] (hμ : μ.IsComplete) (hc : ContinuousSpace μ)
     (𝒜 : Type u) [CStarAlgebra 𝒜] [PartialOrder 𝒜] [StarOrderedRing 𝒜]
     [VonNeumannAlgebra 𝒜] (q : (X → ℂ) → 𝒜) (hq : IsLinftyOf μ 𝒜 q)
-    (hd : Duplicable 𝒜) : μ Set.univ = 0 := sorry
+    (hd : Duplicable 𝒜) : μ Set.univ = 0 := by
+  classical
+  by_contra hpos
+  obtain ⟨d⟩ := hd
+  ---- (0) the indicator dictionary -------------------------------------
+  have hindbm : ∀ T : Set X, MeasurableSet T →
+      IsBoundedMeasurable X (T.indicator (1 : X → ℂ)) := by
+    intro T hT
+    refine ⟨(measurable_const : Measurable (1 : X → ℂ)).indicator hT, 1, fun x => ?_⟩
+    by_cases hx : x ∈ T <;> simp [Set.indicator_apply, hx]
+  obtain ⟨qi, hqi⟩ : ∃ f : Set X → 𝒜, ∀ T, f T = q (T.indicator (1 : X → ℂ)) :=
+    ⟨_, fun _ => rfl⟩
+  have hqiuniv : qi Set.univ = 1 := by
+    rw [hqi, show (Set.univ : Set X).indicator (1 : X → ℂ) = 1 by funext x; simp]
+    exact hq.one
+  have hqiempty : qi (∅ : Set X) = 0 := by
+    rw [hqi, show (∅ : Set X).indicator (1 : X → ℂ) = 0 by funext x; simp]
+    exact linfty_zero μ 𝒜 q hq
+  have hqiproj : ∀ T : Set X, MeasurableSet T → IsStarProjection (qi T) := by
+    intro T hT
+    refine ⟨?_, ?_⟩
+    · show qi T * qi T = qi T
+      rw [hqi, ← hq.mul _ _ (hindbm T hT) (hindbm T hT)]
+      congr 1
+      funext x
+      by_cases hx : x ∈ T <;> simp [Set.indicator_apply, hx]
+    · show star (qi T) = qi T
+      rw [hqi, ← hq.star_map _ (hindbm T hT)]
+      congr 1
+      funext x
+      by_cases hx : x ∈ T <;> simp [Set.indicator_apply, hx]
+  have hqinonneg : ∀ T : Set X, MeasurableSet T → (0 : 𝒜) ≤ qi T :=
+    fun T hT => (hqiproj T hT).nonneg
+  have hqimono : ∀ T T' : Set X, MeasurableSet T → MeasurableSet T' → T ⊆ T' →
+      qi T ≤ qi T' := by
+    intro T T' hT hT' hsub
+    rw [hqi, hqi]
+    refine linfty_mono μ 𝒜 q hq (hindbm T hT) (hindbm T' hT')
+      (Filter.Eventually.of_forall fun x => ?_)
+    by_cases hx : x ∈ T
+    · simp [Set.indicator_apply, hx, hsub hx]
+    · by_cases hx' : x ∈ T' <;> simp [Set.indicator_apply, hx, hx']
+  have hqidiff : ∀ T T' : Set X, MeasurableSet T → MeasurableSet T' → T ⊆ T' →
+      qi T' - qi T = qi (T' \ T) := by
+    intro T T' hT hT' hsub
+    rw [hqi, hqi, hqi, ← linfty_sub μ 𝒜 q hq (hindbm T' hT') (hindbm T hT)]
+    congr 1
+    funext x
+    by_cases hx : x ∈ T
+    · simp [Set.indicator_apply, hx, hsub hx, Set.mem_diff]
+    · by_cases hx' : x ∈ T' <;> simp [Set.indicator_apply, hx, hx', Set.mem_diff]
+  ---- (1) `𝒜` is nontrivial, and carries a nonzero np-functional -------
+  have hone : (1 : 𝒜) ≠ 0 := by
+    intro h0
+    refine hpos ?_
+    have h1 : q (1 : X → ℂ) = 0 := by rw [hq.one, h0]
+    have h2 := ae_iff.mp ((hq.kernel 1 bm_one).mp h1)
+    have h3 : {x : X | ¬ (1 : X → ℂ) x = (0 : X → ℂ) x} = Set.univ := by
+      ext x; simp
+    rwa [h3] at h2
+  haveI : Nontrivial 𝒜 := ⟨⟨1, 0, hone⟩⟩
+  obtain ⟨ω, hω1⟩ : ∃ ω : NPFunctional 𝒜, ω 1 ≠ 0 := by
+    by_contra hcon
+    push_neg at hcon
+    exact hone (VonNeumannAlgebra.np_faithful 1 zero_le_one hcon)
+  have hωre : ∀ a : 𝒜, 0 ≤ a → (ω a : ℂ) = (((ω a).re : ℝ) : ℂ) := by
+    intro a ha
+    obtain ⟨-, h2⟩ := Complex.le_def.mp (npFunctional_nonneg ω ha)
+    simp only [Complex.zero_im] at h2
+    exact Complex.ext (by simp) (by simp [← h2])
+  have hωnn : ∀ a : 𝒜, 0 ≤ a → 0 ≤ (ω a).re := by
+    intro a ha
+    obtain ⟨h1, -⟩ := Complex.le_def.mp (npFunctional_nonneg ω ha)
+    simpa using h1
+  ---- (2) absolute continuity of `ω` ------------------------------------
+  -- The thesis takes for `ω` the *integral* state `μ(X)⁻¹∫·dμ`, for which
+  -- `ω(p_w) = 2^{-#w}` is immediate; that state is normal by `Linfty-vn`
+  -- (**51IX**), which is still `sorry` in the tree.  We take instead an
+  -- arbitrary non-zero np-functional and get the decay of `ω(p_w)` from
+  -- normality directly, in the form of absolute continuity.
+  have habs : ∀ ε : ℝ, 0 < ε → ∃ n : ℕ, ∀ T : Set X, MeasurableSet T →
+      μ T * 2 ^ n ≤ μ Set.univ → (ω (qi T)).re ≤ ε := by
+    intro ε hε
+    by_contra hcon
+    push_neg at hcon
+    choose T hTm hTμ hTω using hcon
+    -- the sets `T n` are small, so their tails have null intersection
+    have h2ne : ∀ n : ℕ, ((2 : ℝ≥0∞) ^ n) ≠ 0 := fun n => by
+      simp [pow_ne_zero]
+    have h2top : ∀ n : ℕ, ((2 : ℝ≥0∞) ^ n) ≠ ⊤ := fun n => by
+      simp [ENNReal.pow_ne_top]
+    have hTle : ∀ n, μ (T n) ≤ μ Set.univ * ((2 : ℝ≥0∞)⁻¹) ^ n := by
+      intro n
+      calc μ (T n) = μ (T n) * 2 ^ n * ((2 : ℝ≥0∞) ^ n)⁻¹ := by
+            rw [mul_assoc, ENNReal.mul_inv_cancel (h2ne n) (h2top n), mul_one]
+        _ ≤ μ Set.univ * ((2 : ℝ≥0∞) ^ n)⁻¹ := by gcongr; exact hTμ n
+        _ = μ Set.univ * ((2 : ℝ≥0∞)⁻¹) ^ n := by rw [ENNReal.inv_pow]
+    have hsum : ∑' n, μ (T n) ≠ ⊤ := by
+      refine ne_top_of_le_ne_top ?_ (ENNReal.tsum_le_tsum hTle)
+      rw [ENNReal.tsum_mul_left, ENNReal.tsum_geometric_two]
+      exact ENNReal.mul_ne_top (measure_ne_top μ _) (by simp)
+    obtain ⟨U, hU⟩ : ∃ U : ℕ → Set X, ∀ N, U N = ⋃ k, T (k + N) :=
+      ⟨_, fun _ => rfl⟩
+    have hUm : ∀ N, MeasurableSet (U N) := by
+      intro N; rw [hU]; exact MeasurableSet.iUnion fun k => hTm _
+    have hUanti : ∀ N, U (N + 1) ⊆ U N := by
+      intro N
+      rw [hU, hU]
+      refine Set.iUnion_subset fun k => ?_
+      refine Set.subset_iUnion_of_subset (k + 1) ?_
+      rw [show k + 1 + N = k + (N + 1) by ring]
+    have hUle : ∀ N, μ (U N) ≤ ∑' k, μ (T (k + N)) := by
+      intro N; rw [hU]; exact measure_iUnion_le _
+    have hUnull : μ (⋂ N, U N) = 0 := by
+      refine le_antisymm ?_ (by simp)
+      refine ge_of_tendsto (ENNReal.tendsto_sum_nat_add (fun n => μ (T n)) hsum) ?_
+      refine Filter.Eventually.of_forall fun N => ?_
+      exact le_trans (measure_mono (Set.iInter_subset _ N)) (hUle N)
+    -- their projections have infimum `0`, so `ω(qi (U N)) → 0`
+    have hglb : IsGLB {x : selfAdjoint 𝒜 | ∃ N, (x : 𝒜) = qi (U N)}
+        (0 : selfAdjoint 𝒜) := by
+      constructor
+      · rintro x ⟨N, hN⟩
+        exact Subtype.coe_le_coe.mp (by rw [hN]; exact hqinonneg _ (hUm N))
+      · intro b hb
+        refine Subtype.coe_le_coe.mp ?_
+        obtain ⟨g, hgbm, hgq⟩ := hq.surj (b : 𝒜)
+        have hgle : ∀ N, ∀ᵐ x ∂μ, g x ≤ (U N).indicator (1 : X → ℂ) x := by
+          intro N
+          refine linfty_ae_le μ 𝒜 q hq hgbm (hindbm _ (hUm N)) ?_
+          rw [hgq, ← hqi]
+          exact hb (show (⟨qi (U N), (hqiproj _ (hUm N)).isSelfAdjoint⟩ :
+            selfAdjoint 𝒜) ∈ {x : selfAdjoint 𝒜 | ∃ N, (x : 𝒜) = qi (U N)} from ⟨N, rfl⟩)
+        have hall : ∀ᵐ x ∂μ, ∀ N, g x ≤ (U N).indicator (1 : X → ℂ) x :=
+          ae_all_iff.mpr hgle
+        have hgle0 : ∀ᵐ x ∂μ, g x ≤ (0 : X → ℂ) x := by
+          have hint : ∀ᵐ x ∂μ, x ∉ ⋂ N, U N := by
+            rw [ae_iff]
+            have hset : {x : X | ¬ (x ∉ ⋂ N, U N)} = ⋂ N, U N := by
+              ext x; simp
+            rw [hset]
+            exact hUnull
+          filter_upwards [hall, hint] with x hx hxi
+          obtain ⟨N, hN⟩ : ∃ N, x ∉ U N := by
+            by_contra hcon2
+            push_neg at hcon2
+            exact hxi (Set.mem_iInter.mpr hcon2)
+          have := hx N
+          simpa [Set.indicator_apply, hN] using this
+        have := linfty_mono μ 𝒜 q hq hgbm bm_zero hgle0
+        rw [hgq, linfty_zero μ 𝒜 q hq] at this
+        simpa using this
+    have hne : ({x : selfAdjoint 𝒜 | ∃ N, (x : 𝒜) = qi (U N)}).Nonempty :=
+      ⟨⟨qi (U 0), (hqiproj _ (hUm 0)).isSelfAdjoint⟩, ⟨0, rfl⟩⟩
+    have hdir : DirectedOn (· ≥ ·) {x : selfAdjoint 𝒜 | ∃ N, (x : 𝒜) = qi (U N)} := by
+      rintro x ⟨N, hN⟩ y ⟨M, hM⟩
+      have hmono : ∀ N M : ℕ, N ≤ M → U M ⊆ U N := by
+        intro N M h
+        induction M with
+        | zero => simpa using (by omega : N = 0) ▸ subset_rfl
+        | succ K ih =>
+            rcases Nat.lt_or_ge N (K + 1) with h1 | h1
+            · exact (hUanti K).trans (ih (by omega))
+            · have : N = K + 1 := by omega
+              subst this
+              exact subset_rfl
+      refine ⟨⟨qi (U (max N M)), (hqiproj _ (hUm _)).isSelfAdjoint⟩, ⟨max N M, rfl⟩,
+        ?_, ?_⟩
+      · exact Subtype.coe_le_coe.mp (by
+          rw [hN]
+          exact hqimono _ _ (hUm _) (hUm _) (hmono N (max N M) (le_max_left _ _)))
+      · exact Subtype.coe_le_coe.mp (by
+          rw [hM]
+          exact hqimono _ _ (hUm _) (hUm _) (hmono M (max N M) (le_max_right _ _)))
+    have himg := dup_preservesDirInfs ω.toPositiveLinearMap ω.preservesDirSups' _ _
+      hne hdir hglb
+    -- but every `ω(qi (U N))` is `> ε`
+    have hlow : ((ε : ℝ) : ℂ) ∈ lowerBounds
+        ((fun x : selfAdjoint 𝒜 => (ω.toPositiveLinearMap (x : 𝒜) : ℂ)) ''
+          {x : selfAdjoint 𝒜 | ∃ N, (x : 𝒜) = qi (U N)}) := by
+      rintro _ ⟨x, ⟨N, hN⟩, rfl⟩
+      have h1 : (ω (qi (T N)) : ℂ).re ≤ (ω (qi (U N))).re := by
+        have := npFunctional_mono ω (hqimono (T N) (U N) (hTm N) (hUm N) (by
+          rw [hU]
+          exact Set.subset_iUnion_of_subset 0 (by simp)))
+        exact (Complex.le_def.mp this).1
+      have h2 : ε ≤ (ω (qi (U N))).re := le_of_lt (lt_of_lt_of_le (hTω N) h1)
+      have h3 : (ω (qi (U N)) : ℂ) = (((ω (qi (U N))).re : ℝ) : ℂ) :=
+        hωre _ (hqinonneg _ (hUm N))
+      show ((ε : ℝ) : ℂ) ≤ ω.toPositiveLinearMap (x : 𝒜)
+      rw [show (ω.toPositiveLinearMap (x : 𝒜) : ℂ) = ω (qi (U N)) by rw [hN]; rfl, h3]
+      exact Complex.le_def.mpr ⟨by simpa using h2, by simp⟩
+    have hfin := himg.2 hlow
+    have : ((ε : ℝ) : ℂ) ≤ 0 := by
+      simpa using hfin
+    have := (Complex.le_def.mp this).1
+    simp only [Complex.ofReal_re, Complex.zero_re] at this
+    linarith
+  ---- (3) the dyadic partition ------------------------------------------
+  obtain ⟨S, hSm, hSmono, hS0, hStop, hSref, hSblock⟩ := exists_dyadic_scale μ hμ hc
+  obtain ⟨e, he⟩ : ∃ f : ℕ → ℕ → 𝒜, ∀ N j, f N j = qi (S N j) := ⟨_, fun _ _ => rfl⟩
+  obtain ⟨p, hp⟩ : ∃ f : ℕ → ℕ → 𝒜, ∀ N j, f N j = e N (j + 1) - e N j :=
+    ⟨_, fun _ _ => rfl⟩
+  have hpind : ∀ N j, p N j = qi (S N (j + 1) \ S N j) := by
+    intro N j
+    rw [hp, he, he]
+    exact hqidiff _ _ (hSm N j) (hSm N (j + 1)) (hSmono N j)
+  have hpproj : ∀ N j, IsStarProjection (p N j) := by
+    intro N j
+    rw [hpind]
+    exact hqiproj _ ((hSm N (j + 1)).diff (hSm N j))
+  have hpnonneg : ∀ N j, (0 : 𝒜) ≤ p N j := fun N j => (hpproj N j).nonneg
+  have hpsum : ∀ N, ∑ j ∈ Finset.range (2 ^ N), p N j = 1 := by
+    intro N
+    have h := Finset.sum_range_sub (f := fun j => e N j) (n := 2 ^ N)
+    simp only [← hp] at h
+    rw [h, he, he, hS0 N, hStop N (2 ^ N) le_rfl, hqiuniv, hqiempty, sub_zero]
+  have hpsplit : ∀ N i, p N i = p (N + 1) (2 * i) + p (N + 1) (2 * i + 1) := by
+    intro N i
+    have h1 : S (N + 1) (2 * i) = S N i := hSref N i
+    have h2 : S (N + 1) (2 * i + 1 + 1) = S N (i + 1) := by
+      rw [show 2 * i + 1 + 1 = 2 * (i + 1) by ring]
+      exact hSref N (i + 1)
+    simp only [hp, he, h1, h2]
+    abel
+  have hpsmall : ∀ (ε : ℝ), 0 < ε → ∃ N, ∀ j < 2 ^ N, (ω (p N j)).re ≤ ε := by
+    intro ε hε
+    obtain ⟨n, hn⟩ := habs ε hε
+    refine ⟨n, fun j hj => ?_⟩
+    rw [hpind]
+    refine hn _ ((hSm n (j + 1)).diff (hSm n j)) ?_
+    exact le_of_eq (hSblock n j hj)
+  ---- (4) the descending sequence `q_N` ----------------------------------
+  obtain ⟨Q, hQ⟩ : ∃ f : ℕ → VNT 𝒜 𝒜,
+      ∀ N, f N = ∑ j ∈ Finset.range (2 ^ N), (p N j ⊗ᵥ p N j) := ⟨_, fun _ => rfl⟩
+  have hQnonneg : ∀ N, (0 : VNT 𝒜 𝒜) ≤ Q N := by
+    intro N
+    rw [hQ]
+    exact Finset.sum_nonneg fun j _ => vtmul_nonneg _ _ (hpnonneg N j) (hpnonneg N j)
+  have hQsa : ∀ N, IsSelfAdjoint (Q N) := fun N => IsSelfAdjoint.of_nonneg (hQnonneg N)
+  have hQ0 : Q 0 = 1 := by
+    rw [hQ]
+    have h1 : ∑ j ∈ Finset.range (2 ^ 0), p 0 j = 1 := hpsum 0
+    simp only [pow_zero, Finset.sum_range_one] at h1 ⊢
+    rw [h1]
+    exact (show ((1 : 𝒜) ⊗ᵥ (1 : 𝒜)) = (1 : VNT 𝒜 𝒜) from
+      (vnTensor 𝒜 𝒜).isTensorProduct.miu.1)
+  have hQanti : ∀ N, Q (N + 1) ≤ Q N := by
+    intro N
+    have h1 : (2 : ℕ) ^ (N + 1) = 2 * 2 ^ N := by ring
+    rw [hQ, hQ, h1, sum_range_two_mul]
+    refine Finset.sum_le_sum fun i _ => ?_
+    have ha : (0 : 𝒜) ≤ p (N + 1) (2 * i) := hpnonneg _ _
+    have hb : (0 : 𝒜) ≤ p (N + 1) (2 * i + 1) := hpnonneg _ _
+    have hexp : p N i ⊗ᵥ p N i
+        = ((p (N + 1) (2 * i) ⊗ᵥ p (N + 1) (2 * i))
+            + (p (N + 1) (2 * i + 1) ⊗ᵥ p (N + 1) (2 * i + 1)))
+          + ((p (N + 1) (2 * i) ⊗ᵥ p (N + 1) (2 * i + 1))
+            + (p (N + 1) (2 * i + 1) ⊗ᵥ p (N + 1) (2 * i))) := by
+      simp only [vtmul]
+      rw [hpsplit N i, map_add]
+      simp only [LinearMap.add_apply, map_add]
+      abel
+    rw [hexp]
+    exact le_add_of_nonneg_right
+      (add_nonneg (vtmul_nonneg _ _ ha hb) (vtmul_nonneg _ _ hb ha))
+  have hQanti' : ∀ N M : ℕ, N ≤ M → Q M ≤ Q N := by
+    intro N M h
+    induction M with
+    | zero => simpa using (by omega : N = 0) ▸ le_rfl
+    | succ K ih =>
+        rcases Nat.lt_or_ge N (K + 1) with h1 | h1
+        · exact (hQanti K).trans (ih (by omega))
+        · have : N = K + 1 := by omega
+          subst this
+          exact le_rfl
+  ---- (5) `δ(q_N) = 1` and `(ω⊗ω)(q_N) ≤ ε·ω(1)` -------------------------
+  have hδmul := (uniqueness_duplicator d).2
+  have hδQ : ∀ N, d.δ (Q N) = 1 := by
+    intro N
+    rw [hQ, map_sum]
+    have : ∀ j ∈ Finset.range (2 ^ N), d.δ (p N j ⊗ᵥ p N j) = p N j := by
+      intro j _
+      rw [hδmul, (hpproj N j).isIdempotentElem.eq]
+    rw [Finset.sum_congr rfl this, hpsum N]
+  set χ : NPFunctional (VNT 𝒜 𝒜) := prodNP (vnTensor 𝒜 𝒜).isTensorProduct ω ω with hχdef
+  have hχtmul : ∀ a b : 𝒜, χ (a ⊗ᵥ b) = ω a * ω b :=
+    fun a b => prodNP_apply (vnTensor 𝒜 𝒜).isTensorProduct ω ω a b
+  have hχQ : ∀ N, (χ (Q N) : ℂ)
+      = ((∑ j ∈ Finset.range (2 ^ N), (ω (p N j)).re * (ω (p N j)).re : ℝ) : ℂ) := by
+    intro N
+    rw [hQ, show (χ (∑ j ∈ Finset.range (2 ^ N), (p N j ⊗ᵥ p N j)) : ℂ)
+        = ∑ j ∈ Finset.range (2 ^ N), (χ (p N j ⊗ᵥ p N j) : ℂ) from
+      map_sum χ.toPositiveLinearMap _ _]
+    push_cast
+    refine Finset.sum_congr rfl fun j _ => ?_
+    rw [hχtmul]
+    conv_lhs => rw [hωre _ (hpnonneg N j)]
+  have hωsum : ∀ N, ∑ j ∈ Finset.range (2 ^ N), (ω (p N j)).re = (ω 1).re := by
+    intro N
+    have h : (ω (∑ j ∈ Finset.range (2 ^ N), p N j) : ℂ)
+        = ∑ j ∈ Finset.range (2 ^ N), (ω (p N j) : ℂ) :=
+      map_sum ω.toPositiveLinearMap _ _
+    rw [hpsum N] at h
+    have h2 := congrArg Complex.re h
+    simpa using h2.symm
+  ---- (6) the infimum ----------------------------------------------------
+  obtain ⟨Qi, hQi⟩ : ∃ i : selfAdjoint (VNT 𝒜 𝒜),
+      IsGLB {x : selfAdjoint (VNT 𝒜 𝒜) | ∃ N, (x : VNT 𝒜 𝒜) = Q N} i := by
+    refine infima_in_vna _ ⟨⟨Q 0, hQsa 0⟩, ⟨0, rfl⟩⟩ ?_ ⟨(0 : selfAdjoint (VNT 𝒜 𝒜)), ?_⟩
+    · rintro x ⟨N, hN⟩ y ⟨M, hM⟩
+      refine ⟨⟨Q (max N M), hQsa _⟩, ⟨max N M, rfl⟩, ?_, ?_⟩
+      · exact Subtype.coe_le_coe.mp (by rw [hN]; exact hQanti' _ _ (le_max_left N M))
+      · exact Subtype.coe_le_coe.mp (by rw [hM]; exact hQanti' _ _ (le_max_right N M))
+    · rintro x ⟨N, hN⟩
+      exact Subtype.coe_le_coe.mp (by rw [hN]; exact hQnonneg N)
+  have hQine : ({x : selfAdjoint (VNT 𝒜 𝒜) | ∃ N, (x : VNT 𝒜 𝒜) = Q N}).Nonempty :=
+    ⟨⟨Q 0, hQsa 0⟩, ⟨0, rfl⟩⟩
+  have hQidir : DirectedOn (· ≥ ·)
+      {x : selfAdjoint (VNT 𝒜 𝒜) | ∃ N, (x : VNT 𝒜 𝒜) = Q N} := by
+    rintro x ⟨N, hN⟩ y ⟨M, hM⟩
+    refine ⟨⟨Q (max N M), hQsa _⟩, ⟨max N M, rfl⟩, ?_, ?_⟩
+    · exact Subtype.coe_le_coe.mp (by rw [hN]; exact hQanti' _ _ (le_max_left N M))
+    · exact Subtype.coe_le_coe.mp (by rw [hM]; exact hQanti' _ _ (le_max_right N M))
+  have hQile : ∀ N, (Qi : VNT 𝒜 𝒜) ≤ Q N := by
+    intro N
+    exact Subtype.coe_le_coe.mpr (hQi.1 (show (⟨Q N, hQsa N⟩ : selfAdjoint (VNT 𝒜 𝒜))
+      ∈ {x : selfAdjoint (VNT 𝒜 𝒜) | ∃ N, (x : VNT 𝒜 𝒜) = Q N} from ⟨N, rfl⟩))
+  have hQinn : (0 : VNT 𝒜 𝒜) ≤ (Qi : VNT 𝒜 𝒜) := by
+    have h : (0 : selfAdjoint (VNT 𝒜 𝒜)) ≤ Qi := by
+      refine hQi.2 ?_
+      rintro x ⟨N, hN⟩
+      exact Subtype.coe_le_coe.mp (by rw [hN]; exact hQnonneg N)
+    simpa using Subtype.coe_le_coe.mpr h
+  ---- (7) `δ(q) = 1` -----------------------------------------------------
+  have hδQi : d.δ (Qi : VNT 𝒜 𝒜) = 1 := by
+    have hglb := dup_preservesDirInfs d.δ d.normal _ Qi hQine hQidir hQi
+    refine le_antisymm ?_ ?_
+    · have h : d.δ (Qi : VNT 𝒜 𝒜) ≤ d.δ (Q 0) :=
+        hglb.1 ⟨⟨Q 0, hQsa 0⟩, ⟨0, rfl⟩, rfl⟩
+      rwa [hδQ 0] at h
+    · refine hglb.2 ?_
+      rintro _ ⟨x, ⟨N, hN⟩, rfl⟩
+      show (1 : 𝒜) ≤ d.δ (x : VNT 𝒜 𝒜)
+      rw [hN, hδQ N]
+  ---- (8) `(ω⊗ω)(q) = 0` -------------------------------------------------
+  have hχnn : (0 : ℂ) ≤ χ (Qi : VNT 𝒜 𝒜) := npFunctional_nonneg χ hQinn
+  have hχ0 : (χ (Qi : VNT 𝒜 𝒜) : ℂ) = 0 := by
+    have hc0 : 0 ≤ (ω 1).re := hωnn 1 zero_le_one
+    have hre : (χ (Qi : VNT 𝒜 𝒜)).re ≤ 0 := by
+      refine le_of_forall_pos_le_add fun δ hδ => ?_
+      obtain ⟨N, hN⟩ := hpsmall (δ / ((ω 1).re + 1)) (by positivity)
+      have h1 : (χ (Qi : VNT 𝒜 𝒜)).re ≤ (χ (Q N)).re := by
+        have := npFunctional_mono χ (hQile N)
+        exact (Complex.le_def.mp this).1
+      have h2 : (χ (Q N)).re
+          = ∑ j ∈ Finset.range (2 ^ N), (ω (p N j)).re * (ω (p N j)).re := by
+        rw [hχQ N]
+        simp
+      have h3 : ∑ j ∈ Finset.range (2 ^ N), (ω (p N j)).re * (ω (p N j)).re
+          ≤ (δ / ((ω 1).re + 1)) * ∑ j ∈ Finset.range (2 ^ N), (ω (p N j)).re := by
+        rw [Finset.mul_sum]
+        refine Finset.sum_le_sum fun j hj => ?_
+        have hj' : j < 2 ^ N := Finset.mem_range.mp hj
+        exact mul_le_mul_of_nonneg_right (hN j hj') (hωnn _ (hpnonneg N j))
+      rw [hωsum N] at h3
+      have h4 : (δ / ((ω 1).re + 1)) * (ω 1).re ≤ δ := by
+        rw [div_mul_eq_mul_div, div_le_iff₀ (by linarith)]
+        nlinarith
+      have := h1.trans (le_of_eq h2)
+      linarith [this.trans (h3.trans h4)]
+    have h5 : 0 ≤ (χ (Qi : VNT 𝒜 𝒜)).re := (Complex.le_def.mp hχnn).1.trans_eq (by simp)
+    have h6 : (χ (Qi : VNT 𝒜 𝒜)).re = 0 := le_antisymm hre (by simpa using h5)
+    have h7 : (χ (Qi : VNT 𝒜 𝒜)).im = 0 := by
+      have := (Complex.le_def.mp hχnn).2
+      simpa using this.symm
+    exact Complex.ext (by simpa using h6) (by simpa using h7)
+  ---- (9) the contradiction ----------------------------------------------
+  have hcarrier : npCarrier χ = npCarrier ω ⊗ᵥ npCarrier ω :=
+    carrier_tensor_4 ω ω χ hχtmul
+  have hceille : ceil (Qi : VNT 𝒜 𝒜) ≤ 1 - npCarrier χ := by
+    have hc : ceil ((χ.toPositiveLinearMap) (ceil (Qi : VNT 𝒜 𝒜))) = 0 := by
+      rw [← ncp_ceil χ.toPositiveLinearMap χ.preservesDirSups' _ hQinn]
+      rw [show (χ.toPositiveLinearMap (Qi : VNT 𝒜 𝒜) : ℂ) = 0 from hχ0, ceil_zero]
+    have hfc : (χ.toPositiveLinearMap (ceil (Qi : VNT 𝒜 𝒜)) : ℂ) = 0 :=
+      (ceil_basic_3 _ (npFunctional_nonneg χ (ceil_spec hQinn).1.nonneg)).mpr hc
+    have hle : npCarrier χ ≤ 1 - ceil (Qi : VNT 𝒜 𝒜) := by
+      refine (carrier_spec χ.toPositiveLinearMap χ.preservesDirSups').2.2 _
+        (ceil_spec hQinn).1.one_sub ?_
+      rwa [sub_sub_cancel]
+    exact le_sub_comm.mp hle
+  have hQile1 : (Qi : VNT 𝒜 𝒜) ≤ 1 - npCarrier χ := by
+    refine le_trans ?_ hceille
+    -- `q ≤ ⌈q⌉` for the effect `q`
+    have heff : (Qi : VNT 𝒜 𝒜) ≤ 1 := le_trans (hQile 0) (le_of_eq hQ0)
+    obtain ⟨hp1, hac, -⟩ := ceil_spec hQinn
+    have hca : ceil (Qi : VNT 𝒜 𝒜) * (Qi : VNT 𝒜 𝒜) = (Qi : VNT 𝒜 𝒜) := by
+      have h := congrArg star hac
+      rwa [star_mul, hp1.isSelfAdjoint.star_eq,
+        (IsSelfAdjoint.of_nonneg hQinn).star_eq] at h
+    calc (Qi : VNT 𝒜 𝒜) = ceil (Qi : VNT 𝒜 𝒜) * (Qi : VNT 𝒜 𝒜) * ceil (Qi : VNT 𝒜 𝒜) := by
+          rw [hca, hac]
+      _ ≤ ceil (Qi : VNT 𝒜 𝒜) * 1 * ceil (Qi : VNT 𝒜 𝒜) :=
+          IsSelfAdjoint.conjugate_le_conjugate heff hp1.isSelfAdjoint
+      _ = ceil (Qi : VNT 𝒜 𝒜) := by rw [mul_one, hp1.isIdempotentElem.eq]
+  have hone11 : ((1 : 𝒜) ⊗ᵥ (1 : 𝒜)) = (1 : VNT 𝒜 𝒜) :=
+    (vnTensor 𝒜 𝒜).isTensorProduct.miu.1
+  have hδ1 : d.δ (1 : VNT 𝒜 𝒜) = 1 := by
+    rw [← hone11]
+    exact (unit_duplicator d).2
+  have hωproj : IsStarProjection (npCarrier ω) :=
+    (carrier_spec ω.toPositiveLinearMap ω.preservesDirSups').1
+  have hfinal : (1 : 𝒜) ≤ 1 - npCarrier ω := by
+    calc (1 : 𝒜) = d.δ (Qi : VNT 𝒜 𝒜) := hδQi.symm
+      _ ≤ d.δ (1 - npCarrier χ) := OrderHomClass.mono d.δ hQile1
+      _ = d.δ 1 - d.δ (npCarrier χ) := map_sub d.δ _ _
+      _ = 1 - npCarrier ω := by
+          rw [hδ1, hcarrier, hδmul, hωproj.isIdempotentElem.eq]
+  have hcω : npCarrier ω = 0 := by
+    have h : (1 : 𝒜) - 1 ≤ (1 - npCarrier ω) - 1 := sub_le_sub_right hfinal 1
+    rw [sub_self] at h
+    have h2 : (0 : 𝒜) ≤ -npCarrier ω := by
+      calc (0 : 𝒜) ≤ 1 - npCarrier ω - 1 := h
+        _ = -npCarrier ω := by abel
+    exact le_antisymm (neg_nonneg.mp h2) hωproj.nonneg
+  refine hω1 ?_
+  have h : (ω (1 - npCarrier ω) : ℂ) = 0 :=
+    (carrier_spec ω.toPositiveLinearMap ω.preservesDirSups').2.1
+  rwa [hcω, sub_zero] at h
 
 /-! ## Parsec 1300: the discrete case -/
 
@@ -1508,75 +2415,6 @@ the missing dictionary are needed:
   bound.  It is proved by the usual argument: if `‖f‖ > M + ε` on a set
   `S` of positive measure then `p := q 1_S` is a nonzero projection with
   `(M+ε)²p ≤ (q f · p)^* (q f · p)`, whence `(M+ε)² ≤ ‖q f‖² ≤ M²`. -/
-
-private theorem bm_const (z : ℂ) : IsBoundedMeasurable X (fun _ : X => z) :=
-  ⟨measurable_const, ‖z‖, fun _ => le_rfl⟩
-
-private theorem bm_one : IsBoundedMeasurable X (1 : X → ℂ) := bm_const 1
-
-private theorem bm_zero : IsBoundedMeasurable X (0 : X → ℂ) := bm_const 0
-
-private theorem bm_nonneg {f : X → ℂ} (hf : IsBoundedMeasurable X f) :
-    ∃ C : ℝ, 0 ≤ C ∧ ∀ x, ‖f x‖ ≤ C := by
-  obtain ⟨-, C, hC⟩ := hf
-  exact ⟨max C 0, le_max_right _ _, fun x => (hC x).trans (le_max_left _ _)⟩
-
-private theorem bm_add {f g : X → ℂ} (hf : IsBoundedMeasurable X f)
-    (hg : IsBoundedMeasurable X g) : IsBoundedMeasurable X (f + g) := by
-  obtain ⟨hfm, Cf, hCf⟩ := hf
-  obtain ⟨hgm, Cg, hCg⟩ := hg
-  refine ⟨hfm.add hgm, Cf + Cg, fun x => ?_⟩
-  exact (norm_add_le (f x) (g x)).trans (add_le_add (hCf x) (hCg x))
-
-private theorem bm_sub {f g : X → ℂ} (hf : IsBoundedMeasurable X f)
-    (hg : IsBoundedMeasurable X g) : IsBoundedMeasurable X (f - g) := by
-  obtain ⟨hfm, Cf, hCf⟩ := hf
-  obtain ⟨hgm, Cg, hCg⟩ := hg
-  refine ⟨hfm.sub hgm, Cf + Cg, fun x => ?_⟩
-  exact (norm_sub_le (f x) (g x)).trans (add_le_add (hCf x) (hCg x))
-
-private theorem bm_mul {f g : X → ℂ} (hf : IsBoundedMeasurable X f)
-    (hg : IsBoundedMeasurable X g) : IsBoundedMeasurable X (f * g) := by
-  obtain ⟨Cf, hCf0, hCf⟩ := bm_nonneg hf
-  obtain ⟨Cg, hCg0, hCg⟩ := bm_nonneg hg
-  refine ⟨hf.1.mul hg.1, Cf * Cg, fun x => ?_⟩
-  exact (norm_mul_le (f x) (g x)).trans
-    (mul_le_mul (hCf x) (hCg x) (norm_nonneg _) hCf0)
-
-private theorem bm_star {f : X → ℂ} (hf : IsBoundedMeasurable X f) :
-    IsBoundedMeasurable X (star f) := by
-  obtain ⟨hfm, Cf, hCf⟩ := hf
-  exact ⟨continuous_star.measurable.comp hfm, Cf, fun x => by simpa using hCf x⟩
-
-private theorem bm_smul (z : ℂ) {f : X → ℂ} (hf : IsBoundedMeasurable X f) :
-    IsBoundedMeasurable X (z • f) := by
-  obtain ⟨C, hC0, hC⟩ := bm_nonneg hf
-  refine ⟨hf.1.const_smul z, ‖z‖ * C, fun x => ?_⟩
-  simpa [norm_smul] using mul_le_mul_of_nonneg_left (hC x) (norm_nonneg z)
-
-/-- Auxiliary for **130IV**: `q` only depends on the a.e.-class of its
-argument.  (This is the argument already made inline in **130II**.) -/
-private theorem linfty_congr (ν : Measure X) (𝒞 : Type u) [CStarAlgebra 𝒞]
-    [PartialOrder 𝒞] [StarOrderedRing 𝒞] (p : (X → ℂ) → 𝒞)
-    (hp : IsLinftyOf ν 𝒞 p) {f g : X → ℂ} (hf : IsBoundedMeasurable X f)
-    (hg : IsBoundedMeasurable X g) (h : f =ᵐ[ν] g) : p f = p g := by
-  have hsub := bm_sub hf hg
-  have h0 : p (f - g) = 0 := by
-    refine (hp.kernel _ hsub).mpr ?_
-    filter_upwards [h] with x hx
-    simp [hx]
-  have hadd := hp.add (f - g) g hsub hg
-  rw [sub_add_cancel, h0, zero_add] at hadd
-  exact hadd
-
-/-- Auxiliary for **130IV**: `q` is additive, hence subtractive. -/
-private theorem linfty_sub (ν : Measure X) (𝒞 : Type u) [CStarAlgebra 𝒞]
-    [PartialOrder 𝒞] [StarOrderedRing 𝒞] (p : (X → ℂ) → 𝒞)
-    (hp : IsLinftyOf ν 𝒞 p) {f g : X → ℂ} (hf : IsBoundedMeasurable X f)
-    (hg : IsBoundedMeasurable X g) : p (f - g) = p f - p g := by
-  have h := hp.add (f - g) g (bm_sub hf hg) hg
-  rw [sub_add_cancel] at h
-  rw [h, add_sub_cancel_right]
 
 /-- Auxiliary for **130IV**: a function that vanishes a.e. on each member
 of a countable measurable cover vanishes a.e. -/

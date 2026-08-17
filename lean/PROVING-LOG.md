@@ -17091,3 +17091,128 @@ else in parsecs 140–150 failed to check out: the `(-π,π)` in 14VIII.3's glos
 `∠` is harmless (with `z₀ ∉ [w,w']` the value `π` cannot occur, so `Complex.arg`
 and the thesis's convention agree), and 15I's `‖f'(z₀)‖ + 37` is, as the survey
 says, the author's joke and a valid bound.
+
+## Session 74 — `A/Proc`: **129X is CLOSED** (the chapter's dyadic partition), and **123II.1/.2 fall with it** (worker on `Theses/A/Proc/`)
+
+`Duplicators.lean` **6 → 5**, `QuantumLambda.lean` **16 → 14**; A/Proc
+**34 → 31**.  Per file, each source run through `lean` individually against
+rebuilt oleans, paired with an error count, **0 errors everywhere**:
+`Tensor` **2**, `QuantumLambda` **14**, `Measurement` **10**,
+`Duplicators` **5**.  Everything new is axiom-clean
+(`[propext, Classical.choice, Quot.sound]`), checked from an importing file
+after `lake build` of each module.  Cost: **+927 / −89** in `Duplicators.lean`
+(the −89 is the `IsLinftyOf` dictionary moved up the file, unchanged) and
+**+230** in `QuantumLambda.lean` — so 129X came in at roughly **840 net lines
+against the 300–600 costed**, the first overrun in this chapter in a while.
+
+### 129X `continuous_finite_measure_space_not_duplicable` — and one deliberate divergence
+
+The skeleton is the thesis's (proc.tex:6371): a duplicator `δ` on
+`L^∞(X)`, the dyadic partition of `X`, the descending projections
+`q_N = ∑_{|w|=N} p_w ⊗ p_w`, `δ(q) = 1` against `(ω⊗ω)(q) = 0`.  Three
+things are ours.
+
+* **The state `ω` is *not* the thesis's integral state.**  proc.tex takes
+  `ω(f°) = μ(X)⁻¹∫f dμ` and calls it normal by `Linfty-vn` (**51IX**) —
+  which is `sorry` in this tree, so citing it would leave 129X
+  `sorry`-tainted.  We take instead an **arbitrary non-zero np-functional**
+  `ω`, which exists for free from 42I.2 (`np_faithful` at `1 ≠ 0`) and is
+  normal *by definition*.  Divergence, case 3.
+* **Consequently the decay `ω(p_w) → 0` has to be proved rather than
+  computed**, and it is proved from normality: `ω` is *absolutely
+  continuous* — for every `ε > 0` there is an `n` with
+  `ω(q 1_T) ≤ ε` whenever `μ(T)·2ⁿ ≤ μ(X)` (the sets `Tₙ` of a failing
+  sequence are summable, so the tails `Uₙ` have null intersection, their
+  projections have infimum `0`, and normality sends `ω(q 1_{Uₙ})` to `0`).
+  The level-`N` blocks satisfy `μ(block)·2^N = μ(X)` exactly, so this is
+  what replaces `ω(p_w) = 2^{-#w}`.
+* **`ω` is not faithful, so `q = 0` is not the contradiction.**  118IV.4
+  `carrier_tensor_4` gives `⌈ω⊗ω⌉ = ⌈ω⌉⊗⌈ω⌉` for *any* np-functional, and
+  `(ω⊗ω)(q) = 0` with `q` an effect then gives `q ≤ ⌈q⌉ ≤ 1 − ⌈ω⌉⊗⌈ω⌉`,
+  whence `1 = δ(q) ≤ δ(1) − δ(⌈ω⌉⊗⌈ω⌉) = 1 − ⌈ω⌉` by **128VIII**
+  (`δ(a⊗b) = ab`), so `⌈ω⌉ = 0` and `ω(1) = 0` — against the choice of `ω`.
+  **This is strictly more than the thesis needs and strictly less than it
+  assumes**: no faithful normal state on `L^∞(X)` is used anywhere.
+
+Three pieces of machinery were written for it, all `private`:
+
+* **the `IsLinftyOf` order dictionary** — `q` is *bipositive*:
+  `linfty_nonneg` (a.e. `f ≥ 0` ⟹ `q f ≥ 0`, witness `√f`) and its converse
+  `linfty_ae_nonneg`, whose proof is the one nice trick in the file: with
+  `S = {Re f < 0}` and `s = 1_S`, the element `q(s·f)` is `≤ 0` because
+  `s·f ≤ 0` pointwise *and* `≥ 0` because it is the compression
+  `q(s)·q(f)·q(s)` of a positive element, hence `0`, so `μ(S) = 0`.  No `ε`
+  and no scalar multiplication in a C\*-algebra is needed.
+* **`continuous_measure_space_subset`** — 129VIII relativised to a
+  measurable `B ⊆ X`.  The thesis's proof is used verbatim with `B` in place
+  of `X`; the public `continuous_measure_space` is now the case `B = univ`.
+  It cannot be obtained from the unrelativised form by restricting the
+  measure: `μ.restrict B` is **not complete**, and 129IV's statement demands
+  completeness (even though its proof, as its own doc comment records, never
+  uses it).
+* **`exists_dyadic_scale`** — the partition, indexed by *initial segments*
+  rather than by words: `S N j` is the union of the first `j` blocks of
+  level `N`, the blocks are `S N (j+1) ∖ S N j`, refinement is
+  `S (N+1) (2i) = S N i`, and the level-`N` block measure is recorded as
+  `μ(block)·2^N = μ(X)` (no division, no `ENNReal` subtraction).  This
+  indexing is what makes the descent `q_{N+1} ≤ q_N` a one-line regrouping
+  (`sum_range_two_mul`) instead of a bijection between words of length `N+1`
+  and pairs.
+
+`preservesDirInfs` had to be re-proved locally (`dup_preservesDirInfs`): the
+copy in `A/VN/Projections.lean` is `private`, and 129X needs it twice.
+
+### 123II.1 and .2 `nsp_tensor_1` / `nsp_tensor_2` — the exercise has no printed argument
+
+Both halves are ~230 lines together and run on two devices.
+
+* **The slice nmiu-maps.**  `b ↦ 1 ⊗ b` is **116III**.5
+  (`tensor_simple_facts_5`, proved); its mirror `a ↦ a ⊗ 1`
+  (`nmiuTmulLeft`) had to be written, but only because the existing one is
+  stated for the chosen `vnTensor` rather than for an arbitrary tensor
+  product — normality is `p_uwcont` against `continuous_ultraweak_vtmul_left`,
+  which session 62 wrote for 116IV.1.  **123II.1** is then
+  `φ(a⊗b) = φ((a⊗1)(1⊗b)) = φ(a⊗1)·φ(1⊗b)` and the two composites
+  `nmiuComp φ (·)` are the required nmiu-functionals.
+* **123II.2 is `prodNP` plus `tensor_linear_ext`, twice.**  The candidate is
+  the product np-functional `σ ⊗ τ` supplied by 108II's own `prod_exists`
+  clause; what has to be added is *multiplicativity*, and that is the
+  session-69 device: `t ↦ χ((a⊗b)·t)` and `t ↦ χ(a⊗b)·χ(t)` are ultraweakly
+  continuous and agree on elementary tensors, then `x ↦ χ(x·t)` and
+  `x ↦ χ(t)·χ(x)` likewise.  Star-preservation is free (`npFunctional_star`
+  — a positive functional is already a ∗-map, so no conjugate-linear
+  extension argument is needed), and uniqueness is `tensor_linear_ext` once
+  more, with `nmiuNP` turning each nmiu-functional into an np-functional so
+  that `continuous_ultraweak_npFunctional` applies directly.
+
+### Two corrections to the brief, and the next gates
+
+* **`Measurement.lean` is not "ordinary transcription".**  Its ten items are
+  four `centrally_similar_basic_*` **awaiting an author ruling** (false as
+  printed, ERRATA 104III), one refuted `sequential_product_counterexample_3`,
+  and a **single chain of five**: **104VII** → **104IX**
+  `faithful_positive_map_uniqueness` → **105V** `positive_map_uniqueness` →
+  {**105VII** `sqrt_axiom`, **106I** `uniqueness_sequential_product`}.  So
+  nothing in the file is isolated, and nothing in it is cheap.
+* **The gate is 104VII, and it is blocked on an unauthorised repair.**  Its
+  proof (proc.tex:1564) needs (i) "`p` is a norm limit of linear combinations
+  of projections *commuting with* `p`" — the tree has 65IV only for all
+  projections, and `commutant` carries no von Neumann structure, though
+  `ceil_basic_2` plus the spectral projections `⌈(p−λ)⁺⌉` looks like a route;
+  (ii) the corner reduction to `eₙ𝒜eₙ`, which invokes **104III.5**
+  `centrally_similar_basic_5` — *false as printed*, its repair not yet ruled
+  on.  Its sibling 104III.4 is **not** a blocker (104VII supplies the
+  `⌈p⌉ = ⌈q⌉ = 1` under which `centrally_similar_basic_4_faithful` is
+  already proved).  **This chain should not be started before the 104III
+  ruling lands.**
+* **In `Duplicators.lean` the next gate is 127III `duplicable`**, and 129X is
+  no longer one of its blockers: what is left is **54XI.1** `cvn_faithful_1`
+  (`A/VN/Basic.lean`, `sorry` — a measure on the almost-clopen σ-algebra),
+  the `⊕ᵢ L^∞(Xᵢ)` carrier (FIXME at `Projections.lean:5695`) together with
+  `⊕ᵢ ℓ^∞(Yᵢ) ≅ ℓ^∞(⋃ᵢ Yᵢ)`, and the easy direction "`ℓ^∞(X)` is
+  duplicable", which needs a monoid structure on `linf X` in `W*_miu`.
+* **In `QuantumLambda.lean` the cheapest remaining items are 125II
+  `vn_gns_bound` and 124I `vn_generation_bound`**, both pure cardinal
+  arithmetic; 125II now looks the nearer of the two (`ngns` and `gnsHilb` are
+  proved, and only `#H ≤ 2^#𝒜` is left, which needs the countable support of
+  `ℓ²`-families).

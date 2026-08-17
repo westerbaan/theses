@@ -760,6 +760,98 @@ theorem linf_tensor (X Y : Type u) :
     rfl
 
 
+/-! ### Auxiliaries for **123II**
+
+The exercise (proc.tex:4663) gives no argument.  Both halves run on the
+same two devices: the two "slice" nmiu-maps `a ↦ a ⊗ 1` and `b ↦ 1 ⊗ b`
+(the second is **116III**.5), and `tensor_linear_ext` — the vector-valued
+form of `prod_functional_unique` — for everything that has to be checked
+beyond the elementary tensors. -/
+
+/-- Auxiliary for **123II**: an nmiu-functional is in particular an
+np-functional (an nmiu-map is completely positive, `nmiuNCP`, and normal
+by its own field). -/
+private noncomputable def nmiuNP [VonNeumannAlgebra A] (σ : NMIUMap A ℂ) :
+    NPFunctional A where
+  toPositiveLinearMap := ncpPositive (nmiuNCP σ)
+  preservesDirSups' := σ.preservesDirSups'
+
+@[simp] private theorem nmiuNP_apply [VonNeumannAlgebra A] (σ : NMIUMap A ℂ)
+    (a : A) : (nmiuNP σ a : ℂ) = σ a := rfl
+
+/-- Auxiliary for **123II**.1: the left slice `a ↦ a ⊗ 1` is linear. -/
+private theorem vtmulLeft_add [VonNeumannAlgebra A] [VonNeumannAlgebra B]
+    (a a' : A) : (a + a') ⊗ᵥ (1 : B) = a ⊗ᵥ (1 : B) + a' ⊗ᵥ (1 : B) := by
+  show (vnTensor A B).map (a + a') 1 = _
+  rw [map_add]
+  rfl
+
+private theorem vtmulLeft_smul [VonNeumannAlgebra A] [VonNeumannAlgebra B]
+    (r : ℂ) (a : A) : (r • a) ⊗ᵥ (1 : B) = r • (a ⊗ᵥ (1 : B)) := by
+  show (vnTensor A B).map (r • a) 1 = _
+  rw [map_smul]
+  rfl
+
+private theorem vtmulLeft_mono [VonNeumannAlgebra A] [VonNeumannAlgebra B]
+    {x y : A} (h : x ≤ y) : x ⊗ᵥ (1 : B) ≤ y ⊗ᵥ (1 : B) := by
+  have h1 := vtmul_nonneg (y - x) (1 : B) (sub_nonneg.mpr h) zero_le_one
+  have h2 : ((y - x) ⊗ᵥ (1 : B)) = y ⊗ᵥ (1 : B) - x ⊗ᵥ (1 : B) := by
+    show (vnTensor A B).map (y - x) 1 = _
+    rw [map_sub]
+    rfl
+  rw [h2] at h1
+  exact sub_nonneg.mp h1
+
+/-- Auxiliary for **123II**.1: the left slice is normal, by **44XV**
+`p_uwcont` and the ultraweak continuity of `a ↦ a ⊗ b` (proved for
+**116IV**.1). -/
+private noncomputable def pmapTmulLeft (A B : Type u) [CStarAlgebra A]
+    [PartialOrder A] [StarOrderedRing A] [CStarAlgebra B] [PartialOrder B]
+    [StarOrderedRing B] [VonNeumannAlgebra A] [VonNeumannAlgebra B] :
+    A →ₚ[ℂ] VNT A B where
+  toFun a := a ⊗ᵥ (1 : B)
+  map_add' := vtmulLeft_add
+  map_smul' := vtmulLeft_smul
+  monotone' _ _ h := vtmulLeft_mono h
+
+private theorem preservesDirSups_vtmulLeft [VonNeumannAlgebra A]
+    [VonNeumannAlgebra B] :
+    PreservesDirSups (fun a : A => a ⊗ᵥ (1 : B)) :=
+  ((p_uwcont (pmapTmulLeft A B)).out 0 2).mp
+    (continuous_ultraweak_vtmul_left (1 : B))
+
+/-- Auxiliary for **123II**.1: the left slice `a ↦ a ⊗ 1` as an nmiu-map.
+(The right slice `b ↦ 1 ⊗ b` is **116III**.5, `tensor_simple_facts_5`.) -/
+private noncomputable def nmiuTmulLeft (A B : Type u) [CStarAlgebra A]
+    [PartialOrder A] [StarOrderedRing A] [CStarAlgebra B] [PartialOrder B]
+    [StarOrderedRing B] [VonNeumannAlgebra A] [VonNeumannAlgebra B] :
+    NMIUMap A (VNT A B) where
+  toStarAlgHom :=
+    { toFun := fun a => a ⊗ᵥ (1 : B)
+      map_one' := (vnTensor A B).isTensorProduct.miu.1
+      map_mul' := fun x y => by
+        have h := (vnTensor A B).isTensorProduct.miu.2.1 x y (1 : B) (1 : B)
+        rwa [one_mul] at h
+      map_zero' := by
+        show (vnTensor A B).map 0 1 = 0
+        rw [map_zero]
+        rfl
+      map_add' := vtmulLeft_add
+      commutes' := fun r => by
+        have hone : ((1 : A) ⊗ᵥ (1 : B)) = (1 : VNT A B) :=
+          (vnTensor A B).isTensorProduct.miu.1
+        rw [Algebra.algebraMap_eq_smul_one, Algebra.algebraMap_eq_smul_one,
+          vtmulLeft_smul, hone]
+      map_star' := fun a => by
+        have h := (vnTensor A B).isTensorProduct.miu.2.2 a (1 : B)
+        rw [star_one] at h
+        exact h.symm }
+  preservesDirSups' := preservesDirSups_vtmulLeft
+
+@[simp] private theorem nmiuTmulLeft_apply [VonNeumannAlgebra A]
+    [VonNeumannAlgebra B] (a : A) :
+    nmiuTmulLeft A B a = a ⊗ᵥ (1 : B) := rfl
+
 /-- **123II** (proc.tex:4663, Exercise), part 1: an nmiu-functional `φ` on
 `𝒜 ⊗ ℬ` restricts to nmiu-functionals `σ = φ((·) ⊗ 1)` and
 `τ = φ(1 ⊗ (·))` with `φ(a ⊗ b) = σ(a)τ(b)`. -/
@@ -767,7 +859,23 @@ theorem nsp_tensor_1 [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     (φ : NMIUMap (VNT A B) ℂ) :
     ∃ (σ : NMIUMap A ℂ) (τ : NMIUMap B ℂ),
       (∀ a : A, σ a = φ (a ⊗ᵥ 1)) ∧ (∀ b : B, τ b = φ (1 ⊗ᵥ b)) ∧
-        ∀ (a : A) (b : B), φ (a ⊗ᵥ b) = σ a * τ b := sorry
+        ∀ (a : A) (b : B), φ (a ⊗ᵥ b) = σ a * τ b := by
+  -- `σ = φ ∘ ((·) ⊗ 1)` and `τ = φ ∘ (1 ⊗ (·))`, both nmiu as composites of
+  -- nmiu-maps; the product formula is multiplicativity of `φ` against
+  -- `(a ⊗ 1)(1 ⊗ b) = a ⊗ b`.
+  obtain ⟨ρ, hρ⟩ := (tensor_simple_facts_5 (A := A) (B := B) (1 : A) zero_le_one).2
+  refine ⟨nmiuComp φ (nmiuTmulLeft A B), nmiuComp φ ρ, fun a => rfl, fun b => ?_,
+    fun a b => ?_⟩
+  · show φ (ρ b) = φ ((1 : A) ⊗ᵥ b)
+    rw [hρ]
+  · have h1 : ((a ⊗ᵥ (1 : B)) * ((1 : A) ⊗ᵥ b)) = a ⊗ᵥ b := by
+      have h := (vnTensor A B).isTensorProduct.miu.2.1 a (1 : A) (1 : B) b
+      rw [mul_one, one_mul] at h
+      exact h.symm
+    have hmulφ : ∀ x y : VNT A B, φ (x * y) = φ x * φ y :=
+      fun x y => map_mul φ.toStarAlgHom x y
+    show (φ (a ⊗ᵥ b) : ℂ) = φ (a ⊗ᵥ (1 : B)) * φ (ρ b)
+    rw [hρ, ← h1, hmulφ]
 
 /-- **123II** (proc.tex:4663, Exercise), part 2: `(σ, τ) ↦ σ ⊗ τ` gives a
 bijection `nsp(𝒜) × nsp(ℬ) → nsp(𝒜 ⊗ ℬ)` (which makes `nsp` strong
@@ -776,7 +884,127 @@ nmiu-functional. -/
 theorem nsp_tensor_2 [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     (σ : NMIUMap A ℂ) (τ : NMIUMap B ℂ) :
     ∃! φ : NMIUMap (VNT A B) ℂ,
-      ∀ (a : A) (b : B), φ (a ⊗ᵥ b) = σ a * τ b := sorry
+      ∀ (a : A) (b : B), φ (a ⊗ᵥ b) = σ a * τ b := by
+  classical
+  -- The candidate is the *product np-functional* `σ ⊗ τ` (108II's clause
+  -- `prod_exists`); what has to be added is that it is multiplicative, and
+  -- that is `tensor_linear_ext` twice — once in each argument.
+  have hone : ((1 : A) ⊗ᵥ (1 : B)) = (1 : VNT A B) :=
+    (vnTensor A B).isTensorProduct.miu.1
+  have hmulσ : ∀ x y : A, σ (x * y) = σ x * σ y := fun x y => map_mul σ.toStarAlgHom x y
+  have hmulτ : ∀ x y : B, τ (x * y) = τ x * τ y := fun x y => map_mul τ.toStarAlgHom x y
+  have honeσ : σ (1 : A) = 1 := map_one σ.toStarAlgHom
+  have honeτ : τ (1 : B) = 1 := map_one τ.toStarAlgHom
+  obtain ⟨χ, hχtmul⟩ : ∃ χ : NPFunctional (VNT A B),
+      ∀ (a : A) (b : B), (χ (a ⊗ᵥ b) : ℂ) = σ a * τ b :=
+    ⟨prodNP (vnTensor A B).isTensorProduct (nmiuNP σ) (nmiuNP τ),
+      fun a b => prodNP_apply (vnTensor A B).isTensorProduct (nmiuNP σ) (nmiuNP τ) a b⟩
+  have hcont : @Continuous (VNT A B) ℂ (ultraweak (VNT A B)) _ (fun x => (χ x : ℂ)) :=
+    continuous_ultraweak_npFunctional χ
+  have haddχ : ∀ x y : VNT A B, (χ (x + y) : ℂ) = χ x + χ y :=
+    fun x y => map_add χ.toPositiveLinearMap x y
+  have hsmulχ : ∀ (c : ℂ) (x : VNT A B), (χ (c • x) : ℂ) = c * χ x :=
+    fun c x => (map_smul χ.toPositiveLinearMap c x).trans (smul_eq_mul _ _)
+  -- the two linear maps compared in each step
+  have hmk : ∀ z : VNT A B, ∃ F : VNT A B →ₗ[ℂ] ℂ, ∀ t, F t = (χ (z * t) : ℂ) := by
+    intro z
+    exact ⟨{ toFun := fun t => (χ (z * t) : ℂ)
+             map_add' := fun x y => by rw [mul_add, haddχ]
+             map_smul' := fun c x => by
+               simp only [RingHom.id_apply, smul_eq_mul]
+               rw [mul_smul_comm, hsmulχ] }, fun _ => rfl⟩
+  have hmk' : ∀ z : VNT A B, ∃ G : VNT A B →ₗ[ℂ] ℂ, ∀ t, G t = (χ (t * z) : ℂ) := by
+    intro z
+    exact ⟨{ toFun := fun t => (χ (t * z) : ℂ)
+             map_add' := fun x y => by rw [add_mul, haddχ]
+             map_smul' := fun c x => by
+               simp only [RingHom.id_apply, smul_eq_mul]
+               rw [smul_mul_assoc, hsmulχ] }, fun _ => rfl⟩
+  have hmkc : ∀ c : ℂ, ∃ G : VNT A B →ₗ[ℂ] ℂ, ∀ t, G t = c * (χ t : ℂ) := by
+    intro c
+    exact ⟨{ toFun := fun t => c * (χ t : ℂ)
+             map_add' := fun x y => by rw [haddχ]; ring
+             map_smul' := fun r x => by
+               simp only [RingHom.id_apply, smul_eq_mul]
+               rw [hsmulχ]; ring }, fun _ => rfl⟩
+  -- step 1: multiplicativity with an elementary tensor on the left
+  have hstep1 : ∀ (a : A) (b : B) (t : VNT A B),
+      (χ ((a ⊗ᵥ b) * t) : ℂ) = χ (a ⊗ᵥ b) * χ t := by
+    intro a b
+    obtain ⟨F, hF⟩ := hmk (a ⊗ᵥ b)
+    obtain ⟨G, hG⟩ := hmkc (χ (a ⊗ᵥ b) : ℂ)
+    have hFG : F = G := by
+      refine tensor_linear_ext (vnTensor A B).isTensorProduct F G ?_ ?_ ?_
+      · have hfun : ⇑F = fun t => (χ ((a ⊗ᵥ b) * t) : ℂ) := funext hF
+        rw [hfun]
+        exact @Continuous.comp (VNT A B) (VNT A B) ℂ (ultraweak (VNT A B))
+          (ultraweak (VNT A B)) _ _ _ hcont (mult_uws_cont (a ⊗ᵥ b)).1
+      · have hfun : ⇑G = fun t => (χ (a ⊗ᵥ b) : ℂ) * (χ t : ℂ) := funext hG
+        rw [hfun]
+        exact @Continuous.comp (VNT A B) ℂ ℂ (ultraweak (VNT A B)) _ _ _ _
+          (continuous_const.mul continuous_id) hcont
+      · intro c d
+        have hmul : ((a ⊗ᵥ b) * (c ⊗ᵥ d)) = (a * c) ⊗ᵥ (b * d) :=
+          ((vnTensor A B).isTensorProduct.miu.2.1 a c b d).symm
+        have h1 : F ((vnTensor A B).map c d) = (χ ((a ⊗ᵥ b) * (c ⊗ᵥ d)) : ℂ) := hF _
+        have h2 : G ((vnTensor A B).map c d) = (χ (a ⊗ᵥ b) : ℂ) * (χ (c ⊗ᵥ d) : ℂ) :=
+          hG _
+        rw [h1, h2, hmul, hχtmul, hχtmul, hχtmul, hmulσ, hmulτ]
+        ring
+    intro t
+    rw [← hF t, ← hG t, hFG]
+  -- step 2: multiplicativity in general
+  have hmul : ∀ x t : VNT A B, (χ (x * t) : ℂ) = χ x * χ t := by
+    intro x t
+    obtain ⟨F, hF⟩ := hmk' t
+    obtain ⟨G, hG⟩ := hmkc (χ t : ℂ)
+    have hFG : F = G := by
+      refine tensor_linear_ext (vnTensor A B).isTensorProduct F G ?_ ?_ ?_
+      · have hfun : ⇑F = fun x => (χ (x * t) : ℂ) := funext hF
+        rw [hfun]
+        exact @Continuous.comp (VNT A B) (VNT A B) ℂ (ultraweak (VNT A B))
+          (ultraweak (VNT A B)) _ _ _ hcont (mult_uws_cont t).2.1
+      · have hfun : ⇑G = fun x => (χ t : ℂ) * (χ x : ℂ) := funext hG
+        rw [hfun]
+        exact @Continuous.comp (VNT A B) ℂ ℂ (ultraweak (VNT A B)) _ _ _ _
+          (continuous_const.mul continuous_id) hcont
+      · intro a b
+        have h1 : F ((vnTensor A B).map a b) = (χ ((a ⊗ᵥ b) * t) : ℂ) := hF _
+        have h2 : G ((vnTensor A B).map a b) = (χ t : ℂ) * (χ (a ⊗ᵥ b) : ℂ) := hG _
+        rw [h1, h2, hstep1 a b t]
+        ring
+    have h : (χ (x * t) : ℂ) = (χ t : ℂ) * (χ x : ℂ) := by
+      rw [← hF x, ← hG x, hFG]
+    rw [h]
+    ring
+  have hχone : (χ (1 : VNT A B) : ℂ) = 1 := by
+    rw [← hone, hχtmul, honeσ, honeτ, one_mul]
+  obtain ⟨φ, hφval⟩ : ∃ φ : NMIUMap (VNT A B) ℂ, ∀ x, φ x = (χ x : ℂ) :=
+    ⟨{ toStarAlgHom :=
+        { toFun := fun x => (χ x : ℂ)
+          map_one' := hχone
+          map_mul' := hmul
+          map_zero' := map_zero χ.toPositiveLinearMap
+          map_add' := haddχ
+          commutes' := fun r => by
+            rw [Algebra.algebraMap_eq_smul_one, Algebra.algebraMap_eq_smul_one,
+              hsmulχ, hχone, mul_one, smul_eq_mul, mul_one]
+          map_star' := fun x => npFunctional_star χ x }
+       preservesDirSups' := χ.preservesDirSups' }, fun _ => rfl⟩
+  refine ⟨φ, fun a b => by rw [hφval, hχtmul], ?_⟩
+  -- uniqueness: two nmiu-functionals agreeing on elementary tensors agree
+  intro ψ hψ
+  have hψcont : @Continuous (VNT A B) ℂ (ultraweak (VNT A B)) _ ⇑(nmiuLin ψ) :=
+    continuous_ultraweak_npFunctional (nmiuNP ψ)
+  have hφcont : @Continuous (VNT A B) ℂ (ultraweak (VNT A B)) _ ⇑(nmiuLin φ) :=
+    continuous_ultraweak_npFunctional (nmiuNP φ)
+  have h := tensor_linear_ext (vnTensor A B).isTensorProduct (nmiuLin ψ)
+    (nmiuLin φ) hψcont hφcont (fun a b => by
+      show (ψ (a ⊗ᵥ b) : ℂ) = φ (a ⊗ᵥ b)
+      rw [hψ a b, hφval, hχtmul])
+  refine DFunLike.coe_injective (funext fun x => ?_)
+  have h2 := congrArg (fun L : VNT A B →ₗ[ℂ] ℂ => L x) h
+  simpa using h2
 
 /-! ## Parsec 1240: the second adjunction -/
 

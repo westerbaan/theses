@@ -1,17 +1,44 @@
 # `Theses/A/Proc/` — full survey of the remaining `sorry`s (worker 71, 2026-08-16; revised workers 72–81, sessions 47–58)
 
-**Headline count: A/Proc has 40 code `sorry`s** after session 69.
-Per file: `Tensor` **8** (was 13), `QuantumLambda` 16,
-`Measurement` 10, `Duplicators` 6.  **All four compiler-verified in session 69
-(0 errors each, `lean` run per file against rebuilt oleans).**
-⚠️ The pre-session-69 headline said 46; the four per-file figures were right
-and sum to **45** — the total was wrong, not a file.
-**No statement in the project is `sorry`-tainted any more**: `dup_vna_is_monoid_4`
-went axiom-clean in session 68 when 119IVc closed.  (`grep -c sorry` over-counts, because the file
-docstrings mention `sorry` in prose; the code counts are the ones above.
-Note `\bsorry\b` also matches "sorry-ed" in prose — count the compiler's
-`declaration uses \`sorry\`` warnings instead.)
+**Headline count: A/Proc has 31 code `sorry`s** after session 74.
+Per file: `Tensor` **2**, `QuantumLambda` **14**,
+`Measurement` **10**, `Duplicators` **5**.  **All four compiler-verified in
+session 74 (0 errors each, `lean` run per file against rebuilt oleans).**
+**No statement in the project is `sorry`-tainted.**  (`grep -c sorry`
+over-counts, because the file docstrings mention `sorry` in prose; the code
+counts are the ones above.  Note `\bsorry\b` also matches "sorry-ed" in
+prose — count the compiler's `declaration uses \`sorry\`` warnings instead.)
 
+> **Session 74 — 129X `continuous_finite_measure_space_not_duplicable` is
+> CLOSED, and 123II.1/.2 `nsp_tensor_1`/`nsp_tensor_2` with it.**
+> `Duplicators` **6 → 5**, `QuantumLambda` **16 → 14**; A/Proc **34 → 31**,
+> 0 errors in all four files, everything new axiom-clean.
+> **+927/−89 in `Duplicators.lean`, +230 in `QuantumLambda.lean`** — 129X
+> cost ~840 net lines against the 300–600 costed.
+>
+> * **The state is not the thesis's.**  proc.tex's integral state is normal
+>   only by **51IX** `Linfty_vn`, which is `sorry`; so 129X runs on an
+>   *arbitrary non-zero np-functional* (free from 42I.2), gets the decay
+>   `ω(p_w) → 0` from **absolute continuity** (proved from normality via the
+>   summable-tails argument), and ends not at `q = 0` but at
+>   `1 = δ(q) ≤ 1 − ⌈ω⌉`, using 118IV.4's `⌈ω⊗ω⌉ = ⌈ω⌉⊗⌈ω⌉` and 128VIII.
+>   **No faithful normal state on `L^∞(X)` is used anywhere.**
+> * New private machinery: the `IsLinftyOf` **order dictionary**
+>   (bipositivity of `q`, both directions), `continuous_measure_space_subset`
+>   (129VIII relativised — `μ.restrict B` is not complete, so the
+>   unrelativised form cannot be reused), and `exists_dyadic_scale`, which
+>   indexes the partition by *initial segments* `S N j` rather than by words,
+>   making `q_{N+1} ≤ q_N` a one-line regrouping.
+> * **123II** needed only the mirror slice map `a ↦ a ⊗ 1` plus
+>   `tensor_linear_ext` twice (multiplicativity of `σ ⊗ τ`), with `nmiuNP`
+>   bridging nmiu-functionals to np-functionals.
+> * **`Measurement.lean` is a single blocked chain, not ten transcriptions**:
+>   4 items await the 104III ruling, 1 is refuted, and the other 5 are the
+>   chain 104VII → 104IX → 105V → {105VII, 106I} whose root **104VII** needs
+>   both spectral projections commuting with `p` *and* the unauthorised
+>   repair of 104III.5.
+> * **127III `duplicable` no longer waits on 129X**: it waits on 54XI.1
+>   `cvn_faithful_1`, the `⊕ᵢ L^∞(Xᵢ)` carrier, and "`ℓ^∞(X)` is duplicable".
 
 > **Session 69 — 119IV `exists_associator` is CLOSED, and with it *all* of
 > 119V; 119II is not needed and its thesis proof has a gap.**  `Tensor.lean`
