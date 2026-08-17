@@ -1320,14 +1320,481 @@ def IsFilterFor (c : NCPMap A B) (b : B) : Prop :=
 def IsFilter (c : NCPMap A B) : Prop :=
   ∃ b : B, IsFilterFor c b
 
+/-! ### **169X**: the standard filter `c_b : ⌈b⌉B⌈b⌉ → B` -/
+
+section StandardFilter
+
+set_option linter.unusedSectionVars false
+
+variable {D : Type u} [CStarAlgebra D] [PartialOrder D] [StarOrderedRing D]
+
+/-- proc.tex **96III**.1 (`ncp-uwlim`): a pointwise ultraweak limit of
+completely positive maps is completely positive.  Re-derived here because
+`Theses.A.Proc` is off this import path; the domain needs no von Neumann
+structure (`Theses.A.Proc.ncp_uwlim_1` asks for one, but never uses it). -/
+private theorem sfilter_cp_uwlim [VonNeumannAlgebra B] {ι : Type*}
+    (l : Filter ι) [l.NeBot] (f : ι → (D →ₗ[ℂ] B)) (g : D →ₗ[ℂ] B)
+    (hlim : ∀ a : D, UWTendsto (fun i => f i a) l (g a))
+    (hcp : ∀ i, IsCompletelyPositiveMap (f i)) :
+    IsCompletelyPositiveMap g := by
+  intro n a bb
+  have hclosed : @IsClosed B (ultraweak B) {x : B | 0 ≤ x} := vn_positive_basic_2.1
+  have hlim2 : UWTendsto
+      (fun i => ∑ p, ∑ q, star (bb p) * (f i) (star (a p) * a q) * bb q) l
+      (∑ p, ∑ q, star (bb p) * g (star (a p) * a q) * bb q) := by
+    rw [uwTendsto_iff]
+    intro ω
+    have hterm : ∀ p q : Fin n,
+        Tendsto (fun i => (ω (star (bb p) * (f i) (star (a p) * a q) * bb q) : ℂ)) l
+          (𝓝 (ω (star (bb p) * g (star (a p) * a q) * bb q))) := by
+      intro p q
+      have hc := @Continuous.tendsto B ℂ (ultraweak B) _
+        (fun x : B => (ω (star (bb p) * x * bb q) : ℂ))
+        (continuous_ultraweak_conj ω (star (bb p)) (bb q)) (g (star (a p) * a q))
+      exact hc.comp (hlim (star (a p) * a q))
+    have hsum := tendsto_finsetSum Finset.univ
+      (fun p _ => tendsto_finsetSum Finset.univ (fun q _ => hterm p q))
+    have hms : ∀ F : Fin n → B, (ω (∑ p, F p) : ℂ) = ∑ p, ω (F p) :=
+      fun F => map_sum ω.toPositiveLinearMap F Finset.univ
+    simp only [hms]
+    exact hsum
+  refine @IsClosed.mem_of_tendsto B (ultraweak B) ι _ _ _ l _ hclosed hlim2 ?_
+  filter_upwards with i using hcp i n a bb
+
+/-- `x ↦ d* x d : B → B` as a linear map. -/
+private noncomputable def sfilterAdLin (d : B) : B →ₗ[ℂ] B where
+  toFun := fun x => star d * x * d
+  map_add' := fun x y => by noncomm_ring
+  map_smul' := fun z x => by
+    simp only [RingHom.id_apply]
+    rw [mul_smul_comm, smul_mul_assoc]
+
+@[simp] private theorem sfilterAdLin_apply (d x : B) :
+    sfilterAdLin d x = star d * x * d := rfl
+
+private theorem sfilterAdLin_cp (d : B) : IsCompletelyPositiveMap (sfilterAdLin d) := by
+  have heq : sfilterAdLin d
+      = (LinearMap.mulLeft ℂ (star d)).comp (LinearMap.mulRight ℂ d) := by
+    ext x
+    simp [mul_assoc]
+  rw [heq]
+  exact ad_cp_1 d
+
+/-- The ncp-map `x ↦ d* x d : B → B` (**34V** `ad-cp`, **44VIII**
+`ad-normal`). -/
+private theorem exists_sfilterAd [VonNeumannAlgebra B] (d : B) :
+    ∃ c : NCPMap B B, ∀ x : B, c x = star d * x * d := by
+  refine ⟨{ toCompletelyPositiveMap :=
+              { toLinearMap := sfilterAdLin d
+                map_cstarMatrix_nonneg' :=
+                  (cp_iff (sfilterAdLin d)).out 0 1 |>.mp (sfilterAdLin_cp d) }
+            preservesDirSups' := ?_ }, fun _ => rfl⟩
+  intro Ds s hne hdir hlub
+  have hbdd : BddAbove Ds := ⟨s, hlub.1⟩
+  have h3 : Ds.Nonempty ∧ DirectedOn (· ≤ ·) Ds ∧ BddAbove Ds := ⟨hne, hdir, hbdd⟩
+  have hs : s = dirSup Ds h3 := hlub.unique (isLUB_dirSup Ds h3)
+  have hnat := ad_normal d Ds h3
+  rw [← hs] at hnat
+  exact hnat
+
+
+/-- Auxiliary for **169X** (proc.tex 96V): `t` is an approximate
+pseudoinverse of `a` iff `t*` is one of `a*`.  Each of the six clauses is
+the star-image of another; the partial-sum sets coincide on the nose,
+because `tₙa` and `atₙ` are projections, hence self adjoint. -/
+private theorem sfilter_approxPseudo_star [VonNeumannAlgebra B] {a : B}
+    {t : ℕ → B} (h : IsApproxPseudoinverse B a t) :
+    IsApproxPseudoinverse B (star a) (fun n => star (t n)) := by
+  have hL : ∀ n, star (t n) * star a = a * t n := by
+    intro n; rw [← star_mul, (h.proj_right n).isSelfAdjoint.star_eq]
+  have hR : ∀ n, star a * star (t n) = t n * a := by
+    intro n; rw [← star_mul, (h.proj_left n).isSelfAdjoint.star_eq]
+  refine { proj_left := ?_, proj_right := ?_, sum_left := ?_, sum_range := ?_,
+           sum_right := ?_, sum_supp := ?_ }
+  · intro n; rw [hL n]; exact h.proj_right n
+  · intro n; rw [hR n]; exact h.proj_left n
+  · have he : {x : B | ∃ N : ℕ, x = ∑ n ∈ Finset.range N, star (t n) * star a}
+        = {x : B | ∃ N : ℕ, x = ∑ n ∈ Finset.range N, a * t n} := by
+      ext x
+      constructor <;> rintro ⟨N, rfl⟩ <;> exact ⟨N, by simp only [hL]⟩
+    rw [he, suppProj_star]
+    exact h.sum_right
+  · have he : {x : B | ∃ N : ℕ, x = ∑ n ∈ Finset.range N, rangeProj (star (t n))}
+        = {x : B | ∃ N : ℕ, x = ∑ n ∈ Finset.range N, suppProj (t n)} := by
+      ext x
+      constructor <;> rintro ⟨N, rfl⟩ <;> exact ⟨N, by simp only [rangeProj_star]⟩
+    rw [he, suppProj_star]
+    exact h.sum_supp
+  · have he : {x : B | ∃ N : ℕ, x = ∑ n ∈ Finset.range N, star a * star (t n)}
+        = {x : B | ∃ N : ℕ, x = ∑ n ∈ Finset.range N, t n * a} := by
+      ext x
+      constructor <;> rintro ⟨N, rfl⟩ <;> exact ⟨N, by simp only [hR]⟩
+    rw [he, rangeProj_star]
+    exact h.sum_left
+  · have he : {x : B | ∃ N : ℕ, x = ∑ n ∈ Finset.range N, suppProj (star (t n))}
+        = {x : B | ∃ N : ℕ, x = ∑ n ∈ Finset.range N, rangeProj (t n)} := by
+      ext x
+      constructor <;> rintro ⟨N, rfl⟩ <;> exact ⟨N, by simp only [suppProj_star]⟩
+    rw [he, rangeProj_star]
+    exact h.sum_range
+
+/-- Auxiliary for **169X** (proc.tex 96V, from **81II**): for `x` in the
+corner `⌊d⌉B⌊d⌉` one has `d*∖(d*xd)/d = x`. -/
+private theorem sfilter_ldiv_div [VonNeumannAlgebra B] (d x : B)
+    (hx : rangeProj d * x * rangeProj d = x) :
+    ldiv (star d) (div (star d * x * d) d) = x := by
+  have hqq : rangeProj d * rangeProj d = rangeProj d :=
+    ((ceill_basic_2 d).1.1).isIdempotentElem.eq
+  have hxq : x * rangeProj d = x := by
+    calc x * rangeProj d
+        = (rangeProj d * x * rangeProj d) * rangeProj d := by rw [hx]
+      _ = rangeProj d * x * (rangeProj d * rangeProj d) := by noncomm_ring
+      _ = rangeProj d * x * rangeProj d := by rw [hqq]
+      _ = x := hx
+  have hqx : rangeProj d * x = x := by
+    calc rangeProj d * x
+        = rangeProj d * (rangeProj d * x * rangeProj d) := by rw [hx]
+      _ = (rangeProj d * rangeProj d) * x * rangeProj d := by noncomm_ring
+      _ = rangeProj d * x * rangeProj d := by rw [hqq]
+      _ = x := hx
+  have h1 : div (star d * x * d) d = star d * x :=
+    div_eq rfl (by rw [mul_assoc, hxq])
+  rw [h1]
+  exact ldiv_eq rfl (by rw [suppProj_star, hqx])
+
+/-- Bipositivity of `x ↦ d* x d` on the corner `⌊d⌉B⌊d⌉` (**81VI**.2). -/
+private theorem sfilter_bipos [VonNeumannAlgebra B] (d x : B)
+    (hx : rangeProj d * x * rangeProj d = x) (h : 0 ≤ star d * x * d) : 0 ≤ x := by
+  have h2 := sequential_douglas_2 (star d * x * d) d h ⟨x, rfl⟩
+  rwa [sfilter_ldiv_div d x hx] at h2
+
+/-- `⌈b⌉ = ⌊√b⌉` for `b ≥ 0`. -/
+private theorem sfilter_ceil_eq [VonNeumannAlgebra B] (b : B) (hb : 0 ≤ b) :
+    ceil b = rangeProj (CFC.sqrt b) := by
+  have hsa : IsSelfAdjoint (CFC.sqrt b) := IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg b)
+  rw [rangeProj, hsa.star_eq, CFC.sqrt_mul_sqrt_self b hb]
+
+/-- The heart of **169X** (proc.tex 96V): an ncp-map `f : D → B` with
+`f(1) ≤ d*d` factors as `f = d* g(·) d` through an ncp-map
+`g : D → ⌊d⌉B⌊d⌉`, namely `g(x) = d*∖f(x)/d`.
+
+The author's argument (proc.tex:426), with the same divergence as
+`Theses.A.Proc`: *existence* of the value is `sequential-douglas`
+(**81VI**.1) applied to `0 ≤ f(x) ≤ ‖x‖f(1) ≤ ‖x‖d*d`, extended off the
+positive cone by linearity; *positivity* is **81VI**.2; *complete
+positivity* is `ncp-uwlim` (**96III**.1) applied to the completely positive
+approximants `(∑_{n<N}tₙ)* f(·) (∑_{n<N}tₙ)`, which converge pointwise to
+`g` by `div-approx` (**81VII**); *normality* is **not** taken from
+`div-usc` (**81IX**, whose relevant half is false — see
+`Theses.A.VN.div_usc`) but from normality of `f` together with the
+bipositivity of `d*(·)d` on the corner. -/
+private theorem sfilter_factor [VonNeumannAlgebra B] (d : B) (q : B)
+    [Fact (IsStarProjection q)] (hqr : q = rangeProj d)
+    (f : NCPMap D B) (hf1 : (f 1 : B) ≤ star d * d) :
+    ∃ g : NCPMap D (cornerSet B q),
+      ∀ x : D, star d * (g x).1 * d = (f x : B) := by
+  classical
+  subst hqr
+  set q : B := rangeProj d with hqdef
+  have hq : IsStarProjection q := (ceill_basic_2 d).1.1
+  have hqq : q * q = q := hq.isIdempotentElem.eq
+  have hqd : q * d = d := (ceill_basic_2 d).1.2
+  have hdq : star d * q = star d := by
+    have h := congrArg star hqd
+    rwa [star_mul, hq.isSelfAdjoint.star_eq] at h
+  -- linearity helpers for `f`
+  have hfadd : ∀ x y : D, (f (x + y) : B) = f x + f y :=
+    fun x y => map_add f.toCompletelyPositiveMap x y
+  have hfsmul : ∀ (z : ℂ) (x : D), (f (z • x) : B) = z • f x :=
+    fun z x => map_smul f.toCompletelyPositiveMap z x
+  have hfsub : ∀ x y : D, (f (x - y) : B) = f x - f y :=
+    fun x y => map_sub f.toCompletelyPositiveMap x y
+  have hfmono : ∀ {x y : D}, x ≤ y → (f x : B) ≤ f y :=
+    fun h => (ncpPos f).monotone h
+  have hf0 : (f (0 : D) : B) = 0 := map_zero f.toCompletelyPositiveMap
+  have hfnn : ∀ {x : D}, 0 ≤ x → (0 : B) ≤ f x := by
+    intro x hx
+    have h : (f (0 : D) : B) ≤ f x := hfmono hx
+    rwa [hf0] at h
+  -- (1) the inversion formula, (2) bipositivity and injectivity
+  have hinv : ∀ x : B, q * x * q = x → ldiv (star d) (div (star d * x * d) d) = x :=
+    fun x hx => sfilter_ldiv_div d x hx
+  have hbipos : ∀ x : B, q * x * q = x → 0 ≤ star d * x * d → 0 ≤ x := by
+    intro x hx hpos
+    have h := sequential_douglas_2 (star d * x * d) d hpos ⟨x, rfl⟩
+    rwa [hinv x hx] at h
+  have hinj : ∀ x y : B, q * x * q = x → q * y * q = y →
+      star d * x * d = star d * y * d → x = y := by
+    intro x y hx hy h
+    rw [← hinv x hx, ← hinv y hy, h]
+  -- (3) every value of `f` lies in `d*Bd`
+  have hsmulmono : ∀ (r : ℝ), 0 ≤ r → ∀ x z : B, x ≤ z →
+      ((r : ℂ)) • x ≤ ((r : ℂ)) • z := by
+    intro r hr x z h
+    have h2 := ofReal_smul_nonneg (sub_nonneg.mpr h) hr
+    rwa [smul_sub, sub_nonneg] at h2
+  have hposmem : ∀ y : D, 0 ≤ y →
+      ∃ e : B, ‖e‖ ≤ ‖y‖ ∧ (f y : B) = star d * e * d := by
+    intro y hy
+    have hyle : y ≤ algebraMap ℂ D ((‖y‖ : ℝ) : ℂ) := by
+      rw [← algebraMap_real_eq]
+      exact (IsSelfAdjoint.of_nonneg hy).le_algebraMap_norm_self
+    have h1 : (f y : B) ≤ ((‖y‖ : ℝ) : ℂ) • (f 1 : B) := by
+      have h := hfmono hyle
+      rwa [Algebra.algebraMap_eq_smul_one, hfsmul] at h
+    have h2 : (f y : B) ≤ ((‖y‖ : ℝ) : ℂ) • (star d * d) :=
+      h1.trans (hsmulmono ‖y‖ (norm_nonneg y) _ _ hf1)
+    exact (sequential_douglas_1 (f y) d (hfnn hy) ‖y‖ (norm_nonneg y)).1.2 h2
+  have hmem : ∀ x : D, ∃ e : B, (f x : B) = star d * e * d := by
+    intro x
+    obtain ⟨e1, -, h1⟩ := hposmem _ (CFC.posPart_nonneg ((realPart x : D)))
+    obtain ⟨e2, -, h2⟩ := hposmem _ (CFC.negPart_nonneg ((realPart x : D)))
+    obtain ⟨e3, -, h3⟩ := hposmem _ (CFC.posPart_nonneg ((imaginaryPart x : D)))
+    obtain ⟨e4, -, h4⟩ := hposmem _ (CFC.negPart_nonneg ((imaginaryPart x : D)))
+    refine ⟨e1 - e2 + Complex.I • (e3 - e4), ?_⟩
+    have hb : (realPart x : D) + Complex.I • (imaginaryPart x : D) = x :=
+      realPart_add_I_smul_imaginaryPart x
+    have hr : posPart ((realPart x : D)) - negPart ((realPart x : D))
+        = (realPart x : D) := CFC.posPart_sub_negPart _ (realPart x).2
+    have hi : posPart ((imaginaryPart x : D)) - negPart ((imaginaryPart x : D))
+        = (imaginaryPart x : D) := CFC.posPart_sub_negPart _ (imaginaryPart x).2
+    rw [← hb, ← hr, ← hi, hfadd, hfsmul, hfsub, hfsub, h1, h2, h3, h4]
+    simp only [mul_sub, sub_mul, mul_add, add_mul, mul_smul_comm, smul_mul_assoc]
+  -- (4) the factorisation, elementwise
+  set F : D → B := fun x => ldiv (star d) (div ((f x : B)) d) with hFdef
+  have hFapp : ∀ x : D, F x = ldiv (star d) (div ((f x : B)) d) := fun x => by rw [hFdef]
+  have hF : ∀ x : D, q * F x * q = F x ∧ star d * F x * d = (f x : B) := by
+    intro x
+    obtain ⟨e, he⟩ := hmem x
+    have hcorner : q * (q * e * q) * q = q * e * q := by
+      calc q * (q * e * q) * q = (q * q) * e * (q * q) := by noncomm_ring
+        _ = q * e * q := by rw [hqq]
+    have hfe : (f x : B) = star d * (q * e * q) * d := by
+      rw [he]
+      calc star d * e * d = (star d * q) * e * (q * d) := by rw [hdq, hqd]
+        _ = star d * (q * e * q) * d := by noncomm_ring
+    have hFb : F x = q * e * q := by
+      rw [hFapp x, hfe]
+      exact hinv _ hcorner
+    exact ⟨by rw [hFb]; exact hcorner, by rw [hFb, ← hfe]⟩
+  -- (5) linearity and positivity of `F`
+  have hFadd : ∀ x y : D, F (x + y) = F x + F y := by
+    intro x y
+    refine hinj _ _ (hF (x + y)).1 ?_ ?_
+    · rw [mul_add, add_mul, (hF x).1, (hF y).1]
+    · rw [(hF (x + y)).2, hfadd, mul_add, add_mul, (hF x).2, (hF y).2]
+  have hFsmul : ∀ (z : ℂ) (x : D), F (z • x) = z • F x := by
+    intro z x
+    refine hinj _ _ (hF (z • x)).1 ?_ ?_
+    · rw [mul_smul_comm, smul_mul_assoc, (hF x).1]
+    · rw [(hF (z • x)).2, hfsmul, mul_smul_comm, smul_mul_assoc, (hF x).2]
+  set Flin : D →ₗ[ℂ] B :=
+    { toFun := F, map_add' := hFadd, map_smul' := hFsmul } with hFlin
+  have hFlinapp : ∀ x : D, Flin x = F x := fun _ => rfl
+  have hFpos : ∀ y : D, 0 ≤ y → 0 ≤ F y := by
+    intro y hy
+    obtain ⟨e, he⟩ := hmem y
+    rw [hFapp y]
+    exact sequential_douglas_2 ((f y : B)) d (hfnn hy) ⟨e, he⟩
+  have hFmono : ∀ {x y : D}, x ≤ y → F x ≤ F y := by
+    intro x y h
+    have h0 := hFpos (y - x) (sub_nonneg.mpr h)
+    rw [show F (y - x) = F y - F x from map_sub Flin y x, sub_nonneg] at h0
+    exact h0
+  -- (6) complete positivity: `div-approx` + `ncp-uwlim`
+  have hFcp : IsCompletelyPositiveMap Flin := by
+    obtain ⟨t, ht⟩ := approximate_pseudoinverse d
+    have hst : IsApproxPseudoinverse B (star d) (fun n => star (t n)) :=
+      sfilter_approxPseudo_star ht
+    set T : ℕ → B := fun N => ∑ n ∈ Finset.range N, t n with hTdef
+    have hTstar : ∀ N : ℕ, (∑ n ∈ Finset.range N, star (t n)) = star (T N) := by
+      intro N; rw [hTdef, star_sum]
+    obtain ⟨adT, hadT⟩ : ∃ c : ℕ → NCPMap B B, ∀ (N : ℕ) (x : B),
+        c N x = star (T N) * x * T N := by
+      choose c hc using fun N => exists_sfilterAd (T N)
+      exact ⟨c, hc⟩
+    obtain ⟨hN, hNapp⟩ : ∃ c : ℕ → NCPMap D B, ∀ (N : ℕ) (x : D),
+        c N x = star (T N) * (f x : B) * T N := by
+      choose c hc using fun N => exists_ncpComp (adT N) f
+      exact ⟨c, fun N x => by rw [hc N x, hadT]⟩
+    -- pointwise ultrastrong convergence, first for `0 ≤ y` with `‖y‖ ≤ 1`
+    have hbase : ∀ y : D, 0 ≤ y → ‖y‖ ≤ 1 →
+        USTendsto (fun N => star (T N) * (f y : B) * T N) atTop (F y) := by
+      intro y hy hy1
+      obtain ⟨e, hen, he⟩ := hposmem y hy
+      have hconv := div_approx ((f y : B)) d (star d) t (fun n => star (t n)) ht
+        hst ⟨e, hen.trans hy1, he⟩
+      rw [hFapp y]
+      simpa only [hTstar] using hconv
+    have hadd : ∀ x y : D,
+        USTendsto (fun N => star (T N) * (f x : B) * T N) atTop (F x) →
+        USTendsto (fun N => star (T N) * (f y : B) * T N) atTop (F y) →
+        USTendsto (fun N => star (T N) * (f (x + y) : B) * T N) atTop (F (x + y)) := by
+      intro x y hx hy
+      have h := usTendsto_add hx hy
+      rw [hFadd]
+      refine h.congr fun N => ?_
+      rw [hfadd, mul_add, add_mul]
+    have hsmulc : ∀ (z : ℂ) (x : D),
+        USTendsto (fun N => star (T N) * (f x : B) * T N) atTop (F x) →
+        USTendsto (fun N => star (T N) * (f (z • x) : B) * T N) atTop (F (z • x)) := by
+      intro z x hx
+      have h := usTendsto_smul z hx
+      rw [hFsmul]
+      refine h.congr fun N => ?_
+      rw [hfsmul, mul_smul_comm, smul_mul_assoc]
+    have hpos : ∀ y : D, 0 ≤ y →
+        USTendsto (fun N => star (T N) * (f y : B) * T N) atTop (F y) := by
+      intro y hy
+      rcases eq_or_lt_of_le (norm_nonneg y) with hn | hn
+      · have hy0 : y = 0 := norm_eq_zero.mp hn.symm
+        subst hy0
+        have hF0 : F (0 : D) = 0 := by
+          refine hinj _ _ (hF 0).1 (by simp) ?_
+          rw [(hF 0).2, hf0]; simp
+        rw [hF0]
+        simp only [hf0, mul_zero, zero_mul]
+        exact usTendsto_const 0
+      · have hu0 : (0 : D) ≤ ((‖y‖⁻¹ : ℝ) : ℂ) • y :=
+          ofReal_smul_nonneg hy (by positivity)
+        have hu1 : ‖((‖y‖⁻¹ : ℝ) : ℂ) • y‖ ≤ 1 := by
+          rw [norm_smul, Complex.norm_real, Real.norm_eq_abs,
+            abs_of_pos (inv_pos.mpr hn)]
+          rw [inv_mul_cancel₀ (ne_of_gt hn)]
+        have hy' : ((‖y‖ : ℝ) : ℂ) • (((‖y‖⁻¹ : ℝ) : ℂ) • y) = y := by
+          rw [smul_smul, ← Complex.ofReal_mul, mul_inv_cancel₀ (ne_of_gt hn)]
+          simp
+        have h := hsmulc ((‖y‖ : ℝ) : ℂ) _ (hbase _ hu0 hu1)
+        rwa [hy'] at h
+    have hsa : ∀ y : D, IsSelfAdjoint y →
+        USTendsto (fun N => star (T N) * (f y : B) * T N) atTop (F y) := by
+      intro y hy
+      have hd0 : posPart y + (-1 : ℂ) • negPart y = y := by
+        rw [neg_one_smul, ← sub_eq_add_neg]
+        exact CFC.posPart_sub_negPart y hy
+      have h := hadd _ _ (hpos _ (CFC.posPart_nonneg y))
+        (hsmulc (-1 : ℂ) _ (hpos _ (CFC.negPart_nonneg y)))
+      rwa [hd0] at h
+    have hall : ∀ x : D,
+        USTendsto (fun N => star (T N) * (f x : B) * T N) atTop (F x) := by
+      intro x
+      have hb : (realPart x : D) + Complex.I • (imaginaryPart x : D) = x :=
+        realPart_add_I_smul_imaginaryPart x
+      have h := hadd _ _ (hsa _ (realPart x).2)
+        (hsmulc Complex.I _ (hsa _ (imaginaryPart x).2))
+      rwa [hb] at h
+    refine sfilter_cp_uwlim atTop
+      (fun N => (hN N).toCompletelyPositiveMap.toLinearMap) Flin ?_ ?_
+    · intro x
+      have h := uwweaker_2 _ atTop _ (hall x)
+      rw [hFlinapp x]
+      exact h.congr fun N => (hNapp N x).symm
+    · intro N
+      exact (cp_iff _).out 1 0 |>.mp fun k M hM =>
+        (hN N).toCompletelyPositiveMap.map_cstarMatrix_nonneg' k M hM
+  -- (7) assemble
+  set G : D →ₗ[ℂ] cornerSet B q :=
+    { toFun := fun x => ⟨F x, (hF x).1⟩
+      map_add' := fun x y => cornerSet.val_injective (hFadd x y)
+      map_smul' := fun z x => cornerSet.val_injective (hFsmul z x) } with hGdef
+  have hGval : ∀ x : D, (G x).1 = F x := fun _ => rfl
+  have hGcp : IsCompletelyPositiveMap G := by
+    intro n a bb
+    have hsum : ∀ E : Fin n → cornerSet B q, (∑ i, E i).1 = ∑ i, (E i).1 :=
+      fun E => map_sum cornerSet.valAddHom E Finset.univ
+    show (0 : B) ≤ (∑ i, ∑ j, star (bb i) * G (star (a i) * a j) * bb j).1
+    have hval : (∑ i, ∑ j, star (bb i) * G (star (a i) * a j) * bb j).1
+        = ∑ i, ∑ j, star ((bb i).1) * Flin (star (a i) * a j) * (bb j).1 := by
+      simp only [hsum, cornerSet.val_mul, cornerSet.val_star, hGval, hFlinapp]
+    rw [hval]
+    exact hFcp n a fun i => (bb i).1
+  refine ⟨{ toCompletelyPositiveMap :=
+              { toLinearMap := G
+                map_cstarMatrix_nonneg' := (cp_iff G).out 0 1 |>.mp hGcp }
+            preservesDirSups' := ?_ }, fun x => (hF x).2⟩
+  intro Ds s hne hdir hlub
+  constructor
+  · rintro _ ⟨y, hy, rfl⟩
+    exact hFmono (hlub.1 hy)
+  · intro u hu
+    have hu' : ∀ y ∈ Ds, F ((y : selfAdjoint D) : D) ≤ (u : cornerSet B q).1 :=
+      fun y hy => hu ⟨y, hy, rfl⟩
+    have hfle : ∀ y ∈ Ds,
+        (f ((y : selfAdjoint D) : D) : B) ≤ star d * (u : cornerSet B q).1 * d := by
+      intro y hy
+      have h2 := star_left_conjugate_le_conjugate (hu' y hy) d
+      rwa [(hF _).2] at h2
+    have hfl := f.preservesDirSups' Ds s hne hdir hlub
+    have hfs : (f ((s : selfAdjoint D) : D) : B)
+        ≤ star d * (u : cornerSet B q).1 * d := by
+      refine hfl.2 ?_
+      rintro _ ⟨y, hy, rfl⟩
+      exact hfle y hy
+    have hz : q * ((u : cornerSet B q).1 - F ((s : selfAdjoint D) : D)) * q
+        = (u : cornerSet B q).1 - F ((s : selfAdjoint D) : D) := by
+      rw [mul_sub, sub_mul, (u : cornerSet B q).2, (hF _).1]
+    have hzz : 0 ≤ star d * ((u : cornerSet B q).1 - F ((s : selfAdjoint D) : D)) * d := by
+      rw [mul_sub, sub_mul, (hF _).2, sub_nonneg]
+      exact hfs
+    have h := hbipos _ hz hzz
+    show F ((s : selfAdjoint D) : D) ≤ (u : cornerSet B q).1
+    rwa [sub_nonneg] at h
+
+end StandardFilter
 /-- **169X** (`dils-stand-filter`, dils.tex:6150, Example): the **standard
 filter** `c_b : ⌈b⌉B⌈b⌉ → B`, `a ↦ √b a √b`, is a filter for `b ≥ 0` (see
 proc.tex 96V, 98I). -/
 theorem dils_stand_filter [VonNeumannAlgebra B] (b : B) (hb : 0 ≤ b) :
     ∃ c : NCPMap (cornerSet B (ceil b)) B,
       (∀ a : cornerSet B (ceil b), c a = CFC.sqrt b * a.1 * CFC.sqrt b) ∧
-      IsFilterFor c b :=
-  sorry
+      IsFilterFor c b := by
+  classical
+  set d : B := CFC.sqrt b with hd
+  have hsa : IsSelfAdjoint d := IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg b)
+  have hds : star d = d := hsa.star_eq
+  have hdd : d * d = b := CFC.sqrt_mul_sqrt_self b hb
+  have hqr : ceil b = rangeProj d := sfilter_ceil_eq b hb
+  have hcd : ceil b * d = d := by rw [hqr]; exact (ceill_basic_2 d).1.2
+  have hdc : d * ceil b = d := by
+    have h := congrArg star hcd
+    rwa [star_mul, hds, ((ceil_spec hb).1).isSelfAdjoint.star_eq] at h
+  have hstd : star d * d = b := by rw [hds, hdd]
+  have hdcd : star d * (1 : cornerSet B (ceil b)).1 * d = b := by
+    show star d * ceil b * d = b
+    rw [hds, hdc, hdd]
+  -- the standard filter `c_b`
+  obtain ⟨ad, had⟩ := exists_sfilterAd d
+  obtain ⟨c, hc⟩ := exists_ncpComp ad (cornerInclNcp (A := B) (ceil b))
+  have hcval : ∀ a : cornerSet B (ceil b), (c a : B) = star d * a.1 * d := by
+    intro a
+    rw [hc, cornerInclNcp_apply, had]
+  refine ⟨c, fun a => by rw [hcval a, hds], hb, ?_, ?_⟩
+  · rw [hcval 1, hdcd]
+  intro C _ _ _ f hf1
+  have hf1' : (f 1 : B) ≤ star d * d := by rwa [hstd]
+  obtain ⟨g, hg⟩ := sfilter_factor (D := C) d (ceil b) hqr f hf1'
+  have hsub : Subunital ⇑g := by
+    show g 1 ≤ 1
+    show (g 1).1 ≤ (1 : cornerSet B (ceil b)).1
+    rw [← sub_nonneg]
+    refine sfilter_bipos d _ ?_ ?_
+    · rw [← hqr, mul_sub, sub_mul, (1 : cornerSet B (ceil b)).2, (g 1).2]
+    · rw [mul_sub, sub_mul, hg 1, hdcd, sub_nonneg]
+      exact hf1
+  refine ⟨⟨g, hsub⟩, fun x => ?_, ?_⟩
+  · show (c (g x) : B) = f x
+    rw [hcval (g x), hg x]
+  · rintro ⟨g', hsub'⟩ hg'
+    have key : g' = g := by
+      refine DFunLike.ext _ _ fun x => cornerSet.val_injective ?_
+      refine mult_cancellation_3 d _ _ ?_ ?_ ?_
+      · rw [← hqr]; exact (g' x).2
+      · rw [← hqr]; exact (g x).2
+      · have h1 : (c (g' x) : B) = f x := hg' x
+        rw [hcval (g' x)] at h1
+        exact h1.trans (hg x).symm
+    subst key
+    rfl
 
 /- **169XI** (`dils-filter-basics-exercise`) follows **169XII** below: both
 its parts use the injectivity of filters, and Lean needs that declaration
@@ -1338,8 +1805,8 @@ are injective.
 
 The hint (and the `bsols.tex` solution) route this through the *standard*
 filter `c_b` of **169X**: `c = c_b ∘ ϑ` for an ncp-isomorphism `ϑ`, and `c_b`
-is injective by `mult-cancellation`.  **169X** is still `sorry`, and it is not
-needed: the *uniqueness* half of `c`'s own universal property already gives
+is injective by `mult-cancellation`.  **169X** is proved (above), but it is
+not needed here: the *uniqueness* half of `c`'s own universal property already gives
 injectivity, tested against the ncp-maps out of the scalars
 (`ncpOfNonneg` above).  For effects `x, y` with `c x = c y`, the map
 `z ↦ z·(c x)` is an ncp-map `ℂᵤ → B` whose value at `1` is `c x ≤ c 1 ≤ b`,
@@ -1740,18 +2207,100 @@ operators `T : 𝒦 → ℋ`. -/
 theorem dils_examples_pure_1 (φ : NCPMap (H →L[ℂ] H) (K →L[ℂ] K)) :
     IsPureMap φ ↔ ∃ T : K →L[ℂ] H, ∀ a, φ a = conjOperator T a :=
   sorry
-
+/-- Auxiliary for **170II**.2: a corner precomposed with a *bijective*
+nmiu-map is again a corner (for the preimage of its effect).  Both the
+factorisation and its uniqueness transport along the ncp inverse
+(`pcorner_exists_ncpInv`). -/
+private theorem isCorner_comp_nmiuBij {P Q R : Type u} [CStarAlgebra P]
+    [PartialOrder P] [StarOrderedRing P] [CStarAlgebra Q] [PartialOrder Q]
+    [StarOrderedRing Q] [CStarAlgebra R] [PartialOrder R] [StarOrderedRing R]
+    (h : NCPMap Q R) (hh : IsCorner h) (ϑ : NMIUMap P Q)
+    (hbij : Function.Bijective ⇑ϑ) (k : NCPMap P R) (hk : ∀ x, k x = h (ϑ x)) :
+    IsCorner k := by
+  obtain ⟨a, ha01, hha, huniv⟩ := hh
+  obtain ⟨g, hgϑ, hϑg⟩ := pcorner_exists_ncpInv ϑ hbij
+  have hϑ1 : (ϑ (1 : P) : Q) = 1 := map_one ϑ.toStarAlgHom
+  have hg1 : (g (1 : Q) : P) = 1 := by rw [← hϑ1, hgϑ]
+  have hgmono : ∀ x y : Q, x ≤ y → g x ≤ g y := fun _ _ hxy => (ncpPos g).monotone hxy
+  refine ⟨g a, ⟨?_, ?_⟩, ?_, ?_⟩
+  · have h0 : (0 : P) = g 0 := (map_zero g.toCompletelyPositiveMap).symm
+    rw [h0]
+    exact hgmono _ _ ha01.1
+  · rw [← hg1]
+    exact hgmono _ _ ha01.2
+  · rw [hk, hk, hϑg, hϑ1, hha]
+  · intro C _ _ _ f hf
+    obtain ⟨fg, hfg⟩ := exists_ncpComp f g
+    have hfga : (fg a : C) = fg 1 := by rw [hfg, hfg, hg1, ← hf]
+    obtain ⟨f', hf'1, hf'2⟩ := huniv C ‹_› ‹_› ‹_› fg hfga
+    refine ⟨f', fun x => ?_, fun f'' hf'' => ?_⟩
+    · rw [hk, hf'1 (ϑ x), hfg, hgϑ]
+    · refine hf'2 f'' fun y => ?_
+      have h1 : (f'' (h y) : C) = f'' (k (g y)) := by rw [hk, hϑg]
+      rw [h1, hf'' (g y), hfg]
 /-- **170II** (`dils-examples-pure`, dils.tex:6195, Examples), part 2: the
-right-hand side `h` of any Paschke dilation is pure (it is `c ∘ h'` for a
-filter `c` and corner `h'` by **169V** and **169XI**).
+right-hand side `h` of any Paschke dilation is pure.
+
+⚠️ **The two `[VonNeumannAlgebra]` binders are new.**  They are the
+chapter's standing hypothesis (dils.tex **140II** opens "let `φ : 𝒜 → ℬ` be
+any ncp-map **between von Neumann algebras**") and every sibling statement
+about a `PaschkeTriple` carries them; they were dropped in the first
+transcription of this point.  This is the same repair the author ruled on
+for **169V** and for **170IV** (QUESTIONS **D5**, "restore the
+hypothesis"): the proof reduces to the *standard* dilation of **154III**,
+whose construction `existence_paschke` needs both algebras to be von
+Neumann.
+
+**Proof**, transcribed from dils.tex:6205.  `c'` is the standard filter of
+`φ(1)` (**169X** `dils_stand_filter`), `φ'` the unique unital ncp-map with
+`φ = c' ∘ φ'` (**169XI**.2a), and `(𝒫', ϱ', h')` a Paschke dilation of `φ'`
+(**154III**).  Then `h'` is a *corner* by **169V**
+`h_is_corner_for_unital_map`, `(𝒫', ϱ', c' ∘ h')` is a Paschke dilation of
+`φ` by **169XI**.2b, and `paschke_unique_up_to_iso` (**140VIII**) supplies
+the nmiu-isomorphism `ϑ : 𝒫 ≅ 𝒫'` with `c' ∘ h' ∘ ϑ = h`.  So
+`h = c' ∘ (h' ∘ ϑ)` with `h' ∘ ϑ` a corner (`isCorner_comp_nmiuBij`) and
+`c'` a filter — i.e. `h` is pure.
 
 **170III** (Remark, the †-structure preview: there is a unique dagger on
 the category of von Neumann algebras with pure maps, `(ad_V)† = ad_{V*}`;
 see eff.tex 215III `dagger-theorem`) — not converted here. -/
-theorem dils_examples_pure_2 (φ : NCPMap A B) (D : PaschkeTriple A B)
+theorem dils_examples_pure_2 [VonNeumannAlgebra A] [VonNeumannAlgebra B]
+    (φ : NCPMap A B) (D : PaschkeTriple A B)
     (hD : IsPaschkeDilationOf D ⇑φ) :
-    IsPureMap D.h :=
-  sorry
+    IsPureMap D.h := by
+  classical
+  let _ := D.vn
+  have hmono : ∀ {x y : A}, x ≤ y → (φ x : B) ≤ φ y := fun h => (ncpPos φ).monotone h
+  have hφ0 : (φ (0 : A) : B) = 0 := map_zero φ.toCompletelyPositiveMap
+  have hb : (0 : B) ≤ φ 1 := by
+    have h := hmono (zero_le_one' A)
+    rwa [hφ0] at h
+  -- the standard filter for `φ(1)`
+  obtain ⟨c', -, hc'⟩ := dils_stand_filter (φ 1) hb
+  let _ : VonNeumannAlgebra (cornerSet B (ceil (φ 1))) :=
+    cornerSet_vonNeumannAlgebra B (ceil (φ 1))
+  -- the unique unital `φ'` with `φ = c' ∘ φ'`, and a Paschke dilation of it
+  obtain ⟨φ', ⟨hφ'1, hφ'2⟩, -⟩ := dils_filter_basics_2a φ c' hc'
+  obtain ⟨M⟩ := existence_paschke φ'
+  set D' : PaschkeTriple A (cornerSet B (ceil (φ 1))) :=
+    ⟨(Ba (cornerSet B (ceil (φ 1))) M.X)ᵐᵒᵖ,
+      @vonNeumannAlgebra_mulOpposite (Ba (cornerSet B (ceil (φ 1))) M.X) _ _ _
+        (ba_vonNeumannAlgebra M.selfDual), M.ρ, M.h⟩ with hD'def
+  have hD' : IsPaschkeDilationOf D' ⇑φ' := existence_paschke_5 φ' M
+  -- `169V`: the right leg of a dilation of a *unital* map is a corner
+  have hcorner : IsCorner D'.h := h_is_corner_for_unital_map φ' hφ'1 D' hD'
+  -- `169XI`.2: composing with the filter gives a dilation of `φ`
+  obtain ⟨h₂, hh₂, hD₂⟩ := dils_filter_basics_2b φ c' hc' φ' ⟨hφ'1, hφ'2⟩ D' hD'
+  -- and Paschke dilations are unique up to nmiu-isomorphism
+  obtain ⟨ϑ, ⟨hbij, -, hϑh⟩, -⟩ :=
+    paschke_unique_up_to_iso ⇑φ D ⟨D'.P, D'.vn, D'.ρ, h₂⟩ hD hD₂
+  obtain ⟨ϑc, hϑc⟩ := pcorner_exists_ncpOfNmiu ϑ
+  obtain ⟨k, hkdef⟩ := exists_ncpComp D'.h ϑc
+  have hkval : ∀ x : D.P, (k x : cornerSet B (ceil (φ 1))) = D'.h (ϑ x) := by
+    intro x; rw [hkdef, hϑc]
+  refine ⟨cornerSet B (ceil (φ 1)), inferInstance, inferInstance, inferInstance,
+    k, c', isCorner_comp_nmiuBij D'.h hcorner ϑ hbij k hkval, ⟨φ 1, hc'⟩, fun x => ?_⟩
+  rw [hkval, ← hh₂, hϑh]
 
 /-- **170IV** (`surjective-nmiu`, dils.tex:6223, Exercise), first half:
 every surjective nmiu-map **between von Neumann algebras** is a corner of a
@@ -3137,6 +3686,101 @@ private theorem pcorner_sigma_bijective :
 
 end PaschkeCornerAux
 
+/-! ### Infrastructure for **172X**: from an abstract corner to a standard one
+
+`IsPureMap` gives an *abstract* corner `h : A → C`; the thesis's proof of
+172X runs through proc.tex 100III `pure-fundamental`, which hands it the
+*standard* corner `h_p` directly.  The gap is closed by **169IV**: `h_p` for
+`p = ⌊a⌋` is a corner for the same effect `a`, so the two universal
+properties produce mutually inverse ncp-maps `u`, `v` between `C` and `pAp`
+with `v ∘ h_p = h` (`pext_corner_iso`).  `v` is an ncp-*isomorphism* but
+**not** unital in general (QUESTIONS **D7**: `λ·h_p` is again a corner under
+**169II** as printed), which is why the Paschke dilation is transported along
+`v` at the level of the *dilating triple* (`pext_dilation_target_iso`) rather
+than by claiming that `c ∘ v` is again a filter — the latter is exactly the
+step that D7 puts in doubt. -/
+
+/-- The identity as an ncp-map. -/
+private theorem pext_exists_ncpId (P : Type*) [CStarAlgebra P] [PartialOrder P]
+    [StarOrderedRing P] : ∃ f : NCPMap P P, ∀ a : P, f a = a :=
+  ⟨{ toCompletelyPositiveMap :=
+       { toLinearMap := LinearMap.id
+         map_cstarMatrix_nonneg' := fun _ _ hM => by simpa using hM }
+     preservesDirSups' := by
+       intro D s hne _ hlub
+       exact isLUB_coe_of_isLUB hne hlub }, fun _ => rfl⟩
+
+/-- **169IV** + the universal property of **169II**: a corner `h` for `a` is
+the standard corner `h_{⌊a⌋}` followed by an ncp-isomorphism `v`. -/
+private theorem pext_corner_iso {P C : Type u} [CStarAlgebra P] [PartialOrder P]
+    [StarOrderedRing P] [VonNeumannAlgebra P] [CStarAlgebra C] [PartialOrder C]
+    [StarOrderedRing C] (h : NCPMap P C) (a : P) (hc : IsCornerFor h a) :
+    ∃ (hp : NCPMap P (cornerSet P (floor a)))
+      (v : NCPMap (cornerSet P (floor a)) C)
+      (u : NCPMap C (cornerSet P (floor a))),
+      (∀ b : P, (hp b).1 = floor a * b * floor a) ∧
+      (∀ x : P, v (hp x) = h x) ∧
+      (∀ y : C, v (u y) = y) ∧ ∀ z : cornerSet P (floor a), u (v z) = z := by
+  obtain ⟨hp, hval, hpc⟩ := standard_corner_dils a hc.1
+  obtain ⟨v, hv, -⟩ :=
+    hpc.2.2 C inferInstance inferInstance inferInstance h hc.2.1
+  obtain ⟨u, hu, -⟩ :=
+    hc.2.2 (cornerSet P (floor a)) inferInstance inferInstance inferInstance hp
+      hpc.2.1
+  refine ⟨hp, v, u, hval, hv, ?_, ?_⟩
+  · -- `v ∘ u = id`, both mediating `h` through `h`
+    obtain ⟨w, hw⟩ := exists_ncpComp v u
+    obtain ⟨idm, hidm⟩ := pext_exists_ncpId C
+    obtain ⟨w₀, -, huniq⟩ := hc.2.2 C inferInstance inferInstance inferInstance h hc.2.1
+    have h1 : w = idm := (huniq w fun x => by rw [hw, hu, hv]).trans
+      (huniq idm fun x => by rw [hidm]).symm
+    intro y
+    have := DFunLike.congr_fun h1 y
+    rw [hw, hidm] at this
+    exact this
+  · -- `u ∘ v = id`, both mediating `h_p` through `h_p`
+    obtain ⟨w, hw⟩ := exists_ncpComp u v
+    obtain ⟨idm, hidm⟩ := pext_exists_ncpId (cornerSet P (floor a))
+    obtain ⟨w₀, -, huniq⟩ := hpc.2.2 (cornerSet P (floor a)) inferInstance
+      inferInstance inferInstance hp hpc.2.1
+    have h1 : w = idm := (huniq w fun x => by rw [hw, hv, hu]).trans
+      (huniq idm fun x => by rw [hidm]).symm
+    intro z
+    have := DFunLike.congr_fun h1 z
+    rw [hw, hidm] at this
+    exact this
+
+/-- A Paschke dilation stays one when its `h`-leg is post-composed with an
+ncp-isomorphism of the target: mediate through `u ∘ h'` and use `v ∘ u = id`
+both ways.  (No unitality of `u`, `v` is needed.) -/
+private theorem pext_dilation_target_iso {P B₁ B₂ : Type u} [CStarAlgebra P]
+    [PartialOrder P] [StarOrderedRing P] [CStarAlgebra B₁] [PartialOrder B₁]
+    [StarOrderedRing B₁] [CStarAlgebra B₂] [PartialOrder B₂] [StarOrderedRing B₂]
+    (ψ : P → B₁) (D : PaschkeTriple P B₁) (hD : IsPaschkeDilationOf D ψ)
+    (v : NCPMap B₁ B₂) (u : NCPMap B₂ B₁) (hvu : ∀ y : B₂, v (u y) = y)
+    (huv : ∀ z : B₁, u (v z) = z) (H : NCPMap D.P B₂)
+    (hH : ∀ x : D.P, H x = v (D.h x)) :
+    IsPaschkeDilationOf ⟨D.P, D.vn, D.ρ, H⟩ fun x => v (ψ x) := by
+  refine ⟨fun x => ?_, fun D' hD' => ?_⟩
+  · show (H (D.ρ x) : B₂) = v (ψ x)
+    rw [hH, hD.1 x]
+  obtain ⟨k, hk⟩ := exists_ncpComp u D'.h
+  have hk1 : ∀ x : P, (k (D'.ρ x) : B₁) = ψ x := by
+    intro x
+    rw [hk, hD' x, huv]
+  obtain ⟨σ, ⟨hσρ, hσh⟩, hσuniq⟩ := hD.2 ⟨D'.P, D'.vn, D'.ρ, k⟩ hk1
+  refine ⟨σ, ⟨hσρ, fun c => ?_⟩, fun σ' hσ' => ?_⟩
+  · show (H (σ c) : B₂) = D'.h c
+    rw [hH, hσh c]
+    show (v (k c) : B₂) = D'.h c
+    rw [hk, hvu]
+  · refine hσuniq σ' ⟨hσ'.1, fun c => ?_⟩
+    show (D.h (σ' c) : B₁) = k c
+    have h1 : (H (σ' c) : B₂) = D'.h c := hσ'.2 c
+    rw [hH] at h1
+    rw [hk, ← h1, huv]
+
+
 /-! ## Parsec 1710: purity via the Paschke dilation
 
 **171I** (dils.tex:6232): introduction; **171III**–**171VI** and
@@ -3203,14 +3847,150 @@ theorem paschke_corner [VonNeumannAlgebra A] (p : A)
     show M.h (M.ρ c.1) = h' c
     rw [paschkeModule_h_ρ, hh', hincl]
 
+/-- Auxiliary for **171VII** ⇐: **corners compose**.  If `h₁` is a corner
+for `a₁` and *unital*, `h₂` a corner for `a₂`, and `e ≤ a₁` an effect with
+`h₁(e) = a₂`, then `h₂ ∘ h₁` is a corner for `e`.
+
+(The thesis takes this for granted — dils.tex **170I** *defines* pure maps
+as arbitrary composites of filters and corners, and appeals to proc.tex
+100III `pure-fundamental` to bring them to the normal form "filter after
+corner" used by `IsPureMap`.  100III is off this import path; in the case
+needed for 171VII the first corner is a surjective nmiu-map, so the
+elementary argument below suffices and no normal-form theorem is needed.) -/
+private theorem isCornerFor_comp {P Q R : Type u} [CStarAlgebra P]
+    [PartialOrder P] [StarOrderedRing P] [CStarAlgebra Q] [PartialOrder Q]
+    [StarOrderedRing Q] [CStarAlgebra R] [PartialOrder R] [StarOrderedRing R]
+    (h₁ : NCPMap P Q) (a₁ : P) (hc₁ : IsCornerFor h₁ a₁) (hu₁ : (h₁ 1 : Q) = 1)
+    (h₂ : NCPMap Q R) (a₂ : Q) (hc₂ : IsCornerFor h₂ a₂)
+    (e : P) (he : e ∈ effects P) (hea : e ≤ a₁) (h1e : (h₁ e : Q) = a₂)
+    (k : NCPMap P R) (hk : ∀ x : P, k x = h₂ (h₁ x)) :
+    IsCornerFor k e := by
+  refine ⟨he, ?_, ?_⟩
+  · rw [hk, hk, h1e, hu₁, hc₂.2.1]
+  intro C _ _ _ f hf
+  -- `f(e) = f(1)` forces `f(a₁) = f(1)`, so `f` factors through `h₁`
+  have hfmono : ∀ {x y : P}, x ≤ y → (f x : C) ≤ f y := fun h => (ncpPos f).monotone h
+  have hfa₁ : (f a₁ : C) = f 1 := by
+    refine le_antisymm (hfmono hc₁.1.2) ?_
+    rw [← hf]
+    exact hfmono hea
+  obtain ⟨g, hg, hguniq⟩ := hc₁.2.2 C ‹_› ‹_› ‹_› f hfa₁
+  -- and then `g(a₂) = g(1)`, so `g` factors through `h₂`
+  have hga₂ : (g a₂ : C) = g 1 := by rw [← h1e, hg e, hf, ← hu₁, hg 1]
+  obtain ⟨f', hf', hf'uniq⟩ := hc₂.2.2 C ‹_› ‹_› ‹_› g hga₂
+  refine ⟨f', fun x => ?_, fun f'' hf'' => ?_⟩
+  · rw [hk, hf' (h₁ x), hg x]
+  · refine hf'uniq f'' fun y => ?_
+    obtain ⟨g'', hg''⟩ := exists_ncpComp f'' h₂
+    have hg''g : g'' = g := hguniq g'' fun x => by rw [hg'', ← hk, hf'' x]
+    rw [← hg'', hg''g]
+
 /-- **171VII** (`paschke-pure`, dils.tex:6365, Theorem): an ncp-map `φ`
 with Paschke dilation `(𝒫, ϱ, h)` is pure if and only if `ϱ` is
-surjective. -/
+surjective.
+
+**171VIII** is the proof, transcribed.
+
+**⇐** `ϱ` surjective is a corner (of a central projection) by **170IV**.1
+`surjective_nmiu_1` — this is the thesis's "`ker ϱ = z𝒜` by
+`weakly-closed-ideal`, so `ϱ` is a corner by the isomorphism theorem",
+already available in the tree in that form.  `h` is pure by **170II**.2
+`dils_examples_pure_2`, say `h = c ∘ k` with `k` a corner, and then
+`φ = c ∘ (k ∘ ϱ)` with `k ∘ ϱ` a corner by `isCornerFor_comp`.  (Where the
+thesis says "a composition of pure maps is pure", `IsPureMap` demands the
+normal form *filter after corner*, so what is actually needed is that
+*corners* compose; see `isCornerFor_comp`.)
+
+**⇒** `φ = c ∘ h` for a filter `c` and an abstract corner `h`, which
+`pext_corner_iso` (**169IV**) identifies with the standard corner `h_p`,
+`p = ⌊a⌋`, up to an ncp-isomorphism; **171II** `paschke_corner` and
+**169XI**.1 `dils_filter_basics_1` then assemble a Paschke dilation of `φ`
+whose `ϱ`-leg is the standard corner `h_{⌈⌈p⌉⌉}`, visibly surjective.  Any
+other dilation has an `ϱ` differing from it by a bijective nmiu-map
+(`paschke_unique_up_to_iso`, **140VIII**), hence is surjective too.  This is
+the same opening as **172X** `pure_ncp_extreme`. -/
 theorem paschke_pure [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     (φ : NCPMap A B) (D : PaschkeTriple A B)
     (hD : IsPaschkeDilationOf D ⇑φ) :
-    IsPureMap φ ↔ Function.Surjective ⇑D.ρ :=
-  sorry
+    IsPureMap φ ↔ Function.Surjective ⇑D.ρ := by
+  classical
+  let _ := D.vn
+  constructor
+  · rintro ⟨C, iC, iP, iS, h, c, hcorner, hfilter, hcomp⟩
+    letI := iC; letI := iP; letI := iS
+    obtain ⟨a, hca⟩ := hcorner
+    obtain ⟨hp, v, u, hval, hvhp, hvu, huv⟩ := pext_corner_iso h a hca
+    set p : A := floor a with hpdef
+    letI : VonNeumannAlgebra (cornerSet A (cceil p)) :=
+      cornerSet_vonNeumannAlgebra A (cceil p)
+    obtain ⟨ρ₀, h₀, hρval, hh₀val, hD₀⟩ := paschke_corner p hp hval
+    obtain ⟨H₁, hH₁⟩ := exists_ncpComp v h₀
+    have hD₁ : IsPaschkeDilationOf
+        ⟨cornerSet A (cceil p), cornerSet_vonNeumannAlgebra A (cceil p), ρ₀, H₁⟩
+        (fun x => v (hp x)) :=
+      pext_dilation_target_iso ⇑hp _ hD₀ v u hvu huv H₁ hH₁
+    have hvhp' : (fun x => v (hp x)) = ⇑h := funext hvhp
+    rw [hvhp'] at hD₁
+    obtain ⟨H₂, hH₂, hD₂⟩ := dils_filter_basics_1 h _ hD₁ c hfilter
+    have hcomp' : (fun x => c (h x)) = ⇑φ := (funext hcomp).symm
+    rw [hcomp'] at hD₂
+    have hρ0surj : Function.Surjective ⇑ρ₀ := by
+      intro y
+      exact ⟨y.1, Subtype.ext (by rw [hρval]; exact y.2)⟩
+    obtain ⟨ϑ, ⟨hbij, hϑρ, -⟩, -⟩ :=
+      paschke_unique_up_to_iso ⇑φ
+        ⟨cornerSet A (cceil p), cornerSet_vonNeumannAlgebra A (cceil p), ρ₀, H₂⟩
+        D hD₂ hD
+    intro y
+    obtain ⟨w, hw⟩ := hbij.2 y
+    obtain ⟨x, hx⟩ := hρ0surj w
+    exact ⟨x, by rw [← hϑρ x, hx, hw]⟩
+  · intro hsurj
+    -- `ϱ`, as an ncp-map, is a corner of a central projection (**170IV**.1)
+    obtain ⟨ϱc, hϱc⟩ := pcorner_exists_ncpOfNmiu D.ρ
+    obtain ⟨z, -, -, hzcorner⟩ := surjective_nmiu_1 D.ρ hsurj ϱc hϱc
+    have hϱ1 : (ϱc 1 : D.P) = 1 := by rw [hϱc]; exact map_one D.ρ.toStarAlgHom
+    -- `h` is pure (**170II**.2): `h = c ∘ k` with `k` a corner, `c` a filter
+    obtain ⟨C, iC, iP, iS, k, c, hkcorner, hcfilter, hkc⟩ :=
+      dils_examples_pure_2 φ D hD
+    letI := iC; letI := iP; letI := iS
+    obtain ⟨a₂, ha₂⟩ := hkcorner
+    -- an effect `e ≤ ⌊z⌋ ≤ z` of `A` with `ϱ(e) = a₂`
+    obtain ⟨hp₀, v₀, u₀, hval₀, hv₀, hv₀u₀, hu₀v₀⟩ := pext_corner_iso ϱc z hzcorner
+    have hzfloor : floor z ∈ effects A := ⟨(floor_spec hzcorner.1).1.nonneg,
+      (floor_spec hzcorner.1).1.le_one⟩
+    have hp₀1 : (hp₀ (1 : A) : cornerSet A (floor z)) = 1 := by
+      refine Subtype.ext ?_
+      rw [hval₀, mul_one]
+      exact (floor_spec hzcorner.1).1.isIdempotentElem.eq
+    have hv₀1 : (v₀ (1 : cornerSet A (floor z)) : D.P) = 1 := by
+      rw [← hp₀1, hv₀ 1, hϱ1]
+    have hu₀1 : (u₀ (1 : D.P) : cornerSet A (floor z)) = 1 := by
+      rw [← hv₀1, hu₀v₀]
+    set e : A := (u₀ a₂).1 with hedef
+    have hu₀mono : ∀ x y : D.P, x ≤ y → u₀ x ≤ u₀ y :=
+      fun _ _ hxy => (ncpPos u₀).monotone hxy
+    have he0 : (0 : A) ≤ e := by
+      have h0 : (0 : cornerSet A (floor z)) = u₀ 0 :=
+        (map_zero u₀.toCompletelyPositiveMap).symm
+      have h1 : (0 : cornerSet A (floor z)) ≤ u₀ a₂ := by
+        rw [h0]; exact hu₀mono _ _ ha₂.1.1
+      exact h1
+    have hefl : e ≤ floor z := by
+      have h1 : u₀ a₂ ≤ (1 : cornerSet A (floor z)) := by
+        rw [← hu₀1]; exact hu₀mono _ _ ha₂.1.2
+      exact h1
+    have hez : e ≤ z := hefl.trans (floor_le hzcorner.1)
+    have he : e ∈ effects A := ⟨he0, hez.trans hzcorner.1.2⟩
+    have hϱe : (ϱc e : D.P) = a₂ := by
+      have h1 : hp₀ e = u₀ a₂ := Subtype.ext (by rw [hval₀]; exact (u₀ a₂).2)
+      rw [← hv₀ e, h1, hv₀u₀]
+    -- assemble
+    obtain ⟨kϱ, hkϱ⟩ := exists_ncpComp k ϱc
+    refine ⟨C, iC, iP, iS, kϱ, c,
+      ⟨e, isCornerFor_comp ϱc z hzcorner hϱ1 k a₂ ha₂ e he hez hϱe kϱ hkϱ⟩,
+      hcfilter, fun x => ?_⟩
+    rw [hkϱ, hϱc, ← hkc, hD.1 x]
 
 end PaschkePure
 
@@ -3591,8 +4371,9 @@ theorem nmiu_ncp_extreme (ϱ : NMIUMap A B) (φ : NCPMap A B)
     NCPExtreme φ := by
   -- The author's proof (**172IX**) is: `(ℬ, ϱ, id)` is a Paschke dilation of
   -- `ϱ` and `id` is injective, so **172III** `ncp_extreme_paschke` applies.
-  -- That theorem is still `sorry`, so we argue directly instead, by strict
-  -- convexity of `b ↦ b* b` together with Choi's inequality **34XVIII**.1.
+  -- That theorem was still `sorry` when this was written (it has since been
+  -- proved, below), so we argue directly instead, by strict convexity of
+  -- `b ↦ b* b` together with Choi's inequality **34XVIII**.1.
   intro l hl0 hl1 φ₁ φ₂ h1 h2 hsum
   -- Kadison–Schwarz for a unital ncp-map (**34XVIII**.1 `choi_1`).
   have kad : ∀ ψ : NCPMap A B, ψ 1 = 1 → ∀ a : A,
@@ -3689,100 +4470,6 @@ theorem nmiu_ncp_extreme (ϱ : NMIUMap A B) (φ : NCPMap A B)
     rw [key a, hNL, ← add_smul] at hs
     rw [hs, hLdef]
     rw [show (l : ℂ) + (1 - (l : ℂ)) = 1 by ring, one_smul]
-
-/-! ### Infrastructure for **172X**: from an abstract corner to a standard one
-
-`IsPureMap` gives an *abstract* corner `h : A → C`; the thesis's proof of
-172X runs through proc.tex 100III `pure-fundamental`, which hands it the
-*standard* corner `h_p` directly.  The gap is closed by **169IV**: `h_p` for
-`p = ⌊a⌋` is a corner for the same effect `a`, so the two universal
-properties produce mutually inverse ncp-maps `u`, `v` between `C` and `pAp`
-with `v ∘ h_p = h` (`pext_corner_iso`).  `v` is an ncp-*isomorphism* but
-**not** unital in general (QUESTIONS **D7**: `λ·h_p` is again a corner under
-**169II** as printed), which is why the Paschke dilation is transported along
-`v` at the level of the *dilating triple* (`pext_dilation_target_iso`) rather
-than by claiming that `c ∘ v` is again a filter — the latter is exactly the
-step that D7 puts in doubt. -/
-
-/-- The identity as an ncp-map. -/
-private theorem pext_exists_ncpId (P : Type*) [CStarAlgebra P] [PartialOrder P]
-    [StarOrderedRing P] : ∃ f : NCPMap P P, ∀ a : P, f a = a :=
-  ⟨{ toCompletelyPositiveMap :=
-       { toLinearMap := LinearMap.id
-         map_cstarMatrix_nonneg' := fun _ _ hM => by simpa using hM }
-     preservesDirSups' := by
-       intro D s hne _ hlub
-       exact isLUB_coe_of_isLUB hne hlub }, fun _ => rfl⟩
-
-/-- **169IV** + the universal property of **169II**: a corner `h` for `a` is
-the standard corner `h_{⌊a⌋}` followed by an ncp-isomorphism `v`. -/
-private theorem pext_corner_iso {P C : Type u} [CStarAlgebra P] [PartialOrder P]
-    [StarOrderedRing P] [VonNeumannAlgebra P] [CStarAlgebra C] [PartialOrder C]
-    [StarOrderedRing C] (h : NCPMap P C) (a : P) (hc : IsCornerFor h a) :
-    ∃ (hp : NCPMap P (cornerSet P (floor a)))
-      (v : NCPMap (cornerSet P (floor a)) C)
-      (u : NCPMap C (cornerSet P (floor a))),
-      (∀ b : P, (hp b).1 = floor a * b * floor a) ∧
-      (∀ x : P, v (hp x) = h x) ∧
-      (∀ y : C, v (u y) = y) ∧ ∀ z : cornerSet P (floor a), u (v z) = z := by
-  obtain ⟨hp, hval, hpc⟩ := standard_corner_dils a hc.1
-  obtain ⟨v, hv, -⟩ :=
-    hpc.2.2 C inferInstance inferInstance inferInstance h hc.2.1
-  obtain ⟨u, hu, -⟩ :=
-    hc.2.2 (cornerSet P (floor a)) inferInstance inferInstance inferInstance hp
-      hpc.2.1
-  refine ⟨hp, v, u, hval, hv, ?_, ?_⟩
-  · -- `v ∘ u = id`, both mediating `h` through `h`
-    obtain ⟨w, hw⟩ := exists_ncpComp v u
-    obtain ⟨idm, hidm⟩ := pext_exists_ncpId C
-    obtain ⟨w₀, -, huniq⟩ := hc.2.2 C inferInstance inferInstance inferInstance h hc.2.1
-    have h1 : w = idm := (huniq w fun x => by rw [hw, hu, hv]).trans
-      (huniq idm fun x => by rw [hidm]).symm
-    intro y
-    have := DFunLike.congr_fun h1 y
-    rw [hw, hidm] at this
-    exact this
-  · -- `u ∘ v = id`, both mediating `h_p` through `h_p`
-    obtain ⟨w, hw⟩ := exists_ncpComp u v
-    obtain ⟨idm, hidm⟩ := pext_exists_ncpId (cornerSet P (floor a))
-    obtain ⟨w₀, -, huniq⟩ := hpc.2.2 (cornerSet P (floor a)) inferInstance
-      inferInstance inferInstance hp hpc.2.1
-    have h1 : w = idm := (huniq w fun x => by rw [hw, hv, hu]).trans
-      (huniq idm fun x => by rw [hidm]).symm
-    intro z
-    have := DFunLike.congr_fun h1 z
-    rw [hw, hidm] at this
-    exact this
-
-/-- A Paschke dilation stays one when its `h`-leg is post-composed with an
-ncp-isomorphism of the target: mediate through `u ∘ h'` and use `v ∘ u = id`
-both ways.  (No unitality of `u`, `v` is needed.) -/
-private theorem pext_dilation_target_iso {P B₁ B₂ : Type u} [CStarAlgebra P]
-    [PartialOrder P] [StarOrderedRing P] [CStarAlgebra B₁] [PartialOrder B₁]
-    [StarOrderedRing B₁] [CStarAlgebra B₂] [PartialOrder B₂] [StarOrderedRing B₂]
-    (ψ : P → B₁) (D : PaschkeTriple P B₁) (hD : IsPaschkeDilationOf D ψ)
-    (v : NCPMap B₁ B₂) (u : NCPMap B₂ B₁) (hvu : ∀ y : B₂, v (u y) = y)
-    (huv : ∀ z : B₁, u (v z) = z) (H : NCPMap D.P B₂)
-    (hH : ∀ x : D.P, H x = v (D.h x)) :
-    IsPaschkeDilationOf ⟨D.P, D.vn, D.ρ, H⟩ fun x => v (ψ x) := by
-  refine ⟨fun x => ?_, fun D' hD' => ?_⟩
-  · show (H (D.ρ x) : B₂) = v (ψ x)
-    rw [hH, hD.1 x]
-  obtain ⟨k, hk⟩ := exists_ncpComp u D'.h
-  have hk1 : ∀ x : P, (k (D'.ρ x) : B₁) = ψ x := by
-    intro x
-    rw [hk, hD' x, huv]
-  obtain ⟨σ, ⟨hσρ, hσh⟩, hσuniq⟩ := hD.2 ⟨D'.P, D'.vn, D'.ρ, k⟩ hk1
-  refine ⟨σ, ⟨hσρ, fun c => ?_⟩, fun σ' hσ' => ?_⟩
-  · show (H (σ c) : B₂) = D'.h c
-    rw [hH, hσh c]
-    show (v (k c) : B₂) = D'.h c
-    rw [hk, hvu]
-  · refine hσuniq σ' ⟨hσ'.1, fun c => ?_⟩
-    show (D.h (σ' c) : B₁) = k c
-    have h1 : (H (σ' c) : B₂) = D'.h c := hσ'.2 c
-    rw [hH] at h1
-    rw [hk, ← h1, huv]
 
 /-- **172X** (dils.tex:6520, Theorem): every pure ncp-map is
 ncp-extreme.
@@ -3928,8 +4615,20 @@ theorem ncp_extreme_comp [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     (φ : NCPMap A B) :
     ∃ (C : Type u) (_ : CStarAlgebra C) (_ : PartialOrder C)
       (_ : StarOrderedRing C) (ψ₁ : NCPMap A C) (ψ₂ : NCPMap C B),
-      NCPExtreme ψ₁ ∧ NCPExtreme ψ₂ ∧ ∀ a, φ a = ψ₂ (ψ₁ a) :=
-  sorry
+      NCPExtreme ψ₁ ∧ NCPExtreme ψ₂ ∧ ∀ a, φ a = ψ₂ (ψ₁ a) := by
+  classical
+  obtain ⟨M⟩ := existence_paschke φ
+  set D : PaschkeTriple A B :=
+    ⟨(Ba B M.X)ᵐᵒᵖ,
+      @vonNeumannAlgebra_mulOpposite (Ba B M.X) _ _ _
+        (ba_vonNeumannAlgebra M.selfDual), M.ρ, M.h⟩ with hDdef
+  have hD : IsPaschkeDilationOf D ⇑φ := existence_paschke_5 φ M
+  let _ := D.vn
+  obtain ⟨ϱ, hϱ⟩ := pcorner_exists_ncpOfNmiu D.ρ
+  exact ⟨D.P, inferInstance, inferInstance, inferInstance, ϱ, D.h,
+    nmiu_ncp_extreme D.ρ ϱ hϱ,
+    pure_ncp_extreme D.h (dils_examples_pure_2 φ D hD),
+    fun a => by rw [hϱ, hD.1 a]⟩
 
 end Extreme
 

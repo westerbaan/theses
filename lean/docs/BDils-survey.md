@@ -1027,3 +1027,54 @@ and the second instance of the *same* defect: a universal property stated
 among ncp-maps where the thesis's argument needs ncpsu-maps (the first was
 B11, `IsFilterFor`, ruled on 2026-08-16).  Worth a sweep of every universal
 property in dils.tex parsecs 1690–1700 for the same slip.
+
+## Session 71 — **169X was never off the import path**; `Pure.lean` 6 → 2
+
+**`B/Dils` 19 → 15** (HilbertModules 0, SelfDualCompletion 0, Stinespring 1,
+Kaplansky 4, Paschke 1, SelfDual 7, **Pure 2**; 0 errors per file, compiled
+individually).  Closed, all axiom-clean: **169X** `dils_stand_filter`,
+**170II**.2 `dils_examples_pure_2`, **171VII** `paschke_pure`, **172XII**
+`ncp_extreme_comp`.
+
+**The row for 169X — "cited to proc.tex 96V, which is proved but off
+`B/Dils`'s import path, so it must be redone" — was misleading and cost six
+sessions.**  `B/Dils/HilbertModules.lean` imports `A/VN/NormalFunctionals`,
+which imports **`A/VN/Division`**; so `div`, `ldiv`, `sequential_douglas`
+(81VI), `div_approx` (81VII), `approximate_pseudoinverse`,
+`polar_decomposition`, `rangeProj`, `mult_cancellation_3` are *all* already
+available.  Only two of `A/Proc.canonicalFilter_factor`'s inputs are really
+in `A/Proc`: `ncp_uwlim_1` (96III.1) and the private
+`isApproxPseudoinverse_star`, ~55 lines between them.  The port is ~330
+private lines in `Pure.lean` with **no new import**.
+
+Three statements fell out of it immediately, each by the thesis's own proof:
+170II.2 (dils.tex:6205, needing one elementary new lemma — a corner
+precomposed with a bijective nmiu-map is a corner), 172XII (a Corollary the
+thesis leaves unproved; `ϱ` extreme by 172VIII, `h` pure by 170II.2 hence
+extreme by 172X), and 171VII.  171VII's ⇐ half needed one thing the thesis
+takes for granted — that **corners compose** — supplied by
+`isCornerFor_comp` without proc.tex 100III `pure-fundamental`.
+
+⚠️ **170II**.2 gained two `[VonNeumannAlgebra]` binders**, exactly as 169V
+did in session 70 and 170IV.1 did under QUESTIONS **D5**.
+
+**Still blocked, re-derived this session: 165VI `ba_ext_tensor_pres` and
+hence 167I.**  116VII `tensor_characterization` being proved does not
+release them: it is in `A/Proc/Tensor.lean`, which is *not* in `B/Dils`'s
+transitive import closure (unlike `A/VN/Division`) and whose own proof rests
+on 112XI/114I/114II and the constructed `vnTensor`, none of which `B/Dils`
+has — `B/Dils` axiomatizes the tensor product as the hypothesis
+`IsVNTensor t`.  The blocking clause is `exists_productFunctional` (product
+functionals for *every* pair of np-functionals, where 165IX/165X give only
+the vector states).  Needs its own copy of 116VII, or an author ruling on
+the import path.
+
+**Next gates.**  **162II `total_mv_order`** is still the only self-contained
+item, and one of its recorded external inputs, `polar_decomposition`, turns
+out to be on the import path already; what it really needs is the Zorn
+argument over infinite orthogonal families of partial isometries plus
+`summing-partial-isometries`, which is in the tree under no name.  162IV
+`selfdual_normalish_form` sits on 162II and adds two further Zorn arguments.
+**155II `ksgns`** is still the whole of `Paschke.lean`.  170II.1
+`dils_examples_pure_1` now has 171VII but still wants the Stinespring
+classification of pure maps `𝒷(ℋ) → 𝒷(𝒦)`.
