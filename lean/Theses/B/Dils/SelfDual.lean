@@ -2985,6 +2985,551 @@ theorem total_mv_order [VonNeumannAlgebra ℬ] (hF : IsFactor ℬ) (p q : ℬ)
 variable {X : Type v}
   [NormedAddCommGroup X] [NormedSpace ℂ X] [SMul ℬ X] [CStarModule ℬ X]
 
+/-! ### The normal form **162IV**: the two Zorn arguments of 162V–162VII
+
+**Divergence from the thesis, class 2** (same argument, restructured).  The
+thesis's 162VI produces a whole new *orthonormal basis* of `X` containing a
+vector `e` with `⟨e,e⟩ = 1` — the basis `D ∪ (E₁ ∖ {e₁})` built from
+`d₀ = e₁q`, `d₁ = e₀ + e₁v*`.  162VII, its only consumer, uses **nothing but
+the vector `d₁`**, so `normalish_step` below stops there: the second vector
+`d₀ = e₁q` and the verification that `{d₀,d₁}` spans `{e₀,e₁}^⊥⊥` are not
+transcribed.
+
+Two further points where the transcription is not literal.
+
+* The thesis's poset `P` of subsets `U ⊆ E₀ × ℬ` is read here as a poset of
+  **partial functions** (the extra clause `q.1 = q'.1 → q.2 = q'.2`).
+  Without it the claim `⟨e₀,e₀⟩ = ∑_{(e,u) ∈ U} u^*u` is **false**: two pairs
+  `(e,u)`, `(e,u')` with the same `e` contribute a cross term
+  `u^*u'`, which need not vanish (take `u^*u ⊥ u'^*u'` but `uu^* = u'u'^*`
+  infinite in `B(ℓ²)`).  The thesis's own use of `U₀` — one partial isometry
+  per basis vector — is the partial-function reading, and its maximality step
+  only ever adjoins a pair `(e₁,v)` with `e₁` outside the domain, so nothing
+  in 162VI is lost.  Recorded as a *nit*, not an erratum: the intended object
+  is unambiguous.
+* Orthogonality of the family `U` is expressed **pairwise**
+  (`(uu^*)(u'u'^*) = 0`) rather than by the sum condition
+  `∑_{(e,u) ∈ U} u^*u ≤ 1`; the two agree, because a finite sum of pairwise
+  orthogonal projections is a projection (`projx_sum`), and the pairwise form
+  makes the chain bound of Zorn's lemma trivial.
+
+Mirroring: in the tree `⟨x, b·y⟩ = b⟨x,y⟩`, so the thesis's `e·u` is `u^*•e`
+and its `u^*u ≤ 1`, `uu^* = ⟨e,e⟩` read as `bb^* ≤ 1`, `b^*b = ⟨e,e⟩`.  With
+that dictionary `MvNLe` is used exactly as printed. -/
+
+/-- An orthonormal family whose orthocomplement is trivial is an
+orthonormal *basis*.  Clause (a) of `IsONBasis` is **160IX**
+(`selfdual_orthn_basis`) — every `x` lies in `E^⊥⊥ = {0}^⊥ = X` — and
+clause (b) holds for *every* orthonormal family in a self-dual module
+(`exists_unTendsto_of_l2Summable`). -/
+theorem isONBasis_of_orthoCompl_eq_zero [VonNeumannAlgebra ℬ] [CompleteSpace X]
+    (hX : SelfDual ℬ X) {ι : Type v} {e : ι → X} (he : OrthonormalFam ℬ e)
+    (htriv : ∀ x : X, (∀ i, (inner ℬ (e i) x : ℬ) = 0) → x = 0) :
+    IsONBasis ℬ e := by
+  have hbdd : BddUnComplete ℬ X := bddUnComplete_of_selfDual hX
+  refine ⟨he, fun x => ?_, fun b hb => exists_unTendsto_of_l2Summable hbdd he b hb⟩
+  refine (selfdual_orthn_basis hX e he x).1 ?_
+  intro y hy
+  have hy0 : y = 0 := by
+    refine htriv y fun i => ?_
+    have h := hy (e i) ⟨i, rfl⟩
+    have h2 := congrArg star h
+    rwa [CStarModule.star_inner, star_zero] at h2
+  rw [hy0]
+  exact CStarModule.inner_zero_right
+
+/-- The orthocomplement of any set is closed under ultranorm limits. -/
+private theorem mem_orthoCompl_of_unTendsto [VonNeumannAlgebra ℬ] {κ : Type*}
+    {l : Filter κ} [l.NeBot] (V : Set X) (v : κ → X)
+    (hv : ∀ k, v k ∈ orthoCompl ℬ V) {y : X}
+    (h : UnTendsto (inner ℬ : X → X → ℬ) v l y) : y ∈ orthoCompl ℬ V := by
+  intro w hw
+  refine np_separating _ fun ω => ?_
+  have hbound : ∀ k, ‖ω (inner ℬ y w : ℬ)‖
+      ≤ unSeminorm ω (inner ℬ : X → X → ℬ) (v k - y)
+        * unSeminorm ω (inner ℬ : X → X → ℬ) w := by
+    intro k
+    have hsplit : (inner ℬ y w : ℬ) = inner ℬ (y - v k) w := by
+      rw [CStarModule.inner_sub_left, hv k w hw, sub_zero]
+    have hneg := unSeminorm_neg_inner (X := X) ω (v k - y)
+    rw [neg_sub] at hneg
+    have hb2 : ‖ω (inner ℬ y w : ℬ)‖
+        ≤ unSeminorm ω (inner ℬ : X → X → ℬ) (y - v k)
+          * unSeminorm ω (inner ℬ : X → X → ℬ) w := by
+      rw [hsplit]; exact unSeminorm_inner_le ω (cstarBInner ℬ X) _ _
+    rwa [hneg] at hb2
+  have hlim : Tendsto (fun k => unSeminorm ω (inner ℬ : X → X → ℬ) (v k - y)
+      * unSeminorm ω (inner ℬ : X → X → ℬ) w) l (𝓝 0) := by
+    have := (h ω).mul_const (unSeminorm ω (inner ℬ : X → X → ℬ) w)
+    rwa [zero_mul] at this
+  have hle : ‖ω (inner ℬ y w : ℬ)‖ ≤ 0 :=
+    ge_of_tendsto hlim (Filter.Eventually.of_forall hbound)
+  simpa using le_antisymm hle (norm_nonneg _)
+
+/-- **149VIII** relativized to the orthocomplement `W = V^⊥` (the Zorn
+argument inside `exists_orthogonal_decomp`, extracted): `W` carries a
+maximal orthonormal subset `E`, and maximality says exactly that an element
+of `W` orthogonal to all of `E` is `0`. -/
+private theorem exists_max_orthonormal_orthoCompl [VonNeumannAlgebra ℬ]
+    [CompleteSpace X] (hX : SelfDual ℬ X) (V : Set X) :
+    ∃ E : Set X, E ⊆ orthoCompl ℬ V ∧
+      (∀ y ∈ E, ∀ z ∈ E, y ≠ z → (inner ℬ y z : ℬ) = 0) ∧
+      (∀ y ∈ E, IsStarProjection (inner ℬ y y : ℬ) ∧ (inner ℬ y y : ℬ) ≠ 0) ∧
+      (∀ z ∈ orthoCompl ℬ V, (∀ y ∈ E, (inner ℬ y z : ℬ) = 0) → z = 0) := by
+  classical
+  set W : Set X := orthoCompl ℬ V with hWdef
+  have hbdd : BddUnComplete ℬ X := bddUnComplete_of_selfDual hX
+  obtain ⟨E, hEmax⟩ := zorn_subset
+    {E : Set X | E ⊆ W ∧ (∀ y ∈ E, ∀ z ∈ E, y ≠ z → (inner ℬ y z : ℬ) = 0)
+      ∧ ∀ y ∈ E, IsStarProjection (inner ℬ y y : ℬ) ∧ (inner ℬ y y : ℬ) ≠ 0}
+    (fun c hc hchain => by
+      refine ⟨⋃₀ c, ⟨?_, ?_, ?_⟩, fun s hs => Set.subset_sUnion_of_mem hs⟩
+      · rintro y ⟨s, hs, hys⟩
+        exact (hc hs).1 hys
+      · rintro y ⟨s₁, hs₁, hys₁⟩ z ⟨s₂, hs₂, hzs₂⟩ hyz
+        rcases hchain.total hs₁ hs₂ with h12 | h21
+        · exact (hc hs₂).2.1 y (h12 hys₁) z hzs₂ hyz
+        · exact (hc hs₁).2.1 y hys₁ z (h21 hzs₂) hyz
+      · rintro y ⟨s₁, hs₁, hys₁⟩
+        exact (hc hs₁).2.2 y hys₁)
+  obtain ⟨hEW, hEorth, hEproj⟩ := hEmax.1
+  refine ⟨E, hEW, hEorth, hEproj, ?_⟩
+  intro z hzW hzo
+  by_contra hne
+  obtain ⟨u, huu, hbu, cc, hcc⟩ := polar_decomposition hbdd z
+  have huW : u ∈ W := by
+    refine mem_orthoCompl_of_unTendsto (l := atTop) V (fun N => cc N • z)
+      (fun N => ?_) hcc
+    intro w hw
+    rw [CStarModule.inner_op_smul_left, hzW w hw, zero_mul]
+  have hzz : (inner ℬ z z : ℬ) ≠ 0 := fun h0 =>
+    hne ((CStarModule.inner_self (A := ℬ)).mp h0)
+  have hbne : CFC.sqrt (inner ℬ z z : ℬ) ≠ 0 := by
+    intro h0
+    refine hzz ?_
+    rw [← CFC.sqrt_mul_sqrt_self (inner ℬ z z : ℬ)
+      CStarModule.inner_self_nonneg, h0, mul_zero]
+  have hqproj : IsStarProjection (inner ℬ u u : ℬ) := by
+    rw [huu]; exact (ceill_basic_1 _).1.1
+  have hqne : (inner ℬ u u : ℬ) ≠ 0 := by
+    rw [huu]
+    intro h0
+    have h1 := (ceill_basic_1 (CFC.sqrt (inner ℬ z z : ℬ))).1.2
+    rw [h0, mul_zero] at h1
+    exact hbne h1.symm
+  have horthu : ∀ y ∈ E, (inner ℬ y u : ℬ) = 0 := fun y hy =>
+    inner_eq_zero_of_polar huu hbu (hzo y hy)
+  have huE : u ∉ E := fun h => hqne (horthu u h)
+  have hEu : (insert u E) ∈ {E' : Set X | E' ⊆ W ∧
+      (∀ y ∈ E', ∀ z ∈ E', y ≠ z → (inner ℬ y z : ℬ) = 0)
+      ∧ ∀ y ∈ E', IsStarProjection (inner ℬ y y : ℬ)
+        ∧ (inner ℬ y y : ℬ) ≠ 0} := by
+    refine ⟨?_, ?_, ?_⟩
+    · rintro y (rfl | hy)
+      · exact huW
+      · exact hEW hy
+    · rintro y (rfl | hy) z (rfl | hz) hne'
+      · exact absurd rfl hne'
+      · have h5 := congrArg star (horthu z hz)
+        rwa [CStarModule.star_inner, star_zero] at h5
+      · exact horthu y hy
+      · exact hEorth y hy z hz hne'
+    · rintro y (rfl | hy)
+      · exact ⟨hqproj, hqne⟩
+      · exact hEproj y hy
+  exact huE (hEmax.2 hEu (Set.subset_insert u E) (Set.mem_insert u E))
+
+/-! ### Projection arithmetic for **162V** -/
+
+section NormalishProj
+
+variable [VonNeumannAlgebra ℬ]
+
+private theorem projx_zero : IsStarProjection (0 : ℬ) := by
+  constructor
+  · show (0 : ℬ) * 0 = 0; simp
+  · show star (0 : ℬ) = 0; simp
+
+/-- A finite sum of pairwise orthogonal projections is a projection. -/
+private theorem projx_sum {κ : Type*} (g : κ → ℬ)
+    (hg : ∀ i, IsStarProjection (g i)) (s : Finset κ)
+    (horth : ∀ i ∈ s, ∀ j ∈ s, i ≠ j → g i * g j = 0) :
+    IsStarProjection (∑ i ∈ s, g i) := by
+  classical
+  induction s using Finset.induction_on with
+  | empty => simpa using projx_zero (ℬ := ℬ)
+  | insert a s ha ih =>
+      rw [Finset.sum_insert ha]
+      have horth' : ∀ i ∈ s, ∀ j ∈ s, i ≠ j → g i * g j = 0 := fun i hi j hj hij =>
+        horth i (Finset.mem_insert_of_mem hi) j (Finset.mem_insert_of_mem hj) hij
+      have hax : ∀ j ∈ s, g a * g j = 0 := fun j hj =>
+        horth a (Finset.mem_insert_self a s) j (Finset.mem_insert_of_mem hj)
+          (fun h => ha (h ▸ hj))
+      have h1 : g a * ∑ j ∈ s, g j = 0 := by
+        rw [Finset.mul_sum]
+        exact Finset.sum_eq_zero hax
+      have h2 : (∑ j ∈ s, g j) * g a = 0 := by
+        have := congrArg star h1
+        rwa [star_mul, star_zero, (hg a).isSelfAdjoint.star_eq,
+          star_sum, Finset.sum_congr rfl (fun j _ => (hg j).isSelfAdjoint.star_eq)] at this
+      exact mvn_proj_add (hg a) (ih horth') h1 h2
+
+private theorem npnn (ω : NPFunctional ℬ) {a : ℬ} (ha : 0 ≤ a) : (0 : ℂ) ≤ ω a := by
+  have h : ω.toPositiveLinearMap 0 ≤ ω.toPositiveLinearMap a :=
+    ω.toPositiveLinearMap.monotone ha
+  rwa [map_zero] at h
+
+/-- If `ω(a − P k) → 0` for every np-functional `ω` and every `P k` is `≤ c`,
+then `a ≤ c`.  (Least-upper-bound half of "an ultraweak limit of an
+increasing net is its supremum".) -/
+private theorem le_of_np_limit {κ : Type*} {l : Filter κ} [l.NeBot] {P : κ → ℬ}
+    {a c : ℬ} (hasa : IsSelfAdjoint a) (hcsa : IsSelfAdjoint c)
+    (hPc : ∀ k, P k ≤ c)
+    (hlim : ∀ ω : NPFunctional ℬ, Tendsto (fun k => ω (a - P k)) l (𝓝 0)) :
+    a ≤ c := by
+  refine np_orderSeparating a c hasa hcsa fun ω => ?_
+  have hF : Tendsto (fun k => ω (c - P k)) l (𝓝 (ω c - ω a)) := by
+    have hrw : ∀ k, ω (c - P k) = (ω c - ω a) + ω (a - P k) := by
+      intro k
+      rw [npFunctional_sub, npFunctional_sub]
+      ring
+    simp only [hrw]
+    simpa using (tendsto_const_nhds (x := ω c - ω a) (f := l)).add (hlim ω)
+  have hnn : ∀ k, (0 : ℂ) ≤ ω (c - P k) := fun k =>
+    npnn ω (sub_nonneg.mpr (hPc k))
+  have hre : (0 : ℝ) ≤ (ω c - ω a).re := by
+    refine ge_of_tendsto ((Complex.continuous_re.tendsto _).comp hF) ?_
+    exact Filter.Eventually.of_forall fun k => (Complex.le_def.mp (hnn k)).1
+  have him : (ω c - ω a).im = 0 := by
+    have h1 : Tendsto (fun k => (ω (c - P k)).im) l (𝓝 (ω c - ω a).im) :=
+      (Complex.continuous_im.tendsto _).comp hF
+    have h2 : ∀ k, (ω (c - P k)).im = 0 := fun k => ((Complex.le_def.mp (hnn k)).2).symm
+    simp only [h2] at h1
+    exact tendsto_nhds_unique h1 tendsto_const_nhds
+  rw [← sub_nonneg]
+  exact Complex.le_def.mpr ⟨by simpa using hre, by simpa using him.symm⟩
+
+end NormalishProj
+
+section Step
+
+variable [VonNeumannAlgebra ℬ] [CompleteSpace X]
+
+private theorem projx_one : IsStarProjection (1 : ℬ) := by
+  constructor
+  · show (1 : ℬ) * 1 = 1; simp
+  · show star (1 : ℬ) = 1; simp
+
+private theorem npim (ω : NPFunctional ℬ) {a : ℬ} (ha : 0 ≤ a) : (ω a).im = 0 := by
+  simpa using ((Complex.le_def.mp (npnn ω ha)).2).symm
+
+/-- **162VI** (`selfdual-normalish-form1`, dils.tex:4760), in the only form
+**162VII** consumes: a non-zero ultranorm-closed submodule `W = V^⊥` of a
+self-dual Hilbert ℬ-module over a *factor* either contains a vector `d` with
+`⟨d,d⟩ = 1`, or is generated by a single vector `e`. -/
+private theorem normalish_step (hF : IsFactor ℬ) (hX : SelfDual ℬ X) (V : Set X)
+    (hWne : ∃ z ∈ orthoCompl ℬ V, z ≠ 0) :
+    (∃ d ∈ orthoCompl ℬ V, (inner ℬ d d : ℬ) = 1) ∨
+    (∃ e ∈ orthoCompl ℬ V, IsStarProjection (inner ℬ e e : ℬ) ∧
+      (inner ℬ e e : ℬ) ≠ 0 ∧
+      ∀ z ∈ orthoCompl ℬ V, (inner ℬ e z : ℬ) = 0 → z = 0) := by
+  classical
+  obtain ⟨z₀, hz₀, hz₀ne⟩ := hWne
+  have hbdd : BddUnComplete ℬ X := bddUnComplete_of_selfDual hX
+  obtain ⟨hW0, hWadd, hWb, hWc, hWcl⟩ := hilbmod_projthm_1 hX V
+  obtain ⟨E₀, hE₀W, hE₀orth, hE₀proj, hE₀max⟩ :=
+    exists_max_orthonormal_orthoCompl hX V
+  -- the poset of partial absorptions `U ⊆ E₀ × ℬ`
+  set Pset : Set (Set (X × ℬ)) :=
+    {U | (∀ q ∈ U, q.1 ∈ E₀) ∧
+         (∀ q ∈ U, ∀ q' ∈ U, q.1 = q'.1 → q.2 = q'.2) ∧
+         (∀ q ∈ U, star q.2 * q.2 = (inner ℬ q.1 q.1 : ℬ)) ∧
+         (∀ q ∈ U, ∀ q' ∈ U, q ≠ q' →
+            (q.2 * star q.2) * (q'.2 * star q'.2) = 0)} with hPsetdef
+  obtain ⟨U₀, hU₀max⟩ := zorn_subset Pset (fun c hc hchain => by
+    refine ⟨⋃₀ c, ⟨?_, ?_, ?_, ?_⟩, fun s hs => Set.subset_sUnion_of_mem hs⟩
+    · rintro q ⟨s, hs, hqs⟩; exact (hc hs).1 q hqs
+    · rintro q ⟨s₁, hs₁, h₁⟩ q' ⟨s₂, hs₂, h₂⟩ heq
+      rcases hchain.total hs₁ hs₂ with h12 | h21
+      · exact (hc hs₂).2.1 q (h12 h₁) q' h₂ heq
+      · exact (hc hs₁).2.1 q h₁ q' (h21 h₂) heq
+    · rintro q ⟨s, hs, hqs⟩; exact (hc hs).2.2.1 q hqs
+    · rintro q ⟨s₁, hs₁, h₁⟩ q' ⟨s₂, hs₂, h₂⟩ hne
+      rcases hchain.total hs₁ hs₂ with h12 | h21
+      · exact (hc hs₂).2.2.2 q (h12 h₁) q' h₂ hne
+      · exact (hc hs₁).2.2.2 q h₁ q' (h21 h₂) hne)
+  obtain ⟨hU₀E, hU₀fn, hU₀pi, hU₀orth⟩ := hU₀max.1
+  set f : ↥U₀ → X := fun i => (i : X × ℬ).1 with hfdef
+  set b : ↥U₀ → ℬ := fun i => (i : X × ℬ).2 with hbdef
+  have hff : ∀ i : ↥U₀, (inner ℬ (f i) (f i) : ℬ) = star (b i) * b i :=
+    fun i => (hU₀pi _ i.2).symm
+  have hbpi : ∀ i : ↥U₀, IsPartialIsometry ℬ (b i) := by
+    intro i
+    refine ((partial_isometry_equivalents (b i)).out 1 0).mp ?_
+    rw [hU₀pi _ i.2]
+    exact (hE₀proj _ (hU₀E _ i.2)).1
+  have hfne : ∀ i j : ↥U₀, i ≠ j → f i ≠ f j := by
+    intro i j hij hf
+    exact hij (Subtype.ext (Prod.ext hf (hU₀fn _ i.2 _ j.2 hf)))
+  have horth : OrthonormalFam ℬ f := by
+    refine ⟨fun i j hij => hE₀orth _ (hU₀E _ i.2) _ (hU₀E _ j.2) (hfne i j hij),
+      fun i => hE₀proj _ (hU₀E _ i.2)⟩
+  have habs : ∀ i : ↥U₀, b i * (inner ℬ (f i) (f i) : ℬ) = b i := by
+    intro i
+    rw [hff i, ← mul_assoc]
+    exact ((partial_isometry_equivalents (b i)).out 0 2).mp (hbpi i)
+  have hrproj : ∀ i : ↥U₀, IsStarProjection (b i * star (b i)) := fun i =>
+    ((partial_isometry_equivalents (b i)).out 0 3).mp (hbpi i)
+  have hPproj : ∀ s : Finset ↥U₀, IsStarProjection (∑ i ∈ s, b i * star (b i)) := by
+    intro s
+    refine projx_sum _ hrproj s fun i _ j _ hij => ?_
+    exact hU₀orth _ i.2 _ j.2 (fun h => hij (Subtype.ext h))
+  have hL2 : L2Summable ℬ b := by
+    exact ⟨‖(1 : ℬ)‖, fun s => CStarAlgebra.norm_le_norm_of_nonneg_of_le
+      (hPproj s).nonneg (hPproj s).le_one⟩
+  obtain ⟨e₀, he₀⟩ := exists_unTendsto_of_l2Summable hbdd horth b hL2
+  have hvsW : ∀ s : Finset ↥U₀, (∑ i ∈ s, b i • f i) ∈ orthoCompl ℬ V := by
+    intro s
+    induction s using Finset.induction_on with
+    | empty => simpa using hW0
+    | insert a s ha ih =>
+        rw [Finset.sum_insert ha]
+        exact hWadd _ (hWb (b a) _ (hE₀W (hU₀E _ a.2))) _ ih
+  have he₀W : e₀ ∈ orthoCompl ℬ V := mem_orthoCompl_of_unTendsto V _ hvsW he₀
+  have hfe₀ : ∀ j : ↥U₀, (inner ℬ (f j) e₀ : ℬ) = b j :=
+    fun j => inner_of_unTendsto_sum_smul horth b habs he₀ j
+  set p₀ : ℬ := (inner ℬ e₀ e₀ : ℬ) with hp₀def
+  have hp₀nn : (0 : ℬ) ≤ p₀ := CStarModule.inner_self_nonneg
+  have hp₀sa : IsSelfAdjoint p₀ := IsSelfAdjoint.of_nonneg hp₀nn
+  -- the difference `p₀ − ∑_{i∈s} bᵢbᵢ*` is a Gram value, hence `≥ 0`
+  have hdiff : ∀ s : Finset ↥U₀,
+      (inner ℬ (e₀ - ∑ i ∈ s, b i • f i) (e₀ - ∑ i ∈ s, b i • f i) : ℬ)
+        = p₀ - ∑ i ∈ s, b i * star (b i) := by
+    intro s
+    have h1 : (inner ℬ (∑ i ∈ s, b i • f i) (∑ i ∈ s, b i • f i) : ℬ)
+        = ∑ i ∈ s, b i * star (b i) := inner_sum_smul_self horth.1 b habs s
+    have h2 : (inner ℬ (∑ i ∈ s, b i • f i) e₀ : ℬ) = ∑ i ∈ s, b i * star (b i) := by
+      rw [CStarModule.inner_sum_left]
+      exact Finset.sum_congr rfl fun i _ => by
+        rw [CStarModule.inner_op_smul_left, hfe₀ i]
+    have h3 : (inner ℬ e₀ (∑ i ∈ s, b i • f i) : ℬ) = ∑ i ∈ s, b i * star (b i) := by
+      have h4 := congrArg star h2
+      rw [CStarModule.star_inner, star_sum] at h4
+      rw [h4]
+      exact Finset.sum_congr rfl fun i _ => by rw [star_mul, star_star]
+    rw [CStarModule.inner_sub_left, CStarModule.inner_sub_right,
+      CStarModule.inner_sub_right, h1, h2, h3, ← hp₀def]
+    abel
+  have hPle : ∀ s : Finset ↥U₀, (∑ i ∈ s, b i * star (b i)) ≤ p₀ := by
+    intro s
+    have h := (CStarModule.inner_self_nonneg :
+      (0 : ℬ) ≤ inner ℬ (e₀ - ∑ i ∈ s, b i • f i) (e₀ - ∑ i ∈ s, b i • f i))
+    rw [hdiff s] at h
+    exact sub_nonneg.mp h
+  -- `∑_{i∈s} bᵢbᵢ* → p₀` ultraweakly
+  have huwlim : ∀ ω : NPFunctional ℬ,
+      Tendsto (fun s : Finset ↥U₀ => ω (p₀ - ∑ i ∈ s, b i * star (b i)))
+        atTop (𝓝 0) := by
+    intro ω
+    have heq : ∀ s : Finset ↥U₀, ω (p₀ - ∑ i ∈ s, b i * star (b i))
+        = Complex.ofReal ((unSeminorm ω (inner ℬ : X → X → ℬ)
+              ((∑ i ∈ s, b i • f i) - e₀)) ^ 2) := by
+      intro s
+      have hnn : (0 : ℬ) ≤ inner ℬ (e₀ - ∑ i ∈ s, b i • f i)
+          (e₀ - ∑ i ∈ s, b i • f i) := CStarModule.inner_self_nonneg
+      have hsq : (unSeminorm ω (inner ℬ : X → X → ℬ)
+            (e₀ - ∑ i ∈ s, b i • f i)) ^ 2
+          = (ω (inner ℬ (e₀ - ∑ i ∈ s, b i • f i)
+              (e₀ - ∑ i ∈ s, b i • f i) : ℬ)).re :=
+        unSeminorm_sq ω (cstarBInner ℬ X) _
+      have hneg := unSeminorm_neg_inner (X := X) ω ((∑ i ∈ s, b i • f i) - e₀)
+      rw [neg_sub] at hneg
+      refine Complex.ext ?_ ?_
+      · rw [Complex.ofReal_re, ← hneg, hsq, ← hdiff s]
+      · rw [Complex.ofReal_im, ← hdiff s, npim ω hnn]
+    simp only [heq]
+    have hcore : Tendsto (fun s : Finset ↥U₀ =>
+        ((unSeminorm ω (inner ℬ : X → X → ℬ)
+          ((∑ i ∈ s, b i • f i) - e₀)) ^ 2 : ℝ)) atTop (𝓝 0) := by
+      have h := (he₀ ω).pow 2
+      simpa using h
+    have hfin := (Complex.continuous_ofReal.tendsto (0 : ℝ)).comp hcore
+    simpa [Function.comp_def] using hfin
+  have hlub : IsLUB (Set.range (fun s : Finset ↥U₀ => ∑ i ∈ s, b i * star (b i)))
+      p₀ := by
+    constructor
+    · rintro _ ⟨s, rfl⟩; exact hPle s
+    · rintro c hc
+      have h0 : (0 : ℬ) ≤ c := by simpa using hc ⟨(∅ : Finset ↥U₀), rfl⟩
+      exact le_of_np_limit hp₀sa (IsSelfAdjoint.of_nonneg h0)
+        (fun s => hc ⟨s, rfl⟩) huwlim
+  have hp₀proj : IsStarProjection p₀ := by
+    refine vna_directed_supremum_projections
+      (Set.range (fun s : Finset ↥U₀ => ∑ i ∈ s, b i * star (b i))) p₀ ?_
+      ⟨_, Set.mem_range_self (∅ : Finset ↥U₀)⟩ ?_ hlub
+    · rintro _ ⟨s, rfl⟩; exact hPproj s
+    · rintro _ ⟨s, rfl⟩ _ ⟨t, rfl⟩
+      exact ⟨_, ⟨s ∪ t, rfl⟩,
+        Finset.sum_le_sum_of_subset_of_nonneg Finset.subset_union_left
+          (fun i _ _ => (hrproj i).nonneg),
+        Finset.sum_le_sum_of_subset_of_nonneg Finset.subset_union_right
+          (fun i _ _ => (hrproj i).nonneg)⟩
+  -- each summand is a compression of `e₀`
+  have hgj : ∀ j : ↥U₀, (b j * star (b j)) • e₀ = b j • f j := by
+    intro j
+    have hrle : (b j * star (b j)) ≤ p₀ := by simpa using hPle {j}
+    have hrp := hrproj j
+    have hrp₀ := mvn_proj_mul_eq hp₀proj hrp hrle
+    have he₀f : (inner ℬ e₀ (f j) : ℬ) = star (b j) := by
+      have h := congrArg star (hfe₀ j)
+      rwa [CStarModule.star_inner] at h
+    have h1 : (inner ℬ ((b j * star (b j)) • e₀) ((b j * star (b j)) • e₀) : ℬ)
+        = b j * star (b j) := by
+      rw [CStarModule.inner_op_smul_right, CStarModule.inner_op_smul_left, ← hp₀def,
+        hrp.isSelfAdjoint.star_eq, hrp₀.1, hrp.isIdempotentElem.eq]
+    have h2 : (inner ℬ ((b j * star (b j)) • e₀) (b j • f j) : ℬ)
+        = b j * star (b j) := by
+      rw [CStarModule.inner_op_smul_right, CStarModule.inner_op_smul_left, he₀f,
+        hrp.isSelfAdjoint.star_eq, ← mul_assoc, hrp.isIdempotentElem.eq]
+    have h3 : (inner ℬ (b j • f j) ((b j * star (b j)) • e₀) : ℬ)
+        = b j * star (b j) := by
+      have h := congrArg star h2
+      rwa [CStarModule.star_inner, star_mul, star_star] at h
+    have hsbj : star (b j) * b j * star (b j) = star (b j) :=
+      ((partial_isometry_equivalents (b j)).out 0 4).mp (hbpi j)
+    have h4 : (inner ℬ (b j • f j) (b j • f j) : ℬ) = b j * star (b j) := by
+      rw [CStarModule.inner_op_smul_right, CStarModule.inner_op_smul_left, hff j, hsbj]
+    have hz : (inner ℬ ((b j * star (b j)) • e₀ - b j • f j)
+        ((b j * star (b j)) • e₀ - b j • f j) : ℬ) = 0 := by
+      rw [CStarModule.inner_sub_left, CStarModule.inner_sub_right,
+        CStarModule.inner_sub_right, h1, h2, h3, h4]
+      abel
+    exact sub_eq_zero.mp ((CStarModule.inner_self (A := ℬ)).mp hz)
+  have hCsupp : ∀ x : X, (inner ℬ e₀ x : ℬ) = 0 →
+      ∀ j : ↥U₀, (inner ℬ (f j) x : ℬ) = 0 := by
+    intro x hx j
+    have h1 : (inner ℬ (b j • f j) x : ℬ) = 0 := by
+      rw [← hgj j, CStarModule.inner_op_smul_left, hx, zero_mul]
+    rw [CStarModule.inner_op_smul_left] at h1
+    have h2 := congrArg (fun t => t * b j) h1
+    simp only [zero_mul] at h2
+    rw [mul_assoc, ← hff j, onbasis_coef_absorb horth x j] at h2
+    exact h2
+  have hspan : ∀ z ∈ orthoCompl ℬ V, (inner ℬ e₀ z : ℬ) = 0 →
+      (∀ y ∈ E₀, (∀ j : ↥U₀, y ≠ f j) → (inner ℬ y z : ℬ) = 0) → z = 0 := by
+    intro z hzW hz hz'
+    refine hE₀max z hzW fun y hy => ?_
+    by_cases hyf : ∃ j : ↥U₀, y = f j
+    · obtain ⟨j, rfl⟩ := hyf; exact hCsupp z hz j
+    · push_neg at hyf; exact hz' y hy hyf
+  by_cases hE₁ : ∀ y ∈ E₀, ∃ j : ↥U₀, y = f j
+  · right
+    refine ⟨e₀, he₀W, hp₀proj, ?_, ?_⟩
+    · intro h0
+      refine hz₀ne (hspan z₀ hz₀ ?_ ?_)
+      · have he₀0 : e₀ = 0 := (CStarModule.inner_self (A := ℬ)).mp h0
+        rw [he₀0]; exact CStarModule.inner_zero_left
+      · intro y hy hyf
+        obtain ⟨j, hj⟩ := hE₁ y hy
+        exact absurd hj (hyf j)
+    · intro z hzW hz
+      refine hspan z hzW hz fun y hy hyf => ?_
+      obtain ⟨j, hj⟩ := hE₁ y hy
+      exact absurd hj (hyf j)
+  · push_neg at hE₁
+    obtain ⟨e₁, he₁E₀, he₁nf⟩ := hE₁
+    left
+    set p₁ : ℬ := (inner ℬ e₁ e₁ : ℬ) with hp₁def
+    have hp₁proj : IsStarProjection p₁ := (hE₀proj e₁ he₁E₀).1
+    have hnotmem : (e₁, (0 : ℬ)) ∉ U₀ := by
+      intro h
+      exact he₁nf ⟨(e₁, (0 : ℬ)), h⟩ rfl
+    have hnotle : ¬ MvNLe p₁ (1 - p₀) := by
+      rintro ⟨u, hu1, hu2⟩
+      have huproj : IsStarProjection (u * star u) :=
+        ((partial_isometry_equivalents u).out 0 3).mp
+          (((partial_isometry_equivalents u).out 1 0).mp (by rw [hu1]; exact hp₁proj))
+      have hcross : ∀ q ∈ U₀, (u * star u) * (q.2 * star q.2) = 0 := by
+        intro q hq
+        have hqle : q.2 * star q.2 ≤ p₀ := by
+          simpa using hPle {(⟨q, hq⟩ : ↥U₀)}
+        have hp : p₀ ≤ 1 - u * star u := by
+          have h := sub_le_sub_left hu2 1
+          simpa using h
+        exact mvn_proj_orth projx_one huproj
+          (((partial_isometry_equivalents q.2).out 0 3).mp (hbpi ⟨q, hq⟩))
+          huproj.le_one (hqle.trans hp)
+      have hnew : insert (e₁, u) U₀ ∈ Pset := by
+        refine ⟨?_, ?_, ?_, ?_⟩
+        · rintro q (rfl | hq)
+          · exact he₁E₀
+          · exact hU₀E q hq
+        · rintro q (rfl | hq) q' (rfl | hq') heq
+          · rfl
+          · exact absurd heq.symm (Ne.symm (he₁nf ⟨q', hq'⟩))
+          · exact absurd heq (Ne.symm (he₁nf ⟨q, hq⟩))
+          · exact hU₀fn q hq q' hq' heq
+        · rintro q (rfl | hq)
+          · exact hu1
+          · exact hU₀pi q hq
+        · rintro q (rfl | hq) q' (rfl | hq') hne
+          · exact absurd rfl hne
+          · exact hcross q' hq'
+          · have hqp : IsStarProjection (q.2 * star q.2) :=
+              ((partial_isometry_equivalents q.2).out 0 3).mp (hbpi ⟨q, hq⟩)
+            have h := congrArg star (hcross q hq)
+            rwa [star_mul, star_zero, hqp.isSelfAdjoint.star_eq,
+              huproj.isSelfAdjoint.star_eq] at h
+          · exact hU₀orth q hq q' hq' hne
+      have hin : (e₁, u) ∈ U₀ :=
+        hU₀max.2 hnew (Set.subset_insert _ _) (Set.mem_insert _ _)
+      exact he₁nf ⟨(e₁, u), hin⟩ rfl
+    rcases total_mv_order hF p₁ (1 - p₀) hp₁proj hp₀proj.one_sub with h | h
+    · exact absurd h hnotle
+    obtain ⟨v, hv1, hv2⟩ := h
+    have hvpi : IsPartialIsometry ℬ v :=
+      ((partial_isometry_equivalents v).out 1 0).mp (by rw [hv1]; exact hp₀proj.one_sub)
+    have hr'proj : IsStarProjection (v * star v) :=
+      ((partial_isometry_equivalents v).out 0 3).mp hvpi
+    have hsv : star v * v * star v = star v :=
+      ((partial_isometry_equivalents v).out 0 4).mp hvpi
+    have hvr : v * star v * v = v :=
+      ((partial_isometry_equivalents v).out 0 2).mp hvpi
+    have hkey : star v * p₁ * v = 1 - p₀ := by
+      have hrp : (v * star v) * p₁ = v * star v :=
+        (mvn_proj_mul_eq hp₁proj hr'proj hv2).2
+      have e1 : star v * ((v * star v) * p₁ * (v * star v)) * v = star v * p₁ * v := by
+        calc star v * ((v * star v) * p₁ * (v * star v)) * v
+            = (star v * v * star v) * p₁ * (v * star v * v) := by noncomm_ring
+          _ = star v * p₁ * v := by rw [hsv, hvr]
+      have e2 : (v * star v) * p₁ * (v * star v) = v * star v := by
+        rw [hrp, hr'proj.isIdempotentElem.eq]
+      rw [← e1, e2]
+      calc star v * (v * star v) * v = (star v * v) * (star v * v) := by noncomm_ring
+        _ = (1 - p₀) * (1 - p₀) := by rw [hv1]
+        _ = 1 - p₀ := hp₀proj.one_sub.isIdempotentElem.eq
+    have he₀e₁ : (inner ℬ e₀ e₁ : ℬ) = 0 := by
+      refine mem_orthoCompl_of_unTendsto ({e₁} : Set X) _ (fun s => ?_) he₀ e₁ rfl
+      intro w hw
+      rw [Set.mem_singleton_iff] at hw
+      subst hw
+      rw [CStarModule.inner_sum_left]
+      refine Finset.sum_eq_zero fun i _ => ?_
+      rw [CStarModule.inner_op_smul_left,
+        hE₀orth _ (hU₀E _ i.2) _ he₁E₀ (Ne.symm (he₁nf i)), zero_mul]
+    have he₁e₀ : (inner ℬ e₁ e₀ : ℬ) = 0 := by
+      have h := congrArg star he₀e₁
+      rwa [CStarModule.star_inner, star_zero] at h
+    refine ⟨e₀ + (star v) • e₁, hWadd _ he₀W _ (hWb _ _ (hE₀W he₁E₀)), ?_⟩
+    rw [CStarModule.inner_add_left, CStarModule.inner_add_right,
+      CStarModule.inner_add_right, CStarModule.inner_op_smul_right,
+      CStarModule.inner_op_smul_left, CStarModule.inner_op_smul_left,
+      CStarModule.inner_op_smul_right, he₀e₁, he₁e₀, ← hp₀def, ← hp₁def,
+      star_star, hkey]
+    simp
+
+end Step
+
 /-- **162IV** (`selfdual-normalish-form`, dils.tex:4747, Theorem): every
 self-dual Hilbert ℬ-module over a factor `ℬ` is isomorphic to
 `ℓ²((1)_{α∈κ})` for an infinite cardinal `κ`, or to `ℓ²((1,…,1,p))` for
@@ -2999,8 +3544,273 @@ theorem selfdual_normalish_form [VonNeumannAlgebra ℬ] [CompleteSpace X]
     (hF : IsFactor ℬ) (hX : SelfDual ℬ X) :
     ∃ (ι : Type v) (e : ι → X), IsONBasis ℬ e ∧
       ((∀ i, inner ℬ (e i) (e i) = 1) ∨
-        (Finite ι ∧ ∃ i₀ : ι, ∀ i, i ≠ i₀ → inner ℬ (e i) (e i) = 1)) :=
-  sorry
+        (Finite ι ∧ ∃ i₀ : ι, ∀ i, i ≠ i₀ → inner ℬ (e i) (e i) = 1)) := by
+  classical
+  classical
+  -- the degenerate algebra: then `X = {0}` and the empty family is a basis
+  by_cases htriv : (1 : ℬ) = 0
+  · have hX0 : ∀ x : X, x = 0 := by
+      intro x
+      refine (CStarModule.inner_self (A := ℬ)).mp ?_
+      calc (inner ℬ x x : ℬ) = inner ℬ x ((1 : ℬ) • x) := by rw [op_one_smul]
+        _ = (1 : ℬ) * inner ℬ x x := CStarModule.inner_op_smul_right
+        _ = 0 := by rw [htriv, zero_mul]
+    refine ⟨PEmpty.{v + 1}, PEmpty.elim, ?_, Or.inl (fun i => i.elim)⟩
+    exact isONBasis_of_orthoCompl_eq_zero hX ⟨fun i => i.elim, fun i => i.elim⟩
+      (fun x _ => hX0 x)
+  have honeproj : IsStarProjection (1 : ℬ) := projx_one
+  -- a maximal orthogonal set of unit vectors
+  obtain ⟨E, hEmax⟩ := zorn_subset
+    {E : Set X | (∀ y ∈ E, ∀ z ∈ E, y ≠ z → (inner ℬ y z : ℬ) = 0)
+      ∧ ∀ y ∈ E, (inner ℬ y y : ℬ) = 1}
+    (fun c hc hchain => by
+      refine ⟨⋃₀ c, ⟨?_, ?_⟩, fun s hs => Set.subset_sUnion_of_mem hs⟩
+      · rintro y ⟨s₁, hs₁, hys₁⟩ z ⟨s₂, hs₂, hzs₂⟩ hyz
+        rcases hchain.total hs₁ hs₂ with h12 | h21
+        · exact (hc hs₂).1 y (h12 hys₁) z hzs₂ hyz
+        · exact (hc hs₁).1 y hys₁ z (h21 hzs₂) hyz
+      · rintro y ⟨s, hs, hys⟩
+        exact (hc hs).2 y hys)
+  obtain ⟨hEorth, hEone⟩ := hEmax.1
+  have hEproj : ∀ y ∈ E, IsStarProjection (inner ℬ y y : ℬ) ∧ (inner ℬ y y : ℬ) ≠ 0 :=
+    fun y hy => by rw [hEone y hy]; exact ⟨honeproj, fun h => htriv h⟩
+  have hEfam : OrthonormalFam ℬ (fun i : ↥E => (i : X)) :=
+    ⟨fun i j hij => hEorth _ i.2 _ j.2 fun h => hij (Subtype.ext h),
+      fun i => hEproj _ i.2⟩
+  by_cases hW : ∀ z ∈ orthoCompl ℬ E, z = 0
+  · -- `E` is already a basis
+    refine ⟨↥E, fun i => (i : X), ?_, Or.inl fun i => hEone _ i.2⟩
+    refine isONBasis_of_orthoCompl_eq_zero hX hEfam fun x hx => ?_
+    refine hW x fun v hv => ?_
+    have h2 := congrArg star (hx ⟨v, hv⟩)
+    rwa [CStarModule.star_inner, star_zero] at h2
+  push_neg at hW
+  obtain ⟨z₀, hz₀, hz₀ne⟩ := hW
+  rcases normalish_step hF hX E ⟨z₀, hz₀, hz₀ne⟩ with
+    ⟨d, hdW, hd1⟩ | ⟨e, heW, hep, hepne, hespan⟩
+  · -- `E ∪ {d}` contradicts maximality
+    exfalso
+    have hdE : d ∉ E := by
+      intro hdE
+      rw [hdW d hdE] at hd1
+      exact htriv hd1.symm
+    have hnew : insert d E ∈ {E : Set X |
+        (∀ y ∈ E, ∀ z ∈ E, y ≠ z → (inner ℬ y z : ℬ) = 0)
+        ∧ ∀ y ∈ E, (inner ℬ y y : ℬ) = 1} := by
+      refine ⟨?_, ?_⟩
+      · rintro y (rfl | hy) z (rfl | hz) hne
+        · exact absurd rfl hne
+        · exact hdW z hz
+        · have h := congrArg star (hdW y hy)
+          rwa [CStarModule.star_inner, star_zero] at h
+        · exact hEorth y hy z hz hne
+      · rintro y (rfl | hy)
+        · exact hd1
+        · exact hEone y hy
+    exact hdE (hEmax.2 hnew (Set.subset_insert _ _) (Set.mem_insert _ _))
+  -- `E^⊥` is generated by the single vector `e`
+  have hEe : ∀ y ∈ E, (inner ℬ e y : ℬ) = 0 := fun y hy => heW y hy
+  have hEe' : ∀ y ∈ E, (inner ℬ y e : ℬ) = 0 := by
+    intro y hy
+    have h := congrArg star (hEe y hy)
+    rwa [CStarModule.star_inner, star_zero] at h
+  rcases Set.finite_or_infinite E with hEfin | hEinf
+  · -- finitely many unit vectors: `E ∪ {e}` is the basis
+    haveI : Finite ↥(insert e E) := (hEfin.insert e).to_subtype
+    refine ⟨↥(insert e E), fun i => (i : X), ?_,
+      Or.inr ⟨inferInstance, ⟨e, Set.mem_insert _ _⟩, ?_⟩⟩
+    · refine isONBasis_of_orthoCompl_eq_zero hX ?_ ?_
+      · constructor
+        · rintro ⟨y, hy⟩ ⟨z, hz⟩ hyz
+          have hne : y ≠ z := fun h => hyz (Subtype.ext h)
+          rcases hy with rfl | hy
+          · rcases hz with rfl | hz
+            · exact absurd rfl hne
+            · exact hEe z hz
+          · rcases hz with rfl | hz
+            · exact hEe' y hy
+            · exact hEorth y hy z hz hne
+        · rintro ⟨y, hy⟩
+          rcases hy with rfl | hy
+          · exact ⟨hep, hepne⟩
+          · exact hEproj y hy
+      · intro x hx
+        refine hespan x (fun v hv => ?_) (hx ⟨e, Set.mem_insert _ _⟩)
+        have h := congrArg star (hx ⟨v, Set.mem_insert_of_mem _ hv⟩)
+        rwa [CStarModule.star_inner, star_zero] at h
+    · rintro ⟨y, hy⟩ hne
+      rcases hy with rfl | hy
+      · exact absurd rfl hne
+      · exact hEone y hy
+  · -- infinitely many: the Hilbert-hotel replacement of `{e} ∪ {eₙ}` by
+    -- `{e + e₁(1−p), e₁p + e₂(1−p), …}`
+    set p : ℬ := (inner ℬ e e : ℬ) with hpdef
+    have hpsa : star p = p := hep.isSelfAdjoint
+    have hcompl1 : p * (1 - p) = 0 := by
+      rw [mul_sub, mul_one, hep.isIdempotentElem.eq, sub_self]
+    have hcompl2 : (1 - p) * p = 0 := by
+      rw [sub_mul, one_mul, hep.isIdempotentElem.eq, sub_self]
+    have hqsa : star (1 - p) = 1 - p := by rw [star_sub, star_one, hpsa]
+    have hqidem : (1 - p) * (1 - p) = 1 - p := hep.one_sub.isIdempotentElem.eq
+    set en : ℕ → X := fun n => ((hEinf.natEmbedding E n : ↥E) : X) with hendef
+    have heninj : Function.Injective en := fun n m h =>
+      (hEinf.natEmbedding E).injective (Subtype.ext h)
+    have henE : ∀ n, en n ∈ E := fun n => (hEinf.natEmbedding E n).2
+    have hendiag : ∀ n, (inner ℬ (en n) (en n) : ℬ) = 1 := fun n => hEone _ (henE n)
+    have henoff : ∀ n m, n ≠ m → (inner ℬ (en n) (en m) : ℬ) = 0 := fun n m h =>
+      hEorth _ (henE n) _ (henE m) fun hh => h (heninj hh)
+    set t : ℕ → X := fun n => Nat.rec e (fun k _ => p • en k) n with htdef
+    have ht0 : t 0 = e := rfl
+    have hts : ∀ k, t (k + 1) = p • en k := fun _ => rfl
+    have httdiag : ∀ n, (inner ℬ (t n) (t n) : ℬ) = p := by
+      intro n
+      cases n with
+      | zero => rw [ht0, ← hpdef]
+      | succ k =>
+          rw [hts k, CStarModule.inner_op_smul_right,
+            CStarModule.inner_op_smul_left, hendiag k, hpsa, one_mul,
+            hep.isIdempotentElem.eq]
+    have httoff : ∀ n m, n ≠ m → (inner ℬ (t n) (t m) : ℬ) = 0 := by
+      intro n m h
+      cases n with
+      | zero =>
+          cases m with
+          | zero => exact absurd rfl h
+          | succ l =>
+              rw [ht0, hts l, CStarModule.inner_op_smul_right, hEe _ (henE l),
+                mul_zero]
+      | succ k =>
+          cases m with
+          | zero =>
+              rw [ht0, hts k, CStarModule.inner_op_smul_left, hEe' _ (henE k),
+                zero_mul]
+          | succ l =>
+              rw [hts k, hts l, CStarModule.inner_op_smul_right,
+                CStarModule.inner_op_smul_left,
+                henoff k l (fun hh => h (by omega)), zero_mul, mul_zero]
+    have hten : ∀ n m, (1 - p) * (inner ℬ (t n) (en m) : ℬ) = 0 := by
+      intro n m
+      cases n with
+      | zero => rw [ht0, hEe _ (henE m), mul_zero]
+      | succ k =>
+          rw [hts k, CStarModule.inner_op_smul_left, hpsa]
+          by_cases h : k = m
+          · subst h
+            rw [hendiag k, one_mul, hcompl2]
+          · rw [henoff k m h, zero_mul, mul_zero]
+    have hten' : ∀ n m, (inner ℬ (en n) (t m) : ℬ) * (1 - p) = 0 := by
+      intro n m
+      have h := congrArg star (hten m n)
+      rwa [star_mul, star_zero, CStarModule.star_inner, hqsa] at h
+    set dd : ℕ → X := fun n => t n + (1 - p) • en n with hdddef
+    have hddexp : ∀ n m, (inner ℬ (dd n) (dd m) : ℬ)
+        = (inner ℬ (t n) (t m) : ℬ)
+          + (1 - p) * (inner ℬ (t n) (en m) : ℬ)
+          + (inner ℬ (en n) (t m) : ℬ) * (1 - p)
+          + (1 - p) * ((inner ℬ (en n) (en m) : ℬ) * (1 - p)) := by
+      intro n m
+      show (inner ℬ (t n + (1 - p) • en n) (t m + (1 - p) • en m) : ℬ) = _
+      rw [CStarModule.inner_add_left, CStarModule.inner_add_right,
+        CStarModule.inner_add_right, CStarModule.inner_op_smul_right,
+        CStarModule.inner_op_smul_left, CStarModule.inner_op_smul_left,
+        CStarModule.inner_op_smul_right, hqsa]
+      noncomm_ring
+    have hdddiag : ∀ n, (inner ℬ (dd n) (dd n) : ℬ) = 1 := by
+      intro n
+      rw [hddexp n n, httdiag n, hten n n, hten' n n, hendiag n, one_mul, hqidem]
+      abel
+    have hddoff : ∀ n m, n ≠ m → (inner ℬ (dd n) (dd m) : ℬ) = 0 := by
+      intro n m h
+      rw [hddexp n m, httoff n m h, hten n m, hten' n m, henoff n m h, zero_mul,
+        mul_zero]
+      abel
+    have hgdE : ∀ (n : ℕ) (y : X), y ∈ E → y ∉ Set.range en →
+        (inner ℬ (dd n) y : ℬ) = 0 := by
+      intro n y hy hyr
+      show (inner ℬ (t n + (1 - p) • en n) y : ℬ) = 0
+      rw [CStarModule.inner_add_left, CStarModule.inner_op_smul_left]
+      have h1 : (inner ℬ (t n) y : ℬ) = 0 := by
+        cases n with
+        | zero => rw [ht0]; exact hEe y hy
+        | succ k =>
+            rw [hts k, CStarModule.inner_op_smul_left,
+              hEorth _ (henE k) _ hy (fun hh => hyr ⟨k, hh⟩), zero_mul]
+      rw [h1, hEorth _ (henE n) _ hy (fun hh => hyr ⟨n, hh⟩), zero_mul, add_zero]
+    have hgdE' : ∀ (n : ℕ) (y : X), y ∈ E → y ∉ Set.range en →
+        (inner ℬ y (dd n) : ℬ) = 0 := by
+      intro n y hy hyr
+      have h := congrArg star (hgdE n y hy hyr)
+      rwa [CStarModule.star_inner, star_zero] at h
+    set g : (↥(E \ Set.range en)) ⊕ (ULift.{v, 0} ℕ) → X :=
+      Sum.elim (fun y : ↥(E \ Set.range en) => (y : X))
+        (fun n : ULift.{v, 0} ℕ => dd n.down) with hgdef
+    have hgorth : OrthonormalFam ℬ g := by
+      constructor
+      · rintro (⟨y, hy⟩ | n) (⟨z, hz⟩ | m) hij
+        · exact hEorth y hy.1 z hz.1 fun h => hij (congrArg Sum.inl (Subtype.ext h))
+        · exact hgdE' m.down y hy.1 hy.2
+        · exact hgdE n.down z hz.1 hz.2
+        · refine hddoff n.down m.down fun h => hij (congrArg Sum.inr ?_)
+          exact ULift.ext _ _ h
+      · rintro (⟨y, hy⟩ | n)
+        · exact hEproj y hy.1
+        · have h1 : (inner ℬ (g (Sum.inr n)) (g (Sum.inr n)) : ℬ) = 1 :=
+            hdddiag n.down
+          rw [h1]
+          exact ⟨honeproj, fun hh => htriv hh⟩
+    have hgone : ∀ i, (inner ℬ (g i) (g i) : ℬ) = 1 := by
+      rintro (⟨y, hy⟩ | n)
+      · exact hEone y hy.1
+      · exact hdddiag n.down
+    refine ⟨(↥(E \ Set.range en)) ⊕ (ULift.{v, 0} ℕ), g, ?_, Or.inl hgone⟩
+    refine isONBasis_of_orthoCompl_eq_zero hX hgorth fun x hx => ?_
+    have hdx : ∀ n : ℕ, (inner ℬ (t n) x : ℬ)
+        + (inner ℬ (en n) x : ℬ) * (1 - p) = 0 := by
+      intro n
+      have h : (inner ℬ (dd n) x : ℬ) = 0 := hx (Sum.inr ⟨n⟩)
+      rw [show dd n = t n + (1 - p) • en n from rfl, CStarModule.inner_add_left,
+        CStarModule.inner_op_smul_left, hqsa] at h
+      exact h
+    have hap : (inner ℬ e x : ℬ) * p = inner ℬ e x := by
+      have h : (inner ℬ ((inner ℬ e e : ℬ) • e) x : ℬ) = inner ℬ e x :=
+        congrArg (fun y : X => (inner ℬ y x : ℬ)) (mod_projelabs e hep)
+      rwa [CStarModule.inner_op_smul_left, hpsa] at h
+    have hccp : ∀ n, (inner ℬ (en n) x : ℬ) * p = 0 := by
+      intro n
+      have h := hdx (n + 1)
+      rw [hts n, CStarModule.inner_op_smul_left, hpsa] at h
+      have h2 := congrArg (fun y : ℬ => y * p) h
+      simp only [zero_mul] at h2
+      rwa [add_mul, mul_assoc, mul_assoc, hcompl2, mul_zero, add_zero,
+        hep.isIdempotentElem.eq] at h2
+    have ha0 : (inner ℬ e x : ℬ) = 0 := by
+      have h := hdx 0
+      rw [ht0] at h
+      have h2 := congrArg (fun y : ℬ => y * p) h
+      simp only [zero_mul] at h2
+      rwa [add_mul, mul_assoc, hcompl2, mul_zero, add_zero, hap] at h2
+    have hccq : ∀ n, (inner ℬ (en n) x : ℬ) * (1 - p) = 0 := by
+      intro n
+      cases n with
+      | zero =>
+          have h := hdx 0
+          rwa [ht0, ha0, zero_add] at h
+      | succ k =>
+          have h := hdx (k + 1)
+          rwa [hts k, CStarModule.inner_op_smul_left, hpsa, hccp k, zero_add] at h
+    have hcc0 : ∀ n, (inner ℬ (en n) x : ℬ) = 0 := by
+      intro n
+      have h : (inner ℬ (en n) x : ℬ) * p + (inner ℬ (en n) x : ℬ) * (1 - p) = 0 := by
+        rw [hccp n, hccq n, add_zero]
+      have hone' : p + (1 - p) = 1 := by abel
+      rwa [← mul_add, hone', mul_one] at h
+    refine hespan x (fun v hv => ?_) ha0
+    by_cases hvr : v ∈ Set.range en
+    · obtain ⟨n, rfl⟩ := hvr
+      have h2 := congrArg star (hcc0 n)
+      rwa [CStarModule.star_inner, star_zero] at h2
+    · have h2 := congrArg star (hx (Sum.inl ⟨v, hv, hvr⟩))
+      rwa [CStarModule.star_inner, star_zero] at h2
 
 end NormalForm
 
