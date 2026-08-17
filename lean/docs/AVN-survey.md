@@ -1,6 +1,6 @@
-# `Theses/A/VN/` — full survey of the remaining `sorry`s (updated session 75)
+# `Theses/A/VN/` — full survey of the remaining `sorry`s (updated session 78)
 
-**Headline count: A/VN has 4 code `sorry`s** after session 77 (was 5).
+**Headline count: A/VN has 3 code `sorry`s** after session 78 (was 4).
 Per file, compiler-counted (`declaration uses 'sorry'` warnings, *not* grep),
 each paired with an error count of **0**:
 
@@ -8,10 +8,10 @@ each paired with an error count of **0**:
 |---|---|
 | `Basic.lean` | **1** |
 | `Projections.lean` | **0** |
-| `Division.lean` | 3 |
+| `Division.lean` | 2 |
 | `NormalFunctionals.lean` | **0** |
 | `Completeness.lean` | **0** |
-| **total** | **4** |
+| **total** | **3** |
 
 (Every file compiles with **0 errors**; counts are compiler-counted.)
 
@@ -28,6 +28,58 @@ done
 (This bare `lean` invocation does **not** report `linter.style.show`; only
 `lake build` does.  Check with `lake build` before handing off.)
 
+> **Session 78 headline — 84II `fdcstar` is CLOSED, by Mathlib's
+> Wedderburn–Artin plus a hand-rolled Skolem–Noether, not by the thesis's
+> matrix-unit construction.**  `Division.lean` is down to two (84bIII, 84bV),
+> and A/VN to three.  `fdcstar` is `#print axioms`-clean.
+>
+> * **Route taken, and why it is not the thesis's.**  The thesis (vn.tex:5798–
+>   6027) first proves `𝒜` is a von Neumann algebra (norm-compact ball), then
+>   splits `𝒜 ≅ ⊕ₘ zₘ𝒜` along minimal central projections via
+>   **67IV**.2, then in the factor case builds matrix units from **83V**
+>   `cceil_sum` + polar decomposition.  In Lean that route wants (i) a
+>   `PartialOrder`/`StarOrderedRing` on `A`, which the *statement does not
+>   provide* (`fdcstar` assumes only `CStarAlgebra A`, `FiniteDimensional ℂ A`),
+>   and (ii) the corner `zₘ𝒜` **as a type** carrying C*- and von Neumann
+>   instances — the very carrier problem that makes 84bIII a 1000–1600 line
+>   job.  Mathlib's
+>   `IsSemisimpleRing.exists_algEquiv_pi_matrix_of_isAlgClosed` gives the
+>   conclusion's exact shape as an *algebra* iso with none of that, so the work
+>   was moved into the ∗-upgrade, where no corners appear at all.  ~640 lines.
+> * **Skolem–Noether really is absent from Mathlib** (`grep -r Skolem` finds
+>   only model theory; there is no inner-automorphism theory for
+>   `Matrix n n K`).  It is proved here as the private
+>   `matrix_exists_intertwiner`, in about 100 lines and with no module theory:
+>   for `ψ` an algebra automorphism, every `T X := ∑ⱼ ψ(Eⱼ₀) X E₀ⱼ` satisfies
+>   `ψ(x)·T X = T X·x` for **all** `x` (check on matrix units), some `T X` is
+>   non-zero (because `ψ(E₀₀)·T X·E₀₀ = ψ(E₀₀)·X·E₀₀`), and a non-zero
+>   intertwiner is invertible because its kernel is invariant under every
+>   matrix, hence `0` or everything.
+> * **The ∗-upgrade needs no positivity theory either.**  Transport the
+>   involution along `φ` to `J x = φ(star (φ⁻¹ x))`; then `x ↦ star (J x)` is
+>   an algebra automorphism, so `J x = h⁻¹ (star x) h`.  Involutivity of `J`
+>   forces `h⁻¹·star h` to be central, hence scalar (`Matrix
+>   .mem_range_scalar_of_commute_single`), so `star h = λ·h` with `|λ| = 1`;
+>   rescaling by whichever of `1 + λ`, `i(1 − λ)` is non-zero makes `h`
+>   Hermitian **without any complex square root**.  `star a · a = 0 ⇒ a = 0`
+>   in `A` then says the Hermitian form of `h` is *anisotropic*, and the
+>   spectral theorem turns anisotropy into "all eigenvalues of one sign",
+>   whence `k` with `k = star k`, `k² = ±h`, and `θ x = k x k⁻¹` is the
+>   automorphism with `θ (J x) = star (θ x)`.
+> * **No corner types were needed for the product.**  `J` fixes each block unit
+>   `eⱼ`, because `φ⁻¹(eⱼ)` is a *central idempotent* of `A` and a central
+>   idempotent of a C*-algebra is self-adjoint (Mathlib's
+>   `IsIdempotentElem.isSelfAdjoint_iff_isStarNormal` — centrality gives
+>   normality).  So `J` splits into per-block `Jⱼ` and the whole argument runs
+>   blockwise inside `Matrix (Fin (N j)) (Fin (N j)) ℂ`.
+> * Semisimplicity of a finite-dimensional C*-algebra is ~25 lines:
+>   `IsSemiprimaryRing.isNilpotent` gives `J^n = ⊥`, and for `x` in the radical
+>   `y = x*x` is self-adjoint with `y^n = 0`, so `‖y‖^{2^n} = ‖y^{2^n}‖ = 0`
+>   (`IsSelfAdjoint.norm_pow_two_pow`) and `x = 0`.
+> * **67IV.2 was not used.**  Session 77 recorded that the thesis's proof of
+>   84II cites `central-projections-sums`; that is true of the *thesis's* proof,
+>   and the Lean proof taken here does not need it.  84bIII's use of it stands.
+>
 > **Session 77 headline — `Projections.lean` is FINISHED, and 67IV.2 never
 > needed 77III.**  **67IV**.2 `central_projections_sums_2` is proved and
 > `#print axioms`-clean.  A/VN is down to `Basic.lean`'s 51IX and
@@ -357,20 +409,44 @@ lines, plus six reusable helpers — `uwTendsto_unique`, `UWTendsto.add`/`.smul`
 `isClosed_ultraweak_closedBall`, `uw_map_of_cont` — placed just above them and
 usable anywhere in `A/VN` and downstream.)
 
-## `Division.lean` — 3
+## `Division.lean` — 2
 
 | point | decl | class |
 |---|---|---|
-| **84II** | `fdcstar` | [L] Artin–Wedderburn for finite-dimensional C\*-algebras; large |
 | **84bIII** | `hereditarilyAtomic_subalgebra` | [S] but real work |
 | **84bV** | `ha_equalisers` | [B] on 84bIII only (47V `vn_equalisers` is proved) |
+
+**A suggestion for 84bIII, untested, from session 78's experience.**  The
+corner `dⱼℬ`-as-a-type may be avoidable the same way corners were avoided in
+84II.  Write `gⱼ := πⱼ ∘ e : ℬ → CStarMatrix (Fin (Nⱼ+1)) (Fin (Nⱼ+1)) ℂ`
+(unital, ∗-preserving, normal) and `dⱼ := ⌈gⱼ⌉` (central by **63IV**-era
+`carrier_miu`).  Then `dⱼℬ ≅ range gⱼ` — and `range gⱼ` is a **closed
+`StarSubalgebra` of a `CStarAlgebra`**, for which Mathlib already supplies the
+`CStarAlgebra` instance (`StarSubalgebra.cstarAlgebra`, closedness free in
+finite dimensions), so `fdcstar` applies to it directly with no instance
+plumbing.  Surjectivity of `b ↦ (gⱼ b)ⱼ` onto the `lp ∞` of the ranges is
+exactly **67IV**.2 `central_projections_sums_2`, which is stated concretely
+*inside* `ℬ` — precisely the shape wanted.  What this does **not** remove is
+the Zorn step (the `dⱼ` are not orthogonal as they stand; the thesis passes to
+a maximal orthogonal subfamily) nor the `lp`-of-`lp` regrouping.
+
+**84II** `fdcstar` was proved in session 78 (see the headline).  Its private
+by-products, all in the new `section FDCStar`, are reusable:
+`cstar_jacobson_eq_bot` (a C*-algebra has trivial Jacobson radical),
+`matrix_exists_intertwiner` (**Skolem–Noether for `Matrix n n ℂ`**),
+`matrix_exists_algEquiv_conj` (a conjugate-linear involutive anti-automorphism
+of `Matrix n n ℂ` satisfying `J x · x = 0 ⇒ x = 0` is `star` up to an inner
+automorphism), and `central_idempotent_isSelfAdjoint`.  Promote them if 84bIII
+wants them.
 
 (`pseudoinverse_basic_2'_4` and `div_usc` — both false as printed — have since
 been retired with their `sorry`s; see HANDOFF.)
 
 **Costings, re-derived in session 77.**
 
-* **84II `fdcstar` — ~500–800 lines, and Mathlib does half of it.**
+* ~~**84II `fdcstar` — ~500–800 lines, and Mathlib does half of it.**~~
+  *(Superseded — proved in session 78; the line estimate was right, the split
+  of the work was not.  See the headline.)*
   `IsSemisimpleRing.exists_algEquiv_pi_matrix_of_isAlgClosed`
   (`Mathlib/RingTheory/SimpleModule/IsAlgClosed.lean`) gives exactly the
   conclusion's shape for a finite-dimensional semisimple ℂ-algebra, and its

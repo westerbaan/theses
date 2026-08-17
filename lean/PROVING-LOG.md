@@ -18098,6 +18098,183 @@ keeping for any future scratch-file development against this file.
 
 ---
 
+## Session 78 — `A/VN`: **84II `fdcstar` is CLOSED** — Mathlib's Wedderburn–Artin plus a hand-rolled Skolem–Noether, *not* the thesis's matrix-unit construction (worker on `Theses/A/VN/`)
+
+A/VN **4 → 3** code `sorry`s.  Per file, each source run through `lean`
+individually against rebuilt oleans, paired with an error count, **0 errors
+everywhere**: `Basic` **1**, `Projections` **0**, `Division` **2**,
+`NormalFunctionals` **0**, `Completeness` **0**.  Closed this session,
+`#print axioms`-clean (`[propext, Classical.choice, Quot.sound]`):
+
+* **84II** `fdcstar` — every finite-dimensional C*-algebra is
+  ∗-isomorphic to a finite product `∏ₘ M_{Nₘ}(ℂ)`.
+
+About 640 lines, all in a new `section FDCStar` of `Division.lean`, with two
+new imports (`Mathlib.RingTheory.SimpleModule.IsAlgClosed`,
+`Mathlib.Analysis.Matrix.Spectrum`).
+
+### 1. The route, and why it is not the thesis's — a recorded divergence
+
+The thesis (vn.tex:5798–6027) proves 84II in three movements: (i) `𝒜` is a
+von Neumann algebra, because the unit ball is norm compact in finite
+dimensions, so bounded directed sets converge in norm and every positive
+functional is normal; (ii) `1 = ∑ₘ zₘ` for minimal *central* projections, so
+`𝒜 ≅ ⊕ₘ zₘ𝒜` by **67IV**.2 `central_projections_sums_2`, each summand a
+factor; (iii) in a factor, a minimal projection `e` has `⟦e⟧ = 1`, **83V**
+`cceil_sum` writes `1 = ∑ₖ eₖ` with `eₖ ⪯ e`, polar decomposition supplies
+partial isometries `uₖ` with `uₖ*uₖ = eₖ`, `uₖuₖ* = e`, and
+`u_{kℓ} := uₖ*u_ℓ` is a system of matrix units; surjectivity is `eae = ‖a‖e`,
+proved by a norm-limit argument on `⌈‖a‖e − a⌉`.
+
+**Two things make that route markedly more expensive in Lean than the one
+taken.**
+
+1. **The statement carries no order.**  `fdcstar` is stated for
+   `[CStarAlgebra A] [FiniteDimensional ℂ A]` and *nothing else* — no
+   `PartialOrder A`, no `StarOrderedRing A`.  Every piece of A/VN machinery the
+   thesis's proof uses (`⌈·⌉`, `cceil`, `IsStarProjection`, polar
+   decomposition, 67IV.2, 83V) is stated over those instances, so the whole
+   argument would have to run under a `letI := CStarAlgebra.spectralOrder A`,
+   plus a proof of `VonNeumannAlgebra A` (movement (i), ~150–250 lines on its
+   own).
+2. **Movement (ii) needs the corner as a type.**  67IV.2 is deliberately
+   stated *concretely inside `A`* (that is what session 77 recorded), so it
+   does not hand you `⊕ₘ zₘ𝒜`; producing the direct sum means giving `zₘ𝒜` a
+   type with `CStarAlgebra`/`PartialOrder`/`StarOrderedRing`/`VonNeumannAlgebra`
+   instances.  That is exactly the carrier problem that has 84bIII costed at
+   1000–1600 lines.
+
+Mathlib's `IsSemisimpleRing.exists_algEquiv_pi_matrix_of_isAlgClosed`
+(`Mathlib/RingTheory/SimpleModule/IsAlgClosed.lean`) delivers movements (ii)
+and (iii) at once — as an **algebra** isomorphism — with no order, no von
+Neumann structure and no corner types.  The whole cost then sits in the
+∗-upgrade, and the ∗-upgrade turned out to need *no* corners either (§4).
+**This is a genuine divergence from the author's argument** and is recorded as
+such: the Lean proof does not check movements (i)–(iii); it checks the
+theorem.
+
+### 2. Skolem–Noether is genuinely absent from Mathlib, and is 100 lines
+
+`grep -r "Skolem" Mathlib/` finds only model theory (Löwenheim–Skolem); there
+is no inner-automorphism theory for `Matrix n n K`, no "unique simple module
+over a simple Artinian ring" in usable form, and `Mathlib/Algebra/Central/`
+has only `IsCentralSimple`'s definition.  The private
+**`matrix_exists_intertwiner`** supplies what is needed, with no module theory
+at all.  For `ψ : Matrix n n ℂ ≃ₐ[ℂ] Matrix n n ℂ` and a fixed index `i₀`, put
+
+    T X := ∑ⱼ ψ(E_{j i₀}) · X · E_{i₀ j}.
+
+*Every* `T X` intertwines: `ψ(E_{ab})·T X = ψ(E_{a i₀})·X·E_{i₀ b} = T X·E_{ab}`
+(only `j = b` resp. `j = a` survives), and `Matrix.induction_on'` extends this
+from matrix units to all `x`.  Some `T X` is non-zero, because
+`ψ(E_{i₀i₀})·T X·E_{i₀i₀} = ψ(E_{i₀i₀})·X·E_{i₀i₀}`, and taking
+`X = E_{q i₀}` for every `q` would otherwise force `ψ(E_{i₀i₀}) = 0`.  Finally
+a non-zero intertwiner is **invertible**: `u·(x·v) = ψ(x)·(u·v)`, so `ker u`
+is invariant under every matrix, and a non-zero vector generates everything
+(an explicit rank-one `x` sends `v` to any `w`), so `ker u = ⊥` and
+`Matrix.mulVec_injective_iff_isUnit` finishes.
+
+### 3. The ∗-upgrade needs no square root of a complex number and no
+positivity theory
+
+Transport the involution: `J x := φ (star (φ⁻¹ x))` is conjugate-linear,
+anti-multiplicative, unital and involutive, and satisfies
+`J x · x = 0 ⇒ x = 0` because `star a · a = 0 ⇒ a = 0` in a C*-algebra.  Then
+`ψ x := star (J x)` is an algebra automorphism, so by §2 there is an
+invertible `h` (namely `star u`) with
+
+    h · J x = star x · h    for all x.
+
+Applying that identity to `J x` and using `J∘J = id` shows `h⁻¹ · star h`
+commutes with everything, hence is scalar
+(`Matrix.mem_range_scalar_of_commute_single`), so `star h = λ • h`; taking
+`star` again gives `conj λ · λ = 1`.  **The obvious next step — take
+`μ = λ^{1/2}` and rescale — is avoidable**: whichever of `1 + λ` and
+`i(1 − λ)` is non-zero (they cannot both vanish) works as the scaling factor
+`α`, because `conj(1+λ)·λ = λ + |λ|² = 1 + λ` and
+`conj(i(1−λ))·λ = −i(λ − |λ|²) = i(1 − λ)`.  So `h' := α • h` is Hermitian,
+still invertible, still satisfies the identity.
+
+Definiteness is where the C*-hypothesis is spent a second time.  For a vector
+`v` let `x` be the matrix whose only non-zero column is `v`; then
+`star x · h' · x = (star v ⬝ᵥ h' *ᵥ v) · E_{i₀i₀}`, so
+`star v ⬝ᵥ h' *ᵥ v = 0` gives `J x · x = 0` and hence `v = 0`.  The Hermitian
+form of `h'` is therefore **anisotropic**, and with
+`Matrix.IsHermitian.spectral_theorem` that is the same as "all eigenvalues are
+non-zero and of one sign": testing at an eigenvector gives `dⱼ ≠ 0`, and at
+`√(−d_q)·w_p + √(d_p)·w_q` gives `0` if the signs differ.  Writing `s = ±1`
+for the common sign, `k := U·diag(√(s·dⱼ))·U*` is Hermitian with `k·k = s • h'`
+and (via `det`) invertible, and `θ x := k x k⁻¹` is the automorphism with
+`θ (J x) = star (θ x)`: from `(k k)·J x = star x·(k k)` one gets
+`k·J x·k⁻¹ = k⁻¹·star x·k`, which is `star (k x k⁻¹)` because `k` and `k⁻¹`
+are Hermitian.
+
+### 4. Blocks split without any corner algebra
+
+`J` fixes each block unit `eⱼ = Pi.single j 1`, because `zⱼ := φ⁻¹(eⱼ)` is a
+**central idempotent of `A`**, and *a central idempotent of a C*-algebra is
+self-adjoint*: centrality gives `IsStarNormal`, and Mathlib's
+`IsIdempotentElem.isSelfAdjoint_iff_isStarNormal` does the rest (three lines;
+the hand computation `z = z·z*` via `star a · a = 0` is unnecessary).  Given
+`J eⱼ = eⱼ`, anti-multiplicativity gives
+`J (Pi.single j x) = Pi.single j (Jⱼ x)` and `(J y) j = Jⱼ (y j)`, so all six
+hypotheses of §3's lemma transfer blockwise and `θ` is assembled with a
+hand-built `AlgEquiv` on the product (**Mathlib has no `AlgEquiv.piCongrRight`**
+— only the `LinearEquiv` and `AddEquiv` versions).  `StarAlgEquiv.ofAlgEquiv`
+turns `φ.trans θ` into the ∗-isomorphism.
+
+Two Lean notes.  (i) `set B := (∀ m, Matrix …)` for the *product type* silently
+breaks `simp` (`Pi.mul_apply`, `Pi.zero_apply` stop firing through the local
+definition); a `private abbrev MatProd M N` — reducible — is the fix, and also
+keeps the lines under 100 characters.  (ii) `Matrix.stdBasisMatrix` is now
+`Matrix.single`, and `Matrix.single_mul_mul_single` (`single i i' a * x *
+single j' j b = single i j (a * x i' j' * b)`) proves the whole
+`single p q 1 * single r s 1 = if q = r then single p s 1 else 0` table in
+four lines through `x = 1`.
+
+### 5. Semisimplicity of a finite-dimensional C*-algebra is 25 lines
+
+`IsArtinianRing.of_finite ℂ A` gives Artinian; `IsSemiprimaryRing.isNilpotent`
+(an *instance* for Artinian rings) gives `Ring.jacobson A ^ n = ⊥`.  For `x` in
+the radical, `y = star x · x` is self-adjoint and lies in the radical (a left
+ideal suffices), so `y^n = 0`, so `‖y‖^{2ⁿ} = ‖y^{2ⁿ}‖ = 0` by
+`IsSelfAdjoint.norm_pow_two_pow`, so `y = 0` and `‖x‖² = 0`.  Then
+`IsArtinianRing.isSemisimpleRing_iff_jacobson`.
+
+### 6. Corrections to the brief and to the survey
+
+* The brief's estimate of **~500–800 lines** for 84II was right (~640), but its
+  reason was not: it expected the star-upgrade to be "the bulk of the work" via
+  `x♯ = h⁻¹x*h` and "conjugate by `h^{1/2}`" — that part is real but modest;
+  the largest single block is Skolem–Noether, which the brief did not cost.
+* The survey's classification of 84II as **[L]** ("cited to the literature or
+  needs a carrier Mathlib lacks") was wrong on both counts: Mathlib has
+  Wedderburn–Artin over `ℂ`, and no new carrier was needed.
+* Session 77's "84II is downstream of 67IV.2" is true of the *thesis's* proof
+  and false of the Lean proof: `fdcstar` does not mention
+  `central_projections_sums_2`.  84bIII's use of it stands.
+* One typo in the thesis's own text, too small for ERRATA: vn.tex:5836 sets up
+  "let `f₁,…,f_M` be a basis for `𝒜*`" and then says "the functionals
+  `f₁,…,f_N` form a separating set too" — `N` should be `M` (the very next
+  display uses `M` correctly).  The argument itself is sound.
+* `Matrix.PosSemidef.sqrt` / `Matrix.PosDef.sqrt` do **not** exist; the
+  square root of a positive-definite matrix must be built from
+  `Matrix.IsHermitian.spectral_theorem`, or imported from `CFC.sqrt` through
+  the *scoped* `MatrixOrder` instances of `Mathlib/Analysis/Matrix/Order.lean`
+  (not done here, to avoid opening a scoped order on `Matrix` inside a file
+  that already carries an abstract order on `A`).
+
+### 7. What is left in A/VN
+
+`Basic.lean`'s **51IX** `Linfty_vn` (a construction job — Mathlib has no
+C*-algebra of bounded measurable functions mod a.e.) and `Division.lean`'s
+**84bIII** `hereditarilyAtomic_subalgebra` → **84bV** `ha_equalisers`.  84bIII
+is now unblocked (84II was its only Lean prerequisite) but is still the
+1000–1600 line assembly job costed in session 77: it needs the corner `cℬ` as
+a type with von Neumann instances, Zorn for a maximal orthogonal subfamily,
+and an `lp ∞` regrouping.  Mathematically `A/Proc`'s **125bII**
+`ha_second_adjunction` wants both.
+
 ## Session 77 — `A/VN`: **67IV.2 `central_projections_sums_2` is CLOSED, and it never needed 77III** (worker on `Theses/A/VN/`)
 
 A/VN **5 → 4** code `sorry`s.  Per file, each source run through `lean`

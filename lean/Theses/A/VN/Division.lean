@@ -16,6 +16,8 @@ the topologies and `Theses/A/VN/Projections.lean` for `ceil`, `suppProj`
 (`⌈a⌋`), `rangeProj` (`⌊a⌉`), `projSup`, `cceil`.
 -/
 import Theses.A.VN.Completeness
+import Mathlib.RingTheory.SimpleModule.IsAlgClosed
+import Mathlib.Analysis.Matrix.Spectrum
 
 open scoped ComplexOrder ComplexInnerProductSpace CStarAlgebra ENNReal
 open Filter Topology Theses Theses.A.CStar
@@ -3568,13 +3570,665 @@ end Pseudoinverse
 
 **84I** (vn.tex:5752): introduction — nothing to formalize. -/
 
+/-! ### Ingredients for 84II
+
+The proof below **diverges from the thesis's** (see PROVING-LOG): instead of
+showing that a finite-dimensional C*-algebra is a von Neumann algebra and
+building a system of matrix units by hand (vn.tex:5798–6027), it takes the
+*algebra* decomposition from Mathlib's Wedderburn–Artin theorem
+(`IsSemisimpleRing.exists_algEquiv_pi_matrix_of_isAlgClosed`) and upgrades it
+to a **∗**-isomorphism.  The upgrade needs Skolem–Noether for matrix algebras,
+which Mathlib does not have; it is proved here as
+`matrix_exists_intertwiner`. -/
+
+section FDCStar
+
+open Matrix
+
+variable {n : Type*} [Fintype n] [DecidableEq n]
+
+/-- A C*-algebra has trivial Jacobson radical (given that it is Artinian, so that
+the radical is nilpotent). -/
+private theorem cstar_jacobson_eq_bot (R : Type u) [CStarAlgebra R] [IsArtinianRing R] :
+    Ring.jacobson R = ⊥ := by
+  obtain ⟨n, hn⟩ : IsNilpotent (Ring.jacobson R) := IsSemiprimaryRing.isNilpotent
+  refine Submodule.eq_bot_iff _ |>.mpr fun x hx => ?_
+  set y : R := star x * x with hy
+  have hysa : IsSelfAdjoint y := by simp [hy, IsSelfAdjoint, star_mul]
+  have hyJ : y ∈ Ring.jacobson R := Ideal.mul_mem_left _ _ hx
+  have hyn : y ^ n = 0 := by
+    have : y ^ n ∈ (Ring.jacobson R) ^ n := Ideal.pow_mem_pow hyJ n
+    rw [hn] at this
+    simpa using this
+  have hpow : ∀ m : ℕ, n ≤ m → y ^ m = 0 := by
+    intro m hm
+    rw [← Nat.sub_add_cancel hm, pow_add, hyn, mul_zero]
+  have h2 : y ^ 2 ^ n = 0 := hpow _ (Nat.le_of_lt (Nat.lt_two_pow_self))
+  have hnn : ‖y‖ ^ 2 ^ n = 0 := by rw [← hysa.norm_pow_two_pow, h2, norm_zero]
+  have hy0 : y = 0 := by
+    have : ‖y‖ = 0 := by
+      simpa using pow_eq_zero_iff (n := 2 ^ n) (by positivity) |>.mp hnn
+    simpa using this
+  have hxx : ‖x‖ * ‖x‖ = 0 := by
+    rw [← CStarRing.norm_star_mul_self (x := x), ← hy, hy0, norm_zero]
+  have : ‖x‖ = 0 := by
+    rcases mul_eq_zero.mp hxx with h | h <;> exact h
+  simpa using this
+
+private theorem matrix_single_mul_single (p q r s : n) :
+    single p q (1 : ℂ) * single r s 1 = if q = r then single p s 1 else 0 := by
+  by_cases h : q = r
+  · subst h; rw [Matrix.single_mul_single_same]; simp
+  · simp only [h, if_false]
+    calc single p q (1 : ℂ) * single r s 1 = single p q (1 : ℂ) * 1 * single r s 1 := by
+          rw [mul_one]
+      _ = single p s (1 * (1 : Matrix n n ℂ) q r * 1) :=
+          Matrix.single_mul_mul_single _ _ _ _ _ _ _
+      _ = 0 := by simp [h]
+
+/-- **Skolem–Noether for matrix algebras** (absent from Mathlib): every ℂ-algebra
+automorphism of `Matrix n n ℂ` is inner. -/
+private theorem matrix_exists_intertwiner [Nonempty n]
+    (ψ : Matrix n n ℂ ≃ₐ[ℂ] Matrix n n ℂ) :
+    ∃ u : Matrix n n ℂ, IsUnit u ∧ ∀ x, ψ x * u = u * x := by
+  classical
+  set i₀ := Classical.arbitrary n with hi₀
+  set T : Matrix n n ℂ → Matrix n n ℂ :=
+    fun X => ∑ j : n, ψ (single j i₀ 1) * X * single i₀ j 1 with hT
+  have key : ∀ (X : Matrix n n ℂ) (a b : n), ψ (single a b 1) * T X = T X * single a b 1 := by
+    intro X a b
+    have hL : ψ (single a b 1) * T X = ψ (single a i₀ 1) * X * single i₀ b 1 := by
+      have e1 : ψ (single a b 1) * T X
+          = ∑ j : n, ψ (single a b 1 * single j i₀ 1) * X * single i₀ j 1 := by
+        rw [hT, Finset.mul_sum]
+        refine Finset.sum_congr rfl fun j _ => ?_
+        rw [map_mul]; noncomm_ring
+      rw [e1, Finset.sum_eq_single b]
+      · rw [matrix_single_mul_single]; simp
+      · intro j _ hj
+        rw [matrix_single_mul_single, if_neg (Ne.symm hj), map_zero, zero_mul, zero_mul]
+      · intro h; exact absurd (Finset.mem_univ b) h
+    have hR : T X * single a b 1 = ψ (single a i₀ 1) * X * single i₀ b 1 := by
+      have e1 : T X * single a b 1
+          = ∑ j : n, ψ (single j i₀ 1) * X * (single i₀ j 1 * single a b 1) := by
+        rw [hT, Finset.sum_mul]
+        refine Finset.sum_congr rfl fun j _ => ?_
+        noncomm_ring
+      rw [e1, Finset.sum_eq_single a]
+      · rw [matrix_single_mul_single]; simp
+      · intro j _ hj
+        rw [matrix_single_mul_single, if_neg hj, mul_zero]
+      · intro h; exact absurd (Finset.mem_univ a) h
+    rw [hL, hR]
+  have hsingle : ∀ (a b : n) (c : ℂ), single a b c = c • single a b 1 := by
+    intro a b c; ext p q; simp [Matrix.single_apply]
+  have key' : ∀ (X x : Matrix n n ℂ), ψ x * T X = T X * x := by
+    intro X x
+    induction x using Matrix.induction_on' with
+    | h_zero => simp
+    | h_add p q hp hq => rw [map_add, add_mul, hp, hq, mul_add]
+    | h_std_basis a b c =>
+        rw [hsingle, map_smul, smul_mul_assoc, key, mul_smul_comm]
+  have hex : ∃ X, T X ≠ 0 := by
+    by_contra hc
+    push_neg at hc
+    have hF : ∀ q : n, ψ (single i₀ i₀ 1) * single q i₀ (1 : ℂ) = 0 := by
+      intro q
+      have h1 : ψ (single i₀ i₀ 1) * T (single q i₀ 1) * single i₀ i₀ 1
+          = ψ (single i₀ i₀ 1) * single q i₀ (1 : ℂ) := by
+        have e1 : ψ (single i₀ i₀ 1) * T (single q i₀ 1) * single i₀ i₀ 1
+            = ∑ j : n, ψ (single i₀ i₀ 1 * single j i₀ 1) * (single q i₀ (1:ℂ)) *
+                (single i₀ j 1 * single i₀ i₀ 1) := by
+          rw [hT, Finset.mul_sum, Finset.sum_mul]
+          refine Finset.sum_congr rfl fun j _ => ?_
+          rw [map_mul]; noncomm_ring
+        rw [e1, Finset.sum_eq_single i₀]
+        · rw [mul_assoc, matrix_single_mul_single]
+          simp
+        · intro j _ hj
+          rw [matrix_single_mul_single, if_neg (Ne.symm hj), map_zero, zero_mul, zero_mul]
+        · intro h; exact absurd (Finset.mem_univ i₀) h
+      rw [← h1, hc, mul_zero, zero_mul]
+    have hz : ψ (single i₀ i₀ (1 : ℂ)) = 0 := by
+      ext a q
+      have h2 := congrFun (congrFun (hF q) a) i₀
+      simpa using h2
+    have h3 := ψ.injective (hz.trans (map_zero ψ).symm)
+    have h1 : (single i₀ i₀ (1 : ℂ)) i₀ i₀ = 0 := by rw [h3]; simp
+    simp at h1
+  obtain ⟨X, hX⟩ := hex
+  refine ⟨T X, ?_, fun x => key' X x⟩
+  rw [← Matrix.mulVec_injective_iff_isUnit]
+  have hker : ∀ v : n → ℂ, T X *ᵥ v = 0 → v = 0 := ?_
+  · intro v w hvw
+    have h0 : T X *ᵥ (v - w) = 0 := by rw [Matrix.mulVec_sub, hvw, sub_self]
+    exact sub_eq_zero.mp (hker _ h0)
+  intro v hv
+  by_contra hv0
+  obtain ⟨i, hi⟩ : ∃ i, v i ≠ 0 := by
+    by_contra h; push_neg at h; exact hv0 (funext h)
+  apply hX
+  have hall : ∀ w : n → ℂ, T X *ᵥ w = 0 := by
+    intro w
+    set x : Matrix n n ℂ := Matrix.of fun a b => if b = i then w a / v i else 0 with hx
+    have hxv : x *ᵥ v = w := by
+      ext a
+      simp only [hx, Matrix.mulVec, Matrix.of_apply, dotProduct]
+      rw [Finset.sum_eq_single i]
+      · have hii : (if i = i then w a / v i else 0) = w a / v i := by simp
+        rw [hii]
+        field_simp
+      · intro j _ hj; simp [hj]
+      · intro h; exact absurd (Finset.mem_univ i) h
+    calc T X *ᵥ w = T X *ᵥ (x *ᵥ v) := by rw [hxv]
+      _ = (T X * x) *ᵥ v := by rw [Matrix.mulVec_mulVec]
+      _ = (ψ x * T X) *ᵥ v := by rw [key' X x]
+      _ = ψ x *ᵥ (T X *ᵥ v) := by rw [Matrix.mulVec_mulVec]
+      _ = 0 := by rw [hv, Matrix.mulVec_zero]
+  ext a b
+  have h4 := congrFun (hall (Pi.single b 1)) a
+  simpa [Matrix.mulVec_single] using h4
+
+/-- Given a conjugate-linear anti-automorphism `J` of `Matrix n n ℂ` which is
+involutive and "definite" (`J x * x = 0 → x = 0`), there is an algebra
+automorphism `θ` turning `J` into the conjugate transpose. -/
+private theorem matrix_exists_algEquiv_conj [Nonempty n]
+    (J : Matrix n n ℂ → Matrix n n ℂ)
+    (hadd : ∀ x y, J (x + y) = J x + J y)
+    (hsmul : ∀ (c : ℂ) x, J (c • x) = (starRingEnd ℂ) c • J x)
+    (hmul : ∀ x y, J (x * y) = J y * J x)
+    (hone : J 1 = 1)
+    (hinvol : ∀ x, J (J x) = x)
+    (hdefinite : ∀ x, J x * x = 0 → x = 0) :
+    ∃ θ : Matrix n n ℂ ≃ₐ[ℂ] Matrix n n ℂ, ∀ x, θ (J x) = star (θ x) := by
+  classical
+  -- Step 1: `ψ x = star (J x)` is an algebra automorphism.
+  have hψadd : ∀ x y, star (J (x + y)) = star (J x) + star (J y) := by
+    intro x y; rw [hadd, star_add]
+  have hψsmul : ∀ (c : ℂ) x, star (J (c • x)) = c • star (J x) := by
+    intro c x; rw [hsmul, star_smul]; simp
+  have hψmul : ∀ x y, star (J (x * y)) = star (J x) * star (J y) := by
+    intro x y; rw [hmul, star_mul]
+  let ψL : Matrix n n ℂ →ₗ[ℂ] Matrix n n ℂ :=
+    { toFun := fun x => star (J x)
+      map_add' := hψadd
+      map_smul' := by intro c x; simpa using hψsmul c x }
+  let ψA : Matrix n n ℂ →ₐ[ℂ] Matrix n n ℂ :=
+    AlgHom.ofLinearMap ψL (by simpa [ψL] using congrArg star hone) (by
+      intro x y; simpa [ψL] using hψmul x y)
+  have hbij : Function.Bijective (fun x => star (J x) : Matrix n n ℂ → Matrix n n ℂ) := by
+    refine Function.bijective_iff_has_inverse.mpr ⟨fun y => J (star y), ?_, ?_⟩
+    · intro x; simp [hinvol]
+    · intro y; simp [hinvol]
+  let ψ : Matrix n n ℂ ≃ₐ[ℂ] Matrix n n ℂ := AlgEquiv.ofBijective ψA hbij
+  have hψapp : ∀ x, ψ x = star (J x) := fun x => rfl
+  -- Step 2: `ψ` is inner, giving `h` with `h * J x = star x * h`.
+  obtain ⟨u, hu, hcomm⟩ := matrix_exists_intertwiner ψ
+  set h : Matrix n n ℂ := star u with hhdef
+  have hh : IsUnit h := hu.star
+  have hrel : ∀ x, h * J x = star x * h := by
+    intro x
+    have h1 : star (J x) * u = u * x := by rw [← hψapp]; exact hcomm x
+    have h2 := congrArg star h1
+    rw [star_mul, star_mul, star_star] at h2
+    exact h2
+  have hdet : IsUnit h.det := (Matrix.isUnit_iff_isUnit_det h).mp hh
+  have hli : h⁻¹ * h = 1 := Matrix.nonsing_inv_mul h hdet
+  have hri : h * h⁻¹ = 1 := Matrix.mul_nonsing_inv h hdet
+  have hJx : ∀ x, J x = h⁻¹ * (star x * h) := by
+    intro x
+    rw [← hrel x, ← mul_assoc, hli, one_mul]
+  -- Step 3: `star h` is a scalar multiple of `h`.
+  have hstarinv : star h⁻¹ * star h = 1 := by rw [← star_mul, hri, star_one]
+  have hcentral : ∀ x, (star h⁻¹ * h) * x = x * (star h⁻¹ * h) := by
+    intro x
+    have e1 : h * x = star h * (x * (star h⁻¹ * h)) := by
+      have := hrel (J x)
+      rw [hinvol] at this
+      rw [this, hJx x]
+      rw [star_mul, star_mul, star_star]
+      simp only [mul_assoc, star_star]
+    calc (star h⁻¹ * h) * x = star h⁻¹ * (h * x) := by noncomm_ring
+      _ = star h⁻¹ * (star h * (x * (star h⁻¹ * h))) := by rw [e1]
+      _ = (star h⁻¹ * star h) * (x * (star h⁻¹ * h)) := by noncomm_ring
+      _ = x * (star h⁻¹ * h) := by rw [hstarinv, one_mul]
+  obtain ⟨μ, hμ⟩ : (star h⁻¹ * h) ∈ Set.range (Matrix.scalar n) := by
+    refine Matrix.mem_range_scalar_of_commute_single ?_
+    intro i j _
+    exact (hcentral (Matrix.single i j 1)).symm
+  have hscalarone : (Matrix.scalar n μ) = μ • (1 : Matrix n n ℂ) := by
+    ext p q; simp [Matrix.scalar, Matrix.one_apply, Matrix.diagonal_apply]
+  have hhstar : star h = (starRingEnd ℂ) μ • h := by
+    have e1 : h = μ • star h := by
+      calc h = star h * (star h⁻¹ * h) := by rw [← mul_assoc, ← star_mul, hli, star_one, one_mul]
+        _ = star h * (Matrix.scalar n μ) := by rw [← hμ]
+        _ = μ • star h := by rw [hscalarone, mul_smul_comm, mul_one]
+    calc star h = star (μ • star h) := by rw [← e1]
+      _ = (starRingEnd ℂ) μ • h := by rw [star_smul, star_star]; rfl
+  -- Step 4: rescale `h` to a self-adjoint `h'`.
+  have hne : h ≠ 0 := by
+    intro h0
+    have : (1 : Matrix n n ℂ) = 0 := by rw [← hli, h0, mul_zero]
+    exact one_ne_zero this
+  set lam : ℂ := (starRingEnd ℂ) μ with hlam
+  have habs : (starRingEnd ℂ) lam * lam = 1 := by
+    have e2 : h = ((starRingEnd ℂ) lam * lam) • h := by
+      calc h = star (star h) := (star_star h).symm
+        _ = star (lam • h) := by rw [hhstar]
+        _ = (starRingEnd ℂ) lam • star h := by rw [star_smul]; rfl
+        _ = (starRingEnd ℂ) lam • (lam • h) := by rw [hhstar]
+        _ = ((starRingEnd ℂ) lam * lam) • h := by rw [smul_smul]
+    have e3 : (((starRingEnd ℂ) lam * lam) - 1) • h = 0 := by
+      rw [sub_smul, one_smul, ← e2, sub_self]
+    rcases smul_eq_zero.mp e3 with e4 | e4
+    · linear_combination (norm := ring_nf) e4
+    · exact absurd e4 hne
+  obtain ⟨α, hα0, hαlam⟩ : ∃ α : ℂ, α ≠ 0 ∧ (starRingEnd ℂ) α * lam = α := by
+    by_cases hc : 1 + lam = 0
+    · refine ⟨Complex.I, Complex.I_ne_zero, ?_⟩
+      have hlm : lam = -1 := by linear_combination hc
+      rw [hlm]
+      simp
+    · refine ⟨1 + lam, hc, ?_⟩
+      rw [map_add, map_one, add_mul, one_mul, habs]
+      ring
+  set h' : Matrix n n ℂ := α • h with hh'def
+  have hsa : star h' = h' := by
+    rw [hh'def, star_smul, hhstar, smul_smul]
+    congr 1
+  set g : Matrix n n ℂ := α⁻¹ • h⁻¹ with hgdef
+  have hg1 : g * h' = 1 := by
+    rw [hgdef, hh'def, smul_mul_smul_comm, hli, inv_mul_cancel₀ hα0, one_smul]
+  have hg2 : h' * g = 1 := by
+    rw [hgdef, hh'def, smul_mul_smul_comm, hri, mul_inv_cancel₀ hα0, one_smul]
+  have hrel' : ∀ x, h' * J x = star x * h' := by
+    intro x
+    rw [hh'def, smul_mul_assoc, hrel, mul_smul_comm]
+  -- Step 5: the Hermitian form of `h'` is anisotropic.
+  have haniso : ∀ v : n → ℂ, star v ⬝ᵥ (h' *ᵥ v) = 0 → v = 0 := by
+    intro v hv
+    set i₀ := Classical.arbitrary n with hi₀
+    set x : Matrix n n ℂ := Matrix.of (fun a b => if b = i₀ then v a else 0) with hxdef
+    have hstarx : ∀ a q, (star x) a q = if a = i₀ then (starRingEnd ℂ) (v q) else 0 := by
+      intro a q
+      rw [Matrix.star_eq_conjTranspose, Matrix.conjTranspose_apply, hxdef]
+      simp only [Matrix.of_apply]
+      split_ifs with h1 <;> simp
+    have hhx : ∀ q b, (h' * x) q b = if b = i₀ then (h' *ᵥ v) q else 0 := by
+      intro q b
+      rw [Matrix.mul_apply]
+      simp only [hxdef, Matrix.of_apply]
+      split_ifs with hb
+      · simp [Matrix.mulVec, dotProduct]
+      · simp
+    have hxz : star x * (h' * x) = 0 := by
+      ext a b
+      rw [Matrix.mul_apply]
+      simp only [hstarx, hhx, Matrix.zero_apply]
+      by_cases ha : a = i₀ <;> by_cases hb : b = i₀ <;> simp [ha, hb]
+      simpa [dotProduct, Matrix.mulVec] using hv
+    have hJxx : J x * x = 0 := by
+      have e1 : h' * (J x * x) = 0 := by
+        rw [← mul_assoc, hrel', mul_assoc, hxz]
+      calc J x * x = (g * h') * (J x * x) := by rw [hg1, one_mul]
+        _ = g * (h' * (J x * x)) := by rw [mul_assoc]
+        _ = 0 := by simp [e1]
+    have hx0 := hdefinite x hJxx
+    funext a
+    have := congrFun (congrFun hx0 a) i₀
+    simpa [hxdef] using this
+  -- Step 6: `h'` is (positive or negative) definite.
+  have hHerm : h'.IsHermitian := by
+    rw [Matrix.IsHermitian, ← Matrix.star_eq_conjTranspose]; exact hsa
+  set d := hHerm.eigenvalues with hd
+  set w : n → (n → ℂ) := fun j => ⇑(hHerm.eigenvectorBasis j) with hw
+  have hmv : ∀ j, h' *ᵥ w j = ((d j : ℂ)) • w j := by
+    intro j
+    rw [hw]
+    simp only
+    rw [hHerm.mulVec_eigenvectorBasis]
+    funext i
+    simp [Complex.real_smul]
+    left
+    rw [hd]
+  have hip : ∀ p q, star (w p) ⬝ᵥ w q = if p = q then 1 else 0 := by
+    intro p q
+    have h1 := orthonormal_iff_ite.mp hHerm.eigenvectorBasis.orthonormal p q
+    rw [EuclideanSpace.inner_eq_star_dotProduct] at h1
+    rw [dotProduct_comm]
+    exact h1
+  have hwne : ∀ j, w j ≠ 0 := by
+    intro j hj
+    have h1 := hip j j
+    rw [hj] at h1
+    simp at h1
+  have hd0 : ∀ j, d j ≠ 0 := by
+    intro j hj0
+    refine hwne j (haniso _ ?_)
+    rw [hmv, dotProduct_smul, hip]
+    simp [hj0]
+  have hB : ∀ (c₁ c₂ : ℂ) (p q : n), p ≠ q →
+      star ((c₁ • w p) + (c₂ • w q)) ⬝ᵥ (h' *ᵥ ((c₁ • w p) + (c₂ • w q)))
+        = (starRingEnd ℂ) c₁ * c₁ * (d p : ℂ) + (starRingEnd ℂ) c₂ * c₂ * (d q : ℂ) := by
+    intro c₁ c₂ p q hpq
+    simp only [Matrix.mulVec_add, Matrix.mulVec_smul, hmv, star_add, star_smul,
+      add_dotProduct, dotProduct_add, smul_dotProduct, dotProduct_smul, hip,
+      smul_eq_mul, smul_smul]
+    simp [hpq, Ne.symm hpq]
+    ring
+  have hmix : ∀ p q, 0 < d p → d q < 0 → False := by
+    intro p q hp hq
+    have hpq : p ≠ q := by rintro rfl; linarith
+    set a : ℝ := Real.sqrt (-(d q)) with ha
+    set b : ℝ := Real.sqrt (d p) with hb
+    have ha0 : 0 < a := Real.sqrt_pos.mpr (by linarith)
+    have haa : a * a = -(d q) := Real.mul_self_sqrt (by linarith)
+    have hbb : b * b = d p := Real.mul_self_sqrt (le_of_lt hp)
+    set v : n → ℂ := ((a : ℂ) • w p) + ((b : ℂ) • w q) with hv
+    have hz : star v ⬝ᵥ (h' *ᵥ v) = 0 := by
+      rw [hv, hB _ _ _ _ hpq]
+      simp only [Complex.conj_ofReal]
+      have : ((a * a * d p + b * b * d q : ℝ) : ℂ) = 0 := by
+        rw [haa, hbb]
+        norm_cast
+        ring
+      push_cast at this
+      linear_combination this
+    have hv0 := haniso v hz
+    have hpv : star (w p) ⬝ᵥ v = (a : ℂ) := by
+      rw [hv, dotProduct_add, dotProduct_smul, dotProduct_smul, hip, hip]
+      simp [hpq]
+    rw [hv0] at hpv
+    simp at hpv
+    exact absurd hpv (by positivity)
+  set j₀ := Classical.arbitrary n with hj₀
+  set s : ℝ := if 0 < d j₀ then 1 else -1 with hs
+  have hspos : ∀ j, 0 < s * d j := by
+    intro j
+    by_cases hc : 0 < d j₀
+    · rw [hs, if_pos hc, one_mul]
+      rcases lt_trichotomy (d j) 0 with hj | hj | hj
+      · exact absurd (hmix j₀ j hc hj) (fun h => h)
+      · exact absurd hj (hd0 j)
+      · exact hj
+    · have hj₀neg : d j₀ < 0 := lt_of_le_of_ne (not_lt.mp hc) (hd0 j₀)
+      rw [hs, if_neg hc]
+      rcases lt_trichotomy (d j) 0 with hj | hj | hj
+      · linarith
+      · exact absurd hj (hd0 j)
+      · exact absurd (hmix j j₀ hj hj₀neg) (fun h => h)
+  -- Step 7: the square root `k` and the automorphism `θ`.
+  set U : Matrix n n ℂ := (hHerm.eigenvectorUnitary : Matrix n n ℂ) with hU
+  have hUU : star U * U = 1 := hHerm.eigenvectorUnitary.2.1
+  have hUU' : U * star U = 1 := hHerm.eigenvectorUnitary.2.2
+  set D2 : Matrix n n ℂ := Matrix.diagonal (fun j => ((Real.sqrt (s * d j) : ℝ) : ℂ)) with hD2
+  set k : Matrix n n ℂ := U * D2 * star U with hk
+  have hspec : h' = U * Matrix.diagonal (fun j => ((d j : ℝ) : ℂ)) * star U := by
+    conv_lhs => rw [hHerm.spectral_theorem]
+    rfl
+  have hkk : k * k = (s : ℂ) • h' := by
+    have e1 : D2 * D2 = Matrix.diagonal (fun j => (((s * d j : ℝ)) : ℂ)) := by
+      rw [hD2, Matrix.diagonal_mul_diagonal]
+      congr 1
+      funext j
+      have hj := hspos j
+      rw [← Complex.ofReal_mul, Real.mul_self_sqrt (le_of_lt hj)]
+    calc k * k = U * D2 * (star U * U) * D2 * star U := by rw [hk]; noncomm_ring
+      _ = U * (D2 * D2) * star U := by rw [hUU]; noncomm_ring
+      _ = U * Matrix.diagonal (fun j => (((s * d j : ℝ)) : ℂ)) * star U := by rw [e1]
+      _ = (s : ℂ) • (U * Matrix.diagonal (fun j => ((d j : ℝ) : ℂ)) * star U) := by
+            rw [show Matrix.diagonal (fun j => (((s * d j : ℝ)) : ℂ))
+                  = (s : ℂ) • Matrix.diagonal (fun j => ((d j : ℝ) : ℂ)) by
+                rw [← Matrix.diagonal_smul]
+                congr 1
+                funext j
+                simp only [Pi.smul_apply, smul_eq_mul]
+                push_cast
+                ring]
+            rw [Matrix.mul_smul, Matrix.smul_mul]
+      _ = (s : ℂ) • h' := by rw [← hspec]
+  have hsne : (s : ℂ) ≠ 0 := by
+    have := hspos j₀
+    have hs0 : s ≠ 0 := by intro h0; rw [h0, zero_mul] at this; exact lt_irrefl 0 this
+    exact_mod_cast hs0
+  have hD2star : star D2 = D2 := by
+    rw [hD2, Matrix.star_eq_conjTranspose, Matrix.diagonal_conjTranspose]
+    congr 1
+    funext j
+    simp
+  have hkstar : star k = k := by
+    rw [hk, star_mul, star_mul, star_star, hD2star]
+    noncomm_ring
+  have hkunit : IsUnit k := by
+    have hh'unit : IsUnit h' := ⟨⟨h', g, hg2, hg1⟩, rfl⟩
+    have h1 : IsUnit (k * k) := by
+      rw [hkk]
+      refine ⟨⟨(s : ℂ) • h', (s : ℂ)⁻¹ • g, ?_, ?_⟩, rfl⟩
+      · rw [smul_mul_smul_comm, hg2, mul_inv_cancel₀ hsne, one_smul]
+      · rw [smul_mul_smul_comm, hg1, inv_mul_cancel₀ hsne, one_smul]
+    rw [Matrix.isUnit_iff_isUnit_det] at h1 ⊢
+    rw [Matrix.det_mul] at h1
+    exact isUnit_of_mul_isUnit_left h1
+  have hkdet : IsUnit k.det := (Matrix.isUnit_iff_isUnit_det k).mp hkunit
+  have hkl : k⁻¹ * k = 1 := Matrix.nonsing_inv_mul k hkdet
+  have hkr : k * k⁻¹ = 1 := Matrix.mul_nonsing_inv k hkdet
+  have hkistar : star k⁻¹ = k⁻¹ := by
+    have e0 : star k⁻¹ * k = 1 := by
+      have e00 : star k⁻¹ * star k = star (k * k⁻¹) := (star_mul _ _).symm
+      rw [hkstar] at e00
+      rw [e00, hkr, star_one]
+    calc star k⁻¹ = star k⁻¹ * (k * k⁻¹) := by rw [hkr, mul_one]
+      _ = (star k⁻¹ * k) * k⁻¹ := (mul_assoc _ _ _).symm
+      _ = k⁻¹ := by rw [e0, one_mul]
+  have hkrel : ∀ x, (k * k) * J x = star x * (k * k) := by
+    intro x
+    calc (k * k) * J x = ((s : ℂ) • h') * J x := by rw [hkk]
+      _ = (s : ℂ) • (h' * J x) := smul_mul_assoc _ _ _
+      _ = (s : ℂ) • (star x * h') := by rw [hrel']
+      _ = star x * ((s : ℂ) • h') := (mul_smul_comm _ _ _).symm
+      _ = star x * (k * k) := by rw [hkk]
+  refine ⟨{ toFun := fun x => k * x * k⁻¹
+            invFun := fun y => k⁻¹ * y * k
+            left_inv := by
+              intro x
+              show k⁻¹ * (k * x * k⁻¹) * k = x
+              calc k⁻¹ * (k * x * k⁻¹) * k = (k⁻¹ * k) * x * (k⁻¹ * k) := by noncomm_ring
+                _ = x := by rw [hkl, one_mul, mul_one]
+            right_inv := by
+              intro y
+              show k * (k⁻¹ * y * k) * k⁻¹ = y
+              calc k * (k⁻¹ * y * k) * k⁻¹ = (k * k⁻¹) * y * (k * k⁻¹) := by noncomm_ring
+                _ = y := by rw [hkr, one_mul, mul_one]
+            map_mul' := by
+              intro x y
+              show k * (x * y) * k⁻¹ = (k * x * k⁻¹) * (k * y * k⁻¹)
+              calc k * (x * y) * k⁻¹ = k * x * (k⁻¹ * k) * y * k⁻¹ := by
+                    rw [hkl]; noncomm_ring
+                _ = (k * x * k⁻¹) * (k * y * k⁻¹) := by noncomm_ring
+            map_add' := by
+              intro x y
+              show k * (x + y) * k⁻¹ = k * x * k⁻¹ + k * y * k⁻¹
+              noncomm_ring
+            commutes' := by
+              intro c
+              show k * (algebraMap ℂ (Matrix n n ℂ) c) * k⁻¹ = algebraMap ℂ (Matrix n n ℂ) c
+              rw [Algebra.algebraMap_eq_smul_one, Matrix.mul_smul, mul_one,
+                Matrix.smul_mul, hkr] }, ?_⟩
+  intro x
+  show k * J x * k⁻¹ = star (k * x * k⁻¹)
+  rw [star_mul, star_mul, hkstar, hkistar]
+  have e1 : k * J x = k⁻¹ * (star x * (k * k)) := by
+    rw [← hkrel, ← mul_assoc, ← mul_assoc, hkl, one_mul]
+  calc k * J x * k⁻¹ = (k⁻¹ * (star x * (k * k))) * k⁻¹ := by rw [e1]
+    _ = k⁻¹ * star x * k * (k * k⁻¹) := by noncomm_ring
+    _ = k⁻¹ * (star x * k) := by rw [hkr, mul_one, mul_assoc]
+
+/-- A central idempotent of a C*-algebra is self-adjoint. -/
+private theorem central_idempotent_isSelfAdjoint {R : Type u} [CStarAlgebra R] (z : R)
+    (hz : z * z = z) (hcen : ∀ a : R, z * a = a * z) : star z = z := by
+  have hidem : IsIdempotentElem z := hz
+  have hnormal : IsStarNormal z := ⟨(hcen (star z)).symm⟩
+  exact (hidem.isSelfAdjoint_iff_isStarNormal.mpr hnormal).star_eq
+
+
+/-- Abbreviation for the target of `fdcstar`: a finite product of full matrix
+algebras.  Reducible, so that instance search and `simp` see through it. -/
+private abbrev MatProd (M : ℕ) (N : Fin M → ℕ) :=
+  ∀ m : Fin M, Matrix (Fin (N m)) (Fin (N m)) ℂ
+
 /-- **84II** (`fdcstar`, vn.tex:5756, Theorem): every finite-dimensional
 C*-algebra is (miu-isomorphic to) a finite direct sum of full matrix
 algebras `⊕ₘ M_{Nₘ}`. -/
 theorem fdcstar (A : Type u) [CStarAlgebra A] [FiniteDimensional ℂ A] :
     ∃ (M : ℕ) (N : Fin M → ℕ),
-      Nonempty (A ≃⋆ₐ[ℂ] ∀ m : Fin M, Matrix (Fin (N m)) (Fin (N m)) ℂ) :=
-  sorry
+      Nonempty (A ≃⋆ₐ[ℂ] ∀ m : Fin M, Matrix (Fin (N m)) (Fin (N m)) ℂ) := by
+  classical
+  have : IsArtinianRing A := IsArtinianRing.of_finite ℂ A
+  have : IsSemisimpleRing A :=
+    IsArtinianRing.isSemisimpleRing_iff_jacobson.mpr (cstar_jacobson_eq_bot A)
+  obtain ⟨M, N, hN, ⟨φ⟩⟩ := IsSemisimpleRing.exists_algEquiv_pi_matrix_of_isAlgClosed ℂ A
+  refine ⟨M, N, ?_⟩
+  set J : (MatProd M N) →
+      (MatProd M N) := fun y => φ (star (φ.symm y)) with hJ
+  have hJsymm : ∀ y, φ.symm (J y) = star (φ.symm y) := by
+    intro y; rw [hJ]; simp
+  have hJadd : ∀ x y, J (x + y) = J x + J y := by
+    intro x y; rw [hJ]; simp
+  have hJsmul : ∀ (c : ℂ) x, J (c • x) = (starRingEnd ℂ) c • J x := by
+    intro c x; rw [hJ]; simp
+  have hJmul : ∀ x y, J (x * y) = J y * J x := by
+    intro x y; rw [hJ]; simp [star_mul]
+  have hJone : J 1 = 1 := by rw [hJ]; simp
+  have hJinvol : ∀ x, J (J x) = x := by
+    intro x; rw [hJ]; simp
+  have hJdef : ∀ y, J y * y = 0 → y = 0 := by
+    intro y hy
+    have h1 : star (φ.symm y) * φ.symm y = 0 := by
+      rw [← hJsymm, ← map_mul, hy, map_zero]
+    have := (CStarRing.star_mul_self_eq_zero_iff _).mp h1
+    simpa using congrArg φ this
+  -- `J` fixes each block unit
+  have hJe : ∀ m : Fin M, J (Pi.single m 1) = Pi.single m 1 := by
+    intro m
+    have hsa : star (φ.symm (Pi.single m 1 : MatProd M N))
+        = φ.symm (Pi.single m 1 : MatProd M N) := by
+      refine central_idempotent_isSelfAdjoint _ ?_ ?_
+      · rw [← map_mul]
+        congr 1
+        funext m'
+        rcases eq_or_ne m m' with rfl | h
+        · simp [Pi.mul_apply]
+        · simp [Pi.mul_apply, Pi.single_eq_of_ne (Ne.symm h)]
+      · intro a
+        have e0 : (Pi.single m 1 : MatProd M N) * φ a = φ a * Pi.single m 1 := by
+          funext m'
+          rcases eq_or_ne m m' with rfl | h
+          · simp [Pi.mul_apply]
+          · simp [Pi.mul_apply, Pi.single_eq_of_ne (Ne.symm h)]
+        calc φ.symm (Pi.single m 1 : MatProd M N) * a
+            = φ.symm ((Pi.single m 1 : MatProd M N) * φ a) := by simp
+          _ = φ.symm (φ a * (Pi.single m 1 : MatProd M N)) := by rw [e0]
+          _ = a * φ.symm (Pi.single m 1 : MatProd M N) := by simp
+    rw [hJ]
+    show φ (star (φ.symm (Pi.single m 1 : MatProd M N))) = Pi.single m 1
+    rw [hsa]
+    simp
+  -- block components of `J`
+  set Jm : ∀ m : Fin M, Matrix (Fin (N m)) (Fin (N m)) ℂ → Matrix (Fin (N m)) (Fin (N m)) ℂ :=
+    fun m x => (J (Pi.single m x)) m with hJm
+  have hJzero : J 0 = 0 := by rw [hJ]; simp
+  have hsingle_mul : ∀ (m : Fin M) (y : MatProd M N),
+      (Pi.single m 1 : MatProd M N) * y = Pi.single m (y m) := by
+    intro m y
+    funext m'
+    rcases eq_or_ne m m' with rfl | h
+    · simp [Pi.mul_apply]
+    · simp [Pi.mul_apply, Pi.single_eq_of_ne (Ne.symm h)]
+  have hmul_single : ∀ (m : Fin M) (y : MatProd M N),
+      y * (Pi.single m 1 : MatProd M N) = Pi.single m (y m) := by
+    intro m y
+    funext m'
+    rcases eq_or_ne m m' with rfl | h
+    · simp [Pi.mul_apply]
+    · simp [Pi.mul_apply, Pi.single_eq_of_ne (Ne.symm h)]
+  have hsingle_mul_single : ∀ (m : Fin M) (x y : Matrix (Fin (N m)) (Fin (N m)) ℂ),
+      (Pi.single m x : MatProd M N) * Pi.single m y = Pi.single m (x * y) := by
+    intro m x y
+    funext m'
+    rcases eq_or_ne m m' with rfl | h
+    · simp [Pi.mul_apply]
+    · simp [Pi.mul_apply, Pi.single_eq_of_ne (Ne.symm h)]
+  have hJblock : ∀ (m : Fin M) (y : MatProd M N), (J y) m = Jm m (y m) := by
+    intro m y
+    have e1 : J (Pi.single m (y m)) = (Pi.single m 1 : MatProd M N) * J y := by
+      rw [← hmul_single m y, hJmul, hJe]
+    show (J y) m = (J (Pi.single m (y m))) m
+    rw [e1, hsingle_mul]
+    simp
+  have hJmzero : ∀ m : Fin M, Jm m 0 = 0 := by
+    intro m
+    show (J (Pi.single m (0 : Matrix (Fin (N m)) (Fin (N m)) ℂ))) m = 0
+    rw [Pi.single_zero, hJzero]
+    rfl
+  have hJsingle : ∀ (m : Fin M) (x : Matrix (Fin (N m)) (Fin (N m)) ℂ),
+      J (Pi.single m x) = Pi.single m (Jm m x) := by
+    intro m x
+    funext m'
+    rw [hJblock m' (Pi.single m x)]
+    rcases eq_or_ne m m' with rfl | h
+    · simp
+    · rw [Pi.single_eq_of_ne (Ne.symm h), Pi.single_eq_of_ne (Ne.symm h), hJmzero]
+  have hθ : ∀ m : Fin M, ∃ θ : Matrix (Fin (N m)) (Fin (N m)) ℂ ≃ₐ[ℂ]
+      Matrix (Fin (N m)) (Fin (N m)) ℂ, ∀ x, θ (Jm m x) = star (θ x) := by
+    intro m
+    have : Nonempty (Fin (N m)) := ⟨⟨0, Nat.pos_of_ne_zero (hN m).1⟩⟩
+    refine matrix_exists_algEquiv_conj (Jm m) ?_ ?_ ?_ ?_ ?_ ?_
+    · intro x y
+      show (J (Pi.single m (x + y))) m = (J (Pi.single m x)) m + (J (Pi.single m y)) m
+      rw [Pi.single_add, hJadd]
+      rfl
+    · intro c x
+      show (J (Pi.single m (c • x))) m = (starRingEnd ℂ) c • (J (Pi.single m x)) m
+      rw [Pi.single_smul, hJsmul]
+      rfl
+    · intro x y
+      show (J (Pi.single m (x * y))) m = (J (Pi.single m y)) m * (J (Pi.single m x)) m
+      rw [← hsingle_mul_single, hJmul]
+      rfl
+    · show (J (Pi.single m 1)) m = 1
+      rw [hJe]
+      simp
+    · intro x
+      have e2 := hJinvol (Pi.single m x)
+      rw [hJsingle, hJsingle] at e2
+      have e3 := congrFun e2 m
+      simpa using e3
+    · intro x hx
+      have e1 : J (Pi.single m x) * (Pi.single m x : MatProd M N) = 0 := by
+        rw [hJsingle, hsingle_mul_single, hx, Pi.single_zero]
+      have e2 := hJdef _ e1
+      have e3 := congrFun e2 m
+      simpa using e3
+  choose θ hθ using hθ
+  refine ⟨?_⟩
+  refine StarAlgEquiv.ofAlgEquiv (φ.trans
+    { toFun := fun y m => θ m (y m)
+      invFun := fun y m => (θ m).symm (y m)
+      left_inv := fun y => funext fun m => (θ m).symm_apply_apply (y m)
+      right_inv := fun y => funext fun m => (θ m).apply_symm_apply (y m)
+      map_mul' := fun x y => funext fun m => map_mul (θ m) _ _
+      map_add' := fun x y => funext fun m => map_add (θ m) _ _
+      commutes' := fun c => funext fun m => by
+        simp only [Pi.algebraMap_apply]
+        exact (θ m).commutes c }) ?_
+  intro a
+  have e1 : φ (star a) = J (φ a) := by rw [hJ]; simp
+  show (fun m => θ m ((φ (star a)) m)) = star (fun m => θ m ((φ a) m))
+  funext m
+  rw [e1, hJblock, hθ m]
+  rfl
+
+end FDCStar
 
 /-! **84aI** (`cstar-no-pu-equalisers-example`, vn.tex:6007, Example): the
 pu-maps `f, g : ℂ⁴ → ℂ`, `f(a,b,c,d) = ½(a+b)`, `g(a,b,c,d) = ½(c+d)` have

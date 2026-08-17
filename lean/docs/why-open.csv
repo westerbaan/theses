@@ -20,9 +20,8 @@ rigid_expansion|costed||~80-120 lines; needs neither Goursat nor 15V, using Math
 Linfty_vn|costed||51IX needs an L-infinity carrier that Mathlib lacks; rendered with a quotient map, still unbuilt
 carrier_ad_operator|costed||best isolated target in Projections.lean: the Hilbert-space form of the proved carrier_ad
 div_usc|awaiting-ruling||QUESTIONS A5: the second conjunct is false; the ultraweak repair is proved as div_uwc, ruling pending
-fdcstar|costed||84II, ~500-800 lines: Mathlib's IsSemisimpleRing.exists_algEquiv_pi_matrix_of_isAlgClosed gives the shape and semisimplicity of a f.d. C*-algebra is cheap, but it yields an algebra iso and there is no Skolem-Noether in Mathlib, so the upgrade to a star iso (or the thesis's matrix-unit construction) is the bulk; needs 67IV.2, proved in session 77
 ha_equalisers|blocked|hereditarilyAtomic_subalgebra|84bV, ~150-300 lines once 84bIII lands; its other input 47V was proved in session 50
-hereditarilyAtomic_subalgebra|costed|fdcstar|84bIII, ~1000-1600 lines and downstream of 84II: the mathematics is short but the assembly needs the corner cB as a type with VonNeumannAlgebra instances, Zorn for the maximal orthogonal subfamily, and an lp-infinity regrouping; needs 67IV.2, proved in session 77
+hereditarilyAtomic_subalgebra|costed||84bIII, ~1000-1600 lines: 84II fdcstar is now PROVED (session 78), so this is unblocked; the mathematics is short but the assembly needs the corner cB as a type with VonNeumannAlgebra instances, Zorn for the maximal orthogonal subfamily, and an lp-infinity regrouping
 mn_vna_2|costed||its third clause is available as the proved exists_isLUB_matForm; the rest is the entrywise dictionary
 mn_vna_3|open||49IV.3, normality of the amplification M_N f; recorded as genuinely open, with no route
 ngelfand_normal|open||53II.2, surveyed self-contained but with no route or estimate recorded
@@ -45,7 +44,7 @@ exists_unitors|open||119IVb, the two unitors; not attempted
 faithful_positive_map_uniqueness|blocked|positive_quotients_centrally_similar|104IX is 100VII plus 104VII, both cited by name
 free_monoid_in_Wcpsu|blocked|duplicable|132VI's freeness runs through the monoid classification; only its unit is proved
 free_monoid_in_vNAMIU|blocked|duplicable|132IV's freeness runs through the monoid classification; only its unit is proved
-ha_second_adjunction|open||125bII: vn_products_ncpsu is now proved, but ha_equalisers (84bV) and hereditarilyAtomic_subalgebra (84bIII) are still sorry; not yet attempted
+ha_second_adjunction|open||125bII: vn_products_ncpsu and fdcstar (84II) are proved, but ha_equalisers (84bV) and hereditarilyAtomic_subalgebra (84bIII) are still sorry; not yet attempted
 ha_tensor_closed|open||125dII, the hereditarily atomic free exponential; no route recorded
 intersection_tensor|cited||121II gives no argument, only a pointer to Corollary IV.5.10 of Takesaki I
 linf_tensor|costed||123I.3 cites 116VII, which is now proved; parts 1 and 2 of the exercise are proved above it
