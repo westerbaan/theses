@@ -1,13 +1,65 @@
 # `Theses/A/Proc/` — full survey of the remaining `sorry`s (worker 71, 2026-08-16; revised workers 72–81, sessions 47–58)
 
-**Headline count: A/Proc has 48 code `sorry`s** after session 66.
-Per file: `Tensor` **16** (was 18), `QuantumLambda` **16** (was 17),
-`Measurement` 10, `Duplicators` 6.  **All four compiler-verified in session 66
-(0 errors each).**  (`grep -c sorry` over-counts, because the file
+**Headline count: A/Proc has 46 code `sorry`s** after session 68.
+Per file: `Tensor` **13** (was 16), `QuantumLambda` 16,
+`Measurement` 10, `Duplicators` 6.  **All four compiler-verified in session 68
+(0 errors each; `lake build Theses.A.Proc.Duplicators` exits 0).**
+**No statement in the project is `sorry`-tainted any more**: `dup_vna_is_monoid_4`
+went axiom-clean in session 68 when 119IVc closed.  (`grep -c sorry` over-counts, because the file
 docstrings mention `sorry` in prose; the code counts are the ones above.
 Note `\bsorry\b` also matches "sorry-ed" in prose — count the compiler's
 `declaration uses \`sorry\`` warnings instead.)
 
+
+> **Session 68 — 119IVc `exists_braiding` and 119IVb `exists_unitors` are
+> CLOSED, and `dup_vna_is_monoid_4` is AXIOM-CLEAN.**  `Tensor.lean`
+> **16 → 13** (119IVc, 119IVb, and the *symmetry* half of 119V); A/Proc
+> **48 → 46**, 0 errors in all four files, everything new axiom-clean.
+> **+278 / −45 lines** against the ~150 costed for 119IVc alone.
+>
+> * **The exercise in both items is one universe-polymorphic lemma,
+>   `isTensorProduct_flip`**: every clause of 108II is invariant under
+>   swapping the two factors (the product functional of `(σ,τ)` for `γ.flip`
+>   is the one of `(τ,σ)` for `γ`, because `ℂ` is commutative).  It serves
+>   119IVc *and* the right-hand half of 119IVb — the survey had costed
+>   `(a,z) ↦ z·a` as a second construction; it is free.
+> * **The deduction is session 66's lifting device, with one simplification.**
+>   For 119IVc *both targets* `𝒜 ⊗ ℬ` and `ℬ ⊗ 𝒜` already live in
+>   `Type (max u v)`; only the factors are split, so the target leg of
+>   `exists_vnt_transfer` is the **identity** `nmiuId`.  114II then runs at
+>   the single universe `max u v` between `(vnTensor A' B').map` and
+>   `(vnTensor B' A').map.flip`.  For 119IVb only `ℂ : Type 0` is lifted
+>   (`exists_vnLift.{0, u}`), `𝒜` staying put.  The `prod_exists` clause of
+>   `lsmul` uses **`smulNP`** (72XI/73VIII, already in `A/VN/Basic.lean`) to
+>   scale `τ` by the nonneg real `σ(1)`; `faithful` is 42I's `np_faithful` at
+>   `complexIdNP`.
+> * Two mechanical relocations inside `Tensor.lean`, no signature changes:
+>   **`nmiuId`** moved up into `section NmiuAux` (gaining `nmiuId_apply`,
+>   `nmiuId_bijective`) and **`exists_vnt_transfer`** moved out of
+>   `section TmapM` to just above `section AssocBraid`.  New public
+>   accessors: `braiding_apply`, `leftUnitor_apply`, `rightUnitor_apply`,
+>   `rightUnitor_unique`.
+> * **`vn_smc_symmetry` was never blocked on the associator** and fell out in
+>   ~20 lines: `γ_{ℬ,𝒜} ∘ γ_{𝒜,ℬ} = id` is `exists_tmapM (nmiuId 𝒜)
+>   (nmiuId ℬ)`'s uniqueness clause, and `λ_ℬ ∘ γ_{ℬ,ℂ} = ρ_ℬ` is the right
+>   unitor's own.  The survey's "the `vn_smc_*` block needs the associator,
+>   braiding and unitors" is true of the *other four* parts only.
+> * **Next gate: 119IV `exists_associator`, and the gate behind it is not
+>   119II.**  All four remaining `vn_smc_*` parts mention `associator`.
+>   **119II `triple_tensor` itself is ~200 lines with every input proved**
+>   (proc.tex:3994: density from 116IV.1, `γ(σ,τ,υ) := prodNP (prodNP σ τ) υ`,
+>   centre-separation from 116IV.2) — but it does **not** produce `α` on its
+>   own: our `IsTensorProduct₃` is stated only for `(a,b,c) ↦ (a⊗b)⊗c`, and
+>   there is **no trilinear analogue of 112X/112XI/114I/114II** in the tree,
+>   so both the mirror form `a⊗(b⊗c)` and the comparison have to be built.
+>   **Cost the cheaper route first**: the *bilinear* map
+>   `𝒜 × (ℬ⊗𝒞) → (𝒜⊗ℬ)⊗𝒞`, `(a,t) ↦ ((a⊗1)⊗1) · Θ(t)` with
+>   `Θ = tmapM (1 ⊗ ·) (nmiuId 𝒞)` (the nmiu-map `1 ⊗ (·)` is **116III**.5,
+>   proved), sends `(a, b⊗c)` to `(a⊗b)⊗c` and would let plain **114II**
+>   deliver the associator — its multiplicativity needs `(a⊗1)⊗1` to commute
+>   with the whole range of `Θ`, a density argument.
+> * `ERRATA` gained a one-line **119IVc** nit (the exercise writes
+>   `𝒜 ⊗ ℬ` where it means `𝒜 × ℬ` for the domain).  Nothing for QUESTIONS.
 
 > **Session 66 — `exists_tmapM` is CLOSED, and the 2650-line re-universing was
 > never needed.**  `Tensor.lean` **18 → 16** (`exists_tmapM`, **117III**

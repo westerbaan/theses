@@ -146,6 +146,37 @@ theorem prodNP_apply [VonNeumannAlgebra A₁] [VonNeumannAlgebra B₁]
     (a : A₁) (b : B₁) : prodNP hγ σ τ (γ a b) = σ a * τ b :=
   (hγ.prod_exists σ τ).choose_spec a b
 
+/-- A tensor product is symmetric in its two factors: if `γ : 𝒜 × ℬ → 𝒯`
+is a tensor product then so is `γ.flip : ℬ × 𝒜 → 𝒯`, `(b,a) ↦ γ(a,b)`.
+Every clause of 108II is invariant under the swap — the product functional
+of `(σ,τ)` for `γ.flip` is the one of `(τ,σ)` for `γ`, since `ℂ` is
+commutative.  This is the content of the exercise **119IVc**. -/
+theorem isTensorProduct_flip [VonNeumannAlgebra A₁] [VonNeumannAlgebra B₁]
+    [VonNeumannAlgebra C₁] {γ : A₁ →ₗ[ℂ] B₁ →ₗ[ℂ] C₁} (hγ : IsTensorProduct γ) :
+    IsTensorProduct γ.flip := by
+  have happ : ∀ (b : B₁) (a : A₁), γ.flip b a = γ a b := fun _ _ => rfl
+  refine ⟨⟨?_, ?_, ?_⟩, ?_, ?_, ?_⟩
+  · show γ.flip 1 1 = 1
+    rw [happ]; exact hγ.miu.1
+  · intro b b' a a'
+    rw [happ, happ, happ]
+    exact hγ.miu.2.1 _ _ _ _
+  · intro b a
+    rw [happ, happ]
+    exact hγ.miu.2.2 _ _
+  · have hset : {t : C₁ | ∃ (b : B₁) (a : A₁), t = γ.flip b a}
+        = {t : C₁ | ∃ a b, t = γ a b} := by
+      ext t
+      exact ⟨fun ⟨b, a, h⟩ => ⟨a, b, h⟩, fun ⟨a, b, h⟩ => ⟨b, a, h⟩⟩
+    rw [hset]
+    exact hγ.dense
+  · intro σ τ
+    obtain ⟨h, hh⟩ := hγ.prod_exists τ σ
+    exact ⟨h, fun b a => by rw [happ, hh a b, mul_comm]⟩
+  · intro t ht hfaith
+    refine hγ.faithful t ht fun σ τ h hcompat => ?_
+    exact hfaith τ σ h fun b a => by rw [happ, hcompat a b, mul_comm]
+
 end Bilinear
 
 variable {A B C D : Type u}
@@ -1822,6 +1853,20 @@ theorem nmiuSymm_apply_apply' [VonNeumannAlgebra X] [VonNeumannAlgebra Y]
     (φ : NMIUMap X Y) (hφ : Function.Bijective ⇑φ) (b : Y) :
     φ (nmiuSymm φ hφ b) = b :=
   (StarAlgEquiv.ofBijective φ.toStarAlgHom hφ).apply_symm_apply b
+
+variable (X) in
+/-- The identity nmiu-map (infrastructure for 119IVb/119IVc/119V).  Moved
+here from the 119V block so that the universe-lifting device of
+`exists_vnt_transfer` can use it as the identity transport. -/
+noncomputable def nmiuId [VonNeumannAlgebra X] : NMIUMap X X :=
+  { toStarAlgHom := StarAlgHom.id ℂ X
+    preservesDirSups' := preservesDirSups_id }
+
+@[simp] theorem nmiuId_apply [VonNeumannAlgebra X] (x : X) : nmiuId X x = x := rfl
+
+theorem nmiuId_bijective [VonNeumannAlgebra X] :
+    Function.Bijective ⇑(nmiuId X) :=
+  ⟨fun _ _ h => h, fun x => ⟨x, rfl⟩⟩
 
 theorem nmiuSymm_bijective [VonNeumannAlgebra X] [VonNeumannAlgebra Y]
     (φ : NMIUMap X Y) (hφ : Function.Bijective ⇑φ) :
@@ -7860,88 +7905,6 @@ theorem triple_tensor :
     ∃ γ : A →ₗ[ℂ] B →ₗ[ℂ] C →ₗ[ℂ] VNT (VNT A B) C,
       (∀ a b c, γ a b c = (a ⊗ᵥ b) ⊗ᵥ c) ∧ IsTensorProduct₃ γ := sorry
 
-section AssocBraid
-
-variable (𝒜 : Type u) (ℬ : Type v) (𝒞 : Type w)
-  [CStarAlgebra 𝒜] [PartialOrder 𝒜] [StarOrderedRing 𝒜]
-  [VonNeumannAlgebra 𝒜]
-  [CStarAlgebra ℬ] [PartialOrder ℬ] [StarOrderedRing ℬ]
-  [VonNeumannAlgebra ℬ]
-  [CStarAlgebra 𝒞] [PartialOrder 𝒞] [StarOrderedRing 𝒞]
-  [VonNeumannAlgebra 𝒞]
-
-/-- **119IV** (`associator`, proc.tex:4031, Corollary): there is a unique
-nmiu-isomorphism `α : 𝒜 ⊗ (ℬ ⊗ 𝒞) → (𝒜 ⊗ ℬ) ⊗ 𝒞` with
-`α(a ⊗ (b ⊗ c)) = (a ⊗ b) ⊗ c`. -/
-theorem exists_associator :
-    ∃ α : NMIUMap (VNT 𝒜 (VNT ℬ 𝒞)) (VNT (VNT 𝒜 ℬ) 𝒞),
-      (∀ a b c, α (a ⊗ᵥ (b ⊗ᵥ c)) = (a ⊗ᵥ b) ⊗ᵥ c) ∧
-      Function.Bijective ⇑α ∧
-      ∀ α' : NMIUMap (VNT 𝒜 (VNT ℬ 𝒞)) (VNT (VNT 𝒜 ℬ) 𝒞),
-        (∀ a b c, α' (a ⊗ᵥ (b ⊗ᵥ c)) = (a ⊗ᵥ b) ⊗ᵥ c) → α' = α := sorry
-
-/-- The associator `α_{𝒜,ℬ,𝒞}` (119IV), by choice. -/
-noncomputable def associator :
-    NMIUMap (VNT 𝒜 (VNT ℬ 𝒞)) (VNT (VNT 𝒜 ℬ) 𝒞) :=
-  (exists_associator 𝒜 ℬ 𝒞).choose
-
-/-- **119IVc** (proc.tex:4072, Exercise): the bilinear map
-`(a, b) ↦ b ⊗ a : 𝒜 × ℬ → ℬ ⊗ 𝒜` is a tensor product; hence there is a
-unique nmiu-isomorphism (braiding) `γ_{𝒜,ℬ} : 𝒜 ⊗ ℬ → ℬ ⊗ 𝒜` with
-`γ(a ⊗ b) = b ⊗ a`. -/
-theorem exists_braiding :
-    ∃ s : NMIUMap (VNT 𝒜 ℬ) (VNT ℬ 𝒜),
-      (∀ (a : 𝒜) (b : ℬ), s (a ⊗ᵥ b) = b ⊗ᵥ a) ∧
-      Function.Bijective ⇑s ∧
-      ∀ s' : NMIUMap (VNT 𝒜 ℬ) (VNT ℬ 𝒜),
-        (∀ (a : 𝒜) (b : ℬ), s' (a ⊗ᵥ b) = b ⊗ᵥ a) → s' = s := sorry
-
-/-- The braiding `γ_{𝒜,ℬ} : 𝒜 ⊗ ℬ → ℬ ⊗ 𝒜` (119IVc), by choice. -/
-noncomputable def braiding : NMIUMap (VNT 𝒜 ℬ) (VNT ℬ 𝒜) :=
-  (exists_braiding 𝒜 ℬ).choose
-
-end AssocBraid
-
-/-- **119IVb** (proc.tex:4053, Exercise): the bilinear maps
-`(z, a) ↦ z·a : ℂ × 𝒜 → 𝒜` and `(a, z) ↦ z·a : 𝒜 × ℂ → 𝒜` are tensor
-products; hence there are unique nmiu-isomorphisms (unitors)
-`λ_𝒜 : ℂ ⊗ 𝒜 → 𝒜` and `ρ_𝒜 : 𝒜 ⊗ ℂ → 𝒜` with `λ(z ⊗ a) = z·a = ρ(a ⊗ z)`. -/
-theorem exists_unitors :
-    IsTensorProduct (LinearMap.lsmul ℂ A) ∧
-      IsTensorProduct (LinearMap.lsmul ℂ A).flip ∧
-      (∃ l : NMIUMap (VNT ℂ A) A,
-        (∀ (z : ℂ) (a : A), l (z ⊗ᵥ a) = z • a) ∧ Function.Bijective ⇑l ∧
-        ∀ l' : NMIUMap (VNT ℂ A) A,
-          (∀ (z : ℂ) (a : A), l' (z ⊗ᵥ a) = z • a) → l' = l) ∧
-      ∃ r : NMIUMap (VNT A ℂ) A,
-        (∀ (a : A) (z : ℂ), r (a ⊗ᵥ z) = z • a) ∧ Function.Bijective ⇑r ∧
-        ∀ r' : NMIUMap (VNT A ℂ) A,
-          (∀ (a : A) (z : ℂ), r' (a ⊗ᵥ z) = z • a) → r' = r := sorry
-
-variable (A) in
-/-- The left unitor `λ_𝒜 : ℂ ⊗ 𝒜 → 𝒜` (119IVb), by choice. -/
-noncomputable def leftUnitor : NMIUMap (VNT ℂ A) A :=
-  (exists_unitors (A := A)).2.2.1.choose
-
-variable (A) in
-/-- The right unitor `ρ_𝒜 : 𝒜 ⊗ ℂ → 𝒜` (119IVb), by choice. -/
-noncomputable def rightUnitor : NMIUMap (VNT A ℂ) A :=
-  (exists_unitors (A := A)).2.2.2.choose
-
-section TmapM
-
-universe u₁ u₂ u₃ u₄
-
-variable {A₂ : Type u₁} {B₂ : Type u₂} {C₂ : Type u₃} {D₂ : Type u₄}
-  [CStarAlgebra A₂] [PartialOrder A₂] [StarOrderedRing A₂]
-  [VonNeumannAlgebra A₂]
-  [CStarAlgebra B₂] [PartialOrder B₂] [StarOrderedRing B₂]
-  [VonNeumannAlgebra B₂]
-  [CStarAlgebra C₂] [PartialOrder C₂] [StarOrderedRing C₂]
-  [VonNeumannAlgebra C₂]
-  [CStarAlgebra D₂] [PartialOrder D₂] [StarOrderedRing D₂]
-  [VonNeumannAlgebra D₂]
-
 set_option linter.unusedSectionVars false in
 /-- Transfer of the chosen tensor product along a universe lift: given
 nmiu-isomorphisms `εA : 𝒳 ≅ 𝒜'`, `εB : 𝒴 ≅ ℬ'` and `ℓ : 𝒳 ⊗ 𝒴 ≅ 𝒯'`,
@@ -7976,6 +7939,263 @@ theorem exists_vnt_transfer {Xa : Type p} {Xb : Type q} {A' B' T' : Type r}
   show ℓ ((vnTensor Xa Xb).map (nmiuSymm εA hA (εA a)) (nmiuSymm εB hB (εB b)))
     = ℓ ((vnTensor Xa Xb).map a b)
   rw [nmiuSymm_apply_apply εA hA, nmiuSymm_apply_apply εB hB]
+
+
+section AssocBraid
+
+variable (𝒜 : Type u) (ℬ : Type v) (𝒞 : Type w)
+  [CStarAlgebra 𝒜] [PartialOrder 𝒜] [StarOrderedRing 𝒜]
+  [VonNeumannAlgebra 𝒜]
+  [CStarAlgebra ℬ] [PartialOrder ℬ] [StarOrderedRing ℬ]
+  [VonNeumannAlgebra ℬ]
+  [CStarAlgebra 𝒞] [PartialOrder 𝒞] [StarOrderedRing 𝒞]
+  [VonNeumannAlgebra 𝒞]
+
+/-- **119IV** (`associator`, proc.tex:4031, Corollary): there is a unique
+nmiu-isomorphism `α : 𝒜 ⊗ (ℬ ⊗ 𝒞) → (𝒜 ⊗ ℬ) ⊗ 𝒞` with
+`α(a ⊗ (b ⊗ c)) = (a ⊗ b) ⊗ c`. -/
+theorem exists_associator :
+    ∃ α : NMIUMap (VNT 𝒜 (VNT ℬ 𝒞)) (VNT (VNT 𝒜 ℬ) 𝒞),
+      (∀ a b c, α (a ⊗ᵥ (b ⊗ᵥ c)) = (a ⊗ᵥ b) ⊗ᵥ c) ∧
+      Function.Bijective ⇑α ∧
+      ∀ α' : NMIUMap (VNT 𝒜 (VNT ℬ 𝒞)) (VNT (VNT 𝒜 ℬ) 𝒞),
+        (∀ a b c, α' (a ⊗ᵥ (b ⊗ᵥ c)) = (a ⊗ᵥ b) ⊗ᵥ c) → α' = α := sorry
+
+/-- The associator `α_{𝒜,ℬ,𝒞}` (119IV), by choice. -/
+noncomputable def associator :
+    NMIUMap (VNT 𝒜 (VNT ℬ 𝒞)) (VNT (VNT 𝒜 ℬ) 𝒞) :=
+  (exists_associator 𝒜 ℬ 𝒞).choose
+
+/-- **119IVc** (proc.tex:4072, Exercise): the bilinear map
+`(a, b) ↦ b ⊗ a : 𝒜 × ℬ → ℬ ⊗ 𝒜` is a tensor product; hence there is a
+unique nmiu-isomorphism (braiding) `γ_{𝒜,ℬ} : 𝒜 ⊗ ℬ → ℬ ⊗ 𝒜` with
+`γ(a ⊗ b) = b ⊗ a`. -/
+theorem exists_braiding :
+    ∃ s : NMIUMap (VNT 𝒜 ℬ) (VNT ℬ 𝒜),
+      (∀ (a : 𝒜) (b : ℬ), s (a ⊗ᵥ b) = b ⊗ᵥ a) ∧
+      Function.Bijective ⇑s ∧
+      ∀ s' : NMIUMap (VNT 𝒜 ℬ) (VNT ℬ 𝒜),
+        (∀ (a : 𝒜) (b : ℬ), s' (a ⊗ᵥ b) = b ⊗ᵥ a) → s' = s := by
+  -- The exercise itself is `isTensorProduct_flip`: `(a,b) ↦ b ⊗ a` is a
+  -- tensor product because every clause of 108II is swap-invariant.  The
+  -- deduction then wants **114II** `tensor_uniqueness`, which confines its
+  -- two factors and both targets to *one* universe, while `𝒜 : Type u` and
+  -- `ℬ : Type v`.  So we lift `𝒜`, `ℬ` into `Type (max u v)` (`exists_vnLift`)
+  -- and transport the two chosen tensor products there and back with
+  -- `exists_vnt_transfer` — the device of `exists_tmapM`.  Both *targets*
+  -- `𝒜 ⊗ ℬ` and `ℬ ⊗ 𝒜` already live in `Type (max u v)`, so the transport
+  -- of the target is the identity.
+  obtain ⟨A', _, _, _, _, εA, hεA⟩ := exists_vnLift.{u, v} 𝒜
+  obtain ⟨B', _, _, _, _, εB, hεB⟩ := exists_vnLift.{v, u} ℬ
+  obtain ⟨Φ, hΦb, hΦe⟩ := exists_vnt_transfer εA hεA εB hεB
+    (nmiuId (VNT 𝒜 ℬ)) nmiuId_bijective
+  obtain ⟨Ψ, hΨb, hΨe⟩ := exists_vnt_transfer εB hεB εA hεA
+    (nmiuId (VNT ℬ 𝒜)) nmiuId_bijective
+  -- `Φ : 𝒜' ⊗ ℬ' ≅ 𝒜 ⊗ ℬ` with `Φ(εA a ⊗ εB b) = a ⊗ b`, and
+  -- `Ψ : ℬ' ⊗ 𝒜' ≅ ℬ ⊗ 𝒜` with `Ψ(εB b ⊗ εA a) = b ⊗ a`.
+  have hΦe' : ∀ (a : 𝒜) (b : ℬ), Φ (εA a ⊗ᵥ εB b) = a ⊗ᵥ b := hΦe
+  have hΨe' : ∀ (b : ℬ) (a : 𝒜), Ψ (εB b ⊗ᵥ εA a) = b ⊗ᵥ a := hΨe
+  -- 114II at the single universe `max u v`.
+  obtain ⟨s₀, hs₀e, hs₀b, hs₀u⟩ :=
+    tensor_uniqueness (vnTensor A' B').map ((vnTensor B' A').map.flip)
+      (vnTensor A' B').isTensorProduct
+      (isTensorProduct_flip (vnTensor B' A').isTensorProduct)
+  have hs₀e' : ∀ (a : A') (b : B'), s₀ (a ⊗ᵥ b) = b ⊗ᵥ a := hs₀e
+  refine ⟨nmiuComp Ψ (nmiuComp s₀ (nmiuSymm Φ hΦb)), ?_, ?_, ?_⟩
+  · intro a b
+    show Ψ (s₀ (nmiuSymm Φ hΦb (a ⊗ᵥ b))) = b ⊗ᵥ a
+    rw [← hΦe' a b, nmiuSymm_apply_apply Φ hΦb, hs₀e', hΨe']
+  · exact hΨb.comp (hs₀b.comp (nmiuSymm_bijective Φ hΦb))
+  · intro s' hs'
+    set k' : NMIUMap (VNT A' B') (VNT B' A') :=
+      nmiuComp (nmiuSymm Ψ hΨb) (nmiuComp s' Φ) with hk'
+    have hk'a : ∀ (a : A') (b : B'), k' ((vnTensor A' B').map a b)
+        = (vnTensor B' A').map.flip a b := by
+      intro x y
+      obtain ⟨a, rfl⟩ := hεA.2 x
+      obtain ⟨b, rfl⟩ := hεB.2 y
+      show nmiuSymm Ψ hΨb (s' (Φ (εA a ⊗ᵥ εB b))) = εB b ⊗ᵥ εA a
+      rw [hΦe' a b, hs' a b, ← hΨe' b a, nmiuSymm_apply_apply Ψ hΨb]
+    have hkk : k' = s₀ := hs₀u k' hk'a
+    refine DFunLike.ext _ _ fun x => ?_
+    have h1 : nmiuSymm Ψ hΨb (s' (Φ (nmiuSymm Φ hΦb x))) = s₀ (nmiuSymm Φ hΦb x) :=
+      congrArg (fun f : NMIUMap (VNT A' B') (VNT B' A') => f (nmiuSymm Φ hΦb x)) hkk
+    rw [nmiuSymm_apply_apply' Φ hΦb] at h1
+    show s' x = Ψ (s₀ (nmiuSymm Φ hΦb x))
+    rw [← h1, nmiuSymm_apply_apply' Ψ hΨb]
+
+/-- The braiding `γ_{𝒜,ℬ} : 𝒜 ⊗ ℬ → ℬ ⊗ 𝒜` (119IVc), by choice. -/
+noncomputable def braiding : NMIUMap (VNT 𝒜 ℬ) (VNT ℬ 𝒜) :=
+  (exists_braiding 𝒜 ℬ).choose
+
+@[simp] theorem braiding_apply (a : 𝒜) (b : ℬ) : braiding 𝒜 ℬ (a ⊗ᵥ b) = b ⊗ᵥ a :=
+  (exists_braiding 𝒜 ℬ).choose_spec.1 a b
+
+end AssocBraid
+
+/-- **119IVb** (proc.tex:4053, Exercise): the bilinear maps
+`(z, a) ↦ z·a : ℂ × 𝒜 → 𝒜` and `(a, z) ↦ z·a : 𝒜 × ℂ → 𝒜` are tensor
+products; hence there are unique nmiu-isomorphisms (unitors)
+`λ_𝒜 : ℂ ⊗ 𝒜 → 𝒜` and `ρ_𝒜 : 𝒜 ⊗ ℂ → 𝒜` with `λ(z ⊗ a) = z·a = ρ(a ⊗ z)`. -/
+theorem exists_unitors :
+    IsTensorProduct (LinearMap.lsmul ℂ A) ∧
+      IsTensorProduct (LinearMap.lsmul ℂ A).flip ∧
+      (∃ l : NMIUMap (VNT ℂ A) A,
+        (∀ (z : ℂ) (a : A), l (z ⊗ᵥ a) = z • a) ∧ Function.Bijective ⇑l ∧
+        ∀ l' : NMIUMap (VNT ℂ A) A,
+          (∀ (z : ℂ) (a : A), l' (z ⊗ᵥ a) = z • a) → l' = l) ∧
+      ∃ r : NMIUMap (VNT A ℂ) A,
+        (∀ (a : A) (z : ℂ), r (a ⊗ᵥ z) = z • a) ∧ Function.Bijective ⇑r ∧
+        ∀ r' : NMIUMap (VNT A ℂ) A,
+          (∀ (a : A) (z : ℂ), r' (a ⊗ᵥ z) = z • a) → r' = r := by
+  -- The exercise proper: `(z,a) ↦ z·a` satisfies 108II.  Density is trivial
+  -- (the range is already all of `𝒜`), the product functional of `(σ,τ)` is
+  -- `σ(1)·τ` (an np-functional by `smulNP`, since `σ(1) ≥ 0`), and
+  -- faithfulness is 42I's `np_faithful` at `σ = complexIdNP`.  The right-hand
+  -- version is then `isTensorProduct_flip`.  The *deduction* again wants
+  -- **114II**, which is single-universe while `ℂ : Type 0` and `𝒜 : Type u`,
+  -- so `ℂ` is lifted into `Type u` with `exists_vnLift` and the chosen
+  -- tensor products are moved across with `exists_vnt_transfer`.
+  have hsm : ∀ (z : ℂ) (a : A), LinearMap.lsmul ℂ A z a = z • a := fun _ _ => rfl
+  have hnpsmul : ∀ (ω : NPFunctional A) (z : ℂ) (a : A), ω (z • a) = z * ω a := by
+    intro ω z a
+    show npLin ω (z • a) = _
+    rw [map_smul]; rfl
+  have hlsmul : IsTensorProduct (LinearMap.lsmul ℂ A) := by
+    refine ⟨⟨?_, ?_, ?_⟩, ?_, ?_, ?_⟩
+    · show (1 : ℂ) • (1 : A) = 1
+      rw [one_smul]
+    · intro z z' a a'
+      show (z * z') • (a * a') = (z • a) * (z' • a')
+      rw [smul_mul_assoc, mul_smul_comm, smul_smul]
+    · intro z a
+      show star (z • a) = (star z) • (star a)
+      rw [star_smul]
+    · have htop : (Submodule.span ℂ {t : A | ∃ (z : ℂ) (a : A),
+          t = LinearMap.lsmul ℂ A z a}) = ⊤ := by
+        refine eq_top_iff.mpr fun a _ => Submodule.subset_span ?_
+        exact ⟨1, a, (one_smul ℂ a).symm⟩
+      have hcoe : ((⊤ : Submodule ℂ A) : Set A) = Set.univ := Submodule.top_coe
+      rw [htop, hcoe]
+      exact @dense_univ A (ultraweak A)
+    · intro σ τ
+      have hσ1 : (0 : ℂ) ≤ σ 1 := npFunctional_nonneg σ zero_le_one
+      have him : (σ 1).im = 0 := ((Complex.le_def.mp hσ1).2).symm
+      have hre : (0 : ℝ) ≤ (σ 1).re := by simpa using (Complex.le_def.mp hσ1).1
+      have hcoe : (((σ 1).re : ℝ) : ℂ) = σ 1 := by
+        apply Complex.ext <;> simp [him]
+      have hσz : ∀ z : ℂ, σ z = z * σ 1 := by
+        intro z
+        have h : npLin σ (z • (1 : ℂ)) = z • npLin σ (1 : ℂ) := map_smul _ _ _
+        show npLin σ z = z * npLin σ 1
+        simpa [smul_eq_mul] using h
+      refine ⟨smulNP hre τ, fun z a => ?_⟩
+      rw [hsm, smulNP_apply, hcoe, hnpsmul τ z a, hσz z]
+      ring
+    · intro t ht hfaith
+      refine VonNeumannAlgebra.np_faithful t ht fun τ => ?_
+      refine hfaith Theses.A.VN.complexIdNP τ τ fun z a => ?_
+      rw [hsm, hnpsmul τ z a]
+      rfl
+  refine ⟨hlsmul, isTensorProduct_flip hlsmul, ?_, ?_⟩
+  · -- the left unitor
+    obtain ⟨C₀, _, _, _, _, εC, hεC⟩ := exists_vnLift.{0, u} ℂ
+    obtain ⟨Φ, hΦb, hΦe⟩ := exists_vnt_transfer εC hεC (nmiuId A) nmiuId_bijective
+      (nmiuId (VNT ℂ A)) nmiuId_bijective
+    have hΦe' : ∀ (z : ℂ) (a : A), Φ (εC z ⊗ᵥ a) = z ⊗ᵥ a := hΦe
+    obtain ⟨l₀, hl₀e, hl₀b, hl₀u⟩ :=
+      tensor_uniqueness (vnTensor C₀ A).map
+        ((LinearMap.lsmul ℂ A).compl₁₂ (nmiuLin (nmiuSymm εC hεC)) (nmiuLin (nmiuId A)))
+        (vnTensor C₀ A).isTensorProduct
+        (isTensorProduct_comp (nmiuSymm εC hεC) (nmiuSymm_bijective εC hεC)
+          (nmiuId A) nmiuId_bijective hlsmul)
+    have hl₀e' : ∀ (z : C₀) (a : A), l₀ (z ⊗ᵥ a) = (nmiuSymm εC hεC z) • a := hl₀e
+    refine ⟨nmiuComp l₀ (nmiuSymm Φ hΦb), ?_, ?_, ?_⟩
+    · intro z a
+      show l₀ (nmiuSymm Φ hΦb (z ⊗ᵥ a)) = z • a
+      rw [← hΦe' z a, nmiuSymm_apply_apply Φ hΦb, hl₀e', nmiuSymm_apply_apply εC hεC]
+    · exact hl₀b.comp (nmiuSymm_bijective Φ hΦb)
+    · intro l' hl'
+      have hk' : ∀ (z : C₀) (a : A), (nmiuComp l' Φ) ((vnTensor C₀ A).map z a)
+          = ((LinearMap.lsmul ℂ A).compl₁₂ (nmiuLin (nmiuSymm εC hεC))
+              (nmiuLin (nmiuId A))) z a := by
+        intro w a
+        obtain ⟨z, rfl⟩ := hεC.2 w
+        show l' (Φ (εC z ⊗ᵥ a)) = (nmiuSymm εC hεC (εC z)) • a
+        rw [hΦe' z a, hl' z a, nmiuSymm_apply_apply εC hεC]
+      have hkk := hl₀u (nmiuComp l' Φ) hk'
+      refine DFunLike.ext _ _ fun x => ?_
+      have h1 : l' (Φ (nmiuSymm Φ hΦb x)) = l₀ (nmiuSymm Φ hΦb x) :=
+        congrArg (fun f : NMIUMap (VNT C₀ A) A => f (nmiuSymm Φ hΦb x)) hkk
+      rw [nmiuSymm_apply_apply' Φ hΦb] at h1
+      exact h1
+  · -- the right unitor
+    obtain ⟨C₀, _, _, _, _, εC, hεC⟩ := exists_vnLift.{0, u} ℂ
+    obtain ⟨Φ, hΦb, hΦe⟩ := exists_vnt_transfer (nmiuId A) nmiuId_bijective εC hεC
+      (nmiuId (VNT A ℂ)) nmiuId_bijective
+    have hΦe' : ∀ (a : A) (z : ℂ), Φ (a ⊗ᵥ εC z) = a ⊗ᵥ z := hΦe
+    obtain ⟨r₀, hr₀e, hr₀b, hr₀u⟩ :=
+      tensor_uniqueness (vnTensor A C₀).map
+        ((LinearMap.lsmul ℂ A).flip.compl₁₂ (nmiuLin (nmiuId A))
+          (nmiuLin (nmiuSymm εC hεC)))
+        (vnTensor A C₀).isTensorProduct
+        (isTensorProduct_comp (nmiuId A) nmiuId_bijective
+          (nmiuSymm εC hεC) (nmiuSymm_bijective εC hεC) (isTensorProduct_flip hlsmul))
+    have hr₀e' : ∀ (a : A) (z : C₀), r₀ (a ⊗ᵥ z) = (nmiuSymm εC hεC z) • a := hr₀e
+    refine ⟨nmiuComp r₀ (nmiuSymm Φ hΦb), ?_, ?_, ?_⟩
+    · intro a z
+      show r₀ (nmiuSymm Φ hΦb (a ⊗ᵥ z)) = z • a
+      rw [← hΦe' a z, nmiuSymm_apply_apply Φ hΦb, hr₀e', nmiuSymm_apply_apply εC hεC]
+    · exact hr₀b.comp (nmiuSymm_bijective Φ hΦb)
+    · intro r' hr'
+      have hk' : ∀ (a : A) (z : C₀), (nmiuComp r' Φ) ((vnTensor A C₀).map a z)
+          = ((LinearMap.lsmul ℂ A).flip.compl₁₂ (nmiuLin (nmiuId A))
+              (nmiuLin (nmiuSymm εC hεC))) a z := by
+        intro a w
+        obtain ⟨z, rfl⟩ := hεC.2 w
+        show r' (Φ (a ⊗ᵥ εC z)) = (nmiuSymm εC hεC (εC z)) • a
+        rw [hΦe' a z, hr' a z, nmiuSymm_apply_apply εC hεC]
+      have hkk := hr₀u (nmiuComp r' Φ) hk'
+      refine DFunLike.ext _ _ fun x => ?_
+      have h1 : r' (Φ (nmiuSymm Φ hΦb x)) = r₀ (nmiuSymm Φ hΦb x) :=
+        congrArg (fun f : NMIUMap (VNT A C₀) A => f (nmiuSymm Φ hΦb x)) hkk
+      rw [nmiuSymm_apply_apply' Φ hΦb] at h1
+      exact h1
+
+variable (A) in
+/-- The left unitor `λ_𝒜 : ℂ ⊗ 𝒜 → 𝒜` (119IVb), by choice. -/
+noncomputable def leftUnitor : NMIUMap (VNT ℂ A) A :=
+  (exists_unitors (A := A)).2.2.1.choose
+
+@[simp] theorem leftUnitor_apply (z : ℂ) (a : A) : leftUnitor A (z ⊗ᵥ a) = z • a :=
+  (exists_unitors (A := A)).2.2.1.choose_spec.1 z a
+
+variable (A) in
+/-- The right unitor `ρ_𝒜 : 𝒜 ⊗ ℂ → 𝒜` (119IVb), by choice. -/
+noncomputable def rightUnitor : NMIUMap (VNT A ℂ) A :=
+  (exists_unitors (A := A)).2.2.2.choose
+
+@[simp] theorem rightUnitor_apply (a : A) (z : ℂ) : rightUnitor A (a ⊗ᵥ z) = z • a :=
+  (exists_unitors (A := A)).2.2.2.choose_spec.1 a z
+
+/-- Uniqueness clause of the right unitor (119IVb). -/
+theorem rightUnitor_unique (r' : NMIUMap (VNT A ℂ) A)
+    (hr' : ∀ (a : A) (z : ℂ), r' (a ⊗ᵥ z) = z • a) : r' = rightUnitor A :=
+  (exists_unitors (A := A)).2.2.2.choose_spec.2.2 r' hr'
+
+section TmapM
+
+universe u₁ u₂ u₃ u₄
+
+variable {A₂ : Type u₁} {B₂ : Type u₂} {C₂ : Type u₃} {D₂ : Type u₄}
+  [CStarAlgebra A₂] [PartialOrder A₂] [StarOrderedRing A₂]
+  [VonNeumannAlgebra A₂]
+  [CStarAlgebra B₂] [PartialOrder B₂] [StarOrderedRing B₂]
+  [VonNeumannAlgebra B₂]
+  [CStarAlgebra C₂] [PartialOrder C₂] [StarOrderedRing C₂]
+  [VonNeumannAlgebra C₂]
+  [CStarAlgebra D₂] [PartialOrder D₂] [StarOrderedRing D₂]
+  [VonNeumannAlgebra D₂]
 
 /-- Infrastructure for 119V: for nmiu-maps `ρ : 𝒜 → 𝒞`, `σ : ℬ → 𝒟`
 there is a unique nmiu-map `ρ ⊗ σ` acting on pure tensors as expected.
@@ -8080,12 +8300,6 @@ noncomputable def tmapM (ρ : NMIUMap A₂ C₂) (σ : NMIUMap B₂ D₂) :
 
 end TmapM
 
-variable (A) in
-/-- The identity nmiu-map (infrastructure for 119V). -/
-noncomputable def nmiuId : NMIUMap A A :=
-  { toStarAlgHom := StarAlgHom.id ℂ A
-    preservesDirSups' := preservesDirSups_id }
-
 /-- **119V** (`vn-smc`, proc.tex:4087, Theorem), naturality: the
 associators form a natural transformation, i.e.
 `α ∘ (f ⊗ (g ⊗ h)) = ((f ⊗ g) ⊗ h) ∘ α` for all ncp-maps `f`, `g`, `h`.
@@ -8125,8 +8339,27 @@ theorem vn_smc_hexagon (t : VNT A (VNT B C)) :
 `γ_{ℬ,𝒜} ∘ γ_{𝒜,ℬ} = id` and `λ_ℬ ∘ γ_{ℬ,ℂ} = ρ_ℬ`. -/
 theorem vn_smc_symmetry :
     (∀ t : VNT A B, braiding B A (braiding A B t) = t) ∧
-      ∀ t : VNT B ℂ, leftUnitor B (braiding B ℂ t) = rightUnitor B t :=
-  sorry
+      ∀ t : VNT B ℂ, leftUnitor B (braiding B ℂ t) = rightUnitor B t := by
+  -- Both halves are uniqueness arguments: two nmiu-maps agreeing on pure
+  -- tensors agree.  For the first, the relevant uniqueness is that of
+  -- `id ⊗ id` (`exists_tmapM`); for the second it is the right unitor's own.
+  constructor
+  · have h1 : nmiuComp (braiding B A) (braiding A B) = nmiuId (VNT A B) :=
+      (exists_tmapM (nmiuId A) (nmiuId B)).unique
+        (fun a b => by
+          show braiding B A (braiding A B (a ⊗ᵥ b)) = nmiuId A a ⊗ᵥ nmiuId B b
+          rw [braiding_apply, braiding_apply, nmiuId_apply, nmiuId_apply])
+        (fun a b => by
+          show nmiuId (VNT A B) (a ⊗ᵥ b) = nmiuId A a ⊗ᵥ nmiuId B b
+          rfl)
+    intro t
+    exact congrArg (fun f : NMIUMap (VNT A B) (VNT A B) => f t) h1
+  · have h2 : nmiuComp (leftUnitor B) (braiding B ℂ) = rightUnitor B :=
+      rightUnitor_unique _ fun b z => by
+        show leftUnitor B (braiding B ℂ (b ⊗ᵥ z)) = z • b
+        rw [braiding_apply, leftUnitor_apply]
+    intro t
+    exact congrArg (fun f : NMIUMap (VNT B ℂ) B => f t) h2
 
 end Monoidal
 
