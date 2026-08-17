@@ -20796,3 +20796,122 @@ in our own PROVING-LOG route, not in the theses).  No new QUESTIONS.
 `docs/why-open.csv`: the seven non-blocked `VNExamples` rows record that the
 transport now exists.  `docs/BEff-survey.md`: session-85 block added, the
 classification row and the "suggested order" item 4 updated.
+
+## Session 86 — `B/Eff`: **190III `effectus_vn_real_separating` is CLOSED** — and it is the *only* one of the eight vN examples that the `vn_effObj_iso` transport alone unblocks; the other six need a bridge layer that exists nowhere (worker on `Theses/B/Eff/VNExamples.lean`)
+
+`VNExamples.lean` is at **7** `sorry`s, **0** errors, 3163 lines (+377).
+B/Eff as a whole is at **8** (`VNExamples` 7, `EffectAlgebras` 1,
+`StatesPredicates` 0 — all three counted with the compiler, 0 errors each).
+Axioms were checked **in situ** (a copy of the source with `#print axioms`
+appended, compiled directly, *not* against the olean): all of
+`effectus_vn_real_separating`, `su_real_separating`, `eq_zero_of_ncpsu_states`,
+`exists_ncpsu_state_of_np`, `exists_ncpsu_state`, `smul_le_smul_cstar`,
+`smul_one_le_one` are `[propext, Classical.choice, Quot.sound]`.
+
+### What landed
+
+* **`effectus_vn_real_separating` (190III)**, via `su_real_separating` inside
+  the `IUnique` section and the same `obtain`/`subst`/`@` wrapper idiom that
+  `vn_effObj_iso` uses.  eff.tex:2136 asserts the statement with a citation to
+  `[effintro]` and **gives no proof**, and `bsols.tex` has nothing (it is an
+  *Examples*, not an Exercise) — so **the mathematics below is ours, not the
+  author's**, and the record should say so.
+* **`eq_zero_of_ncpsu_states`** — *the normal states of a von Neumann algebra
+  separate its elements* — and **`exists_ncpsu_state_of_np`** — *an
+  np-functional with `ω 1 ≠ 0` normalises to a normal state, with the scaling
+  identity `ω = ω(1)·ψ`*.  `exists_ncpsu_state` (session 85) is now three lines
+  on top of the latter.  Both are independent API.
+* Two small generic order lemmas, `smul_le_smul_cstar` (scaling by a
+  nonnegative real is monotone for the C\*-order) and `smul_one_le_one`.
+
+### The proof
+
+Everything is read off `θ : I ≅ ℂᵤ` from `su_effObj_iso`, with
+`μ = θ.inv.unop` the induced iso `I → ℂᵤ` and `a = μ(a)·1`.
+
+1. **Separating predicates.**  For an effect `a ∈ [0,1]_{X.unop}` the map
+   `(z ↦ z·a) ≫ θ.inv` is a predicate on `X`, and composing `f` with it reads
+   off `f(a)`.  So `f` and `g` agree on effects; every positive `b` is
+   `(‖b‖+1)·` an effect, and `linear_eq_zero_of_nonneg` does the rest.
+2. **Separating states.**  `su_isTotal_iff` says the states of `X` are exactly
+   the *unital* ncpsu-maps `X.unop → ℂᵤ`, i.e. the normal states; `θ.hom ≫ ψ`
+   turns each into a `Stat X` and `θ.inv.unop` cancels off the front again.
+   What is then needed is `eq_zero_of_ncpsu_states`.
+3. **Real.**  `μ` carries `Scal C = C(I,I)` onto `[0,1] ⊆ ℝ` — `k ↦ μ(k(1)).re`
+   — bijectively (`k` is determined by `k(1)` because every element of the
+   effect algebra is a scalar), taking `⋁` to `+`, `1_I = 𝟙` to `1` and
+   composition to multiplication.
+
+**The one genuinely operator-algebraic step is (2), and the recorded route for
+it was wrong in a useful direction.**  Session 85 costed it as wanting "the
+ceiling calculus of `A/VN/Projections.lean`", because the `np_faithful` axiom
+of `Theses.VonNeumannAlgebra` separates only *positive* elements while what is
+needed is *self-adjoint* ones.  No ceilings are involved.  Write `y = y⁺ − y⁻`
+(Mathlib's `CFC.posPart_sub_negPart`).  Then `y⁺ y y⁺ = (y⁺)³` because
+`y⁺y⁻ = 0`; `ν = ω(y⁺ · y⁺)` is again an np-functional (`conjNP`,
+`A/VN/Basic.lean:2312`, which we found by looking for the `bStarOmega`
+development of 72III); so `ω((y⁺)³) = ν(y) = 0` for every `ω`, and `np_faithful`
+at the positive element `(y⁺)³` gives `(y⁺)³ = 0`, whence `y⁺ = 0` by two
+applications of the C\*-identity.  Same at `y⁻`.  Four lines of algebra, no
+spectral theory.
+
+### Costing
+
+**~400 added lines** against the ~250–350 costed — ~1.2–1.6× low, and unevenly:
+`SeparatingPredicates` ~60, `SeparatingStates` ~70 (plus ~70 for
+`eq_zero_of_ncpsu_states` and the np-normalisation), **`IsRealEffectus` ~150**,
+which the survey treated as a footnote and is in fact the largest of the three
+— the effect-monoid isomorphism has to be constructed field by field.  The
+`WStar.of`-semireducibility trap cost the usual: five of the seven compile
+errors in the first pass were `rw` failing to match `θ.hom.unop.toNCPMap ?z`
+because `?z : ULift ℂ` and the actual argument is at
+`(Opposite.unop suI).base.carrier`.  **The fix that works every time is to
+drop `rw` and write the step as an `Eq.trans` chain in term mode** — `exact`
+crosses the gap, `rw` never does.  That is worth more than the ascription
+advice in the session-85 log.
+
+### The real gate for the remaining six is *not* any one of them
+
+The brief for this session named `vn_has_dilations` (221III) and
+`vn_dilation_order_correspondence` (223VI) as "~200 lines each, because
+`existence_paschke` and the three `paschke_correspondence_*` are proved and on
+the import path".  **That costing is wrong, and so is the `why-open.csv` row it
+came from.**  190III went through on `vn_effObj_iso` alone because it is the
+only one of the eight that never mentions sharpness, purity, quotients or
+comprehensions.  Every other one does:
+
+* `IsDilation` (221II) asks for `SharpMap ϱ`, `IsTotal ϱ`, `IsPure h`;
+* `DiamondEffectus` (206II) asks for `HasQuotients`, `HasComprehension`,
+  `HasImages` and `orth_sharp`;
+* `DaggerPrimeEffectus` (215II) asks for `quot_sharp`;
+* `PureCat` — hence both `exc_purec_*` — is built from `IsPure`.
+
+The concrete identifications that would supply these are **bare Examples in
+eff.tex with no proof**: sharp predicates = projections (eff.tex:4195),
+quotients = corners (3684), comprehensions = filters (3934), pure maps (4040),
+sharp maps = nmiu-maps (4777).  **None of the five is formalized anywhere in
+the tree** — no Lean declaration cites any of those five lines.  In particular
+221III's "as shown in `existence-paschke`" is not a transcribable proof:
+`IsPaschkeDilationOf` quantifies over triples whose `ϱ'` is **nmiu**, while
+`IsDilation` quantifies over `ϱ'` **sharp and total**, so the two universal
+properties coincide only after *sharp + total ⟹ nmiu*, which needs the
+**multiplicative domain** of a ucp-map (`φ(p)` a projection ⟹ `p` in the
+multiplicative domain ⟹ `φ` is a \*-homomorphism, by normality and the fact
+that projections generate).  Neither the multiplicative domain nor
+Kadison–Schwarz for *maps* is in the tree (`grep -ri multdomain\|kadison` finds
+only Kadison's inequality for np-*functionals*).
+
+**Recommendation for the next session: build the bridge layer, not one of the
+six.**  Estimate ~800–1500 lines for the five identifications (they share their
+infrastructure: `B/Dils/Pure.lean` already has `IsCornerFor`, `IsFilterFor`,
+the standard corner `h_a` and the standard filter `c_b`, all proved, so the
+work is their *universal properties* in the effectus sense plus the
+projection/support-projection characterisation of images).  After it,
+`vn_has_dilations` and `vn_dilation_order_correspondence` really are the
+cheapest two.
+
+Nothing for ERRATA (no defect in a *statement*).  No new QUESTIONS.
+`docs/why-open.csv`: the `effectus_vn_real_separating` row is removed; the six
+remaining vN rows record that their costings omit the bridge layer.
+`docs/BEff-survey.md`: session-86 block added; the 190III bullet marked PROVED
+with the `np_faithful` correction, and the two dilation bullets re-costed.

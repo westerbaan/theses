@@ -2137,6 +2137,67 @@ private noncomputable def npNCP (ω : Theses.NPFunctional A) :
 @[simp] private theorem npNCP_apply (ω : Theses.NPFunctional A) (a : A) :
     (npNCP ω) a = ULift.up (ω a) := rfl
 
+/-- Scaling by a nonnegative real is monotone for the C\*-order. -/
+theorem smul_le_smul_cstar {r : ℝ} (hr : 0 ≤ r) {x y : A} (h : x ≤ y) :
+    ((r : ℂ)) • x ≤ ((r : ℂ)) • y := by
+  have h0 : (0 : A) ≤ ((r : ℂ)) • (y - x) :=
+    cstar_positive_1 _ (sub_nonneg.mpr h) r hr
+  rw [smul_sub] at h0
+  exact sub_nonneg.mp h0
+
+/-- `t·1 ≤ 1` for a real `t ∈ [0,1]`. -/
+theorem smul_one_le_one {t : ℝ} (h0 : 0 ≤ t) (h1 : t ≤ 1) :
+    ((t : ℂ)) • (1 : A) ≤ (1 : A) := by
+  have h : (0 : A) ≤ (((1 - t : ℝ)) : ℂ) • (1 : A) :=
+    cstar_positive_1 1 zero_le_one _ (by linarith)
+  rw [show (((1 - t : ℝ)) : ℂ) = 1 - (t : ℂ) by push_cast; ring, sub_smul,
+    one_smul] at h
+  exact sub_nonneg.mp h
+
+/-- **Every np-functional with `ω 1 ≠ 0` normalises to a normal state**: a
+*unital* ncpsu-map `ψ : A → ℂᵤ` with `ω = ω(1)·ψ`. -/
+theorem exists_ncpsu_state_of_np (ω : Theses.NPFunctional A) (hω : ω 1 ≠ 0) :
+    ∃ ψ : Theses.NCPSUMap A (ULift.{u} ℂ), ψ.toNCPMap 1 = 1 ∧
+      ∀ a : A, ω a = ω 1 * (ψ.toNCPMap a).down := by
+  have hpos : (0 : ℂ) ≤ ω 1 := Theses.A.VN.npFunctional_nonneg ω zero_le_one
+  obtain ⟨hre, him⟩ := Complex.le_def.mp hpos
+  obtain ⟨c, hc, hcpos⟩ : ∃ c : ℝ, ((c : ℂ) = ω 1 ∧ 0 < c) := by
+    refine ⟨(ω 1).re, ?_, ?_⟩
+    · refine Complex.ext (by simp) ?_
+      simpa using him
+    · rcases lt_or_eq_of_le (by simpa using hre) with h | h
+      · exact h
+      · exact absurd (by refine Complex.ext (by simpa using h.symm) (by simpa using him.symm)) hω
+  have hc0 : (c : ℂ) ≠ 0 := by
+    simpa using hcpos.ne'
+  have hnn : (0 : ULift.{u} ℂ) ≤ ((c⁻¹ : ℝ) : ℂ) • (1 : ULift.{u} ℂ) :=
+    cstar_positive_1 1 zero_le_one _ (le_of_lt (inv_pos.mpr hcpos))
+  have hval : ((ncpLin (Theses.A.VN.ncpOfNonneg hnn)).comp (ncpLin (npNCP ω))) 1
+      = (1 : ULift.{u} ℂ) := by
+    refine Theses.A.VN.CU.down_injective ?_
+    show (ω 1) * (((c⁻¹ : ℝ) : ℂ) * 1) = 1
+    rw [mul_one, ← hc]
+    push_cast
+    field_simp
+  obtain ⟨ψ, hψd⟩ : ∃ ψ : Theses.NCPSUMap A (ULift.{u} ℂ),
+      ∀ a : A, (ψ.toNCPMap a).down = (ω a) * (((c⁻¹ : ℝ) : ℂ) * 1) :=
+    ⟨mkNCPSU ((ncpLin (Theses.A.VN.ncpOfNonneg hnn)).comp (ncpLin (npNCP ω)))
+      (cp_comp _ _ (ncpLin_cp _) (ncpLin_cp _))
+      (preservesDirSups_comp' (f := ⇑(ncpLin (npNCP ω)))
+        (g := ⇑(ncpLin (Theses.A.VN.ncpOfNonneg hnn)))
+        (ncpLin_normal (npNCP ω))
+        (fun a => sa_of_cp (ncpLin_cp (npNCP ω)) a.2) (ncpLin_normal _))
+      (le_of_eq hval), fun _ => rfl⟩
+  refine ⟨ψ, ?_, ?_⟩
+  · refine Theses.A.VN.CU.down_injective ?_
+    rw [hψd 1, Theses.A.VN.CU.down_one, mul_one, ← hc]
+    push_cast
+    field_simp
+  · intro a
+    rw [hψd a, mul_one, ← hc]
+    push_cast
+    field_simp
+
 /-- **Every nontrivial von Neumann algebra carries a normal state**, here in
 the form needed for the effectus argument: a *unital* ncpsu-map `A → ℂᵤ`.
 (An np-functional exists by the faithfulness axiom of
@@ -2149,31 +2210,84 @@ theorem exists_ncpsu_state (A : Type u) [CStarAlgebra A] [PartialOrder A]
     by_contra h
     exact h1 (Theses.VonNeumannAlgebra.np_faithful 1 zero_le_one
       (fun ω => not_not.mp fun hne => h ⟨ω, hne⟩))
-  have hpos : (0 : ℂ) ≤ ω 1 := Theses.A.VN.npFunctional_nonneg ω zero_le_one
-  obtain ⟨hre, him⟩ := Complex.le_def.mp hpos
-  obtain ⟨c, hc, hcpos⟩ : ∃ c : ℝ, ((c : ℂ) = ω 1 ∧ 0 < c) := by
-    refine ⟨(ω 1).re, ?_, ?_⟩
-    · refine Complex.ext (by simp) ?_
-      simpa using him
-    · rcases lt_or_eq_of_le (by simpa using hre) with h | h
-      · exact h
-      · exact absurd (by refine Complex.ext (by simpa using h.symm) (by simpa using him.symm)) hω
-  have hnn : (0 : ULift.{u} ℂ) ≤ ((c⁻¹ : ℝ) : ℂ) • (1 : ULift.{u} ℂ) :=
-    cstar_positive_1 1 zero_le_one _ (le_of_lt (inv_pos.mpr hcpos))
-  have hval : ((ncpLin (Theses.A.VN.ncpOfNonneg hnn)).comp (ncpLin (npNCP ω))) 1
-      = (1 : ULift.{u} ℂ) := by
-    refine Theses.A.VN.CU.down_injective ?_
-    show (ω 1) * (((c⁻¹ : ℝ) : ℂ) * 1) = 1
-    rw [mul_one, ← hc]
-    push_cast
-    field_simp
-  exact ⟨mkNCPSU ((ncpLin (Theses.A.VN.ncpOfNonneg hnn)).comp (ncpLin (npNCP ω)))
-    (cp_comp _ _ (ncpLin_cp _) (ncpLin_cp _))
-    (preservesDirSups_comp' (f := ⇑(ncpLin (npNCP ω)))
-      (g := ⇑(ncpLin (Theses.A.VN.ncpOfNonneg hnn)))
-      (ncpLin_normal (npNCP ω))
-      (fun a => sa_of_cp (ncpLin_cp (npNCP ω)) a.2) (ncpLin_normal _))
-    (le_of_eq hval), hval⟩
+  obtain ⟨ψ, hψ, -⟩ := exists_ncpsu_state_of_np ω hω
+  exact ⟨ψ, hψ⟩
+
+/-- **Normal states separate the elements of a von Neumann algebra.**  The
+faithfulness axiom of `Theses.VonNeumannAlgebra` gives this for *positive*
+elements only; the extension to self-adjoint ones is by conjugation:
+`ω(y⁺ · y⁺)` is again an np-functional (`conjNP`), and it turns `y` into the
+positive element `(y⁺)³`, because `y⁺y⁻ = 0`.  (Supplied here: 190III is
+asserted in eff.tex without proof.) -/
+theorem eq_zero_of_ncpsu_states (A : Type u) [CStarAlgebra A] [PartialOrder A]
+    [StarOrderedRing A] [Theses.VonNeumannAlgebra A] {y : A}
+    (hy : IsSelfAdjoint y)
+    (hst : ∀ ψ : Theses.NCPSUMap A (ULift.{u} ℂ), ψ.toNCPMap 1 = 1 →
+      ψ.toNCPMap y = 0) : y = 0 := by
+  -- (1) every np-functional kills `y`
+  have hnp : ∀ ω : Theses.NPFunctional A, ω y = 0 := by
+    intro ω
+    by_cases hω : ω 1 = 0
+    · have h0 : (npNCP ω) (1 : A) = 0 := by
+        rw [npNCP_apply, hω]; rfl
+      have h := ncp_eq_zero_of_one (npNCP ω) h0 y
+      rw [npNCP_apply] at h
+      exact congrArg ULift.down h
+    · obtain ⟨ψ, hψ1, hψ⟩ := exists_ncpsu_state_of_np ω hω
+      rw [hψ y, hst ψ hψ1]
+      simp
+  -- (2) a positive element with `b³ = 0` is zero
+  have cube_zero : ∀ b : A, IsSelfAdjoint b → b * b * b = 0 → b = 0 := by
+    intro b hb h3
+    have hsa2 : star (b * b) = b * b := by rw [star_mul, hb.star_eq]
+    have h4 : star (b * b) * (b * b) = 0 := by
+      rw [hsa2, ← mul_assoc, h3, zero_mul]
+    have h2 : b * b = 0 := by
+      have hn := CStarRing.norm_star_mul_self (x := b * b)
+      rw [h4, norm_zero] at hn
+      exact norm_eq_zero.mp (mul_self_eq_zero.mp hn.symm)
+    have hn := CStarRing.norm_star_mul_self (x := b)
+    rw [hb.star_eq, h2, norm_zero] at hn
+    exact norm_eq_zero.mp (mul_self_eq_zero.mp hn.symm)
+  have hsplit : posPart y - negPart y = y := CFC.posPart_sub_negPart y hy
+  have hpn : posPart y * negPart y = 0 := CFC.posPart_mul_negPart y
+  have hnpm : negPart y * posPart y = 0 := CFC.negPart_mul_posPart y
+  have hp0 : (0 : A) ≤ posPart y := CFC.posPart_nonneg y
+  have hn0 : (0 : A) ≤ negPart y := CFC.negPart_nonneg y
+  have hpsa : IsSelfAdjoint (posPart y) := hp0.isSelfAdjoint
+  have hnsa : IsSelfAdjoint (negPart y) := hn0.isSelfAdjoint
+  -- (3) the positive part
+  have hpz : posPart y = 0 := by
+    refine cube_zero _ hpsa (Theses.VonNeumannAlgebra.np_faithful _ ?_ ?_)
+    · have h := star_left_conjugate_le_conjugate hp0 (posPart y)
+      rwa [mul_zero, zero_mul, hpsa.star_eq] at h
+    · intro ω
+      have hcube : posPart y * (posPart y - negPart y) * posPart y
+          = posPart y * posPart y * posPart y := by
+        rw [mul_sub, sub_mul, hpn, zero_mul, sub_zero]
+      rw [hsplit] at hcube
+      have h := hnp (Theses.A.VN.conjNP (posPart y) ω)
+      rw [Theses.A.VN.conjNP_apply, hpsa.star_eq, hcube] at h
+      exact h
+  -- (4) the negative part
+  have hnz : negPart y = 0 := by
+    refine cube_zero _ hnsa (Theses.VonNeumannAlgebra.np_faithful _ ?_ ?_)
+    · have h := star_left_conjugate_le_conjugate hn0 (negPart y)
+      rwa [mul_zero, zero_mul, hnsa.star_eq] at h
+    · intro ω
+      have hcube : negPart y * (posPart y - negPart y) * negPart y
+          = -(negPart y * negPart y * negPart y) := by
+        rw [mul_sub, sub_mul, hnpm, zero_mul, zero_sub]
+      rw [hsplit] at hcube
+      have h := hnp (Theses.A.VN.conjNP (negPart y) ω)
+      rw [Theses.A.VN.conjNP_apply, hnsa.star_eq, hcube] at h
+      have hlin : ω (-(negPart y * negPart y * negPart y))
+          = -(ω (negPart y * negPart y * negPart y)) :=
+        map_neg ω.toPositiveLinearMap _
+      rw [hlin] at h
+      exact neg_eq_zero.mp h
+  rw [hpz, hnz, sub_zero] at hsplit
+  exact hsplit.symm
 
 end StateExists
 
@@ -2412,6 +2526,263 @@ theorem su_isTotal_iff {X Y : WStarCPSU.{u}ᵒᵖ} (f : X ⟶ Y) :
       = (θ.inv.unop.toNCPMap a).down • (1 : X.unop.base.carrier)
     rw [hf]
 
+/-! ### `vN_cpsuᵒᵖ` is real, with separating states and predicates (190III)
+
+All three claims are read off the isomorphism `θ : I ≅ ℂᵤ` of
+`su_effObj_iso`.  Writing `μ = θ.inv.unop` for the induced isomorphism
+`I → ℂᵤ` (so that `a = μ(a)·1` for every `a` of the effect algebra):
+
+* **separating predicates** — an effect `a ∈ [0,1]_X` gives the predicate
+  `(z ↦ z·a) ≫ θ.inv`, and composing with it reads off `f(a)`; every
+  positive element is a positive multiple of an effect, so `f = g` follows by
+  linearity (`linear_eq_zero_of_nonneg`).
+* **separating states** — by `su_isTotal_iff` the states of `X` are exactly
+  the normal states of the algebra `X.unop`, and those separate its elements
+  (`eq_zero_of_ncpsu_states`).
+* **real** — `μ` carries `Scal C = C(I,I)` bijectively onto `[0,1] ⊆ ℝ`,
+  taking `⋁` to `+` and composition to multiplication. -/
+theorem su_real_separating :
+    IsRealEffectus (WStarCPSU.{u}ᵒᵖ) ∧ SeparatingPredicates (WStarCPSU.{u}ᵒᵖ) ∧
+      SeparatingStates (WStarCPSU.{u}ᵒᵖ) := by
+  obtain ⟨θ, hθ⟩ := su_effObj_iso.{u}
+  have hhom : θ.hom = suOne (effObj (WStarCPSU.{u}ᵒᵖ)) := by
+    have h := hθ (effObj (WStarCPSU.{u}ᵒᵖ))
+    rwa [one_m_is_id, Category.id_comp] at h
+  have hhomap : ∀ z : ULift.{u} ℂ,
+      θ.hom.unop.toNCPMap z = z.down • (1 : effCarrier) := by
+    intro z
+    rw [hhom]
+    rfl
+  have hinvhom : ∀ z : ULift.{u} ℂ,
+      θ.inv.unop.toNCPMap (θ.hom.unop.toNCPMap z) = z := by
+    intro z
+    exact (suop_comp_apply θ.inv θ.hom z).symm.trans
+      ((suop_congr θ.inv_hom_id z).trans (su_id_apply (X := (suI.{u}).unop) z))
+  have hall : ∀ a : effCarrier,
+      (θ.inv.unop.toNCPMap a).down • (1 : effCarrier) = a := by
+    intro a
+    refine (hhomap (θ.inv.unop.toNCPMap a)).symm.trans ?_
+    exact (suop_comp_apply θ.hom θ.inv a).symm.trans
+      ((suop_congr θ.hom_inv_id a).trans (su_id_apply a))
+  have hinv1 : θ.inv.unop.toNCPMap (1 : effCarrier) = (1 : ULift.{u} ℂ) := by
+    have h := hinvhom 1
+    rwa [hhomap, Theses.A.VN.CU.down_one, one_smul] at h
+  -- ### separating predicates
+  have hsepP : SeparatingPredicates (WStarCPSU.{u}ᵒᵖ) := by
+    intro Y X f g hfg
+    -- the predicates of `X` include the concrete effects of `X.unop`
+    have key : ∀ (a : X.unop.base.carrier) (h0 : 0 ≤ a) (h1 : a ≤ 1),
+        f.unop.toNCPMap a = g.unop.toNCPMap a := by
+      intro a h0 h1
+      have hq : ∀ k : Y ⟶ X,
+          (k ≫ (Quiver.Hom.op (wEffect h0 h1) ≫ θ.inv)).unop.toNCPMap
+            (1 : effCarrier) = k.unop.toNCPMap a := by
+        intro k
+        rw [suop_comp_apply, suop_comp_apply, hinv1]
+        show k.unop.toNCPMap ((1 : ULift.{u} ℂ).down • a) = k.unop.toNCPMap a
+        rw [Theses.A.VN.CU.down_one, one_smul]
+      have hp := suop_congr (hfg (Quiver.Hom.op (wEffect h0 h1) ≫ θ.inv))
+        (1 : effCarrier)
+      rw [hq f, hq g] at hp
+      exact hp
+    -- every positive element is a positive multiple of an effect
+    have hpos : ∀ b : X.unop.base.carrier, 0 ≤ b →
+        f.unop.toNCPMap b = g.unop.toNCPMap b := by
+      intro b hb
+      have hnorm : (0 : ℝ) < ‖b‖ + 1 := by positivity
+      have hr0 : (0 : ℝ) ≤ (‖b‖ + 1)⁻¹ := le_of_lt (inv_pos.mpr hnorm)
+      have hle : b ≤ ((‖b‖ : ℝ) : ℂ) • (1 : X.unop.base.carrier) := by
+        have h := Theses.A.VN.le_norm_smul_one hb
+        simpa [Complex.coe_smul] using h
+      have h0 : (0 : X.unop.base.carrier) ≤ (((‖b‖ + 1)⁻¹ : ℝ) : ℂ) • b :=
+        cstar_positive_1 b hb _ hr0
+      have h1 : (((‖b‖ + 1)⁻¹ : ℝ) : ℂ) • b ≤ 1 := by
+        refine le_trans (smul_le_smul_cstar hr0 hle) ?_
+        rw [smul_smul, show ((((‖b‖ + 1)⁻¹ : ℝ) : ℂ) * ((‖b‖ : ℝ) : ℂ))
+            = ((((‖b‖ + 1)⁻¹ * ‖b‖ : ℝ)) : ℂ) by push_cast; ring]
+        refine smul_one_le_one (by positivity) ?_
+        rw [inv_mul_eq_div]
+        exact (div_le_one hnorm).mpr (by linarith)
+      have hkey := key _ h0 h1
+      rw [ncp_smul_apply f.unop.toNCPMap, ncp_smul_apply g.unop.toNCPMap] at hkey
+      have h2 := congrArg (fun z : Y.unop.base.carrier =>
+        (((‖b‖ + 1 : ℝ)) : ℂ) • z) hkey
+      simp only [smul_smul] at h2
+      rwa [show ((((‖b‖ + 1 : ℝ)) : ℂ) * ((((‖b‖ + 1)⁻¹ : ℝ)) : ℂ)) = 1 by
+        push_cast; field_simp, one_smul, one_smul] at h2
+    refine suop_hom_ext fun a => ?_
+    have hlin : ∀ x : X.unop.base.carrier, 0 ≤ x →
+        ((ncpLin f.unop.toNCPMap - ncpLin g.unop.toNCPMap :
+          X.unop.base.carrier →ₗ[ℂ] Y.unop.base.carrier)) x = 0 := by
+      intro x hx
+      show f.unop.toNCPMap x - g.unop.toNCPMap x = 0
+      rw [hpos x hx, sub_self]
+    have h := linear_eq_zero_of_nonneg hlin a
+    have h' : f.unop.toNCPMap a - g.unop.toNCPMap a = 0 := h
+    exact sub_eq_zero.mp h'
+  -- ### separating states
+  have hsepS : SeparatingStates (WStarCPSU.{u}ᵒᵖ) := by
+    intro X Y f g hfg
+    have hpos : ∀ c : Y.unop.base.carrier, 0 ≤ c →
+        f.unop.toNCPMap c = g.unop.toNCPMap c := by
+      intro c hc
+      have hfc : (0 : X.unop.base.carrier) ≤ f.unop.toNCPMap c :=
+        ncpsu_nonneg _ hc
+      have hgc : (0 : X.unop.base.carrier) ≤ g.unop.toNCPMap c :=
+        ncpsu_nonneg _ hc
+      have hsa : IsSelfAdjoint (f.unop.toNCPMap c - g.unop.toNCPMap c) :=
+        hfc.isSelfAdjoint.sub hgc.isSelfAdjoint
+      refine sub_eq_zero.mp (eq_zero_of_ncpsu_states X.unop.base.carrier hsa ?_)
+      intro ψ hψ1
+      -- `θ.hom ≫ ψ` is a state of `X`
+      have htot : IsTotal (θ.hom ≫ Quiver.Hom.op ψ) := by
+        rw [su_isTotal_iff, suop_comp_apply]
+        show θ.hom.unop.toNCPMap (ψ.toNCPMap (1 : X.unop.base.carrier)) = 1
+        rw [hψ1, hhomap, Theses.A.VN.CU.down_one, one_smul]
+      have h := suop_congr (hfg ⟨θ.hom ≫ Quiver.Hom.op ψ, htot⟩) c
+      rw [suop_comp_apply, suop_comp_apply, suop_comp_apply,
+        suop_comp_apply] at h
+      have h2 : ψ.toNCPMap (f.unop.toNCPMap c) = ψ.toNCPMap (g.unop.toNCPMap c) := by
+        have h3 := congrArg (fun z : effCarrier => θ.inv.unop.toNCPMap z) h
+        exact ((hinvhom (ψ.toNCPMap (f.unop.toNCPMap c))).symm.trans h3).trans
+          (hinvhom (ψ.toNCPMap (g.unop.toNCPMap c)))
+      show ψ.toNCPMap (f.unop.toNCPMap c - g.unop.toNCPMap c) = 0
+      rw [show ψ.toNCPMap (f.unop.toNCPMap c - g.unop.toNCPMap c)
+          = ncpLin ψ.toNCPMap (f.unop.toNCPMap c - g.unop.toNCPMap c) from rfl,
+        map_sub]
+      show ψ.toNCPMap (f.unop.toNCPMap c) - ψ.toNCPMap (g.unop.toNCPMap c) = 0
+      rw [h2, sub_self]
+    refine suop_hom_ext fun b => ?_
+    have hlin : ∀ x : Y.unop.base.carrier, 0 ≤ x →
+        ((ncpLin f.unop.toNCPMap - ncpLin g.unop.toNCPMap :
+          Y.unop.base.carrier →ₗ[ℂ] X.unop.base.carrier)) x = 0 := by
+      intro x hx
+      show f.unop.toNCPMap x - g.unop.toNCPMap x = 0
+      rw [hpos x hx, sub_self]
+    have h := linear_eq_zero_of_nonneg hlin b
+    have h' : f.unop.toNCPMap b - g.unop.toNCPMap b = 0 := h
+    exact sub_eq_zero.mp h'
+  -- ### the scalars are `[0,1]`
+  refine ⟨?_, hsepP, hsepS⟩
+  obtain ⟨t, ht⟩ : ∃ t : Scal (WStarCPSU.{u}ᵒᵖ) → ℂ,
+      ∀ k : Scal (WStarCPSU.{u}ᵒᵖ),
+        t k = (θ.inv.unop.toNCPMap (k.unop.toNCPMap (1 : effCarrier))).down :=
+    ⟨_, fun _ => rfl⟩
+  have ht0 : ∀ k, (0 : ℂ) ≤ t k := by
+    intro k
+    rw [ht]
+    exact ncpsu_nonneg θ.inv.unop (ncpsu_nonneg k.unop zero_le_one)
+  have ht1 : ∀ k, t k ≤ 1 := by
+    intro k
+    rw [ht]
+    have h := ncpsu_mono θ.inv.unop k.unop.subunital'
+    rw [hinv1] at h
+    exact h
+  have htre : ∀ k, (((t k).re : ℝ) : ℂ) = t k := by
+    intro k
+    obtain ⟨-, him⟩ := Complex.le_def.mp (ht0 k)
+    refine Complex.ext (by simp) ?_
+    simpa using him
+  obtain ⟨s, hs⟩ : ∃ s : Scal (WStarCPSU.{u}ᵒᵖ) → unitInterval,
+      ∀ k, ((s k : ℝ) : ℂ) = t k := by
+    refine ⟨fun k => ⟨(t k).re, ?_, ?_⟩, fun k => htre k⟩
+    · simpa using (Complex.le_def.mp (ht0 k)).1
+    · simpa using (Complex.le_def.mp (ht1 k)).1
+  -- `k` is determined by `k(1)`, which is the scalar `t k`
+  have hunop : ∀ (k : Scal (WStarCPSU.{u}ᵒᵖ)) (a : effCarrier),
+      k.unop.toNCPMap a
+        = (θ.inv.unop.toNCPMap a).down • k.unop.toNCPMap (1 : effCarrier) := by
+    intro k a
+    conv_lhs => rw [← hall a]
+    exact ncp_smul_apply k.unop.toNCPMap _ 1
+  have hone : t 1 = 1 := by
+    have h1 : (1 : Scal (WStarCPSU.{u}ᵒᵖ)).unop.toNCPMap (1 : effCarrier)
+        = (1 : effCarrier) := by
+      rw [show (1 : Scal (WStarCPSU.{u}ᵒᵖ)) = 𝟙 (effObj (WStarCPSU.{u}ᵒᵖ)) from
+        one_m_is_id]
+      exact su_id_apply (1 : effCarrier)
+    rw [ht, h1, hinv1]
+    simp
+  have hmul : ∀ k l : Scal (WStarCPSU.{u}ᵒᵖ), t (k * l) = t k * t l := by
+    intro k l
+    simp only [ht]
+    show (θ.inv.unop.toNCPMap ((l ≫ k).unop.toNCPMap (1 : effCarrier))).down
+      = (θ.inv.unop.toNCPMap (k.unop.toNCPMap 1)).down
+        * (θ.inv.unop.toNCPMap (l.unop.toNCPMap 1)).down
+    rw [suop_comp_apply, hunop l (k.unop.toNCPMap 1),
+      ncp_smul_apply θ.inv.unop.toNCPMap]
+    rfl
+  have hadd : ∀ (k l : Scal (WStarCPSU.{u}ᵒᵖ)) (h : Perp k l),
+      t (ovee k l h) = t k + t l := by
+    intro k l h
+    simp only [ht]
+    rw [show (ovee k l h).unop.toNCPMap (1 : effCarrier)
+        = k.unop.toNCPMap 1 + l.unop.toNCPMap 1 from rfl, ncp_add_apply]
+    rfl
+  have hperp : ∀ (k l : Scal (WStarCPSU.{u}ᵒᵖ)), Perp k l → t k + t l ≤ 1 := by
+    intro k l h
+    have h' : k.unop.toNCPMap (1 : effCarrier) + l.unop.toNCPMap 1 ≤ 1 := h
+    have h2 := ncpsu_mono θ.inv.unop h'
+    rw [hinv1, ncp_add_apply] at h2
+    simp only [ht]
+    exact h2
+  refine ⟨{ toEAHom := { toPCMHom := { toFun := s
+                                       perp_map := ?_
+                                       ovee_map := ?_ }
+                         map_one := ?_ }
+            map_mul := ?_ }, ?_, ?_⟩
+  · intro k l h
+    show ((s k : ℝ)) + ((s l : ℝ)) ≤ 1
+    have h2 := hperp k l h
+    rw [← hs, ← hs] at h2
+    obtain ⟨h3, -⟩ := Complex.le_def.mp h2
+    simpa using h3
+  · intro k l h
+    refine Subtype.ext ?_
+    show ((s (ovee k l h) : ℝ)) = ((s k : ℝ)) + ((s l : ℝ))
+    have h2 := hadd k l h
+    rw [← hs, ← hs, ← hs] at h2
+    exact_mod_cast h2
+  · refine Subtype.ext ?_
+    show ((s 1 : ℝ)) = 1
+    have h2 := hone
+    rw [← hs] at h2
+    exact_mod_cast h2
+  · intro k l
+    refine Subtype.ext ?_
+    show ((s (k * l) : ℝ)) = ((s k : ℝ)) * ((s l : ℝ))
+    have h2 := hmul k l
+    rw [← hs, ← hs, ← hs] at h2
+    exact_mod_cast h2
+  · -- injective
+    intro k l hkl
+    have hkl' : s k = s l := hkl
+    have h2 : t k = t l := by rw [← hs, ← hs, hkl']
+    have h1 : k.unop.toNCPMap (1 : effCarrier) = l.unop.toNCPMap 1 := by
+      rw [← hall (k.unop.toNCPMap 1), ← hall (l.unop.toNCPMap 1), ← ht k, ← ht l,
+        h2]
+    exact suop_hom_ext fun a => by rw [hunop k a, hunop l a, h1]
+  · -- surjective
+    intro r
+    have h0 : (0 : ULift.{u} ℂ) ≤ ((r : ℝ) : ℂ) • (1 : ULift.{u} ℂ) :=
+      cstar_positive_1 1 zero_le_one _ r.2.1
+    have h1 : ((r : ℝ) : ℂ) • (1 : ULift.{u} ℂ) ≤ 1 :=
+      smul_one_le_one r.2.1 r.2.2
+    refine ⟨θ.hom ≫ (Quiver.Hom.op (wEffect h0 h1) ≫ θ.inv), ?_⟩
+    refine Subtype.ext ?_
+    have h2 : t (θ.hom ≫ (Quiver.Hom.op (wEffect h0 h1) ≫ θ.inv))
+        = ((r : ℝ) : ℂ) := by
+      rw [ht, suop_comp_apply, suop_comp_apply, hinv1]
+      show (θ.inv.unop.toNCPMap (θ.hom.unop.toNCPMap
+        ((1 : ULift.{u} ℂ).down • (((r : ℝ) : ℂ) • (1 : ULift.{u} ℂ))))).down
+        = ((r : ℝ) : ℂ)
+      rw [Theses.A.VN.CU.down_one, one_smul, hinvhom]
+      show ((r : ℝ) : ℂ) * 1 = ((r : ℝ) : ℂ)
+      rw [mul_one]
+    have h3 := hs (θ.hom ≫ (Quiver.Hom.op (wEffect h0 h1) ≫ θ.inv))
+    rw [h2] at h3
+    show ((s (θ.hom ≫ (Quiver.Hom.op (wEffect h0 h1) ≫ θ.inv)) : ℝ)) = (r : ℝ)
+    exact_mod_cast h3
 
 end IUnique
 
@@ -2463,7 +2834,13 @@ theorem effectus_vn_real_separating
     letI := s.finPAC
     letI := s.effectus
     IsRealEffectus WStarCPSU.{u}ᵒᵖ ∧ SeparatingPredicates WStarCPSU.{u}ᵒᵖ ∧
-      SeparatingStates WStarCPSU.{u}ᵒᵖ := sorry
+      SeparatingStates WStarCPSU.{u}ᵒᵖ := by
+  have : HasFiniteCoproducts (WStarCPSU.{u}ᵒᵖ) := suHasFiniteCoproducts
+  have hpcm : s.homPCM = suPCM :=
+    effectusPartialStructure_homPCM_unique s vnPartialStructure
+  obtain ⟨hfc, pcm, hfin, E⟩ := s
+  subst hpcm
+  exact @su_real_separating E
 
 /-! ## `vNᵒᵖ` is a ⋄-effectus and an &-effectus (parsecs 206, 211)
 

@@ -128,6 +128,49 @@
 > `exc_purec_*` ~600/~400.  `vn_is_andthen_eff` (211IV) is unchanged:
 > blocked on A/Proc's 105V.
 
+> **Session 86.**  **`effectus_vn_real_separating` (190III) is CLOSED**,
+> axiom-clean (checked *in situ*), in `VNExamples.lean`; B/Eff is at **8**
+> `sorry`s (`VNExamples` **7**, `EffectAlgebras` 1, `StatesPredicates` 0 —
+> all three counted with the compiler), 0 errors.  ~400 added lines
+> against the ~250–350 costed, so ~1.2–1.6× low.  Three corrections to the
+> costing just above, in **both** directions:
+>
+> * `SeparatingStates` did **not** need the ceiling calculus.  "np-functionals
+>   separate self-adjoint elements" is four lines of conjugation:
+>   `ν = ω(y⁺ · y⁺)` is again an np-functional (`conjNP`, `A/VN/Basic.lean`)
+>   and `y⁺ y y⁺ = (y⁺)³` because `y⁺y⁻ = 0`, so `np_faithful` at `(y⁺)³`
+>   kills `y⁺`, and the same at `y⁻`.  No spectral projections, no ceilings.
+>   (New reusable lemma: `eq_zero_of_ncpsu_states`.)
+> * `IsRealEffectus` was the *largest* of the three parts, not a footnote: the
+>   effect-monoid isomorphism `Scal C ≅ [0,1]` has to be built by hand out of
+>   `θ`, with `⋁ ↦ +`, `∘ ↦ ×`, and bijectivity both ways.
+> * `SeparatingPredicates` was indeed nearly free, but needed the scaling
+>   `b ↦ (‖b‖+1)⁻¹·b` to get from effects to all positive elements (helpers
+>   `smul_le_smul_cstar`, `smul_one_le_one`).
+>
+> **The remaining six reachable items are re-costed sharply upwards, and the
+> ~200-line figures above are wrong.**  190III turns out to be the *only* one
+> of the eight that never mentions sharpness, purity, quotients or
+> comprehensions — which is why it went through on `vn_effObj_iso` alone.
+> Every other one does: `IsDilation` asks for `SharpMap ϱ`, `IsTotal ϱ` and
+> `IsPure h`; `DiamondEffectus` asks for `HasQuotients`, `HasComprehension`,
+> `HasImages` and `orth_sharp`; `DaggerPrimeEffectus` asks for `quot_sharp`;
+> `PureCat` is built from `IsPure`.  The concrete identifications that supply
+> these — **sharp predicates = projections** (eff.tex:4195), **quotients =
+> corners** (3684), **comprehensions = filters** (3934), **pure maps** (4040),
+> **sharp maps = nmiu-maps** (4777) — are *bare Examples in eff.tex with no
+> proof* and are formalized **nowhere in the tree** (grep: no Lean statement
+> cites any of those five lines).  `vn_has_dilations`'s "as shown in
+> `existence-paschke`" presupposes all of them: `existence_paschke` quantifies
+> over *nmiu* `ϱ'`, the abstract universal property over *sharp total* `ϱ'`,
+> so the two are the same statement only after "sharp + total ⟹ nmiu", which
+> needs the **multiplicative domain** of a ucp-map — and neither that nor
+> Kadison–Schwarz for maps is in the tree (grep: no `multDomain`, no
+> `kadison_schwarz`).  Realistic shared cost of that bridge layer:
+> **~800–1500 lines**; after it, each of the six is comparatively cheap and
+> `vn_has_dilations`/`vn_dilation_order_correspondence` are again the first
+> two to take.  **This layer, not any one of the six, is the next target.**
+
 > **Session 84, second worker.**  **`finite_effectMonoid_boolean` (178III.2) is
 > CLOSED**, axiom-clean, in `EffectAlgebras.lean` (new section
 > `FiniteBoolean`).  With `effects_sea` that puts B/Eff at **10** `sorry`s
@@ -367,12 +410,12 @@ without a concrete `s` in hand there is nothing to compute with.
 
 Individually:
 
-* **`effectus_vn_real_separating` (190III)** — eff.tex:2136 asserts it and
-  cites `[effintro]`; no proof.  The content is concrete and elementary once
-  the effectus exists: predicates on `𝒜` are `[0,1]_𝒜`, states are the normal
-  states, `M ≅ [0,1]`, separation of states is `np_faithful` (the second axiom
-  of `Theses.VonNeumannAlgebra`), separation of predicates is order separation.
-  **~250 lines after 180V.**  *Reachable, blocked on the root.*
+* **`effectus_vn_real_separating` (190III)** — **PROVED, session 86** (~400
+  lines).  eff.tex:2136 asserts it and cites `[effintro]`; no proof, so the
+  mathematics was supplied.  One correction to what stood here: separation of
+  states is *not* `np_faithful` — that axiom is about *positive* elements, and
+  what is needed is separation of *self-adjoint* ones, which takes the
+  conjugation `ω(y⁺ · y⁺)` (`eq_zero_of_ncpsu_states`).
 * **`diamond_effectus_vn` (206III)** — eff.tex:4460 is a bare Examples list
   ("`vNᵒᵖ`, `CvNᵒᵖ`, `EJAᵒᵖ` and `Set` are all ⋄-effectuses"), no proof.
   `f_⋄` is `p ↦ ⌈f(p)⌉`; the ceiling calculus is fully developed in
@@ -395,12 +438,18 @@ Individually:
   (`B/Dils/Paschke.lean:1376`), on the import path.  This is therefore the
   cheapest of the eight once 180V exists: the work is fitting the Paschke
   dilation into the abstract `IsDilation` shape.  **~200 lines after 180V.**
-  *Reachable, blocked on the root.*
+  *Reachable, blocked on the root.*  **Session 86: the ~200 is wrong.**
+  "Fitting into the abstract shape" *is* the whole job — `IsDilation` asks for
+  `SharpMap ϱ`, `IsTotal ϱ` and `IsPure h`, and `existence_paschke`'s
+  universal property quantifies over *nmiu* maps where the abstract one
+  quantifies over *sharp total* maps.  See the session-86 block at the top.
 * **`vn_dilation_order_correspondence` (223VI)** — eff.tex:7095, "By
   `paschke-correspondence`".  `paschke_correspondence_mem`, `_embedding` and
   `_surjective` are all **proved** (`Paschke.lean:2861, 2893, 2973`).  Same
   shape as 221III.  **~200 lines after 180V.**  *Reachable, blocked on the
-  root.*
+  root.*  **Session 86: also re-costed upwards** — it consumes 221III (it is
+  handed an abstract `IsDilation`, which has to be recognised as the Paschke
+  one) and additionally needs `asrt` and `sef` concretely.
 * **`exc_purec_no_biproduct` (224VI)** and **`exc_purec_equal` (224VII)** —
   Exercises\* with **full author solutions** (`bsols.tex:3358–3479` and
   `3480–3540`).  These are the only two vN examples with a transcribable
