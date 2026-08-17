@@ -2765,18 +2765,23 @@ theorem omegaNorm_mul_right [VonNeumannAlgebra A] (ω : NPFunctional A)
   congr 3
   noncomm_ring
 
-/-- The core of **44XV**, (2) ⇒ (3): a positive linear map which is
-ultraweakly continuous on the effects is normal.  Replace the bounded
-directed `D` by its cofinal upper tail `{d ∈ D | d₀ ≤ d}`, which is
-norm-bounded, and rescale it into `[0,1]_A` by the affine map
-`a ↦ (a − d₀)/‖⋁D − d₀‖`; **44VI** pushes the net into the effects, the
-hypothesis pushes it through `f`, and **44XI** (order separation) identifies
-the limit as the least upper bound. -/
-theorem preservesDirSups_of_continuousOn_effects
+/-- The common core of **44XV** (2) ⇒ (3) and **45I**.1: a positive linear
+map which is *ultrastrongly*-to-*ultraweakly* continuous on the effects is
+normal.  Replace the bounded directed `D` by its cofinal upper tail
+`{d ∈ D | d₀ ≤ d}`, which is norm-bounded, and rescale it into `[0,1]_A` by
+the affine map `a ↦ (a − d₀)/‖⋁D − d₀‖`; **44XIV** `vna_supremum_uslimit`
+pushes the (ultrastrongly convergent) net into the effects, the hypothesis
+pushes it through `f`, and **44XI** (order separation) identifies the limit
+as the least upper bound.
+
+Stated with the *finest* source topology and the *coarsest* target topology
+of the two applications, so that both **44XV** (ultraweak ⇒ ultraweak) and
+**45I**.1 (ultrastrong ⇒ ultrastrong) are one-line corollaries. -/
+private theorem preservesDirSups_of_continuousOn_effects_core
     [VonNeumannAlgebra A] [VonNeumannAlgebra B] (f : A →ₚ[ℂ] B)
-    (h : @ContinuousOn A B (ultraweak A) (ultraweak B) f (effects A)) :
+    (h : @ContinuousOn A B (ultrastrong A) (ultraweak B) f (effects A)) :
     PreservesDirSups ⇑f := by
-  let _ : TopologicalSpace A := ultraweak A
+  let _ : TopologicalSpace A := ultrastrong A
   let _ : TopologicalSpace B := ultraweak B
   intro D s hne hdir hlub
   refine ⟨?_, ?_⟩
@@ -2820,23 +2825,26 @@ theorem preservesDirSups_of_continuousOn_effects
   have hh' : D'.Nonempty ∧ DirectedOn (· ≤ ·) D' ∧ BddAbove D' :=
     ⟨hne', hdir', ⟨s, hlub'.1⟩⟩
   have hsup : dirSup D' hh' = s := (isLUB_dirSup D' hh').unique hlub'
-  have hbase : UWTendsto (fun d : D' => ((d : selfAdjoint A) : A)) atTop (s : A) := by
-    have := vna_supremum_uwlimit D' hh'
+  have hbase : USTendsto (fun d : D' => ((d : selfAdjoint A) : A)) atTop (s : A) := by
+    have := vna_supremum_uslimit D' hh'
     rwa [hsup] at this
-  have hnet : UWTendsto (fun d : D' => e ((d : selfAdjoint A) : A)) atTop
+  have hnet : USTendsto (fun d : D' => e ((d : selfAdjoint A) : A)) atTop
       (e (s : A)) := by
-    rw [uwTendsto_iff] at hbase ⊢
+    rw [usTendsto_iff] at hbase ⊢
     intro ω
-    have h1 := ((hbase ω).sub (tendsto_const_nhds
-      (x := (ω ((d₀ : selfAdjoint A) : A) : ℂ)) (f := (atTop : Filter D')))).const_mul
-      ((c⁻¹ : ℝ) : ℂ)
-    have hrw : ∀ a : A, (ω (e a) : ℂ)
-        = ((c⁻¹ : ℝ) : ℂ) * (ω a - ω ((d₀ : selfAdjoint A) : A)) := by
+    have h1 := (hbase ω).const_mul ‖((c⁻¹ : ℝ) : ℂ)‖
+    have hrw : ∀ a : A, omegaNorm A ω (e a - e (s : A))
+        = ‖((c⁻¹ : ℝ) : ℂ)‖ * omegaNorm A ω (a - (s : A)) := by
       intro a
-      rw [he]
-      simp only [npFunctional_real_smul, npFunctional_sub]
+      have hsm : e a - e (s : A) = ((c⁻¹ : ℝ) : ℂ) • (a - (s : A)) := by
+        rw [he]
+        simp only
+        rw [← real_smul_eq_complex_smul, ← smul_sub]
+        congr 1
+        abel
+      rw [hsm, omegaNorm_smul]
     simp only [hrw]
-    exact h1
+    simpa using h1
   have hin : ∀ᶠ d : D' in atTop, e ((d : selfAdjoint A) : A) ∈ effects A :=
     Eventually.of_forall fun d =>
       heff _ (Subtype.coe_le_coe.mpr d.2.2) (Subtype.coe_le_coe.mpr (hlub'.1 d.2))
@@ -2878,6 +2886,29 @@ theorem preservesDirSups_of_continuousOn_effects
   refine le_of_tendsto ((uwTendsto_iff _ _ _).mp hfd ω) ?_
   exact Eventually.of_forall fun d =>
     npFunctional_mono ω (hz ⟨(d : selfAdjoint A), d.2.1, rfl⟩)
+
+/-- Coarsening the source topology of a `ContinuousOn` statement: the
+ultrastrong topology is finer than the ultraweak one (**43I**
+`ultrastrong_le_ultraweak`), so ultraweak continuity on a set implies
+ultrastrong continuity on it. -/
+private theorem continuousWithinAt_ultrastrong_of_ultraweak {f : A → B}
+    {S : Set A} {a : A} {t : TopologicalSpace B}
+    (h : @ContinuousWithinAt A B (ultraweak A) t f S a) :
+    @ContinuousWithinAt A B (ultrastrong A) t f S a :=
+  h.mono_left (by
+    show @nhdsWithin A (ultrastrong A) a S ≤ @nhdsWithin A (ultraweak A) a S
+    exact inf_le_inf_right _ (_root_.nhds_mono ultrastrong_le_ultraweak))
+
+/-- The core of **44XV**, (2) ⇒ (3): a positive linear map which is
+ultraweakly continuous on the effects is normal.  This is the special case
+of `preservesDirSups_of_continuousOn_effects_core` in which the source
+topology is coarsened from ultrastrong to ultraweak. -/
+theorem preservesDirSups_of_continuousOn_effects
+    [VonNeumannAlgebra A] [VonNeumannAlgebra B] (f : A →ₚ[ℂ] B)
+    (h : @ContinuousOn A B (ultraweak A) (ultraweak B) f (effects A)) :
+    PreservesDirSups ⇑f :=
+  preservesDirSups_of_continuousOn_effects_core f fun a ha =>
+    continuousWithinAt_ultrastrong_of_ultraweak (h a ha)
 
 /-- `b ↦ a* b a` as a positive linear map (**34V** `ad-cp`). -/
 private noncomputable def adPositive (a : A) : A →ₚ[ℂ] A where
@@ -2991,12 +3022,16 @@ theorem p_uwcont_ad [VonNeumannAlgebra A] (a : A) :
 
 /-- **45I** (vn.tex:829, Exercise), part 1: a positive linear map between
 von Neumann algebras which is ultrastrongly continuous on `[0,1]_A` is
-normal. -/
+normal.  This is `preservesDirSups_of_continuousOn_effects_core` — the proof
+of **44XV** (2) ⇒ (3) — with the target topology coarsened from ultrastrong
+to ultraweak by **43I** `ultrastrong_le_ultraweak`; the net `d → ⋁D` already
+converges *ultrastrongly* by **44XIV** `vna_supremum_uslimit`. -/
 theorem us_cont_normal [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     (f : A →ₚ[ℂ] B)
     (h : @ContinuousOn A B (ultrastrong A) (ultrastrong B) f (effects A)) :
     PreservesDirSups ⇑f :=
-  sorry
+  preservesDirSups_of_continuousOn_effects_core f fun a ha =>
+    (h a ha).mono_right (_root_.nhds_mono ultrastrong_le_ultraweak)
 
 /-- **45I** (vn.tex:829, Exercise), part 2: the converse fails — there is a
 normal positive map (e.g. the transpose on `B(ℓ²)`) that is not
@@ -3303,12 +3338,57 @@ theorem vn_products_nmiu {B : Type*} [CStarAlgebra B] [PartialOrder B]
 
 /-- **47IV** (`vn-products`, vn.tex:988, Exercise), part 3 (`W*_cpsu`):
 `⊕ᵢ𝒜ᵢ` is also the product in `W*_cpsu`: every family of ncpsu-maps
-`f_i : B → 𝒜ᵢ` factors through a unique ncpsu-map `g : B → ⊕ᵢ𝒜ᵢ`. -/
+`f_i : B → 𝒜ᵢ` factors through a unique ncpsu-map `g : B → ⊕ᵢ𝒜ᵢ`.
+
+*As for `vn_products_nmiu`, the von Neumann hypotheses on the `𝒜ᵢ` are not
+used* (hence the deliberate `unusedSectionVars` warning): the C*-half is
+**34VI**.4 `cstar_product_4`, which already delivers complete positivity and
+subunitality of the mediating map, and normality is pointwise because the
+order on `⊕ᵢ𝒜ᵢ` is (`lp_infty_le_iff`). -/
 theorem vn_products_ncpsu {B : Type*} [CStarAlgebra B] [PartialOrder B]
     [StarOrderedRing B] [VonNeumannAlgebra B] (f : ∀ i, NCPSUMap B (𝒜 i)) :
     ∃! g : NCPSUMap B (lp 𝒜 ∞), ∀ (j : I) (b : B),
-      ((g.toNCPMap b : lp 𝒜 ∞) : ∀ i, 𝒜 i) j = (f j).toNCPMap b :=
-  sorry
+      ((g.toNCPMap b : lp 𝒜 ∞) : ∀ i, 𝒜 i) j = (f j).toNCPMap b := by
+  have hcp : ∀ i, IsCompletelyPositiveMap
+      ((f i).toNCPMap.toCompletelyPositiveMap.toLinearMap) := fun i =>
+    (cp_iff _).out 1 0 |>.mp fun N M hM =>
+      (f i).toNCPMap.toCompletelyPositiveMap.map_cstarMatrix_nonneg' N M hM
+  have hsu : ∀ i, Subunital ⇑((f i).toNCPMap.toCompletelyPositiveMap.toLinearMap) :=
+    fun i => (f i).subunital'
+  obtain ⟨g, ⟨hgcp, hgsu, hgval⟩, -⟩ :=
+    cstar_product_4 (𝒜f := 𝒜)
+      (fun i => (f i).toNCPMap.toCompletelyPositiveMap.toLinearMap) hcp hsu
+  have hgcp' : IsCompletelyPositiveMap g := hgcp
+  have hnorm : PreservesDirSups ⇑g := by
+    intro D s hne hdir hlub
+    constructor
+    · rintro _ ⟨d, hd, rfl⟩
+      rw [lp_infty_le_iff]
+      intro j
+      rw [hgval j, hgval j]
+      exact ((f j).toNCPMap.preservesDirSups' D s hne hdir hlub).1 ⟨d, hd, rfl⟩
+    · intro u hu
+      rw [lp_infty_le_iff]
+      intro j
+      rw [hgval j]
+      refine ((f j).toNCPMap.preservesDirSups' D s hne hdir hlub).2 ?_
+      rintro _ ⟨d, hd, rfl⟩
+      have hd' := (lp_infty_le_iff _ _).mp (hu ⟨d, hd, rfl⟩) j
+      rwa [hgval j] at hd'
+  refine ⟨{ toNCPMap :=
+              { toCompletelyPositiveMap :=
+                  { toLinearMap := g,
+                    map_cstarMatrix_nonneg' := (cp_iff g).out 0 1 |>.mp hgcp' },
+                preservesDirSups' := hnorm },
+            subunital' := hgsu }, hgval, ?_⟩
+  rintro ⟨nc, su⟩ hg'
+  congr 1
+  apply DFunLike.coe_injective
+  funext b
+  apply lp.ext
+  funext j
+  rw [hg' j b]
+  exact (hgval j b).symm
 
 end Products
 
@@ -3548,6 +3628,63 @@ theorem starAlgEquiv_preservesDirSups (Φ : A ≃⋆ₐ[ℂ] C) : PreservesDirSu
       simpa using h
     have h := starAlgHom_mono Φ.toStarAlgHom hsym
     simpa using h
+
+/-- Kadison's definition (**42I**) transports along a ∗-isomorphism: both of
+its clauses are order-theoretic, and a ∗-isomorphism is an order isomorphism
+(`starAlgEquiv_preservesDirSups`).  Directed suprema are pulled back along
+`Φ⁻¹` and pushed forward again; faithfulness of the np-functionals transfers
+because `ψ ∘ Φ⁻¹` is an np-functional on `Y` for every np-functional `ψ` on
+`X` (`compNP`).  (Both algebras must live in one universe, as everything in
+this section does.) -/
+theorem vonNeumannAlgebra_of_starAlgEquiv {X Y : Type u} [CStarAlgebra X]
+    [PartialOrder X] [StarOrderedRing X] [CStarAlgebra Y] [PartialOrder Y]
+    [StarOrderedRing Y] [VonNeumannAlgebra X] (Φ : X ≃⋆ₐ[ℂ] Y) :
+    VonNeumannAlgebra Y where
+  isLUB_of_bddAbove_directed := by
+    intro D hne hdir hbdd
+    have hsa : ∀ d : selfAdjoint Y, IsSelfAdjoint (Φ.symm (d : Y)) := fun d =>
+      (d.2 : IsSelfAdjoint (d : Y)).map Φ.symm
+    have hmono : ∀ a b : Y, a ≤ b → (Φ.symm a : X) ≤ (Φ.symm b : X) := by
+      intro a b h
+      simpa using starAlgHom_mono Φ.symm.toStarAlgHom h
+    set E : Set (selfAdjoint X) :=
+      (fun d : selfAdjoint Y => (⟨Φ.symm (d : Y), hsa d⟩ : selfAdjoint X)) '' D with hE
+    have hEne : E.Nonempty := hne.image _
+    have hEdir : DirectedOn (· ≤ ·) E := by
+      rintro _ ⟨x, hx, rfl⟩ _ ⟨y, hy, rfl⟩
+      obtain ⟨z, hz, hxz, hyz⟩ := hdir x hx y hy
+      exact ⟨_, ⟨z, hz, rfl⟩,
+        Subtype.coe_le_coe.mp (hmono _ _ (Subtype.coe_le_coe.mpr hxz)),
+        Subtype.coe_le_coe.mp (hmono _ _ (Subtype.coe_le_coe.mpr hyz))⟩
+    have hEbdd : BddAbove E := by
+      obtain ⟨u, hu⟩ := hbdd
+      refine ⟨⟨Φ.symm (u : Y), hsa u⟩, ?_⟩
+      rintro _ ⟨x, hx, rfl⟩
+      exact Subtype.coe_le_coe.mp (hmono _ _ (Subtype.coe_le_coe.mpr (hu hx)))
+    obtain ⟨s, hs⟩ := VonNeumannAlgebra.isLUB_of_bddAbove_directed E hEne hEdir hEbdd
+    refine ⟨⟨Φ (s : X), (s.2 : IsSelfAdjoint (s : X)).map Φ⟩, isLUB_sa_of_isLUB ?_⟩
+    have h := starAlgEquiv_preservesDirSups Φ E s hEne hEdir hs
+    have himg : (fun d : selfAdjoint X => (Φ (d : X) : Y)) '' E = Subtype.val '' D := by
+      rw [hE, ← Set.image_comp]
+      ext y
+      constructor
+      · rintro ⟨c, hc, rfl⟩; exact ⟨c, hc, by simp⟩
+      · rintro ⟨c, hc, rfl⟩; exact ⟨c, hc, by simp⟩
+    rwa [himg] at h
+  np_faithful := by
+    intro y hy hall
+    have hnorm : PreservesDirSups ⇑(starAlgHomP Φ.symm.toStarAlgHom) :=
+      fun D s hne hdir hlub =>
+        starAlgEquiv_preservesDirSups Φ.symm D s hne hdir hlub
+    have hxnn : (0 : X) ≤ Φ.symm y := by
+      have := starAlgHom_mono Φ.symm.toStarAlgHom hy
+      rwa [map_zero] at this
+    have hx0 : Φ.symm y = 0 := by
+      refine VonNeumannAlgebra.np_faithful _ hxnn fun ψ => ?_
+      have := hall (compNP (starAlgHomP Φ.symm.toStarAlgHom) hnorm ψ)
+      simpa using this
+    have := congrArg Φ hx0
+    rwa [Φ.apply_symm_apply, map_zero] at this
 
 end StarAlgHomAux
 
@@ -4330,6 +4467,16 @@ theorem usTendsto_mul_left_right [VonNeumannAlgebra A] {ι : Type*} {l : Filter 
   rw [he, omegaNorm_mul_right]
   exact omegaNorm_mul_le _ _ _
 
+/-- The ultraweak companion of `usTendsto_mul_left_right`: two-sided
+multiplication by fixed elements preserves ultraweak convergence.  Immediate
+from polarisation (**44II**, `continuous_ultraweak_conj`). -/
+theorem uwTendsto_mul_left_right [VonNeumannAlgebra A] {ι : Type*} {l : Filter ι}
+    {f : ι → A} {a : A} (u v : A) (h : UWTendsto f l a) :
+    UWTendsto (fun i => u * f i * v) l (u * a * v) := by
+  refine (uwTendsto_iff _ _ _).mpr fun ω => ?_
+  exact (@Continuous.tendsto A ℂ (ultraweak A) _ _
+    (continuous_ultraweak_conj ω u v) a).comp h
+
 end USLinear
 
 section MatrixVN
@@ -4692,22 +4839,6 @@ end Conv
 
 end MatEmbOrder
 
-/-- **49IV** (`mn-vna`, vn.tex:1272, Exercise), part 2 (first half): for
-`a₁,…,a_N, b₁,…,b_N ∈ 𝒜`, the map `M ↦ ∑ᵢⱼ aᵢ* Mᵢⱼ bⱼ : M_N(𝒜) → 𝒜` is
-ultraweakly and ultrastrongly continuous; for `a = b` it is moreover normal
-(and completely positive). -/
-theorem mn_vna_2 [VonNeumannAlgebra A] (N : ℕ) (a b : Fin N → A) :
-    @Continuous _ _ (ultraweak (CStarMatrix (Fin N) (Fin N) A)) (ultraweak A)
-        (fun M : CStarMatrix (Fin N) (Fin N) A =>
-          ∑ i, ∑ j, star (a i) * CStarMatrix.ofMatrix.symm M i j * b j) ∧
-      @Continuous _ _ (ultrastrong (CStarMatrix (Fin N) (Fin N) A))
-        (ultrastrong A)
-        (fun M : CStarMatrix (Fin N) (Fin N) A =>
-          ∑ i, ∑ j, star (a i) * CStarMatrix.ofMatrix.symm M i j * b j) ∧
-      PreservesDirSups (fun M : CStarMatrix (Fin N) (Fin N) A =>
-        ∑ i, ∑ j, star (a i) * CStarMatrix.ofMatrix.symm M i j * a j) :=
-  sorry
-
 /-- **49IV** (`mn-vna`, vn.tex:1272, Exercise), part 2 (second half): a net
 in `M_N(𝒜)` converges ultraweakly (resp. ultrastrongly) iff it does so
 entrywise. -/
@@ -4753,14 +4884,123 @@ theorem mn_vna_2' [VonNeumannAlgebra A] (N : ℕ) {ι : Type*} (l : Filter ι)
         usTendsto_matEmb i j (h i j)
 
 
+/-- **49IV** (`mn-vna`, vn.tex:1272, Exercise), part 2 (first half): for
+`a₁,…,a_N, b₁,…,b_N ∈ 𝒜`, the map `M ↦ ∑ᵢⱼ aᵢ* Mᵢⱼ bⱼ : M_N(𝒜) → 𝒜` is
+ultraweakly and ultrastrongly continuous; for `a = b` it is moreover normal
+(and completely positive).  (Placed after the second half, which its proof
+uses.) -/
+theorem mn_vna_2 [VonNeumannAlgebra A] (N : ℕ) (a b : Fin N → A) :
+    @Continuous _ _ (ultraweak (CStarMatrix (Fin N) (Fin N) A)) (ultraweak A)
+        (fun M : CStarMatrix (Fin N) (Fin N) A =>
+          ∑ i, ∑ j, star (a i) * CStarMatrix.ofMatrix.symm M i j * b j) ∧
+      @Continuous _ _ (ultrastrong (CStarMatrix (Fin N) (Fin N) A))
+        (ultrastrong A)
+        (fun M : CStarMatrix (Fin N) (Fin N) A =>
+          ∑ i, ∑ j, star (a i) * CStarMatrix.ofMatrix.symm M i j * b j) ∧
+      PreservesDirSups (fun M : CStarMatrix (Fin N) (Fin N) A =>
+        ∑ i, ∑ j, star (a i) * CStarMatrix.ofMatrix.symm M i j * a j) := by
+  -- The map is `matForm a b`, and convergence in `M_N(𝒜)` is entrywise
+  -- (**49IV**.2', below — stated for an arbitrary filter, so it applies to
+  -- the identity net on `𝓝 M₀` and yields continuity, not just sequential
+  -- continuity).  Normality for `a = b` is then **44XV** (1) ⇒ (3), the map
+  -- being positive by **33II** (`matForm_mono`).
+  have huw : ∀ x y : Fin N → A,
+      @Continuous _ _ (ultraweak (CStarMatrix (Fin N) (Fin N) A)) (ultraweak A)
+        (fun M : CStarMatrix (Fin N) (Fin N) A =>
+          ∑ i, ∑ j, star (x i) * CStarMatrix.ofMatrix.symm M i j * y j) := by
+    intro x y
+    let _ : TopologicalSpace (CStarMatrix (Fin N) (Fin N) A) :=
+      ultraweak (CStarMatrix (Fin N) (Fin N) A)
+    let _ : TopologicalSpace A := ultraweak A
+    rw [continuous_iff_continuousAt]
+    intro M₀
+    have hentry :=
+      (mn_vna_2' N (𝓝 M₀) (fun X : CStarMatrix (Fin N) (Fin N) A => X) M₀).1.mp
+        tendsto_id
+    exact uwTendsto_finsetSum fun i _ => uwTendsto_finsetSum fun j _ =>
+      uwTendsto_mul_left_right _ _ (hentry i j)
+  refine ⟨huw a b, ?_, ?_⟩
+  · let _ : TopologicalSpace (CStarMatrix (Fin N) (Fin N) A) :=
+      ultrastrong (CStarMatrix (Fin N) (Fin N) A)
+    let _ : TopologicalSpace A := ultrastrong A
+    rw [continuous_iff_continuousAt]
+    intro M₀
+    have hentry :=
+      (mn_vna_2' N (𝓝 M₀) (fun X : CStarMatrix (Fin N) (Fin N) A => X) M₀).2.mp
+        tendsto_id
+    exact usTendsto_finsetSum fun i _ => usTendsto_finsetSum fun j _ =>
+      usTendsto_mul_left_right _ _ (hentry i j)
+  · let F : CStarMatrix (Fin N) (Fin N) A →ₚ[ℂ] A :=
+      { toFun := fun M : CStarMatrix (Fin N) (Fin N) A => matForm a a M
+        map_add' := fun X Y => matForm_add_matrix a a X Y
+        map_smul' := fun c X => matForm_smul_matrix c a a X
+        monotone' := fun X Y h => matForm_mono h a }
+    exact ((p_uwcont F).out 0 2).mp (huw a a)
+
 /-- **49IV** (`mn-vna`, vn.tex:1272, Exercise), part 3: for an ncp-map
 `f : 𝒜 → ℬ` between von Neumann algebras, the entrywise map
 `M_N f : M_N(𝒜) → M_N(ℬ)` (cstar.tex 33III, `mnf`) is normal. -/
 theorem mn_vna_3 [VonNeumannAlgebra A] [VonNeumannAlgebra B] (N : ℕ)
     (f : NCPMap A B) :
     PreservesDirSups fun M : CStarMatrix (Fin N) (Fin N) A =>
-      CStarMatrix.ofMatrix ((CStarMatrix.ofMatrix.symm M).map f) :=
-  sorry
+      CStarMatrix.ofMatrix ((CStarMatrix.ofMatrix.symm M).map f) := by
+  -- Normality is *not* proved directly (unwinding `PreservesDirSups` for
+  -- `M_N f` reduces to itself, because `M ↦ M i j` is not monotone).  Go
+  -- through **44XV** `p_uwcont` instead: `M_N f` is a positive linear map,
+  -- so it is normal as soon as it is ultraweakly *continuous*, and
+  -- continuity is entrywise by **49IV**.2' `mn_vna_2'` — which is stated for
+  -- an arbitrary filter, so it applies to the identity net on `𝓝 M₀`.
+  have hfc : @Continuous A B (ultraweak A) (ultraweak B) ⇑f :=
+    ((p_uwcont (ncpPositive f)).out 2 0).mp f.preservesDirSups'
+  let F : CStarMatrix (Fin N) (Fin N) A →ₚ[ℂ] CStarMatrix (Fin N) (Fin N) B :=
+    { toFun := fun M : CStarMatrix (Fin N) (Fin N) A =>
+        CStarMatrix.ofMatrix ((CStarMatrix.ofMatrix.symm M).map ⇑f)
+      map_add' := by
+        intro X Y
+        ext i j
+        show (f ((X + Y) i j) : B) = f (X i j) + f (Y i j)
+        rw [show ((X + Y) i j : A) = X i j + Y i j from rfl]
+        exact map_add f.toCompletelyPositiveMap _ _
+      map_smul' := by
+        intro r X
+        ext i j
+        show (f ((r • X) i j) : B) = (r • (CStarMatrix.ofMatrix
+          ((CStarMatrix.ofMatrix.symm X).map ⇑f))) i j
+        rw [show ((r • X) i j : A) = r • X i j from rfl,
+          show ((r • (CStarMatrix.ofMatrix
+            ((CStarMatrix.ofMatrix.symm X).map ⇑f))) i j : B)
+            = r • (f (X i j)) from rfl]
+        exact map_smul f.toCompletelyPositiveMap r (X i j)
+      monotone' := by
+        intro X Y hXY
+        have h0 : (0 : CStarMatrix (Fin N) (Fin N) A) ≤ Y - X := sub_nonneg.mpr hXY
+        have := f.toCompletelyPositiveMap.map_cstarMatrix_nonneg' N (Y - X) h0
+        rw [← sub_nonneg]
+        refine le_of_le_of_eq this ?_
+        ext i j
+        show (f ((Y - X) i j) : B) = f (Y i j) - f (X i j)
+        rw [show ((Y - X) i j : A) = Y i j - X i j from rfl]
+        exact map_sub f.toCompletelyPositiveMap _ _ }
+  have hcont : @Continuous (CStarMatrix (Fin N) (Fin N) A)
+      (CStarMatrix (Fin N) (Fin N) B)
+      (ultraweak (CStarMatrix (Fin N) (Fin N) A))
+      (ultraweak (CStarMatrix (Fin N) (Fin N) B)) ⇑F := by
+    let _ : TopologicalSpace (CStarMatrix (Fin N) (Fin N) A) :=
+      ultraweak (CStarMatrix (Fin N) (Fin N) A)
+    let _ : TopologicalSpace (CStarMatrix (Fin N) (Fin N) B) :=
+      ultraweak (CStarMatrix (Fin N) (Fin N) B)
+    rw [continuous_iff_continuousAt]
+    intro M₀
+    have hid : UWTendsto (fun X : CStarMatrix (Fin N) (Fin N) A => X) (𝓝 M₀) M₀ :=
+      tendsto_id
+    have hentry :=
+      (mn_vna_2' N (𝓝 M₀) (fun X : CStarMatrix (Fin N) (Fin N) A => X) M₀).1.mp hid
+    refine (mn_vna_2' N (𝓝 M₀) (fun X => F X) (F M₀)).1.mpr ?_
+    intro i j
+    exact Filter.Tendsto.comp
+      (@Continuous.tendsto A B (ultraweak A) (ultraweak B) _ hfc (M₀ i j))
+      (hentry i j)
+  exact ((p_uwcont F).out 0 2).mp hcont
 
 end Elementary
 
@@ -4981,7 +5221,7 @@ von Neumann algebra `A`, the C*-algebra `C(spec A)` of continuous functions
 on its spectrum is a (commutative) von Neumann algebra. -/
 theorem ngelfand_vna [VonNeumannAlgebra A] :
     VonNeumannAlgebra C(characterSpace ℂ A, ℂ) :=
-  sorry
+  vonNeumannAlgebra_of_starAlgEquiv (gelfandStarTransform A)
 
 /-- **53II** (`ngelfand`, vn.tex:1807, Exercise), part 2: the Gelfand
 representation `γ_A : A → C(spec A)` (Mathlib: `gelfandStarTransform`), an
@@ -4989,7 +5229,7 @@ miu-isomorphism by cstar.tex 27XXVII, is normal, hence an
 nmiu-isomorphism. -/
 theorem ngelfand_normal [VonNeumannAlgebra A] :
     PreservesDirSups ⇑(gelfandStarTransform A) :=
-  sorry
+  starAlgEquiv_preservesDirSups (gelfandStarTransform A)
 
 /-- **53III** (`vn-spectrum-extremally-disconnected`, vn.tex:1821,
 Proposition): the spectrum of a commutative von Neumann algebra is

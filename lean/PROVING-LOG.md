@@ -15318,3 +15318,384 @@ proc.tex.
   `ncpInterval`.
 
 Nothing new for ERRATA.md or QUESTIONS.md this session.
+
+## Session 68 — `B/Dils`: **171II `paschke_corner` is CLOSED**, and 170IV.2 is **false** — with a three-line counterexample (worker on `Pure.lean`)
+
+**Headline: `paschke_corner` closes, axiom-clean.**  Session 67's costing was
+exactly right: the three remaining items were packaging, not mathematics, and
+cost ~130 lines between them.  `Pure.lean` goes **10 → 9**; `B/Dils` **23 →
+22** (HilbertModules 0, SelfDualCompletion 0, Stinespring 1, Kaplansky 4,
+Paschke 1, SelfDual 7, Pure 9 — each compiled individually, 0 errors
+everywhere).
+
+### The three items, and what each actually cost
+
+1. **`h'_p : ⌈⌈p⌉⌉𝒜 → p𝒜p` as an `NCPMap`** — *not* built from `ad_cp` +
+   `ad_normal` as the brief suggested.  It is `hp' ∘ ι` for the inclusion
+   `ι : ⌈⌈p⌉⌉𝒜 ⊆ 𝒜`, and `hp'` is already given as an `NCPMap` in the
+   statement of 171II.  So all that is needed is `ι` as an ncp-map
+   (`pcorner_exists_inclNcp`): complete positivity is `cp_of_mi` (`Subtype.val`
+   is a non-unital ∗-homomorphism, and `cornerSet.val_mul`/`val_star` are
+   `rfl`), and **normality is `pcorner_val_normal`, already proved in session
+   67**.  Six lines.
+2. **`σ⁻¹` as an ncp-map** (`pcorner_exists_ncpInv`).  Linearity from
+   `LinearEquiv.ofBijective`; multiplicativity and star-preservation by
+   applying injectivity of `σ` to `σ(σ⁻¹x · σ⁻¹y) = xy`; complete positivity
+   then `cp_of_mi`.  Normality is the only real step, and it does **not** need
+   `starAlgHom_nonneg_reflect` (the brief's suggestion) or an order
+   isomorphism: given `IsLUB D s`, `σ⁻¹` is monotone (it is positive) so
+   `σ⁻¹s` is an upper bound of `σ⁻¹''D`; and for any upper bound `u`, `σu` is
+   an upper bound of `D` (`σ` monotone by `starAlgHom_nonneg`), so `s ≤ σu`
+   by `isLUB_coe_of_isLUB` and `σ⁻¹s ≤ u`.  ~45 lines.
+3. **The transport lemma** (`pcorner_transport`), ~30 lines, exactly as
+   costed: mediate with `ϑ⁻¹ ∘ σ₁`, get uniqueness from injectivity of `ϑ`.
+
+Assembly of 171II is then 15 lines: `existence_paschke hp'` for the module,
+`existence_paschke_5` for the dilation, `pcorner_sigma_bijective` (surjectivity
+of `σ` extracted from session 67's `hrange`, which is now the standalone
+`pcorner_rho_cceil` / `pcorner_sigma_centralCorner`), and transport.
+
+*Divergence, class 2*, already recorded in session 67 and now load-bearing:
+steps 1 and 2 of the printed proof of `paschke-corner` (`𝒜p` as a self-dual
+Hilbert `p𝒜p`-module; `𝒜 ⊗_{h_p} p𝒜p ≅ 𝒜p`) can be **dropped entirely**.
+Nothing in the printed proof is wrong.
+
+### **170IV.2 `surjective_nmiu_2` is false** — QUESTIONS **D7**
+
+Scouted as the next target and turned out to be a defect; the counterexample
+is now in the tree as `surjective_nmiu_2_false` (public, axiom-clean).
+
+`𝒜 = ℬ = ℂ`, `z = 1`, `φ = λ·id` for any `λ > 0`, `λ ≠ 1`.  Under **169II**
+`dils-corner` *as printed*, a positive scalar multiple of a corner is again a
+corner: the mediating map is `f' = λ⁻¹f`, which is ncp (`exists_ncpSmul`), and
+uniqueness survives because `x ↦ λx` is a bijection.  But `φ(1) = λ ≠ 1`,
+while every nmiu-map is unital.  The same scaling breaks the claim at every
+central projection (`φ = λ·h_z`), so `z = 1` is not the issue.
+
+The author's solution (`bsols.tex`, `surjective-nmiu`) is correct up to its
+step "`ϑ₁` is an ncp-isomorphism and consequently an nmiu-isomorphism by
+`iso`".  proc.tex **100IX** `iso` is stated for **ncpsu**-isomorphisms, and
+its proof opens with `f⁻¹(1) ≤ 1`, hence `1 = f(f⁻¹(1)) ≤ f(1) ≤ 1` — exactly
+the step `λ·id` fails.  The two universal properties deliver only an ncp
+isomorphism.
+
+**This is the same defect as B11**, one point earlier in the same development
+(the mediating map of `IsFilterFor`, ruled on 2026-08-16), but the identical
+edit does not repair it: for filters `f(1) ≤ b ≤ 1` already forces the
+quantified `f` subunital, whereas `f(a) = f(1)` constrains nothing, so for
+corners *both* the quantified `f` and the mediating `f'` have to be ncpsu —
+otherwise `f = 2·h_z` stops `h_z` itself from being a corner.  Left for a
+ruling; `IsCornerFor` is unchanged and `surjective_nmiu_2` stays `sorry`.
+Note `surjective_nmiu_1` is true and proved as it stands.
+
+### Corrections to the brief
+
+* **Closing 171II unroots nothing.**  The brief said "its ten sorries sit on
+  just three roots" and that 171II "unroots most of `Pure.lean`".  Of the nine
+  left, **none** has 171II as its last blocker: 171VII additionally needs
+  closure of pure maps under composition (proc.tex 100III `pure-fundamental` —
+  `IsPureMap` is "corner then filter", so composing two is not formal) and
+  `square-f`; 170II.1/.2, 169V and 172X all reduce to **169IV**
+  `standard_corner_dils` and **169X** `dils_stand_filter`, the two proc.tex
+  roots, which are untouched.
+* `h'_p` does **not** need `ad_cp`/`ad_normal`, and `σ⁻¹`'s normality does not
+  need `starAlgHom_nonneg_reflect` — see above.  Both were over-costed.
+* `ncpSMul` was again not promoted (nothing this session touched `NCPLe`).
+  `exists_ncpSmul`, the private sibling in `Pure.lean`, *was* used — by the
+  counterexample.
+
+### Scouting note for the next session: **169IV is the gate**
+
+169IV gates 169V, 170II.2, 171VII, 172X and the repair of 170IV.2, and it is
+closer than "cited to proc.tex" suggests.  The mediating map for
+`h_{⌊a⌋} : 𝒜 → ⌊a⌋𝒜⌊a⌋` is `f ∘ ι`, and `ι` is ncp for **any** projection —
+`pcorner_val_normal`'s centrality hypothesis is stronger than necessary, since
+`cornerSet.isLUB_mem` (used already by `cornerSet_vonNeumannAlgebra`) says the
+supremum in `𝒜` of a set in the corner lies in the corner.  Uniqueness is one
+line (`c = ⌊a⌋c⌊a⌋ = h_{⌊a⌋}(c.1)`).  The single real step is
+`f(a) = f(1) ⟹ f(x) = f(⌊a⌋x⌊a⌋)`: cp-Cauchy–Schwarz gives `f((1−a)x) = 0`
+from `f(1−a) = 0`, and what remains is `f(b) = 0 ⟹ f(⌈b⌉) = 0` for `b ≥ 0`
+and normal `f`, i.e. `b^{1/2ⁿ} ↑ ⌈b⌉`.  **Check `A/VN/Projections.lean` for
+that chain first** — it already runs `b^{2^m}` chains for `⌊·⌋`.
+
+Nothing new for ERRATA.md this session (D7 is a decision, not a correction).
+
+## Session 68 — `A/Proc`: **119IVc `exists_braiding` and 119IVb `exists_unitors` are CLOSED, and `dup_vna_is_monoid_4` is now axiom-clean** — plus the symmetry half of 119V (worker on `Tensor.lean`)
+
+`Tensor.lean` **16 → 13** code `sorry`s; A/Proc **48 → 46**
+(`Tensor` 13, `QuantumLambda` 16, `Measurement` 10, `Duplicators` 6 —
+compiler-counted, **0 errors** in each; `lake build Theses.A.Proc.Duplicators`
+exits 0).  Everything new is axiom-clean
+(`[propext, Classical.choice, Quot.sound]`).
+
+**The headline: the project has no tainted statement left.**
+`dup_vna_is_monoid_4` (`Duplicators.lean`) was the only declaration that was
+proved but rested on a `sorry`, through `braiding`.  With 119IVc closed it
+reports the three standard axioms, verified from a scratch file against
+freshly built oleans.
+
+### 119IVc `exists_braiding` — the exercise is one lemma, the deduction is the lift
+
+The exercise itself ("`(a,b) ↦ b ⊗ a` is a tensor product") is a single
+universe-polymorphic lemma, **`isTensorProduct_flip`**: every clause of 108II
+is invariant under swapping the two factors.  Unitality, multiplicativity,
+involution-preservation and density are literally the same data; the product
+functional of `(σ,τ)` for `γ.flip` is the one of `(τ,σ)` for `γ`, because `ℂ`
+is commutative; faithfulness is the same swap.  ~30 lines, three universes,
+no von Neumann theory at all.
+
+The *deduction* is where the work is, and it is exactly the shape session 66
+predicted.  **114II `tensor_uniqueness` confines its two factors and both
+targets to one universe**, while `𝒜 : Type u` and `ℬ : Type v`.  Note what is
+*not* the obstruction: both targets `𝒜 ⊗ ℬ` and `ℬ ⊗ 𝒜` already live in
+`Type (max u v)`.  Only the factors are split, so the transport of the target
+in `exists_vnt_transfer` is the **identity** — `exists_vnt_transfer εA hεA
+εB hεB (nmiuId _) nmiuId_bijective` gives `Φ : 𝒜' ⊗ ℬ' ≅ 𝒜 ⊗ ℬ` with
+`Φ(εA a ⊗ εB b) = a ⊗ b`, and the mirrored call gives `Ψ : ℬ' ⊗ 𝒜' ≅ ℬ ⊗ 𝒜`.
+114II then runs at the single universe `max u v` between `(vnTensor A' B').map`
+and `(vnTensor B' A').map.flip`, and the braiding is `Ψ ∘ s₀ ∘ Φ⁻¹`.
+Uniqueness pulls back the same way (conjugate the competitor and quote 114II's
+own uniqueness clause), so no cross-universe continuity argument is needed.
+
+Two mechanical moves were required, neither of which changes any signature:
+* **`nmiuId` was moved up** from the 119V block into `section NmiuAux`
+  (with new `nmiuId_apply`, `nmiuId_bijective`), because the lifting device now
+  needs it 200 lines earlier;
+* **`exists_vnt_transfer` was moved out of `section TmapM`** to just before
+  `section AssocBraid`, for the same reason.  It never used that section's
+  variables.
+
+### 119IVb `exists_unitors` — same device, plus `smulNP`
+
+`IsTensorProduct (LinearMap.lsmul ℂ 𝒜)` is the thesis's exercise verbatim:
+density is trivial (`a = 1 • a`, so the span is `⊤`); `prod_exists` needs
+`σ z = z·σ(1)` for a functional on `ℂ`, so the witness is `smulNP` of `τ` by
+the nonneg real `(σ 1).re` (**72XI/73VIII**, already in `A/VN/Basic.lean`);
+`faithful` is 42I's `np_faithful` at `σ = complexIdNP`.  The right-hand
+version `(a,z) ↦ z·a` is then **free** — it is `isTensorProduct_flip` of the
+left one, which the survey had costed as a second construction.
+
+The deduction lifts `ℂ : Type 0` into `Type u` (`exists_vnLift.{0, u}`) and
+leaves `𝒜` where it is, passing `nmiuId 𝒜` as the other leg of
+`exists_vnt_transfer`; `isTensorProduct_comp` then moves `lsmul` along
+`εC⁻¹` and 114II compares it with `vnTensor C₀ 𝒜`.  Both unitors go through
+in the same ~40 lines each.
+
+### Bonus: the symmetry half of **119V** falls out immediately
+
+`vn_smc_symmetry` needs no associator, so it was not blocked at all — the
+survey's "the `vn_smc_*` block needs the associator, braiding and unitors"
+is true of the other four parts only.  `γ_{ℬ,𝒜} ∘ γ_{𝒜,ℬ} = id` is
+`exists_tmapM (nmiuId 𝒜) (nmiuId ℬ)`'s **uniqueness** clause applied to the
+composite and to `nmiuId (𝒜 ⊗ ℬ)`; `λ_ℬ ∘ γ_{ℬ,ℂ} = ρ_ℬ` is the right
+unitor's own uniqueness clause.  ~20 lines.  New public accessors:
+`braiding_apply`, `leftUnitor_apply`, `rightUnitor_apply`,
+`rightUnitor_unique` (all `@[simp]` except the last; none clashed — checked
+against the whole tree before adding).
+
+### Costing correction, and the next gate
+
+The brief's "119IVb is the same shape as 119IVc; only 119IV itself needs
+119II" is **confirmed**, and 119IVb was in fact cheaper than costed (the flip
+lemma serves both sides).  The brief's estimate of ~150 lines for 119IVc was
+close: the whole session is **+278 / −45** lines in `Tensor.lean` (the deletions are
+almost entirely the two blocks that moved).
+
+**The remaining 119V is entirely associator-gated.**  `vn_smc_pentagon`,
+`vn_smc_triangle`, `vn_smc_hexagon` and `vn_smc_associator_natural` all
+mention `associator`, so **119IV** — hence **119II `triple_tensor`** — is the
+single gate for the last four.  Re-read against proc.tex:3994 the *proposition*
+119II is not the hard part: its three conditions are (1) density from **116IV**
+`tensor_generation_1` (the `(a⊗b)⊗c` generate because the `a⊗b` generate
+`𝒜⊗ℬ` and `𝒞` generates `𝒞`), (2) `γ(σ,τ,υ) := (σ⊗τ)⊗υ`, i.e. `prodNP (prodNP
+σ τ) υ`, and (3) centre-separation from **116IV**.2 `tensor_generation_2`.
+Estimate ~200 lines, all inputs proved.
+
+**What 119IV then needs, and does not have, is a *trilinear* 114II** — the
+statement "two trilinear tensor products of the same triple are uniquely
+nmiu-isomorphic".  There is no `IsTensorProduct₃` analogue of 112X/112XI/114I
+in the tree, and `triple_tensor` alone does not produce `α`: our
+`IsTensorProduct₃` is stated only for `(a,b,c) ↦ (a⊗b)⊗c`, so the mirror form
+`a⊗(b⊗c)` and the comparison both have to be built.  A cheaper-looking route
+exists and should be costed before the trilinear development is started:
+`𝒜 × (ℬ⊗𝒞) → (𝒜⊗ℬ)⊗𝒞`, `(a,t) ↦ ((a⊗1)⊗1) · Θ(t)` where
+`Θ = tmapM (1 ⊗ ·) (nmiuId 𝒞)` (the nmiu-map `1 ⊗ (·)` is **116III**.5, proved),
+is bilinear with `(a, b⊗c) ↦ (a⊗b)⊗c` and would let plain **114II** produce
+the associator — but its multiplicativity needs `(a⊗1)⊗1` to commute with the
+whole range of `Θ`, which is a density argument rather than a one-liner.
+
+### Divergences from the theses
+
+* **119IVc / 119IVb**: the mathematical content is the thesis's, transcribed.
+  The universe lifting has no counterpart in proc.tex — universes are a Lean
+  artefact (divergence case 2).  Note the thesis's phrasing of 119IVc,
+  "the bilinear map `(a,b) ↦ b ⊗ a : 𝒜 ⊗ ℬ → ℬ ⊗ 𝒜`", writes `⊗` where it
+  means `×` in the domain; harmless, and not worth an erratum.
+* **119V symmetry**: proc.tex:4087 states the whole theorem at once with no
+  proof, so nothing was compared (case 4 for this fragment).
+
+Nothing new for ERRATA.md or QUESTIONS.md this session.
+
+## Session 68 — `A/VN`: **the two "reduces to itself" gates fall, and both to the same device** — 45I.1, 47IV.3, 49IV.2, 49IV.3, 53II.1, 53II.2, 63III.2 (worker on `Theses/A/VN/`)
+
+**A/VN 29 → 22 code `sorry`s.**  Per file, each source run through `lean`
+individually against rebuilt oleans and paired with an error count, **0
+everywhere**: `Basic` **16 → 10**, `Projections` **8 → 7**, `Division` 5,
+`NormalFunctionals` 0, `Completeness` 0.  All seven new theorems, and the
+three new helpers, verify `[propext, Classical.choice, Quot.sound]` from an
+importing file against current oleans.
+
+### 45I.1 `us_cont_normal` — a few lines, but only after the right generalisation
+
+The brief expected "`preservesDirSups_of_continuousOn_effects` with ultraweak
+replaced by ultrastrong, dropping back at `hfnet`".  That is the mathematics,
+but copying is the wrong way to spend it.  The proof is now stated **once**,
+as the private `preservesDirSups_of_continuousOn_effects_core`, with the
+**finest** source topology and the **coarsest** target topology of its two
+applications:
+
+> `(h : @ContinuousOn A B (ultrastrong A) (ultraweak B) f (effects A)) → PreservesDirSups ⇑f`
+
+**44XV** (2) ⇒ (3) is then `fun a ha => continuousWithinAt_ultrastrong_of_ultraweak (h a ha)`
+(coarsen the source: `nhdsWithin` is monotone in the topology, and
+`ultrastrong_le_ultraweak`), and **45I**.1 is
+`fun a ha => (h a ha).mono_right (nhds_mono ultrastrong_le_ultraweak)`
+(coarsen the target, same lemma).  Inside the core only `hbase` and `hnet`
+changed: **44XIV** `vna_supremum_uslimit` in place of `vna_supremum_uwlimit`,
+and `omegaNorm_smul` in place of the `ω`-linearity computation.  Net effect:
+`us_cont_normal` costs two lines and 44XV costs three.
+
+*This is the thesis's own hint* (vn.tex:829: "use that a bounded directed set
+`D` converges ultrastrongly to `⋁D`"), so no divergence.
+
+### `mn_vna_3`'s circularity is breakable, and the key is a binder
+
+`PreservesDirSups (M_N f)` genuinely does reduce to itself if unwound
+directly, because `M ↦ Mᵢⱼ` is not monotone and so carries no
+`PreservesDirSups` statement.  The way out is that **49IV**.2'
+`mn_vna_2'` — "a net in `M_N(𝒜)` converges ultraweakly iff it does so
+entrywise", already proved — is stated for an **arbitrary filter** `l`, not
+for `atTop` on a directed set.  So it applies to the *identity net on the
+ultraweak `𝓝 M₀`*, and what it yields is ultraweak **continuity** of the
+entry maps, not normality.  Three steps:
+
+1. `tendsto_id : UWTendsto id (𝓝 M₀) M₀`, so `mn_vna_2'` (⇒) gives
+   `UWTendsto (fun X => X i j) (𝓝 M₀) (M₀ i j)`;
+2. compose with the ultraweak continuity of `f` (**44XV** (3) ⇒ (1) applied to
+   `ncpPositive f`), then `mn_vna_2'` (⇐) reassembles: `ContinuousAt (M_N f) M₀`;
+3. `M_N f` is a *positive linear map* (complete positivity of `f`, i.e.
+   `map_cstarMatrix_nonneg'`, plus `sub_nonneg`), so **44XV** `p_uwcont`
+   (1) ⇒ (3) turns continuity back into normality.
+
+**This unblocks B/Dils**, which routed `ρ`'s normality through double
+polarisation precisely because `mn_vna_3` was `sorry`; that detour can be
+removed.
+
+The same device proves **49IV**.2 `mn_vna_2`, whose map is exactly
+`matForm a b` (already in the file, with `matForm_mono` for positivity):
+entrywise convergence, then `uwTendsto_mul_left_right` / `usTendsto_mul_left_right`
+and `uwTendsto_finsetSum` / `usTendsto_finsetSum`, then `p_uwcont` (1) ⇒ (3)
+for the `a = b` normality clause.  **`mn_vna_2` had to be moved below
+`mn_vna_2'`** in the file (a note says so in its doc comment).
+
+*Divergence, class 3 (dependency order), worth a remark in vn.tex.*  49IV.2
+is stated as "show the sum map is continuous; **in particular** `A ↦ Aᵢⱼ` is;
+[then] show a net converges iff entrywise" — i.e. the thesis derives the net
+characterisation *from* the continuity of the sum map.  We have it the other
+way round: `mn_vna_2'` was proved independently (from `npFunctional_entry_repr`
+and `omegaNorm_entry_le`, session 57 vintage), and the sum map's continuity is
+a corollary.  Neither order is wrong; ours is shorter because the polarisation
+estimate is needed anyway.  *Class 2 for 49IV.3*: the thesis gives no hint, and
+proves 49IV.1 through **49II** `bah-vn` (`B^a(X)`), which is not formalized.
+
+### 53II — one new reusable piece, then two one-liners
+
+`vonNeumannAlgebra_of_starAlgEquiv` (~45 lines, `section StarAlgHomAux`):
+**Kadison's definition transports along a ∗-isomorphism.**  Both clauses are
+order-theoretic — directed suprema are pulled back along `Φ⁻¹`, taken in `X`,
+and pushed forward by `starAlgEquiv_preservesDirSups`; faithfulness transfers
+because `compNP (starAlgHomP Φ⁻¹) _ ψ` is an np-functional on `Y` for every
+np-functional `ψ` on `X`.  Then **53II**.1 `ngelfand_vna` is
+`vonNeumannAlgebra_of_starAlgEquiv (gelfandStarTransform A)` and **53II**.2
+`ngelfand_normal` is *literally* `starAlgEquiv_preservesDirSups
+(gelfandStarTransform A)`.  This is the thesis's own argument (vn.tex:1806:
+"using that `γ_𝒜` is an miu-isomorphism and thus an **order isomorphism**").
+
+Caveat for reuse: the lemma confines both algebras to **one universe**,
+because everything in `section StarAlgHomAux` does (`variable {A B : Type u}`).
+That is enough for 53II, `C(characterSpace ℂ A, ℂ)` living in `A`'s universe.
+Do **not** try to widen it here — see the standing warning about A/VN's
+`Type u` block; lift instead.
+
+### 47IV.3 `vn_products_ncpsu` — the assembly already existed, inline, downstream
+
+**34VI**.4 `cstar_product_4` (`A/CStar/Matrices.lean`) already delivers the
+mediating linear map together with complete positivity and subunitality;
+normality is pointwise by `lp_infty_le_iff`, and uniqueness is
+`DFunLike.coe_injective` after `rintro ⟨nc, su⟩` + `congr 1`.  Note this is
+*the same assembly* `A/Proc/Duplicators.lean`'s `exists_freeMonoidUnitCpsu`
+writes out inline, under a comment saying "**47IV**.3 `vn_products_ncpsu`
+itself is not needed" — it could now call it (at the constant family `ℂ`).
+
+**Hypothesis finding**: like its `W*_miu` sibling, **47IV.3 does not use the
+von Neumann hypotheses on the `𝒜ᵢ`** — deliberate `unusedSectionVars` warning,
+recorded in the doc comment as for `vn_products_nmiu`.
+
+### 63III.2 `carrier_ad_operator` — the thesis's `carrier_ad`, transported
+
+`p := (LinearMap.range T).topologicalClosure.starProjection`; Mathlib finds
+`HasOrthogonalProjection` by `inferInstance` and gives
+`isStarProjection_starProjection` and `starProjection_eq_self_iff`.  Then
+`T*p^⊥T = 0` because `p^⊥T = 0`, and minimality is the thesis's C*-identity
+step done by hand in the Hilbert space: `‖q^⊥Tx‖² = ⟪Tx, q^⊥Tx⟫ = ⟪x, T*q^⊥Tx⟫ = 0`,
+so `ker q^⊥ ⊇ range T`, and being closed it contains the closure, whence
+`q^⊥p = 0`, `p q^⊥ = 0` by taking adjoints, and `p ≤ q` by **55X**
+`proj_le_iff`.  ~55 lines, all Hilbert plumbing, no new von Neumann theory.
+
+### New public names (all greped against the whole `Theses/` tree first)
+
+`uwTendsto_mul_left_right` (ultraweak twin of `usTendsto_mul_left_right`,
+three lines from `continuous_ultraweak_conj`) and
+`vonNeumannAlgebra_of_starAlgEquiv`.  Two private ones:
+`preservesDirSups_of_continuousOn_effects_core` and
+`continuousWithinAt_ultrastrong_of_ultraweak`.  No collisions.
+
+### Corrections to the brief and to the survey
+
+* **`preservesDirSups_of_continuousOn_effects` had been un-`private`d but not
+  generalised** in the direction 45I.1 needs; the generalisation is this
+  session's.
+* **67IV.2 `central_projections_sums_2` is *not* the cheap sequel to 67IV.1.**
+  Uniqueness is easy (`cᵢx = 0 ∀i ⟹ ⌈xx*⌉cᵢ = 0` by `ceil_mul_eq_zero`, so
+  `projSup (range c) ≤ ⌊x⌉^⊥` and `hsum` forces `x = 0`).  *Existence* needs
+  `a = "∑ᵢbᵢ"` as an ultraweak limit of the finite partial sums — norm-bounded
+  by `sup‖bᵢ‖` because the corners are orthogonal — and hence ultraweak
+  compactness of the ball, **77III**, which lives in `Completeness.lean`,
+  *downstream* of `Projections.lean`.  Either the statement moves or the
+  compactness argument is redone.  Costed, not attempted.
+* The `NormalFunctionals.lean` cleanup the brief proposed **was already done in
+  session 57**: `gnsHilbOn`/`gnsRepOn` are no longer a copy, they are
+  three-line instances of `gnsHilbFam`/`gnsRepFam` at `F = Subtype.val`.
+  Nothing to delete.
+* `Division.lean` really has **5**, not the survey's 6: `sequential_quotient_2`
+  is proved.  Survey corrected.
+* **48III** `gns_normal` is downgraded from **[L]** to **[S]**: Mathlib does
+  have GNS (`GelfandNaimarkSegal.lean`) and the file's own `gnsHilbFam` block
+  covers a family; what is left is the singleton instance, cyclicity, and the
+  transport to `ℓ²(ι)` along a Hilbert basis, which `nvna_repr` already does.
+* **53III** is no longer **[B]** on 53II (which is proved) but is not a
+  corollary of it either: it needs suprema in `C(spec 𝒜)` and Urysohn.
+
+Nothing new for ERRATA.md or QUESTIONS.md this session.
+
+### Next gate, precisely
+
+**43II**.11 `vn_counterexamples_11` (`Basic.lean:1598`) — the last of the nine,
+and the only one that is not an estimate of `‖·‖_ω`: it needs an *unbounded*
+functional on `ℓ²` built by Riesz representation on finite-dimensional
+subspaces, so none of `hasSum_omegaNorm_sq` / `omegaNorm_vectorNP` /
+`ultrastrong_continuous_apply` / Tannery applies.  After it, the cheapest in
+`Projections.lean` are **59VII** `hilb_ceil_1`/`hilb_ceil_2`, which want
+exactly the Hilbert-space vocabulary 63III.2 has just introduced
+(`Submodule.starProjection`, `starProjection_eq_self_iff`,
+`topologicalClosure_minimal`).

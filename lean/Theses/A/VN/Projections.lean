@@ -2928,8 +2928,72 @@ theorem carrier_ad_operator {H K : Type*} [NormedAddCommGroup H]
     [InnerProductSpace ℂ K] [CompleteSpace K] (T : H →L[ℂ] K)
     (g : (K →L[ℂ] K) →ₚ[ℂ] (H →L[ℂ] H)) (hg : PreservesDirSups ⇑g)
     (h : ∀ S, g S = ContinuousLinearMap.adjoint T ∘L S ∘L T) :
-    {y : K | carrier g hg y = y} = closure (Set.range T) :=
-  sorry
+    {y : K | carrier g hg y = y} = closure (Set.range T) := by
+  -- The thesis's argument for `carrier_ad`, transported: take `p` the
+  -- orthogonal projection onto `closure (range T)`.  Then `T* p^⊥ T = 0`
+  -- because `p^⊥ T = 0`, and for any projection `q` with `T* q^⊥ T = 0` one
+  -- has `‖q^⊥ T x‖² = ⟪Tx, q^⊥ T x⟫ = ⟪x, T* q^⊥ T x⟫ = 0`, so `q^⊥` kills
+  -- `range T`, hence (its kernel being closed) all of `closure (range T)`,
+  -- i.e. `q^⊥ p = 0` and so `p ≤ q` by **55X** `proj_le_iff`.
+  classical
+  set M : Submodule ℂ K := (LinearMap.range (T : H →ₗ[ℂ] K)).topologicalClosure
+    with hMdef
+  have hOP : M.HasOrthogonalProjection := inferInstance
+  set p : K →L[ℂ] K := M.starProjection with hpdef
+  have hproj : IsStarProjection p := isStarProjection_starProjection
+  have hmemM : ∀ x : H, T x ∈ M := fun x =>
+    Submodule.le_topologicalClosure _ ⟨x, rfl⟩
+  have hpT : ∀ x : H, p (T x) = T x := fun x =>
+    Submodule.starProjection_eq_self_iff.mpr (hmemM x)
+  have h0 : g (1 - p) = 0 := by
+    rw [h]
+    ext x
+    simp [hpT x]
+  have hleast : ∀ q : (K →L[ℂ] K), IsStarProjection q → g (1 - q) = 0 → p ≤ q := by
+    intro q hq hq0
+    rw [h] at hq0
+    set e : K →L[ℂ] K := 1 - q with hedef
+    have heproj : IsStarProjection e := hq.one_sub
+    have hself : ContinuousLinearMap.adjoint e = e := by
+      rw [← ContinuousLinearMap.star_eq_adjoint]; exact heproj.isSelfAdjoint.star_eq
+    have hidem : ∀ y : K, e (e y) = e y := by
+      intro y
+      have := congrArg (fun S : K →L[ℂ] K => S y) heproj.isIdempotentElem.eq
+      simpa using this
+    have hE : ∀ x : H, e (T x) = 0 := by
+      intro x
+      have h1 : (ContinuousLinearMap.adjoint T ∘L e ∘L T) x = 0 := by
+        rw [hq0]; rfl
+      have h2 : (⟪T x, e (T x)⟫ : ℂ) = 0 := by
+        have := congrArg (fun z => (⟪x, z⟫ : ℂ)) h1
+        simpa [ContinuousLinearMap.adjoint_inner_right] using this
+      have h3 : (⟪e (T x), e (T x)⟫ : ℂ) = (⟪T x, e (T x)⟫ : ℂ) := by
+        conv_lhs => rw [← hself]
+        rw [ContinuousLinearMap.adjoint_inner_left, hself, hidem]
+      rw [h2] at h3
+      exact inner_self_eq_zero.mp h3
+    have hker : M ≤ LinearMap.ker (e : K →ₗ[ℂ] K) := by
+      rw [hMdef]
+      refine Submodule.topologicalClosure_minimal _ ?_ e.isClosed_ker
+      rintro _ ⟨x, rfl⟩
+      exact hE x
+    have hpe : p * e = 0 := by
+      have h1 : e * p = 0 := by
+        ext y
+        show e (p y) = 0
+        exact hker (M.starProjection_apply_mem y)
+      have h2 := congrArg star h1
+      rwa [star_mul, heproj.isSelfAdjoint.star_eq, hproj.isSelfAdjoint.star_eq,
+        star_zero] at h2
+    exact (proj_le_iff (projection_basic_2 q hq).2 hproj).mpr hpe
+  have hcar : carrier g hg = p := carrier_eq g hg hproj h0 hleast
+  have hset : ((LinearMap.range (T : H →ₗ[ℂ] K) : Submodule ℂ K) : Set K)
+      = Set.range T := by
+    ext z; simp [LinearMap.mem_range]
+  rw [hcar]
+  ext y
+  simp only [Set.mem_ofPred_eq, hpdef, Submodule.starProjection_eq_self_iff]
+  rw [hMdef, ← SetLike.mem_coe, Submodule.topologicalClosure_coe, hset]
 
 /-- **63III** (vn.tex:3074, Exercise), part 3: `⌈⟨x,(·)x⟩⌉ = |x⟩⟨x|` for a
 unit vector `x` of a Hilbert space, the vector functional taken on all of
