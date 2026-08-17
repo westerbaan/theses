@@ -1,0 +1,6 @@
+# The image xindy-container.sh runs; see there for why the index needs it.
+# Build with `make xindy-image`.
+FROM debian:stable-slim
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends xindy \
+ && rm -rf /var/lib/apt/lists/*

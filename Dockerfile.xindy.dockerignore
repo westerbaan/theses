@@ -1,0 +1,3 @@
+# Dockerfile.xindy installs a Debian package and copies nothing, so no build
+# context is needed.
+*
