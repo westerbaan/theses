@@ -5170,6 +5170,150 @@ theorem cceilMap_least (f : A →ₚ[ℂ] B) (hf : PreservesDirSups ⇑f) (c : A
       (cceil_isLeast (carrier f hf)).1.1).mpr
       (cceil_isLeast (carrier f hf)).1.2.2) h
 
+/-- **56I** (`vna-ceil`, vn.tex:2362) in the *powers* form: for an effect
+`a`, `1 - (1-a)^{2ⁿ} ↗ ⌈a⌉`.
+
+This is the ERRATA 69III repair of the proof of **69II**: vn.tex 69III
+obtains `⌈a⌉ ∈ 𝒟` from the *roots* formula `⌈a⌉ = ⋁ₙ a^{1/2ⁿ}`
+(`vna_ceil_sup`), which needs every `a^{1/2ⁿ} ∈ 𝒟` — not an ideal-theoretic
+fact (in `C[0,1]`, `x·C[0,1]` contains `x` but not `√x`).  Powers work
+instead, and the argument is elementary: with `p = ⌈a⌉` and `x = p - a` one
+has `(1-p)x = x(1-p) = 0`, hence `(1-a)^{n+1} = (1-p) + x^{n+1}` and so
+`1 - (1-a)ⁿ = p - xⁿ`; and `⌊x⌋ = 0` (a projection `q ≤ p - a` would give
+`a ≤ p - q`, a projection strictly below `⌈a⌉`), so `xⁿ ↘ 0` by **56VI**
+`vna_floor`. -/
+theorem ceil_isLUB_one_sub_pow {a : A} (ha : a ∈ effects A) :
+    IsLUB (Set.range fun n : ℕ => 1 - (1 - a) ^ (2 ^ n)) (ceil a) := by
+  have hpproj : IsStarProjection (ceil a) := (ceil_spec ha.1).1
+  have hap : a ≤ ceil a := (vna_ceil a ha).1.2
+  have hpa : ceil a * a = a := ((ceil_basic_1 a (ceil a) ha.1 hpproj).out 2 0).mp le_rfl
+  have hap' : a * ceil a = a := ((ceil_basic_1 a (ceil a) ha.1 hpproj).out 2 1).mp le_rfl
+  set p : A := ceil a with hpdef
+  set x : A := p - a with hxdef
+  have hx0 : (0 : A) ≤ x := sub_nonneg.mpr hap
+  have hxp : x ≤ p := sub_le_self p ha.1
+  have hxeff : x ∈ effects A := ⟨hx0, hxp.trans hpproj.le_one⟩
+  -- `(1-p)x = x(1-p) = 0`
+  have hlx : (1 - p) * x = 0 := by
+    rw [hxdef, mul_sub, sub_mul, one_mul, hpproj.isIdempotentElem.eq, sub_mul,
+      one_mul, hpa]
+    abel
+  have hxl : x * (1 - p) = 0 := by
+    rw [hxdef, sub_mul, mul_sub, mul_one, hpproj.isIdempotentElem.eq, mul_sub,
+      mul_one, hap']
+    abel
+  -- `(1-a)^(n+1) = (1-p) + x^(n+1)`
+  have hkey : ∀ n : ℕ, (1 - a) ^ (n + 1) = (1 - p) + x ^ (n + 1) := by
+    intro n
+    induction n with
+    | zero => rw [pow_one, pow_one, hxdef]; abel
+    | succ m ih =>
+        have hxm : x ^ (m + 1) * (1 - p) = 0 := by
+          rw [pow_succ, mul_assoc, hxl, mul_zero]
+        calc (1 - a) ^ (m + 1 + 1) = (1 - a) ^ (m + 1) * (1 - a) := by rw [pow_succ]
+          _ = ((1 - p) + x ^ (m + 1)) * ((1 - p) + x) := by
+              rw [ih]; congr 1; rw [hxdef]; abel
+          _ = (1 - p) * (1 - p) + (1 - p) * x + x ^ (m + 1) * (1 - p)
+                + x ^ (m + 1) * x := by noncomm_ring
+          _ = (1 - p) + x ^ (m + 1 + 1) := by
+              rw [hpproj.one_sub.isIdempotentElem.eq, hlx, hxm, ← pow_succ]; abel
+  -- `⌊x⌋ = 0`
+  have hfl : floor x = 0 := by
+    obtain ⟨⟨hqproj, hqle⟩, -⟩ := floor_isGreatest hxeff
+    have hqp : floor x ≤ p := hqle.trans hxp
+    have hpq : IsStarProjection (p - floor x) :=
+      projection_below_projection _ p hqproj hpproj hqp
+    have haq : a ≤ p - floor x := le_sub_comm.mp (hxdef ▸ hqle)
+    have hle := (vna_ceil a ha).2 ⟨hpq, haq⟩
+    have hq0 : floor x ≤ 0 := by
+      have h2 : p + floor x ≤ p + 0 := by rw [add_zero]; exact le_sub_iff_add_le.mp hle
+      exact (add_le_add_iff_left p).mp h2
+    exact le_antisymm hq0 hqproj.nonneg
+  have hglb : IsGLB (Set.range fun n : ℕ => x ^ 2 ^ n) 0 := by
+    have h := (vna_floor x hxeff).2
+    rwa [hfl] at h
+  -- rewrite the family
+  have hrw : ∀ n : ℕ, 1 - (1 - a) ^ 2 ^ n = p - x ^ 2 ^ n := by
+    intro n
+    obtain ⟨m, hm⟩ : ∃ m : ℕ, 2 ^ n = m + 1 :=
+      ⟨2 ^ n - 1, by have := Nat.one_le_two_pow (n := n); omega⟩
+    rw [hm, hkey m]
+    abel
+  have hrange : (Set.range fun n : ℕ => 1 - (1 - a) ^ 2 ^ n)
+      = Set.range fun n : ℕ => p - x ^ 2 ^ n := by
+    ext y
+    constructor
+    · rintro ⟨n, rfl⟩; exact ⟨n, (hrw n).symm⟩
+    · rintro ⟨n, rfl⟩; exact ⟨n, hrw n⟩
+  rw [hrange]
+  constructor
+  · rintro _ ⟨n, rfl⟩
+    exact sub_le_self p (pow_mem_effects hxeff (2 ^ n)).1
+  · intro u hu
+    have h1 : ∀ n : ℕ, p - u ≤ x ^ 2 ^ n := fun n => sub_le_comm.mp (hu ⟨n, rfl⟩)
+    have h2 : p - u ≤ 0 := hglb.2 (by rintro _ ⟨n, rfl⟩; exact h1 n)
+    exact sub_nonpos.mp h2
+
+/-- **69III** (the proof of **69II**), first paragraph, repaired: `⌈a⌉ ∈ 𝒟`
+for an effect `a` of a two-sided ideal `𝒟` closed under bounded directed
+suprema.  Each `1 - (1-a)^{2ⁿ} = (∑_{i<2ⁿ}(1-a)^i)·a` lies in `𝒟` because
+`a` does, and these increase to `⌈a⌉` by `ceil_isLUB_one_sub_pow`. -/
+private theorem ceil_mem_ideal_of_effect (D : TwoSidedIdeal A)
+    (hD : ∀ (S : Set (selfAdjoint A)) (s : selfAdjoint A),
+      (∀ y ∈ S, (y : A) ∈ D) → S.Nonempty → DirectedOn (· ≤ ·) S →
+        IsLUB S s → (s : A) ∈ D)
+    {a : A} (ha : a ∈ effects A) (haD : a ∈ D) : ceil a ∈ D := by
+  have hasa : IsSelfAdjoint a := IsSelfAdjoint.of_nonneg ha.1
+  have h1a : (1 : A) - a ∈ effects A := effect_orthosupplement a ha
+  have hsa : ∀ n : ℕ, IsSelfAdjoint ((1 : A) - (1 - a) ^ n) := fun n =>
+    (IsSelfAdjoint.one A).sub (((IsSelfAdjoint.one A).sub hasa).pow n)
+  have hmono : Monotone (fun n : ℕ => (⟨1 - (1 - a) ^ 2 ^ n, hsa _⟩ : selfAdjoint A)) := by
+    intro m n hmn
+    refine Subtype.coe_le_coe.mp ?_
+    exact sub_le_sub_left
+      (pow_antitone_of_mem_effects h1a (Nat.pow_le_pow_right (by norm_num) hmn)) 1
+  refine hD (Set.range fun n : ℕ => (⟨1 - (1 - a) ^ 2 ^ n, hsa _⟩ : selfAdjoint A))
+    ⟨ceil a, ((ceil_spec ha.1).1).isSelfAdjoint⟩ ?_ ⟨_, 0, rfl⟩ ?_ ?_
+  · rintro _ ⟨n, rfl⟩
+    show (1 : A) - (1 - a) ^ 2 ^ n ∈ D
+    have h := geom_sum_mul_neg ((1 : A) - a) (2 ^ n)
+    rw [sub_sub_cancel] at h
+    rw [← h]
+    exact D.mul_mem_left _ _ haD
+  · rintro _ ⟨m, rfl⟩ _ ⟨n, rfl⟩
+    exact ⟨_, ⟨max m n, rfl⟩, hmono (le_max_left _ _), hmono (le_max_right _ _)⟩
+  · refine isLUB_sa_of_isLUB ?_
+    have himg : Subtype.val '' (Set.range fun n : ℕ =>
+        (⟨1 - (1 - a) ^ 2 ^ n, hsa _⟩ : selfAdjoint A))
+        = Set.range fun n : ℕ => (1 : A) - (1 - a) ^ 2 ^ n := by
+      rw [← Set.range_comp]; rfl
+    rw [himg]
+    exact ceil_isLUB_one_sub_pow ha
+
+/-- `ceil_mem_ideal_of_effect` for an arbitrary positive element of `𝒟`,
+by rescaling (**59I**). -/
+private theorem ceil_mem_ideal (D : TwoSidedIdeal A)
+    (hD : ∀ (S : Set (selfAdjoint A)) (s : selfAdjoint A),
+      (∀ y ∈ S, (y : A) ∈ D) → S.Nonempty → DirectedOn (· ≤ ·) S →
+        IsLUB S s → (s : A) ∈ D)
+    {b : A} (hb : 0 ≤ b) (hbD : b ∈ D) : ceil b ∈ D := by
+  rcases eq_or_ne b 0 with rfl | hne
+  · rw [ceil_zero]; exact D.zero_mem
+  have hn : (0 : ℝ) < ‖b‖ := norm_pos_iff.mpr hne
+  have heff : (‖b‖⁻¹ : ℝ) • b ∈ effects A := by
+    refine ⟨smul_nonneg (by positivity) hb, ?_⟩
+    refine (CStarAlgebra.norm_le_one_iff_of_nonneg _
+      (smul_nonneg (by positivity) hb)).mp ?_
+    rw [norm_smul, Real.norm_eq_abs, abs_of_pos (by positivity),
+      inv_mul_cancel₀ (ne_of_gt hn)]
+  have hmemD : (‖b‖⁻¹ : ℝ) • b ∈ D := by
+    have : (‖b‖⁻¹ : ℝ) • b = ((‖b‖⁻¹ : ℂ) • (1 : A)) * b := by
+      rw [smul_mul_assoc, one_mul, ← Complex.ofReal_inv, Complex.coe_smul]
+    rw [this]
+    exact D.mul_mem_left _ _ hbD
+  have := ceil_mem_ideal_of_effect D hD heff hmemD
+  rwa [ceil_smul hb (inv_pos.mpr hn)] at this
+
 /-- **69II** (`prop:weakly-closed-ideal`, vn.tex:3539, Proposition): every
 two-sided ideal `D` of a von Neumann algebra that is closed under bounded
 directed suprema of self-adjoint elements is `cA` for a unique central
@@ -5182,8 +5326,105 @@ theorem weakly_closed_ideal (D : TwoSidedIdeal A)
         ∀ a : A, a ∈ D ↔ c * a = a) ∧
       ∀ c : A, IsStarProjection c → IsCentral A c →
         (∀ a : A, a ∈ D ↔ c * a = a) →
-        IsGreatest {p : A | IsStarProjection p ∧ p ∈ D} c :=
-  sorry
+        IsGreatest {p : A | IsStarProjection p ∧ p ∈ D} c := by
+  -- the second clause holds of *any* `c` with the stated property
+  have hgreat : ∀ c : A, IsStarProjection c → IsCentral A c →
+      (∀ a : A, a ∈ D ↔ c * a = a) →
+      IsGreatest {p : A | IsStarProjection p ∧ p ∈ D} c := by
+    intro c hc _ hchar
+    refine ⟨⟨hc, (hchar c).mpr hc.isIdempotentElem.eq⟩, ?_⟩
+    rintro p ⟨hp, hpD⟩
+    exact (proj_le_iff_mul_left hp hc).mpr ((hchar p).mp hpD)
+  refine ⟨?_, hgreat⟩
+  -- `𝒟 ∩ [0,1]` is nonempty, bounded and — by the repair above — directed
+  have hzero : (⟨0, IsSelfAdjoint.zero A⟩ : selfAdjoint A) ∈
+      {y : selfAdjoint A | (y : A) ∈ D ∧ (y : A) ∈ effects A} :=
+    ⟨D.zero_mem, le_rfl, zero_le_one⟩
+  have hEne : ({y : selfAdjoint A | (y : A) ∈ D ∧ (y : A) ∈ effects A}).Nonempty :=
+    ⟨_, hzero⟩
+  have hEbdd : BddAbove {y : selfAdjoint A | (y : A) ∈ D ∧ (y : A) ∈ effects A} := by
+    refine ⟨⟨1, IsSelfAdjoint.one A⟩, fun y hy => ?_⟩
+    exact hy.2.2
+  have hEdir : DirectedOn (· ≤ ·)
+      {y : selfAdjoint A | (y : A) ∈ D ∧ (y : A) ∈ effects A} := by
+    rintro y ⟨hy1, hy2⟩ z ⟨hz1, hz2⟩
+    have hsum : (0 : A) ≤ (y : A) + z := add_nonneg hy2.1 hz2.1
+    have hsumD : ((y : A) + z) ∈ D := D.add_mem hy1 hz1
+    have hcm : ceil ((y : A) + z) ∈ D := ceil_mem_ideal D hD hsum hsumD
+    have hcp : IsStarProjection (ceil ((y : A) + z)) := (ceil_spec hsum).1
+    refine ⟨⟨ceil ((y : A) + z), hcp.isSelfAdjoint⟩,
+      ⟨hcm, hcp.nonneg, hcp.le_one⟩, Subtype.coe_le_coe.mp ?_, Subtype.coe_le_coe.mp ?_⟩
+    · exact (vna_ceil _ hy2).1.2.trans
+        (ceil_mono hy2.1 (le_add_of_nonneg_right hz2.1))
+    · exact (vna_ceil _ hz2).1.2.trans
+        (ceil_mono hz2.1 (le_add_of_nonneg_left hy2.1))
+  obtain ⟨s, hs⟩ := VonNeumannAlgebra.isLUB_of_bddAbove_directed
+    {y : selfAdjoint A | (y : A) ∈ D ∧ (y : A) ∈ effects A} hEne hEdir hEbdd
+  have hcD : (s : A) ∈ D := hD _ s (fun y hy => hy.1) hEne hEdir hs
+  have hc0 : (0 : A) ≤ (s : A) := by
+    have := Subtype.coe_le_coe.mpr (hs.1 hzero)
+    simpa using this
+  have hc1 : (s : A) ≤ 1 := by
+    have hub : (⟨1, IsSelfAdjoint.one A⟩ : selfAdjoint A) ∈ upperBounds
+        {y : selfAdjoint A | (y : A) ∈ D ∧ (y : A) ∈ effects A} := by
+      intro y hy; exact hy.2.2
+    have := Subtype.coe_le_coe.mpr (hs.2 hub)
+    simpa using this
+  have hceff : (s : A) ∈ effects A := ⟨hc0, hc1⟩
+  -- `c` is the greatest effect of `𝒟`
+  have hgreatest : ∀ y : A, y ∈ D → y ∈ effects A → y ≤ (s : A) := by
+    intro y hy1 hy2
+    exact Subtype.coe_le_coe.mpr
+      (hs.1 (show (⟨y, IsSelfAdjoint.of_nonneg hy2.1⟩ : selfAdjoint A) ∈ _ from ⟨hy1, hy2⟩))
+  -- hence a projection, since `⌈c⌉ ∈ 𝒟 ∩ [0,1]` too
+  have hcproj : IsStarProjection (s : A) := by
+    have h1 : ceil (s : A) ∈ D := ceil_mem_ideal_of_effect D hD hceff hcD
+    have hpp : IsStarProjection (ceil (s : A)) := (ceil_spec hc0).1
+    have h3 : ceil (s : A) ≤ (s : A) := hgreatest _ h1 ⟨hpp.nonneg, hpp.le_one⟩
+    have h4 : (s : A) ≤ ceil (s : A) := (vna_ceil _ hceff).1.2
+    exact (le_antisymm h3 h4) ▸ hpp
+  -- the claim: `a ∈ 𝒟` implies `ca = a` and `ac = a`
+  have hclaim : ∀ a : A, a ∈ D → (s : A) * a = a ∧ a * (s : A) = a := by
+    intro a haD
+    have h1 : star a * a ∈ D := D.mul_mem_left _ _ haD
+    have h2 : a * star a ∈ D := D.mul_mem_right _ _ haD
+    have hq : suppProj a ∈ D := ceil_mem_ideal D hD (star_mul_self_nonneg a) h1
+    have hr : rangeProj a ∈ D := ceil_mem_ideal D hD (mul_star_self_nonneg a) h2
+    have hqproj : IsStarProjection (suppProj a) := (ceill_basic_1 a).1.1
+    have hrproj : IsStarProjection (rangeProj a) := (ceill_basic_2 a).1.1
+    have hqc : suppProj a ≤ (s : A) := hgreatest _ hq ⟨hqproj.nonneg, hqproj.le_one⟩
+    have hrc : rangeProj a ≤ (s : A) := hgreatest _ hr ⟨hrproj.nonneg, hrproj.le_one⟩
+    constructor
+    · have hcr : (s : A) * rangeProj a = rangeProj a := (proj_le_iff_mul_left hrproj hcproj).mp hrc
+      calc (s : A) * a = (s : A) * (rangeProj a * a) := by rw [(ceill_basic_2 a).1.2]
+        _ = ((s : A) * rangeProj a) * a := by rw [mul_assoc]
+        _ = rangeProj a * a := by rw [hcr]
+        _ = a := (ceill_basic_2 a).1.2
+    · have hqc' : suppProj a * (s : A) = suppProj a := (proj_le_iff_mul_right hqproj hcproj).mp hqc
+      calc a * (s : A) = (a * suppProj a) * (s : A) := by rw [(ceill_basic_1 a).1.2]
+        _ = a * (suppProj a * (s : A)) := by rw [mul_assoc]
+        _ = a * suppProj a := by rw [hqc']
+        _ = a := (ceill_basic_1 a).1.2
+  have hchar : ∀ a : A, a ∈ D ↔ (s : A) * a = a := by
+    intro a
+    refine ⟨fun h => (hclaim a h).1, fun h => ?_⟩
+    exact h ▸ D.mul_mem_right _ a hcD
+  have hcentral : IsCentral A (s : A) := by
+    intro b
+    have h1 : (s : A) * (b * (s : A)) = b * (s : A) :=
+      (hclaim (b * (s : A)) (D.mul_mem_left b _ hcD)).1
+    have h2 : ((s : A) * b) * (s : A) = (s : A) * b :=
+      (hclaim ((s : A) * b) (D.mul_mem_right _ b hcD)).2
+    rw [← h2, mul_assoc, h1]
+  refine ⟨(s : A), ⟨hcproj, hcentral, hchar⟩, ?_⟩
+  rintro c' ⟨hc'proj, -, hc'char⟩
+  have h1 : c' ∈ D := (hc'char c').mpr hc'proj.isIdempotentElem.eq
+  have e1 : (s : A) * c' = c' := (hclaim c' h1).1
+  have e2 : c' * (s : A) = (s : A) := (hc'char (s : A)).mp hcD
+  have e3 : c' * (s : A) = c' := by
+    have h := congrArg star e1
+    rwa [star_mul, hc'proj.isSelfAdjoint.star_eq, hcproj.isSelfAdjoint.star_eq] at h
+  rw [← e3, e2]
 
 /-- **69IV** (`carrier-miu`, vn.tex:3611, Corollary): the carrier of an
 nmiu-map `f : A → B` is central (`⌈f⌉ = ⌈⌈f⌉⌉`), and

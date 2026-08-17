@@ -1598,8 +1598,123 @@ dimensional subspaces) with no ultraweak limit. -/
 theorem vn_counterexamples_11 :
     ∃ (ι : Type) (l : Filter ι), l.NeBot ∧ ∃ x : ι → (ℓ² →L[ℂ] ℓ²),
       (∀ ω : NPFunctional (ℓ² →L[ℂ] ℓ²), Cauchy (l.map fun i => ω (x i))) ∧
-      ¬∃ T, UWTendsto x l T :=
-  sorry
+      ¬∃ T, UWTendsto x l T := by
+  classical
+  set e : ℕ → ℓ² := fun n => lp.single 2 n (1 : ℂ) with he
+  -- (a) an unbounded linear functional `f` on `ℓ²`, with `f eₙ = n`
+  obtain ⟨f, hf⟩ : ∃ f : ℓ² →ₗ[ℂ] ℂ, ∀ n : ℕ, f (e n) = (n : ℂ) := by
+    have hon : Orthonormal ℂ e := by
+      rw [orthonormal_iff_ite]
+      intro i j
+      exact inner_single_nat i j
+    have hli : LinearIndependent ℂ e := hon.linearIndependent
+    obtain ⟨g, hg⟩ := ((Module.Basis.span hli).constr ℂ (fun n : ℕ => (n : ℂ))).exists_extend
+    refine ⟨g, fun n => ?_⟩
+    have h1 : ((Module.Basis.span hli n : ↥(Submodule.span ℂ (Set.range e))) : ℓ²) = e n :=
+      Module.Basis.coe_span_apply hli n
+    have h2 := LinearMap.congr_fun hg (Module.Basis.span hli n)
+    simp only [LinearMap.comp_apply, Submodule.subtype_apply, h1] at h2
+    rw [h2, Module.Basis.constr_basis]
+  -- (b) Riesz representation on the (finite-dimensional) span of a finite set
+  have hriesz : ∀ F : Finset ℓ², ∃ x : ℓ²,
+      ∀ y ∈ Submodule.span ℂ (F : Set ℓ²), f y = ⟪x, y⟫ := by
+    intro F
+    have hcs : CompleteSpace ↥(Submodule.span ℂ (F : Set ℓ²)) :=
+      FiniteDimensional.complete ℂ _
+    set S : Submodule ℂ ℓ² := Submodule.span ℂ (F : Set ℓ²) with hS
+    set g : ↥S →ₗ[ℂ] ℂ := f.comp S.subtype with hgdef
+    refine ⟨(((InnerProductSpace.toDual ℂ ↥S).symm g.toContinuousLinearMap : ↥S) : ℓ²),
+      fun y hy => ?_⟩
+    have h := InnerProductSpace.toDual_symm_apply (𝕜 := ℂ) (E := ↥S)
+      (y := g.toContinuousLinearMap) (x := (⟨y, hy⟩ : ↥S))
+    rw [Submodule.coe_inner] at h
+    have h2 : (⟪(((InnerProductSpace.toDual ℂ ↥S).symm g.toContinuousLinearMap : ↥S) : ℓ²),
+        y⟫ : ℂ) = g ⟨y, hy⟩ := h
+    rw [h2]
+    rfl
+  choose xv hxv using hriesz
+  refine ⟨Finset ℓ², atTop, inferInstance,
+    fun F => ketbra (e 0) (xv F), ?_, ?_⟩
+  · -- (c) the net is ultraweakly Cauchy: `ω(|e⟩⟨x_F|)` is eventually constant
+    intro ω
+    obtain ⟨y, hy, hy1⟩ := bh_np ω
+    have hsum2 : Summable (fun n : ℕ => ‖y n‖ ^ 2) := by
+      exact Complex.summable_ofReal.mp hy1.summable
+    have hsumz : Summable (fun n : ℕ => (⟪y n, e 0⟫ : ℂ) • y n) := by
+      refine Summable.of_norm ((hsum2.mul_right ‖e 0‖).of_nonneg_of_le
+        (fun n => norm_nonneg _) fun n => ?_)
+      rw [norm_smul]
+      calc ‖(⟪y n, e 0⟫ : ℂ)‖ * ‖y n‖ ≤ (‖y n‖ * ‖e 0‖) * ‖y n‖ :=
+            mul_le_mul_of_nonneg_right (norm_inner_le_norm _ _) (norm_nonneg _)
+        _ = ‖y n‖ ^ 2 * ‖e 0‖ := by ring
+    have hz : ∀ v : ℓ², (ω (ketbra (e 0) v) : ℂ) = ⟪v, ∑' n, (⟪y n, e 0⟫ : ℂ) • y n⟫ := by
+      intro v
+      refine HasSum.unique (hy (ketbra (e 0) v)) ?_
+      have h := (hsumz.hasSum).mapL (innerSL ℂ v)
+      refine h.congr_fun fun n => ?_
+      show (⟪y n, ketbra (e 0) v (y n)⟫ : ℂ) = ⟪v, (⟪y n, e 0⟫ : ℂ) • y n⟫
+      show (⟪y n, (⟪v, y n⟫ : ℂ) • e 0⟫ : ℂ) = ⟪v, (⟪y n, e 0⟫ : ℂ) • y n⟫
+      rw [inner_smul_right, inner_smul_right]
+      ring
+    refine Filter.Tendsto.cauchy_map (a := f (∑' n, (⟪y n, e 0⟫ : ℂ) • y n)) ?_
+    refine tendsto_const_nhds.congr' ?_
+    rw [EventuallyEq, Filter.eventually_atTop]
+    refine ⟨{∑' n, (⟪y n, e 0⟫ : ℂ) • y n}, fun F hF => ?_⟩
+    have hmem : (∑' n, (⟪y n, e 0⟫ : ℂ) • y n) ∈ Submodule.span ℂ (F : Set ℓ²) :=
+      Submodule.subset_span (hF (Finset.mem_singleton_self _))
+    rw [hz (xv F), ← hxv F _ hmem]
+  · -- (d) but it has no ultraweak limit
+    rintro ⟨T, hT⟩
+    rw [uwTendsto_iff] at hT
+    have key : ∀ n : ℕ, 1 ≤ n → (n : ℂ) = ⟪e n + e 0, T (e n + e 0)⟫ := by
+      intro n hn
+      have hne : ¬ (n = 0) := by omega
+      have hw : (⟪e n + e 0, e 0⟫ : ℂ) = 1 := by
+        rw [inner_add_left, he]
+        simp only []
+        rw [inner_single_nat n 0, inner_single_nat 0 0]
+        simp [hne]
+      have happ : ∀ v : ℓ²,
+          (vectorNP (e n + e 0) (ketbra (e 0) v) : ℂ) = ⟪v, e n + e 0⟫ := by
+        intro v
+        rw [vectorNP_apply]
+        show (⟪e n + e 0, (⟪v, e n + e 0⟫ : ℂ) • e 0⟫ : ℂ) = ⟪v, e n + e 0⟫
+        rw [inner_smul_right, hw, mul_one]
+      have h1 := hT (vectorNP (e n + e 0))
+      have h2 : Tendsto (fun F : Finset ℓ² =>
+          (vectorNP (e n + e 0) (ketbra (e 0) (xv F)) : ℂ)) atTop (𝓝 (f (e n + e 0))) := by
+        refine tendsto_const_nhds.congr' ?_
+        rw [EventuallyEq, Filter.eventually_atTop]
+        refine ⟨{e n + e 0}, fun F hF => ?_⟩
+        have hmem : (e n + e 0) ∈ Submodule.span ℂ (F : Set ℓ²) :=
+          Submodule.subset_span (hF (Finset.mem_singleton_self _))
+        rw [happ, ← hxv F _ hmem]
+      have h3 := tendsto_nhds_unique h2 h1
+      rw [vectorNP_apply] at h3
+      rw [← h3, map_add, hf n, hf 0]
+      simp
+    -- but `|⟪w, Tw⟫| ≤ ‖T‖‖w‖² ≤ 4‖T‖`
+    obtain ⟨n, hn⟩ := exists_nat_gt (max 1 (4 * ‖T‖))
+    have hn1 : 1 ≤ n := by
+      have : (1 : ℝ) ≤ n := le_of_lt (lt_of_le_of_lt (le_max_left _ _) hn)
+      exact_mod_cast this
+    have hnorm : ‖e n + e 0‖ ≤ 2 := by
+      refine (norm_add_le _ _).trans ?_
+      rw [he]
+      simp only []
+      rw [lp.norm_single (by norm_num), lp.norm_single (by norm_num)]
+      norm_num
+    have hbd : (n : ℝ) ≤ 4 * ‖T‖ := by
+      have h1 : ‖(⟪e n + e 0, T (e n + e 0)⟫ : ℂ)‖ ≤ ‖e n + e 0‖ * ‖T (e n + e 0)‖ :=
+        norm_inner_le_norm _ _
+      have h2 : ‖T (e n + e 0)‖ ≤ ‖T‖ * ‖e n + e 0‖ := T.le_opNorm _
+      have h3 : ((n : ℝ)) = ‖(⟪e n + e 0, T (e n + e 0)⟫ : ℂ)‖ := by
+        rw [← key n hn1]; simp
+      rw [h3]
+      nlinarith [norm_nonneg (e n + e 0), norm_nonneg (T (e n + e 0)),
+        norm_nonneg T, hnorm, h1, h2]
+    have := lt_of_le_of_lt (le_max_right (1 : ℝ) (4 * ‖T‖)) hn
+    linarith
 
 /-! **43II**, parts 7–10 (the maps `|·|_s`, `|·|_r` and squaring are not
 ultrastrongly continuous, and multiplication is not jointly ultrastrongly
@@ -3033,6 +3148,121 @@ theorem us_cont_normal [VonNeumannAlgebra A] [VonNeumannAlgebra B]
   preservesDirSups_of_continuousOn_effects_core f fun a ha =>
     (h a ha).mono_right (_root_.nhds_mono ultrastrong_le_ultraweak)
 
+section Transpose
+
+/-! ### The transpose on `B(ℓ²)` (**45I**.2)
+
+Mathlib has no transpose on `B(ℓ²)`, so it is built here as `T ↦ J T* J`
+with `J` the coordinatewise conjugation `star` of `lp` — a conjugate-linear
+isometric involution of `ℓ²`.  The three facts that carry the argument are:
+`J` is antiunitary (`star_inner_l2`), the transpose is its own inverse
+(`transL2_involutive`, whence normality: an order isomorphism preserves every
+supremum it meets), and `|0⟩⟨n| ↦ |n⟩⟨0|`, which is the counterexample net of
+**43II**.4 again. -/
+
+local notation "ℓ²" => lp (fun _ : ℕ => ℂ) 2
+
+/-- The conjugation `J` on `ℓ²` is antiunitary: `⟪Jx, Jy⟫ = conj ⟪x,y⟫`. -/
+private theorem star_inner_l2 (x y : ℓ²) :
+    (⟪star x, star y⟫ : ℂ) = star (⟪x, y⟫ : ℂ) := by
+  rw [lp.inner_eq_tsum, lp.inner_eq_tsum]
+  refine Eq.trans (tsum_congr fun i => ?_) tsum_star.symm
+  rw [lp.star_apply, lp.star_apply]
+  simp [RCLike.inner_apply, mul_comm]
+
+private theorem star_single (n : ℕ) :
+    star (lp.single 2 n (1 : ℂ) : ℓ²) = lp.single 2 n (1 : ℂ) := by
+  ext i
+  rcases eq_or_ne n i with h | h <;> simp [h]
+
+/-- The transpose `T ↦ J T* J` on `B(ℓ²)`, as a continuous linear map. -/
+private noncomputable def transL2 (T : ℓ² →L[ℂ] ℓ²) : ℓ² →L[ℂ] ℓ² :=
+  LinearMap.mkContinuous
+    { toFun := fun x => star (star T (star x))
+      map_add' := by
+        intro x y
+        rw [star_add, map_add, star_add]
+      map_smul' := by
+        intro c x
+        rw [RingHom.id_apply, star_smul, map_smul, star_smul, star_star] }
+    ‖T‖ (by
+      intro x
+      show ‖star (star T (star x))‖ ≤ ‖T‖ * ‖x‖
+      calc ‖star (star T (star x))‖ = ‖star T (star x)‖ := by rw [norm_star]
+        _ ≤ ‖star T‖ * ‖star x‖ := (star T).le_opNorm _
+        _ = ‖T‖ * ‖x‖ := by rw [norm_star, norm_star])
+
+private theorem transL2_apply (T : ℓ² →L[ℂ] ℓ²) (x : ℓ²) :
+    transL2 T x = star (star T (star x)) := rfl
+
+private theorem star_transL2 (T : ℓ² →L[ℂ] ℓ²) :
+    star (transL2 T) = transL2 (star T) := by
+  refine ContinuousLinearMap.ext fun u => ?_
+  refine ext_inner_left ℂ fun v => ?_
+  rw [ContinuousLinearMap.star_eq_adjoint, ContinuousLinearMap.adjoint_inner_right,
+    transL2_apply, transL2_apply, star_star]
+  calc (⟪star (star T (star v)), u⟫ : ℂ)
+      = ⟪star (star T (star v)), star (star u)⟫ := by rw [star_star]
+    _ = star (⟪star T (star v), star u⟫ : ℂ) := star_inner_l2 _ _
+    _ = star (⟪star v, T (star u)⟫ : ℂ) := by
+        rw [ContinuousLinearMap.star_eq_adjoint, ContinuousLinearMap.adjoint_inner_left]
+    _ = ⟪star (star v), star (T (star u))⟫ := (star_inner_l2 _ _).symm
+    _ = ⟪v, star (T (star u))⟫ := by rw [star_star]
+
+private theorem transL2_involutive (T : ℓ² →L[ℂ] ℓ²) : transL2 (transL2 T) = T := by
+  refine ContinuousLinearMap.ext fun x => ?_
+  rw [transL2_apply, star_transL2, transL2_apply, star_star, star_star, star_star]
+
+private theorem transL2_nonneg {T : ℓ² →L[ℂ] ℓ²} (hT : 0 ≤ T) : 0 ≤ transL2 T := by
+  have hsa : star T = T := (IsSelfAdjoint.of_nonneg hT).star_eq
+  refine (hilb_positive_operators_2 _).mpr fun x hx => ?_
+  rw [transL2_apply, hsa]
+  have h1 : (⟪x, star (T (star x))⟫ : ℂ) = star (⟪star x, T (star x)⟫ : ℂ) := by
+    calc (⟪x, star (T (star x))⟫ : ℂ)
+        = ⟪star (star x), star (T (star x))⟫ := by rw [star_star]
+      _ = star (⟪star x, T (star x)⟫ : ℂ) := star_inner_l2 _ _
+  rw [h1]
+  have h2 : (0 : ℂ) ≤ ⟪star x, T (star x)⟫ :=
+    (hilb_positive_operators_2 T).mp hT (star x) (by rw [norm_star]; exact hx)
+  have h3 : star (⟪star x, T (star x)⟫ : ℂ) = ⟪star x, T (star x)⟫ := by
+    rw [Complex.star_def, Complex.conj_eq_iff_im]
+    simpa using (Complex.le_def.mp h2).2.symm
+  rw [h3]
+  exact h2
+
+private theorem transL2_map_add (S T : ℓ² →L[ℂ] ℓ²) :
+    transL2 (S + T) = transL2 S + transL2 T := by
+  refine ContinuousLinearMap.ext fun x => ?_
+  show star (star (S + T) (star x)) = transL2 S x + transL2 T x
+  rw [transL2_apply, transL2_apply, star_add]
+  show star (star S (star x) + star T (star x)) = _
+  rw [star_add]
+
+private theorem transL2_mono : Monotone transL2 := by
+  intro S T hST
+  have h : (0 : ℓ² →L[ℂ] ℓ²) ≤ transL2 (T - S) := transL2_nonneg (sub_nonneg.mpr hST)
+  have he : transL2 (T - S) = transL2 T - transL2 S := by
+    have := transL2_map_add (T - S) S
+    rw [sub_add_cancel] at this
+    rw [this]
+    abel
+  rw [he, sub_nonneg] at h
+  exact h
+
+/-- The transpose, bundled as a positive linear map. -/
+private noncomputable def transPLM :
+    (ℓ² →L[ℂ] ℓ²) →ₚ[ℂ] (ℓ² →L[ℂ] ℓ²) where
+  toFun := transL2
+  map_add' := transL2_map_add
+  map_smul' := by
+    intro c T
+    refine ContinuousLinearMap.ext fun x => ?_
+    show star (star (c • T) (star x)) = c • transL2 T x
+    rw [transL2_apply, star_smul]
+    show star (star c • star T (star x)) = c • star (star T (star x))
+    rw [star_smul, star_star]
+  monotone' := transL2_mono
+
 /-- **45I** (vn.tex:829, Exercise), part 2: the converse fails — there is a
 normal positive map (e.g. the transpose on `B(ℓ²)`) that is not
 ultrastrongly continuous. -/
@@ -3040,8 +3270,66 @@ theorem normal_not_us_cont :
     ∃ f : (lp (fun _ : ℕ => ℂ) 2 →L[ℂ] lp (fun _ : ℕ => ℂ) 2) →ₚ[ℂ]
         (lp (fun _ : ℕ => ℂ) 2 →L[ℂ] lp (fun _ : ℕ => ℂ) 2),
       PreservesDirSups ⇑f ∧
-        ¬@Continuous _ _ (ultrastrong _) (ultrastrong _) ⇑f :=
-  sorry
+        ¬@Continuous _ _ (ultrastrong _) (ultrastrong _) ⇑f := by
+  have hcoe : ⇑transPLM = transL2 := rfl
+  refine ⟨transPLM, ?_, ?_⟩
+  · -- normality: the transpose is an order isomorphism, hence preserves suprema
+    rw [hcoe]
+    intro D s hne hdir hlub
+    refine ⟨?_, ?_⟩
+    · rintro _ ⟨d, hd, rfl⟩
+      exact transL2_mono (Subtype.coe_le_coe.mpr (hlub.1 hd))
+    · intro u hu
+      obtain ⟨d₀, hd₀⟩ := hne
+      have hle : transL2 (d₀ : ℓ² →L[ℂ] ℓ²) ≤ u := hu ⟨d₀, hd₀, rfl⟩
+      have husa : IsSelfAdjoint u := by
+        have h1 : IsSelfAdjoint (u - transL2 (d₀ : ℓ² →L[ℂ] ℓ²)) :=
+          IsSelfAdjoint.of_nonneg (sub_nonneg.mpr hle)
+        have h2 : IsSelfAdjoint (transL2 (d₀ : ℓ² →L[ℂ] ℓ²)) := by
+          show star (transL2 (d₀ : ℓ² →L[ℂ] ℓ²)) = _
+          rw [star_transL2]
+          congr 1
+          exact d₀.2
+        simpa using h1.add h2
+      have hfusa : IsSelfAdjoint (transL2 u) := by
+        show star (transL2 u) = _
+        rw [star_transL2, husa.star_eq]
+      have hub : (⟨transL2 u, hfusa⟩ : selfAdjoint (ℓ² →L[ℂ] ℓ²)) ∈ upperBounds D := by
+        intro d hd
+        refine Subtype.coe_le_coe.mp ?_
+        have h := transL2_mono (hu ⟨d, hd, rfl⟩)
+        rwa [transL2_involutive] at h
+      have := Subtype.coe_le_coe.mpr (hlub.2 hub)
+      have h2 := transL2_mono this
+      rwa [transL2_involutive] at h2
+  · -- but it is not ultrastrongly continuous: `|0⟩⟨n| ↦ |n⟩⟨0|`
+    rw [hcoe]
+    intro hcont
+    refine vn_counterexamples_4_bra.2 ⟨0, ?_⟩
+    have hzero : transL2 (0 : ℓ² →L[ℂ] ℓ²) = 0 := by
+      refine ContinuousLinearMap.ext fun x => ?_
+      rw [transL2_apply, star_zero]
+      simp
+    have h0 : Filter.Tendsto transL2
+        (@nhds (ℓ² →L[ℂ] ℓ²) (ultrastrong _) 0)
+        (@nhds (ℓ² →L[ℂ] ℓ²) (ultrastrong _) (transL2 0)) :=
+      @Continuous.tendsto (ℓ² →L[ℂ] ℓ²) (ℓ² →L[ℂ] ℓ²) (ultrastrong _) (ultrastrong _)
+        transL2 hcont 0
+    have h : USTendsto (fun n : ℕ => transL2 (ketbraNat 0 n)) atTop (transL2 0) :=
+      h0.comp vn_counterexamples_4_ket
+    have hkb : ∀ n : ℕ, transL2 (ketbraNat 0 n) = ketbraNat n 0 := by
+      intro n
+      refine ContinuousLinearMap.ext fun x => ?_
+      rw [transL2_apply, star_ketbraNat, ketbraNat_apply, star_smul, star_single]
+      congr 1
+      calc star (⟪(lp.single 2 0 (1 : ℂ) : ℓ²), star x⟫ : ℂ)
+          = star (⟪star (lp.single 2 0 (1 : ℂ) : ℓ²), star x⟫ : ℂ) := by rw [star_single]
+        _ = star (star (⟪(lp.single 2 0 (1 : ℂ) : ℓ²), x⟫ : ℂ)) := by rw [star_inner_l2]
+        _ = ⟪(lp.single 2 0 (1 : ℂ) : ℓ²), x⟫ := star_star _
+    simp only [hkb, hzero] at h
+    exact h
+
+end Transpose
 
 /-- **45II** (`cp-uscont`, vn.tex:841, Proposition): an ncp-map between von
 Neumann algebras is ultrastrongly continuous. -/

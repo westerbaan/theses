@@ -1,17 +1,19 @@
-# `Theses/A/VN/` — full survey of the remaining `sorry`s (updated session 70)
+# `Theses/A/VN/` — full survey of the remaining `sorry`s (updated session 73)
 
-**Headline count: A/VN has 15 code `sorry`s** after session 70 (was 22).
+**Headline count: A/VN has 8 code `sorry`s** after session 73 (was 11).
 Per file, compiler-counted (`declaration uses 'sorry'` warnings, *not* grep),
 each paired with an error count of **0**:
 
 | file | sorries |
 |---|---|
-| `Basic.lean` | **8** |
-| `Projections.lean` | **2** |
-| `Division.lean` | 5 |
+| `Basic.lean` | **4** |
+| `Projections.lean` | **1** |
+| `Division.lean` | 3 |
 | `NormalFunctionals.lean` | **0** |
 | `Completeness.lean` | **0** |
-| **total** | **15** |
+| **total** | **8** |
+
+(Every file compiles with **0 errors**; counts are compiler-counted.)
 
 Refresh with (bypasses another agent's `lake build` lock):
 
@@ -22,6 +24,42 @@ for f in Basic Projections Division NormalFunctionals Completeness; do
     grep -c "declaration uses"
 done
 ```
+
+> **Session 73 headline — the ERRATA 69III repair survives formalization, and
+> `Basic.lean`'s two remaining self-contained items fall.**  Closed, all
+> `#print axioms`-clean: **69II** `weakly_closed_ideal` (`Projections.lean`,
+> now down to one), **43II**.11 `vn_counterexamples_11` — the last of the nine
+> 43II counterexamples — and **45I**.2 `normal_not_us_cont` (`Basic.lean`).
+>
+> * **The powers-not-roots repair filed at ERRATA 69III holds**, with two
+>   simplifications: the binomial expansion is unnecessary
+>   (`1 − (1−a)ⁿ = (∑_{i<n}(1−a)^i)·a`, so ideal membership is one step), and
+>   `1 − (1−a)ⁿ ↗ ⌈a⌉` is **not** a variant of 56I but has its own short
+>   proof, now public as **`ceil_isLUB_one_sub_pow`**: with `p = ⌈a⌉`,
+>   `x = p − a` one has `(1−p)x = x(1−p) = 0`, hence
+>   `(1−a)^{n+1} = (1−p) + x^{n+1}` and `1 − (1−a)ⁿ = p − xⁿ`, and `⌊x⌋ = 0`
+>   by leastness of `⌈a⌉`, so `xⁿ ↘ 0` by **56VI** `vna_floor`.  A *third*
+>   circularity of the same shape was found further down the printed proof
+>   ("self-adjoint by scaling … then real and imaginary parts" needs
+>   `a⁺ ∈ 𝒟`); the Lean proof routes through `⌈a*a⌉, ⌈aa*⌉ ≤ c` instead.  See
+>   PROVING-LOG session 73 and the updated ERRATA row.
+> * **43II.11 is much cheaper than "unbounded functional + Riesz" suggests.**
+>   The index type is `Finset ℓ²` (so `atTop` is directed and `NeBot` for
+>   free); `f` comes from `Module.Basis.span` + `Basis.constr` +
+>   `LinearMap.exists_extend`, with no Hamel basis of `ℓ²`; and ultraweak
+>   Cauchyness is *eventual constancy*, not an estimate — by **39IX**
+>   `bh_np`, `ω(|e⟩⟨v|) = ⟨v, z_ω⟩` for the single vector
+>   `z_ω = ∑ₙ⟨yₙ,e⟩yₙ`, so `ω(|e⟩⟨x_S|) = f(z_ω)` for every `S ∋ z_ω`.  The
+>   non-convergence half needs **no polarisation**: testing at `w = eₙ + e₀`
+>   gives `⟨w,Aw⟩ = n` against `|⟨w,Aw⟩| ≤ 4‖A‖`.
+> * **45I.2 needs no new carrier after all.**  `lp` already carries `Star`
+>   (`lp.star_apply`, `NormedStarGroup`, `StarModule`), so `J := star` is the
+>   conjugation; `transL2 T := J T* J` is built with `LinearMap.mkContinuous`,
+>   is `∗`-compatible and hence **involutive**, and *normality is then free* —
+>   a monotone involution is an order isomorphism.  Non-continuity is
+>   `vn_counterexamples_4_ket`/`_bra` re-used verbatim, since
+>   `transL2 |0⟩⟨n| = |n⟩⟨0|`.  All private, in `Basic.lean`'s new
+>   `section Transpose`.
 
 > **Session 70 headline — `gns_normal` was never [L], and `Projections.lean`
 > is down to two.**  Closed, all `#print axioms`-clean: **48III**
@@ -248,15 +286,16 @@ lines, plus six reusable helpers — `uwTendsto_unique`, `UWTendsto.add`/`.smul`
 `isClosed_ultraweak_closedBall`, `uw_map_of_cont` — placed just above them and
 usable anywhere in `A/VN` and downstream.)
 
-## `Division.lean` — 5
+## `Division.lean` — 3
 
-| line | point | decl | class |
-|---|---|---|---|
-| 766 | **79VI**.4 | `pseudoinverse_basic_2'_4` | **[F]** false as stated; refutation `pseudoinverse_basic_2'_4_is_false` sits just above it, ERRATA filed, awaiting author |
-| 2817 | **81IX** | `div_usc` | **[F]** second conjunct false (counterexample in the doc comment), ERRATA filed |
-| 3410 | **84II** | `fdcstar` | [L] Artin–Wedderburn for finite-dimensional C\*-algebras; large |
-| 3444 | **84bIII** | `hereditarilyAtomic_subalgebra` | [S] but real work |
-| 3454 | **84bV** | `ha_equalisers` | [B] on 47V `vn_equalisers` (**now proved**, session 50) + 84bIII |
+| point | decl | class |
+|---|---|---|
+| **84II** | `fdcstar` | [L] Artin–Wedderburn for finite-dimensional C\*-algebras; large |
+| **84bIII** | `hereditarilyAtomic_subalgebra` | [S] but real work |
+| **84bV** | `ha_equalisers` | [B] on 84bIII only (47V `vn_equalisers` is proved) |
+
+(`pseudoinverse_basic_2'_4` and `div_usc` — both false as printed — have since
+been retired with their `sorry`s; see HANDOFF.)
 
 **81VIII**.2 `sequential_quotient_2` is **proved** (it was still listed here
 after session 57 and was not).
@@ -265,12 +304,15 @@ after session 57 and was not).
 nmiu-maps is a von Neumann subalgebra", is 47V and was proved this session,
 so 84bV is now only blocked on 84bIII.
 
-## `Projections.lean` — 2
+## `Projections.lean` — 1
 
 | point | decl | class |
 |---|---|---|
 | **67IV**.2 | `central_projections_sums_2` | [S] 67IV.1 is proved (session 56); **not** cheap, see below |
-| **69II** | `weakly_closed_ideal` | [S] weakly closed two-sided ideals are `cA`; substantial |
+
+**69II** `weakly_closed_ideal` was proved in session 73 (see the headline);
+its by-product `ceil_isLUB_one_sub_pow` (`1 − (1−a)^{2ⁿ} ↗ ⌈a⌉` for an effect
+`a`) is **public** and sits just above it.
 
 56XVII.3, 58IV, 59VII.1–3 and 62I were proved in session 70 (see the
 headline).  **`preservesDirInfs`** — normal positive maps preserve filtered
@@ -303,20 +345,17 @@ starting.
 
 Locate by name; line numbers are not recorded.
 
-## `Basic.lean` — 8
+## `Basic.lean` — 4
 
 | point | decl | class |
 |---|---|---|
-| **43II**.11 | `vn_counterexamples_11` | [S] the only survivor of the nine (unbounded functional + Riesz on finite-dimensional subspaces) |
-| **45I**.2 | `normal_not_us_cont` | [S] the transpose on `B(ℓ²)`, but re-costed **high** in session 70: Mathlib has no transpose for `B(ℓ²)` and no conjugation on `lp`, so `T ↦ JT*J` must be built (`J` conjugate-linear isometric involution) before either half starts |
-| **51VII**.1 | `vna_of_faithful_countably_normal_1` | [S] — the thesis's proof (vn.tex 51VIII) is complete and elementary; costed at ~200–250 lines in session 70, the work being the recursive choice of an increasing sequence `aₙ ∈ D` with `sup ₙτ(aₙ) = sup_{d∈D} τ(d)`, plus the `ℂ`-vs-`ℝ` bookkeeping for `τ` on self-adjoints.  51VII.2 falls out of the same construction — prove them together |
-| **51VII**.2 | `vna_of_faithful_countably_normal_2` | [B] on 51VII.1 |
-| **51IX** | `Linfty_vn` | [L] no `L^∞` carrier in Mathlib (FIXME) |
-| **54XI**.1 | `cvn_faithful_1` | [L] measure on the almost-clopen σ-algebra; large |
+| **51IX** | `Linfty_vn` | [L] no `L^∞` carrier in Mathlib (FIXME); a construction job, ~400–800 lines, of which the proved 51VII is the last twenty |
+| **54XI**.1 | `cvn_faithful_1` | [L] measure on the almost-clopen σ-algebra; large — **and the only A/VN item anything downstream still wants** (it blocks `A/Proc` 127III `duplicable`) |
 | **54XI**.2 | `cvn_faithful_2` | [B] on 54XI.1 |
 | **54XI**.3 | `cvn_faithful_3` | [B] on 54XI.1 |
 
-48III and 53III were proved in session 70 (see the headline).
+48III and 53III were proved in session 70; 51VII.1/.2, **43II.11** and
+**45I.2** in sessions 71–73 (see the session-73 headline).
 
 ### The 43II counterexamples: eight down, one to go
 
@@ -327,9 +366,8 @@ np-functional `ω` on `B(ℓ²)`.  Since **39IX** `bh_np`
 (`hasSum_omegaNorm_sq`, session 57), and parts 2, 4 and 6 are one
 dominated-convergence argument (Mathlib's Tannery theorem
 `tendsto_tsum_of_dominated_convergence`) with dominating family `(‖xₙ‖²)ₙ`.
-Parts 2a, 2b, 4a, 4b, 4c, 5, 6 and 6c are proved.  Part **11** is left: it
-needs an unbounded functional on `ℓ²` built by Riesz representation on
-finite-dimensional subspaces, and is genuinely different from the rest.
+Parts 2a, 2b, 4a, 4b, 4c, 5, 6 and 6c were proved in session 57, and part
+**11** in session 73 — **the block is finished**.
 
 **45I**.1 `us_cont_normal` was closed this way in session 68 — see the
 headline: the whole proof is now `preservesDirSups_of_continuousOn_effects_core`
@@ -340,7 +378,11 @@ one-line corollaries of it.
 
 ## What `A/Proc` needs from here
 
-**As of session 56 the answer is: nothing.**  The three sorries that were
+**One thing: 54XI.1 `cvn_faithful_1`**, the last A/VN blocker of `A/Proc`'s
+**127III** `duplicable` (`Duplicators.lean`).  The note below, written in
+session 56, refers to the *tensor* frontier, which is indeed closed.
+
+**As of session 56 the tensor answer is: nothing.**  The three sorries that were
 `A/Proc`'s external frontier — 90II.2 (session 55), 87III and 86IX (session
 56) — are all closed, and 87VI, which 116III.2 wants for its `≥` half, with
 them.  The note below is kept because it records *why* `tensor-2` is
