@@ -20078,3 +20078,139 @@ be transported to `s` along `s.effectus.I ≅ ℂᵤ`.  With
 `effectusPartialStructure_homPCM_unique` (session 82) the enrichment part of
 that transport is already known to be free; the object part is the small
 lemma the previous session flagged and did not write.
+
+## Session 83 — `B/Eff`: **192III.3 `exc_dm_effectus_kleisli` is proved**, from the author's solution; and six `𝒟_M` helpers had to be moved up the file (worker on `Theses/B/Eff/{StatesPredicates,EffectAlgebras}.lean`)
+
+`StatesPredicates.lean` **2 → 1** `sorry`, 0 errors; `EffectAlgebras.lean`
+untouched at **2**, 0 errors.  Both counted with `lean` per file (never
+`lake env lean`) and paired with `grep -c ': error'`.
+`exc_dm_effectus_kleisli` is `#print axioms`-clean
+(`propext, Classical.choice, Quot.sound`), checked *in situ* by appending
+`#print axioms` to a copy of the file, since the olean chain was deliberately
+not rebuilt (another worker was mid-flight in `VNExamples.lean`).
+
+### 1. The author's solution is complete, and the survey's headline was right
+
+`bsols.tex:1991–2170` does contain a full solution to `exc-dm-effectus`, and
+its part 3 (`:2100` onwards) is usable exactly as written: coproducts of
+`Kl 𝒟_M` are `Set`'s with coprojections `η ∘ κᵢ`; `∅` is initial; `𝒟_M 1 ≅ 1`
+makes `1` final; and both pullback squares and the joint monicity are
+pointwise computations.  The proof below follows it step for step.  The one
+place the text is terse — "but first need to check the image of `δ(z)` sums
+to `1`" — is the only place with real content, and its computation
+(`⋁_w δ(z)(w) = ⋁_y β(z)(κ₂y) ⋁ ⋁_x α(z)(κ₁x) = α(z)(κ₂*) ⋁ ⋁_x α(z)(κ₁x)
+= 1`) is transcribed verbatim as `MConvexComb.exists_glue`.
+
+**The costing was accurate at its low end.**  The survey said ~500–700 lines;
+the actual addition is **~480**, of which ~190 are `MConvexComb` glue lemmas
+and ~290 the Kleisli plumbing plus the three axioms.  One survey remark needs
+a footnote: "Mathlib has neither [the coproducts nor the terminal object of a
+Kleisli category]" is right about the *limits*, but Mathlib does have the
+Kleisli adjunction the author appeals to — see the divergence note below.  What made it cheap is that
+`effectusTotalForm_of_pres` (session 7's bridge) already reduces 180I to a
+*concrete* presentation of `1` and of `X + Y`, and that `𝒟_M`'s `Finset`/list
+API was in place.
+
+### 2. What was added
+
+In `StatesPredicates.lean`, all before the 192III.3 statement:
+
+* `MConvexComb.exists_suppLeft` / `_suppRight` — a repetition-free list
+  enumerating the `X`-part (resp. `Y`-part) of the support of a combination
+  over `X ⊕ Z` (resp. `Z ⊕ Y`), via `List.filterMap Sum.getLeft?`.
+* `MConvexComb.exists_splitLeft` / `_splitRight` — the mass of a combination
+  over `X ⊕ 1` splits as `(⋁ₓ p(κ₁x)) ⋁ p(κ₂*) = 1`, and dually.
+* `MConvexComb.exists_glue` — the author's computation above.
+* `namespace DMKleisli`: `fn`/`hom`/`hom_ext` (the `TypeCat.Hom` plumbing),
+  `kpure` (the Kleisli inclusion `η ∘ k` of a function) with `comp_kpure`,
+  `kpure_comp`, `kpure_id`, `kpure_kpure`; `one M = PUnit` with
+  `isTerminalOne`, `isInitialEmpty` (`PEmpty`), `sumDesc`/`isColimitSum`
+  (`X ⊕ Y` with `kpure κᵢ`), the `CoprodPres` `pres`, and then
+  `isPullback_plus`, `isPullback_kappa`, `jointlyMonic_cotuples`, `effectus`.
+
+`exc_dm_effectus_kleisli` is now `DMKleisli.effectus M`.
+
+### 3. Divergences from the author's argument (case 3 — different order, not different mathematics)
+
+* The author justifies the coproduct by "for any category `C` and monad `T`,
+  the inclusion `K : C → Kl T` is a left adjoint and so preserves colimits".
+  **Mathlib has that adjunction** (`CategoryTheory.Kleisli.Adjunction.adj`),
+  but it is *not* used: the coproduct is quicker to give by hand
+  (`sumDesc = Sum.elim` on underlying functions) than to extract from the
+  adjunction, because Mathlib's `BinaryCofan.mk` does not reduce reducibly to
+  the given coprojections and the transport costs more than the direct
+  construction.  Recorded so the shortcut is not re-hunted.
+* The author's `𝒟_M 1 ≅ 1` is used in the sharper form `𝒟_M 1 = 1`:
+  `MConvexComb.eq_eta_punit` says every combination over `PUnit` *is* the
+  Dirac one, so `PUnit` is final on the nose and no comparison iso is needed.
+* Joint monicity is not re-proved: `MConvexComb.jointly_injective_of_three`
+  (session 7, for `AConv_M`) is exactly the author's `1+1+1` computation and
+  is reused verbatim.
+
+### 4. Six helpers moved up the file — no statement changed
+
+`MConvexComb.eq_eta_punit`, `MConvexComb.map_apply_of_unique_fiber`,
+`PCM.le_of_mem_isSumOf`, `MConvexComb.eq_zero_of_map_eq_zero`,
+`MConvexComb.exists_map_inl` and `MConvexComb.jointly_injective_of_three` were
+stated in the `AConv_M` block (parsecs 193–194) and are needed by 192III.3,
+which is earlier.  They are moved verbatim to just after the `MConvexComb`
+section and before the `𝒟_M` monad; all six have fully explicit binders, so
+the move is a pure cut-and-paste and their `AConv_M` uses are unaffected.
+`MConvexComb.map_inl_apply_inr` (`:6545` before the move) is the *same*
+statement as a helper this session needed and could not use for the same
+reason; rather than move a seventh declaration it is inlined as a two-line
+`have` inside `isPullback_kappa`.  Worth consolidating in a later sweep.
+
+### 5. Two Lean traps worth keeping
+
+* **`DMKleisli.pres` must be `@[reducible]`.**  `CoprodPres` is a structure;
+  if the instance is an ordinary `def`, `(pres M).T.of` does not unfold at
+  reducible transparency, so every `rw` of a `kpure` lemma against a goal
+  mentioning `(pres M).T` fails.  The error message is misleading: it reports
+  "did not find an occurrence of the pattern" and only the *Full error* line
+  underneath shows the real cause, an application type mismatch
+  `Y.of → PUnit` vs `Y.of → (pres M).T.of`.
+* `MConvexComb.map_apply_of_unique_fiber` and `eq_zero_of_map_eq_zero` must be
+  applied with the map and the target point **explicit**; with `_` for them
+  the fibre-condition subgoal is stated in metavariables and `simp` cannot
+  discharge it.
+
+### 6. Costings for the three items this worker did not close
+
+* **`finite_effectMonoid_boolean` (178III.2)** — reclassified from *literature
+  park* to **the best next target in `EffectAlgebras.lean`**.  It is cited to
+  \[basmsc, prop. 40] and has no proof to transcribe, but most of prop. 40 is
+  already in the file: `emon_finite_idem` (`:2731`) gives idempotence of every
+  element of a finite effect monoid, the proof of
+  `finite_effectMonoid_commutative` (`:2763`) shows `a ⊙ b` *is* the meet, and
+  the MSc sup/inf calculus (`msc_prop13_*`, `msc_cor14_*`, `msc_prop15*`,
+  `msc_cor16_*`, `:1224`–`:1400`) is formalized.  Missing: the join
+  `a ⊔ b := (aᵖ ⊙ bᵖ)ᵖ`, distributivity (route: `EffectMonoid.distrib` for
+  orthogonal joins plus `b ⊔ c = b ⋁ (c ⊙ bᵖ)`), `Perp a b ↔ a ⊙ b = 0` (a
+  consequence of distributivity), and finally the *structure* equality
+  `@booleanEffectMonoid M ba = em`, whose data fields are `Perp`, `ovee`,
+  `zero`, `one`, `orth`, `mul`.  **~250–400 lines.**
+* **`cancellative_iso_convex` (192V.4)** — unchanged: cited to
+  \[statesofconvexsets, thm. 8], nothing in the tree helps beyond
+  `MConvex.ofConvex` and the `rsum` API, **~500–600 lines** as an independent
+  project.  Still QUESTIONS **A3**.
+* **`effectModule_unitInterval_representation` (179III.2)** — should **not**
+  be attacked: our statement is weaker than the cited Gudder–Pulmannová
+  result (no order-unit condition, no scalar compatibility), so proving it as
+  written would not be proving the theorem.  Blocked on the A3 ruling.
+
+### 7. Corrections to the record
+
+* **QUESTIONS A3 was already correct**, not stale: the note trimming
+  `finite_effectMonoid_commutative` and `exists_noncommutative_effectMonoid`
+  from it was added on 2026-08-17.  Only `finite_effectMonoid_boolean`,
+  `cancellative_iso_convex` and 179III.2 remain in the B/Eff part of A3, and
+  the first of those is now recorded as a target rather than a park.
+* **`StatesPredicates.lean`'s file header is stale.**  It says the functorial
+  action `map` and the multiplication `mu` "are obtained by choice from
+  `sorry`-ed unique-existence lemmas (FIXME(choice))".  `MConvexComb.exists_map`
+  (`:1956`) and `exists_mu` (`:2124`) are **both proved**; only the *use of
+  choice* remains, not any `sorry`.  Left for the doc-comment sweep.
+* `docs/why-open.csv`: the `exc_dm_effectus_kleisli` row is deleted and the
+  `finite_effectMonoid_boolean` row is re-costed from `cited` to `costed`.
+* Nothing for ERRATA: the author's solution is correct as printed.

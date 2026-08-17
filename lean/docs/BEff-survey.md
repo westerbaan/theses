@@ -14,6 +14,12 @@
 > hypothetical examples are *still* gated on a transport of the new concrete
 > structure to the arbitrary `s` of their statements.  See PROVING-LOG,
 > session 83.
+>
+> **Session 83, second worker.**  `exc_dm_effectus_kleisli` (192III.3) is also
+> CLOSED, from the author's solution at `bsols.tex:1991–2170`, which is
+> complete and usable as written.  With both closures B/Eff is at **12**
+> `sorry`s (`VNExamples` 9, `StatesPredicates` **1**, `EffectAlgebras` 2), 0
+> errors.  See the `StatesPredicates.lean` section below.
 
 **Headline count (session 82): B/Eff had 15 code `sorry`s.**  Per file, each source run
 through `lean` individually with `LEAN_PATH` set (never `lake env lean`), and
@@ -25,7 +31,7 @@ import line, which is not a defect in this directory — retry, do not debug.)
 | file | lines | `sorry` | errors |
 |---|---|---|---|
 | `VNExamples.lean` | 408 (now 2167) | **11** (now **9**) | 0 |
-| `StatesPredicates.lean` | 7500 | **1** | 0 |
+| `StatesPredicates.lean` | 7216 (now 7723) | **2** (now **1**) | 0 |
 | `EffectAlgebras.lean` | 3088 | **2** | 0 |
 | `Comparisons.lean` | 1903 | 0 | 0 |
 | `Dagger.lean` | 2572 | 0 | 0 |
@@ -33,7 +39,7 @@ import line, which is not a defect in this directory — retry, do not debug.)
 | `Quotients.lean` | 1427 | 0 | 0 |
 | `Effectus.lean` | 2783 | 0 | 0 |
 | `WStarCat.lean` | 292 | 0 | 0 |
-| **total** | | **14** | **0** |
+| **total** | | **12** | **0** |
 
 The import chain is linear:
 `EffectAlgebras + WStarCat → Effectus → StatesPredicates → Quotients →
@@ -106,8 +112,8 @@ work upstream.
 
 | classification | statements |
 |---|---|
-| **proved (session 83)** | `exc_dm_effectus_kleisli` |
-| **reachable, live target** | `effectus_vn` + `effectus_vn_partial` (long); `finite_effectMonoid_boolean` |
+| **proved (session 83)** | `exc_dm_effectus_kleisli`; `effectus_vn` + `effectus_vn_partial` |
+| **reachable, live target** | `finite_effectMonoid_boolean`; `effects_sea` (225V) |
 | **blocked on the root 180V** | the eight hypothetical vN examples below |
 | **blocked outside B/Eff** | `vn_is_andthen_eff` (A/Proc 105V + missing import); `vn_is_dagger_category` (via 211IV) |
 | **awaiting a ruling / literature park** | `effectModule_unitInterval_representation`, `cancellative_iso_convex` (both QUESTIONS **A3**) |
@@ -256,9 +262,9 @@ for anyone who does not want to build 180V.*
 * **`exc_dm_effectus_kleisli` (192III.3, `exc-dm-effectus`, eff.tex:2410,
   Exercise\*)** — **PROVED, session 83**, by transcribing the author's
   solution (`bsols.tex:1991–2170`), which is complete and usable exactly as
-  the survey described it.  The costing of ~500–700 lines was ~2× too high:
-  **~480 added lines**, of which ~190 are the `MConvexComb` glue and ~290 the
-  Kleisli plumbing and the three axioms.  Notes for anyone building on it:
+  the survey described it, and the costing of ~500–700 lines was right at its
+  low end: **~480 added lines**, of which ~190 are the `MConvexComb` glue and
+  ~290 the Kleisli plumbing and the three axioms.  Notes for anyone building on it:
   * The new section `DMKleisli` gives `Kl(𝒟_M)` a concrete `CoprodPres`
     (`one M = PUnit`, `P X Y = X ⊕ Y`, `pinl/pinr = kpure κᵢ`) together with
     `HasTerminal`/`HasFiniteCoproducts`, and the three axioms go through

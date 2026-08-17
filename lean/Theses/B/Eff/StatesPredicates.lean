@@ -3009,6 +3009,391 @@ end Real
 
 end MConvexComb
 
+/-! ### Helpers on `𝒟_M`
+
+These six lemmas were originally stated further down, next to their uses for
+`AConv_M` (parsecs 193–194).  They are stated here because **192III.3**
+(`exc_dm_effectus_kleisli`, below) needs them earlier; nothing about them
+changed in the move. -/
+
+/-- `𝒟_M` of a one-element set is a one-element set: every formal
+`M`-convex combination over `PUnit` is the Dirac one.  (This holds also for
+the trivial effect monoid `1 = 0`, where both sides are the zero function —
+cf. QUESTIONS B7.) -/
+theorem MConvexComb.eq_eta_punit {M : Type u} [EffectMonoid M]
+    (p : MConvexComb M PUnit.{v + 1}) : p = MConvexComb.eta PUnit.unit := by
+  classical
+  have hval : ∀ z : PUnit.{v + 1},
+      (MConvexComb.eta PUnit.unit : MConvexComb M PUnit.{v + 1}).toFun z =
+        (1 : M) := fun z => if_pos rfl
+  by_cases h1 : (1 : M) = 0
+  · refine MConvexComb.ext (funext fun z => ?_)
+    rw [eq_zero_of_one_eq_zero h1 (p.toFun z),
+      eq_zero_of_one_eq_zero h1
+        ((MConvexComb.eta PUnit.unit : MConvexComb M PUnit.{v + 1}).toFun z)]
+  · obtain ⟨l, hnd, hmem, hs⟩ := p.sum_one
+    have hone : p.toFun PUnit.unit = 1 := by
+      match l, hnd, hs with
+      | [], _, hs => exact absurd (PCM.isSumOf_nil_iff.mp hs) h1
+      | [_], _, hs => exact (eq_of_isSumOf_singleton hs).symm
+      | _ :: _ :: _, hnd, _ =>
+          exact absurd (List.mem_cons_self ..) (List.nodup_cons.mp hnd).1
+    exact MConvexComb.ext (funext fun z => by rw [hval z]; exact hone)
+
+/-- Helper: the value of `𝒟_M f (p)` at a point `y` whose `f`-fibre is the
+single point `x₀` is `p(x₀)`. -/
+theorem MConvexComb.map_apply_of_unique_fiber {M : Type u} [EffectMonoid M]
+    {X : Type v} {Y : Type w} (p : MConvexComb M X) (f : X → Y) {y : Y} {x₀ : X}
+    (h : ∀ x, f x = y ↔ x = x₀) : (p.map f).toFun y = p.toFun x₀ := by
+  classical
+  by_cases hz : p.toFun x₀ = 0
+  · have hm : ∀ x, x ∈ ([] : List X) ↔ (p.toFun x ≠ 0 ∧ f x = y) := by
+      intro x
+      simp only [List.not_mem_nil, false_iff, not_and]
+      intro hx hfx
+      exact hx (by rw [(h x).mp hfx]; exact hz)
+    have hsp := MConvexComb.map_spec p f y [] List.nodup_nil hm
+    rw [List.map_nil, PCM.isSumOf_nil_iff] at hsp
+    rw [hsp, hz]
+  · have hm : ∀ x, x ∈ [x₀] ↔ (p.toFun x ≠ 0 ∧ f x = y) := by
+      intro x
+      rw [List.mem_singleton]
+      refine ⟨fun hx => ?_, fun hx => (h x).mp hx.2⟩
+      rw [hx]
+      exact ⟨hz, (h x₀).mpr rfl⟩
+    have hsp := MConvexComb.map_spec p f y [x₀] (List.nodup_singleton x₀) hm
+    rw [List.map_cons, List.map_nil] at hsp
+    exact eq_of_isSumOf_singleton hsp
+
+/-- Helper: every entry of a summable list is below the sum. -/
+theorem PCM.le_of_mem_isSumOf {M : Type u} [PCM M] {A : Type v} (f : A → M)
+    {l : List A} {a : A} (ha : a ∈ l) {s : M}
+    (h : PCM.IsSumOf (l.map f) s) : f a ≼ s := by
+  classical
+  have hperm : (l.map f).Perm (f a :: (l.erase a).map f) := by
+    have := (List.perm_cons_erase ha).map f
+    simpa using this
+  exact PCM.le_of_isSumOf_cons (PCM.isSumOf_perm hperm h)
+
+/-- Helper: if `𝒟_M f (p)` vanishes at `y`, then `p` vanishes on the whole
+`f`-fibre of `y`. -/
+theorem MConvexComb.eq_zero_of_map_eq_zero {M : Type u} [EffectMonoid M]
+    {X : Type v} {Y : Type w} (p : MConvexComb M X) (f : X → Y) {y : Y}
+    (h : (p.map f).toFun y = 0) {x : X} (hx : f x = y) : p.toFun x = 0 := by
+  classical
+  by_contra hne
+  obtain ⟨l, hnd, hmem, -⟩ := p.sum_one
+  have hmemfib : ∀ x' : X,
+      x' ∈ l.filter (fun x' => decide (f x' = y)) ↔ (p.toFun x' ≠ 0 ∧ f x' = y) := by
+    intro x'
+    rw [List.mem_filter, hmem x']
+    simp
+  have hsp := MConvexComb.map_spec p f y _ (List.Nodup.filter _ hnd) hmemfib
+  rw [h] at hsp
+  exact hne (eq_zero_of_le_zero
+    (PCM.le_of_mem_isSumOf p.toFun ((hmemfib x).mpr ⟨hne, hx⟩) hsp))
+
+/-- Helper: a formal combination over `A + B` that vanishes on `B` is
+`𝒟_M κ₁` of a formal combination over `A`. -/
+theorem MConvexComb.exists_map_inl {M : Type u} [EffectMonoid M]
+    {A B : Type v} (p : MConvexComb M (A ⊕ B))
+    (h : ∀ b : B, p.toFun (Sum.inr b) = 0) :
+    ∃ χ : MConvexComb M A, χ.map Sum.inl = p := by
+  classical
+  obtain ⟨l, hnd, hmem, hs⟩ := p.sum_one
+  have hall : ∀ z ∈ l, ∃ a : A, z = Sum.inl a := by
+    rintro (a | b) hz
+    · exact ⟨a, rfl⟩
+    · exact absurd (h b) ((hmem _).mp hz)
+  have hll : ∀ L : List (A ⊕ B), (∀ z ∈ L, ∃ a : A, z = Sum.inl a) →
+      (L.filterMap Sum.getLeft?).map Sum.inl = L := by
+    intro L
+    induction L with
+    | nil => intro _; rfl
+    | cons z L ih =>
+        intro hz
+        obtain ⟨a, rfl⟩ := hz z List.mem_cons_self
+        rw [List.filterMap_cons]
+        simp only [Sum.getLeft?_inl, List.map_cons, List.cons.injEq, true_and]
+        exact ih fun w hw => hz w (List.mem_cons_of_mem _ hw)
+  have hl' : (l.filterMap Sum.getLeft?).map Sum.inl = l := hll l hall
+  have hinj : Function.Injective (Sum.inl : A → A ⊕ B) := fun _ _ h => by
+    simpa using h
+  have hmem' : ∀ a : A, a ∈ l.filterMap Sum.getLeft? ↔ p.toFun (Sum.inl a) ≠ 0 := by
+    intro a
+    rw [← hmem (Sum.inl a)]
+    constructor
+    · intro ha
+      rw [← hl']
+      exact List.mem_map_of_mem ha
+    · intro ha
+      rw [← hl'] at ha
+      obtain ⟨a', ha', he⟩ := List.mem_map.mp ha
+      rwa [hinj he] at ha'
+  have hsum : PCM.IsSumOf ((l.filterMap Sum.getLeft?).map
+      (fun a => p.toFun (Sum.inl a))) 1 := by
+    rw [show (l.filterMap Sum.getLeft?).map (fun a => p.toFun (Sum.inl a))
+        = ((l.filterMap Sum.getLeft?).map Sum.inl).map p.toFun from
+      (List.map_map ..).symm, hl']
+    exact hs
+  refine ⟨⟨fun a => p.toFun (Sum.inl a),
+    ⟨l.filterMap Sum.getLeft?, ?_, hmem', hsum⟩⟩, ?_⟩
+  · exact List.Nodup.of_map Sum.inl (hl' ▸ hnd)
+  · refine MConvexComb.ext (funext fun z => ?_)
+    rcases z with a | b
+    · exact MConvexComb.map_apply_of_unique_fiber _ Sum.inl
+        (fun x => ⟨fun hx => (hinj hx), fun hx => by rw [hx]⟩)
+    · have hsp := MConvexComb.map_spec (⟨fun a => p.toFun (Sum.inl a),
+        ⟨l.filterMap Sum.getLeft?, List.Nodup.of_map Sum.inl (hl' ▸ hnd),
+          hmem', hsum⟩⟩ : MConvexComb M A) Sum.inl (Sum.inr b) []
+        List.nodup_nil (fun x => by simp)
+      rw [List.map_nil, PCM.isSumOf_nil_iff] at hsp
+      rw [hsp, h b]
+
+/-- Helper for 194I.3: the thesis's computation with `1+1+1` as the set of
+triples `(a,b,c) ∈ M³` with `a ⋁ b ⋁ c = 1`.  If `A` has exactly the three
+elements `a₁,a₂,a₃` and `σ₁,σ₂ : A → B` single out `a₁` resp. `a₂` over a
+point `b₁ ∈ B`, then `𝒟_M σ₁` and `𝒟_M σ₂` are jointly injective: they
+determine the first two coordinates, and the third is the orthocomplement of
+their sum. -/
+theorem MConvexComb.jointly_injective_of_three {M : Type u} [EffectMonoid M]
+    {A : Type v} {B : Type w} {a₁ a₂ a₃ : A} {b₁ : B}
+    (hA : ∀ x : A, x = a₁ ∨ x = a₂ ∨ x = a₃)
+    (h12 : a₁ ≠ a₂) (h13 : a₁ ≠ a₃) (h23 : a₂ ≠ a₃)
+    {σ₁ σ₂ : A → B}
+    (hs₁ : ∀ x : A, σ₁ x = b₁ ↔ x = a₁) (hs₂ : ∀ x : A, σ₂ x = b₁ ↔ x = a₂)
+    {p q : MConvexComb M A}
+    (e₁ : p.map σ₁ = q.map σ₁) (e₂ : p.map σ₂ = q.map σ₂) : p = q := by
+  classical
+  -- the first two coordinates are read off from `𝒟_M σ₁` and `𝒟_M σ₂`
+  have hv₁ : p.toFun a₁ = q.toFun a₁ := by
+    rw [← MConvexComb.map_apply_of_unique_fiber p σ₁ hs₁,
+      ← MConvexComb.map_apply_of_unique_fiber q σ₁ hs₁, e₁]
+  have hv₂ : p.toFun a₂ = q.toFun a₂ := by
+    rw [← MConvexComb.map_apply_of_unique_fiber p σ₂ hs₂,
+      ← MConvexComb.map_apply_of_unique_fiber q σ₂ hs₂, e₂]
+  -- the three coordinates sum to `1`
+  have hnd : ([a₁, a₂, a₃] : List A).Nodup := by
+    simp [h12, h13, h23]
+  have hsum : ∀ r : MConvexComb M A,
+      PCM.IsSumOf (([a₁, a₂, a₃] : List A).map r.toFun) 1 := by
+    intro r
+    obtain ⟨l, hndl, hmem, hs⟩ := r.sum_one
+    refine isSumOf_map_of_support r.toFun hndl hnd (fun x hx => (hmem x).mpr hx)
+      (fun x _ => ?_) hs
+    rcases hA x with rfl | rfl | rfl <;> simp
+  -- so the third is the orthocomplement of the sum of the first two
+  have hthird : ∀ r : MConvexComb M A, ∃ hp : Perp (r.toFun a₁) (r.toFun a₂),
+      r.toFun a₃ = orth (ovee (r.toFun a₁) (r.toFun a₂) hp) := by
+    intro r
+    obtain ⟨t, ht, hpt, het⟩ := PCM.isSumOf_cons_iff.mp (hsum r)
+    obtain ⟨s, hs', hps, hes⟩ := PCM.isSumOf_cons_iff.mp ht
+    have hsv : s = r.toFun a₃ := eq_of_isSumOf_singleton hs'
+    subst hsv
+    subst hes
+    obtain ⟨hab, h', he'⟩ := PCM.assoc_left hps hpt
+    exact ⟨hab, (EffectAlgebra.orth_unique h' (he'.trans het)).symm ▸ rfl⟩
+  obtain ⟨hpp, hp3⟩ := hthird p
+  obtain ⟨hqq, hq3⟩ := hthird q
+  have hv₃ : p.toFun a₃ = q.toFun a₃ := by
+    rw [hp3, hq3, PCM.ovee_congr hv₁ hv₂ hpp hqq]
+  refine MConvexComb.ext (funext fun x => ?_)
+  rcases hA x with rfl | rfl | rfl
+  · exact hv₁
+  · exact hv₂
+  · exact hv₃
+
+namespace MConvexComb
+
+variable {M : Type u} [EffectMonoid M] {X Y : Type v}
+
+/-- Helper: a repetition-free list enumerating the `X`-part of the support of
+a formal combination over `X ⊕ Z`. -/
+theorem exists_suppLeft {Z : Type v} (p : MConvexComb M (X ⊕ Z)) :
+    ∃ L : List X, L.Nodup ∧ ∀ x, x ∈ L ↔ p.toFun (Sum.inl x) ≠ 0 := by
+  classical
+  obtain ⟨l, hnd, hmem, -⟩ := p.sum_one
+  refine ⟨l.filterMap Sum.getLeft?, List.Nodup.filterMap ?_ hnd, fun x => ?_⟩
+  · intro a a' b hb hb'
+    rw [Option.mem_def, Sum.getLeft?_eq_some_iff] at hb hb'
+    rw [hb, hb']
+  · rw [← hmem (Sum.inl x)]
+    constructor
+    · intro hx
+      obtain ⟨w, hw, hwx⟩ := List.mem_filterMap.mp hx
+      rwa [Sum.getLeft?_eq_some_iff.mp hwx] at hw
+    · intro hx
+      exact List.mem_filterMap.mpr ⟨Sum.inl x, hx, Sum.getLeft?_inl⟩
+
+/-- Helper: a repetition-free list enumerating the `Y`-part of the support of
+a formal combination over `Z ⊕ Y`. -/
+theorem exists_suppRight {Z : Type v} (p : MConvexComb M (Z ⊕ Y)) :
+    ∃ L : List Y, L.Nodup ∧ ∀ y, y ∈ L ↔ p.toFun (Sum.inr y) ≠ 0 := by
+  classical
+  obtain ⟨l, hnd, hmem, -⟩ := p.sum_one
+  refine ⟨l.filterMap Sum.getRight?, List.Nodup.filterMap ?_ hnd, fun y => ?_⟩
+  · intro a a' b hb hb'
+    rw [Option.mem_def, Sum.getRight?_eq_some_iff] at hb hb'
+    rw [hb, hb']
+  · rw [← hmem (Sum.inr y)]
+    constructor
+    · intro hy
+      obtain ⟨w, hw, hwy⟩ := List.mem_filterMap.mp hy
+      rwa [Sum.getRight?_eq_some_iff.mp hwy] at hw
+    · intro hy
+      exact List.mem_filterMap.mpr ⟨Sum.inr y, hy, Sum.getRight?_inr⟩
+
+
+/-- The mass of a formal combination over `X ⊕ 1` splits as
+`(⋁ₓ p(κ₁x)) ⋁ p(κ₂*) = 1`. -/
+theorem exists_splitLeft (p : MConvexComb M (X ⊕ PUnit.{v + 1})) {L : List X}
+    (hnd : L.Nodup) (hmem : ∀ x, x ∈ L ↔ p.toFun (Sum.inl x) ≠ 0) :
+    ∃ (s : M) (_ : PCM.IsSumOf (L.map (fun x => p.toFun (Sum.inl x))) s)
+      (hp : Perp s (p.toFun (Sum.inr PUnit.unit))),
+      ovee s (p.toFun (Sum.inr PUnit.unit)) hp = 1 := by
+  classical
+  obtain ⟨l, hndl, hmeml, hsum⟩ := p.sum_one
+  have hnd' : ((L.map Sum.inl) ++ [Sum.inr (PUnit.unit : PUnit.{v + 1})]).Nodup := by
+    refine List.Nodup.append (hnd.map (fun a b h => by simpa using h))
+      (List.nodup_singleton _) ?_
+    intro a ha ha'
+    simp only [List.mem_map, List.mem_singleton] at ha ha'
+    obtain ⟨x, -, rfl⟩ := ha
+    exact absurd ha' (by simp)
+  have hs' : ∀ w, p.toFun w ≠ 0 → w ∈ (L.map Sum.inl) ++ [Sum.inr (PUnit.unit : PUnit.{v + 1})] := by
+    rintro (x | t) hw
+    · exact List.mem_append_left _ (List.mem_map_of_mem ((hmem x).mpr hw))
+    · exact List.mem_append_right _ (by cases t; exact List.mem_singleton_self _)
+  have h2 := isSumOf_map_of_support p.toFun hndl hnd' (fun w hw => (hmeml w).mpr hw) hs' hsum
+  simp only [List.map_append, List.map_map, Function.comp_def, List.map_cons,
+    List.map_nil] at h2
+  obtain ⟨s₁, s₂, k₁, k₂, hp, hov⟩ := isSumOf_split h2
+  have he : s₂ = p.toFun (Sum.inr PUnit.unit) := eq_of_isSumOf_singleton k₂
+  subst he
+  exact ⟨s₁, k₁, hp, hov⟩
+
+/-- The mass of a formal combination over `1 ⊕ Y` splits as
+`p(κ₁*) ⋁ (⋁_y p(κ₂y)) = 1`. -/
+theorem exists_splitRight (p : MConvexComb M (PUnit.{v + 1} ⊕ Y)) {L : List Y}
+    (hnd : L.Nodup) (hmem : ∀ y, y ∈ L ↔ p.toFun (Sum.inr y) ≠ 0) :
+    ∃ (s : M) (_ : PCM.IsSumOf (L.map (fun y => p.toFun (Sum.inr y))) s)
+      (hp : Perp (p.toFun (Sum.inl PUnit.unit)) s),
+      ovee (p.toFun (Sum.inl PUnit.unit)) s hp = 1 := by
+  classical
+  obtain ⟨l, hndl, hmeml, hsum⟩ := p.sum_one
+  have hnd' : ([Sum.inl (PUnit.unit : PUnit.{v + 1})] ++ (L.map Sum.inr)).Nodup := by
+    refine List.Nodup.append (List.nodup_singleton _)
+      (hnd.map (fun a b h => by simpa using h)) ?_
+    intro a ha ha'
+    simp only [List.mem_map, List.mem_singleton] at ha ha'
+    obtain ⟨y, -, rfl⟩ := ha'
+    exact absurd ha (by simp)
+  have hs' : ∀ w, p.toFun w ≠ 0 →
+      w ∈ [Sum.inl (PUnit.unit : PUnit.{v + 1})] ++ (L.map Sum.inr) := by
+    rintro (t | y) hw
+    · exact List.mem_append_left _ (by cases t; exact List.mem_singleton_self _)
+    · exact List.mem_append_right _ (List.mem_map_of_mem ((hmem y).mpr hw))
+  have h2 := isSumOf_map_of_support p.toFun hndl hnd' (fun w hw => (hmeml w).mpr hw) hs' hsum
+  simp only [List.map_append, List.map_map, Function.comp_def, List.map_cons,
+    List.map_nil] at h2
+  obtain ⟨s₁, s₂, k₁, k₂, hp, hov⟩ := isSumOf_split h2
+  have he : s₁ = p.toFun (Sum.inl PUnit.unit) := eq_of_isSumOf_singleton k₁
+  subst he
+  exact ⟨s₂, k₂, hp, hov⟩
+
+
+/-- The elementwise content of the left-hand pullback square of 180I in
+`Kl(𝒟_M)` (`bsols.tex:2119`): if `α ∈ 𝒟_M(X+1)` and `β ∈ 𝒟_M(1+Y)` agree in
+`𝒟_M(1+1)`, then `δ(κ₁x) = α(κ₁x)`, `δ(κ₂y) = β(κ₂y)` defines an element of
+`𝒟_M(X+Y)` — the coefficients still add up to `1` because
+`α(κ₂*) = ⋁_y β(κ₂y)`. -/
+theorem exists_glue (α : MConvexComb M (X ⊕ PUnit.{v + 1}))
+    (β : MConvexComb M (PUnit.{v + 1} ⊕ Y))
+    (h : α.map (Sum.map (fun _ => PUnit.unit) _root_.id)
+      = β.map (Sum.map _root_.id (fun _ => PUnit.unit))) :
+    ∃ δ : MConvexComb M (X ⊕ Y),
+      δ.map (Sum.map _root_.id (fun _ => PUnit.unit)) = α ∧
+      δ.map (Sum.map (fun _ => PUnit.unit) _root_.id) = β := by
+  classical
+  obtain ⟨LX, hndX, hmemX⟩ := exists_suppLeft α
+  obtain ⟨LY, hndY, hmemY⟩ := exists_suppRight β
+  obtain ⟨s₁, hs₁, hp₁, hov₁⟩ := exists_splitLeft α hndX hmemX
+  obtain ⟨t₂, ht₂, hpβ, hovβ⟩ := exists_splitRight β hndY hmemY
+  have hndXl : (LX.map (Sum.inl : X → X ⊕ Y)).Nodup :=
+    hndX.map (fun a b hb => by simpa using hb)
+  have hndYr : (LY.map (Sum.inr : Y → X ⊕ Y)).Nodup :=
+    hndY.map (fun a b hb => by simpa using hb)
+  -- `α(κ₂*) = ⋁_y β(κ₂y)`, the author's first computation
+  have hαr : (α.map (Sum.map (fun _ => PUnit.unit) _root_.id)).toFun
+      (Sum.inr PUnit.unit) = α.toFun (Sum.inr PUnit.unit) :=
+    map_apply_of_unique_fiber α _ (by rintro (x | t) <;> simp)
+  have hβr := map_spec β (Sum.map _root_.id (fun _ => PUnit.unit))
+      (Sum.inr (PUnit.unit : PUnit.{v + 1})) (LY.map Sum.inr)
+      (hndY.map (fun a b hb => by simpa using hb)) (by
+        rintro (t | y)
+        · simp
+        · simp [hmemY y])
+  simp only [List.map_map, Function.comp_def] at hβr
+  have hkey : t₂ = α.toFun (Sum.inr PUnit.unit) := by
+    rw [← hαr, h]
+    exact isSumOf_unique ht₂ hβr
+  -- the glued combination
+  obtain ⟨δ, hδl, hδr⟩ : ∃ δ : MConvexComb M (X ⊕ Y),
+      (∀ x, δ.toFun (Sum.inl x) = α.toFun (Sum.inl x)) ∧
+      (∀ y, δ.toFun (Sum.inr y) = β.toFun (Sum.inr y)) := by
+    refine ⟨⟨Sum.elim (fun x => α.toFun (Sum.inl x)) (fun y => β.toFun (Sum.inr y)),
+      ⟨LX.map Sum.inl ++ LY.map Sum.inr, ?_, ?_, ?_⟩⟩, fun _ => rfl, fun _ => rfl⟩
+    · refine List.Nodup.append hndXl hndYr ?_
+      intro a ha ha'
+      simp only [List.mem_map] at ha ha'
+      obtain ⟨x, -, rfl⟩ := ha
+      obtain ⟨y, -, hy⟩ := ha'
+      exact absurd hy (by simp)
+    · rintro (x | y)
+      · simp [hmemX x]
+      · simp [hmemY y]
+    · have hp : Perp s₁ t₂ := hkey ▸ hp₁
+      have hsum := isSumOf_append hs₁ ht₂ hp
+      simp only [List.map_append, List.map_map, Function.comp_def, Sum.elim_inl,
+        Sum.elim_inr]
+      exact isSumOf_congr hsum ((PCM.ovee_congr rfl hkey hp hp₁).trans hov₁)
+  refine ⟨δ, ?_, ?_⟩
+  · refine MConvexComb.ext (funext fun w => ?_)
+    rcases w with x | t
+    · rw [map_apply_of_unique_fiber δ _ (x₀ := Sum.inl x) (by rintro (x' | y') <;> simp)]
+      exact hδl x
+    · cases t
+      have hsp := map_spec δ (Sum.map _root_.id (fun _ => PUnit.unit))
+        (Sum.inr (PUnit.unit : PUnit.{v + 1})) (LY.map Sum.inr) hndYr (by
+          rintro (x | y)
+          · simp
+          · simp [hδr y, hmemY y])
+      simp only [List.map_map, Function.comp_def] at hsp
+      rw [show (fun y => δ.toFun (Sum.inr y)) = (fun y => β.toFun (Sum.inr y)) from
+        funext hδr] at hsp
+      exact (isSumOf_unique hsp ht₂).trans hkey
+  · refine MConvexComb.ext (funext fun w => ?_)
+    rcases w with t | y
+    · cases t
+      have hsp := map_spec δ (Sum.map (fun _ => PUnit.unit) _root_.id)
+        (Sum.inl (PUnit.unit : PUnit.{v + 1})) (LX.map Sum.inl) hndXl (by
+          rintro (x | y)
+          · simp [hδl x, hmemX x]
+          · simp)
+      simp only [List.map_map, Function.comp_def] at hsp
+      rw [show (fun x => δ.toFun (Sum.inl x)) = (fun x => α.toFun (Sum.inl x)) from
+        funext hδl] at hsp
+      have e1 : s₁ = orth (α.toFun (Sum.inr PUnit.unit)) :=
+        EffectAlgebra.orth_unique (PCM.perp_comm hp₁) ((PCM.ovee_comm hp₁).symm.trans hov₁)
+      have e2 : β.toFun (Sum.inl PUnit.unit) = orth t₂ :=
+        EffectAlgebra.orth_unique (PCM.perp_comm hpβ) ((PCM.ovee_comm hpβ).symm.trans hovβ)
+      rw [isSumOf_unique hsp hs₁, e1, e2, hkey]
+    · rw [map_apply_of_unique_fiber δ _ (x₀ := Sum.inr y) (by rintro (x' | y') <;> simp)]
+      exact hδr y
+
+
+end MConvexComb
+
 section DMMonad
 
 variable (M : Type u) [EffectMonoid M]
@@ -3086,6 +3471,308 @@ noncomputable def exc_dm_effectus_monad : Monad (Type u) where
     TypeCat.Hom.hom ((exc_dm_effectus_monad M).μ.app X) Φ =
       MConvexComb.mu Φ := rfl
 
+end DMMonad
+
+namespace DMKleisli
+
+variable {M : Type u} [EffectMonoid M]
+
+/-- The Kleisli category of `𝒟_M`. -/
+abbrev Kl (M : Type u) [EffectMonoid M] := Kleisli (exc_dm_effectus_monad M)
+
+/-- The object of `Kl M` on a set `X`. -/
+abbrev ob (M : Type u) [EffectMonoid M] (X : Type u) : Kl M := Kleisli.mk _ X
+
+/-- The underlying function `X → 𝒟_M Y` of an arrow of `Kl M`. -/
+def fn {X Y : Kl M} (f : X ⟶ Y) : X.of → MConvexComb M Y.of :=
+  fun x => TypeCat.Hom.hom f.of x
+
+/-- An arrow of `Kl M` from a function `X → 𝒟_M Y`. -/
+def hom {X Y : Kl M} (f : X.of → MConvexComb M Y.of) : X ⟶ Y := ⟨TypeCat.ofHom f⟩
+
+@[simp] theorem fn_hom {X Y : Kl M} (f : X.of → MConvexComb M Y.of) (x : X.of) :
+    fn (hom f) x = f x := rfl
+
+theorem hom_ext {X Y : Kl M} {f g : X ⟶ Y} (h : ∀ x, fn f x = fn g x) : f = g :=
+  Kleisli.hom_ext (TypeCat.homEquiv.injective (funext h))
+
+theorem fn_comp {X Y Z : Kl M} (f : X ⟶ Y) (g : Y ⟶ Z) (x : X.of) :
+    fn (f ≫ g) x = MConvexComb.mu ((fn f x).map (fn g)) := rfl
+
+theorem fn_id {X : Kl M} (x : X.of) : fn (𝟙 X) x = MConvexComb.eta x := rfl
+
+/-- The image of a function under the Kleisli inclusion. -/
+noncomputable def kpure {X Y : Kl M} (k : X.of → Y.of) : X ⟶ Y :=
+  hom (fun x => MConvexComb.eta (k x))
+
+theorem comp_kpure {X Y Z : Kl M} (f : X ⟶ Y) (k : Y.of → Z.of) (x : X.of) :
+    fn (f ≫ kpure k) x = (fn f x).map k := by
+  rw [fn_comp]
+  show MConvexComb.mu ((fn f x).map (fun y => MConvexComb.eta (k y))) = _
+  rw [show (fun y => MConvexComb.eta (k y))
+      = (MConvexComb.eta ∘ k : Y.of → MConvexComb M Z.of) from rfl,
+    ← MConvexComb.map_comp]
+  exact MConvexComb.mu_map_eta _
+
+theorem kpure_comp {X Y Z : Kl M} (k : X.of → Y.of) (f : Y ⟶ Z) (x : X.of) :
+    fn (kpure k ≫ f) x = fn f (k x) := by
+  rw [fn_comp]
+  show MConvexComb.mu ((MConvexComb.eta (k x)).map (fn f)) = _
+  rw [MConvexComb.map_eta]
+  exact MConvexComb.mu_eta _
+
+theorem kpure_id {X : Kl M} : kpure (_root_.id : X.of → X.of) = 𝟙 X :=
+  hom_ext (fun _ => rfl)
+
+theorem kpure_kpure {X Y Z : Kl M} (k : X.of → Y.of) (k' : Y.of → Z.of) :
+    kpure k ≫ kpure k' = kpure (k' ∘ k) :=
+  hom_ext (fun x => by rw [kpure_comp]; rfl)
+
+
+/-! ### The concrete presentation: `1 = PUnit`, `X + Y = X ⊕ Y` -/
+
+/-- The one-point set, the final object of `Kl M`. -/
+abbrev one (M : Type u) [EffectMonoid M] : Kl M := ob M PUnit.{u + 1}
+
+noncomputable def isTerminalOne : IsTerminal (one M) :=
+  IsTerminal.ofUniqueHom (fun _ => hom (fun _ => MConvexComb.eta PUnit.unit))
+    (fun _ m => hom_ext (fun x => MConvexComb.eq_eta_punit (fn m x)))
+
+noncomputable def isInitialEmpty : IsInitial (ob M PEmpty.{u + 1}) :=
+  IsInitial.ofUniqueHom (fun _ => hom (fun e => e.elim))
+    (fun _ _ => hom_ext (fun e => e.elim))
+
+/-- Cotupling for the concrete coproduct `X ⊕ Y`. -/
+noncomputable def sumDesc {X Y T : Kl M} (f : X ⟶ T) (g : Y ⟶ T) :
+    ob M (X.of ⊕ Y.of) ⟶ T := hom (Sum.elim (fn f) (fn g))
+
+theorem inl_sumDesc {X Y T : Kl M} (f : X ⟶ T) (g : Y ⟶ T) :
+    kpure (Sum.inl : X.of → X.of ⊕ Y.of) ≫ sumDesc f g = f :=
+  hom_ext (fun x => by rw [kpure_comp]; rfl)
+
+theorem inr_sumDesc {X Y T : Kl M} (f : X ⟶ T) (g : Y ⟶ T) :
+    kpure (Sum.inr : Y.of → X.of ⊕ Y.of) ≫ sumDesc f g = g :=
+  hom_ext (fun y => by rw [kpure_comp]; rfl)
+
+theorem sumDesc_uniq {X Y T : Kl M} (f : X ⟶ T) (g : Y ⟶ T)
+    (m : ob M (X.of ⊕ Y.of) ⟶ T)
+    (h₁ : kpure (Sum.inl : X.of → X.of ⊕ Y.of) ≫ m = f)
+    (h₂ : kpure (Sum.inr : Y.of → X.of ⊕ Y.of) ≫ m = g) :
+    m = sumDesc f g := by
+  have e₁ : ∀ x : X.of, fn m (Sum.inl x) = fn f x := fun x => by
+    have h := congrArg (fun t : X ⟶ T => fn t x) h₁
+    rwa [kpure_comp] at h
+  have e₂ : ∀ y : Y.of, fn m (Sum.inr y) = fn g y := fun y => by
+    have h := congrArg (fun t : Y ⟶ T => fn t y) h₂
+    rwa [kpure_comp] at h
+  refine hom_ext (fun w => ?_)
+  rcases w with x | y
+  · exact e₁ x
+  · exact e₂ y
+
+/-- The coproduct `X ⊕ Y` in `Kl M`, with the coprojections `η ∘ κᵢ`. -/
+noncomputable def isColimitSum (X Y : Kl M) :
+    IsColimit (BinaryCofan.mk (P := ob M (X.of ⊕ Y.of))
+      (kpure (Sum.inl : X.of → X.of ⊕ Y.of)) (kpure (Sum.inr : Y.of → X.of ⊕ Y.of))) :=
+  BinaryCofan.IsColimit.mk _ (fun {_} f g => sumDesc f g)
+    (fun {_} f g => inl_sumDesc f g) (fun {_} f g => inr_sumDesc f g)
+    (fun {_} f g m h₁ h₂ => sumDesc_uniq f g m h₁ h₂)
+
+/-- The concrete presentation of the final object and the binary coproducts. -/
+@[reducible] noncomputable def pres (M : Type u) [EffectMonoid M] : CoprodPres (Kl M) where
+  T := one M
+  hT := isTerminalOne
+  P X Y := ob M (X.of ⊕ Y.of)
+  pinl _ _ := kpure Sum.inl
+  pinr _ _ := kpure Sum.inr
+  hP := isColimitSum
+
+@[simp] theorem pres_from (X : Kl M) :
+    (pres M).hT.from X = (kpure (fun _ => PUnit.unit) : X ⟶ (pres M).T) :=
+  (pres M).hT.hom_ext _ _
+
+
+/-! ### The three axioms of 180I at this presentation -/
+
+@[simp] theorem pres_T : (pres M).T = one M := rfl
+
+@[simp] theorem pres_pinl (X Y : Kl M) :
+    (pres M).pinl X Y = kpure (Sum.inl : X.of → X.of ⊕ Y.of) := rfl
+
+@[simp] theorem pres_pinr (X Y : Kl M) :
+    (pres M).pinr X Y = kpure (Sum.inr : Y.of → X.of ⊕ Y.of) := rfl
+
+theorem pres_desc_kpure {X Y Z : Kl M} (a : X.of → Z.of) (b : Y.of → Z.of) :
+    (pres M).desc (kpure a) (kpure b) = kpure (Sum.elim a b) := by
+  refine (pres M).hom_ext ?_ ?_
+  · rw [CoprodPres.inl_desc]
+    show kpure a = kpure (Sum.inl : X.of → X.of ⊕ Y.of) ≫ kpure (Sum.elim a b)
+    rw [kpure_kpure]
+    rfl
+  · rw [CoprodPres.inr_desc]
+    show kpure b = kpure (Sum.inr : Y.of → X.of ⊕ Y.of) ≫ kpure (Sum.elim a b)
+    rw [kpure_kpure]
+    rfl
+
+theorem pres_pmap_kpure {X X' Y Y' : Kl M} (a : X.of → X'.of) (b : Y.of → Y'.of) :
+    (pres M).pmap (kpure a) (kpure b) = kpure (Sum.map a b) := by
+  show (pres M).desc (kpure a ≫ kpure (Sum.inl : X'.of → X'.of ⊕ Y'.of))
+    (kpure b ≫ kpure (Sum.inr : Y'.of → X'.of ⊕ Y'.of)) = _
+  rw [kpure_kpure, kpure_kpure, pres_desc_kpure]
+  congr 1
+
+/-- The left pullback square of 180I in `Kl(𝒟_M)` (`bsols.tex:2119`). -/
+theorem isPullback_plus (X Y : Kl M) :
+    IsPullback ((pres M).pmap (𝟙 X) ((pres M).hT.from Y))
+      ((pres M).pmap ((pres M).hT.from X) (𝟙 Y))
+      ((pres M).pmap ((pres M).hT.from X) (𝟙 (pres M).T))
+      ((pres M).pmap (𝟙 (pres M).T) ((pres M).hT.from Y)) := by
+  have e1 : (pres M).pmap (𝟙 X) ((pres M).hT.from Y)
+      = kpure (Sum.map _root_.id (fun _ => PUnit.unit)) := by
+    rw [pres_from, ← kpure_id, pres_pmap_kpure]
+  have e2 : (pres M).pmap ((pres M).hT.from X) (𝟙 Y)
+      = kpure (Sum.map (fun _ => PUnit.unit) _root_.id) := by
+    rw [pres_from, ← kpure_id, pres_pmap_kpure]
+  have e3 : (pres M).pmap ((pres M).hT.from X) (𝟙 (pres M).T)
+      = kpure (Sum.map (fun _ => PUnit.unit) _root_.id) := by
+    rw [pres_from, ← kpure_id, pres_pmap_kpure]
+  have e4 : (pres M).pmap (𝟙 (pres M).T) ((pres M).hT.from Y)
+      = kpure (Sum.map _root_.id (fun _ => PUnit.unit)) := by
+    rw [pres_from, ← kpure_id, pres_pmap_kpure]
+  rw [e1, e2, e3, e4]
+  refine IsPullback.mk' ?_ ?_ ?_
+  · rw [kpure_kpure, kpure_kpure]
+    congr 1
+    funext w
+    rcases w with x | y <;> rfl
+  · intro Z φ φ' h₁ h₂
+    refine hom_ext (fun z => ?_)
+    have j₁ := congrArg (fun t : Z ⟶ _ => fn t z) h₁
+    have j₂ := congrArg (fun t : Z ⟶ _ => fn t z) h₂
+    simp only [comp_kpure] at j₁ j₂
+    refine MConvexComb.ext (funext fun w => ?_)
+    rcases w with x | y
+    · have hfib : ∀ w : X.of ⊕ Y.of,
+          Sum.map (_root_.id : X.of → X.of) (fun _ => (PUnit.unit : PUnit.{u + 1})) w
+            = (Sum.inl x : X.of ⊕ PUnit.{u + 1}) ↔ w = (Sum.inl x : X.of ⊕ Y.of) := by
+        rintro (x' | y') <;> simp
+      have k := congrArg (fun q : MConvexComb M (X.of ⊕ PUnit.{u + 1}) =>
+        q.toFun (Sum.inl x)) j₁
+      rwa [MConvexComb.map_apply_of_unique_fiber (fn φ z) _ hfib,
+        MConvexComb.map_apply_of_unique_fiber (fn φ' z) _ hfib] at k
+    · have hfib : ∀ w : X.of ⊕ Y.of,
+          Sum.map (fun _ => (PUnit.unit : PUnit.{u + 1})) (_root_.id : Y.of → Y.of) w
+            = (Sum.inr y : PUnit.{u + 1} ⊕ Y.of) ↔ w = (Sum.inr y : X.of ⊕ Y.of) := by
+        rintro (x' | y') <;> simp
+      have k := congrArg (fun q : MConvexComb M (PUnit.{u + 1} ⊕ Y.of) =>
+        q.toFun (Sum.inr y)) j₂
+      rwa [MConvexComb.map_apply_of_unique_fiber (fn φ z) _ hfib,
+        MConvexComb.map_apply_of_unique_fiber (fn φ' z) _ hfib] at k
+  · intro Z a b hab
+    have hpt : ∀ z : Z.of, (fn a z).map (Sum.map (fun _ => PUnit.unit) _root_.id)
+        = (fn b z).map (Sum.map _root_.id (fun _ => PUnit.unit)) := by
+      intro z
+      have h := congrArg (fun t : Z ⟶ _ => fn t z) hab
+      simpa only [comp_kpure] using h
+    choose δ hδ₁ hδ₂ using fun z => MConvexComb.exists_glue (fn a z) (fn b z) (hpt z)
+    refine ⟨hom δ, hom_ext (fun z => ?_), hom_ext (fun z => ?_)⟩
+    · rw [comp_kpure]
+      exact hδ₁ z
+    · rw [comp_kpure]
+      exact hδ₂ z
+
+/-- The right pullback square of 180I in `Kl(𝒟_M)` (`bsols.tex:2144`). -/
+theorem isPullback_kappa (X Y : Kl M) :
+    IsPullback ((pres M).hT.from X) ((pres M).pinl X Y)
+      ((pres M).pinl (pres M).T (pres M).T)
+      ((pres M).pmap ((pres M).hT.from X) ((pres M).hT.from Y)) := by
+  have e1 : (pres M).pmap ((pres M).hT.from X) ((pres M).hT.from Y)
+      = kpure (Sum.map (fun _ => PUnit.unit) (fun _ => PUnit.unit)) := by
+    rw [pres_from, pres_from, pres_pmap_kpure]
+  rw [e1, pres_from, pres_pinl, pres_pinl]
+  refine IsPullback.mk' ?_ ?_ ?_
+  · rw [kpure_kpure, kpure_kpure]
+    congr 1
+  · intro Z φ φ' _ h₂
+    refine hom_ext (fun z => ?_)
+    have e := congrArg (fun t : Z ⟶ _ => fn t z) h₂
+    simp only [comp_kpure] at e
+    refine MConvexComb.ext (funext fun x => ?_)
+    have hfib : ∀ w : X.of, (Sum.inl : X.of → X.of ⊕ Y.of) w = Sum.inl x ↔ w = x := by
+      intro x'; simp
+    have k := congrArg (fun q : MConvexComb M (X.of ⊕ Y.of) => q.toFun (Sum.inl x)) e
+    rwa [MConvexComb.map_apply_of_unique_fiber (fn φ z) _ hfib,
+      MConvexComb.map_apply_of_unique_fiber (fn φ' z) _ hfib] at k
+  · intro Z a b hab
+    have hzero : ∀ (z : Z.of) (y : Y.of), (fn b z).toFun (Sum.inr y) = 0 := by
+      intro z y
+      have h := congrArg (fun t : Z ⟶ _ => fn t z) hab
+      simp only [comp_kpure] at h
+      refine MConvexComb.eq_zero_of_map_eq_zero (fn b z)
+        (Sum.map (fun _ => (PUnit.unit : PUnit.{u + 1}))
+          (fun _ => (PUnit.unit : PUnit.{u + 1})))
+        (y := Sum.inr PUnit.unit) ?_ (x := Sum.inr y) rfl
+      rw [← h]
+      have hsp := MConvexComb.map_spec (fn a z)
+        (Sum.inl : PUnit.{u + 1} → PUnit.{u + 1} ⊕ PUnit.{u + 1})
+        (Sum.inr PUnit.unit) [] List.nodup_nil (by simp)
+      rw [List.map_nil, PCM.isSumOf_nil_iff] at hsp
+      exact hsp
+    choose χ hχ using fun z => MConvexComb.exists_map_inl (fn b z) (hzero z)
+    refine ⟨hom χ, ?_, hom_ext (fun z => ?_)⟩
+    · exact (pres M).hT.hom_ext _ _
+    · rw [comp_kpure]
+      exact hχ z
+
+/-- Joint monicity of the two cotuples `1+1+1 ⟶ 1+1` in `Kl(𝒟_M)`
+(`bsols.tex:2170`). -/
+theorem jointlyMonic_cotuples :
+    JointlyMonic
+      ((pres M).desc ((pres M).desc ((pres M).pinl (pres M).T (pres M).T)
+          ((pres M).pinr (pres M).T (pres M).T)) ((pres M).pinr (pres M).T (pres M).T))
+      ((pres M).desc ((pres M).desc ((pres M).pinr (pres M).T (pres M).T)
+          ((pres M).pinl (pres M).T (pres M).T)) ((pres M).pinr (pres M).T (pres M).T)) := by
+  have h₁ : (pres M).desc ((pres M).desc ((pres M).pinl (pres M).T (pres M).T)
+        ((pres M).pinr (pres M).T (pres M).T)) ((pres M).pinr (pres M).T (pres M).T)
+      = kpure (Sum.elim (Sum.elim Sum.inl Sum.inr) Sum.inr) := by
+    rw [pres_pinl, pres_pinr, pres_desc_kpure, pres_desc_kpure]
+  have h₂ : (pres M).desc ((pres M).desc ((pres M).pinr (pres M).T (pres M).T)
+        ((pres M).pinl (pres M).T (pres M).T)) ((pres M).pinr (pres M).T (pres M).T)
+      = kpure (Sum.elim (Sum.elim Sum.inr Sum.inl) Sum.inr) := by
+    rw [pres_pinl, pres_pinr, pres_desc_kpure, pres_desc_kpure]
+  rw [h₁, h₂]
+  intro Z a b ha hb
+  refine hom_ext (fun z => ?_)
+  have ea := congrArg (fun t : Z ⟶ _ => fn t z) ha
+  have eb := congrArg (fun t : Z ⟶ _ => fn t z) hb
+  simp only [comp_kpure] at ea eb
+  exact MConvexComb.jointly_injective_of_three
+    (a₁ := Sum.inl (Sum.inl PUnit.unit)) (a₂ := Sum.inl (Sum.inr PUnit.unit))
+    (a₃ := Sum.inr PUnit.unit) (b₁ := Sum.inl PUnit.unit)
+    (fun x => by rcases x with (x | x) | x <;> simp) (by simp) (by simp) (by simp)
+    (fun x => by rcases x with (x | x) | x <;> simp)
+    (fun x => by rcases x with (x | x) | x <;> simp) ea eb
+
+/-- **192III.3**: `Kl(𝒟_M)` is an effectus in total form. -/
+theorem effectus (M : Type u) [EffectMonoid M] :
+    Nonempty (EffectusTotalStructure (Kleisli (exc_dm_effectus_monad.{u} M))) := by
+  have : HasTerminal (Kl M) := (isTerminalOne (M := M)).hasTerminal
+  have : HasInitial (Kl M) := (isInitialEmpty (M := M)).hasInitial
+  have : ∀ X Y : Kl M, HasColimit (pair X Y) := fun X Y =>
+    HasColimit.mk ⟨_, isColimitSum X Y⟩
+  have : HasBinaryCoproducts (Kl M) := hasBinaryCoproducts_of_hasColimit_pair _
+  have : HasFiniteCoproducts (Kl M) := hasFiniteCoproducts_of_has_binary_and_initial
+  exact ⟨{ hasFiniteCoproducts := inferInstance
+           hasTerminal := inferInstance
+           effectus := effectusTotalForm_of_pres (pres M) isPullback_plus
+             isPullback_kappa jointlyMonic_cotuples }⟩
+
+end DMKleisli
+
+section DMKleisliEffectus
+
+variable (M : Type u) [EffectMonoid M]
+
 /-- **192III.3** (`exc-dm-effectus`, eff.tex:2410, Exercise\*): the Kleisli
 category of `𝒟_M` is an effectus (in total form) with scalars `M`.
 
@@ -3093,11 +3780,18 @@ Now stated about `exc_dm_effectus_monad` itself.  Until session 10 it was
 stated for an *arbitrary* monad `T` agreeing with `𝒟_M` on objects, which is
 **false**: transporting any monad along a bijection `T.obj X ≃ 𝒟_M X`
 satisfies that hypothesis while `Kl T` need not be an effectus (QUESTIONS.md
-B6).  The remaining `sorry` is the exercise itself. -/
-theorem exc_dm_effectus_kleisli :
-    Nonempty (EffectusTotalStructure (Kleisli (exc_dm_effectus_monad M))) := sorry
+B6).
 
-end DMMonad
+The proof is the author's (`bsols.tex:1991-2170`): the coproducts of `Kl T`
+are those of `Set` with coprojections `η ∘ κᵢ` (the Kleisli inclusion is a
+left adjoint), `∅` is initial, `𝒟_M 1 ≅ 1` makes `1` final, and the two
+pullback squares plus the joint monicity are pointwise computations on
+`MConvexComb M (X ⊕ Y)`.  See the section `DMKleisli` above. -/
+theorem exc_dm_effectus_kleisli :
+    Nonempty (EffectusTotalStructure (Kleisli (exc_dm_effectus_monad M))) :=
+  DMKleisli.effectus M
+
+end DMKleisliEffectus
 
 /-! ## Abstract `M`-convex sets (parsec 192, continued) -/
 
@@ -4426,30 +5120,6 @@ theorem AConvMCat.freeMap_id (M : Type u) [EffectMonoid M] {X : Type v} :
     AConvMCat.freeMap M (_root_.id : X → X) = 𝟙 (AConvMCat.free.{u, v} M X) :=
   Subtype.ext (funext fun p => MConvexComb.map_id p)
 
-/-- `𝒟_M` of a one-element set is a one-element set: every formal
-`M`-convex combination over `PUnit` is the Dirac one.  (This holds also for
-the trivial effect monoid `1 = 0`, where both sides are the zero function —
-cf. QUESTIONS B7.) -/
-theorem MConvexComb.eq_eta_punit {M : Type u} [EffectMonoid M]
-    (p : MConvexComb M PUnit.{v + 1}) : p = MConvexComb.eta PUnit.unit := by
-  classical
-  have hval : ∀ z : PUnit.{v + 1},
-      (MConvexComb.eta PUnit.unit : MConvexComb M PUnit.{v + 1}).toFun z =
-        (1 : M) := fun z => if_pos rfl
-  by_cases h1 : (1 : M) = 0
-  · refine MConvexComb.ext (funext fun z => ?_)
-    rw [eq_zero_of_one_eq_zero h1 (p.toFun z),
-      eq_zero_of_one_eq_zero h1
-        ((MConvexComb.eta PUnit.unit : MConvexComb M PUnit.{v + 1}).toFun z)]
-  · obtain ⟨l, hnd, hmem, hs⟩ := p.sum_one
-    have hone : p.toFun PUnit.unit = 1 := by
-      match l, hnd, hs with
-      | [], _, hs => exact absurd (PCM.isSumOf_nil_iff.mp hs) h1
-      | [_], _, hs => exact (eq_of_isSumOf_singleton hs).symm
-      | _ :: _ :: _, hnd, _ =>
-          exact absurd (List.mem_cons_self ..) (List.nodup_cons.mp hnd).1
-    exact MConvexComb.ext (funext fun z => by rw [hval z]; exact hone)
-
 /-- Every function out of a one-element abstract `M`-convex set is affine. -/
 theorem MConvexComb.punit_isAffine {M : Type u} [EffectMonoid M] {Z : Type w}
     (sP : MConvex M PUnit.{v + 1}) (sZ : MConvex M Z) (z : Z) :
@@ -4610,59 +5280,6 @@ theorem n_times_one_aconvm (M : Type u) [EffectMonoid M] (n : ℕ)
       exact hfin
   exact ⟨colimit.isoColimitCocone ⟨_, hcol⟩⟩
 
-/-- Helper: the value of `𝒟_M f (p)` at a point `y` whose `f`-fibre is the
-single point `x₀` is `p(x₀)`. -/
-theorem MConvexComb.map_apply_of_unique_fiber {M : Type u} [EffectMonoid M]
-    {X : Type v} {Y : Type w} (p : MConvexComb M X) (f : X → Y) {y : Y} {x₀ : X}
-    (h : ∀ x, f x = y ↔ x = x₀) : (p.map f).toFun y = p.toFun x₀ := by
-  classical
-  by_cases hz : p.toFun x₀ = 0
-  · have hm : ∀ x, x ∈ ([] : List X) ↔ (p.toFun x ≠ 0 ∧ f x = y) := by
-      intro x
-      simp only [List.not_mem_nil, false_iff, not_and]
-      intro hx hfx
-      exact hx (by rw [(h x).mp hfx]; exact hz)
-    have hsp := MConvexComb.map_spec p f y [] List.nodup_nil hm
-    rw [List.map_nil, PCM.isSumOf_nil_iff] at hsp
-    rw [hsp, hz]
-  · have hm : ∀ x, x ∈ [x₀] ↔ (p.toFun x ≠ 0 ∧ f x = y) := by
-      intro x
-      rw [List.mem_singleton]
-      refine ⟨fun hx => ?_, fun hx => (h x).mp hx.2⟩
-      rw [hx]
-      exact ⟨hz, (h x₀).mpr rfl⟩
-    have hsp := MConvexComb.map_spec p f y [x₀] (List.nodup_singleton x₀) hm
-    rw [List.map_cons, List.map_nil] at hsp
-    exact eq_of_isSumOf_singleton hsp
-
-/-- Helper: every entry of a summable list is below the sum. -/
-theorem PCM.le_of_mem_isSumOf {M : Type u} [PCM M] {A : Type v} (f : A → M)
-    {l : List A} {a : A} (ha : a ∈ l) {s : M}
-    (h : PCM.IsSumOf (l.map f) s) : f a ≼ s := by
-  classical
-  have hperm : (l.map f).Perm (f a :: (l.erase a).map f) := by
-    have := (List.perm_cons_erase ha).map f
-    simpa using this
-  exact PCM.le_of_isSumOf_cons (PCM.isSumOf_perm hperm h)
-
-/-- Helper: if `𝒟_M f (p)` vanishes at `y`, then `p` vanishes on the whole
-`f`-fibre of `y`. -/
-theorem MConvexComb.eq_zero_of_map_eq_zero {M : Type u} [EffectMonoid M]
-    {X : Type v} {Y : Type w} (p : MConvexComb M X) (f : X → Y) {y : Y}
-    (h : (p.map f).toFun y = 0) {x : X} (hx : f x = y) : p.toFun x = 0 := by
-  classical
-  by_contra hne
-  obtain ⟨l, hnd, hmem, -⟩ := p.sum_one
-  have hmemfib : ∀ x' : X,
-      x' ∈ l.filter (fun x' => decide (f x' = y)) ↔ (p.toFun x' ≠ 0 ∧ f x' = y) := by
-    intro x'
-    rw [List.mem_filter, hmem x']
-    simp
-  have hsp := MConvexComb.map_spec p f y _ (List.Nodup.filter _ hnd) hmemfib
-  rw [h] at hsp
-  exact hne (eq_zero_of_le_zero
-    (PCM.le_of_mem_isSumOf p.toFun ((hmemfib x).mpr ⟨hne, hx⟩) hsp))
-
 /-- Helper: `𝒟_M` of a constant map is the Dirac distribution at its value. -/
 theorem MConvexComb.map_const {M : Type u} [EffectMonoid M] {X : Type v}
     {Z : Type w} (p : MConvexComb M X) (z : Z) :
@@ -4683,116 +5300,6 @@ theorem MConvexComb.map_const {M : Type u} [EffectMonoid M] {X : Type v}
     rw [List.map_nil, PCM.isSumOf_nil_iff] at hsp
     rw [hsp]
     exact (if_neg hw).symm
-
-/-- Helper: a formal combination over `A + B` that vanishes on `B` is
-`𝒟_M κ₁` of a formal combination over `A`. -/
-theorem MConvexComb.exists_map_inl {M : Type u} [EffectMonoid M]
-    {A B : Type v} (p : MConvexComb M (A ⊕ B))
-    (h : ∀ b : B, p.toFun (Sum.inr b) = 0) :
-    ∃ χ : MConvexComb M A, χ.map Sum.inl = p := by
-  classical
-  obtain ⟨l, hnd, hmem, hs⟩ := p.sum_one
-  have hall : ∀ z ∈ l, ∃ a : A, z = Sum.inl a := by
-    rintro (a | b) hz
-    · exact ⟨a, rfl⟩
-    · exact absurd (h b) ((hmem _).mp hz)
-  have hll : ∀ L : List (A ⊕ B), (∀ z ∈ L, ∃ a : A, z = Sum.inl a) →
-      (L.filterMap Sum.getLeft?).map Sum.inl = L := by
-    intro L
-    induction L with
-    | nil => intro _; rfl
-    | cons z L ih =>
-        intro hz
-        obtain ⟨a, rfl⟩ := hz z List.mem_cons_self
-        rw [List.filterMap_cons]
-        simp only [Sum.getLeft?_inl, List.map_cons, List.cons.injEq, true_and]
-        exact ih fun w hw => hz w (List.mem_cons_of_mem _ hw)
-  have hl' : (l.filterMap Sum.getLeft?).map Sum.inl = l := hll l hall
-  have hinj : Function.Injective (Sum.inl : A → A ⊕ B) := fun _ _ h => by
-    simpa using h
-  have hmem' : ∀ a : A, a ∈ l.filterMap Sum.getLeft? ↔ p.toFun (Sum.inl a) ≠ 0 := by
-    intro a
-    rw [← hmem (Sum.inl a)]
-    constructor
-    · intro ha
-      rw [← hl']
-      exact List.mem_map_of_mem ha
-    · intro ha
-      rw [← hl'] at ha
-      obtain ⟨a', ha', he⟩ := List.mem_map.mp ha
-      rwa [hinj he] at ha'
-  have hsum : PCM.IsSumOf ((l.filterMap Sum.getLeft?).map
-      (fun a => p.toFun (Sum.inl a))) 1 := by
-    rw [show (l.filterMap Sum.getLeft?).map (fun a => p.toFun (Sum.inl a))
-        = ((l.filterMap Sum.getLeft?).map Sum.inl).map p.toFun from
-      (List.map_map ..).symm, hl']
-    exact hs
-  refine ⟨⟨fun a => p.toFun (Sum.inl a),
-    ⟨l.filterMap Sum.getLeft?, ?_, hmem', hsum⟩⟩, ?_⟩
-  · exact List.Nodup.of_map Sum.inl (hl' ▸ hnd)
-  · refine MConvexComb.ext (funext fun z => ?_)
-    rcases z with a | b
-    · exact MConvexComb.map_apply_of_unique_fiber _ Sum.inl
-        (fun x => ⟨fun hx => (hinj hx), fun hx => by rw [hx]⟩)
-    · have hsp := MConvexComb.map_spec (⟨fun a => p.toFun (Sum.inl a),
-        ⟨l.filterMap Sum.getLeft?, List.Nodup.of_map Sum.inl (hl' ▸ hnd),
-          hmem', hsum⟩⟩ : MConvexComb M A) Sum.inl (Sum.inr b) []
-        List.nodup_nil (fun x => by simp)
-      rw [List.map_nil, PCM.isSumOf_nil_iff] at hsp
-      rw [hsp, h b]
-
-/-- Helper for 194I.3: the thesis's computation with `1+1+1` as the set of
-triples `(a,b,c) ∈ M³` with `a ⋁ b ⋁ c = 1`.  If `A` has exactly the three
-elements `a₁,a₂,a₃` and `σ₁,σ₂ : A → B` single out `a₁` resp. `a₂` over a
-point `b₁ ∈ B`, then `𝒟_M σ₁` and `𝒟_M σ₂` are jointly injective: they
-determine the first two coordinates, and the third is the orthocomplement of
-their sum. -/
-theorem MConvexComb.jointly_injective_of_three {M : Type u} [EffectMonoid M]
-    {A : Type v} {B : Type w} {a₁ a₂ a₃ : A} {b₁ : B}
-    (hA : ∀ x : A, x = a₁ ∨ x = a₂ ∨ x = a₃)
-    (h12 : a₁ ≠ a₂) (h13 : a₁ ≠ a₃) (h23 : a₂ ≠ a₃)
-    {σ₁ σ₂ : A → B}
-    (hs₁ : ∀ x : A, σ₁ x = b₁ ↔ x = a₁) (hs₂ : ∀ x : A, σ₂ x = b₁ ↔ x = a₂)
-    {p q : MConvexComb M A}
-    (e₁ : p.map σ₁ = q.map σ₁) (e₂ : p.map σ₂ = q.map σ₂) : p = q := by
-  classical
-  -- the first two coordinates are read off from `𝒟_M σ₁` and `𝒟_M σ₂`
-  have hv₁ : p.toFun a₁ = q.toFun a₁ := by
-    rw [← MConvexComb.map_apply_of_unique_fiber p σ₁ hs₁,
-      ← MConvexComb.map_apply_of_unique_fiber q σ₁ hs₁, e₁]
-  have hv₂ : p.toFun a₂ = q.toFun a₂ := by
-    rw [← MConvexComb.map_apply_of_unique_fiber p σ₂ hs₂,
-      ← MConvexComb.map_apply_of_unique_fiber q σ₂ hs₂, e₂]
-  -- the three coordinates sum to `1`
-  have hnd : ([a₁, a₂, a₃] : List A).Nodup := by
-    simp [h12, h13, h23]
-  have hsum : ∀ r : MConvexComb M A,
-      PCM.IsSumOf (([a₁, a₂, a₃] : List A).map r.toFun) 1 := by
-    intro r
-    obtain ⟨l, hndl, hmem, hs⟩ := r.sum_one
-    refine isSumOf_map_of_support r.toFun hndl hnd (fun x hx => (hmem x).mpr hx)
-      (fun x _ => ?_) hs
-    rcases hA x with rfl | rfl | rfl <;> simp
-  -- so the third is the orthocomplement of the sum of the first two
-  have hthird : ∀ r : MConvexComb M A, ∃ hp : Perp (r.toFun a₁) (r.toFun a₂),
-      r.toFun a₃ = orth (ovee (r.toFun a₁) (r.toFun a₂) hp) := by
-    intro r
-    obtain ⟨t, ht, hpt, het⟩ := PCM.isSumOf_cons_iff.mp (hsum r)
-    obtain ⟨s, hs', hps, hes⟩ := PCM.isSumOf_cons_iff.mp ht
-    have hsv : s = r.toFun a₃ := eq_of_isSumOf_singleton hs'
-    subst hsv
-    subst hes
-    obtain ⟨hab, h', he'⟩ := PCM.assoc_left hps hpt
-    exact ⟨hab, (EffectAlgebra.orth_unique h' (he'.trans het)).symm ▸ rfl⟩
-  obtain ⟨hpp, hp3⟩ := hthird p
-  obtain ⟨hqq, hq3⟩ := hthird q
-  have hv₃ : p.toFun a₃ = q.toFun a₃ := by
-    rw [hp3, hq3, PCM.ovee_congr hv₁ hv₂ hpp hqq]
-  refine MConvexComb.ext (funext fun x => ?_)
-  rcases hA x with rfl | rfl | rfl
-  · exact hv₁
-  · exact hv₂
-  · exact hv₃
 
 /-! ### The canonical surjection `𝒟_M(X+Y) ↠ X ⨿ Y`
 

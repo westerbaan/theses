@@ -396,6 +396,16 @@ Confirm that is the right treatment:
   `exists_noncommutative_effectMonoid` are **proved** —
   `EffectAlgebras.lean:2763` and `:2299` — by routes that do not need the
   cited results, so only 178III.2's Boolean-algebra half remains.)
+  **Update (2026-08-18, session 83): `finite_effectMonoid_boolean` should
+  probably be un-parked and proved.**  It still has no proof to transcribe,
+  but most of \[basmsc, prop. 40] is now in `EffectAlgebras.lean` anyway:
+  `emon_finite_idem` gives idempotence of every element, the proof of
+  `finite_effectMonoid_commutative` shows `a ⊙ b` *is* the meet, and the MSc
+  sup/inf calculus (props 13–16) is formalized.  What is missing is the join,
+  distributivity and the structure equality — costed at ~250–400 lines.  So
+  the question here is narrower than for the other two: is it worth the
+  effort, given that its only stated corollary is already proved by a
+  different route?
 * **192V.4** "every cancellative abstract `[0,1]`-convex set embeds affinely in
   a real vector space" (`eff.tex:2591`, cited to `statesofconvexsets` thm. 8);
   `cancellative_iso_convex`.
