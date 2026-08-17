@@ -18400,3 +18400,110 @@ jobs, zero errors).  Thirteen `show` tactics that changed the goal were
 converted to `change` to keep `lake`'s style linter quiet — note that the
 bare `lean` invocation in the survey's refresh recipe does **not** report
 `linter.style.show`, only `lake build` does.
+
+## Session 79 — `B/Dils`: **164II `univprop_ext_tensor` is CLOSED**, and it is *not* the three-step shape the survey advertised (worker on `Theses/B/Dils/`)
+
+**`B/Dils` 14 → 13** (HilbertModules 0, SelfDualCompletion 0, Paschke 1,
+Kaplansky 4, **SelfDual 5**, Pure 2, Stinespring 1; every file run through
+`lean` individually, each with **0 errors**).  `univprop_ext_tensor` is
+`#print axioms`-clean (`propext, Classical.choice, Quot.sound`), checked from
+inside the module against the rebuilt olean.  ~900 lines, all `private`
+except the theorem, in a new `section UnivPropExistence`.
+
+### The brief was wrong about the shape, and the thesis says so itself
+
+The survey (session 75) and the brief both called this "the same three-step
+shape as `existence_paschke` — a `ℬ₁₂`-valued inner product on `X ⊙ Y`, then
+150II, then 151Ia".  Steps one and three are indeed 150II and 151Ia, but
+there is a fourth step, and it is where the work is.  dils.tex **164VIII**
+(line 5166) opens by flagging it:
+
+> If `X ⊙ Y` were an `𝒜 ⊗ ℬ`-module *and* both `η` and `T` were
+> `𝒜 ⊗ ℬ`-linear, we could simply apply `selfdual-completion-univ` to get the
+> desired `T̂`.  Instead, we will retrace the steps of its proof and modify it
+> for the present situation.
+
+`X ⊙ Y` is a module over `𝒜 ⊙ ℬ` only, so **151Ia cannot be applied to it**.
+Our route keeps 151Ia as a black box by completing
+`V = (X ⊗[ℂ] Y) ⊗[ℂ] 𝒞` — an honest `𝒞`-module — instead, and pays for that
+in the other currency: the `univ` field of `ExtTensor` bounds `T` over
+families of *elementary* tensors, i.e. with coefficients in `𝒜 ⊙ ℬ`, while
+the lift `T̃` to `V` is evaluated at coefficients from all of `𝒜 ⊗ ℬ`.
+Closing that gap is `tensor_gram_le`, and it is three lemmas:
+
+1. **`tensor_bound_tSpan`** — coefficients in `𝒜 ⊙ ℬ` are absorbed into the
+   families: `cₖ = ∑ₗ aₖₗ ⊗ bₖₗ` acts as `xₖ ↦ aₖₗ·xₖ`, `yₖ ↦ bₖₗ·yₖ`, and
+   the enlarged family is indexed by `Σ k, Fin (mₖ)` — no padding to a common
+   length is needed once the hypothesis is transported to an arbitrary
+   `Fintype` (`bound_fintype`).
+2. **`le_smul_of_conj_norm_le`** — the *order* form `⟨Tt,Tt⟩ ≤ C[t,t]` of that
+   norm bound, i.e. the thesis's `\eqref{eq:exttensorcontT}`.  This is the
+   proof of **144V** `blinear_inprod_inequality` verbatim, with one addition:
+   the resolvent `(B+ε)^{-½}` is not in `𝒜 ⊙ ℬ`, but it *is* in its norm
+   closure — the spatial tensor product, which is exactly what dils.tex:5190
+   passes to — and Mathlib's `cfc_mem` puts it there, so no norm-completion of
+   the module has to be built.  **Divergence, class 2**: the thesis builds
+   `\overline{X ⊙ Y}` as a Hilbert module over `\overline{𝒜 ⊙ ℬ}`; we only
+   need the *scalars* to be approximable, because our module already carries
+   the full `𝒞`-action.
+3. **`nonneg_of_unDense`** — the upgrade from `𝒜 ⊙ ℬ`- to `𝒜 ⊗ ℬ`-
+   coefficients.  ⚠️ **Kaplansky density is not needed here**, which was the
+   first thing tried: the quadratic form `c ↦ ω(∑ᵢⱼ cⱼQᵢⱼcᵢ*)` is continuous
+   for the GNS seminorm `‖·‖_ω` itself (Cauchy–Schwarz
+   `norm_apply_star_mul_le` plus `omegaNorm_mul_le`), so *unbounded*
+   ultranorm density of `𝒜 ⊙ ℬ` — the already-proved private
+   `unDense_tSpan`, i.e. the thesis's own 164VII input — suffices, and
+   `nonneg_of_conjNP` (**44XI**) turns "`ω(z) ≥ 0` for every np `ω`" into
+   `z ≥ 0`.  A bounded net would have been needed only if one tried to pass
+   to the limit in the *norm* inequality, which is where the first attempt
+   died: norms are only lower semicontinuous ultraweakly.
+
+### The rest of the construction
+
+* `V = (X ⊗[ℂ] Y) ⊗[ℂ] 𝒞` with `c·(z ⊗ c') = z ⊗ (cc')` and
+  `[(x⊗y)⊗c, (x'⊗y')⊗c'] = c' (⟨x,x'⟩ ⊗ ⟨y,y'⟩) c*`.  The pairing is built
+  with **semilinear** `TensorProduct.lift` (`f : M →ₛₗ[σ] N →ₛₗ[σ] P` lifts to
+  `M ⊗[R] N →ₛₗ[σ] P`, σ = `starRingEnd ℂ`) — the same device Mathlib uses for
+  the inner product on a tensor product of Hilbert spaces.  Four nested lifts
+  (`extB1`, `extB2`, `extC1`, `extC2`); writing them as one anonymous
+  structure **blew the 200000-heartbeat limit at `whnf`**, and naming the
+  intermediate stages with `rfl`-lemmas fixed it.
+* Positivity of `[v,v]` is **113II**/**113IV** `matBilin_nonneg_of_mi`
+  applied to the two Gram matrices with the vector of coefficients that lemma
+  already allows — no new positivity argument at all.
+* `η(x,y) := η_V((x ⊗ y) ⊗ 1)`.  The relation `η(a·x, b·y) = (a⊗b)·η(x,y)`
+  is *not* an identity in `V`: the two vectors differ, and what is proved is
+  that their difference is a null vector for `[·,·]` (all four cross terms
+  equal `(a⊗b) (⟨x,x⟩⊗⟨y,y⟩) (a⊗b)*`), so `η_V` identifies them.
+* The `univ` field is 151Ia applied to `T̃ : V → W`, `(z ⊗ c) ↦ c·T̂(z)`, with
+  bound `√C`; uniqueness transfers because a module map agreeing with `T` on
+  `η(x,y)` agrees with `T̃` on all of `η_V(V)`.
+
+### Two things worth keeping
+
+* **`hX : SelfDual 𝒜 X`, `hY : SelfDual ℬ Y` and both `CompleteSpace`
+  hypotheses are unused.**  The thesis needs them for its orthonormal bases
+  (160IX); the completion route does not.  Our `ExtTensor` structure has no
+  injectivity or density field, so nothing is lost.  The statement is of
+  course left exactly as it was.
+* **`paschke_tensor` (167I) did not come down with it**, contrary to the
+  brief: it needs **165VI** `ba_ext_tensor_pres` as well, and 165VI is still
+  blocked outside the directory on a local copy of 116VII
+  (`exists_productFunctional`).  164II was the *last* input to 167I other
+  than 165VI, which is what the survey said; "three statements from one
+  development" was not.
+
+Nothing was added to ERRATA or QUESTIONS.
+
+### Process
+
+The whole development was written in a throw-away file importing
+`Theses.B.Dils.SelfDual` (~10 s per iteration against the olean, versus ~55 s
+for the file itself), with the three `tSpan` inputs abstracted as a
+`StarSubalgebra ℂ 𝒞` plus a density hypothesis, and transplanted once; at the
+transplant the abstract subalgebra was instantiated to the existing private
+`tSpanSubalg ht`.  The private `section TensorDense` block (`tSpan`,
+`tSpanSubalg`, `unDense_tSpan`, `add_smul_sum`) was **moved up**, unchanged,
+to just before `univprop_ext_tensor`, so that the theorem could stay where it
+is instead of being relocated to the end of the parsec.  Ten `show`s that
+change the goal were converted to `change` for `lake`'s style linter.

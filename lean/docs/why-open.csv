@@ -84,13 +84,12 @@ paschke_correspondence_embedding|costed||157IV.2, ~250 lines: run on the concret
 paschke_correspondence_surjective|costed||157IV.3, ~300 lines; every ingredient has been in the file since session 63
 paschke_injective|costed||156II is unblocked by exists_paschke_iso_paschkeModule, but also wants A/VN's cceil-fundamental
 paschke_injective_carrier|costed||156II in carrier form; same route as paschke_injective, and the same A/VN ceiling question
-paschke_tensor|blocked|ba_ext_tensor_pres univprop_ext_tensor|167I needs 165VI and an ExtTensor to exist; its 167I-furthermore half (paschke_tensor_module) is now PROVED and was never downstream of it
+paschke_tensor|blocked|ba_ext_tensor_pres|167I needs 165VI and an ExtTensor to exist; univprop_ext_tensor is PROVED (session 79) and paschke_tensor_module was never downstream of it, so 165VI is the only blocker left
 pure_ncp_extreme|open||unblocked: ncp_extreme_paschke is now proved; not yet attempted
 selfdual_normalish_form|blocked|total_mv_order|162IV needs 162II; its other input 161II.2 is proved
 standard_corner_dils|cited||169IV is cited to proc.tex 98I and 95II; A/Proc is off this import path, so it must be rebuilt
 surjective_nmiu_2|awaiting-ruling||FALSE: counterexample in tree; needs ncpsu on both f and f-prime (QUESTIONS D7)
 total_mv_order|costed||162II is the only self-contained item in B/Dils; polar_decomposition IS on the import path, but summing-partial-isometries is in the tree under no name
-univprop_ext_tensor|costed||its 150II blocker is now proved; what is left is building l-two of the p_ij as a Hilbert module, multi-session
 kaplansky_hilbmod_A₁|false||one of 158V's four estimates, disproved and kept as documentation; 158II is proved by the linking algebra
 kaplansky_hilbmod_A₁'|false||one of 158V's four estimates, disproved and kept as documentation; 158II is proved by the linking algebra
 kaplansky_hilbmod_A₂|false||one of 158V's four estimates, disproved and kept as documentation; 158II is proved by the linking algebra

@@ -82,6 +82,13 @@ At the end of **session 69** (**169IV `standard_corner_dils`**):
 individually and each with **0 errors**.  (Five of the 21 are the known-false
 items: `Kaplansky`'s four and `Stinespring`'s 139XI.)
 
+At the end of **session 79** (**164II `univprop_ext_tensor`**):
+`SelfDual.lean` **5**, `Pure.lean` 2, `Paschke.lean` 1, `Kaplansky.lean` 4,
+`Stinespring.lean` 1, `SelfDualCompletion.lean` 0, `HilbertModules.lean` 0 —
+**13**, compiler-counted per file, each with **0 errors**.  (Five of the 13
+are the known-false items: `Kaplansky`'s four and `Stinespring`'s 139XI; a
+sixth, 164II.2b, is QUESTIONS D6.)
+
 Classification key: **(a)** self-contained, **(b)** blocked on a named
 `sorry` elsewhere, **(c)** cited to the literature / another chapter,
 **(d)** suspicious/false.
@@ -104,14 +111,14 @@ Classification key: **(a)** self-contained, **(b)** blocked on a named
 | 162IV | `selfdual_normalish_form` | **(b)** | needs 162II and 161II.2 |
 | **163II uniq** | `selfdual_compl_defining_unique` | **(a)** | **CLOSED session 55**, ~110 lines, immediately after 151Ia: apply 151Ia four times (`E₁→E₂`, `E₂→E₁`, and once on each `Eᵢ` for the uniqueness clause, which identifies `W∘U` and `U∘W` with the identity).  ⚠️ For the inner-product clause we do **not** re-run the thesis's density argument: `U` is bundled as a CLM, **152VIII** gives `U*`, and `U*U` and `id` have equal vector states on `η₁V`, so **152IX**.2 `hilmod_fixed_on_V_eq` closes it |
 | **163II dense** | `selfdual_compl_defining_dense` | **(a)** | **CLOSED session 49**.  The survey's "needs 151Ia" was **wrong**: the statement takes the universal property as a hypothesis |
-| 164II ex. | `univprop_ext_tensor` | **(a)/(b)** | the construction 164III–164VIII via `ℓ²((pᵢⱼ))`; the single biggest item in the file.  **Session 52**: the case `X = 𝒜`, `Y = ℬ` *is* proved, as `extTensorSelf` (see below); the general case still needs `ℓ²((pᵢⱼ))` as an actual Hilbert `𝒞`-module (our `L2Set` is a bare `Set (ι → ℬ)`), and the shortcut through the self-dual completion is blocked on **151I** `dils_completion` (`SelfDualCompletion.lean:81`, `sorry`).  Multi-session |
+| **164II ex.** | `univprop_ext_tensor` | **(a)** | **CLOSED session 79**, ~900 private lines, axiom-clean.  `X ⊗ Y` is the self-dual completion (**150II**) of `V = (X ⊙ Y) ⊙ 𝒞`, an honest `𝒞`-module, and `univ` is **151Ia** applied to `T̃(z ⊗ c) = c·T̂(z)`.  ⚠️ **This row's "same three-step shape as `existence_paschke`" was wrong**, and dils.tex **164VIII** says so itself: `X ⊙ Y` is only an `𝒜 ⊙ ℬ`-module, so 151Ia does not apply to it and the thesis retraces its proof.  The fourth step, which is where the work is, is `tensor_gram_le`: the `univ` field bounds `T` over *elementary* families (coefficients in `𝒜 ⊙ ℬ`) and the lift needs all of `𝒜 ⊗ ℬ`.  Three lemmas: absorb `𝒜 ⊙ ℬ`-coefficients into the families (`Σ`-indexing, no padding); the order form of the bound by 144V's own proof with `cfc_mem` putting the resolvent in the **norm closure** of `𝒜 ⊙ ℬ` (this replaces the thesis's norm-completion of the module); and the upgrade to `𝒜 ⊗ ℬ`-coefficients by GNS-seminorm continuity of the quadratic form plus `unDense_tSpan` — **Kaplansky density is not needed**.  `hX`, `hY` and both `CompleteSpace` hypotheses turn out **unused** |
 | **164II.1** | `ext_tensor_dense` | **(a)** | **CLOSED session 50.**  `P = id` from `exists_orthoProj` + `ExtTensor.univ` as in 163II-dense; the `bSpan D ⊆ unClosure D` gap is the thesis's own 164VII, and needs only *unbounded* ultrastrong density of `𝒜 ⊙ ℬ` (`IsVNTensor.generates` + `isVNSubalgebra_usClosureSubalgebra`) — **not** Kaplansky density, contrary to this row's earlier text |
 | **164II.2a** | `ext_tensor_basis` | **(a)** | **CLOSED session 51** (~170 lines).  It needed 164II.1 but **not** 161II.2, contrary to this row's earlier text: the thesis's 164X reduces to a Parseval identity checked against product np-functionals only because its `X ⊗ Y` *is* `ℓ²((pᵢⱼ))`; for an abstract `E : ExtTensor` the cheaper route is 164II.1 + the 166III estimates with `s` chosen before `u` |
 | 164II.2b | `ext_tensor_ketbra_dense` | **(d)** | **FALSE as transcribed** (session 54, QUESTIONS **D6**): our statement forces a `Finset (ι × κ)`-indexed net along `atTop`, and at `ι = κ = PUnit` (`X = 𝒜`, `Y = ℬ`, `E = extTensorSelf`) `atTop` is principal at the top element, so the net's value there would have to *equal* `T` — forcing `𝒜 ⊗ ℬ = 𝒜 ⊙ ℬ`.  The thesis claims only ultraweak **density** of `span D`, and *that* **is proved**, as the new public `ext_tensor_ketbra_uwDense` (entourage form), by the thesis's own 164XI: 159IV + 164II.2a + Kaplansky 74IV + 159IX.  Left `sorry` per the never-change-a-statement rule |
 | 165VI | `ba_ext_tensor_pres` | **(b)** | proof 165VII–165X.  `generates` is supplied by `ext_tensor_ketbra_uwDense`, and the miu-clauses by 165III (proved).  ⚠️ **This row previously said "what is left is 165IX/165X" — that is wrong** (session 55): 165IX/165X give product functionals only for the *vector states* `Ω_X`, `Ω_Y` and then appeal to **116VII** `tensor-characterization`, whereas our `IsVNTensor.exists_productFunctional` transcribes proc.tex's `tensor` literally and demands one for **every** pair of np-functionals.  `tensor_characterization` (`A/Proc/Tensor.lean`) **was closed in session 65**, but it is still off this import path — `B/Dils` does not import `A/Proc` at all (`HilbertModules.lean` imports `Theses.Common`, `A.CStar.Matrices` and three `A/VN` files), and `B/Dils` carries its own `IsVNTensor`.  So 165VI remains blocked *structurally*: it needs its own copy of 116VII, or a decision to put `A/Proc` on the import path (QUESTIONS **D3** territory).  Re-checked session 67 |
 | **166IV** | `exttensor_dense_subsets` | **(a)** | **CLOSED session 50.**  The thesis's route through 158II `kaplansky_hilbmod` (open, printed proof false) is avoided: `u ∈ U` is chosen before `v ∈ V`, so no norm-bounded net is required |
 | **166VI** | `dilationspace_dense_subset` | **(a)** | **CLOSED session 50**, together with the new public `paschke_tprod_dense` (the elementary tensors of `𝒜 ⊗_φ ℬ` are ultranorm dense — easier than 164II.1, since `{∑ aᵢ ⊗ bᵢ}` is already a ℬ-submodule) |
-| 167I | `paschke_tensor` | **(b)** | needs **165VI** *and* `univprop_ext_tensor` (the argument runs `ad_{U*} ∘ ϑ` for the `U` of 167I-furthermore and the `ϑ` of 165VI, so an `ExtTensor` must exist).  `existence_paschke` is proved; **167I-furthermore is proved and is not a blocker** |
+| 167I | `paschke_tensor` | **(b)** | needs **165VI** *and* `univprop_ext_tensor` (the argument runs `ad_{U*} ∘ ϑ` for the `U` of 167I-furthermore and the `ϑ` of 165VI, so an `ExtTensor` must exist).  `univprop_ext_tensor` **is proved since session 79** and 167I-furthermore since 75, so **165VI is the only blocker left** |
 | **167I furth.** | `paschke_tensor_module` | **(a)** | **CLOSED session 75**, ~370 private lines, axiom-clean.  ⚠️ **This row was wrong**: the furthermore-claim is what the thesis proves *first* (167III–167V), and it needs neither 167I nor 165VI — it takes `E : ExtTensor` as a hypothesis, so it does not even need `univprop_ext_tensor`.  Route: both `X₁ ⊗ X₂` and `(𝒜₁⊗𝒜₂) ⊗_Φ (ℬ₁⊗ℬ₂)` are self-dual completions of the *same* `ℬ₁₂`-module `V = (𝒜₁ ⊙ 𝒜₂) ⊙ ℬ₁₂`, so **163II** `selfdual_compl_defining_unique` hands over boundedness, bijectivity, inner-product preservation and the value on elementary tensors in one step |
 
 **Bottom line for `B/Dils` after session 54.**  159IX is closed and 164II.2b
@@ -1218,3 +1225,46 @@ the directory are, in order of reachability:
 defect: the thesis's modules are right modules, so its arrows compose the
 other way round.  Recorded here so the next worker does not file it as an
 erratum.
+
+## Session 79 — **164II `univprop_ext_tensor` is closed**; the next gate is 162II
+
+**`B/Dils` 14 → 13** (HilbertModules 0, SelfDualCompletion 0, Paschke 1,
+Kaplansky 4, **SelfDual 5**, Pure 2, Stinespring 1; each file run through
+`lean` individually, **0 errors** everywhere).  Axiom-clean.  See
+PROVING-LOG session 79 for the route; the 164II row above records the
+correction.
+
+**What it did and did not unblock.**  `paschke_tensor` (167I) is now blocked
+on **165VI alone** — re-derived, not assumed: 167I-furthermore was closed in
+session 75 and needs nothing, and the `ExtTensor` that 167I's `ad_{U*} ∘ ϑ`
+argument needs now exists.  165VI itself is unchanged: it needs a local copy
+of **116VII** `tensor_characterization`, because `B/Dils` axiomatizes the
+tensor product as `IsVNTensor` and `A/Proc/Tensor.lean` is not in its import
+closure.  That remains the one structural decision in this directory
+(QUESTIONS **D3** territory), and it is now worth a fresh costing: with
+164II closed, **one** item — 165VI — stands between the directory and both
+167I and the whole 1650 parsec.
+
+**The next gates inside `B/Dils`**, in order of reachability:
+
+1. **162II `total_mv_order`** (`SelfDual.lean`) — still the only
+   self-contained item, and now the only reachable one in the file: Zorn over
+   infinite orthogonal families of partial isometries plus
+   `summing-partial-isometries`, which is in the tree under no name.  162IV
+   `selfdual_normalish_form` sits on it and adds two further Zorn arguments.
+2. **155II `ksgns`** (`Paschke.lean`, the whole of it) — class **(c)**: a
+   KSGNS construction written from scratch, with no thesis text to check
+   against (155III explicitly leaves its universal property open).  ~Several
+   hundred lines; the in-tree model for the norm completion is **136II**.
+   ⚠️ Its printed `T : Y → X` versus our `T : X →L[ℂ] Y` is the *mirroring*,
+   not a defect — do not file it.
+3. **170II.1 `dils_examples_pure_1`** (`Pure.lean`) — wants the Stinespring
+   classification of pure maps `𝒷(ℋ) → 𝒷(𝒦)`.
+4. **165VI** — blocked outside the directory, see above.
+
+⚠️ For whoever takes 155II or another completion-style construction: the
+`(X ⊙ Y) ⊙ 𝒞` idiom of this session is directly reusable — a `BInner` on an
+algebraic tensor product is built with **semilinear** `TensorProduct.lift`
+(`M →ₛₗ[starRingEnd ℂ] N →ₛₗ[…] P` lifts), which is how Mathlib's
+`TensorProduct.instInner` does it, and the four nested lifts must be named
+separately or the elaborator blows the heartbeat limit.

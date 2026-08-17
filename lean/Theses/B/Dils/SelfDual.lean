@@ -3408,6 +3408,1130 @@ attribute [instance] ExtTensor.nacg ExtTensor.nsp ExtTensor.smul
 
 variable {t : 𝒜 → ℬ → 𝒞} {ht : IsVNTensor t}
 
+/-! ### Auxiliary for **164II** and **164II**.1: ultranorm density of `𝒜 ⊙ ℬ`
+
+This block sat below `ext_tensor_uniqueness` until session 79, when the
+*existence* proof of **164II** turned out to need it too (`unDense_tSpan` is
+the input to the `𝒜 ⊙ ℬ → 𝒜 ⊗ ℬ` coefficient upgrade there); it was moved up
+unchanged, so that `univprop_ext_tensor` could stay where it is.
+
+The thesis's **164VII** (`ultranorm-dense-tensor-base`) reads the density off
+its own construction of `X ⊗ Y` as `ℓ²((pᵢⱼ))`.  Our statement quantifies
+over an *arbitrary* `E : ExtTensor`, so the density has to come from the
+universal property instead — exactly as in `selfdual_compl_defining_dense`
+(**163II**), through the orthogonal projection onto `D^⊥⊥` (`exists_orthoProj`)
+and **160IV**.2.  The one step that does not transfer verbatim is that
+**160IV**.2 identifies `D^⊥⊥` with the ultranorm closure of the `𝒞`-**span**
+of `D = {∑ᵢ xᵢ ⊗ yᵢ}`, which is strictly bigger than `D`: the latter absorbs
+elementary tensors `t a b` only.  Bridging that gap *is* the thesis's own
+argument for 164VII — `𝒜 ⊙ ℬ` is ultrastrongly dense in `𝒜 ⊗ ℬ` (by `tensor`
+and `ultraclosed`), so `D·(𝒜 ⊙ ℬ)` is ultranorm dense in `D·(𝒜 ⊗ ℬ)` — and
+it is developed here.  Note that no *bounded* net is needed for it, so
+Kaplansky density (**158Ia**, `kaplansky_bounded_approx`) does not enter. -/
+
+section TensorDense
+
+variable (t) in
+/-- The algebraic tensor product `𝒜 ⊙ ℬ` seen inside `𝒞 = 𝒜 ⊗ ℬ`: the finite
+sums of elementary tensors.  (Auxiliary for **164II**.1.) -/
+private def tSpan : Set 𝒞 :=
+  {c : 𝒞 | ∃ (n : ℕ) (a : Fin n → 𝒜) (b : Fin n → ℬ), c = ∑ i, t (a i) (b i)}
+
+private theorem t_mem_tSpan (a : 𝒜) (b : ℬ) : t a b ∈ tSpan t :=
+  ⟨1, fun _ => a, fun _ => b, by simp⟩
+
+private theorem tSpan_add {c d : 𝒞} (hc : c ∈ tSpan t) (hd : d ∈ tSpan t) :
+    c + d ∈ tSpan t := by
+  obtain ⟨n, a, b, rfl⟩ := hc
+  obtain ⟨m, a', b', rfl⟩ := hd
+  refine ⟨n + m, Fin.append a a', Fin.append b b', ?_⟩
+  rw [Fin.sum_univ_add]
+  simp only [Fin.append_left, Fin.append_right]
+
+private theorem tSpan_star (ht : IsVNTensor t) {c : 𝒞} (hc : c ∈ tSpan t) :
+    star c ∈ tSpan t := by
+  obtain ⟨n, a, b, rfl⟩ := hc
+  refine ⟨n, fun i => star (a i), fun i => star (b i), ?_⟩
+  rw [star_sum]
+  exact Finset.sum_congr rfl fun i _ => ht.star (a i) (b i)
+
+private theorem tSpan_mul (ht : IsVNTensor t) {c d : 𝒞} (hc : c ∈ tSpan t)
+    (hd : d ∈ tSpan t) : c * d ∈ tSpan t := by
+  obtain ⟨n, a, b, rfl⟩ := hc
+  obtain ⟨m, a', b', rfl⟩ := hd
+  have h1 : (∑ i, t (a i) (b i)) * ∑ j, t (a' j) (b' j)
+      = ∑ p : Fin n × Fin m, t (a p.1 * a' p.2) (b p.1 * b' p.2) := by
+    rw [Fintype.sum_prod_type, Finset.sum_mul_sum]
+    exact Finset.sum_congr rfl fun i _ =>
+      Finset.sum_congr rfl fun j _ => ht.mul _ _ _ _
+  refine ⟨n * m,
+    fun k => a (finProdFinEquiv.symm k).1 * a' (finProdFinEquiv.symm k).2,
+    fun k => b (finProdFinEquiv.symm k).1 * b' (finProdFinEquiv.symm k).2, ?_⟩
+  rw [h1]
+  exact Fintype.sum_equiv finProdFinEquiv _ _ fun p => by simp
+
+variable (ht) in
+/-- `𝒜 ⊙ ℬ` as a unital `*`-subalgebra of `𝒞 = 𝒜 ⊗ ℬ`. -/
+private def tSpanSubalg : StarSubalgebra ℂ 𝒞 where
+  carrier := tSpan t
+  mul_mem' := tSpan_mul ht
+  add_mem' := tSpan_add
+  one_mem' := ⟨1, fun _ => 1, fun _ => 1, by simp [ht.one]⟩
+  zero_mem' := ⟨0, Fin.elim0, Fin.elim0, by simp⟩
+  algebraMap_mem' := fun r => ⟨1, fun _ => r • (1 : 𝒜), fun _ => 1, by
+    simp [ht.smul_complex, ht.one, Algebra.algebraMap_eq_smul_one]⟩
+  star_mem' := tSpan_star ht
+
+/-- **The algebraic tensor product is ultrastrongly dense**: this is the
+thesis's "by `tensor` (and `ultraclosed`) `𝒜 ⊙ ℬ` is ultrastrongly dense in
+`𝒜 ⊗ ℬ`" (dils.tex:5153), in the mirrored (`mulInner`) ultranorm form used
+throughout this file.  It needs only the *generation* clause of `IsVNTensor`,
+plus thesis A's `isVNSubalgebra_usClosureSubalgebra` (the ultrastrong closure
+of a `*`-subalgebra is a von Neumann subalgebra), which makes `W*(𝒜 ⊙ ℬ)`
+land inside that closure. -/
+private theorem unDense_tSpan [VonNeumannAlgebra 𝒞] (ht : IsVNTensor t) :
+    UnDense (mulInner 𝒞) (tSpan t) := by
+  have hclosed : ∀ c : 𝒞, c ∈ @closure 𝒞 (ultrastrong 𝒞) (tSpan t) := by
+    have hmem : usClosureSubalgebra (tSpanSubalg ht) ∈
+        {T : StarSubalgebra ℂ 𝒞 | IsVNSubalgebra 𝒞 T ∧
+          (Set.range fun p : 𝒜 × ℬ => t p.1 p.2) ⊆ T} := by
+      refine ⟨isVNSubalgebra_usClosureSubalgebra _, ?_⟩
+      rintro _ ⟨p, rfl⟩
+      exact @subset_closure 𝒞 (ultrastrong 𝒞) (tSpan t) _ (t_mem_tSpan p.1 p.2)
+    have hle : wstar 𝒞 (Set.range fun p : 𝒜 × ℬ => t p.1 p.2)
+        ≤ usClosureSubalgebra (tSpanSubalg ht) := sInf_le hmem
+    rw [ht.generates] at hle
+    intro c
+    exact hle (by simp : c ∈ (⊤ : StarSubalgebra ℂ 𝒞))
+  intro c n ωs ε hε
+  obtain ⟨z, hz, hlt⟩ := (mem_usClosure_iff (tSpan t) (star c)).mp
+    (hclosed (star c)) (npSum n ωs) ε hε
+  refine ⟨star z, tSpan_star ht hz, fun i => ?_⟩
+  rw [unSeminorm_mulInner_eq, star_sub, star_star]
+  calc omegaNorm 𝒞 (ωs i) (star c - z)
+      = omegaNorm 𝒞 (ωs i) (z - star c) := by rw [← omegaNorm_neg, neg_sub]
+    _ ≤ omegaNorm 𝒞 (npSum n ωs) (z - star c) := omegaNorm_le_npSum n ωs i _
+    _ ≤ ε := hlt.le
+
+variable {Z : Type u} [NormedAddCommGroup Z] [NormedSpace ℂ Z] [SMul 𝒞 Z]
+  [CStarModule 𝒞 Z]
+
+/-- `(∑ᵢ cᵢ)·z = ∑ᵢ (cᵢ·z)`; the companion of `op_smul_sum`. -/
+private theorem add_smul_sum {κ : Type*} (s : Finset κ) (f : κ → 𝒞) (z : Z) :
+    (∑ i ∈ s, f i) • z = ∑ i ∈ s, f i • z := by
+  classical
+  refine Finset.induction_on s (by simp [op_zero_smul]) ?_
+  intro i s hi ih
+  rw [Finset.sum_insert hi, op_add_smul, ih, Finset.sum_insert hi]
+
+/-- `‖c·z‖_ω ≤ ‖z‖·‖c‖_ω`: the module action is ultranorm continuous in the
+*algebra* variable, uniformly on norm-bounded sets — where `‖c‖_ω` is the
+mirrored ultrastrong seminorm `ω(cc*)^½` (`mulInner`).  This is the estimate
+behind the thesis's "so `E(𝒜 ⊙ ℬ)` is ultranorm dense in `E(𝒜 ⊗ ℬ)`, see
+`ultranormcontstruct`" (dils.tex:5155); it is `c⟨z,z⟩c* ≤ ‖⟨z,z⟩‖ cc*`. -/
+private theorem unSeminorm_op_smul_le [VonNeumannAlgebra 𝒞]
+    (ω : NPFunctional 𝒞) (c : 𝒞) (z : Z) :
+    unSeminorm ω (inner 𝒞 : Z → Z → 𝒞) (c • z)
+      ≤ ‖z‖ * unSeminorm ω (mulInner 𝒞) c := by
+  have hinner : (inner 𝒞 (c • z) (c • z) : 𝒞) = c * (inner 𝒞 z z : 𝒞) * star c := by
+    rw [CStarModule.inner_op_smul_right, CStarModule.inner_op_smul_left, mul_assoc]
+  have hsa : IsSelfAdjoint (inner 𝒞 z z : 𝒞) :=
+    IsSelfAdjoint.of_nonneg (CStarModule.inner_self_nonneg (A := 𝒞))
+  have hle : c * (inner 𝒞 z z : 𝒞) * star c
+      ≤ ‖(inner 𝒞 z z : 𝒞)‖ • (c * star c) :=
+    CStarAlgebra.star_right_conjugate_le_norm_smul hsa
+  have hnorm : ‖(inner 𝒞 z z : 𝒞)‖ = ‖z‖ ^ 2 := (CStarModule.norm_sq_eq (A := 𝒞) (x := z)).symm
+  have hsmul : ((‖z‖ ^ 2 : ℝ) • (c * star c) : 𝒞)
+      = ((‖z‖ ^ 2 : ℝ) : ℂ) • (c * star c) := by
+    rw [← Complex.coe_algebraMap, algebraMap_smul]
+  have hre : (ω (c * (inner 𝒞 z z : 𝒞) * star c)).re
+      ≤ ‖z‖ ^ 2 * (ω (c * star c)).re := by
+    have h1 := np_re_mono' ω hle
+    rwa [hnorm, hsmul, npf_csmul, Complex.re_ofReal_mul] at h1
+  have hm : mulInner 𝒞 c c = c * star c := rfl
+  rw [unSeminorm, unSeminorm, hinner, hm]
+  calc Real.sqrt (ω (c * (inner 𝒞 z z : 𝒞) * star c)).re
+      ≤ Real.sqrt (‖z‖ ^ 2 * (ω (c * star c)).re) := Real.sqrt_le_sqrt hre
+    _ = ‖z‖ * Real.sqrt ((ω (c * star c)).re) := by
+        rw [Real.sqrt_mul (by positivity), Real.sqrt_sq (norm_nonneg z)]
+
+end TensorDense
+
+/-! ### The construction behind **164II** (existence)
+
+The thesis builds `X ⊗ Y` as `ℓ²((pᵢⱼ))` for orthonormal bases of `X` and
+`Y` (164III–164VIII).  The route here is the one the survey names as the
+shortcut, now that **150II** `dils_completion` and **151Ia**
+`selfdual_completion_univ` are both proved: `X ⊗ Y` is the *self-dual
+completion* of `V = (X ⊙ Y) ⊙ 𝒞` — an honest `𝒞`-module, which `X ⊙ Y`
+alone is not — with the `𝒞`-valued inner product
+`[(x ⊗ y) ⊗ c, (x' ⊗ y') ⊗ c'] = c' (⟨x,x'⟩ ⊗ ⟨y,y'⟩) c*`.
+
+⚠️ **This is not the same three-step shape as `existence_paschke`.**  The
+thesis itself flags the difference (dils.tex:5166, **164VIII**): "If `X ⊙ Y`
+were an `𝒜 ⊗ ℬ`-module *and* both `η` and `T` were `𝒜 ⊗ ℬ`-linear, we could
+simply apply `selfdual-completion-univ`… Instead, we will retrace the steps
+of its proof."  The `univ` field of `ExtTensor` bounds `T` over families of
+*elementary* tensors only, i.e. with coefficients in `𝒜 ⊙ ℬ`, whereas the
+lift to `V` has coefficients in all of `𝒜 ⊗ ℬ`.  Bridging that gap — instead
+of retracing the ~360 lines of 151Ia — is `tensor_gram_le` below, and it
+takes the three steps documented at `tensor_bound_tSpan`,
+`le_smul_of_conj_norm_le` and `nonneg_of_unDense`.
+
+Positivity of the inner product on `V` is **113II**/**113IV**
+(`matBilin_nonneg_of_mi`) applied to the two Gram matrices, with the
+`𝒞`-coefficients that lemma already allows.
+
+Two hypotheses of the theorem are **not used**: self-duality (and
+completeness) of `X` and of `Y`.  The thesis needs them for its orthonormal
+bases; the completion route does not. -/
+
+section UnivPropExistence
+
+/-- **The order form of a norm bound, over a dense subalgebra.**  This is the
+device that replaces the thesis's passage to the norm completions
+(dils.tex:5190): `T` is bounded only over `𝒜 ⊙ ℬ`-coefficients, and the
+resolvent `(B + ε)^{-½}` that the proof of **144V**
+`blinear_inprod_inequality` needs does *not* lie in `𝒜 ⊙ ℬ` — but it does lie
+in its norm closure (the spatial tensor product, which is exactly what
+dils.tex passes to), and `cfc_mem` puts it there.  Everything else is the
+proof of 144V, verbatim. -/
+private theorem le_smul_of_conj_norm_le (S : StarSubalgebra ℂ 𝒞)
+    {C : ℝ} (hC : 0 ≤ C) {P B : 𝒞} (hP : 0 ≤ P) (hB : 0 ≤ B) (hBS : B ∈ S)
+    (h : ∀ d ∈ S, ‖d * P * star d‖ ≤ C * ‖d * B * star d‖) :
+    P ≤ C • B := by
+  have key : ∀ ε : ℝ, 0 < ε → P ≤ C • B + (C * ε) • (1 : 𝒞) := by
+    intro ε hε
+    set s : 𝒞 := B + ε • (1 : 𝒞) with hs
+    have hsp : IsStrictlyPositive s :=
+      IsStrictlyPositive.nonneg_add hB (IsStrictlyPositive.smul hε isStrictlyPositive_one)
+    have hsnn : (0 : 𝒞) ≤ s := by
+      rw [hs]; exact add_nonneg hB (smul_nonneg hε.le zero_le_one)
+    set g : 𝒞 := s ^ (-(1 / 2) : ℝ) with hg
+    set k : 𝒞 := s ^ ((1 / 2) : ℝ) with hk
+    have hgnn : (0 : 𝒞) ≤ g := CFC.rpow_nonneg
+    have hknn : (0 : 𝒞) ≤ k := CFC.rpow_nonneg
+    have hgsa : IsSelfAdjoint g := IsSelfAdjoint.of_nonneg hgnn
+    have hksa : IsSelfAdjoint k := IsSelfAdjoint.of_nonneg hknn
+    have hgstar : star g = g := hgsa
+    have hconj : g * s * g = 1 := CFC.conjugate_rpow_neg_one_half s hsp
+    have hkg : k * g = 1 := by
+      rw [hk, hg, ← CFC.rpow_add hsp.isUnit]
+      norm_num
+      exact CFC.rpow_zero s
+    have hgk : g * k = 1 := by
+      rw [hk, hg, ← CFC.rpow_add hsp.isUnit]
+      norm_num
+      exact CFC.rpow_zero s
+    have hkk : k * k = s := by
+      rw [hk, ← CFC.rpow_add hsp.isUnit]
+      norm_num
+      exact CFC.rpow_one s
+    -- `g` lies in the norm closure of `S`
+    have hsS : s ∈ S.topologicalClosure := by
+      refine add_mem (S.le_topologicalClosure hBS) ?_
+      have hsm : (ε : ℝ) • (1 : 𝒞) = ((ε : ℂ)) • (1 : 𝒞) := by
+        rw [← IsScalarTower.algebraMap_smul ℂ ε (1 : 𝒞), Complex.coe_algebraMap]
+      rw [hsm]
+      exact SMulMemClass.smul_mem _ (one_mem _)
+    have hgS : g ∈ S.topologicalClosure := by
+      have : IsClosed ((S.topologicalClosure : StarSubalgebra ℂ 𝒞) : Set 𝒞) :=
+        S.isClosed_topologicalClosure
+      rw [hg, CFC.rpow_eq_cfc_real hsnn]
+      exact cfc_mem (𝕜 := ℝ) (𝕜' := ℂ) _ hsS
+    have hgcl : g ∈ closure (S : Set 𝒞) := hgS
+    obtain ⟨d, hdS, hdlim⟩ := mem_closure_iff_seq_limit.mp hgcl
+    -- pass the hypothesis to the limit
+    have hcont1 : Tendsto (fun n => ‖d n * P * star (d n)‖) atTop (𝓝 ‖g * P * star g‖) := by
+      have : Tendsto (fun n => d n * P * star (d n)) atTop (𝓝 (g * P * star g)) := by
+        exact ((hdlim.mul tendsto_const_nhds).mul (hdlim.star))
+      exact this.norm
+    have hcont2 : Tendsto (fun n => C * ‖d n * B * star (d n)‖) atTop
+        (𝓝 (C * ‖g * B * star g‖)) := by
+      have : Tendsto (fun n => d n * B * star (d n)) atTop (𝓝 (g * B * star g)) := by
+        exact ((hdlim.mul tendsto_const_nhds).mul (hdlim.star))
+      exact (this.norm).const_mul C
+    have hlim : ‖g * P * star g‖ ≤ C * ‖g * B * star g‖ :=
+      le_of_tendsto_of_tendsto' hcont1 hcont2 fun n => h (d n) (hdS n)
+    -- `g B g ≤ 1`
+    have hgBg : g * B * star g ≤ 1 := by
+      rw [hgstar]
+      calc g * B * g ≤ g * s * g :=
+            hgsa.conjugate_le_conjugate
+              (by rw [hs]; exact le_add_of_nonneg_right (smul_nonneg hε.le zero_le_one))
+        _ = 1 := hconj
+    have hgBgnn : (0 : 𝒞) ≤ g * B * star g := by
+      rw [hgstar]
+      exact conjugate_nonneg_of_nonneg hB hgnn
+    have hnB : ‖g * B * star g‖ ≤ 1 :=
+      (CStarAlgebra.norm_le_one_iff_of_nonneg _ hgBgnn).mpr hgBg
+    have hnP : ‖g * P * star g‖ ≤ C := by
+      calc ‖g * P * star g‖ ≤ C * ‖g * B * star g‖ := hlim
+        _ ≤ C * 1 := by gcongr
+        _ = C := mul_one C
+    have hPnn : (0 : 𝒞) ≤ g * P * star g := by
+      rw [hgstar]; exact conjugate_nonneg_of_nonneg hP hgnn
+    have h4 : g * P * star g ≤ C • (1 : 𝒞) := by
+      refine le_trans (hPnn.isSelfAdjoint.le_algebraMap_norm_self) ?_
+      rw [Algebra.algebraMap_eq_smul_one]
+      have hh : (0 : 𝒞) ≤ (C - ‖g * P * star g‖) • (1 : 𝒞) :=
+        smul_nonneg (by linarith) zero_le_one
+      rw [sub_smul] at hh
+      exact sub_nonneg.mp hh
+    have h5 := hksa.conjugate_le_conjugate h4
+    have hlhs : k * (g * P * star g) * k = P := by
+      rw [hgstar]
+      calc k * (g * P * g) * k = (k * g) * P * (g * k) := by simp only [mul_assoc]
+        _ = P := by rw [hkg, hgk, one_mul, mul_one]
+    have hrhs : k * (C • (1 : 𝒞)) * k = C • B + (C * ε) • (1 : 𝒞) := by
+      rw [mul_smul_comm, smul_mul_assoc, mul_one, hkk, hs, smul_add, smul_smul]
+    rw [hlhs, hrhs] at h5
+    exact h5
+  have hlim : Tendsto (fun ε : ℝ => C • B + (C * ε) • (1 : 𝒞))
+      (nhdsWithin (0 : ℝ) (Set.Ioi 0)) (𝓝 (C • B)) := by
+    have hcont : Continuous (fun ε : ℝ => C • B + (C * ε) • (1 : 𝒞)) := by fun_prop
+    have h0 := hcont.tendsto 0
+    simp only [mul_zero, zero_smul, add_zero] at h0
+    exact h0.mono_left nhdsWithin_le_nhds
+  refine ge_of_tendsto hlim ?_
+  filter_upwards [self_mem_nhdsWithin] with ε hε using key ε hε
+
+
+/-- **From `𝒜 ⊙ ℬ`- to `𝒜 ⊗ ℬ`-coefficients.**  A self-adjoint matrix `Q`
+over `𝒞` whose quadratic form is positive on an ultranorm dense set `D` has
+positive quadratic form everywhere.  Kaplansky density is *not* needed: the
+form is continuous for the GNS seminorms `‖·‖_ω` of the np-functionals
+(Cauchy–Schwarz `norm_apply_star_mul_le` and `omegaNorm_mul_le`), in which
+`D` is dense by hypothesis, and `nonneg_of_conjNP` (**44XI**) turns
+`ω(z) ≥ 0` for every np `ω` into `z ≥ 0`. -/
+private theorem nonneg_of_unDense [VonNeumannAlgebra 𝒞] (D : Set 𝒞)
+    (hD : UnDense (mulInner 𝒞) D) {n : ℕ} (Q : Fin n → Fin n → 𝒞)
+    (hQ : ∀ i j, star (Q i j) = Q j i)
+    (h : ∀ d : Fin n → 𝒞, (∀ k, d k ∈ D) →
+      0 ≤ ∑ i, ∑ j, d j * Q i j * star (d i))
+    (c : Fin n → 𝒞) : 0 ≤ ∑ i, ∑ j, c j * Q i j * star (c i) := by
+  classical
+  set z : 𝒞 := ∑ i, ∑ j, c j * Q i j * star (c i) with hz
+  -- `z` is self-adjoint
+  have hzsa : star z = z := by
+    rw [hz, star_sum]
+    rw [Finset.sum_comm]
+    refine Finset.sum_congr rfl fun i _ => ?_
+    rw [star_sum]
+    refine Finset.sum_congr rfl fun j _ => ?_
+    rw [star_mul, star_mul, star_star, hQ, mul_assoc]
+  -- the main estimate, for one np-functional
+  have main : ∀ ω : NPFunctional 𝒞, (0 : ℂ) ≤ ω z := by
+    intro ω
+    have him : (ω z).im = 0 := by
+      have h1 : ω (star z) = star (ω z) := npFunctional_star ω z
+      rw [hzsa] at h1
+      have := congrArg Complex.im h1
+      simp only [Complex.star_def, Complex.conj_im] at this
+      linarith
+    set N : Fin n → ℝ := fun i => omegaNorm 𝒞 ω (star (c i)) with hN
+    set K : ℝ := ∑ i, ∑ j, ‖Q i j‖ * (N i + N j + 1) with hK
+    have hNnn : ∀ i, 0 ≤ N i := fun i => omegaNorm_nonneg _ _
+    have hKnn : (0 : ℝ) ≤ K := by
+      rw [hK]
+      refine Finset.sum_nonneg fun i _ => Finset.sum_nonneg fun j _ => ?_
+      have := hNnn i; have := hNnn j
+      positivity
+    have hre : ∀ ε : ℝ, 0 < ε → ε ≤ 1 → -(ε * K) ≤ (ω z).re := by
+      intro ε hε hε1
+      choose d hdD hd using fun k => hD (c k) 1 (fun _ => ω) ε hε
+      have hd' : ∀ k, omegaNorm 𝒞 ω (star (c k - d k)) ≤ ε := by
+        intro k
+        have := hd k 0
+        rwa [unSeminorm_mulInner_eq] at this
+      set zd : 𝒞 := ∑ i, ∑ j, d j * Q i j * star (d i) with hzd
+      have hzdnn : (0 : 𝒞) ≤ zd := h d hdD
+      have hzdre : 0 ≤ (ω zd).re :=
+        (Complex.le_def.mp (npFunctional_nonneg ω hzdnn)).1
+      -- the difference
+      have hdiff : z - zd = ∑ i, ∑ j,
+          ((c j - d j) * Q i j * star (c i) + d j * Q i j * star (c i - d i)) := by
+        rw [hz, hzd, ← Finset.sum_sub_distrib]
+        refine Finset.sum_congr rfl fun i _ => ?_
+        rw [← Finset.sum_sub_distrib]
+        refine Finset.sum_congr rfl fun j _ => ?_
+        rw [star_sub]
+        noncomm_ring
+      have hbound : ‖ω (z - zd)‖ ≤ ε * K := by
+        rw [hdiff]
+        have hmapsum : ∀ (f : Fin n → 𝒞), ω (∑ i, f i) = ∑ i, ω (f i) :=
+          fun f => map_sum ω.toPositiveLinearMap f Finset.univ
+        have hsum : ω (∑ i, ∑ j,
+            ((c j - d j) * Q i j * star (c i) + d j * Q i j * star (c i - d i)))
+            = ∑ i, ∑ j, (ω ((c j - d j) * Q i j * star (c i))
+              + ω (d j * Q i j * star (c i - d i))) := by
+          rw [hmapsum]
+          refine Finset.sum_congr rfl fun i _ => ?_
+          rw [hmapsum]
+          refine Finset.sum_congr rfl fun j _ => ?_
+          exact map_add ω.toPositiveLinearMap _ _
+        rw [hsum]
+        calc ‖∑ i, ∑ j, (ω ((c j - d j) * Q i j * star (c i))
+                + ω (d j * Q i j * star (c i - d i)))‖
+            ≤ ∑ i, ∑ j, ‖ω ((c j - d j) * Q i j * star (c i))
+                + ω (d j * Q i j * star (c i - d i))‖ :=
+              (norm_sum_le _ _).trans (Finset.sum_le_sum fun i _ => norm_sum_le _ _)
+          _ ≤ ∑ i, ∑ j, (ε * (‖Q i j‖ * N i) + (N j + ε) * (‖Q i j‖ * ε)) := by
+              refine Finset.sum_le_sum fun i _ => Finset.sum_le_sum fun j _ => ?_
+              refine (norm_add_le _ _).trans (add_le_add ?_ ?_)
+              · have h1 : ‖ω ((c j - d j) * Q i j * star (c i))‖
+                    ≤ omegaNorm 𝒞 ω (star (c j - d j))
+                      * omegaNorm 𝒞 ω (Q i j * star (c i)) := by
+                  have := norm_apply_star_mul_le ω (star (c j - d j)) (Q i j * star (c i))
+                  rwa [star_star, ← mul_assoc] at this
+                refine h1.trans (mul_le_mul (hd' j) ?_ (omegaNorm_nonneg _ _) hε.le)
+                exact omegaNorm_mul_le ω _ _
+              · have h1 : ‖ω (d j * Q i j * star (c i - d i))‖
+                    ≤ omegaNorm 𝒞 ω (star (d j))
+                      * omegaNorm 𝒞 ω (Q i j * star (c i - d i)) := by
+                  have := norm_apply_star_mul_le ω (star (d j)) (Q i j * star (c i - d i))
+                  rwa [star_star, ← mul_assoc] at this
+                have h2 : omegaNorm 𝒞 ω (star (d j)) ≤ N j + ε := by
+                  have hsplit : star (d j) = star (c j) - star (c j - d j) := by
+                    rw [star_sub]; abel
+                  have h4 : omegaNorm 𝒞 ω (star (d j))
+                      ≤ omegaNorm 𝒞 ω (star (c j)) + omegaNorm 𝒞 ω (star (c j - d j)) := by
+                    rw [hsplit]
+                    have := omegaNorm_add_le ω (star (c j)) (-star (c j - d j))
+                    rwa [omegaNorm_neg, ← sub_eq_add_neg] at this
+                  have h5 := hd' j
+                  simp only [hN]
+                  linarith
+                have h3 : omegaNorm 𝒞 ω (Q i j * star (c i - d i)) ≤ ‖Q i j‖ * ε :=
+                  (omegaNorm_mul_le ω _ _).trans
+                    (mul_le_mul_of_nonneg_left (hd' i) (norm_nonneg _))
+                exact h1.trans (mul_le_mul h2 h3 (omegaNorm_nonneg _ _)
+                  (by have := hNnn j; linarith))
+          _ ≤ ε * K := by
+              rw [hK, Finset.mul_sum]
+              refine Finset.sum_le_sum fun i _ => ?_
+              rw [Finset.mul_sum]
+              refine Finset.sum_le_sum fun j _ => ?_
+              have h1 := hNnn i
+              have h2 := hNnn j
+              have h3 : (0 : ℝ) ≤ ‖Q i j‖ := norm_nonneg _
+              nlinarith [mul_nonneg h3 h2, mul_nonneg h3 h1,
+                mul_nonneg (mul_nonneg hε.le h3) (sub_nonneg.mpr hε1)]
+      have hre1 : (ω zd).re - (ω z).re ≤ ε * K := by
+        have habs : |(ω (z - zd)).re| ≤ ‖ω (z - zd)‖ := Complex.abs_re_le_norm _
+        have h2 : ω (z - zd) = ω z - ω zd := npFunctional_sub ω z zd
+        have h3 : |(ω z - ω zd).re| ≤ ε * K := by rw [← h2]; exact habs.trans hbound
+        have h4 := abs_le.mp h3
+        simp only [Complex.sub_re] at h4
+        linarith [h4.1]
+      linarith
+    have hre0 : 0 ≤ (ω z).re := by
+      by_contra hcon
+      push_neg at hcon
+      set ε : ℝ := min 1 (-(ω z).re / (2 * (K + 1))) with hεdef
+      have hKpos : (0 : ℝ) < K + 1 := by linarith
+      have hnum : (0 : ℝ) < -(ω z).re := by linarith
+      have hden : (0 : ℝ) < 2 * (K + 1) := by linarith
+      have hε2 : 0 < -(ω z).re / (2 * (K + 1)) := div_pos hnum hden
+      have hεpos : 0 < ε := lt_min one_pos hε2
+      have hεle1 : ε ≤ 1 := min_le_left _ _
+      have hεle2 : ε ≤ -(ω z).re / (2 * (K + 1)) := min_le_right _ _
+      have := hre ε hεpos hεle1
+      have hKε : ε * K ≤ -(ω z).re / 2 := by
+        have h1 : ε * K ≤ (-(ω z).re / (2 * (K + 1))) * K :=
+          mul_le_mul_of_nonneg_right hεle2 hKnn
+        have h2 : (-(ω z).re / (2 * (K + 1))) * K ≤ -(ω z).re / 2 := by
+          rw [div_mul_eq_mul_div, div_le_iff₀ hden]
+          nlinarith
+        linarith
+      linarith
+    exact Complex.le_def.mpr ⟨by simpa using hre0, by simp [him]⟩
+  refine nonneg_of_conjNP fun ω c₀ => ?_
+  have := main (conjNP c₀ ω)
+  rwa [conjNP_apply] at this
+
+
+section TensorGram
+
+variable {W : Type u} [NormedAddCommGroup W] [NormedSpace ℂ W] [SMul 𝒞 W]
+  [CStarModule 𝒞 W]
+
+variable {C : ℝ} {T : X → Y → W}
+
+private theorem bound_fintype
+    (hbound : ∀ (n : ℕ) (x : Fin n → X) (y : Fin n → Y),
+      ‖∑ i, T (x i) (y i)‖ ^ 2 ≤
+        C * ‖∑ i, ∑ j, t (inner 𝒜 (x i) (x j)) (inner ℬ (y i) (y j))‖)
+    {ι : Type} [Fintype ι] (x : ι → X) (y : ι → Y) :
+    ‖∑ i, T (x i) (y i)‖ ^ 2 ≤
+      C * ‖∑ i, ∑ j, t (inner 𝒜 (x i) (x j)) (inner ℬ (y i) (y j))‖ := by
+  classical
+  set e : Fin (Fintype.card ι) ≃ ι := (Fintype.equivFin ι).symm with he
+  have h := hbound (Fintype.card ι) (fun i => x (e i)) (fun i => y (e i))
+  have h1 : ∑ i, T (x (e i)) (y (e i)) = ∑ i, T (x i) (y i) :=
+    Fintype.sum_equiv e _ _ fun i => rfl
+  have h2 : ∑ i, ∑ j, t (inner 𝒜 (x (e i)) (x (e j))) (inner ℬ (y (e i)) (y (e j)))
+      = ∑ i, ∑ j, t (inner 𝒜 (x i) (x j)) (inner ℬ (y i) (y j)) :=
+    Fintype.sum_equiv e _ _ fun i => Fintype.sum_equiv e _ _ fun j => rfl
+  rw [h1, h2] at h
+  exact h
+
+private theorem tensor_bound_tSpan (ht : IsVNTensor t)
+    (hTs : ∀ (a : 𝒜) (b : ℬ) (x : X) (y : Y), T (a • x) (b • y) = t a b • T x y)
+    (hbound : ∀ (n : ℕ) (x : Fin n → X) (y : Fin n → Y),
+      ‖∑ i, T (x i) (y i)‖ ^ 2 ≤
+        C * ‖∑ i, ∑ j, t (inner 𝒜 (x i) (x j)) (inner ℬ (y i) (y j))‖)
+    {n : ℕ} (x : Fin n → X) (y : Fin n → Y) (c : Fin n → 𝒞)
+    (hc : ∀ k, ∃ (m : ℕ) (a : Fin m → 𝒜) (b : Fin m → ℬ),
+      c k = ∑ l, t (a l) (b l)) :
+    ‖∑ k, c k • T (x k) (y k)‖ ^ 2 ≤
+      C * ‖∑ i, ∑ j, c j * t (inner 𝒜 (x i) (x j)) (inner ℬ (y i) (y j))
+        * star (c i)‖ := by
+  classical
+  choose m a b hab using hc
+  have h := bound_fintype (t := t) (T := T) hbound
+    (ι := Σ k : Fin n, Fin (m k))
+    (fun p => a p.1 p.2 • x p.1) (fun p => b p.1 p.2 • y p.1)
+  have hLHS : ∑ p : Σ k : Fin n, Fin (m k),
+      T (a p.1 p.2 • x p.1) (b p.1 p.2 • y p.1) = ∑ k, c k • T (x k) (y k) := by
+    rw [← Finset.univ_sigma_univ, Finset.sum_sigma]
+    refine Finset.sum_congr rfl fun k _ => ?_
+    have hstep : ∀ l ∈ Finset.univ, T (a k l • x k) (b k l • y k)
+        = t (a k l) (b k l) • T (x k) (y k) := fun l _ => hTs _ _ _ _
+    rw [Finset.sum_congr rfl hstep, ← add_smul_sum, ← hab k]
+  have hinner : ∀ (p q : Σ k : Fin n, Fin (m k)),
+      t (inner 𝒜 (a p.1 p.2 • x p.1) (a q.1 q.2 • x q.1))
+        (inner ℬ (b p.1 p.2 • y p.1) (b q.1 q.2 • y q.1))
+      = t (a q.1 q.2) (b q.1 q.2)
+          * t (inner 𝒜 (x p.1) (x q.1)) (inner ℬ (y p.1) (y q.1))
+          * star (t (a p.1 p.2) (b p.1 p.2)) := by
+    intro p q
+    rw [CStarModule.inner_op_smul_left, CStarModule.inner_op_smul_right,
+      CStarModule.inner_op_smul_left, CStarModule.inner_op_smul_right,
+      ht.star, ← ht.mul, ← ht.mul]
+  have hRHS : ∑ p : Σ k : Fin n, Fin (m k), ∑ q : Σ k : Fin n, Fin (m k),
+      t (inner 𝒜 (a p.1 p.2 • x p.1) (a q.1 q.2 • x q.1))
+        (inner ℬ (b p.1 p.2 • y p.1) (b q.1 q.2 • y q.1))
+      = ∑ i, ∑ j, c j * t (inner 𝒜 (x i) (x j)) (inner ℬ (y i) (y j))
+          * star (c i) := by
+    have hq : ∀ (p : Σ k : Fin n, Fin (m k)),
+        ∑ q : Σ k : Fin n, Fin (m k),
+          t (a q.1 q.2) (b q.1 q.2)
+            * t (inner 𝒜 (x p.1) (x q.1)) (inner ℬ (y p.1) (y q.1))
+        = ∑ j, c j * t (inner 𝒜 (x p.1) (x j)) (inner ℬ (y p.1) (y j)) := by
+      intro p
+      rw [← Finset.univ_sigma_univ, Finset.sum_sigma]
+      refine Finset.sum_congr rfl fun j _ => ?_
+      dsimp only
+      rw [← Finset.sum_mul, ← hab j]
+    calc ∑ p : Σ k : Fin n, Fin (m k), ∑ q : Σ k : Fin n, Fin (m k),
+          t (inner 𝒜 (a p.1 p.2 • x p.1) (a q.1 q.2 • x q.1))
+            (inner ℬ (b p.1 p.2 • y p.1) (b q.1 q.2 • y q.1))
+        = ∑ p : Σ k : Fin n, Fin (m k),
+            (∑ j, c j * t (inner 𝒜 (x p.1) (x j)) (inner ℬ (y p.1) (y j)))
+              * star (t (a p.1 p.2) (b p.1 p.2)) := by
+          refine Finset.sum_congr rfl fun p _ => ?_
+          rw [← hq p, Finset.sum_mul]
+          exact Finset.sum_congr rfl fun q _ => hinner p q
+      _ = ∑ i, ∑ j, c j * t (inner 𝒜 (x i) (x j)) (inner ℬ (y i) (y j))
+            * star (c i) := by
+          rw [← Finset.univ_sigma_univ, Finset.sum_sigma]
+          refine Finset.sum_congr rfl fun i _ => ?_
+          dsimp only
+          rw [← Finset.mul_sum, ← star_sum, ← hab i, Finset.sum_mul]
+  rw [hLHS, hRHS] at h
+  exact h
+
+
+private theorem gram_t_nonneg (ht : IsVNTensor t) {n : ℕ} (x : Fin n → X) (y : Fin n → Y)
+    (d : Fin n → 𝒞) :
+    0 ≤ ∑ i, ∑ j, d j * t (inner 𝒜 (x i) (x j)) (inner ℬ (y i) (y j))
+      * star (d i) := by
+  have h := matBilin_nonneg_of_mi t ht.add_left ht.add_right ht.mul ht.star
+    (CStarMatrix.ofMatrix (Matrix.of fun i j => (inner 𝒜 (x j) (x i) : 𝒜)))
+    (CStarMatrix.ofMatrix (Matrix.of fun i j => (inner ℬ (y j) (y i) : ℬ)))
+    (gram_nonneg x) (gram_nonneg y) (fun i => star (d i))
+  have heq : (∑ i, ∑ j, star (star (d i))
+        * t ((CStarMatrix.ofMatrix (Matrix.of fun i j => (inner 𝒜 (x j) (x i) : 𝒜))) i j)
+            ((CStarMatrix.ofMatrix (Matrix.of fun i j => (inner ℬ (y j) (y i) : ℬ))) i j)
+        * star (d j))
+      = ∑ i, ∑ j, d j * t (inner 𝒜 (x i) (x j)) (inner ℬ (y i) (y j)) * star (d i) := by
+    rw [Finset.sum_comm]
+    refine Finset.sum_congr rfl fun i _ => ?_
+    refine Finset.sum_congr rfl fun j _ => ?_
+    rw [star_star]
+    rfl
+  rwa [heq] at h
+
+/-- The estimate that the universal property of **164II** needs: the Gram
+bound over families of *elementary* tensors implies the Gram bound with
+arbitrary `𝒞`-coefficients, in its order form. -/
+private theorem tensor_gram_le [VonNeumannAlgebra 𝒞] (ht : IsVNTensor t) (hC : 0 ≤ C)
+    (hTs : ∀ (a : 𝒜) (b : ℬ) (x : X) (y : Y), T (a • x) (b • y) = t a b • T x y)
+    (hbound : ∀ (n : ℕ) (x : Fin n → X) (y : Fin n → Y),
+      ‖∑ i, T (x i) (y i)‖ ^ 2 ≤
+        C * ‖∑ i, ∑ j, t (inner 𝒜 (x i) (x j)) (inner ℬ (y i) (y j))‖)
+    (S : StarSubalgebra ℂ 𝒞) (hSt : ∀ (a : 𝒜) (b : ℬ), t a b ∈ S)
+    (hSrep : ∀ z ∈ S, ∃ (m : ℕ) (a : Fin m → 𝒜) (b : Fin m → ℬ),
+      z = ∑ l, t (a l) (b l))
+    (hSdense : UnDense (mulInner 𝒞) (S : Set 𝒞))
+    {n : ℕ} (x : Fin n → X) (y : Fin n → Y) (c : Fin n → 𝒞) :
+    inner 𝒞 (∑ k, c k • T (x k) (y k)) (∑ k, c k • T (x k) (y k))
+      ≤ C • ∑ i, ∑ j, c j * t (inner 𝒜 (x i) (x j)) (inner ℬ (y i) (y j))
+          * star (c i) := by
+  classical
+  set M : Fin n → Fin n → 𝒞 :=
+    fun i j => t (inner 𝒜 (x i) (x j)) (inner ℬ (y i) (y j)) with hM
+  set P : Fin n → Fin n → 𝒞 :=
+    fun i j => inner 𝒞 (T (x i) (y i)) (T (x j) (y j)) with hP
+  have hexp : ∀ d : Fin n → 𝒞,
+      inner 𝒞 (∑ k, d k • T (x k) (y k)) (∑ k, d k • T (x k) (y k))
+        = ∑ i, ∑ j, d j * P i j * star (d i) := by
+    intro d
+    rw [CStarModule.inner_sum_left]
+    refine Finset.sum_congr rfl fun i _ => ?_
+    rw [CStarModule.inner_sum_right]
+    refine Finset.sum_congr rfl fun j _ => ?_
+    rw [CStarModule.inner_op_smul_left, CStarModule.inner_op_smul_right]
+  have hscale : ∀ (e : 𝒞) (d : Fin n → 𝒞) (F : Fin n → Fin n → 𝒞),
+      ∑ i, ∑ j, (e * d j) * F i j * star (e * d i)
+        = e * (∑ i, ∑ j, d j * F i j * star (d i)) * star e := by
+    intro e d F
+    simp only [Finset.mul_sum, Finset.sum_mul, star_mul]
+    exact Finset.sum_congr rfl fun i _ =>
+      Finset.sum_congr rfl fun j _ => by noncomm_ring
+  have hMpos : ∀ d : Fin n → 𝒞, 0 ≤ ∑ i, ∑ j, d j * M i j * star (d i) :=
+    fun d => gram_t_nonneg ht x y d
+  have hMval : ∀ i j, M i j = t (inner 𝒜 (x i) (x j)) (inner ℬ (y i) (y j)) :=
+    fun _ _ => rfl
+  have hPval : ∀ i j, P i j = inner 𝒞 (T (x i) (y i)) (T (x j) (y j)) :=
+    fun _ _ => rfl
+  have hMs : ∀ i j, star (M i j) = M j i := by
+    intro i j
+    rw [hMval, hMval, ht.star, CStarModule.star_inner, CStarModule.star_inner]
+  have hPs : ∀ i j, star (P i j) = P j i := by
+    intro i j
+    rw [hPval, hPval, CStarModule.star_inner]
+  have hQstar : ∀ i j, star (C • M i j - P i j) = C • M j i - P j i := by
+    intro i j
+    rw [star_sub, star_smul, star_trivial, hMs, hPs]
+  have hkey : ∀ d : Fin n → 𝒞, (∀ k, d k ∈ S) →
+      ∑ i, ∑ j, d j * P i j * star (d i)
+        ≤ C • ∑ i, ∑ j, d j * M i j * star (d i) := by
+    intro d hd
+    have hPnn : (0 : 𝒞) ≤ ∑ i, ∑ j, d j * P i j * star (d i) := by
+      rw [← hexp d]; exact CStarModule.inner_self_nonneg
+    have hmem : (∑ i, ∑ j, d j * M i j * star (d i)) ∈ S :=
+      sum_mem fun i _ => sum_mem fun j _ =>
+        mul_mem (mul_mem (hd j) (hSt _ _)) (star_mem (hd i))
+    refine le_smul_of_conj_norm_le S hC hPnn (hMpos d) hmem ?_
+    intro e heS
+    have h1 := tensor_bound_tSpan ht hTs hbound x y (fun k => e * d k)
+      (fun k => hSrep _ (mul_mem heS (hd k)))
+    rw [CStarModule.norm_sq_eq (A := 𝒞), hexp (fun k => e * d k),
+      hscale e d P, hscale e d M] at h1
+    exact h1
+  have hfinal := nonneg_of_unDense (S : Set 𝒞) hSdense (fun i j => C • M i j - P i j)
+    hQstar (fun d hd => by
+      have h := hkey d hd
+      rw [← sub_nonneg] at h
+      have heq : ∑ i, ∑ j, d j * (C • M i j - P i j) * star (d i)
+          = (C • ∑ i, ∑ j, d j * M i j * star (d i))
+            - ∑ i, ∑ j, d j * P i j * star (d i) := by
+        rw [Finset.smul_sum, ← Finset.sum_sub_distrib]
+        refine Finset.sum_congr rfl fun i _ => ?_
+        rw [Finset.smul_sum, ← Finset.sum_sub_distrib]
+        refine Finset.sum_congr rfl fun j _ => ?_
+        rw [mul_sub, sub_mul, mul_smul_comm, smul_mul_assoc]
+      rw [heq]
+      exact h) c
+  have heq : ∑ i, ∑ j, c j * (C • M i j - P i j) * star (c i)
+      = (C • ∑ i, ∑ j, c j * M i j * star (c i))
+        - ∑ i, ∑ j, c j * P i j * star (c i) := by
+    rw [Finset.smul_sum, ← Finset.sum_sub_distrib]
+    refine Finset.sum_congr rfl fun i _ => ?_
+    rw [Finset.smul_sum, ← Finset.sum_sub_distrib]
+    refine Finset.sum_congr rfl fun j _ => ?_
+    rw [mul_sub, sub_mul, mul_smul_comm, smul_mul_assoc]
+  rw [heq, sub_nonneg] at hfinal
+  rw [hexp c]
+  exact hfinal
+
+end TensorGram
+
+/-- The `𝒞`-action on `(X ⊙ Y) ⊙ 𝒞`, mirrored: `c · (z ⊗ c') = z ⊗ (c c')`. -/
+noncomputable local instance extSMul : SMul 𝒞 ((X ⊗[ℂ] Y) ⊗[ℂ] 𝒞) where
+  smul c := LinearMap.lTensor (X ⊗[ℂ] Y) (LinearMap.mulLeft ℂ c)
+
+private theorem ext_smul_tmul (c : 𝒞) (z : X ⊗[ℂ] Y) (c' : 𝒞) :
+    c • (z ⊗ₜ[ℂ] c') = z ⊗ₜ[ℂ] (c * c') := rfl
+
+private theorem ext_smul_add (c : 𝒞) (v w : (X ⊗[ℂ] Y) ⊗[ℂ] 𝒞) :
+    c • (v + w) = c • v + c • w :=
+  map_add (LinearMap.lTensor (X ⊗[ℂ] Y) (LinearMap.mulLeft ℂ c)) v w
+
+private theorem ext_smul_zero (c : 𝒞) : c • (0 : (X ⊗[ℂ] Y) ⊗[ℂ] 𝒞) = 0 :=
+  map_zero (LinearMap.lTensor (X ⊗[ℂ] Y) (LinearMap.mulLeft ℂ c))
+
+private theorem ext_smul_sum {κ : Type*} (c : 𝒞) (s : Finset κ)
+    (f : κ → (X ⊗[ℂ] Y) ⊗[ℂ] 𝒞) : c • (∑ i ∈ s, f i) = ∑ i ∈ s, c • f i :=
+  map_sum (LinearMap.lTensor (X ⊗[ℂ] Y) (LinearMap.mulLeft ℂ c)) f s
+
+variable (t) in
+/-- The `𝒞`-valued pairing of `X ⊙ Y` in the second slot, for a fixed
+elementary vector `x ⊗ y` in the first. -/
+private noncomputable def extB1 (ht : IsVNTensor t) (x : X) (y : Y) :
+    (X ⊗[ℂ] Y) →ₗ[ℂ] 𝒞 :=
+  TensorProduct.lift (LinearMap.mk₂ ℂ
+    (fun (x' : X) (y' : Y) => t (inner 𝒜 x x') (inner ℬ y y'))
+    (fun x₁ x₂ y' => by rw [CStarModule.inner_add_right, ht.add_left])
+    (fun c x' y' => by
+      rw [CStarModule.inner_smul_right_complex, ht.smul_complex])
+    (fun x' y₁ y₂ => by rw [CStarModule.inner_add_right, ht.add_right])
+    (fun c x' y' => by
+      rw [CStarModule.inner_smul_right_complex,
+        vnTensor_smul_complex_right ht]))
+
+@[simp] private theorem extB1_tmul (ht : IsVNTensor t) (x x' : X) (y y' : Y) :
+    extB1 t ht x y (x' ⊗ₜ[ℂ] y') = t (inner 𝒜 x x') (inner ℬ y y') := rfl
+
+variable (t) in
+/-- `extB1`, conjugate-linear in the first slot. -/
+private noncomputable def extB2 (ht : IsVNTensor t) :
+    X →ₛₗ[starRingEnd ℂ] (Y →ₛₗ[starRingEnd ℂ] ((X ⊗[ℂ] Y) →ₗ[ℂ] 𝒞)) where
+  toFun x :=
+    { toFun := fun y => extB1 t ht x y
+      map_add' := fun y₁ y₂ => by
+        refine TensorProduct.ext' fun x' y' => ?_
+        change t (inner 𝒜 x x') (inner ℬ (y₁ + y₂) y') = _
+        rw [CStarModule.inner_add_left, ht.add_right]
+        rfl
+      map_smul' := fun c y => by
+        refine TensorProduct.ext' fun x' y' => ?_
+        change t (inner 𝒜 x x') (inner ℬ (c • y) y') = _
+        rw [CStarModule.inner_smul_left_complex,
+          vnTensor_smul_complex_right ht]
+        rfl }
+  map_add' x₁ x₂ := by
+    ext y x' y'
+    change t (inner 𝒜 (x₁ + x₂) x') (inner ℬ y y') = _
+    rw [CStarModule.inner_add_left, ht.add_left]
+    rfl
+  map_smul' c x := by
+    ext y x' y'
+    change t (inner 𝒜 (c • x) x') (inner ℬ y y') = _
+    rw [CStarModule.inner_smul_left_complex, ht.smul_complex]
+    rfl
+
+variable (t) in
+/-- The pairing of `X ⊙ Y`, conjugate-linear in the first slot. -/
+private noncomputable def extPairAux (ht : IsVNTensor t) :
+    (X ⊗[ℂ] Y) →ₛₗ[starRingEnd ℂ] ((X ⊗[ℂ] Y) →ₗ[ℂ] 𝒞) :=
+  TensorProduct.lift (extB2 t ht)
+
+@[simp] private theorem extPairAux_tmul (ht : IsVNTensor t) (x x' : X) (y y' : Y) :
+    extPairAux t ht (x ⊗ₜ[ℂ] y) (x' ⊗ₜ[ℂ] y')
+      = t (inner 𝒜 x x') (inner ℬ y y') := rfl
+
+
+variable (t) in
+/-- The pairing of `(X ⊙ Y) ⊙ 𝒞` in the second slot, for a fixed elementary
+vector `z ⊗ c` in the first. -/
+private noncomputable def extC1 (ht : IsVNTensor t) (z : X ⊗[ℂ] Y) (c : 𝒞) :
+    ((X ⊗[ℂ] Y) ⊗[ℂ] 𝒞) →ₗ[ℂ] 𝒞 :=
+  TensorProduct.lift (LinearMap.mk₂ ℂ
+    (fun (z' : X ⊗[ℂ] Y) (c' : 𝒞) => c' * extPairAux t ht z z' * star c)
+    (fun z₁ z₂ c' => by rw [map_add, mul_add, add_mul])
+    (fun a z' c' => by rw [map_smul, mul_smul_comm, smul_mul_assoc])
+    (fun z' c₁ c₂ => by rw [add_mul, add_mul])
+    (fun a z' c' => by rw [smul_mul_assoc, smul_mul_assoc]))
+
+@[simp] private theorem extC1_tmul (ht : IsVNTensor t) (z z' : X ⊗[ℂ] Y) (c c' : 𝒞) :
+    extC1 t ht z c (z' ⊗ₜ[ℂ] c') = c' * extPairAux t ht z z' * star c := rfl
+
+variable (t) in
+/-- `extC1`, conjugate-linear in the first slot. -/
+private noncomputable def extC2 (ht : IsVNTensor t) :
+    (X ⊗[ℂ] Y) →ₛₗ[starRingEnd ℂ]
+      (𝒞 →ₛₗ[starRingEnd ℂ] (((X ⊗[ℂ] Y) ⊗[ℂ] 𝒞) →ₗ[ℂ] 𝒞)) where
+  toFun z :=
+    { toFun := fun c => extC1 t ht z c
+      map_add' := fun c₁ c₂ => by
+        refine TensorProduct.ext' fun z' c' => ?_
+        rw [extC1_tmul, star_add, mul_add]
+        rfl
+      map_smul' := fun a c => by
+        refine TensorProduct.ext' fun z' c' => ?_
+        rw [extC1_tmul, star_smul, mul_smul_comm]
+        rfl }
+  map_add' z₁ z₂ := by
+    refine LinearMap.ext fun c => ?_
+    refine TensorProduct.ext' fun z' c' => ?_
+    change extC1 t ht (z₁ + z₂) c (z' ⊗ₜ[ℂ] c') = _
+    rw [extC1_tmul, map_add, LinearMap.add_apply, mul_add, add_mul]
+    rfl
+  map_smul' a z := by
+    refine LinearMap.ext fun c => ?_
+    refine TensorProduct.ext' fun z' c' => ?_
+    change extC1 t ht (a • z) c (z' ⊗ₜ[ℂ] c') = _
+    rw [extC1_tmul, LinearMap.map_smulₛₗ, LinearMap.smul_apply, mul_smul_comm,
+      smul_mul_assoc]
+    simp only [LinearMap.smul_apply]
+    rfl
+
+variable (t) in
+/-- The `𝒞`-valued pairing of `(X ⊙ Y) ⊙ 𝒞`, conjugate-linear in the first
+slot. -/
+private noncomputable def extPair (ht : IsVNTensor t) :
+    ((X ⊗[ℂ] Y) ⊗[ℂ] 𝒞) →ₛₗ[starRingEnd ℂ]
+      (((X ⊗[ℂ] Y) ⊗[ℂ] 𝒞) →ₗ[ℂ] 𝒞) :=
+  TensorProduct.lift (extC2 t ht)
+
+@[simp] private theorem extPair_tmul (ht : IsVNTensor t) (z z' : X ⊗[ℂ] Y) (c c' : 𝒞) :
+    extPair t ht (z ⊗ₜ[ℂ] c) (z' ⊗ₜ[ℂ] c')
+      = c' * extPairAux t ht z z' * star c := rfl
+
+private theorem extPairAux_star (ht : IsVNTensor t) (z z' : X ⊗[ℂ] Y) :
+    star (extPairAux t ht z z') = extPairAux t ht z' z := by
+  induction z using TensorProduct.induction_on with
+  | zero => simp
+  | tmul x y =>
+      induction z' using TensorProduct.induction_on with
+      | zero => simp
+      | tmul x' y' =>
+          rw [extPairAux_tmul, extPairAux_tmul, ht.star,
+            CStarModule.star_inner, CStarModule.star_inner]
+      | add z₁ z₂ h₁ h₂ => rw [map_add, star_add, h₁, h₂, map_add,
+          LinearMap.add_apply]
+  | add z₁ z₂ h₁ h₂ =>
+      rw [map_add, LinearMap.add_apply, star_add, h₁, h₂, map_add]
+
+/-- Every element of `(X ⊙ Y) ⊙ 𝒞` is a finite sum of elementary tensors. -/
+private theorem exists_fin_rep (v : (X ⊗[ℂ] Y) ⊗[ℂ] 𝒞) :
+    ∃ (n : ℕ) (x : Fin n → X) (y : Fin n → Y) (c : Fin n → 𝒞),
+      v = ∑ k, (x k ⊗ₜ[ℂ] y k) ⊗ₜ[ℂ] c k := by
+  classical
+  induction v using TensorProduct.induction_on with
+  | zero => exact ⟨0, Fin.elim0, Fin.elim0, Fin.elim0, by simp⟩
+  | tmul z c =>
+      induction z using TensorProduct.induction_on with
+      | zero => exact ⟨0, Fin.elim0, Fin.elim0, Fin.elim0, by simp⟩
+      | tmul x y => exact ⟨1, fun _ => x, fun _ => y, fun _ => c, by simp⟩
+      | add z₁ z₂ h₁ h₂ =>
+          obtain ⟨n₁, x₁, y₁, c₁, hv₁⟩ := h₁
+          obtain ⟨n₂, x₂, y₂, c₂, hv₂⟩ := h₂
+          refine ⟨n₁ + n₂, Fin.append x₁ x₂, Fin.append y₁ y₂,
+            Fin.append c₁ c₂, ?_⟩
+          rw [TensorProduct.add_tmul, hv₁, hv₂, Fin.sum_univ_add]
+          simp only [Fin.append_left, Fin.append_right]
+  | add v₁ v₂ h₁ h₂ =>
+      obtain ⟨n₁, x₁, y₁, c₁, hv₁⟩ := h₁
+      obtain ⟨n₂, x₂, y₂, c₂, hv₂⟩ := h₂
+      refine ⟨n₁ + n₂, Fin.append x₁ x₂, Fin.append y₁ y₂,
+        Fin.append c₁ c₂, ?_⟩
+      rw [hv₁, hv₂, Fin.sum_univ_add]
+      simp only [Fin.append_left, Fin.append_right]
+
+/-- The expansion of the pairing on a finite sum of elementary tensors. -/
+private theorem extPair_sum (ht : IsVNTensor t) {n : ℕ} (x : Fin n → X) (y : Fin n → Y)
+    (c : Fin n → 𝒞) :
+    extPair t ht (∑ k, (x k ⊗ₜ[ℂ] y k) ⊗ₜ[ℂ] c k)
+        (∑ k, (x k ⊗ₜ[ℂ] y k) ⊗ₜ[ℂ] c k)
+      = ∑ i, ∑ j, c j * t (inner 𝒜 (x i) (x j)) (inner ℬ (y i) (y j))
+          * star (c i) := by
+  have h1 : extPair t ht (∑ k, (x k ⊗ₜ[ℂ] y k) ⊗ₜ[ℂ] c k)
+      = ∑ k, extPair t ht ((x k ⊗ₜ[ℂ] y k) ⊗ₜ[ℂ] c k) :=
+    map_sum (extPair t ht) _ _
+  rw [h1, LinearMap.sum_apply]
+  refine Finset.sum_congr rfl fun i _ => ?_
+  rw [map_sum]
+  exact Finset.sum_congr rfl fun j _ => rfl
+
+variable (t) in
+/-- The `𝒞`-valued inner product on `(X ⊙ Y) ⊙ 𝒞` (**164II**, existence). -/
+private noncomputable def extBInner (ht : IsVNTensor t) :
+    BInner 𝒞 ((X ⊗[ℂ] Y) ⊗[ℂ] 𝒞) where
+  inner v w := extPair t ht v w
+  inner_add_right v w w' := map_add (extPair t ht v) w w'
+  inner_smul_right_complex a v w := map_smul (extPair t ht v) a w
+  inner_op_smul_right c v w := by
+    induction w using TensorProduct.induction_on with
+    | zero => simp only [ext_smul_zero, map_zero, mul_zero]
+    | tmul z' c' =>
+        induction v using TensorProduct.induction_on with
+        | zero => simp only [map_zero, LinearMap.zero_apply, mul_zero]
+        | tmul z c₀ =>
+            rw [ext_smul_tmul, extPair_tmul, extPair_tmul]
+            noncomm_ring
+        | add v₁ v₂ h₁ h₂ =>
+            rw [map_add, LinearMap.add_apply, LinearMap.add_apply, h₁, h₂,
+              mul_add]
+    | add w₁ w₂ h₁ h₂ =>
+        rw [ext_smul_add, map_add, map_add, h₁, h₂, mul_add]
+  star_inner v w := by
+    induction v using TensorProduct.induction_on with
+    | zero => simp only [map_zero, LinearMap.zero_apply, star_zero]
+    | tmul z c =>
+        induction w using TensorProduct.induction_on with
+        | zero => simp only [map_zero, LinearMap.zero_apply, star_zero]
+        | tmul z' c' =>
+            rw [extPair_tmul, extPair_tmul, star_mul, star_mul, star_star,
+              extPairAux_star, mul_assoc]
+        | add w₁ w₂ h₁ h₂ =>
+            rw [map_add, star_add, h₁, h₂, map_add, LinearMap.add_apply]
+    | add v₁ v₂ h₁ h₂ =>
+        rw [map_add, LinearMap.add_apply, star_add, h₁, h₂, map_add]
+  inner_self_nonneg v := by
+    obtain ⟨n, x, y, c, rfl⟩ := exists_fin_rep v
+    rw [extPair_sum]
+    exact gram_t_nonneg ht x y c
+
+@[simp] private theorem extBInner_tmul (ht : IsVNTensor t) (z z' : X ⊗[ℂ] Y) (c c' : 𝒞) :
+    (extBInner t ht).inner (z ⊗ₜ[ℂ] c) (z' ⊗ₜ[ℂ] c')
+      = c' * extPairAux t ht z z' * star c :=
+  extPair_tmul ht z z' c c'
+
+
+
+variable (t) in
+/-- `η(x, y) = (x ⊗ y) ⊗ 1`, pushed into the self-dual completion. -/
+private noncomputable def extEta (ht : IsVNTensor t)
+    (E : SelfDualCompletion.{u, u, u} (extBInner (X := X) (Y := Y) t ht))
+    (x : X) (y : Y) : E.X :=
+  E.η ((x ⊗ₜ[ℂ] y) ⊗ₜ[ℂ] 1)
+
+section EtaFields
+
+variable (ht : IsVNTensor t)
+  (E : SelfDualCompletion.{u, u, u} (extBInner (X := X) (Y := Y) t ht))
+
+/-- `η` as an additive map, so that it commutes with finite sums. -/
+private noncomputable def extEtaHom : ((X ⊗[ℂ] Y) ⊗[ℂ] 𝒞) →+ E.X where
+  toFun := E.η
+  map_zero' := by simpa using E.η_smul_complex 0 0
+  map_add' := E.η_add
+
+private theorem extEta_sub (v w : (X ⊗[ℂ] Y) ⊗[ℂ] 𝒞) :
+    E.η (v - w) = E.η v - E.η w := map_sub (extEtaHom ht E) v w
+
+/-- Two vectors of `(X ⊙ Y) ⊙ 𝒞` with the same image under `η` are
+identified by the completion. -/
+private theorem extEta_eq_of_inner_zero {v w : (X ⊗[ℂ] Y) ⊗[ℂ] 𝒞}
+    (h : (extBInner t ht).inner (v - w) (v - w) = 0) : E.η v = E.η w := by
+  have h1 : (inner 𝒞 (E.η (v - w)) (E.η (v - w)) : 𝒞) = 0 := by
+    rw [E.η_inner]; exact h
+  have h2 : ‖E.η (v - w)‖ = 0 := by
+    rw [CStarModule.norm_eq_sqrt_norm_inner_self (A := 𝒞), h1]
+    simp
+  have h3 : E.η (v - w) = 0 := norm_eq_zero.mp h2
+  rw [extEta_sub ht E] at h3
+  exact sub_eq_zero.mp h3
+
+private theorem extEta_inner (x x' : X) (y y' : Y) :
+    (inner 𝒞 (extEta t ht E x y) (extEta t ht E x' y') : 𝒞)
+      = t (inner 𝒜 x x') (inner ℬ y y') := by
+  rw [extEta, extEta, E.η_inner, extBInner_tmul, extPairAux_tmul]
+  rw [star_one, mul_one, one_mul]
+
+private theorem extEta_add_left (x x' : X) (y : Y) :
+    extEta t ht E (x + x') y = extEta t ht E x y + extEta t ht E x' y := by
+  rw [extEta, extEta, extEta, ← E.η_add, TensorProduct.add_tmul,
+    TensorProduct.add_tmul]
+
+private theorem extEta_add_right (x : X) (y y' : Y) :
+    extEta t ht E x (y + y') = extEta t ht E x y + extEta t ht E x y' := by
+  rw [extEta, extEta, extEta, ← E.η_add, TensorProduct.tmul_add,
+    TensorProduct.add_tmul]
+
+private theorem extEta_smul_complex (a : ℂ) (x : X) (y : Y) :
+    extEta t ht E (a • x) y = a • extEta t ht E x y := by
+  rw [extEta, extEta, ← E.η_smul_complex, TensorProduct.smul_tmul',
+    TensorProduct.smul_tmul']
+
+private theorem extEta_smul (a : 𝒜) (b : ℬ) (x : X) (y : Y) :
+    extEta t ht E (a • x) (b • y) = t a b • extEta t ht E x y := by
+  have hrhs : t a b • extEta t ht E x y
+      = E.η ((x ⊗ₜ[ℂ] y) ⊗ₜ[ℂ] (t a b)) := by
+    rw [extEta, ← E.η_smul, ext_smul_tmul, mul_one]
+  rw [hrhs, extEta]
+  refine extEta_eq_of_inner_zero ht E ?_
+  set M : 𝒞 := t (inner 𝒜 x x) (inner ℬ y y) with hM
+  have hAA : (extBInner t ht).inner
+      (((a • x) ⊗ₜ[ℂ] (b • y)) ⊗ₜ[ℂ] (1 : 𝒞))
+      (((a • x) ⊗ₜ[ℂ] (b • y)) ⊗ₜ[ℂ] (1 : 𝒞))
+      = t a b * M * star (t a b) := by
+    rw [extBInner_tmul, extPairAux_tmul, star_one, mul_one, one_mul,
+      CStarModule.inner_op_smul_left, CStarModule.inner_op_smul_right,
+      CStarModule.inner_op_smul_left, CStarModule.inner_op_smul_right,
+      ht.star, ← ht.mul, ← ht.mul, hM]
+  have hAB : (extBInner t ht).inner
+      (((a • x) ⊗ₜ[ℂ] (b • y)) ⊗ₜ[ℂ] (1 : 𝒞))
+      ((x ⊗ₜ[ℂ] y) ⊗ₜ[ℂ] (t a b))
+      = t a b * M * star (t a b) := by
+    rw [extBInner_tmul, extPairAux_tmul, star_one, mul_one,
+      CStarModule.inner_op_smul_left, CStarModule.inner_op_smul_left,
+      ht.star, ← ht.mul, hM, ← mul_assoc]
+  have hBA : (extBInner t ht).inner
+      ((x ⊗ₜ[ℂ] y) ⊗ₜ[ℂ] (t a b))
+      (((a • x) ⊗ₜ[ℂ] (b • y)) ⊗ₜ[ℂ] (1 : 𝒞))
+      = t a b * M * star (t a b) := by
+    rw [extBInner_tmul, extPairAux_tmul, one_mul,
+      CStarModule.inner_op_smul_right, CStarModule.inner_op_smul_right,
+      ← ht.mul, hM]
+  have hBB : (extBInner t ht).inner
+      ((x ⊗ₜ[ℂ] y) ⊗ₜ[ℂ] (t a b))
+      ((x ⊗ₜ[ℂ] y) ⊗ₜ[ℂ] (t a b))
+      = t a b * M * star (t a b) := by
+    rw [extBInner_tmul, extPairAux_tmul, hM]
+  have hexp : (extBInner t ht).inner
+      ((((a • x) ⊗ₜ[ℂ] (b • y)) ⊗ₜ[ℂ] (1 : 𝒞)) - ((x ⊗ₜ[ℂ] y) ⊗ₜ[ℂ] (t a b)))
+      ((((a • x) ⊗ₜ[ℂ] (b • y)) ⊗ₜ[ℂ] (1 : 𝒞)) - ((x ⊗ₜ[ℂ] y) ⊗ₜ[ℂ] (t a b)))
+      = ((extBInner t ht).inner (((a • x) ⊗ₜ[ℂ] (b • y)) ⊗ₜ[ℂ] (1 : 𝒞))
+            (((a • x) ⊗ₜ[ℂ] (b • y)) ⊗ₜ[ℂ] (1 : 𝒞))
+          - (extBInner t ht).inner (((a • x) ⊗ₜ[ℂ] (b • y)) ⊗ₜ[ℂ] (1 : 𝒞))
+            ((x ⊗ₜ[ℂ] y) ⊗ₜ[ℂ] (t a b)))
+        - ((extBInner t ht).inner ((x ⊗ₜ[ℂ] y) ⊗ₜ[ℂ] (t a b))
+              (((a • x) ⊗ₜ[ℂ] (b • y)) ⊗ₜ[ℂ] (1 : 𝒞))
+            - (extBInner t ht).inner ((x ⊗ₜ[ℂ] y) ⊗ₜ[ℂ] (t a b))
+              ((x ⊗ₜ[ℂ] y) ⊗ₜ[ℂ] (t a b))) := by
+    change extPair t ht _ _ = _
+    have h1 : extPair t ht ((((a • x) ⊗ₜ[ℂ] (b • y)) ⊗ₜ[ℂ] (1 : 𝒞))
+          - ((x ⊗ₜ[ℂ] y) ⊗ₜ[ℂ] (t a b)))
+        = extPair t ht (((a • x) ⊗ₜ[ℂ] (b • y)) ⊗ₜ[ℂ] (1 : 𝒞))
+          - extPair t ht ((x ⊗ₜ[ℂ] y) ⊗ₜ[ℂ] (t a b)) := map_sub _ _ _
+    rw [h1, LinearMap.sub_apply, map_sub, map_sub]
+    rfl
+  rw [hexp, hAA, hAB, hBA, hBB]
+  abel
+
+end EtaFields
+
+section UnivField
+
+variable {W : Type u} [NormedAddCommGroup W] [NormedSpace ℂ W] [SMul 𝒞 W]
+  [CStarModule 𝒞 W]
+
+variable {T : X → Y → W}
+
+/-- The data of a bounded `𝒜 ⊙ ℬ`-bilinear map, as in `ExtTensor.univ`. -/
+private structure IsExtBilin (t : 𝒜 → ℬ → 𝒞) (T : X → Y → W) : Prop where
+  add_left : ∀ (x x' : X) (y : Y), T (x + x') y = T x y + T x' y
+  add_right : ∀ (x : X) (y y' : Y), T x (y + y') = T x y + T x y'
+  smul : ∀ (a : 𝒜) (b : ℬ) (x : X) (y : Y), T (a • x) (b • y) = t a b • T x y
+
+
+private theorem extBilin_smul_left (ht : IsVNTensor t) (hT : IsExtBilin t T) (a : ℂ)
+    (x : X) (y : Y) : T (a • x) y = a • T x y := by
+  have h3 := hT.smul (a • (1 : 𝒜)) 1 x y
+  rw [op_smul_complex_smul, op_one_smul, op_one_smul, ht.smul_complex, ht.one,
+    op_smul_complex_smul, op_one_smul] at h3
+  exact h3
+
+private theorem extBilin_smul_right (ht : IsVNTensor t) (hT : IsExtBilin t T) (a : ℂ)
+    (x : X) (y : Y) : T x (a • y) = a • T x y := by
+  have h3 := hT.smul 1 (a • (1 : ℬ)) x y
+  rw [op_smul_complex_smul, op_one_smul, op_one_smul,
+    vnTensor_smul_complex_right ht, ht.one,
+    op_smul_complex_smul, op_one_smul] at h3
+  exact h3
+
+variable (t) in
+/-- `T` lifted to `X ⊙ Y`. -/
+private noncomputable def extLift0 (ht : IsVNTensor t) (hT : IsExtBilin t T) :
+    (X ⊗[ℂ] Y) →ₗ[ℂ] W :=
+  TensorProduct.lift (LinearMap.mk₂ ℂ T hT.add_left
+    (fun a x y => extBilin_smul_left ht hT a x y) hT.add_right
+    (fun a x y => extBilin_smul_right ht hT a x y))
+
+@[simp] private theorem extLift0_tmul (ht : IsVNTensor t) (hT : IsExtBilin t T)
+    (x : X) (y : Y) : extLift0 t ht hT (x ⊗ₜ[ℂ] y) = T x y := rfl
+
+variable (t) in
+/-- `T` lifted to `(X ⊙ Y) ⊙ 𝒞`. -/
+private noncomputable def extLift (ht : IsVNTensor t) (hT : IsExtBilin t T) :
+    ((X ⊗[ℂ] Y) ⊗[ℂ] 𝒞) →ₗ[ℂ] W :=
+  TensorProduct.lift (LinearMap.mk₂ ℂ
+    (fun (z : X ⊗[ℂ] Y) (c : 𝒞) => c • extLift0 t ht hT z)
+    (fun z₁ z₂ c => by rw [map_add, op_smul_add])
+    (fun a z c => by rw [map_smul, op_smul_comm_complex])
+    (fun z c₁ c₂ => by rw [op_add_smul])
+    (fun a z c => by rw [op_smul_complex_smul]))
+
+@[simp] private theorem extLift_tmul (ht : IsVNTensor t) (hT : IsExtBilin t T)
+    (z : X ⊗[ℂ] Y) (c : 𝒞) :
+    extLift t ht hT (z ⊗ₜ[ℂ] c) = c • extLift0 t ht hT z := rfl
+
+private theorem extLift_op_smul (ht : IsVNTensor t) (hT : IsExtBilin t T) (c : 𝒞)
+    (v : (X ⊗[ℂ] Y) ⊗[ℂ] 𝒞) :
+    extLift t ht hT (c • v) = c • extLift t ht hT v := by
+  induction v using TensorProduct.induction_on with
+  | zero => rw [ext_smul_zero, map_zero, op_smul_zero]
+  | tmul z c' => rw [ext_smul_tmul, extLift_tmul, extLift_tmul, op_mul_smul]
+  | add v₁ v₂ h₁ h₂ => rw [ext_smul_add, map_add, map_add, h₁, h₂, op_smul_add]
+
+private theorem extLift_rep (ht : IsVNTensor t) (hT : IsExtBilin t T) {n : ℕ}
+    (x : Fin n → X) (y : Fin n → Y) (c : Fin n → 𝒞) :
+    extLift t ht hT (∑ k, (x k ⊗ₜ[ℂ] y k) ⊗ₜ[ℂ] c k)
+      = ∑ k, c k • T (x k) (y k) := by
+  rw [map_sum]
+  exact Finset.sum_congr rfl fun k _ => rfl
+
+private theorem bmm_sum {V₁ V₂ : Type*} [AddCommGroup V₁] [Module ℂ V₁] [SMul 𝒞 V₁]
+    [AddCommGroup V₂] [Module ℂ V₂] [SMul 𝒞 V₂] {B₁ : BInner 𝒞 V₁}
+    {B₂ : BInner 𝒞 V₂} {C : ℝ} {S : V₁ → V₂} (hS : IsBoundedModuleMap B₁ B₂ C S)
+    {κ : Type*} (s : Finset κ) (f : κ → V₁) :
+    S (∑ i ∈ s, f i) = ∑ i ∈ s, S (f i) := by
+  classical
+  have hS0 : S 0 = 0 := by simpa using hS.smul_complex 0 0
+  refine Finset.induction_on s (by simpa using hS0) ?_
+  intro i s hi ih
+  rw [Finset.sum_insert hi, hS.add, ih, Finset.sum_insert hi]
+
+
+variable [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ] [VonNeumannAlgebra 𝒞]
+
+private theorem extLift_bounded (ht : IsVNTensor t) (hT : IsExtBilin t T) {C : ℝ}
+    (hC : 0 ≤ C)
+    (hbound : ∀ (n : ℕ) (x : Fin n → X) (y : Fin n → Y),
+      ‖∑ i, T (x i) (y i)‖ ^ 2 ≤
+        C * ‖∑ i, ∑ j, t (inner 𝒜 (x i) (x j)) (inner ℬ (y i) (y j))‖)
+    (S : StarSubalgebra ℂ 𝒞) (hSt : ∀ (a : 𝒜) (b : ℬ), t a b ∈ S)
+    (hSrep : ∀ z ∈ S, ∃ (m : ℕ) (a : Fin m → 𝒜) (b : Fin m → ℬ),
+      z = ∑ l, t (a l) (b l))
+    (hSdense : UnDense (mulInner 𝒞) (S : Set 𝒞)) :
+    IsBoundedModuleMap (extBInner t ht) (cstarBInner 𝒞 W) (Real.sqrt C)
+      (extLift t ht hT) where
+  add := map_add _
+  smul_complex := map_smul _
+  smul := extLift_op_smul ht hT
+  bound := by
+    intro v
+    obtain ⟨n, x, y, c, rfl⟩ := exists_fin_rep v
+    have hle := tensor_gram_le ht hC (fun a b x y => hT.smul a b x y) hbound
+      S hSt hSrep hSdense x y c
+    have hGnn : (0 : 𝒞) ≤ ∑ i, ∑ j, c j
+        * t (inner 𝒜 (x i) (x j)) (inner ℬ (y i) (y j)) * star (c i) :=
+      gram_t_nonneg ht x y c
+    have hInn : (0 : 𝒞) ≤ inner 𝒞 (∑ k, c k • T (x k) (y k))
+        (∑ k, c k • T (x k) (y k)) := CStarModule.inner_self_nonneg
+    have hnorm : ‖(inner 𝒞 (∑ k, c k • T (x k) (y k))
+          (∑ k, c k • T (x k) (y k)) : 𝒞)‖
+        ≤ C * ‖∑ i, ∑ j, c j
+            * t (inner 𝒜 (x i) (x j)) (inner ℬ (y i) (y j)) * star (c i)‖ := by
+      have h1 := CStarAlgebra.norm_le_norm_of_nonneg_of_le hInn hle
+      rwa [norm_smul, Real.norm_eq_abs, abs_of_nonneg hC] at h1
+    have hBv : (extBInner t ht).inner (∑ k, (x k ⊗ₜ[ℂ] y k) ⊗ₜ[ℂ] c k)
+          (∑ k, (x k ⊗ₜ[ℂ] y k) ⊗ₜ[ℂ] c k)
+        = ∑ i, ∑ j, c j * t (inner 𝒜 (x i) (x j)) (inner ℬ (y i) (y j))
+            * star (c i) := extPair_sum ht x y c
+    change (cstarBInner 𝒞 W).norm _ ≤ Real.sqrt C * (extBInner t ht).norm _
+    rw [BInner.norm, BInner.norm, extLift_rep, hBv, ← Real.sqrt_mul hC]
+    change Real.sqrt ‖(inner 𝒞 (∑ k, c k • T (x k) (y k))
+      (∑ k, c k • T (x k) (y k)) : 𝒞)‖ ≤ _
+    exact Real.sqrt_le_sqrt hnorm
+
+end UnivField
+
 /-- **164II** (`univprop-ext-tensor`, dils.tex:5024, Theorem), existence:
 for self-dual `X`, `Y` over von Neumann algebras the self-dual exterior
 tensor product exists.
@@ -3419,8 +4543,58 @@ converted separately. -/
 theorem univprop_ext_tensor [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
     [VonNeumannAlgebra 𝒞] [CompleteSpace X] [CompleteSpace Y]
     (hX : SelfDual 𝒜 X) (hY : SelfDual ℬ Y) :
-    Nonempty (ExtTensor t ht X Y) :=
-  sorry
+    Nonempty (ExtTensor t ht X Y) := by
+  have hSt : ∀ (a : 𝒜) (b : ℬ), t a b ∈ tSpanSubalg ht := fun a b => t_mem_tSpan a b
+  have hSrep : ∀ z ∈ tSpanSubalg ht, ∃ (m : ℕ) (a : Fin m → 𝒜) (b : Fin m → ℬ),
+      z = ∑ l, t (a l) (b l) := fun z hz => hz
+  have hSdense : UnDense (mulInner 𝒞) ((tSpanSubalg ht : StarSubalgebra ℂ 𝒞) : Set 𝒞) :=
+    unDense_tSpan ht
+  obtain ⟨E⟩ := dils_completion (𝒷 := 𝒞) (extBInner (X := X) (Y := Y) t ht)
+  refine ⟨{ Z := E.X
+            selfDual := E.selfDual
+            η := extEta t ht E
+            η_add_left := extEta_add_left ht E
+            η_add_right := extEta_add_right ht E
+            η_smul_complex := extEta_smul_complex ht E
+            η_smul := extEta_smul ht E
+            η_inner := extEta_inner ht E
+            univ := ?_ }⟩
+  intro W inacg innsp insmul incstar incompl hW T hTl hTr hTsm hbd
+  letI := inacg
+  letI := innsp
+  letI := insmul
+  letI := incstar
+  letI := incompl
+  obtain ⟨C₀, hbound₀⟩ := hbd
+  have hC : (0 : ℝ) ≤ max C₀ 0 := le_max_right _ _
+  have hbound : ∀ (n : ℕ) (x : Fin n → X) (y : Fin n → Y),
+      ‖∑ i, T (x i) (y i)‖ ^ 2 ≤
+        max C₀ 0 * ‖∑ i, ∑ j, t (inner 𝒜 (x i) (x j)) (inner ℬ (y i) (y j))‖ :=
+    fun n x y => (hbound₀ n x y).trans
+      (mul_le_mul_of_nonneg_right (le_max_left _ _) (norm_nonneg _))
+  have hT : IsExtBilin t T := ⟨hTl, hTr, hTsm⟩
+  obtain ⟨T', ⟨hT'b, hT'v⟩, hT'u⟩ := selfdual_completion_univ
+    (extBInner (X := X) (Y := Y) t ht) E hW (Real.sqrt (max C₀ 0))
+    (extLift t ht hT) (extLift_bounded ht hT hC hbound (tSpanSubalg ht) hSt hSrep hSdense)
+  refine ⟨T', ⟨hT'b, fun x y => ?_⟩, fun S' hS' => ?_⟩
+  · have h := hT'v ((x ⊗ₜ[ℂ] y) ⊗ₜ[ℂ] (1 : 𝒞))
+    rw [extLift_tmul, extLift0_tmul, op_one_smul] at h
+    exact h
+  · refine hT'u S' ⟨hS'.1, fun v => ?_⟩
+    obtain ⟨C', hSb⟩ := hS'.1
+    obtain ⟨n, x, y, c, rfl⟩ := exists_fin_rep v
+    have hη : E.η (∑ k, (x k ⊗ₜ[ℂ] y k) ⊗ₜ[ℂ] c k)
+        = ∑ k, c k • extEta t ht E (x k) (y k) := by
+      rw [show E.η (∑ k, (x k ⊗ₜ[ℂ] y k) ⊗ₜ[ℂ] c k)
+          = ∑ k, E.η ((x k ⊗ₜ[ℂ] y k) ⊗ₜ[ℂ] c k) from
+        map_sum (extEtaHom ht E) _ _]
+      refine Finset.sum_congr rfl fun k _ => ?_
+      rw [extEta, ← E.η_smul, ext_smul_tmul, mul_one]
+    rw [hη, bmm_sum hSb, extLift_rep]
+    refine Finset.sum_congr rfl fun k _ => ?_
+    rw [hSb.smul, hS'.2]
+
+end UnivPropExistence
 
 /-- **Non-vacuity check** for `ExtTensor` — the analogue of
 `vnTensor_mul_complex` for `IsVNTensor` and of `paschkeModuleId` for
@@ -3686,149 +4860,6 @@ private theorem extTensor_inner_diff_ext (E : ExtTensor t ht X Y)
 
 end ExtTensorAux
 
-/-! ### Auxiliary for **164II**.1: ultranorm density of the elementary tensors
-
-The thesis's **164VII** (`ultranorm-dense-tensor-base`) reads the density off
-its own construction of `X ⊗ Y` as `ℓ²((pᵢⱼ))`.  Our statement quantifies
-over an *arbitrary* `E : ExtTensor`, so the density has to come from the
-universal property instead — exactly as in `selfdual_compl_defining_dense`
-(**163II**), through the orthogonal projection onto `D^⊥⊥` (`exists_orthoProj`)
-and **160IV**.2.  The one step that does not transfer verbatim is that
-**160IV**.2 identifies `D^⊥⊥` with the ultranorm closure of the `𝒞`-**span**
-of `D = {∑ᵢ xᵢ ⊗ yᵢ}`, which is strictly bigger than `D`: the latter absorbs
-elementary tensors `t a b` only.  Bridging that gap *is* the thesis's own
-argument for 164VII — `𝒜 ⊙ ℬ` is ultrastrongly dense in `𝒜 ⊗ ℬ` (by `tensor`
-and `ultraclosed`), so `D·(𝒜 ⊙ ℬ)` is ultranorm dense in `D·(𝒜 ⊗ ℬ)` — and
-it is developed here.  Note that no *bounded* net is needed for it, so
-Kaplansky density (**158Ia**, `kaplansky_bounded_approx`) does not enter. -/
-
-section TensorDense
-
-variable (t) in
-/-- The algebraic tensor product `𝒜 ⊙ ℬ` seen inside `𝒞 = 𝒜 ⊗ ℬ`: the finite
-sums of elementary tensors.  (Auxiliary for **164II**.1.) -/
-private def tSpan : Set 𝒞 :=
-  {c : 𝒞 | ∃ (n : ℕ) (a : Fin n → 𝒜) (b : Fin n → ℬ), c = ∑ i, t (a i) (b i)}
-
-private theorem t_mem_tSpan (a : 𝒜) (b : ℬ) : t a b ∈ tSpan t :=
-  ⟨1, fun _ => a, fun _ => b, by simp⟩
-
-private theorem tSpan_add {c d : 𝒞} (hc : c ∈ tSpan t) (hd : d ∈ tSpan t) :
-    c + d ∈ tSpan t := by
-  obtain ⟨n, a, b, rfl⟩ := hc
-  obtain ⟨m, a', b', rfl⟩ := hd
-  refine ⟨n + m, Fin.append a a', Fin.append b b', ?_⟩
-  rw [Fin.sum_univ_add]
-  simp only [Fin.append_left, Fin.append_right]
-
-private theorem tSpan_star (ht : IsVNTensor t) {c : 𝒞} (hc : c ∈ tSpan t) :
-    star c ∈ tSpan t := by
-  obtain ⟨n, a, b, rfl⟩ := hc
-  refine ⟨n, fun i => star (a i), fun i => star (b i), ?_⟩
-  rw [star_sum]
-  exact Finset.sum_congr rfl fun i _ => ht.star (a i) (b i)
-
-private theorem tSpan_mul (ht : IsVNTensor t) {c d : 𝒞} (hc : c ∈ tSpan t)
-    (hd : d ∈ tSpan t) : c * d ∈ tSpan t := by
-  obtain ⟨n, a, b, rfl⟩ := hc
-  obtain ⟨m, a', b', rfl⟩ := hd
-  have h1 : (∑ i, t (a i) (b i)) * ∑ j, t (a' j) (b' j)
-      = ∑ p : Fin n × Fin m, t (a p.1 * a' p.2) (b p.1 * b' p.2) := by
-    rw [Fintype.sum_prod_type, Finset.sum_mul_sum]
-    exact Finset.sum_congr rfl fun i _ =>
-      Finset.sum_congr rfl fun j _ => ht.mul _ _ _ _
-  refine ⟨n * m,
-    fun k => a (finProdFinEquiv.symm k).1 * a' (finProdFinEquiv.symm k).2,
-    fun k => b (finProdFinEquiv.symm k).1 * b' (finProdFinEquiv.symm k).2, ?_⟩
-  rw [h1]
-  exact Fintype.sum_equiv finProdFinEquiv _ _ fun p => by simp
-
-variable (ht) in
-/-- `𝒜 ⊙ ℬ` as a unital `*`-subalgebra of `𝒞 = 𝒜 ⊗ ℬ`. -/
-private def tSpanSubalg : StarSubalgebra ℂ 𝒞 where
-  carrier := tSpan t
-  mul_mem' := tSpan_mul ht
-  add_mem' := tSpan_add
-  one_mem' := ⟨1, fun _ => 1, fun _ => 1, by simp [ht.one]⟩
-  zero_mem' := ⟨0, Fin.elim0, Fin.elim0, by simp⟩
-  algebraMap_mem' := fun r => ⟨1, fun _ => r • (1 : 𝒜), fun _ => 1, by
-    simp [ht.smul_complex, ht.one, Algebra.algebraMap_eq_smul_one]⟩
-  star_mem' := tSpan_star ht
-
-/-- **The algebraic tensor product is ultrastrongly dense**: this is the
-thesis's "by `tensor` (and `ultraclosed`) `𝒜 ⊙ ℬ` is ultrastrongly dense in
-`𝒜 ⊗ ℬ`" (dils.tex:5153), in the mirrored (`mulInner`) ultranorm form used
-throughout this file.  It needs only the *generation* clause of `IsVNTensor`,
-plus thesis A's `isVNSubalgebra_usClosureSubalgebra` (the ultrastrong closure
-of a `*`-subalgebra is a von Neumann subalgebra), which makes `W*(𝒜 ⊙ ℬ)`
-land inside that closure. -/
-private theorem unDense_tSpan [VonNeumannAlgebra 𝒞] (ht : IsVNTensor t) :
-    UnDense (mulInner 𝒞) (tSpan t) := by
-  have hclosed : ∀ c : 𝒞, c ∈ @closure 𝒞 (ultrastrong 𝒞) (tSpan t) := by
-    have hmem : usClosureSubalgebra (tSpanSubalg ht) ∈
-        {T : StarSubalgebra ℂ 𝒞 | IsVNSubalgebra 𝒞 T ∧
-          (Set.range fun p : 𝒜 × ℬ => t p.1 p.2) ⊆ T} := by
-      refine ⟨isVNSubalgebra_usClosureSubalgebra _, ?_⟩
-      rintro _ ⟨p, rfl⟩
-      exact @subset_closure 𝒞 (ultrastrong 𝒞) (tSpan t) _ (t_mem_tSpan p.1 p.2)
-    have hle : wstar 𝒞 (Set.range fun p : 𝒜 × ℬ => t p.1 p.2)
-        ≤ usClosureSubalgebra (tSpanSubalg ht) := sInf_le hmem
-    rw [ht.generates] at hle
-    intro c
-    exact hle (by simp : c ∈ (⊤ : StarSubalgebra ℂ 𝒞))
-  intro c n ωs ε hε
-  obtain ⟨z, hz, hlt⟩ := (mem_usClosure_iff (tSpan t) (star c)).mp
-    (hclosed (star c)) (npSum n ωs) ε hε
-  refine ⟨star z, tSpan_star ht hz, fun i => ?_⟩
-  rw [unSeminorm_mulInner_eq, star_sub, star_star]
-  calc omegaNorm 𝒞 (ωs i) (star c - z)
-      = omegaNorm 𝒞 (ωs i) (z - star c) := by rw [← omegaNorm_neg, neg_sub]
-    _ ≤ omegaNorm 𝒞 (npSum n ωs) (z - star c) := omegaNorm_le_npSum n ωs i _
-    _ ≤ ε := hlt.le
-
-variable {Z : Type u} [NormedAddCommGroup Z] [NormedSpace ℂ Z] [SMul 𝒞 Z]
-  [CStarModule 𝒞 Z]
-
-/-- `(∑ᵢ cᵢ)·z = ∑ᵢ (cᵢ·z)`; the companion of `op_smul_sum`. -/
-private theorem add_smul_sum {κ : Type*} (s : Finset κ) (f : κ → 𝒞) (z : Z) :
-    (∑ i ∈ s, f i) • z = ∑ i ∈ s, f i • z := by
-  classical
-  refine Finset.induction_on s (by simp [op_zero_smul]) ?_
-  intro i s hi ih
-  rw [Finset.sum_insert hi, op_add_smul, ih, Finset.sum_insert hi]
-
-/-- `‖c·z‖_ω ≤ ‖z‖·‖c‖_ω`: the module action is ultranorm continuous in the
-*algebra* variable, uniformly on norm-bounded sets — where `‖c‖_ω` is the
-mirrored ultrastrong seminorm `ω(cc*)^½` (`mulInner`).  This is the estimate
-behind the thesis's "so `E(𝒜 ⊙ ℬ)` is ultranorm dense in `E(𝒜 ⊗ ℬ)`, see
-`ultranormcontstruct`" (dils.tex:5155); it is `c⟨z,z⟩c* ≤ ‖⟨z,z⟩‖ cc*`. -/
-private theorem unSeminorm_op_smul_le [VonNeumannAlgebra 𝒞]
-    (ω : NPFunctional 𝒞) (c : 𝒞) (z : Z) :
-    unSeminorm ω (inner 𝒞 : Z → Z → 𝒞) (c • z)
-      ≤ ‖z‖ * unSeminorm ω (mulInner 𝒞) c := by
-  have hinner : (inner 𝒞 (c • z) (c • z) : 𝒞) = c * (inner 𝒞 z z : 𝒞) * star c := by
-    rw [CStarModule.inner_op_smul_right, CStarModule.inner_op_smul_left, mul_assoc]
-  have hsa : IsSelfAdjoint (inner 𝒞 z z : 𝒞) :=
-    IsSelfAdjoint.of_nonneg (CStarModule.inner_self_nonneg (A := 𝒞))
-  have hle : c * (inner 𝒞 z z : 𝒞) * star c
-      ≤ ‖(inner 𝒞 z z : 𝒞)‖ • (c * star c) :=
-    CStarAlgebra.star_right_conjugate_le_norm_smul hsa
-  have hnorm : ‖(inner 𝒞 z z : 𝒞)‖ = ‖z‖ ^ 2 := (CStarModule.norm_sq_eq (A := 𝒞) (x := z)).symm
-  have hsmul : ((‖z‖ ^ 2 : ℝ) • (c * star c) : 𝒞)
-      = ((‖z‖ ^ 2 : ℝ) : ℂ) • (c * star c) := by
-    rw [← Complex.coe_algebraMap, algebraMap_smul]
-  have hre : (ω (c * (inner 𝒞 z z : 𝒞) * star c)).re
-      ≤ ‖z‖ ^ 2 * (ω (c * star c)).re := by
-    have h1 := np_re_mono' ω hle
-    rwa [hnorm, hsmul, npf_csmul, Complex.re_ofReal_mul] at h1
-  have hm : mulInner 𝒞 c c = c * star c := rfl
-  rw [unSeminorm, unSeminorm, hinner, hm]
-  calc Real.sqrt (ω (c * (inner 𝒞 z z : 𝒞) * star c)).re
-      ≤ Real.sqrt (‖z‖ ^ 2 * (ω (c * star c)).re) := Real.sqrt_le_sqrt hre
-    _ = ‖z‖ * Real.sqrt ((ω (c * star c)).re) := by
-        rw [Real.sqrt_mul (by positivity), Real.sqrt_sq (norm_nonneg z)]
-
-end TensorDense
 
 /-- **164IX** (`ext-tensor-uniqueness`, dils.tex:5286, Uniqueness — stated
 in **164II** as "up-to-isomorphism unique"): two self-dual exterior tensor
