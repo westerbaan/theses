@@ -1,17 +1,17 @@
 # `Theses/A/VN/` — full survey of the remaining `sorry`s (updated session 75)
 
-**Headline count: A/VN has 5 code `sorry`s** after session 75 (was 8).
+**Headline count: A/VN has 4 code `sorry`s** after session 77 (was 5).
 Per file, compiler-counted (`declaration uses 'sorry'` warnings, *not* grep),
 each paired with an error count of **0**:
 
 | file | sorries |
 |---|---|
 | `Basic.lean` | **1** |
-| `Projections.lean` | **1** |
+| `Projections.lean` | **0** |
 | `Division.lean` | 3 |
 | `NormalFunctionals.lean` | **0** |
 | `Completeness.lean` | **0** |
-| **total** | **5** |
+| **total** | **4** |
 
 (Every file compiles with **0 errors**; counts are compiler-counted.)
 
@@ -24,6 +24,36 @@ for f in Basic Projections Division NormalFunctionals Completeness; do
     grep -c "declaration uses"
 done
 ```
+
+(This bare `lean` invocation does **not** report `linter.style.show`; only
+`lake build` does.  Check with `lake build` before handing off.)
+
+> **Session 77 headline — `Projections.lean` is FINISHED, and 67IV.2 never
+> needed 77III.**  **67IV**.2 `central_projections_sums_2` is proved and
+> `#print axioms`-clean.  A/VN is down to `Basic.lean`'s 51IX and
+> `Division.lean`'s three.
+>
+> * **The import problem recorded below does not exist.**  Existence does
+>   *not* need an ultraweak limit or compactness of the ball (77III,
+>   `Completeness.lean`).  For a **positive** family the finite partial sums
+>   `∑_{i∈F} bᵢ` are directed and bounded by `M·1` (each `bᵢ ≤ M·cᵢ` by
+>   conjugating with `cᵢ`; `∑_{i∈F} cᵢ` is a projection by
+>   `isStarProjection_sum`), so `a := ⋁` exists by von Neumann-ness alone.
+>   `cⱼa = bⱼ` then follows from *leastness* only: with `q = 1 − cⱼ`, every
+>   partial sum is `≤ bⱼ + q a q`, so `a ≤ bⱼ + q a q`, and conjugating by
+>   `cⱼ` gives `cⱼ a cⱼ ≤ bⱼ`; the converse is `bⱼ ≤ a` conjugated by `cⱼ`.
+>   No statement was moved and no import restructured.
+> * The general case is two private reductions above it — self-adjoint `bᵢ`
+>   by the shift `bᵢ + M·cᵢ ≥ 0`, general `bᵢ` by
+>   `b = ½(b+b*) + I·(I/2)(b*−b)`.
+> * Uniqueness is the new **public** `central_family_separating`: *an
+>   orthogonal family of central projections with `⋁ᵢcᵢ = 1` is separating*
+>   (`cᵢa = 0 ⟹ ⌈aa*⌉cᵢ = 0` by `ceil_mul_eq_zero`, so `1 ≤ 1 − ⌈aa*⌉`).
+>   Both `Division.lean` items want it, hence public.
+> * **67IV.2 was upstream of `Division.lean`'s three, not beside them**: the
+>   thesis's proofs of *both* 84II (vn.tex:5900) and 84bIII (vn.tex:6180)
+>   cite `central-projections-sums` to reassemble a direct sum from central
+>   projections.
 
 > **Session 75 headline — 54XI is CLOSED, all three parts, and `Basic.lean`
 > is down to `Linfty_vn`.**  **54XI**.1 `cvn_faithful_1` (the measure on the
@@ -338,6 +368,40 @@ usable anywhere in `A/VN` and downstream.)
 (`pseudoinverse_basic_2'_4` and `div_usc` — both false as printed — have since
 been retired with their `sorry`s; see HANDOFF.)
 
+**Costings, re-derived in session 77.**
+
+* **84II `fdcstar` — ~500–800 lines, and Mathlib does half of it.**
+  `IsSemisimpleRing.exists_algEquiv_pi_matrix_of_isAlgClosed`
+  (`Mathlib/RingTheory/SimpleModule/IsAlgClosed.lean`) gives exactly the
+  conclusion's shape for a finite-dimensional semisimple ℂ-algebra, and its
+  hypothesis is cheap (`IsArtinianRing.isSemisimpleRing_iff_jacobson` +
+  `IsArtinianRing.isNilpotent_jacobson_bot`, then "`x` in the radical ⟹
+  `x*x` nilpotent self-adjoint ⟹ `0`", ~60–100 lines).  **What Mathlib does
+  not give is the star**: Wedderburn yields `≃ₐ[ℂ]`, we want `≃⋆ₐ[ℂ]`, and
+  there is **no Skolem–Noether in Mathlib**, so either the involution-
+  transport upgrade (`x♯ = h⁻¹x*h`, conjugate by `h^{1/2}`) is built or the
+  thesis's own matrix-unit construction (83V `cceil_sum` + polar
+  decomposition, both proved) is used, which is `∗`-preserving by
+  construction.  The thesis's first two pages ("`𝒜` is a von Neumann
+  algebra") are free in Lean: finite-dimensional normed spaces are proper and
+  `LinearMap.continuous_of_finiteDimensional` is Mathlib's.
+* **84bIII — ~1000–1600 lines; not a tail-end job.**  The mathematics is
+  short (`dⱼ := ⌈πⱼ∘e⌉` central by `carrier_miu`, `⌈πⱼ⌉ ≤ dⱼ` by leastness,
+  `⋃ⱼdⱼ = 1`, `dᵢℬ ↪ M_{Nᵢ}` finite-dimensional), but every step of the
+  assembly needs a carrier the tree lacks: the corner `cℬ` as a **type** with
+  `CStarAlgebra`/`PartialOrder`/`StarOrderedRing`/`VonNeumannAlgebra`
+  instances (67IV.2 is stated concretely, in `A`, precisely to avoid it), 84II
+  applied to each corner, a Zorn argument for the maximal orthogonal
+  subfamily, and a regrouping `lp (fun j => lp (fun m => M) ∞) ∞ ≃⋆ₐ
+  lp (fun (j,m) => M) ∞`.  It is downstream of 84II.
+* **84bV — ~150–300 lines given 84bIII.**
+* The `⌈π_j⌉ ≤ ⌈π_j∘e⌉` step of vn.tex 84bIII is **not** a type error: the
+  thesis has `ℬ ⊆ 𝒜` literally, so both projections live in `𝒜`; under our
+  rendering (injective nmiu `e : B → A`) it reads `⌈π_j⌉ ≤ e(d_j)`.
+* Mathematically (not in Lean) `A/Proc`'s **125bII** `ha_second_adjunction`
+  wants 84bV and 84bIII — see `docs/why-open.csv`.  Since it is itself a
+  `sorry`, no Lean declaration outside `A/VN` depends on `Division.lean`.
+
 **81VIII**.2 `sequential_quotient_2` is **proved** (it was still listed here
 after session 57 and was not).
 
@@ -345,11 +409,13 @@ after session 57 and was not).
 nmiu-maps is a von Neumann subalgebra", is 47V and was proved this session,
 so 84bV is now only blocked on 84bIII.
 
-## `Projections.lean` — 1
+## `Projections.lean` — 0
 
-| point | decl | class |
-|---|---|---|
-| **67IV**.2 | `central_projections_sums_2` | [S] 67IV.1 is proved (session 56); **not** cheap, see below |
+**Nothing left.**  **67IV**.2 `central_projections_sums_2` was proved in
+session 77 (see the headline); the note below, which claimed it needed 77III
+and so an import restructure, is **wrong** and is kept only as a record.
+`central_family_separating` (an orthogonal family of central projections with
+supremum `1` is separating) is public, just above it.
 
 **69II** `weakly_closed_ideal` was proved in session 73 (see the headline);
 its by-product `ceil_isLUB_one_sub_pow` (`1 − (1−a)^{2ⁿ} ↗ ⌈a⌉` for an effect
@@ -373,8 +439,9 @@ does *not* need 54XI, because our statement of `cvn` is the FIXME reduction
 (orthogonal projection onto `closure (range T)`, minimality from
 `T*q^⊥T = 0 ⟹ q^⊥T = 0`).
 
-**67IV**.2 `central_projections_sums_2` is *not* the cheap sequel to 67IV.1
-that the previous note implied.  Uniqueness is easy — if `cᵢ x = 0` for all
+~~**67IV**.2 `central_projections_sums_2` is *not* the cheap sequel to 67IV.1
+that the previous note implied.~~  *(Superseded by session 77: the
+compactness claim below is false — see the headline.)*  Uniqueness is easy — if `cᵢ x = 0` for all
 `i` then `⌈xx*⌉cᵢ = 0` (`ceil_mul_eq_zero`, the `cᵢ` being central), so
 `projSup (range c) ≤ 1 − ⌊x⌉` and `hsum` forces `x = 0`.  **Existence is the
 work**: one must build `a = "∑ᵢ bᵢ"` as an ultraweak limit of the finite

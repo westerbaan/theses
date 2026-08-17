@@ -4587,6 +4587,216 @@ theorem central_projections_sums_1 (c : A) (hc : IsStarProjection c)
     rw [hq, sub_mul, one_mul, sub_eq_zero] at hqs
     exact hqs.symm
 
+/-- Auxiliary for **67IV**.2: a family of central projections whose
+supremum is `1` is separating — if `cᵢa = 0` for every `i`, then `a = 0`.
+(Take `⌈aa*⌉`: `aa*cᵢ = 0` gives `⌈aa*⌉cᵢ = 0` by `ceil_mul_eq_zero`, so
+every `cᵢ` lies below `1 − ⌈aa*⌉`, whence `1 ≤ 1 − ⌈aa*⌉`.) -/
+theorem central_family_separating {ι : Type*} (c : ι → A)
+    (hc : ∀ i, IsStarProjection (c i))
+    (hsum : projSup (Set.range c) = 1)
+    {a : A} (ha : ∀ i, c i * a = 0) : a = 0 := by
+  have hnn : (0 : A) ≤ a * star a := mul_star_self_nonneg a
+  have hkey : ∀ i, ceil (a * star a) * c i = 0 := by
+    intro i
+    refine ceil_mul_eq_zero hnn ?_
+    have h : star a * c i = 0 := by
+      have := congrArg star (ha i)
+      rwa [star_mul, (hc i).isSelfAdjoint.star_eq, star_zero] at this
+    calc a * star a * c i = a * (star a * c i) := by noncomm_ring
+      _ = 0 := by rw [h, mul_zero]
+  have hle : projSup (Set.range c) ≤ 1 - ceil (a * star a) := by
+    refine (projSup_spec ?_).2.2 _ ((ceil_spec hnn).1).one_sub ?_
+    · rintro _ ⟨i, rfl⟩; exact hc i
+    · rintro _ ⟨i, rfl⟩
+      exact ((orthogonal_tuple_of_projections_1 (c i) (ceil (a * star a))
+        (hc i) ((ceil_spec hnn).1)).out 0 4).mp
+        (by
+          have := congrArg star (hkey i)
+          rwa [star_mul, (hc i).isSelfAdjoint.star_eq,
+            ((ceil_spec hnn).1).isSelfAdjoint.star_eq, star_zero] at this)
+  rw [hsum] at hle
+  have hz : ceil (a * star a) = 0 := by
+    have : (0 : A) ≤ -ceil (a * star a) := by
+      have := sub_nonneg.mpr hle
+      simpa using this
+    have h2 := ((ceil_spec hnn).1).nonneg
+    have : ceil (a * star a) ≤ 0 := by
+      have := neg_nonneg.mp this
+      exact this
+    exact le_antisymm this h2
+  have : a * star a = 0 := by
+    have := (ceil_spec hnn).2.1
+    rw [hz, mul_zero] at this
+    exact this.symm
+  exact (CStarRing.mul_star_self_eq_zero_iff a).mp this
+
+/-- Auxiliary for **67IV**.2, the heart of the existence half: a *positive*
+family `(bᵢ)` in the corners `cᵢA` of an orthogonal family of central
+projections, bounded above by `M·1`, is `(cᵢa)ᵢ` for the supremum `a` of the
+finite partial sums `∑_{i∈F} bᵢ`.  The partial sums are directed and bounded
+by `M·1` (a finite sum of orthogonal projections is a projection), so `a`
+exists by von Neumann-ness alone — no ultraweak compactness is needed.  That
+`cⱼa = bⱼ` comes from `bⱼ + cⱼ^⊥ a cⱼ^⊥` being an upper bound of the partial
+sums as well. -/
+private theorem exists_corner_lift_nonneg {ι : Type*} (c : ι → A)
+    (hc : ∀ i, IsStarProjection (c i)) (hcen : ∀ i, IsCentral A (c i))
+    (horth : Pairwise fun i j => c i * c j = 0)
+    (b : ι → A) (hbnn : ∀ i, 0 ≤ b i) (hb : ∀ i, c i * b i = b i)
+    {M : ℝ} (hM0 : 0 ≤ M) (hM : ∀ i, b i ≤ M • (1 : A)) :
+    ∃ a : A, ∀ i, c i * a = b i := by
+  classical
+  -- partial sums
+  have hSsa : ∀ F : Finset ι, IsSelfAdjoint (∑ i ∈ F, b i) := by
+    intro F
+    change star (∑ i ∈ F, b i) = _
+    rw [star_sum]
+    exact Finset.sum_congr rfl fun i _ => (IsSelfAdjoint.of_nonneg (hbnn i)).star_eq
+  set D : Set (selfAdjoint A) :=
+    Set.range (fun F : Finset ι => (⟨∑ i ∈ F, b i, hSsa F⟩ : selfAdjoint A)) with hDdef
+  have hmono : ∀ F G : Finset ι, F ⊆ G → (∑ i ∈ F, b i) ≤ ∑ i ∈ G, b i := by
+    intro F G h
+    exact Finset.sum_le_sum_of_subset_of_nonneg h fun i _ _ => hbnn i
+  have hne : D.Nonempty := ⟨_, ⟨∅, rfl⟩⟩
+  have hdir : DirectedOn (· ≤ ·) D := by
+    rintro _ ⟨F, rfl⟩ _ ⟨G, rfl⟩
+    exact ⟨_, ⟨F ∪ G, rfl⟩,
+      Subtype.coe_le_coe.mp (hmono _ _ Finset.subset_union_left),
+      Subtype.coe_le_coe.mp (hmono _ _ Finset.subset_union_right)⟩
+  -- `b i ≤ M • c i`
+  have hbMc : ∀ i, b i ≤ M • c i := by
+    intro i
+    have h2 := star_left_conjugate_le_conjugate (hM i) (c i)
+    rw [(hc i).isSelfAdjoint.star_eq] at h2
+    have hcbc : c i * b i * c i = b i := by
+      rw [hb i, ← hcen i (b i)]; exact hb i
+    have hrhs : c i * (M • (1 : A)) * c i = M • c i := by
+      rw [mul_smul_comm, smul_mul_assoc, mul_one, (hc i).isIdempotentElem.eq]
+    rwa [hcbc, hrhs] at h2
+  have hMone : IsSelfAdjoint (M • (1 : A)) := by
+    change star (M • (1 : A)) = M • (1 : A)
+    rw [star_smul, star_one, star_trivial]
+  have hbdd : BddAbove D := by
+    refine ⟨⟨M • (1 : A), hMone⟩, ?_⟩
+    rintro _ ⟨F, rfl⟩
+    refine Subtype.coe_le_coe.mp ?_
+    change (∑ i ∈ F, b i) ≤ M • (1 : A)
+    calc (∑ i ∈ F, b i) ≤ ∑ i ∈ F, M • c i := Finset.sum_le_sum fun i _ => hbMc i
+      _ = M • ∑ i ∈ F, c i := (Finset.smul_sum).symm
+      _ ≤ M • (1 : A) := by
+          have hp : IsStarProjection (∑ i ∈ F, c i) :=
+            isStarProjection_sum F c (fun i => hc i) fun i _ j _ hij => horth hij
+          exact smul_le_smul_of_nonneg_left hp.le_one hM0
+  set s : selfAdjoint A := dirSup D ⟨hne, hdir, hbdd⟩ with hsdef
+  have hlub : IsLUB D s := isLUB_dirSup D ⟨hne, hdir, hbdd⟩
+  set a : A := (s : A) with hadef
+  refine ⟨a, fun j => ?_⟩
+  set q : A := 1 - c j with hqdef
+  have hqproj : IsStarProjection q := (hc j).one_sub
+  have hqcen : IsCentral A q := fun x => by
+    rw [hqdef, sub_mul, mul_sub, one_mul, mul_one, hcen j x]
+  have hqb : ∀ i, i ≠ j → q * b i = b i := by
+    intro i hij
+    have : c j * b i = 0 := by
+      rw [← hb i, ← mul_assoc, horth (Ne.symm hij), zero_mul]
+    rw [hqdef, sub_mul, one_mul, this, sub_zero]
+  have hUB : ∀ F : Finset ι, (∑ i ∈ F, b i) ≤ b j + q * a * q := by
+    intro F
+    have hF' : (∑ i ∈ F.erase j, b i) ≤ q * a * q := by
+      have hle : (∑ i ∈ F.erase j, b i) ≤ a :=
+        Subtype.coe_le_coe.mpr (hlub.1 ⟨F.erase j, rfl⟩)
+      have h2 := star_left_conjugate_le_conjugate hle q
+      rw [hqproj.isSelfAdjoint.star_eq] at h2
+      have hfix : q * (∑ i ∈ F.erase j, b i) * q = ∑ i ∈ F.erase j, b i := by
+        have h3 : q * (∑ i ∈ F.erase j, b i) = ∑ i ∈ F.erase j, b i := by
+          rw [Finset.mul_sum]
+          exact Finset.sum_congr rfl fun i hi =>
+            hqb i (Finset.ne_of_mem_erase hi)
+        rw [← hqcen _, ← mul_assoc, hqproj.isIdempotentElem.eq, h3]
+      rwa [hfix] at h2
+    by_cases hj : j ∈ F
+    · rw [← Finset.add_sum_erase F b hj]
+      exact add_le_add le_rfl hF'
+    · rw [Finset.erase_eq_of_notMem hj] at hF'
+      calc (∑ i ∈ F, b i) ≤ q * a * q := hF'
+        _ ≤ b j + q * a * q := le_add_of_nonneg_left (hbnn j)
+  have hsale : IsSelfAdjoint (b j + q * a * q) := by
+    refine (IsSelfAdjoint.of_nonneg (hbnn j)).add ?_
+    have : star (q * a * q) = q * a * q := by
+      rw [star_mul, star_mul, hqproj.isSelfAdjoint.star_eq, s.2.star_eq, mul_assoc]
+    exact this
+  have hub : (⟨b j + q * a * q, hsale⟩ : selfAdjoint A) ∈ upperBounds D := by
+    intro x hx
+    obtain ⟨F, rfl⟩ := hx
+    exact Subtype.coe_le_coe.mp (hUB F)
+  have hale : a ≤ b j + q * a * q := Subtype.coe_le_coe.mpr (hlub.2 hub)
+  have hcq : c j * q = 0 := by
+    rw [hqdef, mul_sub, mul_one, (hc j).isIdempotentElem.eq, sub_self]
+  have hcbc : c j * b j * c j = b j := by
+    rw [hb j, ← hcen j (b j)]; exact hb j
+  have hupper : c j * a * c j ≤ b j := by
+    have h := star_left_conjugate_le_conjugate hale (c j)
+    rw [(hc j).isSelfAdjoint.star_eq] at h
+    have hz : c j * (b j + q * a * q) * c j = b j := by
+      rw [mul_add, add_mul, hcbc,
+        show c j * (q * a * q) * c j = (c j * q) * a * (q * c j) by noncomm_ring,
+        hcq, zero_mul, zero_mul, add_zero]
+    rwa [hz] at h
+  have hlower : b j ≤ c j * a * c j := by
+    have hbjmem : (⟨∑ i ∈ ({j} : Finset ι), b i, hSsa _⟩ : selfAdjoint A) ∈ D := ⟨{j}, rfl⟩
+    have hbjle : b j ≤ a := by
+      have h0 := Subtype.coe_le_coe.mpr (hlub.1 hbjmem)
+      simpa using h0
+    have h := star_left_conjugate_le_conjugate hbjle (c j)
+    rw [(hc j).isSelfAdjoint.star_eq, hcbc] at h
+    exact h
+  have heq : c j * a * c j = b j := le_antisymm hupper hlower
+  rw [← heq, mul_assoc, ← hcen j a, ← mul_assoc, (hc j).isIdempotentElem.eq]
+
+/-- Auxiliary for **67IV**.2: the self-adjoint case, by shifting.  A
+self-adjoint family with `‖bᵢ‖ ≤ M` satisfies `−M·cᵢ ≤ bᵢ`, so `bᵢ + M·cᵢ`
+is positive and bounded by `2M·1`; subtract `M·1` from the lift. -/
+private theorem exists_corner_lift_selfAdjoint {ι : Type*} (c : ι → A)
+    (hc : ∀ i, IsStarProjection (c i)) (hcen : ∀ i, IsCentral A (c i))
+    (horth : Pairwise fun i j => c i * c j = 0)
+    (d : ι → A) (hdsa : ∀ i, IsSelfAdjoint (d i)) (hdc : ∀ i, c i * d i = d i)
+    {M : ℝ} (hM0 : 0 ≤ M) (hdM : ∀ i, ‖d i‖ ≤ M) :
+    ∃ a : A, ∀ i, c i * a = d i := by
+  have hcoe : algebraMap ℂ A ((M : ℝ) : ℂ) = M • (1 : A) := by
+    rw [Algebra.algebraMap_eq_smul_one, Complex.coe_smul]
+  have hord : ∀ i, -(M • (1 : A)) ≤ d i ∧ d i ≤ M • (1 : A) := by
+    intro i
+    have h := (Theses.A.CStar.norm_le_iff_neg_algebraMap_le (hdsa i) hM0).mp (hdM i)
+    rwa [hcoe] at h
+  have hcm : ∀ i, c i * (M • (1 : A)) = M • c i := by
+    intro i; rw [mul_smul_comm, mul_one]
+  have hcdc : ∀ i, c i * d i * c i = d i := by
+    intro i; rw [hdc i, ← hcen i (d i)]; exact hdc i
+  set d' : ι → A := fun i => d i + M • c i with hd'def
+  have hd'nn : ∀ i, 0 ≤ d' i := by
+    intro i
+    have h2 := star_left_conjugate_le_conjugate (hord i).1 (c i)
+    rw [(hc i).isSelfAdjoint.star_eq, hcdc i,
+      show c i * -(M • (1 : A)) * c i = -(M • c i) by
+        rw [mul_neg, neg_mul, hcm i, smul_mul_assoc, (hc i).isIdempotentElem.eq]] at h2
+    have := neg_le_iff_add_nonneg.mp h2
+    simpa [hd'def, add_comm] using this
+  have hd'c : ∀ i, c i * d' i = d' i := by
+    intro i
+    change c i * (d i + M • c i) = d i + M • c i
+    rw [mul_add, hdc i, mul_smul_comm, (hc i).isIdempotentElem.eq]
+  have hd'M : ∀ i, d' i ≤ (2 * M) • (1 : A) := by
+    intro i
+    have h1 : M • c i ≤ M • (1 : A) := smul_le_smul_of_nonneg_left (hc i).le_one hM0
+    have h2 := add_le_add (hord i).2 h1
+    rwa [show M • (1 : A) + M • (1 : A) = (2 * M) • (1 : A) by
+      rw [← add_smul]; ring_nf] at h2
+  obtain ⟨a', ha'⟩ := exists_corner_lift_nonneg c hc hcen horth d' hd'nn hd'c
+    (by linarith : (0 : ℝ) ≤ 2 * M) hd'M
+  refine ⟨a' - M • (1 : A), fun i => ?_⟩
+  rw [mul_sub, ha' i, hcm i]
+  change d i + M • c i - M • c i = d i
+  abel
+
 /-- **67IV** (`central-projections-sums`, vn.tex:3408, Exercise), part 2:
 given a family of central projections `(cᵢ)` with `∑ᵢ cᵢ = 1` (pairwise
 orthogonal, supremum `1`), `a ↦ (cᵢa)ᵢ` is an nmiu-isomorphism
@@ -4598,8 +4808,85 @@ theorem central_projections_sums_2 {ι : Type*} (c : ι → A)
     (hsum : projSup (Set.range c) = 1)
     (b : ι → A) (hb : ∀ i, c i * b i = b i)
     (hbdd : BddAbove (Set.range fun i => ‖b i‖)) :
-    ∃! a : A, ∀ i, c i * a = b i :=
-  sorry
+    ∃! a : A, ∀ i, c i * a = b i := by
+  obtain ⟨M₀, hM₀⟩ := hbdd
+  have hM : ∀ i, ‖b i‖ ≤ max M₀ 0 := fun i =>
+    le_trans (hM₀ ⟨i, rfl⟩) (le_max_left _ _)
+  have hM0 : (0 : ℝ) ≤ max M₀ 0 := le_max_right _ _
+  set M : ℝ := max M₀ 0 with hMdef
+  have hcp : ∀ i, IsStarProjection (c i) := fun i => (hc i).1
+  have hcc : ∀ i, IsCentral A (c i) := fun i => (hc i).2
+  have hbs : ∀ i, c i * star (b i) = star (b i) := by
+    intro i
+    have h := congrArg star (hb i)
+    rw [star_mul, (hcp i).isSelfAdjoint.star_eq] at h
+    rw [hcc i (star (b i))]; exact h
+  -- real and imaginary parts
+  set h : ι → A := fun i => ((2 : ℂ)⁻¹) • (b i + star (b i)) with hhdef
+  set k : ι → A := fun i => (Complex.I / 2) • (star (b i) - b i) with hkdef
+  have hhsa : ∀ i, IsSelfAdjoint (h i) := by
+    intro i
+    change star (((2 : ℂ)⁻¹) • (b i + star (b i))) = _
+    rw [star_smul, star_add, star_star]
+    simp [hhdef, add_comm]
+  have hksa : ∀ i, IsSelfAdjoint (k i) := by
+    intro i
+    change star ((Complex.I / 2) • (star (b i) - b i)) = _
+    rw [star_smul, star_sub, star_star]
+    rw [show star (Complex.I / 2) = -(Complex.I / 2) by
+      simp [Complex.ext_iff]; norm_num]
+    rw [hkdef]
+    change (-(Complex.I / 2)) • (b i - star (b i)) = (Complex.I / 2) • (star (b i) - b i)
+    rw [neg_smul, ← smul_neg]
+    congr 1
+    abel
+  have hhc : ∀ i, c i * h i = h i := by
+    intro i; change c i * (((2 : ℂ)⁻¹) • (b i + star (b i))) = _
+    rw [mul_smul_comm, mul_add, hb i, hbs i]
+  have hkc : ∀ i, c i * k i = k i := by
+    intro i; change c i * ((Complex.I / 2) • (star (b i) - b i)) = _
+    rw [mul_smul_comm, mul_sub, hb i, hbs i]
+  have hhM : ∀ i, ‖h i‖ ≤ M := by
+    intro i
+    change ‖((2 : ℂ)⁻¹) • (b i + star (b i))‖ ≤ M
+    rw [norm_smul]
+    have := norm_add_le (b i) (star (b i))
+    rw [norm_star] at this
+    have h2 : ‖((2 : ℂ)⁻¹)‖ = 2⁻¹ := by norm_num
+    rw [h2]
+    have := hM i
+    nlinarith [norm_nonneg (b i), norm_add_le (b i) (star (b i))]
+  have hkM : ∀ i, ‖k i‖ ≤ M := by
+    intro i
+    change ‖(Complex.I / 2) • (star (b i) - b i)‖ ≤ M
+    rw [norm_smul]
+    have h2 : ‖Complex.I / 2‖ = 2⁻¹ := by
+      rw [norm_div, Complex.norm_I]; norm_num
+    rw [h2]
+    have h3 := norm_sub_le (star (b i)) (b i)
+    rw [norm_star] at h3
+    have := hM i
+    nlinarith [norm_nonneg (b i)]
+  have hdec : ∀ i, h i + Complex.I • k i = b i := by
+    intro i
+    change ((2 : ℂ)⁻¹) • (b i + star (b i)) +
+      Complex.I • ((Complex.I / 2) • (star (b i) - b i)) = b i
+    rw [smul_smul, show Complex.I * (Complex.I / 2) = -(2 : ℂ)⁻¹ by
+      rw [div_eq_mul_inv, ← mul_assoc, Complex.I_mul_I]; ring]
+    rw [neg_smul, ← smul_neg, ← smul_add]
+    rw [show (b i + star (b i)) + -(star (b i) - b i) = (2 : ℂ) • b i by
+      rw [two_smul]; abel]
+    rw [smul_smul, inv_mul_cancel₀ (two_ne_zero), one_smul]
+  obtain ⟨ah, hah⟩ := exists_corner_lift_selfAdjoint c hcp hcc horth h hhsa hhc hM0 hhM
+  obtain ⟨ak, hak⟩ := exists_corner_lift_selfAdjoint c hcp hcc horth k hksa hkc hM0 hkM
+  refine ⟨ah + Complex.I • ak, fun i => ?_, ?_⟩
+  · rw [mul_add, mul_smul_comm, hah i, hak i]
+    exact hdec i
+  · intro y hy
+    have hzero : ∀ i, c i * (y - (ah + Complex.I • ak)) = 0 := by
+      intro i
+      rw [mul_sub, hy i, mul_add, mul_smul_comm, hah i, hak i, hdec i, sub_self]
+    exact sub_eq_zero.mp (central_family_separating c hcp hsum hzero)
 
 /-! ## Parsec 680: central support -/
 
