@@ -17216,3 +17216,372 @@ Both halves are ~230 lines together and run on two devices.
   arithmetic; 125II now looks the nearer of the two (`ngns` and `gnsHilb` are
   proved, and only `#H ≤ 2^#𝒜` is left, which needs the countable support of
   `ℓ²`-families).
+
+---
+
+## Session 73 — `A/VN`: **the ERRATA 69III powers-not-roots repair survives formalization**, 69II is CLOSED, and both of `Basic.lean`'s counterexample/transpose items fall (worker on `Theses/A/VN/`)
+
+A/VN **11 → 8** code `sorry`s.  Per file, each source run through `lean`
+individually against rebuilt oleans, paired with an error count, **0 errors
+everywhere**: `Basic` **4**, `Projections` **1**, `Division` **3**,
+`NormalFunctionals` **0**, `Completeness` **0**.  Closed this session, all
+three `#print axioms`-clean (`[propext, Classical.choice, Quot.sound]`):
+
+* **69II** `weakly_closed_ideal` (`Projections.lean`) — the file is down to
+  its single remaining item, 67IV.2;
+* **43II**.11 `vn_counterexamples_11` (`Basic.lean`) — the **last** of the
+  nine 43II counterexamples, so the whole 43II block is now proved;
+* **45I**.2 `normal_not_us_cont` (`Basic.lean`).
+
+`lake build Theses.A.VN.Division Theses.A.VN.NormalFunctionals` completes with
+zero errors (8717 jobs) after each of them.
+
+### 1. 69II: the ERRATA 69III repair holds, and two of its details simplify
+
+The brief asked for the repair filed at ERRATA **69III** to be *checked* by
+formalizing it, since it had been written from a sketch.  **It holds.**  The
+row is updated in place (it stays OPEN — the tex still needs the fix), with
+two corrections, both of which make the repair shorter than filed:
+
+* **The binomial expansion is not needed.**  ERRATA wrote
+  `1 − (1−a)ⁿ = ∑_{k≥1} \binom{n}{k}(−1)^{k+1}aᵏ` to place the approximants in
+  `𝒟`.  The geometric factorisation does it in one step:
+  `1 − (1−a)ⁿ = (∑_{i<n}(1−a)^i)·a` (Mathlib's `geom_sum_mul_neg`), which is
+  in `𝒟` by the ideal law because `a` is, with no coefficients to bound.
+* **`1 − (1−a)ⁿ ↗ ⌈a⌉` is *not* a variant of 56I and needs its own proof.**
+  This was the one real risk in the filed repair, and the argument turned out
+  to be elementary; it is now the public `ceil_isLUB_one_sub_pow`.  With
+  `p = ⌈a⌉` and `x = p − a`: `p a = a p = a` gives `(1−p)x = x(1−p) = 0`,
+  hence `(1−a)^{n+1} = (1−p) + x^{n+1}` by induction, hence
+  `1 − (1−a)ⁿ = p − xⁿ`.  And `⌊x⌋ = 0`, because a projection `q ≤ p − a`
+  would give `a ≤ p − q` with `p − q` a projection (**55XIV**), contradicting
+  the leastness of `⌈a⌉` unless `q = 0`.  So `xⁿ ↘ 0` by **56VI**
+  `vna_floor`, whose statement is already the sub-sequence `n = 2ᵏ` — which is
+  all the argument needs, since `(1 − (1−a)ⁿ)ₙ` is increasing.
+
+Two further notes on the *rest* of 69III, which the ERRATA row said was
+unaffected.  It is, with one wrinkle worth recording:
+
+* The paragraph "the equality `ac = a` holds when `a` is an effect …, and thus
+  when `a` is self-adjoint too (by scaling), and hence for arbitrary `a` by
+  writing `a = Re a + i Im a`" **does not survive as printed**, and for the
+  same reason as the roots: passing from a self-adjoint `a ∈ 𝒟` to its
+  positive part needs `a⁺ ∈ 𝒟`, which is exactly the kind of functional
+  calculus an ideal does not support.  (Scaling alone only covers *positive*
+  elements.)  The Lean proof therefore goes through the support and range
+  projections instead: for arbitrary `a ∈ 𝒟`, `a*a` and `aa*` are positive
+  elements of `𝒟`, so `⌈a⌋ = ⌈a*a⌉` and `⌊a⌉ = ⌈aa*⌉` are projections of `𝒟`
+  (by the repaired first paragraph, rescaled by `‖·‖⁻¹` for **59I**), hence
+  `≤ c`; and `a⌈a⌋ = a`, `⌊a⌉a = a` (**59VI** `ceill_basic_1`/`2`) give both
+  `ca = a` and `ac = a` at once.  This also removes the printed proof's
+  asymmetry — it proves `ac = a` and states the claim as `ca = a`.
+* Uniqueness needs no centrality: `c' = c c'` and `c' = c' c` (adjoints) and
+  `c = c' c` give `c' = c` directly.
+
+Everything else is the thesis's proof verbatim: `𝒟 ∩ [0,1]` is directed
+because `⌈½a + ½b⌉ ∈ 𝒟` dominates both (here through `ceil_mono` and
+`ceil_smul` rather than `ceil_floor_basic`'s `⌈a⌉ ∪ ⌈b⌉`, which is the same
+element); `c := ⋁(𝒟 ∩ [0,1])` is in `𝒟` by the hypothesis; `⌈c⌉ ∈ 𝒟 ∩ [0,1]`
+forces `⌈c⌉ ≤ c ≤ ⌈c⌉`, making `c` a projection; and centrality comes from the
+claim applied to `ac` and `ca`.  Two new private helpers sit above it,
+`ceil_mem_ideal_of_effect` and `ceil_mem_ideal`.
+
+### 2. 43II.11: the net is *eventually constant*, which is what makes it cheap
+
+The thesis's route (vn.tex:519 ff.) is: an unbounded `f : ℓ² → ℂ`; `x_S ∈ S`
+representing `f` on each finite-dimensional `S` by Riesz; the net
+`(|e⟩⟨x_S|)_S` over finite-dimensional subspaces ordered by inclusion.  Three
+things made it shorter than the "unbounded functional + Riesz" costing
+suggested:
+
+* **The index type is `Finset ℓ²`**, with `S = span F`, not the poset of
+  finite-dimensional subspaces — `atTop` is then `NeBot` and directed for
+  free, and `FiniteDimensional.span_finset` is an instance.
+* **`f` is built without a Hamel basis of `ℓ²`.**  `Module.Basis.span` turns
+  the orthonormal family `(eₙ)` into a basis *of its span*, `Basis.constr`
+  sends `eₙ ↦ n`, and `LinearMap.exists_extend` extends to `ℓ²`.  No
+  extension of a linearly independent set to a basis is needed.
+* **Ultraweak Cauchyness is not an estimate.**  By **39IX** `bh_np`,
+  `ω = ∑ₙ⟨yₙ,(·)yₙ⟩`, and `ω(|e⟩⟨v|) = ⟨v, z_ω⟩` for the *single* vector
+  `z_ω := ∑ₙ⟨yₙ,e⟩yₙ` (norm-summable because `∑‖yₙ‖² < ∞`).  So
+  `ω(|e⟩⟨x_S|) = f(z_ω)` for **every** `S ∋ z_ω`: the net is eventually
+  constant, and `Filter.Tendsto.cauchy_map` finishes it.  This is the thesis's
+  own observation, and it means no Cauchy estimate is ever needed — which is
+  just as well, since `‖x_S‖ → ∞`.
+
+For the non-convergence half the thesis derives `⟨e, Ay⟩ = f(y)` for all `y`,
+which needs the *sesquilinear* functionals `T ↦ ⟨u,Tv⟩` to be ultraweakly
+continuous, i.e. a polarisation argument.  **That is avoidable.**  Testing
+against the vector functional at `w` alone gives `⟨w, Aw⟩ = f(w)·⟨w,e⟩`, and
+at `w = eₙ + e₀` (with `e = e₀`) this reads `⟨w,Aw⟩ = f(eₙ) + f(e₀) = n`,
+while `|⟨w,Aw⟩| ≤ ‖A‖‖w‖² ≤ 4‖A‖`.  Only *diagonal* np-functionals are used.
+
+### 3. 45I.2: the transpose, and normality for free
+
+Mathlib has no transpose on `B(ℓ²)` and no conjugation on `lp`, as the
+previous costing said — but `lp` *does* carry `Star`
+(`lp.star_apply`, `NormedStarGroup`, `StarModule`), so `J := star` is the
+conjugation and no bespoke carrier is needed.  The three facts that carry the
+proof, all private in `Basic.lean`'s new `section Transpose`:
+
+* **`star_inner_l2`**: `⟨Jx, Jy⟩ = conj⟨x,y⟩`, one `lp.inner_eq_tsum` and
+  `tsum_star`.
+* **`transL2 T := J T* J`**, built with `LinearMap.mkContinuous` at bound
+  `‖T‖`.  It is `∗`-compatible — `star (transL2 T) = transL2 (star T)`, proved
+  through `adjoint_inner_left/right` and `star_inner_l2` — and therefore
+  **involutive**.
+* Positivity is `⟨x, (J T J)x⟩ = conj⟨Jx, T Jx⟩` plus `‖Jx‖ = ‖x‖`, through
+  **25V**.2 `hilb_positive_operators_2`.
+
+**Normality then costs nothing beyond involutivity**: a monotone involution is
+an order isomorphism, so it carries `IsLUB` to `IsLUB`.  The only wrinkle is
+that `PreservesDirSups` quantifies over upper bounds `u` in the *algebra*, not
+in `sa(𝒜)`; but `u ≥ f(d₀)` for some `d₀` in a nonempty `D` makes
+`u = (u − f d₀) + f d₀` self-adjoint, so `f u` can be fed back to the
+`IsLUB` in `sa(𝒜)`.  There is no need for a normality argument of the
+"reduces to itself" kind that 44XV/45I.1 needed.
+
+Non-continuity is **43II**.4 re-used verbatim: `transL2 |0⟩⟨n| = |n⟩⟨0|`
+(the basis vectors are `J`-fixed), `|0⟩⟨n| → 0` ultrastrongly
+(`vn_counterexamples_4_ket`), and `|n⟩⟨0|` has no ultrastrong limit
+(`vn_counterexamples_4_bra`).  The proof is a copy of
+`vn_counterexamples_4_star` with `star` replaced by `transL2`.
+
+### Where A/VN stands, and the next gate
+
+Eight left: `Basic.lean` **4** — 51IX `Linfty_vn` (an `L^∞` carrier Mathlib
+has not; a construction job, not a proof job) and 54XI.1/.2/.3
+`cvn_faithful_*` (a measure on the almost-clopen σ-algebra; 54XI.1 is the
+gate, .2 and .3 are downstream of it); `Projections.lean` **1** — 67IV.2
+`central_projections_sums_2`, whose existence half needs 77III's ultraweak
+compactness of the ball, and 77III lives *downstream* in `Completeness.lean`;
+`Division.lean` **3** — 84II `fdcstar` (Artin–Wedderburn), 84bIII
+`hereditarilyAtomic_subalgebra`, and 84bV `ha_equalisers`, now blocked only on
+84bIII.
+
+**The next gate to name precisely is 54XI.1 `cvn_faithful_1`**
+(`A/VN/Basic.lean`), because it is the only remaining A/VN item anything
+downstream wants: it is the last A/VN blocker of `A/Proc`'s **127III**
+`duplicable` (see session 72's closing note in `Duplicators.lean`), and 54XI.2
+and .3 fall out of the same construction.  Everything else in A/VN is now
+terminal — nothing in the tree consumes 51IX, 84II, 84bIII, 84bV or 67IV.2.
+
+### Session 75 (A/Proc) — **125II `vn_gns_bound` and 124I `vn_generation_bound` are both CLOSED**, and 124I's recorded blocker was void
+
+`QuantumLambda.lean` **14 → 12**; A/Proc **31 → 29**, 0 errors in all four
+files, both new theorems axiom-clean.  **+265/−4 lines**, all in
+`QuantumLambda.lean`, against costings of "the cheapest items in the file"
+(right) plus, for 124I, "a transfinite-closure construction has to be
+written" (wrong).
+
+**125II — the brief's reading was accurate.**  "Only the `#H ≤ 2^#𝒜` half
+remains" is correct: the representation is the thesis's, `gnsRep` on
+`gnsHilb 𝒜 = ⊕_ω ℋ_ω` over *all* np-functionals (48V/48VIII), and
+`ConcreteRep` is assembled straight from `gnsRep_injective` and
+`gnsRep_normal`.  So is "it needs countable support of `ℓ²`-families".  The
+count is two private lemmas:
+
+* **`card_le_of_denseRange`** — `#Y ≤ #X^ℵ₀` for a Hausdorff Fréchet–Urysohn
+  `Y` carrying a dense-range `f : X → Y`; each `y` gets a sequence from
+  `range f` (`mem_closure_iff_seq_limit`) and the assignment is injective
+  because limits are unique.  Applied at `gnsVec_denseRange`, this *is* the
+  thesis's "every element of `ℋ_ω` is the limit of a sequence of elements
+  from `𝒜`" — but that argument gives `#ℋ_ω ≤ #𝒜^{ℵ₀}`, whereas the thesis
+  prints `ℵ₀^{#𝒜}`.  **Exponents swapped.**
+* **`card_lp_two_le`** — `#ℓ²(E) ≤ (#Σᵢ Eᵢ)^{ℵ₀} + 1`.  A member of `ℓ²(E)`
+  is determined by its graph `{⟨i, yᵢ⟩ : yᵢ ≠ 0}`, which is countable
+  because `Σ‖yᵢ‖²` converges (`Summable.countable_support`), and a countable
+  set is either empty or a `Set.range` of some `ℕ → Σᵢ Eᵢ` — so the graph
+  injects into `Option (ℕ → Σᵢ Eᵢ)`.  This replaces the thesis's
+  `#ℋ = Σ_ω #ℋ_ω`, which is **false** for a Hilbert direct sum over a large
+  index set: with `#Ω = ℵ_ω` and `ℋ_ω = ℂ`, `#ℓ²(Ω) = ℵ_ω^{ℵ₀} > ℵ_ω`.
+
+Both slips are harmless — `(2^{#𝒜})^{ℵ₀} = 2^{#𝒜}` for infinite `𝒜` — and are
+filed as a single ERRATA **125II** row marked as a nit.
+
+Two further notes.  (i) **The thesis's `𝒜 = {0}` case has to be kept.**  Our
+`VonNeumannAlgebra` class carries no `Nontrivial`, and `#𝒜^{ℵ₀} ≤ 2^{#𝒜}` is
+false for finite `#𝒜 ≥ 2`; the split on `subsingleton_or_nontrivial` is also
+what supplies `Infinite 𝒜` in the main branch, via
+`Infinite.of_injective (algebraMap ℂ 𝒜) (RingHom.injective _)`.  In the
+subsingleton branch `card_le_of_denseRange` already gives `#ℋ_ω ≤ 1^{ℵ₀} = 1`,
+so `⊕_ω ℋ_ω` is a point and `1 ≤ 2 = 2^{#𝒜}`.  (ii) `#Ω ≤ 2^{#𝒜}` is the
+thesis's own argument (`Ω ↪ (𝒜 → ℂ)`), unchanged.
+
+**124I — the recorded blocker does not exist.**  `docs/why-open.csv` and the
+survey both said "the tree has **no** characterisation of `wstar` as a
+closure (only `isVNSubalgebra_wstar`), so a transfinite-closure construction
+has to be written".  Session 66 already wrote it: **`dense_of_wstar_eq_top`**
+in `Tensor.lean` (if `W*(𝒮) = 𝒜` for a ∗-subalgebra `𝒮`, then `𝒮` is
+ultraweakly dense — via 75VII `usClosureSubalgebra`) is exactly the closure
+property 124I needs, and it is *upstream in the same chapter*.  With it the
+thesis's proof transcribes in ~70 lines:
+
+* `S' := StarAlgebra.adjoin ℂ S` is ultraweakly dense, from `wstar_mono` plus
+  `dense_of_wstar_eq_top`;
+* `#S' ≤ 𝔠 + #S` is Mathlib's `Algebra.lift_cardinalMk_adjoin_le` (the
+  thesis's "every element of `S'` can be formed from `S ∪ ℂ` by the finitary
+  operations"), with `StarAlgebra.adjoin_toSubalgebra` to pass from the star
+  adjoin to the plain one and `#(star S) = #S` for the `S ∪ star S` step;
+* `#𝒜 ≤ 2^(2^#S')` is the thesis's filter count, made precise as: `x ↦
+  Filter.comap ι (𝓝 x)` is injective `𝒜 → Filter S'`, because the trace
+  filter is `NeBot` (`mem_closure_iff_comap_neBot`) and converges to `x`, and
+  the **ultraweak topology is Hausdorff** (**44XI**.1 `vn_positive_basic_1`)
+  — that last is the ingredient the printed proof leaves implicit.  Then
+  `Filter S' ↪ Set (Set S')` by `Filter.filter_eq`.
+
+**Next gate in `QuantumLambda.lean`: 124III `second_adjunction`.**  Both of
+its recorded external blockers are now gone — 47IV.3 `vn_products_ncpsu` was
+proved in A/VN, and 124I is this session's.  What is left is Freyd's AFT
+*itself*, and it is not bookkeeping: proc.tex:4718 indexes the solution set
+by "von Neumann algebras carried on a **subset of `κ`**", which means
+transporting `CStarAlgebra`, `PartialOrder`, `StarOrderedRing` and
+`VonNeumannAlgebra` along a relabelling bijection, on top of the limit
+machinery.  Of the other eleven, **125cIII `Fha_concrete`** remains the only
+one costed as self-contained; the parsec-1255 chain is *not* rooted in a
+cheap item — 125VIIb `tensor_preimage`, which 125eIII cites, is an exercise
+whose hint routes through 125VI `tensor_equalisers`, itself `sorry`.
+
+**Process note.** Three upstream rebuilds of `A/VN/Basic.lean` and one of
+`A/CStar/Matrices.lean` landed during this session; each invalidates the
+whole A/Proc olean chain (~10 min cold, ~4 min warm).  The two proofs were
+therefore developed in a throw-away file importing only `Theses.A.VN.Basic`,
+which is stable enough to iterate against, and transplanted once.  The one
+thing that did not survive the transplant was placement: a `section` opened
+*between* a doc comment and its theorem is a parse error
+(`unexpected token 'section'; expected 'lemma'`).
+
+---
+
+## Session 74 — `A/CStar`: **the chapter is finished** — 15I `cauchy_formula`, 15V `taylor`, 34VII `ccstar_pos_mat`, 34IX.2 `cp_commutative_dom` (worker on `Theses/A/CStar/`)
+
+**Result: A/CStar 5 → 1 sorry, 0 errors.**  Per file, compiler-counted, each
+paired with an error count of 0: `Basic` 0, `Positive` **2 → 0**,
+`Representation` 1 (`functional_calculus_4`, the do-not-touch (d) item awaiting
+an author decision), `Matrices` **2 → 0**, `TowardsVN` 0.  All four new
+theorems are `#print axioms`-clean (`propext, Classical.choice, Quot.sound`).
+**Every statement of `cstar.tex` except 28II.4 is now proved**, and with 15I/15V
+the parsec 120–150 complex-analysis block is complete, so the chapter's
+bootstrapping no longer rests on the two imported Mathlib facts flagged in
+HANDOFF ("Open decisions", item 0) — those were imported precisely because
+parsecs 120–150 were open.
+
+### 1. 15I `cauchy_formula` — the ERRATA repair works, in a weaker and cheaper form
+
+**Answer to the brief's question: yes, 15I closed, and the triangulation-free
+repair of ERRATA `15I` does survive contact with Lean — but the repair as
+written is stronger than necessary and was *not* the route taken.**  The row
+proposed showing `h(z₀) := ∑ₙ ∫_{wₙ}^{wₙ₊₁}(z−z₀)⁻¹dz` is *holomorphic* in `z₀`
+and that `h' = 0`; that needs differentiation under the integral sign.  **Mere
+continuity suffices**, and the continuity is free:
+
+* by `invint_3` (proved last session) `h(z₀) = i·∑ₙ arg ζₙ` with
+  `ζₙ = (wₙ₊₁−z₀)/(wₙ−z₀)`, the logarithms telescoping to `0` because
+  `w_N = w₀`;
+* the `n`-th edge spans a supporting line of the `N`-gon, so an interior `z₀`
+  satisfies `Re((z₀−c)·conj e^{iπ(2n+1)/N}) < r cos(π/N)` **strictly**
+  (`polygon_halfplane`, `polygon_halfplane_strict`);
+* that inequality *is* `Im(conj(wₙ−z₀)(wₙ₊₁−z₀)) > 0` — the identity
+  `Im(conj aₙ aₙ₊₁) = 2r sin(π/N)·(r cos(π/N) − Re((z₀−c)conj e^{iπ(2n+1)/N}))`
+  is one `linear_combination` (`polygon_im_pos`) — so each `ζₙ` sits in the open
+  upper half plane, where `Complex.arg` is continuous;
+* so `S(z₀) = ∑ₙ arg ζₙ` is continuous along the segment from the centre `c` to
+  `z₀`, which stays inside the same open half planes by convexity, while
+  `exp(i S) = ∏ ζₙ = 1` (telescoping product); hence `S ∈ 2πℤ` pointwise and the
+  **intermediate value theorem** forces it constant.  At the centre every `ζₙ`
+  is `e^{2πi/N}`, so `S = N·(2π/N) = 2π`.  That is `polygon_winding`.
+
+The ERRATA row has been rewritten to record the machine-checked version.
+The only genuinely fiddly ingredient is `cos(πm/N) ≤ cos(π/N)` for **odd**
+integers `m` (`cos_le_cos_of_odd`, ~25 lines via `m % 2N`), which is what makes
+the supporting-line bound hold at every vertex.
+
+**A second divergence, and it is the one that saved the most work.**  The route
+sketched by session 73 and by the survey builds a *primitive on a convex open
+set* (`F(z) = ∫_c^z f`) by Goursat, after thickening the polygon to a convex
+open `V ⊆ U`.  None of that is needed: the **fan triangulation from the vertex
+`w₀`** gives `∑ₙ ∫_{wₙ}^{wₙ₊₁} g = ∑ₙ ∫_{T(w₀,wₙ,wₙ₊₁)} g` by telescoping the
+spokes (`polygon_fan`, hypothesis-free, 10 lines), and each triangle's convex
+hull lies inside `convexHull(range w) ⊆ U`, so **`goursat` applies directly**
+(`polygon_integral_eq_zero`).  No primitive, no `Metric.thickening`, no
+convexity of `V`.  The rest is the thesis's own argument: Mathlib's
+`Complex.differentiableOn_dslope` for the removable singularity, and
+`intervalIntegral.integral_smul_const` to pull the constant `f z₀` out.
+
+### 2. 15V `taylor`
+
+As predicted, small on top of 15I (~90 lines).  Per edge, the geometric series
+`∑ₙ (z−v)ⁿ(u−v)^{−(n+1)} = (u−z)⁻¹` is integrated term by term with
+`intervalIntegral.hasSum_integral_of_dominated_convergence`, the domination
+being `(‖z−v‖/s)ⁿ·(M/s)` where `M` bounds `‖f‖` on the edge
+(`IsCompact.exists_bound_of_continuousOn`).  The one point worth recording:
+the hypothesis "`ball v s` is inside the polygon" gives `s ≤ ‖u − v‖` on every
+edge **only because `polygon_notMem_edge` says interior points are never on an
+edge** — the same lemma that 15I needs.  Then `hasSum_sum` over the `K` edges
+and `HasSum.const_smul` by `(2πi)⁻¹`.
+
+### 3. 34VII `ccstar_pos_mat` — the survey's costing was 3–5× too high, and its diagnosis was wrong
+
+**Costed at 450–650 lines "dominated by the transport through `CStarMatrix`";
+it came in at ~150, and the transport is *four lines*.**  The survey (and
+session 69's re-costing) assumed one must build `(𝒜 ≃⋆ₐ ℬ) → (M_N 𝒜 ≃⋆ₐ M_N ℬ)`
+and an `M_N(C(X)) ≅ C(X, M_N ℂ)` bridge, neither of which Mathlib has.
+**Neither is needed.**  The already-proved **33II**.1 `cstar_matrix_positive_iff`
+(`0 ≤ A ↔ ∀ a, 0 ≤ ∑ᵢⱼ aᵢ* Aᵢⱼ aⱼ`) transports positivity across the character
+space by itself, in both directions:
+
+* `⇒`: take `aᵢ = φ(vᵢ)·1` and apply the character `φ`, which is positive;
+* `⇐`: apply `nonneg_of_forall_character` (already private in the file) to
+  `∑ᵢⱼ aᵢ* Aᵢⱼ aⱼ ∈ 𝒜` and feed it `vᵢ := φ(aᵢ)`.
+
+That is `matrix_nonneg_iff_character`, 15 lines, and it replaces the whole
+transport.  With it the thesis's argument (340.80) goes through verbatim: cover
+the character space by the opens where all `N²` **entries** of `Â` are within
+`δ` of their value at the centre, take a finite subcover
+(`IsCompact.elim_finite_subcover`), build a partition of unity
+(`PartitionOfUnity.exists_isSubordinate`; the character space is compact
+Hausdorff, hence normal and paracompact), and read off the estimate.
+
+Two further notes for anyone working with `CStarMatrix`:
+
+* the estimate is made **entrywise**, never in the `CStarMatrix` operator norm,
+  using `‖M‖ ≤ ∑ⱼ∑ᵢ ‖Mᵢⱼ‖`.  Mathlib proves exactly this inequality but only
+  inside a **`private`** lemma (`antilipschitzWith_toMatrixAux`,
+  `Analysis/CStarAlgebra/CStarMatrix.lean`), so it is repeated here as
+  `norm_le_sum_norm_entry`; the proof transplants verbatim except for one extra
+  `simp only [equiv_symm_pi_apply]`.
+* `(∑ₖ Mₖ) i j = ∑ₖ Mₖ i j` needs a hand-rolled induction
+  (`cstarMatrix_sum_apply`): neither `Finset.sum_apply` nor `Matrix.sum_apply`
+  fires through the `CStarMatrix` synonym.
+
+The easy inclusion (`closure S ⊆ 𝒜₊`) is `CStarAlgebra.isClosed_nonneg` plus
+`tensor_nonneg`: with `a = x*x` and `B = C*C`, the matrix `(Bᵢⱼ • a)` is
+`M*M` for `Mᵢⱼ = Cᵢⱼ • x`.  ⚠ Note `isClosed_nonneg` resolves by default to the
+**Banach-lattice** lemma in `Analysis/Normed/Order/Lattice.lean`; the one wanted
+is `CStarAlgebra.isClosed_nonneg`, and the wrong one fails only at unification.
+
+### 4. 34IX.2 `cp_commutative_dom` — ~55 lines, as the survey said
+
+The thesis's one-sentence proof, made honest.  `{M | 0 ≤ ∑ᵢⱼ bᵢ* f(Mᵢⱼ) bⱼ}` is
+closed — `f` is continuous because **20II**.2 `weak_russo_dye_2`
+(`‖f a‖ ≤ 2‖f 1‖‖a‖`, already proved in `Positive.lean`) bounds it, and entry
+evaluation on `CStarMatrix` is 1-Lipschitz by `CStarMatrix.norm_entry_le_norm`
+— and it contains the generators `∑ₖ cₖ ⊗ Bₖ`, because with `f(cₖ) = d*d` and
+`Bₖ = C*C` the double sum is `∑ₗ eₗ* eₗ` for `eₗ = ∑ᵢ Cₗᵢ • (d bᵢ)`.  Then
+34VII, applied to the Gram matrix `(aᵢ* aⱼ)` (positive by the proved
+**33II**.3), does the rest.  One friction: `cp_commutative_dom` carries no
+`PartialOrder (CStarMatrix …)` instance hypotheses, so the proof introduces them
+with `letI := CStarAlgebra.spectralOrder …` / `spectralOrderedRing`; the
+conclusion does not mention that order, so this is harmless.
+
+### 5. What the brief got wrong
+
+* "the winding number … is the single remaining piece" of 15I was right, but the
+  **primitive on a convex open set** it listed as step (1) is not needed at all
+  (fan triangulation from a vertex, above).
+* **34VII at "450–650 lines, the dominant cost is the transport through
+  `CStarMatrix`" is wrong on both counts** — ~150 lines, and the transport is
+  `cstar_matrix_positive_iff` applied twice.  The three earlier costings of this
+  item (~350–500 in the survey, 450–650 in session 69) were all too high for the
+  same reason.
+* 34IX.2 at "~40 lines" was close (~55).

@@ -1,8 +1,5 @@
-cauchy_formula|costed||15I: goursat is now proved, so what is left is the winding number of the regular N-gon around an interior point (thesis asserts an unconstructed triangulation); a Goursat-based primitive on a convex open set removes the rest
-ccstar_pos_mat|costed||largest item in A/CStar, ~350-500 lines; thesis proof complete, cost is the Gelfand transport
 chilb_vector_states_2|costed||~150 lines; the polarisation core sits in the proved 32XV.1 just above it
 chilb_vector_states_3|costed||~120 lines from chilb_form_bounded plus the C*-identity; the thesis hint is retracted by an erratum
-cp_commutative_dom|blocked|ccstar_pos_mat|34IX.2 is ~40 lines once 34VII lands; nothing in the tree waits on it
 cstar_pos_neg_part_3|costed||cheapest item in the chapter, ~40-60 lines, with a template 50 lines above it
 functional_calculus_4|costed||~60 lines as stated; the survey flags our statement as weaker than 28II.4 and asks for a repair first
 gelfand_naimark|blocked|proto_gelfand_naimark_2|~30 lines once 30X.2 lands; its other input is already proved
@@ -20,7 +17,6 @@ riesz_ideal_basic_3|costed||cheapest of the 270 chain: Zorn, copying the skeleto
 riesz_ideal_miu_map|blocked|maximal_riesz_ideal_maximal_order_ideal|four lines on top of 27XI, plus 27VIII for the multiplicativity step
 riesz_ideal_ring_ideal|costed||~100-150 lines; root of the 270 chain, and every external ingredient is proved
 rigid_expansion|costed||~80-120 lines; needs neither Goursat nor 15V, using Mathlib CauchyIntegral
-taylor|blocked|cauchy_formula|geometric-series expansion under the integral plus a uniform-convergence interchange
 Linfty_vn|costed||51IX needs an L-infinity carrier that Mathlib lacks; rendered with a quotient map, still unbuilt
 carrier_ad_operator|costed||best isolated target in Projections.lean: the Hilbert-space form of the proved carrier_ad
 central_projections_sums_2|costed||no longer blocked: 67IV.1 was proved in session 56
@@ -35,11 +31,8 @@ mn_vna_2|costed||its third clause is available as the proved exists_isLUB_matFor
 mn_vna_3|open||49IV.3, normality of the amplification M_N f; recorded as genuinely open, with no route
 ngelfand_normal|open||53II.2, surveyed self-contained but with no route or estimate recorded
 ngelfand_vna|open||53II.1, surveyed self-contained but with no route or estimate recorded
-normal_not_us_cont|costed||45I.2 is the transpose on B of l-two; self-contained
 us_cont_normal|costed||45I.1 is preservesDirSups_of_continuousOn_effects with ultraweak replaced by ultrastrong
-vn_counterexamples_11|costed||the last of the nine 43II counterexamples: an unbounded functional by Riesz on finite-dimensional subspaces
 vn_products_ncpsu|costed||47IV.3, categorical, with 47IV.1 and .2 proved; it gates 124III and 125bII in A/Proc
-weakly_closed_ideal|costed||69II, weakly closed two-sided ideals; substantial, and 170IV.1 deliberately routed around it.  Note the ERRATA gap at vn.tex 69II.30: the printed route to the key step needs a repair before it can be transcribed
 AstarhaB_concrete|open||125eVII sits at the top of the parsec-1255 chain; no route recorded
 Fha_concrete|costed||long but self-contained: nothing it needs is sorry, the work is representatives and re-indexing
 centrally_similar_basic_2a|awaiting-ruling||all three claims false as printed (ERRATA 104III.2a); the carrier repair is not yet authorised
@@ -57,13 +50,13 @@ exists_unitors|open||119IVb, the two unitors; not attempted
 faithful_positive_map_uniqueness|blocked|positive_quotients_centrally_similar|104IX is 100VII plus 104VII, both cited by name
 free_monoid_in_Wcpsu|blocked|duplicable|132VI's freeness runs through the monoid classification; only its unit is proved
 free_monoid_in_vNAMIU|blocked|duplicable|132IV's freeness runs through the monoid classification; only its unit is proved
-ha_second_adjunction|open||unblocked: vn_products_ncpsu is now proved; not yet attempted
+ha_second_adjunction|open||125bII: vn_products_ncpsu is now proved, but ha_equalisers (84bV) and hereditarilyAtomic_subalgebra (84bIII) are still sorry; not yet attempted
 ha_tensor_closed|open||125dII, the hereditarily atomic free exponential; no route recorded
 intersection_tensor|cited||121II gives no argument, only a pointer to Corollary IV.5.10 of Takesaki I
 linf_tensor|costed||123I.3 cites 116VII, which is now proved; parts 1 and 2 of the exercise are proved above it
 positive_map_uniqueness|blocked|faithful_positive_map_uniqueness|105V uniqueness cites 104IX; the existence half is proved
 positive_quotients_centrally_similar|blocked|centrally_similar_basic_5|104VII needs the unauthorised repair of 104III.5, plus commutant infrastructure
-second_adjunction|open||unblocked: vn_products_ncpsu is now proved; not yet attempted
+second_adjunction|costed||124III: 124I vn_generation_bound and 47IV.3 vn_products_ncpsu are both now proved, so the remaining work is Freyd's AFT itself - the solution set indexed by von Neumann algebras carried on subsets of kappa, i.e. transport of the whole structure along a relabelling bijection
 sequential_product_counterexample_3|false||clause (E) is false as printed and refuted in-tree; kept unchanged, ERRATA 106III.3 open
 sqrt_axiom|blocked|faithful_positive_map_uniqueness|105VII sits on 104IX, like the uniqueness half of 105V
 tensorBsurjectivity|open||125eIII; no route recorded
@@ -74,8 +67,6 @@ tensor_preimage|open||125VIIb; no route recorded
 tensor_simple_facts_4|costed||116III.4 joint ultraweak continuity: the obstruction was re-derived twice, neither proved nor refuted
 triple_tensor|open||119II, the trilinear tensor product; no route recorded
 uniqueness_sequential_product|blocked|positive_map_uniqueness|106I uniqueness cites 105V uniqueness; the existence half is proved
-vn_generation_bound|costed||124I is cardinal arithmetic, but wstar has no closure characterisation, so a transfinite construction is needed
-vn_gns_bound|costed||125II: ngns and gnsHilb are proved, only the cardinal count of the GNS sum is left
 vn_smc_associator_natural|blocked|exists_associator|119V naturality is stated with the associator chosen from 119IV
 vn_smc_hexagon|blocked|exists_tmapM|119V hexagon is stated with tmapM, the associator and the braiding
 vn_smc_pentagon|blocked|exists_tmapM|119V pentagon is stated with tmapM and the associator

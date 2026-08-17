@@ -1,13 +1,62 @@
 # `Theses/A/Proc/` — full survey of the remaining `sorry`s (worker 71, 2026-08-16; revised workers 72–81, sessions 47–58)
 
-**Headline count: A/Proc has 31 code `sorry`s** after session 74.
-Per file: `Tensor` **2**, `QuantumLambda` **14**,
+**Headline count: A/Proc has 29 code `sorry`s** after session 75.
+Per file: `Tensor` **2**, `QuantumLambda` **12**,
 `Measurement` **10**, `Duplicators` **5**.  **All four compiler-verified in
-session 74 (0 errors each, `lean` run per file against rebuilt oleans).**
+session 75 (0 errors each, `lean` run per file against rebuilt oleans).**
 **No statement in the project is `sorry`-tainted.**  (`grep -c sorry`
 over-counts, because the file docstrings mention `sorry` in prose; the code
 counts are the ones above.  Note `\bsorry\b` also matches "sorry-ed" in
 prose — count the compiler's `declaration uses \`sorry\`` warnings instead.)
+
+> **Session 75 — 125II `vn_gns_bound` AND 124I `vn_generation_bound` are
+> CLOSED.**  `QuantumLambda` **14 → 12**; A/Proc **31 → 29**, 0 errors in all
+> four files, both new theorems axiom-clean.  **+265/−4 lines**, all in
+> `QuantumLambda.lean` — an order of magnitude under the two items' costings.
+>
+> * **"Only the `#H ≤ 2^#𝒜` half remains" was accurate for 125II**, and that
+>   half is ~150 lines.  The representation *is* the thesis's — `gnsRep` on
+>   `gnsHilb 𝒜 = ⊕_ω ℋ_ω` over *all* np-functionals, faithful and normal by
+>   48V/48VIII — so `ConcreteRep` is built directly from `gnsRep_injective`
+>   and `gnsRep_normal`; nothing was existentially re-derived.
+> * **Two private cardinality lemmas carry it, and both correct the thesis.**
+>   `card_le_of_denseRange` (`#Y ≤ #X^ℵ₀` for a Hausdorff Fréchet–Urysohn `Y`
+>   with a dense-range map from `X`, applied at `gnsVec_denseRange`) is the
+>   thesis's "every element of `ℋ_ω` is the limit of a sequence from `𝒜`" —
+>   which bounds `#ℋ_ω` by `#𝒜^{ℵ₀}`, **not** by the printed `ℵ₀^{#𝒜}`.
+>   `card_lp_two_le` (`#ℓ²(E) ≤ (#Σᵢ Eᵢ)^{ℵ₀} + 1`, via `Summable.
+>   countable_support` on `Σ‖yᵢ‖²` and an injection of the support graph into
+>   `Option (ℕ → Σᵢ Eᵢ)`) replaces the printed `#ℋ = Σ_ω #ℋ_ω`, which is
+>   **false** for a Hilbert direct sum over a large index set (`#Ω = ℵ_ω`,
+>   `ℋ_ω = ℂ`).  Both slips are harmless — `(2^{#𝒜})^{ℵ₀} = 2^{#𝒜}` — and
+>   are recorded as one ERRATA **125II** row (nit).
+> * The thesis's `𝒜 = {0}` case is genuinely needed: our `VonNeumannAlgebra`
+>   carries no `Nontrivial`, and `#𝒜^{ℵ₀} ≤ 2^{#𝒜}` fails for finite `#𝒜 ≥ 2`
+>   (impossible for a ℂ-algebra, but the split is what makes `Infinite 𝒜`
+>   available, from `RingHom.injective (algebraMap ℂ 𝒜)`).
+> * **124I's recorded blocker was void.**  The survey's row —
+>   "the tree has **no** characterisation of `wstar` as a closure, so a
+>   transfinite-closure construction has to be written" — is stale: session
+>   66's **`dense_of_wstar_eq_top`** (`Tensor.lean`, via 75VII
+>   `usClosureSubalgebra`) is exactly that characterisation.  With it, 124I
+>   is the thesis's own proof in ~70 lines: `S' = StarAlgebra.adjoin ℂ S` is
+>   ultraweakly dense, `#S' ≤ 𝔠 + #S` is Mathlib's
+>   `Algebra.lift_cardinalMk_adjoin_le`, and `#𝒜 ≤ 2^(2^#S')` because
+>   `x ↦ comap ι (𝓝 x)` is injective into `Filter S'` — the ultraweak
+>   topology being Hausdorff (**44XI**.1 `vn_positive_basic_1`) is what makes
+>   the thesis's "limit of a filter" argument work.
+> * **Next gate in `QuantumLambda.lean`: 124III `second_adjunction`.**  Both
+>   of its recorded external blockers are now gone — 47IV.3 `vn_products_ncpsu`
+>   was proved in A/VN, and 124I is this session's.  What remains is Freyd's
+>   AFT *itself*: proc.tex:4718 builds the solution set from "von Neumann
+>   algebras carried on a **subset of κ**", i.e. transport of `CStarAlgebra`,
+>   `PartialOrder`, `StarOrderedRing` and `VonNeumannAlgebra` along a
+>   relabelling bijection, plus the categorical limit bookkeeping.  That is a
+>   real development, not bookkeeping.  The other candidates in the file are
+>   unchanged: **125cIII `Fha_concrete`** (long, self-contained, nothing it
+>   needs is `sorry`) and the parsec-1255 chain, whose root 125VIIb
+>   `tensor_preimage` is *not* cheap — its hint routes through 125VI
+>   `tensor_equalisers`, itself `sorry`.
 
 > **Session 74 — 129X `continuous_finite_measure_space_not_duplicable` is
 > CLOSED, and 123II.1/.2 `nsp_tensor_1`/`nsp_tensor_2` with it.**
@@ -1017,9 +1066,9 @@ to be `Nonempty.some` of the sorried `vnTensorProduct_nonempty`.
 |---|---|---|---|---|
 | 121II | `intersection_tensor` | :326 | (c′) | proc.tex:4473 gives no argument, only "See Corollary IV.5.10 of Takesaki I".  **Not** in the vacuous band |
 | 123I.3 | `linf_tensor` | :650 | (b) | **CLOSED (session 66)** — and it did **not** need 117III: 116VII applies directly to the point evaluations, with `δ_{(x,y)} = δ_x ⊗ δ_y` from `sum_generation_1` at `S i = ∅`.  Previous note: **116VII `tensor_characterization` is CLOSED (session 65)**, so this is now local; proc.tex:4645 cites it explicitly and parts 1/2 of the exercise are proved just above it.  (The old pointer "`Tensor.lean:2407`" was stale.) |
-| 124I | `vn_generation_bound` | :678 | (a) | proc.tex:4696 needs `#(∗-algebra generated by S) ≤ #ℂ + #S` **and** that every element of `wstar S` is an ultraweak limit of a filter on it — the tree has **no** characterisation of `wstar` as a closure (only `isVNSubalgebra_wstar`), so a transfinite-closure construction has to be written |
-| 124III | `second_adjunction` | :707 | (b) | Freyd's AFT: needs products and equalisers in `W*_miu` preserved into `W*_cpsu`.  47V `vn_equalisers` is **proved**; **47IV.3 `vn_products_ncpsu` (`A/VN/Basic.lean:2905`, `sorry`) is the real external blocker** — the earlier note ("124I + 125II + Zorn") missed it |
-| 125II | `vn_gns_bound` | :729 | (a) | `ngns` is proved and `gnsHilb`/`exists_faithful_normal_rep` give the representation concretely; only the cardinal count `#H ≤ 2^#A` is left (the thesis's `#H = Σ_ω #H_ω` is correct only via countable support of `ℓ²`-families) |
+| 124I | `vn_generation_bound` | :678 | (a) | **CLOSED (session 75)** — ~70 lines, the thesis's own proof.  The recorded blocker was **void**: session 66's `dense_of_wstar_eq_top` (`Tensor.lean`, via 75VII `usClosureSubalgebra`) *is* the missing closure characterisation, so no transfinite construction was needed.  `#(∗-algebra generated by S) ≤ 𝔠 + #S` is Mathlib's `Algebra.lift_cardinalMk_adjoin_le`; the filter count is `x ↦ comap ι (𝓝 x)`, injective because the ultraweak topology is Hausdorff (44XI.1) |
+| 124III | `second_adjunction` | :707 | (a) | **the next gate in this file (session 75).**  Both recorded external blockers are gone: 47IV.3 `vn_products_ncpsu` is proved in A/VN, and 124I is closed.  What is left is Freyd's AFT itself — proc.tex:4718's solution set is indexed by "von Neumann algebras carried on a *subset of κ*", i.e. transport of `CStarAlgebra`/`PartialOrder`/`StarOrderedRing`/`VonNeumannAlgebra` along a relabelling bijection, plus the limit bookkeeping |
+| 125II | `vn_gns_bound` | :729 | (a) | **CLOSED (session 75)** — ~150 lines.  The reading was right: the representation is `gnsRep` on `gnsHilb 𝒜` verbatim, and only the count was missing.  Two private lemmas do it — `card_le_of_denseRange` (`#Y ≤ #X^ℵ₀`, at `gnsVec_denseRange`) and `card_lp_two_le` (countable support of `ℓ²`-families).  **Both correct the thesis**: the printed `ℵ₀^{#𝒜}` has its exponents swapped, and the printed `#ℋ = Σ_ω #ℋ_ω` is false for a large index set.  ERRATA **125II** (nit); the conclusion is unaffected |
 | 125bII | `ha_second_adjunction` | :852 | (b) | AFT again: `ha_equalisers` (84bV, `A/VN/Division.lean:3084`), `hereditarilyAtomic_subalgebra` (84bIII, `Division.lean:3074`) and `vn_products_ncpsu`, all `sorry` |
 | 125cIII | `Fha_concrete` | :894 | (a), long | nothing it needs is `sorry`: `HereditarilyAtomic` *is* the direct-sum decomposition by definition, and `mn_vna_1` is proved.  The work is the representatives/re-indexing bijection |
 
