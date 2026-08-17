@@ -19339,3 +19339,138 @@ Hilbert C\*-module that neither the tree nor Mathlib has.  **So `ksgns` is now
 the only remaining item in `B/Dils` that is not blocked on a ruling or on
 another directory**, and it is a construction, not a transcription (155II
 cites Kasparov and gives no proof).
+
+---
+
+## Session 81 — `A/Proc`: **125cIII `Fha_concrete` is CLOSED** — the thesis's Existence step is `carrier_miu`, not a directed-sup argument, and none of its content was already in the tree (worker on `Theses/A/Proc/`)
+
+A/Proc **23 → 22**.  Per file, counted from the compiler's
+``declaration uses `sorry` `` warnings, each paired with an error count:
+**`QuantumLambda` 11 → 10, 0 errors**; `Measurement` 10, 0 errors;
+`Tensor` 2, 0 errors; `Duplicators` 0, 0 errors.  `lake build` completes
+successfully over the whole chain.  **+430 lines**, all in
+`QuantumLambda.lean`; **no new public name** — the eleven auxiliaries are all
+`private`, so nothing downstream needs rebuilding beyond the recompile of
+`Duplicators.lean`, which passes.  `Fha_concrete` is `#print axioms`-clean
+(`[propext, Classical.choice, Quot.sound]`) against the rebuilt olean.
+
+### 1. Was any of it already proved?  No — but three of the five obstacles were
+
+The handoff asked, on the strength of session 80's experience with 132III.5,
+whether `Fha_concrete`'s content was already in the tree.  It is not: nothing
+in `A/Proc` or `A/VN` states any part of "the `sᵢ` are a set of
+representatives".  What *was* already there, and what made the build ~430
+lines rather than the ~900 first costed, is the surrounding apparatus:
+**69IV** `carrier_miu`, **69IVb** `nmiu_image`, **84bIII**
+`hereditarilyAtomic_subalgebra`, **47IV**.2/.3 `vn_products_*`, the `lpKappa`
+API of `Tensor.lean`, and session 76's `exists_ncpsuCorestrict` and
+`VNSub.valNMIU`.
+
+### 2. The one structural divergence: the universal property is never used for uniqueness
+
+proc.tex:5300ff appeals four times to the *uniqueness* half of the universal
+property of `η` at a **matrix algebra** target (`ϱ = π_j`, `π_j = φ ∘ π_i`,
+…).  That cannot be transcribed: `HaFreeMIU.universal` quantifies over
+`B : Type u` and `MatAlg n : Type 0`.  The replacement is
+`nmiu_ext_of_wstar_top`: **two nmiu-maps that agree on a generating set are
+equal**.  Its proof is **47V** `vn_equalisers`'s, copied verbatim (that
+statement is single-universe, `{A B : Type u}` in `A/VN/Basic.lean`) plus
+minimality of `W*(G)`.  Feeding it needs `W*(η(𝒜)) = F_ha(𝒜)`, which is
+proc.tex:5390's own first step, transcribed as private `wstar_unit_eq_top`
+(the corestriction of `η` to the bundled `VNSub`, whose hereditary atomicity
+is **84bIII**, then uniqueness at `B = F_ha(𝒜)`, where the universes *do*
+match).  This single lemma then does three jobs: the theorem's own uniqueness
+clause, the uniqueness of the representatives, and the final identification of
+`Φ` with the reindexing isomorphism.
+
+### 3. The Existence step is much cheaper than the thesis's argument
+
+proc.tex:5455 produces the summand `i` from "`Σᵢ ϱ(cᵢ) = 1` and the `ϱ(cᵢ)` are
+central projections of a factor", i.e. from *normality* applied to the
+directed family of finite partial sums.  Private `exists_lp_factor` gets it
+from **69IV** `carrier_miu` instead — which, unlike almost everything else in
+`A/VN`, *is* universe-polymorphic (`{A : Type u} {B : Type v}` in
+`Projections.lean`, contrary to what the traps list would lead one to expect).
+The carrier `z` of `ϱ` is a central projection of `⊕ᵢ𝒜ᵢ`, so each `zᵢ` is a
+central idempotent of `𝒜ᵢ`, hence `0` or `1`; `z ≠ 0` because `ϱ(1) = 1`; and
+at a coordinate with `zᵢ = 1` one gets `ϱ(eᵢ) ≠ 0`, whence `ϱ(eᵢ) = 1` because
+`ϱ(eᵢ)` is a central idempotent of the *factor* `M_{N_f}`.  Multiplicativity
+then gives `ϱ = ϱ' ∘ πᵢ` outright — the thesis's "one easily deduces
+(c.f. `nmiu-factors`)".  No directed-sup argument appears anywhere in the
+file's new code.
+
+**Injectivity of `ϱ'` is Mathlib, not `nmiu-factors`**: `IsSimpleRing.matrix`
+plus `RingHom.injective` say every unital ring homomorphism out of
+`Matrix (Fin n) (Fin n) ℂ` into a nontrivial ring is injective, and
+`CStarMatrix.ofMatrixStarAlgEquiv` transports it.  *Normality* of `ϱ'` is then
+free from `starAlgEquiv_preservesDirSups'`, since `ϱ'` is bijective — so the
+50-line normality argument that `lp_nmiu_functional_factors` needs is not
+repeated.
+
+### 4. Reindexing, and the one place dependent types bite
+
+The thesis's "`r ↦ i_r` is a bijection `R_𝒜 → I`, so the first map is an
+nmiu-isomorphism" becomes private `exists_lp_reindex`: given `e : I₁ ≃ I₂` and
+nmiu-isomorphisms `uᵢ : 𝒜_{e i} ≅ ℬᵢ`, the map `x ↦ (uᵢ(x_{e i}))ᵢ` is a
+bijective nmiu-map `⊕𝒜 → ⊕ℬ`.  Existence is **47IV**.3 `vn_products_nmiu`
+applied to `uᵢ ∘ π_{e i}` — no structure is built by hand.  Surjectivity is
+the only step where the summands' dependence on the index matters, and
+Mathlib's `Equiv.piCongrLeft` (with `piCongrLeft_apply_apply`) absorbs all of
+it; the `Memℓp _ ∞` bound is uniform because a bijective ∗-homomorphism of
+C*-algebras is isometric.  The two mutually inverse index maps are
+`c : I' → I` from `hrep` and `d : I → I'` from `exists_lp_factor`;
+`c ∘ d = id` is `hdistinct`, and `d ∘ c = id` is the uniqueness of the
+representatives.
+
+### 5. Two universe rebuilds, both private, both noted
+
+* `exists_ncpsuCompNmiu'` — `ncpsuCompNmiu` (this file) and its underlying
+  `ncpComp` (`Measurement.lean`) are single-universe, so neither composes
+  `η : 𝒜 → F_ha(𝒜)` with an nmiu-map into `MatAlg n : Type 0`.  Rebuilt
+  privately here, as session 80 had to rebuild `exists_ncpsuEval`; the
+  underlying `preservesDirSups_comp` *is* polymorphic, so it is 25 lines.
+  `Measurement.lean` remains out of bounds for this worker, so the
+  polymorphic `ncpComp` is still not written.
+* `isVNSubalgebra_comap` — the preimage of a von Neumann subalgebra along a
+  normal ∗-homomorphism is one.  Needed to show each `sᵢ'` generates its
+  matrix algebra: `πᵢ' ∘ ψ` pulls `W*(sᵢ'(𝒜))` back to a von Neumann
+  subalgebra of `F_ha(𝒜)` containing `η(𝒜)`, which is everything by
+  `wstar_unit_eq_top`, and `πᵢ' ∘ ψ` is surjective.  This replaces
+  proc.tex:5410's "`⊕ᵢ W*(sᵢ(𝒜))` is a von Neumann subalgebra of
+  `⊕ᵢ M_{N_i}`", which would have needed the direct sum of a family of
+  subalgebras to be built as a subalgebra.
+
+### 6. `hA` is not used
+
+`Fha_concrete`'s `hA : HereditarilyAtomic 𝒜` is never used: everything runs
+off `F.ha`, the hereditary atomicity of `F_ha(𝒜)`, which is part of the
+`HaFreeMIU` structure.  The unused-variable state is left as it stands (the
+hypothesis is explicit, so no linter warning fires).  This is **not** an
+erratum — 125bII only produces `F_ha(𝒜)` for hereditarily atomic `𝒜`, so the
+hypothesis is not idle in the thesis's setting; it is simply not needed once
+the universal arrow is taken as given, exactly as with `hA` in 132III.5.
+
+### 7. Next gate
+
+**125bII `ha_second_adjunction`** (`QuantumLambda.lean:1898`, proc.tex:5240).
+proc.tex:5250 says its proof is "exactly as in `second-adjunction-proof`" —
+i.e. **124III**, which session 76 closed *in this file*, so the whole
+apparatus (the solution set indexed by von Neumann subalgebras of `B(ℓ²(T))`,
+`lpReindex`, `conjStarAlgEquiv`, the `VNSub` API, `vnsub_wstar_eq_top`, 124I
+and 125II) is in place and reusable; the only new ingredients are that
+`haW*_miu` is closed under products and equalisers (equalisers are **84bV**
+`ha_equalisers`, proved in `A/VN`; products need `⊕ᵢ` of hereditarily atomic
+algebras to be hereditarily atomic, a `Sigma`-type reindexing of the double
+sum) and that the generated subalgebra is again hereditarily atomic, which is
+**84bIII** applied to the inclusion.  Closing it would also unblock 125dII
+`ha_tensor_closed` and the rest of parsec 1255.  The alternatives are worse:
+125VIIb `tensor_preimage`'s hint routes through the `sorry`-ed 125VI
+`tensor_equalisers`, 125eVII `AstarhaB_concrete` still has no recorded route,
+`Measurement.lean`'s ten remain gated on the 104III author ruling, and
+`Tensor.lean`'s two are deliberate non-targets.
+
+### 8. Nothing for ERRATA or QUESTIONS
+
+The thesis's proof of 125cIII is correct as printed; the divergences above are
+all forced by universe polymorphism or are shortenings.
+`docs/why-open.csv`: the `Fha_concrete` row is deleted.

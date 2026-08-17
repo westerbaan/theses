@@ -1,14 +1,68 @@
-# `Theses/A/Proc/` — full survey of the remaining `sorry`s (worker 71, 2026-08-16; revised workers 72–85, sessions 47–80)
+# `Theses/A/Proc/` — full survey of the remaining `sorry`s (worker 71, 2026-08-16; revised workers 72–86, sessions 47–81)
 
-**Headline count: A/Proc has 23 code `sorry`s** after session 80.
-Per file: `Tensor` **2**, `QuantumLambda` **11**,
+**Headline count: A/Proc has 22 code `sorry`s** after session 81.
+Per file: `Tensor` **2**, `QuantumLambda` **10**,
 `Measurement` **10**, `Duplicators` **0 — the file is finished**.
-**All four compiler-verified in session 80** (`lake build` against rebuilt
-oleans; `Duplicators.lean` 0 errors, 0 sorries).
+**All four compiler-verified in session 81** (each file compiled directly;
+0 errors in all four, and `lake build` completes over the whole chain).
 **No statement in the project is `sorry`-tainted.**  (`grep -c sorry`
 over-counts, because the file docstrings mention `sorry` in prose; the code
 counts are the ones above.  Note `\bsorry\b` also matches "sorry-ed" in
 prose — count the compiler's `declaration uses \`sorry\`` warnings instead.)
+
+> **Session 81 — 125cIII `Fha_concrete` is CLOSED.**  `QuantumLambda`
+> **11 → 10**; A/Proc **23 → 22**, 0 errors in all four files, the new theorem
+> axiom-clean.  **+430 lines**, all in `QuantumLambda.lean`; every new name
+> `private`, so no public name was added and nothing downstream changed.
+>
+> * **None of its content was already in the tree** (the question session 80's
+>   132III.5 finding raised).  What *was* there, and cut the cost from the
+>   ~900 lines first estimated to ~430, is the surrounding apparatus: **69IV**
+>   `carrier_miu`, **69IVb** `nmiu_image`, **84bIII**
+>   `hereditarilyAtomic_subalgebra`, **47IV**.2/.3, the `lpKappa` API, and
+>   session 76's `exists_ncpsuCorestrict` and `VNSub.valNMIU`.
+> * **The universal property is never used for uniqueness.**  proc.tex:5300ff
+>   appeals to it four times at a *matrix algebra* target, which is impossible
+>   here (`HaFreeMIU.universal` quantifies over `Type u`; `MatAlg n : Type 0`).
+>   Private `nmiu_ext_of_wstar_top` — two nmiu-maps agreeing on a generating
+>   set are equal, i.e. **47V** `vn_equalisers`'s proof copied plus minimality
+>   of `W*(G)` — replaces all four, fed by `W*(η(𝒜)) = F_ha(𝒜)`, which is
+>   proc.tex:5390's own first step (private `wstar_unit_eq_top`).
+> * **The Existence step does not need the thesis's directed-sup argument.**
+>   proc.tex:5455 gets the summand from `Σᵢ ϱ(cᵢ) = 1` and normality; private
+>   `exists_lp_factor` gets it from **69IV** `carrier_miu`, whose carrier is a
+>   central projection of `⊕ᵢ𝒜ᵢ`, so some coordinate `zᵢ` is a nonzero central
+>   idempotent of `M_{Nᵢ}`, hence `1`, whence `ϱ(eᵢ) = 1` because `M_{N_f}` is
+>   a factor.  Multiplicativity then gives `ϱ = ϱ' ∘ πᵢ` outright.
+> * **`carrier_miu`, `nmiu_factors` and `nmiu_image` are universe-polymorphic**
+>   (`{A : Type u} {B : Type v}` in `Projections.lean`) — unlike `wstar`'s and
+>   `vn_equalisers`'s home section, and unlike `ncpComp`.  This is worth
+>   remembering: it is what makes both of the previous two points work.
+> * **Injectivity of `ϱ'` is Mathlib**: `IsSimpleRing.matrix` +
+>   `RingHom.injective`, transported along `CStarMatrix.ofMatrixStarAlgEquiv`.
+>   Normality of `ϱ'` is then free from bijectivity
+>   (`starAlgEquiv_preservesDirSups'`).
+> * **Reindexing** (`exists_lp_reindex`) is **47IV**.3 `vn_products_nmiu`
+>   applied to `uᵢ ∘ π_{e i}`; the dependent-type bookkeeping in its
+>   surjectivity is Mathlib's `Equiv.piCongrLeft`.
+> * **`ncpsuCompNmiu` is single-universe, again**: private
+>   `exists_ncpsuCompNmiu'` rebuilds it (25 lines; `preservesDirSups_comp` is
+>   already polymorphic).  Also private: `isVNSubalgebra_comap`, the preimage
+>   of a von Neumann subalgebra along a normal ∗-hom, which replaces
+>   proc.tex:5410's "`⊕ᵢ W*(sᵢ(𝒜))` is a von Neumann subalgebra".
+> * **`hA` is unused** — everything runs off `F.ha`.  Not an erratum.
+> * **Next gate in A/Proc: 125bII `ha_second_adjunction`**
+>   (`QuantumLambda.lean:1898`, proc.tex:5240), whose proof proc.tex:5250 says
+>   is "exactly as in" **124III** — closed in session 76 *in this file*, so the
+>   solution set, `lpReindex`, the `VNSub` API and 124I/125II are all reusable.
+>   New ingredients: `haW*_miu` closed under products (a `Sigma`-reindexing of
+>   `⊕ᵢ⊕ⱼ`) and equalisers (**84bV** `ha_equalisers`, already proved), and
+>   hereditary atomicity of the generated subalgebra (**84bIII**).  It unblocks
+>   125dII and the rest of parsec 1255.  125VIIb routes through the `sorry`-ed
+>   125VI, 125eVII still has no route, `Measurement`'s ten are gated on the
+>   104III ruling, and `Tensor`'s two are deliberate non-targets.
+> * Nothing for ERRATA or QUESTIONS.  `docs/why-open.csv`: the `Fha_concrete`
+>   row is deleted.
 
 > **Session 80 — 132III.5, 132IV and 132VI are ALL CLOSED, and
 > `Duplicators.lean` is FINISHED.**  `Duplicators` **3 → 0**; A/Proc
@@ -1134,7 +1188,7 @@ The two blockers that gate almost everything:
 | **125II** | `vn_gns_bound` | QuantumLambda 729 | `ngns` + a cardinality count of the GNS direct sum; `ngns` is proved |
 | ~~**129X**~~ | `continuous_finite_measure_space_not_duplicable` | Duplicators 725 | **REMOVED (session 51)** — `hd : Duplicable 𝒜` is in the *type*, so it is tainted after all; and proc.tex:6367 really does use the product functional `ω⊗ω` and `carrier-tensor` faithfulness |
 | **130IV** | `measure_space_partition` | Duplicators 1019 | (a) — its recorded obstruction has been discharged; see the `Duplicators` table |
-| **125cIII** | `Fha_concrete` | QuantumLambda 894 | (a) but long — nothing it needs is `sorry` |
+| ~~**125cIII**~~ | `Fha_concrete` | QuantumLambda 894 | **CLOSED (session 81)** — ~430 lines; the costing "(a) but long" was right |
 
 ### The near miss: 98II.2 `filter_basic_2` — **superseded (session 47)**
 
@@ -1265,8 +1319,8 @@ to be `Nonempty.some` of the sorried `vnTensorProduct_nonempty`.
 | 124I | `vn_generation_bound` | :678 | (a) | **CLOSED (session 75)** — ~70 lines, the thesis's own proof.  The recorded blocker was **void**: session 66's `dense_of_wstar_eq_top` (`Tensor.lean`, via 75VII `usClosureSubalgebra`) *is* the missing closure characterisation, so no transfinite construction was needed.  `#(∗-algebra generated by S) ≤ 𝔠 + #S` is Mathlib's `Algebra.lift_cardinalMk_adjoin_le`; the filter count is `x ↦ comap ι (𝓝 x)`, injective because the ultraweak topology is Hausdorff (44XI.1) |
 | 124III | `second_adjunction` | :707 | (a) | **the next gate in this file (session 75).**  Both recorded external blockers are gone: 47IV.3 `vn_products_ncpsu` is proved in A/VN, and 124I is closed.  What is left is Freyd's AFT itself — proc.tex:4718's solution set is indexed by "von Neumann algebras carried on a *subset of κ*", i.e. transport of `CStarAlgebra`/`PartialOrder`/`StarOrderedRing`/`VonNeumannAlgebra` along a relabelling bijection, plus the limit bookkeeping |
 | 125II | `vn_gns_bound` | :729 | (a) | **CLOSED (session 75)** — ~150 lines.  The reading was right: the representation is `gnsRep` on `gnsHilb 𝒜` verbatim, and only the count was missing.  Two private lemmas do it — `card_le_of_denseRange` (`#Y ≤ #X^ℵ₀`, at `gnsVec_denseRange`) and `card_lp_two_le` (countable support of `ℓ²`-families).  **Both correct the thesis**: the printed `ℵ₀^{#𝒜}` has its exponents swapped, and the printed `#ℋ = Σ_ω #ℋ_ω` is false for a large index set.  ERRATA **125II** (nit); the conclusion is unaffected |
-| 125bII | `ha_second_adjunction` | :852 | (b) | AFT again: `ha_equalisers` (84bV, `A/VN/Division.lean:3084`), `hereditarilyAtomic_subalgebra` (84bIII, `Division.lean:3074`) and `vn_products_ncpsu`, all `sorry` |
-| 125cIII | `Fha_concrete` | :894 | (a), long | nothing it needs is `sorry`: `HereditarilyAtomic` *is* the direct-sum decomposition by definition, and `mn_vna_1` is proved.  The work is the representatives/re-indexing bijection |
+| 125bII | `ha_second_adjunction` | :852 | (a) | **the next gate in this file (session 81).**  The recorded blockers have all evaporated: `ha_equalisers` (84bV), `hereditarilyAtomic_subalgebra` (84bIII) and `vn_products_ncpsu` (47IV.3) are **all proved** in `A/VN`.  proc.tex:5250 says the proof is "exactly as in" 124III, which session 76 closed in this same file, so the solution set, `lpReindex`, the `VNSub` API and 124I/125II are reusable.  New: `⊕ᵢ` of hereditarily atomic algebras is hereditarily atomic (a `Sigma`-reindexing of the double sum) |
+| 125cIII | `Fha_concrete` | :894 | (a), long | **CLOSED (session 81)** — ~430 lines.  The reading was right (`HereditarilyAtomic` *is* the direct-sum decomposition, `mn_vna_1` is proved, the work is the representatives and the re-indexing bijection), but two things it did not anticipate dominated: the universal property cannot be used for uniqueness at a `Type 0` target, so `nmiu_ext_of_wstar_top` + `wstar_unit_eq_top` replace it; and the Existence step is **69IV** `carrier_miu`, not the thesis's directed-sup argument |
 
 ### `Duplicators.lean` — the 3 untainted ones (recounted, session 51)
 

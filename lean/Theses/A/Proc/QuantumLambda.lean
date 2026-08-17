@@ -1931,6 +1931,437 @@ description of `F_ha`: ncpsu-maps `f : 𝒜 → M_n` with
 def GeneratesMat {n : ℕ} (f : NCPSUMap A (MatAlg n)) : Prop :=
   wstar (MatAlg n) (Set.range ⇑f.toNCPMap) = ⊤
 
+/-! ### Machinery for 125cIII
+
+The proof of `Fha_concrete` below needs five things that are not in the tree,
+all of them stated across two universes (`F.carrier : Type u`, but
+`MatAlg n : Type 0`, and the A/VN development of `wstar` and of ncp-map
+composition fixes a single universe):
+
+* `nmiu_ext_of_wstar_top` — two nmiu-maps agreeing on a generating set are
+  equal.  This is **47V** `vn_equalisers` (whose proof is copied verbatim,
+  the statement there being single-universe) plus minimality of `W*(G)`; it
+  replaces every appeal in proc.tex:5300ff to the *uniqueness* half of the
+  universal property of `η`, which cannot be used directly because the
+  universal property quantifies over `Type u` and the matrix algebras are
+  `Type 0`.
+* `isVNSubalgebra_comap` — the preimage of a von Neumann subalgebra along a
+  normal ∗-homomorphism is one.
+* `exists_ncpsuCompNmiu'` — the universe-polymorphic form of
+  `ncpsuCompNmiu` (the underlying `ncpComp` of `Measurement.lean` fixes one
+  universe).
+* `exists_lp_reindex` — a bijection of index sets together with
+  nmiu-isomorphisms of the summands induces an nmiu-isomorphism of the
+  direct sums.  The dependent-type bookkeeping is done by Mathlib's
+  `Equiv.piCongrLeft`.
+* `exists_lp_factor` — proc.tex:5300's Existence step: an nmiu-map onto a
+  *factor* out of a direct sum factors through a single summand.  The thesis
+  gets the summand from `∑ᵢ ϱ(cᵢ) = 1` and normality; here it comes for free
+  from **69IV** `carrier_miu` (already universe-polymorphic), whose carrier
+  is a central projection of `⊕ᵢ𝒜ᵢ`, hence has a coordinate equal to `1`.
+  Injectivity of the resulting `ρ'` is Mathlib's `IsSimpleRing` for matrix
+  rings rather than the thesis's `nmiu-factors`. -/
+
+section FhaAux
+
+universe u₁ u₂ u₃ u₄
+
+/-! ### helper 1: central idempotents of a matrix algebra -/
+
+private theorem matAlg_central_idem {n : ℕ} {x : MatAlg n}
+    (hx : x * x = x) (hcen : ∀ y, x * y = y * x) : x = 0 ∨ x = 1 := by
+  classical
+  rcases isEmpty_or_nonempty (Fin n) with he | hne
+  · left
+    have : Subsingleton (MatAlg n) := by
+      constructor
+      intro a b
+      funext i
+      exact he.elim i
+    exact Subsingleton.elim _ _
+  · set X : Matrix (Fin n) (Fin n) ℂ := CStarMatrix.ofMatrixStarAlgEquiv.symm x with hX
+    have hXcen : ∀ y : Matrix (Fin n) (Fin n) ℂ, X * y = y * X := by
+      intro y
+      have h := hcen (CStarMatrix.ofMatrixStarAlgEquiv y)
+      have h1 := congrArg CStarMatrix.ofMatrixStarAlgEquiv.symm h
+      rw [map_mul, map_mul] at h1
+      simpa [hX] using h1
+    have hXX : X * X = X := by
+      have h1 := congrArg CStarMatrix.ofMatrixStarAlgEquiv.symm hx
+      rw [map_mul] at h1
+      simpa [hX] using h1
+    obtain ⟨c, hc⟩ := Matrix.mem_range_scalar_of_commute_single
+      (M := X) (fun i j _ => (hXcen (Matrix.single i j 1)).symm)
+    have hcc : (Matrix.scalar (Fin n)) (c * c) = (Matrix.scalar (Fin n)) c := by
+      rw [map_mul, hc, hXX]
+    have hc2 : c * c = c := by
+      obtain ⟨i⟩ := hne
+      have h4 := congrFun (congrFun hcc i) i
+      simpa [Matrix.scalar_apply, Matrix.diagonal_apply_eq] using h4
+    have : c = 0 ∨ c = 1 := by
+      rcases eq_or_ne c 0 with h | h
+      · exact Or.inl h
+      · right
+        field_simp at hc2
+        exact hc2
+    rcases this with h | h
+    · left
+      have : X = 0 := by rw [← hc, h, map_zero]
+      rw [hX] at this
+      have := congrArg CStarMatrix.ofMatrixStarAlgEquiv this
+      simpa using this
+    · right
+      have : X = 1 := by rw [← hc, h, map_one]
+      rw [hX] at this
+      have := congrArg CStarMatrix.ofMatrixStarAlgEquiv this
+      simpa using this
+
+/-! ### helper 2: a unital ∗-hom out of a matrix algebra is injective -/
+
+private theorem matAlg_starAlgHom_injective {n : ℕ} {M : Type u₂} [CStarAlgebra M]
+    [Nontrivial M] (φ : MatAlg (n + 1) →⋆ₐ[ℂ] M) : Function.Injective ⇑φ := by
+  set e : Matrix (Fin (n + 1)) (Fin (n + 1)) ℂ ≃⋆ₐ[ℂ] MatAlg (n + 1) :=
+    CStarMatrix.ofMatrixStarAlgEquiv with he
+  have hsimple : Function.Injective
+      ⇑(((φ : MatAlg (n + 1) →⋆ₐ[ℂ] M).comp (e : _ →⋆ₐ[ℂ] _)) :
+        Matrix (Fin (n + 1)) (Fin (n + 1)) ℂ →⋆ₐ[ℂ] M) := by
+    exact RingHom.injective
+      (((φ.comp (e : _ →⋆ₐ[ℂ] _)) : Matrix (Fin (n + 1)) (Fin (n + 1)) ℂ →⋆ₐ[ℂ] M) :
+        Matrix (Fin (n + 1)) (Fin (n + 1)) ℂ →+* M)
+  intro x y hxy
+  have h : φ (e (e.symm x)) = φ (e (e.symm y)) := by
+    rw [e.apply_symm_apply, e.apply_symm_apply]; exact hxy
+  have := hsimple h
+  rw [← e.apply_symm_apply x, ← e.apply_symm_apply y, this]
+
+
+
+
+variable {X : Type u₁} {Y : Type u₂} {Z : Type u₃}
+  [CStarAlgebra X] [PartialOrder X] [StarOrderedRing X]
+  [CStarAlgebra Y] [PartialOrder Y] [StarOrderedRing Y]
+  [CStarAlgebra Z] [PartialOrder Z] [StarOrderedRing Z]
+
+/-! ### helper 3: two nmiu-maps agreeing on a generating set are equal -/
+
+private theorem nmiu_ext_of_wstar_top [VonNeumannAlgebra X] [VonNeumannAlgebra Y]
+    (f g : NMIUMap X Y) (G : Set X) (hG : wstar X G = ⊤)
+    (hfg : ∀ x ∈ G, f x = g x) (x : X) : f x = g x := by
+  classical
+  have hE : IsVNSubalgebra X (StarAlgHom.equalizer f.toStarAlgHom g.toStarAlgHom) := by
+    constructor
+    · have hfc : Continuous ⇑f.toStarAlgHom :=
+        AddMonoidHomClass.continuous_of_bound f.toStarAlgHom 1 fun a => by
+          simpa using Theses.A.CStar.norm_mi_map_contractive f.toStarAlgHom a
+      have hgc : Continuous ⇑g.toStarAlgHom :=
+        AddMonoidHomClass.continuous_of_bound g.toStarAlgHom 1 fun a => by
+          simpa using Theses.A.CStar.norm_mi_map_contractive g.toStarAlgHom a
+      exact isClosed_eq hfc hgc
+    · intro D s hDsub hne hdir hlub
+      have hf := f.preservesDirSups' D s hne hdir hlub
+      have hg := g.preservesDirSups' D s hne hdir hlub
+      have himg : (fun d : selfAdjoint X => (f.toStarAlgHom (d : X) : Y)) '' D
+          = (fun d : selfAdjoint X => (g.toStarAlgHom (d : X) : Y)) '' D := by
+        ext y
+        constructor
+        · rintro ⟨d, hd, rfl⟩; exact ⟨d, hd, (hDsub d hd).symm⟩
+        · rintro ⟨d, hd, rfl⟩; exact ⟨d, hd, hDsub d hd⟩
+      rw [himg] at hf
+      exact hf.unique hg
+  have hle : wstar X G ≤ StarAlgHom.equalizer f.toStarAlgHom g.toStarAlgHom :=
+    sInf_le ⟨hE, fun y hy => hfg y hy⟩
+  rw [hG, top_le_iff] at hle
+  have : x ∈ StarAlgHom.equalizer f.toStarAlgHom g.toStarAlgHom := by
+    rw [hle]; trivial
+  exact this
+
+/-! ### helper 6: the preimage of a von Neumann subalgebra -/
+
+private theorem isVNSubalgebra_comap [VonNeumannAlgebra X] [VonNeumannAlgebra Y]
+    (θ : X →⋆ₐ[ℂ] Y) (hθ : PreservesDirSups ⇑θ) (S : StarSubalgebra ℂ Y)
+    (hS : IsVNSubalgebra Y S) : IsVNSubalgebra X (S.comap θ) := by
+  have hsa : ∀ d : selfAdjoint X, IsSelfAdjoint (θ (d : X)) := by
+    intro d
+    show star (θ (d : X)) = θ (d : X)
+    rw [← map_star, d.2.star_eq]
+  constructor
+  · have hc : Continuous ⇑θ :=
+      AddMonoidHomClass.continuous_of_bound θ 1 fun a => by
+        simpa using Theses.A.CStar.norm_mi_map_contractive θ a
+    exact hS.isClosed.preimage hc
+  · intro D s hDS hne hdir hlub
+    set G : Set (selfAdjoint Y) :=
+      (fun d : selfAdjoint X => (⟨θ (d : X), hsa d⟩ : selfAdjoint Y)) '' D with hG
+    have hval : Subtype.val '' G = (fun d : selfAdjoint X => θ (d : X)) '' D := by
+      rw [hG, ← Set.image_comp]; rfl
+    have hlubG : IsLUB G (⟨θ (s : X), hsa s⟩ : selfAdjoint Y) := by
+      refine isLUB_sa_of_isLUB ?_
+      rw [hval]
+      exact hθ D s hne hdir hlub
+    have hGne : G.Nonempty := hne.image _
+    have hGdir : DirectedOn (· ≤ ·) G := by
+      rintro _ ⟨a, ha, rfl⟩ _ ⟨b, hb, rfl⟩
+      obtain ⟨c, hc, hac, hbc⟩ := hdir a ha b hb
+      exact ⟨_, ⟨c, hc, rfl⟩,
+        Subtype.coe_le_coe.mp (starAlgHom_mono' θ (Subtype.coe_le_coe.mpr hac)),
+        Subtype.coe_le_coe.mp (starAlgHom_mono' θ (Subtype.coe_le_coe.mpr hbc))⟩
+    exact hS.dirSup_mem G _ (fun d hd => by
+      obtain ⟨e, he, rfl⟩ := hd
+      exact hDS e he) hGne hGdir hlubG
+
+/-! ### helper 4: composing an ncpsu-map with an nmiu-map, across universes -/
+
+private theorem exists_ncpsuCompNmiu' (g : NMIUMap Y Z) (f : NCPSUMap X Y) :
+    ∃ h : NCPSUMap X Z, ∀ x : X, h.toNCPMap x = g (f.toNCPMap x) := by
+  have hmono : ∀ x y : X, x ≤ y → f.toNCPMap x ≤ f.toNCPMap y := fun x y h =>
+    OrderHomClass.mono f.toNCPMap.toCompletelyPositiveMap h
+  have hsa : ∀ x : X, IsSelfAdjoint x → IsSelfAdjoint (f.toNCPMap x) := fun x hx =>
+    isSelfAdjoint_map_of_pos
+      (PositiveLinearMap.ofClass f.toNCPMap.toCompletelyPositiveMap) hx
+  refine ⟨{ toNCPMap :=
+              { toCompletelyPositiveMap :=
+                  { toLinearMap :=
+                      ((nmiuNCP g).toCompletelyPositiveMap.toLinearMap).comp
+                        f.toNCPMap.toCompletelyPositiveMap.toLinearMap
+                    map_cstarMatrix_nonneg' := fun k M hM => by
+                      have h1 : (0 : CStarMatrix (Fin k) (Fin k) Y) ≤
+                          M.map f.toNCPMap.toCompletelyPositiveMap.toLinearMap :=
+                        f.toNCPMap.toCompletelyPositiveMap.map_cstarMatrix_nonneg' k M hM
+                      exact (nmiuNCP g).toCompletelyPositiveMap.map_cstarMatrix_nonneg'
+                        k _ h1 }
+                preservesDirSups' := by
+                  exact preservesDirSups_comp (f := ⇑f.toNCPMap) (g := ⇑(nmiuNCP g))
+                    hsa hmono f.toNCPMap.preservesDirSups' (nmiuNCP g).preservesDirSups' }
+            subunital' := ?_ }, fun _ => rfl⟩
+  show g (f.toNCPMap 1) ≤ 1
+  refine le_trans (starAlgHom_mono' g.toStarAlgHom f.subunital') ?_
+  exact le_of_eq (map_one g.toStarAlgHom)
+
+
+
+
+/-- The coordinate projection as an nmiu-map. -/
+private def lpEvalNMIU {I : Type u₁} (𝒜 : I → Type u₄) [∀ i, CStarAlgebra (𝒜 i)]
+    [∀ i, Nontrivial (𝒜 i)] [∀ i, PartialOrder (𝒜 i)] [∀ i, StarOrderedRing (𝒜 i)]
+    [∀ i, VonNeumannAlgebra (𝒜 i)] (j : I) : NMIUMap (lp 𝒜 ∞) (𝒜 j) :=
+  ⟨lpEvalSAH j, vn_products_proj_normal 𝒜 j⟩
+
+/-! ### helper 5: reindexing a direct sum along a bijection of index sets -/
+
+private theorem exists_lp_reindex {I₁ : Type u₁} {I₂ : Type u₂} {𝒜 : I₂ → Type u₄}
+    {ℬ : I₁ → Type u₄}
+    [∀ i, CStarAlgebra (𝒜 i)] [∀ i, Nontrivial (𝒜 i)] [∀ i, PartialOrder (𝒜 i)]
+    [∀ i, StarOrderedRing (𝒜 i)] [∀ i, VonNeumannAlgebra (𝒜 i)]
+    [∀ i, CStarAlgebra (ℬ i)] [∀ i, Nontrivial (ℬ i)] [∀ i, PartialOrder (ℬ i)]
+    [∀ i, StarOrderedRing (ℬ i)] [∀ i, VonNeumannAlgebra (ℬ i)]
+    (e : I₁ ≃ I₂) (u : ∀ i : I₁, NMIUMap (𝒜 (e i)) (ℬ i))
+    (hu : ∀ i, Function.Bijective ⇑(u i)) :
+    ∃ Φ : NMIUMap (lp 𝒜 ∞) (lp ℬ ∞), Function.Bijective ⇑Φ ∧
+      ∀ (x : lp 𝒜 ∞) (i : I₁),
+        ((Φ x : lp ℬ ∞) : ∀ j, ℬ j) i = u i ((x : ∀ j, 𝒜 j) (e i)) := by
+  classical
+  obtain ⟨Φ, hΦ, -⟩ := vn_products_nmiu (B := lp 𝒜 ∞) ℬ
+    (fun i => nmiuComp (u i) (lpEvalNMIU 𝒜 (e i)))
+  have hΦapp : ∀ (x : lp 𝒜 ∞) (i : I₁),
+      ((Φ x : lp ℬ ∞) : ∀ j, ℬ j) i = u i ((x : ∀ j, 𝒜 j) (e i)) := fun x i => hΦ i x
+  -- the inverse maps
+  set v : ∀ i : I₁, NMIUMap (ℬ i) (𝒜 (e i)) := fun i => nmiuSymm (u i) (hu i) with hv
+  have hvu : ∀ (i : I₁) (b : ℬ i), u i (v i b) = b := fun i b =>
+    nmiuSymm_apply_apply' (u i) (hu i) b
+  have hvnorm : ∀ (i : I₁) (b : ℬ i), ‖v i b‖ = ‖b‖ := by
+    intro i b
+    have h := NonUnitalStarAlgHom.norm_map (u i).toStarAlgHom (hu i).1 (v i b)
+    rw [show ((u i).toStarAlgHom (v i b) : ℬ i) = b from hvu i b] at h
+    exact h.symm
+  refine ⟨Φ, ⟨?_, ?_⟩, hΦapp⟩
+  · intro x y hxy
+    refine lp.ext (funext fun j => ?_)
+    obtain ⟨i, rfl⟩ := e.surjective j
+    refine (hu i).1 ?_
+    rw [← hΦapp x i, ← hΦapp y i, hxy]
+  · intro z
+    have hmem : Memℓp ((Equiv.piCongrLeft 𝒜 e)
+        (fun i : I₁ => v i ((z : ∀ j, ℬ j) i))) ∞ := by
+      refine memℓp_infty_iff.mpr ⟨‖z‖, ?_⟩
+      rintro _ ⟨j, rfl⟩
+      obtain ⟨i, rfl⟩ := e.surjective j
+      show ‖(Equiv.piCongrLeft 𝒜 e)
+        (fun i : I₁ => v i ((z : ∀ j, ℬ j) i)) (e i)‖ ≤ ‖z‖
+      rw [Equiv.piCongrLeft_apply_apply, hvnorm]
+      exact lp.norm_apply_le_norm (by simp) z i
+    refine ⟨⟨_, hmem⟩, ?_⟩
+    refine lp.ext (funext fun i => ?_)
+    rw [hΦapp]
+    show u i ((Equiv.piCongrLeft 𝒜 e)
+      (fun i' : I₁ => v i' ((z : ∀ j, ℬ j) i')) (e i)) = _
+    rw [Equiv.piCongrLeft_apply_apply, hvu]
+
+
+
+
+open Classical in
+private theorem lpKappa_one_comm {I : Type u₁} {𝒜 : I → Type u₄} [∀ i, CStarAlgebra (𝒜 i)]
+    [∀ i, Nontrivial (𝒜 i)] [∀ i, PartialOrder (𝒜 i)] [∀ i, StarOrderedRing (𝒜 i)]
+    (i : I) (x : lp 𝒜 ∞) :
+    lpKappa i (1 : 𝒜 i) * x = x * lpKappa i (1 : 𝒜 i) := by
+  apply lp.ext
+  funext j
+  rw [lp.infty_coeFn_mul, lp.infty_coeFn_mul]
+  simp only [Pi.mul_apply, lpKappa, lp.coeFn_single]
+  by_cases h : j = i
+  · subst h; simp
+  · simp [h]
+
+open Classical in
+private theorem mul_lpKappa {I : Type u₁} {𝒜 : I → Type u₄} [∀ i, CStarAlgebra (𝒜 i)]
+    [∀ i, Nontrivial (𝒜 i)] [∀ i, PartialOrder (𝒜 i)] [∀ i, StarOrderedRing (𝒜 i)]
+    (i : I) (z : lp 𝒜 ∞) (a : 𝒜 i) :
+    z * lpKappa i a = lpKappa i ((z : ∀ j, 𝒜 j) i * a) := by
+  apply lp.ext
+  funext j
+  rw [lp.infty_coeFn_mul]
+  simp only [Pi.mul_apply, lpKappa, lp.coeFn_single]
+  by_cases h : j = i
+  · subst h; simp
+  · simp [h]
+
+/-! ### helper 2': an nmiu-map onto a factor out of a direct sum of matrix
+algebras factors through one summand -/
+
+open Classical in
+private theorem exists_lp_factor {I : Type u₁} {𝒜 : I → Type u₄} [∀ i, CStarAlgebra (𝒜 i)]
+    [∀ i, Nontrivial (𝒜 i)] [∀ i, PartialOrder (𝒜 i)] [∀ i, StarOrderedRing (𝒜 i)]
+    [∀ i, VonNeumannAlgebra (𝒜 i)] {M : Type u₂}
+    [CStarAlgebra M] [PartialOrder M] [StarOrderedRing M] [VonNeumannAlgebra M]
+    [Nontrivial M]
+    (hfacM : ∀ x : M, x * x = x → (∀ y, x * y = y * x) → x = 0 ∨ x = 1)
+    (hfacA : ∀ (i : I) (x : 𝒜 i), x * x = x → (∀ y, x * y = y * x) → x = 0 ∨ x = 1)
+    (hinjA : ∀ (i : I) (φ : 𝒜 i →⋆ₐ[ℂ] M), Function.Injective ⇑φ)
+    (ρ : NMIUMap (lp 𝒜 ∞) M) (hsurj : Function.Surjective ⇑ρ) :
+    ∃ (i : I) (ρ' : NMIUMap (𝒜 i) M), Function.Bijective ⇑ρ' ∧
+      ∀ x : lp 𝒜 ∞, ρ x = ρ' ((x : ∀ j, 𝒜 j) i) := by
+  classical
+  -- the carrier of `ρ`
+  obtain ⟨hzcen, hzker⟩ :=
+    carrier_miu ρ (nmiuP ρ) ρ.preservesDirSups' (fun _ => rfl)
+  have hzproj : IsStarProjection (carrier (nmiuP ρ) ρ.preservesDirSups') :=
+    (carrier_spec (nmiuP ρ) ρ.preservesDirSups').1
+  set z : lp 𝒜 ∞ := carrier (nmiuP ρ) ρ.preservesDirSups'
+  have hone : (ρ 1 : M) = 1 := map_one ρ.toStarAlgHom
+  have hmulρ : ∀ a b : lp 𝒜 ∞, (ρ (a * b) : M) = ρ a * ρ b := fun a b =>
+    map_mul ρ.toStarAlgHom a b
+  have hsmulρ : ∀ (c : ℂ) (x : lp 𝒜 ∞), (ρ (c • x) : M) = c • ρ x := fun c x =>
+    map_smul ρ.toStarAlgHom c x
+  have hsmulρ : ∀ (c : ℂ) (x : lp 𝒜 ∞), (ρ (c • x) : M) = c • ρ x := fun c x =>
+    map_smul ρ.toStarAlgHom c x
+  -- `z ≠ 0`
+  have hzne : z ≠ 0 := by
+    intro h
+    have h1 : (ρ 1 : M) = 0 := (hzker 1).mpr (by rw [h, zero_mul])
+    rw [hone] at h1
+    exact one_ne_zero h1
+  -- some coordinate of `z` is nonzero
+  obtain ⟨i, hzi⟩ : ∃ i : I, (z : ∀ j, 𝒜 j) i ≠ 0 := by
+    by_contra hcon
+    push_neg at hcon
+    exact hzne (lp.ext (funext fun j => by rw [hcon j]; rfl))
+  -- that coordinate is a central idempotent, hence `1`
+  have hzz : z * z = z := hzproj.isIdempotentElem.eq
+  have hzii : (z : ∀ j, 𝒜 j) i * (z : ∀ j, 𝒜 j) i = (z : ∀ j, 𝒜 j) i := by
+    have h := congrArg (fun w : lp 𝒜 ∞ => (w : ∀ j, 𝒜 j) i) hzz
+    simpa [lp.infty_coeFn_mul] using h
+  have hzicen : ∀ y : 𝒜 i, (z : ∀ j, 𝒜 j) i * y = y * (z : ∀ j, 𝒜 j) i := by
+    intro y
+    have h := hzcen (lpKappa i y)
+    have h1 := congrArg (fun w : lp 𝒜 ∞ => (w : ∀ j, 𝒜 j) i) h
+    simpa [lp.infty_coeFn_mul, lpKappa_apply_self] using h1
+  have hzi1 : (z : ∀ j, 𝒜 j) i = 1 :=
+    (hfacA i _ hzii hzicen).resolve_left hzi
+  -- `ρ` is `1` on the unit of the `i`-th summand
+  have hkne : (ρ (lpKappa i (1 : 𝒜 i)) : M) ≠ 0 := by
+    intro h
+    have h1 := (hzker _).mp h
+    rw [mul_lpKappa, hzi1, mul_one] at h1
+    have h2 := congrArg (fun w : lp 𝒜 ∞ => (w : ∀ j, 𝒜 j) i) h1
+    rw [lpKappa_apply_self] at h2
+    exact one_ne_zero (h2.trans rfl)
+  have hkidem : (ρ (lpKappa i (1 : 𝒜 i)) : M) * ρ (lpKappa i (1 : 𝒜 i))
+      = ρ (lpKappa i (1 : 𝒜 i)) := by
+    rw [← hmulρ, lpKappa_mul, mul_one]
+  have hkcen : ∀ y : M, (ρ (lpKappa i (1 : 𝒜 i)) : M) * y
+      = y * ρ (lpKappa i (1 : 𝒜 i)) := by
+    intro y
+    obtain ⟨x, rfl⟩ := hsurj y
+    rw [← hmulρ, ← hmulρ, lpKappa_one_comm]
+  have hi : (ρ (lpKappa i (1 : 𝒜 i)) : M) = 1 :=
+    (hfacM _ hkidem hkcen).resolve_left hkne
+  -- the factoring ∗-homomorphism
+  set ρ'₀ : 𝒜 i →⋆ₐ[ℂ] M :=
+    { toFun := fun a => ρ (lpKappa i a)
+      map_one' := hi
+      map_mul' := fun a b => by
+        rw [← lpKappa_mul]; exact hmulρ _ _
+      map_zero' := by
+        show (ρ (lp.single ∞ i (0 : 𝒜 i)) : M) = 0
+        rw [lp.single_zero]; exact map_zero ρ.toStarAlgHom
+      map_add' := fun a b => by
+        show (ρ (lp.single ∞ i (a + b)) : M) = _
+        rw [lp.single_add]; exact map_add ρ.toStarAlgHom _ _
+      commutes' := fun c => by
+        rw [Algebra.algebraMap_eq_smul_one]
+        show (ρ (lp.single ∞ i (c • (1 : 𝒜 i))) : M) = _
+        rw [lp.single_smul]
+        show (ρ (c • lpKappa i (1 : 𝒜 i)) : M) = _
+        rw [hsmulρ, hi]
+        exact (Algebra.algebraMap_eq_smul_one c).symm
+      map_star' := fun a => by
+        rw [← lpKappa_star]; exact map_star ρ.toStarAlgHom _ }
+  have hfac : ∀ x : lp 𝒜 ∞, (ρ x : M) = ρ'₀ ((x : ∀ j, 𝒜 j) i) := by
+    intro x
+    show (ρ x : M) = ρ (lpKappa i ((x : ∀ j, 𝒜 j) i))
+    rw [← lpKappa_mul_left, hmulρ, hi, one_mul]
+  have hsurj' : Function.Surjective ⇑ρ'₀ := by
+    intro y
+    obtain ⟨x, rfl⟩ := hsurj y
+    exact ⟨(x : ∀ j, 𝒜 j) i, (hfac x).symm⟩
+  have hinj' : Function.Injective ⇑ρ'₀ := hinjA i ρ'₀
+  exact ⟨i, ⟨ρ'₀, starAlgEquiv_preservesDirSups'
+    (StarAlgEquiv.ofBijective ρ'₀ ⟨hinj', hsurj'⟩)⟩, ⟨hinj', hsurj'⟩, hfac⟩
+
+
+
+/-! ### step B: the unit generates `F_ha(𝒜)` -/
+
+private theorem wstar_unit_eq_top [VonNeumannAlgebra A] (F : HaFreeMIU A) :
+    wstar F.carrier (Set.range ⇑F.unit.toNCPMap) = ⊤ := by
+  classical
+  have hSvn : IsVNSubalgebra F.carrier
+      (wstar F.carrier (Set.range ⇑F.unit.toNCPMap)) :=
+    (isVNSubalgebra_wstar (Set.range ⇑F.unit.toNCPMap)).1
+  have hGS : Set.range ⇑F.unit.toNCPMap ⊆ wstar F.carrier (Set.range ⇑F.unit.toNCPMap) :=
+    (isVNSubalgebra_wstar (Set.range ⇑F.unit.toNCPMap)).2
+  have hha : HereditarilyAtomic
+      (VNSub F.carrier (wstar F.carrier (Set.range ⇑F.unit.toNCPMap)) hSvn) :=
+    hereditarilyAtomic_subalgebra F.ha VNSub.valNMIU VNSub.valNMIU_injective
+  obtain ⟨g, hg⟩ : ∃ g : NCPSUMap A
+      (VNSub F.carrier (wstar F.carrier (Set.range ⇑F.unit.toNCPMap)) hSvn),
+      ∀ a : A, (g.toNCPMap a).val = F.unit.toNCPMap a :=
+    exists_ncpsuCorestrict _ hSvn F.unit (fun a => hGS ⟨a, rfl⟩)
+  obtain ⟨ϱ, hϱ, -⟩ := F.universal _ hha g
+  obtain ⟨τ, -, huniq⟩ := F.universal F.carrier F.ha F.unit
+  have h1 : nmiuComp VNSub.valNMIU ϱ = nmiuId F.carrier := by
+    rw [huniq (nmiuComp VNSub.valNMIU ϱ) ?_, huniq (nmiuId F.carrier) (fun a => rfl)]
+    intro a
+    show F.unit.toNCPMap a = (ϱ (F.unit.toNCPMap a)).val
+    rw [← hϱ a, hg a]
+  refine eq_top_iff.mpr fun x _ => ?_
+  have h2 : (ϱ x).val = x :=
+    congrFun (congrArg (fun f : NMIUMap F.carrier F.carrier => ⇑f) h1) x
+  exact h2 ▸ (ϱ x).property
+
+
+end FhaAux
+
 /-- **125cIII** (`Fha-concrete`, proc.tex:5300, Theorem): for a
 hereditarily atomic `𝒜` with a set of representatives
 `r_i : 𝒜 → M_{N_i+1}` (`i ∈ I`) for miu-equivalence of the generating
@@ -1950,7 +2381,169 @@ theorem Fha_concrete [VonNeumannAlgebra A] (hA : HereditarilyAtomic A)
         Φ (F.unit.toNCPMap a) i = (r i).toNCPMap a) ∧
       ∀ Φ' : NMIUMap F.carrier (lp (fun i : I => MatAlg (N i + 1)) ∞),
         (∀ (a : A) (i : I),
-          Φ' (F.unit.toNCPMap a) i = (r i).toNCPMap a) → Φ' = Φ := sorry
+          Φ' (F.unit.toNCPMap a) i = (r i).toNCPMap a) → Φ' = Φ := by
+  classical
+  have htop : wstar F.carrier (Set.range ⇑F.unit.toNCPMap) = ⊤ := wstar_unit_eq_top F
+  -- the mediating map `Φ` from the universal property
+  obtain ⟨R, hR, -⟩ := vn_products_ncpsu (fun i : I => MatAlg (N i + 1)) r
+  have hhaB : HereditarilyAtomic (lp (fun i : I => MatAlg (N i + 1)) ∞) :=
+    ⟨I, N, ⟨StarAlgEquiv.refl (R := ℂ)
+      (A := lp (fun i : I => MatAlg (N i + 1)) ∞)⟩⟩
+  obtain ⟨Φ, hΦ, -⟩ := F.universal _ hhaB R
+  have hΦr : ∀ (a : A) (i : I),
+      ((Φ (F.unit.toNCPMap a) : lp (fun i : I => MatAlg (N i + 1)) ∞) :
+        ∀ j : I, MatAlg (N j + 1)) i = (r i).toNCPMap a := by
+    intro a i
+    rw [← hΦ a]
+    exact hR i a
+  -- uniqueness, from `htop`
+  have huniq : ∀ Φ' : NMIUMap F.carrier (lp (fun i : I => MatAlg (N i + 1)) ∞),
+      (∀ (a : A) (i : I), Φ' (F.unit.toNCPMap a) i = (r i).toNCPMap a) → Φ' = Φ := by
+    intro Φ' hΦ'
+    refine DFunLike.coe_injective (funext fun x => ?_)
+    refine nmiu_ext_of_wstar_top Φ' Φ _ htop ?_ x
+    rintro _ ⟨a, rfl⟩
+    exact lp.ext (funext fun i => by rw [hΦ' a i, hΦr a i])
+  refine ⟨Φ, ?_, hΦr, huniq⟩
+  -- ## bijectivity
+  obtain ⟨I', N', ⟨ψ₀⟩⟩ := F.ha
+  set ψ : NMIUMap F.carrier (lp (fun i' : I' => MatAlg (N' i' + 1)) ∞) :=
+    ⟨ψ₀.toStarAlgHom, starAlgEquiv_preservesDirSups' ψ₀⟩ with hψdef
+  have hψbij : Function.Bijective ⇑ψ := ψ₀.bijective
+  -- the maps `sᵢ' = πᵢ' ∘ ψ ∘ η`
+  have hsex : ∀ i' : I', ∃ sm : NCPSUMap A (MatAlg (N' i' + 1)), ∀ a : A,
+      sm.toNCPMap a =
+        ((ψ (F.unit.toNCPMap a) : lp (fun i' : I' => MatAlg (N' i' + 1)) ∞) :
+          ∀ j : I', MatAlg (N' j + 1)) i' := fun i' =>
+    exists_ncpsuCompNmiu'
+      (nmiuComp (lpEvalNMIU (fun i' : I' => MatAlg (N' i' + 1)) i') ψ) F.unit
+  choose s hs using hsex
+  -- each `sᵢ'` generates its matrix algebra
+  have hsgen : ∀ i' : I', GeneratesMat (s i') := by
+    intro i'
+    set θ : F.carrier →⋆ₐ[ℂ] MatAlg (N' i' + 1) :=
+      (nmiuComp (lpEvalNMIU (fun i' : I' => MatAlg (N' i' + 1)) i') ψ).toStarAlgHom
+      with hθ
+    have hθn : PreservesDirSups ⇑θ :=
+      (nmiuComp (lpEvalNMIU (fun i' : I' => MatAlg (N' i' + 1)) i') ψ).preservesDirSups'
+    have hcomap := isVNSubalgebra_comap θ hθn
+      (wstar (MatAlg (N' i' + 1)) (Set.range ⇑(s i').toNCPMap))
+      (isVNSubalgebra_wstar _).1
+    have hle : wstar F.carrier (Set.range ⇑F.unit.toNCPMap) ≤
+        (wstar (MatAlg (N' i' + 1)) (Set.range ⇑(s i').toNCPMap)).comap θ := by
+      refine sInf_le ⟨hcomap, ?_⟩
+      rintro _ ⟨a, rfl⟩
+      show θ (F.unit.toNCPMap a) ∈ wstar (MatAlg (N' i' + 1)) (Set.range ⇑(s i').toNCPMap)
+      have : θ (F.unit.toNCPMap a) = (s i').toNCPMap a := (hs i' a).symm
+      rw [this]
+      exact (isVNSubalgebra_wstar _).2 ⟨a, rfl⟩
+    rw [htop, top_le_iff] at hle
+    -- `θ` is surjective
+    have hθsurj : Function.Surjective ⇑θ := by
+      intro y
+      obtain ⟨x, hx⟩ := hψbij.2 (lpKappa i' y)
+      refine ⟨x, ?_⟩
+      show ((ψ x : lp (fun i' : I' => MatAlg (N' i' + 1)) ∞) :
+        ∀ j : I', MatAlg (N' j + 1)) i' = y
+      rw [hx, lpKappa_apply_self]
+    refine eq_top_iff.mpr fun y _ => ?_
+    obtain ⟨x, rfl⟩ := hθsurj y
+    have hx : x ∈ (wstar (MatAlg (N' i' + 1)) (Set.range ⇑(s i').toNCPMap)).comap θ := by
+      rw [hle]; trivial
+    exact hx
+  -- `c : I' → I`
+  have hcex : ∀ i' : I', ∃ i : I, MIUEquiv (r i) (s i') := fun i' =>
+    hrep (N' i') (s i') (hsgen i')
+  choose c hc using hcex
+  -- `d : I → I'`, by the factoring lemma
+  have hdex : ∀ i : I, ∃ i' : I', MIUEquiv (s i') (r i) := by
+    intro i
+    set ρ : NMIUMap F.carrier (MatAlg (N i + 1)) :=
+      nmiuComp (lpEvalNMIU (fun j : I => MatAlg (N j + 1)) i) Φ with hρdef
+    have hρη : ∀ a : A, ρ (F.unit.toNCPMap a) = (r i).toNCPMap a := fun a => hΦr a i
+    have hρsurj : Function.Surjective ⇑ρ := by
+      have hrange : wstar (MatAlg (N i + 1)) (Set.range ⇑(r i).toNCPMap) ≤
+          ρ.toStarAlgHom.range :=
+        sInf_le ⟨nmiu_image ρ, by
+          rintro _ ⟨a, rfl⟩
+          exact ⟨F.unit.toNCPMap a, hρη a⟩⟩
+      rw [hgen i, top_le_iff] at hrange
+      intro y
+      have : y ∈ ρ.toStarAlgHom.range := by rw [hrange]; trivial
+      exact this
+    set rhoT : NMIUMap (lp (fun i' : I' => MatAlg (N' i' + 1)) ∞) (MatAlg (N i + 1)) :=
+      nmiuComp ρ (nmiuSymm ψ hψbij) with hrhoT
+    have hrhoTsurj : Function.Surjective ⇑rhoT := fun y => by
+      obtain ⟨x, hx⟩ := hρsurj y
+      exact ⟨ψ x, by rw [show rhoT (ψ x) = ρ (nmiuSymm ψ hψbij (ψ x)) from rfl,
+        nmiuSymm_apply_apply, hx]⟩
+    obtain ⟨i', ρ', hρ'bij, hρ'fac⟩ :=
+      exists_lp_factor (fun x hx hcen => matAlg_central_idem hx hcen)
+        (fun _ x hx hcen => matAlg_central_idem hx hcen)
+        (fun _ φ => matAlg_starAlgHom_injective φ) rhoT hrhoTsurj
+    refine ⟨i', ρ', hρ'bij, fun a => ?_⟩
+    rw [hs i' a, ← hρ'fac (ψ (F.unit.toNCPMap a))]
+    show ρ (nmiuSymm ψ hψbij (ψ (F.unit.toNCPMap a))) = _
+    rw [nmiuSymm_apply_apply, hρη a]
+  choose d hd using hdex
+  -- `c` and `d` are mutually inverse
+  have htrans : ∀ {n₁ n₂ n₃ : ℕ} {f₁ : NCPSUMap A (MatAlg n₁)}
+      {f₂ : NCPSUMap A (MatAlg n₂)} {f₃ : NCPSUMap A (MatAlg n₃)},
+      MIUEquiv f₁ f₂ → MIUEquiv f₂ f₃ → MIUEquiv f₁ f₃ := by
+    rintro n₁ n₂ n₃ f₁ f₂ f₃ ⟨φ₁, hb₁, he₁⟩ ⟨φ₂, hb₂, he₂⟩
+    exact ⟨nmiuComp φ₂ φ₁, hb₂.comp hb₁, fun a => by
+      show φ₂ (φ₁ (f₁.toNCPMap a)) = _
+      rw [he₁ a, he₂ a]⟩
+  have hcd : ∀ i : I, c (d i) = i := by
+    intro i
+    by_contra hne
+    exact hdistinct _ _ hne (htrans (hc (d i)) (hd i))
+  -- uniqueness of the `s`-representatives
+  have hsuniq : ∀ i₁ i₂ : I', MIUEquiv (s i₁) (s i₂) → i₁ = i₂ := by
+    rintro i₁ i₂ ⟨φ, hφbij, hφ⟩
+    by_contra hne
+    have hagree : ∀ x : F.carrier,
+        nmiuComp φ (nmiuComp (lpEvalNMIU (fun i' : I' => MatAlg (N' i' + 1)) i₁) ψ) x
+          = nmiuComp (lpEvalNMIU (fun i' : I' => MatAlg (N' i' + 1)) i₂) ψ x := by
+      refine nmiu_ext_of_wstar_top _ _ _ htop ?_
+      rintro _ ⟨a, rfl⟩
+      show φ (((ψ (F.unit.toNCPMap a) : lp (fun i' : I' => MatAlg (N' i' + 1)) ∞) :
+        ∀ j : I', MatAlg (N' j + 1)) i₁) = _
+      rw [← hs i₁ a, hφ a, hs i₂ a]
+      rfl
+    obtain ⟨x, hx⟩ := hψbij.2 (lpKappa i₁ (1 : MatAlg (N' i₁ + 1)))
+    have h := hagree x
+    show False
+    rw [show nmiuComp φ (nmiuComp (lpEvalNMIU (fun i' : I' => MatAlg (N' i' + 1)) i₁) ψ) x
+      = φ (((ψ x : lp (fun i' : I' => MatAlg (N' i' + 1)) ∞) :
+        ∀ j : I', MatAlg (N' j + 1)) i₁) from rfl,
+      show nmiuComp (lpEvalNMIU (fun i' : I' => MatAlg (N' i' + 1)) i₂) ψ x
+      = ((ψ x : lp (fun i' : I' => MatAlg (N' i' + 1)) ∞) :
+        ∀ j : I', MatAlg (N' j + 1)) i₂ from rfl, hx,
+      lpKappa_apply_self, lpKappa_apply_ne _ _ (Ne.symm hne),
+      show (φ 1 : MatAlg (N' i₂ + 1)) = 1 from map_one φ.toStarAlgHom] at h
+    exact one_ne_zero h
+  have hdc : ∀ i' : I', d (c i') = i' := fun i' =>
+    hsuniq _ _ (htrans (hd (c i')) (hc i'))
+  -- the reindexing isomorphism
+  set e : I ≃ I' := ⟨d, c, hcd, hdc⟩ with he
+  obtain ⟨Θ, hΘbij, hΘ⟩ :=
+    exists_lp_reindex (𝒜 := fun i' : I' => MatAlg (N' i' + 1))
+      (ℬ := fun i : I => MatAlg (N i + 1)) e
+      (fun i => (hd i).choose) (fun i => (hd i).choose_spec.1)
+  have hΦeq : Φ = nmiuComp Θ ψ := by
+    refine (huniq (nmiuComp Θ ψ) ?_).symm
+    intro a i
+    show ((Θ (ψ (F.unit.toNCPMap a)) : lp (fun i : I => MatAlg (N i + 1)) ∞) :
+      ∀ j : I, MatAlg (N j + 1)) i = _
+    rw [hΘ]
+    show (hd i).choose (((ψ (F.unit.toNCPMap a) :
+      lp (fun i' : I' => MatAlg (N' i' + 1)) ∞) : ∀ j : I', MatAlg (N' j + 1)) (d i)) = _
+    rw [← hs (d i) a]
+    exact (hd i).choose_spec.2 a
+  rw [hΦeq]
+  exact hΘbij.comp hψbij
+
 
 /-! ## Parsec 1254: the hereditarily atomic free exponential -/
 
