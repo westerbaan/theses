@@ -1,6 +1,10 @@
-.PHONY: all clean
+.PHONY: all clean xindy-image
 
 all: a.pdf b.pdf bstellingen.pdf berr-sep.pdf asols.pdf
+
+# Only needed where xindy itself cannot be installed; see xindy-container.sh.
+xindy-image:
+	docker build -t theses-xindy -f Dockerfile.xindy .
 
 berr-sep.pdf: common-lite.tex berr-sep.tex berr.tex
 	latexmk -pdf -use-make berr-sep.tex
