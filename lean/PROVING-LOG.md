@@ -19690,3 +19690,159 @@ the more promising attack.
 Nothing for ERRATA or QUESTIONS this session.  `docs/why-open.csv`: the
 `ha_second_adjunction` row is deleted.  `docs/AProc-survey.md`: headline
 22 → 21, `QuantumLambda` 10 → 9, the 125bII row rewritten, session note added.
+
+## Session 83 — `A/Proc`: **121II `intersection_tensor` is *equivalent* to the commutation theorem for von Neumann tensor products**, so the recommended "specialised containment" route buys nothing; seven of `QuantumLambda`'s nine sorries have no route, and the two that do are the hereditarily atomic pair (worker on `Theses/A/Proc/`)
+
+A/Proc **21 → 21**; no Lean was written and no file was touched, so the
+counts stand as session 82 left them (`QuantumLambda` 9, `Measurement` 10,
+`Tensor` 2, `Duplicators` 0; 0 errors in all four).  This entry is the
+analysis the brief asked for — "decide which route you are taking and say
+why" — together with the route that replaces both.
+
+### 1. The decision: **neither** route, because they are the same theorem
+
+The brief offered (a) the general 121II and (b) the previous worker's
+recommendation, 125IV's containment step `Ã⊗𝒞 = (Ã⊗B(ℋ)) ∩ (𝒜⊗𝒞)`
+"without the concrete Takesaki result".  **(b) is an instance of (a), and (a)
+is a consequence of (b); both are equivalent, modulo facts the tree already
+has, to the commutation theorem `(M ⊗̄ N)' = M' ⊗̄ N'` (Takesaki I,
+Thm IV.5.9 — the theorem of which the cited Cor IV.5.10 is a corollary).**
+That theorem is Tomita's, and every known proof of it in the generality
+stated goes through Tomita–Takesaki modular theory (the semifinite case has
+an older proof through the trace).  Neither Mathlib nor this tree has any
+modular theory — `grep -i 'tomita\|modular'` over `Theses/` returns nothing,
+and Mathlib has no von Neumann algebra tensor product at all — so this is not
+a session's work and, in my judgement, not this project's work either: the
+thesis itself does not prove it, it cites it.
+
+The reduction, in enough detail to be checked against Takesaki's:
+
+* **(E) the easy half is elementary and available.**  For a von Neumann
+  algebra `M ⊆ B(𝒦)` and any `ℋ`, `M ⊗̄ B(ℋ) = (M' ⊗ 1)'` in `B(𝒦⊗ℋ)`.
+  `⊆` is the computation `(a⊗b)(m'⊗1) = (m'⊗1)(a⊗b)` plus ultraweak
+  closedness of a commutant (**65III**.2); `⊇` takes matrix entries against
+  an orthonormal basis of `ℋ`, observes that each entry commutes with `M'`,
+  and applies the **double commutant theorem 88VI** (`double_commutant`,
+  `A/VN/NormalFunctionals.lean:1610`), which the tree has.  Mirror-image:
+  `B(𝒦) ⊗̄ N = (1 ⊗ N')'`.
+* **(a) ⟹ commutation theorem.**  Instantiate the Lean statement at
+  `SA₁ = M`, `SB₁ = ⊤`, `SA₂ = ⊤`, `SB₂ = N`:
+  `(M ⊗̄ B(ℋ)) ∩ (B(𝒦) ⊗̄ N) = M ⊗̄ N`.  By (E) the left side is
+  `(M'⊗1)' ∩ (1⊗N')' = ((M'⊗1) ∪ (1⊗N'))' = (M' ⊗̄ N')'`, the last step
+  because a commutant depends only on the von Neumann algebra generated.  So
+  `M ⊗̄ N = (M' ⊗̄ N')'` for all `M, N`; reading it at `M', N'` and using
+  `M'' = M` gives `(M ⊗̄ N)' = M' ⊗̄ N'`.
+* **(b) is the same statement.**  What 125IV needs is
+  `x ∈ Ã ⊗̄ B(ℋ)` and `x ∈ 𝒜 ⊗̄ 𝒞` ⟹ `x ∈ Ã ⊗̄ 𝒞`; by (E) that intersection
+  *is* the Fubini product `F(Ã,𝒞) = {x : (id⊗ψ)(x) ∈ Ã, (φ⊗id)(x) ∈ 𝒞}`, so
+  the step is Tomiyama's slice-map property for the pair `(Ã,𝒞)`.  Taking
+  `𝒜 = B(𝒦)` — legitimate, since 125IV quantifies over all `𝒜` — makes the
+  general slice-map property an instance of the "specialised" step.  And the
+  slice-map property gives the commutation theorem back in three lines: if
+  `x ∈ (M' ⊗̄ N')'` then `x` commutes with `M'⊗1` and with `1⊗N'`, so its
+  slices lie in `M'' = M` and `N'' = N`, so `x ∈ F(M,N) = M ⊗̄ N`.
+* **So the only thing the "specialised" route saves is the concrete/abstract
+  bridge**, i.e. having to realise `VNT 𝒜 𝒞` spatially — which is real work,
+  but is not where the difficulty is.
+
+Everything above is the *hard* direction only; note that the easy inclusion
+of 121II (`⊇`, and the fact that all slices of an element of `𝒜₁⊗̄ℬ₁` land in
+`𝒜₁`) is elementary and needs nothing but 88VI.
+
+### 2. Consequence for the file: seven of the nine have no route
+
+121II, and with it **125IV** `equaliser_lemma`, **125VI** `tensor_equalisers`,
+**125VIIb** `tensor_preimage`, **125VIII** `tensor_closed`, **125eIIa**
+`tensor_map_factorisation` and **125eIII** `tensorBsurjectivity`, should be
+regarded as blocked on a Big Theorem rather than as unrouted.  Two caveats,
+kept deliberately narrow:
+
+* Only **121II** is *proved* equivalent to the commutation theorem.  The other
+  six are blocked because their printed proofs run through it and I found no
+  alternative — not because they are known to imply it.  In particular
+  125eIIa asks only for *some* `𝒞̃` with `s(𝒜) ⊆ 𝒞̃ ⊗ ℬ` and the restriction
+  `(·)⊗ℬ`-surjective; the obvious Zorn attempt fails because a descending
+  chain of subalgebras needs `⋂ᵢ(Sᵢ ⊗ ℬ) = (⋂ᵢSᵢ) ⊗ ℬ`, which is 121II again.
+* **The easy half of 125eIII is genuinely easy** and does not need 125VIIb:
+  proc.tex:5620's direction ("if `(ϱ⊗ℬ)∘s` is `(·)⊗ℬ`-surjective then `ϱ` is
+  surjective") only needs `range(ϱ⊗id) ⊆ ϱ(𝒞) ⊗ ℬ` — the preimage of
+  `tensorSub ℬ (range ϱ)` is a von Neumann subalgebra containing every
+  elementary tensor — plus **69IVb** `nmiu_image` to know `range ϱ` is a von
+  Neumann subalgebra.  It is the *forward* direction that needs 125VIIb.
+
+### 3. What *is* reachable: the hereditarily atomic branch
+
+**For hereditarily atomic `ℬ` the slice-map property is elementary**, because
+`ℬ` has matrix units.  This is the observation the rest of the file can be
+built on, and it makes **125dII** `ha_tensor_closed` and **125eVII**
+`AstarhaB_concrete` — the only two sorries in `QuantumLambda.lean` whose
+statements are confined to hereditarily atomic algebras — reachable without
+121II.  Note that `ℬ` here is the *tensored* factor; `𝒞` may be arbitrary.
+
+Write `ℬ ≅ ⊕_{j∈J} M_{n_j}` (**84bII** `HereditarilyAtomic` *is* this
+decomposition), with central projections `z_j` and matrix units `u^j_{kl}`.
+The device is:
+
+> for every `x ∈ 𝒞 ⊗ ℬ` and every `j`,
+> `(1 ⊗ z_j)·x  =  Σ_{k,l} c^j_{kl} ⊗ u^j_{kl}`, a **finite** sum, with
+> `c^j_{kl} ∈ 𝒞`.
+
+Both sides are ultraweakly continuous and linear in `x` and agree on
+elementary tensors `c ⊗ b` (because `z_j b` is a finite combination of the
+`u^j_{kl}`), so **`tensor_linear_ext`** (session 69) proves it outright — the
+same one-step device that carried 123II and 119IV.  Reassembling over `j` is
+the uniqueness half of **67IV**.2 `central_projections_sums_2` (`∃! a, ∀ i,
+cᵢ a = bᵢ`) applied *inside* the von Neumann subalgebra `W*{c^j_{kl}} ⊗ ℬ`,
+which contains every `1 ⊗ z_j`.  Hence
+
+> `x ∈ W*{ c^j_{kl} } ⊗ ℬ`, with at most `#ℬ·#ℬ` generators per `x` —
+> the hereditarily atomic **`equaliser-lemma`**, cardinality bound included
+> (`#𝒜·#ℬ²`, better than the printed `#𝒟·2^#𝒞`), and with `f∘ι = g∘ι`
+> immediate because `f ⊗ id` acts entrywise on the display above.
+
+**One API gap, and it is small.**  Extracting `c^j_{kl}` must not slice into
+`ℂ : Type 0`, since `tmap` (115II) is single-universe while `𝒞, ℬ : Type u`.
+It need not: `c ↦ c ⊗ 1` is an nmiu-map (`nmiuTmulLeft`, already private in
+`QuantumLambda.lean` for 123II), so its range is a von Neumann subalgebra by
+**69IVb** `nmiu_image` (universe-polymorphic) and in particular ultraweakly
+closed; the ncp-map `tmap (ncpId 𝒞) κ` with `κ(b) = ω(u^j_{1k} b u^j_{l1})·1`
+carries elementary tensors into that range, hence everything into it, and
+`c^j_{kl}` is its unique preimage.  The gap is that `κ` has to be built as an
+`NCPMap ℬ ℬ` by hand: `b ↦ ω(b)·1` for a normal state `ω`, whose complete
+positivity is "a positive functional is completely positive" followed by the
+∗-homomorphism `ℂ → ℬ`.  There is no `NPFunctional → NCPMap` conversion in
+the tree (checked); ~30 lines.
+
+The same device gives, as *private* lemmas, the hereditarily atomic forms of
+125VIIb and 125eIIa/125eIII that 125dII and 125eVII consume — e.g. ha-125VIIb
+is two lines from it, since the entries of `(ϱ⊗id)(x)` are `ϱ` of the entries
+of `x`.  **Those private forms do not close 125VIIb, 125eIIa or 125eIII**,
+whose statements are general and stay open; statements are never changed.
+
+Costing, for whoever takes it: the block device ~250–400 lines (the risk is
+the `⊕_j` bookkeeping, not the mathematics); the ha equaliser lemma ~150 on
+top; **125dII** then mirrors 125bII's Freyd construction (~300; note it does
+*not* need 125VIII, contradicting proc.tex:5538's "exactly as in
+`tensor-closed-proof`", which is the only printed route); **125eVII** mirrors
+125cIII (~500, and it takes `F : HaFreeExp A B` as a *hypothesis*, so it is
+not gated on 125dII — the same pattern as 125cIII vs 125cI).  Two to three
+sessions for the two statements.  Prediction, on the pattern of 125bII/125cIII
+/132III.5: in `ha_tensor_closed` it will be `hB` — the hypothesis on the
+algebra being freed — that is unused, while `hA`, on the tensored factor, is
+exactly what the device consumes.
+
+### 4. What in the brief turned out to be wrong
+
+* **"A worker who can get 125IV's containment step without the concrete
+  Takesaki result would unblock the file at 125IV"** (session 82's
+  recommendation, repeated in the brief and in `docs/AProc-survey.md`): there
+  is no such worker.  §1 shows the containment step *is* the Takesaki result.
+* The brief's dependency map is otherwise accurate, with one exception:
+  **125VIII does not gate 125dII** once the ha route is taken (it does gate it
+  as printed, which is what session 82 recorded).
+* `docs/why-open.csv`'s `equaliser_lemma` row said "its statement uses the
+  sorried `tmapM`"; `tmapM` has been proved since session 66.  Corrected.
+
+Nothing for ERRATA (the thesis cites a true theorem and is right to) and
+nothing for QUESTIONS.  `docs/why-open.csv`: nine rows rewritten.
+`docs/AProc-survey.md`: session note added, headline unchanged at 21.

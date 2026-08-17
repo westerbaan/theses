@@ -1,6 +1,7 @@
-# `Theses/A/Proc/` — full survey of the remaining `sorry`s (worker 71, 2026-08-16; revised workers 72–87, sessions 47–82)
+# `Theses/A/Proc/` — full survey of the remaining `sorry`s (worker 71, 2026-08-16; revised workers 72–88, sessions 47–83)
 
-**Headline count: A/Proc has 21 code `sorry`s** after session 82.
+**Headline count: A/Proc has 21 code `sorry`s** after session 83 (session 83
+wrote no Lean).
 Per file: `Tensor` **2**, `QuantumLambda` **9**,
 `Measurement` **10**, `Duplicators` **0 — the file is finished**.
 **All four compiler-verified in session 82** (each file compiled directly;
@@ -9,6 +10,47 @@ Per file: `Tensor` **2**, `QuantumLambda` **9**,
 over-counts, because the file docstrings mention `sorry` in prose; the code
 counts are the ones above.  Note `\bsorry\b` also matches "sorry-ed" in
 prose — count the compiler's `declaration uses \`sorry\`` warnings instead.)
+
+> **Session 83 — 121II `intersection_tensor` is OUT OF REACH, and so is the
+> "specialised containment" route recommended below.**  No Lean written;
+> A/Proc **21 → 21**.  Full working in PROVING-LOG, session 83.
+>
+> * **121II is *equivalent*, given the tree's double commutant theorem
+>   (88VI), to the commutation theorem `(M ⊗̄ N)' = M' ⊗̄ N'`** (Takesaki I,
+>   Thm IV.5.9 — the theorem behind the cited Cor IV.5.10).  Forwards:
+>   instantiate 121II at `SB₁ = SA₂ = ⊤` and use the *elementary*
+>   `M ⊗̄ B(ℋ) = (M'⊗1)'`.  Every known proof of the commutation theorem in
+>   this generality uses Tomita–Takesaki modular theory, which neither
+>   Mathlib nor this tree has.
+> * **The route recommended in the session-82 note below — get 125IV's step
+>   `Ã⊗𝒞 = (Ã⊗B(ℋ)) ∩ (𝒜⊗𝒞)` without the Takesaki result — is void.**  By
+>   the elementary half that step *is* Tomiyama's slice-map property
+>   `F(Ã,𝒞) = Ã ⊗̄ 𝒞`, and at `𝒜 = B(𝒦)` the general slice-map property is an
+>   instance of it; slice-map gives the commutation theorem back in three
+>   lines.  Same theorem, no saving.
+> * **Seven of `QuantumLambda`'s nine are therefore blocked on a Big
+>   Theorem**, not merely unrouted: 121II, 125IV, 125VI, 125VIIb, 125VIII,
+>   125eIIa, 125eIII.  (Only 121II is *proved* equivalent; the other six are
+>   blocked because their printed proofs run through it and no alternative
+>   was found.  125eIIa's obvious Zorn dodge fails on chains, which need the
+>   intersection theorem itself.)
+> * **The two hereditarily atomic statements are reachable: 125dII
+>   `ha_tensor_closed` and 125eVII `AstarhaB_concrete`.**  For ha `ℬ` the
+>   slice-map property is *elementary*, via matrix units: for `x ∈ 𝒞 ⊗ ℬ`,
+>   `(1⊗z_j)x = Σ_{k,l} c^j_{kl} ⊗ u^j_{kl}` — a finite sum — proved in one
+>   step by `tensor_linear_ext`, reassembled over `j` by **67IV**.2, giving
+>   `x ∈ W*{c^j_{kl}} ⊗ ℬ` with `#𝒜·#ℬ²` generators.  Entry extraction stays
+>   in `Type u` (no slicing into `ℂ`) because `c ↦ c ⊗ 1` is an nmiu-map
+>   (`nmiuTmulLeft`, private, already in the file) whose range is a von
+>   Neumann subalgebra by **69IVb**.  One API gap: no `NPFunctional → NCPMap`
+>   in the tree (~30 lines).  **125dII does not need 125VIII on this route**,
+>   and 125eVII takes `F : HaFreeExp A B` as a hypothesis, so 125dII does not
+>   gate it.  Costing: 2–3 sessions for the two.
+> * Private ha forms of 125VIIb/125eIIa/125eIII are what 125dII and 125eVII
+>   consume; they do **not** close those three general statements.
+> * Nothing for ERRATA or QUESTIONS.  `docs/why-open.csv`: nine rows
+>   rewritten (six `open` → `blocked`, two → `costed`, `intersection_tensor`
+>   annotated).
 
 > **Session 82 — 125bII `ha_second_adjunction` is CLOSED.**  `QuantumLambda`
 > **10 → 9**; A/Proc **22 → 21**, 0 errors in all four files, the new theorem
@@ -53,6 +95,7 @@ prose — count the compiler's `declaration uses \`sorry\`` warnings instead.)
 >   inspecting the proof of `equaliser-lemma`"; 125eVII `AstarhaB_concrete`
 >   tops the chain.  A worker who can get 125IV's containment step without the
 >   concrete Takesaki result would unblock the file at 125IV instead.
+>   **[Superseded by session 83: that step is the Takesaki result.]**
 > * Nothing for ERRATA or QUESTIONS.  `docs/why-open.csv`: the
 >   `ha_second_adjunction` row is deleted.
 

@@ -24,29 +24,29 @@ mn_vna_3|open||49IV.3, normality of the amplification M_N f; recorded as genuine
 ngelfand_normal|open||53II.2, surveyed self-contained but with no route or estimate recorded
 ngelfand_vna|open||53II.1, surveyed self-contained but with no route or estimate recorded
 us_cont_normal|costed||45I.1 is preservesDirSups_of_continuousOn_effects with ultraweak replaced by ultrastrong
-AstarhaB_concrete|open||125eVII sits at the top of the parsec-1255 chain; no route recorded
+AstarhaB_concrete|costed||125eVII; reachable off 121II via the ha matrix-unit device (log s83): ~500 lines mirroring 125cIII, and it takes F : HaFreeExp as a hypothesis so 125dII does not gate it
 centrally_similar_basic_2a|awaiting-ruling||all three claims false as printed (ERRATA 104III.2a); the carrier repair is not yet authorised
 centrally_similar_basic_3|awaiting-ruling||false as printed, one machine-checked witness; the equal-carrier repair awaits the author
 centrally_similar_basic_4|awaiting-ruling||false as printed; equal carriers are not enough, and the faithfulness repair is unauthorised
 centrally_similar_basic_5|awaiting-ruling||false as printed; the equal-carrier repair awaits the author
 dup_vna_is_monoid_4|open||yellow: the proof is complete, but the statement mentions the braiding of 119IVc, which is now proved
-equaliser_lemma|open||125IV (Kornell); no route recorded, and its statement uses the sorried tmapM
+equaliser_lemma|blocked|intersection_tensor|125IV (Kornell); its one missing step is the Fubini/slice-map property, which is the commutation theorem (log s83).  tmapM has been proved since s66
 exists_braiding|open||119IVc, the exercise that (a,b) maps to b tensor a is a tensor product; not attempted
 exists_tmapM|costed||needs the tmap construction made universe-polymorphic (four universes); prerequisite for all of 119V
 exists_unitors|open||119IVb, the two unitors; not attempted
 faithful_positive_map_uniqueness|blocked|positive_quotients_centrally_similar|104IX is 100VII plus 104VII, both cited by name
-ha_tensor_closed|open||125dII, the hereditarily atomic free exponential; no route recorded
-intersection_tensor|cited||121II gives no argument, only a pointer to Corollary IV.5.10 of Takesaki I
+ha_tensor_closed|costed||125dII; does NOT need 125VIII if the ha matrix-unit device is built (log s83): ~400 for the device plus ~300 for Freyd, mirroring 125bII
+intersection_tensor|cited||121II gives no argument, only a pointer to Corollary IV.5.10 of Takesaki I.  It is EQUIVALENT, given 88VI, to the commutation theorem (M tensor N)' = M' tensor N' (Takesaki IV.5.9), whose only proofs use Tomita-Takesaki modular theory: absent from Mathlib and from this tree (log s83).  Out of reach; the ha branch routes around it
 linf_tensor|costed||123I.3 cites 116VII, which is now proved; parts 1 and 2 of the exercise are proved above it
 positive_map_uniqueness|blocked|faithful_positive_map_uniqueness|105V uniqueness cites 104IX; the existence half is proved
 positive_quotients_centrally_similar|blocked|centrally_similar_basic_5|104VII needs the unauthorised repair of 104III.5, plus commutant infrastructure
 sequential_product_counterexample_3|false||clause (E) is false as printed and refuted in-tree; kept unchanged, ERRATA 106III.3 open
 sqrt_axiom|blocked|faithful_positive_map_uniqueness|105VII sits on 104IX, like the uniqueness half of 105V
-tensorBsurjectivity|open||125eIII; no route recorded
-tensor_closed|open||125VIII (Kornell), the free exponential; no route recorded
-tensor_equalisers|open||125VI; no route recorded
-tensor_map_factorisation|open||125eIIa; no route recorded
-tensor_preimage|open||125VIIb; no route recorded
+tensorBsurjectivity|blocked|tensor_preimage|125eIII; only its forward direction needs tensor_preimage, the other is elementary from 69IVb nmiu_image (log s83)
+tensor_closed|blocked|equaliser_lemma|125VIII (Kornell), the free exponential; Freyd through 125IV/125VI
+tensor_equalisers|blocked|equaliser_lemma|125VI; uses 125IV for the factorisation of h
+tensor_map_factorisation|blocked|intersection_tensor|125eIIa; by inspecting 125IV's proof.  The Zorn dodge fails: a descending chain needs the intersection theorem itself (log s83)
+tensor_preimage|blocked|tensor_equalisers|125VIIb; the hint routes through pullbacks, i.e. 125VI; the direct statement is Fubini-shaped
 tensor_simple_facts_4|costed||116III.4 joint ultraweak continuity: the obstruction was re-derived twice, neither proved nor refuted
 triple_tensor|open||119II, the trilinear tensor product; no route recorded
 uniqueness_sequential_product|blocked|positive_map_uniqueness|106I uniqueness cites 105V uniqueness; the existence half is proved
