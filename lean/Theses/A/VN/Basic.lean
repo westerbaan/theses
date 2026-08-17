@@ -6015,12 +6015,923 @@ theorem open_almost_clopen :
 
 end Baire
 
+/-! ### Machinery for **54XI**: measures on a Stonean space
+
+Everything up to the `CVNFaithful` section below is stated for an arbitrary
+**compact Hausdorff extremally disconnected** space `X` carrying an
+np-functional `τ` on `C(X, ℂ)` — for **54XI** these are `X = spec 𝒜` (by
+**53III**) and `τ = ω ∘ γ_𝒜⁻¹` (by **53II**), but nothing else in the
+development uses that.  The vocabulary is: `chi C` (the continuous indicator
+of a clopen `C`), `nu τ C = τ(1_C)` (the finitely additive measure on the
+clopen sets), `clRep s` (the unique clopen `≈ s` of **54VI**), and finally
+`mac`/`macMeasure` (the measure of 54XI itself).  Normality of `τ` enters at
+exactly one place, `isLUB_nu`. -/
+
+section Stone
+
+variable {X : Type*} [TopologicalSpace X]
+
+open Classical in
+/-- The continuous indicator of a clopen set (`0` on non-clopen sets, so
+that it is a total function). -/
+noncomputable def chi (C : Set X) : C(X, ℂ) :=
+  if h : IsClopen C then ⟨Set.indicator C (fun _ => 1), h.continuous_indicator continuous_const⟩
+  else 0
+
+theorem chi_apply {C : Set X} (hC : IsClopen C) (x : X) :
+    chi C x = Set.indicator C (fun _ => 1) x := by
+  rw [chi, dif_pos hC]; rfl
+
+theorem chi_of_mem {C : Set X} (hC : IsClopen C) {x : X} (hx : x ∈ C) :
+    chi C x = 1 := by
+  rw [chi_apply hC, Set.indicator_of_mem hx]
+
+theorem chi_of_notMem {C : Set X} (hC : IsClopen C) {x : X} (hx : x ∉ C) :
+    chi C x = 0 := by
+  rw [chi_apply hC, Set.indicator_of_notMem hx]
+
+theorem chi_isSelfAdjoint (C : Set X) : IsSelfAdjoint (chi C) := by
+  rw [isSelfAdjoint_iff]
+  ext x
+  by_cases h : IsClopen C
+  · by_cases hx : x ∈ C
+    · simp [ContinuousMap.star_apply, chi_of_mem h hx]
+    · simp [ContinuousMap.star_apply, chi_of_notMem h hx]
+  · rw [chi, dif_neg h]; simp
+
+/-- The continuous indicator, as an element of the self-adjoint part. -/
+noncomputable def chiSA (C : Set X) : selfAdjoint C(X, ℂ) :=
+  ⟨chi C, chi_isSelfAdjoint C⟩
+
+@[simp] theorem chiSA_coe (C : Set X) : (chiSA C : C(X, ℂ)) = chi C := rfl
+
+theorem chi_nonneg (C : Set X) : (0 : C(X, ℂ)) ≤ chi C := by
+  refine ContinuousMap.le_def.mpr fun x => ?_
+  by_cases h : IsClopen C
+  · by_cases hx : x ∈ C
+    · rw [chi_of_mem h hx]; simp
+    · rw [chi_of_notMem h hx]; simp
+  · rw [chi, dif_neg h]
+
+theorem chi_le_one {C : Set X} (hC : IsClopen C) : chi C ≤ 1 := by
+  refine ContinuousMap.le_def.mpr fun x => ?_
+  by_cases hx : x ∈ C
+  · rw [chi_of_mem hC hx]; rfl
+  · rw [chi_of_notMem hC hx]; simp
+
+theorem chi_mono {C D : Set X} (hC : IsClopen C) (hD : IsClopen D) (h : C ⊆ D) :
+    chi C ≤ chi D := by
+  refine ContinuousMap.le_def.mpr fun x => ?_
+  by_cases hx : x ∈ C
+  · rw [chi_of_mem hC hx, chi_of_mem hD (h hx)]
+  · rw [chi_of_notMem hC hx]
+    by_cases hx' : x ∈ D
+    · rw [chi_of_mem hD hx']; simp
+    · rw [chi_of_notMem hD hx']
+
+@[simp] theorem chi_empty : chi (∅ : Set X) = 0 := by
+  ext x; rw [chi_of_notMem isClopen_empty (Set.notMem_empty x)]; rfl
+
+@[simp] theorem chi_univ : chi (Set.univ : Set X) = 1 := by
+  ext x; rw [chi_of_mem isClopen_univ (Set.mem_univ x)]; rfl
+
+theorem chi_union_of_disjoint {C D : Set X} (hC : IsClopen C) (hD : IsClopen D)
+    (h : Disjoint C D) : chi (C ∪ D) = chi C + chi D := by
+  ext x
+  simp only [ContinuousMap.add_apply]
+  by_cases hx : x ∈ C
+  · rw [chi_of_mem (hC.union hD) (Or.inl hx), chi_of_mem hC hx,
+      chi_of_notMem hD (Set.disjoint_left.mp h hx)]
+    simp
+  · by_cases hx' : x ∈ D
+    · rw [chi_of_mem (hC.union hD) (Or.inr hx'), chi_of_mem hD hx',
+        chi_of_notMem hC hx]
+      simp
+    · rw [chi_of_notMem (hC.union hD) (by simp [hx, hx']), chi_of_notMem hC hx,
+        chi_of_notMem hD hx']
+      simp
+
+theorem chi_eq_zero_iff {C : Set X} (hC : IsClopen C) : chi C = 0 ↔ C = ∅ := by
+  constructor
+  · intro h
+    rw [Set.eq_empty_iff_forall_notMem]
+    intro x hx
+    have := chi_of_mem hC hx
+    rw [h] at this
+    exact one_ne_zero this.symm
+  · rintro rfl; exact chi_empty
+
+variable [CompactSpace X] [T2Space X]
+
+/-- In a compact Hausdorff extremally disconnected space the clopen sets form
+a base: every neighbourhood of a point contains a clopen neighbourhood. -/
+theorem exists_clopen_subset [ExtremallyDisconnected X] {U : Set X} (hU : IsOpen U)
+    {x : X} (hx : x ∈ U) : ∃ C : Set X, IsClopen C ∧ x ∈ C ∧ C ⊆ U := by
+  obtain ⟨t, ht, htc, htU⟩ := exists_mem_nhds_isClosed_subset (hU.mem_nhds hx)
+  refine ⟨closure (interior t), ⟨isClosed_closure,
+    ExtremallyDisconnected.open_closure _ isOpen_interior⟩,
+    subset_closure (mem_interior_iff_mem_nhds.mpr ht), ?_⟩
+  exact (closure_minimal interior_subset htc).trans htU
+
+omit [CompactSpace X] [T2Space X] in
+/-- The interior of a closed set in an extremally disconnected space is
+clopen. -/
+theorem isClopen_interior [ExtremallyDisconnected X] {F : Set X} (hF : IsClosed F) :
+    IsClopen (interior F) := by
+  refine ⟨?_, isOpen_interior⟩
+  rw [interior_eq_compl_closure_compl]
+  exact (ExtremallyDisconnected.open_closure _ hF.isOpen_compl).isClosed_compl
+
+/-- The supremum, in the self-adjoint part of `C(X, ℂ)`, of the indicators of
+a family of clopen sets is the indicator of the closure of their union. -/
+theorem selfAdjoint_im_eq_zero (g : selfAdjoint C(X, ℂ)) (x : X) :
+    ((g : C(X, ℂ)) x).im = 0 := by
+  have h : (star (g : C(X, ℂ))) x = (g : C(X, ℂ)) x := by rw [g.2.star_eq]
+  rw [ContinuousMap.star_apply, Complex.star_def] at h
+  exact Complex.conj_eq_iff_im.mp h
+
+theorem isLUB_chiSA [ExtremallyDisconnected X] {𝒞 : Set (Set X)}
+    (hcl : ∀ C ∈ 𝒞, IsClopen C) (hne : 𝒞.Nonempty) :
+    IsLUB (chiSA '' 𝒞) (chiSA (closure (⋃₀ 𝒞))) := by
+  have hopen : IsOpen (⋃₀ 𝒞) := isOpen_sUnion fun C hC => (hcl C hC).2
+  have hclos : IsClopen (closure (⋃₀ 𝒞)) :=
+    ⟨isClosed_closure, ExtremallyDisconnected.open_closure _ hopen⟩
+  constructor
+  · rintro _ ⟨C, hC, rfl⟩
+    exact Subtype.coe_le_coe.mp (chi_mono (hcl C hC) hclos
+      ((Set.subset_sUnion_of_mem hC).trans subset_closure))
+  · intro g hg
+    have hg1 : ∀ y ∈ closure (⋃₀ 𝒞), (1 : ℂ) ≤ (g : C(X, ℂ)) y := by
+      have hclosed : IsClosed {y : X | (1 : ℝ) ≤ ((g : C(X, ℂ)) y).re} :=
+        isClosed_le continuous_const
+          (Complex.continuous_re.comp (g : C(X, ℂ)).continuous)
+      have hsub : ⋃₀ 𝒞 ⊆ {y : X | (1 : ℝ) ≤ ((g : C(X, ℂ)) y).re} := by
+        rintro y ⟨C, hC, hyC⟩
+        have h := ContinuousMap.le_def.mp (Subtype.coe_le_coe.mpr (hg ⟨C, hC, rfl⟩)) y
+        rw [chiSA_coe, chi_of_mem (hcl C hC) hyC] at h
+        exact (Complex.le_def.mp h).1
+      intro y hy
+      have := hclosed.closure_subset_iff.mpr hsub hy
+      exact Complex.le_def.mpr ⟨by simpa using this,
+        by rw [Complex.one_im, selfAdjoint_im_eq_zero g y]⟩
+    refine Subtype.coe_le_coe.mp (ContinuousMap.le_def.mpr fun x => ?_)
+    by_cases hx : x ∈ closure (⋃₀ 𝒞)
+    · rw [chiSA_coe, chi_of_mem hclos hx]
+      exact hg1 x hx
+    · rw [chiSA_coe, chi_of_notMem hclos hx]
+      obtain ⟨C₀, hC₀⟩ := hne
+      have h0 := ContinuousMap.le_def.mp (Subtype.coe_le_coe.mpr (hg ⟨C₀, hC₀, rfl⟩)) x
+      refine le_trans ?_ h0
+      have := ContinuousMap.le_def.mp (chi_nonneg (X := X) C₀) x
+      simpa using this
+
+/-! ### The finitely additive measure attached to an np-functional -/
+
+variable [ExtremallyDisconnected X]
+
+/-- The value `ν(C) = τ(1_C)` of an np-functional on the indicator of a
+clopen set. -/
+noncomputable def nu (τ : NPFunctional C(X, ℂ)) (C : Set X) : ℝ := (τ (chi C)).re
+
+variable (τ : NPFunctional C(X, ℂ))
+
+theorem npFunctional_chi_re (C : Set X) : (τ (chi C) : ℂ) = (nu τ C : ℝ) := by
+  rw [nu, Complex.ext_iff]
+  exact ⟨by simp, by simp [npFunctional_im_eq_zero τ (chi_isSelfAdjoint C)]⟩
+
+theorem nu_nonneg (C : Set X) : 0 ≤ nu τ C :=
+  (Complex.le_def.mp (npFunctional_nonneg τ (chi_nonneg C))).1
+
+theorem nu_mono {C D : Set X} (hC : IsClopen C) (hD : IsClopen D) (h : C ⊆ D) :
+    nu τ C ≤ nu τ D :=
+  (Complex.le_def.mp (npFunctional_mono τ (chi_mono hC hD h))).1
+
+@[simp] theorem nu_empty : nu τ (∅ : Set X) = 0 := by
+  rw [nu, chi_empty, npFunctional_zero]; simp
+
+theorem nu_union {C D : Set X} (hC : IsClopen C) (hD : IsClopen D)
+    (h : Disjoint C D) : nu τ (C ∪ D) = nu τ C + nu τ D := by
+  rw [nu, nu, nu, chi_union_of_disjoint hC hD h, npFunctional_add]
+  simp
+
+theorem nu_finset_biUnion {ι : Type*} (s : Finset ι) {C : ι → Set X}
+    (hcl : ∀ i, IsClopen (C i)) (hdisj : ∀ i j, i ≠ j → Disjoint (C i) (C j)) :
+    nu τ (⋃ i ∈ s, C i) = ∑ i ∈ s, nu τ (C i) := by
+  classical
+  induction s using Finset.induction with
+  | empty => simp
+  | insert a s ha ih =>
+    have hdis : Disjoint (C a) (⋃ i ∈ s, C i) := by
+      rw [Set.disjoint_iUnion₂_right]
+      exact fun i hi => hdisj a i (by rintro rfl; exact ha hi)
+    rw [Finset.set_biUnion_insert, nu_union τ (hcl a)
+      (isClopen_biUnion_finset fun i _ => hcl i) hdis, ih, Finset.sum_insert ha]
+
+/-- Normality of `τ`, in the form used for the measure: the value of `ν` on
+the closure of the union of an upward directed family of clopen sets is the
+supremum of the values on the family. -/
+theorem isLUB_nu {𝒞 : Set (Set X)} (hcl : ∀ C ∈ 𝒞, IsClopen C) (hne : 𝒞.Nonempty)
+    (hdir : DirectedOn (· ⊆ ·) 𝒞) :
+    IsLUB (nu τ '' 𝒞) (nu τ (closure (⋃₀ 𝒞))) := by
+  have h1 := isLUB_chiSA hcl hne
+  have hdir' : DirectedOn (· ≤ ·) (chiSA '' 𝒞) := by
+    rintro _ ⟨C, hC, rfl⟩ _ ⟨D, hD, rfl⟩
+    obtain ⟨E, hE, hCE, hDE⟩ := hdir C hC D hD
+    exact ⟨chiSA E, ⟨E, hE, rfl⟩,
+      Subtype.coe_le_coe.mp (chi_mono (hcl C hC) (hcl E hE) hCE),
+      Subtype.coe_le_coe.mp (chi_mono (hcl D hD) (hcl E hE) hDE)⟩
+  have h2 := τ.preservesDirSups' (chiSA '' 𝒞) (chiSA (closure (⋃₀ 𝒞)))
+    (hne.image _) hdir' h1
+  have hreal : ∀ w ∈ (fun d : selfAdjoint C(X, ℂ) => (τ (d : C(X, ℂ)) : ℂ)) '' (chiSA '' 𝒞),
+      w.im = 0 := by
+    rintro _ ⟨_, ⟨C, _, rfl⟩, rfl⟩
+    exact npFunctional_im_eq_zero τ (chi_isSelfAdjoint C)
+  have h3 := isLUB_re_of_isLUB hreal h2
+  have hset : Complex.re ''
+      ((fun d : selfAdjoint C(X, ℂ) => (τ (d : C(X, ℂ)) : ℂ)) '' (chiSA '' 𝒞))
+      = nu τ '' 𝒞 := by
+    rw [← Set.image_comp, ← Set.image_comp]
+    rfl
+  rwa [hset] at h3
+
+/-- Countable additivity of `ν` on clopen sets: for a pairwise disjoint
+sequence of clopen sets, `ν(closure(⋃ Cₙ)) = ∑ ν(Cₙ)`. -/
+theorem hasSum_nu {C : ℕ → Set X} (hcl : ∀ n, IsClopen (C n))
+    (hdisj : ∀ i j, i ≠ j → Disjoint (C i) (C j)) :
+    HasSum (fun n => nu τ (C n)) (nu τ (closure (⋃ n, C n))) := by
+  classical
+  set 𝒞 : Set (Set X) := Set.range (fun F : Finset ℕ => ⋃ i ∈ F, C i) with h𝒞
+  have hcl' : ∀ D ∈ 𝒞, IsClopen D := by
+    rintro _ ⟨F, rfl⟩; exact isClopen_biUnion_finset fun i _ => hcl i
+  have hne : 𝒞.Nonempty := ⟨_, ⟨∅, rfl⟩⟩
+  have hdir : DirectedOn (· ⊆ ·) 𝒞 := by
+    rintro _ ⟨F, rfl⟩ _ ⟨G, rfl⟩
+    refine ⟨_, ⟨F ∪ G, rfl⟩, ?_, ?_⟩ <;>
+      exact Set.biUnion_subset_biUnion_left (by simp)
+  have hunion : ⋃₀ 𝒞 = ⋃ n, C n := by
+    apply Set.Subset.antisymm
+    · rintro x ⟨_, ⟨F, rfl⟩, hx⟩
+      obtain ⟨i, _, hi⟩ := Set.mem_iUnion₂.mp hx
+      exact Set.mem_iUnion.mpr ⟨i, hi⟩
+    · rintro x hx
+      obtain ⟨i, hi⟩ := Set.mem_iUnion.mp hx
+      exact ⟨_, ⟨({i} : Finset ℕ), rfl⟩, Set.mem_iUnion₂.mpr ⟨i, by simp, hi⟩⟩
+  have h := isLUB_nu τ hcl' hne hdir
+  rw [hunion] at h
+  have himg : nu τ '' 𝒞 = Set.range (fun F : Finset ℕ => ∑ i ∈ F, nu τ (C i)) := by
+    rw [h𝒞, ← Set.range_comp]
+    congr 1
+    funext F
+    exact nu_finset_biUnion τ F hcl hdisj
+  rw [himg] at h
+  exact hasSum_of_isLUB_of_nonneg _ (fun n => nu_nonneg τ (C n)) h
+
+/-! ### The clopen representative of an almost clopen set -/
+
+open Classical in
+/-- The unique clopen set `≈` to an almost clopen set (`∅` otherwise). -/
+noncomputable def clRep (s : Set X) : Set X :=
+  if h : AlmostClopen s then h.choose else ∅
+
+theorem clRep_isClopen (s : Set X) : IsClopen (clRep s) := by
+  by_cases h : AlmostClopen s
+  · rw [clRep, dif_pos h]; exact h.choose_spec.1
+  · rw [clRep, dif_neg h]; exact isClopen_empty
+
+theorem clRep_equiv {s : Set X} (hs : AlmostClopen s) : MeagreEquiv s (clRep s) := by
+  rw [clRep, dif_pos hs]; exact hs.choose_spec.2
+
+theorem clRep_eq {s C : Set X} (hC : IsClopen C) (h : MeagreEquiv s C) : clRep s = C := by
+  have hs : AlmostClopen s := ⟨C, hC, h⟩
+  obtain ⟨D, _, huniq⟩ := almost_meagre_fundamental s hs
+  rw [huniq _ ⟨clRep_isClopen s, clRep_equiv hs⟩, huniq _ ⟨hC, h⟩]
+
+theorem clRep_of_isClopen {C : Set X} (hC : IsClopen C) : clRep C = C :=
+  clRep_eq hC (MeagreEquiv.refl C)
+
+@[simp] theorem clRep_empty : clRep (∅ : Set X) = ∅ :=
+  clRep_of_isClopen isClopen_empty
+
+/-- A clopen meagre set is empty (Baire). -/
+theorem eq_empty_of_isClopen_of_isMeagre {C : Set X} (hC : IsClopen C) (h : IsMeagre C) :
+    C = ∅ := by
+  have h2 := baire_category_theorem C h
+  rwa [hC.2.interior_eq] at h2
+
+theorem isMeagre_iff_clRep_eq_empty {s : Set X} (hs : AlmostClopen s) :
+    IsMeagre s ↔ clRep s = ∅ := by
+  constructor
+  · intro h
+    refine eq_empty_of_isClopen_of_isMeagre (clRep_isClopen s) (IsMeagre.mono ?_
+      (h.union (clRep_equiv hs)))
+    intro x hx
+    rw [Set.mem_union, Set.mem_symmDiff]
+    by_cases hxs : x ∈ s
+    · exact Or.inl hxs
+    · exact Or.inr (Or.inr ⟨hx, hxs⟩)
+  · intro h
+    have h2 := clRep_equiv hs
+    rw [MeagreEquiv, h] at h2
+    simpa [Set.symmDiff_def] using h2
+
+theorem clRep_disjoint {s t : Set X} (hs : AlmostClopen s) (ht : AlmostClopen t)
+    (h : Disjoint s t) : Disjoint (clRep s) (clRep t) := by
+  rw [Set.disjoint_iff_inter_eq_empty]
+  refine eq_empty_of_isClopen_of_isMeagre ((clRep_isClopen s).inter (clRep_isClopen t))
+    (IsMeagre.mono ?_ ((clRep_equiv hs).union (clRep_equiv ht)))
+  rintro x ⟨hxs, hxt⟩
+  rw [Set.mem_union, Set.mem_symmDiff, Set.mem_symmDiff]
+  by_cases hx : x ∈ s
+  · exact Or.inr (Or.inr ⟨hxt, Set.disjoint_left.mp h hx⟩)
+  · exact Or.inl (Or.inr ⟨hxs, hx⟩)
+
+/-! ### The measure -/
+
+/-- The value of the measure of **54XI** on an almost clopen set. -/
+noncomputable def mac (s : Set X) : ℝ≥0∞ := ENNReal.ofReal (nu τ (clRep s))
+
+@[simp] theorem mac_empty : mac τ (∅ : Set X) = 0 := by
+  rw [mac, clRep_empty, nu_empty, ENNReal.ofReal_zero]
+
+theorem mac_of_isClopen {C : Set X} (hC : IsClopen C) :
+    mac τ C = ENNReal.ofReal (nu τ C) := by
+  rw [mac, clRep_of_isClopen hC]
+
+theorem mac_iUnion {f : ℕ → Set X} (hf : ∀ n, AlmostClopen (f n))
+    (hdisj : ∀ i j, i ≠ j → Disjoint (f i) (f j)) :
+    mac τ (⋃ n, f n) = ∑' n, mac τ (f n) := by
+  have hcl : ∀ n, IsClopen (clRep (f n)) := fun n => clRep_isClopen _
+  have hd : ∀ i j, i ≠ j → Disjoint (clRep (f i)) (clRep (f j)) := fun i j hij =>
+    clRep_disjoint (hf i) (hf j) (hdisj i j hij)
+  have hsum := hasSum_nu τ hcl hd
+  have hopen : IsOpen (⋃ n, clRep (f n)) := isOpen_iUnion fun n => (hcl n).2
+  have hrep : clRep (⋃ n, f n) = closure (⋃ n, clRep (f n)) := by
+    refine clRep_eq ⟨isClosed_closure, ExtremallyDisconnected.open_closure _ hopen⟩ ?_
+    exact (meagre_basic_4 f (fun n => clRep (f n)) fun n => clRep_equiv (hf n)).trans
+      (meagre_basic_3 _ hopen).symm
+  simp only [mac]
+  rw [hrep, ← hsum.tsum_eq,
+    ENNReal.ofReal_tsum_of_nonneg (fun n => nu_nonneg τ _) hsum.summable]
+
+/-- The measure of **54XI**. -/
+noncomputable def macMeasure : @Measure X (almostClopenMS X) :=
+  @Measure.ofMeasurable X (almostClopenMS X) (fun s _ => mac τ s) (mac_empty τ)
+    (fun f h hd => mac_iUnion τ (fun n => (almostClopen_sigmaAlgebra X (f n)).mp (h n))
+      (fun _ _ hij => hd hij))
+
+theorem macMeasure_apply {s : Set X} (hs : AlmostClopen s) :
+    macMeasure τ s = mac τ s :=
+  @Measure.ofMeasurable_apply X (almostClopenMS X) _ _ _ s
+    ((almostClopen_sigmaAlgebra X s).mpr hs)
+
+variable (hfaith : ∀ f : C(X, ℂ), 0 ≤ f → τ f = 0 → f = 0)
+
+include hfaith in
+theorem nu_eq_zero_iff {C : Set X} (hC : IsClopen C) : nu τ C = 0 ↔ C = ∅ := by
+  constructor
+  · intro h
+    rw [← chi_eq_zero_iff hC]
+    refine hfaith _ (chi_nonneg C) ?_
+    rw [npFunctional_chi_re, h]
+    simp
+  · rintro rfl; simp
+
+include hfaith in
+theorem mac_eq_zero_iff {s : Set X} (hs : AlmostClopen s) :
+    mac τ s = 0 ↔ IsMeagre s := by
+  have h1 : mac τ s = 0 ↔ nu τ (clRep s) = 0 := by
+    rw [mac, ENNReal.ofReal_eq_zero]
+    exact ⟨fun h => le_antisymm h (nu_nonneg _ _), fun h => h.le⟩
+  rw [h1, nu_eq_zero_iff τ hfaith (clRep_isClopen s), ← isMeagre_iff_clRep_eq_empty hs]
+
+/-- Any measure on the almost clopen σ-algebra which is null exactly on the
+meagre sets and takes the value `ν` on clopen sets is `mac`. -/
+theorem measure_eq_mac (μ : @Measure X (almostClopenMS X))
+    (h0 : ∀ s : Set X, AlmostClopen s → (μ s = 0 ↔ IsMeagre s))
+    (hcl : ∀ C : Set X, IsClopen C → μ C = ENNReal.ofReal (nu τ C))
+    {s : Set X} (hs : AlmostClopen s) : μ s = mac τ s := by
+  have hC : AlmostClopen (clRep s) := ⟨clRep s, clRep_isClopen s, MeagreEquiv.refl _⟩
+  have hd1 : AlmostClopen (s \ clRep s) := (meagre_basic_6 s (clRep s) hs hC).2
+  have hd2 : AlmostClopen (clRep s \ s) := (meagre_basic_6 (clRep s) s hC hs).2
+  have hm1 : μ (s \ clRep s) = 0 := (h0 _ hd1).mpr
+    ((clRep_equiv hs).mono (fun x hx => Or.inl hx))
+  have hm2 : μ (clRep s \ s) = 0 := (h0 _ hd2).mpr
+    ((clRep_equiv hs).mono (fun x hx => Or.inr ⟨hx.1, hx.2⟩))
+  have e1 : μ s ≤ μ (clRep s) := by
+    calc μ s ≤ μ (clRep s ∪ (s \ clRep s)) :=
+          measure_mono (fun x hx => by by_cases h : x ∈ clRep s <;> simp [h, hx])
+      _ ≤ μ (clRep s) + μ (s \ clRep s) := measure_union_le _ _
+      _ = μ (clRep s) := by rw [hm1, add_zero]
+  have e2 : μ (clRep s) ≤ μ s := by
+    calc μ (clRep s) ≤ μ (s ∪ (clRep s \ s)) :=
+          measure_mono (fun x hx => by by_cases h : x ∈ s <;> simp [h, hx])
+      _ ≤ μ s + μ (clRep s \ s) := measure_union_le _ _
+      _ = μ s := by rw [hm2, add_zero]
+  rw [le_antisymm e1 e2, hcl _ (clRep_isClopen s), mac]
+
+end Stone
+
+/-- An np-functional is bounded, with `‖ω‖ ≤ ω(1)`: Kadison's inequality
+`‖ω a‖ ≤ ‖a‖_ω √(ω 1)` together with `‖a‖_ω = ‖a·1‖_ω ≤ ‖a‖‖1‖_ω`.  (There is
+a private copy of this in `A/Proc/Tensor.lean`, which is why this one is
+private too.) -/
+private theorem npFunctional_norm_le (ω : NPFunctional A) (a : A) :
+    ‖ω a‖ ≤ (ω 1).re * ‖a‖ := by
+  have h0 : (0 : ℝ) ≤ (ω 1).re := by
+    simpa using (Complex.le_def.mp (npFunctional_nonneg ω zero_le_one)).1
+  have h1 := norm_apply_le_omegaNorm ω a
+  have h2 : omegaNorm A ω a ≤ ‖a‖ * Real.sqrt (ω 1).re := by
+    have h := omegaNorm_mul_le ω a 1
+    rwa [mul_one, omegaNorm_one] at h
+  have h3 : Real.sqrt (ω 1).re * Real.sqrt (ω 1).re = (ω 1).re :=
+    Real.mul_self_sqrt h0
+  nlinarith [Real.sqrt_nonneg (ω 1).re, norm_nonneg a, omegaNorm_nonneg ω a]
+
+/-! ### The second half: distributivity, measurability, and the integral
+
+`isMeagre_closure_of_isMeagre` — *every meagre subset of `X` is nowhere
+dense* — is the theorem that **54XI**'s measurability clause needs and that
+vn.tex does not state (see ERRATA **54XII**); it is **false** without a
+faithful np-functional, e.g. in the Gleason cover of `[0,1]`.  It is proved
+here from normality and faithfulness of `τ` alone, before any measure is in
+sight. -/
+
+section Stone2
+
+variable {X : Type*} [TopologicalSpace X] [CompactSpace X] [T2Space X]
+  [ExtremallyDisconnected X] (τ : NPFunctional C(X, ℂ))
+
+omit [CompactSpace X] [T2Space X] [ExtremallyDisconnected X] in
+theorem interior_union_of_isClopen {P Q : Set X} (hP : IsClopen P) :
+    interior (P ∪ Q) = P ∪ interior Q := by
+  refine subset_antisymm (fun x hx => ?_) (Set.union_subset
+    (hP.2.subset_interior_iff.mpr Set.subset_union_left)
+    (interior_mono Set.subset_union_right))
+  by_cases hxP : x ∈ P
+  · exact Or.inl hxP
+  · refine Or.inr (interior_maximal ?_ (isOpen_interior.sdiff hP.1) ⟨hx, hxP⟩)
+    rintro y ⟨hy, hyP⟩
+    exact (interior_subset hy).resolve_left hyP
+
+theorem nu_sdiff {C P : Set X} (hC : IsClopen C) (hP : IsClopen P) (h : P ⊆ C) :
+    nu τ (C \ P) = nu τ C - nu τ P := by
+  have hd : Disjoint P (C \ P) := Set.disjoint_sdiff_right
+  have : nu τ C = nu τ P + nu τ (C \ P) := by
+    rw [← nu_union τ hP (hC.diff hP) hd, Set.union_diff_cancel h]
+  linarith
+
+theorem nu_inter_ge {C P Q : Set X} (hC : IsClopen C) (hP : IsClopen P)
+    (hQ : IsClopen Q) (hPC : P ⊆ C) (hQC : Q ⊆ C) :
+    nu τ P + nu τ Q - nu τ C ≤ nu τ (P ∩ Q) := by
+  have h1 : nu τ (P ∪ Q) = nu τ P + nu τ (Q \ P) := by
+    rw [← nu_union τ hP (hQ.diff hP) Set.disjoint_sdiff_right, Set.union_diff_self]
+  have h2 : nu τ Q = nu τ (Q ∩ P) + nu τ (Q \ P) := by
+    rw [← nu_union τ (hQ.inter hP) (hQ.diff hP)
+      (Set.disjoint_of_subset_left Set.inter_subset_right Set.disjoint_sdiff_right)]
+    congr 1
+    rw [Set.inter_union_diff]
+  have h3 : nu τ (P ∪ Q) ≤ nu τ C :=
+    nu_mono τ (hP.union hQ) hC (Set.union_subset hPC hQC)
+  rw [Set.inter_comm]
+  linarith
+
+/-- Inside a clopen set `C`, a clopen subset of a dense open subset of `C`
+can be chosen with `ν` arbitrarily close to `ν C` — this is normality of
+`τ`. -/
+theorem exists_clopen_nu_gt {C U : Set X} (hC : IsClopen C) (hU : IsOpen U)
+    (hdense : C ⊆ closure U) {ε : ℝ} (hε : 0 < ε) :
+    ∃ D : Set X, IsClopen D ∧ D ⊆ U ∩ C ∧ nu τ C - ε < nu τ D := by
+  set 𝒞 : Set (Set X) := {D | IsClopen D ∧ D ⊆ U ∩ C} with h𝒞
+  have hcl : ∀ D ∈ 𝒞, IsClopen D := fun D hD => hD.1
+  have hne : 𝒞.Nonempty := ⟨∅, isClopen_empty, Set.empty_subset _⟩
+  have hdir : DirectedOn (· ⊆ ·) 𝒞 := by
+    rintro D ⟨hD, hDs⟩ E ⟨hE, hEs⟩
+    exact ⟨D ∪ E, ⟨hD.union hE, Set.union_subset hDs hEs⟩,
+      Set.subset_union_left, Set.subset_union_right⟩
+  have hsU : ⋃₀ 𝒞 = U ∩ C := by
+    refine subset_antisymm (Set.sUnion_subset fun D hD => hD.2) fun x hx => ?_
+    obtain ⟨D, hD, hxD, hDs⟩ := exists_clopen_subset (hU.inter hC.2) hx
+    exact ⟨D, ⟨hD, hDs⟩, hxD⟩
+  have hclosure : closure (⋃₀ 𝒞) = C := by
+    rw [hsU]
+    refine subset_antisymm (closure_minimal Set.inter_subset_right hC.1) fun x hx => ?_
+    refine mem_closure_iff.mpr fun V hV hxV => ?_
+    obtain ⟨y, hyV, hyU⟩ := mem_closure_iff.mp (hdense hx) (V ∩ C) (hV.inter hC.2) ⟨hxV, hx⟩
+    exact ⟨y, hyV.1, hyU, hyV.2⟩
+  have h := isLUB_nu τ hcl hne hdir
+  rw [hclosure] at h
+  by_contra hcon
+  push_neg at hcon
+  have : nu τ C ≤ nu τ C - ε := h.2 (by rintro _ ⟨D, hD, rfl⟩; exact hcon D hD.1 hD.2)
+  linarith
+
+/-- **The key distributivity property of the spectrum of a commutative von
+Neumann algebra with a faithful np-functional**: given a sequence of closed
+nowhere dense subsets `Nₙ` and a nonempty clopen `C`, there is a nonempty
+clopen `b ⊆ C` disjoint from every `Nₙ`.  (In Boolean-algebraic terms: the
+projection lattice is weakly `(σ,∞)`-distributive.) -/
+theorem exists_clopen_disjoint_iUnion
+    (hfaith : ∀ f : C(X, ℂ), 0 ≤ f → τ f = 0 → f = 0)
+    {N : ℕ → Set X} (hNc : ∀ n, IsClosed (N n)) (hNd : ∀ n, interior (N n) = ∅)
+    {C : Set X} (hC : IsClopen C) (hCne : C.Nonempty) :
+    ∃ b : Set X, IsClopen b ∧ b.Nonempty ∧ b ⊆ C ∧ ∀ n, Disjoint b (N n) := by
+  have hCpos : 0 < nu τ C := by
+    rcases (nu_nonneg τ C).lt_or_eq with h | h
+    · exact h
+    · exact absurd ((nu_eq_zero_iff τ hfaith hC).mp h.symm)
+        (Set.nonempty_iff_ne_empty.mp hCne)
+  -- (1) clopen sets `D n ⊆ C \ N n` with `ν (D n)` close to `ν C`
+  have hstep : ∀ n : ℕ, ∃ D : Set X, IsClopen D ∧ D ⊆ (C \ N n) ∩ C ∧
+      nu τ C - nu τ C / 2 ^ (n + 2) < nu τ D := by
+    intro n
+    refine exists_clopen_nu_gt τ hC (hC.2.sdiff (hNc n)) (fun x hx => ?_)
+      (by positivity)
+    refine mem_closure_iff.mpr fun V hV hxV => ?_
+    have hVC : (V ∩ C).Nonempty := ⟨x, hxV, hx⟩
+    have : ¬ (V ∩ C ⊆ N n) := by
+      intro hsub
+      have : (V ∩ C).Nonempty → (interior (N n)).Nonempty := fun ⟨y, hy⟩ =>
+        ⟨y, interior_maximal hsub (hV.inter hC.2) hy⟩
+      rw [hNd n] at this
+      exact (this hVC).ne_empty rfl
+    obtain ⟨y, hy⟩ := Set.not_subset.mp this
+    exact ⟨y, hy.1.1, hy.1.2, hy.2⟩
+  choose D hDcl hDsub hDnu using hstep
+  -- (2) the decreasing intersections
+  set E : ℕ → Set X := fun n => ⋂ i ∈ Finset.range (n + 1), D i with hE
+  have hEcl : ∀ n, IsClopen (E n) := fun n =>
+    isClopen_biInter_finset fun i _ => hDcl i
+  have hEsub : ∀ n, E n ⊆ C := by
+    intro n x hx
+    have : x ∈ D 0 := Set.mem_iInter₂.mp hx 0 (by simp)
+    exact (hDsub 0 this).2
+  have hEanti : ∀ {m n : ℕ}, m ≤ n → E n ⊆ E m := by
+    intro m n hmn
+    exact Set.biInter_subset_biInter_left (by
+      simpa using Nat.succ_le_succ hmn)
+  have htpos : ∀ n : ℕ, 0 < nu τ C / 2 ^ (n + 2) := fun n => by positivity
+  have htsucc : ∀ n : ℕ, nu τ C / 2 ^ (n + 1 + 2) = nu τ C / 2 ^ (n + 2) / 2 := by
+    intro n
+    rw [show n + 1 + 2 = (n + 2) + 1 by ring, pow_succ]
+    ring
+  have hEnu : ∀ n, nu τ C / 2 + nu τ C / 2 ^ (n + 2) ≤ nu τ (E n) := by
+    intro n
+    induction n with
+    | zero =>
+      have h0 : E 0 = D 0 := by simp [hE]
+      have h1 := hDnu 0
+      rw [h0]
+      norm_num at h1 ⊢
+      linarith
+    | succ n ih =>
+      have hsucc : E (n + 1) = D (n + 1) ∩ E n := by
+        rw [hE]
+        simp only []
+        rw [Finset.range_add_one, Finset.set_biInter_insert]
+      have hge := nu_inter_ge τ hC (hDcl (n + 1)) (hEcl n)
+        (fun x hx => (hDsub (n + 1) hx).2) (hEsub n)
+      have hd := hDnu (n + 1)
+      have ht := htsucc n
+      rw [hsucc]
+      linarith
+  have hEhalf : ∀ n, nu τ C / 2 ≤ nu τ (E n) := fun n => by
+    linarith [hEnu n, htpos n]
+  -- (3) the clopen `b`
+  set b : Set X := interior (⋂ n, E n) with hb
+  have hbcl : IsClopen b := isClopen_interior (isClosed_iInter fun n => (hEcl n).1)
+  have hbsub : b ⊆ C := (interior_subset).trans ((Set.iInter_subset _ 0).trans (hEsub 0))
+  -- `ν b ≥ ν C / 2`
+  have hFdir : DirectedOn (· ⊆ ·) (Set.range fun n => C \ E n) := by
+    rintro _ ⟨m, rfl⟩ _ ⟨n, rfl⟩
+    refine ⟨C \ E (max m n), ⟨max m n, rfl⟩, ?_, ?_⟩
+    · exact Set.diff_subset_diff_right (hEanti (le_max_left m n))
+    · exact Set.diff_subset_diff_right (hEanti (le_max_right m n))
+  have hFcl : ∀ F ∈ Set.range fun n => C \ E n, IsClopen F := by
+    rintro _ ⟨n, rfl⟩; exact hC.diff (hEcl n)
+  have hFunion : ⋃₀ (Set.range fun n => C \ E n) = C \ ⋂ n, E n := by
+    rw [Set.sUnion_range, ← Set.diff_iInter]
+  have hFclosure : closure (C \ ⋂ n, E n) = C \ b := by
+    rw [closure_eq_compl_interior_compl]
+    have h1 : (C \ ⋂ n, E n)ᶜ = Cᶜ ∪ ⋂ n, E n := by
+      rw [Set.diff_eq, Set.compl_inter, compl_compl]
+    rw [h1, interior_union_of_isClopen hC.compl, ← hb, Set.compl_union, compl_compl,
+      Set.diff_eq]
+  have hlub := isLUB_nu τ hFcl ⟨_, ⟨0, rfl⟩⟩ hFdir
+  rw [hFunion, hFclosure] at hlub
+  have hbnu : nu τ C / 2 ≤ nu τ b := by
+    have hub : ∀ r ∈ nu τ '' (Set.range fun n => C \ E n), r ≤ nu τ C - nu τ C / 2 := by
+      rintro _ ⟨_, ⟨n, rfl⟩, rfl⟩
+      rw [nu_sdiff τ hC (hEcl n) (hEsub n)]
+      linarith [hEhalf n]
+    have h2 := hlub.2 hub
+    rw [nu_sdiff τ hC hbcl hbsub] at h2
+    linarith
+  refine ⟨b, hbcl, ?_, hbsub, fun n => ?_⟩
+  · rw [Set.nonempty_iff_ne_empty]
+    intro h
+    rw [h, nu_empty] at hbnu
+    linarith
+  · refine Set.disjoint_left.mpr fun x hx hxN => ?_
+    have h1 : x ∈ E n := (interior_subset hx) |> fun h => Set.mem_iInter.mp h n
+    have h2 : x ∈ D n := Set.mem_iInter₂.mp h1 n (by simp)
+    exact ((hDsub n h2).1).2 hxN
+
+/-- **The closure of a meagre subset of the spectrum is meagre.**  (Weak
+`(σ,∞)`-distributivity; false in a general extremally disconnected compact
+Hausdorff space, e.g. in the Gleason cover of `[0,1]`.) -/
+theorem isMeagre_closure_of_isMeagre
+    (hfaith : ∀ f : C(X, ℂ), 0 ≤ f → τ f = 0 → f = 0)
+    {s : Set X} (h : IsMeagre s) : IsMeagre (closure s) := by
+  obtain ⟨S, hSnd, hScount, hSsub⟩ := isMeagre_iff_countable_union_isNowhereDense.mp h
+  rcases S.eq_empty_or_nonempty with hS | hS
+  · rw [hS] at hSsub
+    simp only [Set.sUnion_empty, Set.subset_empty_iff] at hSsub
+    rw [hSsub]
+    simpa using (IsMeagre.empty : IsMeagre (∅ : Set X))
+  obtain ⟨f, hf⟩ := hScount.exists_eq_range hS
+  set N : ℕ → Set X := fun n => closure (f n) with hN
+  have hNc : ∀ n, IsClosed (N n) := fun n => isClosed_closure
+  have hNd : ∀ n, interior (N n) = ∅ := by
+    intro n
+    have : IsNowhereDense (f n) := hSnd _ (by rw [hf]; exact ⟨n, rfl⟩)
+    exact this
+  have hsub : s ⊆ ⋃ n, N n := by
+    refine hSsub.trans (Set.sUnion_subset fun t ht => ?_)
+    rw [hf] at ht
+    obtain ⟨n, rfl⟩ := ht
+    exact (subset_closure).trans (Set.subset_iUnion N n)
+  have hnd : IsNowhereDense (⋃ n, N n) := by
+    rw [IsNowhereDense]
+    rw [Set.eq_empty_iff_forall_notMem]
+    intro x hx
+    obtain ⟨C, hC, hxC, hCsub⟩ := exists_clopen_subset isOpen_interior hx
+    obtain ⟨b, hbcl, hbne, hbC, hbd⟩ :=
+      exists_clopen_disjoint_iUnion τ hfaith hNc hNd hC ⟨x, hxC⟩
+    obtain ⟨y, hy⟩ := hbne
+    have hy2 : y ∈ closure (⋃ n, N n) := interior_subset (hCsub (hbC hy))
+    have : (b ∩ ⋃ n, N n).Nonempty := mem_closure_iff.mp hy2 b hbcl.2 hy
+    obtain ⟨z, hzb, hz⟩ := this
+    obtain ⟨n, hzn⟩ := Set.mem_iUnion.mp hz
+    exact Set.disjoint_left.mp (hbd n) hzb hzn
+  exact (IsNowhereDense.isMeagre (hnd.closure.mono (closure_mono hsub)))
+
+/-- A function continuous outside a meagre set is measurable for the almost
+clopen σ-algebra. -/
+theorem measurable_of_continuousAt_compl {f : X → ℂ} {E : Set X} (hE : IsMeagre E)
+    (hc : ∀ x ∈ Eᶜ, ContinuousAt f x) : @Measurable _ _ (almostClopenMS X) _ f := by
+  refine @measurable_of_isOpen ℂ X _ _ _ (almostClopenMS X) f (fun W hW => ?_)
+  refine (almostClopen_sigmaAlgebra X _).mpr ?_
+  have hsub : (f ⁻¹' W) ∆ interior (f ⁻¹' W) ⊆ E := by
+    intro x hx
+    rcases hx with ⟨hx1, hx2⟩ | ⟨hx1, hx2⟩
+    · by_contra hxE
+      exact hx2 (mem_interior_iff_mem_nhds.mpr (hc x hxE (hW.mem_nhds hx1)))
+    · exact absurd (interior_subset hx1) hx2
+  refine ⟨closure (interior (f ⁻¹' W)),
+    ⟨isClosed_closure, ExtremallyDisconnected.open_closure _ isOpen_interior⟩, ?_⟩
+  exact MeagreEquiv.trans (show MeagreEquiv (f ⁻¹' W) (interior (f ⁻¹' W)) from
+    hE.mono hsub) (meagre_basic_3 _ isOpen_interior).symm
+
+/-- **Conversely**: a function measurable for the almost clopen σ-algebra is
+continuous outside a meagre set — this is where weak distributivity
+(`isMeagre_closure_of_isMeagre`) is needed. -/
+theorem exists_isMeagre_continuousAt_of_measurable
+    (hfaith : ∀ f : C(X, ℂ), 0 ≤ f → τ f = 0 → f = 0)
+    {f : X → ℂ} (hmeas : @Measurable _ _ (almostClopenMS X) _ f) :
+    ∃ E : Set X, IsMeagre E ∧ ∀ x ∈ Eᶜ, ContinuousAt f x := by
+  obtain ⟨b, hbc, -, hb⟩ := TopologicalSpace.exists_countable_basis ℂ
+  have hac : ∀ B ∈ b, AlmostClopen (f ⁻¹' B) := fun B hB =>
+    (almostClopen_sigmaAlgebra X _).mp (hmeas (hb.isOpen hB).measurableSet)
+  set M : Set X := ⋃ B ∈ b, (f ⁻¹' B) ∆ clRep (f ⁻¹' B) with hM
+  have hMm : IsMeagre M := isMeagre_biUnion hbc fun B hB => clRep_equiv (hac B hB)
+  refine ⟨closure M, isMeagre_closure_of_isMeagre τ hfaith hMm, fun x hx => ?_⟩
+  have hxM : x ∉ M := fun h => hx (subset_closure h)
+  show Filter.Tendsto f (nhds x) (nhds (f x))
+  refine Filter.tendsto_def.mpr fun W hW => ?_
+  obtain ⟨W₀, hW₀sub, hW₀open, hxW₀⟩ := mem_nhds_iff.mp hW
+  obtain ⟨B, hB, hfxB, hBW⟩ := hb.exists_subset_of_mem_open hxW₀ hW₀open
+  have hmem : ∀ y ∉ M, (y ∈ f ⁻¹' B ↔ y ∈ clRep (f ⁻¹' B)) := by
+    intro y hy
+    by_cases h1 : y ∈ f ⁻¹' B
+    · refine ⟨fun _ => ?_, fun _ => h1⟩
+      by_contra h2
+      exact hy (Set.mem_biUnion hB (Or.inl ⟨h1, h2⟩))
+    · refine ⟨fun h => absurd h h1, fun h2 => ?_⟩
+      exact absurd (Set.mem_biUnion hB (Or.inr ⟨h2, h1⟩)) hy
+  have hxC : x ∈ clRep (f ⁻¹' B) := (hmem x hxM).mp hfxB
+  refine Filter.mem_of_superset
+    (((clRep_isClopen (f ⁻¹' B)).2.sdiff isClosed_closure).mem_nhds ⟨hxC, hx⟩) ?_
+  rintro y ⟨hyC, hyM⟩
+  exact hW₀sub (hBW ((hmem y (fun h => hyM (subset_closure h))).mpr hyC))
+
+/-! ### Uniform approximation by clopen combinations, and the integral -/
+
+/-- Every continuous function on a compact Hausdorff extremally disconnected
+space is uniformly approximated by `ℂ`-combinations of indicators of clopen
+sets (the atoms of the finite Boolean algebra generated by a finite clopen
+cover of small oscillation). -/
+theorem exists_clopen_approx (f : C(X, ℂ)) {ε : ℝ} (hε : 0 < ε) :
+    ∃ (s : Finset (Set X)) (c : Set X → ℂ), (∀ E ∈ s, IsClopen E) ∧
+      ∀ x : X, ‖f x - ∑ E ∈ s, c E * chi E x‖ ≤ ε := by
+  classical
+  have hstep : ∀ y : X, ∃ D : Set X, IsClopen D ∧ y ∈ D ∧
+      ∀ z ∈ D, ‖f z - f y‖ < ε / 2 := by
+    intro y
+    have hopen : IsOpen (f ⁻¹' Metric.ball (f y) (ε / 2)) :=
+      Metric.isOpen_ball.preimage f.continuous
+    have hy : y ∈ f ⁻¹' Metric.ball (f y) (ε / 2) := by
+      simp [Metric.mem_ball, hε]
+    obtain ⟨D, hD, hyD, hDsub⟩ := exists_clopen_subset hopen hy
+    refine ⟨D, hD, hyD, fun z hz => ?_⟩
+    have := hDsub hz
+    simpa [Metric.mem_ball, dist_eq_norm] using this
+  choose D hDcl hDmem hDvar using hstep
+  obtain ⟨t, ht⟩ := isCompact_univ.elim_finite_subcover D (fun y => (hDcl y).2)
+    (fun x _ => Set.mem_iUnion.mpr ⟨x, hDmem x⟩)
+  set A : ({y // y ∈ t} → Bool) → Set X := fun σ =>
+    ⋂ i ∈ (Finset.univ : Finset {y // y ∈ t}), (cond (σ i) (D i) (D i)ᶜ) with hAdef
+  have hAcl : ∀ σ, IsClopen (A σ) := by
+    intro σ
+    refine isClopen_biInter_finset fun i _ => ?_
+    cases hσi : σ i
+    · simpa only [hσi, Bool.cond_false] using (hDcl i).compl
+    · simpa only [hσi, Bool.cond_true] using hDcl i
+  have hAdisj : ∀ σ σ', σ ≠ σ' → Disjoint (A σ) (A σ') := by
+    intro σ σ' hne
+    obtain ⟨i, hi⟩ : ∃ i, σ i ≠ σ' i := by
+      by_contra hcon
+      push_neg at hcon
+      exact hne (funext hcon)
+    refine Set.disjoint_left.mpr fun x hx hx' => ?_
+    have h1 := Set.mem_iInter₂.mp hx i (Finset.mem_univ i)
+    have h2 := Set.mem_iInter₂.mp hx' i (Finset.mem_univ i)
+    have hcases : (σ i = true ∧ σ' i = false) ∨ (σ i = false ∧ σ' i = true) := by
+      cases hσi : σ i <;> cases hσ'i : σ' i <;> simp_all
+    rcases hcases with ⟨ha, hb⟩ | ⟨ha, hb⟩
+    · rw [ha, Bool.cond_true] at h1
+      rw [hb, Bool.cond_false] at h2
+      exact h2 h1
+    · rw [ha, Bool.cond_false] at h1
+      rw [hb, Bool.cond_true] at h2
+      exact h1 h2
+  refine ⟨Finset.image A Finset.univ,
+    fun E => if h : E.Nonempty then f h.choose else 0, ?_, fun x => ?_⟩
+  · rintro E hE
+    obtain ⟨σ, -, rfl⟩ := Finset.mem_image.mp hE
+    exact hAcl σ
+  · set σx : {y // y ∈ t} → Bool := fun i => decide (x ∈ D i) with hσx
+    have hxA : x ∈ A σx := by
+      refine Set.mem_iInter₂.mpr fun i _ => ?_
+      by_cases h : x ∈ D i
+      · simp [hσx, h]
+      · simp [hσx, h]
+    have hsum : ∑ E ∈ Finset.image A Finset.univ,
+        (if h : E.Nonempty then f h.choose else 0) * chi E x
+        = (if h : (A σx).Nonempty then f h.choose else 0) * chi (A σx) x := by
+      refine Finset.sum_eq_single_of_mem (A σx)
+        (Finset.mem_image_of_mem A (Finset.mem_univ σx)) ?_
+      rintro E hE hne
+      obtain ⟨σ, -, rfl⟩ := Finset.mem_image.mp hE
+      have hσ : σ ≠ σx := fun h => hne (by rw [h])
+      rw [chi_of_notMem (hAcl σ) (Set.disjoint_left.mp (hAdisj σ σx hσ) · hxA |> fun h => h),
+        mul_zero]
+    rw [hsum, chi_of_mem (hAcl σx) hxA, mul_one, dif_pos ⟨x, hxA⟩]
+    -- `x` and the chosen point of `A σx` lie in a common `D i`
+    obtain ⟨i, hi, hxi⟩ := Set.mem_iUnion₂.mp (ht (Set.mem_univ x))
+    have hσxi : σx ⟨i, hi⟩ = true := by simp [hσx, hxi]
+    have hsub : A σx ⊆ D i := by
+      intro z hz
+      have := Set.mem_iInter₂.mp hz ⟨i, hi⟩ (Finset.mem_univ _)
+      simpa [hσxi] using this
+    have hy := hsub (Exists.choose_spec (⟨x, hxA⟩ : (A σx).Nonempty))
+    have h1 := hDvar i x hxi
+    have h2 := hDvar i _ hy
+    calc ‖f x - f (Exists.choose (⟨x, hxA⟩ : (A σx).Nonempty))‖
+        = ‖(f x - f i) - (f (Exists.choose (⟨x, hxA⟩ : (A σx).Nonempty)) - f i)‖ := by
+          congr 1; ring
+      _ ≤ ‖f x - f i‖ + ‖f (Exists.choose (⟨x, hxA⟩ : (A σx).Nonempty)) - f i‖ :=
+          norm_sub_le _ _
+      _ ≤ ε := by linarith
+
+/-- **The integral against the measure of 54XI computes `τ`.** -/
+theorem integral_eq_npFunctional (μ : @Measure X (almostClopenMS X))
+    (hμC : ∀ C : Set X, IsClopen C → μ C = ENNReal.ofReal (nu τ C)) (f : C(X, ℂ)) :
+    ∫ x, f x ∂μ = τ f := by
+  letI : MeasurableSpace X := almostClopenMS X
+  have hms : ∀ C : Set X, IsClopen C → MeasurableSet C := fun C hC =>
+    (almostClopen_sigmaAlgebra X C).mpr ⟨C, hC, MeagreEquiv.refl _⟩
+  haveI hfin : IsFiniteMeasure μ := ⟨by
+    rw [hμC Set.univ isClopen_univ]; exact ENNReal.ofReal_lt_top⟩
+  have hmeas : ∀ g : C(X, ℂ), Measurable (g : X → ℂ) := fun g =>
+    measurable_of_continuousAt_compl IsMeagre.empty
+      (fun x _ => g.continuous.continuousAt)
+  have hint : ∀ g : C(X, ℂ), Integrable (g : X → ℂ) μ := fun g =>
+    (integrable_const ‖g‖).mono' (hmeas g).stronglyMeasurable.aestronglyMeasurable
+      (Filter.Eventually.of_forall (g.norm_coe_le_norm))
+  have hchi : ∀ C : Set X, IsClopen C → ∫ x, chi C x ∂μ = τ (chi C) := by
+    intro C hC
+    have h1 : (fun x => chi C x) = Set.indicator C (fun _ => (1 : ℂ)) :=
+      funext (chi_apply hC)
+    rw [h1, integral_indicator_const (1 : ℂ) (hms C hC), npFunctional_chi_re,
+      measureReal_def, hμC C hC, ENNReal.toReal_ofReal (nu_nonneg τ C)]
+    simp
+  set K : ℝ := μ.real Set.univ + (τ 1).re with hK
+  have hK0 : 0 ≤ K := by
+    have : (0:ℝ) ≤ (τ 1).re :=
+      (Complex.le_def.mp (npFunctional_nonneg τ zero_le_one)).1
+    have h2 : (0:ℝ) ≤ μ.real Set.univ := ENNReal.toReal_nonneg
+    linarith
+  have key : ∀ ε : ℝ, 0 < ε → ‖(∫ x, f x ∂μ) - τ f‖ ≤ ε * K := by
+    intro ε hε
+    obtain ⟨s, c, hcl, happ⟩ := exists_clopen_approx f hε
+    classical
+    set g : C(X, ℂ) := ∑ E ∈ s, c E • chi E with hg
+    have hgapp : ∀ x, ‖(f - g) x‖ ≤ ε := by
+      intro x
+      have : (g : X → ℂ) x = ∑ E ∈ s, c E * chi E x := by
+        rw [hg, ContinuousMap.coe_sum]
+        simp [Finset.sum_apply]
+      simpa [this] using happ x
+    have hgnorm : ‖f - g‖ ≤ ε := (ContinuousMap.norm_le _ hε.le).mpr hgapp
+    have hIg : ∫ x, g x ∂μ = τ g := by
+      have h1 : (fun x => (g : X → ℂ) x) = fun x => ∑ E ∈ s, c E * chi E x := by
+        funext x
+        rw [hg, ContinuousMap.coe_sum]
+        simp [Finset.sum_apply]
+      rw [h1, integral_finsetSum s (fun E _ => (hint (chi E)).const_mul (c E))]
+      have h2 : ∀ E ∈ s, ∫ x, c E * chi E x ∂μ = c E * τ (chi E) := by
+        intro E hE
+        rw [integral_const_mul, hchi E (hcl E hE)]
+      rw [Finset.sum_congr rfl h2, hg,
+        show (τ (∑ E ∈ s, c E • chi E) : ℂ) = ∑ E ∈ s, (τ (c E • chi E) : ℂ) from
+          map_sum τ.toPositiveLinearMap _ s]
+      refine (Finset.sum_congr rfl fun E _ => ?_).symm
+      exact (map_smul τ.toPositiveLinearMap (c E) (chi E)).trans (smul_eq_mul _ _)
+    have hdiff : (∫ x, f x ∂μ) - τ f
+        = (∫ x, (f - g) x ∂μ) + τ (g - f) := by
+      have h1 : ∫ x, (f - g) x ∂μ = (∫ x, f x ∂μ) - ∫ x, g x ∂μ := by
+        simpa using integral_sub (hint f) (hint g)
+      have h2 : (τ (g - f) : ℂ) = τ g - τ f := by
+        have := map_sub τ.toPositiveLinearMap g f
+        exact this
+      rw [h1, h2, hIg]
+      ring
+    have hb1 : ‖∫ x, (f - g) x ∂μ‖ ≤ ε * μ.real Set.univ :=
+      norm_integral_le_of_norm_le_const (Filter.Eventually.of_forall hgapp)
+    have hb2 : ‖(τ (g - f) : ℂ)‖ ≤ (τ 1).re * ε := by
+      refine (npFunctional_norm_le τ (g - f)).trans ?_
+      have h0 : (0:ℝ) ≤ (τ 1).re :=
+        (Complex.le_def.mp (npFunctional_nonneg τ zero_le_one)).1
+      have : ‖g - f‖ = ‖f - g‖ := by rw [← norm_neg]; congr 1; ring
+      rw [this]
+      exact mul_le_mul_of_nonneg_left hgnorm h0
+    rw [hdiff]
+    calc ‖(∫ x, (f - g) x ∂μ) + τ (g - f)‖
+        ≤ ‖∫ x, (f - g) x ∂μ‖ + ‖(τ (g - f) : ℂ)‖ := norm_add_le _ _
+      _ ≤ ε * μ.real Set.univ + (τ 1).re * ε := add_le_add hb1 hb2
+      _ = ε * K := by rw [hK]; ring
+  have hzero : ‖(∫ x, f x ∂μ) - τ f‖ ≤ 0 := by
+    refine le_of_forall_pos_le_add fun ε hε => ?_
+    have h := key (ε / (K + 1)) (by positivity)
+    have h2 : ε / (K + 1) * K ≤ ε := by
+      rw [div_mul_eq_mul_div, div_le_iff₀ (by linarith : (0:ℝ) < K + 1)]
+      nlinarith
+    linarith
+  exact sub_eq_zero.mp (norm_le_zero_iff.mp hzero)
+
+end Stone2
+
 section CVNFaithful
 
 variable {A : Type*} [CommCStarAlgebra A] [PartialOrder A] [StarOrderedRing A]
   [VonNeumannAlgebra A]
 
 open WeakDual
+
+/-- The np-functional `ω ∘ γ_A⁻¹` on `C(spec A, ℂ)` transported along the
+Gelfand isomorphism (**53II**). -/
+noncomputable def gelfandNP (ω : NPFunctional A) : NPFunctional C(characterSpace ℂ A, ℂ) :=
+  compNP (starAlgHomP (gelfandStarTransform A).symm.toStarAlgHom)
+    (starAlgEquiv_preservesDirSups (gelfandStarTransform A).symm) ω
+
+theorem gelfandNP_apply (ω : NPFunctional A) (f : C(characterSpace ℂ A, ℂ)) :
+    gelfandNP ω f = ω ((gelfandStarTransform A).symm f) := rfl
+
+theorem gelfandNP_faithful (ω : NPFunctional A)
+    (hω : ∀ a : A, 0 ≤ a → ω a = 0 → a = 0) :
+    ∀ f : C(characterSpace ℂ A, ℂ), 0 ≤ f → gelfandNP ω f = 0 → f = 0 := by
+  intro f hf h
+  have h1 : (0 : A) ≤ (gelfandStarTransform A).symm f :=
+    starAlgHom_nonneg (gelfandStarTransform A).symm.toStarAlgHom hf
+  have h3 := congrArg (gelfandStarTransform A) (hω _ h1 h)
+  simpa using h3
+
+/-- The continuous indicator of a clopen set is the only continuous function
+whose values are those of the set-theoretic indicator. -/
+theorem eq_chi_of_indicator {X : Type*} [TopologicalSpace X] {C : Set X}
+    (hC : IsClopen C) (f : C(X, ℂ)) (hf : ∀ x, f x = C.indicator (fun _ => 1) x) :
+    f = chi C := by
+  ext x; rw [hf x, chi_apply hC]
 
 /-- **54XI** (`cvn-faithful`, vn.tex:2014, Theorem), part 1: for a
 commutative von Neumann algebra `A` with a faithful np-functional `ω` there
@@ -6037,8 +6948,43 @@ theorem cvn_faithful_1 (ω : NPFunctional A)
           (∀ x, f x = C.indicator (fun _ => 1) x) →
           μ C = ENNReal.ofReal (ω ((gelfandStarTransform A).symm f)).re) ∧
       @IsFiniteMeasure _ (almostClopenMS _) μ ∧
-      @Measure.IsComplete _ (almostClopenMS _) μ :=
-  sorry
+      @Measure.IsComplete _ (almostClopenMS _) μ := by
+  have := vn_spectrum_extremally_disconnected A
+  set τ := gelfandNP ω with hτ
+  have hfaith := gelfandNP_faithful ω hω
+  have hclop : ∀ (C : Set (characterSpace ℂ A)), IsClopen C →
+      ∀ f : C(characterSpace ℂ A, ℂ), (∀ x, f x = C.indicator (fun _ => 1) x) →
+        ENNReal.ofReal (ω ((gelfandStarTransform A).symm f)).re
+          = ENNReal.ofReal (nu τ C) := by
+    intro C hC f hf
+    rw [eq_chi_of_indicator hC f hf]
+    rfl
+  refine ⟨macMeasure τ, ⟨fun s hs => ?_, fun C hC f hf => ?_, ?_, ?_⟩, ?_⟩
+  · rw [macMeasure_apply τ hs]
+    exact mac_eq_zero_iff τ hfaith hs
+  · rw [hclop C hC f hf, macMeasure_apply τ ⟨C, hC, MeagreEquiv.refl _⟩,
+      mac_of_isClopen τ hC]
+  · refine ⟨?_⟩
+    rw [macMeasure_apply τ ⟨Set.univ, isClopen_univ, MeagreEquiv.refl _⟩,
+      mac_of_isClopen τ isClopen_univ]
+    exact ENNReal.ofReal_lt_top
+  · refine ⟨fun s hs => ?_⟩
+    obtain ⟨t, hst, ht, ht0⟩ :=
+      @exists_measurable_superset_of_null _ (almostClopenMS _) _ _ hs
+    have hta : AlmostClopen t := (almostClopen_sigmaAlgebra _ t).mp ht
+    have htm : IsMeagre t := (mac_eq_zero_iff τ hfaith hta).mp
+      (by rw [← macMeasure_apply τ hta]; exact ht0)
+    refine (almostClopen_sigmaAlgebra _ s).mpr ⟨∅, isClopen_empty, ?_⟩
+    show IsMeagre (s ∆ (∅ : Set (characterSpace ℂ A)))
+    simpa [Set.symmDiff_def] using htm.mono hst
+  · rintro μ ⟨h0, hC2, -, -⟩
+    refine @Measure.ext _ (almostClopenMS _) _ _ (fun s hs => ?_)
+    have hsa := (almostClopen_sigmaAlgebra _ s).mp hs
+    rw [measure_eq_mac τ μ h0 (fun C hC => by
+        rw [hC2 C hC (chi C) (fun x => (chi_apply hC x)), hclop C hC (chi C)
+          (fun x => (chi_apply hC x))]) hsa,
+      macMeasure_apply τ hsa]
+
 
 /-- **54XI** (`cvn-faithful`, vn.tex:2014, Theorem), part 2: with respect to
 this measure(-space) structure, a bounded function `f : spec A → ℂ` is
@@ -6050,8 +6996,25 @@ theorem cvn_faithful_2 (ω : NPFunctional A)
       (μ s = 0 ↔ IsMeagre s))
     (f : characterSpace ℂ A → ℂ) (hf : ∃ C : ℝ, ∀ x, ‖f x‖ ≤ C) :
     @Measurable _ _ (almostClopenMS _) _ f ↔
-      ∃ E : Set (characterSpace ℂ A), μ E = 0 ∧ ∀ x ∈ Eᶜ, ContinuousAt f x :=
-  sorry
+      ∃ E : Set (characterSpace ℂ A), μ E = 0 ∧ ∀ x ∈ Eᶜ, ContinuousAt f x := by
+  have := vn_spectrum_extremally_disconnected A
+  have hnull : ∀ s : Set (characterSpace ℂ A), IsMeagre s → μ s = 0 := by
+    intro s hs
+    refine (hμ s ⟨∅, isClopen_empty, ?_⟩).mpr hs
+    show IsMeagre (s ∆ (∅ : Set (characterSpace ℂ A)))
+    simpa [Set.symmDiff_def] using hs
+  have hmeagre : ∀ s : Set (characterSpace ℂ A), μ s = 0 → IsMeagre s := by
+    intro s hs
+    obtain ⟨t, hst, ht, ht0⟩ :=
+      @exists_measurable_superset_of_null _ (almostClopenMS _) _ _ hs
+    exact ((hμ t ((almostClopen_sigmaAlgebra _ t).mp ht)).mp ht0).mono hst
+  constructor
+  · intro hm
+    obtain ⟨E, hE, hc⟩ := exists_isMeagre_continuousAt_of_measurable (gelfandNP ω)
+      (gelfandNP_faithful ω hω) hm
+    exact ⟨E, hnull E hE, hc⟩
+  · rintro ⟨E, hE0, hc⟩
+    exact measurable_of_continuousAt_compl (hmeagre E hE0) hc
 
 /-- **54XI** (`cvn-faithful`, vn.tex:2014, Theorem), part 3: the diagram
 commutes: `∫ f dμ = ω(γ_A⁻¹(f))` for every continuous `f` on `spec A`.
@@ -6068,8 +7031,14 @@ theorem cvn_faithful_3 (ω : NPFunctional A)
         (∀ x, f x = C.indicator (fun _ => 1) x) →
         μ C = ENNReal.ofReal (ω ((gelfandStarTransform A).symm f)).re)
     (f : C(characterSpace ℂ A, ℂ)) :
-    ∫ x, f x ∂μ = ω ((gelfandStarTransform A).symm f) :=
-  sorry
+    ∫ x, f x ∂μ = ω ((gelfandStarTransform A).symm f) := by
+  have := vn_spectrum_extremally_disconnected A
+  have hclop : ∀ C : Set (characterSpace ℂ A), IsClopen C →
+      μ C = ENNReal.ofReal (nu (gelfandNP ω) C) := by
+    intro C hC
+    rw [hμC C hC (chi C) (fun x => chi_apply hC x)]
+    rfl
+  exact integral_eq_npFunctional (gelfandNP ω) μ hclop f
 
 /-! **54XIII** (vn.tex:2172): transition to the projections needed for the
 full classification (70III, `Theses/A/VN/Projections.lean`) — nothing to

@@ -20,9 +20,6 @@ rigid_expansion|costed||~80-120 lines; needs neither Goursat nor 15V, using Math
 Linfty_vn|costed||51IX needs an L-infinity carrier that Mathlib lacks; rendered with a quotient map, still unbuilt
 carrier_ad_operator|costed||best isolated target in Projections.lean: the Hilbert-space form of the proved carrier_ad
 central_projections_sums_2|costed||no longer blocked: 67IV.1 was proved in session 56
-cvn_faithful_1|costed||54XI.1 needs a measure on the almost-clopen sigma-algebra; large
-cvn_faithful_2|blocked|cvn_faithful_1|54XI.2 is stated on top of 54XI.1
-cvn_faithful_3|blocked|cvn_faithful_1|54XI.3 is stated on top of 54XI.1
 div_usc|awaiting-ruling||QUESTIONS A5: the second conjunct is false; the ultraweak repair is proved as div_uwc, ruling pending
 fdcstar|costed||84II is Artin-Wedderburn for finite-dimensional C*-algebras; the thesis proof is long and Mathlib has none
 ha_equalisers|blocked|hereditarilyAtomic_subalgebra|84bV's other input 47V was proved in session 50
@@ -42,7 +39,7 @@ centrally_similar_basic_5|awaiting-ruling||false as printed; the equal-carrier r
 dup_vna_is_monoid_2|blocked|duplicable|132III.2 restates the 127III classification of duplicable algebras
 dup_vna_is_monoid_4|open||yellow: the proof is complete, but the statement mentions the braiding of 119IVc, which is now proved
 dup_vna_is_monoid_5|blocked|duplicable|132III.5 computes nmiu-maps through the l-infinity classification of 127III
-duplicable|blocked|cvn_faithful_1|127III: 129X is now PROVED; what remains is 54XI.1 cvn_faithful_1, a direct-sum-of-L-infinity carrier, and the easy direction (l-infinity is duplicable) behind the tensor block
+duplicable|costed||127III: 129X and 54XI.1 cvn_faithful_1 are now PROVED; what remains is an A/Proc-local direct-sum-of-L-infinity carrier (it mirrors 51IX Linfty_vn but does not use it) and the easy direction (l-infinity is duplicable) behind the tensor block
 equaliser_lemma|open||125IV (Kornell); no route recorded, and its statement uses the sorried tmapM
 exists_braiding|open||119IVc, the exercise that (a,b) maps to b tensor a is a tensor product; not attempted
 exists_tmapM|costed||needs the tmap construction made universe-polymorphic (four universes); prerequisite for all of 119V

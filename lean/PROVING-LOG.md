@@ -17585,3 +17585,155 @@ conclusion does not mention that order, so this is harmless.
   item (~350–500 in the survey, 450–650 in session 69) were all too high for the
   same reason.
 * 34IX.2 at "~40 lines" was close (~55).
+
+## Session 75 — `A/VN`: **54XI is CLOSED, all three parts** — the measure on the almost clopen σ-algebra, and the distributivity theorem the printed proof needs but does not state (worker on `Theses/A/VN/`)
+
+A/VN **8 → 5** code `sorry`s.  Per file, each source run through `lean`
+individually against rebuilt oleans, paired with an error count, **0 errors
+everywhere**: `Basic` **1**, `Projections` **1**, `Division` **3**,
+`NormalFunctionals` **0**, `Completeness` **0**.  `Basic.lean` is down to its
+single remaining item, **51IX** `Linfty_vn`.  Closed this session, all three
+`#print axioms`-clean (`[propext, Classical.choice, Quot.sound]`):
+
+* **54XI**.1 `cvn_faithful_1` — the measure `μ` on the almost clopen
+  σ-algebra of `spec 𝒜`, unique, finite, complete, null exactly on the meagre
+  sets;
+* **54XI**.2 `cvn_faithful_2` — measurable ⟺ continuous almost everywhere;
+* **54XI**.3 `cvn_faithful_3` — `∫ f dμ = ω(γ_𝒜⁻¹ f)`.
+
+`lake build Theses.A.VN.Projections Theses.A.VN.Completeness
+Theses.A.VN.Division Theses.A.VN.NormalFunctionals` completes with zero errors
+(8717 jobs) against the new `Basic.olean`.
+
+The brief predicted ".2/.3 fall out of the same construction"; that is right
+for **.3** and **wrong for .2**, which needs a theorem the thesis does not
+state and which is **false without the faithful normal `ω`** (see §2).  The
+brief's other prediction — "several hundred lines" — held: ~980 lines in all,
+of which the measure itself is ~360.
+
+### 1. Part 1 is the thesis's proof, with one step it does not mention
+
+`cvn_faithful_1` follows vn.tex:2020 ff. exactly: `μ(A) := ω(γ⁻¹(1_{C_A}))`
+for the unique clopen `C_A ≈ A` of **54VI**, finitely additive, null exactly
+on the meagre sets by faithfulness, and countably additive by normality.  Four
+notes.
+
+* **Everything is done in `C(spec 𝒜, ℂ)`, not in `𝒜`.**  The transported
+  np-functional `gelfandNP ω := compNP (γ⁻¹) ω` is normal by
+  `starAlgEquiv_preservesDirSups` (**53II**.2), and in `C(X, ℂ)` the order is
+  pointwise, so the suprema the thesis takes are computed by hand rather than
+  transported.  The whole toolkit is stated for an arbitrary **compact
+  Hausdorff extremally disconnected `X`** carrying a faithful np-functional
+  `τ` on `C(X, ℂ)` — `chi` (the continuous indicator), `nu τ C = (τ 1_C).re`,
+  `clRep` (the clopen representative), `mac`, `macMeasure` — and only the last
+  three declarations specialise to `X = spec 𝒜`.
+* **Normality is used through one lemma, `isLUB_nu`**: for *any* family `𝒞`
+  of clopen sets, `IsLUB (chiSA '' 𝒞) (chiSA (closure ⋃₀𝒞))` in
+  `sa C(X, ℂ)` — the upper-bound half is monotonicity, the least half is that
+  `{y : 1 ≤ Re g y}` is closed and contains `⋃₀𝒞`.  Directedness of `𝒞` is
+  needed only to feed `PreservesDirSups`, not for the `IsLUB`.  Countable
+  additivity is this at `𝒞 = {⋃_{i∈F} Cᵢ : F : Finset ℕ}` plus
+  `hasSum_of_isLUB_of_nonneg`.
+* **The step the thesis omits**: its continuity-from-above argument takes
+  `Aₙ ⊇ Aₙ₊₁` to clopen `Cₙ` and then treats the `Cₙ` as decreasing.  They
+  are, but only because a *clopen meagre set is empty* (Baire —
+  `eq_empty_of_isClopen_of_isMeagre`), which is also what makes the clopen
+  representatives of disjoint sets disjoint.  It is used four times.
+* **Completeness** is `exists_measurable_superset_of_null` plus "a subset of a
+  meagre set is meagre", and **uniqueness** is `Measure.ext` through
+  `measure_eq_mac`: any `μ` null exactly on the meagre sets and equal to `ν`
+  on clopens satisfies `μ A = μ C_A`, because `A ∖ C_A` and `C_A ∖ A` are
+  measurable *and* meagre.
+
+### 2. Part 2: the printed proof does not prove the statement as rendered, and the repair is a real theorem
+
+vn.tex proves the measurability clause by showing `ϱ : C(spec 𝒜) → L^∞` is
+**surjective**, i.e. that a bounded measurable `f` is *equal almost everywhere
+to a continuous function*.  Our Lean statement reads "continuous almost
+everywhere" the other way — `∃ E, μ E = 0 ∧ ∀ x ∉ E, ContinuousAt f x` — and
+**the two are not the same**: `f = g` off a meagre `M` gives continuity at `x`
+only if `f = g` on a *neighbourhood* of `x`, i.e. only off `closure M`.
+
+**The difference is not formal.**  In a general compact Hausdorff extremally
+disconnected space a meagre set can be dense: the Gleason cover `X` of
+`[0,1]` (the Stone space of the Cohen algebra `RO[0,1]`) is compact Hausdorff
+and extremally disconnected, `π : X → [0,1]` is irreducible, so `π⁻¹(ℚ)` is
+meagre (preimages of nowhere dense sets under an irreducible map are nowhere
+dense) and dense (its closure maps onto `[0,1]`).  Its indicator is bounded,
+measurable for the almost clopen σ-algebra, and continuous at **no** point.
+So the pointwise reading cannot be proved from extremal disconnectedness
+alone; the faithful normal `ω` has to be used a second time.
+
+The missing theorem is `isMeagre_closure_of_isMeagre`: **in `spec 𝒜` every
+meagre set has meagre closure**, i.e. the clopen algebra is weakly
+`(σ,∞)`-distributive (as every measure algebra is).  The proof is the measure
+one, run *before* the measure: given closed nowhere dense `Nₙ` and a nonempty
+clopen `C`,
+
+* `C ∖ Nₙ` is open and dense in `C`, so `isLUB_nu` at
+  `{D clopen : D ⊆ (C∖Nₙ) ∩ C}` (whose union is `C∖Nₙ` because `X` is
+  zero-dimensional, and whose closure is `C`) gives clopen `Dₙ ⊆ C∖Nₙ` with
+  `ν Dₙ > ν C − ν C·2^{-(n+2)}`;
+* `Eₙ := D₀∩…∩Dₙ` has `ν Eₙ ≥ ν C/2 + ν C·2^{-(n+2)}` by
+  `ν(P∩Q) ≥ ν P + ν Q − ν C`, by induction;
+* `b := interior (⋂ₙ Eₙ)` is clopen (`isClopen_interior`: in an extremally
+  disconnected space the interior of a closed set is clopen), and
+  `ν b ≥ ν C/2 > 0` — this is `isLUB_nu` again, applied to the *increasing*
+  clopen family `C ∖ Eₙ`, whose union has closure `C ∖ b` by
+  `interior (P ∪ Q) = P ∪ interior Q` for clopen `P`;
+* so `b` is a nonempty clopen subset of `C` disjoint from every `Nₙ`, and
+  `closure (⋃ₙ Nₙ)` contains no nonempty clopen, hence has empty interior.
+
+Filed as ERRATA **54XII**.  Note the fix is a choice for the authors: state
+the extra lemma, or weaken the phrase to "equal a.e. to a continuous
+function", which is what the diagram `C(spec 𝒜) ≅ L^∞(spec 𝒜)` means anyway.
+
+**With that lemma, part 2 needs no `L^∞` at all** — and this is the second
+divergence.  The printed route (injectivity of `ϱ`, norm-closedness of its
+image, density of the simple functions in `L^∞` citing Fremlin 243I) is
+replaced by: take a countable basis `b` of `ℂ`; for `B ∈ b` the set
+`f⁻¹(B)` is almost clopen with clopen representative `C_B`; the countable
+union `M := ⋃_{B∈b} f⁻¹(B) ∆ C_B` is meagre, and `E := closure M` is meagre by
+the lemma.  Off `E`, membership in `f⁻¹(B)` and in `C_B` agree *for every
+`B`*, so `C_B ∖ E` is an open neighbourhood of `x` on which `f` takes values
+in `B` — continuity at `x`.  The boundedness hypothesis on `f` is never used
+in either direction.  The converse half (`measurable_of_continuousAt_compl`)
+is four lines: `f⁻¹(W) ∆ interior f⁻¹(W) ⊆ E`.
+
+### 3. Part 3 avoids `L^∞` too, by approximating in `C(spec 𝒜)` instead
+
+The thesis gets `∫ = ω∘γ⁻¹∘ϱ⁻¹` from density of the span of the `1_C°`
+(`C` clopen) in `L^∞`.  In Lean the same density is used one step earlier, in
+`C(X, ℂ)`, where it is elementary and needs no measure theory:
+`exists_clopen_approx` covers `X` by finitely many clopen `D_y` on which `f`
+varies by `< ε/2` (compactness), and then takes the **atoms** of the finite
+Boolean algebra they generate — `A σ := ⋂_{i} cond (σ i) (D i) (D i)ᶜ` for
+`σ : t → Bool`.  These are clopen, pairwise disjoint and cover `X` with no
+disjointification and no linear order on the cover, which is why the index is
+`Bool`-valued; the resulting `g = ∑_E c_E·1_E` (summed over
+`Finset.image A univ`, so that the repeated `∅` collapses harmlessly) has
+`‖f − g‖ ≤ ε`.  Both `∫ · dμ` and `τ` are then linear and bounded and agree on
+each `1_C`, so they agree on `f`.  `μ` is finite because `spec 𝒜` is clopen;
+integrability of a continuous `f` is `measurable_of_continuousAt_compl` at
+`E = ∅` plus `Integrable.mono'`.  Part 3 does **not** use the `hμ` hypothesis
+(null ⟺ meagre) at all — `hμC` alone determines `μ` on clopens, and that is
+all the argument needs.
+
+### 4. Small things
+
+* One new private helper in `Basic.lean`, `npFunctional_norm_le`
+  (`‖ω a‖ ≤ (ω 1).re·‖a‖`).  It is a copy of the identically named private
+  lemma in `A/Proc/Tensor.lean`; it is kept private precisely because
+  `Tensor.lean` does `open Theses.A.VN`, so a public copy would make the short
+  name ambiguous there.  If the two are ever merged, the `A/VN` one is the
+  place to keep it.
+* `chi` is a `dite` on `IsClopen` (`0` off the clopen sets) so that it is a
+  total `Set X → C(X, ℂ)` and families of indicators are ordinary images;
+  `Set.indicator` is continuous for clopen sets by Mathlib's
+  `IsClopen.continuous_indicator`.
+* `exists_clopen_subset` (compact Hausdorff + extremally disconnected ⟹ the
+  clopen sets are a base) is proved from `exists_mem_nhds_isClosed_subset` and
+  `ExtremallyDisconnected.open_closure`; it is used three times and is the
+  only place zero-dimensionality is needed.
+* Mathlib's `Measure.ofMeasurable` takes the construction directly: no outer
+  measure, no Carathéodory.
