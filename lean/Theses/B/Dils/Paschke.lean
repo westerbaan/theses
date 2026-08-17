@@ -2279,6 +2279,1081 @@ end Inhabited
 **155I**, **155III** (dils.tex:3841, 3859): discussion — nothing to
 formalize. -/
 
+/-! ### The KSGNS construction
+
+The thesis states **155II** as Kasparov's theorem and cites it (155III leaves
+even its universal property open), so there is no printed proof to transcribe:
+what follows is the standard KSGNS construction, written from scratch.  It has
+three parts.
+
+1. `ksgns_gram_nonneg`: complete positivity of `φ : 𝒜 → 𝒷ᵃ(X)` makes the form
+   `⟨x ⊗ a, x' ⊗ a'⟩ = ⟪x, φ(a* a') x'⟫` on `X ⊙ 𝒜` positive.  The tree's
+   `IsCompletelyPositiveMap` is the *sesquilinear* form of complete positivity
+   (**10II**), and **34IV** `cp_iff` turns it into positivity of the matrix
+   `[φ(aᵢ* aⱼ)]` over the C*-algebra `𝒷ᵃ(X)` (**143IV**); writing that matrix
+   as `star Y * Y` turns the Gram sum into `∑ₖ ⟪yₖ, yₖ⟫`.  **No isomorphism
+   `Mₙ(𝒷ᵃ(X)) ≅ 𝒷ᵃ(Xⁿ)` is needed.**
+
+2. The **norm** completion of a module with a (possibly indefinite) `BInner`,
+   `NC B` → `UniformSpace.Completion (NC B)`: the seminorm is **142V**
+   (`module_seminorm_1`, `module_seminorm_2`), the completion is Mathlib's
+   Hausdorff completion of the seminormed group (so the null vectors are
+   quotiented out automatically), and the inner product is extended one slot
+   at a time by `clmExtend`.  This is *not* `dils_completion` (**150II**),
+   which is the ultranorm/self-dual completion and needs a von Neumann `𝒷`;
+   here `ℬ` is only a C*-algebra.  `IsLinearAction` records the one thing a
+   semidefinite form does not give for free: that the `ℬ`-action is ℂ-linear.
+
+3. `ϱ(a₀)(x ⊗ a) = x ⊗ (a₀a)`, bounded by `‖a₀‖` because
+   `‖a₀‖² - a₀*a₀ = c*c` makes the defect another Gram form, and
+   `T(x) = x ⊗ 1` with adjoint `T*(x ⊗ a) = φ(a)x`; then
+   `T* ϱ(a) T = φ(a)` on the nose.
+-/
+
+section KSGNSGram
+
+variable {𝒜 ℬ : Type u}
+  [CStarAlgebra 𝒜] [PartialOrder 𝒜] [StarOrderedRing 𝒜]
+  [CStarAlgebra ℬ] [PartialOrder ℬ] [StarOrderedRing ℬ]
+  {X : Type u} [NormedAddCommGroup X] [Module ℂ X] [SMul ℬ X]
+  [CStarModule ℬ X] [CompleteSpace X]
+
+private theorem ks_sum_comm₃ {N : ℕ} {M : Type*} [AddCommMonoid M]
+    (h : Fin N → Fin N → Fin N → M) :
+    ∑ i, ∑ j, ∑ k, h i j k = ∑ k, ∑ i, ∑ j, h i j k := by
+  rw [Finset.sum_congr rfl (fun i _ => Finset.sum_comm), Finset.sum_comm]
+
+private theorem ks_exists_star_mul_self {M : Type*} [CStarAlgebra M] [PartialOrder M]
+    [StarOrderedRing M] {a : M} (ha : 0 ≤ a) : ∃ b, a = star b * b :=
+  CStarAlgebra.nonneg_iff_eq_star_mul_self.mp ha
+
+/-- The Gram form `∑ᵢⱼ ⟪xᵢ, φ(aᵢ* aⱼ) xⱼ⟫` of a cp-map `φ : 𝒜 → 𝒷ᵃ(X)` is
+positive: `[φ(aᵢ* aⱼ)]ᵢⱼ ≥ 0` in `Mₙ(𝒷ᵃ(X))` by **34IV** `cp_iff`, so it is
+`star Y * Y`, and the sum becomes `∑ₖ ⟪∑ᵢ Yₖᵢxᵢ, ∑ⱼ Yₖⱼxⱼ⟫`. -/
+private theorem ksgns_gram_nonneg (φ : 𝒜 →ₗ[ℂ] Ba ℬ X) (hφ : IsCompletelyPositiveMap φ)
+    {n : ℕ} (a : Fin n → 𝒜) (x : Fin n → X) :
+    0 ≤ ∑ i, ∑ j, (inner ℬ (x i) ((φ (star (a i) * a j)).1 (x j)) : ℬ) := by
+  let _ : NormedSpace ℂ X := NormedSpace.ofCore (CStarModule.normedSpaceCore ℬ)
+  have h3 : ∀ (N : ℕ) (a : Fin N → 𝒜),
+      0 ≤ CStarMatrix.ofMatrix (Matrix.of fun i j => φ (star (a i) * a j)) :=
+    (cp_iff φ).out 0 2 |>.mp hφ
+  set M : CStarMatrix (Fin n) (Fin n) (Ba ℬ X) :=
+    CStarMatrix.ofMatrix (Matrix.of fun i j => φ (star (a i) * a j)) with hM
+  have hM0 : 0 ≤ M := h3 n a
+  obtain ⟨Y, hMY⟩ := ks_exists_star_mul_self hM0
+  have hentry : ∀ i j, (φ (star (a i) * a j) : Ba ℬ X)
+      = ∑ k, star (Y k i) * Y k j := by
+    intro i j
+    have : M i j = (star Y * Y) i j := by rw [← hMY]
+    rw [CStarMatrix.mul_apply] at this
+    simp only [CStarMatrix.star_apply] at this
+    exact this
+  have hsum_val : ∀ (s : Finset (Fin n)) (T : Fin n → Ba ℬ X) (y : X),
+      ((∑ k ∈ s, T k : Ba ℬ X)).1 y = ∑ k ∈ s, (T k).1 y := by
+    intro s T y
+    classical
+    induction s using Finset.induction_on with
+    | empty => simp; rfl
+    | insert b s hb ih =>
+        rw [Finset.sum_insert hb, Finset.sum_insert hb, ← ih]; rfl
+  set z : Fin n → Fin n → X := fun k i => (Y k i).1 (x i) with hz
+  have key : ∀ i j, (inner ℬ (x i) ((φ (star (a i) * a j)).1 (x j)) : ℬ)
+      = ∑ k, (inner ℬ (z k i) (z k j) : ℬ) := by
+    intro i j
+    rw [hentry i j, hsum_val, CStarModule.inner_sum_right]
+    refine Finset.sum_congr rfl fun k _ => ?_
+    show (inner ℬ (x i) ((star (Y k i) * Y k j).1 (x j)) : ℬ) = _
+    have hmul : ((star (Y k i) * Y k j : Ba ℬ X)).1 (x j)
+        = (star (Y k i) : Ba ℬ X).1 ((Y k j).1 (x j)) := rfl
+    rw [hmul]
+    exact (baSubalgebra_star_spec (𝒷 := ℬ) (X := X) (Y k i) (x i) ((Y k j).1 (x j))).symm
+  have hcol : ∀ k : Fin n, ∑ i, ∑ j, (inner ℬ (z k i) (z k j) : ℬ)
+      = inner ℬ (∑ i, z k i) (∑ j, z k j) := by
+    intro k
+    rw [CStarModule.inner_sum_left]
+    exact Finset.sum_congr rfl fun i _ => (CStarModule.inner_sum_right).symm
+  calc (0 : ℬ) ≤ ∑ k, (inner ℬ (∑ i, z k i) (∑ j, z k j) : ℬ) :=
+        Finset.sum_nonneg fun k _ => CStarModule.inner_self_nonneg
+    _ = ∑ k, ∑ i, ∑ j, (inner ℬ (z k i) (z k j) : ℬ) :=
+        Finset.sum_congr rfl fun k _ => (hcol k).symm
+    _ = ∑ i, ∑ j, ∑ k, (inner ℬ (z k i) (z k j) : ℬ) :=
+        (ks_sum_comm₃ fun i j k => (inner ℬ (z k i) (z k j) : ℬ)).symm
+    _ = ∑ i, ∑ j, (inner ℬ (x i) ((φ (star (a i) * a j)).1 (x j)) : ℬ) :=
+        Finset.sum_congr rfl fun i _ => Finset.sum_congr rfl fun j _ => (key i j).symm
+
+end KSGNSGram
+
+/-! ## The norm completion of a semi-inner-product module -/
+
+section ClmExtend
+
+open UniformSpace
+
+variable {E F : Type*} [SeminormedAddCommGroup E] [NormedSpace ℂ E]
+  [NormedAddCommGroup F] [NormedSpace ℂ F] [CompleteSpace F]
+
+/-- A bounded linear map into a Banach space extends to the completion. -/
+private noncomputable def clmExtend (f : E →L[ℂ] F) : Completion E →L[ℂ] F where
+  toFun := Completion.extension f
+  map_add' x y := by
+    refine Completion.induction_on₂ (p := fun x y =>
+      Completion.extension f (x + y) = Completion.extension f x + Completion.extension f y)
+      x y (isClosed_eq (Completion.continuous_extension.comp continuous_add)
+        ((Completion.continuous_extension.comp continuous_fst).add
+          (Completion.continuous_extension.comp continuous_snd))) ?_
+    intro a b
+    rw [← Completion.coe_add, Completion.extension_coe f.uniformContinuous,
+      Completion.extension_coe f.uniformContinuous,
+      Completion.extension_coe f.uniformContinuous, map_add]
+  map_smul' c x := by
+    refine Completion.induction_on (p := fun x =>
+      Completion.extension f (c • x) = c • Completion.extension f x)
+      x (isClosed_eq (Completion.continuous_extension.comp (continuous_const_smul c))
+        ((continuous_const_smul c).comp Completion.continuous_extension)) ?_
+    intro a
+    rw [← Completion.coe_smul, Completion.extension_coe f.uniformContinuous,
+      Completion.extension_coe f.uniformContinuous, map_smul]
+  cont := Completion.continuous_extension
+
+@[simp] private theorem clmExtend_coe (f : E →L[ℂ] F) (x : E) :
+    clmExtend f (x : Completion E) = f x :=
+  Completion.extension_coe f.uniformContinuous x
+
+private theorem clmExtend_norm_le (f : E →L[ℂ] F) {C : ℝ}
+    (h : ∀ x : E, ‖f x‖ ≤ C * ‖x‖) (ξ : Completion E) : ‖clmExtend f ξ‖ ≤ C * ‖ξ‖ := by
+  refine Completion.induction_on (p := fun ξ => ‖clmExtend f ξ‖ ≤ C * ‖ξ‖) ξ
+    (isClosed_le ((clmExtend f).continuous.norm) (continuous_const.mul continuous_norm)) ?_
+  intro a
+  rw [clmExtend_coe, Completion.norm_coe]
+  exact h a
+
+end ClmExtend
+
+section NormCompletion
+
+open UniformSpace
+
+universe v
+
+variable {ℬ : Type u} {V : Type v}
+  [CStarAlgebra ℬ] [PartialOrder ℬ] [StarOrderedRing ℬ]
+  [AddCommGroup V] [Module ℂ V] [SMul ℬ V]
+
+/-- `V` carrying the seminorm `‖x‖ = ‖[x,x]‖^½` of a ℬ-valued inner product
+`B` (**142V**). -/
+private def NC (B : BInner ℬ V) : Type v := V
+
+private instance (B : BInner ℬ V) : AddCommGroup (NC B) := inferInstanceAs (AddCommGroup V)
+private instance (B : BInner ℬ V) : Module ℂ (NC B) := inferInstanceAs (Module ℂ V)
+private instance (B : BInner ℬ V) : SMul ℬ (NC B) := inferInstanceAs (SMul ℬ V)
+
+/-- The ℬ-action of a `BInner`-module is ℂ-linear.  For a *definite* inner
+product this follows from the axioms; for a semidefinite one it does not, and
+the norm completion needs it. -/
+private class IsLinearAction (B : BInner ℬ V) : Prop where
+  op_smul_add : ∀ (b : ℬ) (x y : V), b • (x + y) = b • x + b • y
+  op_smul_comm : ∀ (b : ℬ) (c : ℂ) (x : V), b • (c • x) = c • (b • x)
+
+private noncomputable instance (B : BInner ℬ V) : SeminormedAddCommGroup (NC B) :=
+  AddGroupSeminorm.toSeminormedAddCommGroup
+    { toFun := fun x => B.norm x
+      map_zero' := by
+        show Real.sqrt ‖B.inner 0 0‖ = 0
+        rw [B.inner_zero_right, norm_zero, Real.sqrt_zero]
+      add_le' := fun x y => (module_seminorm_2 B x y 0 0).1
+      neg' := fun x => by
+        show B.norm (-x) = B.norm x
+        have h : B.norm ((-1 : ℂ) • (x : V)) = ‖(-1 : ℂ)‖ * B.norm (x : V) :=
+          (module_seminorm_2 B x x (-1) 0).2.1
+        rw [show (-(x : V)) = (-1 : ℂ) • (x : V) from (neg_one_smul ℂ (x : V)).symm, h]
+        simp }
+
+private theorem nc_norm (B : BInner ℬ V) (x : NC B) : ‖x‖ = B.norm x := rfl
+
+private instance ncUniformSMul (B : BInner ℬ V) : UniformContinuousConstSMul ℂ (NC B) where
+  uniformContinuous_const_smul c := by
+    have hl : LipschitzWith ‖c‖₊ (fun x : NC B => c • x) := by
+      refine LipschitzWith.of_dist_le_mul fun x y => ?_
+      have hx : ‖c • (x - y)‖ = ‖c‖ * ‖x - y‖ :=
+        (module_seminorm_2 B ((x : V) - y) ((x : V) - y) c 0).2.1
+      rw [dist_eq_norm, dist_eq_norm, ← smul_sub, hx]
+      simp
+    exact hl.uniformContinuous
+
+private noncomputable instance (B : BInner ℬ V) : NormedSpace ℂ (NC B) where
+  norm_smul_le c x := le_of_eq (module_seminorm_2 B x x c 0).2.1
+
+/-- `[v, ·]` as a bounded linear map on `NC B`. -/
+private noncomputable def ncIpL (B : BInner ℬ V) (v : NC B) : NC B →L[ℂ] ℬ :=
+  LinearMap.mkContinuous
+    ({ toFun := fun y => B.inner v y
+       map_add' := fun y z => B.inner_add_right v y z
+       map_smul' := fun c y => B.inner_smul_right_complex c v y } : NC B →ₗ[ℂ] ℬ)
+    (B.norm v) (fun y => module_seminorm_1 B v y)
+
+private theorem ncIpL_apply (B : BInner ℬ V) (v w : NC B) : ncIpL B v w = B.inner v w := rfl
+
+/-- `[w, ·]` extended to the completion. -/
+private noncomputable def ncIpP (B : BInner ℬ V) (w : NC B) : Completion (NC B) →L[ℂ] ℬ :=
+  clmExtend (ncIpL B w)
+
+private theorem ncIpP_coe (B : BInner ℬ V) (w v : NC B) :
+    ncIpP B w (v : Completion (NC B)) = B.inner w v := by
+  rw [ncIpP, clmExtend_coe, ncIpL_apply]
+
+private theorem ncIpP_norm_le (B : BInner ℬ V) (w : NC B) (ξ : Completion (NC B)) :
+    ‖ncIpP B w ξ‖ ≤ B.norm w * ‖ξ‖ :=
+  clmExtend_norm_le (ncIpL B w) (fun y : NC B => module_seminorm_1 B w y) ξ
+
+private theorem ncIpP_add (B : BInner ℬ V) (w w' : NC B) (ξ : Completion (NC B)) :
+    ncIpP B (w + w') ξ = ncIpP B w ξ + ncIpP B w' ξ := by
+  refine Completion.induction_on (p := fun ξ =>
+    ncIpP B (w + w') ξ = ncIpP B w ξ + ncIpP B w' ξ) ξ
+    (isClosed_eq (ncIpP B (w + w')).continuous ((ncIpP B w).continuous.add
+      (ncIpP B w').continuous)) ?_
+  intro v
+  rw [ncIpP_coe, ncIpP_coe, ncIpP_coe]
+  exact B.inner_add_left w w' v
+
+private theorem ncIpP_smul (B : BInner ℬ V) (c : ℂ) (w : NC B) (ξ : Completion (NC B)) :
+    ncIpP B (c • w) ξ = (starRingEnd ℂ) c • ncIpP B w ξ := by
+  refine Completion.induction_on (p := fun ξ =>
+    ncIpP B (c • w) ξ = (starRingEnd ℂ) c • ncIpP B w ξ) ξ
+    (isClosed_eq (ncIpP B (c • w)).continuous
+      ((continuous_const_smul _).comp (ncIpP B w).continuous)) ?_
+  intro v
+  rw [ncIpP_coe, ncIpP_coe]
+  exact B.inner_smul_left_complex c w v
+
+
+/-- `⟨ξ, ·⟩` for `ξ` in the completion, as a bounded linear map on `NC B`. -/
+private noncomputable def ncIpQ (B : BInner ℬ V) (ξ : Completion (NC B)) : NC B →L[ℂ] ℬ :=
+  LinearMap.mkContinuous
+    ({ toFun := fun w => star (ncIpP B w ξ)
+       map_add' := fun w w' => by rw [ncIpP_add, star_add]
+       map_smul' := fun c w => by
+         rw [ncIpP_smul, star_smul]
+         simp } : NC B →ₗ[ℂ] ℬ)
+    ‖ξ‖ (fun w => by
+      show ‖star (ncIpP B w ξ)‖ ≤ ‖ξ‖ * ‖w‖
+      rw [norm_star]
+      exact (ncIpP_norm_le B w ξ).trans (le_of_eq (mul_comm _ _)))
+
+private theorem ncIpQ_apply (B : BInner ℬ V) (ξ : Completion (NC B)) (w : NC B) :
+    ncIpQ B ξ w = star (ncIpP B w ξ) := rfl
+
+/-- The ℬ-valued inner product of the norm completion. -/
+private noncomputable def ncInner (B : BInner ℬ V) (ξ η : Completion (NC B)) : ℬ :=
+  clmExtend (ncIpQ B ξ) η
+
+private theorem continuous_ncInner_right (B : BInner ℬ V) (ξ : Completion (NC B)) :
+    Continuous (ncInner B ξ) := (clmExtend (ncIpQ B ξ)).continuous
+
+private theorem ncInner_coe_right (B : BInner ℬ V) (ξ : Completion (NC B)) (w : NC B) :
+    ncInner B ξ (w : Completion (NC B)) = star (ncIpP B w ξ) := by
+  rw [ncInner, clmExtend_coe, ncIpQ_apply]
+
+private theorem ncInner_coe_coe (B : BInner ℬ V) (v w : NC B) :
+    ncInner B (v : Completion (NC B)) (w : Completion (NC B)) = B.inner v w := by
+  rw [ncInner_coe_right, ncIpP_coe]
+  exact B.star_inner (w : V) (v : V)
+
+private theorem ncInner_add_right (B : BInner ℬ V) (ξ η η' : Completion (NC B)) :
+    ncInner B ξ (η + η') = ncInner B ξ η + ncInner B ξ η' :=
+  map_add (clmExtend (ncIpQ B ξ)) η η'
+
+private theorem ncInner_smul_right (B : BInner ℬ V) (c : ℂ) (ξ η : Completion (NC B)) :
+    ncInner B ξ (c • η) = c • ncInner B ξ η :=
+  map_smul (clmExtend (ncIpQ B ξ)) c η
+
+private theorem ncInner_norm_le (B : BInner ℬ V) (ξ η : Completion (NC B)) :
+    ‖ncInner B ξ η‖ ≤ ‖ξ‖ * ‖η‖ :=
+  clmExtend_norm_le (ncIpQ B ξ) (fun w => (ncIpQ B ξ).le_opNorm w |>.trans
+    (mul_le_mul_of_nonneg_right ((ncIpQ B ξ).opNorm_le_bound (norm_nonneg _)
+      (fun w => by
+        rw [ncIpQ_apply, norm_star]
+        exact (ncIpP_norm_le B w ξ).trans (le_of_eq (mul_comm _ _)))) (norm_nonneg w))) η
+
+private theorem ncInner_add_left (B : BInner ℬ V) (ξ ξ' η : Completion (NC B)) :
+    ncInner B (ξ + ξ') η = ncInner B ξ η + ncInner B ξ' η := by
+  refine Completion.induction_on (p := fun η =>
+    ncInner B (ξ + ξ') η = ncInner B ξ η + ncInner B ξ' η) η
+    (isClosed_eq (continuous_ncInner_right B (ξ + ξ'))
+      ((continuous_ncInner_right B ξ).add (continuous_ncInner_right B ξ'))) ?_
+  intro w
+  rw [ncInner_coe_right, ncInner_coe_right, ncInner_coe_right, map_add, star_add]
+
+private theorem ncInner_smul_left (B : BInner ℬ V) (c : ℂ) (ξ η : Completion (NC B)) :
+    ncInner B (c • ξ) η = (starRingEnd ℂ) c • ncInner B ξ η := by
+  refine Completion.induction_on (p := fun η =>
+    ncInner B (c • ξ) η = (starRingEnd ℂ) c • ncInner B ξ η) η
+    (isClosed_eq (continuous_ncInner_right B (c • ξ))
+      ((continuous_const_smul _).comp (continuous_ncInner_right B ξ))) ?_
+  intro w
+  rw [ncInner_coe_right, ncInner_coe_right, map_smul, star_smul]
+  simp
+
+private theorem ncInner_sub_left (B : BInner ℬ V) (ξ ξ' η : Completion (NC B)) :
+    ncInner B (ξ - ξ') η = ncInner B ξ η - ncInner B ξ' η := by
+  have h := ncInner_add_left B (ξ - ξ') ξ' η
+  rw [sub_add_cancel] at h
+  rw [h]
+  abel
+
+private theorem ncInner_sub_right (B : BInner ℬ V) (ξ η η' : Completion (NC B)) :
+    ncInner B ξ (η - η') = ncInner B ξ η - ncInner B ξ η' :=
+  map_sub (clmExtend (ncIpQ B ξ)) η η'
+
+private theorem continuous_ncInner_left (B : BInner ℬ V) (η : Completion (NC B)) :
+    Continuous (fun ξ => ncInner B ξ η) := by
+  have hlip : LipschitzWith ‖η‖₊ (fun ξ : Completion (NC B) => ncInner B ξ η) := by
+    refine LipschitzWith.of_dist_le_mul fun ξ ξ' => ?_
+    rw [dist_eq_norm, dist_eq_norm, ← ncInner_sub_left]
+    exact (ncInner_norm_le B (ξ - ξ') η).trans (le_of_eq (mul_comm _ _))
+  exact hlip.continuous
+
+private theorem ncInner_star (B : BInner ℬ V) (ξ η : Completion (NC B)) :
+    star (ncInner B ξ η) = ncInner B η ξ := by
+  refine Completion.induction_on (p := fun η => star (ncInner B ξ η) = ncInner B η ξ) η
+    (isClosed_eq ((continuous_ncInner_right B ξ).star) (continuous_ncInner_left B ξ)) ?_
+  intro w
+  rw [ncInner_coe_right, star_star]
+  refine Completion.induction_on (p := fun ξ => ncIpP B w ξ = ncInner B (w : Completion (NC B)) ξ) ξ
+    (isClosed_eq (ncIpP B w).continuous (continuous_ncInner_right B _)) ?_
+  intro v
+  rw [ncIpP_coe, ncInner_coe_coe]
+
+private theorem continuous_ncInner_self (B : BInner ℬ V) :
+    Continuous (fun ξ : Completion (NC B) => ncInner B ξ ξ) := by
+  refine Metric.continuous_iff.mpr fun ξ₀ ε hε => ?_
+  refine ⟨min 1 (ε / (2 * ‖ξ₀‖ + 2)), lt_min one_pos (by positivity), fun ξ hξ => ?_⟩
+  rw [dist_eq_norm] at hξ
+  have hle1 : ‖ξ - ξ₀‖ ≤ 1 := le_of_lt (lt_of_lt_of_le hξ (min_le_left _ _))
+  have h2 : ‖ξ - ξ₀‖ < ε / (2 * ‖ξ₀‖ + 2) := lt_of_lt_of_le hξ (min_le_right _ _)
+  have hdec : ncInner B ξ ξ - ncInner B ξ₀ ξ₀
+      = ncInner B (ξ - ξ₀) ξ + ncInner B ξ₀ (ξ - ξ₀) := by
+    rw [ncInner_sub_left, ncInner_sub_right]
+    abel
+  have hb1 : ‖ncInner B (ξ - ξ₀) ξ‖ ≤ ‖ξ - ξ₀‖ * ‖ξ‖ := ncInner_norm_le B _ _
+  have hb2 : ‖ncInner B ξ₀ (ξ - ξ₀)‖ ≤ ‖ξ₀‖ * ‖ξ - ξ₀‖ := ncInner_norm_le B _ _
+  have hxi : ‖ξ‖ ≤ ‖ξ₀‖ + ‖ξ - ξ₀‖ := by
+    have h := norm_add_le (ξ - ξ₀) ξ₀
+    rw [sub_add_cancel] at h
+    linarith [h]
+  have hkey : ‖ncInner B ξ ξ - ncInner B ξ₀ ξ₀‖ ≤ ‖ξ - ξ₀‖ * (2 * ‖ξ₀‖ + 1) := by
+    rw [hdec]
+    have h := norm_add_le (ncInner B (ξ - ξ₀) ξ) (ncInner B ξ₀ (ξ - ξ₀))
+    nlinarith [norm_nonneg (ξ - ξ₀), norm_nonneg ξ₀, norm_nonneg ξ]
+  have hdenom : (0 : ℝ) < 2 * ‖ξ₀‖ + 2 := by positivity
+  have hlt : ‖ξ - ξ₀‖ * (2 * ‖ξ₀‖ + 1) < ε := by
+    have h3 : ‖ξ - ξ₀‖ * (2 * ‖ξ₀‖ + 2) < ε := by
+      rw [← lt_div_iff₀ hdenom]
+      exact h2
+    nlinarith [norm_nonneg (ξ - ξ₀)]
+  rw [dist_eq_norm]
+  exact lt_of_le_of_lt hkey hlt
+
+private theorem ncInner_self_nonneg (B : BInner ℬ V) (ξ : Completion (NC B)) :
+    0 ≤ ncInner B ξ ξ := by
+  refine Completion.induction_on (p := fun ξ => 0 ≤ ncInner B ξ ξ) ξ
+    (isClosed_le continuous_const (continuous_ncInner_self B)) ?_
+  intro v
+  rw [ncInner_coe_coe]
+  exact B.inner_self_nonneg v
+
+private theorem ncInner_norm_self (B : BInner ℬ V) (ξ : Completion (NC B)) :
+    ‖ξ‖ = Real.sqrt ‖ncInner B ξ ξ‖ := by
+  refine Completion.induction_on (p := fun ξ => ‖ξ‖ = Real.sqrt ‖ncInner B ξ ξ‖) ξ
+    (isClosed_eq continuous_norm
+      (Real.continuous_sqrt.comp (continuous_ncInner_self B).norm)) ?_
+  intro v
+  rw [Completion.norm_coe, ncInner_coe_coe]
+  rfl
+
+
+/-! ### The ℬ-action and the `CStarModule` structure on the completion -/
+
+section Action
+
+/-- `b • ·` as a bounded linear map on `NC B`. -/
+private noncomputable def ncSmulCLM (B : BInner ℬ V) [IsLinearAction B] (b : ℬ) :
+    NC B →L[ℂ] NC B :=
+  LinearMap.mkContinuous
+    ({ toFun := fun x => b • x
+       map_add' := fun x y => IsLinearAction.op_smul_add (B := B) b x y
+       map_smul' := fun c x => IsLinearAction.op_smul_comm (B := B) b c x } : NC B →ₗ[ℂ] NC B)
+    ‖b‖ (fun x => by
+      show B.norm (b • (x : V)) ≤ ‖b‖ * B.norm (x : V)
+      exact (module_seminorm_2 B x x 0 b).2.2.trans (le_of_eq (mul_comm _ _)))
+
+private theorem ncSmulCLM_apply (B : BInner ℬ V) [IsLinearAction B] (b : ℬ) (x : NC B) :
+    ncSmulCLM B b x = b • x := rfl
+
+private noncomputable instance ncSMul (B : BInner ℬ V) [IsLinearAction B] :
+    SMul ℬ (Completion (NC B)) where
+  smul b ξ := clmExtend
+    ((Completion.toComplL : NC B →L[ℂ] Completion (NC B)).comp (ncSmulCLM B b)) ξ
+
+private theorem ncSMul_def (B : BInner ℬ V) [IsLinearAction B] (b : ℬ) (ξ : Completion (NC B)) :
+    b • ξ = clmExtend
+      ((Completion.toComplL : NC B →L[ℂ] Completion (NC B)).comp (ncSmulCLM B b)) ξ := rfl
+
+private theorem continuous_ncSMul (B : BInner ℬ V) [IsLinearAction B] (b : ℬ) :
+    Continuous (fun ξ : Completion (NC B) => b • ξ) :=
+  (clmExtend ((Completion.toComplL : NC B →L[ℂ] Completion (NC B)).comp (ncSmulCLM B b))).continuous
+
+private theorem ncSMul_coe (B : BInner ℬ V) [IsLinearAction B] (b : ℬ) (x : NC B) :
+    b • (x : Completion (NC B)) = ((b • x : NC B) : Completion (NC B)) := by
+  rw [ncSMul_def, clmExtend_coe]
+  rfl
+
+private theorem ncIpP_op_smul (B : BInner ℬ V) (b : ℬ) (w : NC B) (ξ : Completion (NC B)) :
+    ncIpP B (b • w) ξ = ncIpP B w ξ * star b := by
+  refine Completion.induction_on (p := fun ξ => ncIpP B (b • w) ξ = ncIpP B w ξ * star b) ξ
+    (isClosed_eq (ncIpP B (b • w)).continuous
+      ((ncIpP B w).continuous.mul continuous_const)) ?_
+  intro v
+  rw [ncIpP_coe, ncIpP_coe]
+  exact B.inner_op_smul_left b w v
+
+private theorem ncInner_op_smul_right (B : BInner ℬ V) [IsLinearAction B] (b : ℬ)
+    (ξ η : Completion (NC B)) :
+    ncInner B ξ (b • η) = b * ncInner B ξ η := by
+  refine Completion.induction_on (p := fun η => ncInner B ξ (b • η) = b * ncInner B ξ η) η
+    (isClosed_eq ((continuous_ncInner_right B ξ).comp (continuous_ncSMul B b))
+      (continuous_const.mul (continuous_ncInner_right B ξ))) ?_
+  intro w
+  rw [ncSMul_coe, ncInner_coe_right, ncInner_coe_right, ncIpP_op_smul, star_mul, star_star]
+
+/-- The norm completion of a semi-inner-product ℬ-module is a Hilbert
+ℬ-module. -/
+private noncomputable instance ncCStarModule (B : BInner ℬ V) [IsLinearAction B] :
+    CStarModule ℬ (Completion (NC B)) where
+  inner := ncInner B
+  inner_add_right := ncInner_add_right B _ _ _
+  inner_self_nonneg := ncInner_self_nonneg B _
+  inner_self := by
+    intro ξ
+    refine ⟨fun h => ?_, fun h => by rw [h]; simpa using ncInner_add_right B 0 0 0⟩
+    have : ‖ξ‖ = 0 := by rw [ncInner_norm_self B ξ, h, norm_zero, Real.sqrt_zero]
+    exact norm_eq_zero.mp this
+  inner_op_smul_right := ncInner_op_smul_right B _ _ _
+  inner_smul_right_complex := ncInner_smul_right B _ _ _
+  star_inner ξ η := ncInner_star B ξ η
+  norm_eq_sqrt_norm_inner_self := ncInner_norm_self B
+
+private theorem nc_inner_apply (B : BInner ℬ V) [IsLinearAction B] (ξ η : Completion (NC B)) :
+    (inner ℬ ξ η : ℬ) = ncInner B ξ η := rfl
+
+private theorem nc_inner_coe_coe (B : BInner ℬ V) [IsLinearAction B] (v w : NC B) :
+    (inner ℬ (v : Completion (NC B)) (w : Completion (NC B)) : ℬ) = B.inner v w :=
+  ncInner_coe_coe B v w
+
+end Action
+
+end NormCompletion
+
+/-! ## 155II: the KSGNS construction -/
+
+section KSGNS
+
+open UniformSpace
+
+variable {𝒜 ℬ : Type u}
+  [CStarAlgebra 𝒜] [PartialOrder 𝒜] [StarOrderedRing 𝒜]
+  [CStarAlgebra ℬ] [PartialOrder ℬ] [StarOrderedRing ℬ]
+  {X : Type u} [NormedAddCommGroup X] [Module ℂ X] [SMul ℬ X]
+  [CStarModule ℬ X] [CompleteSpace X]
+
+/-- The ℬ-action on a Hilbert ℬ-module is additive (by definiteness). -/
+private theorem cstar_smul_add (b : ℬ) (x y : X) : b • (x + y) = b • x + b • y := by
+  refine eq_of_inner_right_eq (𝒜 := ℬ) fun z => ?_
+  simp [mul_add]
+
+/-- The ℬ-action on a Hilbert ℬ-module commutes with the ℂ-action. -/
+private theorem cstar_smul_comm (b : ℬ) (c : ℂ) (x : X) : b • (c • x) = c • (b • x) := by
+  refine eq_of_inner_right_eq (𝒜 := ℬ) fun z => ?_
+  simp [mul_smul_comm]
+
+/-- `b • ·` on `X` as a ℂ-linear map. -/
+private noncomputable def ksSmulLM (b : ℬ) : X →ₗ[ℂ] X where
+  toFun x := b • x
+  map_add' := cstar_smul_add b
+  map_smul' c x := cstar_smul_comm b c x
+
+/-- Application of a sum and of a scalar multiple in `𝒷ᵃ(X)`. -/
+private theorem ba_add_apply (S T : Ba ℬ X) (x : X) : (S + T).1 x = S.1 x + T.1 x := rfl
+
+private theorem ba_smul_apply (c : ℂ) (T : Ba ℬ X) (x : X) : (c • T).1 x = c • T.1 x := rfl
+
+private theorem ba_sub_apply (S T : Ba ℬ X) (x : X) : (S - T).1 x = S.1 x - T.1 x := rfl
+
+private theorem ba_smul_apply' (c : ℂ) (T : Ba ℬ X) (x : X) : (c • T).1 x = c • T.1 x := rfl
+
+/-- The ℬ-action on `X ⊙ 𝒜`: `b • (x ⊗ a) = (b • x) ⊗ a`. -/
+private noncomputable local instance ksSMul : SMul ℬ (X ⊗[ℂ] 𝒜) where
+  smul b := LinearMap.rTensor 𝒜 (ksSmulLM (X := X) b)
+
+private theorem ksSMul_tmul (b : ℬ) (x : X) (a : 𝒜) :
+    b • (x ⊗ₜ[ℂ] a) = (b • x) ⊗ₜ[ℂ] a := rfl
+
+private theorem ksSMul_zero (b : ℬ) : b • (0 : X ⊗[ℂ] 𝒜) = 0 :=
+  map_zero (LinearMap.rTensor 𝒜 (ksSmulLM (X := X) b))
+
+private theorem ksSMul_add (b : ℬ) (u v : X ⊗[ℂ] 𝒜) : b • (u + v) = b • u + b • v :=
+  map_add (LinearMap.rTensor 𝒜 (ksSmulLM (X := X) b)) u v
+
+private theorem ksSMul_smul (b : ℬ) (c : ℂ) (u : X ⊗[ℂ] 𝒜) : b • (c • u) = c • (b • u) :=
+  map_smul (LinearMap.rTensor 𝒜 (ksSmulLM (X := X) b)) c u
+
+/-- Every element of `X ⊗[ℂ] 𝒜` is a finite sum of elementary tensors. -/
+private theorem exists_fin_tmul' (u : X ⊗[ℂ] 𝒜) :
+    ∃ (n : ℕ) (x : Fin n → X) (a : Fin n → 𝒜), u = ∑ i, x i ⊗ₜ[ℂ] a i := by
+  classical
+  obtain ⟨S, rfl⟩ := TensorProduct.exists_finset u
+  refine ⟨S.card, fun i => ((S.equivFin.symm i : X × 𝒜)).1,
+    fun i => ((S.equivFin.symm i : X × 𝒜)).2, ?_⟩
+  rw [← Finset.sum_coe_sort S (fun p : X × 𝒜 => p.1 ⊗ₜ[ℂ] p.2)]
+  exact (Fintype.sum_equiv S.equivFin.symm _ _ (fun i => rfl)).symm
+
+/-- The right slot of the φ-pairing: `⟨x ⊗ a, ·⟩`. -/
+private noncomputable def ksR (φ : 𝒜 →ₗ[ℂ] Ba ℬ X) (x : X) (a : 𝒜) :
+    (X ⊗[ℂ] 𝒜) →ₗ[ℂ] ℬ :=
+  TensorProduct.lift <| LinearMap.mk₂ ℂ
+    (fun (x' : X) (a' : 𝒜) => (inner ℬ x ((φ (star a * a')).1 x') : ℬ))
+    (fun x₁ x₂ a' => by rw [map_add, CStarModule.inner_add_right])
+    (fun c x' a' => by rw [map_smul, CStarModule.inner_smul_right_complex])
+    (fun x' a₁ a₂ => by rw [mul_add, map_add, ba_add_apply, CStarModule.inner_add_right])
+    (fun c x' a' => by
+      rw [mul_smul_comm, map_smul, ba_smul_apply, CStarModule.inner_smul_right_complex])
+
+@[simp] private theorem ksR_tmul (φ : 𝒜 →ₗ[ℂ] Ba ℬ X) (x x' : X) (a a' : 𝒜) :
+    ksR φ x a (x' ⊗ₜ[ℂ] a') = (inner ℬ x ((φ (star a * a')).1 x') : ℬ) := rfl
+
+/-- The φ-pairing on `X ⊙ 𝒜`, additive in the first slot (it is
+conjugate-linear, so it is not a `TensorProduct.lift`; the two slots are
+conjugated together, so the pairing is ℂ-*balanced* and
+`TensorProduct.liftAddHom` applies). -/
+private noncomputable def ksPair (φ : 𝒜 →ₗ[ℂ] Ba ℬ X) :
+    (X ⊗[ℂ] 𝒜) →+ ((X ⊗[ℂ] 𝒜) →ₗ[ℂ] ℬ) :=
+  TensorProduct.liftAddHom
+    (AddMonoidHom.mk'
+      (fun x : X => AddMonoidHom.mk' (fun a : 𝒜 => ksR φ x a) (fun a₁ a₂ => by
+        refine TensorProduct.ext' fun x' a' => ?_
+        rw [ksR_tmul, LinearMap.add_apply, ksR_tmul, ksR_tmul, star_add, add_mul, map_add,
+          ba_add_apply, CStarModule.inner_add_right]))
+      (fun x₁ x₂ => by
+        refine AddMonoidHom.ext fun a => ?_
+        refine TensorProduct.ext' fun x' a' => ?_
+        rw [AddMonoidHom.add_apply]
+        show ksR φ (x₁ + x₂) a (x' ⊗ₜ[ℂ] a') = ksR φ x₁ a (x' ⊗ₜ[ℂ] a') + ksR φ x₂ a _
+        rw [ksR_tmul, ksR_tmul, ksR_tmul, CStarModule.inner_add_left]))
+    (fun c x a => by
+      refine TensorProduct.ext' fun x' a' => ?_
+      show ksR φ (c • x) a (x' ⊗ₜ[ℂ] a') = ksR φ x (c • a) (x' ⊗ₜ[ℂ] a')
+      rw [ksR_tmul, ksR_tmul, CStarModule.inner_smul_left_complex, star_smul,
+        Complex.star_def, smul_mul_assoc, map_smul, ba_smul_apply,
+        CStarModule.inner_smul_right_complex])
+
+/-- `star` in `𝒷ᵃ(X)` is the module adjoint. -/
+private theorem ba_star_inner (T : Ba ℬ X) (x y : X) :
+    (inner ℬ (T.1 x) y : ℬ) = inner ℬ x ((star T : Ba ℬ X).1 y) := by
+  let _ : NormedSpace ℂ X := NormedSpace.ofCore (CStarModule.normedSpaceCore ℬ)
+  exact baSubalgebra_star_spec (𝒷 := ℬ) (X := X) T x y
+
+@[simp] private theorem ksPair_tmul (φ : 𝒜 →ₗ[ℂ] Ba ℬ X) (x x' : X) (a a' : 𝒜) :
+    ksPair φ (x ⊗ₜ[ℂ] a) (x' ⊗ₜ[ℂ] a') = (inner ℬ x ((φ (star a * a')).1 x') : ℬ) := rfl
+
+/-- The φ-inner product on `X ⊙ 𝒜` (**155II**, the KSGNS form):
+`⟨x ⊗ a, x' ⊗ a'⟩ = ⟪x, φ(a* a') x'⟫`. -/
+private noncomputable def ksBInner (φ : 𝒜 →ₗ[ℂ] Ba ℬ X) (hφ : IsCompletelyPositiveMap φ) :
+    BInner ℬ (X ⊗[ℂ] 𝒜) where
+  inner u v := ksPair φ u v
+  inner_add_right u v w := map_add (ksPair φ u) v w
+  inner_smul_right_complex c u v := map_smul (ksPair φ u) c v
+  inner_op_smul_right b u v := by
+    induction v using TensorProduct.induction_on with
+    | zero => rw [ksSMul_zero, map_zero, mul_zero]
+    | tmul x' a' =>
+        induction u using TensorProduct.induction_on with
+        | zero => simp
+        | tmul x a =>
+            rw [ksSMul_tmul, ksPair_tmul, ksPair_tmul,
+              ((moduleAdjointable_linear (𝒜 := ℬ) _ (φ (star a * a')).2).2.2 b x'),
+              CStarModule.inner_op_smul_right]
+        | add u₁ u₂ h₁ h₂ =>
+            rw [map_add, LinearMap.add_apply, LinearMap.add_apply, h₁, h₂, mul_add]
+    | add v₁ v₂ h₁ h₂ => rw [ksSMul_add, map_add, map_add, h₁, h₂, mul_add]
+  star_inner u v := by
+    have hi : IsInvolutionPreserving φ :=
+      cstar_p_implies_i φ (astara_pos_basic_2_cp φ hφ)
+    induction u using TensorProduct.induction_on with
+    | zero => simp
+    | tmul x a =>
+        induction v using TensorProduct.induction_on with
+        | zero => simp
+        | tmul x' a' =>
+            have hst : (star (φ (star a * a')) : Ba ℬ X) = φ (star a' * a) := by
+              rw [← hi, star_mul, star_star]
+            rw [ksPair_tmul, ksPair_tmul, CStarModule.star_inner, ba_star_inner, hst]
+        | add v₁ v₂ h₁ h₂ =>
+            rw [map_add, map_add, LinearMap.add_apply, star_add, h₁, h₂]
+    | add u₁ u₂ h₁ h₂ =>
+        rw [map_add, LinearMap.add_apply, star_add, h₁, h₂, map_add]
+  inner_self_nonneg u := by
+    obtain ⟨n, x, a, rfl⟩ := exists_fin_tmul' u
+    have hexp : ksPair φ (∑ i, x i ⊗ₜ[ℂ] a i) (∑ i, x i ⊗ₜ[ℂ] a i)
+        = ∑ i, ∑ j, (inner ℬ (x i) ((φ (star (a i) * a j)).1 (x j)) : ℬ) := by
+      have h1 : ksPair φ (∑ i, x i ⊗ₜ[ℂ] a i) = ∑ i, ksPair φ (x i ⊗ₜ[ℂ] a i) :=
+        map_sum (ksPair φ) _ _
+      rw [h1, LinearMap.sum_apply]
+      refine Finset.sum_congr rfl fun i _ => ?_
+      rw [map_sum]
+      rfl
+    show (0 : ℬ) ≤ ksPair φ _ _
+    rw [hexp]
+    exact ksgns_gram_nonneg φ hφ a x
+
+private instance ksIsLinearAction (φ : 𝒜 →ₗ[ℂ] Ba ℬ X) (hφ : IsCompletelyPositiveMap φ) :
+    IsLinearAction (ksBInner φ hφ) where
+  op_smul_add := ksSMul_add
+  op_smul_comm := ksSMul_smul
+
+/-- The Gram sum of a finite family, for the φ-inner product. -/
+private theorem ksBInner_gram (φ : 𝒜 →ₗ[ℂ] Ba ℬ X) (hφ : IsCompletelyPositiveMap φ)
+    {n : ℕ} (x : Fin n → X) (a : Fin n → 𝒜) :
+    (ksBInner φ hφ).inner (∑ i, x i ⊗ₜ[ℂ] a i) (∑ i, x i ⊗ₜ[ℂ] a i)
+      = ∑ i, ∑ j, (inner ℬ (x i) ((φ (star (a i) * a j)).1 (x j)) : ℬ) := by
+  show ksPair φ (∑ i, x i ⊗ₜ[ℂ] a i) (∑ i, x i ⊗ₜ[ℂ] a i) = _
+  have h1 : ksPair φ (∑ i, x i ⊗ₜ[ℂ] a i) = ∑ i, ksPair φ (x i ⊗ₜ[ℂ] a i) :=
+    map_sum (ksPair φ) _ _
+  rw [h1, LinearMap.sum_apply]
+  refine Finset.sum_congr rfl fun i _ => ?_
+  rw [map_sum]
+  rfl
+
+/-- The norm of an element of `𝒷ᵃ(X)` dominates its action. -/
+private theorem ba_apply_norm_le (T : Ba ℬ X) (x : X) : ‖T.1 x‖ ≤ ‖T‖ * ‖x‖ := by
+  let _ : NormedSpace ℂ X := NormedSpace.ofCore (CStarModule.normedSpaceCore ℬ)
+  have h : ‖T‖ = ‖T.1‖ := rfl
+  rw [h]
+  exact T.1.le_opNorm x
+
+/-- `a₀ ⬝` on `X ⊙ 𝒜`. -/
+private noncomputable def ksRhoLM (a₀ : 𝒜) : (X ⊗[ℂ] 𝒜) →ₗ[ℂ] (X ⊗[ℂ] 𝒜) :=
+  LinearMap.lTensor X (LinearMap.mulLeft ℂ a₀)
+
+private theorem ksRhoLM_tmul (a₀ : 𝒜) (x : X) (a : 𝒜) :
+    ksRhoLM (X := X) a₀ (x ⊗ₜ[ℂ] a) = x ⊗ₜ[ℂ] (a₀ * a) := rfl
+
+/-- `⟨a₀ u, v⟩ = ⟨u, a₀* v⟩` for the φ-inner product. -/
+private theorem ksBInner_rho_adj (φ : 𝒜 →ₗ[ℂ] Ba ℬ X) (hφ : IsCompletelyPositiveMap φ)
+    (a₀ : 𝒜) (u v : X ⊗[ℂ] 𝒜) :
+    (ksBInner φ hφ).inner (ksRhoLM a₀ u) v
+      = (ksBInner φ hφ).inner u (ksRhoLM (star a₀) v) := by
+  induction u using TensorProduct.induction_on with
+  | zero =>
+      rw [map_zero, (ksBInner φ hφ).inner_zero_left, (ksBInner φ hφ).inner_zero_left]
+  | tmul x a =>
+      induction v using TensorProduct.induction_on with
+      | zero =>
+          rw [map_zero, (ksBInner φ hφ).inner_zero_right, (ksBInner φ hφ).inner_zero_right]
+      | tmul x' a' =>
+          show ksPair φ (x ⊗ₜ[ℂ] (a₀ * a)) (x' ⊗ₜ[ℂ] a')
+            = ksPair φ (x ⊗ₜ[ℂ] a) (x' ⊗ₜ[ℂ] (star a₀ * a'))
+          rw [ksPair_tmul, ksPair_tmul, star_mul, mul_assoc]
+      | add v₁ v₂ h₁ h₂ =>
+          rw [map_add, (ksBInner φ hφ).inner_add_right, (ksBInner φ hφ).inner_add_right,
+            h₁, h₂]
+  | add u₁ u₂ h₁ h₂ =>
+      rw [map_add, (ksBInner φ hφ).inner_add_left, (ksBInner φ hφ).inner_add_left, h₁, h₂]
+
+/-- `‖a₀ u‖ ≤ ‖a₀‖ ‖u‖` for the φ-seminorm: the key estimate behind `ϱ`. -/
+private theorem ksRho_bound (φ : 𝒜 →ₗ[ℂ] Ba ℬ X) (hφ : IsCompletelyPositiveMap φ)
+    (a₀ : 𝒜) (u : X ⊗[ℂ] 𝒜) :
+    (ksBInner φ hφ).norm (ksRhoLM a₀ u) ≤ ‖a₀‖ * (ksBInner φ hφ).norm u := by
+  obtain ⟨n, x, a, rfl⟩ := exists_fin_tmul' u
+  -- `‖a₀‖² - a₀* a₀ = c* c`
+  have hsa : IsSelfAdjoint (star a₀ * a₀) := IsSelfAdjoint.star_mul_self a₀
+  have hle : star a₀ * a₀ ≤ ‖star a₀ * a₀‖ • (1 : 𝒜) := by
+    have h := IsSelfAdjoint.le_algebraMap_norm_self (a := star a₀ * a₀) hsa
+    rwa [Algebra.algebraMap_eq_smul_one] at h
+  have hnorm2 : ‖star a₀ * a₀‖ = ‖a₀‖ ^ 2 := by
+    rw [CStarRing.norm_star_mul_self]; ring
+  obtain ⟨c, hc⟩ : ∃ c : 𝒜, (‖a₀‖ ^ 2 : ℝ) • (1 : 𝒜) - star a₀ * a₀ = star c * c :=
+    ks_exists_star_mul_self (by rw [← hnorm2]; exact sub_nonneg.mpr hle)
+  -- the termwise identity
+  have hterm : ∀ i j, ((‖a₀‖ ^ 2 : ℝ) : ℂ) • (inner ℬ (x i) ((φ (star (a i) * a j)).1 (x j)) : ℬ)
+      - (inner ℬ (x i) ((φ (star (a₀ * a i) * (a₀ * a j))).1 (x j)) : ℬ)
+      = (inner ℬ (x i) ((φ (star (c * a i) * (c * a j))).1 (x j)) : ℬ) := by
+    intro i j
+    have harg : star (c * a i) * (c * a j)
+        = ((‖a₀‖ ^ 2 : ℝ) : ℂ) • (star (a i) * a j) - star (a₀ * a i) * (a₀ * a j) := by
+      rw [star_mul, star_mul]
+      have : star (a i) * (star c * c) * a j
+          = ((‖a₀‖ ^ 2 : ℝ) : ℂ) • (star (a i) * a j) - star (a i) * (star a₀ * a₀) * a j := by
+        rw [← hc, RCLike.real_smul_eq_coe_smul (K := ℂ)]
+        simp [mul_sub, sub_mul, smul_mul_assoc, mul_smul_comm]
+      calc star (a i) * star c * (c * a j) = star (a i) * (star c * c) * a j := by
+            noncomm_ring
+        _ = _ := by rw [this]; noncomm_ring
+    rw [harg, map_sub, map_smul, ba_sub_apply, CStarModule.inner_sub_right,
+      ba_smul_apply, CStarModule.inner_smul_right_complex]
+  -- sum up
+  have hsum : ((‖a₀‖ ^ 2 : ℝ) : ℂ) • (∑ i, ∑ j, (inner ℬ (x i) ((φ (star (a i) * a j)).1 (x j)) : ℬ))
+      - (∑ i, ∑ j, (inner ℬ (x i) ((φ (star (a₀ * a i) * (a₀ * a j))).1 (x j)) : ℬ))
+      = ∑ i, ∑ j, (inner ℬ (x i) ((φ (star (c * a i) * (c * a j))).1 (x j)) : ℬ) := by
+    rw [Finset.smul_sum, ← Finset.sum_sub_distrib]
+    refine Finset.sum_congr rfl fun i _ => ?_
+    rw [Finset.smul_sum, ← Finset.sum_sub_distrib]
+    exact Finset.sum_congr rfl fun j _ => hterm i j
+  have hgram_le : (ksBInner φ hφ).inner (ksRhoLM a₀ (∑ i, x i ⊗ₜ[ℂ] a i))
+      (ksRhoLM a₀ (∑ i, x i ⊗ₜ[ℂ] a i))
+      ≤ ((‖a₀‖ ^ 2 : ℝ) : ℂ) • (ksBInner φ hφ).inner (∑ i, x i ⊗ₜ[ℂ] a i)
+          (∑ i, x i ⊗ₜ[ℂ] a i) := by
+    have hrho : ksRhoLM a₀ (∑ i, x i ⊗ₜ[ℂ] a i) = ∑ i, x i ⊗ₜ[ℂ] (a₀ * a i) := by
+      rw [map_sum]
+      rfl
+    rw [hrho, ksBInner_gram, ksBInner_gram]
+    have h0 := ksgns_gram_nonneg φ hφ (fun i => c * a i) x
+    rw [← hsum] at h0
+    exact sub_nonneg.mp h0
+  -- pass to norms
+  have hnn : (0 : ℬ) ≤ (ksBInner φ hφ).inner (ksRhoLM a₀ (∑ i, x i ⊗ₜ[ℂ] a i))
+      (ksRhoLM a₀ (∑ i, x i ⊗ₜ[ℂ] a i)) := (ksBInner φ hφ).inner_self_nonneg _
+  have hn := CStarAlgebra.norm_le_norm_of_nonneg_of_le hnn hgram_le
+  rw [norm_smul] at hn
+  have hcnorm : ‖((‖a₀‖ ^ 2 : ℝ) : ℂ)‖ = ‖a₀‖ ^ 2 := by
+    rw [Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (by positivity)]
+  rw [hcnorm] at hn
+  have h2 := Real.sqrt_le_sqrt hn
+  calc (ksBInner φ hφ).norm (ksRhoLM a₀ (∑ i, x i ⊗ₜ[ℂ] a i))
+      = Real.sqrt ‖(ksBInner φ hφ).inner (ksRhoLM a₀ (∑ i, x i ⊗ₜ[ℂ] a i))
+          (ksRhoLM a₀ (∑ i, x i ⊗ₜ[ℂ] a i))‖ := rfl
+    _ ≤ Real.sqrt (‖a₀‖ ^ 2 * ‖(ksBInner φ hφ).inner (∑ i, x i ⊗ₜ[ℂ] a i)
+          (∑ i, x i ⊗ₜ[ℂ] a i)‖) := h2
+    _ = ‖a₀‖ * (ksBInner φ hφ).norm (∑ i, x i ⊗ₜ[ℂ] a i) := by
+        rw [Real.sqrt_mul (by positivity), Real.sqrt_sq (norm_nonneg _)]
+        rfl
+
+private theorem ksRhoLM_one (u : X ⊗[ℂ] 𝒜) : ksRhoLM (1 : 𝒜) u = u := by
+  induction u using TensorProduct.induction_on with
+  | zero => rw [map_zero]
+  | tmul x a => rw [ksRhoLM_tmul, one_mul]
+  | add u₁ u₂ h₁ h₂ => rw [map_add, h₁, h₂]
+
+private theorem ksRhoLM_mul (a a' : 𝒜) (u : X ⊗[ℂ] 𝒜) :
+    ksRhoLM (a * a') u = ksRhoLM a (ksRhoLM a' u) := by
+  induction u using TensorProduct.induction_on with
+  | zero => rw [map_zero, map_zero, map_zero]
+  | tmul x a₁ => rw [ksRhoLM_tmul, ksRhoLM_tmul, ksRhoLM_tmul, mul_assoc]
+  | add u₁ u₂ h₁ h₂ => rw [map_add, map_add, map_add, h₁, h₂]
+
+private theorem ksRhoLM_add (a a' : 𝒜) (u : X ⊗[ℂ] 𝒜) :
+    ksRhoLM (a + a') u = ksRhoLM a u + ksRhoLM a' u := by
+  induction u using TensorProduct.induction_on with
+  | zero => rw [map_zero, map_zero, map_zero, add_zero]
+  | tmul x a₁ => rw [ksRhoLM_tmul, ksRhoLM_tmul, ksRhoLM_tmul, add_mul, TensorProduct.tmul_add]
+  | add u₁ u₂ h₁ h₂ =>
+      rw [map_add, map_add, map_add, h₁, h₂]
+      abel
+
+private theorem ksRhoLM_smul (c : ℂ) (a : 𝒜) (u : X ⊗[ℂ] 𝒜) :
+    ksRhoLM (c • a) u = c • ksRhoLM a u := by
+  induction u using TensorProduct.induction_on with
+  | zero => rw [map_zero, map_zero, smul_zero]
+  | tmul x a₁ =>
+      rw [ksRhoLM_tmul, ksRhoLM_tmul, smul_mul_assoc, TensorProduct.tmul_smul]
+  | add u₁ u₂ h₁ h₂ => rw [map_add, map_add, h₁, h₂, smul_add]
+
+private theorem ksRhoLM_zero (u : X ⊗[ℂ] 𝒜) : ksRhoLM (0 : 𝒜) u = 0 := by
+  induction u using TensorProduct.induction_on with
+  | zero => rw [map_zero]
+  | tmul x a => rw [ksRhoLM_tmul, zero_mul, TensorProduct.tmul_zero]
+  | add u₁ u₂ h₁ h₂ => rw [map_add, h₁, h₂, add_zero]
+
+/-- Two bounded maps out of a completion agreeing on the image agree. -/
+private theorem clm_ext_of_coe {E : Type*} [SeminormedAddCommGroup E] [NormedSpace ℂ E]
+    {F : Type*} [NormedAddCommGroup F] [NormedSpace ℂ F]
+    {f g : Completion E →L[ℂ] F} (h : ∀ v : E, f (v : Completion E) = g v) : f = g := by
+  refine ContinuousLinearMap.ext fun ξ => ?_
+  exact Completion.induction_on (p := fun ξ => f ξ = g ξ) ξ
+    (isClosed_eq f.continuous g.continuous) h
+
+section Assembly
+
+variable (φ : 𝒜 →ₗ[ℂ] Ba ℬ X) (hφ : IsCompletelyPositiveMap φ)
+
+/-- The carrier of the KSGNS dilation: the norm completion of `X ⊙ 𝒜`. -/
+private noncomputable abbrev ksY : Type u := Completion (NC (ksBInner φ hφ))
+
+private noncomputable def ksRhoCLM (a₀ : 𝒜) :
+    NC (ksBInner φ hφ) →L[ℂ] NC (ksBInner φ hφ) :=
+  LinearMap.mkContinuous
+    (ksRhoLM a₀ : NC (ksBInner φ hφ) →ₗ[ℂ] NC (ksBInner φ hφ)) ‖a₀‖
+    (fun u => ksRho_bound φ hφ a₀ u)
+
+private noncomputable def ksRhoY (a₀ : 𝒜) : ksY φ hφ →L[ℂ] ksY φ hφ :=
+  clmExtend ((Completion.toComplL : NC (ksBInner φ hφ) →L[ℂ] ksY φ hφ).comp
+    (ksRhoCLM φ hφ a₀))
+
+/-- The canonical map `X ⊙ 𝒜 → Y`. -/
+private noncomputable def ksEta (u : NC (ksBInner φ hφ)) : ksY φ hφ :=
+  (u : Completion (NC (ksBInner φ hφ)))
+
+private theorem ksEta_inner (u v : NC (ksBInner φ hφ)) :
+    (inner ℬ (ksEta φ hφ u) (ksEta φ hφ v) : ℬ) = (ksBInner φ hφ).inner u v :=
+  nc_inner_coe_coe (ksBInner φ hφ) u v
+
+private theorem ksEta_add (u v : NC (ksBInner φ hφ)) :
+    ksEta φ hφ (u + v) = ksEta φ hφ u + ksEta φ hφ v :=
+  Completion.coe_add _ _
+
+private theorem ksEta_smul (c : ℂ) (u : NC (ksBInner φ hφ)) :
+    ksEta φ hφ (c • u) = c • ksEta φ hφ u :=
+  Completion.coe_smul c _
+
+private theorem denseRange_ksEta : DenseRange (ksEta φ hφ) :=
+  Completion.denseRange_coe
+
+private theorem ksRhoCLM_one (u : NC (ksBInner φ hφ)) : ksRhoCLM φ hφ 1 u = u :=
+  ksRhoLM_one u
+
+private theorem ksRhoCLM_zero (u : NC (ksBInner φ hφ)) : ksRhoCLM φ hφ 0 u = 0 :=
+  ksRhoLM_zero u
+
+private theorem ksRhoCLM_mul (a a' : 𝒜) (u : NC (ksBInner φ hφ)) :
+    ksRhoCLM φ hφ (a * a') u = ksRhoCLM φ hφ a (ksRhoCLM φ hφ a' u) :=
+  ksRhoLM_mul a a' u
+
+private theorem ksRhoCLM_add (a a' : 𝒜) (u : NC (ksBInner φ hφ)) :
+    ksRhoCLM φ hφ (a + a') u = ksRhoCLM φ hφ a u + ksRhoCLM φ hφ a' u :=
+  ksRhoLM_add a a' u
+
+private theorem ksRhoCLM_smul (c : ℂ) (a : 𝒜) (u : NC (ksBInner φ hφ)) :
+    ksRhoCLM φ hφ (c • a) u = c • ksRhoCLM φ hφ a u :=
+  ksRhoLM_smul c a u
+
+private theorem ksRhoCLM_adj (a₀ : 𝒜) (u v : NC (ksBInner φ hφ)) :
+    (ksBInner φ hφ).inner (ksRhoCLM φ hφ a₀ u) v
+      = (ksBInner φ hφ).inner u (ksRhoCLM φ hφ (star a₀) v) :=
+  ksBInner_rho_adj φ hφ a₀ u v
+
+private theorem ksRhoY_coe (a₀ : 𝒜) (u : NC (ksBInner φ hφ)) :
+    ksRhoY φ hφ a₀ (ksEta φ hφ u) = ksEta φ hφ (ksRhoCLM φ hφ a₀ u) := by
+  show clmExtend ((Completion.toComplL : NC (ksBInner φ hφ) →L[ℂ] ksY φ hφ).comp
+      (ksRhoCLM φ hφ a₀)) (u : Completion (NC (ksBInner φ hφ))) = _
+  rw [clmExtend_coe]
+  rfl
+
+private theorem ksRhoY_adj (a₀ : 𝒜) (ξ η : ksY φ hφ) :
+    (inner ℬ (ksRhoY φ hφ a₀ ξ) η : ℬ) = inner ℬ ξ (ksRhoY φ hφ (star a₀) η) := by
+  refine Completion.induction_on (p := fun η =>
+    (inner ℬ (ksRhoY φ hφ a₀ ξ) η : ℬ) = inner ℬ ξ (ksRhoY φ hφ (star a₀) η)) η
+    (isClosed_eq (continuous_ncInner_right _ _)
+      ((continuous_ncInner_right _ _).comp (ksRhoY φ hφ (star a₀)).continuous)) ?_
+  intro w
+  refine Completion.induction_on (p := fun ξ =>
+    (inner ℬ (ksRhoY φ hφ a₀ ξ) (ksEta φ hφ w) : ℬ)
+      = inner ℬ ξ (ksRhoY φ hφ (star a₀) (ksEta φ hφ w))) ξ
+    (isClosed_eq ((continuous_ncInner_left _ _).comp (ksRhoY φ hφ a₀).continuous)
+      (continuous_ncInner_left _ _)) ?_
+  intro u
+  rw [show ((u : Completion (NC (ksBInner φ hφ))) : ksY φ hφ) = ksEta φ hφ u from rfl,
+    ksRhoY_coe, ksRhoY_coe, ksEta_inner, ksEta_inner]
+  exact ksRhoCLM_adj φ hφ a₀ u w
+
+/-- `ϱ(a₀)` as an adjointable operator on the completion. -/
+private noncomputable def ksRhoBa (a₀ : 𝒜) : Ba ℬ (ksY φ hφ) :=
+  ⟨ksRhoY φ hφ a₀, ⟨ksRhoY φ hφ (star a₀), fun ξ η => ksRhoY_adj φ hφ a₀ ξ η⟩⟩
+
+/-- **155II**, the representation `ϱ : 𝒜 → 𝒷ᵃ(Y)`. -/
+private noncomputable def ksRho : MIUMap 𝒜 (Ba ℬ (ksY φ hφ)) where
+  toFun := ksRhoBa φ hφ
+  map_one' := by
+    refine Subtype.ext (clm_ext_of_coe fun u => ?_)
+    show ksRhoY φ hφ 1 (ksEta φ hφ u) = ksEta φ hφ u
+    rw [ksRhoY_coe, ksRhoCLM_one]
+  map_mul' a a' := by
+    refine Subtype.ext (clm_ext_of_coe fun u => ?_)
+    show ksRhoY φ hφ (a * a') (ksEta φ hφ u)
+      = ksRhoY φ hφ a (ksRhoY φ hφ a' (ksEta φ hφ u))
+    rw [ksRhoY_coe, ksRhoY_coe, ksRhoY_coe, ksRhoCLM_mul]
+  map_zero' := by
+    refine Subtype.ext (clm_ext_of_coe fun u => ?_)
+    show ksRhoY φ hφ 0 (ksEta φ hφ u) = 0
+    rw [ksRhoY_coe, ksRhoCLM_zero]
+    show ((0 : NC (ksBInner φ hφ)) : Completion (NC (ksBInner φ hφ))) = 0
+    exact Completion.coe_zero
+  map_add' a a' := by
+    refine Subtype.ext (clm_ext_of_coe fun u => ?_)
+    show ksRhoY φ hφ (a + a') (ksEta φ hφ u)
+      = ksRhoY φ hφ a (ksEta φ hφ u) + ksRhoY φ hφ a' (ksEta φ hφ u)
+    rw [ksRhoY_coe, ksRhoY_coe, ksRhoY_coe, ksRhoCLM_add, ksEta_add]
+  commutes' r := by
+    refine Subtype.ext (clm_ext_of_coe fun u => ?_)
+    show ksRhoY φ hφ (algebraMap ℂ 𝒜 r) (ksEta φ hφ u)
+      = ((algebraMap ℂ (Ba ℬ (ksY φ hφ)) r).1 : ksY φ hφ →L[ℂ] ksY φ hφ) (ksEta φ hφ u)
+    rw [Algebra.algebraMap_eq_smul_one, Algebra.algebraMap_eq_smul_one, ksRhoY_coe,
+      ksRhoCLM_smul, ksRhoCLM_one, ksEta_smul, ba_smul_apply']
+    rfl
+  map_star' a := by
+    refine Subtype.ext ?_
+    have h1 : ModuleAdjointTo ℬ ⇑(ksRhoY φ hφ a) ⇑(ksRhoY φ hφ (star a)) :=
+      fun ξ η => ksRhoY_adj φ hφ a ξ η
+    have h2 : ModuleAdjointTo ℬ ⇑(ksRhoY φ hφ a)
+        ⇑((star (ksRhoBa φ hφ a) : Ba ℬ (ksY φ hφ)).1) := by
+      let _ : NormedSpace ℂ (ksY φ hφ) := NormedSpace.ofCore (CStarModule.normedSpaceCore ℬ)
+      exact baSubalgebra_star_spec (𝒷 := ℬ) (X := ksY φ hφ) (ksRhoBa φ hφ a)
+    have h4 : ((ksRhoBa φ hφ (star a) : Ba ℬ (ksY φ hφ)).1) = ksRhoY φ hφ (star a) := rfl
+    rw [h4]
+    exact DFunLike.coe_injective (moduleAdjointTo_unique (𝒜 := ℬ) _ _ _ h1 h2)
+
+
+private theorem continuous_inner_right' (x : X) :
+    Continuous (fun y : X => (inner ℬ x y : ℬ)) := by
+  have hl : LipschitzWith ‖x‖₊ (fun y : X => (inner ℬ x y : ℬ)) := by
+    refine LipschitzWith.of_dist_le_mul fun y y' => ?_
+    rw [dist_eq_norm, dist_eq_norm, ← CStarModule.inner_sub_right]
+    have hb : ‖(inner ℬ x (y - y') : ℬ)‖ ≤ ‖x‖ * ‖y - y'‖ := CStarModule.norm_inner_le X
+    simpa using hb
+  exact hl.continuous
+
+/-- `T : X → Y`, `x ↦ x ⊗ 1`, as a linear map into `X ⊙ 𝒜`. -/
+private noncomputable def ksTLM : X →ₗ[ℂ] NC (ksBInner φ hφ) where
+  toFun x := (x ⊗ₜ[ℂ] (1 : 𝒜) : X ⊗[ℂ] 𝒜)
+  map_add' x y := by
+    show ((x + y) ⊗ₜ[ℂ] (1 : 𝒜) : X ⊗[ℂ] 𝒜)
+      = (x ⊗ₜ[ℂ] (1 : 𝒜) : X ⊗[ℂ] 𝒜) + (y ⊗ₜ[ℂ] (1 : 𝒜) : X ⊗[ℂ] 𝒜)
+    rw [TensorProduct.add_tmul]
+  map_smul' c x := by
+    show ((c • x) ⊗ₜ[ℂ] (1 : 𝒜) : X ⊗[ℂ] 𝒜) = c • (x ⊗ₜ[ℂ] (1 : 𝒜) : X ⊗[ℂ] 𝒜)
+    rw [TensorProduct.smul_tmul']
+
+private theorem ksT_bound (x : X) :
+    (ksBInner φ hφ).norm (x ⊗ₜ[ℂ] (1 : 𝒜)) ≤ Real.sqrt ‖φ (1 : 𝒜)‖ * ‖x‖ := by
+  have hin : (ksBInner φ hφ).inner (x ⊗ₜ[ℂ] (1 : 𝒜)) (x ⊗ₜ[ℂ] (1 : 𝒜))
+      = (inner ℬ x ((φ (1 : 𝒜)).1 x) : ℬ) := by
+    show ksPair φ _ _ = _
+    rw [ksPair_tmul, star_one, one_mul]
+  have h1 : ‖(inner ℬ x ((φ (1 : 𝒜)).1 x) : ℬ)‖ ≤ ‖φ (1 : 𝒜)‖ * ‖x‖ ^ 2 := by
+    calc ‖(inner ℬ x ((φ (1 : 𝒜)).1 x) : ℬ)‖ ≤ ‖x‖ * ‖(φ (1 : 𝒜)).1 x‖ :=
+          CStarModule.norm_inner_le X
+      _ ≤ ‖x‖ * (‖φ (1 : 𝒜)‖ * ‖x‖) := by
+          gcongr
+          exact ba_apply_norm_le (φ (1 : 𝒜)) x
+      _ = ‖φ (1 : 𝒜)‖ * ‖x‖ ^ 2 := by ring
+  show Real.sqrt ‖(ksBInner φ hφ).inner (x ⊗ₜ[ℂ] (1 : 𝒜)) (x ⊗ₜ[ℂ] (1 : 𝒜))‖ ≤ _
+  rw [hin]
+  calc Real.sqrt ‖(inner ℬ x ((φ (1 : 𝒜)).1 x) : ℬ)‖
+      ≤ Real.sqrt (‖φ (1 : 𝒜)‖ * ‖x‖ ^ 2) := Real.sqrt_le_sqrt h1
+    _ = Real.sqrt ‖φ (1 : 𝒜)‖ * ‖x‖ := by
+        rw [Real.sqrt_mul (norm_nonneg _), Real.sqrt_sq (norm_nonneg _)]
+
+/-- **155II**, the map `T : X → Y`. -/
+private noncomputable def ksT : X →L[ℂ] ksY φ hφ :=
+  (Completion.toComplL : NC (ksBInner φ hφ) →L[ℂ] ksY φ hφ).comp
+    (LinearMap.mkContinuous (ksTLM φ hφ) (Real.sqrt ‖φ (1 : 𝒜)‖) (fun x => ksT_bound φ hφ x))
+
+private theorem ksT_apply (x : X) :
+    ksT φ hφ x = ksEta φ hφ (x ⊗ₜ[ℂ] (1 : 𝒜)) := rfl
+
+/-- `T* : Y → X`, `x ⊗ a ↦ φ(a) x`, on `X ⊙ 𝒜`. -/
+private noncomputable def ksTadjLM : (X ⊗[ℂ] 𝒜) →ₗ[ℂ] X :=
+  TensorProduct.lift <| LinearMap.mk₂ ℂ (fun (x : X) (a : 𝒜) => ((φ a).1 x : X))
+    (fun x y a => by rw [map_add])
+    (fun c x a => by rw [map_smul])
+    (fun x a a' => by rw [map_add, ba_add_apply])
+    (fun c x a => by rw [map_smul, ba_smul_apply])
+
+private theorem ksTadjLM_tmul (x : X) (a : 𝒜) :
+    ksTadjLM φ (x ⊗ₜ[ℂ] a) = (φ a).1 x := rfl
+
+private theorem ksTadj_pair (y : X) (u : X ⊗[ℂ] 𝒜) :
+    (inner ℬ y (ksTadjLM φ u) : ℬ) = (ksBInner φ hφ).inner (y ⊗ₜ[ℂ] (1 : 𝒜)) u := by
+  induction u using TensorProduct.induction_on with
+  | zero =>
+      rw [map_zero (ksTadjLM φ), CStarModule.inner_zero_right,
+        (ksBInner φ hφ).inner_zero_right]
+  | tmul x a =>
+      rw [ksTadjLM_tmul]
+      show _ = ksPair φ _ _
+      rw [ksPair_tmul, star_one, one_mul]
+  | add u v h1 h2 =>
+      rw [map_add (ksTadjLM φ) u v, CStarModule.inner_add_right, h1, h2,
+        (ksBInner φ hφ).inner_add_right]
+
+private theorem ksTadj_bound (u : X ⊗[ℂ] 𝒜) :
+    ‖ksTadjLM φ u‖ ≤ Real.sqrt ‖φ (1 : 𝒜)‖ * (ksBInner φ hφ).norm u := by
+  have h1 : ‖ksTadjLM φ u‖ ^ 2 = ‖(inner ℬ (ksTadjLM φ u) (ksTadjLM φ u) : ℬ)‖ :=
+    CStarModule.norm_sq_eq (A := ℬ)
+  rw [ksTadj_pair φ hφ (ksTadjLM φ u) u] at h1
+  have h3 : ‖(ksBInner φ hφ).inner (ksTadjLM φ u ⊗ₜ[ℂ] (1 : 𝒜)) u‖
+      ≤ (ksBInner φ hφ).norm (ksTadjLM φ u ⊗ₜ[ℂ] (1 : 𝒜)) * (ksBInner φ hφ).norm u :=
+    module_seminorm_1 _ _ _
+  have h4 := ksT_bound φ hφ (ksTadjLM φ u)
+  have hnn : (0 : ℝ) ≤ (ksBInner φ hφ).norm u := Real.sqrt_nonneg _
+  have hsq : (0 : ℝ) ≤ Real.sqrt ‖φ (1 : 𝒜)‖ := Real.sqrt_nonneg _
+  rcases eq_or_lt_of_le (norm_nonneg (ksTadjLM φ u)) with h | h
+  · rw [← h]
+    positivity
+  · nlinarith [h1, h3, h4]
+
+/-- **155II**, the adjoint `T* : Y → X`. -/
+private noncomputable def ksTadjCLM : NC (ksBInner φ hφ) →L[ℂ] X :=
+  LinearMap.mkContinuous (ksTadjLM φ : NC (ksBInner φ hφ) →ₗ[ℂ] X)
+    (Real.sqrt ‖φ (1 : 𝒜)‖) (fun u => ksTadj_bound φ hφ u)
+
+private noncomputable def ksTadj : ksY φ hφ →L[ℂ] X := by
+  letI : NormedSpace ℂ X := NormedSpace.ofCore (CStarModule.normedSpaceCore ℬ)
+  exact clmExtend (ksTadjCLM φ hφ)
+
+private theorem ksTadj_coe (u : NC (ksBInner φ hφ)) :
+    ksTadj φ hφ (ksEta φ hφ u) = ksTadjCLM φ hφ u := by
+  letI : NormedSpace ℂ X := NormedSpace.ofCore (CStarModule.normedSpaceCore ℬ)
+  show clmExtend (ksTadjCLM φ hφ) (u : Completion (NC (ksBInner φ hφ))) = _
+  rw [clmExtend_coe]
+
+private theorem ksT_adjointTo : ModuleAdjointTo ℬ ⇑(ksT φ hφ) ⇑(ksTadj φ hφ) := by
+  intro x ξ
+  refine Completion.induction_on (p := fun ξ =>
+    (inner ℬ (ksT φ hφ x) ξ : ℬ) = inner ℬ x (ksTadj φ hφ ξ)) ξ
+    (isClosed_eq (continuous_ncInner_right _ _)
+      ((continuous_inner_right' x).comp (ksTadj φ hφ).continuous)) ?_
+  intro u
+  show (inner ℬ (ksT φ hφ x) (ksEta φ hφ u) : ℬ) = inner ℬ x (ksTadj φ hφ (ksEta φ hφ u))
+  have h1 : (inner ℬ (ksT φ hφ x) (ksEta φ hφ u) : ℬ)
+      = (ksBInner φ hφ).inner (x ⊗ₜ[ℂ] (1 : 𝒜)) u := ksEta_inner φ hφ _ u
+  have h2 : (inner ℬ x (ksTadj φ hφ (ksEta φ hφ u)) : ℬ)
+      = (ksBInner φ hφ).inner (x ⊗ₜ[ℂ] (1 : 𝒜)) u := by
+    rw [ksTadj_coe]
+    exact ksTadj_pair φ hφ x u
+  rw [h1, h2]
+
+
+include hφ in
+/-- **155II**: the KSGNS dilation built above. -/
+private theorem ksgns_aux :
+    ∃ (Y : Type u) (_ : NormedAddCommGroup Y) (_ : Module ℂ Y)
+      (_ : SMul ℬ Y) (_ : CStarModule ℬ Y) (_ : CompleteSpace Y)
+      (ϱ : MIUMap 𝒜 (Ba ℬ Y)) (T : X →L[ℂ] Y) (T' : Y →L[ℂ] X),
+      ModuleAdjointTo ℬ ⇑T ⇑T' ∧
+      ∀ a : 𝒜, (φ a).1 = T'.comp (((ϱ a).1).comp T) := by
+  refine ⟨ksY φ hφ, inferInstance, inferInstance, inferInstance, inferInstance, inferInstance,
+    ksRho φ hφ, ksT φ hφ, ksTadj φ hφ, ksT_adjointTo φ hφ, fun a => ?_⟩
+  refine ContinuousLinearMap.ext fun x => ?_
+  show (φ a).1 x = ksTadj φ hφ ((ksRho φ hφ a).1 (ksT φ hφ x))
+  have h1 : (ksRho φ hφ a).1 (ksT φ hφ x) = ksEta φ hφ (x ⊗ₜ[ℂ] (a * 1)) :=
+    ksRhoY_coe φ hφ a (x ⊗ₜ[ℂ] (1 : 𝒜))
+  have h2 : ksTadj φ hφ (ksEta φ hφ (x ⊗ₜ[ℂ] (a * 1))) = (φ (a * 1)).1 x :=
+    ksTadj_coe φ hφ (x ⊗ₜ[ℂ] (a * 1))
+  rw [h1, h2, mul_one]
+
+end Assembly
+
+end KSGNS
+
+
 /-- **155II** (dils.tex:3849, Theorem (KSGNS)): for a cp-map
 `φ : 𝒜 → ℬᵃ(X)`, with `𝒜`, `ℬ` C*-algebras and `X` a Hilbert ℬ-module,
 there are a Hilbert ℬ-module `Y`, an miu-map `ϱ : 𝒜 → ℬᵃ(Y)` and an
@@ -2295,7 +3370,7 @@ theorem ksgns {𝒜 ℬ : Type u}
       (ϱ : MIUMap 𝒜 (Ba ℬ Y)) (T : X →L[ℂ] Y) (T' : Y →L[ℂ] X),
       ModuleAdjointTo ℬ ⇑T ⇑T' ∧
       ∀ a : 𝒜, (φ a).1 = T'.comp (((ϱ a).1).comp T) :=
-  sorry
+  ksgns_aux φ hφ
 
 /-! ## Parsec 1560: injectivity of the Paschke representation
 

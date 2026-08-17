@@ -67,7 +67,6 @@ dils_examples_pure_1|costed||170II.1: 171VII is now proved; what is left is the 
 ess_uniq_pur|awaiting-ruling||QUESTIONS B12: false without a dimension hypothesis, and which of three repairs is undecided
 ext_tensor_ketbra_dense|awaiting-ruling||QUESTIONS D6: our net form is false; the thesis's claim is proved as ext_tensor_ketbra_uwDense
 h_is_corner_for_unital_map|open||its recorded blocker existence_paschke is now proved, so 169V needs re-analysis; not attempted
-ksgns|costed||155II is Kasparov KSGNS, cited with no proof, so it is a construction and cross-checks nothing; blocked in practice on a NORM completion of a semi-inner-product Hilbert C*-module, which neither the tree (dils_completion is the ultranorm one and needs a von Neumann B) nor Mathlib has; ~1200-1600 lines, 2-3 sessions, of which the completion is reusable
 ncp_extreme_paschke|blocked|paschke_correspondence_surjective|172III needs the 157IV correspondence and 170II.2
 paschke_corner|open||its blockers existence_paschke and 154III.5 are now both proved; unblocked but not yet attempted
 paschke_correspondence_embedding|costed||157IV.2, ~250 lines: run on the concrete module using ordersep and ultranorm density, then transport

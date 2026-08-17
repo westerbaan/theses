@@ -19846,3 +19846,161 @@ exactly what the device consumes.
 Nothing for ERRATA (the thesis cites a true theorem and is right to) and
 nothing for QUESTIONS.  `docs/why-open.csv`: nine rows rewritten.
 `docs/AProc-survey.md`: session note added, headline unchanged at 21.
+
+## Session 83 — `B/Dils`: **155II `ksgns` is CLOSED and `Paschke.lean` is FINISHED**; the norm completion of a semi-inner-product Hilbert C*-module now exists in the tree (worker on `Theses/B/Dils/`)
+
+`B/Dils` **11 → 10**.  Per file, from `lake build`'s ``declaration uses
+`sorry` `` warnings against freshly rebuilt oleans: **`Paschke` 1 → 0**,
+Kaplansky 4, SelfDual 3, Pure 2, Stinespring 1, HilbertModules 0,
+SelfDualCompletion 0.  `Paschke.lean` and `Pure.lean` each run through `lean`
+individually with **0 errors**; `lake build Theses.B.Dils.Pure` completes
+successfully, so nothing downstream broke.  `#print axioms ksgns` →
+`[propext, Classical.choice, Quot.sound]`.  **+1010 lines, all in
+`Paschke.lean`**, all `private` except the theorem itself.
+
+### 1. The costing was about twice too high, for two separate reasons
+
+Session 80 costed 155II at **~1200–1600 lines over 2–3 sessions**, in three
+parts.  It closed in one session at ~1010 lines, and both of the two big
+parts came in under estimate:
+
+* **Part (i), positivity of the Gram form, does *not* need
+  `Mₙ(𝒷ᵃ(X)) ≅ 𝒷ᵃ(Xⁿ)`** (which is indeed not in the tree).  The tree's
+  `IsCompletelyPositiveMap` (**10II**, `A/CStar/Basic.lean:1304`) is the
+  *sesquilinear* form of complete positivity, and **34IV** `cp_iff`
+  (`A/CStar/Matrices.lean:1310`) converts it into positivity of the matrix
+  `[φ(aᵢ* aⱼ)]` over the C*-algebra `𝒷ᵃ(X)` (**143IV** gives `Ba ℬ X` its
+  `CStarAlgebra`, `PartialOrder` and `StarOrderedRing` instances, and
+  `CStarMatrix (Fin n) (Fin n) (Ba ℬ X)` is then a C*-algebra off the shelf).
+  Writing that matrix as `star Y * Y`
+  (`CStarAlgebra.nonneg_iff_eq_star_mul_self`, stated through an abstract `M`
+  because typeclass search cannot see the CFC instances on `CStarMatrix` —
+  the same dodge as `Matrices.lean`'s private `exists_star_mul_self`) turns
+  `∑ᵢⱼ ⟪xᵢ, φ(aᵢ* aⱼ) xⱼ⟫` into `∑ₖ ⟪∑ᵢ Yₖᵢxᵢ, ∑ⱼ Yₖⱼxⱼ⟫`, which is a sum of
+  self-inner-products.  **~60 lines, not the several hundred the amplification
+  route would have cost.**
+* **Part (ii), the norm completion, is ~300 lines, not ~600**, because
+  **142III/142V** (`module_CS`, `module_seminorm_1`, `module_seminorm_2` in
+  `HilbertModules.lean`) already give Cauchy–Schwarz and the seminorm axioms
+  for an arbitrary `BInner ℬ V` over a *C\*-algebra* `ℬ` — the analytic core.
+  What was missing was only the plumbing, and Mathlib supplies more of it than
+  the costing assumed: `AddGroupSeminorm.toSeminormedAddCommGroup` makes `V`
+  a seminormed space, and `UniformSpace.Completion` of a *seminormed* group is
+  already a `NormedAddCommGroup` (`Analysis/Normed/Group/Completion.lean:40`),
+  i.e. **the Hausdorff completion quotients the null vectors out by itself** —
+  there is no quotient step to build, contrary to the costing's "quotient by
+  null vectors plus `UniformSpace.Completion`".
+
+Only part (iii) (`ϱ`, `T`, `T*`) came in on estimate, at ~350 lines.
+
+### 2. The route, for checking against Kasparov
+
+There is **no printed proof** — dils.tex 155II states Kasparov's theorem and
+cites it, and 155III explicitly leaves the universal property open — so this
+is a construction written from scratch and it **cross-checks nothing in the
+thesis**.  The route, in the order it appears in `Paschke.lean` (all names
+`private`):
+
+1. `ksgns_gram_nonneg` — part (i) above.
+2. `NC B` (`V` under the seminorm `‖x‖ = ‖[x,x]‖^½`) and
+   `Completion (NC B)` with a full `CStarModule ℬ` structure: `clmExtend`
+   extends a bounded linear map into a Banach space to the completion;
+   `ncIpP B w` extends `[w, ·]`; `ncIpQ B ξ` is `w ↦ star (ncIpP B w ξ)`,
+   which is ℂ-*linear* in `w` (the two conjugations cancel), and
+   `ncInner B ξ η := clmExtend (ncIpQ B ξ) η`.  The `CStarModule` axioms are
+   then density arguments; `star_inner` is a *nested* induction (first slot
+   inside second) so that only separate continuity in each slot is needed,
+   and joint continuity is proved by hand for the diagonal
+   (`continuous_ncInner_self`).
+3. `IsLinearAction B` — a `Prop`-class recording that the ℬ-action is additive
+   and commutes with ℂ.  For a *definite* inner product both follow from the
+   axioms, but for the semidefinite `BInner` of the construction they do not,
+   and the instances on the completion need them.
+4. `ksBInner φ hφ` — the form `⟨x ⊗ a, x' ⊗ a'⟩ = ⟪x, φ(a* a') x'⟫` on
+   `X ⊗[ℂ] 𝒜`.  **It is built with `TensorProduct.liftAddHom`, not with a
+   semilinear `TensorProduct.lift`**: the form is conjugate-linear in *both*
+   arguments of the first slot, hence ℂ-*balanced* (`f (c•x) a = f x (c•a)`),
+   which is exactly `liftAddHom`'s hypothesis.  This is the analogue for a
+   module without a `star` of `ptensBInner`'s `star`-on-the-first-argument
+   trick (which is unavailable here, `X` having no involution).
+5. `ϱ(a₀)(x ⊗ a) = x ⊗ (a₀a)`, bounded by `‖a₀‖` because
+   `‖a₀‖²·1 - a₀*a₀ = c*c` (`IsSelfAdjoint.le_algebraMap_norm_self`) makes
+   `‖a₀‖²⟨u,u⟩ - ⟨ϱu,ϱu⟩` the Gram form of the family `(c aᵢ)`, positive by
+   step 1 again; `T x = x ⊗ 1`, bounded by `‖φ(1)‖^½`; `T*(x ⊗ a) = φ(a)x`,
+   bounded by the standard `‖T*u‖² = ‖⟨T*u ⊗ 1, u⟩‖ ≤ ‖T‖‖T*u‖‖u‖` argument;
+   and `T* ϱ(a) T = φ(a)` on the nose, since `a·1 = a`.
+
+**What a checker should look at**: the statement is Kasparov's theorem
+*without* its minimality/universality clause (`ϱ(𝒜)TX` need not be dense in
+`Y` — our `Y` is the closure of `ϱ(𝒜)TX` by construction, but that is not
+claimed), and without normality.  Nothing here depends on `X` being full or
+on `𝒜` being separable.  `[CompleteSpace X]` **is** used (it is what makes
+`𝒷ᵃ(X)` a C*-algebra, via 143IV, and hence what makes `cp_iff` applicable);
+no hypothesis of the statement is unused.
+
+### 3. Reusable output
+
+All `private` in `Paschke.lean`, and worth promoting if a second consumer
+appears:
+
+* `clmExtend` / `clmExtend_coe` / `clmExtend_norm_le` / `clm_ext_of_coe` — the
+  extension of a bounded linear map to `UniformSpace.Completion`, with its
+  norm bound and an extensionality principle.  Nothing in Mathlib does this
+  for `ContinuousLinearMap`s (`Completion.extension₂` wants uniform continuity
+  in two variables, which a bilinear map does not have).
+* **The norm completion itself** (`NC`, `ncInner`, `ncSMul`, `ncCStarModule`):
+  for any C*-algebra `ℬ` and any `BInner ℬ V` with `IsLinearAction`,
+  `Completion (NC B)` is a Hilbert ℬ-module and `↑ : V → Completion (NC B)`
+  preserves the inner product with dense range.  **This is the norm analogue
+  of 150II `dils_completion`** and needs no von Neumann algebra; it is the
+  piece the chapter did not have.
+* `ba_add_apply` / `ba_smul_apply` / `ba_sub_apply` / `ba_apply_norm_le` /
+  `ba_star_inner` — the missing application API for `Ba 𝒷 X` (`star` is the
+  module adjoint; the `Ba`-norm dominates the action).
+
+### 4. Traps met, for the next worker
+
+* **`NC B` is a type synonym `def NC (B) : Type v := V`, and `rw` will not see
+  through it.**  A lemma stated with a binder `(u : X ⊗[ℂ] 𝒜)` does not
+  rewrite a goal whose corresponding term is typed `NC B` (the instance
+  arguments inside `inner`, `0`, `+` are then *syntactically* different
+  terms), and vice versa.  Every such failure in this session was fixed by
+  restating the lemma at the type the goal uses, or by using `exact`/`have`
+  (which work up to defeq) instead of `rw`.  Do not be tempted to make the
+  synonym `abbrev`: instance search would then offer the seminorm on the bare
+  `V` with `B` a metavariable.
+* **`ContinuousLinearMap.coe_injective` is about the coercion to `LinearMap`,
+  not to functions.**  For `⇑f = ⇑g → f = g` use `DFunLike.coe_injective`.
+  This produced a spectacularly confusing "type mismatch" between two things
+  both displayed as `↑`.
+* **`IsBoundedBilinearMap.continuous` composed with the diagonal blew the
+  heartbeat limit** (1M) at `isDefEq`, twice, apparently on the product's
+  normed-vs-uniform topology paths.  Proving continuity of `ξ ↦ ⟨ξ,ξ⟩` by hand
+  from `‖⟨ξ,η⟩‖ ≤ ‖ξ‖‖η‖` takes 20 lines and elaborates instantly.
+* `NormedSpace ℂ X` is not an instance for a `CStarModule ℬ X` (Mathlib
+  deliberately does not register it), so any *definition* whose elaboration
+  needs it — here `clmExtend` into `X` — must carry
+  `letI : NormedSpace ℂ X := NormedSpace.ofCore (CStarModule.normedSpaceCore ℬ)`
+  in its body, not only in proofs.
+* The new `local instance` `SMul ℬ (X ⊗[ℂ] 𝒜)` overlaps in head symbol with
+  `Paschke.lean`'s existing `ptensSMul : SMul ℬ (𝒜 ⊗[ℂ] ℬ)`; it is declared
+  *after* everything that uses `ptensSMul` and requires a `CStarModule ℬ X`
+  that the later sections cannot supply, so resolution falls through.  Keep it
+  that way.
+
+### 5. What in the brief turned out to be wrong
+
+* **The ~1200–1600-line, 2–3-session costing was about double** — see §1; both
+  the "needs `Mₙ(𝒷ᵃ(X)) ≅ 𝒷ᵃ(Xⁿ)`" and the "quotient-by-null-vectors, ~600
+  lines" halves of it were avoidable, the first because of `cp_iff` and the
+  second because Mathlib's completion of a seminormed group is already
+  Hausdorff.
+* Everything else in the brief held: `dils_completion` is indeed unusable here
+  (von Neumann `ℬ`), Mathlib's `Analysis/CStarAlgebra/Module/` still has no
+  completion, `polar_decomposition` is still shadowed, deeply nested
+  semilinear `TensorProduct.lift`s are still to be avoided (this session
+  avoided them entirely, via `liftAddHom`), and the printed `T : Y → X` of
+  dils.tex 155II is the mirroring, not an erratum.
+
+Nothing for ERRATA and nothing for QUESTIONS.  `docs/why-open.csv`: the
+`ksgns` row is deleted (closed).

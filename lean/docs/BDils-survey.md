@@ -1331,3 +1331,44 @@ theory is ever needed elsewhere.
 `HilbertModules.lean`'s Hilbert-module version (**80IV**); the A/VN one must
 be written `Theses.A.VN.polar_decomposition`.  A scratch file that does not
 open the namespace will not show this.
+
+## Session 83 — **155II `ksgns` is closed and `Paschke.lean` is finished**
+
+`B/Dils` **11 → 10** (HilbertModules 0, SelfDualCompletion 0, **Paschke 0**,
+Kaplansky 4, SelfDual 3, Pure 2, Stinespring 1; `Paschke.lean` and `Pure.lean`
+each run through `lean` individually with **0 errors**, `lake build` of the
+chain completes).  Axiom-clean.  +1010 lines, all `private` in `Paschke.lean`
+except the theorem.  Full account in PROVING-LOG session 83; three things a
+successor needs:
+
+1. **The tree now has a *norm* completion of a semi-inner-product Hilbert
+   C\*-module** — `NC B` / `Completion (NC B)` with a full `CStarModule ℬ`
+   structure, for any C\*-algebra `ℬ` and any `BInner ℬ V` whose action is
+   ℂ-linear (`IsLinearAction`).  It is the norm analogue of **150II**
+   `dils_completion` and needs no von Neumann algebra.  It is `private` in
+   `Paschke.lean`; **promote it if a second consumer appears**.  Along with it
+   come `clmExtend` (extend a bounded linear map to a completion, with its
+   norm bound and an extensionality principle — Mathlib has no such thing for
+   `ContinuousLinearMap`s) and the missing application API for `Ba 𝒷 X`
+   (`ba_add_apply`, `ba_smul_apply`, `ba_sub_apply`, `ba_apply_norm_le`,
+   `ba_star_inner`).
+2. **The session-80 costing (~1200–1600 lines, 2–3 sessions) was about
+   double.**  Positivity of the Gram form does *not* need
+   `Mₙ(𝒷ᵃ(X)) ≅ 𝒷ᵃ(Xⁿ)`: the tree's `IsCompletelyPositiveMap` is the
+   sesquilinear form of complete positivity and **34IV** `cp_iff` turns it
+   into positivity of `[φ(aᵢ* aⱼ)]` over the C\*-algebra `𝒷ᵃ(X)`, ~60 lines.
+   And the completion needs no quotient step: `UniformSpace.Completion` of a
+   *seminormed* group is already a `NormedAddCommGroup`, i.e. Hausdorff.
+3. **A `BInner` on an algebraic tensor product does not have to be a
+   semilinear `TensorProduct.lift`.**  A sesquilinear form is
+   conjugate-linear in *both* arguments of its first slot, hence ℂ-*balanced*,
+   which is exactly the hypothesis of `TensorProduct.liftAddHom`.  This is the
+   analogue, for a factor with no involution, of `ptensBInner`'s
+   `star`-on-the-first-argument trick, and it avoids the nested-lift heartbeat
+   problem entirely.
+
+⚠️ `NC B` is a type synonym and **`rw` does not see through it**: a lemma
+stated with a binder at `X ⊗[ℂ] 𝒜` will not rewrite a goal whose term is
+typed `NC B`.  Restate at the type the goal uses, or use `exact`/`have`.
+Also: `ContinuousLinearMap.coe_injective` is about the coercion to
+`LinearMap`; for `⇑f = ⇑g → f = g` use `DFunLike.coe_injective`.
