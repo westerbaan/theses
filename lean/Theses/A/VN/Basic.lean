@@ -5073,6 +5073,214 @@ section Measure
 
 variable {A : Type u} [CStarAlgebra A] [PartialOrder A] [StarOrderedRing A]
 
+/-- Auxiliary: a positive functional is real on self-adjoint elements (the
+same argument as `npFunctional_im_eq_zero`, but for a bare positive linear
+map, which is what **51VII** is given). -/
+private theorem positiveLinearMap_im_eq_zero (τ : A →ₚ[ℂ] ℂ) {a : A}
+    (ha : IsSelfAdjoint a) : (τ a).im = 0 := by
+  have h := map_star τ a
+  rw [ha.star_eq] at h
+  exact Complex.conj_eq_iff_im.mp h.symm
+
+/-- The construction of **51VIII** (vn.tex:1596, Proof), which yields both
+parts of **51VII** at once: a bounded directed set `D` of self-adjoint
+elements has a supremum, and `τ` preserves it.
+
+The thesis's argument verbatim.  Write `M = ⋁_{d ∈ D} τ(d)` (a supremum in
+`ℝ`, since `τ` is real and monotone on `sa(A)` and `D` is bounded).  Pick an
+ascending `a₁ ≤ a₂ ≤ ⋯` in `D` with `⋁ₙ τ(aₙ) = M`, and let `s = ⋁ₙ aₙ` be
+the supremum supplied by the hypothesis.  Any upper bound of `D` bounds the
+`aₙ`, so `s` is below it; the work is that `s` is an upper bound of `D` at
+all.  Given `b ∈ D`, directedness produces an ascending `e₀ ≤ e₁ ≤ ⋯` in `D`
+with `b ≤ e₀` and `aₙ ≤ eₙ`; then `s ≤ t := ⋁ₙ eₙ` while
+`M = ⋁ₙ τ(aₙ) = τ(s) ≤ τ(t) = ⋁ₙ τ(eₙ) ≤ M`, so `τ(t − s) = 0` and
+faithfulness gives `t = s`, whence `b ≤ e₀ ≤ t = s`.  Normality falls out of
+the same chain: `τ(s) = M = ⋁_{d ∈ D} τ(d)`. -/
+private theorem countably_normal_key (τ : A →ₚ[ℂ] ℂ)
+    (hfaith : ∀ a : A, 0 ≤ a → τ a = 0 → a = 0)
+    (hsup : ∀ a : ℕ → selfAdjoint A, Monotone a → BddAbove (Set.range a) →
+      ∃ s : selfAdjoint A, IsLUB (Set.range a) s ∧
+        IsLUB (Set.range fun n => τ (a n : A)) (τ (s : A)))
+    (D : Set (selfAdjoint A)) (hne : D.Nonempty) (hdir : DirectedOn (· ≤ ·) D)
+    (hbdd : BddAbove D) :
+    ∃ s : selfAdjoint A, IsLUB D s ∧
+      IsLUB ((fun d : selfAdjoint A => τ (d : A)) '' D) (τ (s : A)) := by
+  classical
+  -- `f` is `τ` read as a real-valued monotone function on `sa(A)`
+  set f : selfAdjoint A → ℝ := fun d => (τ (d : A)).re
+  have hτre : ∀ d : selfAdjoint A, (τ (d : A) : ℂ) = ((f d : ℝ) : ℂ) := by
+    intro d
+    exact (Complex.conj_eq_iff_re.mp (by
+      rw [Complex.conj_eq_iff_im]; exact positiveLinearMap_im_eq_zero τ d.2)).symm
+  have hfmono : ∀ d e : selfAdjoint A, d ≤ e → f d ≤ f e := by
+    intro d e h
+    exact (Complex.le_def.mp (OrderHomClass.mono τ (Subtype.coe_le_coe.mpr h))).1
+  -- `M = ⋁_{d ∈ D} τ(d)` in `ℝ`
+  obtain ⟨u, hu⟩ := hbdd
+  obtain ⟨d₀, hd₀⟩ := hne
+  have hSne : (f '' D).Nonempty := ⟨f d₀, ⟨d₀, hd₀, rfl⟩⟩
+  have hSbdd : BddAbove (f '' D) := by
+    refine ⟨f u, ?_⟩
+    rintro _ ⟨d, hd, rfl⟩
+    exact hfmono d u (hu hd)
+  obtain ⟨M, hM⟩ : ∃ M : ℝ, IsLUB (f '' D) M := ⟨_, Real.isLUB_sSup hSne hSbdd⟩
+  have hfle : ∀ d ∈ D, f d ≤ M := fun d hd => hM.1 ⟨d, hd, rfl⟩
+  -- a sequence in `D` whose `τ`-values approach `M` has a supremum of value `M`
+  have hval : ∀ e : ℕ → selfAdjoint A, (∀ n, e n ∈ D) →
+      (∀ n : ℕ, M - 1 / (n + 1) < f (e n)) → ∀ s : selfAdjoint A,
+      IsLUB (Set.range fun n => τ (e n : A)) (τ (s : A)) → f s = M := by
+    intro e heD hegt s hs
+    have himg : ∀ w ∈ Set.range fun n => τ (e n : A), w.im = 0 := by
+      rintro _ ⟨n, rfl⟩
+      exact positiveLinearMap_im_eq_zero τ (e n).2
+    have hre := isLUB_re_of_isLUB himg hs
+    have himage : Complex.re '' (Set.range fun n => τ (e n : A))
+        = Set.range fun n => f (e n) := by
+      ext r
+      constructor
+      · rintro ⟨_, ⟨n, rfl⟩, rfl⟩; exact ⟨n, rfl⟩
+      · rintro ⟨n, rfl⟩; exact ⟨τ (e n : A), ⟨n, rfl⟩, rfl⟩
+    rw [himage] at hre
+    refine le_antisymm (hre.2 ?_) ?_
+    · rintro _ ⟨n, rfl⟩
+      exact hfle _ (heD n)
+    · by_contra hlt
+      push_neg at hlt
+      obtain ⟨n, hn⟩ := exists_nat_one_div_lt (sub_pos.mpr hlt)
+      have h1 : M - 1 / (n + 1) < f (e n) := hegt n
+      have h2 : f (e n) ≤ f s := hre.1 ⟨n, rfl⟩
+      have h3 : (1 : ℝ) / (n + 1) < M - f s := hn
+      linarith
+  -- directedness, as a choice function
+  obtain ⟨g, hg⟩ : ∃ g : selfAdjoint A → selfAdjoint A → selfAdjoint A,
+      ∀ x z : selfAdjoint A, x ∈ D → z ∈ D →
+        g x z ∈ D ∧ x ≤ g x z ∧ z ≤ g x z := by
+    have hpair : ∀ x z : selfAdjoint A, ∃ y : selfAdjoint A,
+        x ∈ D → z ∈ D → y ∈ D ∧ x ≤ y ∧ z ≤ y := by
+      intro x z
+      by_cases hx : x ∈ D
+      · by_cases hz : z ∈ D
+        · obtain ⟨w, hwD, h1, h2⟩ := hdir x hx z hz
+          exact ⟨w, fun _ _ => ⟨hwD, h1, h2⟩⟩
+        · exact ⟨x, fun _ h => absurd h hz⟩
+      · exact ⟨x, fun h _ => absurd h hx⟩
+    choose g hg using hpair
+    exact ⟨g, fun x z hx hz => hg x z hx hz⟩
+  -- choose `cₙ ∈ D` with `τ(cₙ) > M − 1/(n+1)`
+  obtain ⟨c, hcD, hcgt⟩ : ∃ c : ℕ → selfAdjoint A,
+      (∀ n, c n ∈ D) ∧ ∀ n : ℕ, M - 1 / (n + 1) < f (c n) := by
+    have hex : ∀ n : ℕ, ∃ d : selfAdjoint A, d ∈ D ∧ M - 1 / (n + 1) < f d := by
+      intro n
+      have hpos : (0 : ℝ) < 1 / (n + 1) := by positivity
+      obtain ⟨r, hrS, hr⟩ := (lt_isLUB_iff hM).mp (by linarith : M - 1 / (n + 1) < M)
+      obtain ⟨d, hd, rfl⟩ := hrS
+      exact ⟨d, hd, hr⟩
+    choose c hcD hcgt using hex
+    exact ⟨c, hcD, hcgt⟩
+  -- the ascending sequence `a` in `D` with `⋁ₙ τ(aₙ) = M`
+  obtain ⟨a, ha0, hasucc⟩ : ∃ a : ℕ → selfAdjoint A,
+      a 0 = c 0 ∧ ∀ n, a (n + 1) = g (a n) (c (n + 1)) :=
+    ⟨fun n => Nat.rec (c 0) (fun k prev => g prev (c (k + 1))) n, rfl, fun _ => rfl⟩
+  have haD : ∀ n, a n ∈ D := by
+    intro n
+    induction n with
+    | zero => rw [ha0]; exact hcD 0
+    | succ n ih => rw [hasucc n]; exact (hg _ _ ih (hcD (n + 1))).1
+  have hastep : ∀ n, a n ≤ a (n + 1) := by
+    intro n
+    rw [hasucc n]
+    exact (hg _ _ (haD n) (hcD (n + 1))).2.1
+  have hamono : Monotone a := monotone_nat_of_le_succ hastep
+  have hca : ∀ n, c n ≤ a n := by
+    intro n
+    cases n with
+    | zero => rw [ha0]
+    | succ n => rw [hasucc n]; exact (hg _ _ (haD n) (hcD (n + 1))).2.2
+  have hagt : ∀ n : ℕ, M - 1 / (n + 1) < f (a n) := fun n =>
+    lt_of_lt_of_le (hcgt n) (hfmono _ _ (hca n))
+  have habdd : BddAbove (Set.range a) := by
+    refine ⟨u, ?_⟩
+    rintro _ ⟨n, rfl⟩
+    exact hu (haD n)
+  obtain ⟨s, hslub, hsτ⟩ := hsup a hamono habdd
+  have hfs : f s = M := hval a haD hagt s hsτ
+  -- the crux: `s` is an upper bound of `D`
+  have hub : ∀ b ∈ D, b ≤ s := by
+    intro b hb
+    obtain ⟨e, he0, hesucc⟩ : ∃ e : ℕ → selfAdjoint A,
+        e 0 = g b (a 0) ∧ ∀ n, e (n + 1) = g (e n) (a (n + 1)) :=
+      ⟨fun n => Nat.rec (g b (a 0)) (fun k prev => g prev (a (k + 1))) n, rfl,
+        fun _ => rfl⟩
+    have heD : ∀ n, e n ∈ D := by
+      intro n
+      induction n with
+      | zero => rw [he0]; exact (hg _ _ hb (haD 0)).1
+      | succ n ih => rw [hesucc n]; exact (hg _ _ ih (haD (n + 1))).1
+    have hestep : ∀ n, e n ≤ e (n + 1) := by
+      intro n
+      rw [hesucc n]
+      exact (hg _ _ (heD n) (haD (n + 1))).2.1
+    have hemono : Monotone e := monotone_nat_of_le_succ hestep
+    have hae : ∀ n, a n ≤ e n := by
+      intro n
+      cases n with
+      | zero => rw [he0]; exact (hg _ _ hb (haD 0)).2.2
+      | succ n => rw [hesucc n]; exact (hg _ _ (heD n) (haD (n + 1))).2.2
+    have hegt : ∀ n : ℕ, M - 1 / (n + 1) < f (e n) := fun n =>
+      lt_of_lt_of_le (hagt n) (hfmono _ _ (hae n))
+    have hebdd : BddAbove (Set.range e) := by
+      refine ⟨u, ?_⟩
+      rintro _ ⟨n, rfl⟩
+      exact hu (heD n)
+    obtain ⟨t, htlub, htτ⟩ := hsup e hemono hebdd
+    have hft : f t = M := hval e heD hegt t htτ
+    -- `s ≤ t` and `τ(t − s) = 0`, so `t = s` by faithfulness
+    have hst : s ≤ t := hslub.2 (by
+      rintro _ ⟨n, rfl⟩
+      exact le_trans (hae n) (htlub.1 ⟨n, rfl⟩))
+    have hzero : (t : A) - (s : A) = 0 := by
+      refine hfaith _ (sub_nonneg.mpr (Subtype.coe_le_coe.mpr hst)) ?_
+      rw [map_sub, hτre t, hτre s, hft, hfs, sub_self]
+    have hts : t = s := by
+      refine Subtype.ext ?_
+      exact sub_eq_zero.mp hzero
+    calc b ≤ e 0 := by rw [he0]; exact (hg _ _ hb (haD 0)).2.1
+      _ ≤ t := htlub.1 ⟨0, rfl⟩
+      _ = s := hts
+  refine ⟨s, ⟨hub, ?_⟩, ?_, ?_⟩
+  · intro v hv
+    exact hslub.2 (by rintro _ ⟨n, rfl⟩; exact hv (haD n))
+  · rintro _ ⟨d, hd, rfl⟩
+    show (τ (d : A) : ℂ) ≤ τ (s : A)
+    rw [hτre d, hτre s, hfs]
+    exact RCLike.ofReal_le_ofReal.mpr (hfle d hd)
+  · intro z hz
+    have hz₀ : τ (d₀ : A) ≤ z := hz ⟨d₀, hd₀, rfl⟩
+    have hzim : z.im = 0 := by
+      have h := Complex.le_def.mp hz₀
+      rw [← h.2]
+      exact positiveLinearMap_im_eq_zero τ d₀.2
+    rw [hτre s, hfs, Complex.le_def]
+    refine ⟨?_, by rw [Complex.ofReal_im, hzim]⟩
+    refine hM.2 ?_
+    rintro _ ⟨d, hd, rfl⟩
+    have hcd := Complex.le_def.mp (hz ⟨d, hd, rfl⟩)
+    simp only [hτre d, Complex.ofReal_re] at hcd
+    exact hcd.1
+
+/-- **51VII**.2 as a private lemma, so that **51VII**.1 below can use it (the
+faithfulness clause of Kadison's definition needs `τ` to be *normal* before
+it is an np-functional). -/
+private theorem countably_normal_normal (τ : A →ₚ[ℂ] ℂ)
+    (hfaith : ∀ a : A, 0 ≤ a → τ a = 0 → a = 0)
+    (hsup : ∀ a : ℕ → selfAdjoint A, Monotone a → BddAbove (Set.range a) →
+      ∃ s : selfAdjoint A, IsLUB (Set.range a) s ∧
+        IsLUB (Set.range fun n => τ (a n : A)) (τ (s : A))) :
+    PreservesDirSups ⇑τ := by
+  intro D s hne hdir hlub
+  obtain ⟨s', hs', hτ⟩ := countably_normal_key τ hfaith hsup D hne hdir ⟨s, hlub.1⟩
+  rwa [hs'.unique hlub] at hτ
+
 /-- **51VII** (vn.tex:1581, Proposition), part 1: a C*-algebra `A` with a
 faithful positive functional `τ` such that every bounded ascending sequence
 of self-adjoint elements has a supremum preserved by `τ` is a von Neumann
@@ -5082,8 +5290,12 @@ theorem vna_of_faithful_countably_normal_1 (τ : A →ₚ[ℂ] ℂ)
     (hsup : ∀ a : ℕ → selfAdjoint A, Monotone a → BddAbove (Set.range a) →
       ∃ s : selfAdjoint A, IsLUB (Set.range a) s ∧
         IsLUB (Set.range fun n => τ (a n : A)) (τ (s : A))) :
-    VonNeumannAlgebra A :=
-  sorry
+    VonNeumannAlgebra A where
+  isLUB_of_bddAbove_directed D hne hdir hbdd :=
+    let ⟨s, hs, _⟩ := countably_normal_key τ hfaith hsup D hne hdir hbdd
+    ⟨s, hs⟩
+  np_faithful a ha h :=
+    hfaith a ha (h ⟨τ, countably_normal_normal τ hfaith hsup⟩)
 
 /-- **51VII** (vn.tex:1581, Proposition), part 2: such a `τ` is moreover
 normal. -/
@@ -5093,7 +5305,7 @@ theorem vna_of_faithful_countably_normal_2 (τ : A →ₚ[ℂ] ℂ)
       ∃ s : selfAdjoint A, IsLUB (Set.range a) s ∧
         IsLUB (Set.range fun n => τ (a n : A)) (τ (s : A))) :
     PreservesDirSups ⇑τ :=
-  sorry
+  countably_normal_normal τ hfaith hsup
 
 variable (X : Type u) [MeasurableSpace X] in
 /-- A function `X → ℂ` on a measure(able) space that is measurable and

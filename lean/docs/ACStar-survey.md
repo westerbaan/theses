@@ -1,18 +1,24 @@
 # `Theses/A/CStar/` — full survey of the remaining `sorry`s (first survey of this chapter)
 
 **Headline count at the time of the survey: A/CStar had 28 code `sorry`s.**
+**Session 73 took it to 5**: the whole of parsec 140 fell — `goursat` and the
+four `invint` items — leaving `cauchy_formula` and `taylor` (parsec 150),
+`functional_calculus_4` (the do-not-touch (d) item) and the 34VII/34IX.2 pair.
 Per file, counted by reading every declaration body (each `sorry` is the whole
 proof of one `theorem`; no declaration carries two), with the **session-69**
 figures beside them (compiler-counted, each paired with an error count of 0):
 
-| file | at survey | after session 69 |
-|---|---|---|
-| `Basic.lean` | **0** | **0** |
-| `Positive.lean` | 13 | 7 |
-| `Representation.lean` | 11 | **1** |
-| `Matrices.lean` | 4 | 2 |
-| `TowardsVN.lean` | **0** | **0** |
-| **total** | **28** | **10** |
+| file | at survey | after session 69 | after session 73 |
+|---|---|---|---|
+| `Basic.lean` | **0** | **0** | **0** |
+| `Positive.lean` | 13 | 7 | **2** |
+| `Representation.lean` | 11 | **1** | **1** |
+| `Matrices.lean` | 4 | 2 | 2 |
+| `TowardsVN.lean` | **0** | **0** | **0** |
+| **total** | **28** | **10** | **5** |
+
+All five figures are compiler-counted and each is paired with an **error count
+of 0** (session 73, recipe below).
 
 Session 69 closed **18 of the 28**: the whole parsec 270 Riesz-ideal chain,
 **30X**.2 and **30XIV** `gelfand_naimark` (the chapter's headline theorem) in
@@ -56,6 +62,8 @@ to transcribe; **(d)** suspicious — looks false or mis-transcribed.
 
 **Counts at the time of the survey: (a) 17 · (b) 10 · (c) 0 · (d) 1.**
 After session 69: (a) 2 (`goursat`, `34VII`) · (b) 7 · (c) 0 · (d) 1 (28II.4).
+After session 73: (a) 2 (`15I`, `34VII`) · (b) 2 (`taylor`, `34IX.2`) · (c) 0 ·
+(d) 1 (28II.4).
 
 **There are no (c) items in this chapter.**  Unlike A/VN (Artin–Wedderburn,
 `L^∞`) and B/Dils, A/CStar cites nothing as a black box.  14IV `goursat`
@@ -71,12 +79,12 @@ credits Moore 1900 for the *idea* but reproduces the proof in full.
 | **13II**.2 | `hadamard_2` | (a) small; hypothesis stronger than source | **proved** (6 lines) |
 | **13IV** | `powerSeries_hasDerivAt` | (a) medium | **proved** (~40 lines) |
 | **13VI** | `powerseries_uniqueness_coeffients` | (a) small | **proved** (~15 lines) |
-| **14IV** | `goursat` | (a) **large — the file's, and now the chapter's, only gate** | open |
-| **14VIII**.2 | `invint_2` | (a) small–medium | open |
-| **14VIII**.2′ | `invint_2'` | (a) small–medium | open |
-| **14VIII**.3 | `invint_3` | **(b)** on `goursat` | open |
-| **14VIII**.4 | `invint_4` | **(b)** on `invint_3` | open |
-| **15I** | `cauchy_formula` | **(b)** on `goursat` + `invint_4` | open |
+| **14IV** | `goursat` | (a) **large — was the chapter's only gate** | **proved** (~340 lines, session 73) |
+| **14VIII**.2 | `invint_2` | (a) small–medium | **proved** (~35 lines, from 14VIII.3) |
+| **14VIII**.2′ | `invint_2'` | (a) small–medium | **proved** (~50 lines, from 14VIII.3) |
+| **14VIII**.3 | `invint_3` | **(b)** on `goursat` — **wrongly**; it is (a) | **proved** (~75 lines, no Goursat) |
+| **14VIII**.4 | `invint_4` | **(b)** on `invint_3` | **proved** (~25 lines) |
+| **15I** | `cauchy_formula` | **(b)** on `goursat` + `invint_4` | open — now **(a)**, see below |
 | **15V** | `taylor` | **(b)** on `cauchy_formula` | open |
 | **15VII** | `rigid_expansion` | (a) — **not** blocked, see below | **proved** (~35 lines) |
 | **24II**.3 | `cstar_pos_neg_part_3` | (a) small | **proved** (~105 lines) |
@@ -96,6 +104,24 @@ credits Moore 1900 for the *idea* but reproduces the proof in full.
 > deprecated for `Metric.eball*`; `Matrix.dotProduct` is now root `dotProduct`.
 > One trap: `rw [← map_mul]` on a goal containing a `!![…]` literal resolves
 > against `Matrix.of`, not `Matrix.toEuclideanCLM`.
+
+> **Session-73 costings and the two calls that were wrong.**  `goursat` came in
+> at ~340 lines, inside this survey's ~250–400 — but the survey's reason was
+> wrong twice over.  (i) "**Mathlib does not help here**" is false: Mathlib
+> supplies the entire *endgame*.  `DifferentiableOn.isExactOn_ball`
+> (`Mathlib/Analysis/Complex/HasPrimitives.lean`, Morera for a disc, stated for
+> an arbitrary complete complex normed space so it applies to `𝒜`) gives a
+> primitive on any disc, and the nested triangles eventually sit inside one; the
+> thesis's `f(z*) + f'(z*)(z−z*) + o(·)` estimate is never needed.  What Mathlib
+> does not help with is the *rectangle*-to-triangle transfer, which is a
+> different claim — and that route is a **dead end**, because a triangle inside
+> an open `U` need not lie inside any rectangle or disc inside `U`, so the only
+> bridge is a primitive, and Mathlib's primitives are disc-only.  The bisection
+> is unavoidable; transcribe the author.  (ii) **14VIII.3 was never (b) on
+> `goursat`.**  Proved directly (see below) it becomes the *source* of 2, 2′ and
+> 4, so the whole exercise costs ~200 lines with Goursat untouched, against this
+> survey's ~80 + ~80 + rest — and the two ~80s were themselves over-costed once
+> the order is reversed.
 
 Twelve of these thirteen are the complex-analysis preamble of parsecs 120–150,
 built only to reach **16II** `norm_spectrum` — which is *already proved*, from
@@ -137,46 +163,56 @@ depend on 13IV; **in Lean it does not need to** —
 `HasFPowerSeriesAt.eq_formalMultilinearSeries`
 (`Analytic/Uniqueness.lean:113`) closes it against the zero series in ~40 lines.
 
-**14IV** `goursat` (`cstar.tex:2177`) — **this is the gate of the whole
-120–150 block**: 14VIII.3, and through it 14VIII.4, 15I and 15V, all cite it.
-The thesis proof is complete (bisection, following Moore 1900) and is the
-single largest transcription job in the chapter, ~250–400 lines.  **Mathlib
-does not help here.**  Its complex-analysis development is stated for
-*rectangle boundaries* (`Complex.integral_boundary_rect_eq_zero_of_differentiableOn`)
-and *circles*, over an arbitrary complex Banach space `E`; our `triIntegral`
-(built from `segIntegral`, `Positive.lean:134/140`) is a triangle, and there is
-no bridge.  Anyone who takes this on should first decide whether to keep the
-thesis's `segIntegral` vocabulary or to prove a rectangle↔triangle
-transfer — the latter is probably the shorter road to 15I but abandons the
-thesis's argument.
+**14IV** `goursat` (`cstar.tex:2177`) — **PROVED (session 73), ~340 lines,
+axiom-clean.**  The bisection (segment reparametrisation, splitting, sign
+reversal, the four sub-triangles, the quarter-of-the-integral choice, the nested
+limit) is transcribed from the thesis in full; only the final estimate is
+replaced, by Mathlib's Morera-on-a-disc.  Two devices made it cheap and are
+worth reusing: the limit point comes from the *first vertices* forming a Cauchy
+sequence (`cauchySeq_of_le_geometric_two` /
+`dist_le_of_le_geometric_two_of_tendsto`, which also supply the quantitative
+`dist (aₙ) z ≤ 2S₀/2ⁿ`), so no nested-compact intersection is needed; and
+`triSideMax` — the longest side — replaces `Metric.diam` throughout, since every
+side of every sub-triangle is *exactly half* a side of the parent (a `ring`
+identity) and `convexHull {v₀,v₁,v₂} ⊆ closedBall v₀ (triSideMax …)` is one
+`convexHull_min`.  All the machinery is `private` in `Positive.lean` and is
+reusable: in particular `segIntegral_reparam` (hypothesis-free) and
+`triIntegral_of_primitive`.
 
-**14VIII**.2 / .2′ `invint_2` / `invint_2'` — the two explicit segment
-integrals of `z⁻¹`.  Pure `intervalIntegral` computation; the thesis writes
-both antiderivatives out (`arctan`, `log`).  Independent of Goursat, and of
-each other up to mirroring.  ~80 lines apiece; do one, then the other is a
-near-copy.
+**14VIII**.2 / .2′ / .3 / .4 — **all four PROVED (session 73), and the thesis's
+order is reversed.**  The thesis proves 2 by hand and reduces 3 to it *using
+Goursat*; here **3 is proved directly and 2, 2′ and 4 are corollaries**.  The
+observation: if `z₀ ∉ [w,w']` then the rescaled segment from `1` to
+`ζ := (w'−z₀)/(w−z₀)` misses not merely `0` but **the whole branch cut
+`(−∞,0]`**, so `Complex.log` is an honest antiderivative along it and
+`Complex.hasDerivAt_log` + `intervalIntegral.integral_eq_sub_of_hasDerivAt` give
+`∫_w^{w'} (z−z₀)⁻¹ dz = Log ζ` in one step.  That is the private
+`segment_inv_integral`.  2 and 2′ are its case `z₀ = 0` (the segments miss `0`
+because the real part is `a ≠ 0`, resp. the imaginary part is `b ≠ 0`), using
+`arg x = arctan(x.im/x.re)` on the right half plane — not a Mathlib lemma, but
+two lines from `Complex.abs_arg_lt_pi_div_two_iff`, `Complex.tan_arg` and
+`Real.arctan_tan`.  4 is the thesis's own telescoping argument.
 
-**14VIII**.3 `invint_3` — **(b)** on `goursat`: the thesis's hint is "using
-Goursat's Theorem one may reduce the problem to horizontal and vertical line
-segments", i.e. to .2/.2′.  A Goursat-free route exists (`Complex.log` is an
-antiderivative of `z⁻¹` off the cut, `Complex.hasDerivAt_log`, plus the
-fundamental theorem of calculus for the segment) and would *un*block this item
-and 14VIII.4 without touching Goursat — worth considering, since Goursat is the
-chapter's most expensive single item.
-
-**14VIII**.4 `invint_4` — **(b)** on `invint_3`; then sum the three segments and
-telescope the angles into `windingNumber`.  Small once .3 is in.
-
-**15I** `cauchy_formula` — **(b)** on `goursat` *and* `invint_4`, both cited by
-name in the proof (`cstar.tex:2396`).  ⚠ Note for whoever attempts it: the
-thesis partitions the region between the small triangle `T` and the `N`-gon
-"in the obvious manner into triangles `T₁,…,T_M`".  That triangulation is
-asserted, not constructed, and is by some distance the hardest part to
-formalize — treat it as an open gap in the source, not a transcription.  (The
-"`‖f'(z₀)‖ + 37`" in the same proof is the author's joke, and a valid bound.)
-Also: the thesis's vertex formula `wₙ = c + r cos(2π/n) + i r sin(2π/n)` is a
-typo for `2πn/N`; our `hw` already writes the correct
-`c + r·exp(2πi·n/N)`.
+**15I** `cauchy_formula` — **now (a): `goursat` and `invint_4` are both proved,
+and the asserted triangulation is avoidable.**  Route, in order:
+(1) build a primitive on a *convex open* set as `F(z) := ∫_c^z f`, with `F' = f`
+by **Goursat applied to the triangle `(c, z, z+h)`** — the step Mathlib's
+disc-only `isExactOn_ball` cannot do and that `goursat` now unlocks;
+(2) thicken the closed `N`-gon to a convex open `V ⊆ U`, so the polygon integral
+of anything holomorphic on `V` telescopes to `0`;
+(3) apply that to `dslope f z₀` — Mathlib's `Complex.differentiableOn_dslope`
+makes `(z−z₀)⁻¹•(f z − f z₀)` genuinely holomorphic across `z₀`, which is the
+thesis's "bounded near `z₀`" step made honest;
+(4) what remains is `∑_{n<N} ∫_{wₙ}^{wₙ₊₁}(z−z₀)⁻¹ dz = 2πi`, i.e. **the winding
+number of a regular `N`-gon about an interior point is 1**.  ⚠ This is where the
+thesis's unconstructed triangulation sits, and it is the only genuinely missing
+piece.  A triangulation-free route: the left-hand side is holomorphic in `z₀` on
+the connected interior and its derivative is the polygon integral of
+`(z−z₀)⁻²`, which vanishes because `−(z−z₀)⁻¹` is a **single-valued** primitive
+on `ℂ∖{z₀}`; so it is constant, and at the centre it is `∑_n 2π/N = 2π` by
+symmetry.  (The thesis's vertex formula `wₙ = c + r cos(2π/n) + i r sin(2π/n)`
+is a typo for `2πn/N`; our `hw` already writes the correct `c + r·exp(2πi·n/N)`.
+The "`‖f'(z₀)‖ + 37`" is the author's joke, and a valid bound.)
 
 **15V** `taylor` — **(b)** on `cauchy_formula` (geometric-series expansion of
 `1/(u−z)` under the integral, plus a uniform-convergence interchange).
@@ -461,8 +497,11 @@ duality, no Urysohn.  So 34VII → 34IX.2 buys faithfulness, not reach.
 > rather than a step towards it.  Now that `dsumRep` exists, restating 30X
 > faithfully is cheap — but it is an author decision.
 >
-> **The live ranking is now: 14IV `goursat` (the chapter's only gate, six items
-> behind it) and 34VII `ccstar_pos_mat`.**
+> **Session 73: `goursat` is DONE, with the whole of 14VIII.**  The live ranking
+> is now **34VII `ccstar_pos_mat`** (the only remaining self-contained target)
+> and **15I `cauchy_formula`**, which is no longer blocked on anything proved —
+> what it needs is the winding number of a regular `N`-gon about an interior
+> point, sketched above.
 
 **1. 27VIII `riesz_ideal_ring_ideal`** (`Representation.lean:81`) — **DONE**.
 Chain-opening, and the chain is the biggest in the chapter: it is required by
@@ -489,8 +528,8 @@ A/VN's public `lp_clm_ext` forces a primed name for the A/CStar copy.  Proving
 it also settles whether A/VN's **48III `gns_normal`** is still correctly classed
 [L] — it is not; Mathlib's GNS plus `dsumRep` should now cover it.
 
-**3. 34VII `ccstar_pos_mat`** (`Matrices.lean`) — **now the chapter's only
-self-contained target besides `goursat`.**
+**3. 34VII `ccstar_pos_mat`** (`Matrices.lean`) — **since session 73 the
+chapter's only self-contained target.**
 Chain-opening (sole blocker of 34IX.2, closing the last CP-theory gap in the
 chapter) with a complete thesis proof, but the payoff is faithfulness only —
 `normal_russo_dye` already routed around it.  **Re-costed in session 69 at
@@ -499,16 +538,15 @@ neither `(𝒜 ≃⋆ₐ ℬ) → (M_N 𝒜 ≃⋆ₐ M_N ℬ)` nor any `M_N(C(X
 bridge, both of which must be built.  Once inside `C(X, M_N ℂ)` the thesis's
 order computation is better replaced by a plain triangle inequality.
 
-*Warm-ups, if a short session is wanted:* **24II**.3 `cstar_pos_neg_part_3`
-(~40 lines, template 50 lines above it) and **15VII** `rigid_expansion`
-(~80–120 lines, and it turns out not to need Goursat).
+*Warm-ups:* none are left in this chapter — the four cheap items
+(**24II**.3, **15VII**, and then all of **14VIII**) are proved.
 
 ---
 
 ## What A/CStar gates downstream
 
 **Nothing.  No declaration anywhere in `Theses/` is blocked, directly or
-indirectly, on any of these 28 sorries.**
+indirectly, on any of these 28 sorries.**  (Still true of the 5 that remain.)
 
 Who imports it:
 
@@ -525,7 +563,8 @@ grepping the whole `Theses/` tree for each of the 28 declaration names returns
 **no uses at all**, inside or outside A/CStar.  The complete set of
 non-declaration hits is:
 
-* `Positive.lean:156` and `:234` — doc comments mentioning `goursat`/`taylor`;
+* `Positive.lean` — doc comments mentioning `goursat`/`taylor` (`goursat` is
+  now proved and *is* used, by nothing yet, but see the 15I route above);
 * `Matrices.lean:1483`, `:1546–1557` — the two notes explaining that
   `cp_commutative_dom` was *routed around*, not used;
 * `A/VN/Basic.lean:2251` and `A/VN/Projections.lean:5473/5480` — these use

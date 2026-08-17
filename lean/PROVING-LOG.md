@@ -16822,3 +16822,272 @@ Two traps worth carrying:
   theorem still carries `set_option maxHeartbeats 2000000`.
 * A doc comment must come **after** `set_option … in`, not before: the
   reverse order is a parse error ("unexpected token 'set_option'").
+
+## Session 73 — `A/VN`: **79VI.4 closed under the ruled restatement**, and **51VII.1/.2 fall together** (worker on `Theses/A/VN/`)
+
+A/VN **14 → 11** code `sorry`s.  Per file, each source run through `lean`
+individually against rebuilt oleans, paired with an error count, **0 errors
+everywhere**: `Basic` **6** (was 8), `Projections` **2**, `NormalFunctionals`
+**0**, `Completeness` **0**, `Division` **3** (was 4).  `lake build
+Theses.A.VN.Division` exits 0.  All three closed statements are axiom-clean
+(`[propext, Classical.choice, Quot.sound]`), checked with `#print axioms` from
+inside their own modules against rebuilt oleans.
+
+### 79VI.4 `pseudoinverse_basic_2'_4` — **restated and proved**, per Bram's ruling of 2026-08-17
+
+This is a **ruled statement change**, the one case where altering a
+transcribed statement is correct; the ruling is recorded in HANDOFF.md under
+"Resolved by the author (2026-08-17)" and carries erratum key
+`parsec-790.60`.  The printed conclusion `c^{∼1} ≤ b^{∼1}` is false — our
+`pseudoinverse_basic_2'_4_is_false` refutes it with `b = (1,0)`, `c = (1,1)`
+in `ℓ^∞({0,1})` — and the repair **compresses the conclusion** to
+`⌈b⌉c^{∼1}⌈b⌉ ≤ b^{∼1}` rather than strengthening the hypotheses.  Note this
+is *not* what our ERRATA row had proposed (adding `⌈b⌉ = ⌈c⌉`, which is the
+special case of it), and the compressed form keeps the printed parenthetical
+about dropping commutativity **true**: `hcomm` is now used nowhere, and is
+kept only to match the printed statement (with
+`set_option linter.unusedVariables false in`).
+
+Both refutation lemmas **stay**, as the record of what the printed statement
+claimed; their doc comments now say they refute the *printed* conclusion, and
+`pseudoinverse_basic_2'_4_forces_eq_one` notes that the corrected conclusion
+reads `p·1·p = p ≤ p` on the same witness.  The ERRATA row was already gone
+(deleted by Bram); the `why-open.csv` row is deleted here.
+
+*The proof is the author's, transcribed.*  With `b^{½}`, `b^{∼½}`, `c^{∼½}`
+the positive square roots and `p = ⌈b⌉`: `x := c^{∼½}b^{½}` has
+`xx* = c^{∼½}bc^{∼½} ≤ c^{∼½}cc^{∼½} = ⌈c⌉ ≤ 1`, so `‖x*x‖ = ‖xx*‖ ≤ 1` and
+`x*x = b^{½}c^{∼1}b^{½} ≤ 1`; `p` absorbs `b^{½}` on both sides, so
+compressing by `p` gives `b^{½}c^{∼1}b^{½} ≤ p`; conjugating by `b^{∼½}` and
+using `b^{∼½}b^{½} = p` and `b^{∼½}b^{∼½} = b^{∼1}` gives the claim.
+
+Two small private helpers carry the mechanical parts (`Division.lean`, both
+`omit`-ted from the section binders they do not use):
+
+* `exists_sqrt_commuting` — packages `CFC.sqrt` as an opaque `x` with
+  `0 ≤ x`, `x*x = a` and "commutes with everything `a` commutes with"
+  (`Commute.cfc_nnreal`).  Using the packaged form rather than `CFC.sqrt`
+  itself keeps the four commutation facts the proof needs to one line each.
+* `isStarProjection_absorb` — a projection absorbing `x²` on both sides
+  absorbs the self-adjoint `x`, via
+  `(xq−x)*(xq−x) = qx²q − qx² − x²q + x² = 0` and
+  `CStarRing.star_mul_self_eq_zero_iff`.  Used for `⌈b⌉b^{½} = b^{½}` and
+  `⌈b⌉b^{∼½} = b^{∼½}` (the latter needs `⌈b^{∼1}⌉ = ⌈b⌉`, i.e. **79VI**.3,
+  already proved just above).
+
+`b^{∼½}b^{½} = ⌈b⌉` is got by squaring: the product is positive (conjugate
+`b^{½}` by `(b^{∼½})^{½}`), squares to `⌈b⌉`, and `CFC.sqrt_unique` twice
+identifies it with `√⌈b⌉ = ⌈b⌉`.
+
+The norm step avoids `‖1‖` deliberately — Mathlib's `CStarAlgebra` does
+**not** extend `NormOneClass`, so `‖(1 : A)‖ = 1` is unavailable in the
+trivial algebra.  `CStarAlgebra.norm_le_one_iff_of_nonneg` (`‖a‖ ≤ 1 ↔ a ≤ 1`
+for `0 ≤ a`) is the right tool and needs no such assumption in either
+direction.
+
+### 51VII.1/.2 `vna_of_faithful_countably_normal_1/2` — **both closed**, together
+
+As predicted: the thesis's proof at vn.tex **51VIII** yields both parts from
+one construction, so they are proved by a shared private
+`countably_normal_key`, which for a nonempty bounded directed `D ⊆ sa(𝒜)`
+produces `s` with **both** `IsLUB D s` and `IsLUB (τ '' D) (τ s)`.  ~200 lines
+in `Basic.lean`, no divergence from the thesis's argument.
+
+Order of declaration: `PreservesDirSups ⇑τ` is extracted first as a private
+`countably_normal_normal`, because 51VII.**1** needs it — the `np_faithful`
+clause of Kadison's definition asks for faithfulness against *np*-functionals,
+so `τ` has to be known normal before it is one.  The printed order (1 then 2)
+is preserved in the file; `vna_of_faithful_countably_normal_2` is a one-liner
+onto the private lemma.
+
+Mechanics worth keeping:
+
+* Everything is run through `f d := (τ d).re` on `sa(𝒜)` with
+  `M := ⋁ (f '' D)` taken in `ℝ` by `Real.isLUB_sSup`; the bridge back to `ℂ`
+  is the existing `isLUB_re_of_isLUB` (Basic.lean:203).  A private
+  `positiveLinearMap_im_eq_zero` repeats `npFunctional_im_eq_zero`'s two-line
+  argument for a **bare** `A →ₚ[ℂ] ℂ`, which is what 51VII is handed.
+* The two recursive choices (the ascending `aₙ` with `⋁ₙ τ(aₙ) = M`, and the
+  `eₙ ≥ aₙ` with `e₀ ≥ b`) share **one** directedness choice function
+  `g : sa(𝒜) → sa(𝒜) → sa(𝒜)`, obtained by `choose` from a statement whose
+  conclusion is guarded by `x ∈ D → z ∈ D → …` so that `g` is total.  The
+  sequences themselves are introduced by
+  `obtain ⟨a, ha0, hasucc⟩ : ∃ a, a 0 = … ∧ ∀ n, a (n+1) = … := ⟨fun n => Nat.rec …, rfl, fun _ => rfl⟩`,
+  which gives the two defining equations without exposing the recursor.
+* "`⋁ₙ f(eₙ) = M`" is proved once, as a `have` over an arbitrary sequence in
+  `D` satisfying `M − 1/(n+1) < f(eₙ)`, and used for both sequences.  The
+  `M ≤ f s` half is `exists_nat_one_div_lt` plus `linarith`.
+
+### New erratum: the proof of **69II** `prop:weakly-closed-ideal` is circular in one step
+
+Found while costing `weakly_closed_ideal`, which is **not** attempted here.
+The proof's first paragraph needs `⌈a⌉ ∈ 𝒟` for an effect `a ∈ 𝒟` and gets it
+from **56I**'s formula `⌈a⌉ = ⋁ₙ a^{1/2ⁿ}` — which requires every `a^{1/2ⁿ}`
+to be in `𝒟`.  That is not an ideal-theoretic fact: `x·C[0,1]` contains
+`a(x) = x` but not `√a`.  It is true here once one knows `𝒟 = c𝒜`, i.e.
+a posteriori, so the step is circular rather than false.  The repair filed in
+ERRATA replaces roots by **powers**: `1 − (1−a)ⁿ ↗ ⌈a⌉`, and each
+`1 − (1−a)ⁿ` is an integer combination of `a, a², …, aⁿ`, hence in `𝒟`.  The
+`why-open.csv` row for `weakly_closed_ideal` now points at this.
+
+### Costings re-derived (the brief's "grep in both directions" rule)
+
+* **`central_projections_sums_2` (67IV.2)** — confirmed still blocked.  It
+  needs ultraweak compactness of the ball (**77III**), which is proved, but
+  lives in `Completeness.lean`; the import order is
+  `Basic → Projections → Completeness → Division → NormalFunctionals`, so
+  `Projections.lean` cannot reach it.  "Completeness has 0 sorries" is *not*
+  the same as "77III is available to Projections".
+* **`Linfty_vn` (51IX)** is 51VII's only intended consumer (nothing in the
+  tree cites 51VII yet, since 51IX is still open) and is a construction job
+  rather than a proof job: it asks for the C*-algebra
+  `L^∞(X)` itself (bounded measurable functions modulo a.e. equality, with
+  the essential-sup norm and completeness), which Mathlib does not have —
+  `Lp E ∞ μ` carries no multiplication.  Estimate 400–800 lines, of which
+  51VII is the last twenty.
+* `fdcstar` (84II, Artin–Wedderburn for finite-dimensional C*-algebras),
+  `hereditarilyAtomic_subalgebra` (84bIII) and `ha_equalisers` (84bV) are all
+  structure theorems well beyond a session.
+
+## Session 73 — `A/CStar/Positive.lean`: **the parsec 140 block falls whole** — `goursat` is CLOSED, and the `invint` chain never needed it (worker on `Theses/A/CStar/`)
+
+**Result: `Positive.lean` 7 → 2 sorries, 0 errors.**  Closed **14IV** `goursat`,
+**14VIII**.2 `invint_2`, **14VIII**.2′ `invint_2'`, **14VIII**.3 `invint_3`,
+**14VIII**.4 `invint_4`.  All five verified `#print axioms` clean
+(`propext, Classical.choice, Quot.sound`).  A/CStar is now **5** sorries:
+`Positive.lean` 2 (`cauchy_formula`, `taylor`), `Representation.lean` 1
+(`functional_calculus_4`, the do-not-touch (d) item), `Matrices.lean` 2
+(`ccstar_pos_mat`, `cp_commutative_dom`).
+
+### 1. The `invint` chain is Goursat-free, and the thesis's order can be reversed
+
+The survey's suspicion was right and stronger than stated.  The thesis proves
+14VIII in the order 2 → 3 → 4, computing the two axis-parallel integrals by hand
+and reducing the general segment to them **using Goursat** (cstar.tex:2364).  We
+reversed it: **14VIII.3 is proved directly and 2, 2′ and 4 are corollaries of
+it**, so the whole exercise costs about 200 lines and touches Goursat nowhere.
+
+The observation that makes 3 direct: if `z₀ ∉ [w,w']` then, rescaling by
+`u := w − z₀`, the segment from `1` to `ζ := (w'−z₀)/(w−z₀)` misses not merely
+`0` but **the entire branch cut `(−∞,0]`**.  (Along it the imaginary part is
+`t·Im ζ`; where that vanishes either `t = 0`, giving the point `1`, or `ζ` is
+real — and a real `ζ ≤ 0` would put `0` on the segment.)  So `Complex.log` is a
+genuine antiderivative of `z⁻¹` along the path, `Complex.hasDerivAt_log` plus
+`intervalIntegral.integral_eq_sub_of_hasDerivAt` gives
+`∫_w^{w'} (z−z₀)⁻¹ dz = Log ζ` in one step, and splitting `Log` into
+`log‖ζ‖ + i·arg ζ` is exactly the statement.  That is the private
+`segment_inv_integral`; `affine_mem_slitPlane` is the observation.
+
+14VIII.2 and 2′ are then the case `z₀ = 0` — 2 because every point of
+`[a, a+ib]` has real part `a ≠ 0`, 2′ because every point of `[a+ib, ib]` has
+imaginary part `b ≠ 0` — plus `arg x = arctan(x.im/x.re)` on the right half
+plane, which Mathlib does not have as a lemma but which is two lines from
+`Complex.abs_arg_lt_pi_div_two_iff`, `Complex.tan_arg` and `Real.arctan_tan`.
+14VIII.4 is the thesis's own argument: three applications of 3, the logarithms
+telescope, and the angles are `2π` times the winding number by definition.
+
+**Costing note.**  The survey put 14VIII.2 and 2′ at ~80 lines *each* and
+independent of one another; both figures were wrong in the cheap direction once
+the order is reversed (~35 and ~50 lines, both derived).
+
+### 2. `goursat`: transcribed bisection, Mathlib endgame
+
+**Verdict on the brief's question — thesis bisection versus rectangle
+transfer.**  The rectangle transfer is *not* a viable shortcut, and the reason
+is worth recording: our triangle lies in an arbitrary open `U`, and a triangle
+inside an open set need not lie inside any rectangle or disc inside that set.
+Mathlib's `Complex.integral_boundary_rect_eq_zero_of_differentiableOn` can only
+be moved to a triangle through a **primitive**, and Mathlib's primitives
+(`Mathlib/Analysis/Complex/HasPrimitives.lean`) exist only on **discs** — to
+reach a disc from a general triangle you must subdivide, i.e. bisect.  So the
+bisection is unavoidable and the thesis's proof is the shorter road.
+
+What *is* worth taking from Mathlib is the **endgame**.  The thesis's last step
+is the classical estimate: at the point `z*` common to all the nested triangles,
+`f(z) = f(z*) + f'(z*)(z−z*) + o(|z−z*|)`, the affine part integrates to zero
+around a closed triangle, and the remainder is bounded by
+`ε·(perimeter)·(diameter)`.  We replace it with two lines: the nested triangles
+eventually sit inside a disc contained in `U`, and on a disc
+`DifferentiableOn.isExactOn_ball` (**Morera**, and — the load-bearing fact —
+stated in Mathlib for an arbitrary *complete complex normed space*, so it
+applies to `𝒜`) hands over a primitive, which kills the triangle integral
+outright.  This is a **divergence in the endgame only**; the bisection itself,
+which is the substance of the author's argument, is transcribed in full.
+
+Shape of the ~340 lines that resulted, all `private` in `Positive.lean`:
+
+* `segIntegral_reparam` — the one lemma that pays for the whole segment
+  calculus: `∫` along the sub-segment of `[w,w']` cut out by parameters `p,q`
+  equals `(w'−w)•∫_p^q`.  It needs **no hypotheses at all**
+  (`intervalIntegral.smul_integral_comp_mul_add` does the substitution), and
+  both `segIntegral_symm` (reversal changes the sign) and `segIntegral_split`
+  (splitting at an interior point) fall out of it; only the latter needs
+  continuity, for `integral_add_adjacent_intervals`.
+* `triIntegral_subdivide` — the four sub-triangles, `abel` after three splits
+  and three sign reversals.
+* `segIntegral_of_primitive` / `triIntegral_of_primitive` /
+  `triIntegral_eq_zero_of_ball` — the endgame, the first of these being the
+  same FTC-along-a-segment step as `segment_inv_integral` above.
+* `triSideMax`, `dist_half_le`, `sub_triangle_ok`, `exists_subtriangle` — the
+  bisection step: one of the four sub-triangles carries a quarter of the
+  integral, sits inside the parent, and has half its longest side.
+* `hull_subset_closedBall` and the main proof — `choose` over a *total* step
+  function (the hypothesis "the triangle is inside `K`" is pushed into the
+  conclusion so that `choose` applies), then four inductions
+  (containment, nesting, `side ≤ S₀/2ⁿ`, `‖∫T‖ ≤ 4ⁿ‖∫Tₙ‖`).
+
+Two design choices that cut the cost sharply, worth reusing:
+
+* **the limit point is obtained from the first vertices, not from nested
+  compacts.**  `dist (aₙ) (aₙ₊₁) ≤ S₀/2ⁿ` because `aₙ₊₁` lies in the parent
+  triangle, which lies in `closedBall aₙ (side)`; then
+  `cauchySeq_of_le_geometric_two` and
+  `dist_le_of_le_geometric_two_of_tendsto` give both the limit and the
+  quantitative `dist (aₙ) z ≤ 2S₀/2ⁿ` needed to fit `Tₙ` inside `ball z δ`.
+  No `iInter` of nested compacts is needed anywhere.
+* **`triSideMax` (the longest side) replaces `Metric.diam`.**  Every side of
+  every sub-triangle is exactly *half* of a side of the parent, which is a
+  `ring` identity plus `dist_eq_norm`; and `convexHull {v₀,v₁,v₂} ⊆
+  closedBall v₀ (triSideMax v₀ v₁ v₂)` is one `convexHull_min`.  Going through
+  `convexHull_diam` would have been strictly more work.
+
+**Costing note.**  The survey's ~250–400 lines for `goursat` was accurate
+(~340), but its reasoning was not: it said "Mathlib does not help here", and in
+fact Mathlib supplied the entire endgame.  What Mathlib does not help with is
+the *rectangle*-to-triangle step, which is a different claim.
+
+### 3. What 15I still needs, precisely
+
+`cauchy_formula` is **no longer blocked on `goursat`** and is no longer blocked
+on the asserted triangulation either — `why-open.csv` is updated accordingly.
+With `goursat` in hand the classical route is:
+
+1. a primitive on a *convex open* set: `F(z) := ∫_c^z f`, well defined and with
+   `F' = f` **by Goursat applied to the triangle `(c, z, z+h)`**, which is
+   inside the set by convexity.  This is the step that Mathlib's disc-only
+   `isExactOn_ball` does not give and that Goursat now unlocks;
+2. thicken the closed `N`-gon to a convex open `V ⊆ U` (`Metric.thickening` of
+   a compact convex set), so the polygon integral of any function holomorphic
+   on `V` telescopes to `0`;
+3. apply that to `dslope f z₀` — Mathlib's removable-singularity machinery
+   (`Complex.differentiableOn_dslope`) makes `(z−z₀)⁻¹•(f z − f z₀)` genuinely
+   holomorphic across `z₀`, which is exactly the thesis's "the integrand is
+   bounded near `z₀`" step made honest;
+4. what is then left is `∑_{n<N} ∫_{wₙ}^{wₙ₊₁} (z−z₀)⁻¹ dz = 2πi`, i.e. **the
+   winding number of a regular `N`-gon about an interior point is 1**.  This is
+   where the thesis's unconstructed triangulation sits, and it is the only
+   genuinely missing piece.  A route that avoids triangulation: the left-hand
+   side is holomorphic in `z₀` on the (connected) interior, and its derivative
+   is the polygon integral of `(z−z₀)⁻²`, which vanishes because
+   `−(z−z₀)⁻¹` is a **single-valued** primitive on `ℂ∖{z₀}`; so it is constant,
+   and at the centre it is `∑_n 2π/N = 2π` by symmetry.  Not attempted.
+
+### 4. Erratum found
+
+**14VIII**.2 (cstar.tex, the first line of the displayed computation) reads
+`i∫₀^t (a−it)/(a²+t²) dt` — the upper limit is the dummy variable; it should be
+`∫₀^b`, as the two following lines have.  Filed in ERRATA.md as a nit.  Nothing
+else in parsecs 140–150 failed to check out: the `(-π,π)` in 14VIII.3's gloss on
+`∠` is harmless (with `z₀ ∉ [w,w']` the value `π` cannot occur, so `Complex.arg`
+and the thesis's convention agree), and 15I's `‖f'(z₀)‖ + 37` is, as the survey
+says, the author's joke and a valid bound.

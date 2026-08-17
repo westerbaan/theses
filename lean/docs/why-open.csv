@@ -1,4 +1,4 @@
-cauchy_formula|blocked|goursat|15I is proved from Goursat and 14VIII.4; also has an asserted, unconstructed triangulation
+cauchy_formula|costed||15I: goursat is now proved, so what is left is the winding number of the regular N-gon around an interior point (thesis asserts an unconstructed triangulation); a Goursat-based primitive on a convex open set removes the rest
 ccstar_pos_mat|costed||largest item in A/CStar, ~350-500 lines; thesis proof complete, cost is the Gelfand transport
 chilb_vector_states_2|costed||~150 lines; the polarisation core sits in the proved 32XV.1 just above it
 chilb_vector_states_3|costed||~120 lines from chilb_form_bounded plus the C*-identity; the thesis hint is retracted by an erratum
@@ -6,13 +6,8 @@ cp_commutative_dom|blocked|ccstar_pos_mat|34IX.2 is ~40 lines once 34VII lands; 
 cstar_pos_neg_part_3|costed||cheapest item in the chapter, ~40-60 lines, with a template 50 lines above it
 functional_calculus_4|costed||~60 lines as stated; the survey flags our statement as weaker than 28II.4 and asks for a repair first
 gelfand_naimark|blocked|proto_gelfand_naimark_2|~30 lines once 30X.2 lands; its other input is already proved
-goursat|costed||~250-400 lines (bisection, after Moore 1900); Mathlib has rectangles and circles but no triangles
 hadamard_1|costed||small; route via FormalMultilinearSeries and radius_inv_eq_limsup
 hadamard_2|costed||small; the converse of 13II.1 over the same Mathlib bridge
-invint_2|costed||~80 lines of intervalIntegral computation; independent of Goursat
-invint_2'|costed||~80 lines, a near-copy of invint_2 after mirroring
-invint_3|blocked|goursat|the thesis reduces to 14VIII.2 via Goursat; a Goursat-free route through Complex.log is noted
-invint_4|blocked|invint_3|small once 14VIII.3 is in: sum the three segments and telescope the angles
 maximal_riesz_ideal_maximal_order_ideal|blocked|riesz_ideal_ring_ideal|27XI cites 27VIII, 27X.1 and 27X.2; transcribe asols.tex, the printed proof is wrong
 powerSeries_hasDerivAt|costed||~80-150 lines, either by Mathlib changeOrigin or the thesis own domination argument
 powerseries_uniqueness_coeffients|costed||~40 lines from eq_formalMultilinearSeries; does not need 13IV
@@ -41,13 +36,10 @@ mn_vna_3|open||49IV.3, normality of the amplification M_N f; recorded as genuine
 ngelfand_normal|open||53II.2, surveyed self-contained but with no route or estimate recorded
 ngelfand_vna|open||53II.1, surveyed self-contained but with no route or estimate recorded
 normal_not_us_cont|costed||45I.2 is the transpose on B of l-two; self-contained
-pseudoinverse_basic_2'_4|false||79VI.4 is false as stated; the refutation sits just above it and the ERRATA row is open
 us_cont_normal|costed||45I.1 is preservesDirSups_of_continuousOn_effects with ultraweak replaced by ultrastrong
 vn_counterexamples_11|costed||the last of the nine 43II counterexamples: an unbounded functional by Riesz on finite-dimensional subspaces
 vn_products_ncpsu|costed||47IV.3, categorical, with 47IV.1 and .2 proved; it gates 124III and 125bII in A/Proc
-vna_of_faithful_countably_normal_1|open||51VII.1, surveyed self-contained but with no route recorded
-vna_of_faithful_countably_normal_2|blocked|vna_of_faithful_countably_normal_1|51VII.2 sits directly on 51VII.1
-weakly_closed_ideal|costed||69II, weakly closed two-sided ideals; substantial, and 170IV.1 deliberately routed around it
+weakly_closed_ideal|costed||69II, weakly closed two-sided ideals; substantial, and 170IV.1 deliberately routed around it.  Note the ERRATA gap at vn.tex 69II.30: the printed route to the key step needs a repair before it can be transcribed
 AstarhaB_concrete|open||125eVII sits at the top of the parsec-1255 chain; no route recorded
 Fha_concrete|costed||long but self-contained: nothing it needs is sorry, the work is representatives and re-indexing
 centrally_similar_basic_2a|awaiting-ruling||all three claims false as printed (ERRATA 104III.2a); the carrier repair is not yet authorised

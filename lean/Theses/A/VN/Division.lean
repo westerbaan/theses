@@ -701,9 +701,11 @@ theorem pinv_of_isStarProjection {p : A} (hp : IsStarProjection p) : pinv p = p 
   isPseudoinverse_unique p _ _ (pinv_spec (pseudoinvertible_of_isStarProjection hp))
     (isPseudoinverse_self_of_isStarProjection hp)
 
-/-- **79VI**.4 applied to `b = p` (a projection) and `c = 1` would force
-`p = 1`: both are positive, commuting and pseudoinvertible with `p ≤ 1`, and
-`p^{∼1} = p`, `1^{∼1} = 1`. -/
+/-- The **printed** conclusion of **79VI**.4 applied to `b = p` (a projection)
+and `c = 1` would force `p = 1`: both are positive, commuting and
+pseudoinvertible with `p ≤ 1`, and `p^{∼1} = p`, `1^{∼1} = 1`.  (The
+*corrected* conclusion — see `pseudoinverse_basic_2'_4` below — reads
+`⌈b⌉c^{∼1}⌈b⌉ ≤ b^{∼1}`, which here is the true `p·1·p = p ≤ p`.) -/
 theorem pseudoinverse_basic_2'_4_forces_eq_one {p : A} (hp : IsStarProjection p)
     (h : pinv (1 : A) ≤ pinv p) : p = 1 := by
   rw [pinv_of_isStarProjection hp, pinv_of_isStarProjection (IsStarProjection.one _)] at h
@@ -738,14 +740,18 @@ theorem pbFourWitness_ne_one :
   simp only [pbFourWitness_apply, lp.infty_coeFn_one, Pi.one_apply] at hco
   exact absurd hco (by norm_num)
 
-/-- **79VI**.4 (vn.tex:5222) is **false as stated** — ERRATA `79VI.4`.  Take
-`b = (1,0)` and `c = (1,1)` in `ℓ^∞({0,1})`: both are positive, commuting and
-pseudoinvertible (projections are their own pseudoinverses) with `b ≤ c`,
-`b^{∼1} = b` and `c^{∼1} = c`, and `c ≰ b`.  What the exercise needs is the
-extra hypothesis `⌈b⌉ = ⌈c⌉`; without it the pseudoinverse *grows* where the
-carrier of `c` exceeds that of `b`.  The parenthetical remark that the
-statement holds without the commutation hypothesis is false for the same
-reason. -/
+/-- The **printed** conclusion of **79VI**.4 (vn.tex:5222), `c^{∼1} ≤ b^{∼1}`,
+is **false** — erratum `parsec-790.60`.  Take `b = (1,0)` and `c = (1,1)` in
+`ℓ^∞({0,1})`: both are positive, commuting and pseudoinvertible (projections
+are their own pseudoinverses) with `b ≤ c`, `b^{∼1} = b` and `c^{∼1} = c`, and
+`c ≰ b`.  The pseudoinverse *grows* where the carrier of `c` exceeds that of
+`b`.
+
+This lemma is kept as the record of what the printed statement claimed; the
+author's repair (2026-08-17) **compresses the conclusion** to
+`⌈b⌉c^{∼1}⌈b⌉ ≤ b^{∼1}`, which is `pseudoinverse_basic_2'_4` below and is
+proved there.  In particular the printed parenthetical about dropping the
+commutation hypothesis is *correct* for the repaired statement. -/
 theorem pseudoinverse_basic_2'_4_is_false :
     ¬ ∀ b c : lp (fun _ : Fin 2 => ℂ) ∞, 0 ≤ b → Pseudoinvertible _ b →
       Pseudoinvertible _ c → b ≤ c → b * c = c * b → pinv c ≤ pinv b := by
@@ -757,16 +763,169 @@ theorem pseudoinverse_basic_2'_4_is_false :
       (pseudoinvertible_of_isStarProjection (IsStarProjection.one _))
       pbFourWitness_isStarProjection.le_one (by rw [mul_one, one_mul])))
 
-/-- **79VI** (`pseudoinverse-basic-2`, vn.tex:5203, Exercise), part 4:
-`c^{∼1} ≤ b^{∼1}` for pseudoinvertible positive *commuting* `b ≤ c`.
+omit [VonNeumannAlgebra A] in
+/-- Auxiliary: the positive square root of a positive element, packaged with
+the two properties the estimates below need — it squares to `a`, and it
+commutes with everything `a` commutes with. -/
+private theorem exists_sqrt_commuting {a : A} (ha : 0 ≤ a) :
+    ∃ x : A, 0 ≤ x ∧ x * x = a ∧ ∀ y : A, Commute a y → Commute x y :=
+  ⟨CFC.sqrt a, CFC.sqrt_nonneg a, CFC.sqrt_mul_sqrt_self a ha, fun y hy => by
+    rw [CFC.sqrt_eq_cfc]
+    exact hy.cfc_nnreal _⟩
 
-**False as stated** — see `pseudoinverse_basic_2'_4_is_false` just above and
-`ERRATA.md`.  The statement is kept verbatim (and `sorry`) pending an author
-decision; with `⌈b⌉ = ⌈c⌉` added it is true. -/
+omit [PartialOrder A] [StarOrderedRing A] [VonNeumannAlgebra A] in
+/-- Auxiliary: a projection `q` that absorbs `x²` on both sides absorbs the
+self-adjoint `x` itself, since `(xq − x)*(xq − x) = qx²q − qx² − x²q + x² = 0`. -/
+private theorem isStarProjection_absorb {q x : A} (hq : IsStarProjection q)
+    (hx : IsSelfAdjoint x) (h : q * (x * x) = x * x) (h' : x * x * q = x * x) :
+    x * q = x ∧ q * x = x := by
+  have hz : star (x * q - x) * (x * q - x) = 0 := by
+    have hs : star (x * q - x) = q * x - x := by
+      rw [star_sub, star_mul, hq.isSelfAdjoint.star_eq, hx.star_eq]
+    rw [hs]
+    calc (q * x - x) * (x * q - x)
+        = q * (x * x) * q - q * (x * x) - x * x * q + x * x := by noncomm_ring
+      _ = 0 := by rw [h, h']; abel
+  have h1 : x * q = x := by
+    have hd := (CStarRing.star_mul_self_eq_zero_iff _).mp hz
+    rwa [sub_eq_zero] at hd
+  refine ⟨h1, ?_⟩
+  have hs := congrArg star h1
+  rwa [star_mul, hq.isSelfAdjoint.star_eq, hx.star_eq] at hs
+
+-- `hcomm` is deliberately unused: see the doc comment.
+set_option linter.unusedVariables false in
+/-- **79VI** (`pseudoinverse-basic-2`, vn.tex:5203, Exercise), part 4:
+`⌈b⌉c^{∼1}⌈b⌉ ≤ b^{∼1}` for pseudoinvertible positive `b ≤ c`.
+
+**Corrected statement**, erratum `parsec-790.60` (author's ruling of
+2026-08-17).  The *printed* conclusion `c^{∼1} ≤ b^{∼1}` is false — see
+`pseudoinverse_basic_2'_4_is_false` just above — and the repair **compresses
+the conclusion** rather than strengthening the hypotheses (ERRATA had proposed
+adding `⌈b⌉ = ⌈c⌉`, which is the special case of this).  The printed
+parenthetical therefore stands: `hcomm` is used **nowhere** in the proof, and
+is kept only to match the printed statement.
+
+The argument is the standard C*-one.  Writing `b^{½}`, `b^{∼½} = (b^{∼1})^{½}`,
+`c^{∼½} = (c^{∼1})^{½}` and `p = ⌈b⌉`: from `b ≤ c`,
+`‖c^{∼½}b^{½}‖² = ‖c^{∼½}bc^{∼½}‖ ≤ ‖c^{∼½}cc^{∼½}‖ = ‖⌈c⌉‖ ≤ 1`, so
+`b^{½}c^{∼1}b^{½} = (c^{∼½}b^{½})*(c^{∼½}b^{½})` is positive of norm `≤ 1`,
+hence `≤ 1`, hence `≤ p` after compressing by `p` (which it absorbs).
+Conjugating by `b^{∼½}` — using `b^{∼½}b^{½} = p` and `b^{∼½}b^{∼½} = b^{∼1}`,
+both from **79VI**.1 — gives the claim. -/
 theorem pseudoinverse_basic_2'_4 (b c : A) (hb : 0 ≤ b)
     (hbp : Pseudoinvertible A b) (hcp : Pseudoinvertible A c) (hbc : b ≤ c)
-    (hcomm : b * c = c * b) : pinv c ≤ pinv b :=
-  sorry
+    (hcomm : b * c = c * b) : ceil b * pinv c * ceil b ≤ pinv b := by
+  have hc : (0 : A) ≤ c := hb.trans hbc
+  have hbsa : IsSelfAdjoint b := .of_nonneg hb
+  have hcsa : IsSelfAdjoint c := .of_nonneg hc
+  have hpbnn : (0 : A) ≤ pinv b := pinv_nonneg hb hbp
+  have hpcnn : (0 : A) ≤ pinv c := pinv_nonneg hc hcp
+  have hpproj : IsStarProjection (ceil b) := (ceil_spec hb).1
+  have hqproj : IsStarProjection (ceil c) := (ceil_spec hc).1
+  -- the defining products of the two pseudoinverses
+  have e_pbb : pinv b * b = ceil b := by
+    rw [(pinv_spec hbp).1, suppProj_of_nonneg hb]
+  have e_bpb : b * pinv b = ceil b := by
+    rw [(pinv_spec hbp).2.2.2, rangeProj_eq_suppProj_of_isSelfAdjoint hbsa,
+      suppProj_of_nonneg hb]
+  have e_pcc : pinv c * c = ceil c := by
+    rw [(pinv_spec hcp).1, suppProj_of_nonneg hc]
+  have e_cpc : c * pinv c = ceil c := by
+    rw [(pinv_spec hcp).2.2.2, rangeProj_eq_suppProj_of_isSelfAdjoint hcsa,
+      suppProj_of_nonneg hc]
+  have hcomm_b : Commute b (pinv b) := show b * pinv b = pinv b * b by
+    rw [e_bpb, e_pbb]
+  have hcomm_c : Commute c (pinv c) := show c * pinv c = pinv c * c by
+    rw [e_cpc, e_pcc]
+  -- the three square roots
+  obtain ⟨bh, hbh0, hbh2, hbhC⟩ := exists_sqrt_commuting hb
+  obtain ⟨bph, hbph0, hbph2, hbphC⟩ := exists_sqrt_commuting hpbnn
+  obtain ⟨cph, hcph0, hcph2, hcphC⟩ := exists_sqrt_commuting hpcnn
+  have hbhsa : IsSelfAdjoint bh := .of_nonneg hbh0
+  have hbphsa : IsSelfAdjoint bph := .of_nonneg hbph0
+  have hcphsa : IsSelfAdjoint cph := .of_nonneg hcph0
+  -- `c^{∼½} c c^{∼½} = ⌈c⌉`
+  have hcphc : Commute cph c := hcphC c hcomm_c.symm
+  have hconj_c : cph * c * cph = ceil c := by
+    rw [mul_assoc, ← hcphc.eq, ← mul_assoc, hcph2, e_pcc]
+  -- `b^{½}c^{∼1}b^{½} = x*x` and `c^{∼½}bc^{∼½} = xx*` for `x = c^{∼½}b^{½}`
+  have hx : cph * bh * star (cph * bh) = cph * b * cph := by
+    rw [star_mul, hbhsa.star_eq, hcphsa.star_eq]
+    calc cph * bh * (bh * cph) = cph * (bh * bh) * cph := by noncomm_ring
+      _ = cph * b * cph := by rw [hbh2]
+  have hx' : star (cph * bh) * (cph * bh) = bh * pinv c * bh := by
+    rw [star_mul, hbhsa.star_eq, hcphsa.star_eq]
+    calc bh * cph * (cph * bh) = bh * (cph * cph) * bh := by noncomm_ring
+      _ = bh * pinv c * bh := by rw [hcph2]
+  have hle1 : cph * bh * star (cph * bh) ≤ 1 := by
+    rw [hx]
+    calc cph * b * cph ≤ cph * c * cph := hcphsa.conjugate_le_conjugate hbc
+      _ = ceil c := hconj_c
+      _ ≤ 1 := hqproj.le_one
+  have hnorm : ‖star (cph * bh) * (cph * bh)‖ ≤ 1 := by
+    rw [CStarRing.norm_star_mul_self, ← CStarRing.norm_self_mul_star]
+    exact (CStarAlgebra.norm_le_one_iff_of_nonneg _ (mul_star_self_nonneg _)).mpr hle1
+  have hy1 : bh * pinv c * bh ≤ 1 := by
+    rw [← hx']
+    exact (CStarAlgebra.norm_le_one_iff_of_nonneg _ (star_mul_self_nonneg _)).mp hnorm
+  -- `⌈b⌉` absorbs `b^{½}` and `b^{∼½}`
+  have hbceil : b * ceil b = b := (ceil_spec hb).2.1
+  have hbceil' : ceil b * b = b := by
+    have hs := congrArg star hbceil
+    rwa [star_mul, hpproj.isSelfAdjoint.star_eq, hbsa.star_eq] at hs
+  obtain ⟨hbhp, hpbh⟩ := isStarProjection_absorb hpproj hbhsa
+    (by rw [hbh2]; exact hbceil') (by rw [hbh2]; exact hbceil)
+  have hceilpb : ceil (pinv b) = ceil b := (pseudoinverse_basic_2'_3 b hb hbp).1
+  have hpbc : pinv b * ceil b = pinv b := by
+    have hh := (ceil_spec hpbnn).2.1
+    rwa [hceilpb] at hh
+  have hpbc' : ceil b * pinv b = pinv b := by
+    have hs := congrArg star hpbc
+    rwa [star_mul, hpproj.isSelfAdjoint.star_eq,
+      (IsSelfAdjoint.of_nonneg hpbnn).star_eq] at hs
+  obtain ⟨hbphp, hpbph⟩ := isStarProjection_absorb hpproj hbphsa
+    (by rw [hbph2]; exact hpbc') (by rw [hbph2]; exact hpbc)
+  -- compress `b^{½}c^{∼1}b^{½} ≤ 1` by `⌈b⌉`
+  have hconj_p : ceil b * (bh * pinv c * bh) * ceil b = bh * pinv c * bh := by
+    calc ceil b * (bh * pinv c * bh) * ceil b
+        = ceil b * bh * pinv c * (bh * ceil b) := by noncomm_ring
+      _ = bh * pinv c * bh := by rw [hpbh, hbhp]
+  have hy2 : bh * pinv c * bh ≤ ceil b := by
+    have hh := hpproj.isSelfAdjoint.conjugate_le_conjugate hy1
+    rwa [hconj_p, mul_one, hpproj.isIdempotentElem.eq] at hh
+  -- `b^{∼½}b^{½} = ⌈b⌉`
+  have hcomm_bh_pb : Commute bh (pinv b) := hbhC (pinv b) hcomm_b
+  have hcomm_bph_bh : Commute bph bh := hbphC bh hcomm_bh_pb.symm
+  have hz2 : bph * bh * (bph * bh) = ceil b := by
+    calc bph * bh * (bph * bh) = bph * (bh * bph) * bh := by noncomm_ring
+      _ = bph * (bph * bh) * bh := by rw [hcomm_bph_bh.eq]
+      _ = bph * bph * (bh * bh) := by noncomm_ring
+      _ = ceil b := by rw [hbph2, hbh2, e_pbb]
+  have hz0 : (0 : A) ≤ bph * bh := by
+    obtain ⟨u, hu0, hu2, huC⟩ := exists_sqrt_commuting hbph0
+    have hub : Commute u bh := huC bh hcomm_bph_bh
+    have hrw : bph * bh = star u * bh * u := by
+      rw [(IsSelfAdjoint.of_nonneg hu0).star_eq]
+      calc bph * bh = u * u * bh := by rw [hu2]
+        _ = u * (u * bh) := by noncomm_ring
+        _ = u * (bh * u) := by rw [hub.eq]
+        _ = u * bh * u := by noncomm_ring
+    rw [hrw]
+    exact star_left_conjugate_nonneg hbh0 u
+  have hzp : bph * bh = ceil b := by
+    have h1 : CFC.sqrt (ceil b) = bph * bh := CFC.sqrt_unique hz2 hz0
+    have h2 : CFC.sqrt (ceil b) = ceil b :=
+      CFC.sqrt_unique hpproj.isIdempotentElem.eq hpproj.nonneg
+    rw [← h1, h2]
+  -- conjugate by `b^{∼½}`
+  have hbphp' : bph * ceil b * bph = pinv b := by rw [hbphp, hbph2]
+  have hlhs : bph * (bh * pinv c * bh) * bph = ceil b * pinv c * ceil b := by
+    calc bph * (bh * pinv c * bh) * bph
+        = bph * bh * pinv c * (bh * bph) := by noncomm_ring
+      _ = ceil b * pinv c * ceil b := by rw [hzp, ← hcomm_bph_bh.eq, hzp]
+  have hh := hbphsa.conjugate_le_conjugate hy2
+  rwa [hlhs, hbphp'] at hh
 
 /-! **79VI** (`pseudoinverse-basic-2`, vn.tex:5203, Exercise), part 5: the
 element `(0, 0, 1, ½, ⅓, …)` of `ℓ^∞(ℕ)` is not pseudoinvertible.

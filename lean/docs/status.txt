@@ -1230,7 +1230,7 @@ Theses.A.VN.Division|Theses.A.VN.pseudoinverse_basic_2|green
 Theses.A.VN.Division|Theses.A.VN.pseudoinverse_basic_2'_1|green
 Theses.A.VN.Division|Theses.A.VN.pseudoinverse_basic_2'_2|green
 Theses.A.VN.Division|Theses.A.VN.pseudoinverse_basic_2'_3|green
-Theses.A.VN.Division|Theses.A.VN.pseudoinverse_basic_2'_4|red
+Theses.A.VN.Division|Theses.A.VN.pseudoinverse_basic_2'_4|green
 Theses.A.VN.Division|Theses.A.VN.pseudoinverse_basic_2'_4_forces_eq_one|green
 Theses.A.VN.Division|Theses.A.VN.pseudoinverse_basic_2'_4_is_false|green
 Theses.A.VN.Division|Theses.A.VN.pseudoinverse_basic_2'_5|green
@@ -1356,8 +1356,8 @@ Theses.A.VN.Projections|Theses.A.VN.vna_directed_supremum_projections|green
 Theses.A.VN.Projections|Theses.A.VN.vna_floor|green
 Theses.A.VN.Projections|Theses.A.VN.vna_floor_comm|green
 Theses.A.VN.Basic|Theses.A.VN.vna_infimum_commutes|green
-Theses.A.VN.Basic|Theses.A.VN.vna_of_faithful_countably_normal_1|red
-Theses.A.VN.Basic|Theses.A.VN.vna_of_faithful_countably_normal_2|red
+Theses.A.VN.Basic|Theses.A.VN.vna_of_faithful_countably_normal_1|green
+Theses.A.VN.Basic|Theses.A.VN.vna_of_faithful_countably_normal_2|green
 Theses.A.VN.Basic|Theses.A.VN.vna_supremum_commutes|green
 Theses.A.VN.Basic|Theses.A.VN.vna_supremum_mult|green
 Theses.A.VN.Basic|Theses.A.VN.vna_supremum_uslimit|green

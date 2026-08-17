@@ -13,9 +13,11 @@ arXiv:1804.02203), chapter 1: C*-algebras — cstar.tex, lines 1714–3886.
                            positive and negative parts, a*a ≥ 0, vector
                            states, commutative C*-algebras)
 
-All statements of parsecs 130 and 160–260 are proved.  Seven remain `sorry`,
-all in parsecs 140–150 and all behind **14IV** `goursat`: `goursat` itself,
-`invint_2`, `invint_2'`, `invint_3`, `invint_4`, `cauchy_formula` and `taylor`.
+All statements of parsecs 130, 140 and 160–260 are proved.  Two remain `sorry`,
+both in parsec 150: `cauchy_formula` (**15I**) and `taylor` (**15V**), which is
+behind it.  Both now have `goursat` available; what 15I still needs is the
+winding number of the regular `N`-gon around an interior point, which the thesis
+obtains from a triangulation it asserts without constructing.
 See CONVENTIONS.md for the numbering (**16II** = parsec 160, point 20) and
 naming conventions.
 -/
@@ -276,14 +278,394 @@ noncomputable def windingNumber (w₀ w₁ w₂ z : ℂ) : ℝ :=
   (measuredAngle w₀ z w₁ + measuredAngle w₁ z w₂ + measuredAngle w₂ z w₀) /
     (2 * Real.pi)
 
+/-! ### The bisection machinery behind **14IV** `goursat`
+
+The thesis's proof (cstar.tex:2183–2299, after Moore 1900) bisects the triangle
+into four, keeps a quarter carrying at least a quarter of the integral, and in the
+limit uses differentiability at the point common to all of them, together with
+`∫_T (α + βz) dz = 0`, to make the estimate.  **The bisection is transcribed here
+in full**; the *endgame* diverges.  Instead of the thesis's final estimate we use
+Mathlib's Morera theorem for a disc (`DifferentiableOn.isExactOn_ball`, stated for
+any complete complex normed space, so it applies to `𝒜`): the nested triangles
+eventually sit inside a disc contained in `dom(f)`, and there `f` has a primitive,
+which kills the integral outright.  Both routes are elementary; ours is shorter
+and, unlike a rectangle-to-triangle transfer, does not need Mathlib's rectangle
+theorem to be moved across a region it does not cover. -/
+
+
+/-- Reparametrisation: the integral along the sub-segment of `[w,w']` cut out by the
+parameters `p` and `q` is the corresponding partial integral. -/
+private theorem segIntegral_reparam (f : ℂ → 𝒜) (w w' : ℂ) (p q : ℝ) :
+    segIntegral f (w + (p:ℂ) * (w' - w)) (w + (q:ℂ) * (w' - w))
+      = (w' - w) • ∫ t in p..q, f (w + (t:ℂ) * (w' - w)) := by
+  set g : ℝ → 𝒜 := fun t => f (w + (t:ℂ) * (w' - w)) with hg
+  rw [segIntegral]
+  have hsub : (w + (q:ℂ) * (w' - w)) - (w + (p:ℂ) * (w' - w))
+      = ((q - p : ℝ) : ℂ) * (w' - w) := by push_cast; ring
+  rw [hsub]
+  have hfun : (fun t : ℝ =>
+      f (w + (p:ℂ) * (w' - w) + (t:ℂ) * (((q - p : ℝ) : ℂ) * (w' - w))))
+      = fun t : ℝ => g ((q - p) * t + p) := by
+    funext t
+    simp only [hg]
+    congr 1
+    push_cast
+    ring
+  rw [hfun]
+  have hs : (((q - p : ℝ) : ℂ) * (w' - w)) • (∫ t in (0:ℝ)..1, g ((q - p) * t + p))
+      = (w' - w) • ((q - p) • ∫ t in (0:ℝ)..1, g ((q - p) * t + p)) := by
+    rw [← Complex.coe_smul, smul_smul, mul_comm]
+  rw [hs, intervalIntegral.smul_integral_comp_mul_add g (q - p) p,
+    show (q - p) * 0 + p = p by ring, show (q - p) * 1 + p = q by ring]
+
+private theorem segIntegral_endpoints (f : ℂ → 𝒜) (w w' : ℂ) :
+    segIntegral f w w' = (w' - w) • ∫ t in (0:ℝ)..1, f (w + (t:ℂ) * (w' - w)) := rfl
+
+/-- Reversing a segment reverses the sign of the integral. -/
+private theorem segIntegral_symm (f : ℂ → 𝒜) (w w' : ℂ) :
+    segIntegral f w' w = - segIntegral f w w' := by
+  have h1 : w' = w + ((1:ℝ):ℂ) * (w' - w) := by push_cast; ring
+  have h0 : w = w + ((0:ℝ):ℂ) * (w' - w) := by push_cast; ring
+  calc segIntegral f w' w
+      = segIntegral f (w + ((1:ℝ):ℂ) * (w' - w)) (w + ((0:ℝ):ℂ) * (w' - w)) := by
+        rw [← h1, ← h0]
+    _ = (w' - w) • ∫ t in (1:ℝ)..0, f (w + (t:ℂ) * (w' - w)) := segIntegral_reparam f w w' 1 0
+    _ = - segIntegral f w w' := by
+        rw [intervalIntegral.integral_symm, smul_neg, segIntegral_endpoints]
+
+/-- The integrand of a segment integral is continuous when `f` is continuous on the segment. -/
+private theorem segIntegrand_continuousOn (f : ℂ → 𝒜) (w w' : ℂ)
+    (hf : ContinuousOn f (segment ℝ w w')) :
+    ContinuousOn (fun t : ℝ => f (w + (t:ℂ) * (w' - w))) (Set.Icc 0 1) := by
+  refine hf.comp (Continuous.continuousOn (by fun_prop)) ?_
+  intro t ht
+  rw [segment_eq_image' ℝ]
+  exact ⟨t, ht, by simp [Complex.real_smul]⟩
+
+/-- Splitting a segment at an interior parameter splits the integral. -/
+private theorem segIntegral_split (f : ℂ → 𝒜) (w w' : ℂ)
+    (hf : ContinuousOn f (segment ℝ w w')) (s : ℝ) (hs : s ∈ Set.Icc (0:ℝ) 1) :
+    segIntegral f w w'
+      = segIntegral f w (w + (s:ℂ) * (w' - w))
+        + segIntegral f (w + (s:ℂ) * (w' - w)) w' := by
+  obtain ⟨hs0, hs1⟩ := hs
+  set g : ℝ → 𝒜 := fun t => f (w + (t:ℂ) * (w' - w)) with hg
+  have hgc : ContinuousOn g (Set.Icc 0 1) := segIntegrand_continuousOn f w w' hf
+  have h0 : w = w + ((0:ℝ):ℂ) * (w' - w) := by push_cast; ring
+  have h1 : w' = w + ((1:ℝ):ℂ) * (w' - w) := by push_cast; ring
+  have e1 : segIntegral f w (w + (s:ℂ) * (w' - w)) = (w' - w) • ∫ t in (0:ℝ)..s, g t := by
+    simpa using segIntegral_reparam f w w' 0 s
+  have e2 : segIntegral f (w + (s:ℂ) * (w' - w)) w' = (w' - w) • ∫ t in s..(1:ℝ), g t := by
+    simpa using segIntegral_reparam f w w' s 1
+  have i1 : IntervalIntegrable g MeasureTheory.volume 0 s := by
+    apply ContinuousOn.intervalIntegrable
+    rw [Set.uIcc_of_le hs0]
+    exact hgc.mono (Set.Icc_subset_Icc le_rfl hs1)
+  have i2 : IntervalIntegrable g MeasureTheory.volume s 1 := by
+    apply ContinuousOn.intervalIntegrable
+    rw [Set.uIcc_of_le hs1]
+    exact hgc.mono (Set.Icc_subset_Icc hs0 le_rfl)
+  rw [e1, e2, ← smul_add, intervalIntegral.integral_add_adjacent_intervals i1 i2,
+    segIntegral_endpoints]
+
+/-- Splitting a segment at its midpoint. -/
+private theorem segIntegral_split_mid (f : ℂ → 𝒜) (w w' : ℂ)
+    (hf : ContinuousOn f (segment ℝ w w')) :
+    segIntegral f w w' = segIntegral f w ((w + w')/2) + segIntegral f ((w + w')/2) w' := by
+  have h := segIntegral_split f w w' hf (1/2) (by norm_num)
+  rwa [show w + ((1/2:ℝ):ℂ) * (w' - w) = (w + w')/2 by push_cast; ring] at h
+
+/-- The midpoint of two vertices lies in the triangle. -/
+private theorem mid_mem_hull {u v : ℂ} {S : Set ℂ} (hu : u ∈ convexHull ℝ S)
+    (hv : v ∈ convexHull ℝ S) : (u + v)/2 ∈ convexHull ℝ S := by
+  have h := (convex_convexHull ℝ S) hu hv (by norm_num : (0:ℝ) ≤ 1/2)
+    (by norm_num : (0:ℝ) ≤ 1/2) (by norm_num)
+  rwa [show ((1:ℝ)/2) • u + ((1:ℝ)/2) • v = (u + v)/2 by
+    rw [Complex.real_smul, Complex.real_smul]; push_cast; ring] at h
+
+/-- **Bisection**: the triangle integral is the sum of the four integrals over the
+sub-triangles cut out by the midpoints of the sides. -/
+private theorem triIntegral_subdivide (f : ℂ → 𝒜) (w₀ w₁ w₂ : ℂ)
+    (hf : ContinuousOn f (convexHull ℝ {w₀, w₁, w₂})) :
+    triIntegral f w₀ w₁ w₂
+      = triIntegral f w₀ ((w₀ + w₁)/2) ((w₀ + w₂)/2)
+        + triIntegral f ((w₀ + w₁)/2) w₁ ((w₁ + w₂)/2)
+        + triIntegral f ((w₀ + w₂)/2) ((w₁ + w₂)/2) w₂
+        + triIntegral f ((w₀ + w₁)/2) ((w₁ + w₂)/2) ((w₀ + w₂)/2) := by
+  have hmem : ∀ u : ℂ, u ∈ ({w₀, w₁, w₂} : Set ℂ) → u ∈ convexHull ℝ ({w₀, w₁, w₂} : Set ℂ) :=
+    fun u hu => subset_convexHull ℝ _ hu
+  have hseg : ∀ u v : ℂ, u ∈ ({w₀, w₁, w₂} : Set ℂ) → v ∈ ({w₀, w₁, w₂} : Set ℂ) →
+      ContinuousOn f (segment ℝ u v) := fun u v hu hv =>
+    hf.mono ((convex_convexHull ℝ _).segment_subset (hmem u hu) (hmem v hv))
+  have s01 := segIntegral_split_mid f w₀ w₁ (hseg _ _ (by simp) (by simp))
+  have s12 := segIntegral_split_mid f w₁ w₂ (hseg _ _ (by simp) (by simp))
+  have s20 := segIntegral_split_mid f w₂ w₀ (hseg _ _ (by simp) (by simp))
+  rw [show (w₂ + w₀)/2 = (w₀ + w₂)/2 by ring] at s20
+  simp only [triIntegral]
+  rw [s01, s12, s20,
+    segIntegral_symm f ((w₀ + w₁)/2) ((w₀ + w₂)/2),
+    segIntegral_symm f ((w₁ + w₂)/2) ((w₀ + w₁)/2),
+    segIntegral_symm f ((w₀ + w₂)/2) ((w₁ + w₂)/2)]
+  abel
+
+/-- If `f` has a primitive on a convex set, the segment integral telescopes. -/
+private theorem segIntegral_of_primitive (f F : ℂ → 𝒜) {V : Set ℂ} (hV : Convex ℝ V)
+    (hFf : ∀ z ∈ V, HasDerivAt F (f z) z) (hfc : ContinuousOn f V)
+    {w w' : ℂ} (hw : w ∈ V) (hw' : w' ∈ V) :
+    segIntegral f w w' = F w' - F w := by
+  have hmaps : ∀ t ∈ Set.uIcc (0:ℝ) 1, w + (t:ℂ) * (w' - w) ∈ V := by
+    intro t ht
+    rw [Set.uIcc_of_le zero_le_one] at ht
+    have := hV.segment_subset hw hw'
+    refine this ?_
+    rw [segment_eq_image' ℝ]
+    exact ⟨t, ht, by simp [Complex.real_smul]⟩
+  have hγ : ∀ t : ℝ, HasDerivAt (fun s : ℝ => w + (s:ℂ) * (w' - w)) (w' - w) t := by
+    intro t
+    simpa using ((Complex.ofRealCLM.hasDerivAt (x := t)).mul_const (w' - w)).const_add w
+  have hderiv : ∀ t ∈ Set.uIcc (0:ℝ) 1,
+      HasDerivAt (fun s : ℝ => F (w + (s:ℂ) * (w' - w)))
+        ((w' - w) • f (w + (t:ℂ) * (w' - w))) t := by
+    intro t ht
+    exact (hFf _ (hmaps t ht)).scomp t (hγ t)
+  have hcont : ContinuousOn (fun t : ℝ => (w' - w) • f (w + (t:ℂ) * (w' - w)))
+      (Set.uIcc (0:ℝ) 1) := by
+    refine ContinuousOn.const_smul ?_ _
+    refine hfc.comp (Continuous.continuousOn (by fun_prop)) ?_
+    exact fun t ht => hmaps t ht
+  have hFTC := intervalIntegral.integral_eq_sub_of_hasDerivAt hderiv hcont.intervalIntegrable
+  rw [segIntegral_endpoints, ← intervalIntegral.integral_smul, hFTC]
+  norm_num
+
+/-- If `f` has a primitive on a convex set containing the triangle, the triangle
+integral vanishes. -/
+private theorem triIntegral_of_primitive (f F : ℂ → 𝒜) {V : Set ℂ} (hV : Convex ℝ V)
+    (hFf : ∀ z ∈ V, HasDerivAt F (f z) z) (hfc : ContinuousOn f V)
+    {w₀ w₁ w₂ : ℂ} (h0 : w₀ ∈ V) (h1 : w₁ ∈ V) (h2 : w₂ ∈ V) :
+    triIntegral f w₀ w₁ w₂ = 0 := by
+  rw [triIntegral, segIntegral_of_primitive f F hV hFf hfc h0 h1,
+    segIntegral_of_primitive f F hV hFf hfc h1 h2,
+    segIntegral_of_primitive f F hV hFf hfc h2 h0]
+  abel
+
+/-- **Goursat inside a disc**: the case of the theorem that Mathlib's Morera theorem
+(`DifferentiableOn.isExactOn_ball`) settles outright. -/
+private theorem triIntegral_eq_zero_of_ball (f : ℂ → 𝒜) (c : ℂ) (r : ℝ)
+    (hf : DifferentiableOn ℂ f (Metric.ball c r))
+    {w₀ w₁ w₂ : ℂ} (h0 : w₀ ∈ Metric.ball c r) (h1 : w₁ ∈ Metric.ball c r)
+    (h2 : w₂ ∈ Metric.ball c r) :
+    triIntegral f w₀ w₁ w₂ = 0 := by
+  obtain ⟨F, hF⟩ := hf.isExactOn_ball
+  exact triIntegral_of_primitive f F (convex_ball c r) hF hf.continuousOn h0 h1 h2
+
+/-- The longest side of a triangle. -/
+private noncomputable def triSideMax (u₀ u₁ u₂ : ℂ) : ℝ :=
+  max (dist u₀ u₁) (max (dist u₁ u₂) (dist u₂ u₀))
+
+private theorem dist_half_le {a b c d : ℂ} {S : ℝ} (h : a - b = (c - d)/2)
+    (hcd : dist c d ≤ S) : dist a b ≤ S/2 := by
+  have h2 : ‖(2:ℂ)‖ = 2 := by norm_num
+  rw [dist_eq_norm] at hcd
+  rw [dist_eq_norm, h, norm_div, h2]
+  linarith
+
+private theorem sub_triangle_ok {u₀ u₁ u₂ v₀ v₁ v₂ : ℂ}
+    (hm0 : v₀ ∈ convexHull ℝ ({u₀, u₁, u₂} : Set ℂ))
+    (hm1 : v₁ ∈ convexHull ℝ ({u₀, u₁, u₂} : Set ℂ))
+    (hm2 : v₂ ∈ convexHull ℝ ({u₀, u₁, u₂} : Set ℂ))
+    (d0 : dist v₀ v₁ ≤ triSideMax u₀ u₁ u₂ / 2)
+    (d1 : dist v₁ v₂ ≤ triSideMax u₀ u₁ u₂ / 2)
+    (d2 : dist v₂ v₀ ≤ triSideMax u₀ u₁ u₂ / 2) :
+    convexHull ℝ ({v₀, v₁, v₂} : Set ℂ) ⊆ convexHull ℝ ({u₀, u₁, u₂} : Set ℂ)
+      ∧ triSideMax v₀ v₁ v₂ ≤ triSideMax u₀ u₁ u₂ / 2 := by
+  refine ⟨convexHull_min ?_ (convex_convexHull ℝ _), max_le d0 (max_le d1 d2)⟩
+  intro x hx
+  simp only [Set.mem_insert_iff, Set.mem_singleton_iff] at hx
+  rcases hx with rfl | rfl | rfl <;> assumption
+
+/-- One bisection step: among the four sub-triangles there is one carrying at least a
+quarter of the integral, contained in the parent and with half its longest side. -/
+private theorem exists_subtriangle (f : ℂ → 𝒜) (u₀ u₁ u₂ : ℂ)
+    (hf : ContinuousOn f (convexHull ℝ ({u₀, u₁, u₂} : Set ℂ))) :
+    ∃ v : ℂ × ℂ × ℂ,
+      convexHull ℝ ({v.1, v.2.1, v.2.2} : Set ℂ) ⊆ convexHull ℝ ({u₀, u₁, u₂} : Set ℂ) ∧
+      triSideMax v.1 v.2.1 v.2.2 ≤ triSideMax u₀ u₁ u₂ / 2 ∧
+      ‖triIntegral f u₀ u₁ u₂‖ ≤ 4 * ‖triIntegral f v.1 v.2.1 v.2.2‖ := by
+  set S := triSideMax u₀ u₁ u₂ with hS
+  have hd01 : dist u₀ u₁ ≤ S := le_max_left _ _
+  have hd12 : dist u₁ u₂ ≤ S := le_trans (le_max_left _ _) (le_max_right _ _)
+  have hd20 : dist u₂ u₀ ≤ S := le_trans (le_max_right _ _) (le_max_right _ _)
+  have hd10 : dist u₁ u₀ ≤ S := by rw [dist_comm]; exact hd01
+  have hd21 : dist u₂ u₁ ≤ S := by rw [dist_comm]; exact hd12
+  have hd02 : dist u₀ u₂ ≤ S := by rw [dist_comm]; exact hd20
+  set p := (u₀ + u₁)/2 with hp
+  set q := (u₁ + u₂)/2 with hq
+  set r := (u₀ + u₂)/2 with hr
+  have e0 : u₀ ∈ convexHull ℝ ({u₀, u₁, u₂} : Set ℂ) := subset_convexHull ℝ _ (by simp)
+  have e1 : u₁ ∈ convexHull ℝ ({u₀, u₁, u₂} : Set ℂ) := subset_convexHull ℝ _ (by simp)
+  have e2 : u₂ ∈ convexHull ℝ ({u₀, u₁, u₂} : Set ℂ) := subset_convexHull ℝ _ (by simp)
+  have ep : p ∈ convexHull ℝ ({u₀, u₁, u₂} : Set ℂ) := mid_mem_hull e0 e1
+  have eq' : q ∈ convexHull ℝ ({u₀, u₁, u₂} : Set ℂ) := mid_mem_hull e1 e2
+  have er : r ∈ convexHull ℝ ({u₀, u₁, u₂} : Set ℂ) := mid_mem_hull e0 e2
+  have hA := sub_triangle_ok e0 ep er
+    (dist_half_le (by rw [hp]; ring) hd01) (dist_half_le (by rw [hp, hr]; ring) hd12)
+    (dist_half_le (by rw [hr]; ring) hd20)
+  have hB := sub_triangle_ok ep e1 eq'
+    (dist_half_le (by rw [hp]; ring) hd01) (dist_half_le (by rw [hq]; ring) hd12)
+    (dist_half_le (by rw [hp, hq]; ring) hd20)
+  have hC := sub_triangle_ok er eq' e2
+    (dist_half_le (by rw [hr, hq]; ring) hd01) (dist_half_le (by rw [hq]; ring) hd12)
+    (dist_half_le (by rw [hr]; ring) hd20)
+  have hD := sub_triangle_ok ep eq' er
+    (dist_half_le (by rw [hp, hq]; ring) hd02) (dist_half_le (by rw [hq, hr]; ring) hd10)
+    (dist_half_le (by rw [hr, hp]; ring) hd21)
+  have hsub := triIntegral_subdivide f u₀ u₁ u₂ hf
+  rw [← hp, ← hq, ← hr] at hsub
+  have hquarter : ‖triIntegral f u₀ u₁ u₂‖ ≤ 4 * ‖triIntegral f u₀ p r‖ ∨
+      ‖triIntegral f u₀ u₁ u₂‖ ≤ 4 * ‖triIntegral f p u₁ q‖ ∨
+      ‖triIntegral f u₀ u₁ u₂‖ ≤ 4 * ‖triIntegral f r q u₂‖ ∨
+      ‖triIntegral f u₀ u₁ u₂‖ ≤ 4 * ‖triIntegral f p q r‖ := by
+    by_contra hcon
+    push_neg at hcon
+    obtain ⟨ha, hb, hc, hd⟩ := hcon
+    have t1 := norm_add_le (triIntegral f u₀ p r + triIntegral f p u₁ q
+      + triIntegral f r q u₂) (triIntegral f p q r)
+    have t2 := norm_add_le (triIntegral f u₀ p r + triIntegral f p u₁ q)
+      (triIntegral f r q u₂)
+    have t3 := norm_add_le (triIntegral f u₀ p r) (triIntegral f p u₁ q)
+    rw [hsub] at ha hb hc hd
+    linarith
+  rcases hquarter with h | h | h | h
+  · exact ⟨(u₀, p, r), hA.1, hA.2, h⟩
+  · exact ⟨(p, u₁, q), hB.1, hB.2, h⟩
+  · exact ⟨(r, q, u₂), hC.1, hC.2, h⟩
+  · exact ⟨(p, q, r), hD.1, hD.2, h⟩
+
+private theorem hull_subset_closedBall (v₀ v₁ v₂ : ℂ) :
+    convexHull ℝ ({v₀, v₁, v₂} : Set ℂ) ⊆ Metric.closedBall v₀ (triSideMax v₀ v₁ v₂) := by
+  refine convexHull_min ?_ (convex_closedBall _ _)
+  intro x hx
+  simp only [Set.mem_insert_iff, Set.mem_singleton_iff] at hx
+  rcases hx with rfl | rfl | rfl
+  · refine Metric.mem_closedBall.mpr ?_
+    rw [dist_self]
+    exact le_trans dist_nonneg (le_max_left (dist x v₁) _)
+  · exact Metric.mem_closedBall.mpr (by rw [dist_comm]; exact le_max_left _ _)
+  · exact Metric.mem_closedBall.mpr
+      (le_trans (le_max_right _ _) (le_max_right _ _))
+
 /-- **14IV** (`goursat`, cstar.tex:2177, Goursat's Theorem): `∫_T f = 0` for
 a holomorphic 𝒜-valued function `f` and a triangle `T` whose closure (convex
 hull of its vertices) lies inside `dom(f)`. -/
 theorem goursat {U : Set ℂ} (hU : IsOpen U) (f : ℂ → 𝒜)
     (hf : DifferentiableOn ℂ f U) (w₀ w₁ w₂ : ℂ)
     (hT : convexHull ℝ {w₀, w₁, w₂} ⊆ U) :
-    triIntegral f w₀ w₁ w₂ = 0 :=
-  sorry
+    triIntegral f w₀ w₁ w₂ = 0 := by
+  set K : Set ℂ := convexHull ℝ ({w₀, w₁, w₂} : Set ℂ) with hK
+  set S₀ : ℝ := triSideMax w₀ w₁ w₂ with hS₀
+  have hS₀0 : 0 ≤ S₀ := le_trans dist_nonneg (le_max_left (dist w₀ w₁) _)
+  -- a total bisection step
+  have key : ∀ P : ℂ × ℂ × ℂ, ∃ v : ℂ × ℂ × ℂ,
+      convexHull ℝ ({P.1, P.2.1, P.2.2} : Set ℂ) ⊆ K →
+        (convexHull ℝ ({v.1, v.2.1, v.2.2} : Set ℂ)
+            ⊆ convexHull ℝ ({P.1, P.2.1, P.2.2} : Set ℂ) ∧
+          triSideMax v.1 v.2.1 v.2.2 ≤ triSideMax P.1 P.2.1 P.2.2 / 2 ∧
+          ‖triIntegral f P.1 P.2.1 P.2.2‖ ≤ 4 * ‖triIntegral f v.1 v.2.1 v.2.2‖) := by
+    intro P
+    by_cases hc : convexHull ℝ ({P.1, P.2.1, P.2.2} : Set ℂ) ⊆ K
+    · obtain ⟨v, hv⟩ := exists_subtriangle f P.1 P.2.1 P.2.2
+        (hf.continuousOn.mono (hc.trans hT))
+      exact ⟨v, fun _ => hv⟩
+    · exact ⟨P, fun h => absurd h hc⟩
+  choose F hF using key
+  set T : ℕ → ℂ × ℂ × ℂ := fun n => F^[n] (w₀, w₁, w₂) with hTdef
+  have hT0 : T 0 = (w₀, w₁, w₂) := rfl
+  have hTsucc : ∀ n, T (n + 1) = F (T n) := fun n => Function.iterate_succ_apply' F n _
+  have hsub : ∀ n, convexHull ℝ ({(T n).1, (T n).2.1, (T n).2.2} : Set ℂ) ⊆ K := by
+    intro n
+    induction n with
+    | zero => exact subset_rfl
+    | succ n ih => rw [hTsucc n]; exact ((hF (T n)) ih).1.trans ih
+  have hstep : ∀ n, convexHull ℝ ({(T (n+1)).1, (T (n+1)).2.1, (T (n+1)).2.2} : Set ℂ)
+      ⊆ convexHull ℝ ({(T n).1, (T n).2.1, (T n).2.2} : Set ℂ) := by
+    intro n; rw [hTsucc n]; exact ((hF (T n)) (hsub n)).1
+  have hside : ∀ n, triSideMax (T n).1 (T n).2.1 (T n).2.2 ≤ S₀ / 2 ^ n := by
+    intro n
+    induction n with
+    | zero => rw [hT0]; simp [hS₀]
+    | succ n ih =>
+        have h := ((hF (T n)) (hsub n)).2.1
+        rw [hTsucc n]
+        rw [pow_succ]
+        rw [← div_div]
+        calc triSideMax (F (T n)).1 (F (T n)).2.1 (F (T n)).2.2
+            ≤ triSideMax (T n).1 (T n).2.1 (T n).2.2 / 2 := h
+          _ ≤ (S₀ / 2 ^ n) / 2 := by linarith
+  have hnorm : ∀ n, ‖triIntegral f w₀ w₁ w₂‖
+      ≤ 4 ^ n * ‖triIntegral f (T n).1 (T n).2.1 (T n).2.2‖ := by
+    intro n
+    induction n with
+    | zero => rw [hT0]; simp
+    | succ n ih =>
+        have h := ((hF (T n)) (hsub n)).2.2
+        rw [hTsucc n, pow_succ]
+        have h4 : (0:ℝ) ≤ 4 ^ n := by positivity
+        nlinarith [ih, h, h4]
+  -- the first vertices form a Cauchy sequence
+  set a : ℕ → ℂ := fun n => (T n).1 with ha
+  have hmem : ∀ n, a n ∈ convexHull ℝ ({(T n).1, (T n).2.1, (T n).2.2} : Set ℂ) :=
+    fun n => subset_convexHull ℝ _ (by simp [ha])
+  have hcauchyBound : ∀ n, dist (a n) (a (n + 1)) ≤ (2 * S₀) / 2 / 2 ^ n := by
+    intro n
+    have h1 : a (n + 1) ∈ convexHull ℝ ({(T n).1, (T n).2.1, (T n).2.2} : Set ℂ) :=
+      hstep n (hmem (n + 1))
+    have h2 := hull_subset_closedBall (T n).1 (T n).2.1 (T n).2.2 h1
+    rw [Metric.mem_closedBall, dist_comm] at h2
+    have := hside n
+    calc dist (a n) (a (n + 1)) ≤ triSideMax (T n).1 (T n).2.1 (T n).2.2 := h2
+      _ ≤ S₀ / 2 ^ n := this
+      _ = (2 * S₀) / 2 / 2 ^ n := by ring
+  obtain ⟨z, hz⟩ := cauchySeq_tendsto_of_complete (cauchySeq_of_le_geometric_two hcauchyBound)
+  have hdistz : ∀ n, dist (a n) z ≤ (2 * S₀) / 2 ^ n :=
+    fun n => dist_le_of_le_geometric_two_of_tendsto hcauchyBound hz n
+  -- the limit lies in the triangle, hence in `U`
+  have hzK : z ∈ K :=
+    ((Set.toFinite _).isClosed_convexHull ℝ).mem_of_tendsto hz
+      (Filter.Eventually.of_forall fun n => hsub n (hmem n))
+  obtain ⟨δ, hδ, hball⟩ := Metric.isOpen_iff.mp hU z (hT hzK)
+  -- for `n` large the `n`-th triangle sits inside that ball
+  obtain ⟨n, hn⟩ := exists_pow_lt_of_lt_one (show 0 < δ / (3 * S₀ + 1) by positivity)
+    (show (1:ℝ)/2 < 1 by norm_num)
+  have hpow : (0:ℝ) < 2 ^ n := by positivity
+  have hc0 : (0:ℝ) < 3 * S₀ + 1 := by linarith
+  have hn' : (3 * S₀ + 1) / 2 ^ n < δ := by
+    rw [div_pow, one_pow, lt_div_iff₀ hc0] at hn
+    have h3 := mul_lt_mul_of_pos_right hn hpow
+    rw [div_lt_iff₀ hpow]
+    calc 3 * S₀ + 1 = 1 / 2 ^ n * (3 * S₀ + 1) * 2 ^ n := by field_simp
+      _ < δ * 2 ^ n := h3
+  have hin : convexHull ℝ ({(T n).1, (T n).2.1, (T n).2.2} : Set ℂ) ⊆ Metric.ball z δ := by
+    intro x hx
+    have h2 := hull_subset_closedBall (T n).1 (T n).2.1 (T n).2.2 hx
+    rw [Metric.mem_closedBall] at h2
+    have h3 := hside n
+    have h4 : dist (T n).1 z ≤ (2 * S₀) / 2 ^ n := hdistz n
+    have h5 : dist x z ≤ dist x (T n).1 + dist (T n).1 z := dist_triangle _ _ _
+    have h6 : S₀ / 2 ^ n + (2 * S₀) / 2 ^ n ≤ (3 * S₀ + 1) / 2 ^ n := by
+      have hinv : (0:ℝ) < 1 / 2 ^ n := by positivity
+      have e1 : S₀ / 2 ^ n = S₀ * (1 / 2 ^ n) := by ring
+      have e2 : (2 * S₀) / 2 ^ n = (2 * S₀) * (1 / 2 ^ n) := by ring
+      have e3 : (3 * S₀ + 1) / 2 ^ n = (3 * S₀ + 1) * (1 / 2 ^ n) := by ring
+      rw [e1, e2, e3]
+      nlinarith [hinv]
+    exact Metric.mem_ball.mpr (by linarith)
+  have hzero : triIntegral f (T n).1 (T n).2.1 (T n).2.2 = 0 :=
+    triIntegral_eq_zero_of_ball f z δ (hf.mono hball) (hin (hmem n))
+      (hin (subset_convexHull ℝ _ (by simp))) (hin (subset_convexHull ℝ _ (by simp)))
+  have hfin := hnorm n
+  rw [hzero, norm_zero, mul_zero] at hfin
+  exact norm_le_zero_iff.mp hfin
+
 
 /-- **14VIII** (`invint`, cstar.tex:2302, Exercise), part 1: for a non-zero
 complex number `z`, `z⁻¹ = (Re z - i Im z)/(Re z² + Im z²)`. -/
@@ -297,6 +679,122 @@ theorem invint_1 (z : ℂ) (hz : z ≠ 0) :
       apply Complex.ext <;> simp
     rw [h1, h2, Complex.inv_def, div_eq_mul_inv, Complex.ofReal_inv]
 
+/-! **Divergence from the thesis, recorded here for all four parts of 14VIII.**
+The thesis's route is 2 → 3 → 4: it computes the two axis-parallel segment
+integrals by hand and then reduces the general segment to those *using Goursat's
+Theorem* ("using Goursat's Theorem one may reduce the problem to horizontal and
+vertical line segments", cstar.tex:2364).  Here the order is reversed and
+**Goursat is not used at all**: part 3 is proved directly, and parts 2, 2′ and 4
+are read off from it.  The observation that makes this work is that if `z₀`
+misses the segment `[w,w']` then the rescaled segment from `1` to
+`ζ := (w'-z₀)/(w-z₀)` misses not merely `0` but the whole branch cut `(-∞,0]`
+(`affine_mem_slitPlane` below), so `Complex.log` is a genuine antiderivative of
+`z⁻¹` along it and the fundamental theorem of calculus applies in one step.
+Both proofs are elementary; the thesis's is not wrong, only more expensive. -/
+
+/-- Auxiliary for **14VIII**.3: if the segment from `1` to `ζ` misses `0`, then
+it misses the whole branch cut `(-∞,0]` of `Complex.log`.  (Along the segment
+the imaginary part is `t·Im ζ`; where that vanishes either `t = 0`, giving the
+point `1`, or `ζ` is real — and a real `ζ ≤ 0` would put `0` on the segment.) -/
+private theorem affine_mem_slitPlane {ζ : ℂ}
+    (hζ : ∀ s : ℝ, s ∈ Set.Icc (0:ℝ) 1 → (1:ℂ) + (s : ℂ) * (ζ - 1) ≠ 0)
+    {t : ℝ} (ht : t ∈ Set.Icc (0:ℝ) 1) :
+    (1 : ℂ) + (t : ℂ) * (ζ - 1) ∈ Complex.slitPlane := by
+  obtain ⟨ht0, ht1⟩ := ht
+  by_contra hc
+  rw [Complex.mem_slitPlane_iff, not_or, not_lt, not_not] at hc
+  obtain ⟨hre, him⟩ := hc
+  simp only [Complex.add_re, Complex.add_im, Complex.one_re, Complex.one_im, Complex.mul_re,
+    Complex.mul_im, Complex.ofReal_re, Complex.ofReal_im, Complex.sub_re, Complex.sub_im,
+    zero_mul, sub_zero, add_zero, zero_add] at hre him
+  have him' : t * ζ.im = 0 := him
+  have hre' : 1 + t * (ζ.re - 1) ≤ 0 := hre
+  have ht0' : t ≠ 0 := by
+    rintro rfl; simp at hre'; linarith
+  have hzim : ζ.im = 0 := by
+    rcases mul_eq_zero.mp him' with h | h
+    · exact absurd h ht0'
+    · exact h
+  have htpos : 0 < t := lt_of_le_of_ne ht0 (Ne.symm ht0')
+  obtain ⟨c, hc⟩ : ∃ c : ℝ, ζ = (c : ℂ) :=
+    ⟨ζ.re, Complex.ext (by simp) (by simp [hzim])⟩
+  have hcre : ζ.re = c := by rw [hc]; simp
+  rw [hcre] at hre'
+  have hc0 : c ≤ 0 := by nlinarith
+  have h1c : (0:ℝ) < 1 - c := by linarith
+  have hcne : ((1 - c : ℝ) : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr (ne_of_gt h1c)
+  have h1c' : (1 : ℂ) - (c : ℂ) ≠ 0 := by push_cast at hcne; exact hcne
+  refine hζ (1 / (1 - c)) ⟨by positivity, by rw [div_le_one h1c]; linarith⟩ ?_
+  rw [hc]
+  push_cast
+  field_simp
+  ring
+
+/-- Auxiliary: on the right half plane `arg` is `arctan` of the slope. -/
+private theorem arg_eq_arctan {x : ℂ} (hx : 0 < x.re) :
+    x.arg = Real.arctan (x.im / x.re) := by
+  have h := Complex.abs_arg_lt_pi_div_two_iff.mpr (Or.inl hx)
+  rw [abs_lt] at h
+  rw [← Complex.tan_arg, Real.arctan_tan h.1 h.2]
+
+/-- The content of **14VIII**.3, factored out because parts 2, 2′ and 4 are all
+special cases of it: `∫_w^{w'} (z-z₀)⁻¹ dz = Log((w'-z₀)/(w-z₀))`. -/
+private theorem segment_inv_integral (w w' z₀ : ℂ) (hz₀ : z₀ ∉ segment ℝ w w') :
+    segIntegral (fun z => (z - z₀)⁻¹) w w' =
+      (measuredAngle w z₀ w' : ℂ) * Complex.I +
+        (Real.log (‖w' - z₀‖ / ‖w - z₀‖) : ℂ) := by
+  have hu : w - z₀ ≠ 0 := by
+    intro h
+    rw [sub_eq_zero] at h
+    exact hz₀ (h ▸ left_mem_segment ℝ w w')
+  set ζ : ℂ := (w' - z₀) / (w - z₀) with hζdef
+  have hvu : (w' - z₀) = ζ * (w - z₀) := by rw [hζdef]; field_simp
+  have hww : w' - w = (w - z₀) * (ζ - 1) := by
+    have h : w' - w = (w' - z₀) - (w - z₀) := by ring
+    rw [h, hvu]; ring
+  -- the affine path `p t = 1 + t (ζ - 1)` misses `0`, since a zero of it would
+  -- exhibit `z₀` as a point of `[w,w']`
+  have hpne : ∀ s : ℝ, s ∈ Set.Icc (0:ℝ) 1 → (1:ℂ) + (s : ℂ) * (ζ - 1) ≠ 0 := by
+    intro s hs hzero
+    refine hz₀ ?_
+    rw [segment_eq_image' ℝ w w']
+    refine ⟨s, hs, ?_⟩
+    have hexp : w + (s:ℝ) • (w' - w) - z₀ = (w - z₀) * ((1:ℂ) + (s : ℂ) * (ζ - 1)) := by
+      rw [Complex.real_smul, hww]; ring
+    rw [hzero, mul_zero, sub_eq_zero] at hexp
+    exact hexp
+  -- so `Log ∘ p` is an antiderivative of the integrand
+  have hderiv : ∀ t ∈ Set.uIcc (0:ℝ) 1,
+      HasDerivAt (fun s : ℝ => Complex.log ((1:ℂ) + (s : ℂ) * (ζ - 1)))
+        ((ζ - 1) / ((1:ℂ) + (t : ℂ) * (ζ - 1))) t := by
+    intro t ht
+    rw [Set.uIcc_of_le zero_le_one] at ht
+    have h1 : HasDerivAt (fun s : ℝ => (1:ℂ) + (s : ℂ) * (ζ - 1)) (ζ - 1) t := by
+      simpa using ((Complex.ofRealCLM.hasDerivAt (x := t)).mul_const (ζ - 1)).const_add (1:ℂ)
+    exact h1.clog_real (affine_mem_slitPlane hpne ht)
+  have hcont : ContinuousOn
+      (fun t : ℝ => (ζ - 1) / ((1:ℂ) + (t : ℂ) * (ζ - 1))) (Set.uIcc (0:ℝ) 1) := by
+    rw [Set.uIcc_of_le zero_le_one]
+    refine ContinuousOn.div continuousOn_const ?_ ?_
+    · fun_prop
+    · intro t ht; exact hpne t ht
+  have hFTC : (∫ t in (0:ℝ)..1, (ζ - 1) / ((1:ℂ) + (t : ℂ) * (ζ - 1)))
+      = Complex.log ζ := by
+    rw [intervalIntegral.integral_eq_sub_of_hasDerivAt hderiv hcont.intervalIntegrable]
+    simp
+  have hrw : ∀ t : ℝ, (w' - w) * ((w + (t:ℂ) * (w' - w) - z₀)⁻¹)
+      = (ζ - 1) / ((1:ℂ) + (t : ℂ) * (ζ - 1)) := by
+    intro t
+    have hfac : w + (t:ℂ) * (w' - w) - z₀ = (w - z₀) * ((1:ℂ) + (t : ℂ) * (ζ - 1)) := by
+      rw [hww]; ring
+    rw [hfac, hww, mul_inv, div_eq_mul_inv]
+    field_simp
+  have hseg : segIntegral (fun z => (z - z₀)⁻¹) w w' = Complex.log ζ := by
+    rw [segIntegral, smul_eq_mul, ← hFTC, ← intervalIntegral.integral_const_mul]
+    exact intervalIntegral.integral_congr fun t _ => hrw t
+  rw [hseg, Complex.log, measuredAngle, ← hζdef, norm_div]
+  ring
+
 /-- **14VIII** (`invint`, cstar.tex:2302, Exercise), part 2 (vertical
 segment): `∫_a^{a+ib} z⁻¹ dz = i arctan(b/a) + log|a+ib| - log|ia|` for real
 `a ≠ 0` and `b`. -/
@@ -305,7 +803,38 @@ theorem invint_2 (a b : ℝ) (ha : a ≠ 0) :
       (Real.arctan (b / a) : ℂ) * Complex.I +
         (Real.log ‖(a : ℂ) + (b : ℂ) * Complex.I‖ : ℂ) -
         (Real.log ‖(a : ℂ) * Complex.I‖ : ℂ) :=
-  sorry
+  by
+    -- the special case `z₀ = 0` of `segment_inv_integral`; the segment misses
+    -- `0` because every point on it has real part `a ≠ 0`
+    have hz₀ : (0 : ℂ) ∉ segment ℝ (a : ℂ) ((a : ℂ) + (b : ℂ) * Complex.I) := by
+      rw [segment_eq_image' ℝ]
+      rintro ⟨t, _, ht⟩
+      have := congrArg Complex.re ht
+      simp [Complex.real_smul] at this
+      exact ha this
+    have key := segment_inv_integral (a : ℂ) ((a : ℂ) + (b : ℂ) * Complex.I) 0 hz₀
+    have hfun : (fun z : ℂ => (z - 0)⁻¹) = (fun z : ℂ => z⁻¹) := by funext z; rw [sub_zero]
+    rw [hfun] at key
+    rw [key]
+    have haC : (a : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr ha
+    have hratio : ((a : ℂ) + (b : ℂ) * Complex.I - 0) / ((a : ℂ) - 0)
+        = 1 + ((b / a : ℝ) : ℂ) * Complex.I := by
+      push_cast
+      field_simp
+      ring
+    have hangle : measuredAngle (a : ℂ) 0 ((a : ℂ) + (b : ℂ) * Complex.I)
+        = Real.arctan (b / a) := by
+      rw [measuredAngle, hratio, arg_eq_arctan (by simp)]
+      simp
+    have hn1 : ‖(a : ℂ) + (b : ℂ) * Complex.I‖ ≠ 0 := by
+      simp only [ne_eq, norm_eq_zero]
+      intro h
+      exact ha (by simpa using congrArg Complex.re h)
+    have hn2 : ‖(a : ℂ)‖ ≠ 0 := by simpa using ha
+    rw [hangle, sub_zero, sub_zero, Real.log_div hn1 hn2,
+      show ‖(a : ℂ) * Complex.I‖ = ‖(a : ℂ)‖ by simp]
+    push_cast
+    ring
 
 /-- **14VIII** (`invint`, cstar.tex:2302, Exercise), part 2 (horizontal
 segment): `∫_{a+ib}^{ib} z⁻¹ dz = i arctan(a/b) + log|ib| - log|a+ib|` for
@@ -316,7 +845,55 @@ theorem invint_2' (a b : ℝ) (hb : b ≠ 0) :
       (Real.arctan (a / b) : ℂ) * Complex.I +
         (Real.log ‖(b : ℂ) * Complex.I‖ : ℂ) -
         (Real.log ‖(a : ℂ) + (b : ℂ) * Complex.I‖ : ℂ) :=
-  sorry
+  by
+    -- again the case `z₀ = 0` of `segment_inv_integral`; this time the segment
+    -- misses `0` because every point on it has imaginary part `b ≠ 0`
+    have hb' : (b : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hb
+    have hsq : (a ^ 2 + b ^ 2 : ℝ) ≠ 0 := by positivity
+    have hsqC : ((a : ℂ) ^ 2 + (b : ℂ) ^ 2) ≠ 0 := by
+      have h : (((a ^ 2 + b ^ 2 : ℝ)) : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hsq
+      push_cast at h; exact h
+    have hz₀ : (0 : ℂ) ∉ segment ℝ ((a : ℂ) + (b : ℂ) * Complex.I) ((b : ℂ) * Complex.I) := by
+      rw [segment_eq_image' ℝ]
+      rintro ⟨t, _, ht⟩
+      have := congrArg Complex.im ht
+      simp [Complex.real_smul] at this
+      exact hb this
+    have key := segment_inv_integral ((a : ℂ) + (b : ℂ) * Complex.I) ((b : ℂ) * Complex.I) 0 hz₀
+    have hfun : (fun z : ℂ => (z - 0)⁻¹) = (fun z : ℂ => z⁻¹) := by funext z; rw [sub_zero]
+    rw [hfun] at key
+    rw [key]
+    have hden : (a : ℂ) + (b : ℂ) * Complex.I ≠ 0 := by
+      intro h
+      exact hb (by simpa using congrArg Complex.im h)
+    have hratio : ((b : ℂ) * Complex.I - 0) / ((a : ℂ) + (b : ℂ) * Complex.I - 0)
+        = ((b ^ 2 / (a ^ 2 + b ^ 2) : ℝ) : ℂ)
+          + ((a * b / (a ^ 2 + b ^ 2) : ℝ) : ℂ) * Complex.I := by
+      rw [sub_zero, sub_zero, div_eq_iff hden]
+      push_cast
+      field_simp
+      linear_combination (-((a : ℂ) * (b : ℂ))) * Complex.I_sq
+    have hre : (0:ℝ) < b ^ 2 / (a ^ 2 + b ^ 2) := by positivity
+    have hrepos : (0:ℝ) < (((b ^ 2 / (a ^ 2 + b ^ 2) : ℝ) : ℂ)
+        + ((a * b / (a ^ 2 + b ^ 2) : ℝ) : ℂ) * Complex.I).re := by
+      simp only [Complex.add_re, Complex.ofReal_re, Complex.mul_re, Complex.ofReal_im,
+        Complex.I_re, Complex.I_im, mul_zero, sub_zero, add_zero, mul_one]
+      exact hre
+    have hangle : measuredAngle ((a : ℂ) + (b : ℂ) * Complex.I) 0 ((b : ℂ) * Complex.I)
+        = Real.arctan (a / b) := by
+      rw [measuredAngle, hratio, arg_eq_arctan hrepos]
+      congr 1
+      simp only [Complex.add_re, Complex.add_im, Complex.ofReal_re, Complex.ofReal_im,
+        Complex.mul_re, Complex.mul_im, Complex.I_re, Complex.I_im, mul_zero, mul_one,
+        sub_zero, add_zero, zero_add]
+      field_simp
+    have hn1 : ‖(b : ℂ) * Complex.I‖ ≠ 0 := by simpa using hb
+    have hn2 : ‖(a : ℂ) + (b : ℂ) * Complex.I‖ ≠ 0 := by
+      simp only [ne_eq, norm_eq_zero]
+      exact hden
+    rw [hangle, sub_zero, sub_zero, Real.log_div hn1 hn2]
+    push_cast
+    ring
 
 /-- **14VIII** (`invint`, cstar.tex:2302, Exercise), part 3:
 `∫_w^{w'} (z - z₀)⁻¹ dz = i ∠(w, z₀, w') + log(|w' - z₀|/|w - z₀|)` when
@@ -325,7 +902,8 @@ theorem invint_3 (w w' z₀ : ℂ) (hz₀ : z₀ ∉ segment ℝ w w') :
     segIntegral (fun z => (z - z₀)⁻¹) w w' =
       (measuredAngle w z₀ w' : ℂ) * Complex.I +
         (Real.log (‖w' - z₀‖ / ‖w - z₀‖) : ℂ) :=
-  sorry
+  -- proved without Goursat; see the divergence note above `affine_mem_slitPlane`
+  segment_inv_integral w w' z₀ hz₀
 
 /-- **14VIII** (`invint`, cstar.tex:2302, Exercise), part 4:
 `(2πi)⁻¹ ∫_T (z - z₀)⁻¹ dz = wn_T(z₀)` for a triangle `T` and a point `z₀`
@@ -334,7 +912,28 @@ theorem invint_4 (w₀ w₁ w₂ z₀ : ℂ)
     (h : z₀ ∉ segment ℝ w₀ w₁ ∪ segment ℝ w₁ w₂ ∪ segment ℝ w₂ w₀) :
     triIntegral (fun z => (z - z₀)⁻¹) w₀ w₁ w₂ =
       2 * (Real.pi : ℂ) * Complex.I * (windingNumber w₀ w₁ w₂ z₀ : ℂ) :=
-  sorry
+  by
+    -- the thesis's own argument: apply part 3 to each of the three sides; the
+    -- three logarithms telescope to `log 1 = 0` and the three angles are, by
+    -- definition, `2π` times the winding number
+    rw [Set.union_assoc] at h
+    simp only [Set.mem_union, not_or] at h
+    obtain ⟨h01, h12, h20⟩ := h
+    have n0 : ‖w₀ - z₀‖ ≠ 0 := by
+      simp only [ne_eq, norm_eq_zero, sub_eq_zero]
+      rintro rfl; exact h01 (left_mem_segment ℝ w₀ w₁)
+    have n1 : ‖w₁ - z₀‖ ≠ 0 := by
+      simp only [ne_eq, norm_eq_zero, sub_eq_zero]
+      rintro rfl; exact h12 (left_mem_segment ℝ w₁ w₂)
+    have n2 : ‖w₂ - z₀‖ ≠ 0 := by
+      simp only [ne_eq, norm_eq_zero, sub_eq_zero]
+      rintro rfl; exact h20 (left_mem_segment ℝ w₂ w₀)
+    rw [triIntegral, invint_3 w₀ w₁ z₀ h01, invint_3 w₁ w₂ z₀ h12, invint_3 w₂ w₀ z₀ h20,
+      Real.log_div n1 n0, Real.log_div n2 n1, Real.log_div n0 n2, windingNumber]
+    have hpi : (Real.pi : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr Real.pi_ne_zero
+    push_cast
+    field_simp
+    ring
 
 /-! ## Parsec 150: Cauchy's integral formula and Taylor expansion -/
 
