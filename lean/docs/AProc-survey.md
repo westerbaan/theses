@@ -1,15 +1,48 @@
 # `Theses/A/Proc/` — full survey of the remaining `sorry`s (worker 71, 2026-08-16; revised workers 72–88, sessions 47–83)
 
-**Headline count: A/Proc has 21 code `sorry`s** after session 83 (session 83
-wrote no Lean).
+**Headline count: A/Proc has 21 code `sorry`s** after session 84 (sessions 83
+and 84 closed no sorry; session 84 banked +471 private lines of
+infrastructure in `QuantumLambda.lean`).
 Per file: `Tensor` **2**, `QuantumLambda` **9**,
 `Measurement` **10**, `Duplicators` **0 — the file is finished**.
-**All four compiler-verified in session 82** (each file compiled directly;
-0 errors in all four, and `lake build` completes over the whole chain).
+**All four compiler-verified in session 84** (each file compiled directly;
+0 errors in all four).
 **No statement in the project is `sorry`-tainted.**  (`grep -c sorry`
 over-counts, because the file docstrings mention `sorry` in prose; the code
 counts are the ones above.  Note `\bsorry\b` also matches "sorry-ed" in
 prose — count the compiler's `declaration uses \`sorry\`` warnings instead.)
+
+> **Session 84 — the hereditarily atomic slice device is BUILT and banked**
+> in `QuantumLambda.lean` (+471 lines, all `private`); A/Proc **21 → 21**,
+> 0 errors in all four files.  No sorry closed; the session's output is the
+> infrastructure both ha statements need.  Full working in PROVING-LOG,
+> session 84.
+>
+> * **Session 83's matrix-unit route works as advertised.**  The file now
+>   proves, for any `𝒞` and hereditarily atomic `𝒜 ≅ ⊕_{j∈J} M_{n_j+1}`:
+>   `haE_mem` (each slice `(id ⊗ κ_j)((1⊗u^j_{0k})·x·(1⊗u^j_{l0}))` is of the
+>   form `c ⊗ 1`, `c ∈ 𝒞` — the **entry extraction**, staying in `Type u`)
+>   and `haSliceEq` (`(1 ⊗ z_j)·x = ∑_{k,l} (haE j k l x)·(1 ⊗ u^j_{kl})`, a
+>   finite sum, by `tensor_linear_ext`).
+> * **The predicted API gap was real and is filled**: `npScalarP`/`npScalar`,
+>   the missing `NPFunctional → NCPMap` (`a ↦ ω(a)·1`), ~45 lines via **34IX**
+>   `cp_commutative_cod`/`cp_of_mi` and **44XV** `p_uwcont`.
+> * **The np-functional is not avoidable.**  The naive slice lands in
+>   `{c ⊗ u^j_{00}}` and spreading only reaches `{c ⊗ z_j}`; neither is known
+>   ultraweakly closed, because the only closedness tool (**69IVb** +
+>   **75VIII**) needs a *unital* ∗-hom, i.e. the target `{c ⊗ 1}`.  Moving
+>   into `𝒞 ⊗ M_{n_j+1}` instead (where `∑_p e_{pp} = 1` is finite) is blocked
+>   by universes: `tmapM` is polymorphic but **117III** and
+>   `continuous_ultraweak_vtmul_left` are not, and `MatAlg m : Type 0`.
+> * **Left to do**, in order: the ultraweak approximation step
+>   (`∑_{j∈F} z_j ↑ 1` via **44VI**, target sets closed by `vnsac` — note
+>   `IsVNSubalgebra` carries *norm* closedness); the two membership
+>   corollaries (the ha slice-map property, the second being the ha form of
+>   125VIIb, via **115V** `tensor_injective`); then 125eVII (~500, mirroring
+>   125cIII); then 125dII, which also needs `(⊕ᵢ𝒞ᵢ)⊗𝒜 ≅ ⊕ᵢ(𝒞ᵢ⊗𝒜)` (117III +
+>   `braiding`) and a **trivial-`𝒜` case split** that session 83's costing
+>   missed.
+> * Nothing for ERRATA or QUESTIONS.  `docs/why-open.csv`: two rows rewritten.
 
 > **Session 83 — 121II `intersection_tensor` is OUT OF REACH, and so is the
 > "specialised containment" route recommended below.**  No Lean written;

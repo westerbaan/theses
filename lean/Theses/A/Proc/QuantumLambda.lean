@@ -2822,6 +2822,477 @@ theorem Fha_concrete [VonNeumannAlgebra A] (hA : HereditarilyAtomic A)
   exact hΘbij.comp hψbij
 
 
+/-! ## The hereditarily atomic slice device
+
+Session 84's core.  For **hereditarily atomic** `𝒜 ≅ ⊕_{j∈J} M_{n_j+1}`
+(**84bII**) and *any* von Neumann algebra `𝒞`, every `x ∈ 𝒞 ⊗ 𝒜` has, in
+each block `j`, a **finite** matrix of entries `c^j_{kl} ∈ 𝒞`:
+
+> `(1 ⊗ z_j)·x  =  ∑_{k,l} (c^j_{kl} ⊗ 1)·(1 ⊗ u^j_{kl})`.
+
+This is the elementary substitute, available only in the hereditarily
+atomic case, for Tomiyama's slice-map property — which in general is
+equivalent to the commutation theorem `(M ⊗̄ N)' = M' ⊗̄ N'` and hence out
+of reach here (PROVING-LOG, session 83).
+
+The entry extraction stays inside `Type u`: it never slices into `ℂ`.
+`haE j k l x := (id ⊗ κ_j)((1⊗u^j_{0k})·x·(1⊗u^j_{l0}))`, where `κ_j` is
+the ncp-map `a ↦ ω_j(a)·1` of the np-functional `ω_j(a) = (a_j)_{00}`, and
+`haE j k l` lands in the range of the nmiu-map `c ↦ c ⊗ 1` (`nmiuTmulLeft`),
+which is a von Neumann subalgebra by **69IVb** `nmiu_image` and hence
+ultraweakly closed by **75VIII** `vnsac`.  Agreement on elementary tensors
+plus `tensor_linear_ext` (108II(1)) does the rest.
+
+`npScalarP`/`npScalar` fill the one API gap the survey predicted: the tree
+had no `NPFunctional → NCPMap`.  Complete positivity is **34IX**
+`cp_commutative_cod`/`cp_commutative_dom` through `ℂ`, normality is
+**44XV** `p_uwcont`. -/
+
+section HaSlice
+
+set_option synthInstance.maxHeartbeats 400000
+
+variable [VonNeumannAlgebra A] [VonNeumannAlgebra C]
+
+/-- `x ↦ u * x * v` is ultraweakly continuous. -/
+private theorem continuous_uw_mulmul {X : Type*} [CStarAlgebra X] [PartialOrder X]
+    [StarOrderedRing X] [VonNeumannAlgebra X] (u v : X) :
+    @Continuous X X (ultraweak X) (ultraweak X) (fun x => u * x * v) :=
+  continuous_ultraweak_of_forall _ fun ω => continuous_ultraweak_conj ω u v
+
+/-- `z ↦ z·1` is monotone on the complex order. -/
+private theorem algebraMap_complex_mono {z w : ℂ} (h : z ≤ w) :
+    algebraMap ℂ A z ≤ algebraMap ℂ A w := by
+  have h0 : (0:ℂ) ≤ w - z := sub_nonneg.mpr h
+  obtain ⟨hre, him⟩ := Complex.le_def.mp h0
+  have hd : w - z = (((w - z).re : ℝ) : ℂ) := by
+    refine Complex.ext (by simp) ?_
+    simp only [Complex.ofReal_im]
+    simpa using him.symm
+  rw [← sub_nonneg, ← map_sub, hd]
+  exact Theses.A.CStar.algebraMap_ofReal_nonneg (by simpa using hre)
+
+/-- The scalar map `a ↦ ω(a)·1` as a positive linear map. -/
+private def npScalarP (ω : NPFunctional A) : A →ₚ[ℂ] A where
+  toFun a := algebraMap ℂ A (ω a)
+  map_add' x y := by
+    show algebraMap ℂ A (ω (x + y)) = _
+    rw [npFunctional_add, map_add]
+  map_smul' r x := by
+    show algebraMap ℂ A (ω (r • x)) = _
+    rw [show (ω (r • x) : ℂ) = r * ω x from ω.toPositiveLinearMap.map_smul r x,
+      map_mul, ← Algebra.smul_def]
+    rfl
+  monotone' x y h :=
+    algebraMap_complex_mono (ω.toPositiveLinearMap.monotone h)
+
+@[simp] private theorem npScalarP_apply (ω : NPFunctional A) (a : A) :
+    npScalarP ω a = algebraMap ℂ A (ω a) := rfl
+
+private theorem npScalarP_cp (ω : NPFunctional A) :
+    Theses.A.CStar.IsCompletelyPositiveMap
+      ((npScalarP ω : A →ₚ[ℂ] A) : A →ₗ[ℂ] A) := by
+  have h1 : Theses.A.CStar.IsCompletelyPositiveMap (npLin ω) :=
+    Theses.A.CStar.cp_commutative_cod (npLin ω)
+      (fun a ha => npFunctional_nonneg ω ha)
+  have h2 : Theses.A.CStar.IsCompletelyPositiveMap (Algebra.linearMap ℂ A) :=
+    Theses.A.CStar.cp_of_mi (Algebra.linearMap ℂ A)
+      (fun x y => by
+        show algebraMap ℂ A (x * y) = algebraMap ℂ A x * algebraMap ℂ A y
+        rw [map_mul])
+      (fun x => by
+        show algebraMap ℂ A (star x) = star (algebraMap ℂ A x)
+        rw [algebraMap_star_comm])
+  have h3 := Theses.A.CStar.cp_comp (npLin ω) (Algebra.linearMap ℂ A) h1 h2
+  exact h3
+
+private theorem npScalarP_normal (ω : NPFunctional A) :
+    PreservesDirSups ⇑(npScalarP (A := A) ω) := by
+  letI : TopologicalSpace A := ultraweak A
+  refine ((p_uwcont (npScalarP ω)).out 0 2).mp ?_
+  refine continuous_ultraweak_of_forall _ fun ν => ?_
+  have heq : (fun a : A => (ν (npScalarP ω a) : ℂ))
+      = fun a : A => (ν 1 : ℂ) * (ω a : ℂ) := by
+    funext a
+    show (ν (algebraMap ℂ A (ω a)) : ℂ) = _
+    rw [Algebra.algebraMap_eq_smul_one,
+      show (ν ((ω a : ℂ) • (1:A)) : ℂ) = (ω a : ℂ) * ν 1 from
+        ν.toPositiveLinearMap.map_smul _ _]
+    ring
+  rw [heq]
+  exact continuous_const.mul (continuous_ultraweak_npFunctional ω)
+
+/-- The scalar map as an ncp-map. -/
+private def npScalar (ω : NPFunctional A) : NCPMap A A where
+  toCompletelyPositiveMap :=
+    { toLinearMap := (npScalarP ω : A →ₗ[ℂ] A)
+      map_cstarMatrix_nonneg' :=
+        (Theses.A.CStar.cp_iff ((npScalarP ω : A →ₚ[ℂ] A) : A →ₗ[ℂ] A)).out 0 1
+          |>.mp (npScalarP_cp ω) }
+  preservesDirSups' := npScalarP_normal ω
+
+@[simp] private theorem npScalar_apply (ω : NPFunctional A) (a : A) :
+    npScalar ω a = algebraMap ℂ A (ω a) := rfl
+
+
+/-! ## Matrix units -/
+
+
+variable {m : ℕ}
+
+/-- `M_m(ℂ)` as `CStarMatrix`, transported from `Matrix`. -/
+private def matE : Matrix (Fin m) (Fin m) ℂ ≃⋆ₐ[ℂ] MatAlg m :=
+  CStarMatrix.ofMatrixStarAlgEquiv
+
+private theorem matE_apply (M : Matrix (Fin m) (Fin m) ℂ) (p q : Fin m) :
+    (matE M) p q = M p q := rfl
+
+private theorem matE_symm_apply (M : MatAlg m) (p q : Fin m) :
+    (matE.symm M : Matrix (Fin m) (Fin m) ℂ) p q = M p q := rfl
+
+/-- The matrix unit `e_{kl}` of `M_m`. -/
+private def matU (k l : Fin m) : MatAlg m := matE (Matrix.single k l 1)
+
+private theorem matU_mul_mul (o k l : Fin m) (M : MatAlg m) :
+    matU o k * M * matU l o = (M k l) • matU o o := by
+  have h : matU o k * M * matU l o
+      = matE (Matrix.single o k (1:ℂ) * matE.symm M * Matrix.single l o 1) := by
+    rw [map_mul, map_mul]
+    show matU o k * (matE (matE.symm M)) * matU l o = _
+    rw [matE.apply_symm_apply]
+    rfl
+  rw [h, Matrix.single_mul_mul_single, one_mul, mul_one,
+    show (matE.symm M : Matrix (Fin m) (Fin m) ℂ) k l = M k l from rfl,
+    matU, ← map_smul, Matrix.smul_single, smul_eq_mul, mul_one]
+
+private theorem sum_matU_diag : ∑ p : Fin m, matU p p = (1 : MatAlg m) := by
+  rw [show ∑ p : Fin m, matU p p
+      = matE (∑ p : Fin m, Matrix.single p p (1:ℂ)) from (map_sum matE _ _).symm,
+    show ∑ p : Fin m, Matrix.single p p (1:ℂ) = 1 from ?_, map_one]
+  conv_rhs => rw [Matrix.matrix_eq_sum_single (1 : Matrix (Fin m) (Fin m) ℂ)]
+  refine Finset.sum_congr rfl fun p _ => ?_
+  rw [Finset.sum_eq_single p]
+  · rw [Matrix.one_apply_eq]
+  · intro q _ hq
+    rw [Matrix.one_apply_ne (Ne.symm hq), Matrix.single_zero]
+  · intro h; exact absurd (Finset.mem_univ p) h
+
+private theorem matrix_eq_sum_matU (M : MatAlg m) :
+    M = ∑ k : Fin m, ∑ l : Fin m, (M k l) • matU k l := by
+  have h : ∀ k l : Fin m, (M k l) • matU k l = matE (Matrix.single k l (M k l)) := by
+    intro k l
+    rw [matU, ← map_smul, Matrix.smul_single, smul_eq_mul, mul_one]
+  simp only [h, ← map_sum]
+  conv_lhs => rw [show M = matE (matE.symm M) from (matE.apply_symm_apply M).symm]
+  exact congrArg matE (Matrix.matrix_eq_sum_single _)
+
+
+
+/-! ## The hereditarily atomic decomposition -/
+
+
+/-- The coprojection as an additive homomorphism (for `map_sum`). -/
+private def lpKappaHom {I : Type u₁} (𝒜 : I → Type u₄) [∀ i, CStarAlgebra (𝒜 i)]
+    [∀ i, PartialOrder (𝒜 i)] [∀ i, StarOrderedRing (𝒜 i)] (j : I) :
+    𝒜 j →+ lp 𝒜 ∞ where
+  toFun := lpKappa j
+  map_zero' := lpKappa_zero j
+  map_add' := lpKappa_add j
+
+private theorem lpKappa_sum {I : Type u₁} {𝒜 : I → Type u₄} [∀ i, CStarAlgebra (𝒜 i)]
+    [∀ i, PartialOrder (𝒜 i)] [∀ i, StarOrderedRing (𝒜 i)] (j : I) {ι : Type*}
+    (F : Finset ι) (f : ι → 𝒜 j) :
+    lpKappa j (∑ p ∈ F, f p) = ∑ p ∈ F, lpKappa j (f p) :=
+  map_sum (lpKappaHom 𝒜 j) f F
+
+private theorem lpKappa_mul_right' {I : Type u₁} {𝒜 : I → Type u₄} [∀ i, CStarAlgebra (𝒜 i)]
+    [∀ i, Nontrivial (𝒜 i)] [∀ i, PartialOrder (𝒜 i)] [∀ i, StarOrderedRing (𝒜 i)]
+    (j : I) (m : 𝒜 j) (y : lp 𝒜 ∞) :
+    lpKappa j m * y = lpKappa j (m * (y : ∀ i, 𝒜 i) j) := by
+  calc lpKappa j m * y = lpKappa j (m * 1) * y := by rw [mul_one]
+    _ = (lpKappa j m * lpKappa j 1) * y := by rw [lpKappa_mul]
+    _ = lpKappa j m * (lpKappa j 1 * y) := mul_assoc _ _ _
+    _ = lpKappa j m * lpKappa j ((y : ∀ i, 𝒜 i) j) := by rw [lpKappa_mul_left]
+    _ = lpKappa j (m * (y : ∀ i, 𝒜 i) j) := lpKappa_mul _ _ _
+
+
+variable {J : Type u} {nn : J → ℕ}
+  (Φ : A ≃⋆ₐ[ℂ] lp (fun j : J => MatAlg (nn j + 1)) ∞)
+
+/-- `Φ` as an nmiu-map. -/
+private def haPhi : NMIUMap A (lp (fun j : J => MatAlg (nn j + 1)) ∞) :=
+  ⟨Φ.toStarAlgHom, starAlgEquiv_preservesDirSups Φ⟩
+
+/-- The `j`-th block of `a`. -/
+private def haPi (j : J) : NMIUMap A (MatAlg (nn j + 1)) :=
+  nmiuComp (lpEvalNMIU _ j) (haPhi Φ)
+
+private theorem haPi_apply (j : J) (a : A) :
+    haPi Φ j a = (Φ a : ∀ j : J, MatAlg (nn j + 1)) j := rfl
+
+/-- The `(k,l)` entry of the `j`-th block. -/
+private def haEnt (j : J) (a : A) (k l : Fin (nn j + 1)) : ℂ :=
+  (haPi Φ j a : MatAlg (nn j + 1)) k l
+
+/-- The matrix units of `𝒜`. -/
+private def haU (j : J) (k l : Fin (nn j + 1)) : A := Φ.symm (lpKappa j (matU k l))
+
+/-- The central projections of `𝒜`. -/
+private def haZ (j : J) : A := Φ.symm (lpKappa j 1)
+
+private theorem haU_mul_mul (j : J) (o k l : Fin (nn j + 1)) (a : A) :
+    haU Φ j o k * a * haU Φ j l o = (haEnt Φ j a k l) • haU Φ j o o := by
+  have ha : a = Φ.symm (Φ a) := (Φ.symm_apply_apply a).symm
+  rw [haU, haU, haU]
+  conv_lhs => rw [ha]
+  rw [← map_mul, ← map_mul, lpKappa_mul_right', lpKappa_mul, matU_mul_mul,
+    lpKappa_smul]
+  exact map_smul Φ.symm.toStarAlgHom _ _
+
+private theorem sum_haU_diag (j : J) : ∑ p : Fin (nn j + 1), haU Φ j p p = haZ Φ j := by
+  rw [haZ, ← sum_matU_diag (m := nn j + 1), lpKappa_sum, map_sum]
+  rfl
+
+private theorem haZ_mul (j : J) (a : A) :
+    haZ Φ j * a = ∑ k : Fin (nn j + 1), ∑ l : Fin (nn j + 1),
+      (haEnt Φ j a k l) • haU Φ j k l := by
+  have ha : a = Φ.symm (Φ a) := (Φ.symm_apply_apply a).symm
+  rw [haZ]
+  conv_lhs => rw [ha]
+  rw [← map_mul, lpKappa_mul_left]
+  conv_lhs => rw [show ((Φ a : ∀ j : J, MatAlg (nn j + 1)) j)
+    = ∑ k : Fin (nn j + 1), ∑ l : Fin (nn j + 1),
+      (haEnt Φ j a k l) • matU k l from matrix_eq_sum_matU _]
+  rw [show lpKappa (𝒜 := fun j : J => MatAlg (nn j + 1)) j
+      (∑ k : Fin (nn j + 1), ∑ l : Fin (nn j + 1),
+        (haEnt Φ j a k l) • matU (m := nn j + 1) k l)
+      = ∑ k : Fin (nn j + 1), ∑ l : Fin (nn j + 1),
+        lpKappa j ((haEnt Φ j a k l) • matU (m := nn j + 1) k l) from ?_, map_sum]
+  · refine Finset.sum_congr rfl fun k _ => ?_
+    rw [map_sum]
+    exact Finset.sum_congr rfl fun l _ => by
+      rw [lpKappa_smul]
+      exact map_smul Φ.symm.toStarAlgHom _ _
+  · rw [lpKappa_sum]
+    exact Finset.sum_congr rfl fun k _ => lpKappa_sum _ _ _
+
+
+
+/-! ## The slice operators -/
+
+
+/-- The identity np-functional on `ℂ`. -/
+private def oneNP : NPFunctional ℂ where
+  toPositiveLinearMap :=
+    { toFun := id
+      map_add' := fun _ _ => rfl
+      map_smul' := fun _ _ => rfl
+      monotone' := fun _ _ h => h }
+  preservesDirSups' := by
+    intro D s hne _ hlub
+    refine ⟨?_, ?_⟩
+    · rintro _ ⟨d, hd, rfl⟩
+      exact Subtype.coe_le_coe.mpr (hlub.1 hd)
+    · intro u hu
+      obtain ⟨d₀, hd₀⟩ := hne
+      have h0 : (d₀ : ℂ) ≤ u := hu ⟨d₀, hd₀, rfl⟩
+      have him : (d₀ : ℂ).im = 0 := Complex.conj_eq_iff_im.mp d₀.2
+      have hui : u.im = 0 := by
+        have := (Complex.le_def.mp h0).2
+        rw [him] at this
+        exact this.symm
+      have husa : IsSelfAdjoint u := Complex.conj_eq_iff_im.mpr hui
+      exact Subtype.coe_le_coe.mpr (hlub.2 (fun d hd => Subtype.coe_le_coe.mp
+        (hu ⟨d, hd, rfl⟩) : ∀ d ∈ D, d ≤ (⟨u, husa⟩ : selfAdjoint ℂ)))
+
+/-- The np-functional `a ↦ (a_j)_{00}`. -/
+private def haOm (j : J) : NPFunctional A :=
+  compNP (nmiuP (haPi Φ j)) (haPi Φ j).preservesDirSups'
+    (matFormNP oneNP (matUnit (0 : Fin (nn j + 1))))
+
+private theorem haOm_apply (j : J) (a : A) : (haOm Φ j a : ℂ) = haEnt Φ j a 0 0 := by
+  show (matFormNP oneNP (matUnit (0 : Fin (nn j + 1))) (haPi Φ j a) : ℂ) = _
+  rw [matFormNP_apply, matForm_matUnit]
+  rfl
+
+/-- The ncp-map `a ↦ (a_j)_{00}·1`. -/
+private def haKappa (j : J) : NCPMap A A := npScalar (haOm Φ j)
+
+private theorem haKappa_apply (j : J) (a : A) :
+    haKappa Φ j a = algebraMap ℂ A (haEnt Φ j a 0 0) := by
+  show algebraMap ℂ A (haOm Φ j a) = _
+  rw [haOm_apply]
+
+private theorem haKappa_haU (j : J) : haKappa Φ j (haU Φ j 0 0) = 1 := by
+  rw [haKappa_apply]
+  have hpi : haPi Φ j (haU Φ j (0 : Fin (nn j + 1)) (0 : Fin (nn j + 1)))
+      = matU (0 : Fin (nn j + 1)) (0 : Fin (nn j + 1)) := by
+    show ((Φ (Φ.symm (lpKappa j
+        (matU (0 : Fin (nn j + 1)) (0 : Fin (nn j + 1)))))) :
+      ∀ q : J, MatAlg (nn q + 1)) j = _
+    rw [Φ.apply_symm_apply, lpKappa_apply_self]
+  have h : haEnt Φ j (haU Φ j (0 : Fin (nn j + 1)) (0 : Fin (nn j + 1)))
+      (0 : Fin (nn j + 1)) (0 : Fin (nn j + 1)) = 1 := by
+    show (haPi Φ j (haU Φ j (0 : Fin (nn j + 1)) (0 : Fin (nn j + 1))) :
+      MatAlg (nn j + 1)) (0 : Fin (nn j + 1)) (0 : Fin (nn j + 1)) = 1
+    rw [hpi]
+    show (Matrix.single (0 : Fin (nn j + 1)) (0 : Fin (nn j + 1)) (1 : ℂ))
+      (0 : Fin (nn j + 1)) (0 : Fin (nn j + 1)) = 1
+    simp
+  rw [h, map_one]
+
+
+
+
+variable (C)
+
+/-- The slice operator `x ↦ (id ⊗ κ_j)((1⊗u_{0k}) x (1⊗u_{l0}))`. -/
+private def haE (j : J) (k l : Fin (nn j + 1)) (x : VNT C A) : VNT C A :=
+  tmap (ncpId C) (haKappa Φ j)
+    (((1 : C) ⊗ᵥ haU Φ j 0 k) * x * ((1 : C) ⊗ᵥ haU Φ j l 0))
+
+variable {C}
+
+private theorem vtmul_mul_vtmul (c c' : C) (a a' : A) :
+    (c ⊗ᵥ a) * (c' ⊗ᵥ a') = (c * c') ⊗ᵥ (a * a') :=
+  ((vnTensor C A).isTensorProduct.miu.2.1 c c' a a').symm
+
+private theorem vtmul_smul_right (c : C) (r : ℂ) (a : A) :
+    c ⊗ᵥ (r • a) = r • (c ⊗ᵥ a) :=
+  map_smul ((vnTensor C A).map c) r a
+
+private theorem haE_tmul (j : J) (k l : Fin (nn j + 1)) (c : C) (a : A) :
+    haE C Φ j k l (c ⊗ᵥ a) = (haEnt Φ j a k l) • (c ⊗ᵥ (1 : A)) := by
+  rw [haE, vtmul_mul_vtmul, vtmul_mul_vtmul, one_mul, mul_one,
+    haU_mul_mul, vtmul_smul_right,
+    show (tmap (ncpId C) (haKappa Φ j)) ((haEnt Φ j a k l) • (c ⊗ᵥ haU Φ j 0 0))
+        = (haEnt Φ j a k l) • (tmap (ncpId C) (haKappa Φ j) (c ⊗ᵥ haU Φ j 0 0)) from
+      map_smul (tmap (ncpId C) (haKappa Φ j)).toCompletelyPositiveMap.toLinearMap _ _,
+    tmap_apply, ncpId_apply, haKappa_haU]
+
+/-- `haE` as a linear map. -/
+private def haEL (j : J) (k l : Fin (nn j + 1)) : VNT C A →ₗ[ℂ] VNT C A :=
+  ((tmap (ncpId C) (haKappa Φ j)).toCompletelyPositiveMap.toLinearMap).comp
+    (((LinearMap.mulRight ℂ ((1 : C) ⊗ᵥ haU Φ j l 0)).comp
+      (LinearMap.mulLeft ℂ ((1 : C) ⊗ᵥ haU Φ j 0 k))))
+
+private theorem haEL_apply (j : J) (k l : Fin (nn j + 1)) (x : VNT C A) :
+    haEL Φ j k l x = haE C Φ j k l x := rfl
+
+private theorem haEL_continuous (j : J) (k l : Fin (nn j + 1)) :
+    @Continuous (VNT C A) (VNT C A) (ultraweak _) (ultraweak _) ⇑(haEL Φ j k l) := by
+  letI : TopologicalSpace (VNT C A) := ultraweak (VNT C A)
+  have h1 : Continuous
+      (fun x : VNT C A => ((1 : C) ⊗ᵥ haU Φ j 0 k) * x * ((1 : C) ⊗ᵥ haU Φ j l 0)) :=
+    continuous_uw_mulmul _ _
+  have h2 : Continuous ⇑(tmap (ncpId C) (haKappa Φ j)) :=
+    ((p_uwcont (ncpPositive (tmap (ncpId C) (haKappa Φ j)))).out 2 0).mp
+      (tmap (ncpId C) (haKappa Φ j)).preservesDirSups'
+  exact h2.comp h1
+
+
+
+
+
+
+private theorem haE_mem (j : J) (k l : Fin (nn j + 1)) (x : VNT C A) :
+    ∃ c : C, haE C Φ j k l x = c ⊗ᵥ (1 : A) := by
+  letI : TopologicalSpace (VNT C A) := ultraweak (VNT C A)
+  haveI : T2Space (VNT C A) := vn_positive_basic_1.1
+  obtain ⟨hRvn⟩ : Nonempty (IsVNSubalgebra (VNT C A)
+      (nmiuTmulLeft C A).toStarAlgHom.range) :=
+    ⟨nmiu_image _⟩
+  have hRcl : IsClosed
+      ((nmiuTmulLeft C A).toStarAlgHom.range : Set (VNT C A)) :=
+    (vnsac _ hRvn).2
+  set W : Submodule ℂ (VNT C A) :=
+    Submodule.comap (haEL Φ j k l)
+      (Subalgebra.toSubmodule
+        (nmiuTmulLeft C A).toStarAlgHom.range.toSubalgebra) with hW
+  have hWcl : IsClosed (W : Set (VNT C A)) :=
+    hRcl.preimage (haEL_continuous Φ j k l)
+  have hspan : (Submodule.span ℂ
+      {t : VNT C A | ∃ a b, t = (vnTensor C A).map a b} : Set (VNT C A))
+      ⊆ (W : Set (VNT C A)) := by
+    refine Submodule.span_le.mpr ?_
+    rintro _ ⟨c, a, rfl⟩
+    have hmem : haE C Φ j k l (c ⊗ᵥ a) ∈
+        (nmiuTmulLeft C A).toStarAlgHom.range := by
+      rw [haE_tmul, ← vtmulLeft_smul]
+      exact ⟨(haEnt Φ j a k l) • c, rfl⟩
+    exact hmem
+  have hx : x ∈ W := by
+    have hd := (vnTensor C A).isTensorProduct.dense
+    have hcl : x ∈ closure ((Submodule.span ℂ
+        {t : VNT C A | ∃ a b, t = (vnTensor C A).map a b} : Set (VNT C A))) := by
+      rw [hd.closure_eq]; trivial
+    exact hWcl.closure_subset_iff.mpr hspan hcl
+  obtain ⟨c, hc⟩ := hx
+  exact ⟨c, hc.symm⟩
+
+private theorem haSliceEq (j : J) (x : VNT C A) :
+    ((1 : C) ⊗ᵥ haZ Φ j) * x
+      = ∑ k : Fin (nn j + 1), ∑ l : Fin (nn j + 1),
+          haE C Φ j k l x * ((1 : C) ⊗ᵥ haU Φ j k l) := by
+  letI : TopologicalSpace (VNT C A) := ultraweak (VNT C A)
+  haveI : T2Space (VNT C A) := vn_positive_basic_1.1
+  set f : VNT C A →ₗ[ℂ] VNT C A :=
+    LinearMap.mulLeft ℂ ((1 : C) ⊗ᵥ haZ Φ j) with hf
+  set g : VNT C A →ₗ[ℂ] VNT C A :=
+    ∑ k : Fin (nn j + 1), ∑ l : Fin (nn j + 1),
+      (LinearMap.mulRight ℂ ((1 : C) ⊗ᵥ haU Φ j k l)).comp (haEL Φ j k l) with hg
+  have hgapp : ∀ y : VNT C A, g y
+      = ∑ k : Fin (nn j + 1), ∑ l : Fin (nn j + 1),
+          haE C Φ j k l y * ((1 : C) ⊗ᵥ haU Φ j k l) := by
+    intro y
+    rw [hg]
+    rw [LinearMap.sum_apply]
+    exact Finset.sum_congr rfl fun k _ => LinearMap.sum_apply _ _ _
+  have hcf : Continuous ⇑f := (mult_uws_cont ((1 : C) ⊗ᵥ haZ Φ j)).1
+  have hcg : Continuous ⇑g := by
+    have h : ⇑g = fun y : VNT C A => ∑ k : Fin (nn j + 1), ∑ l : Fin (nn j + 1),
+        haE C Φ j k l y * ((1 : C) ⊗ᵥ haU Φ j k l) := funext hgapp
+    rw [h]
+    refine continuous_ultraweak_of_forall _ fun ν => ?_
+    have hnu : (fun y : VNT C A => (ν (∑ k : Fin (nn j + 1), ∑ l : Fin (nn j + 1),
+          haE C Φ j k l y * ((1 : C) ⊗ᵥ haU Φ j k l)) : ℂ))
+        = fun y : VNT C A => ∑ k : Fin (nn j + 1), ∑ l : Fin (nn j + 1),
+            (ν (haE C Φ j k l y * ((1 : C) ⊗ᵥ haU Φ j k l)) : ℂ) := by
+      funext y
+      exact (map_sum ν.toPositiveLinearMap _ _).trans
+        (Finset.sum_congr rfl fun k _ => map_sum ν.toPositiveLinearMap _ _)
+    rw [hnu]
+    refine continuous_finsetSum _ fun k _ => continuous_finsetSum _ fun l _ => ?_
+    have hc1 : Continuous (fun y : VNT C A =>
+        (ν (1 * y * ((1 : C) ⊗ᵥ haU Φ j k l)) : ℂ)) :=
+      continuous_ultraweak_conj ν 1 ((1 : C) ⊗ᵥ haU Φ j k l)
+    simp only [one_mul] at hc1
+    exact hc1.comp (haEL_continuous Φ j k l)
+  have hfg : f = g := by
+    refine tensor_linear_ext (vnTensor C A).isTensorProduct f g hcf hcg ?_
+    intro c a
+    show ((1 : C) ⊗ᵥ haZ Φ j) * (c ⊗ᵥ a) = g (c ⊗ᵥ a)
+    rw [hgapp, vtmul_mul_vtmul, one_mul, haZ_mul]
+    have hsum : c ⊗ᵥ (∑ k : Fin (nn j + 1), ∑ l : Fin (nn j + 1),
+          (haEnt Φ j a k l) • haU Φ j k l)
+        = ∑ k : Fin (nn j + 1), ∑ l : Fin (nn j + 1),
+            (haEnt Φ j a k l) • (c ⊗ᵥ haU Φ j k l) := by
+      show (vnTensor C A).map c _ = _
+      rw [map_sum]
+      exact Finset.sum_congr rfl fun k _ => by
+        rw [map_sum]
+        exact Finset.sum_congr rfl fun l _ => map_smul ((vnTensor C A).map c) _ _
+    rw [hsum]
+    refine Finset.sum_congr rfl fun k _ => Finset.sum_congr rfl fun l _ => ?_
+    rw [haE_tmul, smul_mul_assoc, vtmul_mul_vtmul, mul_one, one_mul]
+  have := congrFun (congrArg (fun F : VNT C A →ₗ[ℂ] VNT C A => ⇑F) hfg) x
+  rw [hgapp] at this
+  exact this
+
+
+
+end HaSlice
+
 /-! ## Parsec 1254: the hereditarily atomic free exponential -/
 
 /-- **125dII** (proc.tex:5528, Proposition), bundled: a universal arrow
