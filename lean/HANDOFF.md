@@ -536,6 +536,23 @@ comments may have shifted, so re-locate by point number.
   `f(a)² ≤ f(a²)` is corrected to `cp-cs` (erratum 620.20).
 * Still open: a handful of minor solution nits listed in PROVING-LOG.
 
+### Resolved by the author (2026-08-17) — thesis-A rulings, incorporated
+
+Bram is working through the thesis-A rows of ERRATA.md.  Each ruling below is
+already applied to the sources, and its row has been **deleted** from
+ERRATA.md, per that file's own convention.
+
+* **11XV.3** — the defect is in the *solution* (`asols.tex`, keyed
+  `parsec-110.150`), not in the printed hint, so there is **no erratum
+  block**.  Repaired by assuming `n > 1` ("For~$n=1$ this is trivial, so we
+  may (and do) assume that~$n>1$"), under which the printed "`ζ^{2k+1} ∉ ℝ`
+  when `k ≠ ½(n−1)`" is exactly right: over `k = 1,…,n` the only real value
+  occurs at `2k+1 = n`, the next odd multiple `3n` exceeding `2n+1`.  Only
+  `n = 1` broke it, where `2k+1 = 3 = 3n` does fit the range.  A line
+  identifying that factor — `b − ζ^{2k+1} = b − ζⁿ = b + 1` — was added, which
+  the closing sentence had been assuming tacitly.  **No Lean-side change is
+  authorised or needed**: the statement of 11XV.3 is untouched.
+
 ### Still open
 
 **0. RESOLVED — the formalization validates the thesis's own bootstrapping.**
