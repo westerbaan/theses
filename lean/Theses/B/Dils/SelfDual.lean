@@ -27,7 +27,7 @@ product np-functionals are separating — the three clauses `tensor-1`,
 import Theses.B.Dils.Paschke
 import Theses.B.Dils.Kaplansky
 
-open scoped ComplexOrder CStarAlgebra WithCStarModule Uniformity
+open scoped ComplexOrder CStarAlgebra WithCStarModule Uniformity TensorProduct
 open Filter Topology Theses Theses.A.CStar Theses.A.VN
 
 universe u v
@@ -5163,6 +5163,408 @@ theorem paschke_tensor
     IsPaschkeDilationOf ⟨P₁₂, vnP, R, H⟩ ⇑Φ :=
   sorry
 
+/-! ### The isomorphism of dilation spaces (**167III**–**167V**)
+
+The "furthermore" half of **167I** is what the thesis proves *first*, and it
+needs neither **165VI** nor the main claim: both `X₁ ⊗ X₂` and
+`(𝒜₁ ⊗ 𝒜₂) ⊗_Φ (ℬ₁ ⊗ ℬ₂)` are self-dual completions of one and the same
+`ℬ₁₂`-module with `ℬ₁₂`-valued inner product, namely
+`V = (𝒜₁ ⊙ 𝒜₂) ⊙ ℬ₁₂`, so **163II** `selfdual_compl_defining_unique`
+produces the isomorphism outright.
+
+**Divergence, class 2.**  The thesis (167V) extends its `U₀` in two steps —
+first along the ultranorm-dense `𝒜ᵢ ⊙ ℬᵢ ⊆ 𝒜ᵢ ⊗_{φᵢ} ℬᵢ`, then by the
+universal property of the exterior tensor product — and reads
+inner-product preservation off **148V** and surjectivity off the density.
+Recognising the two modules as completions of one `V` replaces all of that:
+`selfdual_compl_defining_unique` (i.e. **151Ia** run four times) delivers
+boundedness, bijectivity, inner-product preservation and the value on
+elementary tensors in one go.  The two densities are the thesis's own
+**167III**: `η₁`'s from **166VI** `dilationspace_dense_subset` at
+`𝒜' = 𝒜₁ ⊙ 𝒜₂` (ultrastrongly dense by `unDense_tSpan`) and `ℬ' = ℬ₁₂`,
+`η₂`'s from **166IV** `exttensor_dense_subsets` at the elementary tensors of
+the two Paschke modules (`paschke_tprod_dense`).  The inner-product
+computation of 167IV is `ptmEtaA_inner`. -/
+
+section PaschkeTensorModuleAux
+
+variable [VonNeumannAlgebra 𝒜₁] [VonNeumannAlgebra 𝒜₂] [VonNeumannAlgebra 𝒜₁₂]
+  [VonNeumannAlgebra ℬ₁] [VonNeumannAlgebra ℬ₂] [VonNeumannAlgebra ℬ₁₂]
+
+/-- The right ℬ₁₂-action on `(𝒜₁ ⊙ 𝒜₂) ⊙ ℬ₁₂`. -/
+private noncomputable instance ptmSMul :
+    SMul ℬ₁₂ ((𝒜₁ ⊗[ℂ] 𝒜₂) ⊗[ℂ] ℬ₁₂) where
+  smul b := LinearMap.lTensor (𝒜₁ ⊗[ℂ] 𝒜₂) (LinearMap.mulLeft ℂ b)
+
+private theorem ptm_smul_tmul (b : ℬ₁₂) (x : 𝒜₁ ⊗[ℂ] 𝒜₂) (b' : ℬ₁₂) :
+    b • (x ⊗ₜ[ℂ] b') = x ⊗ₜ[ℂ] (b * b') := rfl
+
+private theorem ptm_smul_add (b : ℬ₁₂) (v w : (𝒜₁ ⊗[ℂ] 𝒜₂) ⊗[ℂ] ℬ₁₂) :
+    b • (v + w) = b • v + b • w :=
+  map_add (LinearMap.lTensor (𝒜₁ ⊗[ℂ] 𝒜₂) (LinearMap.mulLeft ℂ b)) v w
+
+@[simp] private theorem ptm_smul_zero (b : ℬ₁₂) :
+    b • (0 : (𝒜₁ ⊗[ℂ] 𝒜₂) ⊗[ℂ] ℬ₁₂) = 0 :=
+  map_zero (LinearMap.lTensor (𝒜₁ ⊗[ℂ] 𝒜₂) (LinearMap.mulLeft ℂ b))
+
+/-- `tA` as a linear map on the algebraic tensor product. -/
+private noncomputable def tALin {tA : 𝒜₁ → 𝒜₂ → 𝒜₁₂} (htA : IsVNTensor tA) :
+    (𝒜₁ ⊗[ℂ] 𝒜₂) →ₗ[ℂ] 𝒜₁₂ :=
+  TensorProduct.lift <| LinearMap.mk₂ ℂ tA htA.add_left htA.smul_complex
+    htA.add_right (fun c a b => vnTensor_smul_complex_right htA c a b)
+
+@[simp] private theorem tALin_tmul {tA : 𝒜₁ → 𝒜₂ → 𝒜₁₂} (htA : IsVNTensor tA)
+    (a₁ : 𝒜₁) (a₂ : 𝒜₂) : tALin htA (a₁ ⊗ₜ[ℂ] a₂) = tA a₁ a₂ := rfl
+
+/-- The elementary tensor of a Paschke module as a ℂ-bilinear map. -/
+private noncomputable def tprodBil {Φ : NCPMap 𝒜₁₂ ℬ₁₂} (M : PaschkeModule Φ) :
+    𝒜₁₂ →ₗ[ℂ] ℬ₁₂ →ₗ[ℂ] M.X :=
+  LinearMap.mk₂ ℂ M.tprod M.compat.add_left M.compat.smul_complex
+    M.compat.add_right (fun c a b => M.compat.smul_complex_right Φ c a b)
+
+/-- `η₁ : (𝒜₁ ⊙ 𝒜₂) ⊙ ℬ₁₂ → 𝒜₁₂ ⊗_Φ ℬ₁₂`, `(a₁ ⊗ a₂) ⊗ b ↦ (a₁ ⊗ a₂) ⊗ b`. -/
+private noncomputable def ptmEta1 {tA : 𝒜₁ → 𝒜₂ → 𝒜₁₂} (htA : IsVNTensor tA)
+    {Φ : NCPMap 𝒜₁₂ ℬ₁₂} (M : PaschkeModule Φ) :
+    ((𝒜₁ ⊗[ℂ] 𝒜₂) ⊗[ℂ] ℬ₁₂) →ₗ[ℂ] M.X :=
+  TensorProduct.lift ((tprodBil M).comp (tALin htA))
+
+@[simp] private theorem ptmEta1_tmul {tA : 𝒜₁ → 𝒜₂ → 𝒜₁₂} (htA : IsVNTensor tA)
+    {Φ : NCPMap 𝒜₁₂ ℬ₁₂} (M : PaschkeModule Φ) (x : 𝒜₁ ⊗[ℂ] 𝒜₂) (b : ℬ₁₂) :
+    ptmEta1 htA M (x ⊗ₜ[ℂ] b) = M.tprod (tALin htA x) b := rfl
+
+private theorem ptmEta1_op_smul {tA : 𝒜₁ → 𝒜₂ → 𝒜₁₂} (htA : IsVNTensor tA)
+    {Φ : NCPMap 𝒜₁₂ ℬ₁₂} (M : PaschkeModule Φ) (b : ℬ₁₂)
+    (v : (𝒜₁ ⊗[ℂ] 𝒜₂) ⊗[ℂ] ℬ₁₂) :
+    ptmEta1 htA M (b • v) = b • ptmEta1 htA M v := by
+  induction v using TensorProduct.induction_on with
+  | zero => rw [ptm_smul_zero, map_zero, op_smul_zero]
+  | tmul x b' => rw [ptm_smul_tmul, ptmEta1_tmul, ptmEta1_tmul, M.compat.smul_action]
+  | add v₁ v₂ h₁ h₂ => rw [ptm_smul_add, map_add, map_add, h₁, h₂, op_smul_add]
+
+section EtaTwo
+
+variable {X Y : Type u}
+  [NormedAddCommGroup X] [NormedSpace ℂ X] [SMul ℬ₁ X] [CStarModule ℬ₁ X]
+  [NormedAddCommGroup Y] [NormedSpace ℂ Y] [SMul ℬ₂ Y] [CStarModule ℬ₂ Y]
+
+/-- The ℬ-action and the ℂ-action on a Hilbert module commute. -/
+private theorem op_smul_smul_complex {Z : Type u} [NormedAddCommGroup Z]
+    [NormedSpace ℂ Z] [SMul ℬ₁₂ Z] [CStarModule ℬ₁₂ Z] (b : ℬ₁₂) (c : ℂ)
+    (z : Z) : b • (c • z) = c • (b • z) := by
+  have h1 : c • z = (c • (1 : ℬ₁₂)) • z := by
+    rw [op_smul_complex_smul, op_one_smul]
+  have h2 : c • (b • z) = (c • b) • z := by rw [op_smul_complex_smul]
+  rw [h1, ← op_mul_smul, mul_smul_comm, mul_one, h2]
+
+/-- `η` is ℂ-homogeneous in its second argument too. -/
+private theorem extTensor_eta_smul_complex_right {tB : ℬ₁ → ℬ₂ → ℬ₁₂}
+    {htB : IsVNTensor tB} (E : ExtTensor tB htB X Y) (c : ℂ) (x : X) (y : Y) :
+    E.η x (c • y) = c • E.η x y := by
+  have h := E.η_smul 1 (c • (1 : ℬ₂)) x y
+  rw [op_one_smul, op_smul_complex_smul, op_one_smul,
+    vnTensor_smul_complex_right htB, htB.one, op_smul_complex_smul,
+    op_one_smul] at h
+  exact h
+
+end EtaTwo
+
+section EtaTwoDef
+
+variable {φ₁ : NCPMap 𝒜₁ ℬ₁} {φ₂ : NCPMap 𝒜₂ ℬ₂} {tB : ℬ₁ → ℬ₂ → ℬ₁₂}
+  {htB : IsVNTensor tB}
+
+/-- `a₁ ⊗ a₂ ↦ (a₁ ⊗ 1) ⊗ (a₂ ⊗ 1)`, as a linear map on `𝒜₁ ⊙ 𝒜₂`. -/
+private noncomputable def ptmEtaA (M₁ : PaschkeModule φ₁) (M₂ : PaschkeModule φ₂)
+    (E : ExtTensor tB htB M₁.X M₂.X) : (𝒜₁ ⊗[ℂ] 𝒜₂) →ₗ[ℂ] E.Z :=
+  TensorProduct.lift <| LinearMap.mk₂ ℂ
+    (fun a₁ a₂ => E.η (M₁.tprod a₁ 1) (M₂.tprod a₂ 1))
+    (fun a a' b => by rw [M₁.compat.add_left, E.η_add_left])
+    (fun c a b => by rw [M₁.compat.smul_complex, E.η_smul_complex])
+    (fun a b b' => by rw [M₂.compat.add_left, E.η_add_right])
+    (fun c a b => by
+      rw [M₂.compat.smul_complex, extTensor_eta_smul_complex_right])
+
+@[simp] private theorem ptmEtaA_tmul (M₁ : PaschkeModule φ₁) (M₂ : PaschkeModule φ₂)
+    (E : ExtTensor tB htB M₁.X M₂.X) (a₁ : 𝒜₁) (a₂ : 𝒜₂) :
+    ptmEtaA M₁ M₂ E (a₁ ⊗ₜ[ℂ] a₂) = E.η (M₁.tprod a₁ 1) (M₂.tprod a₂ 1) := rfl
+
+/-- `η₂ : (𝒜₁ ⊙ 𝒜₂) ⊙ ℬ₁₂ → X₁ ⊗ X₂`,
+`(a₁ ⊗ a₂) ⊗ b ↦ b · ((a₁ ⊗ 1) ⊗ (a₂ ⊗ 1))`. -/
+private noncomputable def ptmEta2 (M₁ : PaschkeModule φ₁) (M₂ : PaschkeModule φ₂)
+    (E : ExtTensor tB htB M₁.X M₂.X) :
+    ((𝒜₁ ⊗[ℂ] 𝒜₂) ⊗[ℂ] ℬ₁₂) →ₗ[ℂ] E.Z :=
+  TensorProduct.lift <| LinearMap.mk₂ ℂ
+    (fun x b => b • ptmEtaA M₁ M₂ E x)
+    (fun x x' b => by rw [map_add, op_smul_add])
+    (fun c x b => by rw [map_smul, op_smul_smul_complex])
+    (fun x b b' => by rw [op_add_smul])
+    (fun c x b => by rw [op_smul_complex_smul])
+
+@[simp] private theorem ptmEta2_tmul (M₁ : PaschkeModule φ₁) (M₂ : PaschkeModule φ₂)
+    (E : ExtTensor tB htB M₁.X M₂.X) (x : 𝒜₁ ⊗[ℂ] 𝒜₂) (b : ℬ₁₂) :
+    ptmEta2 M₁ M₂ E (x ⊗ₜ[ℂ] b) = b • ptmEtaA M₁ M₂ E x := rfl
+
+private theorem ptmEta2_op_smul (M₁ : PaschkeModule φ₁) (M₂ : PaschkeModule φ₂)
+    (E : ExtTensor tB htB M₁.X M₂.X) (b : ℬ₁₂)
+    (v : (𝒜₁ ⊗[ℂ] 𝒜₂) ⊗[ℂ] ℬ₁₂) :
+    ptmEta2 M₁ M₂ E (b • v) = b • ptmEta2 M₁ M₂ E v := by
+  induction v using TensorProduct.induction_on with
+  | zero => rw [ptm_smul_zero, map_zero, op_smul_zero]
+  | tmul x b' => rw [ptm_smul_tmul, ptmEta2_tmul, ptmEta2_tmul, op_mul_smul]
+  | add v₁ v₂ h₁ h₂ => rw [ptm_smul_add, map_add, map_add, h₁, h₂, op_smul_add]
+
+end EtaTwoDef
+
+section PTMain
+
+variable {tA : 𝒜₁ → 𝒜₂ → 𝒜₁₂} {htA : IsVNTensor tA}
+  {tB : ℬ₁ → ℬ₂ → ℬ₁₂} {htB : IsVNTensor tB}
+  {φ₁ : NCPMap 𝒜₁ ℬ₁} {φ₂ : NCPMap 𝒜₂ ℬ₂} {Φ : NCPMap 𝒜₁₂ ℬ₁₂}
+  (M₁ : PaschkeModule φ₁) (M₂ : PaschkeModule φ₂) (M₁₂ : PaschkeModule Φ)
+
+/-- The Gram identity on `𝒜₁ ⊙ 𝒜₂`: `⟨eA x, eA y⟩ = Φ(y x*)`. -/
+private theorem ptmEtaA_inner (E : ExtTensor tB htB M₁.X M₂.X)
+    (hΦ : ∀ (a₁ : 𝒜₁) (a₂ : 𝒜₂), Φ (tA a₁ a₂) = tB (φ₁ a₁) (φ₂ a₂))
+    (x y : 𝒜₁ ⊗[ℂ] 𝒜₂) :
+    inner ℬ₁₂ (ptmEtaA M₁ M₂ E x) (ptmEtaA M₁ M₂ E y)
+      = Φ (tALin htA y * star (tALin htA x)) := by
+  have hadd : ∀ p q : 𝒜₁₂, Φ (p + q) = Φ p + Φ q := fun p q =>
+    map_add Φ.toCompletelyPositiveMap.toLinearMap p q
+  have hzero : Φ (0 : 𝒜₁₂) = 0 :=
+    map_zero Φ.toCompletelyPositiveMap.toLinearMap
+  induction x using TensorProduct.induction_on with
+  | zero => simp [hzero]
+  | tmul a₁ a₂ =>
+      induction y using TensorProduct.induction_on with
+      | zero => simp [hzero]
+      | tmul α₁ α₂ =>
+          rw [ptmEtaA_tmul, ptmEtaA_tmul, E.η_inner, M₁.inner_tprod,
+            M₂.inner_tprod]
+          simp only [star_one, one_mul, mul_one]
+          rw [tALin_tmul, tALin_tmul, htA.star, htA.mul, ← hΦ]
+      | add y₁ y₂ h₁ h₂ =>
+          rw [map_add (ptmEtaA M₁ M₂ E) y₁ y₂, CStarModule.inner_add_right,
+            h₁, h₂, map_add (tALin htA) y₁ y₂, add_mul, hadd]
+  | add x₁ x₂ h₁ h₂ =>
+      rw [map_add (ptmEtaA M₁ M₂ E) x₁ x₂, CStarModule.inner_add_left,
+        h₁, h₂, map_add (tALin htA) x₁ x₂, star_add, mul_add, hadd]
+
+/-- Both embeddings induce the same 𝒷-valued inner product on
+`(𝒜₁ ⊙ 𝒜₂) ⊙ ℬ₁₂`. -/
+private theorem ptmEta_inner_eq (E : ExtTensor tB htB M₁.X M₂.X)
+    (hΦ : ∀ (a₁ : 𝒜₁) (a₂ : 𝒜₂), Φ (tA a₁ a₂) = tB (φ₁ a₁) (φ₂ a₂))
+    (v w : (𝒜₁ ⊗[ℂ] 𝒜₂) ⊗[ℂ] ℬ₁₂) :
+    inner ℬ₁₂ (ptmEta2 M₁ M₂ E v) (ptmEta2 M₁ M₂ E w)
+      = inner ℬ₁₂ (ptmEta1 htA M₁₂ v) (ptmEta1 htA M₁₂ w) := by
+  induction v using TensorProduct.induction_on with
+  | zero => simp
+  | tmul x b =>
+      induction w using TensorProduct.induction_on with
+      | zero => simp
+      | tmul y β =>
+          rw [ptmEta2_tmul, ptmEta2_tmul, ptmEta1_tmul, ptmEta1_tmul,
+            CStarModule.inner_op_smul_right, CStarModule.inner_op_smul_left,
+            ptmEtaA_inner M₁ M₂ E hΦ, M₁₂.inner_tprod, mul_assoc]
+      | add w₁ w₂ h₁ h₂ =>
+          rw [map_add, map_add, CStarModule.inner_add_right,
+            CStarModule.inner_add_right, h₁, h₂]
+  | add v₁ v₂ h₁ h₂ =>
+      rw [map_add, map_add, CStarModule.inner_add_left,
+        CStarModule.inner_add_left, h₁, h₂]
+
+/-- The 𝒷-valued inner product on `(𝒜₁ ⊙ 𝒜₂) ⊙ ℬ₁₂` pulled back along
+`η₁`. -/
+private noncomputable def ptmBInner (htA : IsVNTensor tA) (M₁₂ : PaschkeModule Φ) :
+    BInner ℬ₁₂ ((𝒜₁ ⊗[ℂ] 𝒜₂) ⊗[ℂ] ℬ₁₂) where
+  inner v w := inner ℬ₁₂ (ptmEta1 htA M₁₂ v) (ptmEta1 htA M₁₂ w)
+  inner_add_right v w z := by rw [map_add, CStarModule.inner_add_right]
+  inner_op_smul_right b v w := by
+    rw [ptmEta1_op_smul, CStarModule.inner_op_smul_right]
+  inner_smul_right_complex c v w := by
+    rw [map_smul, CStarModule.inner_smul_right_complex]
+  star_inner v w := CStarModule.star_inner _ _
+  inner_self_nonneg v := CStarModule.inner_self_nonneg
+
+/-- Ultranorm density of the range of `η₁`: **166VI** with `𝒜' = 𝒜₁ ⊙ 𝒜₂`
+(ultrastrongly dense by `unDense_tSpan`) and `ℬ' = ℬ₁₂`. -/
+private theorem ptmEta1_denseRange (htA : IsVNTensor tA) (M₁₂ : PaschkeModule Φ)
+    (A' : StarSubalgebra ℂ 𝒜₁₂)
+    (hA'dense : UnDense (mulInner 𝒜₁₂) (A' : Set 𝒜₁₂))
+    (hA'mem : ∀ c ∈ A', ∃ (n : ℕ) (α : Fin n → 𝒜₁) (α' : Fin n → 𝒜₂),
+      c = ∑ i, tA (α i) (α' i)) :
+    UnDense (inner ℬ₁₂) (Set.range (ptmEta1 htA M₁₂)) := by
+  classical
+  have hBtop : UnDense (mulInner ℬ₁₂) ((⊤ : StarSubalgebra ℂ ℬ₁₂) : Set ℬ₁₂) := by
+    intro x n ωs ε hε
+    refine ⟨x, by trivial, fun i => ?_⟩
+    rw [sub_self]
+    have h0 : unSeminorm (ωs i) (mulInner ℬ₁₂) (0 : ℬ₁₂) = 0 :=
+      unSeminorm_zero (ωs i) (cstarBInner ℬ₁₂ ℬ₁₂)
+    rw [h0]
+    exact hε.le
+  have hd := dilationspace_dense_subset Φ M₁₂ A'
+    (⊤ : StarSubalgebra ℂ ℬ₁₂) hA'dense hBtop
+  intro z n ωs ε hε
+  obtain ⟨d, ⟨m, a, b, ha, -, rfl⟩, hdist⟩ := hd z n ωs ε hε
+  choose k α α' hα using fun i => hA'mem (a i) (ha i)
+  refine ⟨_, ⟨∑ i, (∑ j, α i j ⊗ₜ[ℂ] α' i j) ⊗ₜ[ℂ] b i, rfl⟩, ?_⟩
+  have hval : ptmEta1 htA M₁₂ (∑ i, (∑ j, α i j ⊗ₜ[ℂ] α' i j) ⊗ₜ[ℂ] b i)
+      = ∑ i, M₁₂.tprod (a i) (b i) := by
+    rw [map_sum]
+    refine Finset.sum_congr rfl fun i _ => ?_
+    have h2 : (tALin htA) (∑ j, α i j ⊗ₜ[ℂ] α' i j) = a i := by
+      rw [map_sum, hα i]
+      exact Finset.sum_congr rfl fun j _ => tALin_tmul htA _ _
+    rw [ptmEta1_tmul, h2]
+  rw [hval]
+  exact hdist
+
+/-- The image of `η₁`, as a `SelfDualCompletion` of `(𝒜₁ ⊙ 𝒜₂) ⊙ ℬ₁₂`. -/
+private noncomputable def ptmCompl1 (htA : IsVNTensor tA) (M₁₂ : PaschkeModule Φ)
+    (hdense : UnDense (inner ℬ₁₂) (Set.range (ptmEta1 htA M₁₂))) :
+    SelfDualCompletion.{u, u, u} (ptmBInner htA M₁₂) where
+  X := M₁₂.X
+  selfDual := M₁₂.selfDual
+  η := ptmEta1 htA M₁₂
+  η_add v w := map_add _ v w
+  η_smul_complex c v := map_smul _ c v
+  η_smul b v := ptmEta1_op_smul htA M₁₂ b v
+  η_inner v w := rfl
+  dense := hdense
+
+end PTMain
+
+private theorem ptmOpSmulSum {𝒷 W : Type u} [CStarAlgebra 𝒷] [PartialOrder 𝒷]
+    [StarOrderedRing 𝒷] [NormedAddCommGroup W] [NormedSpace ℂ W] [SMul 𝒷 W]
+    [CStarModule 𝒷 W] {κ : Type*} (a : 𝒷) (s : Finset κ) (f : κ → W) :
+    a • (∑ i ∈ s, f i) = ∑ i ∈ s, a • f i := by
+  classical
+  refine Finset.induction_on s (by simp [op_smul_zero]) ?_
+  intro i s hi ih
+  rw [Finset.sum_insert hi, op_smul_add, ih, Finset.sum_insert hi]
+
+section EtaSums
+
+variable {tB : ℬ₁ → ℬ₂ → ℬ₁₂} {htB : IsVNTensor tB} {X Y : Type u}
+  [NormedAddCommGroup X] [NormedSpace ℂ X] [SMul ℬ₁ X] [CStarModule ℬ₁ X]
+  [NormedAddCommGroup Y] [NormedSpace ℂ Y] [SMul ℬ₂ Y] [CStarModule ℬ₂ Y]
+
+/-- `η(·, y)` as an additive map, so that it commutes with finite sums. -/
+private noncomputable def etaHomLeft (E : ExtTensor tB htB X Y) (y : Y) : X →+ E.Z where
+  toFun x := E.η x y
+  map_zero' := by
+    have h := E.η_smul_complex 0 0 y
+    rwa [zero_smul, zero_smul] at h
+  map_add' x x' := E.η_add_left x x' y
+
+/-- `η(x, ·)` as an additive map. -/
+private noncomputable def etaHomRight (E : ExtTensor tB htB X Y) (x : X) : Y →+ E.Z where
+  toFun y := E.η x y
+  map_zero' := by
+    have h := extTensor_eta_smul_complex_right E 0 x 0
+    rwa [zero_smul, zero_smul] at h
+  map_add' y y' := E.η_add_right x y y'
+
+private theorem eta_sum_left (E : ExtTensor tB htB X Y) {n : ℕ} (f : Fin n → X)
+    (y : Y) : E.η (∑ i, f i) y = ∑ i, E.η (f i) y :=
+  map_sum (etaHomLeft E y) f Finset.univ
+
+private theorem eta_sum_right (E : ExtTensor tB htB X Y) (x : X) {n : ℕ}
+    (g : Fin n → Y) : E.η x (∑ i, g i) = ∑ i, E.η x (g i) :=
+  map_sum (etaHomRight E x) g Finset.univ
+
+end EtaSums
+
+section PTMain2
+
+variable {tA : 𝒜₁ → 𝒜₂ → 𝒜₁₂} {htA : IsVNTensor tA}
+  {tB : ℬ₁ → ℬ₂ → ℬ₁₂} {htB : IsVNTensor tB}
+  {φ₁ : NCPMap 𝒜₁ ℬ₁} {φ₂ : NCPMap 𝒜₂ ℬ₂} {Φ : NCPMap 𝒜₁₂ ℬ₁₂}
+  (M₁ : PaschkeModule φ₁) (M₂ : PaschkeModule φ₂) (M₁₂ : PaschkeModule Φ)
+
+/-- The elementary tensor `(a₁ ⊗ b₁) ⊗ (a₂ ⊗ b₂)` of `X₁ ⊗ X₂` is in the
+image of `η₂`, at `(a₁ ⊗ a₂) ⊗ (b₁ ⊗ b₂)`. -/
+private theorem ptmEta2_eta_tprod (E : ExtTensor tB htB M₁.X M₂.X)
+    (a₁ : 𝒜₁) (b₁ : ℬ₁) (a₂ : 𝒜₂) (b₂ : ℬ₂) :
+    E.η (M₁.tprod a₁ b₁) (M₂.tprod a₂ b₂)
+      = ptmEta2 M₁ M₂ E ((a₁ ⊗ₜ[ℂ] a₂) ⊗ₜ[ℂ] tB b₁ b₂) := by
+  have h1 : M₁.tprod a₁ b₁ = b₁ • M₁.tprod a₁ 1 := by
+    rw [M₁.compat.smul_action, mul_one]
+  have h2 : M₂.tprod a₂ b₂ = b₂ • M₂.tprod a₂ 1 := by
+    rw [M₂.compat.smul_action, mul_one]
+  rw [h1, h2, E.η_smul, ptmEta2_tmul, ptmEtaA_tmul]
+
+/-- Ultranorm density of the range of `η₂`: **166IV** applied to the
+elementary tensors of the two Paschke modules (**166VI** at `𝒜' = 𝒜`,
+`ℬ' = ℬ`, i.e. `paschke_tprod_dense`). -/
+private theorem ptmEta2_denseRange (E : ExtTensor tB htB M₁.X M₂.X) :
+    UnDense (inner ℬ₁₂) (Set.range (ptmEta2 M₁ M₂ E)) := by
+  classical
+  set U : Set M₁.X := {z : M₁.X | ∃ (n : ℕ) (a : Fin n → 𝒜₁) (b : Fin n → ℬ₁),
+    z = ∑ i, M₁.tprod (a i) (b i)} with hUdef
+  set V : Set M₂.X := {z : M₂.X | ∃ (n : ℕ) (a : Fin n → 𝒜₂) (b : Fin n → ℬ₂),
+    z = ∑ i, M₂.tprod (a i) (b i)} with hVdef
+  have hUadd : ∀ u ∈ U, ∀ u' ∈ U, u + u' ∈ U := by
+    rintro _ ⟨n, a, b, rfl⟩ _ ⟨m, a', b', rfl⟩
+    refine ⟨n + m, Fin.append a a', Fin.append b b', ?_⟩
+    rw [Fin.sum_univ_add]
+    simp only [Fin.append_left, Fin.append_right]
+  have hUsmul : ∀ (c : ℬ₁), ∀ u ∈ U, c • u ∈ U := by
+    rintro c _ ⟨n, a, b, rfl⟩
+    refine ⟨n, a, fun i => c * b i, ?_⟩
+    rw [ptmOpSmulSum]
+    exact Finset.sum_congr rfl fun i _ => M₁.compat.smul_action _ _ _
+  have hVadd : ∀ v ∈ V, ∀ v' ∈ V, v + v' ∈ V := by
+    rintro _ ⟨n, a, b, rfl⟩ _ ⟨m, a', b', rfl⟩
+    refine ⟨n + m, Fin.append a a', Fin.append b b', ?_⟩
+    rw [Fin.sum_univ_add]
+    simp only [Fin.append_left, Fin.append_right]
+  have hVsmul : ∀ (c : ℬ₂), ∀ v ∈ V, c • v ∈ V := by
+    rintro c _ ⟨n, a, b, rfl⟩
+    refine ⟨n, a, fun i => c * b i, ?_⟩
+    rw [ptmOpSmulSum]
+    exact Finset.sum_congr rfl fun i _ => M₂.compat.smul_action _ _ _
+  have hd := exttensor_dense_subsets M₁.selfDual M₂.selfDual E U V
+    (paschke_tprod_dense φ₁ M₁) (paschke_tprod_dense φ₂ M₂)
+    hUadd hUsmul hVadd hVsmul
+  -- every member of the dense set is in the range of `η₂`
+  have hsub : ∀ z : E.Z,
+      (∃ (n : ℕ) (u : Fin n → M₁.X) (v : Fin n → M₂.X),
+        (∀ i, u i ∈ U) ∧ (∀ i, v i ∈ V) ∧ z = ∑ i, E.η (u i) (v i)) →
+      z ∈ Set.range (ptmEta2 M₁ M₂ E) := by
+    rintro _ ⟨n, u, v, hu, hv, rfl⟩
+    choose p a b hab using fun i => hu i
+    choose q α β hαβ using fun i => hv i
+    refine ⟨∑ i, ∑ j, ∑ k,
+      ((a i j ⊗ₜ[ℂ] α i k) ⊗ₜ[ℂ] tB (b i j) (β i k)), ?_⟩
+    rw [map_sum]
+    refine Finset.sum_congr rfl fun i _ => ?_
+    rw [map_sum, hab i, hαβ i, eta_sum_left]
+    refine Finset.sum_congr rfl fun j _ => ?_
+    rw [map_sum, eta_sum_right]
+    exact Finset.sum_congr rfl fun k _ => (ptmEta2_eta_tprod M₁ M₂ E _ _ _ _).symm
+  intro z n ωs ε hε
+  obtain ⟨d, hd', hdist⟩ := hd z n ωs ε hε
+  exact ⟨d, hsub d hd', hdist⟩
+
+/-- The exterior tensor product `X₁ ⊗ X₂`, as a `SelfDualCompletion` of the
+same `(𝒜₁ ⊙ 𝒜₂) ⊙ ℬ₁₂`. -/
+private noncomputable def ptmCompl2 (E : ExtTensor tB htB M₁.X M₂.X)
+    (hΦ : ∀ (a₁ : 𝒜₁) (a₂ : 𝒜₂), Φ (tA a₁ a₂) = tB (φ₁ a₁) (φ₂ a₂)) :
+    SelfDualCompletion.{u, u, u} (ptmBInner htA M₁₂) where
+  X := E.Z
+  selfDual := E.selfDual
+  η := ptmEta2 M₁ M₂ E
+  η_add v w := map_add _ v w
+  η_smul_complex c v := map_smul _ c v
+  η_smul b v := ptmEta2_op_smul M₁ M₂ E b v
+  η_inner v w := ptmEta_inner_eq M₁ M₂ M₁₂ E hΦ v w
+  dense := ptmEta2_denseRange M₁ M₂ E
+
+end PTMain2
+
+end PaschkeTensorModuleAux
+
 /-- **167I** (`paschke-tensor`, dils.tex:5746, Theorem), furthermore-claim
 (dils.tex:5754): the dilation spaces satisfy
 `(𝒜₁ ⊗_{φ₁} ℬ₁) ⊗ (𝒜₂ ⊗_{φ₂} ℬ₂) ≅ (𝒜₁ ⊗ 𝒜₂) ⊗_{φ₁⊗φ₂} (ℬ₁ ⊗ ℬ₂)`,
@@ -5185,8 +5587,16 @@ theorem paschke_tensor_module
       (∀ z z' : E.Z, inner ℬ₁₂ (U z) (U z') = inner ℬ₁₂ z z') ∧
       ∀ (a₁ : 𝒜₁) (b₁ : ℬ₁) (a₂ : 𝒜₂) (b₂ : ℬ₂),
         U (E.η (M₁.tprod a₁ b₁) (M₂.tprod a₂ b₂)) =
-          M₁₂.tprod (tA a₁ a₂) (tB b₁ b₂) :=
-  sorry
+          M₁₂.tprod (tA a₁ a₂) (tB b₁ b₂) := by
+  have hdense : UnDense (inner ℬ₁₂) (Set.range (ptmEta1 htA M₁₂)) :=
+    ptmEta1_denseRange htA M₁₂ (tSpanSubalg htA) (unDense_tSpan htA)
+      (fun _ hc => hc)
+  obtain ⟨U, ⟨hUb, hUbij, hUip, hUη⟩, -⟩ :=
+    selfdual_compl_defining_unique (ptmBInner htA M₁₂)
+      (ptmCompl2 M₁ M₂ M₁₂ E hΦ) (ptmCompl1 htA M₁₂ hdense)
+  refine ⟨U, hUb, hUbij, hUip, fun a₁ b₁ a₂ b₂ => ?_⟩
+  rw [ptmEta2_eta_tprod M₁ M₂ E a₁ b₁ a₂ b₂]
+  exact hUη ((a₁ ⊗ₜ[ℂ] a₂) ⊗ₜ[ℂ] tB b₁ b₂)
 
 end PaschkeTensor
 

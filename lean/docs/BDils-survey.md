@@ -111,8 +111,8 @@ Classification key: **(a)** self-contained, **(b)** blocked on a named
 | 165VI | `ba_ext_tensor_pres` | **(b)** | proof 165VII–165X.  `generates` is supplied by `ext_tensor_ketbra_uwDense`, and the miu-clauses by 165III (proved).  ⚠️ **This row previously said "what is left is 165IX/165X" — that is wrong** (session 55): 165IX/165X give product functionals only for the *vector states* `Ω_X`, `Ω_Y` and then appeal to **116VII** `tensor-characterization`, whereas our `IsVNTensor.exists_productFunctional` transcribes proc.tex's `tensor` literally and demands one for **every** pair of np-functionals.  `tensor_characterization` (`A/Proc/Tensor.lean`) **was closed in session 65**, but it is still off this import path — `B/Dils` does not import `A/Proc` at all (`HilbertModules.lean` imports `Theses.Common`, `A.CStar.Matrices` and three `A/VN` files), and `B/Dils` carries its own `IsVNTensor`.  So 165VI remains blocked *structurally*: it needs its own copy of 116VII, or a decision to put `A/Proc` on the import path (QUESTIONS **D3** territory).  Re-checked session 67 |
 | **166IV** | `exttensor_dense_subsets` | **(a)** | **CLOSED session 50.**  The thesis's route through 158II `kaplansky_hilbmod` (open, printed proof false) is avoided: `u ∈ U` is chosen before `v ∈ V`, so no norm-bounded net is required |
 | **166VI** | `dilationspace_dense_subset` | **(a)** | **CLOSED session 50**, together with the new public `paschke_tprod_dense` (the elementary tensors of `𝒜 ⊗_φ ℬ` are ultranorm dense — easier than 164II.1, since `{∑ aᵢ ⊗ bᵢ}` is already a ℬ-submodule) |
-| 167I | `paschke_tensor` | **(b)** | needs 165VI + `existence_paschke` |
-| 167I furth. | `paschke_tensor_module` | **(b)** | needs 167I |
+| 167I | `paschke_tensor` | **(b)** | needs **165VI** *and* `univprop_ext_tensor` (the argument runs `ad_{U*} ∘ ϑ` for the `U` of 167I-furthermore and the `ϑ` of 165VI, so an `ExtTensor` must exist).  `existence_paschke` is proved; **167I-furthermore is proved and is not a blocker** |
+| **167I furth.** | `paschke_tensor_module` | **(a)** | **CLOSED session 75**, ~370 private lines, axiom-clean.  ⚠️ **This row was wrong**: the furthermore-claim is what the thesis proves *first* (167III–167V), and it needs neither 167I nor 165VI — it takes `E : ExtTensor` as a hypothesis, so it does not even need `univprop_ext_tensor`.  Route: both `X₁ ⊗ X₂` and `(𝒜₁⊗𝒜₂) ⊗_Φ (ℬ₁⊗ℬ₂)` are self-dual completions of the *same* `ℬ₁₂`-module `V = (𝒜₁ ⊙ 𝒜₂) ⊙ ℬ₁₂`, so **163II** `selfdual_compl_defining_unique` hands over boundedness, bijectivity, inner-product preservation and the value on elementary tensors in one step |
 
 **Bottom line for `B/Dils` after session 54.**  159IX is closed and 164II.2b
 is **dead as transcribed** (D6), so the 1640 parsec is finished apart from the
@@ -1078,3 +1078,143 @@ argument over infinite orthogonal families of partial isometries plus
 **155II `ksgns`** is still the whole of `Paschke.lean`.  170II.1
 `dils_examples_pure_1` now has 171VII but still wants the Stinespring
 classification of pure maps `𝒷(ℋ) → 𝒷(𝒦)`.
+
+
+## Session 75 — **167I-furthermore `paschke_tensor_module` is closed**, and the survey had the 1670 parsec's dependency order backwards
+
+**`B/Dils` 15 → 14** (HilbertModules 0, SelfDualCompletion 0, Stinespring 1,
+Kaplansky 4, Paschke 1, **SelfDual 6**, Pure 2; every file run through `lean`
+individually and **paired with an error count, 0 everywhere**).
+`paschke_tensor_module` is `#print axioms`-clean
+(`propext, Classical.choice, Quot.sound`), checked from an importing file
+against the rebuilt olean.  **~370 lines**, all `private`, in a new
+`section PaschkeTensorModuleAux` between `paschke_tensor` and
+`paschke_tensor_module`.
+
+### The root of the `SelfDual.lean` tensor chain
+
+The brief asked which of the seven is the root of the `*_tensor*` cluster.
+The cluster is **not** a chain with one root; it has three independent items
+at the bottom, and the survey's table had one of the arrows pointing the
+wrong way:
+
+* **`univprop_ext_tensor`** (164II existence) — a *construction*, and nothing
+  else in the file waits on it, because 165VI, 166II, 166IV and
+  167I-furthermore all take `E : ExtTensor` as a **hypothesis**.  Only
+  `paschke_tensor` (167I main) needs an `ExtTensor` to exist.
+* **`ba_ext_tensor_pres`** (165VI) — blocked outside the directory on its own
+  copy of **116VII** `tensor_characterization` (the `exists_productFunctional`
+  clause of `IsVNTensor`; the thesis's 165IX/165X supply product functionals
+  only for the *vector states* `Ω_X`, `Ω_Y` and then appeal to 116VII).
+  Unchanged.
+* **`paschke_tensor_module`** (167I furthermore) — **not blocked at all**, and
+  this is the correction.  The survey said "needs 167I"; the thesis
+  (dils.tex:5760, 167II) proves the furthermore-claim **first** and then uses
+  it, together with 165VI, to get the main claim.  It was the reachable root,
+  and it is now closed.
+
+`ext_tensor_ketbra_dense` (164II.2b) stays `sorry` as the record of QUESTIONS
+**D6**, and `paschke_tensor` (167I main) still needs 165VI *and*
+`univprop_ext_tensor`.
+
+### How 167I-furthermore was proved, and where it diverges
+
+The thesis's 167III–167V does three things: (i) density of
+`(𝒜₁ ⊙ ℬ₁) ⊙ (𝒜₂ ⊙ ℬ₂)` in `X₁ ⊗ X₂` and of `(𝒜₁ ⊙ 𝒜₂) ⊙ (ℬ₁ ⊙ ℬ₂)` in
+`(𝒜₁ ⊗ 𝒜₂) ⊗_Φ (ℬ₁ ⊗ ℬ₂)`; (ii) the four-line inner-product computation on
+elementary tensors; (iii) extension of `U₀` in two stages (first along the
+dense `𝒜ᵢ ⊙ ℬᵢ`, then by the universal property of the exterior tensor
+product), with inner-product preservation read off **148V** and surjectivity
+off the density.
+
+**(i) and (ii) transcribe verbatim; (iii) is replaced (divergence, class 2).**
+The observation that does it is that the two modules are self-dual
+completions of **one and the same** `ℬ₁₂`-module with `ℬ₁₂`-valued inner
+product, namely `V = (𝒜₁ ⊗[ℂ] 𝒜₂) ⊗[ℂ] ℬ₁₂` with `ℬ₁₂` acting on the right
+factor, embedded by
+
+* `η₁ : (a₁ ⊗ a₂) ⊗ b ↦ (a₁ ⊗ a₂) ⊗ b ∈ (𝒜₁ ⊗ 𝒜₂) ⊗_Φ (ℬ₁ ⊗ ℬ₂)`, and
+* `η₂ : (a₁ ⊗ a₂) ⊗ b ↦ b · ((a₁ ⊗ 1) ⊗ (a₂ ⊗ 1)) ∈ X₁ ⊗ X₂`.
+
+Then **163II** `selfdual_compl_defining_unique` — itself four applications of
+**151Ia**, i.e. exactly the "usual reasoning" the thesis invokes for `U₁` —
+delivers *all four* conclusions at once.  No `ExtTensor.univ`, no 148V, no
+separate surjectivity argument.
+
+Three points worth keeping.
+
+1. **`V` cannot be `𝒜₁₂ ⊗[ℂ] ℬ₁₂`** (the carrier `Paschke.lean` uses).  `η₂`
+   has to be *defined*, and `X₁ ⊗ X₂` knows nothing about a general element
+   of `𝒜₁₂`; the tensor factor `𝒜₁ ⊗[ℂ] 𝒜₂` is forced.  Conversely the
+   *second* factor must be all of `ℬ₁₂`, not `ℬ₁ ⊗[ℂ] ℬ₂`, because `η₂`'s
+   ℬ₁₂-equivariance is what makes `V` a `ℬ₁₂`-module at all.  Nothing else
+   works: with `ℬ₁ ⊙ ℬ₂` there is no `SMul ℬ₁₂ V`, and `SelfDualCompletion`
+   demands one.
+2. **`B` is the pullback of `⟨·,·⟩` along `η₁`**, so its five `BInner` axioms
+   are one line each and positivity is free; the whole mathematical content
+   is `η₂`'s `η_inner`, and *that* is the thesis's 167IV.  The computation
+   factors through a Gram identity on `𝒜₁ ⊙ 𝒜₂` alone
+   (`ptmEtaA_inner`: `⟨eA x, eA y⟩ = Φ(tA(y) · tA(x)*)`), which is additive
+   in both slots, so the induction is 3×3 rather than the 3⁴ a direct double
+   `TensorProduct.induction_on` on `V` would need.
+3. **Both densities are the thesis's own 167III**, and both were already in
+   the file: `η₁`'s is **166VI** `dilationspace_dense_subset` at
+   `𝒜' = 𝒜₁ ⊙ 𝒜₂` (ultrastrongly dense by the private `unDense_tSpan`, which
+   is exactly the thesis's "by `tensor` and `ultraclosed`") and `ℬ' = ℬ₁₂`;
+   `η₂`'s is **166IV** `exttensor_dense_subsets` at the elementary tensors of
+   the two Paschke modules (`paschke_tprod_dense`).  ⚠️ The 166IV route needs
+   `E.η (a₁ ⊗ b₁) (a₂ ⊗ b₂) = (b₁ ⊗ b₂) · ((a₁ ⊗ 1) ⊗ (a₂ ⊗ 1))`, i.e. one
+   application of `PhiCompatible.smul_action` in each factor followed by
+   `ExtTensor.η_smul` — this is what puts the whole 166IV dense set inside
+   the *range* of `η₂`, not merely in its closure.
+
+### Two small helpers that were missing and may be wanted elsewhere
+
+Both are `private` in `SelfDual.lean`:
+
+* `op_smul_smul_complex` — the ℬ-action and the ℂ-action of a `CStarModule`
+  commute (`b • (c • z) = c • (b • z)`), proved through `(c • 1) • z`.
+  `HilbertModules.lean` has `op_smul_complex_smul` (`(c • b) • x = c • (b • x)`)
+  but not this one.
+* `extTensor_eta_smul_complex_right` — `ExtTensor.η` is ℂ-homogeneous in its
+  **second** argument too.  `ExtTensor` records `η_smul_complex` only in the
+  first, and the second follows from `η_smul` at `a = 1`, `b = c·1` exactly as
+  `vnTensor_smul_complex_right` does for `IsVNTensor`.
+
+### The next gate
+
+Inside `SelfDual.lean` there is now **no unblocked item left in the 1640–1670
+parsecs**: `paschke_tensor` waits on 165VI and `univprop_ext_tensor`, 165VI on
+a local copy of 116VII, and 164II.2b on QUESTIONS D6.  So the next gates in
+the directory are, in order of reachability:
+
+1. **`univprop_ext_tensor`** (164II existence) — with `dils_completion`
+   (150II) and `selfdual_completion_univ` (151Ia) both proved, the shortcut
+   the survey named in session 52 is open: build the `ℬ₁₂`-valued inner
+   product on `X ⊙ Y` (the exterior analogue of `ptensBInner`, with
+   `⟨x ⊗ y, x' ⊗ y'⟩ = t ⟨x,x'⟩ ⟨y,y'⟩`), complete it with 150II and get
+   `univ` from 151Ia — **the same three-step shape as `existence_paschke`,
+   whose ~830 lines are the template**, and the `V` / pullback / two-embedding
+   idiom of this session is directly reusable.  This is now the highest-return
+   item in the file: it is the last input to `paschke_tensor` other than
+   165VI, and it is the only item of the 1640 parsec that is neither
+   known-false nor blocked outside the directory.
+2. **162II `total_mv_order`** — unchanged; Zorn over infinite orthogonal
+   families of partial isometries, and `summing-partial-isometries` is still
+   in the tree under no name.  162IV sits on it.
+3. **155II `ksgns`** (`Paschke.lean`, the whole of it) — class **(c)**: the
+   thesis states Kasparov's theorem and gives *no proof at all* (155III
+   explicitly leaves its universal property open), so this is a KSGNS
+   construction written from scratch: `𝒜 ⊙ X` with
+   `⟨a ⊗ x, a' ⊗ x'⟩ = ⟨x, φ(a* a') x'⟩`, quotient by the null vectors,
+   norm-complete (**136II** is the in-tree model — *not* 150II, since no
+   self-duality is asked for).  Several hundred lines and no thesis text to
+   check against, which makes it the least valuable of the three despite
+   being self-contained.
+
+⚠️ **On the printed direction of `T` in 155II**: dils.tex says
+"adjointable `T : Y → X` with `φ = ad_T ∘ ϱ`" while our `ksgns` has
+`T : X →L[ℂ] Y` and `φ a = T' ∘ ϱ(a) ∘ T`.  This is the **mirroring**, not a
+defect: the thesis's modules are right modules, so its arrows compose the
+other way round.  Recorded here so the next worker does not file it as an
+erratum.

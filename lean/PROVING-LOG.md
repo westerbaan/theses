@@ -17883,3 +17883,210 @@ Two observations for whoever takes `Duplicators.lean`:
 * `vn_products_ncpsu` (**47IV**.3) is **proved** in `A/VN/Basic.lean` — its
   row in `docs/why-open.csv` is stale.  Left alone because `A/VN` is another
   worker's live territory.
+
+---
+
+## Session 75 — `B/Dils`: **167I-furthermore `paschke_tensor_module`** (worker on `Theses/B/Dils/`)
+
+**Result: `SelfDual.lean` 7 → 6, `B/Dils` 15 → 14, 0 errors in all seven
+files.**  Compiler-counted per file, each source run through `lean`
+individually and paired with an error count: `HilbertModules` 0,
+`SelfDualCompletion` 0, `Stinespring` 1, `Kaplansky` 4, `Paschke` 1,
+`SelfDual` **6**, `Pure` 2 — errors 0 everywhere.  `paschke_tensor_module`
+is `#print axioms`-clean (`propext, Classical.choice, Quot.sound`), checked
+from an importing file against the rebuilt olean.  ~370 new lines, all
+`private`, in `section PaschkeTensorModuleAux`.
+
+**The survey's dependency arrow was backwards.**  `docs/BDils-survey.md` had
+`167I furth. (b) — needs 167I`; the thesis proves the furthermore-claim
+**first** (167III–167V) and then uses it, with **165VI**, for the main claim
+(167VI onwards).  Our Lean statement takes `E : ExtTensor` as a *hypothesis*,
+so it needs neither 165VI nor `univprop_ext_tensor` — it was the one
+reachable item in the 1670 parsec all along.  `docs/why-open.csv` is updated
+(the `paschke_tensor_module` row deleted, the `paschke_tensor` row corrected
+to list *both* its blockers).
+
+**Divergence, class 2 (thesis proof fine, another route taken).**  167V
+extends `U₀` in two stages — along the ultranorm-dense `𝒜ᵢ ⊙ ℬᵢ`, then by the
+universal property of the exterior tensor product — and reads
+inner-product preservation off **148V** `innerprod_ultraweak` and
+surjectivity off the density.  Here, instead, `X₁ ⊗ X₂` and
+`(𝒜₁ ⊗ 𝒜₂) ⊗_Φ (ℬ₁ ⊗ ℬ₂)` are exhibited as self-dual completions of *one*
+`ℬ₁₂`-module with `ℬ₁₂`-valued inner product,
+`V = (𝒜₁ ⊗[ℂ] 𝒜₂) ⊗[ℂ] ℬ₁₂` (with `ℬ₁₂` acting on the right factor), by
+
+* `η₁ ((a₁ ⊗ a₂) ⊗ b) = (a₁ ⊗ a₂) ⊗ b` and
+* `η₂ ((a₁ ⊗ a₂) ⊗ b) = b · ((a₁ ⊗ 1) ⊗ (a₂ ⊗ 1))`,
+
+and **163II** `selfdual_compl_defining_unique` delivers boundedness,
+bijectivity, inner-product preservation and the value on elementary tensors
+in one step.  This is not a Mathlib substitution: 163II *is* 151Ia run four
+times, i.e. the thesis's own "usual reasoning", used one parsec earlier than
+the thesis uses it.  Steps (i) density and (ii) the inner-product computation
+are the thesis's 167III and 167IV verbatim.
+
+**What the choice of `V` is forced by**, since it is the only real design
+decision: the first factor cannot be `𝒜₁₂` (η₂ would have to be defined on a
+general element of `𝒜₁ ⊗ 𝒜₂`'s target algebra, which `X₁ ⊗ X₂` knows nothing
+about), and the second factor cannot be `ℬ₁ ⊗[ℂ] ℬ₂` (there would be no
+`SMul ℬ₁₂ V`, which `SelfDualCompletion` requires).  `B` is then the pullback
+of the inner product along `η₁`, so its five `BInner` axioms are one line
+each and positivity is free.
+
+**The one computation** is `η₂`'s `η_inner`, i.e. 167IV.  It factors through a
+Gram identity on `𝒜₁ ⊙ 𝒜₂` alone — `⟨eA x, eA y⟩ = Φ(tA(y) · tA(x)*)`, which
+is *additive in both slots* — so the `TensorProduct` induction is 3×3 instead
+of the 3⁴ that a direct double induction on `V` would need.
+
+**Two helpers that were missing** (both now `private` in `SelfDual.lean`):
+`op_smul_smul_complex` (the ℬ- and ℂ-actions of a `CStarModule` commute;
+`HilbertModules.lean` has only `op_smul_complex_smul`) and
+`extTensor_eta_smul_complex_right` (`ExtTensor.η` is ℂ-homogeneous in its
+*second* argument, which the structure records only for the first — the same
+gap `vnTensor_smul_complex_right` fills for `IsVNTensor`).
+
+**Nothing was added to ERRATA or QUESTIONS**: no defect was found in
+167III–167V, and the inner-product computation of 167IV is correct as
+printed under the mirroring.  One near-miss recorded in the survey rather
+than in ERRATA: dils.tex 155II prints `T : Y → X` where our `ksgns` has
+`T : X →L[ℂ] Y`; that is the right-module mirroring, not an error.
+
+**Process note.**  Three upstream rebuild waves (`A/VN/Basic`,
+`Projections`, `NormalFunctionals`, `Completeness`, and then `Stinespring`)
+landed during the session and each removed the oleans `SelfDual.lean` needs.
+The development was therefore done in a throw-away file importing only
+`Theses.B.Dils.SelfDual` (~5 s per iteration against ~40 s for the real
+file) and transplanted once.  The one thing that did not survive the
+transplant was `unDense_tSpan` and `tSpanSubalg`, which are **private** to
+`SelfDual.lean` and so invisible to the scratch file; the density lemma was
+therefore written with the star subalgebra and its ultrastrong density as
+*hypotheses*, and only instantiated on transplant.  That shape is worth
+keeping for any future scratch-file development against this file.
+
+---
+
+## Session 77 — `A/VN`: **67IV.2 `central_projections_sums_2` is CLOSED, and it never needed 77III** (worker on `Theses/A/VN/`)
+
+A/VN **5 → 4** code `sorry`s.  Per file, each source run through `lean`
+individually against rebuilt oleans, paired with an error count, **0 errors
+everywhere**: `Basic` **1**, `Projections` **0**, `Division` **3**,
+`NormalFunctionals` **0**, `Completeness` **0**.  **`Projections.lean` is
+finished.**  Closed this session, `#print axioms`-clean
+(`[propext, Classical.choice, Quot.sound]`):
+
+* **67IV**.2 `central_projections_sums_2` — given an orthogonal family of
+  central projections `(cᵢ)` with `⋁ᵢ cᵢ = 1` and a norm-bounded choice
+  `bᵢ ∈ cᵢA`, there is a **unique** `a` with `cᵢa = bᵢ`.
+
+### 1. The import problem does not exist
+
+The survey (and the brief) said existence "must build `a = ∑ᵢ bᵢ` as an
+ultraweak limit of the finite partial sums … and then use ultraweak
+compactness of the ball (**77III**, `Completeness.lean` — *downstream* of
+`Projections.lean`, so either the statement moves or the compactness argument
+is redone)".  **Neither is necessary.**  For a *positive* family the finite
+partial sums `∑_{i∈F} bᵢ` are a **directed** set of self-adjoints, bounded
+above by `M·1` (each `bᵢ ≤ M·cᵢ` by conjugating `bᵢ ≤ M·1` with `cᵢ`, and
+`∑_{i∈F} cᵢ` is a projection by `isStarProjection_sum`), so `a := ⋁` exists
+by von Neumann-ness *alone* — no topology, no compactness, no 77III, nothing
+from `Completeness.lean`.  `Projections.lean` was never blocked, and no
+statement was moved and no import restructured.
+
+That `cⱼa = bⱼ` needs no normality of conjugation either, only *leastness* of
+the supremum: writing `q = 1 − cⱼ`, every partial sum satisfies
+`∑_{i∈F} bᵢ ≤ bⱼ + q a q` (split off the `j` term; the rest is fixed by `q`,
+so conjugating `∑_{i∈F∖{j}} bᵢ ≤ a` by `q` leaves it unchanged), whence
+`a ≤ bⱼ + q a q`; conjugating *that* by `cⱼ` gives `cⱼ a cⱼ ≤ bⱼ`, and
+`bⱼ ≤ a` conjugated by `cⱼ` gives the converse.
+
+The general case is two reductions on top of it, in `Projections.lean`, both
+private: **self-adjoint** `bᵢ` by shifting (`‖bᵢ‖ ≤ M` gives `−M·cᵢ ≤ bᵢ`, so
+`bᵢ + M·cᵢ ≥ 0` and is `≤ 2M·1`; subtract `M·1` from the lift), and
+**general** `bᵢ` by `b = ½(b+b*) + I·(I/2)(b*−b)`, the two halves being
+self-adjoint, in the corner (`cᵢ b*ᵢ = b*ᵢ` because `cᵢ` is central) and of
+norm `≤ ‖bᵢ‖`.
+
+Uniqueness is the new **public** `central_family_separating` — *an orthogonal
+family of central projections with `⋁ᵢ cᵢ = 1` is separating*: `cᵢ a = 0`
+gives `a a* cᵢ = 0`, so `⌈a a*⌉ cᵢ = 0` (`ceil_mul_eq_zero`), so every `cᵢ`
+lies below `1 − ⌈a a*⌉` and `1 = ⋁ᵢ cᵢ ≤ 1 − ⌈a a*⌉`, forcing `⌈a a*⌉ = 0`.
+It is public because both remaining `Division.lean` items want it.
+
+### 2. 67IV.2 was upstream of `Division.lean`'s three, not beside them
+
+The brief said to start in `Division.lean` and treat `Projections.lean`'s one
+item as awkward.  It is the other way round: **the thesis's proofs of both
+84II `fdcstar` and 84bIII `hereditarilyAtomic_subalgebra` cite
+`central-projections-sums` by name** — 84II to reassemble `𝒜 ≅ ⊕ₘ zₘ𝒜` from
+its minimal central projections (vn.tex:5900), 84bIII to reassemble
+`ℬ ≅ ⊕ⱼ cⱼℬ` (vn.tex:6180).  Closing 67IV.2 is therefore the one piece of
+`A/VN` that both of `Division.lean`'s open theorems were waiting on.
+
+### 3. Costing of `Division.lean`'s three
+
+Re-derived this session; the survey's classification `[L] / [S] / [B]` holds
+but the sizes are worth recording.
+
+* **84II `fdcstar` — ~500–800 lines, and Mathlib does *half* of it.**
+  `IsSemisimpleRing.exists_algEquiv_pi_matrix_of_isAlgClosed`
+  (`Mathlib/RingTheory/SimpleModule/IsAlgClosed.lean`) gives exactly our
+  conclusion's *shape* — `∃ (n : ℕ) (d : Fin n → ℕ), R ≃ₐ[ℂ] Π i, Matrix
+  (Fin (d i)) (Fin (d i)) ℂ` — for a finite-dimensional semisimple algebra
+  over an algebraically closed field.  Its hypothesis is cheap: with
+  `IsArtinianRing.isSemisimpleRing_iff_jacobson` and
+  `IsArtinianRing.isNilpotent_jacobson_bot`, semisimplicity of a
+  finite-dimensional C\*-algebra is "`x` in the radical ⟹ `x*x` is a
+  nilpotent self-adjoint ⟹ `x*x = 0`", ~60–100 lines.  **What Mathlib does
+  not give is the star.**  Wedderburn yields `≃ₐ[ℂ]`, our statement wants
+  `≃⋆ₐ[ℂ]`, and there is **no Skolem–Noether in Mathlib** (grep: only
+  `LittleWedderburn` and model-theoretic "skolem"), so the upgrade — transport
+  the involution, write `x♯ = h⁻¹x*h` for a positive invertible `h`, conjugate
+  by `h^{1/2}` — has to be built, or the thesis's own matrix-unit
+  construction (`cceil_sum` 83V + polar decomposition, both proved) used
+  instead, which produces a `∗`-map by construction.  Either way this is the
+  bulk.  Note the thesis's first two pages — "`𝒜` is a von Neumann algebra",
+  via norm-compactness of the unit ball and boundedness of every linear
+  functional — are **free in Lean**: finite-dimensional normed spaces are
+  proper and `LinearMap.continuous_of_finiteDimensional` is Mathlib's.
+* **84bIII `hereditarilyAtomic_subalgebra` — ~1000–1600 lines, and it is not
+  a tail-end job** (the previous worker's judgement is confirmed).  The
+  mathematics is short — `dⱼ := ⌈πⱼ∘e⌉` is central by `carrier_miu`,
+  `⌈πⱼ⌉ ≤ dⱼ` by leastness, `⋃ⱼ dⱼ = 1`, and `dᵢℬ` embeds in `M_{Nᵢ}` hence
+  is finite-dimensional — but every step of the *assembly* needs a carrier
+  the tree does not have: the corner `cℬ` as a **type** with `CStarAlgebra`,
+  `PartialOrder`, `StarOrderedRing` and `VonNeumannAlgebra` instances (67IV.2
+  is deliberately stated concretely, in `A`, precisely to avoid building it),
+  84II applied to each corner, a Zorn argument for the maximal orthogonal
+  subfamily, and a regrouping `lp (fun j => lp (fun m => M) ∞) ∞ ≃⋆ₐ
+  lp (fun (j,m) => M) ∞`.  It is downstream of 84II.
+* **84bV `ha_equalisers` — ~150–300 lines *given* 84bIII**, whose `[B]`
+  classification is right; 47V `vn_equalisers` supplies the equaliser as a
+  von Neumann subalgebra and 84bIII then applies to it.
+
+Nothing in `Division.lean` was started: on these numbers none of the three is
+closable in a session, and all three are terminal for `A/VN` itself.
+
+### 4. Two corrections to the brief
+
+* "**Nothing outside `A/VN` refers to any remaining `A/VN` sorry**" is true of
+  *Lean* references but not of the mathematics: `docs/why-open.csv`'s
+  `ha_second_adjunction` row (**125bII**, `A/Proc`) records that item as
+  wanting 84bV and 84bIII.  Since `ha_second_adjunction` is itself a `sorry`,
+  no Lean declaration depends on `A/VN`; but `Division.lean`'s three are not
+  "blocking nobody" mathematically.
+* The `⌈π_j⌉ ≤ ⌈π_j∘e⌉` step of vn.tex 84bIII, which *looks* like a type
+  error (a projection of `𝒜` compared with one of `ℬ`), is **not** a defect:
+  the thesis has `ℬ ⊆ 𝒜` literally, so both are elements of `𝒜` and the
+  inequality is leastness of `⌈π_j⌉` in `𝒜` applied to `d_j ∈ ℬ ⊆ 𝒜`.  Under
+  our rendering (an injective nmiu `e : B → A`) it becomes `⌈π_j⌉ ≤ e(d_j)`.
+  Nothing was added to ERRATA or QUESTIONS this session.
+
+### 5. Process
+
+The whole development was done in a throw-away file importing
+`Theses.A.VN.Projections` (~40 s per iteration) and transplanted once, then
+`lake build Theses.A.VN.Projections` + the other four A/VN modules (8717
+jobs, zero errors).  Thirteen `show` tactics that changed the goal were
+converted to `change` to keep `lake`'s style linter quiet — note that the
+bare `lean` invocation in the survey's refresh recipe does **not** report
+`linter.style.show`, only `lake build` does.
