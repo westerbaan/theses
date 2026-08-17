@@ -2817,6 +2817,149 @@ theorem bin_eq_zero {X : Type v} (l : M) (x y z : X) (hzx : z ≠ x) (hzy : z �
     rw [if_neg hzx]
   · rw [bin_apply l hxy z, if_neg hzx, if_neg hzy]
 
+/-- Variant of `map_spec`: the value of `𝒟_M f (p)` at `y` may be computed
+over any repetition-free list of elements of the fibre of `y` containing the
+whole support of `p` in that fibre. -/
+theorem map_spec_of_list {X : Type v} {Y : Type w} (p : MConvexComb M X)
+    (f : X → Y) (y : Y) (L : List X) (hnd : L.Nodup)
+    (hL : ∀ x ∈ L, f x = y)
+    (hsupp : ∀ x, p.toFun x ≠ 0 → f x = y → x ∈ L) :
+    PCM.IsSumOf (L.map p.toFun) ((p.map f).toFun y) := by
+  classical
+  have hmem' : ∀ x, x ∈ L.filter (fun x => decide (p.toFun x ≠ 0)) ↔
+      (p.toFun x ≠ 0 ∧ f x = y) := by
+    intro x
+    rw [List.mem_filter]
+    simp only [decide_eq_true_eq]
+    exact ⟨fun h => ⟨h.2, hL x h.1⟩, fun h => ⟨hsupp x h.1 h.2, h.1⟩⟩
+  have h1 := map_spec p f y _ (List.Nodup.filter _ hnd) hmem'
+  refine isSumOf_map_of_subset p.toFun (List.Nodup.filter _ hnd) hnd
+    (fun x hx => List.mem_of_mem_filter hx) (fun x hx hnx => ?_) h1
+  by_contra h0
+  exact hnx (List.mem_filter.mpr ⟨hx, by simpa using h0⟩)
+
+open Classical in
+/-- The pushforward of a binary combination is a binary combination. -/
+theorem map_bin {X : Type v} {Y : Type w} (l : M) (x y : X) (f : X → Y) :
+    (bin l x y).map f = bin l (f x) (f y) := by
+  by_cases hxy : x = y
+  · subst hxy
+    rw [bin_self, map_eta, bin_self]
+  have hvx : (bin l x y).toFun x = l := by rw [bin_apply l hxy, if_pos rfl]
+  have hvy : (bin l x y).toFun y = orth l := by
+    rw [bin_apply l hxy, if_neg (fun h : y = x => hxy h.symm), if_pos rfl]
+  refine MConvexComb.ext (funext fun z => ?_)
+  by_cases hfxy : f x = f y
+  · -- both coefficients land on the same point of `Y`
+    have hR : bin l (f x) (f y) = (eta (f x) : MConvexComb M Y) := by
+      rw [← hfxy, bin_self]
+    rw [hR]
+    by_cases hz : z = f x
+    · subst hz
+      have h := map_spec_of_list (bin l x y) f (f x) [x, y] (by simp [hxy])
+        (fun w hw => by
+          rcases List.mem_cons.mp hw with rfl | hw
+          · rfl
+          · rw [List.mem_singleton.mp hw]; exact hfxy.symm)
+        (fun w hw _ => by
+          by_cases hwx : w = x
+          · exact List.mem_cons.mpr (Or.inl hwx)
+          by_cases hwy : w = y
+          · exact List.mem_cons.mpr (Or.inr (List.mem_singleton.mpr hwy))
+          · exact absurd (bin_eq_zero l x y w hwx hwy) hw)
+      rw [List.map_cons, List.map_cons, List.map_nil, hvx, hvy] at h
+      have h2 := isSumOf_pair l (orth l) (EffectAlgebra.perp_orth l)
+      rw [EffectAlgebra.ovee_orth l] at h2
+      rw [isSumOf_unique h h2]
+      show (1 : M) = if f x = f x then (1 : M) else 0
+      rw [if_pos rfl]
+    · have h := map_spec_of_list (bin l x y) f z [] List.nodup_nil
+        (fun w hw => absurd hw (List.not_mem_nil))
+        (fun w hw hfw => by
+          by_cases hwx : w = x
+          · subst hwx; exact absurd hfw.symm hz
+          by_cases hwy : w = y
+          · subst hwy; exact absurd (hfxy.trans hfw).symm hz
+          · exact absurd (bin_eq_zero l x y w hwx hwy) hw)
+      rw [List.map_nil, PCM.isSumOf_nil_iff] at h
+      rw [h]
+      show (0 : M) = if z = f x then (1 : M) else 0
+      rw [if_neg hz]
+  · rw [bin_apply l hfxy z]
+    by_cases hz : z = f x
+    · subst hz
+      have h := map_spec_of_list (bin l x y) f (f x) [x] (List.nodup_singleton x)
+        (fun w hw => by rw [List.mem_singleton.mp hw])
+        (fun w hw hfw => by
+          by_cases hwx : w = x
+          · exact List.mem_singleton.mpr hwx
+          by_cases hwy : w = y
+          · exact absurd ((hwy ▸ hfw : f y = f x)) (fun hh => hfxy hh.symm)
+          · exact absurd (bin_eq_zero l x y w hwx hwy) hw)
+      rw [List.map_cons, List.map_nil, hvx] at h
+      rw [eq_of_isSumOf_singleton h, if_pos rfl]
+    · by_cases hz2 : z = f y
+      · subst hz2
+        have h := map_spec_of_list (bin l x y) f (f y) [y] (List.nodup_singleton y)
+          (fun w hw => by rw [List.mem_singleton.mp hw])
+          (fun w hw hfw => by
+            by_cases hwy : w = y
+            · exact List.mem_singleton.mpr hwy
+            by_cases hwx : w = x
+            · exact absurd ((hwx ▸ hfw : f x = f y)) hfxy
+            · exact absurd (bin_eq_zero l x y w hwx hwy) hw)
+        rw [List.map_cons, List.map_nil, hvy] at h
+        rw [eq_of_isSumOf_singleton h, if_neg hz, if_pos rfl]
+      · have h := map_spec_of_list (bin l x y) f z [] List.nodup_nil
+          (fun w hw => absurd hw (List.not_mem_nil))
+          (fun w hw hfw => by
+            by_cases hwx : w = x
+            · exact absurd (hwx ▸ hfw : f x = z) (fun hh => hz hh.symm)
+            by_cases hwy : w = y
+            · exact absurd (hwy ▸ hfw : f y = z) (fun hh => hz2 hh.symm)
+            · exact absurd (bin_eq_zero l x y w hwx hwy) hw)
+        rw [List.map_nil, PCM.isSumOf_nil_iff] at h
+        rw [h, if_neg hz, if_neg hz2]
+
+/-- Variant of `mu_spec`: the value of `μ(Φ)` may be computed over any
+repetition-free list containing the support of `Φ`. -/
+theorem mu_spec_of_subset {X : Type v} (Φ : MConvexComb M (MConvexComb M X))
+    (x : X) (l : List (MConvexComb M X)) (hnd : l.Nodup)
+    (hsupp : ∀ φ, Φ.toFun φ ≠ 0 → φ ∈ l) :
+    PCM.IsSumOf (l.map fun φ => Φ.toFun φ * φ.toFun x) ((mu Φ).toFun x) := by
+  classical
+  obtain ⟨L, hndL, hmemL, -⟩ := Φ.sum_one
+  refine isSumOf_map_of_support _ hndL hnd ?_ ?_ (mu_spec Φ x L hndL hmemL)
+  · intro φ hφ
+    refine (hmemL φ).mpr fun h0 => hφ ?_
+    show Φ.toFun φ * φ.toFun x = 0
+    rw [h0, (exc_emonzero (φ.toFun x)).2]
+  · intro φ hφ
+    refine hsupp φ fun h0 => hφ ?_
+    show Φ.toFun φ * φ.toFun x = 0
+    rw [h0, (exc_emonzero (φ.toFun x)).2]
+
+open Classical in
+/-- `μ` of a binary combination of two distributions is their `λ`-mixture. -/
+theorem mu_bin {X : Type v} (l : M) (P Q : MConvexComb M X) (x : X) :
+    PCM.IsSumOf [l * P.toFun x, orth l * Q.toFun x] ((mu (bin l P Q)).toFun x) := by
+  by_cases hPQ : P = Q
+  · subst hPQ
+    rw [bin_self, mu_eta]
+    obtain ⟨h', he⟩ := emon_ovee_mul (P.toFun x) (EffectAlgebra.perp_orth l)
+    rw [EffectAlgebra.ovee_orth l, EffectMonoid.one_mul] at he
+    have hp2 := isSumOf_pair (l * P.toFun x) (orth l * P.toFun x) h'
+    rwa [← he] at hp2
+  · have h := mu_spec_of_subset (bin l P Q) x [P, Q] (by simp [hPQ]) (fun φ hφ => by
+      by_cases hP : φ = P
+      · exact List.mem_cons.mpr (Or.inl hP)
+      by_cases hQ : φ = Q
+      · exact List.mem_cons.mpr (Or.inr (List.mem_singleton.mpr hQ))
+      · exact absurd (bin_eq_zero l P Q φ hP hQ) hφ)
+    rw [List.map_cons, List.map_cons, List.map_nil, bin_apply l hPQ P, if_pos rfl,
+      bin_apply l hPQ Q, if_neg (fun hh : Q = P => hPQ hh.symm), if_pos rfl] at h
+    exact h
+
 variable {X : Type v}
 
 open Classical in
@@ -4314,6 +4457,280 @@ theorem semilattice_cancellative_iff (L : Type u) [SemilatticeSup L]
   rw [key, key, sup_eq_left.mpr (le_sup_left : x ≤ x ⊔ y),
     sup_eq_left.mpr (le_sup_right : y ≤ x ⊔ y)]
 
+/-! ### The embedding of a cancellative `[0,1]`-convex set (192V.4)
+
+The thesis cites 192V.4 to \[statesofconvexsets, thm. 8\] and gives no proof,
+so the argument below is ours.  It is the Stone–Gudder embedding, carried out
+directly inside the free real vector space `X →₀ ℝ` rather than through the
+cone-and-Grothendieck-group route, which keeps the `AddCommGroup`/`Module ℝ`
+structure free (it is `Submodule.Quotient`'s).
+
+`V` is `X →₀ ℝ` modulo the subspace `MConvex.embSubmodule` of *relators*
+`t·(P − Q)`, where `P`, `Q` are formal convex combinations with the same
+barycentre `h P = h Q` and `t > 0`.  That this set of relators is a subspace
+is where the convex structure is used: it is closed under addition because
+`t·(P − Q) + t'·(P' − Q')` is `(t+t')·(P'' − Q'')` for the mixtures
+`P'' = μ(λ|P⟩ ⋁ λᵖ|P'⟩)` with `λ = t/(t+t')`, whose barycentres agree by the
+Eilenberg–Moore law `h ∘ μ = h ∘ 𝒟h`.
+
+Cancellativity is used exactly once, for **injectivity**: if
+`|x⟩ − |y⟩ = t·(P − Q)` with `h P = h Q =: z`, then `|x⟩ + t·Q` and
+`|y⟩ + t·P` are the same element of `X →₀ ℝ`, hence `λ|x⟩ ⋁ λᵖ|Q⟩` and
+`λ|y⟩ ⋁ λᵖ|P⟩` are the same formal convex combination for `λ = 1/(1+t)`, so
+`h(λᵖ|z⟩ ⋁ λ|x⟩) = h(λᵖ|z⟩ ⋁ λ|y⟩)` with `λᵖ ≠ 1`, and `x = y`.
+
+Surjectivity, convexity of the image and affineness are then immediate: the
+image of `X` is closed under binary mixtures because `λ|x⟩ + λᵖ|y⟩ − |h(λ|x⟩ ⋁
+λᵖ|y⟩)⟩` is a relator, and affineness holds because `|h P⟩ − P` is one. -/
+
+namespace MConvexComb
+
+variable {M : Type u} [EffectMonoid M]
+
+open Classical in
+/-- A binary combination read from the other side: `λ|x⟩ ⋁ λᵖ|y⟩` is
+`λᵖ|y⟩ ⋁ λ|x⟩`. -/
+theorem bin_comm {X : Type v} (l : M) (x y : X) :
+    bin l x y = bin (orth l) y x := by
+  refine MConvexComb.ext (funext fun z => ?_)
+  by_cases hxy : x = y
+  · subst hxy
+    rw [bin_self, bin_self]
+  · rw [bin_apply l hxy z, bin_apply (orth l) (fun h : y = x => hxy h.symm) z,
+      eabasics_orth_orth]
+    by_cases hzx : z = x
+    · rw [if_pos hzx, if_neg (fun h : z = y => hxy (hzx ▸ h)), if_pos hzx]
+    · rw [if_neg hzx]
+      by_cases hzy : z = y
+      · rw [if_pos hzy, if_pos hzy]
+      · rw [if_neg hzy, if_neg hzy, if_neg hzx]
+
+variable {X : Type u}
+
+/-- The coefficients of a formal `[0,1]`-convex combination, as a finitely
+supported real function. -/
+noncomputable def coeFinsupp (p : MConvexComb I X) : X →₀ ℝ :=
+  ⟨p.supp, fun x => (p.toFun x : ℝ), by
+    intro x
+    rw [mem_supp]
+    exact ⟨fun h h0 => h (Subtype.ext h0), fun h h0 => h (congrArg Subtype.val h0)⟩⟩
+
+@[simp] theorem coeFinsupp_apply (p : MConvexComb I X) (x : X) :
+    p.coeFinsupp x = (p.toFun x : ℝ) := rfl
+
+theorem coeFinsupp_support (p : MConvexComb I X) : p.coeFinsupp.support = p.supp := rfl
+
+theorem coeFinsupp_injective : Function.Injective (coeFinsupp (X := X)) := by
+  intro p q h
+  refine MConvexComb.ext (funext fun x => Subtype.ext ?_)
+  exact congrArg (fun v : X →₀ ℝ => v x) h
+
+open Classical in
+theorem coeFinsupp_eta (x : X) :
+    (eta x : MConvexComb I X).coeFinsupp = Finsupp.single x 1 := by
+  refine Finsupp.ext fun z => ?_
+  by_cases hz : z = x
+  · subst hz
+    rw [Finsupp.single_eq_same]
+    show ((if z = z then (1 : I) else 0 : I) : ℝ) = 1
+    rw [if_pos rfl]; rfl
+  · rw [Finsupp.single_eq_of_ne hz]
+    show ((if z = x then (1 : I) else 0 : I) : ℝ) = 0
+    rw [if_neg hz]; rfl
+
+/-- `p` is the convex combination `Σᵢ p(xᵢ)·|xᵢ⟩` of its own points. -/
+theorem coeFinsupp_eq_sum (p : MConvexComb I X) :
+    p.coeFinsupp = ∑ x ∈ p.supp, (p.toFun x : ℝ) • Finsupp.single x (1 : ℝ) := by
+  refine Finsupp.ext fun z => ?_
+  classical
+  rw [Finsupp.finsetSum_apply]
+  by_cases hz : z ∈ p.supp
+  · rw [Finset.sum_eq_single z]
+    · rw [Finsupp.smul_apply, Finsupp.single_eq_same, smul_eq_mul, mul_one]
+      rfl
+    · intro w _ hwz
+      rw [Finsupp.smul_apply, Finsupp.single_eq_of_ne (Ne.symm hwz), smul_zero]
+
+    · intro h; exact absurd hz h
+  · rw [Finset.sum_eq_zero, coeFinsupp_apply]
+    · rw [show p.toFun z = 0 by by_contra h; exact hz ((p.mem_supp z).mpr h)]
+      rfl
+    · intro w hw
+      rw [Finsupp.smul_apply,
+        Finsupp.single_eq_of_ne (show z ≠ w by rintro rfl; exact hz hw), smul_zero]
+
+/-- The `λ`-mixture of two formal `[0,1]`-convex combinations, `μ(λ|P⟩ ⋁
+λᵖ|Q⟩)`. -/
+noncomputable def cmix (l : I) (P Q : MConvexComb I X) : MConvexComb I X :=
+  mu (bin l P Q)
+
+theorem coeFinsupp_cmix (l : I) (P Q : MConvexComb I X) :
+    (cmix l P Q).coeFinsupp
+      = (l : ℝ) • P.coeFinsupp + (1 - (l : ℝ)) • Q.coeFinsupp := by
+  refine Finsupp.ext fun x => ?_
+  have h := mu_bin l P Q x
+  rw [unitInterval_isSumOf_iff] at h
+  simp only [List.map_cons, List.map_nil, List.sum_cons, List.sum_nil, add_zero] at h
+  show ((mu (bin l P Q)).toFun x : ℝ) = _
+  rw [← h]
+  show ((l * P.toFun x : I) : ℝ) + ((orth l * Q.toFun x : I) : ℝ)
+      = (l : ℝ) * (P.toFun x : ℝ) + (1 - (l : ℝ)) * (Q.toFun x : ℝ)
+  rfl
+
+theorem cmix_eta_eta (l : I) (x y : X) :
+    cmix l (eta x) (eta y) = bin l x y := by
+  rw [cmix, ← map_bin, mu_map_eta]
+
+end MConvexComb
+
+namespace MConvex
+
+open MConvexComb
+
+variable {X : Type u} (st : MConvex I X)
+
+theorem h_cmix (l : I) (P Q : MConvexComb I X) :
+    st.h (cmix l P Q) = st.h (bin l (st.h P) (st.h Q)) := by
+  rw [cmix, st.h_mu, map_bin]
+
+/-- The relators of the embedding of a `[0,1]`-convex set into a real vector
+space: `t·(P − Q)` for formal convex combinations `P`, `Q` with the same
+barycentre and `t > 0` (together with `0`). -/
+def embRel (v : X →₀ ℝ) : Prop :=
+  v = 0 ∨ ∃ (t : ℝ) (p q : MConvexComb I X), 0 < t ∧ st.h p = st.h q ∧
+    v = t • (p.coeFinsupp - q.coeFinsupp)
+
+/-- The relators form a subspace of the free vector space on `X`. -/
+noncomputable def embSubmodule : Submodule ℝ (X →₀ ℝ) where
+  carrier := {v | st.embRel v}
+  zero_mem' := Or.inl rfl
+  add_mem' := by
+    rintro v w (rfl | ⟨t, p, q, ht, hpq, rfl⟩) hw
+    · rwa [zero_add]
+    rcases hw with rfl | ⟨t', p', q', ht', hpq', rfl⟩
+    · rw [add_zero]; exact Or.inr ⟨t, p, q, ht, hpq, rfl⟩
+    refine Or.inr ⟨t + t', cmix ⟨t / (t + t'), ?_, ?_⟩ p p',
+      cmix ⟨t / (t + t'), ?_, ?_⟩ q q', by linarith, ?_, ?_⟩
+    · exact le_of_lt (div_pos ht (by linarith))
+    · rw [div_le_one (by linarith)]; linarith
+    · exact le_of_lt (div_pos ht (by linarith))
+    · rw [div_le_one (by linarith)]; linarith
+    · rw [h_cmix, h_cmix, hpq, hpq']
+    · refine Finsupp.ext fun x => ?_
+      have hs : t + t' ≠ 0 := by linarith
+      simp only [coeFinsupp_cmix, Finsupp.add_apply, Finsupp.sub_apply,
+        Finsupp.smul_apply, smul_eq_mul]
+      show t * (p.coeFinsupp x - q.coeFinsupp x)
+          + t' * (p'.coeFinsupp x - q'.coeFinsupp x)
+        = (t + t') * ((t / (t + t')) * p.coeFinsupp x
+            + (1 - t / (t + t')) * p'.coeFinsupp x
+          - ((t / (t + t')) * q.coeFinsupp x
+            + (1 - t / (t + t')) * q'.coeFinsupp x))
+      field_simp
+      ring
+  smul_mem' := by
+    rintro c v (rfl | ⟨t, p, q, ht, hpq, rfl⟩)
+    · rw [smul_zero]; exact Or.inl rfl
+    rcases lt_trichotomy c 0 with hc | hc | hc
+    · refine Or.inr ⟨-c * t, q, p, by nlinarith, hpq.symm, ?_⟩
+      refine Finsupp.ext fun x => ?_
+      simp only [Finsupp.sub_apply, Finsupp.smul_apply, smul_eq_mul]
+      ring
+    · subst hc
+      exact Or.inl (by rw [zero_smul])
+    · refine Or.inr ⟨c * t, p, q, by positivity, hpq, ?_⟩
+      refine Finsupp.ext fun x => ?_
+      simp only [Finsupp.sub_apply, Finsupp.smul_apply, smul_eq_mul]
+      ring
+
+/-- The real vector space in which a cancellative `[0,1]`-convex set `X`
+embeds: the free vector space on `X` modulo the relators. -/
+noncomputable abbrev embSpace : Type u := (X →₀ ℝ) ⧸ st.embSubmodule
+
+/-- The embedding `X → V`. -/
+noncomputable def embMap (x : X) : st.embSpace := Submodule.Quotient.mk (Finsupp.single x 1)
+
+theorem embMap_eq_iff {x y : X} :
+    st.embMap x = st.embMap y ↔
+      (Finsupp.single x (1 : ℝ) - Finsupp.single y 1) ∈ st.embSubmodule :=
+  Submodule.Quotient.eq _
+
+theorem embMap_injective (hc : st.Cancellative) : Function.Injective st.embMap := by
+  intro x y hxy
+  rw [embMap_eq_iff] at hxy
+  rcases hxy with h0 | ⟨t, p, q, ht, hpq, heq⟩
+  · by_contra hne
+    have hx := congrArg (fun v : X →₀ ℝ => v x) h0
+    rw [Finsupp.sub_apply, Finsupp.single_eq_same,
+      Finsupp.single_eq_of_ne (fun h : x = y => hne h)] at hx
+    exact absurd hx (by norm_num)
+  · have ht1 : (0 : ℝ) < 1 + t := by linarith
+    have ht1' : (1 : ℝ) + t ≠ 0 := ne_of_gt ht1
+    have hlam0 : (0 : ℝ) < 1 / (1 + t) := by positivity
+    have hlam1 : 1 / (1 + t) ≤ 1 := by
+      rw [div_le_one ht1]; linarith
+    set lam : I := ⟨1 / (1 + t), le_of_lt hlam0, hlam1⟩ with hlamdef
+    have hlamval : (lam : ℝ) = 1 / (1 + t) := rfl
+    have hPQ : cmix lam (eta x) q = cmix lam (eta y) p := by
+      refine coeFinsupp_injective (Finsupp.ext fun w => ?_)
+      have hw := congrArg (fun v : X →₀ ℝ => v w) heq
+      simp only [Finsupp.sub_apply, Finsupp.smul_apply, smul_eq_mul] at hw
+      simp only [coeFinsupp_cmix, coeFinsupp_eta, Finsupp.add_apply,
+        Finsupp.smul_apply, smul_eq_mul, hlamval]
+      have hgoal : (Finsupp.single x (1 : ℝ)) w + t * q.coeFinsupp w
+          = (Finsupp.single y (1 : ℝ)) w + t * p.coeFinsupp w := by linarith
+      field_simp
+      linarith
+    have hh : st.h (bin lam x (st.h q)) = st.h (bin lam y (st.h q)) := by
+      have h1 := congrArg st.h hPQ
+      rw [h_cmix, h_cmix, st.h_eta, st.h_eta, hpq] at h1
+      exact h1
+    have hne : orth lam ≠ (1 : I) := by
+      intro hcon
+      have hv : (1 : ℝ) - 1 / (1 + t) = 1 := congrArg Subtype.val hcon
+      have : (1 : ℝ) / (1 + t) = 0 := by linarith
+      exact absurd this (ne_of_gt hlam0)
+    rw [bin_comm lam x (st.h q), bin_comm lam y (st.h q)] at hh
+    exact hc (st.h q) x y (orth lam) hne hh
+
+theorem embMap_range_convex : Convex ℝ (Set.range st.embMap) := by
+  rintro _ ⟨x, rfl⟩ _ ⟨y, rfl⟩ a b ha hb hab
+  have ha1 : a ≤ 1 := by linarith
+  refine ⟨st.h (bin ⟨a, ha, ha1⟩ x y), ?_⟩
+  have hmk : a • st.embMap x + b • st.embMap y
+      = Submodule.Quotient.mk
+          (a • Finsupp.single x (1 : ℝ) + b • Finsupp.single y (1 : ℝ)) := by
+    rw [Submodule.Quotient.mk_add, Submodule.Quotient.mk_smul,
+      Submodule.Quotient.mk_smul]
+    rfl
+  rw [hmk, embMap, Submodule.Quotient.eq]
+  refine Or.inr ⟨1, eta (st.h (bin ⟨a, ha, ha1⟩ x y)), bin ⟨a, ha, ha1⟩ x y,
+    one_pos, st.h_eta _, ?_⟩
+  rw [one_smul, coeFinsupp_eta, ← cmix_eta_eta, coeFinsupp_cmix, coeFinsupp_eta,
+    coeFinsupp_eta]
+  refine Finsupp.ext fun w => ?_
+  simp only [Finsupp.sub_apply, Finsupp.add_apply, Finsupp.smul_apply, smul_eq_mul]
+  show _ = _
+  have hb' : b = 1 - a := by linarith
+  rw [hb']
+
+theorem embMap_sum (p : MConvexComb I X) :
+    st.embMap (st.h p) = ∑ x ∈ p.supp, (p.toFun x : ℝ) • st.embMap x := by
+  have hsum : ∑ x ∈ p.supp, (p.toFun x : ℝ) • st.embMap x
+      = st.embSubmodule.mkQ
+          (∑ x ∈ p.supp, (p.toFun x : ℝ) • Finsupp.single x (1 : ℝ)) := by
+    rw [map_sum]
+    refine Finset.sum_congr rfl fun x _ => ?_
+    rw [map_smul]
+    rfl
+  rw [hsum, ← coeFinsupp_eq_sum]
+  show Submodule.Quotient.mk _ = Submodule.Quotient.mk _
+  rw [Submodule.Quotient.eq]
+  exact Or.inr ⟨1, eta (st.h p), p, one_pos, st.h_eta _,
+    by rw [one_smul, coeFinsupp_eta]⟩
+
+end MConvex
+
 /-- **192V.4** (eff.tex:2588, Examples): every cancellative abstract
 `[0,1]`-convex set is isomorphic (by an affine bijection) to a convex subset
 of a real vector space — *with its canonical convex structure*
@@ -4329,7 +4746,19 @@ theorem cancellative_iso_convex {X : Type u} (st : MConvex I X)
     (hc : st.Cancellative) :
     ∃ (V : Type u) (_ : AddCommGroup V) (_ : Module ℝ V) (s : Set V)
       (hs : Convex ℝ s) (f : X → s),
-        Function.Bijective f ∧ st.IsAffine (MConvex.ofConvex s hs) f := sorry
+        Function.Bijective f ∧ st.IsAffine (MConvex.ofConvex s hs) f := by
+  refine ⟨st.embSpace, inferInstance, inferInstance, Set.range st.embMap,
+    st.embMap_range_convex, fun x => ⟨st.embMap x, ⟨x, rfl⟩⟩, ⟨?_, ?_⟩, ?_⟩
+  · exact fun x y h => st.embMap_injective hc (congrArg Subtype.val h)
+  · rintro ⟨_, x, rfl⟩
+    exact ⟨x, rfl⟩
+  · intro p
+    refine Subtype.ext ?_
+    show st.embMap (st.h p)
+        = ((p.map (fun x => (⟨st.embMap x, ⟨x, rfl⟩⟩ : Set.range st.embMap))).rsum
+            (fun y : Set.range st.embMap => (y : st.embSpace)) : st.embSpace)
+    rw [MConvexComb.rsum_map, MConvexComb.rsum_eq _ _ (Finset.Subset.refl p.supp)]
+    exact st.embMap_sum p
 
 /-! ### The opposite effect monoid, and states as a convex set (192VII) -/
 
@@ -6735,149 +7164,9 @@ theorem bin_zero {X : Type v} (a b : X) : bin (0 : M) a b = eta b := by
   · rw [if_pos hz, if_neg (by rw [hz]; exact hab)]
   · rw [if_neg hz]
 
-/-- Variant of `map_spec`: the value of `𝒟_M f (p)` at `y` may be computed
-over any repetition-free list of elements of the fibre of `y` containing the
-whole support of `p` in that fibre. -/
-theorem map_spec_of_list {X : Type v} {Y : Type w} (p : MConvexComb M X)
-    (f : X → Y) (y : Y) (L : List X) (hnd : L.Nodup)
-    (hL : ∀ x ∈ L, f x = y)
-    (hsupp : ∀ x, p.toFun x ≠ 0 → f x = y → x ∈ L) :
-    PCM.IsSumOf (L.map p.toFun) ((p.map f).toFun y) := by
-  classical
-  have hmem' : ∀ x, x ∈ L.filter (fun x => decide (p.toFun x ≠ 0)) ↔
-      (p.toFun x ≠ 0 ∧ f x = y) := by
-    intro x
-    rw [List.mem_filter]
-    simp only [decide_eq_true_eq]
-    exact ⟨fun h => ⟨h.2, hL x h.1⟩, fun h => ⟨hsupp x h.1 h.2, h.1⟩⟩
-  have h1 := map_spec p f y _ (List.Nodup.filter _ hnd) hmem'
-  refine isSumOf_map_of_subset p.toFun (List.Nodup.filter _ hnd) hnd
-    (fun x hx => List.mem_of_mem_filter hx) (fun x hx hnx => ?_) h1
-  by_contra h0
-  exact hnx (List.mem_filter.mpr ⟨hx, by simpa using h0⟩)
-
-open Classical in
-/-- The pushforward of a binary combination is a binary combination. -/
-theorem map_bin {X : Type v} {Y : Type w} (l : M) (x y : X) (f : X → Y) :
-    (bin l x y).map f = bin l (f x) (f y) := by
-  by_cases hxy : x = y
-  · subst hxy
-    rw [bin_self, map_eta, bin_self]
-  have hvx : (bin l x y).toFun x = l := by rw [bin_apply l hxy, if_pos rfl]
-  have hvy : (bin l x y).toFun y = orth l := by
-    rw [bin_apply l hxy, if_neg (fun h : y = x => hxy h.symm), if_pos rfl]
-  refine MConvexComb.ext (funext fun z => ?_)
-  by_cases hfxy : f x = f y
-  · -- both coefficients land on the same point of `Y`
-    have hR : bin l (f x) (f y) = (eta (f x) : MConvexComb M Y) := by
-      rw [← hfxy, bin_self]
-    rw [hR]
-    by_cases hz : z = f x
-    · subst hz
-      have h := map_spec_of_list (bin l x y) f (f x) [x, y] (by simp [hxy])
-        (fun w hw => by
-          rcases List.mem_cons.mp hw with rfl | hw
-          · rfl
-          · rw [List.mem_singleton.mp hw]; exact hfxy.symm)
-        (fun w hw _ => by
-          by_cases hwx : w = x
-          · exact List.mem_cons.mpr (Or.inl hwx)
-          by_cases hwy : w = y
-          · exact List.mem_cons.mpr (Or.inr (List.mem_singleton.mpr hwy))
-          · exact absurd (bin_eq_zero l x y w hwx hwy) hw)
-      rw [List.map_cons, List.map_cons, List.map_nil, hvx, hvy] at h
-      have h2 := isSumOf_pair l (orth l) (EffectAlgebra.perp_orth l)
-      rw [EffectAlgebra.ovee_orth l] at h2
-      rw [isSumOf_unique h h2]
-      show (1 : M) = if f x = f x then (1 : M) else 0
-      rw [if_pos rfl]
-    · have h := map_spec_of_list (bin l x y) f z [] List.nodup_nil
-        (fun w hw => absurd hw (List.not_mem_nil))
-        (fun w hw hfw => by
-          by_cases hwx : w = x
-          · subst hwx; exact absurd hfw.symm hz
-          by_cases hwy : w = y
-          · subst hwy; exact absurd (hfxy.trans hfw).symm hz
-          · exact absurd (bin_eq_zero l x y w hwx hwy) hw)
-      rw [List.map_nil, PCM.isSumOf_nil_iff] at h
-      rw [h]
-      show (0 : M) = if z = f x then (1 : M) else 0
-      rw [if_neg hz]
-  · rw [bin_apply l hfxy z]
-    by_cases hz : z = f x
-    · subst hz
-      have h := map_spec_of_list (bin l x y) f (f x) [x] (List.nodup_singleton x)
-        (fun w hw => by rw [List.mem_singleton.mp hw])
-        (fun w hw hfw => by
-          by_cases hwx : w = x
-          · exact List.mem_singleton.mpr hwx
-          by_cases hwy : w = y
-          · exact absurd ((hwy ▸ hfw : f y = f x)) (fun hh => hfxy hh.symm)
-          · exact absurd (bin_eq_zero l x y w hwx hwy) hw)
-      rw [List.map_cons, List.map_nil, hvx] at h
-      rw [eq_of_isSumOf_singleton h, if_pos rfl]
-    · by_cases hz2 : z = f y
-      · subst hz2
-        have h := map_spec_of_list (bin l x y) f (f y) [y] (List.nodup_singleton y)
-          (fun w hw => by rw [List.mem_singleton.mp hw])
-          (fun w hw hfw => by
-            by_cases hwy : w = y
-            · exact List.mem_singleton.mpr hwy
-            by_cases hwx : w = x
-            · exact absurd ((hwx ▸ hfw : f x = f y)) hfxy
-            · exact absurd (bin_eq_zero l x y w hwx hwy) hw)
-        rw [List.map_cons, List.map_nil, hvy] at h
-        rw [eq_of_isSumOf_singleton h, if_neg hz, if_pos rfl]
-      · have h := map_spec_of_list (bin l x y) f z [] List.nodup_nil
-          (fun w hw => absurd hw (List.not_mem_nil))
-          (fun w hw hfw => by
-            by_cases hwx : w = x
-            · exact absurd (hwx ▸ hfw : f x = z) (fun hh => hz hh.symm)
-            by_cases hwy : w = y
-            · exact absurd (hwy ▸ hfw : f y = z) (fun hh => hz2 hh.symm)
-            · exact absurd (bin_eq_zero l x y w hwx hwy) hw)
-        rw [List.map_nil, PCM.isSumOf_nil_iff] at h
-        rw [h, if_neg hz, if_neg hz2]
-
-/-- Variant of `mu_spec`: the value of `μ(Φ)` may be computed over any
-repetition-free list containing the support of `Φ`. -/
-theorem mu_spec_of_subset {X : Type v} (Φ : MConvexComb M (MConvexComb M X))
-    (x : X) (l : List (MConvexComb M X)) (hnd : l.Nodup)
-    (hsupp : ∀ φ, Φ.toFun φ ≠ 0 → φ ∈ l) :
-    PCM.IsSumOf (l.map fun φ => Φ.toFun φ * φ.toFun x) ((mu Φ).toFun x) := by
-  classical
-  obtain ⟨L, hndL, hmemL, -⟩ := Φ.sum_one
-  refine isSumOf_map_of_support _ hndL hnd ?_ ?_ (mu_spec Φ x L hndL hmemL)
-  · intro φ hφ
-    refine (hmemL φ).mpr fun h0 => hφ ?_
-    show Φ.toFun φ * φ.toFun x = 0
-    rw [h0, (exc_emonzero (φ.toFun x)).2]
-  · intro φ hφ
-    refine hsupp φ fun h0 => hφ ?_
-    show Φ.toFun φ * φ.toFun x = 0
-    rw [h0, (exc_emonzero (φ.toFun x)).2]
-
-open Classical in
-/-- `μ` of a binary combination of two distributions is their `λ`-mixture. -/
-theorem mu_bin {X : Type v} (l : M) (P Q : MConvexComb M X) (x : X) :
-    PCM.IsSumOf [l * P.toFun x, orth l * Q.toFun x] ((mu (bin l P Q)).toFun x) := by
-  by_cases hPQ : P = Q
-  · subst hPQ
-    rw [bin_self, mu_eta]
-    obtain ⟨h', he⟩ := emon_ovee_mul (P.toFun x) (EffectAlgebra.perp_orth l)
-    rw [EffectAlgebra.ovee_orth l, EffectMonoid.one_mul] at he
-    have hp2 := isSumOf_pair (l * P.toFun x) (orth l * P.toFun x) h'
-    rwa [← he] at hp2
-  · have h := mu_spec_of_subset (bin l P Q) x [P, Q] (by simp [hPQ]) (fun φ hφ => by
-      by_cases hP : φ = P
-      · exact List.mem_cons.mpr (Or.inl hP)
-      by_cases hQ : φ = Q
-      · exact List.mem_cons.mpr (Or.inr (List.mem_singleton.mpr hQ))
-      · exact absurd (bin_eq_zero l P Q φ hP hQ) hφ)
-    rw [List.map_cons, List.map_cons, List.map_nil, bin_apply l hPQ P, if_pos rfl,
-      bin_apply l hPQ Q, if_neg (fun hh : Q = P => hPQ hh.symm), if_pos rfl] at h
-    exact h
-
+-- (`map_spec_of_list`, `map_bin`, `mu_spec_of_subset` and `mu_bin` were
+-- stated here originally; they are now next to `bin_eq_zero`, above, because
+-- 192V.4 (`cancellative_iso_convex`) already needs them.)
 /-- A formal combination over `A + B` that vanishes on `A` is `𝒟_M κ₂` of a
 formal combination over `B` (the mirror image of `exists_map_inl`). -/
 theorem exists_map_inr {A B : Type v} (p : MConvexComb M (A ⊕ B))

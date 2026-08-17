@@ -460,9 +460,15 @@ Confirm that is the right treatment:
   independent check that the cited claim holds.  Nothing is asked of the
   authors here any more; the route is in PROVING-LOG and in the section note
   in the file.
-* **192V.4** "every cancellative abstract `[0,1]`-convex set embeds affinely in
-  a real vector space" (`eff.tex:2591`, cited to `statesofconvexsets` thm. 8);
-  `cancellative_iso_convex`.
+* ~~**192V.4**~~ "every cancellative abstract `[0,1]`-convex set embeds
+  affinely in a real vector space" (`eff.tex:2591`, cited to
+  `statesofconvexsets` thm. 8) — **no longer parked: `cancellative_iso_convex`
+  was proved on 2026-08-18** (session 85, `StatesPredicates.lean`), again
+  without consulting the cited paper, so this too is an independent check that
+  the cited claim holds.  Nothing is asked of the authors here any more; the
+  route (the Stone–Gudder embedding, carried out inside the free vector space
+  `X →₀ ℝ` rather than through a Grothendieck group) is in PROVING-LOG
+  session 85 and in the section note in the file.
 * ~~**`extensive_effectus`**~~ (189aII.3, `eff.tex:2043`, cites `effintro`) —
   **no longer parked: proved 2026-08-14** (worker 44) from Mathlib's
   `FinitaryExtensive`, i.e. from the van Kampen property of binary coproducts.

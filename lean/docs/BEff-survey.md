@@ -86,6 +86,47 @@
 > `effectModule_unitInterval_representation` was **not** attacked, deliberately;
 > its rendering gap is now **QUESTIONS B14**, split out of A3.
 
+> **Session 85.**  **`cancellative_iso_convex` (192V.4) is CLOSED**,
+> axiom-clean (checked *in situ*), and **`StatesPredicates.lean` is
+> FINISHED** — 0 `sorry`s, 0 errors, both counted with `lean` on the file
+> itself.  `EffectAlgebras.lean` is unchanged at 1, and that one is the
+> ruling-blocked B14.  That puts B/Eff at **9** if `VNExamples.lean` is still
+> at the 8 of session 84 — it was not re-counted here, because another worker
+> was mid-flight in it and rebuilding the chain would have raced with them.
+> **Nothing in `B/Eff` outside `VNExamples.lean` is open any more except the
+> one ruling-blocked statement**, 179III.2.
+>
+> Costing was again **~2× too high**: **~289 net added lines** (7724 → 8013),
+> ~27 of them the section header, against ~500–600.  The reason is the same as
+> for `finite_effectMonoid_boolean`: the survey costed the *textbook* route —
+> the cone `ℝ_{>0} × X ∪ {0}`, its Grothendieck group, and an `ℝ`-module
+> structure built on that quotient by hand — instead of a route that lets
+> Mathlib supply the algebra.  What works is to stay inside the **free vector
+> space `X →₀ ℝ`** and quotient by an explicit `Submodule`, so that
+> `AddCommGroup` and `Module ℝ` are `Submodule.Quotient`'s and nothing has to
+> be checked; the relators are `t·(P − Q)` for formal convex combinations with
+> `h P = h Q` and `t > 0`, written in that *existential* shape so that both
+> closure under `+`/`•` and injectivity are easy.  Cancellativity is used
+> **exactly once**, for injectivity.  (Mathlib does have
+> `Algebra.GrothendieckAddGroup` with `mk_left_injective`, in
+> `GroupTheory/MonoidLocalization/GrothendieckGroup.lean` — but it carries no
+> scalar action, so it would not have saved the module structure.)
+>
+> **The survey's claim that "nothing in the tree helps beyond
+> `MConvex.ofConvex` and the `rsum` API" was wrong.**  `mu_bin`, `map_bin`,
+> `mu_map_eta` and `unitInterval_isSumOf_iff` are the whole `𝒟_[0,1]` calculus
+> this needs and were all already present — `mu_bin`/`map_bin` merely had to be
+> **moved up the file** (with `map_spec_of_list`, `mu_spec_of_subset`) from the
+> parsec-196 block to next to `bin_eq_zero`, no statement changed.  This is the
+> third time a `B/Eff` item has needed helpers moved up; check the *whole* file
+> for existing API before costing, not just the neighbourhood.
+>
+> `eff.tex:2589` carries **no `\label`** and is not an Exercise, so `bsols.tex`
+> has no solution for it — verified, not assumed.  Like `effects_sea` and
+> `finite_effectMonoid_boolean`, this is mathematics we supplied, and an
+> independent check of \[statesofconvexsets, thm. 8\]; see PROVING-LOG
+> session 85.  QUESTIONS **A3**'s 192V.4 bullet is struck through.
+
 **Headline count (session 82): B/Eff had 15 code `sorry`s.**  Per file, each source run
 through `lean` individually with `LEAN_PATH` set (never `lake env lean`), and
 each checked for **errors** as well as `sorry`s.  (`VNExamples.lean` was
@@ -96,7 +137,7 @@ import line, which is not a defect in this directory — retry, do not debug.)
 | file | lines | `sorry` | errors |
 |---|---|---|---|
 | `VNExamples.lean` | 408 (now 2387) | **11** (now **8**) | 0 |
-| `StatesPredicates.lean` | 7216 (now 7723) | **2** (now **1**) | 0 |
+| `StatesPredicates.lean` | 7216 (now 8013) | **2** (now **0**) | 0 |
 | `EffectAlgebras.lean` | 3088 (now 3348) | **2** (now **1**) | 0 |
 | `Comparisons.lean` | 1903 | 0 | 0 |
 | `Dagger.lean` | 2572 | 0 | 0 |
@@ -104,7 +145,7 @@ import line, which is not a defect in this directory — retry, do not debug.)
 | `Quotients.lean` | 1427 | 0 | 0 |
 | `Effectus.lean` | 2783 | 0 | 0 |
 | `WStarCat.lean` | 292 | 0 | 0 |
-| **total** | | **10** | **0** |
+| **total** | | **9** | **0** |
 
 The import chain is linear:
 `EffectAlgebras + WStarCat → Effectus → StatesPredicates → Quotients →
@@ -181,10 +222,11 @@ work upstream.
 |---|---|
 | **proved (session 83)** | `exc_dm_effectus_kleisli`; `effectus_vn` + `effectus_vn_partial` |
 | **proved (session 84)** | `effects_sea` (225V); `finite_effectMonoid_boolean` (178III.2) |
+| **proved (session 85)** | `cancellative_iso_convex` (192V.4) — `StatesPredicates.lean` is finished |
 | **reachable, live target** | *(none left outside the gated eight)* |
 | **gated on uniqueness of the effect object** | the eight hypothetical vN examples below (*not* on 180V — see the session-84 block at the top) |
 | **blocked outside B/Eff** | `vn_is_andthen_eff` (A/Proc 105V + missing import) — and **only** that one |
-| **awaiting a ruling / literature park** | `effectModule_unitInterval_representation` (QUESTIONS **A3** *and* **B14** — do not attack before the B14 ruling), `cancellative_iso_convex` (QUESTIONS **A3**) |
+| **awaiting a ruling / literature park** | `effectModule_unitInterval_representation` (QUESTIONS **A3** *and* **B14** — do not attack before the B14 ruling) — the only one left |
 | **known false** | none in this directory |
 
 Nothing in `B/Eff` is known false, and nothing is waiting on a thesis-B
@@ -332,7 +374,7 @@ for anyone who does not want to build 180V.*
 
 ---
 
-## `StatesPredicates.lean` — one
+## `StatesPredicates.lean` — none left (FINISHED, session 85)
 
 * **`exc_dm_effectus_kleisli` (192III.3, `exc-dm-effectus`, eff.tex:2410,
   Exercise\*)** — **PROVED, session 83**, by transcribing the author's
@@ -360,12 +402,23 @@ for anyone who does not want to build 180V.*
     `(pres M).T.of` does not unfold and every `rw` against a `kpure` lemma
     fails with a type mismatch that the error message reports as "did not find
     an occurrence of the pattern".
-* **`cancellative_iso_convex` (192V.4, eff.tex:2588)** — cited to
-  \[statesofconvexsets, thm. 8\] and **not proved in the thesis**.  QUESTIONS
-  **A3**.  *Awaiting a ruling* (confirm that parking is right); if revived it
-  is an independent project (the Stone–Kakutani/Gudder embedding of a
-  cancellative convex set into a vector space), **~500–600 lines**.  Nothing
-  in the tree helps beyond `MConvex.ofConvex` and the `rsum` API.
+* ~~**`cancellative_iso_convex` (192V.4, eff.tex:2588)**~~ — **PROVED,
+  session 85**, in the new section before the theorem, **~289 net added
+  lines** (not the ~500–600 costed here), axiom-clean.  The thesis cites
+  \[statesofconvexsets, thm. 8\] and proves nothing; `eff.tex:2589` has no
+  `\label` and is not an Exercise, so `bsols.tex` has no solution either — the
+  mathematics is ours, and this is an independent check of the cited claim.
+  The route, for anyone comparing it with thm. 8: `V` is `X →₀ ℝ` modulo
+  `MConvex.embSubmodule`, the relators `t·(P − Q)` with `h P = h Q`, `t > 0`;
+  the `AddCommGroup`/`Module ℝ` structure is `Submodule.Quotient`'s, closure
+  of the relators under `+` is the Eilenberg–Moore law via
+  `MConvexComb.cmix`, and **cancellativity is used exactly once**, to show
+  `embMap` injective.  New reusable API: `MConvexComb.coeFinsupp`,
+  `MConvexComb.cmix` (+ `coeFinsupp_cmix`, `cmix_eta_eta`),
+  `MConvexComb.bin_comm` (general effect monoid), `MConvex.h_cmix`.
+  `map_spec_of_list`, `map_bin`, `mu_spec_of_subset`, `mu_bin` were **moved
+  up** from the parsec-196 block to next to `bin_eq_zero`; no statement
+  changed, and their old site carries a comment.
 
 ## `EffectAlgebras.lean` — one
 
@@ -417,9 +470,10 @@ for anyone who does not want to build 180V.*
 4. **The uniqueness of the effect object** — "the `I` of any
    `EffectusPartialStructure` on `vN_cpsuᵒᵖ` is isomorphic to `ℂᵤ`", ~150–250
    lines, described in the session-84 block at the top.  It is now the root of
-   the whole file: all eight remaining `VNExamples` items need it, and nothing
-   else in `B/Eff` is open except `cancellative_iso_convex` (an independent
-   ~500–600-line project) and the ruling-blocked 179III.2.
+   the whole file: all eight remaining `VNExamples` items need it, and — since
+   `cancellative_iso_convex` was proved in session 85 — **nothing else in
+   `B/Eff` is open** except the ruling-blocked 179III.2.  Every open item in
+   this directory is now in `VNExamples.lean`.
 
 Do **not** start on 211IV/215VI until A/Proc's 105V is closed, and do not add
 `import Theses.A.Proc.*` to any file other than `VNExamples.lean`.

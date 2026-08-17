@@ -20524,3 +20524,157 @@ there is no argument to diverge from; the mathematics is ours.
 and to say explicitly that it must not be attacked.  `docs/BEff-survey.md`:
 session-84 second-worker block added, counts and classification table updated,
 `EffectAlgebras.lean` section rewritten.
+
+---
+
+## Session 85 — `B/Eff`: **192V.4 `cancellative_iso_convex` is proved**, independently of \[statesofconvexsets, thm. 8\]; `StatesPredicates.lean` is FINISHED, and the item cost ~289 lines against a ~500–600 costing (worker on `Theses/B/Eff/{StatesPredicates,EffectAlgebras}.lean`)
+
+`StatesPredicates.lean` **1 → 0** `sorry`, 0 errors — the file is finished.
+`EffectAlgebras.lean` untouched at **1** `sorry`
+(`effectModule_unitInterval_representation`, QUESTIONS **B14**), 0 errors.
+Both counted with `lean` per file (never `lake env lean`, which blocks on
+another agent's `lake build`) and paired with `grep -c 'error:'`.
+`cancellative_iso_convex` is `#print axioms`-clean
+(`propext, Classical.choice, Quot.sound`), **checked in situ**: the whole file
+with four `#print axioms` lines appended was compiled as a copy, so no stale
+olean was consulted.  `Quotients.lean` was re-checked against the new
+`StatesPredicates` olean: 0 errors, 0 `sorry`s.
+
+### 1. There is nothing to transcribe, and that is confirmed
+
+`eff.tex:2589–2591` is the fourth bullet of the *Examples* point
+`\begin{point}{50}{Examples}` at `eff.tex:2496`: "Every cancellative
+`[0,1]`-convex set is isomorphic to a convex subset of a real vector space.
+See e.g.~\cite[thm.~8]{statesofconvexsets}."  It carries **no `\label`** (the
+bullet above it has `eff-semilattice-aconv`; this one has nothing), it is not
+an Exercise, and `bsols.tex` — which is keyed by exercise label — has no entry
+for it; `grep -in 'cancellative\|convex' ../bsols.tex` returns four hits, all
+inside the solution to `aconv-cong`, none about this.  `statesofconvexsets` is
+not in the repository and **we did not consult it**.  So this is the same kind
+of item as `effects_sea` and `finite_effectMonoid_boolean`: the mathematics
+had to be supplied, and the proof below is an **independent check** that the
+cited claim holds, not a transcription.
+
+### 2. The route: the free vector space, not the Grothendieck group
+
+The textbook proof (Stone; Gudder) builds the cone `ℝ_{>0} × X ∪ {0}`, checks
+it is a cancellative commutative monoid, takes its Grothendieck group and then
+puts an `ℝ`-module structure on that.  In Lean that means constructing
+`AddCommGroup` and `Module ℝ` instances on a quotient by hand — perhaps twenty
+axioms.  Mathlib's `Algebra.GrothendieckAddGroup` exists
+(`Mathlib/GroupTheory/MonoidLocalization/GrothendieckGroup.lean`, with
+`mk_left_injective` for the cancellative case) but carries no scalar action,
+so it does not save the module structure.
+
+The route taken instead keeps the module structure free by working inside the
+**free real vector space `X →₀ ℝ`** and quotienting by an explicit subspace:
+`V := (X →₀ ℝ) ⧸ MConvex.embSubmodule st`, whose `AddCommGroup` and
+`Module ℝ` instances are `Submodule.Quotient`'s.  The subspace is the set of
+**relators**
+
+    embRel st v  ⟺  v = 0  ∨  ∃ t > 0, ∃ P Q : 𝒟_[0,1] X,
+                       h P = h Q  ∧  v = t • (coeFinsupp P − coeFinsupp Q),
+
+i.e. positive multiples of differences of formal convex combinations with the
+same barycentre.  Writing the relators in this *existential* shape (rather
+than as "`v⁺` and `v⁻` have equal mass and equal barycentre") is the whole
+trick: closure under `+` and `•` becomes easy, and injectivity becomes easy
+too, because a witness may be chosen freely on each side.
+
+Three small pieces of `𝒟_[0,1]` API were needed and are new:
+
+* `MConvexComb.coeFinsupp : 𝒟_[0,1] X → (X →₀ ℝ)` — the coefficients as a
+  finsupp; injective, `coeFinsupp (η x) = single x 1`, and
+  `coeFinsupp p = Σ_{x ∈ supp p} p(x) • single x 1`.
+* `MConvexComb.cmix l P Q := μ(l|P⟩ ⋁ lᵖ|Q⟩)`, with
+  `coeFinsupp (cmix l P Q) = l • coeFinsupp P + (1−l) • coeFinsupp Q`
+  (immediately from the existing `mu_bin` plus `unitInterval_isSumOf_iff`) and
+  `cmix l (η x) (η y) = bin l x y` (from `map_bin` + `mu_map_eta`).
+* `MConvexComb.bin_comm : bin l x y = bin lᵖ y x`, stated for a general effect
+  monoid.  Needed because `MConvex.Cancellative` cancels the **first** argument
+  of `bin` and the argument below produces the common point in the second.
+
+and one on `MConvex`: `h_cmix`, `h (cmix l P Q) = h(bin l (h P) (h Q))`, which
+is just `h_mu` followed by `map_bin`.
+
+**Closure of the relators under addition** is where the convex structure is
+used: `t•(P−Q) + t'•(P'−Q')` is `(t+t')•(P''−Q'')` for `P'' = cmix λ P P'`,
+`Q'' = cmix λ Q Q'` with `λ = t/(t+t')`, and `h P'' = h Q''` because
+`h(cmix λ P P') = h(bin λ (h P) (h P'))`.  Closure under `•` is trivial, with
+the negative case swapping `P` and `Q`.
+
+**Cancellativity is used exactly once, for injectivity.**  If
+`single x 1 − single y 1 = t•(coeFinsupp P − coeFinsupp Q)` with `h P = h Q =: z`
+and `t > 0`, then pointwise `single x 1 + t·Q = single y 1 + t·P`, so with
+`λ = 1/(1+t)` the two combinations `cmix λ (η x) Q` and `cmix λ (η y) P` have
+the same `coeFinsupp` — divide by `1+t` — hence are equal (`coeFinsupp` is
+injective), hence have equal `h`, i.e. `h(λ|x⟩ ⋁ λᵖ|z⟩) = h(λ|y⟩ ⋁ λᵖ|z⟩)`.
+Turn both round with `bin_comm` and cancel `z`, whose weight `λᵖ = t/(1+t)`
+is `≠ 1` because `t > 0`.  (The degenerate branch `v = 0` of `embRel` is the
+case `single x 1 = single y 1`, which gives `x = y` by evaluating at `x`.)
+
+Everything else is immediate.  `s := Set.range (embMap st)` is convex because
+`a·|x⟩ + b·|y⟩ − |h(a|x⟩ ⋁ b|y⟩)⟩` is a relator (`t = 1`), `embMap` is
+surjective onto `s` by construction, and affineness holds because
+`|h P⟩ − coeFinsupp P` is a relator; the last step is
+`MConvexComb.rsum_map` + `rsum_eq`, since `MConvex.ofConvex`'s structure map is
+literally `rsum`.
+
+The `∃ (V : Type u)` of the statement is met without a universe bump: `X : Type u`
+gives `X →₀ ℝ : Type u` and the quotient stays in `Type u`.
+
+### 3. Four lemmas had to be moved up the file
+
+`map_spec_of_list`, `map_bin`, `mu_spec_of_subset` and `mu_bin` were stated in
+the parsec-196 `MConvexComb` block near the end of the file (they were written
+for `AConvMCat.exists_mix`), but 192V.4 needs `map_bin` and `mu_bin` some 4000
+lines earlier.  They are now next to `bin_eq_zero`, in the parsec-192
+`MConvexComb` block, with a comment left at the old site.  **No statement
+changed** and all four of their own dependencies (`map_spec`, `mu_spec`,
+`isSumOf_map_of_subset`, `isSumOf_pair`, `emon_ovee_mul`) already precede the
+new position.  This is the same manoeuvre session 83 had to make for six
+`𝒟_M`/`PCM` helpers, for the same reason.
+
+### 4. Costing
+
+**~289 net added lines** (7724 → 8013), of which ~27 are the explanatory
+section header — so ~260 lines of mathematics, against the survey's
+**~500–600**.  That is the second item in two sessions to come in at about
+half its costing, and for the same reason both times: the survey costed the
+textbook route (here the cone-and-Grothendieck-group construction) rather than
+looking for one that lets Mathlib supply the algebra.  The survey's remark
+that "nothing in the tree helps beyond `MConvex.ofConvex` and the `rsum` API"
+was wrong: `mu_bin`, `map_bin`, `mu_map_eta` and `unitInterval_isSumOf_iff`
+are all of the `𝒟_[0,1]` calculus this needs, and they were already there.
+
+### 5. Divergences and defects
+
+Nothing for ERRATA: the cited claim is true and eff.tex's statement of it is
+accurate.  Our rendering was checked against the source once more — it is the
+*strengthened* form fixed in session 9 (the convex structure on the target is
+pinned to `MConvex.ofConvex`, not existentially quantified), which is what
+"isomorphic to a convex subset of a real vector space" means; the source's
+"isomorphic" is our `Function.Bijective f ∧ st.IsAffine … f`, and an affine
+bijection of abstract convex sets is an isomorphism in `AConv_[0,1]` because
+the inverse of a bijective affine map is affine.  Divergence class: **case 3**
+for the whole item — the thesis has no proof, so there is no argument to
+diverge from; the mathematics is ours.
+
+QUESTIONS **A3**'s 192V.4 bullet is struck through: with the statement proved,
+nothing is asked of the authors about it, exactly as happened to the 178III
+trio last session.  The `cancellative_iso_convex` row of
+`docs/why-open.csv` is deleted, and `docs/BEff-survey.md` gets a session-85
+block, updated counts and classification table, and a rewritten
+`StatesPredicates.lean` section.
+
+### 6. Two errors in the record
+
+* The session-85 brief said that "all eight original `B/Eff` files, including
+  both of yours, import only `Theses.Common`".  They do not: only
+  `EffectAlgebras.lean` and `WStarCat.lean` do.  `StatesPredicates.lean`
+  imports `Theses.B.Eff.Effectus`, and the eight files form a chain
+  `EffectAlgebras`/`WStarCat` → `Effectus` → `StatesPredicates` → `Quotients`
+  → `DiamondAmp` → `Dagger` → `Comparisons`.  Nothing outside the chain was
+  imported here, so the intent of the instruction was respected.
+* `docs/BEff-survey.md` said nothing in the tree helps beyond
+  `MConvex.ofConvex` and `rsum`; see §4.
