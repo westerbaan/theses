@@ -2157,11 +2157,231 @@ theorem exc_purec_equal (s : EffectusPartialStructure WStarCPSU.{u}ᵒᵖ) :
       letI := hA
       ¬ HasCoequalizers (PureCat WStarCPSU.{u}ᵒᵖ) := sorry
 
+/-! ### The sequential product `a & b = √a b √a` (225V)
+
+eff.tex:7381 asserts 225V without proof, and 225VI — which proves (S1), (S2),
+(S3) for a †-effectus — is not a route to the remaining three axioms.  The
+mathematics supplied here is the Gudder–Greechie characterisation
+
+> `√a b √a = √b a √b` **iff** `ab = ba`,
+
+`commute_of_sqrtConj_eq` / `sqrtConj_comm_of_commute` below; the three
+commutation axioms (S4a), (S4b), (S5) are immediate from it, because once
+`a` and `b` commute `a & b` is just `ab`.  Nothing in this block uses the
+effectus structure, so 225V never depended on 180V.
+
+The hard direction is `commute_of_sqrtConj_eq`, and the argument is:
+with `s = √a`, `t = √b` the hypothesis says exactly that `x = st` is
+**normal** (`x x* = s b s`, `x* x = t a t`); writing `x = s₁·(s₁t)` with
+`s₁ = √s` and using `quasispectrum (cd) = quasispectrum (dc)` transports the
+spectrum of the *positive* element `s₁ t s₁` onto `x`, so `x` is normal with
+spectrum in `ℝ≥0`, hence positive, hence self-adjoint: `st = ts`. -/
+
+section SequentialEffects
+
+variable {A : Type u} [CStarAlgebra A] [PartialOrder A] [StarOrderedRing A]
+
+/-- Anything commuting with `a` commutes with `√a` (`CFC.sqrt` is a
+`cfcₙ` over `ℝ≥0`). -/
+theorem commute_sqrt {a b : A} (h : Commute a b) : Commute (CFC.sqrt a) b :=
+  h.cfcₙ_nnreal NNReal.sqrt
+
+/-- If `x` is normal and `x = c * d` with `d * c ≥ 0`, then `x ≥ 0`: the
+`ℂ`- and `ℝ`-quasispectra of `cd` and `dc` agree, so `x` is normal with real
+spectrum (hence self-adjoint) and with nonnegative spectrum (hence
+positive). -/
+theorem nonneg_of_normal_of_swap {x c d : A} (hx : x = c * d) (hcd : 0 ≤ d * c)
+    (hn : Commute (star x) x) : 0 ≤ x := by
+  have hqℂ : quasispectrum ℂ (d * c) = quasispectrum ℂ x := by
+    rw [hx, quasispectrum.mul_comm]
+  have hqℝ : quasispectrum ℝ (d * c) = quasispectrum ℝ x := by
+    rw [hx, quasispectrum.mul_comm]
+  have hsa : IsSelfAdjoint x := by
+    have h1 : QuasispectrumRestricts (d * c) Complex.reCLM :=
+      (IsSelfAdjoint.of_nonneg hcd).quasispectrumRestricts
+    exact isSelfAdjoint_iff_isStarNormal_and_quasispectrumRestricts.mpr
+      ⟨⟨hn⟩, h1.of_quasispectrum_eq hqℂ⟩
+  refine nonneg_iff_isSelfAdjoint_and_quasispectrumRestricts.mpr ⟨hsa, ?_⟩
+  exact (QuasispectrumRestricts.nnreal_of_nonneg hcd).of_quasispectrum_eq hqℝ
+
+/-- The product of two nonnegative elements is nonnegative as soon as it is
+normal (`st = √s · (√s t)` and `(√s t) · √s = √s t √s ≥ 0`). -/
+theorem nonneg_mul_of_normal {s t : A} (hs : 0 ≤ s) (ht : 0 ≤ t)
+    (hn : Commute (star (s * t)) (s * t)) : 0 ≤ s * t := by
+  have hs1 : (0 : A) ≤ CFC.sqrt s := CFC.sqrt_nonneg s
+  have hss : CFC.sqrt s * CFC.sqrt s = s := CFC.sqrt_mul_sqrt_self s hs
+  refine nonneg_of_normal_of_swap (c := CFC.sqrt s) (d := CFC.sqrt s * t) ?_ ?_ hn
+  · rw [← mul_assoc, hss]
+  · exact conjugate_nonneg_of_nonneg ht hs1
+
+/-- The **sequential product** of 225V, `a & b = √a b √a`, on the whole
+algebra. -/
+noncomputable def sqrtConj (a b : A) : A := CFC.sqrt a * b * CFC.sqrt a
+
+theorem sqrtConj_nonneg {a b : A} (hb : 0 ≤ b) : 0 ≤ sqrtConj a b :=
+  conjugate_nonneg_of_nonneg hb (CFC.sqrt_nonneg a)
+
+theorem sqrtConj_le_one {a b : A} (ha : 0 ≤ a) (ha1 : a ≤ 1) (hb : b ≤ 1) :
+    sqrtConj a b ≤ 1 := by
+  refine le_trans (conjugate_le_conjugate_of_nonneg hb (CFC.sqrt_nonneg a)) ?_
+  rw [show CFC.sqrt a * 1 * CFC.sqrt a = a by
+    rw [mul_one, CFC.sqrt_mul_sqrt_self a ha]]
+  exact ha1
+
+theorem sqrtConj_one_left (b : A) : sqrtConj 1 b = b := by
+  simp [sqrtConj, CFC.sqrt_one]
+
+theorem sqrtConj_add (a b c : A) :
+    sqrtConj c a + sqrtConj c b = sqrtConj c (a + b) := by
+  simp only [sqrtConj]; noncomm_ring
+
+/-- **Gudder–Greechie**, the content of 225V: for positive `a, b`,
+`√a b √a = √b a √b` forces `ab = ba`. -/
+theorem commute_of_sqrtConj_eq {a b : A} (ha : 0 ≤ a) (hb : 0 ≤ b)
+    (h : sqrtConj a b = sqrtConj b a) : Commute a b := by
+  simp only [sqrtConj] at h
+  set s : A := CFC.sqrt a with hsdef
+  set t : A := CFC.sqrt b with htdef
+  have hs : (0 : A) ≤ s := CFC.sqrt_nonneg a
+  have ht : (0 : A) ≤ t := CFC.sqrt_nonneg b
+  have hss : s * s = a := CFC.sqrt_mul_sqrt_self a ha
+  have htt : t * t = b := CFC.sqrt_mul_sqrt_self b hb
+  have hsst : star s = s := (IsSelfAdjoint.of_nonneg hs).star_eq
+  have htst : star t = t := (IsSelfAdjoint.of_nonneg ht).star_eq
+  have hstar : star (s * t) = t * s := by rw [star_mul, hsst, htst]
+  have hnorm : Commute (star (s * t)) (s * t) := by
+    show star (s * t) * (s * t) = (s * t) * star (s * t)
+    rw [hstar]
+    calc t * s * (s * t) = t * (s * s) * t := by noncomm_ring
+      _ = t * a * t := by rw [hss]
+      _ = s * b * s := h.symm
+      _ = s * (t * t) * s := by rw [htt]
+      _ = s * t * (t * s) := by noncomm_ring
+  have hpos : (0 : A) ≤ s * t := nonneg_mul_of_normal hs ht hnorm
+  have hst : s * t = t * s := by
+    have hx := (IsSelfAdjoint.of_nonneg hpos).star_eq
+    rw [hstar] at hx
+    exact hx.symm
+  have hc : Commute s t := hst
+  have h1 : Commute s b := by rw [← htt]; exact hc.mul_right hc
+  have h2 : Commute a b := by rw [← hss]; exact h1.mul_left h1
+  exact h2
+
+theorem sqrtConj_eq_mul_of_commute {a b : A} (ha : 0 ≤ a) (h : Commute a b) :
+    sqrtConj a b = a * b := by
+  have hc : Commute (CFC.sqrt a) b := commute_sqrt h
+  calc sqrtConj a b = CFC.sqrt a * (b * CFC.sqrt a) := by rw [sqrtConj, mul_assoc]
+    _ = CFC.sqrt a * (CFC.sqrt a * b) := by rw [hc.eq]
+    _ = CFC.sqrt a * CFC.sqrt a * b := by rw [mul_assoc]
+    _ = a * b := by rw [CFC.sqrt_mul_sqrt_self a ha]
+
+/-- The converse half of Gudder–Greechie. -/
+theorem sqrtConj_comm_of_commute {a b : A} (ha : 0 ≤ a) (hb : 0 ≤ b)
+    (h : Commute a b) : sqrtConj a b = sqrtConj b a := by
+  rw [sqrtConj_eq_mul_of_commute ha h, sqrtConj_eq_mul_of_commute hb h.symm, h.eq]
+
+/-- `√(ab) = √a √b` for commuting nonnegative `a, b`. -/
+theorem sqrt_mul_of_commute {a b : A} (ha : 0 ≤ a) (hb : 0 ≤ b) (h : Commute a b) :
+    CFC.sqrt (a * b) = CFC.sqrt a * CFC.sqrt b := by
+  have hc : Commute (CFC.sqrt a) (CFC.sqrt b) :=
+    (commute_sqrt (commute_sqrt h).symm).symm
+  refine CFC.sqrt_unique ?_ (hc.mul_nonneg (CFC.sqrt_nonneg a) (CFC.sqrt_nonneg b))
+  calc CFC.sqrt a * CFC.sqrt b * (CFC.sqrt a * CFC.sqrt b)
+      = CFC.sqrt a * (CFC.sqrt b * CFC.sqrt a) * CFC.sqrt b := by noncomm_ring
+    _ = CFC.sqrt a * (CFC.sqrt a * CFC.sqrt b) * CFC.sqrt b := by rw [hc.eq]
+    _ = CFC.sqrt a * CFC.sqrt a * (CFC.sqrt b * CFC.sqrt b) := by noncomm_ring
+    _ = a * b := by rw [CFC.sqrt_mul_sqrt_self a ha, CFC.sqrt_mul_sqrt_self b hb]
+
+/-- Axiom (S3): `√a b √a = star u * u` and `√b a √b = u * star u` for
+`u = √b √a`, so either vanishing forces `u = 0`. -/
+theorem sqrtConj_eq_zero_comm {a b : A} (ha : 0 ≤ a) (hb : 0 ≤ b)
+    (h : sqrtConj a b = 0) : sqrtConj b a = 0 := by
+  simp only [sqrtConj] at h ⊢
+  set s : A := CFC.sqrt a with hsdef
+  set t : A := CFC.sqrt b with htdef
+  have hs : (0 : A) ≤ s := CFC.sqrt_nonneg a
+  have ht : (0 : A) ≤ t := CFC.sqrt_nonneg b
+  have hss : s * s = a := CFC.sqrt_mul_sqrt_self a ha
+  have htt : t * t = b := CFC.sqrt_mul_sqrt_self b hb
+  have hsst : star s = s := (IsSelfAdjoint.of_nonneg hs).star_eq
+  have htst : star t = t := (IsSelfAdjoint.of_nonneg ht).star_eq
+  have hstar : star (t * s) = s * t := by rw [star_mul, hsst, htst]
+  have hzero : star (t * s) * (t * s) = 0 := by
+    rw [hstar]
+    calc s * t * (t * s) = s * (t * t) * s := by noncomm_ring
+      _ = s * b * s := by rw [htt]
+      _ = 0 := h
+  have hu : t * s = 0 := (CStarRing.star_mul_self_eq_zero_iff _).mp hzero
+  calc t * a * t = (t * s) * (s * t) := by rw [← hss]; noncomm_ring
+    _ = 0 := by rw [hu, zero_mul]
+
+/-- Axiom (S4b): with `ab = ba` one has `√(ab) = √a√b`, so both sides are
+`√a √b c √b √a`. -/
+theorem sqrtConj_assoc_of_commute {a b : A} (ha : 0 ≤ a) (hb : 0 ≤ b)
+    (h : Commute a b) (c : A) :
+    sqrtConj (sqrtConj a b) c = sqrtConj a (sqrtConj b c) := by
+  have hc : Commute (CFC.sqrt a) (CFC.sqrt b) :=
+    (commute_sqrt (commute_sqrt h).symm).symm
+  have hab : sqrtConj a b = a * b := sqrtConj_eq_mul_of_commute ha h
+  have hsq : CFC.sqrt (a * b) = CFC.sqrt a * CFC.sqrt b :=
+    sqrt_mul_of_commute ha hb h
+  rw [show sqrtConj (sqrtConj a b) c = sqrtConj (a * b) c by rw [hab]]
+  simp only [sqrtConj, hsq]
+  calc CFC.sqrt a * CFC.sqrt b * c * (CFC.sqrt a * CFC.sqrt b)
+      = CFC.sqrt a * CFC.sqrt b * c * (CFC.sqrt b * CFC.sqrt a) := by rw [hc.eq]
+    _ = CFC.sqrt a * (CFC.sqrt b * c * CFC.sqrt b) * CFC.sqrt a := by noncomm_ring
+
+variable [Theses.VonNeumannAlgebra A]
+
+/-- The sequential product `a & b = √a b √a` on the effects `[0,1]_𝒜`. -/
+noncomputable def effSeq (a b : Theses.effects A) : Theses.effects A :=
+  ⟨sqrtConj (a : A) (b : A), sqrtConj_nonneg b.2.1,
+    sqrtConj_le_one a.2.1 a.2.2 b.2.2⟩
+
+/-- **225V** (eff.tex:7381, Examples), the structure: `[0,1]_𝒜` with
+`a & b = √a b √a`. -/
+noncomputable def effectsSEA : SequentialEffectAlgebra (Theses.effects A) where
+  seq := effSeq
+  seq_add := fun c {a b} h => by
+    have hab : (a : A) + (b : A) ≤ 1 := h
+    have hperp : Perp (effSeq c a) (effSeq c b) := by
+      show sqrtConj (c : A) (a : A) + sqrtConj (c : A) (b : A) ≤ 1
+      rw [sqrtConj_add]
+      exact sqrtConj_le_one c.2.1 c.2.2 hab
+    exact ⟨hperp, Subtype.ext (sqrtConj_add _ _ _)⟩
+  one_seq := fun a => Subtype.ext (sqrtConj_one_left (a : A))
+  seq_zero_comm := fun a b hab =>
+    Subtype.ext (sqrtConj_eq_zero_comm a.2.1 b.2.1 (congrArg Subtype.val hab))
+  seq_comm_orth := fun {a b} h => by
+    have hcomm : Commute (a : A) (b : A) :=
+      commute_of_sqrtConj_eq a.2.1 b.2.1 (congrArg Subtype.val h)
+    have hb' : (0 : A) ≤ 1 - (b : A) := sub_nonneg.mpr b.2.2
+    have hc2 : Commute (a : A) (1 - (b : A)) :=
+      (Commute.one_right (a : A)).sub_right hcomm
+    exact Subtype.ext (sqrtConj_comm_of_commute a.2.1 hb' hc2)
+  seq_comm_assoc := fun {a b} h c => by
+    have hcomm : Commute (a : A) (b : A) :=
+      commute_of_sqrtConj_eq a.2.1 b.2.1 (congrArg Subtype.val h)
+    exact Subtype.ext (sqrtConj_assoc_of_commute a.2.1 b.2.1 hcomm (c : A))
+  seq_comm_compat := fun {a b c} h hca hcb => by
+    have h1 : Commute (c : A) (a : A) :=
+      commute_of_sqrtConj_eq c.2.1 a.2.1 (congrArg Subtype.val hca)
+    have h2 : Commute (c : A) (b : A) :=
+      commute_of_sqrtConj_eq c.2.1 b.2.1 (congrArg Subtype.val hcb)
+    have hsa : Commute (c : A) (CFC.sqrt (a : A)) := (commute_sqrt h1.symm).symm
+    have h3 : Commute (c : A) (sqrtConj (a : A) (b : A)) :=
+      (hsa.mul_right h2).mul_right hsa
+    have h4 : Commute (c : A) ((a : A) + (b : A)) := h1.add_right h2
+    exact ⟨Subtype.ext (sqrtConj_comm_of_commute c.2.1 (sqrtConj_nonneg b.2.1) h3),
+      Subtype.ext (sqrtConj_comm_of_commute c.2.1 (add_nonneg a.2.1 b.2.1) h4)⟩
+
+end SequentialEffects
+
 /-- **225V** (eff.tex:7381, Examples): the effect algebra `[0,1]_𝒜` of a
 von Neumann algebra is a sequential effect algebra with
 `a & b = √a b √a`. -/
 theorem effects_sea (A : Type u) [CStarAlgebra A] [PartialOrder A]
     [StarOrderedRing A] [Theses.VonNeumannAlgebra A] :
-    Nonempty (SequentialEffectAlgebra (Theses.effects A)) := sorry
+    Nonempty (SequentialEffectAlgebra (Theses.effects A)) := ⟨effectsSEA⟩
 
 end Theses.B.Eff
