@@ -19052,3 +19052,290 @@ the 104III author ruling, and `Tensor.lean`'s two are deliberate non-targets
 The thesis's proofs of 132III.5, 132IV and 132VI are correct as printed.
 `docs/why-open.csv`: the `dup_vna_is_monoid_5`, `free_monoid_in_vNAMIU` and
 `free_monoid_in_Wcpsu` rows are deleted.
+
+---
+
+## Session 80 — `A/VN`: **51IX `Linfty_vn` is CLOSED and `Theses/A/VN/` is FINISHED** — `L^∞(X)` is built as a star subalgebra of `X →ₘ[μ] ℂ`, after supplying the ring structure Mathlib omits (worker on `Theses/A/VN/`)
+
+**`A/VN` 1 → 0.**  Compiler-counted, each file run through `lean`
+individually: `Basic.lean` **0**, `Projections.lean` 0, `Division.lean` 0,
+`NormalFunctionals.lean` 0, `Completeness.lean` 0 — all with **0 errors**, and
+`lake build` of the five completes.  `Linfty_vn` is `#print axioms`-clean
+(`propext, Classical.choice, Quot.sound`), checked against the rebuilt olean.
+**~680 lines**, against a 400–800 costing, all `private`, in a new
+`section LinftyConstruction` / `namespace LinftyConstruction` block placed
+between `IsBoundedMeasurable` and the theorem.
+
+### 1. The proof is the thesis's own
+
+vn.tex 51IX (line 1638) is a two-line corollary of **51VII** (vn.tex:1581),
+which is already proved in Lean as `vna_of_faithful_countably_normal_1/2`.
+So the mathematical content of the session is entirely the *construction* of
+the carrier and the verification of 51VII's two hypotheses:
+
+* `∫` is faithful on `L^∞(X)_+` (`integral_eq_zero_iff_of_nonneg_ae`), and
+* every bounded ascending sequence of self-adjoint elements has a supremum
+  that `∫` preserves — Levi's theorem, which is Mathlib's
+  `integral_tendsto_of_tendsto_of_monotone` plus `isLUB_of_tendsto_atTop`.
+
+No divergence from the thesis's argument; the whole cost is carrier-building.
+
+### 2. The carrier: what Mathlib does and does not have
+
+The brief's premise — "Mathlib has no C\*-algebra of bounded measurable
+functions modulo a.e. equality, because `Lp E ∞ μ` carries no multiplication"
+— is right, but understates it by one level.  **`MeasureTheory.AEEqFun`
+(`X →ₘ[μ] ℂ`) has no ring structure either**: it carries `AddCommGroup`,
+`CommMonoid` (multiplicative), `Module ℂ`, `Star` and a partial order, but
+*distributivity is never proved*, so `Semiring (X →ₘ[μ] ℂ)` fails to
+synthesise.  That is the one genuine gap; everything else was already there.
+Recorded in QUESTIONS' upstream-Mathlib section.
+
+The construction is therefore in four layers.
+
+1. **`CommRing`, `Algebra ℂ`, `StarRing`, `StarModule ℂ` on `X →ₘ[μ] ℂ`**
+   (~70 lines).  Each axiom is three lines via `AEEqFun.induction_on` plus
+   the `mk_mul_mk` / `mk_add_mk` / `mk_eq_mk` / `comp_mk` / `smul_mk` simp
+   set — *not* `filter_upwards` on `coeFn_mul` etc., which needs five
+   hypotheses per axiom and leaves `Pi`-level goals behind.  The four are
+   `private` **and** `attribute [local instance]`, so nothing leaks past the
+   section; the three non-`Prop` ones must be `@[instance_reducible]` or
+   `Module ℂ (X →ₘ[μ] ℂ)` stops being found the moment the new
+   `AddCommGroup` path exists (the same trap as session 79's
+   `CStarAlgebra ↥S`).
+2. **`LinftySub μ : StarSubalgebra ℂ (X →ₘ[μ] ℂ)`**, the essentially bounded
+   elements (`eLpNormEssSup ↑f μ < ∞`).  Its coercion then carries
+   `CommRing`, `Algebra ℂ`, `StarRing`, `StarModule ℂ` for free.
+3. **The norm and completeness come from `Lp ℂ ∞ μ`.**  `Lp E p μ` is an
+   `AddSubgroup` of `X →ₘ[μ] E` whose carrier is *the same set*, so
+   `toLpHom : ↥(LinftySub μ) →+ Lp ℂ ∞ μ` is a bijection, and
+   `NormedAddCommGroup.induced` + `Isometry.isUniformInducing.completeSpace`
+   transport the norm and — the expensive half of the classical proof —
+   **completeness of `L^∞`, for free**.  (`Lp.instCompleteSpace` wants
+   `Fact (1 ≤ (∞ : ℝ≥0∞))`, which is supplied as a `local` instance so it
+   does not leak into the rest of the tree.)
+4. `NormedCommRing`, `CStarRing`, `NormedAlgebra ℂ`, hence
+   `CommCStarAlgebra`.
+
+### 3. Two essential-supremum inequalities are the whole analytic content
+
+`CStarRing` in current Mathlib has a **single** field,
+`norm_mul_self_le : ‖x‖ * ‖x‖ ≤ ‖star x * x‖` — `‖star x‖ = ‖x‖` and the
+C\*-identity are *derived* — so exactly two estimates are needed:
+
+* `eLpNormEssSup (f * g) ≤ eLpNormEssSup f * eLpNormEssSup g` (two
+  applications of `ENNReal.ae_le_essSup`), and
+* `(eLpNormEssSup f)² ≤ eLpNormEssSup (star f * f)`, which is the one place
+  where the reverse direction of an `essSup` bound is wanted.  It is *not*
+  a "for all `t < M`" argument: from `u * u ≤ v` in `ℝ≥0∞` one gets
+  `u ≤ v ^ (1/2 : ℝ)` in three lines by `ENNReal.rpow_le_rpow` and
+  `ENNReal.rpow_mul`, and `v ^ (1/2) * v ^ (1/2) = v` unconditionally
+  (`ENNReal.rpow_add_of_nonneg`), zero and infinity included.  The same
+  `enn_le_half` lemma then bounds the pointwise square root in layer 5.
+
+### 4. The order was already there, and is the a.e.-pointwise one
+
+`↥(LinftySub μ)` is a `Subtype`, `Subtype.partialOrder` fires on
+`AEEqFun.instPartialOrder`, and that instance is `PartialOrder.lift toGerm` —
+i.e. **the a.e.-pointwise order** (`AEEqFun.coeFn_le`).  So no `PartialOrder`
+had to be written at all, and `CStarAlgebra.spectralOrder` was not needed;
+`linfty_le_iff` (`a ≤ b ↔ ∀ᵐ x, a x ≤ b x`) is `Subtype.coe_le_coe` followed
+by `AEEqFun.coeFn_le`.  This works only because `open scoped ComplexOrder` is
+in force, which it is throughout the file.
+
+`StarOrderedRing` is then `StarOrderedRing.of_le_iff` with the explicit
+square root `z ↦ (√(z.re) : ℂ)` pushed through `AEEqFun.comp` — continuous,
+so no measurability side-condition — and `enn_le_half` for its membership.
+
+### 5. `hμ : μ.IsComplete` is not used, and does not need to be
+
+The thesis needs completeness of the measure to know that an a.e. limit of
+measurable functions is measurable (vn.tex 51V, citing Fremlin 121F), which is
+what makes `L^∞(X)` a set of classes of *measurable* functions and gives it
+countable suprema.  In Lean that role is played by `AEEqFun` itself: every
+element already has a `StronglyMeasurable` representative
+(`AEEqFun.stronglyMeasurable`), and the countable supremum is built from those
+representatives by `Measurable.iSup`.  Surjectivity of `q` onto genuinely
+*everywhere*-bounded measurable functions is then a one-line truncation
+`x ↦ if ‖g x‖ ≤ ‖y‖ then g x else 0`.  So the hypothesis is inert — harmless,
+and the statement is left exactly as it stands.
+
+### 6. QUESTIONS A9: the missing `ℂ`-homogeneity did **not** obstruct anything
+
+Our `q` is `f ↦ (MemLp.toLp f)` and is manifestly `ℂ`-linear; the clause
+`q (z • f) = z • q f` would be one more `rep_injective` + `filter_upwards`
+line.  A9 stays open — it asks the authors whether to *strengthen* the
+statement, and statements are not changed without a ruling — but it is now
+known to be free.  The note has been added to the A9 entry.
+
+### 7. The verdict on `A/Proc`'s `exists_contRep` stands
+
+Nothing in `Duplicators.lean` was reusable: both of its lemmas start from an
+algebra that is already given together with a ∗-iso to `C(X, ℂ)`, and 51IX has
+neither.  Read before starting, not used.
+
+### 8. Nothing for ERRATA
+
+The thesis's proof of 51IX is correct as printed.  `docs/why-open.csv`: the
+`Linfty_vn` row is deleted, and **`A/VN` now contributes no rows at all**.
+
+---
+
+## Session 81 — `B/Dils`: **162IV `selfdual_normalish_form` is CLOSED in one session**, not the two-to-three the costing said — 162VI's basis surgery is dead weight, because 162VII only ever uses *one* of the two new vectors (worker on `Theses/B/Dils/`)
+
+**`B/Dils` 12 → 11** (HilbertModules 0, SelfDualCompletion 0, Stinespring 1,
+Kaplansky 4, Paschke 1, **SelfDual 3**, Pure 2; each source run through
+`lean` individually, **0 errors** in every one, `Pure.lean` re-run against a
+freshly built `SelfDual.olean`).  `selfdual_normalish_form` is
+`#print axioms`-clean (`propext, Classical.choice, Quot.sound`), checked from
+inside the module against a source build.  **≈770 lines**, all `private`
+except the theorem and one new public lemma.
+
+### 1. The costing was wrong by a factor of two, and here is exactly why
+
+The survey and `why-open.csv` both said 162IV is "not session-sized:
+162V–162VII are two further Zorn arguments, … ~800–1200 lines, 2–3 sessions",
+and listed as its content the infinite module sum `e₀ = ∑ e·u`, *basis
+surgery*, and a Hilbert-hotel step.  Two of those three are real.  The basis
+surgery is not:
+
+**162VI, as printed, proves far more than 162VII consumes.**  It builds a
+whole new orthonormal basis `D ∪ (E₁ ∖ {e₁})` of `X` out of two new vectors
+`d₀ = e₁q` and `d₁ = e₀ + e₁v*`, and the bulk of its half-page is the
+verification that `{d₀,d₁}` is an orthonormal basis of `{e₀,e₁}^⊥⊥` (the
+displayed six-line computation `d₀⟨d₀,x⟩ + d₁⟨d₁,x⟩ = x`).  Its **only**
+consumer, 162VII, says "we can find an orthonormal basis `E'` of `E^⊥`
+together with `e ∈ E'` such that `⟨e,e⟩ = 1`.  Now `E ∪ {e} ∈ P`" — and uses
+nothing about `E'` beyond that single vector.  So the whole of `d₀`, the
+projection `q = p₀' + p₁ − 1`, the splitting-of-`1` picture and the
+six-line computation can be dropped: what 162VII needs is
+
+> `∃ d ∈ E^⊥` with `⟨d,d⟩ = 1`, **or** `E^⊥` is generated by a single vector,
+
+and that is `normalish_step`, the form actually transcribed.  Nothing is lost
+— the printed 162VI is *true*, and its extra content is a genuine structural
+statement — but it is not on the path to 162IV.  **Divergence, class 2**
+(their proof is fine, we took a shorter route through it), logged here.
+
+The same holds for **162VII**: it never needs a *basis* of `E^⊥` either, only
+that `E^⊥ = {0}` or `E^⊥ = {e}^⊥⊥`.
+
+### 2. What the transcription does need, and the four reusable pieces
+
+* **`isONBasis_of_orthoCompl_eq_zero`** (new, **public**): an orthonormal
+  family with trivial orthocomplement *is* an orthonormal basis.  Clause (a)
+  of `IsONBasis` is **160IX** `selfdual_orthn_basis` at `E^⊥⊥ = {0}^⊥ = X`,
+  and clause (b) holds for *every* orthonormal family in a self-dual module
+  (`exists_unTendsto_of_l2Summable`).  ~15 lines, and it is what lets the
+  whole proof be run on **sets of vectors** rather than on submodules-as-types
+  — no `E^⊥` ever has to be given a `CStarModule` instance.
+* **`exists_max_orthonormal_orthoCompl`** (new, private): **149VIII**
+  relativized to `W = V^⊥`.  This is exactly the Zorn block already inside
+  `exists_orthogonal_decomp` (160IV.3), extracted; the only change is that
+  `u ∈ W` now comes from `mem_orthoCompl_of_unTendsto` rather than from
+  `unClosure`.
+* **`mem_orthoCompl_of_unTendsto`** (new, private): `V^⊥` is closed under
+  ultranorm limits, in the net form.  (`hilbmod_projthm_1`'s fifth clause says
+  the same in `unClosure` form; the net form is what every call site wants.)
+* **`le_of_np_limit`** (new, private): if `ω(a − Pₖ) → 0` for every
+  np-functional and every `Pₖ ≤ c`, then `a ≤ c` — the least-upper-bound half
+  of "an ultraweak limit of an increasing net is its supremum", which the tree
+  had only in the `selfAdjoint`-subtype/`dirSup` packaging.  With it,
+  `p₀ = ⟨e₀,e₀⟩` is `IsLUB` of the partial sums and **56XIV**
+  `vna_directed_supremum_projections` makes it a projection.
+
+### 3. Two things the thesis's 162VI gets slightly wrong, both harmless
+
+Recorded as **nits**, not errata — the intended objects are unambiguous — but
+they had to be repaired to typecheck.
+
+1. **The poset `P` must consist of partial *functions* `E₀ ⇀ ℬ`, not of
+   arbitrary subsets `U ⊆ E₀ × ℬ`.**  With two pairs `(e,u)`, `(e,u')` sharing
+   the same `e`, the claim `⟨e₀,e₀⟩ = ∑_{(e,u)∈U} u*u` fails: the cross term
+   is `u*⟨e,e⟩u' = u*u'`, which need not vanish — in `B(ℓ²)` take `u*u ⊥ u'*u'`
+   with `uu* = u'u'* = ⟨e,e⟩` infinite, and `u*u'` is a non-zero partial
+   isometry.  The clause `q.1 = q'.1 → q.2 = q'.2` is added to `P`; chains are
+   unaffected (a union of a chain of functional relations is functional), and
+   the maximality step only ever adjoins a pair whose first coordinate is
+   *outside* the domain, so 162VI's own argument is untouched.
+2. **The orthogonality condition is stated as a sum, `∑_{(e,u)∈U} u*u ≤ 1`,
+   which is not a first-order condition on `U`.**  It is replaced by the
+   equivalent *pairwise* `(uu*)(u'u'*) = 0`, which makes the chain bound of
+   Zorn's lemma completely trivial; that the two agree is
+   `projx_sum` (a finite sum of pairwise orthogonal projections is a
+   projection, hence `≤ 1`).
+
+### 4. The one computation that replaces the thesis's infinite sums
+
+The thesis reads `⟨e₀,e₀⟩ = ∑ u*u` and `x = e₀(∑ u*⟨e,x⟩) + ∑_{E₁} e⟨e,x⟩`
+off the sum `e₀ = ∑_{(e,u)∈U₀} eu` directly.  Neither ultraweak limit is
+needed here.  Writing `rⱼ = bⱼbⱼ*` (mirrored; `bⱼ` is the thesis's `uⱼ*`):
+
+* `∑_{i∈s} rᵢ ≤ p₀` for every finite `s`, because
+  `⟨e₀ − vₛ, e₀ − vₛ⟩ = p₀ − ∑_{i∈s} rᵢ` — all three cross terms equal
+  `∑_{i∈s} rᵢ`;
+* hence **`rⱼ • e₀ = bⱼ • fⱼ`**, by `⟨d,d⟩ = rⱼ − rⱼ − rⱼ + rⱼ = 0` for the
+  difference `d`.  This single identity replaces the thesis's expansion
+  argument outright: `⟨e₀,x⟩ = 0` gives
+  `⟨bⱼ•fⱼ, x⟩ = ⟨rⱼ•e₀, x⟩ = ⟨e₀,x⟩rⱼ = 0`, and then `⟨fⱼ,x⟩ = 0` by
+  absorbing `⟨fⱼ,fⱼ⟩`.
+
+`p₀` being a **projection** is the only place an ultraweak limit survives:
+`ω(p₀ − Pₛ) = ‖e₀ − vₛ‖_ω² → 0`, so `p₀ = ⋁ₛ Pₛ` (`le_of_np_limit`) and
+56XIV applies.
+
+### 5. The Hilbert hotel, uniformly
+
+162VII's `E₁ = {e + e₁(1−p), e₁p + e₂(1−p), …}` is written as
+`dₙ = tₙ + (1−p)•eₙ` with `t₀ = e`, `t_{k+1} = p•e_k`.  Then
+
+    ⟨tₙ,tₘ⟩ = δₙₘ p,   (1−p)⟨tₙ,eₘ⟩ = 0,   ⟨eₙ,tₘ⟩(1−p) = 0,
+
+so `⟨dₙ,dₘ⟩ = δₙₘ(p + (1−p)) = δₙₘ`, with no case analysis on `|n−m|` at all.
+The spanning half needs **no induction** either, contrary to the shape of the
+thesis's list: from `⟨dₙ,x⟩ = 0` write `a = ⟨e,x⟩`, `cₙ = ⟨eₙ,x⟩`; right
+multiplication of the `n+1`-st equation by `p` gives `cₙp = 0` for *all* `n`
+at once, of the `0`-th gives `a = 0`, and then each `cₙ(1−p) = 0` follows from
+one equation, so `cₙ = cₙp + cₙ(1−p) = 0`.
+
+The new index type is `↥(E ∖ range eₙ) ⊕ ULift.{v} ℕ`; the ambient index type
+of the theorem is `Type v` and `X : Type v`, so a *set* of vectors is always
+an admissible index and no universe juggling is needed.
+
+### 6. Traps
+
+* The brief's warning held: `polar_decomposition` inside
+  `namespace Theses.B.Dils` is `HilbertModules.lean`'s Hilbert-module version
+  — which is the one wanted here, in `exists_max_orthonormal_orthoCompl`.
+* `rintro`'s `⟨n⟩` does **not** destructure `ULift ℕ` (it binds the whole
+  `ULift`); use a plain binder and `n.down`.
+* `set ι : Type v := …` makes `rcases`/`rintro` unable to see through the
+  local definition to the `⊕`; write the sum type out.
+* `(cstarBInner ℬ X).inner` and `inner ℬ` are defeq but not syntactically
+  equal, so `unSeminorm_inner_le`/`unSeminorm_sq` must be `exact`ed into an
+  `inner ℬ`-shaped `have`, never `rw`n.
+* `CStarAlgebra ℬ` gives **no `NormOneClass`**, so a projection's norm bound
+  is `‖p‖ ≤ ‖(1 : ℬ)‖`, not `≤ 1`.  (`L2Summable` only needs *some* bound.)
+* The degenerate algebra `1 = 0` has to be split off at the top of 162IV:
+  `OrthonormalFam` demands `⟨e,e⟩ ≠ 0`, so `⟨e,e⟩ = 1` is not a unit vector
+  there.  Then `X = {0}` and the empty family is a basis.
+
+### 7. Nothing for ERRATA or QUESTIONS
+
+162IV is true as printed and its proof is correct; the two points of §3 are
+notational.  No statement was changed.
+
+### 8. What is left in `B/Dils`: **nothing that is both open and reachable**
+
+The three remaining `sorry`s of `SelfDual.lean` are 164II.2b
+`ext_tensor_ketbra_dense` (false as transcribed, QUESTIONS **D6**), 165VI
+`ba_ext_tensor_pres` and 167I `paschke_tensor` (both blocked outside the
+directory on 116VII, QUESTIONS **D3**); `Kaplansky.lean`'s 4 and
+`Stinespring.lean`'s 1 are the known-false items; `Pure.lean`'s 2 are 170II.1
+(needs 171VII and the Stinespring block) and 170IV.2 (false, QUESTIONS
+**D7**); `Paschke.lean`'s 1 is 155II `ksgns`, re-costed in session 80 at
+≈1200–1600 lines because it needs a **norm** completion of a semi-inner-product
+Hilbert C\*-module that neither the tree nor Mathlib has.  **So `ksgns` is now
+the only remaining item in `B/Dils` that is not blocked on a ruling or on
+another directory**, and it is a construction, not a transcription (155II
+cites Kasparov and gives no proof).

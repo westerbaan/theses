@@ -17,7 +17,6 @@ riesz_ideal_basic_3|costed||cheapest of the 270 chain: Zorn, copying the skeleto
 riesz_ideal_miu_map|blocked|maximal_riesz_ideal_maximal_order_ideal|four lines on top of 27XI, plus 27VIII for the multiplicativity step
 riesz_ideal_ring_ideal|costed||~100-150 lines; root of the 270 chain, and every external ingredient is proved
 rigid_expansion|costed||~80-120 lines; needs neither Goursat nor 15V, using Mathlib CauchyIntegral
-Linfty_vn|costed||51IX needs an L-infinity carrier that Mathlib lacks; rendered with a quotient map, still unbuilt
 carrier_ad_operator|costed||best isolated target in Projections.lean: the Hilbert-space form of the proved carrier_ad
 div_usc|awaiting-ruling||QUESTIONS A5: the second conjunct is false; the ultraweak repair is proved as div_uwc, ruling pending
 mn_vna_2|costed||its third clause is available as the proved exists_isLUB_matForm; the rest is the entrywise dictionary
@@ -79,7 +78,6 @@ paschke_injective|costed||156II is unblocked by exists_paschke_iso_paschkeModule
 paschke_injective_carrier|costed||156II in carrier form; same route as paschke_injective, and the same A/VN ceiling question
 paschke_tensor|blocked|ba_ext_tensor_pres|167I needs 165VI and an ExtTensor to exist; univprop_ext_tensor is PROVED (session 79) and paschke_tensor_module was never downstream of it, so 165VI is the only blocker left
 pure_ncp_extreme|open||unblocked: ncp_extreme_paschke is now proved; not yet attempted
-selfdual_normalish_form|costed||162IV is UNBLOCKED since session 80 (162II is proved) but is not session-sized: 162V-162VII are two further Zorn arguments, an infinite sum e0 = sum e*u inside the module, basis surgery and a Hilbert-hotel step; ~800-1200 lines, 2-3 sessions
 standard_corner_dils|cited||169IV is cited to proc.tex 98I and 95II; A/Proc is off this import path, so it must be rebuilt
 surjective_nmiu_2|awaiting-ruling||FALSE: counterexample in tree; needs ncpsu on both f and f-prime (QUESTIONS D7)
 kaplansky_hilbmod_A₁|false||one of 158V's four estimates, disproved and kept as documentation; 158II is proved by the linking algebra

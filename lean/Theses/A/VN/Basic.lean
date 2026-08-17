@@ -5601,6 +5601,709 @@ bounded — a member of the thesis's `𝓛^∞(X)` (vn.tex 51II). -/
 def IsBoundedMeasurable (f : X → ℂ) : Prop :=
   Measurable f ∧ ∃ C : ℝ, ∀ x, ‖f x‖ ≤ C
 
+/-! ### The construction of `L^∞(X)` for **51IX**
+
+Mathlib has no C*-algebra of bounded measurable functions modulo equality
+almost everywhere: `MeasureTheory.Lp E ∞ μ` is only a Banach space, and
+`X →ₘ[μ] ℂ` (`MeasureTheory.AEEqFun`) carries `Mul`, `Star` and `Module ℂ`
+but *no ring structure at all* (distributivity is missing).  This block
+builds one, as the star subalgebra `LinftySub μ` of essentially bounded
+elements of `X →ₘ[μ] ℂ`, and then proves 51IX by feeding integration to
+**51VII** `vna_of_faithful_countably_normal_1/2` — which is exactly the
+thesis's own proof (vn.tex:1638 is a corollary of vn.tex:1581).
+
+Everything here is `private`, and the four algebraic instances on
+`X →ₘ[μ] ℂ` are `local`, so nothing leaks out of this section. -/
+
+section LinftyConstruction
+
+namespace LinftyConstruction
+
+variable {X : Type u} [MeasurableSpace X] {μ : Measure X}
+
+/-! ### The commutative ring structure on `X →ₘ[μ] ℂ` -/
+
+attribute [local simp] AEEqFun.mk_mul_mk AEEqFun.mk_add_mk AEEqFun.mk_eq_mk
+  AEEqFun.comp_mk AEEqFun.smul_mk
+
+@[instance_reducible] private noncomputable def aeCommRing (μ : Measure X) :
+    CommRing (X →ₘ[μ] ℂ) where
+  __ := (inferInstance : AddCommGroup (X →ₘ[μ] ℂ))
+  __ := (inferInstance : CommMonoid (X →ₘ[μ] ℂ))
+  left_distrib a b c := by
+    induction a using AEEqFun.induction_on with | _ f hf =>
+    induction b using AEEqFun.induction_on with | _ g hg =>
+    induction c using AEEqFun.induction_on with | _ h hh =>
+    simp [mul_add]
+  right_distrib a b c := by
+    induction a using AEEqFun.induction_on with | _ f hf =>
+    induction b using AEEqFun.induction_on with | _ g hg =>
+    induction c using AEEqFun.induction_on with | _ h hh =>
+    simp [add_mul]
+  zero_mul a := by
+    induction a using AEEqFun.induction_on with | _ f hf =>
+    change (0 : X →ₘ[μ] ℂ) * _ = _
+    rw [show (0 : X →ₘ[μ] ℂ) = AEEqFun.mk 0 aestronglyMeasurable_const from rfl]
+    simp
+  mul_zero a := by
+    induction a using AEEqFun.induction_on with | _ f hf =>
+    change _ * (0 : X →ₘ[μ] ℂ) = _
+    rw [show (0 : X →ₘ[μ] ℂ) = AEEqFun.mk 0 aestronglyMeasurable_const from rfl]
+    simp
+
+attribute [local instance] aeCommRing
+
+@[instance_reducible] private noncomputable def aeAlgebra (μ : Measure X) :
+    Algebra ℂ (X →ₘ[μ] ℂ) :=
+  Algebra.ofModule
+    (fun r x y => by
+      induction x using AEEqFun.induction_on with | _ f hf =>
+      induction y using AEEqFun.induction_on with | _ g hg =>
+      simp)
+    (fun r x y => by
+      induction x using AEEqFun.induction_on with | _ f hf =>
+      induction y using AEEqFun.induction_on with | _ g hg =>
+      simp)
+
+attribute [local instance] aeAlgebra
+
+@[instance_reducible] private noncomputable def aeStarRing (μ : Measure X) :
+    StarRing (X →ₘ[μ] ℂ) where
+  star_involutive := star_star
+  star_mul a b := by
+    induction a using AEEqFun.induction_on with | _ f hf =>
+    induction b using AEEqFun.induction_on with | _ g hg =>
+    change AEEqFun.comp _ continuous_star _
+      = AEEqFun.comp _ continuous_star _ * AEEqFun.comp _ continuous_star _
+    simp only [AEEqFun.comp_mk, AEEqFun.mk_mul_mk, AEEqFun.mk_eq_mk, Function.comp_def,
+      RCLike.star_def]
+    exact Filter.EventuallyEq.of_eq (funext fun x => by simp [map_mul, mul_comm])
+  star_add a b := by
+    induction a using AEEqFun.induction_on with | _ f hf =>
+    induction b using AEEqFun.induction_on with | _ g hg =>
+    change AEEqFun.comp _ continuous_star _
+      = AEEqFun.comp _ continuous_star _ + AEEqFun.comp _ continuous_star _
+    simp only [AEEqFun.comp_mk, AEEqFun.mk_add_mk, AEEqFun.mk_eq_mk, Function.comp_def,
+      RCLike.star_def]
+    exact Filter.EventuallyEq.of_eq (funext fun x => by simp [map_add])
+
+attribute [local instance] aeStarRing
+
+private theorem aeStarModule (μ : Measure X) :
+    StarModule ℂ (X →ₘ[μ] ℂ) where
+  star_smul r a := by
+    induction a using AEEqFun.induction_on with | _ f hf =>
+    change AEEqFun.comp _ continuous_star _ = _ • AEEqFun.comp _ continuous_star _
+    simp only [AEEqFun.comp_mk, AEEqFun.smul_mk, AEEqFun.mk_eq_mk, Function.comp_def,
+      RCLike.star_def]
+    exact Filter.EventuallyEq.of_eq (funext fun x => by simp [map_mul])
+
+attribute [local instance] aeStarModule
+
+noncomputable example : Module ℂ (X →ₘ[μ] ℂ) := inferInstance
+noncomputable example : StarRing (X →ₘ[μ] ℂ) := inferInstance
+noncomputable example : StarModule ℂ (X →ₘ[μ] ℂ) := inferInstance
+noncomputable example : Algebra ℂ (X →ₘ[μ] ℂ) := inferInstance
+
+/-! ### essential-supremum estimates -/
+
+private theorem essSup_mul_le (f g : X → ℂ) :
+    eLpNormEssSup (f * g) μ ≤ eLpNormEssSup f μ * eLpNormEssSup g μ := by
+  rw [eLpNormEssSup_eq_essSup_enorm]
+  refine essSup_le_of_ae_le _ ?_
+  filter_upwards [ENNReal.ae_le_essSup (fun x => ‖f x‖ₑ) (μ := μ),
+    ENNReal.ae_le_essSup (fun x => ‖g x‖ₑ) (μ := μ)] with x h1 h2
+  simp only [Pi.mul_apply, enorm_mul]
+  exact mul_le_mul' h1 h2
+
+private theorem enn_half_mul (u : ℝ≥0∞) : u ^ (1/2 : ℝ) * u ^ (1/2 : ℝ) = u := by
+  rw [← ENNReal.rpow_add_of_nonneg _ _ (by norm_num) (by norm_num)]
+  norm_num
+
+private theorem enn_sq (u : ℝ≥0∞) : u * u = u ^ (2 : ℝ) := by
+  rw [show ((2:ℝ)) = ((2:ℕ):ℝ) by norm_num, ENNReal.rpow_natCast, pow_two]
+
+private theorem enn_le_half {u v : ℝ≥0∞} (h : u * u ≤ v) : u ≤ v ^ (1/2 : ℝ) := by
+  have := ENNReal.rpow_le_rpow h (z := (1/2 : ℝ)) (by norm_num)
+  calc u = (u * u) ^ (1/2 : ℝ) := by
+        rw [enn_sq, ← ENNReal.rpow_mul]
+        norm_num
+    _ ≤ v ^ (1/2 : ℝ) := this
+
+private theorem essSup_mul_self_ge (f : X → ℂ) :
+    eLpNormEssSup f μ * eLpNormEssSup f μ ≤ eLpNormEssSup (fun x => star (f x) * f x) μ := by
+  set c := eLpNormEssSup (fun x => star (f x) * f x) μ with hc
+  have key : eLpNormEssSup f μ ≤ c ^ (1/2 : ℝ) := by
+    rw [eLpNormEssSup_eq_essSup_enorm]
+    refine essSup_le_of_ae_le _ ?_
+    filter_upwards [ENNReal.ae_le_essSup (fun x => ‖star (f x) * f x‖ₑ) (μ := μ)] with x hx
+    refine enn_le_half ?_
+    rw [hc, eLpNormEssSup_eq_essSup_enorm]
+    have hs : ∀ z : ℂ, ‖star z‖ₑ = ‖z‖ₑ := fun z => by simp
+    simpa only [enorm_mul, hs] using hx
+  calc eLpNormEssSup f μ * eLpNormEssSup f μ ≤ c ^ (1/2 : ℝ) * c ^ (1/2 : ℝ) :=
+        mul_le_mul' key key
+    _ = c := enn_half_mul c
+
+/-! ### `L^∞(X)` as a star subalgebra of `X →ₘ[μ] ℂ` -/
+
+variable (μ) in
+private def LinftySub : StarSubalgebra ℂ (X →ₘ[μ] ℂ) where
+  carrier := {f | eLpNormEssSup (f : X → ℂ) μ < ∞}
+  mul_mem' {f g} hf hg := by
+    simp only [Set.mem_ofPred_eq] at *
+    refine lt_of_le_of_lt ?_ (ENNReal.mul_lt_top hf hg)
+    refine le_trans (le_of_eq (eLpNormEssSup_congr_ae (AEEqFun.coeFn_mul f g))) ?_
+    exact essSup_mul_le _ _
+  add_mem' {f g} hf hg := by
+    simp only [Set.mem_ofPred_eq] at *
+    refine lt_of_le_of_lt ?_ (ENNReal.add_lt_top.2 ⟨hf, hg⟩)
+    refine le_trans (le_of_eq (eLpNormEssSup_congr_ae (AEEqFun.coeFn_add f g))) ?_
+    rw [eLpNormEssSup_eq_essSup_enorm]
+    refine essSup_le_of_ae_le _ ?_
+    filter_upwards [ENNReal.ae_le_essSup (fun x => ‖f x‖ₑ) (μ := μ),
+      ENNReal.ae_le_essSup (fun x => ‖g x‖ₑ) (μ := μ)] with x h1 h2
+    exact le_trans (enorm_add_le _ _) (add_le_add h1 h2)
+  zero_mem' := by
+    simp only [Set.mem_ofPred_eq]
+    rw [eLpNormEssSup_congr_ae (AEEqFun.coeFn_zero (β := ℂ) (μ := μ))]
+    simp
+  one_mem' := by
+    simp only [Set.mem_ofPred_eq]
+    refine lt_of_le_of_lt (le_of_eq (eLpNormEssSup_congr_ae (AEEqFun.coeFn_one (β := ℂ) (μ := μ)))) ?_
+    exact lt_of_le_of_lt (eLpNormEssSup_le_of_ae_enorm_bound (C := ‖(1:ℂ)‖ₑ)
+      (by filter_upwards with x; simp)) (by simp)
+  algebraMap_mem' r := by
+    simp only [Set.mem_ofPred_eq]
+    refine lt_of_le_of_lt (eLpNormEssSup_le_of_ae_enorm_bound (C := ‖r‖ₑ) ?_) (by simp)
+    have : (algebraMap ℂ (X →ₘ[μ] ℂ) r) = r • (1 : X →ₘ[μ] ℂ) := by
+      rw [Algebra.algebraMap_eq_smul_one]
+    rw [this]
+    filter_upwards [AEEqFun.coeFn_smul r (1 : X →ₘ[μ] ℂ), AEEqFun.coeFn_one (β := ℂ) (μ := μ)] with x h1 h2
+    simp [h1, h2]
+  star_mem' {f} hf := by
+    simp only [Set.mem_ofPred_eq] at *
+    refine lt_of_le_of_lt (le_of_eq (eLpNormEssSup_congr_ae (AEEqFun.coeFn_star f))) ?_
+    rw [show eLpNormEssSup (star (f : X → ℂ)) μ = eLpNormEssSup (f : X → ℂ) μ from ?_]
+    · exact hf
+    · rw [eLpNormEssSup_eq_essSup_enorm, eLpNormEssSup_eq_essSup_enorm]
+      congr 1
+      funext x
+      simp
+
+/-! ### `L^∞(X)` as a commutative C*-algebra -/
+
+private theorem linfty_mem {f : X →ₘ[μ] ℂ} (hf : f ∈ LinftySub μ) :
+    eLpNormEssSup (f : X → ℂ) μ < ∞ := hf
+
+variable (μ) in
+private def toLpHom : ↥(LinftySub μ) →+ Lp ℂ ∞ μ where
+  toFun a := ⟨(a : X →ₘ[μ] ℂ), by
+    rw [Lp.mem_Lp_iff_eLpNorm_lt_top, eLpNorm_exponent_top]
+    exact linfty_mem a.2⟩
+  map_zero' := rfl
+  map_add' _ _ := rfl
+
+private theorem toLpHom_injective : Function.Injective (toLpHom μ) :=
+  fun _ _ h => Subtype.ext (congrArg Subtype.val h)
+
+private theorem toLpHom_surjective : Function.Surjective (toLpHom μ) := by
+  rintro ⟨f, hf⟩
+  refine ⟨⟨f, ?_⟩, rfl⟩
+  rw [Lp.mem_Lp_iff_eLpNorm_lt_top, eLpNorm_exponent_top] at hf
+  exact hf
+
+private noncomputable instance : NormedAddCommGroup ↥(LinftySub μ) :=
+  NormedAddCommGroup.induced _ _ (toLpHom μ) toLpHom_injective
+
+private theorem norm_linfty (a : ↥(LinftySub μ)) :
+    ‖a‖ = (eLpNormEssSup ((a : X →ₘ[μ] ℂ) : X → ℂ) μ).toReal := by
+  change ‖toLpHom μ a‖ = _
+  rw [Lp.norm_def, eLpNorm_exponent_top]
+  rfl
+
+private noncomputable instance : NormedCommRing ↥(LinftySub μ) where
+  __ := (inferInstance : NormedAddCommGroup ↥(LinftySub μ))
+  __ := (inferInstance : CommRing ↥(LinftySub μ))
+  norm_mul_le a b := by
+    rw [norm_linfty, norm_linfty, norm_linfty, ← ENNReal.toReal_mul]
+    refine ENNReal.toReal_mono (by exact ENNReal.mul_ne_top (linfty_mem a.2).ne (linfty_mem b.2).ne) ?_
+    refine le_trans (le_of_eq (eLpNormEssSup_congr_ae ?_)) (essSup_mul_le _ _)
+    exact AEEqFun.coeFn_mul (a : X →ₘ[μ] ℂ) (b : X →ₘ[μ] ℂ)
+
+private theorem fact_one_le_top : Fact (1 ≤ (∞ : ℝ≥0∞)) := ⟨le_top⟩
+
+attribute [local instance] fact_one_le_top
+
+private theorem isometry_toLpHom : Isometry (toLpHom (X := X) μ) :=
+  AddMonoidHomClass.isometry_of_norm (toLpHom μ) (fun _ => rfl)
+
+private instance : CompleteSpace ↥(LinftySub μ) := by
+  refine (isometry_toLpHom (X := X) (μ := μ)).isUniformInducing.completeSpace ?_
+  rw [(toLpHom_surjective (X := X) (μ := μ)).range_eq]
+  exact isComplete_univ
+
+private instance : CStarRing ↥(LinftySub μ) where
+  norm_mul_self_le a := by
+    rw [norm_linfty, norm_linfty, ← ENNReal.toReal_mul]
+    refine ENNReal.toReal_mono (linfty_mem (star a * a).2).ne ?_
+    refine le_trans (essSup_mul_self_ge _) (le_of_eq (eLpNormEssSup_congr_ae ?_))
+    filter_upwards [AEEqFun.coeFn_mul (star a : X →ₘ[μ] ℂ) (a : X →ₘ[μ] ℂ),
+      AEEqFun.coeFn_star (a : X →ₘ[μ] ℂ)] with x h1 h2
+    rw [show ((star a * a : ↥(LinftySub μ)) : X →ₘ[μ] ℂ)
+        = star (a : X →ₘ[μ] ℂ) * (a : X →ₘ[μ] ℂ) from rfl, h1]
+    simp [h2]
+
+private noncomputable instance : NormedAlgebra ℂ ↥(LinftySub μ) where
+  __ := (inferInstance : Algebra ℂ ↥(LinftySub μ))
+  norm_smul_le r a := by
+    have h1 : eLpNormEssSup (((r • a : ↥(LinftySub μ)) : X →ₘ[μ] ℂ) : X → ℂ) μ
+        ≤ ‖r‖ₑ * eLpNormEssSup ((a : X →ₘ[μ] ℂ) : X → ℂ) μ := by
+      rw [show ((r • a : ↥(LinftySub μ)) : X →ₘ[μ] ℂ) = r • (a : X →ₘ[μ] ℂ) from rfl,
+        eLpNormEssSup_congr_ae (AEEqFun.coeFn_smul r (a : X →ₘ[μ] ℂ))]
+      exact eLpNormEssSup_const_smul_le
+    rw [norm_linfty, norm_linfty]
+    refine le_trans (ENNReal.toReal_mono ?_ h1) ?_
+    · exact ENNReal.mul_ne_top (by simp) (linfty_mem a.2).ne
+    · rw [ENNReal.toReal_mul]
+      simp
+
+private noncomputable instance : CommCStarAlgebra ↥(LinftySub μ) where
+
+/-! ### The a.e.-pointwise order -/
+
+/-- Notation-free access to a representative of an element of `L^∞(X)`. -/
+private noncomputable def rep (a : ↥(LinftySub μ)) : X → ℂ := ((a : X →ₘ[μ] ℂ) : X → ℂ)
+
+private theorem rep_add (a b : ↥(LinftySub μ)) : rep (a + b) =ᵐ[μ] rep a + rep b :=
+  AEEqFun.coeFn_add (a : X →ₘ[μ] ℂ) (b : X →ₘ[μ] ℂ)
+
+private theorem rep_mul (a b : ↥(LinftySub μ)) : rep (a * b) =ᵐ[μ] rep a * rep b :=
+  AEEqFun.coeFn_mul (a : X →ₘ[μ] ℂ) (b : X →ₘ[μ] ℂ)
+
+private theorem rep_star (a : ↥(LinftySub μ)) : rep (star a) =ᵐ[μ] star (rep a) :=
+  AEEqFun.coeFn_star (a : X →ₘ[μ] ℂ)
+
+private theorem rep_zero : rep (0 : ↥(LinftySub μ)) =ᵐ[μ] 0 :=
+  AEEqFun.coeFn_zero (β := ℂ) (μ := μ)
+
+private theorem rep_one : rep (1 : ↥(LinftySub μ)) =ᵐ[μ] 1 :=
+  AEEqFun.coeFn_one (β := ℂ) (μ := μ)
+
+private theorem rep_smul (r : ℂ) (a : ↥(LinftySub μ)) : rep (r • a) =ᵐ[μ] r • rep a :=
+  AEEqFun.coeFn_smul r (a : X →ₘ[μ] ℂ)
+
+private theorem rep_injective {a b : ↥(LinftySub μ)} (h : rep a =ᵐ[μ] rep b) : a = b :=
+  Subtype.ext (AEEqFun.ext h)
+
+private theorem rep_essSup_lt_top (a : ↥(LinftySub μ)) : eLpNormEssSup (rep a) μ < ∞ :=
+  linfty_mem a.2
+
+noncomputable example : PartialOrder ↥(LinftySub μ) := inferInstance
+
+private theorem linfty_le_iff {a b : ↥(LinftySub μ)} :
+    a ≤ b ↔ ∀ᵐ x ∂μ, rep a x ≤ rep b x := by
+  rw [← Subtype.coe_le_coe, ← AEEqFun.coeFn_le]
+  rfl
+
+private theorem continuous_csqrt : Continuous (fun z : ℂ => ((Real.sqrt z.re : ℝ) : ℂ)) := by
+  fun_prop
+
+/-- The pointwise square root of a nonnegative element of `L^∞(X)`. -/
+private noncomputable def sqrtLinfty (a : ↥(LinftySub μ)) : ↥(LinftySub μ) := by
+  refine ⟨AEEqFun.comp (fun z : ℂ => ((Real.sqrt z.re : ℝ) : ℂ)) continuous_csqrt
+    (a : X →ₘ[μ] ℂ), ?_⟩
+  change eLpNormEssSup _ μ < ∞
+  rw [eLpNormEssSup_congr_ae (AEEqFun.coeFn_comp _ _ _)]
+  refine lt_of_le_of_lt (eLpNormEssSup_le_of_ae_enorm_bound
+    (C := (eLpNormEssSup (rep a) μ) ^ (1/2 : ℝ)) ?_) ?_
+  · filter_upwards [ENNReal.ae_le_essSup (fun x => ‖rep a x‖ₑ) (μ := μ)] with x hx
+    refine enn_le_half ?_
+    have h1 : ‖((Real.sqrt (rep a x).re : ℝ) : ℂ)‖ₑ * ‖((Real.sqrt (rep a x).re : ℝ) : ℂ)‖ₑ
+        ≤ ‖rep a x‖ₑ := by
+      have h2 : ‖((Real.sqrt (rep a x).re : ℝ) : ℂ)‖ = Real.sqrt (rep a x).re := by
+        simp [Real.norm_eq_abs, abs_of_nonneg (Real.sqrt_nonneg _)]
+      have h3 : Real.sqrt (rep a x).re * Real.sqrt (rep a x).re ≤ ‖rep a x‖ := by
+        rcases le_or_gt (rep a x).re 0 with h | h
+        · simp [Real.sqrt_eq_zero_of_nonpos h]
+        · rw [Real.mul_self_sqrt h.le]
+          exact (Complex.abs_re_le_norm _).trans' (le_abs_self _)
+      calc ‖((Real.sqrt (rep a x).re : ℝ) : ℂ)‖ₑ * ‖((Real.sqrt (rep a x).re : ℝ) : ℂ)‖ₑ
+          = ENNReal.ofReal (Real.sqrt (rep a x).re * Real.sqrt (rep a x).re) := by
+            rw [ENNReal.ofReal_mul (Real.sqrt_nonneg _), ← ofReal_norm, h2]
+        _ ≤ ‖rep a x‖ₑ := by
+            rw [← ofReal_norm]
+            exact ENNReal.ofReal_le_ofReal h3
+    exact h1.trans hx
+  · exact ENNReal.rpow_lt_top_of_nonneg (by norm_num) (rep_essSup_lt_top a).ne
+
+private theorem rep_sub (a b : ↥(LinftySub μ)) : rep (a - b) =ᵐ[μ] rep a - rep b :=
+  AEEqFun.coeFn_sub (a : X →ₘ[μ] ℂ) (b : X →ₘ[μ] ℂ)
+
+private theorem rep_sqrt (a : ↥(LinftySub μ)) :
+    rep (sqrtLinfty a) =ᵐ[μ] fun x => ((Real.sqrt (rep a x).re : ℝ) : ℂ) :=
+  AEEqFun.coeFn_comp _ continuous_csqrt _
+
+private theorem star_sqrt_mul_sqrt {a : ↥(LinftySub μ)} (ha : ∀ᵐ x ∂μ, 0 ≤ rep a x) :
+    star (sqrtLinfty a) * sqrtLinfty a = a := by
+  refine rep_injective ?_
+  filter_upwards [rep_mul (star (sqrtLinfty a)) (sqrtLinfty a), rep_star (sqrtLinfty a),
+    rep_sqrt a, ha] with x h1 h2 h3 h4
+  rw [h1]
+  simp only [Pi.mul_apply, h2, Pi.star_apply, h3]
+  rw [Complex.le_def] at h4
+  simp only [Complex.zero_re, Complex.zero_im] at h4
+  rw [show star ((Real.sqrt (rep a x).re : ℝ) : ℂ) = ((Real.sqrt (rep a x).re : ℝ) : ℂ) by simp,
+    ← Complex.ofReal_mul, Real.mul_self_sqrt h4.1]
+  simp [Complex.ext_iff, ← h4.2]
+
+private theorem star_mul_self_nonneg_rep (s : ↥(LinftySub μ)) :
+    ∀ᵐ x ∂μ, 0 ≤ rep (star s * s) x := by
+  filter_upwards [rep_mul (star s) s, rep_star s] with x h1 h2
+  rw [h1]
+  simp only [Pi.mul_apply, h2, Pi.star_apply, RCLike.star_def]
+  rw [mul_comm, Complex.mul_conj]
+  simp [Complex.le_def, Complex.normSq_nonneg]
+
+private noncomputable instance : StarOrderedRing ↥(LinftySub μ) :=
+  StarOrderedRing.of_le_iff <| by
+    intro x y
+    constructor
+    · intro h
+      refine ⟨sqrtLinfty (y - x), ?_⟩
+      have hnn : ∀ᵐ t ∂μ, 0 ≤ rep (y - x) t := by
+        filter_upwards [linfty_le_iff.mp h, rep_sub y x] with t h1 h2
+        rw [h2]
+        simpa using sub_nonneg.mpr h1
+      rw [star_sqrt_mul_sqrt hnn]
+      ring
+    · rintro ⟨s, rfl⟩
+      rw [linfty_le_iff]
+      filter_upwards [rep_add x (star s * s), star_mul_self_nonneg_rep s] with t h1 h2
+      rw [h1]
+      simpa using h2
+
+/-! ### The quotient map `q` -/
+
+private theorem memLp_of_isBoundedMeasurable {f : X → ℂ} (hf : IsBoundedMeasurable X f) :
+    MemLp f ∞ μ := by
+  obtain ⟨hm, C, hC⟩ := hf
+  exact memLp_top_of_bound hm.aestronglyMeasurable C (.of_forall hC)
+
+open Classical in
+variable (μ) in
+/-- The quotient map from bounded measurable functions to `L^∞(X)`. -/
+private noncomputable def qmap (f : X → ℂ) : ↥(LinftySub μ) :=
+  if h : MemLp f ∞ μ then ⟨AEEqFun.mk f h.1, by
+    change eLpNormEssSup _ μ < ∞
+    rw [eLpNormEssSup_congr_ae (AEEqFun.coeFn_mk f h.1), ← eLpNorm_exponent_top]
+    exact h.2⟩
+  else 0
+
+private theorem rep_qmap {f : X → ℂ} (hf : MemLp f ∞ μ) : rep (qmap μ f) =ᵐ[μ] f := by
+  rw [qmap]
+  simp only [hf, ↓reduceDIte]
+  exact AEEqFun.coeFn_mk f hf.1
+
+private theorem qmap_eq_iff {f : X → ℂ} (hf : MemLp f ∞ μ) {y : ↥(LinftySub μ)} :
+    qmap μ f = y ↔ f =ᵐ[μ] rep y := by
+  constructor
+  · rintro rfl; exact (rep_qmap hf).symm
+  · rintro h; exact rep_injective ((rep_qmap hf).trans h)
+
+private theorem qmap_surjective (y : ↥(LinftySub μ)) :
+    ∃ f, IsBoundedMeasurable X f ∧ qmap μ f = y := by
+  set g : X → ℂ := rep y with hg
+  have hgm : Measurable g := (AEEqFun.stronglyMeasurable (y : X →ₘ[μ] ℂ)).measurable
+  set M : ℝ := (eLpNormEssSup g μ).toReal with hM
+  have hMnn : 0 ≤ M := ENNReal.toReal_nonneg
+  have hbdd : ∀ᵐ x ∂μ, ‖g x‖ ≤ M := by
+    filter_upwards [ENNReal.ae_le_essSup (fun x => ‖g x‖ₑ) (μ := μ)] with x hx
+    have := ENNReal.toReal_mono (rep_essSup_lt_top y).ne hx
+    simpa using this
+  refine ⟨fun x => if ‖g x‖ ≤ M then g x else 0, ⟨?_, M, ?_⟩, ?_⟩
+  · exact Measurable.ite (measurableSet_le hgm.norm measurable_const) hgm measurable_const
+  · intro x
+    by_cases h : ‖g x‖ ≤ M <;> simp [h, hMnn]
+  · refine (qmap_eq_iff ?_).mpr ?_
+    · refine memLp_top_of_bound ?_ M (.of_forall ?_)
+      · exact (Measurable.ite (measurableSet_le hgm.norm measurable_const) hgm
+          measurable_const).aestronglyMeasurable
+      · intro x; by_cases h : ‖g x‖ ≤ M <;> simp [h, hMnn]
+    · filter_upwards [hbdd] with x hx
+      simp only [hx, ↓reduceIte]
+      exact congrFun hg x
+
+/-! ### Integration -/
+
+private theorem memLp_rep (a : ↥(LinftySub μ)) : MemLp (rep a) ∞ μ :=
+  ⟨AEEqFun.aestronglyMeasurable _, by rw [eLpNorm_exponent_top]; exact rep_essSup_lt_top a⟩
+
+variable [IsFiniteMeasure μ]
+
+private theorem integrable_rep (a : ↥(LinftySub μ)) : Integrable (rep a) μ :=
+  (memLp_rep a).integrable le_top
+
+/-- Integration on `L^∞(X)`. -/
+private noncomputable def tauFun (a : ↥(LinftySub μ)) : ℂ := ∫ x, rep a x ∂μ
+
+omit [IsFiniteMeasure μ] in
+private theorem tauFun_congr {a : ↥(LinftySub μ)} {f : X → ℂ} (h : rep a =ᵐ[μ] f) :
+    tauFun a = ∫ x, f x ∂μ := integral_congr_ae h
+
+private noncomputable def tauMap : (↥(LinftySub μ)) →ₚ[ℂ] ℂ where
+  toFun := tauFun
+  map_add' a b := by
+    rw [tauFun, tauFun, tauFun, integral_congr_ae (rep_add a b)]
+    exact integral_add (integrable_rep a) (integrable_rep b)
+  map_smul' r a := by
+    rw [RingHom.id_apply, tauFun, tauFun, integral_congr_ae (rep_smul r a), smul_eq_mul]
+    simpa using integral_smul r (rep a)
+  monotone' a b hab := by
+    refine integral_mono_ae (integrable_rep a) (integrable_rep b) ?_
+    exact linfty_le_iff.mp hab
+
+private theorem tau_re (a : ↥(LinftySub μ)) : (tauFun a).re = ∫ x, (rep a x).re ∂μ :=
+  (ContinuousLinearMap.integral_comp_comm Complex.reCLM (integrable_rep a)).symm
+
+private theorem tau_im (a : ↥(LinftySub μ)) : (tauFun a).im = ∫ x, (rep a x).im ∂μ :=
+  (ContinuousLinearMap.integral_comp_comm Complex.imCLM (integrable_rep a)).symm
+
+private theorem tau_ofReal (a : ↥(LinftySub μ)) (ha : ∀ᵐ x ∂μ, (rep a x).im = 0) :
+    tauFun a = ((∫ x, (rep a x).re ∂μ : ℝ) : ℂ) := by
+  refine Complex.ext ?_ ?_
+  · rw [Complex.ofReal_re, tau_re]
+  · rw [Complex.ofReal_im, tau_im, integral_congr_ae (g := fun _ => (0:ℝ)) ha, integral_zero]
+
+private theorem tau_faithful (a : ↥(LinftySub μ)) (ha : 0 ≤ a) (h : tauFun a = 0) : a = 0 := by
+  have hnn : ∀ᵐ x ∂μ, 0 ≤ rep a x := by
+    filter_upwards [linfty_le_iff.mp ha, rep_zero (μ := μ)] with x h1 h2
+    rwa [h2] at h1
+  have hre : ∀ᵐ x ∂μ, (0:ℝ) ≤ (rep a x).re := by
+    filter_upwards [hnn] with x hx using (Complex.le_def.mp hx).1
+  have hint : ∫ x, (rep a x).re ∂μ = 0 := by
+    have := congrArg Complex.re h
+    rwa [tau_re, Complex.zero_re] at this
+  have hzero := (integral_eq_zero_iff_of_nonneg_ae hre
+    ((integrable_rep a).re)).mp hint
+  refine rep_injective ?_
+  filter_upwards [hnn, hzero, rep_zero (μ := μ)] with x h1 h2 h3
+  rw [h3]
+  refine Complex.ext ?_ ?_
+  · simpa using h2
+  · simpa using ((Complex.le_def.mp h1).2).symm
+
+/-! ### Bounded ascending sequences -/
+
+omit [IsFiniteMeasure μ] in
+private theorem rep_ae_bound (a : ↥(LinftySub μ)) : ∀ᵐ x ∂μ, ‖rep a x‖ ≤ ‖a‖ := by
+  filter_upwards [ENNReal.ae_le_essSup (fun x => ‖rep a x‖ₑ) (μ := μ)] with x hx
+  rw [norm_linfty]
+  have h2 := ENNReal.toReal_mono (rep_essSup_lt_top a).ne hx
+  rw [show ‖rep a x‖ₑ.toReal = ‖rep a x‖ by simp] at h2
+  exact h2
+
+omit [IsFiniteMeasure μ] in
+private theorem isSelfAdjoint_rep {a : ↥(LinftySub μ)} (ha : IsSelfAdjoint a) :
+    ∀ᵐ x ∂μ, (rep a x).im = 0 := by
+  have h : rep (star a) = rep a := congrArg rep ha.star_eq
+  filter_upwards [rep_star a] with x h1
+  have h2 : star (rep a x) = rep a x := by rw [← Pi.star_apply, ← h1, h]
+  exact Complex.conj_eq_iff_im.mp h2
+
+private theorem isLUB_ofReal_seq {f : ℕ → ℝ} {r : ℝ} (h : IsLUB (Set.range f) r) :
+    IsLUB (Set.range fun n => ((f n : ℝ) : ℂ)) (r : ℂ) := by
+  constructor
+  · rintro _ ⟨n, rfl⟩
+    rw [Complex.le_def]
+    exact ⟨by simpa using h.1 ⟨n, rfl⟩, by simp⟩
+  · rintro z hz
+    have h0 := Complex.le_def.mp (hz ⟨0, rfl⟩)
+    rw [Complex.le_def]
+    refine ⟨h.2 ?_, by simpa using h0.2⟩
+    rintro _ ⟨n, rfl⟩
+    simpa using (Complex.le_def.mp (hz ⟨n, rfl⟩)).1
+
+private theorem exists_isLUB_seq (a : ℕ → selfAdjoint ↥(LinftySub μ))
+    (hmono : Monotone a) (hbdd : BddAbove (Set.range a)) :
+    ∃ s : selfAdjoint ↥(LinftySub μ), IsLUB (Set.range a) s ∧
+      IsLUB (Set.range fun n => tauFun (a n : ↥(LinftySub μ)))
+        (tauFun (s : ↥(LinftySub μ))) := by
+  classical
+  obtain ⟨b, hb⟩ := hbdd
+  set g : ℕ → X → ℂ := fun n => rep ((a n : ↥(LinftySub μ))) with hgdef
+  have hgm : ∀ n, Measurable (g n) :=
+    fun n => (AEEqFun.stronglyMeasurable ((a n : ↥(LinftySub μ)) : X →ₘ[μ] ℂ)).measurable
+  have him : ∀ᵐ x ∂μ, ∀ n, (g n x).im = 0 := by
+    rw [ae_all_iff]; intro n; exact isSelfAdjoint_rep (a n).2
+  have hbim : ∀ᵐ x ∂μ, (rep ((b : ↥(LinftySub μ))) x).im = 0 := isSelfAdjoint_rep b.2
+  have hstep : ∀ᵐ x ∂μ, ∀ n, (g n x).re ≤ (g (n+1) x).re := by
+    rw [ae_all_iff]; intro n
+    filter_upwards [linfty_le_iff.mp (Subtype.coe_le_coe.mpr (hmono (Nat.le_succ n)))] with x hx
+    exact (Complex.le_def.mp hx).1
+  have hupper : ∀ᵐ x ∂μ, ∀ n, (g n x).re ≤ (rep ((b : ↥(LinftySub μ))) x).re := by
+    rw [ae_all_iff]; intro n
+    filter_upwards [linfty_le_iff.mp (Subtype.coe_le_coe.mpr (hb ⟨n, rfl⟩))] with x hx
+    exact (Complex.le_def.mp hx).1
+  set h : X → ℝ := fun x => ⨆ n, (g n x).re with hhdef
+  have hhm : Measurable h := Measurable.iSup (fun n => by
+    simpa [RCLike.re_to_complex] using (hgm n).re)
+  -- the good set
+  have hgood : ∀ᵐ x ∂μ, (Monotone fun n => (g n x).re) ∧
+      BddAbove (Set.range fun n => (g n x).re) := by
+    filter_upwards [hstep, hupper] with x h1 h2
+    exact ⟨monotone_nat_of_le_succ h1, ⟨(rep ((b : ↥(LinftySub μ))) x).re, by
+      rintro _ ⟨n, rfl⟩; exact h2 n⟩⟩
+  have hbound : ∀ᵐ x ∂μ, ‖(h x : ℂ)‖ ≤ ‖(a 0 : ↥(LinftySub μ))‖ + ‖(b : ↥(LinftySub μ))‖ := by
+    filter_upwards [hgood, hupper, rep_ae_bound ((a 0 : ↥(LinftySub μ))),
+      rep_ae_bound ((b : ↥(LinftySub μ)))] with x hx h2 h3 h4
+    have hlow : (g 0 x).re ≤ h x := le_ciSup hx.2 0
+    have hhigh : h x ≤ (rep ((b : ↥(LinftySub μ))) x).re := ciSup_le (fun n => h2 n)
+    have e1 : (g 0 x).re ≥ -‖(a 0 : ↥(LinftySub μ))‖ := by
+      have := (Complex.abs_re_le_norm (g 0 x)).trans h3
+      cases abs_le.mp this with | intro l r => exact l
+    have e2 : (rep ((b : ↥(LinftySub μ))) x).re ≤ ‖(b : ↥(LinftySub μ))‖ :=
+      (Complex.abs_re_le_norm _).trans' (le_abs_self _) |>.trans h4
+    rw [Complex.norm_real, Real.norm_eq_abs, abs_le]
+    constructor
+    · have : -‖(a 0 : ↥(LinftySub μ))‖ ≤ h x := e1.trans hlow
+      linarith [norm_nonneg ((b : ↥(LinftySub μ)))]
+    · have : h x ≤ ‖(b : ↥(LinftySub μ))‖ := hhigh.trans e2
+      linarith [norm_nonneg ((a 0 : ↥(LinftySub μ)))]
+  have hmem : MemLp (fun x => (h x : ℂ)) ∞ μ :=
+    memLp_top_of_bound (by fun_prop) _ hbound
+  set s0 : ↥(LinftySub μ) := qmap μ (fun x => (h x : ℂ)) with hs0
+  have hreps : rep s0 =ᵐ[μ] fun x => (h x : ℂ) := rep_qmap hmem
+  have hsa : IsSelfAdjoint s0 := by
+    refine rep_injective ?_
+    filter_upwards [rep_star s0, hreps] with x h1 h2
+    rw [h1]
+    simp [h2]
+  refine ⟨⟨s0, hsa⟩, ⟨?_, ?_⟩, ?_⟩
+  · rintro _ ⟨n, rfl⟩
+    rw [← Subtype.coe_le_coe, linfty_le_iff]
+    filter_upwards [hgood, hreps, him] with x hx h2 h3
+    rw [h2, Complex.le_def]
+    exact ⟨le_ciSup hx.2 n, by rw [Complex.ofReal_im]; exact h3 n⟩
+  · intro c hc
+    rw [← Subtype.coe_le_coe, linfty_le_iff]
+    have hcn : ∀ n, ∀ᵐ x ∂μ, (g n x).re ≤ (rep ((c : ↥(LinftySub μ))) x).re := by
+      intro n
+      filter_upwards [linfty_le_iff.mp (Subtype.coe_le_coe.mpr (hc ⟨n, rfl⟩))] with x hx
+      exact (Complex.le_def.mp hx).1
+    rw [← ae_all_iff] at hcn
+    filter_upwards [hcn, hreps, isSelfAdjoint_rep c.2] with x h1 h2 h3
+    rw [h2, Complex.le_def]
+    exact ⟨ciSup_le h1, by simp [h3]⟩
+  · -- the integral part
+    have hint : ∀ n, Integrable (fun x => (g n x).re) μ := fun n => by
+      simpa [RCLike.re_to_complex] using (integrable_rep ((a n : ↥(LinftySub μ)))).re
+    have hinth : Integrable h μ := by
+      refine Integrable.congr (f := fun x => (rep s0 x).re) ?_ ?_
+      · simpa [RCLike.re_to_complex] using (integrable_rep s0).re
+      · filter_upwards [hreps] with x hx using by simp [hx]
+    have htend : Tendsto (fun n => ∫ x, (g n x).re ∂μ) atTop (𝓝 (∫ x, h x ∂μ)) := by
+      refine integral_tendsto_of_tendsto_of_monotone hint hinth ?_ ?_
+      · filter_upwards [hgood] with x hx using hx.1
+      · filter_upwards [hgood] with x hx using tendsto_atTop_ciSup hx.1 hx.2
+    have hmono2 : Monotone fun n => ∫ x, (g n x).re ∂μ := by
+      intro m n hmn
+      refine integral_mono_ae (hint m) (hint n) ?_
+      filter_upwards [linfty_le_iff.mp (Subtype.coe_le_coe.mpr (hmono hmn))] with x hx
+      exact (Complex.le_def.mp hx).1
+    have hlub := isLUB_of_tendsto_atTop hmono2 htend
+    have heq1 : ∀ n, tauFun ((a n : ↥(LinftySub μ))) = ((∫ x, (g n x).re ∂μ : ℝ) : ℂ) :=
+      fun n => tau_ofReal _ (by filter_upwards [him] with x hx using hx n)
+    have heq2 : tauFun s0 = ((∫ x, h x ∂μ : ℝ) : ℂ) := by
+      rw [tau_ofReal s0 (by filter_upwards [hreps] with x hx using by simp [hx])]
+      congr 1
+      refine integral_congr_ae ?_
+      filter_upwards [hreps] with x hx using by simp [hx]
+    simp only [heq1, heq2]
+    exact isLUB_ofReal_seq hlub
+
+/-! ### `q` is a ∗-homomorphism -/
+
+omit [IsFiniteMeasure μ] in
+private theorem bm_add {f g : X → ℂ} (hf : IsBoundedMeasurable X f)
+    (hg : IsBoundedMeasurable X g) : IsBoundedMeasurable X (f + g) := by
+  obtain ⟨hfm, Cf, hCf⟩ := hf
+  obtain ⟨hgm, Cg, hCg⟩ := hg
+  exact ⟨hfm.add hgm, Cf + Cg, fun x => (norm_add_le _ _).trans (add_le_add (hCf x) (hCg x))⟩
+
+omit [IsFiniteMeasure μ] in
+private theorem bm_mul {f g : X → ℂ} (hf : IsBoundedMeasurable X f)
+    (hg : IsBoundedMeasurable X g) : IsBoundedMeasurable X (f * g) := by
+  obtain ⟨hfm, Cf, hCf⟩ := hf
+  obtain ⟨hgm, Cg, hCg⟩ := hg
+  refine ⟨hfm.mul hgm, max Cf 0 * max Cg 0, fun x => ?_⟩
+  rw [Pi.mul_apply, norm_mul]
+  exact mul_le_mul ((hCf x).trans (le_max_left _ _)) ((hCg x).trans (le_max_left _ _))
+    (norm_nonneg _) (le_max_right _ _)
+
+omit [IsFiniteMeasure μ] in
+private theorem bm_star {f : X → ℂ} (hf : IsBoundedMeasurable X f) :
+    IsBoundedMeasurable X (star f) := by
+  obtain ⟨hfm, Cf, hCf⟩ := hf
+  exact ⟨(Complex.continuous_conj.measurable).comp hfm, Cf, fun x => by simpa using hCf x⟩
+
+omit [IsFiniteMeasure μ] in
+private theorem bm_one : IsBoundedMeasurable X (1 : X → ℂ) :=
+  ⟨measurable_const, 1, fun x => by simp⟩
+
+omit [IsFiniteMeasure μ] in
+private theorem qmap_add {f g : X → ℂ} (hf : IsBoundedMeasurable X f)
+    (hg : IsBoundedMeasurable X g) : qmap μ (f + g) = qmap μ f + qmap μ g := by
+  refine rep_injective ?_
+  filter_upwards [rep_qmap (memLp_of_isBoundedMeasurable (bm_add hf hg)),
+    rep_add (qmap μ f) (qmap μ g), rep_qmap (memLp_of_isBoundedMeasurable hf),
+    rep_qmap (memLp_of_isBoundedMeasurable hg)] with x h1 h2 h3 h4
+  rw [h1, h2]
+  simp [h3, h4]
+
+omit [IsFiniteMeasure μ] in
+private theorem qmap_mul {f g : X → ℂ} (hf : IsBoundedMeasurable X f)
+    (hg : IsBoundedMeasurable X g) : qmap μ (f * g) = qmap μ f * qmap μ g := by
+  refine rep_injective ?_
+  filter_upwards [rep_qmap (memLp_of_isBoundedMeasurable (bm_mul hf hg)),
+    rep_mul (qmap μ f) (qmap μ g), rep_qmap (memLp_of_isBoundedMeasurable hf),
+    rep_qmap (memLp_of_isBoundedMeasurable hg)] with x h1 h2 h3 h4
+  rw [h1, h2]
+  simp [h3, h4]
+
+omit [IsFiniteMeasure μ] in
+private theorem qmap_star {f : X → ℂ} (hf : IsBoundedMeasurable X f) :
+    qmap μ (star f) = star (qmap μ f) := by
+  refine rep_injective ?_
+  filter_upwards [rep_qmap (memLp_of_isBoundedMeasurable (bm_star hf)),
+    rep_star (qmap μ f), rep_qmap (memLp_of_isBoundedMeasurable hf)] with x h1 h2 h3
+  rw [h1, h2]
+  simp [h3]
+
+omit [IsFiniteMeasure μ] in
+private theorem qmap_one : qmap μ (1 : X → ℂ) = 1 := by
+  refine rep_injective ?_
+  filter_upwards [rep_qmap (memLp_of_isBoundedMeasurable (bm_one (X := X))),
+    rep_one (μ := μ)] with x h1 h2
+  rw [h1, h2]
+
+omit [IsFiniteMeasure μ] in
+private theorem qmap_eq_zero_iff {f : X → ℂ} (hf : IsBoundedMeasurable X f) :
+    qmap μ f = 0 ↔ f =ᵐ[μ] 0 := by
+  rw [qmap_eq_iff (memLp_of_isBoundedMeasurable hf)]
+  constructor
+  · intro h; filter_upwards [h, rep_zero (μ := μ)] with x h1 h2 using by rw [h1, h2]
+  · intro h; filter_upwards [h, rep_zero (μ := μ)] with x h1 h2 using by rw [h1, h2]
+
+omit [IsFiniteMeasure μ] in
+private theorem tau_qmap {f : X → ℂ} (hf : IsBoundedMeasurable X f) :
+    tauFun (qmap μ f) = ∫ x, f x ∂μ :=
+  tauFun_congr (rep_qmap (memLp_of_isBoundedMeasurable hf))
+
+end LinftyConstruction
+
+end LinftyConstruction
+
 /-- **51IX** (`Linfty-vn`, vn.tex:1638, Corollary): for a finite complete
 measure space `X`, the C*-algebra `L^∞(X)` — bounded measurable functions
 modulo equality almost everywhere — is a commutative von Neumann algebra on
@@ -5624,8 +6327,20 @@ theorem Linfty_vn (X : Type u) [MeasurableSpace X] (μ : Measure X)
       -- integration descends to a faithful normal positive functional:
       (∃ τ' : NPFunctional 𝒜, ⇑τ' = τ) ∧
       (∀ y : 𝒜, 0 ≤ y → τ y = 0 → y = 0) ∧
-      (∀ f, IsBoundedMeasurable X f → τ (q f) = ∫ x, f x ∂μ) :=
-  sorry
+      (∀ f, IsBoundedMeasurable X f → τ (q f) = ∫ x, f x ∂μ) := by
+  open LinftyConstruction in
+  have hfaith : ∀ a : ↥(LinftySub μ), 0 ≤ a → tauMap a = 0 → a = 0 := tau_faithful
+  have hsup : ∀ a : ℕ → selfAdjoint ↥(LinftySub μ), Monotone a → BddAbove (Set.range a) →
+      ∃ s : selfAdjoint ↥(LinftySub μ), IsLUB (Set.range a) s ∧
+        IsLUB (Set.range fun n => tauMap (a n : ↥(LinftySub μ)))
+          (tauMap (s : ↥(LinftySub μ))) := exists_isLUB_seq
+  have hvn : VonNeumannAlgebra ↥(LinftySub μ) :=
+    vna_of_faithful_countably_normal_1 tauMap hfaith hsup
+  refine ⟨↥(LinftySub μ), inferInstance, inferInstance, inferInstance, qmap μ, tauFun,
+    hvn, qmap_surjective, ?_, qmap_one, fun f hf => qmap_eq_zero_iff hf,
+    ⟨⟨tauMap, vna_of_faithful_countably_normal_2 tauMap hfaith hsup⟩, rfl⟩,
+    hfaith, fun f hf => tau_qmap hf⟩
+  exact fun f g hf hg => ⟨qmap_add hf hg, qmap_mul hf hg, qmap_star hf⟩
 
 end Measure
 

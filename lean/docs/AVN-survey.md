@@ -1,19 +1,20 @@
-# `Theses/A/VN/` — full survey of the remaining `sorry`s (updated session 79)
+# `Theses/A/VN/` — full survey of the remaining `sorry`s (updated session 80)
 
-**Headline count: A/VN has 1 code `sorry`** after session 79 (was 3).
+**`Theses/A/VN/` is FINISHED: 0 code `sorry`s** after session 80 (was 1).
 Per file, compiler-counted (`declaration uses 'sorry'` warnings, *not* grep),
 each paired with an error count of **0**:
 
 | file | sorries |
 |---|---|
-| `Basic.lean` | **1** |
+| `Basic.lean` | **0** |
 | `Projections.lean` | **0** |
 | `Division.lean` | **0** |
 | `NormalFunctionals.lean` | **0** |
 | `Completeness.lean` | **0** |
-| **total** | **1** |
+| **total** | **0** |
 
-(Every file compiles with **0 errors**; counts are compiler-counted.)
+(Every file compiles with **0 errors**, and `lake build` of the five
+completes.  Counts are compiler-counted.)
 
 Refresh with (bypasses another agent's `lake build` lock):
 
@@ -27,6 +28,46 @@ done
 
 (This bare `lean` invocation does **not** report `linter.style.show`; only
 `lake build` does.  Check with `lake build` before handing off.)
+
+> **Session 80 headline — 51IX `Linfty_vn` is CLOSED and the chapter is
+> FINISHED.**  `L^∞(X)` is constructed as the star subalgebra `LinftySub μ` of
+> essentially bounded elements of `X →ₘ[μ] ℂ`, and 51IX then falls out of
+> **51VII** `vna_of_faithful_countably_normal_1/2` exactly as the thesis says.
+> `#print axioms`-clean; **~680 lines** against a 400–800 costing, all
+> `private`, in a new `section LinftyConstruction` block.
+>
+> * **The real gap is one level below `Lp`.**  `MeasureTheory.AEEqFun`
+>   (`X →ₘ[μ] ℂ`) has `AddCommGroup`, `CommMonoid`, `Module ℂ`, `Star` and a
+>   partial order but **no distributivity**, so `Semiring (X →ₘ[μ] ℂ)` does not
+>   synthesise.  Four `local`, `private` instances (`CommRing`, `Algebra ℂ`,
+>   `StarRing`, `StarModule ℂ`, ~70 lines) fix that; each axiom is three lines
+>   via `AEEqFun.induction_on` and the `mk_mul_mk`/`mk_eq_mk`/`comp_mk` simp
+>   set.  The three non-`Prop` ones **must** be `@[instance_reducible]`, or
+>   `Module ℂ (X →ₘ[μ] ℂ)` stops being found — the same trap as 84II's
+>   `CStarAlgebra ↥S`.
+> * **Completeness of `L^∞` is free.**  `Lp ℂ ∞ μ`'s carrier is *the same set*
+>   as `LinftySub μ`'s, so `NormedAddCommGroup.induced` along the bijection
+>   `↥(LinftySub μ) →+ Lp ℂ ∞ μ` transports both the essential-sup norm and
+>   `Lp.instCompleteSpace`.  (`Fact (1 ≤ (∞ : ℝ≥0∞))` is supplied as a *local*
+>   instance so it does not leak downstream.)
+> * **The order was already there.**  `Subtype.partialOrder` on
+>   `AEEqFun.instPartialOrder` *is* the a.e.-pointwise order
+>   (`AEEqFun.coeFn_le`), so no `PartialOrder` had to be written and
+>   `CStarAlgebra.spectralOrder` was not needed.  `StarOrderedRing` is
+>   `of_le_iff` with the pointwise `z ↦ (√(z.re) : ℂ)` pushed through
+>   `AEEqFun.comp`.
+> * **`CStarRing` has a single field** in current Mathlib
+>   (`‖x‖ * ‖x‖ ≤ ‖star x * x‖`), so only two `essSup` estimates are needed;
+>   the reverse one comes from `u * u ≤ v → u ≤ v ^ (1/2 : ℝ)` in `ℝ≥0∞`, three
+>   lines of `ENNReal.rpow`, with no case split on `0`/`∞`.
+> * **`hμ : μ.IsComplete` is unused** and does not need to be: `AEEqFun`
+>   already supplies a `StronglyMeasurable` representative, which is the role
+>   completeness plays in vn.tex 51V.  The statement is unchanged.
+> * **QUESTIONS A9's missing `ℂ`-homogeneity did not obstruct the proof** — the
+>   constructed `q` is `ℂ`-linear, so the clause is free if the authors want
+>   it.  A9 stays open (it asks to strengthen a statement).
+> * The session-79 verdict on `A/Proc`'s `exists_contRep` stands: read, not
+>   usable, not used.
 
 > **Session 79 headline — 84bIII and 84bV are CLOSED, `Division.lean` is
 > finished, and A/VN is down to `Basic.lean`'s 51IX alone.**  Both are
@@ -533,14 +574,14 @@ starting.
 
 Locate by name; line numbers are not recorded.
 
-## `Basic.lean` — 1
+## `Basic.lean` — 0
 
-| point | decl | class |
-|---|---|---|
-| **51IX** | `Linfty_vn` | [L] no `L^∞` carrier in Mathlib (FIXME); a construction job, ~400–800 lines, of which the proved 51VII is the last twenty |
+**51IX** `Linfty_vn` was proved in session 80 (see the headline): ~680 lines,
+against the ~400–800 costing recorded here, and the proved 51VII really was
+the last twenty.  The `L^∞` carrier is now built in the file's
+`section LinftyConstruction`.
 
-**54XI**.1/.2/.3 were proved in session 75 (see the headline); the file's
-only remaining item is 51IX, which nothing in `A/VN` needs.
+**54XI**.1/.2/.3 were proved in session 75 (see the headline).
 
 48III and 53III were proved in session 70; 51VII.1/.2, **43II.11** and
 **45I.2** in sessions 71–73 (see the session-73 headline).

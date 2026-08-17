@@ -345,9 +345,15 @@ by adding the field `smul : q (z • f) = z • q f`.  `IsLinftyOf` is otherwise
 field-for-field our 51IX, so the two renderings should agree.
 
 **Question.** May the clause `∀ (z : ℂ) f, IsBoundedMeasurable X f →
-q (z • f) = z • q f` be added to `Linfty_vn`?  It is true of the intended `q`
-and 51IX is still `sorry`, so nothing has to be reproved; but it strengthens a
-statement, which needs a ruling.
+q (z • f) = z • q f` be added to `Linfty_vn`?  It strengthens a statement,
+which needs a ruling.
+
+**Update (2026-08-17, session 80).**  51IX is now **proved**, with the
+statement exactly as it stands, and the omission **did not obstruct the
+proof**: the `q` that is constructed is `f ↦ (MemLp.toLp f)`, which is
+`ℂ`-linear, so the clause above is true of it and would cost one further
+`rep_injective` + `filter_upwards` line.  Adding it therefore requires no
+reproving at all — only the ruling.
 
 ### A2. `parsec-340.60` (34VI.1) is an empty `\TODO{}`
 The solution slot exists but is empty, and it is the *last* entry in
@@ -414,6 +420,15 @@ Recorded here only so they are not re-diagnosed.
   instance carries `Algebra.complexToReal` while `Algebra ℝ (CStarMatrix …)`
   resolves to `CStarMatrix.instAlgebra` — defeq but not syntactically equal.
   Worked around with `letI` throughout; worth filing upstream.
+* **`MeasureTheory.AEEqFun` (`α →ₘ[μ] γ`) has no ring structure.**  It
+  carries `AddCommGroup`, `CommMonoid`, `Module 𝕜`, `Star` and a partial
+  order, but distributivity is never proved, so even
+  `Semiring (X →ₘ[μ] ℂ)` fails to synthesise — and consequently there is no
+  `Algebra`, no `StarRing`, and nothing downstream on `Lp E ∞ μ`.  Supplied
+  locally in `A/VN/Basic.lean`'s `LinftyConstruction` block (four instances,
+  ~70 lines, each axiom three lines via `AEEqFun.induction_on`); worth
+  filing upstream, since it is the only thing standing between Mathlib and a
+  C*-algebra `L^∞(X)`.
 * Mathlib has **no double commutant theorem** (an explicit TODO in its own
   header), **no von Neumann tensor product**, no spatial tensor product, and no
   normal GNS.  Its `VonNeumannAlgebra` is the *concrete* (double-commutant)
