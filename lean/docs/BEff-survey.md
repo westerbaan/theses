@@ -64,6 +64,70 @@
 > `dagger_thm_sufficiency` (220II) is proved.  Only `vn_is_andthen_eff`
 > itself is blocked outside `B/Eff`.
 
+> **Session 85.**  **The uniqueness-of-`I` lemma exists**, axiom-clean, in
+> `VNExamples.lean` (new section after `effectus_vn_partial`, ~330 lines):
+>
+> * `vn_effObj_iso (s : EffectusPartialStructure WStarCPSU.{u}ᵒᵖ)` —
+>   `∃ θ : s.effectus.I ≅ ℂᵤ, ∀ X, s.effectus.one X ≫ θ.hom = suOne X`;
+> * `vn_isTotal_iff` — the corollary every dependant will actually use:
+>   `f ≫ s.effectus.one Y = s.effectus.one X ↔ f.unop 1 = 1`, i.e. **the
+>   total maps of *any* partial-form effectus structure on `vN_cpsuᵒᵖ` are
+>   exactly the ncpu-maps**;
+> * by-products: `vnPartialStructure` (the bundled concrete structure, now
+>   also the proof of `effectus_vn_partial`), and `exists_ncpsu_state` — *a
+>   nontrivial von Neumann algebra carries a normal state, presented as a
+>   unital ncpsu-map `A → ℂᵤ`* — which fills a real API gap (the tree had no
+>   `NPFunctional → NCPSUMap`; `A/Proc/QuantumLambda.lean` had to build the
+>   `NPFunctional → NCPMap` half for itself in session 84).
+>
+> **The recorded route was wrong, and the replacement is shorter.**  Session
+> 84 proposed to cut the circle "`I` is terminal in `Tot`, but `Tot` is
+> defined from `I`" with the `I`-free characterisation *total ⟺ `≼`-maximal*.
+> **That characterisation is false in `vN_cpsuᵒᵖ`**: the unique morphism
+> `X ⟶ 0` into the initial object (the trivial algebra, which *is* an object
+> here) is `≼`-maximal, being the only element of its hom-set, but it is
+> total only if `X` is a zero object.  `Tot` is not needed at all.  What
+> works instead, and is the whole of the proof:
+>
+> 1. `p ⋁ pᗮ = 1` is the *pointwise* sum in the concrete PCM (which is
+>    `s`'s, by `effectusPartialStructure_homPCM_unique`), so every predicate
+>    is dominated **pointwise** by the truth predicate.  This replaces all
+>    reasoning with `≼`.
+> 2. The algebra `A` under `s.effectus.I` is nontrivial, else `𝟙 ℂᵤ = 0` by
+>    `eq_zero_of_one_zero`.
+> 3. So `A` has a normal state `ψ` (`exists_ncpsu_state`); `ψ ≤ φ` pointwise
+>    for `φ := 1_{ℂᵤ}` and `φ(1) ≤ 1 = ψ(1)` force `φ = ψ` and `φ(1) = 1`.
+> 4. **`one_m_is_id` (181XIII) at the effect object itself**: `1_I = 𝟙 I`
+>    says `𝟙` is the greatest element of `vN_cpsu(A, A)`, i.e.
+>    `φ(a)·1 ≤ a` for `a ≥ 0`.  Running that at `a` *and* at `‖a‖·1 − a`
+>    gives `φ(a)·1 ≤ a ≤ φ(a)·1`; `linear_eq_zero_of_nonneg` extends it to
+>    all `a`.  So `A ≅ ℂ` — and this is the one genuinely operator-algebraic
+>    step, three lines once the state is in hand.
+> 5. `1_X(1) = 1` for every `X` (the compatibility clause) because
+>    `a ↦ φ(a)·1_X` is a *unital* predicate dominated by `1_X`.
+>
+> **Costing.**  The ~150–250 lines costed below was ~1.3–2× low: **~330
+> lines**, of which ~90 are `exists_ncpsu_state` and its `ℂᵤ` plumbing.  The
+> dominant cost was again not the mathematics but *types*: `WStar.of` is
+> semireducible, so `(Opposite.unop suI).base.carrier` and `ULift ℂ` are
+> defeq but never syntactically equal, and every `rw`/`+`/`1` that crosses
+> the two has to be given an explicit ascription (`exact` and `show` are
+> fine).  Budget for that in any of the eight.
+>
+> **What the eight now cost.**  Each still needs its own mathematics; none
+> is closed.  Re-costed with the transport in hand:
+> `vn_has_dilations` (221III) and `vn_dilation_order_correspondence` (223VI)
+> ~200 lines each and still the cheapest; `effectus_vn_real_separating`
+> (190III) ~250–350 — its `SeparatingPredicates` half is now nearly free
+> (predicates on `X` are the effects of `X.unop`, and separation is
+> linearity), its `SeparatingStates` half needs "np-functionals separate
+> *self-adjoint* elements", which wants the ceiling calculus of
+> `A/VN/Projections.lean`, and `IsRealEffectus` needs an effect-monoid
+> isomorphism `Scal C ≅ [0,1]`; `diamond_effectus_vn` (206III) ~250;
+> `vn_is_dagger_category` (215VI) via `dagger_thm_sufficiency`; the two
+> `exc_purec_*` ~600/~400.  `vn_is_andthen_eff` (211IV) is unchanged:
+> blocked on A/Proc's 105V.
+
 > **Session 84, second worker.**  **`finite_effectMonoid_boolean` (178III.2) is
 > CLOSED**, axiom-clean, in `EffectAlgebras.lean` (new section
 > `FiniteBoolean`).  With `effects_sea` that puts B/Eff at **10** `sorry`s
@@ -136,7 +200,7 @@ import line, which is not a defect in this directory — retry, do not debug.)
 
 | file | lines | `sorry` | errors |
 |---|---|---|---|
-| `VNExamples.lean` | 408 (now 2387) | **11** (now **8**) | 0 |
+| `VNExamples.lean` | 408 (now 2786) | **11** (now **8**) | 0 |
 | `StatesPredicates.lean` | 7216 (now 8013) | **2** (now **0**) | 0 |
 | `EffectAlgebras.lean` | 3088 (now 3348) | **2** (now **1**) | 0 |
 | `Comparisons.lean` | 1903 | 0 | 0 |
@@ -224,7 +288,7 @@ work upstream.
 | **proved (session 84)** | `effects_sea` (225V); `finite_effectMonoid_boolean` (178III.2) |
 | **proved (session 85)** | `cancellative_iso_convex` (192V.4) — `StatesPredicates.lean` is finished |
 | **reachable, live target** | *(none left outside the gated eight)* |
-| **gated on uniqueness of the effect object** | the eight hypothetical vN examples below (*not* on 180V — see the session-84 block at the top) |
+| **transport now available** | the eight hypothetical vN examples below: the uniqueness-of-`I` lemma they were gated on is **proved** (session 85, `vn_effObj_iso`); each is now open on its own mathematics alone |
 | **blocked outside B/Eff** | `vn_is_andthen_eff` (A/Proc 105V + missing import) — and **only** that one |
 | **awaiting a ruling / literature park** | `effectModule_unitInterval_representation` (QUESTIONS **A3** *and* **B14** — do not attack before the B14 ruling) — the only one left |
 | **known false** | none in this directory |

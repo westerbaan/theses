@@ -20678,3 +20678,121 @@ block, updated counts and classification table, and a rewritten
   imported here, so the intent of the instruction was respected.
 * `docs/BEff-survey.md` said nothing in the tree helps beyond
   `MConvex.ofConvex` and `rsum`; see §4.
+
+## Session 85 — `B/Eff`: **the uniqueness-of-`I` lemma is PROVED** (`vn_effObj_iso`, with `vn_isTotal_iff`); the recorded route via *total ⟺ `≼`-maximal* is **false in `vN_cpsuᵒᵖ`** and was not needed (worker on `Theses/B/Eff/VNExamples.lean`)
+
+`VNExamples.lean` is at **8** `sorry`s, **0** errors, 2786 lines (+399).
+Nothing was closed — the target of this round was infrastructure, not a
+statement — but the single obstruction that all eight remaining items shared
+is gone.  Axioms were checked **in situ** (a copy of the source with
+`#print axioms` appended, compiled directly; not against the olean): all of
+`effectus_vn_partial`, `vnPartialStructure`, `exists_ncpsu_state`,
+`su_effObj_iso`, `su_isTotal_iff`, `vn_effObj_iso`, `vn_isTotal_iff` are
+`[propext, Classical.choice, Quot.sound]`.
+
+### What landed
+
+* **`vn_effObj_iso (s : EffectusPartialStructure WStarCPSU.{u}ᵒᵖ)`** —
+  `∃ θ : s.effectus.I ≅ ℂᵤ, ∀ X, s.effectus.one X ≫ θ.hom = suOne X`.  The
+  compatibility clause is the part that makes it usable: it says the truth
+  predicates transport to the concrete ones, not merely that the objects are
+  isomorphic.
+* **`vn_isTotal_iff`** — for an arbitrary `s`,
+  `f ≫ s.effectus.one Y = s.effectus.one X ↔ f.unop 1 = 1`: **the total maps
+  of any partial-form effectus structure on `vN_cpsuᵒᵖ` are exactly the
+  ncpu-maps.**  This is the form the eight will use.
+* **`exists_ncpsu_state`** — *a nontrivial von Neumann algebra carries a
+  normal state, as a unital ncpsu-map `A → ℂᵤ`.*  Independent API: the tree
+  had no `NPFunctional → NCPSUMap` (session 84's `A/Proc` worker had to build
+  the `NPFunctional → NCPMap` half privately in `QuantumLambda.lean`; this
+  one is public and could replace it once the import paths allow).
+* `vnPartialStructure`, the bundled concrete structure; `effectus_vn_partial`
+  is now `⟨vnPartialStructure⟩` (statement unchanged).
+
+### The recorded route was false; the replacement never mentions `Tot`
+
+Session 84 costed the lemma at ~150–250 lines through "`one_m_is_id` makes
+`I` terminal in `Tot`, and the circularity is cut by the `I`-free
+characterisation **total ⟺ `≼`-maximal**, which holds in `vN` via
+`np_faithful`".  **That characterisation is false in this category.**  The
+trivial algebra is an object of `WStarCPSU` (it is the initial object of
+`vN_cpsuᵒᵖ` — it had to be added in session 83 for exactly that reason), and
+the unique morphism `X ⟶ 0` is `≼`-maximal, being the only element of its
+hom-set, while it is total only when `X` is a zero object.  The "⇐ is
+concrete" sketch silently assumed the codomain has a normal state.
+
+What works is shorter and uses `one_m_is_id` **at the effect object itself**:
+
+1. In the concrete PCM — which is `s`'s, by
+   `effectusPartialStructure_homPCM_unique` — `p ⋁ pᗮ = 1_X` is the
+   *pointwise* sum, so `p(a) ≤ 1_X(a)` for every predicate `p` and every
+   `a ≥ 0`.  This replaces every argument that would otherwise go through
+   `≼`, and it is where the whole "`1_X` is the `≼`-greatest predicate"
+   observation actually gets used.
+2. The algebra `A` under `s.effectus.I` is nontrivial: if it were the
+   trivial algebra then `1_{ℂᵤ} = 0`, so `𝟙 ℂᵤ = 0` by `eq_zero_of_one_zero`,
+   so `1 = 0` in `ℂ`.
+3. Hence `A` has a normal state `ψ` (`exists_ncpsu_state`).  With
+   `φ := 1_{ℂᵤ} : A → ℂᵤ`: `ψ ≤ φ` pointwise by (1) while `φ(1) ≤ 1 = ψ(1)`
+   by subunitality, so `φᗮ(1) = 0`, so `φᗮ = 0` (`ncp_eq_zero_of_one`), so
+   `φ = ψ` and `φ(1) = 1`.
+4. **`one_m_is_id` (181XIII)** gives `1_I = 𝟙 I`, i.e. `𝟙` is the greatest
+   element of `vN_cpsu(A, A)`, i.e. by (1) `φ(a)·1 ≤ a` for all `a ≥ 0`.
+   Apply that to `a` *and* to `b = ‖a‖·1 − a ≥ 0`: since `φ(b) = ‖a‖ − φ(a)`,
+   the second gives `a ≤ φ(a)·1`.  So `a = φ(a)·1` for `a ≥ 0`, and
+   `linear_eq_zero_of_nonneg` extends it to every `a`.  **That is `A ≅ ℂ`**,
+   with `φ` and the unit map `z ↦ z·1` mutually inverse — the two halves of
+   the iso.
+5. The compatibility clause: `a ↦ φ(a)·1_X` is a *unital* predicate on `X`
+   (it is `suOne X ≫ 1_{ℂᵤ}`), so by (1) at `a = 1` and subunitality,
+   `1_X(1) = 1_X`; that is exactly `1_X ≫ θ.hom = suOne X`, and
+   `vn_isTotal_iff` follows by cancelling the iso.
+
+Note what is *not* used: `Tot`, `≼` anywhere, `IsTotal`'s abstract theory,
+and — perhaps surprisingly — `np_faithful` for anything but the existence of
+one normal state.  No spectral theory: the "every nonzero positive element
+is invertible, hence every self-adjoint is a scalar" argument that suggests
+itself at step 4 is unnecessary, because the `‖a‖·1 − a` trick gives the
+two-sided bound directly.
+
+### Costing, and the trap to budget for
+
+**~330 added lines** (399 with the section's doc comment), against ~150–250
+costed — so ~1.3–2× low, in the direction the brief warned about.  About 90
+of those are `exists_ncpsu_state` and its `ℂᵤ` plumbing (`cuUpLin`,
+`isLUB_up`, `npNCP`: complete positivity is `cp_commutative_cod` through `ℂ`
+plus `cp_of_mi` for `ULift.up`, normality is transport of `IsLUB` along
+`up`).  The dominant cost was again **not** the mathematics but the
+semireducibility of `WStar.of`: `(Opposite.unop suI).base.carrier` and
+`ULift ℂ` are definitionally equal but never syntactically equal, so any
+`rw`, any `+`, and any bare `1` that crosses the two fails — with errors as
+misleading as `failed to synthesize HAdd (ULift ℂ) ((Opposite.unop suI).base.carrier) ?m`
+and `did not find an occurrence of the pattern 1`.  The fix is always an
+explicit type ascription (`(1 : (Opposite.unop suI).base.carrier)`) or a
+`show`; `exact` crosses the gap by itself.  Anyone taking one of the eight
+should budget for this.
+
+### Where the eight stand now
+
+None is closed and each still needs its own mathematics; but none is gated
+any longer.  Re-costed with the transport in hand: `vn_has_dilations`
+(221III) and `vn_dilation_order_correspondence` (223VI) remain the cheapest
+at ~200 lines each (`existence_paschke` and the three
+`paschke_correspondence_*` are proved and on the import path);
+`effectus_vn_real_separating` (190III) is ~250–350 and splits unevenly —
+`SeparatingPredicates` is nearly free (predicates on `X` are the effects of
+`X.unop`, and separation is linearity), `IsRealEffectus` needs an
+effect-monoid isomorphism `Scal C ≅ [0,1]`, and `SeparatingStates` needs
+"np-functionals separate *self-adjoint* elements", which is not the
+`np_faithful` axiom and appears to want the ceiling calculus of
+`A/VN/Projections.lean`; `diamond_effectus_vn` (206III) ~250;
+`vn_is_dagger_category` (215VI) via `dagger_thm_sufficiency` (220II);
+`exc_purec_no_biproduct`/`exc_purec_equal` ~600/~400 from their author
+solutions.  `vn_is_andthen_eff` (211IV) is unchanged: blocked on A/Proc's
+105V.
+
+Nothing for ERRATA (no defect in a *statement*; the error corrected here was
+in our own PROVING-LOG route, not in the theses).  No new QUESTIONS.
+`docs/why-open.csv`: the seven non-blocked `VNExamples` rows record that the
+transport now exists.  `docs/BEff-survey.md`: session-85 block added, the
+classification row and the "suggested order" item 4 updated.

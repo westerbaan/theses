@@ -2039,15 +2039,414 @@ end SUCat
 
 end VNPartial
 
+/-- The partial-form effectus structure `vN_cpsuᵒᵖ` carries, bundled: the
+concrete finite coproducts, PCM-enrichment, finPAC axioms and effects data
+built above.  (`effectus_vn_partial` is its `Nonempty` form; the bundled
+version is what `vn_effObj_iso` compares an arbitrary structure with.) -/
+noncomputable def vnPartialStructure : EffectusPartialStructure WStarCPSU.{u}ᵒᵖ :=
+  { hasFiniteCoproducts := suHasFiniteCoproducts
+    homPCM := suPCM
+    finPAC := suFinPAC
+    effectus := suEffectusPartialForm }
+
 /-- **180V** (`effectus-vn`, eff.tex:827): the partial maps of the effectus
 `vNᵒᵖ` correspond to the ncpsu-maps: `(W*_ncpsu)ᵒᵖ` is an effectus in
 partial form (its effect object being `ℂ`). -/
+
 theorem effectus_vn_partial :
     Nonempty (EffectusPartialStructure WStarCPSU.{u}ᵒᵖ) :=
-  ⟨{ hasFiniteCoproducts := suHasFiniteCoproducts
-     homPCM := suPCM
-     finPAC := suFinPAC
-     effectus := suEffectusPartialForm }⟩
+  ⟨vnPartialStructure⟩
+
+/-! ## Uniqueness of the effect object of `vN_cpsuᵒᵖ`
+
+The eight hypothetical examples below each quantify over an **arbitrary**
+`s : EffectusPartialStructure WStarCPSU.{u}ᵒᵖ`, so none of them may use
+`effectus_vn_partial`; what they need instead is that such an `s` is
+essentially unique.  Three of its four fields already are:
+`hasFiniteCoproducts` and `finPAC` are `Prop`s, and `homPCM` is
+`effectusPartialStructure_homPCM_unique` (`Comparisons.lean`).  The one free
+datum is the **effect object** `I`, and `vn_effObj_iso` below pins it: for
+any `s`, `s.effectus.I ≅ ℂᵤ`, compatibly with the truth predicates.
+
+Note that the effect *structure* on top of `I` is then determined too:
+`orth` by `orth_unique` and `one X` as the `≼`-greatest predicate — which is
+how the argument proceeds.  Writing `A` for the algebra underlying
+`s.effectus.I` and `φ = 1_{ℂᵤ}` for the truth predicate at `ℂᵤ` (an ncpsu
+functional `A → ℂᵤ`), the steps are:
+
+1. `p ⋁ pᗮ = 1` is the *pointwise* sum, so every predicate is dominated
+   pointwise by the truth predicate (`su_pred_le_truth'`).
+2. `A` is not the trivial algebra (`su_effCarrier_one_ne_zero`), else
+   `1 = 0` in `ℂ` by `eq_zero_of_one_zero` at `𝟙 ℂᵤ`.
+3. Hence `A` carries a normal state, i.e. a *unital* ncpsu-map `ψ : A → ℂᵤ`
+   (`exists_ncpsu_state`, from the faithfulness axiom of
+   `Theses.VonNeumannAlgebra` at `1`, normalised).  Since `ψ ≤ φ` pointwise
+   and `φ 1 ≤ 1 = ψ 1`, the orthocomplement of `ψ` kills `1`, hence is `0`:
+   `φ = ψ`, and in particular `φ 1 = 1`.
+4. **`1_I = 𝟙 I`** (`one_m_is_id`, 181XIII) says the identity is the greatest
+   element of `vN_cpsu(A, A)`, so `φ(a)·1 ≤ a` for every `a ≥ 0`.  Applying
+   that to `a` and to `‖a‖·1 − a` at once gives `φ(a)·1 ≤ a ≤ φ(a)·1`, so
+   every positive `a` — hence, by `linear_eq_zero_of_nonneg`, every `a` — is
+   the scalar `φ(a)·1`.  That is exactly `A ≅ ℂ`, and `φ` and the unit map
+   are mutually inverse.
+5. Finally `1_X(1) = 1` for every `X`, because `a ↦ φ(a)·1_X` is a *unital*
+   predicate dominated by `1_X`; that is the compatibility clause, and it
+   yields `su_isTotal_iff`: **the total maps of any such `s` are exactly the
+   ncpu-maps**.
+
+The route recorded in PROVING-LOG session 84 (cut the circle "`I` terminal in
+`Tot`" by the `I`-free characterisation *total ⟺ `≼`-maximal*) is **not** the
+route taken: that characterisation is false in `vN_cpsuᵒᵖ` — the unique map
+`X ⟶ 0` into the initial object is `≼`-maximal but not total unless `X` is a
+zero object.  What replaces it is step 4, which uses `one_m_is_id` at the
+effect object itself and never mentions `Tot`. -/
+
+section StateExists
+
+open Theses.A.CStar
+open scoped ComplexOrder ComplexStarModule
+
+variable {A : Type u} [CStarAlgebra A] [PartialOrder A] [StarOrderedRing A]
+
+/-- `ULift.up : ℂ → ℂᵤ` as a linear map. -/
+private noncomputable def cuUpLin : ℂ →ₗ[ℂ] ULift.{u} ℂ where
+  toFun := ULift.up
+  map_add' _ _ := rfl
+  map_smul' _ _ := rfl
+
+private theorem isLUB_up {S : Set ℂ} {x : ℂ} (h : IsLUB S x) :
+    IsLUB ((fun z : ℂ => (ULift.up z : ULift.{u} ℂ)) '' S) (ULift.up x) := by
+  constructor
+  · rintro _ ⟨z, hz, rfl⟩
+    exact h.1 hz
+  · intro b hb
+    exact h.2 (fun z hz => hb ⟨z, hz, rfl⟩)
+
+/-- An np-functional as an ncp-map into the lifted scalars. -/
+private noncomputable def npNCP (ω : Theses.NPFunctional A) :
+    Theses.NCPMap A (ULift.{u} ℂ) :=
+  mkNCP (cuUpLin.comp (ω.toPositiveLinearMap : A →ₗ[ℂ] ℂ))
+    (cp_comp _ _ (cp_commutative_cod _ (fun a ha => Theses.A.VN.npFunctional_nonneg ω ha))
+      (cp_of_mi _ (fun _ _ => rfl) (fun _ => rfl)))
+    (by
+      intro D s hne hdir hlub
+      have h2 := isLUB_up.{u} (ω.preservesDirSups' D s hne hdir hlub)
+      rw [Set.image_image] at h2
+      exact h2)
+
+@[simp] private theorem npNCP_apply (ω : Theses.NPFunctional A) (a : A) :
+    (npNCP ω) a = ULift.up (ω a) := rfl
+
+/-- **Every nontrivial von Neumann algebra carries a normal state**, here in
+the form needed for the effectus argument: a *unital* ncpsu-map `A → ℂᵤ`.
+(An np-functional exists by the faithfulness axiom of
+`Theses.VonNeumannAlgebra` applied to `1`; it is then normalised by
+composing with `z ↦ z·ω(1)⁻¹`.) -/
+theorem exists_ncpsu_state (A : Type u) [CStarAlgebra A] [PartialOrder A]
+    [StarOrderedRing A] [Theses.VonNeumannAlgebra A] (h1 : (1 : A) ≠ 0) :
+    ∃ ψ : Theses.NCPSUMap A (ULift.{u} ℂ), ψ.toNCPMap 1 = 1 := by
+  obtain ⟨ω, hω⟩ : ∃ ω : Theses.NPFunctional A, ω 1 ≠ 0 := by
+    by_contra h
+    exact h1 (Theses.VonNeumannAlgebra.np_faithful 1 zero_le_one
+      (fun ω => not_not.mp fun hne => h ⟨ω, hne⟩))
+  have hpos : (0 : ℂ) ≤ ω 1 := Theses.A.VN.npFunctional_nonneg ω zero_le_one
+  obtain ⟨hre, him⟩ := Complex.le_def.mp hpos
+  obtain ⟨c, hc, hcpos⟩ : ∃ c : ℝ, ((c : ℂ) = ω 1 ∧ 0 < c) := by
+    refine ⟨(ω 1).re, ?_, ?_⟩
+    · refine Complex.ext (by simp) ?_
+      simpa using him
+    · rcases lt_or_eq_of_le (by simpa using hre) with h | h
+      · exact h
+      · exact absurd (by refine Complex.ext (by simpa using h.symm) (by simpa using him.symm)) hω
+  have hnn : (0 : ULift.{u} ℂ) ≤ ((c⁻¹ : ℝ) : ℂ) • (1 : ULift.{u} ℂ) :=
+    cstar_positive_1 1 zero_le_one _ (le_of_lt (inv_pos.mpr hcpos))
+  have hval : ((ncpLin (Theses.A.VN.ncpOfNonneg hnn)).comp (ncpLin (npNCP ω))) 1
+      = (1 : ULift.{u} ℂ) := by
+    refine Theses.A.VN.CU.down_injective ?_
+    show (ω 1) * (((c⁻¹ : ℝ) : ℂ) * 1) = 1
+    rw [mul_one, ← hc]
+    push_cast
+    field_simp
+  exact ⟨mkNCPSU ((ncpLin (Theses.A.VN.ncpOfNonneg hnn)).comp (ncpLin (npNCP ω)))
+    (cp_comp _ _ (ncpLin_cp _) (ncpLin_cp _))
+    (preservesDirSups_comp' (f := ⇑(ncpLin (npNCP ω)))
+      (g := ⇑(ncpLin (Theses.A.VN.ncpOfNonneg hnn)))
+      (ncpLin_normal (npNCP ω))
+      (fun a => sa_of_cp (ncpLin_cp (npNCP ω)) a.2) (ncpLin_normal _))
+    (le_of_eq hval), hval⟩
+
+end StateExists
+
+
+
+section IUnique
+
+open Theses.A.CStar
+open scoped ComplexOrder ComplexStarModule
+
+attribute [local instance] suHasFiniteCoproducts suPCM suFinPAC
+
+variable [EffectusPartialForm (WStarCPSU.{u}ᵒᵖ)]
+
+/-- The von Neumann algebra underlying the effect object. -/
+private abbrev effCarrier : Type u :=
+  (effObj (WStarCPSU.{u}ᵒᵖ)).unop.base.carrier
+
+omit [EffectusPartialForm (WStarCPSU.{u}ᵒᵖ)] in
+private theorem ncpsu_nonneg {A B : Type u} [CStarAlgebra A] [PartialOrder A]
+    [StarOrderedRing A] [CStarAlgebra B] [PartialOrder B] [StarOrderedRing B]
+    (f : Theses.NCPSUMap A B) {a : A} (ha : 0 ≤ a) : 0 ≤ f.toNCPMap a := by
+  have h := ncpsu_mono f ha
+  rwa [ncp_zero_apply] at h
+
+/-- The concrete form of `p ⋁ pᗮ = 1`: pointwise sum. -/
+private theorem su_pred_ovee (X : WStarCPSU.{u}ᵒᵖ)
+    (p : X ⟶ effObj (WStarCPSU.{u}ᵒᵖ)) (a : effCarrier) :
+    p.unop.toNCPMap a + (EffectusPartialForm.orth p).unop.toNCPMap a
+      = (truth X).unop.toNCPMap a :=
+  congrArg (fun k : X ⟶ effObj (WStarCPSU.{u}ᵒᵖ) => k.unop.toNCPMap a)
+    (EffectusPartialForm.ovee_orth p)
+
+/-- Every predicate is dominated by the truth predicate, pointwise. -/
+private theorem su_pred_le_truth' (X : WStarCPSU.{u}ᵒᵖ)
+    (p : X ⟶ effObj (WStarCPSU.{u}ᵒᵖ)) {a : effCarrier} (ha : 0 ≤ a) :
+    p.unop.toNCPMap a ≤ (truth X).unop.toNCPMap a := by
+  rw [← su_pred_ovee X p a]
+  exact le_add_of_nonneg_right (ncpsu_nonneg _ ha)
+
+/-- The effect object is not the trivial algebra. -/
+private theorem su_effCarrier_one_ne_zero : (1 : effCarrier) ≠ 0 := by
+  intro h
+  have : Subsingleton (effCarrier.{u}) := subsingleton_of_zero_eq_one h.symm
+  have hz : truth (suI.{u}) = (0 : suI.{u} ⟶ effObj (WStarCPSU.{u}ᵒᵖ)) := by
+    refine suop_hom_ext fun a => ?_
+    rw [Subsingleton.elim a 0, ncp_zero_apply]
+    rfl
+  have hid : (𝟙 suI.{u} : suI.{u} ⟶ suI.{u}) = 0 :=
+    EffectusPartialForm.eq_zero_of_one_zero (by rw [Category.id_comp]; exact hz)
+  have h1 := congrArg (fun k : suI.{u} ⟶ suI.{u} => k.unop.toNCPMap (1 : ULift.{u} ℂ)) hid
+  have e1 : (𝟙 suI.{u} : suI.{u} ⟶ suI.{u}).unop.toNCPMap (1 : ULift.{u} ℂ) = 1 :=
+    su_id_apply (X := suI.{u}.unop) 1
+  exact one_ne_zero (α := ℂ) (congrArg ULift.down (e1.symm.trans h1))
+
+/-- **Uniqueness of the effect object of `vN_cpsuᵒᵖ`**: the effect object of
+*any* partial-form effectus structure on `vN_cpsuᵒᵖ` is isomorphic to the
+scalars `ℂᵤ`, compatibly with the truth predicates. -/
+theorem su_effObj_iso :
+    ∃ θ : effObj (WStarCPSU.{u}ᵒᵖ) ≅ suI.{u},
+      ∀ X : WStarCPSU.{u}ᵒᵖ, truth X ≫ θ.hom = suOne X := by
+  obtain ⟨ψ, hψ⟩ := exists_ncpsu_state (effCarrier.{u}) su_effCarrier_one_ne_zero
+  obtain ⟨p, hp⟩ : ∃ p : suI.{u} ⟶ effObj (WStarCPSU.{u}ᵒᵖ),
+      ∀ a : effCarrier, p.unop.toNCPMap a = ψ.toNCPMap a :=
+    ⟨Quiver.Hom.op ψ, fun _ => rfl⟩
+  -- the truth predicate on `ℂᵤ`, as an ncpsu functional on the effect algebra
+  have hψ' : ψ.toNCPMap (1 : effCarrier)
+      = (1 : (Opposite.unop (suI.{u})).base.carrier) := hψ
+  have hsum1 := su_pred_ovee suI.{u} p 1
+  rw [hp 1, hψ'] at hsum1
+  have hr0 : (EffectusPartialForm.orth p).unop.toNCPMap (1 : effCarrier) = 0 := by
+    refine le_antisymm ?_ (ncpsu_nonneg _ zero_le_one)
+    have hle := le_trans (le_of_eq hsum1) (truth (suI.{u})).unop.subunital'
+    have h6 := sub_le_sub_right hle 1
+    rw [add_sub_cancel_left, sub_self] at h6
+    exact h6
+  have hφψ : ∀ a : effCarrier,
+      (truth (suI.{u})).unop.toNCPMap a = ψ.toNCPMap a := by
+    intro a
+    rw [← su_pred_ovee suI.{u} p a, ncp_eq_zero_of_one _ hr0 a, add_zero, hp a]
+  have hφ1 : (truth (suI.{u})).unop.toNCPMap (1 : effCarrier) = 1 := by
+    rw [hφψ 1]; exact hψ'
+  -- the ncpsu map `a ↦ φ(a)·1` of the effect algebra
+  have hk : ∀ a : effCarrier,
+      (suOne (effObj (WStarCPSU.{u}ᵒᵖ)) ≫ truth (suI.{u})).unop.toNCPMap a
+        = ((truth (suI.{u})).unop.toNCPMap a).down • (1 : effCarrier) := fun a =>
+    suop_comp_apply _ _ a
+  have htruthEI : ∀ a : effCarrier,
+      (truth (effObj (WStarCPSU.{u}ᵒᵖ))).unop.toNCPMap a = a := by
+    intro a
+    rw [one_m_is_id]
+    exact su_id_apply a
+  have hdom : ∀ a : effCarrier, 0 ≤ a →
+      ((truth (suI.{u})).unop.toNCPMap a).down • (1 : effCarrier) ≤ a := by
+    intro a ha
+    have h := su_pred_le_truth' (effObj (WStarCPSU.{u}ᵒᵖ))
+      (suOne (effObj (WStarCPSU.{u}ᵒᵖ)) ≫ truth (suI.{u})) ha
+    rw [hk a, htruthEI a] at h
+    exact h
+  -- every positive element of the effect algebra is a scalar
+  have hnorm : ∀ a : effCarrier, 0 ≤ a →
+      a = ((truth (suI.{u})).unop.toNCPMap a).down • (1 : effCarrier) := by
+    intro a ha
+    have hle : a ≤ ((‖a‖ : ℝ) : ℂ) • (1 : effCarrier) := by
+      have h := Theses.A.VN.le_norm_smul_one ha
+      simpa [Complex.coe_smul] using h
+    have hb : (0 : effCarrier) ≤ ((‖a‖ : ℝ) : ℂ) • (1 : effCarrier) - a :=
+      sub_nonneg.mpr hle
+    have h2 := hdom _ hb
+    have hval : ((truth (suI.{u})).unop.toNCPMap
+          (((‖a‖ : ℝ) : ℂ) • (1 : effCarrier) - a)).down
+        = ((‖a‖ : ℝ) : ℂ) - ((truth (suI.{u})).unop.toNCPMap a).down := by
+      have hlin : (truth (suI.{u})).unop.toNCPMap
+            (((‖a‖ : ℝ) : ℂ) • (1 : effCarrier) - a)
+          = ((‖a‖ : ℝ) : ℂ) • (truth (suI.{u})).unop.toNCPMap (1 : effCarrier)
+            - (truth (suI.{u})).unop.toNCPMap a := by
+        rw [show (truth (suI.{u})).unop.toNCPMap
+              (((‖a‖ : ℝ) : ℂ) • (1 : effCarrier) - a)
+            = ncpLin (truth (suI.{u})).unop.toNCPMap
+              (((‖a‖ : ℝ) : ℂ) • (1 : effCarrier) - a) from rfl,
+          map_sub, map_smul]
+        rfl
+      rw [hlin, hφ1]
+      show ((‖a‖ : ℝ) : ℂ) * 1 - ((truth (suI.{u})).unop.toNCPMap a).down
+        = ((‖a‖ : ℝ) : ℂ) - ((truth (suI.{u})).unop.toNCPMap a).down
+      rw [mul_one]
+    rw [hval] at h2
+    refine le_antisymm ?_ (hdom a ha)
+    have h4 := sub_nonneg.mpr h2
+    have h5 : (((‖a‖ : ℝ) : ℂ) • (1 : effCarrier) - a)
+          - ((((‖a‖ : ℝ) : ℂ) - ((truth (suI.{u})).unop.toNCPMap a).down)
+            • (1 : effCarrier))
+        = ((truth (suI.{u})).unop.toNCPMap a).down • (1 : effCarrier) - a := by
+      rw [sub_smul]; abel
+    rw [h5] at h4
+    exact sub_nonneg.mp h4
+  -- hence every element is
+  have hall : ∀ a : effCarrier,
+      ((truth (suI.{u})).unop.toNCPMap a).down • (1 : effCarrier) = a := by
+    have hlin : ∀ x : effCarrier, 0 ≤ x →
+        ((ncpLin (suOne (effObj (WStarCPSU.{u}ᵒᵖ)) ≫ truth (suI.{u})).unop.toNCPMap
+          - LinearMap.id : effCarrier →ₗ[ℂ] effCarrier)) x = 0 := by
+      intro x hx
+      show (suOne (effObj (WStarCPSU.{u}ᵒᵖ)) ≫ truth (suI.{u})).unop.toNCPMap x - x = 0
+      rw [hk x, ← hnorm x hx, sub_self]
+    intro a
+    have h := linear_eq_zero_of_nonneg hlin a
+    have h' : (suOne (effObj (WStarCPSU.{u}ᵒᵖ)) ≫ truth (suI.{u})).unop.toNCPMap a - a
+        = 0 := h
+    rw [hk a] at h'
+    exact sub_eq_zero.mp h'
+  -- the truth predicate is unital at every object
+  have hone : ∀ X : WStarCPSU.{u}ᵒᵖ,
+      (truth X).unop.toNCPMap (1 : effCarrier) = 1 := by
+    intro X
+    have hq := su_pred_le_truth' X (suOne X ≫ truth (suI.{u}))
+      (a := (1 : effCarrier)) zero_le_one
+    have hq1 : (suOne X ≫ truth (suI.{u})).unop.toNCPMap (1 : effCarrier) = 1 := by
+      rw [suop_comp_apply, hφ1]
+      show (1 : ULift.{u} ℂ).down • (1 : X.unop.base.carrier) = 1
+      simp
+    rw [hq1] at hq
+    exact le_antisymm (truth X).unop.subunital' hq
+  refine ⟨⟨suOne (effObj (WStarCPSU.{u}ᵒᵖ)), truth (suI.{u}), ?_, ?_⟩, ?_⟩
+  · refine suop_hom_ext fun a => ?_
+    rw [hk a, hall a]
+    exact (su_id_apply a).symm
+  · refine suop_hom_ext fun z => ?_
+    refine Eq.trans ?_ (su_id_apply (X := (suI.{u}).unop) z).symm
+    rw [suop_comp_apply]
+    show (truth (suI.{u})).unop.toNCPMap (z.down • (1 : effCarrier)) = z
+    rw [show (truth (suI.{u})).unop.toNCPMap (z.down • (1 : effCarrier))
+      = ncpLin (truth (suI.{u})).unop.toNCPMap (z.down • (1 : effCarrier)) from rfl,
+      map_smul]
+    show z.down • (truth (suI.{u})).unop.toNCPMap (1 : effCarrier) = z
+    rw [hφ1]
+    exact Theses.A.VN.CU.down_injective (by show z.down * (1 : ℂ) = z.down; rw [mul_one])
+  · intro X
+    refine suop_hom_ext fun z => ?_
+    rw [suop_comp_apply]
+    show (truth X).unop.toNCPMap (z.down • (1 : effCarrier))
+      = z.down • (1 : X.unop.base.carrier)
+    rw [show (truth X).unop.toNCPMap (z.down • (1 : effCarrier))
+      = ncpLin (truth X).unop.toNCPMap (z.down • (1 : effCarrier)) from rfl,
+      map_smul]
+    show z.down • (truth X).unop.toNCPMap (1 : effCarrier)
+      = z.down • (1 : X.unop.base.carrier)
+    rw [hone X]
+
+/-- **The total maps of `vN_cpsuᵒᵖ` are the ncpu-maps**, for *any*
+partial-form effectus structure on it: `f` is total iff it is unital. -/
+theorem su_isTotal_iff {X Y : WStarCPSU.{u}ᵒᵖ} (f : X ⟶ Y) :
+    IsTotal f ↔ f.unop.toNCPMap 1 = 1 := by
+  obtain ⟨θ, hθ⟩ := su_effObj_iso.{u}
+  have hhom : θ.hom = suOne (effObj (WStarCPSU.{u}ᵒᵖ)) := by
+    have h := hθ (effObj (WStarCPSU.{u}ᵒᵖ))
+    rwa [one_m_is_id, Category.id_comp] at h
+  have htr : ∀ (Z : WStarCPSU.{u}ᵒᵖ) (a : effCarrier),
+      (truth Z).unop.toNCPMap a
+        = (θ.inv.unop.toNCPMap a).down • (1 : Z.unop.base.carrier) := by
+    intro Z a
+    have e : truth Z = suOne Z ≫ θ.inv := by
+      rw [← hθ Z, Category.assoc, θ.hom_inv_id, Category.comp_id]
+    rw [e, suop_comp_apply]
+    rfl
+  have hinv1 : θ.inv.unop.toNCPMap (1 : effCarrier) = (1 : ULift.{u} ℂ) := by
+    have h : (θ.inv ≫ θ.hom).unop.toNCPMap
+          (1 : (Opposite.unop (suI.{u})).base.carrier)
+        = (𝟙 (suI.{u}) : suI.{u} ⟶ suI.{u}).unop.toNCPMap
+          (1 : (Opposite.unop (suI.{u})).base.carrier) :=
+      congrArg (fun k : suI.{u} ⟶ suI.{u} =>
+        k.unop.toNCPMap (1 : (Opposite.unop (suI.{u})).base.carrier)) θ.inv_hom_id
+    rw [suop_comp_apply, hhom] at h
+    refine Eq.trans ?_ (su_id_apply (X := (suI.{u}).unop) 1)
+    refine Eq.trans (congrArg θ.inv.unop.toNCPMap ?_) h
+    show (1 : effCarrier) = (1 : ULift.{u} ℂ).down • (1 : effCarrier)
+    rw [Theses.A.VN.CU.down_one, one_smul]
+  have hone : ∀ Z : WStarCPSU.{u}ᵒᵖ,
+      (truth Z).unop.toNCPMap (1 : effCarrier) = (1 : Z.unop.base.carrier) := by
+    intro Z
+    rw [htr Z 1, hinv1, Theses.A.VN.CU.down_one, one_smul]
+  constructor
+  · intro hf
+    have h := congrArg (fun k : X ⟶ effObj (WStarCPSU.{u}ᵒᵖ) =>
+      k.unop.toNCPMap (1 : effCarrier)) hf
+    rw [suop_comp_apply, hone Y, hone X] at h
+    exact h
+  · intro hf
+    refine suop_hom_ext fun a => ?_
+    rw [suop_comp_apply, htr Y a, htr X a,
+      show f.unop.toNCPMap ((θ.inv.unop.toNCPMap a).down • (1 : Y.unop.base.carrier))
+        = ncpLin f.unop.toNCPMap
+          ((θ.inv.unop.toNCPMap a).down • (1 : Y.unop.base.carrier)) from rfl,
+      map_smul]
+    show (θ.inv.unop.toNCPMap a).down • f.unop.toNCPMap (1 : Y.unop.base.carrier)
+      = (θ.inv.unop.toNCPMap a).down • (1 : X.unop.base.carrier)
+    rw [hf]
+
+
+end IUnique
+
+
+section Wrapper
+
+open Theses.A.CStar
+
+/-- **Uniqueness of the effect object of `vN_cpsuᵒᵖ`**, in the form the
+hypothetical von Neumann examples need. -/
+theorem vn_effObj_iso (s : EffectusPartialStructure WStarCPSU.{u}ᵒᵖ) :
+    ∃ θ : s.effectus.I ≅ suI.{u},
+      ∀ X : WStarCPSU.{u}ᵒᵖ, s.effectus.one X ≫ θ.hom = suOne X := by
+  have : HasFiniteCoproducts (WStarCPSU.{u}ᵒᵖ) := suHasFiniteCoproducts
+  have hpcm : s.homPCM = suPCM :=
+    effectusPartialStructure_homPCM_unique s vnPartialStructure
+  obtain ⟨hfc, pcm, hfin, E⟩ := s
+  subst hpcm
+  exact @su_effObj_iso E
+
+/-- **The total maps are the ncpu-maps**, for an arbitrary
+`EffectusPartialStructure` on `vN_cpsuᵒᵖ`. -/
+theorem vn_isTotal_iff (s : EffectusPartialStructure WStarCPSU.{u}ᵒᵖ)
+    {X Y : WStarCPSU.{u}ᵒᵖ} (f : X ⟶ Y) :
+    (f ≫ s.effectus.one Y = s.effectus.one X) ↔ f.unop.toNCPMap 1 = 1 := by
+  have : HasFiniteCoproducts (WStarCPSU.{u}ᵒᵖ) := suHasFiniteCoproducts
+  have hpcm : s.homPCM = suPCM :=
+    effectusPartialStructure_homPCM_unique s vnPartialStructure
+  obtain ⟨hfc, pcm, hfin, E⟩ := s
+  subst hpcm
+  exact @su_isTotal_iff E X Y f
+
+
+end Wrapper
+
 
 /-! ## `vNᵒᵖ` is real, with separating states and predicates (parsec 190)
 
