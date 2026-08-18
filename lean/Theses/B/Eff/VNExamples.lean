@@ -3643,6 +3643,858 @@ theorem su_hasDilations (hDia : DiamondEffectus (WStarCPSU.{u}ᵒᵖ)) :
     rfl
   · exact hD₂
 
+/-! ### The assert maps of `vNᵒᵖ` (211II at `vNᵒᵖ`, eff.tex:4859)
+
+`asrt_p` is characterised (**211II**) as the unique **⋄-positive** map with
+`1 ∘ asrt_p = p`, and 206II.4 defines ⋄-positive as *pure and of the form
+`g ∘ g` for a ⋄-self-adjoint `g`*.  So identifying `asrt_p` in `vNᵒᵖ` as
+`ad_{√a} : b ↦ √a b √a` needs both halves, and the ⋄ half needs `f^⋄` and
+`f_⋄` computed here.
+
+**`f_⋄` never has to be computed.**  By **207III** `diamond_adjunction`,
+`f^⋄(s) ≤ tᵖ ⟺ f_⋄(t) ≤ sᵖ`; so if `f^⋄` is *symmetric* in the sense that
+`f^⋄(s) ≤ tᵖ ⟺ f^⋄(t) ≤ sᵖ`, then `f_⋄(t)` and `f^⋄(t)` have the same
+`ᵖ`-upper bounds and `f` is ⋄-self-adjoint (`su_diamondSelfAdjoint_of_symm`).
+And `f^⋄` *is* computable from the dictionary alone: `f^⋄(s) = ⌈f(z)⌉` where
+`z` is the projection naming `s`.  For `f = ad_w` the condition becomes
+`y w z w = 0 ⟺ z w y w = 0` for projections `y, z`, which is
+`(zwy)^* = ywz` — three lines of C\*-algebra, and no comprehension map,
+image or corner algebra appears anywhere. -/
+
+section DiaVN
+
+variable [DiamondEffectus (WStarCPSU.{u}ᵒᵖ)]
+
+/-- **203IV at `vNᵒᵖ`**: the ceiling of predicates is the ceiling `⌈·⌉` of
+vn.tex 59I.  Both are least among projections above the effect
+(`ceil_le_iff_of_isSharp` and `ceil_basic_1`, through `su_isSharp_iff`). -/
+theorem su_ceilPred_val {X : WStarCPSU.{u}ᵒᵖ}
+    (p : X ⟶ effObj (WStarCPSU.{u}ᵒᵖ)) :
+    suPredVal (ceilPred p) = Theses.A.VN.ceil (suPredVal p) := by
+  have hp0 : (0 : X.unop.base.carrier) ≤ suPredVal p := suPredVal_nonneg p
+  have hp1 : suPredVal p ≤ 1 := suPredVal_le_one p
+  have hcproj : IsStarProjection (suPredVal (ceilPred p)) :=
+    (su_isSharp_iff _).mp (isSharp_ceil p)
+  have hceilproj : IsStarProjection (Theses.A.VN.ceil (suPredVal p)) :=
+    (Theses.A.VN.ceil_spec hp0).1
+  refine le_antisymm ?_ ?_
+  · obtain ⟨q, hq⟩ := su_pred_exists (X := X) hceilproj.nonneg hceilproj.le_one
+    have hsq : IsSharp q := (su_isSharp_iff q).mpr (by rw [hq]; exact hceilproj)
+    have hpq : p ≼ q := by
+      refine (su_pred_le_iff p q).mpr ?_
+      rw [hq]
+      refine (Theses.A.VN.le_proj_iff ⟨hp0, hp1⟩ hceilproj).mpr ?_
+      rw [mul_sub, mul_one, (Theses.A.VN.ceil_spec hp0).2.1, sub_self]
+    have hle := (su_pred_le_iff (ceilPred p) q).mp
+      ((ceil_le_iff_of_isSharp hsq).mpr hpq)
+    rwa [hq] at hle
+  · refine (Theses.A.VN.ceil_le_iff hp0 hcproj).mpr ?_
+    have hle : suPredVal p ≤ suPredVal (ceilPred p) :=
+      (su_pred_le_iff p (ceilPred p)).mp (le_ceil p)
+    have h := (Theses.A.VN.le_proj_iff ⟨hp0, hp1⟩ hcproj).mp hle
+    rw [mul_sub, mul_one, sub_eq_zero] at h
+    exact h.symm
+
+/-- `f^⋄` in `vN_cpsuᵒᵖ`: the sharp predicate `f^⋄(s)` names the carrier
+`⌈f(z)⌉` of the image of the projection `z` naming `s`. -/
+theorem su_diaPull_val {X Y : WStarCPSU.{u}ᵒᵖ} (f : X ⟶ Y) (s : SPred Y) :
+    suPredVal (diaPull f s).1
+      = Theses.A.VN.ceil (f.unop.toNCPMap (suPredVal s.1)) := by
+  show suPredVal (ceilPred (f ≫ s.1)) = _
+  rw [su_ceilPred_val, suPredVal_comp]
+
+/-- A ⋄-self-adjointness criterion that never mentions `f_⋄`: by **207III**
+`diamond_adjunction` it is enough that `f^⋄` be symmetric. -/
+theorem su_diamondSelfAdjoint_of_symm {X : WStarCPSU.{u}ᵒᵖ} (f : X ⟶ X)
+    (hsymm : ∀ s t : SPred X, (diaPull f s).1 ≼ EffectAlgebra.orth t.1 ↔
+      (diaPull f t).1 ≼ EffectAlgebra.orth s.1) :
+    DiamondSelfAdjoint f := by
+  show diaPull f = diaPush f
+  refine funext fun t => Subtype.ext (eabasics_le_antisymm ?_ ?_)
+  · have h0 : (diaPush f t).1 ≼ EffectAlgebra.orth ((diaPush f t).orth).1 := by
+      rw [spred_orth_val, eabasics_orth_orth]
+      exact pcm_preorder_refl _
+    have h2 := (hsymm (diaPush f t).orth t).mp
+      ((diamond_adjunction f (diaPush f t).orth t).mpr h0)
+    rw [spred_orth_val, eabasics_orth_orth] at h2
+    exact h2
+  · have h0 : (diaPull f t).1 ≼ EffectAlgebra.orth ((diaPull f t).orth).1 := by
+      rw [spred_orth_val, eabasics_orth_orth]
+      exact pcm_preorder_refl _
+    have h2 := (diamond_adjunction f (diaPull f t).orth t).mp
+      ((hsymm t (diaPull f t).orth).mp h0)
+    rw [spred_orth_val, eabasics_orth_orth] at h2
+    exact h2
+
+end DiaVN
+
+
+omit [EffectusPartialForm (WStarCPSU.{u}ᵒᵖ)] in
+/-- The C\*-content of ⋄-self-adjointness of `ad_w`: for projections `y, z`
+and self-adjoint `w`, `y (w z w) = 0` iff `y w z = 0` — and the latter is
+symmetric in `y` and `z`, being `(z w y)^*`. -/
+private theorem su_ad_triple_zero {A : Type u} [CStarAlgebra A] [PartialOrder A]
+    [StarOrderedRing A] {w y z : A} (hw : star w = w) (hy : IsStarProjection y)
+    (hz : IsStarProjection z) : y * (w * z * w) = 0 ↔ y * w * z = 0 := by
+  have e : star (z * w * y) = y * w * z := by
+    rw [star_mul, star_mul, hw, hy.isSelfAdjoint.star_eq,
+      hz.isSelfAdjoint.star_eq, mul_assoc]
+  constructor
+  · intro h
+    have hstar : star (z * w * y) * (z * w * y) = 0 := by
+      rw [e]
+      calc y * w * z * (z * w * y) = y * (w * (z * z) * w) * y := by noncomm_ring
+        _ = y * (w * z * w) * y := by rw [hz.isIdempotentElem.eq]
+        _ = 0 := by rw [h, zero_mul]
+    have hzy : z * w * y = 0 := (CStarRing.star_mul_self_eq_zero_iff _).mp hstar
+    rw [← e, hzy, star_zero]
+  · intro h
+    calc y * (w * z * w) = y * w * z * w := by noncomm_ring
+      _ = 0 := by rw [h, zero_mul]
+
+omit [EffectusPartialForm (WStarCPSU.{u}ᵒᵖ)] in
+/-- Transport of a corner along an equality of the two projections: the
+`Fact` instances that carry the algebra structure of `pAp` are `Prop`s, so
+`subst` crosses them.  (This is what makes `su_stand_corner_ceil` below
+possible: **169IV** produces a corner into `⌊a⌋A⌊a⌋`, and we need one into
+`⌈a⌉A⌈a⌉` — the same algebra, but only after `⌊⌈a⌉⌋ = ⌈a⌉`.) -/
+private theorem su_corner_transport {A : Type u} [CStarAlgebra A]
+    [PartialOrder A] [StarOrderedRing A] (z z' : A) (hzz : z = z')
+    [Fact (IsStarProjection z)] [Fact (IsStarProjection z')] (e : A)
+    (h : Theses.NCPMap A (Theses.B.Dils.cornerSet A z))
+    (hval : ∀ b : A, (h b).1 = z * b * z)
+    (hc : Theses.B.Dils.IsCornerFor h e) :
+    ∃ h' : Theses.NCPMap A (Theses.B.Dils.cornerSet A z'),
+      (∀ b : A, (h' b).1 = z' * b * z') ∧ Theses.B.Dils.IsCornerFor h' e := by
+  subst hzz
+  exact ⟨h, hval, hc⟩
+
+/-- **169IV at a ceiling**: `b ↦ ⌈a⌉b⌈a⌉ : A → ⌈a⌉A⌈a⌉` is a corner for the
+projection `⌈a⌉`.  (The standard corner of **169IV** lands in `⌊·⌋A⌊·⌋`, and
+`⌊⌈a⌉⌋ = ⌈a⌉`; the algebra is the *filter's* domain, which is why the
+transport is needed at all.) -/
+private theorem su_stand_corner_ceil {A : Type u} [CStarAlgebra A]
+    [PartialOrder A] [StarOrderedRing A] [Theses.VonNeumannAlgebra A] {a : A}
+    (ha : 0 ≤ a) :
+    ∃ h : Theses.NCPMap A (Theses.B.Dils.cornerSet A (Theses.A.VN.ceil a)),
+      (∀ b : A, (h b).1
+        = Theses.A.VN.ceil a * b * Theses.A.VN.ceil a) ∧
+      Theses.B.Dils.IsCornerFor h (Theses.A.VN.ceil a) := by
+  have hcp : IsStarProjection (Theses.A.VN.ceil a) := (Theses.A.VN.ceil_spec ha).1
+  have hfz : Theses.A.VN.floor (Theses.A.VN.ceil a) = Theses.A.VN.ceil a :=
+    su_floor_of_isStarProjection hcp
+  obtain ⟨h, hval, hc⟩ := Theses.B.Dils.standard_corner_dils
+    (Theses.A.VN.ceil a) ⟨hcp.nonneg, hcp.le_one⟩
+  exact su_corner_transport _ _ hfz _ h hval hc
+
+omit [EffectusPartialForm (WStarCPSU.{u}ᵒᵖ)] in
+/-- `√a ⌈a⌉ = √a` and `⌈a⌉ √a = √a` (`ceil_spec` through
+`sqrt_mul_eq_zero_iff`); this is what makes `ad_{√a}` the standard filter
+after the standard corner at `⌈a⌉`. -/
+private theorem su_sqrt_mul_ceil {A : Type u} [CStarAlgebra A] [PartialOrder A]
+    [StarOrderedRing A] [Theses.VonNeumannAlgebra A] {a : A} (ha : 0 ≤ a) :
+    CFC.sqrt a * Theses.A.VN.ceil a = CFC.sqrt a ∧
+      Theses.A.VN.ceil a * CFC.sqrt a = CFC.sqrt a := by
+  have hcp : IsStarProjection (Theses.A.VN.ceil a) := (Theses.A.VN.ceil_spec ha).1
+  have hz : CFC.sqrt a * (1 - Theses.A.VN.ceil a) = 0 := by
+    refine (Theses.A.VN.sqrt_mul_eq_zero_iff ha _).mpr ?_
+    rw [mul_sub, mul_one, (Theses.A.VN.ceil_spec ha).2.1, sub_self]
+  have h1 : CFC.sqrt a * Theses.A.VN.ceil a = CFC.sqrt a := by
+    rw [mul_sub, mul_one, sub_eq_zero] at hz
+    exact hz.symm
+  refine ⟨h1, ?_⟩
+  have h2 := congrArg star h1
+  rwa [star_mul, hcp.isSelfAdjoint.star_eq,
+    (IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg a)).star_eq] at h2
+
+section DiaVN2
+
+variable [DiamondEffectus (WStarCPSU.{u}ᵒᵖ)]
+
+omit [EffectusPartialForm (WStarCPSU.{u}ᵒᵖ)] [DiamondEffectus (WStarCPSU.{u}ᵒᵖ)] in
+/-- `ad_w : b ↦ w b w` as a morphism `X ⟶ X` of `vN_cpsuᵒᵖ`, for `0 ≤ w`
+with `w² ≤ 1` (complete positivity is **34V**.1 `ad_cp_1`, normality
+**44VIII** `ad_normal`). -/
+theorem su_exists_ad {X : WStarCPSU.{u}ᵒᵖ} {w : X.unop.base.carrier}
+    (hw : 0 ≤ w) (hw1 : w * w ≤ 1) :
+    ∃ k : X ⟶ X, ∀ x, k.unop.toNCPMap x = w * x * w := by
+  have hsa : star w = w := (IsSelfAdjoint.of_nonneg hw).star_eq
+  obtain ⟨m, hm⟩ : ∃ m : Theses.NCPSUMap X.unop.base.carrier X.unop.base.carrier,
+      ∀ x, m.toNCPMap x = w * x * w := by
+    refine ⟨mkNCPSU { toFun := fun x => star w * x * w
+                      map_add' := fun x y => by noncomm_ring
+                      map_smul' := fun c x => by simp } ?_ ?_ ?_,
+      fun x => by show star w * x * w = w * x * w; rw [hsa]⟩
+    · intro n c b
+      have h := ad_cp_1 w n c b
+      simpa [mul_assoc] using h
+    · intro Dset s' hne hdir hlub
+      have hb : BddAbove Dset := ⟨s', hlub.1⟩
+      have hsd : Theses.dirSup Dset ⟨hne, hdir, hb⟩ = s' :=
+        (Theses.isLUB_dirSup Dset ⟨hne, hdir, hb⟩).unique hlub
+      have h := Theses.A.VN.ad_normal w Dset ⟨hne, hdir, hb⟩
+      rw [hsd] at h
+      exact h
+    · show star w * 1 * w ≤ 1
+      rw [hsa, mul_one]
+      exact hw1
+  exact ⟨Quiver.Hom.op m, hm⟩
+
+/-- **206II at `vNᵒᵖ`**: `ad_w` is ⋄-self-adjoint for every `w ≥ 0`.  By
+`su_diamondSelfAdjoint_of_symm` this is the symmetry of `ad_w^⋄`, which
+`su_diaPull_val` turns into `y w z = 0 ⟺ z w y = 0`. -/
+theorem su_diamondSelfAdjoint_ad {X : WStarCPSU.{u}ᵒᵖ} (g : X ⟶ X)
+    {w : X.unop.base.carrier} (hw : 0 ≤ w)
+    (hgw : ∀ x, g.unop.toNCPMap x = w * x * w) : DiamondSelfAdjoint g := by
+  have hsa : star w = w := (IsSelfAdjoint.of_nonneg hw).star_eq
+  have key : ∀ ps pt : X ⟶ effObj (WStarCPSU.{u}ᵒᵖ), IsSharp ps → IsSharp pt →
+      (ceilPred (g ≫ ps) ≼ EffectAlgebra.orth pt ↔
+        suPredVal pt * w * suPredVal ps = 0) := by
+    intro ps pt hps hpt
+    have hz : IsStarProjection (suPredVal ps) := (su_isSharp_iff ps).mp hps
+    have hy : IsStarProjection (suPredVal pt) := (su_isSharp_iff pt).mp hpt
+    have hnn : (0 : X.unop.base.carrier) ≤ w * suPredVal ps * w := by
+      have h := ncpsu_nonneg g.unop hz.nonneg
+      rwa [hgw] at h
+    have hceil : Theses.A.VN.ceil (w * suPredVal ps * w) ≤ 1 - suPredVal pt ↔
+        (1 - suPredVal pt) * (w * suPredVal ps * w) = w * suPredVal ps * w :=
+      (Theses.A.VN.ceil_basic_1 (w * suPredVal ps * w) (1 - suPredVal pt) hnn
+        hy.one_sub).out 2 0
+    refine Iff.trans (su_pred_le_iff (ceilPred (g ≫ ps)) (EffectAlgebra.orth pt)) ?_
+    rw [su_ceilPred_val, suPredVal_comp, hgw,
+      show suPredVal (EffectAlgebra.orth pt) = 1 - suPredVal pt from
+        suPredVal_orth pt, hceil, sub_mul, one_mul, sub_eq_self]
+    exact su_ad_triple_zero hsa hy hz
+  have hstar : ∀ x y : X.unop.base.carrier, IsStarProjection x →
+      IsStarProjection y → x * w * y = 0 → y * w * x = 0 := by
+    intro x y hx hy0 h
+    have h2 := congrArg star h
+    rwa [star_mul, star_mul, hsa, hx.isSelfAdjoint.star_eq,
+      hy0.isSelfAdjoint.star_eq, star_zero, ← mul_assoc] at h2
+  refine su_diamondSelfAdjoint_of_symm g fun s t => ?_
+  have hz : IsStarProjection (suPredVal s.1) := (su_isSharp_iff s.1).mp s.2
+  have hy : IsStarProjection (suPredVal t.1) := (su_isSharp_iff t.1).mp t.2
+  exact Iff.trans (key s.1 t.1 s.2 t.2)
+    (Iff.trans ⟨fun h => hstar _ _ hy hz h, fun h => hstar _ _ hz hy h⟩
+      (key t.1 s.1 t.2 s.2).symm)
+
+end DiaVN2
+
+/-- **201II at `vNᵒᵖ`**: `ad_{√a} : b ↦ √a b √a` is **pure** — it is the
+standard filter `c_a` (a quotient, `su_isQuotient_of_isFilterFor`) after the
+standard corner at `⌈a⌉` (a *unital* corner, hence a comprehension,
+`su_isComprehension_of_isCornerFor`), the composite being `ad_{√a}` because
+`√a ⌈a⌉ = √a`. -/
+theorem su_isPure_ad_sqrt {X : WStarCPSU.{u}ᵒᵖ} (g : X ⟶ X)
+    {a : X.unop.base.carrier} (ha0 : 0 ≤ a) (ha1 : a ≤ 1)
+    (hga : ∀ x, g.unop.toNCPMap x = CFC.sqrt a * x * CFC.sqrt a) : IsPure g := by
+  have hceilp : IsStarProjection (Theses.A.VN.ceil a) := (Theses.A.VN.ceil_spec ha0).1
+  letI : Theses.VonNeumannAlgebra (Theses.B.Dils.cornerSet X.unop.base.carrier
+      (Theses.A.VN.ceil a)) := Theses.B.Dils.cornerSet_vonNeumannAlgebra _ _
+  obtain ⟨c, hcval, hcfil⟩ :=
+    Theses.B.Dils.dils_stand_filter (B := X.unop.base.carrier) a ha0
+  obtain ⟨hcor, hcorval, hcorfor⟩ :=
+    su_stand_corner_ceil (A := X.unop.base.carrier) ha0
+  have hcoru : hcor (1 : X.unop.base.carrier) = 1 := by
+    refine Theses.B.Dils.cornerSet.val_injective ?_
+    rw [hcorval, mul_one, hceilp.isIdempotentElem.eq,
+      Theses.B.Dils.cornerSet.val_one]
+  obtain ⟨ξ, hξ⟩ : ∃ ξ : X ⟶ Opposite.op (WStarCPSU.of (WStar.of
+        (Theses.B.Dils.cornerSet X.unop.base.carrier (Theses.A.VN.ceil a)))),
+      ξ.unop.toNCPMap = c :=
+    ⟨Quiver.Hom.op ⟨c, le_trans hcfil.2.1 ha1⟩, rfl⟩
+  obtain ⟨π, hπ⟩ : ∃ π : Opposite.op (WStarCPSU.of (WStar.of
+        (Theses.B.Dils.cornerSet X.unop.base.carrier (Theses.A.VN.ceil a)))) ⟶ X,
+      π.unop.toNCPMap = hcor :=
+    ⟨Quiver.Hom.op ⟨hcor, le_of_eq hcoru⟩, rfl⟩
+  obtain ⟨p, hp⟩ := su_pred_exists (X := X) (a := 1 - a)
+    (sub_nonneg.mpr ha1) (sub_le_self 1 ha0)
+  obtain ⟨q, hq⟩ := su_pred_exists (X := X) hceilp.nonneg hceilp.le_one
+  refine ⟨_, ξ, π, p, q, su_isQuotient_of_isFilterFor p ξ ?_,
+    su_isComprehension_of_isCornerFor q π ?_ ?_, ?_⟩
+  · rw [hξ, show suPredVal (EffectusPartialForm.orth p) = a by
+      rw [suPredVal_orth, hp, sub_sub_cancel]]
+    exact hcfil
+  · rw [hπ]; exact hcoru
+  · rw [hπ, hq]; exact hcorfor
+  · -- `rw` cannot cross `cornerSet A ⌈a⌉` and
+    -- `(Opposite.unop (Opposite.op (WStarCPSU.of (WStar.of (cornerSet A ⌈a⌉))))).base.carrier`,
+    -- so the computation is a term-mode `Eq.trans` chain
+    refine suop_hom_ext fun x => ?_
+    obtain ⟨h1, h2⟩ := su_sqrt_mul_ceil (A := X.unop.base.carrier) ha0
+    have e1 : ξ.unop.toNCPMap (π.unop.toNCPMap x) = c (hcor x) :=
+      Eq.trans (congrArg (fun m => m (π.unop.toNCPMap x)) hξ)
+        (congrArg (fun y => c y) (congrArg (fun m => m x) hπ))
+    have e2 : ξ.unop.toNCPMap (π.unop.toNCPMap x)
+        = CFC.sqrt a * (Theses.A.VN.ceil a * x * Theses.A.VN.ceil a)
+          * CFC.sqrt a :=
+      Eq.trans e1 (Eq.trans (hcval (hcor x))
+        (congrArg (fun y => CFC.sqrt a * y * CFC.sqrt a) (hcorval x)))
+    have hcalc : CFC.sqrt a * x * CFC.sqrt a
+        = CFC.sqrt a * (Theses.A.VN.ceil a * x * Theses.A.VN.ceil a)
+          * CFC.sqrt a :=
+      calc CFC.sqrt a * x * CFC.sqrt a
+          = CFC.sqrt a * Theses.A.VN.ceil a * x
+              * (Theses.A.VN.ceil a * CFC.sqrt a) := by rw [h1, h2]
+        _ = CFC.sqrt a * (Theses.A.VN.ceil a * x * Theses.A.VN.ceil a)
+              * CFC.sqrt a := by noncomm_ring
+    exact Eq.trans (hga x)
+      (Eq.trans (Eq.trans hcalc e2.symm) (suop_comp_apply ξ π x).symm)
+
+section AsrtVN
+
+variable [DiamondEffectus (WStarCPSU.{u}ᵒᵖ)]
+
+/-- **211II at `vNᵒᵖ`**, the *existence* half of `existsUnique_asrt`, proved
+without any &-effectus hypothesis: `ad_{√a}` is ⋄-positive and takes the
+value `a` at the truth predicate.  (`su_isPure_ad_sqrt` gives purity, and
+`ad_{√a} = ad_{⁴√a} ∘ ad_{⁴√a}` with `su_diamondSelfAdjoint_ad` gives the
+square.)  **211IV** `vn_is_andthen_eff` is therefore blocked on *uniqueness*
+alone, i.e. on **105V** `positive-map-uniqueness` in `A/Proc`. -/
+theorem su_exists_asrt {X : WStarCPSU.{u}ᵒᵖ}
+    (p : X ⟶ effObj (WStarCPSU.{u}ᵒᵖ)) :
+    ∃ k : X ⟶ X, DiamondPositive k ∧ k ≫ truth X = p ∧
+      ∀ x, k.unop.toNCPMap x
+        = CFC.sqrt (suPredVal p) * x * CFC.sqrt (suPredVal p) := by
+  have ha0 : (0 : X.unop.base.carrier) ≤ suPredVal p := suPredVal_nonneg p
+  have ha1 : suPredVal p ≤ 1 := suPredVal_le_one p
+  have hs0 : (0 : X.unop.base.carrier) ≤ CFC.sqrt (suPredVal p) :=
+    CFC.sqrt_nonneg _
+  have hss : CFC.sqrt (suPredVal p) * CFC.sqrt (suPredVal p) = suPredVal p :=
+    CFC.sqrt_mul_sqrt_self _ ha0
+  have hs1 : CFC.sqrt (suPredVal p) ≤ 1 :=
+    (Theses.A.VN.sqrt_mem_effects ⟨ha0, ha1⟩).2
+  obtain ⟨k, hk⟩ := su_exists_ad (X := X) hs0 (by rw [hss]; exact ha1)
+  obtain ⟨k2, hk2⟩ := su_exists_ad (X := X)
+    (CFC.sqrt_nonneg (CFC.sqrt (suPredVal p)))
+    (by rw [CFC.sqrt_mul_sqrt_self _ hs0]; exact hs1)
+  refine ⟨k, ⟨su_isPure_ad_sqrt k ha0 ha1 hk, k2,
+    su_diamondSelfAdjoint_ad k2 (CFC.sqrt_nonneg _) hk2, ?_⟩, ?_, hk⟩
+  · refine suop_hom_ext fun y => ?_
+    rw [hk, suop_comp_apply, hk2, hk2]
+    calc CFC.sqrt (suPredVal p) * y * CFC.sqrt (suPredVal p)
+        = CFC.sqrt (CFC.sqrt (suPredVal p)) * CFC.sqrt (CFC.sqrt (suPredVal p))
+            * y * (CFC.sqrt (CFC.sqrt (suPredVal p))
+              * CFC.sqrt (CFC.sqrt (suPredVal p))) := by
+          rw [CFC.sqrt_mul_sqrt_self _ hs0]
+      _ = CFC.sqrt (CFC.sqrt (suPredVal p))
+            * (CFC.sqrt (CFC.sqrt (suPredVal p)) * y
+              * CFC.sqrt (CFC.sqrt (suPredVal p)))
+            * CFC.sqrt (CFC.sqrt (suPredVal p)) := by noncomm_ring
+  · refine su_pred_ext ?_
+    rw [suPredVal_comp, suPredVal_truth, hk, mul_one, hss]
+
+end AsrtVN
+
+section AndThenVN
+
+variable [AndThenEffectus (WStarCPSU.{u}ᵒᵖ)]
+
+/-- **211IV at `vNᵒᵖ`** (`vn-is-andthen-eff`, eff.tex:4859), the half that
+does not need 105V: **`asrt_p` is `ad_{√a}`**, `b ↦ √a b √a`, where
+`a = suPredVal p`.  By 211II `asrt_p` is the *unique* ⋄-positive map with
+`1 ∘ asrt_p = p`, and `su_exists_asrt` produces `ad_{√a}` as one. -/
+theorem su_asrt_apply {X : WStarCPSU.{u}ᵒᵖ}
+    (p : X ⟶ effObj (WStarCPSU.{u}ᵒᵖ)) (x : X.unop.base.carrier) :
+    (asrt p).unop.toNCPMap x
+      = CFC.sqrt (suPredVal p) * x * CFC.sqrt (suPredVal p) := by
+  obtain ⟨k, hpos, h1, hk⟩ := su_exists_asrt p
+  rw [← asrt_unique p k hpos h1, hk]
+
+end AndThenVN
+
+/-! ### The order correspondence of 223VI
+
+The three remaining ingredients are the dictionary between the effectus
+notions of 223V and the Paschke correspondence **157IV** of `B/Dils`:
+
+* `↓f` is the ncp-interval `[0, φ]_ncp` (`su_below_iff`);
+* a dilation in `vNᵒᵖ` *is* a Paschke dilation (`su_isPaschke_of_isDilation`,
+  the converse reading of `su_isDilation_of_paschke`);
+* `Inv ϱ = [0,1]_{ϱ(𝒜)^□}` (**223III** `su_invSet_iff`), whose ⇐ half is the
+  computation `√t ϱ(b) √t + √(1−t) ϱ(b) √(1−t) = ϱ(b)` and whose ⇒ half is
+  157IV applied to the Paschke dilation `(𝒫, ϱ, id)` of an nmiu-map. -/
+
+omit [EffectusPartialForm (WStarCPSU.{u}ᵒᵖ)] in
+/-- An **nmiu**-map is its own Paschke dilation, with `h = id`: used for the
+⇒ half of **223III**. -/
+theorem su_paschke_nmiu {A B : Type u} [CStarAlgebra A] [PartialOrder A]
+    [StarOrderedRing A] [CStarAlgebra B] [PartialOrder B] [StarOrderedRing B]
+    [Theses.VonNeumannAlgebra A] [Theses.VonNeumannAlgebra B]
+    (ρ : Theses.NMIUMap A B) (φ : Theses.NCPMap A B) (hφ : ∀ a, φ a = ρ a) :
+    Theses.B.Dils.IsPaschkeDilationOf
+      ⟨B, inferInstance, ρ, Theses.A.Proc.ncpId B⟩ ⇑φ := by
+  constructor
+  · intro a
+    rw [show (Theses.A.Proc.ncpId B) (ρ a) = ρ a from Theses.A.Proc.ncpId_apply _,
+      hφ]
+  · intro D' hD'
+    refine ⟨D'.h, ⟨fun a => ?_, fun c => ?_⟩, ?_⟩
+    · rw [hD' a, hφ]
+    · exact Theses.A.Proc.ncpId_apply _
+    · rintro k ⟨-, hk2⟩
+      refine DFunLike.ext _ _ fun c => ?_
+      exact (Theses.A.Proc.ncpId_apply (k c)).symm.trans (hk2 c)
+
+/-- **223V at `vNᵒᵖ`**: the down-set `↓f` of a morphism is the ncp-interval
+`[0, φ]_ncp` of **157II**.  (One direction needs that the difference of a
+subunital map and a smaller one is again *subunital*, which it is because
+`δ(1) ≤ φ(1) ≤ 1`.) -/
+theorem su_below_iff {X Y : WStarCPSU.{u}ᵒᵖ} (f g : X ⟶ Y) :
+    g ≼ f ↔ ⇑g.unop.toNCPMap ∈ Theses.B.Dils.ncpInterval ⇑f.unop.toNCPMap := by
+  constructor
+  · rintro ⟨r, hr, rfl⟩
+    exact ⟨⟨g.unop.toNCPMap, fun a => (zero_add _).symm⟩,
+      r.unop.toNCPMap, fun a => rfl⟩
+  · rintro ⟨-, δ, hδ⟩
+    have hδ1 : δ (1 : Y.unop.base.carrier) ≤ 1 := by
+      refine le_trans (le_add_of_nonneg_left (ncpsu_one_nonneg g.unop)) ?_
+      rw [← hδ 1]
+      exact f.unop.subunital'
+    obtain ⟨r, hrv⟩ : ∃ r : X ⟶ Y, r.unop.toNCPMap = δ :=
+      ⟨Quiver.Hom.op ⟨δ, hδ1⟩, rfl⟩
+    have hperp : Perp g r := by
+      show g.unop.toNCPMap 1 + r.unop.toNCPMap 1 ≤ 1
+      rw [hrv, ← hδ 1]
+      exact f.unop.subunital'
+    refine ⟨r, hperp, suop_hom_ext fun a => ?_⟩
+    show g.unop.toNCPMap a + r.unop.toNCPMap a = f.unop.toNCPMap a
+    rw [hrv, ← hδ a]
+
+section Paschke223
+
+variable [DiamondEffectus (WStarCPSU.{u}ᵒᵖ)]
+
+/-- **221II at `vNᵒᵖ`**, the converse reading of `su_isDilation_of_paschke`:
+a dilation of `f` in `vN_cpsuᵒᵖ` *is* a Paschke dilation of the ncp-map
+`f`.  (The `h'` of a Paschke competitor is automatically subunital, being
+`h'(1) = h'(ϱ'(1)) = f(1) ≤ 1`, and its mediating map is automatically
+unital — so the two universal properties quantify over the same data.) -/
+theorem su_isPaschke_of_isDilation {X Y P : WStarCPSU.{u}ᵒᵖ} (f : X ⟶ Y)
+    (ϱ : P ⟶ Y) (h : X ⟶ P) (hd : IsDilation f ϱ h)
+    (ρ : Theses.NMIUMap Y.unop.base.carrier P.unop.base.carrier)
+    (hρ : ∀ a, ρ a = ϱ.unop.toNCPMap a) :
+    Theses.B.Dils.IsPaschkeDilationOf
+      ⟨P.unop.base.carrier, inferInstance, ρ, h.unop.toNCPMap⟩
+      ⇑f.unop.toNCPMap := by
+  obtain ⟨hs, ht, hp, hfac, huniv⟩ := hd
+  constructor
+  · intro a
+    show h.unop.toNCPMap (ρ a) = f.unop.toNCPMap a
+    rw [hρ a, ← suop_comp_apply h ϱ a, hfac]
+  · intro D' hD'
+    letI := D'.vn
+    have hD'ρ1 : D'.ρ (1 : Y.unop.base.carrier) = (1 : D'.P) :=
+      map_one D'.ρ.toStarAlgHom
+    have hρ1 : ρ (1 : Y.unop.base.carrier) = (1 : P.unop.base.carrier) :=
+      map_one ρ.toStarAlgHom
+    obtain ⟨g', hg'⟩ := su_exists_ncpsu_of_nmiu D'.ρ
+    obtain ⟨ϱ', hϱ'⟩ : ∃ ϱ' : Opposite.op (WStarCPSU.of (WStar.of D'.P)) ⟶ Y,
+        ∀ a, ϱ'.unop.toNCPMap a = D'.ρ a :=
+      ⟨Quiver.Hom.op g', fun a => (hg' a)⟩
+    have hh'1 : D'.h (1 : D'.P) ≤ 1 := by
+      have e : D'.h (1 : D'.P) = f.unop.toNCPMap (1 : Y.unop.base.carrier) := by
+        rw [← hD'ρ1]; exact hD' 1
+      rw [e]
+      exact f.unop.subunital'
+    obtain ⟨h', hh'⟩ : ∃ h' : X ⟶ Opposite.op (WStarCPSU.of (WStar.of D'.P)),
+        h'.unop.toNCPMap = D'.h :=
+      ⟨Quiver.Hom.op ⟨D'.h, hh'1⟩, rfl⟩
+    obtain ⟨hs', ht'⟩ := su_sharp_total_of_nmiu ϱ' D'.ρ fun a => (hϱ' a).symm
+    have hfac' : h' ≫ ϱ' = f := by
+      refine suop_hom_ext fun a => ?_
+      rw [suop_comp_apply, hϱ', hh']
+      exact hD' a
+    obtain ⟨σ, ⟨hσ1, hσ2⟩, hσu⟩ := huniv ϱ' h' hs' ht' hfac'
+    refine ⟨σ.unop.toNCPMap, ⟨fun a => ?_, fun c => ?_⟩, ?_⟩
+    · have e := congrArg (fun m : P ⟶ Y => m.unop.toNCPMap a) hσ2
+      simp only [suop_comp_apply] at e
+      rw [hϱ'] at e
+      rw [hρ a]
+      exact e
+    · have e0 : (h ≫ σ).unop.toNCPMap c = h'.unop.toNCPMap c :=
+        congrArg (fun m : X ⟶ Opposite.op (WStarCPSU.of (WStar.of D'.P)) =>
+          m.unop.toNCPMap c) hσ1
+      exact ((suop_comp_apply h σ c).symm.trans e0).trans
+        (congrArg (fun m => m c) hh')
+    · rintro k ⟨hk1, hk2⟩
+      have hk1' : k (1 : D'.P) ≤ 1 := by
+        have e : k (1 : D'.P) = (1 : P.unop.base.carrier) := by
+          rw [← hD'ρ1, hk1 1, hρ1]
+        rw [e]
+      obtain ⟨κ, hκ⟩ : ∃ κ : P ⟶ Opposite.op (WStarCPSU.of (WStar.of D'.P)),
+          κ.unop.toNCPMap = k :=
+        ⟨Quiver.Hom.op ⟨k, hk1'⟩, rfl⟩
+      have hκ1 : h ≫ κ = h' := by
+        refine suop_hom_ext fun c => ?_
+        exact Eq.trans (suop_comp_apply h κ c)
+          (Eq.trans (congrArg (fun z => h.unop.toNCPMap z)
+              (congrArg (fun m => m c) hκ))
+            ((hk2 c).trans (congrArg (fun m => m c) hh').symm))
+      have hκ2 : κ ≫ ϱ' = ϱ := by
+        refine suop_hom_ext fun a => ?_
+        have hk1a : k (D'.ρ a) = ρ a := hk1 a
+        exact Eq.trans (suop_comp_apply κ ϱ' a)
+          (Eq.trans (congrArg (fun z => κ.unop.toNCPMap z) (hϱ' a))
+            (Eq.trans (congrArg (fun m => m (D'.ρ a)) hκ)
+              (hk1a.trans (hρ a))))
+      exact hκ.symm.trans (congrArg
+        (fun m : P ⟶ Opposite.op (WStarCPSU.of (WStar.of D'.P)) =>
+          m.unop.toNCPMap) (hσu κ ⟨hκ1, hκ2⟩))
+
+end Paschke223
+
+section AndThen223
+
+variable [AndThenEffectus (WStarCPSU.{u}ᵒᵖ)]
+
+/-- **223II at `vNᵒᵖ`**: the side-effect map is
+`sef_p(b) = √a b √a + √(1−a) b √(1−a)` (the sum of the PCM being pointwise
+addition). -/
+theorem su_sef_apply {X : WStarCPSU.{u}ᵒᵖ}
+    (p : X ⟶ effObj (WStarCPSU.{u}ᵒᵖ)) (x : X.unop.base.carrier) :
+    (sef p).unop.toNCPMap x
+      = CFC.sqrt (suPredVal p) * x * CFC.sqrt (suPredVal p)
+        + CFC.sqrt (1 - suPredVal p) * x * CFC.sqrt (1 - suPredVal p) := by
+  have e : (sef p).unop.toNCPMap x
+      = (asrt p).unop.toNCPMap x
+        + (asrt (EffectAlgebra.orth p)).unop.toNCPMap x := rfl
+  rw [e, su_asrt_apply, su_asrt_apply,
+    show suPredVal (EffectAlgebra.orth p) = 1 - suPredVal p from suPredVal_orth p]
+
+omit [EffectusPartialForm (WStarCPSU.{u}ᵒᵖ)] in
+private theorem su_sqrtConj_self {A : Type u} [CStarAlgebra A] [PartialOrder A]
+    [StarOrderedRing A] {b : A} (hb : 0 ≤ b) :
+    CFC.sqrt b * b * CFC.sqrt b = b * b := by
+  have hc : CFC.sqrt b * b = b * CFC.sqrt b :=
+    (Commute.cfcₙ_nnreal (rfl : b * b = b * b) NNReal.sqrt :
+      Commute (CFC.sqrt b) b)
+  rw [hc, mul_assoc, CFC.sqrt_mul_sqrt_self b hb]
+
+omit [EffectusPartialForm (WStarCPSU.{u}ᵒᵖ)] in
+private theorem su_ad_sq {A : Type u} [CStarAlgebra A] [PartialOrder A]
+    [StarOrderedRing A] (u x : A) : u * (u * x * u) * u = u * u * x * (u * u) := by
+  noncomm_ring
+
+omit [EffectusPartialForm (WStarCPSU.{u}ᵒᵖ)] in
+private theorem su_ad_nest {A : Type u} [CStarAlgebra A] [PartialOrder A]
+    [StarOrderedRing A] (v u x : A) :
+    v * (u * (u * (v * x * v) * u) * u) * v
+      = v * (u * u) * v * x * (v * (u * u) * v) := by
+  noncomm_ring
+
+/-- **211II at `vNᵒᵖ`**: the sequential conjunction is
+`p & q = √a b √a`, the sequential product of 225V. -/
+theorem su_andThen_val {X : WStarCPSU.{u}ᵒᵖ}
+    (p q : X ⟶ effObj (WStarCPSU.{u}ᵒᵖ)) :
+    suPredVal (andThen p q)
+      = CFC.sqrt (suPredVal p) * suPredVal q * CFC.sqrt (suPredVal p) := by
+  show suPredVal (asrt p ≫ q) = _
+  rw [suPredVal_comp, su_asrt_apply]
+
+/-- **215V**.1 at `vNᵒᵖ` (the first axiom of a †'-effectus): every predicate
+has a **unique** square root for `&`, namely the one naming `√a`
+(`CFC.sqrt_unique`). -/
+theorem su_sqrt_existsUnique {X : WStarCPSU.{u}ᵒᵖ}
+    (p : X ⟶ effObj (WStarCPSU.{u}ᵒᵖ)) :
+    ∃! q : X ⟶ effObj (WStarCPSU.{u}ᵒᵖ), andThen q q = p := by
+  have ha0 : (0 : X.unop.base.carrier) ≤ suPredVal p := suPredVal_nonneg p
+  have ha1 : suPredVal p ≤ 1 := suPredVal_le_one p
+  have hsq := Theses.A.VN.sqrt_mem_effects (A := X.unop.base.carrier)
+    ⟨ha0, ha1⟩
+  obtain ⟨q₀, hq₀⟩ := su_pred_exists (X := X) hsq.1 hsq.2
+  refine ⟨q₀, ?_, ?_⟩
+  · refine su_pred_ext ?_
+    rw [su_andThen_val, hq₀, su_sqrtConj_self (CFC.sqrt_nonneg _),
+      CFC.sqrt_mul_sqrt_self _ ha0]
+  · intro q hq
+    refine su_pred_ext ?_
+    rw [hq₀]
+    have h := congrArg suPredVal hq
+    rw [su_andThen_val, su_sqrtConj_self (suPredVal_nonneg q)] at h
+    exact (CFC.sqrt_unique h (suPredVal_nonneg q)).symm
+
+/-- **215V**.2 at `vNᵒᵖ` (the second axiom of a †'-effectus):
+`asrt²_{p & q} = asrt_p ∘ asrt²_q ∘ asrt_p`.  Both sides are `x ↦ c x c` for
+`c = √a b √a`, by `su_asrt_apply` and `√c √c = c`. -/
+theorem su_asrt_sq {X : WStarCPSU.{u}ᵒᵖ}
+    (p q : X ⟶ effObj (WStarCPSU.{u}ᵒᵖ)) :
+    asrt (andThen p q) ≫ asrt (andThen p q)
+      = asrt p ≫ asrt q ≫ asrt q ≫ asrt p := by
+  have hc0 : (0 : X.unop.base.carrier) ≤ CFC.sqrt (suPredVal p)
+      * suPredVal q * CFC.sqrt (suPredVal p) := by
+    rw [← su_andThen_val]
+    exact suPredVal_nonneg _
+  refine suop_hom_ext fun x => ?_
+  simp only [suop_comp_apply, su_asrt_apply, su_andThen_val]
+  rw [su_ad_sq, su_ad_nest, CFC.sqrt_mul_sqrt_self _ hc0,
+    CFC.sqrt_mul_sqrt_self _ (suPredVal_nonneg q)]
+
+/-- If the effect `a` named by `p` commutes with the image of `ϱ`, then
+`asrt_p` acts on that image as multiplication by `a`:
+`√a ϱ(b) √a = a ϱ(b)`. -/
+theorem su_asrt_comp_of_commute {P Y : WStarCPSU.{u}ᵒᵖ} (ϱ : P ⟶ Y)
+    (q : P ⟶ effObj (WStarCPSU.{u}ᵒᵖ))
+    (hcomm : ∀ a : Y.unop.base.carrier,
+      suPredVal q * ϱ.unop.toNCPMap a = ϱ.unop.toNCPMap a * suPredVal q)
+    (a : Y.unop.base.carrier) :
+    (asrt q).unop.toNCPMap (ϱ.unop.toNCPMap a)
+      = suPredVal q * ϱ.unop.toNCPMap a := by
+  have hsq : CFC.sqrt (suPredVal q) * ϱ.unop.toNCPMap a
+      = ϱ.unop.toNCPMap a * CFC.sqrt (suPredVal q) :=
+    (Commute.cfcₙ_nnreal (hcomm a) NNReal.sqrt :
+      Commute (CFC.sqrt (suPredVal q)) (ϱ.unop.toNCPMap a))
+  rw [su_asrt_apply]
+  calc CFC.sqrt (suPredVal q) * ϱ.unop.toNCPMap a * CFC.sqrt (suPredVal q)
+      = ϱ.unop.toNCPMap a
+          * (CFC.sqrt (suPredVal q) * CFC.sqrt (suPredVal q)) := by
+        rw [← mul_assoc, ← hsq, mul_assoc]
+    _ = ϱ.unop.toNCPMap a * suPredVal q := by
+        rw [CFC.sqrt_mul_sqrt_self _ (suPredVal_nonneg q)]
+    _ = suPredVal q * ϱ.unop.toNCPMap a := (hcomm a).symm
+
+/-- **223III** (`eff-inv-lemma`, eff.tex:7053, Lemma): in `vNᵒᵖ`, for an
+nmiu-map `ϱ : 𝒜 → 𝒫`, `Inv ϱ` is the set of effects of the commutant
+`ϱ(𝒜)^□` of the image.
+
+The author's proof, transcribed.  (⇐) is the computation
+`√a ϱ(b) √a + √(1−a) ϱ(b) √(1−a) = a ϱ(b) + (1−a) ϱ(b) = ϱ(b)`.  (⇒) uses
+that `(𝒫, ϱ, id)` is a Paschke dilation of `ϱ` (`su_paschke_nmiu`) and
+**157IV**.3 `paschke_correspondence_surjective`: `asrt_a ∘ ϱ ≤_ncp ϱ`, so
+`asrt_a(ϱ(b)) = t ϱ(b)` for a `t` in the commutant, and `b = 1` gives
+`a = t`. -/
+theorem su_invSet_iff {P Y : WStarCPSU.{u}ᵒᵖ} (ϱ : P ⟶ Y)
+    (ρ : Theses.NMIUMap Y.unop.base.carrier P.unop.base.carrier)
+    (hρ : ∀ a, ρ a = ϱ.unop.toNCPMap a)
+    (p : P ⟶ effObj (WStarCPSU.{u}ᵒᵖ)) :
+    sef p ≫ ϱ = ϱ ↔ suPredVal p ∈ Theses.A.VN.commutant P.unop.base.carrier
+      (Set.range ⇑ρ) := by
+  have hρ1 : ρ (1 : Y.unop.base.carrier) = (1 : P.unop.base.carrier) :=
+    map_one ρ.toStarAlgHom
+  have ht0 : (0 : P.unop.base.carrier) ≤ suPredVal p := suPredVal_nonneg p
+  have ht1 : suPredVal p ≤ 1 := suPredVal_le_one p
+  constructor
+  · -- ⇒
+    intro hsef
+    obtain ⟨φsu, hφsu⟩ := su_exists_ncpsu_of_nmiu ρ
+    have hD := su_paschke_nmiu ρ φsu.toNCPMap hφsu
+    -- `asrt_p ∘ ϱ` is ncp-below `ϱ`
+    have hmem : ⇑(asrt p ≫ ϱ).unop.toNCPMap ∈
+        Theses.B.Dils.ncpInterval ⇑φsu.toNCPMap := by
+      refine ⟨⟨(asrt p ≫ ϱ).unop.toNCPMap, fun a => (zero_add _).symm⟩,
+        (asrt (EffectAlgebra.orth p) ≫ ϱ).unop.toNCPMap, fun a => ?_⟩
+      have e := congrArg (fun m : P ⟶ Y => m.unop.toNCPMap a) hsef
+      simp only [suop_comp_apply] at e
+      show φsu.toNCPMap a = (asrt p ≫ ϱ).unop.toNCPMap a
+        + (asrt (EffectAlgebra.orth p) ≫ ϱ).unop.toNCPMap a
+      rw [suop_comp_apply, suop_comp_apply, hφsu, hρ]
+      exact e.symm
+    obtain ⟨s, hs, hs0, hs1, hsval⟩ :=
+      Theses.B.Dils.paschke_correspondence_surjective φsu.toNCPMap _ hD _ hmem
+    -- `s = a`, by evaluating at `1`
+    have hval1 : s = suPredVal p := by
+      have e := congrFun hsval (1 : Y.unop.base.carrier)
+      show s = suPredVal p
+      have e1 : Theses.A.Proc.ncpId P.unop.base.carrier (s * ρ 1) = s := by
+        rw [Theses.A.Proc.ncpId_apply, hρ1, mul_one]
+      have e2 : (asrt p ≫ ϱ).unop.toNCPMap (1 : Y.unop.base.carrier)
+          = suPredVal p := by
+        rw [suop_comp_apply, su_asrt_apply,
+          show ϱ.unop.toNCPMap (1 : Y.unop.base.carrier)
+            = (1 : P.unop.base.carrier) from (hρ 1).symm.trans hρ1,
+          mul_one, CFC.sqrt_mul_sqrt_self _ ht0]
+      exact (e1.symm.trans e).trans e2
+    rw [← hval1]
+    exact hs
+  · -- ⇐
+    intro hcomm
+    have hc : ∀ a : Y.unop.base.carrier,
+        suPredVal p * ϱ.unop.toNCPMap a = ϱ.unop.toNCPMap a * suPredVal p := by
+      intro a
+      have h := hcomm (ϱ.unop.toNCPMap a) ⟨a, hρ a⟩
+      exact h.symm
+    have hco : ∀ a : Y.unop.base.carrier,
+        (1 - suPredVal p) * ϱ.unop.toNCPMap a
+          = ϱ.unop.toNCPMap a * (1 - suPredVal p) := by
+      intro a
+      rw [sub_mul, mul_sub, one_mul, mul_one, hc a]
+    obtain ⟨p', hp'⟩ : ∃ p' : P ⟶ effObj (WStarCPSU.{u}ᵒᵖ),
+        p' = EffectAlgebra.orth p := ⟨_, rfl⟩
+    have hp'val : suPredVal p' = 1 - suPredVal p := by
+      rw [hp']; exact suPredVal_orth p
+    refine suop_hom_ext fun a => ?_
+    have e1 : (asrt p).unop.toNCPMap (ϱ.unop.toNCPMap a)
+        = suPredVal p * ϱ.unop.toNCPMap a :=
+      su_asrt_comp_of_commute ϱ p hc a
+    have e2 : (asrt p').unop.toNCPMap (ϱ.unop.toNCPMap a)
+        = (1 - suPredVal p) * ϱ.unop.toNCPMap a := by
+      refine Eq.trans (su_asrt_comp_of_commute ϱ p' (by rw [hp'val]; exact hco) a) ?_
+      rw [hp'val]
+    have e3 : (sef p ≫ ϱ).unop.toNCPMap a
+        = (asrt p).unop.toNCPMap (ϱ.unop.toNCPMap a)
+          + (asrt p').unop.toNCPMap (ϱ.unop.toNCPMap a) := by
+      rw [hp']
+      exact suop_comp_apply (sef p) ϱ a
+    rw [e3, e1, e2, sub_mul, one_mul]
+    abel
+
+/-- **223VI at `vNᵒᵖ`** (eff.tex:7095, Example): **every dilation in `vNᵒᵖ`
+has the order correspondence.**  eff.tex's proof is one line — "by
+`paschke-correspondence`" — and this is what it amounts to: the dilation is a
+Paschke dilation (`su_isPaschke_of_isDilation`), `↓f` is `[0,φ]_ncp`
+(`su_below_iff`), `Inv ϱ` is `[0,1]_{ϱ(𝒜)^□}` (**223III** `su_invSet_iff`),
+and `ϱ ∘ asrt_q ∘ h` is `φ_t` for `t` the effect named by `q`
+(`su_asrt_apply` plus the commutation).  The order isomorphism is then
+**157IV**: `t ↦ φ_t` is an order embedding (part 2) onto `[0,φ]_ncp`
+(part 3), and `Θ` is its inverse. -/
+theorem su_dilation_order_correspondence {X Y P : WStarCPSU.{u}ᵒᵖ}
+    (f : X ⟶ Y) (ϱ : P ⟶ Y) (h : X ⟶ P) (hd : IsDilation f ϱ h) :
+    DilationOrderCorrespondence f ϱ h := by
+  obtain ⟨ρ, hρ⟩ := su_exists_nmiu_of_sharp_total ϱ hd.1 hd.2.1
+  have hD := su_isPaschke_of_isDilation f ϱ h hd ρ hρ
+  -- the effects of `Inv ϱ` commute with the image of `ϱ` (223III)
+  have hcm : ∀ q : (InvSet ϱ), suPredVal q.1 ∈
+      Theses.A.VN.commutant P.unop.base.carrier (Set.range ⇑ρ) :=
+    fun q => (su_invSet_iff ϱ ρ hρ q.1).mp q.2
+  have hcomm : ∀ (q : (InvSet ϱ)) (a : Y.unop.base.carrier),
+      suPredVal q.1 * ϱ.unop.toNCPMap a
+        = ϱ.unop.toNCPMap a * suPredVal q.1 :=
+    fun q a => (hcm q (ϱ.unop.toNCPMap a) ⟨a, hρ a⟩).symm
+  -- `ϱ ∘ asrt_q ∘ h` is `φ_t`
+  have hphiT : ∀ q : (InvSet ϱ), ⇑(h ≫ asrt q.1 ≫ ϱ).unop.toNCPMap
+      = Theses.B.Dils.phiT
+          (⟨P.unop.base.carrier, inferInstance, ρ, h.unop.toNCPMap⟩ :
+            Theses.B.Dils.PaschkeTriple Y.unop.base.carrier X.unop.base.carrier)
+          (suPredVal q.1) := by
+    intro q
+    funext a
+    show (h ≫ asrt q.1 ≫ ϱ).unop.toNCPMap a
+      = h.unop.toNCPMap (suPredVal q.1 * ρ a)
+    rw [suop_comp_apply, suop_comp_apply,
+      su_asrt_comp_of_commute ϱ q.1 (hcomm q) a, hρ a]
+  have hncp : ∀ q : (InvSet ϱ), Theses.B.Dils.NCPLe (fun _ => 0)
+      (Theses.B.Dils.phiT
+        (⟨P.unop.base.carrier, inferInstance, ρ, h.unop.toNCPMap⟩ :
+          Theses.B.Dils.PaschkeTriple Y.unop.base.carrier X.unop.base.carrier)
+        (suPredVal q.1)) := by
+    intro q
+    exact ⟨(h ≫ asrt q.1 ≫ ϱ).unop.toNCPMap,
+      fun a => (congrFun (hphiT q) a).symm.trans (zero_add _).symm⟩
+  -- the map `Θ⁻¹ : Inv ϱ → ↓f`
+  obtain ⟨Ψ, hΨ⟩ : ∃ Ψ : (InvSet ϱ) → (belowSet f),
+      ∀ q, (Ψ q).1 = h ≫ asrt q.1 ≫ ϱ := by
+    refine ⟨fun q => ⟨h ≫ asrt q.1 ≫ ϱ, ?_⟩, fun _ => rfl⟩
+    refine (su_below_iff f _).mpr ?_
+    rw [hphiT q]
+    exact Theses.B.Dils.paschke_correspondence_mem f.unop.toNCPMap _ hD
+      (suPredVal q.1) (hcm q) (suPredVal_nonneg _) (suPredVal_le_one _)
+  -- it is an order embedding (157IV.2)
+  have hle : ∀ q q' : (InvSet ϱ), (Ψ q).1 ≼ (Ψ q').1 ↔ q.1 ≼ q'.1 := by
+    intro q q'
+    have hemb := Theses.B.Dils.paschke_correspondence_embedding
+      f.unop.toNCPMap _ hD (suPredVal q'.1) (suPredVal q.1) (hcm q')
+      (suPredVal_nonneg _) (suPredVal_le_one _) (hcm q)
+      (suPredVal_nonneg _) (suPredVal_le_one _)
+    refine Iff.trans (su_below_iff (Ψ q').1 (Ψ q).1) ?_
+    rw [hΨ q, hΨ q', hphiT q, hphiT q', su_pred_le_iff]
+    exact ⟨fun hh => hemb.mp hh.2, fun hh => ⟨hncp q, hemb.mpr hh⟩⟩
+  -- and onto (157IV.3)
+  have hsurj : Function.Surjective Ψ := by
+    intro g
+    obtain ⟨t, ht, ht0, ht1, htval⟩ :=
+      Theses.B.Dils.paschke_correspondence_surjective f.unop.toNCPMap _ hD
+        ⇑g.1.unop.toNCPMap ((su_below_iff f g.1).mp g.2)
+    obtain ⟨q, hq⟩ := su_pred_exists (X := P) ht0 ht1
+    have hqinv : sef q ≫ ϱ = ϱ :=
+      (su_invSet_iff ϱ ρ hρ q).mpr (by rw [hq]; exact ht)
+    refine ⟨⟨q, hqinv⟩, Subtype.ext ?_⟩
+    have e : ⇑(h ≫ asrt q ≫ ϱ).unop.toNCPMap = ⇑g.1.unop.toNCPMap := by
+      rw [hphiT ⟨q, hqinv⟩, hq, htval]
+    rw [hΨ ⟨q, hqinv⟩]
+    exact suop_hom_ext fun a => congrFun e a
+  have hinj : Function.Injective Ψ := by
+    intro q q' hqq
+    refine Subtype.ext (su_pred_ext (le_antisymm ?_ ?_))
+    · exact (su_pred_le_iff q.1 q'.1).mp
+        ((hle q q').mp (by rw [hqq]; exact pcm_preorder_refl _))
+    · exact (su_pred_le_iff q'.1 q.1).mp
+        ((hle q' q).mp (by rw [hqq]; exact pcm_preorder_refl _))
+  obtain ⟨E, hE⟩ : ∃ E : (InvSet ϱ) ≃ (belowSet f), ∀ q, E q = Ψ q :=
+    ⟨Equiv.ofBijective Ψ ⟨hinj, hsurj⟩, fun _ => rfl⟩
+  have hEs : ∀ g : (belowSet f), (Ψ (E.symm g)).1 = g.1 := fun g =>
+    congrArg Subtype.val ((hE (E.symm g)).symm.trans (E.apply_symm_apply g))
+  refine ⟨E.symm, fun g₁ g₂ => ?_, fun g => ?_⟩
+  · rw [← hEs g₁, ← hEs g₂]
+    exact hle _ _
+  · rw [← hEs g, hΨ]
+
+/-- **215V**.3 at `vNᵒᵖ` (the third axiom of a †'-effectus): a quotient for
+a **sharp** predicate is a sharp map.  Quotients are unique up to isomorphism
+(**197V**.2), so it is enough for the standard one, which for a projection
+`z` is `b ↦ (1−z) b (1−z) : (1−z)𝒜(1−z) → 𝒜` (as `√(1−z) = 1−z`) and
+therefore restricts to the identity on projections. -/
+theorem su_quot_sharp {X W : WStarCPSU.{u}ᵒᵖ}
+    {s : X ⟶ effObj (WStarCPSU.{u}ᵒᵖ)} (hs : IsSharp s) {ξ : X ⟶ W}
+    (hξ : IsQuotient s ξ) : SharpMap ξ := by
+  have hz : IsStarProjection (suPredVal s) := (su_isSharp_iff s).mp hs
+  have hz1 : IsStarProjection (1 - suPredVal s) := hz.one_sub
+  have hsq : CFC.sqrt (1 - suPredVal s) = 1 - suPredVal s :=
+    CFC.sqrt_unique hz1.isIdempotentElem.eq hz1.nonneg
+  have hce : Theses.A.VN.ceil (1 - suPredVal s) = 1 - suPredVal s :=
+    Theses.A.VN.ceil_of_isStarProjection hz1
+  letI : Theses.VonNeumannAlgebra (Theses.B.Dils.cornerSet X.unop.base.carrier
+      (Theses.A.VN.ceil (1 - suPredVal s))) :=
+    Theses.B.Dils.cornerSet_vonNeumannAlgebra _ _
+  obtain ⟨c, hcval, hcfil⟩ := Theses.B.Dils.dils_stand_filter
+    (B := X.unop.base.carrier) (1 - suPredVal s) hz1.nonneg
+  obtain ⟨ξ₀, hξ₀v⟩ : ∃ ξ₀ : X ⟶ Opposite.op (WStarCPSU.of (WStar.of
+        (Theses.B.Dils.cornerSet X.unop.base.carrier
+          (Theses.A.VN.ceil (1 - suPredVal s))))),
+      ξ₀.unop.toNCPMap = c :=
+    ⟨Quiver.Hom.op ⟨c, le_trans hcfil.2.1 (sub_le_self 1 hz.nonneg)⟩, rfl⟩
+  have hq₀ : IsQuotient s ξ₀ := by
+    refine su_isQuotient_of_isFilterFor s ξ₀ ?_
+    rw [hξ₀v, show suPredVal (EffectusPartialForm.orth s) = 1 - suPredVal s from
+      suPredVal_orth s]
+    exact hcfil
+  have h0 : SharpMap ξ₀ := by
+    refine (su_sharpMap_iff ξ₀).mpr fun b hb => ?_
+    -- the corner element `b` is generalised to a plain `bv` before `⌈1−z⌉` is
+    -- rewritten: `↑b`'s own type mentions `⌈1−z⌉`, so `rw` would not typecheck
+    obtain ⟨bv, hb1, hval, hbv2⟩ : ∃ bv : X.unop.base.carrier,
+        IsStarProjection bv ∧
+        ξ₀.unop.toNCPMap b
+          = CFC.sqrt (1 - suPredVal s) * bv * CFC.sqrt (1 - suPredVal s) ∧
+        Theses.A.VN.ceil (1 - suPredVal s) * bv
+            * Theses.A.VN.ceil (1 - suPredVal s) = bv :=
+      ⟨b.1, ⟨congrArg Subtype.val hb.isIdempotentElem.eq,
+          congrArg Subtype.val hb.isSelfAdjoint.star_eq⟩,
+        Eq.trans (congrArg (fun m => m b) hξ₀v) (hcval b), b.2⟩
+    rw [hce] at hbv2
+    rw [hval, hsq, hbv2]
+    exact hb1
+  obtain ⟨θ, hiso, hθ, -⟩ := quotient_basics_2 hξ hq₀
+  haveI := hiso
+  rw [← hθ]
+  exact sharpMap_comp h0 (sharpMap_of_isIso θ)
+
+/-- **215V at `vNᵒᵖ`**: `vNᵒᵖ` is a **†'-effectus**. -/
+theorem su_daggerPrimeEffectus : DaggerPrimeEffectus (WStarCPSU.{u}ᵒᵖ) where
+  sqrt_existsUnique := su_sqrt_existsUnique
+  asrt_sq := su_asrt_sq
+  quot_sharp := by
+    intro X W s hs ξ hq
+    exact su_quot_sharp hs hq
+
+/-- **215VI at `vNᵒᵖ`** (`vn-is-dagger-category`, eff.tex:5338, Corollary):
+the &-effectus `vNᵒᵖ` is a **†-effectus**, by **220II**
+`dagger_thm_sufficiency` applied to `su_daggerPrimeEffectus`. -/
+theorem su_daggerEffectus : Nonempty (DaggerEffectus (WStarCPSU.{u}ᵒᵖ)) := by
+  letI := su_daggerPrimeEffectus.{u}
+  exact dagger_thm_sufficiency
+
+end AndThen223
+
 end IUnique
 
 
@@ -3743,7 +4595,13 @@ theorem vn_is_dagger_category (s : EffectusPartialStructure WStarCPSU.{u}ᵒᵖ)
     letI := s.effectus
     ∀ hA : AndThenEffectus WStarCPSU.{u}ᵒᵖ,
       letI := hA
-      Nonempty (DaggerEffectus WStarCPSU.{u}ᵒᵖ) := sorry
+      Nonempty (DaggerEffectus WStarCPSU.{u}ᵒᵖ) := by
+  have : HasFiniteCoproducts (WStarCPSU.{u}ᵒᵖ) := suHasFiniteCoproducts
+  have hpcm : s.homPCM = suPCM :=
+    effectusPartialStructure_homPCM_unique s vnPartialStructure
+  obtain ⟨hfc, pcm, hfin, E⟩ := s
+  subst hpcm
+  exact fun hA => @su_daggerEffectus E hA
 
 /-- **221III** (eff.tex:6805, Example): the effectus `vNᵒᵖ` has dilations
 (Paschke dilations; the full subcategory `CvNᵒᵖ` does not, 221IIIa — not
@@ -3775,7 +4633,14 @@ theorem vn_dilation_order_correspondence
     ∀ hA : AndThenEffectus WStarCPSU.{u}ᵒᵖ,
       letI := hA
       ∀ {X Y P : WStarCPSU.{u}ᵒᵖ} (f : X ⟶ Y) (ϱ : P ⟶ Y) (h : X ⟶ P),
-        IsDilation f ϱ h → DilationOrderCorrespondence f ϱ h := sorry
+        IsDilation f ϱ h → DilationOrderCorrespondence f ϱ h := by
+  have : HasFiniteCoproducts (WStarCPSU.{u}ᵒᵖ) := suHasFiniteCoproducts
+  have hpcm : s.homPCM = suPCM :=
+    effectusPartialStructure_homPCM_unique s vnPartialStructure
+  obtain ⟨hfc, pcm, hfin, E⟩ := s
+  subst hpcm
+  intro hA X Y P f ϱ h hd
+  exact @su_dilation_order_correspondence E hA X Y P f ϱ h hd
 
 /-! ## `Pure (vNᵒᵖ)`, and the effects of a von Neumann algebra (parsecs 224, 225)
 

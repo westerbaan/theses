@@ -21244,3 +21244,118 @@ Nothing for ERRATA — no defect in a statement; the corner-unitality point is
 QUESTIONS **D7**, already filed, and no new QUESTIONS.  `docs/why-open.csv`:
 the `vn_has_dilations` row is removed and the five remaining rows carry the
 session-88 note.  `docs/BEff-survey.md`: a session-88 block.
+
+## Session 89 — `B/Eff`: **the second bridge layer is FINISHED, and 223VI `vn_dilation_order_correspondence` *and* 215VI `vn_is_dagger_category` are both CLOSED** — `f_⋄` never had to be computed (worker on `Theses/B/Eff/VNExamples.lean`)
+
+Both closed statements are axiom-clean (`#print axioms` in situ, on a copy of
+the source with the checks appended, since oleans in this tree go stale).
+`VNExamples.lean` compiles with **no errors** and exactly three remaining
+`sorry`s.  **B/Eff goes 6 → 4.**  ~865 added lines, against the ~400–600
+re-costing recorded at the end of session 88 — the overrun is entirely the
+`asrt`/`sef` dictionary, which turned out to be a prerequisite of *both*
+statements rather than of 223VI alone.
+
+### The shortcut that made the ⋄ layer affordable
+
+`asrt_p` is characterised by **211II** as the unique **⋄-positive** map with
+`1 ∘ asrt_p = p`, and **206II**.4 defines ⋄-positive as *pure and of the form
+`g ≫ g` for a ⋄-self-adjoint `g`*.  Read literally that needs both `f^⋄` and
+`f_⋄` computed concretely in `vN`, and `f_⋄` is the expensive one — it is
+defined through comprehensions and corner algebras.
+
+**It never has to be computed.**  By **207III** `diamond_adjunction`,
+`f^⋄(s) ≤ tᗮ ⟺ f_⋄(t) ≤ sᗮ`.  So if `f^⋄` happens to be *symmetric*, i.e.
+`f^⋄(s) ≤ tᗮ ⟺ f^⋄(t) ≤ sᗮ`, then `f_⋄(t)` and `f^⋄(t)` have exactly the same
+`ᗮ`-upper bounds, and `f` is ⋄-self-adjoint — that is
+`su_diamondSelfAdjoint_of_symm`, and it mentions `f_⋄` nowhere.  And `f^⋄`
+*is* cheap from the session-87 dictionary alone: `f^⋄(s) = ⌈f(z)⌉` where `z`
+is the projection naming `s` (`su_diaPull_val`, on top of `su_ceilPred_val`,
+which is 203IV at `vNᵒᵖ`: the effectus ceiling of predicates is the `⌈·⌉` of
+vn.tex 59I, both being least among projections above the effect).
+
+For `f = ad_w` the symmetry condition then unwinds to
+`y (w z w) = 0 ⟺ y w z = 0` for projections `y, z` (`su_ad_triple_zero`,
+by `CStarRing.star_mul_self_eq_zero_iff`), and `y w z = 0 ⟺ z w y = 0`
+because the two are each other's adjoint.  **Three lines of C\*-algebra**,
+and no comprehension map, image or corner algebra appears anywhere in the ⋄
+layer.
+
+### `asrt_p` is `ad_{√a}` — and 211IV is blocked on *uniqueness alone*
+
+`su_exists_asrt` proves the **existence** half of 211II with **no
+`AndThenEffectus` hypothesis at all**: `ad_{√a}` is ⋄-positive (pure by
+`su_isPure_ad_sqrt`, and `ad_{√a} = ad_{⁴√a} ≫ ad_{⁴√a}` with `⁴√a`
+⋄-self-adjoint by the above) and satisfies `1 ∘ ad_{√a} = a`.  Under the
+hypothesis, `asrt_unique` then gives `su_asrt_apply`: **`asrt_p` is
+`b ↦ √a b √a`**.
+
+This sharpens the standing record for **211IV `vn_is_andthen_eff`**: it is
+blocked on the **uniqueness** half only — i.e. on **105V**
+`positive-map-uniqueness` in `A/Proc/Measurement.lean` — and on nothing else.
+`docs/why-open.csv` row updated accordingly.
+
+Purity of `ad_{√a}` (`su_isPure_ad_sqrt`) is the one place a corner algebra
+survives: it factors as *standard filter after standard corner at `⌈a⌉`*,
+which needs **169IV** transported from `⌊·⌋𝒜⌊·⌋` to `⌈a⌉𝒜⌈a⌉`.  The two are
+the same algebra only after `⌊⌈a⌉⌋ = ⌈a⌉`, and the `Fact` instances carrying
+the algebra structure of `p𝒜p` are `Prop`s, so `subst` crosses them —
+`su_corner_transport`.  The gluing equations are `√a ⌈a⌉ = √a` and
+`⌈a⌉ √a = √a` (`su_sqrt_mul_ceil`, from `sqrt_mul_eq_zero_iff`).
+
+### 223VI: three dictionary entries, then 157IV verbatim
+
+* **`↓f` is the ncp-interval `[0, φ]_ncp`** of 157II (`su_below_iff`).  The
+  only content is that the *difference* of a subunital map and a smaller one
+  is again subunital, which holds because `δ(1) ≤ φ(1) ≤ 1`.
+* **A dilation in `vNᵒᵖ` is a Paschke dilation** (`su_isPaschke_of_isDilation`)
+  — the converse reading of session 88's `su_isDilation_of_paschke`.
+* **223III `Inv ϱ = [0,1]_{ϱ(𝒜)^□}`** (`su_invSet_iff`).  The ⇐ half is the
+  computation `√t ϱ(b) √t + √(1−t) ϱ(b) √(1−t) = ϱ(b)` for `t` in the
+  commutant; the ⇒ half applies **157IV** to the Paschke dilation `(𝒫, ϱ, id)`
+  of an nmiu-map, for which `su_paschke_nmiu` records that **an nmiu-map is
+  its own Paschke dilation, with `h = id`**.
+
+After that, `paschke_correspondence_mem`/`_embedding`/`_surjective` supply
+the map, the order-embedding and the surjectivity of `Θ` with nothing left
+over.
+
+### 215VI came out of the same layer, as predicted
+
+`dagger_thm_sufficiency` (**220II**) reduces it to `DaggerPrimeEffectus`, so
+what was needed was 215V.1–3.  215V.1 `su_sqrt_existsUnique` (every predicate
+has a unique `&`-square root) is `CFC.sqrt_unique` once `su_andThen_val` says
+`p & q` is `√a b √a`; 215V.2 `su_asrt_sq`
+(`asrt²_{p&q} = asrt_p ∘ asrt²_q ∘ asrt_p`) is `su_asrt_apply` plus
+`√c √c = c` on both sides.  215V.3 `su_quot_sharp` is the one with an
+argument —
+*quotients are unique up to isomorphism* (**197V**.2), so it suffices for the
+**standard** quotient, which for a projection `z` is `b ↦ (1−z)b(1−z)` since
+`√(1−z) = 1−z`, and that restricts to the identity on projections.
+
+### A Lean note worth keeping
+
+`rw` cannot cross `cornerSet A ⌈a⌉` and
+`(Opposite.unop (Opposite.op (WStarCPSU.of (WStar.of (cornerSet A ⌈a⌉))))).base.carrier`
+— definitionally equal, syntactically not.  Both places where a corner
+algebra is the codomain of a `vN_cpsuᵒᵖ` morphism, the computation had to be
+written as a term-mode `Eq.trans` chain instead.  The same trick as session
+88 (generalise the corner element to a plain algebra element *before*
+rewriting `⌈·⌉`) is what makes `su_quot_sharp` go through: `↑b`'s own **type**
+mentions `⌈1−z⌉`, so rewriting it first does not typecheck.
+
+Nothing for ERRATA — no defect in any statement.  No new QUESTIONS; **D7**
+(corner unitality) is untouched by this session's route, which uses the
+*standard* corner throughout and therefore never meets a non-unital one.
+`docs/why-open.csv`: the `vn_dilation_order_correspondence` and
+`vn_is_dagger_category` rows are removed, the `vn_is_andthen_eff` row is
+narrowed to 105V, and the two `exc_purec_*` rows carry the session-89 note.
+
+### What is next in `B/Eff`
+
+The three remaining `sorry`s are **211IV `vn_is_andthen_eff`** (blocked on
+105V, outside B/Eff) and the two exercises **224VI `exc_purec_no_biproduct`**
+and **224VII `exc_purec_equal`**, both of which have full author solutions in
+`bsols.tex` (3358–3479 and 3480–3540) and neither of which is blocked: the
+whole bridge is now built, and what is left is each exercise's own
+mathematics — GNS, minimal projections and factoriality for 224VI, filters in
+`M₄` and pseudoinverses for 224VII.
