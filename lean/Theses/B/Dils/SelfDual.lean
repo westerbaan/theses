@@ -18,14 +18,28 @@ Statements only; every proof is `sorry`.  Conventions as in
 `HilbertModules.lean` (mirrored left-action convention).
 
 NOTE(proc-dep): the tensor product of von Neumann algebras is developed in
-thesis A (proc.tex, parsec 1080, label `tensor`), which is not yet
-formalized; the interface needed here (an miu-bilinear map whose image
-generates, whose product functionals of np-functionals all exist, and whose
-product np-functionals are separating — the three clauses `tensor-1`,
-`tensor-2`, `tensor-3` of 108II) is axiomatized below as `IsVNTensor`.
+thesis A (proc.tex, parsec 1080, label `tensor`).  The interface needed here
+(an miu-bilinear map whose image generates, whose product functionals of
+np-functionals all exist, and whose product np-functionals are separating —
+the three clauses `tensor-1`, `tensor-2`, `tensor-3` of 108II) is written out
+below as `IsVNTensor`, so that parsecs 1640–1670 depend on the *interface*
+rather than on a chosen construction.  It is the same definition as thesis
+A's `Theses.A.Proc.IsTensorProduct`, field for field, once `generates`
+(`W*(ran t) = ⊤`) is read as ultraweak density of the span
+(`wstar_eq_top_of_dense_span`).
+
+`Theses.A.Proc.Tensor` **is** imported, since session 91: **165VI**
+`ba_ext_tensor_pres` cannot be proved without **116VII**
+`tensor_characterization`, which is what upgrades the product functionals of
+the *vector* states — the only ones 165IX constructs — to the product
+functionals of all np-functionals that `IsVNTensor` asks for.  The import is
+acyclic (nothing under `Theses/A/` imports `Theses.B`), costs no measurable
+compile time, and clashes with nothing, because this file does not
+`open Theses.A.Proc`; the few names taken from it are written out qualified.
 -/
 import Theses.B.Dils.Paschke
 import Theses.B.Dils.Kaplansky
+import Theses.A.Proc.Tensor
 
 open scoped ComplexOrder CStarAlgebra WithCStarModule Uniformity TensorProduct
 open Filter Topology Theses Theses.A.CStar Theses.A.VN
@@ -7046,20 +7060,294 @@ theorem hilbmod_tensor_ketbra [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
     rw [CStarModule.inner_sub_right, ← hRadj (E.η x' y') (E.η x y), hR x' y',
       E.η_inner, E.η_inner, hSadj x' x, hTadj y' y, sub_self]
 
+/-! ### Auxiliary for **165VI**
+
+Two general facts, used only in `ba_ext_tensor_pres`. -/
+
+/-- Membership of the *ultraweak* closure from approximation against finitely
+many np-functionals at a time — the ultraweak counterpart of
+`mem_usClosure_iff`.  Needed because **164XI** `ext_tensor_ketbra_uwDense`
+delivers its density in that entourage form (its net form **is false**, see
+QUESTIONS **D6**), while **116VII** and `wstar_eq_top_of_dense_span` want
+`Dense` for the topology `ultraweak`.  The net that witnesses the closure
+membership is indexed by `Finset (NPFunctional A) × ℕ` — finitely many
+functionals, accuracy `1/(n+1)`. -/
+private theorem mem_uwClosure_of_npApprox {A : Type u} [CStarAlgebra A]
+    [PartialOrder A] [StarOrderedRing A] [VonNeumannAlgebra A]
+    (K : Set A) (x : A)
+    (h : ∀ (m : ℕ) (gs : Fin m → NPFunctional A) (ε : ℝ), 0 < ε →
+      ∃ z ∈ K, ∀ k, ‖(gs k x : ℂ) - gs k z‖ ≤ ε) :
+    x ∈ @closure A (ultraweak A) K := by
+  classical
+  let _ : TopologicalSpace A := ultraweak A
+  have hpt : ∀ (s : Finset (NPFunctional A)) (n : ℕ),
+      ∃ z ∈ K, ∀ ω ∈ s, ‖(ω x : ℂ) - ω z‖ ≤ 1 / (n + 1 : ℝ) := by
+    intro s n
+    obtain ⟨z, hzK, hz⟩ := h s.card
+      (fun k => ((s.equivFin.symm k : {a // a ∈ s}) : NPFunctional A))
+      (1 / (n + 1 : ℝ)) (by positivity)
+    refine ⟨z, hzK, fun ω hω => ?_⟩
+    have hk := hz (s.equivFin ⟨ω, hω⟩)
+    simpa using hk
+  choose z hzK hz using hpt
+  have hlim : UWTendsto (fun d : Finset (NPFunctional A) × ℕ => z d.1 d.2) atTop x := by
+    rw [uwTendsto_iff]
+    intro ω
+    rw [Metric.tendsto_atTop]
+    intro ε hε
+    obtain ⟨n, hn⟩ := exists_nat_one_div_lt hε
+    refine ⟨({ω}, n), fun d hd => ?_⟩
+    have hωd : ω ∈ d.1 := hd.1 (Finset.mem_singleton_self ω)
+    have hnd : (n : ℝ) ≤ (d.2 : ℝ) := by exact_mod_cast hd.2
+    have h1 := hz d.1 d.2 ω hωd
+    have h2 : 1 / ((d.2 : ℝ) + 1) ≤ 1 / ((n : ℝ) + 1) := by
+      apply one_div_le_one_div_of_le (by positivity)
+      linarith
+    rw [dist_eq_norm]
+    calc ‖(ω (z d.1 d.2) : ℂ) - ω x‖ = ‖(ω x : ℂ) - ω (z d.1 d.2)‖ := norm_sub_rev _ _
+      _ ≤ 1 / ((d.2 : ℝ) + 1) := h1
+      _ ≤ 1 / ((n : ℝ) + 1) := h2
+      _ < ε := hn
+  exact mem_closure_of_tendsto hlim (Eventually.of_forall fun d => hzK d.1 d.2)
+
+/-- The vector np-functionals of `𝒷ᵃ(X)` are centre separating: this is
+**144I** `hilbmod_ordersep` (through `ba_nonneg_iff`) plus their normality
+**152XIII** `baVecNP`, and it is the `Ω_X`/`Ω_Y` of the thesis's **165IX**.
+(The same argument appears inline inside `ketbra_ultranorm_continuous`
+above.) -/
+private theorem baVec_centreSeparatingConj {𝒷 : Type u} [CStarAlgebra 𝒷]
+    [PartialOrder 𝒷] [StarOrderedRing 𝒷] [VonNeumannAlgebra 𝒷] {M : Type v}
+    [NormedAddCommGroup M] [NormedSpace ℂ M] [SMul 𝒷 M] [CStarModule 𝒷 M]
+    [CompleteSpace M] (hM : SelfDual 𝒷 M) [VonNeumannAlgebra (Ba 𝒷 M)] :
+    CentreSeparatingConj (Ba 𝒷 M)
+      {ν | ∃ (v : M) (f : NPFunctional 𝒷), ν = baVecNP hM v f} := by
+  rw [centreSeparatingConj_iff]
+  intro a ha
+  refine ⟨fun h ν hν b => by rw [h]; simp, fun h => ?_⟩
+  have hvec : ∀ v : M, (inner 𝒷 v (a.1 v) : 𝒷) = 0 := by
+    intro v
+    refine VonNeumannAlgebra.np_faithful _ ((ba_nonneg_iff a).mp ha v) fun fν => ?_
+    have h1 := h (baVecNP hM v fν) ⟨v, fν, rfl⟩ 1
+    rw [star_one, one_mul, mul_one, baVecNP_apply] at h1
+    exact h1
+  have hle : a ≤ 0 := by
+    rw [← neg_nonneg]
+    refine (ba_nonneg_iff _).mpr fun v => ?_
+    have he : (-a).1 v = -(a.1 v) := rfl
+    rw [he, CStarModule.inner_neg_right, hvec v, neg_zero]
+  exact le_antisymm hle ha
+
 /-- **165VI** (`ba-ext-tensor-pres`, dils.tex:5531, Theorem): there is an
 nmiu-isomorphism `𝒜ᵃ(X) ⊗ ℬᵃ(Y) ≅ 𝒞ᵃ(X ⊗ Y)` sending `S ⊗ T` to
 `S ⊗ T`; stated as: the bilinear map `Θ(S,T) = S ⊗ T` exhibits
 `𝒞ᵃ(X ⊗ Y)` as the von Neumann tensor product of `𝒜ᵃ(X)` and `ℬᵃ(Y)`.
 
-**165VII**–**165X** are the proof — not converted. -/
+**165VII**–**165X** are the proof, transcribed below.
+
+**165VII** reduces the theorem to *`Θ` is a tensor product in the sense of
+`tensor`* (108II) by way of `tensor-uniqueness`; our statement is that
+reduction already carried out, so what is proved here is exactly the thesis's
+**165VIII**–**165X** — and the route is the thesis's own: verify the three
+conditions of **116VII** `tensor_characterization` (thesis A, proc.tex:3578,
+now proved) for the centre separating collections `Ω_X`, `Ω_Y` of *vector*
+np-functionals, and read `IsVNTensor` off the resulting `IsTensorProduct`.
+It is only for this that `Theses.A.Proc.Tensor` is imported: **116VII** is
+what upgrades the product functionals of the *vector* states — the only ones
+**165IX** constructs — to the product functionals of *all* np-functionals
+that `IsVNTensor.exists_productFunctional` asks for.
+
+**Divergences.**  (1, class 2) **165VIII** reads generation off the
+ultraweak density of the `|(eᵢa) ⊗ (dⱼb)⟩⟨e_k ⊗ d_l|`; we use
+`ext_tensor_ketbra_uwDense`, the *entourage* form of that density (the net
+form `ext_tensor_ketbra_dense` is false, QUESTIONS **D6**), which needs the
+bridge `mem_uwClosure_of_npApprox` above.  (2, class 1) **165X** argues with
+`√A`; the transcription uses `hilbmod_ordersep`'s own factorisation
+`A = R'∘R` instead, which is the same argument with the continuous functional
+calculus replaced by the positivity witness that **144I** already supplies.
+The miu-bilinearity of `Θ` (the first half of **165VIII**) is
+**165V** `hilbmod_tensor_ketbra`, as the thesis says. -/
 theorem ba_ext_tensor_pres [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
     [VonNeumannAlgebra 𝒞] [CompleteSpace X] [CompleteSpace Y]
     (hX : SelfDual 𝒜 X) (hY : SelfDual ℬ Y) (E : ExtTensor t ht X Y)
     (Θ : Ba 𝒜 X → Ba ℬ Y → Ba 𝒞 E.Z)
     (hΘ : ∀ (S : Ba 𝒜 X) (T : Ba ℬ Y) (x : X) (y : Y),
       (Θ S T).1 (E.η x y) = E.η (S.1 x) (T.1 y)) :
-    IsVNTensor Θ :=
-  sorry
+    IsVNTensor Θ := by
+  classical
+  have : VonNeumannAlgebra (Ba 𝒜 X) := ba_vonNeumannAlgebra hX
+  have : VonNeumannAlgebra (Ba ℬ Y) := ba_vonNeumannAlgebra hY
+  have : VonNeumannAlgebra (Ba 𝒞 E.Z) := ba_vonNeumannAlgebra E.selfDual
+  have hbdd : ∀ R₀ : Ba 𝒞 E.Z, ∃ C : ℝ,
+      IsBoundedModuleMap (cstarBInner 𝒞 E.Z) (cstarBInner 𝒞 E.Z) C ⇑R₀.1 := by
+    intro R₀
+    obtain ⟨-, -, hRm⟩ := moduleAdjointable_linear (𝒜 := 𝒞) ⇑R₀.1 R₀.2
+    refine ⟨‖R₀.1‖, ⟨fun x y => map_add _ x y, fun c x => map_smul _ c x,
+      hRm, fun x => ?_⟩⟩
+    change Real.sqrt ‖(inner 𝒞 (R₀.1 x) (R₀.1 x) : 𝒞)‖
+      ≤ ‖R₀.1‖ * Real.sqrt ‖(inner 𝒞 x x : 𝒞)‖
+    rw [← CStarModule.norm_eq_sqrt_norm_inner_self (A := 𝒞),
+      ← CStarModule.norm_eq_sqrt_norm_inner_self (A := 𝒞)]
+    exact R₀.1.le_opNorm x
+  have hunique : ∀ R₁ R₂ : Ba 𝒞 E.Z,
+      (∀ (x : X) (y : Y), R₁.1 (E.η x y) = R₂.1 (E.η x y)) → R₁ = R₂ := by
+    intro R₁ R₂ hagree
+    obtain ⟨C₁, hC₁⟩ := hbdd R₁
+    obtain ⟨C₂, hC₂⟩ := hbdd R₂
+    exact Subtype.ext (DFunLike.coe_injective
+      (extTensor_map_ext E E.selfDual C₁ C₂ _ _ hC₁ hC₂ hagree))
+  have hηsr : ∀ (c : ℂ) (x : X) (y : Y), E.η x (c • y) = c • E.η x y := by
+    intro c x y
+    refine sub_eq_zero.mp (extTensor_sep E _ fun x' y' => ?_)
+    rw [CStarModule.inner_sub_right, E.η_inner,
+      CStarModule.inner_smul_right_complex, CStarModule.inner_smul_right_complex,
+      E.η_inner, vnTensor_smul_complex_right ht, sub_self]
+  have hktb := fun (S S' : Ba 𝒜 X) (T T' : Ba ℬ Y) =>
+    hilbmod_tensor_ketbra hX hY E S S' T T' (Θ S T) (Θ S' T') (Θ (S * S') (T * T'))
+      (hΘ S T) (hΘ S' T') (hΘ (S * S') (T * T'))
+  have hadd_left : ∀ (S S' : Ba 𝒜 X) (T : Ba ℬ Y),
+      Θ (S + S') T = Θ S T + Θ S' T := by
+    intro S S' T
+    refine hunique _ _ fun x y => ?_
+    rw [hΘ]
+    show E.η (S.1 x + S'.1 x) (T.1 y) = (Θ S T).1 (E.η x y) + (Θ S' T).1 (E.η x y)
+    rw [E.η_add_left, hΘ, hΘ]
+  have hadd_right : ∀ (S : Ba 𝒜 X) (T T' : Ba ℬ Y),
+      Θ S (T + T') = Θ S T + Θ S T' := by
+    intro S T T'
+    refine hunique _ _ fun x y => ?_
+    rw [hΘ]
+    show E.η (S.1 x) (T.1 y + T'.1 y) = (Θ S T).1 (E.η x y) + (Θ S T').1 (E.η x y)
+    rw [E.η_add_right, hΘ, hΘ]
+  have hsmul_left : ∀ (c : ℂ) (S : Ba 𝒜 X) (T : Ba ℬ Y),
+      Θ (c • S) T = c • Θ S T := by
+    intro c S T
+    refine hunique _ _ fun x y => ?_
+    rw [hΘ]
+    show E.η (c • S.1 x) (T.1 y) = c • (Θ S T).1 (E.η x y)
+    rw [E.η_smul_complex, hΘ]
+  have hsmul_right : ∀ (c : ℂ) (S : Ba 𝒜 X) (T : Ba ℬ Y),
+      Θ S (c • T) = c • Θ S T := by
+    intro c S T
+    refine hunique _ _ fun x y => ?_
+    rw [hΘ]
+    show E.η (S.1 x) (c • T.1 y) = c • (Θ S T).1 (E.η x y)
+    rw [hηsr, hΘ]
+  have hone : Θ (1 : Ba 𝒜 X) (1 : Ba ℬ Y) = 1 :=
+    (hktb 1 1 1 1).2.1 fun x y => hΘ 1 1 x y
+  have hmul : ∀ (S S' : Ba 𝒜 X) (T T' : Ba ℬ Y),
+      Θ S T * Θ S' T' = Θ (S * S') (T * T') := fun S S' T T' =>
+    (hktb S S' T T').2.2.1
+  have hstar : ∀ (S : Ba 𝒜 X) (T : Ba ℬ Y),
+      star (Θ S T) = Θ (star S) (star T) := by
+    intro S T
+    refine hunique _ _ fun x y => ?_
+    rw [(hktb S S T T).2.2.2 x y, hΘ]
+  set γ : Ba 𝒜 X →ₗ[ℂ] Ba ℬ Y →ₗ[ℂ] Ba 𝒞 E.Z :=
+    LinearMap.mk₂ ℂ Θ hadd_left hsmul_left hadd_right hsmul_right with hγdef
+  have hγ : ∀ (S : Ba 𝒜 X) (T : Ba ℬ Y), γ S T = Θ S T := fun _ _ => rfl
+  have hmiu : Theses.A.Proc.MIUBilinear γ :=
+    ⟨hone, fun S S' T T' => (hmul S S' T T').symm, fun S T => hstar S T⟩
+  set Sg : Set (NPFunctional (Ba 𝒜 X)) :=
+    {ν | ∃ (v : X) (f : NPFunctional 𝒜), ν = baVecNP hX v f} with hSgdef
+  set Gm : Set (NPFunctional (Ba ℬ Y)) :=
+    {ν | ∃ (w : Y) (g : NPFunctional ℬ), ν = baVecNP hY w g} with hGmdef
+  have hSg : CentreSeparatingConj (Ba 𝒜 X) Sg := baVec_centreSeparatingConj hX
+  have hGm : CentreSeparatingConj (Ba ℬ Y) Gm := baVec_centreSeparatingConj hY
+  have hvecprod : ∀ (x : X) (y : Y) (f : NPFunctional 𝒜) (g : NPFunctional ℬ)
+      (Ω : NPFunctional 𝒞), (∀ (a : 𝒜) (b : ℬ), Ω (t a b) = f a * g b) →
+      ∀ (S : Ba 𝒜 X) (T : Ba ℬ Y),
+        (baVecNP E.selfDual (E.η x y) Ω) (Θ S T)
+          = (baVecNP hX x f) S * (baVecNP hY y g) T := by
+    intro x y f g Ω hΩ S T
+    show (Ω (inner 𝒞 (E.η x y) ((Θ S T).1 (E.η x y))) : ℂ) = _
+    rw [hΘ, E.η_inner, hΩ]
+    rfl
+  have hprod : ∀ σ ∈ Sg, ∀ τ ∈ Gm, ∃ h : NPFunctional (Ba 𝒞 E.Z),
+      ∀ (S : Ba 𝒜 X) (T : Ba ℬ Y), h (γ S T) = σ S * τ T := by
+    rintro σ ⟨x, f, rfl⟩ τ ⟨y, g, rfl⟩
+    obtain ⟨Ω, hΩ⟩ := ht.exists_productFunctional f g
+    exact ⟨baVecNP E.selfDual (E.η x y) Ω, fun S T => hvecprod x y f g Ω hΩ S T⟩
+  -- **165VIII**: the image of `Θ` generates `𝒞ᵃ(X ⊗ Y)`
+  obtain ⟨ι, e, he⟩ := exists_isONBasis_of_bddUnComplete (bddUnComplete_of_selfDual hX)
+  obtain ⟨κ, d, hd⟩ := exists_isONBasis_of_bddUnComplete (bddUnComplete_of_selfDual hY)
+  have hketbra : ∀ (x₁ x₂ : X) (y₁ y₂ : Y) (S : Ba 𝒞 E.Z),
+      S.1 = mketbra 𝒞 (E.η x₁ y₁) (E.η x₂ y₂) →
+      S = Θ (mketbraBa (ℬ := 𝒜) x₁ x₂) (mketbraBa (ℬ := ℬ) y₁ y₂) := by
+    intro x₁ x₂ y₁ y₂ S hS
+    refine hunique _ _ fun x y => ?_
+    rw [hS, hΘ]
+    show (inner 𝒞 (E.η x₂ y₂) (E.η x y) : 𝒞) • E.η x₁ y₁
+      = E.η ((inner 𝒜 x₂ x : 𝒜) • x₁) ((inner ℬ y₂ y : ℬ) • y₁)
+    rw [E.η_smul, E.η_inner]
+  have hdense : @Dense (Ba 𝒞 E.Z) (ultraweak (Ba 𝒞 E.Z))
+      (Submodule.span ℂ {S : Ba 𝒞 E.Z | ∃ a b, S = γ a b} : Set (Ba 𝒞 E.Z)) := by
+    intro T
+    refine mem_uwClosure_of_npApprox _ T fun m gs ε hε => ?_
+    obtain ⟨S, hSmem, hSapp⟩ := ext_tensor_ketbra_uwDense hX hY E e d he hd T gs ε hε
+    refine ⟨S, ?_, hSapp⟩
+    refine Submodule.span_le.mpr ?_ hSmem
+    rintro S₀ ⟨i, k, j, l, a, b, hS₀⟩
+    exact Submodule.subset_span
+      ⟨mketbraBa (ℬ := 𝒜) (a • e i) (e k), mketbraBa (ℬ := ℬ) (b • d j) (d l),
+        hketbra _ _ _ _ S₀ hS₀⟩
+  -- **165X**: the product functionals of the vector functionals are faithful
+  have hcs : CentreSeparatingConj (Ba 𝒞 E.Z)
+      {h : NPFunctional (Ba 𝒞 E.Z) | ∃ σ ∈ Sg, ∃ τ ∈ Gm,
+        ∀ (S : Ba 𝒜 X) (T : Ba ℬ Y), h (γ S T) = σ S * τ T} := by
+    rw [centreSeparatingConj_iff]
+    intro A₀ hA₀
+    refine ⟨fun hz ν hν b => by rw [hz]; simp, fun hkill => ?_⟩
+    have hvec : ∀ (x : X) (y : Y),
+        (inner 𝒞 (E.η x y) (A₀.1 (E.η x y)) : 𝒞) = 0 := by
+      intro x y
+      refine ht.separating _ ((ba_nonneg_iff A₀).mp hA₀ (E.η x y)) ?_
+      rintro Ω ⟨f, g, hfg⟩
+      have h1 := hkill (baVecNP E.selfDual (E.η x y) Ω)
+        ⟨baVecNP hX x f, ⟨x, f, rfl⟩, baVecNP hY y g, ⟨y, g, rfl⟩,
+          fun S T => hvecprod x y f g Ω hfg S T⟩ 1
+      rw [star_one, one_mul, mul_one, baVecNP_apply] at h1
+      exact h1
+    obtain ⟨R, R', hRR', hAeq⟩ := (hilbmod_ordersep A₀.1 A₀.2).mpr
+      fun v => (ba_nonneg_iff A₀).mp hA₀ v
+    have hR0 : ∀ (x : X) (y : Y), R (E.η x y) = 0 := by
+      intro x y
+      refine (CStarModule.inner_self (A := 𝒞)).mp ?_
+      rw [hRR' (E.η x y) (R (E.η x y))]
+      have h2 := hvec x y
+      rw [hAeq] at h2
+      exact h2
+    refine hunique A₀ 0 fun x y => ?_
+    have hcomp : A₀.1 (E.η x y) = R' (R (E.η x y)) := by rw [hAeq]; rfl
+    rw [hcomp, hR0 x y, map_zero]
+    rfl
+  -- **116VII** `tensor_characterization`
+  have hTP : Theses.A.Proc.IsTensorProduct γ :=
+    (Theses.A.Proc.tensor_characterization Sg Gm hSg hGm γ hmiu).mpr
+      ⟨hdense, hprod, hcs⟩
+  have hgen : wstar (Ba 𝒞 E.Z)
+      (Set.range fun p : Ba 𝒜 X × Ba ℬ Y => Θ p.1 p.2) = ⊤ := by
+    have hset : (Set.range fun p : Ba 𝒜 X × Ba ℬ Y => Θ p.1 p.2)
+        = {S : Ba 𝒞 E.Z | ∃ a b, S = γ a b} := by
+      ext S
+      constructor
+      · rintro ⟨p, rfl⟩
+        exact ⟨p.1, p.2, rfl⟩
+      · rintro ⟨a, b, rfl⟩
+        exact ⟨(a, b), rfl⟩
+    rw [hset]
+    exact Theses.A.Proc.wstar_eq_top_of_dense_span _ hdense
+  exact
+    { add_left := hadd_left
+      add_right := hadd_right
+      smul_complex := hsmul_left
+      mul := hmul
+      one := hone
+      star := hstar
+      generates := hgen
+      exists_productFunctional := hTP.prod_exists
+      separating := fun z hz hall =>
+        hTP.faithful z hz fun σ τ h hh => hall h ⟨σ, τ, hh⟩ }
+
 
 /-! ## Parsec 1660: ultranorm continuity of the exterior tensor product
 
