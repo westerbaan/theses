@@ -3291,6 +3291,318 @@ private theorem haSliceEq (j : J) (x : VNT C A) :
 
 
 
+/-! ## Parsec 1254 preliminaries: the approximation step and the ha
+slice-map property
+
+Session 85's continuation of the slice device.  `haApprox` is the
+ultraweak approximation step (`∑_{j∈F} z_j ↑ 1`, **44VI**
+`vna_supremum_uwlimit`, with `vnsac` supplying *ultraweak* closedness of a
+von Neumann subalgebra — `IsVNSubalgebra` only carries norm closedness).
+`haMem` and `haE_of_mem` are the two halves of the hereditarily atomic
+slice-map property, and `haTensorPreimage`/`haTensorBSurj` are the private
+ha forms of **125VIIb** `tensor_preimage` and **125eIII**
+`tensorBsurjectivity`.  They do *not* close those two statements, which are
+stated for arbitrary second factors and remain blocked on the commutation
+theorem (PROVING-LOG, session 83). -/
+
+/-- Monotonicity of the finite partial sums `∑_{j∈F} κⱼ(1)`. -/
+private theorem lpSumSA_mono {I : Type*} {𝒜 : I → Type*} [∀ i, CStarAlgebra (𝒜 i)]
+    [∀ i, Nontrivial (𝒜 i)] [∀ i, PartialOrder (𝒜 i)] [∀ i, StarOrderedRing (𝒜 i)]
+    {F G : Finset I} (hFG : F ⊆ G) : lpSumSA (𝒜 := 𝒜) F ≤ lpSumSA G := by
+  classical
+  rw [← Subtype.coe_le_coe, lp_infty_le_iff]
+  intro i
+  rw [lpSumSA_apply, lpSumSA_apply]
+  split <;> split
+  · exact le_rfl
+  · exact absurd (hFG ‹_›) ‹_›
+  · exact zero_le_one
+  · exact le_rfl
+
+/-- A supremum of a nonempty set of self-adjoint elements taken in the
+self-adjoint part is a supremum in the algebra. -/
+private theorem isLUB_coe_of_isLUB' {X : Type*} [CStarAlgebra X] [PartialOrder X]
+    [StarOrderedRing X] {D : Set (selfAdjoint X)} {s : selfAdjoint X}
+    (hne : D.Nonempty) (h : IsLUB D s) :
+    IsLUB ((fun d : selfAdjoint X => (d : X)) '' D) (s : X) := by
+  constructor
+  · rintro _ ⟨d, hd, rfl⟩
+    exact Subtype.coe_le_coe.mpr (h.1 hd)
+  · intro c hc
+    obtain ⟨d, hd⟩ := hne
+    have hdc : (d : X) ≤ c := hc ⟨d, hd, rfl⟩
+    have hsa : IsSelfAdjoint c := by
+      have h0 : (0 : X) ≤ c - d := sub_nonneg.mpr hdc
+      simpa using h0.isSelfAdjoint.add d.2
+    have hub : (⟨c, hsa⟩ : selfAdjoint X) ∈ upperBounds D := by
+      intro e he
+      exact Subtype.coe_le_coe.mp (hc ⟨e, he, rfl⟩)
+    exact Subtype.coe_le_coe.mpr (h.2 hub)
+
+/-- The finite partial sums `∑_{j∈F} z_j` of the central projections. -/
+private def haZS (F : Finset J) : A := ∑ j ∈ F, haZ Φ j
+
+private theorem haZS_eq (F : Finset J) :
+    haZS Φ F = Φ.symm ((lpSumSA (𝒜 := fun j : J => MatAlg (nn j + 1)) F :
+      selfAdjoint (lp (fun j : J => MatAlg (nn j + 1)) ∞)) :
+      lp (fun j : J => MatAlg (nn j + 1)) ∞) := by
+  classical
+  show ∑ j ∈ F, Φ.symm (lpKappa j 1) = _
+  rw [show ((lpSumSA (𝒜 := fun j : J => MatAlg (nn j + 1)) F :
+      selfAdjoint (lp (fun j : J => MatAlg (nn j + 1)) ∞)) :
+      lp (fun j : J => MatAlg (nn j + 1)) ∞)
+      = ∑ j ∈ F, lpKappa j (1 : MatAlg (nn j + 1)) from rfl]
+  exact (map_sum Φ.symm.toStarAlgHom _ _).symm
+
+private theorem haZS_sa (F : Finset J) : IsSelfAdjoint (haZS Φ F) := by
+  show star _ = _
+  rw [haZS_eq]
+  exact (map_star Φ.symm.toStarAlgHom _).symm.trans
+    (congrArg ⇑Φ.symm.toStarAlgHom (lpSumSA F).2.star_eq)
+
+private def haZSsa (F : Finset J) : selfAdjoint A := ⟨haZS Φ F, haZS_sa Φ F⟩
+
+private theorem haZS_mono {F G : Finset J} (hFG : F ⊆ G) : haZS Φ F ≤ haZS Φ G := by
+  rw [haZS_eq, haZS_eq]
+  exact starAlgHom_mono' Φ.symm.toStarAlgHom
+    (Subtype.coe_le_coe.mpr (lpSumSA_mono hFG))
+
+private theorem haZS_isLUB : IsLUB (Set.range (fun F : Finset J => haZS Φ F)) (1 : A) := by
+  have h1 : IsLUB ((fun d : selfAdjoint (lp (fun j : J => MatAlg (nn j + 1)) ∞) =>
+      (d : lp (fun j : J => MatAlg (nn j + 1)) ∞)) ''
+        Set.range (lpSumSA (𝒜 := fun j : J => MatAlg (nn j + 1))))
+      ((⟨1, IsSelfAdjoint.one _⟩ :
+        selfAdjoint (lp (fun j : J => MatAlg (nn j + 1)) ∞)) :
+        lp (fun j : J => MatAlg (nn j + 1)) ∞) :=
+    isLUB_coe_of_isLUB' ⟨_, ⟨∅, rfl⟩⟩ lpSumSA_isLUB
+  have h2 := isLUB_image_of_orderIso ⇑Φ.symm (starAlgEquiv_le_iff Φ.symm)
+    Φ.symm.surjective h1
+  have himg : ⇑Φ.symm '' ((fun d : selfAdjoint (lp (fun j : J => MatAlg (nn j + 1)) ∞) =>
+      (d : lp (fun j : J => MatAlg (nn j + 1)) ∞)) ''
+        Set.range (lpSumSA (𝒜 := fun j : J => MatAlg (nn j + 1))))
+      = Set.range (fun F : Finset J => haZS Φ F) := by
+    ext y
+    constructor
+    · rintro ⟨_, ⟨_, ⟨F, rfl⟩, rfl⟩, rfl⟩
+      exact ⟨F, haZS_eq Φ F⟩
+    · rintro ⟨F, rfl⟩
+      exact ⟨_, ⟨_, ⟨F, rfl⟩, rfl⟩, (haZS_eq Φ F).symm⟩
+  rw [himg] at h2
+  rwa [show Φ.symm ((⟨1, IsSelfAdjoint.one _⟩ :
+      selfAdjoint (lp (fun j : J => MatAlg (nn j + 1)) ∞)) :
+      lp (fun j : J => MatAlg (nn j + 1)) ∞) = 1 from map_one Φ.symm.toStarAlgHom] at h2
+
+/-- **The ultraweak approximation step**: `∑_{j∈F} z_j ↑ 1`, so `x` is the
+ultraweak limit of `(1 ⊗ ∑_{j∈F} z_j)·x`; hence `x` lies in every
+ultraweakly closed set containing all of those. -/
+private theorem haApprox (x : VNT C A) (T : Set (VNT C A))
+    (hT : @IsClosed (VNT C A) (ultraweak (VNT C A)) T)
+    (hmem : ∀ F : Finset J, ((1 : C) ⊗ᵥ haZS Φ F) * x ∈ T) : x ∈ T := by
+  classical
+  letI : TopologicalSpace (VNT C A) := ultraweak (VNT C A)
+  letI : TopologicalSpace A := ultraweak A
+  set D : Set (selfAdjoint A) := Set.range (haZSsa Φ) with hD
+  have hcoe : (fun d : selfAdjoint A => (d : A)) '' D
+      = Set.range (fun F : Finset J => haZS Φ F) := by
+    ext y
+    constructor
+    · rintro ⟨_, ⟨F, rfl⟩, rfl⟩; exact ⟨F, rfl⟩
+    · rintro ⟨F, rfl⟩; exact ⟨haZSsa Φ F, ⟨F, rfl⟩, rfl⟩
+  have hlubA : IsLUB ((fun d : selfAdjoint A => (d : A)) '' D) (1 : A) := by
+    rw [hcoe]; exact haZS_isLUB Φ
+  have hlub : IsLUB D (⟨1, IsSelfAdjoint.one _⟩ : selfAdjoint A) := by
+    constructor
+    · rintro _ ⟨F, rfl⟩
+      exact Subtype.coe_le_coe.mp (hlubA.1 ⟨_, ⟨F, rfl⟩, rfl⟩)
+    · intro u hu
+      refine Subtype.coe_le_coe.mp (hlubA.2 ?_)
+      rintro _ ⟨d, hd, rfl⟩
+      exact Subtype.coe_le_coe.mpr (hu hd)
+  have hh : D.Nonempty ∧ DirectedOn (· ≤ ·) D ∧ BddAbove D := by
+    refine ⟨⟨_, ⟨∅, rfl⟩⟩, ?_, ⟨_, hlub.1⟩⟩
+    rintro _ ⟨F, rfl⟩ _ ⟨G, rfl⟩
+    exact ⟨haZSsa Φ (F ∪ G), ⟨F ∪ G, rfl⟩,
+      Subtype.coe_le_coe.mp (haZS_mono Φ Finset.subset_union_left),
+      Subtype.coe_le_coe.mp (haZS_mono Φ Finset.subset_union_right)⟩
+  have hds : dirSup D hh = (⟨1, IsSelfAdjoint.one _⟩ : selfAdjoint A) :=
+    (isLUB_dirSup D hh).unique hlub
+  have hnet := vna_supremum_uwlimit D hh
+  rw [hds] at hnet
+  set ψ : Finset J → D := fun F => ⟨haZSsa Φ F, ⟨F, rfl⟩⟩ with hψ
+  have hψmono : Monotone ψ := fun F G hFG =>
+    Subtype.coe_le_coe.mpr (Subtype.coe_le_coe.mp (haZS_mono Φ hFG))
+  have hψtend : Tendsto ψ atTop atTop :=
+    tendsto_atTop_atTop_of_monotone hψmono (by
+      rintro ⟨_, F, rfl⟩
+      exact ⟨F, le_rfl⟩)
+  have h1 : Tendsto (fun F : Finset J => haZS Φ F) atTop
+      (@nhds A (ultraweak A) (1 : A)) := hnet.comp hψtend
+  have hcont : @Continuous A (VNT C A) (ultraweak A) (ultraweak (VNT C A))
+      (fun b : A => ((1 : C) ⊗ᵥ b) * x) :=
+    ((mult_uws_cont x).2.1).comp (continuous_ultraweak_vtmul_right (1 : C))
+  have h2 := (hcont.tendsto (1 : A)).comp h1
+  have hone : ((1 : C) ⊗ᵥ (1 : A)) = 1 := (vnTensor C A).isTensorProduct.miu.1
+  rw [show ((1 : C) ⊗ᵥ (1 : A)) * x = x by rw [hone, one_mul]] at h2
+  exact hT.mem_of_tendsto h2 (Filter.Eventually.of_forall hmem)
+
+/-! ### The two membership corollaries (the ha slice-map property) -/
+
+private theorem vtmul_one_mem (S : StarSubalgebra ℂ C) (a : A) :
+    ((1 : C) ⊗ᵥ a) ∈ tensorSub A S :=
+  (isVNSubalgebra_wstar _).2 ⟨1, S.one_mem, a, rfl⟩
+
+/-- **The ha slice-map property, containment half**: if every entry
+`haE j k l x` of `x` lies in `𝒮 ⊗ 𝒜`, then `x` does. -/
+private theorem haMem (S : StarSubalgebra ℂ C) (x : VNT C A)
+    (h : ∀ (j : J) (k l : Fin (nn j + 1)), haE C Φ j k l x ∈ tensorSub A S) :
+    x ∈ tensorSub A S := by
+  classical
+  have hcl : @IsClosed (VNT C A) (ultraweak (VNT C A))
+      ((tensorSub A S : StarSubalgebra ℂ (VNT C A)) : Set (VNT C A)) :=
+    (vnsac _ (isVNSubalgebra_wstar _).1).2
+  have hmem := haApprox Φ x
+    ((tensorSub A S : StarSubalgebra ℂ (VNT C A)) : Set (VNT C A)) hcl ?_
+  · exact hmem
+  intro F
+  have hsplit : ((1 : C) ⊗ᵥ haZS Φ F) * x = ∑ j ∈ F, ((1 : C) ⊗ᵥ haZ Φ j) * x := by
+    have hd : ((1 : C) ⊗ᵥ haZS Φ F) = ∑ j ∈ F, ((1 : C) ⊗ᵥ haZ Φ j) :=
+      map_sum ((vnTensor C A).map 1) _ _
+    rw [hd, Finset.sum_mul]
+  rw [SetLike.mem_coe, hsplit]
+  refine sum_mem fun j _ => ?_
+  rw [haSliceEq Φ j x]
+  exact sum_mem fun k _ => sum_mem fun l _ =>
+    mul_mem (h j k l) (vtmul_one_mem S _)
+
+private theorem tmapM_vtmul_one {C' : Type u} [CStarAlgebra C'] [PartialOrder C']
+    [StarOrderedRing C'] [VonNeumannAlgebra C'] (ρ : NMIUMap C' C) (a : A) :
+    tmapM ρ (nmiuId A) ((1 : C') ⊗ᵥ a) = (1 : C) ⊗ᵥ a := by
+  rw [tmapM_apply, nmiuId_apply,
+    show (ρ 1 : C) = 1 from map_one ρ.toStarAlgHom]
+
+/-- Naturality of the slice operator in the first factor. -/
+private theorem haE_natural {C' : Type u} [CStarAlgebra C'] [PartialOrder C']
+    [StarOrderedRing C'] [VonNeumannAlgebra C'] (ρ : NMIUMap C' C)
+    (j : J) (k l : Fin (nn j + 1)) (y : VNT C' A) :
+    tmapM ρ (nmiuId A) (haE C' Φ j k l y) = haE C Φ j k l (tmapM ρ (nmiuId A) y) := by
+  have hcomm : ncpComp (nmiuNCP (tmapM ρ (nmiuId A))) (tmap (ncpId C') (haKappa Φ j))
+      = ncpComp (tmap (ncpId C) (haKappa Φ j)) (nmiuNCP (tmapM ρ (nmiuId A))) := by
+    refine (exists_tmap (nmiuNCP ρ) (haKappa Φ j)).unique (fun a b => ?_) (fun a b => ?_)
+    · simp only [ncpComp_apply, tmap_apply, ncpId_apply, nmiuNCP_apply, tmapM_apply,
+        nmiuId_apply]
+    · simp only [ncpComp_apply, tmap_apply, ncpId_apply, nmiuNCP_apply, tmapM_apply,
+        nmiuId_apply]
+  have hkey : ∀ z : VNT C' A, tmapM ρ (nmiuId A) (tmap (ncpId C') (haKappa Φ j) z)
+      = tmap (ncpId C) (haKappa Φ j) (tmapM ρ (nmiuId A) z) := fun z => by
+    have h := congrArg (fun f : NCPMap (VNT C' A) (VNT C A) => f z) hcomm
+    simpa only [ncpComp_apply, nmiuNCP_apply] using h
+  have hmul : ∀ z w : VNT C' A, tmapM ρ (nmiuId A) (z * w)
+      = tmapM ρ (nmiuId A) z * tmapM ρ (nmiuId A) w :=
+    fun z w => map_mul (tmapM ρ (nmiuId A)).toStarAlgHom z w
+  show tmapM ρ (nmiuId A) (tmap (ncpId C') (haKappa Φ j) _) = _
+  rw [hkey]
+  show _ = tmap (ncpId C) (haKappa Φ j) _
+  congr 1
+  rw [hmul, hmul, tmapM_vtmul_one, tmapM_vtmul_one]
+
+/-- **The ha slice-map property, extraction half** (the ha form of
+125VIIb): the entries of an element of `𝒮 ⊗ 𝒜` lie in `𝒮`. -/
+private theorem haE_of_mem (S : StarSubalgebra ℂ C) (hS : IsVNSubalgebra C S)
+    (x : VNT C A) (hx : x ∈ tensorSub A S) (j : J) (k l : Fin (nn j + 1)) :
+    ∃ c ∈ S, haE C Φ j k l x = c ⊗ᵥ (1 : A) := by
+  have hrange : tensorSub A S ≤
+      (tmapM (VNSub.valNMIU (A := C) (S := S) (hS := hS)) (nmiuId A)).toStarAlgHom.range := by
+    refine sInf_le ⟨nmiu_image _, ?_⟩
+    rintro _ ⟨s, hs, a, rfl⟩
+    refine ⟨(⟨s, hs⟩ : VNSub C S hS) ⊗ᵥ a, ?_⟩
+    show tmapM (VNSub.valNMIU (A := C) (S := S) (hS := hS)) (nmiuId A)
+      ((⟨s, hs⟩ : VNSub C S hS) ⊗ᵥ a) = s ⊗ᵥ a
+    rw [tmapM_apply, nmiuId_apply]
+    rfl
+  obtain ⟨y, hy⟩ : x ∈
+      (tmapM (VNSub.valNMIU (A := C) (S := S) (hS := hS)) (nmiuId A)).toStarAlgHom.range :=
+    hrange hx
+  have hy' : tmapM (VNSub.valNMIU (A := C) (S := S) (hS := hS)) (nmiuId A) y = x := hy
+  obtain ⟨c, hc⟩ := haE_mem (C := VNSub C S hS) Φ j k l y
+  refine ⟨c.val, c.property, ?_⟩
+  rw [← hy', ← haE_natural Φ (VNSub.valNMIU (A := C) (S := S) (hS := hS)) j k l y, hc,
+    tmapM_apply, nmiuId_apply]
+  rfl
+
+/-! ### The ha forms of 125VIIb and 125eIII -/
+
+variable [VonNeumannAlgebra D]
+
+/-- `c ↦ c ⊗ 1` is injective when the second factor is nontrivial. -/
+private theorem vtmul_one_injective [Nontrivial A] :
+    Function.Injective (fun c : C => c ⊗ᵥ (1 : A)) := by
+  intro c c' h
+  have hsub : (c - c') ⊗ᵥ (1 : A) = c ⊗ᵥ (1 : A) - c' ⊗ᵥ (1 : A) :=
+    map_sub ((vnTensor C A).map.flip (1 : A)) c c'
+  have hz : (c - c') ⊗ᵥ (1 : A) = 0 := by
+    rw [hsub, show (c ⊗ᵥ (1 : A)) = c' ⊗ᵥ (1 : A) from h, sub_self]
+  have hn : ‖c - c'‖ * ‖(1 : A)‖ = 0 := by
+    rw [← norm_vtmul, hz, norm_zero]
+  rw [norm_one, mul_one, norm_eq_zero, sub_eq_zero] at hn
+  exact hn
+
+/-- A tensor product with a trivial factor is trivial. -/
+private theorem vnt_subsingleton {Cc Aa : Type*} [CStarAlgebra Cc] [PartialOrder Cc]
+    [StarOrderedRing Cc] [VonNeumannAlgebra Cc] [CStarAlgebra Aa] [PartialOrder Aa]
+    [StarOrderedRing Aa] [VonNeumannAlgebra Aa] [Subsingleton Aa] :
+    Subsingleton (VNT Cc Aa) := by
+  have h1 : ((1 : Cc) ⊗ᵥ (1 : Aa)) = 1 := (vnTensor Cc Aa).isTensorProduct.miu.1
+  have h0 : ((1 : Cc) ⊗ᵥ (1 : Aa)) = 0 := by
+    rw [show (1 : Aa) = 0 from Subsingleton.elim _ _]
+    exact map_zero ((vnTensor Cc Aa).map 1)
+  exact subsingleton_of_zero_eq_one (h1.symm.trans h0).symm
+
+/-- **The ha form of 125VIIb** (`tensor-preimage`): for hereditarily atomic
+`𝒜`, `(ρ ⊗ 𝒜)⁻¹(𝒮 ⊗ 𝒜) = ρ⁻¹(𝒮) ⊗ 𝒜`. -/
+private theorem haTensorPreimage
+    (Φ : A ≃⋆ₐ[ℂ] lp (fun j : J => MatAlg (nn j + 1)) ∞) (ρ : NMIUMap C D)
+    (S : StarSubalgebra ℂ D) (hS : IsVNSubalgebra D S) (x : VNT C A) :
+    tmapM ρ (nmiuId A) x ∈ tensorSub A S ↔
+      x ∈ tensorSub A (S.comap ρ.toStarAlgHom) := by
+  rcases subsingleton_or_nontrivial A with hss | hnt
+  · haveI := hss
+    haveI : Subsingleton (VNT C A) := vnt_subsingleton
+    haveI : Subsingleton (VNT D A) := vnt_subsingleton
+    constructor
+    · intro _
+      rw [Subsingleton.elim x 0]
+      exact zero_mem _
+    · intro _
+      rw [Subsingleton.elim (tmapM ρ (nmiuId A) x) 0]
+      exact zero_mem _
+  haveI := hnt
+  constructor
+  · intro hx
+    refine haMem Φ _ _ (fun j k l => ?_)
+    obtain ⟨c', hc'⟩ := haE_mem (C := C) Φ j k l x
+    obtain ⟨d, hd, hde⟩ := haE_of_mem Φ S hS _ hx j k l
+    have hnat := haE_natural Φ ρ j k l x
+    rw [hc', hde, tmapM_apply, nmiuId_apply] at hnat
+    have hcd : ρ c' = d := vtmul_one_injective hnat
+    rw [hc']
+    refine (isVNSubalgebra_wstar _).2 ⟨c', ?_, 1, rfl⟩
+    show ρ.toStarAlgHom c' ∈ S
+    rw [show ρ.toStarAlgHom c' = d from hcd]
+    exact hd
+  · intro hx
+    have hle : tensorSub A (S.comap ρ.toStarAlgHom) ≤
+        (tensorSub A S).comap (tmapM ρ (nmiuId A)).toStarAlgHom := by
+      refine sInf_le ⟨isVNSubalgebra_comap (tmapM ρ (nmiuId A)).toStarAlgHom
+        (tmapM ρ (nmiuId A)).preservesDirSups' _ (isVNSubalgebra_wstar _).1, ?_⟩
+      rintro _ ⟨t, ht, a, rfl⟩
+      show tmapM ρ (nmiuId A) (t ⊗ᵥ a) ∈ tensorSub A S
+      rw [tmapM_apply, nmiuId_apply]
+      exact (isVNSubalgebra_wstar _).2 ⟨ρ t, ht, a, rfl⟩
+    exact hle hx
+
+variable {X : Type u} [CStarAlgebra X] [PartialOrder X] [StarOrderedRing X]
+  [VonNeumannAlgebra X]
+
 end HaSlice
 
 /-! ## Parsec 1254: the hereditarily atomic free exponential -/
@@ -3345,6 +3657,287 @@ def TensorBSurjective (s : NMIUMap 𝒜 (VNT 𝒞 ℬ)) : Prop :=
 
 end TensorBSurj
 
+section HaSliceBSurj
+
+set_option synthInstance.maxHeartbeats 400000
+
+universe u₁ u₂ u₃ u₄
+
+variable [VonNeumannAlgebra A] [VonNeumannAlgebra C] [VonNeumannAlgebra D]
+variable {J : Type u} {nn : J → ℕ}
+variable {X : Type u} [CStarAlgebra X] [PartialOrder X] [StarOrderedRing X]
+  [VonNeumannAlgebra X]
+
+/-- The range of `ρ ⊗ 𝒜` is contained in `ρ(𝒞) ⊗ 𝒜`. -/
+private theorem tmapM_range_le (ρ : NMIUMap C D) (y : VNT C A) :
+    tmapM ρ (nmiuId A) y ∈ tensorSub A ρ.toStarAlgHom.range := by
+  have htop : wstar (VNT C A)
+      {t : VNT C A | ∃ a b, t = (vnTensor C A).map a b} = ⊤ :=
+    wstar_eq_top_of_dense_span _ (vnTensor C A).isTensorProduct.dense
+  have hle : wstar (VNT C A) {t : VNT C A | ∃ a b, t = (vnTensor C A).map a b} ≤
+      (tensorSub A ρ.toStarAlgHom.range).comap (tmapM ρ (nmiuId A)).toStarAlgHom := by
+    refine sInf_le ⟨isVNSubalgebra_comap (tmapM ρ (nmiuId A)).toStarAlgHom
+      (tmapM ρ (nmiuId A)).preservesDirSups' _ (isVNSubalgebra_wstar _).1, ?_⟩
+    rintro _ ⟨c, a, rfl⟩
+    show tmapM ρ (nmiuId A) (c ⊗ᵥ a) ∈ tensorSub A ρ.toStarAlgHom.range
+    rw [tmapM_apply, nmiuId_apply]
+    exact (isVNSubalgebra_wstar _).2 ⟨ρ c, ⟨c, rfl⟩, a, rfl⟩
+  rw [htop, top_le_iff] at hle
+  have hy : y ∈ (tensorSub A ρ.toStarAlgHom.range).comap
+      (tmapM ρ (nmiuId A)).toStarAlgHom := by rw [hle]; trivial
+  exact hy
+
+/-- **The ha form of 125eIII** (`tensorBsurjectivity`), the easy half:
+if `(ρ ⊗ 𝒜) ∘ s` is `(·) ⊗ 𝒜`-surjective then `ρ` is surjective. -/
+private theorem surj_of_haTensorBSurj (s : NMIUMap X (VNT C A)) (ρ : NMIUMap C D)
+    (hcomp : TensorBSurjective (nmiuComp (tmapM ρ (nmiuId A)) s)) :
+    Function.Surjective ⇑ρ := by
+  have hrange : Set.range ⇑(nmiuComp (tmapM ρ (nmiuId A)) s)
+      ⊆ ((tensorSub A ρ.toStarAlgHom.range : StarSubalgebra ℂ (VNT D A)) :
+        Set (VNT D A)) := by
+    rintro _ ⟨a, rfl⟩
+    exact tmapM_range_le ρ (s a)
+  have htop := hcomp ρ.toStarAlgHom.range (nmiu_image ρ) hrange
+  intro d
+  have hd : d ∈ ρ.toStarAlgHom.range := by rw [htop]; trivial
+  exact hd
+
+/-- **The ha form of 125eIII** (`tensorBsurjectivity`), the hard half:
+`(ρ ⊗ 𝒜) ∘ s` is `(·) ⊗ 𝒜`-surjective when `s` is and `ρ` is surjective. -/
+private theorem haTensorBSurj
+    (Φ : A ≃⋆ₐ[ℂ] lp (fun j : J => MatAlg (nn j + 1)) ∞) (s : NMIUMap X (VNT C A))
+    (hs : TensorBSurjective s) (ρ : NMIUMap C D) (hρ : Function.Surjective ⇑ρ) :
+    TensorBSurjective (nmiuComp (tmapM ρ (nmiuId A)) s) := by
+  intro S hS hsub
+  have h1 : Set.range ⇑s ⊆
+      ((tensorSub A (S.comap ρ.toStarAlgHom) : StarSubalgebra ℂ (VNT C A)) :
+        Set (VNT C A)) := by
+    rintro _ ⟨a, rfl⟩
+    exact (haTensorPreimage Φ ρ S hS (s a)).mp (hsub ⟨a, rfl⟩)
+  have h2 := hs _ (isVNSubalgebra_comap ρ.toStarAlgHom ρ.preservesDirSups' S hS) h1
+  refine eq_top_iff.mpr fun d _ => ?_
+  obtain ⟨c, rfl⟩ := hρ d
+  have hc : c ∈ S.comap ρ.toStarAlgHom := by rw [h2]; trivial
+  exact hc
+
+variable {X₁ : Type u₁} {X₂ : Type u₂} {X₃ : Type u₃} {Y : Type u₄}
+  [CStarAlgebra X₁] [PartialOrder X₁] [StarOrderedRing X₁] [VonNeumannAlgebra X₁]
+  [CStarAlgebra X₂] [PartialOrder X₂] [StarOrderedRing X₂] [VonNeumannAlgebra X₂]
+  [CStarAlgebra X₃] [PartialOrder X₃] [StarOrderedRing X₃] [VonNeumannAlgebra X₃]
+  [CStarAlgebra Y] [PartialOrder Y] [StarOrderedRing Y] [VonNeumannAlgebra Y]
+
+/-! ### Functoriality of `tmapM` -/
+
+private theorem tmapM_id (t : VNT X₁ Y) : tmapM (nmiuId X₁) (nmiuId Y) t = t := by
+  have h : tmapM (nmiuId X₁) (nmiuId Y) = nmiuId (VNT X₁ Y) :=
+    (exists_tmapM (nmiuId X₁) (nmiuId Y)).unique
+      (fun a b => tmapM_apply _ _ a b) (fun a b => rfl)
+  rw [h]
+  rfl
+
+private theorem tmapM_comp_id (ρ₁ : NMIUMap X₁ X₂) (ρ₂ : NMIUMap X₂ X₃) (t : VNT X₁ Y) :
+    tmapM ρ₂ (nmiuId Y) (tmapM ρ₁ (nmiuId Y) t)
+      = tmapM (nmiuComp ρ₂ ρ₁) (nmiuId Y) t := by
+  have h : nmiuComp (tmapM ρ₂ (nmiuId Y)) (tmapM ρ₁ (nmiuId Y))
+      = tmapM (nmiuComp ρ₂ ρ₁) (nmiuId Y) :=
+    (exists_tmapM (nmiuComp ρ₂ ρ₁) (nmiuId Y)).unique
+      (fun a b => by simp only [nmiuComp_apply, tmapM_apply, nmiuId_apply])
+      (fun a b => tmapM_apply _ _ a b)
+  exact congrArg (fun f : NMIUMap (VNT X₁ Y) (VNT X₃ Y) => f t) h
+
+private theorem tmapM_injective {A₁ A₂ B₁ B₂ : Type u}
+    [CStarAlgebra A₁] [PartialOrder A₁] [StarOrderedRing A₁] [VonNeumannAlgebra A₁]
+    [CStarAlgebra A₂] [PartialOrder A₂] [StarOrderedRing A₂] [VonNeumannAlgebra A₂]
+    [CStarAlgebra B₁] [PartialOrder B₁] [StarOrderedRing B₁] [VonNeumannAlgebra B₁]
+    [CStarAlgebra B₂] [PartialOrder B₂] [StarOrderedRing B₂] [VonNeumannAlgebra B₂]
+    (f : NMIUMap A₁ A₂) (g : NMIUMap B₁ B₂) (hf : Function.Injective ⇑f)
+    (hg : Function.Injective ⇑g) : Function.Injective ⇑(tmapM f g) :=
+  tensor_injective f g hf hg (nmiuNCP (tmapM f g)) (fun a b => tmapM_apply f g a b)
+
+/-! ### `(·) ⊗ ℬ`-surjectivity: congruence and transport along an isomorphism -/
+
+variable {Xs : Type u₁} {C₁ : Type u₂} {C₂ : Type u₃} {Bb : Type u₄}
+  [CStarAlgebra Xs] [PartialOrder Xs] [StarOrderedRing Xs] [VonNeumannAlgebra Xs]
+  [CStarAlgebra C₁] [PartialOrder C₁] [StarOrderedRing C₁] [VonNeumannAlgebra C₁]
+  [CStarAlgebra C₂] [PartialOrder C₂] [StarOrderedRing C₂] [VonNeumannAlgebra C₂]
+  [CStarAlgebra Bb] [PartialOrder Bb] [StarOrderedRing Bb] [VonNeumannAlgebra Bb]
+
+private theorem tensorBSurjective_congr {s₁ s₂ : NMIUMap Xs (VNT C₁ Bb)}
+    (h : ∀ a, s₁ a = s₂ a) (hs : TensorBSurjective s₁) : TensorBSurjective s₂ := by
+  intro S hS hsub
+  refine hs S hS ?_
+  rintro _ ⟨a, rfl⟩
+  rw [h a]
+  exact hsub ⟨a, rfl⟩
+
+private theorem tensorBSurjective_of_iso (θ : NMIUMap C₁ C₂)
+    (hθ : Function.Bijective ⇑θ) (s : NMIUMap Xs (VNT C₁ Bb))
+    (hs : TensorBSurjective s) :
+    TensorBSurjective (nmiuComp (tmapM θ (nmiuId Bb)) s) := by
+  intro S hS hsub
+  have hθθ : nmiuComp (nmiuSymm θ hθ) θ = nmiuId C₁ :=
+    DFunLike.coe_injective (funext fun c => nmiuSymm_apply_apply θ hθ c)
+  have hcomap : IsVNSubalgebra C₁ (S.comap θ.toStarAlgHom) :=
+    isVNSubalgebra_comap θ.toStarAlgHom θ.preservesDirSups' S hS
+  have hpull : ∀ y : VNT C₂ Bb, y ∈ tensorSub Bb S →
+      tmapM (nmiuSymm θ hθ) (nmiuId Bb) y ∈ tensorSub Bb (S.comap θ.toStarAlgHom) := by
+    intro y hy
+    have hle : tensorSub Bb S ≤ (tensorSub Bb (S.comap θ.toStarAlgHom)).comap
+        (tmapM (nmiuSymm θ hθ) (nmiuId Bb)).toStarAlgHom := by
+      refine sInf_le ⟨isVNSubalgebra_comap _
+        (tmapM (nmiuSymm θ hθ) (nmiuId Bb)).preservesDirSups' _
+        (isVNSubalgebra_wstar _).1, ?_⟩
+      rintro _ ⟨t, ht, b, rfl⟩
+      show tmapM (nmiuSymm θ hθ) (nmiuId Bb) (t ⊗ᵥ b)
+        ∈ tensorSub Bb (S.comap θ.toStarAlgHom)
+      rw [tmapM_apply, nmiuId_apply]
+      refine (isVNSubalgebra_wstar _).2 ⟨nmiuSymm θ hθ t, ?_, b, rfl⟩
+      show θ.toStarAlgHom (nmiuSymm θ hθ t) ∈ S
+      rw [show θ.toStarAlgHom (nmiuSymm θ hθ t) = t from nmiuSymm_apply_apply' θ hθ t]
+      exact ht
+    exact hle hy
+  have hrange : Set.range ⇑s ⊆
+      ((tensorSub Bb (S.comap θ.toStarAlgHom) : StarSubalgebra ℂ (VNT C₁ Bb)) :
+        Set (VNT C₁ Bb)) := by
+    rintro _ ⟨a, rfl⟩
+    have h1 : tmapM θ (nmiuId Bb) (s a) ∈ tensorSub Bb S := hsub ⟨a, rfl⟩
+    have h2 := hpull _ h1
+    rw [tmapM_comp_id, hθθ, tmapM_id] at h2
+    exact h2
+  have htop := hs _ hcomap hrange
+  refine eq_top_iff.mpr fun c₂ _ => ?_
+  obtain ⟨c₁, rfl⟩ := hθ.2 c₂
+  have hc : c₁ ∈ S.comap θ.toStarAlgHom := by rw [htop]; trivial
+  exact hc
+
+/-! ### The singleton direct sum `M ≅ ⊕_{PUnit} M`
+
+A device for the universe gap: `HaFreeExp.universal` quantifies over `Type u`
+targets while `MatAlg n : Type 0`.  `punitSum n` is `M_n` presented as a
+one-summand direct sum, which *is* in `Type u`, hereditarily atomic, and
+nmiu-isomorphic to `M_n`. -/
+
+private abbrev punitSum (n : ℕ) : Type u := lp (fun _ : PUnit.{u+1} => MatAlg (n + 1)) ∞
+
+private def punitEval (n : ℕ) : NMIUMap (punitSum.{u} n) (MatAlg (n + 1)) :=
+  lpEvalNMIU (fun _ : PUnit.{u+1} => MatAlg (n + 1)) PUnit.unit
+
+private theorem punitEval_bijective (n : ℕ) :
+    Function.Bijective ⇑(punitEval.{u} n) := by
+  constructor
+  · intro x y h
+    refine lp.ext (funext fun p => ?_)
+    cases p
+    exact h
+  · intro m
+    exact ⟨lpKappa PUnit.unit m, lpKappa_apply_self _ _⟩
+
+private def punitInv (n : ℕ) : NMIUMap (MatAlg (n + 1)) (punitSum.{u} n) :=
+  nmiuSymm (punitEval.{u} n) (punitEval_bijective n)
+
+private theorem punitEval_comp_inv (n : ℕ) :
+    nmiuComp (punitEval.{u} n) (punitInv.{u} n) = nmiuId (MatAlg (n + 1)) :=
+  DFunLike.coe_injective
+    (funext fun m => nmiuSymm_apply_apply' (punitEval.{u} n) (punitEval_bijective n) m)
+
+private theorem punitSum_ha (n : ℕ) : HereditarilyAtomic (punitSum.{u} n) :=
+  ⟨PUnit.{u+1}, fun _ => n, ⟨StarAlgEquiv.refl ℂ (punitSum.{u} n)⟩⟩
+
+/-! ### Cross-universe form of the easy half of 125eIII -/
+
+private theorem tmapM_range_le2 (ρ : NMIUMap C₁ C₂) (y : VNT C₁ Bb) :
+    tmapM ρ (nmiuId Bb) y ∈ tensorSub Bb ρ.toStarAlgHom.range := by
+  have htop : wstar (VNT C₁ Bb)
+      {t : VNT C₁ Bb | ∃ a b, t = (vnTensor C₁ Bb).map a b} = ⊤ :=
+    wstar_eq_top_of_dense_span _ (vnTensor C₁ Bb).isTensorProduct.dense
+  have hle : wstar (VNT C₁ Bb) {t : VNT C₁ Bb | ∃ a b, t = (vnTensor C₁ Bb).map a b} ≤
+      (tensorSub Bb ρ.toStarAlgHom.range).comap (tmapM ρ (nmiuId Bb)).toStarAlgHom := by
+    refine sInf_le ⟨isVNSubalgebra_comap (tmapM ρ (nmiuId Bb)).toStarAlgHom
+      (tmapM ρ (nmiuId Bb)).preservesDirSups' _ (isVNSubalgebra_wstar _).1, ?_⟩
+    rintro _ ⟨c, b, rfl⟩
+    show tmapM ρ (nmiuId Bb) (c ⊗ᵥ b) ∈ tensorSub Bb ρ.toStarAlgHom.range
+    rw [tmapM_apply, nmiuId_apply]
+    exact (isVNSubalgebra_wstar _).2 ⟨ρ c, ⟨c, rfl⟩, b, rfl⟩
+  rw [htop, top_le_iff] at hle
+  have hy : y ∈ (tensorSub Bb ρ.toStarAlgHom.range).comap
+      (tmapM ρ (nmiuId Bb)).toStarAlgHom := by rw [hle]; trivial
+  exact hy
+
+private theorem surj_of_haTensorBSurj2 (s : NMIUMap Xs (VNT C₁ Bb)) (ρ : NMIUMap C₁ C₂)
+    (hcomp : TensorBSurjective (nmiuComp (tmapM ρ (nmiuId Bb)) s)) :
+    Function.Surjective ⇑ρ := by
+  have hrange : Set.range ⇑(nmiuComp (tmapM ρ (nmiuId Bb)) s)
+      ⊆ ((tensorSub Bb ρ.toStarAlgHom.range : StarSubalgebra ℂ (VNT C₂ Bb)) :
+        Set (VNT C₂ Bb)) := by
+    rintro _ ⟨a, rfl⟩
+    exact tmapM_range_le2 ρ (s a)
+  have htop := hcomp ρ.toStarAlgHom.range (nmiu_image ρ) hrange
+  intro d
+  have hd : d ∈ ρ.toStarAlgHom.range := by rw [htop]; trivial
+  exact hd
+
+private theorem nmiuComp_punit (n : ℕ) {Z : Type u₁} [CStarAlgebra Z] [PartialOrder Z]
+    [StarOrderedRing Z] [VonNeumannAlgebra Z] (ρ : NMIUMap Z (MatAlg (n + 1))) :
+    nmiuComp (punitEval.{u} n) (nmiuComp (punitInv.{u} n) ρ) = ρ :=
+  DFunLike.coe_injective (funext fun z =>
+    nmiuSymm_apply_apply' (punitEval.{u} n) (punitEval_bijective n) (ρ z))
+
+/-! ### The unit of `(·)^{*_ha ℬ}` is `(·) ⊗ ℬ`-surjective (proc.tex:5690) -/
+
+private theorem haFreeExp_unit_tensorBSurjective {Aa Bb2 : Type u}
+    [CStarAlgebra Aa] [PartialOrder Aa] [StarOrderedRing Aa] [VonNeumannAlgebra Aa]
+    [CStarAlgebra Bb2] [PartialOrder Bb2] [StarOrderedRing Bb2] [VonNeumannAlgebra Bb2]
+    (F : HaFreeExp Aa Bb2) : TensorBSurjective F.unit := by
+  intro S hS hsub
+  have hSha : HereditarilyAtomic (VNSub F.carrier S hS) :=
+    hereditarilyAtomic_subalgebra F.ha VNSub.valNMIU VNSub.valNMIU_injective
+  set Θ : NMIUMap (VNT (VNSub F.carrier S hS) Bb2) (VNT F.carrier Bb2) :=
+    tmapM (VNSub.valNMIU (A := F.carrier) (S := S) (hS := hS)) (nmiuId Bb2) with hΘ
+  have hΘinj : Function.Injective ⇑Θ :=
+    tmapM_injective _ _ VNSub.valNMIU_injective (fun _ _ h => h)
+  have hTvn : IsVNSubalgebra (VNT F.carrier Bb2) Θ.toStarAlgHom.range := nmiu_image Θ
+  have hle : tensorSub Bb2 S ≤ Θ.toStarAlgHom.range := by
+    refine sInf_le ⟨hTvn, ?_⟩
+    rintro _ ⟨t, ht, b, rfl⟩
+    refine ⟨(⟨t, ht⟩ : VNSub F.carrier S hS) ⊗ᵥ b, ?_⟩
+    show Θ ((⟨t, ht⟩ : VNSub F.carrier S hS) ⊗ᵥ b) = t ⊗ᵥ b
+    rw [hΘ, tmapM_apply, nmiuId_apply]
+    rfl
+  have hmemΘ : ∀ y, Θ y ∈ Θ.toStarAlgHom.range := fun y => ⟨y, rfl⟩
+  set κ := nmiuCorestrict Θ Θ.toStarAlgHom.range hTvn hmemΘ with hκ
+  have hκbij : Function.Bijective ⇑κ :=
+    nmiuCorestrict_bijective Θ _ hTvn hmemΘ hΘinj (by rintro _ ⟨y, rfl⟩; exact ⟨y, rfl⟩)
+  have hmemη : ∀ a : Aa, F.unit a ∈ Θ.toStarAlgHom.range := fun a => hle (hsub ⟨a, rfl⟩)
+  set η' := nmiuCorestrict F.unit Θ.toStarAlgHom.range hTvn hmemη with hη'
+  set f : NMIUMap Aa (VNT (VNSub F.carrier S hS) Bb2) :=
+    nmiuComp (nmiuSymm κ hκbij) η' with hf
+  have hfΘ : ∀ a : Aa, Θ (f a) = F.unit a := by
+    intro a
+    have h1 : κ (f a) = η' a := nmiuSymm_apply_apply' κ hκbij (η' a)
+    exact congrArg VNSub.val h1
+  obtain ⟨g, hg, -⟩ := F.universal (VNSub F.carrier S hS) hSha f
+  set σ : NMIUMap F.carrier F.carrier :=
+    nmiuComp (VNSub.valNMIU (A := F.carrier) (S := S) (hS := hS)) g with hσ
+  have hσunit : ∀ a : Aa, F.unit a = tmapM σ (nmiuId Bb2) (F.unit a) := by
+    intro a
+    rw [hσ, ← tmapM_comp_id, ← hg a]
+    exact (hfΘ a).symm
+  have hidunit : ∀ a : Aa,
+      F.unit a = tmapM (nmiuId F.carrier) (nmiuId Bb2) (F.unit a) :=
+    fun a => (tmapM_id _).symm
+  obtain ⟨g₀, -, huniq⟩ := F.universal F.carrier F.ha F.unit
+  have hσid : σ = nmiuId F.carrier :=
+    (huniq σ hσunit).trans (huniq (nmiuId F.carrier) hidunit).symm
+  refine eq_top_iff.mpr fun x _ => ?_
+  have hx : (g x).val = x := by
+    have := congrArg (fun h : NMIUMap F.carrier F.carrier => h x) hσid
+    exact this
+  rw [← hx]
+  exact (g x).property
+
+
+end HaSliceBSurj
+
 /-- **125eIIa** (`tensor-map-factorisation`, proc.tex:5569): for any
 nmiu-map `s : 𝒜 → 𝒞 ⊗ ℬ` there is a von Neumann subalgebra
 `𝒞̃ ⊆ 𝒞` with `s(𝒜) ⊆ 𝒞̃ ⊗ ℬ` such that the restriction of `s` to
@@ -3381,6 +3974,196 @@ def TensorBEquiv [VonNeumannAlgebra B] {n₁ n₂ : ℕ}
   ∃ φ : NMIUMap (MatAlg n₁) (MatAlg n₂), Function.Bijective ⇑φ ∧
     ∀ a : A, tmapM φ (nmiuId B) (f₁ a) = f₂ a
 
+section AstarhaBAux
+
+set_option synthInstance.maxHeartbeats 400000
+
+/-! ### The concrete description of `𝒜^{*_ha ℬ}`
+
+The assembly of 125eVII, following proc.tex:5680–5810 and the shape of
+125cIII `Fha_concrete`.  The two genuinely new steps are
+`haFreeExp_unit_tensorBSurjective` (proc.tex:5690) and the ha form of
+`tensorBsurjectivity`; `hA` is *not* used. -/
+
+
+
+set_option maxHeartbeats 2000000 in
+private theorem haAstarhaB_concrete_aux {Aa Bb2 : Type u}
+    [CStarAlgebra Aa] [PartialOrder Aa] [StarOrderedRing Aa] [VonNeumannAlgebra Aa]
+    [CStarAlgebra Bb2] [PartialOrder Bb2] [StarOrderedRing Bb2] [VonNeumannAlgebra Bb2]
+    (hB : HereditarilyAtomic Bb2) (F : HaFreeExp Aa Bb2) (I : Type u) (N : I → ℕ)
+    (s : ∀ i : I, NMIUMap Aa (VNT (MatAlg (N i + 1)) Bb2))
+    (hsurj : ∀ i, TensorBSurjective (s i))
+    (hdistinct : ∀ i j, i ≠ j → ¬ TensorBEquiv (s i) (s j))
+    (hrep : ∀ (n : ℕ) (f : NMIUMap Aa (VNT (MatAlg (n + 1)) Bb2)),
+      TensorBSurjective f → ∃ i, TensorBEquiv (s i) f) :
+    ∃ Φ : NMIUMap F.carrier (lp (fun i : I => MatAlg (N i + 1)) ∞),
+      Function.Bijective ⇑Φ ∧
+      ∀ (i : I) (πΦ : NMIUMap F.carrier (MatAlg (N i + 1))),
+        (∀ x : F.carrier, πΦ x = Φ x i) →
+        ∀ a : Aa, tmapM πΦ (nmiuId Bb2) (F.unit a) = s i a := by
+  classical
+  obtain ⟨JB, nnB, ⟨ΦB⟩⟩ := hB
+  have hunit : TensorBSurjective F.unit := haFreeExp_unit_tensorBSurjective F
+  obtain ⟨I', N', ⟨ψ₀⟩⟩ := F.ha
+  obtain ⟨ψ, hψbij, -⟩ :
+      ∃ ψ : NMIUMap F.carrier (lp (fun i' : I' => MatAlg (N' i' + 1)) ∞),
+        Function.Bijective ⇑ψ ∧ ∀ x, ψ x = ψ₀ x :=
+    ⟨⟨ψ₀.toStarAlgHom, starAlgEquiv_preservesDirSups' ψ₀⟩, ψ₀.bijective, fun _ => rfl⟩
+  obtain ⟨pp, hppapp⟩ :
+      ∃ pp : ∀ i' : I', NMIUMap F.carrier (MatAlg (N' i' + 1)),
+        ∀ (i' : I') (x : F.carrier),
+          pp i' x = ((ψ x : lp (fun i' : I' => MatAlg (N' i' + 1)) ∞) :
+            ∀ j : I', MatAlg (N' j + 1)) i' :=
+    ⟨fun i' => nmiuComp (lpEvalNMIU (fun i' : I' => MatAlg (N' i' + 1)) i') ψ,
+      fun _ _ => rfl⟩
+  obtain ⟨ee, heeapp⟩ :
+      ∃ ee : ∀ i' : I', NMIUMap Aa (VNT (MatAlg (N' i' + 1)) Bb2),
+        ∀ (i' : I') (a : Aa), ee i' a = tmapM (pp i') (nmiuId Bb2) (F.unit a) :=
+    ⟨fun i' => nmiuComp (tmapM (pp i') (nmiuId Bb2)) F.unit, fun _ _ => rfl⟩
+  have hppsurj : ∀ i' : I', Function.Surjective ⇑(pp i') := by
+    intro i' y
+    obtain ⟨x, hx⟩ := hψbij.2 (lpKappa i' y)
+    exact ⟨x, by rw [hppapp, hx, lpKappa_apply_self]⟩
+  -- (i) each `eᵢ'` is `(·) ⊗ ℬ`-surjective
+  have hesurj : ∀ i' : I', TensorBSurjective (ee i') := by
+    intro i'
+    have hinvbij : Function.Bijective ⇑(punitInv.{u} (N' i')) :=
+      nmiuSymm_bijective _ _
+    have hsu : Function.Surjective ⇑(nmiuComp (punitInv.{u} (N' i')) (pp i')) := by
+      intro y
+      obtain ⟨m, hm⟩ := hinvbij.2 y
+      obtain ⟨x, hx⟩ := hppsurj i' m
+      exact ⟨x, by show punitInv.{u} (N' i') (pp i' x) = y; rw [hx, hm]⟩
+    have h1 := haTensorBSurj ΦB F.unit hunit
+      (nmiuComp (punitInv.{u} (N' i')) (pp i')) hsu
+    have h2 := tensorBSurjective_of_iso (punitEval.{u} (N' i'))
+      (punitEval_bijective (N' i')) _ h1
+    refine tensorBSurjective_congr (fun a => ?_) h2
+    show tmapM (punitEval.{u} (N' i')) (nmiuId Bb2)
+        (tmapM (nmiuComp (punitInv.{u} (N' i')) (pp i')) (nmiuId Bb2) (F.unit a))
+      = ee i' a
+    rw [tmapM_comp_id, nmiuComp_punit, heeapp]
+  -- (ii) `c : I' → I`
+  have hcex : ∀ i' : I', ∃ i : I, TensorBEquiv (s i) (ee i') :=
+    fun i' => hrep (N' i') (ee i') (hesurj i')
+  choose c hc using hcex
+  -- (iii) the mediating maps `ρᵢ : F.carrier → M_{Nᵢ+1}`
+  have hrhoex : ∀ i : I, ∃ ρ : NMIUMap F.carrier (MatAlg (N i + 1)),
+      ∀ a : Aa, tmapM ρ (nmiuId Bb2) (F.unit a) = s i a := by
+    intro i
+    obtain ⟨g, hg, -⟩ := F.universal (punitSum.{u} (N i)) (punitSum_ha (N i))
+      (nmiuComp (tmapM (punitInv.{u} (N i)) (nmiuId Bb2)) (s i))
+    refine ⟨nmiuComp (punitEval.{u} (N i)) g, fun a => ?_⟩
+    have h1 : tmapM (punitInv.{u} (N i)) (nmiuId Bb2) (s i a)
+        = tmapM g (nmiuId Bb2) (F.unit a) := hg a
+    have h2 : tmapM (punitEval.{u} (N i)) (nmiuId Bb2)
+          (tmapM (punitInv.{u} (N i)) (nmiuId Bb2) (s i a))
+        = tmapM (punitEval.{u} (N i)) (nmiuId Bb2)
+          (tmapM g (nmiuId Bb2) (F.unit a)) := by rw [h1]
+    rw [tmapM_comp_id, tmapM_comp_id, punitEval_comp_inv, tmapM_id] at h2
+    exact h2.symm
+  choose rho hrho using hrhoex
+  have hrhosurj : ∀ i : I, Function.Surjective ⇑(rho i) := by
+    intro i
+    refine surj_of_haTensorBSurj2 F.unit (rho i) ?_
+    exact tensorBSurjective_congr (fun a => (hrho i a).symm) (hsurj i)
+  -- `d : I → I'` by the factoring lemma
+  have hdex : ∀ i : I, ∃ i' : I', TensorBEquiv (ee i') (s i) := by
+    intro i
+    obtain ⟨rhoT, hrhoTapp⟩ :
+        ∃ rhoT : NMIUMap (lp (fun i' : I' => MatAlg (N' i' + 1)) ∞) (MatAlg (N i + 1)),
+          ∀ y, rhoT y = rho i (nmiuSymm ψ hψbij y) :=
+      ⟨nmiuComp (rho i) (nmiuSymm ψ hψbij), fun _ => rfl⟩
+    have hrhoTsurj : Function.Surjective ⇑rhoT := by
+      intro y
+      obtain ⟨x, hx⟩ := hrhosurj i y
+      exact ⟨ψ x, by rw [hrhoTapp, nmiuSymm_apply_apply, hx]⟩
+    obtain ⟨i', ρ', hρ'bij, hρ'fac⟩ :=
+      exists_lp_factor (fun x hx hcen => matAlg_central_idem hx hcen)
+        (fun _ x hx hcen => matAlg_central_idem hx hcen)
+        (fun _ φ => matAlg_starAlgHom_injective φ) rhoT hrhoTsurj
+    refine ⟨i', ρ', hρ'bij, fun a => ?_⟩
+    have hcomp : nmiuComp ρ' (pp i') = rho i := by
+      refine DFunLike.coe_injective (funext fun x => ?_)
+      show ρ' (pp i' x) = rho i x
+      rw [hppapp, ← hρ'fac (ψ x), hrhoTapp, nmiuSymm_apply_apply]
+    rw [heeapp, tmapM_comp_id, hcomp, hrho i a]
+  choose d hd using hdex
+  -- transitivity of `(·) ⊗ ℬ`-equivalence
+  have htrans : ∀ {n₁ n₂ n₃ : ℕ} {f₁ : NMIUMap Aa (VNT (MatAlg n₁) Bb2)}
+      {f₂ : NMIUMap Aa (VNT (MatAlg n₂) Bb2)} {f₃ : NMIUMap Aa (VNT (MatAlg n₃) Bb2)},
+      TensorBEquiv f₁ f₂ → TensorBEquiv f₂ f₃ → TensorBEquiv f₁ f₃ := by
+    rintro n₁ n₂ n₃ f₁ f₂ f₃ ⟨φ₁, hb₁, he₁⟩ ⟨φ₂, hb₂, he₂⟩
+    refine ⟨nmiuComp φ₂ φ₁, hb₂.comp hb₁, fun a => ?_⟩
+    rw [← tmapM_comp_id, he₁ a, he₂ a]
+  have hcd : ∀ i : I, c (d i) = i := by
+    intro i
+    by_contra hne
+    exact hdistinct _ _ hne (htrans (hc (d i)) (hd i))
+  -- uniqueness of the `e`-representatives
+  have hsuniq : ∀ i₁ i₂ : I', TensorBEquiv (ee i₁) (ee i₂) → i₁ = i₂ := by
+    rintro i₁ i₂ ⟨φ, hφbij, hφ⟩
+    by_contra hne
+    obtain ⟨μ₁, hμ₁⟩ : ∃ μ : NMIUMap F.carrier (punitSum.{u} (N' i₂)),
+        ∀ x, μ x = punitInv.{u} (N' i₂) (φ (pp i₁ x)) :=
+      ⟨nmiuComp (punitInv.{u} (N' i₂)) (nmiuComp φ (pp i₁)), fun _ => rfl⟩
+    obtain ⟨μ₂, hμ₂⟩ : ∃ μ : NMIUMap F.carrier (punitSum.{u} (N' i₂)),
+        ∀ x, μ x = punitInv.{u} (N' i₂) (pp i₂ x) :=
+      ⟨nmiuComp (punitInv.{u} (N' i₂)) (pp i₂), fun _ => rfl⟩
+    have hμ₁eq : μ₁ = nmiuComp (punitInv.{u} (N' i₂)) (nmiuComp φ (pp i₁)) :=
+      DFunLike.coe_injective (funext hμ₁)
+    have hμ₂eq : μ₂ = nmiuComp (punitInv.{u} (N' i₂)) (pp i₂) :=
+      DFunLike.coe_injective (funext hμ₂)
+    have h1 : ∀ a : Aa, tmapM (nmiuComp φ (pp i₁)) (nmiuId Bb2) (F.unit a)
+        = tmapM (pp i₂) (nmiuId Bb2) (F.unit a) := by
+      intro a
+      rw [← tmapM_comp_id, ← heeapp, hφ a, heeapp]
+    have hkey : ∀ a : Aa, tmapM μ₁ (nmiuId Bb2) (F.unit a)
+        = tmapM μ₂ (nmiuId Bb2) (F.unit a) := by
+      intro a
+      calc tmapM μ₁ (nmiuId Bb2) (F.unit a)
+          = tmapM (punitInv.{u} (N' i₂)) (nmiuId Bb2)
+              (tmapM (nmiuComp φ (pp i₁)) (nmiuId Bb2) (F.unit a)) := by
+            rw [hμ₁eq, tmapM_comp_id]
+        _ = tmapM (punitInv.{u} (N' i₂)) (nmiuId Bb2)
+              (tmapM (pp i₂) (nmiuId Bb2) (F.unit a)) := by rw [h1]
+        _ = tmapM μ₂ (nmiuId Bb2) (F.unit a) := by rw [hμ₂eq, tmapM_comp_id]
+    obtain ⟨g₀, -, huniq⟩ := F.universal (punitSum.{u} (N' i₂)) (punitSum_ha (N' i₂))
+      (nmiuComp (tmapM μ₂ (nmiuId Bb2)) F.unit)
+    have hμ : μ₁ = μ₂ :=
+      (huniq μ₁ (fun a => (hkey a).symm)).trans (huniq μ₂ (fun _ => rfl)).symm
+    have hφpp : ∀ x : F.carrier, φ (pp i₁ x) = pp i₂ x := by
+      intro x
+      have h : μ₁ x = μ₂ x :=
+        congrArg (fun ν : NMIUMap F.carrier (punitSum.{u} (N' i₂)) => ν x) hμ
+      rw [hμ₁ x, hμ₂ x] at h
+      exact (nmiuSymm_bijective (punitEval.{u} (N' i₂)) (punitEval_bijective (N' i₂))).1 h
+    obtain ⟨x, hx⟩ := hψbij.2 (lpKappa i₁ (1 : MatAlg (N' i₁ + 1)))
+    have hx₁ : pp i₁ x = 1 := by rw [hppapp, hx, lpKappa_apply_self]
+    have hx₂ : pp i₂ x = 0 := by
+      rw [hppapp, hx, lpKappa_apply_ne _ _ (Ne.symm hne)]
+    have := hφpp x
+    rw [hx₁, hx₂, show (φ 1 : MatAlg (N' i₂ + 1)) = 1 from map_one φ.toStarAlgHom] at this
+    exact one_ne_zero this
+  have hdc : ∀ i' : I', d (c i') = i' := fun i' =>
+    hsuniq _ _ (htrans (hd (c i')) (hc i'))
+  obtain ⟨Θ, hΘbij, hΘ⟩ :=
+    exists_lp_reindex (𝒜 := fun i' : I' => MatAlg (N' i' + 1))
+      (ℬ := fun i : I => MatAlg (N i + 1)) (⟨d, c, hcd, hdc⟩ : I ≃ I')
+      (fun i => (hd i).choose) (fun i => (hd i).choose_spec.1)
+  refine ⟨nmiuComp Θ ψ, hΘbij.comp hψbij, ?_⟩
+  intro i πΦ hπΦ a
+  have hπeq : πΦ = nmiuComp ((hd i).choose) (pp (d i)) := by
+    refine DFunLike.coe_injective (funext fun x => ?_)
+    show πΦ x = (hd i).choose (pp (d i) x)
+    rw [hπΦ x, hppapp]
+    exact hΘ (ψ x) i
+  rw [hπeq, ← tmapM_comp_id, ← heeapp]
+  exact (hd i).choose_spec.2 a
+
+end AstarhaBAux
+
 /-- **125eVII** (`AstarhaB-concrete`, proc.tex:5652, Theorem): for
 hereditarily atomic `𝒜`, `ℬ` with a set of representatives
 `s_i : 𝒜 → M_{N_i+1} ⊗ ℬ` (`i ∈ I`) for `(·) ⊗ ℬ`-equivalence of the
@@ -3401,7 +4184,8 @@ theorem AstarhaB_concrete [VonNeumannAlgebra A] [VonNeumannAlgebra B]
       Function.Bijective ⇑Φ ∧
       ∀ (i : I) (πΦ : NMIUMap F.carrier (MatAlg (N i + 1))),
         (∀ x : F.carrier, πΦ x = Φ x i) →
-        ∀ a : A, tmapM πΦ (nmiuId B) (F.unit a) = s i a := sorry
+        ∀ a : A, tmapM πΦ (nmiuId B) (F.unit a) = s i a :=
+  haAstarhaB_concrete_aux hB F I N s hsurj hdistinct hrep
 
 end Theses.A.Proc
 

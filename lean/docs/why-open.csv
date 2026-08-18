@@ -24,7 +24,6 @@ mn_vna_3|open||49IV.3, normality of the amplification M_N f; recorded as genuine
 ngelfand_normal|open||53II.2, surveyed self-contained but with no route or estimate recorded
 ngelfand_vna|open||53II.1, surveyed self-contained but with no route or estimate recorded
 us_cont_normal|costed||45I.1 is preservesDirSups_of_continuousOn_effects with ultraweak replaced by ultrastrong
-AstarhaB_concrete|costed||125eVII; the ha slice device it needs is now IN the file (private, log s84: haE_mem + haSliceEq); what is left is the finite-sum approximation step, the two membership corollaries, and ~500 lines mirroring 125cIII; it takes F : HaFreeExp as a hypothesis so 125dII does not gate it
 centrally_similar_basic_2a|awaiting-ruling||all three claims false as printed (ERRATA 104III.2a); the carrier repair is not yet authorised
 centrally_similar_basic_3|awaiting-ruling||false as printed, one machine-checked witness; the equal-carrier repair awaits the author
 centrally_similar_basic_4|awaiting-ruling||false as printed; equal carriers are not enough, and the faithfulness repair is unauthorised
@@ -35,7 +34,7 @@ exists_braiding|open||119IVc, the exercise that (a,b) maps to b tensor a is a te
 exists_tmapM|costed||needs the tmap construction made universe-polymorphic (four universes); prerequisite for all of 119V
 exists_unitors|open||119IVb, the two unitors; not attempted
 faithful_positive_map_uniqueness|blocked|positive_quotients_centrally_similar|104IX is 100VII plus 104VII, both cited by name
-ha_tensor_closed|costed||125dII; does NOT need 125VIII (log s83); the ha slice device is now IN the file (private, log s84: haE_mem + haSliceEq); what is left is the approximation step, the ha slice-map corollaries, product-distribution over the solution set, and ~300 for Freyd mirroring 125bII
+ha_tensor_closed|costed||125dII; does NOT need 125VIII (log s83).  The full ha slice-map property is now IN the file (private, log s85: haApprox, haMem, haE_of_mem, haTensorPreimage, haTensorBSurj), together with tmapM functoriality, the singleton-direct-sum device punitSum (the Type-0/Type-u bridge) and haFreeExp_unit_tensorBSurjective.  What is left is Freyd mirroring 125bII (solution set from W*(entries) + 124I, weak initiality, uniqueness by 47V + the slice device) and the trivial-A case split (A subsingleton makes C (x) A trivial for every C, so the carrier must instead be initial in haW*_miu)
 intersection_tensor|cited||121II gives no argument, only a pointer to Corollary IV.5.10 of Takesaki I.  It is EQUIVALENT, given 88VI, to the commutation theorem (M tensor N)' = M' tensor N' (Takesaki IV.5.9), whose only proofs use Tomita-Takesaki modular theory: absent from Mathlib and from this tree (log s83).  Out of reach; the ha branch routes around it
 linf_tensor|costed||123I.3 cites 116VII, which is now proved; parts 1 and 2 of the exercise are proved above it
 positive_map_uniqueness|blocked|faithful_positive_map_uniqueness|105V uniqueness cites 104IX; the existence half is proved

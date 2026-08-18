@@ -1,16 +1,48 @@
-# `Theses/A/Proc/` — full survey of the remaining `sorry`s (worker 71, 2026-08-16; revised workers 72–88, sessions 47–83)
+# `Theses/A/Proc/` — full survey of the remaining `sorry`s (worker 71, 2026-08-16; revised workers 72–89, sessions 47–88)
 
-**Headline count: A/Proc has 21 code `sorry`s** after session 84 (sessions 83
-and 84 closed no sorry; session 84 banked +471 private lines of
-infrastructure in `QuantumLambda.lean`).
-Per file: `Tensor` **2**, `QuantumLambda` **9**,
+**Headline count: A/Proc has 20 code `sorry`s** after session 88, which
+closed **125eVII `AstarhaB_concrete`**.
+Per file: `Tensor` **2**, `QuantumLambda` **8**,
 `Measurement` **10**, `Duplicators` **0 — the file is finished**.
-**All four compiler-verified in session 84** (each file compiled directly;
+**All four compiler-verified in session 88** (each file compiled directly;
 0 errors in all four).
 **No statement in the project is `sorry`-tainted.**  (`grep -c sorry`
 over-counts, because the file docstrings mention `sorry` in prose; the code
 counts are the ones above.  Note `\bsorry\b` also matches "sorry-ed" in
 prose — count the compiler's `declaration uses \`sorry\`` warnings instead.)
+
+> **Session 88 — 125eVII `AstarhaB_concrete` is CLOSED.**  `QuantumLambda`
+> **9 → 8**; A/Proc **21 → 20**, 0 errors in all four files, the new theorem
+> axiom-clean (checked *in situ*).  **+681 lines**, all in
+> `QuantumLambda.lean`, all `private`; no public name added, `Duplicators`
+> still 0/0.  Full working in PROVING-LOG, session 88.
+>
+> * **The ha slice-map property is complete**: `haApprox` (the `∑_{j∈F} z_j ↑ 1`
+>   approximation step, **44VI** + `vnsac` for *ultraweak* closedness),
+>   `haMem`, `haE_of_mem`, and the private ha forms `haTensorPreimage`
+>   (125VIIb) and `haTensorBSurj`/`surj_of_haTensorBSurj` (125eIII).  Those
+>   two public statements stay open: they are stated for arbitrary second
+>   factors.
+> * **The recorded distributivity obligation is not what 125eVII needed.**
+>   The real obstacle is that `HaFreeExp.universal` quantifies over `Type u`
+>   while `MatAlg n : Type 0`, and **117III cannot help** (it needs the fixed
+>   factor and the summands in one universe).  The fix is a *singleton direct
+>   sum* `punitSum n = ⊕_{PUnit.{u+1}} M_{n+1}`, which is in `Type u`,
+>   hereditarily atomic, and nmiu-isomorphic to `M_{n+1}`.  No distributivity
+>   isomorphism and no braiding were written.
+> * **The trivial-`𝒜` case split was not needed.**  When the ha factor is
+>   subsingleton the whole tensor product is (`vnt_subsingleton`), so
+>   `haTensorPreimage` is trivially true; a `rcases subsingleton_or_nontrivial`
+>   inside it makes 125eVII unconditional.  125dII may still need the split,
+>   for the *carrier*.
+> * **`hA` is unused** (fourth time in this file).  `haFreeExp_unit_tensorBSurjective`
+>   (proc.tex:5690) needs no nontriviality either, and cost ~45 lines.
+> * **Next in A/Proc: 125dII `ha_tensor_closed`**, whose *uniqueness* half is
+>   now available from the device (`haE_natural` + `vtmul_one_injective` +
+>   `haMem` + `vnsub_wstar_eq_top`); what is left is Freyd's solution-set
+>   bookkeeping mirroring 125bII, plus the trivial-`𝒜` carrier case.
+> * Nothing for ERRATA or QUESTIONS.  `docs/why-open.csv`: the
+>   `AstarhaB_concrete` row is deleted, `ha_tensor_closed` rewritten.
 
 > **Session 84 — the hereditarily atomic slice device is BUILT and banked**
 > in `QuantumLambda.lean` (+471 lines, all `private`); A/Proc **21 → 21**,

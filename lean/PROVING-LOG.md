@@ -21039,3 +21039,108 @@ statement.  No new QUESTIONS.  `docs/why-open.csv`: the
 `diamond_effectus_vn` row is removed and the five remaining vN rows plus
 `vn_is_andthen_eff` carry the two corrections.  `docs/BEff-survey.md`: a
 session-87 block.
+
+## Session 88 — `A/Proc`: **125eVII `AstarhaB_concrete` is CLOSED** — the hereditarily atomic slice-map property is complete, and the `Type 0`/`Type u` gap is bridged by a *singleton direct sum*, not by 117III (worker on `Theses/A/Proc/QuantumLambda.lean`)
+
+`AstarhaB_concrete` (**125eVII**, proc.tex:5652) is proved and
+`#print axioms`-clean (`[propext, Classical.choice, Quot.sound]`, checked *in
+situ* on a copy of the source).  `QuantumLambda` **9 → 8**; A/Proc
+**21 → 20** (`QuantumLambda` 8, `Measurement` 10, `Tensor` 2, `Duplicators`
+0; **0 errors in all four**, each compiled directly with `lean`).
+**+681 lines**, all in `QuantumLambda.lean`, every new name `private` except
+none — no public name was added, and `Duplicators` (the only importer) is
+still 0/0.
+
+### 1. What was built, in the order session 84 predicted
+
+1. **`haApprox`** — the ultraweak approximation step.  `∑_{j∈F} z_j ↑ 1` is
+   `lpSumSA_isLUB` transported along `Φ.symm` (an order isomorphism by
+   **48VI**.2 `starAlgEquiv_le_iff`), so **44VI** `vna_supremum_uwlimit`
+   gives a net; composing with `continuous_ultraweak_vtmul_right` and
+   `mult_uws_cont` makes `(1 ⊗ ∑_{j∈F} z_j)·x` an ultraweak net converging
+   to `x`.  The target set must be **ultraweakly** closed and
+   `IsVNSubalgebra` only carries norm closedness, so `vnsac` (**75VIII**) is
+   the bridge — session 84's warning was exactly right.
+   The net is indexed by `Finset J` (a `SemilatticeSup`, so `atTop` is
+   `NeBot`) and mapped monotonely and cofinally into the directed set, as in
+   `B/Dils/HilbertModules.lean`'s use of 44VI.
+2. **`haMem`** and **`haE_of_mem`** — the two halves of the hereditarily
+   atomic slice-map property.  `haMem` is `haApprox` applied to
+   `tensorSub 𝒜 𝒮` plus `haSliceEq`; `haE_of_mem` is `haE_mem` computed
+   *inside* `VNSub 𝒞 𝒮`, pushed forward by the naturality lemma
+   `haE_natural` and the containment `tensorSub 𝒜 𝒮 ≤ range (ι ⊗ id)`
+   (minimality of `W*`, with **69IVb** `nmiu_image` for the range).
+   **115V `tensor_injective` is not needed for this direction** — only the
+   *easy* containment is, since `haE_of_mem` never has to invert `ι ⊗ id`.
+3. **`haTensorPreimage`** (ha form of **125VIIb**) and **`haTensorBSurj`** /
+   `surj_of_haTensorBSurj` (ha form of **125eIII**), both private.  They do
+   not close 125VIIb or 125eIII, which are stated for arbitrary second
+   factors.
+4. **125eVII**, ~330 lines, following proc.tex:5680–5810 and the shape of
+   125cIII.
+
+### 2. Three findings that change the recorded plan
+
+* **125eVII needs the universal property at `MatAlg n : Type 0` targets,
+  which `HaFreeExp.universal` cannot supply** (it quantifies over `Type u`).
+  Session 83/84 recorded distributivity `(⊕ᵢ𝒞ᵢ)⊗𝒜 ≅ ⊕ᵢ(𝒞ᵢ⊗𝒜)` as a 125dII-only
+  obligation; in fact 125eVII hits the same wall, in three places (the
+  mediating `ρᵢ`, the uniqueness of the `e`-representatives, and the
+  `(·)⊗ℬ`-surjectivity of `eᵢ'`).  **117III cannot be used** — it needs the
+  fixed factor *and* the summands in one universe, and `MatAlg n : Type 0`.
+  The fix is a **singleton direct sum**: `punitSum n := ⊕_{PUnit.{u+1}} M_{n+1}`
+  *is* in `Type u`, is hereditarily atomic, and is nmiu-isomorphic to
+  `M_{n+1}` via `lpEvalNMIU`.  Every appeal to the universal property at a
+  matrix target is routed through it.  So neither 117III nor a braiding was
+  used, and **no distributivity isomorphism was written**.
+* **The trivial-`𝒜` case split is *not* needed here, and the reason
+  generalises.**  `vtmul_one_injective` (`c ↦ c ⊗ 1` injective, proved from
+  `norm_vtmul` and `‖1‖ = 1`) genuinely needs `Nontrivial 𝒜`; but when `𝒜`
+  is subsingleton the whole tensor product `𝒞 ⊗ 𝒜` is subsingleton
+  (`vnt_subsingleton`: `1 = 1⊗1 = 1⊗0 = 0`), so `haTensorPreimage` is
+  *trivially true*, and a `rcases subsingleton_or_nontrivial` inside it
+  makes the ha slice-map property and 125eVII **unconditional**.  125dII may
+  still need the split, because there the *carrier* is what must be
+  identified.
+* **`hA` is unused in 125eVII** — hereditary atomicity of the *source* plays
+  no role; what is used is `hB` (for the slice device), `F.ha` (for the
+  block decomposition of the carrier) and `hsurj`/`hdistinct`/`hrep`.  This
+  is the fourth `hA`-is-unused finding in this file (124III, 125bII,
+  125cIII, 125eVII).
+
+### 3. Smaller things worth recording
+
+* **`haFreeExp_unit_tensorBSurjective`** (proc.tex:5690) is the one step of
+  125eVII with no analogue in 125cIII, and it came in at ~45 lines: corestrict
+  `η` along the injective `ι ⊗ ℬ` (`tensor_injective` **is** needed here, to
+  know `ι ⊗ ℬ` is injective, together with `nmiuCorestrict` /
+  `nmiuCorestrict_bijective`), feed the corestriction to the universal
+  property, and use the *uniqueness* half at `𝒞' = F.carrier` to force
+  `ι ∘ ϱ = id`.  It needs **no** nontriviality hypothesis.
+* `tmapM` functoriality (`tmapM_id`, `tmapM_comp_id`) was missing from the
+  tree and is four lines each from `(exists_tmapM _ _).unique`.
+* **`include x in` is not available in this toolchain.**  A section variable
+  that occurs only in a *proof* has to be re-declared as an explicit binder
+  (done for `Φ` in `haTensorPreimage`/`haTensorBSurj`).
+* `set` was avoided throughout the 125eVII assembly in favour of
+  `obtain ⟨f, hf⟩ : ∃ f, … := ⟨_, fun _ => rfl⟩`, per the standing warning;
+  the assembly still needs `set_option maxHeartbeats 2000000`.
+* `map_star`/`map_smul` on a `StarAlgEquiv` still blow instance synthesis
+  (session 84's observation); `Φ.symm.toStarAlgHom` is the workaround.
+
+### 4. Where 125dII stands now
+
+Everything 125dII was costed to need is in the file except the Freyd
+assembly itself.  The route is 125bII's verbatim: solution set indexed by
+presentations, product over it, `W*(range η)`, weak initiality; **uniqueness
+is now available** — if `g, g'` agree after `⊗ 𝒜` on `η(ℬ)` then, by
+`haE_natural` and `vtmul_one_injective`, they agree on every *entry* of every
+`η(b)`, and `haMem` puts `η(b)` back into `E ⊗ 𝒜` for the equaliser `E`, so
+`vnsub_wstar_eq_top` finishes.  What is genuinely left is the solution-set
+cardinality bookkeeping (**124I** `vn_generation_bound` on `W*(entries)`) and
+the trivial-`𝒜` case, where `𝒞 ⊗ 𝒜` is trivial for every `𝒞` and the carrier
+has to be an initial object of `haW*_miu`.
+
+Nothing for ERRATA or QUESTIONS.  `docs/why-open.csv`: the
+`AstarhaB_concrete` row is deleted and the `ha_tensor_closed` row rewritten.
+`docs/AProc-survey.md`: headline 21 → 20, session block added.
