@@ -21639,3 +21639,442 @@ Two `sorry`s, neither of them this file's own mathematics: **211IV
 session's A/Proc worker), and
 `effectModule_unitInterval_representation` in `EffectAlgebras.lean`
 (QUESTIONS **B14**).
+
+## Session 91 — `B/Dils`: **165VI `ba_ext_tensor_pres` is CLOSED — the import really was the only blocker** — and 167I is not one step behind it (worker on `Theses/B/Dils/SelfDual.lean`)
+
+`SelfDual.lean` is at **2** `sorry`s, **0** errors, 8222 lines (**+278**).
+B/Dils as a whole is at **9** (`Kaplansky` 4, `Pure` 2, `SelfDual` 2,
+`Stinespring` 1).  `ba_ext_tensor_pres` was checked **in situ** — a copy of
+the source in the scratchpad with `#print axioms` appended, compiled directly,
+*not* against the olean — and is
+`[propext, Classical.choice, Quot.sound]`.
+
+### The import: no cost, no clash
+
+`SelfDual.lean` now imports `Theses.A.Proc.Tensor`.  Session 71's record was
+right that this is acyclic (nothing under `Theses/A/` imports `Theses.B`) and
+right that `Theses.A.Proc.Tensor` was genuinely **not** in the closure of
+`Theses.B.Dils.Paschke` + `Theses.B.Dils.Kaplansky` — checked by walking the
+import graph, not assumed.  The cost is **not measurable**: 70.7s before the import,
+67.9s directly after, and 54.3s / 76.1s on two runs of the finished file —
+four runs of the same machine under wildly different concurrent load (three
+other workers), so the honest reading is "swamped by scheduling noise, and
+certainly not visible the way the +7s that `A/Proc/Measurement` cost `B/Eff`
+in session 88 was".  Peak RSS
+is unchanged at ~7.1 GB.  **No name clash**, because `SelfDual.lean` does not
+`open Theses.A.Proc`; the three names used from it —
+`tensor_characterization`, `wstar_eq_top_of_dense_span`, `MIUBilinear` — are
+written out qualified at the use site, and `IsTensorProduct` never competes
+with `IsVNTensor`.
+
+### 116VII is what 165VI needs, and the check was not trivial
+
+The recorded claim ("165VI needs 116VII") is **true, but for a reason worth
+writing down**, because the two statements are not about the same predicate.
+`IsVNTensor` (our axiomatization of 108II `tensor`) asks for product
+functionals of **all** np-functionals and for **all** of them to be
+separating.  What **165IX**–**165X** construct are the product functionals of
+the **vector** np-functionals `Ω_X = {f⟨x,(·)x⟩}`, `Ω_Y = {g⟨y,(·)y⟩}` only.
+The gap between the two is exactly the content of **116VII**
+`tensor_characterization`: *centre separating* collections `Σ`, `Γ` suffice.
+So 165VI cannot be done without it (or without redoing it), and the thesis
+says so at 165VII: "using `tensor-characterization`".
+
+`IsTensorProduct` (A/Proc, 108II) and `IsVNTensor` (B/Dils, the same 108II)
+turn out to line up field for field once `generates` — `W*(ran t) = ⊤` — is
+read as ultraweak density of the span, which is
+`Theses.A.Proc.wstar_eq_top_of_dense_span`.  No statement had to move and
+neither definition had to change.
+
+### The route, and where it left the thesis
+
+**165VII** reduces the Theorem (an nmiu-isomorphism `ϑ`) to "`Θ` is a tensor
+product" via `tensor-uniqueness`; our statement *is* that reduction already
+carried out, so what is proved is **165VIII**–**165X**, by the thesis's own
+plan.
+
+1. **miu-bilinearity of `Θ`** is **165V** `hilbmod_tensor_ketbra`, exactly as
+   165VIII says.  Instantiating it at `(S,T,S',T')` with `R = Θ S T`,
+   `R' = Θ S' T'`, `R'' = Θ (SS') (TT')` gives `one`, `mul` and `star`
+   outright; `add_left`, `add_right` and both `smul_complex`s go through the
+   uniqueness half of **164II** (two elements of `𝒞ᵃ(X ⊗ Y)` agreeing on the
+   elementary tensors are equal).  Class 1, faithful.
+2. **Generation** (165VIII) is `ext_tensor_ketbra_uwDense`, and the
+   `|x₁⟩⟨x₂| ⊗ |y₁⟩⟨y₂| = |x₁⊗y₁⟩⟨x₂⊗y₂|` clause of 165V puts each
+   `|(eᵢa) ⊗ (dⱼb)⟩⟨e_k ⊗ d_l|` in the range of `Θ`.  The bases come from
+   **149V**.4 `exists_isONBasis_of_bddUnComplete`.
+3. **Product functionals** (165IX) are `baVecNP E.selfDual (η x y) Ω` for `Ω`
+   a product functional of `𝒜 ⊗ ℬ`; the computation is `η_inner` and one
+   `rfl`.  That `Ω_X`, `Ω_Y` are centre separating is **144I** through
+   `ba_nonneg_iff` — the argument already sitting inline inside
+   `ketbra_ultranorm_continuous`, now factored out as
+   `baVec_centreSeparatingConj`.
+4. **Faithfulness** (165X) is where the transcription diverges, mildly.
+
+**Divergence 1 (class 2), and it is forced.**  165VIII reads generation off
+the ultraweak density of the `|(eᵢa) ⊗ (dⱼb)⟩⟨e_k ⊗ d_l|`, i.e. off
+**164XI**.  Our `ext_tensor_ketbra_dense` — the *net* form of 164XI — is
+**false** (QUESTIONS **D6**), and the true form we have,
+`ext_tensor_ketbra_uwDense`, is an entourage statement: finitely many
+np-functionals and an `ε`.  116VII and `wstar_eq_top_of_dense_span` both want
+`@Dense _ (ultraweak _)`.  The missing bridge is
+**`mem_uwClosure_of_npApprox`** (new, ~35 lines): the ultraweak counterpart of
+`mem_usClosure_iff`, proved by exhibiting the net indexed by
+`Finset (NPFunctional A) × ℕ` — finitely many functionals, accuracy
+`1/(n+1)` — and `mem_closure_of_tendsto`.  It is the general fact and belongs
+in `A/VN` eventually.
+
+**Divergence 2 (class 3, mild).**  165X argues "`⟨x⊗y, A(x⊗y)⟩ = 0`, thus
+`‖√A(x⊗y)‖² = 0`".  We do not take a square root: **144I**
+`hilbmod_ordersep`, which is *already* how `A ≥ 0` is available on
+`Ba 𝒞 E.Z`, hands back a factorisation `A = R' ∘ R` with `R` adjoint to `R'`,
+and `⟨x⊗y, R'(R(x⊗y))⟩ = ⟨R(x⊗y), R(x⊗y)⟩` does the same work.  Same argument,
+continuous functional calculus removed.
+
+**One derived fact the thesis takes for granted.**  `η x (c·y) = c·η x y`:
+`ExtTensor` records ℂ-homogeneity of `η` in the **first** slot only, exactly
+as `IsVNTensor` records it for `t` (see the 165IV note in ERRATA).  It follows
+from `η_inner` + `vnTensor_smul_complex_right` + `extTensor_sep`, three lines.
+(`extTensor_eta_smul_complex_right`, further down the file, proves the same
+thing a different way for parsec 1670; they were written for different
+sections and neither is in scope of the other.)
+
+### 167I `paschke_tensor` — the record was wrong, and this is the finding
+
+`docs/why-open.csv` said "**165VI is the only blocker left**".  It is not, and
+nothing else in the tree is close.  With 165VI now proved, 167I needs, none of
+it present and none of it recorded before:
+
+1. **Transport of `IsPaschkeDilationOf` along a bijective nmiu-map.**  This
+   exists — `pcorner_transport` — but it is `private` in `B/Dils/Pure.lean`,
+   and `Pure.lean:21` imports `SelfDual.lean`.  It is *downstream*, so it has
+   to be re-proved here, together with the two lemmas it rests on
+   (`pcorner_exists_ncpOfNmiu`, `pcorner_exists_ncpInv`).
+2. **A bridge `IsVNTensor ↔ Theses.A.Proc.IsTensorProduct`, both ways**, to
+   feed `tensor_uniqueness`.  (One way is now written out inside 165VI's proof
+   and could be lifted; the other is new.)
+3. **`IsVNTensor` on the opposite algebra.**  Unavoidable: the standard
+   Paschke dilation's algebra is `(𝒷ᵃ(M.X))ᵐᵒᵖ` (`existence_paschke_5`), so
+   `Θᵒᵖ` is what has to be a tensor product.  `npFunctionalOp` is in
+   `Paschke.lean`, but `wstar` and `IsVNSubalgebra` on `ᵐᵒᵖ` are nowhere —
+   and `op` is an **anti**-isomorphism, so this is not a rename.
+4. **`ad_U` as a bijective nmiu-map** `𝒷ᵃ(X₁ ⊗ X₂) → 𝒷ᵃ((𝒜₁⊗𝒜₂) ⊗_Φ (ℬ₁⊗ℬ₂))`
+   for the inner-product-preserving bijection `U` that
+   `paschke_tensor_module` already supplies.  **153I** `hilbmod_ad_ncp` gives
+   only *ncp*; multiplicativity and unitality for a unitary are new.
+5. **167VI itself**: the two intertwining identities
+   `ad_{U*} ∘ ϑ ∘ (ϱ₁⊗ϱ₂) = ϱ` and `h ∘ ad_{U*} ∘ ϑ = h₁⊗h₂`, and separately
+   `H ∘ R = Φ`, each by ultrastrong density of `𝒜₁ ⊙ 𝒜₂` (`unDense_tSpan`,
+   available) plus normality.
+
+Estimate **500–800 lines** across at least those five pieces.  It was not
+attempted: half of it in the tree would be worse than none.
+
+**And the thesis does not do step 5's sequel either.**  167II's plan ends
+"From this, we finally derive the stated result" — the passage from the
+*standard* dilations, which is all 167VI treats, to the **arbitrary** ones the
+Theorem quantifies over.  That passage exists in `dils.tex` **only as a LaTeX
+comment**, lines 5950–5961; the `\qed` at 5948 closes the proof before it.
+Filed as ERRATA **167II**, with the two gaps the commented argument would
+itself leave (notably "`β₁ ⊗ β₂` is an isomorphism", which presupposes that
+`β₁ ⊗ β₂` exists as an nmiu-map — functoriality of `⊗`, i.e. item 2 above).
+
+### Bookkeeping
+
+`docs/why-open.csv`: the `ba_ext_tensor_pres` row is **removed**; the
+`paschke_tensor` row carries a session-91 note with the five items above (its
+`blocker` field still names `ba_ext_tensor_pres` — not reflowed, per the
+convention; the note says why that name is now stale).  `ERRATA.md`: one new
+row, **167II**.  No new `QUESTIONS` — **D6** (`ext_tensor_ketbra_dense`) is
+untouched and is *not* a blocker for anything now, since 165VI routes through
+`ext_tensor_ketbra_uwDense` instead.  No repairs to our formalization: both
+`ba_ext_tensor_pres` and `paschke_tensor` say what the source says, and the
+check found nothing to fix on our side.
+
+
+## Session 90 — `A/Proc`: **125dII `ha_tensor_closed` is CLOSED — A/Proc has no reachable `sorry` left** (worker on `Theses/A/Proc/QuantumLambda.lean`)
+
+`ha_tensor_closed` (**125dII**, proc.tex:5528) is proved.  `QuantumLambda`
+**8 → 7**; A/Proc **20 → 19**, and *every one of the 19 is blocked*:
+`QuantumLambda`'s 7 are the 121II/125IV/125VIII commutation-theorem cluster
+(`intersection_tensor`, `equaliser_lemma`, `tensor_equalisers`,
+`tensor_preimage`, `tensor_closed`, `tensor_map_factorisation`,
+`tensorBsurjectivity`), `Tensor`'s 2 are the recorded non-targets, and
+`Measurement`'s 10 are gated on the open author question.  **+598 / −87
+lines**, all in `QuantumLambda.lean`, every new name `private` except the
+theorem itself; no public name was added.  The file compiles with **0
+errors** (direct `lean` invocation).
+
+### 1. The route, and where it leaves the recorded plan
+
+proc.tex:5541 gives one line — "Freyd, exactly as in
+`tensor-closed-proof`, but with a suitably modified solution set" — so the
+solution set is ours to choose.  Two of the three things session 88 costed
+turned out to be unnecessary, and the one it had dismissed turned out to be
+needed after all.
+
+* **No cardinality bookkeeping.**  125bII indexes its solution set by
+  *presentations* `⊕_{j∈J} M_{N j+1}` with `J ⊆ K`, `#K = 2^(2^(𝔠+#𝒜))`, and
+  pays for it with **124I** `vn_generation_bound`, `exists_haPresentation`
+  and `HaSolIdx`.  Here the solution set can be taken to be **all** nmiu-maps
+  `ℬ → M_{n+1} ⊗ 𝒜` — an honest set, `Σ n : ℕ, NMIUMap ℬ (M_{n+1} ⊗ 𝒜)`,
+  because the matrix algebras are indexed by `ℕ` and the maps into a *fixed*
+  algebra form a type.  Weak initiality is then immediate from **84bII**: a
+  hereditarily atomic `𝒞'` *is* `⊕_{i∈I} M_{m i+1}`, so each
+  `(πᵢ ∘ Ψ) ⊗ id ∘ h` is itself a solution-set entry, and the factoring map
+  `P → 𝒞'` is `Ψ⁻¹` after the coordinate map `⟨π_{r i}⟩` of **47IV**
+  `vn_products_nmiu`.  So none of 124I, `exists_haPresentation`, `K` or
+  `HaSolIdx` is used.
+* **Distributivity *was* needed, and 117III does supply it.**  Session
+  83/84 recorded `(⊕ᵢ𝒞ᵢ) ⊗ 𝒜 ≅ ⊕ᵢ(𝒞ᵢ ⊗ 𝒜)` as the 125dII-only obligation and
+  session 88 recorded that "117III cannot be used" (it confines the index
+  type *and* the summands to one universe, while `MatAlg n : Type 0`).  Both
+  are right, and the second is not fatal: run **117III**
+  `tensor_distributes_over_sums` on the family
+  `fun p => punitSum (N p) : Type u` — session 88's own singleton-direct-sum
+  bridge — flip it with **119IVc** `exists_braiding`, move it onto the
+  *chosen* tensor product with **114II** `tensor_uniqueness`, and carry the
+  summandwise isomorphisms `punitSum (N p) ⊗ 𝒜 ≅ M_{N p+1} ⊗ 𝒜` across the
+  universe gap with a new `exists_lp_congr` (the fixed-index companion of
+  `exists_lp_reindex`, which cannot do it: `exists_lp_reindex` moves the
+  *index* type but keeps the summands in one universe).  The result,
+  `exists_matSumTensorIso` (~110 lines), says exactly that the coordinates of
+  the isomorphism are the maps `π_p ⊗ id`, and it is used twice: to build the
+  mediating `η : ℬ → P ⊗ 𝒜` from its coordinates (this is the *only* way to
+  get a map *into* a tensor product here), and to know that the `πᵢ ⊗ id` are
+  jointly injective on `𝒞' ⊗ 𝒜`.
+* **The trivial-`𝒜` case needed no initial object.**  The recorded plan said
+  that when `𝒜` is subsingleton — `𝒞 ⊗ 𝒜` trivial for every `𝒞`, so the
+  universal property says nothing — the carrier would have to be *initial* in
+  `haW*_miu`, i.e. `ℂ`, which would have meant building the scalar embedding
+  `ℂ → 𝒞'` (normality and all) and an `M_1 ≅ ℂ`.  None of that is needed:
+  a subsingleton `𝒜 ≅ ⊕_{j∈J} M_{n_j+1}` forces `J = ∅` (a single `j : J`
+  makes `𝒜` nontrivial — `nontrivial_of_haIndex`, `κ_j` is injective), so the
+  generating set of *entries* is empty, the carrier is `W*(∅) ⊆ P` — which is
+  ℂ·1, the initial object, arrived at for free — and `vnsub_wstar_eq_top`
+  gives uniqueness **vacuously**.  The case split has to supply only (i) some
+  nmiu-map into the trivial algebra `P ⊗ 𝒜` (`nmiuOfSubsingleton`, 12 lines,
+  every field `Subsingleton.elim`) and (ii) the factoring equation, by
+  `Subsingleton.elim`.
+* **Uniqueness is exactly session 88's prediction**: if `g, g'` agree after
+  `⊗ 𝒜` on `η(ℬ)` then `haE_natural` turns each entry equation into
+  `g'(d) ⊗ 1 = g(d) ⊗ 1`, `vtmul_one_injective` cancels the `⊗ 1`, the
+  entries generate the carrier, and **47V** `vn_equalisers` +
+  `vnsub_wstar_eq_top` finish.  The `Nontrivial 𝒜` that
+  `vtmul_one_injective` needs is *derived inside the step*, from the slice
+  index `j : J` that comes with the entry.
+
+### 2. Smaller things worth recording
+
+* **`Function.Bijective.comp` must not be used on `⇑(nmiuComp g f)`.**
+  Unifying it with `⇑g ∘ ⇑f` at these tensor-product types burned 10⁶
+  heartbeats and failed; a three-line `nmiuComp_bijective` (which never
+  mentions `∘`) is instant.  This is the same lesson as session 88's `set`
+  warning, one level down.
+* **`tmapM_injective` is single-universe** — it goes through 115V
+  `tensor_injective`, whose four algebras live in one `Type u`.  The
+  cross-universe uses here (`punitSum n ⊗ 𝒜 → M_{n+1} ⊗ 𝒜`) are served
+  instead by `tmapM_id_bijective`, proved from `tmapM_comp_id` and
+  `tmapM_id`: the inverse of `ρ ⊗ id` is `ρ⁻¹ ⊗ id`, which needs no
+  injectivity theorem at all.
+* **`Nontrivial (M_{n+1} ⊗ 𝒜)` is not available from `norm_vtmul`** for the
+  same reason (116III.2 is single-universe); `vnt_mat_nontrivial` gets it by
+  injecting `punitSum n ⊗ 𝒜`, where `norm_vtmul` does apply.
+* **`rw` cannot see through `vtmul`.**  114II's conclusion is stated with
+  `(vnTensor 𝒜 ℬ).map a b` and the goals carry `a ⊗ᵥ b`; they are definitionally
+  equal but not syntactically, so a restatement (`have h' : … := h`) is needed
+  before rewriting.
+* Three private blocks were **moved forward** in the file, unchanged:
+  `tmapM_range_le`, the `tmapM` functoriality block (`tmapM_id`,
+  `tmapM_comp_id`, `tmapM_injective`) and the `punitSum` block.  All three
+  were written for parsec 1255 and are needed by 125dII in parsec 1254.
+* Compile cost: the file went from ~2.2 to ~7.3 minutes.
+  `exists_matSumTensorIso` is the expensive declaration
+  (`maxHeartbeats 2000000`, `synthInstance.maxHeartbeats 400000`); the main
+  theorem needs the same options but is much cheaper.
+
+### 3. Statement check, and what the proof does *not* use
+
+Our rendering is faithful: 125dII says `(·) ⊗ ℬ : haW*_miu → haW*_miu` has a
+left adjoint for hereditarily atomic `ℬ`, and `Nonempty (HaFreeExp B A)` is
+the universal-arrow form of that, with both algebras hereditarily atomic and
+the universal property quantified over hereditarily atomic targets — which is
+what the domain `haW*_miu` means.  Nothing to change; nothing for ERRATA or
+QUESTIONS.
+
+`hB` — hereditary atomicity of the *source* — is **not used**, the fifth such
+finding in this file (124III, 125bII, 125cIII, 125eVII, now 125dII).  What
+the proof really shows is that `(·) ⊗ 𝒜 : haW*_miu → W*_miu` has a left
+adjoint defined on all of `W*_miu`; the hypothesis is kept because the thesis
+states the adjunction with `haW*_miu` as its domain.  `hA` *is* used, twice
+over: for the slice device (the entries) and for `exists_matSumTensorIso`.
+
+Divergences by class: (2) *different route* for the solution set (the thesis
+leaves it unspecified; ours is the set of all matrix-algebra-valued maps, and
+it avoids 124I entirely) and for the uniqueness half (the ha slice device in
+place of 125IV `equaliser_lemma`, which is blocked on the commutation
+theorem); (1) *faithful* for the Freyd skeleton itself.  No Mathlib
+substitutions beyond `Function.Injective.nontrivial` and `Equiv`/`lp`
+plumbing.
+
+### 4. Where A/Proc stands
+
+19 `sorry`s, and **no reachable target remains**: `QuantumLambda` 7 (all
+downstream of 121II `intersection_tensor` = the commutation theorem, which
+needs Tomita–Takesaki), `Tensor` 2 (recorded non-targets), `Measurement` 10
+(gated on the open author question).  `docs/why-open.csv`: the
+`ha_tensor_closed` row is deleted.  `docs/AProc-survey.md`: headline 20 → 19,
+session block added.
+
+## Session 91 — A/Proc: 104VII closed, and the corner-centre bridge is not needed
+
+**`positive_quotients_centrally_similar` (104VII) is proved and axiom-clean**,
+and with it the whole chain that hung on it.  `A/Proc/Measurement.lean` is
+down from six `sorry`s to five (104III.2a, .3, .4, .5 and 106III.3 — all five
+now *leaves*), and `#print axioms`, run on a scratch copy of the file,
+reports
+
+```
+positive_quotients_centrally_similar : [propext, Classical.choice, Quot.sound]
+faithful_positive_map_uniqueness     : [propext, Classical.choice, Quot.sound]
+positive_map_uniqueness              : [propext, Classical.choice, Quot.sound]
+sqrt_axiom                           : [propext, Classical.choice, Quot.sound]
+uniqueness_sequential_product        : [propext, Classical.choice, Quot.sound]
+```
+
+— no `sorryAx`.  So 104VII, 104IX, 105V, 105VII and 106I are all genuinely
+closed, and `B/Eff`'s **211IV** `vn_is_andthen_eff` is no longer blocked by
+anything in `A/Proc`.
+
+### The brief, and why the answer to it is "not needed"
+
+The brief was to build everything 104VII needs that is not gated on the
+**A7** ruling, in priority order: (1) `Z(e𝒜e) = Z(𝒜)e`; (2) the `eₙ`; (3)
+steps 1–2 of the printed proof; (4) assembly, with the faithful form of
+104III.5 as an explicit hypothesis of a new auxiliary lemma.
+
+**`Z(e𝒜e) = Z(𝒜)e` is *not* proved, and it turned out not to be needed** —
+neither is 104III.5.  Session 90's analysis of the printed proof is right in
+every particular: the reduction really does produce elements central in
+`eₙ𝒜eₙ` and really does then use them in `𝒜`, and that step really is a gap
+(ERRATA **104VIII**(a)).  What session 90 did not see is that the gap is
+*avoidable*, because the element one wants to prove central can be written
+down globally from the start:
+
+* let `s := p + q` and `d := p/s`.  `d` exists by Douglas' lemma
+  (**81V**.1): `p² ≤ s²` because `p` and `q` commute — which is step 1 of the
+  printed proof — so `p ∈ 𝒜s`.  `d` is *unique* with `ds = p`, because
+  `⌈s⌉ ≥ ⌈p⌉ = 1`; uniqueness alone gives that `d` commutes with everything
+  commuting with `p` and `q`, since `x d s = x p = p x = d x s`;
+* on the corner `Eₙ𝒜Eₙ`, `dEₙ` is the inverse of `Eₙ + zₙ` where
+  `zₙ := (pEₙ)^{∼1}(qEₙ)`, and `zₙ` is central *in the corner* by **104VI**
+  applied there.  Hence `dEₙ` commutes with every `x` of the corner: from
+  `dEₙ(Eₙ+zₙ) = Eₙ` and `x(Eₙ+zₙ) = (Eₙ+zₙ)x` one gets
+  `((dEₙ)x − x(dEₙ))(Eₙ+zₙ) = 0`, and `⌈Eₙ+zₙ⌉ = Eₙ` finishes it — no
+  inverses are ever formed, only carriers;
+* therefore `Eₙ(da − ad)Eₙ = (dEₙ)(EₙaEₙ) − (EₙaEₙ)(dEₙ) = 0` for every `n`
+  and every `a ∈ 𝒜`, and `d` is central **in `𝒜`**;
+* `(1−d)p = dq` is then the central similarity outright: `p − dp − dq
+  = p − ds = 0`, `d` and `1−d` are positive (`nonneg_of_central_of_mul_nonneg`)
+  and have carrier `1` (from `ds = p`, `(1−d)s = q`).
+
+So the corner is used exactly once, to run **104VI** where `p` and `q` are
+invertible, and nothing has to be carried back out of it except an equation
+between elements of `𝒜`.  Neither `Z(e𝒜e) = Z(𝒜)e` nor **104III**.5 nor
+**104III**.3/.4 appears anywhere.
+
+**Consequence for A7: it is now a leaf.**  Nothing in either thesis's
+formalization waits on the ruling any more; the four `centrally_similar_basic`
+statements are wanted only for their own sake.  `QUESTIONS.md` **A7** and the
+**104VIII** row of `ERRATA.md` carry session-91 updates saying so.
+
+### What was actually built (all in `A/Proc/Measurement.lean`)
+
+* `mul_ceil_eq_zero` — the mirror of `ceil_mul_eq_zero`.
+* `Corner.isStarProjection_iff`, `Corner.val_ceil`, `cornerMIU` — the transport
+  of projections, of `⌈·⌉` and of an miu-map fixing `e` into the bundled corner
+  `Corner A e`.  `Corner.val_ceil` is the only substantial one: the carrier of a
+  corner element is its carrier in `𝒜` (both are least among the projections of
+  `𝒜` below `e`).
+* `specPos`, `spectralProj`, `specInv` — `(a−t)⁺`, `1_{(t,∞)}(a) = ⌈(a−t)⁺⌉` and
+  `1/max(a,t)`, with: `spectralProj_comm` (they lie in `{a}^□□`),
+  `spectralProj_mono`, `norm_sub_specPos_le` (`‖a − (a−t)⁺‖ ≤ t`) and
+  `specInv_mul_mul_spectralProj` (`(1/max(a,t))·a·1_{(t,∞)}(a) = 1_{(t,∞)}(a)`
+  — the pseudoinvertibility of `a·1_{(t,∞)}(a)`, proved from
+  `(1 − t/max(a,t))·(a−t)⁺ = 0`).
+* `specPair p q n := 1_{(tₙ,∞)}(p)·1_{(tₙ,∞)}(q)`, `tₙ = 1/(n+1)`, with
+  `specPair_isStarProjection`, `specPair_mul_specPair` (they increase) and
+  `eq_zero_of_mul_specPair`: **only `0` is annihilated by every `Eₙ`**, when
+  `⌈p⌉ = ⌈q⌉ = 1`.  That last is what replaces "`eₙaeₙ → a` ultrastrongly" in
+  the printed proof (ERRATA **104VIII**(c)); it needs no topology beyond
+  `‖x·a‖ = ‖x·(a − (a−t)⁺)‖ ≤ ‖x‖t`.
+* `ceil_mul_proj_mul_of_comm` (step 1: `⌈pep⌉ = e` for `e` commuting with a
+  faithful `p`) and `positive_quotients_step12` (steps 1–2: `ϑ` fixes, and `q`
+  commutes with, every projection commuting with `p`; hence `pq = qp` and
+  `ϑ(p) = p`, by **65IV** `projections_norm_dense`, whose projections land in
+  `{p}^□□` — exactly as session 90 predicted).
+* `positive_quotients_corner` — the corner step, stated abstractly: for a
+  projection `E` commuting with `p` and `q` and `u`, `v` inverting them on `E`
+  (`upE = E = vqE`), `z := uqE` is central in `E𝒜E` and `ϑ` is the identity on
+  `E𝒜E`.  The hypothesis of **104VI** in the corner is
+  `⌈z ϑ(f) z⌉ = ⌈(uE)·⌈qϑ(f)q⌉·(uE)⌉ = ⌈(uE)·⌈pfp⌉·(uE)⌉ = ⌈EfE⌉ = f`, i.e.
+  two applications of **60VII**.1 `ceil_fundamental_1` around the hypothesis of
+  104VII.  `positive_quotients_specPair` instantiates it at the `Eₙ`.
+* `nonneg_of_central_of_mul_nonneg` — a self-adjoint central `d` with `ds ≥ 0`
+  for faithful positive `s` is positive (`d⁻ds = −(d⁻)²s` is both `≥ 0` and
+  `≤ 0`, so `(d⁻)²s = 0`, so `(d⁻)² = 0`).
+
+### Divergences from the authors (classified)
+
+1. *Faithful* — steps 1–2, and the corner application of **104VI**, are the
+   printed proof verbatim.
+2. *Different route* — three, all forced and all already recorded as defects of
+   the printed proof: (a) the `eₙ` are the spectral projections of `p` and `q`
+   rather than partial sums of `⌈tₙ⌉` for an approximate pseudoinverse of
+   `p ∧ q`, whose existence is not available (ERRATA **104VIII**(b); the thesis
+   offers its construction as an example only); (b) the descent goes through the
+   global `d = p/(p+q)` rather than through **104III**.5 plus
+   `Z(e𝒜e) = Z(𝒜)e` (ERRATA **104VIII**(a)); (c) `ϑ = id` comes from
+   `eq_zero_of_mul_specPair` rather than from ultrastrong convergence
+   (ERRATA **104VIII**(c)).
+3. *Mild* — none.
+4. *Our mis-transcription* — none.  Worth recording that our rendering's
+   `hbij : Function.Bijective ϑ` is **not used**: bijectivity is a conclusion
+   (`ϑ = id`), not a hypothesis.  The hypothesis is kept because the thesis
+   says "miu-isomorphism".
+5. *Mathlib without reading the author* — the continuous functional calculus
+   used to build the spectral projections (`cfc_mul`, `cfc_mono`,
+   `norm_cfc_le`) is Mathlib, but it is the same construction `⌈(a−t)⁺⌉` that
+   `A/VN/Projections.lean`'s own `exists_spectral_approx` (the tree's proof of
+   **64II**/**65IV**) already runs; Douglas' lemma is the thesis's **81V**.1.
+
+### On `Z(e𝒜e) = Z(𝒜)e` itself, for the record
+
+Not proved, and not attempted past the design stage, since it became
+unnecessary.  It does **not** need comparison theory, contrary to what one
+might fear.  On paper: for projections `f`, `g` of `Z(e𝒜e)` with `fg = 0` one
+has `f𝒜g = f(eae)g = (eae)fg = 0`, so `⌈⌈f⌉⌉g = 0`, so `⌈⌈f⌉⌉e = f` — the
+projection case is the central carrier and nothing else, and it is a couple of
+dozen lines with the tree's `cceil`.  The general case then needs (i)
+`Z(e𝒜e)` is generated by its projections (65IV inside the corner, available),
+and (ii) the map `Z(𝒜)⌈⌈e⌉⌉ → Z(e𝒜e)`, `c ↦ ce`, is isometric, so that the
+approximants converge — and (ii) is the only real work: for central `c ≥ 0`
+with `⌈c⌉ ≤ ⌈⌈e⌉⌉`, `‖ce‖ ≥ μ‖re‖ = μ` for the spectral projection `r` of `c`
+above any `μ < ‖c‖`, because `re ≠ 0` (`r` central, `0 ≠ r ≤ ⌈⌈e⌉⌉`).  Anyone
+who wants the lemma for its own sake should start there; it is a self-contained
+afternoon, not a chapter.
+
+### Bookkeeping
+
+* `docs/why-open.csv`: the five rows `positive_quotients_centrally_similar`,
+  `faithful_positive_map_uniqueness`, `positive_map_uniqueness`, `sqrt_axiom`
+  and `uniqueness_sequential_product` are **removed** — closed and axiom-clean.
+  `vn_is_andthen_eff` and the four `centrally_similar_basic_*` rows get
+  session-91 notes (the latter are now leaves).
+* `ERRATA.md`: the **104VIII** row gains a session-91 update — (a) is real but
+  avoidable, and the way around it, so nothing in the tree waits on it.  The
+  suggested fixes to the printed proof stand unchanged.
+* `QUESTIONS.md`: **A7** gains a session-91 update — the ruling is now needed
+  by nothing.
+* Stale "104VII is still `sorry`" remarks in the docstrings of 104IX, 105V,
+  105VII and 106I updated.

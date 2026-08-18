@@ -6185,16 +6185,913 @@ theorem centrally_similar_corollary [VonNeumannAlgebra A] (q : A)
     have hclosed : IsClosed (S : Set A) := isClosed_eq hcont continuous_id
     exact mem_of_isClosed_of_projections S hclosed (fun p hp => (hfund p hp).2) a
 
+
+/-! ### Infrastructure for 104VII (`positive-quotients-centrally-similar`)
+
+The authors' proof (proc.tex:1558) has four steps: (1) `⌈pep⌉ = e` for
+projections `e` commuting with `p`, so **104IV** gives `eq = qe` and
+`ϑ(e) = e`, whence `pq = qp` and `ϑ(p) = p` by **65IV**; (2) a sequence of
+projections `e₁ ≤ e₂ ≤ ⋯` commuting with `p` and `q` with `⋃ₙeₙ = ⌈p⌉` and
+`eₙp`, `eₙq` pseudoinvertible; (3) the reduction to the invertible case by
+passing to the corner `eₙ𝒜eₙ`, where **104VI** applies; (4) descent from the
+corners back to `𝒜`.
+
+Steps 1 and 2 are transcribed faithfully — for (2) we take the spectral
+projections `Eₙ = 1_{(tₙ,∞)}(p)·1_{(tₙ,∞)}(q)`, `tₙ = 1/(n+1)`, rather than
+the thesis's approximate pseudoinverse of `p ∧ q`, which presupposes that
+`p ∧ q` exists (ERRATA **104VIII**(b)); the thesis offers its construction
+only as an example.
+
+Step (4) is a **different route** (ERRATA **104VIII**(a)).  The printed
+proof descends by applying **104III**.5 to the corner-wise central
+similarities; but the central elements it obtains from **104VI** are central
+in `eₙ𝒜eₙ`, not in `𝒜`, and bridging the two needs `Z(e𝒜e) = Z(𝒜)e`, which
+is in neither thesis nor tree.  We avoid the bridge altogether: the *single
+global* element `d := p/(p+q)` (which exists by Douglas' lemma **81V**.1,
+since `p² ≤ (p+q)²`, and is unique because `⌈p+q⌉ = 1`) restricts on each
+corner to `d·Eₙ = (Eₙ + zₙ)^{-1}` with `zₙ = (pEₙ)^{∼1}(qEₙ)` central in
+`Eₙ𝒜Eₙ` by **104VI**; so `Eₙ(da − ad)Eₙ = 0` for every `n` and every
+`a ∈ 𝒜`, and `d` is central in `𝒜`.  Then `(1−d)p = dq` is the central
+similarity outright, and neither **104III**.5 nor `Z(e𝒜e) = Z(𝒜)e` is used.
+Likewise `ϑ = id` follows from `ϑ(EₙaEₙ) = EₙaEₙ` with no appeal to the
+ultrastrong continuity of `ϑ` (ERRATA **104VIII**(c)): what replaces
+"`eₙaeₙ → a` ultrastrongly" is the elementary `eq_zero_of_mul_specPair`,
+that only `0` is annihilated by every `Eₙ`. -/
+
+section Aux104VII
+
+variable [VonNeumannAlgebra A]
+
+/-- `c·b = 0` implies `c·⌈b⌉ = 0` for positive `b` (the mirror image of
+`ceil_mul_eq_zero`). -/
+theorem mul_ceil_eq_zero {b : A} (hb : 0 ≤ b) {c : A} (h : c * b = 0) :
+    c * ceil b = 0 := by
+  have h' : b * star c = 0 := by
+    have h2 := congrArg star h
+    rwa [star_mul, star_zero, (IsSelfAdjoint.of_nonneg hb).star_eq] at h2
+  have h3 := congrArg star (ceil_mul_eq_zero hb h')
+  rwa [star_mul, star_star, star_zero,
+    (ceil_spec hb).1.isSelfAdjoint.star_eq] at h3
+
+omit [VonNeumannAlgebra A] in
+/-- A projection of the corner `e𝒜e` is the same thing as a projection of
+`𝒜` lying in the corner. -/
+theorem Corner.isStarProjection_iff {e : A} [Fact (IsStarProjection e)]
+    (f : Corner A e) : IsStarProjection f ↔ IsStarProjection f.val :=
+  ⟨fun h => ⟨congrArg Corner.val h.isIdempotentElem,
+      congrArg Corner.val h.isSelfAdjoint⟩,
+    fun h => ⟨Corner.val_injective h.isIdempotentElem,
+      Corner.val_injective h.isSelfAdjoint⟩⟩
+
+/-- The ceiling of an element of the corner `e𝒜e` is computed in the corner
+exactly as it is in `𝒜` (**94II**: the projections of the corner are the
+projections of `𝒜` below `e`, and the order is inherited). -/
+theorem Corner.val_ceil {e : A} [Fact (IsStarProjection e)]
+    (x : Corner A e) (hx : 0 ≤ x) : (ceil x).val = ceil x.val := by
+  have hxv : (0 : A) ≤ x.val := hx
+  have hce : ceil x.val ≤ e :=
+    (ceil_le_iff hxv (Corner.proj e)).mpr (Corner.mul_right x)
+  have hcp : IsStarProjection (ceil x.val) := (ceil_spec hxv).1
+  have h1 : ceil x.val * e = ceil x.val :=
+    (hcp.le_iff_mul_eq_left (Corner.proj e)).mp hce
+  have h2 : e * ceil x.val = ceil x.val := by
+    have h3 := congrArg star h1
+    rwa [star_mul, hcp.isSelfAdjoint.star_eq,
+      (Corner.proj e).isSelfAdjoint.star_eq] at h3
+  have hmem : e * ceil x.val * e = ceil x.val := by rw [h2, h1]
+  refine congrArg Corner.val
+    (ceil_eq_of_isLeast hx (p := ⟨ceil x.val, hmem⟩) ?_ ?_ ?_)
+  · exact (Corner.isStarProjection_iff _).mpr hcp
+  · exact Corner.val_injective (ceil_spec hxv).2.1
+  · intro g hg hxg
+    show ceil x.val ≤ g.val
+    exact (ceil_spec hxv).2.2 g.val ((Corner.isStarProjection_iff g).mp hg)
+      (congrArg Corner.val hxg)
+
+/-- An miu-map `ϑ : 𝒜 → 𝒜` fixing a projection `e` restricts to an miu-map
+of the corner `e𝒜e`. -/
+def cornerMIU {e : A} [Fact (IsStarProjection e)] (ϑ : MIUMap A A)
+    (he : ϑ e = e) : MIUMap (Corner A e) (Corner A e) where
+  toFun x := ⟨ϑ x.val, by
+    have hx : ϑ (e * x.val * e) = ϑ e * ϑ x.val * ϑ e := by rw [map_mul, map_mul]
+    rw [x.property, he] at hx
+    exact hx.symm⟩
+  map_one' := Corner.val_injective he
+  map_mul' x y := Corner.val_injective (map_mul ϑ _ _)
+  map_zero' := Corner.val_injective (map_zero ϑ)
+  map_add' x y := Corner.val_injective (map_add ϑ _ _)
+  map_star' x := Corner.val_injective (map_star ϑ _)
+  commutes' r := Corner.val_injective (by
+    show ϑ ((algebraMap ℂ (Corner A e) r).val) = (algebraMap ℂ (Corner A e) r).val
+    rw [Algebra.algebraMap_eq_smul_one]
+    show ϑ (r • e) = r • e
+    rw [map_smul, he])
+
+omit [VonNeumannAlgebra A] in
+@[simp] theorem cornerMIU_val {e : A} [Fact (IsStarProjection e)]
+    (ϑ : MIUMap A A) (he : ϑ e = e) (x : Corner A e) :
+    (cornerMIU ϑ he x).val = ϑ x.val := rfl
+
+/-! #### Spectral projections
+
+`1_{(t,∞)}(a) = ⌈(a − t)⁺⌉`, for positive `a` and `t > 0`.  These are the
+projections **104VII** needs: they commute with everything that commutes
+with `a`, they increase to `⌈a⌉` as `t ↓ 0`, and `a` is *pseudoinvertible*
+on each of them, with the explicit pseudoinverse `1/max(a,t)`. -/
+
+/-- The positive part `(a − t)⁺` of `a − t`, as a continuous function of
+`a`; the spectral projection `1_{(t,∞)}(a)` is its carrier. -/
+noncomputable def specPos (a : A) (t : ℝ) : A := cfc (fun r : ℝ => max (r - t) 0) a
+
+/-- The spectral projection `1_{(t,∞)}(a) = ⌈(a − t)⁺⌉` of a positive
+element `a` of a von Neumann algebra. -/
+noncomputable def spectralProj (a : A) (t : ℝ) : A := ceil (specPos a t)
+
+omit [VonNeumannAlgebra A] in
+theorem specPos_nonneg (a : A) (t : ℝ) : (0 : A) ≤ specPos a t :=
+  cfc_nonneg (fun _ _ => le_max_right _ _)
+
+theorem spectralProj_isStarProjection (a : A) (t : ℝ) :
+    IsStarProjection (spectralProj a t) := (ceil_spec (specPos_nonneg a t)).1
+
+theorem specPos_mul_spectralProj (a : A) (t : ℝ) :
+    specPos a t * spectralProj a t = specPos a t :=
+  (ceil_spec (specPos_nonneg a t)).2.1
+
+theorem spectralProj_mul_specPos (a : A) (t : ℝ) :
+    spectralProj a t * specPos a t = specPos a t := by
+  have h := congrArg star (specPos_mul_spectralProj a t)
+  rwa [star_mul, (IsSelfAdjoint.of_nonneg (specPos_nonneg a t)).star_eq,
+    (spectralProj_isStarProjection a t).isSelfAdjoint.star_eq] at h
+
+/-- Whatever commutes with `a` commutes with `1_{(t,∞)}(a)`. -/
+theorem spectralProj_comm (a : A) (t : ℝ) (x : A) (hx : a * x = x * a) :
+    x * spectralProj a t = spectralProj a t * x :=
+  ceil_basic_2 _ x (specPos_nonneg a t) (Commute.cfc_real hx _).symm
+
+omit [VonNeumannAlgebra A] in
+/-- `‖a − (a − t)⁺‖ ≤ t` for positive `a` and `t ≥ 0`. -/
+theorem norm_sub_specPos_le {a : A} (ha : 0 ≤ a) {t : ℝ} (ht : 0 ≤ t) :
+    ‖a - specPos a t‖ ≤ t := by
+  have hsa : IsSelfAdjoint a := IsSelfAdjoint.of_nonneg ha
+  have hrw : a - specPos a t = cfc (fun r : ℝ => r - max (r - t) 0) a := by
+    rw [specPos, cfc_sub _ _ a (by fun_prop) (by fun_prop)]
+    congr 1
+    exact (cfc_id ℝ a).symm
+  rw [hrw]
+  refine norm_cfc_le ht fun r hr => ?_
+  have hr0 : (0 : ℝ) ≤ r := spectrum_nonneg_of_nonneg ha hr
+  rw [Real.norm_eq_abs, abs_le]
+  rcases le_total r t with h | h
+  · rw [max_eq_right (by linarith)]
+    constructor <;> linarith
+  · rw [max_eq_left (by linarith)]
+    constructor <;> linarith
+
+/-- If `x` kills every `1_{(t,∞)}(a)` (`t > 0`) then it kills `a`. -/
+theorem mul_eq_zero_of_mul_spectralProj_eq_zero {a x : A} (ha : 0 ≤ a)
+    (h : ∀ n : ℕ, x * spectralProj a ((n : ℝ) + 1)⁻¹ = 0) : x * a = 0 := by
+  have hkey : ∀ n : ℕ, ‖x * a‖ ≤ ‖x‖ * ((n : ℝ) + 1)⁻¹ := by
+    intro n
+    set t : ℝ := ((n : ℝ) + 1)⁻¹ with htdef
+    have ht : 0 < t := by positivity
+    have hxg : x * specPos a t = 0 := by
+      rw [← spectralProj_mul_specPos a t, ← mul_assoc, h n, zero_mul]
+    have hxa : x * a = x * (a - specPos a t) := by rw [mul_sub, hxg, sub_zero]
+    calc ‖x * a‖ = ‖x * (a - specPos a t)‖ := by rw [hxa]
+      _ ≤ ‖x‖ * ‖a - specPos a t‖ := norm_mul_le _ _
+      _ ≤ ‖x‖ * t := by
+          exact mul_le_mul_of_nonneg_left (norm_sub_specPos_le ha ht.le) (norm_nonneg x)
+  refine norm_le_zero_iff.mp ?_
+  by_contra hc
+  rw [not_le] at hc
+  obtain ⟨n, hn⟩ := exists_nat_gt (‖x‖ / ‖x * a‖)
+  have hpos : (0 : ℝ) < (n : ℝ) + 1 := by positivity
+  have hmul : ‖x * a‖ * ((n : ℝ) + 1) ≤ ‖x‖ := by
+    rw [← le_div_iff₀ hpos]
+    simpa [div_eq_mul_inv] using hkey n
+  rw [div_lt_iff₀ hc] at hn
+  nlinarith [norm_nonneg x]
+
+/-- The bounded "inverse" `1/max(a,t)` of a positive `a`, which inverts `a`
+on the spectral projection `1_{(t,∞)}(a)`. -/
+noncomputable def specInv (a : A) (t : ℝ) : A := cfc (fun r : ℝ => (max r t)⁻¹) a
+
+omit [VonNeumannAlgebra A] in
+theorem specInv_nonneg (a : A) {t : ℝ} (ht : 0 < t) : (0 : A) ≤ specInv a t :=
+  cfc_nonneg fun r _ => by positivity
+
+omit [PartialOrder A] [StarOrderedRing A] [VonNeumannAlgebra A] in
+theorem specInv_comm (a : A) (t : ℝ) (x : A) (hx : a * x = x * a) :
+    x * specInv a t = specInv a t * x := (Commute.cfc_real hx _).symm
+
+/-- `1/max(a,t)` is a left (and right) inverse of `a` on `1_{(t,∞)}(a)`:
+this is the pseudoinvertibility of `a·1_{(t,∞)}(a)` that **104VII**'s
+reduction needs. -/
+theorem specInv_mul_mul_spectralProj {a : A} (ha : 0 ≤ a) {t : ℝ} (ht : 0 < t) :
+    specInv a t * a * spectralProj a t = spectralProj a t := by
+  have hsa : IsSelfAdjoint a := IsSelfAdjoint.of_nonneg ha
+  have hcont : Continuous (fun r : ℝ => (max r t)⁻¹) :=
+    Continuous.inv₀ (by fun_prop) fun r => ne_of_gt (lt_of_lt_of_le ht (le_max_right r t))
+  have hcont2 : Continuous (fun r : ℝ => 1 - (max r t)⁻¹ * r) :=
+    continuous_const.sub (hcont.mul continuous_id)
+  have h1 : specInv a t * a = cfc (fun r : ℝ => (max r t)⁻¹ * r) a := by
+    rw [cfc_mul (fun r : ℝ => (max r t)⁻¹) (fun r : ℝ => r) a hcont.continuousOn
+      (by fun_prop), specInv, show (fun r : ℝ => r) = (id : ℝ → ℝ) from rfl, cfc_id ℝ a]
+  have h2 : (1 : A) - specInv a t * a = cfc (fun r : ℝ => 1 - (max r t)⁻¹ * r) a := by
+    rw [cfc_sub (fun _ : ℝ => (1 : ℝ)) (fun r : ℝ => (max r t)⁻¹ * r) a (by fun_prop)
+      ((hcont.mul continuous_id).continuousOn), h1]
+    congr 1
+    exact (cfc_const_one ℝ a).symm
+  have h3 : ((1 : A) - specInv a t * a) * specPos a t = 0 := by
+    rw [h2, specPos, ← cfc_mul _ _ a hcont2.continuousOn (by fun_prop),
+      show (0 : A) = cfc (fun _ : ℝ => (0 : ℝ)) a by simp]
+    refine cfc_congr fun r hr => ?_
+    have hr0 : (0 : ℝ) ≤ r := spectrum_nonneg_of_nonneg ha hr
+    rcases le_total r t with h | h
+    · rw [max_eq_right (by linarith : r - t ≤ 0), mul_zero]
+    · have hrne : r ≠ 0 := ne_of_gt (lt_of_lt_of_le ht h)
+      rw [max_eq_left h, inv_mul_cancel₀ hrne, sub_self, zero_mul]
+  have h4 := mul_ceil_eq_zero (specPos_nonneg a t) h3
+  rw [← spectralProj, sub_mul, one_mul, sub_eq_zero] at h4
+  exact h4.symm
+
+/-- The spectral projections increase as `t` decreases. -/
+theorem spectralProj_mono {a : A} (ha : 0 ≤ a) {s t : ℝ} (hst : s ≤ t) :
+    spectralProj a t ≤ spectralProj a s := by
+  refine ceil_mono (specPos_nonneg a t) ?_
+  rw [specPos, specPos]
+  exact cfc_mono fun r _ => max_le_max (by linarith) le_rfl
+
+/-! #### Steps 1–2 of the proof of 104VII -/
+
+/-- **104VII**, step 1 (proc.tex:1560): `⌈pep⌉ = e` for a projection `e`
+commuting with a faithful positive `p` — because `pep = ep²` and
+`⌈p²⌉ = ⌈p⌉ = 1`. -/
+theorem ceil_mul_proj_mul_of_comm {p e : A} (hp : 0 ≤ p) (hcp : ceil p = 1)
+    (he : IsStarProjection e) (hcomm : e * p = p * e) :
+    ceil (p * e * p) = e := by
+  have hsq : (0 : A) ≤ p ^ 2 := by
+    have h := star_mul_self_nonneg p
+    rwa [(IsSelfAdjoint.of_nonneg hp).star_eq, ← sq] at h
+  have hcomm2 : e * p ^ 2 = p ^ 2 * e := by
+    rw [sq]
+    calc e * (p * p) = e * p * p := by rw [mul_assoc]
+      _ = p * e * p := by rw [hcomm]
+      _ = p * (e * p) := by rw [mul_assoc]
+      _ = p * (p * e) := by rw [hcomm]
+      _ = p * p * e := by rw [mul_assoc]
+  have hrw : p * e * p = e * p ^ 2 := by
+    rw [sq]
+    calc p * e * p = e * p * p := by rw [hcomm]
+      _ = e * (p * p) := by rw [mul_assoc]
+  have hnn : (0 : A) ≤ e * p ^ 2 := Theses.A.CStar.sqrt_1 e (p ^ 2) he.nonneg hsq hcomm2
+  rw [hrw]
+  refine le_antisymm ?_ ?_
+  · refine (ceil_le_iff hnn he).mpr ?_
+    rw [mul_assoc, ← hcomm2, ← mul_assoc, he.isIdempotentElem.eq]
+  · set r : A := ceil (e * p ^ 2) with hrdef
+    have hrp : IsStarProjection r := (ceil_spec hnn).1
+    have h1 : e * p ^ 2 * r = e * p ^ 2 := (ceil_spec hnn).2.1
+    have h2 : r * (e * p ^ 2) = e * p ^ 2 := by
+      have h := congrArg star h1
+      rwa [star_mul, hrp.isSelfAdjoint.star_eq,
+        (IsSelfAdjoint.of_nonneg hnn).star_eq] at h
+    have h3 : ((1 : A) - r) * e * p ^ 2 = 0 := by
+      have hexp : ((1 : A) - r) * e * p ^ 2 = e * p ^ 2 - r * (e * p ^ 2) := by
+        noncomm_ring
+      rw [hexp, h2, sub_self]
+    have h4 : ((1 : A) - r) * e * ceil (p ^ 2) = 0 := mul_ceil_eq_zero hsq h3
+    rw [ceil_basic_5 p hp, hcp, mul_one, sub_mul, one_mul, sub_eq_zero] at h4
+    refine (he.le_iff_mul_eq_left hrp).mpr ?_
+    have h5 := congrArg star h4
+    rwa [star_mul, hrp.isSelfAdjoint.star_eq, he.isSelfAdjoint.star_eq, eq_comm] at h5
+
+/-- **104VII**, steps 1–2 (proc.tex:1560): under the hypotheses of 104VII,
+`ϑ` fixes every projection commuting with `p`, and `q` commutes with it; so
+`pq = qp` and `ϑ(p) = p`, because `p` is a norm limit of linear
+combinations of projections from `{p}^□□` (**65IV**). -/
+theorem positive_quotients_step12 {p q : A} (hp : 0 ≤ p) (hq : 0 ≤ q)
+    (hcp : ceil p = 1) (hcq : ceil q = 1) (ϑ : MIUMap A A)
+    (h : ∀ e : A, IsStarProjection e → ceil (p * e * p) = ceil (q * ϑ e * q)) :
+    (∀ e : A, IsStarProjection e → e * p = p * e → e * q = q * e ∧ ϑ e = e) ∧
+      p * q = q * p ∧ ϑ p = p := by
+  have hfix : ∀ e : A, IsStarProjection e → e * p = p * e →
+      e * q = q * e ∧ ϑ e = e := by
+    intro e he hcomm
+    have hperp : (1 - e) * p = p * (1 - e) := by
+      rw [sub_mul, mul_sub, one_mul, mul_one, hcomm]
+    refine centrally_similar_fundamental e q he hq hcq ϑ ?_ ?_
+    · rw [← h e he, ceil_mul_proj_mul_of_comm hp hcp he hcomm]
+    · rw [← h (1 - e) he.one_sub, ceil_mul_proj_mul_of_comm hp hcp he.one_sub hperp]
+  refine ⟨hfix, ?_⟩
+  have hcont : Continuous ⇑ϑ :=
+    AddMonoidHomClass.continuous_of_bound ϑ 1
+      fun x => by simpa using NonUnitalStarAlgHom.norm_apply_le ϑ x
+  let S : Submodule ℂ A :=
+    { carrier := {y : A | y * q = q * y ∧ ϑ y = y}
+      add_mem' := by
+        rintro y z ⟨hy1, hy2⟩ ⟨hz1, hz2⟩
+        exact ⟨by rw [add_mul, mul_add, hy1, hz1], by rw [map_add, hy2, hz2]⟩
+      zero_mem' := ⟨by rw [zero_mul, mul_zero], map_zero ϑ⟩
+      smul_mem' := by
+        rintro c y ⟨hy1, hy2⟩
+        exact ⟨by rw [smul_mul_assoc, mul_smul_comm, hy1], by rw [map_smul, hy2]⟩ }
+  have hclosed : IsClosed (S : Set A) := by
+    have : (S : Set A) = {y : A | y * q = q * y} ∩ {y : A | ϑ y = y} := rfl
+    rw [this]
+    exact (isClosed_eq (continuous_id.mul continuous_const)
+      (continuous_const.mul continuous_id)).inter (isClosed_eq hcont continuous_id)
+  have hspan : Submodule.span ℂ
+      {r : A | IsStarProjection r ∧ r ∈ commutant A (commutant A {p})} ≤ S := by
+    refine Submodule.span_le.mpr ?_
+    rintro r ⟨hrp, hrc⟩
+    have hcomm : r * p = p * r := by
+      have hpm : p ∈ commutant A {p} := fun m hm => by
+        rw [Set.mem_singleton_iff] at hm; rw [hm]
+      exact (hrc p hpm).symm
+    exact hfix r hrp hcomm
+  have hmem : p ∈ closure (S : Set A) :=
+    closure_mono (SetLike.coe_subset_coe.mpr hspan)
+      (projections_norm_dense p (IsSelfAdjoint.of_nonneg hp))
+  rw [hclosed.closure_eq] at hmem
+  exact ⟨hmem.1, hmem.2⟩
+
+/-! #### The corner step -/
+
+/-- **104VII**, the reduction to the invertible case (proc.tex:1585), done
+*inside* the corner `E𝒜E` and with no appeal to `Z(E𝒜E) = Z(𝒜)E`.
+
+`E` is a projection commuting with `p` and `q`, and `u`, `v` are positive
+elements commuting with everything in sight which invert `p` and `q` on the
+corner (`upE = E = vqE`) — for the spectral projections
+`E = 1_{(t,∞)}(p)·1_{(t,∞)}(q)` one may take `u = 1/max(p,t)`,
+`v = 1/max(q,t)`.  Then `z := uqE = (pE)^{∼1}(qE)` is central **in the
+corner**, and `ϑ` is the identity **on the corner**. -/
+theorem positive_quotients_corner {p q E u v : A} (hp : 0 ≤ p) (hq : 0 ≤ q)
+    (hu : 0 ≤ u) (hE : IsStarProjection E)
+    (cpE : Commute p E) (cqE : Commute q E)
+    (cpu : Commute p u) (cqu : Commute q u) (cuE : Commute u E)
+    (cpv : Commute p v) (cuv : Commute u v)
+    (hupE : u * p * E = E) (hvqE : v * q * E = E)
+    (ϑ : MIUMap A A) (hϑE : ϑ E = E)
+    (h : ∀ e : A, IsStarProjection e → ceil (p * e * p) = ceil (q * ϑ e * q)) :
+    0 ≤ u * q * E ∧ (u * q * E) * (p * E) = q * E ∧ (p * E) * (u * E) = E ∧
+      (∀ x : A, E * x * E = x → (u * q * E) * x = x * (u * q * E)) ∧
+      (∀ x : A, E * x * E = x → ϑ x = x) := by
+  have hEsa : star E = E := hE.isSelfAdjoint.star_eq
+  have husa : star u = u := (IsSelfAdjoint.of_nonneg hu).star_eq
+  have hqsa : star q = q := (IsSelfAdjoint.of_nonneg hq).star_eq
+  set z : A := u * q * E with hzdef
+  have hzE : z * E = z := by rw [hzdef, mul_assoc, hE.isIdempotentElem.eq]
+  have hEz : E * z = z := by
+    rw [hzdef]
+    simp only [mul_assoc]
+    rw [cuE.symm.left_comm, cqE.symm.left_comm, hE.isIdempotentElem.eq]
+  have hzmem : E * z * E = z := by rw [hEz, hzE]
+  have hz0 : (0 : A) ≤ z := by
+    refine Theses.A.CStar.sqrt_1 (u * q) E ?_ hE.nonneg (Commute.mul_left cuE cqE)
+    exact Theses.A.CStar.sqrt_1 u q hu hq cqu.symm.eq
+  -- `⌈z⌉ = E`
+  have hceilz : ceil z = E := by
+    refine le_antisymm ((ceil_le_iff hz0 hE).mpr hzE) ?_
+    have hkey : v * p * z = E := by
+      rw [hzdef]
+      simp only [mul_assoc]
+      rw [cpu.left_comm, cuv.symm.left_comm, cpv.symm.left_comm, ← mul_assoc v q E,
+        hvqE, ← mul_assoc u p E, hupE]
+    have h1 : suppProj E ≤ suppProj z := hkey ▸ suppProj_mul_le (v * p) z
+    rwa [suppProj_of_isStarProjection hE, suppProj_of_nonneg hz0] at h1
+  -- the corner
+  have : Fact (IsStarProjection E) := ⟨hE⟩
+  set zc : Corner A E := ⟨z, hzmem⟩ with hzcdef
+  have hzc0 : (0 : Corner A E) ≤ zc := hz0
+  have hzc1 : ceil zc = 1 :=
+    Corner.val_injective (by rw [Corner.val_ceil zc hzc0]; exact hceilz)
+  have hWsa : star (u * E) = u * E := by rw [star_mul, hEsa, husa, cuE.eq]
+  have hWp : u * E * p = E := by rw [mul_assoc, ← cpE.eq, ← mul_assoc, hupE]
+  have hpW : p * (u * E) = E := by rw [← mul_assoc, cpu.eq, hupE]
+  have hyp : ∀ f : Corner A E, IsStarProjection f →
+      ceil (zc * cornerMIU ϑ hϑE f * zc) ≤ f := by
+    intro f hf
+    have hfv : IsStarProjection f.val := (Corner.isStarProjection_iff f).mp hf
+    have hϑf : IsStarProjection (ϑ f.val) := hfv.map ϑ
+    have hw : (0 : A) ≤ q * ϑ f.val * q := by
+      have hcj := star_left_conjugate_nonneg hϑf.nonneg q
+      rwa [hqsa] at hcj
+    have hpfp : (0 : A) ≤ p * f.val * p := by
+      have hcj := star_left_conjugate_nonneg hfv.nonneg p
+      rwa [(IsSelfAdjoint.of_nonneg hp).star_eq] at hcj
+    have hX0 : (0 : Corner A E) ≤ zc * cornerMIU ϑ hϑE f * zc := by
+      show (0 : A) ≤ z * ϑ f.val * z
+      have hcj := star_left_conjugate_nonneg hϑf.nonneg z
+      rwa [(IsSelfAdjoint.of_nonneg hz0).star_eq] at hcj
+    show (ceil (zc * cornerMIU ϑ hϑE f * zc)).val ≤ f.val
+    rw [Corner.val_ceil _ hX0]
+    show ceil (z * ϑ f.val * z) ≤ f.val
+    have hconj : z * ϑ f.val * z = star (u * E) * (q * ϑ f.val * q) * (u * E) := by
+      rw [hWsa, hzdef]
+      simp only [mul_assoc]
+      rw [cqE.left_comm, cqu.symm.left_comm]
+    rw [hconj, ceil_fundamental_1 (u * E) (q * ϑ f.val * q) hw, ← h f.val hfv,
+      ← ceil_fundamental_1 (u * E) (p * f.val * p) hpfp]
+    have hfin : star (u * E) * (p * f.val * p) * (u * E) = f.val := by
+      rw [hWsa]
+      calc u * E * (p * f.val * p) * (u * E)
+          = (u * E * p) * f.val * (p * (u * E)) := by simp only [mul_assoc]
+        _ = E * f.val * E := by rw [hWp, hpW]
+        _ = f.val := f.property
+    rw [hfin, ceil_of_isStarProjection hfv]
+  obtain ⟨hcentre, hid⟩ :=
+    centrally_similar_corollary zc hzc0 hzc1 (cornerMIU ϑ hϑE) hyp
+  have hzP : z * (p * E) = q * E := by
+    rw [hzdef]
+    simp only [mul_assoc]
+    rw [cpE.symm.left_comm, hE.isIdempotentElem.eq, cqu.symm.left_comm,
+      ← mul_assoc u p E, hupE]
+  have hPU : (p * E) * (u * E) = E := by
+    simp only [mul_assoc]
+    rw [cuE.symm.left_comm, hE.isIdempotentElem.eq, ← mul_assoc p u E, cpu.eq, hupE]
+  refine ⟨hz0, hzP, hPU, fun x hx => ?_, fun x hx => ?_⟩
+  · exact (congrArg Corner.val (hcentre ⟨x, hx⟩ (Set.mem_univ _))).symm
+  · exact congrArg Corner.val (hid ⟨x, hx⟩)
+
+/-! #### The increasing sequence of spectral projections -/
+
+omit [PartialOrder A] [StarOrderedRing A] [VonNeumannAlgebra A] in
+/-- The product of two commuting projections is a projection. -/
+theorem isStarProjection_mul_of_commute {a b : A} (ha : IsStarProjection a)
+    (hb : IsStarProjection b) (hab : Commute a b) : IsStarProjection (a * b) where
+  isIdempotentElem := by
+    show a * b * (a * b) = a * b
+    calc a * b * (a * b) = a * (b * a) * b := by simp only [mul_assoc]
+      _ = a * (a * b) * b := by rw [hab.eq]
+      _ = a * a * (b * b) := by simp only [mul_assoc]
+      _ = a * b := by rw [ha.isIdempotentElem.eq, hb.isIdempotentElem.eq]
+  isSelfAdjoint := by
+    show star (a * b) = a * b
+    rw [star_mul, hb.isSelfAdjoint.star_eq, ha.isSelfAdjoint.star_eq, hab.eq]
+
+/-- The projections `Eₙ = 1_{(tₙ,∞)}(p)·1_{(tₙ,∞)}(q)` with `tₙ = 1/(n+1)`:
+an increasing sequence of projections commuting with `p` and `q`, on each of
+which both `p` and `q` are invertible, and whose supremum is `⌈p⌉ ∧ ⌈q⌉`. -/
+noncomputable def specPair (p q : A) (n : ℕ) : A :=
+  spectralProj p ((n : ℝ) + 1)⁻¹ * spectralProj q ((n : ℝ) + 1)⁻¹
+
+theorem commute_spectralProj_spectralProj {p q : A} (hpq : p * q = q * p) (s t : ℝ) :
+    Commute (spectralProj p s) (spectralProj q t) :=
+  spectralProj_comm q t _ (spectralProj_comm p s q hpq)
+
+theorem specPair_isStarProjection {p q : A} (hpq : p * q = q * p) (n : ℕ) :
+    IsStarProjection (specPair p q n) :=
+  isStarProjection_mul_of_commute (spectralProj_isStarProjection _ _)
+    (spectralProj_isStarProjection _ _) (commute_spectralProj_spectralProj hpq _ _)
+
+theorem commute_specPair_left {p q : A} (hpq : p * q = q * p) (n : ℕ) :
+    Commute p (specPair p q n) := by
+  simp only [specPair]
+  exact Commute.mul_right (spectralProj_comm p ((n : ℝ) + 1)⁻¹ p rfl)
+    (spectralProj_comm q ((n : ℝ) + 1)⁻¹ p hpq.symm)
+
+theorem commute_specPair_right {p q : A} (hpq : p * q = q * p) (n : ℕ) :
+    Commute q (specPair p q n) := by
+  simp only [specPair]
+  exact Commute.mul_right (spectralProj_comm p ((n : ℝ) + 1)⁻¹ q hpq)
+    (spectralProj_comm q ((n : ℝ) + 1)⁻¹ q rfl)
+
+/-- `t ↦ 1/(t+1)` is antitone on `ℕ`. -/
+theorem specSeq_anti {i j : ℕ} (hij : i ≤ j) :
+    ((j : ℝ) + 1)⁻¹ ≤ ((i : ℝ) + 1)⁻¹ := by
+  have h0 : (0 : ℝ) < (i : ℝ) + 1 := by positivity
+  have h1 : (i : ℝ) + 1 ≤ (j : ℝ) + 1 := by
+    have : (i : ℝ) ≤ (j : ℝ) := by exact_mod_cast hij
+    linarith
+  exact inv_anti₀ h0 h1
+
+/-- The `Eₙ` increase. -/
+theorem specPair_mul_specPair {p q : A} (hp : 0 ≤ p) (hq : 0 ≤ q)
+    (hpq : p * q = q * p) {m n : ℕ} (hmn : m ≤ n) :
+    specPair p q m * specPair p q n = specPair p q m := by
+  have hle : ((n : ℝ) + 1)⁻¹ ≤ ((m : ℝ) + 1)⁻¹ := specSeq_anti hmn
+  have ha : spectralProj p ((m : ℝ) + 1)⁻¹ * spectralProj p ((n : ℝ) + 1)⁻¹ =
+      spectralProj p ((m : ℝ) + 1)⁻¹ :=
+    ((spectralProj_isStarProjection p _).le_iff_mul_eq_left
+      (spectralProj_isStarProjection p _)).mp (spectralProj_mono hp hle)
+  have hb : spectralProj q ((m : ℝ) + 1)⁻¹ * spectralProj q ((n : ℝ) + 1)⁻¹ =
+      spectralProj q ((m : ℝ) + 1)⁻¹ :=
+    ((spectralProj_isStarProjection q _).le_iff_mul_eq_left
+      (spectralProj_isStarProjection q _)).mp (spectralProj_mono hq hle)
+  have hcomm := commute_spectralProj_spectralProj hpq ((n : ℝ) + 1)⁻¹ ((m : ℝ) + 1)⁻¹
+  simp only [specPair]
+  calc spectralProj p ((m : ℝ) + 1)⁻¹ * spectralProj q ((m : ℝ) + 1)⁻¹ *
+        (spectralProj p ((n : ℝ) + 1)⁻¹ * spectralProj q ((n : ℝ) + 1)⁻¹)
+      = spectralProj p ((m : ℝ) + 1)⁻¹ * (spectralProj q ((m : ℝ) + 1)⁻¹ *
+          spectralProj p ((n : ℝ) + 1)⁻¹) * spectralProj q ((n : ℝ) + 1)⁻¹ := by
+        simp only [mul_assoc]
+    _ = spectralProj p ((m : ℝ) + 1)⁻¹ * (spectralProj p ((n : ℝ) + 1)⁻¹ *
+          spectralProj q ((m : ℝ) + 1)⁻¹) * spectralProj q ((n : ℝ) + 1)⁻¹ := by
+        rw [hcomm.eq]
+    _ = (spectralProj p ((m : ℝ) + 1)⁻¹ * spectralProj p ((n : ℝ) + 1)⁻¹) *
+          (spectralProj q ((m : ℝ) + 1)⁻¹ * spectralProj q ((n : ℝ) + 1)⁻¹) := by
+        simp only [mul_assoc]
+    _ = spectralProj p ((m : ℝ) + 1)⁻¹ * spectralProj q ((m : ℝ) + 1)⁻¹ := by rw [ha, hb]
+
+/-- `⋁ₙ Eₙ = 1` when `p` and `q` are faithful: nothing but `0` annihilates
+every `Eₙ` on the right. -/
+theorem eq_zero_of_mul_specPair {p q y : A} (hp : 0 ≤ p) (hq : 0 ≤ q)
+    (hcp : ceil p = 1) (hcq : ceil q = 1) (hpq : p * q = q * p)
+    (hy : ∀ n : ℕ, y * specPair p q n = 0) : y = 0 := by
+  have hstep : ∀ m k : ℕ, y * (spectralProj p ((m : ℝ) + 1)⁻¹ *
+      spectralProj q ((k : ℝ) + 1)⁻¹) = 0 := by
+    intro m k
+    set N : ℕ := max m k with hN
+    have hmN : m ≤ N := le_max_left _ _
+    have hkN : k ≤ N := le_max_right _ _
+    have hle1 : ((N : ℝ) + 1)⁻¹ ≤ ((m : ℝ) + 1)⁻¹ := specSeq_anti hmN
+    have hle2 : ((N : ℝ) + 1)⁻¹ ≤ ((k : ℝ) + 1)⁻¹ := specSeq_anti hkN
+    have ha : spectralProj p ((N : ℝ) + 1)⁻¹ * spectralProj p ((m : ℝ) + 1)⁻¹ =
+        spectralProj p ((m : ℝ) + 1)⁻¹ := by
+      have h1 := ((spectralProj_isStarProjection p ((m : ℝ) + 1)⁻¹).le_iff_mul_eq_left
+        (spectralProj_isStarProjection p ((N : ℝ) + 1)⁻¹)).mp (spectralProj_mono hp hle1)
+      have h2 := congrArg star h1
+      rwa [star_mul, (spectralProj_isStarProjection p _).isSelfAdjoint.star_eq,
+        (spectralProj_isStarProjection p _).isSelfAdjoint.star_eq] at h2
+    have hb : spectralProj q ((N : ℝ) + 1)⁻¹ * spectralProj q ((k : ℝ) + 1)⁻¹ =
+        spectralProj q ((k : ℝ) + 1)⁻¹ := by
+      have h1 := ((spectralProj_isStarProjection q ((k : ℝ) + 1)⁻¹).le_iff_mul_eq_left
+        (spectralProj_isStarProjection q ((N : ℝ) + 1)⁻¹)).mp (spectralProj_mono hq hle2)
+      have h2 := congrArg star h1
+      rwa [star_mul, (spectralProj_isStarProjection q _).isSelfAdjoint.star_eq,
+        (spectralProj_isStarProjection q _).isSelfAdjoint.star_eq] at h2
+    have hcomm := (commute_spectralProj_spectralProj hpq ((m : ℝ) + 1)⁻¹
+      ((N : ℝ) + 1)⁻¹).symm
+    have hkey : specPair p q N * (spectralProj p ((m : ℝ) + 1)⁻¹ *
+        spectralProj q ((k : ℝ) + 1)⁻¹) =
+        spectralProj p ((m : ℝ) + 1)⁻¹ * spectralProj q ((k : ℝ) + 1)⁻¹ := by
+      simp only [specPair, mul_assoc]
+      rw [hcomm.left_comm, hb, ← mul_assoc, ha]
+    rw [← hkey, ← mul_assoc, hy N, zero_mul]
+  have hcolumn : ∀ m : ℕ, y * spectralProj p ((m : ℝ) + 1)⁻¹ = 0 := by
+    intro m
+    have h1 : (y * spectralProj p ((m : ℝ) + 1)⁻¹) * q = 0 :=
+      mul_eq_zero_of_mul_spectralProj_eq_zero hq fun k => by
+        rw [mul_assoc]; exact hstep m k
+    have h2 := mul_ceil_eq_zero hq h1
+    rwa [hcq, mul_one] at h2
+  have h3 : y * p = 0 := mul_eq_zero_of_mul_spectralProj_eq_zero hp hcolumn
+  have h4 := mul_ceil_eq_zero hp h3
+  rwa [hcp, mul_one] at h4
+
+/-- The corner step, specialised to the canonical sequence `Eₙ`. -/
+theorem positive_quotients_specPair {p q : A} (hp : 0 ≤ p) (hq : 0 ≤ q)
+    (hpq : p * q = q * p) (ϑ : MIUMap A A)
+    (h : ∀ e : A, IsStarProjection e → ceil (p * e * p) = ceil (q * ϑ e * q))
+    (n : ℕ) (hϑE : ϑ (specPair p q n) = specPair p q n) :
+    0 ≤ specInv p ((n : ℝ) + 1)⁻¹ * q * specPair p q n ∧
+      (specInv p ((n : ℝ) + 1)⁻¹ * q * specPair p q n) * (p * specPair p q n) =
+        q * specPair p q n ∧
+      (p * specPair p q n) * (specInv p ((n : ℝ) + 1)⁻¹ * specPair p q n) =
+        specPair p q n ∧
+    (∀ x : A, specPair p q n * x * specPair p q n = x →
+        (specInv p ((n : ℝ) + 1)⁻¹ * q * specPair p q n) * x =
+          x * (specInv p ((n : ℝ) + 1)⁻¹ * q * specPair p q n)) ∧
+      (∀ x : A, specPair p q n * x * specPair p q n = x → ϑ x = x) := by
+  set t : ℝ := ((n : ℝ) + 1)⁻¹ with htdef
+  have ht : (0 : ℝ) < t := by rw [htdef]; positivity
+  have hE : IsStarProjection (specPair p q n) := specPair_isStarProjection hpq n
+  have cpE : Commute p (specPair p q n) := commute_specPair_left hpq n
+  have cqE : Commute q (specPair p q n) := commute_specPair_right hpq n
+  have cpu : Commute p (specInv p t) := specInv_comm p t p rfl
+  have cqu : Commute q (specInv p t) := specInv_comm p t q hpq
+  have cpv : Commute p (specInv q t) := specInv_comm q t p hpq.symm
+  have cqv : Commute q (specInv q t) := specInv_comm q t q rfl
+  have cua : Commute (specInv p t) (spectralProj p t) :=
+    (specInv_comm p t _ (spectralProj_comm p t p rfl)).symm
+  have cub : Commute (specInv p t) (spectralProj q t) :=
+    (specInv_comm p t _ (spectralProj_comm q t p hpq.symm)).symm
+  have cva : Commute (specInv q t) (spectralProj p t) :=
+    (specInv_comm q t _ (spectralProj_comm p t q hpq)).symm
+  have cvb : Commute (specInv q t) (spectralProj q t) :=
+    (specInv_comm q t _ (spectralProj_comm q t q rfl)).symm
+  have cuE : Commute (specInv p t) (specPair p q n) := by
+    simp only [specPair, ← htdef]; exact Commute.mul_right cua cub
+  have cvE : Commute (specInv q t) (specPair p q n) := by
+    simp only [specPair, ← htdef]; exact Commute.mul_right cva cvb
+  have cuv : Commute (specInv p t) (specInv q t) :=
+    specInv_comm q t _ cqu.eq
+  have hupE : specInv p t * p * specPair p q n = specPair p q n := by
+    simp only [specPair, ← htdef, ← mul_assoc, specInv_mul_mul_spectralProj hp ht]
+  have hvqE : specInv q t * q * specPair p q n = specPair p q n := by
+    simp only [specPair, ← htdef, mul_assoc]
+    rw [(show Commute q (spectralProj p t) from spectralProj_comm p t q hpq).left_comm,
+      cva.left_comm,
+      ← mul_assoc (specInv q t) q _, specInv_mul_mul_spectralProj hq ht]
+  exact positive_quotients_corner hp hq (specInv_nonneg p ht) hE
+    cpE cqE cpu cqu cuE cpv cuv hupE hvqE ϑ hϑE h
+
+/-- A self-adjoint **central** `d` with `d·s ≥ 0` for a faithful positive
+`s` is itself positive: `d⁻ d s = −(d⁻)²s` is both `≥ 0` and `≤ 0`, so
+`(d⁻)²s = 0` and hence `d⁻ = 0`. -/
+theorem nonneg_of_central_of_mul_nonneg {d s : A} (hs : 0 ≤ s) (hcs : ceil s = 1)
+    (hdsa : IsSelfAdjoint d) (hcomm : ∀ a : A, d * a = a * d) (hds : 0 ≤ d * s) :
+    0 ≤ d := by
+  set g : A := cfc (fun r : ℝ => max (-r) 0) d with hgdef
+  set f : A := cfc (fun r : ℝ => max r 0) d with hfdef
+  have hg0 : (0 : A) ≤ g := cfc_nonneg fun r _ => le_max_right _ _
+  have hf0 : (0 : A) ≤ f := cfc_nonneg fun r _ => le_max_right _ _
+  have hfg : f - g = d := by
+    rw [hfdef, hgdef, ← cfc_sub (fun r : ℝ => max r 0) (fun r : ℝ => max (-r) 0) d
+      (by fun_prop) (by fun_prop)]
+    nth_rewrite 2 [← cfc_id ℝ d]
+    refine cfc_congr fun r _ => ?_
+    rcases le_total 0 r with hr | hr
+    · rw [max_eq_left hr, max_eq_right (by linarith : -r ≤ 0)]; simp
+    · rw [max_eq_right hr, max_eq_left (by linarith : (0 : ℝ) ≤ -r)]; simp
+  have hprod : f * g = 0 := by
+    rw [hfdef, hgdef, ← cfc_mul (fun r : ℝ => max r 0) (fun r : ℝ => max (-r) 0) d
+      (by fun_prop) (by fun_prop),
+      show (0 : A) = cfc (fun _ : ℝ => (0 : ℝ)) d by simp]
+    refine cfc_congr fun r _ => ?_
+    rcases le_total 0 r with hr | hr
+    · rw [max_eq_right (by linarith : -r ≤ 0), mul_zero]
+    · rw [max_eq_right hr, zero_mul]
+  have hgc : ∀ a : A, a * g = g * a := fun a =>
+    (Commute.cfc_real (show Commute d a from hcomm a) _).symm
+  have hdg : d * g = -(g * g) := by rw [← hfg, sub_mul, hprod, zero_sub]
+  have hcgds : g * (d * s) = (d * s) * g := (hgc (d * s)).symm
+  have h1 : (0 : A) ≤ g * (d * s) := Theses.A.CStar.sqrt_1 g (d * s) hg0 hds hcgds
+  have h2 : g * (d * s) = -(g * g * s) := by
+    rw [← mul_assoc, ← hgc d, hdg, neg_mul]
+  have hgg0 : (0 : A) ≤ g * g := by
+    have hst := star_mul_self_nonneg g
+    rwa [(IsSelfAdjoint.of_nonneg hg0).star_eq] at hst
+  have cgs : Commute g s := (hgc s).symm
+  have hggs : (0 : A) ≤ g * g * s :=
+    Theses.A.CStar.sqrt_1 (g * g) s hgg0 hs (cgs.mul_left cgs).eq
+  have hz : g * g * s = 0 := by
+    refine le_antisymm ?_ hggs
+    exact neg_nonneg.mp (h2 ▸ h1)
+  have hz2 : g * g = 0 := by
+    have h4 := mul_ceil_eq_zero hs hz
+    rwa [hcs, mul_one] at h4
+  have hgzero : g = 0 := by
+    have hstar : star g * g = 0 := by
+      rwa [(IsSelfAdjoint.of_nonneg hg0).star_eq]
+    exact (CStarRing.star_mul_self_eq_zero_iff g).mp hstar
+  rw [← hfg, hgzero, sub_zero]
+  exact hf0
+
+/-! #### 104VII itself -/
+
 /-- **104VII** (`positive-quotients-centrally-similar`, proc.tex:1556,
 Proposition): positive `p, q` with `⌈p⌉ = ⌈q⌉ = 1` are centrally similar
 when there is an miu-isomorphism `ϑ` with `⌈p e p⌉ = ⌈q ϑ(e) q⌉` for all
-projections `e`; and in that case `ϑ = id`. -/
-theorem positive_quotients_centrally_similar [VonNeumannAlgebra A]
-    (p q : A) (hp : 0 ≤ p) (hq : 0 ≤ q) (hcp : ceil p = 1)
-    (hcq : ceil q = 1) (ϑ : MIUMap A A) (hbij : Function.Bijective ⇑ϑ)
+projections `e`; and in that case `ϑ = id`.
+
+The author's proof (proc.tex:1558), with the descent from the corners done
+differently — see the section preamble above and ERRATA **104VIII**.  Note
+that `hbij` is **not used**: an miu-*map* with the stated property is
+automatically the identity, so bijectivity comes out rather than going in.
+The hypothesis is kept because the thesis states it. -/
+theorem positive_quotients_centrally_similar (p q : A) (hp : 0 ≤ p) (hq : 0 ≤ q)
+    (hcp : ceil p = 1) (hcq : ceil q = 1) (ϑ : MIUMap A A)
+    (hbij : Function.Bijective ⇑ϑ)
     (h : ∀ e : A, IsStarProjection e →
       ceil (p * e * p) = ceil (q * ϑ e * q)) :
-    CentrallySimilar p q ∧ ∀ a, ϑ a = a := sorry
+    CentrallySimilar p q ∧ ∀ a, ϑ a = a := by
+  obtain ⟨hfix, hpq, hϑp⟩ := positive_quotients_step12 hp hq hcp hcq ϑ h
+  have hpsa : IsSelfAdjoint p := IsSelfAdjoint.of_nonneg hp
+  have hqsa : IsSelfAdjoint q := IsSelfAdjoint.of_nonneg hq
+  set s : A := p + q with hsdef
+  have hs : (0 : A) ≤ s := add_nonneg hp hq
+  have hssa : IsSelfAdjoint s := IsSelfAdjoint.of_nonneg hs
+  have hcs : ceil s = 1 := by
+    have h1 : ceil p ≤ ceil s := ceil_mono hp (by rw [hsdef]; exact le_add_of_nonneg_right hq)
+    rw [hcp] at h1
+    exact le_antisymm (ceil_spec hs).1.le_one h1
+  -- `d := p/(p+q)` exists by Douglas' lemma (**81V**.1), since `p² ≤ (p+q)²`
+  have hsq : p * p ≤ s * s := by
+    have h1 : (0 : A) ≤ p * q := Theses.A.CStar.sqrt_1 p q hp hq hpq
+    have h2 : (0 : A) ≤ q * q := by
+      have hst := star_mul_self_nonneg q
+      rwa [hqsa.star_eq] at hst
+    have hexp : s * s - p * p = p * q + (q * p + q * q) := by rw [hsdef]; noncomm_ring
+    rw [← sub_nonneg, hexp, ← hpq]
+    exact add_nonneg h1 (add_nonneg h1 h2)
+  obtain ⟨d, -, hd⟩ := ((douglas_1 p s 1 zero_le_one).1).mpr (by
+    simpa [hpsa.star_eq, hssa.star_eq] using hsq)
+  -- `d` is the *unique* solution of `d·s = p`, hence commutes with `p` and `q`
+  have huniq : ∀ c c' : A, c * s = c' * s → c = c' := by
+    intro c c' hcc
+    have h0 : (c - c') * s = 0 := by rw [sub_mul, hcc, sub_self]
+    have h1 := mul_ceil_eq_zero hs h0
+    rw [hcs, mul_one, sub_eq_zero] at h1
+    exact h1
+  have hdcomm : ∀ x : A, x * p = p * x → x * q = q * x → x * d = d * x := by
+    intro x hxp hxq
+    have hxs : x * s = s * x := by rw [hsdef, mul_add, add_mul, hxp, hxq]
+    refine huniq _ _ ?_
+    calc x * d * s = x * (d * s) := mul_assoc _ _ _
+      _ = x * p := by rw [← hd]
+      _ = p * x := hxp
+      _ = d * s * x := by rw [← hd]
+      _ = d * (s * x) := mul_assoc _ _ _
+      _ = d * (x * s) := by rw [hxs]
+      _ = d * x * s := (mul_assoc _ _ _).symm
+  -- the increasing projections `Eₙ`
+  have hEproj : ∀ n : ℕ, IsStarProjection (specPair p q n) := specPair_isStarProjection hpq
+  have hEE : ∀ n : ℕ, specPair p q n * specPair p q n = specPair p q n :=
+    fun n => (hEproj n).isIdempotentElem.eq
+  have hϑE : ∀ n : ℕ, ϑ (specPair p q n) = specPair p q n := fun n =>
+    (hfix _ (hEproj n) (commute_specPair_left hpq n).symm.eq).2
+  -- nothing but `0` is killed by every `Eₙ` on both sides
+  have hvanish : ∀ y : A, (∀ n : ℕ, specPair p q n * y * specPair p q n = 0) → y = 0 := by
+    intro y hy
+    have hmk : ∀ m k : ℕ, specPair p q m * y * specPair p q k = 0 := by
+      intro m k
+      have hm : specPair p q m * specPair p q (max m k) = specPair p q m :=
+        specPair_mul_specPair hp hq hpq (le_max_left m k)
+      have hk0 : specPair p q k * specPair p q (max m k) = specPair p q k :=
+        specPair_mul_specPair hp hq hpq (le_max_right m k)
+      have hk : specPair p q (max m k) * specPair p q k = specPair p q k := by
+        have hst := congrArg star hk0
+        rwa [star_mul, (hEproj _).isSelfAdjoint.star_eq,
+          (hEproj _).isSelfAdjoint.star_eq] at hst
+      have hexp : specPair p q m * (specPair p q (max m k) * y * specPair p q (max m k)) *
+          specPair p q k
+          = (specPair p q m * specPair p q (max m k)) * y *
+            (specPair p q (max m k) * specPair p q k) := by simp only [mul_assoc]
+      rw [hm, hk] at hexp
+      rw [← hexp, hy (max m k), mul_zero, zero_mul]
+    have hleft : ∀ m : ℕ, specPair p q m * y = 0 :=
+      fun m => eq_zero_of_mul_specPair hp hq hcp hcq hpq (fun k => hmk m k)
+    have hstar : star y = 0 := by
+      refine eq_zero_of_mul_specPair hp hq hcp hcq hpq (fun m => ?_)
+      have hst := congrArg star (hleft m)
+      rwa [star_mul, star_zero, (hEproj m).isSelfAdjoint.star_eq] at hst
+    exact star_eq_zero.mp hstar
+  -- `d·Eₙ` is central in the corner `Eₙ𝒜Eₙ`
+  have hdE : ∀ n : ℕ, ∀ x : A, specPair p q n * x * specPair p q n = x →
+      (d * specPair p q n) * x = x * (d * specPair p q n) := by
+    intro n x hx
+    obtain ⟨hz0, hzP, hPU, hzc, -⟩ := positive_quotients_specPair hp hq hpq ϑ h n (hϑE n)
+    set E : A := specPair p q n with hEdef
+    set z : A := specInv p ((n : ℝ) + 1)⁻¹ * q * E with hzdef
+    set U : A := specInv p ((n : ℝ) + 1)⁻¹ * E with hUdef
+    have hEidem : E * E = E := hEE n
+    have hEp : E * p = p * E := (commute_specPair_left hpq n).symm.eq
+    have hEq : E * q = q * E := (commute_specPair_right hpq n).symm.eq
+    have hEs : E * s = s * E := by rw [hsdef, mul_add, add_mul, hEp, hEq]
+    have hEd : E * d = d * E := hdcomm E hEp hEq
+    have hzE : z * E = z := by rw [hzdef, mul_assoc, hEidem]
+    have hEx : E * x = x := by
+      conv_lhs => rw [← hx]
+      rw [← mul_assoc, ← mul_assoc, hEidem, hx]
+    have hxE : x * E = x := by
+      conv_lhs => rw [← hx]
+      rw [mul_assoc (E * x) E E, hEidem, hx]
+    have hsE : (E + z) * (p * E) = s * E := by
+      rw [add_mul, hzP, hsdef, add_mul]
+      congr 1
+      calc E * (p * E) = E * p * E := (mul_assoc _ _ _).symm
+        _ = p * E * E := by rw [hEp]
+        _ = p * E := by rw [mul_assoc, hEidem]
+    have hd1 : (d * E) * (s * E) = p * E := by
+      calc (d * E) * (s * E) = d * (E * s) * E := by simp only [mul_assoc]
+        _ = d * (s * E) * E := by rw [hEs]
+        _ = (d * s) * (E * E) := by simp only [mul_assoc]
+        _ = p * E := by rw [← hd, hEidem]
+    have hd3 : (d * E * (E + z)) * E = E := by
+      calc (d * E * (E + z)) * E = (d * E * (E + z)) * ((p * E) * U) := by rw [hPU]
+        _ = (d * E) * ((E + z) * (p * E)) * U := by simp only [mul_assoc]
+        _ = (d * E) * (s * E) * U := by rw [hsE]
+        _ = (p * E) * U := by rw [hd1]
+        _ = E := hPU
+    have hd4 : d * E * (E + z) = E := by
+      have hfold : (d * E * (E + z)) * E = d * E * (E + z) := by
+        rw [mul_assoc, add_mul, hEidem, hzE]
+      rw [← hfold, hd3]
+    have hxz : x * z = z * x := (hzc x hx).symm
+    have hcomm2 : x * (E + z) = (E + z) * x := by
+      rw [mul_add, add_mul, hxE, hEx, hxz]
+    set y : A := (d * E) * x - x * (d * E) with hydef
+    have hy1 : y * (E + z) = 0 := by
+      have hA : ((d * E) * x) * (E + z) = x := by
+        calc ((d * E) * x) * (E + z) = (d * E) * (x * (E + z)) := by simp only [mul_assoc]
+          _ = (d * E) * ((E + z) * x) := by rw [hcomm2]
+          _ = (d * E * (E + z)) * x := by simp only [mul_assoc]
+          _ = E * x := by rw [hd4]
+          _ = x := hEx
+      have hB : (x * (d * E)) * (E + z) = x := by
+        rw [mul_assoc, hd4, hxE]
+      rw [hydef, sub_mul, hA, hB, sub_self]
+    have hEz0 : (0 : A) ≤ E + z := add_nonneg (hEproj n).nonneg hz0
+    have hceilEz : ceil (E + z) = E := by
+      refine le_antisymm ((ceil_le_iff hEz0 (hEproj n)).mpr ?_) ?_
+      · rw [add_mul, hEidem, hzE]
+      · have h1 : ceil E ≤ ceil (E + z) :=
+          ceil_mono (hEproj n).nonneg (le_add_of_nonneg_right hz0)
+        rwa [ceil_of_isStarProjection (hEproj n)] at h1
+    have hy2 : y * E = 0 := by
+      have hcz := mul_ceil_eq_zero hEz0 hy1
+      rwa [hceilEz] at hcz
+    have hy3 : y * E = y := by
+      rw [hydef, sub_mul]
+      congr 1
+      · rw [mul_assoc (d * E) x E, hxE]
+      · rw [mul_assoc x (d * E) E, mul_assoc d E E, hEidem]
+    have hy0 : y = 0 := by rw [← hy3]; exact hy2
+    exact sub_eq_zero.mp hy0
+  -- `d` is central
+  have hdc : ∀ a : A, d * a = a * d := by
+    intro a
+    refine sub_eq_zero.mp (hvanish (d * a - a * d) fun n => ?_)
+    set E : A := specPair p q n with hEdef
+    have hEidem : E * E = E := hEE n
+    have hEd : E * d = d * E :=
+      hdcomm E (commute_specPair_left hpq n).symm.eq (commute_specPair_right hpq n).symm.eq
+    have hxcorner : E * (E * a * E) * E = E * a * E := by
+      calc E * (E * a * E) * E = (E * E) * a * (E * E) := by simp only [mul_assoc]
+        _ = E * a * E := by rw [hEidem]
+    have hkey := hdE n (E * a * E) hxcorner
+    have hleg1 : E * (d * a) * E = (d * E) * (E * a * E) := by
+      calc E * (d * a) * E = E * d * a * E := by simp only [mul_assoc]
+        _ = d * E * a * E := by rw [hEd]
+        _ = d * (E * E) * a * E := by rw [hEidem]
+        _ = (d * E) * (E * a * E) := by simp only [mul_assoc]
+    have hleg2 : E * (a * d) * E = (E * a * E) * (d * E) := by
+      calc E * (a * d) * E = E * a * d * (E * E) := by rw [hEidem]; simp only [mul_assoc]
+        _ = E * a * (d * E) * E := by simp only [mul_assoc]
+        _ = E * a * (E * d) * E := by rw [hEd]
+        _ = (E * a * E) * (d * E) := by simp only [mul_assoc]
+    calc E * (d * a - a * d) * E
+        = (d * E) * (E * a * E) - (E * a * E) * (d * E) := by
+          rw [mul_sub, sub_mul, hleg1, hleg2]
+      _ = 0 := sub_eq_zero.mpr hkey
+  -- `ϑ = id`
+  have hϑid : ∀ a : A, ϑ a = a := by
+    intro a
+    refine sub_eq_zero.mp (hvanish (ϑ a - a) fun n => ?_)
+    obtain ⟨-, -, -, -, hfixc⟩ := positive_quotients_specPair hp hq hpq ϑ h n (hϑE n)
+    set E : A := specPair p q n with hEdef
+    have hEidem : E * E = E := hEE n
+    have hxcorner : E * (E * a * E) * E = E * a * E := by
+      calc E * (E * a * E) * E = (E * E) * a * (E * E) := by simp only [mul_assoc]
+        _ = E * a * E := by rw [hEidem]
+    have h1 : ϑ (E * a * E) = E * a * E := hfixc _ hxcorner
+    calc E * (ϑ a - a) * E = ϑ (E * a * E) - E * a * E := by
+          rw [mul_sub, sub_mul]
+          congr 1
+          rw [map_mul, map_mul, hϑE n]
+      _ = 0 := sub_eq_zero.mpr h1
+  -- `d` is self-adjoint and positive, and so is `1 − d`
+  have hdsa : IsSelfAdjoint d := by
+    have hstarc : ∀ a : A, star d * a = a * star d := by
+      intro a
+      have hst := congrArg star (hdc (star a))
+      rw [star_mul, star_mul, star_star] at hst
+      exact hst.symm
+    have h1 : star d * s = p := by
+      have hst := congrArg star hd
+      rw [hpsa.star_eq, star_mul, hssa.star_eq] at hst
+      rw [← hstarc s] at hst
+      exact hst.symm
+    exact huniq (star d) d (h1.trans hd)
+  have hd0 : (0 : A) ≤ d :=
+    nonneg_of_central_of_mul_nonneg hs hcs hdsa hdc (by rw [← hd]; exact hp)
+  have hqd : (1 - d) * s = q := by rw [sub_mul, one_mul, ← hd, hsdef]; abel
+  have hc0 : (0 : A) ≤ 1 - d := by
+    refine nonneg_of_central_of_mul_nonneg hs hcs ((IsSelfAdjoint.one A).sub hdsa)
+      (fun a => by rw [sub_mul, mul_sub, one_mul, mul_one, hdc a]) ?_
+    rw [hqd]; exact hq
+  -- the carriers
+  have hceil_of : ∀ c x : A, 0 ≤ c → 0 ≤ x → ceil x = 1 → IsSelfAdjoint c → c * s = x →
+      ceil c = 1 := by
+    intro c x hc0' hx0 hcx hcsa hcx'
+    have hcc : ceil c * c = c := by
+      have h1 := (ceil_spec hc0').2.1
+      have h2 := congrArg star h1
+      rwa [star_mul, (ceil_spec hc0').1.isSelfAdjoint.star_eq, hcsa.star_eq] at h2
+    have hxc : x * ceil c = x := by
+      have h1 : ceil c * x = x := by rw [← hcx', ← mul_assoc, hcc]
+      have h2 := congrArg star h1
+      rwa [star_mul, (IsSelfAdjoint.of_nonneg hx0).star_eq,
+        (ceil_spec hc0').1.isSelfAdjoint.star_eq] at h2
+    have hle := (ceil_le_iff hx0 (ceil_spec hc0').1).mpr hxc
+    rw [hcx] at hle
+    exact le_antisymm (ceil_spec hc0').1.le_one hle
+  have hceild : ceil d = 1 := hceil_of d p hd0 hp hcp hdsa hd.symm
+  have hceilc : ceil (1 - d) = 1 :=
+    hceil_of (1 - d) q hc0 hq hcq ((IsSelfAdjoint.one A).sub hdsa) hqd
+  refine ⟨⟨1 - d, d, fun m _ => ?_, fun m _ => (hdc m).symm, hc0, hd0, ?_, ?_, ?_⟩, hϑid⟩
+  · rw [sub_mul, mul_sub, one_mul, mul_one, hdc m]
+  · have hsum : d * p + d * q = p := by rw [← mul_add, ← hsdef, ← hd]
+    rw [sub_mul, one_mul]
+    exact (eq_sub_of_add_eq (by rw [add_comm]; exact hsum)).symm
+  · rw [hcp, hceilc]
+  · rw [hcq, hceild]
+
+end Aux104VII
 
 /-- **104IX** (`faithful-positive-map-uniqueness`, proc.tex:1628,
 Proposition): a faithful ⋄-positive map `f : 𝒜 → 𝒜` is of the form
@@ -6214,8 +7111,8 @@ inverse); so `α^⋄ ∘ D ∘ α^⋄ = D` for `D := (√w(·)√w)^⋄`, whence
 `⌈√p ϑ(e) √p⌉ = ⌈w e w⌉` for every projection `e`.  **104VII** at `w`,
 `√p` (both faithful) now gives `ϑ = id`.
 
-This proof **rests on 104VII, which is still `sorry`** — and 104VII is the
-only thing it rests on. -/
+This proof rests on **104VII**, and on nothing else; since session 91
+104VII is proved, so this one is axiom-clean. -/
 theorem faithful_positive_map_uniqueness [VonNeumannAlgebra A]
     (f : NCPMap A A) (hf : IsDiamondPositive f)
     (hfaith : ncpCarrier f = 1) :
@@ -6777,7 +7674,7 @@ faithfulness argument of `chevron_f_basic_3` is repeated here, since
 `⟨f⟩ = √p(·)√p` by **104IX**; and `f = c_{⌈p⌉} ∘ ⟨f⟩ ∘ π_{⌈p⌉}`
 together with `√p⌈p⌉ = √p` gives `f = √p(·)√p`.
 
-Depends on **104IX**, hence on **104VII**, which is still `sorry`. -/
+Depends on **104IX**, hence on **104VII** — both proved. -/
 theorem positive_map_uniqueness [VonNeumannAlgebra A] (p : A) (hp : 0 ≤ p)
     (f : NCPMap A A) (hf : IsDiamondPositive f) (h1 : f 1 = p) :
     ∀ a, f a = CFC.sqrt p * a * CFC.sqrt p := by
@@ -6902,8 +7799,8 @@ The author's proof (proc.tex:1796), transcribed: any such `g` is
 `g(1) = √p` by uniqueness of the square root; existence is `adSelf ⁴√p`,
 ⋄-positive by **103II**.2.
 
-The uniqueness half depends on **105V**, hence on **104VII**, which is
-still `sorry`; the existence half is unconditional. -/
+The uniqueness half depends on **105V**, hence on **104VII** — both
+proved; the existence half is unconditional. -/
 theorem sqrt_axiom [VonNeumannAlgebra A] (p : A) (hp : 0 ≤ p) :
     (∃ g : NCPMap A A, IsDiamondPositive g ∧ g (g 1) = p ∧
       ∀ a, g a = CFC.sqrt (CFC.sqrt p) * a * CFC.sqrt (CFC.sqrt p)) ∧
@@ -7079,7 +7976,7 @@ order-theoretic `≤ e^⊥` into the ceiling-theoretic one by
 (A); **105V** makes `f∘f = √p(·)√p`, and (C) turns `p ∗ q` into
 `f(f(q))`.
 
-Depends on **105V**, hence on **104VII**, which is still `sorry`. -/
+Depends on **105V**, hence on **104VII** — both proved. -/
 theorem uniqueness_sequential_product [VonNeumannAlgebra A] (op : A → A → A)
     (h : IsSequentialProduct op) :
     ∀ p ∈ effects A, ∀ q ∈ effects A,

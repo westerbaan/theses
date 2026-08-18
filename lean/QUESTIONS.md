@@ -414,6 +414,33 @@ and for something slightly different.**  Two things were established on
    ruling that would unblock the chain is the *faithful* form of .3/.5, not
    the general one.
 
+⚠️ **Update (session 91): the ruling is no longer needed by anything at all —
+104VII is proved without 104III.3/.4/.5.**  `positive_quotients_centrally_similar`
+is closed and axiom-clean in `A/Proc/Measurement.lean`, and with it 104IX, 105V,
+105VII and 106I; `#print axioms` reports only `propext`, `Classical.choice`,
+`Quot.sound` for all five.  Two things made this possible, neither of which is
+in the printed proof.
+
+1. **The descent from the corners does not go through 104III.5.**  Instead of
+   assembling a central similarity out of the corner-wise ones, we exhibit the
+   central element directly: `d := p/(p+q)` exists by Douglas' lemma (**81V**.1,
+   applicable because `p² ≤ (p+q)²` once `pq = qp` is known, which is step 1 of
+   the printed proof), is *unique* because `⌈p+q⌉ = 1`, and therefore commutes
+   with everything commuting with `p` and `q`.  On the corner `eₙ𝒜eₙ` it equals
+   `(eₙ + zₙ)⁻¹` with `zₙ = (peₙ)^{∼1}(qeₙ)`, and `zₙ` is central *in the corner*
+   by **104VI**; hence `eₙ(da − ad)eₙ = 0` for every `n` and every `a`, and `d`
+   is central in `𝒜`.  `(1−d)p = dq` is then the central similarity, with
+   `⌈d⌉ = ⌈1−d⌉ = 1`.
+2. **`Z(e𝒜e) = Z(𝒜)e` is therefore not needed either** — see the session-91
+   update to the **104VIII** row of `ERRATA.md`.  We did *not* prove it; the
+   gap in the printed proof is real, but the tree steps around it.
+
+So A7 is now a **leaf**: the ruling is wanted only for the four parked
+statements `centrally_similar_basic_{2a,3,4,5}` themselves, which nothing else
+in either thesis's formalization consumes.  The partial answer offered in
+point 3 above stands, and so does the question "what is `p ∧ q`?" — but no
+formalization is waiting on either.
+
 ### A8. 30X `proto-gelfand-naimark` — **our** statement of clause (1) drops `ϱ_Ω`, and with it half of the equivalence
 `cstar.tex` parsec 300, point 100.  The thesis states a three-way equivalence
 for a collection `Ω` of p-maps: (1) `ϱ_Ω : 𝒜 → B(ℋ_Ω)` is **injective**;

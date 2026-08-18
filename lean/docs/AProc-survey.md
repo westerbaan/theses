@@ -1,15 +1,53 @@
-# `Theses/A/Proc/` — full survey of the remaining `sorry`s (worker 71, 2026-08-16; revised workers 72–89, sessions 47–88)
+# `Theses/A/Proc/` — full survey of the remaining `sorry`s (worker 71, 2026-08-16; revised workers 72–90, sessions 47–90)
 
-**Headline count: A/Proc has 20 code `sorry`s** after session 88, which
-closed **125eVII `AstarhaB_concrete`**.
-Per file: `Tensor` **2**, `QuantumLambda` **8**,
+**Headline count: A/Proc has 19 code `sorry`s** after session 90, which
+closed **125dII `ha_tensor_closed`** — and **none of the 19 is reachable**:
+`QuantumLambda`'s 7 are all downstream of 121II `intersection_tensor` (the
+commutation theorem, i.e. Tomita–Takesaki), `Tensor`'s 2 are the recorded
+non-targets, and `Measurement`'s 10 are gated on the open author question.
+Per file: `Tensor` **2**, `QuantumLambda` **7**,
 `Measurement` **10**, `Duplicators` **0 — the file is finished**.
-**All four compiler-verified in session 88** (each file compiled directly;
-0 errors in all four).
+(`QuantumLambda` compiler-verified in session 90, 0 errors; the other three
+in session 88.)
 **No statement in the project is `sorry`-tainted.**  (`grep -c sorry`
 over-counts, because the file docstrings mention `sorry` in prose; the code
 counts are the ones above.  Note `\bsorry\b` also matches "sorry-ed" in
 prose — count the compiler's `declaration uses \`sorry\`` warnings instead.)
+
+> **Session 90 — 125dII `ha_tensor_closed` is CLOSED, and A/Proc is out of
+> reachable work.**  `QuantumLambda` **8 → 7**; A/Proc **20 → 19**, 0 errors,
+> the new theorem axiom-clean (checked *in situ*).  **+598 / −87 lines**, all
+> in `QuantumLambda.lean`, all new names `private` except the theorem.  Full
+> working in PROVING-LOG, session 90.
+>
+> * **The solution set needs no cardinality bound.**  Take it to be *all*
+>   nmiu-maps `ℬ → M_{n+1} ⊗ 𝒜` (`Σ n : ℕ, NMIUMap ℬ (M_{n+1} ⊗ 𝒜)` is an
+>   honest set); a hereditarily atomic `𝒞'` *is* `⊕ᵢ M_{mᵢ+1}` by **84bII**,
+>   so each `(πᵢ ∘ Ψ) ⊗ id ∘ h` is already an entry.  **124I**
+>   `vn_generation_bound`, `exists_haPresentation` and the index type `K` —
+>   all of 125bII's bookkeeping — are unused.
+> * **Distributivity was needed after all, and 117III does give it.**
+>   `exists_matSumTensorIso` (~110 lines): **117III** on the family
+>   `fun p => punitSum (N p) : Type u`, flipped by **119IVc**
+>   `exists_braiding`, moved onto the chosen tensor product by **114II**
+>   `tensor_uniqueness`, and carried onto the `Type 0` matrix summands by a
+>   new `exists_lp_congr` (fixed index, summands may change universe — which
+>   `exists_lp_reindex` cannot do).  Its coordinates are the `π_p ⊗ id`; it
+>   is what builds `η` and what makes the `πᵢ ⊗ id` jointly injective.
+> * **No initial object was needed for the trivial-`𝒜` case.**  A
+>   subsingleton `𝒜` forces the index set `J` of its decomposition to be
+>   empty, so the entry set is empty, the carrier is `W*(∅) = ℂ·1` and
+>   `vnsub_wstar_eq_top` gives uniqueness vacuously.  The split supplies only
+>   an nmiu-map into a trivial algebra (`nmiuOfSubsingleton`) and
+>   `Subsingleton.elim`.
+> * **`hB` is unused** (fifth time in this file): the construction gives the
+>   left adjoint of `(·) ⊗ 𝒜 : haW*_miu → W*_miu` on all of `W*_miu`.
+> * Watch out: `Function.Bijective.comp` on `⇑(nmiuComp g f)` blows 10⁶
+>   heartbeats (use `nmiuComp_bijective`); `tmapM_injective` and `norm_vtmul`
+>   are single-universe, so `tmapM_id_bijective` and `vnt_mat_nontrivial`
+>   replace them across the universe gap; `rw` cannot see through `vtmul`.
+> * Nothing for ERRATA or QUESTIONS.  `docs/why-open.csv`: the
+>   `ha_tensor_closed` row is deleted.
 
 > **Session 88 — 125eVII `AstarhaB_concrete` is CLOSED.**  `QuantumLambda`
 > **9 → 8**; A/Proc **21 → 20**, 0 errors in all four files, the new theorem
