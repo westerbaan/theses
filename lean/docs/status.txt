@@ -1541,7 +1541,6 @@ Theses.B.Dils.SelfDualCompletion|Theses.B.Dils.exists_semC_entourage_subset|gree
 Theses.B.Dils.HilbertModules|Theses.B.Dils.exists_unTendsto_of_l2Summable|green
 Theses.B.Dils.SelfDual|Theses.B.Dils.ext_tensor_basis|green
 Theses.B.Dils.SelfDual|Theses.B.Dils.ext_tensor_dense|green
-Theses.B.Dils.SelfDual|Theses.B.Dils.ext_tensor_ketbra_dense|red
 Theses.B.Dils.SelfDual|Theses.B.Dils.ext_tensor_ketbra_uwDense|green
 Theses.B.Dils.SelfDual|Theses.B.Dils.ext_tensor_uniqueness|green
 Theses.B.Dils.SelfDual|Theses.B.Dils.exttensor_dense_subsets|green
