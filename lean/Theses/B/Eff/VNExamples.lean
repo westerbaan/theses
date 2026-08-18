@@ -34,9 +34,13 @@ from it — `sharp_multiplicative`, `gardner`, `pure_fundamental` — are
 
 `vn_is_andthen_eff` (211IV) is proved in eff.tex:4859 from **105V**
 `positive-map-uniqueness` and **100III** `pure-fundamental`, both in
-`Theses/A/Proc/Measurement.lean`.  As of session 90 **105V is proved there**,
-but only modulo **104VII** `positive_quotients_centrally_similar`, which is
-still `sorry`; so that item stays blocked, on 104VII and on nothing else.
+`Theses/A/Proc/Measurement.lean`.  As of session 91 **both are proved and
+axiom-clean** there — 104VII `positive_quotients_centrally_similar`, which
+105V rested on, closed in session 91 — so 211IV is no longer blocked by
+anything in `A/Proc`.  What it now waits on is **QUESTIONS B15**, a
+definitional mismatch between the two theses over whether the ⋄-self-adjoint
+square root of a ⋄-positive map is required to be pure; see the doc comment
+on `vn_is_andthen_eff` itself.
 (An earlier version of this header claimed nothing here needs `A/Proc`; that
 was wrong.)
 
@@ -4222,6 +4226,414 @@ theorem su_exists_asrt {X : WStarCPSU.{u}ᵒᵖ}
 
 end AsrtVN
 
+/-! ### The `A/Proc` dictionary for purity (95I, 96I, 100I)
+
+`su_isQuotient_of_isFilterFor` and `su_isComprehension_of_isCornerFor` above
+read the **`B/Dils`** universal properties (dils.tex 169VIII, 169II) inside
+`vN_cpsuᵒᵖ`.  **211IV** needs the same dictionary against the **`A/Proc`**
+notions — proc.tex **96I** `IsFilter`, **95I** `IsCornerOf`/`IsCornerMap`
+and **100I** `IsPure` — because 105V `positive-map-uniqueness` and 100III
+`pure-fundamental` are stated with those; and it needs it in *both*
+directions.  The mismatches, and why each is harmless:
+
+* `A/Proc`'s universal properties quantify over ncp-maps where the effectus
+  quantifies over its morphisms (ncp**su**-maps).  Every mediating map that
+  occurs is subunital anyway: for a filter `c` because `c(g(1)) = f(1) ≤
+  c(1)` and filters are **bipositive** (98II.3 `filter_basic_3`); for a
+  corner because the corner is unital (comprehensions are total, 202VIII).
+* `A/Proc`'s corner condition is `f(p^⊥) = 0` where the effectus asks
+  `p ∘ f = 1 ∘ f`; for a *linear* map those are the same equation.
+* an `A/Proc` filter is a filter *for* `c(1)`; an effectus quotient is one
+  *for* `p`, with `1 ∘ ξ ≼ pᵖ` — the two agree at `c(1) = pᵖ`.
+* the effectus quantifies over its own objects, which are exactly the von
+  Neumann algebras of `A/Proc`. -/
+
+section ProcPurity
+
+variable [DiamondEffectus (WStarCPSU.{u}ᵒᵖ)]
+
+/-- **197II at `vNᵒᵖ`** against `A/Proc`: a map whose ncpsu-map is a
+**filter** (proc.tex 96I) taking the value `pᵖ` at `1` is a quotient for
+`p`. -/
+theorem su_isQuotient_of_isFilter {X Q : WStarCPSU.{u}ᵒᵖ}
+    (p : X ⟶ effObj (WStarCPSU.{u}ᵒᵖ)) (ξ : X ⟶ Q)
+    (hfil : Theses.A.Proc.IsFilter ξ.unop.toNCPMap)
+    (hval : ξ.unop.toNCPMap (1 : Q.unop.base.carrier)
+      = suPredVal (EffectusPartialForm.orth p)) :
+    IsQuotient p ξ := by
+  constructor
+  · refine (su_pred_le_iff _ _).mpr ?_
+    show suPredVal (ξ ≫ truth Q) ≤ suPredVal (EffectusPartialForm.orth p)
+    rw [suPredVal_comp, suPredVal_truth, hval]
+  · intro Y f hf
+    have hf1 : f.unop.toNCPMap (1 : Y.unop.base.carrier)
+        ≤ ξ.unop.toNCPMap (1 : Q.unop.base.carrier) := by
+      have h1 := (su_pred_le_iff (f ≫ truth Y) (EffectusPartialForm.orth p)).mp hf
+      rw [suPredVal_comp, suPredVal_truth] at h1
+      rw [hval]
+      exact h1
+    obtain ⟨g, hg, huniq⟩ :=
+      hfil.universal Y.unop.base.carrier f.unop.toNCPMap hf1
+    have hsub : g (1 : Y.unop.base.carrier) ≤ (1 : Q.unop.base.carrier) := by
+      have hlin : ξ.unop.toNCPMap ((1 : Q.unop.base.carrier) - g 1)
+          = ξ.unop.toNCPMap 1 - ξ.unop.toNCPMap (g 1) :=
+        map_sub (ncpLin ξ.unop.toNCPMap) _ _
+      have h0 : (0 : X.unop.base.carrier)
+          ≤ ξ.unop.toNCPMap ((1 : Q.unop.base.carrier) - g 1) := by
+        rw [hlin, ← hg 1]
+        exact sub_nonneg.mpr hf1
+      exact sub_nonneg.mp ((Theses.A.Proc.filter_basic_3 _ hfil _).mp h0)
+    obtain ⟨k, hk⟩ : ∃ k : Q ⟶ Y, ∀ y, k.unop.toNCPMap y = g y :=
+      ⟨Quiver.Hom.op ⟨g, hsub⟩, fun _ => rfl⟩
+    refine ⟨k, suop_hom_ext fun y => ?_, fun k' hk' => ?_⟩
+    · rw [suop_comp_apply, hk]
+      exact (hg y).symm
+    · have hk'' : ∀ y, f.unop.toNCPMap y = ξ.unop.toNCPMap (k'.unop.toNCPMap y) :=
+        fun y => (suop_congr hk' y).symm.trans (suop_comp_apply ξ k' y)
+      refine suop_hom_ext fun y => ?_
+      rw [hk]
+      exact congrArg
+        (fun m : Theses.NCPMap Y.unop.base.carrier Q.unop.base.carrier => m y)
+        (huniq k'.unop.toNCPMap hk'')
+
+/-- **199II at `vNᵒᵖ`** against `A/Proc`: a map whose ncpsu-map is a
+**unital corner** of the effect named by `q` (proc.tex 95I) is a
+comprehension for `q`. -/
+theorem su_isComprehension_of_isCornerOf {W X : WStarCPSU.{u}ᵒᵖ}
+    (q : X ⟶ effObj (WStarCPSU.{u}ᵒᵖ)) (π : W ⟶ X)
+    (hu : π.unop.toNCPMap (1 : X.unop.base.carrier) = (1 : W.unop.base.carrier))
+    (hc : Theses.A.Proc.IsCornerOf (suPredVal q) π.unop.toNCPMap) :
+    IsComprehension q π := by
+  constructor
+  · refine su_pred_ext ?_
+    rw [suPredVal_comp, suPredVal_comp, suPredVal_truth]
+    have h := hc.map_perp
+    have hlin : π.unop.toNCPMap ((1 : X.unop.base.carrier) - suPredVal q)
+        = π.unop.toNCPMap 1 - π.unop.toNCPMap (suPredVal q) :=
+      map_sub (ncpLin π.unop.toNCPMap) _ _
+    rw [hlin] at h
+    exact (sub_eq_zero.mp h).symm
+  · intro Z g hgq
+    have hg0 : g.unop.toNCPMap ((1 : X.unop.base.carrier) - suPredVal q) = 0 := by
+      have h1 := congrArg suPredVal hgq
+      rw [suPredVal_comp, suPredVal_comp, suPredVal_truth] at h1
+      have hlin : g.unop.toNCPMap ((1 : X.unop.base.carrier) - suPredVal q)
+          = g.unop.toNCPMap 1 - g.unop.toNCPMap (suPredVal q) :=
+        map_sub (ncpLin g.unop.toNCPMap) _ _
+      rw [hlin, h1, sub_self]
+    obtain ⟨g', hg', huniq⟩ :=
+      hc.universal Z.unop.base.carrier g.unop.toNCPMap hg0
+    have hsub : g' (1 : W.unop.base.carrier) ≤ 1 := by
+      have h := hg' (1 : X.unop.base.carrier)
+      rw [hu] at h
+      rw [← h]
+      exact g.unop.subunital'
+    obtain ⟨k, hk⟩ : ∃ k : Z ⟶ W, ∀ x, k.unop.toNCPMap x = g' x :=
+      ⟨Quiver.Hom.op ⟨g', hsub⟩, fun _ => rfl⟩
+    refine ⟨k, suop_hom_ext fun x => ?_, fun k' hk' => ?_⟩
+    · rw [suop_comp_apply, hk]
+      exact (hg' x).symm
+    · have hk'' : ∀ x, g.unop.toNCPMap x = k'.unop.toNCPMap (π.unop.toNCPMap x) :=
+        fun x => (suop_congr hk' x).symm.trans (suop_comp_apply k' π x)
+      refine suop_hom_ext fun x => ?_
+      rw [hk]
+      exact congrArg
+        (fun m : Theses.NCPMap W.unop.base.carrier Z.unop.base.carrier => m x)
+        (huniq k'.unop.toNCPMap hk'')
+
+/-- **197II at `vNᵒᵖ`**, the converse: the ncpsu-map of a **quotient** is a
+filter in the sense of proc.tex 96I.  Any two quotients for `p` differ by an
+isomorphism (197V.2), the standard filter `c_{pᵖ}` (proc.tex 98I) gives one,
+and isomorphisms are filters (`isFilter_of_iso`) which compose with filters
+(98III). -/
+theorem su_isFilter_of_isQuotient {X Q : WStarCPSU.{u}ᵒᵖ}
+    {p : X ⟶ effObj (WStarCPSU.{u}ᵒᵖ)} {ξ : X ⟶ Q} (hξ : IsQuotient p ξ) :
+    Theses.A.Proc.IsFilter ξ.unop.toNCPMap := by
+  set b : X.unop.base.carrier := suPredVal (EffectusPartialForm.orth p) with hb
+  have hb0 : (0 : X.unop.base.carrier) ≤ b := suPredVal_nonneg _
+  have hb1 : b ≤ 1 := suPredVal_le_one _
+  have hsub : (Theses.A.Proc.stdFilter b)
+      (1 : Theses.A.Proc.Corner X.unop.base.carrier (Theses.A.VN.ceil b)) ≤ 1 := by
+    rw [Theses.A.Proc.stdFilter_one hb0]; exact hb1
+  obtain ⟨ξ₀, hξ₀⟩ : ∃ ξ₀ : X ⟶ Opposite.op (WStarCPSU.of (WStar.of
+        (Theses.A.Proc.Corner X.unop.base.carrier (Theses.A.VN.ceil b)))),
+      ξ₀.unop.toNCPMap = Theses.A.Proc.stdFilter b :=
+    ⟨Quiver.Hom.op ⟨Theses.A.Proc.stdFilter b, hsub⟩, rfl⟩
+  have hfil₀ : Theses.A.Proc.IsFilter ξ₀.unop.toNCPMap := by
+    rw [hξ₀]; exact Theses.A.Proc.isFilter_stdFilter b hb0
+  have hq₀ : IsQuotient p ξ₀ := by
+    refine su_isQuotient_of_isFilter p ξ₀ hfil₀ ?_
+    rw [hξ₀]; exact Theses.A.Proc.stdFilter_one hb0
+  obtain ⟨θ, hθiso, hθ, -⟩ := quotient_basics_2 hξ hq₀
+  haveI := hθiso
+  have hcomp : ξ.unop.toNCPMap
+      = Theses.A.Proc.ncpComp ξ₀.unop.toNCPMap θ.unop.toNCPMap := by
+    refine DFunLike.ext _ _ fun y => ?_
+    rw [Theses.A.Proc.ncpComp_apply]
+    exact (suop_congr hθ y).symm.trans (suop_comp_apply ξ₀ θ y)
+  have hgf : ∀ a : Q.unop.base.carrier,
+      (inv θ).unop.toNCPMap (θ.unop.toNCPMap a) = a := by
+    intro a
+    have h := suop_congr (IsIso.inv_hom_id θ) a
+    rw [suop_comp_apply] at h
+    exact h.trans (su_id_apply _)
+  have hfg : ∀ y, θ.unop.toNCPMap ((inv θ).unop.toNCPMap y) = y := by
+    intro y
+    have h := suop_congr (IsIso.hom_inv_id θ) y
+    rw [suop_comp_apply] at h
+    exact h.trans (su_id_apply _)
+  rw [hcomp]
+  exact Theses.A.Proc.filters_composition θ.unop.toNCPMap ξ₀.unop.toNCPMap
+    (Theses.A.Proc.isFilter_of_iso θ.unop.toNCPMap (inv θ).unop.toNCPMap hgf hfg)
+    hfil₀
+
+/-- **199II at `vNᵒᵖ`**, the converse: the ncpsu-map of a **comprehension**
+is a unital corner in the sense of proc.tex 95I.  Comprehensions for `q`
+differ by an isomorphism (199VII.2), the standard corner `π_q` (proc.tex
+98I) gives one, comprehensions are total (202VIII), and corners compose
+(98VI). -/
+theorem su_isCornerMap_of_isComprehension {W X : WStarCPSU.{u}ᵒᵖ}
+    {q : X ⟶ effObj (WStarCPSU.{u}ᵒᵖ)} {π : W ⟶ X} (hπ : IsComprehension q π) :
+    Theses.A.Proc.IsCornerMap π.unop.toNCPMap := by
+  set a : X.unop.base.carrier := suPredVal q with ha
+  have ha0 : (0 : X.unop.base.carrier) ≤ a := suPredVal_nonneg _
+  have ha1 : a ≤ 1 := suPredVal_le_one _
+  obtain ⟨π₀, hπ₀⟩ : ∃ π₀ : Opposite.op (WStarCPSU.of (WStar.of
+        (Theses.A.Proc.Corner X.unop.base.carrier (Theses.A.VN.floor a)))) ⟶ X,
+      π₀.unop.toNCPMap = (Theses.A.Proc.stdCorner a).toNCPMap :=
+    ⟨Quiver.Hom.op ⟨(Theses.A.Proc.stdCorner a).toNCPMap,
+      le_of_eq (Theses.A.Proc.stdCorner a).unital'⟩, rfl⟩
+  have hcorner₀ : Theses.A.Proc.IsCornerMap (Theses.A.Proc.stdCorner a).toNCPMap :=
+    ⟨(Theses.A.Proc.stdCorner a).unital', a, ⟨ha0, ha1⟩,
+      Theses.A.Proc.isCornerOf_stdCorner a ⟨ha0, ha1⟩⟩
+  have hcorner₀' : Theses.A.Proc.IsCornerMap π₀.unop.toNCPMap := by
+    rw [hπ₀]; exact hcorner₀
+  have hcompr₀ : IsComprehension q π₀ := by
+    refine su_isComprehension_of_isCornerOf q π₀ ?_ ?_
+    · rw [hπ₀]; exact (Theses.A.Proc.stdCorner a).unital'
+    · rw [hπ₀]; exact Theses.A.Proc.isCornerOf_stdCorner a ⟨ha0, ha1⟩
+  obtain ⟨θ, hθiso, hθ, -⟩ := compr_basics_2 hπ hcompr₀
+  haveI := hθiso
+  have hcomp : π.unop.toNCPMap
+      = Theses.A.Proc.ncpComp θ.unop.toNCPMap π₀.unop.toNCPMap := by
+    refine DFunLike.ext _ _ fun x => ?_
+    rw [Theses.A.Proc.ncpComp_apply]
+    exact (suop_congr hθ x).symm.trans (suop_comp_apply θ π₀ x)
+  have hgf : ∀ y, (inv θ).unop.toNCPMap (θ.unop.toNCPMap y) = y := by
+    intro y
+    have h := suop_congr (IsIso.inv_hom_id θ) y
+    rw [suop_comp_apply] at h
+    exact h.trans (su_id_apply _)
+  have hfg : ∀ y, θ.unop.toNCPMap ((inv θ).unop.toNCPMap y) = y := by
+    intro y
+    have h := suop_congr (IsIso.hom_inv_id θ) y
+    rw [suop_comp_apply] at h
+    exact h.trans (su_id_apply _)
+  have hθu : θ.unop.toNCPMap 1 = 1 := (su_isTotal_iff θ).mp (iso_isTotal θ)
+  rw [hcomp]
+  exact Theses.A.Proc.corners_composition π₀.unop.toNCPMap
+    θ.unop.toNCPMap hcorner₀'
+    (Theses.A.Proc.isCornerMap_of_iso θ.unop.toNCPMap (inv θ).unop.toNCPMap
+      hgf hfg hθu)
+
+/-- **201II at `vNᵒᵖ`**: a pure map of `vN_cpsuᵒᵖ` has a pure ncpsu-map
+(proc.tex 100I). -/
+theorem su_procPure_of_isPure {X Y : WStarCPSU.{u}ᵒᵖ} {f : X ⟶ Y}
+    (hf : IsPure f) : Theses.A.Proc.IsPure f.unop.toNCPMap := by
+  obtain ⟨Q, ξ, π, p, q, hξ, hπ, hfe⟩ := hf
+  have hcomp : f.unop.toNCPMap
+      = Theses.A.Proc.ncpComp ξ.unop.toNCPMap π.unop.toNCPMap := by
+    refine DFunLike.ext _ _ fun y => ?_
+    rw [Theses.A.Proc.ncpComp_apply]
+    exact (suop_congr hfe y).trans (suop_comp_apply ξ π y)
+  rw [hcomp]
+  exact Theses.A.Proc.IsPure.comp
+    (Theses.A.Proc.IsPure.filter (su_isFilter_of_isQuotient hξ))
+    (Theses.A.Proc.IsPure.corner (su_isCornerMap_of_isComprehension hπ))
+
+/-- **100III at `vNᵒᵖ`**, the converse: a map of `vN_cpsuᵒᵖ` whose ncpsu-map
+is pure (proc.tex 100I) is pure in the effectus.  `pure-fundamental` writes
+it as a filter after a *unital* corner, and the two dictionary lemmas above
+turn those into a quotient and a comprehension. -/
+theorem su_isPure_of_procPure {X Y : WStarCPSU.{u}ᵒᵖ} {f : X ⟶ Y}
+    (hf : Theses.A.Proc.IsPure f.unop.toNCPMap) : IsPure f := by
+  obtain ⟨Z, _, _, _, _, π, c, hπ, hc, hfac⟩ :=
+    ((Theses.A.Proc.pure_fundamental f.unop.toNCPMap).out 0 1).mp hf
+  have hfx : ∀ y : Y.unop.base.carrier, f.unop.toNCPMap y = c (π y) := by
+    intro y
+    rw [hfac, Theses.A.Proc.ncpComp_apply]
+  have hc1 : (c 1 : X.unop.base.carrier) = f.unop.toNCPMap 1 := by
+    rw [hfx 1, hπ.1]
+  have hc0 : (0 : X.unop.base.carrier) ≤ c 1 := by
+    rw [hc1]; exact ncpsu_nonneg f.unop zero_le_one
+  have hc1le : (c 1 : X.unop.base.carrier) ≤ 1 := by
+    rw [hc1]; exact f.unop.subunital'
+  obtain ⟨ξ, hξ⟩ : ∃ ξ : X ⟶ Opposite.op (WStarCPSU.of (WStar.of Z)),
+      ξ.unop.toNCPMap = c :=
+    ⟨Quiver.Hom.op ⟨c, hc1le⟩, rfl⟩
+  obtain ⟨π', hπ'⟩ : ∃ π' : Opposite.op (WStarCPSU.of (WStar.of Z)) ⟶ Y,
+      π'.unop.toNCPMap = π :=
+    ⟨Quiver.Hom.op ⟨π, le_of_eq hπ.1⟩, rfl⟩
+  obtain ⟨p₀, hp₀⟩ := su_pred_exists (X := X) (a := 1 - c 1)
+    (sub_nonneg.mpr hc1le) (sub_le_self 1 hc0)
+  obtain ⟨r, hr, hcorner⟩ := hπ.2
+  obtain ⟨q₀, hq₀⟩ := su_pred_exists (X := Y) (a := r) hr.1 hr.2
+  refine ⟨_, ξ, π', p₀, q₀, ?_, ?_, ?_⟩
+  · refine su_isQuotient_of_isFilter p₀ ξ ?_ ?_
+    · rw [hξ]; exact hc
+    · have hval : suPredVal (EffectusPartialForm.orth p₀)
+          = (c 1 : X.unop.base.carrier) := by
+        rw [suPredVal_orth, hp₀, sub_sub_cancel]
+      exact (congrArg (fun m : Theses.NCPMap Z X.unop.base.carrier => m 1) hξ).trans
+        hval.symm
+  · refine su_isComprehension_of_isCornerOf q₀ π' ?_ ?_
+    · rw [hπ']; exact hπ.1
+    · rw [hπ', hq₀]; exact hcorner
+  · refine suop_hom_ext fun y => ?_
+    rw [suop_comp_apply, hξ, hπ']
+    exact hfx y
+
+/-- **211II.2 at `vNᵒᵖ`** (eff.tex:4808): a **quotient after a
+comprehension is pure** — the second axiom of an &-effectus.  This is
+`pure-fundamental` in `A/Proc` (eff.tex:4862 cites exactly that): the
+ncpsu-map of `ξ ∘ π` is a *corner after a filter*, and 100I closes purity
+under composition. -/
+theorem su_quot_after_compr_pure {X Y Z : WStarCPSU.{u}ᵒᵖ}
+    {p q : X ⟶ effObj (WStarCPSU.{u}ᵒᵖ)} (π : Z ⟶ X) (ξ : X ⟶ Y)
+    (hπ : IsComprehension p π) (hξ : IsQuotient q ξ) : IsPure (π ≫ ξ) := by
+  refine su_isPure_of_procPure ?_
+  have hcomp : (π ≫ ξ).unop.toNCPMap
+      = Theses.A.Proc.ncpComp π.unop.toNCPMap ξ.unop.toNCPMap := by
+    refine DFunLike.ext _ _ fun z => ?_
+    rw [Theses.A.Proc.ncpComp_apply]
+    exact suop_comp_apply π ξ z
+  rw [hcomp]
+  exact Theses.A.Proc.IsPure.comp
+    (Theses.A.Proc.IsPure.corner (su_isCornerMap_of_isComprehension hπ))
+    (Theses.A.Proc.IsPure.filter (su_isFilter_of_isQuotient hξ))
+
+/-! ### The ⋄-layer of 211II, and where eff.tex and proc.tex part company
+
+`su_exists_asrt` above settles the *existence* half of 211II.1.  For
+*uniqueness* eff.tex:4861 cites **105V** `positive-map-uniqueness`, and that
+citation does not quite land, for a reason that is a difference between the
+two theses' definitions and not an artefact of this rendering:
+
+* proc.tex **103I** calls `f` **⋄-self-adjoint** when it is *pure* and
+  contraposed to itself, and **⋄-positive** when `f = gg` for a
+  ⋄-self-adjoint `g` — so the square root `g` is pure, and `f` is pure with
+  it;
+* eff.tex **206II**.4 calls an endomap ⋄-self-adjoint when `f^⋄ = f_⋄`,
+  *without* purity — which is why it has to ask separately that a
+  ⋄-positive `f` be pure: "a pure endomap `f` is ⋄-positive if `f = g ∘ g`
+  for some ⋄-self-adjoint `g`".
+
+The effectus notion is therefore *formally weaker*: it does not ask the
+square root `g` to be pure.  Uniqueness of `asrt_p` in 211II.1 is a
+statement about the *larger* class, and 105V proves it only for the
+smaller.  Everything below is the reduction of 211IV to that one missing
+step; `su_contraposed_of_diamondSelfAdjoint` and `su_procPure_of_isPure`
+are the two halves of the translation of proc.tex 103I's ⋄-positivity into
+the effectus's, and `su_asrt_unique_of_pure_sqrt` is uniqueness once a pure
+square root is available.  See the doc comment of `vn_is_andthen_eff` and
+`QUESTIONS.md` **B15**.
+
+(That the gap is not vacuous, and not a defect of the *theorem*: for a
+self-adjoint non-positive `b`, `ad_b` is pure and contraposed to itself with
+`ad_b(1) = b²`, yet `ad_b ≠ ad_{|b|}` — so a ⋄-self-adjoint square root that
+is allowed to be impure would break uniqueness outright.  What has to be
+shown is that no such square root exists; for `𝒜 = M₂` one can check by
+hand that it does not.) -/
+
+/-- **206II/101VI at `vNᵒᵖ`**: an effectus-⋄-self-adjoint endomap is
+*contraposed to itself* in the sense of proc.tex **101VI**.  By **207III**
+`diamond_adjunction`, `f^⋄ = f_⋄` says exactly that `f^⋄` is symmetric, and
+`su_diaPull_val` turns `f^⋄` into `⌈f(·)⌉`. -/
+theorem su_contraposed_of_diamondSelfAdjoint {X : WStarCPSU.{u}ᵒᵖ}
+    {g : X ⟶ X} (hg : DiamondSelfAdjoint g) :
+    Theses.A.Proc.Contraposed g.unop.toNCPMap g.unop.toNCPMap := by
+  have hg' : diaPull g = diaPush g := hg
+  have key : ∀ ps pt : X ⟶ effObj (WStarCPSU.{u}ᵒᵖ),
+      (ceilPred (g ≫ ps) ≼ EffectAlgebra.orth pt ↔
+        Theses.A.VN.ceil (g.unop.toNCPMap (suPredVal ps))
+          ≤ 1 - suPredVal pt) := by
+    intro ps pt
+    refine Iff.trans (su_pred_le_iff (ceilPred (g ≫ ps)) (EffectAlgebra.orth pt)) ?_
+    rw [su_ceilPred_val, suPredVal_comp,
+      show suPredVal (EffectAlgebra.orth pt) = 1 - suPredVal pt from
+        suPredVal_orth pt]
+  have hsymm : ∀ ps pt : X ⟶ effObj (WStarCPSU.{u}ᵒᵖ), IsSharp ps → IsSharp pt →
+      (ceilPred (g ≫ ps) ≼ EffectAlgebra.orth pt ↔
+        ceilPred (g ≫ pt) ≼ EffectAlgebra.orth ps) := by
+    intro ps pt hps hpt
+    have h := diamond_adjunction g ⟨ps, hps⟩ ⟨pt, hpt⟩
+    rw [← hg'] at h
+    exact h
+  intro s t hs ht
+  obtain ⟨ps, hps⟩ := su_pred_exists (X := X) hs.nonneg hs.le_one
+  obtain ⟨pt, hpt⟩ := su_pred_exists (X := X) ht.nonneg ht.le_one
+  have hss : IsSharp ps := (su_isSharp_iff ps).mpr (by rw [hps]; exact hs)
+  have hst : IsSharp pt := (su_isSharp_iff pt).mpr (by rw [hpt]; exact ht)
+  have h := hsymm ps pt hss hst
+  rw [key ps pt, key pt ps] at h
+  show Theses.A.VN.ceil (g.unop.toNCPMap s) ≤ 1 - t ↔
+    Theses.A.VN.ceil (g.unop.toNCPMap t) ≤ 1 - s
+  rw [← hps, ← hpt]
+  exact h
+
+/-- **211II at `vNᵒᵖ`**, the *uniqueness* half of `existsUnique_asrt`, under
+the one hypothesis that eff.tex **206II**.4 does not supply: that the
+⋄-self-adjoint square root may be taken **pure**.  With it, `k`'s ncpsu-map
+is ⋄-positive in the sense of proc.tex **103I**, and **105V**
+`positive-map-uniqueness` gives `k = ad_{√a}`. -/
+theorem su_asrt_unique_of_pure_sqrt {X : WStarCPSU.{u}ᵒᵖ}
+    (p : X ⟶ effObj (WStarCPSU.{u}ᵒᵖ)) {k g : X ⟶ X}
+    (hgpure : IsPure g) (hgsa : DiamondSelfAdjoint g) (hkg : k = g ≫ g)
+    (hk1 : k ≫ truth X = p) (x : X.unop.base.carrier) :
+    k.unop.toNCPMap x
+      = CFC.sqrt (suPredVal p) * x * CFC.sqrt (suPredVal p) := by
+  have hdp : Theses.A.Proc.IsDiamondPositive k.unop.toNCPMap := by
+    refine ⟨g.unop.toNCPMap, ⟨su_procPure_of_isPure hgpure,
+      su_contraposed_of_diamondSelfAdjoint hgsa⟩, ?_⟩
+    refine DFunLike.ext _ _ fun y => ?_
+    rw [Theses.A.Proc.ncpComp_apply]
+    exact (suop_congr hkg y).trans (suop_comp_apply g g y)
+  have ha : k.unop.toNCPMap (1 : X.unop.base.carrier) = suPredVal p := by
+    have h := congrArg suPredVal hk1
+    rwa [suPredVal_comp, suPredVal_truth] at h
+  have h := Theses.A.Proc.positive_map_uniqueness
+    (k.unop.toNCPMap (1 : X.unop.base.carrier))
+    (ncpsu_nonneg k.unop zero_le_one) k.unop.toNCPMap hdp rfl x
+  rwa [ha] at h
+
+/-- **211IV at `vNᵒᵖ`** (`vn-is-andthen-eff`, eff.tex:4859) — *everything
+except* the purity of the ⋄-self-adjoint square root.  Both axioms of
+**211II** are proved here: the second outright
+(`su_quot_after_compr_pure`, which is eff.tex:4862's citation of **100III**
+`pure-fundamental`), the first from `su_exists_asrt` and
+`su_asrt_unique_of_pure_sqrt`, given the hypothesis `H` that a
+⋄-self-adjoint `g` whose square is pure has a *pure* ⋄-self-adjoint square
+root with the same square. -/
+theorem su_andThenEffectus_of_pure_sqrt
+    (H : ∀ {X : WStarCPSU.{u}ᵒᵖ} (g : X ⟶ X), DiamondSelfAdjoint g →
+      IsPure (g ≫ g) →
+      ∃ h : X ⟶ X, IsPure h ∧ DiamondSelfAdjoint h ∧ g ≫ g = h ≫ h) :
+    AndThenEffectus (WStarCPSU.{u}ᵒᵖ) :=
+  { ‹DiamondEffectus (WStarCPSU.{u}ᵒᵖ)› with
+    existsUnique_asrt := by
+      intro X p
+      obtain ⟨k, hkpos, hk1, hkval⟩ := su_exists_asrt p
+      refine ⟨k, ⟨hkpos, hk1⟩, ?_⟩
+      rintro k' ⟨⟨hk'pure, g, hgsa, hk'g⟩, hk'1⟩
+      obtain ⟨h, hhpure, hhsa, hgh⟩ :=
+        H g hgsa (by rw [← hk'g]; exact hk'pure)
+      refine suop_hom_ext fun x => ?_
+      rw [hkval x]
+      exact su_asrt_unique_of_pure_sqrt p hhpure hhsa (hk'g.trans hgh) hk'1 x
+    quot_after_compr_pure := fun π ξ hπ hξ => su_quot_after_compr_pure π ξ hπ hξ }
+
+end ProcPurity
+
 section AndThenVN
 
 variable [AndThenEffectus (WStarCPSU.{u}ᵒᵖ)]
@@ -5288,13 +5700,47 @@ theorem diamond_effectus_vn (s : EffectusPartialStructure WStarCPSU.{u}ᵒᵖ) :
 
 /-- **211IV** (`vn-is-andthen-eff`, eff.tex:4859, Examples): `vNᵒᵖ` is an
 &-effectus, with `asrt_a(b) = √a b √a` (as are `CvNᵒᵖ` and `EJAᵒᵖ`, not
-formalized here; these are the only known examples). -/
+formalized here; these are the only known examples).
+
+**Reduced, in session 92, to a single missing step** — see
+`su_andThenEffectus_of_pure_sqrt` and the section header above it.  Both
+axioms of **211II** are proved for `vNᵒᵖ`:
+
+* axiom 2 (`quot_after_compr_pure`) outright, as
+  `su_quot_after_compr_pure`, which is eff.tex:4862's citation of **100III**
+  `pure-fundamental`;
+* axiom 1 (`existsUnique_asrt`): existence is `su_exists_asrt`, and
+  uniqueness is `su_asrt_unique_of_pure_sqrt`, i.e. **105V**
+  `positive-map-uniqueness` reached through the two translations
+  `su_procPure_of_isPure` (eff-purity ⟹ proc-purity, 100I) and
+  `su_contraposed_of_diamondSelfAdjoint` (eff-⋄-self-adjointness ⟹
+  proc-contraposition, 101VI).
+
+What is *not* proved is the hypothesis `H` below: **eff.tex 206II.4 does
+not require the ⋄-self-adjoint square root `g` of a ⋄-positive map to be
+pure, where proc.tex 103I does**, so 105V is a statement about a strictly
+smaller class of maps than 211II.1 quantifies over.  `H` says the two
+classes agree in `vNᵒᵖ`.  It is believed true (it holds for `M₂` by a
+hand computation, and it *must* hold if 211IV does, since for self-adjoint
+non-positive `b` the map `ad_b` is pure and contraposed to itself with
+`ad_b(1) = b²` but `ad_b ≠ ad_{|b|}`), but neither thesis proves it.
+Recorded as **QUESTIONS B15**. -/
 theorem vn_is_andthen_eff (s : EffectusPartialStructure WStarCPSU.{u}ᵒᵖ) :
     letI := s.hasFiniteCoproducts
     letI := s.homPCM
     letI := s.finPAC
     letI := s.effectus
-    AndThenEffectus WStarCPSU.{u}ᵒᵖ := sorry
+    AndThenEffectus WStarCPSU.{u}ᵒᵖ := by
+  have : HasFiniteCoproducts (WStarCPSU.{u}ᵒᵖ) := suHasFiniteCoproducts
+  have hpcm : s.homPCM = suPCM :=
+    effectusPartialStructure_homPCM_unique s vnPartialStructure
+  obtain ⟨hfc, pcm, hfin, E⟩ := s
+  subst hpcm
+  refine @su_andThenEffectus_of_pure_sqrt E (@su_diamondEffectus E) ?_
+  -- **the one missing step**: a ⋄-self-adjoint `g` whose square is pure has
+  -- a *pure* ⋄-self-adjoint square root with the same square (QUESTIONS B15)
+  intro X g hgsa hpure
+  sorry
 
 /-! ## `vNᵒᵖ` is a †-effectus, and has dilations (parsecs 215, 221, 223)
 

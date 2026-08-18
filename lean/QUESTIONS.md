@@ -298,6 +298,61 @@ condition — no `OrderUnit` predicate exists in the file yet, so this is a real
 addition), or drop 179III.2 as out of scope.  Statements are not changed
 without a ruling.
 
+### B15. 206II.4 / 211IV — is the ⋄-self-adjoint square root of a ⋄-positive map required to be **pure**?  (eff.tex vs proc.tex 103I)
+`eff.tex` parsec 2060 point 40 (`diamond-basics`), and parsec 2110 point 40
+(`vn-is-andthen-eff`).
+
+The two theses define ⋄-positivity differently, and 211IV's proof depends on
+the difference.
+
+* **proc.tex 103I** (parsec 1030): `f` is **⋄-self-adjoint** if it is *pure*
+  and contraposed to itself; `f` is **⋄-positive** if `f = gg` for a
+  ⋄-self-adjoint `g`.  So the square root is pure, and `f` is pure with it.
+* **eff.tex 206II**: an endomap is ⋄-self-adjoint if `f^⋄ = f_⋄` — *no*
+  purity; and 206II.4 reads "a **pure** endomap `f` is ⋄-positive if
+  `f = g ∘ g` for some ⋄-self-adjoint `g`".  The word "pure" on `f` is there
+  precisely because `g` is not asked to be pure (under proc.tex's definition
+  it would be redundant).
+
+So the effectus notion is **formally weaker**: the class of ⋄-positive maps it
+describes is a priori larger.  211II.1 asks for a *unique* ⋄-positive
+`asrt_p` with `1 ∘ asrt_p = p`, i.e. uniqueness in the **larger** class, and
+211IV proves it by citing **105V** `positive-map-uniqueness`, which is
+uniqueness in the **smaller** one.  The citation therefore leaves a step.
+
+The step is not cosmetic.  A ⋄-self-adjoint square root that is allowed to be
+impure would break uniqueness outright: for self-adjoint but **not** positive
+`b` in a von Neumann algebra, `ad_b : x ↦ bxb` is pure and contraposed to
+itself (103II.1) with `ad_b(1) = b²`, yet `ad_b ≠ ad_{|b|} = √(b²)(·)√(b²)`.
+What has to be shown is that no ⋄-self-adjoint `g` with `gg = ad_b` exists.
+For `𝒜 = M₂` and `b` invertible this can be checked by hand (`gg` is then an
+order automorphism, so `g` is `ad_c` or `ad_c ∘ transpose` by Kadison;
+contraposition to itself forces `c* = μc` resp. `cᵀ = μc`, and either way
+`b` comes out positive up to sign), but we have found no general argument and
+neither thesis gives one.
+
+**Ruling wanted**, one of:
+
+1. *206II.4 does intend `g` to be pure* (so that eff.tex's ⋄-self-adjoint
+   silently means proc.tex's, and "pure endomap `f`" in 206II.4 is
+   redundant) — then 211IV.1 follows from 105V verbatim, and the fix is to
+   the wording of 206II;
+2. *206II.4 is as printed*, and 211IV needs an extra step, namely: in
+   `vNᵒᵖ`, a ⋄-self-adjoint `g` whose square `gg` is pure has a **pure**
+   ⋄-self-adjoint square root with the same square.  Is there a proof?
+
+**Formalization status** (session 92): everything else in 211IV is proved and
+axiom-clean in `Theses/B/Eff/VNExamples.lean`.  Axiom 2 of 211II is
+`su_quot_after_compr_pure` (via 100III `pure-fundamental`, exactly as
+eff.tex:4862 says); axiom 1's existence half is `su_exists_asrt`; its
+uniqueness half is `su_asrt_unique_of_pure_sqrt`, which is 105V reached
+through the two dictionary lemmas `su_procPure_of_isPure` (effectus purity ⟹
+100I purity) and `su_contraposed_of_diamondSelfAdjoint` (effectus
+⋄-self-adjointness ⟹ 101VI contraposition).  `vn_is_andthen_eff` is
+`su_andThenEffectus_of_pure_sqrt` applied to the one hypothesis above, and
+that hypothesis is the file's only `sorry`.  Under ruling (1) the `sorry`
+disappears immediately.
+
 ### B8. Minor: `bsols.tex`'s `onb1` solution over-assumes
 Its solution assumes self-duality, which neither the exercise nor our statement
 requires.  Harmless; noted for tidiness.

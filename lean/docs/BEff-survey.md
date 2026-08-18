@@ -355,6 +355,45 @@
 > `su_pure_range`, `su_no_coequalizer_of_proj`, `su_exc_purec_equal`,
 > `suFun`, `su_exc_purec_no_biproduct`.  Nothing for ERRATA or QUESTIONS.
 
+> **Session 92.**  **211IV `vn_is_andthen_eff` is reduced to a single
+> missing step, and that step is a *definitional mismatch between the two
+> theses*, not a missing lemma.**  B/Eff stays at **2** `sorry`s
+> (`VNExamples` 1, `EffectAlgebras` 1), 0 errors, but the one in
+> `VNExamples.lean` is no longer "blocked outside B/Eff": `A/Proc`'s **105V**
+> `positive_map_uniqueness` is axiom-clean since session 91 and *is now
+> used*.  ~444 added lines.
+>
+> Both axioms of **211II** are proved and axiom-clean for `vNᵒᵖ`:
+> `su_quot_after_compr_pure` (axiom 2, outright — it is eff.tex:4862's
+> citation of **100III** `pure-fundamental`) and, for axiom 1,
+> `su_exists_asrt` (existence, session 89) together with
+> `su_asrt_unique_of_pure_sqrt` (uniqueness **given a pure square root**).
+> `vn_is_andthen_eff` is now literally `su_andThenEffectus_of_pure_sqrt`
+> applied to one sorried hypothesis.
+>
+> **The mismatch.**  proc.tex **103I** calls `f` ⋄-self-adjoint when it is
+> *pure* and contraposed to itself, and ⋄-positive when `f = gg` for such a
+> `g`; eff.tex **206II**.2 asks only `g^⋄ = g_⋄`, no purity — which is why
+> 206II.4 has to add "a **pure** endomap `f`".  eff.tex's class of
+> ⋄-positive maps is therefore a priori **larger**, 211II.1 asks for
+> uniqueness in it, and 105V proves uniqueness only in the smaller class.
+> The gap is real: `ad_b` for self-adjoint non-positive `b` is pure and
+> contraposed to itself with `ad_b(1) = b²` but is not `ad_{|b|}`, so an
+> impure ⋄-self-adjoint square root would break 211II.1 outright.  What is
+> missing is that no such square root exists (checked by hand for `M₂`).
+> **ERRATA 206II.4/211IV, QUESTIONS B15** — under the ruling "206II.2 does
+> mean pure" the `sorry` disappears without further work.
+>
+> New in `VNExamples.lean` (all axiom-clean), the `A/Proc` dictionary that
+> nothing in the file had: `su_isQuotient_of_isFilter`,
+> `su_isComprehension_of_isCornerOf` and their converses
+> `su_isFilter_of_isQuotient`, `su_isCornerMap_of_isComprehension`
+> (proc.tex 95I/96I in place of dils.tex 169II/169VIII);
+> `su_procPure_of_isPure`, `su_isPure_of_procPure` (100I purity both ways);
+> `su_contraposed_of_diamondSelfAdjoint` (101VI);
+> `su_quot_after_compr_pure`; `su_asrt_unique_of_pure_sqrt`;
+> `su_andThenEffectus_of_pure_sqrt`.
+
 > **Session 84, second worker.**  **`finite_effectMonoid_boolean` (178III.2) is
 > CLOSED**, axiom-clean, in `EffectAlgebras.lean` (new section
 > `FiniteBoolean`).  With `effects_sea` that puts B/Eff at **10** `sorry`s

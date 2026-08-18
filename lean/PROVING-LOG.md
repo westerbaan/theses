@@ -22078,3 +22078,141 @@ afternoon, not a chapter.
   by nothing.
 * Stale "104VII is still `sorry`" remarks in the docstrings of 104IX, 105V,
   105VII and 106I updated.
+
+## Session 92 — `B/Eff`: **211IV `vn_is_andthen_eff` is reduced to one step, and that step is a mismatch between the two theses' definitions of ⋄-positivity** (worker on `Theses/B/Eff/VNExamples.lean`)
+
+The brief was: 105V `positive-map-uniqueness` became axiom-clean in session
+91, so 211IV is unblocked — close it.  105V *is* axiom-clean (re-checked here
+on a scratch copy of `Measurement.lean`: `positive_map_uniqueness`,
+`positive_map_uniqueness_exists` and `pure_fundamental` all report
+`[propext, Classical.choice, Quot.sound]`), and it is now used.  **211IV did
+not close.**  Everything else in it is proved and `#print axioms`-clean; what
+is left is a single hypothesis that neither thesis proves, because eff.tex and
+proc.tex do not define ⋄-positivity the same way.
+
+`VNExamples.lean`: 0 errors, **1 `sorry`** — the same declaration as before,
+`vn_is_andthen_eff`, but now with the missing step isolated *inside* the proof
+rather than standing for the whole theorem.  ~444 added lines.
+
+### 1. The mismatch, exactly
+
+* **proc.tex 103I**: `f` is **⋄-self-adjoint** if it is *pure* and contraposed
+  to itself; `f` is **⋄-positive** if `f = gg` for a ⋄-self-adjoint `g`.  The
+  square root is pure, hence so is `f`.
+* **eff.tex 206II.2/.4**: an endomap is ⋄-self-adjoint if `f^⋄ = f_⋄` —
+  **no purity**; and "a *pure* endomap `f` is ⋄-positive if `f = g ∘ g` for
+  some ⋄-self-adjoint `g`".  The qualifier "pure" on `f` is there precisely
+  because it does not come for free from `g`.
+
+So the effectus's class of ⋄-positive maps is a priori **larger**.  211II.1
+asks for a *unique* ⋄-positive `asrt_p` with `1 ∘ asrt_p = p` — uniqueness in
+the larger class — and eff.tex:4861 proves it by citing 105V, which is
+uniqueness in the smaller one.
+
+**The gap is not cosmetic.**  For self-adjoint but not positive `b`, `ad_b` is
+pure (103II.1) and contraposed to itself, and `ad_b(1) = b²`, yet
+`ad_b ≠ ad_{|b|} = √(b²)(·)√(b²)`.  If a ⋄-self-adjoint square root were
+allowed to be impure and one existed for `ad_b`, 211II.1 would be *false*.
+So what has to be proved is that none exists.  For `𝒜 = M₂` with `b`
+invertible this is a hand computation: `gg = ad_b` is an order automorphism,
+so `g` is one too and is `ad_c` or `ad_c ∘ transpose` (Kadison); `g^⋄ = g_⋄`
+forces `c* = μc` in the first case and `cᵀ = μc` in the second, and either way
+`b` comes out `±` a positive element.  The projective-line form of the same
+computation is pretty: `g^⋄` must be `⊥ ∘ φ` with `φ` an *involution* of `P¹`,
+and the two Möbius square roots of `z ↦ −z/2` give `φ² = −id`, while those of
+`z ↦ z/2` give `φ² = id`.  We found no general argument.
+
+Recorded as **ERRATA 206II.4/211IV** and **QUESTIONS B15**.  Under the ruling
+"206II.2 does mean pure" the `sorry` disappears with no further work; under
+the other ruling, 211IV needs a new theorem.
+
+### 2. What was proved (all axiom-clean, checked on a scratch copy)
+
+The file had no dictionary against `A/Proc` at all — the corner/filter
+translations it carried (`su_isQuotient_of_isFilterFor`,
+`su_isComprehension_of_isCornerFor`) are against **`B/Dils`**'s 169II/169VIII,
+whose universal properties are shaped differently from proc.tex's 95I/96I.
+Both 105V and 100III speak the `A/Proc` language, so the dictionary had to be
+built, in both directions.
+
+* `su_isQuotient_of_isFilter`, `su_isComprehension_of_isCornerOf` — an
+  `A/Proc` filter/unital corner is an effectus quotient/comprehension.  The
+  one real point is that `A/Proc`'s mediating maps are *ncp*, the effectus's
+  are *ncpsu*: the filter's mediating `g` is subunital because
+  `c(1 − g(1)) = c(1) − f(1) ≥ 0` and filters are **bipositive**
+  (98II.3 `filter_basic_3`), the corner's because the corner is unital.
+* `su_isFilter_of_isQuotient`, `su_isCornerMap_of_isComprehension` — the
+  converses.  Two quotients (comprehensions) for the same predicate differ by
+  an isomorphism (197V.2 / 199VII.2); the standard filter `c_b` and standard
+  corner `π_a` of proc.tex 98I give one of each; isomorphisms are filters and
+  unital isomorphisms are corner maps (`isFilter_of_iso`,
+  `isCornerMap_of_iso`), and filters and corners compose (98III, 98VI).
+  Comprehensions are unital by 202VIII `compr_total` + `su_isTotal_iff`.
+* `su_procPure_of_isPure`, `su_isPure_of_procPure` — purity in the two senses
+  agrees.  ⟸ is 100III `pure-fundamental` (which writes a pure map as a filter
+  after a *unital* corner) plus the first pair above; ⟹ is the second pair
+  plus `IsPure.comp`.
+* `su_quot_after_compr_pure` — **axiom 2 of 211II, proved outright**.  This is
+  eff.tex:4862's citation of `pure-fundamental` made good: `ξ ∘ π` has
+  ncpsu-map a corner after a filter, and 100I closes purity under composition.
+* `su_contraposed_of_diamondSelfAdjoint` — an effectus-⋄-self-adjoint endomap
+  is contraposed to itself (101VI).  By 207III `diamond_adjunction`,
+  `f^⋄ = f_⋄` is exactly symmetry of `f^⋄`, and `su_diaPull_val` turns `f^⋄`
+  into `⌈f(·)⌉`; the same route `su_diamondSelfAdjoint_of_symm` takes in the
+  other direction.
+* `su_asrt_unique_of_pure_sqrt` — **uniqueness of `asrt_p`, given a pure
+  square root**: the two bridges make `k`'s ncpsu-map ⋄-positive in proc.tex's
+  sense, and 105V gives `k = ad_{√a}`.
+* `su_andThenEffectus_of_pure_sqrt` — `AndThenEffectus vN_cpsuᵒᵖ` from the
+  single hypothesis `H`: *a ⋄-self-adjoint `g` whose square is pure has a
+  pure ⋄-self-adjoint square root with the same square*.  `vn_is_andthen_eff`
+  is this, transported by the usual `effectusPartialStructure_homPCM_unique`
+  pattern, applied to a sorried `H`.
+
+### 3. Lean notes
+
+* The `WStar.of`/`WStarCPSU.of` wrapper strikes again: `(stdFilter b) 1` and
+  the `1` of `(op (WStarCPSU.of (WStar.of (Corner A ⌈b⌉)))).unop.base.carrier`
+  are definitionally equal and syntactically not, so **`rw` fails inside the
+  subunitality field and inside any `ncpComp` that mixes wrapped and unwrapped
+  carriers**.  Two habits fix it: hoist the subunitality proof into a `have`
+  stated in the *unwrapped* types and pass it as a term (the defeq check at
+  application is happy), and never mention `stdFilter b` again once
+  `ξ₀.unop.toNCPMap = stdFilter b` is available — state the composition
+  `ncpComp ξ₀.unop.toNCPMap θ.unop.toNCPMap` with the wrapped map, so all
+  three types are the same wrapper.
+* `EffectAlgebra.orth p` and `EffectusPartialForm.orth p` are again defeq and
+  not syntactically equal.  `rw [show suPredVal (EffectAlgebra.orth p) = … from
+  suPredVal_orth p]` works; with `EffectusPartialForm.orth` in the `show` it
+  does not.  Likewise a goal `… ≼ orth p` sometimes needs a `show` to be
+  rewritten by `suPredVal_orth`.
+* `SPred X` is a subtype and `(⟨p, hp⟩ : SPred X).1` does not `rw`-match `p`.
+  State auxiliary claims over plain predicates plus an `IsSharp` hypothesis
+  (the shape `su_diamondSelfAdjoint_ad` already uses) and feed
+  `diamond_adjunction` the anonymous constructor, closing with `exact` (defeq)
+  rather than `rw`.
+* `suop_id_apply` already exists in the file — 700 lines *below* where the new
+  block needed it.  It was not moved; the two uses close with
+  `h.trans (su_id_apply _)` instead.
+
+### 4. Divergences from the authors (classified)
+
+1. *Faithful* — the uniqueness half is eff.tex:4861's own argument (105V),
+   and axiom 2 is eff.tex:4862's own citation (100III), both run exactly as
+   printed once the dictionary is in place.
+2. *Different route* — none.
+3. *Mild* — none.
+4. *Our mis-transcription* — none.  `DiamondPositive` in
+   `B/Eff/DiamondAmp.lean` renders eff.tex 206II.4 verbatim, purity of `f`
+   and no purity of `g`; that this differs from `IsDiamondPositive` in
+   `A/Proc/Measurement.lean` is a difference between the *theses*, and the
+   rendering of each is right.  Neither statement was touched.
+5. *Mathlib without reading the author* — none.
+
+### 5. Bookkeeping
+
+* `ERRATA.md`: new row **206II.4 / 211IV** in the `eff.tex` table.
+* `QUESTIONS.md`: new **B15** (numbered 15 because B14 is taken by 179III.2).
+* `docs/why-open.csv`: the `vn_is_andthen_eff` row is now `awaiting-ruling`
+  with no blocker, and carries the session-92 note.
+* `docs/BEff-survey.md`: session-92 block after the session-90 one.
