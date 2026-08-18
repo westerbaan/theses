@@ -171,6 +171,75 @@
 > `vn_has_dilations`/`vn_dilation_order_correspondence` are again the first
 > two to take.  **This layer, not any one of the six, is the next target.**
 
+> **Session 87.**  **The bridge layer is half built and `diamond_effectus_vn`
+> (206III) is CLOSED**, axiom-clean (checked *in situ*).  `VNExamples.lean` is
+> at **6** `sorry`s, 0 errors, 3692 lines (**+530**) — against the ~800–1500
+> costed for the whole layer, so the half that landed came in at about a third
+> of the estimate.  B/Eff is at **7** (`VNExamples` 6, `EffectAlgebras` 1,
+> `StatesPredicates` 0).
+>
+> What landed, all in the `IUnique` section (so it holds for an *arbitrary*
+> `EffectusPartialForm` on `vN_cpsuᵒᵖ`, and the `Wrapper` idiom transports it):
+>
+> * **the predicate–effect dictionary** — `suPredVal p = p(1)`, with
+>   `su_pred_ext` (a predicate is determined by the effect it names),
+>   `su_pred_exists` (every effect is named), `suPredVal_comp`,
+>   `suPredVal_truth`, `suPredVal_orth` (`pᗮ ↦ 1 − a`) and **`su_pred_le_iff`**
+>   (the algebraic order `≼` of the effect algebra *is* the C\*-order).  This
+>   is what every one of the five identifications is stated against, and it is
+>   ~120 lines;
+> * **`su_hasQuotients`** — quotients are **filters** (`dils_stand_filter`);
+> * **`su_hasComprehension`** — comprehensions are **corners**
+>   (`standard_corner_dils`);
+> * **`su_hasImages`** — the image of `f` is its **carrier** `⌈f⌉`
+>   (`Theses.A.VN.carrier`, vn.tex 63I);
+> * **`su_isSharp_iff`** — *the sharp predicates of `vNᵒᵖ` are exactly the
+>   projections* (eff.tex:4195);
+> * **`su_orth_sharp`**, **`su_diamondEffectus`**, and hence **206III**;
+> * **`su_sharpMap_iff`** — a map is sharp iff its ncpsu-map sends projections
+>   to projections.
+>
+> **Three corrections to the session-86 block below, one of them structural.**
+>
+> 1. **Quotients and comprehensions were swapped** in that block, in
+>    `why-open.csv`, and in the brief derived from them.  eff.tex:3686 says
+>    quotients in `op(vN)` are *contractive filters*; eff.tex:3935 says
+>    comprehensions are *corners*.  (dils.tex:6072 and :6140 agree, each
+>    calling the effectus-side notion "the direction-reversed counterpart".)
+>    The Lean proofs confirm it: `IsQuotient p ξ` unfolds to `IsFilterFor
+>    ξ.unop (1 − a)` and `IsComprehension p π` to `IsCornerFor π.unop a`.
+> 2. **The multiplicative domain is *not* the root, and nothing about it is
+>    missing.**  "Sharp maps = nmiu-maps" is **99XII** `sharp_multiplicative`
+>    (proc.tex:905) — *for an ncp-map: multiplicative ⟺ sends projections to
+>    projections ⟺ `⌈f(a)⌉ = f(⌈a⌉)`* — and it is **PROVED** at
+>    `Theses/A/Proc/Measurement.lean:3568`, together with **99II** `gardner`
+>    (:3352) and **100III** `pure_fundamental` (:4058, the pure-maps
+>    identification of eff.tex:4040).  eff.tex:4779 cites `sharp-multiplicative`
+>    explicitly, so this is not even a bare Examples point.  The claim that the
+>    five identifications are "formalized nowhere in the tree" is right only for
+>    the three that live in `B/Eff` and is **wrong for the two that gate
+>    `vn_has_dilations`**.
+> 3. Hence the remaining gate for 221III/223VI is an **import**, not
+>    mathematics: `VNExamples.lean` does not import `Theses.A.Proc.Measurement`.
+>    Adding it is a real change (that file carries 11 `sorry`s of its own,
+>    including 105V) but a mechanical one; with it, `su_sharpMap_iff` +
+>    `gardner` gives *sharp + total ⟹ nmiu* in a few lines.
+>
+> Two traps cost time and are worth recording.  `Quiver.Hom.op (wEffect …)`
+> **diverges** (`whnf` timeout, not slowness) unless its type is ascribed:
+> without it Lean has to solve `?P.base.carrier =?= ULift ℂ`, and `WStar.of` is
+> semireducible.  The `obtain ⟨q, hq⟩ : ∃ q : X ⟶ suI, … := ⟨…, fun _ => rfl⟩`
+> idiom fixes it.  And every equation whose *codomain* is a corner algebra has
+> to be written as an `Eq.trans` chain: `rw` will not cross
+> `cornerSet A p` versus `(Opposite.unop (Opposite.op (WStarCPSU.of (WStar.of
+> (cornerSet A p))))).base.carrier`.
+>
+> Not done, and the natural next increments: **pure maps = filter-after-corner**
+> (needs "every quotient is a filter", i.e. uniqueness-up-to-iso of the
+> universal objects, plus `pure_fundamental`), then `vn_has_dilations` (221III)
+> and `vn_dilation_order_correspondence` (223VI).  Nothing for ERRATA (no defect
+> in a *statement* — the swap was a defect in **our** record); no new QUESTIONS.
+
 > **Session 84, second worker.**  **`finite_effectMonoid_boolean` (178III.2) is
 > CLOSED**, axiom-clean, in `EffectAlgebras.lean` (new section
 > `FiniteBoolean`).  With `effects_sea` that puts B/Eff at **10** `sorry`s

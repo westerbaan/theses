@@ -2784,6 +2784,529 @@ theorem su_real_separating :
     show ((s (θ.hom ≫ (Quiver.Hom.op (wEffect h0 h1) ≫ θ.inv)) : ℝ)) = (r : ℝ)
     exact_mod_cast h3
 
+/-! ### The bridge layer: predicates are effects (parsecs 197–203)
+
+Everything below 190III in this file — the ⋄-effectus of 206III, the sharp
+maps of 210III, the dilations of 221III — needs the *concrete*
+identification of the effectus notions in `vN_cpsuᵒᵖ`, and eff.tex gives
+these as bare `Examples` with no proof:
+
+| eff.tex | notion | in `vNᵒᵖ` |
+|---|---|---|
+| 3684 | quotients | **filters** (dils.tex 169VIII) |
+| 3934 | comprehensions | **corners** (dils.tex 169II) |
+| 4195 | sharp predicates | projections |
+| 4040 | pure maps | filters after corners |
+| 4777 | sharp maps | nmiu-maps |
+
+⚠️ Note the pairing: **quotients are filters and comprehensions are
+corners**, not the other way round.  (eff.tex:3686 and eff.tex:3935; the
+Remarks at dils.tex:6072 and dils.tex:6140 say the same, each calling the
+effectus-side notion "the direction-reversed counterpart".  The record in
+`docs/BEff-survey.md` and `PROVING-LOG.md` had the two swapped.)
+
+The first step is the dictionary itself.  A predicate `p : X ⟶ I` is an
+ncpsu-map `I.unop → X.unop`, and `I.unop ≅ ℂ` by `su_effObj_iso`, so `p` is
+determined by, and may be chosen freely as, the effect `p(1)` of `X.unop`.
+`suPredVal` is that effect, and `su_pred_ext`/`su_pred_exists` are the two
+halves of the bijection.  Composition, truth and orthocomplement are then
+computed by `su_predVal_comp`, `su_predVal_truth` and `su_predVal_orth`, and
+the algebraic order `≼` of the effect algebra is the C\*-order
+(`su_pred_le_iff`). -/
+
+/-- The data of `su_effObj_iso` in the form the bridge uses: an ncpsu-map
+`μ : I.unop → ℂᵤ` with `μ(1) = 1`, `μ(a)·1 = a`, and `1_X(1) = 1` for every
+`X`.  (This is exactly what the proofs of `su_isTotal_iff` and
+`su_real_separating` extract from `θ` before they start.) -/
+private theorem su_effObj_data :
+    ∃ μ : Theses.NCPSUMap (effCarrier.{u}) ((Opposite.unop (suI.{u})).base.carrier),
+      (∀ a : effCarrier, (μ.toNCPMap a).down • (1 : effCarrier) = a) ∧
+        (∀ X : WStarCPSU.{u}ᵒᵖ,
+          (truth X).unop.toNCPMap (1 : effCarrier) = (1 : X.unop.base.carrier)) ∧
+        ∀ (X : WStarCPSU.{u}ᵒᵖ) (a : X.unop.base.carrier), 0 ≤ a → a ≤ 1 →
+          ∃ p : X ⟶ effObj (WStarCPSU.{u}ᵒᵖ),
+            p.unop.toNCPMap (1 : effCarrier) = a := by
+  obtain ⟨θ, hθ⟩ := su_effObj_iso.{u}
+  have hhom : θ.hom = suOne (effObj (WStarCPSU.{u}ᵒᵖ)) := by
+    have h := hθ (effObj (WStarCPSU.{u}ᵒᵖ))
+    rwa [one_m_is_id, Category.id_comp] at h
+  have hhomap : ∀ z : ULift.{u} ℂ,
+      θ.hom.unop.toNCPMap z = z.down • (1 : effCarrier) := by
+    intro z
+    rw [hhom]
+    rfl
+  -- `μ(1) = 1`
+  have hinv1 : θ.inv.unop.toNCPMap (1 : effCarrier) = (1 : ULift.{u} ℂ) := by
+    have h : (θ.inv ≫ θ.hom).unop.toNCPMap
+          (1 : (Opposite.unop (suI.{u})).base.carrier)
+        = (𝟙 (suI.{u}) : suI.{u} ⟶ suI.{u}).unop.toNCPMap
+          (1 : (Opposite.unop (suI.{u})).base.carrier) :=
+      congrArg (fun k : suI.{u} ⟶ suI.{u} =>
+        k.unop.toNCPMap (1 : (Opposite.unop (suI.{u})).base.carrier)) θ.inv_hom_id
+    rw [suop_comp_apply, hhom] at h
+    refine Eq.trans ?_ (su_id_apply (X := (suI.{u}).unop) 1)
+    refine Eq.trans (congrArg θ.inv.unop.toNCPMap ?_) h
+    show (1 : effCarrier) = (1 : ULift.{u} ℂ).down • (1 : effCarrier)
+    rw [Theses.A.VN.CU.down_one, one_smul]
+  -- `μ(a)·1 = a`, from `θ.hom ≫ θ.inv = 𝟙`
+  have hscal : ∀ a : effCarrier, (θ.inv.unop.toNCPMap a).down • (1 : effCarrier) = a := by
+    intro a
+    have h : (θ.hom ≫ θ.inv).unop.toNCPMap a
+        = (𝟙 (effObj (WStarCPSU.{u}ᵒᵖ))).unop.toNCPMap a :=
+      congrArg (fun k : effObj (WStarCPSU.{u}ᵒᵖ) ⟶ effObj (WStarCPSU.{u}ᵒᵖ) =>
+        k.unop.toNCPMap a) θ.hom_inv_id
+    rw [suop_comp_apply] at h
+    -- `rw [hhomap]` cannot cross `(Opposite.unop suI).base.carrier` vs `ULift ℂ`
+    exact Eq.trans (hhomap (θ.inv.unop.toNCPMap a)).symm
+      (h.trans (su_id_apply (X := (effObj (WStarCPSU.{u}ᵒᵖ)).unop) a))
+  -- `1_X(1) = 1`
+  have hone : ∀ X : WStarCPSU.{u}ᵒᵖ,
+      (truth X).unop.toNCPMap (1 : effCarrier) = (1 : X.unop.base.carrier) := by
+    intro X
+    have e : truth X = suOne X ≫ θ.inv := by
+      rw [← hθ X, Category.assoc, θ.hom_inv_id, Category.comp_id]
+    have h : (truth X).unop.toNCPMap (1 : effCarrier)
+        = (θ.inv.unop.toNCPMap (1 : effCarrier)).down • (1 : X.unop.base.carrier) := by
+      rw [e, suop_comp_apply]
+      rfl
+    rw [h, hinv1, Theses.A.VN.CU.down_one, one_smul]
+  -- every effect is named by a predicate
+  have hex : ∀ (X : WStarCPSU.{u}ᵒᵖ) (a : X.unop.base.carrier), 0 ≤ a → a ≤ 1 →
+      ∃ p : X ⟶ effObj (WStarCPSU.{u}ᵒᵖ),
+        p.unop.toNCPMap (1 : effCarrier) = a := by
+    intro X a h0 h1
+    -- the ascription `X ⟶ suI` is essential: without it `Quiver.Hom.op` has to
+    -- solve `?P.base.carrier =?= ULift ℂ`, which diverges (`WStar.of` is
+    -- semireducible)
+    obtain ⟨q, hq⟩ : ∃ q : X ⟶ suI.{u},
+        ∀ z : (Opposite.unop (suI.{u})).base.carrier,
+          q.unop.toNCPMap z = z.down • a :=
+      ⟨Quiver.Hom.op (wEffect h0 h1), fun _ => rfl⟩
+    refine ⟨q ≫ θ.inv, ?_⟩
+    refine Eq.trans (suop_comp_apply q θ.inv (1 : effCarrier)) ?_
+    rw [hq, hinv1, Theses.A.VN.CU.down_one, one_smul]
+  exact ⟨θ.inv.unop, hscal, hone, hex⟩
+
+/-- **The predicate–effect dictionary.**  The effect of `X.unop` named by a
+predicate `p` on `X`, namely `p(1)`. -/
+noncomputable def suPredVal {X : WStarCPSU.{u}ᵒᵖ}
+    (p : X ⟶ effObj (WStarCPSU.{u}ᵒᵖ)) : X.unop.base.carrier :=
+  p.unop.toNCPMap (1 : effCarrier)
+
+theorem suPredVal_def {X : WStarCPSU.{u}ᵒᵖ} (p : X ⟶ effObj (WStarCPSU.{u}ᵒᵖ)) :
+    suPredVal p = p.unop.toNCPMap (1 : effCarrier) := rfl
+
+theorem suPredVal_nonneg {X : WStarCPSU.{u}ᵒᵖ}
+    (p : X ⟶ effObj (WStarCPSU.{u}ᵒᵖ)) : 0 ≤ suPredVal p :=
+  ncpsu_one_nonneg _
+
+theorem suPredVal_le_one {X : WStarCPSU.{u}ᵒᵖ}
+    (p : X ⟶ effObj (WStarCPSU.{u}ᵒᵖ)) : suPredVal p ≤ 1 :=
+  p.unop.subunital'
+
+/-- Composition: `suPredVal (f ≫ p) = f(suPredVal p)`. -/
+theorem suPredVal_comp {X Y : WStarCPSU.{u}ᵒᵖ} (f : X ⟶ Y)
+    (p : Y ⟶ effObj (WStarCPSU.{u}ᵒᵖ)) :
+    suPredVal (f ≫ p) = f.unop.toNCPMap (suPredVal p) :=
+  suop_comp_apply f p (1 : effCarrier)
+
+/-- The truth predicate names `1`. -/
+theorem suPredVal_truth (X : WStarCPSU.{u}ᵒᵖ) :
+    suPredVal (truth X) = (1 : X.unop.base.carrier) := by
+  obtain ⟨μ, -, hone, -⟩ := su_effObj_data.{u}
+  exact hone X
+
+/-- A predicate is determined by the effect it names. -/
+theorem su_pred_ext {X : WStarCPSU.{u}ᵒᵖ}
+    {p q : X ⟶ effObj (WStarCPSU.{u}ᵒᵖ)} (h : suPredVal p = suPredVal q) :
+    p = q := by
+  obtain ⟨μ, hscal, -, -⟩ := su_effObj_data.{u}
+  have key : ∀ (k : X ⟶ effObj (WStarCPSU.{u}ᵒᵖ)) (a : effCarrier),
+      k.unop.toNCPMap a = (μ.toNCPMap a).down • suPredVal k := by
+    intro k a
+    exact Eq.trans (congrArg k.unop.toNCPMap (hscal a).symm)
+      (map_smul (ncpLin k.unop.toNCPMap) _ _)
+  exact suop_hom_ext fun a => by rw [key p a, key q a, h]
+
+/-- Every effect of `X.unop` is named by a predicate on `X`. -/
+theorem su_pred_exists {X : WStarCPSU.{u}ᵒᵖ} {a : X.unop.base.carrier}
+    (h0 : 0 ≤ a) (h1 : a ≤ 1) :
+    ∃ p : X ⟶ effObj (WStarCPSU.{u}ᵒᵖ), suPredVal p = a := by
+  obtain ⟨μ, -, -, hex⟩ := su_effObj_data.{u}
+  exact hex X a h0 h1
+
+/-- The orthocomplement of predicates is `a ↦ 1 − a`. -/
+theorem suPredVal_orth {X : WStarCPSU.{u}ᵒᵖ}
+    (p : X ⟶ effObj (WStarCPSU.{u}ᵒᵖ)) :
+    suPredVal (EffectusPartialForm.orth p) = 1 - suPredVal p := by
+  have h : suPredVal p + suPredVal (EffectusPartialForm.orth p)
+      = suPredVal (truth X) := su_pred_ovee X p 1
+  rw [suPredVal_truth X] at h
+  exact eq_sub_of_add_eq' h
+
+/-- The algebraic order of the effect algebra of predicates is the C\*-order
+of the effects. -/
+theorem su_pred_le_iff {X : WStarCPSU.{u}ᵒᵖ}
+    (p q : X ⟶ effObj (WStarCPSU.{u}ᵒᵖ)) :
+    p ≼ q ↔ suPredVal p ≤ suPredVal q := by
+  constructor
+  · rintro ⟨r, hr, rfl⟩
+    have hval : suPredVal (ovee p r hr) = suPredVal p + suPredVal r := rfl
+    rw [hval]
+    exact le_add_of_nonneg_right (suPredVal_nonneg r)
+  · intro hle
+    obtain ⟨r, hr⟩ : ∃ r : X ⟶ effObj (WStarCPSU.{u}ᵒᵖ),
+        suPredVal r = suPredVal q - suPredVal p :=
+      su_pred_exists (sub_nonneg.mpr hle)
+        (le_trans (sub_le_self _ (suPredVal_nonneg p)) (suPredVal_le_one q))
+    have hperp : Perp p r := by
+      show suPredVal p + suPredVal r ≤ 1
+      rw [hr, add_sub_cancel]
+      exact suPredVal_le_one q
+    refine ⟨r, hperp, su_pred_ext ?_⟩
+    show suPredVal p + suPredVal r = suPredVal q
+    rw [hr, add_sub_cancel]
+
+/-! ### Images are carriers (eff.tex:4080 at `vNᵒᵖ`)
+
+The image of `f : X ⟶ Y` is the least predicate `q` on `Y` with
+`f(q) = f(1)`, i.e. the least effect `q` of `Y.unop` with `f(1 − q) = 0`.
+That is **not quite** the carrier `⌈f⌉` of vn.tex 63I, which is the least
+such *projection*; but the two agree, because `f(b) = 0` for an effect `b`
+forces `f(⌈b⌉) = 0` (`ncp_ceil`, **60V**), and `b ≤ ⌈b⌉`.  So the image
+exists and is a projection — which is the first half of "sharp predicates
+are projections". -/
+
+/-- The **carrier** `⌈f⌉` of a morphism of `vN_cpsuᵒᵖ`: the least projection
+`z` of `Y.unop` with `f(1 − z) = 0` (vn.tex 63I, `Theses.A.VN.carrier`). -/
+private noncomputable def suCarrier {X Y : WStarCPSU.{u}ᵒᵖ} (f : X ⟶ Y) :
+    Y.unop.base.carrier :=
+  Theses.A.VN.carrier (Theses.A.VN.ncpPositive f.unop.toNCPMap)
+    f.unop.toNCPMap.preservesDirSups'
+
+private theorem su_carrier_spec {X Y : WStarCPSU.{u}ᵒᵖ} (f : X ⟶ Y) :
+    IsStarProjection (suCarrier f) ∧
+      f.unop.toNCPMap (1 - suCarrier f) = 0 ∧
+      ∀ q : Y.unop.base.carrier, IsStarProjection q →
+        f.unop.toNCPMap (1 - q) = 0 → suCarrier f ≤ q :=
+  Theses.A.VN.carrier_spec (Theses.A.VN.ncpPositive f.unop.toNCPMap)
+    f.unop.toNCPMap.preservesDirSups'
+
+/-- `f(b) = f(1)` for an effect `b` forces `⌈f⌉ ≤ b`: the carrier is least
+not only among projections but among *effects*, by `ncp_ceil`. -/
+private theorem su_carrier_le {X Y : WStarCPSU.{u}ᵒᵖ} (f : X ⟶ Y)
+    {b : Y.unop.base.carrier} (h0 : 0 ≤ b) (h1 : b ≤ 1)
+    (heq : f.unop.toNCPMap b = f.unop.toNCPMap 1) : suCarrier f ≤ b := by
+  obtain ⟨-, -, hleast⟩ := su_carrier_spec f
+  have hb0 : (0 : Y.unop.base.carrier) ≤ 1 - b := sub_nonneg.mpr h1
+  -- `f(1 − b) = 0`
+  have hzero : f.unop.toNCPMap (1 - b) = 0 := by
+    have hlin : f.unop.toNCPMap (1 - b)
+        = f.unop.toNCPMap 1 - f.unop.toNCPMap b :=
+      map_sub (ncpLin f.unop.toNCPMap) 1 b
+    rw [hlin, heq, sub_self]
+  -- hence `f(⌈1 − b⌉) = 0`
+  have hceil : f.unop.toNCPMap (Theses.A.VN.ceil (1 - b)) = 0 := by
+    have hnc := Theses.A.VN.ncp_ceil (Theses.A.VN.ncpPositive f.unop.toNCPMap)
+      f.unop.toNCPMap.preservesDirSups' (1 - b) hb0
+    have hl : Theses.A.VN.ceil (f.unop.toNCPMap (1 - b)) = 0 := by
+      rw [hzero]; exact Theses.A.VN.ceil_zero
+    have hnn : (0 : X.unop.base.carrier)
+        ≤ f.unop.toNCPMap (Theses.A.VN.ceil (1 - b)) :=
+      ncpsu_nonneg f.unop (Theses.A.VN.ceil_spec hb0).1.nonneg
+    exact (Theses.A.VN.ceil_basic_3 _ hnn).mpr (hl ▸ hnc).symm
+  -- so `⌈f⌉ ≤ 1 − ⌈1 − b⌉ ≤ b`
+  have hle := hleast (1 - Theses.A.VN.ceil (1 - b))
+    (Theses.A.VN.ceil_spec hb0).1.one_sub
+    (by rw [sub_sub_cancel]; exact hceil)
+  refine le_trans hle ?_
+  have hbc : (1 : Y.unop.base.carrier) - b ≤ Theses.A.VN.ceil (1 - b) := by
+    refine (Theses.A.VN.le_proj_iff ⟨hb0, by simpa using h0⟩
+      (Theses.A.VN.ceil_spec hb0).1).mpr ?_
+    rw [mul_sub, mul_one, (Theses.A.VN.ceil_spec hb0).2.1, sub_self]
+  have := sub_le_sub_left hbc (1 : Y.unop.base.carrier)
+  simpa using this
+
+/-! ### Comprehensions are corners, quotients are filters (eff.tex:3934, 3684)
+
+With the dictionary in hand the two universal properties are *literally* the
+ones of `Theses/B/Dils/Pure.lean`, read in the opposite category:
+
+* a **comprehension** for `p` on `X` is a map `π : W ⟶ X`, i.e. an ncpsu-map
+  `h : X.unop → W.unop`, with `h(a) = h(1)` for `a = suPredVal p`, universal
+  among ncpsu-maps out of `X.unop` with that property — that is exactly
+  `IsCornerFor h a` (dils.tex 169II), except that `IsCornerFor` quantifies
+  over all *ncp*-maps `f`.  That is harmless in both directions: the standard
+  corner `h_a : A → ⌊a⌋A⌊a⌋` is **unital** (its unit is `⌊a⌋ = h_a(1)`), so
+  the mediating map `f'` of a subunital `f` is again subunital, and
+  uniqueness among ncp-maps is stronger than uniqueness among ncpsu-maps.
+* a **quotient** for `p` on `X` is a map `ξ : X ⟶ Q`, i.e. an ncpsu-map
+  `c : Q.unop → X.unop`, with `c(1) ≼ pᗮ`, universal among ncpsu-maps into
+  `X.unop` bounded by `pᗮ` — that is exactly `IsFilterFor c (1 − a)`
+  (dils.tex 169VIII, in the form repaired under QUESTIONS **B11**, whose
+  mediating map is *subunital*: precisely what a morphism of this category
+  is).
+
+Both are `Prop`-valued classes with existential fields, so no canonical
+choice of corner or filter has to be made. -/
+
+/-- **199II at `vNᵒᵖ`** (eff.tex:3934, Examples): `vN_cpsuᵒᵖ` **has
+comprehension**, and a comprehension for the effect `a` is the standard
+corner `h_a : 𝒜 → ⌊a⌋𝒜⌊a⌋`, `b ↦ ⌊a⌋b⌊a⌋` (dils.tex 169IV
+`standard_corner_dils`). -/
+private theorem su_exists_corner {X : WStarCPSU.{u}ᵒᵖ}
+    (p : X ⟶ effObj (WStarCPSU.{u}ᵒᵖ)) :
+    ∃ (W : WStarCPSU.{u}ᵒᵖ) (π : W ⟶ X), IsComprehension p π ∧
+      suCarrier π = Theses.A.VN.floor (suPredVal p) := by
+    obtain ⟨h, hval, -, hcorner, huniv⟩ := Theses.B.Dils.standard_corner_dils
+      (A := X.unop.base.carrier) (suPredVal p)
+      ⟨suPredVal_nonneg p, suPredVal_le_one p⟩
+    letI : Theses.VonNeumannAlgebra
+        (Theses.B.Dils.cornerSet X.unop.base.carrier
+          (Theses.A.VN.floor (suPredVal p))) :=
+      Theses.B.Dils.cornerSet_vonNeumannAlgebra _ _
+    -- the standard corner is **unital** into `⌊a⌋𝒜⌊a⌋`, whose unit is `⌊a⌋`
+    have hunital : h (1 : X.unop.base.carrier) = 1 := by
+      refine Theses.B.Dils.cornerSet.val_injective ?_
+      rw [hval, Theses.B.Dils.cornerSet.val_one, mul_one]
+      exact (Theses.B.Dils.cornerSet.proj
+        (Theses.A.VN.floor (suPredVal p))).isIdempotentElem.eq
+    obtain ⟨π, hπ⟩ : ∃ π : Opposite.op (WStarCPSU.of (WStar.of
+          (Theses.B.Dils.cornerSet X.unop.base.carrier
+            (Theses.A.VN.floor (suPredVal p))))) ⟶ X,
+        ∀ x : X.unop.base.carrier, π.unop.toNCPMap x = h x :=
+      ⟨Quiver.Hom.op ⟨h, le_of_eq hunital⟩, fun _ => rfl⟩
+    have hproj : IsStarProjection (Theses.A.VN.floor (suPredVal p)) :=
+      Theses.B.Dils.cornerSet.proj (Theses.A.VN.floor (suPredVal p))
+    refine ⟨_, π, ⟨?_, ?_⟩, ?_⟩
+    · -- `π ∘ p = π ∘ 1`
+      refine su_pred_ext (Eq.trans (suPredVal_comp π p)
+        (Eq.trans ?_ (suPredVal_comp π (truth X)).symm))
+      rw [suPredVal_truth X, hπ, hπ]
+      exact hcorner
+    · intro Z g hg
+      -- `g(a) = g(1)`
+      have hga : g.unop.toNCPMap (suPredVal p) = g.unop.toNCPMap 1 := by
+        have h1 := congrArg suPredVal hg
+        rwa [suPredVal_comp, suPredVal_comp, suPredVal_truth X] at h1
+      obtain ⟨f', hf', huniq⟩ := huniv Z.unop.base.carrier _ _ _
+        g.unop.toNCPMap hga
+      have hsub : Theses.Subunital ⇑f' := by
+        show f' 1 ≤ 1
+        have h1 : f' (1 : Theses.B.Dils.cornerSet X.unop.base.carrier
+            (Theses.A.VN.floor (suPredVal p))) = g.unop.toNCPMap 1 :=
+          (congrArg (fun z => f' z) hunital.symm).trans (hf' 1)
+        rw [h1]
+        exact g.unop.subunital'
+      obtain ⟨g', hg'⟩ : ∃ g' : Z ⟶ Opposite.op (WStarCPSU.of (WStar.of
+            (Theses.B.Dils.cornerSet X.unop.base.carrier
+              (Theses.A.VN.floor (suPredVal p))))),
+          ∀ c, g'.unop.toNCPMap c = f' c :=
+        ⟨Quiver.Hom.op ⟨f', hsub⟩, fun _ => rfl⟩
+      refine ⟨g', suop_hom_ext fun x => ?_, fun k hk => ?_⟩
+      · exact (suop_comp_apply g' π x).trans
+          ((congrArg g'.unop.toNCPMap (hπ x)).trans ((hg' (h x)).trans (hf' x)))
+      · have hk' : ∀ x, k.unop.toNCPMap (h x) = g.unop.toNCPMap x := by
+          intro x
+          refine Eq.trans (congrArg k.unop.toNCPMap (hπ x)).symm ?_
+          exact (suop_comp_apply k π x).symm.trans
+            (congrArg (fun m : Z ⟶ X => m.unop.toNCPMap x) hk)
+        have hkf : k.unop.toNCPMap = f' := huniq k.unop.toNCPMap hk'
+        exact suop_hom_ext fun c =>
+          (congrArg (fun m => m c) hkf).trans (hg' c).symm
+    · -- the carrier of the standard corner is `⌊a⌋`
+      refine Theses.A.VN.carrier_eq _ _ hproj ?_ ?_
+      · -- `⌊a⌋(1 − ⌊a⌋)⌊a⌋ = 0`
+        have hz : π.unop.toNCPMap (1 - Theses.A.VN.floor (suPredVal p)) = 0 := by
+          refine Theses.B.Dils.cornerSet.val_injective ?_
+          rw [hπ, hval, mul_sub, mul_one, hproj.isIdempotentElem.eq, sub_self,
+            zero_mul]
+          rfl
+        exact hz
+      · intro q hq hq0
+        -- `⌊a⌋(1 − q)⌊a⌋ = 0` forces `√(1−q)⌊a⌋ = 0`, hence `⌊a⌋ ≤ q`
+        have hq0'' : π.unop.toNCPMap (1 - q) = 0 := hq0
+        have hq0' : Theses.A.VN.floor (suPredVal p) * (1 - q)
+            * Theses.A.VN.floor (suPredVal p) = 0 := by
+          rw [← hval, ← hπ, hq0'']
+          rfl
+        have hqnn : (0 : X.unop.base.carrier) ≤ 1 - q := sub_nonneg.mpr hq.le_one
+        have hsq : star (CFC.sqrt (1 - q) * Theses.A.VN.floor (suPredVal p))
+            * (CFC.sqrt (1 - q) * Theses.A.VN.floor (suPredVal p)) = 0 := by
+          rw [star_mul, hproj.isSelfAdjoint.star_eq,
+            (IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg (1 - q))).star_eq]
+          calc Theses.A.VN.floor (suPredVal p) * CFC.sqrt (1 - q)
+                * (CFC.sqrt (1 - q) * Theses.A.VN.floor (suPredVal p))
+              = Theses.A.VN.floor (suPredVal p)
+                  * (CFC.sqrt (1 - q) * CFC.sqrt (1 - q))
+                  * Theses.A.VN.floor (suPredVal p) := by noncomm_ring
+            _ = 0 := by rw [CFC.sqrt_mul_sqrt_self _ hqnn]; exact hq0'
+        have h1 : CFC.sqrt (1 - q) * Theses.A.VN.floor (suPredVal p) = 0 :=
+          (CStarRing.star_mul_self_eq_zero_iff _).mp hsq
+        have h2 : (1 - q) * Theses.A.VN.floor (suPredVal p) = 0 :=
+          (Theses.A.VN.sqrt_mul_eq_zero_iff hqnn _).mp h1
+        have h3 : Theses.A.VN.floor (suPredVal p) * (1 - q) = 0 := by
+          have h4 := congrArg star h2
+          rwa [star_mul, hproj.isSelfAdjoint.star_eq,
+            hq.one_sub.isSelfAdjoint.star_eq, star_zero] at h4
+        exact (Theses.A.VN.le_proj_iff ⟨hproj.nonneg, hproj.le_one⟩ hq).mpr h3
+
+/-- **199II at `vNᵒᵖ`** (eff.tex:3934, Examples): `vN_cpsuᵒᵖ` **has
+comprehension**, and a comprehension for the effect `a` is the standard
+corner `h_a : 𝒜 → ⌊a⌋𝒜⌊a⌋`, `b ↦ ⌊a⌋b⌊a⌋` (dils.tex 169IV
+`standard_corner_dils`). -/
+theorem su_hasComprehension : HasComprehension (WStarCPSU.{u}ᵒᵖ) :=
+  ⟨fun p => by
+    obtain ⟨W, π, hπ, -⟩ := su_exists_corner p
+    exact ⟨W, π, hπ⟩⟩
+
+/-- **197II at `vNᵒᵖ`** (eff.tex:3684, Examples): `vN_cpsuᵒᵖ` **has
+quotients**, and a quotient for the effect `a` is the standard filter
+`c_{aᗮ} : ⌈aᗮ⌉𝒜⌈aᗮ⌉ → 𝒜`, `b ↦ √(aᗮ) b √(aᗮ)` (dils.tex 169X
+`dils_stand_filter`). -/
+theorem su_hasQuotients : HasQuotients (WStarCPSU.{u}ᵒᵖ) where
+  quot {X} p := by
+    have hb0 : (0 : X.unop.base.carrier) ≤ suPredVal (EffectusPartialForm.orth p) :=
+      suPredVal_nonneg _
+    obtain ⟨c, hcval, -, hc1, huniv⟩ := Theses.B.Dils.dils_stand_filter
+      (B := X.unop.base.carrier) (suPredVal (EffectusPartialForm.orth p)) hb0
+    letI : Theses.VonNeumannAlgebra
+        (Theses.B.Dils.cornerSet X.unop.base.carrier
+          (Theses.A.VN.ceil (suPredVal (EffectusPartialForm.orth p)))) :=
+      Theses.B.Dils.cornerSet_vonNeumannAlgebra _ _
+    obtain ⟨ξ, hξ⟩ : ∃ ξ : X ⟶ Opposite.op (WStarCPSU.of (WStar.of
+          (Theses.B.Dils.cornerSet X.unop.base.carrier
+            (Theses.A.VN.ceil (suPredVal (EffectusPartialForm.orth p)))))),
+        ∀ x, ξ.unop.toNCPMap x = c x :=
+      ⟨Quiver.Hom.op ⟨c, le_trans hc1 (suPredVal_le_one _)⟩, fun _ => rfl⟩
+    refine ⟨_, ξ, ?_, ?_⟩
+    · -- `1 ∘ ξ ≼ pᗮ`
+      refine (su_pred_le_iff _ _).mpr ?_
+      rw [suPredVal_comp, hξ, suPredVal_truth]
+      exact hc1
+    · intro Y f hf
+      have hf1 : f.unop.toNCPMap (1 : Y.unop.base.carrier)
+          ≤ suPredVal (EffectusPartialForm.orth p) := by
+        have h1 := (su_pred_le_iff (f ≫ truth Y) (EffectusPartialForm.orth p)).mp hf
+        rwa [suPredVal_comp, suPredVal_truth] at h1
+      obtain ⟨f', hf', huniq⟩ := huniv Y.unop.base.carrier _ _ _
+        f.unop.toNCPMap hf1
+      obtain ⟨g, hg⟩ : ∃ g : Opposite.op (WStarCPSU.of (WStar.of
+            (Theses.B.Dils.cornerSet X.unop.base.carrier
+              (Theses.A.VN.ceil (suPredVal (EffectusPartialForm.orth p)))))) ⟶ Y,
+          ∀ y, g.unop.toNCPMap y = f'.toNCPMap y :=
+        ⟨Quiver.Hom.op f', fun _ => rfl⟩
+      refine ⟨g, suop_hom_ext fun y => ?_, fun k hk => ?_⟩
+      · exact (suop_comp_apply ξ g y).trans
+          ((congrArg (fun z => ξ.unop.toNCPMap z) (hg y)).trans
+            ((hξ (f'.toNCPMap y)).trans (hf' y)))
+      · have hk' : ∀ y, c (k.unop.toNCPMap y) = f.unop.toNCPMap y := by
+          intro y
+          refine Eq.trans (hξ (k.unop.toNCPMap y)).symm ?_
+          exact (suop_comp_apply ξ k y).symm.trans
+            (congrArg (fun m : X ⟶ Y => m.unop.toNCPMap y) hk)
+        have hkf : k.unop = f' := huniq k.unop hk'
+        exact suop_hom_ext fun y =>
+          (congrArg (fun m : Theses.NCPSUMap Y.unop.base.carrier _ =>
+            m.toNCPMap y) hkf).trans (hg y).symm
+
+/-- **202I at `vNᵒᵖ`** (eff.tex:4080): a predicate is *the* image of `f`
+exactly when it names the carrier `⌈f⌉`. -/
+private theorem su_isImage_carrier {X Y : WStarCPSU.{u}ᵒᵖ} (f : X ⟶ Y)
+    (q : Y ⟶ effObj (WStarCPSU.{u}ᵒᵖ)) (hq : suPredVal q = suCarrier f) :
+    IsImage f q := by
+  obtain ⟨-, hzero, -⟩ := su_carrier_spec f
+  refine ⟨?_, ?_⟩
+  · refine su_pred_ext (Eq.trans (suPredVal_comp f q)
+      (Eq.trans ?_ (suPredVal_comp f (truth Y)).symm))
+    rw [suPredVal_truth Y, hq]
+    have hlin : f.unop.toNCPMap (1 - suCarrier f)
+        = f.unop.toNCPMap 1 - f.unop.toNCPMap (suCarrier f) :=
+      map_sub (ncpLin f.unop.toNCPMap) 1 (suCarrier f)
+    rw [hlin] at hzero
+    exact (sub_eq_zero.mp hzero).symm
+  · intro r hr
+    refine (su_pred_le_iff q r).mpr ?_
+    rw [hq]
+    refine su_carrier_le f (suPredVal_nonneg r) (suPredVal_le_one r) ?_
+    have h1 := congrArg suPredVal hr
+    rwa [suPredVal_comp, suPredVal_comp, suPredVal_truth Y] at h1
+
+/-- **202I at `vNᵒᵖ`** (eff.tex:4080, Definition): `vN_cpsuᵒᵖ` **has
+images**, and `im f` is the carrier `⌈f⌉` of vn.tex 63I. -/
+theorem su_hasImages : HasImages (WStarCPSU.{u}ᵒᵖ) where
+  im {X Y} f := by
+    obtain ⟨hproj, -, -⟩ := su_carrier_spec f
+    obtain ⟨q, hq⟩ := su_pred_exists (X := Y) hproj.nonneg hproj.le_one
+    exact ⟨q, su_isImage_carrier f q hq⟩
+
+/-- The floor of a projection is itself. -/
+private theorem su_floor_of_isStarProjection {A : Type u} [CStarAlgebra A]
+    [PartialOrder A] [StarOrderedRing A] [Theses.VonNeumannAlgebra A] {z : A}
+    (hz : IsStarProjection z) : Theses.A.VN.floor z = z := by
+  rw [Theses.A.VN.floor_eq_one_sub_ceil ⟨hz.nonneg, hz.le_one⟩,
+    Theses.A.VN.ceil_of_isStarProjection hz.one_sub, sub_sub_cancel]
+
+/-- **203I.1 at `vNᵒᵖ`** (eff.tex:4195, Example): **the sharp predicates of
+`vNᵒᵖ` are exactly the projections.**  eff.tex states this without proof.
+(⇒) an image is a carrier, and carriers are projections; (⇐) a projection
+`z` is the image of the standard corner `h_z`, whose carrier is `⌊z⌋ = z`. -/
+theorem su_isSharp_iff {X : WStarCPSU.{u}ᵒᵖ}
+    (p : X ⟶ effObj (WStarCPSU.{u}ᵒᵖ)) :
+    IsSharp p ↔ IsStarProjection (suPredVal p) := by
+  constructor
+  · rintro ⟨Y, f, him⟩
+    obtain ⟨hproj, -, -⟩ := su_carrier_spec f
+    obtain ⟨q, hq⟩ := su_pred_exists (X := X) hproj.nonneg hproj.le_one
+    have himq : IsImage f q := su_isImage_carrier f q hq
+    have h1 : suPredVal p ≤ suPredVal q := (su_pred_le_iff p q).mp (him.2 q himq.1)
+    have h2 : suPredVal q ≤ suPredVal p := (su_pred_le_iff q p).mp (himq.2 p him.1)
+    rw [le_antisymm h1 h2, hq]
+    exact hproj
+  · intro hpr
+    obtain ⟨W, π, -, hcar⟩ := su_exists_corner p
+    exact ⟨W, π, su_isImage_carrier π p
+      (by rw [hcar, su_floor_of_isStarProjection hpr])⟩
+
+/-- **206II at `vNᵒᵖ`**: the orthocomplement of a sharp predicate is sharp —
+the last axiom of a ⋄-effectus, and immediate from `su_isSharp_iff` because
+`1 − z` is a projection whenever `z` is. -/
+theorem su_orth_sharp {X : WStarCPSU.{u}ᵒᵖ}
+    {s : X ⟶ effObj (WStarCPSU.{u}ᵒᵖ)} (hs : IsSharp s) :
+    IsSharp (EffectAlgebra.orth s) := by
+  rw [su_isSharp_iff] at hs ⊢
+  rw [show suPredVal (EffectAlgebra.orth s) = 1 - suPredVal s from suPredVal_orth s]
+  exact hs.one_sub
+
+/-- **206III at `vN_cpsuᵒᵖ`** (eff.tex:4460, Examples): `vN_cpsuᵒᵖ` is a
+⋄-effectus. -/
+theorem su_diamondEffectus : DiamondEffectus (WStarCPSU.{u}ᵒᵖ) :=
+  { su_hasQuotients, su_hasComprehension, su_hasImages with
+    orth_sharp := fun hs => su_orth_sharp hs }
+
+/-- **210III at `vNᵒᵖ`** (`exa-sharp-vn`, eff.tex:4777, Example): a map of
+`vN_cpsuᵒᵖ` is **sharp exactly when its ncpsu-map sends projections to
+projections**.  This is the whole of the identification that can be proved
+on this import path; the text's "the sharp maps are exactly the nmiu-maps"
+is this together with **99II** (`gardner`, proc.tex:795 — *sends projections
+to projections ⟺ multiplicative*, for an ncpu-map), which is **proved** in
+`Theses/A/Proc/Measurement.lean` but is not imported here.  eff.tex:4779
+cites `sharp-multiplicative` (proc.tex:905, an Exercise) for the same fact;
+no multiplicative-domain theory is needed. -/
+theorem su_sharpMap_iff {X Y : WStarCPSU.{u}ᵒᵖ} (f : X ⟶ Y) :
+    SharpMap f ↔ ∀ z : Y.unop.base.carrier, IsStarProjection z →
+      IsStarProjection (f.unop.toNCPMap z) := by
+  constructor
+  · intro hf z hz
+    obtain ⟨s, hs⟩ := su_pred_exists (X := Y) hz.nonneg hz.le_one
+    have hsharp : IsSharp s := (su_isSharp_iff s).mpr (by rw [hs]; exact hz)
+    have := (su_isSharp_iff (f ≫ s)).mp (hf s hsharp)
+    rwa [suPredVal_comp, hs] at this
+  · intro hf s hs
+    refine (su_isSharp_iff (f ≫ s)).mpr ?_
+    rw [suPredVal_comp]
+    exact hf _ ((su_isSharp_iff s).mp hs)
+
 end IUnique
 
 
@@ -2853,7 +3376,13 @@ theorem diamond_effectus_vn (s : EffectusPartialStructure WStarCPSU.{u}ᵒᵖ) :
     letI := s.homPCM
     letI := s.finPAC
     letI := s.effectus
-    DiamondEffectus WStarCPSU.{u}ᵒᵖ := sorry
+    DiamondEffectus WStarCPSU.{u}ᵒᵖ := by
+  have : HasFiniteCoproducts (WStarCPSU.{u}ᵒᵖ) := suHasFiniteCoproducts
+  have hpcm : s.homPCM = suPCM :=
+    effectusPartialStructure_homPCM_unique s vnPartialStructure
+  obtain ⟨hfc, pcm, hfin, E⟩ := s
+  subst hpcm
+  exact @su_diamondEffectus E
 
 /-- **211IV** (`vn-is-andthen-eff`, eff.tex:4859, Examples): `vNᵒᵖ` is an
 &-effectus, with `asrt_a(b) = √a b √a` (as are `CvNᵒᵖ` and `EJAᵒᵖ`, not

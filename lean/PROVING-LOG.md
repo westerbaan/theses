@@ -20915,3 +20915,127 @@ Nothing for ERRATA (no defect in a *statement*).  No new QUESTIONS.
 remaining vN rows record that their costings omit the bridge layer.
 `docs/BEff-survey.md`: session-86 block added; the 190III bullet marked PROVED
 with the `np_faithful` correction, and the two dilation bullets re-costed.
+
+## Session 87 — `B/Eff`: **the bridge layer is half built and `diamond_effectus_vn` (206III) is CLOSED** — and the multiplicative domain is *not* the root (worker on `Theses/B/Eff/VNExamples.lean`)
+
+`VNExamples.lean` is at **6** `sorry`s, **0** errors, 3692 lines (**+530**).
+B/Eff as a whole is at **7** (`VNExamples` 6, `EffectAlgebras` 1,
+`StatesPredicates` 0).  Axioms were checked **in situ** (a copy of the source
+with `#print axioms` appended, compiled directly, *not* against the olean):
+`diamond_effectus_vn`, `su_diamondEffectus`, `su_hasQuotients`,
+`su_hasComprehension`, `su_hasImages`, `su_isSharp_iff`, `su_sharpMap_iff`,
+`su_orth_sharp`, `su_pred_ext`, `su_pred_exists`, `su_pred_le_iff`,
+`suPredVal_orth`, `suPredVal_truth`, `suPredVal_comp` are all
+`[propext, Classical.choice, Quot.sound]`.
+
+### The headline: the recorded root does not exist
+
+Session 86 recommended building a bridge layer costed at ~800–1500 lines,
+whose "true root" was suspected to be **the multiplicative domain of a
+ucp-map**, since neither it nor Kadison–Schwarz *for maps* is in the tree.
+
+**That is wrong, and in a way worth recording.**  eff.tex:4779 does not assert
+"the sharp maps are the nmiu-maps" bare: it says *"See `sharp-multiplicative`"*,
+and `sharp-multiplicative` is **proc.tex:905**, an Exercise of thesis A, which
+is **already formalized and proved** as
+`Theses/A/Proc/Measurement.lean:3568` — *for an ncp-map `f`:
+multiplicative ⟺ `f` sends projections to projections ⟺ `⌈f(a)⌉ = f(⌈a⌉)`*
+(**99XII**).  So is **99II** `gardner` (`:3352`) and so is **100III**
+`pure_fundamental` (`:4058`), which is the pure-maps identification of
+eff.tex:4040.  No multiplicative domain is needed; the proof runs through
+Gardner's cycle.  What is actually missing is an **import**:
+`VNExamples.lean` imports `Theses.B.Eff.Comparisons` and
+`Theses.B.Dils.Pure`, and `A/Proc/Measurement.lean` is one directory over,
+not on that path.
+
+The second correction is smaller but was propagated three times: the record
+had **quotients and comprehensions swapped**.  eff.tex:3686 — quotients in
+`op(vN)` are *contractive filters*; eff.tex:3935 — comprehensions are
+*corners*.  The Lean proofs settle it: `IsQuotient p ξ` unfolds to exactly
+`IsFilterFor ξ.unop (1 − a)` (in the shape repaired under QUESTIONS **B11**,
+whose mediating map is subunital — which is precisely what a morphism of
+`vN_cpsuᵒᵖ` is, so the repair is what makes the two literally the same), and
+`IsComprehension p π` to exactly `IsCornerFor π.unop a`.
+
+### What landed
+
+All of it in the `IUnique` section, so it holds for an **arbitrary**
+`EffectusPartialForm` on `vN_cpsuᵒᵖ` and the existing `Wrapper` idiom
+transports it to the `s` of the statements.
+
+1. **The predicate–effect dictionary** (~120 lines).  `suPredVal p = p(1)`,
+   with `su_pred_ext` (a predicate is determined by the effect it names),
+   `su_pred_exists` (every effect is named), `suPredVal_comp`,
+   `suPredVal_truth`, `suPredVal_orth`, and **`su_pred_le_iff`**: the
+   algebraic order `≼` of the effect algebra of predicates *is* the C\*-order
+   of the effects.  Everything else is stated against this, and it is the
+   part that generalises to the remaining items.
+2. **`su_hasQuotients`** — quotients are filters, from `dils_stand_filter`
+   (169X): the quotient for `p` is the standard filter `c_{aᗮ}`.
+3. **`su_hasComprehension`** — comprehensions are corners, from
+   `standard_corner_dils` (169IV): the comprehension for `p` is the standard
+   corner `h_a : 𝒜 → ⌊a⌋𝒜⌊a⌋`.  The one thing the source does not say and
+   the proof needs is that `h_a` is **unital** into the corner (its unit is
+   `⌊a⌋ = h_a(1)`) — that is what makes the mediating ncp-map of
+   `IsCornerFor` subunital, i.e. a morphism.
+4. **`su_hasImages`** — the image of `f` is the **carrier** `⌈f⌉` of vn.tex
+   63I (`Theses.A.VN.carrier`, on the import path).  This needs one step the
+   source does not: the carrier is least among *projections*, an image must
+   be least among *effects*; the gap closes because `f(b) = 0` for an effect
+   `b` forces `f(⌈b⌉) = 0` (**60V** `ncp_ceil` plus `ceil_basic_3`), and
+   `b ≤ ⌈b⌉`.
+5. **`su_isSharp_iff`** — *the sharp predicates of `vNᵒᵖ` are exactly the
+   projections* (eff.tex:4195, asserted with no proof).  (⇒) an image is a
+   carrier and carriers are projections; (⇐) a projection `z` is the image of
+   the standard corner `h_z`, whose carrier is `⌊z⌋ = z` — the carrier
+   computation being `z(1−q)z = 0 ⟹ √(1−q)z = 0 ⟹ z(1−q) = 0 ⟹ z ≤ q`.
+6. **`su_orth_sharp`** and **`su_diamondEffectus`**, hence **206III
+   `diamond_effectus_vn`**.
+7. **`su_sharpMap_iff`** — a map of `vN_cpsuᵒᵖ` is sharp iff its ncpsu-map
+   sends projections to projections.  This is the whole of eff.tex:4777 that
+   is provable on the present import path; with `Measurement.lean` imported,
+   `gardner`/`sharp_multiplicative` turns it into "sharp ⟺ nmiu" directly.
+
+**The mathematics of 2–7 is ours** in the sense that eff.tex proves none of
+it (all five are *Examples*, and `bsols.tex` is keyed by exercise label so has
+nothing); but 7 is an independent re-derivation of a fact the author *does*
+prove, in thesis A, and 2–4 are assembled from `B/Dils` and `A/VN` results
+that are transcriptions of the author.
+
+### Two traps, both new
+
+* **`Quiver.Hom.op (wEffect h0 h1)` diverges without a type ascription** —
+  a genuine `whnf` timeout, not slowness: raising `maxHeartbeats` fivefold
+  does not help.  Unascribed, Lean must solve `?P.base.carrier =?= ULift ℂ`
+  with `?P` a metavariable, and `WStar.of` is semireducible.  The fix is the
+  `obtain ⟨q, hq⟩ : ∃ q : X ⟶ suI.{u}, … := ⟨Quiver.Hom.op (wEffect h0 h1),
+  fun _ => rfl⟩` idiom, which pins the type before `Quiver.Hom.op` is
+  elaborated.  This is the same trap as session 86's, one level worse.
+* **Anything whose codomain is a corner algebra must be written in term
+  mode.**  `rw` will not cross `cornerSet A p` versus
+  `(Opposite.unop (Opposite.op (WStarCPSU.of (WStar.of (cornerSet A p))))).base.carrier`;
+  `Eq.trans`/`congrArg` chains cross it every time.  Session 86's advice
+  generalises exactly.
+
+### Costing, and what is next
+
+**~530 added lines** for five of the seven pieces of the layer, against
+~800–1500 for all of it — so the *rate* is about right and the layer is
+roughly half done.  What is left:
+
+* **pure maps** (eff.tex:4040): `IsPure f` is "comprehension after quotient",
+  i.e. filter-after-corner, which is `pure_fundamental` (100III) — but
+  bridging needs *every* quotient to be a filter, not just the standard one,
+  i.e. uniqueness-up-to-iso of the universal objects (`quotient_basics_*` and
+  `compr_basics_*` in `Quotients.lean` should give it).
+* **sharp + total ⟹ nmiu**: `su_sharpMap_iff` + `gardner`, after the import.
+* then **221III `vn_has_dilations`** and **223VI
+  `vn_dilation_order_correspondence`**, which really are the cheapest two of
+  the remaining six once those exist.
+
+`vn_is_andthen_eff` (211IV) is untouched and still blocked on A/Proc's 105V.
+Nothing for ERRATA — the swap was a defect in our own record, not in a
+statement.  No new QUESTIONS.  `docs/why-open.csv`: the
+`diamond_effectus_vn` row is removed and the five remaining vN rows plus
+`vn_is_andthen_eff` carry the two corrections.  `docs/BEff-survey.md`: a
+session-87 block.
