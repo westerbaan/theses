@@ -2201,12 +2201,14 @@ variable {H K : Type u}
   [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
   [NormedAddCommGroup K] [InnerProductSpace ℂ K] [CompleteSpace K]
 
-/-- **170II** (`dils-examples-pure`, dils.tex:6195, Examples), part 1: the
-pure maps `B(ℋ) → B(𝒦)` are precisely the maps `ad_T` for bounded
-operators `T : 𝒦 → ℋ`. -/
-theorem dils_examples_pure_1 (φ : NCPMap (H →L[ℂ] H) (K →L[ℂ] K)) :
-    IsPureMap φ ↔ ∃ T : K →L[ℂ] H, ∀ a, φ a = conjOperator T a :=
-  sorry
+/-! ### **170II**.1: the pure maps `B(ℋ) → B(𝒦)`
+
+**170II**.1 `dils_examples_pure_1` is proved at the **foot of parsec 1710**
+(section `PureTypeI` below), because its proof runs through **171VII**
+`paschke_pure` — "pure ⟺ the `ϱ`-leg of a Paschke dilation is surjective".
+There is no circularity: `paschke_pure` consumes **170II**.2
+`dils_examples_pure_2`, immediately below, and never **170II**.1. -/
+
 /-- Auxiliary for **170II**.2: a corner precomposed with a *bijective*
 nmiu-map is again a corner (for the preimage of its effect).  Both the
 factorisation and its uniqueness transport along the ncp inverse
@@ -3993,6 +3995,231 @@ theorem paschke_pure [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     rw [hkϱ, hϱc, ← hkc, hD.1 x]
 
 end PaschkePure
+
+section PureTypeI
+
+variable {H K : Type u}
+  [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
+  [NormedAddCommGroup K] [InnerProductSpace ℂ K] [CompleteSpace K]
+
+/-! ### **170II**.1: the pure maps `B(ℋ) → B(𝒦)`
+
+dils.tex states 170II.1 as an *Example*, with **no proof** and no solution
+in `bsols.tex`; proc.tex **99XI** `ad-pure` gives the corresponding picture
+for `a*(·)a : s𝒜s → t𝒜t` inside one von Neumann algebra, via the polar
+decomposition `a = [a]√(a*a)`, but not for two `B(ℋ)`s.  The route taken
+here is the chapter's own later theorem instead: **171VII** `paschke_pure`
+("pure ⟺ the `ϱ`-leg of a Paschke dilation is surjective") combined with
+**140III** `stinespring_is_paschke` ("a *minimal normal Stinespring*
+dilation is a Paschke dilation").  So for `φ : B(ℋ) → B(𝒦)` with minimal
+Stinespring dilation `(𝒦₀, ϱ, V)`,
+
+  `φ` is pure  ⟺  `ϱ : B(ℋ) → B(𝒦₀)` is surjective,
+
+and the classification is then read off **138II** `nmiu_between_type_I` and
+**138VI** `typei_inner_auto`: a surjective `ϱ` is also *injective* (write
+`ϱ(a) = U*(a ⊗ 1)U` with `U` unitary; `𝒦₀ ≠ 0` forces `𝒦' ≠ 0`, and
+`‖a x ⊗ y‖ = ‖a x‖‖y‖` then turns `a ⊗ 1 = 0` into `a = 0`), hence an
+nmiu-*isomorphism*, hence `ad_{U₀}` for a unitary `U₀ : 𝒦₀ → ℋ`, and
+`φ = ad_V ∘ ad_{U₀} = ad_{U₀ V}`.  Conversely `ad_T` for `T ≠ 0` has the
+*identity* dilation `(ℋ, id, T)`, which is minimal because
+`B(ℋ)·T x₀ = ℋ` for any `x₀` with `T x₀ ≠ 0`, and whose `ϱ = id` is
+surjective; and `ad_0 = 0`, whose minimal dilation lives on the zero
+Hilbert space (from `φ(1) = 0` one gets `V*V = 0`, so `V = 0`, so the span
+of `ϱ(B(ℋ))V𝒦` is `{0}`), where `ϱ` is again surjective.
+
+This is a **different route** from proc.tex's polar-decomposition
+factorisation `π_{⌈a⌉}` then `c_{a*a}`; see PROVING-LOG session 92. -/
+
+private theorem pure_conjOperator_comp {X Y Z : Type u}
+    [NormedAddCommGroup X] [InnerProductSpace ℂ X] [CompleteSpace X]
+    [NormedAddCommGroup Y] [InnerProductSpace ℂ Y] [CompleteSpace Y]
+    [NormedAddCommGroup Z] [InnerProductSpace ℂ Z] [CompleteSpace Z]
+    (V : X →L[ℂ] Y) (S : Y →L[ℂ] Z) (T : Z →L[ℂ] Z) :
+    conjOperator V (conjOperator S T) = conjOperator (S.comp V) T := by
+  refine ContinuousLinearMap.ext fun x => ?_
+  simp [conjOperator, ContinuousLinearMap.adjoint_comp]
+
+private theorem pure_subsingleton_hilbTensor {K' : Type u} [NormedAddCommGroup K']
+    [InnerProductSpace ℂ K'] [CompleteSpace K'] (h : Subsingleton K')
+    (v : hilbTensor H K') : v = 0 := by
+  have hts : ∀ z : TensorProduct ℂ H K', z = 0 := by
+    intro z
+    induction z using TensorProduct.induction_on with
+    | zero => rfl
+    | tmul x y => rw [Subsingleton.elim y (0 : K'), TensorProduct.tmul_zero]
+    | add z z' hz hz' => rw [hz, hz', add_zero]
+  have hrange : Set.range (fun z : TensorProduct ℂ H K' => (z : hilbTensor H K'))
+      ⊆ ({0} : Set (hilbTensor H K')) := by
+    rintro _ ⟨z, rfl⟩
+    simp only [Set.mem_singleton_iff]
+    rw [hts z]
+    exact UniformSpace.Completion.coe_zero
+  have h1 : closure (Set.range (fun z : TensorProduct ℂ H K' => (z : hilbTensor H K')))
+      = Set.univ := hilbTensor_denseRange_coe.closure_eq
+  have h2 : (Set.univ : Set (hilbTensor H K')) ⊆ closure ({0} : Set (hilbTensor H K')) := by
+    rw [← h1]; exact closure_mono hrange
+  have h3 := h2 (Set.mem_univ v)
+  rwa [closure_singleton, Set.mem_singleton_iff] at h3
+
+private theorem pure_iff_stinespring_surjective
+    (φ : NCPMap (H →L[ℂ] H) (K →L[ℂ] K)) (D : StinespringDilation ⇑φ)
+    (hmin : D.Minimal) : IsPureMap φ ↔ Function.Surjective ⇑D.ρ := by
+  obtain ⟨vnK, hncp, hval, hpasch⟩ := stinespring_is_paschke φ D hmin
+  exact paschke_pure φ _ hpasch
+
+/-- **170II** (`dils-examples-pure`, dils.tex:6195, Examples), part 1: the
+pure maps `B(ℋ) → B(𝒦)` are precisely the maps `ad_T` for bounded
+operators `T : 𝒦 → ℋ`.
+
+Proof: see the section header above. -/
+theorem dils_examples_pure_1 (φ : NCPMap (H →L[ℂ] H) (K →L[ℂ] K)) :
+    IsPureMap φ ↔ ∃ T : K →L[ℂ] H, ∀ a, φ a = conjOperator T a := by
+  constructor
+  · -- `⇒`
+    intro hpure
+    obtain ⟨D, hmin⟩ := exists_minimal_stinespringDilation φ
+    have hsurj : Function.Surjective ⇑D.ρ :=
+      (pure_iff_stinespring_surjective φ D hmin).mp hpure
+    by_cases hs : Subsingleton D.K
+    · refine ⟨0, fun a => ?_⟩
+      have h0 : (D.ρ a : D.K →L[ℂ] D.K) = 0 :=
+        ContinuousLinearMap.ext fun _ => Subsingleton.elim _ _
+      rw [D.eq a, h0]
+      simp [conjOperator]
+    · rw [not_subsingleton_iff_nontrivial] at hs
+      have hone : (1 : D.K →L[ℂ] D.K) ≠ 0 := by
+        intro hc
+        obtain ⟨x, y, hxy⟩ := hs
+        refine hxy ?_
+        have hx := congrArg (fun T : D.K →L[ℂ] D.K => T x) hc
+        have hy := congrArg (fun T : D.K →L[ℂ] D.K => T y) hc
+        simp only [one_apply_eq_self, zero_apply] at hx hy
+        rw [hx, hy]
+      have hρ1 : (D.ρ 1 : D.K →L[ℂ] D.K) = 1 := map_one D.ρ.toStarAlgHom
+      obtain ⟨K', i1, i2, i3, U, hUU, hUU', hU⟩ :=
+        nmiu_between_type_I D.ρ ⟨1, by rw [hρ1]; exact hone⟩
+      letI := i1; letI := i2; letI := i3
+      have hadj : ∀ z : D.K, ContinuousLinearMap.adjoint U (U z) = z := by
+        intro z
+        have h := congrArg (fun T : D.K →L[ℂ] D.K => T z) hUU
+        simpa using h
+      have hUsurj : ∀ w : hilbTensor H K', U (ContinuousLinearMap.adjoint U w) = w := by
+        intro w
+        have h := congrArg (fun T : hilbTensor H K' →L[ℂ] hilbTensor H K' => T w) hUU'
+        simpa using h
+      have hK' : Nontrivial K' := by
+        rw [← not_subsingleton_iff_nontrivial]
+        intro hsub
+        refine (not_subsingleton_iff_nontrivial.mpr hs) ⟨fun z w => ?_⟩
+        rw [← hadj z, ← hadj w, pure_subsingleton_hilbTensor hsub (U z),
+          pure_subsingleton_hilbTensor hsub (U w)]
+      have hzero : ∀ c : H →L[ℂ] H, (D.ρ c : D.K →L[ℂ] D.K) = 0 → c = 0 := by
+        intro c hc
+        have hc' : conjOperator U (tensorCLM c 1) = 0 := by rw [← hU c]; exact hc
+        have h1 : ∀ v : D.K, (tensorCLM c 1) (U v) = 0 := by
+          intro v
+          have h2 := congrArg (fun T : D.K →L[ℂ] D.K => T v) hc'
+          simp only [conjOperator, LinearMap.coe_mk, AddHom.coe_mk,
+            ContinuousLinearMap.coe_comp, Function.comp_apply, zero_apply] at h2
+          have h3 := congrArg (fun z : D.K => U z) h2
+          simp only [map_zero] at h3
+          rwa [hUsurj] at h3
+        have h4 : tensorCLM c (1 : K' →L[ℂ] K') = 0 := by
+          refine ContinuousLinearMap.ext fun w => ?_
+          rw [← hUsurj w, h1]
+          simp
+        obtain ⟨y, hy⟩ := exists_ne (0 : K')
+        refine ContinuousLinearMap.ext fun x => ?_
+        have h5 : hilbTensorMk (c x) y = (0 : hilbTensor H K') := by
+          have h5' := tensorCLM_mk c (1 : K' →L[ℂ] K') x y
+          rw [h4] at h5'
+          simpa using h5'.symm
+        have h6 : ‖c x‖ * ‖y‖ = 0 := by
+          rw [← norm_hilbTensorMk (c x) y, h5, norm_zero]
+        have h7 : ‖c x‖ = 0 := by
+          rcases mul_eq_zero.mp h6 with h | h
+          · exact h
+          · exact absurd (norm_eq_zero.mp h) hy
+        simpa using norm_eq_zero.mp h7
+      have hinj : Function.Injective ⇑D.ρ := by
+        intro a b hab
+        have h0 : (D.ρ (a - b) : D.K →L[ℂ] D.K) = 0 := by
+          have hsub := map_sub D.ρ.toStarAlgHom a b
+          show (D.ρ.toStarAlgHom (a - b) : D.K →L[ℂ] D.K) = 0
+          rw [hsub]
+          show (D.ρ a : D.K →L[ℂ] D.K) - D.ρ b = 0
+          rw [hab, sub_self]
+        exact sub_eq_zero.mp (hzero _ h0)
+      obtain ⟨U₀, -, -, hU₀⟩ := (typei_inner_auto D.ρ).mp ⟨hinj, hsurj⟩
+      exact ⟨U₀.comp D.V, fun a => by rw [D.eq a, hU₀ a, pure_conjOperator_comp]⟩
+  · -- `⇐`
+    rintro ⟨T, hT⟩
+    by_cases hT0 : T = 0
+    · -- `ad_0 = 0`: the minimal dilation of the zero map lives on the zero space
+      have hz : ∀ a, (φ a : K →L[ℂ] K) = 0 := by
+        intro a
+        rw [hT a, hT0]
+        simp [conjOperator]
+      obtain ⟨D, hmin⟩ := exists_minimal_stinespringDilation φ
+      refine (pure_iff_stinespring_surjective φ D hmin).mpr ?_
+      have hV : D.V = 0 := by
+        have h2 : (D.ρ 1 : D.K →L[ℂ] D.K) = 1 := map_one D.ρ.toStarAlgHom
+        have h1 : ∀ x : K, ContinuousLinearMap.adjoint D.V (D.V x) = 0 := by
+          intro x
+          have h0 := (D.eq 1).symm
+          rw [hz, h2] at h0
+          have h3 := congrArg (fun T : K →L[ℂ] K => T x) h0
+          simpa [conjOperator] using h3
+        refine ContinuousLinearMap.ext fun x => ?_
+        have h4 : (⟪D.V x, D.V x⟫ : ℂ) = 0 := by
+          rw [← ContinuousLinearMap.adjoint_inner_right, h1 x, inner_zero_right]
+        simpa using inner_self_eq_zero.mp h4
+      have hset : {k : D.K | ∃ (a : H →L[ℂ] H) (x : K), k = D.ρ a (D.V x)} = {0} := by
+        ext k
+        constructor
+        · rintro ⟨a, x, rfl⟩
+          simp [hV]
+        · rintro rfl
+          exact ⟨1, 0, by simp [hV]⟩
+      have hdense : Dense ((⊥ : Submodule ℂ D.K) : Set D.K) := by
+        have hm := hmin
+        unfold StinespringDilation.Minimal at hm
+        rwa [hset, Submodule.span_zero_singleton] at hm
+      have hsub : ∀ v : D.K, v = 0 := by
+        intro v
+        rw [Submodule.bot_coe] at hdense
+        have hcl := dense_iff_closure_eq.mp hdense
+        rw [closure_singleton] at hcl
+        have hv : v ∈ ({0} : Set D.K) := by rw [hcl]; exact Set.mem_univ v
+        exact hv
+      intro y
+      exact ⟨1, ContinuousLinearMap.ext fun x => by rw [hsub x]; simp [hsub]⟩
+    · -- `T ≠ 0`: the identity dilation `(ℋ, id, T)` is minimal, and its `ϱ` is onto
+      refine (pure_iff_stinespring_surjective φ
+        { K := H, ρ := Theses.A.Proc.nmiuId (H →L[ℂ] H), V := T,
+          eq := fun a => hT a } ?_).mpr ?_
+      · show Dense ((Submodule.span ℂ
+          {k : H | ∃ (a : H →L[ℂ] H) (x : K), k = a (T x)} : Submodule ℂ H) : Set H)
+        obtain ⟨x₀, hx₀⟩ : ∃ x : K, T x ≠ 0 := by
+          by_contra hc
+          push Not at hc
+          exact hT0 (ContinuousLinearMap.ext hc)
+        have hspan : Submodule.span ℂ
+            {k : H | ∃ (a : H →L[ℂ] H) (x : K), k = a (T x)} = ⊤ := by
+          refine eq_top_iff.mpr fun v _ => ?_
+          refine Submodule.subset_span
+            ⟨ketbra ((⟪T x₀, T x₀⟫ : ℂ)⁻¹ • v) (T x₀), x₀, ?_⟩
+          rw [ketbra_apply', smul_smul,
+            mul_inv_cancel₀ (inner_self_ne_zero.mpr hx₀), one_smul]
+        rw [hspan]
+        simp
+      · intro y
+        exact ⟨y, rfl⟩
+
+
+end PureTypeI
+
 
 /-! ## Parsec 1720: ncp-extreme maps
 

@@ -22327,3 +22327,140 @@ unfolding, not by an argument.
   the declaration carries a ⚠ note that it is the weaker form.  The doc
   comment's `cstar.tex:4258` was corrected to `4299` (the drift the survey
   measured); the other six parts of 28II still carry `4258` and were left alone.
+
+## Session 92 — `B/Dils`: **170II.1 `dils_examples_pure_1` is CLOSED — the pure maps `B(ℋ) → B(𝒦)` are exactly the `ad_T`** — and the classification cost nothing new, because 171VII was already proved (worker on `Theses/B/Dils/Pure.lean`)
+
+`Pure.lean` is at **1** `sorry`, **0** errors, 4862 lines (**+227**).  B/Dils
+as a whole is at **8** (`Kaplansky` 4, `SelfDual` 2, `Pure` 1, `Stinespring`
+1).  The remaining `Pure.lean` `sorry` is **170IV**.2 `surjective_nmiu_2`,
+which is *deliberately* there: it is false as printed, refuted in-tree by
+`surjective_nmiu_2_false`, and awaits QUESTIONS **D7**.  Closing 170II.1 did
+not touch it.
+
+`dils_examples_pure_1` was checked **in situ** — a copy of the finished source
+in the scratchpad with `#print axioms` appended, compiled directly, *not*
+against the olean — and is `[propext, Classical.choice, Quot.sound]`.
+
+### 1. The statement is faithful; the thesis prints no proof of it
+
+dils.tex 6195 (**170II**, *Examples*) reads "The pure maps `𝓑(ℋ) → 𝓑(𝒦)` are
+precisely of the form `ad_T` for some bounded operator `T : 𝒦 → ℋ`", and our
+`IsPureMap φ ↔ ∃ T : K →L[ℂ] H, ∀ a, φ a = conjOperator T a` says exactly
+that: `conjOperator T` is `a ↦ T* a T`, with `T : 𝒦 → ℋ` and the map going
+`𝓑(ℋ) → 𝓑(𝒦)`.  Direction, variance and the quantifier all match; **no
+ERRATA, no QUESTIONS row**.
+
+What the source does *not* contain is an argument.  170II.1 is an Example with
+no proof, and `bsols.tex` has no `dils-examples-pure` entry (170II is not an
+Exercise).  The nearest printed thing is proc.tex **99XI** `ad-pure`, which
+draws the square for `f = a*(·)a : s𝒜s → t𝒜t` **inside one** von Neumann
+algebra, factoring `f` as the standard corner `π_{⌈a⌉ᵣ}`, then the
+ncpu-isomorphism `[f] = [a](·)[a]*` read off the polar decomposition
+`a = [a]√(a*a)`, then the standard filter `c_{a*a}`.  That is a genuine route
+to 170II.1 — but it needs the polar decomposition of a bounded operator, the
+identification `p𝓑(ℋ)p ≅ 𝓑(pℋ)`, and 138VI to make `[f]` spatial.
+
+### 2. The route actually taken: 171VII, which was the whole point
+
+`docs/why-open.csv` said "171VII is now proved; what is left is the
+Stinespring classification".  That costing was right about the ingredient and
+too pessimistic about the price.  Rather than build the corner/filter
+factorisation by hand, the proof **uses the chapter's own later theorem**:
+
+* **171VII** `paschke_pure`: `φ` is pure ⟺ the `ϱ`-leg of *a* Paschke dilation
+  of `φ` is surjective;
+* **140III** `stinespring_is_paschke`: a *minimal normal Stinespring* dilation
+  `(𝒦₀, ϱ, V)` gives a Paschke dilation `(𝓑(𝒦₀), ϱ, ad_V)`;
+* **139I** `exists_minimal_stinespringDilation` supplies such a `(𝒦₀, ϱ, V)`.
+
+Composing the three gives the one lemma the whole proof turns on,
+`pure_iff_stinespring_surjective`:
+
+> for `φ : 𝓑(ℋ) → 𝓑(𝒦)` and any minimal normal Stinespring dilation
+> `(𝒦₀, ϱ, V)` of it, `φ` is pure ⟺ `ϱ : 𝓑(ℋ) → 𝓑(𝒦₀)` is surjective.
+
+Both halves of 170II.1 are then short.
+
+**⇒.**  Purity gives `ϱ` surjective.  If `𝒦₀` is trivial then `ϱ(a) = 0`, so
+`φ = 0 = ad_0`.  Otherwise `1 ≠ 0` in `𝓑(𝒦₀)`, so `ϱ ≠ 0` and **138II**
+`nmiu_between_type_I` writes `ϱ(a) = U*(a ⊗ 1)U` with `U : 𝒦₀ → ℋ ⊗ 𝒦'`
+unitary.  Then `ϱ` is **injective**: `𝒦'` cannot be trivial (a trivial `𝒦'`
+makes `ℋ ⊗ 𝒦'` trivial, and `U` is isometric, so `𝒦₀` would be trivial), and
+with `y ≠ 0` in `𝒦'`, `a ⊗ 1 = 0` gives `‖a x‖‖y‖ = ‖(a x) ⊗ y‖ = 0`, i.e.
+`a = 0`.  Injective + surjective is **138VI** `typei_inner_auto`'s hypothesis,
+which returns a unitary `U₀ : 𝒦₀ → ℋ` with `ϱ = ad_{U₀}`, and
+`φ = ad_V ∘ ad_{U₀} = ad_{U₀ ∘ V}`.  So `T = U₀V`.
+
+**⇐.**  For `T ≠ 0` the *identity* triple `(ℋ, id, T)` is a Stinespring
+dilation of `ad_T`, and it is **minimal**: picking `x₀` with `T x₀ ≠ 0`, the
+single vector `T x₀` already spans `ℋ` under `𝓑(ℋ)`, since
+`|⟪Tx₀,Tx₀⟫⁻¹ v⟩⟨Tx₀| (T x₀) = v`.  Its `ϱ = id` is surjective, so `ad_T` is
+pure.  For `T = 0`, `φ = 0`, and *any* minimal dilation of it lives on the
+zero space: `φ(1) = 0` reads `V*V = 0`, whence `V = 0`, whence
+`span ϱ(𝓑(ℋ))V𝒦 = {0}` is dense in `𝒦₀`, i.e. `𝒦₀ = 0` — and then `ϱ` is
+surjective for free.  (This degenerate branch is not a formalization artefact:
+`ad_0 = 0` is pure only because the zero algebra is a legitimate middle object
+in `IsPureMap`, and going through the dilation is the cheapest way to say so.)
+
+### 3. Where the declaration sits, and why
+
+`dils_examples_pure_1` is **not** at line 2207 any more; it is at the foot of
+parsec 1710, in a new `section PureTypeI` after `end PaschkePure`, because it
+consumes `paschke_pure`.  There is **no circularity**: `paschke_pure`'s `⇐`
+half consumes **170II**.2 `dils_examples_pure_2` and **170IV**.1
+`surjective_nmiu_1`, never 170II.1, and nothing in the file consumed 170II.1
+before.  A pointer block stays at the 170II.1 site saying so.  This is the
+same device Stinespring.lean uses for **140VIII**.
+
+### 4. Lean notes (all four of the day's frictions were type-level)
+
+* `StinespringDilation.K` is a *field*, so `(idDil …).K` is not reducibly `ℋ`
+  and every `ketbra … : ℋ →L[ℂ] ℋ` fails to typecheck against it.  Marking the
+  dilation `@[reducible]` fixes the elaboration but not the *instances*: the
+  `‖·‖` on `(idDil …).K` then comes from `StinespringDilation.nacg`, so
+  `mul_inv_cancel₀ (h : (‖v‖:ℂ)^2 ≠ 0)` will not match a goal that displays
+  identically.  The cure is to **write the dilation inline** as a structure
+  instance at the use site, where the projection ι-reduces and the instances
+  reduce with it.
+* `inner_self_eq_norm_sq_to_K` produces `RCLike.ofReal`, not `Complex.ofReal`;
+  a hypothesis stated with `(‖x‖ : ℂ)` displays identically and does not
+  rewrite.  Keeping the scalar as `⟪x, x⟫` throughout and finishing with
+  `mul_inv_cancel₀ (inner_self_ne_zero.mpr hx)` sidesteps the coercion
+  entirely — worth remembering, it cost three attempts.
+* `obtain ⟨-, -, -, hpasch⟩ := stinespring_is_paschke …` fails with *unknown
+  identifier* `hpasch`, because the cleared `h` occurs in `hpasch`'s type.
+  Name the binders.
+* `tensorCLM c 1 = 0` on its own does not determine the right-hand factor's
+  Hilbert space; `tensorCLM c (1 : K' →L[ℂ] K') = 0` does.
+
+### 5. Divergences from the authors (classified)
+
+1. *Faithful* — nothing, in the strict sense: the thesis prints no proof of
+   170II.1.
+2. *Different route* — **the whole proof**, measured against proc.tex 99XI
+   `ad-pure`, which is the only place either thesis argues this fact.  99XI
+   goes through the polar decomposition `a = [a]√(a*a)` and the explicit
+   corner-then-filter square; we go through 140III + 171VII + 138II/138VI.
+   The two are not far apart in spirit — 138VI *is* the spatiality of `[f]`
+   — but no step is transcribed.  Recorded here because 170II.1 is the first
+   statement in this file proved with **no printed argument to follow at all**.
+3. *Mild* — the two degenerate branches (`𝒦₀ = 0`, `T = 0`) have no
+   counterpart in the source, which does not consider them.
+4. *Our mis-transcription* — none; §1 checked the statement against dils.tex
+   6197 word for word.
+5. *Mathlib without reading the author* — none.  Everything used
+   (`nmiu_between_type_I`, `typei_inner_auto`, `stinespring_is_paschke`,
+   `paschke_pure`, `exists_minimal_stinespringDilation`) is a numbered thesis
+   result already in the tree.
+
+### 6. Bookkeeping
+
+* `docs/why-open.csv`: the `dils_examples_pure_1` row is **removed** (closed
+  and axiom-clean).
+* No `ERRATA.md` and no `QUESTIONS.md` row: the statement was correct and the
+  proof needed no repair.
+* **`ess_uniq_pur` (139XI, `Stinespring.lean`) was *not* needed** — worth
+  recording, because it is the other `sorry` in this sub-tree and the obvious
+  guess for how one classifies Stinespring dilations of `𝓑(ℋ) → 𝓑(𝒦)`.  The
+  minimal-dilation route reaches the classification without any essential
+  uniqueness statement, so QUESTIONS **B12** stays a leaf.

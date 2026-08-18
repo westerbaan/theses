@@ -54,7 +54,6 @@ HaFreeExp.ha|blocked|exists_tmapM|yellow: inherited from the HaFreeExp type, who
 HaFreeExp.sor|blocked|exists_tmapM|yellow: inherited from the HaFreeExp type, whose universal field mentions tmapM
 HaFreeExp.universal|blocked|exists_tmapM|yellow: the universal property is literally stated with tmapM
 HaFreeExp.vna|blocked|exists_tmapM|yellow: inherited from the HaFreeExp type, whose universal field mentions tmapM
-dils_examples_pure_1|costed||170II.1: 171VII is now proved; what is left is the Stinespring classification of pure maps between B(H)s
 ess_uniq_pur|awaiting-ruling||QUESTIONS B12: false without a dimension hypothesis, and which of three repairs is undecided
 ext_tensor_ketbra_dense|awaiting-ruling||QUESTIONS D6: our net form is false; the thesis's claim is proved as ext_tensor_ketbra_uwDense
 h_is_corner_for_unital_map|open||its recorded blocker existence_paschke is now proved, so 169V needs re-analysis; not attempted
