@@ -20,13 +20,24 @@ A-dependent statements move here, to a single leaf module.  Only this file
 sees thesis A, and only this file is exposed to churn in it.
 
 `Theses.B.Dils.Pure` transitively supplies all of `A/CStar`, all of `A/VN`
-and all of `B/Dils`.  `A/Proc` is deliberately *not* imported, and nothing
-proved here has needed it.  **One statement below does**: `vn_is_andthen_eff`
-(211IV) is proved in eff.tex:4859 from **105V** `positive-map-uniqueness` and
-**100III** `pure-fundamental`, both in `Theses/A/Proc/Measurement.lean` — and
-105V is itself still `sorry` there.  So that item is blocked twice over: the
-import would have to be added *and* 105V closed first.  (An earlier version of
-this header claimed nothing here needs `A/Proc`; that was wrong.)
+and all of `B/Dils`.  **`Theses.A.Proc.Measurement` is imported too**, as of
+session 88: `vn_has_dilations` (221III) needs *sharp + total ⟹ nmiu*, which
+eff.tex:4779 proves by citing `sharp-multiplicative` = **99XII**
+(proc.tex:905), and that is proved there.  The import is cheap and safe —
+`Measurement.lean` imports only `Theses.A.VN.NormalFunctionals`, which
+`B/Dils` already supplies, so it adds one file and a few seconds; and it is
+added **here only**, so the other eight files of `Theses/B/Eff/` still import
+`Theses.Common` alone and the author ruling above is untouched.
+(`Measurement.lean` carries `sorry`s of its own, but the three results used
+from it — `sharp_multiplicative`, `gardner`, `pure_fundamental` — are
+`#print axioms`-clean.)
+
+`vn_is_andthen_eff` (211IV) is proved in eff.tex:4859 from **105V**
+`positive-map-uniqueness` and **100III** `pure-fundamental`, both in
+`Theses/A/Proc/Measurement.lean`; **105V is itself still `sorry` there**, so
+that item stays blocked — but on 105V alone now, not also on the import.
+(An earlier version of this header claimed nothing here needs `A/Proc`; that
+was wrong.)
 
 **Nothing was changed in the move**: each statement below is verbatim the
 one that stood in the file named after it, same name, same binders, same
@@ -34,6 +45,7 @@ doc comment.
 -/
 import Theses.B.Eff.Comparisons
 import Theses.B.Dils.Pure
+import Theses.A.Proc.Measurement
 
 set_option warn.classDefReducibility false
 
@@ -3307,6 +3319,330 @@ theorem su_sharpMap_iff {X Y : WStarCPSU.{u}ᵒᵖ} (f : X ⟶ Y) :
     rw [suPredVal_comp]
     exact hf _ ((su_isSharp_iff s).mp hs)
 
+/-! ### Sharp *total* maps are the nmiu-maps (eff.tex:4777, via **99XII**)
+
+`su_sharpMap_iff` above says a map of `vN_cpsuᵒᵖ` is sharp iff its ncpsu-map
+sends projections to projections; `su_isTotal_iff` says it is total iff that
+map is unital.  eff.tex:4779 asserts that the sharp maps are the nmiu-maps
+and refers to `sharp-multiplicative` — **99XII**, proc.tex:905 — for the
+missing half, and that is
+`Theses.A.Proc.sharp_multiplicative`: for an ncp-map between von Neumann
+algebras, *sends projections to projections ⟺ multiplicative*.  It needs no
+unitality (so `gardner`, 99II, which does, is not called), and involution
+preservation is `cstar_p_implies_i` for any positive map.  This is the one
+place in `B/Eff` that uses `Theses.A.Proc`. -/
+
+omit [EffectusPartialForm (WStarCPSU.{u}ᵒᵖ)] in
+/-- An nmiu-map is an ncpsu-map — indeed unital (**34IV**.3 `cp_of_mi`: a
+∗-homomorphism is completely positive). -/
+theorem su_exists_ncpsu_of_nmiu {A B : Type u} [CStarAlgebra A] [PartialOrder A]
+    [StarOrderedRing A] [CStarAlgebra B] [PartialOrder B] [StarOrderedRing B]
+    (f : Theses.NMIUMap A B) :
+    ∃ g : Theses.NCPSUMap A B, ∀ a, g.toNCPMap a = f a :=
+  ⟨⟨{ toCompletelyPositiveMap :=
+        { toLinearMap := (f.toStarAlgHom : A →ₐ[ℂ] B).toLinearMap
+          map_cstarMatrix_nonneg' :=
+            (cp_iff _).out 0 1 |>.mp
+              (cp_of_mi _ (fun x y => map_mul f.toStarAlgHom x y)
+                (fun x => map_star f.toStarAlgHom x)) }
+      preservesDirSups' := f.preservesDirSups' },
+    show (f.toStarAlgHom : A →ₐ[ℂ] B).toLinearMap 1 ≤ 1 by
+      rw [show (f.toStarAlgHom : A →ₐ[ℂ] B).toLinearMap (1 : A) = (1 : B) from
+        map_one f.toStarAlgHom]⟩, fun _ => rfl⟩
+
+/-- **210III at `vNᵒᵖ`** (`exa-sharp-vn`, eff.tex:4777, Example), the half
+that needed `A/Proc`: a **sharp total** map of `vN_cpsuᵒᵖ` is an
+**nmiu**-map. -/
+theorem su_exists_nmiu_of_sharp_total {X Y : WStarCPSU.{u}ᵒᵖ} (f : X ⟶ Y)
+    (hs : SharpMap f) (ht : IsTotal f) :
+    ∃ ρ : Theses.NMIUMap Y.unop.base.carrier X.unop.base.carrier,
+      ∀ a, ρ a = f.unop.toNCPMap a := by
+  have hproj : ∀ z : Y.unop.base.carrier, IsStarProjection z →
+      IsStarProjection (f.unop.toNCPMap z) := (su_sharpMap_iff f).mp hs
+  have hmul : ∀ a b : Y.unop.base.carrier,
+      f.unop.toNCPMap (a * b) = f.unop.toNCPMap a * f.unop.toNCPMap b :=
+    ((Theses.A.Proc.sharp_multiplicative f.unop.toNCPMap).out 1 0).mp hproj
+  have hone : f.unop.toNCPMap 1 = 1 := (su_isTotal_iff f).mp ht
+  have hstar : ∀ a : Y.unop.base.carrier,
+      ncpLin f.unop.toNCPMap (star a) = star (ncpLin f.unop.toNCPMap a) :=
+    cstar_p_implies_i (ncpLin f.unop.toNCPMap)
+      (astara_pos_basic_2_cp _ (ncpLin_cp f.unop.toNCPMap))
+  exact ⟨{ toStarAlgHom :=
+             ⟨AlgHom.ofLinearMap (ncpLin f.unop.toNCPMap) hone hmul, hstar⟩
+           preservesDirSups' := f.unop.toNCPMap.preservesDirSups' }, fun _ => rfl⟩
+
+/-- The converse of `su_exists_nmiu_of_sharp_total`: a map whose ncpsu-map
+is an nmiu-map is sharp and total. -/
+theorem su_sharp_total_of_nmiu {X Y : WStarCPSU.{u}ᵒᵖ} (f : X ⟶ Y)
+    (ρ : Theses.NMIUMap Y.unop.base.carrier X.unop.base.carrier)
+    (hρ : ∀ a, ρ a = f.unop.toNCPMap a) : SharpMap f ∧ IsTotal f := by
+  constructor
+  · refine (su_sharpMap_iff f).mpr fun z hz => ?_
+    rw [← hρ z]
+    exact hz.map ρ.toStarAlgHom
+  · refine (su_isTotal_iff f).mpr ?_
+    rw [← hρ 1]
+    exact map_one ρ.toStarAlgHom
+
+/-! ### Filters are quotients, and *unital* corners are comprehensions
+
+`su_hasQuotients` and `su_hasComprehension` above produce **one** quotient
+and **one** comprehension per predicate, from the standard filter and the
+standard corner.  `IsPure` needs the dictionary read in the other direction:
+an *arbitrary* filter is a quotient, and an arbitrary *unital* corner is a
+comprehension.  Both are the definitions of `IsFilterFor`/`IsCornerFor`
+(dils.tex 169VIII, 169II) transported through `suPredVal`, and the two
+mismatches are the ones the section header above records: `IsFilterFor`'s
+mediating map is subunital (the repair of QUESTIONS **B11**), which is
+exactly a morphism, and `IsCornerFor`'s is merely ncp, which is a morphism
+only because the corner is unital.
+
+**Unitality of the corner is a real hypothesis, not a convenience.**  Under
+169II as printed, `λ·h_a` is again a corner for `a` when `0 < λ < 1`
+(QUESTIONS **D7**), and then the mediating map of a *subunital* `f` is
+`λ⁻¹·f'`, which need not be subunital; such a corner is therefore not a
+comprehension.  Every corner used below is unital, being the right leg of a
+Paschke dilation of a unital map. -/
+
+/-- **197II at `vNᵒᵖ`**, the converse reading of `su_hasQuotients`: a map
+`ξ : X ⟶ Q` whose ncpsu-map is a **filter** for the effect named by `pᗮ` is
+a quotient for `p`. -/
+theorem su_isQuotient_of_isFilterFor {X Q : WStarCPSU.{u}ᵒᵖ}
+    (p : X ⟶ effObj (WStarCPSU.{u}ᵒᵖ)) (ξ : X ⟶ Q)
+    (hf : Theses.B.Dils.IsFilterFor ξ.unop.toNCPMap
+      (suPredVal (EffectusPartialForm.orth p))) :
+    IsQuotient p ξ := by
+  obtain ⟨-, hc1, huniv⟩ := hf
+  constructor
+  · refine (su_pred_le_iff _ _).mpr ?_
+    rw [suPredVal_comp, suPredVal_truth]
+    exact hc1
+  · intro Y f hfle
+    have hf1 : f.unop.toNCPMap (1 : Y.unop.base.carrier)
+        ≤ suPredVal (EffectusPartialForm.orth p) := by
+      have h1 := (su_pred_le_iff (f ≫ truth Y) (EffectusPartialForm.orth p)).mp hfle
+      rwa [suPredVal_comp, suPredVal_truth] at h1
+    obtain ⟨f', hf', huniq⟩ :=
+      huniv Y.unop.base.carrier _ _ _ f.unop.toNCPMap hf1
+    obtain ⟨g, hg⟩ : ∃ g : Q ⟶ Y, ∀ y, g.unop.toNCPMap y = f'.toNCPMap y :=
+      ⟨Quiver.Hom.op f', fun _ => rfl⟩
+    refine ⟨g, suop_hom_ext fun y => ?_, fun k hk => ?_⟩
+    · exact (suop_comp_apply ξ g y).trans
+        ((congrArg (fun z => ξ.unop.toNCPMap z) (hg y)).trans (hf' y))
+    · have hk' : ∀ y, ξ.unop.toNCPMap (k.unop.toNCPMap y) = f.unop.toNCPMap y :=
+        fun y => (suop_comp_apply ξ k y).symm.trans
+          (congrArg (fun m : X ⟶ Y => m.unop.toNCPMap y) hk)
+      have hkf : k.unop = f' := huniq k.unop hk'
+      exact suop_hom_ext fun y =>
+        (congrArg (fun m : Theses.NCPSUMap Y.unop.base.carrier Q.unop.base.carrier =>
+          m.toNCPMap y) hkf).trans (hg y).symm
+
+/-- **199II at `vNᵒᵖ`**, the converse reading of `su_hasComprehension`: a map
+`π : W ⟶ X` whose ncpsu-map is a **unital corner** for the effect named by
+`q` is a comprehension for `q`. -/
+theorem su_isComprehension_of_isCornerFor {W X : WStarCPSU.{u}ᵒᵖ}
+    (q : X ⟶ effObj (WStarCPSU.{u}ᵒᵖ)) (π : W ⟶ X)
+    (hu : π.unop.toNCPMap (1 : X.unop.base.carrier) = (1 : W.unop.base.carrier))
+    (hc : Theses.B.Dils.IsCornerFor π.unop.toNCPMap (suPredVal q)) :
+    IsComprehension q π := by
+  obtain ⟨-, hval, huniv⟩ := hc
+  constructor
+  · refine su_pred_ext ?_
+    rw [suPredVal_comp, suPredVal_comp, suPredVal_truth]
+    exact hval
+  · intro Z g hgq
+    have hgval : g.unop.toNCPMap (suPredVal q)
+        = g.unop.toNCPMap (1 : X.unop.base.carrier) := by
+      have h1 := congrArg suPredVal hgq
+      rwa [suPredVal_comp, suPredVal_comp, suPredVal_truth] at h1
+    obtain ⟨f', hf', huniq⟩ :=
+      huniv Z.unop.base.carrier _ _ _ g.unop.toNCPMap hgval
+    have hsub : f' (1 : W.unop.base.carrier) ≤ 1 := by
+      have h := hf' (1 : X.unop.base.carrier)
+      rw [hu] at h
+      rw [h]
+      exact g.unop.subunital'
+    obtain ⟨g', hgg⟩ : ∃ g' : Z ⟶ W, ∀ x, g'.unop.toNCPMap x = f' x :=
+      ⟨Quiver.Hom.op ⟨f', hsub⟩, fun _ => rfl⟩
+    refine ⟨g', suop_hom_ext fun x => ?_, fun k hk => ?_⟩
+    · exact (suop_comp_apply g' π x).trans ((hgg _).trans (hf' x))
+    · have hk' : ∀ x, k.unop.toNCPMap (π.unop.toNCPMap x) = g.unop.toNCPMap x :=
+        fun x => (suop_comp_apply k π x).symm.trans
+          (congrArg (fun m : Z ⟶ X => m.unop.toNCPMap x) hk)
+      have hkf : k.unop.toNCPMap = f' := huniq k.unop.toNCPMap hk'
+      exact suop_hom_ext fun x =>
+        (congrArg (fun m : Theses.NCPMap W.unop.base.carrier Z.unop.base.carrier =>
+          m x) hkf).trans (hgg x).symm
+
+/-! ### Dilations are Paschke dilations (221III)
+
+eff.tex:6806 says only "as shown in `existence-paschke`", and the two
+statements are the same one *only* after the identifications above: the
+abstract universal property of 221II quantifies over **sharp total** maps
+`ϱ'` where **140II** `def-paschke` quantifies over **nmiu**-maps, and its
+`h` is asked to be **pure** where the Paschke triple asks nothing of it.
+`su_exists_nmiu_of_sharp_total` closes the first gap and
+`su_isQuotient_of_isFilterFor`/`su_isComprehension_of_isCornerFor` the
+second.  Two further mismatches are harmless and worth recording:
+
+* the mediating map of **140II** is an arbitrary ncp-map where a morphism of
+  `vN_cpsuᵒᵖ` must be subunital — but it is *unital*, because
+  `σ(1) = σ(ϱ'(1)) = ϱ(1) = 1`, both legs being nmiu;
+* uniqueness in **140II** is among all ncp-maps, which is stronger than the
+  uniqueness the effectus asks for.
+
+`su_isDilation_of_paschke` is the translation; `su_hasDilations` is the
+construction it is fed.  Note that the dilation used is **not** the Paschke
+dilation of `φ` taken straight from `existence_paschke`: `IsPure` needs a
+*unital* corner, so the dilation is assembled the way **170II**.2 assembles
+it — filter off `φ(1)` first (`dils_filter_basics_2a`), dilate the resulting
+*unital* `φ'`, and put the filter back (`dils_filter_basics_2b`).  The right
+leg of a dilation of a unital map is a corner (**169V**) and is unital,
+`h(1) = h(ϱ(1)) = φ'(1) = 1`. -/
+
+private theorem su_isDilation_of_paschke {X Y P Q : WStarCPSU.{u}ᵒᵖ}
+    (f : X ⟶ Y) (ϱ : P ⟶ Y) (ξ : X ⟶ Q) (π : Q ⟶ P)
+    (ρ : Theses.NMIUMap Y.unop.base.carrier P.unop.base.carrier)
+    (hρ : ∀ a, ρ a = ϱ.unop.toNCPMap a)
+    (hfilter : Theses.B.Dils.IsFilterFor ξ.unop.toNCPMap
+      (f.unop.toNCPMap (1 : Y.unop.base.carrier)))
+    (hπu : π.unop.toNCPMap (1 : P.unop.base.carrier) = (1 : Q.unop.base.carrier))
+    (hcorner : Theses.B.Dils.IsCorner π.unop.toNCPMap)
+    (hh : Theses.NCPMap P.unop.base.carrier X.unop.base.carrier)
+    (hhval : ∀ x, hh x = (ξ ≫ π).unop.toNCPMap x)
+    (hdil : Theses.B.Dils.IsPaschkeDilationOf
+      ⟨P.unop.base.carrier, inferInstance, ρ, hh⟩ ⇑f.unop.toNCPMap) :
+    IsDilation f ϱ (ξ ≫ π) := by
+  obtain ⟨hfac0, huniv⟩ := hdil
+  have hfac : ∀ a, (ξ ≫ π).unop.toNCPMap (ρ a) = f.unop.toNCPMap a :=
+    fun a => (hhval _).symm.trans (hfac0 a)
+  obtain ⟨hsharp, htotal⟩ := su_sharp_total_of_nmiu ϱ ρ hρ
+  have hρ1 : ρ (1 : Y.unop.base.carrier) = (1 : P.unop.base.carrier) :=
+    map_one ρ.toStarAlgHom
+  refine ⟨hsharp, htotal, ?_, ?_, ?_⟩
+  · -- `ξ ≫ π` is pure: a filter after a unital corner
+    obtain ⟨a, hca⟩ := hcorner
+    obtain ⟨q, hq⟩ := su_pred_exists (X := P) hca.1.1 hca.1.2
+    obtain ⟨p, hp⟩ := su_pred_exists (X := X)
+      (a := 1 - f.unop.toNCPMap (1 : Y.unop.base.carrier))
+      (sub_nonneg.mpr f.unop.subunital') (sub_le_self 1 (ncpsu_one_nonneg f.unop))
+    refine ⟨Q, ξ, π, p, q, su_isQuotient_of_isFilterFor p ξ ?_,
+      su_isComprehension_of_isCornerFor q π hπu ?_, rfl⟩
+    · rw [show suPredVal (EffectusPartialForm.orth p)
+          = f.unop.toNCPMap (1 : Y.unop.base.carrier) by
+        rw [suPredVal_orth, hp, sub_sub_cancel]]
+      exact hfilter
+    · rw [hq]; exact hca
+  · -- `(ξ ≫ π) ≫ ϱ = f`
+    refine suop_hom_ext fun a => ?_
+    refine Eq.trans (suop_comp_apply (ξ ≫ π) ϱ a) ?_
+    rw [← hρ a]
+    exact hfac a
+  · -- the universal property
+    intro P' ϱ' h' hs' ht' hfac'
+    obtain ⟨ρ', hρ'⟩ := su_exists_nmiu_of_sharp_total ϱ' hs' ht'
+    have hρ'1 : ρ' (1 : Y.unop.base.carrier) = (1 : P'.unop.base.carrier) :=
+      map_one ρ'.toStarAlgHom
+    obtain ⟨σ, ⟨hσρ, hσh⟩, hσu⟩ :=
+      huniv ⟨P'.unop.base.carrier, inferInstance, ρ', h'.unop.toNCPMap⟩
+        (fun a => by
+          refine Eq.trans (congrArg (fun z => h'.unop.toNCPMap z) (hρ' a)) ?_
+          exact (suop_comp_apply h' ϱ' a).symm.trans
+            (congrArg (fun m : X ⟶ Y => m.unop.toNCPMap a) hfac'))
+    have hσ1 : σ (1 : P'.unop.base.carrier) ≤ (1 : P.unop.base.carrier) := by
+      have h := hσρ (1 : Y.unop.base.carrier)
+      rw [hρ'1, hρ1] at h
+      exact le_of_eq h
+    obtain ⟨s, hs⟩ : ∃ s : P ⟶ P', ∀ x, s.unop.toNCPMap x = σ x :=
+      ⟨Quiver.Hom.op ⟨σ, hσ1⟩, fun _ => rfl⟩
+    refine ⟨s, ⟨suop_hom_ext fun c => ?_, suop_hom_ext fun a => ?_⟩, ?_⟩
+    · exact (suop_comp_apply (ξ ≫ π) s c).trans
+        ((congrArg (fun z => (ξ ≫ π).unop.toNCPMap z) (hs c)).trans
+          ((hhval _).symm.trans (hσh c)))
+    · refine Eq.trans (suop_comp_apply s ϱ' a) ?_
+      refine Eq.trans (hs _) ?_
+      refine Eq.trans (congrArg (fun z => σ z) (hρ' a).symm) ?_
+      exact (hσρ a).trans (hρ a)
+    · rintro k ⟨hk1, hk2⟩
+      have hk1' : ∀ c, hh (k.unop.toNCPMap c) = h'.unop.toNCPMap c := fun c =>
+        (hhval _).trans ((suop_comp_apply (ξ ≫ π) k c).symm.trans
+          (congrArg (fun m : X ⟶ P' => m.unop.toNCPMap c) hk1))
+      have hk2' : ∀ a, k.unop.toNCPMap (ρ' a) = ρ a := fun a =>
+        ((congrArg (fun z => k.unop.toNCPMap z) (hρ' a)).trans
+          ((suop_comp_apply k ϱ' a).symm.trans
+            (congrArg (fun m : P ⟶ Y => m.unop.toNCPMap a) hk2))).trans (hρ a).symm
+      have hkσ : k.unop.toNCPMap = σ := hσu k.unop.toNCPMap ⟨hk2', hk1'⟩
+      exact suop_hom_ext fun x =>
+        (congrArg (fun m : Theses.NCPMap P'.unop.base.carrier P.unop.base.carrier =>
+          m x) hkσ).trans (hs x).symm
+
+/-- **221III at `vN_cpsuᵒᵖ`** (eff.tex:6805, Example): **`vNᵒᵖ` has
+dilations** — the Paschke dilations of **154III**. -/
+theorem su_hasDilations (hDia : DiamondEffectus (WStarCPSU.{u}ᵒᵖ)) :
+    letI := hDia
+    HasDilations (WStarCPSU.{u}ᵒᵖ) := by
+  letI := hDia
+  refine ⟨?_⟩
+  intro X Y f
+  have hb : (0 : X.unop.base.carrier)
+      ≤ f.unop.toNCPMap (1 : Y.unop.base.carrier) := ncpsu_one_nonneg f.unop
+  -- **169X**: the standard filter for `φ(1)`, kept as an opaque algebra `C'`
+  obtain ⟨C', iC, iP, iS, iV, c', hc'⟩ :
+      ∃ (C' : Type u) (_ : CStarAlgebra C') (_ : PartialOrder C')
+        (_ : StarOrderedRing C') (_ : Theses.VonNeumannAlgebra C')
+        (c' : Theses.NCPMap C' X.unop.base.carrier),
+        Theses.B.Dils.IsFilterFor c'
+          (f.unop.toNCPMap (1 : Y.unop.base.carrier)) := by
+    letI : Theses.VonNeumannAlgebra
+        (Theses.B.Dils.cornerSet X.unop.base.carrier
+          (Theses.A.VN.ceil (f.unop.toNCPMap (1 : Y.unop.base.carrier)))) :=
+      Theses.B.Dils.cornerSet_vonNeumannAlgebra _ _
+    obtain ⟨c, -, hc⟩ := Theses.B.Dils.dils_stand_filter
+      (f.unop.toNCPMap (1 : Y.unop.base.carrier)) hb
+    exact ⟨_, _, _, _, inferInstance, c, hc⟩
+  letI := iC; letI := iP; letI := iS; letI := iV
+  -- **169XI**.2a: the unique *unital* `φ'` with `φ = c' ∘ φ'`
+  obtain ⟨φ', ⟨hφ'1, hφ'2⟩, -⟩ :=
+    Theses.B.Dils.dils_filter_basics_2a f.unop.toNCPMap c' hc'
+  -- **154III**: a Paschke dilation of `φ'`
+  obtain ⟨M⟩ := Theses.B.Dils.existence_paschke φ'
+  obtain ⟨D, hDil⟩ : ∃ D : Theses.B.Dils.PaschkeTriple Y.unop.base.carrier C',
+      Theses.B.Dils.IsPaschkeDilationOf D ⇑φ' :=
+    ⟨_, Theses.B.Dils.existence_paschke_5 φ' M⟩
+  letI := D.vn
+  have hρ1 : D.ρ (1 : Y.unop.base.carrier) = (1 : D.P) := map_one D.ρ.toStarAlgHom
+  -- the right leg of a dilation of a *unital* map is a **unital** corner (169V)
+  have hDh1 : D.h (1 : D.P) = 1 := by
+    have h := hDil.1 (1 : Y.unop.base.carrier)
+    rw [hρ1, hφ'1] at h
+    exact h
+  have hcorner := Theses.B.Dils.h_is_corner_for_unital_map φ' hφ'1 D hDil
+  -- **169XI**.2b: putting the filter back gives a Paschke dilation of `φ`
+  obtain ⟨h₂, hh₂, hD₂⟩ := Theses.B.Dils.dils_filter_basics_2b
+    f.unop.toNCPMap c' hc' φ' ⟨hφ'1, hφ'2⟩ D hDil
+  -- the objects and the three morphisms of `vN_cpsuᵒᵖ`
+  obtain ⟨g, hg⟩ := su_exists_ncpsu_of_nmiu D.ρ
+  obtain ⟨ϱ, hϱ⟩ : ∃ ϱ : Opposite.op (WStarCPSU.of (WStar.of D.P)) ⟶ Y,
+      ∀ a, ϱ.unop.toNCPMap a = g.toNCPMap a := ⟨Quiver.Hom.op g, fun _ => rfl⟩
+  obtain ⟨ξ, hξ⟩ : ∃ ξ : X ⟶ Opposite.op (WStarCPSU.of (WStar.of C')),
+      ξ.unop.toNCPMap = c' :=
+    ⟨Quiver.Hom.op ⟨c', le_trans hc'.2.1 f.unop.subunital'⟩, rfl⟩
+  obtain ⟨π, hπ⟩ : ∃ π : Opposite.op (WStarCPSU.of (WStar.of C')) ⟶
+        Opposite.op (WStarCPSU.of (WStar.of D.P)),
+      π.unop.toNCPMap = D.h :=
+    ⟨Quiver.Hom.op ⟨D.h, le_of_eq hDh1⟩, rfl⟩
+  refine ⟨_, ϱ, ξ ≫ π, su_isDilation_of_paschke f ϱ ξ π D.ρ
+    (fun a => ((hϱ a).trans (hg a)).symm) ?_ ?_ ?_ h₂ ?_ ?_⟩
+  · rw [hξ]; exact hc'
+  · rw [hπ]; exact hDh1
+  · rw [hπ]; exact hcorner
+  · intro x
+    refine Eq.trans (hh₂ x) ?_
+    refine Eq.trans ?_ (suop_comp_apply ξ π x).symm
+    rw [hξ, hπ]
+    rfl
+  · exact hD₂
+
 end IUnique
 
 
@@ -3419,7 +3755,13 @@ theorem vn_has_dilations (s : EffectusPartialStructure WStarCPSU.{u}ᵒᵖ) :
     letI := s.effectus
     ∀ hD : DiamondEffectus WStarCPSU.{u}ᵒᵖ,
       letI := hD
-      HasDilations WStarCPSU.{u}ᵒᵖ := sorry
+      HasDilations WStarCPSU.{u}ᵒᵖ := by
+  have : HasFiniteCoproducts (WStarCPSU.{u}ᵒᵖ) := suHasFiniteCoproducts
+  have hpcm : s.homPCM = suPCM :=
+    effectusPartialStructure_homPCM_unique s vnPartialStructure
+  obtain ⟨hfc, pcm, hfin, E⟩ := s
+  subst hpcm
+  exact fun hD => @su_hasDilations E hD
 
 /-- **223VI** (eff.tex:7095, Example): every dilation in `vNᵒᵖ` has the
 order correspondence (by the Paschke correspondence of the dils

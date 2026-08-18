@@ -21144,3 +21144,103 @@ has to be an initial object of `haW*_miu`.
 Nothing for ERRATA or QUESTIONS.  `docs/why-open.csv`: the
 `AstarhaB_concrete` row is deleted and the `ha_tensor_closed` row rewritten.
 `docs/AProc-survey.md`: headline 21 → 20, session block added.
+
+
+## Session 88 — `B/Eff`: **221III `vn_has_dilations` is CLOSED**, the `A/Proc` import is in, and 223VI is *not* the cheap second half it was costed as (worker on `Theses/B/Eff/VNExamples.lean`)
+
+`VNExamples.lean` is at **5** `sorry`s, **0** errors, 4034 lines (**+342**).
+B/Eff as a whole is at **6** (`VNExamples` 5, `EffectAlgebras` 1,
+`StatesPredicates` 0).  Axioms were checked **in situ** (a copy of the source
+with `#print axioms` appended, compiled directly, *not* against the olean):
+`vn_has_dilations`, `su_hasDilations`, `su_exists_nmiu_of_sharp_total`,
+`su_sharp_total_of_nmiu`, `su_exists_ncpsu_of_nmiu`,
+`su_isQuotient_of_isFilterFor`, `su_isComprehension_of_isCornerFor` — and
+`diamond_effectus_vn` re-checked after the import — are all
+`[propext, Classical.choice, Quot.sound]`.
+
+### The import
+
+`VNExamples.lean` now imports `Theses.A.Proc.Measurement`.  Session 87's
+finding was right in every particular: `Measurement.lean` imports only
+`Theses.A.VN.NormalFunctionals`, which `B/Dils` already supplies, so the
+import adds exactly that one file — **+7s** on the file's compile (24s → 31s;
+the final full compile came in at 22s) — and there is **no name clash**,
+because nothing `open`s `Theses.A.Proc` and `Theses.A.Proc.IsPure` /
+`IsFilter` / `IsCornerMap` therefore never compete with
+`Theses.B.Eff.IsPure` or `Theses.B.Dils.IsFilter`.
+
+**The B/Eff chain arrangement is preserved, and this was checked rather than
+assumed**: grep shows no `.lean` file imports `VNExamples` except
+`Theses.lean`, so the other eight files of `Theses/B/Eff/` still import
+`Theses.Common` alone and build in seconds.  The file header's claim that
+`A/Proc` is "deliberately not imported" has been rewritten accordingly.
+
+### What landed
+
+1. **`su_exists_nmiu_of_sharp_total`** — *sharp + total ⟹ nmiu* — with
+   `su_sharp_total_of_nmiu` (the converse, import-free) and
+   `su_exists_ncpsu_of_nmiu` (an nmiu-map is a unital ncpsu-map, `cp_of_mi`).
+   **One correction to the brief and to session 87: `gardner` (99II) is not
+   the lemma to use.**  `gardner` carries the hypothesis `f 1 = 1`; **99XII**
+   `sharp_multiplicative` is the same cycle *without* it, and it is what
+   `su_sharpMap_iff` feeds directly.  Involution-preservation is
+   `cstar_p_implies_i` at any positive map, and the `StarAlgHom` is then
+   `AlgHom.ofLinearMap` plus that.  ~40 lines.
+2. **`su_isQuotient_of_isFilterFor`** and
+   **`su_isComprehension_of_isCornerFor`** — the dictionary of session 87 read
+   backwards: *every* filter is a quotient, and every **unital** corner is a
+   comprehension.  ~70 lines, both first-try.
+3. **`su_isDilation_of_paschke`** (the translation between **140II**
+   `def-paschke` and **221II** `dfn-eff-dilations`) and **`su_hasDilations`**
+   (the construction), hence **221III**.
+
+### Three things worth recording
+
+* **Unitality of the corner is a real hypothesis.**  Not every corner is a
+  comprehension: by QUESTIONS **D7**, `λ·h_a` is again a corner for `a` under
+  169II as printed, and for `λ < 1` the mediating map of a *subunital* `f` is
+  `λ⁻¹·f'`, which need not be subunital.  This is why the dilation used is
+  **not** `existence_paschke` applied to `φ`.  It is assembled the way
+  **170II**.2 assembles one: filter off `φ(1)` (`dils_stand_filter`), take the
+  unique unital `φ'` with `φ = c' ∘ φ'` (`dils_filter_basics_2a`), dilate
+  `φ'`, then put the filter back (`dils_filter_basics_2b`).  The right leg is
+  a corner by **169V** `h_is_corner_for_unital_map` *and* unital, because
+  `h(1) = h(ϱ(1)) = φ'(1) = 1`.  Building it this way also avoids
+  `paschke_unique_up_to_iso`, which `dils_examples_pure_2` needs only because
+  it is handed the dilation instead of choosing it.
+* **The other two mismatches between 140II and 221II are harmless.**  The
+  mediating map of 140II is an arbitrary ncp-map where a morphism of
+  `vN_cpsuᵒᵖ` must be subunital — but it is automatically *unital*,
+  `σ(1) = σ(ϱ'(1)) = ϱ(1) = 1`, both legs being nmiu.  And 140II's uniqueness
+  clause quantifies over all ncp-maps, which is stronger than the effectus
+  asks for.
+* **A technique that paid for itself.**  Rather than name the corner algebra
+  `⌈φ(1)⌉𝒜⌈φ(1)⌉` and the Ba-module, both were hidden behind
+  `obtain ⟨C', iC, iP, iS, iV, c', hc'⟩ : ∃ (C' : Type u) …` and
+  `obtain ⟨D, hDil⟩ : ∃ D : PaschkeTriple …`, so that the page-long types
+  never appear.  Combined with recording `ξ.unop.toNCPMap = c'` as an
+  equation **of maps** (`rfl` at the `Quiver.Hom.op ⟨c', _⟩` site) rather than
+  pointwise, this made every downstream `rw` go through; and passing the
+  Paschke `h` to the translation lemma as a separate argument plus a pointwise
+  equation avoided having to prove two `PaschkeTriple`s equal.  Only two
+  errors in the whole session, both trivial.
+
+### What is next, and a re-costing
+
+**223VI `vn_dilation_order_correspondence` is not the cheap second half the
+record says it is.**  `DilationOrderCorrespondence` is stated with `asrt` and
+`sef`, so it needs `asrt_p` identified concretely in `vN` as `b ↦ √a b √a` —
+and `asrt_p` is characterised (211II) as the unique **⋄-positive** map with
+`1 ∘ asrt_p = p`, where **206II**.4 defines ⋄-positive as *pure and equal to
+`g ≫ g` for a ⋄-self-adjoint `g`*.  So it needs `diaPull`/`diaPush` computed
+concretely in `vN`, which is a second bridge layer of roughly the size of the
+first.  Only after it do `sef_p ≫ ϱ = ϱ ⟺ t ∈ ϱ(𝒜)'` and the
+`paschke_correspondence_mem`/`_embedding`/`_surjective` package apply.
+**~400–600 lines, not the ~200 recorded until now.**  The same layer is what
+`exc_purec_*` and `vn_is_dagger_category` will want, so it is again the next
+target rather than any one statement.
+
+Nothing for ERRATA — no defect in a statement; the corner-unitality point is
+QUESTIONS **D7**, already filed, and no new QUESTIONS.  `docs/why-open.csv`:
+the `vn_has_dilations` row is removed and the five remaining rows carry the
+session-88 note.  `docs/BEff-survey.md`: a session-88 block.

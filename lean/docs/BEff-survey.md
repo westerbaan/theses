@@ -240,6 +240,77 @@
 > and `vn_dilation_order_correspondence` (223VI).  Nothing for ERRATA (no defect
 > in a *statement* — the swap was a defect in **our** record); no new QUESTIONS.
 
+> **Session 88.**  **`vn_has_dilations` (221III) is CLOSED**, axiom-clean
+> (checked *in situ*), and the bridge layer is finished *as far as dilations
+> need it*.  `VNExamples.lean` is at **5** `sorry`s, 0 errors, 4022 lines
+> (**+330**).  B/Eff is at **6** (`VNExamples` 5, `EffectAlgebras` 1,
+> `StatesPredicates` 0).
+>
+> **The import went in and cost almost nothing.**  `VNExamples.lean` now
+> imports `Theses.A.Proc.Measurement` as well as `Theses.B.Eff.Comparisons`
+> and `Theses.B.Dils.Pure`.  `Measurement.lean` imports only
+> `Theses.A.VN.NormalFunctionals`, which `B/Dils` already pulled in, so the
+> import adds one file and **7 seconds** (24s → 31s) and no name clash — in
+> particular `Theses.A.Proc.IsPure`/`IsFilter`/`IsCornerMap` do not collide
+> with `Theses.B.Eff.IsPure` or `Theses.B.Dils.IsFilter`, because nothing
+> `open`s `Theses.A.Proc`.  **The B/Eff chain arrangement is preserved**:
+> checked by grep — no `.lean` file imports `VNExamples` except `Theses.lean`,
+> and the other eight B/Eff files still import `Theses.Common` alone.
+>
+> What landed, all in the `IUnique` section:
+>
+> * **`su_exists_nmiu_of_sharp_total`** — *sharp + total ⟹ nmiu*, with
+>   `su_sharp_total_of_nmiu` the converse and `su_exists_ncpsu_of_nmiu` the
+>   plumbing.  **`gardner` (99II) is not what is needed**: it demands
+>   unitality, and the fact used is **99XII** `sharp_multiplicative`, which
+>   demands none.  Involution-preservation is `cstar_p_implies_i` for any
+>   positive map, and the `StarAlgHom` is `AlgHom.ofLinearMap` plus that.
+>   ~40 lines.
+> * **`su_isQuotient_of_isFilterFor`** — *every* filter is a quotient (the
+>   converse reading of `su_hasQuotients`), and
+>   **`su_isComprehension_of_isCornerFor`** — every **unital** corner is a
+>   comprehension.  **Unitality is a genuine hypothesis, not a convenience**:
+>   by QUESTIONS **D7**, `λ·h_a` is a corner for the same effect under 169II
+>   as printed, and for `λ < 1` the mediating map of a subunital `f` is
+>   `λ⁻¹·f'`, which is not subunital — so *not* every corner is a
+>   comprehension.  ~70 lines.
+> * **`su_isDilation_of_paschke`** and **`su_hasDilations`**, hence 221III.
+>
+> **The construction is not `existence_paschke` applied to `φ`.**  `IsPure h`
+> needs the *unital* corner just described, so the dilation is assembled the
+> way **170II**.2 assembles one: filter off `φ(1)` (`dils_stand_filter`),
+> take the unique unital `φ'` with `φ = c'∘φ'` (`dils_filter_basics_2a`),
+> dilate `φ'`, and put the filter back (`dils_filter_basics_2b`).  The right
+> leg is then a corner by **169V** `h_is_corner_for_unital_map` *and* unital,
+> `h(1) = h(ϱ(1)) = φ'(1) = 1`.  This also sidesteps
+> `paschke_unique_up_to_iso`, which `dils_examples_pure_2` needs only because
+> it is handed the dilation.
+>
+> Two mismatches between **140II** `def-paschke` and **221II**
+> `dfn-eff-dilations` turned out harmless and are worth recording: the
+> mediating ncp-map of 140II is automatically **unital**, hence a morphism of
+> `vN_cpsuᵒᵖ` (`σ(1) = σ(ϱ'(1)) = ϱ(1) = 1`, both legs being nmiu); and
+> 140II's uniqueness is among *all* ncp-maps, which is stronger than the
+> effectus asks for.
+>
+> **Costing.**  ~330 added lines against the ~800–1500 costed in session 86
+> for the whole layer, of which ~530 landed in session 87 — so the layer came
+> in at ~860 lines total, at the low end of that estimate, and the session-86
+> claim that the layer was the *root* was right even though its diagnosis
+> (the multiplicative domain) was wrong.
+>
+> **223VI `vn_dilation_order_correspondence` is re-costed sharply upwards and
+> is *not* now cheap.**  `DilationOrderCorrespondence` is stated with `asrt`
+> and `sef`, so it needs `asrt_p` identified concretely in `vN` as
+> `b ↦ √a b √a` — and by **206II**.4 that means proving `ad_{√a}` **pure**
+> and equal to `g ≫ g` for a **⋄-self-adjoint** `g`, i.e. computing
+> `diaPull`/`diaPush` concretely in `vN`: a second bridge layer of roughly the
+> size of the first.  After it, `sef_p ≫ ϱ = ϱ ⟺ t ∈ ϱ(𝒜)'` and `Θ` is
+> `paschke_correspondence_mem`/`_embedding`/`_surjective`.  **~400–600 lines,
+> not the ~200 recorded until now.**  Nothing for ERRATA (no defect in a
+> statement); no new QUESTIONS — the corner-unitality point is **D7**, already
+> filed.
+
 > **Session 84, second worker.**  **`finite_effectMonoid_boolean` (178III.2) is
 > CLOSED**, axiom-clean, in `EffectAlgebras.lean` (new section
 > `FiniteBoolean`).  With `effects_sea` that puts B/Eff at **10** `sorry`s
