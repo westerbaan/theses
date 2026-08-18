@@ -132,7 +132,7 @@ Classification key: **(a)** self-contained, **(b)** blocked on a named
 | **164II ex.** | `univprop_ext_tensor` | **(a)** | **CLOSED session 79**, ~900 private lines, axiom-clean.  `X ⊗ Y` is the self-dual completion (**150II**) of `V = (X ⊙ Y) ⊙ 𝒞`, an honest `𝒞`-module, and `univ` is **151Ia** applied to `T̃(z ⊗ c) = c·T̂(z)`.  ⚠️ **This row's "same three-step shape as `existence_paschke`" was wrong**, and dils.tex **164VIII** says so itself: `X ⊙ Y` is only an `𝒜 ⊙ ℬ`-module, so 151Ia does not apply to it and the thesis retraces its proof.  The fourth step, which is where the work is, is `tensor_gram_le`: the `univ` field bounds `T` over *elementary* families (coefficients in `𝒜 ⊙ ℬ`) and the lift needs all of `𝒜 ⊗ ℬ`.  Three lemmas: absorb `𝒜 ⊙ ℬ`-coefficients into the families (`Σ`-indexing, no padding); the order form of the bound by 144V's own proof with `cfc_mem` putting the resolvent in the **norm closure** of `𝒜 ⊙ ℬ` (this replaces the thesis's norm-completion of the module); and the upgrade to `𝒜 ⊗ ℬ`-coefficients by GNS-seminorm continuity of the quadratic form plus `unDense_tSpan` — **Kaplansky density is not needed**.  `hX`, `hY` and both `CompleteSpace` hypotheses turn out **unused** |
 | **164II.1** | `ext_tensor_dense` | **(a)** | **CLOSED session 50.**  `P = id` from `exists_orthoProj` + `ExtTensor.univ` as in 163II-dense; the `bSpan D ⊆ unClosure D` gap is the thesis's own 164VII, and needs only *unbounded* ultrastrong density of `𝒜 ⊙ ℬ` (`IsVNTensor.generates` + `isVNSubalgebra_usClosureSubalgebra`) — **not** Kaplansky density, contrary to this row's earlier text |
 | **164II.2a** | `ext_tensor_basis` | **(a)** | **CLOSED session 51** (~170 lines).  It needed 164II.1 but **not** 161II.2, contrary to this row's earlier text: the thesis's 164X reduces to a Parseval identity checked against product np-functionals only because its `X ⊗ Y` *is* `ℓ²((pᵢⱼ))`; for an abstract `E : ExtTensor` the cheaper route is 164II.1 + the 166III estimates with `s` chosen before `u` |
-| 164II.2b | `ext_tensor_ketbra_dense` | **(d)** | **FALSE as transcribed** (session 54, QUESTIONS **D6**): our statement forces a `Finset (ι × κ)`-indexed net along `atTop`, and at `ι = κ = PUnit` (`X = 𝒜`, `Y = ℬ`, `E = extTensorSelf`) `atTop` is principal at the top element, so the net's value there would have to *equal* `T` — forcing `𝒜 ⊗ ℬ = 𝒜 ⊙ ℬ`.  The thesis claims only ultraweak **density** of `span D`, and *that* **is proved**, as the new public `ext_tensor_ketbra_uwDense` (entourage form), by the thesis's own 164XI: 159IV + 164II.2a + Kaplansky 74IV + 159IX.  Left `sorry` per the never-change-a-statement rule |
+| **164II.2b** | `ext_tensor_ketbra_uwDense` | **(a)** | **CLOSED session 93 by author ruling** (2026-08-18; QUESTIONS **D6**, now deleted per that file's convention).  Our earlier transcription `ext_tensor_ketbra_dense` forced a `Finset (ι × κ)`-indexed net along `atTop`, and at `ι = κ = PUnit` (`X = 𝒜`, `Y = ℬ`, `E = extTensorSelf`) `atTop` is principal at the top element, so the net's value there would have to *equal* `T` — forcing `𝒜 ⊗ ℬ = 𝒜 ⊙ ℬ`, which fails for `B(ℓ²)`.  The thesis claims only ultraweak **density** of `span D`, so the entourage form is the faithful reading: the net form has been **deleted** and `ext_tensor_ketbra_uwDense` now carries the 164II.2b name.  Proof is the thesis's own 164XI: 159IV + 164II.2a + Kaplansky 74IV + 159IX |
 | 165VI | `ba_ext_tensor_pres` | **(b)** | proof 165VII–165X.  `generates` is supplied by `ext_tensor_ketbra_uwDense`, and the miu-clauses by 165III (proved).  ⚠️ **This row previously said "what is left is 165IX/165X" — that is wrong** (session 55): 165IX/165X give product functionals only for the *vector states* `Ω_X`, `Ω_Y` and then appeal to **116VII** `tensor-characterization`, whereas our `IsVNTensor.exists_productFunctional` transcribes proc.tex's `tensor` literally and demands one for **every** pair of np-functionals.  `tensor_characterization` (`A/Proc/Tensor.lean`) **was closed in session 65**, but it is still off this import path — `B/Dils` does not import `A/Proc` at all (`HilbertModules.lean` imports `Theses.Common`, `A.CStar.Matrices` and three `A/VN` files), and `B/Dils` carries its own `IsVNTensor`.  So 165VI remains blocked *structurally*: it needs its own copy of 116VII, or a decision to put `A/Proc` on the import path (QUESTIONS **D3** territory).  Re-checked session 67 |
 | **166IV** | `exttensor_dense_subsets` | **(a)** | **CLOSED session 50.**  The thesis's route through 158II `kaplansky_hilbmod` (open, printed proof false) is avoided: `u ∈ U` is chosen before `v ∈ V`, so no norm-bounded net is required |
 | **166VI** | `dilationspace_dense_subset` | **(a)** | **CLOSED session 50**, together with the new public `paschke_tprod_dense` (the elementary tensors of `𝒜 ⊗_φ ℬ` are ultranorm dense — easier than 164II.1, since `{∑ aᵢ ⊗ bᵢ}` is already a ℬ-submodule) |
@@ -1372,3 +1372,23 @@ stated with a binder at `X ⊗[ℂ] 𝒜` will not rewrite a goal whose term is
 typed `NC B`.  Restate at the type the goal uses, or use `exact`/`have`.
 Also: `ContinuousLinearMap.coe_injective` is about the coercion to
 `LinearMap`; for `⇑f = ⇑g → f = g` use `DFunLike.coe_injective`.
+
+---
+
+## Session 93 — QUESTIONS **D6** ruled, and `SelfDual.lean` is finished
+
+The author ruled on 2026-08-18, taking the option this file and QUESTIONS
+both recommended: **delete the net form and keep the entourage form under the
+164II.2b name.**  `ext_tensor_ketbra_dense` is gone; the doc comment of
+`ext_tensor_ketbra_uwDense` now leads with `**164II**` (so the Sorry Map keys
+it to 164II.2b) and records the counterexample that killed the net form, so
+the finding survives the deletion of the QUESTIONS entry.
+
+Consequence: **`Theses/B/Dils/SelfDual.lean` has no `sorry`** — 0 errors, 0
+sorries, ~9090 lines.  Nothing consumed `ext_tensor_ketbra_dense`; the only
+consumer of that density in the file (165VI `ba_ext_tensor_pres`, through the
+`generates` clause) already went through `ext_tensor_ketbra_uwDense`.
+
+`B/Dils` is now at **6** open: Kaplansky 4 (the false 158V estimates, kept as
+documentation), Pure 1 (`surjective_nmiu_2`, QUESTIONS **D7**), Stinespring 1
+(`ess_uniq_pur`, QUESTIONS **B12**).

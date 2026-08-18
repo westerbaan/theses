@@ -6618,35 +6618,24 @@ theorem ext_tensor_basis [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
   exact unClosure_mono hD (ext_tensor_dense hX hY E z)
 
 /-- **164II** (`univprop-ext-tensor`, dils.tex:5024, Theorem), property 2b:
-the linear span of the `|(eᵢa) ⊗ (dⱼb)⟩⟨e_k ⊗ d_l|` is ultraweakly dense
-in `𝒞ᵃ(X ⊗ Y)`.
-
-**164X**–**164XI** are the proof; **164XII** (Examples) — not
-converted. -/
-theorem ext_tensor_ketbra_dense [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
-    [VonNeumannAlgebra 𝒞] [CompleteSpace X] [CompleteSpace Y]
-    (hX : SelfDual 𝒜 X) (hY : SelfDual ℬ Y) (E : ExtTensor t ht X Y)
-    {ι κ : Type u} (e : ι → X) (d : κ → Y)
-    (he : IsONBasis 𝒜 e) (hd : IsONBasis ℬ d) (T : Ba 𝒞 E.Z) :
-    ∃ approx : Finset (ι × κ) → Ba 𝒞 E.Z,
-      (∀ s, approx s ∈ Submodule.span ℂ
-        {S : Ba 𝒞 E.Z | ∃ (i k : ι) (j l : κ) (a : 𝒜) (b : ℬ),
-          S.1 = mketbra 𝒞 (E.η (a • e i) (b • d j)) (E.η (e k) (d l))}) ∧
-      UWTendsto approx atTop T :=
-  sorry
-
-/-- **164XI** (dils.tex:5327), the thesis's own claim: the linear span of
-`D = {|(e'ᵢa) ⊗ (d'ⱼb)⟩⟨e_k ⊗ d_l|}` is **ultraweakly dense** in
-`𝒞ᵃ(X ⊗ Y)` — here in the entourage form (given finitely many
+the linear span of `D = {|(e'ᵢa) ⊗ (d'ⱼb)⟩⟨e_k ⊗ d_l|}` is **ultraweakly
+dense** in `𝒞ᵃ(X ⊗ Y)` — in the entourage form (given finitely many
 np-functionals and an `ε > 0`, some element of the span is within `ε` of
-`T` on all of them).
+`T` on all of them).  **164X**–**164XI** (dils.tex:5327) are the proof;
+**164XII** (Examples) — not converted.
 
-⚠️ This is *weaker* than `ext_tensor_ketbra_dense` above, which forces the
-approximating net to be indexed by `Finset (ι × κ)` along `atTop`; that
-form is **false** (QUESTIONS **D6**): take `ι = κ = PUnit`, `X = 𝒜`,
-`Y = ℬ`, `E = extTensorSelf` — then `Finset (ι × κ)` has a greatest
-element, `atTop` is the principal filter there, and the net's value at that
-element would have to *equal* `T`, forcing `𝒜 ⊗ ℬ = 𝒜 ⊙ ℬ`.
+📌 *Author ruling, 2026-08-18 (QUESTIONS **D6**, now closed).*  This
+declaration replaces an earlier transcription, `ext_tensor_ketbra_dense`,
+which demanded an approximating **net indexed by `Finset (ι × κ)` along
+`atTop`** — the shape of **159IV** `ketbra_ultraweakly_dense`, where the
+thesis's own proof does produce such a net.  Here that strengthening is
+**false**: take `ι = κ = PUnit`, `X = 𝒜`, `Y = ℬ`, `E = extTensorSelf`;
+then `Finset (ι × κ)` has a greatest element, `atTop` is the principal
+filter there, and — the ultraweak topology being Hausdorff — the net's
+value at that element would have to *equal* `T`, forcing
+`𝒜 ⊗ ℬ = 𝒜 ⊙ ℬ`, which fails for `B(ℓ²)`.  The thesis claims only
+density, so the entourage form below is the faithful reading and the net
+form has been deleted.
 
 The proof is the thesis's **164XI**: **159IV** `ketbra_ultraweakly_dense`,
 applied to the basis `E₂` supplied by **164II**.2a, gives the operators
@@ -7159,7 +7148,7 @@ that `IsVNTensor.exists_productFunctional` asks for.
 **Divergences.**  (1, class 2) **165VIII** reads generation off the
 ultraweak density of the `|(eᵢa) ⊗ (dⱼb)⟩⟨e_k ⊗ d_l|`; we use
 `ext_tensor_ketbra_uwDense`, the *entourage* form of that density (the net
-form `ext_tensor_ketbra_dense` is false, QUESTIONS **D6**), which needs the
+form is false and was deleted — QUESTIONS **D6**, ruled 2026-08-18), which needs the
 bridge `mem_uwClosure_of_npApprox` above.  (2, class 1) **165X** argues with
 `√A`; the transcription uses `hilbmod_ordersep`'s own factorisation
 `A = R'∘R` instead, which is the same argument with the continuous functional

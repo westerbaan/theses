@@ -140,44 +140,6 @@ printed statement is recovered verbatim; under (c) the exercise's own first
 half is already the whole content.  We have left `ess_uniq_pur` `sorry`ed and
 unchanged.
 
-### D6. 164II.2b `ext_tensor_ketbra_dense` — **our** statement is false; the thesis's is true and is now proved
-`dils.tex:5327` (**164XI**), `SelfDual.lean`.  The thesis claims only that the
-linear span of
-
->  `D = {|(e'ᵢa) ⊗ (d'ⱼb)⟩⟨e_k ⊗ d_l|; a ∈ 𝒜, b ∈ ℬ, i,k ∈ I', j,l ∈ J'}`
-
-is **ultraweakly dense** in `ℬᵃ(X ⊗ Y)`.  Our transcription instead demands an
-approximating **net indexed by `Finset (ι × κ)` along `atTop`** (copying the
-shape of **159IV** `ketbra_ultraweakly_dense`, where the thesis's own proof
-*does* produce such a net, `p_S T p_S`).  That strengthening is **false**:
-
-* take `ι = κ = PUnit`, `𝒜 = ℬ = B(ℓ²)`, `𝒞 = 𝒜 ⊗ ℬ`, `X = 𝒜`, `Y = ℬ`,
-  `E = extTensorSelf` (session 52), `e = d = 1` — a legitimate orthonormal
-  basis of a von Neumann algebra over itself;
-* then `E.Z = 𝒞`, `f() = t 1 1 = 1`, `ℬᵃ(X ⊗ Y) ≅ 𝒞` (as right multiplications)
-  and `span D ≅ 𝒜 ⊙ ℬ`, the *algebraic* tensor product;
-* `Finset (PUnit × PUnit)` has a greatest element, so `atTop` is the principal
-  filter there and — the ultraweak topology being Hausdorff — the net's value at
-  that element must **equal** `T`.  So the statement would force
-  `𝒜 ⊗ ℬ = 𝒜 ⊙ ℬ`, which fails for `B(ℓ²)`.
-
-The counterexample cannot be written down *inside* the tree, because
-`IsVNTensor` is axiomatized (proc.tex 108II is not formalized) and the only
-concrete instance we have is `ℂ ⊗ ℂ = ℂ`, where the statement is true.  So the
-`sorry` is left in place per the never-change-a-statement rule.
-
-**The thesis's actual claim is now proved**, as `ext_tensor_ketbra_uwDense`
-(same file, immediately below), in the entourage form "for finitely many
-np-functionals and `ε > 0` there is an element of `span D` within `ε` of `T` on
-all of them" — via **159IV**, **164II**.2a, Kaplansky (**74IV**) and **159IX**
-(also proved this session).  That form is what **165VI**'s `generates` clause
-needs, so nothing downstream is lost.
-
-*Decision needed*: replace the net in `ext_tensor_ketbra_dense` by the
-entourage form (i.e. delete the statement and keep `ext_tensor_ketbra_uwDense`
-under the 164II.2b name), or keep both with the net form restricted to a
-hypothesis that rules the degenerate case out.  We recommend the first.
-
 ### D7. 170IV `surjective-nmiu`, converse half — false as printed; corners need subunital mediating maps, exactly as filters did (B11)
 `dils.tex:6223` (Exercise), solution `bsols.tex:1365`, `Pure.lean`
 (`surjective_nmiu_2`).  The exercise's second half — "any corner of a central

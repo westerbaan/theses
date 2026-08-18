@@ -22741,3 +22741,61 @@ on a product, which is also how the thesis itself uses it in **116V**.
 `lake env lean` run, and that is off limits to a worker; the committed map is
 left untouched so it is not overwritten from stale status data.  Regenerating
 it after the next build will drop `triple_tensor` from the open list.
+
+## Session 93 — `B/Dils`: **QUESTIONS D6 ruled by the author — the false net form of 164II.2b is deleted, and `SelfDual.lean` is FINISHED**
+
+**The ruling** (Bram, 2026-08-18): take the option QUESTIONS **D6** and
+`docs/BDils-survey.md` both recommended — *replace the net in
+`ext_tensor_ketbra_dense` by the entourage form, i.e. delete the statement and
+keep `ext_tensor_ketbra_uwDense` under the 164II.2b name.*  This is the first
+thesis-B ruling; thesis A was ruled on 2026-08-13.
+
+### What changed
+
+* `ext_tensor_ketbra_dense` is **deleted** from `Theses/B/Dils/SelfDual.lean`.
+  It was ours, not the thesis's: dils.tex **164XI** claims only that
+  `span D` is ultraweakly *dense* in `𝒞ᵃ(X ⊗ Y)`, while our transcription
+  demanded an approximating net indexed by `Finset (ι × κ)` along `atTop` —
+  the shape of **159IV** `ketbra_ultraweakly_dense`, where the thesis's own
+  proof *does* produce such a net (`p_S T p_S`).
+* `ext_tensor_ketbra_uwDense` now carries the 164II.2b name: its doc comment
+  leads with `**164II**` (which is what `scripts/sorry_map.py` keys on, so the
+  Sorry Map fills the 164II.2b slot with it) and it opens with a 📌 block
+  recording the ruling **and the counterexample**, so the finding survives the
+  deletion of the QUESTIONS entry.
+
+### Why the net form was false, kept here for the record
+
+Take `ι = κ = PUnit`, `𝒜 = ℬ = B(ℓ²)`, `𝒞 = 𝒜 ⊗ ℬ`, `X = 𝒜`, `Y = ℬ`,
+`E = extTensorSelf`, `e = d = 1` — a legitimate orthonormal basis of a von
+Neumann algebra over itself.  Then `E.Z = 𝒞`, `ℬᵃ(X ⊗ Y) ≅ 𝒞` as right
+multiplications and `span D ≅ 𝒜 ⊙ ℬ`, the *algebraic* tensor product.
+`Finset (PUnit × PUnit)` has a greatest element, so `atTop` is the principal
+filter there; the ultraweak topology is Hausdorff, so the net's value at that
+element must **equal** `T`.  That forces `𝒜 ⊗ ℬ = 𝒜 ⊙ ℬ`, which fails for
+`B(ℓ²)`.
+
+The counterexample still cannot be written down *inside* the tree —
+`IsVNTensor` is axiomatized (proc.tex 108II is not formalized) and the only
+concrete instance we have is `ℂ ⊗ ℂ = ℂ`, where the statement is true — which
+is why it lives in a doc comment rather than as a `_counterexample` theorem,
+unlike 116III.4 (session 93, `A/Proc`) and 158V's four estimates.
+
+### Consequence
+
+**`Theses/B/Dils/SelfDual.lean` has no `sorry`: 0 errors, 0 sorries.**
+Nothing consumed `ext_tensor_ketbra_dense` — the only place the file needs
+this density is 165VI `ba_ext_tensor_pres`, through the `generates` clause,
+and that already went through `ext_tensor_ketbra_uwDense`.  Verified after the
+deletion: `SelfDual.lean` compiles clean, and `Pure.lean` and
+`B/Eff/VNExamples.lean` recompile against a fresh `SelfDual` olean with their
+sorry counts unchanged.
+
+`B/Dils` is at **6**: `Kaplansky.lean` 4 (the false 158V estimates, kept as
+documentation), `Pure.lean` 1 (`surjective_nmiu_2`, QUESTIONS **D7**),
+`Stinespring.lean` 1 (`ess_uniq_pur`, QUESTIONS **B12**).
+
+*Divergence class: 4 — a repair to our own transcription, here authorised by
+the author rather than merely logged.*  `QUESTIONS.md` D6 is **deleted** per
+that file's own convention (answered *and* implemented ⟹ delete, the ruling
+preserved in the commit message and here).

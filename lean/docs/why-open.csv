@@ -54,7 +54,6 @@ HaFreeExp.sor|blocked|exists_tmapM|yellow: inherited from the HaFreeExp type, wh
 HaFreeExp.universal|blocked|exists_tmapM|yellow: the universal property is literally stated with tmapM
 HaFreeExp.vna|blocked|exists_tmapM|yellow: inherited from the HaFreeExp type, whose universal field mentions tmapM
 ess_uniq_pur|awaiting-ruling||QUESTIONS B12: false without a dimension hypothesis, and which of three repairs is undecided
-ext_tensor_ketbra_dense|awaiting-ruling||QUESTIONS D6: our net form is false; the thesis's claim is proved as ext_tensor_ketbra_uwDense
 h_is_corner_for_unital_map|open||its recorded blocker existence_paschke is now proved, so 169V needs re-analysis; not attempted
 ncp_extreme_paschke|blocked|paschke_correspondence_surjective|172III needs the 157IV correspondence and 170II.2
 paschke_corner|open||its blockers existence_paschke and 154III.5 are now both proved; unblocked but not yet attempted
