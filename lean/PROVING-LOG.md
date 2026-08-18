@@ -22464,3 +22464,143 @@ same device Stinespring.lean uses for **140VIII**.
   guess for how one classifies Stinespring dilations of `𝓑(ℋ) → 𝓑(𝒦)`.  The
   minimal-dilation route reaches the classification without any essential
   uniqueness statement, so QUESTIONS **B12** stays a leaf.
+
+
+## Session 92 — `B/Dils`: **167I `paschke_tensor` is CLOSED** — all five missing pieces built, and the thesis's own last step is the LaTeX comment (worker on `Theses/B/Dils/SelfDual.lean`)
+
+`SelfDual.lean` is at **1** `sorry` (`ext_tensor_ketbra_dense`, QUESTIONS
+**D6** — false as stated, and a leaf), **0** errors, 9105 lines (**+870**).
+B/Dils as a whole is at **7** (`Kaplansky` 4, `Pure` 1, `SelfDual` 1,
+`Stinespring` 1).  `paschke_tensor` was checked **in situ** — a copy of the
+finished source in the scratchpad with `#print axioms` appended, compiled
+directly, *not* against the olean — and is
+`[propext, Classical.choice, Quot.sound]`, as are all eight new public
+lemmas checked with it.  `Pure.lean`, which imports this file, was rebuilt
+against a fresh scratch olean of the new `SelfDual.lean`: **no errors**.
+
+### Session 91's list of five was right, and complete
+
+The costing in the session-91 entry — five missing pieces, 500–800 lines —
+held up almost exactly: the new material is **+870** lines, of which ~645 is
+general infrastructure and ~155 the theorem itself.  Nothing in the list
+turned out to be unnecessary and only one thing was missing from it (item 6
+below).
+
+1. **Transport of `IsPaschkeDilationOf` along a bijective nmiu-map** —
+   `paschkeDilation_transport`, with `exists_ncpComp'`, `exists_ncp_of_nmiu`,
+   `exists_ncp_inv`.  These *are* `pcorner_transport` and its three
+   supporting lemmas from `B/Dils/Pure.lean`, re-proved verbatim because
+   they are `private` there and `Pure.lean` is downstream.  ~120 lines, no
+   surprises.  (They are **public** here, so the copies in `Pure.lean` are
+   now redundant; not touched, since `Pure.lean` is another worker's file.)
+2. **The bridge `IsVNTensor ↔ Theses.A.Proc.IsTensorProduct`** —
+   `isTensorProduct_of_isVNTensor` / `isVNTensor_of_isTensorProduct`, ~45
+   lines, and much easier than costed: the only real content is
+   `generates` ↔ `dense`, and thesis A already has **both** directions of
+   that (`wstar_eq_top_of_dense_span`, `dense_of_wstar_eq_top`), with
+   `tensorSpan` as the ∗-subalgebra the second one wants.  ℂ-homogeneity in
+   the second slot, which `IsVNTensor` does not record, is
+   `vnTensor_smul_complex_right`.
+3. **`IsVNTensor` on the opposite algebra** — `isVNTensor_mop`.  The
+   algebraic clauses are trivial (the two reversals cancel:
+   `tᵐᵒᵖ(x,y)·tᵐᵒᵖ(x',y') = (t(a',b')t(a,b))ᵒᵖ = t(a'a,b'b)ᵒᵖ`), the product
+   functionals go across by `npFunctionalOp` and its new converse
+   `npFunctionalUnop`, and **all** the work is in `generates`.  That needs
+   `op` to be an **ultraweak homeomorphism**, which is new:
+   `uwContinuous_op`/`uwContinuous_unop`/`uwOpHomeomorph`/`uwDense_op_image`,
+   ~50 lines.  The proof is one line of lattice theory —
+   `ultraweak = ⨅_ω induced ω` and `{ν ∘ op : ν ∈ NP(𝒞ᵐᵒᵖ)} = NP(𝒞)` as
+   *sets of functions*, so `induced_iInf` + `induced_compose` gives
+   `induced op (ultraweak 𝒞ᵐᵒᵖ) = ultraweak 𝒞` — but it has to be written
+   with the topologies `@`-explicit throughout, since `ultraweak` is a `def`
+   and `MulOpposite` carries a competing `TopologicalSpace` instance that
+   wins against a `letI` (this cost more time than the mathematics).
+4. **`ad_U` as a bijective nmiu-map** — `exists_ad_unitary_nmiu`, ~110
+   lines.  **153I** `hilbmod_ad_ncp` supplies the ncp-map for the adjoint
+   pair `(U⁻¹, U)`; unitality and multiplicativity are then immediate from
+   `U ∘ U⁻¹ = id`, and involution preservation is free — `ncp_star` says a
+   positive map is ∗-preserving, so `exists_nmiu_of_ncp` (new, and generally
+   useful: *unital + multiplicative + ncp ⇒ nmiu*) finishes it.  Bijectivity
+   is `ad_{U⁻¹}` on the other side.
+5. **167VI's two identities** — `vnTensor_map_ext` (new): two ultraweakly
+   continuous linear maps out of a tensor product agreeing on the elementary
+   tensors are equal.  This is the thesis's "as the linear span of the
+   `α₁ ⊗ α₂` is ultrastrongly dense and ncp-maps are ultrastrongly
+   continuous"; we route it through `Theses.A.Proc.tensor_linear_ext`
+   (108II(1)) and the bridge instead, which is the same fact in the ultraweak
+   topology and saves the mirrored-ultranorm bookkeeping.  `H ∘ R = Φ` is
+   **not** proved separately — the transport lemma derives it from the two
+   identities, which is one of the two places where the abstract statement
+   pays off.
+6. **The one thing session 91 did not list**: 167VI's left-hand identity
+   reduces, at each elementary tensor, to an identity of *operators* in
+   `𝒷ᵃ(M₁₂.X)`, and the thesis's computation only reaches the vectors
+   `(a₁ ⊗ a₂) ⊗ (b₁ ⊗ b₂)`, which are **not** all the elementary tensors of
+   `M₁₂`.  Closing that gap is **166VI** `dilationspace_dense_subset` (at
+   `𝒜' = 𝒜₁ ⊙ 𝒜₂`, `ℬ' = ℬ₁ ⊙ ℬ₂`) plus a new **`ba_ext_of_unDense`**:
+   two adjointable operators agreeing on an ultranorm-dense subset are
+   equal, by `unSeminorm_boundedModuleMap_le` (**144V**) and `np_faithful`
+   (**42I**.2), ~70 lines.  166VI was in the tree and unused; this is what
+   it was for.
+
+### The route, and the thesis's missing step
+
+Our statement quantifies over **arbitrary** Paschke dilations `(𝒫ᵢ, ϱᵢ, hᵢ)`,
+faithful to the Theorem.  The printed proof stops at the *standard* ones
+(ERRATA **167II**: the passage is a LaTeX comment, `dils.tex:5950–5961`, and
+the `\qed` at 5948 closes the proof one step early).  The proof here is the
+commented argument, with both of its gaps filled:
+
+* `Θ(S,T) = S ⊗ T` is a tensor product of `𝒷ᵃ(X₁)`, `𝒷ᵃ(X₂)` — **165VI**
+  `ba_ext_tensor_pres`, session 91, with `Θ` itself supplied by **165III**
+  `dfn_tensor_of_hilbmod_maps`.  `ad_U` (item 4, for the `U` of
+  `paschke_tensor_module`) carries it to `𝒷ᵃ(M₁₂.X)` and `isVNTensor_mop`
+  (item 3) to the `ᵐᵒᵖ`s, which is where `ϱ` and `h` live.
+* "there are isomorphisms `βᵢ`" is **140VIII**, available as
+  `exists_paschke_iso_paschkeModule`.
+* "**`β₁ ⊗ β₂` is an isomorphism**" — the gap 167II names.  The fix is *not*
+  to construct `β₁ ⊗ β₂`: precomposing the transported tensor product with
+  the `βᵢ` (`isVNTensor_comp`, i.e. `Theses.A.Proc.isTensorProduct_comp`
+  through the bridge) exhibits `𝒷ᵃ(M₁₂.X)ᵐᵒᵖ` as a tensor product of `𝒫₁`
+  and `𝒫₂` directly, and **114II** `tensor_uniqueness` then hands back the
+  nmiu-isomorphism `ϑ : 𝒫₁ ⊗ 𝒫₂ → 𝒷ᵃ(M₁₂.X)ᵐᵒᵖ`.  Note this needs the
+  `βᵢ` only in the direction `𝒫ᵢ → 𝒷ᵃ(Xᵢ)ᵐᵒᵖ`, so no inverse nmiu-map is
+  ever needed.
+* 167VI's two identities across `ϑ` (items 5, 6), then
+  `paschkeDilation_transport` (item 1) moves `existence_paschke_5` across
+  `ϑ`.
+
+Divergence class **2** throughout: the thesis's own route, with its last step
+taken from its own LaTeX comment and its two gaps filled.  Class 1 for the
+computations inside 167VI, which are transcribed as printed (with the
+mirroring: `ϱ(a₀)(a ⊗ b) = (a a₀) ⊗ b`, so 167VI's `(α₁a₁) ⊗ b₁` is our
+`M₁.tprod (α₁ * a₁) b₁`, and `htA.mul` lands on the correct side).
+
+### One repair to **our** transcription (class 4)
+
+`paschke_tensor` as first written **omitted the `[VonNeumannAlgebra 𝒜ᵢ]` and
+`[VonNeumannAlgebra ℬᵢ]` hypotheses.**  The Theorem's own hypothesis is "an
+ncp-map between *von Neumann algebras*", and every neighbouring statement of
+parsecs 1640–1670 — `ba_ext_tensor_pres`, `paschke_tensor_module`,
+`dilationspace_dense_subset`, `univprop_ext_tensor` — carries them; the
+omission is an artefact of where the statement happened to sit relative to
+`section PaschkeTensorModuleAux`, which is where those instances were
+introduced.  Without them nothing is provable (`existence_paschke` does not
+apply), and with them the statement is the thesis's.  Six instance binders
+added; **not** an ERRATA row, per that file's scope rule (our
+mis-transcriptions live here).  Nothing else in the statement moved: the
+`PaschkeTriple`s, the `IsVNTensor` interface for `tA`, `tB`, `tP`, and the
+characterisations of `Φ`, `R`, `H` on elementary tensors are untouched.
+
+The theorem itself **moved to the end of the parsec**, after
+`paschke_tensor_module`, which it consumes; a pointer comment is left at the
+old position.
+
+### Bookkeeping
+
+`docs/why-open.csv`: the `paschke_tensor` row is **removed** (167I is closed
+and axiom-clean).  `ERRATA.md`: **167II** keeps its `OPEN` status — the
+printed proof still stops one step early — with a session-92 note recording
+that the omitted step is now known to be true and short, so the defect is
+confined to the text.  No new `QUESTIONS`; **D6** is untouched and is still
+not a blocker for anything.

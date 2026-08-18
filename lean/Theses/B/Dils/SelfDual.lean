@@ -7755,6 +7755,688 @@ theorem dilationspace_dense_subset {𝒜 ℬ : Type u}
     exact unClosure_mono hDsub (paschke_tprod_dense φ M z)
   exact hz n ωs ε hε
 
+/-! ## Infrastructure for the main claim of **167I**
+
+Five things **167I** needs that parsecs 1640-1660 do not provide, none of
+them recorded before session 92 (see the session-91 entry of
+`PROVING-LOG.md`):
+
+1. transport of `IsPaschkeDilationOf` along a bijective nmiu-map.  This
+   exists as `pcorner_transport`, but it is `private` in `B/Dils/Pure.lean`,
+   which **imports this file**, so it is re-proved here together with the
+   three lemmas it rests on;
+2. a bridge `IsVNTensor ↔ Theses.A.Proc.IsTensorProduct`, both ways, to feed
+   **114II** `tensor_uniqueness` and the transport lemmas of `A/Proc`;
+3. `IsVNTensor` on the **opposite** algebra — unavoidable, since the standard
+   Paschke dilation's algebra is `𝒷ᵃ(𝒜 ⊗_φ ℬ)ᵐᵒᵖ` (**154III**.5).  `op` is
+   an *anti*-isomorphism, so this is not a rename; the only nontrivial clause
+   is `generates`, which needs `op` to be an ultraweak **homeomorphism**
+   (`uwOpHomeomorph`), i.e. `npFunctionalOp` together with its converse
+   `npFunctionalUnop`;
+4. `ad_U` as a bijective **nmiu**-map for a unitary `U` — **153I**
+   `hilbmod_ad_ncp` gives only *ncp*;
+5. two extension principles: `vnTensor_map_ext` (agreement on elementary
+   tensors plus ultraweak continuity) and `ba_ext_of_unDense` (agreement on
+   an ultranorm-dense subset of the module).
+
+All of it is general and none of it mentions parsec 1670. -/
+
+section PaschkeTensorInfra
+
+set_option linter.unusedSectionVars false
+
+variable {𝒜 ℬ 𝒞 : Type u}
+  [CStarAlgebra 𝒜] [PartialOrder 𝒜] [StarOrderedRing 𝒜]
+  [CStarAlgebra ℬ] [PartialOrder ℬ] [StarOrderedRing ℬ]
+  [CStarAlgebra 𝒞] [PartialOrder 𝒞] [StarOrderedRing 𝒞]
+
+/-- The ℂ-bilinear map underlying an `IsVNTensor`. -/
+noncomputable def vnTensorLin {t : 𝒜 → ℬ → 𝒞} (ht : IsVNTensor t) :
+    𝒜 →ₗ[ℂ] ℬ →ₗ[ℂ] 𝒞 :=
+  LinearMap.mk₂ ℂ t ht.add_left ht.smul_complex ht.add_right
+    (fun c a b => vnTensor_smul_complex_right ht c a b)
+
+@[simp] theorem vnTensorLin_apply {t : 𝒜 → ℬ → 𝒞} (ht : IsVNTensor t)
+    (a : 𝒜) (b : ℬ) : vnTensorLin ht a b = t a b := rfl
+
+theorem isTensorProduct_of_isVNTensor [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
+    [VonNeumannAlgebra 𝒞] {t : 𝒜 → ℬ → 𝒞} (ht : IsVNTensor t) :
+    Theses.A.Proc.IsTensorProduct (vnTensorLin ht) := by
+  have hmiu : Theses.A.Proc.MIUBilinear (vnTensorLin ht) :=
+    ⟨ht.one, fun a b c d => (ht.mul a b c d).symm, fun a b => ht.star a b⟩
+  refine ⟨hmiu, ?_, ht.exists_productFunctional, fun z hz hall =>
+      ht.separating z hz fun Ω hΩ => by
+        obtain ⟨ω, ξ, hωξ⟩ := hΩ; exact hall ω ξ Ω hωξ⟩
+  have htop : wstar 𝒞
+      ((Theses.A.Proc.tensorSpan (vnTensorLin ht) hmiu : StarSubalgebra ℂ 𝒞) : Set 𝒞)
+      = ⊤ := by
+    refine top_le_iff.mp ?_
+    rw [← ht.generates]
+    refine sInf_le_sInf fun T hT => ⟨hT.1, ?_⟩
+    rintro _ ⟨p, rfl⟩
+    exact hT.2 (Submodule.subset_span ⟨p.1, p.2, rfl⟩)
+  have hd := Theses.A.Proc.dense_of_wstar_eq_top _ htop
+  rwa [Theses.A.Proc.coe_tensorSpan] at hd
+
+theorem isVNTensor_of_isTensorProduct [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
+    [VonNeumannAlgebra 𝒞] {γ : 𝒜 →ₗ[ℂ] ℬ →ₗ[ℂ] 𝒞}
+    (hγ : Theses.A.Proc.IsTensorProduct γ) :
+    IsVNTensor (fun a b => γ a b) := by
+  refine
+    { add_left := fun a a' b => by rw [map_add]; rfl
+      add_right := fun a b b' => map_add _ b b'
+      smul_complex := fun c a b => by rw [map_smul]; rfl
+      mul := fun a a' b b' => (hγ.miu.2.1 a a' b b').symm
+      one := hγ.miu.1
+      star := fun a b => hγ.miu.2.2 a b
+      generates := ?_
+      exists_productFunctional := hγ.prod_exists
+      separating := fun z hz hall => hγ.faithful z hz fun σ τ h hh =>
+        hall h ⟨σ, τ, hh⟩ }
+  have hset : (Set.range fun p : 𝒜 × ℬ => γ p.1 p.2)
+      = {c : 𝒞 | ∃ a b, c = γ a b} := by
+    ext c
+    exact ⟨fun ⟨p, hp⟩ => ⟨p.1, p.2, hp.symm⟩, fun ⟨a, b, hb⟩ => ⟨(a, b), hb.symm⟩⟩
+  rw [hset]
+  exact Theses.A.Proc.wstar_eq_top_of_dense_span _ hγ.dense
+
+/-! ### np-functionals and the ultraweak topology on the opposite algebra -/
+
+/-- np-functionals transfer *back* from the opposite algebra (the converse of
+`npFunctionalOp`, whose proof it mirrors). -/
+noncomputable def npFunctionalUnop (ν : NPFunctional 𝒞ᵐᵒᵖ) : NPFunctional 𝒞 where
+  toPositiveLinearMap :=
+    PositiveLinearMap.mk₀
+      ((ν.toPositiveLinearMap : 𝒞ᵐᵒᵖ →ₗ[ℂ] ℂ).comp
+        ((MulOpposite.opLinearEquiv ℂ).toLinearMap : 𝒞 →ₗ[ℂ] 𝒞ᵐᵒᵖ))
+      (fun x hx => npFunctional_nonneg ν ((mop_nonneg_iff _).mpr hx))
+  preservesDirSups' := by
+    intro D s hne hdir hlub
+    have hlub' : IsLUB (selfAdjointUnop.symm '' D) (selfAdjointUnop.symm s) :=
+      selfAdjointUnop.symm.isLUB_image'.mpr hlub
+    have h := ν.preservesDirSups' (selfAdjointUnop.symm '' D) (selfAdjointUnop.symm s)
+      (hne.image _) (by
+        rintro _ ⟨x, hx, rfl⟩ _ ⟨y, hy, rfl⟩
+        obtain ⟨w, hw, hxw, hyw⟩ := hdir x hx y hy
+        exact ⟨selfAdjointUnop.symm w, ⟨w, hw, rfl⟩, hxw, hyw⟩) hlub'
+    rw [Set.image_image] at h
+    exact h
+
+theorem npFunctionalUnop_apply (ν : NPFunctional 𝒞ᵐᵒᵖ) (x : 𝒞) :
+    npFunctionalUnop ν x = ν (MulOpposite.op x) := rfl
+
+/-- `op : 𝒞 → 𝒞ᵐᵒᵖ` is ultraweakly continuous: the np-functionals of `𝒞ᵐᵒᵖ`
+composed with `op` are exactly the np-functionals of `𝒞` (`npFunctionalUnop`),
+so the initial topology of the former is coarser. -/
+theorem uwContinuous_op :
+    @Continuous 𝒞 𝒞ᵐᵒᵖ (ultraweak 𝒞) (ultraweak 𝒞ᵐᵒᵖ) MulOpposite.op := by
+  let _ : TopologicalSpace 𝒞 := ultraweak 𝒞
+  let _ : TopologicalSpace 𝒞ᵐᵒᵖ := ultraweak 𝒞ᵐᵒᵖ
+  rw [continuous_iff_le_induced]
+  show ultraweak 𝒞 ≤ TopologicalSpace.induced MulOpposite.op (ultraweak 𝒞ᵐᵒᵖ)
+  simp only [ultraweak, induced_iInf, induced_compose]
+  refine le_iInf fun ν => ?_
+  exact iInf_le_of_le (npFunctionalUnop ν) le_rfl
+
+/-- `unop : 𝒞ᵐᵒᵖ → 𝒞` is ultraweakly continuous (`npFunctionalOp`). -/
+theorem uwContinuous_unop :
+    @Continuous 𝒞ᵐᵒᵖ 𝒞 (ultraweak 𝒞ᵐᵒᵖ) (ultraweak 𝒞) MulOpposite.unop := by
+  let _ : TopologicalSpace 𝒞 := ultraweak 𝒞
+  let _ : TopologicalSpace 𝒞ᵐᵒᵖ := ultraweak 𝒞ᵐᵒᵖ
+  rw [continuous_iff_le_induced]
+  show ultraweak 𝒞ᵐᵒᵖ ≤ TopologicalSpace.induced MulOpposite.unop (ultraweak 𝒞)
+  simp only [ultraweak, induced_iInf, induced_compose]
+  refine le_iInf fun ω => ?_
+  exact iInf_le_of_le (npFunctionalOp ω) le_rfl
+
+/-- `op : 𝒞 → 𝒞ᵐᵒᵖ` as an **ultraweak homeomorphism**. -/
+noncomputable def uwOpHomeomorph :
+    @Homeomorph 𝒞 𝒞ᵐᵒᵖ (ultraweak 𝒞) (ultraweak 𝒞ᵐᵒᵖ) :=
+  @Homeomorph.mk _ _ (ultraweak 𝒞) (ultraweak 𝒞ᵐᵒᵖ) MulOpposite.opEquiv
+    uwContinuous_op uwContinuous_unop
+
+theorem uwOpHomeomorph_coe :
+    (⇑(uwOpHomeomorph : @Homeomorph 𝒞 𝒞ᵐᵒᵖ (ultraweak 𝒞) (ultraweak 𝒞ᵐᵒᵖ)))
+      = (MulOpposite.op : 𝒞 → 𝒞ᵐᵒᵖ) := rfl
+
+/-- Ultraweak density transfers to the opposite algebra along `op`. -/
+theorem uwDense_op_image {S : Set 𝒞} (hS : @Dense 𝒞 (ultraweak 𝒞) S) :
+    @Dense 𝒞ᵐᵒᵖ (ultraweak 𝒞ᵐᵒᵖ) (MulOpposite.op '' S) := by
+  have hcl := @Homeomorph.image_closure 𝒞 𝒞ᵐᵒᵖ (ultraweak 𝒞) (ultraweak 𝒞ᵐᵒᵖ)
+    uwOpHomeomorph S
+  rw [uwOpHomeomorph_coe, @Dense.closure_eq _ (ultraweak 𝒞) _ hS,
+    Set.image_univ] at hcl
+  intro z
+  rw [← hcl]
+  exact ⟨MulOpposite.unop z, rfl⟩
+
+/-- The bilinear map `t` transported to the **opposite** algebras,
+`tᵐᵒᵖ(aᵒᵖ, bᵒᵖ) = t(a,b)ᵒᵖ`.  Note `op` is an *anti*-isomorphism, so this is
+not a rename: multiplicativity holds because the two reversals cancel,
+`tᵐᵒᵖ(x,y)·tᵐᵒᵖ(x',y') = (t(a',b')·t(a,b))ᵒᵖ = t(a'a, b'b)ᵒᵖ
+ = tᵐᵒᵖ(x·x', y·y')`. -/
+def mopTensor (t : 𝒜 → ℬ → 𝒞) : 𝒜ᵐᵒᵖ → ℬᵐᵒᵖ → 𝒞ᵐᵒᵖ :=
+  fun a b => MulOpposite.op (t (MulOpposite.unop a) (MulOpposite.unop b))
+
+@[simp] theorem mopTensor_apply (t : 𝒜 → ℬ → 𝒞) (a : 𝒜) (b : ℬ) :
+    mopTensor t (MulOpposite.op a) (MulOpposite.op b) = MulOpposite.op (t a b) :=
+  rfl
+
+/-- **`IsVNTensor` on the opposite algebras.**  Needed because the standard
+Paschke dilation's algebra is `𝒷ᵃ(𝒜 ⊗_φ ℬ)ᵐᵒᵖ` (**154III**.5), so it is the
+*opposite* of the isomorphism **165VI** `ba_ext_tensor_pres` that has to be a
+tensor product.  Every clause is transported along `op`: `generates` through
+the ultraweak homeomorphism `uwOpHomeomorph`, the product functionals through
+`npFunctionalOp` / `npFunctionalUnop`. -/
+theorem isVNTensor_mop [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
+    [VonNeumannAlgebra 𝒞] {t : 𝒜 → ℬ → 𝒞} (ht : IsVNTensor t) :
+    IsVNTensor (mopTensor t) := by
+  refine
+    { add_left := fun a a' b => by
+        show MulOpposite.op _ = MulOpposite.op _ + MulOpposite.op _
+        rw [← MulOpposite.op_add]
+        exact congrArg _ (ht.add_left _ _ _)
+      add_right := fun a b b' => by
+        show MulOpposite.op _ = MulOpposite.op _ + MulOpposite.op _
+        rw [← MulOpposite.op_add]
+        exact congrArg _ (ht.add_right _ _ _)
+      smul_complex := fun c a b => by
+        show MulOpposite.op _ = c • MulOpposite.op _
+        rw [← MulOpposite.op_smul]
+        exact congrArg _ (ht.smul_complex c _ _)
+      mul := fun a a' b b' => by
+        show MulOpposite.op _ * MulOpposite.op _ = MulOpposite.op _
+        rw [← MulOpposite.op_mul]
+        exact congrArg _ (ht.mul _ _ _ _)
+      one := by
+        show MulOpposite.op _ = (1 : 𝒞ᵐᵒᵖ)
+        rw [← MulOpposite.op_one]
+        exact congrArg _ ht.one
+      star := fun a b => by
+        show star (MulOpposite.op _) = MulOpposite.op _
+        rw [← MulOpposite.op_star]
+        exact congrArg _ (ht.star _ _)
+      generates := ?_
+      exists_productFunctional := ?_
+      separating := ?_ }
+  · -- `generates`: transport the ultraweak density of the span along `op`
+    have hdense := (isTensorProduct_of_isVNTensor ht).dense
+    have himg : (Set.range fun p : 𝒜ᵐᵒᵖ × ℬᵐᵒᵖ => mopTensor t p.1 p.2)
+        = MulOpposite.op '' (Set.range fun p : 𝒜 × ℬ => t p.1 p.2) := by
+      ext z
+      constructor
+      · rintro ⟨p, rfl⟩
+        exact ⟨t (MulOpposite.unop p.1) (MulOpposite.unop p.2),
+          ⟨(MulOpposite.unop p.1, MulOpposite.unop p.2), rfl⟩, rfl⟩
+      · rintro ⟨_, ⟨p, rfl⟩, rfl⟩
+        exact ⟨(MulOpposite.op p.1, MulOpposite.op p.2), rfl⟩
+    refine Theses.A.Proc.wstar_eq_top_of_dense_span _ ?_
+    rw [himg]
+    have hspan : (Submodule.span ℂ
+        (MulOpposite.op '' (Set.range fun p : 𝒜 × ℬ => t p.1 p.2)) : Set 𝒞ᵐᵒᵖ)
+        = MulOpposite.op ''
+          (Submodule.span ℂ (Set.range fun p : 𝒜 × ℬ => t p.1 p.2) : Set 𝒞) := by
+      rw [show (MulOpposite.op : 𝒞 → 𝒞ᵐᵒᵖ)
+          = ⇑((MulOpposite.opLinearEquiv ℂ : 𝒞 ≃ₗ[ℂ] 𝒞ᵐᵒᵖ) : 𝒞 →ₗ[ℂ] 𝒞ᵐᵒᵖ) from rfl,
+        Submodule.span_image, Submodule.map_coe]
+    rw [hspan]
+    have hd0 : @Dense 𝒞 (ultraweak 𝒞)
+        (Submodule.span ℂ (Set.range fun p : 𝒜 × ℬ => t p.1 p.2) : Set 𝒞) := by
+      have hset : {c : 𝒞 | ∃ a b, c = vnTensorLin ht a b}
+          = (Set.range fun p : 𝒜 × ℬ => t p.1 p.2) := by
+        ext c
+        exact ⟨fun ⟨a, b, hb⟩ => ⟨(a, b), hb.symm⟩, fun ⟨p, hp⟩ => ⟨p.1, p.2, hp.symm⟩⟩
+      rwa [hset] at hdense
+    exact uwDense_op_image hd0
+  · -- product functionals
+    intro ω ξ
+    obtain ⟨Ω, hΩ⟩ := ht.exists_productFunctional
+      (npFunctionalUnop ω) (npFunctionalUnop ξ)
+    exact ⟨npFunctionalOp Ω, fun a b => hΩ (MulOpposite.unop a) (MulOpposite.unop b)⟩
+  · -- separating
+    intro z hz hall
+    refine MulOpposite.unop_injective (ht.separating _ ((mop_nonneg_iff z).mp hz) ?_)
+    rintro Ω ⟨ω, ξ, hωξ⟩
+    exact hall (npFunctionalOp Ω) ⟨npFunctionalOp ω, npFunctionalOp ξ,
+      fun a b => hωξ (MulOpposite.unop a) (MulOpposite.unop b)⟩
+
+/-! ### `ad_U` for a unitary `U`, as a bijective nmiu-map -/
+
+section AdUnitary
+
+variable {𝒷 X Y : Type u}
+  [CStarAlgebra 𝒷] [PartialOrder 𝒷] [StarOrderedRing 𝒷]
+  [NormedAddCommGroup X] [Module ℂ X] [SMul 𝒷 X] [CStarModule 𝒷 X]
+  [NormedAddCommGroup Y] [Module ℂ Y] [SMul 𝒷 Y] [CStarModule 𝒷 Y]
+
+/-- An ncp-map which is unital and multiplicative is an nmiu-map: involution
+preservation is `ncp_star` (a positive map is ∗-preserving), and normality is
+carried. -/
+theorem exists_nmiu_of_ncp {P Q : Type u} [CStarAlgebra P] [PartialOrder P]
+    [StarOrderedRing P] [CStarAlgebra Q] [PartialOrder Q] [StarOrderedRing Q]
+    (f : NCPMap P Q) (hone : f 1 = 1) (hmul : ∀ x y : P, f (x * y) = f x * f y) :
+    ∃ g : NMIUMap P Q, ∀ a, g a = f a := by
+  have hsm : ∀ (c : ℂ) (a : P), f (c • a) = c • f a := fun c a =>
+    map_smul f.toCompletelyPositiveMap.toLinearMap c a
+  have hcom : ∀ r : ℂ, f ((algebraMap ℂ P) r) = (algebraMap ℂ Q) r := fun r => by
+    rw [Algebra.algebraMap_eq_smul_one, Algebra.algebraMap_eq_smul_one, hsm, hone]
+  refine ⟨{ toStarAlgHom := { toFun := ⇑f
+                              map_one' := hone
+                              map_mul' := hmul
+                              map_zero' :=
+                                map_zero f.toCompletelyPositiveMap.toLinearMap
+                              map_add' := fun a b =>
+                                map_add f.toCompletelyPositiveMap.toLinearMap a b
+                              map_star' := fun a => ncp_star f a
+                              commutes' := hcom }
+            preservesDirSups' := f.preservesDirSups' }, fun _ => rfl⟩
+
+/-- **`ad_U` for a unitary `U`.**  If `U : X → Y` is a bijective bounded
+module map preserving the inner products, then `S ↦ U S U*` is a **bijective
+nmiu-map** `𝒷ᵃ(X) → 𝒷ᵃ(Y)`.  **153I** `hilbmod_ad_ncp` gives only that it is
+an *ncp*-map; unitality and multiplicativity are immediate from
+`U ∘ U⁻¹ = id`, and involution preservation is then free
+(`exists_nmiu_of_ncp`).  This is what carries the isomorphism of dilation
+spaces of **167I** over to the dilating algebras. -/
+theorem exists_ad_unitary_nmiu [VonNeumannAlgebra 𝒷] [CompleteSpace X]
+    [CompleteSpace Y] (hX : SelfDual 𝒷 X) (hY : SelfDual 𝒷 Y) (U : X → Y)
+    (hUb : ∃ C : ℝ, IsBoundedModuleMap (cstarBInner 𝒷 X) (cstarBInner 𝒷 Y) C U)
+    (hUbij : Function.Bijective U)
+    (hUip : ∀ x x' : X, (inner 𝒷 (U x) (U x') : 𝒷) = inner 𝒷 x x') :
+    ∃ ad : NMIUMap (Ba 𝒷 X) (Ba 𝒷 Y),
+      Function.Bijective ⇑ad ∧
+      ∀ (S : Ba 𝒷 X) (x : X), (ad S).1 (U x) = U (S.1 x) := by
+  classical
+  obtain ⟨C, hC⟩ := hUb
+  -- `U` as a continuous linear map
+  set Ul : X →ₗ[ℂ] Y := { toFun := U, map_add' := hC.add, map_smul' := hC.smul_complex }
+    with hUl
+  have hUbd : ∀ x, ‖Ul x‖ ≤ max C 0 * ‖x‖ := by
+    intro x
+    have h := hC.bound x
+    rw [cstarBInner_norm, cstarBInner_norm] at h
+    exact h.trans (mul_le_mul_of_nonneg_right (le_max_left _ _) (norm_nonneg x))
+  set Uc : X →L[ℂ] Y := Ul.mkContinuous (max C 0) hUbd with hUc
+  have hUcapp : ∀ x, Uc x = U x := fun _ => rfl
+  -- the inverse `V = U⁻¹`, again a bounded module map
+  obtain ⟨V, hVU, hUV⟩ : ∃ V : Y → X, (∀ x, V (U x) = x) ∧ ∀ y, U (V y) = y := by
+    obtain ⟨V, hV⟩ := Function.bijective_iff_has_inverse.mp hUbij
+    exact ⟨V, hV.1, hV.2⟩
+  have hVadd : ∀ y y' : Y, V (y + y') = V y + V y' := by
+    intro y y'
+    refine hUbij.1 ?_
+    rw [hUV, hC.add, hUV, hUV]
+  have hVsmulc : ∀ (c : ℂ) (y : Y), V (c • y) = c • V y := by
+    intro c y
+    refine hUbij.1 ?_
+    rw [hUV, hC.smul_complex, hUV]
+  have hVsmul : ∀ (b : 𝒷) (y : Y), V (b • y) = b • V y := by
+    intro b y
+    refine hUbij.1 ?_
+    rw [hUV, hC.smul, hUV]
+  have hVip : ∀ y y' : Y, (inner 𝒷 (V y) (V y') : 𝒷) = inner 𝒷 y y' := by
+    intro y y'
+    rw [← hUip (V y) (V y'), hUV, hUV]
+  have hVnorm : ∀ y : Y, ‖V y‖ = ‖y‖ := by
+    intro y
+    have h1 : ‖V y‖ = Real.sqrt ‖(inner 𝒷 (V y) (V y) : 𝒷)‖ :=
+      CStarModule.norm_eq_sqrt_norm_inner_self (A := 𝒷) (V y)
+    have h2 : ‖y‖ = Real.sqrt ‖(inner 𝒷 y y : 𝒷)‖ :=
+      CStarModule.norm_eq_sqrt_norm_inner_self (A := 𝒷) y
+    rw [h1, h2, hVip]
+  set Vl : Y →ₗ[ℂ] X := { toFun := V, map_add' := hVadd, map_smul' := hVsmulc }
+    with hVl
+  set Vc : Y →L[ℂ] X := Vl.mkContinuous 1 (fun y => by
+    show ‖V y‖ ≤ 1 * ‖y‖
+    rw [hVnorm, one_mul]) with hVc
+  have hVcapp : ∀ y, Vc y = V y := fun _ => rfl
+  -- `V` is adjoint to `U` and conversely
+  have hVU' : ModuleAdjointTo 𝒷 ⇑Vc ⇑Uc := by
+    intro y x
+    show (inner 𝒷 (V y) x : 𝒷) = inner 𝒷 y (U x)
+    rw [← hUip (V y) x, hUV]
+  have hUV' : ModuleAdjointTo 𝒷 ⇑Uc ⇑Vc := by
+    intro x y
+    show (inner 𝒷 (U x) y : 𝒷) = inner 𝒷 x (V y)
+    rw [← hUV y, hUip, hVU]
+  obtain ⟨ad, hadeq⟩ := hilbmod_ad_ncp hY hX Vc Uc hVU'
+  obtain ⟨ad', hadeq'⟩ := hilbmod_ad_ncp hX hY Uc Vc hUV'
+  have hadapp : ∀ (S : Ba 𝒷 X) (x : X), (ad S).1 (U x) = U (S.1 x) := by
+    intro S x
+    rw [hadeq S]
+    show Uc (S.1 (Vc (U x))) = U (S.1 x)
+    rw [hVcapp, hVU]
+    rfl
+  have hadapp' : ∀ (T : Ba 𝒷 Y) (y : Y), (ad' T).1 (V y) = V (T.1 y) := by
+    intro T y
+    rw [hadeq' T]
+    show Vc (T.1 (Uc (V y))) = V (T.1 y)
+    rw [hUcapp, hUV]
+    rfl
+  have hone : ad 1 = 1 := by
+    refine Subtype.ext (ContinuousLinearMap.ext fun y => ?_)
+    have h := hadapp 1 (V y)
+    rw [hUV] at h
+    rw [h]
+    show U ((1 : X →L[ℂ] X) (V y)) = y
+    exact hUV y
+  have hmul : ∀ S T : Ba 𝒷 X, ad (S * T) = ad S * ad T := by
+    intro S T
+    refine Subtype.ext (ContinuousLinearMap.ext fun y => ?_)
+    have e1 := hadapp (S * T) (V y)
+    have e2 := hadapp T (V y)
+    have e3 := hadapp S (T.1 (V y))
+    rw [hUV] at e1 e2
+    show (ad (S * T)).1 y = (ad S).1 ((ad T).1 y)
+    rw [e1, e2, e3]
+    rfl
+  obtain ⟨g, hg⟩ := exists_nmiu_of_ncp ad hone hmul
+  refine ⟨g, ⟨?_, ?_⟩, fun S x => by rw [hg]; exact hadapp S x⟩
+  · intro S T hST
+    have h : ∀ x : X, S.1 x = T.1 x := by
+      intro x
+      refine hUbij.1 ?_
+      have h1 := hadapp S x
+      have h2 := hadapp T x
+      rw [← h1, ← h2]
+      rw [← hg, ← hg, hST]
+    exact Subtype.ext (ContinuousLinearMap.ext h)
+  · intro T
+    refine ⟨ad' T, ?_⟩
+    rw [hg]
+    refine Subtype.ext (ContinuousLinearMap.ext fun y => ?_)
+    have h1 := hadapp (ad' T) (V y)
+    rw [hUV, hadapp' T y, hUV] at h1
+    exact h1
+
+end AdUnitary
+
+/-! ### Transporting a Paschke dilation along a bijective nmiu-map
+
+These four lemmas duplicate `exists_ncpComp`, `pcorner_exists_ncpOfNmiu`,
+`pcorner_exists_ncpInv` and `pcorner_transport` of `B/Dils/Pure.lean`, which
+are `private` there and — more to the point — **downstream**: `Pure.lean`
+imports this file.  **167I** needs the transport lemma, so it is re-proved
+here; the proofs are the ones in `Pure.lean`. -/
+
+section Transport
+
+variable {P Q R : Type u} [CStarAlgebra P] [PartialOrder P] [StarOrderedRing P]
+  [CStarAlgebra Q] [PartialOrder Q] [StarOrderedRing Q]
+  [CStarAlgebra R] [PartialOrder R] [StarOrderedRing R]
+
+/-- The composition of two ncp-maps is an ncp-map. -/
+theorem exists_ncpComp' (f : NCPMap Q R) (g : NCPMap P Q) :
+    ∃ k : NCPMap P R, ∀ a, k a = f (g a) := by
+  set Lg : P →ₗ[ℂ] Q := g.toCompletelyPositiveMap.toLinearMap with hLg
+  set Lf : Q →ₗ[ℂ] R := f.toCompletelyPositiveMap.toLinearMap with hLf
+  have hLgcp : IsCompletelyPositiveMap Lg :=
+    (cp_iff Lg).out 1 0 |>.mp fun N M hM =>
+      g.toCompletelyPositiveMap.map_cstarMatrix_nonneg' N M hM
+  have hLfcp : IsCompletelyPositiveMap Lf :=
+    (cp_iff Lf).out 1 0 |>.mp fun N M hM =>
+      f.toCompletelyPositiveMap.map_cstarMatrix_nonneg' N M hM
+  exact ⟨{ toCompletelyPositiveMap :=
+             { toLinearMap := Lf.comp Lg
+               map_cstarMatrix_nonneg' :=
+                 (cp_iff (Lf.comp Lg)).out 0 1 |>.mp
+                   (cp_comp Lg Lf hLgcp hLfcp) }
+           preservesDirSups' :=
+             preservesDirSups_pmap_comp (ncpPositive g) g.preservesDirSups'
+               (ncpPositive f) f.preservesDirSups' },
+    fun _ => rfl⟩
+
+/-- An nmiu-map is an ncp-map (**34IV**.3 for `cp`; normality is carried). -/
+theorem exists_ncp_of_nmiu (f : NMIUMap P Q) :
+    ∃ g : NCPMap P Q, ∀ a, g a = f a :=
+  ⟨{ toCompletelyPositiveMap :=
+       { toLinearMap := (f.toStarAlgHom : P →ₐ[ℂ] Q).toLinearMap
+         map_cstarMatrix_nonneg' :=
+           (cp_iff _).out 0 1 |>.mp
+             (cp_of_mi _ (fun x y => map_mul f.toStarAlgHom x y)
+               (fun x => map_star f.toStarAlgHom x)) }
+     preservesDirSups' := f.preservesDirSups' }, fun _ => rfl⟩
+
+/-- The inverse of a **bijective** nmiu-map is an ncp-map. -/
+theorem exists_ncp_inv (f : NMIUMap P Q) (hbij : Function.Bijective ⇑f) :
+    ∃ g : NCPMap Q P, (∀ x : P, g (f x) = x) ∧ ∀ y : Q, f (g y) = y := by
+  classical
+  set L : P →ₗ[ℂ] Q := (f.toStarAlgHom : P →ₐ[ℂ] Q).toLinearMap with hL
+  have hLbij : Function.Bijective ⇑L := hbij
+  set E : P ≃ₗ[ℂ] Q := LinearEquiv.ofBijective L hLbij with hE
+  set g : Q →ₗ[ℂ] P := (E.symm : Q →ₗ[ℂ] P) with hg
+  have hfg : ∀ y : Q, f (g y) = y := fun y => E.apply_symm_apply y
+  have hgf : ∀ x : P, g (f x) = x := fun x => E.symm_apply_apply x
+  have hmul : ∀ x y : Q, g (x * y) = g x * g y := by
+    intro x y
+    refine hbij.1 ?_
+    have h1 : f (g x * g y) = f (g x) * f (g y) := map_mul f.toStarAlgHom _ _
+    rw [hfg, h1, hfg, hfg]
+  have hstar : ∀ y : Q, g (star y) = star (g y) := by
+    intro y
+    refine hbij.1 ?_
+    have h1 : f (star (g y)) = star (f (g y)) := map_star f.toStarAlgHom _
+    rw [hfg, h1, hfg]
+  have hcp : IsCompletelyPositiveMap g := cp_of_mi g hmul hstar
+  have hmono : ∀ x y : Q, x ≤ y → g x ≤ g y := by
+    intro x y hxy
+    have h := astara_pos_basic_2_cp g hcp (y - x) (sub_nonneg.mpr hxy)
+    rw [map_sub] at h
+    exact sub_nonneg.mp h
+  have hfmono : ∀ x y : P, x ≤ y → f x ≤ f y := by
+    intro x y hxy
+    have h := starAlgHom_nonneg f.toStarAlgHom (sub_nonneg.mpr hxy)
+    rw [map_sub] at h
+    exact sub_nonneg.mp h
+  refine ⟨{ toCompletelyPositiveMap :=
+              { toLinearMap := g
+                map_cstarMatrix_nonneg' := (cp_iff g).out 0 1 |>.mp hcp }
+            preservesDirSups' := ?_ }, hgf, hfg⟩
+  intro D s hne hdir hlub
+  have hcoe := isLUB_coe_of_isLUB hne hlub
+  refine ⟨?_, fun u hu => ?_⟩
+  · rintro _ ⟨d, hd, rfl⟩
+    exact hmono _ _ (Subtype.coe_le_coe.mpr (hlub.1 hd))
+  · have hub : f u ∈ upperBounds (Subtype.val '' D) := by
+      rintro _ ⟨d, hd, rfl⟩
+      have h1 : g ((d : selfAdjoint Q) : Q) ≤ u := hu ⟨d, hd, rfl⟩
+      have h2 := hfmono _ _ h1
+      rwa [hfg] at h2
+    have h3 := hcoe.2 hub
+    have h4 := hmono _ _ h3
+    rwa [hgf] at h4
+
+/-- **Transport**: if `D₁` is a Paschke dilation of `φ` and `ϑ : D₂.𝒫 → D₁.𝒫`
+is a *bijective* nmiu-map with `ϑ ∘ ϱ₂ = ϱ₁` and `h₁ ∘ ϑ = h₂`, then `D₂` is a
+Paschke dilation of `φ` too.  Mediate with `ϑ⁻¹ ∘ σ₁`; uniqueness comes from
+the injectivity of `ϑ`. -/
+theorem paschkeDilation_transport {𝒜 ℬ : Type u} [CStarAlgebra 𝒜]
+    [PartialOrder 𝒜] [StarOrderedRing 𝒜] [CStarAlgebra ℬ] [PartialOrder ℬ]
+    [StarOrderedRing ℬ] (φ : 𝒜 → ℬ) (D₁ D₂ : PaschkeTriple 𝒜 ℬ)
+    (hD₁ : IsPaschkeDilationOf D₁ φ) (ϑ : NMIUMap D₂.P D₁.P)
+    (hbij : Function.Bijective ⇑ϑ) (hρ : ∀ a, ϑ (D₂.ρ a) = D₁.ρ a)
+    (hh : ∀ c, D₁.h (ϑ c) = D₂.h c) :
+    IsPaschkeDilationOf D₂ φ := by
+  obtain ⟨ϑinv, hgf, hfg⟩ := exists_ncp_inv ϑ hbij
+  obtain ⟨ϑn, hϑn⟩ := exists_ncp_of_nmiu ϑ
+  refine ⟨fun a => ?_, fun D' hD' => ?_⟩
+  · rw [← hh (D₂.ρ a), hρ a]
+    exact hD₁.1 a
+  · obtain ⟨σ₁, ⟨hσa, hσb⟩, huniq⟩ := hD₁.2 D' hD'
+    obtain ⟨τ, hτ⟩ := exists_ncpComp' ϑinv σ₁
+    have hϑτ : ∀ c, ϑ (τ c) = σ₁ c := fun c => by rw [hτ, hfg]
+    refine ⟨τ, ⟨fun a => ?_, fun c => ?_⟩, fun τ' hτ' => ?_⟩
+    · rw [hτ, hσa a, ← hρ a, hgf]
+    · rw [← hh (τ c), hϑτ c, hσb c]
+    · obtain ⟨κ, hκ⟩ := exists_ncpComp' ϑn τ'
+      have hκ1 : ∀ a, κ (D'.ρ a) = D₁.ρ a := fun a => by
+        rw [hκ, hϑn, hτ'.1 a, hρ a]
+      have hκ2 : ∀ c, D₁.h (κ c) = D'.h c := fun c => by
+        rw [hκ, hϑn, hh (τ' c), hτ'.2 c]
+      have hκσ : κ = σ₁ := huniq κ ⟨hκ1, hκ2⟩
+      refine DFunLike.ext _ _ fun c => hbij.1 ?_
+      have h1 : ϑ (τ' c) = κ c := by rw [hκ, hϑn]
+      rw [h1, hκσ, hϑτ c]
+
+end Transport
+
+/-! ### Adjointable operators agreeing on an ultranorm-dense set -/
+
+section BaUnDenseExt
+
+variable {𝒷 X : Type u}
+  [CStarAlgebra 𝒷] [PartialOrder 𝒷] [StarOrderedRing 𝒷]
+  [NormedAddCommGroup X] [Module ℂ X] [SMul 𝒷 X] [CStarModule 𝒷 X]
+
+/-- Two adjointable bounded operators which agree on an **ultranorm-dense**
+subset of `X` are equal.  A bounded module map is ultranorm continuous
+(`unSeminorm_boundedModuleMap_le`, i.e. **144V**), so the difference has
+`‖(S−R)v‖_ω ≤ C‖v−d‖_ω` for every `d` of the dense set, hence
+`‖(S−R)v‖_ω = 0` for every `ω`; faithfulness of the np-functionals
+(**42I**.2) then gives `⟨(S−R)v, (S−R)v⟩ = 0`. -/
+theorem ba_ext_of_unDense [VonNeumannAlgebra 𝒷] [CompleteSpace X]
+    {S R : Ba 𝒷 X} (D : Set X) (hD : UnDense (inner 𝒷) D)
+    (h : ∀ z ∈ D, S.1 z = R.1 z) : S = R := by
+  let _ : NormedSpace ℂ X := NormedSpace.ofCore (CStarModule.normedSpaceCore 𝒷)
+  set T : X →L[ℂ] X := S.1 - R.1 with hT
+  have hTapp : ∀ x, T x = S.1 x - R.1 x := fun _ => rfl
+  obtain ⟨-, -, hSm⟩ := moduleAdjointable_linear (𝒜 := 𝒷) ⇑S.1 S.2
+  obtain ⟨-, -, hRm⟩ := moduleAdjointable_linear (𝒜 := 𝒷) ⇑R.1 R.2
+  set C : ℝ := ‖T‖ + 1 with hC
+  have hC0 : (0 : ℝ) ≤ C := by positivity
+  have hbdd : IsBoundedModuleMap (cstarBInner 𝒷 X) (cstarBInner 𝒷 X) C ⇑T :=
+    { add := fun x y => map_add T x y
+      smul_complex := fun c x => map_smul T c x
+      smul := fun b x => by
+        rw [hTapp, hTapp, hSm, hRm]
+        have hb : b • (S.1 x - R.1 x) + b • R.1 x = b • S.1 x := by
+          rw [← op_smul_add]; congr 1; abel
+        rw [← hb]; abel
+      bound := fun x => by
+        rw [cstarBInner_norm, cstarBInner_norm]
+        have h1 := T.le_opNorm x
+        have h0 : (0 : ℝ) ≤ ‖x‖ := norm_nonneg x
+        nlinarith }
+  have hsem : ∀ (ω : NPFunctional 𝒷) (z : X),
+      unSeminorm ω (inner 𝒷) (T z) ≤ C * unSeminorm ω (inner 𝒷) z := fun ω z =>
+    unSeminorm_boundedModuleMap_le _ _ C hC0 _ hbdd ω z
+  have hzero : ∀ v : X, T v = 0 := by
+    intro v
+    have hall : ∀ ω : NPFunctional 𝒷, unSeminorm ω (inner 𝒷) (T v) = 0 := by
+      intro ω
+      refine le_antisymm (le_of_forall_pos_le_add fun ε hε => ?_)
+        (unSeminorm_nonneg _ _ _)
+      obtain ⟨d, hdD, hd⟩ := hD v 1 (fun _ => ω) (ε / (C + 1)) (by positivity)
+      have hTv : T v = T (v - d) := by
+        rw [map_sub, hTapp d, h d hdD, sub_self, sub_zero]
+      have h1 : unSeminorm ω (inner 𝒷) (T v)
+          ≤ C * unSeminorm ω (inner 𝒷) (v - d) := by
+        rw [hTv]; exact hsem ω (v - d)
+      have h2 : unSeminorm ω (inner 𝒷) (v - d) ≤ ε / (C + 1) := hd 0
+      have h3 : C * unSeminorm ω (inner 𝒷) (v - d) ≤ C * (ε / (C + 1)) :=
+        mul_le_mul_of_nonneg_left h2 hC0
+      have h4 : C * (ε / (C + 1)) ≤ ε := by
+        rw [mul_div_assoc', div_le_iff₀ (by positivity)]
+        nlinarith [hε.le]
+      linarith
+    have hinner : (inner 𝒷 (T v) (T v) : 𝒷) = 0 := by
+      refine VonNeumannAlgebra.np_faithful _ CStarModule.inner_self_nonneg fun ω => ?_
+      have hnn : (0 : ℂ) ≤ ω (inner 𝒷 (T v) (T v)) :=
+        npFunctional_nonneg ω CStarModule.inner_self_nonneg
+      have hre : (ω (inner 𝒷 (T v) (T v))).re = 0 := by
+        have h5 := hall ω
+        rw [unSeminorm] at h5
+        have h6 : (0 : ℝ) ≤ (ω (inner 𝒷 (T v) (T v))).re := (Complex.le_def.mp hnn).1
+        nlinarith [Real.sq_sqrt h6, Real.sqrt_nonneg
+          ((ω (inner 𝒷 (T v) (T v))).re)]
+      refine Complex.ext hre ?_
+      have h7 := (Complex.le_def.mp hnn).2
+      simpa using h7.symm
+    exact (CStarModule.inner_self (A := 𝒷)).mp hinner
+  refine Subtype.ext (ContinuousLinearMap.ext fun v => ?_)
+  have h8 := hzero v
+  rw [hTapp] at h8
+  exact sub_eq_zero.mp h8
+
+end BaUnDenseExt
+
+/-! ### `IsVNTensor` transports along nmiu-isomorphisms -/
+
+section VNTensorTransport
+
+variable {𝒜' ℬ' 𝒞' : Type u}
+  [CStarAlgebra 𝒜'] [PartialOrder 𝒜'] [StarOrderedRing 𝒜']
+  [CStarAlgebra ℬ'] [PartialOrder ℬ'] [StarOrderedRing ℬ']
+  [CStarAlgebra 𝒞'] [PartialOrder 𝒞'] [StarOrderedRing 𝒞']
+
+/-- `IsVNTensor` transports along nmiu-isomorphisms of the two factors
+(**114I**/`isTensorProduct_comp` through the bridge). -/
+theorem isVNTensor_comp [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
+    [VonNeumannAlgebra 𝒞] [VonNeumannAlgebra 𝒜'] [VonNeumannAlgebra ℬ']
+    {t : 𝒜 → ℬ → 𝒞} (ht : IsVNTensor t) (f : NMIUMap 𝒜' 𝒜)
+    (hf : Function.Bijective ⇑f) (g : NMIUMap ℬ' ℬ)
+    (hg : Function.Bijective ⇑g) :
+    IsVNTensor (fun (a : 𝒜') (b : ℬ') => t (f a) (g b)) :=
+  isVNTensor_of_isTensorProduct
+    (Theses.A.Proc.isTensorProduct_comp f hf g hg (isTensorProduct_of_isVNTensor ht))
+
+/-- `IsVNTensor` transports along an nmiu-isomorphism of the target. -/
+theorem isVNTensor_comp_target [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
+    [VonNeumannAlgebra 𝒞] [VonNeumannAlgebra 𝒞'] {t : 𝒜 → ℬ → 𝒞}
+    (ht : IsVNTensor t) (ℓ : NMIUMap 𝒞 𝒞') (hℓ : Function.Bijective ⇑ℓ) :
+    IsVNTensor (fun (a : 𝒜) (b : ℬ) => ℓ (t a b)) :=
+  isVNTensor_of_isTensorProduct
+    (Theses.A.Proc.isTensorProduct_comp_target (isTensorProduct_of_isVNTensor ht) ℓ hℓ)
+
+end VNTensorTransport
+
+/-! ### Ultraweak extension off the elementary tensors -/
+
+section VNTensorMapExt
+
+variable {𝒜 ℬ 𝒞 : Type u}
+  [CStarAlgebra 𝒜] [PartialOrder 𝒜] [StarOrderedRing 𝒜]
+  [CStarAlgebra ℬ] [PartialOrder ℬ] [StarOrderedRing ℬ]
+  [CStarAlgebra 𝒞] [PartialOrder 𝒞] [StarOrderedRing 𝒞]
+
+/-- An nmiu-map is ultraweakly continuous (**44XV** `p_uwcont`). -/
+theorem uwContinuous_nmiu {X Y : Type u} [CStarAlgebra X] [PartialOrder X]
+    [StarOrderedRing X] [VonNeumannAlgebra X] [CStarAlgebra Y] [PartialOrder Y]
+    [StarOrderedRing Y] [VonNeumannAlgebra Y] (f : NMIUMap X Y) :
+    @Continuous X Y (ultraweak X) (ultraweak Y) ⇑f :=
+  ((p_uwcont (nmiuP f)).out 2 0).mp f.preservesDirSups'
+
+/-- An ncp-map is ultraweakly continuous (**44XV** `p_uwcont`). -/
+theorem uwContinuous_ncp {X Y : Type u} [CStarAlgebra X] [PartialOrder X]
+    [StarOrderedRing X] [VonNeumannAlgebra X] [CStarAlgebra Y] [PartialOrder Y]
+    [StarOrderedRing Y] [VonNeumannAlgebra Y] (f : NCPMap X Y) :
+    @Continuous X Y (ultraweak X) (ultraweak Y) ⇑f :=
+  ((p_uwcont (ncpPositive f)).out 2 0).mp f.preservesDirSups'
+
+/-- **Two ultraweakly continuous linear maps out of a tensor product agreeing
+on the elementary tensors are equal** — clause (1) of 108II, through the
+bridge to `Theses.A.Proc.tensor_linear_ext`.  This is the step that the
+thesis performs by "ultrastrong density of `𝒜₁ ⊙ 𝒜₂` and normality" in
+**167VI**. -/
+theorem vnTensor_map_ext [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
+    [VonNeumannAlgebra 𝒞] {t : 𝒜 → ℬ → 𝒞} (ht : IsVNTensor t) {W : Type u}
+    [CStarAlgebra W] [PartialOrder W] [StarOrderedRing W] [VonNeumannAlgebra W]
+    (f g : 𝒞 →ₗ[ℂ] W)
+    (hf : @Continuous 𝒞 W (ultraweak 𝒞) (ultraweak W) ⇑f)
+    (hg : @Continuous 𝒞 W (ultraweak 𝒞) (ultraweak W) ⇑g)
+    (h : ∀ (a : 𝒜) (b : ℬ), f (t a b) = g (t a b)) : ∀ z, f z = g z := by
+  letI : TopologicalSpace 𝒞 := ultraweak 𝒞
+  letI : TopologicalSpace W := ultraweak W
+  haveI : T2Space W := vn_positive_basic_1.1
+  have hlin := Theses.A.Proc.tensor_linear_ext (isTensorProduct_of_isVNTensor ht)
+    f g hf hg h
+  intro z
+  exact congrFun (congrArg (fun L : 𝒞 →ₗ[ℂ] W => ⇑L) hlin) z
+
+end VNTensorMapExt
+
+end PaschkeTensorInfra
+
 /-! ## Parsec 1670: the tensor product of Paschke dilations -/
 
 section PaschkeTensor
@@ -7768,31 +8450,9 @@ variable {𝒜₁ 𝒜₂ 𝒜₁₂ ℬ₁ ℬ₂ ℬ₁₂ P₁₂ : Type u}
   [CStarAlgebra ℬ₁₂] [PartialOrder ℬ₁₂] [StarOrderedRing ℬ₁₂]
   [CStarAlgebra P₁₂] [PartialOrder P₁₂] [StarOrderedRing P₁₂]
 
-/-- **167I** (`paschke-tensor`, dils.tex:5746, Theorem), main claim: if
-`(𝒫ᵢ, ϱᵢ, hᵢ)` is a Paschke dilation of the ncp-map `φᵢ : 𝒜ᵢ → ℬᵢ`
-(i = 1,2), then `(𝒫₁ ⊗ 𝒫₂, ϱ₁ ⊗ ϱ₂, h₁ ⊗ h₂)` is a Paschke dilation of
-`φ₁ ⊗ φ₂`.  (The tensor products of algebras are given through the
-`IsVNTensor` interface, and the tensor products of maps through their
-characterizing values on elementary tensors.)
-
-**167II**–**167VI** are the proof — not converted. -/
-theorem paschke_tensor
-    (tA : 𝒜₁ → 𝒜₂ → 𝒜₁₂) (htA : IsVNTensor tA)
-    (tB : ℬ₁ → ℬ₂ → ℬ₁₂) (htB : IsVNTensor tB)
-    (φ₁ : NCPMap 𝒜₁ ℬ₁) (φ₂ : NCPMap 𝒜₂ ℬ₂)
-    (D₁ : PaschkeTriple 𝒜₁ ℬ₁) (D₂ : PaschkeTriple 𝒜₂ ℬ₂)
-    (h₁ : IsPaschkeDilationOf D₁ ⇑φ₁) (h₂ : IsPaschkeDilationOf D₂ ⇑φ₂)
-    (tP : D₁.P → D₂.P → P₁₂) (htP : IsVNTensor tP)
-    (vnP : VonNeumannAlgebra P₁₂)
-    (Φ : NCPMap 𝒜₁₂ ℬ₁₂)
-    (hΦ : ∀ (a₁ : 𝒜₁) (a₂ : 𝒜₂), Φ (tA a₁ a₂) = tB (φ₁ a₁) (φ₂ a₂))
-    (R : NMIUMap 𝒜₁₂ P₁₂)
-    (hR : ∀ (a₁ : 𝒜₁) (a₂ : 𝒜₂), R (tA a₁ a₂) = tP (D₁.ρ a₁) (D₂.ρ a₂))
-    (H : NCPMap P₁₂ ℬ₁₂)
-    (hH : ∀ (c₁ : D₁.P) (c₂ : D₂.P),
-      H (tP c₁ c₂) = tB (D₁.h c₁) (D₂.h c₂)) :
-    IsPaschkeDilationOf ⟨P₁₂, vnP, R, H⟩ ⇑Φ :=
-  sorry
+/-! **167I** `paschke_tensor`, the main claim, is stated and proved at the
+end of this parsec (it consumes `paschke_tensor_module` and the
+infrastructure block above). -/
 
 /-! ### The isomorphism of dilation spaces (**167III**–**167V**)
 
@@ -8228,6 +8888,215 @@ theorem paschke_tensor_module
   refine ⟨U, hUb, hUbij, hUip, fun a₁ b₁ a₂ b₂ => ?_⟩
   rw [ptmEta2_eta_tprod M₁ M₂ E a₁ b₁ a₂ b₂]
   exact hUη ((a₁ ⊗ₜ[ℂ] a₂) ⊗ₜ[ℂ] tB b₁ b₂)
+
+/-- **167I** (`paschke-tensor`, dils.tex:5746, Theorem), main claim: if
+`(𝒫ᵢ, ϱᵢ, hᵢ)` is a Paschke dilation of the ncp-map `φᵢ : 𝒜ᵢ → ℬᵢ`
+(i = 1,2), then `(𝒫₁ ⊗ 𝒫₂, ϱ₁ ⊗ ϱ₂, h₁ ⊗ h₂)` is a Paschke dilation of
+`φ₁ ⊗ φ₂`.  (The tensor products of algebras are given through the
+`IsVNTensor` interface, and the tensor products of maps through their
+characterizing values on elementary tensors.)
+
+**Repair, session 92** (our mis-transcription; recorded in
+`PROVING-LOG.md`, not in `ERRATA.md`, per that file's scope rule).  The
+statement as first written omitted the `[VonNeumannAlgebra 𝒜ᵢ]` and
+`[VonNeumannAlgebra ℬᵢ]` hypotheses, although the Theorem's own hypothesis
+is "an ncp-map between *von Neumann algebras*" and every neighbouring
+statement of parsecs 1640-1670 (`ba_ext_tensor_pres`,
+`paschke_tensor_module`, `dilationspace_dense_subset`) carries them.  They
+are restored here; without them `existence_paschke` does not even apply, so
+nothing was provable.
+
+**The proof (167II-167VI), with the last step supplied.**  The thesis proves
+the "furthermore" isomorphism `U` first (that is `paschke_tensor_module`
+below), then shows in **167VI** that the tensor product of the *standard*
+dilations `(𝒷ᵃ(𝒜ᵢ ⊗_{φᵢ} ℬᵢ)ᵐᵒᵖ, ϱᵢ, hᵢ)` of `existence_paschke` is a
+dilation of `φ₁ ⊗ φ₂`.  The passage from those to the **arbitrary**
+dilations the Theorem quantifies over is missing from the printed proof —
+it survives only as a LaTeX comment, dils.tex:5950-5961 (ERRATA **167II**).
+The route below is the commented argument, with its two gaps filled:
+
+1. `Θ(S,T) = S ⊗ T` on `𝒷ᵃ(X₁) × 𝒷ᵃ(X₂)` is a tensor product (**165VI**
+   `ba_ext_tensor_pres`, with `Θ` supplied by **165III**
+   `dfn_tensor_of_hilbmod_maps`); `ad_U` carries it to `𝒷ᵃ(M₁₂.X)`
+   (`exists_ad_unitary_nmiu`, for the `U` of `paschke_tensor_module`), and
+   `isVNTensor_mop` carries *that* to the opposite algebras, which is where
+   `ϱ` and `h` live.
+2. `βᵢ : 𝒫ᵢ ≅ 𝒷ᵃ(𝒜ᵢ ⊗_{φᵢ} ℬᵢ)ᵐᵒᵖ` is **140VIII**
+   (`exists_paschke_iso_paschkeModule`); precomposing with the `βᵢ`
+   (`isVNTensor_comp`) makes `𝒷ᵃ(M₁₂.X)ᵐᵒᵖ` a tensor product of `𝒫₁` and
+   `𝒫₂`.  This is the commented proof's "`β₁ ⊗ β₂` is an isomorphism",
+   which the thesis leaves unjustified: it is **114II** `tensor_uniqueness`
+   applied to that transported tensor product, and it is *why* the bridge
+   `IsVNTensor ↔ Theses.A.Proc.IsTensorProduct` is needed here.
+3. `tensor_uniqueness` then gives the nmiu-isomorphism
+   `ϑ : 𝒫₁ ⊗ 𝒫₂ → 𝒷ᵃ(M₁₂.X)ᵐᵒᵖ`, and **167VI**'s two identities
+   `ϑ ∘ (ϱ₁ ⊗ ϱ₂) = ϱ` and `h ∘ ϑ = h₁ ⊗ h₂` are checked on the elementary
+   tensors and extended by `vnTensor_map_ext` (the thesis's "ultrastrong
+   density of `𝒜₁ ⊙ 𝒜₂` and normality").  The first of the two needs the
+   *operator* identity `ad_U(ϱ₁(a₁) ⊗ ϱ₂(a₂)) = ϱ(a₁ ⊗ a₂)` in
+   `𝒷ᵃ(M₁₂.X)`, which is 167VI's own computation on
+   `(a₁ ⊗ a₂) ⊗ (b₁ ⊗ b₂)` followed by **166VI**
+   `dilationspace_dense_subset` and `ba_ext_of_unDense`.
+4. `paschkeDilation_transport` moves `existence_paschke_5` across `ϑ`.
+
+`h ∘ ϱ = φ₁ ⊗ φ₂` is not proved separately: the transport lemma derives it
+from the two identities.  Divergence class 2 (the thesis's own route, with
+the final step taken from its LaTeX comment and its two gaps filled). -/
+theorem paschke_tensor
+    [VonNeumannAlgebra 𝒜₁] [VonNeumannAlgebra 𝒜₂] [VonNeumannAlgebra 𝒜₁₂]
+    [VonNeumannAlgebra ℬ₁] [VonNeumannAlgebra ℬ₂] [VonNeumannAlgebra ℬ₁₂]
+    (tA : 𝒜₁ → 𝒜₂ → 𝒜₁₂) (htA : IsVNTensor tA)
+    (tB : ℬ₁ → ℬ₂ → ℬ₁₂) (htB : IsVNTensor tB)
+    (φ₁ : NCPMap 𝒜₁ ℬ₁) (φ₂ : NCPMap 𝒜₂ ℬ₂)
+    (D₁ : PaschkeTriple 𝒜₁ ℬ₁) (D₂ : PaschkeTriple 𝒜₂ ℬ₂)
+    (h₁ : IsPaschkeDilationOf D₁ ⇑φ₁) (h₂ : IsPaschkeDilationOf D₂ ⇑φ₂)
+    (tP : D₁.P → D₂.P → P₁₂) (htP : IsVNTensor tP)
+    (vnP : VonNeumannAlgebra P₁₂)
+    (Φ : NCPMap 𝒜₁₂ ℬ₁₂)
+    (hΦ : ∀ (a₁ : 𝒜₁) (a₂ : 𝒜₂), Φ (tA a₁ a₂) = tB (φ₁ a₁) (φ₂ a₂))
+    (R : NMIUMap 𝒜₁₂ P₁₂)
+    (hR : ∀ (a₁ : 𝒜₁) (a₂ : 𝒜₂), R (tA a₁ a₂) = tP (D₁.ρ a₁) (D₂.ρ a₂))
+    (H : NCPMap P₁₂ ℬ₁₂)
+    (hH : ∀ (c₁ : D₁.P) (c₂ : D₂.P),
+      H (tP c₁ c₂) = tB (D₁.h c₁) (D₂.h c₂)) :
+    IsPaschkeDilationOf ⟨P₁₂, vnP, R, H⟩ ⇑Φ := by
+  classical
+  letI := vnP
+  letI := D₁.vn
+  letI := D₂.vn
+  obtain ⟨M₁⟩ := existence_paschke φ₁
+  obtain ⟨M₂⟩ := existence_paschke φ₂
+  obtain ⟨M₁₂⟩ := existence_paschke Φ
+  haveI : VonNeumannAlgebra (Ba ℬ₁ M₁.X) := ba_vonNeumannAlgebra M₁.selfDual
+  haveI : VonNeumannAlgebra (Ba ℬ₂ M₂.X) := ba_vonNeumannAlgebra M₂.selfDual
+  haveI : VonNeumannAlgebra (Ba ℬ₁₂ M₁₂.X) := ba_vonNeumannAlgebra M₁₂.selfDual
+  obtain ⟨E⟩ := univprop_ext_tensor (t := tB) (ht := htB) M₁.selfDual M₂.selfDual
+  haveI : VonNeumannAlgebra (Ba ℬ₁₂ E.Z) := ba_vonNeumannAlgebra E.selfDual
+  obtain ⟨U, hUb, hUbij, hUip, hUη⟩ :=
+    paschke_tensor_module tA htA tB htB φ₁ φ₂ M₁ M₂ Φ hΦ M₁₂ E
+  obtain ⟨ad, hadbij, hadapp⟩ :=
+    exists_ad_unitary_nmiu E.selfDual M₁₂.selfDual U hUb hUbij hUip
+  choose Θ hΘ hΘu using fun (S : Ba ℬ₁ M₁.X) (T : Ba ℬ₂ M₂.X) =>
+    dfn_tensor_of_hilbmod_maps M₁.selfDual M₂.selfDual E S T
+  have hΘt : IsVNTensor Θ := ba_ext_tensor_pres M₁.selfDual M₂.selfDual E Θ hΘ
+  have htad : IsVNTensor (fun S T => ad (Θ S T)) :=
+    isVNTensor_comp_target hΘt ad hadbij
+  have htmop : IsVNTensor (mopTensor (fun S T => ad (Θ S T))) := isVNTensor_mop htad
+  obtain ⟨β₁, ⟨hβ₁bij, hβ₁ρ, hβ₁h⟩, -⟩ := exists_paschke_iso_paschkeModule φ₁ M₁ D₁ h₁
+  obtain ⟨β₂, ⟨hβ₂bij, hβ₂ρ, hβ₂h⟩, -⟩ := exists_paschke_iso_paschkeModule φ₂ M₂ D₂ h₂
+  have htSt : IsVNTensor (fun (c₁ : D₁.P) (c₂ : D₂.P) =>
+      mopTensor (fun S T => ad (Θ S T)) (β₁ c₁) (β₂ c₂)) :=
+    isVNTensor_comp htmop β₁ hβ₁bij β₂ hβ₂bij
+  obtain ⟨ϑ, hϑe, hϑbij, -⟩ := Theses.A.Proc.tensor_uniqueness
+    (vnTensorLin htP) (vnTensorLin htSt)
+    (isTensorProduct_of_isVNTensor htP) (isTensorProduct_of_isVNTensor htSt)
+  have hϑe' : ∀ (c₁ : D₁.P) (c₂ : D₂.P),
+      ϑ (tP c₁ c₂) = MulOpposite.op (ad (Θ (β₁ c₁).unop (β₂ c₂).unop)) := hϑe
+  -- `U(1 ⊗ 1) = 1 ⊗ 1`
+  have hUone : U (E.η (M₁.tprod 1 1) (M₂.tprod 1 1)) = M₁₂.tprod 1 1 := by
+    rw [hUη 1 1 1 1, htA.one, htB.one]
+  -- **167VI**, right-hand equation: `h ∘ ad_{U*} ∘ ϑ = h₁ ⊗ h₂`
+  have hHϑ : ∀ c : P₁₂, M₁₂.h (ϑ c) = H c := by
+    have hcf : @Continuous P₁₂ ℬ₁₂ (ultraweak P₁₂) (ultraweak ℬ₁₂)
+        (⇑M₁₂.h ∘ ⇑ϑ) :=
+      @Continuous.comp P₁₂ ((Ba ℬ₁₂ M₁₂.X)ᵐᵒᵖ) ℬ₁₂ (ultraweak P₁₂)
+        (ultraweak ((Ba ℬ₁₂ M₁₂.X)ᵐᵒᵖ)) (ultraweak ℬ₁₂) _ _
+        (uwContinuous_ncp M₁₂.h) (uwContinuous_nmiu ϑ)
+    refine vnTensor_map_ext htP
+      (M₁₂.h.toCompletelyPositiveMap.toLinearMap.comp (Theses.A.Proc.nmiuLin ϑ))
+      H.toCompletelyPositiveMap.toLinearMap hcf (uwContinuous_ncp H) ?_
+    intro c₁ c₂
+    show M₁₂.h (ϑ (tP c₁ c₂)) = H (tP c₁ c₂)
+    rw [hϑe' c₁ c₂, hH c₁ c₂, M₁₂.h_def]
+    show (inner ℬ₁₂ (M₁₂.tprod 1 1)
+      ((ad (Θ (β₁ c₁).unop (β₂ c₂).unop)).1 (M₁₂.tprod 1 1)) : ℬ₁₂) = _
+    rw [← hUone, hadapp, hUip, hΘ, E.η_inner, ← M₁.h_def, ← M₂.h_def,
+      hβ₁h, hβ₂h]
+  -- expanding `⊗` over finite sums
+  have hsumL : ∀ {m : ℕ} (f : Fin m → 𝒜₁₂) (c : ℬ₁₂),
+      M₁₂.tprod (∑ k, f k) c = ∑ k, M₁₂.tprod (f k) c := by
+    intro m f c
+    exact map_sum (AddMonoidHom.mk' (fun a => M₁₂.tprod a c)
+      (fun a a' => M₁₂.compat.add_left a a' c)) f Finset.univ
+  have hsumR : ∀ (a : 𝒜₁₂) {m : ℕ} (g : Fin m → ℬ₁₂),
+      M₁₂.tprod a (∑ l, g l) = ∑ l, M₁₂.tprod a (g l) := by
+    intro a m g
+    exact map_sum (AddMonoidHom.mk' (fun c => M₁₂.tprod a c)
+      (fun c c' => M₁₂.compat.add_right a c c')) g Finset.univ
+  have hD : UnDense (inner ℬ₁₂)
+      {z : M₁₂.X | ∃ (n : ℕ) (a : Fin n → 𝒜₁₂) (b : Fin n → ℬ₁₂),
+        (∀ i, a i ∈ tSpanSubalg htA) ∧ (∀ i, b i ∈ tSpanSubalg htB) ∧
+        z = ∑ i, M₁₂.tprod (a i) (b i)} :=
+    dilationspace_dense_subset Φ M₁₂ (tSpanSubalg htA) (tSpanSubalg htB)
+      (unDense_tSpan htA) (unDense_tSpan htB)
+  -- the operator identity behind **167VI**'s left-hand equation
+  have hop : ∀ (a₁ : 𝒜₁) (a₂ : 𝒜₂),
+      ad (Θ (M₁.ρ a₁).unop (M₂.ρ a₂).unop) = (M₁₂.ρ (tA a₁ a₂)).unop := by
+    intro a₁ a₂
+    have key : ∀ (α₁ : 𝒜₁) (α₂ : 𝒜₂) (b₁ : ℬ₁) (b₂ : ℬ₂),
+        (ad (Θ (M₁.ρ a₁).unop (M₂.ρ a₂).unop)).1
+            (M₁₂.tprod (tA α₁ α₂) (tB b₁ b₂))
+          = (M₁₂.ρ (tA a₁ a₂)).unop.1 (M₁₂.tprod (tA α₁ α₂) (tB b₁ b₂)) := by
+      intro α₁ α₂ b₁ b₂
+      calc (ad (Θ (M₁.ρ a₁).unop (M₂.ρ a₂).unop)).1
+              (M₁₂.tprod (tA α₁ α₂) (tB b₁ b₂))
+          = (ad (Θ (M₁.ρ a₁).unop (M₂.ρ a₂).unop)).1
+              (U (E.η (M₁.tprod α₁ b₁) (M₂.tprod α₂ b₂))) := by
+            rw [hUη α₁ b₁ α₂ b₂]
+        _ = U ((Θ (M₁.ρ a₁).unop (M₂.ρ a₂).unop).1
+              (E.η (M₁.tprod α₁ b₁) (M₂.tprod α₂ b₂))) := hadapp _ _
+        _ = U (E.η ((M₁.ρ a₁).unop.1 (M₁.tprod α₁ b₁))
+              ((M₂.ρ a₂).unop.1 (M₂.tprod α₂ b₂))) := by rw [hΘ]
+        _ = U (E.η (M₁.tprod (α₁ * a₁) b₁) (M₂.tprod (α₂ * a₂) b₂)) := by
+            rw [M₁.ρ_tprod, M₂.ρ_tprod]
+        _ = M₁₂.tprod (tA (α₁ * a₁) (α₂ * a₂)) (tB b₁ b₂) := hUη _ _ _ _
+        _ = M₁₂.tprod (tA α₁ α₂ * tA a₁ a₂) (tB b₁ b₂) := by rw [htA.mul]
+        _ = (M₁₂.ρ (tA a₁ a₂)).unop.1 (M₁₂.tprod (tA α₁ α₂) (tB b₁ b₂)) :=
+            (M₁₂.ρ_tprod _ _ _).symm
+    refine ba_ext_of_unDense _ hD ?_
+    rintro _ ⟨n, a, b, ha, hb, rfl⟩
+    rw [map_sum, map_sum]
+    refine Finset.sum_congr rfl fun i _ => ?_
+    obtain ⟨p, x, y, hxy⟩ := ha i
+    obtain ⟨q, u, v, huv⟩ := hb i
+    rw [hxy, huv, hsumL, map_sum, map_sum]
+    refine Finset.sum_congr rfl fun k _ => ?_
+    rw [hsumR, map_sum, map_sum]
+    exact Finset.sum_congr rfl fun l _ => key (x k) (y k) (u l) (v l)
+  -- **167VI**, left-hand equation: `ad_{U*} ∘ ϑ ∘ (ϱ₁ ⊗ ϱ₂) = ϱ`
+  have hϑR : ∀ a : 𝒜₁₂, ϑ (R a) = M₁₂.ρ a := by
+    set unopLin : (Ba ℬ₁₂ M₁₂.X)ᵐᵒᵖ →ₗ[ℂ] Ba ℬ₁₂ M₁₂.X :=
+      ((MulOpposite.opLinearEquiv ℂ).symm :
+        (Ba ℬ₁₂ M₁₂.X)ᵐᵒᵖ ≃ₗ[ℂ] Ba ℬ₁₂ M₁₂.X).toLinearMap with hunopLin
+    have hcu : @Continuous ((Ba ℬ₁₂ M₁₂.X)ᵐᵒᵖ) (Ba ℬ₁₂ M₁₂.X)
+        (ultraweak ((Ba ℬ₁₂ M₁₂.X)ᵐᵒᵖ)) (ultraweak (Ba ℬ₁₂ M₁₂.X)) ⇑unopLin :=
+      uwContinuous_unop
+    have hc1 : @Continuous 𝒜₁₂ (Ba ℬ₁₂ M₁₂.X) (ultraweak 𝒜₁₂)
+        (ultraweak (Ba ℬ₁₂ M₁₂.X)) (⇑unopLin ∘ (⇑ϑ ∘ ⇑R)) :=
+      @Continuous.comp 𝒜₁₂ ((Ba ℬ₁₂ M₁₂.X)ᵐᵒᵖ) (Ba ℬ₁₂ M₁₂.X) (ultraweak 𝒜₁₂)
+        (ultraweak ((Ba ℬ₁₂ M₁₂.X)ᵐᵒᵖ)) (ultraweak (Ba ℬ₁₂ M₁₂.X)) _ _ hcu
+        (@Continuous.comp 𝒜₁₂ P₁₂ ((Ba ℬ₁₂ M₁₂.X)ᵐᵒᵖ) (ultraweak 𝒜₁₂)
+          (ultraweak P₁₂) (ultraweak ((Ba ℬ₁₂ M₁₂.X)ᵐᵒᵖ)) _ _
+          (uwContinuous_nmiu ϑ) (uwContinuous_nmiu R))
+    have hc2 : @Continuous 𝒜₁₂ (Ba ℬ₁₂ M₁₂.X) (ultraweak 𝒜₁₂)
+        (ultraweak (Ba ℬ₁₂ M₁₂.X)) (⇑unopLin ∘ ⇑M₁₂.ρ) :=
+      @Continuous.comp 𝒜₁₂ ((Ba ℬ₁₂ M₁₂.X)ᵐᵒᵖ) (Ba ℬ₁₂ M₁₂.X) (ultraweak 𝒜₁₂)
+        (ultraweak ((Ba ℬ₁₂ M₁₂.X)ᵐᵒᵖ)) (ultraweak (Ba ℬ₁₂ M₁₂.X)) _ _ hcu
+        (uwContinuous_nmiu M₁₂.ρ)
+    have hall := vnTensor_map_ext htA
+      (unopLin.comp ((Theses.A.Proc.nmiuLin ϑ).comp (Theses.A.Proc.nmiuLin R)))
+      (unopLin.comp (Theses.A.Proc.nmiuLin M₁₂.ρ)) hc1 hc2 ?_
+    · intro a
+      exact MulOpposite.unop_injective (hall a)
+    · intro a₁ a₂
+      show (ϑ (R (tA a₁ a₂))).unop = (M₁₂.ρ (tA a₁ a₂)).unop
+      rw [hR a₁ a₂, hϑe' (D₁.ρ a₁) (D₂.ρ a₂), hβ₁ρ, hβ₂ρ]
+      show ad (Θ (M₁.ρ a₁).unop (M₂.ρ a₂).unop) = (M₁₂.ρ (tA a₁ a₂)).unop
+      exact hop a₁ a₂
+  -- transport the standard dilation of `Φ` along `ϑ`
+  exact paschkeDilation_transport ⇑Φ
+    ⟨(Ba ℬ₁₂ M₁₂.X)ᵐᵒᵖ, inferInstance, M₁₂.ρ, M₁₂.h⟩
+    ⟨P₁₂, vnP, R, H⟩ (existence_paschke_5 Φ M₁₂) ϑ hϑbij hϑR hHϑ
 
 end PaschkeTensor
 
