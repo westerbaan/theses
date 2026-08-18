@@ -775,7 +775,7 @@ Show that in this case
 \end{parsec}
 
 \begin{parsec}{1390}%
-\begin{point}{10}{Definition}%
+\begin{point}{10}[dfn-stinespring]{Definition}%
 Let~$\varphi\colon \scrA \to \scrB(\scrH)$
     be any ncp-map
     for some Hilbert space~$\scrH$ and von Neumann algebra~$\scrA$.
@@ -1005,13 +1005,22 @@ This property is the cornerstone of several publications,
         Assume there is a bounded
             operator~$W\colon \scrK \to \scrH \otimes \scrK'$
         with~$W^* (a \otimes 1) W = \varphi(a)$ as well.
-    We will show there is a unitary~$U \colon \scrK' \to \scrK'$
-    such that~$V = (1 \otimes U) W$.
+Write~$\scrV$ for the closed linear span
+        of~$\{(a \otimes 1) V x;\  a \in \scrB(\scrH), x \in \scrK\}$.
+Define~$\scrW$ similary for~$W$.
 
-    First show that in the special case the dilations are minimal
-    (i.e.~the linear span of~$\{(a \otimes 1) V x;\  a \in \scrB(\scrH), x \in \scrK\}$ is dense
-            in $\scrH \otimes \scrK'$),
-        there is a (unique) unitary~$U_0$ on $\scrH \otimes \scrK'$
+Show that there is a unitary~$U \colon \scrK' \to \scrK'$
+        such that~$V = (1 \otimes U) W$
+    whenever
+\begin{inparaenum}
+\item both dilations are minimal,
+    i.e.~$\scrV = \scrH \otimes \scrK' = \scrW$;
+\item
+    $\dim \scrV^\perp = \dim \scrW^\perp$;
+\item
+    and~$\scrH$ and~$\scrK$ are finite dimensional.
+\end{inparaenum}
+For the first point, show that there is a (unique) unitary~$U_0$ on $\scrH \otimes \scrK'$
         with~$V = U_0 W$ and~$(a \otimes 1) U_0 = U_0 (a \otimes 1)$
             for all~$a \in \scrB(\scrH)$.
     Derive from the latter
@@ -1019,8 +1028,7 @@ This property is the cornerstone of several publications,
         there is a~$y' \in \scrK'$
         with~$U_0 (e \otimes y) = e \otimes y'$.
     Conclude~$U_0 = 1 \otimes U$ for some unitary~$U$ on~$\scrK'$.
-    Show  that the general case follows from the special case
-        in which the dilations are minimal.
+    Show that the other cases follow from this.
 \end{point}
 \end{parsec}
 \begin{parsec}{1400}%

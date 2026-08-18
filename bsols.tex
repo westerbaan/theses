@@ -213,11 +213,6 @@ As in the description of the exercise,
     and~$V,W\colon \scrK \to \scrH \otimes \scrK'$
     be bounded operators
     with~$V^* (a \otimes 1) V = \varphi(a) = W^* (a\otimes 1) W$.
-Write~$\scrV$ for the closed linear span
-    of~$\{(a \otimes 1) V x; \ a \in \scrB(\scrH),\ x \in \scrK\}$
-        in~$\scrH\otimes \scrK'$
-and similarly~$\scrW$ for that
-    of~$\{(a \otimes 1) W x; \ a \in \scrB(\scrH),\ x \in \scrK\}$.
 Note that for any~$n\in \N$, ~$x_1,\ldots, x_n \in \scrK$
     and~$a_1, \ldots, a_n \in \scrB(\scrH)$ we have
 \begin{align*}
@@ -269,13 +264,16 @@ Clearly~$\| w \| = \| x \otimes w\|=\| U_0 (x\otimes w) \|
         with~$U_0 (x \otimes w) = x \otimes U_1 w$.
         It follows~$U_0 = 1 \otimes U_1$.
 
-As~$\scrV$ and~$\scrW$ are isomorphic, they have the same dimension
-    and so do~$\scrV^\perp$ and~$\scrW$.
-Consequently, there is an unitary~$U\colon \scrK' \to \scrK'$
-    extending~$U_1$.
-We have~$V = (1\otimes U) W
+If the dilations were minimal, then~$\scrV'=\scrK'=\scrW'$
+    and defining~$U \equiv U_1$ will do,
+    as we have~$V = (1\otimes U) W
     =   (1 \otimes U_1) W
      = U_0 W = V$ as desired.
+For the second case, where we have~$\dim\scrV^\perp = \dim \scrW^\perp$,
+    we can extend~$U_1$ to a unitary~$U$ on~$\scrK'$.
+Finally, if~$\scrH$ and~$\scrK$ are finite-dimensional,
+    then~$\dim\scrV^\perp = \dim \scrW^\perp$
+    and we're in the previosu case.
 \end{solution}
 \begin{solution}{paschke-basics}%
 We cover the points in order.
