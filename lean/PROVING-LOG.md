@@ -21502,3 +21502,140 @@ now carries the full list.
   session-90 note recording that they are proved **but not axiom-clean**
   (104VII); no row was removed, because nothing became axiom-clean.  The
   104VII row and `vn_is_andthen_eff` (211IV, now blocked on 104VII) updated.
+
+## Session 90 — `B/Eff`: **both exercises are CLOSED — 224VII `exc_purec_equal` and 224VI `exc_purec_no_biproduct`** — and neither needed the machinery the author's solutions use (worker on `Theses/B/Eff/VNExamples.lean`)
+
+`VNExamples.lean` compiles with **0 errors** and exactly **one** `sorry`
+(211IV `vn_is_andthen_eff`, which is not this file's to close), 5624 lines
+(**+725**).  **B/Eff goes 4 → 2** (`VNExamples` 1, `EffectAlgebras` 1).
+Both closures and every new lemma are axiom-clean —
+`[propext, Classical.choice, Quot.sound]` — checked **in situ**, on a copy
+of the source with `#print axioms` appended and compiled directly, since the
+oleans in this tree go stale: `exc_purec_equal`, `exc_purec_no_biproduct`,
+`su_exc_purec_equal`, `su_exc_purec_no_biproduct`, `su_no_coequalizer_of_proj`,
+`su_pure_range`, `su_compr_surjective`, `su_state_sqrtConj`,
+`proj_mul_selfAdjoint`, and `su_hasComprehension` re-checked after its
+statement was extended.
+
+### The one lemma both exercises turned on
+
+**`su_pure_range`** — *the range of a pure map contains `√a x √a` for every
+effect `x`, where `a = f(1)`.*  This is the whole of "`f` is a filter after
+a corner" that either exercise needs, and it is eight lines of effectus
+theory once two things are in place:
+
+* a **comprehension of `vNᵒᵖ` has surjective `unop`** (`su_compr_surjective`):
+  by `compr_basics_2` it is the standard corner of `su_exists_corner`
+  precomposed with an isomorphism, and `b ↦ ⌊q⌋b⌊q⌋` is surjective onto
+  `⌊q⌋𝒜⌊q⌋` because `y = ⌊q⌋y⌊q⌋` *is* the defining property of `cornerSet`.
+  (`su_exists_corner` had to be extended to report this; two `obtain`
+  patterns downstream grew a `-`.)
+* the **quotient half is used through its effectus universal property, not
+  through `dils_stand_filter`**: `√a x √a ≤ a ≼ pᗮ`, so `ad_{√(√a x √a)}` —
+  a morphism by `su_exists_ad` — factors through the quotient, and its value
+  at `1` is `√a x √a`.  So no filter has to be identified concretely, and
+  `dils_filters_injective` is never needed.
+
+### 224VII: the same argument, with `ad_p`/`ad_{1−p}` for `M₃ ⊕ ℂ`
+
+`su_no_coequalizer_of_proj` is the author's argument (bsols.tex:3480) run
+with an arbitrary projection `p ∉ {0,1}` of a `B(ℋ)` and `σ = 2p − 1`,
+rather than with the swap on `ℂ²⊗ℂ²`; `su_exc_purec_equal` instantiates it
+at `ℋ = ℂ²` (in `Type u` as `EuclideanSpace ℂ (ULift (Fin 2))`) and `p` a
+rank-one projection.  Three divergences, all recorded in the file's own
+comments:
+
+1. **The final contradiction uses `ad_p` and `ad_{1−p}`, not
+   `ad_{e†_𝒮} : M₃ → M₄`.**  Both are pure (`su_isPure_ad_sqrt` applies
+   because `√p = p` for a projection), both are fixed by `ad_σ` (`σp = p`,
+   `σ(1−p) = −(1−p)`), so both factor through the coequalizer `e`; then
+   `p = e(m₁(1)) ≤ e(1) = a` and `1 − p ≤ a`.  The author's `M₃` and its
+   embedding never have to be built.
+2. **The pseudoinverse of `√ξ(1)` is not needed, and neither is the
+   factoriality of `⌈ξ(1)⌉M₄⌈ξ(1)⌉` as such.**  The printed solution goes
+   `p_𝒮 ξ(c) = ξ(c) p_𝒮` → `p_𝒮 √a b √a = √a b √a p_𝒮` → (pseudoinverse)
+   `p_𝒮 ⌈a⌉b⌈a⌉ = ⌈a⌉b⌈a⌉ p_𝒮` → central in a factor → `0` or `⌈a⌉`.
+   `proj_mul_selfAdjoint` reaches the same endpoint in one step: test the
+   hypothesis against the **rank-one** effects `|ξ⟩⟨ξ|`, apply both sides to
+   `√a ξ`, and get `⟪√aξ,√aξ⟫·p(√aξ) = ⟪√aξ,p(√aξ)⟫·√aξ`; applying `p`
+   again gives `p(√aξ) ∈ {0, √aξ}` for **every** `ξ`, and a vector space is
+   not the union of two proper subspaces, so `p√a = 0` or `p√a = √a`.  That
+   is ~60 lines of Hilbert-space algebra with no functional calculus beyond
+   `√a√a = a`.
+3. `a ≤ 1 − p` (resp. `a ≤ p`) then contradicts `p ≤ a` (resp. `1 − p ≤ a`)
+   through `su_proj_eq_zero`: a projection `z ≤ w` with `zw = 0` is `0`.
+
+Also worth recording: **`ad_σ` is pure because it is an *isomorphism***
+(`ad_σ ≫ ad_σ = 𝟙`, then `quotient_basics_3` + `compr_basics_3`), which is
+why `su_exists_ad` had to be generalised to `su_exists_ad'` — `σ` is not
+positive.  And `p` commutes with `b` iff `σbσ = b`, via
+`p = ½·(σ + 1)`; the factor of two is removed by `(2:ℂ)⁻¹ •`, not by
+cancellation.
+
+### 224VI: no GNS, no `paschke-pure`, no minimal projections
+
+The printed solution (bsols.tex:3358) classifies the non-zero pure maps
+`𝒜 → ℂ` by a GNS representation — using **171VII** `paschke-pure` and the
+factoriality of `⌈⌈p⌉⌉𝒜` for a minimal `p` — concludes `𝒜 ≅ M₂` with `π₁`,
+`π₂` vector states, and then contradicts the universal property with the two
+coordinate maps of `ℂ²`.  **None of that is needed.**  Write `ĝ₀`, `ĝ₁` for
+the mediating maps of `(id, id)` and `(id, 0)` and `a₀ = ĝ₀(1)`,
+`a₁ = ĝ₁(1)`, so that `π₁(a₀) = π₂(a₀) = 1`, `π₁(a₁) = 1`, `π₂(a₁) = 0`.
+Then
+
+* `π₁(a₀) = 1 ≤ π_i(1) ≤ 1`, so **both `π_i` are states**;
+* `√a₀ a₁ √a₀` is in the range of `ĝ₀` by `su_pure_range`, and `π₁` and `π₂`
+  are both **left inverses of `ĝ₀`**, so they agree there;
+* a state with `ω(a₀) = 1` satisfies `ω(√a₀ x √a₀) = ω(x)`
+  (**`su_state_sqrtConj`**).
+
+Hence `1 = π₁(a₁) = π₂(a₁) = 0`.  The only analysis in it is
+`su_state_sqrtConj`, which is Cauchy–Schwarz (**31IV**
+`omega_norm_basic_1`, already in `A/CStar`) plus the two small facts
+`a ≤ √a` and `d² ≤ d` for effects (`su_le_sqrt`, `su_sq_le_self`, both by
+conjugating `√a ≤ 1` with `⁴√a`): `ω(1−a₀) = 0` gives `ω(1−√a₀) = 0`, hence
+`ω((1−√a₀)²) = 0`, hence `ω((1−√a₀)x) = ω(x(1−√a₀)) = 0`, and
+`x − √a₀ x √a₀ = (1−√a₀)x + √a₀ x (1−√a₀)`.
+
+**A sanity check worth keeping.**  The argument is *not* too strong: in
+`vNᵒᵖ` itself (all ncpsu-maps) `ℂ ⊕ ℂ` *is* the coproduct of `ℂ` and `ℂ`,
+and there `ĝ₀` is the diagonal `z ↦ (z,z)` — which is **not pure** (a pure
+map out of the scalars is a filter after a corner, and both are forced to be
+`ℂ → ℂ`, so it would have to be a filter, which the diagonal is not).
+`su_pure_range` fails for it exactly as it must, and `(1,0)` is indeed not
+in the range of the diagonal.
+
+### Lean notes
+
+* `(𝟙 X).1` does **not** elaborate for `X : PureCat C` — the type of `𝟙 X`
+  is `CategoryStruct.toQuiver.1 X X`, which the projection elaborator will
+  not unfold to the subtype, although `f.1` for a *variable* `f : X ⟶ Y`
+  works.  The fix used throughout is to state the intended type and let
+  `exact`/`congrArg` check it up to defeq: `have h : i.1 ≫ g.1 = 𝟙 X.base
+  := congrArg (fun m => m.1) hcond`.
+* Universe `u` forced the Hilbert space to be
+  `EuclideanSpace ℂ (ULift.{u} (Fin 2))`; all the `NormedAddCommGroup`,
+  `InnerProductSpace`, `CompleteSpace` and hence
+  `Theses.VonNeumannAlgebra (H →L[ℂ] H)` instances are found without help,
+  and `WStar.of` accepts it directly.
+* The concrete object is a `private noncomputable abbrev`, which keeps
+  `(op (WStarCPSU.of (WStar.of (H →L[ℂ] H)))).unop.base.carrier` reducible
+  enough that plain `refine`/`exact` cross it; the abstract half of the
+  argument (`su_no_coequalizer_of_proj`) is stated over an arbitrary
+  `X : WStarCPSU.{u}ᵒᵖ` precisely so that `rw` never has to.
+
+Nothing for ERRATA — no defect in either statement, and both author
+solutions are correct as printed (they are simply longer than they need to
+be).  No new QUESTIONS.  `docs/why-open.csv`: the `exc_purec_equal` and
+`exc_purec_no_biproduct` rows are deleted; the `vn_is_andthen_eff` row is
+this session's A/Proc worker's and is left alone.  `docs/BEff-survey.md`: a
+session-90 block.
+
+### What is left in `B/Eff`
+
+Two `sorry`s, neither of them this file's own mathematics: **211IV
+`vn_is_andthen_eff`**, blocked on **104VII**
+`positive_quotients_centrally_similar` in `A/Proc` (105V was closed by this
+session's A/Proc worker), and
+`effectModule_unitInterval_representation` in `EffectAlgebras.lean`
+(QUESTIONS **B14**).

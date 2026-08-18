@@ -34,8 +34,9 @@ from it — `sharp_multiplicative`, `gardner`, `pure_fundamental` — are
 
 `vn_is_andthen_eff` (211IV) is proved in eff.tex:4859 from **105V**
 `positive-map-uniqueness` and **100III** `pure-fundamental`, both in
-`Theses/A/Proc/Measurement.lean`; **105V is itself still `sorry` there**, so
-that item stays blocked — but on 105V alone now, not also on the import.
+`Theses/A/Proc/Measurement.lean`.  As of session 90 **105V is proved there**,
+but only modulo **104VII** `positive_quotients_centrally_similar`, which is
+still `sorry`; so that item stays blocked, on 104VII and on nothing else.
 (An earlier version of this header claimed nothing here needs `A/Proc`; that
 was wrong.)
 
@@ -2305,6 +2306,233 @@ end StateExists
 
 
 
+/-! ## Rank-one projections, and `B(ℋ)` as a factor (infrastructure for 224VII)
+
+The one genuinely operator-theoretic input of **224VII** is the step where
+`bsols.tex` concludes, from `⌈ξ(1)⌉p_𝒮⌈ξ(1)⌉` being central in
+`⌈ξ(1)⌉M₄⌈ξ(1)⌉`, that it is `0` or `⌈ξ(1)⌉` — i.e. that a corner of a
+factor is a factor.  It enters the argument only through the following
+form of the conclusion:
+
+> if a projection `p` commutes with `s x s` for every effect `x` of `B(ℋ)`,
+> then `p s = 0` or `p s = s`   (`proj_mul_selfAdjoint`).
+
+Testing the hypothesis against the *rank-one* effects `|ξ⟩⟨ξ|` gives
+`⟪sξ,sξ⟫ · p(sξ) = ⟪sξ,p(sξ)⟫ · sξ`, whence `p(sξ) ∈ {0, sξ}` for every
+`ξ`; and a vector space is not the union of two proper subspaces.  This
+route needs neither the pseudoinverse of `√ξ(1)` nor factoriality as such
+(see `PROVING-LOG.md`, session 90). -/
+
+section RankOne
+
+open scoped ComplexInnerProductSpace
+
+variable {H : Type u} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
+  [CompleteSpace H]
+
+/-- The rank-one operator `|ξ⟩⟨ξ| : ζ ↦ ⟪ξ,ζ⟫ ξ` on a Hilbert space. -/
+noncomputable def rk1 (ξ : H) : H →L[ℂ] H := (innerSL ℂ ξ).smulRight ξ
+
+omit [CompleteSpace H] in
+theorem rk1_apply (ξ x : H) : rk1 ξ x = (⟪ξ, x⟫ : ℂ) • ξ := rfl
+
+theorem rk1_star (ξ : H) : star (rk1 ξ) = rk1 ξ := by
+  rw [ContinuousLinearMap.star_eq_adjoint]
+  refine ((ContinuousLinearMap.eq_adjoint_iff _ _).mpr ?_).symm
+  intro x y
+  simp only [rk1_apply, inner_smul_left, inner_smul_right, inner_conj_symm]
+  ring
+
+/-- `|ξ⟩⟨ξ|` is a projection for a unit vector `ξ`. -/
+theorem rk1_isStarProjection {ξ : H} (h : ‖ξ‖ = 1) :
+    IsStarProjection (rk1 ξ) := by
+  refine ⟨?_, rk1_star ξ⟩
+  ext x
+  simp [rk1_apply, h]
+
+/-- **The factoriality input of 224VII.**  If a projection `p` of `B(ℋ)`
+commutes with `s x s` for every effect `x`, then `p s = 0` or `p s = s`. -/
+theorem proj_mul_selfAdjoint {s p : H →L[ℂ] H} (hs : IsSelfAdjoint s)
+    (hp : IsStarProjection p)
+    (hcomm : ∀ x : H →L[ℂ] H, 0 ≤ x → x ≤ 1 →
+      p * (s * x * s) = s * x * s * p) :
+    p * s = 0 ∨ p * s = s := by
+  have hsym : ∀ x y : H, (⟪s x, y⟫ : ℂ) = ⟪x, s y⟫ :=
+    (ContinuousLinearMap.isSelfAdjoint_iff_isSymmetric.mp hs)
+  have hpp : ∀ v : H, p (p v) = p v := by
+    intro v
+    have h := hp.isIdempotentElem.eq
+    calc p (p v) = (p * p) v := rfl
+      _ = p v := by rw [h]
+  -- the pointwise dichotomy, tested against `|ξ⟩⟨ξ|`
+  have key : ∀ ξ : H, p (s ξ) = 0 ∨ p (s ξ) = s ξ := by
+    have unit : ∀ ξ : H, ‖ξ‖ = 1 → (p (s ξ) = 0 ∨ p (s ξ) = s ξ) := by
+      intro ξ hξ
+      have hpr := rk1_isStarProjection hξ
+      have h := hcomm (rk1 ξ) hpr.nonneg hpr.le_one
+      have happ := congrArg (fun T : H →L[ℂ] H => T (s ξ)) h
+      simp only [ContinuousLinearMap.mul_apply, rk1_apply,
+        ContinuousLinearMap.map_smul] at happ
+      set c : ℂ := (⟪s ξ, s ξ⟫ : ℂ) with hc
+      set d : ℂ := (⟪s ξ, p (s ξ)⟫ : ℂ) with hd
+      have e1 : c • p (s ξ) = d • s ξ := by
+        rw [hc, hd, hsym, hsym]; exact happ
+      have e2 : c • p (s ξ) = d • p (s ξ) := by
+        have h2 := congrArg (fun v : H => p v) e1
+        simpa [hpp] using h2
+      by_cases hd0 : d = 0
+      · left
+        rw [hd0, zero_smul] at e1
+        by_cases hc0 : c = 0
+        · have hz : s ξ = 0 := inner_self_eq_zero.mp hc0
+          rw [hz, map_zero]
+        · exact (smul_eq_zero.mp e1).resolve_left hc0
+      · right
+        have h3 : d • s ξ = d • p (s ξ) := by rw [← e1, e2]
+        exact (smul_right_injective H hd0 h3).symm
+    intro ξ
+    by_cases hξ : ξ = 0
+    · left; rw [hξ, map_zero, map_zero]
+    · have hn : ‖ξ‖ ≠ 0 := norm_ne_zero_iff.mpr hξ
+      set r : ℂ := (‖ξ‖ : ℂ)⁻¹ with hr
+      have hr0 : r ≠ 0 := by simp [hr, hn]
+      have hnr : ‖r • ξ‖ = 1 := by
+        rw [norm_smul, hr]; simp [hn]
+      rcases unit (r • ξ) hnr with h | h
+      · left
+        rw [map_smul, map_smul] at h
+        exact (smul_eq_zero.mp h).resolve_left hr0
+      · right
+        rw [map_smul, map_smul] at h
+        exact smul_right_injective H hr0 h
+  -- a vector space is not the union of two proper subspaces
+  have dich : (∀ ξ : H, p (s ξ) = 0) ∨ (∀ ξ : H, p (s ξ) = s ξ) := by
+    by_contra hcon
+    push Not at hcon
+    obtain ⟨⟨ξ₁, h₁⟩, ⟨ξ₂, h₂⟩⟩ := hcon
+    have e₁ : p (s ξ₁) = s ξ₁ := (key ξ₁).resolve_left h₁
+    have e₂ : p (s ξ₂) = 0 := (key ξ₂).resolve_right h₂
+    have hs₂ : s ξ₂ ≠ 0 := fun h => h₂ (by rw [e₂, h])
+    have hs₁ : s ξ₁ ≠ 0 := fun h => h₁ (by rw [e₁, h])
+    have esum : p (s (ξ₁ + ξ₂)) = s ξ₁ := by
+      rw [map_add, map_add, e₁, e₂, add_zero]
+    rcases key (ξ₁ + ξ₂) with h | h
+    · exact hs₁ (by rw [← esum, h])
+    · rw [esum, map_add] at h
+      refine hs₂ ?_
+      have h4 := h.symm
+      rwa [add_eq_left] at h4
+  rcases dich with h | h
+  · left; ext v; simpa using h v
+  · right; ext v; simpa using h v
+
+end RankOne
+
+/-! ## States and the square root (infrastructure for 224VI)
+
+The step of **224VI** that replaces the printed solution's GNS analysis is
+`su_state_sqrtConj`: a *state* `ω` with `ω(a) = 1` satisfies
+`ω(√a x √a) = ω(x)` for every `x`.  (For a vector state `⟨v, ·v⟩` this says
+`a v = v ⟹ √a v = v`.)  It rests on Cauchy–Schwarz for positive
+functionals, **31IV** `omega_norm_basic_1`. -/
+
+section StateSqrt
+
+open Theses.A.CStar
+open scoped ComplexOrder
+
+variable {A : Type u} [CStarAlgebra A] [PartialOrder A] [StarOrderedRing A]
+
+/-- `a ≤ √a` for an effect `a` (conjugate `√a ≤ 1` by `⁴√a`). -/
+theorem su_le_sqrt {a : A} (h0 : 0 ≤ a) (h1 : a ≤ 1) : a ≤ CFC.sqrt a := by
+  have hs0 : (0 : A) ≤ CFC.sqrt a := CFC.sqrt_nonneg a
+  have hs1 : CFC.sqrt a ≤ 1 := by simpa using CFC.sqrt_le_sqrt a 1 h1
+  set c : A := CFC.sqrt (CFC.sqrt a) with hc
+  have hc0 : (0 : A) ≤ c := CFC.sqrt_nonneg _
+  have hcc : c * c = CFC.sqrt a := CFC.sqrt_mul_sqrt_self _ hs0
+  have key := (IsSelfAdjoint.of_nonneg hc0).conjugate_le_conjugate hs1
+  have e1 : c * CFC.sqrt a * c = a := by
+    rw [← hcc]
+    have h : c * (c * c) * c = c * c * (c * c) := by noncomm_ring
+    rw [h, hcc, CFC.sqrt_mul_sqrt_self a h0]
+  have e2 : c * 1 * c = CFC.sqrt a := by rw [mul_one, hcc]
+  rwa [e1, e2] at key
+
+/-- `d² ≤ d` for an effect `d`. -/
+theorem su_sq_le_self {d : A} (h0 : 0 ≤ d) (h1 : d ≤ 1) : d * d ≤ d := by
+  set s : A := CFC.sqrt d with hs
+  have hs0 : (0 : A) ≤ s := CFC.sqrt_nonneg d
+  have hss : s * s = d := CFC.sqrt_mul_sqrt_self d h0
+  have key := (IsSelfAdjoint.of_nonneg hs0).conjugate_le_conjugate h1
+  have e1 : s * d * s = d * d := by rw [← hss]; noncomm_ring
+  have e2 : s * 1 * s = d := by rw [mul_one, hss]
+  rwa [e1, e2] at key
+
+/-- **Cauchy–Schwarz** (**31IV** `omega_norm_basic_1`): a positive functional
+killing an effect `d` kills every product with `d`. -/
+theorem su_posFun_mul_eq_zero (ω : A →ₗ[ℂ] ℂ) (hω : IsPositiveMap ω) {d : A}
+    (hd0 : 0 ≤ d) (hd1 : d ≤ 1) (h0 : ω d = 0) :
+    (∀ b : A, ω (d * b) = 0) ∧ (∀ b : A, ω (b * d) = 0) := by
+  have hds : star d = d := (IsSelfAdjoint.of_nonneg hd0).star_eq
+  have hmono : ∀ x y : A, x ≤ y → ω x ≤ ω y := by
+    intro x y hxy
+    have h := hω (y - x) (sub_nonneg.mpr hxy)
+    rw [map_sub] at h
+    exact sub_nonneg.mp h
+  have hdd0 : ω (star d * d) = 0 := by
+    rw [hds]
+    have hnn : (0 : A) ≤ d * d := by
+      have h := star_mul_self_nonneg d
+      rwa [hds] at h
+    refine le_antisymm ?_ (hω _ hnn)
+    rw [← h0]
+    exact hmono _ _ (su_sq_le_self hd0 hd1)
+  have hzero : ∀ z : A, ((‖ω z‖ : ℂ)) ^ 2 ≤ 0 → ω z = 0 := by
+    intro z hz
+    have hle : ((‖ω z‖ ^ 2 : ℝ) : ℂ) ≤ 0 := by push_cast; exact hz
+    have h2 : (‖ω z‖ : ℝ) ^ 2 ≤ 0 := by
+      exact_mod_cast Complex.real_le_real.mp (by simpa using hle)
+    have h3 : ‖ω z‖ = 0 := by nlinarith [norm_nonneg (ω z)]
+    exact norm_eq_zero.mp h3
+  constructor
+  · intro b
+    have hcs := omega_norm_basic_1 ω hω d b
+    rw [hdd0, zero_mul] at hcs
+    have h := hzero _ hcs
+    rwa [hds] at h
+  · intro b
+    have hcs := omega_norm_basic_1 ω hω (star b) d
+    rw [star_star, hdd0, mul_zero] at hcs
+    exact hzero _ hcs
+
+/-- **A state fixing an effect `a` is invariant under `x ↦ √a x √a`.** -/
+theorem su_state_sqrtConj (ω : A →ₗ[ℂ] ℂ) (hω : IsPositiveMap ω) (hu : ω 1 = 1)
+    {a : A} (ha0 : 0 ≤ a) (ha1 : a ≤ 1) (hfix : ω a = 1) (x : A) :
+    ω (CFC.sqrt a * x * CFC.sqrt a) = ω x := by
+  have hmono : ∀ x y : A, x ≤ y → ω x ≤ ω y := by
+    intro x y hxy
+    have h := hω (y - x) (sub_nonneg.mpr hxy)
+    rw [map_sub] at h
+    exact sub_nonneg.mp h
+  set s : A := CFC.sqrt a with hs
+  have hs0 : (0 : A) ≤ s := CFC.sqrt_nonneg a
+  have hs1 : s ≤ 1 := by rw [hs]; simpa using CFC.sqrt_le_sqrt a 1 ha1
+  have hωs : ω s = 1 := by
+    refine le_antisymm ?_ ?_
+    · rw [← hu]; exact hmono _ _ hs1
+    · rw [← hfix]; exact hmono _ _ (hs ▸ su_le_sqrt ha0 ha1)
+  set d : A := 1 - s with hd
+  have hd0 : (0 : A) ≤ d := sub_nonneg.mpr hs1
+  have hd1 : d ≤ 1 := by rw [hd]; simpa using hs0
+  have hωd : ω d = 0 := by rw [hd, map_sub, hu, hωs, sub_self]
+  obtain ⟨hL, hR⟩ := su_posFun_mul_eq_zero ω hω hd0 hd1 hωd
+  have hid : x - s * x * s = d * x + s * x * d := by rw [hd]; noncomm_ring
+  have h := congrArg ω hid
+  rw [map_sub, map_add, hL x, hR (s * x), add_zero] at h
+  exact (sub_eq_zero.mp h).symm
+
+end StateSqrt
+
 section IUnique
 
 open Theses.A.CStar
@@ -3069,7 +3297,8 @@ corner `h_a : 𝒜 → ⌊a⌋𝒜⌊a⌋`, `b ↦ ⌊a⌋b⌊a⌋` (dils.tex 16
 private theorem su_exists_corner {X : WStarCPSU.{u}ᵒᵖ}
     (p : X ⟶ effObj (WStarCPSU.{u}ᵒᵖ)) :
     ∃ (W : WStarCPSU.{u}ᵒᵖ) (π : W ⟶ X), IsComprehension p π ∧
-      suCarrier π = Theses.A.VN.floor (suPredVal p) := by
+      suCarrier π = Theses.A.VN.floor (suPredVal p) ∧
+      Function.Surjective π.unop.toNCPMap := by
     obtain ⟨h, hval, -, hcorner, huniv⟩ := Theses.B.Dils.standard_corner_dils
       (A := X.unop.base.carrier) (suPredVal p)
       ⟨suPredVal_nonneg p, suPredVal_le_one p⟩
@@ -3090,7 +3319,7 @@ private theorem su_exists_corner {X : WStarCPSU.{u}ᵒᵖ}
       ⟨Quiver.Hom.op ⟨h, le_of_eq hunital⟩, fun _ => rfl⟩
     have hproj : IsStarProjection (Theses.A.VN.floor (suPredVal p)) :=
       Theses.B.Dils.cornerSet.proj (Theses.A.VN.floor (suPredVal p))
-    refine ⟨_, π, ⟨?_, ?_⟩, ?_⟩
+    refine ⟨_, π, ⟨?_, ?_⟩, ?_, ?_⟩
     · -- `π ∘ p = π ∘ 1`
       refine su_pred_ext (Eq.trans (suPredVal_comp π p)
         (Eq.trans ?_ (suPredVal_comp π (truth X)).symm))
@@ -3162,6 +3391,13 @@ private theorem su_exists_corner {X : WStarCPSU.{u}ᵒᵖ}
           rwa [star_mul, hproj.isSelfAdjoint.star_eq,
             hq.one_sub.isSelfAdjoint.star_eq, star_zero] at h4
         exact (Theses.A.VN.le_proj_iff ⟨hproj.nonneg, hproj.le_one⟩ hq).mpr h3
+    · -- the standard corner is **surjective**: `h(y) = y` for `y` in `⌊a⌋𝒜⌊a⌋`
+      intro y
+      refine ⟨y.1, ?_⟩
+      rw [hπ]
+      refine Theses.B.Dils.cornerSet.val_injective ?_
+      rw [hval]
+      exact y.2
 
 /-- **199II at `vNᵒᵖ`** (eff.tex:3934, Examples): `vN_cpsuᵒᵖ` **has
 comprehension**, and a comprehension for the effect `a` is the standard
@@ -3169,7 +3405,7 @@ corner `h_a : 𝒜 → ⌊a⌋𝒜⌊a⌋`, `b ↦ ⌊a⌋b⌊a⌋` (dils.tex 16
 `standard_corner_dils`). -/
 theorem su_hasComprehension : HasComprehension (WStarCPSU.{u}ᵒᵖ) :=
   ⟨fun p => by
-    obtain ⟨W, π, hπ, -⟩ := su_exists_corner p
+    obtain ⟨W, π, hπ, -, -⟩ := su_exists_corner p
     exact ⟨W, π, hπ⟩⟩
 
 /-- **197II at `vNᵒᵖ`** (eff.tex:3684, Examples): `vN_cpsuᵒᵖ` **has
@@ -3276,7 +3512,7 @@ theorem su_isSharp_iff {X : WStarCPSU.{u}ᵒᵖ}
     rw [le_antisymm h1 h2, hq]
     exact hproj
   · intro hpr
-    obtain ⟨W, π, -, hcar⟩ := su_exists_corner p
+    obtain ⟨W, π, -, hcar, -⟩ := su_exists_corner p
     exact ⟨W, π, su_isImage_carrier π p
       (by rw [hcar, su_floor_of_isStarProjection hpr])⟩
 
@@ -4495,6 +4731,484 @@ theorem su_daggerEffectus : Nonempty (DaggerEffectus (WStarCPSU.{u}ᵒᵖ)) := b
 
 end AndThen223
 
+/-! ### `Pure (vNᵒᵖ)` has no coequalizers (224VII)
+
+`bsols.tex`:3480 argues with `M₄`, the swap `σ` on `ℂ²⊗ℂ²`, and the
+projections `p_𝒮`, `p_𝒜` onto the symmetric and the antisymmetric subspace.
+Only two properties of that configuration are used: `σ` is a self-adjoint
+unitary, so `σ = 2p_𝒮 − 1`, and both `p_𝒮` and `p_𝒜 = 1 − p_𝒮` are non-zero.
+The argument below is the author's, run with an arbitrary such `p` in
+`B(ℋ)` — the smallest instance being `ℋ = ℂ²` with `p` a rank-one
+projection, which is what `su_exc_purec_equal` uses.  Three divergences from
+the printed solution, all recorded in `PROVING-LOG.md`:
+
+* the final contradiction uses `ad_{p}` and `ad_{1−p}` — which are pure,
+  land in the two corners and are fixed by `ad_σ` — in place of
+  `ad_{e†_𝒮} : M₃ → M₄` and `ad_{e†_𝒜} : ℂ → M₄`, so no three-dimensional
+  subspace has to be built;
+* the passage from `p ξ(c) = ξ(c) p` to `⌈ξ(1)⌉p⌈ξ(1)⌉` central, which the
+  solution makes with the pseudoinverse of `√ξ(1)`, is replaced by the
+  rank-one computation of `proj_mul_selfAdjoint` above, which reaches the
+  same conclusion (`p√a ∈ {0, √a}`) directly;
+* the range of the filter half of the pure map `e` is reached through the
+  *effectus* universal property of the quotient (`su_pure_range`) rather
+  than through the isomorphism `ϑ : 𝒞 → ⌈ξ(1)⌉M₄⌈ξ(1)⌉`. -/
+
+omit [EffectusPartialForm (WStarCPSU.{u}ᵒᵖ)] in
+/-- `ad_w : b ↦ w* b w` as a morphism `X ⟶ X` of `vN_cpsuᵒᵖ`, for any `w`
+with `w* w ≤ 1` (the version of `su_exists_ad` that does not ask `w ≥ 0`;
+`ad_σ` for a symmetry `σ` is the point). -/
+theorem su_exists_ad' {X : WStarCPSU.{u}ᵒᵖ} {w : X.unop.base.carrier}
+    (hw1 : star w * w ≤ 1) :
+    ∃ k : X ⟶ X, ∀ x, k.unop.toNCPMap x = star w * x * w := by
+  obtain ⟨m, hm⟩ : ∃ m : Theses.NCPSUMap X.unop.base.carrier X.unop.base.carrier,
+      ∀ x, m.toNCPMap x = star w * x * w := by
+    refine ⟨mkNCPSU { toFun := fun x => star w * x * w
+                      map_add' := fun x y => by noncomm_ring
+                      map_smul' := fun c x => by simp } ?_ ?_ ?_,
+      fun x => rfl⟩
+    · intro n c b
+      have h := ad_cp_1 w n c b
+      simpa [mul_assoc] using h
+    · intro Dset s' hne hdir hlub
+      have hb : BddAbove Dset := ⟨s', hlub.1⟩
+      have hsd : Theses.dirSup Dset ⟨hne, hdir, hb⟩ = s' :=
+        (Theses.isLUB_dirSup Dset ⟨hne, hdir, hb⟩).unique hlub
+      have h := Theses.A.VN.ad_normal w Dset ⟨hne, hdir, hb⟩
+      rw [hsd] at h
+      exact h
+    · show star w * 1 * w ≤ 1
+      rw [mul_one]
+      exact hw1
+  exact ⟨Quiver.Hom.op m, hm⟩
+
+omit [EffectusPartialForm (WStarCPSU.{u}ᵒᵖ)] in
+/-- The identity of `vN_cpsuᵒᵖ` is the identity map. -/
+theorem suop_id_apply {X : WStarCPSU.{u}ᵒᵖ} (a : X.unop.base.carrier) :
+    (𝟙 X).unop.toNCPMap a = a := su_id_apply a
+
+omit [EffectusPartialForm (WStarCPSU.{u}ᵒᵖ)] in
+/-- A projection below an element orthogonal to it is zero. -/
+theorem su_proj_eq_zero {A : Type u} [CStarAlgebra A] [PartialOrder A]
+    [StarOrderedRing A] {z w : A} (hz : IsStarProjection z) (hle : z ≤ w)
+    (hzw : z * w = 0) : z = 0 := by
+  have h1 : z * z * z ≤ z * w * z := hz.isSelfAdjoint.conjugate_le_conjugate hle
+  rw [hzw, zero_mul, hz.isIdempotentElem.eq, hz.isIdempotentElem.eq] at h1
+  exact le_antisymm h1 hz.nonneg
+
+/-- **Comprehensions of `vN_cpsuᵒᵖ` are surjective**: by `compr_basics_2` a
+comprehension for `q` is the standard corner `h_{⌊q⌋}` of `su_exists_corner`
+precomposed with an isomorphism, and the standard corner `b ↦ ⌊q⌋b⌊q⌋` is
+surjective onto `⌊q⌋𝒜⌊q⌋`. -/
+theorem su_compr_surjective {W X : WStarCPSU.{u}ᵒᵖ}
+    {q : X ⟶ effObj (WStarCPSU.{u}ᵒᵖ)} {π : W ⟶ X} (hπ : IsComprehension q π) :
+    Function.Surjective π.unop.toNCPMap := by
+  obtain ⟨W₀, π₀, hπ₀, -, hsurj₀⟩ := su_exists_corner q
+  obtain ⟨θ, hiso, hθ, -⟩ := compr_basics_2 hπ hπ₀
+  haveI := hiso
+  intro y
+  obtain ⟨x, hx⟩ := hsurj₀ ((inv θ).unop.toNCPMap y)
+  refine ⟨x, ?_⟩
+  have hyy : θ.unop.toNCPMap ((inv θ).unop.toNCPMap y) = y := by
+    have h : (θ ≫ inv θ).unop.toNCPMap y = (𝟙 W).unop.toNCPMap y :=
+      congrArg (fun m : W ⟶ W => m.unop.toNCPMap y) (IsIso.hom_inv_id θ)
+    rw [suop_comp_apply, suop_id_apply] at h
+    exact h
+  have hππ : π.unop.toNCPMap x = θ.unop.toNCPMap (π₀.unop.toNCPMap x) := by
+    have h : π.unop.toNCPMap x = (θ ≫ π₀).unop.toNCPMap x :=
+      congrArg (fun m : W ⟶ X => m.unop.toNCPMap x) hθ.symm
+    rw [suop_comp_apply] at h
+    exact h
+  rw [hππ, hx, hyy]
+
+section PureCoequalizer
+
+open scoped ComplexInnerProductSpace
+
+variable [AndThenEffectus (WStarCPSU.{u}ᵒᵖ)]
+
+/-- **The range of a pure map** `f` of `vN_cpsuᵒᵖ` contains `√a x √a` for
+every effect `x`, where `a = f(1)`.  `f` is a quotient followed by a
+comprehension; the comprehension is total and surjective
+(`su_compr_surjective`), and `√a x √a`, being below `a ≼ pᗮ`, is the value
+at `1` of a map that the quotient's universal property factors. -/
+theorem su_pure_range {X Y : WStarCPSU.{u}ᵒᵖ} {f : X ⟶ Y} (hf : IsPure f)
+    {x : X.unop.base.carrier} (hx0 : 0 ≤ x) (hx1 : x ≤ 1) :
+    ∃ z : Y.unop.base.carrier, f.unop.toNCPMap z
+      = CFC.sqrt (f.unop.toNCPMap 1) * x * CFC.sqrt (f.unop.toNCPMap 1) := by
+  obtain ⟨Q, ξ, π, p₀, q₀, hξ, hπ, hfe⟩ := hf
+  have hπ1 : π.unop.toNCPMap 1 = 1 := (su_isTotal_iff π).mp (compr_total hπ)
+  have hsurj := su_compr_surjective hπ
+  set a : X.unop.base.carrier := f.unop.toNCPMap 1 with ha
+  have haξ : ξ.unop.toNCPMap 1 = a := by
+    rw [ha, hfe, suop_comp_apply, hπ1]
+  have ha0 : 0 ≤ a := by
+    have h := ncpsu_mono f.unop (zero_le_one (α := Y.unop.base.carrier))
+    rwa [ncp_zero_apply] at h
+  have ha1 : a ≤ 1 := f.unop.subunital'
+  have hb : ξ.unop.toNCPMap 1 ≤ suPredVal (EffectusPartialForm.orth p₀) := by
+    have h1 := (su_pred_le_iff (ξ ≫ truth Q) (EffectusPartialForm.orth p₀)).mp hξ.1
+    rwa [suPredVal_comp, suPredVal_truth] at h1
+  set s : X.unop.base.carrier := CFC.sqrt a with hs
+  have hs0 : (0 : X.unop.base.carrier) ≤ s := CFC.sqrt_nonneg a
+  have hss : s * s = a := CFC.sqrt_mul_sqrt_self a ha0
+  have hsxs0 : (0 : X.unop.base.carrier) ≤ s * x * s :=
+    (IsSelfAdjoint.of_nonneg hs0).conjugate_nonneg hx0
+  have hsxsle : s * x * s ≤ a := by
+    have h := (IsSelfAdjoint.of_nonneg hs0).conjugate_le_conjugate hx1
+    rwa [mul_one, hss] at h
+  set w : X.unop.base.carrier := CFC.sqrt (s * x * s) with hw
+  have hw0 : (0 : X.unop.base.carrier) ≤ w := CFC.sqrt_nonneg _
+  have hww : w * w = s * x * s := CFC.sqrt_mul_sqrt_self _ hsxs0
+  obtain ⟨g, hg⟩ := su_exists_ad (X := X) hw0 (by rw [hww]; exact hsxsle.trans ha1)
+  have hgle : (g ≫ truth X) ≼ EffectusPartialForm.orth p₀ := by
+    refine (su_pred_le_iff _ _).mpr ?_
+    rw [suPredVal_comp, suPredVal_truth, hg, mul_one, hww]
+    exact hsxsle.trans (haξ ▸ hb)
+  obtain ⟨m, hm, -⟩ := hξ.2 g hgle
+  obtain ⟨z, hz⟩ := hsurj (m.unop.toNCPMap 1)
+  refine ⟨z, ?_⟩
+  have hval : ξ.unop.toNCPMap (m.unop.toNCPMap 1) = s * x * s := by
+    have h := congrArg (fun k : X ⟶ X => k.unop.toNCPMap (1 : X.unop.base.carrier)) hm
+    simp only [suop_comp_apply] at h
+    rw [h, hg, mul_one, hww]
+  rw [hfe, suop_comp_apply, hz, hval]
+
+/-- **224VII at `vNᵒᵖ`, the heart** (bsols.tex:3480): if a von Neumann
+algebra `X` carries a projection `p ∉ {0,1}` for which the factoriality
+input `hcore` holds, then `id` and `ad_σ`, `σ = 2p − 1`, have no
+coequalizer in `Pure (vNᵒᵖ)`. -/
+theorem su_no_coequalizer_of_proj {X : WStarCPSU.{u}ᵒᵖ} {p : X.unop.base.carrier}
+    (hp : IsStarProjection p) (hp0 : p ≠ 0) (hp1 : p ≠ 1)
+    (hcore : ∀ s : X.unop.base.carrier, 0 ≤ s →
+      (∀ x : X.unop.base.carrier, 0 ≤ x → x ≤ 1 →
+        p * (s * x * s) = s * x * s * p) → p * s = 0 ∨ p * s = s) :
+    ¬ HasCoequalizers (PureCat (WStarCPSU.{u}ᵒᵖ)) := by
+  intro hcoeq
+  have := hcoeq
+  have hps : star p = p := hp.isSelfAdjoint.star_eq
+  have hpp : p * p = p := hp.isIdempotentElem.eq
+  have hr : IsStarProjection (1 - p) := hp.one_sub
+  have hrr : (1 - p) * (1 - p) = 1 - p := hr.isIdempotentElem.eq
+  set σ : X.unop.base.carrier := p + p - 1 with hσdef
+  have hσs : star σ = σ := by
+    rw [hσdef, star_sub, star_add, hps, star_one]
+  have hσσ : σ * σ = 1 := by
+    have h : σ * σ = (p * p + p * p + p * p + p * p) - (p + p + p + p) + 1 := by
+      rw [hσdef]; noncomm_ring
+    rw [h, hpp]; abel
+  have hσp : σ * p = p := by
+    have h : σ * p = p * p + p * p - p := by rw [hσdef]; noncomm_ring
+    rw [h, hpp]; abel
+  have hpσ : p * σ = p := by
+    have h : p * σ = p * p + p * p - p := by rw [hσdef]; noncomm_ring
+    rw [h, hpp]; abel
+  have hσr : σ * (1 - p) = -(1 - p) := by
+    have h : σ * (1 - p) = σ - σ * p := by noncomm_ring
+    rw [h, hσp, hσdef]; abel
+  have hrσ : (1 - p) * σ = -(1 - p) := by
+    have h : (1 - p) * σ = σ - p * σ := by noncomm_ring
+    rw [h, hpσ, hσdef]; abel
+  -- `ad_σ` is an involution, hence an isomorphism, hence pure
+  obtain ⟨adσ, hadσ0⟩ := su_exists_ad' (X := X) (w := σ) (le_of_eq (by rw [hσs, hσσ]))
+  have hadσ : ∀ x, adσ.unop.toNCPMap x = σ * x * σ := by
+    intro x; rw [hadσ0, hσs]
+  have hadσ2 : adσ ≫ adσ = 𝟙 X := by
+    refine suop_hom_ext fun x => ?_
+    have h : σ * (σ * x * σ) * σ = σ * σ * x * (σ * σ) := by noncomm_ring
+    rw [suop_comp_apply, hadσ, hadσ, h, hσσ, one_mul, mul_one, suop_id_apply]
+  haveI : IsIso adσ := ⟨adσ, hadσ2, hadσ2⟩
+  have hpureσ : IsPure adσ :=
+    ⟨X, adσ, 𝟙 X, 0, 1, quotient_basics_3 adσ, compr_basics_3 (𝟙 X),
+      (Category.comp_id _).symm⟩
+  -- the parallel pair in `Pure (vNᵒᵖ)`, and its coequalizer `c`
+  set XP : PureCat (WStarCPSU.{u}ᵒᵖ) := PureCat.of X with hXP
+  set fσ : XP ⟶ XP := ⟨adσ, hpureσ⟩ with hfσ
+  set E := coequalizer (𝟙 XP) fσ with hE
+  set c : XP ⟶ E := coequalizer.π (𝟙 XP) fσ with hc
+  set e : X ⟶ E.base := c.1 with he
+  have hepure : IsPure e := c.2
+  have hcond : e = adσ ≫ e := by
+    have h : c = fσ ≫ c :=
+      (Category.id_comp c).symm.trans (coequalizer.condition (𝟙 XP) fσ)
+    exact congrArg (fun k : XP ⟶ E => k.1) h
+  have hcommσ : ∀ y : E.base.unop.base.carrier,
+      σ * e.unop.toNCPMap y * σ = e.unop.toNCPMap y := by
+    intro y
+    have h : (adσ ≫ e).unop.toNCPMap y = e.unop.toNCPMap y :=
+      congrArg (fun k : X ⟶ E.base => k.unop.toNCPMap y) hcond.symm
+    rw [suop_comp_apply, hadσ] at h
+    exact h
+  have hσ1 : σ + 1 = (2 : ℂ) • p := by rw [hσdef, two_smul]; abel
+  have hcommp : ∀ b : X.unop.base.carrier, σ * b * σ = b → p * b = b * p := by
+    intro b hb
+    have hbσ : σ * b = b * σ := by
+      have h : σ * (σ * b * σ) = σ * b := congrArg (fun z => σ * z) hb
+      rw [← mul_assoc, ← mul_assoc, hσσ, one_mul] at h
+      exact h.symm
+    have h1 : (σ + 1) * b = b * (σ + 1) := by
+      rw [add_mul, mul_add, hbσ, one_mul, mul_one]
+    rw [hσ1] at h1
+    have h2 : (2 : ℂ) • (p * b) = (2 : ℂ) • (b * p) := by
+      rw [← smul_mul_assoc, ← mul_smul_comm]; exact h1
+    have h3 := congrArg (fun z : X.unop.base.carrier => (2 : ℂ)⁻¹ • z) h2
+    simpa [smul_smul] using h3
+  -- `a = e(1)`, and `p` commutes with `√a x √a` for every effect `x`
+  set a : X.unop.base.carrier := e.unop.toNCPMap 1 with ha
+  have ha0 : 0 ≤ a := by
+    have h := ncpsu_mono e.unop (zero_le_one (α := E.base.unop.base.carrier))
+    rwa [ncp_zero_apply] at h
+  have ha1 : a ≤ 1 := e.unop.subunital'
+  have hasa : star a = a := (IsSelfAdjoint.of_nonneg ha0).star_eq
+  set s : X.unop.base.carrier := CFC.sqrt a with hsdef
+  have hs0 : (0 : X.unop.base.carrier) ≤ s := CFC.sqrt_nonneg a
+  have hss : s * s = a := CFC.sqrt_mul_sqrt_self a ha0
+  have hconj : ∀ x : X.unop.base.carrier, 0 ≤ x → x ≤ 1 →
+      p * (s * x * s) = s * x * s * p := by
+    intro x hx0 hx1
+    obtain ⟨z, hz⟩ := su_pure_range hepure hx0 hx1
+    rw [← ha, ← hsdef] at hz
+    rw [← hz]
+    exact hcommp _ (hcommσ z)
+  have hdich : p * a = 0 ∨ p * a = a := by
+    rcases hcore s hs0 hconj with h | h
+    · left; rw [← hss, ← mul_assoc, h, zero_mul]
+    · right; rw [← hss, ← mul_assoc, h, hss]
+  -- `ad_p` and `ad_{1−p}` are fixed by `ad_σ`, hence factor through `e`
+  have hfac : ∀ (w : X.unop.base.carrier) (hw : IsStarProjection w)
+      (k : X ⟶ X), IsPure k → (∀ x, k.unop.toNCPMap x = w * x * w) →
+      adσ ≫ k = k → w ≤ a := by
+    intro w hw k hkp hkval hkσ
+    set kP : XP ⟶ XP := ⟨k, hkp⟩ with hkP
+    have hcond2 : 𝟙 XP ≫ kP = fσ ≫ kP := by
+      refine Subtype.ext ?_
+      show 𝟙 X ≫ k = adσ ≫ k
+      rw [Category.id_comp, hkσ]
+    set d : E ⟶ XP := coequalizer.desc kP hcond2 with hd
+    have hcd : c ≫ d = kP := coequalizer.π_desc kP hcond2
+    have hcd' : e ≫ d.1 = k := congrArg (fun m : XP ⟶ XP => m.1) hcd
+    have h1 : e.unop.toNCPMap (d.1.unop.toNCPMap 1) = w := by
+      have h := congrArg
+        (fun m : X ⟶ X => m.unop.toNCPMap (1 : X.unop.base.carrier)) hcd'
+      simp only [suop_comp_apply] at h
+      rw [h, hkval, mul_one, hw.isIdempotentElem.eq]
+    have h2 : e.unop.toNCPMap (d.1.unop.toNCPMap 1) ≤ a :=
+      ncpsu_mono e.unop d.1.unop.subunital'
+    rwa [h1] at h2
+  obtain ⟨adp, hadp⟩ := su_exists_ad (X := X) hp.nonneg (by rw [hpp]; exact hp.le_one)
+  have hsqrtp : CFC.sqrt p = p := CFC.sqrt_unique hpp hp.nonneg
+  have hpurep : IsPure adp :=
+    su_isPure_ad_sqrt adp hp.nonneg hp.le_one (by intro x; rw [hadp, hsqrtp])
+  have hpleq : p ≤ a := by
+    refine hfac p hp adp hpurep hadp (suop_hom_ext fun x => ?_)
+    rw [suop_comp_apply, hadσ, hadp]
+    have h : σ * (p * x * p) * σ = σ * p * x * (p * σ) := by noncomm_ring
+    rw [h, hσp, hpσ]
+  obtain ⟨adr, hadr⟩ := su_exists_ad (X := X) hr.nonneg (by rw [hrr]; exact hr.le_one)
+  have hsqrtr : CFC.sqrt (1 - p) = 1 - p := CFC.sqrt_unique hrr hr.nonneg
+  have hpurer : IsPure adr :=
+    su_isPure_ad_sqrt adr hr.nonneg hr.le_one (by intro x; rw [hadr, hsqrtr])
+  have hrleq : (1 - p) ≤ a := by
+    refine hfac (1 - p) hr adr hpurer hadr (suop_hom_ext fun x => ?_)
+    rw [suop_comp_apply, hadσ, hadr]
+    have h : σ * ((1 - p) * x * (1 - p)) * σ = σ * (1 - p) * x * ((1 - p) * σ) := by
+      noncomm_ring
+    rw [h, hσr, hrσ]
+    noncomm_ring
+  -- the contradiction
+  rcases hdich with h | h
+  · -- `p a = 0`, so `a ≤ 1 − p`, so `p ≤ 1 − p`, so `p = 0`
+    have hap : a * p = 0 := by
+      have h' := congrArg star h
+      rwa [star_mul, hps, hasa, star_zero] at h'
+    have hconj2 : (1 - p) * a * (1 - p) = a := by
+      have h1 : (1 - p) * a * (1 - p) = a - p * a - a * p + p * a * p := by
+        noncomm_ring
+      rw [h1, h, hap]
+      simp
+    have h2 : (1 - p) * a * (1 - p) ≤ (1 - p) * 1 * (1 - p) :=
+      hr.isSelfAdjoint.conjugate_le_conjugate ha1
+    rw [hconj2, mul_one, hrr] at h2
+    exact hp0 (su_proj_eq_zero hp (hpleq.trans h2)
+      (by rw [mul_sub, mul_one, hpp, sub_self]))
+  · -- `p a = a`, so `a ≤ p`, so `1 − p ≤ p`, so `p = 1`
+    have hap : a * p = a := by
+      have h' := congrArg star h
+      rwa [star_mul, hps, hasa] at h'
+    have hconj2 : p * a * p = a := by rw [h, hap]
+    have h2 : p * a * p ≤ p * 1 * p := hp.isSelfAdjoint.conjugate_le_conjugate ha1
+    rw [hconj2, mul_one, hpp] at h2
+    have hz : (1 : X.unop.base.carrier) - p = 0 :=
+      su_proj_eq_zero hr (hrleq.trans h2) (by rw [sub_mul, one_mul, hpp, sub_self])
+    exact hp1 (sub_eq_zero.mp hz).symm
+
+/-- The two-dimensional Hilbert space `ℂ²`, in `Type u`. -/
+private abbrev Hu : Type u := EuclideanSpace ℂ (ULift.{u} (Fin 2))
+
+/-- `B(ℂ²)` as an object of `vN_cpsuᵒᵖ`. -/
+private noncomputable abbrev bhObj : WStarCPSU.{u}ᵒᵖ :=
+  Opposite.op (WStarCPSU.of (WStar.of (Hu.{u} →L[ℂ] Hu.{u})))
+
+/-- **224VII at `vNᵒᵖ`** (`exc-purec-equal`, eff.tex:7218, Exercise\*;
+solution bsols.tex:3480): `Pure (vNᵒᵖ)` does **not** have all coequalizers —
+already `id` and `ad_σ` on `B(ℂ²)`, for the symmetry `σ = 2p − 1` of a
+rank-one projection `p`, have none. -/
+theorem su_exc_purec_equal : ¬ HasCoequalizers (PureCat (WStarCPSU.{u}ᵒᵖ)) := by
+  set ξ₀ : Hu.{u} := EuclideanSpace.single (ULift.up 0) (1 : ℂ) with hξ₀
+  set ξ₁ : Hu.{u} := EuclideanSpace.single (ULift.up 1) (1 : ℂ) with hξ₁
+  have hn₀ : ‖ξ₀‖ = 1 := by simp [hξ₀]
+  have hn₁ : ‖ξ₁‖ = 1 := by simp [hξ₁]
+  have hproj : IsStarProjection (rk1 ξ₀) := rk1_isStarProjection hn₀
+  have h₀ne : ξ₀ ≠ 0 := by
+    intro h; rw [h] at hn₀; simp at hn₀
+  have h₁ne : ξ₁ ≠ 0 := by
+    intro h; rw [h] at hn₁; simp at hn₁
+  refine su_no_coequalizer_of_proj (X := bhObj.{u}) (p := rk1 ξ₀) hproj ?_ ?_ ?_
+  · intro h
+    have h1 : rk1 ξ₀ ξ₀ = ξ₀ := by
+      rw [rk1_apply, inner_self_eq_norm_sq_to_K, hn₀]
+      simp
+    rw [h] at h1
+    exact h₀ne h1.symm
+  · intro h
+    have h1 : rk1 ξ₀ ξ₁ = 0 := by
+      rw [rk1_apply]
+      have hz : (⟪ξ₀, ξ₁⟫ : ℂ) = 0 := by
+        simp [hξ₀, hξ₁, EuclideanSpace.inner_single_left]
+      rw [hz, zero_smul]
+    rw [h] at h1
+    exact h₁ne h1
+  · intro s hs0 hcomm
+    exact proj_mul_selfAdjoint (IsSelfAdjoint.of_nonneg hs0) hproj hcomm
+
+/-! ### `Pure (vNᵒᵖ)` has no binary coproducts (224VI)
+
+`bsols.tex`:3358 classifies the non-zero pure maps `𝒜 → ℂ` by a GNS
+representation (using `paschke-pure` and the factoriality of `⌈⌈p⌉⌉𝒜` for a
+minimal projection `p`), identifies `𝒜` with `M₂`, and then contradicts the
+universal property with the two coordinate maps of `ℂ²`.  The route below is
+shorter and needs none of that machinery — see `PROVING-LOG.md`, session 90:
+
+Write `π₁, π₂ : 𝒜 → ℂ` for the two coprojections of a hypothetical
+coproduct, `a₀ = ĝ₀(1)` for the value of the mediating map of `(id, id)`
+and `a₁ = ĝ₁(1)` for that of `(id, 0)`, so that `π₁(a₀) = π₂(a₀) = 1`,
+`π₁(a₁) = 1` and `π₂(a₁) = 0`.  Then both `π_i` are **states** fixing `a₀`,
+so `π_i(√a₀ a₁ √a₀) = π_i(a₁)` by `su_state_sqrtConj`; while
+`√a₀ a₁ √a₀` lies in the range of `ĝ₀` by `su_pure_range`, on which `π₁`
+and `π₂` agree — both being inverse to `ĝ₀`.  Hence `1 = π₁(a₁) = π₂(a₁)
+= 0`. -/
+
+/-- A substate `f : ℂ ⟶ X` of `vN_cpsuᵒᵖ`, i.e. an ncpsu-map
+`X.unop → ℂ`, as a linear functional. -/
+private noncomputable def suFun {X : WStarCPSU.{u}ᵒᵖ} (f : suI.{u} ⟶ X) :
+    X.unop.base.carrier →ₗ[ℂ] ℂ where
+  toFun x := (f.unop.toNCPMap x).down
+  map_add' x y := by rw [ncp_add_apply]; rfl
+  map_smul' c x := by rw [ncp_smul_apply]; rfl
+
+private theorem suFun_apply {X : WStarCPSU.{u}ᵒᵖ} (f : suI.{u} ⟶ X)
+    (x : X.unop.base.carrier) : suFun f x = (f.unop.toNCPMap x).down := rfl
+
+private theorem suFun_pos {X : WStarCPSU.{u}ᵒᵖ} (f : suI.{u} ⟶ X) :
+    IsPositiveMap (suFun f) := by
+  intro x hx
+  have h := ncpsu_mono f.unop hx
+  rw [ncp_zero_apply] at h
+  exact h
+
+/-- **224VI at `vNᵒᵖ`** (`exc-purec-no-biproduct`, eff.tex:7189, Exercise\*;
+solution bsols.tex:3358): `Pure (vNᵒᵖ)` does **not** have binary
+coproducts — already `ℂ` and `ℂ` have none. -/
+theorem su_exc_purec_no_biproduct :
+    ¬ HasBinaryCoproducts (PureCat (WStarCPSU.{u}ᵒᵖ)) := by
+  intro hbc
+  haveI := hbc
+  set IP : PureCat (WStarCPSU.{u}ᵒᵖ) := PureCat.of suI.{u} with hIP
+  set A : PureCat (WStarCPSU.{u}ᵒᵖ) := IP ⨿ IP with hAdef
+  set z0 : IP ⟶ IP := ⟨(0 : suI.{u} ⟶ suI.{u}), isPure_zero⟩ with hz0
+  set g₀ : A ⟶ IP := coprod.desc (𝟙 IP) (𝟙 IP) with hg0
+  set g₁ : A ⟶ IP := coprod.desc (𝟙 IP) z0 with hg1
+  set i₁ : IP ⟶ A := coprod.inl with hi1
+  set i₂ : IP ⟶ A := coprod.inr with hi2
+  have e10 : i₁ ≫ g₀ = 𝟙 IP := coprod.inl_desc _ _
+  have e20 : i₂ ≫ g₀ = 𝟙 IP := coprod.inr_desc _ _
+  have e11 : i₁ ≫ g₁ = 𝟙 IP := coprod.inl_desc _ _
+  have e21 : i₂ ≫ g₁ = z0 := coprod.inr_desc _ _
+  -- the coprojections are sections of the mediating maps
+  have key : ∀ (g : A ⟶ IP) (i : IP ⟶ A), i ≫ g = 𝟙 IP →
+      ∀ z : (suI.{u}).unop.base.carrier,
+        i.1.unop.toNCPMap (g.1.unop.toNCPMap z) = z := by
+    intro g i h z
+    have h2 : i.1 ≫ g.1 = 𝟙 (IP.base) := congrArg (fun m : IP ⟶ IP => m.1) h
+    have h3 : (i.1 ≫ g.1).unop.toNCPMap z = (𝟙 (IP.base)).unop.toNCPMap z :=
+      congrArg (fun m : IP.base ⟶ IP.base => m.unop.toNCPMap z) h2
+    rw [suop_comp_apply, suop_id_apply] at h3
+    exact h3
+  have k10 := key g₀ i₁ e10
+  have k20 := key g₀ i₂ e20
+  have k11 := key g₁ i₁ e11
+  have k21 : ∀ z : (suI.{u}).unop.base.carrier,
+      i₂.1.unop.toNCPMap (g₁.1.unop.toNCPMap z) = 0 := by
+    intro z
+    have h2 : i₂.1 ≫ g₁.1 = (0 : suI.{u} ⟶ suI.{u}) :=
+      congrArg (fun m : IP ⟶ IP => m.1) e21
+    have h3 : (i₂.1 ≫ g₁.1).unop.toNCPMap z
+        = (0 : suI.{u} ⟶ suI.{u}).unop.toNCPMap z :=
+      congrArg (fun m : IP.base ⟶ IP.base => m.unop.toNCPMap z) h2
+    rw [suop_comp_apply] at h3
+    exact h3
+  -- the two effects `a₀` and `a₁`
+  set a₀ : A.base.unop.base.carrier := g₀.1.unop.toNCPMap 1 with ha0def
+  set a₁ : A.base.unop.base.carrier := g₁.1.unop.toNCPMap 1 with ha1def
+  have ha00 : 0 ≤ a₀ := by
+    have h := ncpsu_mono g₀.1.unop
+      (zero_le_one (α := (suI.{u}).unop.base.carrier))
+    rw [ncp_zero_apply] at h
+    rwa [ha0def]
+  have ha01 : a₀ ≤ 1 := by rw [ha0def]; exact g₀.1.unop.subunital'
+  have ha10 : 0 ≤ a₁ := by
+    have h := ncpsu_mono g₁.1.unop
+      (zero_le_one (α := (suI.{u}).unop.base.carrier))
+    rw [ncp_zero_apply] at h
+    rwa [ha1def]
+  have ha11 : a₁ ≤ 1 := by rw [ha1def]; exact g₁.1.unop.subunital'
+  -- both coprojections are states fixing `a₀`
+  have hstate : ∀ (i : IP ⟶ A),
+      (∀ z : (suI.{u}).unop.base.carrier,
+        i.1.unop.toNCPMap (g₀.1.unop.toNCPMap z) = z) →
+      suFun i.1 (CFC.sqrt a₀ * a₁ * CFC.sqrt a₀) = suFun i.1 a₁ := by
+    intro i hi
+    have hfix : i.1.unop.toNCPMap a₀ = 1 := by rw [ha0def]; exact hi 1
+    have hone : i.1.unop.toNCPMap (1 : A.base.unop.base.carrier) = 1 := by
+      refine le_antisymm i.1.unop.subunital' ?_
+      have h2 : i.1.unop.toNCPMap a₀ ≤ i.1.unop.toNCPMap 1 :=
+        ncpsu_mono i.1.unop ha01
+      rwa [hfix] at h2
+    refine su_state_sqrtConj (suFun i.1) (suFun_pos i.1) ?_ ha00 ha01 ?_ a₁
+    · rw [suFun_apply, hone]; rfl
+    · rw [suFun_apply, hfix]; rfl
+  -- `√a₀ a₁ √a₀` lies in the range of the mediating map `ĝ₀`
+  obtain ⟨w, hw⟩ := su_pure_range (f := g₀.1) g₀.2 ha10 ha11
+  rw [← ha0def] at hw
+  have hval : ∀ (i : IP ⟶ A),
+      (∀ z : (suI.{u}).unop.base.carrier,
+        i.1.unop.toNCPMap (g₀.1.unop.toNCPMap z) = z) →
+      suFun i.1 (CFC.sqrt a₀ * a₁ * CFC.sqrt a₀) = w.down := by
+    intro i hi
+    rw [suFun_apply, ← hw, hi w]
+  -- the contradiction
+  have h1 : suFun i₁.1 a₁ = 1 := by
+    have h : i₁.1.unop.toNCPMap a₁ = 1 := by rw [ha1def]; exact k11 1
+    rw [suFun_apply, h]; rfl
+  have h2 : suFun i₂.1 a₁ = 0 := by
+    have h : i₂.1.unop.toNCPMap a₁ = 0 := by rw [ha1def]; exact k21 1
+    rw [suFun_apply, h]; rfl
+  have e1 : (1 : ℂ) = w.down := by rw [← h1, ← hstate i₁ k10, hval i₁ k10]
+  have e2 : (0 : ℂ) = w.down := by rw [← h2, ← hstate i₂ k20, hval i₂ k20]
+  exact one_ne_zero (e1.trans e2.symm)
+
+end PureCoequalizer
+
 end IUnique
 
 
@@ -4656,7 +5370,13 @@ theorem exc_purec_no_biproduct (s : EffectusPartialStructure WStarCPSU.{u}ᵒᵖ
     letI := s.effectus
     ∀ hA : AndThenEffectus WStarCPSU.{u}ᵒᵖ,
       letI := hA
-      ¬ HasBinaryCoproducts (PureCat WStarCPSU.{u}ᵒᵖ) := sorry
+      ¬ HasBinaryCoproducts (PureCat WStarCPSU.{u}ᵒᵖ) := by
+  have : HasFiniteCoproducts (WStarCPSU.{u}ᵒᵖ) := suHasFiniteCoproducts
+  have hpcm : s.homPCM = suPCM :=
+    effectusPartialStructure_homPCM_unique s vnPartialStructure
+  obtain ⟨hfc, pcm, hfin, E⟩ := s
+  subst hpcm
+  exact fun hA => @su_exc_purec_no_biproduct E hA
 
 /-- **224VII** (`exc-purec-equal`, eff.tex:7218, Exercise\*):
 `Pure (vNᵒᵖ)` does not have all coequalizers. -/
@@ -4667,7 +5387,13 @@ theorem exc_purec_equal (s : EffectusPartialStructure WStarCPSU.{u}ᵒᵖ) :
     letI := s.effectus
     ∀ hA : AndThenEffectus WStarCPSU.{u}ᵒᵖ,
       letI := hA
-      ¬ HasCoequalizers (PureCat WStarCPSU.{u}ᵒᵖ) := sorry
+      ¬ HasCoequalizers (PureCat WStarCPSU.{u}ᵒᵖ) := by
+  have : HasFiniteCoproducts (WStarCPSU.{u}ᵒᵖ) := suHasFiniteCoproducts
+  have hpcm : s.homPCM = suPCM :=
+    effectusPartialStructure_homPCM_unique s vnPartialStructure
+  obtain ⟨hfc, pcm, hfin, E⟩ := s
+  subst hpcm
+  exact fun hA => @su_exc_purec_equal E hA
 
 /-! ### The sequential product `a & b = √a b √a` (225V)
 

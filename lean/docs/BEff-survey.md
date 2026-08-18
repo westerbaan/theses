@@ -311,6 +311,50 @@
 > statement); no new QUESTIONS — the corner-unitality point is **D7**, already
 > filed.
 
+> **Session 90.**  **Both 224 exercises are CLOSED**, axiom-clean, in
+> `VNExamples.lean`: `exc_purec_equal` (224VII, `Pure (vNᵒᵖ)` has no
+> coequalizers) and `exc_purec_no_biproduct` (224VI, no binary coproducts).
+> With session 89's 223VI and 215VI that puts B/Eff at **2** `sorry`s
+> (`VNExamples` **1**, `EffectAlgebras` 1), 0 errors — and the one left in
+> `VNExamples.lean` is 211IV, blocked outside B/Eff.  ~725 added lines
+> against the ~1000 costed for the two.
+>
+> **Both costings were built on the author's solutions, and both solutions
+> are longer than they need to be.**  The single lemma that carried the two
+> exercises is `su_pure_range`: *the range of a pure map contains `√a x √a`
+> for every effect `x`, `a = f(1)`*.  It needs only (i) that a comprehension
+> of `vNᵒᵖ` has **surjective** `unop` (`su_compr_surjective`, from
+> `compr_basics_2` against the standard corner — `su_exists_corner` was
+> extended to report surjectivity) and (ii) the **effectus** universal
+> property of the quotient half, applied to `ad_{√(√a x √a)}`.  No filter is
+> ever identified concretely and `dils_filters_injective` is never used.
+>
+> * **224VI needs no GNS, no `paschke-pure`, no minimal projections and no
+>   `M₂`.**  Both coprojections `π₁, π₂` of a hypothetical coproduct of `ℂ`
+>   and `ℂ` are *states* (they are left inverses of the mediating map `ĝ₀` of
+>   `(id, id)`, so `π_i(a₀) = 1` for `a₀ = ĝ₀(1)`); a state fixing `a₀` is
+>   invariant under `x ↦ √a₀ x √a₀` (`su_state_sqrtConj`, from Cauchy–Schwarz
+>   **31IV** `omega_norm_basic_1` plus `a ≤ √a`); and `√a₀ a₁ √a₀` lies in
+>   the range of `ĝ₀`, where `π₁` and `π₂` agree.  So
+>   `1 = π₁(a₁) = π₂(a₁) = 0`.  ~200 lines against the ~600 costed.
+> * **224VII needs no pseudoinverse and no `M₃`.**  The author's
+>   `⌈ξ(1)⌉p_𝒮⌈ξ(1)⌉`-central-in-a-factor step is replaced by
+>   `proj_mul_selfAdjoint`: testing `p·(s x s) = (s x s)·p` against the
+>   *rank-one* effects `|ξ⟩⟨ξ|` gives `p(sξ) ∈ {0, sξ}` for every `ξ`, and a
+>   vector space is not the union of two proper subspaces, so `ps = 0` or
+>   `ps = s`.  The final contradiction runs with `ad_p` and `ad_{1−p}`
+>   (pure, fixed by `ad_σ`) instead of `ad_{e†_𝒮} : M₃ → M₄`, and the whole
+>   thing is stated for an arbitrary projection `p ∉ {0,1}` of a `B(ℋ)`,
+>   instantiated at `ℋ = ℂ²`.  ~380 lines against the ~400 costed.
+>
+> New in `VNExamples.lean`: `rk1`, `rk1_isStarProjection`,
+> `proj_mul_selfAdjoint`; `su_le_sqrt`, `su_sq_le_self`,
+> `su_posFun_mul_eq_zero`, `su_state_sqrtConj`; `su_exists_ad'` (`ad_w` for
+> `w` **not** positive — needed because `ad_σ` is pure only as an
+> *isomorphism*), `suop_id_apply`, `su_proj_eq_zero`, `su_compr_surjective`,
+> `su_pure_range`, `su_no_coequalizer_of_proj`, `su_exc_purec_equal`,
+> `suFun`, `su_exc_purec_no_biproduct`.  Nothing for ERRATA or QUESTIONS.
+
 > **Session 84, second worker.**  **`finite_effectMonoid_boolean` (178III.2) is
 > CLOSED**, axiom-clean, in `EffectAlgebras.lean` (new section
 > `FiniteBoolean`).  With `effects_sea` that puts B/Eff at **10** `sorry`s
@@ -591,6 +635,10 @@ Individually:
   handed an abstract `IsDilation`, which has to be recognised as the Paschke
   one) and additionally needs `asrt` and `sef` concretely.
 * **`exc_purec_no_biproduct` (224VI)** and **`exc_purec_equal` (224VII)** —
+  **both PROVED, session 90** (~200 and ~380 lines; see the session-90 block
+  at the top — neither needed the GNS/`paschke-pure`/factoriality of the one
+  solution nor the pseudoinverse and `M₃` of the other).  What follows is the
+  session-82 costing, kept for the record. —
   Exercises\* with **full author solutions** (`bsols.tex:3358–3479` and
   `3480–3540`).  These are the only two vN examples with a transcribable
   proof, but they are also the heaviest: 224VI classifies the non-zero pure
