@@ -6198,11 +6198,174 @@ theorem positive_quotients_centrally_similar [VonNeumannAlgebra A]
 
 /-- **104IX** (`faithful-positive-map-uniqueness`, proc.tex:1628,
 Proposition): a faithful ⋄-positive map `f : 𝒜 → 𝒜` is of the form
-`f = √p(·)√p` where `p := f(1)`. -/
+`f = √p(·)√p` where `p := f(1)`.
+
+The author's proof (proc.tex:1631), transcribed.  `f`, being pure (a
+composite `ξ∘ξ`) and faithful, is a filter, so `f = √p ϑ(·) √p` for an
+ncp-isomorphism `ϑ` (**98II**.1 in the form `filter_unique`, against the
+filter `√p(·)√p`); the task is `ϑ = id`.  Writing `f = ξ∘ξ` with `ξ`
+⋄-self-adjoint, `⌈ξ⌉ = ⌈f⌉ = 1` (**103III**.2), so `ξ` is a filter too and
+`ξ = √w α(·) √w` with `w := ξ(1)`, `⌈w⌉ = 1`.  Then `ξ^⋄ = ξ_⋄` (⋄-self-
+adjointness), `ξ^⋄ = (√w(·)√w)^⋄ ∘ α^⋄` and `ξ_⋄ = α_⋄ ∘ (√w(·)√w)_⋄`
+(**101VIII**.1), while `(√w(·)√w)_⋄ = (√w(·)√w)^⋄` (**101VII**.1) and
+`α_⋄ = α'^⋄` (**101VII**.2, an ncpu-isomorphism is contraposed to its
+inverse); so `α^⋄ ∘ D ∘ α^⋄ = D` for `D := (√w(·)√w)^⋄`, whence
+`f^⋄ = D∘α^⋄∘D∘α^⋄ = D∘D = (w(·)w)^⋄`, i.e.
+`⌈√p ϑ(e) √p⌉ = ⌈w e w⌉` for every projection `e`.  **104VII** at `w`,
+`√p` (both faithful) now gives `ϑ = id`.
+
+This proof **rests on 104VII, which is still `sorry`** — and 104VII is the
+only thing it rests on. -/
 theorem faithful_positive_map_uniqueness [VonNeumannAlgebra A]
     (f : NCPMap A A) (hf : IsDiamondPositive f)
     (hfaith : ncpCarrier f = 1) :
-    ∀ a : A, f a = CFC.sqrt (f 1) * a * CFC.sqrt (f 1) := sorry
+    ∀ a : A, f a = CFC.sqrt (f 1) * a * CFC.sqrt (f 1) := by
+  obtain ⟨ξ, hξ, hfξ⟩ := hf
+  have hp : (0 : A) ≤ f 1 := ncpMap_nonneg f zero_le_one
+  have hfsa : IsDiamondSelfAdjoint f := purely_positive_basic_3 f ⟨ξ, hξ, hfξ⟩
+  have hcp : ceil (f 1) = 1 := by rw [← purely_positive_basic_1 f hfsa]; exact hfaith
+  have hcsp : ceil (CFC.sqrt (f 1)) = 1 := by
+    have hs : CFC.sqrt (f 1) * ceil (CFC.sqrt (f 1)) = CFC.sqrt (f 1) :=
+      (ceil_spec (CFC.sqrt_nonneg (f 1))).2.1
+    have hpe : f 1 * ceil (CFC.sqrt (f 1)) = f 1 := by
+      calc f 1 * ceil (CFC.sqrt (f 1))
+          = CFC.sqrt (f 1) * (CFC.sqrt (f 1) * ceil (CFC.sqrt (f 1))) := by
+            rw [← mul_assoc, CFC.sqrt_mul_sqrt_self (f 1) hp]
+        _ = f 1 := by rw [hs, CFC.sqrt_mul_sqrt_self (f 1) hp]
+    have hle : ceil (f 1) ≤ ceil (CFC.sqrt (f 1)) :=
+      (ceil_le_iff hp (isStarProjection_ceil _)).mpr hpe
+    rw [hcp] at hle
+    exact le_antisymm (isStarProjection_ceil _).le_one hle
+  -- the standard filter of `x`, in the form `√x(·)√x : 𝒜 → 𝒜`
+  have hadOne : ∀ x : A, 0 ≤ x → (adSelf (CFC.sqrt x) 1 : A) = x := by
+    intro x hx
+    rw [adSelf_apply, (IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg x)).star_eq,
+      mul_one, CFC.sqrt_mul_sqrt_self x hx]
+  have hadFilter : ∀ x : A, 0 ≤ x → ceil x = 1 → IsFilter (adSelf (CFC.sqrt x)) := by
+    intro x hx hcx
+    refine special_pure_maps_1 _ (isPure_adSelf _) ?_
+    rw [purely_positive_basic_1 _
+      (purely_positive_examples_1 _ (IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg x))),
+      hadOne x hx, hcx]
+  -- `f` is pure and faithful, hence a filter, hence `f = √p ϑ(·) √p`
+  have hfpure : IsPure f := by rw [hfξ]; exact IsPure.comp hξ.1 hξ.1
+  have hffilter : IsFilter f := special_pure_maps_1 f hfpure hfaith
+  obtain ⟨ϑ, hϑ, hϑ1, ϑ', hϑ'ϑ, hϑϑ'⟩ :=
+    filter_unique f hffilter (adSelf (CFC.sqrt (f 1))) (hadFilter _ hp hcp)
+      (hadOne _ hp).symm
+  have hfform : ∀ x : A, (f x : A) = CFC.sqrt (f 1) * ϑ x * CFC.sqrt (f 1) :=
+    fun x => by
+      rw [hϑ x, adSelf_apply,
+        (IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg (f 1))).star_eq]
+  -- `ξ` is pure and faithful too, hence a filter, hence `ξ = √w α(·) √w`
+  have hcξ : ncpCarrier ξ = 1 := by
+    rw [← (purely_positive_basic_2 ξ hξ).2, ← hfξ]; exact hfaith
+  have hw : (0 : A) ≤ ξ 1 := ncpMap_nonneg ξ zero_le_one
+  have hcw : ceil (ξ 1) = 1 := by rw [← purely_positive_basic_1 ξ hξ]; exact hcξ
+  have hξfilter : IsFilter ξ := special_pure_maps_1 ξ hξ.1 hcξ
+  obtain ⟨α, hα, hα1, α', hα'α, hαα'⟩ :=
+    filter_unique ξ hξfilter (adSelf (CFC.sqrt (ξ 1))) (hadFilter _ hw hcw)
+      (hadOne _ hw).symm
+  have hξeq : ξ = ncpComp (adSelf (CFC.sqrt (ξ 1))) α :=
+    DFunLike.ext _ _ fun x => by rw [ncpComp_apply, ← hα x]
+  -- `√w(·)√w` is ⋄-self-adjoint
+  have hstdcon : Contraposed (adSelf (CFC.sqrt (ξ 1))) (adSelf (CFC.sqrt (ξ 1))) := by
+    have h := equivalent_examples_1 (CFC.sqrt (ξ 1))
+    rwa [(IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg (ξ 1))).star_eq] at h
+  have hstd : ∀ t : A, IsStarProjection t →
+      diamondUp (adSelf (CFC.sqrt (ξ 1))) t
+        = diamondDown (adSelf (CFC.sqrt (ξ 1))) t :=
+    (contraposed_iff_diamond _ _).mpr hstdcon
+  -- `α` is contraposed to its inverse
+  have hα'1 : (α' 1 : A) = 1 := by have h := hα'α 1; rwa [hα1] at h
+  have hαcon : Contraposed α' α := equivalent_examples_2 α' α hαα' hα'α hα'1
+  have hαdown : ∀ t : A, IsStarProjection t →
+      diamondUp α' t = diamondDown α t :=
+    (contraposed_iff_diamond α' α).mpr hαcon
+  -- `α^⋄` and `α'^⋄` are mutually inverse on projections
+  have hαid : ncpComp α α' = ncpId A := DFunLike.ext _ _ fun y => by
+    rw [ncpComp_apply, hαα', ncpId_apply]
+  have hαinv : ∀ e : A, IsStarProjection e → diamondUp α (diamondUp α' e) = e := by
+    intro e he
+    have h := (diamond_composition_1 α' α).1 e he
+    rw [hαid] at h
+    rw [← h]
+    show ceil (ncpId A e) = e
+    rw [ncpId_apply, ceil_of_isStarProjection he]
+  -- the key identity `α^⋄ ∘ D ∘ α^⋄ = D`, where `D = (√w(·)√w)^⋄`
+  have hξup : ∀ x : A, IsStarProjection x →
+      diamondUp ξ x = diamondUp (adSelf (CFC.sqrt (ξ 1))) (diamondUp α x) := by
+    intro x hx
+    conv_lhs => rw [hξeq]
+    exact (diamond_composition_1 α (adSelf (CFC.sqrt (ξ 1)))).1 x hx
+  have hkey : ∀ e : A, IsStarProjection e →
+      diamondUp (adSelf (CFC.sqrt (ξ 1))) (diamondUp α e)
+        = diamondUp α' (diamondUp (adSelf (CFC.sqrt (ξ 1))) e) := by
+    intro e he
+    have h2 : diamondDown ξ e
+        = diamondDown α (diamondDown (adSelf (CFC.sqrt (ξ 1))) e) := by
+      conv_lhs => rw [hξeq]
+      exact (diamond_composition_1 α (adSelf (CFC.sqrt (ξ 1)))).2 e he
+    have h3 : diamondUp ξ e = diamondDown ξ e :=
+      (contraposed_iff_diamond ξ ξ).mpr hξ.2 e he
+    rw [← hξup e he, h3, h2, ← hstd e he,
+      hαdown _ (isStarProjection_diamondUp (adSelf (CFC.sqrt (ξ 1))) e)]
+  have hkey2 : ∀ e : A, IsStarProjection e →
+      diamondUp α (diamondUp (adSelf (CFC.sqrt (ξ 1))) (diamondUp α e))
+        = diamondUp (adSelf (CFC.sqrt (ξ 1))) e := by
+    intro e he
+    rw [hkey e he, hαinv _ (isStarProjection_diamondUp (adSelf (CFC.sqrt (ξ 1))) e)]
+  -- hence `f^⋄(e) = ⌈w e w⌉`
+  have hdiam : ∀ e : A, IsStarProjection e →
+      ceil (f e) = ceil (ξ 1 * e * ξ 1) := by
+    intro e he
+    have hff : diamondUp f e = diamondUp ξ (diamondUp ξ e) := by
+      conv_lhs => rw [hfξ]
+      exact (diamond_composition_1 ξ ξ).1 e he
+    have hstep : diamondUp f e
+        = diamondUp (adSelf (CFC.sqrt (ξ 1)))
+            (diamondUp (adSelf (CFC.sqrt (ξ 1))) e) := by
+      rw [hff, hξup _ (isStarProjection_diamondUp ξ e), hξup e he, hkey2 e he]
+    have hdd : diamondUp (adSelf (CFC.sqrt (ξ 1)))
+        (diamondUp (adSelf (CFC.sqrt (ξ 1))) e) = ceil (ξ 1 * e * ξ 1) := by
+      have h := (diamond_composition_1 (adSelf (CFC.sqrt (ξ 1)))
+        (adSelf (CFC.sqrt (ξ 1)))).1 e he
+      rw [← h]
+      show ceil (ncpComp (adSelf (CFC.sqrt (ξ 1))) (adSelf (CFC.sqrt (ξ 1))) e) = _
+      rw [ncpComp_apply, adSelf_apply, adSelf_apply,
+        (IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg (ξ 1))).star_eq]
+      congr 1
+      calc CFC.sqrt (ξ 1) * (CFC.sqrt (ξ 1) * e * CFC.sqrt (ξ 1)) * CFC.sqrt (ξ 1)
+          = (CFC.sqrt (ξ 1) * CFC.sqrt (ξ 1)) * e
+              * (CFC.sqrt (ξ 1) * CFC.sqrt (ξ 1)) := by noncomm_ring
+        _ = ξ 1 * e * ξ 1 := by rw [CFC.sqrt_mul_sqrt_self (ξ 1) hw]
+    rw [← hdd, ← hstep]
+    rfl
+  -- `ϑ` is an miu-isomorphism
+  have hϑ'1 : (ϑ' 1 : A) = 1 := by have h := hϑ'ϑ 1; rwa [hϑ1] at h
+  have hiso := iso (⟨ϑ, le_of_eq hϑ1⟩ : NCPSUMap A A)
+    (⟨ϑ', le_of_eq hϑ'1⟩ : NCPSUMap A A) hϑ'ϑ hϑϑ'
+  let Θ : MIUMap A A :=
+    { toFun := ⇑ϑ
+      map_one' := hϑ1
+      map_mul' := hiso.2.1
+      map_zero' := map_zero ϑ.toCompletelyPositiveMap.toLinearMap
+      map_add' := map_add ϑ.toCompletelyPositiveMap.toLinearMap
+      commutes' := fun r => by
+        have hsm : (ϑ (r • (1 : A)) : A) = r • ϑ 1 :=
+          map_smul ϑ.toCompletelyPositiveMap.toLinearMap r 1
+        rw [Algebra.algebraMap_eq_smul_one, hsm, hϑ1]
+      map_star' := hiso.2.2 }
+  have hΘ : ∀ a : A, (Θ a : A) = ϑ a := fun _ => rfl
+  have hbij : Function.Bijective ⇑Θ :=
+    Function.bijective_iff_has_inverse.mpr ⟨⇑ϑ', hϑ'ϑ, hϑϑ'⟩
+  have hmain := positive_quotients_centrally_similar (ξ 1) (CFC.sqrt (f 1))
+    hw (CFC.sqrt_nonneg (f 1)) hcw hcsp Θ hbij (fun e he => by
+      rw [hΘ, ← hfform e]; exact (hdiam e he).symm)
+  intro a
+  have hid : (ϑ a : A) = a := hmain.2 a
+  rw [hfform a, hid]
+
 
 /-! ## Parsec 1050: the map `⟨f⟩` -/
 
@@ -6604,19 +6767,177 @@ theorem positive_map_uniqueness_exists [VonNeumannAlgebra A] (p : A)
 
 /-- **105V** (`positive-map-uniqueness`, proc.tex:1766, Theorem),
 uniqueness: any ⋄-positive `f : 𝒜 → 𝒜` with `f(1) = p` is
-`√p(·)√p`. -/
+`√p(·)√p`.
+
+The author's proof (proc.tex:1772), transcribed: `⟨f⟩` on the corner
+`⌈p⌉𝒜⌈p⌉` is ⋄-positive by **105IV**.3 and faithful by **105III**.3 (the
+faithfulness argument of `chevron_f_basic_3` is repeated here, since
+`⌈f⌉ = ⌈f(1)⌉` only up to the propositional equality
+`purely_positive_basic_1` and the two corners are different *types*), so
+`⟨f⟩ = √p(·)√p` by **104IX**; and `f = c_{⌈p⌉} ∘ ⟨f⟩ ∘ π_{⌈p⌉}`
+together with `√p⌈p⌉ = √p` gives `f = √p(·)√p`.
+
+Depends on **104IX**, hence on **104VII**, which is still `sorry`. -/
 theorem positive_map_uniqueness [VonNeumannAlgebra A] (p : A) (hp : 0 ≤ p)
     (f : NCPMap A A) (hf : IsDiamondPositive f) (h1 : f 1 = p) :
-    ∀ a, f a = CFC.sqrt p * a * CFC.sqrt p := sorry
+    ∀ a, f a = CFC.sqrt p * a * CFC.sqrt p := by
+  have hfsa : IsDiamondSelfAdjoint f := purely_positive_basic_3 f hf
+  have hcarr : ncpCarrier f = ceil (f 1) := purely_positive_basic_1 f hfsa
+  have hcarr' : carrier (PositiveLinearMap.ofClass f.toCompletelyPositiveMap)
+      f.preservesDirSups' = ncpCarrier f := rfl
+  have hu : IsStarProjection (ceil (f 1)) := isStarProjection_ceil _
+  have hfund : ∀ a : A, (f a : A) = f (ceil (f 1) * a * ceil (f 1)) := by
+    intro a
+    have h := (carrier_fundamental
+      (PositiveLinearMap.ofClass f.toCompletelyPositiveMap)
+      f.preservesDirSups' a).2.2
+    rwa [hcarr', hcarr] at h
+  obtain ⟨g, hgval, hgdp⟩ := chevron_f_purely_positive_3 f hf
+  -- `⟨f⟩` is faithful
+  have hfspec : IsStarProjection (ncpCarrier f) ∧ f (1 - ncpCarrier f) = 0 ∧
+      ∀ r : A, IsStarProjection r → f (1 - r) = 0 → ncpCarrier f ≤ r :=
+    (exists_ncpCarrier f).choose_spec.1
+  have hgfaith : ncpCarrier g = 1 := by
+    have hqspec : IsStarProjection (ncpCarrier g) ∧
+        g (1 - ncpCarrier g) = 0 ∧
+        ∀ r, IsStarProjection r → g (1 - r) = 0 → ncpCarrier g ≤ r :=
+      (exists_ncpCarrier g).choose_spec.1
+    set q := ncpCarrier g with hqdef
+    have hqproj : IsStarProjection q := hqspec.1
+    have hqv : IsStarProjection q.val :=
+      ⟨congrArg Corner.val hqproj.isIdempotentElem.eq,
+        congrArg Corner.val hqproj.isSelfAdjoint.star_eq⟩
+    have hval : ceil (f 1) * f (ceil (f 1) - q.val) * ceil (f 1) = 0 := by
+      have h := congrArg Corner.val hqspec.2.1
+      rw [hgval] at h
+      simpa using h
+    have hfz : (f (ceil (f 1) - q.val) : A) = 0 :=
+      (ceilOne_conj f (ceil (f 1) - q.val)).symm.trans hval
+    set s : A := q.val + (1 - ceil (f 1)) with hsdef
+    have hqe : q.val * ceil (f 1) = q.val := Corner.mul_right q
+    have heq : ceil (f 1) * q.val = q.val := Corner.mul_left q
+    have hsproj : IsStarProjection s := by
+      constructor
+      · change s * s = s
+        rw [hsdef]
+        calc (q.val + (1 - ceil (f 1))) * (q.val + (1 - ceil (f 1)))
+            = q.val * q.val + (q.val - q.val * ceil (f 1))
+              + ((1 - ceil (f 1)) * q.val)
+              + (1 - ceil (f 1)) * (1 - ceil (f 1)) := by noncomm_ring
+          _ = q.val + (1 - ceil (f 1)) := by
+              rw [hqv.isIdempotentElem.eq, hqe, sub_self,
+                hu.one_sub.isIdempotentElem.eq, sub_mul, one_mul, heq, sub_self]
+              abel
+      · change star s = s
+        rw [hsdef, star_add, hqv.isSelfAdjoint.star_eq,
+          hu.one_sub.isSelfAdjoint.star_eq]
+    have hles : ceil (f 1) ≤ s := by
+      rw [← hcarr]
+      refine hfspec.2.2 s hsproj ?_
+      rw [show (1 : A) - s = ceil (f 1) - q.val by rw [hsdef]; abel]
+      exact hfz
+    have hes : ceil (f 1) * s = ceil (f 1) :=
+      ((projection_below_effect s (ceil (f 1))
+        ⟨hsproj.nonneg, hsproj.le_one⟩ hu).out 0 7).mp hles
+    refine (Corner.val_injective ?_).symm
+    rw [Corner.val_one]
+    rw [hsdef] at hes
+    calc ceil (f 1)
+        = ceil (f 1) * (q.val + (1 - ceil (f 1))) := hes.symm
+      _ = ceil (f 1) * q.val + (ceil (f 1) - ceil (f 1) * ceil (f 1)) := by
+          noncomm_ring
+      _ = q.val := by rw [heq, hu.isIdempotentElem.eq, sub_self, add_zero]
+  -- `⟨f⟩(1) = f(1) = p`
+  have hfu : (f (ceil (f 1)) : A) = f 1 := by
+    conv_rhs => rw [hfund 1]
+    rw [mul_one, hu.isIdempotentElem.eq]
+  have hg1 : ((g 1).val : A) = p := by
+    rw [hgval, Corner.val_one, hfu, ceilOne_conj, h1]
+  -- `√p` lies in the corner and is the square root of `⟨f⟩(1)` there
+  have hsq : ceil (f 1) * CFC.sqrt (f 1) = CFC.sqrt (f 1) := by
+    rw [ceil_eq_rangeProj_sqrt (ncpMap_nonneg f zero_le_one)]
+    exact (ceill_basic_2 (CFC.sqrt (f 1))).1.2
+  have hqs : CFC.sqrt (f 1) * ceil (f 1) = CFC.sqrt (f 1) := by
+    have h2 := congrArg star hsq
+    rwa [star_mul, hu.isSelfAdjoint.star_eq,
+      (IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg (f 1))).star_eq] at h2
+  have hmem : ceil (f 1) * CFC.sqrt p * ceil (f 1) = CFC.sqrt p := by
+    rw [← h1, hsq, hqs]
+  set s : Corner A (ceil (f 1)) := ⟨CFC.sqrt p, hmem⟩ with hsdef
+  have hs0 : (0 : Corner A (ceil (f 1))) ≤ s := CFC.sqrt_nonneg p
+  have hsqrt : CFC.sqrt (g 1) = s :=
+    CFC.sqrt_unique (Corner.val_injective (by
+      rw [Corner.val_mul, hsdef, hg1]
+      exact CFC.sqrt_mul_sqrt_self p hp)) hs0
+  have hkey := faithful_positive_map_uniqueness g hgdp hgfaith
+  intro a
+  have hmemA : ceil (f 1) * (ceil (f 1) * a * ceil (f 1)) * ceil (f 1)
+      = ceil (f 1) * a * ceil (f 1) := by
+    have h := hu.isIdempotentElem.eq
+    calc ceil (f 1) * (ceil (f 1) * a * ceil (f 1)) * ceil (f 1)
+        = (ceil (f 1) * ceil (f 1)) * a * (ceil (f 1) * ceil (f 1)) := by
+          noncomm_ring
+      _ = ceil (f 1) * a * ceil (f 1) := by rw [h]
+  have hv := hgval ⟨ceil (f 1) * a * ceil (f 1), hmemA⟩
+  have hthis := congrArg Corner.val (hkey ⟨ceil (f 1) * a * ceil (f 1), hmemA⟩)
+  rw [hsqrt] at hthis
+  have hval2 : (s * (⟨ceil (f 1) * a * ceil (f 1), hmemA⟩ : Corner A (ceil (f 1)))
+      * s).val = CFC.sqrt p * a * CFC.sqrt p := by
+    show CFC.sqrt p * (ceil (f 1) * a * ceil (f 1)) * CFC.sqrt p = _
+    have e1 : CFC.sqrt p * ceil (f 1) = CFC.sqrt p := by rw [← h1]; exact hqs
+    have e2 : ceil (f 1) * CFC.sqrt p = CFC.sqrt p := by rw [← h1]; exact hsq
+    calc CFC.sqrt p * (ceil (f 1) * a * ceil (f 1)) * CFC.sqrt p
+        = (CFC.sqrt p * ceil (f 1)) * a * (ceil (f 1) * CFC.sqrt p) := by
+          noncomm_ring
+      _ = CFC.sqrt p * a * CFC.sqrt p := by rw [e1, e2]
+  rw [hfund a, ← ceilOne_conj f (ceil (f 1) * a * ceil (f 1)), ← hv, hthis, hval2]
+
 
 /-- **105VII** (`sqrt-axiom`, proc.tex:1792, Corollary, "Square Root
 Axiom"): given positive `p` there is a unique ⋄-positive `g : 𝒜 → 𝒜`
-with `g(g(1)) = p`, namely `g = ⁴√p(·)⁴√p`. -/
+with `g(g(1)) = p`, namely `g = ⁴√p(·)⁴√p`.
+
+The author's proof (proc.tex:1796), transcribed: any such `g` is
+`√(g(1))(·)√(g(1))` by **105V**, so `p = g(g(1)) = g(1)²` and hence
+`g(1) = √p` by uniqueness of the square root; existence is `adSelf ⁴√p`,
+⋄-positive by **103II**.2.
+
+The uniqueness half depends on **105V**, hence on **104VII**, which is
+still `sorry`; the existence half is unconditional. -/
 theorem sqrt_axiom [VonNeumannAlgebra A] (p : A) (hp : 0 ≤ p) :
     (∃ g : NCPMap A A, IsDiamondPositive g ∧ g (g 1) = p ∧
       ∀ a, g a = CFC.sqrt (CFC.sqrt p) * a * CFC.sqrt (CFC.sqrt p)) ∧
     ∀ g : NCPMap A A, IsDiamondPositive g → g (g 1) = p →
-      ∀ a, g a = CFC.sqrt (CFC.sqrt p) * a * CFC.sqrt (CFC.sqrt p) := sorry
+      ∀ a, g a = CFC.sqrt (CFC.sqrt p) * a * CFC.sqrt (CFC.sqrt p) := by
+  have hs0 : (0 : A) ≤ CFC.sqrt p := CFC.sqrt_nonneg p
+  have hss : CFC.sqrt p * CFC.sqrt p = p := CFC.sqrt_mul_sqrt_self p hp
+  obtain ⟨t, ht0, htt⟩ : ∃ t : A, (0 : A) ≤ t ∧ t * t = CFC.sqrt p :=
+    ⟨CFC.sqrt (CFC.sqrt p), CFC.sqrt_nonneg _, CFC.sqrt_mul_sqrt_self _ hs0⟩
+  have hts : CFC.sqrt (CFC.sqrt p) = t := CFC.sqrt_unique htt ht0
+  have htsa : star t = t := (IsSelfAdjoint.of_nonneg ht0).star_eq
+  simp only [hts]
+  constructor
+  · refine ⟨adSelf t, purely_positive_examples_2 _ ht0, ?_,
+      fun a => by rw [adSelf_apply, htsa]⟩
+    have h1 : (adSelf t (1 : A) : A) = CFC.sqrt p := by
+      rw [adSelf_apply, htsa, mul_one, htt]
+    rw [h1, adSelf_apply, htsa, ← htt, ← hss, ← htt]
+    noncomm_ring
+  · intro g hg hgg a
+    have hg0 : (0 : A) ≤ g 1 := ncpMap_nonneg g zero_le_one
+    have hform := positive_map_uniqueness (g 1) hg0 g hg rfl
+    obtain ⟨r, hr0, hr⟩ : ∃ r : A, (0 : A) ≤ r ∧ r * r = g 1 :=
+      ⟨CFC.sqrt (g 1), CFC.sqrt_nonneg _, CFC.sqrt_mul_sqrt_self _ hg0⟩
+    have hsq : CFC.sqrt (g 1) = r := CFC.sqrt_unique hr hr0
+    rw [hsq] at hform
+    have hp2 : p = g 1 * g 1 := by
+      have h0 : p = r * g 1 * r := by rw [← hgg, hform (g 1)]
+      rw [h0, ← hr]; noncomm_ring
+    have hg1 : (g 1 : A) = CFC.sqrt p := by
+      rw [hp2, CFC.sqrt_mul_self _ hg0]
+    have hrt : r = t := by rw [← hts, ← hsq, hg1]
+    rw [hform a, hrt]
+
 
 /-! ## Parsec 1060: the sequential product -/
 
@@ -6747,11 +7068,60 @@ theorem uniqueness_sequential_product_exists [VonNeumannAlgebra A] :
 
 /-- **106I** (`uniqueness-sequential-product`, proc.tex:1811, Theorem),
 uniqueness: any sequential product on the effects of a von Neumann algebra
-is given by `p ∗ q = √p q √p`. -/
+is given by `p ∗ q = √p q √p`.
+
+The author's proof (proc.tex:1839), transcribed: pick `p'` with
+`p = p' ∗ p'` by (D) and a pure `f` with `p' ∗ (·) = f` on effects by (B);
+axiom (E) says exactly that `f` is contraposed to itself (turning the
+order-theoretic `≤ e^⊥` into the ceiling-theoretic one by
+`effect_le_isStarProjection_iff`, as in the existence half), so `f` is
+⋄-self-adjoint and `f∘f` is ⋄-positive with `f(f(1)) = p' ∗ p' = p` by
+(A); **105V** makes `f∘f = √p(·)√p`, and (C) turns `p ∗ q` into
+`f(f(q))`.
+
+Depends on **105V**, hence on **104VII**, which is still `sorry`. -/
 theorem uniqueness_sequential_product [VonNeumannAlgebra A] (op : A → A → A)
     (h : IsSequentialProduct op) :
     ∀ p ∈ effects A, ∀ q ∈ effects A,
-      op p q = CFC.sqrt p * q * CFC.sqrt p := sorry
+      op p q = CFC.sqrt p * q * CFC.sqrt p := by
+  intro p hp q hq
+  obtain ⟨p', hp', hpp⟩ := h.ax4 p hp
+  obtain ⟨f, hfpure, hfval⟩ := h.ax2 p' hp'
+  have hone : (1 : A) ∈ effects A := ⟨zero_le_one, le_rfl⟩
+  have hf1 : (f 1 : A) = p' := by rw [← hfval 1 hone]; exact h.ax1 p' hp'
+  -- `f` maps effects to effects
+  have hfeff : ∀ b : A, b ∈ effects A → f b ∈ effects A := by
+    intro b hb
+    refine ⟨ncpMap_nonneg f hb.1, ?_⟩
+    have h1 : (0 : A) ≤ f (1 - b) := ncpMap_nonneg f (sub_nonneg.mpr hb.2)
+    have h2 : (f (1 - b) : A) = f 1 - f b :=
+      map_sub f.toCompletelyPositiveMap.toLinearMap 1 b
+    rw [h2, sub_nonneg] at h1
+    exact h1.trans (hf1 ▸ hp'.2)
+  -- axiom (E) says exactly that `f` is contraposed to itself
+  have hcon : Contraposed f f := by
+    intro e₁ e₂ h₁ h₂
+    have hb₁ := hfeff e₁ ⟨h₁.nonneg, h₁.le_one⟩
+    have hb₂ := hfeff e₂ ⟨h₂.nonneg, h₂.le_one⟩
+    have hax := h.ax5 p' hp' e₁ e₂ h₁ h₂
+    rw [hfval e₁ ⟨h₁.nonneg, h₁.le_one⟩, hfval e₂ ⟨h₂.nonneg, h₂.le_one⟩] at hax
+    show ceil (f e₁) ≤ 1 - e₂ ↔ ceil (f e₂) ≤ 1 - e₁
+    rw [← effect_le_isStarProjection_iff hb₁.1 hb₁.2 h₂.one_sub,
+      ← effect_le_isStarProjection_iff hb₂.1 hb₂.2 h₁.one_sub]
+    exact hax
+  have hfsa : IsDiamondSelfAdjoint f := ⟨hfpure, hcon⟩
+  have hdp : IsDiamondPositive (ncpComp f f) := ⟨f, hfsa, rfl⟩
+  have hff1 : (ncpComp f f) 1 = p := by
+    rw [ncpComp_apply, hf1, ← hfval p' hp', ← hpp]
+  have hkey := positive_map_uniqueness p hp.1 (ncpComp f f) hdp hff1
+  have hopq : op p' q ∈ effects A := by
+    rw [hfval q hq]; exact hfeff q hq
+  calc op p q = op (op p' p') q := by rw [← hpp]
+    _ = op p' (op p' q) := (h.ax3 p' hp' q hq).symm
+    _ = f (f q) := by rw [hfval _ hopq, hfval q hq]
+    _ = (ncpComp f f) q := (ncpComp_apply f f q).symm
+    _ = CFC.sqrt p * q * CFC.sqrt p := hkey q
+
 
 /-- **106III** (proc.tex:1858, Exercise), part 1: `p ∗ q := ⌈p⌉q⌈p⌉`
 satisfies all axioms of 106I except (A) (which fails when `A` is

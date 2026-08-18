@@ -21359,3 +21359,146 @@ and **224VII `exc_purec_equal`**, both of which have full author solutions in
 whole bridge is now built, and what is left is each exercise's own
 mathematics — GNS, minimal projections and factoriality for 224VI, filters in
 `M₄` and pseudoinverses for 224VII.
+
+## Session 90 — A/Proc: the 104VII → 104IX → 105V chain, and where it really stops
+
+**Four `sorry`s closed in `A/Proc/Measurement.lean`** — 104IX
+`faithful_positive_map_uniqueness`, the uniqueness half of 105V
+`positive_map_uniqueness`, 105VII `sqrt_axiom` and the uniqueness half of
+106I `uniqueness_sequential_product` — leaving six in the file (104III.2a,
+.3, .4, .5, **104VII** and 106III.3).  All four are transcriptions of the
+authors' own proofs.
+
+**None of them is axiom-clean, and all four fail for exactly one reason.**
+Checked properly: a copy of the file in which 104VII's `sorry` is replaced by
+a named `axiom pqcsHack` compiles, and `#print axioms` then reports
+
+```
+faithful_positive_map_uniqueness : [propext, Classical.choice, Quot.sound, pqcsHack]
+positive_map_uniqueness          : [propext, Classical.choice, Quot.sound, pqcsHack]
+sqrt_axiom                       : [propext, Classical.choice, Quot.sound, pqcsHack]
+uniqueness_sequential_product    : [propext, Classical.choice, Quot.sound, pqcsHack]
+```
+
+— **no `sorryAx`**.  So the four depend on 104VII and on nothing else; in
+particular none of them touches any of the four broken parts of 104III.  (The
+`declaration uses sorry` warnings are no use for this: Lean emits them only
+for the declaration that literally contains the `sorry`, never for its
+consumers.)
+
+### The premise that started the session, tested
+
+The standing record said all ten `sorry`s in the file were gated on the
+unanswered **A7** ruling, and the brief was that this is too pessimistic for
+the 104VII chain, because 104VII assumes the very faithfulness that repairs
+the false parts of 104III and the repaired variants are already proved.  That
+is **half right**, and the half that is wrong is the important half.
+
+* **Right for 104III.4.**  `centrally_similar_basic_4_faithful` is in the
+  file and 104VII's `⌈p⌉ = ⌈q⌉ = 1` is exactly its hypothesis.  In fact
+  104VII's use of it is even cheaper than that: after the reduction `p` and
+  `q` are *invertible*, `z := p⁻¹q` is central, and `zp = q` with `⌈z⌉ = 1`
+  is the central similarity directly (`c = z`, `d = 1`).
+* **Wrong for 104III.5.**  There is no repaired `.5` in the file, and its
+  only printed route — the exercise's own hint — goes through 104III.3 and
+  through the *third* `iff` of 104III.4, both of which mention `p ∧ q`.  So
+  A7's second question ("what does `p ∧ q` mean?") is not upstream of 104VII;
+  it is **inside** it.
+* And 104VII needs a **corner reduction** that has no counterpart in the tree
+  at all (below).
+
+So: the chain **is** provable without the A7 ruling *from 104VII downwards*,
+and that is how far this session got — 104IX, 105V, 105VII, 106I, all four
+resting on 104VII alone.  104VII itself is not close.
+
+### What each proof actually does
+
+* **104IX** (proc.tex:1631, verbatim).  `f = ξ∘ξ` is pure, and faithful, so a
+  filter (**100VII**.1); `filter_unique` against `adSelf √p` — *not*
+  `stdFilter p`, whose domain is the corner `⌈p⌉𝒜⌈p⌉` and would drag the
+  whole argument through a corner type — gives `f = √p ϑ(·) √p` with `ϑ` an
+  ncp-isomorphism.  `⌈ξ⌉ = ⌈ξ∘ξ⌉ = ⌈f⌉ = 1` (**103III**.2), so the same move
+  gives `ξ = √w α(·) √w`, `w := ξ(1)`, `⌈w⌉ = 1`.  Then the ⋄-calculus:
+  `ξ^⋄ = ξ_⋄` (⋄-self-adjointness), `(g∘f)^⋄ = g^⋄∘f^⋄` and
+  `(g∘f)_⋄ = f_⋄∘g_⋄` (**101VIII**.1), `(√w(·)√w)_⋄ = (√w(·)√w)^⋄`
+  (**101VII**.1 at the self-adjoint `√w`) and `α_⋄ = α'^⋄` (**101VII**.2, an
+  ncpu-isomorphism is contraposed to its inverse — the *unital* form, which
+  is the one we have) give `α^⋄ ∘ D ∘ α^⋄ = D` for `D := (√w(·)√w)^⋄`, hence
+  `f^⋄ = D∘α^⋄∘D∘α^⋄ = D∘D = (w(·)w)^⋄`.  Feeding
+  `⌈√p ϑ(e) √p⌉ = ⌈w e w⌉` to **104VII** at `(w, √p)` forces `ϑ = id`.
+  The one piece of plumbing: 104VII wants a `MIUMap`, so `ϑ` is rebuilt as a
+  `StarAlgHom` out of `iso` (**99IX**) — multiplicativity, unitality and
+  `star` from there, `commutes'` from linearity plus `ϑ(1) = 1`.
+* **105V uniqueness** (proc.tex:1772, verbatim).  `⟨f⟩` is ⋄-positive by
+  **105IV**.3 and faithful by **105III**.3 — but the faithfulness argument had
+  to be *repeated* rather than cited: `chevron_f_basic_3` proves
+  `⌈⟨f⟩⌉ = 1` for `chevron f : Corner A ⌈f⌉ → Corner A ⌈f(1)⌉`, while
+  `chevron_f_purely_positive_3` hands out a map on `Corner A ⌈f(1)⌉ →
+  Corner A ⌈f(1)⌉`, and `⌈f⌉ = ⌈f(1)⌉` is only a propositional equality, so
+  the two corners are different *types* and nothing transports.  Then 104IX
+  in the corner, and `√p ⌈p⌉ = √p` brings the formula back to `𝒜`.
+* **105VII** (proc.tex:1796, verbatim) and **106I uniqueness**
+  (proc.tex:1839, verbatim): short, once 105V is there.  In 106I the only
+  thing to see is that axiom (E) *is* `Contraposed f f`, via the same private
+  `effect_le_isStarProjection_iff` that the already-proved existence half
+  uses to go the other way.
+
+### Divergences from the authors (classified)
+
+1. *Faithful* — 105VII, 106I, and 104IX's skeleton.
+2. *Different route* — (a) 104IX uses `adSelf √p` as the comparison filter
+   instead of the standard filter `c_p`, purely to stay inside `𝒜`; the
+   thesis's `ξ̃` is the same map.  (b) 105V repeats `chevron_f_basic_3`'s
+   argument instead of citing it, for the type reason above.
+3. *Mild* — none.
+4. *Our mis-transcription* — none found.  Checked in particular that our
+   104VII, which asks only for a **bijective** `MIUMap` and says nothing about
+   normality, is not weaker than the thesis's "miu-isomorphism": the printed
+   proof's one appeal to continuity of `ϑ` is removable (see ERRATA
+   **104VIII**(c)), and in any case a `*`-isomorphism of von Neumann algebras
+   is automatically normal.
+5. *Mathlib without reading the author* — none; `CFC.sqrt_unique` and
+   `CFC.sqrt_mul_self` are used where the thesis says "by `sqrt`".
+
+### What 104VII needs, concretely
+
+Steps 1–2 of proc.tex:1558 (`pq = qp` and `ϑ(p) = p`) are ready to write:
+`⌈pep⌉ = ⌈e p² e⌉ = e` for projections `e` commuting with `p`, **104IV**
+gives `eq = qe` and `ϑ(e) = e`, and **65IV** `projections_norm_dense` already
+places its approximating projections in `{p}□□` — i.e. exactly among those
+commuting with `p` — so the two closed subspaces `{y | yq = qy}` and
+`{y | ϑ(y) = y}` swallow `p`.  What is missing is the reduction:
+
+* an increasing `eₙ` of projections commuting with `p` and `q`, with
+  `⋁ₙ eₙ = 1` and `p eₙ`, `q eₙ` invertible in `eₙ𝒜eₙ`.  The spectral
+  projections of `pq` do it (`⌈pq⌉ = 1` under faithfulness, and for
+  commuting positives an invertible product makes each factor invertible);
+  the thesis's approximate-pseudoinverse-of-`p∧q` construction is only an
+  example, and presupposes that `p ∧ q` exists;
+* `ϑ` and the hypothesis transported to `eₙ𝒜eₙ`, and **104VI** applied there
+  — note `z := (p eₙ)⁻¹ q eₙ` satisfies `⌈z ϑ(e) z⌉ = e` only for `e ≤ eₙ`,
+  which is why the corner is unavoidable and no global bounded surrogate
+  `q·g(p)` works;
+* **`Z(e𝒜e) = Z(𝒜)e`**, to turn corner-central back into `𝒜`-central.  This
+  is where the printed proof is incomplete, and the fact is in neither thesis
+  nor tree.  New **104VIII** row in `ERRATA.md`;
+* `eₙ x eₙ → x` ultrastrongly, for `ϑ = id`.
+
+That is a multi-session project, and two of its four ingredients are new
+mathematics for this tree.  Recorded in `docs/why-open.csv`; the 104VII row
+now carries the full list.
+
+### Bookkeeping
+
+* `ERRATA.md`: new **104VIII** row (three gaps in 104VII's proof; (a) is
+  real, (b) and (c) are harmless but worth stating — (c) is what licenses our
+  normality-free rendering of `ϑ`).
+* `QUESTIONS.md`: **A7** gains a session-90 update — the ruling is needed for
+  less than the record said (nothing below 104VII), and for something
+  slightly different (the *faithful* form of .3/.5); plus an unformalized
+  argument that under `⌈p⌉ = ⌈q⌉ = 1` the anti-lattice obstruction to .3
+  disappears, since `⌈p ∧ q⌉ ≥ ⌈pq⌉ = 1`.
+* `docs/why-open.csv`: the four closed rows keep their entries, with a
+  session-90 note recording that they are proved **but not axiom-clean**
+  (104VII); no row was removed, because nothing became axiom-clean.  The
+  104VII row and `vn_is_andthen_eff` (211IV, now blocked on 104VII) updated.

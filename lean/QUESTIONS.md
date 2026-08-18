@@ -366,6 +366,54 @@ part 3 is **false even with `⌈⌈p⌉⌉ = ⌈⌈q⌉⌉`**
 (`centrally_similar_basic_3_meet_cceil_counterexample`).  Which reading is
 intended?
 
+⚠️ **Update (session 90): the ruling is needed for less than the record said,
+and for something slightly different.**  Two things were established on
+2026-08-18.
+
+1. **Nothing below 104VII needs A7 at all.**  `104VII → 104IX → 105V →
+   {105VII, 106I}` is now *proved* in `A/Proc/Measurement.lean`, by
+   transcribing the authors' own proofs, and `#print axioms` (against a copy
+   in which 104VII's `sorry` is replaced by a named axiom) shows the four
+   results depend on **104VII and on nothing else** — no `sorryAx`, so in
+   particular none of the four broken parts of 104III is used.  The four
+   `sorry`s at 104IX, 105V, 105VII and 106I are gone; `B/Eff`'s **211IV**
+   `vn_is_andthen_eff` is thereby blocked on 104VII rather than on 105V.
+   What the earlier record got wrong is the shape of the dependency: 104VII
+   consumes 104III.**4** only in the *invertible* case (where
+   `centrally_similar_basic_4_faithful`, already proved, applies — and in
+   fact `z p = q` with `z = p⁻¹q` central is even more direct), and 104III.**5**
+   only through a *corner reduction* that is not in the tree.  So the
+   repaired-parts-already-proved reading is right for .4 and wrong for .5.
+
+2. **The second question — what is `p ∧ q`? — sits *inside* 104VII's proof,
+   not upstream of it.**  104VII's proof invokes 104III.5, whose only printed
+   route (its hint) runs through 104III.3 and through the *third* `iff` of
+   104III.4, both of which mention `p ∧ q`; and 104VII builds its `eₙ` from an
+   approximate pseudoinverse of `p ∧ q`.  The latter is harmless (any
+   increasing `eₙ` commuting with `p` and `q` with `⋃ₙeₙ = ⌈p⌉` and `eₙp`,
+   `eₙq` pseudoinvertible will do — e.g. the spectral projections of `pq`,
+   which exist because `⌈pq⌉ = ⌈p⌉ ∧ ⌈q⌉ = 1` under 104VII's faithfulness).
+   The former is not: a repaired 104III.5 usable by 104VII has to be proved
+   by some route that does not go through `p ∧ q`.  Separately, the proof of
+   104VII has a genuine gap at the reduction step — central similarity
+   obtained inside `eₙ𝒜eₙ` is not central similarity in `𝒜` without
+   `Z(e𝒜e) = Z(𝒜)e`, which is in neither thesis nor tree.  See the new
+   **104VIII** row of `ERRATA.md`.
+
+3. **A partial answer on .3**, offered for the ruling but *not formalized*:
+   under the faithfulness `⌈p⌉ = ⌈q⌉ = 1` that 104VII supplies, the
+   anti-lattice obstruction described above disappears.  `pq/(‖p‖+‖q‖)` is a
+   lower bound of both `p` and `q`, and `⌈pq⌉ = 1` (if `pqr = 0` for a
+   projection `r` then `p(qr) = 0`, so `qr = 0` because `⌈p⌉ = 1`, so `r = 0`
+   because `⌈q⌉ = 1`), hence `⌈m⌉ = 1` for any lower bound `m` above it — in
+   particular for the infimum.  Then `m = cp` with `c` central gives
+   `⌈c⌉ ≥ ⌈cp⌉ = ⌈m⌉ = 1`, which is exactly the missing carrier condition,
+   and likewise for `d`.  (Caveat: this reads `m/p` as the genuine quotient,
+   i.e. it assumes `m ∈ 𝒜p` and `m ∈ 𝒜q`, which our `div` does not force —
+   off its domain `div` has the junk value `0`, which is central.)  So the
+   ruling that would unblock the chain is the *faithful* form of .3/.5, not
+   the general one.
+
 ### A8. 30X `proto-gelfand-naimark` — **our** statement of clause (1) drops `ϱ_Ω`, and with it half of the equivalence
 `cstar.tex` parsec 300, point 100.  The thesis states a three-way equivalence
 for a collection `Ω` of p-maps: (1) `ϱ_Ω : 𝒜 → B(ℋ_Ω)` is **injective**;
