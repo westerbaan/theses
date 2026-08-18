@@ -12,10 +12,12 @@ arXiv:1804.02203), chapter 1: C*-algebras — cstar.tex, lines 3887–4958.
     … by Bounded Operators      (parsec 300: states, the GNS construction,
                                  the Gelfand–Naimark theorem)
 
-All statements of parsecs 270–300 are proved except one: **28II**.4
-`functional_calculus_4`, which is awaiting an author decision on its statement
-(QUESTIONS.md).  See CONVENTIONS.md for the numbering (**27XV** = parsec 270,
-point 150) and naming conventions.
+All statements of parsecs 270–300 are proved, **28II**.4
+`functional_calculus_4` included (session 92); its *statement* is nevertheless
+still awaiting an author decision, because our rendering is weaker than the
+exercise — see QUESTIONS A10 and the note on the declaration itself.  See
+CONVENTIONS.md for the numbering (**27XV** = parsec 270, point 150) and naming
+conventions.
 -/
 import Theses.A.CStar.Positive
 
@@ -913,16 +915,59 @@ theorem functional_calculus_3 (a : 𝒜) (ha : 0 ≤ a) (α β : ℝ) (hα : 0 <
 
 end Ordered
 
-/-- **28II** (`functional-calculus`, cstar.tex:4258, Exercise), part 4:
+/-- **28II** (`functional-calculus`, cstar.tex:4299, Exercise), part 4:
 `f(a)` is the unique element `b` of `C*(a)` with `φ(b) = f(φ(a))` for all
-`φ ∈ spec(C*(a))`. -/
+`φ ∈ spec(C*(a))`.
+
+⚠ **This is the weaker form of 28II.4, and is proved as such.**  The exercise
+asserts two things: that the character condition determines at most one element
+of `C*(a)`, and that the element it determines *is* `f(a)` — i.e. `Φ(f)` of
+part 3, Mathlib's `cfc f a`.  The statement below is the first clause together
+with bare existence; the name `f(a)` does not occur in it, so it does not
+characterise the functional calculus.  Strengthening it is a statement change
+and needs a ruling: **QUESTIONS A10**, which carries the (compiled) 14-line
+proof of the missing clause `φ (cfc f a) = f (φ a)`.
+
+Proof, following the thesis: part 3's `j : ρ ↦ ρ(a)` maps `spec(C*(a))` into
+`spec(a)` continuously, so `f ∘ j ∈ C(spec(C*(a)))`; and `C*(a)` is commutative
+(`IsStarNormal a`), so Gelfand's representation theorem **27XXVII** makes
+`γ = gelfandStarTransform` a bijection onto `C(spec(C*(a)))`.  The element
+sought is exactly `γ⁻¹(f ∘ j)`, and it is unique because `γ` is injective. -/
 theorem functional_calculus_4 (a : 𝒜) [IsStarNormal a] (f : ℂ → ℂ)
     (hf : ContinuousOn f (spectrum ℂ a)) :
     ∃! b : StarAlgebra.elemental ℂ a,
       ∀ φ : characterSpace ℂ (StarAlgebra.elemental ℂ a),
         φ b = f (φ (⟨a, StarAlgebra.elemental.self_mem ℂ a⟩ :
-          StarAlgebra.elemental ℂ a)) :=
-  sorry
+          StarAlgebra.elemental ℂ a)) := by
+  -- `j : ρ ↦ ρ(a)` maps `spec(C*(a))` into `spec(a)` and is continuous
+  -- (part 3 of the exercise; Mathlib's `characterSpaceToSpectrum`).
+  have hmem : ∀ φ : characterSpace ℂ (StarAlgebra.elemental ℂ a),
+      φ (⟨a, StarAlgebra.elemental.self_mem ℂ a⟩ : StarAlgebra.elemental ℂ a) ∈
+        spectrum ℂ a :=
+    fun φ => (StarAlgebra.elemental.characterSpaceToSpectrum a φ).2
+  have hcont : Continuous fun φ : characterSpace ℂ (StarAlgebra.elemental ℂ a) =>
+      f (φ (⟨a, StarAlgebra.elemental.self_mem ℂ a⟩ :
+        StarAlgebra.elemental ℂ a)) :=
+    hf.comp_continuous
+      (StarAlgebra.elemental.continuous_characterSpaceToSpectrum a).subtype_val hmem
+  -- `f ∘ j ∈ C(spec(C*(a)))`; the claim is that it has a unique `γ`-preimage.
+  set g : C(characterSpace ℂ (StarAlgebra.elemental ℂ a), ℂ) := ⟨_, hcont⟩
+  have key : ∀ b : StarAlgebra.elemental ℂ a,
+      (∀ φ : characterSpace ℂ (StarAlgebra.elemental ℂ a),
+          φ b = f (φ (⟨a, StarAlgebra.elemental.self_mem ℂ a⟩ :
+            StarAlgebra.elemental ℂ a))) ↔
+        gelfandStarTransform (StarAlgebra.elemental ℂ a) b = g := by
+    intro b
+    constructor
+    · intro h; ext φ; exact h φ
+    · intro h φ; exact DFunLike.congr_fun h φ
+  -- Gelfand's representation theorem (27XXVII) for the commutative C*-algebra
+  -- `C*(a)`: `γ` is bijective, so `f ∘ j` has exactly one preimage.
+  refine ⟨(gelfandStarTransform (StarAlgebra.elemental ℂ a)).symm g, ?_, ?_⟩
+  · exact (key _).2 ((gelfandStarTransform (StarAlgebra.elemental ℂ a)).apply_symm_apply g)
+  · intro b hb
+    rw [← (gelfandStarTransform (StarAlgebra.elemental ℂ a)).symm_apply_apply b,
+      (key b).1 hb]
 
 /-- **28II** (`functional-calculus`, cstar.tex:4258, Exercise), part 5
 (Spectral mapping theorem): `spec(f(a)) = f(spec(a))` for normal `a` and

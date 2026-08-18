@@ -22216,3 +22216,114 @@ built, in both directions.
 * `docs/why-open.csv`: the `vn_is_andthen_eff` row is now `awaiting-ruling`
   with no blocker, and carries the session-92 note.
 * `docs/BEff-survey.md`: session-92 block after the session-90 one.
+
+## Session 92 — A/CStar: **28II.4 `functional_calculus_4` is CLOSED — the last open statement of the whole chapter** — but our rendering of it is weaker than the exercise (worker on `Theses/A/CStar/Representation.lean`)
+
+`Theses/A/CStar/Representation.lean` now has **no `sorry`**, and with it parsecs
+270–300 — the entirety of chapter A/CStar — are proved.  The proof is 25 lines
+and axiom-clean (`propext, Classical.choice, Quot.sound`, checked by compiling a
+scratchpad copy with `#print axioms` appended, not against the oleans).
+
+### 1. The statement question comes first, and the answer is: **not faithful**
+
+`cstar.tex:4299`, part 4 of the exercise `functional-calculus`:
+
+> Given `f ∈ C(spec(a))`, show that `f(a)` is the unique element of `C*(a)` with
+> `φ(f(a)) = f(φ(a))` for all `φ ∈ spec(C*(a))`.
+
+Two clauses: (i) at most one element of `C*(a)` satisfies the character
+condition, and (ii) the one that does **is `f(a)`** — part 3's `Φ(f)`, i.e.
+Mathlib's `cfc f a`.  Our statement is
+
+    ∃! b : StarAlgebra.elemental ℂ a, ∀ φ, φ b = f (φ a)
+
+which is (i) plus bare existence.  The name `f(a)` never occurs, so as rendered
+28II.4 is a fact about the character space of `C*(a)` and not a characterisation
+of the functional calculus — which is the entire usable content of the part, and
+what the later parts implicitly lean on.  The `docs/ACStar-survey.md` flag
+(class **(d)**) was right.
+
+**The statement was not touched.**  Filed as **QUESTIONS A10** (A9 was the
+highest A number), and the missing clause `φ (cfc f a) = f (φ a)` was
+*compiled in the scratchpad* so that the entry costs the author a ruling and
+nothing else: 14 lines, going `cfc_apply` → `cfcHom_eq_of_isStarNormal` →
+`continuousFunctionalCalculus` → `StarAlgEquiv.apply_symm_apply`.  It is short
+because Mathlib *defines* `cfc` by the thesis's own formula — see §2.  Nothing
+in `Theses/` consumes `functional_calculus_4`, so the repair is free of
+downstream cost as well.
+
+No `ERRATA.md` row: this is a defect in **our** rendering, not in the thesis,
+and `ERRATA.md`'s own scope note ("our own mis-transcriptions are *not* here")
+plus the 2026-08-14 audit of the three items that had crept in put it in
+`QUESTIONS.md` (statement change ⇒ ruling) with the record here.  That is also
+where its two closest precedents live, **A8** (30X drops `ϱ_Ω`) and **A9**
+(51IX drops `ℂ`-homogeneity).
+
+### 2. The proof — the thesis's route, and Mathlib's `cfc` is that route
+
+The exercise builds `Φ` as `C(spec a) → C(spec C*(a)) ≅ C*(a) ↪ 𝒜`, the middle
+arrow being Gelfand (**27XXVII**, proved at line 817 of the same file), the
+first being restriction along part 3's `j : ρ ↦ ρ(a)`.  Transcribed:
+
+* `j` into `spec(a)` and its continuity are Mathlib's
+  `StarAlgebra.elemental.characterSpaceToSpectrum` and
+  `continuous_characterSpaceToSpectrum` — part 3 of the exercise, which our
+  `functional_calculus_3` renders only by a sample consequence, so this is the
+  first place part 3's actual content is used;
+* `f ∘ j : C(spec(C*(a)))` from `ContinuousOn.comp_continuous` with
+  `(…).subtype_val`;
+* `C*(a)` is commutative because `[IsStarNormal a]`, so
+  `gelfandStarTransform (StarAlgebra.elemental ℂ a)` is a `≃⋆ₐ[ℂ]` — this *is*
+  27XXVII for `C*(a)`, applied exactly where the thesis applies it;
+* the witness is `γ⁻¹(f ∘ j)`, and uniqueness is injectivity of `γ`.
+
+Everything is routed through one bridge lemma `key : (∀ φ, φ b = f (φ a)) ↔
+γ b = f ∘ j`, after which the `∃!` is `apply_symm_apply` / `symm_apply_apply`.
+
+The pleasant discovery, and the reason QUESTIONS A10 is cheap: Mathlib's
+`continuousFunctionalCalculus a` is *defined* as
+`((characterSpaceHomeo a).compStarAlgEquiv' ℂ ℂ).trans (gelfandStarTransform _).symm`
+— literally `Φ` of part 3, with `characterSpaceHomeo` the bijectivity of `j`.
+So the element our proof constructs and `cfc f a` are the same element by
+unfolding, not by an argument.
+
+### 3. Lean notes
+
+* `congrArg (fun k => ⇑k) h` does not elaborate on `ContinuousMap` equalities
+  ("cannot coerce to function `k`"); `DFunLike.congr_fun h φ` is the idiom, and
+  it lands defeq-close enough that `exact` bridges `γ b φ = φ b` and
+  `(f ∘ j) φ = f (φ a)` with no `simp`.
+* `Subtype.ext` then `rw [cfc_apply …]` fails with *motive is not type correct*,
+  because `cfc f a` also occurs in the membership proof of
+  `⟨cfc f a, cfc_mem_elemental f a⟩`.  Interposing
+  `show cfc f a = ((… : StarAlgebra.elemental ℂ a) : 𝒜)` — a defeq change that
+  drops the dependent occurrence — makes the rewrite go through.  This is what
+  the QUESTIONS A10 snippet needs and is the only real friction in it.
+* `cfc_apply`'s argument order is `f a (ha : p a) (hf : ContinuousOn …)`, both
+  auto-params; passing `hf` third silently tries it as the `IsStarNormal`
+  argument.
+
+### 4. Divergences from the authors (classified)
+
+1. *Faithful* — the whole proof: `j`, `f ∘ j`, Gelfand on `C*(a)`, uniqueness
+   by injectivity of `γ`.  The only thing not transcribed is the *construction*
+   of `Φ`, because the statement as we have it does not mention `Φ`.
+2. *Different route* — none.
+3. *Mild* — Mathlib supplies `characterSpaceToSpectrum` and
+   `gelfandStarTransform` rather than our own `gelfand` (line 817), which is
+   stated for a commutative `𝒜` as a whole and would need `C*(a)` substituted
+   into its section variable; the two are the same theorem.
+4. *Our mis-transcription* — **yes, and it is the headline**: our 28II.4 omits
+   clause (ii).  See §1; QUESTIONS A10; statement left untouched.
+5. *Mathlib without reading the author* — none.
+
+### 5. Bookkeeping
+
+* `QUESTIONS.md`: new **A10**, with the compiled repair.
+* `docs/why-open.csv`: the `functional_calculus_4` row is **removed** (closed
+  and axiom-clean); the statement question lives on in A10.
+* `docs/ACStar-survey.md`: session-92 note on the 28II.4 entry.
+* `Representation.lean`: the file header no longer says a `sorry` remains, and
+  the declaration carries a ⚠ note that it is the weaker form.  The doc
+  comment's `cstar.tex:4258` was corrected to `4299` (the drift the survey
+  measured); the other six parts of 28II still carry `4258` and were left alone.

@@ -2125,7 +2125,7 @@ This is **34XVI** `cp_russo_dye` applied to the positive map
 `c ↦ ∑ₖ cₖ pₖ` out of the (commutative, finite-dimensional) C*-algebra
 `ι → ℂ`, whose complete positivity is immediate: `∑ᵢⱼ bᵢ* φ(c̄ᵢcⱼ) bⱼ`
 regroups as `∑ₖ dₖ* pₖ dₖ` with `dₖ = ∑ᵢ cᵢ(k) bᵢ`.  So this is the one
-instance of **34IX**.2 (`cp_commutative_dom`, still `sorry`) that the
+instance of **34IX**.2 (`cp_commutative_dom`, since proved) that the
 Russo–Dye argument needs, and it needs no approximation. -/
 private theorem norm_sum_smul_le_aux {ι : Type*} [Fintype ι] (p : ι → ℬ)
     (hp : ∀ k, 0 ≤ p k) (l : ι → ℂ) (M : ℝ) (hM0 : 0 ≤ M)
@@ -2190,7 +2190,8 @@ private theorem norm_sum_smul_le_of_nonneg {ι : Type*} (s : Finset ι) (p : ι 
 *Class 2 — different route.*  The thesis restricts `f` to the commutative
 C*-subalgebra `C*(a)` and invokes **34IX**.2 (`cp_commutative_dom`, a
 positive map out of a commutative C*-algebra is cp) and then **34XVI**
-`cp_russo_dye`.  `cp_commutative_dom` is still `sorry`, and its own proof
+`cp_russo_dye`.  `cp_commutative_dom` was still `sorry` when this was
+written (it is proved now), and its own proof
 needs **34VII** `ccstar-pos-mat` — a partition-of-unity approximation on the
 Gelfand spectrum.  We run that approximation *directly on `a`* instead,
 where it is explicit: cover the compact `spec(a) ⊆ ℂ` by finitely many

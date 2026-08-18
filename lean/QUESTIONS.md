@@ -564,6 +564,73 @@ proof**: the `q` that is constructed is `f ↦ (MemLp.toLp f)`, which is
 `rep_injective` + `filter_upwards` line.  Adding it therefore requires no
 reproving at all — only the ruling.
 
+### A10. 28II.4 `functional-calculus` — **our** statement drops the identification of the unique element with `f(a)`
+
+**28II**.4 (`functional-calculus`, cstar.tex:4299 — the exercise's part 4),
+rendered as `functional_calculus_4` in `Theses/A/CStar/Representation.lean`.
+
+The exercise asks: *given `f ∈ C(spec(a))`, show that `f(a)` is the unique
+element of `C*(a)` with `φ(f(a)) = f(φ(a))` for all `φ ∈ spec(C*(a))`.*  Two
+clauses are being asserted at once: (i) the character condition **pins down**
+at most one element of `C*(a)`, and (ii) the element it pins down **is** `f(a)`
+— the `Φ(f)` defined in part 3, i.e. Mathlib's `cfc f a`.
+
+Our statement is
+
+    ∃! b : StarAlgebra.elemental ℂ a,
+      ∀ φ : characterSpace ℂ (StarAlgebra.elemental ℂ a), φ b = f (φ a)
+
+which is clause (i) alone, plus the (weaker) assertion that *some* element has
+the property.  The name `f(a)` never occurs, so the statement never says which
+element it is — and that identification is the entire usable content of the
+exercise: it is what lets one compute with `f(a)` through characters, and it is
+what the four later parts (spectral mapping, naturality, composition) are
+implicitly built on.  As it stands our part 4 is a fact about the character
+space of `C*(a)`, not a characterisation of the functional calculus.
+
+**Question.** May the statement be strengthened to the thesis's, i.e. to
+
+    ∀ b : StarAlgebra.elemental ℂ a,
+      (∀ φ, φ b = f (φ a)) ↔ (b : 𝒜) = cfc f a
+
+(or, minimally, may the conjunct `(∀ φ, φ (cfc f a) = f (φ a))` be added)?
+Strengthening a statement needs a ruling.
+
+**Cost of the repair: near zero, and the missing half is already checked.**
+`functional_calculus_4` is now **proved** as it stands (2026-08-18, session 92),
+by the thesis's own route: the unique element is exhibited as
+`(gelfandStarTransform (C*(a))).symm (f ∘ j)`, where `j : φ ↦ φ(a)` is part 3's
+map `spec(C*(a)) → spec(a)` (Mathlib's `elemental.characterSpaceToSpectrum`).
+Mathlib's `cfc f a` is *defined* by that same formula: `continuousFunctionalCalculus a`
+is `((characterSpaceHomeo a).compStarAlgEquiv' ℂ ℂ).trans (gelfandStarTransform _).symm`,
+with `f ∘ j` written as the restriction of `f` transported along the
+homeomorphism `characterSpaceHomeo a : spec(C*(a)) ≃ₜ spec(a)`.  So the missing
+clause needs no new mathematics.  It has been **compiled in the scratchpad** (14
+lines, no `sorry`, not committed because it changes a statement):
+
+    example (a : 𝒜) [ha : IsStarNormal a] (f : ℂ → ℂ)
+        (hf : ContinuousOn f (spectrum ℂ a))
+        (φ : characterSpace ℂ (StarAlgebra.elemental ℂ a)) :
+        φ ⟨cfc f a, cfc_mem_elemental f a⟩ = f (φ ⟨a, StarAlgebra.elemental.self_mem ℂ a⟩) := by
+      have heq : (⟨cfc f a, cfc_mem_elemental f a⟩ : StarAlgebra.elemental ℂ a)
+          = continuousFunctionalCalculus a ⟨_, hf.domRestrict⟩ := by
+        refine Subtype.ext ?_
+        show cfc f a = ((continuousFunctionalCalculus a ⟨_, hf.domRestrict⟩ :
+          StarAlgebra.elemental ℂ a) : 𝒜)
+        rw [cfc_apply f a ha hf, cfcHom_eq_of_isStarNormal]; rfl
+      rw [heq]
+      show gelfandStarTransform (StarAlgebra.elemental ℂ a)
+          (continuousFunctionalCalculus a ⟨_, hf.domRestrict⟩) φ = _
+      rw [continuousFunctionalCalculus, StarAlgEquiv.trans_apply,
+        StarAlgEquiv.apply_symm_apply]
+      rfl
+
+With this in hand the iff form is immediate from the uniqueness half already
+proved.  So the ruling is the whole cost.
+
+Nothing downstream is affected: no declaration in `Theses/` uses
+`functional_calculus_4`.
+
 ### A2. `parsec-340.60` (34VI.1) is an empty `\TODO{}`
 The solution slot exists but is empty, and it is the *last* entry in
 `asols.tex` — which is why solution coverage appears to stop at parsec 340.

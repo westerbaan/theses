@@ -1,7 +1,6 @@
 chilb_vector_states_2|costed||~150 lines; the polarisation core sits in the proved 32XV.1 just above it
 chilb_vector_states_3|costed||~120 lines from chilb_form_bounded plus the C*-identity; the thesis hint is retracted by an erratum
 cstar_pos_neg_part_3|costed||cheapest item in the chapter, ~40-60 lines, with a template 50 lines above it
-functional_calculus_4|costed||~60 lines as stated; the survey flags our statement as weaker than 28II.4 and asks for a repair first
 gelfand_naimark|blocked|proto_gelfand_naimark_2|~30 lines once 30X.2 lands; its other input is already proved
 hadamard_1|costed||small; route via FormalMultilinearSeries and radius_inv_eq_limsup
 hadamard_2|costed||small; the converse of 13II.1 over the same Mathlib bridge

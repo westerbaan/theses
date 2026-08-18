@@ -226,7 +226,8 @@ theorem powerseries_uniqueness_coeffients (a : ℕ → 𝒜) (r : ℝ) (hr : 0 <
   by
     -- Divergence from the thesis's proof (cstar.tex:1958): the hint there is
     -- to differentiate the series repeatedly, which would make this depend on
-    -- **13IV** `powerSeries_hasDerivAt` (still `sorry`).  In Lean the series
+    -- **13IV** `powerSeries_hasDerivAt` (`sorry` when this was written; since
+    -- proved).  In Lean the series
     -- represents the zero function on `ball 0 r`, and
     -- `HasFPowerSeriesAt.eq_zero` gives the conclusion outright.
     have hpow : HasFPowerSeriesOnBall (0 : ℂ → 𝒜) (fpsOfCoeffs a) 0 (ENNReal.ofReal r) := by
@@ -1747,7 +1748,8 @@ theorem rigid_expansion {U : Set ℂ} (hU : IsOpen U) (f : ℂ → 𝒜)
   by
     -- Divergence from the thesis's proof (cstar.tex:2514): the thesis derives
     -- this from **15V** `taylor` and **13VI**
-    -- `powerseries_uniqueness_coeffients`, both still `sorry` here.  In Lean
+    -- `powerseries_uniqueness_coeffients`, both `sorry` when this was written
+    -- (both are proved now).  In Lean
     -- neither is needed: `DifferentiableOn.hasFPowerSeriesOnBall` (Cauchy's
     -- integral formula, stated in Mathlib for any complete complex normed
     -- space) supplies a power-series expansion of `f` on any closed ball

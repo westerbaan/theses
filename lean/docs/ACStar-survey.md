@@ -363,6 +363,17 @@ characters).  As written it is true and (a)-sized, ~60 lines: existence from
 `∀ b : StarAlgebra.elemental ℂ a, (∀ φ, φ b = f (φ a)) ↔ (b : 𝒜) = cfc f a`,
 or at minimum add the conjunct that `cfc f a` satisfies the property.
 
+> **Session 92: PROVED, and the flag stands.**  `functional_calculus_4` is
+> closed and axiom-clean (25 lines, the thesis's own route: `j` from
+> `characterSpaceToSpectrum`, then Gelfand on the commutative `C*(a)` via
+> `gelfandStarTransform`), so `Representation.lean` — and with it the whole of
+> A/CStar — has **no `sorry` left**.  The statement was *not* repaired: the
+> recommended strengthening is filed as **QUESTIONS A10**, which carries a
+> compiled 14-line proof of the missing clause `φ (cfc f a) = f (φ a)`, so the
+> ruling is the only remaining cost.  It is that short because Mathlib's
+> `continuousFunctionalCalculus a` is *defined* as part 3's `Φ`:
+> `((characterSpaceHomeo a).compStarAlgEquiv' ℂ ℂ).trans (gelfandStarTransform _).symm`.
+
 **30X**.2 `proto_gelfand_naimark_2` (`cstar.tex:4951` — doc says 4870; **drift
 81 lines**) — if `Ω` is centre separating then `ϱ_Ω` is injective, so `𝒜`
 embeds in `B(ℋ_Ω)`.  **(a), ~250–400 lines, and much closer than it looks:**
