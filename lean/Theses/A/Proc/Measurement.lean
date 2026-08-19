@@ -5506,19 +5506,328 @@ theorem centrally_similar_basic_2a_counterexample :
   rw [ceil_zero] at h0
   exact zero_ne_one h0
 
+/-- Cancelling a faithful positive element on the left: `⌈b⌉ = 1` and
+`b·y = 0` give `y = 0`. -/
+private theorem eq_zero_of_faithful_mul [VonNeumannAlgebra A] {b y : A} (hb : 0 ≤ b)
+    (hcb : ceil b = 1) (h : b * y = 0) : y = 0 := by
+  have h2 := ceil_mul_eq_zero hb h
+  rwa [hcb, one_mul] at h2
+
+/-- …and on the right. -/
+private theorem eq_zero_of_mul_faithful [VonNeumannAlgebra A] {b y : A} (hb : 0 ≤ b)
+    (hcb : ceil b = 1) (h : y * b = 0) : y = 0 := by
+  have hs : b * star y = 0 := by
+    have h2 := congrArg star h
+    rwa [star_mul, star_zero, (IsSelfAdjoint.of_nonneg hb).star_eq] at h2
+  have h3 := eq_zero_of_faithful_mul hb hcb hs
+  have h4 := congrArg star h3
+  rwa [star_star, star_zero] at h4
+
+/-- A central `z` whose product with a faithful positive `b` is positive is
+itself positive: `z` is self-adjoint because `zb = (zb)* = z*b`, and its
+negative part `u` satisfies `u(zb) = −u²b`, which is positive on the left and
+negative on the right, so `u²b = 0` and `u = 0`. -/
+private theorem nonneg_of_central_mul [VonNeumannAlgebra A] {b z : A} (hb : 0 ≤ b)
+    (hcb : ceil b = 1) (hz : z ∈ centre A) (hzb : 0 ≤ z * b) : 0 ≤ z := by
+  have hbz : b * z = z * b := hz b (Set.mem_univ b)
+  -- `z` is self-adjoint: `z b = (z b)* = b z* = z* b`
+  have hsz : ∀ a : A, a * star z = star z * a := by
+    intro a
+    have h := hz (star a) (Set.mem_univ _)
+    have h2 := congrArg star h
+    simp only [star_mul, star_star] at h2
+    exact h2.symm
+  have hzsa : IsSelfAdjoint z := by
+    have h1 : star z * b = z * b := by
+      have h2 := (IsSelfAdjoint.of_nonneg hzb).star_eq
+      rw [star_mul, (IsSelfAdjoint.of_nonneg hb).star_eq] at h2
+      rw [← hsz b]
+      exact h2
+    have hkey : (z - star z) * b = 0 := by rw [sub_mul, h1, sub_self]
+    exact (sub_eq_zero.mp (eq_zero_of_mul_faithful hb hcb hkey)).symm
+  -- the negative part `u` of `z` commutes with `b`
+  have hzzpos : (0 : A) ≤ z * z := by
+    have h := star_mul_self_nonneg z
+    rwa [hzsa.star_eq] at h
+  have habs : CFC.abs z = CFC.sqrt (z * z) := Theses.A.CStar.abs_eq_sqrt_mul_self hzsa
+  have hzzb : b * (z * z) = z * z * b := by
+    calc b * (z * z) = b * z * z := by rw [mul_assoc]
+      _ = z * b * z := by rw [hbz]
+      _ = z * (b * z) := by rw [mul_assoc]
+      _ = z * (z * b) := by rw [hbz]
+      _ = z * z * b := by rw [mul_assoc]
+  have habsb : b * CFC.abs z = CFC.abs z * b := by
+    rw [habs]
+    exact (Theses.A.CStar.sqrt_commute _ hzzpos b hzzb).1
+  have hu_eq : z⁻ = (2 : ℂ)⁻¹ • (CFC.abs z - z) := by
+    rw [CFC.abs_sub_self z hzsa, two_nsmul, ← two_smul ℂ, smul_smul]
+    norm_num
+  have hu0 : (0 : A) ≤ z⁻ := CFC.negPart_nonneg z
+  have hub : b * z⁻ = z⁻ * b := by
+    rw [hu_eq, mul_smul_comm, smul_mul_assoc, mul_sub, sub_mul, habsb, hbz]
+  have huz : z * z⁻ = z⁻ * z := by
+    have habsz : z * CFC.abs z = CFC.abs z * z := by
+      rw [habs]
+      exact (Theses.A.CStar.sqrt_commute _ hzzpos z (by
+        calc z * (z * z) = z * z * z := by rw [mul_assoc])).1
+    rw [hu_eq, mul_smul_comm, smul_mul_assoc, mul_sub, sub_mul, habsz]
+  -- `u·(z b) = −u²·b`, positive and negative at once
+  have hz : z⁻ * z = -(z⁻ * z⁻) := by
+    have h := CFC.posPart_sub_negPart z hzsa
+    calc z⁻ * z = z⁻ * (z⁺ - z⁻) := by rw [h]
+      _ = -(z⁻ * z⁻) := by rw [mul_sub, CFC.negPart_mul_posPart, zero_sub]
+  have hup : z⁻ * (z * b) = -(z⁻ * z⁻ * b) := by
+    calc z⁻ * (z * b) = z⁻ * z * b := by rw [mul_assoc]
+      _ = -(z⁻ * z⁻ * b) := by rw [hz, neg_mul]
+  have hcomm1 : z⁻ * (z * b) = (z * b) * z⁻ := by
+    calc z⁻ * (z * b) = (z⁻ * z) * b := by rw [mul_assoc]
+      _ = (z * z⁻) * b := by rw [huz]
+      _ = z * (z⁻ * b) := by rw [mul_assoc]
+      _ = z * (b * z⁻) := by rw [hub]
+      _ = (z * b) * z⁻ := by rw [mul_assoc]
+  have hpos1 : (0 : A) ≤ z⁻ * (z * b) :=
+    Theses.A.CStar.sqrt_1 _ _ hu0 hzb hcomm1
+  have hcomm2 : z⁻ * z⁻ * b = b * (z⁻ * z⁻) := by
+    calc z⁻ * z⁻ * b = z⁻ * (z⁻ * b) := by rw [mul_assoc]
+      _ = z⁻ * (b * z⁻) := by rw [hub]
+      _ = z⁻ * b * z⁻ := by rw [mul_assoc]
+      _ = b * z⁻ * z⁻ := by rw [hub]
+      _ = b * (z⁻ * z⁻) := by rw [mul_assoc]
+  have hpos2 : (0 : A) ≤ z⁻ * z⁻ * b :=
+    Theses.A.CStar.sqrt_1 _ _ (Theses.A.CStar.sqrt_1 _ _ hu0 hu0 rfl) hb hcomm2
+  have hzero : z⁻ * z⁻ * b = 0 :=
+    le_antisymm (by rw [← neg_nonneg, ← hup]; exact hpos1) hpos2
+  have husq : z⁻ * z⁻ = 0 := eq_zero_of_mul_faithful hb hcb hzero
+  have hu : z⁻ = 0 := by
+    rw [← CStarRing.star_mul_self_eq_zero_iff (z⁻), (IsSelfAdjoint.of_nonneg hu0).star_eq]
+    exact husq
+  have h := CFC.posPart_sub_negPart z hzsa
+  rw [hu, sub_zero] at h
+  rw [← h]
+  exact CFC.posPart_nonneg _
+
 /-- **104III** (`centrally-similar-basic`, proc.tex:1465, Exercise),
-part 2a: assuming `p ≤ B·q`, `p` and `q` are centrally similar iff `p/q`
-is central; `p` is centrally similar to `1` iff `p` is central; and `p` is
-centrally similar to `p²` iff `p` is central.  **Parked: the first two
-claims are false as printed** — see
-`centrally_similar_basic_2a_counterexample` just above and the 104III row
-of `ERRATA.md`.  The statement is left untouched pending the author's
-ruling. -/
+part 2a, **as repaired by the author on 2026-08-19** (erratum
+`parsec-1040.30`): assuming `⌈p⌉ = ⌈q⌉ = 1` and `p² ≤ B·q²`, `p` and `q` are
+centrally similar iff `p/q` is central; `p` is centrally similar to `1` iff
+`p` is central; and `p` is centrally similar to `p²` iff `p` is central.
+
+Two changes from the printed form.  The faithfulness is new — all three are
+false without it, see `centrally_similar_basic_2a_counterexample` just above,
+which refutes the printed form at `p = 0`, `q = 1` in `ℂ`.  And the bound is
+now on the *squares*: the printed `p ≤ Bq` gives only `√p ∈ 𝒜√q`, whereas
+`p/q` is the junk value `0` unless `p ∈ 𝒜q`, which by Douglas' lemma
+(**81V**.1) is exactly `p² ≤ B·q²`.  The gap is not vacuous even with both
+`p` and `q` faithful: in `B(ℓ²)` with `q = ∑ₙ n⁻¹|n⟩⟨n|` and `xₙ = n^{-3/4}`,
+`p := q + |x⟩⟨x|` satisfies `p ≤ (1+B)q` while `ran p ⊄ ran q`.
+
+The proof of the first claim: `⇒` cancels `c` in `(c·(p/q) − d)·q = 0` and
+then in `c·(a(p/q) − (p/q)a) = ad − da = 0`; `⇐` takes `c = 1`, `d = p/q`,
+whose positivity comes from its negative part `u` satisfying
+`u·p = −u²·q` — the left side positive and the right side negative, so
+`u²q = 0` and `u = 0` — and whose carrier is `1` because `p⌈p/q⌉ = p`. -/
 theorem centrally_similar_basic_2a [VonNeumannAlgebra A] (p q : A)
-    (hp : 0 ≤ p) (hq : 0 ≤ q) (bound : ℝ) (hb : p ≤ (bound : ℂ) • q) :
+    (hp : 0 ≤ p) (hq : 0 ≤ q) (hcp : ceil p = 1) (hcq : ceil q = 1)
+    (bound : ℝ) (hB : 0 ≤ bound) (hb : p ^ 2 ≤ (bound : ℂ) • q ^ 2) :
     (CentrallySimilar p q ↔ div p q ∈ centre A) ∧
       (CentrallySimilar p 1 ↔ p ∈ centre A) ∧
-      (CentrallySimilar p (p ^ 2) ↔ p ∈ centre A) := sorry
+      (CentrallySimilar p (p ^ 2) ↔ p ∈ centre A) :=
+  by
+    have hpsa : IsSelfAdjoint p := IsSelfAdjoint.of_nonneg hp
+    have hqsa : IsSelfAdjoint q := IsSelfAdjoint.of_nonneg hq
+    -- cancellation against a faithful element, on either side
+    have hcancelL : ∀ {x y : A}, 0 ≤ x → ceil x = 1 → x * y = 0 → y = 0 := by
+      intro x y hx hcx h
+      have h2 := ceil_mul_eq_zero hx h
+      rwa [hcx, one_mul] at h2
+    have hcancelR : ∀ {x y : A}, 0 ≤ x → ceil x = 1 → y * x = 0 → y = 0 := by
+      intro x y hx hcx h
+      have hs : x * star y = 0 := by
+        have h2 := congrArg star h
+        rwa [star_mul, star_zero, (IsSelfAdjoint.of_nonneg hx).star_eq] at h2
+      have h3 := hcancelL hx hcx hs
+      have h4 := congrArg star h3
+      rwa [star_star, star_zero] at h4
+    -- commuting positives have a positive product
+    have hmul_nonneg : ∀ {x y : A}, 0 ≤ x → 0 ≤ y → x * y = y * x → 0 ≤ x * y := by
+      intro x y hx hy hxy
+      have hsq : CFC.sqrt x * y = y * CFC.sqrt x :=
+        ((Theses.A.CStar.sqrt_commute x hx y hxy.symm).1).symm
+      have hsa : star (CFC.sqrt x) = CFC.sqrt x :=
+        (IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg x)).star_eq
+      have hconj := star_left_conjugate_nonneg hy (CFC.sqrt x)
+      rw [hsa] at hconj
+      have he : CFC.sqrt x * y * CFC.sqrt x = x * y := by
+        rw [mul_assoc, ← hsq, ← mul_assoc, CFC.sqrt_mul_sqrt_self x hx]
+      rwa [he] at hconj
+    have hpsq : (0 : A) ≤ p ^ 2 := by rw [sq]; exact hmul_nonneg hp hp rfl
+    -- claim 2
+    have claim2 : CentrallySimilar p 1 ↔ p ∈ centre A := by
+      constructor
+      · rintro ⟨c, d, hc, hd, hc0, hd0, hcd, hpc, -⟩
+        rw [mul_one] at hcd
+        have hcc : ceil c = 1 :=
+          le_antisymm (ceil_spec hc0).1.le_one (by rw [← hcp]; exact hpc)
+        intro a _
+        have key : c * (a * p - p * a) = 0 := by
+          have h1 : c * (a * p) = a * d := by
+            rw [← mul_assoc, ← hc a (Set.mem_univ a), mul_assoc, hcd]
+          have h2 : c * (p * a) = d * a := by rw [← mul_assoc, hcd]
+          rw [mul_sub, h1, h2, hd a (Set.mem_univ a), sub_self]
+        exact sub_eq_zero.mp (hcancelL hc0 hcc key)
+      · intro hpc
+        exact ⟨1, p, fun a _ => by rw [one_mul, mul_one], hpc, zero_le_one, hp,
+          by rw [one_mul, mul_one],
+          by rw [ceil_one]; exact (ceil_spec hp).1.le_one,
+          le_of_eq (by rw [ceil_one, hcp])⟩
+    -- claim 3
+    have claim3 : CentrallySimilar p (p ^ 2) ↔ p ∈ centre A := by
+      constructor
+      · rintro ⟨c, d, hc, hd, hc0, hd0, hcd, hpc, hp2d⟩
+        have hcc : ceil c = 1 :=
+          le_antisymm (ceil_spec hc0).1.le_one (by rw [← hcp]; exact hpc)
+        have hdd : ceil d = 1 := by
+          refine le_antisymm (ceil_spec hd0).1.le_one ?_
+          rw [← hcp, ← ceil_basic_5 p hp]
+          exact hp2d
+        have key : (c - d * p) * p = 0 := by
+          rw [sub_mul, hcd, mul_assoc, ← sq, sub_self]
+        have hcdp : c = d * p := sub_eq_zero.mp (hcancelR hp hcp key)
+        intro a _
+        have key2 : d * (a * p - p * a) = 0 := by
+          have h1 : d * (a * p) = a * c := by
+            rw [← mul_assoc, ← hd a (Set.mem_univ a), mul_assoc, ← hcdp]
+          have h2 : d * (p * a) = c * a := by rw [← mul_assoc, ← hcdp]
+          rw [mul_sub, h1, h2, hc a (Set.mem_univ a), sub_self]
+        exact sub_eq_zero.mp (hcancelL hd0 hdd key2)
+      · intro hpc
+        exact ⟨p, 1, hpc, fun a _ => by rw [one_mul, mul_one], hp, zero_le_one,
+          by rw [one_mul, sq], le_rfl,
+          by rw [ceil_one]; exact (ceil_spec hpsq).1.le_one⟩
+    -- claim 1; the corrected hypothesis is exactly Douglas' condition
+    have hex : ∃ c : A, p = c * q := by
+      have hsq : (0 : ℝ) ≤ Real.sqrt bound := Real.sqrt_nonneg _
+      have hsq2 : ((Real.sqrt bound : ℂ) ^ 2) = (bound : ℂ) := by
+        rw [← Complex.ofReal_pow, Real.sq_sqrt hB]
+      have hkey : star p * p ≤ ((Real.sqrt bound : ℂ) ^ 2) • (star q * q) := by
+        rw [hpsa.star_eq, hqsa.star_eq, ← sq, ← sq, hsq2]
+        exact hb
+      obtain ⟨c, -, hc⟩ := ((douglas_1 p q (Real.sqrt bound) hsq).1).mpr hkey
+      exact ⟨c, hc⟩
+    set z := div p q with hzdef
+    have hzq : z * q = p := (div_spec p q hex).1.symm
+    have claim1 : CentrallySimilar p q ↔ z ∈ centre A := by
+      constructor
+      · rintro ⟨c, d, hc, hd, hc0, hd0, hcd, hpc, hqd⟩
+        have hcc : ceil c = 1 :=
+          le_antisymm (ceil_spec hc0).1.le_one (by rw [← hcp]; exact hpc)
+        have hczd : c * z = d := by
+          refine sub_eq_zero.mp (hcancelR hq hcq ?_)
+          rw [sub_mul, mul_assoc, hzq, hcd, sub_self]
+        intro a _
+        have key : c * (a * z - z * a) = 0 := by
+          have h1 : c * (a * z) = a * d := by
+            rw [← mul_assoc, ← hc a (Set.mem_univ a), mul_assoc, hczd]
+          have h2 : c * (z * a) = d * a := by rw [← mul_assoc, hczd]
+          rw [mul_sub, h1, h2, hd a (Set.mem_univ a), sub_self]
+        exact sub_eq_zero.mp (hcancelL hc0 hcc key)
+      · intro hzc
+        have hqz : q * z = z * q := hzc q (Set.mem_univ q)
+        -- `z` is self-adjoint, because `z q = p = p* = q z* = z* q`
+        have hsz : ∀ a : A, a * star z = star z * a := by
+          intro a
+          have h := hzc (star a) (Set.mem_univ _)
+          have h2 := congrArg star h
+          simp only [star_mul, star_star] at h2
+          exact h2.symm
+        have hzsa : IsSelfAdjoint z := by
+          have h1 : star z * q = p := by
+            have h2 := congrArg star hzq
+            rw [star_mul, hqsa.star_eq, hpsa.star_eq] at h2
+            rw [← hsz q]
+            exact h2
+          have hkey : (z - star z) * q = 0 := by rw [sub_mul, hzq, h1, sub_self]
+          exact (sub_eq_zero.mp (hcancelR hq hcq hkey)).symm
+        have hzzpos : (0 : A) ≤ z * z := by
+          have h := star_mul_self_nonneg z
+          rwa [hzsa.star_eq] at h
+        have habs : CFC.abs z = CFC.sqrt (z * z) := by
+          show CFC.sqrt (star z * z) = _
+          rw [hzsa.star_eq]
+        have hzzq : q * (z * z) = z * z * q := by
+          calc q * (z * z) = q * z * z := by rw [mul_assoc]
+            _ = z * q * z := by rw [hqz]
+            _ = z * (q * z) := by rw [mul_assoc]
+            _ = z * (z * q) := by rw [hqz]
+            _ = z * z * q := by rw [mul_assoc]
+        have habsq : q * CFC.abs z = CFC.abs z * q := by
+          rw [habs]
+          exact (Theses.A.CStar.sqrt_commute _ hzzpos q hzzq).1
+        have habsz : z * CFC.abs z = CFC.abs z * z := by
+          rw [habs]
+          exact (Theses.A.CStar.sqrt_commute _ hzzpos z (by
+            calc z * (z * z) = z * z * z := by rw [mul_assoc])).1
+        have hu_eq : z⁻ = (2 : ℂ)⁻¹ • (CFC.abs z - z) := by
+          rw [CFC.abs_sub_self z hzsa, two_nsmul, ← two_smul ℂ, smul_smul]
+          norm_num
+        have hu0 : (0 : A) ≤ z⁻ := CFC.negPart_nonneg z
+        have huq : q * z⁻ = z⁻ * q := by
+          rw [hu_eq, mul_smul_comm, smul_mul_assoc, mul_sub, sub_mul, habsq, hqz]
+        have huz : z * z⁻ = z⁻ * z := by
+          rw [hu_eq, mul_smul_comm, smul_mul_assoc, mul_sub, sub_mul, habsz]
+        have hz : z⁻ * z = -(z⁻ * z⁻) := by
+          have h := CFC.posPart_sub_negPart z hzsa
+          calc z⁻ * z = z⁻ * (z⁺ - z⁻) := by rw [h]
+            _ = -(z⁻ * z⁻) := by rw [mul_sub, CFC.negPart_mul_posPart, zero_sub]
+        have hup : z⁻ * p = -(z⁻ * z⁻ * q) := by
+          calc z⁻ * p = z⁻ * (z * q) := by rw [hzq]
+            _ = z⁻ * z * q := by rw [mul_assoc]
+            _ = -(z⁻ * z⁻ * q) := by rw [hz, neg_mul]
+        have hupq : p * z⁻ = z⁻ * p := by
+          calc p * z⁻ = z * q * z⁻ := by rw [hzq]
+            _ = z * (q * z⁻) := by rw [mul_assoc]
+            _ = z * (z⁻ * q) := by rw [huq]
+            _ = z * z⁻ * q := by rw [mul_assoc]
+            _ = z⁻ * z * q := by rw [huz]
+            _ = z⁻ * (z * q) := by rw [mul_assoc]
+            _ = z⁻ * p := by rw [hzq]
+        have hpos1 : (0 : A) ≤ z⁻ * p := hmul_nonneg hu0 hp hupq.symm
+        have huuq : z⁻ * z⁻ * q = q * (z⁻ * z⁻) := by
+          calc z⁻ * z⁻ * q = z⁻ * (z⁻ * q) := by rw [mul_assoc]
+            _ = z⁻ * (q * z⁻) := by rw [huq]
+            _ = z⁻ * q * z⁻ := by rw [mul_assoc]
+            _ = q * z⁻ * z⁻ := by rw [huq]
+            _ = q * (z⁻ * z⁻) := by rw [mul_assoc]
+        have hpos2 : (0 : A) ≤ z⁻ * z⁻ * q :=
+          hmul_nonneg (hmul_nonneg hu0 hu0 rfl) hq huuq
+        have hzero : z⁻ * z⁻ * q = 0 :=
+          le_antisymm (by rw [← neg_nonneg, ← hup]; exact hpos1) hpos2
+        have husq : z⁻ * z⁻ = 0 := hcancelR hq hcq hzero
+        have hu : z⁻ = 0 := by
+          rw [← CStarRing.star_mul_self_eq_zero_iff (z⁻),
+            (IsSelfAdjoint.of_nonneg hu0).star_eq]
+          exact husq
+        have hz0 : (0 : A) ≤ z := by
+          have h := CFC.posPart_sub_negPart z hzsa
+          rw [hu, sub_zero] at h
+          rw [← h]
+          exact CFC.posPart_nonneg _
+        have hcz : ceil z = 1 := by
+          refine le_antisymm (ceil_spec hz0).1.le_one ?_
+          rw [← hcp]
+          refine (ceil_le_iff hp (ceil_spec hz0).1).mpr ?_
+          have hzc' : z * ceil z = z := (ceil_spec hz0).2.1
+          have hqcz : q * ceil z = ceil z * q := ceil_basic_2 z q hz0 hqz
+          calc p * ceil z = z * q * ceil z := by rw [hzq]
+            _ = z * (q * ceil z) := by rw [mul_assoc]
+            _ = z * (ceil z * q) := by rw [hqcz]
+            _ = z * ceil z * q := by rw [mul_assoc]
+            _ = z * q := by rw [hzc']
+            _ = p := hzq
+        exact ⟨1, z, fun a _ => by rw [one_mul, mul_one], hzc, zero_le_one, hz0,
+          by rw [one_mul, hzq], by rw [ceil_one]; exact (ceil_spec hp).1.le_one,
+          le_of_eq (by rw [hcq, hcz])⟩
+    exact ⟨claim1, claim2, claim3⟩
 
 /-- **104III**.3/.4/.5, obstruction: the projection `(1,0)` of
 `ℓ^∞({0,1})` is not centrally similar to `1` (it is a central projection
@@ -5714,17 +6023,100 @@ theorem centrally_similar_basic_3_meet_cceil_counterexample :
     _ = 0 := hpq
 
 /-- **104III** (`centrally-similar-basic`, proc.tex:1465, Exercise),
-part 3: if `p` and `q` commute, `m` is their infimum, and both `m/p` and
-`m/q` are central, then `p` and `q` are centrally similar.
+part 3, **as repaired by the author on 2026-08-19** (erratum
+`parsec-1040.30`): if `⌈p⌉ = ⌈q⌉ = 1`, `p` and `q` commute, and both
+`(p ∧ q)/p` and `(p ∧ q)/q` are central, then `p` and `q` are centrally
+similar.
 
-**Parked: false as printed** — see
-`centrally_similar_basic_3_counterexample` just above (and the 104III row
-of `ERRATA.md`); the hypothesis `⌈p⌉ = ⌈q⌉` is missing.  The statement is
-left untouched pending the author's ruling. -/
-theorem centrally_similar_basic_3 [VonNeumannAlgebra A] (p q m : A)
-    (hp : 0 ≤ p) (hq : 0 ≤ q) (hcomm : p * q = q * p)
-    (hm : IsGLB {p, q} m) (h1 : div m p ∈ centre A)
-    (h2 : div m q ∈ centre A) : CentrallySimilar p q := sorry
+Two changes from the printed form.  The faithfulness is new — without it
+`centrally_similar_basic_3_counterexample` just above refutes it.  And
+`p ∧ q` is now `Theses.A.CStar.meet`, the meet in the commutative
+C*-subalgebra `p` and `q` generate (**26II**.5), where the earlier
+transcription read it as `IsGLB {p, q} m` — the infimum in the order of `𝒜`,
+which by Kadison's anti-lattice theorem usually does not exist, so that form
+was near-vacuous. -/
+theorem centrally_similar_basic_3 [VonNeumannAlgebra A] (p q : A)
+    (hp : 0 ≤ p) (hq : 0 ≤ q) (hcp : ceil p = 1) (hcq : ceil q = 1)
+    (hcomm : p * q = q * p)
+    (h1 : div (Theses.A.CStar.meet p q) p ∈ centre A)
+    (h2 : div (Theses.A.CStar.meet p q) q ∈ centre A) :
+    CentrallySimilar p q :=
+  by
+    set m := Theses.A.CStar.meet p q with hmdef
+    have hm0 : 0 ≤ m := Theses.A.CStar.meet_nonneg hp hq hcomm
+    have hsad : IsSelfAdjoint (p - q) :=
+      (IsSelfAdjoint.of_nonneg hp).sub (IsSelfAdjoint.of_nonneg hq)
+    have hmp : m ≤ p := Theses.A.CStar.meet_le_left p q hsad
+    have hpm : p * m = m * p := Theses.A.CStar.commute_meet hp hq rfl hcomm
+    have hqm : q * m = m * q := Theses.A.CStar.commute_meet hp hq hcomm.symm rfl
+    -- `⌈m⌉ = 1`, from the identity `m(p+q) = pq + m²`
+    have hcm : ceil m = 1 := by
+      have hr : m * (1 - ceil m) = 0 := by
+        rw [mul_sub, mul_one, (ceil_spec hm0).2.1, sub_self]
+      have hcmp : p * ceil m = ceil m * p := ceil_basic_2 m p hm0 hpm
+      have hcmq : q * ceil m = ceil m * q := ceil_basic_2 m q hm0 hqm
+      have hcomm_r : (p + q) * (1 - ceil m) = (1 - ceil m) * (p + q) := by
+        rw [add_mul, mul_add, mul_sub, sub_mul, mul_sub, sub_mul, mul_one, one_mul,
+          mul_one, one_mul, hcmp, hcmq]
+      have hid := Theses.A.CStar.meet_mul_add hp hq hcomm
+      have hpq : p * q = m * (p + q) - m * m := by rw [hid]; abel
+      have hkey : p * (q * (1 - ceil m)) = 0 := by
+        calc p * (q * (1 - ceil m)) = (p * q) * (1 - ceil m) := by rw [mul_assoc]
+          _ = (m * (p + q)) * (1 - ceil m) - (m * m) * (1 - ceil m) := by
+              rw [hpq, sub_mul]
+          _ = m * ((p + q) * (1 - ceil m)) - m * (m * (1 - ceil m)) := by
+              rw [mul_assoc, mul_assoc]
+          _ = m * ((1 - ceil m) * (p + q)) - m * 0 := by rw [hcomm_r, hr]
+          _ = (m * (1 - ceil m)) * (p + q) - 0 := by rw [mul_assoc, mul_zero]
+          _ = 0 := by rw [hr, zero_mul, sub_zero]
+      have hqr : q * (1 - ceil m) = 0 := eq_zero_of_faithful_mul hp hcp hkey
+      have hr0 : (1 : A) - ceil m = 0 := eq_zero_of_faithful_mul hq hcq hqr
+      exact (sub_eq_zero.mp hr0).symm
+    -- `m ∈ Ap` and `m ∈ Aq` by Douglas, since `m ≤ p` gives `m² ≤ p²` here
+    have hsq : ∀ x : A, 0 ≤ x → m ≤ x → x * m = m * x → m * m ≤ x * x := by
+      intro x hx hmx hxm
+      have hd : (0 : A) ≤ x - m := sub_nonneg.mpr hmx
+      have e1 : (0 : A) ≤ x * (x - m) :=
+        Theses.A.CStar.sqrt_1 _ _ hx hd (by rw [mul_sub, sub_mul, hxm])
+      have e2 : (0 : A) ≤ (x - m) * m :=
+        Theses.A.CStar.sqrt_1 _ _ hd hm0 (by rw [sub_mul, mul_sub, hxm])
+      have hid : x * x - m * m = x * (x - m) + (x - m) * m := by noncomm_ring
+      rw [← sub_nonneg, hid]
+      exact add_nonneg e1 e2
+    have hmem : ∀ x : A, 0 ≤ x → m ≤ x → x * m = m * x → ∃ c : A, m = c * x := by
+      intro x hx hmx hxm
+      have hkey : star m * m ≤ ((1 : ℂ) ^ 2) • (star x * x) := by
+        rw [(IsSelfAdjoint.of_nonneg hm0).star_eq, (IsSelfAdjoint.of_nonneg hx).star_eq,
+          one_pow, one_smul]
+        exact hsq x hx hmx hxm
+      obtain ⟨c, -, hc⟩ := ((douglas_1 m x 1 zero_le_one).1).mpr hkey
+      exact ⟨c, hc⟩
+    have hmq : m ≤ q := Theses.A.CStar.meet_le_right p q hsad
+    have hexp := hmem p hp hmp hpm
+    have hexq := hmem q hq hmq hqm
+    have hdp : div m p * p = m := (div_spec m p hexp).1.symm
+    have hdq : div m q * q = m := (div_spec m q hexq).1.symm
+    -- the two quotients are positive, and faithful because `⌈m⌉ = 1`
+    have hposc : (0 : A) ≤ div m p := nonneg_of_central_mul hp hcp h1 (by rw [hdp]; exact hm0)
+    have hposd : (0 : A) ≤ div m q := nonneg_of_central_mul hq hcq h2 (by rw [hdq]; exact hm0)
+    have hfaith : ∀ (x c : A), 0 ≤ x → 0 ≤ c → c ∈ centre A → c * x = m → ceil c = 1 := by
+      intro x c hx hc0 hc hcx
+      have hcc : c * (1 - ceil c) = 0 := by
+        rw [mul_sub, mul_one, (ceil_spec hc0).2.1, sub_self]
+      have hcx' : x * ceil c = ceil c * x :=
+        ceil_basic_2 c x hc0 (hc x (Set.mem_univ x))
+      have hkey : m * (1 - ceil c) = 0 := by
+        calc m * (1 - ceil c) = (c * x) * (1 - ceil c) := by rw [hcx]
+          _ = c * (x * (1 - ceil c)) := by rw [mul_assoc]
+          _ = c * ((1 - ceil c) * x) := by
+              rw [mul_sub, sub_mul, mul_one, one_mul, hcx']
+          _ = (c * (1 - ceil c)) * x := by rw [mul_assoc]
+          _ = 0 := by rw [hcc, zero_mul]
+      have h0 := eq_zero_of_faithful_mul hm0 hcm hkey
+      exact (sub_eq_zero.mp h0).symm
+    refine ⟨div m p, div m q, h1, h2, hposc, hposd, by rw [hdp, hdq], ?_, ?_⟩
+    · exact le_of_eq (by rw [hcp, hfaith p (div m p) hp hposc h1 hdp])
+    · exact le_of_eq (by rw [hcq, hfaith q (div m q) hq hposd h2 hdq])
 
 open scoped ENNReal in
 /-- **104III** (`centrally-similar-basic`, proc.tex:1465, Exercise),
@@ -5908,24 +6300,32 @@ theorem centrally_similar_basic_4_faithful [VonNeumannAlgebra A] (p q : A)
       by rw [hcq, hcz1]⟩
 
 /-- **104III** (`centrally-similar-basic`, proc.tex:1465, Exercise),
-part 4: for pseudoinvertible `p, q`: centrally similar iff `p·q^∼¹`
-central iff `q·p^∼¹` central iff both `m·p^∼¹` and `m·q^∼¹` central
-(`m` the infimum of `p` and `q`).
+part 4, **as repaired by the author on 2026-08-19** (erratum
+`parsec-1040.30`): for commuting pseudoinvertible `p, q` with
+`⌈p⌉ = ⌈q⌉ = 1`: centrally similar iff `p·q^∼¹` central iff `q·p^∼¹`
+central iff both `(p ∧ q)·p^∼¹` and `(p ∧ q)·q^∼¹` central.
 
-**Parked: false as printed** — see
-`centrally_similar_basic_4_counterexample` and
-`centrally_similar_basic_4_obstruction` just above (and the 104III row of
-`ERRATA.md`); the hypothesis `⌈p⌉ = ⌈q⌉ = 1` is missing.  With it, the
-first two `iff`s are **proved** in
-`centrally_similar_basic_4_faithful` above.  The statement is left
-untouched pending the author's ruling. -/
-theorem centrally_similar_basic_4 [VonNeumannAlgebra A] (p q m : A)
-    (hp : 0 ≤ p) (hq : 0 ≤ q) (hpi : Pseudoinvertible A p)
-    (hqi : Pseudoinvertible A q) (hm : IsGLB {p, q} m) :
+Three changes from the printed form.  The faithfulness is new —
+`centrally_similar_basic_4_counterexample` refutes the printed first `iff`,
+and `centrally_similar_basic_4_obstruction` shows that `⌈p⌉ = ⌈q⌉` alone
+cannot repair it.  Commutation is new too: without it the third `iff` cannot
+be stated at all, since `p ∧ q` is only defined for a commuting pair.  And
+`p ∧ q` is `Theses.A.CStar.meet`, not the ambient `IsGLB` the earlier
+transcription used.  The first two `iff`s are
+`centrally_similar_basic_4_faithful` above. -/
+theorem centrally_similar_basic_4 [VonNeumannAlgebra A] (p q : A)
+    (hp : 0 ≤ p) (hq : 0 ≤ q) (hcp : ceil p = 1) (hcq : ceil q = 1)
+    (hcomm : p * q = q * p) (hpi : Pseudoinvertible A p)
+    (hqi : Pseudoinvertible A q) :
     (CentrallySimilar p q ↔ p * pinv q ∈ centre A) ∧
       (p * pinv q ∈ centre A ↔ q * pinv p ∈ centre A) ∧
       (q * pinv p ∈ centre A ↔
-        m * pinv p ∈ centre A ∧ m * pinv q ∈ centre A) := sorry
+        Theses.A.CStar.meet p q * pinv p ∈ centre A ∧
+          Theses.A.CStar.meet p q * pinv q ∈ centre A) :=
+  by
+    obtain ⟨h1, h2⟩ := centrally_similar_basic_4_faithful p q hp hq hpi hqi hcp hcq
+    -- The third `iff` is the one the ruling made statable; it is not yet proved.
+    exact ⟨h1, h2, sorry⟩
 
 open scoped ENNReal in
 /-- **104III** (`centrally-similar-basic`, proc.tex:1465, Exercise),
@@ -6010,12 +6410,13 @@ with `p` and `q`, with `⋃ₙ eₙ = ⌈p⌉`, such that the `eₙp` and `eₙq
 pseudoinvertible and centrally similar, then `p` and `q` are centrally
 similar.
 
-**Parked: false as printed** — see
-`centrally_similar_basic_5_counterexample` just above (and the 104III row
-of `ERRATA.md`); the hypothesis `⌈p⌉ = ⌈q⌉` is missing.  The statement is
-left untouched pending the author's ruling. -/
+**Repaired by the author on 2026-08-19** (erratum `parsec-1040.30`) with the
+hypothesis `⌈p⌉ = ⌈q⌉`, equivalently `⋃ₙ eₙ = ⌈q⌉` as well as `= ⌈p⌉`.
+Without it `centrally_similar_basic_5_counterexample` just above refutes
+it. -/
 theorem centrally_similar_basic_5 [VonNeumannAlgebra A] (p q : A)
-    (hp : 0 ≤ p) (hq : 0 ≤ q) (hcomm : p * q = q * p) (e : ℕ → A)
+    (hp : 0 ≤ p) (hq : 0 ≤ q) (hceq : ceil p = ceil q)
+    (hcomm : p * q = q * p) (e : ℕ → A)
     (he : ∀ n, IsStarProjection (e n)) (hmono : Monotone e)
     (hcp : ∀ n, e n * p = p * e n) (hcq : ∀ n, e n * q = q * e n)
     (hsup : projSup (Set.range e) = ceil p)
