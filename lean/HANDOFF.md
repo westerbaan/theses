@@ -666,6 +666,34 @@ step for `c eₙ = 2⁻ⁿ eₙ`), and most of the `ℓ²` helpers in `A/VN/Basi
 are `private` — so either re-derive the two or three needed facts locally, or
 de-privatise them and accept the A/VN rebuild.
 
+### Resolved by the author (2026-08-19) — thesis-A ruling, incorporated
+
+* **104III** `centrally-similar-basic` — the false parts are repaired by
+  **faithfulness**, not by equal central carriers.  Points 2a, 3 and 4 now
+  assume `⌈p⌉ = ⌈q⌉ = 1`; point 5 assumes `⌈p⌉ = ⌈q⌉` (erratum
+  `parsec-1040.30`).  The 2026-08-16 proposal `⌈⌈p⌉⌉ = ⌈⌈q⌉⌉` is **dropped**:
+  it cannot repair .4, whose refuting witness `p = q = m = diag(1,0)` in
+  `B(ℂ²)` satisfies every hypothesis reflexive in the pair.  Parts 1 and 2 are
+  unchanged — both are true as printed, and part 2 is what forces `⌈p⌉ = ⌈q⌉`
+  in the first place.  The repair costs the thesis nothing: 104VII, the only
+  consumer, states `⌈p⌉ = ⌈q⌉ = 1` and cites 104III at proc.tex:1594 (part 5)
+  and proc.tex:1624 (part 2a, first claim), both inside that setting.
+  * **Lean side, authorised**: restate `centrally_similar_basic_{2a,3,4,5}`
+    (`A/Proc/Measurement.lean`) with those hypotheses and prove them.  For .4
+    the first two `iff`s are already proved as
+    `centrally_similar_basic_4_faithful`.  For .2a the arguments are short:
+    for the second claim take `c = 1`, `d = p`; for the first `c = 1`,
+    `d = p/q`, whose carrier is `1` because `⌈p⌉ = ⌈(p/q)q⌉ ≤ ⌈p/q⌉`.  For .3
+    see the argument in QUESTIONS A7 — it is on paper only.
+  * The refutations of the printed forms — `centrally_similar_basic_*_counterexample`
+    and the `_cceil_` ones — **stay**: they are what the erratum's delta
+    records.  Their doc comments should say they refute the *printed*
+    statements, not the current ones.
+  * **The `p ∧ q` question is untouched by this ruling** and still open
+    (QUESTIONS A7).  Restating the carrier hypotheses is authorised
+    regardless; leave the `p ∧ q` clauses of .3, .4's third `iff` and .5's
+    hint as they are until that is decided.
+
 ### Still open
 
 **0. RESOLVED — the formalization validates the thesis's own bootstrapping.**
