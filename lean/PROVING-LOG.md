@@ -22938,3 +22938,62 @@ through .4's third `iff`.  For .4 the route is `q p⁻¹ = z` central ⟹
 it is `(eₙp) ∧ (eₙq) = eₙ(p ∧ q)` — provable from `CFC.sqrt_unique`, since
 `eₙ√y` is positive with square `eₙy` — plus ultraweak convergence of `eₙx → x`
 and closedness of the centre under ultraweak limits.
+
+### Session 94, continued — 104III.4 CLOSED, and a defect in .5's stated route
+
+**One lemma closed part 4 and is the key to part 5 as well.**
+`Theses.A.CStar.meet_mul_right`: for `w ≥ 0` commuting with `a` and `b`,
+
+    (a ∧ b)·w = (aw) ∧ (bw)
+
+— pointwise `min(x,y)u = min(xu, yu)`, and with `w` a projection it says the
+meet localises to a corner.  The proof is `|(a−b)w| = |a−b|·w` by uniqueness
+of positive square roots (`CFC.sqrt_unique`), then linearity.
+
+**`centrally_similar_basic_4` is PROVED** and axiom-clean, all three `iff`s.
+For the third, with `P := p^∼¹` and `Q := q^∼¹` two-sided inverses
+(`⌈p⌉ = ⌈q⌉ = 1` plus pseudoinvertibility):
+
+* `⇒` `z := qP` central gives `(p ∧ q)P = 1 ∧ z` and `(p ∧ q)Q = (pQ) ∧ 1`
+  directly from `meet_mul_right` (`pP = 1`, `qQ = 1`), and both are central
+  because `commute_meet` transports centrality through the meet; `pQ` is
+  central as the inverse of `z`.
+* `⇐` the two hypotheses give `cp = p ∧ q = dq` with `c, d` central positive
+  of carrier `1`, i.e. a central similarity, and 104III.4's own first two
+  `iff`s carry it to `qP` central.
+
+Three more private helpers in `Measurement.lean`: `pinv_two_sided`,
+`centre_inv`, and `ceil_meet_eq_one` (the `⌈p ∧ q⌉ = 1` argument, now shared
+with part 3 instead of inlined there).
+
+### ⚠ 104III.5's "on the grounds that" clause is false under `⌈p⌉ = ⌈q⌉`
+
+Part 5 asks to show `p ∼ q` **"on the grounds that both `(p∧q)/p` and
+`(p∧q)/q` are central"**.  Those two quotients need *not* be central under the
+repair `⌈p⌉ = ⌈q⌉` that the 2026-08-19 ruling gave point 5.  Witness, all of
+part 5's hypotheses holding, in the factor `B(ℂ²)`:
+
+    p = diag(1,0),   q = diag(2,0),   eₙ = diag(1,0)  (constant)
+
+`⌈p⌉ = ⌈q⌉ = diag(1,0)`; `p` and `q` commute; the `eₙ` are projections
+commuting with both, increasing, with `⋃ₙ eₙ = ⌈p⌉`; `eₙp = p` and `eₙq = q`
+are pseudoinvertible; and `eₙp ∼ eₙq` via the central scalars `c = 2`, `d = 1`.
+But `p ∧ q = p`, so `(p∧q)/p = ⌈p⌉ = diag(1,0)`, which is **not central** in
+`B(ℂ²)`.  The *conclusion* still holds — `2p = 1q` is a central similarity —
+so it is the stated route, not the statement, that fails.
+
+**Ruled the same day**: point 5 gets the same faithfulness as 2a–4, i.e.
+`⌈p⌉ = ⌈q⌉ = 1` rather than `⌈p⌉ = ⌈q⌉`.  The witness above is then excluded,
+the grounds clause becomes exactly the hypothesis of point 3 (proved), and
+104VII's use at proc.tex:1594 is unaffected, since it applies point 5 to
+faithful `p` and `q`.  The erratum simplifies with it: one clause,
+`⌈p⌉ = ⌈q⌉ = 1` in points 2a--5.  `centrally_similar_basic_5` is restated
+accordingly and still `sorry`ed.
+
+Note the remaining obstacle even under that repair: the natural route runs
+`(p∧q)eₙ = (peₙ) ∧ (qeₙ)` (available now, `meet_mul_right`) and then wants
+point 4's third `iff` for the pair `eₙp, eₙq` — whose carriers are `eₙ`, not
+`1`, so point 4 does not apply in `𝒜`.  Applying it inside the corner
+`eₙ𝒜eₙ` reintroduces exactly the `Z(e𝒜e) = Z(𝒜)e` gap that ERRATA **104VIII**
+records for the printed proof of 104VII, and which session 91 stepped around
+rather than proved.

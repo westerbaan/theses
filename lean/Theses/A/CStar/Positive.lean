@@ -6016,6 +6016,47 @@ theorem mul_le_meet_mul_add {a b : A} (ha : 0 ≤ a) (hb : 0 ≤ b)
   have hm := meet_nonneg ha hb hab
   exact mul_nonneg_of_commute hm hm rfl
 
+/-- `(a ∧ b)·w = (aw) ∧ (bw)` for `w ≥ 0` commuting with `a` and `b`.
+Pointwise this is `min(x,y)·u = min(xu, yu)` for `u ≥ 0`.  With `w` a
+projection it says the meet localises to a corner. -/
+theorem meet_mul_right {a b w : A} (ha : 0 ≤ a) (hb : 0 ≤ b) (hw : 0 ≤ w)
+    (haw : a * w = w * a) (hbw : b * w = w * b) :
+    meet a b * w = meet (a * w) (b * w) := by
+  have hd : IsSelfAdjoint (a - b) :=
+    (IsSelfAdjoint.of_nonneg ha).sub (IsSelfAdjoint.of_nonneg hb)
+  have hdw : (a - b) * w = w * (a - b) := by rw [sub_mul, mul_sub, haw, hbw]
+  have hdd : (0 : A) ≤ (a - b) * (a - b) := by
+    have h := star_mul_self_nonneg (a - b)
+    rwa [hd.star_eq] at h
+  have hddw : w * ((a - b) * (a - b)) = (a - b) * (a - b) * w := by
+    calc w * ((a - b) * (a - b)) = w * (a - b) * (a - b) := by rw [mul_assoc]
+      _ = (a - b) * w * (a - b) := by rw [hdw]
+      _ = (a - b) * (w * (a - b)) := by rw [mul_assoc]
+      _ = (a - b) * ((a - b) * w) := by rw [hdw]
+      _ = (a - b) * (a - b) * w := by rw [mul_assoc]
+  have habsw : CFC.abs (a - b) * w = w * CFC.abs (a - b) := by
+    rw [abs_eq_sqrt_mul_self hd]
+    exact ((sqrt_commute _ hdd w hddw).1).symm
+  have habs0 : (0 : A) ≤ CFC.abs (a - b) := CFC.abs_nonneg _
+  -- `|(a−b)w| = |a−b|·w`, by uniqueness of positive square roots
+  have hkey : CFC.abs ((a - b) * w) = CFC.abs (a - b) * w := by
+    have hnn : (0 : A) ≤ CFC.abs (a - b) * w := sqrt_1 _ _ habs0 hw habsw
+    have habs2 : CFC.abs (a - b) * CFC.abs (a - b) = (a - b) * (a - b) := by
+      rw [abs_eq_sqrt_mul_self hd]
+      exact CFC.sqrt_mul_sqrt_self _ hdd
+    show CFC.sqrt (star ((a - b) * w) * ((a - b) * w)) = _
+    refine CFC.sqrt_unique ?_ hnn
+    have hwsa : star w = w := (IsSelfAdjoint.of_nonneg hw).star_eq
+    calc CFC.abs (a - b) * w * (CFC.abs (a - b) * w)
+        = CFC.abs (a - b) * (w * CFC.abs (a - b)) * w := by noncomm_ring
+      _ = CFC.abs (a - b) * (CFC.abs (a - b) * w) * w := by rw [habsw]
+      _ = (a - b) * (a - b) * (w * w) := by rw [← mul_assoc, habs2]; noncomm_ring
+      _ = w * ((a - b) * (a - b)) * w := by rw [hddw]; noncomm_ring
+      _ = star ((a - b) * w) * ((a - b) * w) := by
+          rw [star_mul, hd.star_eq, hwsa]; noncomm_ring
+  rw [meet, meet, show a * w - b * w = (a - b) * w by rw [sub_mul], hkey,
+    smul_mul_assoc, sub_mul, add_mul]
+
 end MeetLemmas
 
 /-- **26III** (`riesz-decomposition-lemma`, cstar.tex:3878, Exercise), the

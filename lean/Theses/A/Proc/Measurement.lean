@@ -5606,6 +5606,59 @@ private theorem nonneg_of_central_mul [VonNeumannAlgebra A] {b z : A} (hb : 0 �
   rw [← h]
   exact CFC.posPart_nonneg _
 
+/-- A pseudoinvertible positive element with full carrier is invertible,
+`p^∼¹` being a two-sided inverse. -/
+private theorem pinv_two_sided [VonNeumannAlgebra A] {x : A} (hx : 0 ≤ x)
+    (hxi : Pseudoinvertible A x) (hcx : ceil x = 1) :
+    pinv x * x = 1 ∧ x * pinv x = 1 := by
+  obtain ⟨h1, -, -, h4⟩ := pinv_spec hxi
+  refine ⟨?_, ?_⟩
+  · rwa [suppProj_of_nonneg hx, hcx] at h1
+  · rwa [rangeProj_eq_suppProj_of_isSelfAdjoint (IsSelfAdjoint.of_nonneg hx),
+      suppProj_of_nonneg hx, hcx] at h4
+
+/-- The inverse of a central element is central. -/
+private theorem centre_inv [VonNeumannAlgebra A] {x y : A} (hxy : x * y = 1) (hyx : y * x = 1)
+    (hxc : x ∈ centre A) : y ∈ centre A := by
+  intro a _
+  calc a * y = y * x * (a * y) := by rw [hyx, one_mul]
+    _ = y * (x * a) * y := by noncomm_ring
+    _ = y * (a * x) * y := by rw [hxc a (Set.mem_univ a)]
+    _ = y * a * (x * y) := by noncomm_ring
+    _ = y * a := by rw [hxy, mul_one]
+
+/-- `⌈p ∧ q⌉ = 1` for commuting faithful positives: with `r := 1 − ⌈p ∧ q⌉`,
+the identity `(p∧q)(p+q) = pq + (p∧q)²` gives `(pq)r = 0`, and faithfulness
+of `p` and `q` cancels twice. -/
+private theorem ceil_meet_eq_one [VonNeumannAlgebra A] {p q : A} (hp : 0 ≤ p) (hq : 0 ≤ q)
+    (hcp : ceil p = 1) (hcq : ceil q = 1) (hcomm : p * q = q * p) :
+    ceil (Theses.A.CStar.meet p q) = 1 := by
+  set m := Theses.A.CStar.meet p q with hmdef
+  have hm0 : 0 ≤ m := Theses.A.CStar.meet_nonneg hp hq hcomm
+  have hpm : p * m = m * p := Theses.A.CStar.commute_meet hp hq rfl hcomm
+  have hqm : q * m = m * q := Theses.A.CStar.commute_meet hp hq hcomm.symm rfl
+  have hr : m * (1 - ceil m) = 0 := by
+    rw [mul_sub, mul_one, (ceil_spec hm0).2.1, sub_self]
+  have hcmp : p * ceil m = ceil m * p := ceil_basic_2 m p hm0 hpm
+  have hcmq : q * ceil m = ceil m * q := ceil_basic_2 m q hm0 hqm
+  have hcomm_r : (p + q) * (1 - ceil m) = (1 - ceil m) * (p + q) := by
+    rw [add_mul, mul_add, mul_sub, sub_mul, mul_sub, sub_mul, mul_one, one_mul,
+      mul_one, one_mul, hcmp, hcmq]
+  have hid := Theses.A.CStar.meet_mul_add hp hq hcomm
+  have hpq : p * q = m * (p + q) - m * m := by rw [hid]; abel
+  have hkey : p * (q * (1 - ceil m)) = 0 := by
+    calc p * (q * (1 - ceil m)) = (p * q) * (1 - ceil m) := by rw [mul_assoc]
+      _ = (m * (p + q)) * (1 - ceil m) - (m * m) * (1 - ceil m) := by
+          rw [hpq, sub_mul]
+      _ = m * ((p + q) * (1 - ceil m)) - m * (m * (1 - ceil m)) := by
+          rw [mul_assoc, mul_assoc]
+      _ = m * ((1 - ceil m) * (p + q)) - m * 0 := by rw [hcomm_r, hr]
+      _ = (m * (1 - ceil m)) * (p + q) - 0 := by rw [mul_assoc, mul_zero]
+      _ = 0 := by rw [hr, zero_mul, sub_zero]
+  have hqr : q * (1 - ceil m) = 0 := eq_zero_of_faithful_mul hp hcp hkey
+  have hr0 : (1 : A) - ceil m = 0 := eq_zero_of_faithful_mul hq hcq hqr
+  exact (sub_eq_zero.mp hr0).symm
+
 /-- **104III** (`centrally-similar-basic`, proc.tex:1465, Exercise),
 part 2a, **as repaired by the author on 2026-08-19** (erratum
 `parsec-1040.30`): assuming `⌈p⌉ = ⌈q⌉ = 1` and `p² ≤ B·q²`, `p` and `q` are
@@ -6049,29 +6102,7 @@ theorem centrally_similar_basic_3 [VonNeumannAlgebra A] (p q : A)
     have hmp : m ≤ p := Theses.A.CStar.meet_le_left p q hsad
     have hpm : p * m = m * p := Theses.A.CStar.commute_meet hp hq rfl hcomm
     have hqm : q * m = m * q := Theses.A.CStar.commute_meet hp hq hcomm.symm rfl
-    -- `⌈m⌉ = 1`, from the identity `m(p+q) = pq + m²`
-    have hcm : ceil m = 1 := by
-      have hr : m * (1 - ceil m) = 0 := by
-        rw [mul_sub, mul_one, (ceil_spec hm0).2.1, sub_self]
-      have hcmp : p * ceil m = ceil m * p := ceil_basic_2 m p hm0 hpm
-      have hcmq : q * ceil m = ceil m * q := ceil_basic_2 m q hm0 hqm
-      have hcomm_r : (p + q) * (1 - ceil m) = (1 - ceil m) * (p + q) := by
-        rw [add_mul, mul_add, mul_sub, sub_mul, mul_sub, sub_mul, mul_one, one_mul,
-          mul_one, one_mul, hcmp, hcmq]
-      have hid := Theses.A.CStar.meet_mul_add hp hq hcomm
-      have hpq : p * q = m * (p + q) - m * m := by rw [hid]; abel
-      have hkey : p * (q * (1 - ceil m)) = 0 := by
-        calc p * (q * (1 - ceil m)) = (p * q) * (1 - ceil m) := by rw [mul_assoc]
-          _ = (m * (p + q)) * (1 - ceil m) - (m * m) * (1 - ceil m) := by
-              rw [hpq, sub_mul]
-          _ = m * ((p + q) * (1 - ceil m)) - m * (m * (1 - ceil m)) := by
-              rw [mul_assoc, mul_assoc]
-          _ = m * ((1 - ceil m) * (p + q)) - m * 0 := by rw [hcomm_r, hr]
-          _ = (m * (1 - ceil m)) * (p + q) - 0 := by rw [mul_assoc, mul_zero]
-          _ = 0 := by rw [hr, zero_mul, sub_zero]
-      have hqr : q * (1 - ceil m) = 0 := eq_zero_of_faithful_mul hp hcp hkey
-      have hr0 : (1 : A) - ceil m = 0 := eq_zero_of_faithful_mul hq hcq hqr
-      exact (sub_eq_zero.mp hr0).symm
+    have hcm : ceil m = 1 := ceil_meet_eq_one hp hq hcp hcq hcomm
     -- `m ∈ Ap` and `m ∈ Aq` by Douglas, since `m ≤ p` gives `m² ≤ p²` here
     have hsq : ∀ x : A, 0 ≤ x → m ≤ x → x * m = m * x → m * m ≤ x * x := by
       intro x hx hmx hxm
@@ -6324,8 +6355,83 @@ theorem centrally_similar_basic_4 [VonNeumannAlgebra A] (p q : A)
           Theses.A.CStar.meet p q * pinv q ∈ centre A) :=
   by
     obtain ⟨h1, h2⟩ := centrally_similar_basic_4_faithful p q hp hq hpi hqi hcp hcq
-    -- The third `iff` is the one the ruling made statable; it is not yet proved.
-    exact ⟨h1, h2, sorry⟩
+    refine ⟨h1, h2, ?_⟩
+    obtain ⟨hPp, hpP⟩ := pinv_two_sided hp hpi hcp
+    obtain ⟨hQq, hqQ⟩ := pinv_two_sided hq hqi hcq
+    have hP0 : (0 : A) ≤ pinv p := pinv_nonneg hp hpi
+    have hQ0 : (0 : A) ≤ pinv q := pinv_nonneg hq hqi
+    set m := Theses.A.CStar.meet p q with hmdef
+    have hm0 : (0 : A) ≤ m := Theses.A.CStar.meet_nonneg hp hq hcomm
+    have hcm : ceil m = 1 := ceil_meet_eq_one hp hq hcp hcq hcomm
+    -- `q` commutes with `p⁻¹`, and `p` with `q⁻¹`
+    have hqP : q * pinv p = pinv p * q := by
+      calc q * pinv p = pinv p * p * (q * pinv p) := by rw [hPp, one_mul]
+        _ = pinv p * (p * q) * pinv p := by noncomm_ring
+        _ = pinv p * (q * p) * pinv p := by rw [hcomm]
+        _ = pinv p * q * (p * pinv p) := by noncomm_ring
+        _ = pinv p * q := by rw [hpP, mul_one]
+    have hpQ : p * pinv q = pinv q * p := by
+      calc p * pinv q = pinv q * q * (p * pinv q) := by rw [hQq, one_mul]
+        _ = pinv q * (q * p) * pinv q := by noncomm_ring
+        _ = pinv q * (p * q) * pinv q := by rw [hcomm]
+        _ = pinv q * p * (q * pinv q) := by noncomm_ring
+        _ = pinv q * p := by rw [hqQ, mul_one]
+    -- the two localisations of the meet
+    have hmP : m * pinv p = Theses.A.CStar.meet 1 (q * pinv p) := by
+      rw [hmdef, Theses.A.CStar.meet_mul_right hp hq hP0 (by rw [hpP, hPp]) hqP, hpP]
+    have hmQ : m * pinv q = Theses.A.CStar.meet (p * pinv q) 1 := by
+      rw [hmdef, Theses.A.CStar.meet_mul_right hp hq hQ0 hpQ (by rw [hqQ, hQq]), hqQ]
+    constructor
+    · intro hz
+      have hz0 : (0 : A) ≤ q * pinv p :=
+        nonneg_of_central_mul hp hcp hz (by rw [mul_assoc, hPp, mul_one]; exact hq)
+      -- `p q⁻¹` is the inverse of the central `q p⁻¹`, hence central
+      have hinv1 : (q * pinv p) * (p * pinv q) = 1 := by
+        calc (q * pinv p) * (p * pinv q) = q * (pinv p * p) * pinv q := by noncomm_ring
+          _ = 1 := by rw [hPp, mul_one, hqQ]
+      have hinv2 : (p * pinv q) * (q * pinv p) = 1 := by
+        calc (p * pinv q) * (q * pinv p) = p * (pinv q * q) * pinv p := by noncomm_ring
+          _ = 1 := by rw [hQq, mul_one, hpP]
+      have hpQc : p * pinv q ∈ centre A := centre_inv hinv1 hinv2 hz
+      have hpQ0 : (0 : A) ≤ p * pinv q :=
+        nonneg_of_central_mul hq hcq hpQc (by rw [mul_assoc, hQq, mul_one]; exact hp)
+      refine ⟨?_, ?_⟩
+      · rw [hmP]
+        intro x _
+        exact Theses.A.CStar.commute_meet zero_le_one hz0 (by rw [mul_one, one_mul])
+          (hz x (Set.mem_univ x))
+      · rw [hmQ]
+        intro x _
+        exact Theses.A.CStar.commute_meet hpQ0 zero_le_one (hpQc x (Set.mem_univ x))
+          (by rw [mul_one, one_mul])
+    · rintro ⟨hc, hd⟩
+      -- `c p = m = d q` is a central similarity, and 104III.4's first two `iff`s finish
+      have hcp' : (m * pinv p) * p = m := by rw [mul_assoc, hPp, mul_one]
+      have hdq' : (m * pinv q) * q = m := by rw [mul_assoc, hQq, mul_one]
+      have hc0 : (0 : A) ≤ m * pinv p :=
+        nonneg_of_central_mul hp hcp hc (by rw [hcp']; exact hm0)
+      have hd0 : (0 : A) ≤ m * pinv q :=
+        nonneg_of_central_mul hq hcq hd (by rw [hdq']; exact hm0)
+      have hfaith : ∀ x c : A, 0 ≤ c → c ∈ centre A → c * x = m → ceil c = 1 := by
+        intro x c hc0' hcc hcx
+        have hcc0 : c * (1 - ceil c) = 0 := by
+          rw [mul_sub, mul_one, (ceil_spec hc0').2.1, sub_self]
+        have hcx' : x * ceil c = ceil c * x :=
+          ceil_basic_2 c x hc0' (hcc x (Set.mem_univ x))
+        have hkey : m * (1 - ceil c) = 0 := by
+          calc m * (1 - ceil c) = (c * x) * (1 - ceil c) := by rw [hcx]
+            _ = c * (x * (1 - ceil c)) := by rw [mul_assoc]
+            _ = c * ((1 - ceil c) * x) := by
+                rw [mul_sub, sub_mul, mul_one, one_mul, hcx']
+            _ = (c * (1 - ceil c)) * x := by rw [mul_assoc]
+            _ = 0 := by rw [hcc0, zero_mul]
+        exact (sub_eq_zero.mp (eq_zero_of_faithful_mul hm0 hcm hkey)).symm
+      have hcs : CentrallySimilar p q :=
+        ⟨m * pinv p, m * pinv q, hc, hd, hc0, hd0, by rw [hcp', hdq'],
+          le_of_eq (by rw [hcp, hfaith p (m * pinv p) hc0 hc hcp']),
+          le_of_eq (by rw [hcq, hfaith q (m * pinv q) hd0 hd hdq'])⟩
+      obtain ⟨i1, i2⟩ := centrally_similar_basic_4_faithful p q hp hq hpi hqi hcp hcq
+      exact i2.mp (i1.mp hcs)
 
 open scoped ENNReal in
 /-- **104III** (`centrally-similar-basic`, proc.tex:1465, Exercise),
@@ -6410,12 +6516,25 @@ with `p` and `q`, with `⋃ₙ eₙ = ⌈p⌉`, such that the `eₙp` and `eₙq
 pseudoinvertible and centrally similar, then `p` and `q` are centrally
 similar.
 
-**Repaired by the author on 2026-08-19** (erratum `parsec-1040.30`) with the
-hypothesis `⌈p⌉ = ⌈q⌉`, equivalently `⋃ₙ eₙ = ⌈q⌉` as well as `= ⌈p⌉`.
-Without it `centrally_similar_basic_5_counterexample` just above refutes
-it. -/
+**Repaired by the author on 2026-08-19** (erratum `parsec-1040.30`), first
+with `⌈p⌉ = ⌈q⌉` and then, the same day, with the full faithfulness
+`⌈p⌉ = ⌈q⌉ = 1` of points 2a–4.  `⌈p⌉ = ⌈q⌉` alone excludes
+`centrally_similar_basic_5_counterexample` just above, but leaves the
+exercise's *stated route* — "on the grounds that both `(p∧q)/p` and
+`(p∧q)/q` are central" — unachievable: in `B(ℂ²)` at `p = diag(1,0)`,
+`q = diag(2,0)` and the constant `eₙ = diag(1,0)` every hypothesis holds and
+`p ∼ q` (via the scalars `2` and `1`), yet `p ∧ q = p`, so
+`(p∧q)/p = ⌈p⌉ = diag(1,0)` is not central.  Under `⌈p⌉ = ⌈q⌉ = 1` that
+witness is gone and the grounds clause is exactly the hypothesis of part 3.
+
+Still `sorry`: the route runs `(p∧q)eₙ = (peₙ) ∧ (qeₙ)` (`meet_mul_right`)
+and then wants part 4's third `iff` for `eₙp, eₙq`, whose carriers are `eₙ`
+rather than `1`; a form of part 4 relative to a projection unit is what is
+missing.  Note that the final step does *not* need `Z(e𝒜e) = Z(𝒜)e`: corner
+centrality of `γeₙ` kills `eₙ(γa − aγ)eₙ` for every `n`, and `⋃ₙ eₙ = 1`
+finishes, as in session 91's proof of 104VII. -/
 theorem centrally_similar_basic_5 [VonNeumannAlgebra A] (p q : A)
-    (hp : 0 ≤ p) (hq : 0 ≤ q) (hceq : ceil p = ceil q)
+    (hp : 0 ≤ p) (hq : 0 ≤ q) (hcp : ceil p = 1) (hcq : ceil q = 1)
     (hcomm : p * q = q * p) (e : ℕ → A)
     (he : ∀ n, IsStarProjection (e n)) (hmono : Monotone e)
     (hcp : ∀ n, e n * p = p * e n) (hcq : ∀ n, e n * q = q * e n)
