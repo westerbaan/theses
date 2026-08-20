@@ -19,7 +19,7 @@ arXiv:1804.02203), chapter 2: Von Neumann Algebras — vn.tex, lines 1–2182.
                      commutative von Neumann algebras with a faithful
                      np-functional
 
-Statements only; every proof is `sorry`.  See CONVENTIONS.md for the
+See CONVENTIONS.md for the
 numbering (**42I** = parsec 420, point 10) and naming conventions.
 
 Encoding of the ultraweak/ultrastrong topologies: they are *defs* (not
@@ -831,6 +831,21 @@ end BH
 
 section DirectSum
 
+/- The `[∀ i, Nontrivial (𝒜 i)]` binder below is **not** the thesis's: 42V.1
+explicitly allows the zero algebra as a summand.  It is forced by Mathlib,
+whose unital normed-ring instance on `lp A ∞` carries it —
+
+    instance [∀ i, Nontrivial (A i)] [∀ i, CStarAlgebra (A i)] :
+        NormedRing (lp A ∞)
+
+with the comment "it's slightly weird that we need the `Nontrivial` instance
+here; it's because we have no way to say that `‖(1 : A i)‖` is uniformly
+bounded as a type class" (`Mathlib/Analysis/CStarAlgebra/lpSpace.lean`).  The
+bound is `‖1‖ ≤ 1` in *every* C*-algebra, so nothing mathematical is assumed;
+dropping the binder means re-founding the ring structure of `lp 𝒜 ∞` against
+Mathlib's instance, which is not a repair of our transcription.  Recorded
+here, and left. -/
+
 variable {I : Type*} (𝒜 : I → Type u) [∀ i, CStarAlgebra (𝒜 i)]
   [∀ i, Nontrivial (𝒜 i)]
 
@@ -999,7 +1014,11 @@ theorem lp_infty_np_apply [∀ i, VonNeumannAlgebra (𝒜 i)] (i : I)
 
 /-- **42V** (`von-neumann-examples`, vn.tex:262, Examples), part 3 (also
 **47IV**, `vn-products`, part 1): the direct sum `⊕ᵢ 𝒜ᵢ` (Mathlib:
-`lp 𝒜 ∞`) of a family of von Neumann algebras is a von Neumann algebra. -/
+`lp 𝒜 ∞`) of a family of von Neumann algebras is a von Neumann algebra.
+
+(Carries the section's `[∀ i, Nontrivial (𝒜 i)]`, which the thesis does not
+assume — see the note at the head of this section: it comes from Mathlib's
+unital instance on `lp 𝒜 ∞`, not from the mathematics.) -/
 instance vonNeumannAlgebra_lp_infty [∀ i, VonNeumannAlgebra (𝒜 i)] :
     VonNeumannAlgebra (lp 𝒜 ∞) where
   isLUB_of_bddAbove_directed D hne hdir hbdd :=
@@ -1106,9 +1125,9 @@ local notation "ℓ²" => lp (fun _ : ℕ => ℂ) 2
 noncomputable def ketbraNat (n m : ℕ) : ℓ² →L[ℂ] ℓ² :=
   ketbra (lp.single 2 n 1) (lp.single 2 m 1)
 
-/-- **43II** (`vn-counterexamples`, vn.tex:374, Exercise), part 1:
-computation rules `(|n⟩⟨m|)* = |m⟩⟨n|` and
-`|n⟩⟨m| |l⟩⟨k| = δ_{m,l} |n⟩⟨k|`. -/
+/-- The action of `|n⟩⟨m|` on a vector: `|n⟩⟨m| z = ⟨e_m, z⟩ e_n`.
+(Auxiliary — the computation rules of **43II**.1 are
+`vn_counterexamples_1` below.) -/
 private theorem ketbraNat_apply (n m : ℕ) (z : ℓ²) :
     ketbraNat n m z = (⟪lp.single 2 m (1 : ℂ), z⟫ : ℂ) • lp.single 2 n (1 : ℂ) :=
   rfl
@@ -1119,6 +1138,9 @@ private theorem inner_single_nat (m l : ℕ) :
   rw [lp.inner_single_left, lp.single_apply]
   simp [Pi.single_apply]
 
+/-- **43II** (`vn-counterexamples`, vn.tex:374, Exercise), part 1:
+computation rules `(|n⟩⟨m|)* = |m⟩⟨n|` and
+`|n⟩⟨m| |l⟩⟨k| = δ_{m,l} |n⟩⟨k|`. -/
 theorem vn_counterexamples_1 (k l m n : ℕ) :
     star (ketbraNat n m) = ketbraNat m n ∧
       ketbraNat n m * ketbraNat l k =
@@ -1582,6 +1604,127 @@ theorem vn_counterexamples_6_sq :
   set ω : NPFunctional (ℓ² →L[ℂ] ℓ²) := vectorNP (lp.single 2 0 (1 : ℂ) : ℓ²)
   have huniq : (ω (ketbraNat 0 0) : ℂ) = ω (0 : ℓ² →L[ℂ] ℓ²) :=
     tendsto_nhds_unique (h2' ω) (hsq ω)
+  rw [npFunctional_zero] at huniq
+  have hval : (ω (ketbraNat 0 0) : ℂ) = 1 := by
+    show (⟪(lp.single 2 0 (1 : ℂ) : ℓ²),
+      ketbraNat 0 0 (lp.single 2 0 (1 : ℂ) : ℓ²)⟫ : ℂ) = 1
+    rw [ketbraNat_apply, inner_single_nat]
+    simp
+  rw [hval] at huniq
+  exact one_ne_zero huniq
+
+/-- **43II** (`vn-counterexamples`, vn.tex:374, Exercise), part 6 (second
+conclusion): multiplication is not *jointly* ultraweakly continuous on
+`B(ℓ²)` — squaring is its composite with the (always continuous) diagonal,
+and squaring is not ultraweakly continuous by `vn_counterexamples_6_sq`. -/
+theorem vn_counterexamples_6_mul :
+    ¬@Continuous ((ℓ² →L[ℂ] ℓ²) × (ℓ² →L[ℂ] ℓ²)) (ℓ² →L[ℂ] ℓ²)
+        (@instTopologicalSpaceProd _ _ (ultraweak _) (ultraweak _))
+        (ultraweak _) (fun p => p.1 * p.2) := by
+  intro hcont
+  let _ : TopologicalSpace (ℓ² →L[ℂ] ℓ²) := ultraweak _
+  exact vn_counterexamples_6_sq (hcont.comp (continuous_id.prodMk continuous_id))
+
+-- Instance synthesis does not find the (existing) real functional calculus
+-- on the *concrete* algebra `B(ℓ²)` — it does for an abstract `H →L[ℂ] H` —
+-- so the two instances `|·|` needs are named here by hand.  They are the
+-- canonical Mathlib ones, so nothing is bent by naming them.
+noncomputable local instance :
+    ContinuousFunctionalCalculus ℝ (ℓ² →L[ℂ] ℓ²) IsSelfAdjoint :=
+  IsSelfAdjoint.instContinuousFunctionalCalculus
+
+noncomputable local instance :
+    NonUnitalContinuousFunctionalCalculus ℝ (ℓ² →L[ℂ] ℓ²) IsSelfAdjoint :=
+  IsSelfAdjoint.instNonUnitalContinuousFunctionalCalculus
+
+/-- **43II** (`vn-counterexamples`, vn.tex:374, Exercise), part 6 (third
+conclusion): `| |n⟩⟨0| + |0⟩⟨n| | = |0⟩⟨0| + |n⟩⟨n|`.  (Both sides square to
+the same positive element, and the positive square root is unique; the
+computation rules are those of part 1.  The identity holds for `n = 0` too,
+where both sides are `2|0⟩⟨0|`.) -/
+theorem vn_counterexamples_6_abs (n : ℕ) :
+    CFC.abs (ketbraNat n 0 + ketbraNat 0 n) = ketbraNat 0 0 + ketbraNat n n := by
+  have hmul : ∀ p q r t : ℕ,
+      ketbraNat p q * ketbraNat r t = if q = r then ketbraNat p t else 0 :=
+    fun p q r t => (vn_counterexamples_1 t r q p).2
+  have hproj : ∀ m : ℕ, (0 : ℓ² →L[ℂ] ℓ²) ≤ ketbraNat m m := by
+    intro m
+    have h := star_mul_self_nonneg (ketbraNat m m)
+    rwa [star_ketbraNat, hmul m m m m, if_pos rfl] at h
+  have hsa : IsSelfAdjoint (ketbraNat n 0 + ketbraNat 0 n) := by
+    show star _ = _
+    rw [star_add, star_ketbraNat, star_ketbraNat, add_comm]
+  have hp : (0 : ℓ² →L[ℂ] ℓ²) ≤ ketbraNat 0 0 + ketbraNat n n :=
+    add_nonneg (hproj 0) (hproj n)
+  have hsq : (ketbraNat 0 0 + ketbraNat n n) * (ketbraNat 0 0 + ketbraNat n n)
+      = (ketbraNat n 0 + ketbraNat 0 n) * (ketbraNat n 0 + ketbraNat 0 n) := by
+    by_cases hn : n = 0
+    · subst hn; rfl
+    · simp only [mul_add, add_mul, hmul, if_neg hn, if_neg (Ne.symm hn),
+        add_zero, zero_add]
+  -- `|a|` is the unique positive element squaring to `a*a = a·a`
+  refine (CFC.mul_self_eq_mul_self_iff _ _ (CFC.abs_nonneg _) hp).mp ?_
+  rw [CFC.abs_mul_abs, hsa.star_eq]
+  exact hsq.symm
+
+/-- **43II** (`vn-counterexamples`, vn.tex:374, Exercise), part 6 (fourth
+conclusion): `a ↦ |a|` is not ultraweakly continuous on `sa(B(ℓ²))`.  The
+self-adjoint elements `|n⟩⟨0| + |0⟩⟨n|` converge ultraweakly to `0`, while
+their absolute values `|0⟩⟨0| + |n⟩⟨n|` converge ultraweakly to
+`|0⟩⟨0| ≠ 0 = |0|`.  (Continuity is negated *on the self-adjoint part*, as
+the exercise asks: `A/VN/Completeness`'s **74I** `proto_kaplansky` shows
+`a ↦ |a|` *is* ultrastrongly continuous there.) -/
+theorem vn_counterexamples_6_abs_cont :
+    ¬@ContinuousOn (ℓ² →L[ℂ] ℓ²) (ℓ² →L[ℂ] ℓ²) (ultraweak _) (ultraweak _)
+        (fun a => CFC.abs a) {a : ℓ² →L[ℂ] ℓ² | IsSelfAdjoint a} := by
+  intro hcont
+  -- `|·|` and the values it takes on the net are named *before* the
+  -- ultraweak topology is made the ambient instance below: the functional
+  -- calculus that defines `|·|` is the one of the *norm* topology.
+  set f : (ℓ² →L[ℂ] ℓ²) → (ℓ² →L[ℂ] ℓ²) := fun a => CFC.abs a with hf
+  set S : Set (ℓ² →L[ℂ] ℓ²) := {a : ℓ² →L[ℂ] ℓ² | IsSelfAdjoint a} with hS
+  have habs : ∀ n : ℕ,
+      f (ketbraNat n 0 + ketbraNat 0 n) = ketbraNat 0 0 + ketbraNat n n :=
+    fun n => vn_counterexamples_6_abs n
+  have hf0 : f (0 : ℓ² →L[ℂ] ℓ²) = 0 := CFC.abs_zero
+  have hsa : ∀ n : ℕ, (ketbraNat n 0 + ketbraNat 0 n) ∈ S := by
+    intro n
+    show star _ = _
+    rw [star_add, star_ketbraNat, star_ketbraNat, add_comm]
+  have hzero : (0 : ℓ² →L[ℂ] ℓ²) ∈ S := IsSelfAdjoint.zero _
+  let _ : TopologicalSpace (ℓ² →L[ℂ] ℓ²) := ultraweak _
+  -- the net is self-adjoint and converges ultraweakly to `0`
+  have h1 : UWTendsto (fun n : ℕ => ketbraNat n 0 + ketbraNat 0 n) atTop 0 :=
+    vn_counterexamples_6.1
+  have hwithin : Tendsto (fun n : ℕ => ketbraNat n 0 + ketbraNat 0 n) atTop
+      (nhdsWithin (0 : ℓ² →L[ℂ] ℓ²) S) :=
+    tendsto_nhdsWithin_of_tendsto_nhds_of_eventually_within _ h1
+      (Eventually.of_forall hsa)
+  -- continuity would force `|aₙ| → |0| = 0` ultraweakly
+  have hlim0 : UWTendsto (fun n : ℕ => f (ketbraNat n 0 + ketbraNat 0 n))
+      atTop 0 := by
+    have hcw : Tendsto f (nhdsWithin (0 : ℓ² →L[ℂ] ℓ²) S) (𝓝 (f 0)) :=
+      hcont 0 hzero
+    have h := hcw.comp hwithin
+    rwa [hf0] at h
+  -- but `|aₙ| = |0⟩⟨0| + |n⟩⟨n| → |0⟩⟨0|`
+  have h3 : UWTendsto (fun n : ℕ => ketbraNat n n) atTop 0 :=
+    uwweaker_2 _ _ _ vn_counterexamples_2_tendsto
+  have hlim1 : UWTendsto (fun n : ℕ => f (ketbraNat n 0 + ketbraNat 0 n))
+      atTop (ketbraNat 0 0) := by
+    rw [uwTendsto_iff] at h3 ⊢
+    intro ω
+    have hc : Tendsto (fun _ : ℕ => (ω (ketbraNat 0 0) : ℂ)) atTop
+        (𝓝 (ω (ketbraNat 0 0) : ℂ)) := tendsto_const_nhds
+    have h := hc.add (h3 ω)
+    rw [npFunctional_zero, add_zero] at h
+    refine h.congr fun n => ?_
+    rw [habs n, npFunctional_add]
+  -- two ultraweak limits, tested against the vector functional at `e₀`
+  rw [uwTendsto_iff] at hlim0 hlim1
+  set ω : NPFunctional (ℓ² →L[ℂ] ℓ²) := vectorNP (lp.single 2 0 (1 : ℂ) : ℓ²)
+  have huniq : (ω (ketbraNat 0 0) : ℂ) = ω (0 : ℓ² →L[ℂ] ℓ²) :=
+    tendsto_nhds_unique (hlim1 ω) (hlim0 ω)
   rw [npFunctional_zero] at huniq
   have hval : (ω (ketbraNat 0 0) : ℂ) = 1 := by
     show (⟪(lp.single 2 0 (1 : ℂ) : ℓ²),
@@ -3566,6 +3709,10 @@ nothing is formalized here. -/
 
 section Products
 
+/- As in `section DirectSum` above, the `[∀ i, Nontrivial (𝒜 i)]` binder is
+Mathlib's, not 47IV's: it is what the unital C*-structure on `lp 𝒜 ∞`
+demands.  See the note there. -/
+
 variable {I : Type*} (𝒜 : I → Type u) [∀ i, CStarAlgebra (𝒜 i)]
   [∀ i, Nontrivial (𝒜 i)] [∀ i, PartialOrder (𝒜 i)]
   [∀ i, StarOrderedRing (𝒜 i)] [∀ i, VonNeumannAlgebra (𝒜 i)]
@@ -3688,8 +3835,10 @@ variable {A B : Type u} [CStarAlgebra A] [PartialOrder A] [StarOrderedRing A]
 /-- **47V** (`vn-equalisers`, vn.tex:1006, Exercise): for nmiu-maps
 `f, g : A → B` between von Neumann algebras, the set
 `E = {a ∈ A | f(a) = g(a)}` is (the carrier of) a von Neumann subalgebra of
-`A`; its inclusion is then automatically the equaliser of `f` and `g` in
-`W*_miu` and `W*_cpsu`. -/
+`A`; its inclusion is then the equaliser of `f` and `g` in `W*_miu` and
+`W*_cpsu`, which is `vn_equalisers_miu` / `vn_equalisers_cpsu` below (stated
+there for an arbitrary realisation of `E` as a von Neumann algebra, since
+this file has no von Neumann structure on a subalgebra as a type). -/
 theorem vn_equalisers [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     (f g : NMIUMap A B) :
     ∃ S : StarSubalgebra ℂ A, IsVNSubalgebra A S ∧
@@ -4237,6 +4386,14 @@ variable [VonNeumannAlgebra A]
 -- the `lp`-based Hilbert space `⊕_i ℋ_{F i}` makes the (routine) instance
 -- defeq checks against `B(H)`'s C*-algebra structure expensive
 set_option maxHeartbeats 2000000 in
+/-- **48V** (`varrho-Omega-normal`, vn.tex:1113, Exercise): for *every*
+family `Ω` of np-functionals on a von Neumann algebra, the direct-sum GNS
+representation `ϱ_Ω : A → B(⊕_i ℋ_{F i})` is normal.  (Exercise, no thesis
+proof; ours is **48II** `normal_faithful` against the separating family of
+elementary vectors `η_{F i}(b)`, for which `⟪η(b), ϱ_Ω(a)η(b)⟫ = (b*Ω)(a)`
+is an np-functional by **44VIII** `ad_normal` — the argument **48IV** gives
+for a single `ω`.)  The `ℓ²(ι)`-packaged corollary is
+`varrho_Omega_normal`. -/
 theorem gnsRepFam_normal : PreservesDirSups ⇑(gnsRepFam F) := by
   classical
   refine starAlgHom_preservesDirSups_of_vectors (gnsRepFam F) (gnsElemVecsFam F)
@@ -4524,10 +4681,14 @@ theorem gns_normal [VonNeumannAlgebra A] (ω : NPFunctional A) :
 -- as for `gnsRep_normal`, the `lp`-based `⊕_ω ℋ_ω` makes the instance defeq
 -- checks against `B(H)`'s C*-algebra structure expensive
 set_option maxHeartbeats 2000000 in
-/-- **48V** (`varrho-Omega-normal`, vn.tex:1113, Exercise): the direct-sum
-GNS representation `ρ_Ω` of any collection `Ω` of np-functionals on a von
-Neumann algebra is normal (rendered, as in **48III**, as the existence of a
-normal representation in which every `ω ∈ Ω` is a vector functional). -/
+/-- Corollary of **48V**, packaged as **48III** packages **48IV**: for any
+collection `Ω` of np-functionals on a von Neumann algebra there is a *normal*
+representation on some `ℓ²(ι)` in which every `ω ∈ Ω` is a vector functional.
+
+This is **weaker** than 48V, which is `gnsRepFam_normal` above: nothing here
+pins the representation down to `ϱ_Ω`, and the witness taken by the proof is
+the representation over *all* np-functionals, which serves any `Ω` a
+fortiori.  Recorded for the `ℓ²(ι)` packaging alone. -/
 theorem varrho_Omega_normal [VonNeumannAlgebra A]
     (Ω : Set (NPFunctional A)) :
     ∃ (ι : Type u) (ρ : MIUMap A
@@ -4568,14 +4729,278 @@ theorem injective_nmiu_iso_on_image_1 [VonNeumannAlgebra A]
     IsVNSubalgebra B f.toStarAlgHom.range :=
   isVNSubalgebra_range f.toStarAlgHom hf f.preservesDirSups'
 
-/-- **48VI** (`injective-nmiu-iso-on-image`, vn.tex:1120, Lemma), part 2: an
-injective nmiu-map `f` restricts to an nmiu-isomorphism onto its image; in
-particular it is an order embedding (whence its inverse on the image is
-normal). -/
+/-- **48VI** (`injective-nmiu-iso-on-image`, vn.tex:1120, Lemma), part 2, the
+order-embedding half: an injective nmiu-map `f` reflects the order,
+`f a ≤ f b ↔ a ≤ b`.  (The full statement — that `f` restricts to an
+nmiu-*isomorphism* onto its image — is `injective_nmiu_iso_on_image_2'`
+below, which this is the working form of.) -/
 theorem injective_nmiu_iso_on_image_2 [VonNeumannAlgebra A]
     [VonNeumannAlgebra B] (f : NMIUMap A B) (hf : Function.Injective f)
     (a b : A) : f a ≤ f b ↔ a ≤ b :=
   starAlgHom_le_iff f.toStarAlgHom hf
+
+/-- **48VI** (`injective-nmiu-iso-on-image`, vn.tex:1120, Lemma), part 2: an
+injective nmiu-map `f : A → B` between von Neumann algebras restricts to an
+nmiu-*isomorphism* onto its image — a ∗-isomorphism `e : A ≅ f(A)` with
+`e a = f a`, normal in both directions.  (Together with part 1, `f(A)` is a
+von Neumann subalgebra of `B`, so `f(A)` really is a von Neumann algebra and
+`e` an isomorphism of such; the *type* `↥f.range` carries the induced order
+here, and its von Neumann structure is built in `A/VN/Division`.)
+
+Proof: `StarAlgEquiv.ofInjective` gives the ∗-isomorphism; normality of `e`
+is that of `f`, since suprema in `↥f.range` are computed in `B`, and
+normality of `e⁻¹` is the order reflection of part 2's working form (an
+upper bound `t` of a nonempty set of self-adjoint elements is itself
+self-adjoint, so `f t` may be compared inside the image). -/
+theorem injective_nmiu_iso_on_image_2' [VonNeumannAlgebra A]
+    [VonNeumannAlgebra B] (f : NMIUMap A B) (hf : Function.Injective f) :
+    ∃ e : A ≃⋆ₐ[ℂ] f.toStarAlgHom.range,
+      (∀ a : A, ((e a : B) = f a)) ∧ PreservesDirSups ⇑e ∧
+        PreservesDirSups ⇑e.symm := by
+  classical
+  have hle : ∀ a b : A, f a ≤ f b ↔ a ≤ b := injective_nmiu_iso_on_image_2 f hf
+  set e : A ≃⋆ₐ[ℂ] f.toStarAlgHom.range :=
+    StarAlgEquiv.ofInjective f.toStarAlgHom hf with he
+  have hcoe : ∀ a : A, ((e a : B) = f a) := fun a => rfl
+  have hsymm : ∀ x : f.toStarAlgHom.range, f (e.symm x) = (x : B) := by
+    intro x
+    rw [← hcoe (e.symm x), e.apply_symm_apply]
+  refine ⟨e, hcoe, ?_, ?_⟩
+  · -- `e` is normal: suprema in the image are the suprema of `B`
+    intro D s hne hdir hlub
+    constructor
+    · rintro _ ⟨d, hd, rfl⟩
+      refine Subtype.coe_le_coe.mp ?_
+      rw [hcoe, hcoe]
+      exact (hle _ _).mpr (Subtype.coe_le_coe.mpr (hlub.1 hd))
+    · intro u hu
+      refine Subtype.coe_le_coe.mp ?_
+      rw [hcoe]
+      refine (f.preservesDirSups' D s hne hdir hlub).2 ?_
+      rintro _ ⟨d, hd, rfl⟩
+      have h := hu ⟨d, hd, rfl⟩
+      have h' : ((e (d : A) : B)) ≤ (u : B) := Subtype.coe_le_coe.mpr h
+      rwa [hcoe] at h'
+  · -- `e⁻¹` is normal, by order reflection
+    intro D s hne hdir hlub
+    constructor
+    · rintro _ ⟨d, hd, rfl⟩
+      refine (hle _ _).mp ?_
+      rw [hsymm, hsymm]
+      exact Subtype.coe_le_coe.mpr (Subtype.coe_le_coe.mpr (hlub.1 hd))
+    · intro t ht
+      obtain ⟨d₀, hd₀⟩ := hne
+      have hsa₀ : IsSelfAdjoint (e.symm ((d₀ : f.toStarAlgHom.range))) := by
+        have hd₀sa : star ((d₀ : f.toStarAlgHom.range))
+            = (d₀ : f.toStarAlgHom.range) := d₀.2
+        show star (e.symm _) = _
+        rw [← map_star, hd₀sa]
+      have htsa : IsSelfAdjoint t := by
+        have hd : IsSelfAdjoint (t - e.symm ((d₀ : f.toStarAlgHom.range))) :=
+          IsSelfAdjoint.of_nonneg (sub_nonneg.mpr (ht ⟨d₀, hd₀, rfl⟩))
+        simpa using hd.add hsa₀
+      have hetsa : IsSelfAdjoint (e t) := by
+        show star (e t) = _
+        rw [← map_star, htsa.star_eq]
+      have hub : s ≤ (⟨e t, hetsa⟩ : selfAdjoint f.toStarAlgHom.range) := by
+        refine hlub.2 fun d hd => ?_
+        refine Subtype.coe_le_coe.mp ?_
+        refine Subtype.coe_le_coe.mp ?_
+        rw [hcoe, ← hsymm (d : f.toStarAlgHom.range)]
+        exact (hle _ _).mpr (ht ⟨d, hd, rfl⟩)
+      refine (hle _ _).mp ?_
+      rw [hsymm]
+      have h := Subtype.coe_le_coe.mpr (Subtype.coe_le_coe.mpr hub)
+      rwa [hcoe] at h
+
+/-- **47V** (`vn-equalisers`, vn.tex:1006, Exercise), second half, in
+`W*_miu`: the inclusion of `E = {a | f a = g a}` *is* the equaliser of `f`
+and `g`.
+
+`A/VN/Basic` has no von Neumann structure on a subalgebra *as a type* — that
+is `VNSub`, built in `A/VN/Division` — so the inclusion is taken as a
+parameter: for any von Neumann algebra `E` and injective nmiu-map
+`ι : E → A` whose range is the equaliser set (`VNSub` with its inclusion is
+one, by `vn_equalisers`), every nmiu-map `h : C → A` with `f ∘ h = g ∘ h`
+factors through `ι` by a unique nmiu-map.
+
+The mediating map is `ι⁻¹ ∘ h`, and every clause of it — multiplicativity,
+unitality, ∗-preservation, normality — is read off from the corresponding
+clause for `h` by injectivity of `ι` and its order reflection (**48VI**.2
+`injective_nmiu_iso_on_image_2`, which is why this sits here rather than
+beside `vn_equalisers`). -/
+theorem vn_equalisers_miu [VonNeumannAlgebra A] [VonNeumannAlgebra B]
+    {E C : Type u} [CStarAlgebra E] [PartialOrder E] [StarOrderedRing E]
+    [VonNeumannAlgebra E] [CStarAlgebra C] [PartialOrder C] [StarOrderedRing C]
+    [VonNeumannAlgebra C] (f g : NMIUMap A B) (ι : NMIUMap E A)
+    (hι : Function.Injective ι)
+    (hrange : Set.range (ι : E → A) = {a : A | f a = g a})
+    (h : NMIUMap C A) (hfg : ∀ c : C, f (h c) = g (h c)) :
+    ∃! m : NMIUMap C E, ∀ c : C, ι (m c) = h c := by
+  classical
+  have hle : ∀ x y : E, ι x ≤ ι y ↔ x ≤ y :=
+    fun x y => injective_nmiu_iso_on_image_2 ι hι x y
+  have hmem : ∀ c : C, ∃ x : E, ι x = h c := by
+    intro c
+    have hc : h c ∈ Set.range (ι : E → A) := by rw [hrange]; exact hfg c
+    exact hc
+  choose m hm using hmem
+  -- the structural laws, each by injectivity of `ι`
+  have hι1 : ι (1 : E) = 1 := map_one ι.toStarAlgHom
+  have hι0 : ι (0 : E) = 0 := map_zero ι.toStarAlgHom
+  have hιmul : ∀ x y : E, ι (x * y) = ι x * ι y := fun x y => map_mul ι.toStarAlgHom x y
+  have hιadd : ∀ x y : E, ι (x + y) = ι x + ι y := fun x y => map_add ι.toStarAlgHom x y
+  have hιstar : ∀ x : E, ι (star x) = star (ι x) := fun x => map_star ι.toStarAlgHom x
+  have hιalg : ∀ r : ℂ, ι (algebraMap ℂ E r) = algebraMap ℂ A r :=
+    fun r => ι.toStarAlgHom.commutes r
+  have hh1 : h (1 : C) = 1 := map_one h.toStarAlgHom
+  have hh0 : h (0 : C) = 0 := map_zero h.toStarAlgHom
+  have hhmul : ∀ x y : C, h (x * y) = h x * h y := fun x y => map_mul h.toStarAlgHom x y
+  have hhadd : ∀ x y : C, h (x + y) = h x + h y := fun x y => map_add h.toStarAlgHom x y
+  have hhstar : ∀ x : C, h (star x) = star (h x) := fun x => map_star h.toStarAlgHom x
+  have hhalg : ∀ r : ℂ, h (algebraMap ℂ C r) = algebraMap ℂ A r :=
+    fun r => h.toStarAlgHom.commutes r
+  have hone : m 1 = 1 := hι (by rw [hm, hι1, hh1])
+  have hzero : m 0 = 0 := hι (by rw [hm, hι0, hh0])
+  have hmul : ∀ x y : C, m (x * y) = m x * m y := by
+    intro x y
+    refine hι ?_
+    rw [hm, hιmul, hm, hm, hhmul]
+  have hadd : ∀ x y : C, m (x + y) = m x + m y := by
+    intro x y
+    refine hι ?_
+    rw [hm, hιadd, hm, hm, hhadd]
+  have hcomm : ∀ r : ℂ, m (algebraMap ℂ C r) = algebraMap ℂ E r := by
+    intro r
+    refine hι ?_
+    rw [hm, hιalg, hhalg]
+  have hstar : ∀ x : C, m (star x) = star (m x) := by
+    intro x
+    refine hι ?_
+    rw [hm, hιstar, hm, hhstar]
+  have hnormal : PreservesDirSups m := by
+    intro D s hne hdir hlub
+    constructor
+    · rintro _ ⟨d, hd, rfl⟩
+      refine (hle _ _).mp ?_
+      rw [hm, hm]
+      exact (h.preservesDirSups' D s hne hdir hlub).1 ⟨d, hd, rfl⟩
+    · intro t ht
+      refine (hle _ _).mp ?_
+      rw [hm]
+      refine (h.preservesDirSups' D s hne hdir hlub).2 ?_
+      rintro _ ⟨d, hd, rfl⟩
+      show h ((d : selfAdjoint C) : C) ≤ ι t
+      rw [← hm]
+      exact (hle _ _).mpr (ht ⟨d, hd, rfl⟩)
+  refine ⟨⟨{ toFun := m
+             map_one' := hone
+             map_mul' := hmul
+             map_zero' := hzero
+             map_add' := hadd
+             commutes' := hcomm
+             map_star' := hstar }, hnormal⟩, hm, ?_⟩
+  intro m' hm'
+  apply DFunLike.coe_injective
+  funext c
+  exact hι ((hm' c).trans (hm c).symm)
+
+/-- **47V** (`vn-equalisers`, vn.tex:1006, Exercise), second half, in
+`W*_cpsu`: the same inclusion is the equaliser of `f` and `g` for *ncpsu*
+maps.  Presented exactly as `vn_equalisers_miu`, and proved the same way;
+complete positivity of the mediating map `ι⁻¹ ∘ h` is that of `h` pushed
+back along `ι`, since `ι(∑ᵢⱼ bᵢ* (ι⁻¹h)(aᵢ*aⱼ) bⱼ) = ∑ᵢⱼ ι(bᵢ)* h(aᵢ*aⱼ)
+ι(bⱼ) ≥ 0` and `ι` reflects the order. -/
+theorem vn_equalisers_cpsu [VonNeumannAlgebra A] [VonNeumannAlgebra B]
+    {E C : Type u} [CStarAlgebra E] [PartialOrder E] [StarOrderedRing E]
+    [VonNeumannAlgebra E] [CStarAlgebra C] [PartialOrder C] [StarOrderedRing C]
+    [VonNeumannAlgebra C] (f g : NMIUMap A B) (ι : NMIUMap E A)
+    (hι : Function.Injective ι)
+    (hrange : Set.range (ι : E → A) = {a : A | f a = g a})
+    (h : NCPSUMap C A) (hfg : ∀ c : C, f (h.toNCPMap c) = g (h.toNCPMap c)) :
+    ∃! m : NCPSUMap C E, ∀ c : C, ι (m.toNCPMap c) = h.toNCPMap c := by
+  classical
+  have hle : ∀ x y : E, ι x ≤ ι y ↔ x ≤ y :=
+    fun x y => injective_nmiu_iso_on_image_2 ι hι x y
+  have hmem : ∀ c : C, ∃ x : E, ι x = h.toNCPMap c := by
+    intro c
+    have hc : h.toNCPMap c ∈ Set.range (ι : E → A) := by rw [hrange]; exact hfg c
+    exact hc
+  choose m hm using hmem
+  have hι0 : ι (0 : E) = 0 := map_zero ι.toStarAlgHom
+  have hι1 : ι (1 : E) = 1 := map_one ι.toStarAlgHom
+  have hιmul : ∀ x y : E, ι (x * y) = ι x * ι y := fun x y => map_mul ι.toStarAlgHom x y
+  have hιadd : ∀ x y : E, ι (x + y) = ι x + ι y := fun x y => map_add ι.toStarAlgHom x y
+  have hιsmul : ∀ (r : ℂ) (x : E), ι (r • x) = r • ι x :=
+    fun r x => map_smul ι.toStarAlgHom r x
+  have hιstar : ∀ x : E, ι (star x) = star (ι x) := fun x => map_star ι.toStarAlgHom x
+  have hιsum : ∀ {n : ℕ} (F : Fin n → E), ι (∑ i, F i) = ∑ i, ι (F i) :=
+    fun F => map_sum ι.toStarAlgHom F Finset.univ
+  -- `m` is linear
+  have hadd : ∀ x y : C, m (x + y) = m x + m y := by
+    intro x y
+    refine hι ?_
+    rw [hm, hιadd, hm, hm]
+    exact map_add h.toNCPMap.toCompletelyPositiveMap.toLinearMap x y
+  have hsmul : ∀ (r : ℂ) (x : C), m (r • x) = r • m x := by
+    intro r x
+    refine hι ?_
+    rw [hm, hιsmul, hm]
+    exact map_smul h.toNCPMap.toCompletelyPositiveMap.toLinearMap r x
+  set mL : C →ₗ[ℂ] E :=
+    { toFun := m
+      map_add' := hadd
+      map_smul' := hsmul } with hmL
+  have hmLapp : ∀ c : C, mL c = m c := fun _ => rfl
+  -- complete positivity, pushed forward along `ι`
+  have hhcp : IsCompletelyPositiveMap h.toNCPMap.toCompletelyPositiveMap.toLinearMap :=
+    (cp_iff _).out 1 0 |>.mp fun N M hM =>
+      h.toNCPMap.toCompletelyPositiveMap.map_cstarMatrix_nonneg' N M hM
+  have hcp : IsCompletelyPositiveMap mL := by
+    intro n α b
+    refine (hle 0 _).mp ?_
+    rw [hι0, hιsum]
+    have hterm : ∀ i : Fin n,
+        ι (∑ j, star (b i) * mL (star (α i) * α j) * b j)
+          = ∑ j, star (ι (b i)) *
+              h.toNCPMap.toCompletelyPositiveMap.toLinearMap (star (α i) * α j) * ι (b j) := by
+      intro i
+      rw [hιsum]
+      refine Finset.sum_congr rfl fun j _ => ?_
+      rw [hιmul, hιmul, hιstar, hmLapp, hm]
+      rfl
+    rw [Finset.sum_congr rfl fun i _ => hterm i]
+    exact hhcp n α fun i => ι (b i)
+  have hsu : Subunital m := by
+    refine (hle _ _).mp ?_
+    rw [hm, hι1]
+    exact h.subunital'
+  have hnormal : PreservesDirSups m := by
+    intro D s hne hdir hlub
+    constructor
+    · rintro _ ⟨d, hd, rfl⟩
+      refine (hle _ _).mp ?_
+      rw [hm, hm]
+      exact (h.toNCPMap.preservesDirSups' D s hne hdir hlub).1 ⟨d, hd, rfl⟩
+    · intro t ht
+      refine (hle _ _).mp ?_
+      rw [hm]
+      refine (h.toNCPMap.preservesDirSups' D s hne hdir hlub).2 ?_
+      rintro _ ⟨d, hd, rfl⟩
+      show h.toNCPMap ((d : selfAdjoint C) : C) ≤ ι t
+      rw [← hm]
+      exact (hle _ _).mpr (ht ⟨d, hd, rfl⟩)
+  refine ⟨{ toNCPMap :=
+              { toCompletelyPositiveMap :=
+                  { toLinearMap := mL
+                    map_cstarMatrix_nonneg' := (cp_iff mL).out 0 1 |>.mp hcp }
+                preservesDirSups' := hnormal }
+            subunital' := hsu }, hm, ?_⟩
+  rintro ⟨⟨m', hnc⟩, hsu'⟩ hm'
+  congr 1
+  apply DFunLike.coe_injective
+  funext c
+  exact hι ((hm' c).trans (hm c).symm)
 
 /-- **48VIII** (`ngns`, vn.tex:1144, Theorem (normal Gelfand–Naimark)):
 every von Neumann algebra is nmiu-isomorphic to a von Neumann algebra of
@@ -5229,9 +5654,11 @@ theorem mn_vna_2' [VonNeumannAlgebra A] (N : ℕ) {ι : Type*} (l : Filter ι)
 
 /-- **49IV** (`mn-vna`, vn.tex:1272, Exercise), part 2 (first half): for
 `a₁,…,a_N, b₁,…,b_N ∈ 𝒜`, the map `M ↦ ∑ᵢⱼ aᵢ* Mᵢⱼ bⱼ : M_N(𝒜) → 𝒜` is
-ultraweakly and ultrastrongly continuous; for `a = b` it is moreover normal
-(and completely positive).  (Placed after the second half, which its proof
-uses.) -/
+ultraweakly and ultrastrongly continuous; for `a = b` it is moreover normal.
+(Placed after the second half, which its proof uses.)  Complete positivity
+for `a = b` is the sibling `mn_vna_2_cp`, and the exercise's "in particular"
+clause is `mn_vna_2_entry`; the shape of this conjunction is fixed by its
+uses elsewhere in the tree, so the two are separate statements. -/
 theorem mn_vna_2 [VonNeumannAlgebra A] (N : ℕ) (a b : Fin N → A) :
     @Continuous _ _ (ultraweak (CStarMatrix (Fin N) (Fin N) A)) (ultraweak A)
         (fun M : CStarMatrix (Fin N) (Fin N) A =>
@@ -5279,6 +5706,113 @@ theorem mn_vna_2 [VonNeumannAlgebra A] (N : ℕ) (a b : Fin N → A) :
         map_smul' := fun c X => matForm_smul_matrix c a a X
         monotone' := fun X Y h => matForm_mono h a }
     exact ((p_uwcont F).out 0 2).mp (huw a a)
+
+/-- `M ↦ ∑ᵢⱼ aᵢ* Mᵢⱼ aⱼ`, the map of **49IV**.2, bundled as a `ℂ`-linear map
+`M_N(𝒜) → 𝒜` — the form complete positivity is stated for. -/
+def matFormL (N : ℕ) (a : Fin N → A) :
+    CStarMatrix (Fin N) (Fin N) A →ₗ[ℂ] A where
+  toFun M := matForm a a M
+  map_add' := matForm_add_matrix a a
+  map_smul' c M := matForm_smul_matrix c a a M
+
+omit [PartialOrder A] [StarOrderedRing A] in
+@[simp] theorem matFormL_apply (N : ℕ) (a : Fin N → A)
+    (M : CStarMatrix (Fin N) (Fin N) A) :
+    matFormL N a M = ∑ i, ∑ j, star (a i) * M i j * a j := rfl
+
+/-- **49IV** (`mn-vna`, vn.tex:1272, Exercise), part 2 (first half, the
+complete-positivity clause): `M ↦ ∑ᵢⱼ aᵢ* Mᵢⱼ aⱼ : M_N(𝒜) → 𝒜` is
+*completely positive*.
+
+Exercise, no thesis proof.  Ours is the definition (cstar.tex **10II**.6)
+unwound: with `g_{p,r} = ∑ᵢ (X_p)_{r i} aᵢ b_p`, the sum
+`∑_{p,q} b_p* (∑_{i,j} aᵢ* (X_p* X_q)_{ij} aⱼ) b_q` collapses to
+`∑_r (∑_p g_{p,r})* (∑_q g_{q,r}) ≥ 0`.  No von Neumann hypothesis is
+needed, and none is assumed. -/
+theorem mn_vna_2_cp (N : ℕ) (a : Fin N → A) :
+    IsCompletelyPositiveMap (matFormL N a) := by
+  classical
+  intro n X b
+  set g : Fin n → Fin N → A :=
+    fun p r => ∑ i : Fin N, X p r i * (a i * b p) with hg
+  have hexp : ∀ (p q : Fin n) (i j : Fin N),
+      ((star (X p) * X q) i j : A) = ∑ r : Fin N, star (X p r i) * X q r j := by
+    intro p q i j
+    rw [CStarMatrix.mul_apply]
+    simp [CStarMatrix.star_apply]
+  have hterm : ∀ p q : Fin n,
+      star (b p) * matFormL N a (star (X p) * X q) * b q
+        = ∑ r : Fin N, star (g p r) * g q r := by
+    intro p q
+    have hL : star (b p) * matFormL N a (star (X p) * X q) * b q
+        = ∑ i : Fin N, ∑ j : Fin N, ∑ r : Fin N,
+            star (b p) * (star (a i) * (star (X p r i) * X q r j) * a j) * b q := by
+      rw [matFormL_apply]
+      simp only [hexp, Finset.mul_sum, Finset.sum_mul]
+    have hR : ∀ r : Fin N, star (g p r) * g q r
+        = ∑ i : Fin N, ∑ j : Fin N,
+            star (b p) * (star (a i) * (star (X p r i) * X q r j) * a j) * b q := by
+      intro r
+      simp only [hg, star_sum, star_mul, Finset.sum_mul, Finset.mul_sum]
+      rw [Finset.sum_comm]
+      refine Finset.sum_congr rfl fun i _ => Finset.sum_congr rfl fun j _ => ?_
+      simp only [mul_assoc]
+    rw [hL]
+    calc ∑ i : Fin N, ∑ j : Fin N, ∑ r : Fin N,
+            star (b p) * (star (a i) * (star (X p r i) * X q r j) * a j) * b q
+        = ∑ i : Fin N, ∑ r : Fin N, ∑ j : Fin N,
+            star (b p) * (star (a i) * (star (X p r i) * X q r j) * a j) * b q :=
+          Finset.sum_congr rfl fun i _ => Finset.sum_comm
+      _ = ∑ r : Fin N, ∑ i : Fin N, ∑ j : Fin N,
+            star (b p) * (star (a i) * (star (X p r i) * X q r j) * a j) * b q :=
+          Finset.sum_comm
+      _ = ∑ r : Fin N, star (g p r) * g q r :=
+          Finset.sum_congr rfl fun r _ => (hR r).symm
+  have key : ∑ p : Fin n, ∑ q : Fin n,
+        star (b p) * matFormL N a (star (X p) * X q) * b q
+      = ∑ r : Fin N, star (∑ p : Fin n, g p r) * ∑ q : Fin n, g q r := by
+    calc ∑ p : Fin n, ∑ q : Fin n,
+            star (b p) * matFormL N a (star (X p) * X q) * b q
+        = ∑ p : Fin n, ∑ q : Fin n, ∑ r : Fin N, star (g p r) * g q r :=
+          Finset.sum_congr rfl fun p _ => Finset.sum_congr rfl fun q _ => hterm p q
+      _ = ∑ p : Fin n, ∑ r : Fin N, ∑ q : Fin n, star (g p r) * g q r :=
+          Finset.sum_congr rfl fun p _ => Finset.sum_comm
+      _ = ∑ r : Fin N, ∑ p : Fin n, ∑ q : Fin n, star (g p r) * g q r :=
+          Finset.sum_comm
+      _ = ∑ r : Fin N, star (∑ p : Fin n, g p r) * ∑ q : Fin n, g q r := by
+          refine Finset.sum_congr rfl fun r _ => ?_
+          rw [star_sum, Finset.sum_mul]
+          exact Finset.sum_congr rfl fun p _ => (Finset.mul_sum _ _ _).symm
+  rw [key]
+  exact Finset.sum_nonneg fun r _ => star_mul_self_nonneg _
+
+/-- **49IV** (`mn-vna`, vn.tex:1272, Exercise), part 2 ("in particular"):
+each entry map `M ↦ Mᵢⱼ : M_N(𝒜) → 𝒜` is ultraweakly and ultrastrongly
+continuous.  Read off from **49IV**.2' `mn_vna_2'` applied to the identity
+net on `𝓝 M₀`, as in `mn_vna_2`. -/
+theorem mn_vna_2_entry [VonNeumannAlgebra A] (N : ℕ) (i j : Fin N) :
+    @Continuous _ _ (ultraweak (CStarMatrix (Fin N) (Fin N) A)) (ultraweak A)
+        (fun M : CStarMatrix (Fin N) (Fin N) A =>
+          CStarMatrix.ofMatrix.symm M i j) ∧
+      @Continuous _ _ (ultrastrong (CStarMatrix (Fin N) (Fin N) A))
+        (ultrastrong A)
+        (fun M : CStarMatrix (Fin N) (Fin N) A =>
+          CStarMatrix.ofMatrix.symm M i j) := by
+  constructor
+  · let _ : TopologicalSpace (CStarMatrix (Fin N) (Fin N) A) :=
+      ultraweak (CStarMatrix (Fin N) (Fin N) A)
+    let _ : TopologicalSpace A := ultraweak A
+    rw [continuous_iff_continuousAt]
+    intro M₀
+    exact (mn_vna_2' N (𝓝 M₀) (fun X : CStarMatrix (Fin N) (Fin N) A => X) M₀).1.mp
+      tendsto_id i j
+  · let _ : TopologicalSpace (CStarMatrix (Fin N) (Fin N) A) :=
+      ultrastrong (CStarMatrix (Fin N) (Fin N) A)
+    let _ : TopologicalSpace A := ultrastrong A
+    rw [continuous_iff_continuousAt]
+    intro M₀
+    exact (mn_vna_2' N (𝓝 M₀) (fun X : CStarMatrix (Fin N) (Fin N) A => X) M₀).2.mp
+      tendsto_id i j
 
 /-- **49IV** (`mn-vna`, vn.tex:1272, Exercise), part 3: for an ncp-map
 `f : 𝒜 → ℬ` between von Neumann algebras, the entrywise map

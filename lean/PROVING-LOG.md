@@ -23246,3 +23246,301 @@ Proposition, two in-tree refutations, `ERRATA` carries it); 179III.2
 `orderIntervalEffectAlgebra`, whose `0 ≤ u` is a silent repair of a defect in
 the source — without it `[0,u]` is empty and the point is false — so the
 choice of repair is the author's.
+
+## Session 94 — A/VN/Basic: **the first repair pass — six of the twelve non-`ok` rows repaired**, 43II.6 and 47V get the halves they were missing, and the 48V DISP moves to the statement that is 48V (worker on `Theses/A/VN/Basic.lean`)
+
+Scope: `docs/audit/avn-basic.csv`, the 12 rows whose `stmt` is not `ok`
+(11 `weaker`, 1 `stronger`), plus the two stale-prose items the audit flags
+in this file.  The file compiles with **no errors and no `sorry`** (108
+warnings, all pre-existing deprecations and `unusedSectionVars`); every
+statement touched or added was `#print axioms`-checked *in situ* (source
+copied to the scratchpad, `#print axioms` appended, recompiled): all
+`[propext, Classical.choice, Quot.sound]`.  No existing statement was
+changed, so no downstream module is disturbed.
+
+### Repaired — our mis-transcriptions, no ruling needed (6 rows)
+
+* **48V** `varrho_Omega_normal` — the DISP sat on a statement strictly
+  weaker than the point (it fixes `Ω`, then proves normality of the
+  representation over *all* np-functionals, ignoring `Ω`).  The thesis's own
+  statement was already in the file, untagged, as `gnsRepFam_normal`: `ϱ_Ω`
+  is normal for *every* family.  That declaration now carries the 48V DISP,
+  with the proof sketch (**48II** against the separating elementary vectors,
+  `⟪η(b), ϱ_Ω(a)η(b)⟫ = (b*Ω)(a)` an np-functional by **44VIII**).  The weak
+  sibling is kept — it is the `ℓ²(ι)`-packaged form, as **48III** packages
+  **48IV** — with a doc comment that says plainly that it is weaker and why.
+  Nothing was proved.  (4)
+* **43II.6** `vn_counterexamples_6_sq` — only one of the exercise's four
+  conclusions was recorded.  The other three are now stated and proved:
+  `vn_counterexamples_6_mul` (multiplication is not *jointly* ultraweakly
+  continuous — squaring is its composite with the diagonal),
+  `vn_counterexamples_6_abs` (`| |n⟩⟨0| + |0⟩⟨n| | = |0⟩⟨0| + |n⟩⟨n|`, for
+  every `n`, including `n = 0` where both sides are `2|0⟩⟨0|`; both sides
+  square to the same element and the positive square root is unique), and
+  `vn_counterexamples_6_abs_cont` (`a ↦ |a|` is not ultraweakly continuous
+  **on `sa(B(ℓ²))`** — rendered as `¬ContinuousOn … {a | IsSelfAdjoint a}`,
+  the sharp form the exercise asks for).  (1)
+  *Environment note.* Instance synthesis does **not** find the real
+  functional calculus on the concrete algebra `B(ℓ²)` (it does for an
+  abstract `H →L[ℂ] H`), so `CFC.abs` will not elaborate there.  Two `local
+  instance`s naming the canonical Mathlib instances
+  (`IsSelfAdjoint.instContinuousFunctionalCalculus` and its non-unital
+  sibling) fix it; nothing is bent.  In the continuity proof the ultraweak
+  topology must *not* be made ambient until `|·|` has been named, or the
+  same synthesis picks the ultraweak topology and fails again.
+* **49IV.2** `mn_vna_2` — the exercise asks that `M ↦ ∑ᵢⱼ aᵢ* Mᵢⱼ aⱼ` be
+  normal **and completely positive**; complete positivity was stated
+  nowhere.  Now `mn_vna_2_cp`, on the bundled linear form `matFormL`.  The
+  proof is cstar.tex **10II**.6 unwound: with `g_{p,r} = ∑ᵢ (X_p)_{ri} aᵢ b_p`
+  the sum `∑_{p,q} b_p*(∑_{i,j} aᵢ*(X_p*X_q)_{ij} aⱼ)b_q` collapses to
+  `∑_r (∑_p g_{p,r})*(∑_q g_{q,r}) ≥ 0` — no von Neumann hypothesis, none
+  assumed.  (1)
+  The same row's "in particular `M ↦ Mᵢⱼ` is ultraweakly and ultrastrongly
+  continuous" is now `mn_vna_2_entry`, read off from **49IV**.2'
+  `mn_vna_2'`.  Both are *siblings* rather than new conjuncts of
+  `mn_vna_2`, because `B/Dils/SelfDual` projects that conjunction by
+  `.2.2`.  (4)
+* **47V** `vn_equalisers` — only the first half ("`E = {a | f a = g a}` is a
+  von Neumann subalgebra") was stated; the exercise's second half, that the
+  inclusion **is** the equaliser in `W*_miu` and `W*_cpsu`, is now
+  `vn_equalisers_miu` and `vn_equalisers_cpsu`.  `A/VN/Basic` has no von
+  Neumann structure on a subalgebra *as a type* (that is `VNSub`, built in
+  `A/VN/Division`, which imports this file), so the inclusion is a
+  *parameter*: for any von Neumann algebra `E` and injective nmiu-map
+  `ι : E → A` whose range is the equaliser set, every nmiu- (resp. ncpsu-)
+  map `h : C → A` with `f ∘ h = g ∘ h` factors uniquely through `ι`.  The
+  mediating map is `ι⁻¹ ∘ h` and every clause of it comes from the
+  corresponding clause for `h` by injectivity of `ι` plus the order
+  reflection **48VI**.2; complete positivity is `h`'s pushed back along `ι`.
+  Both are placed with 48VI, since that is what their proofs need — the doc
+  comments say so, and `vn_equalisers` now points at them.  (2)
+* **48VI**.2 `injective_nmiu_iso_on_image_2` — the Lemma says `f` restricts
+  to an nmiu-**isomorphism** onto `f(A)`; ours stated only that `f` is an
+  order embedding.  The full statement is now
+  `injective_nmiu_iso_on_image_2'`: a `∗`-isomorphism `e : A ≃⋆ₐ[ℂ] f.range`
+  with `e a = f a`, **normal in both directions** (`↥f.range` with its
+  induced order).  Normality of `e` is `f`'s, since suprema in the image are
+  computed in `B`; normality of `e⁻¹` is the order reflection, using that an
+  upper bound of a nonempty set of self-adjoint elements is self-adjoint.
+  The order-embedding form keeps its name and statement — `A/Proc/Tensor`
+  applies it to two elements — and its doc comment now presents it as the
+  working form of the primed statement.  (1)
+* **43II.1 (doc)** — the doc comment announcing 43II.1 sat on
+  `ketbraNat_apply`, which merely unfolds the action; the real 43II.1 is the
+  next declaration, `vn_counterexamples_1`, which had none.  Swapped.  (4)
+* **Module header (doc)** — "Statements only; every proof is `sorry`"
+  removed: the file has no `sorry`.
+
+### Left, with the reason
+
+* **51IX** `Linfty_vn` — QUESTIONS **A9**.  The clauses imposed on `q` make
+  it a star-*ring* homomorphism only; `ℂ`-homogeneity is missing, and
+  complex conjugation satisfies every listed clause.  Confirmed again here
+  that the repair is **free**: the `q` the proof constructs is
+  `f ↦ MemLp.toLp f`, which *is* `ℂ`-linear, so the clause
+  `q (z • f) = z • q f` is one line and no reproving — it needs only the
+  ruling.  (Also confirmed: the completeness hypothesis `hμ` is unused.)
+* **54XI.3** `cvn_faithful_3` — the same obstruction: the missing half is
+  that `f ↦ f°` is an nmiu-*isomorphism* `C(spec 𝒜) → L^∞(spec 𝒜)`, and
+  `L^∞` has no Mathlib carrier here (which is what A9 is about).  Left.
+* **42V.3 / 47IV.1, 47IV.2, 47IV.3 ×2** (`vonNeumannAlgebra_lp_infty`,
+  `vn_products_proj_normal`, `vn_products_nmiu`, `vn_products_ncpsu`) — the
+  `[∀ i, Nontrivial (𝒜 i)]` binder the thesis does not assume (42V.1
+  explicitly allows `{0}` as a summand).  **It comes from Mathlib**, whose
+  only unital normed-ring instance on `lp A ∞` is
+  `instance [∀ i, Nontrivial (A i)] [∀ i, CStarAlgebra (A i)] :
+  NormedRing (lp A ∞)`, carrying Mathlib's own comment that the hypothesis
+  is "slightly weird" and is there only because there is no class saying
+  `‖(1 : A i)‖` is uniformly bounded — which it always is, `‖1‖ ≤ 1` in every
+  C*-algebra.  Dropping it means re-founding the ring structure of
+  `lp 𝒜 ∞` against a Mathlib instance, which is not a repair of our
+  transcription.  Left, and now **documented in the file** at both section
+  heads and on `vonNeumannAlgebra_lp_infty`.
+* **43I.1** `norm_apply_le_omegaNorm` (the one `stronger` row) — a benign
+  generalisation: the von Neumann hypothesis is dropped because the argument
+  does not use it, and the doc comment already declares this.  Left by the
+  brief's rule (3).
+
+## Session 94 — `B/Dils`: **the first repair pass on `SelfDual.lean` and `Kaplansky.lean`** — 164II's missing injectivity of `η` is restored **and discharged**, 165VI gets its isomorphism, and the ℓ²-module gap is costed (worker on `Theses/B/Dils/SelfDual.lean`, `Theses/B/Dils/Kaplansky.lean`)
+
+Audit rows: `docs/audit/bdils-selfdual-kaplansky.csv` — 19 rows with `stmt`
+not `ok` (15 `weaker`, 2 `stronger`, 2 `differs`).  **Thirteen repaired, six
+left.**  Both files compile with no errors; `SelfDual.lean` has no `sorry`
+at all and `Kaplansky.lean` keeps exactly its four deliberate ones (the false
+**158V** estimates).  `Pure.lean` and `B/Eff/VNExamples.lean`, which import
+`SelfDual.lean`, were recompiled against freshly built oleans of both
+modified files and are unchanged (each keeps its one pre-existing deliberate
+`sorry`).  Every declaration touched, and every consumer of `ExtTensor`, was
+checked in situ with `#print axioms`: `[propext, Classical.choice,
+Quot.sound]` only.
+
+### Repaired — **164II**: `η` is injective, as a field, discharged at both construction sites
+
+The consequential one.  `ExtTensor` omitted 164II's clause that
+`η : X ⊙ Y → X ⊗ Y` is **injective** — equivalently that the inner product on
+`X ⊙ Y` is definite, which **164VI** proves — and nothing downstream looked
+wrong: `univprop_ext_tensor` inherited the omission and `ext_tensor_uniqueness`
+quantified over a wider class than **164IX** does.
+
+* **`ExtTensor.η_injective`** is now a field:
+  `∀ n (x : Fin n → X) (y : Fin n → Y), ∑ᵢ η(xᵢ,yᵢ) = 0 → ∑ᵢ xᵢ ⊗ₜ yᵢ = 0`,
+  i.e. triviality of the kernel of the induced additive map `X ⊙ Y → Z` —
+  every element of `X ⊙ Y` being such a finite sum, that *is* injectivity, and
+  it is the shape the bilinear-on-`X × Y` encoding permits.  (1)
+* **`extTensor_eta_injective`** (private, tagged **164VI**) discharges it for
+  arbitrary raw data, by 164VI's own argument: **160X**
+  `selfdual_gramschmidt` gives finite orthonormal `(eₖ)`, `(dₗ)` expanding the
+  `xᵢ`, `yᵢ`; bilinearity turns the hypothesis into `∑ₖ,ₗ cₖₗ • η(eₖ,dₗ) = 0`
+  with `cₖₗ = ∑ᵢ t(⟨eₖ,xᵢ⟩,⟨dₗ,yᵢ⟩)`; `η_inner` makes the `η(eₖ,dₗ)`
+  orthonormal, so each `cₖₗ = 0` (`onbasis_coef_absorb` absorbing the
+  coefficients into `⟨eₖ,eₖ⟩`), and the claim is reassembled through the
+  ℂ-linear maps `a ↦ a • eₖ`.  (1)
+* The one step 164VI leaves tacit — that `cₖₗ = 0` in `𝒜 ⊗ ℬ` gives
+  `cₖₗ = 0` already in `𝒜 ⊙ ℬ`, i.e. that `𝒜 ⊙ ℬ → 𝒜 ⊗ ℬ` is injective — is
+  now proved as **`vnTensor_alg_injective`**, from `IsVNTensor`'s product
+  functionals (`tensor-2`) plus the fact that the np-functionals of a von
+  Neumann algebra separate (**44XI** `np_separating`), through a piece of
+  pure linear algebra isolated as **`sum_tmul_eq_zero_of_separating`** (for a
+  fixed `τ` the element `∑ᵢ τ(bᵢ)aᵢ` is killed by every `σ`, hence zero;
+  expanding along a basis of the left factor then kills every coordinate).
+  Without it the thesis's own 164VI does not go through as written.  (1, with
+  a step the thesis passes over in silence)
+* Both construction sites discharge the field: `univprop_ext_tensor` by
+  `extTensor_eta_injective` (it already carries `hX`, `hY`, completeness and
+  the three von Neumann binders), and `extTensorSelf` by
+  `vnTensor_alg_injective` — which is exactly `η_injective` at `X = 𝒜`,
+  `Y = ℬ`, `η = t`.  `extTensorSelf` therefore *gains*
+  `[VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]`, 164II's own setting; its doc
+  no longer claims it needs no von Neumann hypotheses.
+* Consequently **`ext_tensor_uniqueness`** is no longer `stronger`: 164IX
+  assumes `η₂` injective, and now both `ExtTensor`s carry it.  No proof
+  needed changing.
+* Two stale docs fixed with it: `ExtTensor`'s doc described a **density
+  field** the structure does not have (density is derived, **164II**.1
+  `ext_tensor_dense`), and `univprop_ext_tensor`'s doc called
+  **164III**–**164VIII** "proof steps — not converted separately" when the
+  `ℓ²((pᵢⱼ))` construction is not run at all (the self-dual completion of
+  `(X ⊗ Y) ⊗ 𝒞` takes its place).  The doc now says which points are replaced
+  by what, and that 164VI *is* run.
+
+### Repaired — **165VI**: the nmiu-isomorphism, not just the reduction
+
+* **`ba_ext_tensor_iso`** — `ba_ext_tensor_pres` states only `IsVNTensor Θ`,
+  which is **165VII**'s *reduction*; 165VI concludes that there **is** an
+  nmiu-isomorphism `ϑ : 𝒜ᵃ(X) ⊗ ℬᵃ(Y) ≅ 𝒞ᵃ(X ⊗ Y)` with `ϑ(S ⊗ T) = S ⊗ T`.
+  That conclusion is now a theorem: for any von Neumann tensor product `s` of
+  `𝒜ᵃ(X)` and `ℬᵃ(Y)` there is a unique such nmiu-isomorphism, by
+  `ba_ext_tensor_pres` followed by **114II** `tensor_uniqueness` — 165VII's
+  own appeal.  It sits in `PaschkeTensorInfra` because that is where the
+  `IsVNTensor → IsTensorProduct` bridge is built; `ba_ext_tensor_pres`'s doc
+  points at it.  (1)
+
+### Repaired — clauses that were simply missing
+
+* **159VI** `onbProj_isLUB` rendered only `⋁_S p_S = 1`.  Added:
+  **`onbProj_isStarProjection`** (each `p_S` is a projection — the point's own
+  reason, the `|eᵢ⟩⟨eᵢ|` being pairwise orthogonal projections by **159III**),
+  and **`onbProj_uwTendsto_one`** (the point's operative conclusion, `p_S → 1`
+  ultraweakly, by **44VI** in the transported form
+  `uwTendsto_of_monotone_isLUB`; the von Neumann structure of `𝒷ᵃ(X)` that
+  44VI needs is **152X**, so this one carries 159IV's self-duality
+  hypothesis).  The two clauses that were in the file untagged,
+  `onbProj_le_one` and `onbProj_mono`, now carry the 159VI DISP.  (1)
+* **161IV**.2 `onb1_el2` — the bijection `Φ` is an isomorphism of Hilbert
+  ℬ-modules, so additivity and ℬ-linearity for the coordinatewise operations
+  are part of the claim; both are now conjuncts of the statement (one line
+  each: `add_mul`, `mul_assoc`).  Its doc also said "Both halves of 161II are
+  still `sorry` here", which has not been true for some time; the real reason
+  the author's route is unavailable is that `ℓ²((pᵢ))` is not formalized as a
+  *module* — the doc now says that.  (4)
+* **162VI** `selfdual_normalish_form1` — the private `normalish_step` renders
+  162VI only in the relativized form **162VII** consumes.  The point itself is
+  now a public theorem: for a non-zero self-dual module over a factor, either
+  `X` has an orthonormal basis one of whose vectors has `⟨e,e⟩ = 1`, or a
+  single vector is by itself a basis (a basis indexed by a nonempty
+  subsingleton).  **Divergence class 2**: the thesis proves 162VI first and
+  bootstraps it to **162IV**; here 162IV is proved directly from
+  `normalish_step` and 162VI is read back off it — its two disjuncts already
+  carry more.  The only extra step is that the index set of a basis of a
+  non-zero module is inhabited.  (2)
+
+### Repaired — transcription and doc defects (class 4)
+
+* **158V**.3/.4 `kaplansky_hilbmod_A₂`, `kaplansky_hilbmod_A₂'` (`differs`) —
+  the two inner products were transcribed with the thesis's argument order
+  while the outer factors kept the thesis's product order, so the terms were
+  neither the thesis's nor the stars of the thesis's.  All four 158V terms
+  are transcribed as `star ∘ mirror` (the full mirror reverses the product,
+  the star reverses it back and swaps each inner product's arguments), which
+  is what `A₁`, `A₁'` do; `A₂`, `A₂'` now do it too — `⟨y_α − y, y_α⟩` is
+  `inner ℬ (y i) (y i - y₀)` and `⟨y − y_α, y⟩` is `inner ℬ y₀ (y₀ - y i)`.
+  The file's own note (ii) is rewritten accordingly.  Both remain **false**
+  and remain `sorry`; this only makes them the *right* false claims.  (4)
+* **158II** `kaplansky_hilbmod_of_commutative` — its doc said "the general
+  (noncommutative) case remains open — see `kaplansky_hilbmod`", which has
+  been wrong since session 56 (and unconditionally since 61).  It now says
+  the declaration is kept as an independent second route to the commutative
+  case.  (4)
+* **158II** `kaplansky_hilbmod_of_selfDual` — self-duality is not 158II's
+  hypothesis; the doc now says so explicitly and points at `kaplansky_hilbmod`
+  for the point itself.  (4)
+* **44XI** `uwTendsto_unique₂`, **44XV** `uwContinuous_nmiu`,
+  `uwContinuous_ncp`, **59VI** `ceil_star_mul_self_le_iff` — four DISPs that
+  read as transcriptions of multi-part exercises but are wrappers around
+  statements proved in full in `A/VN` (`vn_positive_basic_1`, `p_uwcont`,
+  `ceill_basic_1`–`4`).  Each doc now says it is a **provenance citation** and
+  which clause is being used.  (4)
+* **Module header (doc)** — `SelfDual.lean` still read "Statements only;
+  every proof is `sorry`"; it has none.  Replaced.
+
+### Left, with the reason
+
+* **161II** `hilbmod_el2`, `hilbmod_el2_inner` — the exercise's right
+  ℬ-module structure on `ℓ²((pᵢ))`, its pre-Hilbert-module structure and its
+  self-duality.  **Left deliberately: this is a large piece of new
+  mathematics, not a transcription fix.**  Costed: a carrier type
+  `{b : ι → ℬ // b ∈ L2Set ℬ p}`; `AddCommGroup`, `Module ℂ` and the ℬ-action
+  (`∑ (abᵢ)(abᵢ)* ≤ ‖a‖²∑ bᵢbᵢ*`); the inner product as an ultraweak limit
+  (choice over `hilbmod_el2_inner`) with additivity, ℬ-homogeneity,
+  `star_inner`, positivity and **definiteness** each needing uniqueness of
+  ultraweak limits; a `NormedAddCommGroup` instance for
+  `‖b‖ = √‖⟨b,b⟩‖` (Mathlib's `CStarModule` takes the norm as given, so the
+  triangle inequality has to be assembled from `module_seminorm_1`) and a
+  `NormedSpace ℂ`; then the `CStarModule` instance; and finally, for
+  self-duality, that the `δᵢ` are an orthonormal basis — whose clause (b),
+  ultranorm convergence of every ℓ²-summable family *inside* `ℓ²`, is
+  ultranorm completeness of `ℓ²` and is itself a proof.  Estimate 600–1000
+  lines with several genuinely hard steps.  Half of it would be worse than
+  none, so nothing was landed.  This is also why **162IV** is stated through
+  bases: its "`X ≅ ℓ²(…)`" is not available in the tree.
+* **161V** `onb2` — the exercise's second half, "conclude `pℬ ⊕ qℬ ≅ (p+q)ℬ`
+  for `p + q ≤ 1`", is concluded *by* **161II** in the author's own solution
+  (`(p+q)ℬ ≅ ℓ²({p,q}) = pℬ ⊕ qℬ`), and needs in addition `pℬ` as a Hilbert
+  ℬ-module in its own right.  Blocked on exactly the infrastructure above.
+* **159VIII** `onbProj_omegaNorm_tendsto` — the audit ties it to a **thesis
+  defect**: 159VIII applies an np-map of `ℬ` to `T − p_S T p_S`, an element
+  of `𝒷ᵃ(X)`, so the functional lives on the wrong algebra (`berr.tex`'s
+  `err159IV` corrects a different typo in the same display).  Rule (1):
+  changing our statement to match is the author's call.  What is stated —
+  `‖1 − p_S‖_ω → 0` — is sound and is the half `ketbra_ultraweakly_dense`
+  consumes; the rest of 159VIII lives inside that proof.
+* **153I** `exists_ad_unitary_nmiu` (`stronger`) — a benign strengthening:
+  153I gives `ad_T` ncp, and for a bijective inner-product-preserving `U`
+  multiplicativity and unitality are immediate, involution preservation
+  coming from `exists_nmiu_of_ncp`.  Nothing false is claimed.  Rule (3).
+* **158II** `kaplansky_hilbmod_of_selfDual` (`weaker`) — an intermediate step
+  of our own replacement proof, not a rendering of 158II; 158II proper is
+  `kaplansky_hilbmod`, unconditional, in the same file.  Doc clarified
+  (above), statement left.
+* **158V**.1/.2 `kaplansky_hilbmod_A₁`, `kaplansky_hilbmod_A₁'` — deliberate
+  records of a falsehood.  Rule (4).  (Their `stmt` rows are `ok`; only the
+  `A₂` pair needed the transcription fix.)
+
+### Nothing new for the author
+
+No repair here needed a ruling, and none was blocked by an open question.
+The one thing worth recording for the audit's own sake: the audit's note on
+`kaplansky_hilbmod_A₂` is right that the term as written was neither `A₂` nor
+`A₂*`, but the reason is subtler than "the mirroring swap is missing" — the
+mirror reverses the *product* as well, and it is the composite `star ∘ mirror`
+that the file's other terms use.
