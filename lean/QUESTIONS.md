@@ -315,6 +315,23 @@ through the two dictionary lemmas `su_procPure_of_isPure` (effectus purity ⟹
 that hypothesis is the file's only `sorry`.  Under ruling (1) the `sorry`
 disappears immediately.
 
+⚠️ **Audit update (2026-08-20): what the tree actually implements is now
+established, and it is reading (2).**  The statement/proof audit compared both
+definitions in `Theses/B/Eff/DiamondAmp.lean` clause by clause with eff.tex,
+and they take its **printed form verbatim**:
+
+* `DiamondSelfAdjoint f := diaPull f = diaPush f` — **no purity on `f`**;
+* `DiamondPositive f := IsPure f ∧ ∃ g, DiamondSelfAdjoint g ∧ f = g ≫ g` —
+  purity sits on **`f`**, and **none is required of the square root `g`**.
+
+So under reading (2) the missing step is exactly the single `sorry` in
+`VNExamples.lean`: *a ⋄-self-adjoint `g` whose square is pure has a **pure**
+⋄-self-adjoint square root with the same square.*  Under reading (1) — that
+206II.2 silently means "pure" — both definitions gain an `IsPure` conjunct and
+**that `sorry` closes with no further mathematics**.  Nothing else in the tree
+depends on which way this goes; `Effectus.lean`'s partial-form machinery was
+checked field by field against 180VII and is faithful either way.
+
 ### B8. Minor: `bsols.tex`'s `onb1` solution over-assumes
 Its solution assumes self-duality, which neither the exercise nor our statement
 requires.  Harmless; noted for tidiness.

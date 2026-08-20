@@ -90,15 +90,16 @@ auxiliaries that transcribe a numbered point.
 | `aproc-measurement` | `A/Proc/Measurement` | 154 | **9** (8 weaker, 1 differs) | 13 (6 mild, 5 route, 2 sorry) |
 | `acstar-positive` | `A/CStar/Positive` | 157 | **9** (8 weaker, 1 stronger) | 66 (36 route, 17 mathlib, 13 mild) |
 | `avn-division-normalfunctionals` | `A/VN/{Division, NormalFunctionals}` | 211 | **9** (8 weaker, 1 stronger) | 13 (8 route, 5 mild) |
+| `beff-dagger-diamondamp` | `B/Eff/{Dagger, DiamondAmp}` | 117 | **11** (10 weaker, 1 stronger) | 13 (9 route, 4 mild) |
 
-**1585 rows in; 167 statements do not match their source** (121 weaker, 29
+**1702 rows in; 178 statements do not match their source** (131 weaker, 30
 stronger, 17 differs, 0 unsure).
 
 Not yet audited: `A/CStar/TowardsVN`,
 `A/VN/Completeness`,
 `A/Proc/{Duplicators, QuantumLambda}`,
 `B/Dils/{HilbertModules, SelfDualCompletion, Pure}`,
-`B/Eff/{Dagger, DiamondAmp, StatesPredicates, EffectAlgebras}`.  (Five fragments are in flight.  `Positive.lean` and `Measurement.lean` were released into the audit
+`B/Eff/{StatesPredicates, EffectAlgebras}`.  (Five fragments are in flight.  `Positive.lean` and `Measurement.lean` were released into the audit
   on 2026-08-20, the author's edits there having settled.)  (`Positive.lean` and `Measurement.lean` are being edited by the
 author and are held back deliberately.)
 
