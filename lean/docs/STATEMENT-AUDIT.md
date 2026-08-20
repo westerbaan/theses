@@ -92,19 +92,35 @@ auxiliaries that transcribe a numbered point.
 | `avn-division-normalfunctionals` | `A/VN/{Division, NormalFunctionals}` | 211 | **9** (8 weaker, 1 stronger) | 13 (8 route, 5 mild) |
 | `beff-dagger-diamondamp` | `B/Eff/{Dagger, DiamondAmp}` | 117 | **11** (10 weaker, 1 stronger) | 13 (9 route, 4 mild) |
 | `bdils-hilbertmodules-selfdualcompletion` | `B/Dils/{HilbertModules, SelfDualCompletion}` | 125 | **14** (9 weaker, 5 stronger) | 32 (13 route, 12 mild, 7 mathlib) |
+| `aproc-duplicators-quantumlambda` | `A/Proc/{Duplicators, QuantumLambda}` | 124 | **20** (7 weaker, 2 stronger, 11 differs) | 50 (28 route, 14 mild, 7 sorry, 1 mathlib) |
 
-**1827 rows in; 192 statements do not match their source** (140 weaker, 35
-stronger, 17 differs, 0 unsure).
+**1951 rows in; 212 statements do not match their source** (147 weaker, 37
+stronger, 28 differs, 0 unsure).
 
 Not yet audited: `A/CStar/TowardsVN`,
 `A/VN/Completeness`,
-`A/Proc/{Duplicators, QuantumLambda}`,
+
 `B/Dils/Pure`,
 `B/Eff/{StatesPredicates, EffectAlgebras}`.  (Five fragments are in flight.  `Positive.lean` and `Measurement.lean` were released into the audit
   on 2026-08-20, the author's edits there having settled.)  (`Positive.lean` and `Measurement.lean` are being edited by the
 author and are held back deliberately.)
 
 ### Standing observations
+
+* **A stale "still `sorry`" has now driven two live divergences.**
+  `A/Proc/Duplicators`' 129X takes an arbitrary np-functional instead of the
+  thesis's integral state, and the *stated reason* is that `Linfty-vn` (51IX)
+  "is still `sorry` in the tree" — `A/VN/Basic` has contained no `sorry` for a
+  long time.  Together with the three in `A/Proc/Measurement`, that is four
+  proof routes resting on an obsolete premise.  Several file headers still
+  read "Statements only; every proof is `sorry`" on files with none.
+* **A repaired definition can orphan the thesis's own lemma.**  129II.2's
+  `DiscreteSpace` is *partitioned* by atoms on an author ruling (QUESTIONS
+  **A6**), not "covered" as printed — under the printed form 130V is false,
+  129VI vacuous and 127III's proof gapped.  But the printed proof of 129VI
+  does not survive the repair either, so it is replaced by Zorn on disjoint
+  families — which leaves the thesis's own choice-free 129IV `measure_zorn`
+  proved but unused by its intended consumer.
 
 * **Structures are not uniformly bad — check, don't assume.**  Five in
   `B/Dils/{HilbertModules, SelfDualCompletion}` were compared field by field
