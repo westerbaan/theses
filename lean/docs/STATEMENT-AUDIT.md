@@ -86,20 +86,37 @@ auxiliaries that transcribe a numbered point.
 | `acstar-matrices-representation` | `A/CStar/{Matrices, Representation}` | 118 | **28** (27 weaker, 1 stronger) | 56 (28 mathlib, 20 route, 8 mild) |
 | `avn-projections` | `A/VN/Projections` | 166 | **13** (7 weaker, 4 stronger, 2 differs) | 31 (24 route, 5 mild, 2 mathlib) |
 | `bdils-selfdual-kaplansky` | `B/Dils/{SelfDual, Kaplansky}` | 98 | **19** (15 weaker, 2 stronger, 2 differs) | 34 (17 route, 10 mild, 4 sorry, 3 mathlib) |
+| `beff-effectus-quotients` | `B/Eff/{Effectus, Quotients}` | 94 | **6** (all weaker) | 15 (9 mild, 4 route, 2 mathlib) |
 
-**969 rows in; 134 statements do not match their source** (91 weaker, 27
+**1063 rows in; 140 statements do not match their source** (97 weaker, 27
 stronger, 16 differs, 0 unsure).
 
 Not yet audited: `A/CStar/{Positive, TowardsVN}`,
 `A/VN/{Division, NormalFunctionals, Completeness}`,
 `A/Proc/{Measurement, Duplicators, QuantumLambda}`,
 `B/Dils/{HilbertModules, SelfDualCompletion, Pure}`,
-`B/Eff/{Effectus, Quotients, Dagger, DiamondAmp, StatesPredicates,
-EffectAlgebras}`.  (Five fragments are in flight.  `Positive.lean` and `Measurement.lean` were released into the audit
+`B/Eff/{Dagger, DiamondAmp, StatesPredicates, EffectAlgebras}`.  (Five fragments are in flight.  `Positive.lean` and `Measurement.lean` were released into the audit
   on 2026-08-20, the author's edits there having settled.)  (`Positive.lean` and `Measurement.lean` are being edited by the
 author and are held back deliberately.)
 
 ### Standing observations
+
+* **An isomorphism of categories rendered as an equivalence.**  188III and
+  188IV build identity-on-objects functors with two-sided inverses; our
+  `par_tot_equiv`, `tot_par_equiv` and the two Cho-theorem halves assert only
+  `Nonempty (… ≌ …)`.  The gap is recoverable — both functors *are*
+  identity-on-objects and are proved `Full` and `Faithful` — but it is never
+  stated, and it propagates into Cho's theorem.
+* **"Has all X" headlines dropped in favour of the witness.**  200III ("an
+  effectus with comprehension has **all** kernels") and 205II (likewise for
+  cokernels) are each rendered by their second sentence only — the particular
+  map that *is* a kernel — with no `HasKernels`/`HasCokernels` and, in 200III's
+  case, without even assuming `[HasComprehension C]`.
+* **Good news worth recording:** the partial-form machinery of `Effectus.lean`
+  (`FinPAC`, `EffectusPartialForm`, `IsTotal`, `predEffectAlgebra`) was
+  compared field by field with 180VII and **every clause is present**.  So
+  QUESTIONS **B13**'s weakness is in `effectus_vn_partial`'s statement in
+  `VNExamples`, not in the definitions it rests on.
 
 * **A missing field in a `structure` propagates silently.**  `B/Dils`'s
   **164II `ExtTensor`** omits the point's clause that `η` is *injective*
