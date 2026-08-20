@@ -89,12 +89,13 @@ auxiliaries that transcribe a numbered point.
 | `beff-effectus-quotients` | `B/Eff/{Effectus, Quotients}` | 94 | **6** (all weaker) | 15 (9 mild, 4 route, 2 mathlib) |
 | `aproc-measurement` | `A/Proc/Measurement` | 154 | **9** (8 weaker, 1 differs) | 13 (6 mild, 5 route, 2 sorry) |
 | `acstar-positive` | `A/CStar/Positive` | 157 | **9** (8 weaker, 1 stronger) | 66 (36 route, 17 mathlib, 13 mild) |
+| `avn-division-normalfunctionals` | `A/VN/{Division, NormalFunctionals}` | 211 | **9** (8 weaker, 1 stronger) | 13 (8 route, 5 mild) |
 
-**1374 rows in; 158 statements do not match their source** (113 weaker, 28
+**1585 rows in; 167 statements do not match their source** (121 weaker, 29
 stronger, 17 differs, 0 unsure).
 
 Not yet audited: `A/CStar/TowardsVN`,
-`A/VN/{Division, NormalFunctionals, Completeness}`,
+`A/VN/Completeness`,
 `A/Proc/{Duplicators, QuantumLambda}`,
 `B/Dils/{HilbertModules, SelfDualCompletion, Pure}`,
 `B/Eff/{Dagger, DiamondAmp, StatesPredicates, EffectAlgebras}`.  (Five fragments are in flight.  `Positive.lean` and `Measurement.lean` were released into the audit
@@ -102,6 +103,19 @@ Not yet audited: `A/CStar/TowardsVN`,
 author and are held back deliberately.)
 
 ### Standing observations
+
+* **Hypotheses that the proof never uses are a reliable smell.**  90II.1
+  assumes both compared elements self-adjoint where the point says *order
+  separating* for arbitrary `a` — and the two hypotheses are used **nowhere**,
+  the proof going straight to a lemma that takes an arbitrary element.  The
+  statement is therefore weaker than what we already prove.  (Contrast
+  `pseudoinverse_basic_2'_4`, where the unused `hcomm` **is** what the author's
+  ruling asked for: the erratum compressed the conclusion, not the
+  hypotheses.  An unused binder is a question to ask, not a defect by itself.)
+* **`∃!` can be vacuous.**  81VIII.2 writes `∃! c, (three properties) ∧
+  UWTendsto … c` — but an ultraweak limit is already unique, so the `∃!` is
+  automatic and uniqueness *among the three properties* is not delivered,
+  which is what the thesis asserts.
 
 * **A statement can be missing from the tree and still be *used*.**  24II
   part 4 (`‖a‖ = ‖a₊‖ ∨ ‖a₋‖`, added by addendum `parsec-240.20`) is stated
