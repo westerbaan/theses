@@ -93,19 +93,27 @@ auxiliaries that transcribe a numbered point.
 | `beff-dagger-diamondamp` | `B/Eff/{Dagger, DiamondAmp}` | 117 | **11** (10 weaker, 1 stronger) | 13 (9 route, 4 mild) |
 | `bdils-hilbertmodules-selfdualcompletion` | `B/Dils/{HilbertModules, SelfDualCompletion}` | 125 | **14** (9 weaker, 5 stronger) | 32 (13 route, 12 mild, 7 mathlib) |
 | `aproc-duplicators-quantumlambda` | `A/Proc/{Duplicators, QuantumLambda}` | 124 | **20** (7 weaker, 2 stronger, 11 differs) | 50 (28 route, 14 mild, 7 sorry, 1 mathlib) |
+| `acstar-towardsvn-avn-completeness` | `A/CStar/TowardsVN`, `A/VN/Completeness` | 145 | **8** (7 weaker, 1 stronger) | 22 (13 mild, 5 route, 4 mathlib) |
 
-**1951 rows in; 212 statements do not match their source** (147 weaker, 37
+**2096 rows in; 220 statements do not match their source** (154 weaker, 38
 stronger, 28 differs, 0 unsure).
+Only `B/Dils/Pure` and `B/Eff/{StatesPredicates, EffectAlgebras}` remain.
 
-Not yet audited: `A/CStar/TowardsVN`,
-`A/VN/Completeness`,
-
+Not yet audited: 
 `B/Dils/Pure`,
 `B/Eff/{StatesPredicates, EffectAlgebras}`.  (Five fragments are in flight.  `Positive.lean` and `Measurement.lean` were released into the audit
   on 2026-08-20, the author's edits there having settled.)  (`Positive.lean` and `Measurement.lean` are being edited by the
 author and are held back deliberately.)
 
 ### Standing observations
+
+* **A missing statement can orphan a proved one.**  36II ("every Hilbert
+  space is self-dual") has no declaration; `exists_rho` (39IX) and
+  `bh_bounded_uw_complete` (76III) both go straight to Mathlib's Riesz instead
+  of instantiating 36V at `𝒜 = ℂ`.  The consequence is that **36V, proved in
+  full, is used by nothing in the tree.**  This is the 24II.4 pattern with the
+  arrow reversed: there a missing statement was silently used, here a present
+  one is silently bypassed.
 
 * **A stale "still `sorry`" has now driven two live divergences.**
   `A/Proc/Duplicators`' 129X takes an arbitrary np-functional instead of the
