@@ -1,0 +1,154 @@
+65IV|mem_closure_span_projections|A/Proc/Measurement|ok|none|Not 65IV itself (that is in A/VN/Projections): a private extension of it from self-adjoint elements to arbitrary ones, obtained by splitting x = Re x + i Im x. Used by gardner_21 for the (2) => (1) step of 99II.
+94I|cornerSet|A/Proc/Measurement|ok|none|The corner rendered as {a  /  e a e = a} rather than the image {e a e  /  a}; the two agree by 94II.1, which is proved (corner_vna_basic_1, first conjunct).
+94I|Corner|A/Proc/Measurement|ok|none|Bundled form of the same subset.
+94II|instance CStarAlgebra (Corner A e) @L604|A/Proc/Measurement|ok|none|Part 5.
+94II|instance PartialOrder (Corner A e) @L609|A/Proc/Measurement|ok|none|Lean scaffolding for parts 5-6; the order is lifted from A, which is what part 6 needs.
+94II|instance StarOrderedRing (Corner A e) @L660|A/Proc/Measurement|ok|none|Lean scaffolding for parts 5-6.
+94II|instance VonNeumannAlgebra (Corner A e) @L776|A/Proc/Measurement|ok|none|Part 8, the "Conclude that eAe is a von Neumann algebra" clause. Its isLUB_of_bddAbove_directed field also supplies the half of part 6 that corner_vna_basic_6 drops.
+94II|corner_vna_basic_1|A/Proc/Measurement|ok|none|Part 1, both iffs. The thesis's join condition ceilr a U ceill a <= e is rendered as the pair suppProj a <= e and rangeProj a <= e, which is equivalent.
+94II|corner_vna_basic_2|A/Proc/Measurement|ok|none|Part 2. Ours also states closure under the product, which the thesis's "(scalar) multiplication" leaves ambiguous; harmless and true.
+94II|corner_vna_basic_3|A/Proc/Measurement|ok|none|Part 3.
+94II|corner_vna_basic_4|A/Proc/Measurement|ok|faithful|Part 4, both closures. The exercise's hint (e(.)e is normal and bounded) is followed: boundedness gives the norm half, and normality enters through conjNP being an np-functional for the ultraweak half.
+94II|corner_vna_basic_5|A/Proc/Measurement|ok|none|Coherence of the asserted C*-structure with the operations of A; not a separate clause of the thesis but what part 5's "endowed with the operations from A" asserts.
+94II|corner_vna_basic_6|A/Proc/Measurement|weaker|none|Part 6 has two clauses - the supremum computed in A lies in eAe, AND it is the supremum of D in eAe. Ours states only the first. The second is delivered elsewhere (the VonNeumannAlgebra instance at L776 produces exactly the ambient LUB as the LUB in the corner), but the DISP-tagged statement does not say it.
+94II|exists_cornerIncl|A/Proc/Measurement|ok|none|Part 7.
+94II|corner_vna_basic_8|A/Proc/Measurement|ok|none|Part 8, first clause. The "Conclude" clause is the instance at L776.
+94II|exists_cornerProjMap|A/Proc/Measurement|ok|none|Part 9.
+94II|corner_vna_basic_10|A/Proc/Measurement|ok|none|Part 10, first clause.
+94II|corner_vna_basic_10'|A/Proc/Measurement|ok|none|Part 10, the two topology clauses (ultraweak and ultrastrong).
+94III|ad_ncp_1|A/Proc/Measurement|ok|none|Part 1.
+94III|exists_adNCP|A/Proc/Measurement|ok|none|Part 2.
+95I|IsCornerOf|A/Proc/Measurement|ok|none|Definition. The universal property quantifies over von Neumann algebras in the same universe u, as everywhere in this tree.
+95I|IsCornerMap|A/Proc/Measurement|ok|none|The convention of 95I that "corner" means "unital corner".
+95II|prop_corner|A/Proc/Measurement|ok|mild|Statement matches; the extra hypothesis h' : u (u* u) = u is a consequence of hu : IsPartialIsometry, so nothing is really assumed. Proof is the author's (proc.tex:290) with one substitution: the closing step goes through carrier_fundamental (63VI) instead of cp-comprehension (63IV).
+96I|IsFilter|A/Proc/Measurement|ok|none|Definition.
+96III|ncp_uwlim|A/Proc/Measurement|ok|faithful|Main claim. The author's argument: f(a) is an ultraweak limit of positive elements and the cone is ultraweakly closed.
+96III|ncp_uwlim_1|A/Proc/Measurement|ok|faithful|Part 1, the author's argument with mult-uws-cont.
+96III|ncp_uwlim_2|A/Proc/Measurement|ok|faithful|Part 2. "Uniform on [0,1]_A" is read as uniform convergence of omega o f_alpha for each np-functional omega, which is what the thesis's ultraweak uniformity means.
+96V|exists_canonicalFilter|A/Proc/Measurement|ok|none|Well-definedness of the map d*(.)d on the corner of the RANGE projection. The doc comment records why the support projection (an earlier transcription) makes the Proposition false; ceilr is indeed ceil(d d*) by vn.tex 59I.
+96V|isFilter_ad|A/Proc/Measurement|ok|mild|Index-free form of the Proposition (e is any projection equal to the range projection of d), used to avoid transporting inside a dependent type. Proof is the author's except that normality of the mediating g is derived without div-usc (81IX), whose printed ultrastrong form is false; see the doc at canonicalFilter_factor.
+96V|canonical_filter|A/Proc/Measurement|ok|mild|The Proposition on the nose; same proof divergence as isFilter_ad.
+96V|isFilter_stdFilter|A/Proc/Measurement|ok|none|Specialisation of 96V to d = sqrt p, i.e. the statement that the standard filter c_p of 98I is a filter. Not a separate thesis point.
+98I|exists_stdFilter|A/Proc/Measurement|ok|none|Well-definedness of c_p. Ours carries no 0 <= p, where the thesis defines c_p for positive p only; the wider statement is true and proved, so nothing is lost.
+98I|stdFilter|A/Proc/Measurement|ok|none|Definition, part 1.
+98I|stdCorner|A/Proc/Measurement|ok|none|Definition, part 2. Ours carries no "p is an effect" hypothesis; floor p is junk off the effects, so the wider definition is harmless.
+98II|stdFilter_injective|A/Proc/Measurement|ok|faithful|Part 2's parenthetical hint ("by proving first that c_p is injective using mult-cancellation"), followed literally.
+98II|stdFilter_bipositive|A/Proc/Measurement|ok|faithful|Part 3's parenthetical hint (c_p bipositive by sequential-douglas), followed literally.
+98II|filter_basic_1|A/Proc/Measurement|ok|faithful|Part 1, all three clauses: existence, uniqueness, and alpha unital and an ncp-isomorphism.
+98II|filter_basic_2|A/Proc/Measurement|ok|faithful|Part 2, all three clauses (injective, faithful with ceil c = 1, mono in W*_cp). The thesis writes "ceil f = 1" where it means ceil c.
+98II|filter_basic_3|A/Proc/Measurement|ok|faithful|Part 3.
+98II|filter_unique|A/Proc/Measurement|ok|none|Not the printed clause: part 1 restated as "two filters with the same value at 1 are canonically isomorphic", the form 100III and 104IX consume.
+98III|filters_composition|A/Proc/Measurement|ok|none|Exercise with no hint or proof.
+98IV|corner_basic_1|A/Proc/Measurement|ok|none|Part 1, all clauses. The unitality hypothesis on pi is the convention of 95I, not an extra assumption.
+98IV|corner_basic_2|A/Proc/Measurement|ok|none|Part 2, both clauses.
+98IV|corner_unique|A/Proc/Measurement|ok|none|Not the printed clause: part 1 restated as "any two corners of the same effect are canonically isomorphic", the form 100III consumes.
+98V|corners_floor|A/Proc/Measurement|ok|none|Both clauses (the iff and ceil pi = floor p).
+98VI|corners_composition|A/Proc/Measurement|ok|route|Statement matches. The exercise's hint is deliberately not followed - ERRATA 98VI records that the printed inequality is the direction one does not need; ours transports tau's effect along the isomorphism of 98IV.1 instead.
+98VII|filter_corner|A/Proc/Measurement|ok|faithful|The Theorem's existence-and-uniqueness half; the author's proof (proc.tex:678) verbatim.
+98VII|filter_corner_formula|A/Proc/Measurement|ok|faithful|The Theorem's closing formula g(a) = sqrt p \ f(a) / sqrt p, split off as its own statement.
+98IX|exists_sqBracket|A/Proc/Measurement|ok|faithful|Well-definedness of [f], obtained as 98VII at e = ceil f, p = f(1) - which is how the thesis derives the Corollary. (The module header at lines 25-28 still calls this sorry; it is not - the file has only two sorries.)
+98IX|sqBracket|A/Proc/Measurement|ok|none|Definition of [f].
+98IX|square_f|A/Proc/Measurement|ok|faithful|The Corollary's commuting square, its uniqueness, and the closing "[f] is unital and faithful". The formula is carried by exists_sqBracket.
+99II|isStarProjection_map_of_mul|A/Proc/Measurement|ok|faithful|(1) => (4), the author's "rather obvious".
+99II|ceil_map_of_isStarProjection_map|A/Proc/Measurement|ok|faithful|(4) => (5), the author's one-line argument via ncp-ceil. Stated without unitality, which the thesis's ncpu hypothesis supplies; the wider form is what 99XII uses.
+99II|isStarProjection_map_of_ceil|A/Proc/Measurement|ok|faithful|(5) => (4).
+99II|gardner_43|A/Proc/Measurement|ok|faithful|(4) => (3), the author's argument. Unitality is not needed, as the doc notes.
+99II|gardner_32|A/Proc/Measurement|ok|faithful|(3) => (2), the author's argument; the printed paragraph is the one repaired by erratum parsec-990.70, and ours follows the corrected text.
+99II|gardner_21|A/Proc/Measurement|ok|faithful|(2) => (1), the author's argument, with unitality weakened to "f(1) is a projection".
+99II|gardner|A/Proc/Measurement|ok|faithful|The Proposition as a five-way TFAE, with the unitality hypothesis; the author's cycle (1)=>(4)=>(3)=>(2)=>(1) with (4)<=>(5) on the side.
+99IX|iso|A/Proc/Measurement|ok|faithful|The author's proof. Ours concludes that f is unital, multiplicative and star-preserving; the thesis's closing line "It follows automatically that f^-1 is multiplicative too" is not stated, being immediate from bijectivity, which is a hypothesis here.
+99XI|filter_of_projection_multiplicative|A/Proc/Measurement|ok|faithful|The exercise's own hint (the filter is a standard filter up to an ncpu-isomorphism, which is nmiu by 99IX). The inline comment claiming 96V is "unavailable" here is stale - canonical_filter is proved 1200 lines earlier.
+99XII|sharp_multiplicative|A/Proc/Measurement|ok|route|Statement matches the three-way equivalence. The exercise's hint (factor f through a filter for f(1)) is not followed; the implications of 99II are applied directly. The inline comment's reason ("98II filter-basic, still sorry") is stale - filter_basic_1/2/3 are proved above.
+100I|IsPure|A/Proc/Measurement|ok|none|Definition. The comp constructor carries [VonNeumannAlgebra B] for the intermediate algebra, which is forced by the ambient category W*_cp and so is the thesis's reading.
+100II|isPure_of_iso|A/Proc/Measurement|ok|none|Part 1.
+100II|isPure_id|A/Proc/Measurement|ok|none|Part 2.
+100II|isPure_adSelf|A/Proc/Measurement|ok|none|Part 3.
+100III|properlyPure_of_isPure|A/Proc/Measurement|ok|mild|The (1) => (2) half. The thesis's reduction to pi_s o c_p is followed, but the closing appeal to the Example ad-pure (98XI) is replaced by an explicit factorisation - which is fortunate, since ERRATA 98XI records that ad-pure's formula has its two partial isometries swapped.
+100III|pure_fundamental|A/Proc/Measurement|ok|mild|The three-way TFAE. The thesis's cycle, with the (1) => (2) deviation above.
+100VII|special_pure_maps_1|A/Proc/Measurement|ok|faithful|Part 1, via 100III as the exercise directs.
+100VII|special_pure_maps_2|A/Proc/Measurement|ok|faithful|Part 2, via 100III.
+100VII|special_pure_maps_3|A/Proc/Measurement|ok|faithful|Part 3, via 100III.
+101I|diamondUp|A/Proc/Measurement|ok|none|Definition. Defined on all of A rather than on Proj(A); only the values on projections are ever used, and every consumer carries IsStarProjection.
+101II|exists_diamondDown|A/Proc/Measurement|ok|faithful|The Proposition's existence-of-a-least-projection claim; the author's proof (proc.tex:1060). ERRATA 101II records that the printed proof says "greatest" where it means "least"; our statement and proof use "least".
+101II|diamondDown|A/Proc/Measurement|ok|none|Definition of f_diamond, junk value 0 off the projections.
+101II|diamondDown_carrier|A/Proc/Measurement|ok|faithful|The Proposition's "namely f_diamond(e) = ceil(e f(.) e)" clause, rendered unbundled as the least projection p with e f(1-p) e = 0 - which is 63I's definition of that carrier.
+101IV|diamond_suprema_1|A/Proc/Measurement|ok|none|Part 1.
+101IV|diamond_suprema_2|A/Proc/Measurement|ok|none|Part 2.
+101V|NCPEquiv|A/Proc/Measurement|ok|none|The definition of "equivalent" the exercise introduces.
+101V|ncpEquiv_iff|A/Proc/Measurement|ok|none|The exercise's iff.
+101VI|Contraposed|A/Proc/Measurement|ok|none|The definition of "contraposed", taken as the third of the point's three equivalent conditions.
+101VI|contraposed_iff_diamond|A/Proc/Measurement|ok|none|One of the point's two iffs.
+101VI|contraposed_iff|A/Proc/Measurement|ok|none|Both iffs of the point together.
+101VII|equivalent_examples_1|A/Proc/Measurement|ok|none|Part 1, first clause (a*(.)a and a(.)a* on A).
+101VII|equivalent_examples_1'|A/Proc/Measurement|weaker|none|Part 1's third clause ("in particular", pi_s and c_s for a projection s). The MIDDLE clause of part 1 - that for projections p, q with a* p a <= q the maps a*(.)a : pAp -> qAq and a(.)a* : qAq -> pAp are contraposed - is not rendered anywhere in the module, and the third clause is stated as a special case of the first rather than of it.
+101VII|equivalent_examples_2|A/Proc/Measurement|weaker|none|Ours adds the hypothesis f 1 = 1, which the thesis does not have. It is not redundant: 101VII.2 is FALSE as printed, machine-checked here as equivalent_examples_2_is_false and recorded in ERRATA.md (the thesis explicitly admits non-unital ncp-isomorphisms at proc.tex:282).
+101VII|equivalent_examples_2_is_false|A/Proc/Measurement|ok|none|Not a transcription: the machine-checked refutation of 101VII.2 as printed. See ERRATA.md.
+101VII|equivalent_examples_3|A/Proc/Measurement|ok|none|Part 3. The scalar multiple z f is rendered as an arbitrary ncp-map h with h(x) = z f(x), since NCPMap carries no module structure.
+101VIII|diamond_composition_1|A/Proc/Measurement|ok|faithful|Part 1, both equations, using ncp-ceil as the exercise directs.
+101VIII|diamond_composition_2|A/Proc/Measurement|ok|none|Part 2.
+101VIII|diamond_composition_3|A/Proc/Measurement|ok|none|Part 3.
+101IX|diamond_sum|A/Proc/Measurement|ok|faithful|Both equations; the author's argument (proc.tex:1172). f + g is rendered as an arbitrary ncp-map h agreeing pointwise with the sum, since NCPMap has no addition.
+101XI|carrier_f_dagger_f|A/Proc/Measurement|ok|faithful|The author's chain (proc.tex:1192) step for step.
+102II|IsRigid|A/Proc/Measurement|ok|none|Definition.
+102III|rigid_ncp_extreme|A/Proc/Measurement|ok|faithful|The author's proof (proc.tex:1219). The hypothesis h2 : g2 1 = f 1 is redundant given hconv and h1, as the inline comment notes.
+102V|nmiu_rigid|A/Proc/Measurement|ok|faithful|The author's proof (proc.tex:1244). The nmiu-map is carried as an ncp-map f agreeing pointwise with an NMIUMap, since IsRigid is a predicate on NCPMap.
+102VII|ad_rigid|A/Proc/Measurement|ok|route|Index-free form of the Lemma. Our proof does not follow proc.tex:1272: it shows h fixes each e_n A e_n by moving only projections and then passes to a general a ultraweakly, so it needs neither the ultrastrong limit nor cp-uscont. ERRATA 102VIII records two slips in the printed argument (g(a) for h(a), and the missing citation).
+102VII|canonical_quotient_rigid|A/Proc/Measurement|ok|route|The Lemma on the nose, as ad_rigid at e = the range projection of b; same proof divergence.
+102VII|stdFilter_rigid|A/Proc/Measurement|ok|none|Specialisation of the Lemma to b = sqrt p, the form 102IX consumes. Not a separate thesis point.
+102IX|pure_is_rigid|A/Proc/Measurement|ok|faithful|The author's proof (proc.tex:1344) step for step: ceil f = ceil g, factor g through the corner, [f] invertible by 100III, rigidity of c_{f(1)}.
+103I|IsDiamondSelfAdjoint|A/Proc/Measurement|ok|none|Definition, part 1 (pure and contraposed to itself).
+103I|IsDiamondPositive|A/Proc/Measurement|ok|none|Definition, part 2.
+103II|purely_positive_examples_1|A/Proc/Measurement|ok|none|Part 1.
+103II|purely_positive_examples_2|A/Proc/Measurement|ok|none|Part 2.
+103III|purely_positive_basic_1|A/Proc/Measurement|ok|none|Part 1.
+103III|purely_positive_basic_2|A/Proc/Measurement|ok|none|Part 2, both clauses.
+103III|purely_positive_basic_3|A/Proc/Measurement|ok|none|Part 3.
+104II|CentrallySimilar|A/Proc/Measurement|ok|none|Definition, with both carrier conditions.
+104III|centrally_similar_basic_1|A/Proc/Measurement|ok|none|Part 1, both clauses.
+104III|centrally_similar_basic_2|A/Proc/Measurement|ok|none|Part 2.
+104III|centrally_similar_one_carrier|A/Proc/Measurement|ok|none|Not a thesis clause: an obstruction record for point 2a, showing central similarity to 1 forces ceil p = 1.
+104III|centrally_similar_one_of_isStarProjection|A/Proc/Measurement|ok|none|Obstruction record for point 2a's second claim as printed.
+104III|centrally_similar_sq_of_isStarProjection|A/Proc/Measurement|ok|none|Obstruction record for point 2a's third claim as printed.
+104III|centrally_similar_basic_2a_counterexample|A/Proc/Measurement|ok|none|Refutation of point 2a as PRINTED (pre-erratum). Its doc comment says "the missing hypothesis is ceil p = ceil q", which is weaker than the repair the author actually made on 2026-08-19 (erratum parsec-1040.30 asks ceil p = ceil q = 1 in points 2a-5, and moves 2a's bound to the squares); the prose is stale, the theorem is not.
+104III|centrally_similar_basic_2a|A/Proc/Measurement|ok|none|Matches the REPAIRED point 2a (proc.tex as of b154f62): ceil p = ceil q = 1, p^2 <= B q^2, and all three claims. Claims two and three do not mention q, so they are formally proved only in the presence of some q meeting the hypotheses - q = 1, B =  /  / p /  / ^2 always does, so nothing is lost.
+104III|pbFourWitness_not_centrallySimilar_one|A/Proc/Measurement|ok|none|Private witness shared by the counterexamples to points 3, 4 and 5 as printed.
+104III|centrally_similar_basic_3_counterexample|A/Proc/Measurement|ok|none|Refutation of point 3 as PRINTED. Its doc says the missing hypothesis is ceil p = ceil q; the erratum in fact asks ceil p = ceil q = 1. Stale prose only.
+104III|centrally_similar_basic_3_meet_cceil_counterexample|A/Proc/Measurement|ok|none|The theorem is a true counterexample record, but its doc comment is STALE in a way that matters: it asserts "Our transcription reads p AND q as the infimum of {p,q} in the order of A (IsGLB)", which is no longer true - centrally_similar_basic_3 now uses Theses.A.CStar.meet, and proc.tex 104III now cites commutative-cstar-basic(5) for the meet of a commuting pair. The paragraph that follows ("under the IsGLB reading part 3 IS true with equal central carriers, and the only route is the anti-lattice theorem") describes a route the tree has abandoned.
+104III|centrally_similar_basic_3|A/Proc/Measurement|ok|none|Matches the REPAIRED point 3: ceil p = ceil q = 1, p and q commute, both meets' quotients central. p AND q is Theses.A.CStar.meet, the meet in the commutative C*-subalgebra generated by the commuting pair, which is what the repaired source means.
+104III|centrally_similar_basic_4_counterexample|A/Proc/Measurement|ok|none|Refutation of point 4's first iff as printed.
+104III|centrally_similar_basic_4_obstruction|A/Proc/Measurement|ok|none|Record that ceil p = ceil q alone does not repair point 4.
+104III|centrally_similar_basic_4_cceil_counterexample|A/Proc/Measurement|ok|none|Record that equal central carriers do not repair point 4 either.
+104III|centrally_similar_basic_4_faithful|A/Proc/Measurement|ok|none|The first two iffs of point 4 under faithfulness, without the commutation hypothesis the repaired source now carries (it is not needed for these two). A partial form, not a separate thesis clause.
+104III|centrally_similar_basic_4|A/Proc/Measurement|ok|none|Matches the REPAIRED point 4: ceil p = ceil q = 1, p and q commuting and pseudoinvertible, all three iffs with p AND q = Theses.A.CStar.meet.
+104III|centrally_similar_basic_5_counterexample|A/Proc/Measurement|ok|none|Refutation of point 5 as printed.
+104III|centrally_similar_basic_5_cceil_counterexample|A/Proc/Measurement|ok|none|Record that equal central carriers do not repair point 5.
+104III|centrally_similar_basic_5|A/Proc/Measurement|weaker|sorry|Hypotheses match the repaired point 5 (ceil p = ceil q = 1 per b154f62). But the point asks one to show p and q centrally similar ON THE GROUNDS THAT both (p AND q)/p and (p AND q)/q are central - that clause is an assertion in its own right (it is the hint's whole content, and what feeds part 3) and ours states only the conclusion CentrallySimilar p q. Also: the binder hcp is declared twice (ceil p = 1, then the commutation of e n with p), shadowing the first. Proof is sorry.
+104IV|centrally_similar_fundamental_needs_faithful|A/Proc/Measurement|ok|none|Not a transcription: the machine-checked record that the printed 104IV is false without ceil q = 1. See ERRATA.md.
+104IV|centrally_similar_fundamental|A/Proc/Measurement|weaker|faithful|Ours adds ceil q = 1, which is NOT in the printed statement although its own proof invokes it; without it the second conclusion is false (see the row above and ERRATA.md 104IV). Both consumers, 104VI and 104VII, do state it. Given the hypothesis the author's proof (proc.tex:1525) goes through verbatim, and ours transcribes it.
+104VI|centrally_similar_corollary|A/Proc/Measurement|ok|none|Corollary, both clauses (q central and theta = id). The thesis gives no proof point for it.
+104VII|ceil_mul_proj_mul_of_comm|A/Proc/Measurement|ok|none|Auxiliary: step 1 of the author's proof (proc.tex:1560).
+104VII|positive_quotients_step12|A/Proc/Measurement|ok|faithful|Steps 1-2 of the author's proof, transcribed: theta fixes every projection commuting with p, q commutes with them, and the extension to p by norm density of the projections.
+104VII|positive_quotients_corner|A/Proc/Measurement|ok|route|The reduction to the invertible case, done inside the corner and with no appeal to Z(eAe) = Z(A)e. ERRATA 104VIII(a) records that the printed reduction silently needs that identity; ours avoids it.
+104VII|positive_quotients_centrally_similar|A/Proc/Measurement|ok|mild|The Proposition, both conclusions. The author's proof except for the descent from the corners (previous row). The bijectivity hypothesis hbij is stated because the thesis states it but is never used - an miu-map with the stated property is already the identity.
+104IX|faithful_positive_map_uniqueness|A/Proc/Measurement|ok|faithful|The Proposition; the author's proof (proc.tex:1631) transcribed, resting on 104VII.
+105II|exists_chevron|A/Proc/Measurement|ok|none|Well-definedness of <f>.
+105II|chevron|A/Proc/Measurement|ok|none|Definition.
+105II|chevron_unique|A/Proc/Measurement|ok|none|The Definition's uniqueness claim (the commuting square determines <f>).
+105III|chevron_f_basic_12|A/Proc/Measurement|ok|none|Parts 1 and 2 in one statement. Part 2 is rendered in the "Thus <f>(a) = sqrt f(1) [f](a) sqrt f(1)" form the exercise itself gives.
+105III|chevron_f_basic_3|A/Proc/Measurement|ok|none|Part 3, both clauses.
+105III|chevron_f_basic_4|A/Proc/Measurement|ok|faithful|Part 4, both clauses, by the exercise's own route (part 2, then 100III and 100VII.1).
+105IV|isDiamondSelfAdjoint_cornerMap|A/Proc/Measurement|ok|none|Auxiliary: part 1 with the corner index carried as a parameter so that part 3 can use it at the square root's index.
+105IV|chevron_f_purely_positive_1|A/Proc/Measurement|ok|none|Part 1, rendered on the corner of ceil f(1) (equal to ceil f by 103III.1) via the chevron formula rather than through the dependent type.
+105IV|chevron_f_purely_positive_2|A/Proc/Measurement|ok|none|Part 2, rendered elementwise as an identity in A. The hypothesis ha is not used, as the doc admits.
+105IV|chevron_f_purely_positive_3|A/Proc/Measurement|ok|none|Part 3.
+105V|positive_map_uniqueness_exists|A/Proc/Measurement|ok|faithful|The Theorem's existence half; the author's one-line appeal to 103II.2.
+105V|positive_map_uniqueness|A/Proc/Measurement|ok|faithful|The Theorem's uniqueness half; the author's proof (proc.tex:1772) transcribed via <f>, 105IV.3, 105III.3 and 104IX.
+105VII|sqrt_axiom|A/Proc/Measurement|ok|faithful|The Corollary, both halves; the author's proof (proc.tex:1796) transcribed.
+106I|IsSequentialProduct|A/Proc/Measurement|ok|none|All five axioms A-E of the Theorem, each quantified over the effects as printed.
+106I|uniqueness_sequential_product_exists|A/Proc/Measurement|ok|faithful|The Theorem's existence half (the sequential product satisfies A-E).
+106I|uniqueness_sequential_product|A/Proc/Measurement|ok|faithful|The Theorem's uniqueness half; the author's proof (proc.tex:1839) transcribed, resting on 105V.
+106III|sequential_product_counterexample_1|A/Proc/Measurement|differs|none|Part 1. The conjunct meant to be axiom (C) is mis-stated: it reads ceil p * (ceil q * q * ceil q) * ceil p = ..., i.e. p * (q * q) = (p * p) * q, where axiom (C) is p * (p * q) = (p * p) * q (the inner ceil q should be ceil p). Both are true here and equivalent, since ceil q * q * ceil q = q for an effect q, so nothing false is asserted - but the clause as displayed is not axiom (C). The final conjunct, not IsSequentialProduct, does carry the real content.
+106III|sequential_product_counterexample_2|A/Proc/Measurement|weaker|none|Part 2 asks one to show this operation satisfies all axioms EXCEPT (B). Ours proves (A), (C), (D) and (E) and says nothing about (B) failing - so the point of the part, that (B) is not derivable from the rest, is not rendered. The doc admits it.
+106III|sequential_product_counterexample_3_ax5_is_false|A/Proc/Measurement|ok|none|Not a transcription: the machine-checked refutation of part 3's (E) clause. See ERRATA.md 106III.3.
+106III|sequential_product_counterexample_3|A/Proc/Measurement|weaker|sorry|Two things. (i) The statement transcribes part 3's four clauses faithfully, including the (E) clause that is FALSE as printed (previous row, ERRATA 106III.3) - so as it stands it is not provable, and the sorry is not closable. (ii) Part 3's closing "Conclude that when u_p := g(p) for a Borel g with g(2/3)=1, g(4/9)=-1, the operation satisfies all conditions except (C)" is not rendered at all.
+106III|sequential_product_counterexample_4|A/Proc/Measurement|weaker|none|Only part 4's first claim (existence of a Borel g : [0,1] -> S^1 with g(1/2) != 1 and g(l^2) = g(l)^2). The second and main claim - that p * q := sqrt p g(p)* q g(p) sqrt p satisfies all axioms except (E) - is not formalized; the doc carries a FIXME(borel-calculus) saying Mathlib's cfc is continuous-only.

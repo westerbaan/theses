@@ -87,19 +87,33 @@ auxiliaries that transcribe a numbered point.
 | `avn-projections` | `A/VN/Projections` | 166 | **13** (7 weaker, 4 stronger, 2 differs) | 31 (24 route, 5 mild, 2 mathlib) |
 | `bdils-selfdual-kaplansky` | `B/Dils/{SelfDual, Kaplansky}` | 98 | **19** (15 weaker, 2 stronger, 2 differs) | 34 (17 route, 10 mild, 4 sorry, 3 mathlib) |
 | `beff-effectus-quotients` | `B/Eff/{Effectus, Quotients}` | 94 | **6** (all weaker) | 15 (9 mild, 4 route, 2 mathlib) |
+| `aproc-measurement` | `A/Proc/Measurement` | 154 | **9** (8 weaker, 1 differs) | 13 (6 mild, 5 route, 2 sorry) |
 
-**1063 rows in; 140 statements do not match their source** (97 weaker, 27
-stronger, 16 differs, 0 unsure).
+**1217 rows in; 149 statements do not match their source** (105 weaker, 27
+stronger, 17 differs, 0 unsure).
 
 Not yet audited: `A/CStar/{Positive, TowardsVN}`,
 `A/VN/{Division, NormalFunctionals, Completeness}`,
-`A/Proc/{Measurement, Duplicators, QuantumLambda}`,
+`A/Proc/{Duplicators, QuantumLambda}`,
 `B/Dils/{HilbertModules, SelfDualCompletion, Pure}`,
 `B/Eff/{Dagger, DiamondAmp, StatesPredicates, EffectAlgebras}`.  (Five fragments are in flight.  `Positive.lean` and `Measurement.lean` were released into the audit
   on 2026-08-20, the author's edits there having settled.)  (`Positive.lean` and `Measurement.lean` are being edited by the
 author and are held back deliberately.)
 
 ### Standing observations
+
+* **"Still `sorry`" claims in doc comments go stale and cost proofs.**
+  `A/Proc/Measurement` carries four that are now false — the module header on
+  `exists_sqBracket`/`exists_diamondDown`, and three naming 63IV, 81VI/VII/IX
+  and 98II as open when all are proved.  **Three of them are the stated reason
+  for a proof-route divergence that is no longer forced.**  A stale
+  "still `sorry`" is not cosmetic: it is a live instruction to take the long
+  way round.
+* **A displayed axiom can be mistyped without asserting anything false.**
+  106III.1's conjunct for axiom (C) reads `p ∗ (q ∗ q) = (p ∗ p) ∗ q` where (C)
+  is `p ∗ (p ∗ q) = (p ∗ p) ∗ q` — an inner `⌈q⌉` for `⌈p⌉`.  The two coincide
+  for effects, so the theorem is true; it just is not the axiom.  Verdict
+  `differs`, not `weaker`.
 
 * **An isomorphism of categories rendered as an equivalence.**  188III and
   188IV build identity-on-objects functors with two-sided inverses; our
