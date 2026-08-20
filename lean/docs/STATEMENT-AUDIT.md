@@ -91,19 +91,32 @@ auxiliaries that transcribe a numbered point.
 | `acstar-positive` | `A/CStar/Positive` | 157 | **9** (8 weaker, 1 stronger) | 66 (36 route, 17 mathlib, 13 mild) |
 | `avn-division-normalfunctionals` | `A/VN/{Division, NormalFunctionals}` | 211 | **9** (8 weaker, 1 stronger) | 13 (8 route, 5 mild) |
 | `beff-dagger-diamondamp` | `B/Eff/{Dagger, DiamondAmp}` | 117 | **11** (10 weaker, 1 stronger) | 13 (9 route, 4 mild) |
+| `bdils-hilbertmodules-selfdualcompletion` | `B/Dils/{HilbertModules, SelfDualCompletion}` | 125 | **14** (9 weaker, 5 stronger) | 32 (13 route, 12 mild, 7 mathlib) |
 
-**1702 rows in; 178 statements do not match their source** (131 weaker, 30
+**1827 rows in; 192 statements do not match their source** (140 weaker, 35
 stronger, 17 differs, 0 unsure).
 
 Not yet audited: `A/CStar/TowardsVN`,
 `A/VN/Completeness`,
 `A/Proc/{Duplicators, QuantumLambda}`,
-`B/Dils/{HilbertModules, SelfDualCompletion, Pure}`,
+`B/Dils/Pure`,
 `B/Eff/{StatesPredicates, EffectAlgebras}`.  (Five fragments are in flight.  `Positive.lean` and `Measurement.lean` were released into the audit
   on 2026-08-20, the author's edits there having settled.)  (`Positive.lean` and `Measurement.lean` are being edited by the
 author and are held back deliberately.)
 
 ### Standing observations
+
+* **Structures are not uniformly bad — check, don't assume.**  Five in
+  `B/Dils/{HilbertModules, SelfDualCompletion}` were compared field by field
+  and are **clean**: `BInner` (141II), `IsBSesquilinear` (142VII), `IsONBasis`
+  (149I), `SelfDualCompletion` (150II) and `IsCompatExt` (150XI).  Where a
+  point's clause is not a field it is *proved* nearby (definiteness, the
+  seminorm identifications), rather than lost as in 164II `ExtTensor`.
+* **"Uniformly continuous" reduced to "preserves limits".**  148III asserts
+  the three module operations are *uniformly* continuous — which is what 150IX
+  then uses to extend them to `V̄`.  All three of our declarations state only
+  preservation of ultranorm limits.  For addition the real content is in the
+  tree untagged; for `x ↦ [x₀,x]` and `b ↦ x₀·b` it is nowhere.
 
 * **Hypotheses that the proof never uses are a reliable smell.**  90II.1
   assumes both compared elements self-adjoint where the point says *order
