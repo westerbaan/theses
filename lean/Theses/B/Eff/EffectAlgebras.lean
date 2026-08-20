@@ -378,7 +378,16 @@ noncomputable instance unitInterval.effectAlgebra : EffectAlgebra I where
 /-- **175II.2** (`eaexamples`, eff.tex:299, Examples): for an ordered abelian
 group `G` with a distinguished element `u ≥ 0`, the order interval
 `[0,u]_G` is an effect algebra with `x ⊥ y` iff `x + y ≤ u`, `x ⋁ y = x + y`
-and `xᵖ = u - x`. -/
+and `xᵖ = u - x`.
+
+⚠ The hypothesis `0 ≤ u` is **not** in the source, and is a silent repair of
+a defect in it (audit row 175II.2, left unrepaired in session 94): without it
+`[0,u]` is empty and carries no effect algebra, so the point as printed is
+false.  Changing our statement to match the printed one is not an option and
+choosing the repair is the author's call — this is an `ERRATA` matter, not a
+mis-transcription.  (`G` is also specialised to *abelian* groups, where the
+point says "ordered group"; that is harmless, the only operation used is
+`+`.) -/
 noncomputable def orderIntervalEffectAlgebra (G : Type u) [AddCommGroup G]
     [PartialOrder G] [IsOrderedAddMonoid G] (u : G) (hu : 0 ≤ u) :
     EffectAlgebra (Set.Icc (0 : G) u) where
@@ -635,10 +644,24 @@ instance prodEffectAlgebra (E F : Type u) [EffectAlgebra E] [EffectAlgebra F] :
       (EffectAlgebra.eq_zero_of_perp_one h.2)
 
 /-- **175III** (`ea-product`, eff.tex:338, Exercise), part 2: `E × F` with
-the componentwise structure is the categorical product in **EA** (stated
-here as: **EA** has binary products). -/
-theorem ea_product_categorical : HasBinaryProducts EACat.{u} := by
-  have hl : ∀ {X Y : EACat.{u}}, HasLimit (pair X Y) := by
+the componentwise structure **is** the categorical product of `E` and `F` in
+**EA**.
+
+The product is **pinned**: the first conjunct says that the cone with vertex
+the componentwise `E × F` and legs the two set-theoretic projections is a
+limit of `pair E F`.  (Until the audit repair only the second conjunct,
+`HasBinaryProducts EA`, was asserted, which pins neither the carrier nor the
+projections.) -/
+theorem ea_product_categorical :
+    (∀ X Y : EACat.{u}, ∃ (π₁ : EACat.of (X.carrier × Y.carrier) ⟶ X)
+        (π₂ : EACat.of (X.carrier × Y.carrier) ⟶ Y),
+        π₁.toFun = Prod.fst ∧ π₂.toFun = Prod.snd ∧
+          Nonempty (IsLimit (BinaryFan.mk π₁ π₂))) ∧
+      HasBinaryProducts EACat.{u} := by
+  have key : ∀ X Y : EACat.{u}, ∃ (π₁ : EACat.of (X.carrier × Y.carrier) ⟶ X)
+      (π₂ : EACat.of (X.carrier × Y.carrier) ⟶ Y),
+      π₁.toFun = Prod.fst ∧ π₂.toFun = Prod.snd ∧
+        Nonempty (IsLimit (BinaryFan.mk π₁ π₂)) := by
     intro X Y
     let p1 : EACat.of (X.carrier × Y.carrier) ⟶ X :=
       { toFun := Prod.fst
@@ -656,12 +679,17 @@ theorem ea_product_categorical : HasBinaryProducts EACat.{u} := by
         perp_map := fun h => ⟨s.fst.perp_map h, s.snd.perp_map h⟩
         ovee_map := fun h => Prod.ext (s.fst.ovee_map h) (s.snd.ovee_map h)
         map_one := Prod.ext s.fst.map_one s.snd.map_one }
-    refine HasLimit.mk ⟨BinaryFan.mk p1 p2,
-      BinaryFan.isLimitMk lift (fun _ => rfl) (fun _ => rfl) ?_⟩
+    refine ⟨p1, p2, rfl, rfl,
+      ⟨BinaryFan.isLimitMk lift (fun _ => rfl) (fun _ => rfl) ?_⟩⟩
     intro s m e₁ e₂
     refine EAHom.ext (funext fun z => Prod.ext ?_ ?_)
     · exact congrFun (congrArg (fun f : s.pt ⟶ X => f.toFun) e₁) z
     · exact congrFun (congrArg (fun f : s.pt ⟶ Y => f.toFun) e₂) z
+  refine ⟨key, ?_⟩
+  have hl : ∀ {X Y : EACat.{u}}, HasLimit (pair X Y) := by
+    intro X Y
+    obtain ⟨π₁, π₂, -, -, ⟨hlim⟩⟩ := key X Y
+    exact HasLimit.mk ⟨BinaryFan.mk π₁ π₂, hlim⟩
   exact hasBinaryProducts_of_hasLimit_pair EACat.{u}
 
 /-- The data of an effect algebra *without* the zero axiom (`0 ⊥ a` and
@@ -3208,42 +3236,97 @@ theorem effectModule_bool_smul {E : Type v} [EffectAlgebra E]
   · show (true : Bool) • a = a
     exact EffectModule.one_smul a
 
+/-- Helper for 179III.1: the `2`-effect module structure on an effect
+algebra is not merely unique up to isomorphism but **literally unique** —
+`effectModule_bool_smul` forces the scalar multiplication, and the four
+remaining fields of `EffectModule` are propositions. -/
+theorem effectModule_bool_unique {E : Type v} [EffectAlgebra E]
+    (inst : EffectModule Bool E) : effectModuleBool E = inst := by
+  have key := fun (l : Bool) (a : E) => @effectModule_bool_smul E _ inst l a
+  cases inst
+  rename_i sm m1 m2 m3 m4
+  cases sm
+  rename_i f
+  have hf : f = fun (l : Bool) (a : E) => if l then a else 0 := by
+    funext l a; exact key l a
+  subst hf
+  rfl
+
+/-- **179III.1** (eff.tex:722, Examples): the comparison functor
+`EA ⥤ EMod₂`, the identity on carriers — every effect algebra is a
+`2`-effect module (`effectModuleBool`) and every effect algebra
+homomorphism is `2`-linear because it preserves `0`. -/
+def eaToEModTwo : EACat.{u} ⥤ EModCat.{0, u} Bool where
+  obj E := @EModCat.mk Bool _ E.carrier E.str (effectModuleBool E.carrier)
+  map {A B} f :=
+    @EffectModuleHom.mk Bool A.carrier B.carrier _ A.str B.str
+      (effectModuleBool A.carrier) (effectModuleBool B.carrier) f
+      (fun l _ => by
+        cases l
+        · exact exc_eamorphism_map_zero f
+        · rfl)
+  map_id _ := rfl
+  map_comp _ _ := rfl
+
+/-- **179III.1** (eff.tex:722, Examples): the forgetful functor
+`EMod₂ ⥤ EA`, also the identity on carriers. -/
+def eModTwoToEA : EModCat.{0, u} Bool ⥤ EACat.{u} where
+  obj E := ⟨E.carrier⟩
+  map f := f.toEAHom
+  map_id _ := rfl
+  map_comp _ _ := rfl
+
 /-- **179III.1** (eff.tex:722, Examples): `EA ≅ EMod₂` — the category of
-effect algebras is equivalent to that of effect modules over `2`. -/
+effect algebras is **isomorphic** (not merely equivalent) to that of effect
+modules over `2`.
+
+The source says `\cong`, and that is what is asserted here: two functors,
+both the identity on carriers, whose composites are equal to the identity
+functors *on the nose*.  (Until the audit repair only
+`Nonempty (EACat ≌ EModCat Bool)` was stated — the recurring "isomorphism
+rendered as equivalence" shape of 188III/188IV.)  The equivalence is kept as
+the second conjunct.
+
+The extra ingredient over the old proof is `effectModule_bool_unique`: the
+`2`-action on an effect algebra is literally unique, so `EMod₂ ⥤ EA ⥤ EMod₂`
+is the identity, not just naturally isomorphic to it. -/
 theorem ea_equiv_emod_two :
-    Nonempty (EACat.{u} ≌ EModCat.{0, u} Bool) :=
-  -- every effect algebra is a `2`-effect module, and every effect algebra
-  -- homomorphism is `2`-linear because it preserves `0`
-  let F : EACat.{u} ⥤ EModCat.{0, u} Bool :=
-    { obj := fun E => @EModCat.mk Bool _ E.carrier E.str (effectModuleBool E.carrier)
-      map := fun {A B} f =>
-        @EffectModuleHom.mk Bool A.carrier B.carrier _ A.str B.str
-          (effectModuleBool A.carrier) (effectModuleBool B.carrier) f
-          (fun l _ => by
-            cases l
-            · exact exc_eamorphism_map_zero f
-            · rfl)
-      map_id := fun _ => rfl
-      map_comp := fun _ _ => rfl }
-  -- the forgetful functor the other way
-  let G : EModCat.{0, u} Bool ⥤ EACat.{u} :=
-    { obj := fun E => ⟨E.carrier⟩
-      map := fun f => f.toEAHom
-      map_id := fun _ => rfl
-      map_comp := fun _ _ => rfl }
-  -- `G ⋙ F` is the identity on the underlying effect algebra, and the
-  -- `2`-action is uniquely determined, so the identity map is an isomorphism
-  let ε : ∀ E : EModCat.{0, u} Bool, (G ⋙ F).obj E ≅ E := fun E =>
-    { hom := @EffectModuleHom.mk Bool E.carrier E.carrier _ E.eaStr E.eaStr
-        (effectModuleBool E.carrier) E.modStr (EAHom.id E.carrier)
-        (fun l a => (effectModule_bool_smul l a).symm)
-      inv := @EffectModuleHom.mk Bool E.carrier E.carrier _ E.eaStr E.eaStr
-        E.modStr (effectModuleBool E.carrier) (EAHom.id E.carrier)
-        (fun l a => effectModule_bool_smul l a)
-      hom_inv_id := rfl
-      inv_hom_id := rfl }
-  ⟨CategoryTheory.Equivalence.mk F G (Iso.refl _)
-    (NatIso.ofComponents ε (fun _ => rfl))⟩
+    (∃ (F : EACat.{u} ⥤ EModCat.{0, u} Bool) (G : EModCat.{0, u} Bool ⥤ EACat.{u}),
+        (∀ E : EACat.{u}, (F.obj E).carrier = E.carrier) ∧
+        (∀ E : EModCat.{0, u} Bool, (G.obj E).carrier = E.carrier) ∧
+        F ⋙ G = 𝟭 EACat.{u} ∧ G ⋙ F = 𝟭 (EModCat.{0, u} Bool)) ∧
+      Nonempty (EACat.{u} ≌ EModCat.{0, u} Bool) := by
+  refine ⟨⟨eaToEModTwo.{u}, eModTwoToEA.{u}, fun _ => rfl, fun _ => rfl, rfl, ?_⟩, ?_⟩
+  · -- `EMod₂ ⥤ EA ⥤ EMod₂` is the identity because the `2`-action is unique
+    have hobj : ∀ E : EModCat.{0, u} Bool,
+        (eModTwoToEA.{u} ⋙ eaToEModTwo.{u}).obj E = E := by
+      intro E
+      cases E
+      rename_i c ea m
+      show (@EModCat.mk Bool _ c ea (effectModuleBool c)) = @EModCat.mk Bool _ c ea m
+      rw [effectModule_bool_unique m]
+    refine CategoryTheory.Functor.ext hobj ?_
+    intro E E' f
+    cases E
+    rename_i c ea m
+    cases E'
+    rename_i c' ea' m'
+    have h1 : effectModuleBool c = m := effectModule_bool_unique m
+    have h2 : effectModuleBool c' = m' := effectModule_bool_unique m'
+    subst h1
+    subst h2
+    rfl
+  · -- the identity map is an isomorphism `(G ⋙ F) E ≅ E`, by the same uniqueness
+    refine ⟨CategoryTheory.Equivalence.mk eaToEModTwo.{u} eModTwoToEA.{u} (Iso.refl _)
+      (NatIso.ofComponents (fun E =>
+        { hom := @EffectModuleHom.mk Bool E.carrier E.carrier _ E.eaStr E.eaStr
+            (effectModuleBool E.carrier) E.modStr (EAHom.id E.carrier)
+            (fun l a => (effectModule_bool_smul l a).symm)
+          inv := @EffectModuleHom.mk Bool E.carrier E.carrier _ E.eaStr E.eaStr
+            E.modStr (effectModuleBool E.carrier) (EAHom.id E.carrier)
+            (fun l a => effectModule_bool_smul l a)
+          hom_inv_id := rfl
+          inv_hom_id := rfl }) (fun _ => rfl))⟩
 
 /-- The one-element effect monoid `1` (179III.1). -/
 instance : EffectMonoid PUnit :=

@@ -537,7 +537,17 @@ noncomputable instance scalEffectMonoid : EffectMonoid (Scal C) :=
       exact isSumOf_append (isSumOf_pair _ _ h2) (isSumOf_pair _ _ h3) hp }
 
 /-- **190II.3** (`dfn-mandso`, eff.tex:2097, Definition): a **real effectus**
-is an effectus whose effect monoid of scalars is isomorphic to `[0,1]`. -/
+is an effectus whose effect monoid of scalars is isomorphic to `[0,1]`.
+
+⚠ **Weaker than the point** (audit row 190II.3, left unrepaired): the point
+asks for an *isomorphism of effect monoids*, and what is rendered is a
+*bijective* effect-monoid morphism.  A bijective morphism of effect algebras
+need not have a morphism inverse — the inverse has to reflect `⊥`, which is
+not automatic — so the two agree only if that reflection is proved, and it is
+not.  Repairing the definition is a cross-module change: `IsRealEffectus` is
+consumed by `B/Eff/VNExamples` (`effectus_vn_real_separating` and its
+sibling), which supply exactly a bijective morphism, so the repair has to be
+made together with those two proofs.  See the report of session 94. -/
 def IsRealEffectus (C : Type u) [Category.{v} C] [HasFiniteCoproducts C]
     [∀ X Y : C, PCM (X ⟶ Y)] [FinPAC C] [EffectusPartialForm C] : Prop :=
   ∃ φ : EffectMonoidHom (Scal C) I, Function.Bijective φ.toFun
@@ -564,39 +574,70 @@ map `Pred f : Pred Y → Pred X` of `f : X ⟶ Y`, given by
 `Pred(f)(p) = p ∘ f`. -/
 def predMap {X Y : C} (f : X ⟶ Y) : Pred Y → Pred X := fun p => f ≫ p
 
+/-- Effect module homomorphisms are determined by their underlying
+function. -/
+private theorem emodhom_ext' {E F : Type v} [EffectAlgebra E] [EffectAlgebra F]
+    [EffectModule (Scal C) E] [EffectModule (Scal C) F]
+    (f g : EffectModuleHom (Scal C) E F) : f.toFun = g.toFun → f = g := by
+  obtain ⟨⟨⟨f₁, -, -⟩, -⟩, -⟩ := f
+  obtain ⟨⟨⟨g₁, -, -⟩, -⟩, -⟩ := g
+  intro h
+  dsimp only at h
+  subst h
+  rfl
+
+/-- **190II.5** (`dfn-mandso`, eff.tex:2112, Definition), first half: for
+total `f` the substitution map `Pred f = (– ∘ f)` **is a homomorphism of
+`M`-effect modules**.  It preserves `1` (that is totality of `f`), partial
+sums (`FinPAC.ovee_comp`) and scalars (associativity). -/
+noncomputable def predMapHom {X Y : C} (f : X ⟶ Y) (hf : IsTotal f) :
+    EffectModuleHom (Scal C) (Pred Y) (Pred X) where
+  toFun p := predMap f p
+  perp_map {_a _b} h := (FinPAC.ovee_comp h f).choose
+  ovee_map {_a _b} h := (FinPAC.ovee_comp h f).choose_spec
+  map_one := hf
+  map_smul l p := (Category.assoc f p l).symm
+
+@[simp] theorem predMapHom_toFun {X Y : C} (f : X ⟶ Y) (hf : IsTotal f) :
+    (predMapHom f hf).toFun = predMap f := rfl
+
+/-- **190II.5** (`dfn-mandso`, eff.tex:2112, Definition), second half: the
+**substitution functor** `Pred : Tot C ⥤ EMod_M^op`.
+
+Given directly rather than existentially, so that both halves are pinned:
+the object part is *literally* `Pred X` and the action on maps is
+*literally* `p ↦ p ∘ f` (`predFunctor_obj`, `predFunctor_map`, both `rfl`).
+Compare the warning in the doc of `192V.3`, and QUESTIONS.md B6. -/
+noncomputable def predFunctor : Tot C ⥤ (EModCat.{v, v} (Scal C))ᵒᵖ where
+  obj X := Opposite.op (EModCat.of (Scal C) (Pred X.base))
+  map {_ _} f := Quiver.Hom.op (predMapHom f.1 f.2)
+  map_id _ := congrArg Quiver.Hom.op
+    (emodhom_ext' _ _ (funext fun p => Category.id_comp p))
+  map_comp {_ _ _} f g := congrArg Quiver.Hom.op
+    (emodhom_ext' _ _ (funext fun p => Category.assoc f.1 g.1 p))
+
+@[simp] theorem predFunctor_obj (X : Tot C) :
+    ((predFunctor (C := C)).obj X).unop.carrier = Pred X.base := rfl
+
+@[simp] theorem predFunctor_map {X Y : Tot C} (f : X ⟶ Y) (p : Pred Y.base) :
+    (Quiver.Hom.unop ((predFunctor (C := C)).map f)).toFun p = predMap f.1 p :=
+  rfl
+
 /-- **190II.5** (`dfn-mandso`, eff.tex:2112, Definition): for total `f` the
 map `Pred f` is an effect module homomorphism, and `Pred` is in fact a
-functor `Tot C → EMod_M^op` (the substitution functor). -/
+functor `Tot C → EMod_M^op` (the substitution functor).
+
+Both halves of the functor are pinned: the object part is `Pred X`, and the
+action on maps is `p ↦ p ∘ f`.  (Until the audit repair this asserted only
+`(F.obj X).unop.carrier = Pred X`, which any functor transported along a
+family of bijections satisfies — the defect QUESTIONS.md B6 had repaired for
+192III.1 and 192III.2.) -/
 theorem predMap_functor :
     ∃ F : Tot C ⥤ (EModCat.{v, v} (Scal C))ᵒᵖ,
-      ∀ X : Tot C, (F.obj X).unop.carrier = Pred X.base := by
-  -- effect module homomorphisms are determined by their underlying function
-  have emext : ∀ {E F : Type v} [EffectAlgebra E] [EffectAlgebra F]
-      [EffectModule (Scal C) E] [EffectModule (Scal C) F]
-      (f g : EffectModuleHom (Scal C) E F), f.toFun = g.toFun → f = g := by
-    intro E F _ _ _ _ f g
-    obtain ⟨⟨⟨f₁, -, -⟩, -⟩, -⟩ := f
-    obtain ⟨⟨⟨g₁, -, -⟩, -⟩, -⟩ := g
-    intro h
-    dsimp only at h
-    subst h
-    rfl
-  -- `Pred f = (– ∘ f)` is an effect module map for total `f`: it preserves
-  -- `1` (totality), partial sums (`FinPAC.ovee_comp`) and scalars
-  -- (associativity)
-  refine ⟨{ obj := fun X => Opposite.op (EModCat.of (Scal C) (Pred X.base))
-            map := fun {X Y} f => Quiver.Hom.op
-              ({ toFun := fun p => f.1 ≫ p
-                 perp_map := fun {a b} h => (FinPAC.ovee_comp h f.1).choose
-                 ovee_map := fun {a b} h => (FinPAC.ovee_comp h f.1).choose_spec
-                 map_one := f.2
-                 map_smul := fun l p => (Category.assoc f.1 p l).symm } :
-                EffectModuleHom (Scal C) (Pred Y.base) (Pred X.base))
-            map_id := fun X => congrArg Quiver.Hom.op
-              (emext _ _ (funext fun p => Category.id_comp p))
-            map_comp := fun {X Y Z} f g => congrArg Quiver.Hom.op
-              (emext _ _ (funext fun p => Category.assoc f.1 g.1 p)) },
-    fun X => rfl⟩
+      (∀ X : Tot C, (F.obj X).unop.carrier = Pred X.base) ∧
+      ∀ (X Y : Tot C) (f : X ⟶ Y),
+        HEq (Quiver.Hom.unop (F.map f)).toFun (predMap f.1) :=
+  ⟨predFunctor, fun _ => rfl, fun _ _ _ => HEq.rfl⟩
 
 /-- **190II.6** (`dfn-mandso`, eff.tex:2118, Definition): a **substate** of
 `X` is a map `ω : 1 ⟶ X`. -/
@@ -1510,45 +1551,53 @@ end EModPushouts
 end EModEffectusDev
 
 /-- **191II** (`emod-effectus`, eff.tex:2206, Theorem), first half: for any
-effect monoid `M` the category `EMod_M^op` is an effectus in total form
-(with scalars `M` and separating predicates). -/
+effect monoid `M` the category `EMod_M^op` is an effectus in total form.
+
+⚠ **Weaker than the Theorem** (audit row 191II, left unrepaired).  The
+headline reads "`EMod_M^op` is an effectus in total form **with scalars `M`
+and separating predicates**", and neither trailing clause is asserted here or
+anywhere else in the tree.  Both are about the *partial* form
+`Par (EMod_M^op)`, where `Pred X = X ⟶ ⊤ ⨿ ⊤` and
+`Scal = ⊤ ⟶ ⊤ ⨿ ⊤`; the tree has no tool that computes `Pred`, `Scal` or the
+PCM structure (`ParPerp`, `parOvee`) of `Par C` for a concrete total-form
+effectus `C`, and the coproducts and final object used here live inside the
+proof (`emodPres`) rather than as instances.  The mathematics is short —
+`Hom_{EMod}(M × M, E) ≅ E` by `f ↦ f(1,0)`, so `Pred E ≅ E`, `Scal ≅ M`, and
+a module map `E × M → E'` is determined by `e ↦ f(e,0)` because
+`f(0,1) = f(1,0)^⊥` — but the transport through `⊤_ C ≅ emodPres.T` and
+`⊤ ⨿ ⊤ ≅ emodPres.P T T` is not.  The same gap blocks 191VIII.1 and
+192III.3.  See the report of session 94. -/
 theorem emod_effectus (M : Type u) [EffectMonoid M] :
     Nonempty (EffectusTotalStructure (EModCat.{u, u} M)ᵒᵖ) := emod_effectus_aux
 
 /-- **191II** (`emod-effectus`, eff.tex:2210, Theorem), second half
 (*representation*, proved in 191VII): an effectus with separating predicates
-embeds into `EMod_M^op` — the substitution functor `Pred` on the total maps
-is faithful.  (Stated for an effectus in partial form with scalars
-`M = Scal C`.) -/
+embeds into `EMod_M^op` — the substitution functor `Pred` on the total maps,
+with object part `Pred X` and action `p ↦ p ∘ f`, is faithful.  (Stated for
+an effectus in partial form with scalars `M = Scal C`.)
+
+The morphism action is now pinned (audit row 191II, repaired in session 94):
+asserting only `(F.obj X).unop.carrier = Pred X` constrains nothing about
+`F.map`, the defect QUESTIONS.md B6 had repaired for 192III.1/.2.
+
+⚠ Still weaker than the Theorem in one respect: the source concludes "`C` is
+**equivalent to the subcategory** `Pred C` of `EMod_M^op`", and that does not
+follow from faithfulness alone.  Faithfulness does *not* imply equivalence
+with a subcategory: the discrete two-object category maps faithfully to the
+terminal category, whose only subcategories are `∅` and `1`, and it is
+equivalent to neither.  What the image subcategory needs in addition is that
+`Pred` be full onto its image, which 191VII does not prove.  So the missing
+clause is not a transcription slip but a gap in the printed argument — an
+author ruling on how "subcategory" is to be read.  See the report of session
+94. -/
 theorem emod_effectus_representation {C : Type u} [Category.{v} C]
     [HasFiniteCoproducts C] [∀ X Y : C, PCM (X ⟶ Y)] [FinPAC C]
     [EffectusPartialForm C] (hsep : SeparatingPredicates C) :
     ∃ F : Tot C ⥤ (EModCat.{v, v} (Scal C))ᵒᵖ,
-      (∀ X : Tot C, (F.obj X).unop.carrier = Pred X.base) ∧ F.Faithful := by
-  -- effect module homomorphisms are determined by their underlying function
-  have emext : ∀ {E F : Type v} [EffectAlgebra E] [EffectAlgebra F]
-      [EffectModule (Scal C) E] [EffectModule (Scal C) F]
-      (f g : EffectModuleHom (Scal C) E F), f.toFun = g.toFun → f = g := by
-    intro E F _ _ _ _ f g
-    obtain ⟨⟨⟨f₁, -, -⟩, -⟩, -⟩ := f
-    obtain ⟨⟨⟨g₁, -, -⟩, -⟩, -⟩ := g
-    intro h
-    dsimp only at h
-    subst h
-    rfl
-  refine ⟨{ obj := fun X => Opposite.op (EModCat.of (Scal C) (Pred X.base))
-            map := fun {X Y} f => Quiver.Hom.op
-              ({ toFun := fun p => f.1 ≫ p
-                 perp_map := fun {a b} h => (FinPAC.ovee_comp h f.1).choose
-                 ovee_map := fun {a b} h => (FinPAC.ovee_comp h f.1).choose_spec
-                 map_one := f.2
-                 map_smul := fun l p => (Category.assoc f.1 p l).symm } :
-                EffectModuleHom (Scal C) (Pred Y.base) (Pred X.base))
-            map_id := fun X => congrArg Quiver.Hom.op
-              (emext _ _ (funext fun p => Category.id_comp p))
-            map_comp := fun {X Y Z} f g => congrArg Quiver.Hom.op
-              (emext _ _ (funext fun p => Category.assoc f.1 g.1 p)) },
-    fun X => rfl, ?_⟩
+      (∀ X : Tot C, (F.obj X).unop.carrier = Pred X.base) ∧
+      (∀ (X Y : Tot C) (f : X ⟶ Y),
+        HEq (Quiver.Hom.unop (F.map f)).toFun (predMap f.1)) ∧ F.Faithful := by
+  refine ⟨predFunctor, fun _ => rfl, fun _ _ _ => HEq.rfl, ?_⟩
   -- faithfulness is exactly the separating-predicates hypothesis (191VII)
   constructor
   intro X Y f g h
@@ -1874,8 +1923,26 @@ end RngEff
 
 /-- **191VIII** (`exc-rng-eff`, eff.tex:2337, Exercise): the category
 `Rngᵒᵖ` of unital rings with unit-preserving homomorphisms, in the opposite
-direction, is an effectus in total form.  (Its predicates on `R` correspond
-to the idempotents of `R`; its scalars are `2`.) -/
+direction, is an effectus in total form.
+
+⚠ **Part 1 of the Exercise is not in the tree** (audit row 191VIII, left
+unrepaired): "the predicates on `R` correspond to its idempotents; `p ⊥ q`
+iff `pq = qp = 0`, `p^⊥ = 1 - p` and `p ⋁ q = p + q`; so `2` is its effect
+monoid of scalars; conclude `Rngᵒᵖ` does **not** have separating predicates".
+The two sentences above this warning used to assert the idempotent and scalar
+description in prose only, which is why they have been removed from the
+headline.
+
+The predicates in question are those of `Par (Rngᵒᵖ)`, i.e. ring maps
+`(⊤ ⨿ ⊤).unop → R`, and `(⊤ ⨿ ⊤).unop ≅ ℤ × ℤ` gives the bijection with
+idempotents (`f ↦ f(1,0)`; conversely `(a,b) ↦ ap + b(1-p)`, which is
+multiplicative because the image of the initial ring is central).  The
+orthocomplement and sum clauses need in addition the concrete PCM structure
+of `Par C` — `ParPerp f g = ∃ b, ParBound f g b` unfolded at `Rngᵒᵖ` — which
+the tree has no tool for; this is the same missing tool as in `emod_effectus`
+and 192III.3.  The failure of separating predicates then follows from a ring
+with only trivial idempotents and a non-trivial endomorphism (`ℤ[X]` with
+`X ↦ 0` and `X ↦ X`).  See the report of session 94. -/
 theorem exc_rng_eff : Nonempty (EffectusTotalStructure RingCat.{u}ᵒᵖ) := by
   refine ⟨{ hasFiniteCoproducts := inferInstance
             hasTerminal := inferInstance
@@ -1895,9 +1962,17 @@ theorem exc_rng_eff : Nonempty (EffectusTotalStructure RingCat.{u}ᵒᵖ) := by
     · intro k l
       exact congrArg (fun m : W ⟶ rngPres.P rngPres.T rngPres.T => m.unop (k, l)) hg
 
-/-- **191VIII.2** (`exc-rng-eff`, eff.tex:2351, Exercise): there is no
-unit-preserving ring homomorphism `ℤ₂ → ℤ` (whence `Rngᵒᵖ` does not have
-separating states). -/
+/-- **191VIII.2** (`exc-rng-eff`, eff.tex:2351, Exercise), first half: there
+is no unit-preserving ring homomorphism `ℤ₂ → ℤ`.
+
+⚠ The part's second half — "conclude `Rngᵒᵖ` does not have separating
+states" — is not stated (audit row 191VIII.2, left unrepaired).  The states
+of `X` in `Par (Rngᵒᵖ)` are the ring maps `X → ℤ`, so this half says: `ℤ₂`
+has no states, while there are two distinct partial maps out of `ℤ₂` (the
+identity and the zero map), so the states do not separate.  Stating it needs
+the same missing tool as `exc_rng_eff` part 1: a computation of `Stat` and of
+composition in `Par C` for a concrete total-form effectus `C`.  See the
+report of session 94. -/
 theorem exc_rng_eff_no_hom : IsEmpty (ZMod 2 →+* ℤ) := by
   constructor
   intro f
@@ -3897,7 +3972,8 @@ theorem jointlyMonic_cotuples :
     (fun x => by rcases x with (x | x) | x <;> simp)
     (fun x => by rcases x with (x | x) | x <;> simp) ea eb
 
-/-- **192III.3**: `Kl(𝒟_M)` is an effectus in total form. -/
+/-- **192III.3**: `Kl(𝒟_M)` is an effectus in total form.  (The Exercise's
+"with `M` as scalars" is not asserted; see `exc_dm_effectus_kleisli`.) -/
 theorem effectus (M : Type u) [EffectMonoid M] :
     Nonempty (EffectusTotalStructure (Kleisli (exc_dm_effectus_monad.{u} M))) := by
   have : HasTerminal (Kl M) := (isTerminalOne (M := M)).hasTerminal
@@ -3925,6 +4001,14 @@ stated for an *arbitrary* monad `T` agreeing with `𝒟_M` on objects, which is
 **false**: transporting any monad along a bijection `T.obj X ≃ 𝒟_M X`
 satisfies that hypothesis while `Kl T` need not be an effectus (QUESTIONS.md
 B6).
+
+⚠ **Weaker than the Exercise** in one respect (audit row 192III.3, left
+unrepaired): the Exercise says `Kl(𝒟_M)` is an effectus in total form **with
+`M` as scalars**, and the scalars clause is not asserted.  As for
+`emod_effectus`, the scalars are those of `Par (Kl(𝒟_M))`, and the tree has
+no tool that computes `Scal` — nor the PCM structure `ParPerp` / `parOvee` —
+of `Par C` for a concrete total-form effectus `C`.  See the report of session
+94.
 
 The proof is the author's (`bsols.tex:1991-2170`): the coproducts of `Kl T`
 are those of `Set` with coprojections `η ∘ κᵢ` (the Kleisli inclusion is a
@@ -5187,15 +5271,32 @@ noncomputable def statFunctor : Tot C ⥤ AConvMCat.{v, v} (Scal C)ᵐᵒᵖ whe
 
 /-- **192VII** (eff.tex:2610, Proposition), first half: for an effectus `C`
 with scalars `M`, the states `Stat X` form an abstract `Mᵒᵖ`-convex set,
-with `h(⋁ᵢ λᵢ|φᵢ⟩) = [φ₁, …, φₙ] ∘ ⟨λ₁, …, λₙ⟩`. -/
+with `h(⋁ᵢ λᵢ|φᵢ⟩) = [φ₁, …, φₙ] ∘ ⟨λ₁, …, λₙ⟩`.
+
+The structure map is **pinned**: the second component says that `st.h p` is
+the partial sum `⋁ᵢ φᵢ ∘ λᵢ` over any enumeration of the support of `p`
+(the expanded form of `[φ₁,…,φₙ] ∘ ⟨λ₁,…,λₙ⟩`, cf. `tuple_desc`).  A bare
+`Nonempty (MConvex (Scal C)ᵐᵒᵖ (Stat X))` does not mention `h` at all — the
+defect `192V.3`'s doc comment warns against. -/
 theorem stat_mconvex (X : C) :
-    Nonempty (MConvex (Scal C)ᵐᵒᵖ (Stat X)) := ⟨statMConvex X⟩
+    ∃ st : MConvex (Scal C)ᵐᵒᵖ (Stat X),
+      ∀ (p : MConvexComb (Scal C)ᵐᵒᵖ (Stat X)) (l : List (Stat X)), l.Nodup →
+        (∀ φ, p.toFun φ ≠ 0 → φ ∈ l) →
+        PCM.IsSumOf (l.map fun φ => (p.toFun φ).unop ≫ φ.1) ((st.h p).1) :=
+  ⟨statMConvex X, fun p l hnd hsupp => statMConvex_h X p l hnd hsupp⟩
 
 /-- **192VII** (eff.tex:2619, Proposition), second half: `Stat f = f ∘ (–)`
-is affine for total `f`, and `Stat : Tot C → AConv_{Mᵒᵖ}` is a functor. -/
+is affine for total `f`, and `Stat : Tot C → AConv_{Mᵒᵖ}` is a functor.
+
+Both halves of the functor are pinned: the object part is `Stat X` and the
+action on maps is `ω ↦ f ∘ ω` (`statMap`).  Asserting only
+`(F.obj X).carrier = Stat X` constrains no more than the object part — the
+defect QUESTIONS.md B6 had repaired for 192III.1 and 192III.2. -/
 theorem stat_functor :
     ∃ F : Tot C ⥤ AConvMCat.{v, v} (Scal C)ᵐᵒᵖ,
-      ∀ X : Tot C, (F.obj X).carrier = Stat X.base := ⟨statFunctor, fun _ => rfl⟩
+      (∀ X : Tot C, (F.obj X).carrier = Stat X.base) ∧
+      ∀ (X Y : Tot C) (f : X ⟶ Y), HEq (F.map f).1 (statMap f.1 f.2) :=
+  ⟨statFunctor, fun _ => rfl, fun _ _ _ => HEq.rfl⟩
 
 end StatConvex
 
@@ -5214,9 +5315,10 @@ def MConvex.IsCongruence (st : MConvex M X) (r : Setoid X) : Prop :=
     φ.map (Quotient.mk r) = ψ.map (Quotient.mk r) →
       Quotient.mk r (st.h φ) = Quotient.mk r (st.h ψ)
 
-/-- **193II.1** (`aconv-cong`, eff.tex:2699, Exercise): the maps `𝒟_M q` and
-`𝒟_M 𝒟_M q` are surjective (as is `q` itself). -/
+/-- **193II.1** (`aconv-cong`, eff.tex:2699, Exercise): the maps `q`,
+`𝒟_M q` and `𝒟_M 𝒟_M q` are **all** surjective. -/
 theorem aconv_cong_surjective (r : Setoid X) :
+    Function.Surjective (Quotient.mk r) ∧
     Function.Surjective
       (fun p : MConvexComb M X => p.map (Quotient.mk r)) ∧
     Function.Surjective
@@ -5230,8 +5332,8 @@ theorem aconv_cong_surjective (r : Setoid X) :
       (q.map Quotient.out).map (Quotient.mk r) = q := by
     intro q
     rw [MConvexComb.map_comp, hsec, MConvexComb.map_id]
-  refine ⟨fun q => ⟨q.map Quotient.out, key q⟩, fun Q => ⟨Q.map
-    (fun q => q.map Quotient.out), ?_⟩⟩
+  refine ⟨Quotient.mk_surjective, fun q => ⟨q.map Quotient.out, key q⟩,
+    fun Q => ⟨Q.map (fun q => q.map Quotient.out), ?_⟩⟩
   show (Q.map fun q => q.map Quotient.out).map
     (fun p : MConvexComb M X => p.map (Quotient.mk r)) = Q
   rw [MConvexComb.map_comp,
@@ -5241,24 +5343,37 @@ theorem aconv_cong_surjective (r : Setoid X) :
     MConvexComb.map_id]
 
 /-- **193II.2** (`aconv-cong`, eff.tex:2702, Exercise): `∼` is a congruence
-iff the convex structure `h` descends to `X/∼` — there is (a necessarily
-unique) `h_∼` with `h_∼ ∘ 𝒟_M q = q ∘ h`. -/
+iff the convex structure `h` descends to `X/∼` — there is an `h_∼` with
+`h_∼ ∘ 𝒟_M q = q ∘ h`; and **by 193II.1 that `h_∼` is unique**, which is
+what makes `h_∼` well defined.  Stated with `∃!`. -/
 theorem aconv_cong_iff (st : MConvex M X) (r : Setoid X) :
     st.IsCongruence r ↔
-      ∃ h' : MConvexComb M (Quotient r) → Quotient r,
+      ∃! h' : MConvexComb M (Quotient r) → Quotient r,
         ∀ p : MConvexComb M X,
           h' (p.map (Quotient.mk r)) = Quotient.mk r (st.h p) := by
   constructor
   · -- `h_∼` exists by the congruence property along the section of `q`
     intro hc
-    refine ⟨fun P => Quotient.mk r (st.h (P.map Quotient.out)), fun p => ?_⟩
-    refine hc _ p ?_
-    rw [MConvexComb.map_comp,
-      show (Quotient.mk r ∘ Quotient.out : Quotient r → Quotient r) = _root_.id
-        from funext fun z => z.out_eq,
-      MConvexComb.map_id]
+    refine ⟨fun P => Quotient.mk r (st.h (P.map Quotient.out)), fun p => ?_, ?_⟩
+    · refine hc _ p ?_
+      rw [MConvexComb.map_comp,
+        show (Quotient.mk r ∘ Quotient.out : Quotient r → Quotient r) = _root_.id
+          from funext fun z => z.out_eq,
+        MConvexComb.map_id]
+    · -- uniqueness: `𝒟_M q` is surjective (193II.1)
+      intro g hg
+      funext P
+      obtain ⟨p, hp⟩ := (aconv_cong_surjective (M := M) r).2.1 P
+      have hp' : p.map (Quotient.mk r) = P := hp
+      subst hp'
+      rw [hg p]
+      refine (hc _ p ?_).symm
+      rw [MConvexComb.map_comp,
+        show (Quotient.mk r ∘ Quotient.out : Quotient r → Quotient r) = _root_.id
+          from funext fun z => z.out_eq,
+        MConvexComb.map_id]
   · -- conversely `q ∘ h` factors through `𝒟_M q`, which is the congruence
-    rintro ⟨h', hh'⟩ φ ψ hq
+    rintro ⟨h', hh', -⟩ φ ψ hq
     rw [← hh' φ, ← hh' ψ, hq]
 
 /-- **193II.3** (`aconv-cong`, eff.tex:2711, Exercise): for a congruence
@@ -5268,7 +5383,7 @@ theorem aconv_cong_quotient (st : MConvex M X) (r : Setoid X)
     (hc : st.IsCongruence r) :
     ∃ st' : MConvex M (Quotient r),
       st.IsAffine st' (Quotient.mk r) := by
-  obtain ⟨h', hh'⟩ := (aconv_cong_iff st r).mp hc
+  obtain ⟨h', hh', -⟩ := (aconv_cong_iff st r).mp hc
   refine ⟨⟨h', ?_, ?_⟩, fun p => (hh' p).symm⟩
   · -- `h_∼ ∘ η ∘ q = h_∼ ∘ 𝒟_M q ∘ η = q ∘ h ∘ η = q`, by naturality of `η`
     refine Quotient.ind fun x => ?_
@@ -5277,7 +5392,7 @@ theorem aconv_cong_quotient (st : MConvex M X) (r : Setoid X)
   · -- `h_∼ ∘ μ = h_∼ ∘ 𝒟_M h_∼` after precomposing with the surjection
     -- `𝒟_M 𝒟_M q`, by naturality of `μ`
     intro Φ
-    obtain ⟨Ψ, hΨ⟩ := (aconv_cong_surjective (M := M) r).2 Φ
+    obtain ⟨Ψ, hΨ⟩ := (aconv_cong_surjective (M := M) r).2.2 Φ
     have hΨ' : Ψ.map (fun p : MConvexComb M X => p.map (Quotient.mk r)) = Φ :=
       hΨ
     subst hΨ'
@@ -5311,8 +5426,30 @@ theorem affine_kernel_cong {Y : Type v} (st : MConvex M X)
 
 /-- **193IV** (`least-conv-cong`, eff.tex:2729, Exercise): every relation
 `R ⊆ X²` on an abstract `M`-convex set is contained in a least congruence.
-(The thesis moreover gives a syntactic description of this congruence by
-derivations, which is not formalized here.) -/
+
+⚠ **Only the half the Exercise calls easy is stated** (audit row 193IV, left
+unrepaired).  The point introduces existence with "It is easy to see there is
+a least congruence containing `R`.  *We need to know a bit more than mere
+existence.*"  What is then asked for, and is not formalized here, is the
+*derivation calculus*: the relation `φ ≈ ψ` given by a chain
+`φ = Φ₁, …, Φₙ = ψ` in `𝒟_M X` each of whose steps either (a) rewrites the
+points of a presentation componentwise along `R*` keeping the coefficients,
+or (b) keeps `h` fixed; the characterisation `x ∼ y ↔ η x ≈ η y` of the least
+congruence; and parts 1–3 of the Exercise.  In consequence the existence
+proof below is divergence class 2 — intersecting all congruences containing
+`R`, which is not the Exercise's argument — and 193IX, 194I.4 and 196II all
+had to be re-proved by other routes.
+
+Cost, measured in session 94 against `bsols.tex:2303`: the calculus needs a
+notion of *presentation* of a `𝒟_M X` by a list of `(coefficient, point)`
+pairs (the tree has `MConvexComb` as a support function, not as a list), the
+step relation and its reflexive-transitive closure, part 1 (short), part 2
+(the `μ(λ₀|ψ⟩ ⋁ ⋁ⱼ λⱼ|χⱼ⟩)` computation, done twice — once per kind of step),
+and part 3 (choice of `∼`-representatives `r_x`, then `φ ≈ 𝒟_M(rep)(φ)` by
+induction along the support list, using part 2 once per point).  Estimated at
+800–1200 lines of `PCM.IsSumOf` manipulation; this is the largest single
+audit row in the module and was not attempted.  See the report of session
+94. -/
 theorem least_conv_cong (st : MConvex M X) (R : X → X → Prop) :
     ∃ r : Setoid X, st.IsCongruence r ∧ (∀ x y, R x y → r.r x y) ∧
       ∀ r' : Setoid X, st.IsCongruence r' → (∀ x y, R x y → r'.r x y) →
@@ -5343,9 +5480,36 @@ theorem least_conv_cong (st : MConvex M X) (R : X → X → Prop) :
 
 end Congruence
 
-/-- **193V** (`aconv-coprod`, eff.tex:2775, Proposition): `AConv_M` has
-binary coproducts (constructed as a quotient of `𝒟_M(X + Y)` by the least
-congruence making `η ∘ κ₁` and `η ∘ κ₂` affine).
+/-- The free abstract `M`-convex structure `μ` on `𝒟_M X` (the algebra laws
+are the monad laws `mu_eta` and `mu_mu`). -/
+noncomputable def MConvexComb.freeStr (M : Type u) [EffectMonoid M]
+    (X : Type v) : MConvex M (MConvexComb M X) :=
+  ⟨MConvexComb.mu, MConvexComb.mu_eta, MConvexComb.mu_mu⟩
+
+/-- **193V** (`aconv-coprod`, eff.tex:2787, Proposition): the relation on
+`𝒟_M(X + Y)` whose least congruence is the `∼` of the Proposition —
+`(𝒟_M κ₁)(χ) ∼ η(κ₁(h_X χ))` and `(𝒟_M κ₂)(χ) ∼ η(κ₂(h_Y χ))`. -/
+def AConvMCat.coprodRel {M : Type u} [EffectMonoid M]
+    (X Y : AConvMCat.{u, max u v} M) :
+    MConvexComb M (X.carrier ⊕ Y.carrier) →
+      MConvexComb M (X.carrier ⊕ Y.carrier) → Prop := fun a b =>
+  (∃ χ : MConvexComb M X.carrier,
+    a = χ.map Sum.inl ∧ b = MConvexComb.eta (Sum.inl (X.str.h χ))) ∨
+  (∃ χ : MConvexComb M Y.carrier,
+    a = χ.map Sum.inr ∧ b = MConvexComb.eta (Sum.inr (Y.str.h χ)))
+
+/-- **193V** (`aconv-coprod`, eff.tex:2775, Proposition): for abstract
+`M`-convex sets `(X, h_X)` and `(Y, h_Y)`, **the** coproduct is
+`C = 𝒟_M(X + Y)/∼` with coprojections `cᵢ = q ∘ η ∘ κᵢ`, where `∼` is the
+least congruence on the free algebra `(𝒟_M(X+Y), μ)` containing the relation
+`coprodRel` of eff.tex:2787.  In consequence `AConv_M` has binary
+coproducts.
+
+The carrier, the congruence and the two coprojections are all **pinned**:
+`HasBinaryCoproducts` alone (the second conjunct, and all that used to be
+asserted) says nothing about *which* object the coproduct is, so 193IX's
+"by our construction, every element of `X + Y` is `h` of a combination of
+coprojected elements" could not be read off it.
 
 ⚠ Universe level: the coproduct carrier is a quotient of `𝒟_M(X + Y)`, whose
 underlying type is `X + Y → M`, so it lands in `Type (max u v)` and **not** in
@@ -5353,20 +5517,43 @@ underlying type is `X + Y → M`, so it lands in `Type (max u v)` and **not** in
 `AConvMCat.{u, v}` with `v < u` it is *false* (already `1 + 1 ≅ 𝒟_M {1,2}`
 has as many elements as `M`).  See PROVING-LOG. -/
 theorem aconv_coprod (M : Type u) [EffectMonoid M] :
-    HasBinaryCoproducts (AConvMCat.{u, max u v} M) := by
+    (∀ X Y : AConvMCat.{u, max u v} M,
+      ∃ (r : Setoid (MConvexComb M (X.carrier ⊕ Y.carrier)))
+        (stC : MConvex M (Quotient r))
+        (c₁ : X ⟶ (⟨Quotient r, stC⟩ : AConvMCat.{u, max u v} M))
+        (c₂ : Y ⟶ (⟨Quotient r, stC⟩ : AConvMCat.{u, max u v} M)),
+        (MConvexComb.freeStr M (X.carrier ⊕ Y.carrier)).IsCongruence r ∧
+        (∀ a b, AConvMCat.coprodRel X Y a b → r.r a b) ∧
+        (∀ r' : Setoid (MConvexComb M (X.carrier ⊕ Y.carrier)),
+          (MConvexComb.freeStr M (X.carrier ⊕ Y.carrier)).IsCongruence r' →
+            (∀ a b, AConvMCat.coprodRel X Y a b → r'.r a b) →
+              ∀ a b, r.r a b → r'.r a b) ∧
+        (∀ x, c₁.1 x = Quotient.mk r (MConvexComb.eta (Sum.inl x))) ∧
+        (∀ y, c₂.1 y = Quotient.mk r (MConvexComb.eta (Sum.inr y))) ∧
+        Nonempty (IsColimit (BinaryCofan.mk c₁ c₂))) ∧
+      HasBinaryCoproducts (AConvMCat.{u, max u v} M) := by
   classical
-  have : ∀ {X Y : AConvMCat.{u, max u v} M}, HasColimit (pair X Y) := by
+  have key : ∀ X Y : AConvMCat.{u, max u v} M,
+      ∃ (r : Setoid (MConvexComb M (X.carrier ⊕ Y.carrier)))
+        (stC : MConvex M (Quotient r))
+        (c₁ : X ⟶ (⟨Quotient r, stC⟩ : AConvMCat.{u, max u v} M))
+        (c₂ : Y ⟶ (⟨Quotient r, stC⟩ : AConvMCat.{u, max u v} M)),
+        (MConvexComb.freeStr M (X.carrier ⊕ Y.carrier)).IsCongruence r ∧
+        (∀ a b, AConvMCat.coprodRel X Y a b → r.r a b) ∧
+        (∀ r' : Setoid (MConvexComb M (X.carrier ⊕ Y.carrier)),
+          (MConvexComb.freeStr M (X.carrier ⊕ Y.carrier)).IsCongruence r' →
+            (∀ a b, AConvMCat.coprodRel X Y a b → r'.r a b) →
+              ∀ a b, r.r a b → r'.r a b) ∧
+        (∀ x, c₁.1 x = Quotient.mk r (MConvexComb.eta (Sum.inl x))) ∧
+        (∀ y, c₂.1 y = Quotient.mk r (MConvexComb.eta (Sum.inr y))) ∧
+        Nonempty (IsColimit (BinaryCofan.mk c₁ c₂)) := by
     intro X Y
     -- the free abstract `M`-convex set on `X + Y`
     let D : MConvex M (MConvexComb M (X.carrier ⊕ Y.carrier)) :=
-      ⟨MConvexComb.mu, MConvexComb.mu_eta, MConvexComb.mu_mu⟩
+      MConvexComb.freeStr M (X.carrier ⊕ Y.carrier)
     -- the relation of eff.tex:2787, whose least congruence makes `η∘κᵢ` affine
     let R : MConvexComb M (X.carrier ⊕ Y.carrier) →
-        MConvexComb M (X.carrier ⊕ Y.carrier) → Prop := fun a b =>
-      (∃ χ : MConvexComb M X.carrier,
-        a = χ.map Sum.inl ∧ b = MConvexComb.eta (Sum.inl (X.str.h χ))) ∨
-      (∃ χ : MConvexComb M Y.carrier,
-        a = χ.map Sum.inr ∧ b = MConvexComb.eta (Sum.inr (Y.str.h χ)))
+        MConvexComb M (X.carrier ⊕ Y.carrier) → Prop := AConvMCat.coprodRel X Y
     obtain ⟨r, hrc, hrR, hrleast⟩ := least_conv_cong D R
     obtain ⟨stC, hqaff⟩ := aconv_cong_quotient D r hrc
     let Cobj : AConvMCat.{u, max u v} M := ⟨Quotient r, stC⟩
@@ -5431,7 +5618,7 @@ theorem aconv_coprod (M : Type u) [EffectMonoid M] :
       refine ⟨⟨Quotient.lift (fun p => Z.str.h (p.map (Sum.elim f.1 g.1)))
         (fun a b hab => hFker Z f g a b hab), ?_⟩, fun p => rfl⟩
       intro P
-      obtain ⟨P₀, hP₀⟩ := (aconv_cong_surjective (M := M) r).1 P
+      obtain ⟨P₀, hP₀⟩ := (aconv_cong_surjective (M := M) r).2.1 P
       have hP₀' : P₀.map (Quotient.mk r) = P := hP₀
       subst hP₀'
       rw [← hqaff P₀, MConvexComb.map_comp]
@@ -5452,8 +5639,9 @@ theorem aconv_coprod (M : Type u) [EffectMonoid M] :
         rwa [show D.h (z.map MConvexComb.eta) = z from
           MConvexComb.mu_map_eta _] at this
       rw [h1, m.2, MConvexComb.map_comp, MConvexComb.map_comp, he]
-    refine HasColimit.mk ⟨BinaryCofan.mk c₁ c₂, BinaryCofan.IsColimit.mk _
-      (fun {Z} f g => (hdesc Z f g).choose) ?_ ?_ ?_⟩
+    refine ⟨r, stC, c₁, c₂, hrc, hrR, hrleast, fun _ => rfl, fun _ => rfl,
+      ⟨BinaryCofan.IsColimit.mk _
+        (fun {Z} f g => (hdesc Z f g).choose) ?_ ?_ ?_⟩⟩
     · intro Z f g
       refine Subtype.ext (funext fun x => ?_)
       have hx := (hdesc Z f g).choose_spec (MConvexComb.eta (Sum.inl x))
@@ -5470,17 +5658,16 @@ theorem aconv_coprod (M : Type u) [EffectMonoid M] :
       refine Subtype.ext (funext fun z => ?_)
       refine Quotient.inductionOn z fun p => ?_
       rw [huniq Z f g m hm1 hm2 p, (hdesc Z f g).choose_spec p]
+  refine ⟨key, ?_⟩
+  have hcol : ∀ {X Y : AConvMCat.{u, max u v} M}, HasColimit (pair X Y) := by
+    intro X Y
+    obtain ⟨r, stC, c₁, c₂, -, -, -, -, -, ⟨hcl⟩⟩ := key X Y
+    exact HasColimit.mk ⟨BinaryCofan.mk c₁ c₂, hcl⟩
   exact hasBinaryCoproducts_of_hasColimit_pair _
 
 /-- The one-element abstract `M`-convex set `1` (193X). -/
 def AConvMCat.punit (M : Type u) [EffectMonoid M] : AConvMCat.{u, v} M :=
   ⟨PUnit, ⟨fun _ => PUnit.unit, fun _ => rfl, fun _ => rfl⟩⟩
-
-/-- The free abstract `M`-convex structure `μ` on `𝒟_M X` (the algebra laws
-are the monad laws `mu_eta` and `mu_mu`). -/
-noncomputable def MConvexComb.freeStr (M : Type u) [EffectMonoid M]
-    (X : Type v) : MConvex M (MConvexComb M X) :=
-  ⟨MConvexComb.mu, MConvexComb.mu_eta, MConvexComb.mu_mu⟩
 
 /-- The free abstract `M`-convex set `(𝒟_M X, μ)` on a set `X` (used in
 193X; the algebra laws are the monad laws `mu_eta` and `mu_mu`). -/
@@ -5771,7 +5958,17 @@ theorem AConvMCat.coprodQuot_eta_inr {M : Type u} [EffectMonoid M]
 every element of `X ⨿ Y` is `h(⋁ λᵢ|κ₁xᵢ⟩ ⋁ ⋁ σⱼ|κ₂yⱼ⟩)` for some formal
 combination.  (The argument is ours: the thesis reads this off its explicit
 construction of the coproduct, while the proof below uses only the universal
-property.) -/
+property.  Since session 94 that construction *is* pinned by `aconv_coprod`,
+so the thesis's own route is now available.)
+
+⚠ The Remark's second half is not formalized (audit row 193IX, left
+unrepaired): the characterisation of **when two such expressions are equal**,
+by a derivation `Φ₁, …, Φ_l ∈ 𝒟²_M(X+Y)`, which is the whole reason the
+Remark exists ("we need to know more about the coproduct than Linton's
+construction provides") and which the thesis appeals to five times
+(eff.tex:3069, 3085, 3092, 3445, 3528).  It is the coproduct instance of
+193IV's derivation calculus and is blocked on it; see the cost recorded at
+`least_conv_cong`. -/
 theorem AConvMCat.coprodQuot_surjective {M : Type u} [EffectMonoid M]
     (X Y : AConvMCat.{u, max u v} M) [HasBinaryCoproduct X Y] :
     Function.Surjective (AConvMCat.coprodQuot X Y).1 := by
@@ -5871,7 +6068,7 @@ monoids are *not* required to satisfy `1 ≠ 0`. -/
 theorem aconvalmosteffectus_coproducts :
     HasFiniteCoproducts (AConvMCat.{u, max u v} M) := by
   classical
-  have := aconv_coprod.{u, v} M
+  have := (aconv_coprod.{u, v} M).2
   have hinit : HasInitial (AConvMCat.{u, max u v} M) := by
     by_cases h1 : (1 : M) = 0
     · -- `1 = 0`: every abstract `M`-convex set is a singleton, so `1` is initial

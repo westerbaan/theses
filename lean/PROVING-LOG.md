@@ -23094,3 +23094,155 @@ Quot.sound]`.
   of `a` dropped), 11XV.2 (`n = 0` allowed) — are benign generalisations per
   the repair brief, and are untouched.
 * No row in this module turned out to need an author ruling.
+
+## Session 94 — `B/Eff`: **the first repair pass on `StatesPredicates.lean` and `EffectAlgebras.lean`** — nine `weaker` rows repaired, and the one missing tool that blocks four more is named (worker on `Theses/B/Eff/StatesPredicates.lean`, `Theses/B/Eff/EffectAlgebras.lean`)
+
+Audit rows: `docs/audit/bdils-pure-beff-states-effectalgebras.csv`, the
+`B/Eff/StatesPredicates` and `B/Eff/EffectAlgebras` rows — 21 rows with
+`stmt` not `ok`.  **Nine repaired, twelve left.**  Both files compile with no
+errors; the only `sorry` in either is the pre-existing 179III.2
+(`effectModule_unitInterval_representation`, QUESTIONS **B14**).  Every
+declaration touched was checked in situ with `#print axioms` and depends on
+`[propext, Classical.choice, Quot.sound]` only.
+
+### Repaired — the "existential pins only the object part" family (QUESTIONS B6's defect)
+
+Four statements pinned only the object part of a functor or a structure map,
+which is satisfied by any impostor transported along a family of bijections.
+This is exactly what session 10 repaired for 192III.1/.2, and `192V.3`'s own
+doc comment warns against it three thousand lines earlier in the same file.
+
+* **190II.5** `predMap_functor` — two omissions, both closed.  (i) "for total
+  `f`, `Pred f` is an `M`-effect module homomorphism" now has its own
+  declaration, **`predMapHom`**.  (ii) The substitution functor is now given
+  as a `def`, **`predFunctor`**, with `predFunctor_obj` and
+  `predFunctor_map` both `rfl` (the 192III.1 shape); `predMap_functor` keeps
+  its name and adds the morphism clause
+  `HEq (F.map f).unop.toFun (predMap f.1)`.  (1)
+* **192VII** `stat_functor` — same repair: the object clause is joined by
+  `HEq (F.map f).1 (statMap f.1 f.2)`, witnessed by the `statFunctor`
+  already in the file.  (1)
+* **192VII** `stat_mconvex` — was `Nonempty (MConvex (Scal C)ᵐᵒᵖ (Stat X))`,
+  which does not mention `h`.  Now `∃ st, …` with the point's own
+  `h(⋁ᵢ λᵢ|φᵢ⟩) = ⋁ᵢ φᵢ ∘ λᵢ` as the second component (the pinned form
+  `statMConvex_h` was already in the neighbourhood, untagged).  (1)
+* **191II** `emod_effectus_representation` — the functor's morphism action is
+  now pinned as in `predMap_functor`, and the proof re-uses `predFunctor`
+  instead of re-inlining it.  (The "equivalent to a subcategory" half is
+  *not* repaired; see below.)  (1)
+
+### Repaired — the "the construction is inside the proof" family
+
+* **193V** `aconv_coprod` — was `HasBinaryCoproducts (AConvMCat M)`, which
+  pins neither the carrier nor the coprojections; the Proposition asserts
+  that **the specific** `C = 𝒟_M(X+Y)/∼` with `cᵢ = q ∘ η ∘ κᵢ` is a
+  coproduct.  Now a conjunction: for every `X, Y` there are `r`, `stC`, `c₁`,
+  `c₂` with `r` the least congruence on the free algebra `(𝒟_M(X+Y), μ)`
+  containing the relation of eff.tex:2787 (now a `def`,
+  **`AConvMCat.coprodRel`**), `cᵢ` literally `q ∘ η ∘ κᵢ`, and
+  `IsColimit (BinaryCofan.mk c₁ c₂)` — plus the old `HasBinaryCoproducts` as
+  the second conjunct.  `MConvexComb.freeStr` moved up ahead of it (its only
+  other use is below).  The proof is unchanged, only re-plumbed.  (1)
+* **175III** `ea_product_categorical` — was `HasBinaryProducts EACat`; the
+  Exercise's part 2 is "show that **this** is the categorical product".  Now
+  the componentwise `E × F` with the two set-theoretic projections is
+  asserted to be a limit of `pair E F`, with `HasBinaryProducts` derived from
+  it.  (1)
+
+### Repaired — the "isomorphism rendered as equivalence" shape (188III/188IV)
+
+* **179III.1** `ea_equiv_emod_two` — the source says `EA ≅ EMod₂`, and we
+  said `Nonempty (EACat ≌ EModCat Bool)`.  Now: two functors **`eaToEModTwo`**
+  and **`eModTwoToEA`**, both the identity on carriers, with
+  `F ⋙ G = 𝟭` and `G ⋙ F = 𝟭` **on the nose** — plus the equivalence kept as
+  a second conjunct.  The extra ingredient is
+  **`effectModule_bool_unique`**: the `2`-action on an effect algebra is not
+  merely unique up to isomorphism but literally unique, because
+  `effectModule_bool_smul` forces `smul` and the four remaining fields of
+  `EffectModule` are propositions.  (1)
+
+### Repaired — dropped clauses
+
+* **193II.1** `aconv_cong_surjective` — the part asks for surjectivity of
+  `q`, `𝒟_M q` **and** `𝒟_M 𝒟_M q`; only the last two were stated ("as is `q`
+  itself" appeared in the doc comment only).  Now a three-fold conjunction.
+  (1)
+* **193II.2** `aconv_cong_iff` — the part's trailing sentence "By the
+  previous point `h_∼` is unique, if it exists" was dropped, and it is what
+  makes `h_∼` well defined.  Now stated with `∃!`, the uniqueness proved from
+  surjectivity of `𝒟_M q` (193II.1), which is the point's own justification.
+  (1)
+
+### Left — with the reason, and the cost
+
+**One missing tool blocks four rows.**  191II (`emod_effectus`, "with scalars
+`M` and separating predicates"), 191VIII part 1 ("the predicates on `R` are
+its idempotents … so `2` is its effect monoid of scalars … conclude `Rngᵒᵖ`
+does not have separating predicates"), 191VIII.2's second half ("conclude
+`Rngᵒᵖ` does not have separating states") and 192III.3 ("with `M` as
+scalars") all speak about the **partial** form `Par C` of a concrete
+total-form effectus `C`, where `Pred X = X ⟶ ⊤ ⨿ ⊤`, `Scal = ⊤ ⟶ ⊤ ⨿ ⊤` and
+the effect-algebra operations are `ParPerp` / `parOvee`.  The tree has **no
+tool that computes any of these for a concrete `C`**: `SeparatingPredicates`
+and `SeparatingStates` are instantiated exactly once, at `WStarCPSU.{u}ᵒᵖ`,
+which is a *native* partial-form effectus and never goes through `Par`.  Two
+further obstacles are specific to `Par`: the coproducts and final object of
+`(EMod_M)ᵒᵖ`, `Rngᵒᵖ` and `Kl(𝒟_M)` live inside proofs as `CoprodPres`
+records (`emodPres`, `rngPres`, `pres M`), not as instances, so every such
+statement has to be built up through `letI` and transported along
+`⊤_ C ≅ d.T` and `⊤ ⨿ ⊤ ≅ d.P d.T d.T`; and `ParPerp f g = ∃ b, ParBound f g b`
+has to be unfolded at the concrete `C` before "`p ⊥ q` iff `pq = qp = 0`" can
+even be stated.  The mathematics in each case is a paragraph (for `EMod`:
+`Hom_{EMod}(M × M, E) ≅ E` by `f ↦ f(1,0)`, so `Pred E ≅ E` and `Scal ≅ M`,
+and a module map `E × M → E'` is determined by `e ↦ f(e,0)` because
+`f(0,1) = f(1,0)^⊥`; for `Rng`: a ring map `ℤ × ℤ → R` is `f ↦ f(1,0)`, an
+idempotent, and `Rngᵒᵖ` fails to separate because `ℤ[X]` has only trivial
+idempotents but two endomorphisms `X ↦ 0`, `X ↦ X`).  The plumbing is not.
+Each doc comment now records precisely which clause is missing and why.
+
+**193IV `least_conv_cong` is the largest row in the module and was not
+attempted.**  Only the half the Exercise calls easy is stated; the Exercise
+says outright "We need to know a bit more than mere existence".  Cost,
+measured against `bsols.tex:2303`: a notion of *presentation* of a
+`MConvexComb` by a list of `(coefficient, point)` pairs (the tree models
+`𝒟_M X` as a support function, not as a list), the derivation relation `≈`
+and its closure, part 1 (short), part 2 (the
+`μ(λ₀|ψ⟩ ⋁ ⋁ⱼ λⱼ|χⱼ⟩)` computation, once per kind of step) and part 3
+(choice of `∼`-representatives, then `φ ≈ 𝒟_M(rep)(φ)` by induction along the
+support list) — an estimated 800–1200 lines of `PCM.IsSumOf` manipulation.
+**193IX**'s second half (the "iff there is a derivation `Φ₁ … Φ_l`" half of
+`elements-coprod-conv`, which the thesis appeals to five times) is the
+coproduct instance of the same calculus and is blocked on it.  Both doc
+comments now record the cost.
+
+**191II's "equivalent to a subcategory" needs a ruling I did not expect.**
+The Theorem's second sentence concludes from faithfulness of `Pred` that "`C`
+is equivalent to the subcategory `Pred C` of `EMod_M^op`", and that inference
+is **not valid in general**: the discrete two-object category maps faithfully
+to the terminal category, whose only subcategories are `∅` and `1`, and it is
+equivalent to neither.  What the image subcategory needs in addition is that
+`Pred` be full onto its image, which 191VII does not prove.  So this is a gap
+in the printed argument, not a mis-transcription — an author call on how
+"subcategory" is to be read.  Recorded in the doc comment of
+`emod_effectus_representation`.
+
+**190II.3 `IsRealEffectus` is a cross-module repair.**  The point asks for an
+*isomorphism* of effect monoids `Scal C ≅ [0,1]`; we render a *bijective*
+`EffectMonoidHom`, which is weaker (the inverse has to reflect `⊥`).  The
+definition is consumed by `B/Eff/VNExamples.lean`
+(`effectus_vn_real_separating` and its sibling), whose proofs supply exactly
+a bijection, so strengthening the definition breaks a module this pass may
+not edit — the repair has to be made together with those two proofs.  (It is
+also not obvious that "bijective ⟹ iso" is *false* for effect **monoids**:
+the obvious counterexample on `[0,1]` — restricting `⊥` to
+`a = 0 ∨ b = 0 ∨ a + b = 1` — is an effect algebra but not an effect monoid
+under real multiplication.  So the repair may or may not need new
+mathematics.)  Doc comment updated.
+
+**Left by the repair brief's own rules**, untouched except for doc comments:
+177Ia `ea_modularity_prop` (deliberate record of a false printed
+Proposition, two in-tree refutations, `ERRATA` carries it); 179III.2
+`effectModule_unitInterval_representation` (QUESTIONS **B14**); 175II.2
+`orderIntervalEffectAlgebra`, whose `0 ≤ u` is a silent repair of a defect in
+the source — without it `[0,u]` is empty and the point is false — so the
+choice of repair is the author's.
