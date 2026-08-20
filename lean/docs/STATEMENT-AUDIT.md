@@ -84,19 +84,35 @@ auxiliaries that transcribe a numbered point.
 | `bdils-paschke-stinespring` | `B/Dils/{Paschke, Stinespring}` | 70 | **18** (12 stronger, 5 weaker, 1 differs) | 21 |
 | `beff-vnexamples` | `B/Eff/{VNExamples, Comparisons}` | 56 | **17** (6 weaker, 11 differs) | 11 |
 | `acstar-matrices-representation` | `A/CStar/{Matrices, Representation}` | 118 | **28** (27 weaker, 1 stronger) | 56 (28 mathlib, 20 route, 8 mild) |
+| `avn-projections` | `A/VN/Projections` | 166 | **13** (7 weaker, 4 stronger, 2 differs) | 31 (24 route, 5 mild, 2 mathlib) |
 
-**705 rows in; 102 statements do not match their source** (69 weaker, 21
-stronger, 12 differs, 0 unsure).
+**871 rows in; 115 statements do not match their source** (76 weaker, 25
+stronger, 14 differs, 0 unsure).
 
 Not yet audited: `A/CStar/{Positive, TowardsVN}`,
-`A/VN/{Projections, Division, NormalFunctionals, Completeness}`,
+`A/VN/{Division, NormalFunctionals, Completeness}`,
 `A/Proc/{Measurement, Duplicators, QuantumLambda}`,
 `B/Dils/{HilbertModules, SelfDualCompletion, SelfDual, Kaplansky, Pure}`,
 `B/Eff/{Effectus, Quotients, Dagger, DiamondAmp, StatesPredicates,
-EffectAlgebras}`.  (`A/VN/Projections` and `B/Dils/{SelfDual, Kaplansky}` are in flight.)  (`Positive.lean` and `Measurement.lean` are being edited by the
+EffectAlgebras}`.  (`B/Dils/{SelfDual, Kaplansky}` and `B/Eff/{Effectus, Quotients}` are in
+  flight.  `Positive.lean` and `Measurement.lean` were released into the audit
+  on 2026-08-20, the author's edits there having settled.)  (`Positive.lean` and `Measurement.lean` are being edited by the
 author and are held back deliberately.)
 
 ### Standing observations
+
+* **A whole closing Theorem can be missing.**  `A/VN/Projections` renders
+  **70III** — *every commutative von Neumann algebra is nmiu-isomorphic to
+  `⊕ᵢ L^∞(Xᵢ)`* — by its *reduction* only: an orthogonal family of np-functionals
+  with central carriers joining to `1`.  54XI is never applied, no direct sum
+  is formed, no nmiu-isomorphism appears.  A `FIXME` in the doc admits it.  The
+  same shape recurs at 67IV.2 and 69IVa: an **isomorphism** in the source
+  rendered as bare bijectivity, or as two of its consequences.
+* **Stale doc comments about errata cut both ways.**  Two of this module's
+  docs claim an erratum is still outstanding when `vn.tex` already carries the
+  fix (`ncp_ceill` on parsec-610.20, `cceil_basic_2` on parsec-680.40).  The
+  statements are right; only the prose is wrong — the mirror image of 33III,
+  where the prose described a *superseded* version of the gap.
 
 * **Our doc comments can misrecord what is missing.**  `A/CStar/Matrices`'s
   33III says only "`M_n f` need not be positive", and its doc comment explains
