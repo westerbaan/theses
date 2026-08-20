@@ -70,40 +70,37 @@ number `NxR` decodes as:
 The proof, where there is one, is normally the *next* point (`Proof`), or the
 following few.
 
-## Roll-up
+## Roll-up — **complete**
 
-Filled in as fragments land.  Counts are of *rows*, which exceed the 1759
-DISP-carrying `theorem`s because auditors also cover definitions and private
-auxiliaries that transcribe a numbered point.
+All 30 modules audited, 2026-08-20.  Rows exceed the 1759 DISP-carrying
+`theorem`s because auditors also covered DISP-carrying definitions,
+structures and private auxiliaries.
 
-| fragment | modules | rows | stmt not `ok` | proof not `faithful`/`none` |
-|---|---|---:|---:|---:|
-| `acstar-basic` | `A/CStar/Basic` | 109 | **16** (11 weaker, 5 stronger) | 72 (43 mathlib, 26 route, 3 mild) |
-| `avn-basic` | `A/VN/Basic` | 137 | **12** (all weaker) | 19 |
-| `aproc-tensor` | `A/Proc/Tensor` | 148 | **8** (7 weaker, 1 stronger) | 19 (9 route, 8 mild, 1 mathlib, 1 sorry) |
-| `bdils-paschke-stinespring` | `B/Dils/{Paschke, Stinespring}` | 70 | **18** (12 stronger, 5 weaker, 1 differs) | 21 |
-| `beff-vnexamples` | `B/Eff/{VNExamples, Comparisons}` | 56 | **17** (6 weaker, 11 differs) | 11 |
-| `acstar-matrices-representation` | `A/CStar/{Matrices, Representation}` | 118 | **28** (27 weaker, 1 stronger) | 56 (28 mathlib, 20 route, 8 mild) |
-| `avn-projections` | `A/VN/Projections` | 166 | **13** (7 weaker, 4 stronger, 2 differs) | 31 (24 route, 5 mild, 2 mathlib) |
-| `bdils-selfdual-kaplansky` | `B/Dils/{SelfDual, Kaplansky}` | 98 | **19** (15 weaker, 2 stronger, 2 differs) | 34 (17 route, 10 mild, 4 sorry, 3 mathlib) |
-| `beff-effectus-quotients` | `B/Eff/{Effectus, Quotients}` | 94 | **6** (all weaker) | 15 (9 mild, 4 route, 2 mathlib) |
-| `aproc-measurement` | `A/Proc/Measurement` | 154 | **9** (8 weaker, 1 differs) | 13 (6 mild, 5 route, 2 sorry) |
-| `acstar-positive` | `A/CStar/Positive` | 157 | **9** (8 weaker, 1 stronger) | 66 (36 route, 17 mathlib, 13 mild) |
-| `avn-division-normalfunctionals` | `A/VN/{Division, NormalFunctionals}` | 211 | **9** (8 weaker, 1 stronger) | 13 (8 route, 5 mild) |
-| `beff-dagger-diamondamp` | `B/Eff/{Dagger, DiamondAmp}` | 117 | **11** (10 weaker, 1 stronger) | 13 (9 route, 4 mild) |
-| `bdils-hilbertmodules-selfdualcompletion` | `B/Dils/{HilbertModules, SelfDualCompletion}` | 125 | **14** (9 weaker, 5 stronger) | 32 (13 route, 12 mild, 7 mathlib) |
-| `aproc-duplicators-quantumlambda` | `A/Proc/{Duplicators, QuantumLambda}` | 124 | **20** (7 weaker, 2 stronger, 11 differs) | 50 (28 route, 14 mild, 7 sorry, 1 mathlib) |
-| `acstar-towardsvn-avn-completeness` | `A/CStar/TowardsVN`, `A/VN/Completeness` | 145 | **8** (7 weaker, 1 stronger) | 22 (13 mild, 5 route, 4 mathlib) |
+| fragment | rows | stmt not `ok` | proof not `faithful`/`none` |
+|---|---:|---:|---:|
+| `acstar-basic` | 109 | **16** (5 stronger, 11 weaker) | 72 |
+| `acstar-matrices-representation` | 118 | **28** (1 stronger, 27 weaker) | 56 |
+| `acstar-positive` | 157 | **9** (1 stronger, 8 weaker) | 66 |
+| `acstar-towardsvn-avn-completeness` | 144 | **8** (1 stronger, 7 weaker) | 21 |
+| `aproc-duplicators-quantumlambda` | 123 | **19** (10 differs, 2 stronger, 7 weaker) | 49 |
+| `aproc-measurement` | 153 | **9** (1 differs, 8 weaker) | 13 |
+| `aproc-tensor` | 148 | **8** (1 stronger, 7 weaker) | 19 |
+| `avn-basic` | 137 | **12** (1 stronger, 11 weaker) | 19 |
+| `avn-division-normalfunctionals` | 210 | **9** (1 stronger, 8 weaker) | 13 |
+| `avn-projections` | 165 | **13** (2 differs, 4 stronger, 7 weaker) | 30 |
+| `bdils-hilbertmodules-selfdualcompletion` | 125 | **14** (5 stronger, 9 weaker) | 32 |
+| `bdils-paschke-stinespring` | 70 | **18** (1 differs, 12 stronger, 5 weaker) | 21 |
+| `bdils-pure-beff-states-effectalgebras` | 224 | **37** (3 differs, 12 stronger, 22 weaker) | 36 |
+| `bdils-selfdual-kaplansky` | 98 | **19** (2 differs, 2 stronger, 15 weaker) | 34 |
+| `beff-dagger-diamondamp` | 117 | **11** (1 stronger, 10 weaker) | 13 |
+| `beff-effectus-quotients` | 94 | **6** (6 weaker) | 15 |
+| `beff-vnexamples` | 56 | **17** (11 differs, 6 weaker) | 11 |
+| **total** | **2248** | **253** | **520** |
 
-**2096 rows in; 220 statements do not match their source** (154 weaker, 38
-stronger, 28 differs, 0 unsure).
-Only `B/Dils/Pure` and `B/Eff/{StatesPredicates, EffectAlgebras}` remain.
-
-Not yet audited: 
-`B/Dils/Pure`,
-`B/Eff/{StatesPredicates, EffectAlgebras}`.  (Five fragments are in flight.  `Positive.lean` and `Measurement.lean` were released into the audit
-  on 2026-08-20, the author's edits there having settled.)  (`Positive.lean` and `Measurement.lean` are being edited by the
-author and are held back deliberately.)
+**253 of 2248 statements do not match their source** — 174 `weaker`, 49
+`stronger`, 30 `differs`, **0 `unsure`**.  On the proof side, 753 are
+`faithful` and 975 have no thesis proof to match (`none`); 520 diverge — 247 a
+different route, 141 mild, 114 closed by Mathlib, 18 `sorry`.
 
 ### Standing observations
 
@@ -301,6 +298,93 @@ author and are held back deliberately.)
   for facts Mathlib already has, but it means the *thesis's* argument is
   unexhibited, and in a few places it inverts the thesis's own dependency
   order (11XIII from 11XV.1, which the thesis proves from 11XIII).
+
+## Triage
+
+The audit is complete and nothing has been repaired.  The 253 statement
+divergences and 520 proof divergences sort into six piles.
+
+### 1. Thesis defects — for `ERRATA.md` (author's call)
+
+Sixteen, none previously recorded.  Four are **false as printed**: **111IV**,
+**116III.1**, **116III.5** (monotonicity clauses with no positivity
+hypothesis) and **175II.2** (`[0,u]_G` with no `0 ≤ u`).  Two make a claim
+that cannot typecheck: **155II** (KSGNS prints `T : Y → X` against its own
+`ad_T`) and **192IV** (the *M*-affine parenthetical, in both composites).
+The rest are wrong objects or wrong symbols: **42III** (`≤ ε` for `< ε`),
+**140X.1** (`𝒜` for `ℬ`), **157VI** (`√T` for a `T` never assumed positive),
+**158Ia** (`a`/`b` interchanged, net in the wrong algebra), **159VIII** (np-map
+of the wrong algebra), **159IX** (`Y` never introduced), **15I** (`2π/n` for
+`2πn/N`), **56VI** (`b` for `a`), **81II.1** (`b𝒜` for `𝒜b`), **227III.4**
+(inconsistent with 228II, which is right).
+
+Two defects are in thesis **proofs**, not statements: **125II** computes
+`#ℋ = Σ_ω #ℋ_ω` over an uncountable index set (the Lemma stands), and
+**150XV** concludes `W = V̄` from *ultranorm* completeness where the Hilbert
+module also needs *norm* completeness.  A third, **221IV.5**, asserts purity
+of `h ∘ ξ` that its own proof never addresses.
+
+### 2. Source housekeeping
+
+**26II** gained a fifth item on 2026-08-19, but `asols.tex`'s `parsec-260.20`
+still answers the old one — the new item 5 has no solution and the solution's
+item 5 answers nothing.  And **eff.tex 199VII.4** is false as printed with its
+`berr.tex` erratum *not* absorbed into the running text, while the parallel
+correction for 197V.4 has been.
+
+### 3. Questions already open, now with evidence
+
+**B15** is decided as far as the tree goes — our definitions take eff.tex's
+printed form verbatim, so under ruling (1) the single `sorry` in `VNExamples`
+closes with no further mathematics.  **A6**'s knock-on is larger than
+recorded (under the printed `DiscreteSpace`, 130V is false, 129VI vacuous,
+127III gapped — and the repair orphans the thesis's own 129IV).  **A8**'s
+recorded obstruction is gone (`dsumRep` exists).  **A9**, **A10**, **B13**,
+**B14**, **D7** all confirmed as described; B13's weakness is in
+`effectus_vn_partial`, *not* in `Effectus.lean`'s definitions, which are
+faithful field by field.
+
+### 4. Our statements to repair — needs an author ruling
+
+The 174 `weaker` rows, dominated by three shapes: a **multi-part exercise
+rendered by one clause** (much the commonest); an **isomorphism, or a
+"has all X" headline, rendered by a witness or a consequence** (70III, 67IV.2,
+69IVa, 84bV, 188III/188IV, 179III.1, 191II, 200III, 205II, 220II, 193V,
+175III); and a **functor statement pinning only the object part** — which
+QUESTIONS **B6** already had repaired for 192III.1/.2 in session 10, a repair
+never carried across to `predMap_functor`, `stat_functor`,
+`emod_effectus_representation` or `stat_mconvex`.
+
+Two clauses are missing from the tree altogether while being *used*: **24II.4**
+(reached through Mathlib) and **36II** (whose absence leaves **36V**, proved in
+full, used by nothing).  **191VIII.1**, **73III.4** and **101VII.1**'s middle
+clause are simply absent.
+
+The 49 `stronger` rows are mostly benign generalisations; the exception is
+**139XI `ess_uniq_pur`**, which is **false as ours** — it drops all three
+hypotheses the current `dils.tex` carries.  Its proof is `sorry`, so nothing
+false is derived.
+
+### 5. Proof routes resting on obsolete premises
+
+**Four divergences are justified in-file by a "still `sorry`" that is no
+longer true** — three in `A/Proc/Measurement` (63IV, 81VI/VII/IX, 98II) and
+one in `A/Proc/Duplicators` (129X, on 51IX).  Each can now take the thesis's
+route.  Several other `route` verdicts are deliberate and documented
+(158II via the linking algebra, 208III avoiding the false 177Ia, `cauchy_formula`
+via `polygon_winding`).
+
+### 6. Stale prose — ours, and cheap to fix
+
+Module headers reading "Statements only; every proof is `sorry`" on files with
+none (`A/VN/Basic`, `A/VN/Completeness`, `B/Dils/{HilbertModules,
+SelfDualCompletion, Stinespring}`); erratum notes claiming a fix is
+outstanding when the source already carries it (`ncp_ceill`, `cceil_basic_2`,
+two on 72III), and one describing a *superseded* version of its own gap
+(33III, `centrally_similar_basic_3_meet_cceil_counterexample`); and a dozen
+mislabelled DISPs (`31IV` for `30IV`; five one-point drifts in `VNExamples`;
+`138II` for `138IV`; `154IV`/`154II` for `154V`; `216XI.Ax2`/`Ax3` for
+`216XIII`/`216XIV`; `150IV` for 146V.3/146VII; `146VIII` for `146IX`).
 
 ## What happens to a finding
 
