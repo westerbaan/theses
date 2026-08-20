@@ -85,21 +85,34 @@ auxiliaries that transcribe a numbered point.
 | `beff-vnexamples` | `B/Eff/{VNExamples, Comparisons}` | 56 | **17** (6 weaker, 11 differs) | 11 |
 | `acstar-matrices-representation` | `A/CStar/{Matrices, Representation}` | 118 | **28** (27 weaker, 1 stronger) | 56 (28 mathlib, 20 route, 8 mild) |
 | `avn-projections` | `A/VN/Projections` | 166 | **13** (7 weaker, 4 stronger, 2 differs) | 31 (24 route, 5 mild, 2 mathlib) |
+| `bdils-selfdual-kaplansky` | `B/Dils/{SelfDual, Kaplansky}` | 98 | **19** (15 weaker, 2 stronger, 2 differs) | 34 (17 route, 10 mild, 4 sorry, 3 mathlib) |
 
-**871 rows in; 115 statements do not match their source** (76 weaker, 25
-stronger, 14 differs, 0 unsure).
+**969 rows in; 134 statements do not match their source** (91 weaker, 27
+stronger, 16 differs, 0 unsure).
 
 Not yet audited: `A/CStar/{Positive, TowardsVN}`,
 `A/VN/{Division, NormalFunctionals, Completeness}`,
 `A/Proc/{Measurement, Duplicators, QuantumLambda}`,
-`B/Dils/{HilbertModules, SelfDualCompletion, SelfDual, Kaplansky, Pure}`,
+`B/Dils/{HilbertModules, SelfDualCompletion, Pure}`,
 `B/Eff/{Effectus, Quotients, Dagger, DiamondAmp, StatesPredicates,
-EffectAlgebras}`.  (`B/Dils/{SelfDual, Kaplansky}` and `B/Eff/{Effectus, Quotients}` are in
-  flight.  `Positive.lean` and `Measurement.lean` were released into the audit
+EffectAlgebras}`.  (Five fragments are in flight.  `Positive.lean` and `Measurement.lean` were released into the audit
   on 2026-08-20, the author's edits there having settled.)  (`Positive.lean` and `Measurement.lean` are being edited by the
 author and are held back deliberately.)
 
 ### Standing observations
+
+* **A missing field in a `structure` propagates silently.**  `B/Dils`'s
+  **164II `ExtTensor`** omits the point's clause that `η` is *injective*
+  (equivalently, definiteness of the inner product on `X ⊙ Y`, which 164VI
+  proves).  It is not a field and is stated nowhere — so `univprop_ext_tensor`
+  is `weaker` in turn, and `ext_tensor_uniqueness` is `stronger`, quantifying
+  over a wider class than the thesis does.  Nothing downstream looks wrong.
+  Audit `class`/`structure`/`def` field by field against the point.
+* **An unformalized construction can hollow out a statement that looks fine.**
+  **161II**'s right-`ℬ`-module, pre-Hilbert-module and self-duality structure
+  on `ℓ²((pᵢ))` is asked for by the exercise and formalized nowhere; that is
+  *why* 162IV is stated through bases, and it means its "`X ≅ ℓ²(…)`" is not
+  actually available in the tree.
 
 * **A whole closing Theorem can be missing.**  `A/VN/Projections` renders
   **70III** — *every commutative von Neumann algebra is nmiu-isomorphic to
