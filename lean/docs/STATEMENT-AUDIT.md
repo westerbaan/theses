@@ -83,18 +83,40 @@ auxiliaries that transcribe a numbered point.
 | `aproc-tensor` | `A/Proc/Tensor` | 148 | **8** (7 weaker, 1 stronger) | 19 (9 route, 8 mild, 1 mathlib, 1 sorry) |
 | `bdils-paschke-stinespring` | `B/Dils/{Paschke, Stinespring}` | 70 | **18** (12 stronger, 5 weaker, 1 differs) | 21 |
 | `beff-vnexamples` | `B/Eff/{VNExamples, Comparisons}` | 56 | **17** (6 weaker, 11 differs) | 11 |
+| `acstar-matrices-representation` | `A/CStar/{Matrices, Representation}` | 118 | **28** (27 weaker, 1 stronger) | 56 (28 mathlib, 20 route, 8 mild) |
 
-**520 of 1759 rows in; 71 statements do not match their source.**
+**705 rows in; 102 statements do not match their source** (69 weaker, 21
+stronger, 12 differs, 0 unsure).
 
 Not yet audited: `A/CStar/{Positive, TowardsVN}`,
 `A/VN/{Projections, Division, NormalFunctionals, Completeness}`,
 `A/Proc/{Measurement, Duplicators, QuantumLambda}`,
 `B/Dils/{HilbertModules, SelfDualCompletion, SelfDual, Kaplansky, Pure}`,
 `B/Eff/{Effectus, Quotients, Dagger, DiamondAmp, StatesPredicates,
-EffectAlgebras}`.  (`A/CStar/Matrices` and `Representation` are in flight.)  (`Positive.lean` and `Measurement.lean` are being edited by the
+EffectAlgebras}`.  (`A/VN/Projections` and `B/Dils/{SelfDual, Kaplansky}` are in flight.)  (`Positive.lean` and `Measurement.lean` are being edited by the
 author and are held back deliberately.)
 
 ### Standing observations
+
+* **Our doc comments can misrecord what is missing.**  `A/CStar/Matrices`'s
+  33III says only "`M_n f` need not be positive", and its doc comment explains
+  the omitted clause in the *pre-erratum* form ("need not be bounded") — but
+  erratum `parsec-330.30` reverses that clause, asking one to show `M_n f`
+  **is** bounded by `n²‖f‖`.  So the file records the wrong thing about its own
+  gap.  When a point has an erratum, audit against the corrected form and
+  check that our doc comment did too.
+* **Dropping a clause can cost a downstream proof.**  34XII omits the Lemma's
+  final "in particular, if `p = 0` or `q = 0` then `a = a* = 0`" — which is
+  exactly what the thesis uses to finish Choi, so `choi_2` substitutes a
+  private `col_eq_zero` for it.  A missing clause is not always inert.
+* **Mathlib classes in hypothesis position assume what the thesis proves.**
+  Where a statement takes `[CStarModule …]` or `[InnerProductSpace ℂ H]`, the
+  class axioms are assumed rather than established: 32VI and 4XV state
+  Cauchy–Schwarz only for *definite* inner products where the source allows
+  any, and 32IX.1/4III.1 reduce "defines a norm" to the defining equation.
+  Bundled Mathlib *objects* appearing in the statement (`gelfandTransform`,
+  `gnsStarAlgHom`) are treated as content that is present; classes in binder
+  position are not.
 
 * **Seven thesis defects now, not four.**  `B/Dils` adds three: **155II**
   (KSGNS) prints the adjointable map as `T : Y → X`, which does not typecheck
