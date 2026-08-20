@@ -1,0 +1,149 @@
+108I|BilinUnital|A/Proc/Tensor|ok|none|
+108I|BilinMult|A/Proc/Tensor|ok|none|
+108I|BilinStar|A/Proc/Tensor|ok|none|
+108I|MIUBilinear|A/Proc/Tensor|ok|none|
+108II|IsTensorProduct|A/Proc/Tensor|ok|none|
+108II|prod_functional_unique|A/Proc/Tensor|stronger|none|The thesis quantifies over f in A_* and g in B_* (normal functionals); ours over arbitrary linear functionals f, g. Harmless generalisation: normality of f and g is never used, only ultraweak continuity of the two candidate extensions. The thesis states this embedded uniqueness claim without proof.
+109II|IsHilbertTensorProduct|A/Proc/Tensor|ok|none|
+109III|l2Gamma|A/Proc/Tensor|ok|none|Definition only: the map gamma(f,g) = (f(x)g(y)) of part 1.
+109III|l2_tensor|A/Proc/Tensor|ok|none|
+109III|orthonormal_basis_iff_l2_iso|A/Proc/Tensor|ok|none|Part 2. 'Orthonormal basis' is rendered as orthonormal + dense span, whereas cstar.tex (the Definition preceding `orthonormal`) defines it as a MAXIMAL orthonormal set. The two are equivalent and the thesis itself uses the equivalence (109V: 'to see that G is maximal it suffices to show that the span of G is dense'), but the equivalence is not proved in this module.
+109III|hilbertTensor_nonempty|A/Proc/Tensor|ok|route|Part 3 (existence). The exercise's route is parts 1 and 2 plus the existence of orthonormal bases; ours instead takes the completion of the algebraic tensor product H (x) K with Mathlib's inner product, so neither l2_tensor nor orthonormal_basis_iff_l2_iso is used.
+110VI|HilbertTensor|A/Proc/Tensor|ok|none|Bundled form of the Notation.
+110VI|hilbTensor|A/Proc/Tensor|ok|none|
+109IV|hilb_tensor_basic_1|A/Proc/Tensor|ok|faithful|
+109IV|hilb_tensor_basic_2|A/Proc/Tensor|ok|faithful|'Orthonormal basis' rendered as orthonormal + dense span, as in the 109III row.
+110I|L2Bounded|A/Proc/Tensor|ok|none|The Gram sum is real and nonnegative, so taking its real part is faithful; the bound is carried with its nonnegativity, as in the thesis's B in [0,infinity).
+110III|IsHilbertTensorProduct.gram_sum_re|A/Proc/Tensor|ok|faithful|Auxiliary: the computation with which the printed proof opens.
+110III|hilb_tensor_universal_property|A/Proc/Tensor|ok|route|Statement matches (gamma is l2-bounded, by 1; initiality; norm of the extension at most B). The printed proof defines beta_gamma by the orthonormal-basis series and proves convergence with Bessel and Parseval; ours factors through the algebraic tensor product and extends by density, using no basis.
+110V|hilb_tensor_unique|A/Proc/Tensor|ok|none|
+111II|schur|A/Proc/Tensor|ok|mathlib|Closed by Mathlib's Matrix.PosSemidef.hadamard. The printed proof (write a = C*C and b = D*D and recognise the quadratic form as a sum of squares) is not transcribed.
+111IV|mult_completely_monotone|A/Proc/Tensor|weaker|none|Ours adds PosSemidef a and PosSemidef b. As printed the exercise assumes only a <= a~ and b <= b~ over C and is then FALSE: at N = 1, a = b = -1 <= 0 = a~ = b~ gives a.b = 1 which is not <= 0. Positivity of a and b is what the sole consumer (111VI) has and what any Schur-based proof needs. Not recorded in ERRATA.md.
+111V|gram_quad_eq|A/Proc/Tensor|ok|none|Auxiliary with no counterpart in the printed proof.
+111V|gram_posSemidef|A/Proc/Tensor|ok|faithful|The positivity of the Gram matrices that the printed proof asserts.
+111V|gram_op_le_posSemidef|A/Proc/Tensor|ok|faithful|The inequality (<Ax_i,Ax_j>) <= ‖A‖^2 (<x_i,x_j>) that the printed proof asserts.
+111V|sum_entries_nonneg|A/Proc/Tensor|ok|none|Auxiliary.
+111V|exists_opTensor|A/Proc/Tensor|ok|faithful|
+111VII|eq_zero_of_inner_htmul_eq_zero|A/Proc/Tensor|ok|faithful|The last step of the printed proof of condition 3.
+111VII|exists_np_of_spatial_product|A/Proc/Tensor|ok|faithful|Condition 2 of the printed proof, via 89IX and the summable family of vectors.
+111VII|spatial_dense|A/Proc/Tensor|ok|faithful|Condition 1 of the printed proof.
+111VII|special_tensor|A/Proc/Tensor|ok|faithful|
+111XII|isTensorProduct_comp|A/Proc/Tensor|ok|faithful|Auxiliary: the transport along the nmiu-isomorphisms that the exercise's 'using ngns and special-tensor' needs.
+111XII|vnTensorProduct_exists|A/Proc/Tensor|ok|faithful|
+111XII|vnTensorProduct_nonempty|A/Proc/Tensor|ok|faithful|Bundled duplicate of vnTensorProduct_exists, with the two factors in different universes.
+112II|BilinCP|A/Proc/Tensor|ok|none|Clause 4c.
+112II|IsBasicFunctional|A/Proc/Tensor|ok|none|Clause 1.
+112II|IsSimpleFunctional|A/Proc/Tensor|ok|none|Clause 1.
+112II|tensorNorm|A/Proc/Tensor|ok|none|Clause 2. Real parts are taken of quantities that are real for basic functionals.
+112II|NormLimitOfSimple|A/Proc/Tensor|ok|none|Clause 3.
+112II|uwTensorTopology|A/Proc/Tensor|ok|none|Clause 3.
+112II|BilinBounded|A/Proc/Tensor|ok|none|Clause 4a.
+112II|BilinNormal|A/Proc/Tensor|ok|none|Clause 4b.
+112III|exists_fin_repr|A/Proc/Tensor|ok|none|Auxiliary.
+112III|posMap_gram_posSemidef|A/Proc/Tensor|ok|faithful|The 'sigma is completely positive by cp-commutative, hence (sigma(a_n* a_m)) is positive' step.
+112III|product_state_positive|A/Proc/Tensor|ok|faithful|
+112V|odotF_star|A/Proc/Tensor|ok|none|Auxiliary.
+112V|basic_state_inner_product|A/Proc/Tensor|ok|faithful|Rendered as a positive semidefinite Hermitian form. Definiteness is not claimed and cannot be: 112II itself calls the associated ‖.‖_omega a SEMI-norm, so 'inner product' there means semi-inner product.
+112V|basicCore|A/Proc/Tensor|ok|none|Packaging of the previous row as Mathlib's PreInnerProductSpace.Core, to get Cauchy-Schwarz.
+112V|basic_nonneg_tmul|A/Proc/Tensor|ok|none|Auxiliary.
+112VI|exists_indep_repr|A/Proc/Tensor|ok|faithful|Makes precise the printed proof's 'by replacing them if necessary we may assume that a_1..a_N are linearly independent'.
+112VI|product_functionals_separating|A/Proc/Tensor|ok|faithful|
+112VIII|tensorNorm_nonneg|A/Proc/Tensor|ok|none|
+112VIII|tensorNorm_smul|A/Proc/Tensor|ok|none|
+112VIII|tensorNorm_add_le|A/Proc/Tensor|ok|none|
+112VIII|tensorNorm_eq_zero_iff|A/Proc/Tensor|ok|none|
+112VIII|tensor_product_norm|A/Proc/Tensor|ok|none|The four norm axioms assembled.
+112IX|product_functional|A/Proc/Tensor|ok|faithful|Follows the exercise's hint (luws). The two boundedness hypotheses are stated but unused, as the doc comment records.
+112IX|exists_uwExtension_odotF|A/Proc/Tensor|ok|none|Auxiliary: 112IX in the factorised form that 115II and 116I consume.
+112X|basic_star_self_le|A/Proc/Tensor|ok|none|Auxiliary for part 2.
+112X|conjProdNP|A/Proc/Tensor|ok|none|Definition of the members of the collection Omega of part 1.
+112X|tensor_basic_1|A/Proc/Tensor|weaker|mild|Part 1 makes three claims; the statement carries two (Omega is order separating; every np-functional on T is an operator-norm limit of finite sums from Omega). The third - that omega -> omega o gamma_odot is a bijection from Omega onto the basic functionals - is only half present, as the unlabelled isBasicFunctional_comp_lift and exists_conjProdNP_of_isBasicFunctional; the uniqueness half ('for some UNIQUE omega in Omega') is stated nowhere in the module. Proof: order separation comes from 30X plus the ultrastrong approximation of 74VI, not from vn-center-separating-fundamental as the exercise directs.
+112X|tensor_basic_2|A/Proc/Tensor|ok|mild|The thesis renormalises Omega to its unital members Omega_1 and quotes 21VII order-separating-norm; ours applies the order separation of Omega directly at gamma_odot(s)*gamma_odot(s) <= ‖s‖^2 . 1, i.e. 21VII's own argument without the renormalisation (which is unavailable when omega(1) = 0).
+112X|tensor_basic_3|A/Proc/Tensor|ok|faithful|Part 3's first claim, ‖f o gamma_odot‖ <= ‖f‖, is not in this statement; it is the reverse direction of tensor_basic_4.
+112X|tensor_basic_4|A/Proc/Tensor|ok|faithful|The norm equality is rendered in bound form: the same constant M bounds f and f o gamma_odot.
+112X|tensor_basic_5|A/Proc/Tensor|ok|faithful|
+112X|exists_uwExtension_of_normLimit|A/Proc/Tensor|ok|none|Auxiliary (the normal-limit lemma), written to close the gap ERRATA.md records as 115II(e).
+112X|uwTensor_continuous_of_uwExtension|A/Proc/Tensor|ok|none|Auxiliary.
+112XI|tensor_universal_property|A/Proc/Tensor|ok|faithful|The 'trivial details' the printed proof waves through (the inverse of gamma_odot on the subalgebra, and the norm clause) are supplied.
+113II|mi_bilinear_cp|A/Proc/Tensor|ok|none|Exercise, no printed proof. Its index entry points at Schur's product theorem; our proof needs no Schur - multiplicativity and involution preservation collapse the double sum to x* x.
+113III|matBilin|A/Proc/Tensor|ok|none|
+113IV|cp_bilinear|A/Proc/Tensor|weaker|none|The exercise asks for a three-way equivalence: (1) beta is cp, (2) M_N beta is cp for each N, (3) (M_N beta)(A,B) >= 0 for positive A, B. The statement proves only (1) <-> (3). Clause (2) appears nowhere in the module; the doc comment says it is subsumed by applying the statement to M_N beta, but that instance is never formed.
+113IV|cp_bilinear_comp|A/Proc/Tensor|ok|none|The exercise's corollary. beta' is supplied with its defining equation rather than built as a composite.
+114I|tensor_universal_property_extra|A/Proc/Tensor|ok|none|beta_gamma is rendered as an arbitrary ultraweakly continuous g with g o gamma = beta, which is the same map by 112XI's uniqueness.
+114I|nonneg_of_nonneg_on_tensorSpan|A/Proc/Tensor|ok|none|Auxiliary: the functional case of clause 4, needed because BilinNormal confines its three algebras to a single universe and C is not in it.
+114II|tensor_uniqueness|A/Proc/Tensor|ok|none|
+115I|VNTensorProduct|A/Proc/Tensor|ok|none|
+115I|vnTensor|A/Proc/Tensor|ok|none|
+115I|VNT|A/Proc/Tensor|ok|none|
+115II|tmap_cs|A/Proc/Tensor|ok|route|The printed proof's inequality beta_odot(s)* beta_odot(s) <= ‖f‖‖g‖ beta_odot(s* s), but derived without amplifying f: cp-cs is applied to a vector of arguments and the difference is split as P(x)R' + R(x)P' + R(x)R'. This replaces the thesis's M_n f and M_n (x) bookkeeping.
+115II|tmapBilin|A/Proc/Tensor|ok|none|
+115II|tmapBilin_cp|A/Proc/Tensor|ok|faithful|The doc comment's leading bold 113IV is a citation, not this declaration's point; this is the 'beta is completely positive by cp-bilinear' step of 115II.
+115II|exists_extension_conjProdNP|A/Proc/Tensor|ok|faithful|The printed computation omega o beta_odot = sum_kl sigma(c_k* f(.) c_l) (x) tau(d_k* g(.) d_l) fed to 112IX. ERRATA.md 115II(b),(c),(d) record the three typos in that paragraph; the corrected form is what is transcribed.
+115II|exists_npExtension_conjProdNP|A/Proc/Tensor|ok|none|The doc comment's leading bold 112X is a citation; this is an auxiliary of 115II (positivity and normality of the extension E_chi).
+115II|tmapBilin_bounded|A/Proc/Tensor|ok|mild|The printed boundedness argument, with the cp-Cauchy-Schwarz step supplied by tmap_cs instead of by amplification.
+115II|tmapBilin_normal|A/Proc/Tensor|ok|route|The thesis reads normality off the basic functionals in one line ('incidentally, since each omega o beta_odot is ultraweakly continuous, so is beta_odot'); that is the gap ERRATA.md records as 115II(e), and the proof here closes it with the normal-limit lemma and predual-complete.
+115II|exists_tmap|A/Proc/Tensor|ok|mild|The printed assembly (cp by 113IV, bounded and normal, then 112XI, 114I(5) and 44XV), with the two local deviations recorded on tmapBilin_bounded and tmapBilin_normal. The printed defining equation reads f(a) (x) f(b); we use the corrected g(b), ERRATA.md 115II(a).
+115II|tensor_functorial|A/Proc/Tensor|ok|faithful|Parts 1-3, obtained from 114I as the printed proof directs.
+115IV|tensor_functor_id|A/Proc/Tensor|ok|none|Bifunctoriality rendered concretely as id (x) id = id for ncp-maps; the claim for W*_miu, W*_cpu and W*_cpsu follows because tensor_functorial keeps each class closed. The categorical statement itself is not formed.
+115IV|tensor_functor_comp|A/Proc/Tensor|ok|none|Same rendering as tensor_functor_id.
+115V|genSub|A/Proc/Tensor|ok|none|Auxiliary: the thesis's subalgebra T of C (x) D.
+115V|GenAlg|A/Proc/Tensor|ok|none|Auxiliary.
+115V|genGamma|A/Proc/Tensor|ok|none|Auxiliary: the thesis's gamma(a,b) = f(a) (x) g(b).
+115V|isTensorProduct_genGamma|A/Proc/Tensor|ok|mild|The printed proof verifies condition 3 only for a CENTRAL PROJECTION z of T, whereas condition 3 of 108II is faithfulness, i.e. the same for every positive t. The printed argument gives the general case verbatim (gamma(sigma o f, tau o g) is the restriction of sigma (x) tau to T), and that is what is proved here. Not recorded in ERRATA.md.
+115V|tensor_injective|A/Proc/Tensor|ok|faithful|Rendered for any ncp-map agreeing with f (x) g on pure tensors, which is f (x) g by 115II's uniqueness.
+116I|exists_predualTensor|A/Proc/Tensor|ok|none|Well-definedness of f (x) g, which the Lemma presupposes without stating.
+116I|product_functional_norm|A/Proc/Tensor|ok|faithful|The printed proof verbatim (polar decomposition, u (x) v is a partial isometry, functional-norm).
+116III|vtmul_nonneg|A/Proc/Tensor|ok|faithful|First half of part 1.
+116III|tensor_simple_facts_1|A/Proc/Tensor|weaker|none|Ours assumes 0 <= a_1 and 0 <= b_1 in the monotonicity clause. As printed part 1 says 'for all a_1 <= a_2 from A and b_1 <= b_2 from B', with no positivity, and is then FALSE: for A = B = C, a_1 = b_1 = -1 <= 0 = a_2 = b_2 gives a_1 (x) b_1 = 1 which is not <= 0 = a_2 (x) b_2. Not recorded in ERRATA.md.
+116III|tensor_simple_facts_3|A/Proc/Tensor|ok|faithful|Part 3. Norm continuity is rendered as the explicit cross-norm estimate; the proof splits the difference and applies 116I, as the exercise directs.
+116III|norm_sub_le_of_tmul_factor|A/Proc/Tensor|ok|none|Auxiliary: part 3 in the form 116IV.2 consumes.
+116III|tensor_simple_facts_4|A/Proc/Tensor|ok|sorry|Faithful transcription of part 4. The THESIS is wrong: part 4 is FALSE AS PRINTED - see the ERRATA.md row 116III.4 and the machine-checked tensor_simple_facts_4_counterexample in this file. The sorry is deliberate and not closable.
+116III|tensor_simple_facts_4_hint_form|A/Proc/Tensor|ok|none|The statement to which the exercise's hint reduces part 4. It is true; it is the reduction that is invalid, since the ultraweak topology of A (x) B is generated by all np-functionals and not only by the members of Omega.
+116III|tensor_simple_facts_4_counterexample|A/Proc/Tensor|ok|none|Not a transcription: the machine-checked refutation of part 4 at A = B = l-infinity(N). See the ERRATA.md row 116III.4.
+116III|tensorNorm_tmul_le|A/Proc/Tensor|ok|none|Auxiliary: the <= half of part 2 in tensor-norm form.
+116III|norm_vtmul_le|A/Proc/Tensor|ok|none|The <= half of part 2.
+116III|le_tensorNorm_tmul|A/Proc/Tensor|ok|none|The >= half of part 2 in tensor-norm form. It needs the SUBUNITAL form of 21VII, which A/VN does not carry, so it goes through 87VI and 86IX instead.
+116III|norm_vtmul|A/Proc/Tensor|ok|none|The equation of part 2.
+116III|tensor_simple_facts_2|A/Proc/Tensor|ok|none|Part 2, including the norm continuity the exercise warns is not entirely trivial.
+116III|continuous_ultraweak_vtmul_right|A/Proc/Tensor|ok|none|The normality half of part 5.
+116III|continuous_ultraweak_vtmul_left|A/Proc/Tensor|ok|none|Mirror of the previous. Not stated in the thesis; it is what 116IV.1 needs in place of the false part 4.
+116III|tensor_simple_facts_5|A/Proc/Tensor|weaker|none|Ours assumes 0 <= a. As printed part 5 asks that a (x) (.) be an ncp-map 'for every a in A', which is false for non-positive a - at a = -1 the map is not even positive. Not recorded in ERRATA.md.
+116IV|tensor_generation_1|A/Proc/Tensor|ok|route|The printed proof (116V) appeals to joint ultraweak continuity of (x), i.e. 116III.4, which is false; ours iterates the two SEPARATE slices and uses that the ultraweak closure of a submodule is a submodule. ERRATA.md row 116V.
+116IV|tensor_generation_2|A/Proc/Tensor|ok|faithful|
+116VII|char_bounded|A/Proc/Tensor|ok|mild|First step of the printed proof; as in tensor_basic_2 the renormalisation of the order separating collection to its unital members is avoided.
+116VII|char_normal|A/Proc/Tensor|ok|faithful|Second step of the printed proof.
+116VII|tensor_characterization|A/Proc/Tensor|ok|mild|The printed proof gets injectivity of gamma_tensor from its carrier and carrier-miu (69IV); ours reads it off the centre separating collection directly. The rest follows the printed proof.
+117II|sum_generation_1|A/Proc/Tensor|weaker|none|Realigned: the coprojections kappa_i(1) are added to the generating set, so the conclusion is that a LARGER set generates. The printed statement is false and is refuted by sum_generation_1_is_false below; ERRATA.md row 117II.1. The section's [forall i, Nontrivial (A i)] instance, forced by Mathlib's C*-algebra structure on the direct sum, additionally excludes zero summands.
+117II|sum_generation_1_is_false|A/Proc/Tensor|ok|none|Not a transcription: the machine-checked refutation of part 1 as printed.
+117II|sum_generation_2|A/Proc/Tensor|ok|none|Part 2. The section's [forall i, Nontrivial (A i)] instance excludes zero summands; it is forced by the C*-algebra instance on the direct sum, not by the mathematics.
+117III|sumTmul|A/Proc/Tensor|ok|none|
+117III|tensor_distributes_over_sums|A/Proc/Tensor|ok|faithful|The printed proof through 116VII, 117II.1 and 117II.2.
+118II|ceil_tensor|A/Proc/Tensor|ok|faithful|Part 1.
+118II|vtmul_mono_left|A/Proc/Tensor|ok|none|Auxiliary.
+118II|vtmul_mono_right|A/Proc/Tensor|ok|none|Auxiliary.
+118II|vtmulPL|A/Proc/Tensor|ok|none|Auxiliary.
+118II|vtmulPR|A/Proc/Tensor|ok|none|Auxiliary.
+118II|cceil_tensor|A/Proc/Tensor|ok|faithful|Part 2.
+118IV|opTensor_le_of_fix|A/Proc/Tensor|ok|faithful|Steps 2 and 3 of the exercise, rendered together in operator form.
+118IV|carrier_tensor_1|A/Proc/Tensor|weaker|none|Step 1 asks first for (f (x) g)(ceil f (x) ceil g) = 1 (x) 1 and then for ceil(f (x) g) <= ceil f (x) ceil g; ours states only the second, because the first is false unless f and g are unital - ERRATA.md row 118IV.1. Separately: the exercise says 'np-maps', but f (x) g is defined (115II) only for ncp-maps, which is what we require.
+118IV|carrier_tensor_4|A/Proc/Tensor|ok|none|Step 4, the case of functionals, for any np-functional chi restricting to the product.
+118IV|ncpCarrier_eq_projSup|A/Proc/Tensor|ok|none|Auxiliary for step 5.
+118IV|tensor_projSup_le|A/Proc/Tensor|ok|none|Auxiliary for step 5.
+118IV|carrier_tensor_5|A/Proc/Tensor|ok|mild|Step 5's conclusion. The printed route is 1 (x) 1 = sup ceil(sigma (x) tau) followed by diamond-suprema and diamond-composition; ours writes the carrier of h as the supremum of the carriers of the nu o h and pushes the two suprema through (x) as in 118II.2.
+118IV|carrier_tensor_6|A/Proc/Tensor|ok|none|Step 6.
+119II|IsTensorProduct₃|A/Proc/Tensor|ok|none|The trilinear form of 108II, which 119I's 'all of it can be easily adapted' licenses. Lean name is IsTensorProduct with a subscript 3.
+119II|tensorTriple|A/Proc/Tensor|ok|none|
+119II|tensorTriple_dense|A/Proc/Tensor|ok|faithful|The doc comment's leading bold 116IV is a citation; this is condition 1 for the trilinear map, and it follows the printed proof (tensor-generation with T = C).
+119II|triple_tensor|A/Proc/Tensor|ok|route|The printed proof verifies the WRONG third condition: centre separation instead of faithfulness (ERRATA.md row 119II, which stands). The proof here establishes faithfulness directly, by Cauchy-Schwarz for the seminorm w -> ‖sqrt(t).w‖_psi together with the ultrastrong density of the span of the elementary tensors (74VI), and needs no trilinear tensor-characterization. The divergence class recorded for this proof in why-open.csv is not the route the proof takes.
+119IV|exists_vnt_transfer|A/Proc/Tensor|ok|none|The doc comment's leading bold 114II is a citation; this is an auxiliary of 119IV (universe transfer of the chosen tensor product).
+119IV|isTensorProduct_assoc|A/Proc/Tensor|ok|route|The doc comment's leading bold 116III is a citation. This is the BILINEAR route to the associator: beta(a,t) = ((a (x) 1) (x) 1).Theta(t) is shown to be a tensor product through 116VII, so the Corollary is obtained without the trilinear 119II that the thesis derives it from.
+119IV|exists_associator_same|A/Proc/Tensor|ok|route|Single-universe form. Derived from isTensorProduct_assoc and plain 114II rather than from 119II as the printed Corollary is.
+119IV|exists_associator|A/Proc/Tensor|ok|route|As the previous row, with the three algebras lifted into a common universe.
+119IVb|exists_unitors|A/Proc/Tensor|ok|none|Both unitors, with the two bilinear maps shown to be tensor products as the exercise asks.
+119IVc|isTensorProduct_flip|A/Proc/Tensor|ok|none|Stated in the general form (the flip of any tensor product is a tensor product), which yields the exercise's instance. ERRATA.md row 119IVc records that the exercise writes the domain as A (x) B where it must be A x B; the corrected form is what is transcribed.
+119IVc|exists_braiding|A/Proc/Tensor|ok|none|
+119V|vn_smc_associator_natural|A/Proc/Tensor|ok|faithful|119V's naturality clause also asserts that the braidings and the unitors are natural ('by a similar but simpler argument one sees that...'); those squares have no counterpart in the module.
+119V|vn_smc_pentagon|A/Proc/Tensor|ok|faithful|
+119V|vn_smc_triangle|A/Proc/Tensor|ok|faithful|The first of the two diagrams in that display. The second, lambda_C = rho_C on C (x) C, is not stated anywhere in the module.
+119V|vn_smc_hexagon|A/Proc/Tensor|ok|faithful|
+119V|vn_smc_symmetry|A/Proc/Tensor|ok|faithful|The two remaining diagrams: braiding o braiding = id, and lambda_B o braiding = rho_B.

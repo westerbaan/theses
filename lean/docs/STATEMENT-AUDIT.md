@@ -79,12 +79,38 @@ auxiliaries that transcribe a numbered point.
 | fragment | modules | rows | stmt not `ok` | proof not `faithful`/`none` |
 |---|---|---:|---:|---:|
 | `acstar-basic` | `A/CStar/Basic` | 109 | **16** (11 weaker, 5 stronger) | 72 (43 mathlib, 26 route, 3 mild) |
+| `avn-basic` | `A/VN/Basic` | 137 | **12** (all weaker) | 19 |
+| `aproc-tensor` | `A/Proc/Tensor` | 148 | **8** (7 weaker, 1 stronger) | 19 (9 route, 8 mild, 1 mathlib, 1 sorry) |
+
+**394 of 1759 rows in; 36 statements do not match their source.**
 
 Not yet audited: `A/CStar/{Positive, Matrices, Representation, TowardsVN}`,
-all of `A/VN`, `A/Proc/{Measurement, Tensor, Duplicators, QuantumLambda}`, all
-of `B/Dils`, all of `B/Eff`.
+`A/VN/{Projections, Division, NormalFunctionals, Completeness}`,
+`A/Proc/{Measurement, Duplicators, QuantumLambda}`, all of `B/Dils`, all of
+`B/Eff`.  (`Positive.lean` and `Measurement.lean` are being edited by the
+author and are held back deliberately.)
 
 ### Standing observations
+
+* **Four thesis statements are false as printed, none of them previously
+  recorded.**  Three share one shape — a monotonicity or positivity clause
+  stated with no positivity hypothesis: **111IV** `mult-completely-monotone`
+  (`(a)≤(ã)`, `(b)≤(b̃)` ⟹ `(ab)≤(ãb̃)`; at `N=1`, `a=b=−1≤0`), **116III.1**
+  (`a₁⊗b₁ ≤ a₂⊗b₂` for all `a₁≤a₂`, `b₁≤b₂`; same counterexample at
+  `𝒜=ℬ=ℂ`), and **116III.5** (`a ⊗ (·)` an ncp-map for *every* `a`).  The
+  fourth is **42III**, which describes the ultrastrong opens with `‖a−b‖_ω ≤ ε`
+  where it must be `< ε` — with `≤` a closed ball would be open.  In every
+  case our Lean statement silently carries the repair, so it is our *statement*
+  that is `weaker`, not our proof that is wrong.
+* **A DISP-tagged declaration is not always the right one.**  `A/VN/Basic`'s
+  **48V** is rendered by a statement strictly weaker than the point (it fixes
+  the family `Ω` and then ignores it) — while the thesis's actual statement
+  *is* in the file, as `gnsRepFam_normal`, carrying no doc comment and hence no
+  DISP at all.  Auditors should check the neighbourhood, not just the tagged
+  declaration.
+* **Multi-part exercises rendered by one clause** are the commonest
+  divergence by far, in every module audited so far.  Check every numbered
+  part, including the "and conclude that …" tails.
 
 * **Deliberate weakenings are mostly unmarked.**  `A/CStar/Basic` carries two
   doc comments saying in so many words that only a "sample claim" of a
