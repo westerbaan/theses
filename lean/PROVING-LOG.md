@@ -23544,3 +23544,229 @@ The one thing worth recording for the audit's own sake: the audit's note on
 `A₂*`, but the reason is subtler than "the mirroring swap is missing" — the
 mirror reverses the *product* as well, and it is the composite `star ∘ mirror`
 that the file's other terms use.
+
+## Session 94 — A/CStar/Matrices + Representation: **the first repair pass — 18 of the 28 non-`ok` rows repaired**, 34XII gets its "in particular" (and `choi_2` is routed through it), 33I becomes rectangular, and the 27XVII dependency inversion is undone (worker on `Theses/A/CStar/Matrices.lean`, `Theses/A/CStar/Representation.lean`)
+
+Scope: `docs/audit/acstar-matrices-representation.csv`, the 28 rows whose
+`stmt` is not `ok` (27 `weaker`, 1 `stronger`) plus the two proof-side
+dependency inversions the brief names.  Both files compile with **no errors
+and no `sorry`**; every statement touched or added was `#print axioms`-checked
+*in situ* (source copied to scratch, `#print axioms` appended, recompiled) —
+all `[propext, Classical.choice, Quot.sound]`.
+
+No existing statement was weakened, none deleted.  Where a point is
+multi-clause, the missing clause was added as a *new* DISP-tagged declaration
+beside the existing one rather than folded into it as a conjunct, because
+`cstar_positive_2x2matrix` is destructured downstream
+(`A/Proc/Tensor.lean:4924`) and that file is out of scope for this pass.
+
+### Repaired — our mis-transcriptions, no ruling needed (18 rows)
+
+**`Matrices.lean` (13)**
+
+* **34XII** `cstar_positive_2x2matrix` — the Lemma's closing "in particular,
+  if `p = 0` or `q = 0` then `a = a* = 0`" was mentioned only in a
+  parenthesis.  It is now **`cstar_positive_2x2matrix_eq_zero`**, proved the
+  Lemma's own way — off the two inequalities, `p = 0` killing the right-hand
+  side of `a* a ≤ ‖p‖ q` — and **`choi_2` now uses it** where it used the
+  private `col_eq_zero`.  So the thesis's own finish to Choi's Lemma is
+  exhibited.  (1)
+* **33I**.1/.2/.3 `cstar_matrices_1/2/3` — all three were stated for square
+  `N×N` where 33I is about `M×N` matrices and `𝓑^a(𝒜^N, 𝒜^M)` (the running
+  text already carries erratum `parsec-330.10`).  All three are now over two
+  index sets `Fin M`, `Fin N`, and **part 2 gains the linearity clause** it
+  omitted (`toCLM (c•A + B) = c•toCLM A + toCLM B`).  Part 3 needed a new
+  proof: `toCLMNonUnitalAlgHom` is square-only, so it now runs on
+  `Matrix.vecMul_vecMul`.  A `/-!` block states the Mathlib dictionary
+  (`toCLM` acts by `vecMul`, hence transposes the index rôles and reverses
+  composition) once, for all three.  (1)
+* **33III**.1 — "applying `f` entrywise *gives a linear map* `M_N f`" was not
+  stated; the doc pointed at `CStarMatrix.mapₗ` while the theorem used the
+  unbundled `.map`.  Added as **`mnf_linear`**, in the `.map` form the rest of
+  the file uses, proved through `mapₗ`.  (4)
+* **33III**.3 `mnf_not_positive` — two defects in one row.  The second clause
+  of 33III.3, *`M_n f` is bounded by `n²‖f‖` when `f` is bounded*, is now
+  **`mnf_bounded`**; and the doc comment, which described the omitted clause
+  in its **pre-erratum** form ("need not be bounded uniformly in `N`"), is
+  corrected — `parsec-330.30` reverses that clause.  The proof needs
+  `‖M‖ ≤ ∑ᵢⱼ ‖Mᵢⱼ‖` for `CStarMatrix`, which Mathlib proves but only inside
+  the private `antilipschitzWith_toMatrixAux`; it is repeated here as
+  `cstarMatrix_norm_le_sum`.  (2)
+* **34XVI** `cp_russo_dye` and **34aVIII** `russo_dye_cor` — both Corollaries
+  assert `‖f‖ = ‖f(1)‖`; we stated only `‖f(a)‖ ≤ ‖f(1)‖‖a‖`, the reverse
+  bound being "inexpressible" for a bare `𝒜 →ₗ[ℂ] ℬ`.  It is expressible:
+  `unitalBoundCLM f h := f.mkContinuous ‖f 1‖ h` bundles the map with the
+  bound it already satisfies, and **`norm_unitalBoundCLM`** proves
+  `‖unitalBoundCLM f h‖ = ‖f 1‖` (`≤` from `mkContinuous_norm_le`, `≥` by
+  evaluating at `1`; no `Nontrivial 𝒜` needed, the trivial case giving `0 = 0`).
+  **`cp_russo_dye_norm`** and **`russo_dye_cor_norm`** are the two Corollaries.
+  (1)
+* **32IX**.1 `chilb_norm_basic_1` — recorded only the defining equation.
+  **`chilb_norm_basic_1_norm`** now states the three clauses solution
+  `parsec-320.90`(1) asks for — `√‖⟨x,x⟩‖ = 0 ↔ x = 0`, `‖c•x‖ = |c|‖x‖`,
+  the triangle inequality — *phrased in the formula*, not in the ambient
+  norm, and read off `CStarModule.normedSpaceCore`, which derives them from
+  the inner-product axioms (its `norm_triangle` from Cauchy–Schwarz **32VI**,
+  as the solution's does).  (1)
+* **32X**.2 `chilb_form_bounded_adjoint` — assumed the adjoint already
+  continuous and proved only the norm equality, where the Lemma concludes
+  that `T*` *is bounded*.  **`exists_clm_adjointTo_norm`** now takes a bare
+  map `S : Y → X` adjoint to a bounded `T : X → Y` and produces the bundled
+  `S' : Y →L[ℂ] X` with `⇑S' = S` and `‖S'‖ = ‖T‖`.  (The existing
+  `exists_clm_adjointTo`, used in `B/Dils/HilbertModules`, is untouched; it
+  is the endomorphism case without the norm.)  (1)
+* **32XIII** `bax_cstar` — the tagged theorem states only closedness; the
+  Proposition ("`𝓑^a(X)` *is* a C*-algebra") was discharged by the private
+  `Bax` subalgebra and its instances but never *stated*.  A DISP-tagged
+  `noncomputable example [CompleteSpace X] : CStarAlgebra (Bax 𝒜 X) :=
+  inferInstance` now states it, in exactly the shape the audit already marks
+  `ok` for **33I**.4 (`M_N(𝒜)`).  (1)
+* **32IV**.1 `paschke_ideal_closed` — stated only that the set is closed.
+  **`paschke_ideal`** now states that `J = {f : f(0) = 0}` *is an ideal* of
+  `C[0,1]` (the kernel of evaluation at `0`, which is solution
+  `parsec-320.40`'s reading) and closed.  The Hilbert-`C[0,1]`-module
+  structure the exercise then puts on `J` is still not converted; see below.
+  (1)
+* **34VI** `cstar_product_4` — "the coordinate projections are themselves
+  cpsu, and they are the projections of **20aII**" was not stated, so the
+  universal property had no projections to be universal *over*.
+  **`cstar_product_4_proj`** states that `π_i : ⊕ⱼ𝒜ⱼ → 𝒜ᵢ`, `x ↦ x i`, is
+  miu, hence cpu, hence cpsu — complete positivity through **34IX**.1
+  `cp_of_mi`.  Part 2 (the equaliser) is still absent; see below.  (1)
+
+**`Representation.lean` (5)**
+
+* **30IV**.2 `omega_norm_basic_2` — the exercise asks for the inequality
+  **and four counterexamples**, with explicit 2×2 witnesses; we had the
+  inequality only.  **`omega_norm_basic_2_counterexamples`** now supplies all
+  four, in `M₂(ℂ)` with the exercise's own p-map `ω : M ↦ M₀₀` (positivity of
+  `ω` proved, not assumed): `a = (⁰⁰₀₁)`, `b = ½(¹¹₁₁)` refute
+  `‖ab‖_ω ≤ ‖a‖_ω‖b‖`; `a = b = ½(¹¹₁₁)` refute both
+  `‖ab‖_ω ≤ ‖a‖_ω‖b‖_ω` and `‖a*a‖_ω = ‖a‖_ω²` (there `‖a‖_ω = √½` while
+  `‖a‖_ω² = ½ < √½`); and the matrix unit `(⁰¹₀₀)`, for which `‖a‖_ω = 0` but
+  `‖a*‖_ω = 1`, refutes `‖a*‖_ω = ‖a‖_ω` — the one the exercise leaves open.
+  The doc also records that the stated inequality is the *corrected* form of
+  erratum `parsec-300.40`.  (1 for the first three, 2 for the fourth)
+* **30V** `inner_product_completion` — the exercise's two *extension* clauses
+  were missing, and the last of them is what **30VI**'s `ϱ_ω` needs.
+  **`inner_product_completion_extension`** (every uniformly continuous map
+  into a complete space extends uniquely to the completion) and
+  **`inner_product_completion_extendL`** (every bounded linear map into a
+  Hilbert space extends uniquely to a bounded linear map) are both added, as
+  `∃!` statements against `UniformSpace.Completion V`, the very completion
+  the headline produces.  (1)
+* **27XVIII**.2 `gelfand_representation_injective` — the clause "and its range
+  is a C*-subalgebra of `C(spec 𝒜)`" was deferred to 29IX, which did not
+  state it either.  **`gelfand_representation_range`** now states it: a
+  `StarSubalgebra` whose carrier is `Set.range γ` and is closed, together
+  with an miu-isomorphism `𝒜 ≃⋆ₐ[ℂ] S` implemented by `γ`.  (1)
+* **29IX** `injective_miu_iso_on_image` — same clause, at its source: the
+  Exercise asks one to *conclude* that `ρ(𝒜)` is a C*-subalgebra of `ℬ`
+  isomorphic to `𝒜`, and only closedness was stated.
+  **`injective_miu_iso_on_image_isomorphism`** adds it, in the same shape.
+  This is the statement 27XVIII.2 and 30X both defer to; it now exists.  (1)
+* **28II**.3 `functional_calculus_3` — the exercise asks *first* for the
+  continuous `j : spec(C*(a)) → spec(a)`, `ρ ↦ ρ(a)`, and we stated only the
+  sample property `a^α a^β = a^{α+β}`; `j` was used inside
+  `functional_calculus_4` but stated nowhere.  **`functional_calculus_3_j`**
+  states both halves (well-definedness and continuity).  `Φ` itself remains
+  Mathlib's `cfc`, as the doc says.  (1)
+
+### Repaired — proof side: one of the two dependency inversions
+
+* **27XVII** `spectrum_miu` was closed by Mathlib's
+  `WeakDual.CharacterSpace.mem_spectrum_iff_exists`, whose proof reaches the
+  character space through maximal **ring** ideals — the route **16VIII**
+  rejects, and the exact detour that `inv_mult_state`'s own note records as
+  having been removed from 27XV.  It now runs the exercise's derivation from
+  **27XV**: a point `λ` of `spec(a)` is real (`a` self-adjoint), so `λ − a` is
+  self-adjoint and non-invertible and `inv_mult_state` yields a character with
+  `f(a) = λ`; the converse is 27XV's easy direction.  The two order instances
+  are supplied *locally* by `CStarAlgebra.spectralOrder`, so the statement is
+  unchanged and no hypothesis was added.  (1)
+
+### Left alone — with the cost
+
+**Governed by an open question (3 rows)**
+
+* **28II**.4 `functional_calculus_4` — QUESTIONS **A10**.  Untouched.
+* **30X** `proto_gelfand_naimark_2` — QUESTIONS **A8**.  Untouched, but worth
+  recording: **A8's stated obstruction is gone.**  `dsumRep` exists, so the
+  direct-sum representation `ϱ_Ω` can be named and the Proposition's clause
+  (1) ("`ϱ_Ω` is injective") stated about *it* rather than existentially.
+  And the closing clause — `ϱ_Ω(𝒜)` a C*-subalgebra with `ϱ_Ω` an
+  miu-isomorphism onto it — is now available off the shelf as
+  `injective_miu_iso_on_image_isomorphism`, added in this pass.  What remains
+  is a statement change, hence the author's.
+* **113II** `matBilin_nonneg_of_mi` — the one `stronger` row, QUESTIONS
+  **B5**.  Untouched.
+
+**Needs mathematics the tree does not have (7 rows)**
+
+* **32VI** `chilb_cs` — the Proposition is for *any* `𝒜`-valued inner product,
+  definite or not, and with no norm; ours takes `[CStarModule 𝒜 X]`, which
+  builds in both.  Repairing it means a non-definite `𝒜`-valued
+  pre-inner-product structure (the analogue of what `A/CStar/Basic`'s 4XV
+  repair got from Mathlib's `PreInnerProductSpace.Core`, which has no
+  `𝒜`-valued counterpart) plus the thesis's reduction to states.  Estimate
+  200–300 lines, most of it new API.  Not attempted.
+* **32XVI** `chilb_adjoint_mul_self_nonneg` — the thesis states it for an
+  *adjointable* `T`, boundedness being automatic by Hellinger–Toeplitz
+  (**35VI**); ours assumes `T` and `T*` continuous.  35VI is not in this file
+  and rests on the uniform boundedness principle **35II**.  Dropping the
+  continuity hypotheses is exactly 35VI, so this row is blocked on a point
+  from the next parsec.
+* **34V**.2/.3 — `conjOperator`, `ad_cp_2`, `ad_cp_3`, three rows, all one
+  blocker: the thesis states them for Hilbert **𝒜-modules**, `𝓑^a(X) → 𝓑^a(Y)`
+  and `𝓑^a(X) → 𝒜`; here `𝓑^a(X)` exists only as the *private* `Bax 𝒜 X`,
+  a subalgebra of `X →L[ℂ] X`, with **no cross-module hom-set** — `S* T S`
+  for `S : Y → X` needs adjoints of maps *between different* modules and a
+  `star` that swaps hom-sets, which is not there.  Worse for part 3: with
+  Mathlib's inner-product convention (`⟪x, a•y⟫ = a⟪x,y⟫`, so
+  `⟪x,y⟫_Mathlib = ⟨y,x⟩_thesis`) the ℂ-linear vector functional
+  `T ↦ inner 𝒜 x (T x)` does **not** satisfy our `IsCompletelyPositiveMap`
+  condition `∑ᵢⱼ bᵢ* f(aᵢ*aⱼ) bⱼ ≥ 0` — the scalars land on the wrong side,
+  and the form that does is conjugate-linear in `T`.  Getting 34V.2/.3 in the
+  module setting therefore needs both the missing hom-sets and a decision
+  about which of the two `𝒜`-valued conventions the cp condition is stated
+  in.  That second half is arguably a question for the author; it is recorded
+  here rather than in `QUESTIONS.md` because nothing in the tree is currently
+  wrong — the Hilbert-space cases we do state are correct.
+* **32IV**.2 `paschke_inclusion_no_adjoint` (and the tail of 32IV.1) — the
+  exercise wants `J` as a Hilbert `C[0,1]`-module and the *inclusion*
+  `T : J → C[0,1]` as a bounded module map with no adjoint.  We state the
+  non-existence of `b ∈ J` with `⟨b,a⟩ = a` for all `a ∈ J`, which is the
+  exercise's own route to non-adjointability but not the statement.  Making
+  it the statement needs `J` as a type carrying `CStarModule C[0,1] J` — the
+  same missing "sub-Hilbert-module" infrastructure that blocks 161II in
+  `B/Dils`.  Estimate 150+ lines.  Not attempted.
+* **27X**.2 `riesz_ideal_basic_2` — the second clause is a **counterexample**:
+  `I + J` may fail to be an order ideal when `I` and `J` are only order
+  ideals.  The exercise gives no witness and `asols.tex` has no solution for
+  parsec-270.100, so this is original mathematics, not transcription.  Left.
+* **34VI** part 2 — the equaliser of two miu-maps in `CStar_cpsu`.  The tree
+  has no category `CStar_cpsu`, and solution `parsec-340.60` is `\TODO{}`, so
+  there is no thesis proof to follow for either part of 34VI.  The doc now
+  says so.  (Row counted as repaired for its projections clause.)
+
+**The second dependency inversion, costed and left**
+
+* **29II** `multiplicative_state_on_cx` is derived from surjectivity of
+  Mathlib's `CharacterSpace.homeoEval`, i.e. from **29VII**, which the thesis
+  proves *using* 29II.  Undoing it means transcribing 29III–29VI: the set
+  `Z`, separation of two points by `f, g ≥ 0` with `fg = 0` (Urysohn with
+  disjoint supports), and 29V's compactness argument, which needs τ to
+  preserve **finite** suprema — that is **26II**.4, and the audit records
+  `commutative_cstar_basic_4` as stating only the *binary* case, in
+  `A/CStar/Positive.lean`, another worker's file this pass.  So this repair
+  is blocked on a row outside my scope and would run 150–250 lines besides.
+  Left, and the divergence stands recorded in the audit.  (Contrast 27XVII
+  above, which was cheap precisely because 27XV had already been moved onto
+  the thesis's route.)
+
+### Nothing new for the author
+
+No repair here needed a ruling.  Two things worth recording beyond the rows:
+**A8's obstruction has evaporated** (above), and the `A/CStar/Matrices` doc
+comments that described 33III.3's gap in its pre-erratum form are corrected —
+the file no longer records the wrong thing about its own gap.

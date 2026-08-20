@@ -147,12 +147,23 @@ see `PROVING-LOG.md` and `ERRATA.md`.
 Two further defects fell out of the same computation.  (i) `kaplansky-splitting`
 is off by a factor `4`: with `h y = y·2/(1+⟨y,y⟩)` the left-hand side carries the
 square of that `2`, and indeed `⟨h y - h yₙ, h y - h yₙ⟩ = 4(A₁+A₁'+A₂+A₂')`
-(`1/9 = 4·(-1/12 - 1/18 + 0 + 1/6)`).  (ii) *Ours*: the statements of
-`kaplansky_hilbmod_A₂` and `kaplansky_hilbmod_A₂'` below were transcribed
-without the mirroring swap — `inner ℬ (y i - y₀) (y i)` is `⟨y_α, y_α - y⟩`,
-where the thesis's `A₂` has `⟨y_α - y, y_α⟩ = inner ℬ (y i) (y i - y₀)`, and
-likewise for `A₂'`.  `A₁` and `A₁'` mention only `⟨y,y⟩` and `⟨y_α,y_α⟩` and are
-so unaffected.  Both `A₂` statements are false anyway, so this was left alone. -/
+(`1/9 = 4·(-1/12 - 1/18 + 0 + 1/6)`).  (ii) *Ours*, repaired in session 94:
+`kaplansky_hilbmod_A₂` and `kaplansky_hilbmod_A₂'` below had been transcribed
+with the arguments of their inner products in the thesis's order rather than
+the mirrored one, which made them neither the thesis's terms nor the stars of
+those terms.
+
+All four terms are transcribed here as `star ∘ mirror`: the *full* mirror of a
+thesis product `ABC` of inner-product expressions is the reversed product
+`C'B'A'` of the mirrored factors, and its star is `A' star(B') C'` — the
+thesis's factor order back again, with each inner product's two arguments
+swapped relative to a bare mirror.  That is what `A₁` and `A₁'` do (there
+every inner product is a self-adjoint `⟨y,y⟩` or `⟨y_α,y_α⟩`, so only the
+factor order is visible), and `A₂`, `A₂'` now do it too: the thesis's
+`⟨y_α − y, y_α⟩` is `inner ℬ (y i) (y i - y₀)` and its `⟨y − y_α, y⟩` is
+`inner ℬ y₀ (y₀ - y i)`.  Since `star` is ultraweakly continuous and the
+claim is convergence to `0`, `star ∘ mirror` transcribes the thesis's claim
+faithfully.  All four remain false, and remain `sorry`. -/
 
 /-- `inv1p b = (1 + b)⁻¹`, the resolvent occurring throughout **158V**; for
 `b ≥ 0` in a C*-algebra `1 + b` is invertible, so `Ring.inverse` is the
@@ -292,7 +303,7 @@ by `1`. -/
 private theorem kaplansky_hilbmod_A₂ [VonNeumannAlgebra ℬ] [CompleteSpace X]
     (y : ι → X) (y₀ : X) (hy : UnTendsto (inner ℬ) y l y₀) :
     UWTendsto (fun i =>
-        inv1p (inner ℬ y₀ y₀) * inner ℬ (y i - y₀) (y i)
+        inv1p (inner ℬ y₀ y₀) * inner ℬ (y i) (y i - y₀)
           * inv1p (inner ℬ (y i) (y i))) l 0 :=
   sorry
 
@@ -305,7 +316,7 @@ ultraweakly; as for `A₂` (dils.tex:4273). -/
 private theorem kaplansky_hilbmod_A₂' [VonNeumannAlgebra ℬ] [CompleteSpace X]
     (y : ι → X) (y₀ : X) (hy : UnTendsto (inner ℬ) y l y₀) :
     UWTendsto (fun i =>
-        inv1p (inner ℬ (y i) (y i)) * inner ℬ (y₀ - y i) y₀
+        inv1p (inner ℬ (y i) (y i)) * inner ℬ y₀ (y₀ - y i)
           * inv1p (inner ℬ y₀ y₀)) l 0 :=
   sorry
 
@@ -1152,8 +1163,13 @@ established one-shot by `kaplansky_weak_of_commutative` (where the mirror
 obstruction of `PROVING-LOG.md` vanishes) and upgraded by
 `kaplansky_hilbmod_of_weak`.  The statement keeps 158II's exact hypotheses
 (`[VonNeumannAlgebra ℬ]` and `[CompleteSpace X]` are in fact not needed by
-this proof).  The general (noncommutative) case remains open — see
-`kaplansky_hilbmod`. -/
+this proof).
+
+The commutativity hypothesis is *not* 158II's: 158II is unconditional, and it
+is proved unconditionally below as `kaplansky_hilbmod` (session 56, and
+unconditional since session 61) by the linking-algebra route.  This
+declaration is kept as an independent second route to the commutative case,
+not because the general case is open. -/
 theorem kaplansky_hilbmod_of_commutative [VonNeumannAlgebra ℬ] [CompleteSpace X]
     (hcomm : ∀ a b : ℬ, a * b = b * a)
     (A : StarSubalgebra ℂ ℬ) (hA : IsClosed (A : Set ℬ))
@@ -1694,7 +1710,11 @@ theorem kaplansky_hilbmod_of_closure
     linarith
 
 /-- **158II** (`kaplansky-hilbmod`, dils.tex:4135) for a **self-dual**
-Hilbert module, proved through the linking algebra. -/
+Hilbert module, proved through the linking algebra.  Self-duality is *not* a
+hypothesis of 158II: this is the intermediate step of the replacement proof
+(the linking algebra `ℬᵃ(X ⊕ ℬ)` needs `X ⊕ ℬ` self dual, **152X**), and the
+point itself, without it, is `kaplansky_hilbmod` below, which reduces to this
+one along the self-dual completion. -/
 theorem kaplansky_hilbmod_of_selfDual (hX : SelfDual ℬ X)
     (A : StarSubalgebra ℂ ℬ) (hA : IsClosed (A : Set ℬ)) (D : Set X)
     (hD0 : (0 : X) ∈ D)

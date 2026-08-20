@@ -14,8 +14,8 @@ lines 4280–5965.
   parsec 1660:  ultranorm continuity of the exterior tensor product
   parsec 1670:  the tensor product of Paschke dilations
 
-Statements only; every proof is `sorry`.  Conventions as in
-`HilbertModules.lean` (mirrored left-action convention).
+No `sorry`s.  Conventions as in `HilbertModules.lean` (mirrored left-action
+convention).
 
 NOTE(proc-dep): the tensor product of von Neumann algebras is developed in
 thesis A (proc.tex, parsec 1080, label `tensor`).  The interface needed here
@@ -213,6 +213,7 @@ theorem onbProj_nonneg (e : ι → X) (S : Finset ι) :
   exact mul_star_self_nonneg (inner ℬ (e i) x)
 
 omit [VonNeumannAlgebra ℬ] in
+/-- **159VI** (`ketbra-dense-pt1`, dils.tex:4336): `0 ≤ p_S ≤ 1`, by Bessel. -/
 theorem onbProj_le_one {e : ι → X} (he : OrthonormalFam ℬ e) (S : Finset ι) :
     onbProj (ℬ := ℬ) e S ≤ 1 := by
   rw [← sub_nonneg]
@@ -223,6 +224,8 @@ theorem onbProj_le_one {e : ι → X} (he : OrthonormalFam ℬ e) (S : Finset ι
   exact mod_bessel he x S
 
 omit [VonNeumannAlgebra ℬ] in
+/-- **159VI** (`ketbra-dense-pt1`, dils.tex:4336): `p_S ≤ p_S'` when
+`S ⊆ S'`. -/
 theorem onbProj_mono (e : ι → X) {S S' : Finset ι}
     (hS : S ⊆ S') : onbProj (ℬ := ℬ) e S ≤ onbProj (ℬ := ℬ) e S' := by
   classical
@@ -249,9 +252,12 @@ omit [VonNeumannAlgebra ℬ] in
     ((onbProjSA (ℬ := ℬ) e S : selfAdjoint (Ba ℬ X)) : Ba ℬ X)
       = onbProj (ℬ := ℬ) e S := rfl
 
-/-- **159VI** (`ketbra-dense-pt1`, dils.tex:4330): `⋁_S p_S = 1`.
+/-- **159VI** (`ketbra-dense-pt1`, dils.tex:4336): `⋁_S p_S = 1`.
 Parseval (**149IV**) makes `⟨x, p_S x⟩` converge ultraweakly to `⟨x,x⟩`,
-and the vector states of `𝒷ᵃ(X)` are order separating (**144I**). -/
+and the vector states of `𝒷ᵃ(X)` are order separating (**144I**).
+
+The point's other clauses are `onbProj_le_one` and `onbProj_mono` above and
+`onbProj_isStarProjection`, `onbProj_uwTendsto_one` below. -/
 theorem onbProj_isLUB {e : ι → X} (he : IsONBasis ℬ e) :
     IsLUB (Set.range fun S : Finset ι => onbProjSA (ℬ := ℬ) e S)
       (1 : selfAdjoint (Ba ℬ X)) := by
@@ -286,6 +292,62 @@ theorem onbProj_isLUB {e : ι → X} (he : IsONBasis ℬ e) :
     refine le_of_tendsto_of_tendsto' hlim tendsto_const_nhds ?_
     exact hle
   
+omit [VonNeumannAlgebra ℬ] in
+private theorem mketbra_zero_left (y : X) : mketbra ℬ 0 y = 0 := by
+  ext z
+  change (inner ℬ y z : ℬ) • (0 : X) = 0
+  rw [op_smul_zero]
+
+/-- **159VI** (`ketbra-dense-pt1`, dils.tex:4336): each `p_S` is a
+**projection**.  This is the point's own reason — the `|eᵢ⟩⟨eᵢ|` are pairwise
+orthogonal projections (**159III**, clauses 2 and 3 of `mketbra_rules`) — and
+a finite sum of pairwise orthogonal projections is one. -/
+theorem onbProj_isStarProjection {e : ι → X} (he : OrthonormalFam ℬ e)
+    (S : Finset ι) : IsStarProjection (onbProj (ℬ := ℬ) e S) := by
+  classical
+  have hmul : ∀ i j : ι, i ≠ j →
+      mketbraBa (ℬ := ℬ) (e i) (e i) * mketbraBa (ℬ := ℬ) (e j) (e j) = 0 := by
+    intro i j hij
+    refine Subtype.ext ?_
+    show (mketbra ℬ (e i) (e i)).comp (mketbra ℬ (e j) (e j)) = 0
+    rw [(mketbra_rules (ℬ := ℬ) (e i) (e i) (e j) (e j) (e i) 0 0 0
+      (by intro z w; simp) (he.2 i).1).2.1,
+      he.1 i j hij, op_zero_smul, mketbra_zero_left]
+  have hsq : ∀ i : ι,
+      mketbraBa (ℬ := ℬ) (e i) (e i) * mketbraBa (ℬ := ℬ) (e i) (e i)
+        = mketbraBa (ℬ := ℬ) (e i) (e i) := by
+    intro i
+    refine Subtype.ext ?_
+    show (mketbra ℬ (e i) (e i)).comp (mketbra ℬ (e i) (e i)) = _
+    exact (mketbra_rules (ℬ := ℬ) (e i) (e i) (e i) (e i) (e i) 0 0 0
+      (by intro z w; simp) (he.2 i).1).2.2.1.1
+  constructor
+  · show onbProj (ℬ := ℬ) e S * onbProj (ℬ := ℬ) e S = onbProj (ℬ := ℬ) e S
+    rw [onbProj, Finset.sum_mul_sum]
+    rw [Finset.sum_congr rfl (fun i (hi : i ∈ S) =>
+      Finset.sum_eq_single_of_mem i hi (fun j hj hji => hmul i j (Ne.symm hji)))]
+    exact Finset.sum_congr rfl fun i _ => hsq i
+  · exact (IsSelfAdjoint.of_nonneg (onbProj_nonneg e S)).star_eq
+
+/-- **159VI** (`ketbra-dense-pt1`, dils.tex:4336), the operative conclusion:
+`p_S → 1` **ultraweakly**.  This is `onbProj_isLUB` together with **44VI**
+(`vna-supremum-uwlimit`, in the transported form
+`uwTendsto_of_monotone_isLUB`) applied to the increasing net `(p_S)_S`; the
+von Neumann structure of `𝒷ᵃ(X)` that 44VI needs is **152X**, which is why
+the self-duality hypothesis of 159IV appears here (it is not needed for the
+supremum itself). -/
+theorem onbProj_uwTendsto_one {e : ι → X} (he : IsONBasis ℬ e)
+    (hX : SelfDual ℬ X) :
+    UWTendsto (fun S : Finset ι => onbProj (ℬ := ℬ) e S) atTop (1 : Ba ℬ X) := by
+  classical
+  haveI : VonNeumannAlgebra (Ba ℬ X) := ba_vonNeumannAlgebra hX
+  have hmono : Monotone fun S : Finset ι => onbProjSA (ℬ := ℬ) e S := by
+    intro S S' h
+    exact Subtype.coe_le_coe.mp (onbProj_mono e h)
+  have hlub : IsLUB (Set.range fun S : Finset ι => onbProjSA (ℬ := ℬ) e S)
+      (1 : selfAdjoint (Ba ℬ X)) := onbProj_isLUB he
+  exact uwTendsto_of_monotone_isLUB _ hmono _ hlub
+
 /-- For an effect `E` of a C*-algebra, `E² ≤ E`. -/
 private theorem sq_le_self_of_effect {A : Type*} [CStarAlgebra A] [PartialOrder A]
     [StarOrderedRing A] {E : A} (h0 : 0 ≤ E) (h1 : E ≤ 1) : E * E ≤ E := by
@@ -1306,9 +1368,13 @@ theorem hilbmod_projthm_3 [VonNeumannAlgebra ℬ] [CompleteSpace X]
     exact sub_eq_zero.mp h3
   rw [hyp, hzp]
 
-/-- Uniqueness of ultraweak limits (**44XI**.1, `vn_positive_basic_1`); the
-same three-line helper as in `HilbertModules.lean`, which keeps it
-`private`. -/
+/-- Uniqueness of ultraweak limits; the same three-line helper as in
+`HilbertModules.lean`, which keeps it `private`.  The leading **44XI** is a
+*provenance citation*, not a transcription: 44XI.1 says that the ultraweak
+**and** the ultrastrong topology are Hausdorff, and it is stated in full, with
+the exercise's own argument, as `vn_positive_basic_1` in `A/VN/Basic`; this
+wrapper takes the ultraweak half of it and adds Mathlib's
+`tendsto_nhds_unique`. -/
 private theorem uwTendsto_unique₂ [VonNeumannAlgebra ℬ] {κ : Type*}
     {l : Filter κ} [l.NeBot] {f : κ → ℬ} {a c : ℬ} (ha : UWTendsto f l a)
     (hc : UWTendsto f l c) : a = c :=
@@ -1726,8 +1792,11 @@ def L2Set [VonNeumannAlgebra ℬ] {ι : Type v} (p : ι → ℬ) : Set (ι → �
   {b | L2Summable ℬ b ∧ ∀ i, ceil (star (b i) * b i) ≤ p i}
 
 /-- Membership of `L2Set` is an absorption condition: `⌈bᵢ*bᵢ⌉ ≤ pᵢ` iff
-`bᵢpᵢ = bᵢ` (**59VI**.1 `ceill_basic_1`, the "recall from `ceill-basic`" of
-the author's solution to **161II**). -/
+`bᵢpᵢ = bᵢ`.  The leading **59VI** is a *provenance citation*: the exercise
+has four parts and all four are stated and proved in `A/VN/Projections`
+(`ceill_basic_1`–`ceill_basic_4`); what is used here is part 1, in the form
+the author's own solution to **161II** invokes it ("recall from
+`ceill-basic`"). -/
 private theorem ceil_star_mul_self_le_iff [VonNeumannAlgebra ℬ] (x : ℬ)
     {r : ℬ} (hr : IsStarProjection r) :
     ceil (star x * x) ≤ r ↔ x * r = x := by
@@ -2168,11 +2237,15 @@ def MvNEquiv (p q : ℬ) : Prop :=
 families of projections: there is a bijection between the tuple sets that
 identifies the (ultraweakly converging) inner products.
 
+The isomorphism is one of Hilbert ℬ-modules, so `Φ` is additive and
+ℬ-linear for the coordinatewise operations of `ℓ²`; both are stated.
+
 **Divergence (class 2).**  The author's solution routes this through the
 *module* `ℓ²((pᵢ))`: the `δᵢ` are an orthonormal basis (**161II**), so
 `(δᵢuᵢ)ᵢ` is another one by part 1 of this exercise, and the second half of
 **161II** then produces the isomorphism with `ℓ²((⟨δᵢuᵢ, δᵢuᵢ⟩)ᵢ) =
-ℓ²((qᵢ))`.  Both halves of 161II are still `sorry` here, so the bijection is
+ℓ²((qᵢ))`.  That route is unavailable here because `ℓ²((pᵢ))` is not
+formalized as a *module* at all (see `hilbmod_el2`), so the bijection is
 written down directly instead: `Φ(b)ᵢ = bᵢuᵢ*` (mirrored from the thesis's
 `bᵢ ↦ uᵢ*bᵢ`), with inverse `bᵢ ↦ bᵢuᵢ`.  Absorption `bᵢpᵢ = bᵢ` makes
 `Φ(c)ᵢ Φ(b)ᵢ* = cᵢ pᵢ bᵢ* = cᵢbᵢ*` termwise, so the two nets of partial sums
@@ -2183,6 +2256,8 @@ theorem onb1_el2 [VonNeumannAlgebra ℬ] {ι : Type v} (p q : ι → ℬ)
     (hpq : ∀ i, MvNEquiv (p i) (q i)) :
     ∃ Φ : (ι → ℬ) → (ι → ℬ),
       Set.BijOn Φ (L2Set ℬ p) (L2Set ℬ q) ∧
+      (∀ b c : ι → ℬ, Φ (b + c) = Φ b + Φ c) ∧
+      (∀ (a : ℬ) (b : ι → ℬ), Φ (fun i => a * b i) = fun i => a * Φ b i) ∧
       ∀ b ∈ L2Set ℬ p, ∀ c ∈ L2Set ℬ p, ∀ s : ℬ,
         UWTendsto (fun t : Finset ι => ∑ i ∈ t, c i * star (b i)) atTop s ↔
         UWTendsto (fun t : Finset ι => ∑ i ∈ t, Φ c i * star (Φ b i))
@@ -2239,7 +2314,9 @@ theorem onb1_el2 [VonNeumannAlgebra ℬ] {ι : Type v} (p q : ι → ℬ)
     have hter := hΨinner b b hb
     simp only [hter]
     exact hM t
-  refine ⟨fun b i => b i * star (u i), ⟨?_, ?_, ?_⟩, ?_⟩
+  refine ⟨fun b i => b i * star (u i), ⟨?_, ?_, ?_⟩,
+    fun b c => funext fun i => add_mul _ _ _,
+    fun a b => funext fun i => mul_assoc a (b i) (star (u i)), ?_⟩
   · intro b hb
     rw [mem_l2Set_iff hp] at hb
     rw [mem_l2Set_iff hq]
@@ -3237,8 +3314,9 @@ private theorem projx_one : IsStarProjection (1 : ℬ) := by
 private theorem npim (ω : NPFunctional ℬ) {a : ℬ} (ha : 0 ≤ a) : (ω a).im = 0 := by
   simpa using ((Complex.le_def.mp (npnn ω ha)).2).symm
 
-/-- **162VI** (`selfdual-normalish-form1`, dils.tex:4760), in the only form
-**162VII** consumes: a non-zero ultranorm-closed submodule `W = V^⊥` of a
+/-- **162VI** (`selfdual-normalish-form1`, dils.tex:4768), in the only form
+**162VII** consumes (the point itself is `selfdual_normalish_form1` below,
+read off **162IV**): a non-zero ultranorm-closed submodule `W = V^⊥` of a
 self-dual Hilbert ℬ-module over a *factor* either contains a vector `d` with
 `⟨d,d⟩ = 1`, or is generated by a single vector `e`. -/
 private theorem normalish_step (hF : IsFactor ℬ) (hX : SelfDual ℬ X) (V : Set X)
@@ -3825,6 +3903,69 @@ theorem selfdual_normalish_form [VonNeumannAlgebra ℬ] [CompleteSpace X]
       rwa [CStarModule.star_inner, star_zero] at h2
     · have h2 := congrArg star (hx (Sum.inl ⟨v, hv, hvr⟩))
       rwa [CStarModule.star_inner, star_zero] at h2
+
+/-- **162VI** (`selfdual-normalish-form1`, dils.tex:4768), the first step of
+**162IV**'s proof, in full: for a *non-zero* self-dual Hilbert ℬ-module over
+a factor, either (1) `X` has an orthonormal basis one of whose vectors `e`
+has `⟨e,e⟩ = 1`, or (2) a single vector is by itself an orthonormal basis.
+As everywhere in this file a "basis `E`" is an orthonormal family `e : ι → X`,
+so "`{e}` is a basis" reads "a basis indexed by a nonempty subsingleton".
+
+**Divergence, class 2.**  The thesis proves 162VI first, by a Zorn argument
+over partial absorptions, and then bootstraps it to 162IV.  Here that Zorn
+argument is `normalish_step`, in the relativized form 162VII consumes, and
+**162IV** is proved from it directly; 162VI is then read back off 162IV,
+whose two disjuncts already carry more information than 162VI's.  The one
+extra step is that the index set of a basis of a non-zero module is
+inhabited. -/
+theorem selfdual_normalish_form1 [VonNeumannAlgebra ℬ] [CompleteSpace X]
+    (hF : IsFactor ℬ) (hX : SelfDual ℬ X) (hne : ∃ x : X, x ≠ 0) :
+    (∃ (ι : Type v) (e : ι → X), IsONBasis ℬ e ∧
+        ∃ i, (inner ℬ (e i) (e i) : ℬ) = 1) ∨
+    (∃ (ι : Type v) (e : ι → X), IsONBasis ℬ e ∧ Nonempty ι ∧ Subsingleton ι) := by
+  classical
+  obtain ⟨ι, e, hb, hcase⟩ := selfdual_normalish_form hF hX
+  -- a basis of a non-zero module has an inhabited index set
+  have hιne : Nonempty ι := by
+    by_contra hemp
+    rw [not_nonempty_iff] at hemp
+    obtain ⟨x, hx⟩ := hne
+    refine hx ?_
+    have hzero : ∀ ω : NPFunctional ℬ,
+        unSeminorm ω (inner ℬ : X → X → ℬ) (0 - x) = 0 := by
+      intro ω
+      have h := hb.2.1 x ω
+      have hconst : (fun s : Finset ι =>
+          unSeminorm ω (inner ℬ : X → X → ℬ)
+            ((∑ i ∈ s, (inner ℬ (e i) x : ℬ) • e i) - x))
+          = fun _ : Finset ι => unSeminorm ω (inner ℬ : X → X → ℬ) (0 - x) := by
+        funext s
+        rw [Finset.sum_eq_zero fun i _ => (hemp.false i).elim]
+      rw [hconst] at h
+      exact tendsto_nhds_unique tendsto_const_nhds h
+    have hneg : (inner ℬ ((0 : X) - x) ((0 : X) - x) : ℬ) = inner ℬ x x := by
+      rw [zero_sub, CStarModule.inner_neg_left, CStarModule.inner_neg_right,
+        neg_neg]
+    have hinner : (inner ℬ x x : ℬ) = 0 := by
+      refine np_separating _ fun ω => ?_
+      have hz := hzero ω
+      have hsq : unSeminorm ω (inner ℬ : X → X → ℬ) ((0 : X) - x) ^ 2
+          = (ω (inner ℬ ((0 : X) - x) ((0 : X) - x) : ℬ)).re :=
+        unSeminorm_sq ω (cstarBInner ℬ X) _
+      rw [hz, hneg] at hsq
+      have hre : (ω (inner ℬ x x : ℬ)).re = 0 := by rw [← hsq]; norm_num
+      have hnn : (0 : ℬ) ≤ inner ℬ x x := CStarModule.inner_self_nonneg
+      exact Complex.ext (by simpa using hre) (by simpa using npim ω hnn)
+    exact (CStarModule.inner_self (A := ℬ)).mp hinner
+  obtain ⟨i₀⟩ := hιne
+  rcases hcase with hall | ⟨hfin, i₁, hall⟩
+  · exact Or.inl ⟨ι, e, hb, i₀, hall i₀⟩
+  by_cases hsub : ∀ i : ι, i = i₁
+  · exact Or.inr ⟨ι, e, hb, ⟨i₀⟩, ⟨fun i j => (hsub i).trans (hsub j).symm⟩⟩
+  obtain ⟨i, hi⟩ : ∃ i : ι, i ≠ i₁ := by
+    by_contra hc
+    exact hsub fun i => not_not.mp fun h => hc ⟨i, h⟩
+  exact Or.inl ⟨ι, e, hb, i, hall i hi⟩
 
 end NormalForm
 
@@ -4663,6 +4804,85 @@ private theorem tensor_gram_bound {t : 𝒜 → ℬ → 𝒞} (ht : IsVNTensor t
     _ = ‖S‖ ^ 2 * ‖T‖ ^ 2 * ‖∑ i, ∑ j, t (inner 𝒜 (x j) (x i))
           (inner ℬ (y j) (y i))‖ := by ring
 
+/-! ### Auxiliary: `𝒜 ⊙ ℬ` sits inside `𝒜 ⊗ ℬ`
+
+The last step of **164VI** (injectivity of `η`, dils.tex:5140) reads
+`∑ₗ ⟨e'ᵢ,xₗ⟩ ⊗ ⟨d'ⱼ,yₗ⟩ = 0` — an identity derived in the *von Neumann*
+tensor product `𝒞` — back as an identity in the *algebraic* tensor product
+`𝒜 ⊙ ℬ`, which is legitimate exactly because the canonical map
+`𝒜 ⊙ ℬ → 𝒞` is injective.  The thesis passes over this silently (it writes
+both with the same `⊗`); here it has to be proved, and it follows from
+`IsVNTensor`'s product functionals together with the fact that the
+np-functionals of a von Neumann algebra span a separating set of linear
+functionals (**44XI** `np_separating`).  The linear algebra is isolated
+first. -/
+
+/-- If `SM` separates the points of `M` and `SN` those of `N`, then an
+element `∑ᵢ aᵢ ⊗ bᵢ` of `M ⊗_ℂ N` killed by every `σ ⊗ τ` with `σ ∈ SM`,
+`τ ∈ SN` is zero.  (Only that `SM`, `SN` are *separating*, not that they are
+all of the dual, is used: for a fixed `τ` the element `∑ᵢ τ(bᵢ)aᵢ` of `M`
+is killed by every `σ ∈ SM`, hence is `0`; expanding `∑ᵢ aᵢ ⊗ bᵢ` along a
+basis of `M` then exhibits every coordinate as killed by every `τ ∈ SN`.) -/
+private theorem sum_tmul_eq_zero_of_separating {M N : Type*}
+    [AddCommGroup M] [Module ℂ M] [AddCommGroup N] [Module ℂ N]
+    (SM : Set (M →ₗ[ℂ] ℂ)) (SN : Set (N →ₗ[ℂ] ℂ))
+    (hM : ∀ m : M, (∀ σ ∈ SM, σ m = 0) → m = 0)
+    (hN : ∀ v : N, (∀ τ ∈ SN, τ v = 0) → v = 0)
+    {n : ℕ} (a : Fin n → M) (b : Fin n → N)
+    (h : ∀ σ ∈ SM, ∀ τ ∈ SN, ∑ i, σ (a i) * τ (b i) = 0) :
+    ∑ i, a i ⊗ₜ[ℂ] b i = 0 := by
+  classical
+  set B := Module.Free.chooseBasis ℂ M with hB
+  have hA : ∀ τ ∈ SN, ∑ i, τ (b i) • a i = (0 : M) := by
+    intro τ hτ
+    refine hM _ fun σ hσ => ?_
+    rw [map_sum]
+    simp only [map_smul, smul_eq_mul]
+    rw [← h σ hσ τ hτ]
+    exact Finset.sum_congr rfl fun i _ => mul_comm _ _
+  have key : (TensorProduct.equivFinsuppOfBasisLeft B) (∑ i, a i ⊗ₜ[ℂ] b i) = 0 := by
+    ext k
+    have hval : (TensorProduct.equivFinsuppOfBasisLeft B) (∑ i, a i ⊗ₜ[ℂ] b i) k
+        = ∑ i, B.repr (a i) k • b i := by
+      rw [map_sum, Finsupp.finsetSum_apply]
+      exact Finset.sum_congr rfl fun i _ =>
+        TensorProduct.equivFinsuppOfBasisLeft_apply_tmul_apply B (a i) (b i) k
+    rw [hval]
+    refine hN _ fun τ hτ => ?_
+    have hcoord : τ (∑ i, B.repr (a i) k • b i) = B.coord k (∑ i, τ (b i) • a i) := by
+      rw [map_sum, map_sum]
+      refine Finset.sum_congr rfl fun i _ => ?_
+      simp [Module.Basis.coord_apply, mul_comm]
+    rw [hcoord, hA τ hτ, map_zero]
+  refine (TensorProduct.equivFinsuppOfBasisLeft B).injective ?_
+  rw [key, map_zero]
+
+omit [StarOrderedRing 𝒞] in
+/-- The canonical map `𝒜 ⊙ ℬ → 𝒜 ⊗ ℬ` is **injective**: if
+`∑ᵢ t(aᵢ,bᵢ) = 0` in the von Neumann tensor product, then `∑ᵢ aᵢ ⊗ bᵢ` is
+already `0` in the algebraic one.  This is the step **164VI** performs
+tacitly; the product functionals of `IsVNTensor` (`tensor-2`) turn it into
+`sum_tmul_eq_zero_of_separating` for the np-functionals of `𝒜` and of `ℬ`,
+which separate by **44XI** (`np_separating`). -/
+private theorem vnTensor_alg_injective [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
+    {t : 𝒜 → ℬ → 𝒞} (ht : IsVNTensor t) {n : ℕ} (a : Fin n → 𝒜) (b : Fin n → ℬ)
+    (h : ∑ i, t (a i) (b i) = 0) :
+    ∑ i, a i ⊗ₜ[ℂ] b i = 0 := by
+  refine sum_tmul_eq_zero_of_separating
+    (Set.range fun ω : NPFunctional 𝒜 => ω.toPositiveLinearMap.toLinearMap)
+    (Set.range fun ξ : NPFunctional ℬ => ξ.toPositiveLinearMap.toLinearMap)
+    (fun m hm => np_separating m fun ω => hm _ ⟨ω, rfl⟩)
+    (fun v hv => np_separating v fun ξ => hv _ ⟨ξ, rfl⟩)
+    a b ?_
+  rintro σ ⟨ω, rfl⟩ τ ⟨ξ, rfl⟩
+  obtain ⟨Ω, hΩ⟩ := ht.exists_productFunctional ω ξ
+  have hz : Ω (∑ i, t (a i) (b i)) = 0 := by
+    rw [h]; exact map_zero Ω.toPositiveLinearMap.toLinearMap
+  rw [show Ω (∑ i, t (a i) (b i)) = ∑ i, Ω (t (a i) (b i)) from
+    map_sum Ω.toPositiveLinearMap.toLinearMap (fun i => t (a i) (b i)) Finset.univ] at hz
+  rw [← hz]
+  exact Finset.sum_congr rfl fun i _ => (hΩ (a i) (b i)).symm
+
 end VNTensor
 
 /-! ## Parsec 1640: the self-dual exterior tensor product
@@ -4683,11 +4903,16 @@ variable {𝒜 ℬ 𝒞 : Type u}
 a **self-dual exterior tensor product** of a self-dual Hilbert 𝒜-module
 `X` and a self-dual Hilbert ℬ-module `Y` over the von Neumann tensor
 product `𝒞 = 𝒜 ⊗ ℬ` (given by `t`): a self-dual Hilbert 𝒞-module `Z`
-with a bilinear `η : X × Y → Z` satisfying
+with an **injective** bilinear `η : X × Y → Z` satisfying
 `η(xa, yb) = (a ⊗ b)·η(x,y)` and
-`⟨η(x,y), η(x',y')⟩ = ⟨x,x'⟩ ⊗ ⟨y,y'⟩`, whose image spans an
-ultranorm-dense submodule, and which is universal among bounded
-`𝒜 ⊙ ℬ`-bilinear maps into self-dual Hilbert 𝒞-modules. -/
+`⟨η(x,y), η(x',y')⟩ = ⟨x,x'⟩ ⊗ ⟨y,y'⟩`, which is universal among bounded
+`𝒜 ⊙ ℬ`-bilinear maps into self-dual Hilbert 𝒞-modules.
+
+That the image of `η` spans an ultranorm-dense submodule is *not* a field:
+it is **164II**.1, derived from the universal property in `ext_tensor_dense`
+below.  Injectivity of `η` is a field, as in 164II, and is discharged at
+both construction sites (`univprop_ext_tensor`, `extTensorSelf`) by the
+thesis's own **164VI**, `extTensor_eta_injective`. -/
 structure ExtTensor (t : 𝒜 → ℬ → 𝒞) (ht : IsVNTensor t)
     (X Y : Type u) [NormedAddCommGroup X] [NormedSpace ℂ X] [SMul 𝒜 X]
     [CStarModule 𝒜 X] [NormedAddCommGroup Y] [NormedSpace ℂ Y] [SMul ℬ Y]
@@ -4712,6 +4937,15 @@ structure ExtTensor (t : 𝒜 → ℬ → 𝒞) (ht : IsVNTensor t)
   /-- `⟨x ⊗ y, x' ⊗ y'⟩ = ⟨x,x'⟩ ⊗ ⟨y,y'⟩`. -/
   η_inner : ∀ (x x' : X) (y y' : Y),
     inner 𝒞 (η x y) (η x' y') = t (inner 𝒜 x x') (inner ℬ y y')
+  /-- **164II**: `η` is **injective** — equivalently (**164VI**), the inner
+  product on `X ⊙ Y` is definite.  Since `η` is rendered here as a bilinear
+  map on `X × Y` rather than as a map on the algebraic tensor product,
+  injectivity is stated as triviality of its kernel: an element
+  `∑ᵢ xᵢ ⊗ yᵢ` of `X ⊙ Y` whose image `∑ᵢ η(xᵢ,yᵢ)` vanishes is itself `0`.
+  Every element of `X ⊙ Y` is such a finite sum, so this is exactly
+  injectivity of the induced additive map `X ⊙ Y → Z`. -/
+  η_injective : ∀ (n : ℕ) (x : Fin n → X) (y : Fin n → Y),
+    ∑ i, η (x i) (y i) = 0 → ∑ i, x i ⊗ₜ[ℂ] y i = 0
   /-- Universal property: bounded `𝒜 ⊙ ℬ`-bilinear maps into self-dual
   Hilbert 𝒞-modules factor uniquely through `η`. -/
   univ : ∀ (W : Type u) (_ : NormedAddCommGroup W) (_ : NormedSpace ℂ W)
@@ -4731,6 +4965,140 @@ structure ExtTensor (t : 𝒜 → ℬ → 𝒞) (ht : IsVNTensor t)
 
 attribute [instance] ExtTensor.nacg ExtTensor.nsp ExtTensor.smul
   ExtTensor.cstarMod ExtTensor.complete
+
+/-- `a ↦ a·e` (mirrored: `a • e`) as a ℂ-linear map `𝒜 → X`, used to move an
+identity in `𝒜 ⊙ ℬ` into `X ⊙ Y`. -/
+private noncomputable def opSmulHom (e : X) : 𝒜 →ₗ[ℂ] X where
+  toFun a := a • e
+  map_add' a a' := op_add_smul a a' e
+  map_smul' c a := op_smul_complex_smul c a e
+
+/-- **164VI** (dils.tex:5140, inside the proof of **164II**): `η` is
+injective, i.e. the inner product on `X ⊙ Y` is definite.  Stated for the
+raw data rather than for an `ExtTensor`, because it is what *discharges*
+the `η_injective` field at the two construction sites.
+
+Divergence class 1 (faithful): this is 164VI's own argument.  Given
+`∑ₗ η(xₗ,yₗ) = 0`, **160X** (`selfdual_gramschmidt`) supplies finite
+orthonormal `(eₖ)` in `X` and `(dₗ)` in `Y` with `xᵢ = ∑ₖ ⟨eₖ,xᵢ⟩ • eₖ` and
+`yᵢ = ∑ₗ ⟨dₗ,yᵢ⟩ • dₗ`; `η` being bilinear and `𝒜 ⊙ ℬ`-linear, the
+hypothesis becomes `∑ₖ,ₗ cₖₗ • η(eₖ,dₗ) = 0` with
+`cₖₗ = ∑ᵢ ⟨eₖ,xᵢ⟩ ⊗ ⟨dₗ,yᵢ⟩`; `η` preserving the inner product, the
+`η(eₖ,dₗ)` are again orthonormal, so each `cₖₗ = 0` (the coefficients being
+absorbed by the projections `⟨eₖ,eₖ⟩`, `onbasis_coef_absorb`).  The one step
+the thesis leaves tacit is that `cₖₗ = 0` in `𝒞` gives `cₖₗ = 0` already in
+`𝒜 ⊙ ℬ`, which is `vnTensor_alg_injective`. -/
+private theorem extTensor_eta_injective {Z : Type u} [NormedAddCommGroup Z]
+    [NormedSpace ℂ Z] [SMul 𝒞 Z] [CStarModule 𝒞 Z]
+    [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ] [CompleteSpace X] [CompleteSpace Y]
+    {t : 𝒜 → ℬ → 𝒞} (ht : IsVNTensor t)
+    (hX : SelfDual 𝒜 X) (hY : SelfDual ℬ Y) (η : X → Y → Z)
+    (hadd_l : ∀ (x x' : X) (y : Y), η (x + x') y = η x y + η x' y)
+    (hadd_r : ∀ (x : X) (y y' : Y), η x (y + y') = η x y + η x y')
+    (hsmul : ∀ (a : 𝒜) (b : ℬ) (x : X) (y : Y),
+      η (a • x) (b • y) = t a b • η x y)
+    (hinner : ∀ (x x' : X) (y y' : Y),
+      inner 𝒞 (η x y) (η x' y') = t (inner 𝒜 x x') (inner ℬ y y'))
+    {n : ℕ} (x : Fin n → X) (y : Fin n → Y)
+    (h : ∑ i, η (x i) (y i) = 0) :
+    ∑ i, x i ⊗ₜ[ℂ] y i = 0 := by
+  classical
+  -- `t` kills a zero in either slot
+  have ht0l : ∀ b : ℬ, t 0 b = 0 := fun b => by
+    have := ht.add_left 0 0 b; simpa using this.symm
+  have ht0r : ∀ a : 𝒜, t a 0 = 0 := fun a => by
+    have := ht.add_right a 0 0; simpa using this.symm
+  -- `η` is additive in each slot, hence commutes with finite sums
+  have hz_l : ∀ v : Y, η 0 v = 0 := fun v => by
+    have := hadd_l 0 0 v; simpa using this.symm
+  have hz_r : ∀ u : X, η u 0 = 0 := fun u => by
+    have := hadd_r u 0 0; simpa using this.symm
+  have hsum_l : ∀ (N : ℕ) (f : Fin N → X) (v : Y),
+      η (∑ i, f i) v = ∑ i, η (f i) v := fun N f v =>
+    map_sum (AddMonoidHom.mk' (fun u : X => η u v) (fun u u' => hadd_l u u' v))
+      f Finset.univ
+  have hsum_r : ∀ (N : ℕ) (u : X) (g : Fin N → Y),
+      η u (∑ j, g j) = ∑ j, η u (g j) := fun N u g =>
+    map_sum (AddMonoidHom.mk' (fun v : Y => η u v) (fun v v' => hadd_r u v v'))
+      g Finset.univ
+  have hsmul_sum : ∀ (N : ℕ) (f : Fin N → 𝒞) (z : Z),
+      (∑ i, f i) • z = ∑ i, f i • z := fun N f z =>
+    map_sum (AddMonoidHom.mk' (fun a : 𝒞 => a • z) (fun a a' => op_add_smul a a' z))
+      f Finset.univ
+  -- **160X** for the two families
+  obtain ⟨m, -, e, he, -, hex⟩ := selfdual_gramschmidt hX x
+  obtain ⟨m', -, d, hd, -, hey⟩ := selfdual_gramschmidt hY y
+  set A : Fin m → Fin n → 𝒜 := fun k i => inner 𝒜 (e k) (x i) with hA
+  set Bc : Fin m' → Fin n → ℬ := fun l i => inner ℬ (d l) (y i) with hBc
+  set c : Fin m → Fin m' → 𝒞 := fun k l => ∑ i, t (A k i) (Bc l i) with hc
+  -- the expansion of `η (xᵢ) (yᵢ)` along the two orthonormal families
+  have hexp : ∀ i, η (x i) (y i) = ∑ k, ∑ l, t (A k i) (Bc l i) • η (e k) (d l) := by
+    intro i
+    conv_lhs => rw [hex i, hey i]
+    rw [hsum_l m (fun k => A k i • e k) (∑ l, Bc l i • d l)]
+    refine Finset.sum_congr rfl fun k _ => ?_
+    rw [hsum_r m' (A k i • e k) (fun l => Bc l i • d l)]
+    exact Finset.sum_congr rfl fun l _ => hsmul _ _ _ _
+  -- so the hypothesis reads `∑ₖ ∑ₗ cₖₗ • η(eₖ,dₗ) = 0`
+  have hzero : ∑ k, ∑ l, c k l • η (e k) (d l) = (0 : Z) :=
+    calc ∑ k, ∑ l, c k l • η (e k) (d l)
+        = ∑ k, ∑ l, ∑ i, t (A k i) (Bc l i) • η (e k) (d l) :=
+          Finset.sum_congr rfl fun k _ => Finset.sum_congr rfl fun l _ =>
+            hsmul_sum n (fun i => t (A k i) (Bc l i)) (η (e k) (d l))
+      _ = ∑ k, ∑ i, ∑ l, t (A k i) (Bc l i) • η (e k) (d l) :=
+          Finset.sum_congr rfl fun k _ => Finset.sum_comm
+      _ = ∑ i, ∑ k, ∑ l, t (A k i) (Bc l i) • η (e k) (d l) := Finset.sum_comm
+      _ = ∑ i, η (x i) (y i) := Finset.sum_congr rfl fun i _ => (hexp i).symm
+      _ = 0 := h
+  -- each coefficient `cₖₗ` vanishes, by orthonormality of the `η(eₖ,dₗ)`
+  have hcz : ∀ k l, c k l = 0 := by
+    intro k l
+    have hip : (inner 𝒞 (η (e k) (d l)) (∑ k', ∑ l', c k' l' • η (e k') (d l')) : 𝒞)
+        = c k l * t (inner 𝒜 (e k) (e k)) (inner ℬ (d l) (d l)) := by
+      rw [CStarModule.inner_sum_right]
+      rw [Finset.sum_eq_single_of_mem k (Finset.mem_univ k)]
+      · rw [CStarModule.inner_sum_right]
+        rw [Finset.sum_eq_single_of_mem l (Finset.mem_univ l)]
+        · rw [CStarModule.inner_op_smul_right, hinner]
+        · intro l' _ hl'
+          rw [CStarModule.inner_op_smul_right, hinner, hd.1 l l' (Ne.symm hl'), ht0r,
+            mul_zero]
+      · intro k' _ hk'
+        rw [CStarModule.inner_sum_right]
+        refine Finset.sum_eq_zero fun l' _ => ?_
+        rw [CStarModule.inner_op_smul_right, hinner, he.1 k k' (Ne.symm hk'), ht0l,
+          mul_zero]
+    rw [hzero, CStarModule.inner_zero_right] at hip
+    -- and `cₖₗ · (pₖ ⊗ qₗ) = cₖₗ`, the coefficients being absorbed
+    have habs : c k l * t (inner 𝒜 (e k) (e k)) (inner ℬ (d l) (d l)) = c k l := by
+      rw [hc]
+      simp only [Finset.sum_mul]
+      refine Finset.sum_congr rfl fun i _ => ?_
+      rw [ht.mul, hA, hBc, onbasis_coef_absorb he (x i) k, onbasis_coef_absorb hd (y i) l]
+    rw [habs] at hip
+    exact hip.symm
+  -- so each `∑ᵢ ⟨eₖ,xᵢ⟩ ⊗ ⟨dₗ,yᵢ⟩` already vanishes in `𝒜 ⊙ ℬ`
+  have halg : ∀ k l, ∑ i, A k i ⊗ₜ[ℂ] Bc l i = 0 := fun k l =>
+    vnTensor_alg_injective ht (A k) (Bc l) (hcz k l)
+  -- and the claim follows by reassembling
+  calc ∑ i, x i ⊗ₜ[ℂ] y i
+      = ∑ i, ∑ k, ∑ l, (A k i • e k) ⊗ₜ[ℂ] (Bc l i • d l) := by
+        refine Finset.sum_congr rfl fun i _ => ?_
+        conv_lhs => rw [hex i, hey i]
+        rw [TensorProduct.sum_tmul]
+        exact Finset.sum_congr rfl fun k _ => TensorProduct.tmul_sum _ _ _
+    _ = ∑ k, ∑ l, ∑ i, (A k i • e k) ⊗ₜ[ℂ] (Bc l i • d l) := by
+        rw [Finset.sum_comm]
+        exact Finset.sum_congr rfl fun k _ => Finset.sum_comm
+    _ = 0 := by
+        refine Finset.sum_eq_zero fun k _ => Finset.sum_eq_zero fun l _ => ?_
+        have hmap := congrArg
+          (TensorProduct.map (opSmulHom (𝒜 := 𝒜) (e k)) (opSmulHom (𝒜 := ℬ) (d l)))
+          (halg k l)
+        rw [map_sum, map_zero] at hmap
+        rw [← hmap]
+        exact Finset.sum_congr rfl fun i _ => by
+          rw [TensorProduct.map_tmul]; rfl
 
 variable {t : 𝒜 → ℬ → 𝒞} {ht : IsVNTensor t}
 
@@ -5862,10 +6230,17 @@ end UnivField
 for self-dual `X`, `Y` over von Neumann algebras the self-dual exterior
 tensor product exists.
 
-**164III**–**164VIII** (construction via `ℓ²((pᵢⱼ))` and its proof,
-including `ext-tensor-dfn-eta`, `ext-tensor-preserves-inner-prod`,
-injectivity of `η`, `ultranorm-dense-tensor-base`) are proof steps — not
-converted separately. -/
+**Divergence, class 2.**  The thesis constructs `X ⊗ Y` as `ℓ²((pᵢⱼ))` for
+a chosen pair of orthonormal bases (**164III**–**164VII**); that
+construction is *not* run here.  Instead `X ⊗ Y` is the self-dual completion
+(**150II**) of the module `(X ⊗_ℂ Y) ⊗_ℂ 𝒞` carrying `extBInner`, and the
+universal property comes from **151Ia** (`selfdual_completion_univ`).  So
+**164IV** (`η`) and **164V** (`η` preserves the inner product) are replaced
+by `extEta` and `extEta_inner`, and **164VII** (density) is replaced by
+**164II**.1 `ext_tensor_dense`, proved for an arbitrary `ExtTensor` from the
+universal property.  **164VI** (injectivity of `η`) *is* run, as
+`extTensor_eta_injective`, since it is what discharges the `η_injective`
+field. -/
 theorem univprop_ext_tensor [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
     [VonNeumannAlgebra 𝒞] [CompleteSpace X] [CompleteSpace Y]
     (hX : SelfDual 𝒜 X) (hY : SelfDual ℬ Y) :
@@ -5884,6 +6259,10 @@ theorem univprop_ext_tensor [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
             η_smul_complex := extEta_smul_complex ht E
             η_smul := extEta_smul ht E
             η_inner := extEta_inner ht E
+            η_injective := fun n x y hxy =>
+              extTensor_eta_injective ht hX hY (extEta t ht E)
+                (extEta_add_left ht E) (extEta_add_right ht E) (extEta_smul ht E)
+                (extEta_inner ht E) x y hxy
             univ := ?_ }⟩
   intro W inacg innsp insmul incstar incompl hW T hTl hTr hTsm hbd
   letI := inacg
@@ -5926,8 +6305,11 @@ end UnivPropExistence
 `vnTensor_mul_complex` for `IsVNTensor` and of `paschkeModuleId` for
 `PaschkeModule`.  `𝒞 = 𝒜 ⊗ ℬ` itself, as a Hilbert `𝒞`-module over itself
 with `η = t`, **is** a self-dual exterior tensor product of `X = 𝒜` and
-`Y = ℬ`: it is the case `X = 𝒜`, `Y = ℬ` of `univprop_ext_tensor`, and it
-needs no von Neumann hypotheses at all.
+`Y = ℬ`: it is the case `X = 𝒜`, `Y = ℬ` of `univprop_ext_tensor`.  All of
+its fields except `η_injective` are checked with no von Neumann hypotheses
+at all; `η_injective` is at `X = 𝒜`, `Y = ℬ` exactly the injectivity of
+`𝒜 ⊙ ℬ → 𝒜 ⊗ ℬ` (`vnTensor_alg_injective`), which does need `𝒜` and `ℬ` to
+be von Neumann algebras, 164II's own setting.
 
 Every field is checked against the mirrored convention: `inner 𝒜 x x'`
 is `x' * star x`, so `η_inner` reads
@@ -5942,7 +6324,8 @@ Kept in the tree deliberately: without it every theorem hypothesising
 **166IV**, **166VI**, **167I**) would be conditional on a structure not
 known to be inhabited; PROVING-LOG session 14 records a mirroring defect
 that left `PaschkeModule` uninhabited and nine theorems vacuous. -/
-noncomputable def extTensorSelf (t : 𝒜 → ℬ → 𝒞) (ht : IsVNTensor t) :
+noncomputable def extTensorSelf [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
+    (t : 𝒜 → ℬ → 𝒞) (ht : IsVNTensor t) :
     ExtTensor t ht 𝒜 ℬ where
   Z := 𝒞
   selfDual := selfDual_self 𝒞
@@ -5956,6 +6339,7 @@ noncomputable def extTensorSelf (t : 𝒜 → ℬ → 𝒞) (ht : IsVNTensor t) 
   η_inner x x' y y' := by
     show t x' y' * star (t x y) = t (x' * star x) (y' * star y)
     rw [ht.star, ht.mul]
+  η_injective _ a b h := vnTensor_alg_injective ht a b h
   univ := by
     intro W iW₁ iW₂ iW₃ iW₄ iW₅ _ T _ _ hsmul _
     letI := iW₁; letI := iW₂; letI := iW₃; letI := iW₄; letI := iW₅
@@ -6190,7 +6574,9 @@ end ExtTensorAux
 /-- **164IX** (`ext-tensor-uniqueness`, dils.tex:5286, Uniqueness — stated
 in **164II** as "up-to-isomorphism unique"): two self-dual exterior tensor
 products are isomorphic by a unique inner-product-preserving module
-isomorphism commuting with the embeddings. -/
+isomorphism commuting with the embeddings.  164IX assumes `η₂` injective;
+that is the `η_injective` field of `ExtTensor`, so both `E₁` and `E₂` carry
+it and the quantification is over exactly 164IX's class. -/
 theorem ext_tensor_uniqueness [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
     [VonNeumannAlgebra 𝒞] [CompleteSpace X] [CompleteSpace Y]
     (hX : SelfDual 𝒜 X) (hY : SelfDual ℬ Y)
@@ -7134,9 +7520,14 @@ nmiu-isomorphism `𝒜ᵃ(X) ⊗ ℬᵃ(Y) ≅ 𝒞ᵃ(X ⊗ Y)` sending `S ⊗ 
 **165VII**–**165X** are the proof, transcribed below.
 
 **165VII** reduces the theorem to *`Θ` is a tensor product in the sense of
-`tensor`* (108II) by way of `tensor-uniqueness`; our statement is that
+`tensor`* (108II) by way of `tensor-uniqueness`; this statement is that
 reduction already carried out, so what is proved here is exactly the thesis's
-**165VIII**–**165X** — and the route is the thesis's own: verify the three
+**165VIII**–**165X**.  165VI's own conclusion — that there *is* an
+nmiu-isomorphism `𝒜ᵃ(X) ⊗ ℬᵃ(Y) ≅ 𝒞ᵃ(X ⊗ Y)` fixed by `ϑ(S ⊗ T) = S ⊗ T` —
+is `ba_ext_tensor_iso` below, which runs 165VII's appeal to **114II**
+`tensor_uniqueness`; it cannot be stated here because the `IsVNTensor` →
+`IsTensorProduct` bridge it needs is developed only in
+`PaschkeTensorInfra`.  The route is the thesis's own: verify the three
 conditions of **116VII** `tensor_characterization` (thesis A, proc.tex:3578,
 now proved) for the centre separating collections `Ω_X`, `Ω_Y` of *vector*
 np-functionals, and read `IsVNTensor` off the resulting `IsTensorProduct`.
@@ -7829,6 +8220,42 @@ theorem isVNTensor_of_isTensorProduct [VonNeumannAlgebra 𝒜] [VonNeumannAlgebr
   rw [hset]
   exact Theses.A.Proc.wstar_eq_top_of_dense_span _ hγ.dense
 
+/-- **165VI** (`ba-ext-tensor-pres`, dils.tex:5539, Theorem) in the form the
+thesis states it: there **is** an nmiu-isomorphism
+`ϑ : 𝒜ᵃ(X) ⊗ ℬᵃ(Y) ≅ 𝒞ᵃ(X ⊗ Y)` fixed by `ϑ(S ⊗ T) = S ⊗ T`, and it is
+unique with that property.  Here `s` is any von Neumann tensor product of
+`𝒜ᵃ(X)` and `ℬᵃ(Y)` — the thesis's `𝒜ᵃ(X) ⊗ ℬᵃ(Y)`, which is determined
+only up to isomorphism anyway (**114II**).
+
+Divergence class 1: this is **165VII** verbatim.  `ba_ext_tensor_pres`
+carries out its first half (`Θ` *is* a tensor product in the sense of
+**108II**), and `tensor-uniqueness` (**114II**) closes the gap, exactly as
+165VII says.  It sits in this section rather than beside
+`ba_ext_tensor_pres` only because it needs the `IsVNTensor` →
+`IsTensorProduct` bridge above. -/
+theorem ba_ext_tensor_iso [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
+    [VonNeumannAlgebra 𝒞] {X Y : Type u}
+    [NormedAddCommGroup X] [NormedSpace ℂ X] [SMul 𝒜 X] [CStarModule 𝒜 X]
+    [NormedAddCommGroup Y] [NormedSpace ℂ Y] [SMul ℬ Y] [CStarModule ℬ Y]
+    [CompleteSpace X] [CompleteSpace Y] {t : 𝒜 → ℬ → 𝒞} {ht : IsVNTensor t}
+    (hX : SelfDual 𝒜 X) (hY : SelfDual ℬ Y) (E : ExtTensor t ht X Y)
+    (Θ : Ba 𝒜 X → Ba ℬ Y → Ba 𝒞 E.Z)
+    (hΘ : ∀ (S : Ba 𝒜 X) (T : Ba ℬ Y) (x : X) (y : Y),
+      (Θ S T).1 (E.η x y) = E.η (S.1 x) (T.1 y))
+    {𝒯 : Type u} [CStarAlgebra 𝒯] [PartialOrder 𝒯] [StarOrderedRing 𝒯]
+    [VonNeumannAlgebra 𝒯] {s : Ba 𝒜 X → Ba ℬ Y → 𝒯} (hs : IsVNTensor s) :
+    ∃ ϑ : NMIUMap 𝒯 (Ba 𝒞 E.Z),
+      (∀ (S : Ba 𝒜 X) (T : Ba ℬ Y), ϑ (s S T) = Θ S T) ∧
+        Function.Bijective ⇑ϑ ∧
+        ∀ ψ : NMIUMap 𝒯 (Ba 𝒞 E.Z),
+          (∀ (S : Ba 𝒜 X) (T : Ba ℬ Y), ψ (s S T) = Θ S T) → ψ = ϑ := by
+  haveI : VonNeumannAlgebra (Ba 𝒜 X) := ba_vonNeumannAlgebra hX
+  haveI : VonNeumannAlgebra (Ba ℬ Y) := ba_vonNeumannAlgebra hY
+  haveI : VonNeumannAlgebra (Ba 𝒞 E.Z) := ba_vonNeumannAlgebra E.selfDual
+  have hΘt : IsVNTensor Θ := ba_ext_tensor_pres hX hY E Θ hΘ
+  exact Theses.A.Proc.tensor_uniqueness (vnTensorLin hs) (vnTensorLin hΘt)
+    (isTensorProduct_of_isVNTensor hs) (isTensorProduct_of_isVNTensor hΘt)
+
 /-! ### np-functionals and the ultraweak topology on the opposite algebra -/
 
 /-- np-functionals transfer *back* from the opposite algebra (the converse of
@@ -8388,14 +8815,18 @@ variable {𝒜 ℬ 𝒞 : Type u}
   [CStarAlgebra ℬ] [PartialOrder ℬ] [StarOrderedRing ℬ]
   [CStarAlgebra 𝒞] [PartialOrder 𝒞] [StarOrderedRing 𝒞]
 
-/-- An nmiu-map is ultraweakly continuous (**44XV** `p_uwcont`). -/
+/-- An nmiu-map is ultraweakly continuous.  The leading **44XV** is a
+*provenance citation*: the exercise is a four-way TFAE for positive maps
+between von Neumann algebras, stated and proved in full as `p_uwcont` in
+`A/VN/Basic`; this is its (3) ⇒ (1) read off for an nmiu-map. -/
 theorem uwContinuous_nmiu {X Y : Type u} [CStarAlgebra X] [PartialOrder X]
     [StarOrderedRing X] [VonNeumannAlgebra X] [CStarAlgebra Y] [PartialOrder Y]
     [StarOrderedRing Y] [VonNeumannAlgebra Y] (f : NMIUMap X Y) :
     @Continuous X Y (ultraweak X) (ultraweak Y) ⇑f :=
   ((p_uwcont (nmiuP f)).out 2 0).mp f.preservesDirSups'
 
-/-- An ncp-map is ultraweakly continuous (**44XV** `p_uwcont`). -/
+/-- An ncp-map is ultraweakly continuous — as the previous declaration, the
+(3) ⇒ (1) of A/VN's `p_uwcont`, which is **44XV** in full. -/
 theorem uwContinuous_ncp {X Y : Type u} [CStarAlgebra X] [PartialOrder X]
     [StarOrderedRing X] [VonNeumannAlgebra X] [CStarAlgebra Y] [PartialOrder Y]
     [StarOrderedRing Y] [VonNeumannAlgebra Y] (f : NCPMap X Y) :

@@ -766,11 +766,36 @@ theorem inv_mult_state (a : 𝒜) (ha : IsSelfAdjoint a) :
 end Order
 
 /-- **27XVII** (`spectrum-miu`, cstar.tex:4078, Exercise):
-`spec(a) = { f(a) : f ∈ spec(𝒜) }` for self-adjoint `a ∈ 𝒜`.  (Mathlib
-proves this for arbitrary `a`: `WeakDual.CharacterSpace.mem_spectrum_iff_exists`.) -/
+`spec(a) = { f(a) : f ∈ spec(𝒜) }` for self-adjoint `a ∈ 𝒜`.
+
+*Class 1 — faithful.*  The exercise's own derivation from **27XV**
+`inv_mult_state`: a point `λ` of `spec(a)` is real (`a` being self-adjoint),
+so `λ − a` is self-adjoint and non-invertible, and **27XV** produces a
+character killing it, i.e. one with `f(a) = λ`; conversely `f(a) ∈ spec(a)`
+is **27XV**'s easy direction.
+
+Until this repair the theorem went through Mathlib's
+`WeakDual.CharacterSpace.mem_spectrum_iff_exists`, whose proof reaches the
+character space through maximal *ring* ideals — the route **16VIII**
+(cstar.tex:2663) rejects, and the very detour that `inv_mult_state`'s own
+note records as removed.  The two order instances are supplied locally by
+`CStarAlgebra.spectralOrder`, so the statement is unchanged. -/
 theorem spectrum_miu (a : 𝒜) (ha : IsSelfAdjoint a) :
-    spectrum ℂ a = Set.range fun φ : characterSpace ℂ 𝒜 => φ a :=
-  Set.ext fun _ => WeakDual.CharacterSpace.mem_spectrum_iff_exists
+    spectrum ℂ a = Set.range fun φ : characterSpace ℂ 𝒜 => φ a := by
+  letI : PartialOrder 𝒜 := CStarAlgebra.spectralOrder 𝒜
+  haveI : StarOrderedRing 𝒜 := CStarAlgebra.spectralOrderedRing 𝒜
+  refine Set.ext fun z => ⟨fun hz => ?_, ?_⟩
+  · have hre : z = (z.re : ℂ) := ha.mem_spectrum_eq_re hz
+    have hsa : IsSelfAdjoint (algebraMap ℂ 𝒜 z - a) := by
+      refine IsSelfAdjoint.sub (IsSelfAdjoint.algebraMap 𝒜 ?_) ha
+      show star z = z
+      rw [hre, Complex.star_def, Complex.conj_ofReal]
+    obtain ⟨φ, hφ⟩ := (inv_mult_state _ hsa).mp (spectrum.mem_iff.mp hz)
+    refine ⟨φ, ?_⟩
+    rw [map_sub, AlgHomClass.commutes] at hφ
+    exact (sub_eq_zero.mp hφ).symm
+  · rintro ⟨φ, rfl⟩
+    exact WeakDual.CharacterSpace.apply_mem_spectrum φ a
 
 /-- **27XVIII** (`gelfand-representation-isometry`, cstar.tex:4082,
 Exercise), part 1: the Gelfand representation is an isometry,
@@ -780,11 +805,28 @@ theorem gelfand_representation_isometry (a : 𝒜) :
   (gelfandTransform_isometry 𝒜).norm_map_of_map_zero (map_zero _) a
 
 /-- **27XVIII** (`gelfand-representation-isometry`, cstar.tex:4082,
-Exercise), part 2: consequently `γ` is injective (and its range is a
-C*-subalgebra of `C(spec 𝒜)`, cf. **29IX**). -/
+Exercise), part 2, first clause: consequently `γ` is injective. -/
 theorem gelfand_representation_injective :
     Function.Injective (gelfandTransform ℂ 𝒜) :=
   (gelfandTransform_isometry 𝒜).injective
+
+/-- **27XVIII** (`gelfand-representation-isometry`, cstar.tex:4082,
+Exercise), part 2, second clause: the range of `γ` is a *C*-subalgebra* of
+`C(spec 𝒜)` — a ⋆-subalgebra whose carrier is closed — and `γ` is an
+miu-isomorphism of `𝒜` onto it.
+
+*Class 1 — faithful.*  Both clauses come straight from part 1: an isometry of
+a complete space is a closed embedding, so its range is closed, and an
+injective ⋆-homomorphism corestricts to an isomorphism onto its range. -/
+theorem gelfand_representation_range :
+    ∃ S : StarSubalgebra ℂ C(characterSpace ℂ 𝒜, ℂ),
+      (S : Set C(characterSpace ℂ 𝒜, ℂ)) = Set.range (gelfandTransform ℂ 𝒜) ∧
+        IsClosed (S : Set C(characterSpace ℂ 𝒜, ℂ)) ∧
+        ∃ e : 𝒜 ≃⋆ₐ[ℂ] S, ∀ a : 𝒜, Subtype.val (e a) = gelfandTransform ℂ 𝒜 a := by
+  refine ⟨StarAlgHom.range (gelfandStarTransform 𝒜 : 𝒜 →⋆ₐ[ℂ] _), rfl, ?_,
+    StarAlgEquiv.ofInjective _ gelfand_representation_injective, fun _ => rfl⟩
+  show IsClosed (Set.range (gelfandTransform ℂ 𝒜))
+  exact (gelfandTransform_isometry 𝒜).isClosedEmbedding.isClosed_range
 
 /-- **27XX** (`stone-weierstrass`, cstar.tex:4103, Theorem
 (Stone–Weierstraß)): a C*-subalgebra `𝒮` of `C(X)`, `X` compact Hausdorff,
@@ -894,7 +936,27 @@ theorem functional_calculus_2 (a : 𝒜) :
 representation theorem for `C*(a)` with the restriction along
 `j : spec(C*(a)) → spec(a)`, `ρ ↦ ρ(a)` — in Mathlib the continuous
 functional calculus `cfc f a` (for `f : ℂ → ℂ` continuous on `spec a`),
-and `CFC.rpow a α` for the powers `a^α`, `a ≥ 0`, `α ∈ (0,∞)`. -/
+and `CFC.rpow a α` for the powers `a^α`, `a ≥ 0`, `α ∈ (0,∞)`.
+
+`Φ` itself is Mathlib's `cfc`, so it is not built here; but the map `j` that
+the exercise asks one to produce first *is* stated, as
+`functional_calculus_3_j` below. -/
+
+/-- **28II** (`functional-calculus`, cstar.tex:4258, Exercise), part 3, first
+clause: `j : ρ ↦ ρ(a)` maps `spec(C*(a))` into `spec(a)`, and does so
+continuously.  (Mathlib: `StarAlgebra.elemental.characterSpaceToSpectrum` and
+`StarAlgebra.elemental.continuous_characterSpaceToSpectrum`.)  It is this map
+along which `Φ` restricts, and `functional_calculus_4` uses exactly these two
+facts. -/
+theorem functional_calculus_3_j (a : 𝒜) [IsStarNormal a] :
+    (∀ φ : characterSpace ℂ (StarAlgebra.elemental ℂ a),
+        φ (⟨a, StarAlgebra.elemental.self_mem ℂ a⟩ : StarAlgebra.elemental ℂ a)
+          ∈ spectrum ℂ a) ∧
+      Continuous fun φ : characterSpace ℂ (StarAlgebra.elemental ℂ a) =>
+        φ (⟨a, StarAlgebra.elemental.self_mem ℂ a⟩ :
+          StarAlgebra.elemental ℂ a) :=
+  ⟨fun φ => (StarAlgebra.elemental.characterSpaceToSpectrum a φ).2,
+    (StarAlgebra.elemental.continuous_characterSpaceToSpectrum a).subtype_val⟩
 
 section Ordered
 variable [PartialOrder 𝒜] [StarOrderedRing 𝒜]
@@ -1059,12 +1121,28 @@ theorem injective_miu_isometry (ρ : 𝒜 →⋆ₐ[ℂ] ℬ)
     (hρ : Function.Injective ρ) (a : 𝒜) : ‖ρ a‖ = ‖a‖ :=
   NonUnitalStarAlgHom.norm_map ρ hρ a
 
-/-- **29IX** (`injective-miu-iso-on-image`, cstar.tex:4600, Exercise): the
-range of an injective miu-map `ρ : 𝒜 → ℬ` is closed, hence a C*-subalgebra
-of `ℬ` isomorphic to `𝒜`. -/
+/-- **29IX** (`injective-miu-iso-on-image`, cstar.tex:4600, Exercise), first
+clause: the range of an injective miu-map `ρ : 𝒜 → ℬ` is closed. -/
 theorem injective_miu_iso_on_image (ρ : 𝒜 →⋆ₐ[ℂ] ℬ)
     (hρ : Function.Injective ρ) : IsClosed (Set.range ρ) :=
   (NonUnitalStarAlgHom.isometry ρ hρ).isClosedEmbedding.isClosed_range
+
+/-- **29IX** (`injective-miu-iso-on-image`, cstar.tex:4600, Exercise), the
+conclusion the Exercise asks one to draw: `ρ(𝒜)` is a *C*-subalgebra* of `ℬ`
+— a ⋆-subalgebra with closed carrier — and `ρ` is an miu-isomorphism of `𝒜`
+onto it.
+
+This is the clause that **27XVIII**.2 and **30X** defer to.
+
+*Class 1 — faithful.*  Closedness is the first clause, from **29VIII**; the
+isomorphism is `ρ` corestricted to its range, injective by hypothesis. -/
+theorem injective_miu_iso_on_image_isomorphism (ρ : 𝒜 →⋆ₐ[ℂ] ℬ)
+    (hρ : Function.Injective ρ) :
+    ∃ S : StarSubalgebra ℂ ℬ, (S : Set ℬ) = Set.range ρ ∧ IsClosed (S : Set ℬ) ∧
+      ∃ e : 𝒜 ≃⋆ₐ[ℂ] S, ∀ a : 𝒜, Subtype.val (e a) = ρ a := by
+  refine ⟨StarAlgHom.range ρ, rfl, ?_, StarAlgEquiv.ofInjective ρ hρ, fun _ => rfl⟩
+  show IsClosed (Set.range ρ)
+  exact injective_miu_iso_on_image ρ hρ
 
 end Duality
 
@@ -1124,11 +1202,11 @@ theorem omega_norm_basic_1 (ω : 𝒜 →ₗ[ℂ] ℂ) (hω : IsPositiveMap ω)
   rw [← hA, ← hB, ← mul_pow]
   exact_mod_cast RCLike.ofReal_le_ofReal (K := ℂ) |>.mpr hsq
 
-/-- **30IV** (`omega-norm-basic`, cstar.tex:4680, Exercise), part 2:
-`‖ab‖_ω ≤ ‖a‖ ‖b‖_ω` (using `a* a ≤ ‖a‖²`; the thesis writes an additional
-harmless factor `‖ω‖`).  The counterexamples to the variants
-`‖ab‖_ω ≤ ‖ω‖ ‖a‖_ω ‖b‖`, `‖ab‖_ω ≤ ‖a‖_ω ‖b‖_ω`, `‖a* a‖_ω = ‖a‖_ω²` and
-`‖a*‖_ω = ‖a‖_ω` are not converted. -/
+/-- **30IV** (`omega-norm-basic`, cstar.tex:4680, Exercise), part 2, the
+inequality (in the corrected form of erratum `parsec-300.40`, without the
+`‖ω‖` factor): `‖ab‖_ω ≤ ‖a‖ ‖b‖_ω`, using `a* a ≤ ‖a‖²`.  The four
+counterexamples the exercise also asks for are
+`omega_norm_basic_2_counterexamples` below. -/
 theorem omega_norm_basic_2 (ω : 𝒜 →ₗ[ℂ] ℂ) (hω : IsPositiveMap ω)
     (a b : 𝒜) :
     omegaSeminorm ω (a * b) ≤ ‖a‖ * omegaSeminorm ω b := by
@@ -1142,18 +1220,183 @@ theorem omega_norm_basic_2 (ω : 𝒜 →ₗ[ℂ] ℂ) (hω : IsPositiveMap ω)
     LinearMap.mkContinuous_norm_le _ (norm_nonneg a) _
   exact mul_le_mul_of_nonneg_right h2 (norm_nonneg _)
 
-/-- **30V** (`inner-product-completion`, cstar.tex:4733, Exercise): every
-complex inner product space `V` can be completed to a Hilbert space `H` in
-which it embeds densely (Mathlib: `UniformSpace.Completion` with its
-`InnerProductSpace` instance; the intermediate steps — the metric, extension
-of uniformly continuous maps and of bounded linear maps — are Mathlib's
-completion API). -/
+/-! The four counterexamples of **30IV**.2, all in `𝒜 = M₂(ℂ)` with the
+p-map `ω : M ↦ M₀₀`, which are the thesis's own witnesses. -/
+
+private theorem exists_star_mul_self_aux {M : Type*} [CStarAlgebra M]
+    [PartialOrder M] [StarOrderedRing M] {a : M} (ha : 0 ≤ a) :
+    ∃ b, a = star b * b :=
+  CStarAlgebra.nonneg_iff_eq_star_mul_self.mp ha
+
+/-- `ω : M₂(ℂ) → ℂ`, `M ↦ M₀₀` — the p-map the exercise's hints use. -/
+private noncomputable def omegaM2 : CStarMatrix (Fin 2) (Fin 2) ℂ →ₗ[ℂ] ℂ where
+  toFun M := M 0 0
+  map_add' _ _ := rfl
+  map_smul' _ _ := rfl
+
+private theorem omegaM2_pos : IsPositiveMap omegaM2 := by
+  intro M hM
+  obtain ⟨C, rfl⟩ := exists_star_mul_self_aux hM
+  show (0 : ℂ) ≤ (star C * C) 0 0
+  rw [CStarMatrix.mul_apply]
+  refine Finset.sum_nonneg fun i _ => ?_
+  rw [CStarMatrix.star_apply]
+  exact star_mul_self_nonneg _
+
+/-- `‖a‖_ω² = |a₀₀|² + |a₁₀|²` for this `ω`. -/
+private theorem omegaSeminorm_M2 (a : CStarMatrix (Fin 2) (Fin 2) ℂ) :
+    omegaSeminorm omegaM2 a
+      = Real.sqrt (Complex.normSq (a 0 0) + Complex.normSq (a 1 0)) := by
+  unfold omegaSeminorm
+  congr 1
+  show ((star a * a) 0 0).re = _
+  rw [CStarMatrix.mul_apply, Fin.sum_univ_two]
+  simp [CStarMatrix.star_apply, Complex.normSq_apply, Complex.add_re, Complex.mul_re]
+
+/-- `½(¹¹₁₁)`, the thesis's second witness. -/
+private noncomputable def pM2 : CStarMatrix (Fin 2) (Fin 2) ℂ :=
+  CStarMatrix.ofMatrix !![1/2, 1/2; 1/2, 1/2]
+
+/-- `(⁰⁰₀₁)`, the thesis's first witness. -/
+private noncomputable def dM2 : CStarMatrix (Fin 2) (Fin 2) ℂ :=
+  CStarMatrix.ofMatrix !![0, 0; 0, 1]
+
+/-- `(⁰¹₀₀)`, for the last counterexample. -/
+private noncomputable def eM2 : CStarMatrix (Fin 2) (Fin 2) ℂ :=
+  CStarMatrix.ofMatrix !![0, 1; 0, 0]
+
+private theorem pM2_norm : omegaSeminorm omegaM2 pM2 = Real.sqrt (1/2) := by
+  rw [omegaSeminorm_M2]
+  norm_num [pM2, CStarMatrix.ofMatrix_apply, Complex.normSq_apply]
+
+private theorem pM2_sq : pM2 * pM2 = pM2 := by
+  ext i j
+  rw [CStarMatrix.mul_apply, Fin.sum_univ_two]
+  fin_cases i <;> fin_cases j <;> norm_num [pM2, CStarMatrix.ofMatrix_apply]
+
+private theorem pM2_star : star pM2 = pM2 := by
+  ext i j
+  rw [CStarMatrix.star_apply]
+  fin_cases i <;> fin_cases j <;> norm_num [pM2, CStarMatrix.ofMatrix_apply]
+
+private theorem half_lt_sqrt_half : (1/2 : ℝ) < Real.sqrt (1/2) := by
+  rw [show (1/2 : ℝ) = Real.sqrt ((1/2) ^ 2) by rw [Real.sqrt_sq]; norm_num]
+  exact Real.sqrt_lt_sqrt (by positivity) (by norm_num)
+
+/-- **30IV** (`omega-norm-basic`, cstar.tex:4680, Exercise), part 2, the four
+counterexamples: for the p-map `ω : M ↦ M₀₀` on `M₂(ℂ)` none of
+
+* `‖ab‖_ω ≤ ‖a‖_ω ‖b‖`,
+* `‖ab‖_ω ≤ ‖a‖_ω ‖b‖_ω`,
+* `‖a* a‖_ω = ‖a‖_ω²`,
+* `‖a*‖_ω = ‖a‖_ω`
+
+holds in general.
+
+*Class 1 — faithful.*  The witnesses are the exercise's own hints:
+`a = (⁰⁰₀₁)`, `b = ½(¹¹₁₁)` for the first; `a = b = ½(¹¹₁₁)` for the second
+and third (where `‖a‖_ω = √½` but `‖a‖_ω² = ½ < √½`).  For the fourth, which
+the exercise leaves open, we take the matrix unit `a = (⁰¹₀₀)`: `‖a‖_ω = 0`
+while `‖a*‖_ω = 1`. -/
+theorem omega_norm_basic_2_counterexamples :
+    ∃ ω : CStarMatrix (Fin 2) (Fin 2) ℂ →ₗ[ℂ] ℂ, IsPositiveMap ω ∧
+      (∃ a b : CStarMatrix (Fin 2) (Fin 2) ℂ,
+        ¬ omegaSeminorm ω (a * b) ≤ omegaSeminorm ω a * ‖b‖) ∧
+      (∃ a b : CStarMatrix (Fin 2) (Fin 2) ℂ,
+        ¬ omegaSeminorm ω (a * b) ≤ omegaSeminorm ω a * omegaSeminorm ω b) ∧
+      (∃ a : CStarMatrix (Fin 2) (Fin 2) ℂ,
+        omegaSeminorm ω (star a * a) ≠ omegaSeminorm ω a ^ 2) ∧
+      (∃ a : CStarMatrix (Fin 2) (Fin 2) ℂ,
+        omegaSeminorm ω (star a) ≠ omegaSeminorm ω a) := by
+  refine ⟨omegaM2, omegaM2_pos, ⟨dM2, pM2, ?_⟩, ⟨pM2, pM2, ?_⟩, ⟨pM2, ?_⟩, ⟨eM2, ?_⟩⟩
+  · have hL : omegaSeminorm omegaM2 (dM2 * pM2) = 1/2 := by
+      rw [omegaSeminorm_M2]
+      have h0 : (dM2 * pM2) 0 0 = 0 := by
+        rw [CStarMatrix.mul_apply, Fin.sum_univ_two]
+        simp [dM2, pM2, CStarMatrix.ofMatrix_apply]
+      have h1 : (dM2 * pM2) 1 0 = 1/2 := by
+        rw [CStarMatrix.mul_apply, Fin.sum_univ_two]
+        simp [dM2, pM2, CStarMatrix.ofMatrix_apply]
+      rw [h0, h1]
+      norm_num [Complex.normSq_apply]
+    have hR : omegaSeminorm omegaM2 dM2 = 0 := by
+      rw [omegaSeminorm_M2]
+      norm_num [dM2, CStarMatrix.ofMatrix_apply, Complex.normSq_apply]
+    rw [hL, hR, zero_mul]
+    norm_num
+  · rw [pM2_sq, pM2_norm, Real.mul_self_sqrt (by norm_num : (0:ℝ) ≤ 1/2)]
+    exact not_le.mpr half_lt_sqrt_half
+  · rw [pM2_star, pM2_sq, pM2_norm, Real.sq_sqrt (by norm_num : (0:ℝ) ≤ 1/2)]
+    intro h
+    have hl := half_lt_sqrt_half
+    rw [h] at hl
+    exact lt_irrefl _ hl
+  · have h1 : omegaSeminorm omegaM2 eM2 = 0 := by
+      rw [omegaSeminorm_M2]
+      norm_num [eM2, CStarMatrix.ofMatrix_apply, Complex.normSq_apply]
+    have h2 : omegaSeminorm omegaM2 (star eM2) = 1 := by
+      rw [omegaSeminorm_M2]
+      have e0 : (star eM2) 0 0 = 0 := by
+        rw [CStarMatrix.star_apply]; norm_num [eM2, CStarMatrix.ofMatrix_apply]
+      have e1 : (star eM2) 1 0 = 1 := by
+        rw [CStarMatrix.star_apply]; norm_num [eM2, CStarMatrix.ofMatrix_apply]
+      rw [e0, e1]
+      norm_num [Complex.normSq_apply]
+    rw [h1, h2]
+    norm_num
+
+/-- **30V** (`inner-product-completion`, cstar.tex:4733, Exercise), the
+headline: every complex inner product space `V` can be completed to a Hilbert
+space `H` in which it embeds densely (Mathlib: `UniformSpace.Completion` with
+its `InnerProductSpace` instance; the intermediate steps — the metric on
+Cauchy sequences, its completeness, and the extension of the operations — are
+Mathlib's completion API).
+
+The exercise's two *extension* clauses, which are what it is used for, are
+`inner_product_completion_extension` and `inner_product_completion_extendL`
+below; the second is what **30VI**'s `ϱ_ω` needs. -/
 theorem inner_product_completion (V : Type v) [NormedAddCommGroup V]
     [InnerProductSpace ℂ V] :
     ∃ (H : Type v) (_ : NormedAddCommGroup H) (_ : InnerProductSpace ℂ H)
       (_ : CompleteSpace H) (e : V →ₗᵢ[ℂ] H), DenseRange e :=
   ⟨UniformSpace.Completion V, inferInstance, inferInstance, inferInstance,
     UniformSpace.Completion.toComplₗᵢ, UniformSpace.Completion.denseRange_coe⟩
+
+/-- **30V** (`inner-product-completion`, cstar.tex:4733, Exercise), the
+uniform-extension clause: every uniformly continuous map `f : V → X` into a
+complete space extends *uniquely* to a uniformly continuous map on the
+completion `H` of `V` (where "`g` extends `f`" means `f = g ∘ η`). -/
+theorem inner_product_completion_extension (V : Type v) [NormedAddCommGroup V]
+    [InnerProductSpace ℂ V] {X : Type*} [UniformSpace X] [T0Space X]
+    [CompleteSpace X] (f : V → X) (hf : UniformContinuous f) :
+    ∃! g : UniformSpace.Completion V → X,
+      UniformContinuous g ∧ ∀ v : V, g (v : UniformSpace.Completion V) = f v := by
+  refine ⟨UniformSpace.Completion.extension f,
+    ⟨UniformSpace.Completion.uniformContinuous_extension,
+      fun v => UniformSpace.Completion.extension_coe hf v⟩, ?_⟩
+  rintro g ⟨hgc, hg⟩
+  exact (UniformSpace.Completion.extension_unique hf hgc fun v => (hg v).symm).symm
+
+/-- **30V** (`inner-product-completion`, cstar.tex:4733, Exercise), the final
+clause: every bounded linear map `f : V → K` into a Hilbert space `K` extends
+*uniquely* to a bounded linear map on the completion `H` of `V`.
+
+This is the clause **30VI** uses to build `ϱ_ω(a)` from `b ↦ ab`. -/
+theorem inner_product_completion_extendL (V : Type v) [NormedAddCommGroup V]
+    [InnerProductSpace ℂ V] {K : Type*} [NormedAddCommGroup K]
+    [InnerProductSpace ℂ K] [CompleteSpace K] (f : V →L[ℂ] K) :
+    ∃! g : UniformSpace.Completion V →L[ℂ] K,
+      ∀ v : V, g (v : UniformSpace.Completion V) = f v := by
+  have hd : DenseRange (UniformSpace.Completion.toComplL (𝕜 := ℂ) (E := V)) :=
+    UniformSpace.Completion.denseRange_coe
+  have hi : IsUniformInducing (UniformSpace.Completion.toComplL (𝕜 := ℂ) (E := V)) :=
+    UniformSpace.Completion.isUniformInducing_coe V
+  refine ⟨ContinuousLinearMap.extend f UniformSpace.Completion.toComplL,
+    fun v => ContinuousLinearMap.extend_eq f hd hi v, ?_⟩
+  intro g hg
+  refine (ContinuousLinearMap.extend_unique f hd hi g ?_).symm
+  ext v
+  exact hg v
 
 /-! **30VI** (`gns`, cstar.tex:4779, Definition (Gelfand–Naimark–Segal
 construction)): for a p-map `ω : 𝒜 → ℂ`, the Hilbert space `ℋ_ω` is the
