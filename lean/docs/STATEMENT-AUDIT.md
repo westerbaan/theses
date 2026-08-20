@@ -81,16 +81,43 @@ auxiliaries that transcribe a numbered point.
 | `acstar-basic` | `A/CStar/Basic` | 109 | **16** (11 weaker, 5 stronger) | 72 (43 mathlib, 26 route, 3 mild) |
 | `avn-basic` | `A/VN/Basic` | 137 | **12** (all weaker) | 19 |
 | `aproc-tensor` | `A/Proc/Tensor` | 148 | **8** (7 weaker, 1 stronger) | 19 (9 route, 8 mild, 1 mathlib, 1 sorry) |
+| `bdils-paschke-stinespring` | `B/Dils/{Paschke, Stinespring}` | 70 | **18** (12 stronger, 5 weaker, 1 differs) | 21 |
+| `beff-vnexamples` | `B/Eff/{VNExamples, Comparisons}` | 56 | **17** (6 weaker, 11 differs) | 11 |
 
-**394 of 1759 rows in; 36 statements do not match their source.**
+**520 of 1759 rows in; 71 statements do not match their source.**
 
-Not yet audited: `A/CStar/{Positive, Matrices, Representation, TowardsVN}`,
+Not yet audited: `A/CStar/{Positive, TowardsVN}`,
 `A/VN/{Projections, Division, NormalFunctionals, Completeness}`,
-`A/Proc/{Measurement, Duplicators, QuantumLambda}`, all of `B/Dils`, all of
-`B/Eff`.  (`Positive.lean` and `Measurement.lean` are being edited by the
+`A/Proc/{Measurement, Duplicators, QuantumLambda}`,
+`B/Dils/{HilbertModules, SelfDualCompletion, SelfDual, Kaplansky, Pure}`,
+`B/Eff/{Effectus, Quotients, Dagger, DiamondAmp, StatesPredicates,
+EffectAlgebras}`.  (`A/CStar/Matrices` and `Representation` are in flight.)  (`Positive.lean` and `Measurement.lean` are being edited by the
 author and are held back deliberately.)
 
 ### Standing observations
+
+* **Seven thesis defects now, not four.**  `B/Dils` adds three: **155II**
+  (KSGNS) prints the adjointable map as `T : Y → X`, which does not typecheck
+  against the thesis's own `ad_T` of 153I — Kasparov's direction, and ours, is
+  `T : X → Y`; **157VI** says "pick `T ∈ ϱ(𝒜)^□`" and then forms `√T`, so its
+  claim that `φ_T` is ncp is false without `0 ≤ T`; and **140X.1** prints the
+  triple as `(𝒜, ϱ, id)` where the dilating algebra must be `ℬ` (`bsols.tex`
+  confirms `𝒫 = ℬ`).  `B/Eff` adds a likely eighth: eff.tex **227III.4** gives
+  left-modularity as `f^□(f_⋄(IM k)) = IM k ∨ ⌈1∘f⌉` where `f^□(0) = ⌈1∘f⌉ᵖ`
+  and 228II's condition (1) uses `⌈1∘b⌉ᵖ`; the two points are inconsistent and
+  228II is right.  227III.4 is not formalized, so nothing in the tree is wrong.
+* **One of our statements is false, not merely weaker.**  **139XI**
+  `ess_uniq_pur` asserts the conclusion for *arbitrary* `V, W`, dropping all
+  three alternative hypotheses the current `dils.tex` carries and `berr.tex`
+  says are required.  Its proof is `sorry`, so nothing false is derived — but
+  the statement must not be proved as it stands.  The author is revising this
+  exercise now; audited against the text at `ea8cfa2`.
+* **Doc-comment DISP labels are not reliable.**  `B/Eff/VNExamples` cites
+  `31IV` where the rest of the tree writes `30IV`, and names 199II/197II/202I/
+  203I.1/203IV for points that are actually 199V/197IV/202IV/203III/203III;
+  `B/Dils` labels `nmiu_forall_mem` **138II** when its content is **138IV**,
+  and cites **154IV**/**154II** for formulas that are in **154V**.  A wrong
+  label sends the next reader to the wrong point.
 
 * **Four thesis statements are false as printed, none of them previously
   recorded.**  Three share one shape — a monotonicity or positivity clause
