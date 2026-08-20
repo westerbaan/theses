@@ -88,11 +88,12 @@ auxiliaries that transcribe a numbered point.
 | `bdils-selfdual-kaplansky` | `B/Dils/{SelfDual, Kaplansky}` | 98 | **19** (15 weaker, 2 stronger, 2 differs) | 34 (17 route, 10 mild, 4 sorry, 3 mathlib) |
 | `beff-effectus-quotients` | `B/Eff/{Effectus, Quotients}` | 94 | **6** (all weaker) | 15 (9 mild, 4 route, 2 mathlib) |
 | `aproc-measurement` | `A/Proc/Measurement` | 154 | **9** (8 weaker, 1 differs) | 13 (6 mild, 5 route, 2 sorry) |
+| `acstar-positive` | `A/CStar/Positive` | 157 | **9** (8 weaker, 1 stronger) | 66 (36 route, 17 mathlib, 13 mild) |
 
-**1217 rows in; 149 statements do not match their source** (105 weaker, 27
+**1374 rows in; 158 statements do not match their source** (113 weaker, 28
 stronger, 17 differs, 0 unsure).
 
-Not yet audited: `A/CStar/{Positive, TowardsVN}`,
+Not yet audited: `A/CStar/TowardsVN`,
 `A/VN/{Division, NormalFunctionals, Completeness}`,
 `A/Proc/{Duplicators, QuantumLambda}`,
 `B/Dils/{HilbertModules, SelfDualCompletion, Pure}`,
@@ -101,6 +102,18 @@ Not yet audited: `A/CStar/{Positive, TowardsVN}`,
 author and are held back deliberately.)
 
 ### Standing observations
+
+* **A statement can be missing from the tree and still be *used*.**  24II
+  part 4 (`‖a‖ = ‖a₊‖ ∨ ‖a₋‖`, added by addendum `parsec-240.20`) is stated
+  nowhere — yet `A/CStar/Matrices.lean:754` reaches it through Mathlib's
+  `IsSelfAdjoint.norm_eq_max_norm_posPart_negPart` to supply our 32XV.3 repair.
+  Grepping for a statement's *name* will not find these; only reading the point
+  will.
+* **Editing a point can orphan its solution.**  `cstar.tex` 26II gained a
+  fifth item 22 hours ago, but `asols.tex`'s `parsec-260.20` still has five
+  items whose fifth proves the *old* claim `|a+b| ≤ |a|+|b|` in the
+  commutative case — something the exercise no longer asks.  So the new item 5
+  has no solution and the solution's item 5 answers nothing in the exercise.
 
 * **"Still `sorry`" claims in doc comments go stale and cost proofs.**
   `A/Proc/Measurement` carries four that are now false — the module header on
