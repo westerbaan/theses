@@ -72,16 +72,35 @@ following few.
 
 ## Roll-up
 
-Filled in as fragments land.  `—` means not yet audited.
+Filled in as fragments land.  Counts are of *rows*, which exceed the 1759
+DISP-carrying `theorem`s because auditors also cover definitions and private
+auxiliaries that transcribe a numbered point.
 
-| chapter | statements | audited | stmt not `ok` | proof not `faithful`/`none` |
-|---|---:|---:|---:|---:|
-| A/CStar | 406 | — | — | — |
-| A/VN | 422 | — | — | — |
-| A/Proc | 403 | — | — | — |
-| B/Dils | 307 | — | — | — |
-| B/Eff | 221 | — | — | — |
-| **total** | **1759** | — | — | — |
+| fragment | modules | rows | stmt not `ok` | proof not `faithful`/`none` |
+|---|---|---:|---:|---:|
+| `acstar-basic` | `A/CStar/Basic` | 109 | **16** (11 weaker, 5 stronger) | 72 (43 mathlib, 26 route, 3 mild) |
+
+Not yet audited: `A/CStar/{Positive, Matrices, Representation, TowardsVN}`,
+all of `A/VN`, `A/Proc/{Measurement, Tensor, Duplicators, QuantumLambda}`, all
+of `B/Dils`, all of `B/Eff`.
+
+### Standing observations
+
+* **Deliberate weakenings are mostly unmarked.**  `A/CStar/Basic` carries two
+  doc comments saying in so many words that only a "sample claim" of a
+  multi-part exercise is stated — and a grep shows those are the *only* two
+  such admissions in the whole tree.  So the other weakenings this audit finds
+  will not announce themselves.
+* **The commonest shape is a multi-part exercise rendered by one clause.**
+  9X.1 (whole cone property → the scalar clause), 4III.1 ("the operator norm
+  is a norm" → definiteness), 4XV.1–.4 (indefinite inner products →
+  `InnerProductSpace`), 7III.5 (ℝ-linear → additive).  None of these is false;
+  each says less than the point it cites.
+* **`proof = mathlib` is the norm, not the exception**, in the elementary
+  chapters: 43 of 109 rows in `A/CStar/Basic`.  That is a legitimate choice
+  for facts Mathlib already has, but it means the *thesis's* argument is
+  unexhibited, and in a few places it inverts the thesis's own dependency
+  order (11XIII from 11XV.1, which the thesis proves from 11XIII).
 
 ## What happens to a finding
 
