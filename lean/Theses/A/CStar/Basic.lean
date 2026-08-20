@@ -54,8 +54,9 @@ C*-algebra, and every finite-dimensional C*-algebra is of this form
 (proved at 84II, vn.tex).
 -/
 
-/-- **3III** (cstar.tex:135, Example): ℂ is a (commutative) C*-algebra. -/
-noncomputable example : CStarAlgebra ℂ := inferInstance
+/-- **3III** (cstar.tex:135, Example): ℂ is a *commutative* C*-algebra
+(with conjugation as involution and modulus as norm). -/
+noncomputable example : CommCStarAlgebra ℂ := inferInstance
 
 /-! ## Parsec 40 (`hilb`): Hilbert spaces and bounded operators -/
 
@@ -76,11 +77,14 @@ operator, operator norm `‖T‖`, and the space `B(𝒳,𝒴)` of bounded opera
 in Mathlib `𝒳 →L[ℂ] 𝒴` with its operator norm. -/
 
 /-- **4III** (`bounded-operators-basic`, cstar.tex:326, Exercise), part 1:
-the operator norm on `B(𝒳,𝒴)` is a norm.  (Packaged in Mathlib by the
-`NormedAddCommGroup (𝒳 →L[ℂ] 𝒴)` instance; as a sample claim we state
-definiteness, the nontrivial part.) -/
-theorem boundedOperators_basic_1 (T : 𝒳 →L[ℂ] 𝒴) (h : ‖T‖ = 0) : T = 0 :=
-  norm_eq_zero.mp h
+the operator norm on `B(𝒳,𝒴)` is, indeed, a norm: it is nonnegative,
+definite, absolutely homogeneous, and satisfies the triangle inequality.
+(All four are packaged in Mathlib by the `NormedAddCommGroup (𝒳 →L[ℂ] 𝒴)`
+instance; we spell them out, as the exercise asks.) -/
+theorem boundedOperators_basic_1 (T T' : 𝒳 →L[ℂ] 𝒴) (c : ℂ) :
+    0 ≤ ‖T‖ ∧ (‖T‖ = 0 ↔ T = 0) ∧ ‖c • T‖ = ‖c‖ * ‖T‖ ∧
+      ‖T + T'‖ ≤ ‖T‖ + ‖T'‖ :=
+  ⟨norm_nonneg T, norm_eq_zero, norm_smul c T, norm_add_le T T'⟩
 
 /-- **4III** (`bounded-operators-basic`, cstar.tex:326, Exercise), part 2:
 `‖S ∘ T‖ ≤ ‖S‖ ‖T‖` for bounded operators `T : 𝒳 → 𝒴`, `S : 𝒴 → 𝒵`. -/
@@ -298,60 +302,148 @@ theorem positive_2x2matrix_2 (p q c : ℂ)
     exact_mod_cast main
 
 /-! **4XV** (`inner-product-basic`, cstar.tex:590, Exercise): the formula
-`‖x‖ = √⟪x,x⟫` defines a seminorm, and a norm when the inner product is
-definite.  In Mathlib the norm of an inner product space is packaged in the
-`InnerProductSpace` structure (`InnerProductSpace.Core` handles the
-construction of the norm from the inner product); the four listed
-identities follow. -/
+`‖x‖ = √⟪x,x⟫` defines a seminorm on a complex vector space `V` carrying an
+inner product, and a norm when that inner product is definite; and it
+satisfies the four listed identities.  The exercise is stated for an
+arbitrary — in particular possibly *indefinite* — inner product, which in
+Mathlib is a `PreInnerProductSpace.Core ℂ V` (`InnerProductSpace.Core` adds
+definiteness, and `InnerProductSpace ℂ H` is the definite, normed case).  We
+follow the exercise and work over a `PreInnerProductSpace.Core ℂ V`, writing
+`innerNorm x` for the formula `√⟪x,x⟫`. -/
+
+section IndefiniteInner
+
+variable {V : Type*} [AddCommGroup V] [Module ℂ V] [c : PreInnerProductSpace.Core ℂ V]
+
+attribute [local instance] InnerProductSpace.Core.toPreInner'
+
+/-- **4XV** (`inner-product-basic`, cstar.tex:590, Exercise): the formula
+`‖x‖ = √⟪x,x⟫`, for a possibly indefinite inner product on a complex vector
+space. -/
+noncomputable def innerNorm (x : V) : ℝ := Real.sqrt (RCLike.re (⟪x, x⟫ : ℂ))
+
+/-- `‖x‖² = ⟪x,x⟫`, the defining property of `innerNorm`. -/
+theorem innerNorm_sq (x : V) : innerNorm x ^ 2 = RCLike.re (⟪x, x⟫ : ℂ) :=
+  Real.sq_sqrt InnerProductSpace.Core.inner_self_nonneg
+
+theorem innerNorm_nonneg (x : V) : 0 ≤ innerNorm x := Real.sqrt_nonneg _
+
+theorem innerNorm_sq_coe (x : V) : ((innerNorm x : ℂ)) ^ 2 = ⟪x, x⟫ := by
+  rw [← Complex.ofReal_pow, innerNorm_sq]
+  exact InnerProductSpace.Core.inner_self_ofReal_re x
 
 /-- **4XV** (`inner-product-basic`, cstar.tex:590, Exercise), part 1: the
 Cauchy–Schwarz inequality `|⟪x,y⟫|² ≤ ⟪x,x⟫ ⟪y,y⟫`. -/
-theorem inner_product_basic_1 (x y : H) :
-    ‖⟪x, y⟫‖ ^ 2 ≤ ‖x‖ ^ 2 * ‖y‖ ^ 2 :=
-  by
-    have h := norm_inner_le_norm (𝕜 := ℂ) x y
-    nlinarith [norm_nonneg ((⟪x, y⟫ : ℂ)), norm_nonneg x, norm_nonneg y,
-      mul_nonneg (norm_nonneg x) (norm_nonneg y)]
+theorem inner_product_basic_1 (x y : V) :
+    ‖(⟪x, y⟫ : ℂ)‖ ^ 2 ≤ RCLike.re (⟪x, x⟫ : ℂ) * RCLike.re (⟪y, y⟫ : ℂ) := by
+  have h := InnerProductSpace.Core.inner_mul_inner_self_le (𝕜 := ℂ) x y
+  rwa [InnerProductSpace.Core.norm_inner_symm (𝕜 := ℂ) y x, ← sq] at h
+
+/-- **4XV** (`inner-product-basic`, cstar.tex:590, Exercise), main clause:
+`‖x‖ = √⟪x,x⟫` is a seminorm — nonnegative, absolutely homogeneous, and
+subadditive (the triangle inequality, proved as the exercise's hint
+suggests, from Cauchy–Schwarz). -/
+theorem inner_product_seminorm (x y : V) (l : ℂ) :
+    0 ≤ innerNorm x ∧ innerNorm (l • x) = ‖l‖ * innerNorm x ∧
+      innerNorm (x + y) ≤ innerNorm x + innerNorm y := by
+  refine ⟨innerNorm_nonneg x, ?_, ?_⟩
+  · have e : RCLike.re (⟪l • x, l • x⟫ : ℂ) = ‖l‖ ^ 2 * RCLike.re (⟪x, x⟫ : ℂ) := by
+      rw [InnerProductSpace.Core.inner_smul_left (𝕜 := ℂ),
+        InnerProductSpace.Core.inner_smul_right (𝕜 := ℂ), ← mul_assoc,
+        RCLike.conj_mul]
+      simp [← Complex.ofReal_pow]
+    rw [innerNorm, innerNorm, e, Real.sqrt_mul (by positivity), Real.sqrt_sq (norm_nonneg l)]
+  · have hcs : ‖(⟪x, y⟫ : ℂ)‖ ≤ innerNorm x * innerNorm y := by
+      have h1 := inner_product_basic_1 x y
+      rw [← innerNorm_sq, ← innerNorm_sq] at h1
+      nlinarith [norm_nonneg (⟪x, y⟫ : ℂ), innerNorm_nonneg x, innerNorm_nonneg y,
+        mul_nonneg (innerNorm_nonneg x) (innerNorm_nonneg y)]
+    have hre : RCLike.re (⟪x, y⟫ : ℂ) ≤ innerNorm x * innerNorm y :=
+      le_trans (RCLike.re_le_norm _) hcs
+    have hre' : RCLike.re (⟪y, x⟫ : ℂ) ≤ innerNorm x * innerNorm y := by
+      rw [← InnerProductSpace.Core.inner_re_symm (𝕜 := ℂ)]
+      exact hre
+    have expand : RCLike.re (⟪x + y, x + y⟫ : ℂ)
+        = RCLike.re (⟪x, x⟫ : ℂ) + RCLike.re (⟪x, y⟫ : ℂ) + RCLike.re (⟪y, x⟫ : ℂ)
+          + RCLike.re (⟪y, y⟫ : ℂ) := by
+      rw [InnerProductSpace.Core.inner_add_add_self (𝕜 := ℂ)]
+      simp
+    have hle : RCLike.re (⟪x + y, x + y⟫ : ℂ) ≤ (innerNorm x + innerNorm y) ^ 2 := by
+      rw [expand, ← innerNorm_sq, ← innerNorm_sq]
+      nlinarith [hre, hre']
+    calc innerNorm (x + y) = Real.sqrt (RCLike.re (⟪x + y, x + y⟫ : ℂ)) := rfl
+      _ ≤ Real.sqrt ((innerNorm x + innerNorm y) ^ 2) := Real.sqrt_le_sqrt hle
+      _ = innerNorm x + innerNorm y :=
+          Real.sqrt_sq (add_nonneg (innerNorm_nonneg x) (innerNorm_nonneg y))
+
+/-- **4XV** (`inner-product-basic`, cstar.tex:590, Exercise), main clause:
+`‖x‖ = √⟪x,x⟫` is a *norm* when the inner product is definite. -/
+theorem inner_product_norm_of_definite (hdef : ∀ z : V, (⟪z, z⟫ : ℂ) = 0 → z = 0) (x : V) :
+    innerNorm x = 0 ↔ x = 0 := by
+  constructor
+  · intro h
+    refine hdef x ?_
+    have h2 : RCLike.re (⟪x, x⟫ : ℂ) = 0 := by
+      have := innerNorm_sq x
+      rw [h] at this
+      simpa using this.symm
+    rw [← InnerProductSpace.Core.inner_self_ofReal_re (𝕜 := ℂ) x, h2]
+    simp
+  · rintro rfl
+    rw [innerNorm, InnerProductSpace.Core.inner_zero_left (𝕜 := ℂ)]
+    simp
 
 /-- **4XV** (`inner-product-basic`, cstar.tex:590, Exercise), part 2:
 Pythagoras' theorem: `‖x‖² + ‖y‖² = ‖x + y‖²` when `⟪x,y⟫ = 0`. -/
-theorem inner_product_basic_2 (x y : H) (h : ⟪x, y⟫ = 0) :
-    ‖x‖ ^ 2 + ‖y‖ ^ 2 = ‖x + y‖ ^ 2 :=
-  by
-    rw [norm_add_sq (𝕜 := ℂ) x y, h]
-    simp
+theorem inner_product_basic_2 (x y : V) (h : (⟪x, y⟫ : ℂ) = 0) :
+    innerNorm x ^ 2 + innerNorm y ^ 2 = innerNorm (x + y) ^ 2 := by
+  have hyx : (⟪y, x⟫ : ℂ) = 0 := by
+    rw [← InnerProductSpace.Core.inner_conj_symm (𝕜 := ℂ), h, map_zero]
+  rw [innerNorm_sq, innerNorm_sq, innerNorm_sq,
+    InnerProductSpace.Core.inner_add_add_self (𝕜 := ℂ), h, hyx]
+  simp
 
 /-- **4XV** (`inner-product-basic`, cstar.tex:590, Exercise), part 3: the
 parallelogram law. -/
-theorem inner_product_basic_3 (x y : H) :
-    ‖x‖ ^ 2 + ‖y‖ ^ 2 = (‖x + y‖ ^ 2 + ‖x - y‖ ^ 2) / 2 :=
-  by
-    have := parallelogram_law_with_norm ℂ x y
-    linarith
+theorem inner_product_basic_3 (x y : V) :
+    innerNorm x ^ 2 + innerNorm y ^ 2
+      = (innerNorm (x + y) ^ 2 + innerNorm (x - y) ^ 2) / 2 := by
+  rw [innerNorm_sq, innerNorm_sq, innerNorm_sq, innerNorm_sq,
+    InnerProductSpace.Core.inner_add_add_self (𝕜 := ℂ),
+    InnerProductSpace.Core.inner_sub_sub_self (𝕜 := ℂ)]
+  simp
+  ring
 
 /-- **4XV** (`inner-product-basic`, cstar.tex:590, Exercise), part 4: the
 polarisation identity `⟪x,y⟫ = ¼ ∑_{n<4} iⁿ ‖iⁿ x + y‖²`. -/
-theorem inner_product_basic_4 (x y : H) :
-    ⟪x, y⟫ = (∑ n ∈ Finset.range 4,
-      Complex.I ^ n * ((‖(Complex.I ^ n : ℂ) • x + y‖ : ℂ)) ^ 2) / 4 :=
-  by
-    have h1 : ‖(Complex.I : ℂ) • x + y‖ = ‖x - Complex.I • y‖ := by
-      have e : (Complex.I : ℂ) • x + y = Complex.I • (x - Complex.I • y) := by
-        rw [smul_sub, smul_smul, Complex.I_mul_I, neg_one_smul, sub_neg_eq_add]
-      rw [e, norm_smul, Complex.norm_I, one_mul]
-    have h2 : ‖(-Complex.I : ℂ) • x + y‖ = ‖x + Complex.I • y‖ := by
-      have e : (-Complex.I : ℂ) • x + y = (-Complex.I) • (x + Complex.I • y) := by
-        rw [smul_add, smul_smul, neg_mul, Complex.I_mul_I, neg_neg, one_smul]
-      rw [e, norm_smul, norm_neg, Complex.norm_I, one_mul]
-    have h3 : ‖(-1 : ℂ) • x + y‖ = ‖x - y‖ := by
-      rw [neg_one_smul, neg_add_eq_sub, norm_sub_rev]
-    simp only [Finset.sum_range_succ, Finset.sum_range_zero, zero_add,
-      pow_zero, pow_one, one_smul]
-    rw [show (Complex.I : ℂ) ^ 2 = -1 from Complex.I_sq,
-      show (Complex.I : ℂ) ^ 3 = -Complex.I from Complex.I_pow_three,
-      h1, h2, h3, inner_eq_sum_norm_sq_div_four]
-    simp [RCLike.I]
-    ring
+theorem inner_product_basic_4 (x y : V) :
+    (⟪x, y⟫ : ℂ) = (∑ n ∈ Finset.range 4,
+      Complex.I ^ n * ((innerNorm ((Complex.I ^ n : ℂ) • x + y) : ℂ)) ^ 2) / 4 := by
+  have expand : ∀ n : ℕ, ((innerNorm ((Complex.I ^ n : ℂ) • x + y) : ℂ)) ^ 2
+      = ⟪x, x⟫ + (starRingEnd ℂ) (Complex.I ^ n) * ⟪x, y⟫
+        + Complex.I ^ n * ⟪y, x⟫ + ⟪y, y⟫ := by
+    intro n
+    rw [innerNorm_sq_coe, InnerProductSpace.Core.inner_add_add_self (𝕜 := ℂ),
+      InnerProductSpace.Core.inner_smul_left (𝕜 := ℂ),
+      InnerProductSpace.Core.inner_smul_right (𝕜 := ℂ),
+      InnerProductSpace.Core.inner_smul_left (𝕜 := ℂ),
+      InnerProductSpace.Core.inner_smul_right (𝕜 := ℂ)]
+    rw [← mul_assoc, RCLike.conj_mul]
+    simp
+  simp only [Finset.sum_range_succ, Finset.sum_range_zero, zero_add, expand]
+  simp only [pow_zero, pow_one, map_one, map_pow, Complex.conj_I, Complex.I_sq]
+  ring_nf
+  simp [Complex.ext_iff]
+  constructor <;> ring
+
+end IndefiniteInner
+
+/-- Auxiliary: Pythagoras' theorem (**4XV**.2) in the definite, normed case,
+where `‖·‖` is the norm of the pre-Hilbert space `H` itself. -/
+private theorem norm_add_sq_of_inner_eq_zero (x y : H) (h : ⟪x, y⟫ = 0) :
+    ‖x‖ ^ 2 + ‖y‖ ^ 2 = ‖x + y‖ ^ 2 := by
+  rw [norm_add_sq (𝕜 := ℂ) x y, h]
+  simp
 
 /-- Auxiliary: if `A` is adjoint to `B` (as bounded operators on a pre-Hilbert
 space) then `‖A‖ ≤ ‖B‖`.  Used for both parts of **4XVI**. -/
@@ -368,10 +460,37 @@ private theorem norm_le_of_isAdjointTo (A B : H →L[ℂ] H)
   nlinarith [norm_nonneg (A x), norm_nonneg x, norm_nonneg B,
     mul_nonneg (norm_nonneg B) (norm_nonneg x)]
 
-/-- **4XVI** (`operators-cstar-identity`, cstar.tex:642, Lemma), part 1: for
-a bounded adjointable operator `T` on a pre-Hilbert space, `‖T* T‖ = ‖T‖²`
-(the C*-identity). -/
-theorem operators_cstar_identity_1 (T S : H →L[ℂ] H)
+/-- Auxiliary: the adjoint of a bounded operator on a pre-Hilbert space is
+itself linear and bounded (by `‖T‖`), so that it is an element of `B(H)`.
+This is the part of **4XVI** that the thesis leaves implicit when it writes
+`‖T*‖`: linearity is **4X**-style uniqueness reasoning, and boundedness is
+the estimate `‖T*y‖² = ⟪T T* y, y⟫ ≤ ‖T‖ ‖T*y‖ ‖y‖`. -/
+private noncomputable def adjointCLM (T : H →L[ℂ] H) (S : H → H)
+    (h : IsAdjointTo (⇑T) S) : H →L[ℂ] H :=
+  LinearMap.mkContinuous
+    { toFun := S
+      map_add' := fun y z => ext_inner_left ℂ fun x => by
+        rw [← h x (y + z), inner_add_right, inner_add_right, ← h x y, ← h x z]
+      map_smul' := fun c y => ext_inner_left ℂ fun x => by
+        rw [RingHom.id_apply, inner_smul_right, ← h x y, ← h x (c • y), inner_smul_right] }
+    ‖T‖ fun y => by
+      show (‖S y‖ : ℝ) ≤ ‖T‖ * ‖y‖
+      have key : (‖S y‖ : ℝ) ^ 2 = ‖(⟪T (S y), y⟫ : ℂ)‖ := by
+        rw [h (S y) y, inner_self_eq_norm_sq_to_K]
+        simp
+      have e2 : ‖(⟪T (S y), y⟫ : ℂ)‖ ≤ ‖T‖ * ‖S y‖ * ‖y‖ :=
+        (norm_inner_le_norm (𝕜 := ℂ) (T (S y)) y).trans
+          (by gcongr; exact T.le_opNorm (S y))
+      nlinarith [norm_nonneg (S y), norm_nonneg y, norm_nonneg T,
+        mul_nonneg (norm_nonneg T) (norm_nonneg y)]
+
+private theorem coe_adjointCLM (T : H →L[ℂ] H) (S : H → H)
+    (h : IsAdjointTo (⇑T) S) : ⇑(adjointCLM T S h) = S := rfl
+
+/-- Auxiliary: the C*-identity for a pair of bounded operators that are
+adjoint to one another — the computation of **4XVI**, with the adjoint
+already bundled as an element of `B(H)` by `adjointCLM`. -/
+private theorem cstar_identity_aux (T S : H →L[ℂ] H)
     (h : IsAdjointTo T S) : ‖S.comp T‖ = ‖T‖ ^ 2 :=
   by
     have hST : ‖S‖ = ‖T‖ := le_antisymm (norm_le_of_isAdjointTo S T (isAdjointTo_symm T S h))
@@ -397,26 +516,56 @@ theorem operators_cstar_identity_1 (T S : H →L[ℂ] H)
       nlinarith [Real.sq_sqrt (norm_nonneg (S.comp T)), Real.sqrt_nonneg ‖S.comp T‖,
         norm_nonneg T]
 
+/-- **4XVI** (`operators-cstar-identity`, cstar.tex:642, Lemma), part 1: for
+a bounded adjointable operator `T` on a pre-Hilbert space — the adjoint `S`
+being, a priori, an arbitrary map `H → H` — the adjoint is itself a bounded
+operator and `‖T* T‖ = ‖T‖²` (the C*-identity). -/
+theorem operators_cstar_identity_1 (T : H →L[ℂ] H) (S : H → H)
+    (h : IsAdjointTo (⇑T) S) :
+    ∃ S' : H →L[ℂ] H, ⇑S' = S ∧ ‖S'.comp T‖ = ‖T‖ ^ 2 :=
+  ⟨adjointCLM T S h, coe_adjointCLM T S h, cstar_identity_aux T (adjointCLM T S h) h⟩
+
 /-- **4XVI** (`operators-cstar-identity`, cstar.tex:642, Lemma), part 2:
-`‖T*‖ = ‖T‖`. -/
-theorem operators_cstar_identity_2 (T S : H →L[ℂ] H)
-    (h : IsAdjointTo T S) : ‖S‖ = ‖T‖ :=
-  by
-    exact le_antisymm (norm_le_of_isAdjointTo S T (isAdjointTo_symm T S h))
-      (norm_le_of_isAdjointTo T S h)
+`‖T*‖ = ‖T‖` — again with the adjoint only assumed to be a map `H → H`,
+its boundedness being part of the conclusion. -/
+theorem operators_cstar_identity_2 (T : H →L[ℂ] H) (S : H → H)
+    (h : IsAdjointTo (⇑T) S) :
+    ∃ S' : H →L[ℂ] H, ⇑S' = S ∧ ‖S'‖ = ‖T‖ :=
+  ⟨adjointCLM T S h, coe_adjointCLM T S h,
+    le_antisymm
+      (norm_le_of_isAdjointTo _ T (isAdjointTo_symm _ _ h))
+      (norm_le_of_isAdjointTo T _ h)⟩
 
 /-- **4XVIII** (cstar.tex:666, Exercise): for a Hilbert space `H` the
-adjointable operators form a closed (sub)space of `B(H)`. -/
+adjointable operators form a closed *linear subspace* of `B(H)`.  The
+subspace clause is the closure of adjointability under `0`, sums and
+scalars, i.e. **4XII**; closedness is proved here by showing (with **5XI**)
+that every bounded operator on a Hilbert space is adjointable. -/
 theorem adjointable_isClosed [CompleteSpace H] :
-    IsClosed {T : H →L[ℂ] H | Adjointable (⇑T)} :=
+    IsClosed {T : H →L[ℂ] H | Adjointable (⇑T)} ∧
+      ∃ M : Submodule ℂ (H →L[ℂ] H),
+        (M : Set (H →L[ℂ] H)) = {T : H →L[ℂ] H | Adjointable (⇑T)} :=
   by
-    have h : {T : H →L[ℂ] H | Adjointable (⇑T)} = Set.univ := by
-      ext T
-      simp only [Set.mem_setOf_eq, Set.mem_univ, iff_true, Adjointable]
-      exact ⟨⇑(ContinuousLinearMap.adjoint T), fun x y =>
-        (ContinuousLinearMap.adjoint_inner_right T x y).symm⟩
-    rw [h]
-    exact isClosed_univ
+    constructor
+    · have h : {T : H →L[ℂ] H | Adjointable (⇑T)} = Set.univ := by
+        ext T
+        simp only [Set.mem_setOf_eq, Set.mem_univ, iff_true, Adjointable]
+        exact ⟨⇑(ContinuousLinearMap.adjoint T), fun x y =>
+          (ContinuousLinearMap.adjoint_inner_right T x y).symm⟩
+      rw [h]
+      exact isClosed_univ
+    · refine ⟨{ carrier := {T : H →L[ℂ] H | Adjointable (⇑T)}
+                add_mem' := ?_
+                zero_mem' := ?_
+                smul_mem' := ?_ }, rfl⟩
+      · rintro T T' ⟨S, hS⟩ ⟨S', hS'⟩
+        refine ⟨S + S', fun x y => ?_⟩
+        simp only [ContinuousLinearMap.add_apply, Pi.add_apply, inner_add_left,
+          inner_add_right, hS x y, hS' x y]
+      · exact ⟨fun _ => 0, fun x y => by simp⟩
+      · rintro c T ⟨S, hS⟩
+        refine ⟨fun y => (starRingEnd ℂ) c • S y, fun x y => ?_⟩
+        simp only [ContinuousLinearMap.smul_apply, inner_smul_left, inner_smul_right, hS x y]
 
 /-- **4XIX** (`ketbra`, cstar.tex:671, Exercise): the operator
 `|x⟩⟨y| : z ↦ ⟪y, z⟫ x` on a Hilbert space, bounded by construction. -/
@@ -480,7 +629,7 @@ private theorem norm_sub_smul_sq (x e : H) (he : ‖e‖ = 1) (c : ℂ) :
       sub_self, mul_zero]
   have hsplit : x - c • e = (x - ⟪e, x⟫ • e) + (⟪e, x⟫ - c) • e := by
     rw [sub_smul]; abel
-  have hp := inner_product_basic_2 (x - ⟪e, x⟫ • e) ((⟪e, x⟫ - c) • e) horth
+  have hp := norm_add_sq_of_inner_eq_zero (x - ⟪e, x⟫ • e) ((⟪e, x⟫ - c) • e) horth
   rw [← hsplit] at hp
   rw [← hp, norm_smul, he, mul_one]
 
@@ -718,13 +867,16 @@ theorem cstar_involution_basic_4 (a : 𝒜) :
     · exact imaginaryPart_eq_zero_iff.mp (ZeroMemClass.coe_eq_zero.mp ha)
 
 /-- **7III** (`cstar-involution-basic`, cstar.tex:1007, Exercise), part 5:
-`a ↦ ℜa` and `a ↦ ℑa` are ℝ-linear (in Mathlib they are bundled as
-`𝒜 →ₗ[ℝ] selfAdjoint 𝒜`; we state additivity as sample claim). -/
-theorem cstar_involution_basic_5 (a b : 𝒜) :
+`a ↦ ℜa` and `a ↦ ℑa` are ℝ-linear maps `𝒜 → 𝒜`, i.e. additive and
+ℝ-homogeneous.  (In Mathlib they are bundled as `𝒜 →ₗ[ℝ] selfAdjoint 𝒜`,
+from which both clauses are read off.) -/
+theorem cstar_involution_basic_5 (a b : 𝒜) (r : ℝ) :
     (ℜ (a + b) : 𝒜) = (ℜ a : 𝒜) + (ℜ b : 𝒜) ∧
-      (ℑ (a + b) : 𝒜) = (ℑ a : 𝒜) + (ℑ b : 𝒜) :=
+      (ℑ (a + b) : 𝒜) = (ℑ a : 𝒜) + (ℑ b : 𝒜) ∧
+      (ℜ (r • a) : 𝒜) = r • (ℜ a : 𝒜) ∧
+      (ℑ (r • a) : 𝒜) = r • (ℑ a : 𝒜) :=
   by
-    exact ⟨by simp, by simp⟩
+    exact ⟨by simp, by simp, by simp, by simp⟩
 
 /-- **7III** (`cstar-involution-basic`, cstar.tex:1007, Exercise), part 6:
 `ℑa = -ℜ(ia)` and `ℜa = ℑ(ia)`. -/
@@ -1098,13 +1250,35 @@ theorem effect_orthosupplement (a : 𝒜) (ha : a ∈ effects 𝒜) :
     simp only [effects, Set.mem_Icc] at ha ⊢
     exact ⟨sub_nonneg.mpr ha.2, sub_le_self 1 ha.1⟩
 
-/-- **9X** (`cstar-positive`, cstar.tex:1209, Exercise), part 1: the
-positive elements form a *cone*: `0` is positive, sums of positive elements
-are positive (**9VII**), and nonnegative real multiples of positive
-elements are positive; consequently `≤` is a preorder. -/
+/-- **9X** (`cstar-positive`, cstar.tex:1209, Exercise), part 1, scalar
+clause: a nonnegative real multiple of a positive element is positive.
+(The whole of part 1 is `cstar_positive_1_cone` below; this clause is
+stated separately because it is the one the rest of the tree applies.) -/
 theorem cstar_positive_1 (a : 𝒜) (ha : 0 ≤ a) (r : ℝ) (hr : 0 ≤ r) :
     0 ≤ (r : ℂ) • a :=
   ofReal_smul_nonneg ha hr
+
+/-- **9X** (`cstar-positive`, cstar.tex:1209, Exercise), part 1: the
+positive elements form a *cone* — `0` is positive, `a + b` is positive for
+positive `a`, `b` (**9VII**), and `r a` is positive for positive `a` and
+`r ∈ [0,∞)` — and, as the exercise asks one to conclude, `≤` is a preorder
+(reflexivity and transitivity are derived here from the cone properties,
+not from the ambient `PartialOrder` instance). -/
+theorem cstar_positive_1_cone :
+    (0 : 𝒜) ≤ 0 ∧
+      (∀ a b : 𝒜, 0 ≤ a → 0 ≤ b → 0 ≤ a + b) ∧
+      (∀ (a : 𝒜) (r : ℝ), 0 ≤ a → 0 ≤ r → 0 ≤ (r : ℂ) • a) ∧
+      (∀ a : 𝒜, a ≤ a) ∧
+      (∀ a b c : 𝒜, a ≤ b → b ≤ c → a ≤ c) :=
+  by
+    refine ⟨le_refl 0, fun a b ha hb => cstar_positive_sum a b ha hb,
+      fun a r ha hr => cstar_positive_1 a ha r hr, fun a => ?_, fun a b c hab hbc => ?_⟩
+    · have h : (0 : 𝒜) ≤ a - a := by simp
+      exact sub_nonneg.mp h
+    · have h := cstar_positive_sum (b - a) (c - b) (sub_nonneg.mpr hab) (sub_nonneg.mpr hbc)
+      have e : b - a + (c - b) = c - a := by abel
+      rw [e] at h
+      exact sub_nonneg.mp h
 
 /-- **9X** (`cstar-positive`, cstar.tex:1209, Exercise), part 2: `1` is
 positive and `-‖a‖ ≤ a ≤ ‖a‖` for self-adjoint `a` (so `1` is an order
@@ -1439,26 +1613,107 @@ theorem cstar_inv_continuous :
     exact h.continuousWithinAt
 
 /-- **11XIII** (cstar.tex:1547, Lemma): `a - i` is invertible for
-self-adjoint `a`. -/
+self-adjoint `a`.
+
+The proof is the thesis's own trick: write `a - i = (a + ni) - (n+1)i` for
+`n` large, and apply **11VI**.2, the bound being
+`‖a+ni‖² = ‖(a+ni)*(a+ni)‖ = ‖a²+n²‖ ≤ ‖a‖²+n² < (n+1)²`.  (The thesis asks
+for `n` with `‖a‖ < 2n+1`; what its last step uses is `‖a‖² < 2n+1`, and
+that is what we choose `n` for.) -/
 theorem selfAdjoint_sub_I_isUnit (a : 𝒜) (ha : IsSelfAdjoint a) :
-    IsUnit (a - algebraMap ℂ 𝒜 Complex.I) :=
-  by
-    have hI : Complex.I ∉ spectrum ℂ a := by
-      intro hmem
-      simpa using ha.im_eq_zero_of_mem_spectrum hmem
-    rw [spectrum.notMem_iff] at hI
-    simpa using hI.neg
+    IsUnit (a - algebraMap ℂ 𝒜 Complex.I) := by
+  rcases subsingleton_or_nontrivial 𝒜 with hs | hs
+  · exact isUnit_of_subsingleton _
+  have hnormalg : ∀ z : ℂ, ‖algebraMap ℂ 𝒜 z‖ = ‖z‖ := fun z => by
+    rw [Algebra.algebraMap_eq_smul_one, norm_smul, norm_one, mul_one]
+  obtain ⟨n, hn⟩ := exists_nat_gt (‖a‖ ^ 2)
+  set N : ℝ := (n : ℝ) with hN
+  have hN0 : (0 : ℝ) ≤ N := Nat.cast_nonneg n
+  set c : 𝒜 := algebraMap ℂ 𝒜 ((N : ℂ) * Complex.I) with hc
+  have hAstar : star (a + c) = a - c := by
+    rw [star_add, ha.star_eq, hc, ← algebraMap_star_comm]
+    have : star ((N : ℂ) * Complex.I) = -((N : ℂ) * Complex.I) := by simp
+    rw [this, map_neg, ← sub_eq_add_neg]
+  have hAA : star (a + c) * (a + c) = a ^ 2 + algebraMap ℂ 𝒜 ((N : ℂ) ^ 2) := by
+    rw [hAstar]
+    have hcomm : c * a = a * c := Algebra.commutes _ a
+    have hcc : c * c = - algebraMap ℂ 𝒜 ((N : ℂ) ^ 2) := by
+      rw [hc, ← map_mul, ← map_neg]
+      congr 1
+      have hI : Complex.I * Complex.I = -1 := Complex.I_mul_I
+      calc (N : ℂ) * Complex.I * ((N : ℂ) * Complex.I)
+          = (N : ℂ) * (N : ℂ) * (Complex.I * Complex.I) := by ring
+        _ = -((N : ℂ) ^ 2) := by rw [hI]; ring
+    calc (a - c) * (a + c) = a * a + (a * c - c * a) - c * c := by noncomm_ring
+      _ = a ^ 2 + algebraMap ℂ 𝒜 ((N : ℂ) ^ 2) := by rw [hcomm, hcc]; noncomm_ring
+  have hnormsq : ‖a + c‖ ^ 2 ≤ ‖a‖ ^ 2 + N ^ 2 := by
+    have h1 : ‖a + c‖ ^ 2 = ‖a ^ 2 + algebraMap ℂ 𝒜 ((N : ℂ) ^ 2)‖ := by
+      rw [← hAA, CStarRing.norm_star_mul_self]
+      ring
+    rw [h1]
+    calc ‖a ^ 2 + algebraMap ℂ 𝒜 ((N : ℂ) ^ 2)‖
+        ≤ ‖a ^ 2‖ + ‖algebraMap ℂ 𝒜 ((N : ℂ) ^ 2)‖ := norm_add_le _ _
+      _ = ‖a‖ ^ 2 + N ^ 2 := by
+          rw [cstar_involution_basic_13 a ha, hnormalg]
+          congr 1
+          rw [← Complex.ofReal_pow, Complex.norm_real, Real.norm_eq_abs,
+            abs_of_nonneg (by positivity)]
+  have hlt : ‖a + c‖ < N + 1 := by
+    nlinarith [norm_nonneg (a + c), hn, hN0]
+  have hw : ((N + 1 : ℝ) : ℂ) * Complex.I ≠ 0 :=
+    mul_ne_zero (Complex.ofReal_ne_zero.mpr (by positivity)) Complex.I_ne_zero
+  set w : ℂ := ((N + 1 : ℝ) : ℂ) * Complex.I with hwdef
+  let b : 𝒜ˣ :=
+    { val := algebraMap ℂ 𝒜 w
+      inv := algebraMap ℂ 𝒜 w⁻¹
+      val_inv := by rw [← map_mul, mul_inv_cancel₀ hw, map_one]
+      inv_val := by rw [← map_mul, inv_mul_cancel₀ hw, map_one] }
+  have hbinv : ((b⁻¹ : 𝒜ˣ) : 𝒜) = algebraMap ℂ 𝒜 w⁻¹ := rfl
+  have hbnorm : ‖((b⁻¹ : 𝒜ˣ) : 𝒜)‖⁻¹ = N + 1 := by
+    rw [hbinv, hnormalg, norm_inv, inv_inv, hwdef, norm_mul, Complex.norm_I, mul_one,
+      Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (by positivity)]
+  have hmain := spectrum_bounded_2 (a + c) b (by rw [hbnorm]; exact hlt)
+  have heq : (a + c) - (b : 𝒜) = a - algebraMap ℂ 𝒜 Complex.I := by
+    show (a + algebraMap ℂ 𝒜 ((N : ℂ) * Complex.I)) - algebraMap ℂ 𝒜 w
+        = a - algebraMap ℂ 𝒜 Complex.I
+    have hz : (N : ℂ) * Complex.I - w = -Complex.I := by
+      rw [hwdef]; push_cast; ring
+    rw [add_sub_assoc, ← map_sub, hz, map_neg, ← sub_eq_add_neg]
+  rwa [heq] at hmain
 
 /-- **11XV** (`spectrum-self-adjoint-real`, cstar.tex:1569, Exercise),
 part 1: `a - λ` is invertible for self-adjoint `a` and `λ ∈ ℂ \ ℝ`. -/
 theorem spectrum_self_adjoint_real_1 (a : 𝒜) (ha : IsSelfAdjoint a)
-    (z : ℂ) (hz : z.im ≠ 0) : IsUnit (a - algebraMap ℂ 𝒜 z) :=
-  by
-    have hI : z ∉ spectrum ℂ a := by
-      intro hmem
-      exact hz (ha.im_eq_zero_of_mem_spectrum hmem)
-    rw [spectrum.notMem_iff] at hI
-    simpa using hI.neg
+    (z : ℂ) (hz : z.im ≠ 0) : IsUnit (a - algebraMap ℂ 𝒜 z) := by
+  -- the solution's reduction to **11XIII**: `a - λ = (Im λ) · ((a - Re λ)/(Im λ) - i)`
+  have hxsa : IsSelfAdjoint (algebraMap ℂ 𝒜 ((z.re : ℝ) : ℂ)) := by
+    show star _ = _
+    rw [← algebraMap_star_comm]
+    simp
+  have hasub : IsSelfAdjoint (a - algebraMap ℂ 𝒜 ((z.re : ℝ) : ℂ)) := ha.sub hxsa
+  have hyne : ((z.im : ℝ) : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hz
+  set b : 𝒜 := algebraMap ℂ 𝒜 (((z.im : ℝ) : ℂ))⁻¹ * (a - algebraMap ℂ 𝒜 ((z.re : ℝ) : ℂ))
+    with hb
+  have hbsa : IsSelfAdjoint b := by
+    have hinvsa : IsSelfAdjoint (algebraMap ℂ 𝒜 (((z.im : ℝ) : ℂ))⁻¹) := by
+      show star _ = _
+      rw [← algebraMap_star_comm]
+      simp
+    rw [hb]
+    show star _ = _
+    rw [star_mul, hasub.star_eq, hinvsa.star_eq, Algebra.commutes]
+  have hunit := selfAdjoint_sub_I_isUnit b hbsa
+  have hyu : IsUnit (algebraMap ℂ 𝒜 ((z.im : ℝ) : ℂ)) :=
+    (Ne.isUnit hyne).map (algebraMap ℂ 𝒜)
+  have hprod := hyu.mul hunit
+  have heq : algebraMap ℂ 𝒜 ((z.im : ℝ) : ℂ) * (b - algebraMap ℂ 𝒜 Complex.I)
+      = a - algebraMap ℂ 𝒜 z := by
+    rw [hb, mul_sub, ← mul_assoc, ← map_mul, mul_inv_cancel₀ hyne, map_one, one_mul,
+      ← map_mul, sub_sub, ← map_add]
+    congr 2
+    rw [Complex.ext_iff]
+    constructor <;> simp
+  rwa [heq] at hprod
 
 /-- **11XV** (`spectrum-self-adjoint-real`, cstar.tex:1569, Exercise),
 part 2: `aⁿ - λ` is invertible for self-adjoint `a`, even `n` (in
@@ -1533,41 +1788,106 @@ variable {ℬ : Type*} [CStarAlgebra ℬ]
 
 /-- **11XVI** (`inverse-permanence`, cstar.tex:1594, Proposition): if a
 self-adjoint element `a` of a closed ∗-subalgebra `𝒮` of a C*-algebra `ℬ`
-has an inverse in `ℬ`, then `a⁻¹ ∈ 𝒮`. -/
+has an inverse in `ℬ`, then `a⁻¹ ∈ 𝒮`.
+
+The proof is the thesis's own: `a + i/n` is invertible *in `𝒮`* — which is
+itself a C*-algebra — by **11XV**.1, since `a` is self-adjoint; those
+inverses converge to `a⁻¹` in `ℬ` by **11X**; and `𝒮` is closed. -/
 theorem inverse_permanence (𝒮 : StarSubalgebra ℂ ℬ)
     (h𝒮 : IsClosed (𝒮 : Set ℬ)) (a : ℬ) (ha : a ∈ 𝒮)
     (hsa : IsSelfAdjoint a) (hu : IsUnit a) :
     Ring.inverse a ∈ 𝒮 :=
   by
-    haveI := h𝒮
-    obtain ⟨u, hu2⟩ := (StarSubalgebra.coe_isUnit 𝒮 (a := ⟨a, ha⟩)).mp hu
-    have hau : ((u : 𝒮) : ℬ) = a := congrArg Subtype.val hu2
-    have h1 : a * ((↑(u⁻¹) : 𝒮) : ℬ) = 1 := by
-      rw [← hau, ← MulMemClass.coe_mul, u.mul_inv, OneMemClass.coe_one]
-    have key : Ring.inverse a = ((↑(u⁻¹) : 𝒮) : ℬ) := by
-      calc Ring.inverse a = Ring.inverse a * (a * ((↑(u⁻¹) : 𝒮) : ℬ)) := by rw [h1, mul_one]
-        _ = (Ring.inverse a * a) * ((↑(u⁻¹) : 𝒮) : ℬ) := (mul_assoc _ _ _).symm
-        _ = ((↑(u⁻¹) : 𝒮) : ℬ) := by rw [Ring.inverse_mul_cancel a hu, one_mul]
-    rw [key]
-    exact SetLike.coe_mem _
+    haveI : CompleteSpace 𝒮 := h𝒮.completeSpace_coe
+    -- the shifts `a + i/(n+1)`, as elements of `𝒮` and of `ℬ`
+    set z : ℕ → ℂ := fun n => ((((n : ℝ) + 1)⁻¹ : ℝ) : ℂ) * Complex.I with hz
+    have hmemS : ∀ n : ℕ, a + algebraMap ℂ ℬ (z n) ∈ 𝒮 :=
+      fun n => add_mem ha (algebraMap_mem 𝒮 _)
+    have hbsa : IsSelfAdjoint (⟨a, ha⟩ : 𝒮) := Subtype.ext hsa
+    have him : ∀ n : ℕ, (-z n).im ≠ 0 := by
+      intro n
+      have hpos : (0 : ℝ) < (n : ℝ) + 1 := by positivity
+      simp only [hz, Complex.neg_im, Complex.im_ofReal_mul, Complex.I_im, mul_one]
+      simpa using ne_of_gt (inv_pos.mpr hpos)
+    have hsub : ∀ n, ((⟨a, ha⟩ : 𝒮) - algebraMap ℂ 𝒮 (-z n) : 𝒮)
+        = (⟨a + algebraMap ℂ ℬ (z n), hmemS n⟩ : 𝒮) := by
+      intro n
+      ext
+      simp [sub_eq_add_neg, ← map_neg]
+    -- each shift is invertible in `𝒮`, by 11XV.1 applied inside the C*-algebra `𝒮`
+    -- (this is the only place the self-adjointness of `a` is used)
+    have hbu : ∀ n : ℕ, IsUnit ((⟨a + algebraMap ℂ ℬ (z n), hmemS n⟩ : 𝒮)) := by
+      intro n
+      have h := spectrum_self_adjoint_real_1 (⟨a, ha⟩ : 𝒮) hbsa (-z n) (him n)
+      rwa [hsub n] at h
+    have hunit : ∀ n : ℕ, IsUnit (a + algebraMap ℂ ℬ (z n)) := fun n => by
+      simpa using (hbu n).map (𝒮.subtype)
+    -- their inverses lie in `𝒮`
+    have hmem : ∀ n : ℕ, Ring.inverse (a + algebraMap ℂ ℬ (z n)) ∈ 𝒮 := by
+      intro n
+      obtain ⟨u, hu2⟩ := hbu n
+      have hau : ((u : 𝒮) : ℬ) = a + algebraMap ℂ ℬ (z n) := congrArg Subtype.val hu2
+      have h1 : (a + algebraMap ℂ ℬ (z n)) * ((↑(u⁻¹) : 𝒮) : ℬ) = 1 := by
+        rw [← hau, ← MulMemClass.coe_mul, u.mul_inv, OneMemClass.coe_one]
+      have key : Ring.inverse (a + algebraMap ℂ ℬ (z n)) = ((↑(u⁻¹) : 𝒮) : ℬ) := by
+        calc Ring.inverse (a + algebraMap ℂ ℬ (z n))
+            = Ring.inverse (a + algebraMap ℂ ℬ (z n))
+                * ((a + algebraMap ℂ ℬ (z n)) * ((↑(u⁻¹) : 𝒮) : ℬ)) := by rw [h1, mul_one]
+          _ = (Ring.inverse (a + algebraMap ℂ ℬ (z n)) * (a + algebraMap ℂ ℬ (z n)))
+                * ((↑(u⁻¹) : 𝒮) : ℬ) := (mul_assoc _ _ _).symm
+          _ = ((↑(u⁻¹) : 𝒮) : ℬ) := by
+              rw [Ring.inverse_mul_cancel _ (hunit n), one_mul]
+      rw [key]
+      exact SetLike.coe_mem _
+    -- and converge to `a⁻¹`
+    have hz0 : Filter.Tendsto z Filter.atTop (nhds 0) := by
+      rw [tendsto_zero_iff_norm_tendsto_zero]
+      have : ∀ n : ℕ, ‖z n‖ = 1 / ((n : ℝ) + 1) := by
+        intro n
+        have hpos : (0 : ℝ) < (n : ℝ) + 1 := by positivity
+        rw [hz]
+        rw [norm_mul, Complex.norm_I, mul_one, Complex.norm_real, Real.norm_eq_abs,
+          abs_of_pos (inv_pos.mpr hpos), one_div]
+      simpa only [this] using tendsto_one_div_add_atTop_nhds_zero_nat
+    have hshift : Filter.Tendsto (fun n : ℕ => a + algebraMap ℂ ℬ (z n))
+        Filter.atTop (nhds a) := by
+      have hc : Filter.Tendsto (fun n : ℕ => algebraMap ℂ ℬ (z n)) Filter.atTop (nhds 0) := by
+        have h := ((continuous_algebraMap ℂ ℬ).tendsto (0 : ℂ)).comp hz0
+        rw [map_zero] at h
+        exact h
+      simpa using Filter.Tendsto.const_add a hc
+    have hlim : Filter.Tendsto (fun n : ℕ => Ring.inverse (a + algebraMap ℂ ℬ (z n)))
+        Filter.atTop (nhds (Ring.inverse a)) := by
+      have hcont : ContinuousAt (Ring.inverse : ℬ → ℬ) a := by
+        have h := NormedRing.inverse_continuousAt (R := ℬ) hu.unit
+        rwa [hu.unit_spec] at h
+      exact hcont.tendsto.comp hshift
+    exact h𝒮.mem_of_tendsto hlim (Filter.Eventually.of_forall hmem)
 
 /-- **11XVIII** (`improved-inverse-permanence`, cstar.tex:1615, Exercise):
-the self-adjointness assumption in **11XVI** may be dropped. -/
+the self-adjointness assumption in **11XVI** may be dropped.  Following the
+exercise's hint, we apply **11XVI** to the self-adjoint element `a* a`. -/
 theorem improved_inverse_permanence (𝒮 : StarSubalgebra ℂ ℬ)
     (h𝒮 : IsClosed (𝒮 : Set ℬ)) (a : ℬ) (ha : a ∈ 𝒮) (hu : IsUnit a) :
     Ring.inverse a ∈ 𝒮 :=
   by
-    haveI := h𝒮
-    obtain ⟨u, hu2⟩ := (StarSubalgebra.coe_isUnit 𝒮 (a := ⟨a, ha⟩)).mp hu
-    have hau : ((u : 𝒮) : ℬ) = a := congrArg Subtype.val hu2
-    have h1 : a * ((↑(u⁻¹) : 𝒮) : ℬ) = 1 := by
-      rw [← hau, ← MulMemClass.coe_mul, u.mul_inv, OneMemClass.coe_one]
-    have key : Ring.inverse a = ((↑(u⁻¹) : 𝒮) : ℬ) := by
-      calc Ring.inverse a = Ring.inverse a * (a * ((↑(u⁻¹) : 𝒮) : ℬ)) := by rw [h1, mul_one]
-        _ = (Ring.inverse a * a) * ((↑(u⁻¹) : 𝒮) : ℬ) := (mul_assoc _ _ _).symm
-        _ = ((↑(u⁻¹) : 𝒮) : ℬ) := by rw [Ring.inverse_mul_cancel a hu, one_mul]
+    have hstar : star a ∈ 𝒮 := star_mem ha
+    have h1 : IsUnit (star a * a) := (hu.star).mul hu
+    have h2 : Ring.inverse (star a * a) ∈ 𝒮 :=
+      inverse_permanence 𝒮 h𝒮 (star a * a) (mul_mem hstar ha)
+        (IsSelfAdjoint.star_mul_self a) h1
+    have key : Ring.inverse a = Ring.inverse (star a * a) * star a := by
+      have hleft : (Ring.inverse (star a * a) * star a) * a = 1 := by
+        rw [mul_assoc]
+        exact Ring.inverse_mul_cancel _ h1
+      calc Ring.inverse a = ((Ring.inverse (star a * a) * star a) * a) * Ring.inverse a := by
+            rw [hleft, one_mul]
+        _ = (Ring.inverse (star a * a) * star a) * (a * Ring.inverse a) := by
+            rw [mul_assoc]
+        _ = Ring.inverse (star a * a) * star a := by
+            rw [Ring.mul_inverse_cancel a hu, mul_one]
     rw [key]
-    exact SetLike.coe_mem _
+    exact mul_mem h2 hstar
 
 /-! **11XIX** (`spectrum-of-element`, cstar.tex:1622, Definition): the
 *spectrum* of `a` is the set of `λ ∈ ℂ` for which `a - λ` is not

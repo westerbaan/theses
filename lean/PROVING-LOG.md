@@ -22997,3 +22997,100 @@ point 4's third `iff` for the pair `eₙp, eₙq` — whose carriers are `eₙ`,
 `eₙ𝒜eₙ` reintroduces exactly the `Z(e𝒜e) = Z(𝒜)e` gap that ERRATA **104VIII**
 records for the printed proof of 104VII, and which session 91 stepped around
 rather than proved.
+
+## Session 94 — A/CStar/Basic: **the first repair pass — all eleven `weaker` rows of `A/CStar/Basic.lean` are repaired**, and 11XIII/11XVI now run on the thesis's own proofs (worker on `Theses/A/CStar/Basic.lean`)
+
+Scope: `docs/audit/acstar-basic.csv`, the 16 rows whose `stmt` is not `ok`
+(11 `weaker`, 5 `stronger`) plus the two proof-side items the repair brief
+flags.  The file compiles with no errors and no `sorry`; every statement
+touched was `#print axioms`-checked *in situ* (source copied to scratch,
+`#print axioms` appended, recompiled): all `[propext, Classical.choice,
+Quot.sound]`.
+
+### Repaired — our mis-transcriptions, no ruling needed (11 rows)
+
+* **3III** — the example stated `CStarAlgebra ℂ`, dropping the exercise's
+  *commutative*.  Now `CommCStarAlgebra ℂ`.  (4)
+* **4III.1** `boundedOperators_basic_1` — stated definiteness only.  Now all
+  four clauses of "the operator norm is, indeed, a norm": `0 ≤ ‖T‖`,
+  `‖T‖ = 0 ↔ T = 0`, `‖cT‖ = |c|‖T‖`, `‖T+T'‖ ≤ ‖T‖+‖T'‖`.  (4)
+* **4XV.1–.4** `inner_product_basic_1..4` — stated for a definite inner
+  product (`InnerProductSpace ℂ H`); the exercise is for an arbitrary,
+  possibly *indefinite*, inner product on a vector space `V`.  All four are
+  restated over Mathlib's `PreInnerProductSpace.Core ℂ V`, with
+  `innerNorm x := √(re ⟪x,x⟫)` for the exercise's `‖x‖`.  Cauchy–Schwarz is
+  now the thesis's `|⟪x,y⟫|² ≤ ⟪x,x⟫⟪y,y⟫` rather than its norm form.  (4)
+* **4XV main clause** — "`‖x‖ = √⟪x,x⟫` defines a seminorm, and a norm when
+  the inner product is definite" was stated *nowhere*, only mentioned in a
+  `/-!` block.  Added as `inner_product_seminorm` (nonnegativity,
+  `‖λx‖ = |λ|‖x‖`, triangle inequality — the last proved from
+  Cauchy–Schwarz, as the exercise's hint directs) and
+  `inner_product_norm_of_definite`.  (1)
+  The old `H`-form of 4XV.2, which the 5IV proof used, survives as the
+  private `norm_add_sq_of_inner_eq_zero`.
+* **4XVI.1/.2** `operators_cstar_identity_1/2` — both *assumed* the adjoint
+  `S` to be a bounded operator (`H →L[ℂ] H`), whereas the Lemma assumes only
+  that `T` is bounded and adjointable, boundedness of `T*` being part of its
+  content.  Now stated for a bare `S : H → H` with `IsAdjointTo (⇑T) S`, the
+  conclusion producing the bundled `S' : H →L[ℂ] H` with `⇑S' = S`.  The new
+  private `adjointCLM` supplies linearity of `S` (from definiteness, as in
+  4X) and its bound `‖S y‖ ≤ ‖T‖‖y‖ ` from
+  `‖T*y‖² = ⟪T T* y, y⟫ ≤ ‖T‖‖T*y‖‖y‖` — the thesis's own estimate.  (1)
+* **4XVIII** `adjointable_isClosed` — stated only that the set is closed,
+  dropping "*subspace* of `B(H)`".  The subspace clause is now a second
+  conjunct, `∃ M : Submodule ℂ (H →L[ℂ] H), ↑M = {T | Adjointable ⇑T}`,
+  whose `zero_mem'`/`add_mem'`/`smul_mem'` are 4XII.  (Closedness still goes
+  through 5XI, i.e. Mathlib's `ContinuousLinearMap.adjoint`; the solution's
+  route from completeness of `B(H)` and `‖T*‖ = ‖T‖` is still not
+  transcribed.)  (2)
+* **9X.1** `cstar_positive_1` — stated the scalar clause alone; the point is
+  the whole cone property plus "conclude that `≤` is a preorder".  The name
+  `cstar_positive_1` is applied at nineteen call sites in four other modules,
+  so it keeps the scalar clause (with a doc comment that says so), and the
+  full point is added beside it as **`cstar_positive_1_cone`**: `0 ∈ 𝒜₊`,
+  closure under sums (9VII) and under nonnegative reals, and then
+  reflexivity and transitivity of `≤` **derived from those**, not read off
+  the `[PartialOrder 𝒜]` instance.  (1)
+* **7III.5** `cstar_involution_basic_5` — stated additivity of `ℜ`, `ℑ`
+  only; the point asks for ℝ-*linearity*.  ℝ-homogeneity added (two more
+  conjuncts, free from Mathlib's `𝒜 →ₗ[ℝ] selfAdjoint 𝒜`).  (4)
+  This is the same shape as QUESTIONS **A9** (51IX) but needs no ruling: the
+  thesis point is correct and ours simply said less.
+
+### Repaired — proof side (the two items the brief names)
+
+* **11XVI** `inverse_permanence` — the self-adjointness hypothesis `hsa` was
+  never used: the tactic block was character-for-character 11XVIII's, both
+  resting on Mathlib's `StarSubalgebra.coe_isUnit`, so 11XVIII exhibited no
+  improvement over anything.  11XVI now runs the thesis's own proof: `𝒮`
+  closed in `ℬ` is itself a C*-algebra (`CompleteSpace ↥𝒮` from
+  `IsClosed.completeSpace_coe`), so `a + i/(n+1)` is invertible **in `𝒮`**
+  by 11XV.1 — this is where `hsa` is used, and the only place — those
+  inverses converge to `a⁻¹` in `ℬ` by 11X (`cstar_inv_continuous`'s
+  Mathlib source), and `𝒮` is closed.  (1)
+* **11XVIII** `improved_inverse_permanence` now follows the exercise's hint:
+  it applies **11XVI** to the self-adjoint `a*a` and rewrites
+  `a⁻¹ = (a*a)⁻¹a*`.  So the exercise's point — that self-adjointness may be
+  dropped — is exhibited as a genuine improvement over 11XVI.  (1)
+* **11XIII** `selfAdjoint_sub_I_isUnit` was derived from Mathlib's
+  "self-adjoint ⟹ real spectrum", which *is* the thesis's 11XV.1, itself
+  proved from 11XIII: the dependency ran backwards.  It now runs the
+  thesis's trick — `a - i = (a+ni) - (n+1)i` with
+  `‖a+ni‖² = ‖(a+ni)*(a+ni)‖ = ‖a²+n²‖ ≤ ‖a‖²+n² < (n+1)²`, then 11VI.2 —
+  and **11XV.1** is now derived *from* 11XIII by the solution's own
+  reduction `a - λ = (Im λ)·((a - Re λ)/(Im λ) - i)`.  The chain
+  11XIII → 11XV.1 → 11XVI → 11XVIII is now the thesis's own.  (1)
+
+  Minor observation on the printed proof of 11XIII (**not** proposed as an
+  erratum): it asks for `n` with `‖a‖ < 2n+1`, but the step it uses that for
+  is `‖a‖² + n² < 2n+1+n²`, which needs `‖a‖² < 2n+1`.  Since `n` is chosen
+  arbitrarily large the proof is unaffected; our Lean proof picks `n` with
+  `‖a‖² < n`.
+
+### Left alone
+
+* The five `stronger` rows — 4XIX `ketbra_norm`/`ketbra_adjoint`
+  (pre-Hilbert where the thesis says Hilbert), 9X.5b/9X.5e (self-adjointness
+  of `a` dropped), 11XV.2 (`n = 0` allowed) — are benign generalisations per
+  the repair brief, and are untouched.
+* No row in this module turned out to need an author ruling.
