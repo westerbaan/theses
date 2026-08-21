@@ -91,18 +91,33 @@ AUDIT_COMMIT = "4d92c75"   # the commit at which the statement audit was complet
 
 
 def audit_rows():
-    """`lean_name` -> (stmt, proof, note) from docs/audit/*.csv."""
+    """`lean_name` -> (stmt, proof, note, status) from docs/audit/*.csv.
+
+    Rows flagged by the audit carry a seventh field, written by the
+    re-verification of 2026-08-21: `repaired`, `open`, or `left-<reason>`.
+    Only a row that is neither `repaired` nor `left-benign` still marks a real
+    mismatch, so only those are drawn.  Rows with six fields predate the
+    re-verification (or were never flagged) and carry no status.
+    """
     out = {}
     for path in sorted(glob.glob(DOCS + "audit/*.csv")):
         for i, line in enumerate(open(path, encoding="utf-8")):
             f = line.rstrip("\n").split("|")
-            if i == 0 or len(f) != 6:
+            if i == 0 or len(f) not in (6, 7):
                 continue
+            status = ""
+            if len(f) == 7:
+                status = re.split(r"[\s:,]", f[6].strip(), 1)[0].rstrip("-")
             name = f[1].strip()
             if not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_'\u2032\u1d63!.]*", name):
                 continue          # rows naming an `example`, a structure field, …
-            out.setdefault(name.split(".")[-1], (f[3].strip(), f[4].strip(), f[5].strip()))
+            out.setdefault(name.split(".")[-1],
+                           (f[3].strip(), f[4].strip(), f[5].strip(), status))
     return out
+
+
+#: a flagged row still counts as a mismatch unless it is one of these
+SETTLED = ("repaired", "left-benign")
 
 
 def touched_since_audit():
@@ -152,8 +167,10 @@ def main():
     touched = touched_since_audit()
     print(f"{len(rows)} theorems, {len(n2d)} carry a DISP number")
     audit(why, rows)
-    print(f"  statement audit: {len(aud)} rows joined by name, "
-          f"{sum(1 for v in aud.values() if v[0] != 'ok')} do not match their source")
+    flagged = [v for v in aud.values() if v[0] != "ok"]
+    st = collections.Counter(v[3] or "unverified" for v in flagged)
+    print(f"  statement audit: {len(aud)} rows joined by name, {len(flagged)} flagged; "
+          + ", ".join(f"{n} {k}" for k, n in sorted(st.items(), key=lambda x: -x[1])))
 
     items = collections.defaultdict(list)
     for mod, full, status in rows:
@@ -188,14 +205,16 @@ def main():
             fc = collections.Counter(i[2] for i in it)
             still = len(it) - fc["proved"]
             def box(d, nm, cat, bl, rs):
-                av, ap, an = aud.get(nm, ("", "", ""))
-                if av and av != "ok":
+                av, ap, an, st = aud.get(nm, ("", "", "", ""))
+                live = bool(av) and av != "ok" and st not in SETTLED
+                if live:
                     acount[av] += 1
-                mark = " aud" if av and av != "ok" else ""
+                mark = " aud" if live else ""
                 return (f'<i class="b k-{cat}{mark}" tabindex="0" '
                         f'data-d="{html.escape(d)}" data-n="{html.escape(nm)}" '
                         f'data-c="{cat}" data-k="{html.escape(bl)}" '
                         f'data-r="{html.escape(rs)}" data-a="{av}" data-ap="{ap}" '
+                        f'data-s="{html.escape(st)}" '
                         f'data-t="{"1" if nm in touched else ""}" '
                         f'data-an="{html.escape(an[:400])}"></i>')
             boxes = "".join(box(*t) for t in it)
@@ -314,7 +333,7 @@ body.aonly .b:not(.aud){{display:none}}
 <div class="bar"><i style="background:var(--okd);width:{pct:.3f}%"></i><i style="background:var(--warn);width:{blkpct:.3f}%"></i><i style="background:var(--bad);width:{sorrypct:.3f}%"></i></div>
 <table><tbody>{legend}
 <tr><td><i class="sw aud"></i></td><td><code>stmt ≠ source</code></td><td class=num>{abad}</td>
-<td>corner wedge: the statement audit of 2026-08-20 found this rendering weaker than, stronger than, or differently shaped from its thesis point — independently of whether it is proved. {aaudited} declarations were audited. <b>All 30 modules have since had a repair pass</b> (2026-08-20/21); the wedges are the audit-day record and are <em>not</em> rewritten as repairs land, because a repair usually adds a <em>sibling</em> declaration rather than changing the flagged one. Per-row outcomes are in <code>PROVING-LOG.md</code> session 94. A box marked <em>declaration changed since the audit</em> on hover is one whose own statement was rewritten.</td></tr>
+<td>corner wedge: this rendering still does not match its thesis point, independently of whether it is proved. The statement audit of 2026-08-20 checked {aaudited} declarations and flagged 253; all 30 modules were then repaired, and every flagged row was <b>re-verified against the tree on 2026-08-21</b>. A wedge means the row came back <code>open</code> (repairable, nothing blocking), <code>left-thesis</code> (the printed point is defective, so matching it would import a falsehood), <code>left-ruling</code> (an open question in <code>QUESTIONS.md</code> governs it) or <code>left-cost</code> (costed and declined). Rows that came back <code>repaired</code> or <code>left-benign</code> — a true generalisation the thesis's setting supplies — carry no wedge. Hover for the verdict, the finding and the current status.</td></tr>
 </tbody></table>
 <div class="tools"><button id="a" aria-pressed="true">All {total}</button><button id="o" aria-pressed="false">Unproved {blocked}+{sorry}</button><button id="ab" aria-pressed="false"><i class="sw aud"></i>stmt ≠ source <b>{abad}</b></button>{chips}{achips}</div>
 {sections}</div>
@@ -325,6 +344,7 @@ function show(e){{const t=e.target.closest('.b');if(!t)return;const c=t.dataset.
 let h='<b>'+t.dataset.d+'</b> &nbsp; '+t.dataset.n+(c=='proved'?' &nbsp; <em>proved</em>':
 '<br><u>'+c+'</u>'+(t.dataset.k?' → '+t.dataset.k:'')+' &nbsp; '+t.dataset.r);
 if(a&&a!='ok')h+='<br><u>stmt '+a+'</u>'+(t.dataset.ap?' · proof '+t.dataset.ap:'')+
+(t.dataset.s?' · <b>'+t.dataset.s+'</b>':'')+
 (t.dataset.t?' · <em>declaration changed since the audit</em>':'')+' &nbsp; '+t.dataset.an;
 rd.innerHTML=h;}}
 document.addEventListener('mouseover',show);document.addEventListener('focusin',show);
