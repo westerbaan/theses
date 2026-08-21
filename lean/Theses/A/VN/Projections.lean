@@ -3721,60 +3721,19 @@ section Commutant
 variable [VonNeumannAlgebra A] [VonNeumannAlgebra B]
 
 /-- **63VI** (`carrier-fundamental`, vn.tex:3145, Corollary): an np-map
-`f : A → B` satisfies `f(a) = f(⌈f⌉a) = f(a⌈f⌉) = f(⌈f⌉a⌈f⌉)`. -/
+`f : A → B` satisfies `f(a) = f(⌈f⌉a) = f(a⌈f⌉) = f(⌈f⌉a⌈f⌉)`.
+
+The thesis gives no proof: 63VI is stated as an immediate Corollary of
+**63IV** (`cp_comprehension`), and that is what the term below is.  The
+carrier `⌈f⌉` is a projection, hence an effect, and `f(⌈f⌉^⊥) = 0` is the
+defining property of `carrier` — which is exactly 63IV's hypothesis. -/
 theorem carrier_fundamental (f : A →ₚ[ℂ] B) (hf : PreservesDirSups ⇑f)
     (a : A) :
     f a = f (carrier f hf * a) ∧ f a = f (a * carrier f hf) ∧
-      f a = f (carrier f hf * a * carrier f hf) := by
-  -- **63IV**'s argument run through the np-functionals of `B` (which are
-  -- separating), rather than through the states of `B`: for an np-functional
-  -- `ω` on `B` the composite `g = ω ∘ f` kills `p^⊥ = 1 - ⌈f⌉`, hence
-  -- `|g(p^⊥x)|² ≤ g((p^⊥)²)·g(x*x) = 0` by Kadison's inequality.
-  set p : A := carrier f hf with hpdef
-  have hpproj : IsStarProjection p := (carrier_spec f hf).1
-  have hf0 : f (1 - p) = 0 := (carrier_spec f hf).2.1
-  have hosa : star ((1 : A) - p) = 1 - p := hpproj.one_sub.isSelfAdjoint.star_eq
-  have hoo : ((1 : A) - p) * (1 - p) = 1 - p := hpproj.one_sub.isIdempotentElem.eq
-  -- for every np-functional `ω` on `B`, `ω(f(p^⊥ x)) = 0 = ω(f(x p^⊥))`
-  have hzero : ∀ (g : NPFunctional A) (y : A),
-      ((‖g y‖ : ℂ)) ^ 2 ≤ 0 → g y = 0 := by
-    intro g y hcs
-    have hle : ((‖g y‖ ^ 2 : ℝ) : ℂ) ≤ 0 := by push_cast; exact hcs
-    have h2 : (‖g y‖ : ℝ) ^ 2 ≤ 0 := by
-      exact_mod_cast Complex.real_le_real.mp (by simpa using hle)
-    have hnn : (0 : ℝ) ≤ ‖g y‖ := norm_nonneg _
-    have : ‖g y‖ = 0 := by nlinarith
-    exact norm_eq_zero.mp this
-  have hgp : ∀ ω : NPFunctional B,
-      (compNP f hf ω) (star ((1 : A) - p) * (1 - p)) = 0 := by
-    intro ω
-    rw [hosa, hoo]
-    show ω (f (1 - p)) = 0
-    rw [hf0]
-    exact map_zero ω.toPositiveLinearMap
-  have hleft : ∀ (ω : NPFunctional B) (x : A), ω (f (((1 : A) - p) * x)) = 0 := by
-    intro ω x
-    have hcs := npFunctional_cauchy_schwarz (compNP f hf ω) ((1 : A) - p) x
-    rw [hgp ω, zero_mul, hosa] at hcs
-    exact hzero (compNP f hf ω) _ hcs
-  have hright : ∀ (ω : NPFunctional B) (x : A), ω (f (x * ((1 : A) - p))) = 0 := by
-    intro ω x
-    have hcs := npFunctional_cauchy_schwarz (compNP f hf ω) (star x) ((1 : A) - p)
-    rw [hgp ω, mul_zero, star_star] at hcs
-    exact hzero (compNP f hf ω) _ hcs
-  have hL : ∀ x : A, (f x : B) = f (p * x) := by
-    intro x
-    refine sub_eq_zero.mp (np_separating _ fun ω => ?_)
-    have h := hleft ω x
-    rw [sub_mul, one_mul, map_sub] at h
-    exact h
-  have hR : ∀ x : A, (f x : B) = f (x * p) := by
-    intro x
-    refine sub_eq_zero.mp (np_separating _ fun ω => ?_)
-    have h := hright ω x
-    rw [mul_sub, mul_one, map_sub] at h
-    exact h
-  exact ⟨hL a, hR a, by rw [← hR (p * a), ← hL a]⟩
+      f a = f (carrier f hf * a * carrier f hf) :=
+  cp_comprehension f (carrier f hf)
+    ⟨(carrier_spec f hf).1.nonneg, (carrier_spec f hf).1.le_one⟩
+    (carrier_spec f hf).2.1 a
 
 /-! ## Parsec 640 -/
 
@@ -4136,41 +4095,130 @@ private theorem mem_closure_span_spectral (a : A) (ha : IsSelfAdjoint a) :
   rw [dist_eq_norm]
   linarith
 
-private theorem mem_closure_span_proj (a : A) (ha : IsSelfAdjoint a) :
-    a ∈ closure (Submodule.span ℂ {p : A | IsStarProjection p} : Set A) := by
-  have hsub : {p : A | IsStarProjection p ∧ (∀ x : A, a * x = x * a → x * p = p * x) ∧
-        ∀ T : StarSubalgebra ℂ A, IsVNSubalgebra A T → a ∈ T → p ∈ T}
-      ⊆ {p : A | IsStarProjection p} := fun p hp => hp.1
-  exact closure_mono (SetLike.coe_subset_coe.mpr (Submodule.span_mono hsub))
-    (mem_closure_span_spectral a ha)
+section AbelianStone
 
+open WeakDual
+
+/-- The linear span of the projections of a *commutative* ∗-algebra is a
+∗-subalgebra: a product of commuting projections is a projection, `1` is a
+projection, and projections are self-adjoint.  (Needed to run Stone–
+Weierstraß against the projections of `C(spec 𝒜)` in **64II** below.) -/
+private def projStarSubalgebra (R : Type*) [CommRing R] [Algebra ℂ R] [StarRing R]
+    [StarModule ℂ R] : StarSubalgebra ℂ R where
+  toSubalgebra :=
+    Submodule.toSubalgebra (Submodule.span ℂ {p : R | IsStarProjection p})
+      (Submodule.subset_span (IsStarProjection.one R))
+      (fun x y hx hy => by
+        have hle : Submodule.span ℂ {p : R | IsStarProjection p}
+            * Submodule.span ℂ {p : R | IsStarProjection p}
+            ≤ Submodule.span ℂ {p : R | IsStarProjection p} := by
+          rw [Submodule.span_mul_span]
+          refine Submodule.span_le.mpr ?_
+          rintro _ ⟨p, hp, q, hq, rfl⟩
+          exact Submodule.subset_span (hp.mul hq (Commute.all _ _))
+        exact hle (Submodule.mul_mem_mul hx hy))
+  star_mem' := by
+    intro x hx
+    show star x ∈ Submodule.span ℂ {p : R | IsStarProjection p}
+    refine Submodule.span_induction ?_ ?_ ?_ ?_ (show x ∈ Submodule.span ℂ _ from hx)
+    · intro p hp
+      exact Submodule.subset_span
+        (by rw [(hp : IsStarProjection p).isSelfAdjoint.star_eq]; exact hp)
+    · simp
+    · intro a b _ _ ha hb
+      rw [star_add]; exact Submodule.add_mem _ ha hb
+    · intro r a _ ha
+      rw [star_smul]; exact Submodule.smul_mem _ _ ha
+
+/-- The Stone–Weierstraß step of **64II**: on a compact Hausdorff
+*extremally disconnected* space the linear span of the projections of
+`C(X, ℂ)` — the indicators of the clopen sets — is norm dense.
+
+The projections separate the points because such an `X` is totally
+separated (Mathlib's instance for an extremally disconnected Hausdorff
+space); that is what the thesis's **53III**
+`vn_spectrum_extremally_disconnected` is for.  Stone–Weierstraß then applies
+to the ∗-subalgebra `projStarSubalgebra` above. -/
+private theorem mem_closure_span_projections_continuousMap {X : Type*}
+    [TopologicalSpace X] [CompactSpace X] [T2Space X] [ExtremallyDisconnected X]
+    (f : C(X, ℂ)) :
+    f ∈ closure (Submodule.span ℂ {p : C(X, ℂ) | IsStarProjection p} : Set C(X, ℂ)) := by
+  have hsep : (projStarSubalgebra C(X, ℂ)).SeparatesPoints := by
+    rintro x y hxy
+    obtain ⟨U, hU, hxU, hyU⟩ := exists_isClopen_of_totally_separated hxy
+    refine ⟨(chi U : X → ℂ), ⟨chi U, ?_, rfl⟩, ?_⟩
+    · refine Submodule.subset_span ?_
+      refine ⟨?_, chi_isSelfAdjoint U⟩
+      show chi U * chi U = chi U
+      ext z
+      by_cases hz : z ∈ U
+      · simp [chi_of_mem hU hz]
+      · simp [chi_of_notMem hU hz]
+    · rw [chi_of_mem hU hxU, chi_of_notMem hU hyU]
+      exact one_ne_zero
+  have htop := ContinuousMap.starSubalgebra_topologicalClosure_eq_top_of_separatesPoints
+    (projStarSubalgebra C(X, ℂ)) hsep
+  have hmem : f ∈ (projStarSubalgebra C(X, ℂ)).topologicalClosure := by
+    rw [htop]; trivial
+  exact hmem
 
 /-- **64II** (`abelian-projections-norm-dense`, vn.tex:3162, Proposition):
 every element of a *commutative* von Neumann algebra is the norm limit of
-linear combinations of projections. -/
+linear combinations of projections.
+
+This is the thesis's own proof (vn.tex:3165): by **53II** `ngelfand_vna` it
+suffices to show that the span of the projections is norm dense in
+`C(spec 𝒜)`, and for that it suffices by Stone–Weierstraß that the
+projections of `C(spec 𝒜)` — the indicators of its clopen sets — separate
+the points of `spec 𝒜`, which they do because `spec 𝒜` is extremally
+disconnected (**53III**).  The transport back along `γ_𝒜⁻¹` is by continuity:
+an injective ∗-homomorphism between C*-algebras is isometric, and `γ_𝒜⁻¹`
+carries projections to projections.
+
+(The spectral Riemann sum `mem_closure_span_spectral` above proves the same
+conclusion for an *arbitrary* von Neumann algebra, with no appeal to
+commutativity, and that is what **65IV** below is read off; but it is not
+64II's argument, and 64II's argument is what this Proposition is.) -/
 theorem abelian_projections_norm_dense {C : Type*} [CommCStarAlgebra C]
     [PartialOrder C] [StarOrderedRing C] [VonNeumannAlgebra C] (a : C) :
     a ∈ closure (Submodule.span ℂ {p : C | IsStarProjection p} : Set C) := by
-  -- **Divergence from the thesis (different route).**  vn.tex:3165 proves this
-  -- through the normal Gelfand isomorphism `𝒜 ≅ C(spec 𝒜)` (`ngelfand_vna`),
-  -- extremal disconnectedness of `spec 𝒜` (`vn_spectrum_extremally_disconnected`)
-  -- and Stone–Weierstraß.  (All three *are* available — `ngelfand_vna` and
-  -- `vn_spectrum_extremally_disconnected` are proved in `A/VN/Basic`, and
-  -- Stone–Weierstraß is Mathlib's; the note that said they were "still
-  -- `sorry`" was stale.)  We instead
-  -- run the *spectral* argument (`exists_spectral_approx` above), which needs
-  -- no commutativity at all: `a` is within `2‖a‖/n` of the Riemann sum
-  -- `-‖a‖ + (2‖a‖/n)·∑ₖ ⌈(a + ‖a‖ - 2k‖a‖/n)⁺⌉` of its spectral projections.
-  have hmem : ∀ x : C, IsSelfAdjoint x →
-      x ∈ (Submodule.span ℂ {p : C | IsStarProjection p}).topologicalClosure :=
-    fun x hx => mem_closure_span_proj x hx
-  have hdec : a = (realPart a : C) + Complex.I • (imaginaryPart a : C) :=
-    (realPart_add_I_smul_imaginaryPart a).symm
-  have hres : a ∈ (Submodule.span ℂ {p : C | IsStarProjection p}).topologicalClosure := by
-    rw [hdec]
-    exact Submodule.add_mem _ (hmem _ (realPart a).property)
-      (Submodule.smul_mem _ _ (hmem _ (imaginaryPart a).property))
-  exact hres
+  have : ExtremallyDisconnected (characterSpace ℂ C) :=
+    vn_spectrum_extremally_disconnected C
+  set γ : C ≃⋆ₐ[ℂ] C(characterSpace ℂ C, ℂ) := gelfandStarTransform C with hγ
+  have hcont : Continuous (γ.symm : C(characterSpace ℂ C, ℂ) → C) :=
+    (NonUnitalStarAlgHom.isometry γ.symm γ.symm.injective).continuous
+  set L : C(characterSpace ℂ C, ℂ) →ₗ[ℂ] C :=
+    { toFun := γ.symm, map_add' := map_add γ.symm, map_smul' := map_smul γ.symm } with hL
+  have hproj : ∀ p : C(characterSpace ℂ C, ℂ), IsStarProjection p →
+      IsStarProjection (γ.symm p) := by
+    intro p hp
+    refine ⟨?_, ?_⟩
+    · show γ.symm p * γ.symm p = γ.symm p
+      rw [← map_mul, hp.isIdempotentElem.eq]
+    · show star (γ.symm p) = γ.symm p
+      rw [← map_star, hp.isSelfAdjoint.star_eq]
+  have hmap : ∀ x ∈ (Submodule.span ℂ {p : C(characterSpace ℂ C, ℂ) | IsStarProjection p} :
+      Set C(characterSpace ℂ C, ℂ)), γ.symm x ∈
+        (Submodule.span ℂ {p : C | IsStarProjection p} : Set C) := by
+    have hle : Submodule.map L
+        (Submodule.span ℂ {p : C(characterSpace ℂ C, ℂ) | IsStarProjection p})
+        ≤ Submodule.span ℂ {p : C | IsStarProjection p} := by
+      rw [Submodule.map_span]
+      refine Submodule.span_le.mpr ?_
+      rintro _ ⟨p, hp, rfl⟩
+      exact Submodule.subset_span (hproj p hp)
+    exact fun x hx => hle ⟨x, hx, rfl⟩
+  have h1 := mem_closure_span_projections_continuousMap (γ a)
+  have h3 : a ∈ closure ((fun f => (γ.symm f : C)) ''
+      (Submodule.span ℂ {p : C(characterSpace ℂ C, ℂ) | IsStarProjection p} :
+        Set C(characterSpace ℂ C, ℂ))) := by
+    have hgg : (γ.symm (γ a) : C) = a := γ.symm_apply_apply a
+    exact hgg ▸ image_closure_subset_closure_image hcont ⟨γ a, h1, rfl⟩
+  refine closure_mono ?_ h3
+  rintro _ ⟨x, hx, rfl⟩
+  exact hmap x hx
+
+end AbelianStone
 
 /-! ## Parsec 650: the commutant -/
 
@@ -6585,58 +6633,59 @@ theorem weakly_closed_ideal (D : TwoSidedIdeal A)
 /-- **69IV** (`carrier-miu`, vn.tex:3611, Corollary): the carrier of an
 nmiu-map `f : A → B` is central (`⌈f⌉ = ⌈⌈f⌉⌉`), and
 `ker f = ⌈⌈f⌉⌉^⊥ A` (i.e. `f(a) = 0` iff `⌈f⌉·a = 0`).  (The carrier is
-taken through any positive-map avatar `g` of `f`.) -/
+taken through any positive-map avatar `g` of `f`.)
+
+The thesis gives no proof text: 69IV is a Corollary of **69II**
+(`weakly_closed_ideal`), and that is the route taken here.  `ker f` is a
+two-sided ideal closed under bounded directed suprema (`f` being
+multiplicative, linear and normal), so 69II hands us a central projection
+`c` with `ker f = c𝒜`, and `c` is the *greatest* projection of `ker f`.
+That makes `c^⊥` the least projection `p` with `f(p^⊥) = 0`, i.e. `⌈f⌉`;
+centrality and `ker f = ⌈f⌉^⊥𝒜` are then read off `c`. -/
 theorem carrier_miu (f : NMIUMap A B) (g : A →ₚ[ℂ] B)
     (hg : PreservesDirSups ⇑g) (heq : ∀ a, g a = f a) :
     IsCentral A (carrier g hg) ∧
       ∀ a : A, f a = 0 ↔ carrier g hg * a = 0 := by
-  -- `e = ⌈f⌉^⊥` absorbs the kernel of `f` on the right (`f(x) = 0` forces
-  -- `g(⌈x⌋) = 0` by **60V**, so `⌈x⌋ ≤ e`); applied to `x = eb` this gives
-  -- `ebe = eb`, and applied to `x = eb*` (after taking adjoints) `ebe = be`
-  have hmul : ∀ x y : A, (f (x * y) : B) = f x * f y := fun x y => map_mul f.toStarAlgHom x y
-  have hstar : ∀ x : A, (f (star x) : B) = star (f x) := fun x => map_star f.toStarAlgHom x
-  set p : A := carrier g hg with hpdef
-  have hpproj : IsStarProjection p := (carrier_spec g hg).1
-  have heproj : IsStarProjection ((1 : A) - p) := hpproj.one_sub
-  have hkey : ∀ x : A, (f x : B) = 0 → x * ((1 : A) - p) = x := by
-    intro x hx
-    have h1 : (g (star x * x) : B) = 0 := by
-      rw [heq, hmul, hx, mul_zero]
-    have h2 : ceil (g (suppProj x)) = 0 := by
-      rw [suppProj, ← ncp_ceil g hg _ (star_mul_self_nonneg x), h1, ceil_zero]
-    have h3 : (g (suppProj x) : B) = 0 :=
-      (ceil_basic_3 _ (pmap_nonneg g (ceill_basic_1 x).1.1.nonneg)).mpr h2
-    have h4 : p ≤ 1 - suppProj x :=
-      (carrier_spec g hg).2.2 _ (ceill_basic_1 x).1.1.one_sub (by rwa [sub_sub_cancel])
-    exact mul_eq_of_suppProj_le heproj (le_sub_comm.mp h4)
-  have hfe : (f ((1 : A) - p) : B) = 0 := by rw [← heq]; exact (carrier_spec g hg).2.1
-  have hebe : ∀ b : A, ((1 : A) - p) * b * (1 - p) = (1 - p) * b := by
+  -- `𝒟 = ker f`, a two-sided ideal
+  set D : TwoSidedIdeal A := TwoSidedIdeal.ker f.toStarAlgHom with hDdef
+  have hmemD : ∀ a : A, a ∈ D ↔ (f a : B) = 0 := fun a => TwoSidedIdeal.mem_ker _
+  -- closed under bounded directed suprema, because `f` is normal and the
+  -- image of `S` is `{0}`
+  have hDsup : ∀ (S : Set (selfAdjoint A)) (s : selfAdjoint A),
+      (∀ x ∈ S, (x : A) ∈ D) → S.Nonempty → DirectedOn (· ≤ ·) S →
+        IsLUB S s → (s : A) ∈ D := by
+    intro S s hS hne hdir hlub
+    have h := f.preservesDirSups' S s hne hdir hlub
+    have himg : (fun d : selfAdjoint A => (f.toStarAlgHom (d : A) : B)) '' S = {(0 : B)} := by
+      refine Set.eq_singleton_iff_nonempty_unique_mem.mpr ⟨?_, ?_⟩
+      · obtain ⟨x, hx⟩ := hne
+        exact ⟨_, ⟨x, hx, rfl⟩⟩
+      · rintro _ ⟨x, hx, rfl⟩
+        exact (hmemD _).mp (hS x hx)
+    rw [himg] at h
+    exact (hmemD _).mpr (le_antisymm (h.2 fun b hb => le_of_eq hb) (h.1 rfl))
+  -- **69II**: `𝒟 = c𝒜` for a central projection `c`, the greatest in `𝒟`
+  obtain ⟨⟨c, ⟨hcproj, hccentral, hcchar⟩, -⟩, hgreat⟩ := weakly_closed_ideal D hDsup
+  have hcD : c ∈ D := (hcchar c).mpr hcproj.isIdempotentElem.eq
+  -- `⌈f⌉ ≤ c^⊥`, since `f(c) = 0`
+  have hle₁ : carrier g hg ≤ 1 - c := by
+    refine (carrier_spec g hg).2.2 _ hcproj.one_sub ?_
+    rw [sub_sub_cancel, heq]
+    exact (hmemD c).mp hcD
+  have hf0 : (f ((1 : A) - carrier g hg) : B) = 0 := by
+    rw [← heq]; exact (carrier_spec g hg).2.1
+  -- and `c^⊥ ≤ ⌈f⌉`, since `⌈f⌉^⊥` is a projection of `𝒟` and `c` is the
+  -- greatest such
+  have hle₂ : (1 : A) - c ≤ carrier g hg :=
+    sub_le_comm.mp ((hgreat c hcproj hccentral hcchar).2
+      ⟨(carrier_spec g hg).1.one_sub, (hmemD _).mpr hf0⟩)
+  have hceq : carrier g hg = 1 - c := le_antisymm hle₁ hle₂
+  refine ⟨?_, ?_⟩
+  · rw [hceq]
     intro b
-    refine hkey (((1 : A) - p) * b) ?_
-    rw [hmul, hfe, zero_mul]
-  have hcentral : IsCentral A ((1 : A) - p) := by
-    intro b
-    have h := congrArg star (hebe (star b))
-    simp only [star_mul, star_star, heproj.isSelfAdjoint.star_eq] at h
-    calc ((1 : A) - p) * b = (1 - p) * b * (1 - p) := (hebe b).symm
-      _ = (1 - p) * (b * (1 - p)) := by noncomm_ring
-      _ = b * (1 - p) := h
-  have hpcentral : IsCentral A p := by
-    intro b
-    have h := hcentral b
-    rw [sub_mul, mul_sub, one_mul, mul_one] at h
-    exact sub_right_inj.mp h
-  refine ⟨hpcentral, fun a => ?_⟩
-  · constructor
-    · intro ha
-      have hae : a * ((1 : A) - p) = a := hkey a ha
-      rw [mul_sub, mul_one, sub_eq_self] at hae
-      rw [hpcentral a, hae]
-    · intro ha
-      have hea : ((1 : A) - p) * a = a := by rw [sub_mul, one_mul, ha, sub_zero]
-      calc (f a : B) = f (((1 : A) - p) * a) := by rw [hea]
-        _ = f ((1 : A) - p) * f a := hmul _ _
-        _ = 0 := by rw [hfe, zero_mul]
+    rw [sub_mul, mul_sub, one_mul, mul_one, hccentral b]
+  · intro a
+    rw [hceq, ← hmemD a, hcchar a, sub_mul, one_mul, sub_eq_zero, eq_comm]
 
 /-- **69IV** (`carrier-miu`, vn.tex:3611, Corollary), the point's other half:
 `⌈f⌉ = ⌈⌈f⌉⌉` for an nmiu-map `f`.  It is immediate from the centrality that

@@ -19,6 +19,11 @@ two, `cauchy_formula` (**15I**) and `taylor` (**15V**), closed in session 74.
 which the thesis obtains from a triangulation it asserts without constructing;
 `polygon_winding` below replaces that step by a triangulation-free argument
 (ERRATA `15I`).
+
+Parsecs 120-150 are load-bearing: **16II** `norm_spectrum` is proved the
+thesis's way, from **15VII** `rigid_expansion`, which in turn is proved from
+**15V** `taylor` and **13VI** `powerseries_uniqueness_coeffients`, hence from
+**15I** `cauchy_formula` and **14IV** `goursat`.
 See CONVENTIONS.md for the numbering (**16II** = parsec 160, point 20) and
 naming conventions.
 -/
@@ -239,11 +244,17 @@ theorem powerseries_uniqueness_coeffients (a : ℕ → 𝒜) (r : ℝ) (hr : 0 <
     (h : ∀ z : ℂ, ‖z‖ < r → HasSum (fun n : ℕ => z ^ n • a n) 0) :
     ∀ n, a n = 0 :=
   by
-    -- Divergence from the thesis's proof (cstar.tex:1958): the hint there is
-    -- to differentiate the series repeatedly, which would make this depend on
-    -- **13IV** `powerSeries_hasDerivAt` (`sorry` when this was written; since
-    -- proved).  In Lean the series
-    -- represents the zero function on `ball 0 r`, and
+    -- Divergence from the thesis's proof (asols.tex:1562): the solution
+    -- differentiates the series repeatedly and reads `f⁽ⁿ⁾(0) = n aₙ` off
+    -- **13IV** `powerSeries_hasDerivAt`.  (That was once justified here by
+    -- **13IV** being `sorry`; it is proved now, and this is *not* the reason
+    -- any more.)  What the solution's route needs beyond **13IV** is that the
+    -- term-wise derivative series is *summable* on the same disk — **13IV**
+    -- delivers the derivative only as a `tsum` — i.e. the radius of the
+    -- derived series, which the thesis asserts in passing (cstar.tex:1949)
+    -- and which is exactly the analytic content that Mathlib's
+    -- `HasFPowerSeriesAt.eq_zero` already packages.  So the shorter route is
+    -- taken: the series represents the zero function on `ball 0 r`, and
     -- `HasFPowerSeriesAt.eq_zero` gives the conclusion outright.
     have hpow : HasFPowerSeriesOnBall (0 : ℂ → 𝒜) (fpsOfCoeffs a) 0 (ENNReal.ofReal r) := by
       refine fpsOfCoeffs_hasFPowerSeriesOnBall a 0 0 r hr ?_
@@ -722,18 +733,22 @@ theorem invint_1 (z : ℂ) (hz : z ≠ 0) :
       apply Complex.ext <;> simp
     rw [h1, h2, Complex.inv_def, div_eq_mul_inv, Complex.ofReal_inv]
 
-/-! **Divergence from the thesis, recorded here for all four parts of 14VIII.**
+/-! **Divergence from the thesis, recorded here for part 3 of 14VIII.**
 The thesis's route is 2 → 3 → 4: it computes the two axis-parallel segment
 integrals by hand and then reduces the general segment to those *using Goursat's
 Theorem* ("using Goursat's Theorem one may reduce the problem to horizontal and
-vertical line segments", cstar.tex:2364).  Here the order is reversed and
-**Goursat is not used at all**: part 3 is proved directly, and parts 2, 2′ and 4
-are read off from it.  The observation that makes this work is that if `z₀`
+vertical line segments", cstar.tex:2364).  Parts 2 and 2′ below are the thesis's
+own computation and part 4 is the thesis's own argument from part 3; what
+diverges is the step 2 → 3, where **Goursat is not used at all**: part 3 is
+proved directly.  (The thesis's hint is a single sentence and does not say how
+to treat a `z₀` inside the axis-parallel triangle spanned by `[w,w']`, which a
+reduction to horizontal and vertical segments has to subdivide around.)
+The observation that makes the direct proof work is that if `z₀`
 misses the segment `[w,w']` then the rescaled segment from `1` to
 `ζ := (w'-z₀)/(w-z₀)` misses not merely `0` but the whole branch cut `(-∞,0]`
 (`affine_mem_slitPlane` below), so `Complex.log` is a genuine antiderivative of
 `z⁻¹` along it and the fundamental theorem of calculus applies in one step.
-Both proofs are elementary; the thesis's is not wrong, only more expensive. -/
+Both routes are elementary; the thesis's is not wrong, only more expensive. -/
 
 /-- Auxiliary for **14VIII**.3: if the segment from `1` to `ζ` misses `0`, then
 it misses the whole branch cut `(-∞,0]` of `Complex.log`.  (Along the segment
@@ -780,8 +795,9 @@ private theorem arg_eq_arctan {x : ℂ} (hx : 0 < x.re) :
   rw [abs_lt] at h
   rw [← Complex.tan_arg, Real.arctan_tan h.1 h.2]
 
-/-- The content of **14VIII**.3, factored out because parts 2, 2′ and 4 are all
-special cases of it: `∫_w^{w'} (z-z₀)⁻¹ dz = Log((w'-z₀)/(w-z₀))`. -/
+/-- The content of **14VIII**.3: `∫_w^{w'} (z-z₀)⁻¹ dz = Log((w'-z₀)/(w-z₀))`.
+(Parts 2 and 2′ are its `z₀ = 0` case, but are proved on their own, the thesis's
+way; part 4 is the thesis's own argument from part 3.) -/
 private theorem segment_inv_integral (w w' z₀ : ℂ) (hz₀ : z₀ ∉ segment ℝ w w') :
     segIntegral (fun z => (z - z₀)⁻¹) w w' =
       (measuredAngle w z₀ w' : ℂ) * Complex.I +
@@ -847,36 +863,81 @@ theorem invint_2 (a b : ℝ) (ha : a ≠ 0) :
         (Real.log ‖(a : ℂ) + (b : ℂ) * Complex.I‖ : ℂ) -
         (Real.log ‖(a : ℂ) * Complex.I‖ : ℂ) :=
   by
-    -- the special case `z₀ = 0` of `segment_inv_integral`; the segment misses
-    -- `0` because every point on it has real part `a ≠ 0`
-    have hz₀ : (0 : ℂ) ∉ segment ℝ (a : ℂ) ((a : ℂ) + (b : ℂ) * Complex.I) := by
-      rw [segment_eq_image' ℝ]
-      rintro ⟨t, _, ht⟩
-      have := congrArg Complex.re ht
-      simp [Complex.real_smul] at this
-      exact ha this
-    have key := segment_inv_integral (a : ℂ) ((a : ℂ) + (b : ℂ) * Complex.I) 0 hz₀
-    have hfun : (fun z : ℂ => (z - 0)⁻¹) = (fun z : ℂ => z⁻¹) := by funext z; rw [sub_zero]
-    rw [hfun] at key
-    rw [key]
-    have haC : (a : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr ha
-    have hratio : ((a : ℂ) + (b : ℂ) * Complex.I - 0) / ((a : ℂ) - 0)
-        = 1 + ((b / a : ℝ) : ℂ) * Complex.I := by
+    -- The thesis's own computation (cstar.tex:2320): parametrise the segment,
+    -- read off the integrand from part 1, and integrate the antiderivative
+    -- `½log(a² + t²b²) + i arctan(tb/a)`.  (An earlier proof took this as the
+    -- `z₀ = 0` case of part 3, reversing the thesis's dependency order — the
+    -- thesis derives part 3 *from* part 2 using Goursat.)
+    have ha2 : (0 : ℝ) < a ^ 2 := by positivity
+    set D : ℝ → ℝ := fun t => a ^ 2 + t ^ 2 * b ^ 2 with hD
+    have hDpos : ∀ t : ℝ, 0 < D t := by
+      intro t; rw [hD]; nlinarith [sq_nonneg (t * b)]
+    have hne : ∀ t : ℝ, ((a : ℂ) + (t : ℂ) * ((b : ℂ) * Complex.I)) ≠ 0 := by
+      intro t h
+      have hre := congrArg Complex.re h
+      simp at hre
+      exact ha hre
+    set G : ℝ → ℂ := fun t => ((b : ℂ) * Complex.I) *
+        ((a : ℂ) + (t : ℂ) * ((b : ℂ) * Complex.I))⁻¹ with hG
+    set F : ℝ → ℂ := fun t => ((Real.log (D t) / 2 : ℝ) : ℂ)
+        + ((Real.arctan (t * b / a) : ℝ) : ℂ) * Complex.I with hF
+    have hderiv : ∀ t : ℝ, HasDerivAt F (G t) t := by
+      intro t
+      have hd : HasDerivAt D (2 * t * b ^ 2) t := by
+        have h := (((hasDerivAt_pow 2 t).mul_const (b ^ 2)).const_add (a ^ 2))
+        simpa [hD] using h
+      have h1 : HasDerivAt (fun t : ℝ => Real.log (D t) / 2) (t * b ^ 2 / D t) t := by
+        have h := (Real.hasDerivAt_log (hDpos t).ne').comp t hd
+        have h2 := h.div_const 2
+        refine h2.congr_deriv ?_
+        field_simp
+      have h2 : HasDerivAt (fun t : ℝ => Real.arctan (t * b / a)) (a * b / D t) t := by
+        have hin : HasDerivAt (fun t : ℝ => t * b / a) (b / a) t := by
+          have h := ((hasDerivAt_id t).mul_const b).div_const a
+          simpa using h
+        have h := (Real.hasDerivAt_arctan (t * b / a)).comp t hin
+        refine h.congr_deriv ?_
+        rw [hD]
+        field_simp
+      have hsum := (h1.ofReal_comp).add ((h2.ofReal_comp).mul_const Complex.I)
+      refine hsum.congr_deriv ?_
+      rw [hG, eq_comm, mul_inv_eq_iff_eq_mul₀ (hne t)]
+      have hDne : D t ≠ 0 := (hDpos t).ne'
+      rw [Complex.ext_iff]
+      constructor <;>
+        · simp only [hD, Complex.add_re, Complex.add_im, Complex.mul_re, Complex.mul_im,
+            Complex.ofReal_re, Complex.ofReal_im, Complex.I_re, Complex.I_im, mul_zero, mul_one,
+            zero_mul, add_zero, zero_add, sub_self]
+          field_simp
+          ring
+    have hGcont : Continuous G := by
+      rw [hG]
+      exact continuous_const.mul (Continuous.inv₀ (by fun_prop) hne)
+    have hint : ∫ t in (0 : ℝ)..1, G t = F 1 - F 0 :=
+      intervalIntegral.integral_eq_sub_of_hasDerivAt (fun t _ => hderiv t)
+        (hGcont.intervalIntegrable 0 1)
+    have hseg : segIntegral (fun z : ℂ => z⁻¹) (a : ℂ) ((a : ℂ) + (b : ℂ) * Complex.I)
+        = ∫ t in (0 : ℝ)..1, G t := by
+      rw [segIntegral, hG]
+      have hsub : ((a : ℂ) + (b : ℂ) * Complex.I) - (a : ℂ) = (b : ℂ) * Complex.I := by ring
+      rw [hsub, smul_eq_mul, intervalIntegral.integral_const_mul]
+    have hlogsq : ∀ z : ℂ, Real.log ‖z‖ = Real.log (‖z‖ ^ 2) / 2 := by
+      intro z
+      rw [Real.log_pow]
       push_cast
-      field_simp
       ring
-    have hangle : measuredAngle (a : ℂ) 0 ((a : ℂ) + (b : ℂ) * Complex.I)
-        = Real.arctan (b / a) := by
-      rw [measuredAngle, hratio, arg_eq_arctan (by simp)]
+    have hn1 : ‖(a : ℂ) + (b : ℂ) * Complex.I‖ ^ 2 = a ^ 2 + b ^ 2 := by
+      rw [Complex.sq_norm, Complex.normSq_apply]
       simp
-    have hn1 : ‖(a : ℂ) + (b : ℂ) * Complex.I‖ ≠ 0 := by
-      simp only [ne_eq, norm_eq_zero]
-      intro h
-      exact ha (by simpa using congrArg Complex.re h)
-    have hn2 : ‖(a : ℂ)‖ ≠ 0 := by simpa using ha
-    rw [hangle, sub_zero, sub_zero, Real.log_div hn1 hn2,
-      show ‖(a : ℂ) * Complex.I‖ = ‖(a : ℂ)‖ by simp]
-    push_cast
+      ring
+    have hn2 : ‖(a : ℂ) * Complex.I‖ ^ 2 = a ^ 2 := by
+      rw [Complex.sq_norm, Complex.normSq_apply]
+      simp
+      ring
+    rw [hseg, hint, hF, hlogsq ((a : ℂ) + (b : ℂ) * Complex.I), hlogsq ((a : ℂ) * Complex.I),
+      hn1, hn2]
+    simp only [hD]
+    norm_num [Real.arctan_zero]
     ring
 
 /-- **14VIII** (`invint`, cstar.tex:2302, Exercise), part 2 (horizontal
@@ -889,53 +950,85 @@ theorem invint_2' (a b : ℝ) (hb : b ≠ 0) :
         (Real.log ‖(b : ℂ) * Complex.I‖ : ℂ) -
         (Real.log ‖(a : ℂ) + (b : ℂ) * Complex.I‖ : ℂ) :=
   by
-    -- again the case `z₀ = 0` of `segment_inv_integral`; this time the segment
-    -- misses `0` because every point on it has imaginary part `b ≠ 0`
-    have hb' : (b : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hb
-    have hsq : (a ^ 2 + b ^ 2 : ℝ) ≠ 0 := by positivity
-    have hsqC : ((a : ℂ) ^ 2 + (b : ℂ) ^ 2) ≠ 0 := by
-      have h : (((a ^ 2 + b ^ 2 : ℝ)) : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hsq
-      push_cast at h; exact h
-    have hz₀ : (0 : ℂ) ∉ segment ℝ ((a : ℂ) + (b : ℂ) * Complex.I) ((b : ℂ) * Complex.I) := by
-      rw [segment_eq_image' ℝ]
-      rintro ⟨t, _, ht⟩
-      have := congrArg Complex.im ht
-      simp [Complex.real_smul] at this
-      exact hb this
-    have key := segment_inv_integral ((a : ℂ) + (b : ℂ) * Complex.I) ((b : ℂ) * Complex.I) 0 hz₀
-    have hfun : (fun z : ℂ => (z - 0)⁻¹) = (fun z : ℂ => z⁻¹) := by funext z; rw [sub_zero]
-    rw [hfun] at key
-    rw [key]
-    have hden : (a : ℂ) + (b : ℂ) * Complex.I ≠ 0 := by
-      intro h
-      exact hb (by simpa using congrArg Complex.im h)
-    have hratio : ((b : ℂ) * Complex.I - 0) / ((a : ℂ) + (b : ℂ) * Complex.I - 0)
-        = ((b ^ 2 / (a ^ 2 + b ^ 2) : ℝ) : ℂ)
-          + ((a * b / (a ^ 2 + b ^ 2) : ℝ) : ℂ) * Complex.I := by
-      rw [sub_zero, sub_zero, div_eq_iff hden]
+    -- The thesis's own computation again, with antiderivative
+    -- `½log(a²(1-t)² + b²) - i arctan(a(1-t)/b)`.
+    have hb2 : (0 : ℝ) < b ^ 2 := by positivity
+    set D : ℝ → ℝ := fun t => (a - t * a) ^ 2 + b ^ 2 with hD
+    have hDpos : ∀ t : ℝ, 0 < D t := by
+      intro t; rw [hD]; nlinarith [sq_nonneg (a - t * a)]
+    have hne : ∀ t : ℝ, (((a : ℂ) - (t : ℂ) * (a : ℂ)) + (b : ℂ) * Complex.I) ≠ 0 := by
+      intro t h
+      have him := congrArg Complex.im h
+      simp at him
+      exact hb him
+    set G : ℝ → ℂ := fun t => (-(a : ℂ)) *
+        (((a : ℂ) - (t : ℂ) * (a : ℂ)) + (b : ℂ) * Complex.I)⁻¹ with hG
+    set F : ℝ → ℂ := fun t => ((Real.log (D t) / 2 : ℝ) : ℂ)
+        - ((Real.arctan ((a - t * a) / b) : ℝ) : ℂ) * Complex.I with hF
+    have hderiv : ∀ t : ℝ, HasDerivAt F (G t) t := by
+      intro t
+      have hlin : HasDerivAt (fun t : ℝ => a - t * a) (-a) t := by
+        have h := ((hasDerivAt_id t).mul_const a).const_sub a
+        simpa using h
+      have hd : HasDerivAt D (2 * (a - t * a) * (-a)) t := by
+        have h := ((hlin.pow 2).add_const (b ^ 2))
+        simpa [hD] using h
+      have h1 : HasDerivAt (fun t : ℝ => Real.log (D t) / 2) (-(a * (a - t * a)) / D t) t := by
+        have h := (Real.hasDerivAt_log (hDpos t).ne').comp t hd
+        have h2 := h.div_const 2
+        refine h2.congr_deriv ?_
+        field_simp
+      have h2 : HasDerivAt (fun t : ℝ => Real.arctan ((a - t * a) / b)) (-(a * b) / D t) t := by
+        have hin : HasDerivAt (fun t : ℝ => (a - t * a) / b) (-a / b) t := hlin.div_const b
+        have h := (Real.hasDerivAt_arctan ((a - t * a) / b)).comp t hin
+        refine h.congr_deriv ?_
+        rw [hD]
+        field_simp
+        ring
+      have hsum := (h1.ofReal_comp).sub ((h2.ofReal_comp).mul_const Complex.I)
+      refine hsum.congr_deriv ?_
+      rw [hG, eq_comm, mul_inv_eq_iff_eq_mul₀ (hne t)]
+      have hDne : D t ≠ 0 := (hDpos t).ne'
+      rw [Complex.ext_iff]
+      constructor <;>
+        · simp only [hD, Complex.sub_re, Complex.sub_im, Complex.add_re, Complex.add_im,
+            Complex.mul_re, Complex.mul_im, Complex.ofReal_re, Complex.ofReal_im, Complex.I_re,
+            Complex.I_im, Complex.neg_re, Complex.neg_im, mul_zero, mul_one, zero_mul, add_zero,
+            zero_add, sub_self, neg_zero, sub_zero]
+          field_simp
+          ring
+    have hGcont : Continuous G := by
+      rw [hG]
+      exact continuous_const.mul (Continuous.inv₀ (by fun_prop) hne)
+    have hint : ∫ t in (0 : ℝ)..1, G t = F 1 - F 0 :=
+      intervalIntegral.integral_eq_sub_of_hasDerivAt (fun t _ => hderiv t)
+        (hGcont.intervalIntegrable 0 1)
+    have hseg : segIntegral (fun z : ℂ => z⁻¹) ((a : ℂ) + (b : ℂ) * Complex.I) ((b : ℂ) * Complex.I)
+        = ∫ t in (0 : ℝ)..1, G t := by
+      rw [segIntegral, hG]
+      have hsub : ((b : ℂ) * Complex.I) - ((a : ℂ) + (b : ℂ) * Complex.I) = -(a : ℂ) := by ring
+      rw [hsub, smul_eq_mul]
+      have hfun : (fun t : ℝ => ((a : ℂ) + (b : ℂ) * Complex.I + (t : ℂ) * (-(a : ℂ)))⁻¹)
+          = fun t : ℝ => (((a : ℂ) - (t : ℂ) * (a : ℂ)) + (b : ℂ) * Complex.I)⁻¹ := by
+        funext t; congr 1; ring
+      rw [hfun, intervalIntegral.integral_const_mul]
+    have hlogsq : ∀ z : ℂ, Real.log ‖z‖ = Real.log (‖z‖ ^ 2) / 2 := by
+      intro z
+      rw [Real.log_pow]
       push_cast
-      field_simp
-      linear_combination (-((a : ℂ) * (b : ℂ))) * Complex.I_sq
-    have hre : (0:ℝ) < b ^ 2 / (a ^ 2 + b ^ 2) := by positivity
-    have hrepos : (0:ℝ) < (((b ^ 2 / (a ^ 2 + b ^ 2) : ℝ) : ℂ)
-        + ((a * b / (a ^ 2 + b ^ 2) : ℝ) : ℂ) * Complex.I).re := by
-      simp only [Complex.add_re, Complex.ofReal_re, Complex.mul_re, Complex.ofReal_im,
-        Complex.I_re, Complex.I_im, mul_zero, sub_zero, add_zero, mul_one]
-      exact hre
-    have hangle : measuredAngle ((a : ℂ) + (b : ℂ) * Complex.I) 0 ((b : ℂ) * Complex.I)
-        = Real.arctan (a / b) := by
-      rw [measuredAngle, hratio, arg_eq_arctan hrepos]
-      congr 1
-      simp only [Complex.add_re, Complex.add_im, Complex.ofReal_re, Complex.ofReal_im,
-        Complex.mul_re, Complex.mul_im, Complex.I_re, Complex.I_im, mul_zero, mul_one,
-        sub_zero, add_zero, zero_add]
-      field_simp
-    have hn1 : ‖(b : ℂ) * Complex.I‖ ≠ 0 := by simpa using hb
-    have hn2 : ‖(a : ℂ) + (b : ℂ) * Complex.I‖ ≠ 0 := by
-      simp only [ne_eq, norm_eq_zero]
-      exact hden
-    rw [hangle, sub_zero, sub_zero, Real.log_div hn1 hn2]
-    push_cast
+      ring
+    have hn1 : ‖(a : ℂ) + (b : ℂ) * Complex.I‖ ^ 2 = a ^ 2 + b ^ 2 := by
+      rw [Complex.sq_norm, Complex.normSq_apply]
+      simp
+      ring
+    have hn2 : ‖(b : ℂ) * Complex.I‖ ^ 2 = b ^ 2 := by
+      rw [Complex.sq_norm, Complex.normSq_apply]
+      simp
+      ring
+    rw [hseg, hint, hF, hlogsq ((a : ℂ) + (b : ℂ) * Complex.I), hlogsq ((b : ℂ) * Complex.I),
+      hn1, hn2]
+    simp only [hD]
+    norm_num [Real.arctan_zero]
     ring
 
 /-- **14VIII** (`invint`, cstar.tex:2302, Exercise), part 3:
@@ -1775,6 +1868,146 @@ theorem taylor {U : Set ℂ} (hU : IsOpen U) (f : ℂ → 𝒜)
     rw [hfun, hcauchy]
     exact hsum
 
+/-! ### The inradius of the regular `K`-gon, for **15VII** `rigid_expansion`
+
+The thesis's proof of `rigid-expansion` needs a regular `K`-gon that fits
+*between* two concentric disks; the only quantitative fact required is that the
+`K`-gon of circumradius `ρ` contains the open disk of radius `ρ cos(π/K)`, so
+that `K` can be chosen to make the polygon's inner disk exceed any prescribed
+radius `< ρ`.  The polygon lemmas above all run the other way (from a point of
+the interior to a property of it); this one runs into the interior. -/
+
+/-- `cisR` is `2π`-periodic. -/
+private theorem cisR_add_int_two_pi (θ : ℝ) (m : ℤ) : cisR (θ + 2 * Real.pi * m) = cisR θ := by
+  rw [cisR_add]
+  have : cisR (2 * Real.pi * m) = 1 := by
+    rw [cisR]
+    have he : ((2 * Real.pi * m : ℝ) : ℂ) * Complex.I
+        = (m : ℂ) * (2 * (Real.pi : ℂ) * Complex.I) := by push_cast; ring
+    rw [he, Complex.exp_int_mul_two_pi_mul_I]
+  rw [this, mul_one]
+
+private theorem cisR_congr_mod (K : ℕ) (hK : 0 < K) (a b : ℤ) (h : (K : ℤ) ∣ (a - b)) :
+    cisR (2 * Real.pi * (a : ℝ) / K) = cisR (2 * Real.pi * (b : ℝ) / K) := by
+  obtain ⟨q, hq⟩ := h
+  have hKR : (0 : ℝ) < (K : ℝ) := by exact_mod_cast hK
+  have ha : (a : ℝ) = (b : ℝ) + (K : ℝ) * (q : ℝ) := by
+    have h2 : a = b + (K : ℤ) * q := by linarith
+    exact_mod_cast congrArg (fun x : ℤ => (x : ℝ)) h2
+  rw [ha, show 2 * Real.pi * ((b : ℝ) + (K : ℝ) * (q : ℝ)) / K
+      = 2 * Real.pi * (b : ℝ) / K + 2 * Real.pi * (q : ℝ) by field_simp,
+    cisR_add_int_two_pi]
+
+/-- The regular `K`-gon inscribed in the circle of radius `rho` about `c` contains
+the open disk of radius `rho cos(π/K)` about `c` — its inradius. -/
+private theorem ball_subset_polygon {K : ℕ} (hK : 3 ≤ K) (c : ℂ) (rho : ℝ) (hrho : 0 < rho)
+    (w : ℕ → ℂ) (hw : ∀ n, w n = c + (rho : ℂ) * cisR (2 * Real.pi * n / K)) :
+    Metric.ball c (rho * Real.cos (Real.pi / K)) ⊆ convexHull ℝ (Set.range w) := by
+  have hK0 : 0 < K := by omega
+  have hKR : (0 : ℝ) < (K : ℝ) := by exact_mod_cast hK0
+  have hpi : 0 < Real.pi := Real.pi_pos
+  -- the vertex set is finite: `w` is periodic with period `K`
+  have hwper : ∀ n : ℕ, w (n % K) = w n := by
+    intro n
+    rw [hw, hw]
+    congr 2
+    refine cisR_congr_mod K hK0 ((n % K : ℕ) : ℤ) ((n : ℕ) : ℤ) ?_ |>.trans ?_
+    · refine ⟨-((n / K : ℕ) : ℤ), ?_⟩
+      have hnk : ((n % K : ℕ) : ℤ) + (K : ℤ) * ((n / K : ℕ) : ℤ) = (n : ℤ) := by
+        exact_mod_cast congrArg (fun x : ℕ => (x : ℤ)) (Nat.mod_add_div n K)
+      linarith
+    · norm_cast
+  have hfin : (Set.range w).Finite := by
+    refine Set.Finite.subset (Set.finite_range (fun n : Fin K => w (n : ℕ))) ?_
+    rintro _ ⟨n, rfl⟩
+    exact ⟨⟨n % K, Nat.mod_lt _ hK0⟩, hwper n⟩
+  intro z hz
+  rw [Metric.mem_ball, dist_eq_norm] at hz
+  by_contra hnot
+  obtain ⟨f, u, hfs, hfz⟩ := geometric_hahn_banach_closed_point
+    (convex_convexHull ℝ (Set.range w)) (hfin.isClosed_convexHull (𝕜 := ℝ)) hnot
+  have hmem : ∀ n : ℕ, w n ∈ convexHull ℝ (Set.range w) :=
+    fun n => subset_convexHull ℝ _ ⟨n, rfl⟩
+  -- `f` is `y ↦ Re(conj u₀ · y)` for `u₀ := f(1) + f(i)i`
+  set u0 : ℂ := ⟨f 1, f Complex.I⟩ with hu0def
+  have hlin : ∀ y : ℂ, f y = u0.re * y.re + u0.im * y.im := by
+    intro y
+    have hy : y = y.re • (1 : ℂ) + y.im • Complex.I := by
+      apply Complex.ext <;> simp
+    conv_lhs => rw [hy]
+    rw [map_add, map_smul, map_smul]
+    simp [hu0def]
+    ring
+  have hlin2 : ∀ y : ℂ, f y = ((starRingEnd ℂ) u0 * y).re := by
+    intro y
+    rw [hlin y, Complex.mul_re, Complex.conj_re, Complex.conj_im]
+    ring
+  rcases eq_or_ne u0 0 with hu00 | hu00
+  · have h0 : ∀ y : ℂ, f y = 0 := by
+      intro y; rw [hlin y, hu00]; simp
+    rw [h0 z] at hfz
+    have := hfs (w 0) (hmem 0)
+    rw [h0] at this
+    linarith
+  · have hu0pos : 0 < ‖u0‖ := norm_pos_iff.mpr hu00
+    have hK3 : (3 : ℝ) ≤ (K : ℝ) := by exact_mod_cast hK
+    -- the value of `f` at a point of the circumscribed circle
+    have hval : ∀ φ : ℝ, f (c + (rho : ℂ) * cisR φ)
+        = f c + rho * ‖u0‖ * Real.cos (φ - u0.arg) := by
+      intro φ
+      have hsm : ((rho : ℝ) : ℂ) * cisR φ = (rho : ℝ) • cisR φ := by rw [Complex.real_smul]
+      rw [map_add, hsm, map_smul, hlin (cisR φ), cisR_re, cisR_im, smul_eq_mul,
+        Real.cos_sub, Complex.cos_arg hu00, Complex.sin_arg]
+      field_simp
+    -- the vertex nearest in angle to `arg u₀`
+    set m : ℤ := round (u0.arg * K / (2 * Real.pi)) with hm
+    set psi : ℝ := 2 * Real.pi * (m : ℝ) / K with hpsi
+    obtain ⟨n, hn⟩ : ∃ n : ℕ, cisR (2 * Real.pi * (n : ℝ) / K) = cisR psi := by
+      refine ⟨(m % (K : ℤ)).toNat, ?_⟩
+      have hm0 : 0 ≤ m % (K : ℤ) := Int.emod_nonneg m (by exact_mod_cast hK0.ne')
+      have hcast : (((m % (K : ℤ)).toNat : ℕ) : ℤ) = m % (K : ℤ) := Int.toNat_of_nonneg hm0
+      have hcg := cisR_congr_mod K hK0 (((m % (K : ℤ)).toNat : ℕ) : ℤ) m
+        ⟨-(m / (K : ℤ)), by rw [hcast, Int.emod_def]; ring⟩
+      rw [hpsi]
+      exact_mod_cast hcg
+    have hclose : |psi - u0.arg| ≤ Real.pi / K := by
+      have hr := abs_sub_round (u0.arg * K / (2 * Real.pi))
+      have he : psi - u0.arg = (2 * Real.pi / K) * ((m : ℝ) - u0.arg * K / (2 * Real.pi)) := by
+        rw [hpsi]; field_simp
+      rw [he, abs_mul, abs_of_pos (by positivity : (0 : ℝ) < 2 * Real.pi / K), abs_sub_comm, hm]
+      calc 2 * Real.pi / K * |u0.arg * K / (2 * Real.pi)
+              - ((round (u0.arg * K / (2 * Real.pi)) : ℤ) : ℝ)|
+          ≤ 2 * Real.pi / K * (1 / 2) := mul_le_mul_of_nonneg_left hr (by positivity)
+        _ = Real.pi / K := by ring
+    have hcos : Real.cos (Real.pi / K) ≤ Real.cos (psi - u0.arg) := by
+      rw [← Real.cos_abs (psi - u0.arg)]
+      refine Real.cos_le_cos_of_nonneg_of_le_pi (abs_nonneg _) ?_ hclose
+      rw [div_le_iff₀ hKR]
+      nlinarith
+    -- `f` is larger at that vertex than at `z`
+    have hwn : w n = c + (rho : ℂ) * cisR psi := by rw [hw n, hn]
+    have hfw : f (w n) = f c + rho * ‖u0‖ * Real.cos (psi - u0.arg) := by
+      rw [hwn]; exact hval psi
+    have hfzc : f z ≤ f c + ‖u0‖ * ‖z - c‖ := by
+      have hsplit : f z = f c + f (z - c) := by
+        rw [← map_add]; congr 1; ring
+      have hb : f (z - c) ≤ ‖u0‖ * ‖z - c‖ := by
+        rw [hlin2]
+        calc ((starRingEnd ℂ) u0 * (z - c)).re ≤ ‖(starRingEnd ℂ) u0 * (z - c)‖ :=
+              Complex.re_le_norm _
+          _ = ‖u0‖ * ‖z - c‖ := by rw [norm_mul, RCLike.norm_conj]
+      linarith
+    have h1 : ‖u0‖ * ‖z - c‖ < ‖u0‖ * (rho * Real.cos (Real.pi / K)) :=
+      mul_lt_mul_of_pos_left hz hu0pos
+    have e1 : ‖u0‖ * (rho * Real.cos (Real.pi / K))
+        = rho * ‖u0‖ * Real.cos (Real.pi / K) := by ring
+    have h2 : rho * ‖u0‖ * Real.cos (Real.pi / K)
+        ≤ rho * ‖u0‖ * Real.cos (psi - u0.arg) :=
+      mul_le_mul_of_nonneg_left hcos (by positivity)
+    have h3 := hfs (w n) (hmem n)
+    linarith
+
+
 /-- **15VII** (`rigid-expansion`, cstar.tex:2514, Proposition): if a
 holomorphic 𝒜-valued function `f` is given by a power series
 `∑ₙ aₙ (z - w)ⁿ` on some disk around `w` of radius `r > 0`, then the same
@@ -1787,42 +2020,92 @@ theorem rigid_expansion {U : Set ℂ} (hU : IsOpen U) (f : ℂ → 𝒜)
     (hball : Metric.ball w R ⊆ U) (z : ℂ) (hz : z ∈ Metric.ball w R) :
     HasSum (fun n : ℕ => (z - w) ^ n • a n) (f z) :=
   by
-    -- Divergence from the thesis's proof (cstar.tex:2514): the thesis derives
-    -- this from **15V** `taylor` and **13VI**
-    -- `powerseries_uniqueness_coeffients`, both `sorry` when this was written
-    -- (both are proved now).  In Lean
-    -- neither is needed: `DifferentiableOn.hasFPowerSeriesOnBall` (Cauchy's
-    -- integral formula, stated in Mathlib for any complete complex normed
-    -- space) supplies a power-series expansion of `f` on any closed ball
-    -- inside `dom(f)`, and `HasFPowerSeriesAt.eq_formalMultilinearSeries`
-    -- identifies its coefficients with `a` using `hsmall`.  The argument uses
-    -- neither `hU` nor `hrR`.
-    have hpow := fpsOfCoeffs_hasFPowerSeriesOnBall a f w r hr hsmall
-    -- `f` is also represented by `cauchyPowerSeries f w R'` on any closed ball
-    -- around `w` that lies inside `ball w R` and contains `z`
-    have hzw : ‖z - w‖ < R := by
-      simpa [Metric.mem_ball, dist_eq_norm] using hz
-    obtain ⟨R', hR'1, hR'2⟩ := exists_between hzw
-    have hR'0 : 0 < R' := lt_of_le_of_lt (norm_nonneg _) hR'1
-    set RR : ℝ≥0 := ⟨R', hR'0.le⟩ with hRR
-    have hsub : Metric.closedBall w (RR : ℝ) ⊆ U := by
-      refine subset_trans ?_ hball
-      intro v hv
-      simp only [Metric.mem_closedBall] at hv
-      simp only [Metric.mem_ball]
-      exact lt_of_le_of_lt hv hR'2
-    have hq : HasFPowerSeriesOnBall f (cauchyPowerSeries f w RR) w RR :=
-      (hf.mono hsub).hasFPowerSeriesOnBall (by exact_mod_cast hR'0)
-    -- the two power series agree, so the given one converges to `f z`
-    have heq : fpsOfCoeffs a = cauchyPowerSeries f w RR :=
-      hpow.hasFPowerSeriesAt.eq_formalMultilinearSeries hq.hasFPowerSeriesAt
-    have hzmem : z ∈ Metric.eball w (RR : ℝ≥0∞) := by
-      rw [Metric.eball_coe, Metric.mem_ball, dist_eq_norm]
-      exact hR'1
-    have hsum := hq.hasSum_sub hzmem
-    rw [← heq] at hsum
-    simpa [fpsOfCoeffs_coeff] using hsum
-
+    -- The thesis's own proof (cstar.tex:2528).  The previous proof here took
+    -- Mathlib's `DifferentiableOn.hasFPowerSeriesOnBall` and
+    -- `eq_formalMultilinearSeries` instead, on the ground that **15V**
+    -- `taylor` and **13VI** `powerseries_uniqueness_coeffients` were still
+    -- `sorry`; both have been proved since, and the thesis's route is the one
+    -- below: fit a regular `K`-gon between the disk of radius `‖z - w‖` and
+    -- the disk of radius `R`, expand `f` on it by **15V**, and identify the
+    -- two coefficient sequences by **13VI**.
+    have hd : ‖z - w‖ < R := by simpa [Metric.mem_ball, dist_eq_norm] using hz
+    set d : ℝ := ‖z - w‖ with hddef
+    have hd0 : 0 ≤ d := norm_nonneg _
+    set rho : ℝ := (d + R) / 2 with hrhodef
+    have hrho0 : 0 < rho := by rw [hrhodef]; linarith [hr.trans hrR]
+    have hdrho : d < rho := by rw [hrhodef]; linarith
+    have hrhoR : rho < R := by rw [hrhodef]; linarith
+    have hquot : d / rho < 1 := (div_lt_one hrho0).mpr hdrho
+    -- a regular `K`-gon whose inradius `rho cos(π/K)` still exceeds `d`
+    have hlim : Filter.Tendsto (fun K : ℕ => Real.cos (Real.pi / K)) Filter.atTop (nhds 1) := by
+      have h1 : Filter.Tendsto (fun K : ℕ => Real.pi / (K : ℝ)) Filter.atTop (nhds 0) :=
+        tendsto_const_div_atTop_nhds_zero_nat Real.pi
+      simpa [Function.comp_def] using (Real.continuous_cos.tendsto 0).comp h1
+    obtain ⟨K, hKcos, hK3⟩ :=
+      ((hlim.eventually (eventually_gt_nhds hquot)).and (Filter.eventually_ge_atTop 3)).exists
+    have hK0 : 0 < K := by omega
+    have hKR : (0 : ℝ) < (K : ℝ) := by exact_mod_cast hK0
+    set s : ℝ := rho * Real.cos (Real.pi / K) with hsdef
+    have hds : d < s := by
+      rw [hsdef]
+      calc d = rho * (d / rho) := by field_simp
+        _ < rho * Real.cos (Real.pi / K) := by exact mul_lt_mul_of_pos_left hKcos hrho0
+    have hs0 : 0 < s := lt_of_le_of_lt hd0 hds
+    -- the polygon
+    set W : ℕ → ℂ := fun n => w + (rho : ℂ) * Complex.exp (2 * Real.pi * Complex.I * n / K) with hWdef
+    have hW : ∀ n, W n = w + (rho : ℂ) * Complex.exp (2 * (Real.pi : ℂ) * Complex.I * (n : ℂ) / (K : ℂ)) :=
+      fun n => rfl
+    have hW' : ∀ n, W n = w + (rho : ℂ) * cisR (2 * Real.pi * n / K) := by
+      intro n
+      rw [hW n, cisR]
+      congr 2
+      push_cast
+      ring
+    have hWball : convexHull ℝ (Set.range W) ⊆ Metric.closedBall w rho := by
+      refine convexHull_min ?_ (convex_closedBall w rho)
+      rintro _ ⟨n, rfl⟩
+      rw [hW' n, Metric.mem_closedBall, dist_eq_norm]
+      simp only [add_sub_cancel_left, norm_mul, Complex.norm_real, Real.norm_eq_abs,
+        abs_of_pos hrho0]
+      rw [cisR, Complex.norm_exp_ofReal_mul_I, mul_one]
+    have hUw : convexHull ℝ (Set.range W) ⊆ U := by
+      refine subset_trans hWball (subset_trans ?_ hball)
+      intro y hy
+      rw [Metric.mem_closedBall] at hy
+      exact Metric.mem_ball.mpr (lt_of_le_of_lt hy hrhoR)
+    have hballin : Metric.ball w s ⊆ interior (convexHull ℝ (Set.range W)) :=
+      interior_maximal (ball_subset_polygon hK3 w rho hrho0 W hW') Metric.isOpen_ball
+    -- **15V** `taylor` on that polygon
+    set b : ℕ → 𝒜 := fun n => (2 * (Real.pi : ℂ) * Complex.I)⁻¹ •
+        ∑ k ∈ Finset.range K, segIntegral (fun u => ((u - w) ^ (n + 1))⁻¹ • f u) (W k) (W (k + 1))
+      with hbdef
+    have htay : ∀ y ∈ Metric.ball w s, HasSum (fun n : ℕ => (y - w) ^ n • b n) (f y) := by
+      intro y hy
+      exact taylor hU f hf K hK3 w rho hrho0 W hW hUw w s hs0 hballin y hy
+    -- **13VI**: the two expansions agree on the small ball, so the coefficients agree
+    have hcoeff : ∀ n, a n - b n = 0 := by
+      refine powerseries_uniqueness_coeffients (fun n => a n - b n) (min r s)
+        (lt_min hr hs0) ?_
+      intro y hy
+      have hyr : w + y ∈ Metric.ball w r := by
+        rw [Metric.mem_ball, dist_eq_norm]
+        simpa using lt_of_lt_of_le hy (min_le_left _ _)
+      have hys : w + y ∈ Metric.ball w s := by
+        rw [Metric.mem_ball, dist_eq_norm]
+        simpa using lt_of_lt_of_le hy (min_le_right _ _)
+      have h1 := hsmall _ hyr
+      have h2 := htay _ hys
+      simp only [add_sub_cancel_left] at h1 h2
+      have := h1.sub h2
+      rw [sub_self] at this
+      refine this.congr_fun fun n => ?_
+      rw [smul_sub]
+    have hab : ∀ n, a n = b n := fun n => sub_eq_zero.mp (hcoeff n)
+    have hzs : z ∈ Metric.ball w s := by
+      rw [Metric.mem_ball, dist_eq_norm]
+      exact lt_of_le_of_lt (le_of_eq hddef.symm) hds
+    have := htay z hzs
+    simpa [hab] using this
 /-! ## Parsec 160: the spectral radius -/
 
 /-- **16II** (`norm-spectrum`, cstar.tex:2566, Proposition): for a
@@ -1830,8 +2113,131 @@ self-adjoint element `a` of a C*-algebra,
 `‖a‖ = sup { |λ| : λ ∈ spec(a) }`, the *spectral radius* of `a` (Mathlib:
 `spectralRadius ℂ a`, valued in `ℝ≥0∞`). -/
 theorem norm_spectrum (a : 𝒜) (ha : IsSelfAdjoint a) :
-    spectralRadius ℂ a = (‖a‖₊ : ℝ≥0∞) :=
-  ha.spectralRadius_eq_nnnorm
+    spectralRadius ℂ a = (‖a‖₊ : ℝ≥0∞) := by
+  -- The thesis's own proof (**16III**, cstar.tex:2575), which is what the
+  -- whole of parsecs 120-150 was built for.  Mathlib's
+  -- `IsSelfAdjoint.spectralRadius_eq_nnnorm` would close this in one line and
+  -- leave Goursat, Cauchy and Taylor unused by the statement that motivates
+  -- them.  The route below is the thesis's: `f z = z(1-az)⁻¹` is holomorphic
+  -- wherever `1 - az` is invertible, its geometric expansion `∑ₙ aⁿz^{n+1}`
+  -- (**11II** `geometric`) is valid for `|z| < ‖a‖⁻¹`, **15VII**
+  -- `rigid_expansion` carries that expansion out to the whole disk on which
+  -- `f` is defined, and **11VII** `geometric_convergence` — the step that
+  -- uses self-adjointness — says the expansion cannot reach past `‖a‖⁻¹`.
+  refine le_antisymm ?_ ?_
+  · refine iSup₂_le fun z hz => ?_
+    rw [ENNReal.coe_le_coe, ← NNReal.coe_le_coe]
+    by_contra hcon
+    push_neg at hcon
+    exact (spectrum.mem_iff.mp hz) (by simpa using (spectrum_bounded_1 a z hcon).neg)
+  · by_contra hcon
+    push_neg at hcon
+    obtain ⟨t, ht1, ht2⟩ := ENNReal.lt_iff_exists_nnreal_btwn.mp hcon
+    have ht2' : (t : ℝ) < ‖a‖ := by exact_mod_cast ht2
+    have hanorm : 0 < ‖a‖ := lt_of_le_of_lt t.coe_nonneg ht2'
+    set s : ℝ := max (t : ℝ) (‖a‖ / 2) with hsdef
+    have hs0 : 0 < s := lt_of_lt_of_le (by positivity) (le_max_right _ _)
+    have hsa : s < ‖a‖ := max_lt ht2' (by linarith)
+    have hspec : ∀ z ∈ spectrum ℂ a, ‖z‖ < s := by
+      intro z hz
+      have h1 : (‖z‖₊ : ℝ≥0∞) ≤ spectralRadius ℂ a :=
+        le_iSup₂ (f := fun z (_ : z ∈ spectrum ℂ a) => (‖z‖₊ : ℝ≥0∞)) z hz
+      have h2 : (‖z‖₊ : ℝ≥0∞) < (t : ℝ≥0∞) := lt_of_le_of_lt h1 ht1
+      have h3 : ‖z‖ < (t : ℝ) := by exact_mod_cast h2
+      exact lt_of_lt_of_le h3 (le_max_left _ _)
+    -- the thesis's `G`: `1 - za` is invertible for `|z| < s⁻¹`
+    have hunit : ∀ z : ℂ, ‖z‖ < s⁻¹ → IsUnit (1 - z • a) := by
+      intro z hz
+      rcases eq_or_ne z 0 with rfl | hz0
+      · simp
+      · have hzpos : 0 < ‖z‖ := norm_pos_iff.mpr hz0
+        have hzinv : s < ‖z⁻¹‖ := by
+          rw [norm_inv, lt_inv_comm₀ hs0 hzpos]
+          exact hz
+        have hnotmem : z⁻¹ ∉ spectrum ℂ a := fun hmem =>
+          absurd (hspec _ hmem) (not_lt.mpr hzinv.le)
+        have hu : IsUnit (algebraMap ℂ 𝒜 z⁻¹ - a) := by
+          rw [spectrum.notMem_iff] at hnotmem
+          exact hnotmem
+        have hzu : IsUnit (algebraMap ℂ 𝒜 z) := (Ne.isUnit hz0).map (algebraMap ℂ 𝒜)
+        have hfac : (1 : 𝒜) - z • a = algebraMap ℂ 𝒜 z * (algebraMap ℂ 𝒜 z⁻¹ - a) := by
+          rw [mul_sub, ← map_mul, mul_inv_cancel₀ hz0, map_one, ← Algebra.smul_def]
+        rw [hfac]
+        exact hzu.mul hu
+    -- `f z = z (1 - za)⁻¹` is holomorphic on `|z| < s⁻¹`
+    set f : ℂ → 𝒜 := fun z => z • Ring.inverse (1 - z • a) with hfdef
+    have hdiff : DifferentiableOn ℂ f (Metric.ball (0 : ℂ) s⁻¹) := by
+      intro z hz
+      refine DifferentiableAt.differentiableWithinAt ?_
+      have hz' : ‖z‖ < s⁻¹ := by simpa [Metric.mem_ball, dist_zero_right] using hz
+      have h1 : DifferentiableAt ℂ (fun w : ℂ => 1 - w • a) z :=
+        ((differentiable_id.smul_const a).const_sub 1).differentiableAt
+      exact differentiableAt_id.smul (h1.inverse (hunit z hz'))
+    -- the power series `∑ₙ aⁿ z^{n+1}` of `f` on `|z| < ‖a‖⁻¹`
+    set c : ℕ → 𝒜 := fun n => if n = 0 then 0 else a ^ (n - 1) with hcdef
+    have hsmall : ∀ z ∈ Metric.ball (0 : ℂ) ‖a‖⁻¹,
+        HasSum (fun n : ℕ => (z - 0) ^ n • c n) (f z) := by
+      intro z hz
+      have hz' : ‖z‖ < ‖a‖⁻¹ := by simpa [Metric.mem_ball, dist_zero_right] using hz
+      have hlt1 : ‖z • a‖ < 1 := by
+        rw [norm_smul]
+        have h := mul_lt_mul_of_pos_right hz' hanorm
+        rwa [inv_mul_cancel₀ hanorm.ne'] at h
+      have hgs : HasSum (fun n : ℕ => (z • a) ^ n) (∑' n : ℕ, (z • a) ^ n) :=
+        (summable_geometric_of_norm_lt_one hlt1).hasSum
+      have hginv : Ring.inverse (1 - z • a) = ∑' n : ℕ, (z • a) ^ n := by
+        obtain ⟨-, h1, h2⟩ := geometric_2 (z • a) hlt1
+        have hu : (1 : 𝒜) - z • a = ((⟨1 - z • a, ∑' n : ℕ, (z • a) ^ n, h1, h2⟩ : 𝒜ˣ) : 𝒜) := rfl
+        rw [hu, Ring.inverse_unit]
+        rfl
+      have hfz : HasSum (fun n : ℕ => z • (z • a) ^ n) (f z) := by
+        rw [hfdef]
+        simp only [hginv]
+        exact hgs.const_smul z
+      have hshift : (fun n : ℕ => (z - 0) ^ (n + 1) • c (n + 1))
+          = fun n : ℕ => z • (z • a) ^ n := by
+        funext n
+        have hcn : c (n + 1) = a ^ n := by simp [hcdef]
+        rw [hcn, sub_zero, smul_pow, smul_smul, pow_succ']
+      have h0 : f z - ∑ i ∈ Finset.range 1, (z - 0) ^ i • c i = f z := by simp [hcdef]
+      rw [← hasSum_nat_add_iff' 1, hshift, h0]
+      exact hfz
+    -- **15VII** `rigid_expansion`: the expansion is valid on all of `|z| < s⁻¹`
+    have hlt : ‖a‖⁻¹ < s⁻¹ := (inv_lt_inv₀ hanorm hs0).mpr hsa
+    have hkey := rigid_expansion Metric.isOpen_ball f hdiff c 0 ‖a‖⁻¹ s⁻¹
+      (by positivity) hlt hsmall (subset_refl _)
+    -- but at a real `z₁` with `‖a‖⁻¹ < z₁ < s⁻¹` the series `∑ₙ (z₁a)ⁿ` diverges
+    set z₁ : ℝ := (‖a‖⁻¹ + s⁻¹) / 2 with hz₁def
+    have hz₁lo : ‖a‖⁻¹ < z₁ := by rw [hz₁def]; linarith
+    have hz₁hi : z₁ < s⁻¹ := by rw [hz₁def]; linarith
+    have hz₁pos : 0 < z₁ := lt_trans (by positivity) hz₁lo
+    have hmem : (z₁ : ℂ) ∈ Metric.ball (0 : ℂ) s⁻¹ := by
+      simp only [Metric.mem_ball, dist_zero_right, Complex.norm_real, Real.norm_eq_abs,
+        abs_of_pos hz₁pos]
+      exact hz₁hi
+    have hsum := hkey (z₁ : ℂ) hmem
+    have hz1ne : ((z₁ : ℝ) : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hz₁pos.ne'
+    have hsummable : Summable (fun n : ℕ => ((z₁ : ℂ) • a) ^ n) := by
+      have h2 : Summable (fun n : ℕ => (((z₁ : ℂ)) - 0) ^ (n + 1) • c (n + 1)) :=
+        (summable_nat_add_iff 1).mpr hsum.summable
+      have h3 : Summable (fun n : ℕ => (z₁ : ℂ) • ((z₁ : ℂ) • a) ^ n) := by
+        refine h2.congr fun n => ?_
+        have hcn : c (n + 1) = a ^ n := by simp [hcdef]
+        rw [hcn, sub_zero, smul_pow, smul_smul, pow_succ']
+      have h4 : (fun n : ℕ => ((z₁ : ℂ))⁻¹ • ((z₁ : ℂ) • ((z₁ : ℂ) • a) ^ n))
+          = fun n : ℕ => ((z₁ : ℂ) • a) ^ n := by
+        funext n
+        rw [smul_smul, inv_mul_cancel₀ hz1ne, one_smul]
+      have h5 := h3.const_smul ((z₁ : ℂ)⁻¹)
+      rwa [h4] at h5
+    have hrsa : IsSelfAdjoint ((z₁ : ℝ) : ℂ) := by
+      rw [IsSelfAdjoint, Complex.star_def, Complex.conj_ofReal]
+    have hdiv := (geometric_convergence ((z₁ : ℂ) • a) (hrsa.smul ha)).mp hsummable
+    rw [norm_smul, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hz₁pos] at hdiv
+    have hone : 1 < z₁ * ‖a‖ := by
+      have h := mul_lt_mul_of_pos_right hz₁lo hanorm
+      rwa [inv_mul_cancel₀ hanorm.ne'] at h
+    linarith
 
 /-! **16IV** (cstar.tex:2625, Remark): for non-self-adjoint `a` the formula
 may fail (e.g. `[[0,1],[0,0]]`); the general formula
@@ -1865,7 +2271,7 @@ theorem spectrum_eq_singleton_iff (a : 𝒜) (ha : IsSelfAdjoint a) (lam : ℝ) 
     constructor
     · intro h
       -- `spec(a - λ) = spec(a) - {λ} ⊆ {0}`, so the spectral radius of the
-      -- self-adjoint element `a - λ` — its norm, by **16III** — vanishes.
+      -- self-adjoint element `a - λ` — its norm, by **16II** — vanishes.
       have hspec : ∀ z ∈ spectrum ℂ (a - algebraMap ℂ 𝒜 (lam : ℂ)), z = 0 := by
         intro z hz
         rw [← spectrum.sub_singleton_eq] at hz
@@ -2336,6 +2742,36 @@ private theorem thesisPos_of_pow_odd {a : 𝒜} (ha : IsSelfAdjoint a) {n : ℕ}
   rw [spectrum.mem_iff] at hz
   exact hz (by simpa using hu.neg)
 
+/-- **17VI**.4d for `ThesisPos`, by the thesis's own route: **11XV**.3 again,
+read in the direction opposite to `thesisPos_of_pow_odd`.  The solution of
+**17VI** defers the whole of point 4 to **11XV** (asols.tex:1980), and the
+thesis is emphatic that the product of commuting positive elements is *not*
+available before `ineq-square-root` (cstar.tex:3528); so this must not go by
+induction through `square-commuting-monotone` of parsec 230, and does not:
+an even power is a square (**11XV**.2) and an odd power is handled by the
+`.mpr` half of **11XV**.3, both from parsec 110. -/
+private theorem thesisPos_pow {a : 𝒜} (ha : ThesisPos a) : ∀ n : ℕ, ThesisPos (a ^ n) := by
+  intro n
+  rcases Nat.even_or_odd n with hn | hn
+  · obtain ⟨m, rfl⟩ := hn
+    have h : a ^ (m + m) = (a ^ m) ^ 2 := by rw [← pow_mul, Nat.mul_two]
+    rw [h]
+    exact thesisPos_sq (ha.1.pow m)
+  · refine (thesisPos_iff_spectrum (ha.1.pow n)).mpr fun z hz => ?_
+    by_contra hcon
+    simp only [Set.mem_setOf_eq] at hcon
+    push_neg at hcon
+    have hbase : ∀ w : ℂ, (∀ r : ℝ, 0 ≤ r → w ≠ r) → IsUnit (a - algebraMap ℂ 𝒜 w) := by
+      intro w hw
+      have hns : w ∉ spectrum ℂ a := fun hmem => by
+        obtain ⟨r, hr0, hrw⟩ := ha.spectrum_subset hmem
+        exact hw r hr0 hrw
+      rw [spectrum.notMem_iff] at hns
+      simpa using hns.neg
+    have hu := (spectrum_self_adjoint_real_3 a ha.1 n hn).mpr hbase z hcon
+    rw [spectrum.mem_iff] at hz
+    exact hz (by simpa using hu.neg)
+
 /-! #### The square root (**23II**/**23VII**, parsec 230) for `ThesisPos`
 
 The iteration of **23II** is run here against the thesis's own notion of
@@ -2458,14 +2894,6 @@ private theorem thesisPos_mul_of_commute {x y : 𝒜} (hx : ThesisPos x) (hy : T
       _ = d * e * (d * e) := by noncomm_ring
   rw [hprod]
   exact thesisPos_sq hsa
-
-/-- **17VI**.4d for `ThesisPos`: powers of a thesis-positive element are
-thesis-positive. -/
-private theorem thesisPos_pow {a : 𝒜} (ha : ThesisPos a) : ∀ n : ℕ, ThesisPos (a ^ n)
-  | 0 => by simpa using thesisPos_one
-  | (n + 1) => by
-      rw [pow_succ]
-      exact thesisPos_mul_of_commute (thesisPos_pow ha n) ha (by rw [← pow_succ, pow_succ'])
 
 /-! #### **19III** and **24IV** for `ThesisPos` -/
 
@@ -2737,7 +3165,13 @@ theorem cstar_positive_tfae (a : 𝒜) (ha : IsSelfAdjoint a) :
 /-- **17VI** (`positive-basic-2`, cstar.tex:2756, Exercise), part 1:
 `0 ≤ a ≤ 0` entails `a = 0`. -/
 theorem positive_basic_2_1 (a : 𝒜) (h0 : 0 ≤ a) (h1 : a ≤ 0) : a = 0 :=
-  le_antisymm h1 h0
+  by
+    -- `le_antisymm` would close this from the `[PartialOrder 𝒜]` instance —
+    -- but the antisymmetry of the positive cone *is* **17VI**.1, and taking it
+    -- from the instance imports it rather than proves it.  The thesis's own
+    -- argument (asols.tex:1917) is `thesisPos_antisymm`: `spec(a) ⊆ [0,∞)` and
+    -- `spec(a) = -spec(-a) ⊆ (-∞,0]`, so `spec(a) = {0}` and `‖a‖ = 0`.
+    exact thesisPos_antisymm (thesisPos_of_nonneg h0) (thesisPos_of_nonneg (neg_nonneg.mpr h1))
 
 /-- **17VI** (`positive-basic-2`, cstar.tex:2756, Exercise), part 2: the set
 `𝒜₊` of positive elements is closed. -/
@@ -2968,12 +3402,16 @@ theorem prod_spec (a b : 𝒜) :
 theorem astara_non_negative [PartialOrder 𝒜] [StarOrderedRing 𝒜] (a : 𝒜)
     (h : star a * a ≤ 0) : a = 0 :=
   by
-    have h0 := star_mul_self_nonneg a
-    have heq : star a * a = 0 := le_antisymm h h0
-    have hn : ‖a‖ * ‖a‖ = 0 := by
-      rw [← CStarRing.norm_star_mul_self, heq, norm_zero]
-    have hz : ‖a‖ = 0 := by nlinarith [norm_nonneg a]
-    exact norm_eq_zero.mp hz
+    -- Under Mathlib's star order `0 ≤ star a * a` holds by definition, so
+    -- `le_antisymm h (star_mul_self_nonneg a)` closes this in one line — but
+    -- that line is **24IV**, which the thesis proves *from* this Lemma.  The
+    -- thesis's parsec-190 argument is `thesisPos_astara_non_negative` above,
+    -- and it is what is used here.  (The residual appeal to **24IV** through
+    -- `thesisPos_of_nonneg` is the 25I bridge, unavoidable in this encoding:
+    -- the hypothesis is stated with Mathlib's `≤`.  Under that encoding the
+    -- *statement* carries no content; `thesisPos_astara_non_negative` is the
+    -- real transcription of **19III**.)
+    exact thesisPos_astara_non_negative (thesisPos_of_nonneg (neg_nonneg.mpr h))
 
 end Holomorphic
 
@@ -4220,7 +4658,7 @@ theorem order_ideal_basic_4 (a : 𝒜) (ha : IsSelfAdjoint a) (hu : ¬IsUnit a) 
 a self-adjoint `a` is attained, so `‖a‖` or `-‖a‖` lies in `spec(a)`.
 
 Derived from the thesis's own ingredients — non-emptiness of the spectrum
-(**16V**), compactness, `‖a‖ = sup |spec(a)|` (**16III**) and the reality of
+(**16V**), compactness, `‖a‖ = sup |spec(a)|` (**16II**) and the reality of
 `spec(a)` (**11XV**.1) — rather than from Mathlib's
 `CStarAlgebra.norm_or_neg_norm_mem_spectrum`, which rests on the continuous
 functional calculus and so would import parsec-280 content into parsec 220. -/

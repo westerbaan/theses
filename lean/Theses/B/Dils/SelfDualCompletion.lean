@@ -2635,9 +2635,14 @@ by order instead — `⟨x, d₀x⟩ ≤ B(x,x) ≤ ⟨x, ub x⟩` — which nee
 deviation by "**44XI**.3 `vn_positive_basic_3` is still `sorry`"; it is
 not — it has been proved in `A/VN/Basic` for some time, and 73VIII
 `ultraclosed` supplies the ultraweak form.  The deviation stands on the
-first one alone: under the ERRATA-corrected hypothesis there is no norm
-bound `r` in the statement at all, so `‖B(x,y)‖ ≤ r‖x‖‖y‖` is not available
-whatever `usconv` is worth.)* -/
+first one, and on cost rather than on availability: under the
+ERRATA-corrected hypothesis there is no norm bound `r` in the *statement*,
+though the erratum's own repair does recover one (replace `D` by its cofinal
+tail above some `d₀`, which is norm-bounded because `0 ≤ d − d₀ ≤ u − d₀`),
+after which `usconv` — `A/VN/Basic`, proved and imported — would give
+`‖B(x,y)‖ ≤ r‖x‖‖y‖` as printed.  That route costs the cofinal-tail
+reduction plus the Cauchy–Schwarz estimate, some forty lines, for a bound the
+rescaling argument gets in six; it is left, deliberately, as class 2.)* -/
 
 /-- `0 ≤ Z` in `𝒷ᵃ(X)` iff every vector form `⟨x, Zx⟩` is positive: the
 two halves of **144I** `hilbmod_ordersep`, transported to `Ba 𝒷 X`. -/
@@ -3316,12 +3321,15 @@ The author's solution routes through **153I** `hilbmod_ad_ncp` (`φ = ad_T`
 for the row vector `T : 𝒜ⁿ → 𝒜`, `(bᵢ)ᵢ ↦ ∑ᵢ bᵢaᵢ`).  An earlier revision
 said 153I "is still open here — it waits on **152X**"; that is stale, both
 are proved above in this file.  What is missing for the author's route is
-the *module* `𝒜ⁿ`: nothing in the tree makes `Fin n → 𝒜` a **self-dual**
-Hilbert `𝒜`-module, and the route needs, on top of that, the two
-identifications `𝒷ᵃ(𝒜ⁿ) ≅ Mₙ𝒜` and `𝒷ᵃ(𝒜) ≅ 𝒜ᵒᵖ` — the second exists only
-downstream, as `rightMulEquiv` in `Paschke.lean`.  That is three theorems
-none of which the tree has, against the self-contained computation below,
-so this is a direct argument instead: by
+the two identifications `𝒷ᵃ(𝒜ⁿ) ≅ Mₙ𝒜` and `𝒷ᵃ(𝒜) ≅ 𝒜ᵒᵖ`: the first is
+nowhere in the tree, and the second exists only *downstream*, as
+`rightMulEquiv` in `Paschke.lean`, which imports this file.  (The third
+ingredient, that `𝒜ⁿ` is a **self-dual** Hilbert `𝒜`-module, *is* available
+— cstar **36III** `Theses.A.CStar.selfDual_pi`, on the import path — modulo
+a short transfer between `A/CStar`'s `SelfDual`, whose boundedness clause is
+`Continuous`, and **141IIa**'s, whose clause is `∃ C, ‖τ x‖ ≤ C‖x‖`.)  Two
+missing theorems against the self-contained computation below, so this is a
+direct argument instead: by
 **33II**.1 both claims reduce to the scalar identity
 `∑ᵢⱼ cᵢ* φ(d)ᵢⱼ cⱼ = v* d v` with `v = ∑ᵢ aᵢcᵢ`, after which complete
 positivity is the observation that the corresponding double sum is a square

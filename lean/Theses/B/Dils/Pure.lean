@@ -1543,15 +1543,24 @@ private theorem sfilter_ceil_eq [VonNeumannAlgebra B] (b : B) (hb : 0 ≤ b) :
 `g : D → ⌊d⌉B⌊d⌉`, namely `g(x) = d*∖f(x)/d`.
 
 The author's argument (proc.tex:426), with the same divergence as
-`Theses.A.Proc`: *existence* of the value is `sequential-douglas`
-(**81VI**.1) applied to `0 ≤ f(x) ≤ ‖x‖f(1) ≤ ‖x‖d*d`, extended off the
-positive cone by linearity; *positivity* is **81VI**.2; *complete
-positivity* is `ncp-uwlim` (**96III**.1) applied to the completely positive
-approximants `(∑_{n<N}tₙ)* f(·) (∑_{n<N}tₙ)`, which converge pointwise to
-`g` by `div-approx` (**81VII**); *normality* is **not** taken from
-`div-usc` (**81IX**, whose relevant half is false — see
-`Theses.A.VN.div_usc`) but from normality of `f` together with the
-bipositivity of `d*(·)d` on the corner. -/
+`Theses.A.Proc.canonicalFilter_factor`: *existence* of the value is
+`sequential-douglas` (**81VI**.1) applied to `0 ≤ f(x) ≤ ‖x‖f(1) ≤ ‖x‖d*d`,
+extended off the positive cone by linearity; *positivity* is **81VI**.2;
+*complete positivity* is `ncp-uwlim` (**96III**.1) applied to the completely
+positive approximants `(∑_{n<N}tₙ)* f(·) (∑_{n<N}tₙ)`, which converge
+pointwise to `g` by `div-approx` (**81VII**); *normality* is taken from
+normality of `f` together with the bipositivity of `d*(·)d` on the corner,
+rather than from `div-usc` (**81IX**).
+
+*(Corrected session 95.  This used to read "**81IX**, whose relevant half is
+false — see `Theses.A.VN.div_usc`", and both halves have expired.  There is
+no `Theses.A.VN.div_usc`: what is false is the *printed*, ultra**strong**
+form, recorded in the section note above `div_uwc` in `A/VN/Division`.  On
+the author's ruling of **2026-08-17** both 81IX and its vn.tex proof run
+*ultraweakly*, which is sound and proved as `Theses.A.VN.div_uwc`; the
+sibling `Theses.A.Proc.canonicalFilter_factor` was updated to say so.  The
+thesis's route is therefore **valid again**, and this proof is one of two —
+kept, not forced.)* -/
 private theorem sfilter_factor [VonNeumannAlgebra B] (d : B) (q : B)
     [Fact (IsStarProjection q)] (hqr : q = rangeProj d)
     (f : NCPMap D B) (hf1 : (f 1 : B) ≤ star d * d) :
@@ -2689,9 +2698,9 @@ theorem surjective_nmiu_2 [VonNeumannAlgebra A] [VonNeumannAlgebra B]
 half of **170IV** — `surjective_nmiu_2` above — is **false** under **169II**
 as printed, and so is the step of the author's solution
 (`bsols.tex`, `surjective-nmiu`) that reads "`ϑ₁` is an ncp-isomorphism and
-consequently an nmiu-isomorphism by `iso`": proc.tex **100IX** `iso` is
-about **ncpsu**-isomorphisms, and the two universal properties yield only an
-*ncp*-isomorphism.
+consequently an nmiu-isomorphism by `iso`": proc.tex **99IX** `iso`
+(`Theses.A.Proc.iso`, reachable from here) is about **ncpsu**-isomorphisms,
+and the two universal properties yield only an *ncp*-isomorphism.
 
 The witness is as small as it gets: `𝒜 = ℬ = ℂ`, `z = 1`, `φ = λ·id` for any
 `λ > 0`, `λ ≠ 1`.  A positive multiple of a corner is again a corner under

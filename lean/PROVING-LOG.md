@@ -27008,3 +27008,584 @@ appended, the copy compiled from source):
 verdicts changed (seven repairs, two stale rows corrected — 27XVII was
 already fixed in `fcd9292` and 39IX `exists_rho` in `ff6ee3b`), and the
 deliberate omissions above recorded in the `status` column.
+
+
+## Session 95 — `B/Dils`: **140VIII goes back to the author's own citation of 99IX, and `Stinespring.lean` loses 120 lines** — plus 147II.7 "conclude from 4 and 6" and 142II made load-bearing (worker on `Theses/B/Dils/*`)
+
+100 rows were in scope — 48 `route`, 37 `mild`, 15 `mathlib` across the four
+`bdils-*.csv` files (and the `B/Dils/Pure` rows of
+`bdils-pure-beff-states-effectalgebras.csv`).  **Four declarations went back
+on the thesis's argument**, in three places; every other divergence was
+checked against the tree and is recorded below with the reason it was left.
+
+**One dependency inversion was found, and it is local and forced** — 157VIII
+through the transported 157VII, i.e. through the 157IX step the thesis takes
+*after* it; see the section below.  It is documented in the declaration and in
+the audit row rather than removed, because removing it needs a new statement.
+The other candidates were checked and are clean: 160IV.2/.3 (the thesis proves
+3-then-2, we prove both from a common relativized decomposition — not
+circular), 156II (the carrier form plus 69IV rather than the carrier equality —
+69IV is thesis A and precedes it), 143IV (32XII/32XIII from `A/CStar`, which
+precede 143V), 169XI.1 through 169XII (which is what `bsols.tex` itself does,
+and our 169XII avoids 169X), 170II.1 through 171VII (171VIII cites
+`dils-examples-pure` for part *2*, never part 1), and 172VIII (Choi 34XVIII.1
+rather than 172III — 172III does not depend on 172VIII).  The inversions the
+audit had already found in this chapter, 157IV among them, were undone in
+session 94.
+
+### 1. **140VIII `paschke_unique_up_to_iso` — the author's last step is back, and the file lost 120 lines**
+
+The doc comment said: *"For the last step the author cites `iso`
+(proc.tex:878 = **99IX**), which lives in `A/Proc` — off this chapter's import
+path (QUESTIONS **D3**)."*  Both halves had expired.
+
+* `QUESTIONS.md` **D3** was **deleted as resolved on 2026-08-16**; the pointer
+  was dangling.
+* The import-path claim was *true as stated* — `Stinespring.lean` imported
+  only `Theses.Common`, `A/CStar/Matrices`, `A/VN/Projections` — but it was a
+  fact about our file, not about the mathematics.  **`Theses.A.Proc.Measurement`
+  imports only `Theses.A.VN.NormalFunctionals`**, so importing it into
+  `Stinespring.lean` is cycle-free, and thesis B chapter 2 citing thesis A's
+  proc is the direction the tree already goes in (`SelfDual.lean` imports
+  `A.Proc.Tensor`).  `Theses.A.Proc.iso` **is** 99IX, proved, and it wants
+  exactly what 140IX hands it: `σ` and `τ` are mutually inverse **ncpsu**-maps,
+  subunital because both are unital (`σ(1) = σ(ϱ₁ 1) = ϱ₂ 1 = 1`).
+
+In place of the Kadison–Schwarz argument (`ncp_cp_cs` twice, then the
+sesquilinear defect `d(x,y) = σ(x*y) − σ(x)*σ(y)`, its vanishing on the
+diagonal, `d(x,y) = −d(y,x)`, the substitution `y ↦ iy`, and `2·d = 0`) the
+proof now reads
+
+    have hmulfull : ∀ x y : D₁.P, (σ (x * y) : D₂.P) = σ x * σ y := by
+      letI := D₁.vn
+      letI := D₂.vn
+      exact (Theses.A.Proc.iso (A := D₁.P) (B := D₂.P)
+        ⟨σ, hσ1.le⟩ ⟨τ, hτ1.le⟩ hτσ hστ).2.1
+
+**−75 lines** there.  The same import retired the section that begins
+*"`Theses.A.Proc.Measurement` has these … but `Theses.A.Proc` is not in this
+chapter's import path, so the three short proofs are repeated here"*:
+`isLUB_val_of_isLUB`, `preservesDirSups_id`, `exists_ncpId` and
+`exists_ncpComp` are gone in favour of the originals, **−52 lines**.
+`Stinespring.lean` **3753 → 3633** (the module header gained a short note on
+the new import).  Statement byte-identical (it still
+carries no `[VonNeumannAlgebra]` binder on `𝒜` or `ℬ`; the two von Neumann
+instances `iso` needs are `PaschkeTriple.vn`, which is *data* on the
+dilations).  Divergence class **(1) faithful**, where it was (2).
+
+### 2. **147II.7 `dils_uniform_spaces_basics_7` — the exercise says "conclude from 4 and 6", so it now does**
+
+`dils.tex`'s item 7 reads, verbatim: *"Conclude from
+`ex-continuous-preserves-lims` and `ex-cauchy-from-dense-subset` that `f` and
+`g` are equal whenever they agree on a dense subset of `X`."*  That
+instruction **is** the content of the item, and we closed it with Mathlib's
+`hf.ext_on hD hg h` — a `mathlib` verdict of exactly the kind the brief says
+to repair, since the point is *about* the step.  Worse, it left
+`dils_uniform_spaces_basics_6` with **no consumer anywhere in the tree**.
+
+Now: part **6** puts a Cauchy filter `F` on `D` with `F ≤ 𝓝 x`; part **4**,
+applied to the "net" `id : X → X` along `F`, sends it to `f x` and to `g x`;
+`D ∈ F` makes `f` and `g` agree along `F`; part **3** identifies the two
+limits.  Twelve lines, three of the exercise's own parts load-bearing.
+
+### 3. **142II is load-bearing at last — the ultranorm seminorm stops re-proving Cauchy–Schwarz by hand**
+
+Session 94 repaired the 142II row by adding `innerFCore` (the point's
+*"this `⟨·,·⟩_f` is a complex-valued inner product"*, as a
+`PreInnerProductSpace.Core ℂ X`) and `seminormF_seminorm` (the point's stated
+conclusion, *"hence, by `inner-product-basic`, `‖·‖_f` is a seminorm"*, by its
+own one-line appeal to **4XV**).  Neither had a single use: the working
+ultranorm seminorm `unSeminorm ω B.inner` — which is *definitionally*
+`seminormF (ω : 𝒷 →ₗ[ℂ] ℂ) B` — went on getting its Cauchy–Schwarz from a
+hand-rolled quadratic-in-λ argument (`unSeminorm_inner_le`, 58 lines) and its
+triangle inequality from `nlinarith` on the expansion (`unSeminorm_add_le`).
+
+Both now go through 142II.  `unSeminorm_inner_le` is
+`Theses.A.CStar.inner_product_basic_1` (**4XV**.1) at `innerFCore`, and
+`unSeminorm_add_le` is the third conjunct of `seminormF_seminorm` — a
+one-liner.  The bridge is `unInnerCore`, four lines; the three `rfl`s that
+identify `innerNorm` with `unSeminorm` all go through, which is the check that
+the two developments really were the same object.
+`HilbertModules.lean` **3736 → 3708**.
+
+### 4. Two more stale premises found and corrected in prose
+
+* **169X `sfilter_factor` (`Pure.lean`) — the last place in the tree still
+  calling the thesis's normality route unavailable.**  The doc read
+  *"normality is **not** taken from `div-usc` (**81IX**, whose relevant half
+  is false — see `Theses.A.VN.div_usc`)"*.  Both halves had expired: there is
+  no declaration `Theses.A.VN.div_usc` (the pointer dangles — what exists is
+  the section note above `div_uwc` in `A/VN/Division`), and what is false is
+  only the *printed*, ultra**strong** form.  On the author's ruling of
+  **2026-08-17** both 81IX and its vn.tex proof run *ultraweakly*, which is
+  sound and proved as `Theses.A.VN.div_uwc`, reachable from `Pure.lean`.  The
+  sibling `Theses.A.Proc.canonicalFilter_factor` had already been updated to
+  say exactly that ("so the thesis's own route is valid again and this proof is
+  one of two"); this one had not.  The bipositivity proof is now recorded as a
+  *choice*, not a necessity — left, since `A/Proc` made the same choice and
+  the two should not diverge.
+* **`Pure.lean`'s `surjective_nmiu_2_false` cited "proc.tex 100IX `iso`".**
+  The label `iso` sits in parsec **990**, so it is **99IX**; and it is now
+  named by its Lean identifier, `Theses.A.Proc.iso`, which this file can
+  reach.  The substance of the note (it is about *ncpsu*-isomorphisms, and
+  the two universal properties yield only an *ncp*-isomorphism) is unaffected.
+
+### A local dependency inversion, documented rather than removed
+
+**157VIII `paschkeModule_phiT_surjective` (`Paschke.lean`).**  The bound
+`T ≤ 1` is discharged by `phiT_reflects_nonneg`, i.e. by **157VII** *in its
+general-dilation form* — which internally re-runs `dils_completion` +
+`paschkeModuleOf` and transports along `exists_paschke_starAlgHom`, and that
+is **154III**.5 + **140VIII**, precisely the **157IX** step the thesis performs
+*after* 157VIII in order to carry it to an arbitrary dilation.  `dils.tex`
+reads `⟨x,Tx⟩_φ = ⟨x,x⟩_ψ ≤ ⟨x,x⟩_φ` off the elementary tensors of the module
+at hand and closes by `hilmod-fixed-on-V`.
+
+Nothing is circular — 154III and 140VIII both precede parsec 1570 — and the
+detour is **forced by the shape of the statement**: `M` is an abstract
+`PaschkeModule`, which carries no `η` and hence no density statement, and
+positivity (unlike the *equalities* that `paschkeModule_ba_ext` and
+`paschkeModule_inner_tprod_separating` settle) is not determined by matrix
+elements on a non-dense separating set.  Removing it needs a concrete-module
+`paschkeModuleOf_phiT_surjective`, which is a **new statement**.  Flagged in
+the declaration's doc comment and in the audit row; not made.
+
+### Siblings of "157VII was not on record", found and flagged
+
+The pattern the 157VII repair fixed — a proof recovering inside itself
+something the thesis states as a lemma — has three more instances here.  All
+three need a **statement**, so they are reported, not made.
+
+* **157IX's order-isomorphism clause is never stated.**  dils.tex: *"it is
+  easy to see `ϑ` restricts to a linear order isomorphism
+  `[0,1]_{ϱ'(𝒜)^□} → [0,1]_{ϱ(𝒜)^□}`"*.  The tree has only the generic
+  `starAlgHom_nonneg_reflect`, and the transport of commutant membership, of
+  `0 ≤ ·` and of `· ≤ 1` is rebuilt by hand at **two** sites, inside
+  `paschke_correspondence_surjective` and inside `phiT_reflects_nonneg`.  One
+  lemma (~20–25 lines) would delete ~8 lines across the two.
+* **171VIII's "clearly `h_{⌈⌈p⌉⌉}` is surjective" is not exported.**
+  `paschke_corner` pins `ϱ` only by its defining formula, so `paschke_pure`
+  re-derives surjectivity inline and `pure_ncp_extreme` rebuilds its
+  *consequence* — that the commutant of `ϱ(𝒜)` in `⌈⌈p⌉⌉𝒜` is central — in
+  some 22 lines, although its own doc justifies the step by that very
+  surjectivity.
+* **156II's carrier equality `⌈ϱ⌉ = ⌈⌈φ⌉⌉` is never stated** (already an
+  audit finding): `paschke_injective_carrier` gives only the projection-wise
+  characterisation and both halves of `paschke_injective` rebuild the carrier
+  facts from it through 69IV and 63II.4.
+
+### Left, with the reason verified against the tree rather than assumed
+
+* **166IV `exttensor_dense_subsets`** (class 2, *the tree lacks the bridge*).
+  Re-decided this session, and left.  158II **is** available
+  (`kaplansky_hilbmod`, unconditional; what is false is only the printed
+  **158V** proof), and the application at `A = ⊤` compiles.  It is not
+  installed because it is **longer**: **166II** is a statement about
+  `Filter`-indexed **nets**, while ultranorm density is rendered one
+  **entourage** at a time throughout these files, and no lemma bridges the two
+  forms.  The thesis's route must manufacture the net out of the
+  entourage-wise output of `kaplansky_hilbmod` (the nearest analogue, inside
+  `selfdual_completion_univ`, costs some forty lines by itself) and read an
+  entourage estimate back out — 60–75 lines against the present 35.  The four
+  hypotheses `hUsub`/`hUsmul`/`hVsub`/`hVsmul` and the
+  `linter.unusedVariables` suppression are *exactly* what that route would
+  consume, and the comment above the declaration says so.
+* **172VIII `nmiu_ncp_extreme`** (*re-proving would weaken*).  Verified: the
+  doc says it outright — 172IX routes through **172III**, which needs both
+  algebras von Neumann, and our statement has **no** `[VonNeumannAlgebra]`
+  binders, so it proves the corollary for arbitrary C\*-algebras.  "Adopting
+  the thesis's route would *lose* that."
+* **158II `kaplansky_hilbmod`** (*the thesis's proof is false*): 158V, the four
+  `kaplansky_hilbmod_A*` records.  Untouched, as instructed.
+* **169IV `pext_corner_iso` and 172X `pure_ncp_extreme`** (*the substitute is
+  still needed*).  `Theses.A.Proc.Measurement` **is** on `Pure.lean`'s import
+  path and 100III `pure_fundamental` **is** proved — the five doc comments that
+  said otherwise were corrected in session 94 — but the header's reason
+  survives inspection: `IsCornerFor`/`IsFilterFor` here quantify over
+  **C\*-algebras** where `A/Proc`'s quantify over **von Neumann algebras**,
+  `IsFilterFor` carries the author's 2026-08-16 subunitality repair, and
+  `A/Proc`'s `IsPure` is the inductive 170I rather than the normal form.
+  100III does not bridge the two.  Left.
+* **153IV `hilbmod_adj_vector_ncp`** (class 2, *two of three theorems still
+  missing*).  Doc corrected: it claimed *"three theorems none of which the tree
+  has"*, and one of the three **is** there — cstar **36III**
+  `Theses.A.CStar.selfDual_pi` makes `𝒜ⁿ` a self-dual Hilbert `𝒜`-module and is
+  on the import path, modulo a short transfer between `A/CStar`'s `SelfDual`
+  (boundedness = `Continuous`) and **141IIa**'s (`∃ C, ‖τ x‖ ≤ C‖x‖`).  The
+  other two are genuinely absent: `𝒷ᵃ(𝒜ⁿ) ≅ Mₙ𝒜` exists nowhere, and
+  `𝒷ᵃ(𝒜) ≅ 𝒜ᵒᵖ` only *downstream*, as `rightMulEquiv` in `Paschke.lean`, which
+  imports this file.  Two missing theorems against a self-contained 140-line
+  computation.
+* **152XII `ba_isLUB`** (class 2, *cost, not availability*).  The doc said the
+  thesis's bound "is not available whatever `usconv` is worth"; overstated.
+  `ERRATA.md`'s own repair of 152XII — replace `D` by its cofinal tail above
+  `d₀`, norm-bounded because `0 ≤ d − d₀ ≤ u − d₀` — *does* recover the
+  constant `r`, and `usconv` is proved and imported.  The deviation now stands
+  on cost: cofinal tail plus module Cauchy–Schwarz is some forty lines for a
+  bound the rescaling argument gets in six.  Comment corrected.
+* **147II.6 `dils_uniform_spaces_basics_6`** (class 2, *the repair premise
+  expired in the other direction*).  The audit wanted the Φ-indexed net back
+  because "that construction is what **150V** and the completion later reuse";
+  150V–150IX are deliberately `UniformSpace.Completion` instead, so the
+  explicit net would be dead code.  It is at least no longer *unused*: item 3
+  above gives it its consumer.
+* **167I `paschke_tensor`** (*the printed proof is gapped*): the passage from
+  standard dilations to arbitrary ones survives only as a LaTeX comment,
+  `dils.tex:5950–5961`; the Lean proof runs that commented argument with its
+  two gaps filled.  `ERRATA.md` 167II.
+* **164II `univprop_ext_tensor`, 164II.1 `ext_tensor_dense`, 164II.2a
+  `ext_tensor_basis`** (class 2, *forced by the construction*): the thesis has
+  `X ⊗ Y` **defined** as `ℓ²((pᵢⱼ))` for one distinguished pair of bases and
+  reads density and the basis property off that; ours is an arbitrary
+  `ExtTensor`, so there is no distinguished basis to reduce to.  The CSV note
+  claiming `ExtTensor` "omits the injectivity of `η`" is stale — `η_injective`
+  is a field, discharged at both construction sites by the thesis's own 164VI.
+* The `mathlib` rows that are Mathlib trivialities and stay so: 147II.3/.4/.5
+  (uniqueness of limits, continuity preserves limits, `Cauchy.map`), 147III
+  (`Pi.uniformSpace`), 146V `hasBasis_uniformity`, 150II `denseRange_unEta`,
+  44XI `uwTendsto_unique₂`, 44XV `uwContinuous_nmiu`/`_ncp` (which is `A/VN`'s
+  own `p_uwcont`, i.e. the exercise itself), 143IV `hilbmod_cstar`, 135II
+  `dils_gns` (the thesis gives no proof — it defers to `sref gns` and to the
+  proof of Stinespring), 136II `prop_complete_into_hilbert_space` (the
+  completion of a possibly *degenerate* inner product space; the thesis builds
+  it from fast Cauchy sequences, which is exactly what Mathlib settles and is
+  not what the point is for), and the three `fact_isStarProjection_*` instance
+  wrappers in `Pure.lean`.  That is all fifteen `mathlib` rows in scope: one
+  repaired (147II.7), one promoted to load-bearing by it (147II.4), thirteen
+  left.
+
+### Stale prose corrected outside `Theses/`
+
+* **`ERRATA.md`, the 153I row.**  It cited our Lean proof as evidence: *"our
+  `hilbmod_ad_ncp` keeps the thesis's `hX` (faithful transcription) but does not
+  use it, and says so in its doc comment"*.  False since session 94 put that
+  proof back on **153III**: the author's route needs `hX` to make `𝒷ᵃ(X)` a von
+  Neumann algebra at all (`ba_vonNeumannAlgebra hX`, and `baVecNP hX`), and the
+  doc now says the opposite.  The erratum still stands on the mathematics, but
+  it is now a claim about the *printed* proof; the row says so.
+* **`QUESTIONS.md`, the 158II entry.**  *"`150II` is still `sorry` in Lean, so
+  `#print axioms kaplansky_hilbmod` shows `sorryAx`."*  Stale since session 61
+  — `dils_completion` is proved, and `Kaplansky.lean`'s own doc has said
+  "unconditional, `#print axioms` is clean" for some time.  The only `sorry`s
+  there are the four `kaplansky_hilbmod_A*`, which record that 158V is false
+  and which `kaplansky_hilbmod` does not use.
+
+### Compile
+
+Five files touched: `Stinespring.lean` **+36 / −156** (3753 → 3633),
+`HilbertModules.lean` **+52 / −80** (3736 → 3708), and doc-only changes to
+`SelfDualCompletion.lean`, `Paschke.lean` and `Pure.lean`; plus `ERRATA.md`,
+`QUESTIONS.md` and all four `docs/audit/bdils-*.csv`.  `SelfDual.lean` and
+`Kaplansky.lean` are unchanged (their rows are note-only).
+
+Rebuilt from source in dependency order with
+`lean -DrelaxedAutoImplicit=false -DmaxSynthPendingDepth=3 -o …` (never
+`lake`): `HilbertModules` → `SelfDualCompletion` → `Kaplansky` →
+`Stinespring` → `Paschke` → `SelfDual` → `Pure` → `B/Eff/VNExamples`.
+**`rc=0` and 0 errors for every one.**  The ``declaration uses `sorry` ``
+warnings are exactly the pre-existing ones and no others — `Kaplansky` ×4
+(the 158V records), `Stinespring` ×1 (`ess_uniq_pur`), `Pure` ×1
+(`surjective_nmiu_2`), `VNExamples` ×1 (`vn_is_andthen_eff`), and 0 in
+`HilbertModules`, `SelfDualCompletion`, `Paschke`, `SelfDual`.  The diff
+contains no occurrence of the token `sorry`.
+
+All four repaired declarations verified axiom-clean **in situ** (source copied
+to the scratchpad, `#print axioms` appended, the copy compiled from source —
+not against oleans):
+
+    'Theses.B.Dils.paschke_unique_up_to_iso'      [propext, Classical.choice, Quot.sound]
+    'Theses.B.Dils.dils_uniform_spaces_basics_7'  [propext, Classical.choice, Quot.sound]
+    'Theses.B.Dils.unSeminorm_inner_le'           [propext, Classical.choice, Quot.sound]
+    'Theses.B.Dils.unSeminorm_add_le'             [propext, Classical.choice, Quot.sound]
+
+## Session 95 — A/VN: **the proof-route pass on all five files — four proofs go back to the thesis's own argument, and 69IVb's blocker is a universe, not a gap** (worker on `Theses/A/VN/{Basic,Projections,Completeness,Division,NormalFunctionals}.lean`)
+
+**Result: 4 proofs put back on the thesis's route, 2 CSV rows that were
+already back on it corrected, and every one of the five files still compiles
+with no `sorry` and no new axiom.**  `route` across the five files goes
+47 → 42, `mild` 25 → 24.  No statement was touched: all four repairs are
+byte-identical restatements with a different proof term.
+
+### The four repairs
+
+**63VI `carrier_fundamental` (`Projections.lean`) — from ~50 lines to one
+term.**  The thesis gives 63VI no proof text at all: it is an immediate
+Corollary of **63IV** `cp-comprehension`, the carrier being an effect that
+`f` kills the complement of.  `cp_comprehension` sits *seventy lines above*
+`carrier_fundamental` in the same file and had never been invoked; the proof
+instead re-ran 63IV's Kadison argument with the np-functionals of `ℬ` as the
+separating family in place of the states.  Now:
+
+    theorem carrier_fundamental (f : A →ₚ[ℂ] B) (hf : PreservesDirSups ⇑f) (a : A) : … :=
+      cp_comprehension f (carrier f hf)
+        ⟨(carrier_spec f hf).1.nonneg, (carrier_spec f hf).1.le_one⟩
+        (carrier_spec f hf).2.1 a
+
+**69IV `carrier_miu` (`Projections.lean`) — now the Corollary of 69II it is
+printed as.**  The thesis states 69IV directly after **69II**
+`weakly-closed-ideal` and gives no argument, i.e. it means: `ker f` is a
+two-sided ideal closed under bounded directed suprema, so 69II hands over the
+unique central `c` with `ker f = c𝒜`, *greatest among the projections of
+`ker f`*; `⌈f⌉ = c^⊥` then falls out of the two extremality clauses, and
+centrality and `ker f = ⌈f⌉^⊥𝒜` are read off `c`.  Our proof used 69II
+nowhere — it argued from 60V and the carrier directly.  The new proof builds
+`ker f` as `TwoSidedIdeal.ker f.toStarAlgHom`, gets directed-sup-closure from
+normality of `f` (the image of the directed set is `{0}`), and is 30 lines.
+
+**64II `abelian_projections_norm_dense` (`Projections.lean`) — the
+divergence whose premise had expired.**  The file's own comment already said
+so: the note that `ngelfand_vna`, 53III `vn_spectrum_extremally_disconnected`
+and Stone–Weierstraß were "all three still `sorry`" was stale, and the
+stale-prose sweep corrected the *wording* but left the proof, which ran a
+spectral Riemann sum using no commutativity at all.  The thesis's own proof
+(vn.tex:3165) is now there, and it is short:
+
+* `projStarSubalgebra R` — in a *commutative* ∗-algebra the linear span of the
+  projections is already a ∗-subalgebra (`Submodule.span_mul_span`, and a
+  product of commuting projections is a projection);
+* `mem_closure_span_projections_continuousMap` — on a compact Hausdorff
+  *extremally disconnected* `X` the projections of `C(X,ℂ)` are the clopen
+  indicators `chi U` (`A/VN/Basic`'s Stone section) and they separate points,
+  because such an `X` is totally separated (Mathlib's instance for
+  `ExtremallyDisconnected` + `T2Space`) — so Stone–Weierstraß applies;
+* the transport back along `γ_𝒜⁻¹` is by continuity: an injective
+  ∗-homomorphism between C\*-algebras is isometric
+  (`NonUnitalStarAlgHom.isometry`) and `γ_𝒜⁻¹` carries projections to
+  projections, so `Submodule.map_span` and
+  `image_closure_subset_closure_image` finish it.
+
+**Nothing was weakened.**  `exists_spectral_approx` and
+`mem_closure_span_spectral` are untouched and still prove the stronger,
+commutativity-free form — which is what **65IV** and the three relativised
+65IV's are read off, exactly as before.  Only the private wrapper
+`mem_closure_span_proj`, used by nothing else, is gone.
+
+**21II `gnsRepOn_injective` (`NormalFunctionals.lean`) — 25 lines to one, on
+an ingredient that is one day old.**  900.40 opens "since `Ω` is centre
+separating, the map `ϱ_Ω` … is injective", citing **30X**
+`proto-gelfand-naimark`.  The tree's 30X for that direction,
+`proto_gelfand_naimark_2`, is stated *existentially* in the Hilbert space and
+therefore cannot say anything about this particular `ϱ_Ω`, so the proof
+re-ran 30X's own argument by hand.  **69IX** `vn_center_separating` can say
+it — but only since 8633e37 gave the TFAE a fourth entry that is literally
+`Function.Injective ⇑(gnsRepFam …)`.  So:
+
+    theorem gnsRepOn_injective (hΩ : CentreSeparatingConj A Ω) :
+        Function.Injective (gnsRepOn (A := A) Ω) :=
+      ((vn_center_separating Ω).out 0 3).mp hΩ
+
+The section note is rewritten to say all of this, including why 30X cannot be
+cited directly.
+
+### Two rows that were already repaired and said otherwise
+
+* **87VIII** `ultraweakly_bounded_implies_bounded` — the CSV still described
+  the Banach–Steinhaus-on-`ℋ` detour and its stale "87III and 87VI are both
+  still `sorry`" justification.  Both went in the session-94 pass; the proof
+  is 870.90's (predual complete by 87III, `‖(·)(b_α)‖ = ‖b_α‖` by 87VI, `luws`
+  to split `f` into four np-functionals, then 11II).  Row → `faithful`.
+* **76III** `bh_bounded_uw_complete` — the CSV said the form is represented by
+  Riesz rather than **36V**, and that "36V is used nowhere in the tree".  Both
+  were undone when 36II was stated: `chilb_form_representation` is called at
+  `Completeness.lean`:3832.  Row → `faithful`.
+
+Two further rows carried claims about *file prose* that are no longer true —
+77V ("recorded in ERRATA but nowhere in the file": the doc comment now spells
+the 77VI defect out in full) and 77I ("the divergence is recorded in ERRATA
+but not in this doc comment": it now is, added here).  Both rows keep their
+verdicts; only their notes change.
+
+### The one blocker found, and it is a universe
+
+**69IVb `nmiu_image` is left, and it is now named precisely.**  The exercise
+says to use **69IVa** and **48VI.1** `injective-nmiu-iso-on-image`, and our
+250-line proof does neither.  Both are in the tree — 69IVa is
+`nmiu_factors_maps` (unblocked yesterday by the corner type `CentralProj`),
+48VI.1 is `injective_nmiu_iso_on_image_1` / `isVNSubalgebra_range` — and the
+assembly is four lines: `f = H ∘ G` with `G` surjective, so
+`range f = range H`, and `H` is an injective nmiu-map.  **It does not
+typecheck, for one reason only:** both forms of 48VI.1 live in `A/VN/Basic`'s
+`section Elementary`, whose binders are `variable {A B : Type u}` and
+`variable {C : Type u}` — one universe — while 69IVb is stated for
+`A : Type u`, `B : Type v`.  Universe-generalizing `isVNSubalgebra_range` is a
+*statement* change to an auxiliary, which this pass forbids, and duplicating
+its 110 lines into `Projections.lean` was judged worse than the 250-line proof
+it would replace.  (That proof is, in substance, 48VI's own argument —
+isometry on the corner, order reflection, closedness, directed-sup-closedness
+— inlined because the corner had no carrier when it was written.)  **For the
+next pass: generalize the universe of `isVNSubalgebra_range` and
+`starAlgHom_le_iff`/`starAlgHom_mono`/`starAlgHom_nonneg` in `A/VN/Basic`, and
+69IVb becomes four lines.**  The marginal build cost is one extra file:
+`A/VN/Basic` is imported only by `A/VN/Projections`.
+
+### What else was checked and deliberately left
+
+* **44VII / 44XIV** — correct as recorded; the hint's 44III demands *every*
+  `xᵢ` be an effect while the net is only eventually one (the ERRATA row).
+* **49IV.1** — re-verified: 49II `bah-vn` is still unformalized, `B^a(X)` has
+  no declaration in `A/CStar`, and `B/Dils/HilbertModules` is far downstream.
+* **53III, 54XI.2** — the corrected routes (ERRATA 53IV, 54XII) are right.
+* **73IV `hahn_banach`** — the thesis's Zorn-maximal-`K` argument is an
+  independent proof of a theorem Mathlib supplies in its sublinear-extension
+  form, and the point (no topology on `V`) is preserved.  Duplication, not
+  content.
+* **75VIII, 77V, 72V, 74IV** — ERRATA repairs; restoring the printed proofs
+  would import defects.
+* **81IX `div_uwc` / `div_uwc_corner`** — the erratum's repaired route reduces
+  the second map to the *ultraweak* continuity of the first, and the tree has
+  the first only *ultrastrongly* (`div_usc_ball`).  Ultrastrong continuity
+  does not give ultraweak continuity — the source topology gets coarser — so
+  the erratum's route is not available; the compactness argument (77III)
+  stands, and the section note states it in full.
+* **84II `fdcstar`** — the thesis's route begins at 840.40
+  `suprema-in-fdvna`, which has **no declaration anywhere in the tree**.  That
+  is a statement gap, to be reported rather than closed here.
+* **67II.3** — the printed computation is for a *positive* central element;
+  our statement is for arbitrary `T`, and the reduction is nowhere in the
+  thesis.  Weakening is not allowed, so it stays.
+* **55XIV, 60VIII.1, 56VI, 65IV's relativised forms, 66IV.3, 70III, 48V,
+  54XI.3** — trivia, equivalent one-step computations, or already repaired.
+
+### Build
+
+All five files compile clean (`lean -DrelaxedAutoImplicit=false
+-DmaxSynthPendingDepth=3`), warning count on `Projections.lean` unchanged at
+69, no `sorry`.  Oleans rebuilt for `Projections`, `Completeness`, `Division`,
+`NormalFunctionals`, and the three direct importers — `A/Proc/Measurement`,
+`B/Dils/Stinespring`, `B/Dils/HilbertModules` — recompiled clean against them.
+`carrier_fundamental`, `carrier_miu`, `abelian_projections_norm_dense`,
+`gnsRepOn_injective`, `ultraweakly_bounded_implies_bounded`, `vn_complete_1`
+and `bh_bounded_uw_complete` all verified **in situ** (source copied to the
+scratchpad with `#print axioms` appended) on `[propext, Classical.choice,
+Quot.sound]`.
+
+## Session 95 — A/CStar/Positive: **parsecs 120–150 were a dead limb; 16II now runs the thesis's proof and pulls Goursat, Cauchy and Taylor back into the tree** — plus four dependency inversions undone (worker on `Theses/A/CStar/Positive.lean`)
+
+Proof-route pass over the 66 non-`faithful` rows of
+`docs/audit/acstar-positive.csv` (36 `route`, 17 `mathlib`, 13 `mild`) — the
+largest concentration of `route` verdicts in the tree.  **Seven proofs put
+back on the thesis's own argument, no statement touched, no `sorry` added,
+everything axiom-clean in situ** (`#print axioms` appended to a copy of the
+source and compiled: `propext, Classical.choice, Quot.sound` for
+`norm_spectrum`, `rigid_expansion`, `taylor`, `cauchy_formula`,
+`positive_basic_2_1`, `astara_non_negative`, `positive_basic_2_4d`).  The
+proof column goes 67 → 74 `faithful`, 36 → 31 `route`, 17 → 14 `mathlib`.
+
+### The structural one: 16II was closed by Mathlib, so parsecs 120–150 were unused
+
+`norm_spectrum` (**16II**, `‖a‖` = spectral radius for self-adjoint `a`) was
+`ha.spectralRadius_eq_nnnorm`.  That one line was load-bearing in the worst
+sense: 16II is the *only* consumer of the complex-analysis run-up, so with it
+closed from outside, `goursat`, `cauchy_formula`, `taylor`, `rigid_expansion`,
+`hadamard`, `invint_1/2/4` and `powerSeries_hasDerivAt` had **zero** uses
+anywhere in the tree — a hundred parsecs of machinery hanging off nothing.
+
+16II now runs the thesis's proof (16III, cstar.tex:2575).  `f z = z(1-az)⁻¹`
+is holomorphic wherever `1 - az` is invertible; its geometric expansion
+`∑ₙ aⁿz^{n+1}` (our **11II** `geometric_2`) is valid for `|z| < ‖a‖⁻¹`;
+**15VII** `rigid_expansion` carries the expansion out to the whole disk on
+which `f` is defined; and **11VII** `geometric_convergence` — the step that
+uses self-adjointness, and the reason the Remark 16IV says the formula can
+fail without it — says the expansion cannot reach past `‖a‖⁻¹`.  The `≤` half
+is the thesis's **11VI**.1 `spectrum_bounded_1`, not
+`spectrum.spectralRadius_le_nnnorm`.
+
+### 15VII: a divergence resting on a premise that had already expired
+
+`rigid_expansion`'s inline comment said it diverged because **15V** `taylor`
+and **13VI** `powerseries_uniqueness_coeffients` were `sorry` when it was
+written — and then added, in the same sentence, "(both are proved now)".  It
+is the thesis's proof again (cstar.tex:2528): fit a regular `K`-gon in the
+annulus between the disk of radius `‖z-w‖` and the disk of radius `R`, expand
+`f` on it by 15V, and identify the two coefficient sequences by 13VI.
+
+The thesis's "by choosing `K` large enough we can fit the boundary of a
+regular `K`-gon inside the difference between the two disks" needs one
+quantitative fact the file did not have: the `K`-gon of circumradius `ρ`
+contains the open disk of radius `ρ cos(π/K)`.  That is the new private
+`ball_subset_polygon`, proved by Hahn–Banach separation plus the observation
+that for any direction some vertex direction is within `π/K` of it (`round`
+on `θK/2π`, and `cisR` is `2π`-periodic).  Every other polygon lemma in the
+file runs the other way — from a point of the interior to a property of it —
+so this one had to be built.
+
+With 16II and 15VII repaired the limb is alive: 16II → 15VII → {15V, 13VI} →
+15I → {14IV, 14VIII.3, `polygon_winding`}.
+
+### Four dependency inversions
+
+* **17VI**.1 `positive_basic_2_1` (`0 ≤ a ≤ 0 ⟹ a = 0`) was `le_antisymm`,
+  i.e. antisymmetry taken from the `[PartialOrder 𝒜]` instance — but 17VI.1
+  **is** that antisymmetry, and the solution proves it from the spectrum
+  (asols.tex:1917).  The content sat in the Mathlib instance, not in the file.
+  It now crosses the 25I bridge exactly as its sibling `positive_basic_2_2`
+  already did and runs `thesisPos_antisymm`.  Same shape as 9X.5e in
+  `A/CStar/Basic`; this is the class-in-binder-position problem in proof form.
+* **17VI**.4d `thesisPos_pow` inducted through `thesisPos_mul_of_commute`,
+  the thesis's `square-commuting-monotone` of **parsec 230** — and
+  cstar.tex:3528 says in as many words that the positivity of commuting
+  products "is not available to us until `ineq-square-root`".  The solution
+  defers the whole of 17VI.4 to parsec-110.150 (**11XV**), and it now does
+  too: even powers by 11XV.2, odd powers by the `.mpr` half of 11XV.3, which
+  is an *iff* and was only ever read in one direction here.  The lemma has
+  been moved up into the 11XV block, ahead of the square root, so that the
+  dependency is visible in the file's order.  `positive_basic_2_4d` follows.
+* **14VIII**.2 and 2′ (`invint_2`, `invint_2'`) were the `z₀ = 0` case of
+  part 3 — which the thesis derives *from* part 2, using Goursat.  Both are
+  now the thesis's own computation: parametrise the segment, read the
+  integrand off part 1, and integrate `½log(a²+t²b²) + i arctan(tb/a)`
+  (resp. `½log(a²(1-t)²+b²) - i arctan(a(1-t)/b)`).  Nothing in 14VIII runs
+  backwards now.
+* **19III** `astara_non_negative` took `star_mul_self_nonneg`, i.e. Mathlib's
+  **24IV** — which the thesis proves *from* this Lemma.  It now goes through
+  `thesisPos_astara_non_negative`, the file's real transcription of the
+  parsec-190 argument.  This is as far as the encoding allows: the residual
+  24IV inside `thesisPos_of_nonneg` is the 25I bridge and cannot be removed
+  while the hypothesis is stated with Mathlib's `≤`, under which the
+  *statement* of 19III carries no content at all.  The proof now says so; it
+  previously said nothing, and only the docstring of the private
+  transcription mentioned the pair.
+
+### Left deliberately, with reasons
+
+* **13VI**'s hint (differentiate repeatedly) and **13IV**'s difference-quotient
+  domination.  13VI's stated ground — 13IV being `sorry` — has expired, and
+  the in-file note now says so and gives the live reason instead: beyond 13IV
+  the solution needs the term-wise derivative series to be *summable* on the
+  same disk (13IV delivers the derivative as a `tsum` only), i.e. the radius
+  of the derived series, which the thesis asserts in passing (cstar.tex:1949)
+  and which is exactly what `HasFPowerSeriesAt.eq_zero` packages.
+  Transcribing either would duplicate Mathlib on a step neither statement is
+  about.
+* **14VIII**.3 `invint_3`.  The thesis's route is a one-sentence hint —
+  "using Goursat's Theorem one may reduce the problem to horizontal and
+  vertical line segments" — which does not say how to treat a `z₀` inside the
+  axis-parallel triangle spanned by `[w,w']`, the case such a reduction has
+  to subdivide around.  Ours is elementary and complete.  With parts 2 and 2′
+  repaired this is a route divergence and no longer an inversion, and the
+  in-file note was rewritten to say so.
+* **23II**.2 `sqrt_lemma_monotone`.  The thesis proves monotonicity *before*
+  the square root, having "carefully avoided" the positivity of commuting
+  products; ours is stated and proved *after* it, where that fact is
+  available, and the convergence proof does not use monotonicity — so nothing
+  runs backwards and the thesis's reason for its order does not bind ours.
+  Transcribing the coefficient argument would need the `ℝ≥0`-span of the
+  powers of `a` as an `AddSubmonoid` closed under products, ~120 lines to
+  re-derive in a worse way a fact the file has in three.
+* **17V** `nonneg_iff_spectrum_ofReal_nonneg` and the other parsec-170
+  statements that cross the 25I bridge.  Unavoidable: the statements are
+  about Mathlib's `0 ≤`, and the file's declared convention is to cross 25I
+  once, through `thesisPos_iff_nonneg`, and then run the thesis's own
+  argument.  Documented in the `/-!` block above `ThesisPos`.
+* **15I** `cauchy_formula`.  Left, as instructed, and both ERRATA rows
+  re-verified against the current source: cstar.tex:2440 still reads "By
+  partitioning the area between `T` and the `N`-gon in the obvious manner
+  into triangles `T₁,…,T_M`", and the vertex line at cstar.tex:2404 still
+  carries the dummy `n`.  One correction to the audit row: it said the vertex
+  typo was *not* in `ERRATA.md`; it is, added by `880cca7` from this audit.
+
+Also corrected in the file: the two inline comments that cited **16II** as
+16III (16III is its *Proof*).  `docs/audit/acstar-positive.csv` updated —
+fourteen `proof` verdicts or notes changed, one row added
+(`ball_subset_polygon`), and every deliberate omission above recorded in the
+`status` column.

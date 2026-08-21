@@ -1349,12 +1349,30 @@ theorem dils_uniform_spaces_basics_6 (D : Set X) (hD : Dense D) (x : X) :
     cauchy_nhds.mono nhdsWithin_le_nhds, nhdsWithin_le_nhds⟩
 
 /-- **147II** (`dils-uniform-spaces-basics`, dils.tex:1982, Exercise), part
-7: continuous maps into a Hausdorff space agreeing on a dense set are equal
-(Mathlib: `Continuous.ext_on`). -/
+7: continuous maps into a Hausdorff space agreeing on a dense set are equal.
+
+The exercise's own instruction is *"Conclude from
+`ex-continuous-preserves-lims` and `ex-cauchy-from-dense-subset`"*, i.e.
+from parts **4** and **6**, and that is the proof: part 6 puts a Cauchy
+filter `F` on `D` converging to `x`, part 4 (applied to the "net"
+`id : X → X` along `F`) sends it to `f x` and to `g x`, and `f = g` along
+`F` because `D ∈ F`; part **3** then identifies the two limits.  (Mathlib's
+`Continuous.ext_on` closes this in one step, but that hides the point of the
+item — and leaves part 6 with no consumer at all.) -/
 theorem dils_uniform_spaces_basics_7 [T2Space Y] (f g : X → Y)
     (hf : Continuous f) (hg : Continuous g) (D : Set X) (hD : Dense D)
-    (h : Set.EqOn f g D) : f = g :=
-  hf.ext_on hD hg h
+    (h : Set.EqOn f g D) : f = g := by
+  funext x
+  obtain ⟨F, hFne, hFD, -, hFx⟩ := dils_uniform_spaces_basics_6 D hD x
+  haveI : F.NeBot := hFne
+  have hfx : Tendsto (f ∘ id) F (𝓝 (f x)) :=
+    dils_uniform_spaces_basics_4 f hf F id x hFx
+  have hgx : Tendsto (g ∘ id) F (𝓝 (g x)) :=
+    dils_uniform_spaces_basics_4 g hg F id x hFx
+  have hEq : (g ∘ id) =ᶠ[F] (f ∘ id) :=
+    Filter.eventuallyEq_of_mem hFD fun z hz => (h hz).symm
+  exact dils_uniform_spaces_basics_3 (X := Y) F (f ∘ id) (f x) (g x) hfx
+    (hgx.congr' hEq)
 
 /-- **147III** (`dils-product-uniformity`, dils.tex:2021, Exercise): the
 relations `(x_i)_i ε̂ (y_i)_i ⟺ x_{i₀} ε y_{i₀}` of the exercise, one for
@@ -1487,86 +1505,40 @@ theorem unSeminorm_sq (ω : NPFunctional 𝒷) (B : BInner 𝒷 X) (x : X) :
     unSeminorm ω B.inner x ^ 2 = (ω (B.inner x x)).re :=
   Real.sq_sqrt (np_re_nonneg ω (B.inner_self_nonneg x))
 
-/-- Cauchy–Schwarz for `‖·‖_ω`: `|ω[x,y]| ≤ ‖x‖_ω ‖y‖_ω`. -/
+/-- The complex inner product `⟨x,y⟩_ω = ω[x,y]` of **142II** at an
+np-functional, as `innerFCore` — the bridge that lets the ultranorm
+seminorms use 142II's own conclusion. -/
+private noncomputable def unInnerCore (ω : NPFunctional 𝒷) (B : BInner 𝒷 X) :
+    PreInnerProductSpace.Core ℂ X :=
+  innerFCore ω.toPositiveLinearMap.toLinearMap
+    (fun _ ha => npFunctional_nonneg ω ha) B
+
+/-- Cauchy–Schwarz for `‖·‖_ω`: `|ω[x,y]| ≤ ‖x‖_ω ‖y‖_ω`.
+
+`⟨·,·⟩_ω` is a complex-valued inner product — that is **142II**'s embedded
+claim, `innerFCore` — and `‖·‖_ω` is its `seminormF`, so this is cstar.tex
+**4XV**.1 `inner_product_basic_1` verbatim. -/
 theorem unSeminorm_inner_le (ω : NPFunctional 𝒷) (B : BInner 𝒷 X) (x y : X) :
     ‖ω (B.inner x y)‖ ≤ unSeminorm ω B.inner x * unSeminorm ω B.inner y := by
-  have ha : 0 ≤ (ω (B.inner x x)).re := np_re_nonneg ω (B.inner_self_nonneg x)
-  have hb : 0 ≤ (ω (B.inner y y)).re := np_re_nonneg ω (B.inner_self_nonneg y)
-  have hyx : ω (B.inner y x) = starRingEnd ℂ (ω (B.inner x y)) := by
-    rw [← B.star_inner x y, np_star]
-  -- the quadratic `0 ≤ ω [x + λy, x + λy]`
-  have hquad : ∀ lam : ℂ, 0 ≤ (ω (B.inner x x)).re + 2 * (lam * ω (B.inner x y)).re
-      + Complex.normSq lam * (ω (B.inner y y)).re := by
-    intro lam
-    have hz : (0 : ℝ) ≤ (ω (B.inner (x + lam • y) (x + lam • y))).re :=
-      np_re_nonneg ω (B.inner_self_nonneg _)
-    have hexp : B.inner (x + lam • y) (x + lam • y)
-        = B.inner x x + lam • B.inner x y
-          + ((starRingEnd ℂ) lam • B.inner y x
-            + (starRingEnd ℂ lam * lam) • B.inner y y) := by
-      rw [B.inner_add_left, B.inner_add_right, B.inner_add_right,
-        B.inner_smul_right_complex, B.inner_smul_left_complex,
-        B.inner_smul_left_complex, B.inner_smul_right_complex, smul_smul, add_assoc]
-    rw [hexp, np_add, np_add, np_add, np_smul, np_smul, np_smul, hyx] at hz
-    have hbim : (ω (B.inner y y)).im = 0 := np_im_zero ω (B.inner_self_nonneg y)
-    simp only [Complex.add_re, Complex.mul_re, Complex.conj_re, Complex.conj_im,
-      Complex.normSq_apply, hbim] at hz ⊢
-    nlinarith [hz]
-  -- specialize to `λ = -t · conj ω[x,y]`
-  set c := ω (B.inner x y) with hc
-  have hspec : ∀ t : ℝ, 0 ≤ (ω (B.inner x x)).re - 2 * t * Complex.normSq c
-      + t ^ 2 * Complex.normSq c * (ω (B.inner y y)).re := by
-    intro t
-    have h := hquad (-(t : ℂ) * (starRingEnd ℂ) c)
-    have h1 : (-(t : ℂ) * (starRingEnd ℂ) c * c).re = -(t * Complex.normSq c) := by
-      rw [mul_assoc, ← Complex.normSq_eq_conj_mul_self]
-      simp
-    have h2 : Complex.normSq (-(t : ℂ) * (starRingEnd ℂ) c)
-        = t ^ 2 * Complex.normSq c := by
-      simp [Complex.normSq_apply]
-      ring
-    rw [h1, h2] at h
-    nlinarith [h]
-  have hN : 0 ≤ Complex.normSq c := Complex.normSq_nonneg c
-  have hkey : Complex.normSq c ≤ (ω (B.inner x x)).re * (ω (B.inner y y)).re := by
-    rcases eq_or_lt_of_le hN with hN0 | hN0
-    · nlinarith
-    · rcases eq_or_lt_of_le hb with hb0 | hb0
-      · exfalso
-        have h := hspec (((ω (B.inner x x)).re + 1) / (2 * Complex.normSq c))
-        rw [← hb0] at h
-        field_simp at h
-        nlinarith [h]
-      · have h := hspec ((ω (B.inner y y)).re⁻¹)
-        have hbne : (ω (B.inner y y)).re ≠ 0 := ne_of_gt hb0
-        field_simp at h
-        nlinarith [h]
-  calc ‖c‖ = Real.sqrt (Complex.normSq c) := Complex.norm_def c
-    _ ≤ Real.sqrt ((ω (B.inner x x)).re * (ω (B.inner y y)).re) := Real.sqrt_le_sqrt hkey
-    _ = unSeminorm ω B.inner x * unSeminorm ω B.inner y := by
-        rw [unSeminorm, unSeminorm, Real.sqrt_mul ha]
+  letI : PreInnerProductSpace.Core ℂ X := unInnerCore ω B
+  have h := Theses.A.CStar.inner_product_basic_1 (V := X) x y
+  have hx : Theses.A.CStar.innerNorm (V := X) x = unSeminorm ω B.inner x := rfl
+  have hy : Theses.A.CStar.innerNorm (V := X) y = unSeminorm ω B.inner y := rfl
+  rw [← Theses.A.CStar.innerNorm_sq (V := X) x,
+    ← Theses.A.CStar.innerNorm_sq (V := X) y, hx, hy] at h
+  have hcs : ‖ω (B.inner x y)‖ ^ 2
+      ≤ unSeminorm ω B.inner x ^ 2 * unSeminorm ω B.inner y ^ 2 := h
+  have hnx : 0 ≤ unSeminorm ω B.inner x := unSeminorm_nonneg ω B.inner x
+  have hny : 0 ≤ unSeminorm ω B.inner y := unSeminorm_nonneg ω B.inner y
+  nlinarith [norm_nonneg (ω (B.inner x y)), mul_nonneg hnx hny]
 
-/-- The triangle inequality for `‖·‖_ω`. -/
+/-- The triangle inequality for `‖·‖_ω` — the *conclusion* of **142II**
+(`seminormF_seminorm`), read at the np-functional `ω`. -/
 theorem unSeminorm_add_le (ω : NPFunctional 𝒷) (B : BInner 𝒷 X) (x y : X) :
     unSeminorm ω B.inner (x + y)
-      ≤ unSeminorm ω B.inner x + unSeminorm ω B.inner y := by
-  have hx := unSeminorm_nonneg ω B.inner x
-  have hy := unSeminorm_nonneg ω B.inner y
-  have hcs := unSeminorm_inner_le ω B x y
-  have hexp : (ω (B.inner (x + y) (x + y))).re
-      = (ω (B.inner x x)).re + 2 * (ω (B.inner x y)).re + (ω (B.inner y y)).re := by
-    have hyx : ω (B.inner y x) = starRingEnd ℂ (ω (B.inner x y)) := by
-      rw [← B.star_inner x y, np_star]
-    rw [B.inner_add_left, B.inner_add_right, B.inner_add_right, np_add, np_add,
-      np_add, hyx]
-    simp only [Complex.add_re, Complex.conj_re]
-    ring
-  have hre : (ω (B.inner x y)).re ≤ ‖ω (B.inner x y)‖ := Complex.re_le_norm _
-  have hsq : unSeminorm ω B.inner (x + y) ^ 2
-      ≤ (unSeminorm ω B.inner x + unSeminorm ω B.inner y) ^ 2 := by
-    rw [unSeminorm_sq, hexp, add_sq, unSeminorm_sq, unSeminorm_sq]
-    nlinarith
-  nlinarith [unSeminorm_nonneg ω B.inner (x + y)]
+      ≤ unSeminorm ω B.inner x + unSeminorm ω B.inner y :=
+  (seminormF_seminorm ω.toPositiveLinearMap.toLinearMap
+    (fun _ ha => npFunctional_nonneg ω ha) B x y 1).2.2
 
 /-- The seminorm form of **144V** (`blinear-inprod-inequality`), which is
 what the proof of **148I** below computes: applying an np-functional `ω` to

@@ -3762,10 +3762,16 @@ for an arbitrary family `F : ι → NPFunctional A` (`gnsHilbFam`, `gnsRepFam`),
 so the definitions below are its instance at `F = Subtype.val`; the
 `gnsHilb`/`gnsRep` of **48VIII** are its instance at `F = id`.
 
-The one genuinely new item is `gnsRepOn_injective`: `ϱ_Ω(a) = 0` says
-`ω(b* a*a b) = ‖ϱ_Ω(a) η_ω(b)‖² = 0` for all `ω ∈ Ω` and `b`, so `a*a = 0`
-exactly when `Ω` is centre separating in the sense of cstar.tex **21II**.4.
-(The thesis gets this from **30X** and **69VII** instead.) -/
+`gnsRepOn_injective` — `ϱ_Ω` is injective when `Ω` is centre separating — is
+the step 900.40 opens with, and the thesis takes it from **30X**
+(`proto-gelfand-naimark`, (2) ⇒ (1)).  The tree's 30X, `proto_gelfand_naimark_2`,
+is stated *existentially* in the Hilbert space and so cannot speak about this
+particular `ϱ_Ω`; **69IX** (`vn_center_separating`) can, since its fourth
+entry is literally `Function.Injective ϱ_Ω`, and its equivalence with entry 1
+*is* 30X's in the von Neumann setting.  That is the one line below.  (Until
+2026-08-21 30X's own argument — `ϱ_Ω(a) = 0` gives
+`ω(b* a* a b) = ‖ϱ_Ω(a) η_ω(b)‖² = 0` for all `ω ∈ Ω` and `b`, hence
+`a* a = 0` — was re-run here by hand, because 69IX had no fourth entry.) -/
 
 section GNSSumOn
 
@@ -3805,31 +3811,11 @@ theorem gnsRepOn_normal : PreservesDirSups ⇑(gnsRepOn (A := A) Ω) :=
 
 
 /-- `ϱ_Ω` is injective exactly when `Ω` is centre separating (cstar.tex
-**21II**.4): `ϱ_Ω(a) = 0` says `ω(b* a* a b) = ‖ϱ_Ω(a) η_ω(b)‖² = 0`. -/
+**21II**.4).  This is **69IX** (`vn_center_separating`), entry 1 ⟹ entry 4;
+see the section note above for why 30X itself cannot be cited here. -/
 theorem gnsRepOn_injective (hΩ : CentreSeparatingConj A Ω) :
-    Function.Injective (gnsRepOn (A := A) Ω) := by
-  classical
-  have hker : ∀ a : A, gnsRepOn Ω a = 0 → a = 0 := by
-    intro a ha
-    refine (CStarRing.star_mul_self_eq_zero_iff a).mp ?_
-    refine ((centreSeparatingConj_iff Ω).mp hΩ (star a * a)
-      (star_mul_self_nonneg a)).mpr fun ω hω b => ?_
-    have h := congrArg
-      (fun T : gnsHilbOn A Ω →L[ℂ] gnsHilbOn A Ω =>
-        ((T (lp.single 2 (⟨ω, hω⟩ : Ω) (gnsVec ω b)) : gnsHilbOn A Ω) :
-          ∀ _ : Ω, _) ⟨ω, hω⟩) ha
-    simp only [gnsRepOn_apply_coe, lp.single_apply_self] at h
-    rw [gnsRep_gnsVec] at h
-    have h0 : gnsVec ω (a * b) = 0 := by simpa using h
-    have := gnsVec_norm_sq ω (a * b)
-    rw [h0] at this
-    simp only [norm_zero] at this
-    rw [show star b * (star a * a) * b = star (a * b) * (a * b) by
-      rw [star_mul]; noncomm_ring]
-    simpa using this.symm
-  intro a b hab
-  have h : gnsRepOn Ω (a - b) = 0 := by rw [map_sub, hab, sub_self]
-  exact sub_eq_zero.mp (hker _ h)
+    Function.Injective (gnsRepOn (A := A) Ω) :=
+  ((vn_center_separating Ω).out 0 3).mp hΩ
 
 /-- `⟪u,Tu⟫ - ⟪w,Tw⟫ = ⟪u-w,Tu⟫ + ⟪w,T(u-w)⟫`, whence the bound. -/
 private theorem inner_conj_diff_le {K : Type*} [NormedAddCommGroup K]

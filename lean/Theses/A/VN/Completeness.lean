@@ -3921,7 +3921,19 @@ section Complete
 variable [VonNeumannAlgebra A] [VonNeumannAlgebra B]
 
 /-- **77I** (`vn-complete`, vn.tex:4808, Theorem), part 1: a von Neumann
-algebra is ultrastrongly complete. -/
+algebra is ultrastrongly complete.
+
+The proof is the thesis's — transport along `ϱ_Ω`, complete inside
+`𝔅(ℋ_Ω)` by **76I**, land back in `ϱ_Ω(𝒜)` by **75VIII** — with one step
+replaced (`ERRATA.md`, 77II).  The thesis justifies "the ultrastrong
+topology of `𝔅(ℋ_Ω)` coincides on `ℛ` with that of `ℛ`" by "any
+np-functional `ω : ℛ → ℂ` is of the form `⟨x,(·)x⟩`", which is a *forward*
+reference to **89IX** `normal-functional` twelve parsecs later — and
+stronger than 89IX delivers, 89IX giving a sum `∑ₙ⟨xₙ,(·)xₙ⟩`.  Only one
+direction is used and it holds by construction of `ϱ_Ω`: with `Ω` all of
+the np-functionals of `𝒜`, every one of them *is* a vector functional in
+`ℋ_Ω`, which is **48V** and is available already at parsec 770.  That is
+what `hvec` below is. -/
 theorem vn_complete_1 {ι : Type*} (l : Filter ι) [l.NeBot] (x : ι → A)
     (hcauchy : ∀ ω : NPFunctional A,
       Tendsto (fun p : ι × ι => omegaNorm A ω (x p.1 - x p.2)) (l ×ˢ l)
@@ -3956,7 +3968,9 @@ theorem vn_complete_1 {ι : Type*} (l : Filter ι) [l.NeBot] (x : ι → A)
   rw [key, map_sub, ha]
 
 /-- **77I** (`vn-complete`, vn.tex:4808, Theorem), part 2: a von Neumann
-algebra is bounded ultraweakly complete. -/
+algebra is bounded ultraweakly complete.  Same transport as part 1, through
+**76III** and the ultraweak half of **75VIII**, and with the same 77II
+repair. -/
 theorem vn_complete_2 {ι : Type*} (l : Filter ι) [l.NeBot] (x : ι → A)
     (hbdd : ∃ C : ℝ, ∀ i, ‖x i‖ ≤ C)
     (hcauchy : ∀ ω : NPFunctional A, Cauchy (l.map fun i => ω (x i))) :

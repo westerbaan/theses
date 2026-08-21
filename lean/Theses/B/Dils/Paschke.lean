@@ -3856,7 +3856,23 @@ recovered at the use site.  Local deviation in its proof: the thesis reads
 `hilmod-fixed-on-V`; here `φ_{1−T} = φ − ψ = δ` is ncp by hypothesis, so
 `0 ≤ 1 − T` by **157VII** `phiT_reflects_nonneg` — which is itself proved by
 `hilmod-fixed-on-V`, so the density argument is used, once, in the place the
-thesis first uses it. -/
+thesis first uses it.
+
+⚠️ **The appeal is to the *transported* form of 157VII**, and that inverts
+the thesis's order locally: `phiT_reflects_nonneg` is stated for an arbitrary
+Paschke dilation, so it re-runs `dils_completion` + `paschkeModuleOf` and
+transports along `exists_paschke_starAlgHom` — which is **154III**.5 +
+**140VIII**, i.e. exactly the **157IX** step the thesis performs *after*
+157VIII in order to carry it to an arbitrary dilation.  Nothing is circular
+(154III and 140VIII both precede parsec 1570), but this rendering of 157VIII
+rests on them.  It is forced by the shape of the statement: `M` is an
+abstract `PaschkeModule`, which carries no `η` and hence no density
+statement, and positivity — unlike the *equalities* that
+`paschkeModule_ba_ext` and `paschkeModule_inner_tprod_separating` settle — is
+not determined by matrix elements on a non-dense separating set.  A
+concrete-module `paschkeModuleOf_phiT_surjective` proved by the thesis's own
+`⟨x, Tx⟩_φ = ⟨x,x⟩_ψ ≤ ⟨x,x⟩_φ` and then transported would remove the
+detour; that is a new statement, so it is flagged here rather than made. -/
 theorem paschkeModule_phiT_surjective [VonNeumannAlgebra 𝒜]
     [VonNeumannAlgebra ℬ] (φ ψ δ : NCPMap 𝒜 ℬ) (M : PaschkeModule φ)
     (hsum : ∀ a, φ a = ψ a + δ a) :

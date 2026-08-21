@@ -67,9 +67,14 @@ analysis left open.
    (parsec 1500, before 1580, so the thesis's own order is respected), used to
    pass from `X` to a self-dual `X̄`; ultranorm density is transitive, and both
    the norm bound and the seminorms are computed from the inner product, which
-   the embedding preserves.  `150II` is still `sorry` in Lean, so
-   `#print axioms kaplansky_hilbmod` shows `sorryAx`.  The **self-dual case**
-   `kaplansky_hilbmod_of_selfDual` is unconditional and axiom-clean.
+   the embedding preserves.  (This paragraph used to end "`150II` is still
+   `sorry` in Lean, so `#print axioms kaplansky_hilbmod` shows `sorryAx`" —
+   stale since session 61: `dils_completion` is proved, and both
+   `kaplansky_hilbmod` and the **self-dual case**
+   `kaplansky_hilbmod_of_selfDual` are unconditional and axiom-clean.  The
+   only `sorry`s in `Kaplansky.lean` are the four `kaplansky_hilbmod_A*`,
+   which record that 158V is false and which `kaplansky_hilbmod` does not
+   use.)
 
 *Decision needed*: how to repair the thesis.  Concretely, 158III–158V should
 be deleted or demoted, and the proof of `kaplansky-hilbmod` replaced by the
