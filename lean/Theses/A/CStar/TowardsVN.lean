@@ -625,7 +625,17 @@ theorem sot_tendsto_iff {ι : Type*} {l : Filter ι} (T : ι → H →L[ℂ] H)
 /-- **37VII** (`bh-wot-bounded-complete`, cstar.tex:6260, Lemma): if
 `(T_α)_α` is a net of bounded operators on a Hilbert space `H` such that
 `⟪x, T_α x⟫` is Cauchy and bounded for every `x ∈ H`, then `(T_α)_α`
-WOT-converges to some bounded operator `T ∈ B(H)`. -/
+WOT-converges to some bounded operator `T ∈ B(H)`.
+
+*Class 1 — faithful.*  The Lemma's own proof (cstar.tex:6266): polarisation
+turns the hypothesis on the diagonal into boundedness and Cauchyness of every
+matrix coefficient `⟪y, T_α x⟫`, so **37II** `hilb_weakly_bounded_complete`
+produces `T x` for each `x`, and `T` is linear.  For boundedness the thesis
+runs the same argument on the net of *adjoints* `(T_α*)_α` — whose diagonal
+values are the conjugates of `(T_α)`'s — to get a map `S` adjoint to `T`, and
+concludes with **35VI** `hellinger_toeplitz`.  That last step used to be
+replaced by a second appeal to **35II** `pub`, bounding `‖T_α‖` uniformly;
+Hellinger–Toeplitz was not used at all.  It is now. -/
 theorem bh_wot_bounded_complete {ι : Type*} {l : Filter ι} [l.NeBot]
     (T : ι → H →L[ℂ] H)
     (hcauchy : ∀ x : H, Cauchy (l.map fun α => ⟪x, T α x⟫))
@@ -709,41 +719,43 @@ theorem bh_wot_bounded_complete {ι : Type*} {l : Filter ι} [l.NeBot]
     rw [inner_smul_left]
     refine tendsto_nhds_unique (hS (c • x) y) ?_
     simpa [inner_smul_left, mul_comm] using (hS x y).const_mul (starRingEnd ℂ c)
-  -- uniform boundedness gives a common bound on `‖T α‖`
-  have hptbdd : ∀ x : H, BddAbove (Set.range fun α => ‖T α x‖) := by
+  -- the net of adjoints converges weakly too, giving `S` an adjoint …
+  have hylim : ∀ x : H, ∃! z : H, ∀ y : H,
+      Tendsto (fun α => ⟪ContinuousLinearMap.adjoint (T α) x, y⟫) l (𝓝 ⟪z, y⟫) := by
     intro x
-    have h := pub (fun α => innerSL ℂ (T α x)) (fun y => by
-      obtain ⟨b, hb⟩ := hbdd2 x y
+    refine hilb_weakly_bounded_complete (fun α => ContinuousLinearMap.adjoint (T α) x)
+      (fun y => ?_) (fun y => ?_)
+    · have h0 : Tendsto (fun α => ⟪ContinuousLinearMap.adjoint (T α) x, y⟫) l
+          (𝓝 ((d (y + x) - d (y - x) + Complex.I * d (y + Complex.I • x) -
+            Complex.I * d (y - Complex.I • x)) / 4)) :=
+        Filter.Tendsto.congr
+          (fun α => (ContinuousLinearMap.adjoint_inner_left (T α) y x).symm) (hfull y x)
+      exact h0.cauchy_map
+    · obtain ⟨b, hb⟩ := hbdd2 y x
       refine ⟨b, ?_⟩
       rintro _ ⟨α, rfl⟩
-      simpa [hconj x y α] using hb (Set.mem_range_self α))
-    simpa using h
-  obtain ⟨C, hCb⟩ := pub T hptbdd
-  have hTle : ∀ α, ‖T α‖ ≤ C := fun α => hCb (Set.mem_range_self α)
-  have hCnn : 0 ≤ C := by
-    obtain ⟨α⟩ := Filter.nonempty_of_neBot l
-    exact (norm_nonneg (T α)).trans (hTle α)
-  have hSb : ∀ x : H, ‖S x‖ ≤ C * ‖x‖ := by
-    intro x
-    have hlim : ‖⟪S x, S x⟫‖ ≤ C * ‖x‖ * ‖S x‖ := by
-      refine le_of_tendsto (hS x (S x)).norm (Eventually.of_forall fun α => ?_)
-      calc ‖⟪T α x, S x⟫‖ ≤ ‖T α x‖ * ‖S x‖ := norm_inner_le_norm _ _
-        _ ≤ (C * ‖x‖) * ‖S x‖ := by
-            gcongr
-            exact ((T α).le_opNorm x).trans (by gcongr; exact hTle α)
-    have hnorm : ‖⟪S x, S x⟫‖ = ‖S x‖ ^ 2 := by
-      rw [inner_self_eq_norm_sq_to_K]; simp
-    rw [hnorm] at hlim
-    rcases eq_or_lt_of_le (norm_nonneg (S x)) with h | h
-    · rw [← h]
-      exact mul_nonneg hCnn (norm_nonneg x)
-    · nlinarith
+      dsimp only
+      rw [ContinuousLinearMap.adjoint_inner_left]
+      exact hb (Set.mem_range_self α)
+  choose R hR _huniqR using hylim
+  have hadj : ∀ (x y : H), (inner ℂ (S x) y : ℂ) = inner ℂ x (R y) := by
+    intro x y
+    have h2 : Tendsto (fun α => ⟪ContinuousLinearMap.adjoint (T α) y, x⟫) l
+        (𝓝 (star ⟪S x, y⟫)) := by
+      refine Filter.Tendsto.congr (fun α => ?_) (hS x y).star
+      rw [ContinuousLinearMap.adjoint_inner_left, RCLike.star_def, inner_conj_symm]
+    have h3 := tendsto_nhds_unique (hR y x) h2
+    rw [← inner_conj_symm x (R y), h3]
+    simp
+  -- … and **35VI** (Hellinger–Toeplitz) makes it bounded
+  obtain ⟨-, -, -, -, hScont, -⟩ :=
+    hellinger_toeplitz (𝒜 := ℂ) (Or.inl (inferInstance : CompleteSpace H)) S R hadj
   let SL : H →ₗ[ℂ] H := { toFun := S, map_add' := hSadd, map_smul' := hSsmul }
-  refine ⟨SL.mkContinuous C hSb, ?_⟩
+  refine ⟨⟨SL, hScont⟩, ?_⟩
   rw [ContinuousLinearMapWOT.tendsto_iff_forall_inner_apply_tendsto]
   intro x y
   simp only [ContinuousLinearMapWOT.ofCLM_apply]
-  have h2 : ⟪y, SL.mkContinuous C hSb x⟫ = ⟪y, S x⟫ := rfl
+  have h2 : ⟪y, (⟨SL, hScont⟩ : H →L[ℂ] H) x⟫ = ⟪y, S x⟫ := rfl
   rw [h2, ← inner_conj_symm y (S x)]
   exact Filter.Tendsto.congr (fun α => inner_conj_symm y (T α x)) ((hS x y).star)
 

@@ -26704,3 +26704,307 @@ for its owner: `docs/audit/avn-basic.csv`'s `54XI|cvn_faithful_3` row still
 says the isomorphism half lives only in `A/Proc/Duplicators` and is
 unreachable from `A/VN`; as of this session it is `cvn_faithful_4`, in
 `A/VN/Basic` itself.
+
+
+## Session 95 — A/CStar/Basic: **the parsec-110 chain is the thesis's own again — 11VI.1 was the far end of a dependency inversion, and the order (semi)norm no longer uses the fact the author calls hard** (worker on `Theses/A/CStar/Basic.lean`)
+
+Proof-route pass over the 72 non-`faithful` rows of
+`docs/audit/acstar-basic.csv` (43 `mathlib`, 26 `route`, 3 `mild`).
+**Eighteen proofs put back on the thesis's own argument, no statement
+touched, no `sorry` added, everything axiom-clean in situ.**  The proof
+column of that file goes 26 → 43 `faithful`, 43 → 32 `mathlib`,
+26 → 20 `route`.
+
+### The dependency inversion: 11VI.1 ← Mathlib ← 11VI.1
+
+`spectrum_bounded_1` (**11VI**.1, "`a - λ` invertible when `‖a‖ < |λ|`") was
+closed with Mathlib's `spectrum.norm_le_norm_of_mem`.  That lemma **is** the
+thesis's **11XXI**.3, and Mathlib derives it, in
+`Mathlib/Analysis/Normed/Algebra/Spectrum.lean`, from
+`mem_resolventSet_of_norm_lt` — which is 11VI.1 itself.  So our 11VI.1 came
+out of an outside proof of 11VI.1, and our **11XXI**.3 came out of the same
+lemma, exactly reversing the thesis's order (11II → 11VI.1 → 11XXI.3).
+
+11VI.1 now runs the solution's own factorisation (`‖a z⁻¹‖ < 1`, so
+`1 - a z⁻¹` is invertible by our **11II**.2, and `z - a = z(1 - a z⁻¹)`), and
+11XXI.3 is its contrapositive, as the thesis has it.  Checked by walking the
+transitive constant closure: neither `spectrum.norm_le_norm_of_mem` nor
+`spectrum.mem_resolventSet_of_norm_lt` is reachable from either theorem any
+more.
+
+Three more of the same shape, all now on the thesis's chain:
+
+* **10IV** (p⇒i) proved self-adjointness of `f a` with `CFC.posPart_sub_negPart`
+  — the *continuous functional calculus*, which the thesis builds around
+  cstar.tex:4381 on top of the positivity theory this very parsec starts.  It
+  now runs the printed proof: `‖x‖` and `‖x‖ - x` are positive by **9X**.2, so
+  `f x = f(‖x‖) - f(‖x‖-x)` is a difference of positives.
+* **11XXI**.1 came from Mathlib's `IsSelfAdjoint.mem_spectrum_eq_re` (an
+  independent route through `exp` and the unitaries) where the thesis reads it
+  off **11XV**.1 — which, since `acde73c`, we prove from **11XIII**.  A private
+  `mem_spectrum_eq_re_of_isSelfAdjoint` now carries reality of the spectrum
+  from our 11XV.1, and every use in the file goes through it.
+* **11XXI**.4 took closedness of the spectrum out of `spectrum.isCompact` —
+  the reverse of the thesis's order *and* of Mathlib's own.  It is now closed
+  because the invertibles are open (our **11VI**.3, itself now the solution's
+  `ε := ‖b⁻¹‖⁻¹` argument from 11VI.2), and compact by Heine–Borel from that
+  and the bound of part 3.
+
+**11XXIII** (Spectral Permanence) was `StarSubalgebra.spectrum_eq`; it is now
+the thesis's two-line consequence of **11XVIII** — which `acde73c` had already
+put on the printed proof, so the whole run 11XIII → 11XV.1 → 11XVI → 11XVIII →
+11XXIII is ours.  And **11XV**.2 now runs the solution's factorisation
+`aⁿ - λ = (aᵐ - si)(aᵐ + si)` for `n = 2m`, `λ = -s²`, instead of the spectral
+mapping theorem; that made its `n = 0` special case unnecessary.
+
+### 9X.4: the order seminorm no longer leans on 9X.5d
+
+`orderNorm_seminorm`, `orderNorm_le_norm` and `orderNorm_mono` were all proved
+by rewriting `‖·‖ₒ` into `‖·‖` along **9X**.5d — the identity the thesis defers
+to parsec 170 and about which solution `parsec-90.100`(5) says *"please contact
+me if you've found a short and elementary proof"*.  Solution
+`parsec-90.100`(4) argues all three directly from the order, and that is what
+they do now: subadditivity by adding bounds and taking infima, homogeneity by
+scaling bounds by `r` and by `r⁻¹` (with the sign cases), `‖a‖ₒ ≤ ‖a‖` because
+`‖a‖` is itself a bound by **9X**.2, and monotonicity because every bound for
+`b` bounds `a` when `0 ≤ a ≤ b`.  Verified: `orderNorm_eq_norm` (5d) is no
+longer in the transitive dependencies of any of the three.  5d keeps it, as the
+one place it belongs.
+
+**9X**.5e was `le_antisymm` — the claim read off the `[PartialOrder 𝒜]`
+instance binder, which is the class-in-binder-position problem in proof form.
+It now derives `‖a‖ ≤ 0` from **17VI**.3a and concludes `a = 0`.  Still not the
+thesis's own route (which computes `spec(a) = {0}`), so the row is `route`, not
+`faithful`.
+
+### Parsec 40/50, and 9VII
+
+* **4XVIII** proved closedness of the adjointables by showing, with **5XI**,
+  that they are *all* of `B(H)` — a next-parsec result used to prove a
+  parsec-40 exercise, and one that empties the exercise.  It now runs solution
+  `parsec-40.180`: the adjoints of a convergent sequence are Cauchy because
+  `‖Tₙ* - Tₘ*‖ = ‖Tₙ - Tₘ‖` (**4XVI**.2), converge by completeness of `B(H)`
+  (**4V**), and the limit is adjoint to `T`.
+* **5XI** itself now runs the exercise's construction from Riesz (**5IX**):
+  `⟪S y, z⟫ = ⟪y, T z⟫`, conjugated, with boundedness from `adjointCLM`.
+  `ContinuousLinearMap.adjoint` has left the file entirely.
+* **7III**.11 (`‖a*‖ = ‖a‖`) runs the exercise's own hint, and **7III**.12
+  the solution's `‖½(a ± a*)‖ ≤ ½(‖a‖ + ‖a*‖)` estimate on top of it.
+* **9VII** (the sum of positives is positive) was `add_nonneg`, which states
+  nothing about the thesis's *definition* of positive; it now runs the printed
+  estimate `‖(a+b) - (t+s)‖ ≤ ‖a-t‖ + ‖b-s‖ ≤ t+s` through the **9IV** bridge.
+
+### Left, and why
+
+* **4III**.1/.2/.3, **4V**, **4X**.1, **4XIX**, **5VII**, **5IX**, **6II**,
+  **11II**, **11X**, **11XXI**.6 — Mathlib settles these by *the same*
+  argument.  Closing "the operator norm is a norm" by the
+  `NormedAddCommGroup` instance states nothing; re-deriving the Projection
+  Theorem's parallelogram-law Cauchy sequence, or Riesz's projection on
+  `ker f`, would copy Mathlib's proof into the file at ~60 lines apiece.
+* **9X**.5a–d — the thesis *itself* defers these ("try to prove the following
+  facts directly… we will prove them when we return to the positive elements
+  in 17VI").  Closing them with the later machinery is the honest rendering,
+  and 5d is where `orderNorm_eq_norm` belongs.
+* **9X**.2 — transcribing the printed `‖(a+‖a‖) - ‖a‖‖ ≤ ‖a‖` argument would
+  have to go through `cstar_positive_def`, whose reverse direction rests on
+  **17VI**.3a, which Mathlib proves from `le_algebraMap_norm_self` — this very
+  statement.  Leaving it on Mathlib keeps that circle out of the file.
+* **11XV**.3 — the solution's route needs the roots-of-unity factorisation
+  `bⁿ + 1 = ∏ₖ (b - ζ^{2k+1})` (whose printed sign needed errata
+  `parsec-110.150`): a polynomial identity plus a commuting-factors argument,
+  much longer than the current proof.  This is now **the only place in the file
+  that uses the spectral mapping theorem**, i.e. cstar.tex:4381 material.
+* **9IV** and **17VI**.3a — the order bridge.  17VI.3a rests on Mathlib's
+  CFC-based spectral order lemmas; repairing it means importing the thesis's
+  spectral-radius chain, which lives in `A/CStar/Positive.lean`, another
+  worker's file.  Recorded, not repaired.  (After this session **9VII** rests
+  on the bridge too — that is the dependency made explicit rather than hidden
+  inside `add_nonneg`.)
+* **7III**.8's existential still ranges over `Matrix (Fin 2) (Fin 2) ℂ`, which
+  carries no C*-norm here.  That is a statement matter, and statements were
+  settled in `acde73c`.
+
+### Compile
+
+`Theses/A/CStar/Basic.lean` compiles from source with **no errors and no
+`sorry`** (warnings unchanged from the session's start).  The olean was
+rebuilt and its two importers, `A/CStar/Positive.lean` and `A/VN/Basic.lean`,
+both recompile at `rc=0` against it — no statement changed, so nothing
+downstream moved.
+
+Axiom-clean **in situ** (source copied to the scratchpad, `#print axioms`
+appended, the copy compiled from source): all sixteen touched public
+theorems — `spectrum_bounded_1`, `spectrum_bounded_3`, `spectrum_basic_1`–`4`,
+`spectrum_self_adjoint_real_2`, `spectral_permanence`, `cstar_p_implies_i`,
+`cstar_positive_sum`, `cstar_positive_5e`, `orderNorm_seminorm`,
+`orderNorm_le_norm`, `orderNorm_mono`, `cstar_involution_basic_11`,
+`cstar_involution_basic_12` — are `[propext, Classical.choice, Quot.sound]`.
+The same scratch copy carried a transitive-dependency check — the full
+constant closure of each theorem, tested against a ban list — and that is
+what backs the claims above.  Concretely: the nine parsec-40/110 theorems
+(`adjointable_isClosed`, `spectrum_bounded_1`, `spectrum_bounded_3`,
+`spectrum_basic_1`–`4`, `spectrum_self_adjoint_real_2`,
+`spectral_permanence`) reach **none** of
+`spectrum.norm_le_norm_of_mem`, `spectrum.mem_resolventSet_of_norm_lt`,
+`Units.isOpen`, `spectrum.isCompact`, `spectrum.isClosed`,
+`StarSubalgebra.spectrum_eq`, `StarSubalgebra.coe_isUnit`,
+`IsSelfAdjoint.mem_spectrum_eq_re`, `spectrum.map_pow_of_pos`,
+`ContinuousLinearMap.adjoint` or `Theses.A.CStar.bounded_operator_adjoinable`;
+`cstar_p_implies_i` does not reach `CFC.posPart_sub_negPart`; and the three
+9X.4 theorems do not reach `Theses.A.CStar.orderNorm_eq_norm` (5d) or
+`CStarAlgebra.norm_le_norm_of_nonneg_of_le`.
+
+What the parsec-90 theorems *do* still reach, transitively, is Mathlib's
+spectral machinery — `spectrum.norm_le_norm_of_mem`, `Units.isOpen`,
+`IsSelfAdjoint.mem_spectrum_eq_re`, and for `cstar_positive_sum` also
+`CFC.posPart_sub_negPart`.  All of it arrives through **17VI**.3a
+(`norm_le_iff_neg_algebraMap_le`) and Mathlib's `StarOrderedRing` order
+lemmas, i.e. through the order bridge left standing above.  That is the one
+structural dependency in this file that a proof-route pass cannot fix from
+inside it.
+
+## Session 95 — A/CStar Representation + Matrices + TowardsVN: **the 29II dependency inversion is undone, and with it the whole Gelfand chain comes off Mathlib's maximal-ring-ideal route** — 27XVIII.1, 27XXVII and 29VII too; 34aII loses 135 lines to the thesis's own three-line proof, and 37VII finally uses Hellinger–Toeplitz (worker on `Theses/A/CStar/Representation.lean`, `Theses/A/CStar/Matrices.lean`, `Theses/A/CStar/TowardsVN.lean`)
+
+### What was repaired — seven proofs, five of them dependency inversions
+
+**29II `multiplicative_state_on_cx` (Representation.lean).**  The one the
+audit named and wave 1 declined at "150–250 lines".  It read its point `x`
+off the surjectivity of Mathlib's `CharacterSpace.homeoEval` — i.e. off
+**29VII**, which the thesis proves *using* 29II.  It is now the Lemma's own
+proof (cstar.tex:4520–4560) in three movements around
+
+    Z = { x ∈ X : h(x) ≠ 0 for some h ≥ 0 in C(X) with τ(h) = 0 }
+
+— **29V**'s covering argument, **29IV**'s Urysohn separation, **29VI**'s
+`(f − f(x₀))*(f − f(x₀))` computation.  Wave 1's blocker was real and is
+gone: 29V forms `g₁ ∨ ⋯ ∨ g_N` with wave 2's `commutative_cstar_basic_3_finite`
+(existence) and `commutative_cstar_basic_4_finite` (τ preserves it), both
+added to `A/CStar/Positive.lean` for exactly this.  It cost **160 lines**,
+not 250.  One local deviation, recorded here rather than in the note: the
+finite subcover is taken of `{ f ≥ ε }` rather than of all of `X`, because
+the thesis's cover misses the points where `f` vanishes; the conclusion
+`τ(f) ≤ ε` for every `ε > 0` is the same.  (The source's 290.50 also has two
+slips — `f(x) < g_n(x)` is printed `g(x) < f_n(x)`, and "finite infima" is
+written where "finite suprema" is meant.  Neither is worth an errata row: the
+intended statement is unambiguous from the surrounding text.)
+
+**29VII `eval_homeomorphism`** was the other half of the same inversion.
+Mathlib's `homeoEval` gets surjectivity from `ideal_isMaximal_iff` — the
+maximal *ring* ideals of `C(X)`, the route **16VIII** rejects and that
+`inv_mult_state` and `spectrum_miu` were already taken off.  It is now the
+Exercise's own three steps: `continuousMapEval` (a definition) for "δₓ is miu
+and `x ↦ δₓ` is continuous", Urysohn for injectivity, **29II** for
+surjectivity, and the compact-to-Hausdorff upgrade of erratum parsec-290.70.
+
+**27XVIII.1 `gelfand_representation_isometry`** — a third instance of the same
+family, not flagged by the audit.  Mathlib's `gelfandTransform_isometry`
+proves `spec(γ a) = spec(a)` by `WeakDual.CharacterSpace.mem_spectrum_iff_exists`,
+which is the rejected route again.  It now runs the Exercise's own hint:
+for self-adjoint `a` the spectrum of `γ(a)` is its range, which **27XVII**
+`spectrum_miu` identifies with `spec(a)`, so the spectral radii agree and
+**16II** `norm_spectrum` gives the norms; the general case is the C*-identity.
+`gelfand_representation_injective` is then the Exercise's own "conclude", and
+`gelfand_representation_range` takes its closed range from part 1 rather than
+from Mathlib's isometry.
+
+**27XXVII `gelfand`** followed: `gelfandTransform_bijective` brings its own
+copy of that isometry.  It is now **27XXVIII**'s assembly — injectivity from
+27XVIII.2, surjectivity by **27XX** `stone_weierstrass` applied to the closed
+⋆-subalgebra 27XVIII.2 exhibits as the range, which separates characters.
+`Matrices.lean`'s private `norm_le_of_forall_character` was the last live
+consumer of `gelfandTransform_isometry` in the tree and is rerouted; **no
+declaration under `Theses/` now reaches Mathlib's ideal-theoretic Gelfand
+theory.**
+
+**34aII `normal_russo_dye` (Matrices.lean)** — a class-2 repair, the expired
+premise the audit had already spotted.  Its 155-line proof ran the **34VII**
+partition-of-unity approximation directly on `a` (tent functions on `spec(a)`
+through the cfc) because `cp_commutative_dom` was `sorry` when it was
+written.  It has been proved since.  The Lemma's own three-line proof —
+`C*(a)` commutative by 28II.2, the restriction of `f` to it completely
+positive by **34IX**.2, then **34XVI** `cp_russo_dye` — is **18 lines**.
+Positivity transfers to the restriction because `0 ≤ x` in `C*(a)` makes
+`x = y*y` there, hence in `𝒜`; the order on `C*(a)` is
+`CStarAlgebra.spectralOrder`, supplied inside the proof.
+
+**37VII `bh_wot_bounded_complete` (TowardsVN.lean)** — the audit's `mild`
+row.  The last step bounded `‖T_α‖` uniformly by a second appeal to **35II**;
+**35VI** Hellinger–Toeplitz, which the Lemma cites, was not used at all.  It
+now runs the thesis's argument: the net of adjoints `(T_α)*` goes through
+**37II** as well, producing a map adjoint to `T`, and 35VI concludes.
+
+**39IX `exists_rho`**: no repair needed — the audit row was stale.  Commit
+`ff6ee3b` had already put it on 36V/36II/35VI; the CSV verdict is corrected
+from `route` to `faithful`.
+
+### What was deliberately left, and why
+
+* **27IV.1, 27IV.2** — triviality; the solution itself calls part 1
+  "immediate", and the miu clauses are carried by the type of an `AlgHom`.
+* **27XX `stone_weierstrass`, 27XXV `spectrum_calg_compact_hausdorff`** —
+  Mathlib's Stone–Weierstraß and Banach–Alaoglu are independent of Gelfand
+  theory (no inversion) and the thesis's 27XXI–27XXIV lattice argument and
+  Tychonoff argument duplicate them exactly.  Stop-list: a step Mathlib
+  settles that the point is not about.  27XX is now *used* by 27XXVII.
+* **28II's `mathlib` parts, 28III `sqrt_monotone`** — no inversion (Mathlib's
+  cfc is built on Gelfand, the same order as the thesis), and 28III's
+  Pedersen proof needs the `(a + 1/n)^α → a^α` convergence of addendum
+  parsec-280.40, which is not in the tree.
+* **29VIII `injective_miu_isometry`** — the thesis's route is categorical
+  (mono/epi in `CH`, restriction to `C*(a)`); the category `CH` is out of
+  scope here, so the route is unavailable.
+* **30IV.1 `omega_norm_basic_1`** — Mathlib's `PreGNS` inner product *is* the
+  `[·,·]_ω` the thesis applies 4XV to; the deviation is cosmetic.
+* **34VII `ccstar_pos_mat`** — note re-verified and accurate: the proof is
+  34VIII step for step, and only the hand-built partition of unity is
+  Mathlib's.
+* **34IX.2 `cp_commutative_dom`** — note re-verified and accurate.  It runs
+  the thesis's 34XI reduction through 34VII; the "approximation directly on
+  `a`" description belongs to the old `normal_russo_dye` proof, now retired.
+* **39IV.1–4 (TowardsVN)** — Bessel, convergence, completeness of a maximal
+  orthonormal set, Parseval.  Mathlib's proofs *are* the thesis's arguments
+  and rest on nothing this Proposition proves; transcribing them would
+  duplicate a step Mathlib settles that the chapter's point is not about.
+* The remaining `route` rows in `Matrices.lean` (32IV, 33I–33II, 34IV, 34XII,
+  34XVIII) rest on the thesis's *hinted* order-separation route through
+  32XV/33I, which the file deliberately does not transport; they were left
+  untouched and their notes are accurate.
+
+### Two private auxiliaries removed
+
+`norm_sum_smul_le_aux` and `norm_sum_smul_le_of_nonneg` in `Matrices.lean`
+existed only to serve 34aII's abandoned approximation and had no other user
+and no thesis counterpart.  They went with it.  Their audit rows are kept and
+marked `REMOVED`, so the inventory records what happened rather than losing
+two lines silently.  **No statement of a thesis result was touched anywhere
+in this pass.**
+
+### Compile
+
+`A/CStar/Representation.lean`, `A/CStar/Matrices.lean` and
+`A/CStar/TowardsVN.lean` all compile from source with **no errors and no
+`sorry`**; oleans rebuilt and installed.  Every importer recompiled at
+`rc=0`: `A/VN/Basic`, `A/VN/NormalFunctionals`, `B/Dils/HilbertModules`,
+`B/Dils/Stinespring`.  **No new `sorry` anywhere.**
+
+Axiom-clean **in situ** (source copied to the scratchpad, `#print axioms`
+appended, the copy compiled from source):
+
+    'Theses.A.CStar.multiplicative_state_on_cx'      [propext, Classical.choice, Quot.sound]
+    'Theses.A.CStar.eval_homeomorphism'              [propext, Classical.choice, Quot.sound]
+    'Theses.A.CStar.gelfand_representation_isometry' [propext, Classical.choice, Quot.sound]
+    'Theses.A.CStar.gelfand_representation_injective'[propext, Classical.choice, Quot.sound]
+    'Theses.A.CStar.gelfand_representation_range'    [propext, Classical.choice, Quot.sound]
+    'Theses.A.CStar.gelfand'                         [propext, Classical.choice, Quot.sound]
+    'Theses.A.CStar.spectrum_miu'                    [propext, Classical.choice, Quot.sound]
+    'Theses.A.CStar.normal_russo_dye'                [propext, Classical.choice, Quot.sound]
+    'Theses.A.CStar.ccstar_pos_mat'                  [propext, Classical.choice, Quot.sound]
+    'Theses.A.CStar.bh_wot_bounded_complete'         [propext, Classical.choice, Quot.sound]
+    'Theses.A.CStar.bh_np'                           [propext, Classical.choice, Quot.sound]
+
+`docs/audit/acstar-matrices-representation.csv` and
+`docs/audit/acstar-towardsvn-avn-completeness.csv` updated: nine `proof`
+verdicts changed (seven repairs, two stale rows corrected — 27XVII was
+already fixed in `fcd9292` and 39IX `exists_rho` in `ff6ee3b`), and the
+deliberate omissions above recorded in the `status` column.

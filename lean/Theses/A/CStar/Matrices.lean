@@ -1866,11 +1866,14 @@ private theorem cstarMatrix_sum_apply {𝒟 : Type*} [CStarAlgebra 𝒟] {n K : 
 
 variable {𝒞 : Type*} [CommCStarAlgebra 𝒞] [PartialOrder 𝒞] [StarOrderedRing 𝒞]
 
-/-- In a commutative C*-algebra the norm is the sup over the character space. -/
+/-- In a commutative C*-algebra the norm is the sup over the character space.
+(The isometry is **27XVIII**.1 `gelfand_representation_isometry`, not
+Mathlib's `gelfandTransform_isometry`: the latter reaches the character space
+through maximal *ring* ideals, the route **16VIII** rejects.) -/
 private theorem norm_le_of_forall_character {x : 𝒞} {C : ℝ} (hC : 0 ≤ C)
     (h : ∀ φ : WeakDual.characterSpace ℂ 𝒞, ‖φ x‖ ≤ C) : ‖x‖ ≤ C := by
   have hiso : ‖WeakDual.gelfandTransform ℂ 𝒞 x‖ = ‖x‖ :=
-    (gelfandTransform_isometry 𝒞).norm_map_of_map_zero (map_zero _) x
+    gelfand_representation_isometry x
   rw [← hiso, ContinuousMap.norm_le _ hC]
   exact h
 
@@ -2396,204 +2399,43 @@ theorem choi_2 (f : 𝒜 →ₗ[ℂ] ℬ) (hf : IsCompletelyPositiveMap f)
 
 **34aI** (cstar.tex:5724): introduction — nothing to formalize. -/
 
-/-- Auxiliary for **34aII**, over a `Fintype`: a *positive combination*
-`∑ₖ λₖ pₖ` of positive elements has `‖∑ₖ λₖ pₖ‖ ≤ (maxₖ |λₖ|) ‖∑ₖ pₖ‖`.
-
-This is **34XVI** `cp_russo_dye` applied to the positive map
-`c ↦ ∑ₖ cₖ pₖ` out of the (commutative, finite-dimensional) C*-algebra
-`ι → ℂ`, whose complete positivity is immediate: `∑ᵢⱼ bᵢ* φ(c̄ᵢcⱼ) bⱼ`
-regroups as `∑ₖ dₖ* pₖ dₖ` with `dₖ = ∑ᵢ cᵢ(k) bᵢ`.  So this is the one
-instance of **34IX**.2 (`cp_commutative_dom`, since proved) that the
-Russo–Dye argument needs, and it needs no approximation. -/
-private theorem norm_sum_smul_le_aux {ι : Type*} [Fintype ι] (p : ι → ℬ)
-    (hp : ∀ k, 0 ≤ p k) (l : ι → ℂ) (M : ℝ) (hM0 : 0 ≤ M)
-    (hM : ∀ k, ‖l k‖ ≤ M) :
-    ‖∑ k, l k • p k‖ ≤ M * ‖∑ k, p k‖ := by
-  set φ : (ι → ℂ) →ₗ[ℂ] ℬ :=
-    { toFun := fun c => ∑ k, c k • p k
-      map_add' := by intro c d; simp [add_smul, Finset.sum_add_distrib]
-      map_smul' := by intro r c; simp [smul_smul, Finset.smul_sum] } with hφ
-  have hφa : ∀ c : ι → ℂ, φ c = ∑ k, c k • p k := fun c => rfl
-  have hφ1 : φ 1 = ∑ k, p k := by simp [hφa]
-  have hcp : IsCompletelyPositiveMap φ := by
-    intro n a b
-    have key : ∀ i j : Fin n, star (b i) * φ (star (a i) * a j) * b j
-        = ∑ k, star (a i k • b i) * p k * (a j k • b j) := by
-      intro i j
-      rw [hφa, Finset.mul_sum, Finset.sum_mul]
-      refine Finset.sum_congr rfl fun k _ => ?_
-      simp only [Pi.mul_apply, Pi.star_apply, star_smul, RCLike.star_def,
-        smul_mul_assoc, mul_smul_comm, smul_smul]
-      ring_nf
-    calc ∑ i, ∑ j, star (b i) * φ (star (a i) * a j) * b j
-        = ∑ i, ∑ j, ∑ k, star (a i k • b i) * p k * (a j k • b j) :=
-          Finset.sum_congr rfl fun i _ => Finset.sum_congr rfl fun j _ => key i j
-      _ = ∑ i, ∑ k, ∑ j, star (a i k • b i) * p k * (a j k • b j) :=
-          Finset.sum_congr rfl fun i _ => Finset.sum_comm
-      _ = ∑ k, ∑ i, ∑ j, star (a i k • b i) * p k * (a j k • b j) := Finset.sum_comm
-      _ = ∑ k, star (∑ i, a i k • b i) * p k * (∑ j, a j k • b j) := by
-          refine Finset.sum_congr rfl fun k _ => ?_
-          rw [star_sum, Finset.sum_mul, Finset.sum_mul]
-          refine Finset.sum_congr rfl fun i _ => ?_
-          rw [Finset.mul_sum]
-      _ ≥ 0 := by
-          refine Finset.sum_nonneg fun k _ => ?_
-          obtain ⟨q, hq⟩ := CStarAlgebra.nonneg_iff_eq_star_mul_self.mp (hp k)
-          rw [hq]
-          have e : star (∑ i, a i k • b i) * (star q * q) * (∑ j, a j k • b j)
-              = star (q * ∑ i, a i k • b i) * (q * ∑ i, a i k • b i) := by
-            rw [star_mul]; noncomm_ring
-          rw [e]
-          exact star_mul_self_nonneg _
-  have h := cp_russo_dye φ hcp l
-  rw [hφ1, hφa] at h
-  refine h.trans ?_
-  have hl : ‖l‖ ≤ M := by rw [pi_norm_le_iff_of_nonneg hM0]; exact hM
-  calc ‖∑ k, p k‖ * ‖l‖ ≤ ‖∑ k, p k‖ * M :=
-        mul_le_mul_of_nonneg_left hl (norm_nonneg _)
-    _ = M * ‖∑ k, p k‖ := mul_comm _ _
-
-/-- Auxiliary for **34aII**, the `Finset` form of `norm_sum_smul_le_aux`. -/
-private theorem norm_sum_smul_le_of_nonneg {ι : Type*} (s : Finset ι) (p : ι → ℬ)
-    (hp : ∀ k ∈ s, 0 ≤ p k) (l : ι → ℂ) (M : ℝ) (hM0 : 0 ≤ M)
-    (hM : ∀ k ∈ s, ‖l k‖ ≤ M) :
-    ‖∑ k ∈ s, l k • p k‖ ≤ M * ‖∑ k ∈ s, p k‖ := by
-  rw [← Finset.sum_coe_sort s fun k => l k • p k, ← Finset.sum_coe_sort s p]
-  exact norm_sum_smul_le_aux (fun k : {x // x ∈ s} => p k) (fun k => hp k k.2)
-    (fun k : {x // x ∈ s} => l k) M hM0 fun k => hM k k.2
-
 /-- **34aII** (`normal-russo-dye`, cstar.tex:5751, Lemma):
 `‖f(a)‖ ≤ ‖f(1)‖ ‖a‖` for every p-map `f : 𝒜 → ℬ` and *normal* `a ∈ 𝒜`.
 
-*Class 2 — different route.*  The thesis restricts `f` to the commutative
-C*-subalgebra `C*(a)` and invokes **34IX**.2 (`cp_commutative_dom`, a
-positive map out of a commutative C*-algebra is cp) and then **34XVI**
-`cp_russo_dye`.  `cp_commutative_dom` was still `sorry` when this was
-written (it is proved now), and its own proof
-needs **34VII** `ccstar-pos-mat` — a partition-of-unity approximation on the
-Gelfand spectrum.  We run that approximation *directly on `a`* instead,
-where it is explicit: cover the compact `spec(a) ⊆ ℂ` by finitely many
-`δ`-balls centred at points `λ` of the spectrum, turn the tent functions
-`max(0, δ − |z − λ|)` into a partition of unity `ψ_λ` by dividing by their
-sum, and put `g_λ := ψ_λ(a)` through the continuous functional calculus.
-Then `g_λ ≥ 0`, `∑ g_λ = 1`, `‖a − ∑ λ g_λ‖ ≤ δ`, and the approximant is
-handled by `norm_sum_smul_le_of_nonneg`, which is the only instance of
-`cp_commutative_dom` involved and is elementary.  No Gelfand duality and no
-Urysohn lemma are needed. -/
+*Class 1 — faithful.*  The Lemma's own three-line proof (cstar.tex:5757):
+`a` being normal, the C*-subalgebra `C*(a)` it generates is commutative by
+**28II**.2, so the restriction of `f` to `C*(a)` is completely positive by
+**34IX**.2 `cp_commutative_dom`, and **34XVI** `cp_russo_dye` applies to it.
+Positivity transfers to the restriction because `0 ≤ x` in `C*(a)` makes
+`x = y* y` there, hence in `𝒜`.
+
+Until this repair the proof ran the **34VII** partition-of-unity
+approximation directly on `a` — tent functions on `spec(a)` fed through the
+continuous functional calculus — because `cp_commutative_dom` was still
+`sorry` when it was written.  It has been proved since; that premise had
+expired, and the thesis's route costs 150 lines less.  (The two private
+auxiliaries `norm_sum_smul_le_aux` and `norm_sum_smul_le_of_nonneg`, which
+existed only to serve the approximation, went with it.) -/
 theorem normal_russo_dye (f : 𝒜 →ₗ[ℂ] ℬ) (hf : IsPositiveMap f) (a : 𝒜)
     (ha : IsStarNormal a) : ‖f a‖ ≤ ‖f 1‖ * ‖a‖ := by
-  rcases subsingleton_or_nontrivial 𝒜 with _ | _
-  · rw [Subsingleton.elim a 0, map_zero, norm_zero]
-    positivity
-  refine le_of_forall_pos_le_add fun ε hε => ?_
-  set C : ℝ := 2 * ‖f 1‖ + 1 with hC
-  have hCpos : 0 < C := by positivity
-  set δ : ℝ := ε / C with hδ
-  have hδpos : 0 < δ := div_pos hε hCpos
-  -- a finite subcover of the spectrum by `δ`-balls centred in the spectrum
-  have hcov : spectrum ℂ a ⊆ ⋃ lam : spectrum ℂ a, Metric.ball (lam : ℂ) δ := fun z hz =>
-    Set.mem_iUnion.mpr ⟨⟨z, hz⟩, Metric.mem_ball_self hδpos⟩
-  obtain ⟨S, hS⟩ := (spectrum.isCompact a).elim_finite_subcover
-    (fun lam : spectrum ℂ a => Metric.ball (lam : ℂ) δ) (fun _ => Metric.isOpen_ball) hcov
-  -- the tent functions and the partition of unity they induce
-  set φ : spectrum ℂ a → ℂ → ℝ := fun lam z => max 0 (δ - dist z (lam : ℂ)) with hφdef
-  set Φ : ℂ → ℝ := fun z => ∑ lam ∈ S, φ lam z with hΦdef
-  have hφnn : ∀ lam z, 0 ≤ φ lam z := fun _ _ => le_max_left _ _
-  have hφsupp : ∀ lam z, φ lam z * dist z (lam : ℂ) ≤ φ lam z * δ := by
-    intro lam z
-    rcases le_or_gt δ (dist z (lam : ℂ)) with h | h
-    · have : φ lam z = 0 := max_eq_left (by linarith)
-      simp [this]
-    · exact mul_le_mul_of_nonneg_left h.le (hφnn lam z)
-  have hφcont : ∀ lam, Continuous (φ lam) := fun lam =>
-    continuous_const.max (continuous_const.sub (continuous_id.dist continuous_const))
-  have hΦcont : Continuous Φ := continuous_finsetSum _ fun lam _ => hφcont lam
-  have hΦpos : ∀ z ∈ spectrum ℂ a, 0 < Φ z := by
-    intro z hz
-    obtain ⟨lam, hlamS, hlam⟩ := Set.mem_iUnion₂.mp (hS hz)
-    refine lt_of_lt_of_le ?_ (Finset.single_le_sum (f := fun lam => φ lam z)
-      (fun i _ => hφnn i z) hlamS)
-    have : dist z (lam : ℂ) < δ := Metric.mem_ball.mp hlam
-    simp only [hφdef]
-    exact lt_max_of_lt_right (by linarith)
-  set ψ : spectrum ℂ a → ℂ → ℂ := fun lam z => ((φ lam z / Φ z : ℝ) : ℂ) with hψdef
-  have hψcont : ∀ lam, ContinuousOn (ψ lam) (spectrum ℂ a) := fun lam =>
-    Complex.continuous_ofReal.comp_continuousOn
-      ((hφcont lam).continuousOn.div hΦcont.continuousOn fun z hz => (hΦpos z hz).ne')
-  have hψnn : ∀ lam, ∀ z ∈ spectrum ℂ a, 0 ≤ ψ lam z := by
-    intro lam z hz
-    simp only [hψdef]
-    exact Complex.zero_le_real.mpr (div_nonneg (hφnn lam z) (hΦpos z hz).le)
-  have hψsum : ∀ z ∈ spectrum ℂ a, ∑ lam ∈ S, ψ lam z = 1 := by
-    intro z hz
-    simp only [hψdef, ← Complex.ofReal_sum, ← Finset.sum_div]
-    rw [div_self (hΦpos z hz).ne']
-    norm_num
-  -- transport it into `𝒜` by the continuous functional calculus
-  set g : spectrum ℂ a → 𝒜 := fun lam => cfc (ψ lam) a with hgdef
-  have hgnn : ∀ lam, 0 ≤ g lam := fun lam => cfc_nonneg (hψnn lam)
-  have hgsum : ∑ lam ∈ S, g lam = 1 := by
-    rw [hgdef, ← cfc_sum _ a S fun lam _ => hψcont lam]
-    rw [cfc_congr (g := 1) (fun z hz => by simpa [Finset.sum_apply] using hψsum z hz)]
-    exact cfc_one ℂ a
-  set b : 𝒜 := ∑ lam ∈ S, (lam : ℂ) • g lam with hbdef
-  have hmulcont : ∀ lam : spectrum ℂ a,
-      ContinuousOn (fun z => (lam : ℂ) * ψ lam z) (spectrum ℂ a) := fun lam =>
-    continuousOn_const.mul (hψcont lam)
-  have hsumcont : ContinuousOn (fun z => ∑ lam ∈ S, (lam : ℂ) * ψ lam z) (spectrum ℂ a) :=
-    continuousOn_finsetSum _ fun lam _ => hmulcont lam
-  have hbcfc : b = cfc (fun z => ∑ lam ∈ S, (lam : ℂ) * ψ lam z) a := by
-    have he : (fun z => ∑ lam ∈ S, (lam : ℂ) * ψ lam z)
-        = ∑ lam ∈ S, (fun z => (lam : ℂ) * ψ lam z) := by
-      ext z; simp [Finset.sum_apply]
-    rw [hbdef, he, cfc_sum _ a S fun lam _ => hmulcont lam]
-    exact Finset.sum_congr rfl fun lam _ => (cfc_const_mul _ _ _ (hψcont lam)).symm
-  have hnorm : ‖a - b‖ ≤ δ := by
-    have hab : a - b = cfc (fun z => z - ∑ lam ∈ S, (lam : ℂ) * ψ lam z) a := by
-      rw [cfc_sub (fun x : ℂ => x) (fun z => ∑ lam ∈ S, (lam : ℂ) * ψ lam z) a
-          continuousOn_id hsumcont, cfc_id' ℂ a, ← hbcfc]
-    rw [hab]
-    refine norm_cfc_le hδpos.le fun z hz => ?_
-    have key : z - ∑ lam ∈ S, (lam : ℂ) * ψ lam z = ∑ lam ∈ S, ψ lam z * (z - (lam : ℂ)) := by
-      have h1 : ∑ lam ∈ S, ψ lam z * (z - (lam : ℂ))
-          = (∑ lam ∈ S, ψ lam z) * z - ∑ lam ∈ S, (lam : ℂ) * ψ lam z := by
-        rw [Finset.sum_mul, ← Finset.sum_sub_distrib]
-        exact Finset.sum_congr rfl fun lam _ => by ring
-      rw [h1, hψsum z hz, one_mul]
-    rw [key]
-    refine (norm_sum_le _ _).trans ?_
-    have hterm : ∀ lam ∈ S, ‖ψ lam z * (z - (lam : ℂ))‖ ≤ (φ lam z / Φ z) * δ := by
-      intro lam _
-      rw [norm_mul]
-      have h1 : ‖ψ lam z‖ = φ lam z / Φ z := by
-        simp only [hψdef, Complex.norm_real, Real.norm_eq_abs]
-        exact abs_of_nonneg (div_nonneg (hφnn lam z) (hΦpos z hz).le)
-      have h2 : ‖z - (lam : ℂ)‖ = dist z (lam : ℂ) := (dist_eq_norm z _).symm
-      rw [h1, h2, div_mul_eq_mul_div, div_mul_eq_mul_div]
-      exact div_le_div_of_nonneg_right (hφsupp lam z) (hΦpos z hz).le
-    refine (Finset.sum_le_sum hterm).trans (le_of_eq ?_)
-    rw [← Finset.sum_mul, ← Finset.sum_div, div_self (hΦpos z hz).ne', one_mul]
-  -- the two halves of the estimate
-  have hfb : ‖f b‖ ≤ ‖a‖ * ‖f 1‖ := by
-    have hfbe : f b = ∑ lam ∈ S, (lam : ℂ) • f (g lam) := by
-      rw [hbdef, map_sum]; exact Finset.sum_congr rfl fun lam _ => map_smul f _ _
-    have h := norm_sum_smul_le_of_nonneg S (fun lam => f (g lam))
-      (fun lam _ => hf _ (hgnn lam)) (fun lam => (lam : ℂ)) ‖a‖ (norm_nonneg a)
-      (fun lam _ => spectrum.norm_le_norm_of_mem lam.2)
-    rw [show ∑ lam ∈ S, f (g lam) = f 1 from by rw [← map_sum, hgsum]] at h
-    rw [hfbe]; exact h
-  have hfab : ‖f a - f b‖ ≤ 2 * ‖f 1‖ * δ := by
-    rw [← map_sub]
-    exact (weak_russo_dye_2 f hf _).trans
-      (by nlinarith [hnorm, norm_nonneg (f 1), norm_nonneg (a - b)])
-  have hlast : 2 * ‖f 1‖ * δ ≤ ε := by
-    rw [hδ]
-    have : C * (ε / C) = ε := by field_simp
-    nlinarith [div_nonneg hε.le hCpos.le, norm_nonneg (f 1)]
-  calc ‖f a‖ = ‖f b + (f a - f b)‖ := by rw [show f b + (f a - f b) = f a from by abel]
-    _ ≤ ‖f b‖ + ‖f a - f b‖ := norm_add_le _ _
-    _ ≤ ‖a‖ * ‖f 1‖ + 2 * ‖f 1‖ * δ := add_le_add hfb hfab
-    _ ≤ ‖f 1‖ * ‖a‖ + ε := by rw [mul_comm ‖a‖ ‖f 1‖]; linarith
+  -- `C*(a)`, commutative because `a` is normal
+  let S := StarAlgebra.elemental ℂ a
+  let _ : PartialOrder S := CStarAlgebra.spectralOrder S
+  have _ : StarOrderedRing S := CStarAlgebra.spectralOrderedRing S
+  -- the restriction of `f` to `C*(a)`, still positive
+  let g : S →ₗ[ℂ] ℬ := f ∘ₗ (S.subtype : S →ₐ[ℂ] 𝒜).toLinearMap
+  have hga : ∀ x : S, g x = f (x : 𝒜) := fun _ => rfl
+  have hgpos : IsPositiveMap g := by
+    intro x hx
+    obtain ⟨y, hy⟩ := CStarAlgebra.nonneg_iff_eq_star_mul_self.mp hx
+    have hxy : (x : 𝒜) = star (y : 𝒜) * (y : 𝒜) := by rw [hy]; push_cast; rfl
+    rw [hga, hxy]
+    exact hf _ (star_mul_self_nonneg _)
+  -- **34IX**.2 and then **34XVI**
+  have h := cp_russo_dye g (cp_commutative_dom g hgpos)
+    ⟨a, StarAlgebra.elemental.self_mem ℂ a⟩
+  rw [hga, hga] at h
+  simpa using h
 
 /-! **34aIV** (`cstar-unitary`, cstar.tex:5766, Definition): an element `u`
 of a C*-algebra is *unitary* when `u* u = 1 = u u*` — Mathlib's submonoid

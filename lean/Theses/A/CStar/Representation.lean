@@ -800,16 +800,54 @@ theorem spectrum_miu (a : 𝒜) (ha : IsSelfAdjoint a) :
 
 /-- **27XVIII** (`gelfand-representation-isometry`, cstar.tex:4082,
 Exercise), part 1: the Gelfand representation is an isometry,
-`‖γ(a)‖ = ‖a‖`. -/
+`‖γ(a)‖ = ‖a‖`.
+
+*Class 1 — faithful.*  The Exercise's own hint (cstar.tex:4086): for
+self-adjoint `a` the range of `γ(a)` is `spec(a)` by **27XVII**
+`spectrum_miu` — the spectrum of an element of `C(spec 𝒜)` being its range —
+so `γ(a)` and `a` have the same spectral radius, and **16II**
+`norm_spectrum` turns that into `‖γ(a)‖ = ‖a‖`.  The general case is the
+C*-identity: `‖γ(a)‖² = ‖γ(a)*γ(a)‖ = ‖γ(a*a)‖ = ‖a*a‖ = ‖a‖²`.
+
+Until this repair the theorem was Mathlib's `gelfandTransform_isometry`,
+whose proof runs through `WeakDual.CharacterSpace.mem_spectrum_iff_exists`
+and so through maximal *ring* ideals — the route **16VIII** rejects and that
+`inv_mult_state` and `spectrum_miu` were taken off. -/
 theorem gelfand_representation_isometry (a : 𝒜) :
-    ‖gelfandTransform ℂ 𝒜 a‖ = ‖a‖ :=
-  (gelfandTransform_isometry 𝒜).norm_map_of_map_zero (map_zero _) a
+    ‖gelfandTransform ℂ 𝒜 a‖ = ‖a‖ := by
+  -- the self-adjoint case, by **27XVII** and **16II**
+  have hsa : ∀ b : 𝒜, IsSelfAdjoint b → ‖gelfandTransform ℂ 𝒜 b‖ = ‖b‖ := by
+    intro b hb
+    have hγsa : IsSelfAdjoint (gelfandTransform ℂ 𝒜 b) := by
+      rw [IsSelfAdjoint, ← gelfand_representation_basic_2, hb.star_eq]
+    have hspec : spectrum ℂ (gelfandTransform ℂ 𝒜 b) = spectrum ℂ b := by
+      rw [ContinuousMap.spectrum_eq_range]
+      exact (spectrum_miu b hb).symm
+    have hr : spectralRadius ℂ (gelfandTransform ℂ 𝒜 b) = spectralRadius ℂ b := by
+      unfold spectralRadius
+      rw [hspec]
+    rw [norm_spectrum _ hγsa, norm_spectrum b hb] at hr
+    exact congrArg NNReal.toReal (ENNReal.coe_inj.mp hr)
+  -- the general case, by the C*-identity
+  have hstar : star (gelfandTransform ℂ 𝒜 a) * gelfandTransform ℂ 𝒜 a
+      = gelfandTransform ℂ 𝒜 (star a * a) := by
+    rw [map_mul, gelfand_representation_basic_2]
+  have h2 : ‖gelfandTransform ℂ 𝒜 a‖ * ‖gelfandTransform ℂ 𝒜 a‖ = ‖a‖ * ‖a‖ := by
+    rw [← CStarRing.norm_star_mul_self, hstar, hsa _ (IsSelfAdjoint.star_mul_self a),
+      CStarRing.norm_star_mul_self]
+  nlinarith [norm_nonneg (gelfandTransform ℂ 𝒜 a), norm_nonneg a]
 
 /-- **27XVIII** (`gelfand-representation-isometry`, cstar.tex:4082,
-Exercise), part 2, first clause: consequently `γ` is injective. -/
+Exercise), part 2, first clause: consequently `γ` is injective.
+
+*Class 1 — faithful.*  The Exercise's own "conclude": `γ(a) = γ(b)` makes
+`‖a − b‖ = ‖γ(a − b)‖ = 0` by part 1. -/
 theorem gelfand_representation_injective :
-    Function.Injective (gelfandTransform ℂ 𝒜) :=
-  (gelfandTransform_isometry 𝒜).injective
+    Function.Injective (gelfandTransform ℂ 𝒜) := by
+  intro a b hab
+  have h : ‖a - b‖ = 0 := by
+    rw [← gelfand_representation_isometry (a - b), map_sub, hab, sub_self, norm_zero]
+  exact sub_eq_zero.mp (norm_eq_zero.mp h)
 
 /-- **27XVIII** (`gelfand-representation-isometry`, cstar.tex:4082,
 Exercise), part 2, second clause: the range of `γ` is a *C*-subalgebra* of
@@ -827,7 +865,8 @@ theorem gelfand_representation_range :
   refine ⟨StarAlgHom.range (gelfandStarTransform 𝒜 : 𝒜 →⋆ₐ[ℂ] _), rfl, ?_,
     StarAlgEquiv.ofInjective _ gelfand_representation_injective, fun _ => rfl⟩
   show IsClosed (Set.range (gelfandTransform ℂ 𝒜))
-  exact (gelfandTransform_isometry 𝒜).isClosedEmbedding.isClosed_range
+  exact (AddMonoidHomClass.isometry_of_norm (gelfandTransform ℂ 𝒜)
+    gelfand_representation_isometry).isClosedEmbedding.isClosed_range
 
 /-- **27XX** (`stone-weierstrass`, cstar.tex:4103, Theorem
 (Stone–Weierstraß)): a C*-subalgebra `𝒮` of `C(X)`, `X` compact Hausdorff,
@@ -855,12 +894,36 @@ theorem spectrum_calg_compact_hausdorff :
 
 /-- **27XXVII** (`gelfand`, cstar.tex:4221, Gelfand's Representation
 Theorem): for a commutative C*-algebra `𝒜` the Gelfand representation
-`γ : 𝒜 → C(spec 𝒜)` is an miu-isomorphism — it is bijective (Mathlib:
-`gelfandTransform_bijective`; and star-preserving by
-`gelfand_representation_basic_2`, so a ⋆-isomorphism:
-`gelfandStarTransform`). -/
-theorem gelfand : Function.Bijective (gelfandTransform ℂ 𝒜) :=
-  gelfandTransform_bijective 𝒜
+`γ : 𝒜 → C(spec 𝒜)` is an miu-isomorphism — it is bijective (and
+star-preserving by `gelfand_representation_basic_2`, so a ⋆-isomorphism:
+`gelfandStarTransform`).
+
+*Class 1 — faithful.*  The assembly of **27XXVIII** (cstar.tex:4228):
+injectivity is **27XVIII**.2, and for surjectivity the range of `γ` is a
+closed ⋆-subalgebra of `C(spec 𝒜)` by **27XVIII**.2's second clause which
+separates the points of `spec 𝒜` — two characters agreeing on every `γ(a)`
+agree on every `a` — so **27XX** `stone_weierstrass` makes it everything.
+
+Until this repair the theorem was Mathlib's `gelfandTransform_bijective`,
+which supplies its own isometry (the maximal-ring-ideal route) instead of
+**27XVIII**. -/
+theorem gelfand : Function.Bijective (gelfandTransform ℂ 𝒜) := by
+  refine ⟨gelfand_representation_injective, ?_⟩
+  obtain ⟨S, hScarrier, hSclosed, -⟩ := gelfand_representation_range (𝒜 := 𝒜)
+  have hmem : ∀ a : 𝒜, gelfandTransform ℂ 𝒜 a ∈ S := fun a => by
+    rw [← SetLike.mem_coe, hScarrier]; exact ⟨a, rfl⟩
+  have hsep : ∀ φ ψ : characterSpace ℂ 𝒜, φ ≠ ψ → ∃ f ∈ S, f φ ≠ f ψ := by
+    intro φ ψ hne
+    by_contra hcon
+    refine hne (Subtype.ext (ContinuousLinearMap.ext fun a => ?_))
+    by_contra hne2
+    exact hcon ⟨gelfandTransform ℂ 𝒜 a, hmem a, hne2⟩
+  have htop : S = ⊤ := stone_weierstrass S hSclosed hsep
+  intro g
+  have hg : g ∈ (S : Set C(characterSpace ℂ 𝒜, ℂ)) := by
+    rw [SetLike.mem_coe, htop]
+    exact StarSubalgebra.mem_top
+  rwa [hScarrier] at hg
 
 end GelfandRepresentation
 
@@ -1094,23 +1157,257 @@ section Duality
 variable {X : Type*} [TopologicalSpace X] [CompactSpace X] [T2Space X]
 
 /-- **29II** (cstar.tex:4503, Lemma): every miu-map `τ : C(X) → ℂ`, `X`
-compact Hausdorff, is given by evaluation at some point `x ∈ X`. -/
+compact Hausdorff, is given by evaluation at some point `x ∈ X`.
+
+*Class 1 — faithful.*  The Lemma's own proof (cstar.tex:4520–4560), in three
+movements around the set
+
+  `Z = { x ∈ X : h(x) ≠ 0 for some h ≥ 0 in C(X) with τ(h) = 0 }`.
+
+**29V** (cstar.tex:4540) — if `f ≥ 0` vanishes outside `Z` then `τ(f) = 0`:
+each `x` with `f(x) > 0` lies in `Z`, so some `h ≥ 0` with `τ(h) = 0` has
+`h(x) > 0`, and `g := (f(x)/h(x) + 1)·h` is a positive element with
+`τ(g) = 0` and `g(x) > f(x)`; the sets `{ f < g }` cover the compact
+`{ f ≥ ε }`, a finite subcover gives `g₁, …, g_N`, and their supremum
+`g₁ ∨ ⋯ ∨ g_N` — which exists by **26II**.3 and which `τ` preserves by
+**26II**.4, so `τ(g₁ ∨ ⋯ ∨ g_N) = 0` — dominates `f` up to `ε`.  Hence
+`0 ≤ τ(f) ≤ ε` for every `ε > 0`.
+
+**29IV** (cstar.tex:4530) — `X \ Z` has at most one point: for `x ≠ y`
+Urysohn gives `p, q ≥ 0` with `pq = 0`, `p(x) = 1`, `q(y) = 1`, and
+`0 = τ(pq) = τ(p)τ(q)` puts `x` or `y` into `Z`.  It is non-empty because
+`f = 1` in **29V** would otherwise give `1 = τ(1) = 0`.
+
+**29VI** (cstar.tex:4560) — with `x₀` the unique point outside `Z`, the
+element `d := f − f(x₀)` has `(d*d)(x) ≠ 0 ⟹ x ≠ x₀ ⟹ x ∈ Z`, so **29V**
+gives `0 = τ(d*d) = |τ(f) − f(x₀)|²`.
+
+Until this repair the proof ran backwards: it read `x` off the surjectivity
+of Mathlib's `CharacterSpace.homeoEval`, i.e. off **29VII** — which the
+thesis derives *from* this Lemma.  The finite-supremum ingredient **29V**
+needs (`commutative_cstar_basic_3_finite`, `commutative_cstar_basic_4_finite`)
+is what made the honest route available. -/
 theorem multiplicative_state_on_cx (τ : C(X, ℂ) →⋆ₐ[ℂ] ℂ) :
     ∃ x : X, ∀ f : C(X, ℂ), τ f = f x := by
-  obtain ⟨x, hx⟩ := (WeakDual.CharacterSpace.homeoEval X ℂ).surjective
-    (WeakDual.CharacterSpace.equivAlgHom.symm (τ : C(X, ℂ) →ₐ[ℂ] ℂ))
-  refine ⟨x, fun f => ?_⟩
-  have h1 : (WeakDual.CharacterSpace.equivAlgHom.symm
-      (τ : C(X, ℂ) →ₐ[ℂ] ℂ) : C(X, ℂ) → ℂ) f = f x := by rw [← hx]; rfl
-  simpa using h1
+  classical
+  have hmono : ∀ {a b : C(X, ℂ)}, a ≤ b → τ a ≤ τ b := by
+    intro a b hab
+    have h := norm_mi_map_positive τ (b - a) (sub_nonneg.mpr hab)
+    rw [map_sub] at h
+    exact sub_nonneg.mp h
+  set Z : Set X := {x : X | ∃ h : C(X, ℂ), 0 ≤ h ∧ τ h = 0 ∧ h x ≠ 0} with hZdef
+  -- **29V**
+  have key : ∀ f : C(X, ℂ), 0 ≤ f → (∀ x : X, f x ≠ 0 → x ∈ Z) → τ f = 0 := by
+    intro f hf hfZ
+    have hf0 : (0 : ℂ) ≤ τ f := norm_mi_map_positive τ f hf
+    have hbound : ∀ ε : ℝ, 0 < ε → (τ f).re ≤ 0 + ε := by
+      intro ε hε
+      have hKc : IsClosed {x : X | ε ≤ (f x).re} :=
+        isClosed_le continuous_const (Complex.continuous_re.comp f.continuous)
+      have hK : IsCompact {x : X | ε ≤ (f x).re} := hKc.isCompact
+      set G : Type _ := {g : C(X, ℂ) // 0 ≤ g ∧ τ g = 0} with hGdef
+      set U : G → Set X := fun g => {y : X | (f y).re < ((g : C(X, ℂ)) y).re} with hUdef
+      have hUo : ∀ g : G, IsOpen (U g) := fun g =>
+        isOpen_lt (Complex.continuous_re.comp f.continuous)
+          (Complex.continuous_re.comp (g : C(X, ℂ)).continuous)
+      have hcov : {x : X | ε ≤ (f x).re} ⊆ ⋃ g : G, U g := by
+        intro x hx
+        have hx' : ε ≤ (f x).re := hx
+        have hfxre : 0 ≤ (f x).re := (Complex.le_def.mp ((ContinuousMap.le_def.mp hf) x)).1
+        have hfx : f x ≠ 0 := by
+          intro h0
+          rw [h0] at hx'
+          simp only [Complex.zero_re] at hx'
+          exact absurd hx' (not_le.mpr hε)
+        obtain ⟨h, hh0, hhτ, hhx⟩ := hfZ x hfx
+        have hhxre : 0 < (h x).re := by
+          rcases lt_or_eq_of_le ((ContinuousMap.le_def.mp hh0) x) with hlt | heq
+          · exact (Complex.lt_def.mp hlt).1
+          · exact absurd heq.symm hhx
+        refine Set.mem_iUnion.mpr ⟨⟨(((f x).re / (h x).re + 1 : ℝ) : ℂ) • h, ?_, ?_⟩, ?_⟩
+        · refine smul_nonneg ?_ hh0
+          rw [Complex.zero_le_real]
+          exact add_nonneg (div_nonneg hfxre hhxre.le) zero_le_one
+        · rw [map_smul, hhτ, smul_zero]
+        · show (f x).re < _
+          simp only [ContinuousMap.smul_apply, smul_eq_mul, Complex.mul_re,
+            Complex.ofReal_re, Complex.ofReal_im, zero_mul, sub_zero]
+          rw [add_mul, one_mul, div_mul_cancel₀ _ (ne_of_gt hhxre)]
+          linarith
+      obtain ⟨t, ht⟩ := hK.elim_finite_subcover U hUo hcov
+      set S : Set C(X, ℂ) := insert 0 (Subtype.val '' (↑t : Set G)) with hSdef
+      have hSfin : S.Finite := (t.finite_toSet.image _).insert _
+      have hSne : S.Nonempty := Set.insert_nonempty _ _
+      have hSnn : ∀ x ∈ S, (0 : C(X, ℂ)) ≤ x := by
+        rintro x (rfl | ⟨g, -, rfl⟩)
+        · exact le_refl _
+        · exact g.2.1
+      have hSsa : ∀ x ∈ S, IsSelfAdjoint x := fun x hx => IsSelfAdjoint.of_nonneg (hSnn x hx)
+      obtain ⟨s, hs⟩ := commutative_cstar_basic_3_finite hSfin hSne hSsa
+      have hτs : τ s = 0 := by
+        have h4 := commutative_cstar_basic_4_finite τ hSfin hSne hSsa hs
+        have himg : (⇑τ '' S) = {(0 : ℂ)} := by
+          ext z
+          constructor
+          · rintro ⟨x, hx, rfl⟩
+            rcases hx with rfl | ⟨g, -, rfl⟩
+            · simp
+            · simpa using g.2.2
+          · rintro rfl
+            exact ⟨0, Set.mem_insert _ _, map_zero τ⟩
+        rw [himg] at h4
+        exact h4.unique isLUB_singleton
+      have hs0 : (0 : C(X, ℂ)) ≤ s := hs.1 (Set.mem_insert _ _)
+      have hfle : f ≤ s + ((ε : ℂ) • 1) := by
+        refine ContinuousMap.le_def.mpr fun y => ?_
+        have him : (f y).im = 0 := ((Complex.le_def.mp ((ContinuousMap.le_def.mp hf) y)).2).symm
+        have hsim : (s y).im = 0 := ((Complex.le_def.mp ((ContinuousMap.le_def.mp hs0) y)).2).symm
+        have hsre : 0 ≤ (s y).re := (Complex.le_def.mp ((ContinuousMap.le_def.mp hs0) y)).1
+        have hre : (f y).re ≤ (s y).re + ε := by
+          by_cases hy : ε ≤ (f y).re
+          · obtain ⟨g, hgt, hgy⟩ := Set.mem_iUnion₂.mp (ht hy)
+            have hgs : (g : C(X, ℂ)) ≤ s :=
+              hs.1 (Set.mem_insert_of_mem _ ⟨g, hgt, rfl⟩)
+            have h1 : ((g : C(X, ℂ)) y).re ≤ (s y).re :=
+              (Complex.le_def.mp ((ContinuousMap.le_def.mp hgs) y)).1
+            have h2 : (f y).re < ((g : C(X, ℂ)) y).re := hgy
+            linarith
+          · have hy' : (f y).re < ε := not_le.mp hy
+            linarith
+        rw [Complex.le_def]
+        refine ⟨?_, ?_⟩
+        · simpa [Complex.add_re] using hre
+        · simp [Complex.add_im, him, hsim]
+      have hτle := hmono hfle
+      rw [map_add, map_smul, map_one, hτs, smul_eq_mul, mul_one, zero_add] at hτle
+      simpa using (Complex.le_def.mp hτle).1
+    have hre : (τ f).re ≤ 0 := le_of_forall_pos_le_add hbound
+    have hre0 : 0 ≤ (τ f).re := (Complex.le_def.mp hf0).1
+    have him0 : (τ f).im = 0 := ((Complex.le_def.mp hf0).2).symm
+    exact Complex.ext (by rw [Complex.zero_re]; linarith) (by rw [Complex.zero_im]; exact him0)
+  -- **29IV**: `X \ Z` has at most one point
+  have huniq : ∀ x y : X, x ∉ Z → y ∉ Z → x = y := by
+    intro x y hx hy
+    by_contra hxy
+    obtain ⟨U, V, hU, hV, hxU, hyV, hUV⟩ := t2_separation hxy
+    obtain ⟨p, hp0, hp1, hp01⟩ :=
+      exists_continuous_zero_one_of_isClosed (isClosed_compl_iff.mpr hU)
+        (isClosed_singleton (x := x)) (by
+          rw [Set.disjoint_left]
+          rintro z hz rfl
+          exact hz hxU)
+    obtain ⟨q, hq0, hq1, hq01⟩ :=
+      exists_continuous_zero_one_of_isClosed (isClosed_compl_iff.mpr hV)
+        (isClosed_singleton (x := y)) (by
+          rw [Set.disjoint_left]
+          rintro z hz rfl
+          exact hz hyV)
+    set P : C(X, ℂ) := ⟨fun z => ((p z : ℝ) : ℂ), Complex.continuous_ofReal.comp p.continuous⟩
+      with hPdef
+    set Q : C(X, ℂ) := ⟨fun z => ((q z : ℝ) : ℂ), Complex.continuous_ofReal.comp q.continuous⟩
+      with hQdef
+    have hP0 : 0 ≤ P := by
+      refine ContinuousMap.le_def.mpr fun z => ?_
+      show (0 : ℂ) ≤ ((p z : ℝ) : ℂ)
+      rw [Complex.zero_le_real]
+      exact (hp01 z).1
+    have hQ0 : 0 ≤ Q := by
+      refine ContinuousMap.le_def.mpr fun z => ?_
+      show (0 : ℂ) ≤ ((q z : ℝ) : ℂ)
+      rw [Complex.zero_le_real]
+      exact (hq01 z).1
+    have hPQ : P * Q = 0 := by
+      ext z
+      show ((p z : ℝ) : ℂ) * ((q z : ℝ) : ℂ) = 0
+      by_cases hz : z ∈ U
+      · have : q z = 0 := hq0 (fun hzV => Set.disjoint_left.mp hUV hz hzV)
+        rw [this]
+        simp
+      · have : p z = 0 := hp0 hz
+        rw [this]
+        simp
+    have hmul : τ P * τ Q = 0 := by rw [← map_mul, hPQ, map_zero]
+    have hPx : P x = 1 := by
+      show ((p x : ℝ) : ℂ) = 1
+      rw [hp1 rfl]
+      simp
+    have hQy : Q y = 1 := by
+      show ((q y : ℝ) : ℂ) = 1
+      rw [hq1 rfl]
+      simp
+    rcases mul_eq_zero.mp hmul with h | h
+    · exact hx ⟨P, hP0, h, by rw [hPx]; exact one_ne_zero⟩
+    · exact hy ⟨Q, hQ0, h, by rw [hQy]; exact one_ne_zero⟩
+  -- `X \ Z` is nonempty
+  have hex : ∃ x : X, x ∉ Z := by
+    by_contra hall
+    have hall' : ∀ x : X, x ∈ Z := fun x => not_not.mp (not_exists.mp hall x)
+    have := key 1 zero_le_one (fun x _ => hall' x)
+    rw [map_one] at this
+    exact one_ne_zero this
+  obtain ⟨x₀, hx₀⟩ := hex
+  refine ⟨x₀, fun f => ?_⟩
+  -- cstar.tex:4560
+  set d : C(X, ℂ) := f - (f x₀) • 1 with hddef
+  have hdx₀ : d x₀ = 0 := by simp [hddef]
+  have hg : τ (star d * d) = 0 := by
+    refine key _ (star_mul_self_nonneg d) ?_
+    intro x hx
+    by_contra hxZ
+    have : x = x₀ := huniq x x₀ hxZ hx₀
+    subst this
+    exact hx (by simp [hdx₀])
+  rw [map_mul, map_star] at hg
+  have hd0 : τ d = 0 := by
+    rcases mul_eq_zero.mp hg with h | h
+    · exact star_eq_zero.mp h
+    · exact h
+  rw [hddef, map_sub, map_smul, map_one, smul_eq_mul, mul_one, sub_eq_zero] at hd0
+  exact hd0
 
 /-- **29VII** (cstar.tex:4563, Exercise): the map `x ↦ δₓ` (with
-`δₓ(f) = f(x)`, an miu-map) is a homeomorphism from `X` onto
-`spec(C(X))`.  (Mathlib: `WeakDual.CharacterSpace.homeoEval`.) -/
+`δₓ(f) = f(x)`, an miu-map) is a homeomorphism from `X` onto `spec(C(X))`.
+
+*Class 1 — faithful.*  The Exercise's own three steps.  That `δₓ` is miu and
+that `x ↦ δₓ` is continuous is Mathlib's `continuousMapEval`, a definition.
+Injectivity is Urysohn on the compact Hausdorff `X`: a `p` with `p(x) = 0`
+and `p(y) = 1` separates `δₓ` from `δ_y`.  Surjectivity is **29II**
+`multiplicative_state_on_cx`.  And a continuous bijection from a compact
+space to a Hausdorff space is a homeomorphism — the corrected form of
+erratum parsec-290.70.
+
+Until this repair the theorem was Mathlib's `homeoEval`, whose surjectivity
+runs through the maximal *ring* ideals of `C(X)` — the route **16VIII**
+rejects — and which is therefore the inversion of the thesis's order: the
+thesis proves **29II** first and reads this Exercise off it. -/
 theorem eval_homeomorphism :
     ∃ e : X ≃ₜ characterSpace ℂ C(X, ℂ),
-      ∀ (x : X) (f : C(X, ℂ)), (e x : WeakDual ℂ C(X, ℂ)) f = f x :=
-  ⟨WeakDual.CharacterSpace.homeoEval X ℂ, fun _ _ => rfl⟩
+      ∀ (x : X) (f : C(X, ℂ)), (e x : WeakDual ℂ C(X, ℂ)) f = f x := by
+  have hinj : Function.Injective (WeakDual.CharacterSpace.continuousMapEval X ℂ) := by
+    intro x y hxy
+    by_contra hne
+    obtain ⟨p, hp0, hp1, -⟩ := exists_continuous_zero_one_of_isClosed
+      (isClosed_singleton (x := x)) (isClosed_singleton (x := y))
+      (Set.disjoint_singleton.mpr hne)
+    have h : ((p x : ℝ) : ℂ) = ((p y : ℝ) : ℂ) :=
+      congrArg (fun φ : characterSpace ℂ C(X, ℂ) =>
+        (φ : WeakDual ℂ C(X, ℂ))
+          (⟨fun z => ((p z : ℝ) : ℂ), Complex.continuous_ofReal.comp p.continuous⟩ :
+            C(X, ℂ))) hxy
+    rw [hp0 rfl, hp1 rfl] at h
+    exact zero_ne_one (by exact_mod_cast h)
+  have hsurj : Function.Surjective (WeakDual.CharacterSpace.continuousMapEval X ℂ) := by
+    intro φ
+    let τ : C(X, ℂ) →⋆ₐ[ℂ] ℂ :=
+      { WeakDual.CharacterSpace.equivAlgHom φ with
+        map_star' := fun f => map_star φ f }
+    obtain ⟨x, hx⟩ := multiplicative_state_on_cx τ
+    exact ⟨x, Subtype.ext (ContinuousLinearMap.ext fun f => (hx f).symm)⟩
+  exact ⟨@Continuous.homeoOfEquivCompactToT2 _ _ _ _ _ _
+      { Equiv.ofBijective _ ⟨hinj, hsurj⟩ with
+        toFun := WeakDual.CharacterSpace.continuousMapEval X ℂ }
+      (map_continuous (WeakDual.CharacterSpace.continuousMapEval X ℂ)),
+    fun _ _ => rfl⟩
 
 variable {𝒜 ℬ : Type*} [CStarAlgebra 𝒜] [CStarAlgebra ℬ]
 
