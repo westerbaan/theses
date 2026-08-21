@@ -53,6 +53,38 @@ Some of the audit's findings are pure bookkeeping and cost almost nothing:
   prove** (90II.1's two self-adjointness binders, where the proof calls a lemma
   taking an arbitrary element).  Dropping it needs no new mathematics.
 
+## The proof, not just the statement
+
+**Restoring a clause means proving it the thesis's way.**  Where the point (or
+its `Proof` point, or its solution in `asols.tex`/`bsols.tex`) gives an
+argument, transcribe *that* argument.  Reaching the same conclusion by a
+Mathlib lemma or a shortcut leaves the thesis's mathematics unexhibited, and
+the audit found three places where doing so had quietly inverted the thesis's
+own dependency order.  If the thesis's route genuinely will not go through,
+say so in the log with the divergence class and why.
+
+## What wave 1 learned (2026-08-20, six modules, 57 rows)
+
+* **Check for downstream call sites before changing a statement's shape.**
+  `A/CStar/Basic`'s thirteen changed lemmas had none, so the repairs could be
+  folded in.  But `cstar_positive_2x2matrix` is destructured at
+  `A/Proc/Tensor:4924`, `mn_vna_2` at `B/Dils/SelfDual:2580`, and
+  `injective_nmiu_iso_on_image_2` is applied to two elements at
+  `A/Proc/Tensor:7420` — there the restored clause went in as a **new
+  DISP-tagged declaration beside** the existing one.  Adding a conjunct to a
+  destructured statement breaks its consumers silently.  `grep` first.
+* **A structure field is worth the trouble when it is payable.**  `ExtTensor`
+  gained 164II's injectivity clause, discharged at both construction sites by
+  164VI's own argument — and doing it turned up a step 164VI passes over in
+  silence.  But it was only payable because there were two sites; cost it
+  before starting.
+* **Recompile the dependents.**  After a definition changes, rebuild its olean
+  and compile everything that imports it.  A structure change that typechecks
+  in its own file can still break a consumer three modules away.
+* **Some binders are Mathlib's, not ours.**  `A/VN/Basic`'s
+  `[∀ i, Nontrivial (𝒜 i)]` comes from Mathlib's only unital instance for
+  `lp 𝒜 ∞`.  Document it and leave it; that is not our mis-transcription.
+
 ## Method
 
 1. Read your module's rows in `lean/docs/audit/*.csv` — every row with `stmt`
