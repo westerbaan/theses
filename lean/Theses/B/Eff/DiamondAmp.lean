@@ -648,7 +648,11 @@ theorem le_iff_compr_orth_comp_eq_zero {X : C} {j : Pred X} (hj : IsSharp j)
 
 /-- Helper: the predicates below a *sharp* `j` are closed under `⋁` — the
 "partial sum" version of `le_sup`, and the step a general effect algebra
-does not have (see `isSharp_ovee` below). -/
+does not have.
+
+Scaffolding of the route 208III used to take before 2026-08-22, kept as the
+record of it: with `isSharp_ovee` and `diamond_oml` both back on eff.tex's
+argument (177Ia and 177VI respectively) nothing appeals to it any more. -/
 theorem ovee_le_of_le {X : C} {j : Pred X} (hj : IsSharp j) {s t : Pred X}
     (h : Perp s t) (hs : s ≼ j) (ht : t ≼ j) : ovee s t h ≼ j := by
   refine (le_iff_compr_orth_comp_eq_zero hj _).mpr ?_
@@ -675,9 +679,9 @@ eff.tex was corrected on 2026-08-14 and `ea_modularity_prop` now states the
 corrected Proposition, so the detour is no longer needed.  (The avoided
 argument, for the record: `s ∨ t ≤ s ⋁ t` since `s ⋁ t` is an upper bound,
 and `s ⋁ t ≤ s ∨ t` since `s` and `t` both vanish on `π_{(s∨t)ᵖ}` — the
-second half is `ovee_le_of_le`, which orthomodularity below still uses.
-QUESTIONS.md B4, which recorded the gap, was deleted as resolved on
-2026-08-16.) -/
+second half is `ovee_le_of_le`, which is still in the file but is no
+longer appealed to anywhere.  QUESTIONS.md B4, which recorded the gap, was
+deleted as resolved on 2026-08-16.) -/
 theorem isSharp_ovee {X : C} {s t : Pred X} (hs : IsSharp s) (ht : IsSharp t)
     (h : Perp s t) : IsSharp (ovee s t h) := by
   -- 204V: the join `s ∨ t` exists among all predicates, and is sharp
@@ -696,19 +700,56 @@ theorem diamond_oml_subEA (X : C) :
     fun h ha hb => isSharp_ovee ha hb h,
     fun ha => DiamondEffectus.orth_sharp ha⟩, rfl⟩
 
-/-! **208III** (`diamond-oml`, eff.tex:4608, Proposition (Cho)), second
-half — `SPred X` is an orthomodular lattice — is stated and proved as
-`diamond_oml` below, after 208IX/208XII: its lattice operations are the
-`SPred`-infimum and `SPred`-supremum constructed there, and the orthomodular
-law comes from `ovee_le_of_le`.  The thesis instead reads its meets and
-joins off `ea-modularity-prop` (177Ia); that route was originally avoided
-because 177Ia's first printing was false, and since eff.tex's correction of
-2026-08-14 the `s ⋁ t = s ∨ t` step *is* taken the thesis's way (see
-`isSharp_ovee`).  What remains a divergence is only the source of the
-lattice operations themselves — 208IX/208XII rather than 177Ia — which is a
-matter of construction, not of a blocked appeal.  (The QUESTIONS.md B4
-pointer this note used to carry dangles: B4 was deleted as resolved on
-2026-08-16.) -/
+/-- Helper for 208III's "Sub-EA" step, in the form 177VI needs: the
+*difference* of two sharp predicates is sharp.  If `s ⋁ d = t` with `s, t`
+sharp, then `d = (s ⋁ tᵖ)ᵖ` is sharp too, so the algebraic order that
+`SPred X` carries as a sub-effect algebra of `Pred X` is the order it
+inherits as a subset. -/
+theorem isSharp_of_ovee_eq {X : C} {s t d : Pred X} (hs : IsSharp s)
+    (ht : IsSharp t) (hd : Perp s d) (he : ovee s d hd = t) : IsSharp d := by
+  -- `d ⋁ tᵖ = sᵖ` (the computation of 175V.6), hence `s ⊥ tᵖ` and
+  -- `(s ⋁ tᵖ) ⋁ d = s ⋁ (tᵖ ⋁ d) = s ⋁ sᵖ = 1`
+  have hp : Perp (ovee s d hd) (orth (ovee s d hd)) := EffectAlgebra.perp_orth _
+  have h1 : Perp d (orth (ovee s d hd)) := PCM.perp_of_ovee_perp hd hp
+  have h2 : ovee d (orth (ovee s d hd)) h1 = orth s :=
+    EffectAlgebra.orth_unique (PCM.perp_ovee_of_ovee_perp hd hp) (by
+      rw [← PCM.ovee_assoc hd hp]; exact EffectAlgebra.ovee_orth _)
+  subst he
+  have hod : Perp (orth (ovee s d hd)) d := PCM.perp_comm h1
+  have hinner : ovee (orth (ovee s d hd)) d hod = orth s :=
+    (PCM.ovee_comm h1).symm.trans h2
+  have hB : Perp s (ovee (orth (ovee s d hd)) d hod) := by
+    rw [hinner]; exact EffectAlgebra.perp_orth s
+  obtain ⟨hso, h', eq⟩ := PCM.assoc_left hod hB
+  have eq1 : ovee (ovee s (orth (ovee s d hd)) hso) d h' = 1 := by
+    rw [eq, PCM.ovee_congr rfl hinner hB (EffectAlgebra.perp_orth s)]
+    exact EffectAlgebra.ovee_orth s
+  rw [EffectAlgebra.orth_unique h' eq1]
+  exact DiamondEffectus.orth_sharp (isSharp_ovee hs (DiamondEffectus.orth_sharp ht) hso)
+
+/-- The effect algebra `SPred X` carries as a sub-effect algebra of `Pred X`
+(`diamond_oml_subEA`): the structure 208III's proof means by "`SPred X` is a
+sub-effect algebra of `Pred X`", spelled out so that 177VI
+(`orth_ea_is_orthomodular`) can be applied to it.  Kept a `def` rather than
+an `instance` so that `Perp`/`ovee` on `SPred X` are not silently
+reinterpreted elsewhere in this file. -/
+noncomputable def spredEffectAlgebra (X : C) : EffectAlgebra (SPred X) where
+  zero := sZero X
+  one := sOne X
+  Perp s t := Perp s.1 t.1
+  ovee s t h := ⟨ovee s.1 t.1 h, isSharp_ovee s.2 t.2 h⟩
+  orth := SPred.orth
+  perp_comm h := PCM.perp_comm h
+  ovee_comm h := Subtype.ext (PCM.ovee_comm h)
+  perp_of_ovee_perp hab h := PCM.perp_of_ovee_perp hab h
+  perp_ovee_of_ovee_perp hab h := PCM.perp_ovee_of_ovee_perp hab h
+  ovee_assoc hab h := Subtype.ext (PCM.ovee_assoc hab h)
+  zero_perp s := PCM.zero_perp s.1
+  zero_ovee s := Subtype.ext (PCM.zero_ovee s.1)
+  perp_orth s := EffectAlgebra.perp_orth s.1
+  ovee_orth s := Subtype.ext (EffectAlgebra.ovee_orth s.1)
+  orth_unique h he := Subtype.ext (EffectAlgebra.orth_unique h (congrArg Subtype.val he))
+  eq_zero_of_perp_one h := Subtype.ext (EffectAlgebra.eq_zero_of_perp_one h)
 
 end DiamondBasics
 
@@ -737,10 +778,139 @@ instance : Category.{u} OMLatGalCat.{u} where
   comp_id _ := rfl
   assoc _ _ _ := rfl
 
-/-! **208VII** (eff.tex:4644, Corollary) — the functor `X ↦ SPred X`,
-`f ↦ (f_⋄, f^□)` into `OMLatGal` — is `diamond_omlatgal_functor` below; it
-needs the orthomodular structure of 208III, which is only available after
-208IX/208XII. -/
+section DiamondOML
+
+variable [DiamondEffectus C] {X Y Z : C}
+
+/-- **208III** (`diamond-oml`, eff.tex:4608, Proposition (Cho)), second
+half: `SPred X` is an orthomodular lattice (for the order inherited from
+`Pred X`, with orthocomplement `sᵖ`).
+
+This is eff.tex's own proof.  Point 50 ("Ortholattice"): the join is the one
+204V (`lattice_compr`) already provides among *all* predicates,
+`s ∨ t = im [π_s, π_t]`, which is sharp and hence also the join in
+`SPred X`; the meet is `(sᵖ ∨ tᵖ)ᵖ`, because `(·)ᵖ` is an order
+anti-automorphism of both posets (`spred_isSup_orth`); and `s ∧ sᵖ = 0`
+because sharp predicates are order sharp (208I,
+`image_sharp_is_order_sharp`), whence also `s ∨ sᵖ = 1`.  Point 40 then
+appeals to 177VI: an effect algebra that is an ortholattice is orthomodular
+(`orth_ea_is_orthomodular`), and `SPred X` is an effect algebra because it
+is a sub-effect algebra of `Pred X` — the first half, `diamond_oml_subEA`,
+here in the usable form `spredEffectAlgebra`. -/
+theorem diamond_oml (X : C) :
+    ∃ oml : OrthomodularLattice (SPred X), ∀ s t : SPred X,
+      (letI := oml
+       (s ≤ t ↔ s.1 ≼ t.1) ∧ sᶜ = s.orth) := by
+  letI po : PartialOrder (SPred X) :=
+    { le := fun s t => s.1 ≼ t.1
+      le_refl := fun _ => pcm_preorder_refl _
+      le_trans := fun _ _ _ h₁ h₂ => pcm_preorder_trans h₁ h₂
+      le_antisymm := fun _ _ h₁ h₂ => Subtype.ext (eabasics_le_antisymm h₁ h₂) }
+  -- 204V: `s ∨ t = im [π_s, π_t]` is a supremum among *all* predicates and is
+  -- itself sharp, so it is the supremum of `s` and `t` in `SPred X` as well
+  let J : SPred X → SPred X → SPred X := fun s t =>
+    ⟨imPred (coprod.desc (comprMap s.1) (comprMap t.1)), (lattice_compr s.2 t.2).2⟩
+  have hJ : ∀ s t : SPred X, SPred.IsSup s t (J s t) := fun s t =>
+    ⟨(lattice_compr s.2 t.2).1.1, (lattice_compr s.2 t.2).1.2.1,
+      fun r h₁ h₂ => (lattice_compr s.2 t.2).1.2.2 r.1 h₁ h₂⟩
+  -- as `(·)ᵖ` is an order anti-automorphism, `(sᵖ ∨ tᵖ)ᵖ` is the infimum
+  have hM : ∀ s t : SPred X, SPred.IsInf s t (J s.orth t.orth).orth := by
+    intro s t
+    have h := spred_isSup_orth (hJ s.orth t.orth)
+    rwa [spred_orth_orth, spred_orth_orth] at h
+  letI lat : Lattice (SPred X) :=
+    { po with
+      sup := J
+      inf := fun s t => (J s.orth t.orth).orth
+      le_sup_left := fun s t => (hJ s t).1
+      le_sup_right := fun s t => (hJ s t).2.1
+      sup_le := fun s t r h₁ h₂ => (hJ s t).2.2 r h₁ h₂
+      inf_le_left := fun s t => (hM s t).1
+      inf_le_right := fun s t => (hM s t).2.1
+      le_inf := fun r s t h₁ h₂ => (hM s t).2.2 r h₁ h₂ }
+  letI bo : BoundedOrder (SPred X) :=
+    { top := sOne X
+      bot := sZero X
+      le_top := fun s => pred_le_truth s.1
+      bot_le := fun s => zero_le_hom s.1 }
+  letI cpl : Compl (SPred X) := ⟨SPred.orth⟩
+  -- `a ∧ aᵖ = 0`, since sharp predicates are order sharp (208I)
+  have hinf : ∀ a : SPred X, a ⊓ aᶜ = ⊥ := fun a =>
+    Subtype.ext (image_sharp_is_order_sharp a.2 (hM a a.orth).1 (hM a a.orth).2.1)
+  -- and consequently `a ∨ aᵖ = 1`
+  have hsup : ∀ a : SPred X, a ⊔ aᶜ = ⊤ := by
+    intro a
+    have h : SPred.IsInf a.orth a (J a a.orth).orth := by
+      have h0 := spred_isSup_orth (hJ a a.orth)
+      rwa [spred_orth_orth] at h0
+    have h0 : orth (J a a.orth).1 = 0 :=
+      image_sharp_is_order_sharp a.2 h.2.1 h.1
+    refine Subtype.ext ?_
+    show (J a a.orth).1 = (1 : Pred X)
+    have h1 := congrArg orth h0
+    rwa [eabasics_orth_orth, eabasics_orth_zero] at h1
+  letI ol : Ortholattice (SPred X) :=
+    { lat, bo, cpl with
+      inf_compl := hinf
+      sup_compl := hsup
+      compl_antitone := fun h => eabasics_le_iff_orth_le.mp h
+      compl_compl := spred_orth_orth }
+  -- `SPred X` is a sub-effect algebra of `Pred X` (the first half), and the
+  -- algebraic order of that effect algebra is the inherited order, because a
+  -- difference of sharp predicates is sharp
+  letI ea : EffectAlgebra (SPred X) := spredEffectAlgebra X
+  have hle : ∀ a b : SPred X, a ≤ b ↔ a ≼ b := by
+    intro a b
+    constructor
+    · rintro ⟨d, hd, he⟩
+      exact ⟨⟨d, isSharp_of_ovee_eq a.2 b.2 hd he⟩, hd, Subtype.ext he⟩
+    · rintro ⟨d, hd, he⟩
+      exact ⟨d.1, hd, congrArg Subtype.val he⟩
+  -- 177VI: an effect algebra that is an ortholattice is orthomodular
+  exact ⟨{ ol with
+    orthomodular := orth_ea_is_orthomodular (SPred X) hle (fun _ => rfl) },
+    fun s t => ⟨Iff.rfl, rfl⟩⟩
+
+/-- **208VII** (eff.tex:4644, Corollary): in a ⋄-effectus the assignment
+`X ↦ SPred X`, `f ↦ (f_⋄, f^□)` yields a functor to `OMLatGal`, the
+category of orthomodular lattices with Galois connections (Jacobs).  Both
+halves of the assignment are pinned: the object part on the nose, the
+morphism part up to the transport of the object part (`HEq`, as the
+carrier of `F.obj X` is only propositionally `SPred X`). -/
+theorem diamond_omlatgal_functor :
+    ∃ F : C ⥤ OMLatGalCat.{v},
+      (∀ X : C, (F.obj X).carrier = SPred X) ∧
+      ∀ (X Y : C) (f : X ⟶ Y),
+        HEq (F.map f).push (diaPush f) ∧ HEq (F.map f).pull (boxPull f) := by
+  classical
+  -- choose the orthomodular structure of 208III on every `SPred X`
+  have hex : ∀ X : C, ∃ oml : OrthomodularLattice (SPred X), ∀ s t : SPred X,
+      (letI := oml
+       (s ≤ t ↔ s.1 ≼ t.1) ∧ sᶜ = s.orth) := fun X => diamond_oml X
+  choose oml homl using hex
+  -- Galois pairs are determined by their two maps (the adjunction is a `Prop`)
+  have gext : ∀ {A B : Type v} [OrthomodularLattice A] [OrthomodularLattice B]
+      (u v : GaloisPair A B), u.push = v.push → u.pull = v.pull → u = v := by
+    intro A B _ _ u v
+    obtain ⟨p, q, -⟩ := u
+    obtain ⟨p', q', -⟩ := v
+    intro hp hq
+    have hp' : p = p' := hp
+    have hq' : q = q' := hq
+    subst hp'
+    subst hq'
+    rfl
+  refine ⟨{ obj := fun X => { carrier := SPred X, str := oml X }
+            map := fun {X Y} f => ⟨diaPush f, boxPull f, fun a b => ?_⟩
+            map_id := fun X => gext _ _ (funext diaPush_id) (funext boxPull_id)
+            map_comp := fun f g => gext _ _ (funext fun s => diaPush_comp f g s)
+              (funext fun t => boxPull_comp f g t) },
+    fun X => rfl, fun X Y f => ⟨HEq.rfl, HEq.rfl⟩⟩
+  -- the adjunction `f_⋄ ⊣ f^□` of 207III, transported along `homl`
+  exact ((homl Y (diaPush f a) b).1).trans
+    ((diamond_adjunction' f a b).trans ((homl X a (boxPull f b)).1).symm)
+
+end DiamondOML
 
 section DiamondBasics2
 
@@ -822,117 +992,6 @@ theorem spred_sup {X : C} (s t : SPred X) :
     have h3 := (exc_diam_order_pres (quotMap s.1) h2).2
     rwa [hr] at h3
 
-/-- **208III** (`diamond-oml`, eff.tex:4608, Proposition (Cho)), second
-half: `SPred X` is an orthomodular lattice (for the order inherited from
-`Pred X`, with orthocomplement `sᵖ`).
-
-Placed here rather than at 208III because the lattice operations are the
-infimum of 208IX and the supremum of 208XII; the orthomodular law is proved
-from the effect-algebra structure directly (`ovee_le_of_le`), avoiding the
-`ea-modularity-prop` (177Ia) the thesis appeals to. -/
-theorem diamond_oml (X : C) :
-    ∃ oml : OrthomodularLattice (SPred X), ∀ s t : SPred X,
-      (letI := oml
-       (s ≤ t ↔ s.1 ≼ t.1) ∧ sᶜ = s.orth) := by
-  letI po : PartialOrder (SPred X) :=
-    { le := fun s t => s.1 ≼ t.1
-      le_refl := fun _ => pcm_preorder_refl _
-      le_trans := fun _ _ _ h₁ h₂ => pcm_preorder_trans h₁ h₂
-      le_antisymm := fun _ _ h₁ h₂ => Subtype.ext (eabasics_le_antisymm h₁ h₂) }
-  letI lat : Lattice (SPred X) :=
-    { po with
-      sup := fun s t => boxPull (quotMap s.1) (diaPush (quotMap s.1) t)
-      inf := fun s t => diaPush (comprMap s.1) (boxPull (comprMap s.1) t)
-      le_sup_left := fun s t => (spred_sup s t).1
-      le_sup_right := fun s t => (spred_sup s t).2.1
-      sup_le := fun s t r h₁ h₂ => (spred_sup s t).2.2 r h₁ h₂
-      inf_le_left := fun s t => (spred_infimum s t).1
-      inf_le_right := fun s t => (spred_infimum s t).2.1
-      le_inf := fun r s t h₁ h₂ => (spred_infimum s t).2.2 r h₁ h₂ }
-  letI bo : BoundedOrder (SPred X) :=
-    { top := sOne X
-      bot := sZero X
-      le_top := fun s => pred_le_truth s.1
-      bot_le := fun s => zero_le_hom s.1 }
-  letI cpl : Compl (SPred X) := ⟨SPred.orth⟩
-  -- `a ∧ aᵖ = 0`, since sharp predicates are order sharp (208I)
-  have hinf : ∀ a : SPred X, a ⊓ aᶜ = ⊥ := fun a =>
-    Subtype.ext (image_sharp_is_order_sharp a.2
-      (spred_infimum a a.orth).1 (spred_infimum a a.orth).2.1)
-  -- `a ∨ aᵖ = 1`, since `a ⋁ aᵖ = 1` is below the join
-  have hsup : ∀ a : SPred X, a ⊔ aᶜ = ⊤ := by
-    intro a
-    refine Subtype.ext (eabasics_le_antisymm (pred_le_truth _) ?_)
-    have h := ovee_le_of_le (a ⊔ aᶜ : SPred X).2
-      (EffectAlgebra.perp_orth a.1) (spred_sup a a.orth).1 (spred_sup a a.orth).2.1
-    rwa [EffectAlgebra.ovee_orth] at h
-  -- orthomodularity: for `a ≤ b`, say `b = a ⋁ d`, we have `⌈d⌉ ≤ aᵖ` and
-  -- `⌈d⌉ ≤ b`, so `d ≤ aᵖ ∧ b` and hence `b = a ⋁ d ≤ a ∨ (aᵖ ∧ b)`; the
-  -- converse inequality is leastness of the join
-  have hom : ∀ {a b : SPred X}, a ≤ b → a ⊔ (aᶜ ⊓ b) = b := by
-    intro a b hab
-    refine le_antisymm (sup_le hab (spred_infimum a.orth b).2.1) ?_
-    obtain ⟨d, hd, hb⟩ := hab
-    have hda : d ≼ orth a.1 := perp_le_orth hd
-    have hdb : d ≼ b.1 :=
-      ⟨a.1, PCM.perp_comm hd, by rw [← PCM.ovee_comm hd]; exact hb⟩
-    have hdm : d ≼ (aᶜ ⊓ b : SPred X).1 := by
-      refine pcm_preorder_trans (le_ceil d)
-        ((spred_infimum a.orth b).2.2 ⟨ceilPred d, isSharp_ceil d⟩ ?_ ?_)
-      · have h := ceil_mono hda
-        rwa [ceil_of_isSharp (DiamondEffectus.orth_sharp a.2)] at h
-      · have h := ceil_mono hdb
-        rwa [ceil_of_isSharp b.2] at h
-    show b.1 ≼ (a ⊔ (aᶜ ⊓ b) : SPred X).1
-    rw [← hb]
-    exact ovee_le_of_le (a ⊔ (aᶜ ⊓ b) : SPred X).2 hd
-      (spred_sup a (aᶜ ⊓ b)).1
-      (pcm_preorder_trans hdm (spred_sup a (aᶜ ⊓ b)).2.1)
-  exact ⟨{ lat, bo, cpl with
-    inf_compl := hinf
-    sup_compl := hsup
-    compl_antitone := fun h => eabasics_le_iff_orth_le.mp h
-    compl_compl := spred_orth_orth
-    orthomodular := hom }, fun s t => ⟨Iff.rfl, rfl⟩⟩
-
-/-- **208VII** (eff.tex:4644, Corollary): in a ⋄-effectus the assignment
-`X ↦ SPred X`, `f ↦ (f_⋄, f^□)` yields a functor to `OMLatGal`, the
-category of orthomodular lattices with Galois connections (Jacobs).  Both
-halves of the assignment are pinned: the object part on the nose, the
-morphism part up to the transport of the object part (`HEq`, as the
-carrier of `F.obj X` is only propositionally `SPred X`). -/
-theorem diamond_omlatgal_functor :
-    ∃ F : C ⥤ OMLatGalCat.{v},
-      (∀ X : C, (F.obj X).carrier = SPred X) ∧
-      ∀ (X Y : C) (f : X ⟶ Y),
-        HEq (F.map f).push (diaPush f) ∧ HEq (F.map f).pull (boxPull f) := by
-  classical
-  -- choose the orthomodular structure of 208III on every `SPred X`
-  have hex : ∀ X : C, ∃ oml : OrthomodularLattice (SPred X), ∀ s t : SPred X,
-      (letI := oml
-       (s ≤ t ↔ s.1 ≼ t.1) ∧ sᶜ = s.orth) := fun X => diamond_oml X
-  choose oml homl using hex
-  -- Galois pairs are determined by their two maps (the adjunction is a `Prop`)
-  have gext : ∀ {A B : Type v} [OrthomodularLattice A] [OrthomodularLattice B]
-      (u v : GaloisPair A B), u.push = v.push → u.pull = v.pull → u = v := by
-    intro A B _ _ u v
-    obtain ⟨p, q, -⟩ := u
-    obtain ⟨p', q', -⟩ := v
-    intro hp hq
-    have hp' : p = p' := hp
-    have hq' : q = q' := hq
-    subst hp'
-    subst hq'
-    rfl
-  refine ⟨{ obj := fun X => { carrier := SPred X, str := oml X }
-            map := fun {X Y} f => ⟨diaPush f, boxPull f, fun a b => ?_⟩
-            map_id := fun X => gext _ _ (funext diaPush_id) (funext boxPull_id)
-            map_comp := fun f g => gext _ _ (funext fun s => diaPush_comp f g s)
-              (funext fun t => boxPull_comp f g t) },
-    fun X => rfl, fun X Y f => ⟨HEq.rfl, HEq.rfl⟩⟩
-  -- the adjunction `f_⋄ ⊣ f^□` of 207III, transported along `homl`
-  exact ((homl Y (diaPush f a) b).1).trans
-    ((diamond_adjunction' f a b).trans ((homl X a (boxPull f b)).1).symm)
 
 /-! ### ⋄-adjointness (parsec 209) -/
 

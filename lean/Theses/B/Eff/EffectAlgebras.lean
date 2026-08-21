@@ -1388,6 +1388,34 @@ theorem msc_cor16_1 {a b j : E} (hab : Perp a b) (hm : PCM.IsInf a b 0)
   obtain ⟨hmj, he⟩ := msc_cor16_2 hab hm hj
   rw [← he, PCM.ovee_comm, PCM.ovee_zero]
 
+/-- The first step of eff.tex's `modularity-lemma-proof`: "Note
+`x ⊖ c = (x⊥ ⋁ c)⊥`". -/
+theorem isDiff_eq_orth_ovee_orth {x c u : E} (h : IsDiff x c u) :
+    ∃ hp : Perp (orth x) c, orth (ovee (orth x) c hp) = u := by
+  obtain ⟨hcu, e⟩ := h
+  have hB : Perp (orth x) (ovee c u hcu) := by
+    rw [e]; exact PCM.perp_comm (EffectAlgebra.perp_orth x)
+  obtain ⟨hp, h', eq⟩ := PCM.assoc_left hcu hB
+  refine ⟨hp, ?_⟩
+  refine (EffectAlgebra.orth_unique h' ?_).symm
+  rw [eq, PCM.ovee_congr (rfl : orth x = orth x) e hB
+    (PCM.perp_comm (EffectAlgebra.perp_orth x)), ← PCM.ovee_comm]
+  exact EffectAlgebra.ovee_orth x
+
+/-- Helper: `(·)⊥` carries a supremum to an infimum (175V.6, applied twice) —
+the "as `z ↦ z⊥` is an order anti-isomorphism" step of
+`modularity-lemma-proof`. -/
+theorem isInf_orth_of_isSup {a b m : E} (h : PCM.IsSup a b m) :
+    PCM.IsInf (orth a) (orth b) (orth m) := by
+  refine ⟨eabasics_le_iff_orth_le.mp h.1, eabasics_le_iff_orth_le.mp h.2.1, ?_⟩
+  intro e he1 he2
+  have k1 : a ≼ orth e := by
+    have := eabasics_le_iff_orth_le.mp he1; rwa [eabasics_orth_orth] at this
+  have k2 : b ≼ orth e := by
+    have := eabasics_le_iff_orth_le.mp he2; rwa [eabasics_orth_orth] at this
+  have := eabasics_le_iff_orth_le.mp (h.2.2 (orth e) k1 k2)
+  rwa [eabasics_orth_orth] at this
+
 /-- **The lemma of `modularity-lemma-proof`** (eff.tex, the proof of 177Ia,
 point 20), in the direction eff.tex now prints: for `c, d ≼ x`, if
 `(x ⊖ c) ∨ (x ⊖ d)` exists then `c ∧ d` exists as well and
@@ -1407,16 +1435,41 @@ the interval infimum computed in `↓x` by the order isomorphism
 interval supremum is only that.
 
 The statement is more general than 177Ia: no `c ⊥ d`, and `x` arbitrary above
-`c` and `d`.  Under the involution `(·) ↦ x ⊖ (·)` of `↓x` (176II (D3)) it is
-literally the sound half of the master's thesis's Corollary 14.2, so we take
-that route rather than redoing the `⋁`-side computation; `msc_cor14_2_inf`
-carries the same asymmetry in its own proof (`hda : d ≼ a`). -/
+`c` and `d`.  The proof is eff.tex's own, step for step:
+`x ⊖ c = (x⊥ ⋁ c)⊥` (`isDiff_eq_orth_ovee_orth`); the orthocomplement is an
+order anti-isomorphism, so `(x⊥ ⋁ c) ∧ (x⊥ ⋁ d)` exists and equals `j⊥`
+(`isInf_orth_of_isSup`); it lies above `x⊥`, say `j⊥ = x⊥ ⋁ r`; then
+`r = c ∧ d` by the order embedding `b ↦ x⊥ ⋁ b` (`msc_prop13_1`, packaged as
+`msc_cor14_1_inf` — the master's thesis's Corollary 14.1 in its sound
+direction); and finally `r ⋁ j = x`, so `j = x ⊖ (c ∧ d)`. -/
 theorem dual_modularity_lemma {x c d u v j : E}
     (hu : IsDiff x c u) (hv : IsDiff x d v) (hj : PCM.IsSup u v j) :
     ∃ m, IsDiff x m j ∧ PCM.IsInf c d m := by
-  obtain ⟨m, hm⟩ : j ≼ x := hj.2.2 x (exc_dposet_D2 hu) (exc_dposet_D2 hv)
-  exact ⟨m, exc_dposet_D3 hm,
-    msc_cor14_2_inf (exc_dposet_D3 hu) (exc_dposet_D3 hv) hj hm⟩
+  -- `x ⊖ c = (x⊥ ⋁ c)⊥` and `x ⊖ d = (x⊥ ⋁ d)⊥`
+  obtain ⟨hxc, hcu⟩ := isDiff_eq_orth_ovee_orth hu
+  obtain ⟨hxd, hdv⟩ := isDiff_eq_orth_ovee_orth hv
+  -- so `x⊥ ⋁ c` and `x⊥ ⋁ d` have the infimum `j⊥`
+  have hinf : PCM.IsInf (ovee (orth x) c hxc) (ovee (orth x) d hxd) (orth j) := by
+    have h := isInf_orth_of_isSup hj
+    rw [← hcu, ← hdv, eabasics_orth_orth, eabasics_orth_orth] at h
+    exact h
+  -- `x⊥ ≼ j⊥`; write `r` for `j⊥ ⊖ x⊥`
+  obtain ⟨r, hxr, hw⟩ : orth x ≼ orth j :=
+    eabasics_le_iff_orth_le.mp (hj.2.2 x (exc_dposet_D2 hu) (exc_dposet_D2 hv))
+  -- the master's thesis's Corollary 14.1: `r = c ∧ d`
+  have hcd : PCM.IsInf c d r := msc_cor14_1_inf hxc hxd hxr (by rw [hw]; exact hinf)
+  refine ⟨r, ?_, hcd⟩
+  -- finally `r ⋁ j = x`, i.e. `j = x ⊖ r`
+  have hp1 : Perp (ovee (orth x) r hxr) (orth (ovee (orth x) r hxr)) :=
+    EffectAlgebra.perp_orth _
+  have h' : Perp r (orth (ovee (orth x) r hxr)) := PCM.perp_of_ovee_perp hxr hp1
+  have e2 : ovee r (orth (ovee (orth x) r hxr)) h' = x := by
+    have he := EffectAlgebra.orth_unique (PCM.perp_ovee_of_ovee_perp hxr hp1)
+      (by rw [← PCM.ovee_assoc hxr hp1]; exact EffectAlgebra.ovee_orth _)
+    rwa [eabasics_orth_orth] at he
+  have hjw : orth (ovee (orth x) r hxr) = j := by rw [hw, eabasics_orth_orth]
+  have hd : IsDiff x r (orth (ovee (orth x) r hxr)) := ⟨h', e2⟩
+  rwa [hjw] at hd
 
 /-- 177Ia's existence half, read off from `dual_modularity_lemma` at
 `x = a ⋁ b`, `c = a`, `d = b` (so that `x ⊖ c = b` and `x ⊖ d = a`) — this is
