@@ -1313,7 +1313,7 @@ theorem continuous_measure_space [IsFiniteMeasure μ] (hμ : μ.IsComplete)
     continuous_measure_space_subset μ hμ hc Set.univ MeasurableSet.univ r hr
   exact ⟨S, hSm, hSr⟩
 
-variable (𝒜 : Type u) [CStarAlgebra 𝒜] [PartialOrder 𝒜]
+variable (𝒜 : Type*) [CStarAlgebra 𝒜] [PartialOrder 𝒜]
   [StarOrderedRing 𝒜] in
 /-- The Prop "`𝒜` is (a copy of) `L^∞(X, μ)` via the quotient map `q`"
 (mirroring the rendering of vn.tex 51IX, `Linfty_vn`).
@@ -1396,7 +1396,7 @@ private theorem bm_smul (z : ℂ) {f : X → ℂ} (hf : IsBoundedMeasurable X f)
 
 /-- Auxiliary for **130IV**: `q` only depends on the a.e.-class of its
 argument.  (This is the argument already made inline in **130II**.) -/
-private theorem linfty_congr (ν : Measure X) (𝒞 : Type u) [CStarAlgebra 𝒞]
+private theorem linfty_congr (ν : Measure X) (𝒞 : Type*) [CStarAlgebra 𝒞]
     [PartialOrder 𝒞] [StarOrderedRing 𝒞] (p : (X → ℂ) → 𝒞)
     (hp : IsLinftyOf ν 𝒞 p) {f g : X → ℂ} (hf : IsBoundedMeasurable X f)
     (hg : IsBoundedMeasurable X g) (h : f =ᵐ[ν] g) : p f = p g := by
@@ -1410,7 +1410,7 @@ private theorem linfty_congr (ν : Measure X) (𝒞 : Type u) [CStarAlgebra 𝒞
   exact hadd
 
 /-- Auxiliary for **130IV**: `q` is additive, hence subtractive. -/
-private theorem linfty_sub (ν : Measure X) (𝒞 : Type u) [CStarAlgebra 𝒞]
+private theorem linfty_sub (ν : Measure X) (𝒞 : Type*) [CStarAlgebra 𝒞]
     [PartialOrder 𝒞] [StarOrderedRing 𝒞] (p : (X → ℂ) → 𝒞)
     (hp : IsLinftyOf ν 𝒞 p) {f g : X → ℂ} (hf : IsBoundedMeasurable X f)
     (hg : IsBoundedMeasurable X g) : p (f - g) = p f - p g := by
@@ -1418,7 +1418,7 @@ private theorem linfty_sub (ν : Measure X) (𝒞 : Type u) [CStarAlgebra 𝒞]
   rw [sub_add_cancel] at h
   rw [h, add_sub_cancel_right]
 
-private theorem linfty_zero (ν : Measure X) (𝒞 : Type u) [CStarAlgebra 𝒞]
+private theorem linfty_zero (ν : Measure X) (𝒞 : Type*) [CStarAlgebra 𝒞]
     [PartialOrder 𝒞] [StarOrderedRing 𝒞] (p : (X → ℂ) → 𝒞)
     (hp : IsLinftyOf ν 𝒞 p) : p 0 = 0 :=
   (hp.kernel _ bm_zero).mpr (Filter.EventuallyEq.refl _ _)
@@ -1426,7 +1426,7 @@ private theorem linfty_zero (ν : Measure X) (𝒞 : Type u) [CStarAlgebra 𝒞]
 /-- Auxiliary: `q` is bipositive, first half.  (`0 ≤ z` in `ℂ` says that
 `z` is a nonnegative real, so the hypothesis is "`f ≥ 0` a.e.".)  The
 witness is `√f`, which is bounded measurable because `√` is. -/
-private theorem linfty_nonneg (ν : Measure X) (𝒞 : Type u) [CStarAlgebra 𝒞]
+private theorem linfty_nonneg (ν : Measure X) (𝒞 : Type*) [CStarAlgebra 𝒞]
     [PartialOrder 𝒞] [StarOrderedRing 𝒞] (p : (X → ℂ) → 𝒞)
     (hp : IsLinftyOf ν 𝒞 p) {f : X → ℂ} (hf : IsBoundedMeasurable X f)
     (h : ∀ᵐ x ∂ν, 0 ≤ f x) : 0 ≤ p f := by
@@ -1457,7 +1457,7 @@ private theorem linfty_nonneg (ν : Measure X) (𝒞 : Type u) [CStarAlgebra �
     _ = p f := linfty_congr ν 𝒞 p hp (bm_mul (bm_star hgb) hgb) hf hae
 
 /-- Auxiliary: `q` is monotone for the a.e. order. -/
-private theorem linfty_mono (ν : Measure X) (𝒞 : Type u) [CStarAlgebra 𝒞]
+private theorem linfty_mono (ν : Measure X) (𝒞 : Type*) [CStarAlgebra 𝒞]
     [PartialOrder 𝒞] [StarOrderedRing 𝒞] (p : (X → ℂ) → 𝒞)
     (hp : IsLinftyOf ν 𝒞 p) {f g : X → ℂ} (hf : IsBoundedMeasurable X f)
     (hg : IsBoundedMeasurable X g) (h : ∀ᵐ x ∂ν, f x ≤ g x) : p f ≤ p g := by
@@ -1473,7 +1473,7 @@ private theorem linfty_mono (ν : Measure X) (𝒞 : Type u) [CStarAlgebra 𝒞]
 `q(s·f)` is *both* `≤ 0` (because `s·f ≤ 0` pointwise) and `≥ 0` (because
 it is the compression `q(s)·q(f)·q(s)` of a positive element), hence `0`;
 so `s·f` vanishes a.e., which forces `μ(S) = 0`. -/
-private theorem linfty_ae_nonneg (ν : Measure X) (𝒞 : Type u) [CStarAlgebra 𝒞]
+private theorem linfty_ae_nonneg (ν : Measure X) (𝒞 : Type*) [CStarAlgebra 𝒞]
     [PartialOrder 𝒞] [StarOrderedRing 𝒞] (p : (X → ℂ) → 𝒞)
     (hp : IsLinftyOf ν 𝒞 p) {f : X → ℂ} (hf : IsBoundedMeasurable X f)
     (h : 0 ≤ p f) : ∀ᵐ x ∂ν, 0 ≤ f x := by
@@ -1557,8 +1557,10 @@ private theorem linfty_ae_nonneg (ν : Measure X) (𝒞 : Type u) [CStarAlgebra 
   filter_upwards [him, hSae] with x h1 h2
   exact Complex.le_def.mpr ⟨by simpa using not_lt.mp h2, by simpa using h1.symm⟩
 
-/-- Auxiliary: the converse of `linfty_mono`. -/
-private theorem linfty_ae_le (ν : Measure X) (𝒞 : Type u) [CStarAlgebra 𝒞]
+/-- Auxiliary: the converse of `linfty_mono`.  (Kept as part of the
+dictionary although its only consumer, the absolute-continuity step of the
+old **129X** proof, went away with the repair of 2026-08-21.) -/
+private theorem linfty_ae_le (ν : Measure X) (𝒞 : Type*) [CStarAlgebra 𝒞]
     [PartialOrder 𝒞] [StarOrderedRing 𝒞] (p : (X → ℂ) → 𝒞)
     (hp : IsLinftyOf ν 𝒞 p) {f g : X → ℂ} (hf : IsBoundedMeasurable X f)
     (hg : IsBoundedMeasurable X g) (h : p f ≤ p g) : ∀ᵐ x ∂ν, f x ≤ g x := by
@@ -1570,10 +1572,12 @@ private theorem linfty_ae_le (ν : Measure X) (𝒞 : Type u) [CStarAlgebra 𝒞
 
 /-! ### Auxiliaries for **129X**
 
-Three ingredients that the thesis's proof (proc.tex:6371) uses without
+Four ingredients that the thesis's proof (proc.tex:6371) uses without
 comment: normality read as preservation of *infima* (it takes
 `δ(⋀ₙ qₙ) = ⋀ₙ δ(qₙ)`), the regrouping of a level-`N+1` sum into pairs,
-and the dyadic partition itself. -/
+the integral state `ω` (which the thesis writes down directly, and which
+here has to be transported onto the presentation), and the dyadic
+partition itself. -/
 
 omit [MeasurableSpace X] in
 /-- A normal positive map preserves the infima of filtered sets of
@@ -1644,6 +1648,198 @@ private theorem sum_range_two_mul {M : Type*} [AddCommMonoid M] (f : ℕ → M) 
       rw [h, Finset.sum_range_succ, Finset.sum_range_succ, ih,
         Finset.sum_range_succ]
       abel
+
+
+/-- Auxiliary for **129X**: the **integral state** of the thesis's own proof
+(proc.tex:6371), transported onto a presentation.
+
+proc.tex takes for `ω` the normalized integral `ω(f°) = μ(X)⁻¹∫f dμ` and
+cites **51IX** (`Linfty-vn`) for its normality and faithfulness.  Here
+`L^∞(X)` is an *abstract* algebra `𝒜` with a presentation
+`q : 𝓛^∞(X) → 𝒜`, so the state cannot be written down on `𝒜` directly; it
+has to be transported.  `Linfty_vn` builds *one* presentation
+`p : 𝓛^∞(X) → 𝒞` together with its integral functional `τ`, faithful,
+normal and positive.  Any two presentations of the same measure space are
+isomorphic over `𝓛^∞(X)` — both are surjective with kernel the a.e.-null
+functions — so `Ψ : 𝒜 → 𝒞`, `q f ↦ p f`, is a bijection, and `ω := τ ∘ Ψ`
+is a faithful np-functional on `𝒜` with `ω(q f) = ∫f dμ`.
+
+Two notes on the transport.  `Linfty_vn`'s presentation `p` is stated as a
+∗-*ring* map (it carries no `smul` clause, unlike our `IsLinftyOf` — cf. the
+`IsLinftyOf` docstring and QUESTIONS D1), so `Ψ` is built as a ∗-ring
+isomorphism and its normality comes from its being an *order* isomorphism,
+which needs no linearity: `0 ≤ x` iff `x = c*c` in either algebra.
+`ℂ`-linearity of `ω` is then recovered from the integral formula, where
+`q`'s own `smul` clause is available.  And the normalization `μ(X)⁻¹` is
+left off: nothing in 129X uses `ω 1 = 1`. -/
+private theorem exists_integralNP [IsFiniteMeasure μ] (hμ : μ.IsComplete)
+    (𝒜 : Type u) [CStarAlgebra 𝒜] [PartialOrder 𝒜] [StarOrderedRing 𝒜]
+    (q : (X → ℂ) → 𝒜) (hq : IsLinftyOf μ 𝒜 q) :
+    ∃ ω : NPFunctional 𝒜,
+      (∀ f : X → ℂ, IsBoundedMeasurable X f → (ω (q f) : ℂ) = ∫ x, f x ∂μ) ∧
+      (∀ a : 𝒜, 0 ≤ a → (ω a : ℂ) = 0 → a = 0) := by
+  classical
+  obtain ⟨𝒞, iC, iP, iS, p, τ, hvn, hpsurj, hpmiu, hpone, hpker, ⟨τ', hτ'⟩,
+    hτfaith, hτint⟩ := Linfty_vn X μ hμ
+  letI := iC
+  letI := iP
+  letI := iS
+  letI := hvn
+  ---- (a) `p` is a ∗-ring map with the same kernel as `q` -----------------
+  have hpadd : ∀ f g, IsBoundedMeasurable X f → IsBoundedMeasurable X g →
+      p (f + g) = p f + p g := fun f g hf hg => (hpmiu f g hf hg).1
+  have hpmul : ∀ f g, IsBoundedMeasurable X f → IsBoundedMeasurable X g →
+      p (f * g) = p f * p g := fun f g hf hg => (hpmiu f g hf hg).2.1
+  have hpstar : ∀ f, IsBoundedMeasurable X f → p (star f) = star (p f) :=
+    fun f hf => (hpmiu f f hf hf).2.2
+  have hpsub : ∀ f g, IsBoundedMeasurable X f → IsBoundedMeasurable X g →
+      p (f - g) = p f - p g := by
+    intro f g hf hg
+    have hfg : (f - g) + g = f := by abel
+    have h : p ((f - g) + g) = p (f - g) + p g := hpadd _ _ (bm_sub hf hg) hg
+    rw [hfg] at h
+    rw [h]; abel
+  ---- (b) representatives, and the a.e.-dictionary ------------------------
+  choose rep hrepBM hrepq using hq.surj
+  have haeq : ∀ f g, IsBoundedMeasurable X f → IsBoundedMeasurable X g →
+      q f = q g → f =ᵐ[μ] g := by
+    intro f g hf hg h
+    have h0 : q (f - g) = 0 := by rw [linfty_sub _ _ _ hq hf hg, h, sub_self]
+    have hae := (hq.kernel _ (bm_sub hf hg)).mp h0
+    filter_upwards [hae] with x hx
+    have hx' : f x - g x = 0 := hx
+    exact sub_eq_zero.mp hx'
+  have hwd : ∀ f g, IsBoundedMeasurable X f → IsBoundedMeasurable X g →
+      q f = q g → p f = p g := by
+    intro f g hf hg h
+    have h0 : q (f - g) = 0 := by rw [linfty_sub _ _ _ hq hf hg, h, sub_self]
+    have hae := (hq.kernel _ (bm_sub hf hg)).mp h0
+    have h1 := (hpker _ (bm_sub hf hg)).mpr hae
+    rw [hpsub _ _ hf hg, sub_eq_zero] at h1
+    exact h1
+  ---- (c) the comparison map `Ψ : 𝒜 → 𝒞`, `q f ↦ p f` ---------------------
+  obtain ⟨Ψ, hΨ⟩ : ∃ Ψ : 𝒜 → 𝒞, ∀ a, Ψ a = p (rep a) := ⟨_, fun _ => rfl⟩
+  have hΨq : ∀ f, IsBoundedMeasurable X f → Ψ (q f) = p f := by
+    intro f hf
+    rw [hΨ]
+    exact hwd _ _ (hrepBM _) hf (hrepq _)
+  have hΨadd : ∀ a b : 𝒜, Ψ (a + b) = Ψ a + Ψ b := by
+    intro a b
+    rw [hΨ, hΨ, hΨ, ← hpadd _ _ (hrepBM a) (hrepBM b)]
+    exact hwd _ _ (hrepBM _) (bm_add (hrepBM a) (hrepBM b))
+      (by rw [hrepq, hq.add _ _ (hrepBM a) (hrepBM b), hrepq, hrepq])
+  have hΨmul : ∀ a b : 𝒜, Ψ (a * b) = Ψ a * Ψ b := by
+    intro a b
+    rw [hΨ, hΨ, hΨ, ← hpmul _ _ (hrepBM a) (hrepBM b)]
+    exact hwd _ _ (hrepBM _) (bm_mul (hrepBM a) (hrepBM b))
+      (by rw [hrepq, hq.mul _ _ (hrepBM a) (hrepBM b), hrepq, hrepq])
+  have hΨstar : ∀ a : 𝒜, Ψ (star a) = star (Ψ a) := by
+    intro a
+    rw [hΨ, hΨ, ← hpstar _ (hrepBM a)]
+    exact hwd _ _ (hrepBM _) (bm_star (hrepBM a))
+      (by rw [hrepq, hq.star_map _ (hrepBM a), hrepq])
+  have hΨsub : ∀ a b : 𝒜, Ψ (a - b) = Ψ a - Ψ b := by
+    intro a b
+    have hab : a - b + b = a := by abel
+    have h := hΨadd (a - b) b
+    rw [hab] at h
+    rw [h]; abel
+  have hΨinj : Function.Injective Ψ := by
+    intro a b hab
+    rw [hΨ, hΨ] at hab
+    have h0 : p (rep a - rep b) = 0 := by
+      rw [hpsub _ _ (hrepBM a) (hrepBM b), hab, sub_self]
+    have hae := (hpker _ (bm_sub (hrepBM a) (hrepBM b))).mp h0
+    have h1 : q (rep a - rep b) = 0 :=
+      (hq.kernel _ (bm_sub (hrepBM a) (hrepBM b))).mpr hae
+    rw [linfty_sub _ _ _ hq (hrepBM a) (hrepBM b), hrepq, hrepq, sub_eq_zero] at h1
+    exact h1
+  have hΨsurj : Function.Surjective Ψ := by
+    intro c
+    obtain ⟨g, hg, hgc⟩ := hpsurj c
+    exact ⟨q g, by rw [hΨq g hg, hgc]⟩
+  ---- (d) `Ψ` is an order isomorphism, hence normal ------------------------
+  have hΨnonneg : ∀ a : 𝒜, 0 ≤ a → (0 : 𝒞) ≤ Ψ a := by
+    intro a ha
+    have hs : CFC.sqrt a * CFC.sqrt a = a := CFC.sqrt_mul_sqrt_self a ha
+    have hsa : IsSelfAdjoint (CFC.sqrt a) := IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg a)
+    have h : Ψ a = star (Ψ (CFC.sqrt a)) * Ψ (CFC.sqrt a) := by
+      rw [← hΨstar, hsa.star_eq, ← hΨmul, hs]
+    rw [h]
+    exact star_mul_self_nonneg _
+  have hΨnonneg' : ∀ a : 𝒜, (0 : 𝒞) ≤ Ψ a → 0 ≤ a := by
+    intro a h
+    have hs : CFC.sqrt (Ψ a) * CFC.sqrt (Ψ a) = Ψ a := CFC.sqrt_mul_sqrt_self _ h
+    have hsa : IsSelfAdjoint (CFC.sqrt (Ψ a)) :=
+      IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg _)
+    obtain ⟨e, he⟩ := hΨsurj (CFC.sqrt (Ψ a))
+    have h2 : Ψ (star e * e) = Ψ a := by
+      rw [hΨmul, hΨstar, he, hsa.star_eq, hs]
+    rw [← hΨinj h2]
+    exact star_mul_self_nonneg _
+  have hΨle : ∀ a b : 𝒜, Ψ a ≤ Ψ b ↔ a ≤ b := by
+    intro a b
+    constructor
+    · intro h
+      have h1 : (0 : 𝒞) ≤ Ψ (b - a) := by rw [hΨsub]; exact sub_nonneg.mpr h
+      exact sub_nonneg.mp (hΨnonneg' _ h1)
+    · intro h
+      have h1 : (0 : 𝒞) ≤ Ψ (b - a) := hΨnonneg _ (sub_nonneg.mpr h)
+      rw [hΨsub] at h1
+      exact sub_nonneg.mp h1
+  have hΨmono : ∀ x y : 𝒜, x ≤ y → Ψ x ≤ Ψ y := fun x y h => (hΨle x y).mpr h
+  have hΨsa : ∀ x : 𝒜, IsSelfAdjoint x → IsSelfAdjoint (Ψ x) := by
+    intro x hx
+    show star (Ψ x) = Ψ x
+    rw [← hΨstar, hx.star_eq]
+  have hΨnorm : PreservesDirSups Ψ := by
+    intro D s hne hdir hlub
+    have h := isLUB_image_of_orderIso Ψ hΨle hΨsurj (isLUB_coe_of_isLUB hne hlub)
+    rw [← Set.image_comp] at h
+    exact h
+  ---- (e) `ω := τ ∘ Ψ` ----------------------------------------------------
+  have hωint : ∀ a : 𝒜, τ (Ψ a) = ∫ x, rep a x ∂μ := by
+    intro a
+    rw [hΨ]
+    exact hτint _ (hrepBM a)
+  have hωsmul : ∀ (z : ℂ) (a : 𝒜), τ (Ψ (z • a)) = z • τ (Ψ a) := by
+    intro z a
+    rw [hωint, hωint]
+    have hae : rep (z • a) =ᵐ[μ] z • rep a :=
+      haeq _ _ (hrepBM _) (bm_smul z (hrepBM a))
+        (by rw [hrepq, hq.smul z _ (hrepBM a), hrepq])
+    rw [integral_congr_ae hae]
+    simpa using integral_smul (μ := μ) z (rep a)
+  obtain ⟨ω₀, hω₀⟩ : ∃ ω₀ : 𝒜 →ₚ[ℂ] ℂ, ∀ a : 𝒜, ω₀ a = τ' (Ψ a) := by
+    refine ⟨{ toFun := fun a => τ' (Ψ a)
+              map_add' := fun x y => by
+                rw [hΨadd]
+                exact map_add τ'.toPositiveLinearMap _ _
+              map_smul' := fun z x => by
+                show τ' (Ψ (z • x)) = z • τ' (Ψ x)
+                rw [hτ']
+                exact hωsmul z x
+              monotone' := fun x y h => npFunctional_mono τ' (hΨmono x y h) },
+      fun _ => rfl⟩
+  refine ⟨⟨ω₀, ?_⟩, ?_, ?_⟩
+  · have h := preservesDirSups_comp hΨsa hΨmono hΨnorm τ'.preservesDirSups'
+    have heq : ⇑ω₀ = fun a : 𝒜 => (τ' (Ψ a) : ℂ) := funext hω₀
+    rw [heq]
+    exact h
+  · intro f hf
+    show (ω₀ (q f) : ℂ) = _
+    rw [hω₀, hΨq f hf, hτ']
+    exact hτint f hf
+  · intro a ha h0
+    have h1 : τ (Ψ a) = 0 := by
+      rw [← hτ', ← hω₀]
+      exact h0
+    have h2 : Ψ a = 0 := hτfaith _ (hΨnonneg a ha) h1
+    have h3 : Ψ a = Ψ 0 := by
+      rw [h2]
+      have := hΨsub 0 0
+      simpa using this.symm
+    exact hΨinj h3
 
 /-- The **dyadic scale** behind the partition of **129X** (proc.tex:6382).
 Instead of indexing the halves by words `w ∈ {1,2}*` we index the level-`N`
@@ -1804,7 +2000,24 @@ private theorem exists_dyadic_scale [IsFiniteMeasure μ] (hμ : μ.IsComplete)
 
 /-- **129X** (`lem:continuous-finite-measure-space-not-duplicable`,
 proc.tex:6363, Lemma): if `X` is a continuous finite complete measure
-space for which `L^∞(X)` is duplicable, then `μ(X) = 0`. -/
+space for which `L^∞(X)` is duplicable, then `μ(X) = 0`.
+
+The proof is the thesis's, step for step: the dyadic partition of `X` by
+repeated halving (**129VIII**), the projections `p_w`, the descending
+`q_N = ∑_{|w|=N} p_w ⊗ p_w`, `δ(q) = ⋀_N δ(q_N) = 1` by normality of
+`δ`, and `(ω ⊗ ω)(q) = ⋀_N (ω ⊗ ω)(q_N) = 0` for the integral state `ω`,
+whence `q = 0` because `ω ⊗ ω` is faithful (**118IV**.4,
+`carrier-tensor`) — against `δ(q) = 1 ≠ 0`.
+
+Until 2026-08-21 it was *not* the thesis's: `ω` was an arbitrary non-zero
+np-functional, with the decay of `ω(p_w)` recovered by an
+absolute-continuity argument and the closing contradiction routed through
+carriers instead of faithfulness.  The reason recorded in the file was
+that the integral state's normality needs **51IX** `Linfty-vn`, "which is
+still `sorry` in the tree" — long false; `A/VN/Basic` has no `sorry`.
+`exists_integralNP` above now transports 51IX's integral functional onto
+an arbitrary `IsLinftyOf` presentation, and the thesis's own `ω` is
+available. -/
 theorem continuous_finite_measure_space_not_duplicable
     [IsFiniteMeasure μ] (hμ : μ.IsComplete) (hc : ContinuousSpace μ)
     (𝒜 : Type u) [CStarAlgebra 𝒜] [PartialOrder 𝒜] [StarOrderedRing 𝒜]
@@ -1860,7 +2073,14 @@ theorem continuous_finite_measure_space_not_duplicable
     by_cases hx : x ∈ T
     · simp [Set.indicator_apply, hx, hsub hx, Set.mem_diff]
     · by_cases hx' : x ∈ T' <;> simp [Set.indicator_apply, hx, hx', Set.mem_diff]
-  ---- (1) `𝒜` is nontrivial, and carries a nonzero np-functional -------
+  ---- (1) `𝒜` is nontrivial, and carries the integral state -------------
+  -- proc.tex:6371 takes for `ω` the integral state `μ(X)⁻¹∫·dμ`, normal
+  -- and faithful by **51IX** (`Linfty-vn`); `exists_integralNP` above
+  -- supplies exactly that state, transported onto the presentation `q`
+  -- (unnormalized: `ω(1) = μ(X)` rather than `1`, which nothing below
+  -- needs).  So `ω` on an indicator is the measure of its set, and on a
+  -- dyadic projection `p_w` it is `2^{-#w}μ(X)` — the thesis's
+  -- `ω(p_w) = 2^{-#w}`.
   have hone : (1 : 𝒜) ≠ 0 := by
     intro h0
     refine hpos ?_
@@ -1870,10 +2090,13 @@ theorem continuous_finite_measure_space_not_duplicable
       ext x; simp
     rwa [h3] at h2
   haveI : Nontrivial 𝒜 := ⟨⟨1, 0, hone⟩⟩
-  obtain ⟨ω, hω1⟩ : ∃ ω : NPFunctional 𝒜, ω 1 ≠ 0 := by
-    by_contra hcon
-    push_neg at hcon
-    exact hone (VonNeumannAlgebra.np_faithful 1 zero_le_one hcon)
+  obtain ⟨ω, hωq, hωfaith⟩ := exists_integralNP μ hμ 𝒜 q hq
+  have hωind : ∀ T : Set X, MeasurableSet T →
+      (ω (qi T) : ℂ) = (((μ T).toReal : ℝ) : ℂ) := by
+    intro T hT
+    have h1 : (T.indicator (1 : X → ℂ)) = T.indicator (fun _ : X => (1 : ℂ)) := rfl
+    rw [hqi, hωq _ (hindbm T hT), h1, integral_indicator_const (1 : ℂ) hT,
+      Complex.real_smul, mul_one, measureReal_def]
   have hωre : ∀ a : 𝒜, 0 ≤ a → (ω a : ℂ) = (((ω a).re : ℝ) : ℂ) := by
     intro a ha
     obtain ⟨-, h2⟩ := Complex.le_def.mp (npFunctional_nonneg ω ha)
@@ -1883,131 +2106,7 @@ theorem continuous_finite_measure_space_not_duplicable
     intro a ha
     obtain ⟨h1, -⟩ := Complex.le_def.mp (npFunctional_nonneg ω ha)
     simpa using h1
-  ---- (2) absolute continuity of `ω` ------------------------------------
-  -- The thesis takes for `ω` the *integral* state `μ(X)⁻¹∫·dμ`, for which
-  -- `ω(p_w) = 2^{-#w}` is immediate; that state is normal by `Linfty-vn`
-  -- (**51IX**), which is still `sorry` in the tree.  We take instead an
-  -- arbitrary non-zero np-functional and get the decay of `ω(p_w)` from
-  -- normality directly, in the form of absolute continuity.
-  have habs : ∀ ε : ℝ, 0 < ε → ∃ n : ℕ, ∀ T : Set X, MeasurableSet T →
-      μ T * 2 ^ n ≤ μ Set.univ → (ω (qi T)).re ≤ ε := by
-    intro ε hε
-    by_contra hcon
-    push_neg at hcon
-    choose T hTm hTμ hTω using hcon
-    -- the sets `T n` are small, so their tails have null intersection
-    have h2ne : ∀ n : ℕ, ((2 : ℝ≥0∞) ^ n) ≠ 0 := fun n => by
-      simp [pow_ne_zero]
-    have h2top : ∀ n : ℕ, ((2 : ℝ≥0∞) ^ n) ≠ ⊤ := fun n => by
-      simp [ENNReal.pow_ne_top]
-    have hTle : ∀ n, μ (T n) ≤ μ Set.univ * ((2 : ℝ≥0∞)⁻¹) ^ n := by
-      intro n
-      calc μ (T n) = μ (T n) * 2 ^ n * ((2 : ℝ≥0∞) ^ n)⁻¹ := by
-            rw [mul_assoc, ENNReal.mul_inv_cancel (h2ne n) (h2top n), mul_one]
-        _ ≤ μ Set.univ * ((2 : ℝ≥0∞) ^ n)⁻¹ := by gcongr; exact hTμ n
-        _ = μ Set.univ * ((2 : ℝ≥0∞)⁻¹) ^ n := by rw [ENNReal.inv_pow]
-    have hsum : ∑' n, μ (T n) ≠ ⊤ := by
-      refine ne_top_of_le_ne_top ?_ (ENNReal.tsum_le_tsum hTle)
-      rw [ENNReal.tsum_mul_left, ENNReal.tsum_geometric_two]
-      exact ENNReal.mul_ne_top (measure_ne_top μ _) (by simp)
-    obtain ⟨U, hU⟩ : ∃ U : ℕ → Set X, ∀ N, U N = ⋃ k, T (k + N) :=
-      ⟨_, fun _ => rfl⟩
-    have hUm : ∀ N, MeasurableSet (U N) := by
-      intro N; rw [hU]; exact MeasurableSet.iUnion fun k => hTm _
-    have hUanti : ∀ N, U (N + 1) ⊆ U N := by
-      intro N
-      rw [hU, hU]
-      refine Set.iUnion_subset fun k => ?_
-      refine Set.subset_iUnion_of_subset (k + 1) ?_
-      rw [show k + 1 + N = k + (N + 1) by ring]
-    have hUle : ∀ N, μ (U N) ≤ ∑' k, μ (T (k + N)) := by
-      intro N; rw [hU]; exact measure_iUnion_le _
-    have hUnull : μ (⋂ N, U N) = 0 := by
-      refine le_antisymm ?_ (by simp)
-      refine ge_of_tendsto (ENNReal.tendsto_sum_nat_add (fun n => μ (T n)) hsum) ?_
-      refine Filter.Eventually.of_forall fun N => ?_
-      exact le_trans (measure_mono (Set.iInter_subset _ N)) (hUle N)
-    -- their projections have infimum `0`, so `ω(qi (U N)) → 0`
-    have hglb : IsGLB {x : selfAdjoint 𝒜 | ∃ N, (x : 𝒜) = qi (U N)}
-        (0 : selfAdjoint 𝒜) := by
-      constructor
-      · rintro x ⟨N, hN⟩
-        exact Subtype.coe_le_coe.mp (by rw [hN]; exact hqinonneg _ (hUm N))
-      · intro b hb
-        refine Subtype.coe_le_coe.mp ?_
-        obtain ⟨g, hgbm, hgq⟩ := hq.surj (b : 𝒜)
-        have hgle : ∀ N, ∀ᵐ x ∂μ, g x ≤ (U N).indicator (1 : X → ℂ) x := by
-          intro N
-          refine linfty_ae_le μ 𝒜 q hq hgbm (hindbm _ (hUm N)) ?_
-          rw [hgq, ← hqi]
-          exact hb (show (⟨qi (U N), (hqiproj _ (hUm N)).isSelfAdjoint⟩ :
-            selfAdjoint 𝒜) ∈ {x : selfAdjoint 𝒜 | ∃ N, (x : 𝒜) = qi (U N)} from ⟨N, rfl⟩)
-        have hall : ∀ᵐ x ∂μ, ∀ N, g x ≤ (U N).indicator (1 : X → ℂ) x :=
-          ae_all_iff.mpr hgle
-        have hgle0 : ∀ᵐ x ∂μ, g x ≤ (0 : X → ℂ) x := by
-          have hint : ∀ᵐ x ∂μ, x ∉ ⋂ N, U N := by
-            rw [ae_iff]
-            have hset : {x : X | ¬ (x ∉ ⋂ N, U N)} = ⋂ N, U N := by
-              ext x; simp
-            rw [hset]
-            exact hUnull
-          filter_upwards [hall, hint] with x hx hxi
-          obtain ⟨N, hN⟩ : ∃ N, x ∉ U N := by
-            by_contra hcon2
-            push_neg at hcon2
-            exact hxi (Set.mem_iInter.mpr hcon2)
-          have := hx N
-          simpa [Set.indicator_apply, hN] using this
-        have := linfty_mono μ 𝒜 q hq hgbm bm_zero hgle0
-        rw [hgq, linfty_zero μ 𝒜 q hq] at this
-        simpa using this
-    have hne : ({x : selfAdjoint 𝒜 | ∃ N, (x : 𝒜) = qi (U N)}).Nonempty :=
-      ⟨⟨qi (U 0), (hqiproj _ (hUm 0)).isSelfAdjoint⟩, ⟨0, rfl⟩⟩
-    have hdir : DirectedOn (· ≥ ·) {x : selfAdjoint 𝒜 | ∃ N, (x : 𝒜) = qi (U N)} := by
-      rintro x ⟨N, hN⟩ y ⟨M, hM⟩
-      have hmono : ∀ N M : ℕ, N ≤ M → U M ⊆ U N := by
-        intro N M h
-        induction M with
-        | zero => simpa using (by omega : N = 0) ▸ subset_rfl
-        | succ K ih =>
-            rcases Nat.lt_or_ge N (K + 1) with h1 | h1
-            · exact (hUanti K).trans (ih (by omega))
-            · have : N = K + 1 := by omega
-              subst this
-              exact subset_rfl
-      refine ⟨⟨qi (U (max N M)), (hqiproj _ (hUm _)).isSelfAdjoint⟩, ⟨max N M, rfl⟩,
-        ?_, ?_⟩
-      · exact Subtype.coe_le_coe.mp (by
-          rw [hN]
-          exact hqimono _ _ (hUm _) (hUm _) (hmono N (max N M) (le_max_left _ _)))
-      · exact Subtype.coe_le_coe.mp (by
-          rw [hM]
-          exact hqimono _ _ (hUm _) (hUm _) (hmono M (max N M) (le_max_right _ _)))
-    have himg := dup_preservesDirInfs ω.toPositiveLinearMap ω.preservesDirSups' _ _
-      hne hdir hglb
-    -- but every `ω(qi (U N))` is `> ε`
-    have hlow : ((ε : ℝ) : ℂ) ∈ lowerBounds
-        ((fun x : selfAdjoint 𝒜 => (ω.toPositiveLinearMap (x : 𝒜) : ℂ)) ''
-          {x : selfAdjoint 𝒜 | ∃ N, (x : 𝒜) = qi (U N)}) := by
-      rintro _ ⟨x, ⟨N, hN⟩, rfl⟩
-      have h1 : (ω (qi (T N)) : ℂ).re ≤ (ω (qi (U N))).re := by
-        have := npFunctional_mono ω (hqimono (T N) (U N) (hTm N) (hUm N) (by
-          rw [hU]
-          exact Set.subset_iUnion_of_subset 0 (by simp)))
-        exact (Complex.le_def.mp this).1
-      have h2 : ε ≤ (ω (qi (U N))).re := le_of_lt (lt_of_lt_of_le (hTω N) h1)
-      have h3 : (ω (qi (U N)) : ℂ) = (((ω (qi (U N))).re : ℝ) : ℂ) :=
-        hωre _ (hqinonneg _ (hUm N))
-      show ((ε : ℝ) : ℂ) ≤ ω.toPositiveLinearMap (x : 𝒜)
-      rw [show (ω.toPositiveLinearMap (x : 𝒜) : ℂ) = ω (qi (U N)) by rw [hN]; rfl, h3]
-      exact Complex.le_def.mpr ⟨by simpa using h2, by simp⟩
-    have hfin := himg.2 hlow
-    have : ((ε : ℝ) : ℂ) ≤ 0 := by
-      simpa using hfin
-    have := (Complex.le_def.mp this).1
-    simp only [Complex.ofReal_re, Complex.zero_re] at this
-    linarith
-  ---- (3) the dyadic partition ------------------------------------------
+  ---- (2) the dyadic partition ------------------------------------------
   obtain ⟨S, hSm, hSmono, hS0, hStop, hSref, hSblock⟩ := exists_dyadic_scale μ hμ hc
   obtain ⟨e, he⟩ : ∃ f : ℕ → ℕ → 𝒜, ∀ N j, f N j = qi (S N j) := ⟨_, fun _ _ => rfl⟩
   obtain ⟨p, hp⟩ : ∃ f : ℕ → ℕ → 𝒜, ∀ N j, f N j = e N (j + 1) - e N j :=
@@ -2034,14 +2133,27 @@ theorem continuous_finite_measure_space_not_duplicable
       exact hSref N (i + 1)
     simp only [hp, he, h1, h2]
     abel
+  -- `ω(p_w) = 2^{-#w}μ(X)`, the thesis's `ω(p_w) = 2^{-#w}` unnormalized
+  have hωp : ∀ N j, j < 2 ^ N →
+      (ω (p N j) : ℂ) = (((μ Set.univ).toReal / 2 ^ N : ℝ) : ℂ) := by
+    intro N j hj
+    rw [hpind, hωind _ ((hSm N (j + 1)).diff (hSm N j))]
+    have hb := congrArg ENNReal.toReal (hSblock N j hj)
+    rw [ENNReal.toReal_mul, ENNReal.toReal_pow] at hb
+    norm_num at hb
+    rw [← hb]
+    field_simp
   have hpsmall : ∀ (ε : ℝ), 0 < ε → ∃ N, ∀ j < 2 ^ N, (ω (p N j)).re ≤ ε := by
     intro ε hε
-    obtain ⟨n, hn⟩ := habs ε hε
-    refine ⟨n, fun j hj => ?_⟩
-    rw [hpind]
-    refine hn _ ((hSm n (j + 1)).diff (hSm n j)) ?_
-    exact le_of_eq (hSblock n j hj)
-  ---- (4) the descending sequence `q_N` ----------------------------------
+    obtain ⟨N, hN⟩ := pow_unbounded_of_one_lt ((μ Set.univ).toReal / ε)
+      (show (1 : ℝ) < 2 by norm_num)
+    refine ⟨N, fun j hj => ?_⟩
+    rw [hωp N j hj, Complex.ofReal_re]
+    have h2 : (0 : ℝ) < 2 ^ N := by positivity
+    rw [div_le_iff₀ h2]
+    rw [div_lt_iff₀ hε] at hN
+    nlinarith [ENNReal.toReal_nonneg (a := μ (Set.univ : Set X))]
+  ---- (3) the descending sequence `q_N` ----------------------------------
   obtain ⟨Q, hQ⟩ : ∃ f : ℕ → VNT 𝒜 𝒜,
       ∀ N, f N = ∑ j ∈ Finset.range (2 ^ N), (p N j ⊗ᵥ p N j) := ⟨_, fun _ => rfl⟩
   have hQnonneg : ∀ N, (0 : VNT 𝒜 𝒜) ≤ Q N := by
@@ -2085,7 +2197,7 @@ theorem continuous_finite_measure_space_not_duplicable
         · have : N = K + 1 := by omega
           subst this
           exact le_rfl
-  ---- (5) `δ(q_N) = 1` and `(ω⊗ω)(q_N) ≤ ε·ω(1)` -------------------------
+  ---- (4) `δ(q_N) = 1` and `(ω⊗ω)(q_N) ≤ ε·ω(1)` -------------------------
   have hδmul := (uniqueness_duplicator d).2
   have hδQ : ∀ N, d.δ (Q N) = 1 := by
     intro N
@@ -2115,7 +2227,7 @@ theorem continuous_finite_measure_space_not_duplicable
     rw [hpsum N] at h
     have h2 := congrArg Complex.re h
     simpa using h2.symm
-  ---- (6) the infimum ----------------------------------------------------
+  ---- (5) the infimum ----------------------------------------------------
   obtain ⟨Qi, hQi⟩ : ∃ i : selfAdjoint (VNT 𝒜 𝒜),
       IsGLB {x : selfAdjoint (VNT 𝒜 𝒜) | ∃ N, (x : VNT 𝒜 𝒜) = Q N} i := by
     refine infima_in_vna _ ⟨⟨Q 0, hQsa 0⟩, ⟨0, rfl⟩⟩ ?_ ⟨(0 : selfAdjoint (VNT 𝒜 𝒜)), ?_⟩
@@ -2143,7 +2255,7 @@ theorem continuous_finite_measure_space_not_duplicable
       rintro x ⟨N, hN⟩
       exact Subtype.coe_le_coe.mp (by rw [hN]; exact hQnonneg N)
     simpa using Subtype.coe_le_coe.mpr h
-  ---- (7) `δ(q) = 1` -----------------------------------------------------
+  ---- (6) `δ(q) = 1` -----------------------------------------------------
   have hδQi : d.δ (Qi : VNT 𝒜 𝒜) = 1 := by
     have hglb := dup_preservesDirInfs d.δ d.normal _ Qi hQine hQidir hQi
     refine le_antisymm ?_ ?_
@@ -2154,7 +2266,7 @@ theorem continuous_finite_measure_space_not_duplicable
       rintro _ ⟨x, ⟨N, hN⟩, rfl⟩
       show (1 : 𝒜) ≤ d.δ (x : VNT 𝒜 𝒜)
       rw [hN, hδQ N]
-  ---- (8) `(ω⊗ω)(q) = 0` -------------------------------------------------
+  ---- (7) `(ω⊗ω)(q) = 0` -------------------------------------------------
   have hχnn : (0 : ℂ) ≤ χ (Qi : VNT 𝒜 𝒜) := npFunctional_nonneg χ hQinn
   have hχ0 : (χ (Qi : VNT 𝒜 𝒜) : ℂ) = 0 := by
     have hc0 : 0 ≤ (ω 1).re := hωnn 1 zero_le_one
@@ -2186,58 +2298,21 @@ theorem continuous_finite_measure_space_not_duplicable
       have := (Complex.le_def.mp hχnn).2
       simpa using this.symm
     exact Complex.ext (by simpa using h6) (by simpa using h7)
-  ---- (9) the contradiction ----------------------------------------------
-  have hcarrier : npCarrier χ = npCarrier ω ⊗ᵥ npCarrier ω :=
-    carrier_tensor_4 ω ω χ hχtmul
-  have hceille : ceil (Qi : VNT 𝒜 𝒜) ≤ 1 - npCarrier χ := by
-    have hc : ceil ((χ.toPositiveLinearMap) (ceil (Qi : VNT 𝒜 𝒜))) = 0 := by
-      rw [← ncp_ceil χ.toPositiveLinearMap χ.preservesDirSups' _ hQinn]
-      rw [show (χ.toPositiveLinearMap (Qi : VNT 𝒜 𝒜) : ℂ) = 0 from hχ0, ceil_zero]
-    have hfc : (χ.toPositiveLinearMap (ceil (Qi : VNT 𝒜 𝒜)) : ℂ) = 0 :=
-      (ceil_basic_3 _ (npFunctional_nonneg χ (ceil_spec hQinn).1.nonneg)).mpr hc
-    have hle : npCarrier χ ≤ 1 - ceil (Qi : VNT 𝒜 𝒜) := by
-      refine (carrier_spec χ.toPositiveLinearMap χ.preservesDirSups').2.2 _
-        (ceil_spec hQinn).1.one_sub ?_
-      rwa [sub_sub_cancel]
-    exact le_sub_comm.mp hle
-  have hQile1 : (Qi : VNT 𝒜 𝒜) ≤ 1 - npCarrier χ := by
-    refine le_trans ?_ hceille
-    -- `q ≤ ⌈q⌉` for the effect `q`
-    have heff : (Qi : VNT 𝒜 𝒜) ≤ 1 := le_trans (hQile 0) (le_of_eq hQ0)
-    obtain ⟨hp1, hac, -⟩ := ceil_spec hQinn
-    have hca : ceil (Qi : VNT 𝒜 𝒜) * (Qi : VNT 𝒜 𝒜) = (Qi : VNT 𝒜 𝒜) := by
-      have h := congrArg star hac
-      rwa [star_mul, hp1.isSelfAdjoint.star_eq,
-        (IsSelfAdjoint.of_nonneg hQinn).star_eq] at h
-    calc (Qi : VNT 𝒜 𝒜) = ceil (Qi : VNT 𝒜 𝒜) * (Qi : VNT 𝒜 𝒜) * ceil (Qi : VNT 𝒜 𝒜) := by
-          rw [hca, hac]
-      _ ≤ ceil (Qi : VNT 𝒜 𝒜) * 1 * ceil (Qi : VNT 𝒜 𝒜) :=
-          IsSelfAdjoint.conjugate_le_conjugate heff hp1.isSelfAdjoint
-      _ = ceil (Qi : VNT 𝒜 𝒜) := by rw [mul_one, hp1.isIdempotentElem.eq]
+  ---- (8) the contradiction ----------------------------------------------
+  -- `ω` is faithful, so `ω ⊗ ω` is faithful by **118IV**.4
+  -- (`carrier-tensor`), which is the step the thesis cites here; hence
+  -- `q = 0` from `(ω ⊗ ω)(q) = 0`, against `δ(q) = 1 ≠ 0`.
   have hone11 : ((1 : 𝒜) ⊗ᵥ (1 : 𝒜)) = (1 : VNT 𝒜 𝒜) :=
     (vnTensor 𝒜 𝒜).isTensorProduct.miu.1
-  have hδ1 : d.δ (1 : VNT 𝒜 𝒜) = 1 := by
-    rw [← hone11]
-    exact (unit_duplicator d).2
-  have hωproj : IsStarProjection (npCarrier ω) :=
-    (carrier_spec ω.toPositiveLinearMap ω.preservesDirSups').1
-  have hfinal : (1 : 𝒜) ≤ 1 - npCarrier ω := by
-    calc (1 : 𝒜) = d.δ (Qi : VNT 𝒜 𝒜) := hδQi.symm
-      _ ≤ d.δ (1 - npCarrier χ) := OrderHomClass.mono d.δ hQile1
-      _ = d.δ 1 - d.δ (npCarrier χ) := map_sub d.δ _ _
-      _ = 1 - npCarrier ω := by
-          rw [hδ1, hcarrier, hδmul, hωproj.isIdempotentElem.eq]
-  have hcω : npCarrier ω = 0 := by
-    have h : (1 : 𝒜) - 1 ≤ (1 - npCarrier ω) - 1 := sub_le_sub_right hfinal 1
-    rw [sub_self] at h
-    have h2 : (0 : 𝒜) ≤ -npCarrier ω := by
-      calc (0 : 𝒜) ≤ 1 - npCarrier ω - 1 := h
-        _ = -npCarrier ω := by abel
-    exact le_antisymm (neg_nonneg.mp h2) hωproj.nonneg
-  refine hω1 ?_
-  have h : (ω (1 - npCarrier ω) : ℂ) = 0 :=
-    (carrier_spec ω.toPositiveLinearMap ω.preservesDirSups').2.1
-  rwa [hcω, sub_zero] at h
+  have hωcar : npCarrier ω = 1 :=
+    (carrier_basic_3 ω.toPositiveLinearMap ω.preservesDirSups').mpr hωfaith
+  have hχcar : npCarrier χ = 1 := by
+    rw [carrier_tensor_4 ω ω χ hχtmul, hωcar, hone11]
+  have hχfaith : ∀ a : VNT 𝒜 𝒜, 0 ≤ a → (χ a : ℂ) = 0 → a = 0 :=
+    (carrier_basic_3 χ.toPositiveLinearMap χ.preservesDirSups').mp hχcar
+  have hQi0 : (Qi : VNT 𝒜 𝒜) = 0 := hχfaith _ hQinn hχ0
+  refine hone ?_
+  rw [← hδQi, hQi0, map_zero]
 
 /-! ## Parsec 1300: the discrete case -/
 
@@ -2543,7 +2618,8 @@ the missing dictionary are needed:
 
 /-- Auxiliary for **130IV**: a function that vanishes a.e. on each member
 of a countable measurable cover vanishes a.e. -/
-private theorem ae_of_ae_restrict_cover (ν : Measure X) (P : ℕ → Set X)
+private theorem ae_of_ae_restrict_cover {ι : Type*} [Countable ι]
+    (ν : Measure X) (P : ι → Set X)
     (hcover : Set.univ ⊆ ⋃ n, P n)
     {f : X → ℂ} (hf : Measurable f)
     (h : ∀ n, f =ᵐ[ν.restrict (P n)] 0) : f =ᵐ[ν] 0 := by
@@ -2565,7 +2641,7 @@ private theorem ae_of_ae_restrict_cover (ν : Measure X) (P : ℕ → Set X)
 pointwise bound on `f` bounds `‖q f‖`.  The proof is the C*-algebraic
 form of `|f|² ≤ C²`: the function `√(C² − |f|²)` is again bounded
 measurable, so `(q f)^*(q f) + (q h)^*(q h) = C²·1` in `𝒞`. -/
-private theorem linfty_norm_le (ν : Measure X) (𝒞 : Type u) [CStarAlgebra 𝒞]
+private theorem linfty_norm_le (ν : Measure X) (𝒞 : Type*) [CStarAlgebra 𝒞]
     [PartialOrder 𝒞] [StarOrderedRing 𝒞] [Nontrivial 𝒞] (p : (X → ℂ) → 𝒞)
     (hp : IsLinftyOf ν 𝒞 p) {f : X → ℂ} (hf : IsBoundedMeasurable X f)
     {C : ℝ} (hC0 : 0 ≤ C) (hC : ∀ x, ‖f x‖ ≤ C) : ‖p f‖ ≤ C := by
@@ -2621,7 +2697,7 @@ private theorem star_mul_apply (u : X → ℂ) (x : X) :
 /-- Auxiliary for **130IV**, the hard half of the norm dictionary and the
 one thing the construction cannot do without: `‖q f‖ ≤ M` forces
 `|f| ≤ M` almost everywhere. -/
-private theorem linfty_ae_bound (ν : Measure X) (𝒞 : Type u) [CStarAlgebra 𝒞]
+private theorem linfty_ae_bound (ν : Measure X) (𝒞 : Type*) [CStarAlgebra 𝒞]
     [PartialOrder 𝒞] [StarOrderedRing 𝒞] [Nontrivial 𝒞] (p : (X → ℂ) → 𝒞)
     (hp : IsLinftyOf ν 𝒞 p) {f : X → ℂ} (hf : IsBoundedMeasurable X f)
     {M : ℝ} (hM0 : 0 ≤ M) (hM : ‖p f‖ ≤ M) : ∀ᵐ x ∂ν, ‖f x‖ ≤ M := by
@@ -2730,20 +2806,37 @@ private theorem linfty_ae_bound (ν : Measure X) (𝒞 : Type u) [CStarAlgebra �
 
 
 /-- **130IV** (`lem:measure-space-partition`, proc.tex:6518, Exercise):
-`L^∞(X) ≅ ⊕_{A ∈ 𝒫} L^∞(A)` for every countable partition `𝒫` of a
-finite measure space `X` into measurable subsets (rendered for a
-partition indexed by `ℕ` and abstract copies `ℬₙ` of the
-`L^∞(Pₙ)`). -/
+`L^∞(X) ≅ ⊕_{A ∈ 𝒫} L^∞(A)` for every **countable** partition `𝒫` of a
+finite measure space `X` into measurable subsets — rendered for a
+partition indexed by an arbitrary countable type `ι` and abstract copies
+`ℬᵢ` of the `L^∞(Pᵢ)`.
+
+The index set was `ℕ` until 2026-08-21, which excluded the *finite*
+partitions the Exercise also asks for: padding a finite partition out to
+`ℕ` with `∅` forces `ℬᵢ = {0}` on the padding, and the `Nontrivial ℬᵢ`
+binder forbids that.  That gap is what stopped **130V** below from being
+proved by its printed route ("combine 130IV with 130II"); with `ι`
+arbitrary the printed route goes through, and `discrete_ell_x` now takes
+it.
+
+`[∀ i, Nontrivial (ℬ i)]` is **Mathlib's** binder, not ours: `lp ℬ ∞`
+carries a `Ring` (and hence a `VonNeumannAlgebra`) instance only through
+`lp.inftyRing`, which asks `[∀ i, NormOneClass (ℬ i)]`, and for a unital
+C*-algebra that is `Nontrivial`.  It does exclude one case the Exercise
+allows — a block of measure zero, whose `L^∞` is `{0}` — and that block
+would contribute nothing to the direct sum; there is no way to say so
+until Mathlib's `ℓ^∞` admits trivial summands. -/
 theorem measure_space_partition [IsFiniteMeasure μ] (hμ : μ.IsComplete)
-    (P : ℕ → Set X) (hmeas : ∀ n, MeasurableSet (P n))
+    {ι : Type*} [Countable ι]
+    (P : ι → Set X) (hmeas : ∀ i, MeasurableSet (P i))
     (hdisj : Pairwise (Function.onFun Disjoint P))
-    (hcover : Set.univ ⊆ ⋃ n, P n) (𝒜 : Type u) [CStarAlgebra 𝒜]
+    (hcover : Set.univ ⊆ ⋃ i, P i) (𝒜 : Type u) [CStarAlgebra 𝒜]
     [PartialOrder 𝒜] [StarOrderedRing 𝒜] [VonNeumannAlgebra 𝒜]
-    (q : (X → ℂ) → 𝒜) (hq : IsLinftyOf μ 𝒜 q) (ℬ : ℕ → Type u)
-    [∀ n, CStarAlgebra (ℬ n)] [∀ n, Nontrivial (ℬ n)]
-    [∀ n, PartialOrder (ℬ n)] [∀ n, StarOrderedRing (ℬ n)]
-    [∀ n, VonNeumannAlgebra (ℬ n)] (qB : ∀ n, (X → ℂ) → ℬ n)
-    (hqB : ∀ n, IsLinftyOf (μ.restrict (P n)) (ℬ n) (qB n)) :
+    (q : (X → ℂ) → 𝒜) (hq : IsLinftyOf μ 𝒜 q) (ℬ : ι → Type*)
+    [∀ i, CStarAlgebra (ℬ i)] [∀ i, Nontrivial (ℬ i)]
+    [∀ i, PartialOrder (ℬ i)] [∀ i, StarOrderedRing (ℬ i)]
+    [∀ i, VonNeumannAlgebra (ℬ i)] (qB : ∀ i, (X → ℂ) → ℬ i)
+    (hqB : ∀ i, IsLinftyOf (μ.restrict (P i)) (ℬ i) (qB i)) :
     ∃ φ : NMIUMap 𝒜 (lp ℬ ∞), Function.Bijective ⇑φ := by
   classical
   -- a representative for each class
@@ -2770,7 +2863,7 @@ theorem measure_space_partition [IsFiniteMeasure μ] (hμ : μ.IsComplete)
     rintro _ ⟨n, rfl⟩
     exact linfty_norm_le _ _ _ (hqB n) hf hC0 hC
   obtain ⟨Φ, hΦapp⟩ : ∃ Φ : 𝒜 → lp ℬ ∞,
-      ∀ (a : 𝒜) (n : ℕ), (Φ a : ∀ n, ℬ n) n = qB n (rep a) :=
+      ∀ (a : 𝒜) (i : ι), (Φ a : ∀ i, ℬ i) i = qB i (rep a) :=
     ⟨fun a => ⟨fun n => qB n (rep a), hmem _ (hrepBM a)⟩, fun _ _ => rfl⟩
   have hΦrep : ∀ (a : 𝒜) (f : X → ℂ), IsBoundedMeasurable X f → q f = a →
       ∀ n, (Φ a : ∀ n, ℬ n) n = qB n f := fun a f hf hfa n =>
@@ -2837,16 +2930,17 @@ theorem measure_space_partition [IsFiniteMeasure μ] (hμ : μ.IsComplete)
   -- surjectivity: this is where the uniform bound on the representatives is used
   have hsurj : Function.Surjective Φ := by
     intro y
-    obtain ⟨M, hM⟩ := memℓp_infty_iff.mp y.2
-    have hMn : ∀ n, ‖(y : ∀ n, ℬ n) n‖ ≤ M := fun n => hM (Set.mem_range_self n)
-    have hM0 : 0 ≤ M := le_trans (norm_nonneg _) (hMn 0)
+    obtain ⟨M₀, hM₀⟩ := memℓp_infty_iff.mp y.2
+    obtain ⟨M, hM0, hMn⟩ : ∃ M : ℝ, 0 ≤ M ∧ ∀ i, ‖(y : ∀ i, ℬ i) i‖ ≤ M :=
+      ⟨max M₀ 0, le_max_right _ _,
+        fun i => le_trans (hM₀ (Set.mem_range_self i)) (le_max_left _ _)⟩
     choose g hgBM hgy using fun n => (hqB n).surj ((y : ∀ n, ℬ n) n)
     have hgae : ∀ n, ∀ᵐ x ∂(μ.restrict (P n)), ‖g n x‖ ≤ M := fun n =>
       linfty_ae_bound _ _ _ (hqB n) (hgBM n) hM0 (by rw [hgy n]; exact hMn n)
     have hex : ∀ x, ∃ n, x ∈ P n := fun x =>
       Set.mem_iUnion.mp (hcover (Set.mem_univ x))
     -- glue the (truncated) representatives into one bounded measurable function
-    set F : ℕ → X → ℂ := fun n x => if ‖g n x‖ ≤ M then g n x else 0 with hFdef
+    set F : ι → X → ℂ := fun n x => if ‖g n x‖ ≤ M then g n x else 0 with hFdef
     have hFm : ∀ n, Measurable (F n) := fun n =>
       Measurable.ite (measurableSet_le (hgBM n).1.norm measurable_const)
         (hgBM n).1 measurable_const
@@ -2856,16 +2950,27 @@ theorem measure_space_partition [IsFiniteMeasure μ] (hμ : μ.IsComplete)
       · simpa [hFdef, h] using h
       · simpa [hFdef, h] using hM0
     obtain ⟨f, hfm, hfeq⟩ : ∃ f : X → ℂ, Measurable f ∧
-        ∀ (n : ℕ) (x : X), x ∈ P n → f x = F n x := by
-      set Q : ℕ → X → Prop := fun n x => x ∈ P n with hQ
+        ∀ (i : ι) (x : X), x ∈ P i → f x = F i x := by
+      -- `Measurable.find` glues along an `ℕ`-indexed cover, so enumerate
+      -- the (countable) index set; disjointness makes the choice of
+      -- enumeration immaterial.
+      rcases isEmpty_or_nonempty ι with hι | hι
+      · exact ⟨0, measurable_const, fun i => (hι.false i).elim⟩
+      obtain ⟨g, hg⟩ := exists_surjective_nat ι
+      set Q : ℕ → X → Prop := fun n x => x ∈ P (g n) with hQ
       haveI : ∀ n, DecidablePred (Q n) := fun n => Classical.decPred _
-      have hQm : ∀ n, MeasurableSet {x | Q n x} := hmeas
-      have hexQ : ∀ x, ∃ n, Q n x := hex
-      refine ⟨_, Measurable.find hFm hQm hexQ, ?_⟩
-      intro n x hx
-      have hfind : Nat.find (hexQ x) = n := by
+      have hQm : ∀ n, MeasurableSet {x | Q n x} := fun n => hmeas (g n)
+      have hexQ : ∀ x, ∃ n, Q n x := by
+        intro x
+        obtain ⟨i, hi⟩ := hex x
+        obtain ⟨n, rfl⟩ := hg i
+        exact ⟨n, hi⟩
+      refine ⟨_, Measurable.find (fun n => hFm (g n)) hQm hexQ, ?_⟩
+      intro i x hx
+      have hfind : g (Nat.find (hexQ x)) = i := by
         by_contra hne
         exact Set.disjoint_left.mp (hdisj hne) (Nat.find_spec (hexQ x)) hx
+      show F (g (Nat.find (hexQ x))) x = F i x
       rw [hfind]
     have hfBM : IsBoundedMeasurable X f := by
       refine ⟨hfm, M, fun x => ?_⟩
@@ -2910,25 +3015,27 @@ see the counterexample recorded there.  The index set `Y` is the
 partition itself, which is why the partition form of the definition was
 chosen: no exhaustion argument is needed to produce it.
 
-**Divergence from the printed proof.**  proc.tex:6525 reads "combine
-**130IV** with **130II**": partition `X` into atoms, decompose
-`L^∞(X) ≅ ⊕ₙ L^∞(Aₙ)`, and turn each `L^∞(Aₙ)` into `ℂ`.  That route is
-*not* available in this rendering, for a reason of formalization rather
-than mathematics: `measure_space_partition` (130IV) is stated for a
-partition indexed by `ℕ` with each block algebra `ℬₙ` **nontrivial**, and
-a discrete space may have a *finite* partition into atoms — padding it
-out to `ℕ` with `∅` forces `ℬₙ = {0}` there (the `kernel` field makes
-`qB 1 = 0`), which the `Nontrivial` hypothesis forbids.  So the argument
-is run directly over the index set `↥𝒬`: the block algebras are `ℂ` (this
-is 130II's content, and its key lemma `ae_const_of_atomic` is what is
-reused), and `Φ a` records the a.e.-constant value of `a` on each atom.
-Everything else — gluing representatives with `Measurable.find`,
-normality via `starAlgEquiv_preservesDirSups'` — is 130IV's own argument
-specialised to `ℬₙ = ℂ`, where the norm dictionary (`linfty_norm_le`,
-`linfty_ae_bound`) becomes unnecessary: the value on an atom is attained,
-so a pointwise bound on `f` bounds it directly.
+**The printed proof.**  proc.tex:6525 reads "combine **130IV** with
+**130II**": partition `X` into atoms, decompose `L^∞(X) ≅ ⊕_A L^∞(A)`,
+and turn each `L^∞(A)` into `ℂ`.  That is what happens below.  130II
+enters as its key lemma `ae_const_of_atomic` — on an atom every bounded
+measurable `f` is a.e. constant — from which `cval A` (the a.e.-constant
+value on `A`) is read off and shown to present `ℂ` as `L^∞(A)`; 130IV is
+then applied to the partition `𝒬` itself, indexed by `↥𝒬`.
 
-`hμ : μ.IsComplete` is not used. -/
+Until 2026-08-21 this route was *not* available, for a reason of
+formalization rather than mathematics: `measure_space_partition` (130IV)
+was stated for a partition indexed by `ℕ` with each block algebra
+nontrivial, and a discrete space may have a *finite* partition into
+atoms — padding it out to `ℕ` with `∅` forces `ℬₙ = {0}` there (the
+`kernel` field makes `qB 1 = 0`), which the `Nontrivial` hypothesis
+forbids.  130IV now takes an arbitrary countable index type, which is
+what the Exercise asks for anyway, and the printed route goes through;
+the 150 lines that re-ran 130IV's own argument specialised to `ℬ = ℂ`
+are gone.
+
+`hμ : μ.IsComplete` is not used here (it is passed on to 130IV, which
+does not use it either). -/
 theorem discrete_ell_x [IsFiniteMeasure μ] (hμ : μ.IsComplete)
     (hd : DiscreteSpace μ) (𝒜 : Type u) [CStarAlgebra 𝒜]
     [PartialOrder 𝒜] [StarOrderedRing 𝒜] [VonNeumannAlgebra 𝒜]
@@ -2966,20 +3073,6 @@ theorem discrete_ell_x [IsFiniteMeasure μ] (hμ : μ.IsComplete)
     haveI : (ae (μ.restrict A)).NeBot := ae_neBot.mpr (hrpos A hA)
     obtain ⟨x, hx1, hx2⟩ := ((hcval A hA f hf).and hz).exists
     rw [← hx1, hx2]
-  -- the value on an atom is attained, so pointwise bounds carry over
-  have hbound : ∀ A ∈ 𝒬, ∀ (f : X → ℂ) (C : ℝ), IsBoundedMeasurable X f →
-      (∀ x, ‖f x‖ ≤ C) → ‖cval A f‖ ≤ C := by
-    intro A hA f C hf hC
-    haveI : (ae (μ.restrict A)).NeBot := ae_neBot.mpr (hrpos A hA)
-    obtain ⟨x, hx⟩ := (hcval A hA f hf).exists
-    rw [← hx]
-    exact hC x
-  have hcvcongr : ∀ A ∈ 𝒬, ∀ f g : X → ℂ, IsBoundedMeasurable X f →
-      IsBoundedMeasurable X g → f =ᵐ[μ] g → cval A f = cval A g := by
-    intro A hA f g hf hg h
-    refine huniq A hA f _ hf ?_
-    filter_upwards [ae_restrict_of_ae h, hcval A hA g hg] with x h1 h2
-    rw [h1, h2]
   have hcvconst : ∀ A ∈ 𝒬, ∀ z : ℂ, cval A (fun _ => z) = z := fun A hA z =>
     huniq A hA _ z (bm_const z) (Filter.Eventually.of_forall fun _ => rfl)
   have hcvadd : ∀ A ∈ 𝒬, ∀ f g : X → ℂ, IsBoundedMeasurable X f →
@@ -3010,175 +3103,31 @@ theorem discrete_ell_x [IsFiniteMeasure μ] (hμ : μ.IsComplete)
     filter_upwards [hcval A hA f hf] with x h1
     show z • f x = _
     rw [h1]
-  -- an `ℕ`-enumeration of the (countable) partition, padded with `∅`
-  obtain ⟨g, hg𝒬, hgcov⟩ : ∃ g : ℕ → Set X, (∀ n, g n = ∅ ∨ g n ∈ 𝒬) ∧
-      Set.univ ⊆ ⋃ n, g n := by
-    rcases Set.eq_empty_or_nonempty 𝒬 with h | h
-    · refine ⟨fun _ => ∅, fun _ => Or.inl rfl, ?_⟩
-      rw [← hcov, h]
-      simp
-    · obtain ⟨g, hg⟩ := hcount.exists_eq_range h
-      refine ⟨g, fun n => Or.inr (hg ▸ Set.mem_range_self n), ?_⟩
-      rw [← hcov, hg, Set.sUnion_range]
-  have hcover_ae : ∀ f : X → ℂ, Measurable f →
-      (∀ A ∈ 𝒬, f =ᵐ[μ.restrict A] 0) → f =ᵐ[μ] 0 := by
-    intro f hf h
-    refine ae_of_ae_restrict_cover μ g hgcov hf fun n => ?_
-    rcases hg𝒬 n with he | hn
-    · rw [he, Measure.restrict_empty]
-      simp [Filter.EventuallyEq]
-    · exact h _ hn
-  -- representatives, as in 130IV
-  have hrepex : ∀ a : 𝒜, ∃ f, IsBoundedMeasurable X f ∧ q f = a := hq.surj
-  have hrepBM : ∀ a, IsBoundedMeasurable X (hrepex a).choose :=
-    fun a => (hrepex a).choose_spec.1
-  have hrepq : ∀ a, q ((hrepex a).choose) = a := fun a => (hrepex a).choose_spec.2
-  set rep : 𝒜 → (X → ℂ) := fun a => (hrepex a).choose with hrepdef
-  have hmemb : ∀ f, IsBoundedMeasurable X f →
-      Memℓp (fun A : ↥𝒬 => cval (A : Set X) f) ∞ := by
-    intro f hf
-    obtain ⟨C, hC0, hC⟩ := bm_nonneg hf
-    refine memℓp_infty ⟨C, ?_⟩
-    rintro _ ⟨A, rfl⟩
-    exact hbound (A : Set X) A.2 f C hf hC
-  obtain ⟨Φ, hΦapp⟩ : ∃ Φ : 𝒜 → linf ↥𝒬,
-      ∀ (a : 𝒜) (A : ↥𝒬), (Φ a : ∀ _ : ↥𝒬, ℂ) A = cval (A : Set X) (rep a) :=
-    ⟨fun a => ⟨fun A => cval (A : Set X) (rep a), hmemb _ (hrepBM a)⟩, fun _ _ => rfl⟩
-  have hΦrep : ∀ (a : 𝒜) (f : X → ℂ), IsBoundedMeasurable X f → q f = a →
-      ∀ A : ↥𝒬, (Φ a : ∀ _ : ↥𝒬, ℂ) A = cval (A : Set X) f := by
-    intro a f hf hfa A
-    rw [hΦapp]
-    have h0 : q (rep a - f) = 0 := by
-      rw [linfty_sub _ _ _ hq (hrepBM a) hf, hrepq, hfa, sub_self]
-    have hae : (rep a - f) =ᵐ[μ] 0 := (hq.kernel _ (bm_sub (hrepBM a) hf)).mp h0
-    refine hcvcongr _ A.2 _ _ (hrepBM a) hf ?_
-    filter_upwards [hae] with x hx
-    have hx' : rep a x - f x = 0 := hx
-    exact sub_eq_zero.mp hx'
-  -- `Φ` is a unital ∗-algebra map
-  have hΦadd : ∀ a b, Φ (a + b) = Φ a + Φ b := by
-    intro a b
-    refine lp.ext ?_
-    funext A
-    rw [lp.coeFn_add, Pi.add_apply,
-      hΦrep (a + b) (rep a + rep b) (bm_add (hrepBM a) (hrepBM b))
-        (by rw [hq.add _ _ (hrepBM a) (hrepBM b), hrepq, hrepq]) A,
-      hΦapp, hΦapp, hcvadd _ A.2 _ _ (hrepBM a) (hrepBM b)]
-  have hΦmul : ∀ a b, Φ (a * b) = Φ a * Φ b := by
-    intro a b
-    refine lp.ext ?_
-    funext A
-    rw [lp.infty_coeFn_mul, Pi.mul_apply,
-      hΦrep (a * b) (rep a * rep b) (bm_mul (hrepBM a) (hrepBM b))
-        (by rw [hq.mul _ _ (hrepBM a) (hrepBM b), hrepq, hrepq]) A,
-      hΦapp, hΦapp, hcvmul _ A.2 _ _ (hrepBM a) (hrepBM b)]
-  have hΦstar : ∀ a, Φ (star a) = star (Φ a) := by
-    intro a
-    refine lp.ext ?_
-    funext A
-    rw [lp.coeFn_star, Pi.star_apply,
-      hΦrep (star a) (star (rep a)) (bm_star (hrepBM a))
-        (by rw [hq.star_map _ (hrepBM a), hrepq]) A,
-      hΦapp, hcvstar _ A.2 _ (hrepBM a)]
-  have hΦone : Φ 1 = 1 := by
-    refine lp.ext ?_
-    funext A
-    rw [lp.infty_coeFn_one, Pi.one_apply, hΦrep 1 1 bm_one hq.one A]
-    exact hcvconst _ A.2 1
-  have hΦzero : Φ 0 = 0 := by
-    refine lp.ext ?_
-    funext A
-    have h0 : q (0 : X → ℂ) = 0 := (hq.kernel _ bm_zero).mpr (by rfl)
-    rw [lp.coeFn_zero, Pi.zero_apply, hΦrep 0 0 bm_zero h0 A]
-    exact hcvconst _ A.2 0
-  have hΦsmul : ∀ (c : ℂ) (a : 𝒜), Φ (c • a) = c • Φ a := by
-    intro c a
-    refine lp.ext ?_
-    funext A
-    rw [lp.coeFn_smul, Pi.smul_apply,
-      hΦrep (c • a) (c • rep a) (bm_smul c (hrepBM a))
-        (by rw [hq.smul _ _ (hrepBM a), hrepq]) A,
-      hΦapp, hcvsmul _ A.2 _ _ (hrepBM a)]
-  -- injectivity: agreeing on every atom is agreeing almost everywhere
-  have hinj : Function.Injective Φ := by
-    intro a b hab
-    have hcomp : ∀ A ∈ 𝒬, cval A (rep a) = cval A (rep b) := by
-      intro A hA
-      have h := congrArg (fun z : linf ↥𝒬 => (z : ∀ _ : ↥𝒬, ℂ) ⟨A, hA⟩) hab
-      simpa only [hΦapp] using h
-    have hae : (rep a - rep b) =ᵐ[μ] 0 := by
-      refine hcover_ae _ (bm_sub (hrepBM a) (hrepBM b)).1 fun A hA => ?_
-      filter_upwards [hcval A hA (rep a) (hrepBM a),
-        hcval A hA (rep b) (hrepBM b)] with x h1 h2
-      show rep a x - rep b x = 0
-      rw [h1, h2, hcomp A hA, sub_self]
-    have h0 : q (rep a - rep b) = 0 :=
-      (hq.kernel _ (bm_sub (hrepBM a) (hrepBM b))).mpr hae
-    rw [linfty_sub _ _ _ hq (hrepBM a) (hrepBM b), hrepq, hrepq, sub_eq_zero] at h0
-    exact h0
-  -- surjectivity: a bounded family of values glues to a bounded measurable function
-  have hsurj : Function.Surjective Φ := by
-    intro y
-    obtain ⟨M, hM⟩ := memℓp_infty_iff.mp y.2
-    set M' : ℝ := max M 0 with hM'
-    have hM'0 : 0 ≤ M' := le_max_right _ _
-    have hMy : ∀ A : ↥𝒬, ‖(y : ∀ _ : ↥𝒬, ℂ) A‖ ≤ M' :=
-      fun A => le_trans (hM (Set.mem_range_self A)) (le_max_left _ _)
-    set c : ℕ → ℂ := fun n =>
-      if h : g n ∈ 𝒬 then (y : ∀ _ : ↥𝒬, ℂ) ⟨g n, h⟩ else 0 with hc
-    have hcM : ∀ n, ‖c n‖ ≤ M' := by
-      intro n
-      by_cases h : g n ∈ 𝒬
-      · simpa [hc, h] using hMy ⟨g n, h⟩
-      · simpa [hc, h] using hM'0
-    have hexQ : ∀ x, ∃ n, x ∈ g n := fun x =>
-      Set.mem_iUnion.mp (hgcov (Set.mem_univ x))
-    have hQm : ∀ n, MeasurableSet {x | x ∈ g n} := by
-      intro n
-      rcases hg𝒬 n with he | hn
-      · simpa [he] using MeasurableSet.empty
-      · exact (hat _ hn).1
-    set F : ℕ → X → ℂ := fun n _ => c n with hF
-    have hFm : ∀ n, Measurable (F n) := fun n => measurable_const
-    set f : X → ℂ := fun x => F (Nat.find (hexQ x)) x with hf
-    have hfm : Measurable f := Measurable.find hFm hQm hexQ
-    have hfBM : IsBoundedMeasurable X f := ⟨hfm, M', fun x => hcM _⟩
-    have hfval : ∀ (A : Set X) (hA : A ∈ 𝒬), ∀ x ∈ A,
-        f x = (y : ∀ _ : ↥𝒬, ℂ) ⟨A, hA⟩ := by
-      intro A hA x hxA
-      have hxn : x ∈ g (Nat.find (hexQ x)) := Nat.find_spec (hexQ x)
-      have hgn : g (Nat.find (hexQ x)) ∈ 𝒬 := by
-        rcases hg𝒬 (Nat.find (hexQ x)) with he | hn
-        · exact absurd (he ▸ hxn) (Set.notMem_empty x)
-        · exact hn
-      have hgA : g (Nat.find (hexQ x)) = A := by
-        by_contra hne
-        exact Set.disjoint_left.mp (hdisj hgn hA hne) hxn hxA
-      have : (⟨g (Nat.find (hexQ x)), hgn⟩ : ↥𝒬) = ⟨A, hA⟩ := Subtype.ext hgA
-      simp only [hf, hF, hc, dif_pos hgn]
-      rw [this]
-    refine ⟨q f, lp.ext ?_⟩
-    funext A
-    rw [hΦrep (q f) f hfBM rfl A]
-    refine huniq (A : Set X) A.2 f _ hfBM ?_
-    refine ae_restrict_of_forall_mem (hat (A : Set X) A.2).1 fun x hx => ?_
-    have := hfval (A : Set X) A.2 x hx
-    simpa using this
-  -- normality is free: a bijective ∗-homomorphism is an order isomorphism
-  obtain ⟨Ψ, hΨbij⟩ : ∃ Ψ : 𝒜 →⋆ₐ[ℂ] linf ↥𝒬, Function.Bijective ⇑Ψ :=
-    ⟨{ toFun := Φ
-       map_one' := hΦone
-       map_mul' := hΦmul
-       map_zero' := hΦzero
-       map_add' := hΦadd
-       commutes' := fun c => by
-         rw [Algebra.algebraMap_eq_smul_one, Algebra.algebraMap_eq_smul_one,
-           hΦsmul, hΦone]
-       map_star' := hΦstar }, ⟨hinj, hsurj⟩⟩
-  exact ⟨↥𝒬, { toStarAlgHom := Ψ
-               preservesDirSups' :=
-                 starAlgEquiv_preservesDirSups' (StarAlgEquiv.ofBijective Ψ hΨbij) },
-    hΨbij⟩
+  -- **130II** in presentation form: `cval A` presents `ℂ` as `L^∞(A)`
+  haveI : Countable ↥𝒬 := hcount.to_subtype
+  have hqB : ∀ A : ↥𝒬,
+      IsLinftyOf (μ.restrict (A : Set X)) ℂ (cval (A : Set X)) := by
+    intro A
+    refine ⟨fun z => ⟨fun _ => z, bm_const z, hcvconst _ A.2 z⟩,
+      fun f g hf hg => hcvadd _ A.2 f g hf hg,
+      fun z f hf => hcvsmul _ A.2 z f hf,
+      fun f g hf hg => hcvmul _ A.2 f g hf hg,
+      fun f hf => hcvstar _ A.2 f hf,
+      hcvconst _ A.2 1, fun f hf => ⟨fun h => ?_, fun h => ?_⟩⟩
+    · filter_upwards [hcval _ A.2 f hf] with x hx
+      show f x = (0 : X → ℂ) x
+      rw [hx, h]
+      rfl
+    · refine huniq _ A.2 f 0 hf ?_
+      filter_upwards [h] with x hx
+      exact hx
+  -- and now **130IV** for the partition `𝒬`, which is the printed proof
+  obtain ⟨φ, hφ⟩ := measure_space_partition μ hμ (fun A : ↥𝒬 => (A : Set X))
+    (fun A => (hat (A : Set X) A.2).1)
+    (fun A B hAB => hdisj A.2 B.2 fun h => hAB (Subtype.ext h))
+    (by rw [← hcov, Set.sUnion_eq_iUnion]) 𝒜 q hq (fun _ : ↥𝒬 => ℂ)
+    (fun A => cval (A : Set X)) hqB
+  exact ⟨↥𝒬, φ, hφ⟩
 
 end MeasureTheory
 
@@ -3191,8 +3140,10 @@ with a faithful np-functional *is* an `L^∞`.  54XI.1 (`cvn_faithful_1`,
 σ-algebra of almost clopen subsets of `spec 𝒞`, with the null sets exactly
 the meagre ones — but not the quotient map `q`, because 54XI's own statement
 of it (`f ↦ f°` is an nmiu-isomorphism `C(spec 𝒞) → L^∞(spec 𝒞)`) is not
-rendered: `L^∞` has no Mathlib carrier (cf. **51IX** `Linfty_vn`, still
-`sorry`).  This section builds `q`.
+rendered: `L^∞` has no Mathlib carrier, and **51IX** `Linfty_vn` — which is
+proved, and whose integral state `exists_integralNP` above transports onto
+any presentation — likewise delivers `L^∞(X)` only as an existentially
+quantified algebra with a quotient map.  This section builds `q`.
 
 The one piece of mathematics needed is that **every bounded measurable
 function on `spec 𝒞` agrees almost everywhere with a *continuous* one**.
@@ -4424,7 +4375,24 @@ theorem dup_vna_is_monoid_3 [VonNeumannAlgebra A] [VonNeumannAlgebra B]
 /-- **132III** (`prop:dup-vna-is-monoid`, proc.tex:6677, Exercise),
 part 4: `CMon(W*_miu) = Mon(W*_miu) = CMon(W*_cpsu) = Mon(W*_cpsu)` —
 rendered: every monoid in `W*_cpsu` is commutative (`m ∘ γ = m`) and its
-multiplication is an nmiu-map. -/
+multiplication is an nmiu-map.
+
+**The four-fold equality itself is not stated**, and cannot be until the
+tensor product is a *monoidal structure* rather than a family of chosen
+objects.  With part 3 (the morphisms) and part 1 (`Mon(W*_cpsu)` objects
+are `Mon(W*_miu)` objects) this is its whole content, but forming
+`CMon(-)` and `Mon(-)` needs `MonoidalCategory` instances on `W*_miu` and
+`W*_cpsu`: associators and unitors for `VNT`, and the pentagon, triangle
+and hexagon coherences — none of which the tree has (`A/Proc/Tensor.lean`
+proves the braiding, the functoriality of `tmapM` and 114II
+`tensor_uniqueness` individually, and says so in its header).  A second
+obstruction is in the *shape*: Mathlib renders the two as distinct
+structure types (`CategoryTheory.CommMon C` carries an `IsCommMonObj`
+instance field that `CategoryTheory.Mon C` does not), so
+"`CMon(W*_miu) = Mon(W*_miu)`" cannot be an equality of categories there
+at all — it would have to become an isomorphism, which is a change of
+statement and so the author's call.  Repairing this row was costed and
+left. -/
 theorem dup_vna_is_monoid_4 [VonNeumannAlgebra A] (M : MonoidInWcpsu A) :
     (∀ t : VNT A A, M.m.toNCPMap (braiding A A t) = M.m.toNCPMap t) ∧
       ∃ ρ : NMIUMap (VNT A A) A, ∀ t, ρ t = M.m.toNCPMap t := by
@@ -4578,6 +4546,14 @@ private theorem nsp_eq_linfEval {Y : Type u} [VonNeumannAlgebra B]
 /-- **132III** (`prop:dup-vna-is-monoid`, proc.tex:6677, Exercise),
 part 5: `Mon(W*_miu) ≅ dW*_miu ≃ Set^op` — rendered: for duplicable
 `𝒜`, `ℬ` the functor `nsp` is bijective on nmiu-maps `𝒜 → ℬ`.
+
+**Only the hom-set half is stated.**  Together with 127III (`duplicable`,
+essential surjectivity of `ℓ^∞` onto `dW*_miu`) the bijectivity below is
+the content of `dW*_miu ≃ Set^op`; but the *equivalence* is a statement
+about categories, and the first half, `Mon(W*_miu) ≅ dW*_miu`, needs
+`Mon(-)` and hence a `MonoidalCategory` instance on `W*_miu` — see the
+note on part 4, where the cost is set out.  This is the same shape as the
+standing observation on 188III/188IV.
 
 The thesis's hint is `cor:linf-ff`, i.e. **122VI**: `nsp(ℓ^∞(X)) ≅ X` (.2) and
 `ℓ^∞` full and faithful (.3), both already proved.  *Injectivity* is .2 for
@@ -4900,5 +4876,84 @@ theorem free_monoid_in_Wcpsu [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     rw [nmiuSymm_apply_apply' ψ hψ (linfMap k u), happ u, hkk]
 
 end FreeMonoid
+
+
+section Categorical
+
+open CategoryTheory
+
+/-! ### `dW*_miu ≃ Set^op`: the categorical half of **132III**.5
+
+The category `W*_miu` and the functor `ℓ^∞ : Set ⥤ (W*_miu)^op` are in
+`QuantumLambda.lean` (`WMIU`, `linfFunctor`), where **122II** and **122VI**
+live.  Here they are cut down to the full subcategory `dW*_miu` of
+*duplicable* algebras, on which `ℓ^∞` becomes an **equivalence** `Set ≌
+(dW*_miu)^op`: fullness and faithfulness are again **122VI**.3
+(`cor_linf_ff_3` — the hom-sets of a full subcategory are those of the
+ambient one), and essential surjectivity is **127III** (`duplicable`),
+which is where the thesis leaves it.
+
+This is the second half of 132III.5.  The first half, `Mon(W*_miu) ≅
+dW*_miu`, is still not stated: it needs `Mon(-)` and hence a monoidal
+structure on `W*_miu`, whose cost is set out on `dup_vna_is_monoid_4`. -/
+
+/-- The property of being duplicable, as an object property of `W*_miu`. -/
+def dupProp : ObjectProperty WMIU.{u} := fun A => Duplicable A.carrier
+
+/-- `dW*_miu`: the full subcategory of duplicable von Neumann algebras. -/
+abbrev DWMIU := dupProp.FullSubcategory
+
+/-- `ℓ^∞ : Set ⥤ (dW*_miu)^op`. -/
+def linfDup : Type u ⥤ DWMIU.{u}ᵒᵖ where
+  obj X := Opposite.op ⟨WMIU.of (linf X),
+    (duplicable (A := linf X)).mpr ⟨X, nmiuId (linf X), nmiuId_bijective⟩⟩
+  map {X Y} f := Quiver.Hom.op
+    (ObjectProperty.homMk (P := dupProp.{u}) (linfMap (fun x : X => f x)))
+  map_id X := by
+    apply Quiver.Hom.unop_inj
+    apply ObjectProperty.hom_ext
+    refine linf_nmiu_ext fun g x => ?_
+    exact linfMap_apply _ g x
+  map_comp {X Y Z} f g := by
+    apply Quiver.Hom.unop_inj
+    apply ObjectProperty.hom_ext
+    refine linf_nmiu_ext fun h x => ?_
+    exact (linfMap_apply (fun x : X => g (f x)) h x).trans
+      ((linfMap_apply (fun y : Y => g y) h (f x)).symm.trans
+        (linfMap_apply (fun x : X => f x) (linfMap (fun y : Y => g y) h) x).symm)
+
+instance : linfDup.{u}.Full where
+  map_surjective {X Y} h := by
+    obtain ⟨k, hk⟩ := (cor_linf_ff_3 X Y).2 (h.unop.hom)
+    refine ⟨TypeCat.ofHom k, ?_⟩
+    apply Quiver.Hom.unop_inj
+    apply ObjectProperty.hom_ext
+    exact hk.symm
+
+instance : linfDup.{u}.Faithful where
+  map_injective {X Y f g} h := by
+    apply TypeCat.Hom.ext
+    apply DFunLike.coe_injective
+    have h' : linfMap (fun x : X => f x) = linfMap (fun x : X => g x) :=
+      congrArg (fun p : linfDup.obj X ⟶ linfDup.obj Y => (Quiver.Hom.unop p).hom) h
+    exact (cor_linf_ff_3 X Y).1 h'
+
+instance : linfDup.{u}.EssSurj where
+  mem_essImage A := by
+    obtain ⟨Y, ψ, hψ⟩ := (duplicable (A := A.unop.obj.carrier)).mp A.unop.property
+    refine ⟨Y, ⟨Iso.op (ObjectProperty.isoMk (P := dupProp.{u}) ?_)⟩⟩
+    exact { hom := WMIU.ofHom ψ
+            inv := WMIU.ofHom (nmiuSymm ψ hψ)
+            hom_inv_id := WMIU.hom_ext fun a => nmiuSymm_apply_apply ψ hψ a
+            inv_hom_id := WMIU.hom_ext fun b => nmiuSymm_apply_apply' ψ hψ b }
+
+/-- **132III** (`prop:dup-vna-is-monoid`, proc.tex:6677, Exercise), part 5,
+second half: `dW*_miu ≃ Set^op` — as an equivalence of categories, with
+`ℓ^∞` as the (contravariant) functor realizing it. -/
+instance : linfDup.{u}.IsEquivalence where
+
+noncomputable def dupEquivSetOp : Type u ≌ DWMIU.{u}ᵒᵖ := linfDup.asEquivalence
+
+end Categorical
 
 end Theses.A.Proc

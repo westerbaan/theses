@@ -25365,3 +25365,244 @@ settled either — but **A9 is not what blocks 70III**; the missing half of
 No repair in this pass required an author decision, and no repair had to be
 abandoned for want of mathematics except the 54XI half named above, which is
 a repair for the owner of `A/VN/Basic`.
+
+## Session 94 — A/Proc: **the first repair pass on `Duplicators.lean` and `QuantumLambda.lean`** — 130IV gets the *countable* partitions the Exercise asks for (and 130V goes back to its printed proof), 129X goes back to the thesis's integral state, and `W*_miu` is formed at last, so 122II's adjunction and 122VI.3's coreflection can finally be stated (worker on `Theses/A/Proc/Duplicators.lean`, `Theses/A/Proc/QuantumLambda.lean`)
+
+The audit gives these two modules **20 non-`ok` rows** (7 `weaker`, 2
+`stronger`, 11 `differs`), plus one `ok` row whose *proof* rested on an
+obsolete premise.  Outcome: **five `weaker` rows repaired outright** — 130IV,
+125eVII, 123II.2, 122II, 122VI.3 — **a sixth half-repaired** (132III.5 gets
+`dW*_miu ≃ Set^op`, and only `Mon(W*_miu) ≅ dW*_miu` is still missing), and
+**two proof routes put back on the thesis's own argument** (129X and 130V,
+both `stmt = ok` rows).  **Fourteen rows are left**, each for one of
+`REPAIR-BRIEF`'s four reasons; the one that had to be *costed* rather than
+simply classified is 132III.4, and the cost is now in its doc comment.  Both
+files compile with **no errors** and **no new `sorry`s**.
+### `Duplicators.lean`
+
+**130IV `measure_space_partition` — the Exercise's *countable* partitions
+(divergence class 4, our mis-transcription).**  The Exercise asks for
+`L^∞(X) ≅ ⊕_{A∈𝒫} L^∞(A)` for *every countable* partition; ours fixed the
+index to `ℕ` and demanded `[Nontrivial (ℬ n)]` of every block algebra, so a
+*finite* partition was not covered: padding it out to `ℕ` with `∅` forces
+`ℬₙ = {0}` (the `kernel` field makes `qB 1 = 0`), which `Nontrivial` forbids.
+The index is now an arbitrary `{ι} [Countable ι]`.  Two places in the proof
+had to change: `ae_of_ae_restrict_cover` is stated for a countable index, and
+the gluing of the block representatives — `Measurable.find`, which is
+`ℕ`-indexed — now runs along a surjection `ℕ → ι` (`exists_surjective_nat`),
+with disjointness making the choice of enumeration immaterial; the empty-`ι`
+case is split off.  The bound on `y ∈ ℓ^∞(ℬ)` is taken as `max M 0`, since
+with `ι` possibly empty `0 ≤ M` no longer follows from `‖y 0‖ ≤ M`.
+
+`[∀ i, Nontrivial (ℬ i)]` **stays**, and the doc now says why: it is
+*Mathlib's* binder, not ours — `lp ℬ ∞` has a `Ring` instance only through
+`lp.inftyRing`, which asks `[∀ i, NormOneClass (ℬ i)]`, and for a unital
+C*-algebra that is `Nontrivial`.  It still excludes one case the Exercise
+allows, a block of measure zero; that block would contribute nothing to the
+direct sum, and there is no way to say so until Mathlib's `ℓ^∞` admits
+trivial summands.  (This is the wave-1 lesson "some binders are Mathlib's,
+not ours" — but note that here the *other* half of the same restriction, the
+`ℕ` index, **was** ours.)
+
+The algebra universe of `IsLinftyOf` and of its nine dictionary lemmas went
+from the file's `u` (which `X : Type u` also uses, so the two were tied) to
+`Type*`.  Without that, `ℬ = ℂ` — which is what 130V needs — does not
+typecheck.
+
+**130V `discrete_ell_x` — back on the printed proof (class 2 → class 1).**
+proc.tex:6525 reads "combine **130IV** with **130II**", and the doc recorded
+that this route was *not available* precisely because of 130IV's `ℕ` index.
+With 130IV repaired it is available, and the proof now takes it: 130II's key
+lemma `ae_const_of_atomic` gives the a.e.-constant value `cval A` on each
+atom, `cval A` is packaged as an `IsLinftyOf (μ.restrict A) ℂ`, and 130IV is
+applied to the partition `𝒬` indexed by `↥𝒬`.  About 150 lines that re-ran
+130IV's own argument specialised to `ℬ = ℂ` — the `ℕ`-enumeration padded
+with `∅`, `hcover_ae`, the representatives, the gluing, the `∗`-algebra map,
+injectivity, surjectivity, `starAlgEquiv_preservesDirSups'` — are gone.
+
+**129X `continuous_finite_measure_space_not_duplicable` — the obsolete
+premise is retired (class 2 → class 1).**  This is the last of the five
+divergences the audit found resting on a stale "still `sorry`".  The doc
+said the thesis's integral state `ω(f°) = μ(X)⁻¹∫f dμ` is normal "by
+`Linfty-vn` (**51IX**), which is still `sorry` in the tree" — long false;
+`A/VN/Basic.lean` has no `sorry` at all.  The proof therefore took an
+*arbitrary* non-zero np-functional, recovered the decay of `ω(p_w)` by an
+absolute-continuity argument, and closed through carriers rather than
+through faithfulness of `ω ⊗ ω` — the audit's "second deviation, forced by
+the first".
+
+Both are gone.  A new private auxiliary `exists_integralNP` transports
+51IX's integral functional onto an arbitrary `IsLinftyOf` presentation:
+`Linfty_vn` builds *one* presentation `p : 𝓛^∞(X) → 𝒞` with its faithful
+normal `τ`, any two presentations of the same measure space are isomorphic
+over `𝓛^∞(X)` (both surjective, both with kernel the a.e.-null functions),
+and `ω := τ ∘ Ψ` along that isomorphism.  Two points about the transport are
+worth recording:
+
+* `Linfty_vn`'s presentation carries **no `smul` clause** — it is stated as a
+  `∗`-*ring* map, the very gap that QUESTIONS **D1** had `IsLinftyOf` repaired
+  for.  So `Ψ` cannot be built as a `StarAlgEquiv`.  It is built as a
+  bijective `∗`-ring map, and its normality comes from its being an *order*
+  isomorphism (`0 ≤ x` iff `x = c*c`, which is ring-theoretic and needs no
+  linearity) through `isLUB_image_of_orderIso`.  `ℂ`-linearity of `ω` is then
+  recovered from the integral formula, where `q`'s own `smul` clause is
+  available.
+* The normalization `μ(X)⁻¹` is dropped: `ω(1) = μ(X)`, and nothing in 129X
+  uses `ω 1 = 1`.
+
+With the thesis's `ω` in hand the two deviations disappear: `ω(p_w)` is
+`2^{-#w}μ(X)` by `integral_indicator_const`, and the contradiction is the
+thesis's — `ω` faithful ⟹ `⌈ω⌉ = 1` (**63II**.3 `carrier_basic_3`) ⟹
+`⌈ω⊗ω⌉ = 1⊗1 = 1` (**118IV**.4 `carrier_tensor_4`) ⟹ `ω⊗ω` faithful ⟹
+`q = 0` from `(ω⊗ω)(q) = 0`, against `δ(q) = 1 ≠ 0`.  The step
+`⋀_N (ω⊗ω)(q_N) = 0` is argued through the bound
+`(ω⊗ω)(q_N) ≤ (max_{|w|=N} ω(p_w))·ω(1)` rather than through the closed form
+`2^{-N}`; that is the one remaining local deviation, and it is inessential.
+`linfty_ae_le`, whose only consumer was the absolute-continuity step, is now
+unused; it is kept as part of the `IsLinftyOf` dictionary with a note.
+
+**132III.4 `dup_vna_is_monoid_4` — costed, left.**  The four-fold equality
+`CMon(W*_miu) = Mon(W*_miu) = CMon(W*_cpsu) = Mon(W*_cpsu)` needs
+`MonoidalCategory` instances on `W*_miu` and `W*_cpsu` — associators, unitors,
+pentagon, triangle, hexagon for `VNT` — none of which the tree has;
+`A/Proc/Tensor.lean` proves the braiding, the functoriality of `tmapM` and
+114II individually and says so in its header.  And the *shape* is not
+available either: Mathlib renders `CategoryTheory.CommMon C` and
+`CategoryTheory.Mon C` as distinct structure types, so the printed
+**equality** of categories cannot be an equality there at all — it would have
+to become an isomorphism, which is a change of statement and so the author's
+call.  Both obstructions are now recorded in the doc comment.
+
+**132III.5 `dup_vna_is_monoid_5` — half repaired.**  Part 5 is
+`Mon(W*_miu) ≅ dW*_miu ≃ Set^op`, and ours stated only the hom-set half.
+With `W*_miu` now formed (in `QuantumLambda.lean`, below) the **second half is
+stated and proved**: `dupEquivSetOp : Type u ≌ (dW*_miu)^op`, where `dW*_miu`
+is the full subcategory of duplicable algebras and the equivalence is `ℓ^∞`
+— full and faithful by **122VI**.3, essentially surjective by **127III**
+`duplicable`, which is exactly where the thesis leaves it.  The first half,
+`Mon(W*_miu) ≅ dW*_miu`, is still not stated, for the reason costed on part 4.
+
+### `QuantumLambda.lean` — the four statement rows
+
+**125eVII `AstarhaB_concrete` — the uniqueness clause restored and proved
+(class 2, different route).**  The Theorem asserts that *the unique* nmiu-map
+`Φ` making the diagram commute is an nmiu-isomorphism; ours asserted only
+that *some* bijective `Φ` satisfies the compatibility.  A third conjunct now
+says `∀ Φ', (the same compatibility for Φ') → Φ' = Φ`, matching the shape its
+sibling **125cIII** `Fha_concrete` already carried.  The route is 125cIII's —
+`F.universal` decides uniqueness, applied at `⊕ᵢ M_{Nᵢ+1}` (hereditarily
+atomic by `StarAlgEquiv.refl`) — but the step 125cIII gets for free, "two
+nmiu-maps agreeing on the range of the unit agree", is **not** available
+here: the unit lands in `F.carrier ⊗ ℬ`, so the two candidates have to be
+compared *after* tensoring with `ℬ`.  That needs a new private lemma,
+`tensorB_ext_of_coords` — two elements of `(⊕ᵢ M_{Nᵢ+1}) ⊗ ℬ` with the same
+`(πᵢ ⊗ ℬ)`-coordinates are equal — which is the injectivity half of the
+existing `exists_matSumTensorIso` (117III via 119IVc), with the degenerate
+trivial-`ℬ` case split off through `vnt_subsingleton`.  `hA` is kept (it is
+the point's own setting) and the doc says it is unused.
+
+**123II.2 `nsp_tensor_2` — the bijection is stated (class 1, faithful).**
+The Exercise asks that `(σ,τ) ↦ σ ⊗ τ` be a **bijection**
+`nsp(𝒜) × nsp(ℬ) → nsp(𝒜 ⊗ ℬ)`; ours said only that each pair extends
+uniquely.  `nsp_tensor_2` is unchanged (its doc now names it the
+well-definedness half) and a DISP-tagged sibling `nsp_tensor_2_bijection`
+states the bijection: surjectivity is **123II**.1 plus `nsp_tensor_2`'s
+uniqueness, injectivity is 123II.1's own formulas `σ = φ((·)⊗1)`,
+`τ = φ(1⊗(·))` read off at `a ⊗ 1` and `1 ⊗ b`.  The parenthetical "(this
+makes `nsp` strong monoidal)" is recorded as not formalized.
+
+**125dII `ha_tensor_closed` — statement untouched; the fact recorded.**  `hB`
+is the point's own setting, so the statement is not weaker — but `hB` occurs
+only in the binder (Lean's `unusedVariables` linter says so), and it cannot
+be used: the carrier is a von Neumann subalgebra of `haTSolProd ℬ 𝒜`
+whatever `ℬ` is.  So **the tree in fact proves the left adjoint exists on all
+of `W*_miu`**, and the doc now says that.  (`hA` *is* used.)
+
+**Module header — both stale claims fixed.**  "The existence (`Nonempty _`)
+is the sorry-ed content of the theorems" was true of **125VIII**
+`tensor_closed` only: 124III `second_adjunction`, 125bII
+`ha_second_adjunction` and 125dII `ha_tensor_closed` all print
+`[propext, Classical.choice, Quot.sound]`.  The header now names
+`tensor_closed` as the only one still open and says what it is blocked on
+(125IV → 121II).  And "`nmiuComp` (normality sorry-ed)" was simply **false**:
+`nmiuComp.preservesDirSups'` is discharged in `Tensor.lean:1860` by
+`preservesDirSups_comp`, and `#print axioms nmiuComp` is clean.  (`Tensor.lean`
+does have one `sorry`, at 6145 — the joint ultraweak continuity of `⊗ᵥ` — but
+it is nothing to do with `nmiuComp`.)
+
+### `QuantumLambda.lean` — the category `W*_miu`, at last
+
+`CONVENTIONS.md` says the categories "are defined with Mathlib's category
+theory library **when a chapter needs them**".  Two rows of this module needed
+one and did not have it, and both were recorded `weaker` for that reason:
+
+**122II `first_adjunction` — the Proposition's second sentence
+(class 1, faithful).**  "Moreover, and as a result, `X ↦ ℓ^∞(X)` extends to a
+functor `Set → (W*_miu)^op` that is left adjoint to `nsp`."  Only the
+universal arrow and the action on maps (`exists_linfMap`) were stated.  Now:
+`WMIU` (bundled `Theses.VonNeumannAlgebra`s, `NMIUMap`s as morphisms — the
+same shape as `B/Eff/WStarCat.lean`'s `WStar`, which cannot be imported here
+because it belongs to thesis B), `nspFunctor : (W*_miu)^op ⥤ Set`,
+`linfFunctor : Set ⥤ (W*_miu)^op`, and
+`linfNspAdjunction : linfFunctor ⊣ nspFunctor`.  No new mathematics: the
+hom-set equivalence `W*_miu(𝒜, ℓ^∞(X)) ≅ Set(X, nsp(𝒜))` **is**
+`first_adjunction`, both directions coming from its `∃!`, and the two
+naturality squares of `Adjunction.mkOfHomEquiv` come from the uniqueness half
+and from associativity of `nmiuComp`.  That is precisely the thesis's "and as
+a result".
+
+**122VI.3 `cor_linf_ff_3` — the "whence" (class 1, faithful).**  "…whence
+`Set` is (isomorphic to) a coreflective subcategory of `(W*_miu)^op`."  A
+coreflective subcategory is a full-and-faithful inclusion with a right
+adjoint, so this is `cor_linf_ff_3` (injectivity = faithful, surjectivity =
+full) plus 122II — and it goes in as
+`instance linfCoreflective : Coreflective linfFunctor`, Mathlib's own class.
+The existing `cor_linf_ff_3` is untouched (`Duplicators.lean` destructures it
+in two places).
+
+### Left, and why
+
+* **QUESTIONS A6 (129II.2 `DiscreteSpace`) and everything downstream** —
+  `PurelyAtomic`, `discrete_iff_purelyAtomic`, 129VI
+  `exists_maximal_atom_family`, 129VI `measure_space_continuous_discrete`.
+  The definition is the author's ruling of 2026-08-16, not the printed one,
+  and the audit's finding that the knock-on is larger than recorded (under
+  the printed definition 130V is false, 129VI vacuous, 127III gapped, and
+  129VI's *printed proof* does not survive the repair either) is already in
+  the doc comments.  Nothing here is ours to change.
+* **The two benign `stronger` rows.**  128XIII `duplicable_product` is the
+  family form of a binary statement, proved by the thesis's own
+  `πᵢ ∘ δ ∘ (κᵢ ⊗ κᵢ)` with `i` ranging over the family; 129VIII
+  `continuous_measure_space_subset` is the relative form, proved by the
+  thesis's own argument with `B` for `X` throughout (and the doc explains
+  why the absolute form does not give it: a restriction of a complete
+  measure need not be complete).  Both are hypothesis-free
+  generalisations, `REPAIR-BRIEF` case 3.
+* **132III.4** — costed above; two independent obstructions, one of them a
+  change of statement that only the author can make.
+* **The `differs` rows with no thesis statement behind them** — 54XI
+  `exists_isLinftyOf_of_starAlgEquiv` and `exists_ell_of_faithful`, 128XIII
+  `duplicable_corner`, 122VI `nsp_eq_linfEval`, 124III `SolIdx`, 125II
+  `card_lp_two_le` and `exists_smallRealization`, 125bII `HaSolIdx`.  Each
+  is either a clause the tree renders differently because `L^∞` has no
+  carrier, or a step type theory forces (relabelling a *Hilbert space*
+  where the thesis relabels an algebra's elements), and each says so in its
+  doc.  None is a mis-transcription.
+* **132VI `free_monoid_in_Wcpsu`** is still proved by repeating 132IV's
+  direct argument rather than by composing the two adjunctions through
+  124III, as proc.tex does.  That is a `route` row with `stmt = ok`, outside
+  this pass's brief; noted here so it is not lost.
+
+### Nothing needed a ruling
+
+Every repair above is a mis-transcription of ours (`ERRATA.md`'s scope note
+excludes those) or a clause of the source we had simply not stated.  No
+statement was weakened, none deleted, and no `sorry` was added:
+`Duplicators.lean` ends at **0 errors, 0 `sorry`s**, and `QuantumLambda.lean`
+at **0 errors and exactly the 7 pre-existing `sorry`s**
+(`intersection_tensor`, `equaliser_lemma`, `tensor_equalisers`,
+`tensor_preimage`, `tensor_closed`, `tensor_map_factorisation`,
+`tensorBsurjectivity`) — the same set as before the pass.  Everything touched
+was `#print axioms`-checked **in situ** (source copied to the scratchpad, the
+`#print axioms` lines appended, the copy compiled): all
+`[propext, Classical.choice, Quot.sound]`.

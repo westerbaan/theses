@@ -14,17 +14,25 @@ descriptions (parsecs 1251–1255).
   Basic.lean`); `nsp A = NMIUMap A ℂ` is the set of nmiu-functionals.
 * The adjunctions are stated through universal arrows, bundled as
   structures (`FreeMIU`, `FreeExp`, `HaFreeMIU`, `HaFreeExp`) whose
-  existence (`Nonempty _`) is the sorry-ed content of the theorems —
-  a concrete rendering of "the inclusion/`(-) ⊗ 𝒜` has a left adjoint",
-  per the conversion policy's allowance for concrete phrasings of
-  categorical statements.
+  existence (`Nonempty _`) is the content of the theorems — a concrete
+  rendering of "the inclusion/`(-) ⊗ 𝒜` has a left adjoint", per the
+  conversion policy's allowance for concrete phrasings of categorical
+  statements.  Three of the four are **proved**: 124III
+  `second_adjunction` (`Nonempty (FreeMIU 𝒜)`), 125bII
+  `ha_second_adjunction` (`Nonempty (HaFreeMIU 𝒜)`) and 125dII
+  `ha_tensor_closed` (`Nonempty (HaFreeExp ℬ 𝒜)`).  Only 125VIII
+  `tensor_closed` (`Nonempty (FreeExp ℬ 𝒜)`) is still `sorry`, being
+  blocked on 125IV `equaliser_lemma` and hence on 121II
+  `intersection_tensor`.
 * `HereditarilyAtomic` is reused from `Theses/A/VN/Division.lean`.
   Matrix algebras are `MatAlg n = CStarMatrix (Fin n) (Fin n) ℂ`; in the
   concrete descriptions (125cIII, 125eVII) the summands are rendered as
   `MatAlg (N i + 1)` to keep them nontrivial (as in the encoding of
   `HereditarilyAtomic`).
-* Composition of nmiu-maps is the honest `nmiuComp` (star-algebra
-  composition; normality sorry-ed).
+* Composition of nmiu-maps is the honest `nmiuComp` of
+  `Theses/A/Proc/Tensor.lean`: star-algebra composition, with normality
+  (`preservesDirSups'`) **proved** there from `preservesDirSups_comp`
+  (`Theses/A/Proc/Measurement.lean`).  Nothing about it is `sorry`-ed.
 -/
 import Theses.A.Proc.Tensor
 
@@ -346,7 +354,11 @@ theorem linfEval_apply (X : Type u) (x : X) (f : linf X) :
 `η : X → nsp(ℓ^∞(X))` is universal: for every map `f : X → nsp(𝒜)` there
 is a unique nmiu-map `g : 𝒜 → ℓ^∞(X)` with `nsp(g) ∘ η = f`.  (Hence
 `X ↦ ℓ^∞(X)` extends to a functor `Set → (W*_miu)^op` left adjoint to
-`nsp`; its action on maps is `linfMap` below.) -/
+`nsp`; its action on maps is `linfMap` below.)
+
+The Proposition's second sentence — the functor and the adjunction — is
+`linfNspAdjunction` in the `Categorical` section below, whose hom-set
+equivalence is this `∃!`. -/
 theorem first_adjunction [VonNeumannAlgebra A] (X : Type u)
     (f : X → nsp A) :
     ∃! g : NMIUMap A (linf X),
@@ -442,7 +454,12 @@ theorem cor_linf_ff_2 (X : Type u) : Function.Bijective (linfEval X) := by
 
 /-- **122VI** (`cor:linf-ff`, proc.tex:4612, Exercise), part 3: the
 functor `ℓ^∞ : Set → (W*_miu)^op` is full and faithful; whence `Set` is
-(isomorphic to) a coreflective subcategory of `(W*_miu)^op`. -/
+(isomorphic to) a coreflective subcategory of `(W*_miu)^op`.
+
+Full and faithful are the two clauses below (surjectivity and injectivity
+of `f ↦ ℓ^∞(f)` on each hom-set); the "whence" is the instance
+`linfCoreflective` in the `Categorical` section below, which reads them as
+`Coreflective linfFunctor`. -/
 theorem cor_linf_ff_3 (X Y : Type u) :
     Function.Injective (linfMap : (X → Y) → NMIUMap (linf Y) (linf X)) ∧
       ∀ h : NMIUMap (linf Y) (linf X), ∃ f : X → Y, h = linfMap f := by
@@ -471,6 +488,191 @@ theorem cor_linf_ff_3 (X Y : Type u) :
       show nmiuComp (linfEval X x) h g = linfEval X x (h g) from rfl,
       linfEval_apply] at hx
     exact hx.symm
+
+/-! ## The categorical form of the first adjunction
+
+`CONVENTIONS.md`: "the categories `CStar_miu`, `W*_nmiu`, `W*_ncpsu`, … are
+defined with Mathlib's category theory library when a chapter needs them".
+This is where the chapter needs `W*_miu`: **122II**'s second sentence — "and
+as a result, `X ↦ ℓ^∞(X)` extends to a functor `Set → (W*_miu)^op` that is
+left adjoint to `nsp`" — and the "whence" of **122VI**.3, that `Set` is a
+coreflective subcategory of `(W*_miu)^op`.  Neither was stated before
+2026-08-21; the audit recorded both as `weaker`.
+
+Nothing here is new mathematics.  `first_adjunction` *is* the hom-set
+bijection `W*_miu(𝒜, ℓ^∞(X)) ≅ Set(X, nsp(𝒜))` (universality of `η` in the
+`∃!` form), and `cor_linf_ff_3` *is* fullness and faithfulness of `ℓ^∞`; what
+follows packages them as `Adjunction` and `Coreflective`, which is exactly the
+thesis's own "and as a result".  The objects of `W*_miu` are bundled
+`Theses.VonNeumannAlgebra`s and its morphisms are `NMIUMap`s, matching
+`B/Eff/WStarCat.lean`'s `WStar` (which cannot be imported here: it belongs to
+thesis B). -/
+
+section Categorical
+
+open CategoryTheory
+
+
+/-- A bundled von Neumann algebra: the object type of `W*_miu`. -/
+structure WMIU : Type (u + 1) where
+  carrier : Type u
+  [cstarAlgebra : CStarAlgebra carrier]
+  [partialOrder : PartialOrder carrier]
+  [starOrderedRing : StarOrderedRing carrier]
+  [vonNeumannAlgebra : Theses.VonNeumannAlgebra carrier]
+
+attribute [instance] WMIU.cstarAlgebra WMIU.partialOrder
+  WMIU.starOrderedRing WMIU.vonNeumannAlgebra
+
+instance : CoeSort WMIU.{u} (Type u) := ⟨WMIU.carrier⟩
+
+/-- Bundle a von Neumann algebra as an object of `W*_miu`. -/
+def WMIU.of (A : Type u) [CStarAlgebra A] [PartialOrder A] [StarOrderedRing A]
+    [Theses.VonNeumannAlgebra A] : WMIU := ⟨A⟩
+
+instance : Category WMIU.{u} where
+  Hom A B := NMIUMap A B
+  id A := nmiuId A
+  comp f g := nmiuComp g f
+  id_comp f := DFunLike.coe_injective rfl
+  comp_id f := DFunLike.coe_injective rfl
+  assoc f g h := DFunLike.coe_injective rfl
+
+/-- A morphism of `W*_miu` *is* an nmiu-map. -/
+def WMIU.hom {A B : WMIU.{u}} (f : A ⟶ B) : NMIUMap A B := f
+
+/-- An nmiu-map *is* a morphism of `W*_miu`. -/
+def WMIU.ofHom {A B : WMIU.{u}} (f : NMIUMap A B) : A ⟶ B := f
+
+@[simp] theorem WMIU.hom_ofHom {A B : WMIU.{u}} (f : NMIUMap A B) :
+    WMIU.hom (WMIU.ofHom f) = f := rfl
+
+theorem WMIU.hom_injective {A B : WMIU.{u}} {f g : A ⟶ B}
+    (h : WMIU.hom f = WMIU.hom g) : f = g := h
+
+theorem WMIU.hom_ext {A B : WMIU.{u}} {f g : A ⟶ B}
+    (h : ∀ x : A, WMIU.hom f x = WMIU.hom g x) : f = g :=
+  WMIU.hom_injective (DFunLike.coe_injective (funext h))
+
+@[simp] theorem WMIU.hom_id {A : WMIU.{u}} (a : A) : WMIU.hom (𝟙 A) a = a := rfl
+
+@[simp] theorem WMIU.hom_comp {A B C : WMIU.{u}} (f : A ⟶ B) (g : B ⟶ C) (a : A) :
+    WMIU.hom (f ≫ g) a = WMIU.hom g (WMIU.hom f a) := rfl
+
+theorem linfMap_apply {X Y : Type u} (f : X → Y) (g : linf Y) (x : X) :
+    ((linfMap f g : linf X) : ∀ _ : X, ℂ) x = (g : ∀ _ : Y, ℂ) (f x) :=
+  (exists_linfMap f).choose_spec g x
+
+/-- Extensionality for nmiu-maps into `ℓ^∞(X)`. -/
+theorem linf_nmiu_ext {X : Type u} {A : Type u} [CStarAlgebra A] [PartialOrder A]
+    [StarOrderedRing A] {h k : NMIUMap A (linf X)}
+    (hh : ∀ (a : A) (x : X), ((h a : linf X) : ∀ _ : X, ℂ) x
+      = ((k a : linf X) : ∀ _ : X, ℂ) x) : h = k :=
+  DFunLike.coe_injective (funext fun a => lp.ext (funext fun x => hh a x))
+
+/-- `nsp : (W*_miu)^op ⥤ Set`. -/
+def nspFunctor : WMIU.{u}ᵒᵖ ⥤ Type u where
+  obj A := nsp A.unop
+  map {A B} f := TypeCat.ofHom (fun φ : nsp A.unop => nspMap (WMIU.hom f.unop) φ)
+  map_id A := by
+    apply TypeCat.Hom.ext
+    apply DFunLike.coe_injective
+    funext φ
+    exact DFunLike.coe_injective rfl
+  map_comp f g := by
+    apply TypeCat.Hom.ext
+    apply DFunLike.coe_injective
+    funext φ
+    exact DFunLike.coe_injective rfl
+
+/-- `ℓ^∞ : Set ⥤ (W*_miu)^op`. -/
+def linfFunctor : Type u ⥤ WMIU.{u}ᵒᵖ where
+  obj X := Opposite.op (WMIU.of (linf X))
+  map {X Y} f :=
+    Quiver.Hom.op (WMIU.ofHom (A := WMIU.of (linf Y)) (B := WMIU.of (linf X))
+      (linfMap (fun x : X => f x)))
+  map_id X := by
+    apply Quiver.Hom.unop_inj
+    refine linf_nmiu_ext fun g x => ?_
+    exact linfMap_apply _ g x
+  map_comp {X Y Z} f g := by
+    apply Quiver.Hom.unop_inj
+    refine linf_nmiu_ext fun h x => ?_
+    exact (linfMap_apply (fun x : X => g (f x)) h x).trans
+      ((linfMap_apply (fun y : Y => g y) h (f x)).symm.trans
+        (linfMap_apply (fun x : X => f x) (linfMap (fun y : Y => g y) h) x).symm)
+
+/-- The hom-set bijection of the first adjunction: **122II** says exactly
+that `η : X → nsp(ℓ^∞(X))` is universal, i.e. that
+`W*_miu(𝒜, ℓ^∞(X)) ≅ Set(X, nsp(𝒜))`. -/
+def linfNspHomEquiv (X : Type u) (A : WMIU.{u}ᵒᵖ) :
+    (linfFunctor.obj X ⟶ A) ≃ (X ⟶ nspFunctor.obj A) where
+  toFun g := TypeCat.ofHom
+    (fun x : X => nmiuComp (linfEval X x) (WMIU.hom g.unop))
+  invFun f := Quiver.Hom.op (WMIU.ofHom
+    (A := A.unop) (B := WMIU.of (linf X))
+    (first_adjunction (A := A.unop) X (fun x : X => f x)).choose)
+  left_inv g := by
+    apply Quiver.Hom.unop_inj
+    exact ((first_adjunction (A := A.unop) X
+      (fun x : X => nmiuComp (linfEval X x) (WMIU.hom g.unop))).choose_spec.2
+        (WMIU.hom g.unop) (fun _ _ => rfl)).symm
+  right_inv f := by
+    apply TypeCat.Hom.ext
+    apply DFunLike.coe_injective
+    funext x
+    show (nmiuComp (linfEval X x)
+        (first_adjunction (A := A.unop) X (fun x : X => f x)).choose :
+          NMIUMap A.unop ℂ) = (f x : NMIUMap A.unop ℂ)
+    exact DFunLike.coe_injective (funext fun a =>
+      ((first_adjunction (A := A.unop) X (fun x : X => f x)).choose_spec.1 x a).symm)
+
+/-- **122II** (`first-adjunction`, proc.tex:4493, Proposition), second
+sentence: `X ↦ ℓ^∞(X)` is a functor `Set → (W*_miu)^op` and it is **left
+adjoint** to `nsp`. -/
+def linfNspAdjunction : linfFunctor.{u} ⊣ nspFunctor.{u} :=
+  Adjunction.mkOfHomEquiv
+    { homEquiv := linfNspHomEquiv
+      homEquiv_naturality_left_symm := by
+        intro X' X A f g
+        apply Quiver.Hom.unop_inj
+        refine (first_adjunction (A := A.unop) X'
+          (fun x' : X' => (f ≫ g) x')).unique
+            ((first_adjunction (A := A.unop) X'
+              (fun x' : X' => (f ≫ g) x')).choose_spec.1) ?_
+        intro x' a
+        exact ((first_adjunction (A := A.unop) X
+              (fun x : X => g x)).choose_spec.1 (f x') a).trans
+          ((linfEval_apply X (f x') _).trans
+            ((linfMap_apply (fun x : X' => f x) _ x').symm.trans
+              (linfEval_apply X' x' _).symm))
+      homEquiv_naturality_right := by
+        intro X A B f g
+        apply TypeCat.Hom.ext
+        apply DFunLike.coe_injective
+        funext x
+        show (nmiuComp (linfEval X x) (WMIU.hom (f ≫ g).unop) : NMIUMap B.unop ℂ)
+          = nmiuComp (nmiuComp (linfEval X x) (WMIU.hom f.unop)) (WMIU.hom g.unop)
+        exact DFunLike.coe_injective rfl }
+
+/-- **122VI** (`cor:linf-ff`, proc.tex:4612, Exercise), part 3, second
+half: `Set` is a **coreflective subcategory** of `(W*_miu)^op` — the
+functor `ℓ^∞` is full and faithful (part 3, first half, `cor_linf_ff_3`)
+and is a left adjoint (**122II**). -/
+instance linfCoreflective : Coreflective (linfFunctor.{u}) where
+  map_surjective {X Y} h := by
+    obtain ⟨k, hk⟩ := (cor_linf_ff_3 X Y).2 (WMIU.hom h.unop)
+    exact ⟨TypeCat.ofHom k, Quiver.Hom.unop_inj hk.symm⟩
+  map_injective {X Y f g} h := by
+    apply TypeCat.Hom.ext
+    apply DFunLike.coe_injective
+    have h' : linfMap (fun x : X => f x) = linfMap (fun x : X => g x) :=
+      congrArg (fun p => WMIU.hom (Quiver.Hom.unop p)) h
+    exact (cor_linf_ff_3 X Y).1 h'
+  R := nspFunctor
+  adj := linfNspAdjunction
+
+end Categorical
 
 /-! ## Parsec 1230: `ℓ^∞` and `nsp` are strong monoidal -/
 
@@ -877,10 +1079,11 @@ theorem nsp_tensor_1 [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     show (φ (a ⊗ᵥ b) : ℂ) = φ (a ⊗ᵥ (1 : B)) * φ (ρ b)
     rw [hρ, ← h1, hmulφ]
 
-/-- **123II** (proc.tex:4663, Exercise), part 2: `(σ, τ) ↦ σ ⊗ τ` gives a
-bijection `nsp(𝒜) × nsp(ℬ) → nsp(𝒜 ⊗ ℬ)` (which makes `nsp` strong
-monoidal) — rendered: every pair extends uniquely to a product
-nmiu-functional. -/
+/-- **123II** (proc.tex:4663, Exercise), part 2, well-definedness half:
+every pair `(σ, τ)` extends to a *unique* nmiu-functional `σ ⊗ τ` on
+`𝒜 ⊗ ℬ` with `(σ ⊗ τ)(a ⊗ b) = σ(a)τ(b)`.  That the resulting map
+`nsp(𝒜) × nsp(ℬ) → nsp(𝒜 ⊗ ℬ)` is a **bijection**, which is what the
+Exercise asks for, is `nsp_tensor_2_bijection` below. -/
 theorem nsp_tensor_2 [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     (σ : NMIUMap A ℂ) (τ : NMIUMap B ℂ) :
     ∃! φ : NMIUMap (VNT A B) ℂ,
@@ -1005,6 +1208,52 @@ theorem nsp_tensor_2 [VonNeumannAlgebra A] [VonNeumannAlgebra B]
   refine DFunLike.coe_injective (funext fun x => ?_)
   have h2 := congrArg (fun L : VNT A B →ₗ[ℂ] ℂ => L x) h
   simpa using h2
+
+/-- **123II** (proc.tex:4663, Exercise), part 2, as the Exercise states it:
+`(σ, τ) ↦ σ ⊗ τ` is a **bijection** `nsp(𝒜) × nsp(ℬ) → nsp(𝒜 ⊗ ℬ)`.
+The map itself is `nsp_tensor_2` (well-definedness, and the formula
+`(σ ⊗ τ)(a ⊗ b) = σ(a)τ(b)` that pins it down); **surjectivity is part 1**,
+`nsp_tensor_1`, and **injectivity is part 1's formulas** `σ = φ((·) ⊗ 1)`,
+`τ = φ(1 ⊗ (·))`, read off by evaluating at `a ⊗ 1` and `1 ⊗ b`.
+(The parenthetical "this makes `nsp` strong monoidal" is not formalized:
+no monoidal structure is formed in the tree.) -/
+theorem nsp_tensor_2_bijection [VonNeumannAlgebra A] [VonNeumannAlgebra B] :
+    ∃ Θ : NMIUMap A ℂ × NMIUMap B ℂ → NMIUMap (VNT A B) ℂ,
+      (∀ (p : NMIUMap A ℂ × NMIUMap B ℂ) (a : A) (b : B),
+        Θ p (a ⊗ᵥ b) = p.1 a * p.2 b) ∧ Function.Bijective Θ := by
+  classical
+  have hex : ∀ p : NMIUMap A ℂ × NMIUMap B ℂ,
+      ∃ φ : NMIUMap (VNT A B) ℂ,
+        (∀ (a : A) (b : B), φ (a ⊗ᵥ b) = p.1 a * p.2 b) ∧
+        ∀ ψ : NMIUMap (VNT A B) ℂ,
+          (∀ (a : A) (b : B), ψ (a ⊗ᵥ b) = p.1 a * p.2 b) → ψ = φ :=
+    fun p => nsp_tensor_2 p.1 p.2
+  choose Θ hΘ huniq using hex
+  refine ⟨Θ, hΘ, ?_, ?_⟩
+  · -- injectivity: recover `σ` and `τ` by part 1's formulas
+    rintro ⟨σ, τ⟩ ⟨σ', τ'⟩ hpair
+    have hσ : σ = σ' := by
+      refine DFunLike.coe_injective (funext fun a => ?_)
+      have e : Θ (σ, τ) (a ⊗ᵥ (1 : B)) = Θ (σ', τ') (a ⊗ᵥ (1 : B)) := by
+        rw [hpair]
+      rw [hΘ (σ, τ) a 1, hΘ (σ', τ') a 1,
+        show τ (1 : B) = 1 from map_one τ.toStarAlgHom,
+        show τ' (1 : B) = 1 from map_one τ'.toStarAlgHom, mul_one, mul_one] at e
+      exact e
+    have hτ : τ = τ' := by
+      refine DFunLike.coe_injective (funext fun b => ?_)
+      have e : Θ (σ, τ) ((1 : A) ⊗ᵥ b) = Θ (σ', τ') ((1 : A) ⊗ᵥ b) := by
+        rw [hpair]
+      rw [hΘ (σ, τ) 1 b, hΘ (σ', τ') 1 b,
+        show σ (1 : A) = 1 from map_one σ.toStarAlgHom,
+        show σ' (1 : A) = 1 from map_one σ'.toStarAlgHom, one_mul, one_mul] at e
+      exact e
+    rw [hσ, hτ]
+  · -- surjectivity: part 1 produces the pair, and `nsp_tensor_2`'s
+    -- uniqueness identifies `φ` with its extension
+    intro φ
+    obtain ⟨σ, τ, -, -, hφ⟩ := nsp_tensor_1 φ
+    exact ⟨(σ, τ), (huniq (σ, τ) φ (fun a b => hφ a b)).symm⟩
 
 /-! ## Parsec 1240: the second adjunction -/
 
@@ -4016,7 +4265,20 @@ set_option maxHeartbeats 2000000 in
 set_option synthInstance.maxHeartbeats 400000 in
 /-- **125dII** (proc.tex:5528, Proposition): for hereditarily atomic `𝒜`
 the functor `(·) ⊗ 𝒜 : haW*_miu → haW*_miu` has a left adjoint
-`(·)^{*_ha 𝒜}`. -/
+`(·)^{*_ha 𝒜}`.
+
+`hB` is the hypothesis that the *object* `ℬ` lies in `haW*_miu`; that is
+part of 125dII's own setting, so the statement is not weaker than the
+Proposition.  But **`hB` is never used**: it occurs only in the binder
+(`linter.unusedVariables` reports it, and the proof below mentions it
+nowhere).  It cannot be used, either — the carrier is a von Neumann
+subalgebra of the direct sum of matrix algebras `haTSolProd ℬ 𝒜`
+whatever `ℬ` is, and the unit is corestricted to it — so the tree in fact
+proves the **stronger** fact that `(·) ⊗ 𝒜` has a left adjoint on *all* of
+`W*_miu`, not only on `haW*_miu`.  (`hA` *is* used: it supplies the
+presentation `Φ` of `𝒜` that `haE_mem`/`haE_natural` and
+`nontrivial_of_haIndex` need.)  The stronger form is not stated, because
+the thesis states the adjunction with `haW*_miu` as its domain. -/
 theorem ha_tensor_closed [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     (hA : HereditarilyAtomic A) (hB : HereditarilyAtomic B) :
     Nonempty (HaFreeExp B A) := by
@@ -4498,6 +4760,30 @@ The assembly of 125eVII, following proc.tex:5680–5810 and the shape of
 
 
 
+/-- Infrastructure for the uniqueness clause of **125eVII**: two elements of
+`(⊕ᵢ M_{Nᵢ+1}) ⊗ ℬ` with the same coordinates `(πᵢ ⊗ ℬ)(·)` are equal.
+This is the injectivity half of `exists_matSumTensorIso` (**117III** through
+**119IVc**), with the degenerate case `ℬ` trivial split off. -/
+private theorem tensorB_ext_of_coords {I₀ Bb : Type u}
+    [CStarAlgebra Bb] [PartialOrder Bb] [StarOrderedRing Bb]
+    [VonNeumannAlgebra Bb] (N : I₀ → ℕ)
+    (x y : VNT (lp (fun i : I₀ => MatAlg (N i + 1)) ∞) Bb)
+    (h : ∀ i : I₀,
+      tmapM (lpEvalNMIU (fun j : I₀ => MatAlg (N j + 1)) i) (nmiuId Bb) x
+        = tmapM (lpEvalNMIU (fun j : I₀ => MatAlg (N j + 1)) i) (nmiuId Bb) y) :
+    x = y := by
+  rcases subsingleton_or_nontrivial Bb with hss | hnt
+  · haveI := hss
+    haveI : Subsingleton (VNT (lp (fun i : I₀ => MatAlg (N i + 1)) ∞) Bb) :=
+      vnt_subsingleton
+    exact Subsingleton.elim _ _
+  · haveI := hnt
+    haveI hntm : ∀ i : I₀, Nontrivial (VNT (MatAlg (N i + 1)) Bb) :=
+      fun i => vnt_mat_nontrivial (Aa := Bb) (N i)
+    obtain ⟨θ, hθbij, hθa⟩ := exists_matSumTensorIso (Aa := Bb) N
+    refine hθbij.1 (lp.ext (funext fun i => ?_))
+    rw [hθa, hθa, h i]
+
 set_option maxHeartbeats 2000000 in
 private theorem haAstarhaB_concrete_aux {Aa Bb2 : Type u}
     [CStarAlgebra Aa] [PartialOrder Aa] [StarOrderedRing Aa] [VonNeumannAlgebra Aa]
@@ -4510,9 +4796,13 @@ private theorem haAstarhaB_concrete_aux {Aa Bb2 : Type u}
       TensorBSurjective f → ∃ i, TensorBEquiv (s i) f) :
     ∃ Φ : NMIUMap F.carrier (lp (fun i : I => MatAlg (N i + 1)) ∞),
       Function.Bijective ⇑Φ ∧
-      ∀ (i : I) (πΦ : NMIUMap F.carrier (MatAlg (N i + 1))),
+      (∀ (i : I) (πΦ : NMIUMap F.carrier (MatAlg (N i + 1))),
         (∀ x : F.carrier, πΦ x = Φ x i) →
-        ∀ a : Aa, tmapM πΦ (nmiuId Bb2) (F.unit a) = s i a := by
+        ∀ a : Aa, tmapM πΦ (nmiuId Bb2) (F.unit a) = s i a) ∧
+      ∀ Φ' : NMIUMap F.carrier (lp (fun i : I => MatAlg (N i + 1)) ∞),
+        (∀ (i : I) (πΦ : NMIUMap F.carrier (MatAlg (N i + 1))),
+          (∀ x : F.carrier, πΦ x = Φ' x i) →
+          ∀ a : Aa, tmapM πΦ (nmiuId Bb2) (F.unit a) = s i a) → Φ' = Φ := by
   classical
   obtain ⟨JB, nnB, ⟨ΦB⟩⟩ := hB
   have hunit : TensorBSurjective F.unit := haFreeExp_unit_tensorBSurjective F
@@ -4663,15 +4953,48 @@ private theorem haAstarhaB_concrete_aux {Aa Bb2 : Type u}
     exists_lp_reindex (𝒜 := fun i' : I' => MatAlg (N' i' + 1))
       (ℬ := fun i : I => MatAlg (N i + 1)) (⟨d, c, hcd, hdc⟩ : I ≃ I')
       (fun i => (hd i).choose) (fun i => (hd i).choose_spec.1)
-  refine ⟨nmiuComp Θ ψ, hΘbij.comp hψbij, ?_⟩
-  intro i πΦ hπΦ a
-  have hπeq : πΦ = nmiuComp ((hd i).choose) (pp (d i)) := by
-    refine DFunLike.coe_injective (funext fun x => ?_)
-    show πΦ x = (hd i).choose (pp (d i) x)
-    rw [hπΦ x, hppapp]
-    exact hΘ (ψ x) i
-  rw [hπeq, ← tmapM_comp_id, ← heeapp]
-  exact (hd i).choose_spec.2 a
+  -- the compatibility clause
+  have hcompat : ∀ (i : I) (πΦ : NMIUMap F.carrier (MatAlg (N i + 1))),
+      (∀ x : F.carrier, πΦ x = nmiuComp Θ ψ x i) →
+      ∀ a : Aa, tmapM πΦ (nmiuId Bb2) (F.unit a) = s i a := by
+    intro i πΦ hπΦ a
+    have hπeq : πΦ = nmiuComp ((hd i).choose) (pp (d i)) := by
+      refine DFunLike.coe_injective (funext fun x => ?_)
+      show πΦ x = (hd i).choose (pp (d i) x)
+      rw [hπΦ x, hppapp]
+      exact hΘ (ψ x) i
+    rw [hπeq, ← tmapM_comp_id, ← heeapp]
+    exact (hd i).choose_spec.2 a
+  refine ⟨nmiuComp Θ ψ, hΘbij.comp hψbij, hcompat, ?_⟩
+  -- **uniqueness** (proc.tex:5652: "the *unique* nmiu-map `Φ` that makes the
+  -- diagram commute"), from `F.universal` — exactly as 125cIII
+  -- `Fha_concrete` gets its uniqueness clause, except that here the unit
+  -- lands in `F.carrier ⊗ ℬ`, so the two candidates are compared *after*
+  -- tensoring with `ℬ`: their coordinates `(πᵢ ⊗ ℬ) ∘ (Φ ⊗ ℬ) ∘ η` are both
+  -- `sᵢ`, and `tensorB_ext_of_coords` (117III) says the coordinates
+  -- determine an element of `(⊕ᵢ M_{Nᵢ+1}) ⊗ ℬ`.
+  intro Φ' hΦ'
+  have hhaB : HereditarilyAtomic (lp (fun i : I => MatAlg (N i + 1)) ∞) :=
+    ⟨I, N, ⟨StarAlgEquiv.refl (R := ℂ)
+      (A := lp (fun i : I => MatAlg (N i + 1)) ∞)⟩⟩
+  have key : ∀ Φ₀ : NMIUMap F.carrier (lp (fun i : I => MatAlg (N i + 1)) ∞),
+      (∀ (i : I) (πΦ : NMIUMap F.carrier (MatAlg (N i + 1))),
+        (∀ x : F.carrier, πΦ x = Φ₀ x i) →
+        ∀ a : Aa, tmapM πΦ (nmiuId Bb2) (F.unit a) = s i a) →
+      ∀ a : Aa, tmapM Φ₀ (nmiuId Bb2) (F.unit a)
+        = tmapM (nmiuComp Θ ψ) (nmiuId Bb2) (F.unit a) := by
+    intro Φ₀ h₀ a
+    refine tensorB_ext_of_coords N _ _ (fun i => ?_)
+    rw [tmapM_comp_id, tmapM_comp_id,
+      h₀ i (nmiuComp (lpEvalNMIU (fun j : I => MatAlg (N j + 1)) i) Φ₀)
+        (fun _ => rfl) a,
+      hcompat i (nmiuComp (lpEvalNMIU (fun j : I => MatAlg (N j + 1)) i)
+        (nmiuComp Θ ψ)) (fun _ => rfl) a]
+  obtain ⟨g₀, -, huniq⟩ := F.universal _ hhaB
+    (nmiuComp (tmapM (nmiuComp Θ ψ) (nmiuId Bb2)) F.unit)
+  have h1 : Φ' = g₀ := huniq Φ' (fun a => (key Φ' hΦ' a).symm)
+  have h2 : nmiuComp Θ ψ = g₀ := huniq (nmiuComp Θ ψ) (fun _ => rfl)
+  rw [h1, h2]
 
 end AstarhaBAux
 
@@ -4682,7 +5005,16 @@ hereditarily atomic `𝒜`, `ℬ` with a set of representatives
 unique nmiu-map `Φ : 𝒜^{*_ha ℬ} → ⊕ᵢ M_{N_i+1}` compatible with the
 unit is an nmiu-isomorphism.  (The compatibility
 `(π_i ⊗ ℬ)((Φ ⊗ ℬ)(η(a))) = s_i(a)` is rendered through the map
-`Φᵢ := (π_i ∘ Φ) ⊗ ℬ` applied to the unit.) -/
+`Φᵢ := (π_i ∘ Φ) ⊗ ℬ` applied to the unit.)
+
+The third conjunct is the Theorem's word "**the unique**": every nmiu-map
+`Φ'` satisfying the same compatibility equals `Φ`.  (It is the clause the
+sibling 125cIII `Fha_concrete` carries, and it is proved the same way, out
+of `F.universal`; see the tail of `haAstarhaB_concrete_aux`.)
+
+`hA` is stated and never used — the construction needs only the hereditary
+atomicity of `ℬ` (through `haTensorBSurj`) and of `F.carrier` (`F.ha`) —
+but it is 125eVII's own setting and is kept. -/
 theorem AstarhaB_concrete [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     (hA : HereditarilyAtomic A) (hB : HereditarilyAtomic B)
     (F : HaFreeExp A B) (I : Type u) (N : I → ℕ)
@@ -4693,9 +5025,13 @@ theorem AstarhaB_concrete [VonNeumannAlgebra A] [VonNeumannAlgebra B]
       TensorBSurjective f → ∃ i, TensorBEquiv (s i) f) :
     ∃ Φ : NMIUMap F.carrier (lp (fun i : I => MatAlg (N i + 1)) ∞),
       Function.Bijective ⇑Φ ∧
-      ∀ (i : I) (πΦ : NMIUMap F.carrier (MatAlg (N i + 1))),
+      (∀ (i : I) (πΦ : NMIUMap F.carrier (MatAlg (N i + 1))),
         (∀ x : F.carrier, πΦ x = Φ x i) →
-        ∀ a : A, tmapM πΦ (nmiuId B) (F.unit a) = s i a :=
+        ∀ a : A, tmapM πΦ (nmiuId B) (F.unit a) = s i a) ∧
+      ∀ Φ' : NMIUMap F.carrier (lp (fun i : I => MatAlg (N i + 1)) ∞),
+        (∀ (i : I) (πΦ : NMIUMap F.carrier (MatAlg (N i + 1))),
+          (∀ x : F.carrier, πΦ x = Φ' x i) →
+          ∀ a : A, tmapM πΦ (nmiuId B) (F.unit a) = s i a) → Φ' = Φ :=
   haAstarhaB_concrete_aux hB F I N s hsurj hdistinct hrep
 
 end Theses.A.Proc
