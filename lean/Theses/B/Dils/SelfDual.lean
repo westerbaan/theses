@@ -359,8 +359,11 @@ private theorem sq_le_self_of_effect {A : Type*} [CStarAlgebra A] [PartialOrder 
   calc E * E = r * E * r := by rw [← hr]; noncomm_ring
     _ ≤ E := h
 
-/-- **159VIII** (dils.tex:4390), the half that is used: `‖1 − p_S‖_ω → 0`
-for every np-functional `ω` of `𝒷ᵃ(X)`. -/
+/-- **159VIII** (dils.tex:4390), the first half: `‖1 − p_S‖_ω → 0` for every
+np-functional `ω` of `𝒷ᵃ(X)`.  (This is the `f(1 − p_S) → 0` of the printed
+proof, with `f` on the algebra where it belongs; see
+`onbProj_compress_uwTendsto` below, which is the point's conclusion and the
+only consumer of this lemma.) -/
 theorem onbProj_omegaNorm_tendsto {e : ι → X}
     (he : IsONBasis ℬ e) (ω : NPFunctional (Ba ℬ X)) :
     Tendsto (fun S : Finset ι => omegaNorm (Ba ℬ X) ω (1 - onbProj (ℬ := ℬ) e S))
@@ -454,6 +457,92 @@ theorem onbProj_compress {e : ι → X} (he : IsONBasis ℬ e) (T : Ba ℬ X)
   rw [hleft, hcomp]
   rfl
 
+/-- **159VIII** (dils.tex:4390, label `err159IV`), the conclusion: the
+compressions `p_S T p_S` converge **ultraweakly** to `T` along the net of
+finite subsets `S` of the basis.  Together with **159VII**
+`onbProj_compress` (which puts each `p_S T p_S` in the span of the
+`|eᵢb⟩⟨eⱼ|`) this is what proves **159IV**.
+
+The proof is the thesis's own: split
+`T − p_S T p_S = (1−p_S)*T + (T*p_S)*(1−p_S)`, bound each summand by
+Cauchy–Schwarz for `ω` (`norm_apply_star_mul_le`, with `‖p_S‖ ≤ ‖1‖` and
+`‖T‖` absorbing the middle factors), and apply the first half of 159VIII,
+`onbProj_omegaNorm_tendsto`, to the trailing `‖1 − p_S‖_ω`.
+
+Two notes on the printed proof.  (i) It opens "pick any np-map
+`f : ℬ → ℂ`" and then applies `f` to `T − p_S T p_S`, an element of
+`𝒷ᵃ(X)` and not of `ℬ`; the functional has to be an np-functional of
+`𝒷ᵃ(X)`, which is what `ω` is here.  That is a defect in 159VIII's
+*argument* only — the conclusion stated here is correct as printed.
+(`berr.tex`'s `err159IV` corrects a different slip in the same display.)
+(ii) Self-duality of `X`, carried by 159IV, is not needed for this step —
+as for `onbProj_omegaNorm_tendsto`, the orthonormal basis is enough — so it
+is not assumed here. -/
+theorem onbProj_compress_uwTendsto {e : ι → X} (he : IsONBasis ℬ e)
+    (T : Ba ℬ X) :
+    UWTendsto (fun S : Finset ι => onbProj (ℬ := ℬ) e S * T * onbProj (ℬ := ℬ) e S)
+      atTop T := by
+  classical
+  rw [uwTendsto_iff]
+  intro ω
+  set p : Finset ι → Ba ℬ X := fun S => onbProj (ℬ := ℬ) e S with hp
+  -- `T − p T p = (1−p)*T + (pT)*(1−p)`, with `1−p` and `p` self-adjoint
+  have hsa : ∀ S, star (p S) = p S := fun S =>
+    (IsSelfAdjoint.of_nonneg (onbProj_nonneg e S)).star_eq
+  have hsplit : ∀ S, T - p S * T * p S
+      = star (1 - p S) * T + star (star T * p S) * (1 - p S) := by
+    intro S
+    rw [star_sub, star_one, hsa, star_mul, star_star, hsa]
+    noncomm_ring
+  -- the two Cauchy–Schwarz estimates
+  set M : ℝ := ‖(1 : Ba ℬ X)‖ with hM
+  have hpnorm : ∀ S, ‖p S‖ ≤ M :=
+    fun S => CStarAlgebra.norm_le_norm_of_nonneg_of_le
+      (onbProj_nonneg e S) (onbProj_le_one he.1 S)
+  set C : ℝ := omegaNorm (Ba ℬ X) ω T + ‖T‖ * (M * omegaNorm (Ba ℬ X) ω 1) with hC
+  have hbound : ∀ S, ‖ω (T - p S * T * p S)‖
+      ≤ C * omegaNorm (Ba ℬ X) ω (1 - p S) := by
+    intro S
+    have h2 : omegaNorm (Ba ℬ X) ω (star T * p S)
+        ≤ ‖T‖ * (M * omegaNorm (Ba ℬ X) ω 1) := by
+      refine le_trans (omegaNorm_mul_le ω (star T) (p S)) ?_
+      rw [norm_star]
+      refine mul_le_mul_of_nonneg_left ?_ (norm_nonneg T)
+      have h3 := omegaNorm_mul_le ω (p S) 1
+      rw [mul_one] at h3
+      refine le_trans h3 ?_
+      exact mul_le_mul_of_nonneg_right (hpnorm S) (omegaNorm_nonneg _ _)
+    have hA : ‖ω (star (1 - p S) * T)‖
+        ≤ omegaNorm (Ba ℬ X) ω (1 - p S) * omegaNorm (Ba ℬ X) ω T :=
+      norm_apply_star_mul_le ω _ _
+    have hB : ‖ω (star (star T * p S) * (1 - p S))‖
+        ≤ omegaNorm (Ba ℬ X) ω (star T * p S)
+          * omegaNorm (Ba ℬ X) ω (1 - p S) :=
+      norm_apply_star_mul_le ω _ _
+    have hB' : ‖ω (star (star T * p S) * (1 - p S))‖
+        ≤ (‖T‖ * (M * omegaNorm (Ba ℬ X) ω 1))
+          * omegaNorm (Ba ℬ X) ω (1 - p S) :=
+      hB.trans (mul_le_mul_of_nonneg_right h2 (omegaNorm_nonneg _ _))
+    calc ‖ω (T - p S * T * p S)‖
+        = ‖ω (star (1 - p S) * T + star (star T * p S) * (1 - p S))‖ := by
+          rw [hsplit S]
+      _ ≤ ‖ω (star (1 - p S) * T)‖ + ‖ω (star (star T * p S) * (1 - p S))‖ := by
+          rw [npFunctional_add]; exact norm_add_le _ _
+      _ ≤ omegaNorm (Ba ℬ X) ω (1 - p S) * omegaNorm (Ba ℬ X) ω T
+            + (‖T‖ * (M * omegaNorm (Ba ℬ X) ω 1))
+              * omegaNorm (Ba ℬ X) ω (1 - p S) := add_le_add hA hB'
+      _ = C * omegaNorm (Ba ℬ X) ω (1 - p S) := by rw [hC]; ring
+  have hz : Tendsto
+      (fun S : Finset ι => ‖ω (T - p S * T * p S)‖) atTop (𝓝 0) := by
+    refine squeeze_zero (fun S => norm_nonneg _) hbound ?_
+    simpa using (onbProj_omegaNorm_tendsto he ω).const_mul C
+  rw [tendsto_iff_norm_sub_tendsto_zero]
+  refine hz.congr fun S => ?_
+  have hEq : (ω (T - p S * T * p S) : ℂ)
+      = -((ω (p S * T * p S) : ℂ) - ω T) := by
+    rw [npFunctional_sub]; ring
+  rw [hEq, norm_neg]
+
 end KetbraProj
 
 -- `hX` is deliberately unused: **159IV** carries the thesis's self-duality
@@ -466,7 +555,10 @@ span of the operators `|eᵢb⟩⟨eⱼ|` is ultraweakly dense in `ℬᵃ(X)`: e
 `T` is the ultraweak limit of a net (canonically `p_S T p_S`, indexed by
 finite subsets of the basis) from the span.
 
-**159V**–**159VIII** are the proof — not converted. -/
+**159V**–**159VIII** are the proof, converted above: `onbProj_isLUB`,
+`onbProj_isStarProjection` and `onbProj_uwTendsto_one` (159V–159VI),
+`onbProj_compress` (159VII) for membership in the span, and
+`onbProj_compress_uwTendsto` (159VIII) for the ultraweak limit. -/
 theorem ketbra_ultraweakly_dense [VonNeumannAlgebra ℬ]
     (hX : SelfDual ℬ X) {ι : Type v} (e : ι → X) (he : IsONBasis ℬ e)
     (T : Ba ℬ X) :
@@ -480,65 +572,7 @@ theorem ketbra_ultraweakly_dense [VonNeumannAlgebra ℬ]
     rw [onbProj_compress he T S]
     refine Submodule.sum_mem _ fun i _ => Submodule.sum_mem _ fun j _ => ?_
     exact Submodule.subset_span ⟨i, j, inner ℬ (e i) (T.1 (e j)), rfl⟩
-  · rw [uwTendsto_iff]
-    intro ω
-    set p : Finset ι → Ba ℬ X := fun S => onbProj (ℬ := ℬ) e S with hp
-    -- `T − p T p = (1−p)*T + (pT)*(1−p)`, with `1−p` and `p` self-adjoint
-    have hsa : ∀ S, star (p S) = p S := fun S =>
-      (IsSelfAdjoint.of_nonneg (onbProj_nonneg e S)).star_eq
-    have hsplit : ∀ S, T - p S * T * p S
-        = star (1 - p S) * T + star (star T * p S) * (1 - p S) := by
-      intro S
-      rw [star_sub, star_one, hsa, star_mul, star_star, hsa]
-      noncomm_ring
-    -- the two Cauchy–Schwarz estimates
-    set M : ℝ := ‖(1 : Ba ℬ X)‖ with hM
-    have hpnorm : ∀ S, ‖p S‖ ≤ M :=
-      fun S => CStarAlgebra.norm_le_norm_of_nonneg_of_le
-        (onbProj_nonneg e S) (onbProj_le_one he.1 S)
-    set C : ℝ := omegaNorm (Ba ℬ X) ω T + ‖T‖ * (M * omegaNorm (Ba ℬ X) ω 1) with hC
-    have hbound : ∀ S, ‖ω (T - p S * T * p S)‖
-        ≤ C * omegaNorm (Ba ℬ X) ω (1 - p S) := by
-      intro S
-      have h2 : omegaNorm (Ba ℬ X) ω (star T * p S)
-          ≤ ‖T‖ * (M * omegaNorm (Ba ℬ X) ω 1) := by
-        refine le_trans (omegaNorm_mul_le ω (star T) (p S)) ?_
-        rw [norm_star]
-        refine mul_le_mul_of_nonneg_left ?_ (norm_nonneg T)
-        have h3 := omegaNorm_mul_le ω (p S) 1
-        rw [mul_one] at h3
-        refine le_trans h3 ?_
-        exact mul_le_mul_of_nonneg_right (hpnorm S) (omegaNorm_nonneg _ _)
-      have hA : ‖ω (star (1 - p S) * T)‖
-          ≤ omegaNorm (Ba ℬ X) ω (1 - p S) * omegaNorm (Ba ℬ X) ω T :=
-        norm_apply_star_mul_le ω _ _
-      have hB : ‖ω (star (star T * p S) * (1 - p S))‖
-          ≤ omegaNorm (Ba ℬ X) ω (star T * p S)
-            * omegaNorm (Ba ℬ X) ω (1 - p S) :=
-        norm_apply_star_mul_le ω _ _
-      have hB' : ‖ω (star (star T * p S) * (1 - p S))‖
-          ≤ (‖T‖ * (M * omegaNorm (Ba ℬ X) ω 1))
-            * omegaNorm (Ba ℬ X) ω (1 - p S) :=
-        hB.trans (mul_le_mul_of_nonneg_right h2 (omegaNorm_nonneg _ _))
-      calc ‖ω (T - p S * T * p S)‖
-          = ‖ω (star (1 - p S) * T + star (star T * p S) * (1 - p S))‖ := by
-            rw [hsplit S]
-        _ ≤ ‖ω (star (1 - p S) * T)‖ + ‖ω (star (star T * p S) * (1 - p S))‖ := by
-            rw [npFunctional_add]; exact norm_add_le _ _
-        _ ≤ omegaNorm (Ba ℬ X) ω (1 - p S) * omegaNorm (Ba ℬ X) ω T
-              + (‖T‖ * (M * omegaNorm (Ba ℬ X) ω 1))
-                * omegaNorm (Ba ℬ X) ω (1 - p S) := add_le_add hA hB'
-        _ = C * omegaNorm (Ba ℬ X) ω (1 - p S) := by rw [hC]; ring
-    have hz : Tendsto
-        (fun S : Finset ι => ‖ω (T - p S * T * p S)‖) atTop (𝓝 0) := by
-      refine squeeze_zero (fun S => norm_nonneg _) hbound ?_
-      simpa using (onbProj_omegaNorm_tendsto he ω).const_mul C
-    rw [tendsto_iff_norm_sub_tendsto_zero]
-    refine hz.congr fun S => ?_
-    have hEq : (ω (T - p S * T * p S) : ℂ)
-        = -((ω (p S * T * p S) : ℂ) - ω T) := by
-      rw [npFunctional_sub]; ring
-    rw [hEq, norm_neg]
+  · exact onbProj_compress_uwTendsto he T
 
 /-- **159IX** (`ketbra-ultranorm-continuous`, dils.tex:4378, Proposition):
 for a self-dual Hilbert ℬ-module `X`: if a norm-bounded net `x_α → x`
