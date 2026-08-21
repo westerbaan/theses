@@ -539,21 +539,60 @@ theorem operators_cstar_identity_2 (T : H →L[ℂ] H) (S : H → H)
 /-- **4XVIII** (cstar.tex:666, Exercise): for a Hilbert space `H` the
 adjointable operators form a closed *linear subspace* of `B(H)`.  The
 subspace clause is the closure of adjointability under `0`, sums and
-scalars, i.e. **4XII**; closedness is proved here by showing (with **5XI**)
-that every bounded operator on a Hilbert space is adjointable. -/
+scalars, i.e. **4XII**.
+
+Closedness is proved as solution `parsec-40.180` does, with the material of
+parsec 40 alone: if `Tₙ → T` with each `Tₙ` adjointable, then the adjoints
+`Tₙ*` are Cauchy because `‖Tₙ* - Tₘ*‖ = ‖(Tₙ - Tₘ)*‖ = ‖Tₙ - Tₘ‖`
+(**4XVI**.2), so they converge to some `S` by completeness of `B(H)`
+(**4V**), and `⟪T x, y⟫ = lim ⟪Tₙ x, y⟫ = lim ⟪x, Tₙ* y⟫ = ⟪x, S y⟫` by
+continuity of the inner product.  (Earlier this was proved by observing,
+with **5XI**, that *every* bounded operator on a Hilbert space is
+adjointable — a result of the next parsec, which 4XVIII precedes.) -/
 theorem adjointable_isClosed [CompleteSpace H] :
     IsClosed {T : H →L[ℂ] H | Adjointable (⇑T)} ∧
       ∃ M : Submodule ℂ (H →L[ℂ] H),
         (M : Set (H →L[ℂ] H)) = {T : H →L[ℂ] H | Adjointable (⇑T)} :=
   by
     constructor
-    · have h : {T : H →L[ℂ] H | Adjointable (⇑T)} = Set.univ := by
-        ext T
-        simp only [Set.mem_setOf_eq, Set.mem_univ, iff_true, Adjointable]
-        exact ⟨⇑(ContinuousLinearMap.adjoint T), fun x y =>
-          (ContinuousLinearMap.adjoint_inner_right T x y).symm⟩
-      rw [h]
-      exact isClosed_univ
+    · refine IsSeqClosed.isClosed fun Tn T hmem hconv => ?_
+      choose S hS using hmem
+      -- the adjoints, as bounded operators (**4XVI**)
+      set A : ℕ → (H →L[ℂ] H) := fun n => adjointCLM (Tn n) (S n) (hS n) with hA
+      have hadj : ∀ n, IsAdjointTo (⇑(Tn n)) (⇑(A n)) := by
+        intro n
+        rw [hA, coe_adjointCLM]
+        exact hS n
+      have hsub : ∀ n m, IsAdjointTo (⇑(Tn n - Tn m)) (⇑(A n - A m)) := by
+        intro n m x y
+        simp only [ContinuousLinearMap.sub_apply, inner_sub_left, inner_sub_right,
+          hadj n x y, hadj m x y]
+      -- `‖Tₙ* - Tₘ*‖ = ‖Tₙ - Tₘ‖`, so the adjoints are Cauchy
+      have hnorm : ∀ n m, ‖A n - A m‖ = ‖Tn n - Tn m‖ := fun n m =>
+        le_antisymm (norm_le_of_isAdjointTo _ _ (isAdjointTo_symm _ _ (hsub n m)))
+          (norm_le_of_isAdjointTo _ _ (hsub n m))
+      have hcauchyT : CauchySeq Tn := hconv.cauchySeq
+      have hcauchyA : CauchySeq A := by
+        rw [Metric.cauchySeq_iff] at hcauchyT ⊢
+        intro ε hε
+        obtain ⟨N, hN⟩ := hcauchyT ε hε
+        refine ⟨N, fun m hm n hn => ?_⟩
+        rw [dist_eq_norm, hnorm, ← dist_eq_norm]
+        exact hN m hm n hn
+      -- `B(H)` is complete (**4V**), so they converge; the limit is adjoint to `T`
+      obtain ⟨S', hS'⟩ := cauchySeq_tendsto_of_complete hcauchyA
+      have heval : ∀ (Un : ℕ → (H →L[ℂ] H)) (U : H →L[ℂ] H),
+          Filter.Tendsto Un Filter.atTop (nhds U) → ∀ z : H,
+            Filter.Tendsto (fun n => Un n z) Filter.atTop (nhds (U z)) := by
+        intro Un U hU z
+        exact (((ContinuousLinearMap.apply ℂ H z).continuous).tendsto U).comp hU
+      refine ⟨⇑S', fun x y => ?_⟩
+      have h1 : Filter.Tendsto (fun n => (⟪(Tn n) x, y⟫ : ℂ)) Filter.atTop (nhds ⟪T x, y⟫) :=
+        (heval Tn T hconv x).inner tendsto_const_nhds
+      have h2 : Filter.Tendsto (fun n => (⟪x, (A n) y⟫ : ℂ)) Filter.atTop (nhds ⟪x, S' y⟫) :=
+        tendsto_const_nhds.inner (heval A S' hS' y)
+      refine tendsto_nhds_unique h1 ?_
+      simpa only [hadj _ x y] using h2
     · refine ⟨{ carrier := {T : H →L[ℂ] H | Adjointable (⇑T)}
                 add_mem' := ?_
                 zero_mem' := ?_
@@ -779,13 +818,26 @@ theorem riesz_representation_theorem [CompleteSpace H] (f : H →L[ℂ] ℂ) :
       rw [hx z, InnerProductSpace.toDual_symm_apply]
 
 /-- **5XI** (`bounded-operator-adjoinable`, cstar.tex:842, Exercise): every
-bounded operator on a Hilbert space is adjointable.  (Mathlib:
-`ContinuousLinearMap.adjoint`.) -/
+bounded operator on a Hilbert space is adjointable.
+
+The exercise's own construction: for each `y` the functional `z ↦ ⟪y, T z⟫`
+is bounded, so by Riesz (**5IX**) there is a unique `S y` with
+`⟪S y, z⟫ = ⟪y, T z⟫`; conjugating gives `⟪T x, y⟫ = ⟪x, S y⟫`, and `S` is a
+*bounded* operator by **4XVI**. -/
 theorem bounded_operator_adjoinable [CompleteSpace H] (T : H →L[ℂ] H) :
     ∃ S : H →L[ℂ] H, IsAdjointTo (⇑T) (⇑S) :=
   by
-    exact ⟨ContinuousLinearMap.adjoint T, fun x y =>
-      (ContinuousLinearMap.adjoint_inner_right T x y).symm⟩
+    have hR : ∀ y : H, ∃ w : H, ∀ z : H, (⟪w, z⟫ : ℂ) = ⟪y, T z⟫ := by
+      intro y
+      obtain ⟨w, hw, -⟩ := riesz_representation_theorem ((innerSL ℂ y).comp T)
+      exact ⟨w, fun z => by simpa using hw z⟩
+    choose S hS using hR
+    have hadj : IsAdjointTo (⇑T) S := by
+      intro x y
+      calc (⟪T x, y⟫ : ℂ) = (starRingEnd ℂ) ⟪y, T x⟫ := (inner_conj_symm _ _).symm
+        _ = (starRingEnd ℂ) ⟪S y, x⟫ := by rw [hS y x]
+        _ = ⟪x, S y⟫ := inner_conj_symm _ _
+    exact ⟨adjointCLM T S hadj, by rw [coe_adjointCLM]; exact hadj⟩
 
 /-! **5XII** (cstar.tex:854): thus the bounded operators on a Hilbert space
 form a C*-algebra `B(H)` — Mathlib's `CStarAlgebra (H →L[ℂ] H)` instance. -/
@@ -957,16 +1009,42 @@ theorem cstar_involution_basic_10 (b c : 𝒜) (hb : IsSelfAdjoint b)
     exact eq_comm
 
 /-- **7III** (`cstar-involution-basic`, cstar.tex:1007, Exercise), part 11:
-`‖a*‖ = ‖a‖`.  (Mathlib: `norm_star`.) -/
+`‖a*‖ = ‖a‖`, by the exercise's own hint: `‖a‖² = ‖a* a‖ ≤ ‖a*‖ ‖a‖` gives
+`‖a‖ ≤ ‖a*‖`, and applying that to `a*` gives the other inequality. -/
 theorem cstar_involution_basic_11 (a : 𝒜) : ‖star a‖ = ‖a‖ :=
-  norm_star a
+  by
+    have key : ∀ b : 𝒜, ‖b‖ ≤ ‖star b‖ := by
+      intro b
+      rcases eq_or_lt_of_le (norm_nonneg b) with h0 | h0
+      · rw [← h0]
+        exact norm_nonneg _
+      · have h1 : ‖star b * b‖ = ‖b‖ * ‖b‖ := CStarRing.norm_star_mul_self
+        have h2 : ‖star b * b‖ ≤ ‖star b‖ * ‖b‖ := norm_mul_le _ _
+        rw [h1] at h2
+        exact le_of_mul_le_mul_right (by linarith) h0
+    have h := key (star a)
+    rw [star_star] at h
+    exact le_antisymm h (key a)
 
 /-- **7III** (`cstar-involution-basic`, cstar.tex:1007, Exercise), part 12:
 `‖ℜa‖ ≤ ‖a‖` and `‖ℑa‖ ≤ ‖a‖`. -/
 theorem cstar_involution_basic_12 (a : 𝒜) :
     ‖(ℜ a : 𝒜)‖ ≤ ‖a‖ ∧ ‖(ℑ a : 𝒜)‖ ≤ ‖a‖ :=
   by
-    exact ⟨by simpa using realPart.norm_le a, by simpa using imaginaryPart.norm_le a⟩
+    -- the solution's estimate: `‖½(a ± a*)‖ ≤ ½(‖a‖ + ‖a*‖) = ‖a‖`, by part 11
+    have hstar : ‖star a‖ = ‖a‖ := cstar_involution_basic_11 a
+    constructor
+    · rw [realPart_apply_coe, norm_smul, Real.norm_eq_abs]
+      have := norm_add_le a (star a)
+      rw [hstar] at this
+      rw [abs_of_nonneg (by norm_num : (0:ℝ) ≤ (2:ℝ)⁻¹)]
+      linarith
+    · rw [imaginaryPart_apply_coe, norm_smul, norm_smul, Real.norm_eq_abs, norm_neg,
+        Complex.norm_I, one_mul]
+      have := norm_sub_le a (star a)
+      rw [hstar] at this
+      rw [abs_of_nonneg (by norm_num : (0:ℝ) ≤ (2:ℝ)⁻¹)]
+      linarith
 
 /-- **7III** (`cstar-involution-basic`, cstar.tex:1007, Exercise), part 13:
 `‖a²‖ = ‖a‖²` for self-adjoint `a`. -/
@@ -1237,10 +1315,27 @@ theorem cstar_positive_def (a : 𝒜) (ha : IsSelfAdjoint a) :
 space is positive iff `⟪x, Tx⟫ ≥ 0` for all `x` — stated at **25V**. -/
 
 /-- **9VII** (`cstar-positive-sum`, cstar.tex:1185, Lemma): the sum of two
-positive elements of a C*-algebra is positive. -/
+positive elements of a C*-algebra is positive.
+
+The proof is the thesis's own estimate, read through the bridge **9IV**:
+if `‖a - t‖ ≤ t` and `‖b - s‖ ≤ s` then
+`‖(a+b) - (t+s)‖ ≤ ‖a - t‖ + ‖b - s‖ ≤ t + s`. -/
 theorem cstar_positive_sum (a b : 𝒜) (ha : 0 ≤ a) (hb : 0 ≤ b) :
     0 ≤ a + b :=
-  add_nonneg ha hb
+  by
+    have hasa : IsSelfAdjoint a := .of_nonneg ha
+    have hbsa : IsSelfAdjoint b := .of_nonneg hb
+    obtain ⟨t, ht⟩ := (cstar_positive_def a hasa).mp ha
+    obtain ⟨s, hs⟩ := (cstar_positive_def b hbsa).mp hb
+    refine (cstar_positive_def (a + b) (hasa.add hbsa)).mpr ⟨t + s, ?_⟩
+    have he : a + b - algebraMap ℂ 𝒜 ((t + s : ℝ) : ℂ)
+        = (a - algebraMap ℂ 𝒜 (t : ℂ)) + (b - algebraMap ℂ 𝒜 (s : ℂ)) := by
+      rw [show ((t + s : ℝ) : ℂ) = ((t : ℝ) : ℂ) + ((s : ℝ) : ℂ) by push_cast; ring, map_add]
+      abel
+    rw [he]
+    calc ‖(a - algebraMap ℂ 𝒜 (t : ℂ)) + (b - algebraMap ℂ 𝒜 (s : ℂ))‖
+        ≤ ‖a - algebraMap ℂ 𝒜 (t : ℂ)‖ + ‖b - algebraMap ℂ 𝒜 (s : ℂ)‖ := norm_add_le _ _
+      _ ≤ t + s := add_le_add ht hs
 
 /-- **9IX** (cstar.tex:1197, Exercise): if `a` is an *effect*
 (`0 ≤ a ≤ 1`), then so is its *orthosupplement* `a^⊥ := 1 - a`. -/
@@ -1339,6 +1434,98 @@ elements. -/
 noncomputable def orderNorm (a : 𝒜) : ℝ :=
   sInf {r : ℝ | 0 ≤ r ∧ -(algebraMap ℂ 𝒜 (r : ℂ)) ≤ a ∧ a ≤ algebraMap ℂ 𝒜 (r : ℂ)}
 
+/-- Auxiliary: the set `{λ ∈ [0,∞) : -λ ≤ a ≤ λ}` of which `‖a‖ₒ` is the
+infimum.  The clauses of **9X**.4 are proved below directly from the order,
+as solution `parsec-90.100`(4) does — *not* by rewriting `‖·‖ₒ` into `‖·‖`
+along **9X**.5d, which is the fact the thesis defers to parsec 170. -/
+private def orderNormSet (a : 𝒜) : Set ℝ :=
+  {r : ℝ | 0 ≤ r ∧ -(algebraMap ℂ 𝒜 (r : ℂ)) ≤ a ∧ a ≤ algebraMap ℂ 𝒜 (r : ℂ)}
+
+private theorem orderNorm_eq_sInf (a : 𝒜) : orderNorm a = sInf (orderNormSet a) := rfl
+
+private theorem orderNormSet_bddBelow (a : 𝒜) : BddBelow (orderNormSet a) :=
+  ⟨0, fun _ hr => hr.1⟩
+
+/-- Auxiliary: `‖a‖` itself is one of the bounds, by **9X**.2 — so the set is
+nonempty and `‖a‖ₒ ≤ ‖a‖`. -/
+private theorem norm_mem_orderNormSet {a : 𝒜} (ha : IsSelfAdjoint a) :
+    ‖a‖ ∈ orderNormSet a :=
+  ⟨norm_nonneg a, (cstar_positive_2 a ha).2.1, (cstar_positive_2 a ha).2.2⟩
+
+private theorem orderNormSet_nonempty {a : 𝒜} (ha : IsSelfAdjoint a) :
+    (orderNormSet a).Nonempty :=
+  ⟨‖a‖, norm_mem_orderNormSet ha⟩
+
+private theorem orderNorm_le_of_mem {a : 𝒜} {r : ℝ} (hr : r ∈ orderNormSet a) :
+    orderNorm a ≤ r :=
+  csInf_le (orderNormSet_bddBelow a) hr
+
+private theorem orderNorm_nonneg {a : 𝒜} (ha : IsSelfAdjoint a) : 0 ≤ orderNorm a :=
+  le_csInf (orderNormSet_nonempty ha) fun _ hr => hr.1
+
+/-- Auxiliary: a bound `λ ∈ [0,∞)` for `a` that is within `ε` of `‖a‖ₒ`. -/
+private theorem exists_mem_orderNormSet_lt {a : 𝒜} (ha : IsSelfAdjoint a) {ε : ℝ}
+    (hε : 0 < ε) : ∃ r ∈ orderNormSet a, r < orderNorm a + ε := by
+  refine exists_lt_of_csInf_lt (orderNormSet_nonempty ha) ?_
+  rw [← orderNorm_eq_sInf]
+  linarith
+
+private theorem smul_algebraMap_ofReal (r t : ℝ) :
+    (r : ℂ) • algebraMap ℂ 𝒜 (t : ℂ) = algebraMap ℂ 𝒜 ((r * t : ℝ) : ℂ) := by
+  rw [Algebra.algebraMap_eq_smul_one, Algebra.algebraMap_eq_smul_one, smul_smul,
+    Complex.ofReal_mul]
+
+/-- Auxiliary (**9X**.1): multiplication by a nonnegative real is monotone. -/
+private theorem smul_le_smul_ofReal {a b : 𝒜} (h : a ≤ b) {r : ℝ} (hr : 0 ≤ r) :
+    (r : ℂ) • a ≤ (r : ℂ) • b := by
+  have h1 := ofReal_smul_nonneg (sub_nonneg.mpr h) hr
+  rwa [smul_sub, sub_nonneg] at h1
+
+/-- Auxiliary: `‖r a‖ₒ = r ‖a‖ₒ` for `r > 0`, by the two inequalities of
+solution `parsec-90.100`(4): scaling a bound for `a` by `r` bounds `r a`,
+and conversely by scaling with `r⁻¹`. -/
+private theorem orderNorm_smul_pos {a : 𝒜} (ha : IsSelfAdjoint a) {r : ℝ} (hr : 0 < r) :
+    orderNorm ((r : ℂ) • a) = r * orderNorm a := by
+  have hsmul : ∀ (b : 𝒜) (s : ℝ), 0 < s → IsSelfAdjoint b →
+      orderNorm ((s : ℂ) • b) ≤ s * orderNorm b := by
+    intro b s hs hb
+    refine le_of_forall_pos_le_add fun ε hε => ?_
+    obtain ⟨l, hl, hlt⟩ := exists_mem_orderNormSet_lt hb (div_pos hε hs)
+    have hmem : s * l ∈ orderNormSet ((s : ℂ) • b) := by
+      refine ⟨mul_nonneg hs.le hl.1, ?_, ?_⟩
+      · have h1 := smul_le_smul_ofReal hl.2.1 hs.le
+        rwa [smul_neg, smul_algebraMap_ofReal] at h1
+      · have h2 := smul_le_smul_ofReal hl.2.2 hs.le
+        rwa [smul_algebraMap_ofReal] at h2
+    have hle := orderNorm_le_of_mem hmem
+    have : s * l < s * (orderNorm b + ε / s) := mul_lt_mul_of_pos_left hlt hs
+    rw [mul_add, mul_div_cancel₀ _ (ne_of_gt hs)] at this
+    linarith
+  have hrsa : IsSelfAdjoint ((r : ℂ) • a) := by
+    refine IsSelfAdjoint.smul ?_ ha
+    rw [isSelfAdjoint_iff, Complex.star_def, Complex.conj_ofReal]
+  refine le_antisymm (hsmul a r hr ha) ?_
+  have hback := hsmul ((r : ℂ) • a) r⁻¹ (inv_pos.mpr hr) hrsa
+  rw [smul_smul, ← Complex.ofReal_mul, inv_mul_cancel₀ (ne_of_gt hr), Complex.ofReal_one,
+    one_smul] at hback
+  have hfin := mul_le_mul_of_nonneg_left hback hr.le
+  rwa [← mul_assoc, mul_inv_cancel₀ (ne_of_gt hr), one_mul] at hfin
+
+private theorem orderNorm_neg (a : 𝒜) : orderNorm (-a) = orderNorm a := by
+  have hset : orderNormSet (-a) = orderNormSet a := by
+    ext r
+    constructor
+    · rintro ⟨hr, h1, h2⟩
+      exact ⟨hr, neg_le.mp h2, neg_le_neg_iff.mp h1⟩
+    · rintro ⟨hr, h1, h2⟩
+      exact ⟨hr, neg_le_neg h2, neg_le.mpr h1⟩
+  rw [orderNorm_eq_sInf, orderNorm_eq_sInf, hset]
+
+private theorem orderNorm_zero : orderNorm (0 : 𝒜) = 0 := by
+  have hmem : (0 : ℝ) ∈ orderNormSet (0 : 𝒜) := by
+    refine ⟨le_rfl, ?_, ?_⟩ <;> simp
+  exact le_antisymm (orderNorm_le_of_mem hmem) (orderNorm_nonneg (IsSelfAdjoint.zero 𝒜))
+
 /-- Auxiliary (**9X**.5d): the order seminorm of a self-adjoint element is
 its norm. -/
 theorem orderNorm_eq_norm {a : 𝒜} (ha : IsSelfAdjoint a) : orderNorm a = ‖a‖ := by
@@ -1360,28 +1547,52 @@ theorem orderNorm_seminorm (a b : 𝒜) (ha : IsSelfAdjoint a)
     orderNorm (a + b) ≤ orderNorm a + orderNorm b ∧
       orderNorm ((r : ℂ) • a) = |r| * orderNorm a :=
   by
-    have hrsa : IsSelfAdjoint ((r : ℂ) • a) := by
-      refine IsSelfAdjoint.smul ?_ ha
-      rw [isSelfAdjoint_iff, Complex.star_def, Complex.conj_ofReal]
-    rw [orderNorm_eq_norm (ha.add hb), orderNorm_eq_norm ha, orderNorm_eq_norm hb,
-      orderNorm_eq_norm hrsa]
-    exact ⟨norm_add_le a b, by rw [norm_smul, Complex.norm_real, Real.norm_eq_abs]⟩
+    constructor
+    · -- subadditivity: `-λ ≤ a ≤ λ` and `-μ ≤ b ≤ μ` give `-(λ+μ) ≤ a+b ≤ λ+μ`,
+      -- and one takes the infimum over such `λ` and `μ`
+      refine le_of_forall_pos_le_add fun ε hε => ?_
+      obtain ⟨l, hl, hlt⟩ := exists_mem_orderNormSet_lt ha (half_pos hε)
+      obtain ⟨m, hm, hmt⟩ := exists_mem_orderNormSet_lt hb (half_pos hε)
+      have hsum : ((l + m : ℝ) : ℂ) = ((l : ℝ) : ℂ) + ((m : ℝ) : ℂ) := by push_cast; ring
+      have hmem : l + m ∈ orderNormSet (a + b) := by
+        refine ⟨by linarith [hl.1, hm.1], ?_, ?_⟩
+        · rw [hsum, map_add, neg_add]
+          exact add_le_add hl.2.1 hm.2.1
+        · rw [hsum, map_add]
+          exact add_le_add hl.2.2 hm.2.2
+      have hle := orderNorm_le_of_mem hmem
+      linarith
+    · -- absolute homogeneity, by cases on the sign of `r`
+      rcases lt_trichotomy r 0 with hr | hr | hr
+      · have hneg : ((r : ℝ) : ℂ) • a = -((((-r : ℝ)) : ℂ) • a) := by
+          rw [← neg_smul, ← Complex.ofReal_neg, neg_neg]
+        rw [hneg, orderNorm_neg, orderNorm_smul_pos ha (neg_pos.mpr hr),
+          abs_of_neg hr]
+      · rw [hr]
+        simp [orderNorm_zero]
+      · rw [orderNorm_smul_pos ha hr, abs_of_pos hr]
 
 /-- **9X** (`cstar-positive`, cstar.tex:1209, Exercise), part 4b:
 `‖a‖ₒ ≤ ‖a‖` for self-adjoint `a`. -/
 theorem orderNorm_le_norm (a : 𝒜) (ha : IsSelfAdjoint a) :
     orderNorm a ≤ ‖a‖ :=
-  (orderNorm_eq_norm ha).le
+  -- as in the solution: `‖a‖` is itself one of the bounds, by **9X**.2
+  orderNorm_le_of_mem (norm_mem_orderNormSet ha)
 
 /-- **9X** (`cstar-positive`, cstar.tex:1209, Exercise), part 4c:
 `0 ≤ a ≤ b` implies `‖a‖ₒ ≤ ‖b‖ₒ`. -/
 theorem orderNorm_mono (a b : 𝒜) (ha : 0 ≤ a) (hab : a ≤ b) :
     orderNorm a ≤ orderNorm b :=
   by
-    have ha' : IsSelfAdjoint a := .of_nonneg ha
+    -- directly from the order: every bound for `b` is a bound for `a`, since
+    -- `-λ ≤ 0 ≤ a ≤ b ≤ λ`
     have hb' : IsSelfAdjoint b := .of_nonneg (ha.trans hab)
-    rw [orderNorm_eq_norm ha', orderNorm_eq_norm hb']
-    exact CStarAlgebra.norm_le_norm_of_nonneg_of_le ha hab
+    rw [orderNorm_eq_sInf b]
+    refine le_csInf (orderNormSet_nonempty hb') fun r hr => ?_
+    refine orderNorm_le_of_mem ⟨hr.1, ?_, hab.trans hr.2.2⟩
+    refine le_trans ?_ ha
+    rw [neg_nonpos]
+    exact algebraMap_ofReal_nonneg hr.1
 
 /-- **9X** (`cstar-positive`, cstar.tex:1209, Exercise), part 5a: `a²` is
 positive for self-adjoint `a` (proved later, at 17V/25I). -/
@@ -1431,7 +1642,17 @@ theorem cstar_positive_5d (a : 𝒜) (ha : IsSelfAdjoint a) :
 when `0 ≤ a ≤ 0` (antisymmetry). -/
 theorem cstar_positive_5e (a : 𝒜) (h0 : 0 ≤ a) (h1 : a ≤ 0) : a = 0 :=
   by
-    exact le_antisymm h1 h0
+    -- not by `le_antisymm` — that would read the claim off the `PartialOrder`
+    -- instance in the binder.  Instead: `-0 ≤ a ≤ 0` gives `‖a‖ ≤ 0` by
+    -- **17VI**.3a, which is where the thesis proves this point (17VI.1).
+    have hsa : IsSelfAdjoint a := .of_nonneg h0
+    have hle : ‖a‖ ≤ 0 := by
+      refine (norm_le_iff_neg_algebraMap_le hsa le_rfl).mpr ⟨?_, ?_⟩
+      · rw [Complex.ofReal_zero, map_zero, neg_zero]
+        exact h0
+      · rw [Complex.ofReal_zero, map_zero]
+        exact h1
+    exact norm_eq_zero.mp (le_antisymm hle (norm_nonneg a))
 
 end Positive
 
@@ -1480,16 +1701,24 @@ def IsCompletelyPositiveMap (f : 𝒜 →ₗ[ℂ] ℬ) : Prop :=
     0 ≤ ∑ i, ∑ j, star (b i) * f (star (a i) * a j) * b j
 
 /-- **10IV** (`cstar-p-implies-i`, cstar.tex:1338, Lemma (p⇒i)): a positive
-linear map between C*-algebras is involution preserving. -/
+linear map between C*-algebras is involution preserving.
+
+The proof is the thesis's own: for self-adjoint `x` both `‖x‖` and `‖x‖ - x`
+are positive by **9X**.2, so `f x = f ‖x‖ - f (‖x‖ - x)` is a difference of
+positive — hence self-adjoint — elements; then `f(ℜa)` and `f(ℑa)` are self
+adjoint, and `f(a*) = f(ℜa) - i f(ℑa) = (f a)*`. -/
 theorem cstar_p_implies_i (f : 𝒜 →ₗ[ℂ] ℬ) (hf : IsPositiveMap f) :
     IsInvolutionPreserving f :=
   by
     have hsa : ∀ x : 𝒜, IsSelfAdjoint x → IsSelfAdjoint (f x) := by
       intro x hx
-      have h1 := CFC.posPart_sub_negPart x hx
-      rw [← h1, map_sub]
-      exact (IsSelfAdjoint.of_nonneg (hf _ (CFC.posPart_nonneg x))).sub
-        (IsSelfAdjoint.of_nonneg (hf _ (CFC.negPart_nonneg x)))
+      have h1 : (0 : 𝒜) ≤ algebraMap ℂ 𝒜 (‖x‖ : ℂ) :=
+        algebraMap_ofReal_nonneg (norm_nonneg x)
+      have h2 : (0 : 𝒜) ≤ algebraMap ℂ 𝒜 (‖x‖ : ℂ) - x :=
+        sub_nonneg.mpr (cstar_positive_2 x hx).2.2
+      have h3 := (IsSelfAdjoint.of_nonneg (hf _ h1)).sub (IsSelfAdjoint.of_nonneg (hf _ h2))
+      rwa [← map_sub,
+        show algebraMap ℂ 𝒜 (‖x‖ : ℂ) - (algebraMap ℂ 𝒜 (‖x‖ : ℂ) - x) = x from by abel] at h3
     intro a
     have ha : a = (ℜ a : 𝒜) + Complex.I • (ℑ a : 𝒜) := (realPart_add_I_smul_imaginaryPart a).symm
     have has : star a = (ℜ a : 𝒜) - Complex.I • (ℑ a : 𝒜) := by
@@ -1529,16 +1758,31 @@ theorem geometric_2 (a : 𝒜) (ha : ‖a‖ < 1) :
     exact ⟨⟨Units.oneSub a ha, rfl⟩, mul_neg_geom_series a ha, geom_series_mul_neg a ha⟩
 
 /-- **11VI** (`spectrum-bounded`, cstar.tex:1450, Exercise), part 1:
-`a - λ` is invertible for every `λ ∈ ℂ` with `‖a‖ < |λ|`. -/
+`a - λ` is invertible for every `λ ∈ ℂ` with `‖a‖ < |λ|`.
+
+The proof is the solution's own: `‖a λ⁻¹‖ = |λ|⁻¹ ‖a‖ < 1`, so `1 - a λ⁻¹`
+is invertible by **11II**.2, and hence so is `λ - a = λ (1 - a λ⁻¹)`. -/
 theorem spectrum_bounded_1 (a : 𝒜) (z : ℂ) (h : ‖a‖ < ‖z‖) :
     IsUnit (a - algebraMap ℂ 𝒜 z) :=
   by
     rcases subsingleton_or_nontrivial 𝒜 with hs | hs
     · exact isUnit_of_subsingleton _
-    · have hz : z ∉ spectrum ℂ a := fun hmem =>
-        absurd (spectrum.norm_le_norm_of_mem hmem) (not_le.mpr h)
-      rw [spectrum.notMem_iff] at hz
-      simpa using hz.neg
+    · have hnormalg : ∀ w : ℂ, ‖algebraMap ℂ 𝒜 w‖ = ‖w‖ := fun w => by
+        rw [Algebra.algebraMap_eq_smul_one, norm_smul, norm_one, mul_one]
+      have hzpos : 0 < ‖z‖ := lt_of_le_of_lt (norm_nonneg a) h
+      have hz0 : z ≠ 0 := norm_pos_iff.mp hzpos
+      have h1 : ‖a * algebraMap ℂ 𝒜 z⁻¹‖ < 1 := by
+        refine lt_of_le_of_lt (norm_mul_le _ _) ?_
+        rw [hnormalg, norm_inv, ← div_eq_mul_inv, div_lt_one hzpos]
+        exact h
+      have hu : IsUnit (1 - a * algebraMap ℂ 𝒜 z⁻¹) := (geometric_2 _ h1).1
+      have hzu : IsUnit (algebraMap ℂ 𝒜 z) := (Ne.isUnit hz0).map (algebraMap ℂ 𝒜)
+      have hfac : algebraMap ℂ 𝒜 z * (1 - a * algebraMap ℂ 𝒜 z⁻¹) = algebraMap ℂ 𝒜 z - a := by
+        rw [mul_sub, mul_one, ← mul_assoc, Algebra.commutes, mul_assoc, ← map_mul,
+          mul_inv_cancel₀ hz0, map_one, mul_one]
+      have hprod := hzu.mul hu
+      rw [hfac] at hprod
+      simpa using hprod.neg
 
 /-- **11VI** (`spectrum-bounded`, cstar.tex:1450, Exercise), part 2:
 `a - b` is invertible when `b` is invertible and `a` is small compared
@@ -1566,10 +1810,28 @@ theorem spectrum_bounded_2 (a : 𝒜) (b : 𝒜ˣ)
     simpa using h3.neg
 
 /-- **11VI** (`spectrum-bounded`, cstar.tex:1450, Exercise), part 3: the
-invertible elements form an open subset of `𝒜`. -/
+invertible elements form an open subset of `𝒜`.
+
+The proof is the solution's own: around an invertible `b` take the radius
+`ε := ‖(-b)⁻¹‖⁻¹`; every `y` with `‖y - b‖ < ε` is invertible by part 2,
+because `y = (y - b) - (-b)`. -/
 theorem spectrum_bounded_3 : IsOpen {b : 𝒜 | IsUnit b} :=
   by
-    exact Units.isOpen
+    rcases subsingleton_or_nontrivial 𝒜 with hs | hs
+    · have h : {b : 𝒜 | IsUnit b} = Set.univ :=
+        Set.eq_univ_of_forall fun b => isUnit_of_subsingleton b
+      rw [h]
+      exact isOpen_univ
+    rw [Metric.isOpen_iff]
+    rintro x hx
+    obtain ⟨u, rfl⟩ := hx
+    have hpos : 0 < ‖(((-u)⁻¹ : 𝒜ˣ) : 𝒜)‖ := Units.norm_pos _
+    refine ⟨‖(((-u)⁻¹ : 𝒜ˣ) : 𝒜)‖⁻¹, inv_pos.mpr hpos, fun y hy => ?_⟩
+    rw [mem_ball_iff_norm] at hy
+    have h := spectrum_bounded_2 (y - (u : 𝒜)) (-u) hy
+    have he : y - (u : 𝒜) - ((-u : 𝒜ˣ) : 𝒜) = y := by
+      rw [Units.val_neg, sub_neg_eq_add, sub_add_cancel]
+    rwa [he] at h
 
 /-- **11VII** (`geometric-convergence`, cstar.tex:1466, Lemma): for
 self-adjoint `a` the series `∑ₙ aⁿ` converges iff `‖a‖ < 1` (and then
@@ -1716,6 +1978,20 @@ theorem spectrum_self_adjoint_real_1 (a : 𝒜) (ha : IsSelfAdjoint a)
     constructor <;> simp
   rwa [heq] at hprod
 
+/-- Auxiliary: every point of the spectrum of a self-adjoint element is real.
+This is the thesis's **11XXI**.1, which the thesis reads off from **11XV**.1,
+and that is how it is obtained here — so that everything in this file that
+uses reality of the spectrum runs on the thesis's own chain
+**11XIII** → **11XV**.1, and not on Mathlib's independent
+`IsSelfAdjoint.mem_spectrum_eq_re` (which goes through `exp` and the
+unitaries). -/
+private theorem mem_spectrum_eq_re_of_isSelfAdjoint {a : 𝒜} (ha : IsSelfAdjoint a)
+    {z : ℂ} (hz : z ∈ spectrum ℂ a) : z = (z.re : ℂ) := by
+  by_contra hcon
+  have him : z.im ≠ 0 := fun h0 => hcon (Complex.ext rfl (by simp [h0]))
+  exact (spectrum.mem_iff.mp hz)
+    (by simpa using (spectrum_self_adjoint_real_1 a ha z him).neg)
+
 /-- **11XV** (`spectrum-self-adjoint-real`, cstar.tex:1569, Exercise),
 part 2: `aⁿ - λ` is invertible for self-adjoint `a`, even `n` (in
 particular `n = 2`) and `λ ∈ ℂ \ [0,∞)`. -/
@@ -1723,25 +1999,53 @@ theorem spectrum_self_adjoint_real_2 (a : 𝒜) (ha : IsSelfAdjoint a)
     (n : ℕ) (hn : Even n) (z : ℂ) (hz : ∀ r : ℝ, 0 ≤ r → z ≠ r) :
     IsUnit (a ^ n - algebraMap ℂ 𝒜 z) :=
   by
-    rcases subsingleton_or_nontrivial 𝒜 with hs | hs
-    · exact isUnit_of_subsingleton _
-    rcases Nat.eq_zero_or_pos n with rfl | hn0
-    · have h1 : (1 : ℂ) ≠ z := by
-        intro hcon
-        exact hz 1 zero_le_one (by rw [← hcon]; norm_num)
-      have he : a ^ 0 - algebraMap ℂ 𝒜 z = algebraMap ℂ 𝒜 (1 - z) := by
-        rw [map_sub, map_one, pow_zero]
-      rw [he]
-      exact (isUnit_iff_ne_zero.mpr (sub_ne_zero.mpr h1)).map (algebraMap ℂ 𝒜)
-    · have hz' : z ∉ spectrum ℂ (a ^ n) := by
-        intro hmem
-        rw [spectrum.map_pow_of_pos a hn0] at hmem
-        obtain ⟨w, hw, rfl⟩ := hmem
-        refine hz (w.re ^ n) (hn.pow_nonneg _) ?_
-        push_cast
-        rw [← ha.mem_spectrum_eq_re hw]
-      rw [spectrum.notMem_iff] at hz'
-      simpa using hz'.neg
+    -- the solution's own argument, for `n = 2m`: for non-real `λ` this is part 1
+    -- applied to the self-adjoint `aⁿ`; and for `λ ∈ (-∞,0)`, writing
+    -- `λ = -s²`, one factors `aⁿ - λ = (aᵐ - si)(aᵐ + si)`, both factors being
+    -- invertible by part 1 because `aᵐ` is self-adjoint.
+    by_cases him : z.im = 0
+    · obtain ⟨m, hm⟩ := hn
+      have hbsa : IsSelfAdjoint (a ^ m) := ha.pow m
+      have hzre : z = (z.re : ℂ) := Complex.ext rfl (by simp [him])
+      have hneg : z.re < 0 := by
+        by_contra hcon
+        push_neg at hcon
+        exact hz z.re hcon hzre
+      set s : ℝ := Real.sqrt (-z.re) with hsdef
+      have hs0 : 0 < s := Real.sqrt_pos.mpr (by linarith)
+      have hsr : s * s = -z.re := by
+        rw [hsdef]
+        exact Real.mul_self_sqrt (by linarith)
+      have hsc : (s : ℂ) * (s : ℂ) = -(z.re : ℂ) := by exact_mod_cast congrArg Complex.ofReal hsr
+      have hsq : ((s : ℂ) * Complex.I) * ((s : ℂ) * Complex.I) = z := by
+        rw [show ((s : ℂ) * Complex.I) * ((s : ℂ) * Complex.I)
+            = ((s : ℂ) * (s : ℂ)) * (Complex.I * Complex.I) by ring, hsc, Complex.I_mul_I,
+          show -(z.re : ℂ) * (-1 : ℂ) = (z.re : ℂ) from by ring]
+        exact hzre.symm
+      have h1 : IsUnit (a ^ m - algebraMap ℂ 𝒜 ((s : ℂ) * Complex.I)) :=
+        spectrum_self_adjoint_real_1 (a ^ m) hbsa _ (by simpa using ne_of_gt hs0)
+      have h2 : IsUnit (a ^ m - algebraMap ℂ 𝒜 (-((s : ℂ) * Complex.I))) :=
+        spectrum_self_adjoint_real_1 (a ^ m) hbsa _ (by simpa using ne_of_lt (neg_neg_iff_pos.mpr hs0))
+      have hcomm : algebraMap ℂ 𝒜 ((s : ℂ) * Complex.I) * a ^ m
+          = a ^ m * algebraMap ℂ 𝒜 ((s : ℂ) * Complex.I) := Algebra.commutes _ _
+      have he : (a ^ m - algebraMap ℂ 𝒜 ((s : ℂ) * Complex.I))
+            * (a ^ m - algebraMap ℂ 𝒜 (-((s : ℂ) * Complex.I)))
+          = a ^ n - algebraMap ℂ 𝒜 z := by
+        rw [map_neg, sub_neg_eq_add, hm, pow_add]
+        calc (a ^ m - algebraMap ℂ 𝒜 ((s : ℂ) * Complex.I))
+              * (a ^ m + algebraMap ℂ 𝒜 ((s : ℂ) * Complex.I))
+            = a ^ m * a ^ m
+              + (a ^ m * algebraMap ℂ 𝒜 ((s : ℂ) * Complex.I)
+                - algebraMap ℂ 𝒜 ((s : ℂ) * Complex.I) * a ^ m)
+              - algebraMap ℂ 𝒜 ((s : ℂ) * Complex.I)
+                  * algebraMap ℂ 𝒜 ((s : ℂ) * Complex.I) := by noncomm_ring
+          _ = a ^ m * a ^ m - algebraMap ℂ 𝒜 z := by
+              rw [hcomm, ← map_mul, hsq]
+              abel
+      rw [← he]
+      exact h1.mul h2
+    · -- `λ ∉ ℝ`: part 1, applied to the self-adjoint element `aⁿ`
+      exact spectrum_self_adjoint_real_1 (a ^ n) (ha.pow n) z him
 
 /-- **11XV** (`spectrum-self-adjoint-real`, cstar.tex:1569, Exercise),
 part 3: for self-adjoint `a` and *odd* `n`: `aⁿ - λ` is invertible for all
@@ -1762,7 +2066,7 @@ theorem spectrum_self_adjoint_real_3 (a : 𝒜) (ha : IsSelfAdjoint a)
     constructor
     · -- `spec aⁿ ⊆ ℝ≥0` forces `spec a ⊆ ℝ≥0`, using that `n` is odd
       intro h z hz hmem
-      have hzr : z = (z.re : ℂ) := ha.mem_spectrum_eq_re hmem
+      have hzr : z = (z.re : ℂ) := mem_spectrum_eq_re_of_isSelfAdjoint ha hmem
       have hpow : z ^ n ∈ spectrum ℂ (a ^ n) := spectrum.pow_mem_pow a n hmem
       by_cases hnn : ∀ r : ℝ, 0 ≤ r → z ^ n ≠ (r : ℂ)
       · exact h _ hnn hpow
@@ -1926,7 +2230,7 @@ theorem spectrum_basic_1 (a : 𝒜) (ha : IsSelfAdjoint a) :
     spectrum ℂ a ⊆ Set.range ((↑) : ℝ → ℂ) :=
   by
     intro z hz
-    exact ⟨z.re, (ha.mem_spectrum_eq_re hz).symm⟩
+    exact ⟨z.re, (mem_spectrum_eq_re_of_isSelfAdjoint ha hz).symm⟩
 
 /-- **11XXI** (`spectrum-basic`, cstar.tex:1648, Exercise), part 1
 (counterexample): the converse fails, e.g. `spec [[0,2],[0,0]] = {0}`
@@ -1969,30 +2273,43 @@ theorem spectrum_basic_1' :
 theorem spectrum_basic_2 (a : 𝒜) (ha : IsSelfAdjoint a) :
     spectrum ℂ (a ^ 2) ⊆ {z : ℂ | ∃ r : ℝ, 0 ≤ r ∧ z = r} :=
   by
+    -- as the thesis has it: this is **11XV**.2 for `n = 2`
     intro z hz
-    rcases subsingleton_or_nontrivial 𝒜 with hs | hs
-    · exact absurd (isUnit_of_subsingleton _) (spectrum.mem_iff.mp hz)
-    · rw [spectrum.map_pow_of_pos a (by norm_num : 0 < 2)] at hz
-      obtain ⟨w, hw, rfl⟩ := hz
-      refine ⟨w.re ^ 2, by positivity, ?_⟩
-      push_cast
-      rw [← ha.mem_spectrum_eq_re hw]
+    simp only [Set.mem_setOf_eq]
+    by_contra hcon
+    push_neg at hcon
+    have hne : ∀ r : ℝ, 0 ≤ r → z ≠ r := fun r hr => hcon r hr
+    exact (spectrum.mem_iff.mp hz)
+      (by simpa using (spectrum_self_adjoint_real_2 a ha 2 even_two z hne).neg)
 
 /-- **11XXI** (`spectrum-basic`, cstar.tex:1648, Exercise), part 3:
 `|λ| ≤ ‖a‖` for every `λ ∈ spec(a)`. -/
 theorem spectrum_basic_3 (a : 𝒜) (z : ℂ) (hz : z ∈ spectrum ℂ a) :
     ‖z‖ ≤ ‖a‖ :=
   by
-    rcases subsingleton_or_nontrivial 𝒜 with hs | hs
-    · exact absurd (isUnit_of_subsingleton _) (spectrum.mem_iff.mp hz)
-    · exact spectrum.norm_le_norm_of_mem hz
+    -- as the thesis has it: this is the contrapositive of **11VI**.1
+    by_contra hcon
+    push_neg at hcon
+    exact (spectrum.mem_iff.mp hz) (by simpa using (spectrum_bounded_1 a z hcon).neg)
 
 /-- **11XXI** (`spectrum-basic`, cstar.tex:1648, Exercise), part 4: the
 spectrum is closed, hence compact. -/
 theorem spectrum_basic_4 (a : 𝒜) :
     IsClosed (spectrum ℂ a) ∧ IsCompact (spectrum ℂ a) :=
   by
-    exact ⟨(spectrum.isCompact a).isClosed, spectrum.isCompact a⟩
+    -- the thesis's own order: closed because the invertibles are open (**11VI**.3),
+    -- and compact because it is closed and bounded (part 3)
+    have hpre : spectrum ℂ a
+        = (fun z : ℂ => algebraMap ℂ 𝒜 z - a) ⁻¹' {b : 𝒜 | IsUnit b}ᶜ := by
+      ext z
+      simp [spectrum.mem_iff]
+    have hclosed : IsClosed (spectrum ℂ a) := by
+      rw [hpre]
+      exact spectrum_bounded_3.isClosed_compl.preimage
+        ((continuous_algebraMap ℂ 𝒜).sub continuous_const)
+    refine ⟨hclosed, Metric.isCompact_of_isClosed_isBounded hclosed ?_⟩
+    refine (Metric.isBounded_closedBall (x := (0 : ℂ)) (r := ‖a‖)).subset fun z hz => ?_
+    simpa using spectrum_basic_3 a z hz
 
 /-- **11XXI** (`spectrum-basic`, cstar.tex:1648, Exercise), part 5:
 `spec(a + z) = { λ + z : λ ∈ spec(a) }` for `z ∈ ℂ`. -/
@@ -2029,13 +2346,41 @@ theorem spectrum_basic_6 (a : 𝒜ˣ) :
 /-- **11XXIII** (`spectral-permanence`, cstar.tex:1694, Theorem (Spectral
 Permanence)): for a closed ∗-subalgebra `𝒮` of a C*-algebra `ℬ` and
 `a ∈ 𝒮`, the spectrum of `a` computed in `𝒮` equals the one computed in
-`ℬ`.  (Mathlib: `StarSubalgebra.spectrum_eq`.) -/
+`ℬ`.
+
+This is, as in the thesis, an immediate consequence of **11XVIII**: if
+`z - a` is invertible in `ℬ` then its inverse already lies in `𝒮`, so it is
+invertible in `𝒮`; the other inclusion is the inclusion `𝒮 ⊆ ℬ`.
+(Mathlib proves the same theorem as `StarSubalgebra.spectrum_eq`, by a
+different route — through connectedness of the complement of the spectrum
+of a self-adjoint element.) -/
 theorem spectral_permanence (𝒮 : StarSubalgebra ℂ ℬ)
     (h𝒮 : IsClosed (𝒮 : Set ℬ)) (a : 𝒮) :
     spectrum ℂ (a : ℬ) = spectrum ℂ a :=
   by
-    haveI := h𝒮
-    exact (StarSubalgebra.spectrum_eq 𝒮 (a := a)).symm
+    have hcoe : ∀ z : ℂ, ((algebraMap ℂ 𝒮 z - a : 𝒮) : ℬ) = algebraMap ℂ ℬ z - (a : ℬ) :=
+      fun z => by push_cast; rfl
+    have key : ∀ z : ℂ,
+        IsUnit (algebraMap ℂ ℬ z - (a : ℬ)) ↔ IsUnit (algebraMap ℂ 𝒮 z - a) := by
+      intro z
+      constructor
+      · intro hu
+        -- **11XVIII**: the inverse of `z - a`, taken in `ℬ`, lies in `𝒮`
+        have hmem : Ring.inverse (algebraMap ℂ ℬ z - (a : ℬ)) ∈ 𝒮 :=
+          improved_inverse_permanence 𝒮 h𝒮 _ (by rw [← hcoe z]; exact SetLike.coe_mem _) hu
+        refine ⟨⟨algebraMap ℂ 𝒮 z - a, ⟨_, hmem⟩, ?_, ?_⟩, rfl⟩
+        · apply Subtype.ext
+          rw [MulMemClass.coe_mul, OneMemClass.coe_one, hcoe z]
+          exact Ring.mul_inverse_cancel _ hu
+        · apply Subtype.ext
+          rw [MulMemClass.coe_mul, OneMemClass.coe_one, hcoe z]
+          exact Ring.inverse_mul_cancel _ hu
+      · intro hu
+        have h : IsUnit ((algebraMap ℂ 𝒮 z - a : 𝒮) : ℬ) := hu.map 𝒮.subtype
+        rwa [hcoe z] at h
+    ext z
+    simp only [spectrum.mem_iff]
+    exact not_congr (key z)
 
 end Invertibles
 
