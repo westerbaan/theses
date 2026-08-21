@@ -1542,9 +1542,10 @@ theorem spectrum_bounded_1 (a : 𝒜) (z : ℂ) (h : ‖a‖ < ‖z‖) :
 
 /-- **11VI** (`spectrum-bounded`, cstar.tex:1450, Exercise), part 2:
 `a - b` is invertible when `b` is invertible and `a` is small compared
-to `b`.  (The thesis states the hypothesis as `‖a‖ < ‖b‖`, which appears to
-be an erratum; the standard — and provable — bound `‖a‖ < ‖b⁻¹‖⁻¹` is used
-here.) -/
+to `b`.  (The first printing stated the hypothesis as `‖a‖ < ‖b‖`; cstar.tex
+now prints the standard — and provable — bound `‖a‖ < ‖b⁻¹‖⁻¹`, incorporated
+2026-08-13, and that is what is used here.  No ERRATA row: the fix is in the
+source.) -/
 theorem spectrum_bounded_2 (a : 𝒜) (b : 𝒜ˣ)
     (h : ‖a‖ < ‖((b⁻¹ : 𝒜ˣ) : 𝒜)‖⁻¹) :
     IsUnit (a - (b : 𝒜)) :=

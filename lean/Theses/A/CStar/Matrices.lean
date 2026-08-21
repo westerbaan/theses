@@ -1218,12 +1218,18 @@ unbundled form in which thesis B's `IsVNTensor` (dils.tex 165II) supplies
 its data: `M_N t` sends a pair of positive matrices to a positive one.
 **No `ℂ`-homogeneity of `t` is used** — only additivity in each slot,
 multiplicativity and involution preservation — which is exactly what
-`IsVNTensor` has.  (See `QUESTIONS.md` B5: the positivity clause it
-proposes to *add* is derivable.)
+`IsVNTensor` has: the positivity clause that an earlier revision proposed
+to *add* to it is derivable, so no ruling is outstanding here.  (That
+revision deferred to `QUESTIONS.md` B5, which was deleted as resolved on
+2026-08-16 — the question no longer exists.  Nor is one needed: von Neumann
+algebras are C*-algebras, mi-bilinear maps are automatically
+`ℂ`-homogeneous, and `IsVNTensor` needs the generality it has.)
 
 Lives here rather than in `A/Proc/Tensor.lean` (where it was first proved)
 because its content is about matrices over C*-algebras and it is needed by
-`B/Dils`, which imports this file but not `A/Proc`; see `QUESTIONS.md` D3. -/
+`B/Dils`, which imports this file but not `A/Proc`.  (The earlier pointer
+to `QUESTIONS.md` D3 dangles for the same reason; D3 was deleted the same
+day.) -/
 theorem matBilin_nonneg_of_mi {𝒜' ℬ' 𝒞 : Type*} [CStarAlgebra 𝒜']
     [PartialOrder 𝒜'] [StarOrderedRing 𝒜'] [CStarAlgebra ℬ'] [PartialOrder ℬ']
     [StarOrderedRing ℬ'] [CStarAlgebra 𝒞] [PartialOrder 𝒞] [StarOrderedRing 𝒞]
@@ -2807,8 +2813,9 @@ the closed unit ball.)
 
 `N > 0` is **erratum 341.70**.  It is needed in Lean for a reason of pure
 notation — `2 / (0 : ℝ) = 0`, so at `N = 0` the hypothesis would degenerate
-to `‖a‖ < 1` and the conclusion to `a = 0` — and the erratum makes the
-thesis's intent ("for some natural number `N`", meaning `N ≥ 1`) explicit. -/
+to `‖a‖ < 1` and the conclusion to `a = 0`.  The erratum made the thesis's
+intent (`N ≥ 1`) explicit, and cstar.tex now prints "for some natural
+number `N > 0`", so the hypothesis here matches the source as it stands. -/
 theorem russo_dye (a : 𝒜) (N : ℕ) (hN0 : 0 < N) (hN : ‖a‖ < 1 - 2 / N) :
     ∃ u : Fin N → 𝒜, (∀ i, u i ∈ unitary 𝒜) ∧
       a = ((N : ℂ))⁻¹ • ∑ i, u i :=

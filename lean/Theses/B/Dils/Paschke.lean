@@ -521,18 +521,17 @@ the mirroring is absorbed entirely into `tprod a b = a ⊗ₜ b` together with
 the `star`s in `inner_tprod`, which is what makes the pairing
 conjugate-linear in its first argument.
 
-The one step the thesis takes for granted and we do not have is normality of
-`ϱ`: dils.tex proves it from **49IV** `mn-vna` (the entrywise `Mₙφ` is
-normal, and `M ↦ ∑ᵢⱼ aᵢ* Mᵢⱼ aⱼ` preserves suprema), and **both** halves of
-49IV that it uses — `mn_vna_2`'s third clause and `mn_vna_3` — are still
-`sorry` in `A/VN/Basic.lean`.  The route here avoids them: the vector form
-`d ↦ ∑ᵢⱼ bᵢ φ(aᵢ d aⱼ*) bⱼ*` is written by *double* polarisation
-(`gram_polarization`, i.e. **44II** through `mult_polarization`, once in the
-`aᵢ` and once in the `bᵢ`) as a ℂ-combination of the np-functionals
-`d ↦ ω(w* φ(v* d v) w)`, and `preservesDirSups_of_np_combination` turns that
-into normality by reading it off the *convergence* of the monotone nets
-rather than off preservation of suprema, which a ℂ-combination does not
-enjoy. -/
+The one step the thesis compresses into two lines is normality of `ϱ`:
+dils.tex gets it from **153IV** `hilbmod-adj-vector-ncp` and **49IV**
+`mn-vna`, by factoring the vector form `d ↦ ∑ᵢⱼ bᵢ φ(aᵢ d aⱼ*) bⱼ*` of `ϱ`
+as
+
+  `𝒜 → Mₙ𝒜 → Mₙℬ → ℬ`,
+
+and that is the route taken here (`pTheta_normal`): all three factors are in
+the tree — `hilbmod_adj_vector_ncp` in `SelfDualCompletion.lean`, `mn_vna_3`
+and the third clause of `mn_vna_2` in `A/VN/Basic.lean` — and `compNP`
+composes them with an np-functional of `ℬ` into one np-functional of `𝒜`. -/
 
 /-- Right slot of the φ-pairing. -/
 noncomputable def ptensR (φ : 𝒜 →ₗ[ℂ] ℬ) (a : 𝒜) (b : ℬ) :
@@ -865,48 +864,6 @@ theorem npFunctional_tendsto_of_isLUB (τ : NPFunctional A)
   rw [hcast _ (npFunctional_im_eq_zero τ s.2)] at h2
   exact h2.congr fun d => hcast _ (npFunctional_im_eq_zero τ (d : selfAdjoint A).2)
 
-/-- A monotone `g : A → ℂ` which is a ℂ-linear combination of np-functionals
-is **normal**.
-
-This is the mechanism behind the normality of `ϱ` in **154III**.2: the
-vector form `d ↦ ∑ᵢⱼ bᵢ φ(aᵢ d aⱼ*) bⱼ*` is not itself a composite of
-np-maps, but polarisation in both `a` and `b` writes it as a ℂ-combination
-of the np-functionals `d ↦ ω(w φ(v d v*) w*)`.  Normality is then read off
-from convergence of the monotone nets rather than from preservation of
-suprema, which a ℂ-combination does not enjoy. -/
-theorem preservesDirSups_of_np_combination {ι : Type*} (t : Finset ι)
-    (g : A → ℂ) (hmono : ∀ {x y : A}, x ≤ y → g x ≤ g y)
-    (c : ι → ℂ) (τ : ι → NPFunctional A)
-    (hcomb : ∀ a : A, g a = ∑ k ∈ t, c k * τ k a) :
-    PreservesDirSups g := by
-  classical
-  intro D s hne hdir hlub
-  have hub : ∀ w ∈ (fun d : selfAdjoint A => g (d : A)) '' D, w ≤ g (s : A) := by
-    rintro _ ⟨d, hd, rfl⟩
-    exact hmono (Subtype.coe_le_coe.mpr (hlub.1 hd))
-  refine ⟨hub, fun z hz => ?_⟩
-  obtain ⟨d₀, hd₀⟩ := hne
-  have : Nonempty D := ⟨⟨d₀, hd₀⟩⟩
-  have : IsDirectedOrder D := directedOn_iff_isDirectedOrder.mp hdir
-  have hg : Tendsto (fun d : D => g ((d : selfAdjoint A) : A)) atTop (𝓝 (g (s : A))) := by
-    simp only [hcomb]
-    exact tendsto_finsetSum _ fun k _ =>
-      Tendsto.const_mul _ (npFunctional_tendsto_of_isLUB (τ k) ⟨d₀, hd₀⟩ hdir hlub)
-  have hzd : ∀ d : D, g ((d : selfAdjoint A) : A) ≤ z :=
-    fun d => hz ⟨(d : selfAdjoint A), d.2, rfl⟩
-  have hre : (g (s : A)).re ≤ z.re := by
-    have h1 : Tendsto (fun d : D => (g ((d : selfAdjoint A) : A)).re) atTop
-        (𝓝 (g (s : A)).re) := by
-      simpa [Function.comp_def] using (Complex.continuous_re.tendsto _).comp hg
-    exact le_of_tendsto h1 (Filter.Eventually.of_forall fun d => (Complex.le_def.mp (hzd d)).1)
-  have him : (g (s : A)).im = z.im := by
-    have h1 : Tendsto (fun d : D => (g ((d : selfAdjoint A) : A)).im) atTop
-        (𝓝 (g (s : A)).im) := by
-      simpa [Function.comp_def] using (Complex.continuous_im.tendsto _).comp hg
-    exact tendsto_nhds_unique h1
-      (tendsto_const_nhds.congr fun d => ((Complex.le_def.mp (hzd d)).2).symm)
-  exact Complex.le_def.mpr ⟨hre, him⟩
-
 end Normality
 
 section Rho
@@ -1061,44 +1018,6 @@ theorem prho_star (a₀ : 𝒜) : prho φ E (star a₀) = star (prho φ E a₀) 
   exact (ptensBInner_prmul φ a₀ v v).symm
 
 end RhoAlgebra
-section Polarization
-
-variable [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
-
-/-- Double polarisation (**44II** twice, through `mult_polarization`): the
-off-diagonal Gram term `b φ(u d u'*) b'*` is a ℂ-combination of the
-*diagonal* terms `w* φ(v* d v) w`.  This is what makes the vector form of
-`ϱ` a combination of np-functionals, and hence normal. -/
-theorem gram_polarization (φ : NCPMap 𝒜 ℬ) (u u' : 𝒜) (b b' : ℬ) (d : 𝒜) :
-    b * φ (u * d * star u') * star b'
-      = ∑ k ∈ Finset.range 4, ∑ l ∈ Finset.range 4,
-          ((16 : ℂ)⁻¹ * (Complex.I ^ k * Complex.I ^ l)) •
-            (star (Complex.I ^ k • star b + star b') *
-              φ (star (Complex.I ^ l • star u + star u') * d
-                  * (Complex.I ^ l • star u + star u')) *
-              (Complex.I ^ k • star b + star b')) := by
-  set ψ : 𝒜 →ₗ[ℂ] ℬ := φ.toCompletelyPositiveMap.toLinearMap with hψdef
-  have hψ : ⇑φ = ⇑ψ := rfl
-  have hA : u * d * star u' = (4 : ℂ)⁻¹ • ∑ l ∈ Finset.range 4, Complex.I ^ l •
-      (star (Complex.I ^ l • star u + star u') * d
-        * (Complex.I ^ l • star u + star u')) := by
-    have h := mult_polarization (star u) (star u') d
-    rwa [star_star] at h
-  have hB : ∀ y : ℬ, b * y * star b'
-      = (4 : ℂ)⁻¹ • ∑ k ∈ Finset.range 4, Complex.I ^ k •
-          (star (Complex.I ^ k • star b + star b') * y
-            * (Complex.I ^ k • star b + star b')) := by
-    intro y
-    have h := mult_polarization (star b) (star b') y
-    rwa [star_star] at h
-  rw [hB, hA, hψ, map_smul, map_sum]
-  simp only [map_smul, smul_mul_assoc, mul_smul_comm, Finset.mul_sum, Finset.sum_mul,
-    Finset.smul_sum, smul_smul, ← hψ]
-  refine Finset.sum_congr rfl fun k _ => Finset.sum_congr rfl fun l _ => ?_
-  congr 1
-  ring
-
-end Polarization
 
 section Theta
 
@@ -1167,57 +1086,77 @@ theorem pTheta_mono (v : 𝒜 ⊗[ℂ] ℬ) {d d' : 𝒜} (h : d ≤ d') :
   rw [hsub]
   exact pTheta_nonneg φ _ (sub_nonneg.mpr h)
 
-end Theta
+/-- **154III**.2, the analytic core: the vector form `d ↦ ⟨v, ϱ(d) v⟩` of
+`ϱ`, paired with an np-functional `ω` of `ℬ`, is normal.
 
-section ThetaNormal
+The thesis's own argument (dils.tex, parsec 1540, point 60).  Writing
+`v = ∑ᵢ aᵢ ⊗ bᵢ`, the vector form factors as a composite of three normal
+positive maps
 
-variable [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ] (φ : NCPMap 𝒜 ℬ)
+  `𝒜  →  Mₙ𝒜  →  Mₙℬ  →  ℬ`,
+  `d  ↦  (aᵢ d aⱼ*)ᵢⱼ  ↦  (φ(aᵢ d aⱼ*))ᵢⱼ  ↦  ∑ᵢⱼ bᵢ φ(aᵢ d aⱼ*) bⱼ*`,
 
-/-- The index set `(i, j, k, l)` of the double polarisation. -/
-def pIdx (n : ℕ) : Finset (Fin n × Fin n × ℕ × ℕ) :=
-  (Finset.univ : Finset (Fin n)) ×ˢ (Finset.univ : Finset (Fin n))
-    ×ˢ Finset.range 4 ×ˢ Finset.range 4
-
-/-- Its coefficients. -/
-noncomputable def pCoef {n : ℕ} (p : Fin n × Fin n × ℕ × ℕ) : ℂ :=
-  (16 : ℂ)⁻¹ * (Complex.I ^ p.2.2.1 * Complex.I ^ p.2.2.2)
-
-/-- The np-functionals of the double polarisation:
-`d ↦ ω(w* φ(v* d v) w)`. -/
-noncomputable def pNP (ω : NPFunctional ℬ) {n : ℕ} (a : Fin n → 𝒜) (b : Fin n → ℬ)
-    (p : Fin n × Fin n × ℕ × ℕ) : NPFunctional 𝒜 :=
-  conjNP (Complex.I ^ p.2.2.2 • star (a p.1) + star (a p.2.1))
-    (compNP (ncpPositive φ) φ.preservesDirSups'
-      (conjNP (Complex.I ^ p.2.2.1 • star (b p.1) + star (b p.2.1)) ω))
-
-theorem pTheta_combination (ω : NPFunctional ℬ) {n : ℕ} (a : Fin n → 𝒜)
-    (b : Fin n → ℬ) (d : 𝒜) :
-    (ω (pTheta φ (∑ i, a i ⊗ₜ[ℂ] b i) d) : ℂ)
-      = ∑ p ∈ pIdx n, pCoef p * pNP φ ω a b p d := by
-  have hsum : ∀ {ι : Type} (s : Finset ι) (f : ι → ℬ),
-      (ω (∑ i ∈ s, f i) : ℂ) = ∑ i ∈ s, ω (f i) :=
-    fun s f => map_sum ω.toPositiveLinearMap f s
-  have hsmul : ∀ (c : ℂ) (x : ℬ), (ω (c • x) : ℂ) = c * ω x := fun c x =>
-    (map_smul ω.toPositiveLinearMap c x).trans (smul_eq_mul _ _)
-  rw [pTheta_sum, hsum, pIdx, Finset.sum_product]
-  refine Finset.sum_congr rfl fun i _ => ?_
-  rw [hsum, Finset.sum_product]
-  refine Finset.sum_congr rfl fun j _ => ?_
-  rw [gram_polarization φ (a i) (a j) (b i) (b j) d, hsum, Finset.sum_product]
-  refine Finset.sum_congr rfl fun k _ => ?_
-  rw [hsum]
-  refine Finset.sum_congr rfl fun l _ => ?_
-  rw [hsmul]
-  rfl
-
+which are **153IV** `hilbmod_adj_vector_ncp`, **49IV**.3 `mn_vna_3` (the
+entrywise `Mₙφ` is normal) and the third clause of **49IV**.2 `mn_vna_2`
+(`M ↦ ∑ᵢⱼ cᵢ* Mᵢⱼ cⱼ` preserves suprema).  `compNP` composes the three with
+`ω` into a single np-functional of `𝒜`, whose normality is the claim. -/
 theorem pTheta_normal (ω : NPFunctional ℬ) (v : 𝒜 ⊗[ℂ] ℬ) :
     PreservesDirSups (fun d : 𝒜 => (ω (pTheta φ v d) : ℂ)) := by
   obtain ⟨n, a, b, rfl⟩ := exists_fin_tmul v
-  exact preservesDirSups_of_np_combination (pIdx n) _
-    (fun h => npFunctional_mono ω (pTheta_mono φ _ h)) pCoef (pNP φ ω a b)
-    (pTheta_combination φ ω a b)
+  -- **153IV**: `d ↦ (aᵢ d aⱼ*)ᵢⱼ : 𝒜 → Mₙ𝒜` is ncp.
+  obtain ⟨L, hentry, hcp, hLn⟩ :=
+    hilbmod_adj_vector_ncp (𝒜 := 𝒜) (n := n) (fun i => star (a i))
+  have hentry' : ∀ (d : 𝒜) (i j : Fin n), L d i j = a i * d * star (a j) := by
+    intro d i j; rw [hentry, star_star]
+  have hLpos : ∀ d : 𝒜, 0 ≤ d → 0 ≤ L d := by
+    intro d hd
+    have hsa : star (CFC.sqrt d) = CFC.sqrt d :=
+      IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg d)
+    have hd' : star (CFC.sqrt d) * CFC.sqrt d = d := by
+      rw [hsa]; exact CFC.sqrt_mul_sqrt_self d hd
+    simpa [hd'] using hcp 1 (fun _ => CFC.sqrt d) (fun _ => 1)
+  set F₁ : 𝒜 →ₚ[ℂ] CStarMatrix (Fin n) (Fin n) 𝒜 :=
+    { toFun := ⇑L
+      map_add' := map_add L
+      map_smul' := map_smul L
+      monotone' := fun x y h => by
+        have h0 := hLpos (y - x) (sub_nonneg.mpr h)
+        rwa [map_sub, sub_nonneg] at h0 }
+  -- **49IV**.3 `mn_vna_3`: the entrywise `Mₙφ : Mₙ𝒜 → Mₙℬ` is normal.
+  set F₂ : CStarMatrix (Fin n) (Fin n) 𝒜 →ₚ[ℂ] CStarMatrix (Fin n) (Fin n) ℬ :=
+    { toFun := fun M => CStarMatrix.mapₗ φ.toCompletelyPositiveMap.toLinearMap M
+      map_add' := map_add _
+      map_smul' := map_smul _
+      monotone' := fun X Y h => by
+        have h0 := φ.toCompletelyPositiveMap.map_cstarMatrix_nonneg' n (Y - X)
+          (sub_nonneg.mpr h)
+        rw [← sub_nonneg]
+        refine le_of_le_of_eq h0 ?_
+        ext i j
+        show (φ.toCompletelyPositiveMap ((Y - X) i j) : ℬ)
+            = φ.toCompletelyPositiveMap (Y i j) - φ.toCompletelyPositiveMap (X i j)
+        rw [show ((Y - X) i j : 𝒜) = Y i j - X i j from rfl]
+        exact map_sub φ.toCompletelyPositiveMap _ _ }
+  -- **49IV**.2 `mn_vna_2`, third clause: `M ↦ ∑ᵢⱼ bᵢ Mᵢⱼ bⱼ* : Mₙℬ → ℬ` is normal.
+  set c : Fin n → ℬ := fun i => star (b i) with hc
+  set F₃ : CStarMatrix (Fin n) (Fin n) ℬ →ₚ[ℂ] ℬ :=
+    { toFun := fun M => matForm c c M
+      map_add' := matForm_add_matrix c c
+      map_smul' := fun r M => matForm_smul_matrix r c c M
+      monotone' := fun _ _ h => matForm_mono h c }
+  set ν : NPFunctional 𝒜 :=
+    compNP F₁ hLn (compNP F₂ (mn_vna_3 n φ) (compNP F₃ (mn_vna_2 n c c).2.2 ω))
+  have heq : (fun d : 𝒜 => (ω (pTheta φ (∑ i, a i ⊗ₜ[ℂ] b i) d) : ℂ))
+      = fun d : 𝒜 => (ν d : ℂ) := by
+    funext d
+    have hcomp : (ν d : ℂ) = ω (∑ i, ∑ j, star (c i) * φ (L d i j) * c j) := rfl
+    rw [hcomp, pTheta_sum]
+    refine congrArg _ (Finset.sum_congr rfl fun i _ => Finset.sum_congr rfl fun j _ => ?_)
+    rw [hentry', hc, star_star]
+  rw [heq]
+  exact ν.preservesDirSups'
 
-end ThetaNormal
+end Theta
 
 section RhoHom
 
@@ -1252,10 +1191,11 @@ noncomputable def prhoHom : 𝒜 →⋆ₐ[ℂ] (Ba ℬ E.X)ᵐᵒᵖ where
 @[simp] theorem prhoHom_apply (a₀ : 𝒜) :
     prhoHom φ E a₀ = MulOpposite.op (prho φ E a₀) := rfl
 
-/-- **154III**.2: `ϱ` is normal.  The thesis's route (`normal-faithful` +
-`hilmod-fixed-on-V`), with the vector forms `d ↦ ⟨η v, ϱ(d) η v⟩` shown
-normal by the double polarisation above rather than by `mn-vna` (which is
-still open in `A/VN`). -/
+/-- **154III**.2: `ϱ` is normal.  The thesis's route throughout
+(`normal-faithful` + `hilmod-fixed-on-V`): the vector forms
+`d ↦ ⟨η v, ϱ(d) η v⟩` are normal by `pTheta_normal` above, i.e. by the
+thesis's factorisation of them through `Mₙ𝒜 → Mₙℬ` (**153IV** and **49IV**
+`mn-vna`). -/
 theorem prhoHom_normal : PreservesDirSups ⇑(prhoHom φ E) := by
   haveI : VonNeumannAlgebra (Ba ℬ E.X) := ba_vonNeumannAlgebra E.selfDual
   set Ω : Set (NPFunctional (Ba ℬ E.X)ᵐᵒᵖ) :=
@@ -4043,11 +3983,11 @@ now one line of it, and used by parts 2 and 3.  It is model-independent:
 only `D` is needed, no `PaschkeModule`.  157VI's two further clauses are
 `phiT_ncpLe` and `phiT_one` below.
 
-**Thesis slip, absorbed here rather than filed.**  157VI says "Pick
-`T ∈ ϱ(𝒜)^□`" and then forms `√T`; as printed its conclusion "`φ_T` is
+**Thesis slip**, filed as the **157VI** row of `ERRATA.md`.  157VI says
+"Pick `T ∈ ϱ(𝒜)^□`" and then forms `√T`; as printed its conclusion "`φ_T` is
 ncp" is false for a general self-adjoint `T` of the commutant (take
-`T = −1`, `φ ≠ 0`).  What the argument needs, and what is assumed here, is
-`0 ≤ T`. -/
+`T = −1`, `φ ≠ 0`).  What the argument needs, and what is absorbed here as
+the hypothesis `0 ≤ s`, is `0 ≤ T`. -/
 theorem exists_phiT_ncp [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
     (D : PaschkeTriple 𝒜 ℬ) (s : D.P) (hs0 : 0 ≤ s)
     (hsc : ∀ a : 𝒜, s * D.ρ a = D.ρ a * s) :

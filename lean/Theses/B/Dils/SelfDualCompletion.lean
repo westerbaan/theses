@@ -3158,17 +3158,23 @@ theorem hilbmod_ad_cp [CompleteSpace X] [CompleteSpace Y]
 
 set_option maxHeartbeats 1000000 in
 -- as for `ba_isLUB`: instance search through `Ba 𝒷 X` is slow
-set_option linter.unusedVariables false in
--- `hX` is the thesis's hypothesis and is deliberately kept; see the note below
 /-- **153I** (`hilbmod-ad-ncp`, dils.tex:3487, Proposition), part 2: if `X`
 and `Y` are moreover self-dual, then `ad_T` is normal, i.e. an ncp-map.
 
-**153III** (the author's proof) is not available to us; the proof here is
-**152XII** `ba_isLUB` twice: the vector forms of `ad_T S` on `X` are the
-vector forms of `S` on `Y` (`⟨x, T*STx⟩ = ⟨Tx, S(Tx)⟩`), and both suprema
-are computed by their vector forms.  Only `hY` is used: normality of `ad_T`
-does not need `X` to be self-dual, since the supremum it has to preserve is
-one that already exists in `𝒷ᵃ(X)` by hypothesis. -/
+The proof is **153III**, the author's own: by **48II** `normal_faithful`
+against the vector states of `𝒷ᵃ(X)` — faithful by **144I**
+(`ba_nonneg_iff`, whence `ba_vonNeumannAlgebra`'s own `np_faithful`) and
+normal by **152XIII** (`baVecNP`) — it is enough that
+`S ↦ ω⟨x, ad_T(S) x⟩` is normal for every `x ∈ X` and every np-functional
+`ω` of `𝒷`; and `⟨x, ad_T(S) x⟩ = ⟨Tx, S(Tx)⟩`, so that map *is* the vector
+state of `𝒷ᵃ(Y)` at `Tx`.  Both self-duality hypotheses are used, `hX` to
+make `𝒷ᵃ(X)` a von Neumann algebra and `hY` for `𝒷ᵃ(Y)`.
+
+*(Until session 94 this ran instead through **152XII** `ba_isLUB` twice,
+computing both suprema by vector forms and using only `hY`, on the stated
+ground that "**153III** (the author's proof) is not available to us".  That
+was stale: 48II is in `A/VN/Basic` and 152XIII `baVecNP` sits a page and a
+half above in this file.)* -/
 theorem hilbmod_ad_ncp [VonNeumannAlgebra 𝒷] [CompleteSpace X]
     [CompleteSpace Y] (hX : SelfDual 𝒷 X) (hY : SelfDual 𝒷 Y)
     (T : X →L[ℂ] Y) (T' : Y →L[ℂ] X) (hT : ModuleAdjointTo 𝒷 ⇑T ⇑T') :
@@ -3191,43 +3197,38 @@ theorem hilbmod_ad_ncp [VonNeumannAlgebra 𝒷] [CompleteSpace X]
     exact ba_inner_mono (T x) h
   have hcp2 : ∀ (N : ℕ) (M : CStarMatrix (Fin N) (Fin N) (Ba 𝒷 Y)),
       0 ≤ M → 0 ≤ M.map ⇑ad := ((cp_iff ad).out 0 1).mp hadcp
-  -- normality: **152XII** computes both suprema by vector forms
+  -- normality: **153III**, the author's own proof.  By **48II**
+  -- `normal_faithful` it is enough that `S ↦ ω⟨x, ad_T(S) x⟩` is normal for
+  -- the vector states of `𝒷ᵃ(X)`, which are faithful by **144I**
+  -- (`ba_nonneg_iff`) and normal by **152XIII** (`baVecNP`); and
+  -- `ω⟨x, ad_T(S) x⟩ = ω⟨Tx, S(Tx)⟩` is the vector state of `𝒷ᵃ(Y)` at `Tx`.
+  haveI : VonNeumannAlgebra (Ba 𝒷 X) := ba_vonNeumannAlgebra hX
+  haveI : VonNeumannAlgebra (Ba 𝒷 Y) := ba_vonNeumannAlgebra hY
   have hnorm : PreservesDirSups ⇑ad := by
-    intro D s hne hdir hlub
-    constructor
-    · rintro _ ⟨d, hd, rfl⟩
-      exact hmono _ _ (Subtype.coe_le_coe.mpr (hlub.1 hd))
-    · intro c hc
-      rw [← sub_nonneg]
-      refine (ba_nonneg_iff _).mpr fun x => ?_
-      rw [show (c - ad (s : Ba 𝒷 Y)).1 x = c.1 x - (ad (s : Ba 𝒷 Y)).1 x from rfl,
-        CStarModule.inner_sub_right, sub_nonneg, hvec]
-      -- `⟨x, c x⟩` is self-adjoint because it dominates `⟨Tx, d₀ (Tx)⟩`
-      obtain ⟨d₀, hd₀⟩ := hne
-      have h1 : (inner 𝒷 x ((ad (d₀ : Ba 𝒷 Y)).1 x) : 𝒷) ≤ inner 𝒷 x (c.1 x) :=
-        ba_inner_mono x (hc ⟨d₀, hd₀, rfl⟩)
-      have h2 : IsSelfAdjoint (inner 𝒷 x ((ad (d₀ : Ba 𝒷 Y)).1 x) : 𝒷) := by
-        rw [hvec]
-        exact ba_inner_isSelfAdjoint _ _ d₀.2
-      have h3 : IsSelfAdjoint ((inner 𝒷 x (c.1 x) : 𝒷)
-          - inner 𝒷 x ((ad (d₀ : Ba 𝒷 Y)).1 x)) :=
-        IsSelfAdjoint.of_nonneg (sub_nonneg.mpr h1)
-      have hcsa : IsSelfAdjoint (inner 𝒷 x (c.1 x) : 𝒷) := by
-        have h4 : (inner 𝒷 x (c.1 x) : 𝒷)
-            = ((inner 𝒷 x (c.1 x) : 𝒷) - inner 𝒷 x ((ad (d₀ : Ba 𝒷 Y)).1 x))
-              + inner 𝒷 x ((ad (d₀ : Ba 𝒷 Y)).1 x) := by abel
-        rw [h4]
-        exact h3.add h2
-      -- and it dominates every `⟨Tx, d (Tx)⟩`, so it dominates their supremum
-      have hlv := ba_isLUB_vec hY ⟨d₀, hd₀⟩ hdir hlub (T x)
-      exact Subtype.coe_le_coe.mpr
-        (hlv.2 (by
-          rintro _ ⟨d, hd, rfl⟩
-          refine Subtype.coe_le_coe.mp ?_
-          change (inner 𝒷 (T x) ((d : Ba 𝒷 Y).1 (T x)) : 𝒷) ≤ _
-          rw [← hvec]
-          exact ba_inner_mono x (hc ⟨d, hd, rfl⟩)) :
-          baVec (T x) s ≤ (⟨inner 𝒷 x (c.1 x), hcsa⟩ : selfAdjoint 𝒷))
+    have hfaith : FaithfulCollection
+        {ν : NPFunctional (Ba 𝒷 X) | ∃ (x : X) (ω : NPFunctional 𝒷),
+          ν = baVecNP hX x ω} := by
+      intro Z hZ hzero
+      have hvz : ∀ x : X, (inner 𝒷 x (Z.1 x) : 𝒷) = 0 := fun x =>
+        VonNeumannAlgebra.np_faithful _ ((ba_nonneg_iff Z).mp hZ x) fun ω =>
+          hzero _ ⟨x, ω, rfl⟩
+      have hle : Z ≤ 0 := by
+        rw [← neg_nonneg]
+        refine (ba_nonneg_iff _).mpr fun x => ?_
+        have he : (-Z).1 x = -(Z.1 x) := rfl
+        rw [he, CStarModule.inner_neg_right, hvz x, neg_zero]
+      exact le_antisymm hle hZ
+    refine (normal_faithful _ hfaith
+      ({ __ := ad, monotone' := fun Z W h => hmono Z W h } :
+        Ba 𝒷 Y →ₚ[ℂ] Ba 𝒷 X)).mpr ?_
+    rintro ν ⟨x, ω, rfl⟩
+    have heq : (fun S : Ba 𝒷 Y => (baVecNP hX x ω (ad S) : ℂ))
+        = fun S : Ba 𝒷 Y => (baVecNP hY (T x) ω S : ℂ) := by
+      funext S
+      show (ω (inner 𝒷 x ((ad S).1 x)) : ℂ) = _
+      rw [hvec S x]
+      rfl
+    exact heq ▸ (baVecNP hY (T x) ω).preservesDirSups'
   exact ⟨{ toCompletelyPositiveMap :=
              { toLinearMap := ad
                map_cstarMatrix_nonneg' := fun k M hM => hcp2 k M hM }
@@ -3312,8 +3313,15 @@ and `a₁, …, aₙ ∈ 𝒜`, the map `φ : 𝒜 → Mₙ𝒜`, `φ(d) = (aᵢ
 ncp-map.
 
 The author's solution routes through **153I** `hilbmod_ad_ncp` (`φ = ad_T`
-for the row vector `T : 𝒜ⁿ → 𝒜`, `(bᵢ)ᵢ ↦ ∑ᵢ bᵢaᵢ`), which is still open
-here — it waits on **152X**.  So this is a direct argument instead: by
+for the row vector `T : 𝒜ⁿ → 𝒜`, `(bᵢ)ᵢ ↦ ∑ᵢ bᵢaᵢ`).  An earlier revision
+said 153I "is still open here — it waits on **152X**"; that is stale, both
+are proved above in this file.  What is missing for the author's route is
+the *module* `𝒜ⁿ`: nothing in the tree makes `Fin n → 𝒜` a **self-dual**
+Hilbert `𝒜`-module, and the route needs, on top of that, the two
+identifications `𝒷ᵃ(𝒜ⁿ) ≅ Mₙ𝒜` and `𝒷ᵃ(𝒜) ≅ 𝒜ᵒᵖ` — the second exists only
+downstream, as `rightMulEquiv` in `Paschke.lean`.  That is three theorems
+none of which the tree has, against the self-contained computation below,
+so this is a direct argument instead: by
 **33II**.1 both claims reduce to the scalar identity
 `∑ᵢⱼ cᵢ* φ(d)ᵢⱼ cⱼ = v* d v` with `v = ∑ᵢ aᵢcᵢ`, after which complete
 positivity is the observation that the corresponding double sum is a square

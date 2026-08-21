@@ -7378,8 +7378,13 @@ theorem hilbmod_tensor_ketbra [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
     (∀ x y, (star R).1 (E.η x y) = E.η ((star S).1 x) ((star T).1 y)) := by
   -- `bsols.tex`, solution `hilbmod-tensor-ketbra`.  Of the two routes the
   -- author offers ("either by appealing to the defining universal property
-  -- of `X ⊗ Y` or by … ultranorm density") we take the first, since the
-  -- density statement **164II**.1 (`ext_tensor_dense`) is still `sorry`.
+  -- of `X ⊗ Y` or by … ultranorm density") we take the first.  (An earlier
+  -- revision gave as its reason that the density statement **164II**.1
+  -- `ext_tensor_dense` was "still `sorry`".  That is stale: it is proved
+  -- above in this file and used by `ext_tensor_basis` (**164II**.2a) and by
+  -- `exttensor_dense_subsets` (**166IV**).  Both of the author's routes are
+  -- open; the first is kept because its uniqueness half is available here as
+  -- `extTensor_map_ext`, so nothing has to be set up for it.)
   -- Every `R ∈ 𝒞ᵃ(X ⊗ Y)` is a bounded module map.
   have hbdd : ∀ R₀ : Ba 𝒞 E.Z, ∃ C : ℝ,
       IsBoundedModuleMap (cstarBInner 𝒞 E.Z) (cstarBInner 𝒞 E.Z) C ⇑R₀.1 := by
@@ -7841,24 +7846,39 @@ theorem ultranorm_continuity_ext_tensor [VonNeumannAlgebra 𝒜]
       (add_le_add (hterm1 i) (hterm2 i))
   · simpa using ((hx ω).const_mul M).add ((hy ξ).const_mul ‖x₀‖)
 
--- `hUsub`, `hUsmul`, `hVsub`, `hVsmul` are not used: the proof below picks
--- `u` and `v` one after the other rather than through a *net*, so it never
--- needs `U`, `V` to be submodules (see the divergence in the doc comment).
+-- `hUsub`, `hUsmul`, `hVsub`, `hVsmul` are not used by the proof below,
+-- which picks `u` and `v` one after the other rather than through a *net*
+-- and so never needs `U`, `V` to be submodules.  They are the thesis's own
+-- hypotheses, kept for fidelity; they are also exactly what the thesis's
+-- route would feed to `kaplansky_hilbmod` (see the doc comment).
 set_option linter.unusedVariables false in
 /-- **166IV** (`exttensor-dense-subsets`, dils.tex:5669, Lemma): for
 ultranorm-dense submodules `U ⊆ X` and `V ⊆ Y`, the linear span of
 `U ⊗ V = {u ⊗ v}` is ultranorm dense in `X ⊗ Y`.
 
-**Divergence, class 2, and it removes a dependency on a `sorry`.**  The
-thesis's proof (166V) obtains *norm-bounded* nets `u_α → x`, `v_α → y` from
-the Kaplansky density theorem for Hilbert C*-modules **158II**
-(`kaplansky_hilbmod`) and then applies **166II**.  158II is open — its
-printed proof is false, see `Kaplansky.lean` — so that route is unavailable.
-It is also unnecessary: the ultranorm uniformity is approximated one
-entourage at a time, so `u ∈ U` may be chosen *first* and `v ∈ V` afterwards,
-with an accuracy depending on the `‖u‖` already fixed.  No norm bound, and
-hence no Kaplansky density, is needed.  The two estimates are those of
-**166III** (`unSeminorm_eta_le_left/_right`). -/
+**Divergence, class 2.**  The thesis's proof (166V) obtains *norm-bounded*
+nets `u_α → x`, `v_α → y` from the Kaplansky density theorem for Hilbert
+C*-modules **158II** and then applies **166II**.  That route is *available*.
+158II **is** proved: `kaplansky_hilbmod` in `Kaplansky.lean`, through the
+linking algebra `ℬᵃ(X ⊕ ℬ)` and thesis A's **74IV**, and unconditionally —
+what is false is only the thesis's *printed* proof of it, the four **158V**
+estimates, which stay `sorry` to record the falsehood.  Its hypotheses are
+met here, with `A = (⊤ : StarSubalgebra ℂ 𝒜)`: `hUsub` and `hUsmul` say
+exactly that `U` is an `𝒜`-submodule, `hDinner` is vacuous for `A = ⊤`, and
+`0 ∈ U` follows from `hU` and `hUsmul` (checked; likewise for `V`).
+
+It is not taken because it is *longer*, not shorter.  **166II** is a
+statement about nets, whereas ultranorm density is rendered here — as
+everywhere in these files — one entourage at a time, and no lemma bridges
+the two forms.  The thesis's route would have to manufacture the canonical
+net out of the entourage-wise output of `kaplansky_hilbmod` (the nearest
+analogue, the net indexed by finite sets of (functional, precision) inside
+`selfdual_completion_univ` in `SelfDualCompletion.lean`, costs some forty
+lines) and then read an entourage estimate back out of the resulting
+`UnTendsto`, roughly doubling the proof.  One entourage at a time no norm
+bound is needed at all: `u ∈ U` may be chosen *first* and `v ∈ V` afterwards,
+with an accuracy depending on the `‖u‖` already fixed.  The two estimates
+are those of **166III** (`unSeminorm_eta_le_left/_right`). -/
 theorem exttensor_dense_subsets [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
     [VonNeumannAlgebra 𝒞] [CompleteSpace X] [CompleteSpace Y]
     (hX : SelfDual 𝒜 X) (hY : SelfDual ℬ Y) (E : ExtTensor t ht X Y)

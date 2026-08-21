@@ -381,7 +381,7 @@ group `G` with a distinguished element `u ≥ 0`, the order interval
 and `xᵖ = u - x`.
 
 ⚠ The hypothesis `0 ≤ u` is **not** in the source, and is a silent repair of
-a defect in it (audit row 175II.2, left unrepaired in session 94): without it
+a defect in it (`ERRATA.md` row **175II**.2, OPEN): without it
 `[0,u]` is empty and carries no effect algebra, so the point as printed is
 false.  Changing our statement to match the printed one is not an option and
 choosing the repair is the author's call — this is an `ERRATA` matter, not a
@@ -1216,8 +1216,10 @@ and infima taken inside `↓aᵖ` (resp. `↓a`) agree with those taken in `E`. 
 is true for the halves recorded below, but **false** for the remaining two: an
 upper bound of a set contained in `↓a` need not itself lie below `a`, so a
 supremum computed inside `↓a` need not be a supremum in `E`.  The
-counterexample is `WrightTriangle` below; it is also what refutes 177Ia as
-printed.  (Master's thesis Proposition 13.2, about the dual operation
+counterexample is `WrightTriangle` below; it is also what refuted the
+*first printing* of 177Ia (infimum ⟹ supremum).  eff.tex now prints the
+sound converse (see `ea_modularity_prop`).  (Master's thesis Proposition
+13.2, about the dual operation
 `a ⊛ b = (aᵖ ⋁ bᵖ)ᵖ`, is omitted: that operation is not part of this
 development.) -/
 
@@ -1333,7 +1335,9 @@ theorem msc_cor14_2_inf {a b c j u v m : E}
 `a ⊖ b` and `a ⊖ c` **among the elements below `a`**.  It need *not* be their
 least upper bound in `E`: the master's thesis's claim that it is is refuted by
 `WrightTriangle.no_sup_a1_a2` below (take `a = a₁ ⋁ a₂`, `b = a₁`, `c = a₂`,
-`m = 0`).  This is exactly the gap in the printed proof of 177Ia. -/
+`m = 0`).  This is exactly the gap in the **first printing** of 177Ia's
+proof; the proof eff.tex now carries (`modularity-lemma-proof`) hypothesises
+the supremum instead and is sound — `dual_modularity_lemma` below. -/
 theorem msc_cor14_2_sup_below {a b c m u v j : E}
     (hu : IsDiff a b u) (hv : IsDiff a c v) (hm : PCM.IsInf b c m) (hj : IsDiff a m j) :
     u ≼ j ∧ v ≼ j ∧ ∀ d, d ≼ a → u ≼ d → v ≼ d → j ≼ d := by
@@ -1361,9 +1365,10 @@ theorem msc_prop15' {a b j : E} (hab : Perp a b) (hj : PCM.IsSup a b j) :
   exact ⟨m, hm, msc_prop15 hab hj hm⟩
 
 /-- **Master's thesis, Corollary 16.2**: whenever both exist,
-`(a ∨ b) ⋁ (a ∧ b) = a ⋁ b`.  This is the identity of 177Ia; what 177Ia adds —
-that the supremum exists as soon as the infimum does — is false (see
-`WrightTriangle.not_ea_modularity_prop`). -/
+`(a ∨ b) ⋁ (a ∧ b) = a ⋁ b`.  This is the identity of 177Ia; what 177Ia now
+adds — that the *infimum* exists as soon as the supremum does — is true, and
+is `msc_prop15'_of_dual` below.  (The first printing had the two swapped, and
+in *that* direction it is false: `WrightTriangle.not_ea_modularity_prop`.) -/
 theorem msc_cor16_2 {a b j m : E} (hab : Perp a b) (hm : PCM.IsInf a b m)
     (hj : PCM.IsSup a b j) : ∃ hmj : Perp m j, ovee m j hmj = ovee a b hab := by
   obtain ⟨m', hdiff, hm'⟩ := msc_prop15' hab hj
@@ -1381,15 +1386,17 @@ theorem msc_cor16_1 {a b j : E} (hab : Perp a b) (hm : PCM.IsInf a b 0)
   obtain ⟨hmj, he⟩ := msc_cor16_2 hab hm hj
   rw [← he, PCM.ovee_comm, PCM.ovee_zero]
 
-/-- **The dual of the false lemma** of `modularity-lemma-proof` (eff.tex, the
-proof of 177Ia, point 20).  The thesis's lemma reads: for `c, d ≼ x`, if
-`(x ⊖ c) ∧ (x ⊖ d)` exists then `c ∨ d` exists and equals
-`x ⊖ ((x ⊖ c) ∧ (x ⊖ d))`.  That is false, even with `c ⊥ d` added
-(`WrightTriangle.not_modularity_lemma`); the honest remnant is
-`msc_cor14_2_sup_below`.  **Dualised it is true**: hypothesise the *supremum*
-of the two differences, and conclude the *infimum* of `c, d`.
+/-- **The lemma of `modularity-lemma-proof`** (eff.tex, the proof of 177Ia,
+point 20), in the direction eff.tex now prints: for `c, d ≼ x`, if
+`(x ⊖ c) ∨ (x ⊖ d)` exists then `c ∧ d` exists as well and
+`(x ⊖ c) ∨ (x ⊖ d) = x ⊖ (c ∧ d)`.  The *first* printing had the two
+swapped — hypothesise the infimum of the differences, conclude the supremum
+of `c, d` — and in that direction it is false, even with `c ⊥ d` added
+(`WrightTriangle.not_modularity_lemma`); the honest remnant of it is
+`msc_cor14_2_sup_below`.
 
-Why the dual survives.  The printed proof's final step takes a bound `s` of
+Why this direction survives.  The printed proof's final step takes a bound
+`s` of
 `c, d` and forms `x⊥ ⋁ s`, which is defined only when `s ≼ x`.  An *upper*
 bound of `c, d` need not lie below `x` — that is exactly how the Wright
 triangle escapes — whereas a *lower* bound satisfies `s ≼ c ≼ x` for free.  So
@@ -1433,8 +1440,12 @@ axiom is checked by `decide`.
 
 Since `a₁ ⊥ a₂` while `c₃ = a₃ᵖ = a₂ ⋁ a₅ = a₆ ⋁ a₁` and `c₄ = a₄ᵖ = a₁ ⋁ a₂`
 are *two incomparable* upper bounds of `{a₁, a₂}`, the pair `a₁, a₂` has an
-infimum (namely `0`) but **no** supremum.  That refutes 177Ia and the lemma its
-proof rests on. -/
+infimum (namely `0`) but **no** supremum.  That refutes 177Ia and the lemma
+its proof rests on **as they were first printed**; both were corrected in
+eff.tex on 2026-08-14 (commit `280fa5b`), and the corrected forms are true —
+`msc_prop15'_of_dual` and `dual_modularity_lemma`.  The counterexample is
+kept because it is what shows the correction was needed, and because it is
+what refutes master's-thesis Corollary 14's two remaining halves. -/
 
 namespace WrightTriangle
 
@@ -1527,8 +1538,9 @@ theorem no_sup_a1_a2 : ¬ ∃ j : W, PCM.IsSup a1 a2 j := by
   unfold PCM.IsSup PCM.le
   decide
 
-/-- **177Ia is false as printed** (`ea-modularity-prop`, eff.tex:484): in the
-Wright triangle `a₁ ⊥ a₂` and `a₁ ∧ a₂ = 0` exists, yet `a₁ ∨ a₂` does not.
+/-- **177Ia as first printed was false** (`ea-modularity-prop`, eff.tex:484;
+corrected 2026-08-14): in the Wright triangle `a₁ ⊥ a₂` and `a₁ ∧ a₂ = 0`
+exists, yet `a₁ ∨ a₂` does not.
 (Every orthoalgebra has `a ∧ b = 0` for `a ⊥ b`, so the Proposition would make
 every orthoalgebra an orthomodular poset.) -/
 theorem not_ea_modularity_prop :
@@ -1539,8 +1551,9 @@ theorem not_ea_modularity_prop :
   obtain ⟨j, _, hj, _⟩ := H W a1 a2 0 perp_a1_a2 isInf_a1_a2
   exact no_sup_a1_a2 ⟨j, hj⟩
 
-/-- **The lemma of `modularity-lemma-proof` (eff.tex:492) is false too**, even
-when strengthened by `c ⊥ d`: with `x = a₁ ⋁ a₂`, `c = a₁`, `d = a₂` one has
+/-- **The lemma of `modularity-lemma-proof` (eff.tex:492) was false too in
+its first printing**, even when strengthened by `c ⊥ d`: with `x = a₁ ⋁ a₂`,
+`c = a₁`, `d = a₂` one has
 `x ⊖ c = a₂`, `x ⊖ d = a₁`, whose infimum is `0`, while `c ∨ d` does not
 exist. -/
 theorem not_modularity_lemma :
@@ -1553,12 +1566,29 @@ theorem not_modularity_lemma :
 end WrightTriangle
 
 /-- **177Ia** (`ea-modularity-prop`, eff.tex:484, Proposition), **realigned**:
-as printed the Proposition claims that for `a ⊥ b` the existence of `a ∧ b`
+the *first printing* claimed that for `a ⊥ b` the existence of `a ∧ b`
 already gives `a ∨ b`; that is **false**, see
-`WrightTriangle.not_ea_modularity_prop` and the 177Ia row of `ERRATA.md`.  What
-survives — and is all that the thesis's own applications use — is the identity
-`a ⋁ b = (a ∧ b) ⋁ (a ∨ b)` whenever *both* the infimum and the supremum exist
-(master's thesis, Corollary 16.2). -/
+`WrightTriangle.not_ea_modularity_prop` and berr.tex's erratum
+`ea-modularity-prop`.  What is stated here is the identity
+`a ⋁ b = (a ∧ b) ⋁ (a ∨ b)` whenever *both* the infimum and the supremum
+exist (master's thesis, Corollary 16.2), which is all that the thesis's own
+applications use.
+
+⚠ **Understated against the current eff.tex, and cheaply repairable.**
+eff.tex was corrected on 2026-08-14 (commit `280fa5b`, "Second attempt at
+correcting 177Ia") to hypothesise the *supremum* and conclude the
+*infimum*; in that direction the Proposition is true, and the tree already
+proves it — `msc_prop15'_of_dual` above is exactly it.  Dropping the `hm`
+binder here and producing `m` instead would realign this statement with what
+the thesis now prints; that is a change of statement, so it is left for the
+author's call rather than made in a prose sweep.
+
+⚠ **`ERRATA.md`'s 177Ia row is stale in the other direction.**  It was added
+on 2026-08-21 and still says the Proposition is "**false as printed**",
+which was true of the *first* printing only; `eff.tex` has carried the
+corrected statement since 2026-08-14, and so has `modularity-lemma-proof`.
+The 208III row inherits the same assumption.  Both need revisiting by
+whoever owns `ERRATA.md`. -/
 theorem ea_modularity_prop {E : Type u} [EffectAlgebra E] {a b m j : E}
     (hab : Perp a b) (hm : PCM.IsInf a b m) (hj : PCM.IsSup a b j) :
     ∃ hmj : Perp m j, ovee a b hab = ovee m j hmj := by
@@ -2794,8 +2824,16 @@ every finite effect monoid is commutative.
 
 ⚠️ *Different route from the thesis.*  eff.tex:640 obtains this from "every
 finite effect monoid comes from a Boolean algebra"
-(`finite_effectMonoid_boolean`, still `sorry`), which it cites to
-\[basmsc, prop. 40]; there is no argument in either thesis to transcribe.
+(`finite_effectMonoid_boolean`), which it cites to \[basmsc, prop. 40];
+there is no argument in either thesis to transcribe.  That theorem is
+**proved**, below in section `FiniteBoolean` — an earlier revision of this
+note said it was "still `sorry`", which is stale — but the thesis's
+dependency cannot be inverted here, because our proof of it *consumes this
+corollary*: `emon_finite_orth_mul`, `emon_finite_orth_ovee` and
+`emon_finite_perp_mul_orth` each rewrite by `finite_effectMonoid_commutative`,
+and they are what feed `emonBooleanAlgebra` through `emon_finite_perp_iff`
+and `emon_finite_ovee_eq`.  Taking the thesis's route would mean rebuilding
+the Boolean structure without commutativity, not shortening anything.
 The proof below is direct, and needs only three steps: (i) `a ⊙ aᵖ = aᵖ ⊙ a`
 in *any* effect monoid (`emon_mul_orth_comm`, by cancellation); (ii) in a
 finite effect monoid every element is idempotent (`emon_finite_idem`), since
@@ -3417,7 +3455,7 @@ produces only `[PartialOrder V] [IsOrderedAddMonoid V]` and `0 ≤ u`, whereas
 cone to be closed under nonnegative scalars (`PosSMulMono`/`SMulPosMono`, as in
 `orderIntervalEffectModule` above) and `u` to be an order unit.  If this is ever
 revived, strengthen it first — as written it would be provable without being the
-theorem. -/
+theorem.  That gap is `QUESTIONS.md` **B14**, which is open. -/
 theorem effectModule_unitInterval_representation (E : Type u) [EffectAlgebra E]
     [EffectModule I E] :
     ∃ (V : Type u) (_ : AddCommGroup V) (_ : Module ℝ V) (_ : PartialOrder V)

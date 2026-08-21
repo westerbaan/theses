@@ -1183,9 +1183,10 @@ not refine one another, and the leftovers `A ∖ Dₙ` of positive-measure
 atoms may be null and non-empty.  The repair used here is to run Zorn on
 *pairwise disjoint families of atoms* instead of on subsets
 (`exists_maximal_atom_family`), which yields the partition directly; note
-that this replaces the thesis's choice-free 129IV by ordinary Zorn.  It
-is **not** the repair conjectured in ERRATA ("`𝒮` = countable disjoint
-unions of atoms"), which runs into the same non-refinement problem. -/
+that this replaces the thesis's choice-free 129IV by ordinary Zorn.  This
+is the repair the **129II**.2 row of `ERRATA.md` now records; the conjecture
+that row carried earlier ("`𝒮` = countable disjoint unions of atoms") fails
+for the same non-refinement reason. -/
 theorem measure_space_continuous_discrete [IsFiniteMeasure μ]
     (hμ : μ.IsComplete) :
     ∃ D : Set X, MeasurableSet D ∧
@@ -1330,7 +1331,8 @@ consumers — "every `f` is a.e. constant, hence `L^∞ ≅ ℂ`, hence an nmiu-
 complex conjugation shows.  **130II** `atomic_measure_space` was proved before
 the fix by routing through Gelfand–Mazur (**16VII**) instead, so it does not
 depend on `smul`; the other three consumers (**129X**, **130IV**, **130V**)
-were still `sorry` when the field was added. -/
+were still `sorry` when the field was added, and so could take it for
+granted.  All three are proved now. -/
 structure IsLinftyOf (q : (X → ℂ) → 𝒜) : Prop where
   surj : ∀ y : 𝒜, ∃ f, IsBoundedMeasurable X f ∧ q f = y
   add : ∀ f g, IsBoundedMeasurable X f → IsBoundedMeasurable X g →
@@ -4382,10 +4384,15 @@ tensor product is a *monoidal structure* rather than a family of chosen
 objects.  With part 3 (the morphisms) and part 1 (`Mon(W*_cpsu)` objects
 are `Mon(W*_miu)` objects) this is its whole content, but forming
 `CMon(-)` and `Mon(-)` needs `MonoidalCategory` instances on `W*_miu` and
-`W*_cpsu`: associators and unitors for `VNT`, and the pentagon, triangle
-and hexagon coherences — none of which the tree has (`A/Proc/Tensor.lean`
-proves the braiding, the functoriality of `tmapM` and 114II
-`tensor_uniqueness` individually, and says so in its header).  A second
+`W*_cpsu`.  The *mathematics* of those instances is in the tree: 119V is
+proved concretely in `A/Proc/Tensor.lean` — associators and unitors for
+`VNT` by choice from unique-existence lemmas, `vn_smc_associator_natural`
+and its siblings, `vn_smc_pentagon`, `vn_smc_triangle`,
+`vn_smc_unitors_agree`, `vn_smc_hexagon`, `vn_smc_symmetry`, and
+`exists_braiding` (no longer `sorry`).  What is missing is only the
+*packaging* as a `MonoidalCategory` instance, which the file's own header
+records as a deliberate choice (the conversion policy's allowance for
+concrete phrasings), and which is `QUESTIONS.md` **A11**.  A second
 obstruction is in the *shape*: Mathlib renders the two as distinct
 structure types (`CategoryTheory.CommMon C` carries an `IsCommMonObj`
 instance field that `CategoryTheory.Mon C` does not), so
@@ -4551,8 +4558,9 @@ part 5: `Mon(W*_miu) ≅ dW*_miu ≃ Set^op` — rendered: for duplicable
 essential surjectivity of `ℓ^∞` onto `dW*_miu`) the bijectivity below is
 the content of `dW*_miu ≃ Set^op`; but the *equivalence* is a statement
 about categories, and the first half, `Mon(W*_miu) ≅ dW*_miu`, needs
-`Mon(-)` and hence a `MonoidalCategory` instance on `W*_miu` — see the
-note on part 4, where the cost is set out.  This is the same shape as the
+`Mon(-)` and hence a `MonoidalCategory` **instance** on `W*_miu` — the
+coherences themselves are proved in `A/Proc/Tensor.lean`; see the note on
+part 4, and `QUESTIONS.md` A11.  This is the same shape as the
 standing observation on 188III/188IV.
 
 The thesis's hint is `cor:linf-ff`, i.e. **122VI**: `nsp(ℓ^∞(X)) ≅ X` (.2) and
@@ -4894,8 +4902,11 @@ ambient one), and essential surjectivity is **127III** (`duplicable`),
 which is where the thesis leaves it.
 
 This is the second half of 132III.5.  The first half, `Mon(W*_miu) ≅
-dW*_miu`, is still not stated: it needs `Mon(-)` and hence a monoidal
-structure on `W*_miu`, whose cost is set out on `dup_vna_is_monoid_4`. -/
+dW*_miu`, is still not stated: it needs `Mon(-)` and hence a
+`MonoidalCategory` *instance* on `W*_miu`.  The monoidal structure itself
+(119V) is proved concretely in `A/Proc/Tensor.lean`; only the packaging is
+missing, and the cost is set out on `dup_vna_is_monoid_4` and in
+`QUESTIONS.md` A11. -/
 
 /-- The property of being duplicable, as an object property of `W*_miu`. -/
 def dupProp : ObjectProperty WMIU.{u} := fun A => Duplicable A.carrier

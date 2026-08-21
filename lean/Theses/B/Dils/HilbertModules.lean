@@ -1171,7 +1171,7 @@ def mulInner (𝒷 : Type u) [CStarAlgebra 𝒷] : 𝒷 → 𝒷 → 𝒷 :=
   fun a b => b * star a
 
 omit [StarOrderedRing 𝒷] in
-/-- **146VIII** (dils.tex:1772), second identification: *"if `X = 𝒷` with
+/-- **146VIII** (dils.tex:1907), second identification: *"if `X = 𝒷` with
 `[a,b] = a*b`, then the ultranorm uniformity coincides with the ultrastrong
 uniformity"*.  Mirrored, as everywhere in this file: our `mulInner` is
 `[a,b] = b a*`, so the ultranorm seminorms of `𝒷` over itself are the
@@ -1186,7 +1186,7 @@ theorem unSeminorm_mulInner_eq_omegaNorm (ω : NPFunctional 𝒷) (a : 𝒷) :
 
 variable {X : Type v} [AddCommGroup X]
 
-/-- **146VIII** (dils.tex:1772), first identification: *"if `𝒷 = ℂ`, then
+/-- **146VIII** (dils.tex:1907), first identification: *"if `𝒷 = ℂ`, then
 the ultranorm uniformity is the same as the uniformity induced by the
 norm"*.  Every ultranorm seminorm of a ℂ-valued inner product is a scalar
 multiple of the norm `‖x‖ = ‖[x,x]‖^½`, the scalar being `ω(1)^½` — so the
@@ -2412,7 +2412,7 @@ private theorem omegaNorm_inner_le (ω : NPFunctional 𝒷) (d y : X) :
   nlinarith [omegaNorm_nonneg (A := 𝒷) ω (inner 𝒷 d y),
     mul_nonneg (norm_nonneg y) (unSeminorm_nonneg ω (inner 𝒷 : X → X → 𝒷) d)]
 
-/-- **146IX** (dils.tex:1780, Beware), the quantitative half: *"the
+/-- **146IX** (dils.tex:1915, Beware), the quantitative half: *"the
 ultranorm uniformity is weaker than the norm uniformity — norm convergence
 implies ultranorm convergence"*, as the estimate `‖x‖_ω ≤ ‖x‖ ω(1)^½`, in
 the form that **149VII** uses.  (Earlier revisions of this file labelled it

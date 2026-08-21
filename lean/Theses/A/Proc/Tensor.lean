@@ -746,8 +746,8 @@ the Hadamard products satisfy `a ⊙ b ≤ ã ⊙ b̃`.
 `a ⊙ b = 1 ≰ 0 = ã ⊙ b̃`.  Positivity of `a` and `b` is what the sole
 consumer (**111VI**) has, and what any proof through Schur (**111II**)
 needs: the splitting below is a sum of three Hadamard products, and only
-`a ⊙ (b̃ - b)` and `(ã - a) ⊙ b` require it.  Not recorded in
-`ERRATA.md`; changing the printed statement is the author's call. -/
+`a ⊙ (b̃ - b)` and `(ã - a) ⊙ b` require it.  Recorded in `ERRATA.md` as the
+**111IV** row. -/
 theorem mult_completely_monotone (N : ℕ)
     (a a' b b' : Matrix (Fin N) (Fin N) ℂ) (ha : a.PosSemidef)
     (hb : b.PosSemidef) (hab : (a' - a).PosSemidef)
@@ -5451,8 +5451,8 @@ theorem vtmul_nonneg (a : A) (b : B) (ha : 0 ≤ a) (hb : 0 ≤ b) :
 from `𝒜` and `b₁ ≤ b₂` from `ℬ`", with no positivity; at `𝒜 = ℬ = ℂ` take
 `a₁ = b₁ = -1 ≤ 0 = a₂ = b₂` and then `a₁ ⊗ b₁ = 1 ≰ 0 = a₂ ⊗ b₂`.
 Positivity is what the splitting `a₂ ⊗ b₂ - a₁ ⊗ b₁ = (a₂-a₁) ⊗ b₂ +
-a₁ ⊗ (b₂-b₁)` below needs, and what every consumer supplies.  Not recorded
-in `ERRATA.md`; changing the printed statement is the author's call. -/
+a₁ ⊗ (b₂-b₁)` below needs, and what every consumer supplies.  Recorded in
+`ERRATA.md` as the **116III**.1 row. -/
 theorem tensor_simple_facts_1 (a : A) (b : B) (ha : 0 ≤ a) (hb : 0 ≤ b) :
     0 ≤ a ⊗ᵥ b ∧
       ∀ (a₂ : A) (b₂ : B), a ≤ a₂ → b ≤ b₂ → a ⊗ᵥ b ≤ a₂ ⊗ᵥ b₂ := by
@@ -6125,8 +6125,8 @@ only for a *central projection* `z` of `𝒯`, whereas condition (3) is
 faithfulness — the same statement for every positive `t`.  This is the
 error class of the `ERRATA.md` row **119II**, and as harmless: the printed
 argument (that `γ(σ∘f, τ∘g)` is the restriction of `σ ⊗ τ` to `𝒯`) gives
-the general case verbatim, and that is what is proved here.  Not recorded
-in `ERRATA.md`. -/
+the general case verbatim, and that is what is proved here.  Recorded in
+`ERRATA.md` as the **115V** row. -/
 private theorem isTensorProduct_genGamma (f : NMIUMap A C) (g : NMIUMap B D)
     (hf : Function.Injective ⇑f) (hg : Function.Injective ⇑g) :
     IsTensorProduct (genGamma f g) := by
@@ -7139,8 +7139,7 @@ an nmiu-map.
 **The hypothesis `0 ≤ a` is our repair: as printed the part is false.**  It
 asks that `a ⊗ (·)` be an ncp-map "for every `a ∈ 𝒜`", but at `a = -1` the
 map `b ↦ (-1) ⊗ b` is not even positive — it sends the positive `1` to
-`-(1 ⊗ 1) = -1`.  Not recorded in `ERRATA.md`; changing the printed
-statement is the author's call. -/
+`-(1 ⊗ 1) = -1`.  Recorded in `ERRATA.md` as the **116III**.5 row. -/
 theorem tensor_simple_facts_5 (a : A) (ha : 0 ≤ a) :
     (∃ f : NCPMap B (VNT A B), ∀ b, f b = a ⊗ᵥ b) ∧
       ∃ ρ : NMIUMap B (VNT A B), ∀ b, ρ b = (1 : A) ⊗ᵥ b := by

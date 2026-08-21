@@ -5613,8 +5613,13 @@ is **FALSE as printed** in its first two claims; this is the counterexample.
 Take `𝒜 = ℂ`, `p = 0`, `q = 1`, `B = 1`.  Then `p ≤ B·q`, `p/q = 0` is
 central and `p` itself is central, yet `p` and `q` are *not* centrally
 similar — by part 2 they would have to satisfy `⌈p⌉ = ⌈q⌉`, i.e. `0 = 1`.
-The missing hypothesis is `⌈p⌉ = ⌈q⌉` (equivalently: assume `q ≤ B'·p` as
-well as `p ≤ B·q`); see `ERRATA.md`.  `p = 0` is only the smallest witness —
+The missing hypothesis is faithfulness.  The author's repair of 2026-08-19
+(erratum `parsec-1040.30`) is already in proc.tex: part 2a now assumes
+`⌈p⌉ = ⌈q⌉ = 1` and replaces `p ≤ Bq` by `p² ≤ Bq²` — see
+`centrally_similar_basic_2a` below.  (There is therefore no 104III row in
+`ERRATA.md`; the ruling closed it.  An earlier revision of this note proposed
+`⌈p⌉ = ⌈q⌉`, or `q ≤ B'·p` alongside `p ≤ B·q`, which is *not* the repair that
+was adopted.)  `p = 0` is only the smallest witness —
 `p = (1,0)` and `q = (1,1)` in `ℂ²` fail the same way, and by
 `centrally_similar_one_of_isStarProjection` *every* central projection
 `≠ 1` is a witness, so this is not a degeneracy at `0`. -/

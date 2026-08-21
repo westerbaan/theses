@@ -15,8 +15,12 @@ lines 2–1266.
                 uniqueness, basic properties
 
 Every statement in this file is proved, except **139XI**
-(`ess_uniq_pur`), which is `sorry` (see ERRATA.md: the exercise as printed
-needs an extra hypothesis).  See CONVENTIONS.md for the numbering
+(`ess_uniq_pur`), which is `sorry` — and stays `sorry` because our statement
+transcribes the *first* printing of the exercise, which is false.  dils.tex
+was corrected on 2026-08-18 to add one of three hypotheses (both dilations
+minimal / `dim 𝒱^⊥ = dim 𝒲^⊥` / `ℋ`, `𝒦` finite dimensional); realigning our
+statement with it is the author's call, see ERRATA.md 139XI.  See
+CONVENTIONS.md for the numbering
 (**135II** = parsec 1350, point 20) and naming conventions.
 
 Conventions specific to this file: all von Neumann algebras and Hilbert
@@ -2804,7 +2808,14 @@ variable {H K K' : Type u}
 /-- **139XI** (`ess-uniq-pur`, dils.tex:998, Exercise* (Essential uniqueness
 of purification)): if `V, W : 𝒦 → ℋ ⊗ 𝒦'` are bounded operators with
 `V*(a ⊗ 1)V = φ(a) = W*(a ⊗ 1)W` for all `a ∈ B(ℋ)`, then `V = (1 ⊗ U) W`
-for some unitary `U : 𝒦' → 𝒦'`. -/
+for some unitary `U : 𝒦' → 𝒦'`.
+
+⚠ **This transcribes the first printing, which is false**, and it is why the
+proof is `sorry`.  dils.tex was corrected on 2026-08-18 to demand one of
+three extra hypotheses — both dilations minimal (`𝒱 = ℋ ⊗ 𝒦' = 𝒲`), or
+`dim 𝒱^⊥ = dim 𝒲^⊥`, or `ℋ` and `𝒦` finite dimensional — and the statement
+below still carries none of them.  Realigning it is a change of statement,
+so it is left for the author; see `ERRATA.md` 139XI. -/
 theorem ess_uniq_pur (φ : NCPMap (H →L[ℂ] H) (K →L[ℂ] K))
     (V W : K →L[ℂ] hilbTensor H K')
     (hV : ∀ a : H →L[ℂ] H, φ a = conjOperator V (tensorCLM a 1))

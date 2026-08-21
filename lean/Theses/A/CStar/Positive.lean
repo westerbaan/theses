@@ -2778,8 +2778,10 @@ complete Archimedean order unit space).
 
 The infimum runs over `λ ≥ 0`, not over all `λ ∈ ℝ`: that is **erratum
 170.60**.  With the range restricted, the set is `[‖a‖, ∞)` in *every*
-C*-algebra, the trivial one included, so — unlike the printed form — this
-needs no `Subsingleton`/`Nontrivial` case split. -/
+C*-algebra, the trivial one included, so — unlike the *first printing*'s
+unrestricted `λ ∈ ℝ` — this needs no `Subsingleton`/`Nontrivial` case split.
+(cstar.tex now prints the restricted range, so the erratum is incorporated
+at the source.) -/
 theorem positive_basic_2_3b (a : 𝒜) (ha : IsSelfAdjoint a) :
     ‖a‖ = sInf {lam : ℝ | 0 ≤ lam ∧
       -(algebraMap ℂ 𝒜 (lam : ℂ)) ≤ a ∧ a ≤ algebraMap ℂ 𝒜 (lam : ℂ)} :=
@@ -3628,10 +3630,12 @@ theorem order_separating_norm (ω : ∀ i, 𝒜 →ₗ[ℂ] ℬf i)
       ∀ a : 𝒜, 0 ≤ a → ‖a‖ = ⨆ i, ‖ω i a‖] := by
   -- The thesis (cstar.tex:3247) applies **20VI** to the single pu-map
   -- `⟨ω⟩ : 𝒜 → ⊕_ω ℬ_ω` into the C*-product, where positivity is pointwise
-  -- and the norm is the supremum.  Since the ℓ^∞-product of an arbitrary
-  -- family is not available in the tree (it is exactly the gap recorded for
-  -- `vonNeumannAlgebra_lp_infty`), we run **20VI**'s *argument* on the family
-  -- directly; the three steps are the same.  Note no index is needed: for
+  -- and the norm is the supremum.  The ℓ^∞-product of an arbitrary family is
+  -- not available *here*: Mathlib's `lp 𝒜 ∞` carries no `CStarAlgebra` or
+  -- order instance on its own, and the ones the tree builds (together with
+  -- `vonNeumannAlgebra_lp_infty`) live in `A/VN/Basic`, which imports this
+  -- file.  So we run **20VI**'s *argument* on the family directly; the
+  -- three steps are the same.  Note no index is needed: for
   -- empty `ι` all three conditions force `𝒜` to be trivial, and the proof
   -- below covers that case without a split (`⨆ over ∅ = 0` in `ℝ`).
   have hbdd : ∀ a : 𝒜, IsSelfAdjoint a → BddAbove (Set.range fun i => ‖ω i a‖) :=

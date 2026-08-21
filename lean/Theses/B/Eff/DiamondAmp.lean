@@ -660,8 +660,13 @@ theorem ovee_le_of_le {X : C} {j : Pred X} (hj : IsSharp j) {s t : Pred X}
 /-- Sharp predicates are closed under `⋁` (208III, "Sub-EA"): for orthogonal
 sharp `s, t` the sum `s ⋁ t` is the supremum `s ∨ t`, which is sharp.
 
-The thesis derives this from `ea-modularity-prop` (177Ia), whose proof has a
-gap we could not repair (see QUESTIONS.md B4).  The argument below avoids
+The thesis derives this from `ea-modularity-prop` (177Ia).  Its *first*
+printing had a gap we could not repair; eff.tex was corrected on 2026-08-14
+(the Proposition now hypothesises the supremum and concludes the infimum) and
+the corrected form is proved in `EffectAlgebras.lean` as
+`msc_prop15'_of_dual`.  QUESTIONS.md B4, which recorded the gap, was deleted
+as resolved on 2026-08-16, so that pointer no longer resolves.  The argument
+below predates the correction and avoids
 modularity altogether: `s ∨ t = im [π_s, π_t]` is a supremum among *all*
 predicates (204V), so `s ∨ t ≤ s ⋁ t`; conversely `s` and `t` both vanish on
 `π_{(s∨t)ᵖ}`, hence so does `s ⋁ t` (partial sums are preserved by
@@ -692,8 +697,11 @@ theorem diamond_oml_subEA (X : C) :
 half — `SPred X` is an orthomodular lattice — is stated and proved as
 `diamond_oml` below, after 208IX/208XII: its lattice operations are the
 `SPred`-infimum and `SPred`-supremum constructed there. (The thesis takes
-its meets and joins from `ea-modularity-prop` (177Ia) instead, whose proof
-has an unrepaired gap; see QUESTIONS.md B4.) -/
+its meets and joins from `ea-modularity-prop` (177Ia) instead.  That route was
+avoided because 177Ia's first printing was false; eff.tex has since been
+corrected — see `ea_modularity_prop` in `EffectAlgebras.lean` — so the
+divergence is no longer forced, only historical.  The QUESTIONS.md B4 pointer
+this note used to carry dangles: B4 was deleted as resolved on 2026-08-16.) -/
 
 end DiamondBasics
 

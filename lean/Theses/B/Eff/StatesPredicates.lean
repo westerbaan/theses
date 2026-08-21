@@ -608,7 +608,9 @@ noncomputable def predMapHom {X Y : C} (f : X ⟶ Y) (hf : IsTotal f) :
 Given directly rather than existentially, so that both halves are pinned:
 the object part is *literally* `Pred X` and the action on maps is
 *literally* `p ↦ p ∘ f` (`predFunctor_obj`, `predFunctor_map`, both `rfl`).
-Compare the warning in the doc of `192V.3`, and QUESTIONS.md B6. -/
+Compare the warning in the doc of `192V.3`, and the defect that the ruling
+recorded as QUESTIONS B6 repaired for 192III.1/.2 (B6 was deleted as
+resolved on 2026-08-16; the ruling is in the commit that implemented it). -/
 noncomputable def predFunctor : Tot C ⥤ (EModCat.{v, v} (Scal C))ᵒᵖ where
   obj X := Opposite.op (EModCat.of (Scal C) (Pred X.base))
   map {_ _} f := Quiver.Hom.op (predMapHom f.1 f.2)
@@ -3238,8 +3240,10 @@ changed in the move. -/
 
 /-- `𝒟_M` of a one-element set is a one-element set: every formal
 `M`-convex combination over `PUnit` is the Dirac one.  (This holds also for
-the trivial effect monoid `1 = 0`, where both sides are the zero function —
-cf. QUESTIONS B7.) -/
+the trivial effect monoid `1 = 0`, where both sides are the zero function — the
+case QUESTIONS B7 was about, settled by berr.tex's erratum
+`aconvalmosteffectus` and recorded at `aconvalmosteffectus_coproducts`
+below; B7 itself was deleted as resolved on 2026-08-16.) -/
 theorem MConvexComb.eq_eta_punit {M : Type u} [EffectMonoid M]
     (p : MConvexComb M PUnit.{v + 1}) : p = MConvexComb.eta PUnit.unit := by
   classical
@@ -4147,7 +4151,7 @@ theorem convex_subset_mconvex {V : Type u} [AddCommGroup V] [Module ℝ V]
     linarith
   exact Subtype.ext (smul_right_injective V hl' (add_left_cancel heq'))
 
-/-- **Erratum to 192V.3** (`eff-semilattice-aconv`): over the two-element
+/-- **Erratum to 192V.3** (`eff-aconv-exa`): over the two-element
 effect monoid `2` every formal convex combination is a Dirac distribution,
 so `𝒟₂ ≅ Id`.  Indeed by Definition 192II the coefficients of a formal
 combination sum to `1` in the *partial* effect algebra `2`, where `1 ⋁ 1` is
@@ -4213,10 +4217,11 @@ theorem two_eta_injective {X : Type v} :
   rw [hL, hR] at hval
   exact absurd hval (by decide)
 
-/-- **Erratum to 192V.3** (`eff-semilattice-aconv`, eff.tex:2577, Examples):
+/-- **Erratum to 192V.3** (`eff-aconv-exa`, eff.tex:2577, Examples):
 the thesis used to claim "semilattices are exactly the abstract `2`-convex
-sets"; that claim is **false** and has been deleted (see the `erratum` on
-`eff-semilattice-aconv`, and QUESTIONS.md B1).  What is true is that the
+sets"; that claim is **false** and has been deleted (berr.tex's erratum
+`eff-aconv-exa`: "It's claimed abstract 2-convex sets are exactly
+semilattices.  This is false").  What is true is that the
 abstract `2`-convex sets are just *sets*: **every** type carries an abstract
 `2`-convex structure — no semilattice (indeed no structure at all) is
 needed.  Together with `two_convex_unique` this says `AConv₂ ≅ Set`. -/
@@ -4318,7 +4323,7 @@ theorem listJoin_congr {L : Type u} [SemilatticeSup L] {a b : L}
   le_antisymm ((listJoin_le_iff _ _ _).mpr fun y hy => le_listJoin b m ((h y).mp hy))
     ((listJoin_le_iff _ _ _).mpr fun y hy => le_listJoin a l ((h y).mpr hy))
 
-/-- **192V.3** (`eff-semilattice-aconv`, eff.tex:2577, Examples): every
+/-- **192V.3** (`eff-aconv-exa`, eff.tex:2577, Examples): every
 semilattice `(L, ∨)` is an abstract `[0,1]`-convex set with
 `h(λ₁|x₁⟩ ⋁ ⋯ ⋁ λₙ|xₙ⟩) = ⋁_{i : λᵢ ≠ 0} xᵢ`.
 
@@ -4472,7 +4477,7 @@ theorem semilattice_unitInterval_convex (L : Type u) [SemilatticeSup L] :
       exact le_listJoin _ _ ((hbig z).mpr
         ((hmu z).mpr ⟨φ, hφ, (hsuppmem φ z).mp hz⟩))
 
-/-- **192V.3**, second half (`eff-semilattice-aconv`, eff.tex:2585): a
+/-- **192V.3**, second half (`eff-aconv-exa`, eff.tex:2585): a
 semilattice `L` is cancellative as an abstract `[0,1]`-convex set (with the
 join structure of `semilattice_unitInterval_convex`) if and only if `x = y`
 for all `x, y ∈ L`.
@@ -6064,8 +6069,9 @@ initial object" fails for the **trivial** effect monoid `M` (`1 = 0`): there
 object of `AConv_M` at all.  `AConv_M` is then equivalent to the one-object,
 one-arrow category and `1` is initial, so the proposition itself survives —
 the proof below splits on `1 = 0`.  The thesis now makes that same case split
-(erratum on `aconvalmosteffectus`), which settles QUESTIONS B7: effect
-monoids are *not* required to satisfy `1 ≠ 0`. -/
+(erratum on `aconvalmosteffectus`), which settled the question recorded as
+QUESTIONS B7 — effect monoids are *not* required to satisfy `1 ≠ 0`; B7 was
+deleted as resolved on 2026-08-16. -/
 theorem aconvalmosteffectus_coproducts :
     HasFiniteCoproducts (AConvMCat.{u, max u v} M) := by
   classical

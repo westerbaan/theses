@@ -26111,3 +26111,272 @@ situ** (source copied to the scratchpad, `#print axioms` appended, the copy
 compiled): `Theses.A.CStar.inner_product_completion`,
 `…_degenerate`, `…_extension` and `…_extendL` each depend on exactly
 `[propext, Classical.choice, Quot.sound]`.
+
+## Session 94 — the stale-prose sweep: **six "still `sorry`" justifications were false, two proofs go back to the thesis's own argument, and no mislabelled DISP survives** (worker on stale prose across `Theses/`)
+
+The last cleanup pass of the statement audit: prose that is now false and that
+misleads whoever reads it next.  Three sweeps, plus two items handed over by
+the re-verification passes.  **Nothing but comments changed, except two proofs**
+(`hilbmod_ad_ncp` and `pTheta_normal`), and no statement was touched anywhere.
+
+### Sweep 1 — "still `sorry`" and its variants
+
+The tree has exactly **18** declarations containing a `sorry`
+(`intersection_tensor`, `equaliser_lemma`, `tensor_equalisers`,
+`tensor_preimage`, `tensor_closed`, `tensor_map_factorisation`,
+`tensorBsurjectivity`; `ess_uniq_pur`; the four `kaplansky_hilbmod_A*`;
+`centrally_similar_basic_5`, `sequential_product_counterexample_3`;
+`effectModule_unitInterval_representation`; `tensor_simple_facts_4`;
+`surjective_nmiu_2`; `vn_is_andthen_eff`).  Every "is/was `sorry`",
+"still open", "not available", "route is unavailable" claim in `Theses/**`
+was checked against that list rather than against itself.
+
+**Six were false.**  Four of them were the stated reason for a proof taking a
+non-thesis route.
+
+1. **`B/Dils/SelfDualCompletion.lean`, 153I `hilbmod_ad_ncp` — re-proved by
+   the thesis's own argument.**  The doc said "**153III** (the author's proof)
+   is not available to us"; it is.  153III runs `normal-faithful` (48II) +
+   `hilbmod-ordersep` (144I) + `hilbmod-vecstates-normal` (152XIII), and all
+   three are in scope — 48II is `normal_faithful` in `A/VN/Basic`, and 152XIII
+   is `baVecNP`, **a page and a half above in the same file**.  The proof is now
+   48II against the vector states of `𝒷ᵃ(X)`: they are faithful (`ba_nonneg_iff`
+   plus `np_faithful` on `𝒷`), they are normal (`baVecNP`), and
+   `ω⟨x, ad_T(S) x⟩ = ω⟨Tx, S(Tx)⟩` *is* the vector state of `𝒷ᵃ(Y)` at `Tx`.
+   **37 lines → 32**, and both self-duality hypotheses are now used, `hX` for
+   `𝒷ᵃ(X)` and `hY` for `𝒷ᵃ(Y)` — so the `set_option linter.unusedVariables
+   false` and the "`hX` is deliberately kept" comment are gone.  Divergence
+   class **(1) faithful**, where it used to be (2).
+   Axiom-clean in situ: `Theses.B.Dils.hilbmod_ad_ncp` depends on exactly
+   `[propext, Classical.choice, Quot.sound]`.
+
+2. **`B/Dils/SelfDualCompletion.lean`, 153IV `hilbmod_adj_vector_ncp`** — "153I
+   … is still open here — it waits on **152X**".  Stale: both are proved a
+   little above it in the same file.  But the author's route is *not*
+   shorter, and the comment now says why precisely: it needs `𝒜ⁿ` as a
+   **self-dual** Hilbert `𝒜`-module (nothing makes `Fin n → 𝒜` one), and then
+   `𝒷ᵃ(𝒜ⁿ) ≅ Mₙ𝒜` and `𝒷ᵃ(𝒜) ≅ 𝒜ᵒᵖ` — the second exists only downstream, as
+   `rightMulEquiv` in `Paschke.lean`.  Three missing theorems against a
+   self-contained 140-line computation.  Proof left, class (2) stands.
+
+3. **`B/Dils/SelfDual.lean`, 166IV `exttensor_dense_subsets`** — "158II is open
+   — its printed proof is false … so that route is unavailable", with the
+   headline "**and it removes a dependency on a `sorry`**".  Both false: what is
+   false is only the thesis's *printed proof* of 158II (the four 158V
+   estimates, kept `sorry` on purpose); 158II itself is proved as
+   `kaplansky_hilbmod` in `Kaplansky.lean`, through the linking algebra, and
+   `SelfDual.lean` imports it.  The tell was four hypotheses (`hUsub`,
+   `hUsmul`, `hVsub`, `hVsmul`) carried but unused — exactly what
+   `kaplansky_hilbmod` wants.  **The route was verified available by
+   compiling the application**, at `A = (⊤ : StarSubalgebra ℂ 𝒜)`.  It is not
+   installed because it is *longer*: 166II is a statement about **nets** while
+   ultranorm density is rendered one **entourage** at a time throughout these
+   files, and no lemma bridges the two forms (the nearest analogue, the
+   canonical net built inside `selfdual_completion_univ`, costs some forty
+   lines by itself).  60–75 lines against the present 35, for the same
+   conclusion.  Proof left, comment corrected, and the missing bridge lemma is
+   named for whoever wants it.
+
+4. **`B/Dils/SelfDual.lean`, 165V `hilbmod_tensor_ketbra`** — "we take the
+   first, since the density statement **164II**.1 (`ext_tensor_dense`) is still
+   `sorry`".  Stale: `ext_tensor_dense` is proved earlier in the same file and
+   is used by `ext_tensor_basis` and `exttensor_dense_subsets`.  The author
+   offers *both* routes ("either … or"), so this was never a divergence; the
+   comment now says the universal-property route is kept because its uniqueness
+   half is already at hand as `extTensor_map_ext`.
+
+5. **`B/Eff/EffectAlgebras.lean`, 178III.2 `finite_effectMonoid_commutative`** —
+   "(`finite_effectMonoid_boolean`, still `sorry`)".  Stale: it is proved some 240
+   lines below.  But the thesis's dependency **cannot be inverted**, and this is
+   now stated: our proof of `finite_effectMonoid_boolean` *consumes* the
+   corollary — `emon_finite_orth_mul`, `emon_finite_orth_ovee` and
+   `emon_finite_perp_mul_orth` each rewrite by `finite_effectMonoid_commutative`
+   before `emonBooleanAlgebra` is reached.  Proof left.
+
+6. **`B/Dils/Paschke.lean`, 154III.2 `prhoHom_normal` — re-proved by the
+   thesis's own argument, and it is shorter.**  The doc excused a
+   double-polarisation route by "`mn-vna` (which is still open in `A/VN`)".
+   Stale twice over: 49IV is `mn_vna_1`/`_2`/`_2'`/`_3` in `A/VN/Basic`, and
+   *all three* factors of the thesis's argument (dils.tex parsec 1540 point 60)
+   are in the tree.  `⟨x̂, ϱ(d) x̂⟩ = b*(Mₙφ)(a* d a)b` factors as
+
+       `𝒜 → Mₙ𝒜 → Mₙℬ → ℬ`
+
+   by **153IV** `hilbmod_adj_vector_ncp` (`SelfDualCompletion.lean`), **49IV**.3
+   `mn_vna_3` (the entrywise `Mₙφ` is normal) and the third clause of **49IV**.2
+   `mn_vna_2`; three `compNP`s glue them to `ω` into one np-functional of `𝒜`.
+   `pTheta_normal`'s statement is unchanged and `prhoHom_normal`'s body is
+   untouched; the whole polarisation apparatus —
+   `preservesDirSups_of_np_combination`, `gram_polarization`, `pIdx`, `pCoef`,
+   `pNP`, `pTheta_combination` — had **no other consumer** anywhere in the tree
+   and is gone.  **4260 lines → 4200.**  Divergence class **(1) faithful**,
+   where it used to be (2).  Axiom-clean in situ:
+   `Theses.B.Dils.pTheta_normal` and `Theses.B.Dils.prhoHom_normal` each depend
+   on exactly `[propext, Classical.choice, Quot.sound]`.
+
+A seventh, half-false: **`A/CStar/Positive.lean`, 21VII
+`order_separating_norm`** said the ℓ^∞-product "is not available in the tree
+(it is exactly the gap recorded for `vonNeumannAlgebra_lp_infty`)" — but that
+instance exists and is used.  Checked by compiling `infer_instance` at both
+points: `lp A ∞` has no `CStarAlgebra`/`PartialOrder` instance from
+`A/CStar/Basic`, and does have one from `A/VN/Basic`.  The reason is **file
+ordering**, and the comment now says so.
+
+**Left, and verified still true** — `tensor_closed` (125VIII, blocked on 125IV
+`equaliser_lemma` and 121II `intersection_tensor`, both `sorry`);
+`ess_uniq_pur` (139XI); the four `kaplansky_hilbmod_A*` (deliberate records of
+a falsehood); `centrally_similar_basic_5` (104III.5);
+`effectModule_unitInterval_representation` (179III.2 — a `QUESTIONS.md` **B14**
+pointer added, the note was already precise); `vn_is_andthen_eff` (211IV,
+B15); 193IX/193IV's derivation calculus; `tensor_simple_facts_4` (116III.4).
+And the notes that earlier waves had *already* corrected were re-checked and
+left alone: `A/VN/NormalFunctionals` 87VIII, `A/CStar/Matrices` 34aII,
+`A/VN/Projections` 65IV, `A/Proc/Duplicators` 129X,
+`B/Dils/SelfDualCompletion` 152XIV, `A/Proc/Measurement` (three), `B/Dils/Pure`
+(two).
+
+### Sweep 2 — mislabelled DISP numbers: **no survivors**
+
+Two mechanical checks over the whole tree, both scripted rather than eyeballed
+(the tex **labels** are stable; the line numbers are not).
+
+* Every `**DISP** (`label`, file.tex:LINE)` reference — **1254** of them —
+  against the parsec/point that actually carries `label`.  13 flags.
+* Every doc comment's *leading* `**DISP**` against the first resolvable label
+  in it — **1117** doc comments.  37 flags.
+
+Every one of the 50 resolves as legitimate on inspection: a reference to a
+**proof sub-point** of the cited result (`23II` → `square-commuting-monotone`
+and `ineq-square-root`, which are points 40 and 50 inside 23II's proof;
+`56I`.30 → `vna-ceil-point-1`; `44VIII` → `ad-normal-1`; `188III`/`188IV` →
+`proof-cho-thm`; `216XIV` → `dagger-thm-necessity`), a **range**
+(`168I`–`168IV`, `137I`–`137VII`, `21III`–`21IV`), a **`bsols.tex` solution
+key** (`hilbmod-tensor-ketbra`), or a **cited lemma** rather than the point's
+own label.  The dozen the audit found have all been fixed by the repair waves.
+
+A third check *did* find something.  Drift-correcting the **1251** unlabelled
+`file.tex:LINE` citations against local anchors turned up three that are not
+drift but plain wrong: `B/Dils/HilbertModules.lean` cited **146VIII** twice and
+**146IX** once at `dils.tex:1772`/`1780`, which is 130 lines away, inside
+146II's *Definition* of the uniformity.  146VIII (the two identifications) is
+`\begin{point}{80}` at 1906 and 146IX (the Beware) is `{90}` at 1914; the
+citations are now 1907 and 1915.  (The rest of parsec 146 in that file carries a
+uniform −8 drift; that is a separate, tree-wide issue and was left.)
+
+### Sweep 3 — stale erratum notes
+
+Verified against the current `ERRATA.md`, `berr.tex`/`asols.tex`, and the
+running text of the `.tex` sources located **by label, not by line**.
+
+* **The 177Ia cluster — ten notes, and the biggest find.**  `eff.tex` commit
+  `280fa5b` (2026-08-14, "Second attempt at correcting 177Ia") **reversed** the
+  Proposition: it now reads "if the **supremum** `a ∨ b` exists … then their
+  **infimum** `a ∧ b` exists as well", and `modularity-lemma-proof` likewise.
+  In that direction it is *true*, and the tree already proves it —
+  `msc_prop15'_of_dual`, read off `dual_modularity_lemma`.  Eight notes in
+  `EffectAlgebras.lean` and two in `DiamondAmp.lean` still called 177Ia "false
+  as printed" and its lemma "the false lemma"; all ten now distinguish the
+  first printing from the corrected text.  The `WrightTriangle` counterexample
+  stays — it is what shows the correction was needed.
+* **139XI `ess_uniq_pur`** — `dils.tex` was corrected on 2026-08-18 to demand
+  one of three hypotheses (both dilations minimal / `dim 𝒱^⊥ = dim 𝒲^⊥` /
+  `ℋ`, `𝒦` finite dimensional).  Our statement transcribes the *first*
+  printing, which is false — which is *why* it is `sorry`.  Both the module
+  header and the declaration's own doc comment now say so.
+* **11VI.2** (`A/CStar/Basic`) — "the thesis states the hypothesis as
+  `‖a‖ < ‖b‖`, which appears to be an erratum": `cstar.tex:1459` now prints
+  `\|a\| < \|b^{-1}\|^{-1}`.
+* **27XI** (`A/CStar/Representation`) — "⚠ The printed proof is **wrong**":
+  `cstar.tex:4016` now carries the erratum's corrected argument verbatim.
+* **Six notes saying "Not recorded in `ERRATA.md`"** (or citing an audit row)
+  where `ERRATA.md` now has the row: 111IV, 116III.1, 115V, 116III.5
+  (`A/Proc/Tensor`), 175II.2 (`B/Eff/EffectAlgebras`) and 157VI
+  (`B/Dils/Paschke`, "absorbed here rather than filed").
+* **A dangling erratum key.**  `eff-semilattice-aconv`, used five times in
+  `B/Eff/StatesPredicates`, exists in **no** `.tex` file; the label and the
+  `berr.tex` erratum key are both `eff-aconv-exa`.
+* **104III's "see `ERRATA.md`"** (`A/Proc/Measurement`) — there is no 104III
+  row; the author ruled on 2026-08-19 (`parsec-1040.30`) and `proc.tex` now
+  carries `⌈p⌉ = ⌈q⌉ = 1` and `p² ≤ Bq²`.  The note's *proposed* repair was
+  also not the one adopted.
+* Nits: **170.60** (`A/CStar/Positive`, "unlike the printed form") and
+  **341.70** (`A/CStar/Matrices`, "the erratum makes the thesis's intent
+  explicit") both describe corrections that `cstar.tex` already carries;
+  **129II.2** (`A/Proc/Duplicators`) said the Lean repair is "**not** the repair
+  conjectured in ERRATA", but `ERRATA.md` now prescribes exactly the Lean
+  repair.
+
+### Dangling `QUESTIONS.md` pointers
+
+B2, B4, B5, B6, B7, D2, D3, B9 were deleted as resolved on 2026-08-16.  Most
+references to them in `Theses/**` are already past-tense and harmless.  Two
+were live deferrals and are now precise: `StatesPredicates.lean`'s "Compare …
+and QUESTIONS.md B6" and "cf. QUESTIONS B7", the latter now pointing at
+`aconvalmosteffectus_coproducts` and `berr.tex`'s `aconvalmosteffectus`.
+
+### Handed over by the re-verification passes
+
+* **`A/CStar/Matrices.lean`, 113II `matBilin_nonneg_of_mi`** deferred to
+  `QUESTIONS.md` **B5** *and* **D3**, both deleted.  The note now says outright
+  that no ruling is outstanding: von Neumann algebras are C*-algebras,
+  mi-bilinear maps are automatically `ℂ`-homogeneous, and `IsVNTensor` needs
+  the generality it has.
+* **`A/Proc/Duplicators.lean`, 132III.4/132III.5** said the associators,
+  unitors, pentagon, triangle and hexagon are "none of which the tree has",
+  citing `A/Proc/Tensor.lean`'s header.  Wave 3's 119V work overtook that:
+  `vn_smc_associator_natural`, `vn_smc_pentagon`, `vn_smc_triangle`,
+  `vn_smc_unitors_agree`, `vn_smc_hexagon`, `vn_smc_symmetry` and
+  `exists_braiding` are all proved there.  All three occurrences now say what
+  is actually missing — the **packaging** as a `MonoidalCategory` instance —
+  and point at `QUESTIONS.md` **A11**.
+
+### ⚠ `ERRATA.md`'s new 177Ia row is stale in the *other* direction
+
+Commit `e2211f5` (today, "ERRATA gains the 177Ia row two rows cite") added a
+177Ia row saying the Proposition is "**false as printed**".  That was true of
+the **first** printing only.  `eff.tex` has carried the corrected statement —
+supremum hypothesised, infimum concluded — since **2026-08-14**, commit
+`280fa5b` ("Second attempt at correcting 177Ia"), and `modularity-lemma-proof`
+was corrected in the same commit.  The 208III row inherits the assumption.
+Recorded in `ea_modularity_prop`'s doc comment; `ERRATA.md` was not touched.
+
+### Two statement-level findings, flagged not fixed
+
+Both are outside a prose sweep's remit (never weaken, never change a
+statement), and both are recorded in the declarations' own doc comments.
+
+* **`ea_modularity_prop` (177Ia) is now *understated*.**  It hypothesises both
+  the infimum and the supremum; the corrected `eff.tex` hypothesises only the
+  supremum and *concludes* the infimum, and `msc_prop15'_of_dual` above it
+  already proves exactly that.  Dropping the `hm` binder and producing `m`
+  instead would realign it — one binder, no new mathematics.
+  `REPAIR-BRIEF.md`'s listing of `ea_modularity_prop` among the "deliberate
+  records of a falsehood" is stale for the same reason.
+* **`ess_uniq_pur` (139XI) transcribes a statement `dils.tex` no longer
+  prints**, and cannot be proved as it stands.
+
+### Compile
+
+**14 files changed** (`A/CStar/{Basic, Positive, Matrices}`,
+`A/CStar/Representation` — since committed by a concurrent worker —
+`A/Proc/{Measurement, Tensor, Duplicators}`,
+`B/Dils/{Stinespring, HilbertModules, SelfDualCompletion, Paschke, SelfDual}`,
+`B/Eff/{EffectAlgebras, DiamondAmp, StatesPredicates}`), **+343 / −292 lines**,
+of which the only non-comment lines are the two re-proofs.
+
+Every file was recompiled and its olean rebuilt, in dependency order, and then
+the whole of `A/CStar` → `A/VN` → `A/Proc` and `B/Dils` → `B/Eff` was
+recompiled against the new oleans — **30 files, `rc=0` for every one, 0
+errors**.  The ``declaration uses `sorry` `` warnings total **exactly 18**,
+matching the 18 sorry-carrying declarations one for one:
+`QuantumLambda` ×7, `Kaplansky` ×4, `Measurement` ×2, and one each in
+`Tensor`, `Stinespring`, `Pure`, `EffectAlgebras`, `VNExamples`.  **No new
+`sorry` anywhere** — the diff contains no occurrence of the token.
+
+Both re-proofs verified **axiom-clean in situ** (source copied to the
+scratchpad, `#print axioms` appended, the copy compiled from source):
+
+    'Theses.B.Dils.hilbmod_ad_ncp'          [propext, Classical.choice, Quot.sound]
+    'Theses.B.Dils.hilbmod_adj_vector_ncp'  [propext, Classical.choice, Quot.sound]
+    'Theses.B.Dils.pTheta_normal'           [propext, Classical.choice, Quot.sound]
+    'Theses.B.Dils.prhoHom_normal'          [propext, Classical.choice, Quot.sound]
