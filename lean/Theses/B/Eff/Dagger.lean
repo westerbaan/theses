@@ -16,13 +16,17 @@ Design:
 * The dagger of a pure map in a †'-effectus (217II) is formalized by the
   relation `IsDaggerOf f g` (via the standard form 212III, with the
   isomorphism packaged as an `Iso`), with `pureDagger` obtained by unique
-  choice from `pureDagger_existsUnique` (= the well-definedness argument
-  of 217I).
+  choice from `pureDagger_existsUnique`.  That fixes `f†` for the *chosen*
+  `π_s` and `ζ_s`; that the value is independent of that choice — the
+  actual content of 217I — is the separate
+  `pureDagger_indep_of_choice`.
 * Not separately formalized: the examples 214II (`Hilb`), 215II/215VIa–VII
   (the concrete description of the dagger on `vN`), the Setting 219II with
-  its internal lemmas 219III, 219V, 219VII, 219IX, 219X, 219XIII, 219XIV
+  its internal lemmas 219III, 219V, 219VII, 219IX, 219X and 219XIII
   (proof infrastructure for 219XVI, represented here by the standalone
-  219XI and 219XVI), the quantum-gate discussion 222I–222IV, the
+  219XI, 219XIV and 219XVI — 219XIV *is* formalized, as
+  `pureDagger_compr_asrt_zeta`, in a form that avoids the Setting), the
+  quantum-gate discussion 222I–222IV, the
   commutant computation 223III (`Inv ϱ = [0,1]_{ϱ(𝒜)□}`, which needs the
   commutant apparatus of thesis A), and 221IIIa (`CvNᵒᵖ` has no dilations;
   `CvNᵒᵖ` is not formalized).
@@ -429,7 +433,7 @@ theorem standard_form_of_eq {f : X ⟶ Y} (hf : IsPure f) {c : Pred X}
   haveI : IsIso g := standard_form_map_pure hf g hg
   exact ⟨asIso g, hg⟩
 
-/-- **216XI.Ax2** (`pqqp-from-dagger`, eff.tex:5578): in an &-effectus
+/-- **216XIII** (`pqqp-from-dagger`, eff.tex:5578, Ax. 2): in an &-effectus
 `asrt_q ∘ asrt_p = π_{⌈q&p⌉} ∘ α ∘ ζ_{⌈p&q⌉} ∘ asrt_{p&q}` for some
 isomorphism `α`; indeed `1 ∘ asrt_q ∘ asrt_p = p & q` and
 `im (asrt_q ∘ asrt_p) = ⌈q & p⌉`, as `asrt_q ∘ asrt_p` and
@@ -460,7 +464,7 @@ theorem asrt_comp_standard_form (p q : Pred X) :
   rw [h1] at hβ
   exact ⟨β, hβ⟩
 
-/-- **216XI.Ax3** (`dagger-thm-necessity`, eff.tex:5628): in a †-effectus
+/-- **216XIV** (`dagger-thm-necessity`, eff.tex:5630, Ax. 3): in a †-effectus
 `t ∘ ζ_s` is sharp for sharp `s` and `t`; indeed `⌈t ∘ ζ_s⌉ = im (π_s ∘ π_t)`
 because `ζ_s` is ⋄-adjoint to `π_s` (216VII), and `im (π_s ∘ π_t) ≤ t ∘ ζ_s`
 because `t ∘ ζ_s ∘ π_s ∘ π_t = 1 ∘ π_s ∘ π_t`. -/
@@ -612,9 +616,11 @@ def IsDaggerOf (f : X ⟶ Y) (g : Y ⟶ X) : Prop :=
     g = zetaMap (imPred f) (isSharp_imPred C f) ≫ α.inv ≫
         comprMap (ceilPred (f ≫ truth Y)) ≫ asrt (f ≫ truth Y)
 
-/-- **217I–II** (`dagger-definition2`, eff.tex:5653–5738): in a
-†'-effectus every pure map has a unique dagger in the sense of
-`IsDaggerOf` (well-definedness is the argument of 217I). -/
+/-- **217II** (`dagger-definition2`, eff.tex:5721): in a †'-effectus every
+pure map has a unique dagger in the sense of `IsDaggerOf`, so that
+`pureDagger` below is well defined *for the chosen* `π_s` and `ζ_s`.  That
+the value does not depend on that choice — the actual content of 217I — is
+`pureDagger_indep_of_choice` below. -/
 theorem pureDagger_existsUnique [DaggerPrimeEffectus C] (f : X ⟶ Y)
     (hf : IsPure f) : ∃! g : Y ⟶ X, IsDaggerOf f g := by
   obtain ⟨g₀, ⟨-, hg₀⟩, hu⟩ := standard_form_map f
@@ -641,6 +647,73 @@ noncomputable def pureDagger [DaggerPrimeEffectus C] (f : X ⟶ Y)
 theorem isDaggerOf_pureDagger [DaggerPrimeEffectus C] (f : X ⟶ Y)
     (hf : IsPure f) : IsDaggerOf f (pureDagger f hf) :=
   (pureDagger_existsUnique f hf).exists.choose_spec
+
+/-- **217I** (`dagger-definition2`, eff.tex:5653–5718): the formula
+`f† = asrt_{1∘f} ∘ π_{⌈1∘f⌉} ∘ α⁻¹ ∘ ζ_{im f}` is **independent of the
+choice** of comprehension `π'` for `im f` and quotient `ζ'` for
+`⌈1∘f⌉ᵖ` — which is what justifies declaring it a definition.
+
+Precisely, in the notation of 211IX: let `π' : W ⟶ Y` be *any* comprehension
+for `im f` with corresponding quotient `ζπ'` (`π' ∘ ζπ' = id` and
+`ζπ' ∘ π' = asrt_{im f}` — written here in diagrammatic order), let
+`ζ' : X ⟶ V` be *any* quotient for `⌈1∘f⌉ᵖ` with corresponding
+comprehension `πζ'`, and let `α' : V ≅ W` be an isomorphism with
+`f = π' ∘ α' ∘ ζ' ∘ asrt_{1∘f}`.  Then
+`asrt_{1∘f} ∘ πζ' ∘ α'⁻¹ ∘ ζπ' = f†`.
+
+The proof is the thesis's β/γ computation: `π' = π_{im f} ∘ β` and
+`ζ' = γ ∘ ζ_{⌈1∘f⌉}` for isomorphisms `β`, `γ` (197V.2/199VII.2), whence
+`ζπ' = β⁻¹ ∘ ζ_{im f}` and `πζ' = π_{⌈1∘f⌉} ∘ γ⁻¹` (by monicity of `π'` and
+epicity of `ζ'`), and `β ∘ α' ∘ γ` puts `f` in the standard form 212III, so
+the `γ⁻¹ γ` and `β β⁻¹` of the thesis's display cancel. -/
+theorem pureDagger_indep_of_choice [DaggerPrimeEffectus C] {f : X ⟶ Y}
+    (hf : IsPure f) {V W : C}
+    {π' : W ⟶ Y} (hπ' : IsComprehension (imPred f) π')
+    {ζπ' : Y ⟶ W}
+    (hcorrπ' : π' ≫ ζπ' = 𝟙 W ∧ ζπ' ≫ π' = asrt (imPred f))
+    {ζ' : X ⟶ V} (hζ' : IsQuotient (orth (ceilPred (f ≫ truth Y))) ζ')
+    {πζ' : V ⟶ X}
+    (hcorrζ' : πζ' ≫ ζ' = 𝟙 V ∧
+      ζ' ≫ πζ' = asrt (ceilPred (f ≫ truth Y)))
+    (α' : V ≅ W)
+    (hform : f = asrt (f ≫ truth Y) ≫ ζ' ≫ α'.hom ≫ π') :
+    ζπ' ≫ α'.inv ≫ πζ' ≫ asrt (f ≫ truth Y) = pureDagger f hf := by
+  obtain ⟨-, hπζim, hζπim⟩ := zetaMap_spec (imPred f) (isSharp_imPred C f)
+  obtain ⟨hqζc, hπζc, hζπc⟩ :=
+    zetaMap_spec (ceilPred (f ≫ truth Y)) (isSharp_ceil _)
+  -- `β : W ≅ {Y | im f}` with `π' = β ∘ π_{im f}`
+  obtain ⟨β, hβiso, hβ, -⟩ :=
+    compr_basics_2 hπ' (isComprehension_comprMap (imPred f))
+  haveI := hβiso
+  -- `γ : {X | ⌈1∘f⌉} ≅ V` with `ζ' = ζ_{⌈1∘f⌉} ∘ γ`
+  obtain ⟨γ, hγiso, hγ, -⟩ := quotient_basics_2 hζ' hqζc
+  haveI := hγiso
+  -- the corresponding quotient of `π'` is `ζ_{im f} ∘ β⁻¹`, as `π'` is monic
+  haveI : Mono π' := compr_basics_5 hπ'
+  have hζπ' : ζπ' = zetaMap (imPred f) (isSharp_imPred C f) ≫ inv β := by
+    refine (cancel_mono π').mp ?_
+    rw [hcorrπ'.2, ← hβ]
+    simp only [Category.assoc]
+    rw [← Category.assoc (inv β) β, IsIso.inv_hom_id, Category.id_comp, hζπim]
+  -- the corresponding comprehension of `ζ'` is `π_{⌈1∘f⌉} ∘ γ⁻¹`, as `ζ'` is epic
+  haveI : Epi ζ' := quotient_basics_6 hζ'
+  have hπζ' : πζ' = inv γ ≫ comprMap (ceilPred (f ≫ truth Y)) := by
+    refine (cancel_epi ζ').mp ?_
+    rw [hcorrζ'.2, ← hγ]
+    simp only [Category.assoc]
+    rw [← Category.assoc γ (inv γ), IsIso.hom_inv_id, Category.id_comp, hζπc]
+  -- `α = γ ∘ α' ∘ β` is the standard-form isomorphism of 212III for `f`
+  refine (pureDagger_existsUnique f hf).unique ⟨asIso γ ≪≫ α' ≪≫ asIso β, ?_, ?_⟩
+    (isDaggerOf_pureDagger f hf)
+  · -- `f = asrt ∘ ζ ∘ (γ α' β) ∘ π_{im f}`, from `hform` by `hγ` and `hβ`
+    simp only [Iso.trans_hom, asIso_hom]
+    conv_lhs => rw [hform]
+    rw [← hγ, ← hβ]
+    simp only [Category.assoc]
+  · -- and the two formulas for the dagger agree, the `γ⁻¹γ`/`ββ⁻¹` cancelling
+    simp only [Iso.trans_inv, asIso_inv]
+    rw [hζπ', hπζ']
+    simp only [Category.assoc]
 
 /-- Helper (216VII + 216IX): in a †-effectus the given dagger on `Pure C` is
 *the* dagger of 217II — applying `(–)†` to the standard form 212III of a pure
@@ -2188,15 +2261,18 @@ theorem pureDaggerCat_dag [DaggerPrimeEffectus C] {P Q : PureCat C} (f : P ⟶ Q
 theorem pureCat_comp_val {P Q R : PureCat C}
     (f : P ⟶ Q) (g : Q ⟶ R) : (f ≫ g).1 = f.1 ≫ g.1 := rfl
 
-/-- **220II** (`dagger-thm-sufficiency`, eff.tex:6665, Theorem): a
-†'-effectus is a †-effectus, with the dagger of 217II. -/
-theorem dagger_thm_sufficiency [DaggerPrimeEffectus C] :
-    Nonempty (DaggerEffectus C) := by
-  refine ⟨{ daggerCat := pureDaggerCat
-            dag_asrt := fun p => Subtype.ext ?_
-            dag_diamond_adjoint := fun f => ?_
-            sqrt_existsUnique := ?_
-            diamond_pos_dagger_pos := ?_ }⟩
+/-- The †-effectus structure that a †'-effectus carries (220II): its
+†-category is `pureDaggerCat`, hence its dagger *is* `pureDagger`, the
+dagger of 217II.  The three axioms are verified as in the Theorem's own
+proof. -/
+noncomputable def pureDaggerEffectus [DaggerPrimeEffectus C] :
+    DaggerEffectus C := by
+  refine
+    { daggerCat := pureDaggerCat
+      dag_asrt := fun p => Subtype.ext ?_
+      dag_diamond_adjoint := fun f => ?_
+      sqrt_existsUnique := ?_
+      diamond_pos_dagger_pos := ?_ }
   · rw [pureDaggerCat_dag]
     exact pureDagger_eq _ (dagger_prime_basics_asrt p)
   · rw [pureDaggerCat_dag]
@@ -2244,6 +2320,23 @@ theorem dagger_thm_sufficiency [DaggerPrimeEffectus C] :
       andthen_square_rule, hq]
     exact asrt_unique _ f hf rfl
 
+/-- **220II** (`dagger-thm-sufficiency`, eff.tex:6665, Theorem): a
+†'-effectus is a †-effectus **with † as defined in 217II** — the dagger of
+the resulting †-effectus is `pureDagger`, on the nose.  (The identification
+is definitional: the witness `pureDaggerEffectus` has `pureDaggerCat` as its
+†-category, whose `dag` is `pureDagger`.) -/
+theorem dagger_thm_sufficiency' [DaggerPrimeEffectus C] :
+    ∃ d : DaggerEffectus C, ∀ (P Q : PureCat C) (f : P ⟶ Q),
+      (d.daggerCat.dag f).1 = pureDagger f.1 f.2 :=
+  ⟨pureDaggerEffectus, fun _ _ _ => rfl⟩
+
+/-- **220II** (`dagger-thm-sufficiency`, eff.tex:6665, Theorem), the bare
+existence half.  The full statement, with the identification of the dagger
+with that of 217II, is `dagger_thm_sufficiency'`. -/
+theorem dagger_thm_sufficiency [DaggerPrimeEffectus C] :
+    Nonempty (DaggerEffectus C) :=
+  ⟨pureDaggerEffectus⟩
+
 section DaggerTheorem
 
 variable (C)
@@ -2251,7 +2344,11 @@ variable (C)
 /-- **215III** (`dagger-theorem`, eff.tex:5310, Theorem): an &-effectus is
 a †-effectus if and only if it is a †'-effectus (necessity is 216XI,
 sufficiency 220II).  (Stated at its numbering slot in parsec 215; proved here,
-where 220II is available.) -/
+where 220II is available.)  220II's "with † as defined in 217II" cannot be
+carried into this biimplication — `pureDagger` presupposes
+`[DaggerPrimeEffectus C]`, which is the right-hand side — so it is stated
+separately as `dagger_thm_sufficiency'`, and `dag_eq_pureDagger` gives the
+converse identification for an arbitrary †-effectus. -/
 theorem dagger_theorem :
     Nonempty (DaggerEffectus C) ↔ DaggerPrimeEffectus C := by
   constructor
@@ -2366,12 +2463,16 @@ theorem dils_abstract_basics_2 {P' : C} {f : X ⟶ Y} {ϱ : P ⟶ Y}
         Category.id_comp]
     rw [← h1, ← Category.assoc, α.inv_hom_id, Category.id_comp]
 
+/-- Helper (221IV.3/.4): the identity is pure — it is the first component
+of `diamondPositive_id`, so the Proposition needs no purity hypothesis. -/
+theorem isPure_id (X : C) : IsPure (𝟙 X) := (diamondPositive_id X).1
+
 /-- **221IV.3** (`dils-abstract-basics`, eff.tex:6820, Proposition):
 `(X, ϱ, id)` is the dilation of a sharp total map `ϱ`. -/
 theorem dils_abstract_basics_3 {ϱ : X ⟶ Y} (hs : SharpMap ϱ)
-    (ht : IsTotal ϱ) (hp : IsPure (𝟙 X)) :
+    (ht : IsTotal ϱ) :
     IsDilation ϱ ϱ (𝟙 X) := by
-  refine ⟨hs, ht, hp, Category.id_comp _, ?_⟩
+  refine ⟨hs, ht, isPure_id X, Category.id_comp _, ?_⟩
   intro P' ϱ' h' _ _ hfac
   refine ⟨h', ⟨Category.id_comp _, hfac⟩, ?_⟩
   rintro σ ⟨hσ, -⟩
@@ -2381,10 +2482,10 @@ theorem dils_abstract_basics_3 {ϱ : X ⟶ Y} (hs : SharpMap ϱ)
 `(P, ϱ, h)` is a dilation (of some map), then `(P, id, h)` is a dilation
 of `h`. -/
 theorem dils_abstract_basics_4 {f : X ⟶ Y} {ϱ : P ⟶ Y} {h : X ⟶ P}
-    (d : IsDilation f ϱ h) (hid : SharpMap (𝟙 P) ∧ IsTotal (𝟙 P)) :
+    (d : IsDilation f ϱ h) :
     IsDilation h (𝟙 P) h := by
   obtain ⟨hsϱ, htϱ, hph, hfac, huniv⟩ := d
-  refine ⟨hid.1, hid.2, hph, Category.comp_id _, ?_⟩
+  refine ⟨sharpMap_of_isIso (𝟙 P), iso_isTotal (𝟙 P), hph, Category.comp_id _, ?_⟩
   intro P' ϱ' h' hsϱ' htϱ' hfac'
   -- `(P', ϱ' ≫ ϱ, h')` is a factorization of `f`
   have hfac'' : h' ≫ (ϱ' ≫ ϱ) = f := by
@@ -2404,7 +2505,14 @@ theorem dils_abstract_basics_4 {f : X ⟶ Y} {ϱ : P ⟶ Y} {h : X ⟶ P}
 
 /-- **221IV.5** (`dils-abstract-basics`, eff.tex:6820, Proposition): for a
 quotient `ξ : X ⟶ Q` and `f : Q ⟶ Y` with dilation `(P, ϱ, h)`, the triple
-`(P, ϱ, h ∘ ξ)` is a dilation of `f ∘ ξ`. -/
+`(P, ϱ, h ∘ ξ)` is a dilation of `f ∘ ξ`.
+
+Purity of `h ∘ ξ` is a hypothesis here, where the Proposition asserts it.
+That is not a gratuitous weakening: the section assumes only a ⋄-effectus,
+and closure of pure maps under composition is 211XI, which needs an
+&-effectus — **and the thesis's own proof of this clause never addresses
+purity of `h ∘ ξ` either**, so the point as printed has a gap here.  How to
+close it is the author's call. -/
 theorem dils_abstract_basics_5 {Q : C} {p : Pred X} {ξ : X ⟶ Q}
     (hξ : IsQuotient p ξ) {f : Q ⟶ Y} {ϱ : P ⟶ Y} {h : Q ⟶ P}
     (d : IsDilation f ϱ h) (hpure : IsPure (ξ ≫ h)) :
@@ -2471,18 +2579,31 @@ theorem dils_abstract_basics_6 {Q : C} {p : Pred X} {ξ : X ⟶ Q}
 
 /-- **221IV.7** (`dils-abstract-basics`, eff.tex:6820, Proposition):
 dilations are closed under coproducts:
-`(P₁ + P₂, [ϱ₁, ϱ₂], h₁ + h₂)` dilates `[f₁, f₂]`. -/
+`(P₁ + P₂, [ϱ₁, ϱ₂], h₁ + h₂)` dilates `[f₁, f₂]`.
+
+The Proposition *asserts* that `[ϱ₁, ϱ₂]` is sharp and `h₁ + h₂` pure; here
+they are hypotheses, because the section only assumes a ⋄-effectus, in which
+neither the cotuple of two sharp maps nor the coproduct of two pure maps is
+known to be sharp resp. pure (closure of pure maps under composition is
+211XI and needs an &-effectus).  Totality of `[ϱ₁, ϱ₂]`, on the other hand,
+is *not* a hypothesis: it follows from totality of `ϱ₁` and `ϱ₂` by 181IV
+(`cotupl_pcm_one`). -/
 theorem dils_abstract_basics_7 {X₁ X₂ P₁ P₂ : C}
     {f₁ : X₁ ⟶ Y} {f₂ : X₂ ⟶ Y} {ϱ₁ : P₁ ⟶ Y} {ϱ₂ : P₂ ⟶ Y}
     {h₁ : X₁ ⟶ P₁} {h₂ : X₂ ⟶ P₂}
     (d₁ : IsDilation f₁ ϱ₁ h₁) (d₂ : IsDilation f₂ ϱ₂ h₂)
-    (hcop : SharpMap (coprod.desc ϱ₁ ϱ₂) ∧ IsTotal (coprod.desc ϱ₁ ϱ₂) ∧
-      IsPure (coprod.map h₁ h₂)) :
+    (hcop : SharpMap (coprod.desc ϱ₁ ϱ₂) ∧ IsPure (coprod.map h₁ h₂)) :
     IsDilation (coprod.desc f₁ f₂) (coprod.desc ϱ₁ ϱ₂)
       (coprod.map h₁ h₂) := by
   obtain ⟨hs₁, ht₁, hp₁, hfac₁, huniv₁⟩ := d₁
   obtain ⟨hs₂, ht₂, hp₂, hfac₂, huniv₂⟩ := d₂
-  refine ⟨hcop.1, hcop.2.1, hcop.2.2, ?_, ?_⟩
+  -- `[ϱ₁, ϱ₂] ∘ 1 = [ϱ₁ ∘ 1, ϱ₂ ∘ 1] = [1, 1] = 1` (181IV)
+  have htcop : IsTotal (coprod.desc ϱ₁ ϱ₂) := by
+    show coprod.desc ϱ₁ ϱ₂ ≫ truth Y = truth (P₁ ⨿ P₂)
+    rw [← cotupl_pcm_one P₁ P₂, ← show ϱ₁ ≫ truth Y = truth P₁ from ht₁,
+      ← show ϱ₂ ≫ truth Y = truth P₂ from ht₂]
+    exact coprod.desc_comp _ _ _
+  refine ⟨hcop.1, htcop, hcop.2, ?_, ?_⟩
   · rw [coprod.map_desc, hfac₁, hfac₂]
   · intro P' ϱ' h' hsϱ' htϱ' hfac'
     have e₁ : (coprod.inl ≫ h') ≫ ϱ' = f₁ := by

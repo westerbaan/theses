@@ -15,10 +15,13 @@ Design:
   ⋄-positive `asrt_p` maps and purity of quotient-after-comprehension;
   `asrt`, `andThen p q = q ∘ asrt_p` and the corresponding quotient `ζ_s`
   of a chosen comprehension `π_s` are obtained by (unique) choice.
+* 208VII (the functor `X ↦ SPred X`, `f ↦ (f_⋄, f^□)` into `OMLatGal`) *is*
+  formalized, as `diamond_omlatgal_functor`, on the category `OMLatGalCat`
+  of orthomodular lattices and Galois pairs defined below; its data is
+  207VI + 207III, as the Corollary says.
 * Not separately formalized: the examples 206III/210III/211IV beyond
-  `vNᵒᵖ` (`CvNᵒᵖ`, `EJAᵒᵖ`, `Set`; sharp maps = nmiu-maps), the remarks
-  211III/211IIIa on `assert` and polar decomposition, and 208VII (the
-  functor to `OMLatGal`, whose data is exactly 207VI + 207III).
+  `vNᵒᵖ` (`CvNᵒᵖ`, `EJAᵒᵖ`, `Set`; sharp maps = nmiu-maps) and the remarks
+  211III/211IIIa on `assert` and polar decomposition.
 -/
 import Theses.B.Eff.Quotients
 
@@ -217,6 +220,49 @@ for 207V, 208IX). -/
 def SPred.IsInf (s t m : SPred X) : Prop :=
   m.1 ≼ s.1 ∧ m.1 ≼ t.1 ∧ ∀ r : SPred X, r.1 ≼ s.1 → r.1 ≼ t.1 → r.1 ≼ m.1
 
+/-- `j` is the supremum of an **arbitrary** set `D ⊆ SPred X` of sharp
+predicates within the poset `SPred` — the form in which the solution to
+207V (`bsols.tex`:2966) states and proves the preservation clauses 2 and 4. -/
+def SPred.IsSupSet (D : Set (SPred X)) (j : SPred X) : Prop :=
+  (∀ d ∈ D, d.1 ≼ j.1) ∧ ∀ r : SPred X, (∀ d ∈ D, d.1 ≼ r.1) → j.1 ≼ r.1
+
+/-- `m` is the infimum of an **arbitrary** set `D ⊆ SPred X` of sharp
+predicates (`bsols.tex`:2966, clause 3). -/
+def SPred.IsInfSet (D : Set (SPred X)) (m : SPred X) : Prop :=
+  (∀ d ∈ D, m.1 ≼ d.1) ∧ ∀ r : SPred X, (∀ d ∈ D, r.1 ≼ d.1) → r.1 ≼ m.1
+
+/-- The binary supremum of `SPred.IsSup` is the supremum of the two-element
+set `{s, t}`. -/
+theorem SPred.isSup_iff_isSupSet {s t j : SPred X} :
+    SPred.IsSup s t j ↔ SPred.IsSupSet {s, t} j := by
+  simp only [SPred.IsSup, SPred.IsSupSet, Set.mem_insert_iff,
+    Set.mem_singleton_iff]
+  constructor
+  · rintro ⟨h1, h2, h3⟩
+    refine ⟨?_, fun r hr => h3 r (hr s (Or.inl rfl)) (hr t (Or.inr rfl))⟩
+    rintro d (rfl | rfl)
+    exacts [h1, h2]
+  · rintro ⟨hub, hlub⟩
+    refine ⟨hub s (Or.inl rfl), hub t (Or.inr rfl), fun r h1 h2 => hlub r ?_⟩
+    rintro d (rfl | rfl)
+    exacts [h1, h2]
+
+/-- The binary infimum of `SPred.IsInf` is the infimum of the two-element
+set `{s, t}`. -/
+theorem SPred.isInf_iff_isInfSet {s t m : SPred X} :
+    SPred.IsInf s t m ↔ SPred.IsInfSet {s, t} m := by
+  simp only [SPred.IsInf, SPred.IsInfSet, Set.mem_insert_iff,
+    Set.mem_singleton_iff]
+  constructor
+  · rintro ⟨h1, h2, h3⟩
+    refine ⟨?_, fun r hr => h3 r (hr s (Or.inl rfl)) (hr t (Or.inr rfl))⟩
+    rintro d (rfl | rfl)
+    exacts [h1, h2]
+  · rintro ⟨hlb, hglb⟩
+    refine ⟨hlb s (Or.inl rfl), hlb t (Or.inr rfl), fun r h1 h2 => hglb r ?_⟩
+    rintro d (rfl | rfl)
+    exacts [h1, h2]
+
 /-- **207II** (`exc-diam-order-pres`, eff.tex:4470, Exercise): `f^⋄` and
 `f^□` are order preserving. -/
 theorem exc_diam_order_pres (f : X ⟶ Y) {s t : SPred Y} (h : s.1 ≼ t.1) :
@@ -304,39 +350,129 @@ theorem spred_isInf_orth {s t m : SPred X} (h : SPred.IsInf s t m) :
   have k3 := eabasics_le_iff_orth_le.mp (h3 r.orth k1 k2)
   rwa [spred_orth_val, eabasics_orth_orth] at k3
 
+/-- Orthocomplementation turns the supremum of an arbitrary set of sharp
+predicates into the infimum of the orthocomplemented set — the step
+`(⋁D)ᵖ = ⋀_{d ∈ D} dᵖ` of `bsols.tex`:2966, clause 4. -/
+theorem spred_isSupSet_orth {D : Set (SPred X)} {j : SPred X}
+    (h : SPred.IsSupSet D j) :
+    SPred.IsInfSet (SPred.orth '' D) j.orth := by
+  obtain ⟨hub, hlub⟩ := h
+  constructor
+  · rintro _ ⟨d, hd, rfl⟩
+    exact eabasics_le_iff_orth_le.mp (hub d hd)
+  · intro r hr
+    refine le_orth_comm.mp (hlub r.orth ?_)
+    intro d hd
+    exact le_orth_comm.mp (hr _ ⟨d, hd, rfl⟩)
+
+/-- Orthocomplementation turns the infimum of an arbitrary set of sharp
+predicates into a supremum (`bsols.tex`:2966, clause 4). -/
+theorem spred_isInfSet_orth {D : Set (SPred X)} {m : SPred X}
+    (h : SPred.IsInfSet D m) :
+    SPred.IsSupSet (SPred.orth '' D) m.orth := by
+  obtain ⟨hlb, hglb⟩ := h
+  constructor
+  · rintro _ ⟨d, hd, rfl⟩
+    exact eabasics_le_iff_orth_le.mp (hlb d hd)
+  · intro r hr
+    have key : ∀ d ∈ D, (r.orth).1 ≼ d.1 := by
+      intro d hd
+      have hd' : orth d.1 ≼ r.1 := hr _ ⟨d, hd, rfl⟩
+      have h1 := eabasics_le_iff_orth_le.mp hd'
+      rwa [eabasics_orth_orth] at h1
+    have h2' : orth r.1 ≼ m.1 := hglb r.orth key
+    have h2 := eabasics_le_iff_orth_le.mp h2'
+    show orth m.1 ≼ r.1
+    rwa [eabasics_orth_orth] at h2
+
+/-- Double orthocomplementation is the identity on sets of sharp
+predicates. -/
+theorem spred_orth_image_orth (D : Set (SPred X)) :
+    SPred.orth '' (SPred.orth '' D) = D := by
+  rw [Set.image_image]
+  simp only [spred_orth_orth]
+  exact Set.image_id' D
+
 /-- **207V.2** (`order-adj-basics`, eff.tex:4510, Exercise): `f_⋄` preserves
-(binary) suprema. -/
+suprema.  As at `bsols.tex`:2966, for an **arbitrary** set `D ⊆ SPred X`
+with a supremum `j`, the map `f_⋄(j)` is the supremum of `f_⋄(D)`.  (The
+binary case is `order_adj_basics_2` below.) -/
+theorem order_adj_basics_2' (f : X ⟶ Y) {D : Set (SPred X)} {j : SPred X}
+    (h : SPred.IsSupSet D j) :
+    SPred.IsSupSet (diaPush f '' D) (diaPush f j) := by
+  obtain ⟨hub, hlub⟩ := h
+  constructor
+  · -- `d ≤ j` gives `f_⋄(d) ≤ f_⋄(j)` by 207V.1
+    rintro _ ⟨d, hd, rfl⟩
+    exact order_adj_basics_1 f (hub d hd)
+  · -- if `f_⋄(d) ≤ x` for all `d ∈ D` then `d ≤ f^□(x)`, so `j ≤ f^□(x)`
+    intro x hx
+    exact (diamond_adjunction' f j x).mpr
+      (hlub (boxPull f x)
+        (fun d hd => (diamond_adjunction' f d x).mp (hx _ ⟨d, hd, rfl⟩)))
+
+/-- **207V.3** (`order-adj-basics`, eff.tex:4510, Exercise): `f^□` preserves
+infima, for an **arbitrary** set `D ⊆ SPred Y` with an infimum
+(`bsols.tex`:2966).  (The binary case is `order_adj_basics_3` below.) -/
+theorem order_adj_basics_3' (f : X ⟶ Y) {D : Set (SPred Y)} {m : SPred Y}
+    (h : SPred.IsInfSet D m) :
+    SPred.IsInfSet (boxPull f '' D) (boxPull f m) := by
+  obtain ⟨hlb, hglb⟩ := h
+  constructor
+  · -- `inf D ≤ d` gives `f^□(inf D) ≤ f^□(d)` by 207II
+    rintro _ ⟨d, hd, rfl⟩
+    exact (exc_diam_order_pres f (hlb d hd)).2
+  · -- if `x ≤ f^□(d)` for all `d ∈ D` then `f_⋄(x) ≤ d`, so `f_⋄(x) ≤ inf D`
+    intro x hx
+    exact (diamond_adjunction' f x m).mp
+      (hglb (diaPush f x)
+        (fun d hd => (diamond_adjunction' f x d).mpr (hx _ ⟨d, hd, rfl⟩)))
+
+/-- **207V.4** (`order-adj-basics`, eff.tex:4510, Exercise): `f^⋄` preserves
+suprema, for an **arbitrary** set `D ⊆ SPred Y` with a supremum.  The proof
+is `bsols.tex`:2966's derivation from clause 3 by orthocomplementation:
+`f^⋄(⋁D) = f^□((⋁D)ᵖ)ᵖ = (⋀_{d} f^□(dᵖ))ᵖ = ⋁_d f^□(dᵖ)ᵖ = ⋁_d f^⋄(d)`.
+(The binary case is `order_adj_basics_4` below.) -/
+theorem order_adj_basics_4' (f : X ⟶ Y) {D : Set (SPred Y)} {j : SPred Y}
+    (h : SPred.IsSupSet D j) :
+    SPred.IsSupSet (diaPull f '' D) (diaPull f j) := by
+  -- `(⋁D)ᵖ = ⋀_{d ∈ D} dᵖ`, and `f^□` preserves that infimum
+  have h1 := order_adj_basics_3' f (spred_isSupSet_orth h)
+  have e1 : boxPull f '' (SPred.orth '' D) = SPred.orth '' (diaPull f '' D) := by
+    rw [Set.image_image, Set.image_image]
+    exact Set.image_congr (fun s _ => boxPull_orth f s)
+  rw [e1, boxPull_orth] at h1
+  -- orthocomplement back
+  have h2 := spred_isInfSet_orth h1
+  rwa [spred_orth_image_orth, spred_orth_orth] at h2
+
+/-- **207V.2** (`order-adj-basics`, eff.tex:4510, Exercise), binary case:
+`f_⋄` preserves binary suprema.  (`bsols.tex`:2966's argument, specialised
+to `D = {s, t}` through `order_adj_basics_2'`.) -/
 theorem order_adj_basics_2 (f : X ⟶ Y) {s t j : SPred X}
     (h : SPred.IsSup s t j) :
     SPred.IsSup (diaPush f s) (diaPush f t) (diaPush f j) := by
-  obtain ⟨h1, h2, h3⟩ := h
-  refine ⟨order_adj_basics_1 f h1, order_adj_basics_1 f h2, ?_⟩
-  intro r hr1 hr2
-  exact (diamond_adjunction' f j r).mpr
-    (h3 (boxPull f r) ((diamond_adjunction' f s r).mp hr1)
-      ((diamond_adjunction' f t r).mp hr2))
+  have hg := order_adj_basics_2' f (SPred.isSup_iff_isSupSet.mp h)
+  rw [Set.image_pair] at hg
+  exact SPred.isSup_iff_isSupSet.mpr hg
 
-/-- **207V.3** (`order-adj-basics`, eff.tex:4510, Exercise): `f^□` preserves
-(binary) infima. -/
+/-- **207V.3** (`order-adj-basics`, eff.tex:4510, Exercise), binary case:
+`f^□` preserves binary infima. -/
 theorem order_adj_basics_3 (f : X ⟶ Y) {s t m : SPred Y}
     (h : SPred.IsInf s t m) :
     SPred.IsInf (boxPull f s) (boxPull f t) (boxPull f m) := by
-  obtain ⟨h1, h2, h3⟩ := h
-  refine ⟨(exc_diam_order_pres f h1).2, (exc_diam_order_pres f h2).2, ?_⟩
-  intro r hr1 hr2
-  exact (diamond_adjunction' f r m).mp
-    (h3 (diaPush f r) ((diamond_adjunction' f r s).mpr hr1)
-      ((diamond_adjunction' f r t).mpr hr2))
+  have hg := order_adj_basics_3' f (SPred.isInf_iff_isInfSet.mp h)
+  rw [Set.image_pair] at hg
+  exact SPred.isInf_iff_isInfSet.mpr hg
 
-/-- **207V.4** (`order-adj-basics`, eff.tex:4510, Exercise): `f^⋄` preserves
-(binary) suprema. -/
+/-- **207V.4** (`order-adj-basics`, eff.tex:4510, Exercise), binary case:
+`f^⋄` preserves binary suprema. -/
 theorem order_adj_basics_4 (f : X ⟶ Y) {s t j : SPred Y}
     (h : SPred.IsSup s t j) :
     SPred.IsSup (diaPull f s) (diaPull f t) (diaPull f j) := by
-  have h3 := order_adj_basics_3 f (spred_isSup_orth h)
-  rw [boxPull_orth, boxPull_orth, boxPull_orth] at h3
-  have h4 := spred_isInf_orth h3
-  rwa [spred_orth_orth, spred_orth_orth, spred_orth_orth] at h4
+  have hg := order_adj_basics_4' f (SPred.isSup_iff_isSupSet.mp h)
+  rw [Set.image_pair] at hg
+  exact SPred.isSup_iff_isSupSet.mpr hg
 
 /-- **207V.5** (`order-adj-basics`, eff.tex:4510, Exercise):
 `f_⋄ ∘ f^□ ∘ f_⋄ = f_⋄`. -/
@@ -586,9 +722,10 @@ instance : Category.{u} OMLatGalCat.{u} where
   comp_id _ := rfl
   assoc _ _ _ := rfl
 
-/-! **208VII** (eff.tex:4644, Corollary) — the functor `X ↦ SPred X` into
-`OMLatGal` — is `diamond_omlatgal_functor` below; it needs the orthomodular
-structure of 208III, which is only available after 208IX/208XII. -/
+/-! **208VII** (eff.tex:4644, Corollary) — the functor `X ↦ SPred X`,
+`f ↦ (f_⋄, f^□)` into `OMLatGal` — is `diamond_omlatgal_functor` below; it
+needs the orthomodular structure of 208III, which is only available after
+208IX/208XII. -/
 
 section DiamondBasics2
 
@@ -745,10 +882,15 @@ theorem diamond_oml (X : C) :
 
 /-- **208VII** (eff.tex:4644, Corollary): in a ⋄-effectus the assignment
 `X ↦ SPred X`, `f ↦ (f_⋄, f^□)` yields a functor to `OMLatGal`, the
-category of orthomodular lattices with Galois connections (Jacobs). -/
+category of orthomodular lattices with Galois connections (Jacobs).  Both
+halves of the assignment are pinned: the object part on the nose, the
+morphism part up to the transport of the object part (`HEq`, as the
+carrier of `F.obj X` is only propositionally `SPred X`). -/
 theorem diamond_omlatgal_functor :
     ∃ F : C ⥤ OMLatGalCat.{v},
-      ∀ X : C, (F.obj X).carrier = SPred X := by
+      (∀ X : C, (F.obj X).carrier = SPred X) ∧
+      ∀ (X Y : C) (f : X ⟶ Y),
+        HEq (F.map f).push (diaPush f) ∧ HEq (F.map f).pull (boxPull f) := by
   classical
   -- choose the orthomodular structure of 208III on every `SPred X`
   have hex : ∀ X : C, ∃ oml : OrthomodularLattice (SPred X), ∀ s t : SPred X,
@@ -771,7 +913,8 @@ theorem diamond_omlatgal_functor :
             map := fun {X Y} f => ⟨diaPush f, boxPull f, fun a b => ?_⟩
             map_id := fun X => gext _ _ (funext diaPush_id) (funext boxPull_id)
             map_comp := fun f g => gext _ _ (funext fun s => diaPush_comp f g s)
-              (funext fun t => boxPull_comp f g t) }, fun X => rfl⟩
+              (funext fun t => boxPull_comp f g t) },
+    fun X => rfl, fun X Y f => ⟨HEq.rfl, HEq.rfl⟩⟩
   -- the adjunction `f_⋄ ⊣ f^□` of 207III, transported along `homl`
   exact ((homl Y (diaPush f a) b).1).trans
     ((diamond_adjunction' f a b).trans ((homl X a (boxPull f b)).1).symm)

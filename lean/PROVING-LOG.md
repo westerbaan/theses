@@ -23770,3 +23770,155 @@ No repair here needed a ruling.  Two things worth recording beyond the rows:
 **A8's obstruction has evaporated** (above), and the `A/CStar/Matrices` doc
 comments that described 33III.3's gap in its pre-erratum form are corrected —
 the file no longer records the wrong thing about its own gap.
+
+## Session 94 — `B/Eff`: **the first repair pass on `Dagger.lean` and `DiamondAmp.lean`** — eight of the eleven non-`ok` rows repaired, 217I turns out to be *statable* after all, and 220II gets its "with † as defined in 217II" (worker on `Theses/B/Eff/Dagger.lean`, `Theses/B/Eff/DiamondAmp.lean`)
+
+Audit rows: `docs/audit/beff-dagger-diamondamp.csv` — 10 `weaker`, 1
+`stronger`.  **Eight repaired** (seven in full, 221IV.7 in part), **three
+left**.  Both files compile with no errors and no `sorry`; the whole
+downstream chain (`Comparisons.lean`, `VNExamples.lean`) recompiles, the
+only `sorry` in it being the pre-existing `vn_is_andthen_eff` (QUESTIONS
+**B15**).  Every declaration touched or added was checked in situ with
+`#print axioms` and depends on `[propext, Classical.choice, Quot.sound]`
+only.
+
+### Repaired — 217I is statable, and it is the thesis's β/γ computation
+
+The audit judged that 217I's real content — that `f†` does not depend on the
+choice of `π'` and `ζ'` — "cannot even be phrased against `IsDaggerOf`,
+because `comprMap`/`zetaMap` are fixed by choice in the tree".  It can, and
+the choice does **not** have to become a parameter: what the point
+quantifies over is not an arbitrary pair of maps but a **211IX
+corresponding pair**, and that notion is elementary — `π' ∘ ζπ' = id` and
+`ζπ' ∘ π' = asrt_{im f}` — and is exactly what
+`prop_corr_zeta_pi_quot`/`prop_corr_zeta_pi_compr` in `DiamondAmp.lean`
+produce.  Taking it as a hypothesis, the chosen `π_s`, `ζ_s` stay chosen and
+the independence claim becomes a theorem about them.  So the new
+
+* **217I** `pureDagger_indep_of_choice` — for *any* comprehension `π'` of
+  `im f` with corresponding quotient `ζπ'`, *any* quotient `ζ'` of
+  `⌈1∘f⌉ᵖ` with corresponding comprehension `πζ'`, and any iso `α'` with
+  `f = π' ∘ α' ∘ ζ' ∘ asrt_{1∘f}`, one has
+  `asrt_{1∘f} ∘ πζ' ∘ α'⁻¹ ∘ ζπ' = f†`.
+
+  The proof is eff.tex:5686–5716 step for step: `π' = π_{im f} ∘ β` and
+  `ζ' = γ ∘ ζ_{⌈1∘f⌉}` by 199VII.2 and 197V.2; `ζπ' = β⁻¹ ∘ ζ_{im f}` and
+  `πζ' = π_{⌈1∘f⌉} ∘ γ⁻¹`, each pinned by the *uniqueness* the thesis asserts
+  ("it is easy to see …"), here discharged by monicity of `π'` (199VII.5) and
+  epicity of `ζ'` (197V.6); and then the `γ⁻¹γ`/`ββ⁻¹` of the thesis's
+  three-line display cancel.  One local deviation, class **(3)**: the thesis
+  gets `β ∘ α' ∘ γ = α` by cancelling `π_{im f}` and
+  `ζ_{1∘f} ∘ asrt_{1∘f}`; we instead *build* `α := γ ∘ α' ∘ β`, observe it
+  puts `f` in the standard form, and let 212III's own uniqueness clause —
+  which is what pinned `α` in the first place — identify it.  Same
+  computation, one cancellation fewer.
+
+  The doc comment of `pureDagger_existsUnique` claimed "well-definedness is
+  the argument of 217I"; it now says what it actually proves (uniqueness of
+  the dagger *for the chosen* `π_s`, `ζ_s`) and points at the new theorem.
+  The file header carried the same overstatement and is corrected.  (1)/(3)
+
+### Repaired — the identification dropped from a `Nonempty` (220II)
+
+* **220II** `dagger_thm_sufficiency'` — the Theorem is "a †'-effectus is a
+  †-effectus **with † as defined in 217II**", and we concluded only
+  `Nonempty (DaggerEffectus C)`.  The witness is now a `def`,
+  **`pureDaggerEffectus`** (the same three-axiom verification, unchanged,
+  only re-plumbed out of the `refine ⟨{…}⟩`), and the new
+  `dagger_thm_sufficiency'` states `∃ d : DaggerEffectus C, ∀ P Q (f : P ⟶ Q),
+  (d.daggerCat.dag f).1 = pureDagger f.1 f.2` — witnessed by `rfl`, as the
+  audit predicted.  `dagger_thm_sufficiency` keeps its old statement and
+  name (it is applied at `VNExamples.lean:5142`, a file this pass may not
+  edit) and is now one line.  (1)
+
+  **215III `dagger_theorem` cannot carry the identification**, and this is
+  not a transcription defect: `pureDagger` presupposes
+  `[DaggerPrimeEffectus C]`, which is the *right-hand side* of the
+  biimplication, so "with † as in 217II" is not well formed inside it.  The
+  doc comment now says so and points at `dagger_thm_sufficiency'` and at
+  `dag_eq_pureDagger` (the converse identification, for an arbitrary
+  †-effectus).
+
+### Repaired — hypotheses that needed no new mathematics
+
+* **221IV.3** `dils_abstract_basics_3` — `IsPure (𝟙 X)` dropped; it is the
+  first component of `diamondPositive_id`, now exposed as the helper
+  `isPure_id`.  (1)
+* **221IV.4** `dils_abstract_basics_4` — `SharpMap (𝟙 P) ∧ IsTotal (𝟙 P)`
+  dropped, discharged by `sharpMap_of_isIso` and `iso_isTotal`, both already
+  in the file.  (1)
+* **221IV.7** `dils_abstract_basics_7`, in part — the hypothesis bundle loses
+  its `IsTotal (coprod.desc ϱ₁ ϱ₂)` conjunct, which follows from totality of
+  `ϱ₁` and `ϱ₂` by **181IV** `cotupl_pcm_one` (`[1,1] = 1`).  The `SharpMap`
+  and `IsPure` conjuncts stay; see below.  (1)
+
+### Repaired — a multi-part exercise stated only in the binary case (207V)
+
+`bsols.tex`:2966 proves clauses 2, 3 and 4 of 207V for an **arbitrary**
+subset `D ⊆ SPred` with a supremum resp. infimum; we stated only the binary
+case.  Three rows, one repair:
+
+* new `SPred.IsSupSet`/`SPred.IsInfSet` (supremum/infimum of a set of sharp
+  predicates), with `SPred.isSup_iff_isSupSet` / `SPred.isInf_iff_isInfSet`
+  identifying the binary notions with the two-element case;
+* **207V.2** `order_adj_basics_2'`, **207V.3** `order_adj_basics_3'`,
+  **207V.4** `order_adj_basics_4'` — the general statements, each proved by
+  `bsols`' own argument (2 and 3 straight from the adjunction `f_⋄ ⊣ f^□`;
+  4 by `bsols`' derivation from 3 through orthocomplementation, with the
+  `(⋁D)ᵖ = ⋀_d dᵖ` step as the new `spred_isSupSet_orth`/`spred_isInfSet_orth`);
+* the binary `order_adj_basics_2/3/4` keep their names and statements — they
+  are consumed four times in `B/Eff/Comparisons.lean`, which this pass may
+  not edit — but are now *derived* from the general ones through
+  `Set.image_pair`, so they really are "`bsols`' argument specialised".  (1)
+
+### Repaired — a functor pinned only on objects (208VII)
+
+* **208VII** `diamond_omlatgal_functor` — asserted only
+  `∃ F, ∀ X, (F.obj X).carrier = SPred X`; the Corollary's morphism part
+  `f ↦ (f_⋄, f^□)` is now a second conjunct,
+  `HEq (F.map f).push (diaPush f) ∧ HEq (F.map f).pull (boxPull f)`,
+  discharged by `HEq.rfl` — the `HEq` is forced because the carrier of
+  `F.obj X` is only *propositionally* `SPred X` (the `predMap_functor` shape
+  of session 94's `StatesPredicates` pass).  No call sites.  (1)
+
+### Left
+
+**Thesis point itself defective** — 221IV.5 `dils_abstract_basics_5`.  The
+Proposition asserts that `(P, ϱ, h ∘ ξ)` dilates `f ∘ ξ`, purity of `h ∘ ξ`
+included; the section assumes only a ⋄-effectus, where closure of pure maps
+under composition (211XI) is not available — **and the thesis's own proof of
+the clause never addresses purity of `h ∘ ξ` either**.  So the printed point
+has a gap and the repair is the author's call.  Recorded in the doc comment.
+The same reading governs the two surviving conjuncts of **221IV.7**
+(`SharpMap [ϱ₁, ϱ₂]`, `IsPure (h₁ + h₂)`): a cotuple of sharp maps is not
+known to be sharp in a bare ⋄-effectus, and neither is a coproduct of pure
+maps pure.  Both doc comments now say which conjunct is a hypothesis and
+why.
+
+**Benign generalisation** — 219XIV `pureDagger_compr_asrt_zeta` (`stronger`):
+ours drops the Setting 219II and states the daggered `χ` display for
+arbitrary sharp `t`, `e` with `⌈p⌉ ≤ e`, which specialises to the Lemma.
+Not a defect; left.
+
+### Three stale labels, now correct
+
+* `Dagger.lean`'s two doc comments reading `216XI.Ax2` and `216XI.Ax3` name
+  points that are **216XIII** (`pqqp-from-dagger`, eff.tex:5578) and
+  **216XIV** (Ax. 3, eff.tex:5630) — the sub-points of 216XI's *proof*, not
+  clauses of 216XI.  Corrected, with 216XIV's line reference (5628 → 5630).
+* `Dagger.lean`'s header listed 219XIV among the unformalized internal
+  lemmas of Setting 219II; it *is* formalized, as
+  `pureDagger_compr_asrt_zeta`.  Corrected.
+* `DiamondAmp.lean`'s header said 208VII is "not separately formalized";
+  it is, as `diamond_omlatgal_functor` on the `OMLatGalCat` defined in the
+  same file.  Corrected.
+
+### Nothing new for the author
+
+No repair here needed a ruling.  **QUESTIONS B15** governs
+`DiamondSelfAdjoint`/`DiamondPositive`, which take eff.tex's printed form
+verbatim; untouched, as instructed.  The one finding worth carrying forward
+is the first section above: **the audit's "cannot even be phrased" verdict on
+217I was too pessimistic** — the point quantifies over 211IX's *corresponding*
+pairs, not over unrelated choices, and the tree already has both halves of
+that correspondence.
