@@ -55,6 +55,28 @@ Repair, in descending order of value:
 at all in this pass** — statements were settled separately.  If a proof repair
 seems to need a statement change, stop and report it.
 
+## A fifth check, added 2026-08-21: **is the transcription used by anything?**
+
+`A/CStar/Positive`'s 16II was closed by a Mathlib lemma — and 16II is the
+*only* consumer of the complex-analysis run-up, so `goursat`, `cauchy_formula`,
+`taylor`, `rigid_expansion`, `hadamard`, `invint_1/2/4` and
+`powerSeries_hasDerivAt` had **zero uses anywhere in the tree**.  About a
+thousand lines of faithfully transcribed thesis, hanging off nothing, because
+one proof at the top took a shortcut.
+
+`B/Dils` found the same shape twice more: 147II.7 was closed by
+`Continuous.ext_on` where `dils.tex` says verbatim "conclude from part 4 and
+part 6" — leaving **part 6 with no consumer at all**; and session 94's own
+142II repair had zero uses while a hand-rolled 58-line Cauchy–Schwarz sat
+beside it.
+
+So: **for each `mathlib` or `route` row, ask what would become unreachable if
+the thesis's route were restored — and, conversely, grep whether the results
+the thesis's route would have used are used by anything at all.** An
+unreferenced faithful transcription is the fingerprint of a shortcut taken
+somewhere above it.  `grep -rn "\bname\b" Theses/ --include=*.lean` over a
+suspect lemma is cheap and has now paid three times.
+
 ## Method
 
 1. Read your rows in `lean/docs/audit/*.csv` — the `proof` column and the note.
