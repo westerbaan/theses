@@ -86,6 +86,33 @@ def disp_numbers():
     return out
 
 
+
+AUDIT_COMMIT = "4d92c75"   # the commit at which the statement audit was complete
+
+
+def audit_rows():
+    """`lean_name` -> (stmt, proof, note) from docs/audit/*.csv."""
+    out = {}
+    for path in sorted(glob.glob(DOCS + "audit/*.csv")):
+        for i, line in enumerate(open(path, encoding="utf-8")):
+            f = line.rstrip("\n").split("|")
+            if i == 0 or len(f) != 6:
+                continue
+            name = f[1].strip()
+            if not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_'\u2032\u1d63!.]*", name):
+                continue          # rows naming an `example`, a structure field, …
+            out.setdefault(name.split(".")[-1], (f[3].strip(), f[4].strip(), f[5].strip()))
+    return out
+
+
+def touched_since_audit():
+    """Declaration names appearing in the diff since the audit finished."""
+    d = subprocess.run(["git", "diff", AUDIT_COMMIT + "..HEAD", "--", "Theses"],
+                       capture_output=True, text=True).stdout
+    return set(re.findall(r"^[+-]\s*(?:private |protected |noncomputable )*"
+                          r"(?:theorem|def|structure|class|instance)\s+"
+                          r"([A-Za-z_][A-Za-z0-9_'\u2032\u1d63!]*)", d, re.M))
+
 def load():
     why = {}
     for line in open(DOCS + "why-open.csv"):
@@ -121,8 +148,12 @@ def audit(why, rows):
 def main():
     why, rows = load()
     n2d = disp_numbers()
+    aud = audit_rows()
+    touched = touched_since_audit()
     print(f"{len(rows)} theorems, {len(n2d)} carry a DISP number")
     audit(why, rows)
+    print(f"  statement audit: {len(aud)} rows joined by name, "
+          f"{sum(1 for v in aud.values() if v[0] != 'ok')} do not match their source")
 
     items = collections.defaultdict(list)
     for mod, full, status in rows:
@@ -145,6 +176,7 @@ def main():
         return (int(m.group(1)) if m else 9999, t[0], t[1])
 
     sections = []
+    acount = collections.Counter()
     for title, prefix, files in CHAPTERS:
         mods = [f"{prefix}.{f}" for f in files if f"{prefix}.{f}" in items]
         c = collections.Counter(i[2] for m in mods for i in items[m])
@@ -155,11 +187,18 @@ def main():
             it = sorted(items[m], key=sort_key)
             fc = collections.Counter(i[2] for i in it)
             still = len(it) - fc["proved"]
-            boxes = "".join(
-                f'<i class="b k-{cat}" tabindex="0" data-d="{html.escape(d)}" '
-                f'data-n="{html.escape(nm)}" data-c="{cat}" '
-                f'data-k="{html.escape(bl)}" data-r="{html.escape(rs)}"></i>'
-                for d, nm, cat, bl, rs in it)
+            def box(d, nm, cat, bl, rs):
+                av, ap, an = aud.get(nm, ("", "", ""))
+                if av and av != "ok":
+                    acount[av] += 1
+                mark = " aud" if av and av != "ok" else ""
+                return (f'<i class="b k-{cat}{mark}" tabindex="0" '
+                        f'data-d="{html.escape(d)}" data-n="{html.escape(nm)}" '
+                        f'data-c="{cat}" data-k="{html.escape(bl)}" '
+                        f'data-r="{html.escape(rs)}" data-a="{av}" data-ap="{ap}" '
+                        f'data-t="{"1" if nm in touched else ""}" '
+                        f'data-an="{html.escape(an[:400])}"></i>')
+            boxes = "".join(box(*t) for t in it)
             tail = ""
             if fc["blocked"]:
                 tail += f' · <s class=y>{fc["blocked"]} blocked</s>'
@@ -182,6 +221,11 @@ def main():
         sections.append(f'<section><h2>{title}<span class="sc">{n}{head}</span>'
                         f'</h2>{"".join(rows_html)}</section>')
 
+    abad = sum(acount.values())
+    achips = "".join(
+        f'<button class="acat" data-acat="{k}" aria-pressed="false">'
+        f'<i class="sw aud"></i>stmt {k} <b>{acount[k]}</b></button>'
+        for k in ("weaker", "stronger", "differs", "unsure") if acount[k])
     chips = "".join(
         f'<button class="cat" data-cat="{k}" aria-pressed="false">'
         f'<i class="sw k-{k}"></i>{k} <b>{counts[k]}</b></button>'
@@ -195,13 +239,15 @@ def main():
                             capture_output=True, text=True).stdout.strip()
 
     doc = TEMPLATE.format(
+        abad=abad, achips=achips, aaudited=len(aud),
         total=total, proved=proved, blocked=blocked, sorry=sorry,
         pct=proved / total * 100, blkpct=blocked / total * 100,
         sorrypct=sorry / total * 100, commit=commit,
         legend=legend, chips=chips, sections="".join(sections))
     open(DOCS + "sorry-map.html", "w").write(doc)
     print(f"wrote {DOCS}sorry-map.html — {total} boxes: "
-          f"{proved} proved, {blocked} blocked, {sorry} sorry")
+          f"{proved} proved, {blocked} blocked, {sorry} sorry; "
+          f"{abad} carry a statement-audit flag")
 
 
 TEMPLATE = '''<title>Sorry Map</title>
@@ -246,9 +292,13 @@ s{{text-decoration:none;font-weight:600}} s.r{{color:var(--bad)}} s.y{{color:var
 .k-cited{{background:transparent;box-shadow:inset 0 0 0 2.5px var(--bad)}}
 .k-awaiting-ruling{{background:var(--bad);box-shadow:0 0 0 2px var(--accent)}}
 .k-false{{background:var(--bad);background-image:linear-gradient(45deg,transparent 42%,var(--panel) 42%,var(--panel) 58%,transparent 58%)}}
+.aud::before{{content:"";position:absolute;top:0;right:0;width:0;height:0;
+border:5px solid transparent;border-top-color:var(--accent);border-right-color:var(--accent);border-radius:0 3px 0 0}}
+.sw.aud{{background:var(--rule)}}
 .b:hover,.b:focus-visible{{transform:scale(1.7);z-index:2}}
 body.only .b.k-proved{{display:none}} body.only .file.clean{{display:none}}
 body.filt .b:not(.on){{display:none}} body.filt .file.clean{{display:none}}
+body.aonly .b:not(.aud){{display:none}}
 .read{{position:fixed;left:0;right:0;bottom:0;background:var(--panel);border-top:1px solid var(--rule);padding:9px 20px;font:12.5px/1.55 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--dim);min-height:54px}}
 .read b{{color:var(--ink)}} .read u{{text-decoration:none;color:var(--accent)}}
 @media(prefers-reduced-motion:reduce){{.b:hover,.b:focus-visible{{transform:none}}}}
@@ -259,24 +309,34 @@ body.filt .b:not(.on){{display:none}} body.filt .file.clean{{display:none}}
 <div><div class="big" style="color:var(--okd)">{proved}</div><div class="lab">proved</div></div>
 <div><div class="big" style="color:var(--warn)">{blocked}</div><div class="lab">blocked on a sorry</div></div>
 <div><div class="big" style="color:var(--bad)">{sorry}</div><div class="lab">sorry</div></div>
-<div><div class="big">{pct:.1f}%</div><div class="lab">axiom-clean</div></div></div>
+<div><div class="big">{pct:.1f}%</div><div class="lab">axiom-clean</div></div>
+<div><div class="big" style="color:var(--accent)">{abad}</div><div class="lab">statement ≠ source</div></div></div>
 <div class="bar"><i style="background:var(--okd);width:{pct:.3f}%"></i><i style="background:var(--warn);width:{blkpct:.3f}%"></i><i style="background:var(--bad);width:{sorrypct:.3f}%"></i></div>
-<table><tbody>{legend}</tbody></table>
-<div class="tools"><button id="a" aria-pressed="true">All {total}</button><button id="o" aria-pressed="false">Unproved {blocked}+{sorry}</button>{chips}</div>
+<table><tbody>{legend}
+<tr><td><i class="sw aud"></i></td><td><code>stmt ≠ source</code></td><td class=num>{abad}</td>
+<td>corner wedge: the statement audit of 2026-08-20 found this rendering weaker than, stronger than, or differently shaped from its thesis point — independently of whether it is proved. {aaudited} declarations were audited. Repairs since usually add a <em>sibling</em> declaration rather than change the flagged one, so a wedge may already have its content restored nearby; hover for the finding.</td></tr>
+</tbody></table>
+<div class="tools"><button id="a" aria-pressed="true">All {total}</button><button id="o" aria-pressed="false">Unproved {blocked}+{sorry}</button><button id="ab" aria-pressed="false"><i class="sw aud"></i>stmt ≠ source <b>{abad}</b></button>{chips}{achips}</div>
 {sections}</div>
 <div class="read" id="rd">Hover or focus a box for its thesis number, category and reason.</div>
 <script>
 const rd=document.getElementById('rd'),a=document.getElementById('a'),o=document.getElementById('o');
-function show(e){{const t=e.target.closest('.b');if(!t)return;const c=t.dataset.c;
-rd.innerHTML='<b>'+t.dataset.d+'</b> &nbsp; '+t.dataset.n+(c=='proved'?' &nbsp; <em>proved</em>':
-'<br><u>'+c+'</u>'+(t.dataset.k?' → '+t.dataset.k:'')+' &nbsp; '+t.dataset.r);}}
+function show(e){{const t=e.target.closest('.b');if(!t)return;const c=t.dataset.c,a=t.dataset.a;
+let h='<b>'+t.dataset.d+'</b> &nbsp; '+t.dataset.n+(c=='proved'?' &nbsp; <em>proved</em>':
+'<br><u>'+c+'</u>'+(t.dataset.k?' → '+t.dataset.k:'')+' &nbsp; '+t.dataset.r);
+if(a&&a!='ok')h+='<br><u>stmt '+a+'</u>'+(t.dataset.ap?' · proof '+t.dataset.ap:'')+
+(t.dataset.t?' · <em>declaration changed since the audit</em>':'')+' &nbsp; '+t.dataset.an;
+rd.innerHTML=h;}}
 document.addEventListener('mouseover',show);document.addEventListener('focusin',show);
-const cats=[...document.querySelectorAll('.cat')];
-function clr(){{cats.forEach(c=>c.ariaPressed='false');document.querySelectorAll('.b.on').forEach(b=>b.classList.remove('on'))}}
+const cats=[...document.querySelectorAll('.cat')],acats=[...document.querySelectorAll('.acat')],ab=document.getElementById('ab');
+function clr(){{cats.forEach(c=>c.ariaPressed='false');acats.forEach(c=>c.ariaPressed='false');ab.ariaPressed='false';document.querySelectorAll('.b.on').forEach(b=>b.classList.remove('on'))}}
 a.onclick=()=>{{clr();document.body.className='';a.ariaPressed='true';o.ariaPressed='false'}};
 o.onclick=()=>{{clr();document.body.className='only';o.ariaPressed='true';a.ariaPressed='false'}};
 cats.forEach(c=>c.onclick=()=>{{clr();a.ariaPressed='false';o.ariaPressed='false';c.ariaPressed='true';
 document.querySelectorAll('.b.k-'+c.dataset.cat).forEach(b=>b.classList.add('on'));document.body.className='filt'}});
+ab.onclick=()=>{{clr();a.ariaPressed='false';o.ariaPressed='false';ab.ariaPressed='true';document.body.className='aonly'}};
+acats.forEach(c=>c.onclick=()=>{{clr();a.ariaPressed='false';o.ariaPressed='false';c.ariaPressed='true';
+document.querySelectorAll('.b[data-a="'+c.dataset.acat+'"]').forEach(b=>b.classList.add('on'));document.body.className='filt'}});
 </script>'''
 
 
