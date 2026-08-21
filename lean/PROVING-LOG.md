@@ -26556,3 +26556,151 @@ appended, the copy compiled from source):
 row is now `repaired`; the two `208III` rows in
 `docs/audit/beff-dagger-diamondamp.csv` carry a dated note that the sub-EA
 half's divergence is gone.  `ERRATA.md` and `QUESTIONS.md` untouched.
+
+## Session 94 — A/VN: **70III is stated in full at last — `cvn_linfty` gives `𝒜 ≅ ⊕ᵢ L^∞(Xᵢ)`** — and the step that was missing, 54XI's nmiu-isomorphism `C(spec 𝒜) ≅ L^∞(spec 𝒜)`, is rendered where it belongs, in `A/VN/Basic` (worker on `Theses/A/VN/Basic.lean`, `Theses/A/VN/Projections.lean`)
+
+**Both statements are now on record, both axiom-clean, and no statement was
+weakened or removed.**  `cvn` (`Projections.lean`:7805) is untouched — it is
+destructured at `A/Proc/Duplicators.lean`:4038 — and so is `cvn_direct_sum`;
+the two new declarations go in beside them.
+
+### The diagnosis, third time round
+
+70III's third step is "each corner is *therefore by* `cvn-faithful`
+nmiu-isomorphic to `L^∞(Xᵢ)`", i.e. it is 54XI's last paragraph:
+`f ↦ f° : C(spec 𝒜) → L^∞(spec 𝒜)` is an nmiu-isomorphism.  The two earlier
+readings were both wrong in a way that pointed away from the fix.
+
+* Wave 3 said the clause "has no declaration at all", and blamed the missing
+  `L^∞` carrier.  Both halves are false: `A/VN/Basic`'s `LinftySub` is a
+  carrier (it is what proves 51IX), and the clause *does* have a declaration.
+* The re-verification found that declaration —
+  `exists_isLinftyOf_of_starAlgEquiv`, `A/Proc/Duplicators.lean`:3358 — and
+  concluded 70III was blocked because it is `private` and downstream.  True,
+  but that is not a block: the clause simply had to be rendered in
+  `A/VN/Basic`, where 54XI lives, which is what this session does.
+
+**QUESTIONS A9 was checked first, as instructed, and does not block.**  A9 is
+about **51IX** `Linfty_vn`'s own clause list, which omits `ℂ`-homogeneity of
+`q`; `Linfty_vn` is not touched here and the question stands exactly as it
+did.  What A9 also records is the *answer* for the shape of a new `L^∞`
+statement: the sibling defect D1 was ruled by Bas on 2026-08-16 and
+`IsLinftyOf` has carried `smul : q (z • f) = z • q f` ever since.  The new
+statement carries that clause, so it does not repeat the defect A9 raises,
+and no ruling was needed.
+
+### Step 1 — `cvn_faithful_4`, `A/VN/Basic.lean`:8690
+
+    theorem cvn_faithful_4 [MeasurableSpace (characterSpace ℂ A)]
+        (hms : ∀ s, MeasurableSet s ↔ AlmostClopen s)
+        (μ : Measure (characterSpace ℂ A))
+        (hμ : ∀ s, AlmostClopen s → (μ s = 0 ↔ IsMeagre s)) :
+        ∃ q : (characterSpace ℂ A → ℂ) → A,
+          surjective ∧ additive ∧ ℂ-homogeneous ∧ multiplicative ∧
+          ∗-preserving ∧ q 1 = 1 ∧ (q f = 0 ↔ f =ᵐ[μ] 0) ∧
+          (∀ f : C(characterSpace ℂ A, ℂ), q ⇑f = (gelfandStarTransform A).symm f)
+
+`L^∞` is rendered in **presentation form**, exactly as 51IX `Linfty_vn`
+renders `L^∞(X)` itself and as `IsLinftyOf` does downstream: the seven clauses
+say that `q` descends to a **miu-isomorphism `L^∞(spec A) ≅ A`**, and the
+eighth — the commuting triangle `q ⇑f = γ_A⁻¹(f)` on *continuous* `f` — is
+what makes the composite `C(spec A) → L^∞(spec A)` be `f ↦ f°`.  Reading the
+two together: `f ↦ f°` is a bijective miu-map, and its normality is automatic
+(`starAlgEquiv_preservesDirSups`, the same fact 53II `gelfandNP` already
+uses).  Neither `ω` nor its faithfulness appears: all the isomorphism needs of
+the measure is that its null sets are the meagre almost clopen ones, which is
+what `cvn_faithful_1` delivers; and the σ-algebra is given abstractly by
+`hms`, which by 53V pins it to `almostClopenMS (spec A)`.
+
+`cvn_faithful_3`'s doc comment ("the full statement … is not rendered since
+`L^∞` has no Mathlib carrier") is corrected to point at `cvn_faithful_4`.
+
+**The one piece of mathematics, and the divergence (class 2, different
+route).**  What has to be proved is that a bounded *measurable* function on
+`spec 𝒜` agrees **almost everywhere with a continuous one**; `cvn_faithful_2`
+gives only continuity at almost every point, which does not name an element of
+`𝒜`.  The thesis proves it as *surjectivity of* `ϱ` (vn.tex:2130): `ϱ` is
+injective by Baire, its image is norm closed because it is an injective
+miu-map, and the simple functions `∑ λₙ 1_{Aₙ}°` are norm dense in
+`L^∞(spec 𝒜)` (Fremlin 243I) and lie in the image.  **That route is not
+available in presentation form** — every step of it is about the norm of the
+object `L^∞(spec 𝒜)`, and the tree has no such object outside the private
+`LinftyConstruction` block (whose four algebraic instances on `X →ₘ[μ] ℂ` are
+`local`, so `LinftySub` cannot be exported without re-founding them); Fremlin
+243I is not in Mathlib either.  So the continuous representative is built
+directly, in the new private `ContRep` section (`Basic.lean`:8170–8390), from
+the clopen representatives `Cᵣ = clRep {f < r}` (`r` rational) of the sublevel
+sets by `g(x) = inf {r : x ∈ Cᵣ}`, with uniqueness from Baire
+(`eq_of_isMeagre_ne`).  It is extremal disconnectedness of `spec 𝒜`, through
+`clRep` (54VI), that makes it work.  Note that this is the statement ERRATA's
+**54XII** row calls the thesis's *weaker* reading of the measurability clause
+— so the thesis does prove exactly this, just by the other route.
+
+The construction is transcribed from `A/Proc/Duplicators`'s private
+`exists_contRep`, which is the same mathematics; it could not be *moved*,
+Duplicators being another module.  **`A/Proc/Duplicators`'s private
+`exists_contRep`/`exists_isLinftyOf_of_starAlgEquiv` are now redundant** —
+they can be replaced by `cvn_faithful_4` — but that is a change to a file this
+worker was not assigned, and is left for whoever owns it.
+
+### Step 2 — `cvn_linfty`, `A/VN/Projections.lean`:7993
+
+    theorem cvn_linfty {C : Type w} [CommCStarAlgebra C] [PartialOrder C]
+        [StarOrderedRing C] [VonNeumannAlgebra C] :
+        ∃ (ι : Type w) (𝒜 : ι → Type w) (instances…)
+          (X : ι → Type w) (_ : ∀ i, MeasurableSpace (X i)) (μ : ∀ i, Measure (X i)),
+          (∀ i, IsFiniteMeasure (μ i)) ∧ (∀ i, (μ i).IsComplete) ∧
+          (∀ i, commutative) ∧
+          (∀ i, ∃ qᵢ : (X i → ℂ) → 𝒜 i, ⟨the seven presentation clauses⟩) ∧
+          ∃ Φ : NMIUMap C (lp 𝒜 ∞), Function.Bijective ⇑Φ
+
+— that is, **every commutative von Neumann algebra is nmiu-isomorphic to a
+direct sum `⊕ᵢ L^∞(Xᵢ)` over finite complete measure spaces**, the closing
+Theorem of the chapter.  The proof is 70IV verbatim, in its three sentences
+(divergence class 1 for the assembly, class 2 only where step 1 diverges):
+
+1. 70II at `c = 1` — `cvn`, unchanged;
+2. 67IV.2 — `cvn_direct_sum`, unchanged;
+3. 54XI at each corner — `cvn_faithful_1` for the measure and the new
+   `cvn_faithful_4` for the presentation, packaged as the private
+   `exists_linftyPresentation` (`Projections.lean`:7940).
+
+`Xᵢ` is `spec(cᵢC)` with the almost clopen σ-algebra and the measure of 54XI,
+finite and complete as 54XI says.  Commutativity of a corner is passed as a
+*hypothesis* rather than an instance, and the `CommCStarAlgebra` structure put
+on inside the proof — the same manoeuvre `A/Proc/Duplicators`'s
+`duplicable_forward` makes at the same point — so that the `CStarAlgebra`
+instance in the statement is the ambient one `lp _ ∞` consumes.  The
+`Nontrivial` binder on the summands is Mathlib's, not the thesis's (see
+`central_projections_sums_2_iso`), and is why `cvn_direct_sum` drops the zero
+corners.
+
+The two doc comments that said the third step "is *not* available" (on `cvn`
+and on `cvn_direct_sum`) are corrected.
+
+### Compile
+
+`A/VN/Basic.lean` and `A/VN/Projections.lean` both compile from source with
+**no errors and no `sorry`**; oleans rebuilt and installed.  The whole
+importing chain recompiled at `rc=0`, oleans installed as it went:
+`A/VN/Completeness`, `A/VN/Division`, `A/VN/NormalFunctionals`,
+`A/Proc/Measurement` (its two pre-existing `sorry`s, unchanged),
+`A/Proc/Tensor` (one, unchanged), `A/Proc/QuantumLambda` (seven, unchanged),
+`A/Proc/Duplicators` (none) and `B/Dils/HilbertModules` (none).  **No new
+`sorry` anywhere.**
+
+Axiom-clean **in situ** (source copied to the scratchpad, `#print axioms`
+appended, the copy compiled from source):
+
+    'Theses.A.VN.cvn_faithful_4'   [propext, Classical.choice, Quot.sound]
+    'Theses.A.VN.cvn_linfty'       [propext, Classical.choice, Quot.sound]
+    'Theses.A.VN.cvn'              [propext, Classical.choice, Quot.sound]
+    'Theses.A.VN.cvn_direct_sum'   [propext, Classical.choice, Quot.sound]
+
+`docs/audit/avn-projections.csv`'s `70III|cvn` row is now `repaired`.
+`ERRATA.md` and `QUESTIONS.md` untouched — **A9 is unaffected and still
+open**, since `Linfty_vn` is unchanged.  One stale audit note is left behind
+for its owner: `docs/audit/avn-basic.csv`'s `54XI|cvn_faithful_3` row still
+says the isomorphism half lives only in `A/Proc/Duplicators` and is
+unreachable from `A/VN`; as of this session it is `cvn_faithful_4`, in
+`A/VN/Basic` itself.

@@ -8150,6 +8150,372 @@ theorem integral_eq_npFunctional (μ : @Measure X (almostClopenMS X))
 
 end Stone2
 
+/-! ### The continuous representative of a bounded measurable function
+
+The last clause of **54XI** — that `f ↦ f°` is an nmiu-isomorphism
+`C(spec 𝒜) → L^∞(spec 𝒜)` — needs one piece of mathematics beyond
+`cvn_faithful_2`: a bounded measurable function on the spectrum agrees
+*almost everywhere with a continuous function*, not merely (as
+`cvn_faithful_2` says) at almost every point.  The thesis gets this from
+surjectivity of `ϱ : f ↦ f°`, which is the erratum recorded for 54XII; the
+construction below is the classical one, from the clopen representatives
+`Cᵣ = clRep {f < r}` (`r` rational) of the sublevel sets, by
+`g(x) = inf {r : x ∈ Cᵣ}`.  It is extremal disconnectedness of the spectrum,
+through `clRep`, that makes it work; uniqueness of the continuous
+representative is Baire (`eq_of_isMeagre_ne`).
+
+Everything in this section is `private`; `cvn_faithful_4` below is what it is
+for. -/
+
+section ContRep
+
+namespace ContRep
+
+variable {X : Type*} [TopologicalSpace X] [CompactSpace X] [T2Space X]
+  [ExtremallyDisconnected X] [MeasurableSpace X]
+
+private theorem clRep_mono {s t : Set X} (hs : AlmostClopen s) (ht : AlmostClopen t)
+    (hst : s ⊆ t) : clRep s ⊆ clRep t := by
+  have hmeagre : IsMeagre (clRep s \ clRep t) := by
+    refine IsMeagre.mono ?_ ((clRep_equiv hs).union (clRep_equiv ht))
+    rintro x ⟨hxs, hxt⟩
+    rw [Set.mem_union, Set.mem_symmDiff, Set.mem_symmDiff]
+    by_cases hx : x ∈ s
+    · exact Or.inr (Or.inl ⟨hst hx, hxt⟩)
+    · exact Or.inl (Or.inr ⟨hxs, hx⟩)
+  have h := eq_empty_of_isClopen_of_isMeagre
+    ((clRep_isClopen s).diff (clRep_isClopen t)) hmeagre
+  exact Set.diff_eq_empty.mp h
+
+/-- A continuous function that vanishes off a meagre set vanishes. -/
+private theorem eq_of_isMeagre_ne {g h : X → ℂ} (hg : Continuous g) (hh : Continuous h)
+    (hm : IsMeagre {x | g x ≠ h x}) : g = h := by
+  have hopen : IsOpen {x | g x ≠ h x} := by
+    have : {x | g x ≠ h x} = (fun x => g x - h x) ⁻¹' {(0 : ℂ)}ᶜ := by
+      ext x; simp [sub_eq_zero]
+    rw [this]
+    exact (hg.sub hh).isOpen_preimage _ (isClosed_singleton.isOpen_compl)
+  have h0 : {x | g x ≠ h x} = ∅ := by
+    have := baire_category_theorem _ hm
+    rwa [hopen.interior_eq] at this
+  funext x
+  by_contra hne
+  exact absurd (Set.eq_empty_iff_forall_notMem.mp h0 x) (by simpa using hne)
+
+/-- Every bounded measurable real function on the spectrum agrees off a meagre
+set with a continuous one.  The representative is built from the clopen
+representatives `Cᵣ` of the sublevel sets `{f < r}` (`r` rational) by
+`g(x) = inf {r : x ∈ Cᵣ}`; `Cᵣ` is increasing in `r`, empty below `-M` and
+everything above `M`, which makes the infimum well defined, and
+`{g < r} = ⋃_{q<r} C_q`, `{g > r} = ⋃_{q>r} C_qᶜ` are open. -/
+private theorem exists_contRep_real
+    (hms : ∀ s : Set X, MeasurableSet s ↔ AlmostClopen s) (f : X → ℝ)
+    (hfm : Measurable f) (M : ℝ) (hM : ∀ x, |f x| ≤ M) :
+    ∃ g : X → ℝ, Continuous g ∧ IsMeagre {x | f x ≠ g x} := by
+  classical
+  have hac : ∀ r : ℚ, AlmostClopen {y : X | f y < (r : ℝ)} := fun r =>
+    (hms _).mp (hfm measurableSet_Iio)
+  set C : ℚ → Set X := fun r => clRep {y : X | f y < (r : ℝ)} with hCdef
+  have hCclopen : ∀ r, IsClopen (C r) := fun r => clRep_isClopen _
+  have hCmono : ∀ r r' : ℚ, r ≤ r' → C r ⊆ C r' := by
+    intro r r' hrr
+    refine clRep_mono (hac r) (hac r') fun y hy => ?_
+    show f y < (r' : ℝ)
+    exact lt_of_lt_of_le hy (by exact_mod_cast hrr)
+  have hClow : ∀ r : ℚ, (r : ℝ) ≤ -M → C r = ∅ := by
+    intro r hr
+    have : {y : X | f y < (r : ℝ)} = ∅ := by
+      ext y
+      simp only [Set.mem_setOf_eq, Set.mem_empty_iff_false, iff_false, not_lt]
+      exact le_trans hr (neg_le_of_abs_le (hM y))
+    rw [hCdef]; simp only; rw [this, clRep_empty]
+  have hChigh : ∀ r : ℚ, M < (r : ℝ) → C r = Set.univ := by
+    intro r hr
+    have h1 : {y : X | f y < (r : ℝ)} = Set.univ := by
+      ext y
+      simp only [Set.mem_setOf_eq, Set.mem_univ, iff_true]
+      exact lt_of_le_of_lt (le_of_abs_le (hM y)) hr
+    rw [hCdef]; simp only; rw [h1, clRep_of_isClopen isClopen_univ]
+  set S : X → Set ℝ := fun x => (fun r : ℚ => (r : ℝ)) '' {r : ℚ | x ∈ C r} with hSdef
+  obtain ⟨r₁, hr₁⟩ := exists_rat_gt M
+  have hSne : ∀ x, (S x).Nonempty := by
+    intro x
+    exact ⟨(r₁ : ℝ), ⟨r₁, by rw [Set.mem_setOf_eq, hChigh r₁ hr₁]; trivial, rfl⟩⟩
+  have hSbdd : ∀ x, BddBelow (S x) := by
+    intro x
+    refine ⟨-M, ?_⟩
+    rintro _ ⟨r, hr, rfl⟩
+    by_contra hlt
+    rw [not_le] at hlt
+    rw [Set.mem_setOf_eq, hClow r hlt.le] at hr
+    exact hr
+  set g : X → ℝ := fun x => sInf (S x) with hgdef
+  have hlt : ∀ (x : X) (r : ℝ), g x < r ↔ ∃ q : ℚ, (q : ℝ) < r ∧ x ∈ C q := by
+    intro x r
+    rw [hgdef]
+    simp only
+    rw [csInf_lt_iff (hSbdd x) (hSne x)]
+    constructor
+    · rintro ⟨_, ⟨q, hq, rfl⟩, hlt⟩
+      exact ⟨q, hlt, hq⟩
+    · rintro ⟨q, hq, hxq⟩
+      exact ⟨(q : ℝ), ⟨q, hxq, rfl⟩, hq⟩
+  have hgt : ∀ (x : X) (r : ℝ), r < g x ↔ ∃ q : ℚ, r < (q : ℝ) ∧ x ∉ C q := by
+    intro x r
+    constructor
+    · intro h
+      obtain ⟨q, hq1, hq2⟩ := exists_rat_btwn h
+      refine ⟨q, hq1, fun hxq => ?_⟩
+      have : g x ≤ (q : ℝ) := csInf_le (hSbdd x) ⟨q, hxq, rfl⟩
+      exact absurd hq2 (not_lt.mpr this)
+    · rintro ⟨q, hq, hxq⟩
+      refine lt_of_lt_of_le hq ?_
+      refine le_csInf (hSne x) ?_
+      rintro _ ⟨q', hq', rfl⟩
+      simp only
+      by_contra hcon
+      rw [not_le] at hcon
+      have hq'q : q' ≤ q := by exact_mod_cast hcon.le
+      exact hxq (hCmono q' q hq'q hq')
+  have hopen1 : ∀ r : ℝ, IsOpen {x : X | g x < r} := by
+    intro r
+    have : {x : X | g x < r} = ⋃ q : {q : ℚ // (q : ℝ) < r}, C q.1 := by
+      ext x
+      rw [Set.mem_setOf_eq, hlt x r, Set.mem_iUnion]
+      exact ⟨fun ⟨q, hq, hx⟩ => ⟨⟨q, hq⟩, hx⟩, fun ⟨q, hx⟩ => ⟨q.1, q.2, hx⟩⟩
+    rw [this]
+    exact isOpen_iUnion fun q => (hCclopen q.1).2
+  have hopen2 : ∀ r : ℝ, IsOpen {x : X | r < g x} := by
+    intro r
+    have : {x : X | r < g x} = ⋃ q : {q : ℚ // r < (q : ℝ)}, (C q.1)ᶜ := by
+      ext x
+      rw [Set.mem_setOf_eq, hgt x r, Set.mem_iUnion]
+      exact ⟨fun ⟨q, hq, hx⟩ => ⟨⟨q, hq⟩, hx⟩, fun ⟨q, hx⟩ => ⟨q.1, q.2, hx⟩⟩
+    rw [this]
+    exact isOpen_iUnion fun q => (hCclopen q.1).1.isOpen_compl
+  have hcont : Continuous g := by
+    rw [continuous_iff_continuousAt]
+    intro x
+    rw [ContinuousAt, tendsto_order]
+    refine ⟨fun a ha => ?_, fun a ha => ?_⟩
+    · exact Filter.eventually_of_mem ((hopen2 a).mem_nhds ha) fun y hy => hy
+    · exact Filter.eventually_of_mem ((hopen1 a).mem_nhds ha) fun y hy => hy
+  refine ⟨g, hcont, ?_⟩
+  set N : Set X := ⋃ q : ℚ, symmDiff {y : X | f y < (q : ℝ)} (C q) with hNdef
+  have hNm : IsMeagre N := isMeagre_iUnion fun q => clRep_equiv (hac q)
+  refine IsMeagre.mono ?_ hNm
+  intro x hx
+  by_contra hxN
+  have hkey : ∀ q : ℚ, (f x < (q : ℝ) ↔ x ∈ C q) := by
+    intro q
+    by_contra hcon
+    refine hxN (Set.mem_iUnion.mpr ⟨q, ?_⟩)
+    rw [Set.mem_symmDiff]
+    rcases not_iff.mp hcon with h
+    by_cases hf : f x < (q : ℝ)
+    · exact Or.inl ⟨hf, fun hc => (h.mpr hc) hf⟩
+    · exact Or.inr ⟨by tauto, hf⟩
+  refine hx ?_
+  rcases lt_trichotomy (f x) (g x) with h | h | h
+  · obtain ⟨q, hq1, hq2⟩ := (hgt x (f x)).mp h
+    exact absurd ((hkey q).mp hq1) hq2
+  · exact h
+  · obtain ⟨q, hq1, hq2⟩ := (hlt x (f x)).mp h
+    exact absurd ((hkey q).mpr hq2) (not_lt.mpr hq1.le)
+
+/-- Every bounded measurable function on the spectrum agrees off a meagre set
+with a continuous one. -/
+private theorem exists_contRep
+    (hms : ∀ s : Set X, MeasurableSet s ↔ AlmostClopen s) (f : X → ℂ)
+    (hf : IsBoundedMeasurable X f) :
+    ∃ g : C(X, ℂ), IsMeagre {x | f x ≠ g x} := by
+  obtain ⟨hfm, M, hMf⟩ := hf
+  obtain ⟨g₁, hg₁c, hg₁m⟩ := exists_contRep_real hms (fun x => (f x).re)
+    (Complex.measurable_re.comp hfm) M
+    (fun x => (abs_le.mpr ⟨by
+      have := Complex.abs_re_le_norm (f x); have h2 := hMf x
+      rw [abs_le] at this; linarith [this.1], by
+      have := Complex.abs_re_le_norm (f x); have h2 := hMf x
+      rw [abs_le] at this; linarith [this.2]⟩))
+  obtain ⟨g₂, hg₂c, hg₂m⟩ := exists_contRep_real hms (fun x => (f x).im)
+    (Complex.measurable_im.comp hfm) M
+    (fun x => (abs_le.mpr ⟨by
+      have := Complex.abs_im_le_norm (f x); have h2 := hMf x
+      rw [abs_le] at this; linarith [this.1], by
+      have := Complex.abs_im_le_norm (f x); have h2 := hMf x
+      rw [abs_le] at this; linarith [this.2]⟩))
+  refine ⟨⟨fun x => (g₁ x : ℂ) + (g₂ x : ℂ) * Complex.I, ?_⟩, ?_⟩
+  · exact (Complex.continuous_ofReal.comp hg₁c).add
+      ((Complex.continuous_ofReal.comp hg₂c).mul continuous_const)
+  · refine IsMeagre.mono ?_ (hg₁m.union hg₂m)
+    intro x hx
+    by_contra hxN
+    rw [Set.mem_union] at hxN
+    push_neg at hxN
+    simp only [Set.mem_setOf_eq, not_not] at hxN
+    refine hx ?_
+    show f x = (g₁ x : ℂ) + (g₂ x : ℂ) * Complex.I
+    rw [← hxN.1, ← hxN.2]
+    exact (Complex.re_add_im (f x)).symm
+
+
+/-- **54XI**, the isomorphism clause, in presentation form and for an
+arbitrary C\*-algebra `𝒞` with `𝒞 ≃⋆ₐ[ℂ] C(X, ℂ)`: `q` is "take the
+continuous representative, then apply `γ⁻¹`". -/
+private theorem exists_presentation
+    (hms : ∀ s : Set X, MeasurableSet s ↔ AlmostClopen s)
+    (μ : Measure X)
+    (hμ : ∀ s : Set X, AlmostClopen s → (μ s = 0 ↔ IsMeagre s))
+    (𝒞 : Type*) [CStarAlgebra 𝒞] (γ : 𝒞 ≃⋆ₐ[ℂ] C(X, ℂ)) :
+    ∃ q : (X → ℂ) → 𝒞,
+      (∀ y : 𝒞, ∃ f, IsBoundedMeasurable X f ∧ q f = y) ∧
+      (∀ f g, IsBoundedMeasurable X f → IsBoundedMeasurable X g →
+        q (f + g) = q f + q g) ∧
+      (∀ (z : ℂ) f, IsBoundedMeasurable X f → q (z • f) = z • q f) ∧
+      (∀ f g, IsBoundedMeasurable X f → IsBoundedMeasurable X g →
+        q (f * g) = q f * q g) ∧
+      (∀ f, IsBoundedMeasurable X f → q (star f) = star (q f)) ∧
+      q 1 = 1 ∧
+      (∀ f, IsBoundedMeasurable X f → (q f = 0 ↔ f =ᵐ[μ] 0)) ∧
+      (∀ f : C(X, ℂ), q (f : X → ℂ) = γ.symm f) := by
+  classical
+  -- an open set is almost clopen, so a continuous function is measurable
+  have hopenac : ∀ U : Set X, IsOpen U → AlmostClopen U :=
+    open_almost_clopen.mp inferInstance
+  have hcontmeas : ∀ g : C(X, ℂ), Measurable (⇑g) := by
+    intro g
+    refine measurable_of_isOpen fun U hU => ?_
+    exact (hms _).mpr (hopenac _ (hU.preimage g.continuous))
+  have hbm : ∀ g : C(X, ℂ), IsBoundedMeasurable X (⇑g) :=
+    fun g => ⟨hcontmeas g, ‖g‖, fun x => g.norm_coe_le_norm x⟩
+  -- meagre sets are null
+  have hnull : ∀ s : Set X, IsMeagre s → μ s = 0 := by
+    intro s hs
+    refine (hμ s ⟨∅, isClopen_empty, ?_⟩).mpr hs
+    show IsMeagre (symmDiff s (∅ : Set X))
+    simpa [Set.symmDiff_def] using hs
+  -- a continuous function that is null-supported vanishes
+  have hzero : ∀ g : C(X, ℂ), μ {x | (g : X → ℂ) x ≠ 0} = 0 → g = 0 := by
+    intro g hg
+    have hop : IsOpen {x | (g : X → ℂ) x ≠ 0} :=
+      g.continuous.isOpen_preimage _ isClosed_singleton.isOpen_compl
+    have hm : IsMeagre {x | (g : X → ℂ) x ≠ 0} :=
+      (hμ _ (hopenac _ hop)).mp hg
+    have h0 := baire_category_theorem _ hm
+    rw [hop.interior_eq] at h0
+    ext x
+    by_contra hne
+    exact absurd (Set.eq_empty_iff_forall_notMem.mp h0 x) (by simpa using hne)
+  set q : (X → ℂ) → 𝒞 := fun f =>
+    if h : ∃ g : C(X, ℂ), IsMeagre {x | f x ≠ (g : X → ℂ) x}
+      then γ.symm h.choose else 0 with hqdef
+  have hqspec : ∀ (f : X → ℂ) (g : C(X, ℂ)),
+      IsMeagre {x | f x ≠ (g : X → ℂ) x} → q f = γ.symm g := by
+    intro f g hfg
+    have hex : ∃ g : C(X, ℂ), IsMeagre {x | f x ≠ (g : X → ℂ) x} := ⟨g, hfg⟩
+    have hch := hex.choose_spec
+    have heq : (hex.choose : X → ℂ) = (g : X → ℂ) := by
+      refine eq_of_isMeagre_ne hex.choose.continuous g.continuous ?_
+      refine IsMeagre.mono ?_ (hch.union hfg)
+      intro x hx
+      rw [Set.mem_union]
+      by_cases hf : f x = (hex.choose : X → ℂ) x
+      · refine Or.inr (show f x ≠ (g : X → ℂ) x from fun hc => hx ?_)
+        show (hex.choose : X → ℂ) x = (g : X → ℂ) x
+        rw [← hf]; exact hc
+      · exact Or.inl hf
+    rw [hqdef]
+    simp only [dif_pos hex]
+    congr 1
+    exact DFunLike.coe_injective heq
+  refine ⟨q, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
+  · -- surjectivity
+    intro y
+    refine ⟨⇑(γ y), hbm _, ?_⟩
+    rw [hqspec _ (γ y) (by simpa using (IsMeagre.empty : IsMeagre (∅ : Set X)))]
+    exact γ.symm_apply_apply y
+  · -- additivity
+    intro f f' hf hf'
+    obtain ⟨g, hg⟩ := exists_contRep hms f hf
+    obtain ⟨g', hg'⟩ := exists_contRep hms f' hf'
+    rw [hqspec f g hg, hqspec f' g' hg', ← map_add]
+    refine hqspec (f + f') (g + g') ?_
+    refine IsMeagre.mono ?_ (hg.union hg')
+    intro x hx
+    rw [Set.mem_union]
+    by_contra hcon
+    push_neg at hcon
+    simp only [Set.mem_setOf_eq, not_not] at hcon
+    exact hx (by simp [Pi.add_apply, hcon.1, hcon.2])
+  · -- scalars
+    intro z f hf
+    obtain ⟨g, hg⟩ := exists_contRep hms f hf
+    rw [hqspec f g hg, ← map_smul]
+    refine hqspec (z • f) (z • g) ?_
+    refine IsMeagre.mono ?_ hg
+    intro x hx
+    by_contra hcon
+    simp only [Set.mem_setOf_eq, not_not] at hcon
+    exact hx (by simp [Pi.smul_apply, hcon])
+  · -- multiplicativity
+    intro f f' hf hf'
+    obtain ⟨g, hg⟩ := exists_contRep hms f hf
+    obtain ⟨g', hg'⟩ := exists_contRep hms f' hf'
+    rw [hqspec f g hg, hqspec f' g' hg', ← map_mul]
+    refine hqspec (f * f') (g * g') ?_
+    refine IsMeagre.mono ?_ (hg.union hg')
+    intro x hx
+    rw [Set.mem_union]
+    by_contra hcon
+    push_neg at hcon
+    simp only [Set.mem_setOf_eq, not_not] at hcon
+    exact hx (by simp [Pi.mul_apply, hcon.1, hcon.2])
+  · -- involution
+    intro f hf
+    obtain ⟨g, hg⟩ := exists_contRep hms f hf
+    rw [hqspec f g hg, ← map_star]
+    refine hqspec (star f) (star g) ?_
+    refine IsMeagre.mono ?_ hg
+    intro x hx
+    by_contra hcon
+    simp only [Set.mem_setOf_eq, not_not] at hcon
+    exact hx (by simp [Pi.star_apply, hcon])
+  · -- unitality
+    rw [hqspec (1 : X → ℂ) 1 (by simpa using (IsMeagre.empty : IsMeagre (∅ : Set X)))]
+    exact map_one _
+  · -- kernel
+    intro f hf
+    obtain ⟨g, hg⟩ := exists_contRep hms f hf
+    have hfg0 : μ {x | f x ≠ (g : X → ℂ) x} = 0 := hnull _ hg
+    rw [hqspec f g hg]
+    constructor
+    · intro h0
+      have hg0 : g = 0 := by
+        have := congrArg γ h0
+        rwa [γ.apply_symm_apply, map_zero] at this
+      have hsub : {x | f x ≠ (0 : X → ℂ) x} ⊆ {x | f x ≠ (g : X → ℂ) x} := by
+        intro x hx hc
+        exact hx (by rw [hc, hg0]; rfl)
+      exact measure_mono_null hsub hfg0
+    · intro h0
+      have hf0 : μ {x | f x ≠ (0 : X → ℂ) x} = 0 := h0
+      have hsub : {x | (g : X → ℂ) x ≠ 0} ⊆
+          {x | f x ≠ (g : X → ℂ) x} ∪ {x | f x ≠ (0 : X → ℂ) x} := by
+        intro x hx
+        rw [Set.mem_union]
+        by_cases hc : f x = (g : X → ℂ) x
+        · exact Or.inr (fun hz => hx (by rw [← hc]; exact hz))
+        · exact Or.inl hc
+      have := measure_mono_null hsub (measure_union_null hfg0 hf0)
+      rw [hzero g this, map_zero]
+  · -- the commuting triangle: on a continuous `f`, `q` is `γ⁻¹`
+    intro f
+    exact hqspec _ f (by simpa using (IsMeagre.empty : IsMeagre (∅ : Set X)))
+
+end ContRep
+
+end ContRep
+
 section CVNFaithful
 
 variable {A : Type*} [CommCStarAlgebra A] [PartialOrder A] [StarOrderedRing A]
@@ -8267,9 +8633,8 @@ theorem cvn_faithful_2 (ω : NPFunctional A)
 
 /-- **54XI** (`cvn-faithful`, vn.tex:2014, Theorem), part 3: the diagram
 commutes: `∫ f dμ = ω(γ_A⁻¹(f))` for every continuous `f` on `spec A`.
-(The full statement — that `f ↦ f°` is an nmiu-isomorphism
-`C(spec A) → L^∞(spec A)` — is not rendered since `L^∞` has no Mathlib
-carrier; cf. 51IX.) -/
+(The other half of the same paragraph — that `f ↦ f°` is an
+nmiu-isomorphism `C(spec A) → L^∞(spec A)` — is `cvn_faithful_4` below.) -/
 theorem cvn_faithful_3 (ω : NPFunctional A)
     (hω : ∀ a : A, 0 ≤ a → ω a = 0 → a = 0)
     (μ : @Measure (characterSpace ℂ A) (almostClopenMS _))
@@ -8288,6 +8653,64 @@ theorem cvn_faithful_3 (ω : NPFunctional A)
     rw [hμC C hC (chi C) (fun x => chi_apply hC x)]
     rfl
   exact integral_eq_npFunctional (gelfandNP ω) μ hclop f
+
+/-- **54XI** (`cvn-faithful`, vn.tex:2014, Theorem), part 3, the other half:
+`f ↦ f°` is an nmiu-**isomorphism** `C(spec A) → L^∞(spec A)`.
+
+`L^∞` has no carrier of its own in the tree — 51IX `Linfty_vn` renders
+`L^∞(X)` existentially, and the `LinftySub μ` used to prove it is local to
+that section — so the isomorphism is delivered in *presentation* form,
+exactly as `Linfty_vn` delivers `L^∞(X)` itself and as `IsLinftyOf` does in
+`A/Proc/Duplicators`: a map `q : 𝓛^∞(spec A) → A` which is surjective,
+additive, `ℂ`-homogeneous, multiplicative, `∗`-preserving and unital, and
+whose kernel is *exactly* the `μ`-a.e.-zero functions — so that `q` descends
+to a miu-isomorphism `L^∞(spec A) ≅ A` — together with the commuting
+triangle `q f = γ_A⁻¹(f)` for **continuous** `f`.  Reading the triangle
+backwards through that descent: the induced map `C(spec A) → L^∞(spec A)` is
+`f ↦ f°`, and it is a bijective miu-map.  Its normality is automatic, a
+`∗`-isomorphism of von Neumann algebras being normal
+(`starAlgEquiv_preservesDirSups`), which is also how 53II
+(`gelfandNP`) already uses `γ_A`.
+
+The `ℂ`-homogeneity clause `q (z • f) = z • q f` is stated: without it `q`
+would be a `∗`-*ring* map only and the statement would not say "miu" — the
+defect QUESTIONS **A9** raises against 51IX's own rendering, and the one
+ruled in for `IsLinftyOf` under QUESTIONS D1.  (A9 is about `Linfty_vn`'s
+clause list, which is untouched here.)
+
+Neither `ω` nor its faithfulness occurs: all the isomorphism needs of the
+measure is that its null sets are the meagre almost clopen sets, which is
+what `cvn_faithful_1` delivers.  The measurable structure is likewise given
+abstractly by `hms` — any σ-algebra whose measurable sets are exactly the
+almost clopen ones, which by 53V (`almostClopen_sigmaAlgebra`) is
+`almostClopenMS (spec A)`.
+
+The one piece of mathematics is `ContRep.exists_contRep`: every bounded
+measurable function agrees off a meagre set with a continuous one. -/
+theorem cvn_faithful_4 [MeasurableSpace (characterSpace ℂ A)]
+    (hms : ∀ s : Set (characterSpace ℂ A), MeasurableSet s ↔ AlmostClopen s)
+    (μ : Measure (characterSpace ℂ A))
+    (hμ : ∀ s : Set (characterSpace ℂ A), AlmostClopen s →
+      (μ s = 0 ↔ IsMeagre s)) :
+    ∃ q : (characterSpace ℂ A → ℂ) → A,
+      (∀ y : A, ∃ f, IsBoundedMeasurable (characterSpace ℂ A) f ∧ q f = y) ∧
+      (∀ f g, IsBoundedMeasurable (characterSpace ℂ A) f →
+        IsBoundedMeasurable (characterSpace ℂ A) g →
+        q (f + g) = q f + q g) ∧
+      (∀ (z : ℂ) f, IsBoundedMeasurable (characterSpace ℂ A) f →
+        q (z • f) = z • q f) ∧
+      (∀ f g, IsBoundedMeasurable (characterSpace ℂ A) f →
+        IsBoundedMeasurable (characterSpace ℂ A) g →
+        q (f * g) = q f * q g) ∧
+      (∀ f, IsBoundedMeasurable (characterSpace ℂ A) f →
+        q (star f) = star (q f)) ∧
+      q 1 = 1 ∧
+      (∀ f, IsBoundedMeasurable (characterSpace ℂ A) f →
+        (q f = 0 ↔ f =ᵐ[μ] 0)) ∧
+      (∀ f : C(characterSpace ℂ A, ℂ),
+        q (f : characterSpace ℂ A → ℂ) = (gelfandStarTransform A).symm f) := by
+  haveI := vn_spectrum_extremally_disconnected A
+  exact ContRep.exists_presentation hms μ hμ A (gelfandStarTransform A)
 
 /-! **54XIII** (vn.tex:2172): transition to the projections needed for the
 full classification (70III, `Theses/A/VN/Projections.lean`) — nothing to

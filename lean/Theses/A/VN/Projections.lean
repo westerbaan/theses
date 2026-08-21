@@ -7797,11 +7797,11 @@ the thesis's observation that `⌈⌈ωᵢ⌉⌉ = ⌈ωᵢ⌉` in a commutative
 *second* step, `𝒜 ≅ ⊕ᵢ ⌈⌈ωᵢ⌉⌉𝒜` by 67IV.2, is `cvn_direct_sum` below, which
 also records that each summand is a commutative von Neumann algebra carrying
 a faithful np-functional.  The **third** step — identifying each summand
-with an `L^∞(Xᵢ)` by 54XI — is *not* available: see the note on
-`cvn_direct_sum`.
+with an `L^∞(Xᵢ)` by 54XI — is `cvn_linfty` at the end of this file, which is
+the theorem in full.
 
-(This statement is destructured at `A/Proc/Duplicators.lean:4038`; the
-strengthening therefore goes in beside it rather than into it.) -/
+(This statement is destructured at `A/Proc/Duplicators.lean:4038`, which is
+why the two later steps go in beside it rather than into it.) -/
 theorem cvn {C : Type w} [CommCStarAlgebra C] [PartialOrder C]
     [StarOrderedRing C] [VonNeumannAlgebra C] :
     ∃ (ι : Type w) (ω : ι → NPFunctional C),
@@ -7857,20 +7857,11 @@ family are dropped — they contribute nothing to the join and would make the
 corresponding summand the zero algebra, which Mathlib's `lp _ ∞` does not
 admit (see `central_projections_sums_2_iso`).
 
-**What is missing, and where.**  The theorem's last sentence — "which is
-therefore by `cvn-faithful` nmiu-isomorphic to `L^∞(Xᵢ)`" — cannot be taken
-here.  54XI is rendered in `A/VN/Basic` as `cvn_faithful_1`–`cvn_faithful_3`,
-and *none of the three delivers the nmiu-isomorphism*
-`f ↦ f° : C(spec 𝒜) → L^∞(spec 𝒜)` that 54XI asserts: `cvn_faithful_1` builds
-the measure, `cvn_faithful_2` characterises measurability, and
-`cvn_faithful_3` records only `∫f = ω(γ_𝒜⁻¹ f)`, with the doc comment saying
-in as many words that the isomorphism "is not rendered".  A carrier for
-`L^∞` does exist in the tree (`A/VN/Basic`'s `LinftySub`, used to prove 51IX
-`Linfty_vn`), so the obstruction is not the target type; it is the missing
-half of 54XI.3, and it lives in `A/VN/Basic`, not here.  Note also that 51IX's
-own rendering of "`q` is a miu-map" is under QUESTIONS **A9** (it omits
-`ℂ`-homogeneity), so the shape of any future `L^∞` statement is not settled
-either. -/
+The theorem's last sentence — "which is therefore by `cvn-faithful`
+nmiu-isomorphic to `L^∞(Xᵢ)`" — is taken in `cvn_linfty` below, by
+`A/VN/Basic`'s `cvn_faithful_4` (the isomorphism clause of 54XI.3, which used
+to be missing there).  This declaration is kept as the intermediate step, and
+because the *corners* are what the rest of the tree consumes. -/
 theorem cvn_direct_sum {C : Type w} [CommCStarAlgebra C] [PartialOrder C]
     [StarOrderedRing C] [VonNeumannAlgebra C] :
     ∃ (ι : Type w) (ω : ι → NPFunctional C) (c : ι → CentralProj C)
@@ -7928,5 +7919,108 @@ theorem cvn_direct_sum {C : Type w} [CommCStarAlgebra C] [PartialOrder C]
   · obtain ⟨Φ, hbij, hval⟩ := central_projections_sums_2_iso c horth hjoin
     exact ⟨Φ, hbij, hval⟩
 
+
+section Classification
+
+open MeasureTheory WeakDual
+
+/-- Auxiliary for **70III**: **54XI** at a single summand.  A *commutative*
+von Neumann algebra `A` carrying a faithful np-functional `ω` **is** an
+`L^∞(X)` for a finite complete measure space `X`.  `cvn_faithful_1` builds
+the measure on the σ-algebra of almost clopen subsets of `spec A` (which is a
+σ-algebra by 53V, `almostClopen_sigmaAlgebra`), and `cvn_faithful_4` — the
+isomorphism clause of 54XI.3 — builds the presentation
+`q : 𝓛^∞(spec A) → A`.
+
+Commutativity is a *hypothesis* rather than an instance because the summands
+of `cvn_direct_sum` are corners `cᵢ𝒜`, whose ambient `CStarAlgebra` instance
+is the one `lp _ ∞` consumes; the `CommCStarAlgebra` structure is put on
+inside the proof, as `A/Proc/Duplicators`'s `duplicable_forward` does at the
+same point. -/
+private theorem exists_linftyPresentation (A : Type u) [CStarAlgebra A]
+    [PartialOrder A] [StarOrderedRing A] [VonNeumannAlgebra A]
+    (hcomm : ∀ x y : A, x * y = y * x) (ω : NPFunctional A)
+    (hω : ∀ a : A, 0 ≤ a → ω a = 0 → a = 0) :
+    ∃ (X : Type u) (_ : MeasurableSpace X) (μ : Measure X),
+      IsFiniteMeasure μ ∧ μ.IsComplete ∧
+      ∃ q : (X → ℂ) → A,
+        (∀ y : A, ∃ f, IsBoundedMeasurable X f ∧ q f = y) ∧
+        (∀ f g, IsBoundedMeasurable X f → IsBoundedMeasurable X g →
+          q (f + g) = q f + q g) ∧
+        (∀ (z : ℂ) f, IsBoundedMeasurable X f → q (z • f) = z • q f) ∧
+        (∀ f g, IsBoundedMeasurable X f → IsBoundedMeasurable X g →
+          q (f * g) = q f * q g) ∧
+        (∀ f, IsBoundedMeasurable X f → q (star f) = star (q f)) ∧
+        q 1 = 1 ∧
+        (∀ f, IsBoundedMeasurable X f → (q f = 0 ↔ f =ᵐ[μ] 0)) := by
+  letI : CommCStarAlgebra A := { ‹CStarAlgebra A› with mul_comm := hcomm }
+  haveI : ExtremallyDisconnected (characterSpace ℂ A) :=
+    vn_spectrum_extremally_disconnected (A := A)
+  obtain ⟨μ, ⟨hnull, -, hfin, hcomp⟩, -⟩ := cvn_faithful_1 ω hω
+  obtain ⟨q, hq⟩ := @cvn_faithful_4 A _ _ _ _ (almostClopenMS _)
+    (almostClopen_sigmaAlgebra _) μ hnull
+  exact ⟨characterSpace ℂ A, almostClopenMS _, μ, hfin, hcomp, q, hq.1, hq.2.1,
+    hq.2.2.1, hq.2.2.2.1, hq.2.2.2.2.1, hq.2.2.2.2.2.1, hq.2.2.2.2.2.2.1⟩
+
+/-- **70III** (`cvn`, vn.tex:3758, Theorem), in full: **every commutative von
+Neumann algebra `C` is nmiu-isomorphic to a direct sum `⊕ᵢ L^∞(Xᵢ)`, where
+the `Xᵢ` are finite complete measure spaces.**
+
+The printed proof, in its three steps:
+
+* 70II at `c = 1` gives `1 = ∑ᵢ ⌈⌈ωᵢ⌉⌉` with each `ωᵢ` faithful on its
+  corner, by the thesis's observation that `⌈⌈ωᵢ⌉⌉ = ⌈ωᵢ⌉` in a commutative
+  algebra (`cvn`);
+* 67IV.2 gives the nmiu-isomorphism `C ≅ ⊕ᵢ ⌈⌈ωᵢ⌉⌉C` onto the corners
+  (`cvn_direct_sum`);
+* 54XI identifies each corner with an `L^∞(Xᵢ)` (`cvn_faithful_1` and
+  `cvn_faithful_4`, packaged as `exists_linftyPresentation`).
+
+`L^∞(Xᵢ)` is rendered exactly as 51IX `Linfty_vn` renders it — there is no
+`L^∞` carrier in the tree — namely as an algebra `𝒜ᵢ` together with a
+surjective map `qᵢ : 𝓛^∞(Xᵢ) → 𝒜ᵢ` that is additive, `ℂ`-homogeneous,
+multiplicative, `∗`-preserving and unital and whose kernel is exactly the
+`μᵢ`-a.e.-zero functions, i.e. that descends to a miu-isomorphism
+`L^∞(Xᵢ) ≅ 𝒜ᵢ`.  Each `Xᵢ` is `spec(cᵢC)` with the almost clopen σ-algebra
+and the measure of 54XI, and is finite and complete as 54XI says.
+
+The direct sum is Mathlib's `lp 𝒜 ∞`, as everywhere else in the tree; the
+`Nontrivial` binder on the summands is Mathlib's, not the thesis's (see
+`central_projections_sums_2_iso`), and is why the zero corners are dropped.
+
+`cvn` above is left as it stands — it is destructured at
+`A/Proc/Duplicators.lean:4038`. -/
+theorem cvn_linfty {C : Type w} [CommCStarAlgebra C] [PartialOrder C]
+    [StarOrderedRing C] [VonNeumannAlgebra C] :
+    ∃ (ι : Type w) (𝒜 : ι → Type w) (_ : ∀ i, CStarAlgebra (𝒜 i))
+      (_ : ∀ i, Nontrivial (𝒜 i)) (_ : ∀ i, PartialOrder (𝒜 i))
+      (_ : ∀ i, StarOrderedRing (𝒜 i)) (_ : ∀ i, VonNeumannAlgebra (𝒜 i))
+      (X : ι → Type w) (_ : ∀ i, MeasurableSpace (X i))
+      (μ : ∀ i, Measure (X i)),
+      (∀ i, IsFiniteMeasure (μ i)) ∧
+      (∀ i, (μ i).IsComplete) ∧
+      (∀ (i : ι) (x y : 𝒜 i), x * y = y * x) ∧
+      (∀ i, ∃ q : (X i → ℂ) → 𝒜 i,
+        (∀ y : 𝒜 i, ∃ f, IsBoundedMeasurable (X i) f ∧ q f = y) ∧
+        (∀ f g, IsBoundedMeasurable (X i) f → IsBoundedMeasurable (X i) g →
+          q (f + g) = q f + q g) ∧
+        (∀ (z : ℂ) f, IsBoundedMeasurable (X i) f → q (z • f) = z • q f) ∧
+        (∀ f g, IsBoundedMeasurable (X i) f → IsBoundedMeasurable (X i) g →
+          q (f * g) = q f * q g) ∧
+        (∀ f, IsBoundedMeasurable (X i) f → q (star f) = star (q f)) ∧
+        q 1 = 1 ∧
+        (∀ f, IsBoundedMeasurable (X i) f → (q f = 0 ↔ f =ᵐ[μ i] 0))) ∧
+      ∃ Φ : NMIUMap C (lp 𝒜 ∞), Function.Bijective ⇑Φ := by
+  classical
+  obtain ⟨ι, ω, c, hntriv, -, -, -, hcomm, hfaith, Φ, hbij, -⟩ :=
+    cvn_direct_sum (C := C)
+  choose X mX μ hfin hcomp q hq using fun i : ι =>
+    exists_linftyPresentation ((c i).sub) (hcomm i) ((c i).restrictNP (ω i))
+      (hfaith i)
+  exact ⟨ι, fun i => (c i).sub, inferInstance, hntriv, inferInstance,
+    inferInstance, inferInstance, X, mX, μ, hfin, hcomp, hcomm,
+    fun i => ⟨q i, hq i⟩, Φ, hbij⟩
+
+end Classification
 
 end Theses.A.VN
