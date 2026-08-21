@@ -9,17 +9,17 @@ arXiv:1804.02203), chapter 2: Von Neumann Algebras — vn.tex, lines 2183–3780
     Carrier and Commutant   (parsecs 630–660)
     Central Support and Central Carrier  (parsecs 670–700)
 
-Statements only; every proof is `sorry`.  See CONVENTIONS.md for the
-numbering and naming conventions, and `Theses/A/VN/Basic.lean` for the
-encoding of the ultraweak/ultrastrong topologies.
+This module contains **no `sorry`**.  See CONVENTIONS.md for the numbering
+and naming conventions, and `Theses/A/VN/Basic.lean` for the encoding of the
+ultraweak/ultrastrong topologies.
 
 The ceiling `⌈b⌉`, floor `⌊b⌋`, suprema/infima of projections, carriers and
 central supports are actual (noncomputable) definitions, obtained by choice
-from `sorry`-ed existence-and-uniqueness lemmas.
+from proved existence-and-uniqueness lemmas.
 -/
 import Theses.A.VN.Basic
 
-open scoped ComplexOrder ComplexInnerProductSpace CStarAlgebra
+open scoped ComplexOrder ComplexInnerProductSpace CStarAlgebra ENNReal
 open Filter Topology Theses Theses.A.CStar
 
 namespace Theses.A.VN
@@ -1092,15 +1092,18 @@ theorem ceil_floor_basic_1 (a : A) (ha : a ∈ effects A) :
   · rw [floor_eq_one_sub_ceil ha, sub_sub_cancel]
 
 /-- **56XIII** (`ceil-floor-basic`, vn.tex:2505, Exercise), part 2:
-`⌈λa⌉ = ⌈a⌉` for `λ ∈ (0,1]`, and for `λ ∈ (0,1)` the projection
-`⌈λa + λ^⊥b⌉` is the least projection above both `⌈a⌉` and `⌈b⌉` (the
-supremum in the poset of projections). -/
+`⌈λa⌉ = ⌈a⌉` for **every** `λ ∈ (0,1]` — the exercise's hypothesis is
+`λ ∈ [0,1]` with `λ ≠ 0`, so `λ = 1` is included — and, for `λ ∈ (0,1)`, the
+projection `⌈λa + λ^⊥b⌉` is the least projection above both `⌈a⌉` and `⌈b⌉`
+(the supremum in the poset of projections).
+
+The two clauses carry *separate* scalars: only the second needs `λ ≠ 1`, and
+bundling them would silently drop `λ = 1` from the first. -/
 theorem ceil_floor_basic_2 (a b : A) (ha : a ∈ effects A)
     (hb : b ∈ effects A) (l : ℝ) (hl0 : 0 < l) (hl1 : l < 1) :
-    ceil ((l : ℂ) • a) = ceil a ∧
+    (∀ m : ℝ, 0 < m → m ≤ 1 → ceil ((m : ℂ) • a) = ceil a) ∧
       IsLeast {p : A | IsStarProjection p ∧ ceil a ≤ p ∧ ceil b ≤ p}
         (ceil ((l : ℂ) • a + ((1 - l : ℝ) : ℂ) • b)) := by
-  rw [Complex.coe_smul, Complex.coe_smul]
   have hm0 : (0 : ℝ) < 1 - l := by linarith
   have hsmul : ∀ {x : A} {r : ℝ}, x ∈ effects A → 0 ≤ r → r ≤ 1 → r • x ∈ effects A := by
     intro x r hx hr0 hr1
@@ -1110,7 +1113,6 @@ theorem ceil_floor_basic_2 (a b : A) (ha : a ∈ effects A)
       rw [sub_smul, one_smul, sub_nonneg] at h
       exact h
     exact h1.trans hx.2
-  have hla : (l : ℝ) • a ∈ effects A := hsmul ha hl0.le hl1.le
   -- for a projection `p`, `r·x ≤ p ↔ x ≤ p` when `r > 0`
   have hscale : ∀ {x : A} {r : ℝ} {p : A}, x ∈ effects A → 0 < r → r ≤ 1 →
       IsStarProjection p → (r • x ≤ p ↔ x ≤ p) := by
@@ -1120,13 +1122,17 @@ theorem ceil_floor_basic_2 (a b : A) (ha : a ∈ effects A)
     have h2 := congrArg (fun z : A => (r⁻¹ : ℝ) • z) h
     simpa [smul_smul, inv_mul_cancel₀ (ne_of_gt hr0)] using h2
   constructor
-  · refine (vna_ceil _ hla).unique ?_
-    have hset : {p : A | IsStarProjection p ∧ (l : ℝ) • a ≤ p}
+  · -- the first clause, for every `m ∈ (0,1]` (`m = 1` included)
+    intro m hm0 hm1
+    rw [Complex.coe_smul]
+    refine (vna_ceil _ (hsmul ha hm0.le hm1)).unique ?_
+    have hset : {p : A | IsStarProjection p ∧ (m : ℝ) • a ≤ p}
         = {p : A | IsStarProjection p ∧ a ≤ p} :=
-      Set.ext fun p => and_congr_right fun hp => hscale ha hl0 hl1.le hp
+      Set.ext fun p => and_congr_right fun hp => hscale ha hm0 hm1 hp
     rw [hset]
     exact vna_ceil a ha
   -- the convex combination
+  rw [Complex.coe_smul, Complex.coe_smul]
   set c : A := (l : ℝ) • a + ((1 - l : ℝ)) • b with hcdef
   have hceff : c ∈ effects A := by
     refine ⟨add_nonneg (smul_nonneg hl0.le ha.1) (smul_nonneg hm0.le hb.1), ?_⟩
@@ -1687,73 +1693,288 @@ theorem ceil_supremum_2 (D : Set A) (s : A) (hD : ∀ d ∈ D, d ∈ effects A)
     refine (floor_isGreatest hseff).2 ⟨hq, hs.2 fun d hd => ?_⟩
     exact (hle _ ⟨d, hd, rfl⟩).trans (floor_le (hD d hd))
 
-/-- **56XVII** (`ceil-supremum`, vn.tex:2554, Exercise), part 3: `⌈·⌉` does
-not preserve filtered infima and `⌊·⌋` does not preserve directed suprema
-(witness `1, ½, ⅓, …`); consequently neither is ultraweakly, ultrastrongly,
-or norm continuous on `[0,1]_A` (for nontrivial `A`).  We record the norm
-discontinuity. -/
+/-! ### The witness of **56XVII**.3: `1, ½, ⅓, …`
+
+The exercise's hint is a single sequence of scalars, and it settles all four
+of its claims: `aₙ = (n+1)⁻¹·1` is a filtered set of effects with infimum
+`0` on which `⌈·⌉` is constantly `1`, and `aₙ^⊥ = (1 − (n+1)⁻¹)·1` is a
+directed set with supremum `1` on which `⌊·⌋` is constantly `0`.  The same
+sequence converges to its limit in the norm, ultraweak *and* ultrastrong
+topologies (a direct computation of `ω(aₙ)` and `‖aₙ‖_ω`), which is why the
+one witness refutes all three continuities: passing to a coarser topology on
+source *and* target changes continuity in both directions, so the norm case
+does not by itself give the other two. -/
+
+section CeilSupremumWitness
+
+private theorem npFunctional_smul_real (ω : NPFunctional A) (r : ℝ) (x : A) :
+    ω (r • x) = (r : ℂ) * ω x := by
+  rw [← Complex.coe_smul]
+  exact map_smul ω.toPositiveLinearMap _ _
+
+/-- The generic discontinuity argument, for an arbitrary Hausdorff topology
+`t` on `A`: a sequence of effects `aₙ → x` on which `f` is constantly `v ≠
+f x` witnesses that `f` is not `t`-continuous on `[0,1]_A`. -/
+private theorem not_continuousOn_aux (t : TopologicalSpace A) (ht : @T2Space A t)
+    (f : A → A) (a : ℕ → A) (x v : A)
+    (hmem : ∀ n, a n ∈ effects A) (hx : x ∈ effects A)
+    (ha : @Tendsto ℕ A a atTop (@nhds A t x))
+    (hfa : ∀ n, f (a n) = v) (hne : v ≠ f x) :
+    ¬ @ContinuousOn A A t t f (effects A) := by
+  let _ : TopologicalSpace A := t
+  have : T2Space A := ht
+  intro h
+  have h0 : Tendsto f (𝓝[effects A] x) (𝓝 (f x)) := h x hx
+  have hnw : Tendsto a atTop (𝓝[effects A] x) :=
+    tendsto_nhdsWithin_of_tendsto_nhds_of_eventually_within a ha
+      (Filter.Eventually.of_forall hmem)
+  have hcomp : Tendsto (fun n => f (a n)) atTop (𝓝 (f x)) := h0.comp hnw
+  have hconst : Tendsto (fun _ : ℕ => v) atTop (𝓝 (f x)) := by
+    simpa only [hfa] using hcomp
+  exact hne (tendsto_nhds_unique tendsto_const_nhds hconst)
+
+/-- The scalars `1, ½, ⅓, …` of the exercise's hint. -/
+private noncomputable def wc (n : ℕ) : ℝ := ((n : ℝ) + 1)⁻¹
+
+private theorem wc_pos (n : ℕ) : 0 < wc n := by unfold wc; positivity
+
+private theorem wc_le_one (n : ℕ) : wc n ≤ 1 := by
+  unfold wc; rw [inv_le_one_iff₀]; right; simp
+
+private theorem wc_antitone : Antitone wc := by
+  intro m n hmn
+  unfold wc
+  have hle : (m : ℝ) ≤ (n : ℝ) := by exact_mod_cast hmn
+  have : (m : ℝ) + 1 ≤ (n : ℝ) + 1 := by linarith
+  exact inv_anti₀ (by positivity) this
+
+private theorem wc_tendsto : Tendsto wc atTop (𝓝 (0 : ℝ)) := by
+  unfold wc
+  exact tendsto_inv_atTop_zero.comp
+    (tendsto_atTop_add_const_right _ 1 tendsto_natCast_atTop_atTop)
+
+private theorem ofReal_tendsto {f : ℕ → ℝ} {l : ℝ} (h : Tendsto f atTop (𝓝 l)) :
+    Tendsto (fun n => ((f n : ℝ) : ℂ)) atTop (𝓝 ((l : ℝ) : ℂ)) := by
+  have := (Complex.continuous_ofReal.tendsto l).comp h
+  simpa [Function.comp_def] using this
+
+/-- `r·1` is an effect for `r ∈ [0,1]`. -/
+private theorem smul_one_mem_effects {r : ℝ} (hr0 : 0 ≤ r) (hr1 : r ≤ 1) :
+    (r • (1 : A)) ∈ effects A := by
+  refine ⟨smul_nonneg hr0 zero_le_one, ?_⟩
+  have h : (0 : A) ≤ (1 - r) • (1 : A) := smul_nonneg (by linarith) zero_le_one
+  rw [sub_smul, one_smul, sub_nonneg] at h
+  exact h
+
+private theorem ceil_one_eq : ceil (1 : A) = 1 :=
+  ceil_eq_of_isLeast zero_le_one (IsStarProjection.one A) (mul_one 1)
+    fun q _ hq => by rw [← hq, one_mul]
+
+private theorem floor_one_eq : floor (1 : A) = 1 := by
+  have h1 : (1 : A) ∈ effects A := ⟨zero_le_one, le_rfl⟩
+  exact le_antisymm (floor_le h1)
+    ((floor_isGreatest h1).2 ⟨IsStarProjection.one A, le_rfl⟩)
+
+/-- `⌈r·1⌉ = 1` for `r > 0`. -/
+private theorem ceil_smul_one {r : ℝ} (hr : 0 < r) : ceil (r • (1 : A)) = 1 := by
+  rw [ceil_smul zero_le_one hr, ceil_one_eq]
+
+/-- `⌊r·1⌋ = 0` for `0 ≤ r < 1`: a projection `p ≤ r·1` satisfies
+`p = p p p ≤ p (r·1) p = r·p`, so `(1−r)·p ≤ 0`, so `p = 0`. -/
+private theorem floor_smul_one {r : ℝ} (hr0 : 0 ≤ r) (hr1 : r < 1) :
+    floor (r • (1 : A)) = 0 := by
+  obtain ⟨⟨hp, hple⟩, -⟩ := floor_isGreatest (smul_one_mem_effects (A := A) hr0 hr1.le)
+  set p : A := floor (r • (1 : A)) with hpdef
+  have hcj := IsSelfAdjoint.conjugate_le_conjugate hple hp.isSelfAdjoint
+  have h1 : p * p * p = p := by
+    rw [hp.isIdempotentElem.eq, hp.isIdempotentElem.eq]
+  have h2 : p * (r • (1 : A)) * p = r • p := by
+    rw [mul_smul_comm, smul_mul_assoc, mul_one, hp.isIdempotentElem.eq]
+  rw [h1, h2] at hcj
+  have h5 : (1 - r) • p ≤ 0 := by
+    rw [sub_smul, one_smul]; exact sub_nonpos.mpr hcj
+  have h4 : (0 : A) ≤ (1 - r) • p := smul_nonneg (by linarith) hp.nonneg
+  have h7 : (1 - r) • p = 0 := le_antisymm h5 h4
+  have h8 := congrArg (fun z : A => ((1 - r)⁻¹ : ℝ) • z) h7
+  simpa [smul_smul, inv_mul_cancel₀ (by linarith : (1 : ℝ) - r ≠ 0)] using h8
+
+/-- `aₙ = (n+1)⁻¹·1`, the hint's sequence. -/
+private noncomputable def wu (n : ℕ) : A := wc n • (1 : A)
+
+/-- `aₙ^⊥ = (1 − (n+1)⁻¹)·1`. -/
+private noncomputable def wv (n : ℕ) : A := (1 - wc n) • (1 : A)
+
+private theorem wu_mem (n : ℕ) : wu (A := A) n ∈ effects A :=
+  smul_one_mem_effects (wc_pos n).le (wc_le_one n)
+
+private theorem wv_mem (n : ℕ) : wv (A := A) n ∈ effects A :=
+  smul_one_mem_effects (by linarith [wc_le_one n]) (by linarith [(wc_pos n).le])
+
+private theorem wu_ceil (n : ℕ) : ceil (wu (A := A) n) = 1 := ceil_smul_one (wc_pos n)
+
+private theorem wv_floor (n : ℕ) : floor (wv (A := A) n) = 0 :=
+  floor_smul_one (by linarith [wc_le_one n]) (by linarith [wc_pos n])
+
+private theorem wu_norm_tendsto : Tendsto (wu (A := A)) atTop (𝓝 (0 : A)) := by
+  have h := wc_tendsto.smul_const (1 : A)
+  rw [zero_smul] at h
+  exact h
+
+private theorem wv_norm_tendsto : Tendsto (wv (A := A)) atTop (𝓝 (1 : A)) := by
+  have h : Tendsto (fun n => 1 - wc n) atTop (𝓝 (1 : ℝ)) := by
+    simpa using tendsto_const_nhds.sub wc_tendsto
+  have h2 := h.smul_const (1 : A)
+  rw [one_smul] at h2
+  exact h2
+
+private theorem wu_uw : @Tendsto ℕ A (wu (A := A)) atTop (@nhds A (ultraweak A) 0) := by
+  have h : UWTendsto (wu (A := A)) atTop 0 := by
+    rw [uwTendsto_iff]
+    intro ω
+    have hval : ∀ n, (ω (wu (A := A) n) : ℂ) = ((wc n : ℝ) : ℂ) * ω 1 := by
+      intro n
+      show (ω ((wc n : ℝ) • (1 : A)) : ℂ) = _
+      rw [npFunctional_smul_real]
+    have hc : Tendsto (fun n => ((wc n : ℝ) : ℂ)) atTop (𝓝 (0 : ℂ)) := by
+      simpa using ofReal_tendsto wc_tendsto
+    simpa [hval] using hc.mul_const (ω 1 : ℂ)
+  exact h
+
+private theorem wv_uw : @Tendsto ℕ A (wv (A := A)) atTop (@nhds A (ultraweak A) 1) := by
+  have h : UWTendsto (wv (A := A)) atTop 1 := by
+    rw [uwTendsto_iff]
+    intro ω
+    have hval : ∀ n, (ω (wv (A := A) n) : ℂ) = ((1 - wc n : ℝ) : ℂ) * ω 1 := by
+      intro n
+      show (ω ((1 - wc n : ℝ) • (1 : A)) : ℂ) = _
+      rw [npFunctional_smul_real]
+    have hc : Tendsto (fun n => ((1 - wc n : ℝ) : ℂ)) atTop (𝓝 (1 : ℂ)) := by
+      have h1 : Tendsto (fun n => 1 - wc n) atTop (𝓝 (1 : ℝ)) := by
+        simpa using tendsto_const_nhds.sub wc_tendsto
+      simpa using ofReal_tendsto h1
+    simpa [hval] using hc.mul_const (ω 1 : ℂ)
+  exact h
+
+private theorem wu_us : @Tendsto ℕ A (wu (A := A)) atTop (@nhds A (ultrastrong A) 0) := by
+  have h : USTendsto (wu (A := A)) atTop 0 := by
+    rw [usTendsto_iff]
+    intro ω
+    have hval : ∀ n, omegaNorm A ω (wu (A := A) n - 0) = wc n * Real.sqrt (ω 1).re := by
+      intro n
+      rw [sub_zero]
+      show omegaNorm A ω ((wc n : ℝ) • (1 : A)) = _
+      rw [← Complex.coe_smul, omegaNorm_smul, omegaNorm_one]
+      simp [abs_of_nonneg (wc_pos n).le]
+    have h1 := wc_tendsto.mul_const (Real.sqrt (ω 1).re)
+    rw [zero_mul] at h1
+    simp only [hval]
+    exact h1
+  exact h
+
+private theorem wv_us : @Tendsto ℕ A (wv (A := A)) atTop (@nhds A (ultrastrong A) 1) := by
+  have h : USTendsto (wv (A := A)) atTop 1 := by
+    rw [usTendsto_iff]
+    intro ω
+    have hval : ∀ n, omegaNorm A ω (wv (A := A) n - 1) = wc n * Real.sqrt (ω 1).re := by
+      intro n
+      have he : wv (A := A) n - 1 = (-(wc n) : ℝ) • (1 : A) := by
+        show (1 - wc n : ℝ) • (1 : A) - 1 = _
+        rw [sub_smul, one_smul, neg_smul]
+        abel
+      rw [he, ← Complex.coe_smul, omegaNorm_smul, omegaNorm_one]
+      simp [abs_of_nonneg (wc_pos n).le]
+    have h1 := wc_tendsto.mul_const (Real.sqrt (ω 1).re)
+    rw [zero_mul] at h1
+    simp only [hval]
+    exact h1
+  exact h
+
+end CeilSupremumWitness
+
+/-- **56XVII** (`ceil-supremum`, vn.tex:2554, Exercise), part 3, in full:
+
+> Show that `⌈·⌉` does not preserve filtered infima, and `⌊·⌋` does not
+> preserve directed suprema.  (Hint: `1, ½, ⅓, …`.)  Conclude that `⌈·⌉` and
+> `⌊·⌋` are neither ultraweakly, ultrastrongly nor norm continuous as maps
+> from `[0,1]_𝒜` to `[0,1]_𝒜`.
+
+All six claims, on the hint's witness: `D = {(n+1)⁻¹·1}` is filtered with
+`⋀D = 0`, yet `⋂_{d∈D}⌈d⌉ = 1 ≠ 0 = ⌈⋀D⌉`; `D^⊥ = {(1−(n+1)⁻¹)·1}` is
+directed with `⋁D^⊥ = 1`, yet `⋃_{d∈D^⊥}⌊d⌋ = 0 ≠ 1 = ⌊⋁D^⊥⌋`; and the same
+sequences converge in all three topologies, so neither map is continuous on
+`[0,1]_A` for any of them.  `[Nontrivial A]` is what the thesis leaves
+implicit (in `A = 0` every claim fails). -/
 theorem ceil_supremum_3 [Nontrivial A] :
-    ¬ContinuousOn (fun a : A => ceil a) (effects A) ∧
-      ¬ContinuousOn (fun a : A => floor a) (effects A) := by
-  -- `aₙ = (n+1)⁻¹·1 → 0` inside `[0,1]_A`, while `⌈aₙ⌉ = ⌈1⌉ = 1 ≠ 0 = ⌈0⌉`
-  set c : ℕ → ℝ := fun n => ((n : ℝ) + 1)⁻¹ with hc
-  have hc0 : ∀ n, 0 < c n := fun n => by positivity
-  have hc1 : ∀ n, c n ≤ 1 := by
-    intro n
-    rw [hc]
-    rw [inv_le_one_iff₀]
-    right
-    simp
-  set a : ℕ → A := fun n => c n • (1 : A) with hadef
-  have hmem : ∀ n, a n ∈ effects A := by
-    intro n
-    refine ⟨smul_nonneg (hc0 n).le zero_le_one, ?_⟩
-    have h : (0 : A) ≤ (1 - c n) • (1 : A) :=
-      smul_nonneg (by linarith [hc1 n]) zero_le_one
-    rw [sub_smul, one_smul, sub_nonneg] at h
-    exact h
-  have hceil1 : ceil (1 : A) = 1 :=
-    ceil_eq_of_isLeast zero_le_one (IsStarProjection.one A) (mul_one 1)
-      fun q _ hq => by rw [← hq, one_mul]
-  have hceila : ∀ n, ceil (a n) = 1 := by
-    intro n
-    rw [hadef]
-    simp only
-    rw [ceil_smul zero_le_one (hc0 n), hceil1]
-  have htend : Tendsto a atTop (𝓝 (0 : A)) := by
-    have h0 : Tendsto c atTop (𝓝 (0 : ℝ)) := by
-      rw [hc]
-      exact tendsto_inv_atTop_zero.comp (tendsto_atTop_add_const_right _ 1 tendsto_natCast_atTop_atTop)
-    simpa using h0.smul_const (1 : A)
-  have hne : (1 : A) ≠ 0 := one_ne_zero
-  have hceilcont : ¬ContinuousOn (fun a : A => ceil a) (effects A) := by
-    intro h
-    have h0 : Tendsto (fun a : A => ceil a) (nhdsWithin 0 (effects A)) (𝓝 (ceil (0 : A))) :=
-      h 0 ⟨le_rfl, zero_le_one⟩
-    have hnw : Tendsto a atTop (nhdsWithin 0 (effects A)) :=
-      tendsto_nhdsWithin_of_tendsto_nhds_of_eventually_within a htend
-        (Filter.Eventually.of_forall hmem)
-    have := h0.comp hnw
-    rw [ceil_zero] at this
-    have hconst : Tendsto (fun n : ℕ => (1 : A)) atTop (𝓝 (0 : A)) := by
-      simp only [Function.comp_def, hceila] at this
-      exact this
-    have h01 : (0 : A) = 1 :=
-      tendsto_nhds_unique (f := fun _ : ℕ => (1 : A)) hconst tendsto_const_nhds
-    exact hne h01.symm
-  refine ⟨hceilcont, fun h => hceilcont ?_⟩
-  -- `⌈a⌉ = 1 - ⌊1 - a⌋`, and `a ↦ 1 - a` is a continuous self-map of `[0,1]_A`
-  have hkey : ∀ a : A, a ∈ effects A → ceil a = 1 - floor (1 - a) := by
-    intro x hx
-    have h1 := (ceil_floor_basic_1 (1 - x) (effect_orthosupplement x hx)).2
-    rw [sub_sub_cancel] at h1
-    rw [← h1]
-  have hcomp : ContinuousOn (fun x : A => 1 - floor (1 - x)) (effects A) := by
-    refine ContinuousOn.sub continuousOn_const ?_
-    refine ContinuousOn.comp h (continuousOn_const.sub continuousOn_id) ?_
-    intro x hx
-    exact effect_orthosupplement x hx
-  exact hcomp.congr fun x hx => hkey x hx
+    (∃ (D : Set A) (s : A), (∀ d ∈ D, d ∈ effects A) ∧ D.Nonempty ∧
+        DirectedOn (· ≥ ·) D ∧ IsGLB D s ∧ ceil s ≠ projInf (ceil '' D)) ∧
+      (∃ (D : Set A) (s : A), (∀ d ∈ D, d ∈ effects A) ∧ D.Nonempty ∧
+        DirectedOn (· ≤ ·) D ∧ IsLUB D s ∧ floor s ≠ projSup (floor '' D)) ∧
+      ¬ContinuousOn (fun a : A => ceil a) (effects A) ∧
+      ¬ContinuousOn (fun a : A => floor a) (effects A) ∧
+      ¬@ContinuousOn A A (ultraweak A) (ultraweak A) (fun a : A => ceil a) (effects A) ∧
+      ¬@ContinuousOn A A (ultraweak A) (ultraweak A) (fun a : A => floor a) (effects A) ∧
+      ¬@ContinuousOn A A (ultrastrong A) (ultrastrong A)
+        (fun a : A => ceil a) (effects A) ∧
+      ¬@ContinuousOn A A (ultrastrong A) (ultrastrong A)
+        (fun a : A => floor a) (effects A) := by
+  have hsm : ∀ {r s : ℝ}, r ≤ s → (r • (1 : A)) ≤ s • (1 : A) := by
+    intro r s h
+    have h0 : (0 : A) ≤ (s - r) • (1 : A) := smul_nonneg (by linarith) zero_le_one
+    rw [sub_smul, sub_nonneg] at h0
+    exact h0
+  have h0 : (0 : A) ∈ effects A := ⟨le_rfl, zero_le_one⟩
+  have h1 : (1 : A) ∈ effects A := ⟨zero_le_one, le_rfl⟩
+  have hc0 : (1 : A) ≠ ceil (0 : A) := by rw [ceil_zero]; exact one_ne_zero
+  have hf1 : (0 : A) ≠ floor (1 : A) := by rw [floor_one_eq]; exact zero_ne_one
+  refine ⟨⟨Set.range (wu (A := A)), 0, ?_, ⟨wu 0, ⟨0, rfl⟩⟩, ?_, ?_, ?_⟩,
+    ⟨Set.range (wv (A := A)), 1, ?_, ⟨wv 0, ⟨0, rfl⟩⟩, ?_, ?_, ?_⟩,
+    not_continuousOn_aux _ inferInstance _ wu 0 1 wu_mem h0 wu_norm_tendsto wu_ceil hc0,
+    not_continuousOn_aux _ inferInstance _ wv 1 0 wv_mem h1 wv_norm_tendsto wv_floor hf1,
+    not_continuousOn_aux _ (vn_positive_basic_1 (A := A)).1 _ wu 0 1 wu_mem h0 wu_uw
+      wu_ceil hc0,
+    not_continuousOn_aux _ (vn_positive_basic_1 (A := A)).1 _ wv 1 0 wv_mem h1 wv_uw
+      wv_floor hf1,
+    not_continuousOn_aux _ (vn_positive_basic_1 (A := A)).2 _ wu 0 1 wu_mem h0 wu_us
+      wu_ceil hc0,
+    not_continuousOn_aux _ (vn_positive_basic_1 (A := A)).2 _ wv 1 0 wv_mem h1 wv_us
+      wv_floor hf1⟩
+  · rintro _ ⟨n, rfl⟩; exact wu_mem n
+  · rintro _ ⟨m, rfl⟩ _ ⟨n, rfl⟩
+    exact ⟨wu (max m n), ⟨max m n, rfl⟩,
+      hsm (wc_antitone (le_max_left m n)), hsm (wc_antitone (le_max_right m n))⟩
+  · constructor
+    · rintro _ ⟨n, rfl⟩; exact (wu_mem (A := A) n).1
+    · intro b hb
+      exact ge_of_tendsto wu_norm_tendsto
+        (Filter.Eventually.of_forall fun n => hb ⟨n, rfl⟩)
+  · have himg : ∀ p ∈ ceil '' Set.range (wu (A := A)), p = 1 := by
+      rintro _ ⟨_, ⟨n, rfl⟩, rfl⟩; exact wu_ceil n
+    have hproj : ∀ p ∈ ceil '' Set.range (wu (A := A)), IsStarProjection p := by
+      intro p hp; rw [himg p hp]; exact IsStarProjection.one A
+    have hpi : projInf (ceil '' Set.range (wu (A := A))) = 1 :=
+      projInf_eq hproj (IsStarProjection.one A)
+        (fun p hp => by rw [himg p hp]) (fun q hq _ => hq.le_one)
+    rw [hpi, ceil_zero]
+    exact zero_ne_one
+  · rintro _ ⟨n, rfl⟩; exact wv_mem n
+  · rintro _ ⟨m, rfl⟩ _ ⟨n, rfl⟩
+    refine ⟨wv (max m n), ⟨max m n, rfl⟩, hsm ?_, hsm ?_⟩
+    · have := wc_antitone (le_max_left m n); linarith
+    · have := wc_antitone (le_max_right m n); linarith
+  · constructor
+    · rintro _ ⟨n, rfl⟩; exact (wv_mem (A := A) n).2
+    · intro b hb
+      exact le_of_tendsto wv_norm_tendsto
+        (Filter.Eventually.of_forall fun n => hb ⟨n, rfl⟩)
+  · have himg : ∀ p ∈ floor '' Set.range (wv (A := A)), p = 0 := by
+      rintro _ ⟨_, ⟨n, rfl⟩, rfl⟩; exact wv_floor n
+    have hproj : ∀ p ∈ floor '' Set.range (wv (A := A)), IsStarProjection p := by
+      intro p hp; rw [himg p hp]; exact IsStarProjection.zero A
+    have hps : projSup (floor '' Set.range (wv (A := A))) = 0 :=
+      projSup_eq hproj (IsStarProjection.zero A)
+        (fun p hp => by rw [himg p hp]) (fun q hq _ => hq.nonneg)
+    rw [hps, floor_one_eq]
+    exact one_ne_zero
 
 /-- **56XVIII** (`sum-of-orthogonal-projections`, vn.tex:2577, Exercise):
 for a family `(pᵢ)_{i∈I}` of pairwise orthogonal projections, the net of
@@ -2449,11 +2670,6 @@ private theorem npFunctional_cauchy_schwarz (ω : NPFunctional A) (a b : A) :
   omega_norm_basic_1 ω.toPositiveLinearMap.toLinearMap
     (fun _ hx => npFunctional_nonneg ω hx) a b
 
-private theorem npFunctional_smul_real (ω : NPFunctional A) (r : ℝ) (x : A) :
-    ω (r • x) = (r : ℂ) * ω x := by
-  rw [← Complex.coe_smul]
-  exact map_smul ω.toPositiveLinearMap _ _
-
 /-- Kadison's inequality in the form **60I** uses it: `ω(a) = 0` forces
 `ω(√a) = 0`, because `ω(√a)² ≤ ω(1)·ω(a)`. -/
 private theorem npFunctional_sqrt_eq_zero {x : A} (hx : 0 ≤ x)
@@ -2932,10 +3148,12 @@ nothing to formalize. -/
 
 /-- **61II** (`ncp-ceill`, vn.tex:2983, Proposition): for an *ncp*-map
 `f : A → B` and any `a`: `⌈f(a)⌋ ≤ ⌈f(⌈a⌋)⌉` and `⌊f(a)⌉ ≤ ⌈f(⌊a⌉)⌉`.
-(The thesis displays the inequalities in the opposite direction, but its
-proof — via `f(a)* f(a) ≤ ‖f(1)‖² f(a* a)` — establishes the direction
-stated here, and the displayed direction fails, e.g. for the trace on `M₂`
-at `a = e₁₂`.) -/
+
+(Erratum `parsec-610.20` — the reversal of these two inequalities — **has
+been incorporated into vn.tex**: 61II now displays them in the direction
+stated here, which is also the direction its proof, via
+`f(a)* f(a) ≤ ‖f(1)‖² f(a* a)`, establishes.  The displayed-in-reverse form
+was false, e.g. for the trace on `M₂` at `a = e₁₂`.) -/
 theorem ncp_ceill (f : NCPMap A B) (a : A) :
     suppProj (f a) ≤ ceil (f (suppProj a)) ∧
       rangeProj (f a) ≤ ceil (f (rangeProj a)) := by
@@ -3936,7 +4154,10 @@ theorem abelian_projections_norm_dense {C : Type*} [CommCStarAlgebra C]
   -- **Divergence from the thesis (different route).**  vn.tex:3165 proves this
   -- through the normal Gelfand isomorphism `𝒜 ≅ C(spec 𝒜)` (`ngelfand_vna`),
   -- extremal disconnectedness of `spec 𝒜` (`vn_spectrum_extremally_disconnected`)
-  -- and Stone–Weierstraß; all three are still `sorry` in the tree.  We instead
+  -- and Stone–Weierstraß.  (All three *are* available — `ngelfand_vna` and
+  -- `vn_spectrum_extremally_disconnected` are proved in `A/VN/Basic`, and
+  -- Stone–Weierstraß is Mathlib's; the note that said they were "still
+  -- `sorry`" was stale.)  We instead
   -- run the *spectral* argument (`exists_spectral_approx` above), which needs
   -- no commutativity at all: `a` is within `2‖a‖/n` of the Riemann sum
   -- `-‖a‖ + (2‖a‖/n)·∑ₖ ⌈(a + ‖a‖ - 2k‖a‖/n)⁺⌉` of its spectral projections.
@@ -4127,10 +4348,12 @@ norm limit of linear combinations of projections **of `S`**.
 
 The thesis states 65IV only for a von Neumann algebra, and the relative form
 does not follow from it in our setting: 65IV places the projections in
-`{a}^□□`, and `{a}^□□ ⊆ S` is the double commutant theorem **88VI**, which
-is still `sorry` (and is stated only for `B(H)`).  It does, however, come out
-of the same spectral Riemann sum, because a von Neumann subalgebra is closed
-under `cfc` and under `⌈·⌉` (`ceil_mem`). -/
+`{a}^□□`, and `{a}^□□ ⊆ S` is the double commutant theorem **88VI**, which is
+proved (`A/VN/NormalFunctionals`'s `double_commutant`) but only for `B(H)`,
+not for a von Neumann subalgebra of an abstract `A`.  (The earlier note that
+88VI was "still `sorry`" was stale.)  It does, however, come out of the same
+spectral Riemann sum, because a von Neumann subalgebra is closed under `cfc`
+and under `⌈·⌉` (`ceil_mem`). -/
 theorem projections_norm_dense_subalgebra_selfAdjoint {S : StarSubalgebra ℂ A}
     (hS : IsVNSubalgebra A S) (a : A) (ha : IsSelfAdjoint a) (haS : a ∈ S) :
     a ∈ closure (Submodule.span ℂ {p : A | IsStarProjection p ∧ p ∈ S} : Set A) := by
@@ -4257,9 +4480,11 @@ theorem ultracyclic_basic_2 (p q : A) (hp : IsStarProjection p)
       _ ≤ r * 1 * r := IsSelfAdjoint.conjugate_le_conjugate hp.le_one hr.isSelfAdjoint
       _ = r := by rw [mul_one, hr.isIdempotentElem.eq]
 
-/-- **66IV** (`ultracyclic-basic`, vn.tex:3334, Exercise), part 3: every
-projection `p` is the directed supremum of ultracyclic projections:
-`p = ⋁_ω ⌈ω⌉` over the np-functionals `ω` with `ω(p^⊥) = 0`.
+/-- **66IV** (`ultracyclic-basic`, vn.tex:3334, Exercise), part 3, the "in
+fact" equation: `p = ⋁_ω ⌈ω⌉` over the np-functionals `ω` with `ω(p^⊥) = 0`,
+with the supremum read as the join in the poset of projections.  That this
+join is a *directed* supremum — the point's first claim — is
+`ultracyclic_basic_3_directed` below.
 
 *Class 2 — different route.*  The thesis's hint is "first consider `p = 1`";
 we do not need the reduction.  That `p` is an upper bound is the defining
@@ -4318,6 +4543,56 @@ theorem ultracyclic_basic_3 (p : A) (hp : IsStarProjection p) :
     calc p = r * p * r := by rw [hrp, hpr]
       _ ≤ r * 1 * r := IsSelfAdjoint.conjugate_le_conjugate hp.le_one hr.isSelfAdjoint
       _ = r := by rw [mul_one, hr.isIdempotentElem.eq]
+
+/-- **66IV** (`ultracyclic-basic`, vn.tex:3334, Exercise), part 3, **first
+claim**: every projection `p` is a *directed* supremum of ultracyclic
+projections.
+
+`ultracyclic_basic_3` gives the point's "in fact" equation, with the
+supremum read as the join in the poset of projections; this is what makes
+that join a genuine supremum *in `A`*.  The family
+`P = {⌈ω⌉ : ω(p^⊥) = 0}` consists of ultracyclic projections below `p`, is
+nonempty (`ω = 0`), and is directed: for `ω, τ ∈ P` the sum `ω + τ` again
+kills `p^⊥`, and `⌈ω + τ⌉ = ⌈ω⌉ ∪ ⌈τ⌉` by **63II**.2 (`carrier_basic_2`) —
+which is exactly the ingredient part 1 uses.  Being directed, `P` has by
+**56XIV** the same supremum in `A` as in the poset of projections, so
+`IsLUB P p`. -/
+theorem ultracyclic_basic_3_directed (p : A) (hp : IsStarProjection p) :
+    (∀ q ∈ {q : A | ∃ ω : NPFunctional A, ω (1 - p) = 0 ∧ q = npCarrier ω},
+        Ultracyclic A q ∧ q ≤ p) ∧
+      {q : A | ∃ ω : NPFunctional A, ω (1 - p) = 0 ∧ q = npCarrier ω}.Nonempty ∧
+      DirectedOn (· ≤ ·)
+        {q : A | ∃ ω : NPFunctional A, ω (1 - p) = 0 ∧ q = npCarrier ω} ∧
+      IsLUB {q : A | ∃ ω : NPFunctional A, ω (1 - p) = 0 ∧ q = npCarrier ω} p := by
+  set P : Set A := {q : A | ∃ ω : NPFunctional A, ω (1 - p) = 0 ∧ q = npCarrier ω}
+    with hPdef
+  have hPproj : ∀ q ∈ P, IsStarProjection q := by
+    rintro q ⟨ω, -, rfl⟩
+    exact (carrier_spec ω.toPositiveLinearMap ω.preservesDirSups').1
+  have hmem : ∀ q ∈ P, Ultracyclic A q ∧ q ≤ p := by
+    rintro q ⟨ω, hω, rfl⟩
+    exact ⟨⟨ω, rfl⟩,
+      (carrier_spec ω.toPositiveLinearMap ω.preservesDirSups').2.2 p hp hω⟩
+  have hne : P.Nonempty :=
+    ⟨npCarrier (zeroNP : NPFunctional A), ⟨zeroNP, rfl, rfl⟩⟩
+  have hdir : DirectedOn (· ≤ ·) P := by
+    rintro _ ⟨ω, hω, rfl⟩ _ ⟨τ, hτ, rfl⟩
+    have hzero : (addNP ω τ) (1 - p) = 0 := by
+      show (ω (1 - p) : ℂ) + τ (1 - p) = 0
+      rw [hω, hτ, add_zero]
+    have hjoin : npCarrier (addNP ω τ) = projSup {npCarrier ω, npCarrier τ} :=
+      carrier_basic_2 _ _ _ ω.preservesDirSups' τ.preservesDirSups'
+        (addNP ω τ).preservesDirSups' fun _ => rfl
+    have hP2 : ∀ r ∈ ({npCarrier ω, npCarrier τ} : Set A), IsStarProjection r := by
+      rintro r (rfl | rfl)
+      exacts [(carrier_spec ω.toPositiveLinearMap ω.preservesDirSups').1,
+        (carrier_spec τ.toPositiveLinearMap τ.preservesDirSups').1]
+    obtain ⟨-, hub, -⟩ := projSup_spec hP2
+    exact ⟨npCarrier (addNP ω τ), ⟨addNP ω τ, hzero, rfl⟩,
+      hjoin ▸ hub _ (by left; rfl), hjoin ▸ hub _ (by right; rfl)⟩
+  refine ⟨hmem, hne, hdir, ?_⟩
+  have hlub := isLUB_projSup_of_directed P hPproj hne hdir
+  rwa [← ultracyclic_basic_3 p hp] at hlub
 
 /-- **66IV** (`ultracyclic-basic`, vn.tex:3334, Exercise), part 4: every
 projection is the sum of a family of pairwise orthogonal ultracyclic
@@ -4509,22 +4784,475 @@ theorem central_examples_3 {H : Type*} [NormedAddCommGroup H]
   · rintro ⟨z, rfl⟩ b
     simp [smul_mul_assoc, mul_smul_comm]
 
-/-- **67IV** (`central-projections-sums`, vn.tex:3408, Exercise), part 1:
-for a central projection `c` of a von Neumann algebra `A`, the corner
-`cA = {ca : a ∈ A}` is closed under the algebra operations and under
-bounded directed suprema of self-adjoint elements, and is a von Neumann
-algebra with unit `c` (all but the unit being that of `A`). -/
+/-! ### The corner `c𝒜` as a von Neumann algebra in its own right
+
+**67IV**.1's demands (ii) and (iii) — "`c𝒜` is a von Neumann algebra with `c`
+as unit", and "`a ↦ (ca, c^⊥a)` is an nmiu-isomorphism `𝒜 → c𝒜 ⊕ c^⊥𝒜`" —
+are statements *about a carrier type* for the corner, which this section
+builds.  `c𝒜` is the non-unital `*`-subalgebra `{b : cb = b}` of `𝒜`
+(part 1's demand (i)) with `c` adjoined as unit; the resulting
+`CStarAlgebra`, order and `VonNeumannAlgebra` instances are all inherited
+from `𝒜`, and the two facts that make the inheritance work are
+
+* `corner_ub` — an upper bound `u ∈ 𝒜` of a nonempty set of corner elements
+  dominates `cu`, because `c^⊥ u c^⊥ = c^⊥ u ≥ c^⊥ d c^⊥ = 0`; hence
+  suprema computed in `𝒜` land in the corner and agree with suprema computed
+  there (`mul_eq_of_isLUB`, `inclP_preservesDirSups`), and
+* `restrictNP` — every np-functional of `𝒜` restricts to one of `c𝒜`, which
+  is what carries faithfulness across.
+
+The same section supplies the compression `a ↦ ca` as an nmiu-map
+(`compress`) — used again for **69IVa**. -/
+
+section Corner
+
+/-- A **central projection** of `A`, bundled, so that the corner it cuts out
+can carry instances. -/
+structure CentralProj (A : Type u) [CStarAlgebra A] [PartialOrder A]
+    [StarOrderedRing A] where
+  /-- the underlying element -/
+  val : A
+  /-- it is a projection -/
+  isProj : IsStarProjection val
+  /-- it is central -/
+  isCentral : IsCentral A val
+
+namespace CentralProj
+
+variable (c : CentralProj A)
+
+theorem mul_self : c.val * c.val = c.val := c.isProj.isIdempotentElem.eq
+
+theorem star_val : star c.val = c.val := c.isProj.isSelfAdjoint.star_eq
+
+/-- Conjugation by a central projection collapses: `c x c = c x`. -/
+theorem conj_eq (x : A) : c.val * x * c.val = c.val * x := by
+  rw [mul_assoc, ← c.isCentral x, ← mul_assoc, c.mul_self]
+
+/-- The complement `c^⊥` of a central projection is a central projection. -/
+def compl : CentralProj A where
+  val := 1 - c.val
+  isProj := c.isProj.one_sub
+  isCentral := fun b => by
+    rw [sub_mul, mul_sub, one_mul, mul_one, c.isCentral b]
+
+@[simp] theorem compl_val : (c.compl).val = 1 - c.val := rfl
+
+/-- **67IV**.1, demand (i): the corner `cA = {b : cb = b}` as a non-unital
+`*`-subalgebra of `A` — closed under addition, multiplication, scalar
+multiplication and involution (`central_projections_sums_1`), and norm
+closed. -/
+def sub : NonUnitalStarSubalgebra ℂ A where
+  carrier := {a : A | c.val * a = a}
+  add_mem' := by
+    intro x y hx hy
+    show c.val * (x + y) = x + y
+    rw [mul_add, hx, hy]
+  zero_mem' := by show c.val * (0 : A) = 0; rw [mul_zero]
+  mul_mem' := by
+    intro x y hx hy
+    show c.val * (x * y) = x * y
+    rw [← mul_assoc, (hx : c.val * x = x)]
+  smul_mem' := by
+    intro z x hx
+    show c.val * (z • x) = z • x
+    rw [mul_smul_comm, (hx : c.val * x = x)]
+  star_mem' := by
+    intro x hx
+    show c.val * star x = star x
+    have h := congrArg star (hx : c.val * x = x)
+    rwa [star_mul, c.star_val, ← c.isCentral (star x)] at h
+
+theorem mem_sub_iff (a : A) : a ∈ c.sub ↔ c.val * a = a := Iff.rfl
+
+instance : IsClosed (c.sub : Set A) :=
+  isClosed_eq (continuous_const.mul continuous_id) continuous_id
+
+/-- `c` itself is the unit of the corner. -/
+noncomputable instance : One c.sub := ⟨⟨c.val, c.mul_self⟩⟩
+
+@[simp] theorem one_coe : ((1 : c.sub) : A) = c.val := rfl
+
+noncomputable instance : Ring c.sub :=
+  { (inferInstance : NonUnitalRing c.sub), (inferInstance : One c.sub) with
+    one_mul := by
+      rintro ⟨x, hx⟩
+      exact Subtype.ext (hx : c.val * x = x)
+    mul_one := by
+      rintro ⟨x, hx⟩
+      refine Subtype.ext ?_
+      show x * c.val = x
+      rw [← c.isCentral x]
+      exact hx }
+
+noncomputable instance : NormedRing c.sub where
+  dist_eq := fun x y => NonUnitalNormedRing.dist_eq x y
+  norm_mul_le := fun x y => norm_mul_le x y
+
+noncomputable instance : Algebra ℂ c.sub :=
+  Algebra.ofModule (fun r x y => smul_mul_assoc r x y)
+    (fun r x y => mul_smul_comm r x y)
+
+noncomputable instance : NormedAlgebra ℂ c.sub where
+  norm_smul_le := fun r x => norm_smul_le r x
+
+/-- **67IV**.1, demand (ii), first half: the corner is a C\*-algebra with
+`c` as unit. -/
+noncomputable instance : CStarAlgebra c.sub where
+
+theorem algebraMap_coe (r : ℂ) : ((algebraMap ℂ c.sub r : c.sub) : A) = r • c.val := by
+  rw [Algebra.algebraMap_eq_smul_one]
+  rfl
+
+theorem coe_le_coe {x y : c.sub} : x ≤ y ↔ (x : A) ≤ (y : A) := Iff.rfl
+
+/-- The order of the corner is that of `A`, and it is the C\*-order: the
+positives are the `star s * s` for `s` in the corner (take `s = c √x`). -/
+noncomputable instance : StarOrderedRing c.sub := by
+  refine StarOrderedRing.of_nonneg_iff' (fun {x y} h z => ?_) (fun x => ?_)
+  · refine Subtype.coe_le_coe.mp ?_
+    show ((z : A) + (x : A)) ≤ ((z : A) + (y : A))
+    exact add_le_add le_rfl (Subtype.coe_le_coe.mpr h)
+  · constructor
+    · intro hx
+      have hxA : (0 : A) ≤ (x : A) := hx
+      set s : A := CFC.sqrt (x : A) with hs
+      have hsa : star s = s := (IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg (x : A))).star_eq
+      have hss : s * s = (x : A) := CFC.sqrt_mul_sqrt_self (x : A) hxA
+      refine ⟨⟨c.val * s, ?_⟩, ?_⟩
+      · show c.val * (c.val * s) = c.val * s
+        rw [← mul_assoc, c.mul_self]
+      · refine Subtype.ext ?_
+        show (x : A) = star (c.val * s) * (c.val * s)
+        have hcc : star (c.val * s) * (c.val * s) = c.val * (s * s) := by
+          rw [star_mul, hsa, c.star_val]
+          calc s * c.val * (c.val * s) = s * (c.val * c.val) * s := by noncomm_ring
+            _ = s * c.val * s := by rw [c.mul_self]
+            _ = c.val * s * s := by rw [← c.isCentral s]
+            _ = c.val * (s * s) := by noncomm_ring
+        rw [hcc, hss]
+        exact (x.2 : c.val * (x : A) = (x : A)).symm
+    · rintro ⟨t, rfl⟩
+      show (0 : A) ≤ star (t : A) * (t : A)
+      exact star_mul_self_nonneg (t : A)
+
+theorem isSelfAdjoint_iff {x : c.sub} : IsSelfAdjoint x ↔ IsSelfAdjoint (x : A) :=
+  ⟨fun h => congrArg Subtype.val h, fun h => Subtype.ext h⟩
+
+/-- A self-adjoint element of the corner, read in `A`. -/
+noncomputable def saIncl (x : selfAdjoint c.sub) : selfAdjoint A :=
+  ⟨((x : c.sub) : A), (isSelfAdjoint_iff c).mp x.2⟩
+
+@[simp] theorem saIncl_coe (x : selfAdjoint c.sub) :
+    ((saIncl c x : selfAdjoint A) : A) = ((x : c.sub) : A) := rfl
+
+/-- An upper bound `u ∈ A` of a nonempty set of corner elements dominates
+`cu`, which is itself an upper bound and lies in the corner: the `c^⊥`-part
+of `u` is positive because it dominates `c^⊥ d c^⊥ = 0`. -/
+theorem corner_ub {D : Set A} (hD : ∀ d ∈ D, c.val * d = d) (hne : D.Nonempty)
+    {u : A} (hu : ∀ d ∈ D, d ≤ u) :
+    c.val * u ≤ u ∧ ∀ d ∈ D, d ≤ c.val * u := by
+  obtain ⟨d₀, hd₀⟩ := hne
+  have hq : IsSelfAdjoint (1 - c.val) := c.isProj.one_sub.isSelfAdjoint
+  have hqc : ∀ x : A, x * (1 - c.val) = (1 - c.val) * x := by
+    intro x
+    rw [sub_mul, mul_sub, one_mul, mul_one, c.isCentral x]
+  have hconj : ∀ x : A, (1 - c.val) * x * (1 - c.val) = x - c.val * x := by
+    intro x
+    rw [mul_assoc, hqc x, ← mul_assoc, c.isProj.one_sub.isIdempotentElem.eq,
+      sub_mul, one_mul]
+  constructor
+  · have hd0 : (1 - c.val) * d₀ * (1 - c.val) = 0 := by
+      rw [hconj d₀, hD d₀ hd₀, sub_self]
+    have h := IsSelfAdjoint.conjugate_le_conjugate (hu d₀ hd₀) hq
+    rw [hd0, hconj u] at h
+    exact sub_nonneg.mp h
+  · intro d hd
+    have h := IsSelfAdjoint.conjugate_le_conjugate (hu d hd) c.isProj.isSelfAdjoint
+    rwa [c.conj_eq d, c.conj_eq u, hD d hd] at h
+
+/-- `c s = s` for the supremum in `A` of a nonempty set of corner elements:
+`c s` is a self-adjoint upper bound sitting below `s`. -/
+theorem mul_eq_of_isLUB {D : Set (selfAdjoint A)}
+    (hD : ∀ d ∈ D, c.val * (d : A) = (d : A)) (hne : D.Nonempty)
+    {s : selfAdjoint A} (hlub : IsLUB D s) : c.val * (s : A) = (s : A) := by
+  have hsa : IsSelfAdjoint (c.val * (s : A)) := by
+    show star (c.val * (s : A)) = c.val * (s : A)
+    rw [star_mul, s.2.star_eq, c.star_val, ← c.isCentral (s : A)]
+  obtain ⟨hle, hub⟩ := c.corner_ub (D := (fun d : selfAdjoint A => (d : A)) '' D)
+    (by rintro _ ⟨d, hd, rfl⟩; exact hD d hd) (hne.image _)
+    (u := (s : A)) (by rintro _ ⟨d, hd, rfl⟩; exact Subtype.coe_le_coe.mpr (hlub.1 hd))
+  have h2 : s ≤ (⟨c.val * (s : A), hsa⟩ : selfAdjoint A) :=
+    hlub.2 (fun d hd => Subtype.coe_le_coe.mp (hub _ ⟨d, hd, rfl⟩))
+  exact le_antisymm hle (Subtype.coe_le_coe.mpr h2)
+
+/-- The inclusion `cA ↪ A` as a positive linear map. -/
+noncomputable def inclP : c.sub →ₚ[ℂ] A where
+  toFun := fun x => (x : A)
+  map_add' := fun _ _ => rfl
+  map_smul' := fun _ _ => rfl
+  monotone' := fun _ _ h => h
+
+@[simp] theorem inclP_apply (x : c.sub) : c.inclP x = (x : A) := rfl
+
+/-- The inclusion `cA ↪ A` is normal: a supremum computed in the corner is
+the supremum in `A` (leastness is `corner_ub`). -/
+theorem inclP_preservesDirSups : PreservesDirSups ⇑c.inclP := by
+  intro D s hne hdir hlub
+  constructor
+  · rintro _ ⟨d, hd, rfl⟩
+    exact Subtype.coe_le_coe.mp (hlub.1 hd)
+  · intro u hu
+    obtain ⟨d₀, hd₀⟩ := hne
+    have husa : IsSelfAdjoint u :=
+      IsSelfAdjoint.of_ge (hu ⟨d₀, hd₀, rfl⟩) ((isSelfAdjoint_iff c).mp d₀.2)
+    have hmem : c.val * (c.val * u) = c.val * u := by rw [← mul_assoc, c.mul_self]
+    have hsa : IsSelfAdjoint ((⟨c.val * u, hmem⟩ : c.sub)) := by
+      refine Subtype.ext ?_
+      show star (c.val * u) = c.val * u
+      rw [star_mul, husa.star_eq, c.star_val, ← c.isCentral u]
+    obtain ⟨hle, hub⟩ := c.corner_ub
+      (D := (fun d : selfAdjoint c.sub => ((d : c.sub) : A)) '' D)
+      (by rintro _ ⟨d, hd, rfl⟩; exact (d : c.sub).2) ⟨_, ⟨d₀, hd₀, rfl⟩⟩
+      (u := u) hu
+    have h2 : s ≤ (⟨⟨c.val * u, hmem⟩, hsa⟩ : selfAdjoint c.sub) :=
+      hlub.2 (fun d hd => hub _ ⟨d, hd, rfl⟩)
+    exact le_trans (Subtype.coe_le_coe.mp h2) hle
+
+/-- A supremum in the corner is a supremum among the self-adjoints of `A`. -/
+theorem saIncl_isLUB {D : Set (selfAdjoint c.sub)} {s : selfAdjoint c.sub}
+    (hne : D.Nonempty) (hdir : DirectedOn (· ≤ ·) D) (hlub : IsLUB D s) :
+    IsLUB (saIncl c '' D) (saIncl c s) := by
+  have h := c.inclP_preservesDirSups D s hne hdir hlub
+  constructor
+  · rintro _ ⟨d, hd, rfl⟩
+    exact Subtype.coe_le_coe.mp (h.1 ⟨d, hd, rfl⟩)
+  · intro u hu
+    refine Subtype.coe_le_coe.mp (h.2 ?_)
+    rintro _ ⟨d, hd, rfl⟩
+    exact Subtype.coe_le_coe.mpr (hu ⟨d, hd, rfl⟩)
+
+/-- Every np-functional of `A` restricts to an np-functional of the corner. -/
+noncomputable def restrictNP (ω : NPFunctional A) : NPFunctional c.sub :=
+  compNP c.inclP c.inclP_preservesDirSups ω
+
+@[simp] theorem restrictNP_apply (ω : NPFunctional A) (x : c.sub) :
+    c.restrictNP ω x = ω (x : A) := rfl
+
+/-- **67IV**.1, demand (ii): the corner `cA` is a **von Neumann algebra**
+with `c` as unit.  Bounded directed suprema are computed in `A` and land in
+`cA` (`mul_eq_of_isLUB`); the np-functionals of `cA` are faithful because
+those of `A` are and every one of them restricts (`restrictNP`). -/
+noncomputable instance : VonNeumannAlgebra c.sub where
+  isLUB_of_bddAbove_directed := by
+    intro D hne hdir hbdd
+    obtain ⟨b, hb⟩ := hbdd
+    set D' : Set (selfAdjoint A) := saIncl c '' D with hD'
+    have hD'mem : ∀ d ∈ D', c.val * (d : A) = (d : A) := by
+      rintro _ ⟨d, hd, rfl⟩; exact (d : c.sub).2
+    have hD'ne : D'.Nonempty := hne.image _
+    have hD'dir : DirectedOn (· ≤ ·) D' := by
+      rintro _ ⟨x, hx, rfl⟩ _ ⟨y, hy, rfl⟩
+      obtain ⟨z, hz, hxz, hyz⟩ := hdir x hx y hy
+      exact ⟨saIncl c z, ⟨z, hz, rfl⟩, hxz, hyz⟩
+    have hD'bdd : BddAbove D' := by
+      refine ⟨saIncl c b, ?_⟩
+      rintro _ ⟨d, hd, rfl⟩
+      exact hb hd
+    obtain ⟨t, ht⟩ :=
+      VonNeumannAlgebra.isLUB_of_bddAbove_directed D' hD'ne hD'dir hD'bdd
+    have hmem : c.val * (t : A) = (t : A) := c.mul_eq_of_isLUB hD'mem hD'ne ht
+    have hsa : IsSelfAdjoint ((⟨(t : A), hmem⟩ : c.sub)) := Subtype.ext t.2
+    refine ⟨⟨⟨(t : A), hmem⟩, hsa⟩, ?_, ?_⟩
+    · intro d hd
+      exact ht.1 ⟨d, hd, rfl⟩
+    · intro u hu
+      have hub : saIncl c u ∈ upperBounds D' := by
+        rintro _ ⟨d, hd, rfl⟩
+        exact hu hd
+      exact ht.2 hub
+  np_faithful := by
+    intro a ha hzero
+    refine Subtype.ext (VonNeumannAlgebra.np_faithful (a : A) ha fun ω => ?_)
+    exact hzero (c.restrictNP ω)
+
+/-- The compression `a ↦ ca : A → cA`, an nmiu-map.  Normality is the
+computation `c(⋁D) = ⋁(cD)`: leastness holds because for an upper bound `u`
+of `cD` in the corner the element `u + c^⊥(⋁D)` is a self-adjoint upper
+bound of `D` itself. -/
+noncomputable def compress : NMIUMap A c.sub where
+  toStarAlgHom :=
+    { toFun := fun a => ⟨c.val * a, by
+        show c.val * (c.val * a) = c.val * a
+        rw [← mul_assoc, c.mul_self]⟩
+      map_one' := Subtype.ext (by show c.val * 1 = c.val; rw [mul_one])
+      map_mul' := fun a b => Subtype.ext (by
+        show c.val * (a * b) = c.val * a * (c.val * b)
+        symm
+        calc c.val * a * (c.val * b) = c.val * (a * c.val) * b := by noncomm_ring
+          _ = c.val * (c.val * a) * b := by rw [← c.isCentral a]
+          _ = c.val * c.val * (a * b) := by noncomm_ring
+          _ = c.val * (a * b) := by rw [c.mul_self])
+      map_zero' := Subtype.ext (by show c.val * 0 = 0; rw [mul_zero])
+      map_add' := fun a b => Subtype.ext (by
+        show c.val * (a + b) = c.val * a + c.val * b
+        rw [mul_add])
+      commutes' := fun r => Subtype.ext (by
+        rw [algebraMap_coe]
+        show c.val * (algebraMap ℂ A r) = r • c.val
+        rw [Algebra.algebraMap_eq_smul_one, mul_smul_comm, mul_one])
+      map_star' := fun a => Subtype.ext (by
+        show c.val * star a = star (c.val * a)
+        rw [star_mul, c.star_val, ← c.isCentral (star a)]) }
+  preservesDirSups' := by
+    intro D s hne hdir hlub
+    constructor
+    · rintro _ ⟨d, hd, rfl⟩
+      show c.val * ((d : selfAdjoint A) : A) ≤ c.val * ((s : selfAdjoint A) : A)
+      have h := IsSelfAdjoint.conjugate_le_conjugate
+        (Subtype.coe_le_coe.mpr (hlub.1 hd)) c.isProj.isSelfAdjoint
+      rwa [c.conj_eq, c.conj_eq] at h
+    · intro u hu
+      obtain ⟨d₀, hd₀⟩ := hne
+      have hd0sa : IsSelfAdjoint (c.val * ((d₀ : selfAdjoint A) : A)) := by
+        show star _ = _
+        rw [star_mul, d₀.2.star_eq, c.star_val, ← c.isCentral _]
+      have husa : IsSelfAdjoint ((u : A)) :=
+        IsSelfAdjoint.of_ge
+          (show c.val * ((d₀ : selfAdjoint A) : A) ≤ (u : A) from hu ⟨d₀, hd₀, rfl⟩) hd0sa
+      set q : A := 1 - c.val with hq
+      have hqsa : IsSelfAdjoint q := c.isProj.one_sub.isSelfAdjoint
+      have hqc : ∀ x : A, q * x = x * q := fun x => by
+        rw [hq, sub_mul, mul_sub, one_mul, mul_one, c.isCentral x]
+      have hqq : ∀ x : A, q * x * q = q * x := by
+        intro x
+        rw [mul_assoc, ← hqc x, ← mul_assoc, hq,
+          c.isProj.one_sub.isIdempotentElem.eq]
+      have hbnd : IsSelfAdjoint ((u : A) + q * ((s : selfAdjoint A) : A)) := by
+        show star _ = _
+        rw [star_add, husa.star_eq, star_mul, s.2.star_eq, hqsa.star_eq, ← hqc]
+      have hub : ∀ d ∈ D, d ≤ (⟨(u : A) + q * ((s : selfAdjoint A) : A), hbnd⟩ :
+          selfAdjoint A) := by
+        intro d hd
+        refine Subtype.coe_le_coe.mp ?_
+        show ((d : selfAdjoint A) : A) ≤ (u : A) + q * ((s : selfAdjoint A) : A)
+        have h1 : c.val * ((d : selfAdjoint A) : A) ≤ (u : A) := hu ⟨d, hd, rfl⟩
+        have h2 : q * ((d : selfAdjoint A) : A) ≤ q * ((s : selfAdjoint A) : A) := by
+          have h := IsSelfAdjoint.conjugate_le_conjugate
+            (Subtype.coe_le_coe.mpr (hlub.1 hd)) hqsa
+          rwa [hqq, hqq] at h
+        have h3 := add_le_add h1 h2
+        have h4 : c.val * ((d : selfAdjoint A) : A) + q * ((d : selfAdjoint A) : A)
+            = ((d : selfAdjoint A) : A) := by
+          rw [hq, sub_mul, one_mul]; abel
+        rwa [h4] at h3
+      have h5 := hlub.2 hub
+      have h6 := IsSelfAdjoint.conjugate_le_conjugate
+        (Subtype.coe_le_coe.mpr h5) c.isProj.isSelfAdjoint
+      rw [c.conj_eq] at h6
+      show c.val * ((s : selfAdjoint A) : A) ≤ (u : A)
+      have hcq : c.val * q = 0 := by
+        rw [hq, mul_sub, mul_one, c.mul_self, sub_self]
+      have h7 : c.val * ((u : A) + q * ((s : selfAdjoint A) : A)) * c.val = (u : A) := by
+        rw [c.conj_eq, mul_add, ← mul_assoc, hcq, zero_mul, add_zero]
+        exact u.2
+      rwa [h7] at h6
+
+@[simp] theorem compress_coe (a : A) : ((c.compress a : c.sub) : A) = c.val * a := rfl
+
+theorem compress_surjective : Function.Surjective ⇑c.compress := by
+  intro x
+  refine ⟨(x : A), Subtype.ext ?_⟩
+  show c.val * (x : A) = (x : A)
+  exact x.2
+
+/-- `a ↦ (ca, c^⊥a) : A → cA ⊕ c^⊥A`, an nmiu-map. -/
+noncomputable def split : NMIUMap A (c.sub × (c.compl).sub) where
+  toStarAlgHom :=
+    { toFun := fun a => (c.compress a, (c.compl).compress a)
+      map_one' := Prod.ext (map_one c.compress.toStarAlgHom)
+        (map_one (c.compl).compress.toStarAlgHom)
+      map_mul' := fun a b => Prod.ext (map_mul c.compress.toStarAlgHom a b)
+        (map_mul (c.compl).compress.toStarAlgHom a b)
+      map_zero' := Prod.ext (map_zero c.compress.toStarAlgHom)
+        (map_zero (c.compl).compress.toStarAlgHom)
+      map_add' := fun a b => Prod.ext (map_add c.compress.toStarAlgHom a b)
+        (map_add (c.compl).compress.toStarAlgHom a b)
+      commutes' := fun r => Prod.ext (c.compress.toStarAlgHom.commutes r)
+        ((c.compl).compress.toStarAlgHom.commutes r)
+      map_star' := fun a => Prod.ext (map_star c.compress.toStarAlgHom a)
+        (map_star (c.compl).compress.toStarAlgHom a) }
+  preservesDirSups' := by
+    intro D s hne hdir hlub
+    have h1 := c.compress.preservesDirSups' D s hne hdir hlub
+    have h2 := (c.compl).compress.preservesDirSups' D s hne hdir hlub
+    constructor
+    · rintro _ ⟨d, hd, rfl⟩
+      exact ⟨h1.1 ⟨d, hd, rfl⟩, h2.1 ⟨d, hd, rfl⟩⟩
+    · rintro ⟨u, v⟩ huv
+      exact ⟨h1.2 (by rintro _ ⟨d, hd, rfl⟩; exact (huv ⟨d, hd, rfl⟩).1),
+        h2.2 (by rintro _ ⟨d, hd, rfl⟩; exact (huv ⟨d, hd, rfl⟩).2)⟩
+
+@[simp] theorem split_fst (a : A) : ((c.split a).1 : A) = c.val * a := rfl
+
+@[simp] theorem split_snd (a : A) : ((c.split a).2 : A) = (1 - c.val) * a := rfl
+
+theorem split_bijective : Function.Bijective ⇑c.split := by
+  constructor
+  · intro a b hab
+    have h1 : c.val * a = c.val * b := congrArg (fun z => ((z.1 : c.sub) : A)) hab
+    have h2 : (1 - c.val) * a = (1 - c.val) * b := congrArg (fun z => ((z.2 : _) : A)) hab
+    have h3 : c.val * a + (1 - c.val) * a = c.val * b + (1 - c.val) * b := by rw [h1, h2]
+    simpa [sub_mul] using h3
+  · rintro ⟨x, y⟩
+    refine ⟨(x : A) + (y : A), Prod.ext ?_ ?_⟩
+    · refine Subtype.ext ?_
+      show c.val * ((x : A) + (y : A)) = (x : A)
+      have hy : (1 - c.val) * (y : A) = (y : A) := y.2
+      have hcy : c.val * (y : A) = 0 := by
+        rw [← hy, ← mul_assoc, mul_sub, mul_one, c.mul_self, sub_self, zero_mul]
+      rw [mul_add, hcy, add_zero]
+      exact x.2
+    · refine Subtype.ext ?_
+      show (1 - c.val) * ((x : A) + (y : A)) = (y : A)
+      have hx : c.val * (x : A) = (x : A) := x.2
+      have hcx : (1 - c.val) * (x : A) = 0 := by
+        rw [← hx, ← mul_assoc]
+        show (1 - c.val) * c.val * (x : A) = 0
+        rw [sub_mul, one_mul, c.mul_self, sub_self, zero_mul]
+      rw [mul_add, hcx, zero_add]
+      exact y.2
+
+end CentralProj
+
+end Corner
+
+/-- **67IV** (`central-projections-sums`, vn.tex:3408, Exercise), part 1,
+demand (i): for a central projection `c` of a von Neumann algebra `A` the
+corner `cA = {ca : a ∈ A} = {b : cb = b}` is a von Neumann subalgebra of `A`
+"for all but the fact that `1` need not be in `cA`" — it is closed under
+addition, multiplication, involution and **scalar multiplication**, is
+**norm-closed**, has `c` as a unit, and is closed under bounded directed
+suprema of self-adjoint elements.  (The scalar and norm clauses are the two
+remaining fields of `IsVNSubalgebra`; the missing one is exactly `1 ∈ cA`.)
+
+Demands (ii) and (iii) are `central_projections_sums_1_algebra` below, on
+the carrier `CentralProj.sub` built in the preceding section. -/
 theorem central_projections_sums_1 (c : A) (hc : IsStarProjection c)
     (hcentral : IsCentral A c) :
     (∀ x ∈ {b : A | c * b = b}, ∀ y ∈ {b : A | c * b = b},
         x + y ∈ {b : A | c * b = b} ∧ x * y ∈ {b : A | c * b = b} ∧
           star x ∈ {b : A | c * b = b}) ∧
+      (∀ (z : ℂ), ∀ x ∈ {b : A | c * b = b}, z • x ∈ {b : A | c * b = b}) ∧
+      IsClosed {b : A | c * b = b} ∧
       c * c = c ∧  -- `c` is the unit of the corner `cA`
+      (∀ x ∈ {b : A | c * b = b}, c * x = x ∧ x * c = x) ∧
       (∀ (D : Set (selfAdjoint A)) (s : selfAdjoint A),
         (∀ d ∈ D, c * (d : A) = (d : A)) → D.Nonempty →
           DirectedOn (· ≤ ·) D → IsLUB D s → c * (s : A) = (s : A)) := by
   have hcs : star c = c := hc.isSelfAdjoint.star_eq
-  refine ⟨?_, hc.isIdempotentElem.eq, ?_⟩
+  refine ⟨?_, ?_, isClosed_eq (continuous_const.mul continuous_id) continuous_id,
+    hc.isIdempotentElem.eq, ?_, ?_⟩
   · intro x hx y hy
     have hx' : c * x = x := hx
     have hy' : c * y = y := hy
@@ -4536,6 +5264,11 @@ theorem central_projections_sums_1 (c : A) (hc : IsStarProjection c)
     · show c * star x = star x
       have h := congrArg star hx'
       rwa [star_mul, hcs, ← hcentral (star x)] at h
+  · intro z x hx
+    show c * (z • x) = z • x
+    rw [mul_smul_comm, (hx : c * x = x)]
+  · intro x hx
+    exact ⟨hx, by rw [← hcentral x]; exact hx⟩
   · intro D s hD hne hdir hlub
     have hfix : ∀ d ∈ D, c * (d : A) * c = (d : A) := by
       intro d hd
@@ -4586,6 +5319,25 @@ theorem central_projections_sums_1 (c : A) (hc : IsStarProjection c)
     have hqs : q * (s : A) = 0 := by rw [← heq]; exact hzero
     rw [hq, sub_mul, one_mul, sub_eq_zero] at hqs
     exact hqs.symm
+
+/-- **67IV** (`central-projections-sums`, vn.tex:3408, Exercise), part 1,
+demands (ii) and (iii): the corner `cA` **is a von Neumann algebra with `c`
+as unit**, and `a ↦ (ca, c^⊥a)` is an **nmiu-isomorphism**
+`A → cA ⊕ c^⊥A`.
+
+Demand (ii) is carried by the instances of the preceding section — the
+`VonNeumannAlgebra (CentralProj.sub c)` instance, whose `1` is `c` — and
+recorded here by the first conjunct.  Demand (iii) is `CentralProj.split`:
+an nmiu-map (multiplicative, involutive, unital, `ℂ`-linear and normal, all
+four being fields of `NMIUMap`) which is bijective, hence an isomorphism.
+The binary direct sum `cA ⊕ c^⊥A` is rendered as the product, which is
+Mathlib's C\*-algebra direct sum of two summands. -/
+theorem central_projections_sums_1_algebra (c : CentralProj A) :
+    ((1 : c.sub) : A) = c.val ∧
+      ∃ Φ : NMIUMap A (c.sub × (c.compl).sub),
+        Function.Bijective ⇑Φ ∧
+          ∀ a : A, ((Φ a).1 : A) = c.val * a ∧ ((Φ a).2 : A) = (1 - c.val) * a :=
+  ⟨rfl, c.split, c.split_bijective, fun _ => ⟨rfl, rfl⟩⟩
 
 /-- Auxiliary for **67IV**.2: a family of central projections whose
 supremum is `1` is separating — if `cᵢa = 0` for every `i`, then `a = 0`.
@@ -4800,8 +5552,10 @@ private theorem exists_corner_lift_selfAdjoint {ι : Type*} (c : ι → A)
 /-- **67IV** (`central-projections-sums`, vn.tex:3408, Exercise), part 2:
 given a family of central projections `(cᵢ)` with `∑ᵢ cᵢ = 1` (pairwise
 orthogonal, supremum `1`), `a ↦ (cᵢa)ᵢ` is an nmiu-isomorphism
-`A ≅ ⊕ᵢ cᵢA` — rendered concretely: every norm-bounded choice of elements
-of the corners is uniquely of the form `(cᵢa)ᵢ`. -/
+`A ≅ ⊕ᵢ cᵢA` — here in the concrete form that carries the bijectivity:
+every norm-bounded choice of elements of the corners is uniquely of the form
+`(cᵢa)ᵢ`.  The nmiu-isomorphism itself is `central_projections_sums_2_iso`
+below, which is this statement plus `famCompress`. -/
 theorem central_projections_sums_2 {ι : Type*} (c : ι → A)
     (hc : ∀ i, IsStarProjection (c i) ∧ IsCentral A (c i))
     (horth : Pairwise fun i j => c i * c j = 0)
@@ -4887,6 +5641,121 @@ theorem central_projections_sums_2 {ι : Type*} (c : ι → A)
       intro i
       rw [mul_sub, hy i, mul_add, mul_smul_comm, hah i, hak i, hdec i, sub_self]
     exact sub_eq_zero.mp (central_family_separating c hcp hsum hzero)
+
+/-! ### **67IV**.2's nmiu-isomorphism `𝒜 ≅ ⊕ᵢ cᵢ𝒜` -/
+
+section FamilyCorner
+
+variable {ι : Type*} (c : ι → CentralProj A) [∀ i, Nontrivial ((c i).sub)]
+
+/-- `a ↦ (cᵢa)ᵢ : A → ⊕ᵢ cᵢA`, an nmiu-map.  The family `(cᵢa)ᵢ` is
+norm-bounded by `‖a‖` (each `cᵢ` is a projection, so `‖cᵢ‖ ≤ 1`), hence lies
+in `lp _ ∞`; the algebra operations, the unit and the order of `lp _ ∞` are
+all pointwise, so each field reduces to the corresponding field of
+`CentralProj.compress`. -/
+noncomputable def famCompress : NMIUMap A (lp (fun i => (c i).sub) ∞) where
+  toStarAlgHom :=
+    { toFun := fun a => ⟨fun i => (c i).compress a, by
+        refine memℓp_infty ⟨‖a‖, ?_⟩
+        rintro _ ⟨i, rfl⟩
+        show ‖((c i).val * a : A)‖ ≤ ‖a‖
+        calc ‖((c i).val * a : A)‖ ≤ ‖((c i).val : A)‖ * ‖a‖ := norm_mul_le _ _
+          _ ≤ 1 * ‖a‖ := by
+              gcongr
+              exact norm_le_one_of_mem_effects ⟨(c i).isProj.nonneg, (c i).isProj.le_one⟩
+          _ = ‖a‖ := one_mul _⟩
+      map_one' := by
+        refine lp.ext (funext fun i => ?_)
+        show (c i).compress 1 = (1 : lp (fun i => (c i).sub) ∞) i
+        rw [lp.infty_coeFn_one]
+        exact map_one (c i).compress.toStarAlgHom
+      map_mul' := fun a b => by
+        refine lp.ext (funext fun i => ?_)
+        show (c i).compress (a * b) = ((_ : lp (fun i => (c i).sub) ∞) * _) i
+        rw [lp.infty_coeFn_mul]
+        exact map_mul (c i).compress.toStarAlgHom a b
+      map_zero' := by
+        refine lp.ext (funext fun i => ?_)
+        show (c i).compress 0 = (0 : lp (fun i => (c i).sub) ∞) i
+        rw [lp.coeFn_zero]
+        exact map_zero (c i).compress.toStarAlgHom
+      map_add' := fun a b => by
+        refine lp.ext (funext fun i => ?_)
+        show (c i).compress (a + b) = ((_ : lp (fun i => (c i).sub) ∞) + _) i
+        rw [lp.coeFn_add]
+        exact map_add (c i).compress.toStarAlgHom a b
+      commutes' := fun r => by
+        refine lp.ext (funext fun i => ?_)
+        show (c i).compress (algebraMap ℂ A r) = algebraMap ℂ ((c i).sub) r
+        exact (c i).compress.toStarAlgHom.commutes r
+      map_star' := fun a => by
+        refine lp.ext (funext fun i => ?_)
+        show (c i).compress (star a) = (star (_ : lp (fun i => (c i).sub) ∞)) i
+        rw [lp.coeFn_star]
+        exact map_star (c i).compress.toStarAlgHom a }
+  preservesDirSups' := by
+    intro D s hne hdir hlub
+    constructor
+    · rintro _ ⟨d, hd, rfl⟩
+      rw [lp_infty_le_iff]
+      intro i
+      exact ((c i).compress.preservesDirSups' D s hne hdir hlub).1 ⟨d, hd, rfl⟩
+    · intro u hu
+      rw [lp_infty_le_iff]
+      intro i
+      refine ((c i).compress.preservesDirSups' D s hne hdir hlub).2 ?_
+      rintro _ ⟨d, hd, rfl⟩
+      exact (lp_infty_le_iff _ _).mp (hu ⟨d, hd, rfl⟩) i
+
+@[simp] theorem famCompress_coe (a : A) (i : ι) :
+    (((famCompress c a : lp (fun i => (c i).sub) ∞) : ∀ i, (c i).sub) i : A)
+      = (c i).val * a := rfl
+
+/-- **67IV** (`central-projections-sums`, vn.tex:3408, Exercise), part 2, in
+the shape the point asks for: given a family of central projections `(cᵢ)`
+with `∑ᵢcᵢ = 1` (pairwise orthogonal with join `1`, equivalent by
+**56XVIII**), `a ↦ (cᵢa)ᵢ` is an **nmiu-isomorphism** `A → ⊕ᵢ cᵢA`.
+
+`famCompress` supplies the nmiu-map — multiplicativity, involutivity,
+unitality, `ℂ`-linearity and normality are its `NMIUMap` fields — and
+bijectivity is `central_projections_sums_2`: surjectivity is the existence
+half applied to `bᵢ = (yᵢ : A)`, which is norm-bounded by `‖y‖`, and
+injectivity is `central_family_separating`.
+
+The `[∀ i, Nontrivial ((c i).sub)]` binder (i.e. `cᵢ ≠ 0`) is **Mathlib's,
+not the thesis's**: it is what Mathlib's unital normed-ring instance on
+`lp _ ∞` requires — see the note at the head of `A/VN/Basic`'s `DirectSum`
+section, where the same binder is discussed and left. -/
+theorem central_projections_sums_2_iso
+    (horth : Pairwise fun i j => (c i).val * (c j).val = 0)
+    (hsum : projSup (Set.range fun i => (c i).val) = 1) :
+    ∃ Φ : NMIUMap A (lp (fun i => (c i).sub) ∞),
+      Function.Bijective ⇑Φ ∧
+        ∀ (a : A) (i : ι),
+          (((Φ a : lp (fun i => (c i).sub) ∞) : ∀ i, (c i).sub) i : A)
+            = (c i).val * a := by
+  refine ⟨famCompress c, ⟨?_, ?_⟩, fun _ _ => rfl⟩
+  · intro a b hab
+    have h : ∀ i, (c i).val * (a - b) = 0 := by
+      intro i
+      have h1 : (c i).val * a = (c i).val * b :=
+        congrArg (fun z : lp (fun i => (c i).sub) ∞ =>
+          (((z : ∀ i, (c i).sub) i : (c i).sub) : A)) hab
+      rw [mul_sub, h1, sub_self]
+    exact sub_eq_zero.mp
+      (central_family_separating (fun i => (c i).val) (fun i => (c i).isProj) hsum h)
+  · intro y
+    set b : ι → A := fun i => (((y : ∀ i, (c i).sub) i : (c i).sub) : A) with hb
+    have hbc : ∀ i, (c i).val * b i = b i := fun i => ((y : ∀ i, (c i).sub) i).2
+    have hbdd : BddAbove (Set.range fun i => ‖b i‖) := by
+      refine ⟨‖y‖, ?_⟩
+      rintro _ ⟨i, rfl⟩
+      exact lp.norm_apply_le_norm ENNReal.top_ne_zero y i
+    obtain ⟨a, ha, -⟩ := central_projections_sums_2 (fun i => (c i).val)
+      (fun i => ⟨(c i).isProj, (c i).isCentral⟩) horth hsum b hbc hbdd
+    exact ⟨a, lp.ext (funext fun i => Subtype.ext (ha i))⟩
+
+end FamilyCorner
 
 /-! ## Parsec 680: central support -/
 
@@ -5229,13 +6098,13 @@ private theorem cceil_ceil {a : A} (ha : 0 ≤ a) : cceil a = cceil (ceil a) := 
 `⌈⌈⋃E⌉⌉ = ⋃_{e∈E} ⌈⌈e⌉⌉` for sets of projections `E`; and
 `⌈⌈a+b⌉⌉ = ⌈⌈⌈a⌉ ∪ ⌈b⌉⌉⌉ = ⌈⌈a⌉⌉ ∪ ⌈⌈b⌉⌉` for positive `a`, `b`.
 
-**Erratum (author).**  vn.tex:3497 states the first clause "for any bounded
-directed subset of `𝒜`" and the third "for all `a,b ∈ 𝒜`", both without
-positivity, and both are then **false**: central support is monotone on
-*positive* elements only.  For the first take `D = {−1, 0}`, which is directed
-and bounded with `⋁D = 0`, so `⌈⌈⋁D⌉⌉ = 0` while `⌈⌈−1⌉⌉ ∪ ⌈⌈0⌉⌉ = 1`; for the
-third take `a = 1`, `b = −1`, giving `⌈⌈0⌉⌉ = 0` against `1`.  Both clauses need
-positivity, which is what is assumed here. -/
+(Erratum `parsec-680.40` — positivity in the first and third clauses — **has
+been incorporated into vn.tex**: 68IV.2 now reads "for any bounded directed
+subset of positive elements of `𝒜`" and "for all positive `a,b ∈ 𝒜`", which
+is what is assumed here.  Without positivity both clauses were false, central
+support being monotone on positive elements only: `D = {−1, 0}` is directed
+and bounded with `⋁D = 0`, so `⌈⌈⋁D⌉⌉ = 0` while `⌈⌈−1⌉⌉ ∪ ⌈⌈0⌉⌉ = 1`; and
+`a = 1`, `b = −1` gives `⌈⌈0⌉⌉ = 0` against `1`.) -/
 theorem cceil_basic_2 (D : Set (selfAdjoint A)) (s : selfAdjoint A)
     (hne : D.Nonempty) (hdir : DirectedOn (· ≤ ·) D) (hs : IsLUB D s)
     (hDpos : ∀ d ∈ D, 0 ≤ (d : A))
@@ -5769,10 +6638,27 @@ theorem carrier_miu (f : NMIUMap A B) (g : A →ₚ[ℂ] B)
         _ = f ((1 : A) - p) * f a := hmul _ _
         _ = 0 := by rw [hfe, zero_mul]
 
+/-- **69IV** (`carrier-miu`, vn.tex:3611, Corollary), the point's other half:
+`⌈f⌉ = ⌈⌈f⌉⌉` for an nmiu-map `f`.  It is immediate from the centrality that
+`carrier_miu` establishes — a central projection is its own central support,
+by the leastness of `⌈⌈·⌉⌉` in one direction and `⌈⌈p⌉⌉p = p` in the other —
+but the equation itself had no declaration. -/
+theorem carrier_eq_cceilMap (f : NMIUMap A B) (g : A →ₚ[ℂ] B)
+    (hg : PreservesDirSups ⇑g) (heq : ∀ a, g a = f a) :
+    carrier g hg = cceilMap g hg := by
+  have hproj : IsStarProjection (carrier g hg) := (carrier_spec g hg).1
+  have hcent : IsCentral A (carrier g hg) := (carrier_miu f g hg heq).1
+  refine le_antisymm ?_ ((cceil_isLeast (carrier g hg)).2
+    ⟨hproj, hcent, hproj.isIdempotentElem.eq⟩)
+  exact (proj_le_iff_mul_left hproj (cceil_isLeast _).1.1).mpr
+    (cceil_isLeast (carrier g hg)).1.2.2
+
 /-- **69IVa** (`nmiu-factors`, vn.tex:3619, Exercise): an nmiu-map
 `f : A → B` factors through the corner `⌈⌈f⌉⌉A` as an nmiu-surjection
-`a ↦ ⌈⌈f⌉⌉a` followed by an nmiu-injection — rendered concretely:
-`f(a) = f(⌈f⌉a)` for all `a`, and `f(a) = f(b)` iff `⌈f⌉a = ⌈f⌉b`. -/
+`a ↦ ⌈⌈f⌉⌉a` followed by an nmiu-injection — here in the two elementwise
+forms the factorisation amounts to: `f(a) = f(⌈f⌉a)` for all `a`, and
+`f(a) = f(b)` iff `⌈f⌉a = ⌈f⌉b`.  The factorisation itself, with both maps
+constructed as `NMIUMap`s, is `nmiu_factors_maps` below. -/
 theorem nmiu_factors (f : NMIUMap A B) (g : A →ₚ[ℂ] B)
     (hg : PreservesDirSups ⇑g) (heq : ∀ a, g a = f a) (a b : A) :
     f a = f (carrier g hg * a) ∧
@@ -5823,6 +6709,100 @@ noncomputable def nmiuP (f : NMIUMap A B) : A →ₚ[ℂ] B where
 
 omit [VonNeumannAlgebra A] [VonNeumannAlgebra B] in
 @[simp] theorem nmiuP_apply (f : NMIUMap A B) (x : A) : nmiuP f x = f x := rfl
+
+/-! ### **69IVa**'s factorisation, with its two maps
+
+The corner `⌈⌈f⌉⌉A` of the preceding section, the compression
+`g : a ↦ ⌈⌈f⌉⌉a` (`CentralProj.compress`) and the restriction
+`h : x ↦ f(x)` (`CentralProj.restrictNMIU`) are exactly the exercise's
+triangle. -/
+
+namespace CentralProj
+
+variable (c : CentralProj A)
+
+/-- An nmiu-map `f : A → B` with `f(c) = 1` restricts to an nmiu-map
+`cA → B`.  (Normality is `f`'s own normality precomposed with
+`saIncl_isLUB`, i.e. with the fact that suprema of the corner are suprema of
+`A`.) -/
+noncomputable def restrictNMIU (f : NMIUMap A B) (hf1 : (f c.val : B) = 1) :
+    NMIUMap c.sub B where
+  toStarAlgHom :=
+    { toFun := fun x => f (x : A)
+      map_one' := hf1
+      map_mul' := fun x y => map_mul f.toStarAlgHom _ _
+      map_zero' := map_zero f.toStarAlgHom
+      map_add' := fun x y => map_add f.toStarAlgHom _ _
+      commutes' := fun r => by
+        show (f (((algebraMap ℂ c.sub r : c.sub)) : A) : B) = algebraMap ℂ B r
+        rw [algebraMap_coe]
+        show (f.toStarAlgHom (r • c.val) : B) = algebraMap ℂ B r
+        rw [map_smul f.toStarAlgHom]
+        show r • (f c.val : B) = _
+        rw [hf1, Algebra.algebraMap_eq_smul_one]
+      map_star' := fun x => map_star f.toStarAlgHom _ }
+  preservesDirSups' := by
+    intro D s hne hdir hlub
+    have hdir' : DirectedOn (· ≤ ·) (saIncl c '' D) := by
+      rintro _ ⟨x, hx, rfl⟩ _ ⟨y, hy, rfl⟩
+      obtain ⟨z, hz, hxz, hyz⟩ := hdir x hx y hy
+      exact ⟨saIncl c z, ⟨z, hz, rfl⟩, hxz, hyz⟩
+    have h := f.preservesDirSups' (saIncl c '' D) (saIncl c s) (hne.image _) hdir'
+      (c.saIncl_isLUB hne hdir hlub)
+    have himg : (fun d : selfAdjoint A => (f.toStarAlgHom (d : A) : B)) '' (saIncl c '' D)
+        = (fun d : selfAdjoint c.sub => (f.toStarAlgHom ((d : c.sub) : A) : B)) '' D := by
+      rw [← Set.image_comp]; rfl
+    rw [himg] at h
+    exact h
+
+@[simp] theorem restrictNMIU_apply (f : NMIUMap A B) (hf1 : (f c.val : B) = 1)
+    (x : c.sub) : c.restrictNMIU f hf1 x = f (x : A) := rfl
+
+end CentralProj
+
+/-- **69IVa** (`nmiu-factors`, vn.tex:3619, Exercise), the factorisation
+itself: an nmiu-map `f : A → B` factors as an nmiu-**surjection**
+`g : A → ⌈⌈f⌉⌉A`, `a ↦ ⌈⌈f⌉⌉a`, followed by an nmiu-**injection**
+`h : ⌈⌈f⌉⌉A → B`, `a ↦ f(a)`.
+
+Both maps are `NMIUMap`s, so multiplicativity, involutivity, unitality,
+`ℂ`-linearity and normality are all claimed; the corner is the von Neumann
+algebra `CentralProj.sub` of the preceding section, `⌈⌈f⌉⌉ = ⌈f⌉` being
+central by **69IV** (`carrier_miu`).  Unitality of `h` is `f(⌈f⌉) = 1`, which
+is `f(1) = 1` minus `f(⌈f⌉^⊥) = 0`; surjectivity of `g` is `⌈f⌉x = x` on the
+corner; injectivity of `h` is the second clause of `nmiu_factors`. -/
+theorem nmiu_factors_maps (f : NMIUMap A B) (g : A →ₚ[ℂ] B)
+    (hg : PreservesDirSups ⇑g) (heq : ∀ a, g a = f a) :
+    ∃ (c : CentralProj A) (G : NMIUMap A c.sub) (H : NMIUMap c.sub B),
+      c.val = carrier g hg ∧
+        (∀ a : A, ((G a : c.sub) : A) = carrier g hg * a) ∧
+        (∀ x : c.sub, (H x : B) = f (x : A)) ∧
+        Function.Surjective ⇑G ∧ Function.Injective ⇑H ∧
+        ∀ a : A, (f a : B) = H (G a) := by
+  have hcp : IsStarProjection (carrier g hg) := (carrier_spec g hg).1
+  have hcc : IsCentral A (carrier g hg) := (carrier_miu f g hg heq).1
+  set c : CentralProj A := ⟨carrier g hg, hcp, hcc⟩ with hcdef
+  have hf1 : (f c.val : B) = 1 := by
+    have h1 : (f ((1 : A) - carrier g hg) : B) = 0 := by
+      have h := (carrier_spec g hg).2.1
+      rw [heq] at h
+      exact h
+    have h3 : (f ((1 : A) - carrier g hg) : B) = f 1 - f (carrier g hg) :=
+      map_sub f.toStarAlgHom _ _
+    have hone : (f (1 : A) : B) = 1 := map_one f.toStarAlgHom
+    rw [h1, hone] at h3
+    exact (sub_eq_zero.mp h3.symm).symm
+  refine ⟨c, c.compress, c.restrictNMIU f hf1, rfl, fun _ => rfl, fun _ => rfl,
+    c.compress_surjective, ?_, ?_⟩
+  · intro x y hxy
+    have h : carrier g hg * (x : A) = carrier g hg * (y : A) :=
+      (nmiu_factors f g hg heq (x : A) (y : A)).2.mp hxy
+    refine Subtype.ext ?_
+    rw [← (show carrier g hg * (x : A) = (x : A) from x.2),
+      ← (show carrier g hg * (y : A) = (y : A) from y.2)]
+    exact h
+  · intro a
+    exact (nmiu_factors f g hg heq a a).1
 
 /-- **69IVb** (`nmiu-image`, vn.tex:3637): the image of an nmiu-map
 `f : A → B` between von Neumann algebras is a von Neumann subalgebra of
@@ -6244,6 +7224,23 @@ theorem proto_gns_ceil {H : Type*} [NormedAddCommGroup H]
       (gns_zero_iff ω ρ ξ hξ hr.one_sub a).mp (by rw [← heq, hgr]; rfl)
     rwa [sub_sub_cancel] at hkey
 
+/-- **69V** (`proto-gns-ceil`) at the thesis's own `ϱ_ω`.  `proto_gns_ceil`
+above is stated for an *arbitrary* normal cyclic representation implementing
+`ω`, which is more general than the point; this instantiates it at the GNS
+representation of **48I**, in the form in which **48III** (`gns_normal`,
+`A/VN/Basic`) makes that representation available — so the printed statement
+`⌈⌈ω⌉⌉ = ⌈ϱ_ω⌉` is on record. -/
+theorem proto_gns_ceil_gnsRep (ω : NPFunctional A) :
+    ∃ (ι : Type u) (ρ : MIUMap A
+        (lp (fun _ : ι => ℂ) 2 →L[ℂ] lp (fun _ : ι => ℂ) 2))
+      (ξ : lp (fun _ : ι => ℂ) 2) (hn : PreservesDirSups ⇑ρ),
+      (∀ a : A, ω a = ⟪ξ, ρ a ξ⟫) ∧
+        Dense (Set.range fun a : A => ρ a ξ) ∧
+        carrier (starAlgHomP ρ) hn = cceil (npCarrier ω) := by
+  obtain ⟨ι, ρ, ξ, hξ, hdense, hn⟩ := gns_normal ω
+  exact ⟨ι, ρ, ξ, hn, hξ, hdense,
+    proto_gns_ceil ω ρ (starAlgHomP ρ) hn (fun _ => rfl) ξ hξ hdense⟩
+
 /-- **69VII** (`gns-ceil`, vn.tex:3670, Proposition):
 `⌈ρ_Ω⌉ = ⋃_{ω∈Ω} ⌈⌈ω⌉⌉` for a collection `Ω` of np-functionals — rendered:
 for every normal representation `ρ` on a Hilbert space in which each
@@ -6300,22 +7297,24 @@ theorem gns_ceil {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
     rwa [sub_sub_cancel] at hkey
 
 variable (A) in
-/-- **Auxiliary, and not a notion of either thesis**: a collection `Ω` of
-np-functionals kills no nonzero *central positive* element — `a` central,
-`0 ≤ a` and `ω(a) = 0` for all `ω ∈ Ω` force `a = 0`.
+/-- **Auxiliary — not a transcription, and carrying no DISP number**: a
+collection `Ω` of np-functionals kills no nonzero *central positive*
+element — `a` central, `0 ≤ a` and `ω(a) = 0` for all `ω ∈ Ω` force `a = 0`.
 
-⚠️ This is *neither* item of **69IX**: it is not cstar.tex **21II**.4 (which
-conjugates, item 1, here `CentreSeparatingConj`) and not 69IX item 2 (which
-speaks of central *projections*, here `CentreSeparatingCentralProj`).  It sits
-strictly between the two: `CentreSeparating → CentreSeparatingCentralProj`
-(`CentreSeparating.centralProj`, projections are positive), and the three are
-all equivalent once the missing lemma "`⌈a⌉` is central for central positive
-`a`" is available (see PROVING-LOG, "Divergences").
+It is *neither* item of **69IX**, and is deliberately no longer named as if
+it were: it is not cstar.tex **21II**.4 (which conjugates — 69IX item 1,
+here `CentreSeparatingConj`) and not 69IX item 2 (which speaks of central
+*projections*, here `CentreSeparatingCentralProj`).  It sits strictly between
+the two — `CentrePositiveSeparating → CentreSeparatingCentralProj`
+(`CentrePositiveSeparating.centralProj`, projections are positive) — and the
+three are all equivalent once the missing lemma "`⌈a⌉` is central for central
+positive `a`" is available (see PROVING-LOG, "Divergences").
 
-Kept under this name only because `A/Proc/Tensor.lean` states eight results
-with it; those eight all mean the thesis's notion, i.e.
-`CentreSeparatingConj`, and are to be migrated. -/
-def CentreSeparating (Ω : Set (NPFunctional A)) : Prop :=
+The earlier note that it was "kept because `A/Proc/Tensor.lean` states eight
+results with it" is **stale**: `Tensor.lean` uses `CentreSeparatingConj`
+throughout, and this notion is used nowhere outside this file.  It is kept
+only as the intermediate step of the two implications below. -/
+def CentrePositiveSeparating (Ω : Set (NPFunctional A)) : Prop :=
   ∀ a : A, IsCentral A a → 0 ≤ a → (∀ ω ∈ Ω, ω a = 0) → a = 0
 
 variable (A) in
@@ -6352,8 +7351,8 @@ def CentreSeparatingCentralProj (Ω : Set (NPFunctional A)) : Prop :=
 
 /-- The auxiliary central-positive notion implies **69IX** item 2: a central
 projection is a central positive. -/
-theorem CentreSeparating.centralProj {Ω : Set (NPFunctional A)}
-    (h : CentreSeparating A Ω) : CentreSeparatingCentralProj A Ω :=
+theorem CentrePositiveSeparating.centralProj {Ω : Set (NPFunctional A)}
+    (h : CentrePositiveSeparating A Ω) : CentreSeparatingCentralProj A Ω :=
   fun z hz hzc hzero => h z hzc hz.nonneg hzero
 
 /-- **69IX**, the implication (2) ⇒ (1) — the one its consumers actually
@@ -6436,8 +7435,8 @@ theorem CentreSeparatingCentralProj.conj {Ω : Set (NPFunctional A)}
 
 /-- The auxiliary central-positive notion implies the thesis's, through
 **69IX** item 2. -/
-theorem CentreSeparating.conj {Ω : Set (NPFunctional A)}
-    (hΩ : CentreSeparating A Ω) : CentreSeparatingConj A Ω :=
+theorem CentrePositiveSeparating.conj {Ω : Set (NPFunctional A)}
+    (hΩ : CentrePositiveSeparating A Ω) : CentreSeparatingConj A Ω :=
   hΩ.centralProj.conj
 
 /-- The `Ω`-version of **44XI**'s `nonneg_of_conjNP`: for a centre separating
@@ -6455,16 +7454,138 @@ theorem nonneg_of_conjNP_of_centreSeparating (Ω : Set (NPFunctional A))
   rw [← mul_assoc]
   exact h _ p.1.2 p.2
 
+/-! ### **69VII** at the thesis's own `ϱ_Ω`
+
+`gns_ceil` above is stated for an arbitrary normal cyclic representation.
+Here it is *instantiated* at the direct-sum GNS representation
+`ϱ_Ω : 𝒜 → 𝔅(ℋ_Ω)` of **48I**/**48V** (`gnsRepFam` of `A/VN/Basic`), with
+the cyclic vectors `η_ω(1)` — which is what **69IX** item 3 speaks about, and
+what turns `⌈ϱ_Ω⌉ = ⋃_{ω∈Ω}⌈⌈ω⌉⌉` into a statement about `ϱ_Ω` being
+injective (**63II**.4). -/
+
+section GNSOmega
+
+variable (Ω : Set (NPFunctional A))
+
+/-- The collection `Ω`, read as a family indexed by itself, so that
+`gnsHilbFam`/`gnsRepFam` apply. -/
+private noncomputable def famOfSet : Ω → NPFunctional A := fun ω => (ω : NPFunctional A)
+
+open scoped Classical in
+/-- The cyclic vector `η_ω(1)` of `ℋ_Ω = ⊕_{ω∈Ω} ℋ_ω`, sitting in the
+`ω`-summand. -/
+private noncomputable def gnsCycVec (ν : Ω) : gnsHilbFam (famOfSet Ω) :=
+  lp.single 2 ν (gnsVec (famOfSet Ω ν) 1)
+
+set_option maxHeartbeats 1000000 in
+/-- `ω(a) = ⟪η_ω(1), ϱ_Ω(a) η_ω(1)⟫`: each `ω ∈ Ω` is the vector functional
+of its own cyclic vector. -/
+private theorem gnsCycVec_implements (ν : Ω) (a : A) :
+    ((ν : NPFunctional A) a : ℂ)
+      = ⟪gnsCycVec Ω ν, gnsRepFam (famOfSet Ω) a (gnsCycVec Ω ν)⟫ := by
+  classical
+  rw [gnsCycVec, lp.inner_single_left]
+  show _ = (⟪gnsVec (famOfSet Ω ν) 1,
+    ((gnsRepFam (famOfSet Ω) a (lp.single 2 ν (gnsVec (famOfSet Ω ν) 1)) :
+        gnsHilbFam (famOfSet Ω)) : ∀ _ : Ω, _) ν⟫)
+  rw [gnsRepFam_apply_coe, lp.single_apply_self, gnsRep_gnsVec, gnsVec_inner]
+  simp [famOfSet]
+
+open scoped Classical in
+set_option maxHeartbeats 1000000 in
+/-- `ϱ_Ω(a) η_ω(1) = η_ω(a)`. -/
+private theorem gnsRepFam_gnsCycVec (ν : Ω) (a : A) :
+    gnsRepFam (famOfSet Ω) a (gnsCycVec Ω ν)
+      = lp.single 2 ν (gnsVec (famOfSet Ω ν) a) := by
+  classical
+  refine Subtype.ext (funext fun i => ?_)
+  rw [gnsRepFam_apply_coe, gnsCycVec]
+  by_cases h : i = ν
+  · subst h
+    rw [lp.single_apply_self, lp.single_apply_self, gnsRep_gnsVec, mul_one]
+  · rw [lp.single_apply_ne _ _ _ h, lp.single_apply_ne _ _ _ h, map_zero]
+
+open scoped Classical in
+set_option maxHeartbeats 1000000 in
+/-- The vectors `ϱ_Ω(a) η_ω(1) = η_ω(a)` span a dense subspace of `ℋ_Ω`:
+they exhaust each summand's dense set `η_ω(𝒜)`, and the summands add up to
+`ℋ_Ω` by `lp.hasSum_single`. -/
+private theorem gnsCycVec_dense :
+    Dense (Submodule.span ℂ (Set.range fun q : Ω × A =>
+      gnsRepFam (famOfSet Ω) q.2 (gnsCycVec Ω q.1)) :
+        Set (gnsHilbFam (famOfSet Ω))) := by
+  classical
+  set V : Submodule ℂ (gnsHilbFam (famOfSet Ω)) :=
+    Submodule.span ℂ (Set.range fun q : Ω × A =>
+      gnsRepFam (famOfSet Ω) q.2 (gnsCycVec Ω q.1)) with hV
+  have hWclosed : IsClosed ((V.topologicalClosure : Submodule ℂ _) :
+      Set (gnsHilbFam (famOfSet Ω))) := V.isClosed_topologicalClosure
+  have hsingle : ∀ (ν : Ω) (z : (famOfSet Ω ν).toPositiveLinearMap.GNS),
+      (lp.single 2 ν z : gnsHilbFam (famOfSet Ω)) ∈ V.topologicalClosure := by
+    intro ν
+    have hclosed : IsClosed {z : (famOfSet Ω ν).toPositiveLinearMap.GNS |
+        (lp.single 2 ν z : gnsHilbFam (famOfSet Ω)) ∈ V.topologicalClosure} :=
+      hWclosed.preimage (lp.singleContinuousLinearMap ℂ
+        (fun i : Ω => (famOfSet Ω i).toPositiveLinearMap.GNS) 2 ν).continuous
+    have hsub : Set.range (gnsVec (famOfSet Ω ν)) ⊆
+        {z | (lp.single 2 ν z : gnsHilbFam (famOfSet Ω)) ∈ V.topologicalClosure} := by
+      rintro _ ⟨b, rfl⟩
+      refine V.le_topologicalClosure ?_
+      exact Submodule.subset_span ⟨(ν, b), gnsRepFam_gnsCycVec Ω ν b⟩
+    have huniv : (Set.univ : Set (famOfSet Ω ν).toPositiveLinearMap.GNS) ⊆
+        {z | (lp.single 2 ν z : gnsHilbFam (famOfSet Ω)) ∈ V.topologicalClosure} := by
+      rw [← (gnsVec_denseRange (famOfSet Ω ν)).closure_eq]
+      exact hclosed.closure_subset_iff.mpr hsub
+    exact fun z => huniv (Set.mem_univ z)
+  have hall : ∀ y : gnsHilbFam (famOfSet Ω), y ∈ V.topologicalClosure := by
+    intro y
+    have hs : HasSum (fun ν : Ω =>
+        (lp.single 2 ν ((y : ∀ _ : Ω, _) ν) : gnsHilbFam (famOfSet Ω))) y :=
+      lp.hasSum_single (by norm_num) y
+    refine hWclosed.mem_of_tendsto hs ?_
+    filter_upwards with t
+    exact Submodule.sum_mem _ fun ν _ => hsingle ν _
+  rw [dense_iff_closure_eq]
+  refine Set.eq_univ_of_forall fun y => ?_
+  rw [← Submodule.topologicalClosure_coe]
+  exact hall y
+
+set_option maxHeartbeats 1000000 in
+/-- **69VII** (`gns-ceil`) at the thesis's own `ϱ_Ω`:
+`⌈ϱ_Ω⌉ = ⋃_{ω∈Ω} ⌈⌈ω⌉⌉`. -/
+theorem gns_ceil_gnsRepFam :
+    carrier (starAlgHomP (gnsRepFam (famOfSet Ω))) (gnsRepFam_normal (famOfSet Ω))
+      = projSup {p : A | ∃ ω ∈ Ω, p = cceil (npCarrier ω)} :=
+  gns_ceil Ω (gnsRepFam (famOfSet Ω)) (starAlgHomP (gnsRepFam (famOfSet Ω)))
+    (gnsRepFam_normal (famOfSet Ω)) (fun _ => rfl) (gnsCycVec Ω)
+    (gnsCycVec_implements Ω) (gnsCycVec_dense Ω)
+
+set_option maxHeartbeats 1000000 in
+/-- **69IX** items 2/3 joined: `⋃_{ω∈Ω}⌈⌈ω⌉⌉ = 1` iff `ϱ_Ω` is injective.
+This is `gns_ceil_gnsRepFam` followed by **63II**.4 (`carrier_basic_4`,
+`⌈f⌉ = 1` iff `f` injective, for multiplicative `f`). -/
+theorem gnsRepFam_injective_iff :
+    projSup {p : A | ∃ ω ∈ Ω, p = cceil (npCarrier ω)} = 1 ↔
+      Function.Injective ⇑(gnsRepFam (famOfSet Ω)) := by
+  rw [← gns_ceil_gnsRepFam Ω]
+  exact carrier_basic_4 _ _ (fun a b => map_mul (gnsRepFam (famOfSet Ω)) a b)
+
+end GNSOmega
+
 /-- **69IX** (`vn-center-separating`, vn.tex:3693, Corollary): for a
 collection `Ω` of np-functionals on a von Neumann algebra the following are
 equivalent.
 
 > 1. `Ω` is centre separating (see 21II).
 > 2. A central projection `z` of `𝒜` is zero when `ω(z) = 0` for all `ω ∈ Ω`.
-> 3. The map `ϱ_Ω : 𝒜 → 𝔅(ℋ_Ω)` from 69II is injective.
+> 3. The map `ϱ_Ω : 𝒜 → 𝔅(ℋ_Ω)` from 48I is injective.
 
-Item 3 is rendered as `⌈ϱ_Ω⌉ = ⋃_{ω∈Ω}⌈⌈ω⌉⌉ = 1`, which is what **69VII**
-(`gns_ceil`) computes and what `carrier_basic` turns into injectivity.
+Item 3 appears **twice**: as entry 4, verbatim — `ϱ_Ω` being `gnsRepFam` of
+`A/VN/Basic`, the direct-sum GNS representation of **48I**/**48V** — and, as
+entry 3, in the equivalent form `⌈ϱ_Ω⌉ = ⋃_{ω∈Ω}⌈⌈ω⌉⌉ = 1` which the two
+implications below are proved against.  Entries 3 and 4 are joined by
+`gnsRepFam_injective_iff`, i.e. by **69VII** (`gns_ceil`) instantiated at
+`ϱ_Ω` followed by **63II**.4.
 
 Our route differs from the thesis's.  The thesis gets (1) ⟺ (3) from **30X**
 and proves (2) ⇒ (3); we prove (1) ⇒ (3) ⇒ (2) ⇒ (1), where (2) ⇒ (1) is
@@ -6476,7 +7597,8 @@ theorem vn_center_separating (Ω : Set (NPFunctional A)) :
     List.TFAE
       [CentreSeparatingConj A Ω,
        CentreSeparatingCentralProj A Ω,
-       projSup {p : A | ∃ ω ∈ Ω, p = cceil (npCarrier ω)} = 1] := by
+       projSup {p : A | ∃ ω ∈ Ω, p = cceil (npCarrier ω)} = 1,
+       Function.Injective ⇑(gnsRepFam (famOfSet Ω))] := by
   have hSproj : ∀ p ∈ {p : A | ∃ ω ∈ Ω, p = cceil (npCarrier ω)}, IsStarProjection p := by
     rintro _ ⟨ν, -, rfl⟩
     exact (cceil_isLeast _).1.1
@@ -6519,6 +7641,7 @@ theorem vn_center_separating (Ω : Set (NPFunctional A)) :
       exact neg_nonneg.mp h0
     exact le_antisymm hz hzproj.nonneg
   tfae_have 2 → 1 := fun h => h.conj
+  tfae_have 3 ↔ 4 := gnsRepFam_injective_iff Ω
   tfae_finish
 
 /-! ## Parsec 700: the classification of commutative von Neumann algebras
@@ -6661,15 +7784,24 @@ theorem central_projection_central_carrier (c : A)
     _ = cceil (npCarrier ω) * (r * projSup Q) := by noncomm_ring
     _ = 0 := by rw [hrq, mul_zero]
 
+
 end Commutant
 
 /-- **70III** (`cvn`, vn.tex:3758, Theorem): every commutative von Neumann
 algebra is nmiu-isomorphic to a direct sum `⊕ᵢ L^∞(Xᵢ)` of `L^∞`s of finite
 complete measure spaces.
--- FIXME(typecheck): the target `⊕ᵢ L^∞(Xᵢ)` has no Mathlib carrier (cf.
-51IX), so we state the reduction actually proved: `1 = ∑ᵢ ⌈⌈ωᵢ⌉⌉` for
-np-functionals `ωᵢ` each faithful on its corner `⌈⌈ωᵢ⌉⌉A` — each corner is
-then `L^∞(Xᵢ)` by 54XI (`cvn_faithful_1`). -/
+
+This declaration carries the **first step** of the printed proof — 70II at
+`c = 1`, giving `1 = ∑ᵢ ⌈⌈ωᵢ⌉⌉` with each `ωᵢ` faithful on its corner, by
+the thesis's observation that `⌈⌈ωᵢ⌉⌉ = ⌈ωᵢ⌉` in a commutative algebra.  The
+*second* step, `𝒜 ≅ ⊕ᵢ ⌈⌈ωᵢ⌉⌉𝒜` by 67IV.2, is `cvn_direct_sum` below, which
+also records that each summand is a commutative von Neumann algebra carrying
+a faithful np-functional.  The **third** step — identifying each summand
+with an `L^∞(Xᵢ)` by 54XI — is *not* available: see the note on
+`cvn_direct_sum`.
+
+(This statement is destructured at `A/Proc/Duplicators.lean:4038`; the
+strengthening therefore goes in beside it rather than into it.) -/
 theorem cvn {C : Type w} [CommCStarAlgebra C] [PartialOrder C]
     [StarOrderedRing C] [VonNeumannAlgebra C] :
     ∃ (ι : Type w) (ω : ι → NPFunctional C),
@@ -6711,5 +7843,90 @@ theorem cvn {C : Type w} [CommCStarAlgebra C] [PartialOrder C]
       (ceil_spec ha).1).out 4 0).mp (hceille.trans hcarrle)
   refine (ceil_basic_3 a ha).mpr ?_
   rw [← (ceil_spec ha).1.isIdempotentElem.eq, hself]
+
+/-- **70III** (`cvn`, vn.tex:3758, Theorem), the printed proof carried as far
+as the tree allows: a commutative von Neumann algebra `C` is **nmiu-
+isomorphic to the direct sum `⊕ᵢ cᵢC` of its corners**, for an orthogonal
+family of *nonzero* central projections `cᵢ = ⌈⌈ωᵢ⌉⌉` with join `1`, each
+corner being a **commutative von Neumann algebra** on which `ωᵢ` restricts to
+a **faithful** np-functional.
+
+This is 70IV's first two sentences verbatim: 70II at `c = 1` (`cvn`) followed
+by 67IV.2 (`central_projections_sums_2_iso`).  The zero carriers of `cvn`'s
+family are dropped — they contribute nothing to the join and would make the
+corresponding summand the zero algebra, which Mathlib's `lp _ ∞` does not
+admit (see `central_projections_sums_2_iso`).
+
+**What is missing, and where.**  The theorem's last sentence — "which is
+therefore by `cvn-faithful` nmiu-isomorphic to `L^∞(Xᵢ)`" — cannot be taken
+here.  54XI is rendered in `A/VN/Basic` as `cvn_faithful_1`–`cvn_faithful_3`,
+and *none of the three delivers the nmiu-isomorphism*
+`f ↦ f° : C(spec 𝒜) → L^∞(spec 𝒜)` that 54XI asserts: `cvn_faithful_1` builds
+the measure, `cvn_faithful_2` characterises measurability, and
+`cvn_faithful_3` records only `∫f = ω(γ_𝒜⁻¹ f)`, with the doc comment saying
+in as many words that the isomorphism "is not rendered".  A carrier for
+`L^∞` does exist in the tree (`A/VN/Basic`'s `LinftySub`, used to prove 51IX
+`Linfty_vn`), so the obstruction is not the target type; it is the missing
+half of 54XI.3, and it lives in `A/VN/Basic`, not here.  Note also that 51IX's
+own rendering of "`q` is a miu-map" is under QUESTIONS **A9** (it omits
+`ℂ`-homogeneity), so the shape of any future `L^∞` statement is not settled
+either. -/
+theorem cvn_direct_sum {C : Type w} [CommCStarAlgebra C] [PartialOrder C]
+    [StarOrderedRing C] [VonNeumannAlgebra C] :
+    ∃ (ι : Type w) (ω : ι → NPFunctional C) (c : ι → CentralProj C)
+      (_ : ∀ i, Nontrivial ((c i).sub)),
+      (∀ i, (c i).val = cceil (npCarrier (ω i))) ∧
+      (Pairwise fun i j => (c i).val * (c j).val = 0) ∧
+      projSup (Set.range fun i => (c i).val) = 1 ∧
+      (∀ (i : ι) (x y : (c i).sub), x * y = y * x) ∧
+      (∀ (i : ι) (x : (c i).sub), 0 ≤ x → (c i).restrictNP (ω i) x = 0 → x = 0) ∧
+      ∃ Φ : NMIUMap C (lp (fun i => (c i).sub) ∞),
+        Function.Bijective ⇑Φ ∧
+          ∀ (a : C) (i : ι),
+            (((Φ a : lp (fun i => (c i).sub) ∞) : ∀ i, (c i).sub) i : C)
+              = (c i).val * a := by
+  classical
+  obtain ⟨ι₀, ω₀, hpair₀, hsum₀, hfaith₀⟩ := cvn (C := C)
+  -- discard the summands with `⌈⌈ωᵢ⌉⌉ = 0`
+  set ι : Type w := {i : ι₀ // cceil (npCarrier (ω₀ i)) ≠ 0} with hι
+  set ω : ι → NPFunctional C := fun i => ω₀ (i : ι₀) with hω
+  have hcproj : ∀ i : ι, IsStarProjection (cceil (npCarrier (ω i))) :=
+    fun i => (cceil_isLeast _).1.1
+  have hccent : ∀ i : ι, IsCentral C (cceil (npCarrier (ω i))) :=
+    fun i => (cceil_isLeast _).1.2.1
+  set c : ι → CentralProj C := fun i => ⟨cceil (npCarrier (ω i)), hcproj i, hccent i⟩
+    with hc
+  have hntriv : ∀ i : ι, Nontrivial ((c i).sub) := by
+    intro i
+    refine ⟨⟨0, 1, ?_⟩⟩
+    intro h
+    exact i.2 (by
+      have h2 := congrArg (fun z : (c i).sub => (z : C)) h
+      exact h2.symm)
+  have horth : Pairwise fun i j : ι => (c i).val * (c j).val = 0 := by
+    intro i j hij
+    exact hpair₀ (fun h => hij (Subtype.ext h))
+  have hjoin : projSup (Set.range fun i : ι => (c i).val) = 1 := by
+    have hPproj : ∀ p ∈ Set.range (fun i : ι => (c i).val), IsStarProjection p := by
+      rintro _ ⟨i, rfl⟩; exact hcproj i
+    refine projSup_eq hPproj (IsStarProjection.one C)
+      (fun p hp => (hPproj p hp).le_one) ?_
+    intro q hq hle
+    rw [← hsum₀]
+    refine (projSup_spec (fun p hp => by
+      obtain ⟨i, rfl⟩ := hp; exact (cceil_isLeast _).1.1)).2.2 q hq ?_
+    rintro _ ⟨i, rfl⟩
+    show cceil (npCarrier (ω₀ i)) ≤ q
+    by_cases h0 : cceil (npCarrier (ω₀ i)) = 0
+    · rw [h0]; exact hq.nonneg
+    · exact hle _ ⟨⟨i, h0⟩, rfl⟩
+  refine ⟨ι, ω, c, hntriv, fun _ => rfl, horth, hjoin, ?_, ?_, ?_⟩
+  · intro i x y
+    exact Subtype.ext (mul_comm (x : C) (y : C))
+  · intro i x hx h0
+    exact Subtype.ext (hfaith₀ (i : ι₀) (x : C) hx x.2 h0)
+  · obtain ⟨Φ, hbij, hval⟩ := central_projections_sums_2_iso c horth hjoin
+    exact ⟨Φ, hbij, hval⟩
+
 
 end Theses.A.VN

@@ -25170,3 +25170,198 @@ out to be needed.  The one thing worth flagging for the next pass is the
 `A/Proc` ↔ `B/Dils` merge: two parallel developments of corners, filters and
 purity now sit on the same import path with four incompatible definitional
 choices between them, and 170I, 171VII and 100III all wait on it.
+
+## Session 94 — A/VN/Projections: **the first repair pass — eight of the thirteen non-`ok` rows repaired**, the corner `c𝒜` becomes a von Neumann algebra in its own right (67IV.1 (ii)/(iii), 67IV.2, 69IVa), 69IX's item 3 is at last the injectivity of `ϱ_Ω`, and 70III is carried to within one step of the theorem (worker on `Theses/A/VN/Projections.lean`)
+
+Owned `Theses/A/VN/Projections.lean` (165 audit rows, 13 not `ok`: 7 `weaker`,
+4 `stronger`, 2 `differs`).  Result: **8 rows repaired**, **1 partially
+repaired** (70III), **4 left** (all four `stronger`, all four benign
+generalisations).  The module compiles with **no errors and no `sorry`**;
+every statement touched is axiom-clean in situ (`propext`,
+`Classical.choice`, `Quot.sound` only), and the three modules that import it
+(`A/VN/Completeness`, `B/Dils/Stinespring`, `B/Dils/HilbertModules`) were
+recompiled against the new olean without error.
+
+### The enabling construction: `CentralProj` and the corner `c𝒜`
+
+Four of the seven `weaker` rows (67IV.1 demands (ii)/(iii), 67IV.2, 69IVa)
+and the second step of 70III all say the same thing: *the corner `c𝒜` of a
+central projection is a von Neumann algebra, and the maps into and out of it
+are nmiu-maps*.  None of that could be **stated** before, because `c𝒜` had no
+carrier type.  It now does:
+
+* `CentralProj A` — a bundled central projection; `CentralProj.sub` — the
+  corner as a `NonUnitalStarSubalgebra ℂ A`, which is 67IV.1's demand (i)
+  (`central_projections_sums_1` now also states the two clauses the audit
+  found missing: closure under scalar multiplication and **norm-closedness**,
+  the two remaining fields of `IsVNSubalgebra`; the only missing field is
+  `1 ∈ c𝒜`, exactly as the point says).
+* `One`/`Ring`/`NormedRing`/`Algebra ℂ`/`NormedAlgebra ℂ`/`CStarAlgebra`
+  instances with `1 = c`; the order is `A`'s, and `StarOrderedRing` comes
+  from `of_nonneg_iff'` with `s = c√x` (the C\*-order of the corner is the
+  restriction of that of `A`).
+* `VonNeumannAlgebra (CentralProj.sub c)` — demand (ii).  The two facts that
+  carry it are `corner_ub` (an upper bound `u ∈ 𝒜` of a nonempty set of
+  corner elements dominates `cu`, because `c^⊥uc^⊥ = c^⊥u ≥ c^⊥dc^⊥ = 0`)
+  and `restrictNP` (every np-functional of `𝒜` restricts to one of `c𝒜`,
+  which is what carries faithfulness across).
+* `compress` (`a ↦ ca`), `split` (`a ↦ (ca, c^⊥a)`), `famCompress`
+  (`a ↦ (cᵢa)ᵢ`) and `restrictNMIU` (`x ↦ f(x)`) as **`NMIUMap`s**.
+
+Divergence class **(1) faithful** throughout: 67IV.1 and 67IV.2 are
+Exercises with no printed proof, and every step above is the obvious one.
+
+### Repairs, one line each
+
+* **56XIII.2 `ceil_floor_basic_2`** — the two clauses no longer share a
+  scalar.  The first now reads `∀ m ∈ (0,1], ⌈m·a⌉ = ⌈a⌉` (the point's
+  `λ ∈ [0,1]` with `λ ≠ 0`, so `λ = 1` included), the second keeps
+  `0 < λ < 1`.  The doc comment's claim of `(0,1]` is now true of the
+  statement.  Class (1).
+* **56XVII.3 `ceil_supremum_3`** — was only the norm discontinuity of `⌈·⌉`
+  and `⌊·⌋`.  Now all six claims of the exercise: `⌈·⌉` does **not** preserve
+  filtered infima (`D = {(n+1)⁻¹·1}`, `⋀D = 0`, `⋂⌈d⌉ = 1 ≠ 0`), `⌊·⌋` does
+  **not** preserve directed suprema (`D^⊥`, `⋁D^⊥ = 1`, `⋃⌊d⌋ = 0 ≠ 1`), and
+  neither is norm, **ultraweakly** or **ultrastrongly** continuous on
+  `[0,1]_𝒜`.  The two topological cases do not follow from the norm one
+  (coarsening source *and* target changes continuity in both directions); the
+  hint's own sequence settles all three, by computing `ω(aₙ)` and `‖aₙ‖_ω`
+  directly and using the Hausdorffness of both topologies (44XI.1).  Class
+  (1) — the exercise gives no proof beyond the hint, and the hint is what is
+  transcribed.
+* **66IV.3 `ultracyclic_basic_3`** — the point's *first* claim (every
+  projection is a **directed** supremum of ultracyclic projections) is now
+  `ultracyclic_basic_3_directed`: the family `{⌈ω⌉ : ω(p^⊥) = 0}` is
+  nonempty, consists of ultracyclic projections `≤ p`, and is directed
+  (`ω + τ` again kills `p^⊥`, and `⌈ω+τ⌉ = ⌈ω⌉ ∪ ⌈τ⌉` by 63II.2 — the
+  ingredient 66IV.1 uses); being directed, 56XIV makes its `projSup` the
+  supremum in `𝒜`, so `IsLUB {⌈ω⌉ : ω(p^⊥)=0} p`.  Added beside, because
+  `ultracyclic_basic_3` is `rw`-ed at `A/VN/Completeness:3181,3190`.  Class
+  (1).
+* **67IV.1 `central_projections_sums_1`** — demand (i) completed (smul and
+  norm-closedness), and demands (ii)/(iii) stated for the first time as
+  `central_projections_sums_1_algebra`: `1 = c` in the corner, and
+  `a ↦ (ca, c^⊥a)` is a **bijective nmiu-map** `𝒜 → c𝒜 ⊕ c^⊥𝒜`, the binary
+  direct sum being Mathlib's product of C\*-algebras (no `Nontrivial` binder
+  needed).  Class (1).
+* **67IV.2 `central_projections_sums_2`** — the nmiu-**isomorphism** is now
+  `central_projections_sums_2_iso`: `famCompress` is the nmiu-map (so
+  multiplicativity, involutivity, unitality, `ℂ`-linearity and normality are
+  all claimed), and bijectivity is the existing statement.  Added beside:
+  the old one is destructured at `A/VN/Division:5263` and
+  `A/Proc/Duplicators:4144,4194`.  It carries `[∀ i, Nontrivial (cᵢ𝒜)]`,
+  i.e. `cᵢ ≠ 0` — **Mathlib's binder, not the thesis's**, exactly the one
+  documented at the head of `A/VN/Basic`'s `DirectSum` section and left there
+  for the same reason.  Class (1).
+* **69IVa `nmiu_factors`** — the **factorisation** is now
+  `nmiu_factors_maps`: `∃ c G H`, with `G : NMIUMap 𝒜 (c𝒜)` surjective,
+  `H : NMIUMap (c𝒜) ℬ` injective, `c = ⌈f⌉ = ⌈⌈f⌉⌉`, and `f = H ∘ G`.
+  Unitality of `H` is `f(⌈f⌉) = f(1) − f(⌈f⌉^⊥) = 1`; injectivity of `H` is
+  the second clause of the old `nmiu_factors`, which is kept unchanged
+  because it is destructured at `A/VN/NormalFunctionals:2620–2645` and
+  `B/Dils/Pure:2342`.  Class (1) — this is the exercise's own triangle.
+* **69IX `CentreSeparating` → `CentrePositiveSeparating`** — the definition
+  is neither item of 69IX (it is about central *positive* elements, strictly
+  between 21II.4 and 69IX item 2).  Its doc justified keeping the name
+  because "`A/Proc/Tensor.lean` states eight results with it"; that is
+  **stale** — `Tensor.lean` uses `CentreSeparatingConj` throughout and this
+  notion is used nowhere outside this module.  Retagged honestly: renamed
+  (with `.centralProj`/`.conj`), the 69IX framing removed from the name, and
+  the stale justification replaced by the true one (it is the intermediate
+  step of the two implications below it).
+* **69IX `vn_center_separating`** — item 3 was rendered as
+  `⋃_{ω∈Ω}⌈⌈ω⌉⌉ = 1`; injectivity of `ϱ_Ω` appeared nowhere.  The TFAE now
+  has a **fourth** entry, `Function.Injective ⇑(gnsRepFam (famOfSet Ω))` —
+  the thesis's item 3 verbatim, `ϱ_Ω` being 48I/48V's direct-sum GNS
+  representation from `A/VN/Basic`.  Entries 3 and 4 are joined by
+  `gnsRepFam_injective_iff`, which is **69VII instantiated at `ϱ_Ω`**
+  (`gns_ceil_gnsRepFam`, with cyclic vectors `η_ω(1)` and the density of
+  their span proved from `lp.hasSum_single`) followed by 63II.4.  Class (2)
+  for the equivalence's route, as before; class (1) for the new step.
+* **70III `cvn` — partial.**  `cvn` is left unchanged (it is destructured at
+  `A/Proc/Duplicators:4038`) and `cvn_direct_sum` is added beside it,
+  carrying the printed proof's *second* sentence: `𝒜 ≅ ⊕ᵢ cᵢ𝒜` as an
+  nmiu-isomorphism, for an orthogonal family of **nonzero** central
+  projections `cᵢ = ⌈⌈ωᵢ⌉⌉` with join `1`, each corner a **commutative von
+  Neumann algebra** on which `ωᵢ` restricts to a **faithful** np-functional.
+  (The zero carriers of `cvn`'s family are dropped; they contribute nothing
+  to the join and would make a summand the zero algebra, which `lp _ ∞` does
+  not admit.)  See below for what is still missing.
+
+### Also fixed in passing (bookkeeping the audit flagged)
+
+* **`ncp_ceill`** — the doc asserted "the thesis displays the inequalities in
+  the opposite direction".  Not true any more: erratum `parsec-610.20` is
+  incorporated into `vn.tex`, whose 61II now prints them in our direction.
+  The note now says so and cites the erratum.
+* **`cceil_basic_2`** — the doc presented positivity as a fresh "Erratum
+  (author)" against `vn.tex:3497`, which already reads "of positive
+  elements" / "for all positive `a,b`".  This is `parsec-680.40`, already
+  incorporated (and already marked RESOLVED in this log, 2026-08-13); the
+  note now records it as incorporated rather than as an open defect.
+* **69IV** — the point's other half, `⌈f⌉ = ⌈⌈f⌉⌉` for an nmiu-map, had no
+  declaration (the audit flagged it inside an `ok` row).  Added as
+  `carrier_eq_cceilMap`.
+* **69V/69VII's instantiation gap, closed.**  Both are stated for an
+  arbitrary normal cyclic representation, which is more general than the
+  points; neither was ever applied to the thesis's own GNS representation, so
+  the printed statements were not on record.  They now are:
+  `proto_gns_ceil_gnsRep` (69V at `ϱ_ω`, in the form 48III `gns_normal`
+  makes it available) and `gns_ceil_gnsRepFam` (69VII at `ϱ_Ω`).
+* **Three stale "still `sorry`" claims.**  The file header read "Statements
+  only; every proof is `sorry`" on a module with none; the note on
+  `abelian_projections_norm_dense` said `ngelfand_vna`,
+  `vn_spectrum_extremally_disconnected` and Stone–Weierstraß were "all three
+  still `sorry` in the tree" (the first two are proved in `A/VN/Basic`, the
+  third is Mathlib's); the note on
+  `projections_norm_dense_subalgebra_selfAdjoint` said 88VI was "still
+  `sorry`" (it is `double_commutant` in `A/VN/NormalFunctionals`, proved —
+  though still only for `B(H)`, which is the real reason the relativised
+  form is needed).  All three corrected.  This is the audit's standing
+  observation about stale "still `sorry`" premises, in this module.
+
+### Left, and why
+
+**Reason 3 — `stronger`, benign generalisation (4 rows).**
+**56I `vna_ceil_comm`** states the "moreover" for every positive `b` where
+the thesis states it for an effect — the generalisation 59III.2 makes anyway.
+**65III.5 `commutant_basic_5`** drops the "von Neumann subalgebra"
+hypothesis, where the identity is a tautology.  **69V `proto_gns_ceil`** and
+**69VII `gns_ceil`** are stated for an arbitrary normal cyclic
+representation; their instantiation gap is now closed (above), so the
+statements stay as they are.
+
+**Reason 1 — thesis defect (1 row, an `ok` row).**  **56VI**'s "moreover"
+prints "if `a` commutes with `b`, then **`b`** commutes with `⌊b⌋`", which is
+trivially true; the intended claim is about `a`, and that is what
+`vna_floor_comm` states.  Changing our statement to match the printed one
+would be changing it to a triviality; changing the thesis is the author's
+call.  Not in ERRATA — worth adding.
+
+### 70III: exactly what is missing, and where
+
+70IV's proof has three steps.  Step 1 (70II at `c = 1`, with
+`⌈⌈ωᵢ⌉⌉ = ⌈ωᵢ⌉` in a commutative algebra) is `cvn`.  Step 2 (67IV.2) is now
+`cvn_direct_sum`.  Step 3 — "which is therefore by `cvn-faithful`
+nmiu-isomorphic to `L^∞(Xᵢ)`" — **cannot be taken from this module**, and the
+reason is *not* the absence of a carrier for `L^∞`: `A/VN/Basic` has one
+(`LinftySub`, the carrier 51IX `Linfty_vn` is proved on).  The reason is that
+**54XI is under-rendered in `A/VN/Basic`**: `cvn_faithful_1` builds the
+measure, `cvn_faithful_2` characterises measurability, and `cvn_faithful_3`
+records only `∫f = ω(γ_𝒜⁻¹(f))`.  The nmiu-**isomorphism**
+`f ↦ f° : C(spec 𝒜) → L^∞(spec 𝒜)` that 54XI asserts — the one 70III applies
+— has no declaration anywhere, and `cvn_faithful_3`'s own doc says it "is not
+rendered".  That is a *statement* repair in `A/VN/Basic`, not here; the
+surjectivity half of it is the substantial part of 54XI's printed proof, and
+the machinery for it (`exists_isMeagre_continuousAt_of_measurable`,
+`measurable_of_continuousAt_compl`) is already in that module.  Note also
+that 51IX's rendering of "`q` is a miu-map" is governed by QUESTIONS **A9**
+(it omits `ℂ`-homogeneity), so the shape of any future `L^∞` statement is not
+settled either — but **A9 is not what blocks 70III**; the missing half of
+54XI.3 is.  Recorded on `cvn` and `cvn_direct_sum`, and left.
+
+### Nothing else needed a ruling
+
+No repair in this pass required an author decision, and no repair had to be
+abandoned for want of mathematics except the 54XI half named above, which is
+a repair for the owner of `A/VN/Basic`.
