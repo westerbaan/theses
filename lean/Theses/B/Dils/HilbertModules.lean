@@ -15,8 +15,6 @@ lines 1267–2621.
   parsec 1490:  orthonormal bases; self-dual ⇔ (bounded) ultranorm complete
                 ⇔ basis
 
-Statements only; every proof is `sorry`.
-
 Conventions.  Mathlib's `CStarModule 𝒷 X` plays the role of the thesis's
 pre-Hilbert 𝒷-modules (`[CompleteSpace X]` for Hilbert 𝒷-modules); note
 that Mathlib works with *left* actions and the inner product
@@ -276,12 +274,12 @@ seminorm `‖x‖_f = ⟨x,x⟩_f^½`. -/
 noncomputable def seminormF (f : 𝒷 →ₗ[ℂ] ℂ) (B : BInner 𝒷 X) (x : X) : ℝ :=
   Real.sqrt (f (B.inner x x)).re
 
-/-- **142II** (`module-innerprod-state`, dils.tex:1399, Definition),
-embedded claim: `⟨·,·⟩_f` is a complex-valued (semidefinite) inner product;
-in particular it is conjugate symmetric and positive (whence `‖·‖_f` is a
-seminorm, by cstar.tex 4XV `inner-product-basic`).
-
-**142IIa** (dils.tex:1411): discussion — nothing to formalize. -/
+/-- **142II** (`module-innerprod-state`, dils.tex:1399, Definition), two of
+the four identities that make `⟨·,·⟩_f` an inner product: conjugate symmetry
+and positivity.  This is **weaker than the point**, whose stated conclusion
+is that `‖·‖_f` is a seminorm; that is `seminormF_seminorm` below, and the
+"is a complex-valued inner product" claim in full is `innerFCore`.  Kept
+because these are the two identities the ultranorm estimates use directly. -/
 theorem innerF_inner_product (f : 𝒷 →ₗ[ℂ] ℂ) (hf : IsPositiveMap f)
     (B : BInner 𝒷 X) :
     (∀ x y : X, innerF f B y x = starRingEnd ℂ (innerF f B x y)) ∧
@@ -298,6 +296,52 @@ theorem innerF_inner_product (f : 𝒷 →ₗ[ℂ] ℂ) (hf : IsPositiveMap f)
       simpa using h.1
     · show (f (B.inner x x)).im = 0
       simpa using h.2.symm
+
+/-- **142II** (`module-innerprod-state`, dils.tex:1399, Definition), the
+embedded claim in full: *"this `⟨·,·⟩_f` is a complex-valued inner
+product"*.  Bundled as Mathlib's `PreInnerProductSpace.Core ℂ X`, which is
+exactly the possibly-indefinite complex inner product of cstar.tex **4XV**
+(`inner-product-basic`): conjugate symmetric, positive, additive and
+conjugate-homogeneous in the first argument — hence, by conjugate symmetry,
+additive and ℂ-linear in the second, the two clauses the audit found
+unstated. -/
+@[instance_reducible]
+noncomputable def innerFCore (f : 𝒷 →ₗ[ℂ] ℂ) (hf : IsPositiveMap f)
+    (B : BInner 𝒷 X) : PreInnerProductSpace.Core ℂ X where
+  inner x y := innerF f B x y
+  conj_inner_symm x y := by
+    show starRingEnd ℂ (innerF f B y x) = innerF f B x y
+    rw [(innerF_inner_product f hf B).1 x y]
+    simp
+  re_inner_nonneg x := by
+    have h := ((innerF_inner_product f hf B).2 x).1
+    simpa using h
+  add_left x y z := by
+    show f (B.inner (x + y) z) = f (B.inner x z) + f (B.inner y z)
+    rw [B.inner_add_left, map_add]
+  smul_left x y r := by
+    show f (B.inner (r • x) y) = starRingEnd ℂ r * f (B.inner x y)
+    rw [B.inner_smul_left_complex, map_smul, smul_eq_mul]
+
+/-- **142II** (`module-innerprod-state`, dils.tex:1399, Definition), the
+point's **conclusion**: *"Hence, by `inner-product-basic`, we know that
+`‖·‖_f` is a seminorm"* — nonnegative, absolutely homogeneous and
+subadditive.  The proof is the point's own: `⟨·,·⟩_f` is a complex-valued
+inner product (`innerFCore`), so cstar.tex **4XV**
+`inner_product_seminorm` applies verbatim.
+
+**142IIa** (dils.tex:1411): discussion — nothing to formalize. -/
+theorem seminormF_seminorm (f : 𝒷 →ₗ[ℂ] ℂ) (hf : IsPositiveMap f)
+    (B : BInner 𝒷 X) (x y : X) (c : ℂ) :
+    0 ≤ seminormF f B x ∧
+      seminormF f B (c • x) = ‖c‖ * seminormF f B x ∧
+      seminormF f B (x + y) ≤ seminormF f B x + seminormF f B y := by
+  letI : PreInnerProductSpace.Core ℂ X := innerFCore f hf B
+  have h := Theses.A.CStar.inner_product_seminorm (V := X) x y c
+  have hs : ∀ z : X, Theses.A.CStar.innerNorm (V := X) z = seminormF f B z :=
+    fun _ => rfl
+  rw [hs, hs, hs] at h
+  exact h
 
 /-- **142III** (`module-CS`, dils.tex:1419, Proposition (Cauchy–Schwarz)):
 for a (possibly indefinite) 𝒷-valued inner product,
@@ -582,12 +626,15 @@ theorem adjointable_cstar_identity_2 (T : X →L[ℂ] Y) (S : Y →L[ℂ] X)
           pow_le_pow_left₀ (norm_nonneg T) hT 2
       _ = ‖S.comp T‖ := Real.sq_sqrt (norm_nonneg _)
 
-/-- **143IV** (`hilbmod-cstar`, dils.tex:1580, Proposition): for a Hilbert
-𝒷-module `X` the adjointable bounded operators `𝒷ᵃ(X)` form a C*-algebra.
-As in cstar.tex 32XIII (`bax_cstar`) the missing ingredient beyond the
-∗-algebra structure and the C*-identity (**143II**) is closedness in
-`B(X)`, stated here.  (The type `Ba 𝒷 X` with its C*-algebra structure is
-set up below, right after **143IV**.)
+/-- **143IV** (`hilbmod-cstar`, dils.tex:1580, Proposition), *one
+ingredient only*, and strictly weaker than the Proposition: for a Hilbert
+𝒷-module `X` the adjointable bounded operators are a **closed** subset of
+`B(X)`.  As in cstar.tex 32XIII (`bax_cstar`) this is the missing
+ingredient beyond the ∗-algebra structure and the C*-identity (**143II**).
+
+**The Proposition itself — that `𝒷ᵃ(X)` is a C*-algebra — is
+`Ba.instCStarAlgebra` below**, which assembles the three ingredients; read
+this declaration as its closedness lemma, not as 143IV.
 
 **143V** is the proof — not converted. -/
 theorem hilbmod_cstar [CompleteSpace X] :
@@ -1107,8 +1154,11 @@ np-functionals `ω`, constitutes the **ultranorm uniformity**; it is encoded
 through the predicates `UnTendsto`, `UnCauchy`, `UnDense`, `UnComplete`
 below.
 
-**146VIII**–**146X** (relation to the norm and ultrastrong uniformities;
-Beware; Remarks) — not converted. -/
+**146VIII**'s two identifications are `unSeminorm_complex` and
+`unSeminorm_mulInner_eq_omegaNorm` below; of **146IX** (Beware) the
+quantitative half is `unSeminorm_le_norm_mul`, its converse ("but not
+necessarily the other way around", which needs a counterexample) is not
+formalized, and **146X** (Remarks) has nothing to formalize. -/
 noncomputable def unSeminorm {X : Type v} [AddCommGroup X]
     (ω : NPFunctional 𝒷) (B : X → X → 𝒷) (x : X) : ℝ :=
   Real.sqrt (ω (B x x)).re
@@ -1120,7 +1170,42 @@ it the ultranorm uniformity on `𝒷` is the ultrastrong uniformity
 def mulInner (𝒷 : Type u) [CStarAlgebra 𝒷] : 𝒷 → 𝒷 → 𝒷 :=
   fun a b => b * star a
 
+omit [StarOrderedRing 𝒷] in
+/-- **146VIII** (dils.tex:1772), second identification: *"if `X = 𝒷` with
+`[a,b] = a*b`, then the ultranorm uniformity coincides with the ultrastrong
+uniformity"*.  Mirrored, as everywhere in this file: our `mulInner` is
+`[a,b] = b a*`, so the ultranorm seminorms of `𝒷` over itself are the
+ultrastrong seminorms `‖·‖_ω` of vn.tex **43I** composed with `star` — an
+isomorphism of uniform spaces, so the two uniformities do coincide.
+(`Kaplansky.lean` carries the same identity untagged, as
+`unSeminorm_mulInner_eq`, where it is used to transfer 55V.) -/
+theorem unSeminorm_mulInner_eq_omegaNorm (ω : NPFunctional 𝒷) (a : 𝒷) :
+    unSeminorm ω (mulInner 𝒷) a = omegaNorm 𝒷 ω (star a) := by
+  rw [omegaNorm, unSeminorm, star_star]
+  rfl
+
 variable {X : Type v} [AddCommGroup X]
+
+/-- **146VIII** (dils.tex:1772), first identification: *"if `𝒷 = ℂ`, then
+the ultranorm uniformity is the same as the uniformity induced by the
+norm"*.  Every ultranorm seminorm of a ℂ-valued inner product is a scalar
+multiple of the norm `‖x‖ = ‖[x,x]‖^½`, the scalar being `ω(1)^½` — so the
+two seminorm families, and hence the two uniformities, agree. -/
+theorem unSeminorm_complex {X : Type v} [AddCommGroup X] [Module ℂ X]
+    (ω : NPFunctional ℂ) (B : BInner ℂ X) (x : X) :
+    unSeminorm ω B.inner x = Real.sqrt (ω 1).re * B.norm x := by
+  set a : ℂ := B.inner x x with ha
+  have h0 : (0 : ℂ) ≤ a := B.inner_self_nonneg x
+  have hre : 0 ≤ a.re := (Complex.le_def.mp h0).1
+  have him : a.im = 0 := ((Complex.le_def.mp h0).2).symm
+  have hlin : ω a = a * ω 1 := by
+    have h : ω (a • (1 : ℂ)) = a * ω 1 := map_smul ω.toPositiveLinearMap a 1
+    simpa using h
+  have hnorm : ‖a‖ = a.re := by
+    rw [Complex.norm_def, Complex.normSq_apply, him]
+    simp [Real.sqrt_mul_self hre]
+  rw [unSeminorm, BInner.norm, ← ha, hlin, hnorm, Complex.mul_re, him]
+  simp [Real.sqrt_mul hre, mul_comm]
 
 /-- **147I**.1 (`uniformity-basics`, dils.tex:1930, Definition),
 specialized to the ultranorm uniformity: a net `x : ι → X` (along a filter
@@ -1172,15 +1257,22 @@ def FilterEquiv (F G : Filter X) : Prop :=
   ∀ V ∈ 𝓤 X, ∃ s ∈ F, ∃ t ∈ G, s ×ˢ t ⊆ V
 
 /-- **147II** (`dils-uniform-spaces-basics`, dils.tex:1982, Exercise), part
-1: equivalence of Cauchy filters is reflexive, symmetric and transitive. -/
+1, **both claims**: equivalence of Cauchy filters is reflexive, symmetric
+and transitive; *and* a subnet of a Cauchy net is equivalent to it.
+
+A subnet is rendered by its eventuality filter: the tail filter of a subnet
+of `(y_α)_α` refines the tail filter of `(y_α)_α`, so "`F` is a subnet of
+`G`" is `F ≤ G` — that, and Cauchyness of `G`, is all the fourth clause
+needs. -/
 theorem dils_uniform_spaces_basics_1 :
     (∀ F : Filter X, Cauchy F → FilterEquiv F F) ∧
     (∀ F G : Filter X, Cauchy F → Cauchy G → FilterEquiv F G →
       FilterEquiv G F) ∧
     (∀ F G H : Filter X, Cauchy F → Cauchy G → Cauchy H →
-      FilterEquiv F G → FilterEquiv G H → FilterEquiv F H) := by
+      FilterEquiv F G → FilterEquiv G H → FilterEquiv F H) ∧
+    (∀ F G : Filter X, Cauchy G → F ≤ G → FilterEquiv F G) := by
   refine ⟨fun F hF V hV => ?_, fun F G _ _ h V hV => ?_,
-    fun F G H _ hG _ hFG hGH V hV => ?_⟩
+    fun F G H _ hG _ hFG hGH V hV => ?_, fun F G hG hFG V hV => ?_⟩
   · -- reflexivity: `F ×ˢ F ≤ 𝓤 X` is exactly Cauchyness
     obtain ⟨s, hs, t, ht, hst⟩ := Filter.mem_prod_iff.mp (hF.2 hV)
     exact ⟨s, hs, t, ht, hst⟩
@@ -1197,6 +1289,10 @@ theorem dils_uniform_spaces_basics_1 :
     refine ⟨s, hs, u, hu, ?_⟩
     rintro ⟨a, b⟩ ⟨ha, hb⟩
     exact hWV ⟨y, hst (Set.mk_mem_prod ha hy₁), htu (Set.mk_mem_prod hy₂ hb)⟩
+  · -- a subnet is equivalent to its net: `G`'s own Cauchy witness works on
+    -- both sides, since every set of `G` is a set of `F`
+    obtain ⟨s, hs, t, ht, hst⟩ := Filter.mem_prod_iff.mp (hG.2 hV)
+    exact ⟨s, hFG hs, t, ht, hst⟩
 
 /-- **147II** (`dils-uniform-spaces-basics`, dils.tex:1982, Exercise), part
 2: equivalent Cauchy filters have the same limits. -/
@@ -1261,15 +1357,58 @@ theorem dils_uniform_spaces_basics_7 [T2Space Y] (f g : X → Y)
   hf.ext_on hD hg h
 
 /-- **147III** (`dils-product-uniformity`, dils.tex:2021, Exercise): the
-product uniformity (Mathlib: `Pi.uniformSpace`) makes the projections
-uniformly continuous and is the categorical product: a map into the product
-is uniformly continuous iff all its components are (Mathlib:
-`uniformContinuous_pi`). -/
+relations `(x_i)_i ε̂ (y_i)_i ⟺ x_{i₀} ε y_{i₀}` of the exercise, one for
+each `i₀ ∈ I` and each entourage `ε ∈ Φ_{i₀}`. -/
+def piSubbase {ι : Type w} (Z : ι → Type v) [∀ i, UniformSpace (Z i)] :
+    Set (Set ((∀ i, Z i) × (∀ i, Z i))) :=
+  {V | ∃ (i : ι) (ε : Set (Z i × Z i)), ε ∈ 𝓤 (Z i) ∧
+    V = {q : (∀ i, Z i) × (∀ i, Z i) | (q.1 i, q.2 i) ∈ ε}}
+
+/-- **147III** (`dils-product-uniformity`, dils.tex:2021, Exercise), **all
+three claims**.
+
+1. The relations `ε̂` are a *subbase* (**146IIIa**) for the product
+   uniformity: they satisfy the three subbase axioms that **146IV**
+   `exc_subbase` takes as its hypotheses, and the product uniformity
+   (Mathlib: `Pi.uniformSpace`) *is* the filter they generate.
+2. The projections are uniformly continuous.
+3. `Π Xᵢ` is the categorical product in uniform spaces: a map into it is
+   uniformly continuous iff all its components are (Mathlib:
+   `uniformContinuous_pi`). -/
 theorem dils_product_uniformity {ι : Type w} {Z : ι → Type v}
     [∀ i, UniformSpace (Z i)] (f : X → ∀ i, Z i) :
-    (∀ i, UniformContinuous fun z : ∀ i, Z i => z i) ∧
-      (UniformContinuous f ↔ ∀ i, UniformContinuous fun x => f x i) :=
-  ⟨fun i => Pi.uniformContinuous_proj Z i, uniformContinuous_pi⟩
+    ((∀ V ∈ piSubbase Z, ∀ x : ∀ i, Z i, (x, x) ∈ V) ∧
+        (∀ V ∈ piSubbase Z, ∃ W ∈ piSubbase Z, SetRel.comp W W ⊆ V) ∧
+        (∀ V ∈ piSubbase Z, ∃ W ∈ piSubbase Z, Prod.swap ⁻¹' W ⊆ V) ∧
+        𝓤 (∀ i, Z i) = Filter.generate (piSubbase Z)) ∧
+      (∀ i, UniformContinuous fun z : ∀ i, Z i => z i) ∧
+      (UniformContinuous f ↔ ∀ i, UniformContinuous fun x => f x i) := by
+  refine ⟨⟨?_, ?_, ?_, ?_⟩, fun i => Pi.uniformContinuous_proj Z i,
+    uniformContinuous_pi⟩
+  · -- axiom 2: `x ε̂ x`, because `x_i ε x_i`
+    rintro _ ⟨i, ε, hε, rfl⟩ x
+    exact (refl_mem_uniformity hε : (x i, x i) ∈ ε)
+  · -- axiom 3: a half-entourage of `ε` gives a half-entourage of `ε̂`
+    rintro _ ⟨i, ε, hε, rfl⟩
+    obtain ⟨δ, hδ, hδε⟩ := comp_mem_uniformity_sets hε
+    refine ⟨_, ⟨i, δ, hδ, rfl⟩, ?_⟩
+    rintro ⟨a, c⟩ ⟨b, hab, hbc⟩
+    exact hδε ⟨b i, hab, hbc⟩
+  · -- axiom 4: the reverse of `ε̂` is the hat of the reverse of `ε`
+    rintro _ ⟨i, ε, hε, rfl⟩
+    exact ⟨_, ⟨i, Prod.swap ⁻¹' ε, symm_le_uniformity hε, rfl⟩, fun _ h => h⟩
+  · -- the generated filter: `𝓤 (Π Xᵢ) = ⨅ᵢ comap πᵢ (𝓤 Xᵢ)`, and the
+    -- infimum of comaps is generated by the preimages
+    refine le_antisymm ?_ ?_
+    · rw [le_generate_iff]
+      rintro V ⟨i, ε, hε, rfl⟩
+      rw [Pi.uniformity]
+      exact Filter.mem_iInf_of_mem i (Filter.preimage_mem_comap hε)
+    · rw [Pi.uniformity]
+      refine le_iInf fun i => fun t ht => ?_
+      obtain ⟨u, hu, hut⟩ := Filter.mem_comap.mp ht
+      exact Filter.mem_of_superset
+        (Filter.mem_generate_of_mem (⟨i, u, hu, rfl⟩ : _ ∈ piSubbase Z)) hut
 
 end UniformBasics
 
@@ -1503,13 +1642,132 @@ theorem blinear_bounded_is_ultranorm (B₁ : BInner 𝒷 X) (B₂ : BInner 𝒷 
         rw [div_le_iff₀ (by positivity)]
         nlinarith
 
-variable {ι : Type w} {l : Filter ι}
+/-! ### **148III**: the three module operations are *uniformly* continuous
+
+The Corollary asserts uniform continuity — which is what **150IX** then uses
+to extend the operations to `V̄` — so that is what the three declarations
+below state, in the same shape as **148I**: for each np-functional `ω` and
+each `ε > 0` there is a `δ > 0` that works *uniformly* in the arguments.
+(As in 148I one np-functional at a time suffices, because each of the three
+estimates goes through a single seminorm.)
+
+The Corollary is a corollary of **148I**: each of the three maps is a
+bounded 𝒷-linear map, and the bound is the content of the two estimates
+below — Cauchy–Schwarz (**142III**) for `x ↦ [x₀,x]`, and the conjugation
+bound for `b ↦ x₀·b` (mirrored `b ↦ b • x₀`), the map for which no bounded
+𝒷-linear packaging is available here because `SMul 𝒷 X` carries no module
+axioms.  Limit preservation, the weaker form, follows and is recorded
+afterwards as `ultranormcontstruct_*_unTendsto`. -/
+
+/-- The estimate behind **148III** part 2, by Cauchy–Schwarz (**142III**):
+`‖[x₀,d]‖_ω ≤ ‖[x₀,x₀]‖^½ ‖d‖_ω`, the mirrored ultrastrong seminorm on the
+left. -/
+theorem unSeminorm_inner_left_le (B : BInner 𝒷 X) (ω : NPFunctional 𝒷)
+    (x₀ d : X) :
+    unSeminorm ω (mulInner 𝒷) (B.inner x₀ d)
+      ≤ Real.sqrt ‖B.inner x₀ x₀‖ * unSeminorm ω B.inner d := by
+  have hmul : mulInner 𝒷 (B.inner x₀ d) (B.inner x₀ d)
+      = B.inner x₀ d * B.inner d x₀ := by
+    show B.inner x₀ d * star (B.inner x₀ d) = _
+    rw [B.star_inner]
+  have hCS := module_CS B d x₀
+  have hre : (ω (mulInner 𝒷 (B.inner x₀ d) (B.inner x₀ d))).re
+      ≤ ‖B.inner x₀ x₀‖ * (ω (B.inner d d)).re := by
+    rw [hmul, ← np_re_smul]
+    exact np_re_mono ω hCS
+  rw [unSeminorm, unSeminorm]
+  calc Real.sqrt (ω (mulInner 𝒷 (B.inner x₀ d) (B.inner x₀ d))).re
+      ≤ Real.sqrt (‖B.inner x₀ x₀‖ * (ω (B.inner d d)).re) := Real.sqrt_le_sqrt hre
+    _ = _ := Real.sqrt_mul (norm_nonneg _) _
+
+/-- The estimate behind **148III** part 3:
+`‖x₀·b − x₀·c‖_ω ≤ ‖[x₀,x₀]‖^½ ‖b − c‖_ω` (mirrored), from the conjugation
+bound `d [x₀,x₀] d* ≤ ‖[x₀,x₀]‖ d d*`. -/
+theorem unSeminorm_op_smul_right_le (B : BInner 𝒷 X) (ω : NPFunctional 𝒷)
+    (x₀ : X) (b c : 𝒷) :
+    unSeminorm ω B.inner (b • x₀ - c • x₀)
+      ≤ Real.sqrt ‖B.inner x₀ x₀‖ * unSeminorm ω (mulInner 𝒷) (b - c) := by
+  have hexp : B.inner (b • x₀ - c • x₀) (b • x₀ - c • x₀)
+      = (b - c) * B.inner x₀ x₀ * star (b - c) := by
+    simp only [B.inner_sub_left, B.inner_sub_right, B.inner_op_smul_left,
+      B.inner_op_smul_right, star_sub, sub_mul, mul_sub, mul_assoc]
+  have hsa : IsSelfAdjoint (B.inner x₀ x₀) := B.star_inner x₀ x₀
+  have hconj : (b - c) * B.inner x₀ x₀ * star (b - c)
+      ≤ ‖B.inner x₀ x₀‖ • ((b - c) * star (b - c)) :=
+    CStarAlgebra.star_right_conjugate_le_norm_smul hsa
+  have hre : (ω (B.inner (b • x₀ - c • x₀) (b • x₀ - c • x₀))).re
+      ≤ ‖B.inner x₀ x₀‖ * (ω (mulInner 𝒷 (b - c) (b - c))).re := by
+    rw [hexp, ← np_re_smul]
+    exact np_re_mono ω hconj
+  rw [unSeminorm, unSeminorm]
+  calc Real.sqrt (ω (B.inner (b • x₀ - c • x₀) (b • x₀ - c • x₀))).re
+      ≤ Real.sqrt (‖B.inner x₀ x₀‖ * (ω (mulInner 𝒷 (b - c) (b - c))).re) :=
+        Real.sqrt_le_sqrt hre
+    _ = _ := Real.sqrt_mul (norm_nonneg _) _
 
 /-- **148III** (`ultranormcontstruct`, dils.tex:2060, Corollary), part 1:
-addition is (jointly uniformly) ultranorm continuous: it preserves
-ultranorm limits. -/
-theorem ultranormcontstruct_add (B : BInner 𝒷 X) (x y : ι → X) (x₀ y₀ : X)
-    (hx : UnTendsto B.inner x l x₀) (hy : UnTendsto B.inner y l y₀) :
+`(x,y) ↦ x + y : X × X → X` is **uniformly** continuous for the ultranorm
+uniformity (the product uniformity on `X × X` being the one of **147III**,
+whose subbase relations are the two coordinatewise ones — hence the two
+hypotheses below). -/
+theorem ultranormcontstruct_add (B : BInner 𝒷 X) (ω : NPFunctional 𝒷)
+    (ε : ℝ) (hε : 0 < ε) :
+    ∃ δ > (0 : ℝ), ∀ x y x' y' : X,
+      unSeminorm ω B.inner (x - x') ≤ δ → unSeminorm ω B.inner (y - y') ≤ δ →
+        unSeminorm ω B.inner (x + y - (x' + y')) ≤ ε := by
+  refine ⟨ε / 2, by positivity, fun x y x' y' hx hy => ?_⟩
+  rw [show x + y - (x' + y') = (x - x') + (y - y') by abel]
+  calc unSeminorm ω B.inner ((x - x') + (y - y'))
+      ≤ unSeminorm ω B.inner (x - x') + unSeminorm ω B.inner (y - y') :=
+        unSeminorm_add_le ω B _ _
+    _ ≤ ε / 2 + ε / 2 := add_le_add hx hy
+    _ = ε := by ring
+
+/-- **148III** (`ultranormcontstruct`, dils.tex:2060, Corollary), part 2:
+for fixed `x₀`, the map `x ↦ [x₀, x] : X → 𝒷` is **uniformly** continuous
+from the ultranorm uniformity of `X` to the ultrastrong uniformity of `𝒷`
+(the ultranorm uniformity of `mulInner`). -/
+theorem ultranormcontstruct_inner [VonNeumannAlgebra 𝒷] (B : BInner 𝒷 X)
+    (x₀ : X) (ω : NPFunctional 𝒷) (ε : ℝ) (hε : 0 < ε) :
+    ∃ δ > (0 : ℝ), ∀ x y : X, unSeminorm ω B.inner (x - y) ≤ δ →
+      unSeminorm ω (mulInner 𝒷) (B.inner x₀ x - B.inner x₀ y) ≤ ε := by
+  set K : ℝ := Real.sqrt ‖B.inner x₀ x₀‖ with hK
+  have hK0 : (0 : ℝ) ≤ K := Real.sqrt_nonneg _
+  refine ⟨ε / (K + 1), by positivity, fun x y hxy => ?_⟩
+  rw [(B.inner_sub_right x₀ x y).symm]
+  calc unSeminorm ω (mulInner 𝒷) (B.inner x₀ (x - y))
+      ≤ K * unSeminorm ω B.inner (x - y) := unSeminorm_inner_left_le B ω x₀ (x - y)
+    _ ≤ K * (ε / (K + 1)) := mul_le_mul_of_nonneg_left hxy hK0
+    _ ≤ ε := by
+        rw [mul_div_assoc', div_le_iff₀ (by positivity)]
+        nlinarith
+
+/-- **148III** (`ultranormcontstruct`, dils.tex:2060, Corollary), part 3:
+for fixed `x₀`, the map `b ↦ x₀ · b : 𝒷 → X` (mirrored: `b • x₀`) is
+**uniformly** continuous from the ultrastrong uniformity of `𝒷` to the
+ultranorm uniformity of `X`. -/
+theorem ultranormcontstruct_smul [VonNeumannAlgebra 𝒷] (B : BInner 𝒷 X)
+    (x₀ : X) (ω : NPFunctional 𝒷) (ε : ℝ) (hε : 0 < ε) :
+    ∃ δ > (0 : ℝ), ∀ b c : 𝒷, unSeminorm ω (mulInner 𝒷) (b - c) ≤ δ →
+      unSeminorm ω B.inner (b • x₀ - c • x₀) ≤ ε := by
+  set K : ℝ := Real.sqrt ‖B.inner x₀ x₀‖ with hK
+  have hK0 : (0 : ℝ) ≤ K := Real.sqrt_nonneg _
+  refine ⟨ε / (K + 1), by positivity, fun b c hbc => ?_⟩
+  calc unSeminorm ω B.inner (b • x₀ - c • x₀)
+      ≤ K * unSeminorm ω (mulInner 𝒷) (b - c) :=
+        unSeminorm_op_smul_right_le B ω x₀ b c
+    _ ≤ K * (ε / (K + 1)) := mul_le_mul_of_nonneg_left hbc hK0
+    _ ≤ ε := by
+        rw [mul_div_assoc', div_le_iff₀ (by positivity)]
+        nlinarith
+
+variable {ι : Type w} {l : Filter ι}
+
+/-- **148III**, part 1, in the weaker net form: addition preserves
+ultranorm limits.  (A corollary of `ultranormcontstruct_add`; kept because
+it is the form the net arguments of parsec 1490 use.) -/
+theorem ultranormcontstruct_add_unTendsto (B : BInner 𝒷 X) (x y : ι → X)
+    (x₀ y₀ : X) (hx : UnTendsto B.inner x l x₀) (hy : UnTendsto B.inner y l y₀) :
     UnTendsto B.inner (fun i => x i + y i) l (x₀ + y₀) := by
   intro ω
   refine squeeze_zero (fun i => unSeminorm_nonneg ω B.inner _) (g := fun i =>
@@ -1519,62 +1777,29 @@ theorem ultranormcontstruct_add (B : BInner 𝒷 X) (x y : ι → X) (x₀ y₀ 
     exact unSeminorm_add_le ω B _ _
   · simpa using (hx ω).add (hy ω)
 
-/-- **148III** (`ultranormcontstruct`, dils.tex:2060, Corollary), part 2:
-for fixed `x₀`, the map `x ↦ [x₀, x] : X → 𝒷` is uniformly continuous from
-the ultranorm uniformity of `X` to the ultrastrong uniformity of `𝒷` (the
-ultranorm uniformity of `mulInner`): it preserves limits. -/
-theorem ultranormcontstruct_inner [VonNeumannAlgebra 𝒷] (B : BInner 𝒷 X)
-    (x₀ : X) (x : ι → X) (xlim : X) (hx : UnTendsto B.inner x l xlim) :
+/-- **148III**, part 2, in the weaker net form: `x ↦ [x₀,x]` preserves
+ultranorm limits. -/
+theorem ultranormcontstruct_inner_unTendsto [VonNeumannAlgebra 𝒷]
+    (B : BInner 𝒷 X) (x₀ : X) (x : ι → X) (xlim : X)
+    (hx : UnTendsto B.inner x l xlim) :
     UnTendsto (mulInner 𝒷) (fun i => B.inner x₀ (x i)) l (B.inner x₀ xlim) := by
   intro ω
   refine squeeze_zero (fun i => unSeminorm_nonneg ω (mulInner 𝒷) _) (g := fun i =>
     Real.sqrt ‖B.inner x₀ x₀‖ * unSeminorm ω B.inner (x i - xlim)) (fun i => ?_) ?_
-  · have hd : B.inner x₀ (x i) - B.inner x₀ xlim = B.inner x₀ (x i - xlim) :=
-      (B.inner_sub_right x₀ (x i) xlim).symm
-    have hmul : mulInner 𝒷 (B.inner x₀ (x i - xlim)) (B.inner x₀ (x i - xlim))
-        = B.inner x₀ (x i - xlim) * B.inner (x i - xlim) x₀ := by
-      show B.inner x₀ (x i - xlim) * star (B.inner x₀ (x i - xlim)) = _
-      rw [B.star_inner]
-    have hCS := module_CS B (x i - xlim) x₀
-    have hre : (ω (mulInner 𝒷 (B.inner x₀ (x i - xlim)) (B.inner x₀ (x i - xlim)))).re
-        ≤ ‖B.inner x₀ x₀‖ * (ω (B.inner (x i - xlim) (x i - xlim))).re := by
-      rw [hmul, ← np_re_smul]
-      exact np_re_mono ω hCS
-    rw [hd, unSeminorm, unSeminorm]
-    calc Real.sqrt (ω (mulInner 𝒷 (B.inner x₀ (x i - xlim)) (B.inner x₀ (x i - xlim)))).re
-        ≤ Real.sqrt (‖B.inner x₀ x₀‖ * (ω (B.inner (x i - xlim) (x i - xlim))).re) :=
-          Real.sqrt_le_sqrt hre
-      _ = _ := Real.sqrt_mul (norm_nonneg _) _
+  · rw [(B.inner_sub_right x₀ (x i) xlim).symm]
+    exact unSeminorm_inner_left_le B ω x₀ (x i - xlim)
   · simpa using (hx ω).const_mul (Real.sqrt ‖B.inner x₀ x₀‖)
 
-/-- **148III** (`ultranormcontstruct`, dils.tex:2060, Corollary), part 3:
-for fixed `x₀`, the map `b ↦ x₀ · b : 𝒷 → X` is uniformly continuous from
-the ultrastrong uniformity of `𝒷` to the ultranorm uniformity of `X`
-(mirrored: `b • x₀`): it preserves limits. -/
-theorem ultranormcontstruct_smul [VonNeumannAlgebra 𝒷] (B : BInner 𝒷 X)
-    (x₀ : X) (b : ι → 𝒷) (blim : 𝒷)
+/-- **148III**, part 3, in the weaker net form: `b ↦ x₀ · b` (mirrored:
+`b • x₀`) preserves ultrastrong limits. -/
+theorem ultranormcontstruct_smul_unTendsto [VonNeumannAlgebra 𝒷]
+    (B : BInner 𝒷 X) (x₀ : X) (b : ι → 𝒷) (blim : 𝒷)
     (hb : UnTendsto (mulInner 𝒷) b l blim) :
     UnTendsto B.inner (fun i => b i • x₀) l (blim • x₀) := by
   intro ω
   refine squeeze_zero (fun i => unSeminorm_nonneg ω B.inner _) (g := fun i =>
     Real.sqrt ‖B.inner x₀ x₀‖ * unSeminorm ω (mulInner 𝒷) (b i - blim)) (fun i => ?_) ?_
-  · have hexp : B.inner (b i • x₀ - blim • x₀) (b i • x₀ - blim • x₀)
-        = (b i - blim) * B.inner x₀ x₀ * star (b i - blim) := by
-      simp only [B.inner_sub_left, B.inner_sub_right, B.inner_op_smul_left,
-        B.inner_op_smul_right, star_sub, sub_mul, mul_sub, mul_assoc]
-    have hsa : IsSelfAdjoint (B.inner x₀ x₀) := B.star_inner x₀ x₀
-    have hconj : (b i - blim) * B.inner x₀ x₀ * star (b i - blim)
-        ≤ ‖B.inner x₀ x₀‖ • ((b i - blim) * star (b i - blim)) :=
-      CStarAlgebra.star_right_conjugate_le_norm_smul hsa
-    have hre : (ω (B.inner (b i • x₀ - blim • x₀) (b i • x₀ - blim • x₀))).re
-        ≤ ‖B.inner x₀ x₀‖ * (ω (mulInner 𝒷 (b i - blim) (b i - blim))).re := by
-      rw [hexp, ← np_re_smul]
-      exact np_re_mono ω hconj
-    rw [unSeminorm, unSeminorm]
-    calc Real.sqrt (ω (B.inner (b i • x₀ - blim • x₀) (b i • x₀ - blim • x₀))).re
-        ≤ Real.sqrt (‖B.inner x₀ x₀‖ * (ω (mulInner 𝒷 (b i - blim) (b i - blim))).re) :=
-          Real.sqrt_le_sqrt hre
-      _ = _ := Real.sqrt_mul (norm_nonneg _) _
+  · exact unSeminorm_op_smul_right_le B ω x₀ (b i) blim
   · simpa using (hb ω).const_mul (Real.sqrt ‖B.inner x₀ x₀‖)
 
 /-- **148IV** (`ultranormscalar`, dils.tex:2072, Exercise): for fixed
@@ -2187,8 +2412,15 @@ private theorem omegaNorm_inner_le (ω : NPFunctional 𝒷) (d y : X) :
   nlinarith [omegaNorm_nonneg (A := 𝒷) ω (inner 𝒷 d y),
     mul_nonneg (norm_nonneg y) (unSeminorm_nonneg ω (inner 𝒷 : X → X → 𝒷) d)]
 
-/-- `‖x‖_ω ≤ ‖x‖ ω(1)^½` (**146VIII**, the half that **149VII** uses). -/
-private theorem unSeminorm_le_norm_mul (ω : NPFunctional 𝒷) (x : X) :
+/-- **146IX** (dils.tex:1780, Beware), the quantitative half: *"the
+ultranorm uniformity is weaker than the norm uniformity — norm convergence
+implies ultranorm convergence"*, as the estimate `‖x‖_ω ≤ ‖x‖ ω(1)^½`, in
+the form that **149VII** uses.  (Earlier revisions of this file labelled it
+146VIII, whose two identifications are `unSeminorm_complex` and
+`unSeminorm_mulInner_eq_omegaNorm` above.  The converse half of 146IX —
+"but not necessarily the other way around" — needs a counterexample and is
+not formalized.) -/
+theorem unSeminorm_le_norm_mul (ω : NPFunctional 𝒷) (x : X) :
     unSeminorm ω (inner 𝒷 : X → X → 𝒷) x ≤ ‖x‖ * Real.sqrt (ω 1).re := by
   have hle : (inner 𝒷 x x : 𝒷) ≤ (‖(inner 𝒷 x x : 𝒷)‖ : ℝ) • (1 : 𝒷) :=
     le_norm_smul_one (CStarModule.inner_self_nonneg (E := X) (x := x))

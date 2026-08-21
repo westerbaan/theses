@@ -10,7 +10,7 @@ lines 2622–3526.
                 Neumann algebra
   parsec 1530:  ad_T is (n)cp
 
-Statements only; every proof is `sorry`.  See `HilbertModules.lean` for the
+See `HilbertModules.lean` for the
 conventions (Mathlib's left-action mirror of the thesis's right modules;
 the ultranorm uniformity encoded through `UnTendsto`/`UnCauchy`/`UnDense`).
 
@@ -699,8 +699,10 @@ theorem tendsto_iff {ι : Type*} {f : ι → UnUnif B} {l : Filter ι} {x₀ : U
   rw [tendsto_zero_iff_of_nonneg fun i => unSeminorm_nonneg ω (binner B).inner _]
   rfl
 
-/-- The uniformity of `UnUnif B` has the thesis's entourages (**150IV**) as a
-basis: finitely many np-functionals and an `ε > 0`. -/
+/-- The uniformity of `UnUnif B` has the thesis's entourages as a basis:
+finitely many np-functionals and an `ε > 0`.  (The entourages of a seminorm
+uniformity are **146V**.3, `dils.tex:1728`, through the subbase of **146IIIa**;
+**146VII** specializes them to the ultranorm seminorms `‖·‖_ω`.) -/
 theorem hasBasis_uniformity :
     (uniformity (UnUnif B)).HasBasis (fun sr : Finset (NPFunctional 𝒷) × ℝ => 0 < sr.2)
       (fun sr => {q : UnUnif B × UnUnif B | (sr.1.sup (sem B)) (q.2 - q.1) < sr.2}) := by
@@ -1831,8 +1833,9 @@ variable {𝒷 : Type u} {V : Type v}
 variable (B : BInner 𝒷 V)
 
 /-- The extended seminorms **generate** the uniformity of `V̄`: every
-entourage contains one of the thesis's entourages (**150IV**), now phrased
-with the extended seminorms `semC`. -/
+entourage contains one of the thesis's entourages (**146V**.3 / **146VII**),
+now phrased with the extended seminorms `semC`.  This is the claim of
+**150X**, in the direction the construction needs. -/
 theorem exists_semC_entourage_subset {S : Set (UnCompl B × UnCompl B)}
     (hS : S ∈ 𝓤 (UnCompl B)) :
     ∃ (s : Finset (NPFunctional 𝒷)) (r : ℝ), 0 < r ∧
@@ -2013,7 +2016,9 @@ theorem unSeminorm_eq_semC (ω : NPFunctional 𝒷) (x : E.Car) :
 theorem semBddBy_val (x : E.Car) : SemBddBy B ‖x‖ (val x) :=
   E.isCompat.semBddBy_of_mem (val_mem x)
 
-/-- **148V** in the present setting: `‖x‖_ω ≤ ‖x‖ · ω(1)^½`. -/
+/-- **146IX** in the present setting: `‖x‖_ω ≤ ‖x‖ · ω(1)^½` — the
+quantitative half of the Beware, as in `unSeminorm_le_norm_mul`.  (Earlier
+revisions of this file labelled it 148V, which is `innerprod_ultraweak`.) -/
 theorem unSeminorm_le (ω : NPFunctional 𝒷) (x : E.Car) :
     unSeminorm ω (inner 𝒷 : E.Car → E.Car → 𝒷) x ≤ ‖x‖ * Real.sqrt ((ω 1).re) := by
   rw [unSeminorm_eq_semC]; exact semBddBy_val x ω
@@ -2064,10 +2069,20 @@ theorem bddUnComplete (hσ : SigmaCl B E.carrier ⊆ (E.carrier : Set (UnCompl B
   rfl
 
 /-- The carrier is **norm** complete — the last field of a Hilbert
-𝒷-module, and one that **149V** does not supply.  Route: a norm-Cauchy
-filter is ultranorm-Cauchy and norm-bounded (**148V**), so it has an
-ultranorm limit `x₀`; and the estimate `‖x − x₀‖_ω ≤ ε·ω(1)^½` obtained by
-inserting a net element gives `‖x − x₀‖ ≤ ε‖1‖^½` by order separation. -/
+𝒷-module, and one that **149V** does not supply.
+
+**A step missing from the printed proof of 150XV** (recorded here, not
+repaired: nothing in the tree is wrong).  150XV concludes `W = V̄` from
+"completeness", and the completeness it has in hand is *ultranorm*
+completeness — which is all that `dils-selfdual` (**149V**) delivers.  But
+"Hilbert 𝒷-module" also demands completeness for the **norm**
+`‖x‖ = ‖⟨x,x⟩‖^½`, and no clause of 149V supplies that; so it is proved
+separately here.
+
+Route: a norm-Cauchy filter is ultranorm-Cauchy and norm-bounded
+(**146IX**, `unSeminorm_le`), so it has an ultranorm limit `x₀`; and the
+estimate `‖x − x₀‖_ω ≤ ε·ω(1)^½` obtained by inserting a net element gives
+`‖x − x₀‖ ≤ ε‖1‖^½` by order separation. -/
 theorem completeSpace (hσ : SigmaCl B E.carrier ⊆ (E.carrier : Set (UnCompl B))) :
     CompleteSpace E.Car := by
   classical
@@ -2400,8 +2415,12 @@ variable {𝒷 : Type u} {V : Type v}
 
 /-- **152IX** (`hilmod-fixed-on-V`, dils.tex:3394, Exercise), part 1: for a
 self-dual completion `η : V → X`, the vector states `⟨η v, (·) η v⟩` are
-order separating on `𝒷ᵃ(X)`: an adjointable `T` is positive iff
-`⟨η v, T (η v)⟩ ≥ 0` for all `v ∈ V`. -/
+**order separating** on `𝒷ᵃ(X)`: an adjointable `T` is positive iff
+`⟨η v, T (η v)⟩ ≥ 0` for all `v ∈ V`.
+
+The exercise asks for an order separating set of **ncp-maps**; that each
+`⟨η v, (·) η v⟩` *is* an ncp-map is `hilmod_fixed_on_V_ncp`, placed after
+**152XII** because its normality half needs `ba_isLUB_vec`. -/
 theorem hilmod_fixed_on_V [VonNeumannAlgebra 𝒷] (B : BInner 𝒷 V)
     (E : SelfDualCompletion.{u, v, w} B) (T : E.X →L[ℂ] E.X)
     (hT : ModuleAdjointable 𝒷 ⇑T) :
@@ -2610,9 +2629,15 @@ by order instead — `⟨x, d₀x⟩ ≤ B(x,x) ≤ ⟨x, ub x⟩` — which nee
 `usconv` and the module Cauchy–Schwarz inequality, we get
 `‖B(x,y)‖ ≤ r₀(‖x‖+‖y‖)²` from polarization and then rescale
 `x ↦ tx`, `y ↦ t⁻¹y` (which leaves `B(x,y)` fixed) with
-`t = (‖y‖/‖x‖)^{1/2}`.  This avoids `usconv`, whose Lean form would need
-the ultraweak closedness of norm balls (**44XI**.3 `vn_positive_basic_3`,
-still `sorry` in `Theses.A.VN`). -/
+`t = (‖y‖/‖x‖)^{1/2}`.  This avoids `usconv`.
+
+*(Stale-prose correction.  An earlier revision justified that second
+deviation by "**44XI**.3 `vn_positive_basic_3` is still `sorry`"; it is
+not — it has been proved in `A/VN/Basic` for some time, and 73VIII
+`ultraclosed` supplies the ultraweak form.  The deviation stands on the
+first one alone: under the ERRATA-corrected hypothesis there is no norm
+bound `r` in the statement at all, so `‖B(x,y)‖ ≤ r‖x‖‖y‖` is not available
+whatever `usconv` is worth.)* -/
 
 /-- `0 ≤ Z` in `𝒷ᵃ(X)` iff every vector form `⟨x, Zx⟩` is positive: the
 two halves of **144I** `hilbmod_ordersep`, transported to `Ba 𝒷 X`. -/
@@ -3209,6 +3234,44 @@ theorem hilbmod_ad_ncp [VonNeumannAlgebra 𝒷] [CompleteSpace X]
            preservesDirSups' := hnorm }, hadeq⟩
 
 end BaVN
+
+section FixedOnVNCP
+
+variable {𝒷 : Type u} {V : Type v}
+  [CStarAlgebra 𝒷] [PartialOrder 𝒷] [StarOrderedRing 𝒷]
+  [AddCommGroup V] [Module ℂ V] [SMul 𝒷 V]
+
+/-- **152IX** (`hilmod-fixed-on-V`, dils.tex:3394, Exercise), the clause the
+order separation of `hilmod_fixed_on_V` is asserted *of*: the vector states
+`⟨η v, (·) η v⟩ : 𝒷ᵃ(X) → 𝒷` of a self-dual completion are **ncp-maps**.
+
+* *completely positive* — **145I** `hilbmod_vectstates_cp` at `x = η v`, in
+  its own (unfolded, cstar.tex 10II.6) form `∑ᵢⱼ bᵢ* ⟨x, Tᵢ*Tⱼ x⟩ bⱼ ≥ 0`
+  for adjoint pairs `(Tᵢ, Sᵢ)`.  As there, the mirror interchanges the
+  inner product's arguments; see the note on 145I for why the unswapped
+  form is false.
+* *normal* — **152XII** `ba_isLUB_vec`: the vector forms compute bounded
+  directed suprema of `𝒷ᵃ(X)`.  (For self-adjoint `Z` the two mirrorings
+  `⟨η v, Z η v⟩` and `⟨Z η v, η v⟩` coincide, so the two clauses are about
+  the same map; `PreservesDirSups` only ever sees self-adjoint elements.)
+
+Together with `hilmod_fixed_on_V` this is the exercise's "order separating
+set of ncp-maps" in full. -/
+theorem hilmod_fixed_on_V_ncp [VonNeumannAlgebra 𝒷] (B : BInner 𝒷 V)
+    (E : SelfDualCompletion.{u, v, w} B) (v : V) :
+    (∀ (n : ℕ) (T S : Fin n → (E.X →L[ℂ] E.X)),
+        (∀ i, ModuleAdjointTo 𝒷 ⇑(T i) ⇑(S i)) → ∀ b : Fin n → 𝒷,
+          0 ≤ ∑ i, ∑ j, star (b i) *
+            inner 𝒷 (((S i).comp (T j)) (E.η v)) (E.η v) * b j) ∧
+      PreservesDirSups (fun Z : Ba 𝒷 E.X => (inner 𝒷 (E.η v) (Z.1 (E.η v)) : 𝒷)) := by
+  refine ⟨fun n T S hTS b => hilbmod_vectstates_cp (E.η v) n T S hTS b, ?_⟩
+  intro D s hne hdir hlub
+  have h := ba_isLUB_vec E.selfDual hne hdir hlub (E.η v)
+  have h2 := Theses.A.VN.isLUB_coe_of_isLUB (hne.image (baVec (E.η v))) h
+  rw [← Set.image_comp] at h2
+  exact h2
+
+end FixedOnVNCP
 
 section AdjVector
 

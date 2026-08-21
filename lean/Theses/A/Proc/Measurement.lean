@@ -22,10 +22,15 @@ contraposition (`f^⋄`/`f_⋄`), rigidity, ⋄-self-adjointness and
   `c_p`, `Ad_a`-style maps, `[f]`, `⟨f⟩`) are obtained by *choice* from
   existence lemmas (`exists_...`), following the pattern of
   `Theses/B/Eff/WStarCat.lean`; their defining formulas are the
-  corresponding `..._apply`/`..._spec` theorems.  Most of those existence
-  lemmas are now proved; `exists_sqBracket` is the notable one still `sorry`,
-  as is `exists_diamondDown` — and while an `exists_` lemma is `sorry`, every
-  statement about the map it defines is vacuous.
+  corresponding `..._apply`/`..._spec` theorems.  **All** of those existence
+  lemmas are proved — `exists_sqBracket` (98IX) and `exists_diamondDown`
+  (101II) included, so no statement about the maps they define is vacuous.
+  (This note used to say that those two were still `sorry`; that was
+  obsolete, and three proof routes elsewhere in the file were justified by
+  similarly stale claims.  The file has exactly two `sorry`s:
+  `centrally_similar_basic_5` (104III.5, waiting on a form of 104III.4
+  relative to a projection unit) and `sequential_product_counterexample_3`
+  (106III.3, whose transcribed (E) clause is false as printed — `ERRATA.md`).)
 * The universal properties are Prop-valued structures `IsCornerOf` (95I)
   and `IsFilter` (96I) quantifying over all von Neumann algebras in the
   same universe `u`.  A **corner** map simpliciter (`IsCornerMap`) is a
@@ -942,16 +947,44 @@ theorem corner_vna_basic_5 (e : A) [Fact (IsStarProjection e)]
       ‖a‖ = ‖a.val‖ ∧ (a ≤ b ↔ a.val ≤ b.val) :=
   ⟨rfl, rfl, rfl, rfl, rfl, rfl, rfl, Iff.rfl⟩
 
-/-- **94II** (`corner-vna-basic`, proc.tex:194, Exercise), part 6: the
-supremum in `A` of a bounded directed set of self-adjoint elements of the
-corner `e𝒜e` lies again in `e𝒜e` (and is the supremum there). -/
+/-- **94II** (`corner-vna-basic`, proc.tex:194, Exercise), part 6, **both**
+clauses: the supremum in `A` of a bounded directed set `D` of self-adjoint
+elements of the corner `e𝒜e` lies again in `e𝒜e`, **and is the supremum of
+`D` in `e𝒜e`** — i.e. whenever `D` is the image of a set `D'` of
+self-adjoint elements of `Corner A e`, the supremum of `D'` computed in the
+corner is that same element.
+
+(The second clause used to be left to the `VonNeumannAlgebra (Corner A e)`
+instance at `Corner.isLUB_saMap_image` above, which does produce the
+ambient supremum as the supremum in the corner; the DISP-tagged statement
+did not say it.) -/
 theorem corner_vna_basic_6 [VonNeumannAlgebra A] (e : A)
-    (he : IsStarProjection e) (D : Set (selfAdjoint A))
+    [Fact (IsStarProjection e)] (he : IsStarProjection e) (D : Set (selfAdjoint A))
     (hD : ∀ d ∈ D, (d : A) ∈ cornerSet A e)
     (h : D.Nonempty ∧ DirectedOn (· ≤ ·) D ∧ BddAbove D) :
-    (dirSup D h : A) ∈ cornerSet A e :=
-  -- `e(·)e` is normal (44VIII), so it sends `⋁D` to `⋁ e D e = ⋁ D`
-  isLUB_mem_cornerSet e he D (dirSup D h) hD h.1 h.2.1 (isLUB_dirSup D h)
+    (dirSup D h : A) ∈ cornerSet A e ∧
+      ∀ (D' : Set (selfAdjoint (Corner A e))) (s' : selfAdjoint (Corner A e)),
+        Corner.saMap '' D' = D → IsLUB D' s' →
+          (s' : Corner A e).val = (dirSup D h : A) := by
+  -- first clause: `e(·)e` is normal (44VIII), so it sends `⋁D` to `⋁ eDe = ⋁D`
+  have hmem : (dirSup D h : A) ∈ cornerSet A e :=
+    isLUB_mem_cornerSet e he D (dirSup D h) hD h.1 h.2.1 (isLUB_dirSup D h)
+  refine ⟨hmem, ?_⟩
+  -- second clause: the order of `e𝒜e` is that of `𝒜` (part 5), so the
+  -- ambient supremum — which the first clause puts in the corner — is an
+  -- upper bound of `D'` there, and any upper bound of `D'` in the corner is
+  -- one of `D` in `𝒜`
+  rintro D' s' rfl hlub
+  set t : selfAdjoint A := dirSup (Corner.saMap '' D') h with ht
+  have hlubA : IsLUB (Corner.saMap '' D') t := isLUB_dirSup _ h
+  have htsa : IsSelfAdjoint (⟨(t : A), hmem⟩ : Corner A e) := Corner.val_injective t.2
+  have hub' : (⟨⟨(t : A), hmem⟩, htsa⟩ : selfAdjoint (Corner A e)) ∈ upperBounds D' :=
+    fun x hx => hlubA.1 ⟨x, hx, rfl⟩
+  have h2 : t ≤ Corner.saMap s' := by
+    refine hlubA.2 ?_
+    rintro _ ⟨x, hx, rfl⟩
+    exact hlub.1 hx
+  exact le_antisymm (hlub.2 hub') h2
 
 namespace Corner
 
@@ -1606,11 +1639,11 @@ theorem prop_corner [VonNeumannAlgebra A] (p u : A) (hp : p ∈ effects A)
     (h : floor p = u * star u)
     (h' : u * (star u * u) = u) :
     IsCornerOf p (adToCorner u (star u * u) h') := by
-  -- The author's proof (proc.tex:290), with one substitution: the last step
-  -- ("`f(a) = f(uu* a uu*)` by `cp-comprehension`") is run through
-  -- `carrier_fundamental` (63VI) instead of `cp_comprehension` (63IV), which
-  -- is still `sorry` in `A/VN`; the two say the same thing here, since
-  -- `f((uu*)^⊥) = 0` makes `⌈f⌉ ≤ uu*`.
+  -- The author's proof (proc.tex:290) verbatim; in particular the last step
+  -- ("`f(a) = f(uu* a uu*)` by `cp-comprehension`") *is* `cp_comprehension`
+  -- (63IV).  (Until session 94 it went through `carrier_fundamental` (63VI)
+  -- instead, on the ground that 63IV was "still `sorry` in `A/VN`" — which
+  -- has not been true for a long time.)
   have hpi : ∀ b : A, ((adToCorner u (star u * u) h') b).val = star u * b * u :=
     (exists_adToCorner u (star u * u) h').choose_spec
   have hq5 : star u * u * star u = star u :=
@@ -1643,22 +1676,9 @@ theorem prop_corner [VonNeumannAlgebra A] (p u : A) (hp : p ∈ effects A)
     have h1 : ceil (F (1 - p)) = ceil (F (ceil (1 - p))) := ncp_ceil F hFn (1 - p) h1p
     rw [hFapp (1 - p), hf0, ceil_zero, hceil1p] at h1
     exact (ceil_basic_3 _ (hFnn _ hqproj.one_sub.nonneg)).mpr h1.symm
-  -- hence `⌈f⌉ ≤ uu*`, and therefore `f(a) = f(uu* a uu*)`
-  have hcle : carrier F hFn ≤ u * star u := (carrier_spec F hFn).2.2 _ hqproj hfq
-  have hcproj : IsStarProjection (carrier F hFn) := (carrier_spec F hFn).1
-  have hcq : carrier F hFn * (u * star u) = carrier F hFn :=
-    ((projection_below_effect (u * star u) (carrier F hFn)
-      ⟨hqproj.nonneg, hqproj.le_one⟩ hcproj).out 0 7).mp hcle
-  have hqc : (u * star u) * carrier F hFn = carrier F hFn := by
-    have hs := congrArg star hcq
-    rwa [star_mul, hqproj.isSelfAdjoint.star_eq, hcproj.isSelfAdjoint.star_eq] at hs
-  have hconj : ∀ a : A, F a = F (u * star u * a * (u * star u)) := by
-    intro a
-    have e1 := (carrier_fundamental F hFn a).2.2
-    have e2 := (carrier_fundamental F hFn (u * star u * a * (u * star u))).2.2
-    rw [e2, show carrier F hFn * (u * star u * a * (u * star u)) * carrier F hFn
-        = (carrier F hFn * (u * star u)) * a * ((u * star u) * carrier F hFn) by
-      noncomm_ring, hcq, hqc, ← e1]
+  -- `f` kills `(uu*)^⊥`, so `f(a) = f(uu* a uu*)` by `cp-comprehension` (63IV)
+  have hconj : ∀ a : A, F a = F (u * star u * a * (u * star u)) := fun a =>
+    (cp_comprehension F (u * star u) ⟨hqproj.nonneg, hqproj.le_one⟩ hfq a).2.2
   -- existence: `g = f ∘ ζ` with `ζ(a) = u a u*`; uniqueness: `π` is surjective
   set zeta : NCPMap (Corner A (star u * u)) A :=
     ncpComp (adSelf (star u)) (cornerIncl (star u * u)).toNCPMap with hzetadef
@@ -3399,14 +3419,20 @@ theorem iso [VonNeumannAlgebra A] [VonNeumannAlgebra B]
 /-! ### Infrastructure for 99XI: the corner inclusion of a *projection* is a
 filter
 
-The standard filter `c_p(a) = √p a √p` of an arbitrary positive `p` is a
-filter by **96V** (`canonical_filter`), which is out of reach here — its
-proof needs `sequential-douglas`, `div-approx` and `div-usc` (vn.tex 81VI,
-81VII, 81IX), all still `sorry` in `A/VN/Division.lean`.  For a *projection*
-`p`, however, `c_p` is just the inclusion `p𝒜p → 𝒜` and the universal
-property is elementary: an ncp-map `f` with `f(1) ≤ p` already takes its
-values in the corner, so it corestricts, uniquely because the inclusion is
-injective.  That is all 99XI needs. -/
+For a *projection* `p` the standard filter `c_p(a) = √p a √p` is just the
+inclusion `p𝒜p → 𝒜`, and that is the shape 99XI needs.  It is an instance
+of **96V** (`isFilter_ad` at `d = p`, using `⌊p⌉ = p`), which is proved
+1200 lines above; `isFilter_cornerIncl` below simply reads it off.
+
+(Until session 94 this section instead proved the universal property from
+scratch — an ncp-map `f` with `f(1) ≤ p` already takes its values in the
+corner, so it corestricts, uniquely because the inclusion is injective — on
+the ground that 96V was "out of reach here, its proof needing
+`sequential-douglas`, `div-approx` and `div-usc` (vn.tex 81VI, 81VII,
+81IX), all still `sorry` in `A/VN/Division.lean`".  `A/VN/Division.lean` has
+no `sorry`.  The elementary route is kept below as
+`conj_ncp_eq_of_le_proj`/`exists_ncpCorestrict`, which the corestriction
+arguments of 100III and 102VII use in their own right.) -/
 
 /-- If an ncp-map `f : ℬ → 𝒜` satisfies `f(1) ≤ p` for a projection `p`,
 then all of its values lie in the corner `p𝒜p`.  For positive `b` this is
@@ -3491,21 +3517,14 @@ private theorem exists_ncpCorestrict [VonNeumannAlgebra A]
     exact h
 
 /-- The inclusion `p𝒜p → 𝒜` of the corner of a **projection** `p` is a
-filter (96V for `d = p`, but without any of its division theory). -/
+filter: **96V** (`isFilter_ad`) at `d = p`, since `p*ap = a` for `a ∈ p𝒜p`
+and `⌊p⌉ = p`. -/
 theorem isFilter_cornerIncl [VonNeumannAlgebra A] (p : A)
     [Fact (IsStarProjection p)] : IsFilter (cornerIncl p).toNCPMap := by
-  refine ⟨fun B' _ _ _ _ f hf1 => ?_⟩
-  have hone : ((cornerIncl p).toNCPMap 1 : A) = p := by
-    rw [cornerIncl_apply]; exact Corner.val_one
-  rw [hone] at hf1
-  obtain ⟨g, hg⟩ := exists_ncpCorestrict p f
-    (conj_ncp_eq_of_le_proj (Corner.proj p) f hf1)
-  refine ⟨g, fun b => ?_, fun k hk => ?_⟩
-  · rw [cornerIncl_apply, hg]
-  · refine DFunLike.ext _ _ fun b => Corner.val_injective ?_
-    have h1 := hk b
-    rw [cornerIncl_apply] at h1
-    rw [hg, h1]
+  have hp : IsStarProjection p := Fact.out
+  refine isFilter_ad p p (rangeProj_of_isStarProjection hp).symm _ fun a => ?_
+  rw [cornerIncl_apply, hp.isSelfAdjoint.star_eq]
+  exact a.property.symm
 
 /-- **99XI** (proc.tex:897, Exercise): any filter of a projection is
 multiplicative. -/
@@ -3514,9 +3533,10 @@ theorem filter_of_projection_multiplicative [VonNeumannAlgebra A]
     (hp : IsStarProjection (c 1)) : ∀ x y : C, c (x * y) = c x * c y := by
   -- The exercise's own hint: `c` is the standard filter of `p := c(1)` up to
   -- an ncpu-isomorphism (98II), which is an nmiu-isomorphism by 99IX `iso`.
-  -- Since `p` is a projection the standard filter is the corner inclusion,
-  -- so `isFilter_cornerIncl` replaces the (unavailable) 96V here, and the
-  -- two universal properties give the isomorphism directly.
+  -- Since `p` is a projection the standard filter is the corner inclusion
+  -- (`isFilter_cornerIncl`, an instance of 96V), and the two universal
+  -- properties give the isomorphism directly — which is 98II.1's own
+  -- argument, run at this `c` rather than quoted from it.
   have : Fact (IsStarProjection (c 1)) := ⟨hp⟩
   have hone : ((cornerIncl (c 1)).toNCPMap 1 : A) = c 1 := by
     rw [cornerIncl_apply]; exact Corner.val_one
@@ -3570,16 +3590,45 @@ theorem sharp_multiplicative [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     [ ∀ a b : A, f (a * b) = f a * f b,
       ∀ p : A, IsStarProjection p → IsStarProjection (f p),
       ∀ a : A, 0 ≤ a → ceil (f a) = f (ceil a) ].TFAE := by
-  -- Not the thesis's hint (factor `f = ζ ∘ h` through a filter for `f(1)`,
-  -- which would need **98II** `filter-basic`, still `sorry`): instead the
-  -- implications of **99II** are applied directly.  They need no unitality
-  -- beyond `f(1)` being a projection, which (2) supplies at `p = 1`.
+  -- The exercise's own hint, transcribed: factor `f = ζ ∘ h` where `ζ` is a
+  -- filter for `f(1)` and `h` is an ncp-map.  Take `ζ = c_{f(1)}` (96V/98I)
+  -- and let `h` be the map its universal property provides.  Under (2) the
+  -- element `ζ(1) = f(1)` is a projection, so `ζ` is multiplicative by
+  -- **99XI**; and `ζ` is injective (**98II**.2), which makes `h` unital and
+  -- carries (2) across to `h`.  So `h` is multiplicative by **99II**
+  -- `gardner` — in its *unital* form, which is the point of the hint — and
+  -- hence so is `f = ζ ∘ h`.
+  -- (Until session 94 this went straight to the implications of 99II at the
+  -- non-unital `f`, on the ground that **98II** `filter-basic` was "still
+  -- `sorry`"; `filter_basic_1`/`_2`/`_3` are proved 1000 lines above.)
   tfae_have 1 → 2 := isStarProjection_map_of_mul f
   tfae_have 2 → 3 := ceil_map_of_isStarProjection_map f
   tfae_have 3 → 2 := isStarProjection_map_of_ceil f
-  tfae_have 2 → 1 := fun h =>
-    gardner_21 f (h 1 (IsStarProjection.one (R := A)))
-      (gardner_32 f (gardner_43 f h))
+  tfae_have 2 → 1 := by
+    intro h
+    have hf0 : (0 : B) ≤ f 1 := ncpMap_nonneg f zero_le_one
+    have hζ : IsFilter (stdFilter (f 1)) := isFilter_stdFilter (f 1) hf0
+    have hζ1 : (stdFilter (f 1) 1 : B) = f 1 := stdFilter_one hf0
+    -- `f(1) ≤ ζ(1)`, so `f` factors through `ζ`
+    obtain ⟨k, hk, -⟩ := hζ.universal A f (le_of_eq hζ1.symm)
+    have hinj : Function.Injective ⇑(stdFilter (f 1)) := (filter_basic_2 _ hζ).1
+    -- `ζ` is a filter of a projection, hence multiplicative (99XI)
+    have hmulζ : ∀ x y, (stdFilter (f 1) (x * y) : B)
+        = stdFilter (f 1) x * stdFilter (f 1) y :=
+      filter_of_projection_multiplicative _ hζ
+        (by rw [hζ1]; exact h 1 (IsStarProjection.one (R := A)))
+    have hk1 : k 1 = 1 := hinj (by rw [← hk 1, hζ1])
+    have hkproj : ∀ p : A, IsStarProjection p → IsStarProjection (k p) := by
+      intro p hp
+      refine ⟨hinj ?_, ?_⟩
+      · show (stdFilter (f 1) (k p * k p) : B) = stdFilter (f 1) (k p)
+        rw [hmulζ, ← hk p]
+        exact (h p hp).isIdempotentElem.eq
+      · show star (k p) = k p
+        rw [← ncp_star k p, hp.isSelfAdjoint.star_eq]
+    have hkmul := ((gardner k hk1).out 3 0).mp hkproj
+    intro a b
+    rw [hk (a * b), hkmul a b, hmulζ, ← hk a, ← hk b]
   tfae_finish
 
 /-! ## Parsec 1000: purity -/
@@ -4419,10 +4468,81 @@ theorem equivalent_examples_1 [VonNeumannAlgebra A] (a : A) :
       conj_perp_eq_zero_iff ht hs, ← mul_triple_eq_zero_iff_star hs ht]
   rw [h1, h2]
 
-/-- **101VII** (`equivalent-examples`, proc.tex:1102, Examples), part 1
-(continued): the standard corner `π_s` and the standard filter `c_s` of a
-projection `s` are contraposed (the filter of a projection being the
-inclusion). -/
+/-- Infrastructure for 101VII.1: a projection of the corner `e𝒜e` is a
+projection of `𝒜`. -/
+private theorem isStarProjection_val_of_corner [VonNeumannAlgebra A] {e : A}
+    [Fact (IsStarProjection e)] {x : Corner A e} (hx : IsStarProjection x) :
+    IsStarProjection x.val := by
+  refine ⟨?_, ?_⟩
+  · show x.val * x.val = x.val
+    rw [← Corner.val_mul]
+    exact congrArg Corner.val hx.isIdempotentElem.eq
+  · show star x.val = x.val
+    rw [← Corner.val_star]
+    exact congrArg Corner.val hx.isSelfAdjoint.star_eq
+
+/-- **101VII** (`equivalent-examples`, proc.tex:1102, Examples), part 1,
+**middle clause**: if `p` and `q` are projections of `𝒜` with `a*pa ≤ q`
+(the situation of **94III** `ad-ncp`), the maps `a*(·)a : p𝒜p → q𝒜q` and
+`a(·)a* : q𝒜q → p𝒜p` are contraposed.
+
+The two maps are carried as ncp-maps between the corners *given by* their
+formulas — which is how 94III.2 supplies the first one (`adNCP`).  Stating
+it that way is what makes the clause true as printed: `a*pa ≤ q` is exactly
+what puts `a*(·)a` inside `q𝒜q`, but the printed clause offers nothing to
+put `a(·)a*` inside `p𝒜p`, and without such a hypothesis the second map
+does not exist (`p = 0`, `q = 1`, `a = 1`: then `a*pa = 0 ≤ q`, while
+`a(·)a*` is the identity `𝒜 → 0`).  Assuming the maps rather than
+constructing them assumes neither `a*pa ≤ q` nor its mirror `aqa* ≤ p`, and
+both instances of the clause — `adNCP` and the corner/filter pair of the
+"in particular" below — supply them.
+
+Proof: the argument of `equivalent_examples_1` read inside the corners.
+Both sides say `x a t = 0` for the projections `x` of `p𝒜p` and `t` of
+`q𝒜q`. -/
+theorem equivalent_examples_1_corners [VonNeumannAlgebra A] (a p q : A)
+    [Fact (IsStarProjection p)] [Fact (IsStarProjection q)]
+    (f : NCPMap (Corner A p) (Corner A q)) (g : NCPMap (Corner A q) (Corner A p))
+    (hf : ∀ b : Corner A p, (f b).val = star a * b.val * a)
+    (hg : ∀ b : Corner A q, (g b).val = a * b.val * star a) :
+    Contraposed f g := by
+  intro x t hx ht
+  have hxv : IsStarProjection x.val := isStarProjection_val_of_corner hx
+  have htv : IsStarProjection t.val := isStarProjection_val_of_corner ht
+  have hfx : (0 : Corner A q) ≤ f x := ncpMap_nonneg f hx.nonneg
+  have hgt : (0 : Corner A p) ≤ g t := ncpMap_nonneg g ht.nonneg
+  -- `⌈f(x)⌉ ≤ t^⊥` in `q𝒜q` is `t (a* x a) t = 0` in `𝒜`
+  have hL : (diamondUp f x ≤ 1 - t) ↔ t.val * (star a * x.val * a) * t.val = 0 := by
+    have hval : (t * f x * t).val = t.val * (star a * x.val * a) * t.val := by
+      rw [Corner.val_mul, Corner.val_mul, hf]
+    show ceil (f x) ≤ 1 - t ↔ _
+    rw [ceil_le_perp_iff hfx ht]
+    exact ⟨fun h => by rw [← hval, h, Corner.val_zero],
+      fun h => Corner.val_injective (by rw [hval, Corner.val_zero, h])⟩
+  -- `⌈g(t)⌉ ≤ x^⊥` in `p𝒜p` is `x (a t a*) x = 0` in `𝒜`
+  have hR : (diamondUp g t ≤ 1 - x) ↔ x.val * (a * t.val * star a) * x.val = 0 := by
+    have hval : (x * g t * x).val = x.val * (a * t.val * star a) * x.val := by
+      rw [Corner.val_mul, Corner.val_mul, hg]
+    show ceil (g t) ≤ 1 - x ↔ _
+    rw [ceil_le_perp_iff hgt hx]
+    exact ⟨fun h => by rw [← hval, h, Corner.val_zero],
+      fun h => Corner.val_injective (by rw [hval, Corner.val_zero, h])⟩
+  rw [hL, hR, conj_perp_eq_zero_iff (x := a) hxv htv,
+    show a * t.val * star a = star (star a) * t.val * star a from by rw [star_star],
+    conj_perp_eq_zero_iff (x := star a) htv hxv]
+  exact mul_triple_eq_zero_iff_star hxv htv
+
+
+/-- **101VII** (`equivalent-examples`, proc.tex:1102, Examples), part 1,
+**third clause** ("in particular"): the standard corner `π_s` and the
+standard filter `c_s` of a projection `s` are contraposed (the filter of a
+projection being the inclusion).
+
+The thesis reads this off the middle clause
+(`equivalent_examples_1_corners`) at `p = 1`, `q = s`, `a = s`.  Here it is
+proved directly instead, because `π_s` has domain `𝒜` rather than the
+corner `Corner A 1`, and the two are isomorphic but not identical; the
+argument is the same one. -/
 theorem equivalent_examples_1' [VonNeumannAlgebra A] (s : A)
     [Fact (IsStarProjection s)] :
     Contraposed (cornerProjMap s).toNCPMap (cornerIncl s).toNCPMap := by
@@ -4494,8 +4614,10 @@ structure alone. -/
 **unital** ncp-isomorphism is contraposed to its inverse.
 
 The unitality hypothesis `hfu` is **not** in the thesis and is not
-redundant — see `equivalent_examples_2_is_false` and `ERRATA.md`.  (It is
-automatic for an isomorphism of `W*_cpsu`, where the maps are subunital.)
+redundant — see `equivalent_examples_2_is_false` below and the **101VII.2**
+row of `ERRATA.md` (status OPEN), which records the same counterexample and
+proposes adding "unital" to the printed Example.  (It is automatic for an
+isomorphism of `W*_cpsu`, where the maps are subunital.)
 Given it, `g` is unital too, `f` and `g` map projections to projections,
 and `f(s) ≤ 1 - t ⟺ s ≤ 1 - g(t)` by applying `g` and `f`. -/
 theorem equivalent_examples_2 [VonNeumannAlgebra A] [VonNeumannAlgebra B]
@@ -6023,36 +6145,30 @@ theorem centrally_similar_basic_3_counterexample :
     rw [hd]
     exact fun a _ => mul_comm a _
 
-/-- **104III**.3 and the **reading of `p ∧ q`**.  Our transcription reads
-`p ∧ q` as the infimum of `{p, q}` *in the order of `𝒜`* (`IsGLB`), which is
-the thesis's own `⋀` (vn.tex:371).  That reading is what saves part 3 from
-the witness below — and it is a very strong hypothesis: by Kadison's
-anti-lattice theorem two positive elements of a von Neumann algebra have an
-infimum only when they are comparable relative to the centre, so outside the
-commutative case the hypotheses of part 3 are rarely met at all.
+/-- **104III**.3: the hypothesis `⌈p⌉ = ⌈q⌉ = 1` of the **repaired** point 3
+cannot be weakened to equal *central* carriers.
 
-Under the other natural reading — `p ∧ q` computed in the commutative von
-Neumann algebra generated by the *commuting* pair `p, q`, i.e. their
-pointwise minimum, which for the commuting projections below is `pq` — part 3
-is **false even with `⌈⌈p⌉⌉ = ⌈⌈q⌉⌉`**: in the factor `B(ℂ²)` take
-`p = diag(1,0)` and `q = 1 - p`.  Then `m := pq = 0` is a lower bound of both
-(and their meet in the commutative algebra they generate), `m/p = m/q = 0`
-are central, `⌈⌈p⌉⌉ = ⌈⌈q⌉⌉ = 1`, yet `p ≁ q` because part 2 forces
-`⌈p⌉ = ⌈q⌉`.
+Our transcription reads `p ∧ q` as `Theses.A.CStar.meet` — the meet of a
+commuting pair inside the commutative C*-subalgebra it generates — which is
+what the repaired proc.tex 104III means, its preamble citing
+`commutative-cstar-basic`(5) for when `p ∧ q` is defined at all.  Under that
+reading part 3 is **false with `⌈⌈p⌉⌉ = ⌈⌈q⌉⌉` in place of
+`⌈p⌉ = ⌈q⌉ = 1`**: in the factor `B(ℂ²)` take `p = diag(1,0)` and
+`q = 1 − p`.  Then `m := p ∧ q = pq = 0` is a lower bound of both,
+`m/p = m/q = 0` are central and `⌈⌈p⌉⌉ = ⌈⌈q⌉⌉ = 1`, yet `p ≁ q`, since
+part 2 would force `⌈p⌉ = ⌈q⌉`.
 
-Under the `IsGLB` reading no such witness exists, and part 3 *is* true with
-`⌈⌈p⌉⌉ = ⌈⌈q⌉⌉` — but the only route to it is the anti-lattice theorem:
-`c := m/p` and `d := m/q` already give `cp = m = dq`, and the missing carrier
-conditions `⌈p⌉ ≤ ⌈c⌉`, `⌈q⌉ ≤ ⌈d⌉` amount exactly to
-`⌈⌈m⌉⌉ = ⌈⌈p⌉⌉ = ⌈⌈q⌉⌉`.  That fails precisely on a central block where
-`⌈p⌉ ⊥ ⌈q⌉` (note `pq/(‖p‖+‖q‖) ≤ p, q`, so `m = 0` on such a block forces
-`pq = 0` there), and the existence of the infimum is what excludes such a
-block; nothing weaker does, since on it the conclusion itself fails.  Neither
-the anti-lattice theorem nor the comparison theory it rests on is in this
-tree.  See `ERRATA.md`. -/
+(This comment used to describe a superseded state of the tree, in which our
+`p ∧ q` was the infimum of `{p, q}` in the order of `𝒜` (`IsGLB`).  Under
+*that* reading the witness below is not one — `p` and `1 − p` have no
+infimum in `B(ℂ²)` — and the only route to part 3 ran through Kadison's
+anti-lattice theorem, which this tree does not have.
+`centrally_similar_basic_3` now uses `meet`, so that route is abandoned and
+this theorem is a counterexample to the statement actually transcribed.) -/
 theorem centrally_similar_basic_3_meet_cceil_counterexample :
     ∃ p q m : EuclideanSpace ℂ (Fin 2) →L[ℂ] EuclideanSpace ℂ (Fin 2),
-      0 ≤ p ∧ 0 ≤ q ∧ p * q = q * p ∧ m = p * q ∧ m ≤ p ∧ m ≤ q ∧
+      0 ≤ p ∧ 0 ≤ q ∧ p * q = q * p ∧ m = p * q ∧
+        m = Theses.A.CStar.meet p q ∧ m ≤ p ∧ m ≤ q ∧
         div m p ∈ centre _ ∧ div m q ∈ centre _ ∧
         cceil p = cceil q ∧ ¬ CentrallySimilar p q := by
   have hP := bhTwoProj_isStarProjection
@@ -6063,8 +6179,22 @@ theorem centrally_similar_basic_3_meet_cceil_counterexample :
     rw [sub_mul, one_mul, hP.isIdempotentElem.eq, sub_self]
   have hdiv : ∀ b : EuclideanSpace ℂ (Fin 2) →L[ℂ] EuclideanSpace ℂ (Fin 2),
       div 0 b = 0 := fun b => div_eq (by rw [zero_mul]) (by rw [zero_mul])
+  -- `p ∧ (1−p) = 0`: `2p − 1` is a symmetry, so `|p − (1−p)| = 1`
+  have hsa : IsSelfAdjoint (bhTwoProj - (1 - bhTwoProj)) :=
+    hP.isSelfAdjoint.sub hQ.isSelfAdjoint
+  have hsq : (bhTwoProj - (1 - bhTwoProj)) * (bhTwoProj - (1 - bhTwoProj)) = 1 := by
+    have hpp : bhTwoProj * bhTwoProj = bhTwoProj := hP.isIdempotentElem.eq
+    have hexp : (bhTwoProj - (1 - bhTwoProj)) * (bhTwoProj - (1 - bhTwoProj))
+        = 4 * (bhTwoProj * bhTwoProj) - 4 * bhTwoProj + 1 := by noncomm_ring
+    rw [hexp, hpp]
+    noncomm_ring
+  have habs : CFC.abs (bhTwoProj - (1 - bhTwoProj)) = 1 := by
+    rw [Theses.A.CStar.abs_eq_sqrt_mul_self hsa, hsq, CFC.sqrt_one]
+  have hmeet : Theses.A.CStar.meet bhTwoProj (1 - bhTwoProj) = 0 := by
+    rw [Theses.A.CStar.meet, habs,
+      show bhTwoProj + (1 - bhTwoProj) - 1 = 0 by abel, smul_zero]
   refine ⟨bhTwoProj, 1 - bhTwoProj, 0, hP.nonneg, hQ.nonneg, by rw [hpq, hqp], hpq.symm,
-    hP.nonneg, hQ.nonneg, by rw [hdiv]; exact fun a _ => by rw [mul_zero, zero_mul],
+    hmeet.symm, hP.nonneg, hQ.nonneg, by rw [hdiv]; exact fun a _ => by rw [mul_zero, zero_mul],
     by rw [hdiv]; exact fun a _ => by rw [mul_zero, zero_mul],
     by rw [bhTwoProj_cceil, bhTwoProjCompl_cceil], ?_⟩
   intro h
@@ -6514,7 +6644,12 @@ theorem centrally_similar_basic_5_cceil_counterexample :
 part 5: if `p, q` commute and `e₁ ≤ e₂ ≤ ⋯` are projections commuting
 with `p` and `q`, with `⋃ₙ eₙ = ⌈p⌉`, such that the `eₙp` and `eₙq` are
 pseudoinvertible and centrally similar, then `p` and `q` are centrally
-similar.
+similar **on the grounds that both `(p∧q)/p` and `(p∧q)/q` are central**.
+
+That last clause is an assertion in its own right — it is the whole content
+of the hint, and it is exactly the hypothesis of part 3 — so it is stated
+here as the first two conjuncts, with `CentrallySimilar p q` obtained from
+them by `centrally_similar_basic_3`.  Only the grounds clause is `sorry`.
 
 **Repaired by the author on 2026-08-19** (erratum `parsec-1040.30`), first
 with `⌈p⌉ = ⌈q⌉` and then, the same day, with the full faithfulness
@@ -6537,12 +6672,19 @@ theorem centrally_similar_basic_5 [VonNeumannAlgebra A] (p q : A)
     (hp : 0 ≤ p) (hq : 0 ≤ q) (hcp : ceil p = 1) (hcq : ceil q = 1)
     (hcomm : p * q = q * p) (e : ℕ → A)
     (he : ∀ n, IsStarProjection (e n)) (hmono : Monotone e)
-    (hcp : ∀ n, e n * p = p * e n) (hcq : ∀ n, e n * q = q * e n)
+    (hecp : ∀ n, e n * p = p * e n) (hecq : ∀ n, e n * q = q * e n)
     (hsup : projSup (Set.range e) = ceil p)
     (hpin : ∀ n, Pseudoinvertible A (e n * p))
     (hqin : ∀ n, Pseudoinvertible A (e n * q))
     (hcs : ∀ n, CentrallySimilar (e n * p) (e n * q)) :
-    CentrallySimilar p q := sorry
+    div (Theses.A.CStar.meet p q) p ∈ centre A ∧
+      div (Theses.A.CStar.meet p q) q ∈ centre A ∧ CentrallySimilar p q := by
+  -- the exercise's *grounds* clause is the whole content; given it, the
+  -- conclusion is part 3 applied to `p`, `q`
+  have grounds : div (Theses.A.CStar.meet p q) p ∈ centre A ∧
+      div (Theses.A.CStar.meet p q) q ∈ centre A := sorry
+  exact ⟨grounds.1, grounds.2,
+    centrally_similar_basic_3 p q hp hq hcp hcq hcomm grounds.1 grounds.2⟩
 
 /-- **104IV**, obstruction: the printed statement of 104IV omits the
 faithfulness hypothesis `⌈q⌉ = 1` that its own proof invokes ("`ϑ(e)q = qe
@@ -6571,8 +6713,10 @@ and `ϑ(e) = e`.
 
 The hypothesis `⌈q⌉ = 1` is **not printed** in the thesis but is used in its
 proof, and without it the second conclusion is false — see
-`centrally_similar_fundamental_needs_faithful` above and `ERRATA.md`.  Both
-consumers of the lemma (104VI, 104VII) do state it. -/
+`centrally_similar_fundamental_needs_faithful` above and the **104IV**
+(`centrally-similar-fundamental`) row of `ERRATA.md` (status OPEN), which
+asks for `⌈q⌉ = 1` to be added to the hypotheses.  Both consumers of the
+lemma (104VI, 104VII) do state it, so nothing downstream changes. -/
 theorem centrally_similar_fundamental [VonNeumannAlgebra A] (e q : A)
     (he : IsStarProjection e) (hq : 0 ≤ q) (hcq : ceil q = 1) (ϑ : MIUMap A A)
     (h1 : ceil (q * ϑ e * q) ≤ e)
@@ -8542,13 +8686,17 @@ theorem uniqueness_sequential_product [VonNeumannAlgebra A] (op : A → A → A)
 
 /-- **106III** (proc.tex:1858, Exercise), part 1: `p ∗ q := ⌈p⌉q⌈p⌉`
 satisfies all axioms of 106I except (A) (which fails when `A` is
-nontrivial). -/
+nontrivial).  The conjuncts are (B), (C), (D), (E), `¬(A)`, each written
+out at this `∗`; the (C) conjunct is
+`p ∗ (p ∗ q) = (p ∗ p) ∗ q`, whose inner `⌈p⌉` used to be printed here as
+`⌈q⌉` — true and equivalent for effects (`⌈q⌉q⌈q⌉ = q`), but not the
+axiom. -/
 theorem sequential_product_counterexample_1 [VonNeumannAlgebra A]
     [Nontrivial A] :
     (∀ p ∈ effects A, ∃ f : NCPMap A A, IsPure f ∧
         ∀ q ∈ effects A, ceil p * q * ceil p = f q) ∧
     (∀ p ∈ effects A, ∀ q ∈ effects A,
-        ceil p * (ceil q * q * ceil q) * ceil p =
+        ceil p * (ceil p * q * ceil p) * ceil p =
           ceil (ceil p * p * ceil p) * q * ceil (ceil p * p * ceil p)) ∧
     (∀ p ∈ effects A, ∃ q ∈ effects A, p = ceil q * q * ceil q) ∧
     (∀ p ∈ effects A, ∀ e₁ e₂ : A, IsStarProjection e₁ →
@@ -8586,8 +8734,12 @@ theorem sequential_product_counterexample_1 [VonNeumannAlgebra A]
         (IsPure.corner hcorner)
     · rw [adSelf_apply, hcp.isSelfAdjoint.star_eq]
   · -- (C): both sides are `⌈p⌉q⌈p⌉`
-    intro p hp q hq
-    rw [hsandwich q hq.1, hsandwich p hp.1]
+    intro p hp q _
+    have hcp : IsStarProjection (ceil p) := isStarProjection_ceil p
+    rw [hsandwich p hp.1]
+    calc ceil p * (ceil p * q * ceil p) * ceil p
+        = (ceil p * ceil p) * q * (ceil p * ceil p) := by noncomm_ring
+      _ = ceil p * q * ceil p := by rw [hcp.isIdempotentElem.eq]
   · -- (D): `p = ⌈p⌉p⌈p⌉`
     intro p hp
     exact ⟨p, hp, (hsandwich p hp.1).symm⟩
@@ -8701,7 +8853,9 @@ theorem sequential_product_counterexample_1 [VonNeumannAlgebra A]
 
 /-- **106III** (proc.tex:1858, Exercise), part 2:
 `p ∗ q := ⌊p⌋q⌊p⌋ + √(p−⌊p⌋) q √(p−⌊p⌋)` satisfies axioms (A), (C),
-(D), (E) of 106I.  (That (B) may fail is not formalized.) -/
+(D), (E) of 106I.  That (B) **fails** — the other half of the part, and the
+reason it is stated — is
+`sequential_product_counterexample_2_ax2_is_false` below. -/
 theorem sequential_product_counterexample_2 [VonNeumannAlgebra A] :
     ∀ op : A → A → A,
       (∀ p q, op p q = floor p * q * floor p +
@@ -8953,6 +9107,235 @@ theorem sequential_product_counterexample_2 [VonNeumannAlgebra A] :
     rw [hchar e₁ e₂ h₁ h₂, hchar e₂ e₁ h₂ h₁]
     exact ⟨fun h => ⟨hsym _ _ _ hfsa h₁ h₂ h.1, hsym _ _ _ hssa h₁ h₂ h.2⟩,
       fun h => ⟨hsym _ _ _ hfsa h₂ h₁ h.1, hsym _ _ _ hssa h₂ h₁ h.2⟩⟩
+
+/-! ### **106III**.2: axiom (B) does fail
+
+Part 2 asks one to show that
+`p ∗ q := ⌊p⌋q⌊p⌋ + √(p−⌊p⌋) q √(p−⌊p⌋)` satisfies every axiom of 106I
+**except** (B) — so half the content of the part is that (B) *fails*, which
+is what makes (B) independent of the rest.  `sequential_product_counterexample_2`
+above supplies (A), (C), (D) and (E); this section supplies the failure.
+
+The witness is `B(ℂ²)` at `p = e + ½e^⊥` for a rank-one projection `e`.
+There `⌊p⌋ = e` and `p − ⌊p⌋ = ½e^⊥`, so `√(p−⌊p⌋)` lies in `e^⊥𝒜e^⊥` and
+`p ∗ q` depends on `q` only through `eqe` and `e^⊥qe^⊥` — hence is **not
+injective**, the two rank-one projections onto `ℂ(1,1)` and `ℂ(1,−1)`
+having the same image.  It is, however, **faithful**.  And a faithful pure
+map is a filter (**100VII**.1), while a filter is injective (**98II**.2). -/
+
+/-- The floor of `e + t·e^⊥` is `e`, for a projection `e` and `0 ≤ t < 1`:
+a projection `w` below `e + te^⊥` satisfies `(e + te^⊥)w = w`, which forces
+`(1−t)·e^⊥w = 0` and hence `ew = w`. -/
+private theorem effects_and_floor_proj_add_smul [VonNeumannAlgebra A] {e : A}
+    (he : IsStarProjection e) {t : ℝ} (ht0 : 0 ≤ t) (ht1 : t < 1) :
+    e + (t : ℂ) • (1 - e) ∈ effects A ∧ floor (e + (t : ℂ) • (1 - e)) = e := by
+  set p : A := e + (t : ℂ) • (1 - e) with hpdef
+  have hpe : p - e = (t : ℂ) • (1 - e) := by rw [hpdef]; abel
+  have hp0 : (0 : A) ≤ p :=
+    add_nonneg he.nonneg (Theses.A.CStar.ofReal_smul_nonneg he.one_sub.nonneg ht0)
+  have hp1 : p ≤ 1 := by
+    rw [← sub_nonneg, show (1 : A) - p = ((1 - t : ℝ) : ℂ) • (1 - e) by
+      rw [hpdef]; push_cast; module]
+    exact Theses.A.CStar.ofReal_smul_nonneg he.one_sub.nonneg (by linarith)
+  have hpeff : p ∈ effects A := ⟨hp0, hp1⟩
+  have hep : e ≤ p := by
+    rw [← sub_nonneg, hpe]
+    exact Theses.A.CStar.ofReal_smul_nonneg he.one_sub.nonneg ht0
+  refine ⟨hpeff, ((floor_isGreatest hpeff).unique ⟨⟨he, hep⟩, ?_⟩)⟩
+  rintro w ⟨hw, hwp⟩
+  have hpw : p * w = w := ((projection_below_effect p w hpeff hw).out 0 6).mp hwp
+  have hsplit : w = e * w + (1 - e) * w := by
+    rw [← add_mul, show e + (1 - e) = (1 : A) by abel, one_mul]
+  have hexp : p * w = e * w + (t : ℂ) • ((1 - e) * w) := by
+    rw [hpdef, add_mul, smul_mul_assoc]
+  have hkey : (t : ℂ) • ((1 - e) * w) = (1 - e) * w := by
+    refine add_left_cancel (a := e * w) ?_
+    rw [← hexp, hpw]
+    exact hsplit
+  have hzero : (1 - e) * w = 0 := by
+    have hy : ((1 : ℂ) - (t : ℂ)) • ((1 - e) * w) = 0 := by
+      rw [sub_smul, one_smul, hkey, sub_self]
+    refine (smul_eq_zero.mp hy).resolve_left ?_
+    intro hc
+    exact absurd (Complex.ofReal_eq_one.mp (sub_eq_zero.mp hc).symm) (by linarith)
+  have hew : e * w = w := by
+    conv_rhs => rw [hsplit]
+    rw [hzero, add_zero]
+  exact ((projection_below_effect e w ⟨he.nonneg, he.le_one⟩ hw).out 6 0).mp hew
+
+section SPC2
+
+private abbrev spc2B := EuclideanSpace ℂ (Fin 2) →L[ℂ] EuclideanSpace ℂ (Fin 2)
+
+private abbrev spc2T (M : Matrix (Fin 2) (Fin 2) ℂ) : spc2B :=
+  Matrix.toEuclideanCLM (𝕜 := ℂ) M
+
+private theorem spc2_mul (M N : Matrix (Fin 2) (Fin 2) ℂ) :
+    spc2T M * spc2T N = spc2T (M * N) := (map_mul _ _ _).symm
+
+private theorem spc2_star (M : Matrix (Fin 2) (Fin 2) ℂ) :
+    star (spc2T M) = spc2T (star M) := (map_star _ _).symm
+
+private theorem spc2_one : spc2T 1 = 1 := map_one _
+
+private theorem spc2_sub (M N : Matrix (Fin 2) (Fin 2) ℂ) :
+    spc2T M - spc2T N = spc2T (M - N) := (map_sub _ _ _).symm
+
+private theorem spc2_inj {M N : Matrix (Fin 2) (Fin 2) ℂ} (h : spc2T M = spc2T N) :
+    M = N := Matrix.toEuclideanCLM.injective h
+
+private def spc2E : Matrix (Fin 2) (Fin 2) ℂ := !![1, 0; 0, 0]
+private def spc2S : Matrix (Fin 2) (Fin 2) ℂ := !![1/2, 1/2; 1/2, 1/2]
+private def spc2S' : Matrix (Fin 2) (Fin 2) ℂ := !![1/2, -1/2; -1/2, 1/2]
+
+private theorem spc2_facts :
+    spc2E * spc2E = spc2E ∧ star spc2E = spc2E ∧
+      spc2S * spc2S = spc2S ∧ star spc2S = spc2S ∧
+      spc2S' * spc2S' = spc2S' ∧ star spc2S' = spc2S' ∧
+      spc2E * spc2S * spc2E = spc2E * spc2S' * spc2E ∧
+      (1 - spc2E) * spc2S * (1 - spc2E) = (1 - spc2E) * spc2S' * (1 - spc2E) := by
+  refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;>
+    · ext i j
+      fin_cases i <;> fin_cases j <;>
+        simp [spc2E, spc2S, spc2S', Matrix.mul_apply, Fin.sum_univ_two,
+          Matrix.star_eq_conjTranspose, Matrix.conjTranspose_apply,
+          Matrix.one_apply, Matrix.sub_apply] <;>
+        norm_num
+
+private theorem spc2_S_ne : spc2S ≠ spc2S' := by
+  intro h
+  have h01 := congrFun (congrFun h 0) 1
+  simp [spc2S, spc2S'] at h01
+  norm_num at h01
+
+/-- **106III** (proc.tex:1858, Exercise), part 2, the **failing** axiom:
+there is a von Neumann algebra and an effect `p` of it for which
+`q ↦ ⌊p⌋q⌊p⌋ + √(p−⌊p⌋) q √(p−⌊p⌋)` is **not** given by any pure map — so
+axiom (B) does not follow from (A), (C), (D), (E), which is the point of
+part 2.
+
+Witness: `B(ℂ²)` at `p = e + ½e^⊥`, `e` the projection onto `ℂ(1,0)`.  The
+operation is then `q ↦ eqe + ½e^⊥qe^⊥`.  It is faithful (a positive `x`
+with `exe = 0 = e^⊥xe^⊥` is `0`), so a pure map computing it would be a
+filter by **100VII**.1 and hence injective by **98II**.2; but it sends the
+projections onto `ℂ(1,1)` and `ℂ(1,−1)` to the same element. -/
+theorem sequential_product_counterexample_2_ax2_is_false :
+    ∃ p ∈ effects spc2B,
+      ¬ ∃ f : NCPMap spc2B spc2B, IsPure f ∧
+        ∀ q ∈ effects spc2B, floor p * q * floor p +
+          CFC.sqrt (p - floor p) * q * CFC.sqrt (p - floor p) = f q := by
+  obtain ⟨hEE, hEs, hSS, hSs, hS'S', hS's, hES, hE'S⟩ := spc2_facts
+  set e : spc2B := spc2T spc2E with hedef
+  have he : IsStarProjection e :=
+    ⟨show e * e = e by rw [hedef, spc2_mul, hEE],
+      show star e = e by rw [hedef, spc2_star, hEs]⟩
+  have hesa : star e = e := he.isSelfAdjoint.star_eq
+  set p : spc2B := e + (((1 / 2 : ℝ)) : ℂ) • (1 - e) with hpdef
+  obtain ⟨hpeff, hfloor⟩ :=
+    effects_and_floor_proj_add_smul he (t := (1 / 2 : ℝ)) (by norm_num) (by norm_num)
+  refine ⟨p, hpeff, ?_⟩
+  rintro ⟨f, hpure, hf⟩
+  -- `√(p − ⌊p⌋)` lives in `e^⊥𝒜e^⊥`
+  set s : spc2B := CFC.sqrt (p - floor p) with hsdef
+  have hpe : p - floor p = (((1 / 2 : ℝ)) : ℂ) • (1 - e) := by
+    rw [hfloor, hpdef]; abel
+  have hpe0 : (0 : spc2B) ≤ p - floor p := by
+    rw [hpe]
+    exact Theses.A.CStar.ofReal_smul_nonneg he.one_sub.nonneg (by norm_num)
+  have hsa : star s = s := (IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg _)).star_eq
+  have hss : s * s = (((1 / 2 : ℝ)) : ℂ) • (1 - e) := by
+    rw [hsdef, CFC.sqrt_mul_sqrt_self _ hpe0, hpe]
+  have hse : s * e = 0 := by
+    refine (CStarRing.star_mul_self_eq_zero_iff (s * e)).mp ?_
+    rw [star_mul, hsa, hesa]
+    calc e * s * (s * e) = e * (s * s) * e := by noncomm_ring
+      _ = 0 := by
+          rw [hss, mul_smul_comm, smul_mul_assoc,
+            show e * (1 - e) * e = 0 by
+              rw [mul_sub, mul_one, he.isIdempotentElem.eq, sub_self, zero_mul],
+            smul_zero]
+  have hs1e : s * (1 - e) = s := by rw [mul_sub, mul_one, hse, sub_zero]
+  have hes : (1 - e) * s = s := by
+    have h := congrArg star hs1e
+    rwa [star_mul, hsa, he.one_sub.isSelfAdjoint.star_eq] at h
+  -- the operation, written out
+  have hop : ∀ q : spc2B, floor p * q * floor p + s * q * s
+      = e * q * e + s * q * s := by intro q; rw [hfloor]
+  -- it depends on `q` only through `eqe` and `e^⊥qe^⊥`
+  have hconj : ∀ q : spc2B, s * q * s = s * ((1 - e) * q * (1 - e)) * s := by
+    intro q
+    calc s * q * s = (s * (1 - e)) * q * ((1 - e) * s) := by rw [hs1e, hes]
+      _ = s * ((1 - e) * q * (1 - e)) * s := by noncomm_ring
+  -- faithfulness: `exe = 0 = sxs` forces `x = 0` for positive `x`
+  have hkill : ∀ (y x : spc2B), star y = y → 0 ≤ x → y * x * y = 0 → x * y = 0 := by
+    intro y x hy hx h
+    have hxs : star (CFC.sqrt x * y) * (CFC.sqrt x * y) = y * x * y := by
+      rw [star_mul, hy, (IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg x)).star_eq]
+      calc y * CFC.sqrt x * (CFC.sqrt x * y)
+          = y * (CFC.sqrt x * CFC.sqrt x) * y := by noncomm_ring
+        _ = y * x * y := by rw [CFC.sqrt_mul_sqrt_self x hx]
+    have h0 : CFC.sqrt x * y = 0 :=
+      (CStarRing.star_mul_self_eq_zero_iff _).mp (by rw [hxs]; exact h)
+    calc x * y = CFC.sqrt x * (CFC.sqrt x * y) := by
+          rw [← mul_assoc, CFC.sqrt_mul_sqrt_self x hx]
+      _ = 0 := by rw [h0, mul_zero]
+  have hfaith : ncpCarrier f = 1 := by
+    have hcspec := (exists_ncpCarrier f).choose_spec.1
+    have hcproj : IsStarProjection (ncpCarrier f) := isStarProjection_ncpCarrier f
+    set x : spc2B := 1 - ncpCarrier f with hxdef
+    have hxproj : IsStarProjection x := hcproj.one_sub
+    have hx : (0 : spc2B) ≤ x := hxproj.nonneg
+    have hsum : e * x * e + s * x * s = 0 := by
+      rw [← hop x, hf x ⟨hxproj.nonneg, hxproj.le_one⟩]
+      exact hcspec.2.1
+    have hnn1 : (0 : spc2B) ≤ e * x * e := by
+      have h := star_left_conjugate_nonneg hx e; rwa [hesa] at h
+    have hnn2 : (0 : spc2B) ≤ s * x * s := by
+      have h := star_left_conjugate_nonneg hx s; rwa [hsa] at h
+    have hz1 : e * x * e = 0 := by
+      refine le_antisymm ?_ hnn1
+      have h : e * x * e ≤ e * x * e + s * x * s := le_add_of_nonneg_right hnn2
+      rwa [hsum] at h
+    have hz2 : s * x * s = 0 := by
+      refine le_antisymm ?_ hnn2
+      have h : s * x * s ≤ e * x * e + s * x * s := le_add_of_nonneg_left hnn1
+      rwa [hsum] at h
+    have hxe : x * e = 0 := hkill e x hesa hx hz1
+    have hxs : x * s = 0 := hkill s x hsa hx hz2
+    have hx1e : x * (1 - e) = 0 := by
+      have h1 : x * (s * s) = 0 := by rw [← mul_assoc, hxs, zero_mul]
+      rw [hss, mul_smul_comm] at h1
+      refine (smul_eq_zero.mp h1).resolve_left ?_
+      simp
+    have hx0 : x = 0 := by
+      calc x = x * e + x * (1 - e) := by rw [← mul_add, show e + (1 - e) = (1 : spc2B) by abel, mul_one]
+        _ = 0 := by rw [hxe, hx1e, add_zero]
+    have := sub_eq_zero.mp hx0
+    exact this.symm
+  -- a faithful pure map is a filter (100VII.1), and a filter is injective (98II.2)
+  have hinj : Function.Injective ⇑f :=
+    (filter_basic_2 f (special_pure_maps_1 f hpure hfaith)).1
+  -- but the two projections onto `ℂ(1,1)` and `ℂ(1,−1)` collide
+  set q₁ : spc2B := spc2T spc2S with hq1def
+  set q₂ : spc2B := spc2T spc2S' with hq2def
+  have hq1 : IsStarProjection q₁ :=
+    ⟨show q₁ * q₁ = q₁ by rw [hq1def, spc2_mul, hSS],
+      show star q₁ = q₁ by rw [hq1def, spc2_star, hSs]⟩
+  have hq2 : IsStarProjection q₂ :=
+    ⟨show q₂ * q₂ = q₂ by rw [hq2def, spc2_mul, hS'S'],
+      show star q₂ = q₂ by rw [hq2def, spc2_star, hS's]⟩
+  have hone : (1 : spc2B) - e = spc2T (1 - spc2E) := by
+    rw [hedef, ← spc2_one, spc2_sub]
+  have hcorner : e * q₁ * e = e * q₂ * e := by
+    rw [hedef, hq1def, hq2def, spc2_mul, spc2_mul, spc2_mul, spc2_mul, hES]
+  have hcorner' : (1 - e) * q₁ * (1 - e) = (1 - e) * q₂ * (1 - e) := by
+    rw [hone, hq1def, hq2def, spc2_mul, spc2_mul, spc2_mul, spc2_mul, hE'S]
+  have hcollide : (f q₁ : spc2B) = f q₂ := by
+    rw [← hf q₁ ⟨hq1.nonneg, hq1.le_one⟩, ← hf q₂ ⟨hq2.nonneg, hq2.le_one⟩,
+      hop q₁, hop q₂, hconj q₁, hconj q₂, hcorner, hcorner']
+  exact spc2_S_ne (spc2_inj (hinj hcollide))
+
+end SPC2
 
 /-! ### Infrastructure for the 106III.3 counterexample: `B(ℂ²)`
 

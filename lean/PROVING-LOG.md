@@ -24431,3 +24431,160 @@ nothing in the tree is wrong and no ruling is *required*; but if the author
 wants the Example to typecheck as written, the mirror hypothesis
 `aqa* ≤ p` is what it wants.  Both uses in the thesis — `adNCP` and the
 `π_s`/`c_s` pair — satisfy it.
+
+## Session 94 — `B/Dils`: **the first repair pass on `HilbertModules.lean` and `SelfDualCompletion.lean`** — all nine `weaker` rows repaired, 148III gets the *uniform* continuity it asserts, and 146VIII is formalized for the first time (worker on `Theses/B/Dils/HilbertModules.lean`, `Theses/B/Dils/SelfDualCompletion.lean`)
+
+Scope: `docs/audit/bdils-hilbertmodules-selfdualcompletion.csv`, the 14 rows
+whose `stmt` is not `ok` (9 `weaker`, 5 `stronger`), plus the four stale-prose
+items the audit and the brief flag in these two files.  Both files compile
+with **no errors and no `sorry`**; every statement added or changed was
+`#print axioms`-checked **in situ** (source copied to the scratchpad,
+`#print axioms` appended, recompiled): all
+`[propext, Classical.choice, Quot.sound]`.  The whole downstream chain was
+rebuilt from fresh oleans and compiles clean: `SelfDualCompletion`,
+`Kaplansky`, `Stinespring`, `Paschke`, `SelfDual`, `Pure`,
+`B/Eff/VNExamples`.
+
+### Repaired — our mis-transcriptions, no ruling needed (9 rows)
+
+* **148III** `ultranormcontstruct_add` / `_inner` / `_smul` — the Corollary
+  says the three module operations are **uniformly** continuous, which is
+  exactly what **150IX** then uses to extend them to `V̄`; all three
+  declarations stated only preservation of ultranorm limits.  Each now
+  states uniform continuity, in the same ε/δ shape as **148I** (for every
+  np-functional `ω` and every `ε > 0` a `δ > 0` working uniformly in the
+  arguments; one `ω` at a time suffices, because each of the three
+  estimates goes through a single seminorm).  Addition takes the two
+  coordinatewise hypotheses that the product uniformity of **147III**
+  supplies.  The route is the Corollary's own — it is a corollary of 148I,
+  and the boundedness 148I needs *is* the estimate — so the two estimates
+  were pulled out of the old proofs and are now public:
+  `unSeminorm_inner_left_le` (`‖[x₀,d]‖_ω ≤ ‖[x₀,x₀]‖^½‖d‖_ω`, Cauchy–Schwarz
+  **142III**) and `unSeminorm_op_smul_right_le`
+  (`‖x₀·b − x₀·c‖_ω ≤ ‖[x₀,x₀]‖^½‖b − c‖_ω`, the conjugation bound; no
+  bounded-𝒷-linear packaging is available for that third map, since
+  `SMul 𝒷 X` carries no module axioms).  The old limit-preservation
+  statements are kept verbatim as `ultranormcontstruct_*_unTendsto`, now
+  derived from the same two estimates and labelled as the weaker form.
+  Nothing consumed the old names — checked by `grep` across `Theses/`
+  before the rename.  (1)
+* **147III** `dils_product_uniformity` — the exercise's *first* clause, that
+  the relations `ε̂` are a **subbase** for the product uniformity, was not
+  stated; only the projections and the categorical-product clause were.
+  The family is now `piSubbase`, and the theorem gains a first conjunct
+  with all of it: the three subbase axioms **in exactly the shape 146IV
+  `exc_subbase` takes as hypotheses** (so the two points are connected as
+  the exercise intends), and `𝓤 (Π Xᵢ) = Filter.generate (piSubbase Z)`.
+  The proof is elementary: the axioms transfer coordinatewise from
+  `𝓤 (Z i)`, and `Pi.uniformity` plus `Filter.mem_comap` give the generated
+  filter in both directions.  (1)
+* **152IX** `hilmod_fixed_on_V` — the exercise asks for an order separating
+  set of **ncp-maps**; only the order separation was stated.  That each
+  `⟨η v, (·) η v⟩ : 𝒷ᵃ(X) → 𝒷` *is* an ncp-map is now
+  `hilmod_fixed_on_V_ncp`: complete positivity from **145I**
+  `hilbmod_vectstates_cp` at `x = η v` (in its own unfolded cstar.tex
+  10II.6 form, with 145I's argument swap), normality as
+  `PreservesDirSups`, from **152XII** `ba_isLUB_vec` — the vector forms
+  compute bounded directed suprema — transferred from `sa(𝒷)` to `𝒷` by
+  `A/VN`'s `isLUB_coe_of_isLUB`.  For self-adjoint `Z` the two mirrorings
+  `⟨η v, Z η v⟩` and `⟨Z η v, η v⟩` coincide, so the two clauses are about
+  the same map.  It sits after 152XII, because that is what its normality
+  half needs; `hilmod_fixed_on_V` now points at it.  (1)
+* **142II** `innerF_inner_product` — the 48V pattern.  The tagged theorem
+  rendered two of the four inner-product identities, where the point's
+  stated conclusion is *"hence, by `inner-product-basic`, `‖·‖_f` is a
+  seminorm"*.  Two declarations added, and the DISP prose redistributed:
+  `innerFCore`, the point's *"this `⟨·,·⟩_f` is a complex-valued inner
+  product"* in full, as Mathlib's `PreInnerProductSpace.Core ℂ X` — which
+  is literally the possibly-indefinite inner product of cstar.tex **4XV**,
+  and whose four fields include the additivity and ℂ-linearity the audit
+  found unstated; and `seminormF_seminorm`, the point's conclusion
+  (nonnegative, absolutely homogeneous, subadditive), proved **by the
+  point's own one-line argument**: feed `innerFCore` to 4XV
+  `inner_product_seminorm`.  `innerF_inner_product` keeps its name and
+  statement with a doc comment saying plainly that it is weaker and why it
+  is kept (those two identities are what the ultranorm estimates use
+  directly).  Nothing was reproved.  (1)
+* **147II**.1 `dils_uniform_spaces_basics_1` — part 1 has two claims and
+  only the equivalence-relation one was stated.  A fourth conjunct now
+  carries the other: a subnet of a Cauchy net is equivalent to it.  A
+  subnet is rendered by its eventuality filter, which *refines* the net's,
+  so "subnet" is `F ≤ G`; `G`'s own Cauchy witness then works on both
+  sides.  The statement is not destructured anywhere (checked), so the
+  extra conjunct breaks nothing.  (1)
+* **143IV** `hilbmod_cstar` — the same 48V pattern, and here the repair is
+  prose only, because the Proposition proper (`𝒷ᵃ(X)` is a C*-algebra)
+  **is already present and already DISP-tagged**, as
+  `Ba.instCStarAlgebra`.  What was wrong is that a second declaration
+  carried the 143IV headline while stating only closedness of the
+  adjointables in `B(X)`.  Its doc now says that it is one ingredient, that
+  it is strictly weaker than the Proposition, and that the Proposition is
+  `Ba.instCStarAlgebra`.  (4)
+* **146IX** `unSeminorm_le_norm_mul` — mislabelled **146VIII** in its doc.
+  It is the quantitative half of **146IX** (the Beware: norm convergence
+  implies ultranorm convergence).  Relabelled, and made **public**, since
+  it now carries a numbered point.  Its converse ("but not necessarily the
+  other way around") needs a counterexample and is still not formalized —
+  see below.  (4)
+  The same stale label sat on `SelfDualCompletion`'s `unSeminorm_le`, which
+  cited **148V** for the same fact; relabelled 146IX.  (4)
+* **146VIII** — while fixing that label: 146VIII's *own* two
+  identifications were formalized nowhere, and now both are.
+  `unSeminorm_complex`: for `𝒷 = ℂ` every ultranorm seminorm is
+  `ω(1)^½ ‖·‖`, so the ultranorm uniformity is the norm uniformity.
+  `unSeminorm_mulInner_eq_omegaNorm`: for `X = 𝒷` the ultranorm seminorms
+  are vn.tex **43I**'s ultrastrong seminorms composed with `star` (the
+  mirror this file works in), so the two uniformities coincide.  The second
+  is the same identity `Kaplansky.lean` has carried untagged as
+  `unSeminorm_mulInner_eq`; the doc says so.  (1)
+
+### Stale prose fixed (4 items)
+
+* **Both file headers** read "Statements only; every proof is `sorry`".
+  Neither file has a `sorry`, and neither has had one for a long time.
+  Removed from both.
+* `hasBasis_uniformity` and `exists_semC_entourage_subset` cited **150IV**
+  for "the thesis's entourages".  150IV is the *Overview* of the proof of
+  150II and says nothing about entourages; the entourages of a seminorm
+  uniformity are **146V**.3 (through the subbase of **146IIIa**), and
+  **146VII** specializes them to `‖·‖_ω`.  Both relabelled.
+* `ba_isLUB`'s section note justified its second deviation from **152XII**
+  by "**44XI**.3 `vn_positive_basic_3` is still `sorry` in `Theses.A.VN`".
+  It is not — it is proved in `A/VN/Basic`, and 73VIII `ultraclosed` gives
+  the ultraweak form.  The deviation stands on the *first* one alone:
+  under the ERRATA-corrected hypothesis (directed and bounded **above**,
+  not norm-bounded) there is no `r` in the statement at all, so
+  `‖B(x,y)‖ ≤ r‖x‖‖y‖` is unavailable whatever `usconv` is worth.  The note
+  now says that.
+
+### Recorded, not repaired: **150XV's printed proof is a step short**
+
+150XV concludes `W = V̄` from "completeness", and the completeness it has in
+hand is *ultranorm* completeness — all that `dils-selfdual` (**149V**)
+delivers.  But "Hilbert 𝒷-module" also demands completeness for the **norm**
+`‖x‖ = ‖⟨x,x⟩‖^½`, and no clause of 149V supplies it.  Nothing in the tree
+is wrong: `CompatExt.completeSpace` proves norm completeness separately,
+from 146IX plus order separation.  Its doc comment now states the gap and
+that it is what fills it.  (This is the second defect the audit records in a
+thesis *proof* rather than a statement, alongside 125II.)
+
+### Left, with the reason
+
+* **The converse half of 146IX** — "the ultranorm uniformity is weaker than
+  the norm uniformity … but not necessarily the other way around".  This is
+  a non-implication and needs a counterexample (an ultranorm-convergent net
+  in some `B(ℋ)`-module that does not converge in norm).  Costed and left;
+  the doc on `unSeminorm_le_norm_mul` now names it as the missing half.
+* **The five `stronger` rows**, all benign generalisations by the brief's
+  rule (3), and all already documented in the file:
+  **152XII** `ba_isLUB` (carries the ERRATA repair — a directed set bounded
+  above need not be norm-bounded — plus the extra "the vector forms compute
+  the supremum" clause that **152XIII** needs);
+  **153IV** `hilbmod_adj_vector_ncp` (`[VonNeumannAlgebra 𝒜]` where the
+  exercise writes "C*-algebra" while asking for an *n*cp-map — the ERRATA
+  correction);
+  **149VIII** `polar_decomposition` and
+  **149VIII** `exists_unTendsto_of_l2Summable` (both free strengthenings
+  that 160IV.3 consumes);
+  **144III** `hilbmod_adjointable_blinear` (concludes for a bare
+  adjointable function what the Lemma concludes for a ℂ-linear one).
