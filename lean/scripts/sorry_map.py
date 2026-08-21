@@ -314,7 +314,7 @@ body.aonly .b:not(.aud){{display:none}}
 <div class="bar"><i style="background:var(--okd);width:{pct:.3f}%"></i><i style="background:var(--warn);width:{blkpct:.3f}%"></i><i style="background:var(--bad);width:{sorrypct:.3f}%"></i></div>
 <table><tbody>{legend}
 <tr><td><i class="sw aud"></i></td><td><code>stmt ≠ source</code></td><td class=num>{abad}</td>
-<td>corner wedge: the statement audit of 2026-08-20 found this rendering weaker than, stronger than, or differently shaped from its thesis point — independently of whether it is proved. {aaudited} declarations were audited. Repairs since usually add a <em>sibling</em> declaration rather than change the flagged one, so a wedge may already have its content restored nearby; hover for the finding.</td></tr>
+<td>corner wedge: the statement audit of 2026-08-20 found this rendering weaker than, stronger than, or differently shaped from its thesis point — independently of whether it is proved. {aaudited} declarations were audited. <b>All 30 modules have since had a repair pass</b> (2026-08-20/21); the wedges are the audit-day record and are <em>not</em> rewritten as repairs land, because a repair usually adds a <em>sibling</em> declaration rather than changing the flagged one. Per-row outcomes are in <code>PROVING-LOG.md</code> session 94. A box marked <em>declaration changed since the audit</em> on hover is one whose own statement was rewritten.</td></tr>
 </tbody></table>
 <div class="tools"><button id="a" aria-pressed="true">All {total}</button><button id="o" aria-pressed="false">Unproved {blocked}+{sorry}</button><button id="ab" aria-pressed="false"><i class="sw aud"></i>stmt ≠ source <b>{abad}</b></button>{chips}{achips}</div>
 {sections}</div>
