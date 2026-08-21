@@ -2828,26 +2828,22 @@ All three claims are read off the isomorphism `θ : I ≅ ℂᵤ` of
 * **separating states** — by `su_isTotal_iff` the states of `X` are exactly
   the normal states of the algebra `X.unop`, and those separate its elements
   (`eq_zero_of_ncpsu_states`).
-* **real** — `μ` carries `Scal C = C(I,I)` bijectively onto `[0,1] ⊆ ℝ`,
-  taking `⋁` to `+` and composition to multiplication.
+* **real** — `μ` carries `Scal C = C(I,I)` onto `[0,1] ⊆ ℝ` by an
+  *isomorphism* of effect monoids, taking `⋁` to `+` and composition to
+  multiplication.
 
-**On the second conjunct** (audit row 190II.3).  `IsRealEffectus`
-(`StatesPredicates.lean`) currently asks only for a *bijective* morphism of
-effect monoids `Scal C → [0,1]`, where **190II.3** (`dfn-mandso`,
-eff.tex:2097) asks for an *isomorphism* — and a bijective morphism of effect
-algebras need not be one, since the inverse has to **reflect** `⊥`, which no
-axiom gives.  Here it does: `k(1) = s(k)·1`, so `k ⊥ l` is *equivalent* to
+**On the reality conjunct** (audit row 190II.3, repaired in session 94).
+`IsRealEffectus` (`StatesPredicates.lean`) asks — as **190II.3**
+(`dfn-mandso`, eff.tex:2097) does — for an *isomorphism* of effect monoids
+`Scal C ≅ [0,1]`, i.e. a mutually inverse pair of morphisms, and not merely
+for a bijective morphism: a bijective morphism of effect algebras need not
+be an isomorphism, since the inverse has to **reflect** `⊥`, which no axiom
+gives.  Here it does: `k(1) = s(k)·1`, so `k ⊥ l` is *equivalent* to
 `s k + s l ≤ 1` (`hperp_refl` in the proof), and the set-theoretic inverse
-`s'` of `s` is therefore a morphism.  The second conjunct states that — a
-morphism `φ` and a morphism `ψ` inverse to each other, i.e. an isomorphism
-of effect monoids — so that `IsRealEffectus` can be strengthened to the
-point's own reading without any new mathematics; that change is a
-cross-module one and is left for its own pass. -/
+`s'` of `s` is therefore itself a morphism.  That is what discharges the
+first conjunct below. -/
 theorem su_real_separating :
     IsRealEffectus (WStarCPSU.{u}ᵒᵖ) ∧
-      (∃ (φ : EffectMonoidHom (Scal (WStarCPSU.{u}ᵒᵖ)) unitInterval)
-          (ψ : EffectMonoidHom unitInterval (Scal (WStarCPSU.{u}ᵒᵖ))),
-          (∀ k, ψ.toFun (φ.toFun k) = k) ∧ ∀ r, φ.toFun (ψ.toFun r) = r) ∧
       SeparatingPredicates (WStarCPSU.{u}ᵒᵖ) ∧
       SeparatingStates (WStarCPSU.{u}ᵒᵖ) := by
   obtain ⟨θ, hθ⟩ := su_effObj_iso.{u}
@@ -3133,12 +3129,7 @@ theorem su_real_separating :
                                         perp_map := hsperp
                                         ovee_map := hsovee }
                           map_one := hsone }
-             map_mul := hsmul }, hsinj, hssurj⟩,
-    ⟨{ toEAHom := { toPCMHom := { toFun := s
-                                  perp_map := hsperp
-                                  ovee_map := hsovee }
-                    map_one := hsone }
-       map_mul := hsmul },
+             map_mul := hsmul },
      { toEAHom := { toPCMHom := { toFun := s'
                                   perp_map := hs'perp
                                   ovee_map := hs'ovee }
@@ -5861,8 +5852,8 @@ form: `(W*_ncpsu)ᵒᵖ`, cf. `effectus_vn_partial`) is a real effectus with
 separating states and predicates.  (Its predicates on `𝒜` correspond to the
 effects `[0,1]_𝒜` and its states to the normal states.)
 
-The second conjunct is the strengthening **190II.3** asks for: the scalars
-are not merely in bijective-morphic correspondence with `[0,1]` but
+`IsRealEffectus` carries the strengthening **190II.3** asks for: the
+scalars are not merely in bijective-morphic correspondence with `[0,1]` but
 **isomorphic** to it as effect monoids.  See `su_real_separating`. -/
 theorem effectus_vn_real_separating
     (s : EffectusPartialStructure WStarCPSU.{u}ᵒᵖ) :
@@ -5871,9 +5862,6 @@ theorem effectus_vn_real_separating
     letI := s.finPAC
     letI := s.effectus
     IsRealEffectus WStarCPSU.{u}ᵒᵖ ∧
-      (∃ (φ : EffectMonoidHom (Scal WStarCPSU.{u}ᵒᵖ) unitInterval)
-          (ψ : EffectMonoidHom unitInterval (Scal WStarCPSU.{u}ᵒᵖ)),
-          (∀ k, ψ.toFun (φ.toFun k) = k) ∧ ∀ r, φ.toFun (ψ.toFun r) = r) ∧
       SeparatingPredicates WStarCPSU.{u}ᵒᵖ ∧
       SeparatingStates WStarCPSU.{u}ᵒᵖ := by
   have : HasFiniteCoproducts (WStarCPSU.{u}ᵒᵖ) := suHasFiniteCoproducts

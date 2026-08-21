@@ -25955,3 +25955,80 @@ the thesis's own arguments failed to go through.
 a picture; (4) our mis-transcription — the module header, the two 72III
 erratum notes, the 37V item-2 description, the two 72V citations, and the 36V
 doc's half-record of what changed.
+
+## Session 94 — `B/Eff`: **190II.3's cross-module repair is done — `IsRealEffectus` now asks for an *isomorphism* of effect monoids**, and both consumers still prove it (worker on `Theses/B/Eff/StatesPredicates.lean`, `Theses/B/Eff/VNExamples.lean`)
+
+The last outstanding row of the statement audit.  **190II.3** (`dfn-mandso`,
+eff.tex:2097) defines a **real effectus** as one whose effect monoid of
+scalars is *isomorphic* to `[0,1]`.  `IsRealEffectus`
+(`StatesPredicates.lean:551`) asked only for a **bijective** morphism
+
+```lean
+∃ φ : EffectMonoidHom (Scal C) I, Function.Bijective φ.toFun
+```
+
+which is strictly weaker: a bijective morphism of effect algebras need not
+have a morphism inverse, because the inverse has to **reflect** `⊥`, and no
+effect-algebra axiom gives that.  The definition now reads
+
+```lean
+∃ (φ : EffectMonoidHom (Scal C) I) (ψ : EffectMonoidHom I (Scal C)),
+  (∀ k, ψ.toFun (φ.toFun k) = k) ∧ ∀ r, φ.toFun (ψ.toFun r) = r
+```
+
+i.e. a mutually inverse pair of effect-monoid morphisms — the point's own
+reading.  Divergence class **(4) our mis-transcription**; the ⚠ block that
+recorded the defect and its cross-module cost is replaced by a note saying
+what the rendering is and why the pair, not a bijection, is the right shape.
+
+**No new mathematics was needed.**  Session 94's earlier `VNExamples` pass had
+already proved the missing half in situ: for `k : Scal (vN_cpsuᵒᵖ)` one has
+`k(1) = s(k)·1`, so `k ⊥ l` is *equivalent* to `s k + s l ≤ 1` (`hperp_refl`
+inside `su_real_separating`), and the set-theoretic inverse `s'` of `s` is
+therefore itself a morphism of effect monoids.  Both halves — `s` and `s'`,
+with `hsperp/hsovee/hsone/hsmul` and `hs'perp/hs'ovee/hs'one/hs'mul` — were
+already in the proof; only the packaging changed.
+
+**The two consumers.**  Both had carried the strengthened statement as an
+explicit *fourth* conjunct beside `IsRealEffectus`, pending exactly this
+change.  That conjunct is now **literally the unfolding of `IsRealEffectus`**,
+so it was **dropped** rather than kept: a conjunct that is definitionally its
+neighbour states nothing extra, and leaving it would have left the file
+asserting twice — with the doc comment explaining the redundancy — what the
+definition now says once.  Nothing is weakened: the conjunct that survives is
+the stronger of the two old ones, and the discarded one is recoverable from it
+by `rfl`.  The statements are now
+
+```lean
+theorem su_real_separating :
+    IsRealEffectus (WStarCPSU.{u}ᵒᵖ) ∧
+      SeparatingPredicates (WStarCPSU.{u}ᵒᵖ) ∧ SeparatingStates (WStarCPSU.{u}ᵒᵖ)
+```
+
+and the same three conjuncts for `effectus_vn_real_separating (s : …)` — which
+is exactly **190III**'s "is a real effectus with separating states and
+predicates", now with `real` meaning what 190II.3 says it means.  The closing
+`refine` of `su_real_separating` loses its duplicated `⟨φ, hsinj, hssurj⟩`
+component; `hsinj` and `hssurj` are still used, to build `s'` and to prove
+`hs'ovee`/`hs'one`/`hs'mul`.
+
+**Destructuring check first** (wave 1's lesson).  `grep`ped the whole tree for
+both theorem names before touching either: `IsRealEffectus` occurs only in its
+own definition and in those two statements, and `su_real_separating`'s single
+call site is `effectus_vn_real_separating`, which applies it whole
+(`exact @su_real_separating E`) and changes shape in lockstep.
+`effectus_vn_real_separating` has no `.lean` consumer at all.  No positional
+destructuring anywhere, so dropping the conjunct breaks nothing.
+
+**Compile.**  `StatesPredicates` clean, olean rebuilt, then the whole importing
+chain recompiled against it: `Quotients`, `Dagger`, `DiamondAmp`, `Comparisons`
+— 0 errors, 0 `sorry` each; `VNExamples` — 0 errors, **exactly one** `sorry`,
+the pre-existing B15 one at `vn_is_andthen_eff:5920` feeding
+`su_andThenEffectus_of_pure_sqrt`.  All three touched statements verified
+axiom-clean **in situ** (source copied to the scratchpad, `#print axioms`
+appended, copy compiled): `Theses.B.Eff.IsRealEffectus`,
+`Theses.B.Eff.su_real_separating` and
+`Theses.B.Eff.effectus_vn_real_separating` each depend on exactly
+`[propext, Classical.choice, Quot.sound]`.
+
+With this, the last cross-module repair from the statement audit is closed.

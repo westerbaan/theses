@@ -539,18 +539,19 @@ noncomputable instance scalEffectMonoid : EffectMonoid (Scal C) :=
 /-- **190II.3** (`dfn-mandso`, eff.tex:2097, Definition): a **real effectus**
 is an effectus whose effect monoid of scalars is isomorphic to `[0,1]`.
 
-⚠ **Weaker than the point** (audit row 190II.3, left unrepaired): the point
-asks for an *isomorphism of effect monoids*, and what is rendered is a
-*bijective* effect-monoid morphism.  A bijective morphism of effect algebras
-need not have a morphism inverse — the inverse has to reflect `⊥`, which is
-not automatic — so the two agree only if that reflection is proved, and it is
-not.  Repairing the definition is a cross-module change: `IsRealEffectus` is
-consumed by `B/Eff/VNExamples` (`effectus_vn_real_separating` and its
-sibling), which supply exactly a bijective morphism, so the repair has to be
-made together with those two proofs.  See the report of session 94. -/
+The isomorphism is rendered as a mutually inverse pair of effect-monoid
+morphisms, which is what "isomorphic as an effect monoid" means: a merely
+*bijective* morphism of effect algebras need not have a morphism inverse,
+because the inverse has to **reflect** `⊥` and no axiom gives that.  (An
+earlier reading asked only for a bijective `φ`, and was therefore weaker
+than the point; repaired in session 94, together with its two consumers in
+`B/Eff/VNExamples` — `su_real_separating` and `effectus_vn_real_separating`
+— where the reflection is available: the scalar `k` satisfies
+`k(1) = s(k)·1`, so `k ⊥ l` is *equivalent* to `s k + s l ≤ 1`.) -/
 def IsRealEffectus (C : Type u) [Category.{v} C] [HasFiniteCoproducts C]
     [∀ X Y : C, PCM (X ⟶ Y)] [FinPAC C] [EffectusPartialForm C] : Prop :=
-  ∃ φ : EffectMonoidHom (Scal C) I, Function.Bijective φ.toFun
+  ∃ (φ : EffectMonoidHom (Scal C) I) (ψ : EffectMonoidHom I (Scal C)),
+    (∀ k, ψ.toFun (φ.toFun k) = k) ∧ ∀ r, φ.toFun (ψ.toFun r) = r
 
 /-- **190II.4** (`dfn-mandso`, eff.tex:2101, Definition): scalar
 multiplication `λ · p = λ ∘ p` turns each `Pred X` into an effect module
