@@ -554,9 +554,10 @@ private theorem mem_or_mem_of_mul_eq_zero {I : Submodule ℂ 𝒜}
 /-- **27XI** (`maximal-riesz-ideal-maximal-order-ideal`, cstar.tex:4010,
 Lemma): a maximal Riesz ideal is a maximal order ideal.
 
-⚠ The printed proof (cstar.tex 270.120) is **wrong** — erratum
-`parsec-270.120` (`asols.tex:113`) records that it erroneously assumes
-`|a| ∈ J`.  This is the corrected proof of `asols.tex:115–171`. -/
+The proof now printed at cstar.tex 270.120 is the **corrected** one of
+erratum `parsec-270.120` (`asols.tex:113–171`), incorporated 2026-08-13; the
+first printing erroneously assumed `|a| ∈ J`.  What follows transcribes the
+corrected proof, so the erratum is no longer outstanding. -/
 theorem maximal_riesz_ideal_maximal_order_ideal (I : Submodule ℂ 𝒜)
     (hI : IsMaximalRieszIdeal I) : IsMaximalOrderIdeal I := by
   refine ⟨⟨hI.1.1.1, hI.1.2⟩, fun J hJ hIJ => ?_⟩
@@ -1354,13 +1355,84 @@ Mathlib's completion API).
 
 The exercise's two *extension* clauses, which are what it is used for, are
 `inner_product_completion_extension` and `inner_product_completion_extendL`
-below; the second is what **30VI**'s `ϱ_ω` needs. -/
+below; the second is what **30VI**'s `ϱ_ω` needs.  The exercise states the
+headline for a *possibly degenerate* inner product, where `η` need not be
+injective; that is `inner_product_completion_degenerate`, immediately
+below. -/
 theorem inner_product_completion (V : Type v) [NormedAddCommGroup V]
     [InnerProductSpace ℂ V] :
     ∃ (H : Type v) (_ : NormedAddCommGroup H) (_ : InnerProductSpace ℂ H)
       (_ : CompleteSpace H) (e : V →ₗᵢ[ℂ] H), DenseRange e :=
   ⟨UniformSpace.Completion V, inferInstance, inferInstance, inferInstance,
     UniformSpace.Completion.toComplₗᵢ, UniformSpace.Completion.denseRange_coe⟩
+
+section DegenerateInner
+
+-- The inner product of a possibly degenerate `PreInnerProductSpace.Core`,
+-- written `⟪·,·⟫`, as in **4XV** (`A/CStar/Basic`).
+attribute [local instance] InnerProductSpace.Core.toPreInner'
+
+/-- **30V** (`inner-product-completion`, cstar.tex:4733, Exercise), the
+headline for a possibly *degenerate* inner product — which is how the
+exercise states it: "note, however, that `η` need not be injective: show that
+`η(a) = η(b)` iff `‖a−b‖ = 0` for all `a,b ∈ V`".  So `V` carries only a
+`PreInnerProductSpace.Core ℂ V`, the setting of **4XV**, where
+`‖x‖ = innerNorm x = √⟪x,x⟫` is a *seminorm* and need not be a norm.  The
+completion `ℋ` is still a Hilbert space, `η : V → ℋ` is still linear with
+`⟪η a, η b⟫ = [a,b]` and dense image — and `η` collapses exactly the
+seminorm-zero differences.
+
+Divergence (2), a different route to the same object: the thesis builds `ℋ`
+by hand as the Cauchy sequences on `V` modulo `lim ‖aₙ−bₙ‖ = 0`, whereas this
+is Mathlib's completion of the separation quotient of `V`.  The exercise's
+collapse of `η` is carried by that quotient: `η a = η b` iff `a` and `b` are
+inseparable (the completion map is injective on a T0 space) iff
+`d(a,b) = ‖a−b‖ = 0`, which is the exercise's own criterion.
+
+For a definite inner product this is `inner_product_completion` above (where
+`η` is then an isometric *embedding*); the two extension clauses are
+`inner_product_completion_extension` and `inner_product_completion_extendL`
+below. -/
+theorem inner_product_completion_degenerate (V : Type v) [AddCommGroup V] [Module ℂ V]
+    [c : PreInnerProductSpace.Core ℂ V] :
+    ∃ (H : Type v) (_ : NormedAddCommGroup H) (_ : InnerProductSpace ℂ H)
+      (_ : CompleteSpace H) (η : V →ₗ[ℂ] H),
+      (∀ a b : V, (⟪η a, η b⟫ : ℂ) = ⟪a, b⟫) ∧ DenseRange η ∧
+      (∀ a b : V, η a = η b ↔ innerNorm (a - b) = 0) := by
+  let _ : SeminormedAddCommGroup V :=
+    InnerProductSpace.Core.toSeminormedAddCommGroup (𝕜 := ℂ) (F := V) (c := c)
+  let _ : InnerProductSpace ℂ V := InnerProductSpace.ofCore c
+  refine ⟨UniformSpace.Completion (SeparationQuotient V), inferInstance, inferInstance,
+    inferInstance,
+    ((UniformSpace.Completion.toComplL : SeparationQuotient V →L[ℂ]
+        UniformSpace.Completion (SeparationQuotient V)).comp
+      (SeparationQuotient.mkCLM ℂ V)).toLinearMap, fun a b => ?_, ?_, fun a b => ?_⟩
+  · change (⟪((SeparationQuotient.mk a : SeparationQuotient V) :
+        UniformSpace.Completion (SeparationQuotient V)),
+      ((SeparationQuotient.mk b : SeparationQuotient V) :
+        UniformSpace.Completion (SeparationQuotient V))⟫ : ℂ) = _
+    rw [UniformSpace.Completion.inner_coe, SeparationQuotient.inner_mk_mk]
+  · exact UniformSpace.Completion.denseRange_coe.comp
+      SeparationQuotient.surjective_mk.denseRange
+      (UniformSpace.Completion.continuous_coe _)
+  · -- `η a = η b` iff `mk a = mk b` (the completion map is injective on the
+    -- T0 separation quotient) iff `d(a,b) = 0` iff `‖a−b‖ = 0`.
+    have h1 : (((SeparationQuotient.mk a : SeparationQuotient V) :
+        UniformSpace.Completion (SeparationQuotient V)) =
+      ((SeparationQuotient.mk b : SeparationQuotient V) :
+        UniformSpace.Completion (SeparationQuotient V))) ↔
+        (SeparationQuotient.mk a : SeparationQuotient V) = SeparationQuotient.mk b :=
+      UniformSpace.Completion.coe_inj
+    have h2 : (SeparationQuotient.mk a : SeparationQuotient V) = SeparationQuotient.mk b
+        ↔ dist a b = 0 := by
+      rw [SeparationQuotient.mk_eq_mk, Metric.inseparable_iff]
+    have h3 : dist a b = innerNorm (a - b) := by
+      rw [dist_eq_norm]
+      rfl
+    rw [← h3, ← h2, ← h1]
+    exact Iff.rfl
+
+end DegenerateInner
 
 /-- **30V** (`inner-product-completion`, cstar.tex:4733, Exercise), the
 uniform-extension clause: every uniformly continuous map `f : V → X` into a

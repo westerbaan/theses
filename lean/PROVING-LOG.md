@@ -26032,3 +26032,82 @@ appended, copy compiled): `Theses.B.Eff.IsRealEffectus`,
 `[propext, Classical.choice, Quot.sound]`.
 
 With this, the last cross-module repair from the statement audit is closed.
+
+## Session 94 — A/CStar/Representation: **30V is stated for a possibly degenerate inner product at last — `inner_product_completion_degenerate` proves the exercise's "η(a) = η(b) iff ‖a−b‖ = 0"** (worker on `Theses/A/CStar/Representation.lean`)
+
+The last genuinely `open` row of the `A/CStar` audit (57 rows re-verified, one
+still open).  **30V** (`inner-product-completion`, cstar.tex parsec 300 point
+50) begins with a complex vector space `V` carrying *an* inner product — not
+assumed definite — completes it to `ℋ` by Cauchy sequences modulo
+`lim‖aₙ−bₙ‖ = 0`, and says in so many words:
+
+> Note, however, that `η` need not be injective: show that `η(a) = η(b)` iff
+> `‖a−b‖ = 0` for all `a,b ∈ V`.
+
+Our `inner_product_completion` assumed `InnerProductSpace ℂ V`, i.e. a
+definite inner product, which makes that clause vacuous; the exercise's actual
+content was not on record.  Wave 1's two earlier repairs are what made it
+reachable: `A/CStar/Basic`'s **4XV** was restated over
+`PreInnerProductSpace.Core ℂ V` with `innerNorm x = √⟪x,x⟫` and
+`inner_product_seminorm`, and 30V itself gained its two `∃!` extension
+clauses.
+
+**A sibling, not a reshaping.**  `inner_product_completion` keeps its
+statement and the new
+`inner_product_completion_degenerate` (`Representation.lean:1371`) goes in
+beside it, for two reasons.  (i) The two shapes are genuinely different, not
+nested: with no norm on `V` the degenerate form cannot offer the definite
+form's isometric embedding `V →ₗᵢ[ℂ] H`, it offers a linear `η` with
+`⟪η a, η b⟫ = ⟪a,b⟫` instead — folding it in would have *dropped* the
+isometric-embedding rendering rather than generalised it.  (ii)
+`B/Dils/Stinespring.lean:92` points at `inner_product_completion` in prose as
+"cstar.tex 30V, **which assumes definiteness**", and that file is another
+worker's; a fold-in would have falsified a doc comment I am not permitted to
+touch.  This is the `cstar_positive_2x2matrix` / `mn_vna_2` discipline.  Both
+extension clauses (`inner_product_completion_extension`,
+`inner_product_completion_extendL` — the latter is what **30VI**'s `ϱ_ω`
+consumes) are untouched, and `grep` over the tree found *no* `.lean` consumer
+of any of the four: the only references are the three declarations themselves
+and the Stinespring prose note.
+
+**The statement.**
+
+```lean
+theorem inner_product_completion_degenerate (V : Type v) [AddCommGroup V] [Module ℂ V]
+    [c : PreInnerProductSpace.Core ℂ V] :
+    ∃ (H : Type v) (_ : NormedAddCommGroup H) (_ : InnerProductSpace ℂ H)
+      (_ : CompleteSpace H) (η : V →ₗ[ℂ] H),
+      (∀ a b : V, (⟪η a, η b⟫ : ℂ) = ⟪a, b⟫) ∧ DenseRange η ∧
+      (∀ a b : V, η a = η b ↔ innerNorm (a - b) = 0)
+```
+
+with `innerNorm` **4XV**'s `√⟪x,x⟫`, a seminorm here and not a norm, so the
+last conjunct is exactly the exercise's clause and is not vacuous.
+
+**Divergence class (2), a different route to the same object.**  The thesis
+builds `ℋ` by hand out of Cauchy sequences; we take Mathlib's completion of
+the *separation quotient* of `V` under the seminorm — the same construction
+off the shelf, and the same route `B/Dils`'s
+`prop_complete_into_hilbert_space` (136II) already takes for its degenerate
+form.  The exercise's collapse of `η` is then carried by the quotient, and the
+proof is the thesis's criterion read through it:
+
+* `η a = η b` iff `mk a = mk b` in `SeparationQuotient V`
+  (`UniformSpace.Completion.coe_inj`: the completion map is injective on a
+  `T0Space`, and the separation quotient is one);
+* iff `a` and `b` are inseparable (`SeparationQuotient.mk_eq_mk`);
+* iff `d(a,b) = 0` (`Metric.inseparable_iff`) — and `d(a,b) = ‖a−b‖ =
+  innerNorm (a−b)` definitionally, the seminorm of **4XV**.
+
+That chain is the thesis's `lim‖a−b‖ = 0` for the constant sequences: the
+constant sequences `η(a)` and `η(b)` are identified precisely when their
+constant distance vanishes.
+
+**Compile.**  `Representation.lean`: 0 errors, 0 ``uses `sorry` `` (only the
+file's pre-existing `unusedSectionVars`/`haveILetI` linter warnings).  Olean
+rebuilt, and all three importers recompiled against it — `A/CStar/TowardsVN`,
+`A/CStar/Matrices`, `A/VN/Basic` — 0 errors each.  Verified axiom-clean **in
+situ** (source copied to the scratchpad, `#print axioms` appended, the copy
+compiled): `Theses.A.CStar.inner_product_completion`,
+`…_degenerate`, `…_extension` and `…_extendL` each depend on exactly
+`[propext, Classical.choice, Quot.sound]`.
