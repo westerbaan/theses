@@ -14,8 +14,10 @@ lines 2–1266.
   parsec 1400:  Paschke dilations: definition, Stinespring is Paschke,
                 uniqueness, basic properties
 
-Statements only; every proof is `sorry`.  See CONVENTIONS.md for the
-numbering (**135II** = parsec 1350, point 20) and naming conventions.
+Every statement in this file is proved, except **139XI**
+(`ess_uniq_pur`), which is `sorry` (see ERRATA.md: the exercise as printed
+needs an extra hypothesis).  See CONVENTIONS.md for the numbering
+(**135II** = parsec 1350, point 20) and naming conventions.
 
 Conventions specific to this file: all von Neumann algebras and Hilbert
 spaces live in a single universe `u`; the ncp-maps `φ : 𝒜 → B(H)` of the
@@ -905,12 +907,12 @@ theorem isStarProjection_le_starProjection {M : Submodule ℂ K} [M.HasOrthogona
   rw [ContinuousLinearMap.le_def]
   exact (ContinuousLinearMap.nonneg_iff_isPositive _).mp hnn
 
-/-- The heart of the thesis's proof of **138II** (dils.tex 138IV): if a closed
-subspace `M ⊆ 𝒦` absorbs every `ϱ(|x⟩⟨e₀|)η` with `η` fixed by `ϱ(|e₀⟩⟨e₀|)`,
-then `M = 𝒦`.  This is the thesis's computation `1 = ϱ(1) = ∑ᵢ ϱ(pᵢ)
-= ∑ᵢⱼ |rᵢⱼ⟩⟨rᵢⱼ|`, read as: the projection onto `M` dominates every partial
-sum `ϱ(∑_{i∈F} pᵢ)` — because `pᵢ = |eᵢ⟩⟨e₀| · |e₀⟩⟨e₀| · |e₀⟩⟨eᵢ|` — while
-`1` is the *least* upper bound of those partial sums, by normality of `ϱ`. -/
+/-- **138IV** (dils.tex:637): the heart of the thesis's proof of **138II** —
+if a closed subspace `M ⊆ 𝒦` absorbs every `ϱ(|x⟩⟨e₀|)η` with `η` fixed by
+`ϱ(|e₀⟩⟨e₀|)`, then `M = 𝒦`.  This is the thesis's computation
+`1 = ϱ(1) = ∑ᵢ ϱ(pᵢ) = ∑ᵢⱼ |rᵢⱼ⟩⟨rᵢⱼ|`, read as: the projection onto `M`
+dominates every partial sum `ϱ(∑_{i∈F} pᵢ)` — because
+`pᵢ = |eᵢ⟩⟨e₀| · |e₀⟩⟨e₀| · |e₀⟩⟨eᵢ|` — while `1` is the *least* upper bound of those partial sums, by normality of `ϱ`. -/
 theorem nmiu_forall_mem (ϱ : NMIUMap (H →L[ℂ] H) (K →L[ℂ] K)) (e₀ : H) (he₀ : ‖e₀‖ = 1)
     (M : Submodule ℂ K) [M.HasOrthogonalProjection]
     (hM : ∀ (x : H) (η : K), ϱ (ketbra e₀ e₀) η = η → ϱ (ketbra x e₀) η ∈ M) :
@@ -2304,10 +2306,12 @@ def StinespringDilation.Minimal {φ : 𝒜 → (H →L[ℂ] H)}
   Dense (Submodule.span ℂ
     {k : D.K | ∃ (a : 𝒜) (x : H), k = D.ρ a (D.V x)} : Set D.K)
 
-/-- **139I** (dils.tex:778, Definition), embedded claims: every ncp-map
-`φ : 𝒜 → B(ℋ)` has a normal Stinespring dilation (by **135IV**), and (by
-restricting an arbitrary dilation to the closure of the span of `ϱ(𝒜)Vℋ`)
-even a minimal one. -/
+/-- **139I** (dils.tex:778, Definition), embedded claim: every ncp-map
+`φ : 𝒜 → B(ℋ)` has a normal Stinespring dilation, and even a minimal one —
+"by construction the (normal) Stinespring dilation from **137II** is
+minimal".  (The *next* sentence of **139I**, that an *arbitrary* dilation
+restricts to a minimal one, is `stinespringDilation_restrict_minimal`
+below.) -/
 theorem exists_minimal_stinespringDilation [VonNeumannAlgebra 𝒜]
     (φ : NCPMap 𝒜 (H →L[ℂ] H)) :
     ∃ D : StinespringDilation ⇑φ, D.Minimal := by
@@ -2321,6 +2325,169 @@ theorem exists_minimal_stinespringDilation [VonNeumannAlgebra 𝒜]
   have hnn : PreservesDirSups ⇑f := φ.preservesDirSups'
   obtain ⟨𝒦, h1, h2, h3, ϱ, V, heq, -, hmin⟩ := stinespring_normal_aux f hcp hnn
   exact ⟨⟨𝒦, ϱ, V, heq⟩, hmin⟩
+
+/-- **139I** (dils.tex:778, Definition), final sentence: *every* normal
+Stinespring dilation `(𝒦, ϱ, V)` of `φ` **restricts** to a minimal dilation
+for `φ`, on `𝒦' ⊆ 𝒦` the norm-closure of the linear span of `ϱ(𝒜)Vℋ`.
+
+What is delivered: a minimal dilation `D'` together with a ℂ-linear
+isometry `ι : D'.𝒦 → 𝒦` which witnesses that `D'` really is the restriction
+of `D` — it intertwines the two representations (`ι(ϱ'(a)y) = ϱ(a)(ι y)`),
+carries `V'` to `V` (`ι(V'x) = Vx`), and has range exactly the closed span
+`𝒦'`.  So `ι` is a unitary of `D'.𝒦` onto `𝒦'` under which `ϱ'` and `V'`
+become `ϱ|_{𝒦'}` and `V`, which is the thesis's `(𝒦', ϱ, V)`.
+
+Not delivered: `D'.𝒦` is literally the subtype `↥𝒦'`, not the set `𝒦'`
+itself (Lean has no subset types), so "is a subspace of `𝒦`" is recorded by
+`ι` rather than by an inclusion of types; and `φ` is a bare function rather
+than a bundled ncp-map, which only makes the statement more general (`𝒜` is
+still a von Neumann algebra — the normality of `ϱ'` is proved with the
+vector criterion **48II** of `A/VN/Basic`).
+
+The proof is the thesis's one-sentence construction spelled out: `𝒦'` is
+`ϱ(a)`-invariant because `ϱ(a)ϱ(b)Vx = ϱ(ab)Vx` and `ϱ(a)` is continuous;
+`ϱ'(a)` is `ϱ(a)` corestricted to `𝒦'`, an nmiu-map because the inner
+product of `𝒦'` is inherited; `V' = V` corestricted; and minimality holds
+because the span of `ϱ'(𝒜)V'ℋ` maps onto the span of `ϱ(𝒜)Vℋ`, whose
+closure is `𝒦'`. -/
+theorem stinespringDilation_restrict_minimal [VonNeumannAlgebra 𝒜]
+    (φ : 𝒜 → (H →L[ℂ] H)) (D : StinespringDilation φ) :
+    ∃ (D' : StinespringDilation φ) (ι : D'.K →L[ℂ] D.K),
+      D'.Minimal ∧ Isometry ι ∧ (∀ x : H, ι (D'.V x) = D.V x) ∧
+      (∀ (a : 𝒜) (y : D'.K), ι (D'.ρ a y) = D.ρ a (ι y)) ∧
+      Set.range ι =
+        ((Submodule.span ℂ
+          {k : D.K | ∃ (a : 𝒜) (x : H), k = D.ρ a (D.V x)}).topologicalClosure :
+            Set D.K) := by
+  classical
+  set p : Submodule ℂ D.K :=
+    Submodule.span ℂ {k : D.K | ∃ (a : 𝒜) (x : H), k = D.ρ a (D.V x)} with hp
+  set K' : Submodule ℂ D.K := p.topologicalClosure with hK'
+  have hclosed : IsClosed (K' : Set D.K) := Submodule.isClosed_topologicalClosure p
+  have : CompleteSpace K' := hclosed.completeSpace_coe
+  -- `𝒦'` is invariant: `ϱ(a)ϱ(b)Vx = ϱ(ab)Vx`, then continuity.
+  have hinv : ∀ (a : 𝒜) (y : D.K), y ∈ K' → D.ρ a y ∈ K' := by
+    intro a y hy
+    have hsub : p ≤ Submodule.comap ((D.ρ a : D.K →L[ℂ] D.K) : D.K →ₗ[ℂ] D.K) K' := by
+      rw [hp]
+      refine Submodule.span_le.mpr ?_
+      rintro k ⟨b, x, rfl⟩
+      have hmul : D.ρ a (D.ρ b (D.V x)) = D.ρ (a * b) (D.V x) := by
+        rw [show D.ρ (a * b) = D.ρ a * D.ρ b from map_mul D.ρ.toStarAlgHom a b]
+        rfl
+      show D.ρ a (D.ρ b (D.V x)) ∈ K'
+      rw [hmul, hK']
+      exact Submodule.le_topologicalClosure p (Submodule.subset_span ⟨a * b, x, rfl⟩)
+    have hQ : IsClosed ((Submodule.comap ((D.ρ a : D.K →L[ℂ] D.K) : D.K →ₗ[ℂ] D.K) K' :
+        Submodule ℂ D.K) : Set D.K) := hclosed.preimage (D.ρ a).continuous
+    exact Submodule.topologicalClosure_minimal p hsub hQ hy
+  have hVmem : ∀ x : H, D.V x ∈ K' := by
+    intro x
+    refine Submodule.le_topologicalClosure p (Submodule.subset_span ⟨1, x, ?_⟩)
+    rw [show D.ρ (1 : 𝒜) = 1 from map_one D.ρ.toStarAlgHom]
+    rfl
+  -- `ϱ'(a) := ϱ(a)|_{𝒦'}`, corestricted to `𝒦'`.
+  set ρ' : 𝒜 → (K' →L[ℂ] K') := fun a =>
+    ((D.ρ a).comp K'.subtypeL).codRestrict K' (fun y => hinv a y y.2) with hρ'
+  have hcoe : ∀ (a : 𝒜) (y : K'), ((ρ' a y : K') : D.K) = D.ρ a (y : D.K) :=
+    fun _ _ => rfl
+  have hext : ∀ f g : K' →L[ℂ] K',
+      (∀ y : K', ((f y : K') : D.K) = ((g y : K') : D.K)) → f = g := by
+    intro f g h
+    exact ContinuousLinearMap.ext fun y => Subtype.ext (h y)
+  have hone : ρ' 1 = 1 := by
+    refine hext _ _ fun y => ?_
+    rw [hcoe, show D.ρ (1 : 𝒜) = 1 from map_one D.ρ.toStarAlgHom]
+    rfl
+  have hmul : ∀ a b : 𝒜, ρ' (a * b) = ρ' a * ρ' b := by
+    intro a b
+    refine hext _ _ fun y => ?_
+    rw [hcoe, show D.ρ (a * b) = D.ρ a * D.ρ b from map_mul D.ρ.toStarAlgHom a b]
+    show D.ρ a (D.ρ b (y : D.K)) = ((ρ' a (ρ' b y) : K') : D.K)
+    rw [hcoe, hcoe]
+  have hzero : ρ' 0 = 0 := by
+    refine hext _ _ fun y => ?_
+    rw [hcoe, show D.ρ (0 : 𝒜) = 0 from map_zero D.ρ.toStarAlgHom]
+    rfl
+  have hadd : ∀ a b : 𝒜, ρ' (a + b) = ρ' a + ρ' b := by
+    intro a b
+    refine hext _ _ fun y => ?_
+    rw [hcoe, show D.ρ (a + b) = D.ρ a + D.ρ b from map_add D.ρ.toStarAlgHom a b]
+    show D.ρ a (y : D.K) + D.ρ b (y : D.K) = ((ρ' a y + ρ' b y : K') : D.K)
+    rw [Submodule.coe_add, hcoe, hcoe]
+  have hsmul : ∀ (c : ℂ) (a : 𝒜), ρ' (c • a) = c • ρ' a := by
+    intro c a
+    refine hext _ _ fun y => ?_
+    rw [hcoe, show D.ρ (c • a) = c • D.ρ a from map_smul D.ρ.toStarAlgHom c a]
+    show c • D.ρ a (y : D.K) = ((c • ρ' a y : K') : D.K)
+    rw [Submodule.coe_smul, hcoe]
+  have hstar : ∀ a : 𝒜, ρ' (star a) = star (ρ' a) := by
+    intro a
+    rw [ContinuousLinearMap.star_eq_adjoint]
+    refine (ContinuousLinearMap.eq_adjoint_iff _ _).mpr fun y z => ?_
+    rw [Submodule.coe_inner, Submodule.coe_inner, hcoe, hcoe,
+      show D.ρ (star a) = star (D.ρ a) from map_star D.ρ.toStarAlgHom a,
+      ContinuousLinearMap.star_eq_adjoint, ContinuousLinearMap.adjoint_inner_left]
+  set ρA : 𝒜 →⋆ₐ[ℂ] (K' →L[ℂ] K') :=
+    { toFun := ρ'
+      map_one' := hone
+      map_mul' := hmul
+      map_zero' := hzero
+      map_add' := hadd
+      commutes' := fun r => by
+        rw [Algebra.algebraMap_eq_smul_one, hsmul, hone,
+          Algebra.algebraMap_eq_smul_one]
+      map_star' := hstar } with hρA
+  have hρAapp : ∀ a : 𝒜, ρA a = ρ' a := fun _ => rfl
+  -- normality of `ϱ'`: every vector of `𝒦'` gives an np-functional, namely the
+  -- one it gives as a vector of `𝒦`.
+  have hnormal : PreservesDirSups ⇑ρA := by
+    refine starAlgHom_preservesDirSups_of_vectors ρA Set.univ ?_ ?_
+    · intro R hR
+      exact ContinuousLinearMap.ext fun y => hR y (Set.mem_univ y)
+    · intro y _
+      have hDnp : PreservesDirSups ⇑(starAlgHomP D.ρ.toStarAlgHom) :=
+        D.ρ.preservesDirSups'
+      refine ⟨compNP (starAlgHomP D.ρ.toStarAlgHom) hDnp
+        (vectorNP (y : D.K)), fun a => ?_⟩
+      rw [compNP_apply, starAlgHomP_apply, vectorNP_apply, hρAapp,
+        Submodule.coe_inner, hcoe]
+      rfl
+  set V' : H →L[ℂ] K' := D.V.codRestrict K' hVmem with hV'
+  have hVcoe : ∀ x : H, ((V' x : K') : D.K) = D.V x := fun _ => rfl
+  -- `φ = ad_{V'} ∘ ϱ'`: compare inner products.
+  have heq : ∀ a : 𝒜, φ a = conjOperator V' (ρA a) := by
+    intro a
+    refine ContinuousLinearMap.ext fun x => ?_
+    refine ext_inner_left ℂ fun z => ?_
+    rw [D.eq a]
+    show (⟪z, ContinuousLinearMap.adjoint D.V ((D.ρ a).comp D.V x)⟫ : ℂ)
+      = ⟪z, ContinuousLinearMap.adjoint V' ((ρA a).comp V' x)⟫
+    rw [ContinuousLinearMap.adjoint_inner_right,
+      ContinuousLinearMap.adjoint_inner_right, Submodule.coe_inner]
+    rfl
+  -- minimality: `ι` carries the span of `ϱ'(𝒜)V'ℋ` onto the span of `ϱ(𝒜)Vℋ`,
+  -- whose closure is all of `𝒦'`.
+  have hmap : p ≤ Submodule.map (K'.subtype) (Submodule.span ℂ
+      {k : K' | ∃ (a : 𝒜) (x : H), k = ρ' a (V' x)}) := by
+    rw [hp]
+    refine Submodule.span_le.mpr ?_
+    rintro k ⟨a, x, rfl⟩
+    exact ⟨ρ' a (V' x), Submodule.subset_span ⟨a, x, rfl⟩, rfl⟩
+  have hmin : Dense (Submodule.span ℂ
+      {k : K' | ∃ (a : 𝒜) (x : H), k = ρ' a (V' x)} : Set K') := by
+    intro y
+    refine Metric.mem_closure_iff.mpr fun ε hε => ?_
+    have hy : (y : D.K) ∈ closure (p : Set D.K) := by
+      rw [← Submodule.topologicalClosure_coe]
+      exact y.2
+    obtain ⟨b, hbp, hbd⟩ := Metric.mem_closure_iff.mp hy ε hε
+    obtain ⟨w, hw, rfl⟩ := hmap hbp
+    exact ⟨w, hw, by simpa [Subtype.dist_eq] using hbd⟩
+  refine ⟨⟨K', ⟨ρA, hnormal⟩, V', heq⟩, K'.subtypeL, hmin, ?_,
+    fun x => rfl, fun a y => rfl, ?_⟩
+  · exact AddMonoidHomClass.isometry_of_norm K'.subtypeL fun y => rfl
+  · exact Subtype.range_coe
 
 /-- **139III** (`dils-univlemma`, dils.tex:823, Lemma): for nmiu-maps
 `ϱ : 𝒜 → ℬ`, `ϱ' : 𝒜 → 𝒞` between von Neumann algebras and an ncp-map

@@ -24751,8 +24751,11 @@ five were carrying an author-facing defect silently.
 ## Session 94 — `B/Eff`: **the first repair pass on `Effectus.lean` and `Quotients.lean`** — five of the six `weaker` rows repaired, 188III/188IV become genuine isomorphisms of categories (with the thesis's own inverse functors), and 200III/205II get their "has **all** kernels/cokernels" headlines (worker on `Theses/B/Eff/Effectus.lean`, `Theses/B/Eff/Quotients.lean`)
 
 Audit rows: `docs/audit/beff-effectus-quotients.csv`, 94 rows, **6** with
-`stmt` not `ok` (all `weaker`).  **Five repaired in full, one in part.**  Both
-files compile with **no errors, no warnings and no `sorry`s**.  Every
+`stmt` not `ok` (all `weaker`).  **Five repaired in full, one (189aII.3) repaired in two of its three
+sub-items, with the third costed.**  Both
+files compile with **no errors and no `sorry`s**; `Effectus.lean` has no
+warnings at all and `Quotients.lean` has exactly the nine it had before the
+pass (pre-existing `unusedSectionVars` and `haveILetI` style hints).  Every
 declaration added or changed was checked *in situ* (source copied to the
 scratchpad, `#print axioms` appended, recompiled): all
 `[propext, Classical.choice, Quot.sound]`.  `Effectus.olean` and
@@ -24849,28 +24852,26 @@ effectus in total form) was already faithful; the point's sub-items (a)
 
 * **(a) `Set`** is now **`extensive_effectus_set`** — free, on Mathlib's
   `types.finitaryExtensive`.  (1)
-* **(c) `CH`** was **written, checked and then withdrawn**, and this is a
-  costing, not an obstruction.  Mathlib has the mathematics:
+* **(c) `CH`** is now **`extensive_effectus_compHaus`**.
   `CompHaus = CompHausLike (fun _ => True)` and `CompHausLike.Limits` gives
   `FinitaryExtensive (CompHausLike P)` by reflection along the forgetful
   functor to `TopCat`, so the sub-item is two lines
   (`letI : HasFiniteCoproducts CompHaus.{u} := FinitaryExtensive.hasFiniteCoproducts`
-  — a universe-inference workaround: synthesis gets stuck on
-  `u =?= max ?v ?w` because the `CompHausLike` instance is stated in two
-  universes — followed by `extensive_effectus CompHaus.{u}`).  It compiles
-  and is axiom-clean.  What it costs is the import:
-  `import Mathlib.Topology.Category.CompHaus.Limits` takes `Effectus.lean`
-  from **43 s to 2 min 36 s** (measured three times, with and without; the
-  import *alone*, on a stub file, costs only 3 s — the rest is instance
-  search over the newly visible `HasFiniteCoproducts`/`HasTerminal`/
-  `FinitaryExtensive` instances across the file's ~1500 `coprod` elaborations),
-  and it would propagate to `Quotients`, `StatesPredicates`, `Dagger`,
-  `DiamondAmp`, `Comparisons` and `VNExamples`, all of which import this
-  file.  A 3.6× regression across seven modules for one `Examples` sub-item
-  that cites `[effintro]` and gives no proof is not a trade worth making.
-  The two lines and the measurement are recorded in the doc comment of
-  `extensive_effectus`, so the next reader can reinstate them in a minute if
-  the judgement is reversed.
+  — a universe-inference workaround, not mathematics: synthesis gets stuck on
+  `u =?= max ?v ?w` because Mathlib's `CompHausLike` instance is stated in two
+  universes — followed by `extensive_effectus CompHaus.{u}`).  This is the
+  file's one new Mathlib import,
+  `Mathlib.Topology.Category.CompHaus.Limits`.  (1)
+  *A measurement worth recording, because it nearly cost the sub-item.*  A
+  first timing made the import look catastrophic — 43 s without, 2 min 36 s
+  with — and it was withdrawn on that basis.  The two runs were minutes apart
+  on a machine whose load average was drifting between 2 and 14 (other
+  workers building), and the comparison was worthless.  Four back-to-back
+  A/B runs, alternating the order, give 1m08/1m22, 1m23/1m40, 1m36/2m10 and
+  1m17/1m35 — with the *imported* version faster than the un-imported one in
+  the last two pairs.  The import's real cost is within the noise; on a stub
+  file it is 3 s.  **Never A/B a compile time on this machine without
+  alternating the order and repeating.**
 * **(b) `CRngᵒᵖ`** is **not available**.  Mathlib has no `FinitaryExtensive`
   instance for `CommRingCatᵒᵖ`.  The only handle in reach is
   `FinitaryExtensive Scheme` (`Mathlib.AlgebraicGeometry.Limits`) transported
@@ -24901,8 +24902,8 @@ effectus in total form) was already faithful; the point's sub-items (a)
 ### Left, and why
 
 * **Nothing was left for want of mathematics**, and no ruling turned out to
-  be needed.  The only partial row is 189aII.3, and both missing sub-items
-  are costed above rather than blocked.
+  be needed.  The only partial row is 189aII.3, whose one missing sub-item
+  (`CRngᵒᵖ`) is costed above rather than blocked.
 * **`FinPAC`, `EffectusPartialForm`, `IsTotal`, `predEffectAlgebra` were not
   touched.**  The audit compared them field by field with 180VII and found
   every clause present, and QUESTIONS **B13**'s weakness is in
@@ -24919,3 +24920,253 @@ effectus in total form) was already faithful; the point's sub-items (a)
   erratum `one-m-is-id` flags, and 187VI's zero–one axiom because ours goes
   through the uniqueness of the orthosupplement and 186VIII.2.  None of these
   is a statement defect and none was part of this pass's brief.
+
+## Session 94 — `B/Dils`: **the first repair pass on `Paschke.lean`, `Stinespring.lean` and `Pure.lean`** — nine of the thirty-four non-`ok` rows repaired, **157VI/157VII/157VIII are stated in full and 157IV's dependency inversion is undone**, 139I's *restriction* of an arbitrary Stinespring dilation is constructed, and 170IV.1 gets its "hence pure" (workers on `Theses/B/Dils/Paschke.lean`, `Theses/B/Dils/Stinespring.lean`, `Theses/B/Dils/Pure.lean`)
+
+Audit rows: `docs/audit/bdils-paschke-stinespring.csv` (70 rows, **18** not
+`ok`: 5 `weaker`, 12 `stronger`, 1 `differs`) and the 64 `B/Dils/Pure` rows
+of `docs/audit/bdils-pure-beff-states-effectalgebras.csv` (**16** not `ok`:
+1 `weaker`, 12 `stronger`, 3 `differs`).  **Nine repaired, twenty-five
+left** — every one of the twenty-five under one of the brief's four "leave"
+reasons, and each named below.  All three files compile with **no errors**;
+the only `sorry`s are the two pre-existing ones (`ess_uniq_pur`, 139XI, and
+`surjective_nmiu_2`, 170IV.2), both of which the brief ruled out of scope.
+Every declaration added or changed was checked *in situ* (source copied to
+the scratchpad, `#print axioms` appended, recompiled):
+`[propext, Classical.choice, Quot.sound]` throughout.  `Stinespring.olean`,
+`Paschke.olean`, `SelfDual.olean` and `Pure.olean` were rebuilt in
+dependency order and `B/Eff/VNExamples.lean` compiles against them.
+
+### Repaired — the order correspondence 157IV gets its three proof points (157VI, 157VII, 157VIII: 3 rows)
+
+This is the substance of the pass.  Parsec 1570 proves **157IV**
+(`paschke-correspondence`) in three steps — the *Set-up* 157VI, the *Order
+embedding* 157VII and *Surjectivity* 157VIII — and all three were rendered
+short.
+
+* **157VII** asserts that `t ↦ φ_t` **reflects positivity**: `T` in the
+  commutant with `φ_T` ncp forces `T ≥ 0`.  Ours
+  (`paschkeModule_phiT_injective`) concluded only the point's *corollary*,
+  injectivity, and the reflection was recovered inside
+  `paschke_correspondence_embedding` by a route that ran through part **3**
+  — inverting the thesis's order, in which the embedding comes first and
+  surjectivity uses nothing of it.  Restored as two new theorems, and the
+  thesis's argument is transcribed (**divergence class 1**):
+
+  * `paschkeModuleOf_phiT_reflects_nonneg` — 157VII on the *constructed*
+    module.  The thesis picks `x ∈ 𝒜 ⊙ ℬ`, says that by **152IX**
+    `hilmod-fixed-on-V` it suffices to show `⟨x̂, T x̂⟩ ≥ 0`, and computes
+    `⟨x̂, T x̂⟩ = ∑ᵢⱼ bᵢ* φ_T(aᵢ*aⱼ) bⱼ ≥ 0`.  That is exactly the Lean
+    proof: `hilmod_fixed_on_V` for `E`, `exists_fin_tmul` for
+    `x̂ = ∑ᵢ aᵢ ⊗ bᵢ`, `paschkeModule_inner_tprod_commutant` for the matrix
+    element, `phi_gram_nonneg` at `φ_T` for the inequality, and
+    `hilbmod_ordersep`/`ba_nonneg_iff` to turn `IsPositiveOp` into `0 ≤ T`.
+  * `phiT_reflects_nonneg` — 157VII for an *arbitrary* Paschke dilation, by
+    **157IX**'s own move: `paschke-unique-up-to-iso` gives `ϑ` with
+    `ϑ ∘ ϱ' = ϱ` and `h ∘ ϑ = h'`, so `φ_t^{𝒫'} = φ_{ϑ(t)}^{𝒫}`, and
+    `starAlgHom_nonneg_reflect` (the thesis's "it is easy to see `ϑ`
+    restricts to a linear order isomorphism") brings `0 ≤ ϑ(t)` back.
+
+  Stating 157VII on the constructed module is what made the thesis's proof
+  available at all: `hilmod-fixed-on-V` is a statement about the *concrete*
+  `η`, and an abstract `PaschkeModule` carries none.  So
+  `existence_paschke`'s term was given a name — `paschkeModuleOf φ E` — and
+  `existence_paschke` is now that term with `E` discharged by **150II**.
+  The section header that claimed "**no density argument and no
+  `hilmod_fixed_on_V` is used anywhere in 157IV**" was true when it was
+  written and is now false; it has been rewritten to say where the density
+  argument enters and which two facts (injectivity, and `0 ≤ W*W`) still do
+  without it.
+
+* **157VIII** `paschkeModule_phiT_surjective` dropped the bound `T ≤ 1`,
+  which was recovered at the use site by running the whole construction a
+  second time on `φ − ψ`.  The clause is back in the statement.
+  **Divergence class 3**: the thesis gets `T ≤ 1` by comparing
+  `⟨x, Tx⟩_φ = ⟨x,x⟩_ψ ≤ ⟨x,x⟩_φ` on the elementary tensors and appealing to
+  `hilmod-fixed-on-V`; here `φ_{1−T} = φ − ψ = δ` is ncp by hypothesis, so
+  `0 ≤ 1 − T` by 157VII — which *is* the density argument, used once, in the
+  place the thesis first uses it.  `paschke_correspondence_surjective` loses
+  its second run of the construction and its `u + v = 1` step.
+
+* **157VI** `exists_phiT_ncp` rendered only the first of the point's three
+  clauses.  The other two are now `phiT_ncpLe` (`T ≤ S ⟹ φ_T ≤_ncp φ_S`,
+  the thesis's one-liner `φ_{S−T} = φ_S − φ_T` is ncp) and `phiT_one`
+  (`φ_1 = φ`, i.e. `h ∘ ϱ = φ`), with `phiT_ncpLe_self` for the point's own
+  combination ("consequently, if `T ≤ 1`, then `φ_T ≤ φ_1 = φ`").  Both are
+  **class 1**.  They went in as new declarations rather than as conjuncts of
+  `exists_phiT_ncp`, which is destructured at four call sites (wave 1's
+  lesson).
+
+  **The thesis slip is recorded in the doc, not filed as an erratum**, as
+  the brief directed: 157VI says "Pick `T ∈ ϱ(𝒜)^□`" and then forms `√T`,
+  so as printed "`φ_T` is ncp" is false for a general self-adjoint `T` of
+  the commutant (`T = −1`, `φ ≠ 0`).  Our statement carries `0 ≤ T`.
+
+* Consequence for **157IV**: `paschke_correspondence_embedding` is now the
+  thesis's proof in both directions — `←` is `phiT_ncpLe` (157VI), `→` is
+  `phiT_reflects_nonneg` (157VII) applied to `s − t` — and no longer depends
+  on part 3.  **The dependency order of parsec 1570 is the thesis's again.**
+  The audit's separate note that 157IV's "**linear**" clause is stated
+  nowhere is also discharged: `phiT_add` and `phiT_smul`.
+  `paschkeModule_phiT_injective` survives unchanged as the point's "and in
+  particular an injection"; it is no longer used by 157IV, and its doc says
+  so and says why it is worth keeping (it needs no density and holds for an
+  abstract module).
+
+### Repaired — 139I: an arbitrary dilation *restricts* to a minimal one (1 row)
+
+**139I** ends "Every (normal) Stinespring dilation `(𝒦, ϱ, V)` of `φ`
+restricts to a minimal dilation `(𝒦', ϱ, V)`, where `𝒦' ⊆ 𝒦` is the
+norm-closure of the linear span of `ϱ(𝒜)V𝒽`."  We asserted only the
+*previous* sentence, that a minimal dilation exists — and got it from the
+135IV construction, not by restricting.  `exists_minimal_stinespringDilation`
+keeps that (its doc now names the sentence it renders), and the restriction
+is the new `stinespringDilation_restrict_minimal`, **divergence class 1**:
+the thesis's one sentence spelled out.  It delivers a minimal dilation `D'`
+together with an isometry `ι : D'.𝒦 → 𝒦` intertwining the representations,
+carrying `V'` to `V`, with range exactly the closed span — so `ι` is a
+unitary onto `𝒦'` under which `(D'.𝒦, ϱ', V')` *is* the thesis's
+`(𝒦', ϱ, V)`.  Invariance of `𝒦'` is `ϱ(a)ϱ(b)Vx = ϱ(ab)Vx` plus continuity
+(`Submodule.topologicalClosure_minimal`); `ϱ'(a)` is `ϱ(a)` corestricted,
+an nmiu-map with `map_star` from `ContinuousLinearMap.eq_adjoint_iff` and
+normality from **48II** `starAlgHom_preservesDirSups_of_vectors`; minimality
+by an ε-argument (`Metric.mem_closure_iff`) in place of `Subtype.dense_iff`,
+whose `t : Set ↥(↑K' : Set 𝒦)` is defeq to but not syntactically our
+`Set ↥K'`.  Two encoding choices are recorded in the doc comment: `D'.𝒦` is
+the subtype `↥𝒦'` (so "is a subspace of `𝒦`" is carried by `ι`), and `φ` is
+a bare function, which only widens the statement.
+
+### Repaired — 170IV.1 gets its "hence pure" (1 row)
+
+**170IV**'s first half concludes that a surjective nmiu-map between von
+Neumann algebras is a corner of a central projection, **hence pure**.  The
+"hence pure" was nowhere, because `IsPureMap` demands the normal form "a
+filter after a corner" and the identity had never been exhibited as a
+filter.  It is one now: `isFilterFor_ncpId` (`IsFilterFor (ncpId B) 1` —
+`0 ≤ 1`, `1 ≤ 1`, and the mediating map is `f` itself, whose subunitality
+*is* the hypothesis `f(1) ≤ 1`), whence `isPureMap_of_isCorner` (every
+corner is pure, `h = id ∘ h`) and, for symmetry, `isPureMap_of_isFilter`
+(every filter is pure, `c = c ∘ id`).  The exercise's clause is
+`surjective_nmiu_1_pure`, a **new declaration beside** `surjective_nmiu_1`
+because the latter is destructured positionally inside `paschke_pure`.
+**Divergence class 3.**  Note that both *base cases* of 170I's inductive
+definition are now available in the file; what is still missing is closure
+under composition (see below).
+
+### Repaired — labels and provenance (4 rows, no mathematics)
+
+* **140VIII** `exists_paschke_starAlgHom` (`weaker`) claimed to render
+  140VIII and does not: it is `exists_paschke_iso_paschkeModule` with
+  normality *and* uniqueness forgotten.  140VIII in full is
+  `Stinespring.paschke_unique_up_to_iso`, which is faithful.  Relabelled, as
+  the audit's own note suggests — **class 4**, a labelling repair.
+* **141III/143I** `rightMulEquiv` (`differs`): the cited points give only
+  the example "`ℬ` is a self-dual Hilbert `ℬ`-module over itself" and the
+  definition of `𝒷ᵃ(X)`; the ∗-isomorphism `ℬ ≅ 𝒷ᵃ(ℬ)ᵐᵒᵖ` is ours, true,
+  and needed to inhabit `PaschkeModule`.  Retagged honestly: the two points
+  are now cited as provenance for the objects, not as the source of the
+  statement.  **Class 4.**
+* **169XI.2a/2b** `dils_filter_basics_2a`, `dils_filter_basics_2b`
+  (`stronger`) gained the exercise's own `[VonNeumannAlgebra A] [B] [C']`.
+  Every call site — `dils_examples_pure_2` here and
+  `VNExamples.lean:3846,3861` — already supplies them, so the restoration
+  was free.  **Class 4.**
+* Three mislabelled DISPs, from the audit's "stale prose" pile:
+  `ptensBInner`'s **154IV** and the two Gram identities'
+  (`norm_sq_sum_ptprod`, `paschkeModule_norm_sq_sum_tprod`) **154II** are
+  all **154V**, the display in the *proof* of 154III; `nmiu_forall_mem`'s
+  **138II** is **138IV** (138II is the point it serves, and
+  `nmiu_between_type_I` keeps that label).  `Stinespring.lean`'s header no
+  longer says "Statements only; every proof is `sorry`" — one statement in
+  it is.
+
+### A wrong premise, found and corrected: `Theses.A.Proc` *is* on the import path
+
+Five doc comments in `Pure.lean` (the module header, the `cornerSet` note,
+`pcorner_exists_ncpInv`, `sfilter_cp_uwlim`, `isCornerFor_comp`) said that
+`Theses.A.Proc` is "off this chapter's import path", and the audit's note on
+170I repeated it and added that proc.tex **100III** `pure-fundamental` "is
+nowhere proved in the tree".  Both are false: the chain is
+`B/Dils/Pure → B/Dils/SelfDual → A/Proc/Tensor → A/Proc/Measurement`, and
+`Theses.A.Proc.pure_fundamental` is **proved** at `Measurement.lean:4107`.
+(`Pure.lean` already used `Theses.A.Proc.nmiuId`.)  All five doc comments
+are corrected.  **The CSV notes for 170I, 96III and `isCornerFor_comp`
+should be corrected too.**
+
+What actually blocks the reuse is that the two developments' predicates
+differ, in four independent ways (now tabulated in `Pure.lean`'s header):
+the test object is a C\*-algebra here and a von Neumann algebra there; our
+`IsFilterFor` carries the author's 2026-08-16 subunitality repair and a
+filtered element `b`, theirs does not; their `IsCornerMap` is *unital*; and
+their `IsPure` is 170I's inductive form with `[VonNeumannAlgebra]` on every
+intermediate algebra.  So 100III does **not** bridge `A/Proc.IsPure` to
+`IsPureMap`, and the merge the two file headers have been promising each
+other is a project, not a lemma.
+
+### Left, and why
+
+**Reason 3 — benign generalisation (22 rows).**  Twelve in
+Paschke/Stinespring (`paschkeModule_norm_sq_sum_tprod`,
+`PhiCompatible.mul_right`, `paschkeModule_h_ρ`, `dils_univlemma`,
+`dils_univ_stinespring`, `exc_chris_univ_prop`, `paschke_unique_up_to_iso`,
+`paschke_basics_1`–`4`, and 139XI, on which see below) and ten in `Pure`
+(`IsCornerFor`, `IsCorner`, `standard_corner_dils`, `pdil_isCornerFor`,
+`h_is_corner_for_unital_map`, `sfilter_cp_uwlim`, `dils_stand_filter`,
+`nmiu_ncp_extreme`, `dils_filters_injective`, `dils_filter_basics_1`): a
+`[VonNeumannAlgebra]` binder, or a von Neumann test object, that the
+thesis's setting supplies and the proof does not need.
+
+Two of those deserve a note, because the brief asked whether the binders
+could go back in:
+
+* **169XII `dils_filters_injective`** and **169XI.1
+  `dils_filter_basics_1`** must stay binder-free.  `paschke_pure` and
+  `pure_ncp_extreme` apply both at the *intermediate algebra of an
+  `IsPureMap`*, which carries only a C\*-structure — and cannot be given a
+  von Neumann one, the corner's target being merely ncp-isomorphic to a
+  `cornerSet`.  Adding the exercise's binders breaks those call sites.  Both
+  doc comments now record this, so the divergence is documented rather than
+  silent.  (Their siblings 169XI.2a/2b *could* take the binders, and did.)
+* **172VIII `nmiu_ncp_extreme`**'s divergence has *expired* but restoring
+  the thesis's route would **weaken** the statement: our version has no
+  `[VonNeumannAlgebra]` binders, and the thesis's proof (172IX, through
+  172III `ncp_extreme_paschke`) needs them for the criterion and for the
+  dilation to exist at all.  The in-file comment is corrected — the
+  divergence is now deliberate rather than forced, and 172III sits *above*,
+  not below.
+
+**Reason 1 — the thesis point is itself defective (2 rows).**
+**140X.1 `paschke_basics_1`** prints the triple as `(𝒜, ϱ, id)` where the
+dilating algebra must be `ℬ` (`bsols.tex` confirms `𝒫 = ℬ`), and **155II
+`ksgns`** prints the adjointable map as `T : Y → X`, which does not
+typecheck against the thesis's own `ad_T` of 153I.  Both are the author's
+call; both statements untouched.
+
+**Explicitly out of scope, on the brief's instruction (2 rows).**
+**139XI `ess_uniq_pur`** — `stronger` and false as ours, but the author is
+revising the exercise and the current `dils.tex` case (ii) is itself
+defective (the complement is taken in `ℋ ⊗ 𝒦'` where it must be in `𝒦'`).
+Statement and `sorry` untouched.  **170IV.2 `surjective_nmiu_2`** — the
+deliberate record of a known falsehood (QUESTIONS **D7**), refuted in-tree
+by `surjective_nmiu_2_false`; our rendering *is* the printed statement,
+which is the point of keeping it.
+
+**Reason: needs the merge, not a repair (3 `differs` rows).**
+**170I `IsPureMap`** is 168IV's normal form, where 170I defines pure as
+"filters, corners *and their compositions*"; the equivalence is 100III, and
+the previous section says why 100III cannot be applied.  Both base cases are
+now in the file (`isPureMap_of_isCorner`, `isPureMap_of_isFilter`); the
+closure under composition is not, which is why **171VII** still has to
+compose two corners by hand (`isCornerFor_comp`).  The `IsPureMap` doc
+comment now states all of this instead of asserting the equivalence.
+**169VIII `IsFilterFor`/`IsFilter`** carry the author's ruling of
+2026-08-16 (QUESTIONS B11, closed) and were audited against the corrected
+form; their second departure is the widened test class, i.e. reason 3.
+
+### Nothing was blocked for want of mathematics
+
+No repair in this pass had to be abandoned, and no new author ruling turned
+out to be needed.  The one thing worth flagging for the next pass is the
+`A/Proc` ↔ `B/Dils` merge: two parallel developments of corners, filters and
+purity now sit on the same import path with four incompatible definitional
+choices between them, and 170I, 171VII and 100III all wait on it.

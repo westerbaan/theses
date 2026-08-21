@@ -15,8 +15,32 @@ von Neumann structure — proc.tex **94II**, with unit `p` — is *proved*
 below rather than asserted.  Corners and filters (proc.tex parsecs 950–980
 of thesis A) are defined here from scratch following **169II** and
 **169VIII**; `Theses/A/Proc/Measurement.lean` has since acquired a parallel
-development, which should be merged with this one once `Theses.A.Proc` is
-on this chapter's import path.
+development, which should be merged with this one.
+
+⚠️ **The two developments are not interchangeable, and the merge is a
+project rather than an edit.**  `Theses.A.Proc.Measurement` *is* on this
+file's import path (`Theses.B.Dils.SelfDual → Theses.A.Proc.Tensor →
+Theses.A.Proc.Measurement`), so its declarations are already reachable — the
+earlier claim that it is "off this import path", repeated in several doc
+comments below, was wrong.  What blocks reuse is that the predicates differ:
+
+* `IsCornerFor`/`IsFilterFor` here quantify their test object over
+  **C\*-algebras**, where `Theses.A.Proc.IsCornerOf`/`.IsFilter` quantify
+  over **von Neumann algebras** — so ours are strictly *stronger* and cannot
+  be obtained from theirs;
+* `IsFilterFor` here carries the author's 2026-08-16 repair (the mediating
+  map is **subunital**, `NCPSUMap`) and a filtered element `b` with only
+  `c 1 ≤ b`, where `Theses.A.Proc.IsFilter` has an unrepaired *ncp*
+  mediating map and reads `f 1 ≤ c 1`;
+* `Theses.A.Proc.IsCornerMap` (the corner half of its `IsPure`) is
+  **unital**, where `IsCorner` here is not;
+* `Theses.A.Proc.IsPure` is the inductive "filters, corners and their
+  composites" of **170I**, with a `[VonNeumannAlgebra]` binder on every
+  intermediate algebra, where `IsPureMap` here is the normal form.
+
+Consequently proc.tex **100III** `Theses.A.Proc.pure_fundamental` — proved,
+and reachable — does *not* bridge `Theses.A.Proc.IsPure` to `IsPureMap`;
+see the doc of `IsPureMap` at parsec 1700.
 -/
 import Theses.B.Dils.SelfDual
 
@@ -59,8 +83,9 @@ this chapter is discharged automatically by `fact_isStarProjection_floor`
 and `fact_isStarProjection_ceil` below.
 
 `Theses/A/Proc/Measurement.lean` carries the *same* construction for its
-own bundled corner type `Theses.A.Proc.Corner A e`; the two should be
-merged once `Theses.A.Proc` is on this chapter's import path. -/
+own bundled corner type `Theses.A.Proc.Corner A e` (reachable from here —
+see the file header — but built on a different set of instances); the two
+should be merged. -/
 
 namespace cornerSet
 
@@ -669,6 +694,21 @@ def IsCorner (h : NCPMap A B) : Prop :=
 merge is noted in that file's header).  They are placed here, before parsec
 1690, because **169IV** already needs the composite `f ∘ ζ`. -/
 
+/-- The **identity ncp-map** `P → P`.  (Complete positivity and normality of
+the identity are both immediate; `Theses.A.Proc.ncpId` is the same map, built
+there from an existential.) -/
+noncomputable def ncpId (P : Type*) [CStarAlgebra P] [PartialOrder P]
+    [StarOrderedRing P] : NCPMap P P where
+  toCompletelyPositiveMap :=
+    { toLinearMap := LinearMap.id
+      map_cstarMatrix_nonneg' := fun _ _ hM => by simpa using hM }
+  preservesDirSups' := by
+    intro D s hne _ hlub
+    exact isLUB_coe_of_isLUB hne hlub
+
+@[simp] theorem ncpId_apply {P : Type*} [CStarAlgebra P] [PartialOrder P]
+    [StarOrderedRing P] (a : P) : ncpId P a = a := rfl
+
 /-- An ncp-map, as a positive linear map. -/
 private noncomputable def ncpPos {P Q : Type u} [CStarAlgebra P]
     [PartialOrder P] [StarOrderedRing P] [CStarAlgebra Q] [PartialOrder Q]
@@ -987,8 +1027,8 @@ private theorem pcorner_exists_ncpOfNmiu {P Q : Type u} [CStarAlgebra P]
 positivity is **34IV**.3 `cp_of_mi` (a ∗-homomorphism is completely
 positive), and normality follows from that of `f` together with
 `starAlgHom_nonneg` (`Paschke.lean`), which makes `f` an order isomorphism.
-(`nmiuInv` in `Theses/A/Proc/Tensor.lean` is the same construction, off this
-import path.) -/
+(`nmiuInv` in `Theses/A/Proc/Tensor.lean` is the same construction; that
+file *is* imported, but `nmiuInv` is `private` there.) -/
 private theorem pcorner_exists_ncpInv {P Q : Type u} [CStarAlgebra P]
     [PartialOrder P] [StarOrderedRing P] [CStarAlgebra Q] [PartialOrder Q]
     [StarOrderedRing Q] (f : NMIUMap P Q) (hbij : Function.Bijective ⇑f) :
@@ -1320,6 +1360,29 @@ def IsFilterFor (c : NCPMap A B) (b : B) : Prop :=
 def IsFilter (c : NCPMap A B) : Prop :=
   ∃ b : B, IsFilterFor c b
 
+/-- **The identity is a filter for `1`.**  Unfolding `IsFilterFor` leaves
+`0 ≤ 1`, `1 ≤ 1`, and: every ncp-map `f : C → B` with `f(1) ≤ 1` factors
+uniquely through the identity by a *subunital* map — namely `f` itself,
+whose subunitality *is* the hypothesis `f(1) ≤ 1`, and which is unique
+because the factorisation equation pins the underlying function.
+
+This is the ingredient **170IV**.1's "hence pure" needs: it exhibits the
+identity as a filter, and hence (`isPureMap_of_isCorner` at parsec 1700)
+makes every corner a pure map.  It is also why the author's `IsFilterFor`
+repair (the mediating map is subunital) costs nothing here: the quantified
+`f` is already subunital, since `b = 1`. -/
+theorem isFilterFor_ncpId : IsFilterFor (ncpId B) (1 : B) := by
+  refine ⟨zero_le_one, le_rfl, ?_⟩
+  intro C _ _ _ f hf1
+  refine ⟨⟨f, hf1⟩, fun x => rfl, ?_⟩
+  rintro ⟨g, hg⟩ hgx
+  have hgf : g = f := DFunLike.ext _ _ fun x => hgx x
+  subst hgf
+  rfl
+
+/-- **The identity is a filter** (for `1`). -/
+theorem isFilter_ncpId : IsFilter (ncpId B) := ⟨1, isFilterFor_ncpId⟩
+
 /-! ### **169X**: the standard filter `c_b : ⌈b⌉B⌈b⌉ → B` -/
 
 section StandardFilter
@@ -1330,8 +1393,9 @@ variable {D : Type u} [CStarAlgebra D] [PartialOrder D] [StarOrderedRing D]
 
 /-- proc.tex **96III**.1 (`ncp-uwlim`): a pointwise ultraweak limit of
 completely positive maps is completely positive.  Re-derived here because
-`Theses.A.Proc` is off this import path; the domain needs no von Neumann
-structure (`Theses.A.Proc.ncp_uwlim_1` asks for one, but never uses it). -/
+the domain needs no von Neumann structure, which
+`Theses.A.Proc.ncp_uwlim_1` (reachable — see the file header) asks for and
+never uses. -/
 private theorem sfilter_cp_uwlim [VonNeumannAlgebra B] {ι : Type*}
     (l : Filter ι) [l.NeBot] (f : ι → (D →ₗ[ℂ] B)) (g : D →ₗ[ℂ] B)
     (hlim : ∀ a : D, UWTendsto (fun i => f i a) l (g a))
@@ -1812,7 +1876,14 @@ injectivity, tested against the ncp-maps out of the scalars
 `z ↦ z·(c x)` is an ncp-map `ℂᵤ → B` whose value at `1` is `c x ≤ c 1 ≤ b`,
 and both `z ↦ z·x` and `z ↦ z·y` factor it through `c`; so they agree, and
 `x = y`.  Scaling by `(1+‖x‖+‖y‖)⁻¹` extends this to all positive elements,
-and `w = w⁺ − w⁻` together with `c(w*) = (c w)*` to all of `A`. -/
+and `w = w⁺ − w⁻` together with `c(w*) = (c w)*` to all of `A`.
+
+**No `[VonNeumannAlgebra]` binders**, where the exercise says "between von
+Neumann algebras" — deliberately: the argument above never uses them, and
+`pure_ncp_extreme` applies this lemma to the filter half of an `IsPureMap`,
+whose intermediate algebra is only a C\*-algebra.  Adding the exercise's
+binders would therefore break that call site.  (Restoring them for
+**169XI**.2 costs nothing and *is* done: see `dils_filter_basics_2a`.) -/
 theorem dils_filters_injective (c : NCPMap A B) (hc : IsFilter c) :
     Function.Injective ⇑c := by
   obtain ⟨b, -, hc1, huniv⟩ := hc
@@ -2043,7 +2114,14 @@ no case split and no appeal to 140X.4.
 
 *(ii)* Where the solution derives `φ = h'' ∘ ϱ'` and the uniqueness of `σ`
 from *uniqueness* in `c`'s universal property, we use the injectivity of `c`
-(**169XII**) directly; it is proved above and is the same fact. -/
+(**169XII**) directly; it is proved above and is the same fact.
+
+**No `[VonNeumannAlgebra]` binders** on `A`, `B`, `C`, where the exercise
+says "between von Neumann algebras".  As for `dils_filters_injective`, this
+is forced by the call sites: `paschke_pure` and `pure_ncp_extreme` both
+apply this part at the intermediate algebra of an `IsPureMap`, which carries
+only a C\*-structure.  The generality is free — the proof never uses a von
+Neumann structure on any of the three. -/
 theorem dils_filter_basics_1 {C : Type u} [CStarAlgebra C] [PartialOrder C]
     [StarOrderedRing C] (φ : NCPMap A B) (D : PaschkeTriple A B)
     (hD : IsPaschkeDilationOf D ⇑φ) (c : NCPMap B C) (hc : IsFilter c) :
@@ -2130,9 +2208,18 @@ Note it does **not** need faithfulness or bipositivity of `c'`, only
 monotonicity: subunitality of the mediating `ψ` gives
 `φ(1) = c'(ψ(1)) ≤ c'(1)`, the filter clause gives `c'(1) ≤ φ(1)`, so
 `c'(ψ(1)) = c'(1)` and injectivity of a filter (**169XII**
-`dils_filters_injective`) yields `ψ(1) = 1`. -/
-theorem dils_filter_basics_2a {C' : Type u} [CStarAlgebra C']
-    [PartialOrder C'] [StarOrderedRing C'] (φ : NCPMap A B)
+`dils_filters_injective`) yields `ψ(1) = 1`.
+
+The three `[VonNeumannAlgebra]` binders are the exercise's own standing
+setting ("between von Neumann algebras"); they were missing from the first
+transcription, and are restored here because every call site (in this file
+and in `Theses/B/Eff/VNExamples.lean`) already has them.  Contrast
+`dils_filters_injective` and `dils_filter_basics_1` above, which must stay
+binder-free: `paschke_pure` and `pure_ncp_extreme` apply them at the
+intermediate algebra of an `IsPureMap`, which is only a C\*-algebra. -/
+theorem dils_filter_basics_2a [VonNeumannAlgebra A] [VonNeumannAlgebra B]
+    {C' : Type u} [CStarAlgebra C'] [PartialOrder C'] [StarOrderedRing C']
+    [VonNeumannAlgebra C'] (φ : NCPMap A B)
     (c' : NCPMap C' B) (hc : IsFilterFor c' (φ 1)) :
     ∃! φ' : NCPMap A C', φ' 1 = 1 ∧ ∀ a, c' (φ' a) = φ a := by
   have hcinj : Function.Injective ⇑c' := dils_filters_injective c' ⟨φ 1, hc⟩
@@ -2165,9 +2252,14 @@ The author's solution is "by the previous point" — that is, part 1 applied
 to the filter `c'` and the dilation of `φ'` — and that is what is done
 here; the unitality of `φ'` is not used.  (So this half does *not* inherit
 the defect of part 2's first half, which is the only place `c(1) = b` is
-needed.) -/
-theorem dils_filter_basics_2b {C' : Type u} [CStarAlgebra C']
-    [PartialOrder C'] [StarOrderedRing C'] (φ : NCPMap A B)
+needed.)
+
+The three `[VonNeumannAlgebra]` binders are the exercise's own standing
+setting, restored together with those of part 2's first half; the appeal to
+part 1 below goes through because part 1 is proved *without* them. -/
+theorem dils_filter_basics_2b [VonNeumannAlgebra A] [VonNeumannAlgebra B]
+    {C' : Type u} [CStarAlgebra C'] [PartialOrder C'] [StarOrderedRing C']
+    [VonNeumannAlgebra C'] (φ : NCPMap A B)
     (c' : NCPMap C' B) (hc : IsFilterFor c' (φ 1)) (φ' : NCPMap A C')
     (hφ' : φ' 1 = 1 ∧ ∀ a, c' (φ' a) = φ a) (D : PaschkeTriple A C')
     (hD : IsPaschkeDilationOf D ⇑φ') :
@@ -2191,11 +2283,49 @@ variable {A B : Type u}
 /-- **170I** (`dils-def-pure`, dils.tex:6186, Definition): an ncp-map is
 **pure** when it is a composition of filters and corners; equivalently (by
 proc.tex 100III `pure-fundamental`, cf. **170Ia**) a filter after a
-corner, which is the form used here. -/
+corner, which is the form used here.
+
+⚠️ **This is 168IV's normal form, not 170I's inductive definition**, and the
+equivalence is *asserted*, not proved in the tree.  proc.tex 100III is
+proved as `Theses.A.Proc.pure_fundamental` and is reachable from here, but
+it states the equivalence for `Theses.A.Proc.IsPure` / `.IsCornerMap` /
+`.IsFilter`, and none of those three is the predicate used here (test
+objects von Neumann rather than C\*; corners unital; filters without the
+author's subunitality repair; `[VonNeumannAlgebra]` on every intermediate
+algebra).  Bridging them is a merge of the two developments, not a lemma;
+see the file header.
+
+The gap is not idle.  Both base cases of 170I are available —
+`isPureMap_of_isCorner` and `isPureMap_of_isFilter` below — but the closure
+under *composition* is not, which is why **171VII** `paschke_pure` has to
+compose two corners by hand (`isCornerFor_comp`) where the thesis simply
+says "a composite of pure maps is pure". -/
 def IsPureMap (φ : NCPMap A B) : Prop :=
   ∃ (C : Type u) (_ : CStarAlgebra C) (_ : PartialOrder C)
     (_ : StarOrderedRing C) (h : NCPMap A C) (c : NCPMap C B),
     IsCorner h ∧ IsFilter c ∧ ∀ a, φ a = c (h a)
+
+/-- **Every corner is pure.**  `IsPureMap` asks for the normal form "a filter
+after a corner" (**170I**, via **168IV**), so a bare corner `h` has to be
+written `h = id ∘ h`; the identity is a filter for `1` (`isFilter_ncpId`).
+
+Together with `isFilter_ncpId` this is the whole of **170I**'s "filters and
+corners are pure" for the corner half — and it is what supplies the trailing
+"hence pure" of **170IV**.1 (`surjective_nmiu_1_pure`). -/
+theorem isPureMap_of_isCorner (h : NCPMap A B) (hh : IsCorner h) :
+    IsPureMap h :=
+  ⟨B, inferInstance, inferInstance, inferInstance, h, ncpId B, hh,
+    isFilter_ncpId, fun _ => rfl⟩
+
+/-- **Every filter is pure** — the other half of "filters and corners are
+pure": `c = c ∘ id`, and the identity is a corner for `1` (its universal
+property is trivial, the mediating map being `f` itself). -/
+theorem isPureMap_of_isFilter (c : NCPMap A B) (hc : IsFilter c) :
+    IsPureMap c :=
+  ⟨A, inferInstance, inferInstance, inferInstance, ncpId A, c,
+    ⟨1, ⟨zero_le_one, le_rfl⟩, rfl, fun _ _ _ _ f _ =>
+      ⟨f, fun _ => rfl, fun _ hf => DFunLike.ext _ _ fun x => hf x⟩⟩,
+    hc, fun _ => rfl⟩
 
 variable {H K : Type u}
   [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
@@ -2312,7 +2442,12 @@ The two `[VonNeumannAlgebra]` binders are the exercise's own hypothesis; they
 were missing from the first transcription of this point, which therefore
 claimed the result for arbitrary C\*-algebras (QUESTIONS **D5**, ruled on by
 Bas: restore the hypothesis).  They are not decoration — the central
-projection is produced by **69IV** `carrier_miu`, which needs them. -/
+projection is produced by **69IV** `carrier_miu`, which needs them.
+
+The exercise's trailing **"hence pure"** is `surjective_nmiu_1_pure`
+immediately below, *not* a fourth conjunct here: this statement is
+destructured positionally inside `paschke_pure`, and appending a conjunct
+would silently rebind its components. -/
 theorem surjective_nmiu_1 [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     (ϱ : NMIUMap A B) (hs : Function.Surjective ⇑ϱ)
     (φ : NCPMap A B) (hφ : ∀ a, φ a = ϱ a) :
@@ -2517,6 +2652,23 @@ theorem surjective_nmiu_1 [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     obtain ⟨a, ha⟩ := hs b
     have h1 : (φ a : B) = b := by rw [hφ, ha]
     rw [← h1, hk' a, hk, hσ, hφ, hσϱ, hfzx]
+
+/-- **170IV** (`surjective-nmiu`, dils.tex:6223, Exercise), first half, the
+trailing clause: a surjective nmiu-map between von Neumann algebras is
+**pure**.
+
+The exercise reads "…is a corner of a central projection, hence pure", and
+this is the "hence pure": `surjective_nmiu_1` (above) supplies the corner,
+and `isPureMap_of_isCorner` turns any corner into a pure map by writing it
+as `id ∘ h`, the identity being a filter for `1` (`isFilter_ncpId`).  It is
+a separate declaration rather than a fourth conjunct of `surjective_nmiu_1`
+because that statement is destructured positionally in `paschke_pure`. -/
+theorem surjective_nmiu_1_pure [VonNeumannAlgebra A] [VonNeumannAlgebra B]
+    (ϱ : NMIUMap A B) (hs : Function.Surjective ⇑ϱ)
+    (φ : NCPMap A B) (hφ : ∀ a, φ a = ϱ a) :
+    IsPureMap φ := by
+  obtain ⟨z, -, -, hcorner⟩ := surjective_nmiu_1 ϱ hs φ hφ
+  exact isPureMap_of_isCorner φ ⟨z, hcorner⟩
 
 /-- **170IV** (`surjective-nmiu`, dils.tex:6223, Exercise), second half:
 conversely, every corner of a central projection **in a von Neumann
@@ -3702,15 +3854,11 @@ with `v ∘ h_p = h` (`pext_corner_iso`).  `v` is an ncp-*isomorphism* but
 than by claiming that `c ∘ v` is again a filter — the latter is exactly the
 step that D7 puts in doubt. -/
 
-/-- The identity as an ncp-map. -/
+/-- The identity as an ncp-map (`ncpId`, in the existential form the
+universal properties below consume). -/
 private theorem pext_exists_ncpId (P : Type*) [CStarAlgebra P] [PartialOrder P]
     [StarOrderedRing P] : ∃ f : NCPMap P P, ∀ a : P, f a = a :=
-  ⟨{ toCompletelyPositiveMap :=
-       { toLinearMap := LinearMap.id
-         map_cstarMatrix_nonneg' := fun _ _ hM => by simpa using hM }
-     preservesDirSups' := by
-       intro D s hne _ hlub
-       exact isLUB_coe_of_isLUB hne hlub }, fun _ => rfl⟩
+  ⟨ncpId P, fun _ => rfl⟩
 
 /-- **169IV** + the universal property of **169II**: a corner `h` for `a` is
 the standard corner `h_{⌊a⌋}` followed by an ncp-isomorphism `v`. -/
@@ -3856,9 +4004,11 @@ for `a₁` and *unital*, `h₂` a corner for `a₂`, and `e ≤ a₁` an effect 
 (The thesis takes this for granted — dils.tex **170I** *defines* pure maps
 as arbitrary composites of filters and corners, and appeals to proc.tex
 100III `pure-fundamental` to bring them to the normal form "filter after
-corner" used by `IsPureMap`.  100III is off this import path; in the case
-needed for 171VII the first corner is a surjective nmiu-map, so the
-elementary argument below suffices and no normal-form theorem is needed.) -/
+corner" used by `IsPureMap`.  100III is proved and reachable as
+`Theses.A.Proc.pure_fundamental`, but for *its* corner/filter/pure
+predicates, which are not these (file header); in the case needed for 171VII
+the first corner is a surjective nmiu-map, so the elementary argument below
+suffices and no normal-form theorem is needed.) -/
 private theorem isCornerFor_comp {P Q R : Type u} [CStarAlgebra P]
     [PartialOrder P] [StarOrderedRing P] [CStarAlgebra Q] [PartialOrder Q]
     [StarOrderedRing Q] [CStarAlgebra R] [PartialOrder R] [StarOrderedRing R]
@@ -4592,15 +4742,25 @@ theorem ncp_extreme_paschke [VonNeumannAlgebra A] [VonNeumannAlgebra B]
   tfae_finish
 
 /-- **172VIII** (`nmiu-ncp-extreme`, dils.tex:6512, Corollary): every
-nmiu-map (as an ncp-map) is ncp-extreme. -/
+nmiu-map (as an ncp-map) is ncp-extreme.
+
+**No `[VonNeumannAlgebra]` binders**, where the corollary's setting has
+them, and that is the reason the author's own proof is *not* the one below
+(see the comment inside): **172IX** routes through **172III**
+`ncp_extreme_paschke`, which needs both algebras von Neumann — both to have
+a Paschke dilation at all and for the criterion itself.  The direct
+argument below needs neither, so it proves the corollary for arbitrary
+C\*-algebras; adopting the thesis's route would *lose* that. -/
 theorem nmiu_ncp_extreme (ϱ : NMIUMap A B) (φ : NCPMap A B)
     (hφ : ∀ a, φ a = ϱ a) :
     NCPExtreme φ := by
   -- The author's proof (**172IX**) is: `(ℬ, ϱ, id)` is a Paschke dilation of
   -- `ϱ` and `id` is injective, so **172III** `ncp_extreme_paschke` applies.
-  -- That theorem was still `sorry` when this was written (it has since been
-  -- proved, below), so we argue directly instead, by strict convexity of
-  -- `b ↦ b* b` together with Choi's inequality **34XVIII**.1.
+  -- That theorem was still `sorry` when this was written; it has since been
+  -- proved (above), so the divergence is no longer *forced* — but it is now
+  -- deliberate: 172III carries `[VonNeumannAlgebra]` on both algebras, and
+  -- the direct argument below does not need them.  We argue directly, by
+  -- strict convexity of `b ↦ b* b` with Choi's inequality **34XVIII**.1.
   intro l hl0 hl1 φ₁ φ₂ h1 h2 hsum
   -- Kadison–Schwarz for a unital ncp-map (**34XVIII**.1 `choi_1`).
   have kad : ∀ ψ : NCPMap A B, ψ 1 = 1 → ∀ a : A,

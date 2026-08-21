@@ -621,8 +621,10 @@ theorem ptens_smul_sum {ι : Type*} (b : ℬ) (s : Finset ι) (f : ι → 𝒜 �
     b • (∑ i ∈ s, f i) = ∑ i ∈ s, b • f i :=
   map_sum (LinearMap.lTensor 𝒜 (LinearMap.mulLeft ℂ b)) f s
 
-/-- The φ-inner product on `𝒜 ⊙ ℬ` (**154IV**, mirrored):
-`⟨a ⊗ b, a' ⊗ b'⟩ = b' φ(a' a*) b*`. -/
+/-- The φ-inner product on `𝒜 ⊙ ℬ` (**154V**, mirrored):
+`⟨a ⊗ b, a' ⊗ b'⟩ = b' φ(a' a*) b*`.  (The formula is displayed in 154V,
+the first point of the *proof* of **154III**; 154IV is only that proof's
+header point — the doc comment used to cite it.) -/
 noncomputable def ptensBInner (φ : NCPMap 𝒜 ℬ) : BInner ℬ (𝒜 ⊗[ℂ] ℬ) where
   inner x y := ptensPair (φ.toCompletelyPositiveMap.toLinearMap) (star x) y
   inner_add_right x y z := map_add _ _ _
@@ -697,7 +699,8 @@ theorem eta_sum {n : ℕ} (a : Fin n → 𝒜) (b : Fin n → ℬ) :
   map_sum (etaHom φ E) _ _
 
 /-- The Gram identity behind the φ-compatibility of `⊗`: with `r = 1` the
-bound of **154II** holds with equality. -/
+bound of **154II** holds with equality.  The identity itself is the display
+of **154V**; 154II is the definition whose bound it saturates. -/
 theorem norm_sq_sum_ptprod {n : ℕ} (a : Fin n → 𝒜) (b : Fin n → ℬ) :
     ‖∑ i, ptprod φ E (a i) (b i)‖ ^ 2
       = ‖∑ i, ∑ j, b i * φ (a i * star (a j)) * star (b j)‖ := by
@@ -1366,6 +1369,37 @@ noncomputable def pVecNCP (hX : SelfDual ℬ X) (e : X) : NCPMap (Ba ℬ X)ᵐ�
 end VectorState
 
 
+/-- **154III** (`existence-paschke`, dils.tex:3558, Theorem), parts 1–3,
+as a *term*: the module `𝒜 ⊗_φ ℬ` built on a self-dual completion `E` of
+`(𝒜 ⊙ ℬ, ⟨·,·⟩_φ)`, with `⊗ = η(· ⊗ ·)`, `ϱ` and `h(T) = ⟨η(1⊗1), T η(1⊗1)⟩`.
+
+`existence_paschke` below is this term, with `E` discharged by **150II**
+`dils_completion`.  The term is kept accessible because the *concrete* `η`
+is what **157VII** needs (`hilmod-fixed-on-V` is a statement about `η`, and
+an abstract `PaschkeModule` carries none). -/
+
+noncomputable def paschkeModuleOf [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
+    (φ : NCPMap 𝒜 ℬ) (E : SelfDualCompletion.{u, u, u} (ptensBInner φ)) :
+    PaschkeModule φ where
+  X := E.X
+  selfDual := E.selfDual
+  tprod := ptprod φ E
+  compat := phiCompatible_ptprod φ E
+  inner_tprod := inner_ptprod φ E
+  univ := fun Y i1 i2 i3 i4 i5 hY T hT => by
+    letI := i1; letI := i2; letI := i3; letI := i4; letI := i5
+    exact ptprod_univ φ E hY T hT
+  ρ := { toStarAlgHom := prhoHom φ E
+         preservesDirSups' := prhoHom_normal φ E }
+  ρ_tprod := fun a₀ a b => prho_ptprod φ E a₀ a b
+  h := pVecNCP E.selfDual (ptprod φ E 1 1)
+  h_def := fun T => rfl
+
+@[simp] theorem paschkeModuleOf_tprod [VonNeumannAlgebra 𝒜]
+    [VonNeumannAlgebra ℬ] (φ : NCPMap 𝒜 ℬ)
+    (E : SelfDualCompletion.{u, u, u} (ptensBInner φ)) (a : 𝒜) (b : ℬ) :
+    (paschkeModuleOf φ E).tprod a b = E.η (a ⊗ₜ[ℂ] b) := rfl
+
 /-- **154III** (`existence-paschke`, dils.tex:3558, Theorem), parts 1–3:
 the module `𝒜 ⊗_φ ℬ`, the representation `ϱ` and the vector state `h`
 exist.
@@ -1376,19 +1410,7 @@ The bundle is not vacuous: `paschkeModuleId` exhibits `ℬ` itself as
 theorem existence_paschke [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
     (φ : NCPMap 𝒜 ℬ) : Nonempty (PaschkeModule φ) := by
   obtain ⟨E⟩ := dils_completion (𝒷 := ℬ) (V := 𝒜 ⊗[ℂ] ℬ) (ptensBInner φ)
-  exact ⟨{ X := E.X
-           selfDual := E.selfDual
-           tprod := ptprod φ E
-           compat := phiCompatible_ptprod φ E
-           inner_tprod := inner_ptprod φ E
-           univ := fun Y i1 i2 i3 i4 i5 hY T hT => by
-             letI := i1; letI := i2; letI := i3; letI := i4; letI := i5
-             exact ptprod_univ φ E hY T hT
-           ρ := { toStarAlgHom := prhoHom φ E
-                  preservesDirSups' := prhoHom_normal φ E }
-           ρ_tprod := fun a₀ a b => prho_ptprod φ E a₀ a b
-           h := pVecNCP E.selfDual (ptprod φ E 1 1)
-           h_def := fun T => rfl }⟩
+  exact ⟨paschkeModuleOf φ E⟩
 
 /-- An adjointable bounded operator on a Hilbert 𝒷-module is a bounded
 module map in the sense of **144IV** (`IsBoundedModuleMap`). -/
@@ -2082,9 +2104,16 @@ theorem rightMul_star (t : ℬ) : star (rightMul t) = rightMul (star t) := by
     rw [star_mul, mul_assoc]
   exact congrFun (moduleAdjointTo_unique (𝒜 := ℬ) _ _ _ h1 h2) x
 
-/-- **141III**/**143I** for `X = ℬ`: `t ↦ R_t` is a ∗-isomorphism
-`ℬ ≅ 𝒷ᵃ(ℬ)ᵐᵒᵖ`.  Surjectivity is the ℬ-linearity of adjointable operators
-(`moduleAdjointable_linear`): `T x = T (x • 1) = x · T 1`. -/
+/-- `t ↦ R_t` is a ∗-isomorphism `ℬ ≅ 𝒷ᵃ(ℬ)ᵐᵒᵖ`.  Surjectivity is the
+ℬ-linearity of adjointable operators (`moduleAdjointable_linear`):
+`T x = T (x • 1) = x · T 1`.
+
+**Not a statement of the thesis.**  **141III** gives only the example "a
+C*-algebra `ℬ` is a self-dual Hilbert `ℬ`-module over itself, with
+`⟨a,b⟩ = a*b`" and **143I** only the definition of `𝒷ᵃ(X)`; the
+∗-isomorphism `ℬ ≅ 𝒷ᵃ(ℬ)ᵐᵒᵖ` is a Lean-side addition — true, and needed to
+inhabit `PaschkeModule` (see `paschkeModuleId` below).  The two points are
+cited here as *provenance* for the objects it relates, not as its source. -/
 noncomputable def rightMulEquiv : ℬ ≃⋆ₐ[ℂ] (Ba ℬ ℬ)ᵐᵒᵖ where
   toFun t := MulOpposite.op (rightMul t)
   invFun S := S.unop.1 1
@@ -3589,23 +3618,26 @@ through `paschke-unique-up-to-iso` (`exists_paschke_iso_paschkeModule`).
 The four lemmas below are that computation, on an arbitrary
 `M : PaschkeModule φ`.
 
-**Divergence from the thesis (157VII/157VIII), logged in `PROVING-LOG.md`.**
-The thesis reads both parts off the *vector states of the dense image of
-`η`* (`hilmod-fixed-on-V`): for the order embedding it shows
+**How the thesis's density argument is used here.**  157VII and the `T ≤ 1`
+half of 157VIII both read off the *vector states of the dense image of `η`*
+(**152IX** `hilmod-fixed-on-V`): the order embedding shows
 `⟨x̂, T x̂⟩ = ∑ᵢⱼ bᵢ* φ_T(aᵢ*aⱼ) bⱼ ≥ 0` for `x ∈ 𝒜 ⊙ ℬ` and concludes
-`T ≥ 0` by ultranorm density, and for `T ≤ 1` in the surjectivity half it
-compares `⟨x, Tx⟩_φ` with `⟨x,x⟩_φ` the same way.  An abstract
-`PaschkeModule` carries no `η`, so neither is available here (this is the
-same obstruction that `existence_paschke_5` met in **154VIII**).  What
-replaces them is the *matrix* identity
-`⟨a ⊗ b, T(a' ⊗ b')⟩ = b' φ_T(a' a*) b*` for `T` in the commutant
-(`paschkeModule_inner_tprod_commutant`), which together with
-`paschkeModule_inner_tprod_separating` and `paschkeModule_ba_ext` gives
-**injectivity** of `t ↦ φ_t` outright; positivity of `T` is then not proved
-by hand at all but obtained from the construction of part 3
-(`T = W*W ≥ 0`), and `T ≤ 1` from `φ_{T + T'} = φ = φ_1` for the two
-complementary maps `ψ` and `φ − ψ`, again by injectivity.  So **no density
-argument and no `hilmod_fixed_on_V` is used anywhere in 157IV**. -/
+`T ≥ 0` by ultranorm density.  An abstract `PaschkeModule` carries no `η`
+(the same obstruction that `existence_paschke_5` met in **154VIII**), so
+157VII is proved on the *constructed* module — `paschkeModuleOf φ E`, where
+`E` is a self-dual completion and `η` is at hand — and carried to an
+arbitrary dilation by **157IX**, exactly as the thesis carries the whole of
+157IV.  That is `paschkeModuleOf_phiT_reflects_nonneg` and
+`phiT_reflects_nonneg` below, and it is what parts 2 and 3 of **157IV** now
+use.
+
+Two things do *not* need the density argument and are proved without it:
+the **injectivity** of `t ↦ φ_t` (the point's "and in particular an
+injection"), which follows from the matrix identity
+`⟨a ⊗ b, T(a' ⊗ b')⟩ = b' φ_T(a' a*) b*`
+(`paschkeModule_inner_tprod_commutant`) together with
+`paschkeModule_inner_tprod_separating` and `paschkeModule_ba_ext`; and the
+positivity of the `T` produced by 157VIII, which is `T = W*W`. -/
 
 /-- The adjoint of `ϱ(d)` is `ϱ(d*)`. -/
 theorem paschkeModule_rho_adjoint (φ : NCPMap 𝒜 ℬ) (M : PaschkeModule φ)
@@ -3622,7 +3654,8 @@ theorem paschkeModule_rho_adjoint (φ : NCPMap 𝒜 ℬ) (M : PaschkeModule φ)
 
 /-- The Gram identity on an abstract Paschke module: the φ-compatibility
 bound of **154II** holds with equality and `r = 1` for `⊗` itself
-(`norm_sq_sum_ptprod` is the same statement for the concrete module). -/
+(`norm_sq_sum_ptprod` is the same statement for the concrete module).  The
+identity is displayed in **154V**; 154II is the definition it saturates. -/
 theorem paschkeModule_norm_sq_sum_tprod (φ : NCPMap 𝒜 ℬ) (M : PaschkeModule φ)
     {n : ℕ} (a : Fin n → 𝒜) (b : Fin n → ℬ) :
     ‖∑ i, M.tprod (a i) (b i)‖ ^ 2
@@ -3685,10 +3718,15 @@ theorem paschkeModule_inner_tprod_commutant [VonNeumannAlgebra 𝒜]
     CStarModule.inner_op_smul_left, hRadj, ← hcomm, hRcomp, hh,
     ← mul_assoc, hcomm]
 
-/-- **157VII**, injectivity of `t ↦ φ_t`: an element of the commutant of
-`ϱ(𝒜)` with `φ_t = 0` is zero.  This is the previous lemma together with
-`paschkeModule_inner_tprod_separating` and `paschkeModule_ba_ext`, and it
-replaces the thesis's density argument. -/
+/-- **157VII**, injectivity of `t ↦ φ_t` (the point's "and in particular an
+injection"): an element of the commutant of `ϱ(𝒜)` with `φ_t = 0` is zero.
+
+The thesis gets this as a corollary of the order embedding, which it proves
+by the density argument; here it is the previous lemma together with
+`paschkeModule_inner_tprod_separating` and `paschkeModule_ba_ext`, so it is
+available for an *abstract* `PaschkeModule` and without any density.  The
+positivity-reflection half of 157VII is
+`paschkeModuleOf_phiT_reflects_nonneg`/`phiT_reflects_nonneg` below. -/
 theorem paschkeModule_phiT_injective [VonNeumannAlgebra 𝒜]
     [VonNeumannAlgebra ℬ] (φ : NCPMap 𝒜 ℬ) (M : PaschkeModule φ)
     (t : (Ba ℬ M.X)ᵐᵒᵖ) (ht : ∀ a : 𝒜, t * M.ρ a = M.ρ a * t)
@@ -3698,6 +3736,144 @@ theorem paschkeModule_phiT_injective [VonNeumannAlgebra 𝒜]
   refine paschkeModule_inner_tprod_separating φ M fun a b => ?_
   rw [paschkeModule_inner_tprod_commutant φ M t ht a a' b b', h0, mul_zero,
     zero_mul]
+
+/-- A bijective ∗-homomorphism *reflects* positivity: `0 ≤ f x` forces
+`0 ≤ x`.  (`starAlgHom_nonneg` of `A/VN/Basic.lean` is the forward half.)
+Used to transport `[0,1]_{ϱ(𝒜)^□}` back along the nmiu-isomorphism of
+**140VIII**, where the thesis says only "it is easy to see `ϑ` restricts to a
+linear order isomorphism". -/
+theorem starAlgHom_nonneg_reflect {P Q : Type u} [CStarAlgebra P]
+    [PartialOrder P] [StarOrderedRing P] [CStarAlgebra Q] [PartialOrder Q]
+    [StarOrderedRing Q] (f : P →⋆ₐ[ℂ] Q) (hinj : Function.Injective ⇑f)
+    (hsurj : Function.Surjective ⇑f) {x : P} (h : 0 ≤ f x) : 0 ≤ x := by
+  have hy : star (CFC.sqrt (f x)) * CFC.sqrt (f x) = f x := by
+    rw [(IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg (f x))).star_eq,
+      CFC.sqrt_mul_sqrt_self _ h]
+  obtain ⟨z, hz⟩ := hsurj (CFC.sqrt (f x))
+  have hfz : f (star z * z) = f x := by rw [map_mul, map_star, hz]; exact hy
+  rw [← hinj hfz]
+  exact star_mul_self_nonneg z
+
+/-- `exists_paschke_iso_paschkeModule` (**154III**.5 + **140VIII**) with the
+*normality* of the isomorphism and its *uniqueness* forgotten: a bijective
+∗-homomorphism `𝒫 → 𝒷ᵃ(𝒜 ⊗_φ ℬ)ᵐᵒᵖ` compatible with `ϱ` and `h`, which is
+all parts 2 and 3 of **157IV** consume.
+
+**Not a rendering of 140VIII** — the doc comment used to claim it was.
+140VIII in full (the nmiu-isomorphism, and its uniqueness) is
+`B/Dils/Stinespring.paschke_unique_up_to_iso`, which this is a corollary
+of, via `exists_paschke_iso_paschkeModule`. -/
+private theorem exists_paschke_starAlgHom [VonNeumannAlgebra 𝒜]
+    [VonNeumannAlgebra ℬ] (φ : NCPMap 𝒜 ℬ) (M : PaschkeModule φ)
+    (D : PaschkeTriple 𝒜 ℬ) (hD : IsPaschkeDilationOf D ⇑φ) :
+    ∃ f : D.P →⋆ₐ[ℂ] (Ba ℬ M.X)ᵐᵒᵖ,
+      Function.Bijective ⇑f ∧ (∀ a, f (D.ρ a) = M.ρ a) ∧
+      (∀ c, M.h (f c) = D.h c) := by
+  letI := D.vn
+  obtain ⟨ϑ, ⟨hbij, hρ, hh⟩, -⟩ := exists_paschke_iso_paschkeModule φ M D hD
+  exact ⟨ϑ.toStarAlgHom, hbij, hρ, hh⟩
+
+-- The right ℬ-action on `𝒜 ⊙ ℬ` (`ptensSMul`, parsec 1540 above) is
+-- declared `local`, and the two lemmas below speak about the *concrete*
+-- module `𝒜 ⊗_φ ℬ`, so it has to be switched on again here.
+attribute [local instance] ptensSMul
+
+/-- **157VII** (dils.tex:3988, the *Order embedding* step of the proof of
+**157IV**) for the module *constructed* in `existence_paschke`: `t ↦ φ_t`
+**reflects positivity** — if `t` commutes with `ϱ(𝒜)` and `φ_t` is ncp,
+then `0 ≤ t`.  (Injectivity, the point's "and in particular an injection",
+is `paschkeModule_phiT_injective` above.)
+
+This is 157VII transcribed.  The point picks `x ∈ 𝒜 ⊙ ℬ`, says that by
+**152IX** `hilmod-fixed-on-V` it is enough to show `⟨x̂, T x̂⟩ ≥ 0`, and
+computes, for `x̂ = ∑ᵢ aᵢ ⊗ bᵢ`,
+`⟨x̂, T x̂⟩ = ∑ᵢⱼ bᵢ* ⟨1⊗1, T ϱ(aᵢ*aⱼ) 1⊗1⟩ bⱼ = ∑ᵢⱼ bᵢ* φ_T(aᵢ*aⱼ) bⱼ ≥ 0`,
+the last step by complete positivity of `φ_T`.  Here: `hilmod_fixed_on_V`
+for `E`, `exists_fin_tmul` for `x̂ = ∑ᵢ aᵢ ⊗ bᵢ`, the matrix element
+`paschkeModule_inner_tprod_commutant` (which is the same computation, done
+once for a general pair of elementary tensors rather than summed), and
+`phi_gram_nonneg` at `φ_T` for the final inequality.
+
+It is stated for `paschkeModuleOf φ E` and not for an abstract
+`PaschkeModule` because `hilmod-fixed-on-V` is a statement about the
+*concrete* `η`; `phiT_reflects_nonneg` below carries it to an arbitrary
+Paschke dilation by **157IX**, exactly as the thesis does. -/
+theorem paschkeModuleOf_phiT_reflects_nonneg [VonNeumannAlgebra 𝒜]
+    [VonNeumannAlgebra ℬ] (φ : NCPMap 𝒜 ℬ)
+    (E : SelfDualCompletion.{u, u, u} (ptensBInner φ))
+    (t : (Ba ℬ (paschkeModuleOf φ E).X)ᵐᵒᵖ)
+    (ht : ∀ a : 𝒜,
+      t * (paschkeModuleOf φ E).ρ a = (paschkeModuleOf φ E).ρ a * t)
+    (δ : NCPMap 𝒜 ℬ)
+    (hδ : ∀ a : 𝒜,
+      (δ a : ℬ) = (paschkeModuleOf φ E).h (t * (paschkeModuleOf φ E).ρ a)) :
+    0 ≤ t := by
+  rw [mop_nonneg_iff]
+  -- `T` is `t` read on `E.X` itself, which is what `hilmod-fixed-on-V` speaks
+  -- about (`(paschkeModuleOf φ E).X` is `E.X`, but only by unfolding)
+  obtain ⟨T, hTadj, hTt⟩ : ∃ (T : E.X →L[ℂ] E.X) (_ : ModuleAdjointable ℬ ⇑T),
+      ∀ x, T x = t.unop.1 x := ⟨t.unop.1, t.unop.2, fun _ => rfl⟩
+  -- the matrix element of 157VII, `⟨a ⊗ b, T(a' ⊗ b')⟩ = b' φ_T(a' a*) b*`
+  have hmat : ∀ (a a' : 𝒜) (b b' : ℬ),
+      (inner ℬ (ptprod φ E a b) (T (ptprod φ E a' b')) : ℬ)
+        = b' * δ (a' * star a) * star b := by
+    intro a a' b b'
+    have h := paschkeModule_inner_tprod_commutant φ (paschkeModuleOf φ E) t ht
+      a a' b b'
+    rw [← hδ (a' * star a)] at h
+    rw [hTt]
+    exact h
+  -- `⟨x̂, T x̂⟩ = ∑ᵢⱼ bᵢ* φ_T(aᵢ*aⱼ) bⱼ ≥ 0` for `x̂ = ∑ᵢ aᵢ ⊗ bᵢ`
+  have hpos : IsPositiveOp ℬ T := by
+    refine (hilmod_fixed_on_V (ptensBInner φ) E T hTadj).mpr ?_
+    intro v
+    obtain ⟨n, a, b, rfl⟩ := exists_fin_tmul v
+    rw [eta_sum φ E a b, map_sum, CStarModule.inner_sum_left]
+    have hrow : ∀ i : Fin n,
+        (inner ℬ (ptprod φ E (a i) (b i))
+          (∑ j, T (ptprod φ E (a j) (b j))) : ℬ)
+          = ∑ j, b j * δ (a j * star (a i)) * star (b i) := by
+      intro i
+      rw [CStarModule.inner_sum_right]
+      exact Finset.sum_congr rfl fun j _ => hmat (a i) (a j) (b i) (b j)
+    rw [Finset.sum_congr rfl fun i _ => hrow i, Finset.sum_comm]
+    exact phi_gram_nonneg δ a b
+  -- **152IX**/**144I**: the vector forms of the dense image decide positivity
+  refine (ba_nonneg_iff t.unop).mpr fun x => ?_
+  have h := (hilbmod_ordersep T hTadj).mp hpos x
+  exact le_of_le_of_eq h (congrArg (fun y : E.X => (inner ℬ x y : ℬ)) (hTt x))
+
+/-- **157VII** for an arbitrary Paschke dilation `(𝒫, ϱ, h)` of `φ`: if `t`
+lies in the commutant of `ϱ(𝒜)` and `φ_t` is ncp, then `0 ≤ t`.  Together
+with `phiT_ncpLe` (**157VI**) this is the *order embedding* half of
+**157IV**.
+
+The passage from the constructed module to an arbitrary dilation is
+**157IX**'s: `paschke-unique-up-to-iso` (here
+`exists_paschke_starAlgHom`) gives a ∗-isomorphism `ϑ` with `ϑ ∘ ϱ' = ϱ`
+and `h ∘ ϑ = h'`, so `φ_t^{𝒫'} = φ_{ϑ(t)}^{𝒫}`; `ϑ` and its inverse are
+positive, so `0 ≤ ϑ(t)` gives `0 ≤ t` (`starAlgHom_nonneg_reflect`, which
+is the thesis's "it is easy to see `ϑ` restricts to a linear order
+isomorphism `[0,1]_{ϱ'(𝒜)^□} → [0,1]_{ϱ(𝒜)^□}`"). -/
+theorem phiT_reflects_nonneg [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
+    (φ : NCPMap 𝒜 ℬ) (D : PaschkeTriple 𝒜 ℬ) (hD : IsPaschkeDilationOf D ⇑φ)
+    (t : D.P) (ht : ∀ a : 𝒜, t * D.ρ a = D.ρ a * t) (δ : NCPMap 𝒜 ℬ)
+    (hδ : ∀ a : 𝒜, (δ a : ℬ) = D.h (t * D.ρ a)) :
+    0 ≤ t := by
+  letI := D.vn
+  obtain ⟨E⟩ := dils_completion (𝒷 := ℬ) (V := 𝒜 ⊗[ℂ] ℬ) (ptensBInner φ)
+  obtain ⟨f, hbij, hfρ, hfh⟩ :=
+    exists_paschke_starAlgHom φ (paschkeModuleOf φ E) D hD
+  have hcomm : ∀ a : 𝒜,
+      f t * (paschkeModuleOf φ E).ρ a = (paschkeModuleOf φ E).ρ a * f t := by
+    intro a
+    rw [← hfρ, ← map_mul, ← map_mul, ht a]
+  have hδ' : ∀ a : 𝒜,
+      (δ a : ℬ) = (paschkeModuleOf φ E).h (f t * (paschkeModuleOf φ E).ρ a) := by
+    intro a
+    rw [hδ a, ← hfρ, ← map_mul, hfh]
+  exact starAlgHom_nonneg_reflect f hbij.1 hbij.2
+    (paschkeModuleOf_phiT_reflects_nonneg φ E (f t) hcomm δ hδ')
 
 /-- Bounded module maps compose. -/
 private theorem bmm_comp_aux {X Y Z : Type u} [NormedAddCommGroup X]
@@ -3729,17 +3905,22 @@ private theorem bmm_comp_aux {X Y Z : Type u} [NormedAddCommGroup X]
 form the proof produces it: if `φ = ψ + δ` with `ψ`, `δ` ncp, then there is a
 positive `T` in the commutant of `ϱ(𝒜)` with `φ_T = ψ`.
 
-This is the thesis's argument verbatim, minus the bound `T ≤ 1` (which the
-thesis gets from `hilmod-fixed-on-V` and which is instead obtained at the use
-site by applying this lemma to `δ` as well and comparing with `φ_1`): the
-identity `a ⊗ b ↦ a ⊗ b` is φ-compatible into `𝒜 ⊗_ψ ℬ` because
-`⟨x,x⟩_ψ ≤ ⟨x,x⟩_φ`, the universal property of part 1 turns it into a bounded
-module map `W`, self-duality of `𝒜 ⊗_ψ ℬ` gives `W*`
-(**152VIII** `hilbmod_adjoint_exists`), and `T = W*W`. -/
+This is the thesis's argument: the identity `a ⊗ b ↦ a ⊗ b` is φ-compatible
+into `𝒜 ⊗_ψ ℬ` because `⟨x,x⟩_ψ ≤ ⟨x,x⟩_φ`, the universal property of part 1
+turns it into a bounded module map `W`, self-duality of `𝒜 ⊗_ψ ℬ` gives `W*`
+(**152VIII** `hilbmod_adjoint_exists`), and `T = W*W`, whence `0 ≤ T`.
+
+The bound `T ≤ 1` is 157VIII's too, and used to be dropped here and
+recovered at the use site.  Local deviation in its proof: the thesis reads
+`⟨x, Tx⟩_φ = ⟨x,x⟩_ψ ≤ ⟨x,x⟩_φ` off the elementary tensors and concludes by
+`hilmod-fixed-on-V`; here `φ_{1−T} = φ − ψ = δ` is ncp by hypothesis, so
+`0 ≤ 1 − T` by **157VII** `phiT_reflects_nonneg` — which is itself proved by
+`hilmod-fixed-on-V`, so the density argument is used, once, in the place the
+thesis first uses it. -/
 theorem paschkeModule_phiT_surjective [VonNeumannAlgebra 𝒜]
     [VonNeumannAlgebra ℬ] (φ ψ δ : NCPMap 𝒜 ℬ) (M : PaschkeModule φ)
     (hsum : ∀ a, φ a = ψ a + δ a) :
-    ∃ t : (Ba ℬ M.X)ᵐᵒᵖ, (∀ a : 𝒜, t * M.ρ a = M.ρ a * t) ∧ 0 ≤ t ∧
+    ∃ t : (Ba ℬ M.X)ᵐᵒᵖ, (∀ a : 𝒜, t * M.ρ a = M.ρ a * t) ∧ 0 ≤ t ∧ t ≤ 1 ∧
       ∀ d : 𝒜, (M.h (t * M.ρ d) : ℬ) = ψ d := by
   obtain ⟨N⟩ := existence_paschke ψ
   -- (1) `(a,b) ↦ a ⊗_ψ b` is φ-compatible, because `ψ ≤_ncp φ`
@@ -3820,52 +4001,37 @@ theorem paschkeModule_phiT_surjective [VonNeumannAlgebra 𝒜]
             congr 1
             exact (hWρ a₀ x).symm
       _ = inner ℬ y (Z.1 ((M.ρ a₀).unop.1 x)) := hW' y _
-  refine ⟨MulOpposite.op Z, ?_, ?_, ?_⟩
-  · intro a
+  have hcomm : ∀ a : 𝒜,
+      MulOpposite.op Z * M.ρ a = M.ρ a * MulOpposite.op Z := by
+    intro a
     refine MulOpposite.unop_injective (Subtype.ext
       (ContinuousLinearMap.ext fun x => ?_))
     exact hZcomm a x
-  · rw [mop_nonneg_iff]
-    refine (ba_nonneg_iff Z).mpr fun x => ?_
-    rw [hZapp, ← hW' x (Wc x)]
-    exact CStarModule.inner_self_nonneg
-  · intro d
+  have hval : ∀ d : 𝒜, (M.h (MulOpposite.op Z * M.ρ d) : ℬ) = ψ d := by
+    intro d
     rw [M.h_def]
     show (inner ℬ (M.tprod 1 1) ((M.ρ d).unop.1 (Z.1 (M.tprod 1 1))) : ℬ) = ψ d
     rw [hZcomm, hZapp, ← hW' (M.tprod 1 1) (Wc _), hWcapp, hWcapp, M.ρ_tprod,
       hWt, hWt, one_mul, N.inner_tprod]
     simp
-
-/-- A bijective ∗-homomorphism *reflects* positivity: `0 ≤ f x` forces
-`0 ≤ x`.  (`starAlgHom_nonneg` of `A/VN/Basic.lean` is the forward half.)
-Used to transport `[0,1]_{ϱ(𝒜)^□}` back along the nmiu-isomorphism of
-**140VIII**, where the thesis says only "it is easy to see `ϑ` restricts to a
-linear order isomorphism". -/
-theorem starAlgHom_nonneg_reflect {P Q : Type u} [CStarAlgebra P]
-    [PartialOrder P] [StarOrderedRing P] [CStarAlgebra Q] [PartialOrder Q]
-    [StarOrderedRing Q] (f : P →⋆ₐ[ℂ] Q) (hinj : Function.Injective ⇑f)
-    (hsurj : Function.Surjective ⇑f) {x : P} (h : 0 ≤ f x) : 0 ≤ x := by
-  have hy : star (CFC.sqrt (f x)) * CFC.sqrt (f x) = f x := by
-    rw [(IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg (f x))).star_eq,
-      CFC.sqrt_mul_sqrt_self _ h]
-  obtain ⟨z, hz⟩ := hsurj (CFC.sqrt (f x))
-  have hfz : f (star z * z) = f x := by rw [map_mul, map_star, hz]; exact hy
-  rw [← hinj hfz]
-  exact star_mul_self_nonneg z
-
-/-- **140VIII** `paschke_unique_up_to_iso` in the shape parts 2 and 3 use it:
-a bijective ∗-homomorphism `𝒫 → 𝒷ᵃ(𝒜 ⊗_φ ℬ)ᵐᵒᵖ` compatible with `ϱ` and
-`h`.  This is `exists_paschke_iso_paschkeModule` with the normality clause
-forgotten. -/
-private theorem exists_paschke_starAlgHom [VonNeumannAlgebra 𝒜]
-    [VonNeumannAlgebra ℬ] (φ : NCPMap 𝒜 ℬ) (M : PaschkeModule φ)
-    (D : PaschkeTriple 𝒜 ℬ) (hD : IsPaschkeDilationOf D ⇑φ) :
-    ∃ f : D.P →⋆ₐ[ℂ] (Ba ℬ M.X)ᵐᵒᵖ,
-      Function.Bijective ⇑f ∧ (∀ a, f (D.ρ a) = M.ρ a) ∧
-      (∀ c, M.h (f c) = D.h c) := by
-  letI := D.vn
-  obtain ⟨ϑ, ⟨hbij, hρ, hh⟩, -⟩ := exists_paschke_iso_paschkeModule φ M D hD
-  exact ⟨ϑ.toStarAlgHom, hbij, hρ, hh⟩
+  refine ⟨MulOpposite.op Z, hcomm, ?_, ?_, hval⟩
+  · rw [mop_nonneg_iff]
+    refine (ba_nonneg_iff Z).mpr fun x => ?_
+    rw [hZapp, ← hW' x (Wc x)]
+    exact CStarModule.inner_self_nonneg
+  · -- `T ≤ 1`: `φ_{1−T} = φ − ψ = δ` is ncp, so **157VII** applies
+    refine sub_nonneg.mp (phiT_reflects_nonneg φ
+      ⟨(Ba ℬ M.X)ᵐᵒᵖ,
+        @vonNeumannAlgebra_mulOpposite (Ba ℬ M.X) _ _ _
+          (ba_vonNeumannAlgebra M.selfDual),
+        M.ρ, M.h⟩ (existence_paschke_5 φ M) (1 - MulOpposite.op Z)
+      (fun a => by rw [sub_mul, mul_sub, one_mul, mul_one, hcomm a]) δ
+      fun a => ?_)
+    have hMhsub : ∀ x y : (Ba ℬ M.X)ᵐᵒᵖ, (M.h (x - y) : ℬ) = M.h x - M.h y :=
+      fun x y => map_sub M.h.toCompletelyPositiveMap.toLinearMap x y
+    show (δ a : ℬ) = M.h ((1 - MulOpposite.op Z) * M.ρ a)
+    rw [sub_mul, hMhsub, one_mul, paschkeModule_h_ρ, hval a, hsum a]
+    abel
 
 /-- **157VI** (dils.tex:3966, the Set-up of the proof of **157IV**): for
 `0 ≤ s` in the commutant of `ϱ(𝒜)` the map `φ_s = h(s ϱ(·))` is ncp,
@@ -3874,7 +4040,14 @@ composite of the three ncp-maps `ϱ`, `ad_{√s}` and `h`.
 
 Extracted from the proof of `paschke_correspondence_mem` (part 1), which is
 now one line of it, and used by parts 2 and 3.  It is model-independent:
-only `D` is needed, no `PaschkeModule`. -/
+only `D` is needed, no `PaschkeModule`.  157VI's two further clauses are
+`phiT_ncpLe` and `phiT_one` below.
+
+**Thesis slip, absorbed here rather than filed.**  157VI says "Pick
+`T ∈ ϱ(𝒜)^□`" and then forms `√T`; as printed its conclusion "`φ_T` is
+ncp" is false for a general self-adjoint `T` of the commutant (take
+`T = −1`, `φ ≠ 0`).  What the argument needs, and what is assumed here, is
+`0 ≤ T`. -/
 theorem exists_phiT_ncp [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
     (D : PaschkeTriple 𝒜 ℬ) (s : D.P) (hs0 : 0 ≤ s)
     (hsc : ∀ a : 𝒜, s * D.ρ a = D.ρ a * s) :
@@ -3925,6 +4098,65 @@ theorem exists_phiT_ncp [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
     _ = CFC.sqrt s * (CFC.sqrt s * D.ρ a) := by rw [← hrc]
     _ = s * D.ρ a := by rw [← mul_assoc, hr2]
 
+/-- **157IV** (`paschke-correspondence`, dils.tex:3950, Theorem), the
+*linear* clause: `t ↦ φ_t` is additive.  Immediate from the definition —
+`h` is linear and `(s + t)ϱ(a) = sϱ(a) + tϱ(a)` — but the point does assert
+it, and it was stated in none of the three parts. -/
+theorem phiT_add (D : PaschkeTriple 𝒜 ℬ) (s t : D.P) (a : 𝒜) :
+    phiT D (s + t) a = phiT D s a + phiT D t a := by
+  show (D.h ((s + t) * D.ρ a) : ℬ) = D.h (s * D.ρ a) + D.h (t * D.ρ a)
+  rw [add_mul]
+  exact map_add D.h.toCompletelyPositiveMap.toLinearMap _ _
+
+/-- **157IV**, the *linear* clause, ℂ-homogeneity. -/
+theorem phiT_smul (D : PaschkeTriple 𝒜 ℬ) (c : ℂ) (t : D.P) (a : 𝒜) :
+    phiT D (c • t) a = c • phiT D t a := by
+  show (D.h ((c • t) * D.ρ a) : ℬ) = c • D.h (t * D.ρ a)
+  rw [smul_mul_assoc]
+  exact map_smul D.h.toCompletelyPositiveMap.toLinearMap _ _
+
+/-- **157VI** (dils.tex:3966, the Set-up of the proof of **157IV**), second
+clause: `t ↦ φ_t` is *monotone* — if `t ≤ s` for `s, t` in the commutant of
+`ϱ(𝒜)` then `φ_t ≤_ncp φ_s`.
+
+The thesis's one-liner: `φ_{s−t} = φ_s − φ_t` is ncp by the first clause
+(`exists_phiT_ncp`, applicable because `0 ≤ s − t`), which is what
+`φ_t ≤_ncp φ_s` says.  No positivity of `t` or `s` separately is needed. -/
+theorem phiT_ncpLe [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
+    (D : PaschkeTriple 𝒜 ℬ) (s t : D.P)
+    (hsc : ∀ a : 𝒜, s * D.ρ a = D.ρ a * s)
+    (htc : ∀ a : 𝒜, t * D.ρ a = D.ρ a * t) (hts : t ≤ s) :
+    NCPLe (phiT D t) (phiT D s) := by
+  obtain ⟨δ, hδ⟩ := exists_phiT_ncp D (s - t) (sub_nonneg.mpr hts)
+    (fun a => by simp only [sub_mul, mul_sub, hsc a, htc a])
+  have hhadd : ∀ x y : D.P, (D.h (x + y) : ℬ) = D.h x + D.h y := fun x y =>
+    map_add D.h.toCompletelyPositiveMap.toLinearMap x y
+  refine ⟨δ, fun a => ?_⟩
+  show (D.h (s * D.ρ a) : ℬ) = D.h (t * D.ρ a) + δ a
+  rw [hδ a, ← hhadd,
+    show t * D.ρ a + (s - t) * D.ρ a = s * D.ρ a from by noncomm_ring]
+
+/-- **157VI** (dils.tex:3966, the Set-up of the proof of **157IV**), third
+clause: `φ_1 = φ`.  (Together with the second clause: `T ≤ 1` gives
+`φ_T ≤_ncp φ`, which is how 157VI closes.)  This is `h ∘ ϱ = φ`, the first
+half of `IsPaschkeDilationOf`. -/
+theorem phiT_one [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
+    (φ : NCPMap 𝒜 ℬ) (D : PaschkeTriple 𝒜 ℬ) (hD : IsPaschkeDilationOf D ⇑φ) :
+    phiT D 1 = ⇑φ := by
+  funext a
+  show (D.h (1 * D.ρ a) : ℬ) = φ a
+  rw [one_mul]
+  exact hD.1 a
+
+/-- **157VI**, the two clauses together, in the form the point states them:
+for `t ≤ 1` in the commutant, `φ_t ≤_ncp φ_1 = φ`. -/
+theorem phiT_ncpLe_self [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
+    (φ : NCPMap 𝒜 ℬ) (D : PaschkeTriple 𝒜 ℬ) (hD : IsPaschkeDilationOf D ⇑φ)
+    (t : D.P) (htc : ∀ a : 𝒜, t * D.ρ a = D.ρ a * t) (ht1 : t ≤ 1) :
+    NCPLe (phiT D t) ⇑φ := by
+  rw [← phiT_one φ D hD]
+  exact phiT_ncpLe D 1 t (fun a => by rw [one_mul, mul_one]) htc ht1
+
 /-- **157IV** (`paschke-correspondence`, dils.tex:3950, Theorem), part 1:
 for `t` in `[0,1]` of the commutant of `ϱ(𝒜)`, the map `φ_t` lies in
 `[0, φ]_ncp`.
@@ -3958,13 +4190,12 @@ theorem paschke_correspondence_mem [VonNeumannAlgebra 𝒜]
 `φ_t ≤_ncp φ_s` iff `t ≤ s` (in particular `t ↦ φ_t` is injective and
 linear).
 
-**Not** the thesis's 157VII (see the section header above): from
-`φ_t ≤_ncp φ_s` one reads off that `δ = φ_{s−t}` is ncp and that
-`φ = δ + φ_{1−s+t}`, where the second summand is ncp by `exists_phiT_ncp`
-because `0 ≤ 1−s+t`; part **3** then supplies a *positive* `u` in the
-commutant with `φ_u = δ`, and `paschkeModule_phiT_injective` identifies `u`
-with `s − t`.  So no positivity is proved by hand and no density argument is
-needed.  Of the four order hypotheses only `s ≤ 1` and `0 ≤ t` are used. -/
+Both directions are the thesis's, now that **157VI** and **157VII** are
+stated in their own right: `←` is `phiT_ncpLe` (157VI's second clause), and
+`→` is `phiT_reflects_nonneg` (157VII) applied to `s − t`, whose `φ_{s−t}`
+is the ncp-map `δ` witnessing `φ_t ≤_ncp φ_s`.  Of the four order
+hypotheses none is needed for either direction; they are kept because the
+point quantifies over `[0,1]_{ϱ(𝒜)^□}`. -/
 theorem paschke_correspondence_embedding [VonNeumannAlgebra 𝒜]
     [VonNeumannAlgebra ℬ] (φ : NCPMap 𝒜 ℬ) (D : PaschkeTriple 𝒜 ℬ)
     (hD : IsPaschkeDilationOf D ⇑φ) (s t : D.P)
@@ -3978,73 +4209,25 @@ theorem paschke_correspondence_embedding [VonNeumannAlgebra 𝒜]
     map_sub D.h.toCompletelyPositiveMap.toLinearMap x y
   have hhadd : ∀ x y : D.P, (D.h (x + y) : ℬ) = D.h x + D.h y := fun x y =>
     map_add D.h.toCompletelyPositiveMap.toLinearMap x y
+  have hstc : ∀ a : 𝒜, (s - t) * D.ρ a = D.ρ a * (s - t) := fun a => by
+    simp only [sub_mul, mul_sub, hsc a, htc a]
   constructor
   · rintro ⟨δ, hδ⟩
-    -- `δ = φ_{s-t}`
-    have h1 : ∀ a : 𝒜, (D.h ((s - t) * D.ρ a) : ℬ) = δ a := by
-      intro a
-      rw [sub_mul, hhsub]
-      have h2 := hδ a
-      show (D.h (s * D.ρ a) : ℬ) - D.h (t * D.ρ a) = δ a
-      rw [show (D.h (s * D.ρ a) : ℬ) = D.h (t * D.ρ a) + δ a from h2]
-      abel
-    -- `ε = φ_{1-s+t}` is ncp, and `φ = δ + ε`
-    obtain ⟨ε, hε⟩ := exists_phiT_ncp D (1 - s + t)
-      (add_nonneg (sub_nonneg.mpr hs1) ht0)
-      (fun a => by
-        simp only [sub_mul, add_mul, mul_sub, mul_add, one_mul, mul_one, hsc a,
-          htc a])
-    have hsum : ∀ a : 𝒜, φ a = δ a + ε a := by
-      intro a
-      rw [hε a, ← h1 a, ← hhadd,
-        show (s - t) * D.ρ a + (1 - s + t) * D.ρ a = 1 * D.ρ a from by
-          noncomm_ring, one_mul]
-      exact (hD.1 a).symm
-    -- the constructed module, and the transport
-    obtain ⟨M⟩ := existence_paschke φ
-    obtain ⟨f, hbij, hfρ, hfh⟩ := exists_paschke_starAlgHom φ M D hD
-    have hphi : ∀ (u : D.P) (a : 𝒜),
-        (D.h (u * D.ρ a) : ℬ) = M.h (f u * M.ρ a) := by
-      intro u a
-      rw [← hfρ, ← map_mul, hfh]
-    have hfcomm : ∀ u : D.P, (∀ a : 𝒜, u * D.ρ a = D.ρ a * u) →
-        ∀ a : 𝒜, f u * M.ρ a = M.ρ a * f u := by
-      intro u hu a
-      rw [← hfρ, ← map_mul, ← map_mul, hu]
-    -- surjectivity on the constructed module
-    obtain ⟨u, hucomm, hu0, huφ⟩ := paschkeModule_phiT_surjective φ δ ε M hsum
-    have hstc : ∀ a : 𝒜, (s - t) * D.ρ a = D.ρ a * (s - t) := fun a => by
-      simp only [sub_mul, mul_sub, hsc a, htc a]
-    have hMhsub : ∀ x y : (Ba ℬ M.X)ᵐᵒᵖ, (M.h (x - y) : ℬ) = M.h x - M.h y :=
-      fun x y => map_sub M.h.toCompletelyPositiveMap.toLinearMap x y
-    -- `u = f (s - t)` by injectivity
-    have hzero : u - f (s - t) = 0 := by
-      refine paschkeModule_phiT_injective φ M _ ?_ ?_
-      · intro a
-        rw [sub_mul, mul_sub, hucomm a, hfcomm (s - t) hstc a]
-      · intro d
-        rw [sub_mul, hMhsub, huφ d, ← hphi, h1 d, sub_self]
-    have hu : u = f (s - t) := sub_eq_zero.mp hzero
-    have h0 : (0 : (Ba ℬ M.X)ᵐᵒᵖ) ≤ f (s - t) := hu ▸ hu0
-    exact sub_nonneg.mp (starAlgHom_nonneg_reflect f hbij.1 hbij.2 h0)
-  · intro hts
-    obtain ⟨δ, hδ⟩ := exists_phiT_ncp D (s - t) (sub_nonneg.mpr hts)
-      (fun a => by simp only [sub_mul, mul_sub, hsc a, htc a])
-    refine ⟨δ, fun a => ?_⟩
-    show (D.h (s * D.ρ a) : ℬ) = D.h (t * D.ρ a) + δ a
-    rw [hδ a, ← hhadd,
-      show t * D.ρ a + (s - t) * D.ρ a = s * D.ρ a from by noncomm_ring]
+    -- `δ = φ_{s−t}`, so `φ_{s−t}` is ncp; **157VII** gives `0 ≤ s − t`
+    refine sub_nonneg.mp (phiT_reflects_nonneg φ D hD (s - t) hstc δ fun a => ?_)
+    rw [sub_mul, hhsub]
+    show (δ a : ℬ) = D.h (s * D.ρ a) - D.h (t * D.ρ a)
+    rw [show (D.h (s * D.ρ a) : ℬ) = D.h (t * D.ρ a) + δ a from hδ a]
+    abel
+  · exact fun hts => phiT_ncpLe D s t hsc htc hts
 
 /-- **157IV** (`paschke-correspondence`, dils.tex:3950, Theorem), part 3:
 `t ↦ φ_t` maps `[0,1]_{ϱ(𝒜)'}` *onto* `[0,φ]_ncp`.
 
 **157VIII** transcribed on the constructed module
 (`paschkeModule_phiT_surjective`: `T = W*W` for the map `W` induced by
-`a ⊗_φ b ↦ a ⊗_ψ b`) and transported to `D` by **157IX**, i.e. by
-`exists_paschke_iso_paschkeModule`.  The one step that is not the thesis's is
-`T ≤ 1`: instead of `hilmod-fixed-on-V` we run the construction on `φ − ψ` as
-well, obtaining `T'` with `φ_{T+T'} = φ = φ_1`, so `T + T' = 1` by
-`paschkeModule_phiT_injective`. -/
+`a ⊗_φ b ↦ a ⊗_ψ b`, with `0 ≤ T ≤ 1`) and transported to `D` by **157IX**,
+i.e. by `exists_paschke_iso_paschkeModule`. -/
 theorem paschke_correspondence_surjective [VonNeumannAlgebra 𝒜]
     [VonNeumannAlgebra ℬ] (φ : NCPMap 𝒜 ℬ) (D : PaschkeTriple 𝒜 ℬ)
     (hD : IsPaschkeDilationOf D ⇑φ) (ψ : 𝒜 → ℬ)
@@ -4057,24 +4240,7 @@ theorem paschke_correspondence_surjective [VonNeumannAlgebra 𝒜]
   have hsum : ∀ a, φ a = δ a + ε a := fun a => by rw [hε a, hψδ a]
   obtain ⟨M⟩ := existence_paschke φ
   obtain ⟨f, hbij, hfρ, hfh⟩ := exists_paschke_starAlgHom φ M D hD
-  obtain ⟨u, hucomm, hu0, huφ⟩ := paschkeModule_phiT_surjective φ δ ε M hsum
-  obtain ⟨v, hvcomm, hv0, hvφ⟩ := paschkeModule_phiT_surjective φ ε δ M (fun a => by
-    rw [hsum a, add_comm])
-  have hMhadd : ∀ x y : (Ba ℬ M.X)ᵐᵒᵖ, (M.h (x + y) : ℬ) = M.h x + M.h y :=
-    fun x y => map_add M.h.toCompletelyPositiveMap.toLinearMap x y
-  have hMhsub : ∀ x y : (Ba ℬ M.X)ᵐᵒᵖ, (M.h (x - y) : ℬ) = M.h x - M.h y :=
-    fun x y => map_sub M.h.toCompletelyPositiveMap.toLinearMap x y
-  -- `u + v = 1`, by injectivity
-  have huv : u + v = 1 := by
-    have hz : u + v - 1 = 0 := by
-      refine paschkeModule_phiT_injective φ M _ ?_ ?_
-      · intro a
-        rw [sub_mul, mul_sub, add_mul, mul_add, hucomm a, hvcomm a, one_mul,
-          mul_one]
-      · intro d
-        rw [sub_mul, hMhsub, add_mul, hMhadd, huφ d, hvφ d, one_mul,
-          paschkeModule_h_ρ, hsum d, sub_self]
-    exact sub_eq_zero.mp hz
+  obtain ⟨u, hucomm, hu0, hu1, huφ⟩ := paschkeModule_phiT_surjective φ δ ε M hsum
   -- transport back
   obtain ⟨w, hw⟩ := hbij.2 u
   refine ⟨w, ?_, ?_, ?_, ?_⟩
@@ -4083,9 +4249,8 @@ theorem paschke_correspondence_surjective [VonNeumannAlgebra 𝒜]
     rw [map_mul, map_mul, hw, hfρ, hucomm a]
   · exact starAlgHom_nonneg_reflect f hbij.1 hbij.2 (by rw [hw]; exact hu0)
   · refine sub_nonneg.mp (starAlgHom_nonneg_reflect f hbij.1 hbij.2 ?_)
-    rw [map_sub, map_one, hw, show (1 : (Ba ℬ M.X)ᵐᵒᵖ) - u = v from by
-      rw [← huv]; abel]
-    exact hv0
+    rw [map_sub, map_one, hw]
+    exact sub_nonneg.mpr hu1
   · funext a
     show (D.h (w * D.ρ a) : ℬ) = ψ a
     rw [← hfh (w * D.ρ a), map_mul, hw, hfρ, huφ a, hψδ a]
