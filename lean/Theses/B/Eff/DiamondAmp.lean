@@ -660,27 +660,30 @@ theorem ovee_le_of_le {X : C} {j : Pred X} (hj : IsSharp j) {s t : Pred X}
 /-- Sharp predicates are closed under `⋁` (208III, "Sub-EA"): for orthogonal
 sharp `s, t` the sum `s ⋁ t` is the supremum `s ∨ t`, which is sharp.
 
-The thesis derives this from `ea-modularity-prop` (177Ia).  Its *first*
-printing had a gap we could not repair; eff.tex was corrected on 2026-08-14
-(the Proposition now hypothesises the supremum and concludes the infimum) and
-the corrected form is proved in `EffectAlgebras.lean` as
-`msc_prop15'_of_dual`.  QUESTIONS.md B4, which recorded the gap, was deleted
-as resolved on 2026-08-16, so that pointer no longer resolves.  The argument
-below predates the correction and avoids
-modularity altogether: `s ∨ t = im [π_s, π_t]` is a supremum among *all*
-predicates (204V), so `s ∨ t ≤ s ⋁ t`; conversely `s` and `t` both vanish on
-`π_{(s∨t)ᵖ}`, hence so does `s ⋁ t` (partial sums are preserved by
-composition), which is `s ⋁ t ≤ s ∨ t`. -/
+**This is now the thesis's own route.**  208III derives it from
+`ea-modularity-prop` (177Ia): the join `s ∨ t = im [π_s, π_t]` exists by
+204V (`lattice_compr`), orthogonal sharp predicates have `s ∧ t = 0`
+(`isInf_zero_of_perp`), and 177Ia then gives `s ⋁ t = (s ∧ t) ⋁ (s ∨ t)
+= s ∨ t` — that last step is `msc_cor16_1`, the master's thesis's Corollary
+16.1, which `EffectAlgebras.lean` proves in the direction eff.tex now
+prints (supremum hypothesised, infimum concluded).
+
+Until 2026-08-21 this proof avoided modularity altogether, because 177Ia's
+*first* printing hypothesised the infimum and concluded the supremum and in
+that direction it is false (`WrightTriangle.not_ea_modularity_prop`);
+eff.tex was corrected on 2026-08-14 and `ea_modularity_prop` now states the
+corrected Proposition, so the detour is no longer needed.  (The avoided
+argument, for the record: `s ∨ t ≤ s ⋁ t` since `s ⋁ t` is an upper bound,
+and `s ⋁ t ≤ s ∨ t` since `s` and `t` both vanish on `π_{(s∨t)ᵖ}` — the
+second half is `ovee_le_of_le`, which orthomodularity below still uses.
+QUESTIONS.md B4, which recorded the gap, was deleted as resolved on
+2026-08-16.) -/
 theorem isSharp_ovee {X : C} {s t : Pred X} (hs : IsSharp s) (ht : IsSharp t)
     (h : Perp s t) : IsSharp (ovee s t h) := by
+  -- 204V: the join `s ∨ t` exists among all predicates, and is sharp
   obtain ⟨hsup, hjsharp⟩ := lattice_compr hs ht
-  -- `s ∨ t ≤ s ⋁ t`, as `s ⋁ t` is an upper bound of `s` and `t`
-  have h1 : imPred (coprod.desc (comprMap s) (comprMap t)) ≼ ovee s t h :=
-    hsup.2.2 _ ⟨t, h, rfl⟩ ⟨s, PCM.perp_comm h, (PCM.ovee_comm h).symm⟩
-  -- `s ⋁ t ≤ s ∨ t`, as both summands vanish on `π_{(s∨t)ᵖ}`
-  have h2 : ovee s t h ≼ imPred (coprod.desc (comprMap s) (comprMap t)) :=
-    ovee_le_of_le hjsharp h hsup.1 hsup.2.1
-  rw [← eabasics_le_antisymm h1 h2]
+  -- 177Ia at `s ∧ t = 0`: `s ⋁ t = s ∨ t`
+  rw [← msc_cor16_1 h (isInf_zero_of_perp hs h) hsup]
   exact hjsharp
 
 /-- **208III** (`diamond-oml`, eff.tex:4608, Proposition (Cho)), first half:
@@ -696,12 +699,16 @@ theorem diamond_oml_subEA (X : C) :
 /-! **208III** (`diamond-oml`, eff.tex:4608, Proposition (Cho)), second
 half — `SPred X` is an orthomodular lattice — is stated and proved as
 `diamond_oml` below, after 208IX/208XII: its lattice operations are the
-`SPred`-infimum and `SPred`-supremum constructed there. (The thesis takes
-its meets and joins from `ea-modularity-prop` (177Ia) instead.  That route was
-avoided because 177Ia's first printing was false; eff.tex has since been
-corrected — see `ea_modularity_prop` in `EffectAlgebras.lean` — so the
-divergence is no longer forced, only historical.  The QUESTIONS.md B4 pointer
-this note used to carry dangles: B4 was deleted as resolved on 2026-08-16.) -/
+`SPred`-infimum and `SPred`-supremum constructed there, and the orthomodular
+law comes from `ovee_le_of_le`.  The thesis instead reads its meets and
+joins off `ea-modularity-prop` (177Ia); that route was originally avoided
+because 177Ia's first printing was false, and since eff.tex's correction of
+2026-08-14 the `s ⋁ t = s ∨ t` step *is* taken the thesis's way (see
+`isSharp_ovee`).  What remains a divergence is only the source of the
+lattice operations themselves — 208IX/208XII rather than 177Ia — which is a
+matter of construction, not of a blocked appeal.  (The QUESTIONS.md B4
+pointer this note used to carry dangles: B4 was deleted as resolved on
+2026-08-16.) -/
 
 end DiamondBasics
 

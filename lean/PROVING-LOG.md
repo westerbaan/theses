@@ -26380,3 +26380,179 @@ scratchpad, `#print axioms` appended, the copy compiled from source):
     'Theses.B.Dils.hilbmod_adj_vector_ncp'  [propext, Classical.choice, Quot.sound]
     'Theses.B.Dils.pTheta_normal'           [propext, Classical.choice, Quot.sound]
     'Theses.B.Dils.prhoHom_normal'          [propext, Classical.choice, Quot.sound]
+
+## Session 94 — `B/Dils/SelfDual`: **159VIII's conclusion is on record at last — `onbProj_compress_uwTendsto` states `p_S T p_S → T` ultraweakly**, lifted out of `ketbra_ultraweakly_dense` (worker on `Theses/B/Dils/SelfDual.lean`)
+
+### What was open
+
+The audit row `159VIII | onbProj_omegaNorm_tendsto` was one of the three rows
+that came back `open` on re-verification.  Our declaration stated only the
+sub-step `‖1 − p_S‖_ω → 0`, and said so in its own doc comment ("the half that
+is used").  159VIII's actual conclusion — **`p_S T p_S → T` ultraweakly** — was
+proved *in situ*, inside `ketbra_ultraweakly_dense`, but that proof's
+approximating net is existentially bound, so the claim never reached the
+outside: nothing in the tree stated it.
+
+An earlier session-94 pass declined the row on the ground that 159VIII is a
+thesis defect (`ERRATA.md`'s 159VIII row: the printed proof says "pick any
+np-map `f : ℬ → ℂ`" and then applies `f` to `T − p_S T p_S`, an element of
+`𝒷ᵃ(X)`; the functional has to live on `𝒷ᵃ(X)`).  That reading does not hold:
+the defect is in 159VIII's **argument**, not in its **conclusion**, which is
+clean and true.  It is the argument that is repaired by taking `ω` to be an
+np-functional of `𝒷ᵃ(X)` — which is exactly what our proof already did.
+
+### The repair
+
+**New declaration** (divergence class 1, faithful), `SelfDual.lean:481`:
+
+    theorem onbProj_compress_uwTendsto {e : ι → X} (he : IsONBasis ℬ e)
+        (T : Ba ℬ X) :
+        UWTendsto (fun S : Finset ι => onbProj (ℬ := ℬ) e S * T * onbProj (ℬ := ℬ) e S)
+          atTop T
+
+It went in as a **new** declaration, not a changed one:
+`onbProj_omegaNorm_tendsto` is applied — at one site, in
+`ketbra_ultraweakly_dense` — and is the first half of 159VIII in its own
+right, so its shape is untouched.  The proof is the second bullet of
+`ketbra_ultraweakly_dense`, lifted verbatim and dedented; that bullet is now
+`exact onbProj_compress_uwTendsto he T`, so the work is done once and the file
+is **shorter in substance** (+91/−60 lines, of which the new doc comment is 21).
+
+The route is the thesis's own (point 80, `err159IV`): split
+`T − p_S T p_S = (1−p_S)*T + (T*p_S)*(1−p_S)`, bound both summands by
+Cauchy–Schwarz for `ω` (`norm_apply_star_mul_le`, with `‖p_S‖ ≤ ‖1‖` and `‖T‖`
+absorbing the middle factors), and feed the trailing `‖1 − p_S‖_ω` to the first
+half, `onbProj_omegaNorm_tendsto`.
+
+Two things the doc comment records, per the brief: (i) the printed proof's
+np-map is taken on `ℬ` and applied to an element of `𝒷ᵃ(X)`, so it has to be an
+np-functional of `𝒷ᵃ(X)` — a defect in the argument only; and (ii) `berr.tex`'s
+`err159IV` corrects a *different* slip in the same display.  Self-duality of
+`X` (carried by 159IV) is **not** needed for this step — as for
+`onbProj_omegaNorm_tendsto`, the orthonormal basis suffices — so the new lemma
+does not assume it.  159IV's doc comment, which said "**159V**–**159VIII** are
+the proof — not converted", now names the five declarations that *are* its
+proof; that sentence was stale even before this repair (159V–159VII had been
+converted).
+
+### Compile
+
+`SelfDual.lean` **rc=0, 0 errors, 0 `sorry`** (it has never had one); olean
+rebuilt (`lean -o` to the scratchpad, then installed) and the two downstream
+importers recompiled against it:
+
+* `Theses/B/Dils/Pure.lean` — rc=0, 0 errors, **1 `sorry`**, the pre-existing
+  deliberate record of a falsehood at `Pure.lean:2686`; olean rebuilt;
+* `Theses/B/Eff/VNExamples.lean` — rc=0, 0 errors, **1 `sorry`**, the
+  pre-existing `vn_is_andthen_eff` (QUESTIONS **B15**) at `VNExamples.lean:5920`.
+
+Axiom-clean, verified **in situ** (source copied to the scratchpad,
+`#print axioms` appended, the copy compiled from source):
+
+    'Theses.B.Dils.onbProj_compress_uwTendsto'  [propext, Classical.choice, Quot.sound]
+    'Theses.B.Dils.ketbra_ultraweakly_dense'    [propext, Classical.choice, Quot.sound]
+    'Theses.B.Dils.onbProj_omegaNorm_tendsto'   [propext, Classical.choice, Quot.sound]
+
+`docs/audit/bdils-selfdual-kaplansky.csv`'s 159VIII row is set to `repaired`.
+
+---
+
+## Session 94 — `B/Eff`: **177Ia is stated in full at last — the source moved and our rendering was the understated one**, and 208III gets the thesis's own route back (worker on `Theses/B/Eff/EffectAlgebras.lean`, `Theses/B/Eff/DiamondAmp.lean`)
+
+**One statement, and an unusual direction of travel.**  Every previous note
+about `ea-modularity-prop` recorded a *thesis* defect: the Proposition as
+first printed said that for `a ⊥ b` the existence of `a ∧ b` already gives
+`a ∨ b`, and that is false — `WrightTriangle.not_ea_modularity_prop` and
+`WrightTriangle.not_modularity_lemma` refute it and the lemma its proof rests
+on (the latter even when strengthened by `c ⊥ d`).  But eff.tex was corrected
+on **2026-08-14**, commit `280fa5b` "Second attempt at correcting 177Ia",
+which swaps the two existence hypotheses in the Proposition *and* runs the
+same swap through all of `modularity-lemma-proof`:
+
+> Suppose `E` is an effect algebra.  If the supremum `a ∨ b` exists for some
+> `a, b ∈ E` with `a ⊥ b`, then their infimum `a ∧ b` exists as well and
+> `a ⋁ b = (a ∧ b) ⋁ (a ∨ b)`.
+
+In that direction the Proposition is **true**, so from 2026-08-14 our
+`ea_modularity_prop` — which hypothesised *both* the infimum and the supremum
+and concluded only the identity — was no longer an honest remnant but simply
+weaker than the source.  This is a **repair**, not a ruling: the thesis
+statement is correct and ours said less.
+
+**The repair (divergence class 1, faithful).**
+
+    theorem ea_modularity_prop {E : Type u} [EffectAlgebra E] {a b j : E}
+        (hab : Perp a b) (hj : PCM.IsSup a b j) :
+        ∃ m, PCM.IsInf a b m ∧ ∃ hmj : Perp m j, ovee a b hab = ovee m j hmj
+
+The prose sweep's guess was right: **`msc_prop15'_of_dual` proves the stronger
+form already**, and the repair is one binder and no new mathematics.  The
+proof is three lines — `msc_prop15'_of_dual hab hj`, then the commutation
+`j ⋁ m = m ⋁ j` (`PCM.ovee_comm`).  It is also the thesis's *own* route, not a
+shortcut: `msc_prop15'_of_dual` is `dual_modularity_lemma` (= the lemma of
+`modularity-lemma-proof` in the direction eff.tex now prints) instantiated at
+`x = a ⋁ b`, `c = a`, `d = b`, which is exactly the "Indeed: …" derivation of
+point 20.  `grep` found **no consumer** of the old shape anywhere in the tree,
+so the statement could be restated in place rather than added beside.
+
+**The refutations stay, and now say what they are.**  Both are true statements
+about the *first* printing and neither is touched; each doc comment now says
+so in as many words ("The statement refuted here is the **old** one … It is
+not a claim about the text as it now stands").  They are kept as the record of
+why the correction was needed — and `not_modularity_lemma` is still what
+refutes the two remaining halves of the master's thesis's Corollary 14.
+
+**Stale prose, corrected in the other direction.**  Four doc comments in
+`EffectAlgebras.lean` described 177Ia as false as printed or our statement as
+deliberately weaker: `ea_modularity_prop` (both ⚠ blocks — including one
+claiming `ERRATA.md` carries a stale 177Ia row; there is no 177Ia row in
+`ERRATA.md`, and its 208III row already records the 2026-08-14 correction),
+`msc_cor16_2`, `msc_prop15'_of_dual`, and the two `WrightTriangle`
+refutations.  All now distinguish first printing from current text.
+
+**208III: the thesis's route is available again, and it is shorter.**
+`isSharp_ovee` (208III "Sub-EA") had deliberately avoided modularity while
+177Ia was false, proving `s ⋁ t = s ∨ t` by two inequalities.  The thesis's
+own argument needs three ingredients, and all three are now present *before*
+that point in the file: `lattice_compr` (204V) for the existence of the join,
+`isInf_zero_of_perp` for `s ∧ t = 0` at orthogonal sharp predicates
+(`DiamondAmp.lean`:621, already there), and 177Ia at `a ∧ b = 0` — which is
+`msc_cor16_1`.  So the proof is now
+
+    obtain ⟨hsup, hjsharp⟩ := lattice_compr hs ht
+    rw [← msc_cor16_1 h (isInf_zero_of_perp hs h) hsup]
+    exact hjsharp
+
+— nine proof lines down to three, divergence class 2 → class 1.
+`ovee_le_of_le` is untouched and still carries the orthomodular law at
+`diamond_oml`.  The *second* half of 208III still takes its lattice operations
+from 208IX/208XII rather than 177Ia; that is a construction choice, not a
+blocked appeal, and re-plumbing it would not be shorter — it is left, with the
+note rewritten to say exactly that.
+
+**Compile.**  `EffectAlgebras.lean` clean (its only ``uses `sorry` `` is the
+parked B14 `effectModule_unitInterval_representation`, unchanged), olean
+rebuilt and installed; `DiamondAmp.lean` clean, olean rebuilt and installed;
+and the whole importing chain recompiled at `rc=0`: `Quotients`,
+`StatesPredicates`, `Dagger`, `DiamondAmp`, `Comparisons`, `VNExamples` — the
+last with **exactly one** ``uses `sorry` ``, the B15 one at
+`VNExamples.lean`:5920 (`vn_is_andthen_eff`).  **No new `sorry`.**
+
+Axiom-clean **in situ** (source copied to the scratchpad, `#print axioms`
+appended, the copy compiled from source):
+
+    'Theses.B.Eff.ea_modularity_prop'                        [propext]
+    'Theses.B.Eff.msc_prop15'_of_dual'                       [propext]
+    'Theses.B.Eff.dual_modularity_lemma'                     [propext]
+    'Theses.B.Eff.msc_cor16_2'                               [propext]
+    'Theses.B.Eff.WrightTriangle.not_ea_modularity_prop'     [propext, Classical.choice, Quot.sound]
+    'Theses.B.Eff.WrightTriangle.not_modularity_lemma'       [propext, Classical.choice, Quot.sound]
+    'Theses.B.Eff.isSharp_ovee'                              [propext, Classical.choice, Quot.sound]
+    'Theses.B.Eff.diamond_oml_subEA'                         [propext, Classical.choice, Quot.sound]
+    'Theses.B.Eff.diamond_oml'                               [propext, Classical.choice, Quot.sound]
+    'Theses.B.Eff.ovee_le_of_le'                             [propext, Classical.choice, Quot.sound]
+
+`docs/audit/bdils-pure-beff-states-effectalgebras.csv`'s `177Ia|ea_modularity_prop`
+row is now `repaired`; the two `208III` rows in
+`docs/audit/beff-dagger-diamondamp.csv` carry a dated note that the sub-EA
+half's divergence is gone.  `ERRATA.md` and `QUESTIONS.md` untouched.
