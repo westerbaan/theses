@@ -25606,3 +25606,178 @@ at **0 errors and exactly the 7 pre-existing `sorry`s**
 was `#print axioms`-checked **in situ** (source copied to the scratchpad, the
 `#print axioms` lines appended, the copy compiled): all
 `[propext, Classical.choice, Quot.sound]`.
+
+## Session 94 — `B/Eff`: **the first repair pass on `VNExamples.lean` and `Comparisons.lean`** — 210III is at last the Example it quotes (the sharp maps are the **mni**-maps, *not* assumed unital), 177V and both 225V's get the data the points name, and 190II.3's missing half — that `s` **reflects** `⊥` — is proved (worker on `Theses/B/Eff/VNExamples.lean`, `Theses/B/Eff/Comparisons.lean`)
+
+Audit rows: `docs/audit/beff-vnexamples.csv`, 56 rows, **17** with `stmt` not
+`ok` (6 `weaker`, 11 `differs`).  **Ten repaired** — four of them
+statement-level (177V, 210III and both 225V's), six by making the doc say
+what the declaration states (31IV, 34IV, 55XIII, 201II, 223II, 223V);
+**six needed no change**, their docs already describing their content
+accurately (34V, 100III, 169IV, 207III, 211II, 221II); **one left**, 180V,
+for a ruling (QUESTIONS B13) and a named blocker.  Seven mislabelled DISP
+sites were fixed on top of that, in rows the audit marked `ok`.  Both files
+compile with **no errors**; the only `sorry` in either is the pre-existing
+one in `su_andThenEffectus_of_pure_sqrt` (QUESTIONS **B15**), untouched.
+Every declaration added or changed was checked *in situ* (source copied to
+the scratchpad, `#print axioms` appended, the copy recompiled): all
+`[propext, Classical.choice, Quot.sound]`, none through `sorryAx`.
+`Comparisons.olean` and `VNExamples.olean` were both rebuilt, and
+`VNExamples` compiles against the new `Comparisons.olean`.
+
+### Repaired — **210III**: the sharp maps of `vNᵒᵖ` are the **mni**-maps (2 rows)
+
+eff.tex:4778 reads *"In `vNᵒᵖ` the sharp maps are exactly the mni-maps
+(i.e. the normal ∗-homomorphisms).  See `sharp-multiplicative`."*  **mni**,
+not nmiu: the ∗-homomorphism is **not** assumed unital, and in the
+partial-form category this file works in a sharp map need not be total, so
+the non-unital case is the *general* case.  What the file had was
+`su_sharpMap_iff` (Definition 210I unfolded: sharp ⟺ the ncpsu-map sends
+projections to projections) plus `su_exists_nmiu_of_sharp_total`, an
+**nmiu**-map for sharp maps that are additionally *total* — and a doc
+comment that **misquoted the source** as "the sharp maps are exactly the
+nmiu-maps" and claimed the identification could not be reached "on this
+import path", which has been false since session 88 imported
+`A/Proc/Measurement`.
+
+* **210III** `su_exists_mni_of_sharp` (new) — the ncpsu-map of a sharp map
+  is a `NonUnitalStarAlgHom` together with `PreservesDirSups`.  The route is
+  the Example's own: multiplicativity from the reference it gives,
+  `sharp-multiplicative` = **99XII** (`Theses.A.Proc.sharp_multiplicative`),
+  which needs **no** unitality — that is exactly why the Example can drop it,
+  and why `gardner` (99II), whose form does need it, is *not* called;
+  involution preservation from `cstar_p_implies_i`, valid for any positive
+  map; normality carried along as `preservesDirSups'`.  (1)
+* **210III** `su_sharp_of_mni` (new) — the converse, for a ∗-homomorphism
+  that is *not* assumed unital or normal: it sends projections to
+  projections (`IsStarProjection.map`), which is `su_sharpMap_iff`.  (1)
+* **210III** `su_sharpMap_iff_mni` (new) — the two together, i.e. the
+  Example verbatim: `SharpMap f ↔ ∃ ρ, PreservesDirSups ρ ∧ ρ = f`.  (1)
+* `su_exists_nmiu_of_sharp_total` keeps its name and statement (it has two
+  call sites, at 221III and in the 224VII machinery) and is now *derived*
+  from `su_exists_mni_of_sharp` plus `su_isTotal_iff`, so the argument is
+  transcribed once and the total case is visibly the general case plus
+  `ρ 1 = 1`.  Its doc and the section header say so.  (1)
+
+### Repaired — "the data the point names is only inside the proof" (3 rows)
+
+* **177V** `projections_orthomodularLattice` — was
+  `Nonempty (OrthomodularLattice {p // IsStarProjection p})`, which, since
+  `Ortholattice extends Lattice`, asserts only that *some* orthomodular
+  lattice structure exists on the type of projections: it fixed neither the
+  projection order nor the point's explicit `pᶜ = 1 − p`, both of which the
+  proof supplies.  Now `∃ L : OrthomodularLattice …`, with the structure's
+  own `PartialOrder` equal **on the nose** to the ambient (subtype) order of
+  the projections and its complement literally `p ↦ 1 − p`.  Both new
+  components are `rfl`; pinning the order pins `⊓` and `⊔` with it, since a
+  lattice's operations are determined by its order.  No call sites.  (1)
+* **225V** `effects_sea` — was `Nonempty (SequentialEffectAlgebra (effects A))`,
+  dropping "with `a & b = √a b √a`".  Now `∃ S, ∀ a b, S.seq a b = √a b √a`,
+  witnessed by the `effectsSEA` that was already beside it.  (1)
+* **225V** `commutative_effectMonoid_sea` (`Comparisons.lean`) — same defect
+  and *no* companion `def` carrying the product.  The structure is now a
+  `def`, **`commEffectMonoidSEA`**, and the theorem is
+  `∃ S, ∀ a b, S.seq a b = a * b`, the "with `a & b = a ⊙ b`" of the point.
+  (1)
+
+### Repaired — mislabelled DISPs (15 doc sites) and one corollary called a transcription
+
+* **`31IV` → `30IV`** at the two sites that had it (`omega-norm-basic`,
+  cstar.tex:4767, Kadison's inequality; cstar.tex parsec 310 has only a
+  point 10, so `31IV` does not exist, and the rest of the tree writes
+  `30IV`).  `su_posFun_mul_eq_zero`'s doc now also says that it states a
+  *consequence* of 30IV.1, not Cauchy–Schwarz itself.  (4)
+* **five one-point drifts**, each naming the Definition where the Lean
+  renders the `Examples`/`Example` point at `vNᵒᵖ` one point later:
+  `199II → 199V` (eff.tex:3933), `197II → 197IV` (eff.tex:3683),
+  `202I → 202IV` (eff.tex:4116 — the doc also cited the Definition's line
+  4080), `203I.1 → 203III` and `203IV → 203III` (eff.tex:4194).  Thirteen
+  doc comments carry these five labels; with the two `31IV`s that is fifteen
+  sites.  (4)
+
+### Repaired — docs that cited a point and stated something else (4 sites)
+
+None of these is a mathematical defect; each doc now says what the
+declaration actually states.  `su_exists_ncpsu_of_nmiu` (34IV.3 repackaged,
+with normality and subunitality added on top); `su_isPure_ad_sqrt` and
+`su_procPure_of_isPure` (201II is the *Definition* of a pure map — the two
+lemmas are supplied mathematics at `vNᵒᵖ`); `su_sef_apply` (223II is the
+Definition of `sef_p`; the value is the computation eff.tex performs inside
+the proof of 223III); `su_below_iff` (223V is the Definition of the
+down-set).  (4)
+
+### Repaired — **55XIII**, which turned out to be proved upstream
+
+`pjoin_of_orthogonal` is a *private binary* helper and the point is about
+finite families — but 55XIII.2 in full is
+`Theses.A.VN.orthogonal_tuple_of_projections_2'`, in thesis A, and that is
+exactly what the helper applies at `n = 2`.  Nothing to prove; the doc now
+says so and names the general form.  (1)
+
+### Repaired — **190II.3**'s missing half, in `VNExamples`'s two proofs
+
+`IsRealEffectus` (`StatesPredicates.lean`) asks only for a **bijective**
+morphism of effect monoids `Scal C → [0,1]`, where **190II.3**
+(`dfn-mandso`, eff.tex:2097) asks for an **isomorphism** — and a bijective
+morphism of effect algebras need not be one, because the inverse has to
+**reflect** `⊥`, which no axiom gives.  Wave 1 called this a cross-module
+repair, because the definition is in `StatesPredicates` and its only two
+consumers are here.  **The mathematics is now done at this end**:
+`su_real_separating` and `effectus_vn_real_separating` each gained a
+conjunct exhibiting a morphism `φ` and a morphism `ψ` inverse to each other,
+i.e. an isomorphism of effect monoids `Scal (vN_cpsuᵒᵖ) ≅ [0,1]`.
+
+The one new ingredient is `hperp_refl` in the proof: `k(1) = s(k)·1` for
+every scalar `k` (by `hall`, i.e. `su_effObj_iso`), so `k ⊥ l` is
+*equivalent* to `s k + s l ≤ 1` — `smul_one_le_one` supplies the direction
+that was missing — and the set-theoretic inverse of `s` is therefore a
+morphism.  The rest of `ψ`'s clauses follow from injectivity of `s`.  The
+four field proofs of `φ` were pulled out of the terminal `refine` into named
+`have`s so that both conjuncts can share them; nothing else in the ~250-line
+proof changed.  (1)
+
+**What remains for 190II.3 is one line in a file this pass may not touch**:
+`IsRealEffectus` should become
+`∃ (φ : EffectMonoidHom (Scal C) I) (ψ : EffectMonoidHom I (Scal C)),
+(∀ k, ψ (φ k) = k) ∧ ∀ r, φ (ψ r) = r`.  Its only consumers are the two
+theorems above, and each already proves exactly that as its second conjunct,
+so the change is bookkeeping — but it is an edit to `StatesPredicates.lean`
+plus a rebuild of the six-file chain below it, and this worker was scoped to
+`VNExamples`/`Comparisons`.
+
+### Left — and why
+
+* **180V** `effectus_vn_partial`, both halves.  The `I = ℂ` half is
+  QUESTIONS **B13**, which explicitly asks for a ruling before the statement
+  is strengthened (`∃ s, s.effectus.I = suI` would cost a line), so it is
+  left.  The `Par(vNᵒᵖ) ≃ W*_ncpsuᵒᵖ` half — the sentence actually being
+  rendered — is **the same blocker wave 1 named for four
+  `StatesPredicates` rows**: `Par C` needs `HasFiniteCoproducts C` and
+  `HasTerminal C` as *instances*, and for `WStarNCPU.{u}ᵒᵖ` they live inside
+  the proof of `effectus_vn` as a `CoprodPres` record (`vnPres`), never as
+  instances.  Stating the equivalence means hoisting those, transporting
+  along `⊤_ C ≅ vnPres.T` and `Y ⨿ ⊤_ C ≅ vnPres.P Y vnPres.T` (the
+  coproduct comes from `HasColimit.mk`, so it is *not* definitionally the
+  concrete product), and only then the hom-bijection `φ ↦ φ(·, 0)` with
+  inverse `f ↦ ((y, λ) ↦ f(y) + λ(1 − f(1)))` and its compatibility with
+  Kleisli composition `g ⊙ f = [g, κ₂] ∘ f`.  The mathematics is a
+  paragraph; the plumbing is several hundred lines.  Both omissions are now
+  recorded in the doc comment, which previously *claimed* the effect object
+  and the correspondence.
+* **211IV** `vn_is_andthen_eff` — QUESTIONS **B15**, left by instruction;
+  `DiamondSelfAdjoint`/`DiamondPositive` untouched.
+* **211II** `su_asrt_unique_of_pure_sqrt` — the same `sorry`; not a
+  statement defect.
+
+### A thesis defect, recorded here because `ERRATA.md` is out of scope
+
+eff.tex **227III.4** gives left-modularity as
+`f^□(f_⋄(IM k)) = IM k ∨ ⌈1 ∘ f⌉`, but `f^□(0) = ⌈1 ∘ f⌉ᵖ`, and **228II**'s
+condition (1) uses `⌈1 ∘ b⌉ᵖ`.  The two points are inconsistent and 228II is
+the right one.  227III.4 is not formalized, so nothing in the tree is wrong;
+it belongs in `ERRATA.md`, which this pass may not edit.
+
+### Divergence classes used above
+
+(1) faithful; (4) our mis-transcription.  No repair needed a different
+route, and none of the thesis's own arguments failed to go through.

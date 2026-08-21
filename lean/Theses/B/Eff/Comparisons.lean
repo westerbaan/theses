@@ -440,20 +440,33 @@ class SequentialEffectAlgebra (E : Type u) [EffectAlgebra E] where
 -- ruling 2026-08-17): it needs thesis A's von Neumann theory, and this file
 -- must keep importing only `Theses.Common`.
 
+/-- **225V** (eff.tex:7381, Examples), the structure: a commutative effect
+monoid `M`, with the sequential product `a & b = a ⊙ b` the point names.
+(S1) is `emon_mul_ovee`, (S2) is `EffectMonoid.one_mul`, and (S3)–(S5) are
+all instances of commutativity, `a ⊙ b = b ⊙ a`, together with the
+associativity of `⊙`. -/
+def commEffectMonoidSEA (M : Type u) [EffectMonoid M]
+    (hc : EffectMonoid.Commutative M) : SequentialEffectAlgebra M where
+  seq a b := a * b
+  seq_add := fun c _ _ h =>
+    let ⟨h', e⟩ := emon_mul_ovee c h
+    ⟨h', e.symm⟩
+  one_seq := EffectMonoid.one_mul
+  seq_zero_comm := fun a b hab => (hc b a).trans hab
+  seq_comm_orth := fun {a b} _ => hc a (orth b)
+  seq_comm_assoc := fun {a b} _ c => EffectMonoid.mul_assoc a b c
+  seq_comm_compat := fun {a b c} h _ _ => ⟨hc c (a * b), hc c (ovee a b h)⟩
+
 /-- **225V** (eff.tex:7381, Examples): any commutative effect monoid is a
-sequential effect algebra with `a & b = a ⊙ b`. -/
+sequential effect algebra with `a & b = a ⊙ b`.
+
+The "with `a & b = a ⊙ b`" is **in the statement**: a bare
+`Nonempty (SequentialEffectAlgebra M)` would assert only that *some*
+sequential product exists on `M`, and the point names the one it means. -/
 theorem commutative_effectMonoid_sea (M : Type u) [EffectMonoid M]
     (hc : EffectMonoid.Commutative M) :
-    Nonempty (SequentialEffectAlgebra M) :=
-  ⟨{ seq := fun a b => a * b
-     seq_add := fun c _ _ h =>
-       let ⟨h', e⟩ := emon_mul_ovee c h
-       ⟨h', e.symm⟩
-     one_seq := EffectMonoid.one_mul
-     seq_zero_comm := fun a b hab => (hc b a).trans hab
-     seq_comm_orth := fun {a b} _ => hc a (orth b)
-     seq_comm_assoc := fun {a b} _ c => EffectMonoid.mul_assoc a b c
-     seq_comm_compat := fun {a b c} h _ _ => ⟨hc c (a * b), hc c (ovee a b h)⟩ }⟩
+    ∃ S : SequentialEffectAlgebra M, ∀ a b : M, S.seq a b = a * b :=
+  ⟨commEffectMonoidSEA M hc, fun _ _ => rfl⟩
 
 /-- **225VI** (eff.tex:7388, Proposition): in a †-effectus, the predicates
 `Pred X` with `p & q = q ∘ asrt_p` satisfy axioms (S1), (S2) and (S3) of a

@@ -157,7 +157,13 @@ private theorem pjoin_le {p q r : { p : A // IsStarProjection p }} (hp : p ≤ r
     exact hq
 
 /-- **Key computation**: the join of two *orthogonal* projections is their
-sum (**55XIII**.2). -/
+sum.  This is the **binary instance** of **55XIII**.2
+(`orthogonal-tuple-of-projections`, vn.tex:2334, Exercise) — that for a
+pairwise orthogonal *finite* tuple `p₁, …, pₙ` the sum `∑ᵢ pᵢ` is the least
+projection above them all.  The point itself is proved in thesis A, as
+`Theses.A.VN.orthogonal_tuple_of_projections_2'`, and it is exactly what is
+applied here at `n = 2`; this private helper only transports it to
+`Theses.A.VN.projSup {p, q}`. -/
 private theorem pjoin_of_orthogonal {p q : { p : A // IsStarProjection p }}
     (hpq : p.1 * q.1 = 0) : (pjoin p q).1 = p.1 + q.1 := by
   have hqp : q.1 * p.1 = 0 :=
@@ -232,6 +238,15 @@ end ProjLattice
 /-- **177V** (eff.tex:559, Example): the lattice of projections of a von
 Neumann algebra is an orthomodular lattice with `pᶜ = 1 - p`.
 
+Both of the point's data are **in the statement**: the orthomodular lattice
+is one *for the order the projections inherit from `𝒜`* (its
+`PartialOrder` is literally the ambient one, first conjunct), and its
+orthocomplement is literally `p ↦ 1 - p` (second conjunct).  A bare
+`Nonempty (OrthomodularLattice {p // IsStarProjection p})` would assert
+neither, since `Ortholattice extends Lattice` carries an order of its own;
+and once the order is pinned the meet and join are pinned with it, being
+determined by the order.
+
 The join is `⋃{p,q}` of **56XVI** (`Theses.A.VN.projSup`, proved in thesis
 A); the meet is its De Morgan dual.  Orthomodularity comes down to
 **55XIII**.2, that the sum of two orthogonal projections is their *least*
@@ -239,7 +254,12 @@ upper bound among projections: for `p ≤ q` one computes `pᶜ ⊓ q = q - p`
 and then `p ⊔ (q - p) = p + (q - p) = q`. -/
 theorem projections_orthomodularLattice (A : Type u) [CStarAlgebra A]
     [PartialOrder A] [StarOrderedRing A] [Theses.VonNeumannAlgebra A] :
-    Nonempty (OrthomodularLattice { p : A // IsStarProjection p }) := by
+    ∃ L : OrthomodularLattice { p : A // IsStarProjection p },
+      L.toOrtholattice.toLattice.toSemilatticeInf.toPartialOrder
+          = (inferInstance : PartialOrder { p : A // IsStarProjection p }) ∧
+        ∀ p : { p : A // IsStarProjection p },
+          ((L.toOrtholattice.toCompl.compl p : { p : A // IsStarProjection p })
+            : A) = 1 - (p : A) := by
   letI lat : Lattice { p : A // IsStarProjection p } :=
     { (inferInstance : PartialOrder { p : A // IsStarProjection p }) with
       sup := pjoin
@@ -257,7 +277,7 @@ theorem projections_orthomodularLattice (A : Type u) [CStarAlgebra A]
       bot_le := fun p => p.2.nonneg }
   letI cpl : Compl { p : A // IsStarProjection p } := ⟨pcompl⟩
   refine ⟨{ inf_compl := ?_, sup_compl := ?_, compl_antitone := ?_,
-            compl_compl := ?_, orthomodular := ?_ }⟩
+            compl_compl := ?_, orthomodular := ?_ }, rfl, fun _ => rfl⟩
   · intro a
     show pmeet a (pcompl a) = _
     have h : pmeet a (pcompl a) = pcompl (pjoin (pcompl a) a) := by
@@ -2066,9 +2086,31 @@ noncomputable def vnPartialStructure : EffectusPartialStructure WStarCPSU.{u}ᵒ
     finPAC := suFinPAC
     effectus := suEffectusPartialForm }
 
-/-- **180V** (`effectus-vn`, eff.tex:827): the partial maps of the effectus
-`vNᵒᵖ` correspond to the ncpsu-maps: `(W*_ncpsu)ᵒᵖ` is an effectus in
-partial form (its effect object being `ℂ`). -/
+/-- **180V** (`effectus-vn`, eff.tex:827): `(W*_ncpsu)ᵒᵖ` is an effectus in
+**partial form**.
+
+⚠ **What this statement does and does not say** (audit row 180V).  The
+sentence of 180V being rendered is *"the partial maps \[of `vNᵒᵖ`\]
+correspond to ncp-maps `f` with `f(1) ≤ 1`"*, i.e. `Par(vNᵒᵖ) ≃ W*_ncpsuᵒᵖ`.
+Two clauses of it are **not** in the statement below:
+
+* **the effect object is `ℂ`.**  Supplied by the proof
+  (`suEffectusPartialForm` builds `I = ℂᵤ`), but not asserted:
+  `Nonempty (EffectusPartialStructure …)` says only that *some* structure
+  exists.  Strengthening it to `∃ s, s.effectus.I = suI` costs one line and
+  is **QUESTIONS B13**, which asks for a ruling; it is therefore left alone
+  here.  What the eight examples downstream actually use is not this but the
+  *uniqueness* statement `vn_effObj_iso`, which is proved.
+* **the comparison with `Par(vNᵒᵖ)` itself.**  Nothing here relates
+  `W*_ncpsuᵒᵖ` to the category of partial maps of the *total*-form effectus
+  `effectus_vn`.  This is the blocker wave 1 named for four
+  `StatesPredicates` rows: `Par C` needs `HasFiniteCoproducts C` and
+  `HasTerminal C` as **instances**, and for `WStarNCPU.{u}ᵒᵖ` those live
+  inside the proof of `effectus_vn` as a `CoprodPres` record (`vnPres`), so
+  the statement would first have to hoist them and then transport along
+  `⊤_ C ≅ vnPres.T` and `Y ⨿ ⊤_ C ≅ vnPres.P Y vnPres.T` before the
+  hom-bijection `φ ↦ φ(·, 0)` (inverse `f ↦ ((y, λ) ↦ f(y) + λ(1 - f(1)))`)
+  and its compatibility with Kleisli composition could even be stated. -/
 
 theorem effectus_vn_partial :
     Nonempty (EffectusPartialStructure WStarCPSU.{u}ᵒᵖ) :=
@@ -2438,7 +2480,8 @@ The step of **224VI** that replaces the printed solution's GNS analysis is
 `su_state_sqrtConj`: a *state* `ω` with `ω(a) = 1` satisfies
 `ω(√a x √a) = ω(x)` for every `x`.  (For a vector state `⟨v, ·v⟩` this says
 `a v = v ⟹ √a v = v`.)  It rests on Cauchy–Schwarz for positive
-functionals, **31IV** `omega_norm_basic_1`. -/
+functionals, **30IV**.1 (`omega-norm-basic`, cstar.tex:4767)
+`omega_norm_basic_1`. -/
 
 section StateSqrt
 
@@ -2472,8 +2515,10 @@ theorem su_sq_le_self {d : A} (h0 : 0 ≤ d) (h1 : d ≤ 1) : d * d ≤ d := by
   have e2 : s * 1 * s = d := by rw [mul_one, hss]
   rwa [e1, e2] at key
 
-/-- **Cauchy–Schwarz** (**31IV** `omega_norm_basic_1`): a positive functional
-killing an effect `d` kills every product with `d`. -/
+/-- A corollary of **Cauchy–Schwarz** for positive functionals
+(**30IV**.1, `omega-norm-basic`, cstar.tex:4767, `omega_norm_basic_1`): a
+positive functional killing an effect `d` kills every product with `d`.
+This is a consequence of 30IV.1, not a transcription of it. -/
 theorem su_posFun_mul_eq_zero (ω : A →ₗ[ℂ] ℂ) (hω : IsPositiveMap ω) {d : A}
     (hd0 : 0 ≤ d) (hd1 : d ≤ 1) (h0 : ω d = 0) :
     (∀ b : A, ω (d * b) = 0) ∧ (∀ b : A, ω (b * d) = 0) := by
@@ -2784,9 +2829,26 @@ All three claims are read off the isomorphism `θ : I ≅ ℂᵤ` of
   the normal states of the algebra `X.unop`, and those separate its elements
   (`eq_zero_of_ncpsu_states`).
 * **real** — `μ` carries `Scal C = C(I,I)` bijectively onto `[0,1] ⊆ ℝ`,
-  taking `⋁` to `+` and composition to multiplication. -/
+  taking `⋁` to `+` and composition to multiplication.
+
+**On the second conjunct** (audit row 190II.3).  `IsRealEffectus`
+(`StatesPredicates.lean`) currently asks only for a *bijective* morphism of
+effect monoids `Scal C → [0,1]`, where **190II.3** (`dfn-mandso`,
+eff.tex:2097) asks for an *isomorphism* — and a bijective morphism of effect
+algebras need not be one, since the inverse has to **reflect** `⊥`, which no
+axiom gives.  Here it does: `k(1) = s(k)·1`, so `k ⊥ l` is *equivalent* to
+`s k + s l ≤ 1` (`hperp_refl` in the proof), and the set-theoretic inverse
+`s'` of `s` is therefore a morphism.  The second conjunct states that — a
+morphism `φ` and a morphism `ψ` inverse to each other, i.e. an isomorphism
+of effect monoids — so that `IsRealEffectus` can be strengthened to the
+point's own reading without any new mathematics; that change is a
+cross-module one and is left for its own pass. -/
 theorem su_real_separating :
-    IsRealEffectus (WStarCPSU.{u}ᵒᵖ) ∧ SeparatingPredicates (WStarCPSU.{u}ᵒᵖ) ∧
+    IsRealEffectus (WStarCPSU.{u}ᵒᵖ) ∧
+      (∃ (φ : EffectMonoidHom (Scal (WStarCPSU.{u}ᵒᵖ)) unitInterval)
+          (ψ : EffectMonoidHom unitInterval (Scal (WStarCPSU.{u}ᵒᵖ))),
+          (∀ k, ψ.toFun (φ.toFun k) = k) ∧ ∀ r, φ.toFun (ψ.toFun r) = r) ∧
+      SeparatingPredicates (WStarCPSU.{u}ᵒᵖ) ∧
       SeparatingStates (WStarCPSU.{u}ᵒᵖ) := by
   obtain ⟨θ, hθ⟩ := su_effObj_iso.{u}
   have hhom : θ.hom = suOne (effObj (WStarCPSU.{u}ᵒᵖ)) := by
@@ -2907,7 +2969,6 @@ theorem su_real_separating :
     have h' : f.unop.toNCPMap b - g.unop.toNCPMap b = 0 := h
     exact sub_eq_zero.mp h'
   -- ### the scalars are `[0,1]`
-  refine ⟨?_, hsepP, hsepS⟩
   obtain ⟨t, ht⟩ : ∃ t : Scal (WStarCPSU.{u}ᵒᵖ) → ℂ,
       ∀ k : Scal (WStarCPSU.{u}ᵒᵖ),
         t k = (θ.inv.unop.toNCPMap (k.unop.toNCPMap (1 : effCarrier))).down :=
@@ -2970,35 +3031,36 @@ theorem su_real_separating :
     rw [hinv1, ncp_add_apply] at h2
     simp only [ht]
     exact h2
-  refine ⟨{ toEAHom := { toPCMHom := { toFun := s
-                                       perp_map := ?_
-                                       ovee_map := ?_ }
-                         map_one := ?_ }
-            map_mul := ?_ }, ?_, ?_⟩
-  · intro k l h
+  -- `s` is a morphism of effect monoids
+  have hsperp : ∀ {k l : Scal (WStarCPSU.{u}ᵒᵖ)}, Perp k l → Perp (s k) (s l) := by
+    intro k l h
     show ((s k : ℝ)) + ((s l : ℝ)) ≤ 1
     have h2 := hperp k l h
     rw [← hs, ← hs] at h2
     obtain ⟨h3, -⟩ := Complex.le_def.mp h2
     simpa using h3
-  · intro k l h
+  have hsovee : ∀ {k l : Scal (WStarCPSU.{u}ᵒᵖ)} (h : Perp k l),
+      s (ovee k l h) = ovee (s k) (s l) (hsperp h) := by
+    intro k l h
     refine Subtype.ext ?_
     show ((s (ovee k l h) : ℝ)) = ((s k : ℝ)) + ((s l : ℝ))
     have h2 := hadd k l h
     rw [← hs, ← hs, ← hs] at h2
     exact_mod_cast h2
-  · refine Subtype.ext ?_
+  have hsone : s 1 = 1 := by
+    refine Subtype.ext ?_
     show ((s 1 : ℝ)) = 1
     have h2 := hone
     rw [← hs] at h2
     exact_mod_cast h2
-  · intro k l
+  have hsmul : ∀ k l : Scal (WStarCPSU.{u}ᵒᵖ), s (k * l) = s k * s l := by
+    intro k l
     refine Subtype.ext ?_
     show ((s (k * l) : ℝ)) = ((s k : ℝ)) * ((s l : ℝ))
     have h2 := hmul k l
     rw [← hs, ← hs, ← hs] at h2
     exact_mod_cast h2
-  · -- injective
+  have hsinj : Function.Injective s := by
     intro k l hkl
     have hkl' : s k = s l := hkl
     have h2 : t k = t l := by rw [← hs, ← hs, hkl']
@@ -3006,7 +3068,7 @@ theorem su_real_separating :
       rw [← hall (k.unop.toNCPMap 1), ← hall (l.unop.toNCPMap 1), ← ht k, ← ht l,
         h2]
     exact suop_hom_ext fun a => by rw [hunop k a, hunop l a, h1]
-  · -- surjective
+  have hssurj : Function.Surjective s := by
     intro r
     have h0 : (0 : ULift.{u} ℂ) ≤ ((r : ℝ) : ℂ) • (1 : ULift.{u} ℂ) :=
       cstar_positive_1 1 zero_le_one _ r.2.1
@@ -3027,6 +3089,61 @@ theorem su_real_separating :
     rw [h2] at h3
     show ((s (θ.hom ≫ (Quiver.Hom.op (wEffect h0 h1) ≫ θ.inv)) : ℝ)) = (r : ℝ)
     exact_mod_cast h3
+  -- **`s` reflects `⊥`**, and this is what makes the inverse a morphism:
+  -- `k(1) = s(k)·1` and `l(1) = s(l)·1`, so `k(1) + l(1) = (s k + s l)·1 ≤ 1`
+  -- as soon as `s k + s l ≤ 1` in `[0,1]`.
+  have hperp_refl : ∀ k l : Scal (WStarCPSU.{u}ᵒᵖ),
+      ((s k : ℝ) + (s l : ℝ) ≤ 1) → Perp k l := by
+    intro k l h
+    have hk : k.unop.toNCPMap (1 : effCarrier)
+        = (((s k : ℝ) : ℂ)) • (1 : effCarrier) := by
+      rw [hs k, ht k]
+      exact (hall _).symm
+    have hl : l.unop.toNCPMap (1 : effCarrier)
+        = (((s l : ℝ) : ℂ)) • (1 : effCarrier) := by
+      rw [hs l, ht l]
+      exact (hall _).symm
+    show k.unop.toNCPMap (1 : effCarrier) + l.unop.toNCPMap 1 ≤ 1
+    rw [hk, hl, ← add_smul, ← Complex.ofReal_add]
+    exact smul_one_le_one (add_nonneg (s k).2.1 (s l).2.1) h
+  -- the inverse of `s`, and the four clauses that make it a morphism
+  haveI : Nonempty (Scal (WStarCPSU.{u}ᵒᵖ)) := ⟨𝟙 _⟩
+  obtain ⟨s', hs'left, hs'right⟩ :
+      ∃ s' : unitInterval → Scal (WStarCPSU.{u}ᵒᵖ),
+        (∀ k, s' (s k) = k) ∧ ∀ r, s (s' r) = r :=
+    ⟨Function.invFun s, Function.leftInverse_invFun hsinj,
+      Function.rightInverse_invFun hssurj⟩
+  have hs'perp : ∀ {r r' : unitInterval}, Perp r r' → Perp (s' r) (s' r') := by
+    intro r r' h
+    refine hperp_refl _ _ ?_
+    rw [hs'right r, hs'right r']
+    exact h
+  have hs'ovee : ∀ {r r' : unitInterval} (h : Perp r r'),
+      s' (ovee r r' h) = ovee (s' r) (s' r') (hs'perp h) := by
+    intro r r' h
+    refine hsinj ?_
+    rw [hs'right, hsovee]
+    refine Subtype.ext ?_
+    show ((r : ℝ) + (r' : ℝ)) = ((s (s' r) : ℝ)) + ((s (s' r') : ℝ))
+    rw [hs'right, hs'right]
+  have hs'one : s' 1 = 1 := hsinj (by rw [hs'right, hsone])
+  have hs'mul : ∀ r r' : unitInterval, s' (r * r') = s' r * s' r' :=
+    fun r r' => hsinj (by rw [hs'right, hsmul, hs'right, hs'right])
+  refine ⟨⟨{ toEAHom := { toPCMHom := { toFun := s
+                                        perp_map := hsperp
+                                        ovee_map := hsovee }
+                          map_one := hsone }
+             map_mul := hsmul }, hsinj, hssurj⟩,
+    ⟨{ toEAHom := { toPCMHom := { toFun := s
+                                  perp_map := hsperp
+                                  ovee_map := hsovee }
+                    map_one := hsone }
+       map_mul := hsmul },
+     { toEAHom := { toPCMHom := { toFun := s'
+                                  perp_map := hs'perp
+                                  ovee_map := hs'ovee }
+                    map_one := hs'one }
+       map_mul := hs'mul }, hs'left, hs'right⟩, hsepP, hsepS⟩
 
 /-! ### The bridge layer: predicates are effects (parsecs 197–203)
 
@@ -3294,7 +3411,7 @@ ones of `Theses/B/Dils/Pure.lean`, read in the opposite category:
 Both are `Prop`-valued classes with existential fields, so no canonical
 choice of corner or filter has to be made. -/
 
-/-- **199II at `vNᵒᵖ`** (eff.tex:3934, Examples): `vN_cpsuᵒᵖ` **has
+/-- **199V at `vNᵒᵖ`** (eff.tex:3933, Examples): `vN_cpsuᵒᵖ` **has
 comprehension**, and a comprehension for the effect `a` is the standard
 corner `h_a : 𝒜 → ⌊a⌋𝒜⌊a⌋`, `b ↦ ⌊a⌋b⌊a⌋` (dils.tex 169IV
 `standard_corner_dils`). -/
@@ -3403,7 +3520,7 @@ private theorem su_exists_corner {X : WStarCPSU.{u}ᵒᵖ}
       rw [hval]
       exact y.2
 
-/-- **199II at `vNᵒᵖ`** (eff.tex:3934, Examples): `vN_cpsuᵒᵖ` **has
+/-- **199V at `vNᵒᵖ`** (eff.tex:3933, Examples): `vN_cpsuᵒᵖ` **has
 comprehension**, and a comprehension for the effect `a` is the standard
 corner `h_a : 𝒜 → ⌊a⌋𝒜⌊a⌋`, `b ↦ ⌊a⌋b⌊a⌋` (dils.tex 169IV
 `standard_corner_dils`). -/
@@ -3412,7 +3529,7 @@ theorem su_hasComprehension : HasComprehension (WStarCPSU.{u}ᵒᵖ) :=
     obtain ⟨W, π, hπ, -, -⟩ := su_exists_corner p
     exact ⟨W, π, hπ⟩⟩
 
-/-- **197II at `vNᵒᵖ`** (eff.tex:3684, Examples): `vN_cpsuᵒᵖ` **has
+/-- **197IV at `vNᵒᵖ`** (eff.tex:3683, Examples): `vN_cpsuᵒᵖ` **has
 quotients**, and a quotient for the effect `a` is the standard filter
 `c_{aᗮ} : ⌈aᗮ⌉𝒜⌈aᗮ⌉ → 𝒜`, `b ↦ √(aᗮ) b √(aᗮ)` (dils.tex 169X
 `dils_stand_filter`). -/
@@ -3462,8 +3579,8 @@ theorem su_hasQuotients : HasQuotients (WStarCPSU.{u}ᵒᵖ) where
           (congrArg (fun m : Theses.NCPSUMap Y.unop.base.carrier _ =>
             m.toNCPMap y) hkf).trans (hg y).symm
 
-/-- **202I at `vNᵒᵖ`** (eff.tex:4080): a predicate is *the* image of `f`
-exactly when it names the carrier `⌈f⌉`. -/
+/-- **202IV at `vNᵒᵖ`** (eff.tex:4116, Examples): a predicate is *the*
+image of `f` exactly when it names the carrier `⌈f⌉`. -/
 private theorem su_isImage_carrier {X Y : WStarCPSU.{u}ᵒᵖ} (f : X ⟶ Y)
     (q : Y ⟶ effObj (WStarCPSU.{u}ᵒᵖ)) (hq : suPredVal q = suCarrier f) :
     IsImage f q := by
@@ -3484,7 +3601,7 @@ private theorem su_isImage_carrier {X Y : WStarCPSU.{u}ᵒᵖ} (f : X ⟶ Y)
     have h1 := congrArg suPredVal hr
     rwa [suPredVal_comp, suPredVal_comp, suPredVal_truth Y] at h1
 
-/-- **202I at `vNᵒᵖ`** (eff.tex:4080, Definition): `vN_cpsuᵒᵖ` **has
+/-- **202IV at `vNᵒᵖ`** (eff.tex:4116, Examples): `vN_cpsuᵒᵖ` **has
 images**, and `im f` is the carrier `⌈f⌉` of vn.tex 63I. -/
 theorem su_hasImages : HasImages (WStarCPSU.{u}ᵒᵖ) where
   im {X Y} f := by
@@ -3499,7 +3616,7 @@ private theorem su_floor_of_isStarProjection {A : Type u} [CStarAlgebra A]
   rw [Theses.A.VN.floor_eq_one_sub_ceil ⟨hz.nonneg, hz.le_one⟩,
     Theses.A.VN.ceil_of_isStarProjection hz.one_sub, sub_sub_cancel]
 
-/-- **203I.1 at `vNᵒᵖ`** (eff.tex:4195, Example): **the sharp predicates of
+/-- **203III at `vNᵒᵖ`** (eff.tex:4194, Example): **the sharp predicates of
 `vNᵒᵖ` are exactly the projections.**  eff.tex states this without proof.
 (⇒) an image is a carrier, and carriers are projections; (⇐) a projection
 `z` is the image of the standard corner `h_z`, whose carrier is `⌊z⌋ = z`. -/
@@ -3536,15 +3653,11 @@ theorem su_diamondEffectus : DiamondEffectus (WStarCPSU.{u}ᵒᵖ) :=
   { su_hasQuotients, su_hasComprehension, su_hasImages with
     orth_sharp := fun hs => su_orth_sharp hs }
 
-/-- **210III at `vNᵒᵖ`** (`exa-sharp-vn`, eff.tex:4777, Example): a map of
-`vN_cpsuᵒᵖ` is **sharp exactly when its ncpsu-map sends projections to
-projections**.  This is the whole of the identification that can be proved
-on this import path; the text's "the sharp maps are exactly the nmiu-maps"
-is this together with **99II** (`gardner`, proc.tex:795 — *sends projections
-to projections ⟺ multiplicative*, for an ncpu-map), which is **proved** in
-`Theses/A/Proc/Measurement.lean` but is not imported here.  eff.tex:4779
-cites `sharp-multiplicative` (proc.tex:905, an Exercise) for the same fact;
-no multiplicative-domain theory is needed. -/
+/-- **210III at `vNᵒᵖ`** (`exa-sharp-vn`, eff.tex:4777, Example), the first
+step: a map of `vN_cpsuᵒᵖ` is **sharp exactly when its ncpsu-map sends
+projections to projections**.  This is Definition 210I unfolded at `vNᵒᵖ`;
+the Example itself — *the sharp maps are exactly the mni-maps* — is
+`su_sharpMap_iff_mni` below. -/
 theorem su_sharpMap_iff {X Y : WStarCPSU.{u}ᵒᵖ} (f : X ⟶ Y) :
     SharpMap f ↔ ∀ z : Y.unop.base.carrier, IsStarProjection z →
       IsStarProjection (f.unop.toNCPMap z) := by
@@ -3559,22 +3672,41 @@ theorem su_sharpMap_iff {X Y : WStarCPSU.{u}ᵒᵖ} (f : X ⟶ Y) :
     rw [suPredVal_comp]
     exact hf _ ((su_isSharp_iff s).mp hs)
 
-/-! ### Sharp *total* maps are the nmiu-maps (eff.tex:4777, via **99XII**)
+/-! ### The sharp maps are the mni-maps (**210III**, eff.tex:4777, via **99XII**)
 
-`su_sharpMap_iff` above says a map of `vN_cpsuᵒᵖ` is sharp iff its ncpsu-map
-sends projections to projections; `su_isTotal_iff` says it is total iff that
-map is unital.  eff.tex:4779 asserts that the sharp maps are the nmiu-maps
-and refers to `sharp-multiplicative` — **99XII**, proc.tex:905 — for the
-missing half, and that is
-`Theses.A.Proc.sharp_multiplicative`: for an ncp-map between von Neumann
-algebras, *sends projections to projections ⟺ multiplicative*.  It needs no
-unitality (so `gardner`, 99II, which does, is not called), and involution
-preservation is `cstar_p_implies_i` for any positive map.  This is the one
-place in `B/Eff` that uses `Theses.A.Proc`. -/
+eff.tex:4778 reads, in full: *"In `vNᵒᵖ` the sharp maps are exactly the
+mni-maps (i.e. the normal ∗-homomorphisms).  See `sharp-multiplicative`."*
+**mni**, not nmiu: the ∗-homomorphism is **not** assumed unital, and in the
+partial-form category this file works in the non-unital case is the general
+one — a sharp map of `vN_cpsuᵒᵖ` need not be total.  (An earlier doc comment
+here misquoted the source as "the sharp maps are exactly the nmiu-maps";
+that quotation was wrong, and only the *total* half was proved.)
+
+The identification, in both directions and without unitality, is
+`su_sharpMap_iff_mni`.  It is the Example's own route:
+
+* `su_sharpMap_iff` above says a map of `vN_cpsuᵒᵖ` is sharp iff its
+  ncpsu-map sends projections to projections (Definition 210I at `vNᵒᵖ`);
+* the reference the Example gives, `sharp-multiplicative` = **99XII**
+  (proc.tex:905), is `Theses.A.Proc.sharp_multiplicative`: for an *ncp*-map
+  between von Neumann algebras, *sends projections to projections ⟺
+  multiplicative*.  It needs **no** unitality — which is exactly why the
+  Example can drop it — so `gardner` (99II), whose form does need it, is not
+  called;
+* involution preservation is `cstar_p_implies_i`, valid for any positive
+  map; and normality is `preservesDirSups'`, carried along.
+
+This is the one place in `B/Eff` that uses `Theses.A.Proc`.
+
+`su_exists_nmiu_of_sharp_total` is then the *total* case — an mni-map whose
+`ρ 1 = 1`, i.e. an **nmiu**-map — which is what the dilation theory of
+221III and the two `A/Proc` bridges consume. -/
 
 omit [EffectusPartialForm (WStarCPSU.{u}ᵒᵖ)] in
-/-- An nmiu-map is an ncpsu-map — indeed unital (**34IV**.3 `cp_of_mi`: a
-∗-homomorphism is completely positive). -/
+/-- An nmiu-map is an ncpsu-map — indeed unital.  **34IV**.3 (`cp`,
+cstar.tex:5448, Exercise) is the one ingredient — *an mi-map is completely
+positive*, `cp_of_mi` — and this lemma repackages it, adding the normality
+and the subunitality that the source does not mention. -/
 theorem su_exists_ncpsu_of_nmiu {A B : Type u} [CStarAlgebra A] [PartialOrder A]
     [StarOrderedRing A] [CStarAlgebra B] [PartialOrder B] [StarOrderedRing B]
     (f : Theses.NMIUMap A B) :
@@ -3590,23 +3722,79 @@ theorem su_exists_ncpsu_of_nmiu {A B : Type u} [CStarAlgebra A] [PartialOrder A]
       rw [show (f.toStarAlgHom : A →ₐ[ℂ] B).toLinearMap (1 : A) = (1 : B) from
         map_one f.toStarAlgHom]⟩, fun _ => rfl⟩
 
-/-- **210III at `vNᵒᵖ`** (`exa-sharp-vn`, eff.tex:4777, Example), the half
-that needed `A/Proc`: a **sharp total** map of `vN_cpsuᵒᵖ` is an
-**nmiu**-map. -/
-theorem su_exists_nmiu_of_sharp_total {X Y : WStarCPSU.{u}ᵒᵖ} (f : X ⟶ Y)
-    (hs : SharpMap f) (ht : IsTotal f) :
-    ∃ ρ : Theses.NMIUMap Y.unop.base.carrier X.unop.base.carrier,
-      ∀ a, ρ a = f.unop.toNCPMap a := by
+/-- **210III at `vNᵒᵖ`** (`exa-sharp-vn`, eff.tex:4777, Example), one half,
+in the Example's own generality: the ncpsu-map of a **sharp** map of
+`vN_cpsuᵒᵖ` is a **normal ∗-homomorphism** — an **mni**-map, *not* assumed
+unital.
+
+Multiplicativity is **99XII** `sharp_multiplicative` at the projections
+supplied by `su_sharpMap_iff`; involution preservation is
+`cstar_p_implies_i` for the positive map `f`; normality is the map's own
+`preservesDirSups'`. -/
+theorem su_exists_mni_of_sharp {X Y : WStarCPSU.{u}ᵒᵖ} (f : X ⟶ Y)
+    (hs : SharpMap f) :
+    ∃ ρ : Y.unop.base.carrier →⋆ₙₐ[ℂ] X.unop.base.carrier,
+      Theses.PreservesDirSups ρ ∧ ∀ a, ρ a = f.unop.toNCPMap a := by
   have hproj : ∀ z : Y.unop.base.carrier, IsStarProjection z →
       IsStarProjection (f.unop.toNCPMap z) := (su_sharpMap_iff f).mp hs
   have hmul : ∀ a b : Y.unop.base.carrier,
       f.unop.toNCPMap (a * b) = f.unop.toNCPMap a * f.unop.toNCPMap b :=
     ((Theses.A.Proc.sharp_multiplicative f.unop.toNCPMap).out 1 0).mp hproj
-  have hone : f.unop.toNCPMap 1 = 1 := (su_isTotal_iff f).mp ht
   have hstar : ∀ a : Y.unop.base.carrier,
       ncpLin f.unop.toNCPMap (star a) = star (ncpLin f.unop.toNCPMap a) :=
     cstar_p_implies_i (ncpLin f.unop.toNCPMap)
       (astara_pos_basic_2_cp _ (ncpLin_cp f.unop.toNCPMap))
+  exact ⟨{ toFun := f.unop.toNCPMap
+           map_smul' := (ncpLin f.unop.toNCPMap).map_smul
+           map_zero' := (ncpLin f.unop.toNCPMap).map_zero
+           map_add' := (ncpLin f.unop.toNCPMap).map_add
+           map_mul' := hmul
+           map_star' := hstar },
+    f.unop.toNCPMap.preservesDirSups', fun _ => rfl⟩
+
+/-- **210III at `vNᵒᵖ`**, the converse half: a map of `vN_cpsuᵒᵖ` whose
+ncpsu-map is a ∗-homomorphism is sharp.  No unitality and no normality are
+used: a ∗-homomorphism sends projections to projections
+(`IsStarProjection.map`), which is `su_sharpMap_iff`. -/
+theorem su_sharp_of_mni {X Y : WStarCPSU.{u}ᵒᵖ} (f : X ⟶ Y)
+    (ρ : Y.unop.base.carrier →⋆ₙₐ[ℂ] X.unop.base.carrier)
+    (hρ : ∀ a, ρ a = f.unop.toNCPMap a) : SharpMap f := by
+  refine (su_sharpMap_iff f).mpr fun z hz => ?_
+  rw [← hρ z]
+  exact hz.map ρ
+
+/-- **210III** (`exa-sharp-vn`, eff.tex:4777, Example) at `vNᵒᵖ`, in full:
+**the sharp maps of `vNᵒᵖ` are exactly the mni-maps** — the normal
+∗-homomorphisms, *not* assumed unital.  (`ρ` runs over
+`NonUnitalStarAlgHom`s, and `PreservesDirSups ρ` is the "n" of mni.) -/
+theorem su_sharpMap_iff_mni {X Y : WStarCPSU.{u}ᵒᵖ} (f : X ⟶ Y) :
+    SharpMap f ↔ ∃ ρ : Y.unop.base.carrier →⋆ₙₐ[ℂ] X.unop.base.carrier,
+      Theses.PreservesDirSups ρ ∧ ∀ a, ρ a = f.unop.toNCPMap a :=
+  ⟨su_exists_mni_of_sharp f, fun ⟨ρ, _, hρ⟩ => su_sharp_of_mni f ρ hρ⟩
+
+/-- **210III at `vNᵒᵖ`**, the **total** case: a sharp *total* map of
+`vN_cpsuᵒᵖ` is an **nmiu**-map.  This is `su_exists_mni_of_sharp` plus
+`su_isTotal_iff`, which turns totality into `ρ 1 = 1`; it is the form the
+dilation theory below consumes. -/
+theorem su_exists_nmiu_of_sharp_total {X Y : WStarCPSU.{u}ᵒᵖ} (f : X ⟶ Y)
+    (hs : SharpMap f) (ht : IsTotal f) :
+    ∃ ρ : Theses.NMIUMap Y.unop.base.carrier X.unop.base.carrier,
+      ∀ a, ρ a = f.unop.toNCPMap a := by
+  obtain ⟨ρ₀, -, hρ₀⟩ := su_exists_mni_of_sharp f hs
+  have hcoe : ∀ c : Y.unop.base.carrier, ncpLin f.unop.toNCPMap c = ρ₀ c :=
+    fun c => (hρ₀ c).symm
+  have hmul : ∀ a b : Y.unop.base.carrier,
+      ncpLin f.unop.toNCPMap (a * b)
+        = ncpLin f.unop.toNCPMap a * ncpLin f.unop.toNCPMap b := by
+    intro a b
+    simp only [hcoe]
+    exact map_mul ρ₀ a b
+  have hstar : ∀ a : Y.unop.base.carrier,
+      ncpLin f.unop.toNCPMap (star a) = star (ncpLin f.unop.toNCPMap a) := by
+    intro a
+    simp only [hcoe]
+    exact map_star ρ₀ a
+  have hone : ncpLin f.unop.toNCPMap 1 = 1 := (su_isTotal_iff f).mp ht
   exact ⟨{ toStarAlgHom :=
              ⟨AlgHom.ofLinearMap (ncpLin f.unop.toNCPMap) hone hmul, hstar⟩
            preservesDirSups' := f.unop.toNCPMap.preservesDirSups' }, fun _ => rfl⟩
@@ -3644,7 +3832,7 @@ only because the corner is unital.
 comprehension.  Every corner used below is unital, being the right leg of a
 Paschke dilation of a unital map. -/
 
-/-- **197II at `vNᵒᵖ`**, the converse reading of `su_hasQuotients`: a map
+/-- **197IV at `vNᵒᵖ`**, the converse reading of `su_hasQuotients`: a map
 `ξ : X ⟶ Q` whose ncpsu-map is a **filter** for the effect named by `pᗮ` is
 a quotient for `p`. -/
 theorem su_isQuotient_of_isFilterFor {X Q : WStarCPSU.{u}ᵒᵖ}
@@ -3677,7 +3865,7 @@ theorem su_isQuotient_of_isFilterFor {X Q : WStarCPSU.{u}ᵒᵖ}
         (congrArg (fun m : Theses.NCPSUMap Y.unop.base.carrier Q.unop.base.carrier =>
           m.toNCPMap y) hkf).trans (hg y).symm
 
-/-- **199II at `vNᵒᵖ`**, the converse reading of `su_hasComprehension`: a map
+/-- **199V at `vNᵒᵖ`**, the converse reading of `su_hasComprehension`: a map
 `π : W ⟶ X` whose ncpsu-map is a **unital corner** for the effect named by
 `q` is a comprehension for `q`. -/
 theorem su_isComprehension_of_isCornerFor {W X : WStarCPSU.{u}ᵒᵖ}
@@ -3905,7 +4093,7 @@ section DiaVN
 
 variable [DiamondEffectus (WStarCPSU.{u}ᵒᵖ)]
 
-/-- **203IV at `vNᵒᵖ`**: the ceiling of predicates is the ceiling `⌈·⌉` of
+/-- **203III at `vNᵒᵖ`**: the ceiling of predicates is the ceiling `⌈·⌉` of
 vn.tex 59I.  Both are least among projections above the effect
 (`ceil_le_iff_of_isSharp` and `ceil_basic_1`, through `su_isSharp_iff`). -/
 theorem su_ceilPred_val {X : WStarCPSU.{u}ᵒᵖ}
@@ -4120,8 +4308,11 @@ theorem su_diamondSelfAdjoint_ad {X : WStarCPSU.{u}ᵒᵖ} (g : X ⟶ X)
 
 end DiaVN2
 
-/-- **201II at `vNᵒᵖ`**: `ad_{√a} : b ↦ √a b √a` is **pure** — it is the
-standard filter `c_a` (a quotient, `su_isQuotient_of_isFilterFor`) after the
+/-- **201II at `vNᵒᵖ`** (eff.tex:4031 is the *Definition* of a pure map, a
+comprehension after a quotient; what follows is supplied mathematics at
+`vNᵒᵖ`, not a transcription of the point): `ad_{√a} : b ↦ √a b √a` is
+**pure** — it is the standard filter `c_a` (a quotient,
+`su_isQuotient_of_isFilterFor`) after the
 standard corner at `⌈a⌉` (a *unital* corner, hence a comprehension,
 `su_isComprehension_of_isCornerFor`), the composite being `ad_{√a}` because
 `√a ⌈a⌉ = √a`. -/
@@ -4252,7 +4443,7 @@ section ProcPurity
 
 variable [DiamondEffectus (WStarCPSU.{u}ᵒᵖ)]
 
-/-- **197II at `vNᵒᵖ`** against `A/Proc`: a map whose ncpsu-map is a
+/-- **197IV at `vNᵒᵖ`** against `A/Proc`: a map whose ncpsu-map is a
 **filter** (proc.tex 96I) taking the value `pᵖ` at `1` is a quotient for
 `p`. -/
 theorem su_isQuotient_of_isFilter {X Q : WStarCPSU.{u}ᵒᵖ}
@@ -4296,7 +4487,7 @@ theorem su_isQuotient_of_isFilter {X Q : WStarCPSU.{u}ᵒᵖ}
         (fun m : Theses.NCPMap Y.unop.base.carrier Q.unop.base.carrier => m y)
         (huniq k'.unop.toNCPMap hk'')
 
-/-- **199II at `vNᵒᵖ`** against `A/Proc`: a map whose ncpsu-map is a
+/-- **199V at `vNᵒᵖ`** against `A/Proc`: a map whose ncpsu-map is a
 **unital corner** of the effect named by `q` (proc.tex 95I) is a
 comprehension for `q`. -/
 theorem su_isComprehension_of_isCornerOf {W X : WStarCPSU.{u}ᵒᵖ}
@@ -4341,7 +4532,7 @@ theorem su_isComprehension_of_isCornerOf {W X : WStarCPSU.{u}ᵒᵖ}
         (fun m : Theses.NCPMap W.unop.base.carrier Z.unop.base.carrier => m x)
         (huniq k'.unop.toNCPMap hk'')
 
-/-- **197II at `vNᵒᵖ`**, the converse: the ncpsu-map of a **quotient** is a
+/-- **197IV at `vNᵒᵖ`**, the converse: the ncpsu-map of a **quotient** is a
 filter in the sense of proc.tex 96I.  Any two quotients for `p` differ by an
 isomorphism (197V.2), the standard filter `c_{pᵖ}` (proc.tex 98I) gives one,
 and isomorphisms are filters (`isFilter_of_iso`) which compose with filters
@@ -4387,7 +4578,7 @@ theorem su_isFilter_of_isQuotient {X Q : WStarCPSU.{u}ᵒᵖ}
     (Theses.A.Proc.isFilter_of_iso θ.unop.toNCPMap (inv θ).unop.toNCPMap hgf hfg)
     hfil₀
 
-/-- **199II at `vNᵒᵖ`**, the converse: the ncpsu-map of a **comprehension**
+/-- **199V at `vNᵒᵖ`**, the converse: the ncpsu-map of a **comprehension**
 is a unital corner in the sense of proc.tex 95I.  Comprehensions for `q`
 differ by an isomorphism (199VII.2), the standard corner `π_q` (proc.tex
 98I) gives one, comprehensions are total (202VIII), and corners compose
@@ -4437,7 +4628,8 @@ theorem su_isCornerMap_of_isComprehension {W X : WStarCPSU.{u}ᵒᵖ}
       hgf hfg hθu)
 
 /-- **201II at `vNᵒᵖ`**: a pure map of `vN_cpsuᵒᵖ` has a pure ncpsu-map
-(proc.tex 100I). -/
+(proc.tex 100I).  201II is the Definition of purity in an effectus; this
+bridge between it and proc.tex's is supplied, not transcribed. -/
 theorem su_procPure_of_isPure {X Y : WStarCPSU.{u}ᵒᵖ} {f : X ⟶ Y}
     (hf : IsPure f) : Theses.A.Proc.IsPure f.unop.toNCPMap := by
   obtain ⟨Q, ξ, π, p, q, hξ, hπ, hfe⟩ := hf
@@ -4685,8 +4877,10 @@ theorem su_paschke_nmiu {A B : Type u} [CStarAlgebra A] [PartialOrder A]
       exact (Theses.A.Proc.ncpId_apply (k c)).symm.trans (hk2 c)
 
 /-- **223V at `vNᵒᵖ`**: the down-set `↓f` of a morphism is the ncp-interval
-`[0, φ]_ncp` of **157II**.  (One direction needs that the difference of a
-subunital map and a smaller one is again *subunital*, which it is because
+`[0, φ]_ncp` of **157II**.  223V (eff.tex:7076) is the *Definition* of the
+down-set and of "has the order correspondence"; this identification at
+`vNᵒᵖ` is supplied.  (One direction needs that the difference of a subunital
+map and a smaller one is again *subunital*, which it is because
 `δ(1) ≤ φ(1) ≤ 1`.) -/
 theorem su_below_iff {X Y : WStarCPSU.{u}ᵒᵖ} (f g : X ⟶ Y) :
     g ≼ f ↔ ⇑g.unop.toNCPMap ∈ Theses.B.Dils.ncpInterval ⇑f.unop.toNCPMap := by
@@ -4798,7 +4992,9 @@ variable [AndThenEffectus (WStarCPSU.{u}ᵒᵖ)]
 
 /-- **223II at `vNᵒᵖ`**: the side-effect map is
 `sef_p(b) = √a b √a + √(1−a) b √(1−a)` (the sum of the PCM being pointwise
-addition). -/
+addition).  223II (eff.tex:7038) is the *Definition* of
+`sef_p = asrt_p ⋎ asrt_{pᗮ}`; this is its concrete value at `vNᵒᵖ`, the
+computation eff.tex performs inside the proof of **223III**. -/
 theorem su_sef_apply {X : WStarCPSU.{u}ᵒᵖ}
     (p : X ⟶ effObj (WStarCPSU.{u}ᵒᵖ)) (x : X.unop.base.carrier) :
     (sef p).unop.toNCPMap x
@@ -5663,14 +5859,22 @@ Moved from `StatesPredicates.lean`. -/
 /-- **190III** (eff.tex:2136, Examples): the effectus `vNᵒᵖ` (in partial
 form: `(W*_ncpsu)ᵒᵖ`, cf. `effectus_vn_partial`) is a real effectus with
 separating states and predicates.  (Its predicates on `𝒜` correspond to the
-effects `[0,1]_𝒜` and its states to the normal states.) -/
+effects `[0,1]_𝒜` and its states to the normal states.)
+
+The second conjunct is the strengthening **190II.3** asks for: the scalars
+are not merely in bijective-morphic correspondence with `[0,1]` but
+**isomorphic** to it as effect monoids.  See `su_real_separating`. -/
 theorem effectus_vn_real_separating
     (s : EffectusPartialStructure WStarCPSU.{u}ᵒᵖ) :
     letI := s.hasFiniteCoproducts
     letI := s.homPCM
     letI := s.finPAC
     letI := s.effectus
-    IsRealEffectus WStarCPSU.{u}ᵒᵖ ∧ SeparatingPredicates WStarCPSU.{u}ᵒᵖ ∧
+    IsRealEffectus WStarCPSU.{u}ᵒᵖ ∧
+      (∃ (φ : EffectMonoidHom (Scal WStarCPSU.{u}ᵒᵖ) unitInterval)
+          (ψ : EffectMonoidHom unitInterval (Scal WStarCPSU.{u}ᵒᵖ)),
+          (∀ k, ψ.toFun (φ.toFun k) = k) ∧ ∀ r, φ.toFun (ψ.toFun r) = r) ∧
+      SeparatingPredicates WStarCPSU.{u}ᵒᵖ ∧
       SeparatingStates WStarCPSU.{u}ᵒᵖ := by
   have : HasFiniteCoproducts (WStarCPSU.{u}ᵒᵖ) := suHasFiniteCoproducts
   have hpcm : s.homPCM = suPCM :=
@@ -6063,9 +6267,17 @@ end SequentialEffects
 
 /-- **225V** (eff.tex:7381, Examples): the effect algebra `[0,1]_𝒜` of a
 von Neumann algebra is a sequential effect algebra with
-`a & b = √a b √a`. -/
+`a & b = √a b √a`.
+
+The "with `a & b = √a b √a`" is **in the statement**: a bare
+`Nonempty (SequentialEffectAlgebra (effects A))` would assert only that
+*some* sequential product exists on `[0,1]_𝒜`, and the point names the one
+it means.  The structure is `effectsSEA` above. -/
 theorem effects_sea (A : Type u) [CStarAlgebra A] [PartialOrder A]
     [StarOrderedRing A] [Theses.VonNeumannAlgebra A] :
-    Nonempty (SequentialEffectAlgebra (Theses.effects A)) := ⟨effectsSEA⟩
+    ∃ S : SequentialEffectAlgebra (Theses.effects A),
+      ∀ a b : Theses.effects A,
+        (S.seq a b : A) = CFC.sqrt (a : A) * (b : A) * CFC.sqrt (a : A) :=
+  ⟨effectsSEA, fun _ _ => rfl⟩
 
 end Theses.B.Eff
