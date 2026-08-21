@@ -4528,7 +4528,16 @@ variable {X : Type u} [CStarAlgebra X] [PartialOrder X] [StarOrderedRing X]
   [VonNeumannAlgebra X]
 
 /-- **The ha form of 125eIII** (`tensorBsurjectivity`), the easy half:
-if `(ρ ⊗ 𝒜) ∘ s` is `(·) ⊗ 𝒜`-surjective then `ρ` is surjective. -/
+if `(ρ ⊗ 𝒜) ∘ s` is `(·) ⊗ 𝒜`-surjective then `ρ` is surjective.
+
+Two things about this one, both found by the 2026-08-22 dead-limb sweep and
+both worth knowing to whoever attacks the general 125eIII (still `sorry`).
+It has **no consumer**: the 125eVII assembly needs the four algebras in four
+universes and so uses the twin `surj_of_haTensorBSurj2` below instead, which
+supersedes it.  And the proof uses **nothing** about hereditary atomicity —
+neither here nor in the twin does `Φ` appear — so the `→` half of the general
+`tensorBsurjectivity` is in fact already available in full generality; only
+the `←` half (which does need `Φ`, through `haTensorPreimage`) is missing. -/
 private theorem surj_of_haTensorBSurj (s : NMIUMap X (VNT C A)) (ρ : NMIUMap C D)
     (hcomp : TensorBSurjective (nmiuComp (tmapM ρ (nmiuId A)) s)) :
     Function.Surjective ⇑ρ := by

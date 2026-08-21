@@ -2465,14 +2465,25 @@ atomic measure space `A` we have `L^∞(A) ≅ ℂ`.
 
 The author's argument (proc.tex:6474) is the first half: every
 `f ∈ 𝓛^∞(A)` is almost everywhere constant, i.e. `𝒜` is the image of
-`ψ : z ↦ q(const z)`.  Since `ψ` is an injective unital ∗-ring
-homomorphism *onto* `𝒜`, every nonzero element of `𝒜` is invertible, so
-Gelfand–Mazur (**16VII**) makes `algebraMap ℂ 𝒜` surjective — which is
-how "`L^∞(X) ≅ ℂ`" is turned into an nmiu-isomorphism.  (Going through
-Gelfand–Mazur avoids having to show by hand that `ψ` is the `ℂ`-algebra
-map: `IsLinftyOf` records only that `q` is additive and multiplicative,
-and a ∗-ring isomorphism `ℂ → 𝒜` need not be `ℂ`-linear — complex
-conjugation is one.)
+`ψ : z ↦ q(const z)`.  The thesis then writes only "Hence `L^∞(X) ≅ ℂ`",
+and that is what happens here: `q` is `ℂ`-linear and unital
+(`IsLinftyOf.smul`, `IsLinftyOf.one`), so `ψ` **is** `algebraMap ℂ 𝒜`,
+and the first half says exactly that `algebraMap ℂ 𝒜` is surjective —
+injective it always is.
+
+Until 2026-08-22 the second half went through Gelfand–Mazur (**16VII**)
+instead: `ψ` was known only as a unital ∗-*ring* map, every nonzero
+element of `𝒜` was shown to be invertible, and 16VII then delivered
+surjectivity of `algebraMap`.  The stated ground for that detour — that
+`IsLinftyOf` "records only that `q` is additive and multiplicative", so
+that a ∗-ring isomorphism `ℂ → 𝒜` need not be `ℂ`-linear — **expired**
+when the `smul` clause was added to `IsLinftyOf` on 2026-08-16
+(QUESTIONS D1); see the note on `IsLinftyOf`, which recorded 130II as the
+one consumer proved before the fix.  Consequence, recorded here because
+this pass is looking for the reverse pattern: 130II was **16VII**'s only
+consumer in the tree, so `gelfand_mazur` now has none.  16VII is a Theorem
+of cstar.tex in its own right, not run-up machinery, so that is a fact
+about the tree rather than a defect in it.
 
 Note `hμ : μ.IsComplete` is not used; nor is `𝒜`'s von-Neumann-ness, in
 the sense that the argument shows `𝒜` is C*-isomorphic to `ℂ` and only
@@ -2508,12 +2519,6 @@ theorem atomic_measure_space [IsFiniteMeasure μ] (hμ : μ.IsComplete)
     have heq : ((fun _ : X => z) + (fun _ : X => w)) = (fun _ : X => z + w) := rfl
     rw [heq] at h
     exact h
-  have hψmul : ∀ z w : ℂ, ψ (z * w) = ψ z * ψ w := by
-    intro z w
-    have h := hq.mul (fun _ => z) (fun _ => w) (hconstBM z) (hconstBM w)
-    have heq : ((fun _ : X => z) * (fun _ : X => w)) = (fun _ : X => z * w) := rfl
-    rw [heq] at h
-    exact h
   have hψone : ψ 1 = 1 := hq.one
   have hconst_ae : ∀ c : ℂ, (fun _ : X => c) =ᵐ[μ] 0 → c = 0 := by
     intro c hc
@@ -2537,20 +2542,25 @@ theorem atomic_measure_space [IsFiniteMeasure μ] (hμ : μ.IsComplete)
     obtain ⟨f, hfBM, hfy⟩ := hq.surj y
     obtain ⟨z, hz⟩ := ae_const_of_atomic μ hX f hfBM
     exact ⟨z, by rw [← hfy, hqcongr f _ hfBM (hconstBM z) hz]⟩
-  have hunit : ∀ a : 𝒜, a ≠ 0 → IsUnit a := by
-    intro a ha
-    obtain ⟨z, rfl⟩ := hψsurj a
-    have hz : z ≠ 0 := fun h => ha (by rw [h, hψzero])
-    exact ⟨⟨ψ z, ψ z⁻¹, by rw [← hψmul, mul_inv_cancel₀ hz, hψone],
-      by rw [← hψmul, inv_mul_cancel₀ hz, hψone]⟩, rfl⟩
+  -- `ψ` **is** `algebraMap ℂ 𝒜`: `q` is `ℂ`-linear and unital, so
+  -- `q(const z) = q(z • 1) = z • q(1) = z • 1`
+  have hψalg : ∀ z : ℂ, ψ z = algebraMap ℂ 𝒜 z := by
+    intro z
+    have hz1 : (fun _ : X => z) = z • (1 : X → ℂ) := by
+      funext x; simp
+    have h2 : q (fun _ : X => z) = algebraMap ℂ 𝒜 z := by
+      rw [hz1, hq.smul z (1 : X → ℂ) bm_one, hq.one, Algebra.algebraMap_eq_smul_one]
+    rw [hψdef]
+    exact h2
   have hnt : Nontrivial 𝒜 := by
     refine ⟨1, 0, fun h => one_ne_zero (hψinj ?_)⟩
     rw [hψone, hψzero, h]
-  -- Gelfand–Mazur turns that into surjectivity of `algebraMap`
+  -- so the author's "every `f` is a.e. constant" *is* surjectivity of
+  -- `algebraMap ℂ 𝒜`, which is the thesis's "hence `L^∞(X) ≅ ℂ`"
   have hsurjA : Function.Surjective (algebraMap ℂ 𝒜) := by
     intro a
-    obtain ⟨z, hz⟩ := Theses.A.CStar.gelfand_mazur hunit a
-    exact ⟨z, hz.symm⟩
+    obtain ⟨z, hz⟩ := hψsurj a
+    exact ⟨z, by rw [← hψalg z, ← hz]⟩
   have hinjA : Function.Injective (algebraMap ℂ 𝒜) := (algebraMap ℂ 𝒜).injective
   have hbij : Function.Bijective ⇑(algebraMapStarHom 𝒜) := ⟨hinjA, hsurjA⟩
   set e : ℂ ≃⋆ₐ[ℂ] 𝒜 := StarAlgEquiv.ofBijective (algebraMapStarHom 𝒜) hbij with he
@@ -4718,11 +4728,18 @@ theorem free_monoid_in_vNAMIU [VonNeumannAlgebra A] [VonNeumannAlgebra B]
         ∀ a : A, f a = g (freeMonoidUnit a) := by
   -- The thesis's proof (proc.tex:6743): `ℬ` is duplicable because its monoid
   -- structure is a duplicator, hence `ℬ = ℓ^∞(Y)` by **127III**; the mediating
-  -- `h : Y → nsp(𝒜)` is `y ↦ (η(y) ∘ ψ) ∘ f` — currying, so **122II** is not
-  -- even needed here — and `ℓ^∞(h)` is a monoid morphism because both
-  -- multiplications are the algebras' own (**128VIII**), which an miu-map
-  -- preserves.  Uniqueness is fullness *and* faithfulness of `ℓ^∞`,
-  -- **122VI**.3, and uses only the second condition.
+  -- `h : Y → nsp(𝒜)` is `y ↦ (η(y) ∘ ψ) ∘ f`, and `ℓ^∞(h)` is a monoid
+  -- morphism because both multiplications are the algebras' own (**128VIII**),
+  -- which an miu-map preserves.  Uniqueness is fullness *and* faithfulness of
+  -- `ℓ^∞`, **122VI**.3, and uses only the second condition.
+  --
+  -- The thesis gets `h` from **122II**; here it is curried out by hand.  That
+  -- is not a bypass: `first_adjunction` is stated as the universal property of
+  -- the *other* unit, `η_X : X → nsp(ℓ^∞(X))` (given `f : X → nsp(𝒜)`, a
+  -- unique `g : 𝒜 → ℓ^∞(X)`), and the step needed here is the opposite
+  -- triangle (given `f : 𝒜 → ℓ^∞(Y)`, a unique `h : Y → nsp(𝒜)`).  The
+  -- passage between the two *is* this currying — it is the forward map of
+  -- `linfNspHomEquiv`, 122II's hom-set bijection, written out.
   obtain ⟨Y, ψ, hψ⟩ :=
     (duplicable (A := B)).mp ((dup_vna_is_monoid_2 (A := B)).1.mp ⟨M⟩)
   have hmul : ∀ x y : B, M.m (x ⊗ᵥ y) = x * y := by
@@ -4824,6 +4841,80 @@ theorem exists_freeMonoidUnitCpsu [VonNeumannAlgebra A] :
                preservesDirSups' := hnorm },
            subunital' := hgsu }, fun a ω => hgval ω a⟩
 
+/-! ### Reading **124III** at `ℂ`: the `Type u` copy of `ℂ`
+
+The thesis's proof of 132VI (proc.tex:6770) composes the two adjunctions and
+needs the identification `W*_miu(ℱ𝒜, ℂ) ≅ W*_cpsu(𝒜, ℂ)`, i.e. **124III**'s
+universal property *at `ℂ`*.  `FreeMIU.universal` quantifies over von Neumann
+algebras `ℬ : Type u` and `ℂ : Type 0`, so it cannot be applied there
+literally.  The bridge is `ℓ^∞(PUnit.{u+1})`, which *is* a `Type u` — `lp`
+raises to the universe of the index type — together with the nmiu-isomorphism
+`ev_⋆ : ℓ^∞(PUnit) → ℂ`; the two lifts along it are **47IV**.3 at the
+one-element family, in `W*_miu` and in `W*_cpsu`.  This is the same
+`Type 0`/`Type u` device that `QuantumLambda.lean` uses for `M_n`
+(`punitSum`, written for 125eVII). -/
+
+/-- Evaluation at `⋆` is an nmiu-**isomorphism** `ℓ^∞(PUnit) → ℂ`. -/
+private theorem punitLinf_bijective :
+    Function.Bijective ⇑(linfEval PUnit.{u + 1} PUnit.unit) := by
+  constructor
+  · intro x y h
+    rw [linfEval_apply, linfEval_apply] at h
+    exact lp.ext (funext fun p => by cases p; exact h)
+  · intro z
+    refine ⟨algebraMap ℂ (linf PUnit.{u + 1}) z, ?_⟩
+    rw [linfEval_apply, Algebra.algebraMap_eq_smul_one, lp.coeFn_smul,
+      lp.infty_coeFn_one]
+    simp
+
+/-- **47IV**.3 in `W*_miu` at the one-element family: an nmiu-functional
+lifts along `ev_⋆` to the `Type u` copy `ℓ^∞(PUnit)` of `ℂ`. -/
+private theorem exists_punitNmiu [VonNeumannAlgebra A] (χ : NMIUMap A ℂ) :
+    ∃ χ' : NMIUMap A (linf PUnit.{u + 1}),
+      ∀ a : A, linfEval PUnit.{u + 1} PUnit.unit (χ' a) = χ a := by
+  obtain ⟨χ', hχ', -⟩ := vn_products_nmiu (fun _ : PUnit.{u + 1} => ℂ) (fun _ => χ)
+  exact ⟨χ', fun a => (linfEval_apply _ _ _).trans (hχ' PUnit.unit a)⟩
+
+/-- **47IV**.3 in `W*_cpsu` at the one-element family: the same lift for
+ncpsu-functionals. -/
+private theorem exists_punitNcpsu [VonNeumannAlgebra A] (ω : NCPSUMap A ℂ) :
+    ∃ ω' : NCPSUMap A (linf PUnit.{u + 1}),
+      ∀ a : A, linfEval PUnit.{u + 1} PUnit.unit (ω'.toNCPMap a)
+        = ω.toNCPMap a := by
+  obtain ⟨ω', hω', -⟩ := vn_products_ncpsu (fun _ : PUnit.{u + 1} => ℂ) (fun _ => ω)
+  exact ⟨ω', fun a => (linfEval_apply _ _ _).trans (hω' PUnit.unit a)⟩
+
+/-- **124III** (`second-adjunction`) read at `ℂ`, which is what proc.tex:6770
+cites: for a universal arrow `ℱ𝒜` the map `χ ↦ χ ∘ η_ℱ` is a **bijection**
+`nsp(ℱ𝒜) → W*_cpsu(𝒜, ℂ)` — the identification `W*_miu(ℱ𝒜, ℂ) ≅
+W*_cpsu(𝒜, ℂ)`.  Both halves are `F.universal` applied at the bridge
+`ℓ^∞(PUnit)` and transported along `ev_⋆`. -/
+private theorem freeMIU_nsp_bijective [VonNeumannAlgebra A] (F : FreeMIU A) :
+    ∃ Θ : nsp F.carrier → NCPSUMap A ℂ,
+      (∀ (χ : nsp F.carrier) (a : A),
+        (Θ χ).toNCPMap a = χ (F.unit.toNCPMap a)) ∧ Function.Bijective Θ := by
+  choose Θ hΘ using fun χ : nsp F.carrier => exists_ncpsuEval F.unit χ
+  have hpi : Function.Injective ⇑(linfEval PUnit.{u + 1} PUnit.unit) :=
+    punitLinf_bijective.1
+  refine ⟨Θ, hΘ, ?_, ?_⟩
+  · -- injective: two nmiu-functionals agreeing on the range of `η_ℱ` agree
+    intro χ₁ χ₂ h
+    obtain ⟨χ₁', hχ₁'⟩ := exists_punitNmiu (A := F.carrier) χ₁
+    obtain ⟨χ₂', hχ₂'⟩ := exists_punitNmiu (A := F.carrier) χ₂
+    obtain ⟨ω', hω'⟩ := exists_punitNcpsu (A := A) (Θ χ₁)
+    obtain ⟨χ₀, -, huniq⟩ := F.universal (linf PUnit.{u + 1}) ω'
+    have h12 : χ₁' = χ₂' :=
+      (huniq χ₁' fun a => hpi (by rw [hω' a, hχ₁' _, hΘ χ₁ a])).trans
+        (huniq χ₂' fun a => hpi (by rw [hω' a, hχ₂' _, h, hΘ χ₂ a])).symm
+    refine DFunLike.coe_injective (funext fun c => ?_)
+    rw [← hχ₁' c, ← hχ₂' c, h12]
+  · -- surjective: factor `ω` through `ℱ𝒜` in the bridge and come back
+    intro ω
+    obtain ⟨ω', hω'⟩ := exists_punitNcpsu (A := A) ω
+    obtain ⟨χ', hχ', -⟩ := F.universal (linf PUnit.{u + 1}) ω'
+    refine ⟨nmiuComp (linfEval PUnit.{u + 1} PUnit.unit) χ', ncpsu_ext' fun a => ?_⟩
+    rw [hΘ, nmiuComp_apply, ← hχ' a, hω' a]
+
 /-- **132VI** (proc.tex:6766, Corollary): `ℓ^∞(W*_cpsu(𝒜, ℂ))` is the
 free (commutative) monoid on `𝒜` in `W*_cpsu`: every ncpsu-map from `𝒜`
 to a monoid in `W*_cpsu` factors uniquely through it by a monoid
@@ -4836,52 +4927,80 @@ theorem free_monoid_in_Wcpsu [VonNeumannAlgebra A] [VonNeumannAlgebra B]
       (∀ h₁ h₂ : linf (NCPSUMap A ℂ),
         g (h₁ * h₂) = M.m.toNCPMap (g h₁ ⊗ᵥ g h₂)) ∧
         ∀ a : A, f.toNCPMap a = g (η.toNCPMap a) := by
-  -- The thesis (proc.tex:6770) deduces this from 132IV by composing the two
-  -- adjunctions, using **124III** `second_adjunction` to identify
-  -- `W*_miu(ℱ𝒜, ℂ)` with `W*_cpsu(𝒜, ℂ)`.  The direct argument is 132IV's,
-  -- verbatim, with `nsp(𝒜)` replaced by `W*_cpsu(𝒜, ℂ)` throughout: the only
-  -- thing used about the index set is that `η` curries, so `ℱ` never enters.
-  obtain ⟨Y, ψ, hψ⟩ := (duplicable (A := B)).mp (dup_vna_is_monoid_1 M)
+  -- The thesis's proof (proc.tex:6770) composes the two adjunctions: `ℱ` is
+  -- **124III** `second_adjunction`, `ℓ^∞ ∘ nsp` is the free monoid of
+  -- **132IV**, and the free monoid on `𝒜` in `W*_cpsu` is therefore
+  -- `(ℓ^∞ ∘ nsp ∘ ℱ)(𝒜) = ℓ^∞(W*_miu(ℱ𝒜, ℂ)) ≅ ℓ^∞(W*_cpsu(𝒜, ℂ))`, the last
+  -- identification being 124III read at `ℂ` (`freeMIU_nsp_bijective`, through
+  -- the `Type u` bridge above).
+  obtain ⟨F⟩ := second_adjunction A
+  obtain ⟨Θ, hΘ, hΘbij⟩ := freeMIU_nsp_bijective F
+  obtain ⟨Θ', -, hΘ'r⟩ := Function.bijective_iff_has_inverse.mp hΘbij
+  -- `ℓ^∞` of that bijection, and its inverse
+  have hLap : ∀ (u : linf (NCPSUMap A ℂ)) (χ : nsp F.carrier),
+      ((linfMap Θ u : linf (nsp F.carrier)) : ∀ _ : nsp F.carrier, ℂ) χ
+        = (u : ∀ _ : NCPSUMap A ℂ, ℂ) (Θ χ) := fun u χ => linfMap_apply Θ u χ
+  have hL'ap : ∀ (v : linf (nsp F.carrier)) (ω : NCPSUMap A ℂ),
+      ((linfMap Θ' v : linf (NCPSUMap A ℂ)) : ∀ _ : NCPSUMap A ℂ, ℂ) ω
+        = (v : ∀ _ : nsp F.carrier, ℂ) (Θ' ω) := fun v ω => linfMap_apply Θ' v ω
+  have hL'L : ∀ u : linf (NCPSUMap A ℂ), linfMap Θ' (linfMap Θ u) = u := by
+    intro u
+    refine lp.ext (funext fun ω => ?_)
+    rw [hL'ap, hLap, hΘ'r]
+  -- under `ℓ^∞(Θ)` the unit `η` of 132VI is 132IV's unit on `ℱ𝒜`
+  have hfmu : ∀ (c : F.carrier) (χ : nsp F.carrier), freeMonoidUnit c χ = χ c :=
+    (exists_freeMonoidUnit (A := F.carrier)).choose_spec
+  have hLη : ∀ a : A,
+      linfMap Θ (η.toNCPMap a) = freeMonoidUnit (F.unit.toNCPMap a) := by
+    intro a
+    refine lp.ext (funext fun χ => ?_)
+    rw [hLap, hη a (Θ χ), hΘ χ a, hfmu]
+  have hL'fmu : ∀ a : A,
+      linfMap Θ' (freeMonoidUnit (F.unit.toNCPMap a)) = η.toNCPMap a := fun a => by
+    rw [← hLη a, hL'L]
+  -- `f` factors through `ℱ𝒜` by a unique nmiu-map (**124III**)
+  obtain ⟨ft, hft, hftuniq⟩ := F.universal B f
+  -- `ℬ` is a monoid in `W*_miu` too, with the algebra's own multiplication
+  -- (**132III**.2/.4)
   have hmul : ∀ x y : B, M.m.toNCPMap (x ⊗ᵥ y) = x * y :=
     (dup_vna_is_monoid_2 (A := B)).2.2.2 M
-  have hlm : ∀ (k : Y → NCPSUMap A ℂ) (u : linf (NCPSUMap A ℂ)) (y : Y),
-      ((linfMap k u : linf Y) : ∀ _ : Y, ℂ) y
-        = (u : ∀ _ : NCPSUMap A ℂ, ℂ) (k y) :=
-    fun k => (exists_linfMap k).choose_spec
-  obtain ⟨k, hk⟩ : ∃ k : Y → NCPSUMap A ℂ, ∀ (y : Y) (a : A),
-      (k y).toNCPMap a = ((ψ (f.toNCPMap a) : linf Y) : ∀ _ : Y, ℂ) y := by
-    choose k hk using fun y : Y => exists_ncpsuEval f (nmiuComp (linfEval Y y) ψ)
-    exact ⟨k, fun y a => (hk y a).trans (linfEval_apply Y y (ψ (f.toNCPMap a)))⟩
-  have hkey : ∀ (k' : Y → NCPSUMap A ℂ),
-      (∀ (y : Y) (a : A), (k' y).toNCPMap a
-        = ((ψ (f.toNCPMap a) : linf Y) : ∀ _ : Y, ℂ) y) →
-        ∀ a : A, linfMap k' (η.toNCPMap a) = ψ (f.toNCPMap a) := by
-    intro k' hk' a
-    refine lp.ext (funext fun y => ?_)
-    rw [hlm k' (η.toNCPMap a) y, hη a (k' y), hk' y a]
-  refine ⟨nmiuComp (nmiuSymm ψ hψ) (linfMap k), ⟨fun h₁ h₂ => ?_, fun a => ?_⟩,
-    ?_⟩
+  obtain ⟨ρ, hρ⟩ := exists_nmiu_mul (dup_vna_is_monoid_1 M)
+  -- **132IV** on `ℱ𝒜`
+  obtain ⟨gt, ⟨-, hgtunit⟩, hgtuniq⟩ :=
+    free_monoid_in_vNAMIU (A := F.carrier) (B := B)
+      { m := ρ
+        assoc := fun x y z => by rw [hρ, hρ, hρ, hρ, mul_assoc]
+        left_unit := fun x => by rw [hρ, one_mul]
+        right_unit := fun x => by rw [hρ, mul_one] } ft
+  refine ⟨nmiuComp gt (linfMap Θ), ⟨fun h₁ h₂ => ?_, fun a => ?_⟩, ?_⟩
   · rw [hmul]
-    exact map_mul (nmiuComp (nmiuSymm ψ hψ) (linfMap k)).toStarAlgHom h₁ h₂
-  · show f.toNCPMap a = nmiuSymm ψ hψ (linfMap k (η.toNCPMap a))
-    rw [hkey k hk a, nmiuSymm_apply_apply ψ hψ (f.toNCPMap a)]
-  · rintro g' ⟨-, hg'⟩
-    obtain ⟨k', hk'⟩ := (cor_linf_ff_3 Y (NCPSUMap A ℂ)).2 (nmiuComp ψ g')
-    have happ : ∀ u : linf (NCPSUMap A ℂ), ψ (g' u) = linfMap k' u := fun u =>
-      congrArg (fun χ : NMIUMap (linf (NCPSUMap A ℂ)) (linf Y) =>
-        (χ : linf (NCPSUMap A ℂ) → linf Y) u) hk'
-    have hk'spec : ∀ (y : Y) (a : A), (k' y).toNCPMap a
-        = ((ψ (f.toNCPMap a) : linf Y) : ∀ _ : Y, ℂ) y := by
-      intro y a
-      rw [← hη a (k' y), ← hlm k' (η.toNCPMap a) y, ← happ (η.toNCPMap a),
-        ← hg' a]
-    have hkk : k' = k := funext fun y =>
-      ncpsu_ext' fun a => by rw [hk'spec y a, hk y a]
+    exact map_mul (nmiuComp gt (linfMap Θ)).toStarAlgHom h₁ h₂
+  · show f.toNCPMap a = gt (linfMap Θ (η.toNCPMap a))
+    rw [hLη a, ← hgtunit (F.unit.toNCPMap a)]
+    exact hft a
+  · rintro g' ⟨hg'mul, hg'unit⟩
+    -- `g' ∘ ℓ^∞(Θ)⁻¹` factors `ft`, so it is 132IV's `gt` by *its* uniqueness
+    have hfteq : nmiuComp (nmiuComp g' (linfMap Θ')) freeMonoidUnit = ft := by
+      refine hftuniq _ fun a => ?_
+      show f.toNCPMap a = g' (linfMap Θ' (freeMonoidUnit (F.unit.toNCPMap a)))
+      rw [hL'fmu a]
+      exact hg'unit a
+    have hgteq : nmiuComp g' (linfMap Θ') = gt := by
+      refine hgtuniq _ ⟨fun v₁ v₂ => ?_, fun c => ?_⟩
+      · show g' (linfMap Θ' (v₁ * v₂))
+          = ρ (g' (linfMap Θ' v₁) ⊗ᵥ g' (linfMap Θ' v₂))
+        have hm : (linfMap Θ' (v₁ * v₂) : linf (NCPSUMap A ℂ))
+            = linfMap Θ' v₁ * linfMap Θ' v₂ :=
+          map_mul (linfMap Θ').toStarAlgHom v₁ v₂
+        rw [hρ, hm, hg'mul, hmul]
+      · show ft c = g' (linfMap Θ' (freeMonoidUnit c))
+        exact congrArg (fun h : NMIUMap F.carrier B => h c) hfteq.symm
     apply DFunLike.coe_injective
     funext u
-    apply hψ.1
-    show ψ (g' u) = ψ (nmiuSymm ψ hψ (linfMap k u))
-    rw [nmiuSymm_apply_apply' ψ hψ (linfMap k u), happ u, hkk]
+    show g' u = gt (linfMap Θ u)
+    rw [← hgteq]
+    show g' u = g' (linfMap Θ' (linfMap Θ u))
+    rw [hL'L u]
 
 end FreeMonoid
 
