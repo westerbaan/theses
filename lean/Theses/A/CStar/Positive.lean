@@ -3446,15 +3446,17 @@ theorem weak_russo_dye_1 (f : 𝒜 →ₗ[ℂ] ℬ) (hf : IsPositiveMap f) (a : 
       rw [map_sub, sub_nonneg] at h2
       exact h2
     have hM : (0:ℝ) ≤ ‖f 1‖ * ‖a‖ := mul_nonneg (norm_nonneg _) (norm_nonneg _)
-    have hup : a ≤ algebraMap ℂ 𝒜 ((‖a‖ : ℝ) : ℂ) := by
-      rw [← algebraMap_real_eq]; exact ha.le_algebraMap_norm_self
-    have hlow : -(algebraMap ℂ 𝒜 ((‖a‖ : ℝ) : ℂ)) ≤ a := by
-      rw [← algebraMap_real_eq]; exact ha.neg_algebraMap_norm_le_self
+    -- `-‖a‖ ≤ a ≤ ‖a‖` and `f 1 ≤ ‖f 1‖` are **17VI**.3a, `positive_basic_2_3a`
+    -- — the thesis's own parsec-170 theorem, which is what erratum
+    -- `parsec-200.30` cites here.  (Mathlib's `le_algebraMap_norm_self` and
+    -- `A/CStar/Basic`'s `norm_le_iff_neg_algebraMap_le`, used here before, are
+    -- the CFC-backed forms of the same statement, at parsec 90.)
+    obtain ⟨hlow, hup⟩ := (positive_basic_2_3a a ha ‖a‖ (norm_nonneg a)).mpr le_rfl
     have hfalg : f (algebraMap ℂ 𝒜 ((‖a‖ : ℝ) : ℂ)) = ((‖a‖ : ℝ) : ℂ) • f 1 := by
       rw [Algebra.algebraMap_eq_smul_one, map_smul]
-    have hf1 : f 1 ≤ algebraMap ℂ ℬ ((‖f 1‖ : ℝ) : ℂ) := by
-      rw [← algebraMap_real_eq]
-      exact (IsSelfAdjoint.of_nonneg (hf 1 zero_le_one)).le_algebraMap_norm_self
+    have hf1 : f 1 ≤ algebraMap ℂ ℬ ((‖f 1‖ : ℝ) : ℂ) :=
+      ((positive_basic_2_3a (f 1) (IsSelfAdjoint.of_nonneg (hf 1 zero_le_one)) ‖f 1‖
+        (norm_nonneg _)).mpr le_rfl).2
     have hkey : ((‖a‖ : ℝ) : ℂ) • f 1 ≤ algebraMap ℂ ℬ (((‖f 1‖ * ‖a‖ : ℝ)) : ℂ) := by
       have h3 : (0 : ℬ) ≤ ((‖a‖ : ℝ) : ℂ) • (algebraMap ℂ ℬ ((‖f 1‖ : ℝ) : ℂ) - f 1) :=
         ofReal_smul_nonneg (sub_nonneg.mpr hf1) (norm_nonneg a)
@@ -3462,7 +3464,7 @@ theorem weak_russo_dye_1 (f : 𝒜 →ₗ[ℂ] ℬ) (hf : IsPositiveMap f) (a : 
       refine h3.trans (le_of_eq ?_)
       rw [Algebra.algebraMap_eq_smul_one, Algebra.algebraMap_eq_smul_one, smul_smul,
         ← Complex.ofReal_mul, mul_comm]
-    rw [norm_le_iff_neg_algebraMap_le hfsa hM]
+    refine (positive_basic_2_3a (f a) hfsa (‖f 1‖ * ‖a‖) hM).mp ?_
     constructor
     · have h4 := hmono _ _ hlow
       rw [map_neg, hfalg] at h4

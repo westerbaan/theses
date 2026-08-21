@@ -27782,7 +27782,7 @@ that reach a constant of Mathlib's continuous functional calculus (name
 containing `cfc`/`CFC`/`ContinuousFunctionalCalculus`), together with the
 edges by which they reach it.
 
-Before this session, **51** declarations in the two files were CFC-reachable.
+Before this session, **53** declarations in the two files were CFC-reachable.
 They fall into four groups, and only the first is the knot the brief names:
 
 1. **The parsec-90 order bridge** — `norm_le_iff_neg_algebraMap_le` (17VI.3a,
@@ -27900,7 +27900,7 @@ found**:
   parsec-90 surrogate.  All three now go to `positive_basic_2_3a`, and
   **20II.1, 20II.2, the private `norm_map_le_two_mul` and 30V
   `cstar_product_2_pu` no longer reach the continuous functional calculus at
-  all** — 51 CFC-reachable declarations down to 47.
+  all** — 53 CFC-reachable declarations down to 50.
 
 ### The state after
 
@@ -27938,3 +27938,405 @@ situ (source copied to the scratchpad with `#print axioms` appended) for
 `cstar_positive_sum`, `cstar_p_implies_i`, `orderNorm_eq_norm`,
 `weak_russo_dye_1`, `weak_russo_dye_2`, `cstar_product_2_pu` — all
 `[propext, Classical.choice, Quot.sound]`.
+
+## Session 95 — A/Proc Duplicators + QuantumLambda: **124III and the whole 125II run-up were a dead limb — 132VI now composes the two adjunctions as the thesis does, and 130II drops a Gelfand–Mazur detour whose premise expired** (worker on `Theses/A/Proc/Duplicators.lean`, `Theses/A/Proc/QuantumLambda.lean`)
+
+Proof-route pass over the 43 non-`faithful`, non-`none` rows of
+`docs/audit/aproc-duplicators-quantumlambda.csv` (28 `route`, 14 `mild`,
+1 `mathlib`).  **Three proofs put back on the thesis's own argument, no
+statement touched, no `sorry` added, everything axiom-clean in situ.**
+`route` goes 28 → 25, `mild` 14 → 13.  **No dependency inversion was found**
+— see below; the scan that found none is worth recording, because it is the
+first thing the brief asks for.
+
+### The structural finding: 124III `second_adjunction` had no consumer
+
+`FreeMIU` and `second_adjunction` — 124III, the second adjunction, Freyd's
+solution set unwound by hand — had **zero uses anywhere in the tree**, and so
+did everything that feeds them: `SolIdx`, `solProd`, `solNontrivial`, and the
+whole of **125II** (`ConcreteRep`, `card_le_of_denseRange`, `card_lp_two_le`,
+`card_npFunctional_le`, `card_gnsHilb_le`, `vn_gns_bound`,
+`exists_smallRealization`).  About 350 lines, hanging off nothing.
+
+The cause is the 16II pattern exactly.  **132VI**'s only job in proc.tex is to
+compose the two adjunctions:
+
+> By `thm:free-monoid-in-vNAMIU`, `ℓ^∞∘nsp` is a left adjoint to the
+> forgetful functor `Mon(W*_miu) → W*_miu` … where `ℱ` is from
+> `second-adjunction`.  Thus the free monoid on `𝒜` in `W*_cpsu` is
+> `(ℓ^∞∘nsp∘ℱ)(𝒜) = ℓ^∞(W*_miu(ℱ𝒜, ℂ)) ≅ ℓ^∞(W*_cpsu(𝒜, ℂ))`.
+
+Ours instead repeated 132IV's direct argument with `W*_cpsu(𝒜, ℂ)` written in
+for `nsp(𝒜)`, and the in-file comment said so — "so `ℱ` never enters".  With
+`ℱ` never entering, 124III had no reason to exist.
+
+**132VI now takes the printed route.**  `F := second_adjunction 𝒜`, `f`
+factors through `ℱ𝒜` by a unique nmiu-map `f̃`, 132IV gives the unique monoid
+morphism `g̃` out of `ℓ^∞(nsp(ℱ𝒜))` over `f̃`, and `g := g̃ ∘ ℓ^∞(Θ)` where `Θ`
+is the identification `nsp(ℱ𝒜) ≅ W*_cpsu(𝒜, ℂ)`; uniqueness comes back
+through `Θ` from 124III's uniqueness and 132IV's, in that order.
+
+One obstruction had to be cleared and it was real, not bookkeeping.
+`FreeMIU.universal` quantifies over von Neumann algebras `ℬ : Type u`, and
+the identification the thesis cites is at **`ℂ : Type 0`** — so 124III cannot
+be applied there literally, and this is *why* the direct route was taken (the
+old note did not say so; it only said `ℱ` never enters).  The bridge is
+`ℓ^∞(PUnit.{u+1})`, which *is* a `Type u` — `lp` raises to the universe of
+the index type — with `ev_⋆ : ℓ^∞(PUnit) → ℂ` an nmiu-isomorphism and the two
+lifts along it supplied by **47IV**.3 in `W*_miu` and in `W*_cpsu`.  This is
+the same `Type 0`/`Type u` device `QuantumLambda.lean` already uses for `M_n`
+(`punitSum`, written for 125eVII).  Four new private auxiliaries:
+`punitLinf_bijective`, `exists_punitNmiu`, `exists_punitNcpsu`,
+`freeMIU_nsp_bijective` (124III read at `ℂ`, which is what proc.tex:6770
+actually cites).
+
+### 130II `atomic_measure_space` — a divergence resting on an expired premise
+
+proc.tex:6474 proves that on an atom every bounded measurable `f` is a.e.
+constant and then writes, in four words, "Hence `L^∞(X) ≅ ℂ`".  Ours did the
+first half and then went through **Gelfand–Mazur (16VII)** for the second,
+on the recorded ground that `IsLinftyOf` "records only that `q` is additive
+and multiplicative", so that a ∗-ring isomorphism `ℂ → 𝒜` need not be
+`ℂ`-linear.
+
+That ground **expired on 2026-08-16**, when the `smul` clause was added to
+`IsLinftyOf` on the author's ruling (QUESTIONS D1) — and `IsLinftyOf`'s own
+docstring says so, naming 130II as the one consumer that had been proved
+before the fix.  With `smul` available, `ψ : z ↦ q(const z)` **is**
+`algebraMap ℂ 𝒜` (`q(z • 1) = z • q(1) = z • 1`), so the author's first half
+*is* surjectivity of `algebraMap`, which is the printed "Hence".  The
+Gelfand–Mazur detour, the invertibility-of-every-nonzero step and `hψmul`
+are gone.
+
+Recorded because this pass is looking for the reverse pattern: **130II was
+16VII's only consumer in the tree, so `gelfand_mazur` now has none.**  16VII
+is a Theorem of cstar.tex in its own right rather than run-up machinery, so
+that is a fact about the tree, not a defect in it — but it is the sort of
+fact the fifth check exists to surface, and the docstring now carries it.
+
+### 129X and 130V: two rows the audit recorded as divergent are no longer
+
+Both were repaired before this pass and the CSV had not caught up; checked
+against the tree, not against the note, and corrected.
+
+* **129X** `continuous_finite_measure_space_not_duplicable` is now the
+  thesis's proof step for step, with the *integral* state (51IX through
+  `exists_integralNP`) and the closing contradiction by faithfulness of
+  `ω ⊗ ω`, not by carriers.  `mild` → `faithful`.
+* **130V** `discrete_ell_x` takes the printed route, "combine **130IV** with
+  **130II**", since 130IV's index type was generalised from `ℕ` to an
+  arbitrary countable type.  `route` → `faithful`.
+
+### No dependency inversions
+
+Every DISP-carrying declaration in the two files was scanned for uses of a
+declaration *later* in thesis order (parsec, sub-parsec, point), across all
+30 modules' audit rows.  Twelve pairs came back and every one is benign:
+
+* the thesis itself defers 127III's proof to parsec 1310, *after* 128XIII
+  `cor:duplicable-product`, 129VI, 129X and 130V — which is exactly what
+  `duplicable_forward` and `exists_ell_of_isLinftyOf` use, and what
+  `duplicable-proof` cites by name;
+* `linf_duplicable` (127III) through 128XI, and `duplicable_unique` through
+  127VI/128VIII, are the same deferral;
+* 54XI `exists_ell_of_faithful`, 115II `duplicable_of_nmiu_bijective`,
+  33II `vnsub_nonneg_of_map_val`, 47IV `exists_haBlockProj` and 84bIII
+  `ha_solution_set` are auxiliaries carrying the DISP of the statement they
+  render but proved for a *later* consumer; the label is the misleading part,
+  not the dependency;
+* 129X's use of `linfty_sub` (labelled 130IV) is one of the `L^∞` dictionary
+  lemmas, generic and grouped under 130IV for want of a better home.
+
+Nothing runs backwards in either file.
+
+### The dead-limb sweep, in full
+
+Every declaration in both files was checked for consumers across `Theses/`.
+(Terminal results — `dup_vna_is_monoid_3`/`_5`, `free_monoid_in_vNAMIU`,
+`free_monoid_in_Wcpsu`, `exists_freeMonoidUnitCpsu`, `dupEquivSetOp`,
+`linf_generated`, `cor_linf_ff_1`, `tensor_map_factorisation`,
+`AstarhaB_concrete` — have no consumers by construction; they are the ends
+of their chains, not limbs.  What follows is about *machinery*.)
+
+* **124III + 125II** — the finding above.  Now load-bearing.
+* **`measure_zorn` (129IV)** — the audit's standing observation is that the
+  thesis's own choice-free lemma is "proved but unused by its intended
+  consumer", 129VI having had to be re-proved by Zorn on disjoint families
+  after the A6 repair.  That is true, and it *does* have a consumer:
+  **129VIII** `continuous_measure_space_subset` uses it.  Not a dead limb.
+* **`punitSum`, `exists_matSumTensorIso`, `tmapM` functoriality, `SolIdx`,
+  `HaSolIdx`, the ha-slice device (`haE`, `haKappa`, `haPi`, `haU`, `haEL`)**
+  — all named in the brief, all with live consumers.  Nothing.  Five of the
+  device's *dictionary* lemmas are unreferenced (`haPi_apply`, `haEL_apply`,
+  `matE_apply`, `matE_symm_apply` and, the only non-trivial one,
+  `sum_haU_diag` — `∑ₚ haU Φ j p p = haZ Φ j`), but these are one-line API,
+  not transcribed thesis content, and the four `@[simp]`-tagged siblings
+  beside them *are* used, so the shape is an untagged API lemma, not a limb.
+* **`surj_of_haTensorBSurj` (125eIII)** — the one genuine dead limb found,
+  and it is thirteen lines: the 125eVII assembly needs four independent
+  universes and uses the twin `surj_of_haTensorBSurj2`, which supersedes it.
+  Left in place, because it records that the easy half is proved, with a
+  docstring that now also carries the more useful fact the sweep turned up:
+  **neither copy uses hereditary atomicity**, so the `→` half of the general
+  125eIII (still `sorry`) is already available in full generality; only the
+  `←` half, which needs `Φ` through `haTensorPreimage`, is missing.
+* **`linfty_ae_le`** — unused, and its docstring already says so and why (its
+  only consumer was the absolute-continuity step of the *old* 129X proof,
+  which went away on 2026-08-21).  **`pairLp_one`** — unused dictionary
+  lemma, one line.  Neither is worth removing.
+
+### Left deliberately, with reasons
+
+* **132IV** `free_monoid_in_vNAMIU`.  The note said the mediating
+  `h : Y → nsp(𝒜)` is curried out "so **122II** is not even needed here",
+  which reads as a bypass and is not one.  `first_adjunction` is stated as
+  the universal property of the *other* unit, `η_X : X → nsp(ℓ^∞(X))` — given
+  `f : X → nsp(𝒜)`, a unique `g : 𝒜 → ℓ^∞(X)` — and the thesis's step needs
+  the opposite triangle, given `f : 𝒜 → ℓ^∞(Y)` a unique `h : Y → nsp(𝒜)`.
+  The passage between the two *is* the currying: it is the forward map of
+  `linfNspHomEquiv`, 122II's hom-set bijection, written out.  Citing it would
+  be longer.  Comment rewritten to say that.
+* **125dII** `ha_tensor_closed` — the divergence the brief singles out, and
+  it should stay.  Taking the solution set to be all nmiu-maps
+  `ℬ → M_{n+1} ⊗ 𝒜` and assembling through 117III is what makes 125dII
+  provable while the general 125VIII, which needs the thesis's cardinality
+  solution set and hence 125IV `equaliser_lemma`, is not.  Its siblings
+  (84bIII `ha_solution_set`, 125bII `ha_second_adjunction`, 125cIII
+  `Fha_concrete`, 125eVII) were re-read against proc.tex:5262–5810 and are
+  the thesis's arguments with the documented cross-universe substitutions,
+  not conveniences.
+* **124III** `second_adjunction` stays `mild`: the thesis's solution set is
+  transcribed and only Freyd's adjoint functor theorem is unwound by hand,
+  which is forced — `W*_miu` has no limits in the tree (the `WMIU` category
+  added 2026-08-21 carries none), so Mathlib's GAFT cannot be applied.
+  Remark 124IV, the Kleisli identification, is still not converted.
+* **124I** `card_starAdjoin_le`, the file's one `mathlib` row.  The step is
+  "every element of `S'` can be formed from `S ∪ ℂ` using the finitary
+  operations", i.e. a cardinality bound on a generated subalgebra — exactly
+  what Mathlib settles and exactly not what 124I is about.  124I's own
+  content, the ultraweak-limit count, *is* transcribed.
+* **127III** `exists_ell_of_isLinftyOf`.  The corner rendering is forced by
+  `cvn` (70III), whose summands are corners `zᵢ𝒜` and not an `lp`-sum, so
+  `duplicable_corner` has to replace `cor:duplicable-product`; and it stays
+  forced now that 130IV takes an arbitrary countable index, because 130IV's
+  `Nontrivial` binder would still forbid the null block the discrete/
+  continuous split can produce.
+* **129II.2, 129VI, 130IV** and the seven rows blocked on the commutation
+  theorem — left as instructed; A6-governed or with no thesis route to
+  restore.
+* The exercise rows with no printed argument at all (123I.1/.2/.3, 123II.1,
+  122VI.1/.2, 127III `linf_nmiu_mul`) — there is nothing to be faithful to.
+
+### Build
+
+Both files compile clean with `lean -DrelaxedAutoImplicit=false
+-DmaxSynthPendingDepth=3`, no `sorry` added (`QuantumLambda`'s seven are the
+same seven), and the warning multiset on `Duplicators.lean` is **unchanged**
+at 99.  `free_monoid_in_Wcpsu`, `atomic_measure_space`, `second_adjunction`,
+`free_monoid_in_vNAMIU`, `freeMIU_nsp_bijective`, `punitLinf_bijective`,
+`exists_punitNmiu` and `exists_punitNcpsu` verified **in situ** — the source
+copied to the scratchpad with `#print axioms` appended and compiled — all on
+`[propext, Classical.choice, Quot.sound]`.  Both statements re-diffed against
+the pre-session source and are byte-identical.  Oleans rebuilt for both
+files; `Theses.lean`, the only importer, recompiles clean.
+
+## Session 95 — `B/Eff` Dagger + DiamondAmp + EffectAlgebras: **208III was a dependency inversion and a dead limb at once — 177VI had zero uses in the whole tree, and eff.tex's proof cites it in its first line**; 177Ia's `⋁`-side run-up brought back, and 219XVI costed and left (worker on `Theses/B/Eff/{Dagger,DiamondAmp,EffectAlgebras}.lean`)
+
+Proof-route pass over the 13 non-`faithful`, non-`none` rows of
+`docs/audit/beff-dagger-diamondamp.csv`, the 7 `route` rows of
+`B/Eff/EffectAlgebras` in
+`docs/audit/bdils-pure-beff-states-effectalgebras.csv`, and the
+`beff-vnexamples.csv` rows that a repair reached — **20 `route`, 10
+`mild`** (9 + 4 in `beff-dagger-diamondamp.csv`, 7 + 0 in the
+`B/Eff/EffectAlgebras` rows, 4 + 6 in `beff-vnexamples.csv`).
+**Three proofs put back on the thesis's own argument, one stale verdict
+corrected, one dependency inversion undone, three dead limbs found (two
+brought back, one recorded as blocked), twenty-six deliberately left with
+the reason recorded.  No statement touched, no `sorry` added, axiom-clean in
+situ.**
+
+### The dependency inversion: 208III took its lattice from 208IX/208XII
+
+Found mechanically — for every declaration carrying an audit DISP, the
+comment-stripped proof body was scanned for uses of other DISP'd
+declarations with a *later* parsec/point (roman numerals parsed and
+ordered).  Across all five files that left four hits, three of them benign:
+
+* **215III** `dagger_theorem` → 216XI, 220II: statement-then-proof, which is
+  eff.tex's own layout (215III is stated in parsec 215 and proved out of
+  216XI and 220II);
+* **216XI** `dagger_thm_necessity` → 216XIII, 216XIV: the same shape one
+  level down, and eff.tex:5573's proof of `dagger-thm-necessity` runs to
+  216XIV before it closes;
+* **34V** `su_exists_ad` → 44VIII `ad_normal` in `VNExamples.lean`: A/VN
+  numbering in a B/Eff file, and 44VIII does not use 34V.
+
+The fourth is real.  **208III** `diamond_oml` built its lattice operations
+out of **208IX** `spred_infimum` and **208XII** `spred_sup`.  eff.tex places
+both *after* 208III and introduces them with "There is a rather different
+formula for the infima of sharp predicates, which will be useful later on"
+(eff.tex:4652) — they are an alternative formula for a lattice 208III has
+already constructed, not its construction.  208III's own proof
+(eff.tex:4613, point 50) takes the join from **204V** `lattice-compr`, the
+meet as `(sᵖ ∨ tᵖ)ᵖ` through the orthocomplement anti-automorphism, and
+`s ∧ sᵖ = 0` from **208I** `image-sharp-is-order-sharp`.
+
+`diamond_oml` now does exactly that, and `diamond_oml` and **208VII**
+`diamond_omlatgal_functor` have been moved ahead of 208IX/208XII in the file
+so the exposition order is eff.tex's.  Two new supports were needed, both
+content of the *first* half of 208III rather than anything new:
+`isSharp_of_ovee_eq` (a difference of sharp predicates is sharp — so the
+algebraic order `SPred X` carries as a sub-effect algebra is the order it
+inherits as a subset) and `spredEffectAlgebra` (that sub-effect algebra as
+an `EffectAlgebra` instance, which is what "`SPred X` is a sub-effect
+algebra of `Pred X`" has to mean for 177VI to apply to it).
+
+### The dead-limb check: three limbs, two brought back
+
+Every `theorem`/`lemma` in the three files was grepped for consumers across
+`Theses/` — comment-stripped, qualified and unqualified names both, then
+closed transitively from the DISP'd roots so that a live-looking helper
+whose only consumer is itself dead is caught too.
+
+**1. `orth_ea_is_orthomodular` (177VI) had zero uses in the entire tree.**
+This is the `A/CStar` 16II shape exactly.  eff.tex's proof of 208III opens
+"We will show `SPred X` is a sub-effect algebra of `Pred X`, which is
+additionally an ortholattice.  **By `orth-ea-is-orthomodular` this is
+sufficient** to show `SPred X` is orthomodular."  Our proof instead
+established orthomodularity by hand from the effect-algebra structure, and
+177VI — a faithfully transcribed Proposition with its own DISP row — hung
+off nothing.  The repaired `diamond_oml` closes with it.  The same repair
+also brought back **`spred_isSup_orth`** ("orthocomplementation turns
+suprema of sharp predicates into infima"), which was the file's rendering of
+eff.tex's "as `( )ᵖ` is an order anti-automorphism of both `Pred X` and
+`SPred X`" and likewise had zero uses.
+
+**2. 177Ia's `⋁`-side run-up: `msc_prop13_1` and `msc_cor14_1_inf` had zero
+uses.**  eff.tex's `modularity-lemma-proof` (eff.tex:493) proves its lemma
+by the order embedding `b ↦ x⊥ ⋁ b : ↓x → ↑x⊥` — which is the master's
+thesis's Proposition 13.1, transcribed here as `msc_prop13_1`, packaged as
+Corollary 14.1 in `msc_cor14_1_sup`/`msc_cor14_1_inf`.  `dual_modularity_lemma`
+went the other way, through the `⊖`-side Corollary 14.2, and left all four
+declarations with no consumer.  It now runs eff.tex's printed argument step
+for step and `msc_prop13_1`/`msc_cor14_1_inf` are load-bearing again.
+`msc_cor14_1_sup` and `msc_cor14_2_sup_below` stay unreferenced *by design*:
+like the `WrightTriangle` refutations they are the record of the false first
+printing, and the note says so.
+
+**3. `perp_sharp_is_orth` (213III) has zero uses — and cannot be brought
+back.**  Its single consumer in eff.tex is **226II** `homology-lemma`
+(eff.tex:7433), whose Lean proof takes another route.  eff.tex's route
+cannot be restored: its third step is "by the same reasoning as in the final
+part of the proof of `dagger-iso-mu`, there exists a (unique) pristine map
+`l` with …", an undisplayed appeal to the interior of 219XI's proof that the
+thesis never states as a lemma.  Recorded on both rows, not repaired.
+
+Not dead limbs, checked and cleared: **`pureDagger_indep_of_choice`**
+(217I) has zero uses, correctly — 217I sits in an *unlabelled* point of
+eff.tex (5653–5718), is uncitable, and exists only to justify Definition
+217II, so it is terminal in the source too; and the sites that do transport
+a factorisation along a choice (219XIV, `Dagger.lean:1771` and `1832`) use
+`zetaMap_eq_of_compr`/`comprMap_eq_of_zeta`, two-line mono/epi
+cancellations, where 217I's form would demand four objects and two
+correspondence pairs.  **`dagger_thm_sufficiency'`** likewise: it is the
+*full* 220II, deliberately unused because `dagger_theorem` can only carry
+the bare existence half across the biimplication.
+
+### Put back on the thesis's route
+
+* **208III** `diamond_oml` — above.  `route` → `faithful`.
+* **177Ia** `dual_modularity_lemma`.  The row's justification had expired:
+  it reads "the printed lemma is false, so there is no sound argument to
+  transcribe".  eff.tex corrected 177Ia and its proof on **2026-08-14**, and
+  in the direction we state the printed lemma is sound.  It is now
+  transcribed as printed — `x ⊖ c = (x⊥ ⋁ c)ᵖ` (`isDiff_eq_orth_ovee_orth`),
+  the orthocomplement anti-isomorphism carrying the supremum `j` to the
+  infimum of `x⊥ ⋁ c` and `x⊥ ⋁ d` (`isInf_orth_of_isSup`), that infimum
+  lying above `x⊥` so equal to `x⊥ ⋁ r`, and `r = c ∧ d` by `msc_cor14_1_inf`.
+  `route` → `faithful`.
+* **177Ia** `ea_modularity_prop`.  Its proof is eff.tex's own "Indeed: …"
+  derivation and now rests on a `dual_modularity_lemma` that is the thesis's
+  argument, so it follows the point end to end.  `route` → `faithful`.
+* **208III** `diamond_oml_subEA` — repaired earlier the same day, verdict
+  corrected here.  `route` → `faithful`.
+
+### Left, with the reason
+
+* **219XVI** `dagger_is_functor`, costed rather than converted.  The
+  dead-limb check on the seven undisplayed one-sided functoriality lemmas
+  (eight, in fact) **turns up nothing**: `pureDagger_comp_iso`,
+  `pureDagger_comp_compr`, `pureDagger_compr_comp`, `pureDagger_comp_zeta`,
+  `pureDagger_comp_pristine`, `pureDagger_asrt_comp_left`,
+  `pureDagger_comp_asrt` and `pureDagger_asrt_comp` are each used once or
+  twice and every one is reachable only from `dagger_is_functor`.  The
+  numbers for the thesis's route: eff.tex 5963–6534 is ~570 lines of TeX, of
+  which **Setting 219II alone is 202** — four chosen isomorphisms
+  `χ`, `α`, `β`, `ω`, each defined by a standard-form factorisation
+  requiring a truth computation and an image computation, which is the same
+  shape as 219XIV and 219XIV costs **169 Lean lines by itself** — plus
+  219V/VII/IX/X/XIII at ~100 more TeX lines.  Estimate **700–1000 Lean
+  lines** for a Setting whose only consumer would be this one Proposition,
+  replacing **240 lines** of one-sided lemmas that are general, reusable
+  facts.  It would also run the dead-limb argument backwards: those 240
+  lines would lose their only consumer.  `ERRATA`'s 219II–219XVI row already
+  records that the generalised 219XIV is what lets six of the eight chained
+  results and the Setting be dropped.  Leave.
+* **226II** `homology_lemma` and **213III** `perp_sharp_is_orth` — above;
+  eff.tex's route rests on an undisplayed step.
+* **216VII** `dagger_of_compr`, **216IX** `dagger_of_iso`, **174IV**
+  `PCM.isSumOf_perm`, **178III.1** `unitInterval_effectMonoid_unique`,
+  **178III.2** `finite_effectMonoid_commutative` / `finite_effectMonoid_boolean`,
+  **178III.4** `exists_noncommutative_effectMonoid` — there is no argument in
+  the source to be faithful to.  The last four are bare citations to
+  `basmsc` (props. 40, 41, cor. 51) and eff.tex gives no construction; the
+  first two are points where eff.tex states the claim and proves it later or
+  not at all.
+* **221IV.1** `dils_abstract_basics_1`.  "Point 1 has been proven in
+  `paschke-unique-up-to-iso`" — a concrete theorem about Paschke dilations
+  of maps between W\*-algebras, cited for an abstract statement about an
+  arbitrary effectus with dilations.  Our direct categorical argument from
+  the two universal properties *is* that argument; there is nothing else to
+  transcribe.
+* **217I–II** `pureDagger_existsUnique`, **219XIV**
+  `pureDagger_compr_asrt_zeta` — already recorded `repaired` and
+  `left-benign` respectively; nothing further.
+* The four `mild` rows of `beff-dagger-diamondamp.csv` (**216VII**
+  `dagger_of_zeta`, **218X** `prist_asrt_decomp_dagger`, **207VIIa**
+  `diamond_equiv_equiv`, **209II.1** `exc_diamond_adj_1`) and the six of
+  `beff-vnexamples.csv` (**224VII**, **224III.1**, **224III.2**, **225VI**,
+  **226V.3**, **228II**) —
+  local deviations inside the thesis's own argument, each already described
+  in its note.  Repairing them would trade one correct step for another.
+
+One thing for the author, not for this pass: **`ea_modularity_prop`'s `stmt`
+column still reads `weaker`**, and the declaration is no longer a weaker
+remnant — it states the corrected 177Ia in full (supremum hypothesised,
+infimum *and* the identity concluded).  Flagged on the row; statements are
+not this pass's to change.
+
+### Scaffolding now unreferenced
+
+`ovee_le_of_le` and `le_iff_compr_orth_comp_eq_zero` in `DiamondAmp.lean`
+were the supports of the route 208III used to take.  With both halves of
+208III back on eff.tex's argument nothing appeals to them; they are correct
+and small, so they stay as the record of the avoided route, and their doc
+comments have been corrected — the old one claimed "orthomodularity below
+still uses" `ovee_le_of_le`, which is no longer true.
+
+### Build
+
+All three files compile clean with
+`lean -DrelaxedAutoImplicit=false -DmaxSynthPendingDepth=3`, no `sorry`
+added: `EffectAlgebras.lean` keeps exactly its one B14 `sorry`,
+`DiamondAmp.lean` and `Dagger.lean` have none, and `VNExamples.lean` keeps
+exactly its one B15 `sorry`.  `diamond_oml`, `diamond_oml_subEA`,
+`diamond_omlatgal_functor`, `isSharp_of_ovee_eq`, `spredEffectAlgebra`,
+`isSharp_ovee`, `dual_modularity_lemma`, `isDiff_eq_orth_ovee_orth`,
+`isInf_orth_of_isSup`, `msc_prop15'_of_dual` and `ea_modularity_prop`
+verified **in situ** — the source copied to the scratchpad with
+`#print axioms` appended and compiled — all on `[propext, Classical.choice,
+Quot.sound]` or less (`isDiff_eq_orth_ovee_orth` and `isInf_orth_of_isSup`
+depend on no axioms at all).  Every statement re-diffed against the
+pre-session source and byte-identical.  Oleans rebuilt down the whole
+`EffectAlgebras → Effectus → StatesPredicates → Quotients → DiamondAmp →
+Dagger → Comparisons → VNExamples` chain; every importer recompiles clean.

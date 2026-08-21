@@ -1253,7 +1253,24 @@ theorem algebraMap_ofReal_mono {s t : ℝ} (h : s ≤ t) :
   exact algebraMap_ofReal_nonneg (by linarith)
 
 /-- Auxiliary (**17VI**.3a): for a self-adjoint element, `‖a‖ ≤ r` iff
-`-r ≤ a ≤ r`. -/
+`-r ≤ a ≤ r`.
+
+**This is the parsec-90 order bridge, and it is the one place in parsecs
+20–220 where the development enters Mathlib's continuous functional
+calculus.**  Everything in the `Positive` section below — 9IV, 9VII, 9X.1,
+9X.2, 9X.4, 9X.5d, 9X.5e — and 10IV with it now funnels through this lemma
+alone; 9X.5b (`OrderClosedTopology`) and 9X.3 (the order on `B(ℂ²)`, forced by
+its statement) are the only other entries.
+
+It is *not* repairable here.  The thesis proves it at parsec 170 (asols
+`parsec-170.60`(3)): `‖a‖ ≤ λ` iff `|μ| ≤ λ` for all `μ ∈ spec(a)` — by
+**16II** `norm_spectrum` — iff `spec(λ-a)`, `spec(λ+a) ⊆ [0,∞)` iff (**17V**)
+`λ-a` and `λ+a` are positive.  16II rests on parsecs 120–150, and reading
+"positive" as Mathlib's `0 ≤` is **25I**, which rests on the square root
+(parsec 230); both live in `A/CStar/Positive.lean`, which *imports this file*.
+The thesis's own, CFC-free proof of this very statement is already in the tree
+there, as `positive_basic_2_3a`.  Undoing the knot means moving this section
+below parsec 250, which is a statement-level decision, not a proof one. -/
 theorem norm_le_iff_neg_algebraMap_le {a : 𝒜} (ha : IsSelfAdjoint a) {r : ℝ}
     (hr : 0 ≤ r) :
     ‖a‖ ≤ r ↔ (-(algebraMap ℂ 𝒜 (r : ℂ)) ≤ a ∧ a ≤ algebraMap ℂ 𝒜 (r : ℂ)) := by
@@ -1302,8 +1319,9 @@ theorem cstar_positive_def (a : 𝒜) (ha : IsSelfAdjoint a) :
         exact h
       · rw [sub_le_iff_le_add]
         refine le_trans ?_ (le_add_of_nonneg_left (algebraMap_ofReal_nonneg (norm_nonneg a)))
-        rw [← algebraMap_real_eq]
-        exact ha.le_algebraMap_norm_self
+        -- `a ≤ ‖a‖` is again the case `r = ‖a‖` of **17VI**.3a, not a second
+        -- appeal to Mathlib's `le_algebraMap_norm_self`
+        exact ((norm_le_iff_neg_algebraMap_le ha (norm_nonneg a)).mp le_rfl).2
     · rintro ⟨t, ht⟩
       have ht0 : 0 ≤ t := le_trans (norm_nonneg _) ht
       have hsa : IsSelfAdjoint (a - algebraMap ℂ 𝒜 (t : ℂ)) :=
@@ -1382,13 +1400,13 @@ theorem cstar_positive_2 (a : 𝒜) (ha : IsSelfAdjoint a) :
     (0 : 𝒜) ≤ 1 ∧ -(algebraMap ℂ 𝒜 (‖a‖ : ℂ)) ≤ a ∧
       a ≤ algebraMap ℂ 𝒜 (‖a‖ : ℂ) :=
   by
-    have key : ∀ r : ℝ, algebraMap ℝ 𝒜 r = algebraMap ℂ 𝒜 (r : ℂ) := fun r => by
-      rw [IsScalarTower.algebraMap_apply ℝ ℂ 𝒜, Complex.coe_algebraMap]
-    refine ⟨zero_le_one, ?_, ?_⟩
-    · have h := ha.neg_algebraMap_norm_le_self
-      rwa [key] at h
-    · have h := ha.le_algebraMap_norm_self
-      rwa [key] at h
+    -- the order-unit clause is the case `r = ‖a‖` of **17VI**.3a, which is the
+    -- idiom the thesis's own parsec-170 proof of this fact uses
+    -- (`positive_basic_2_3a … ‖a‖ (norm_nonneg a) |>.mpr le_rfl`, A/CStar/Positive).
+    -- Calling Mathlib's `le_algebraMap_norm_self` again here would give the
+    -- section a *second* entry into the continuous functional calculus for one
+    -- and the same fact; see the note on `norm_le_iff_neg_algebraMap_le`.
+    exact ⟨zero_le_one, (norm_le_iff_neg_algebraMap_le ha (norm_nonneg a)).mp le_rfl⟩
 
 /-- **9X** (`cstar-positive`, cstar.tex:1209, Exercise), part 3: the product
 of two positive elements need not be positive (example among the operators
@@ -1614,23 +1632,31 @@ theorem cstar_positive_5b (a : 𝒜) (f : ℕ → 𝒜) (hf : ∀ n, 0 ≤ f n)
 theorem cstar_positive_5c (a : 𝒜) (ha : IsSelfAdjoint a)
     (h : ∀ n : ℕ, -(algebraMap ℂ 𝒜 ((n : ℂ) + 1)⁻¹) ≤ a) : 0 ≤ a :=
   by
-    rw [StarOrderedRing.nonneg_iff_spectrum_nonneg (R := ℝ) a ha]
-    intro x hx
-    have key : ∀ n : ℕ, -((n : ℝ) + 1)⁻¹ ≤ x := by
+    -- The hypothesis says `0 ≤ a + 1/(n+1)`, and `a + 1/(n+1) → a`; so this is
+    -- **9X**.5b — the closedness of the positive cone — which is what the thesis
+    -- delivers for the whole of **9X**.5 when it returns to it at **17VI**.2.
+    -- (Mathlib's `StarOrderedRing.nonneg_iff_spectrum_nonneg`, used here before,
+    -- is its CFC-backed form of **25I**, and a second, independent entry into
+    -- that machinery for a fact the section already has.)
+    have hstep : ∀ n : ℕ, (0 : 𝒜) ≤ a + algebraMap ℂ 𝒜 ((n : ℂ) + 1)⁻¹ := by
       intro n
-      have hconv : algebraMap ℝ 𝒜 (-((n : ℝ) + 1)⁻¹) = -(algebraMap ℂ 𝒜 ((n : ℂ) + 1)⁻¹) := by
-        rw [algebraMap_real_eq, ← map_neg]
-        congr 1
-        push_cast
-        ring
-      have hn := h n
-      rw [← hconv] at hn
-      exact (algebraMap_le_iff_le_spectrum (R := ℝ) (a := a) ha).mp hn x hx
+      have hn := sub_nonneg.mpr (h n)
+      rwa [sub_neg_eq_add] at hn
     have h0 : Filter.Tendsto (fun n : ℕ => ((n : ℝ) + 1)⁻¹) Filter.atTop (nhds 0) := by
       simpa only [one_div] using tendsto_one_div_add_atTop_nhds_zero_nat (𝕜 := ℝ)
-    have hlim : Filter.Tendsto (fun n : ℕ => -((n : ℝ) + 1)⁻¹) Filter.atTop (nhds 0) := by
-      simpa only [neg_zero] using h0.neg
-    exact le_of_tendsto hlim (.of_forall key)
+    have hc : Filter.Tendsto (fun r : ℝ => algebraMap ℂ 𝒜 (r : ℂ)) (nhds 0) (nhds 0) := by
+      have hcont := (continuous_algebraMap ℝ 𝒜).tendsto (0 : ℝ)
+      rw [map_zero] at hcont
+      exact Filter.Tendsto.congr (fun r => algebraMap_real_eq r) hcont
+    have hs : Filter.Tendsto (fun n : ℕ => algebraMap ℂ 𝒜 ((n : ℂ) + 1)⁻¹)
+        Filter.atTop (nhds 0) := by
+      have he : (fun n : ℕ => algebraMap ℂ 𝒜 ((n : ℂ) + 1)⁻¹)
+          = fun n : ℕ => algebraMap ℂ 𝒜 ((((n : ℝ) + 1)⁻¹ : ℝ) : ℂ) := by
+        funext n; congr 1; push_cast; ring
+      rw [he]
+      exact hc.comp h0
+    refine cstar_positive_5b a (fun n => a + algebraMap ℂ 𝒜 ((n : ℂ) + 1)⁻¹) hstep ?_
+    simpa using Filter.Tendsto.add tendsto_const_nhds hs
 
 /-- **9X** (`cstar-positive`, cstar.tex:1209, Exercise), part 5d:
 `‖a‖ = ‖a‖ₒ` for self-adjoint `a`. -/
