@@ -840,7 +840,9 @@ theorem chilb_vector_states_3 [CompleteSpace X] (T : X →L[ℂ] X)
       (CFC.negPart_nonneg a).isSelfAdjoint.star_eq, ← hss]
     noncomm_ring
   calc ‖T‖ = ‖a‖ := hanorm.symm
-    _ = max ‖(a⁺ : Bax 𝒜 X)‖ ‖(a⁻ : Bax 𝒜 X)‖ := hsa.norm_eq_max_norm_posPart_negPart
+    -- **24II**.4 (`cstar_pos_neg_part_4`), the thesis's own statement, in
+    -- place of Mathlib's `IsSelfAdjoint.norm_eq_max_norm_posPart_negPart`
+    _ = max ‖(a⁺ : Bax 𝒜 X)‖ ‖(a⁻ : Bax 𝒜 X)‖ := cstar_pos_neg_part_4 a hsa
     _ ≤ M := max_le hkey1 hkey2
 
 /-- **32XVI** (cstar.tex:5292, Corollary): `T* T` is positive in `B^a(X)`

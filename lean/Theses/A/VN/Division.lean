@@ -11,9 +11,9 @@ arXiv:1804.02203), chapter 2: Von Neumann Algebras — vn.tex, lines
                                    finite-dimensional C*-algebras)
     Hereditarily Atomic Von Neumann Algebras  (parsec 842)
 
-Statements only; every proof is `sorry`.  See `Theses/A/VN/Basic.lean` for
-the topologies and `Theses/A/VN/Projections.lean` for `ceil`, `suppProj`
-(`⌈a⌋`), `rangeProj` (`⌊a⌉`), `projSup`, `cceil`.
+See `Theses/A/VN/Basic.lean` for the topologies and
+`Theses/A/VN/Projections.lean` for `ceil`, `suppProj` (`⌈a⌋`), `rangeProj`
+(`⌊a⌉`), `projSup`, `cceil`.
 -/
 import Theses.A.VN.Completeness
 import Mathlib.RingTheory.SimpleModule.IsAlgClosed
@@ -461,12 +461,24 @@ theorem commute_ceil_of_commute {a b : A} (ha : 0 ≤ a) (hab : b * a = a * b) :
     exact h
   rw [k2', ← k1]
 
-/-- **79VI** (`pseudoinverse-basic-2`, vn.tex:5203, Exercise), part 1: a
-positive `a` is pseudoinvertible iff `at = ⌈a⌉` for some positive `t`
-(equivalently: `a` is invertible in the corner `⌈a⌉A⌈a⌉`); such `t`
-commutes with `a`. -/
+/-- **79VI** (`pseudoinverse-basic-2`, vn.tex:5203, Exercise), part 1, the
+**three-way** equivalence: for positive `a` the following are the same.
+
+> 1. `a` is pseudoinvertible;
+> 2. `a` is invertible in the corner `⌈a⌉𝒜⌈a⌉`;
+> 3. `at = ⌈a⌉` for some `t ∈ 𝒜₊`.
+
+Moreover `at = ta` for such `t`.
+
+The corner `⌈a⌉𝒜⌈a⌉` is not built as a type (cf. **67IV**.1, where the
+corner of a central projection is likewise handled as a set): membership is
+`⌈a⌉t⌈a⌉ = t` and the unit of the corner is `⌈a⌉`, so invertibility of `a`
+there is `at = ⌈a⌉ = ta` for some `t` in the corner — which is what clause 2
+says below. -/
 theorem pseudoinverse_basic_2'_1 (a : A) (ha : 0 ≤ a) :
-    (Pseudoinvertible A a ↔ ∃ t : A, 0 ≤ t ∧ a * t = ceil a) ∧
+    (Pseudoinvertible A a ↔
+        ∃ t : A, ceil a * t * ceil a = t ∧ a * t = ceil a ∧ t * a = ceil a) ∧
+      (Pseudoinvertible A a ↔ ∃ t : A, 0 ≤ t ∧ a * t = ceil a) ∧
       ∀ t : A, 0 ≤ t → a * t = ceil a → a * t = t * a := by
   have hasa : IsSelfAdjoint a := .of_nonneg ha
   have hproj : IsStarProjection (ceil a) := (ceil_spec ha).1
@@ -477,14 +489,43 @@ theorem pseudoinverse_basic_2'_1 (a : A) (ha : 0 ≤ a) :
   have hca : ceil a * a = a := by
     have := congrArg star hac
     rwa [star_mul, hproj.isSelfAdjoint.star_eq, hasa.star_eq] at this
-  refine ⟨⟨?_, ?_⟩, ?_⟩
-  · -- `⟹`: the pseudoinverse is positive
+  set p := ceil a with hpdef
+  refine ⟨⟨?_, ?_⟩, ⟨?_, ?_⟩, ?_⟩
+  · -- (1) ⟹ (2): the pseudoinverse `a^{∼1}` already lies in the corner,
+    -- because `⌈a⌉ = ta` and `⌈a⌉ = at` give `pt = tat = t = tp`
+    intro h
+    set t := pinv a with htdef
+    have hspec := pinv_spec h
+    have hta : t * a = p := by rw [hspec.1, hsupp]
+    have hat : a * t = p := by rw [hspec.2.2.2, hrange]
+    have h4 := ((pseudoinverse_equivalents a t).out 4 3).mp hspec
+    have htat : t * a * t = t := h4.1
+    refine ⟨t, ?_, hat, hta⟩
+    have hpt : p * t = t := by rw [← hta]; exact htat
+    have htp : t * p = t := by rw [← hat, ← mul_assoc]; exact htat
+    rw [hpt, htp]
+  · -- (2) ⟹ (1): a corner inverse is a pseudoinverse, by **79II**.2 ⇒ .5
+    rintro ⟨t, htcorner, hat, hta⟩
+    have hcond : a * t * a = a ∧ suppProj t ≤ rangeProj a ∧
+        rangeProj t ≤ suppProj a := by
+      refine ⟨?_, ?_, ?_⟩
+      · rw [hat, hca]
+      · calc suppProj t = suppProj (p * t * p) := by rw [htcorner]
+          _ ≤ suppProj p := suppProj_mul_le (p * t) p
+          _ = p := suppProj_of_isStarProjection hproj
+          _ = rangeProj a := hrange.symm
+      · calc rangeProj t = rangeProj (p * (t * p)) := by
+              rw [show p * (t * p) = p * t * p by noncomm_ring, htcorner]
+          _ ≤ rangeProj p := rangeProj_mul_le p (t * p)
+          _ = p := rangeProj_of_isStarProjection hproj
+          _ = suppProj a := hsupp.symm
+    exact ⟨t, ((pseudoinverse_equivalents a t).out 1 4).mp hcond⟩
+  · -- (1) ⟹ (3): the pseudoinverse is positive
     intro h
     refine ⟨pinv a, pinv_nonneg ha h, ?_⟩
     rw [(pinv_spec h).2.2.2, hrange]
-  · -- `⟸`: cut `t` down to the corner `⌈a⌉A⌈a⌉`
+  · -- (3) ⟹ (1): cut `t` down to the corner `⌈a⌉A⌈a⌉`
     rintro ⟨t, -, hat⟩
-    set p := ceil a with hpdef
     have hcond : a * (p * t * p) * a = a ∧
         suppProj (p * t * p) ≤ rangeProj a ∧
         rangeProj (p * t * p) ≤ suppProj a := by
@@ -638,7 +679,7 @@ theorem pseudoinverse_basic_2'_2 (a : A) (ha : 0 ≤ a) :
       have : c = star c * b * c := by
         rw [hcsa, mul_assoc, hbc, mul_one]
       rw [this]; exact star_left_conjugate_nonneg hbnn _
-    refine (pseudoinverse_basic_2'_1 a ha).1.mpr ⟨c * p, ?_, ?_⟩
+    refine (pseudoinverse_basic_2'_1 a ha).2.1.mpr ⟨c * p, ?_, ?_⟩
     · have : c * p = p * c * p := by rw [← hcp, mul_assoc, hproj.isIdempotentElem.eq]
       rw [this]
       exact hproj.isSelfAdjoint.conjugate_nonneg hcnn
@@ -1769,7 +1810,14 @@ theorem ldiv_eq {a b c : A} (h1 : a = b * c) (h2 : suppProj b * c = c) :
   rw [div_eq h1' h2', star_star]
 
 /-- **81II** (vn.tex:5358, Exercise), part 1: `c/b ∈ ⌊c⌉A⌊b⌉` for
-`c ∈ bA`… (thesis: for every element `c` of `Ab`). -/
+`c ∈ Ab`.
+
+**Thesis defect (recorded, not repaired).**  vn.tex:5361 prints "for every
+element `c` of `b𝒜`", which cannot be meant: `c/b` is defined (**81I**) only
+for `c ∈ 𝒜b`, and the conclusion `c/b ∈ ⌊c⌉𝒜⌊b⌉` is about that quotient.  Our
+hypothesis `∃ d, c = d * b` is the correct `𝒜b`, so this statement silently
+carries the repair.  (An earlier version of this doc comment had the two
+sides the wrong way round.) -/
 theorem division_basic_1 (b c : A) (h : ∃ d : A, c = d * b) :
     rangeProj c * div c b = div c b ∧ div c b * rangeProj b = div c b := by
   -- `⌊c⌉ = ⌊(c/b)b⌉ = ⌊(c/b)⌊b⌉⌉ = ⌊c/b⌉` by **60VII**.2, and `⌊d⌉d = d`
@@ -1799,12 +1847,16 @@ theorem division_basic_2 (a b : A) :
 
 /-- **81II** (vn.tex:5358, Exercise), part 3: for `c ∈ aAb`:
 `a∖c ∈ Ab`, `c/b ∈ aA`, and `(a∖c)/b = a∖(c/b) =: a∖c/b` is the unique
-`d ∈ ⌈a⌋A⌊b⌉` with `c = adb`. -/
+`d ∈ ⌈a⌋A⌊b⌉` with `c = adb`.
+
+The fourth clause **names** that unique element: `d` satisfies the three
+conditions *iff* `d = a∖c/b`.  (A bare `∃!` would deliver uniqueness without
+connecting it to `a∖c/b`, which is what the point is about.) -/
 theorem division_basic_3 (a b c : A) (h : ∃ d : A, c = a * d * b) :
     (∃ d : A, ldiv a c = d * b) ∧ (∃ d : A, div c b = a * d) ∧
       div (ldiv a c) b = ldiv a (div c b) ∧
-      (∃! d : A, c = a * d * b ∧ suppProj a * d = d ∧
-        d * rangeProj b = d) :=  by
+      (∀ e : A, (c = a * e * b ∧ suppProj a * e = e ∧ e * rangeProj b = e)
+        ↔ e = ldiv a (div c b)) := by
   -- everything is read off from the two explicit descriptions
   -- `a∖c = (⌈a⌋d)b` and `c/b = a(d⌊b⌉)`
   obtain ⟨d, hd⟩ := h
@@ -1830,14 +1882,17 @@ theorem division_basic_3 (a b c : A) (h : ∃ d : A, c = a * d * b) :
     · calc a * (d * rangeProj b) * rangeProj b
           = a * (d * (rangeProj b * rangeProj b)) := by noncomm_ring
         _ = a * (d * rangeProj b) := by rw [hrb.isIdempotentElem.eq]
+  -- the explicit value of `a∖c/b`
+  have hval : ldiv a (div c b) = suppProj a * d * rangeProj b := by
+    rw [hr, (division_basic_2 (d * rangeProj b) a).2, mul_assoc]
   refine ⟨⟨suppProj a * d, hl⟩, ⟨d * rangeProj b, hr⟩, ?_, ?_⟩
   · rw [hl, hr, (division_basic_2 (suppProj a * d) b).1,
       (division_basic_2 (d * rangeProj b) a).2, mul_assoc]
-  · refine ⟨suppProj a * d * rangeProj b, ⟨?_, ?_, hidem⟩, ?_⟩
-    · rw [hd, habs]
-    · rw [← mul_assoc, ← mul_assoc, hsa.isIdempotentElem.eq]
-    · -- uniqueness: cancel `b` on the right (**60VIII**), then `a` on the left
-      rintro e ⟨he, hea, heb⟩
+  · intro e
+    refine ⟨?_, ?_⟩
+    · rw [hval]
+      rintro ⟨he, hea, heb⟩
+      -- uniqueness: cancel `b` on the right (**60VIII**), then `a` on the left
       have hcancelb : a * e = a * (suppProj a * d * rangeProj b) := by
         refine mult_cancellation_2 b (a * e) (a * (suppProj a * d * rangeProj b))
           ((ceill_basic_1 _).2 ⟨hrb, by rw [mul_assoc, heb]⟩)
@@ -1855,6 +1910,10 @@ theorem division_basic_3 (a b c : A) (h : ∃ d : A, c = a * d * b) :
           rw [← mul_assoc, ← mul_assoc, hsa.isIdempotentElem.eq]
       have := congrArg star hkey
       rwa [star_star, star_star] at this
+    · rintro rfl
+      rw [hval]
+      exact ⟨by rw [hd, habs], by rw [← mul_assoc, ← mul_assoc,
+        hsa.isIdempotentElem.eq], hidem⟩
 
 /-- **81II** (vn.tex:5358, Exercise), part 4: for `c ∈ Ab` and `d ∈ aA`:
 `dc ∈ aAb` and `a∖(dc)/b = (a∖d)(c/b)`. -/
@@ -2757,6 +2816,12 @@ that case there is a *unique* positive `c` with `a = √b c √b` and
 `⌈c⌉ ≤ ⌈b⌉`; and for an approximate pseudoinverse `t` of `√b` the double
 series `∑_{m,n} tₘ a tₙ` converges ultraweakly to this `c`.
 
+The two claims are stated **separately**, as the thesis makes them.  Folding
+the convergence into the `∃!` (as an earlier version of this statement did)
+makes the uniqueness *vacuous* — an ultraweak limit is unique anyway (the
+ultraweak topology is Hausdorff), so the `∃!` would say nothing about the
+three properties, which is precisely what the point asserts.
+
 The witness is `c = √b∖a/√b`, positive by **81VI**.2 and a genuine witness
 by `ldiv_div_recover`; it lies in the corner `⌈b⌉A⌈b⌉` (because
 `⌈(√b)*⌋ = ⌊√b⌉ = ⌈b⌉`), which is exactly `⌈c⌉ ≤ ⌈b⌉` by **59III**.1, and
@@ -2776,11 +2841,11 @@ that fails — cf. `div_approx`.) -/
 theorem sequential_quotient_2 (a b : A) (ha : 0 ≤ a) (hb : 0 ≤ b)
     (l : ℝ) (hl : 0 ≤ l) (hab : a ≤ (l : ℂ) • b) (t : ℕ → A)
     (ht : IsApproxPseudoinverse A (CFC.sqrt b) t) :
-    ∃! c : A, (0 ≤ c ∧ a = CFC.sqrt b * c * CFC.sqrt b ∧
-        ceil c ≤ ceil b) ∧
-      UWTendsto
-        (fun N : ℕ => ∑ m ∈ Finset.range N, ∑ n ∈ Finset.range N,
-          t m * a * t n) atTop c := by
+    (∃! c : A, 0 ≤ c ∧ a = CFC.sqrt b * c * CFC.sqrt b ∧ ceil c ≤ ceil b) ∧
+      ∀ c : A, (0 ≤ c ∧ a = CFC.sqrt b * c * CFC.sqrt b ∧ ceil c ≤ ceil b) →
+        UWTendsto
+          (fun N : ℕ => ∑ m ∈ Finset.range N, ∑ n ∈ Finset.range N,
+            t m * a * t n) atTop c := by
   classical
   set s : A := CFC.sqrt b with hsdef
   have hsnn : (0 : A) ≤ s := CFC.sqrt_nonneg b
@@ -2880,17 +2945,20 @@ theorem sequential_quotient_2 (a b : A) (ha : 0 ≤ a) (hb : 0 ≤ b)
       t m * a * t n) atTop c₀ := by
     have := uwweaker_2 _ atTop c₀ hUS
     simpa only [hnet] using this
-  refine ⟨c₀, ⟨⟨hcpos, hrec, hceil⟩, hUW⟩, ?_⟩
-  rintro y ⟨⟨hy0, hys, hyc⟩, -⟩
-  have hqy : ceil b * y = y := ((ceil_basic_1 y (ceil b) hy0 hqb).out 2 0).mp hyc
-  have hyq : y * ceil b = y := ((ceil_basic_1 y (ceil b) hy0 hqb).out 2 1).mp hyc
-  have hcor : suppProj (star s) * y * rangeProj s = y := by
-    rw [suppProj_star, hrange, hqy, hyq]
-  have h : ldiv (star s) (div (star s * y * s) s) = y := ldiv_div_corner hcor
-  have hsy : star s * y * s = a := by rw [hs, ← hys]
-  rw [hsy] at h
-  rw [hcdef]
-  exact h.symm
+  -- uniqueness among the three properties alone
+  have huniq : ∀ y : A, (0 ≤ y ∧ a = CFC.sqrt b * y * CFC.sqrt b ∧
+      ceil y ≤ ceil b) → y = c₀ := by
+    rintro y ⟨hy0, hys, hyc⟩
+    have hqy : ceil b * y = y := ((ceil_basic_1 y (ceil b) hy0 hqb).out 2 0).mp hyc
+    have hyq : y * ceil b = y := ((ceil_basic_1 y (ceil b) hy0 hqb).out 2 1).mp hyc
+    have hcor : suppProj (star s) * y * rangeProj s = y := by
+      rw [suppProj_star, hrange, hqy, hyq]
+    have h : ldiv (star s) (div (star s * y * s) s) = y := ldiv_div_corner hcor
+    have hsy : star s * y * s = a := by rw [hs, ← hys]
+    rw [hsy] at h
+    rw [hcdef]
+    exact h.symm
+  exact ⟨⟨c₀, ⟨hcpos, hrec, hceil⟩, huniq⟩, fun y hy => by rw [huniq y hy]; exact hUW⟩
 
 
 /-- **81IX** (`div-usc`, vn.tex:5533, Lemma), **first half**: `a ↦ a/b` is
@@ -5205,15 +5273,38 @@ end HAMain
 /-- **84bV** (`ha-equalisers`, vn.tex:6209, Corollary): for nmiu-maps
 `f, g : A → B` between hereditarily atomic von Neumann algebras, the
 equaliser `E = {a | f(a) = g(a)}` is (the image of) a hereditarily atomic
-von Neumann algebra, whose inclusion is the equaliser of `f` and `g` in
-`haW*_miu` and `haW*_cpsu`. -/
+von Neumann algebra, **and its inclusion `e` is an equaliser of `f` and `g`
+both in `haW*_miu` and in `haW*_cpsu`.**
+
+The two categories are not bundled (cf. 47II), so — exactly as for **47V**
+`vn_equalisers_miu`/`vn_equalisers_cpsu`, of which these two clauses are the
+restrictions to the full subcategories of *hereditarily atomic* algebras —
+the universal property is spelt out: every nmiu- (resp. ncpsu-) map `h` out
+of a hereditarily atomic `D` that equalises `f` and `g` factors uniquely
+through `e`.  Being full subcategories, the mediating map produced by 47V
+already lies in `haW*`; nothing beyond hereditary atomicity of `D` is
+needed, and that hypothesis is carried only to make the clause the statement
+about `haW*` that the Corollary asserts. -/
 theorem ha_equalisers [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     (hA : HereditarilyAtomic A) (hB : HereditarilyAtomic B)
     (f g : NMIUMap A B) :
     ∃ (C : Type u) (_ : CStarAlgebra C) (_ : PartialOrder C)
-      (_ : StarOrderedRing C),
+      (_ : StarOrderedRing C) (_ : VonNeumannAlgebra C),
       ∃ e : NMIUMap C A, HereditarilyAtomic C ∧ Function.Injective e ∧
-        Set.range ⇑e = {a : A | f a = g a} := by
+        Set.range ⇑e = {a : A | f a = g a} ∧
+        -- the equaliser property in `haW*_miu`
+        (∀ (D : Type u) (_ : CStarAlgebra D) (_ : PartialOrder D)
+            (_ : StarOrderedRing D) (_ : VonNeumannAlgebra D),
+          HereditarilyAtomic D → ∀ h : NMIUMap D A,
+            (∀ d : D, f (h d) = g (h d)) →
+              ∃! m : NMIUMap D C, ∀ d : D, e (m d) = h d) ∧
+        -- and in `haW*_cpsu`
+        (∀ (D : Type u) (_ : CStarAlgebra D) (_ : PartialOrder D)
+            (_ : StarOrderedRing D) (_ : VonNeumannAlgebra D),
+          HereditarilyAtomic D → ∀ h : NCPSUMap D A,
+            (∀ d : D, f (h.toNCPMap d) = g (h.toNCPMap d)) →
+              ∃! m : NCPSUMap D C, ∀ d : D,
+                e (m.toNCPMap d) = h.toNCPMap d) := by
   classical
   -- **47V**: the equaliser is a von Neumann subalgebra `S ⊆ A`; `VNSub A S hS`
   -- bundles it as a von Neumann algebra, and **84bIII** makes it hereditarily
@@ -5235,11 +5326,18 @@ theorem ha_equalisers [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     have h := isLUB_coe_of_isLUB (hne.image _) (VNSub.isLUB_saMap_image hne hdir hlub)
     rw [← Set.image_comp] at h
     exact h
-  refine ⟨VNSub A S hS, inferInstance, inferInstance, inferInstance, ⟨e₀, hnorm⟩,
-    hereditarilyAtomic_subalgebra hA ⟨e₀, hnorm⟩ VNSub.val_injective,
-    VNSub.val_injective, ?_⟩
-  rw [← hSet]
-  exact VNSub.range_val
+  have hrange : Set.range (⇑(⟨e₀, hnorm⟩ : NMIUMap (VNSub A S hS) A))
+      = {a : A | f a = g a} := by
+    rw [← hSet]
+    exact VNSub.range_val
+  refine ⟨VNSub A S hS, inferInstance, inferInstance, inferInstance, inferInstance,
+    ⟨e₀, hnorm⟩, hereditarilyAtomic_subalgebra hA ⟨e₀, hnorm⟩ VNSub.val_injective,
+    VNSub.val_injective, hrange, ?_, ?_⟩
+  · -- `haW*_miu` is a full subcategory of `W*_miu`, so this is **47V**
+    intro D _ _ _ _ _ h hfg
+    exact vn_equalisers_miu f g ⟨e₀, hnorm⟩ VNSub.val_injective hrange h hfg
+  · intro D _ _ _ _ _ h hfg
+    exact vn_equalisers_cpsu f g ⟨e₀, hnorm⟩ VNSub.val_injective hrange h hfg
 
 /-! **84bVI** (vn.tex:6224, Remark): `haW*_miu` is the least full
 subcategory of `W*_miu` closed under limits containing the

@@ -13,9 +13,9 @@ arXiv:1804.02203), chapter 2: Von Neumann Algebras — vn.tex, lines
                             vector functionals, extension of normal
                             functionals, centre separating collections)
 
-Statements only; every proof is `sorry`.  See `Theses/A/VN/Basic.lean` for
-the topologies, and `Theses/A/VN/Projections.lean` for `ceil`, `carrier`,
-`cceil`, `commutant` and `projSup`.
+See `Theses/A/VN/Basic.lean` for the topologies, and
+`Theses/A/VN/Projections.lean` for `ceil`, `carrier`, `cceil`, `commutant`
+and `projSup`.
 -/
 import Theses.A.VN.Division
 import Theses.A.CStar.Matrices
@@ -1002,68 +1002,100 @@ private theorem uwbib_pol_aux (a b c d : ℂ) :
     _ = ‖a‖ + ‖b‖ + ‖c‖ + ‖d‖ := by
         simp only [norm_mul, Complex.norm_I, one_mul]
 
+/-- The predual `A_*` as a **submodule** of `A →L[ℂ] ℂ` — the shape the
+principle of uniform boundedness needs in **87VIII**.  (Ultraweakly
+continuous functionals are closed under sums and scalars, so `predual A` is
+one.) -/
+def predualSub : Submodule ℂ (A →L[ℂ] ℂ) where
+  carrier := predual A
+  add_mem' := by
+    intro f g hf hg
+    letI : TopologicalSpace A := ultraweak A
+    exact (hf.add hg : Continuous fun a : A => f a + g a)
+  zero_mem' := by
+    letI : TopologicalSpace A := ultraweak A
+    exact (continuous_const : Continuous fun _ : A => (0 : ℂ))
+  smul_mem' := by
+    intro c f hf
+    letI : TopologicalSpace A := ultraweak A
+    exact (continuous_const.mul hf : Continuous fun a : A => c * f a)
+
 /-- **87VIII** (`ultraweakly-bounded-implies-bounded`, vn.tex:6584,
 Theorem): a net `(b_α)_α` in a von Neumann algebra is norm bounded provided
 it is **ultraweakly bounded**, i.e. `sup_α |ω(b_α)| < ∞` for every
-np-functional `ω`. -/
+np-functional `ω`.
+
+This is 870.90's proof.  `f ↦ f(b_α)` is a bounded functional on the
+predual with `‖(·)(b_α)‖ = ‖b_α‖` (**87VI** `norm_predual`); the predual is
+complete (**87III** `predual_complete`), so the principle of uniform
+boundedness applies as soon as `sup_α |f(b_α)| < ∞` for each `f ∈ 𝒜_*`, and
+that is ultraweak boundedness itself once `f = ∑_{k<4} i^k ω_k` is split
+into np-functionals by **72XI** `luws`.
+
+*(Until 2026-08-21 this ran instead through a faithful normal
+representation and two applications of Banach–Steinhaus on `H`, on the
+stated ground that 87III and 87VI were "both still `sorry`".  They are
+proved, above, in this file.)* -/
 theorem ultraweakly_bounded_implies_bounded {ι : Type*} (x : ι → A)
     (h : ∀ ω : NPFunctional A, BddAbove (Set.range fun i => ‖ω (x i)‖)) :
     BddAbove (Set.range fun i => ‖x i‖) := by
-  -- Class 2 (different route).  The thesis runs the uniform boundedness
-  -- principle on the predual `A_*`, which needs **87III** and **87VI** (both
-  -- still `sorry`, and behind **86IX**/**86XII**).  Instead we push the net
-  -- into a *faithful normal representation* `ρ : A → B(H)` (**48VIII**), where
-  -- `‖ρ a‖ = ‖a‖`, and run Banach–Steinhaus twice on `H` itself: ultraweak
-  -- boundedness bounds the diagonal `⟪z, ρ(bₐ) z⟫` (each `⟪z, ρ(·) z⟫` is an
-  -- np-functional), polarisation bounds the off-diagonal `⟪ρ(bₐ) y, z⟫`,
-  -- whence `‖ρ(bₐ) y‖` is bounded for each `y`, whence `‖ρ(bₐ)‖ = ‖bₐ‖`.
-  obtain ⟨H, _, _, _, ρ, hinj, hn, -⟩ := exists_faithful_normal_rep_vectors A
-  have hρP : PreservesDirSups ⇑(starAlgHomP ρ) := hn
-  set T : ι → (H →L[ℂ] H) := fun i => ρ (x i) with hTdef
-  -- the diagonal is bounded: `⟪z, ρ(·) z⟫` is an np-functional on `A`
-  have hdiag : ∀ z : H, ∃ C : ℝ, ∀ i, ‖(⟪T i z, z⟫ : ℂ)‖ ≤ C := by
-    intro z
-    obtain ⟨C, hC⟩ := h (compNP (starAlgHomP ρ) hρP (vectorNP z))
-    refine ⟨C, fun i => ?_⟩
-    have hmem : ‖(compNP (starAlgHomP ρ) hρP (vectorNP z) (x i) : ℂ)‖ ≤ C :=
-      hC ⟨i, rfl⟩
-    have hval : (compNP (starAlgHomP ρ) hρP (vectorNP z) (x i) : ℂ)
-        = ⟪z, T i z⟫ := rfl
-    rw [hval] at hmem
-    calc ‖(⟪T i z, z⟫ : ℂ)‖ = ‖(starRingEnd ℂ) (⟪T i z, z⟫ : ℂ)‖ :=
-          (RCLike.norm_conj _).symm
-      _ = ‖(⟪z, T i z⟫ : ℂ)‖ := by rw [inner_conj_symm]
-      _ ≤ C := hmem
-  -- polarisation carries the bound to the off-diagonal
-  have hoff : ∀ y z : H, ∃ C : ℝ, ∀ i, ‖(⟪T i y, z⟫ : ℂ)‖ ≤ C := by
-    intro y z
-    obtain ⟨C₁, h₁⟩ := hdiag (y + z)
-    obtain ⟨C₂, h₂⟩ := hdiag (y - z)
-    obtain ⟨C₃, h₃⟩ := hdiag (y + Complex.I • z)
-    obtain ⟨C₄, h₄⟩ := hdiag (y - Complex.I • z)
-    refine ⟨(C₁ + C₂ + C₃ + C₄) / 4, fun i => ?_⟩
-    have hpol := inner_map_polarization' ((T i : H →L[ℂ] H) : H →ₗ[ℂ] H) y z
-    simp only [ContinuousLinearMap.coe_coe] at hpol
-    rw [hpol]
-    refine le_trans (uwbib_pol_aux _ _ _ _) ?_
-    have e₁ := h₁ i; have e₂ := h₂ i; have e₃ := h₃ i; have e₄ := h₄ i
-    linarith
-  -- first Banach–Steinhaus, on the functionals `⟪ρ(bₐ) y, (·)⟫`
-  have hpt : ∀ y : H, ∃ C : ℝ, ∀ i, ‖T i y‖ ≤ C := by
-    intro y
-    obtain ⟨C, hC⟩ := banach_steinhaus (g := fun i => innerSL ℂ (T i y))
-      (fun z => by
-        obtain ⟨C, hC⟩ := hoff y z
-        exact ⟨C, fun i => by simpa using hC i⟩)
-    exact ⟨C, fun i => by simpa only [innerSL_apply_norm] using hC i⟩
-  -- second Banach–Steinhaus, on the operators themselves
-  obtain ⟨C, hC⟩ := banach_steinhaus (g := T) hpt
+  haveI : CompleteSpace (predualSub (A := A)) :=
+    (predual_complete (A := A)).completeSpace_coe
+  -- `Φ i : 𝒜_* → ℂ`, `f ↦ f(bᵢ)`
+  set Φ : ι → (predualSub (A := A) →L[ℂ] ℂ) := fun i =>
+    LinearMap.mkContinuous
+      { toFun := fun f => (f : A →L[ℂ] ℂ) (x i)
+        map_add' := fun f g => rfl
+        map_smul' := fun c f => rfl } ‖x i‖
+      (fun f => by
+        have h1 : ‖(f : A →L[ℂ] ℂ) (x i)‖ ≤ ‖(f : A →L[ℂ] ℂ)‖ * ‖x i‖ :=
+          (f : A →L[ℂ] ℂ).le_opNorm (x i)
+        calc ‖(f : A →L[ℂ] ℂ) (x i)‖ ≤ ‖(f : A →L[ℂ] ℂ)‖ * ‖x i‖ := h1
+          _ = ‖x i‖ * ‖f‖ := by rw [mul_comm]; rfl) with hΦ
+  have hΦapp : ∀ (i : ι) (f : predualSub (A := A)),
+      Φ i f = (f : A →L[ℂ] ℂ) (x i) := fun _ _ => rfl
+  -- pointwise boundedness on `𝒜_*`, by **72XI**: `f = f₀ + i f₁ - f₂ - i f₃`
+  have hpt : ∀ f : predualSub (A := A), ∃ C : ℝ, ∀ i, ‖Φ i f‖ ≤ C := by
+    intro f
+    have hcont : @Continuous A ℂ (ultraweak A) _ ⇑((f : A →L[ℂ] ℂ) : A →ₗ[ℂ] ℂ) := f.2
+    obtain ⟨g, hg⟩ := ((luws ((f : A →L[ℂ] ℂ) : A →ₗ[ℂ] ℂ)).out 1 2).mp hcont
+    choose C hC using fun k : Fin 4 => (h (g k)).exists_ge 0
+    refine ⟨C 0 + C 1 + C 2 + C 3, fun i => ?_⟩
+    have hbd : ∀ k : Fin 4, ‖(g k (x i) : ℂ)‖ ≤ C k := fun k =>
+      (hC k).2 _ ⟨i, rfl⟩
+    have hval : (Φ i f : ℂ)
+        = g 0 (x i) + Complex.I * g 1 (x i) - g 2 (x i) - Complex.I * g 3 (x i) := by
+      rw [hΦapp]; exact hg (x i)
+    rw [hval]
+    calc ‖g 0 (x i) + Complex.I * g 1 (x i) - g 2 (x i) - Complex.I * g 3 (x i)‖
+        ≤ ‖g 0 (x i) + Complex.I * g 1 (x i) - g 2 (x i)‖
+            + ‖Complex.I * (g 3 (x i) : ℂ)‖ := norm_sub_le _ _
+      _ ≤ (‖g 0 (x i) + Complex.I * g 1 (x i)‖ + ‖(g 2 (x i) : ℂ)‖)
+            + ‖Complex.I * (g 3 (x i) : ℂ)‖ := by gcongr; exact norm_sub_le _ _
+      _ ≤ ((‖(g 0 (x i) : ℂ)‖ + ‖Complex.I * (g 1 (x i) : ℂ)‖)
+            + ‖(g 2 (x i) : ℂ)‖) + ‖Complex.I * (g 3 (x i) : ℂ)‖ := by
+          gcongr; exact norm_add_le _ _
+      _ = ‖(g 0 (x i) : ℂ)‖ + ‖(g 1 (x i) : ℂ)‖ + ‖(g 2 (x i) : ℂ)‖
+            + ‖(g 3 (x i) : ℂ)‖ := by
+          simp only [norm_mul, Complex.norm_I, one_mul]
+      _ ≤ C 0 + C 1 + C 2 + C 3 := by
+          have h0 := hbd 0; have h1 := hbd 1; have h2 := hbd 2; have h3 := hbd 3
+          linarith
+  -- the principle of uniform boundedness (**11II**), on the complete `𝒜_*`
+  obtain ⟨C, hC⟩ := banach_steinhaus (g := Φ) hpt
   refine ⟨C, ?_⟩
   rintro _ ⟨i, rfl⟩
-  have hnm : ‖x i‖ = ‖T i‖ := (NonUnitalStarAlgHom.norm_map ρ hinj (x i)).symm
-  show ‖x i‖ ≤ C
-  rw [hnm]
-  exact hC i
+  -- `‖bᵢ‖ = sup {|f(bᵢ)| : f ∈ (𝒜_*)₁} ≤ ‖Φ i‖ ≤ C` by **87VI**
+  refine le_trans ((norm_predual (x i)).2 ?_) (hC i)
+  rintro r ⟨f, hf, hf1, rfl⟩
+  have hmem : f ∈ predualSub (A := A) := hf
+  calc ‖f (x i)‖ = ‖Φ i ⟨f, hmem⟩‖ := rfl
+    _ ≤ ‖Φ i‖ * ‖(⟨f, hmem⟩ : predualSub (A := A))‖ := (Φ i).le_opNorm _
+    _ ≤ ‖Φ i‖ * 1 := by
+        refine mul_le_mul_of_nonneg_left ?_ (norm_nonneg _)
+        show ‖f‖ ≤ 1
+        exact hf1
+    _ = ‖Φ i‖ := mul_one _
 
 /-! ## Parsec 880: ultraweak permanence and the double commutant theorem
 
@@ -1332,6 +1364,75 @@ theorem carrier_vector_state (S : StarSubalgebra ℂ (H →L[ℂ] H)) (x : H) :
       _ = (T * p) x := by rw [hpcomm T hT]
       _ = T x := by show T (p x) = T x; rw [hpx]
 
+/-- **88IV** (`carrier-vector-state`, vn.tex:6714, Exercise), **item 2**:
+the same projection is `⌈⟨x,(·)x⟩|S^□⌉`, the carrier of the vector
+functional given by `x` *restricted to* `S^□`.
+
+`S^□` is not built as a type here, so the relative carrier is rendered by
+its defining property — the least projection `p` **of `S^□`** with
+`⟨x,(1−p)x⟩ = 0` — exactly as **88IX** `commutant_cceil` renders the
+relative *central* carrier.  That is `carrier_spec` read inside the von
+Neumann algebra `S^□`.
+
+Together with `carrier_vector_state` (items 1, 3 and 4) this is the
+Exercise's "the following coincide": all four are
+`commutantCeil (H →L[ℂ] H) S ⌈|x⟩⟨x|⌉`. -/
+theorem carrier_vector_state_2 (S : StarSubalgebra ℂ (H →L[ℂ] H)) (x : H) :
+    IsLeast {p : H →L[ℂ] H | p ∈ commutant (H →L[ℂ] H) (S : Set (H →L[ℂ] H)) ∧
+        IsStarProjection p ∧ (⟪x, ((1 : H →L[ℂ] H) - p) x⟫ : ℂ) = 0}
+      (commutantCeil (H →L[ℂ] H) S (ceil (ketbra x x))) := by
+  have hkb := ketbra_self_nonneg x
+  obtain ⟨⟨hpproj, hpcomm, hple⟩, hpmin⟩ :=
+    commutant_ceil (A := H →L[ℂ] H) (S : Set (H →L[ℂ] H))
+      (fun a ha b hb => mul_mem ha hb) (fun a ha => star_mem ha) (one_mem S)
+      _ (ceil_spec hkb).1
+  set p : H →L[ℂ] H := commutantCeil (H →L[ℂ] H) S (ceil (ketbra x x)) with hp
+  -- for a projection `q`, `⟨x,(1−q)x⟩ = ‖(1−q)x‖²`, so the equation says `qx = x`
+  have hfix : ∀ q : H →L[ℂ] H, IsStarProjection q →
+      ((⟪x, ((1 : H →L[ℂ] H) - q) x⟫ : ℂ) = 0 ↔ q x = x) := by
+    intro q hq
+    have hr : IsStarProjection ((1 : H →L[ℂ] H) - q) := hq.one_sub
+    have hrsa : ContinuousLinearMap.adjoint ((1 : H →L[ℂ] H) - q)
+        = (1 : H →L[ℂ] H) - q := by
+      rw [← ContinuousLinearMap.star_eq_adjoint]; exact hr.isSelfAdjoint.star_eq
+    have key : (⟪x, ((1 : H →L[ℂ] H) - q) x⟫ : ℂ)
+        = ⟪((1 : H →L[ℂ] H) - q) x, ((1 : H →L[ℂ] H) - q) x⟫ := by
+      have h := ContinuousLinearMap.adjoint_inner_right ((1 : H →L[ℂ] H) - q) x
+        (((1 : H →L[ℂ] H) - q) x)
+      rw [hrsa] at h
+      rw [← h]
+      congr 1
+      exact (congrArg (fun T : H →L[ℂ] H => T x) hr.isIdempotentElem.eq).symm
+    rw [key, inner_self_eq_zero]
+    constructor
+    · intro h0
+      have h1 : x - q x = 0 := h0
+      exact (sub_eq_zero.mp h1).symm
+    · intro h0
+      show x - q x = 0
+      rw [h0, sub_self]
+  have hpx : p x = x := by
+    have h2 : p * ketbra x x = ketbra x x := ((ceil_basic_1 _ p hkb hpproj).out 2 0).mp hple
+    have h3 := congrArg (fun T : H →L[ℂ] H => T x) h2
+    simp only [ContinuousLinearMap.mul_apply, ketbra, ContinuousLinearMap.smulRight_apply,
+      map_smul] at h3
+    rcases eq_or_ne x 0 with rfl | hx
+    · simp
+    · have hne : (inner ℂ x x : ℂ) ≠ 0 := by
+        simpa [inner_self_eq_zero] using hx
+      exact smul_right_injective H hne h3
+  refine ⟨⟨hpcomm, hpproj, (hfix p hpproj).mpr hpx⟩, ?_⟩
+  rintro q ⟨hqmem, hqproj, hq0⟩
+  have hqx : q x = x := (hfix q hqproj).mp hq0
+  refine hpmin ⟨hqproj, hqmem, (ceil_le_iff hkb hqproj).mpr ?_⟩
+  ext w
+  simp only [ContinuousLinearMap.mul_apply, ketbra, ContinuousLinearMap.smulRight_apply]
+  congr 1
+  calc (inner ℂ x (q w) : ℂ) = inner ℂ ((ContinuousLinearMap.adjoint q) x) w :=
+        (ContinuousLinearMap.adjoint_inner_left q w x).symm
+    _ = inner ℂ x w := by
+        rw [← ContinuousLinearMap.star_eq_adjoint, hqproj.isSelfAdjoint.star_eq, hqx]
+
 /-- **88IV** (`carrier-vector-state`, vn.tex:6714, Exercise), conclusion:
 `closure (S^□□ x) = closure (S x)`. -/
 theorem carrier_vector_state' (S : StarSubalgebra ℂ (H →L[ℂ] H)) (x : H) :
@@ -1558,10 +1659,56 @@ theorem wstar_eq_of_isVNSubalgebra (R : StarSubalgebra ℂ (H →L[ℂ] H))
   le_antisymm (sInf_le ⟨hR, subset_rfl⟩)
     (fun _ ha => (isVNSubalgebra_wstar (R : Set (H →L[ℂ] H))).2 ha)
 
-/-- **88V** (`proto-double-commutant`, vn.tex:6737): for a unital
-∗-subalgebra `S` of `B(H)`, the double commutant `S^□□` is contained in
-the ultrastrong closure of `S`.  (The enumerated items are steps of the
-proof, not converted separately.) -/
+/-- **88V** (`proto-double-commutant`, vn.tex:6737), **item 1**, second
+half: `ρ'(t) = ∑ₙ Pₙ* t Pₙ`, where `Pₙ : ⊕ₙ H → H` is the `n`-th projection
+and `Pₙ*` the corresponding coordinate embedding.  The series converges
+strongly — pointwise on `⊕ₙ H` — which is the only sense it can have (in
+norm it does not converge, already for `t = 1`). -/
+theorem amp_eq_sum_corners (t : H →L[ℂ] H) (y : lp (fun _ : ℕ => H) 2) :
+    HasSum (fun n : ℕ =>
+        (lp.singleContinuousLinearMap ℂ (fun _ : ℕ => H) 2 n ∘L t ∘L
+          lp.evalCLM ℂ (fun _ : ℕ => H) 2 n) y)
+      (amp t y) := by
+  have h0 := lp.hasSum_single (E := fun _ : ℕ => H) ENNReal.ofNat_ne_top (amp t y)
+  have heq : ∀ n : ℕ,
+      (lp.singleContinuousLinearMap ℂ (fun _ : ℕ => H) 2 n ∘L t ∘L
+        lp.evalCLM ℂ (fun _ : ℕ => H) 2 n) y
+        = lp.single 2 n (((amp t y : lp (fun _ : ℕ => H) 2) : ∀ _ : ℕ, H) n) := by
+    intro n; rw [amp_apply]; rfl
+  simpa only [heq] using h0
+
+/-- **88V** (`proto-double-commutant`, vn.tex:6737), **item 1**, first
+half: an np-map `ω : B(H) → ℂ` is `ω(t) = ⟨x', ρ'(t)x'⟩` for the vector
+`x' ≡ (x₁, x₂, …)` of `H' = ⊕ₙ H` assembled from the sequence that **39IX**
+(`bh_np`) supplies, `ω = ∑ₙ ⟨xₙ, (·)xₙ⟩`.  (Square-summability of the `xₙ`
+is what puts `x'` in `H'`.) -/
+theorem proto_double_commutant_1 (ω : NPFunctional (H →L[ℂ] H)) :
+    ∃ x' : lp (fun _ : ℕ => H) 2,
+      ∀ t : H →L[ℂ] H, (ω t : ℂ) = ⟪x', amp t x'⟫ := by
+  obtain ⟨x, hx, hxsum⟩ := bh_np ω
+  have hsum : Summable fun n : ℕ => ‖x n‖ ^ 2 := by
+    have h := ((Complex.hasSum_iff _ _).mp hxsum).1
+    simpa only [Complex.ofReal_re] using h.summable
+  have hmem : Memℓp x 2 := by
+    refine memℓp_gen ?_
+    have hcast : (2 : ℝ≥0∞).toReal = ((2 : ℕ) : ℝ) := by norm_num
+    simpa [hcast, Real.rpow_natCast] using hsum
+  refine ⟨⟨x, hmem⟩, fun t => ?_⟩
+  rw [lp.inner_eq_tsum]
+  have heq : ∀ n : ℕ,
+      (⟪((⟨x, hmem⟩ : lp (fun _ : ℕ => H) 2) : ∀ _ : ℕ, H) n,
+        ((amp t ⟨x, hmem⟩ : lp (fun _ : ℕ => H) 2) : ∀ _ : ℕ, H) n⟫ : ℂ)
+      = ⟪x n, t (x n)⟫ := by
+    intro n; rw [amp_apply]
+  simp only [heq]
+  exact ((hx t).tsum_eq).symm
+
+/-- **88V** (`proto-double-commutant`, vn.tex:6737), **item 3**: for a
+unital ∗-subalgebra `S` of `B(H)`, the double commutant `S^□□` is contained
+in the ultrastrong closure of `S`.  (Item 1 is `proto_double_commutant_1`
+and `amp_eq_sum_corners` above; item 2's two halves are
+`ampCorner_mem_commutant` and `amp_mem_double_commutant`, and its "conclude
+that" is the `hin` step of this proof.) -/
 theorem proto_double_commutant (S : StarSubalgebra ℂ (H →L[ℂ] H)) :
     commutant (H →L[ℂ] H) (commutant (H →L[ℂ] H) S) ⊆
       @closure _ (ultrastrong (H →L[ℂ] H)) (S : Set (H →L[ℂ] H)) := by
@@ -2505,8 +2652,25 @@ collection of np-functionals on a von Neumann algebra `A` with pairwise
 orthogonal central carriers, and let `ρ : A → B(H)`, `π : A → B(K)` be
 nmiu-maps such that each `ω ∈ Ω` is given by vectors `x_ω ∈ H` and
 `y_ω ∈ K`.  Then there is a bounded `U : K → H` intertwining `π` and `ρ`
-such that `U*U` is a projection in `π(A)^□` whose least
-`Z(π(A)^□)`-majorant is `π(∑_ω ⌈⌈ω⌉⌉)`, and symmetrically for `UU*`. -/
+such that
+
+> `U*U` is a projection in `π(𝒜)^□` with
+> `⌈⌈U*U⌉⌉_{π(𝒜)^□} = π(∑_ω ⌈⌈ω⌉⌉)`, **and** `UU*` is a projection in
+> `ϱ(𝒜)^□` with `⌈⌈UU*⌉⌉_{ϱ(𝒜)^□} = ϱ(∑_ω ⌈⌈ω⌉⌉)`.
+
+Both halves are stated: the Lemma's conclusion is symmetric, and it is the
+`UU*` half that gives the hypothesis vectors `x_ω ∈ H` a conclusion of their
+own.  The relative *central* carrier `⌈⌈·⌉⌉_{R}` is rendered, as everywhere
+in this file (cf. **88IX** `commutant_cceil`), by its defining `IsLeast`
+property inside the ambient `B(H)`: least among the projections of `R` that
+are central in `R` and dominate the given one.
+
+Proof: 890.60's.  **89I** `gns_mapping_property` for each `ω` gives partial
+isometries `U_ω` with `U_ω*U_ω = ⌈τ'_ω⌉` and `U_ωU_ω* = ⌈σ'_ω⌉`; both
+families are pairwise orthogonal because `⌈σ'_ω⌉ ≤ ⌈⌈σ'_ω⌉⌉ = ⌈⌈σ_ω⌉⌉ =
+ϱ(⌈⌈ω⌉⌉)` (**88IX**) and the `⌈⌈ω⌉⌉` are; **89III**
+`summing_partial_isometries` sums them, and **83V** `cceil-sum` identifies
+the two central carriers. -/
 theorem sigma_weak_lemma_2 (Ω : Set (NPFunctional A))
     (horth : ∀ ω ∈ Ω, ∀ ω' ∈ Ω, ω ≠ ω' →
       cceil (npCarrier ω) * cceil (npCarrier ω') = 0)
@@ -2526,7 +2690,18 @@ theorem sigma_weak_lemma_2 (Ω : Set (NPFunctional A))
           (∀ b ∈ commutant (K →L[ℂ] K)
             (Set.range fun a : A => (π a : K →L[ℂ] K)), p * b = b * p) ∧
           ContinuousLinearMap.adjoint U ∘L U ≤ p}
-        (π (projSup {c : A | ∃ ω ∈ Ω, c = cceil (npCarrier ω)})) := by
+        (π (projSup {c : A | ∃ ω ∈ Ω, c = cceil (npCarrier ω)})) ∧
+      IsStarProjection (U ∘L ContinuousLinearMap.adjoint U) ∧
+      U ∘L ContinuousLinearMap.adjoint U ∈
+        commutant (H →L[ℂ] H) (Set.range fun a : A => (ρ a : H →L[ℂ] H)) ∧
+      IsLeast {p : H →L[ℂ] H |
+          p ∈ commutant (H →L[ℂ] H)
+            (Set.range fun a : A => (ρ a : H →L[ℂ] H)) ∧
+          IsStarProjection p ∧
+          (∀ b ∈ commutant (H →L[ℂ] H)
+            (Set.range fun a : A => (ρ a : H →L[ℂ] H)), p * b = b * p) ∧
+          U ∘L ContinuousLinearMap.adjoint U ≤ p}
+        (ρ (projSup {c : A | ∃ ω ∈ Ω, c = cceil (npCarrier ω)})) := by
   classical
   set c : Ω → A := fun ω => cceil (npCarrier (ω : NPFunctional A)) with hcdef
   have hcproj : ∀ ω : Ω, IsStarProjection (c ω) := fun ω => (cceil_isLeast _).1.1
@@ -2598,6 +2773,7 @@ theorem sigma_weak_lemma_2 (Ω : Set (NPFunctional A))
   obtain ⟨V, hVinner, hVsumK, hVsumH⟩ :=
     summing_partial_isometries U hUprojK horthK horthH
   set P : K →L[ℂ] K := ContinuousLinearMap.adjoint V ∘L V with hPdef
+  set Q : H →L[ℂ] H := V ∘L ContinuousLinearMap.adjoint V with hQdef
   -- `V` intertwines `π` and `ρ`
   have hρadj : ∀ a : A, ContinuousLinearMap.adjoint (ρ a) = ρ (star a) := by
     intro a
@@ -2738,49 +2914,181 @@ theorem sigma_weak_lemma_2 (Ω : Set (NPFunctional A))
       have h : π (1 : A) = 1 := map_one π.toStarAlgHom
       rw [h]; rfl
     exact hmem
-  refine ⟨V, hVint, hPproj, ?_, ⟨⟨hπemem, hπeproj, hπecentre, hPle⟩, ?_⟩⟩
+  /- ### The `UU*` half, on `H`: the same argument with `ρ` for `π`, `x` for
+  `y`, `q ω = U_ω U_ω*` for `p ω = U_ω* U_ω`, and `Q = VV*` for `P = V*V`. -/
+  have hqQ : ∀ (ν : Ω) (z : H), q ν (Q z) = q ν z := by
+    intro ν z
+    have h1 : HasSum (fun ω : Ω => q ν (q ω z)) (q ν (Q z)) :=
+      (hVsumH z).map (q ν) (ContinuousLinearMap.continuous _)
+    have h2 : HasSum (fun ω : Ω => q ν (q ω z)) (q ν (q ν z)) := by
+      refine hasSum_single ν ?_
+      intro ω hω
+      have h3 : q ν ∘L q ω = 0 := horthH (Ne.symm hω)
+      exact congrArg (fun T : H →L[ℂ] H => T z) h3
+    have h4 : q ν (q ν z) = q ν z := by
+      have := (hUprojH ν).isIdempotentElem.eq
+      exact congrArg (fun T : H →L[ℂ] H => T z) this
+    rw [← h4]
+    exact h1.unique h2
+  have hQproj : IsStarProjection Q := by
+    constructor
+    · show Q * Q = Q
+      ext z
+      show Q (Q z) = Q z
+      have h1 : HasSum (fun ω : Ω => q ω (Q z)) (Q (Q z)) := hVsumH (Q z)
+      have h2 : HasSum (fun ω : Ω => q ω (Q z)) (Q z) := by
+        simpa only [hqQ] using hVsumH z
+      exact h1.unique h2
+    · show star Q = Q
+      rw [hQdef, ContinuousLinearMap.star_eq_adjoint, ContinuousLinearMap.adjoint_comp,
+        ContinuousLinearMap.adjoint_adjoint]
+  have hqleQ : ∀ ν : Ω, q ν ≤ Q := by
+    intro ν
+    refine ((projection_below_effect Q (q ν) ⟨hQproj.nonneg, hQproj.le_one⟩
+      (hUprojH ν)).out 0 7).mpr ?_
+    ext z
+    show q ν (Q z) = q ν z
+    exact hqQ ν z
+  have hQcomm : ∀ a : A, Q * ρ a = ρ a * Q := by
+    intro a
+    calc Q * ρ a = V ∘L (ContinuousLinearMap.adjoint V ∘L ρ a) := rfl
+      _ = V ∘L (π a ∘L ContinuousLinearMap.adjoint V) := by rw [hadjint a]
+      _ = (V ∘L π a) ∘L ContinuousLinearMap.adjoint V := rfl
+      _ = (ρ a ∘L V) ∘L ContinuousLinearMap.adjoint V := by rw [hVint a]
+      _ = ρ a * Q := rfl
+  have hρmono : ∀ {a b : A}, a ≤ b → (ρ a : H →L[ℂ] H) ≤ ρ b := fun h => (nmiuP ρ).monotone h
+  have hρeproj : IsStarProjection (ρ e) := nmiu_isStarProjection ρ heproj
+  have hρecomm : ∀ a : A, (ρ e : H →L[ℂ] H) * ρ a = ρ a * ρ e := by
+    intro a
+    have h1 : ρ (e * a) = (ρ e : H →L[ℂ] H) * ρ a := map_mul ρ.toStarAlgHom _ _
+    have h2 : ρ (a * e) = (ρ a : H →L[ℂ] H) * ρ e := map_mul ρ.toStarAlgHom _ _
+    rw [← h1, ← h2, hecen a]
+  have hρemem : (ρ e : H →L[ℂ] H) ∈
+      commutant (H →L[ℂ] H) (Set.range fun a : A => (ρ a : H →L[ℂ] H)) := by
+    rintro _ ⟨a, rfl⟩
+    exact (hρecomm a).symm
+  have hρRset : (ρ.toStarAlgHom.range : Set (H →L[ℂ] H))
+      = Set.range fun a : A => (ρ a : H →L[ℂ] H) := by
+    ext b
+    exact ⟨fun ⟨a, ha⟩ => ⟨a, ha⟩, fun ⟨a, ha⟩ => ⟨a, ha⟩⟩
+  have hρcc := centre_commutant ρ.toStarAlgHom.range (nmiu_image ρ)
+  rw [hρRset] at hρcc
+  have hρecentre : ∀ b ∈ commutant (H →L[ℂ] H)
+      (Set.range fun a : A => (ρ a : H →L[ℂ] H)), (ρ e : H →L[ℂ] H) * b = b * ρ e := by
+    have hmem : (ρ e : H →L[ℂ] H) ∈ (Set.range fun a : A => (ρ a : H →L[ℂ] H)) ∩
+        commutant (H →L[ℂ] H) (Set.range fun a : A => (ρ a : H →L[ℂ] H)) := ⟨⟨e, rfl⟩, hρemem⟩
+    rw [hρcc] at hmem
+    intro b hb
+    exact (hmem.2 b hb).symm
+  have hqρe : ∀ ω : Ω, (ρ e : H →L[ℂ] H) * q ω = q ω := fun ω =>
+    ((projection_below_effect (ρ e) (q ω) ⟨hρeproj.nonneg, hρeproj.le_one⟩
+      (hUprojH ω)).out 0 6).mp (le_trans (hqle ω) (hρmono (hce ω)))
+  have hQle : Q ≤ ρ e := by
+    refine ((projection_below_effect (ρ e) Q ⟨hρeproj.nonneg, hρeproj.le_one⟩
+      hQproj).out 0 6).mpr ?_
+    ext z
+    show (ρ e : H →L[ℂ] H) (Q z) = Q z
+    have h1 : HasSum (fun ω : Ω => (ρ e : H →L[ℂ] H) (q ω z)) ((ρ e : H →L[ℂ] H) (Q z)) :=
+      (hVsumH z).map (ρ e : H →L[ℂ] H) (ContinuousLinearMap.continuous _)
+    have h2 : HasSum (fun ω : Ω => (ρ e : H →L[ℂ] H) (q ω z)) (Q z) := by
+      have hstep : ∀ ω : Ω, (ρ e : H →L[ℂ] H) (q ω z) = q ω z := fun ω =>
+        congrArg (fun T : H →L[ℂ] H => T z) (hqρe ω)
+      simpa only [hstep] using hVsumH z
+    exact h1.unique h2
+  have hxfixq : ∀ ω : Ω, q ω (x ω) = x ω := by
+    intro ω
+    have hmem : x ω ∈ {z : H | q ω z = z} := by
+      rw [hUfixH ω]
+      refine subset_closure ⟨1, ?_⟩
+      have h : ρ (1 : A) = 1 := map_one ρ.toStarAlgHom
+      rw [h]; rfl
+    exact hmem
+  refine ⟨V, hVint, hPproj, ?_, ⟨⟨hπemem, hπeproj, hπecentre, hPle⟩, ?_⟩,
+    hQproj, ?_, ⟨⟨hρemem, hρeproj, hρecentre, hQle⟩, ?_⟩⟩
   · rintro _ ⟨a, rfl⟩
     exact (hPcomm a).symm
-  rintro pp ⟨hpmem, hppproj, hpcentre, hpge⟩
-  -- `pp` lies in `π(A)`, hence is `π` of a central projection
-  have hmem2 : pp ∈ commutant (K →L[ℂ] K) (Set.range fun a : A => (π a : K →L[ℂ] K)) ∩
-      commutant (K →L[ℂ] K)
-        (commutant (K →L[ℂ] K) (Set.range fun a : A => (π a : K →L[ℂ] K))) :=
-    ⟨hpmem, fun b hb => (hpcentre b hb).symm⟩
-  rw [← hcc] at hmem2
-  obtain ⟨w, hw⟩ := hmem2.1
-  have hppcomm : ∀ a : A, pp * π a = π a * pp := fun a => (hpmem _ ⟨a, rfl⟩).symm
-  obtain ⟨z, hzproj, hzcen, hzπ⟩ := nmiu_central_preimage π hppproj w hw hppcomm
-  -- `pp` fixes every `y ω`, so `ω((1-z)) = 0`
-  have hppfix : ∀ ω : Ω, pp (y ω) = y ω := by
-    intro ω
-    have hle2 : p ω ≤ pp := le_trans (hpleP ω) hpge
-    have hmul : pp * p ω = p ω :=
-      ((projection_below_effect pp (p ω) ⟨hppproj.nonneg, hppproj.le_one⟩
-        (hUprojK ω)).out 0 6).mp hle2
-    have h := congrArg (fun T : K →L[ℂ] K => T (y ω)) hmul
-    simp only [ContinuousLinearMap.mul_apply] at h
-    rw [hyfix ω] at h
-    exact h
-  have hzkill : ∀ ω : Ω, ((ω : NPFunctional A) ((1 : A) - z)) = 0 := by
-    intro ω
-    have hone : π (1 : A) = 1 := map_one π.toStarAlgHom
-    have hsub : π ((1 : A) - z) = 1 - pp := by
-      have h : π ((1 : A) - z) = π (1 : A) - π z := map_sub π.toStarAlgHom _ _
-      rw [h, hone, hzπ]
-    rw [hy ω ((1 : A) - z), hsub]
-    show (⟪y ω, ((1 : K →L[ℂ] K) - pp) (y ω)⟫ : ℂ) = 0
-    simp only [ContinuousLinearMap.sub_apply, ContinuousLinearMap.one_apply, hppfix ω,
-      sub_self, inner_zero_right]
-  have hcz : ∀ ω : Ω, c ω ≤ z := by
-    intro ω
-    have hcar : IsStarProjection (npCarrier (ω : NPFunctional A)) := (carrier_spec _ _).1
-    have hnp : npCarrier (ω : NPFunctional A) ≤ z :=
-      (carrier_spec _ _).2.2 z hzproj (hzkill ω)
-    exact (cceil_fundamental _ hcar).1.2 ⟨hzproj, hzcen, hnp⟩
-  have hez : e ≤ z := heleast z hzproj (by rw [hEeq]; rintro _ ⟨w', rfl⟩; exact hcz w')
-  calc (π e : K →L[ℂ] K) ≤ π z := hπmono hez
-    _ = pp := hzπ
+  · -- the `U*U` half, uniqueness
+    rintro pp ⟨hpmem, hppproj, hpcentre, hpge⟩
+    -- `pp` lies in `π(A)`, hence is `π` of a central projection
+    have hmem2 : pp ∈ commutant (K →L[ℂ] K) (Set.range fun a : A => (π a : K →L[ℂ] K)) ∩
+        commutant (K →L[ℂ] K)
+          (commutant (K →L[ℂ] K) (Set.range fun a : A => (π a : K →L[ℂ] K))) :=
+      ⟨hpmem, fun b hb => (hpcentre b hb).symm⟩
+    rw [← hcc] at hmem2
+    obtain ⟨w, hw⟩ := hmem2.1
+    have hppcomm : ∀ a : A, pp * π a = π a * pp := fun a => (hpmem _ ⟨a, rfl⟩).symm
+    obtain ⟨z, hzproj, hzcen, hzπ⟩ := nmiu_central_preimage π hppproj w hw hppcomm
+    -- `pp` fixes every `y ω`, so `ω((1-z)) = 0`
+    have hppfix : ∀ ω : Ω, pp (y ω) = y ω := by
+      intro ω
+      have hle2 : p ω ≤ pp := le_trans (hpleP ω) hpge
+      have hmul : pp * p ω = p ω :=
+        ((projection_below_effect pp (p ω) ⟨hppproj.nonneg, hppproj.le_one⟩
+          (hUprojK ω)).out 0 6).mp hle2
+      have h := congrArg (fun T : K →L[ℂ] K => T (y ω)) hmul
+      simp only [ContinuousLinearMap.mul_apply] at h
+      rw [hyfix ω] at h
+      exact h
+    have hzkill : ∀ ω : Ω, ((ω : NPFunctional A) ((1 : A) - z)) = 0 := by
+      intro ω
+      have hone : π (1 : A) = 1 := map_one π.toStarAlgHom
+      have hsub : π ((1 : A) - z) = 1 - pp := by
+        have h : π ((1 : A) - z) = π (1 : A) - π z := map_sub π.toStarAlgHom _ _
+        rw [h, hone, hzπ]
+      rw [hy ω ((1 : A) - z), hsub]
+      show (⟪y ω, ((1 : K →L[ℂ] K) - pp) (y ω)⟫ : ℂ) = 0
+      simp only [ContinuousLinearMap.sub_apply, ContinuousLinearMap.one_apply, hppfix ω,
+        sub_self, inner_zero_right]
+    have hcz : ∀ ω : Ω, c ω ≤ z := by
+      intro ω
+      have hcar : IsStarProjection (npCarrier (ω : NPFunctional A)) := (carrier_spec _ _).1
+      have hnp : npCarrier (ω : NPFunctional A) ≤ z :=
+        (carrier_spec _ _).2.2 z hzproj (hzkill ω)
+      exact (cceil_fundamental _ hcar).1.2 ⟨hzproj, hzcen, hnp⟩
+    have hez : e ≤ z := heleast z hzproj (by rw [hEeq]; rintro _ ⟨w', rfl⟩; exact hcz w')
+    calc (π e : K →L[ℂ] K) ≤ π z := hπmono hez
+      _ = pp := hzπ
+  · rintro _ ⟨a, rfl⟩
+    exact (hQcomm a).symm
+  · -- the `UU*` half, uniqueness: the mirror of the `U*U` argument above
+    rintro pp ⟨hpmem, hppproj, hpcentre, hpge⟩
+    have hmem2 : pp ∈ commutant (H →L[ℂ] H) (Set.range fun a : A => (ρ a : H →L[ℂ] H)) ∩
+        commutant (H →L[ℂ] H)
+          (commutant (H →L[ℂ] H) (Set.range fun a : A => (ρ a : H →L[ℂ] H))) :=
+      ⟨hpmem, fun b hb => (hpcentre b hb).symm⟩
+    rw [← hρcc] at hmem2
+    obtain ⟨w, hw⟩ := hmem2.1
+    have hppcomm : ∀ a : A, pp * ρ a = ρ a * pp := fun a => (hpmem _ ⟨a, rfl⟩).symm
+    obtain ⟨z, hzproj, hzcen, hzρ⟩ := nmiu_central_preimage ρ hppproj w hw hppcomm
+    have hppfix : ∀ ω : Ω, pp (x ω) = x ω := by
+      intro ω
+      have hle2 : q ω ≤ pp := le_trans (hqleQ ω) hpge
+      have hmul : pp * q ω = q ω :=
+        ((projection_below_effect pp (q ω) ⟨hppproj.nonneg, hppproj.le_one⟩
+          (hUprojH ω)).out 0 6).mp hle2
+      have h := congrArg (fun T : H →L[ℂ] H => T (x ω)) hmul
+      simp only [ContinuousLinearMap.mul_apply] at h
+      rw [hxfixq ω] at h
+      exact h
+    have hzkill : ∀ ω : Ω, ((ω : NPFunctional A) ((1 : A) - z)) = 0 := by
+      intro ω
+      have hone : ρ (1 : A) = 1 := map_one ρ.toStarAlgHom
+      have hsub : ρ ((1 : A) - z) = 1 - pp := by
+        have h : ρ ((1 : A) - z) = ρ (1 : A) - ρ z := map_sub ρ.toStarAlgHom _ _
+        rw [h, hone, hzρ]
+      rw [hx ω ((1 : A) - z), hsub]
+      show (⟪x ω, ((1 : H →L[ℂ] H) - pp) (x ω)⟫ : ℂ) = 0
+      simp only [ContinuousLinearMap.sub_apply, ContinuousLinearMap.one_apply, hppfix ω,
+        sub_self, inner_zero_right]
+    have hcz : ∀ ω : Ω, c ω ≤ z := by
+      intro ω
+      have hcar : IsStarProjection (npCarrier (ω : NPFunctional A)) := (carrier_spec _ _).1
+      have hnp : npCarrier (ω : NPFunctional A) ≤ z :=
+        (carrier_spec _ _).2.2 z hzproj (hzkill ω)
+      exact (cceil_fundamental _ hcar).1.2 ⟨hzproj, hzcen, hnp⟩
+    have hez : e ≤ z := heleast z hzproj (by rw [hEeq]; rintro _ ⟨w', rfl⟩; exact hcz w')
+    calc (ρ e : H →L[ℂ] H) ≤ ρ z := hρmono hez
+      _ = pp := hzρ
 
 
 /-- **89VII** (`sigma-weak-lemma`, vn.tex:7052, Corollary): let `A` be
@@ -2949,7 +3257,7 @@ theorem sigma_weak_lemma (ρ : NMIUMap A (H →L[ℂ] H))
   -- realise the family in both representations
   choose xv hxv using fun ω : Ω => hΩrep ω.1 ω.2
   choose yv hyv using fun ω : Ω => huniv (ω : NPFunctional A)
-  obtain ⟨U, hUint, hUproj, hUmem, hUleast⟩ :=
+  obtain ⟨U, hUint, hUproj, hUmem, hUleast, -, -, -⟩ :=
     sigma_weak_lemma_2 Ω (fun ω hω ω' hω' h => hΩorth ω hω ω' hω' h) ρ π xv yv
       (fun ω a => by rw [hxv ω]; exact hvfapp _ _) hyv
   refine ⟨U, hUint, hUproj, hUmem, ?_⟩
@@ -3380,39 +3688,71 @@ theorem continuous_ultrastrong_conjFunctional (ω : NPFunctional A) (k : A) :
 /-- **90II** (`vn-center-separating-fundamental`, vn.tex:7206,
 Proposition), part 1: for a centre separating collection `Ω` of
 np-functionals (cstar.tex **21II**.4, `CentreSeparatingConj`) and an
-ultrastrongly dense subset `S` of a von Neumann algebra, the collection `Ω' = {ω(s*(·)s) : ω ∈ Ω, s ∈ S}` is order
-separating. -/
+ultrastrongly dense subset `S` of a von Neumann algebra `𝒜`, the collection
+`Ω' = {ω(s*(·)s) : ω ∈ Ω, s ∈ S}` is **order separating** — that is,
+`A/CStar/Positive`'s `OrderSeparating` (cstar.tex **21II**.1): an *arbitrary*
+element `a` of `𝒜` is positive iff `ω(s* a s) ≥ 0` for all `ω ∈ Ω`, `s ∈ S`.
+
+The proof is 900.30's: `Ξ = {ω(c*(·)c) : ω ∈ Ω, c ∈ 𝒜}` is order separating
+by **30X** (`nonneg_of_conjNP_of_centreSeparating`, fed the C*-notion
+**21II**.4 that 30X wants, which is our hypothesis verbatim), and `Ω' ⊆ Ξ`
+is norm dense by **72III**.1c — rendered here as ultrastrong *continuity* of
+`x ↦ ω(x* a x)`, which is that same estimate. -/
+theorem vn_center_separating_fundamental_1' (Ω : Set (NPFunctional A))
+    (hΩ : CentreSeparatingConj A Ω) (S : Set A)
+    (hS : @Dense A (ultrastrong A) S) :
+    OrderSeparating (fun p : Ω × S =>
+      ((p.1 : NPFunctional A).toPositiveLinearMap.toLinearMap :
+        A →ₗ[ℂ] ℂ).comp (conjMap A (p.2 : A))) := by
+  have happ : ∀ (p : Ω × S) (x : A),
+      ((((p.1 : NPFunctional A).toPositiveLinearMap.toLinearMap : A →ₗ[ℂ] ℂ).comp
+        (conjMap A (p.2 : A))) x : ℂ) = (p.1 : NPFunctional A) (star (p.2 : A) * x * (p.2 : A)) := by
+    intro p x
+    show (p.1 : NPFunctional A) (star (p.2 : A) * (x * (p.2 : A))) = _
+    rw [mul_assoc]
+  intro a
+  refine ⟨fun ha p => ?_, fun H => ?_⟩
+  · rw [happ]
+    exact npFunctional_nonneg _ (star_left_conjugate_nonneg ha _)
+  · refine nonneg_of_conjNP_of_centreSeparating Ω hΩ fun ω hω c => ?_
+    set T : Set A := {x : A | (0 : ℂ) ≤ ω (star x * a * x)} with hT
+    have hTclosed : @IsClosed A (ultrastrong A) T := by
+      have hcont := continuous_ultrastrong_conjFunctional ω a
+      have hcl : IsClosed {z : ℂ | (0 : ℂ) ≤ z} := isClosed_le continuous_const continuous_id
+      exact @IsClosed.preimage A ℂ (ultrastrong A) _ _ hcont _ hcl
+    have hST : S ⊆ T := by
+      intro s hs
+      have h1 := H (⟨⟨ω, hω⟩, ⟨s, hs⟩⟩ : Ω × S)
+      rw [happ] at h1
+      exact h1
+    have hsub : @closure A (ultrastrong A) S ⊆ T :=
+      (@IsClosed.closure_subset_iff A (ultrastrong A) S T hTclosed).mpr hST
+    have huniv : @closure A (ultrastrong A) S = Set.univ :=
+      @Dense.closure_eq A (ultrastrong A) S hS
+    exact hsub (by rw [huniv]; trivial)
+
+/-- **90II**.1 in the two-element comparison form, which is how
+`A/Proc/Tensor` (7256, `char_bounded`) uses it: `a ≤ b` follows from
+`ω(s* a s) ≤ ω(s* b s)` for all `ω ∈ Ω`, `s ∈ S`.  A corollary of
+`vn_center_separating_fundamental_1'` above, applied to `b - a`.
+
+The two self-adjointness hypotheses are **not needed** — the primed
+statement, which is the Proposition's, quantifies over arbitrary elements —
+and are kept only because the call site above passes them positionally. -/
 theorem vn_center_separating_fundamental_1 (Ω : Set (NPFunctional A))
     (hΩ : CentreSeparatingConj A Ω) (S : Set A)
-    (hS : @Dense A (ultrastrong A) S) (a b : A) (ha : IsSelfAdjoint a)
-    (hb : IsSelfAdjoint b)
+    (hS : @Dense A (ultrastrong A) S) (a b : A) (_ha : IsSelfAdjoint a)
+    (_hb : IsSelfAdjoint b)
     (h : ∀ ω ∈ Ω, ∀ s ∈ S, ω (star s * a * s) ≤ ω (star s * b * s)) :
     a ≤ b := by
-  -- The thesis's argument, in the shape our statement asks for: `Ξ = {ω(c*(·)c)
-  -- : ω ∈ Ω, c ∈ A}` is order separating by **30X** (that is
-  -- `nonneg_of_conjNP_of_centreSeparating`, fed the C*-notion **21II**.4
-  -- that **30X** wants, which is our hypothesis verbatim), and
-  -- `Ω' ⊆ Ξ` is norm dense by **72III**.1c — rendered here as ultrastrong
-  -- *continuity* of `x ↦ ω(x* k x)`, which is the same estimate.
   rw [← sub_nonneg]
-  refine nonneg_of_conjNP_of_centreSeparating Ω hΩ fun ω hω c => ?_
-  set T : Set A := {x : A | (0 : ℂ) ≤ ω (star x * (b - a) * x)} with hT
-  have hTclosed : @IsClosed A (ultrastrong A) T := by
-    have hcont := continuous_ultrastrong_conjFunctional ω (b - a)
-    have hcl : IsClosed {z : ℂ | (0 : ℂ) ≤ z} := isClosed_le continuous_const continuous_id
-    exact @IsClosed.preimage A ℂ (ultrastrong A) _ _ hcont _ hcl
-  have hST : S ⊆ T := by
-    intro s hs
-    have h1 := h ω hω s hs
-    show (0 : ℂ) ≤ ω (star s * (b - a) * s)
-    rw [show star s * (b - a) * s = star s * b * s - star s * a * s by noncomm_ring,
-      npFunctional_sub, sub_nonneg]
-    exact h1
-  have hsub : @closure A (ultrastrong A) S ⊆ T :=
-    (@IsClosed.closure_subset_iff A (ultrastrong A) S T hTclosed).mpr hST
-  have huniv : @closure A (ultrastrong A) S = Set.univ :=
-    @Dense.closure_eq A (ultrastrong A) S hS
-  exact hsub (by rw [huniv]; trivial)
+  refine (vn_center_separating_fundamental_1' Ω hΩ S hS (b - a)).mpr fun p => ?_
+  show (0 : ℂ) ≤ (p.1 : NPFunctional A) (star (p.2 : A) * ((b - a) * (p.2 : A)))
+  rw [← mul_assoc,
+    show star (p.2 : A) * (b - a) * (p.2 : A)
+      = star (p.2 : A) * b * (p.2 : A) - star (p.2 : A) * a * (p.2 : A) by noncomm_ring,
+    npFunctional_sub, sub_nonneg]
+  exact h _ p.1.2 _ p.2.2
 
 /-! ### The direct-sum GNS representation `ϱ_Ω` over a *set* of functionals
 

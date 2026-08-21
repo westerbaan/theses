@@ -157,16 +157,31 @@ theorem hadamard_1 (a : ℕ → 𝒜) (z : ℂ)
     simpa [fpsOfCoeffs_coeff] using (fpsOfCoeffs a).summable_norm_mul_pow (r := ‖z‖₊) hz
 
 /-- **13II** (`hadamard`, cstar.tex:1806, Theorem), part 2: if `∑ₙ aₙ zⁿ`
-converges then `|z| ≤ R`. -/
-theorem hadamard_2 (a : ℕ → 𝒜) (z : ℂ)
-    (hz : Summable fun n : ℕ => z ^ n • a n) :
+converges then `|z| ≤ R`.
+
+The hypothesis is *convergence of the partial sums* `∑_{n<N} aₙ zⁿ`, as the
+Theorem states it — not `Summable`, i.e. unconditional summability, which in
+an infinite-dimensional Banach space is strictly stronger and which is not
+what the thesis's proof needs.
+
+*Class 1 — faithful*: the terms `aₙ zⁿ = S_{N+1} - S_N` of a convergent
+series tend to `0`, hence `‖aₙ‖ |z|ⁿ` is bounded, hence `|z| ≤ R`. -/
+theorem hadamard_2 (a : ℕ → 𝒜) (z : ℂ) (L : 𝒜)
+    (hz : Tendsto (fun N : ℕ => ∑ n ∈ Finset.range N, z ^ n • a n) atTop (𝓝 L)) :
     (‖z‖₊ : ℝ≥0∞) ≤ radiusOfConvergence a :=
   by
-    -- exactly the thesis's argument: the terms `‖aₙ‖|z|ⁿ` of a convergent
-    -- series tend to `0`, hence are bounded, hence `|z| ≤ R`
     rw [radiusOfConvergence_eq]
     refine (fpsOfCoeffs a).le_radius_of_tendsto (r := ‖z‖₊) (l := 0) ?_
-    have h0 := hz.tendsto_atTop_zero.norm
+    -- the terms of a convergent series tend to `0`
+    have hshift : Tendsto (fun N : ℕ => ∑ n ∈ Finset.range (N + 1), z ^ n • a n)
+        atTop (𝓝 L) := hz.comp (tendsto_add_atTop_nat 1)
+    have hterm : Tendsto (fun N : ℕ => z ^ N • a N) atTop (𝓝 0) := by
+      have hd := hshift.sub hz
+      rw [sub_self] at hd
+      refine hd.congr fun N => ?_
+      rw [Finset.sum_range_succ]
+      abel
+    have h0 := hterm.norm
     simpa [fpsOfCoeffs_coeff, norm_smul, mul_comm] using h0
 
 /-- **13IV** (cstar.tex:1868, Proposition): the function given by a power
@@ -243,10 +258,16 @@ theorem powerseries_uniqueness_coeffients (a : ℕ → 𝒜) (r : ℝ) (hr : 0 <
 
 /-! ## Parsec 140: integration and Goursat's theorem
 
-**14II** (cstar.tex:2000, Exercise): the construction of the integral
-`∫ f ∈ 𝒜` of a continuous `f : [0,1] → 𝒜` via 𝒜-valued step functions
-(parts 1–3) is in Mathlib the Bochner integral `∫ t in (0:ℝ)..1, f t` of the
-`MeasureTheory` library; part 4 is stated below. -/
+**14II** (cstar.tex:2000, Exercise): the *construction* of the integral
+`∫ f ∈ 𝒜` of a continuous `f : [0,1] → 𝒜` — part 1 (the linear
+`∫ : S_𝒜 → 𝒜` with `∫ a·1_I = |I|a`), part 2's disjoint-interval normal form
+`‖f‖ = supₙ‖aₙ‖`, `∑ₙ|Iₙ| ≤ 1`, and part 3 (density of `S_𝒜` in
+`C([0,1],𝒜)`) — is in Mathlib the Bochner integral
+`∫ t in (0:ℝ)..1, f t` of the `MeasureTheory` library, and the 𝒜-valued step
+functions `S_𝒜` are not built here.  What parts 1–3 are *for*, and what the
+rest of the chapter uses, is the bound `‖∫ f‖ ≤ ‖f‖` that part 2 asks one to
+deduce; that bound is `integral_norm_le` below, and part 4 is
+`integral_scalar_smul`. -/
 
 /-- **14II** (cstar.tex:2000, Exercise), part 4: `∫ a f = a ∫ f` for
 continuous `f : [0,1] → ℂ` and `a ∈ 𝒜`. -/
@@ -254,6 +275,26 @@ theorem integral_scalar_smul (f : ℝ → ℂ) (hf : ContinuousOn f (Set.Icc 0 1
     (a : 𝒜) :
     ∫ t in (0:ℝ)..1, f t • a = (∫ t in (0:ℝ)..1, f t) • a :=
   intervalIntegral.integral_smul_const f a
+
+/-- **14II** (cstar.tex:2000, Exercise), part 2, closing clause: `‖∫ f‖ ≤ ‖f‖`
+for the supremum norm on `[0,1]` — the bound the Exercise asks one to deduce
+from the disjoint-interval normal form (`‖∫f‖ ≤ ∑ₙ‖aₙ‖|Iₙ| ≤ ‖f‖∑ₙ|Iₙ| ≤ ‖f‖`),
+and the clause the rest of the chapter actually uses.  The sup norm of `f` is
+taken here as any bound `M` on `‖f t‖` over `[0,1]`, which is what the
+Bochner integral's own estimate supplies.
+
+*Class 5 — Mathlib*: the deduction from the normal form is not transcribed,
+because `S_𝒜` is not built here; see the section note. -/
+theorem integral_norm_le (f : ℝ → 𝒜) (M : ℝ)
+    (hM : ∀ t ∈ Set.Icc (0:ℝ) 1, ‖f t‖ ≤ M) :
+    ‖∫ t in (0:ℝ)..1, f t‖ ≤ M :=
+  by
+    have h := intervalIntegral.norm_integral_le_of_norm_le_const
+      (a := (0:ℝ)) (b := 1) (f := f) (C := M) (fun t ht => by
+        refine hM t ?_
+        rw [Set.uIoc_of_le (by norm_num : (0:ℝ) ≤ 1)] at ht
+        exact Set.Ioc_subset_Icc_self ht)
+    simpa using h
 
 /-- **14III** (cstar.tex:2094, Definition): the integral
 `∫_w^{w'} f = (w' - w) ∫₀¹ f(w + t(w' - w)) dt` of an 𝒜-valued function
@@ -3189,7 +3230,11 @@ section Products
 direct sum `⊕ᵢ 𝒜ᵢ` (Mathlib: `lp 𝒜 ∞`, cf. **3V**) is the categorical
 product in `CStar_miu`: for every C*-algebra `ℬ` and family of miu-maps
 `fᵢ : ℬ → 𝒜ᵢ` there is a unique miu-map `g : ℬ → ⊕ᵢ 𝒜ᵢ` with `πᵢ ∘ g = fᵢ`
-(and similarly in `cCStar_miu`). -/
+(and, by `cstar_product_2_comm` below, the same in `cCStar_miu`).
+
+The `[∀ i, Nontrivial (𝒜 i)]` binder is Mathlib's, not the Exercise's: it is
+what Mathlib's only unital ring structure on `lp 𝒜 ∞` demands (the same note
+stands on 47IV in `A/VN/Basic`). -/
 theorem cstar_product_2_miu {ι : Type*} {𝒜 : ι → Type*}
     [∀ i, CStarAlgebra (𝒜 i)] [∀ i, Nontrivial (𝒜 i)] {ℬ : Type*}
     [CStarAlgebra ℬ] (f : ∀ i, ℬ →⋆ₐ[ℂ] 𝒜 i) :
@@ -3218,9 +3263,10 @@ case, but not this one. -/
 noncomputable instance lpInftyCStarAlgebra {ι : Type*} {𝒜 : ι → Type*}
     [∀ i, Nontrivial (𝒜 i)] [∀ i, CStarAlgebra (𝒜 i)] : CStarAlgebra (lp 𝒜 ∞) where
 
-/-- **20aI** (`cstar-product-2`, cstar.tex:3015, Exercise), part 2 (key step
-for the `pu`-variant): an element of `⊕ᵢ 𝒜ᵢ` is positive iff all of its
-components are. -/
+/-- **20aI** (`cstar-product-2`, cstar.tex:3015, Exercise), the Exercise's
+hint for the `pu` half: an element of `⊕ᵢ 𝒜ᵢ` is positive iff all of its
+components are.  The `pu` universal property it is a hint *for* is
+`cstar_product_2_pu` below. -/
 theorem cstar_product_2_positive {ι : Type*} {𝒜 : ι → Type*}
     [∀ i, CStarAlgebra (𝒜 i)] [∀ i, Nontrivial (𝒜 i)]
     [∀ i, PartialOrder (𝒜 i)] [∀ i, StarOrderedRing (𝒜 i)]
@@ -3276,11 +3322,70 @@ theorem cstar_product_2_positive {ι : Type*} {𝒜 : ι → Type*}
       rw [hco]
       exact hai i
 
+/-- **20aI** (`cstar-product-2`, cstar.tex:3015, Exercise): the direct sum of
+*commutative* C*-algebras is again commutative — which is what makes
+`cstar_product_2_miu` and `cstar_product_2_pu` below the descriptions of the
+product in `cCStar_miu` and `cCStar_pu` as well, as the Exercise asks. -/
+theorem cstar_product_2_comm {ι : Type*} {𝒜 : ι → Type*}
+    [∀ i, CStarAlgebra (𝒜 i)] [∀ i, Nontrivial (𝒜 i)]
+    (hcomm : ∀ (i : ι) (x y : 𝒜 i), x * y = y * x) (a b : lp 𝒜 ∞) :
+    a * b = b * a :=
+  by
+    refine lp.ext ?_
+    funext i
+    exact hcomm i _ _
+
+/-- **20aI** (`cstar-product-2`, cstar.tex:3015, Exercise), the `pu` half:
+`⊕ᵢ 𝒜ᵢ` is also the categorical product in `CStar_pu` (and, by
+`cstar_product_2_comm`, in `cCStar_pu`): for every C*-algebra `ℬ` and family
+of pu-maps `fᵢ : ℬ → 𝒜ᵢ` there is a unique pu-map `g : ℬ → ⊕ᵢ 𝒜ᵢ` with
+`πᵢ ∘ g = fᵢ`.
+
+*Class 1 — faithful*: the mediating map is the tuple `b ↦ (fᵢ b)ᵢ`; it lands
+in `⊕ᵢ 𝒜ᵢ` because the `fᵢ` are bounded — the Exercise's hint, here in the
+pu form of **20II**.2, `‖f b‖ ≤ 2‖f 1‖‖b‖ = 2‖b‖` — and it is positive by
+the Exercise's *other* hint, `cstar_product_2_positive`.
+
+The `[∀ i, Nontrivial (𝒜 i)]` binder is Mathlib's, not the Exercise's: it is
+what Mathlib's only unital ring structure on `lp 𝒜 ∞` demands (cf. the same
+note on 47IV in `A/VN/Basic`).  The order binders on `lp 𝒜 ∞` record that
+this file assumes the C*-order on the product rather than constructing it,
+as it does for every other C*-algebra in the file. -/
+theorem cstar_product_2_pu {ι : Type*} {𝒜 : ι → Type*}
+    [∀ i, CStarAlgebra (𝒜 i)] [∀ i, Nontrivial (𝒜 i)]
+    [∀ i, PartialOrder (𝒜 i)] [∀ i, StarOrderedRing (𝒜 i)]
+    [PartialOrder (lp 𝒜 ∞)] [StarOrderedRing (lp 𝒜 ∞)]
+    {ℬ : Type*} [CStarAlgebra ℬ] [PartialOrder ℬ] [StarOrderedRing ℬ]
+    (f : ∀ i, ℬ →ₗ[ℂ] 𝒜 i) (hp : ∀ i, IsPositiveMap (f i))
+    (hu : ∀ i, IsUnitalMap (f i)) :
+    ∃! g : ℬ →ₗ[ℂ] lp 𝒜 ∞, IsPositiveMap g ∧ IsUnitalMap g ∧
+      ∀ (i : ι) (b : ℬ), (g b : ∀ i, 𝒜 i) i = f i b :=
+  by
+    have hmem : ∀ b : ℬ, Memℓp (fun i => f i b) ∞ := fun b =>
+      memℓp_infty ⟨2 * ‖b‖, by
+        rintro y ⟨i, rfl⟩
+        exact norm_map_le_two_mul (f i) (hp i) (hu i) b⟩
+    refine ⟨{ toFun := fun b => ⟨fun i => f i b, hmem b⟩
+              map_add' := fun x y => by ext i; exact map_add (f i) x y
+              map_smul' := fun r x => by ext i; exact map_smul (f i) r x },
+            ⟨?_, ?_, fun _ _ => rfl⟩, ?_⟩
+    · intro b hb
+      refine (cstar_product_2_positive _).mpr fun i => ?_
+      exact hp i b hb
+    · have hu' : ∀ j, (f j) 1 = 1 := hu
+      show (⟨fun i => f i 1, hmem 1⟩ : lp 𝒜 ∞) = 1
+      ext i
+      simpa using hu' i
+    · rintro g' ⟨-, -, hg'⟩
+      ext b i
+      exact hg' i b
+
 /-- **20aII** (`cstar-equaliser-1`, cstar.tex:3044, Exercise): for miu-maps
 `f, g : 𝒜 → ℬ` the set `ℰ = {a : f(a) = g(a)}` is a (closed) C*-subalgebra
-of `𝒜`; its inclusion is the equaliser of `f` and `g` in `CStar_miu` and
-`CStar_pu` (the universal property is set-theoretically immediate once `ℰ` is
-a closed subalgebra).
+of `𝒜`.  This is the Exercise's *first* clause only; that the inclusion is a
+positive miu-map and *is* the equaliser of `f` and `g` in `CStar_miu` and
+`CStar_pu` (and in the commutative variants) is `cstar_equaliser_2_positive`,
+`cstar_equaliser_2_miu` and `cstar_equaliser_2_pu` below.
 
 (**20aIII**, `cstar-no-pu-equalisers`, cstar.tex:3058, Remark: pu-maps need
 not have equalisers, shown at 84aI in vn.tex; not converted here.) -/
@@ -3295,6 +3400,134 @@ theorem cstar_equaliser_1 {𝒜 ℬ : Type*} [CStarAlgebra 𝒜] [CStarAlgebra �
     have hset : (StarAlgHom.equalizer f g : Set 𝒜) = {a : 𝒜 | f a = g a} := by
       ext a; exact StarAlgHom.mem_equalizer f g a
     exact ⟨StarAlgHom.equalizer f g, hset, hset ▸ isClosed_eq (hc f) (hc g)⟩
+
+section Equaliser
+
+variable {𝒜 ℬ : Type*} [CStarAlgebra 𝒜] [CStarAlgebra ℬ]
+
+/-- **20aII** (`cstar-equaliser-1`, cstar.tex:3044, Exercise): the equaliser
+`ℰ = {a ∈ 𝒜 : f(a) = g(a)}` of two miu-maps, as a ∗-subalgebra of `𝒜`.
+`cstar_equaliser_1` above says it is a *closed* one, i.e. a C*-subalgebra;
+the instance below records that closedness, which is what puts a C*-algebra
+structure on `ℰ` as a type and lets the universal property be stated. -/
+def cstarEqualiser (f g : 𝒜 →⋆ₐ[ℂ] ℬ) : StarSubalgebra ℂ 𝒜 :=
+  StarAlgHom.equalizer f g
+
+@[simp]
+theorem mem_cstarEqualiser {f g : 𝒜 →⋆ₐ[ℂ] ℬ} {a : 𝒜} :
+    a ∈ cstarEqualiser f g ↔ f a = g a :=
+  StarAlgHom.mem_equalizer f g a
+
+/-- `ℰ` is norm-closed: miu-maps are contractive (**20V**), hence
+continuous, so `ℰ` is an equaliser of continuous maps. -/
+instance isClosed_cstarEqualiser (f g : 𝒜 →⋆ₐ[ℂ] ℬ) :
+    IsClosed ((cstarEqualiser f g : StarSubalgebra ℂ 𝒜) : Set 𝒜) :=
+  by
+    have hc : ∀ φ : 𝒜 →⋆ₐ[ℂ] ℬ, Continuous φ := fun φ =>
+      AddMonoidHomClass.continuous_of_bound φ 1
+        (fun a => by simpa using NonUnitalStarAlgHom.norm_apply_le φ a)
+    have hset : ((cstarEqualiser f g : StarSubalgebra ℂ 𝒜) : Set 𝒜)
+        = {a : 𝒜 | f a = g a} := by
+      ext a; exact StarAlgHom.mem_equalizer f g a
+    rw [hset]
+    exact isClosed_eq (hc f) (hc g)
+
+/-- **20aII** (`cstar-equaliser-1`, cstar.tex:3044, Exercise), second
+clause: the inclusion `e : ℰ → 𝒜` is a positive miu-map.  It is an miu-map
+because it is a unital ∗-homomorphism; positivity is **20V**.1. -/
+theorem cstar_equaliser_2_positive [PartialOrder 𝒜] [StarOrderedRing 𝒜]
+    (f g : 𝒜 →⋆ₐ[ℂ] ℬ) [PartialOrder (cstarEqualiser f g)]
+    [StarOrderedRing (cstarEqualiser f g)] :
+    IsPositiveMap ((cstarEqualiser f g).subtype.toAlgHom.toLinearMap) :=
+  fun a ha => norm_mi_map_positive (cstarEqualiser f g).subtype a ha
+
+/-- Auxiliary (**20aII**): an injective *isometric* unital ∗-homomorphism
+reflects positivity.  The argument is the thesis's own norm criterion for
+positivity (**17V**): `0 ≤ ι x` gives `‖ι x - t‖ ≤ t` at `t = ‖ι x‖/2`, and
+both norms are unchanged by `ι`, so `‖x - t‖ ≤ t` at `t = ‖x‖/2`.  For the
+inclusion of a C*-subalgebra the isometry hypothesis holds by definition of
+the subspace norm; in general it is **29VIII**, which is downstream. -/
+private theorem nonneg_of_map_nonneg {ℰ : Type*} [CStarAlgebra ℰ]
+    [PartialOrder ℰ] [StarOrderedRing ℰ] [PartialOrder 𝒜] [StarOrderedRing 𝒜]
+    (ι : ℰ →⋆ₐ[ℂ] 𝒜) (hinj : Function.Injective ι)
+    (hiso : ∀ x : ℰ, ‖ι x‖ = ‖x‖) (x : ℰ) (h : 0 ≤ ι x) : 0 ≤ x :=
+  by
+    have hisa : IsSelfAdjoint (ι x) := IsSelfAdjoint.of_nonneg h
+    have hsa : IsSelfAdjoint x := hinj (by rw [map_star, hisa.star_eq])
+    have ht' : ‖ι x‖ / 2 ≤ ‖x‖ / 2 := by rw [hiso]
+    have hfwd : (0 : 𝒜) ≤ ι x ↔
+        ∀ t : ℝ, ‖ι x‖ / 2 ≤ t → ‖ι x - algebraMap ℂ 𝒜 (t : ℂ)‖ ≤ t :=
+      (cstar_positive_tfae (ι x) hisa).out 3 1
+    have h2 : ‖ι x - algebraMap ℂ 𝒜 ((‖x‖ / 2 : ℝ) : ℂ)‖ ≤ ‖x‖ / 2 :=
+      hfwd.mp h (‖x‖ / 2) ht'
+    have h3 : ι (x - algebraMap ℂ ℰ ((‖x‖ / 2 : ℝ) : ℂ))
+        = ι x - algebraMap ℂ 𝒜 ((‖x‖ / 2 : ℝ) : ℂ) := by
+      rw [map_sub]
+      congr 1
+      exact AlgHomClass.commutes ι _
+    rw [← h3, hiso] at h2
+    have hbwd : (∃ t : ℝ, ‖x‖ / 2 ≤ t ∧ ‖x - algebraMap ℂ ℰ (t : ℂ)‖ ≤ t) ↔ (0 : ℰ) ≤ x :=
+      (cstar_positive_tfae x hsa).out 0 3
+    exact hbwd.mp ⟨‖x‖ / 2, le_rfl, h2⟩
+
+/-- **20aII** (`cstar-equaliser-1`, cstar.tex:3044, Exercise), third clause,
+in `CStar_miu` (and, `𝒜` being commutative, in `cCStar_miu`): the inclusion
+`e : ℰ → 𝒜` **is** the equaliser of `f` and `g` — every miu-map
+`h : 𝒞 → 𝒜` with `f ∘ h = g ∘ h` factors through `e` by a unique miu-map.
+
+*Class 1 — faithful*: the factorisation is set-theoretic, `h` corestricted
+to `ℰ`, which is where its values already lie. -/
+theorem cstar_equaliser_2_miu (f g : 𝒜 →⋆ₐ[ℂ] ℬ) {𝒞 : Type*} [CStarAlgebra 𝒞]
+    (h : 𝒞 →⋆ₐ[ℂ] 𝒜) (hfg : ∀ c : 𝒞, f (h c) = g (h c)) :
+    ∃! m : 𝒞 →⋆ₐ[ℂ] cstarEqualiser f g,
+      ∀ c : 𝒞, ((m c : 𝒜)) = h c :=
+  by
+    have hmem : ∀ c : 𝒞, h c ∈ cstarEqualiser f g := fun c =>
+      mem_cstarEqualiser.mpr (hfg c)
+    refine ⟨StarAlgHom.codRestrict h _ hmem, fun _ => rfl, ?_⟩
+    intro m' hm'
+    ext c
+    exact hm' c
+
+/-- **20aII** (`cstar-equaliser-1`, cstar.tex:3044, Exercise), third clause,
+in `CStar_pu` (and, `𝒜` being commutative, in `cCStar_pu`): the same
+inclusion is the equaliser of `f` and `g` for *pu*-maps — every pu-map
+`h : 𝒞 → 𝒜` with `f ∘ h = g ∘ h` factors through `e` by a unique pu-map.
+
+*Class 1 — faithful*: the mediating map is again `h` corestricted; it is
+unital because `e` is injective and `e(1) = 1`, and positive because `e`
+reflects positivity — for the inclusion of a C*-subalgebra the norm is the
+restricted one, so `nonneg_of_map_nonneg` applies with `hiso := rfl`. -/
+theorem cstar_equaliser_2_pu [PartialOrder 𝒜] [StarOrderedRing 𝒜]
+    (f g : 𝒜 →⋆ₐ[ℂ] ℬ) [PartialOrder (cstarEqualiser f g)]
+    [StarOrderedRing (cstarEqualiser f g)] {𝒞 : Type*} [CStarAlgebra 𝒞]
+    [PartialOrder 𝒞] [StarOrderedRing 𝒞] (h : 𝒞 →ₗ[ℂ] 𝒜)
+    (hp : IsPositiveMap h) (hu : IsUnitalMap h) (hfg : ∀ c : 𝒞, f (h c) = g (h c)) :
+    ∃! m : 𝒞 →ₗ[ℂ] cstarEqualiser f g,
+      IsPositiveMap m ∧ IsUnitalMap m ∧ ∀ c : 𝒞, ((m c : 𝒜)) = h c :=
+  by
+    set e := (cstarEqualiser f g).subtype with he
+    have heinj : Function.Injective e := Subtype.val_injective
+    have heiso : ∀ x : cstarEqualiser f g, ‖e x‖ = ‖x‖ := fun _ => rfl
+    have hmem : ∀ c : 𝒞, h c ∈ cstarEqualiser f g := fun c =>
+      mem_cstarEqualiser.mpr (hfg c)
+    -- the corestriction of `h`, as a linear map
+    refine ⟨{ toFun := fun c => ⟨h c, hmem c⟩
+              map_add' := fun x y => by ext; simp
+              map_smul' := fun r x => by ext; simp }, ⟨?_, ?_, fun _ => rfl⟩, ?_⟩
+    · intro c hc
+      refine nonneg_of_map_nonneg e heinj heiso _ ?_
+      exact hp c hc
+    · refine heinj ?_
+      show (h 1 : 𝒜) = ((1 : cstarEqualiser f g) : 𝒜)
+      rw [hu]
+      rfl
+    · rintro m' ⟨-, -, hm'⟩
+      ext c
+      exact hm' c
+
+
+end Equaliser
 
 end Products
 
@@ -5340,6 +5573,68 @@ theorem cstar_pos_neg_part_3 :
       simp [hsdef] at hre
       nlinarith [Real.sq_sqrt (show (0:ℝ) ≤ 2 by norm_num), Real.sqrt_nonneg 2, hre]
 
+/-- **24II** (`cstar-pos-neg-part`, cstar.tex:3699, Exercise), part 4 (from
+addendum `parsec-240.20`): `‖a‖ = ‖a₊‖ ∨ ‖a₋‖` for self-adjoint `a`.
+
+*Class 1 — faithful* (asols.tex `parsec-240.20`(4)).  For `≤`, the chain
+`-(‖a₊‖ ∨ ‖a₋‖) ≤ -‖a₋‖ ≤ -a₋ ≤ a ≤ a₊ ≤ ‖a₊‖ ≤ ‖a₊‖ ∨ ‖a₋‖` and **17VI**.3a.
+For `≥`, `a₊² + a₋² = (a₊ - a₋)² = a²` because `a₊a₋ = 0`, so `a₊² ≤ a²`,
+whence `‖a₊‖² = ‖a₊²‖ ≤ ‖a²‖ = ‖a‖²` by **17VI**.3c and **7III**.13; likewise
+for `a₋`.
+
+The fact was reached through Mathlib
+(`IsSelfAdjoint.norm_eq_max_norm_posPart_negPart`) at
+`A/CStar/Matrices.lean` before it was stated here. -/
+theorem cstar_pos_neg_part_4 (a : 𝒜) (ha : IsSelfAdjoint a) :
+    ‖a‖ = max ‖a⁺‖ ‖a⁻‖ :=
+  by
+    have hp0 : (0 : 𝒜) ≤ a⁺ := CFC.posPart_nonneg a
+    have hm0 : (0 : 𝒜) ≤ a⁻ := CFC.negPart_nonneg a
+    have hpsa : IsSelfAdjoint a⁺ := IsSelfAdjoint.of_nonneg hp0
+    have hmsa : IsSelfAdjoint a⁻ := IsSelfAdjoint.of_nonneg hm0
+    have hpm : a⁺ - a⁻ = a := CFC.posPart_sub_negPart a ha
+    set M : ℝ := max ‖a⁺‖ ‖a⁻‖ with hM
+    have hM0 : 0 ≤ M := le_trans (norm_nonneg _) (le_max_left _ _)
+    -- `≤`: the thesis's chain `-M ≤ -‖a₋‖ ≤ -a₋ ≤ a ≤ a₊ ≤ ‖a₊‖ ≤ M`
+    have hle : ‖a‖ ≤ M := by
+      refine (positive_basic_2_3a a ha M hM0).mp ⟨?_, ?_⟩
+      · -- `-M ≤ a`
+        have h1 : -(algebraMap ℂ 𝒜 ((M : ℝ) : ℂ)) ≤ -(algebraMap ℂ 𝒜 ((‖a⁻‖ : ℝ) : ℂ)) :=
+          neg_le_neg (algebraMap_ofReal_mono (le_max_right _ _))
+        have h2 : -(algebraMap ℂ 𝒜 ((‖a⁻‖ : ℝ) : ℂ)) ≤ -a⁻ :=
+          neg_le_neg ((positive_basic_2_3a a⁻ hmsa ‖a⁻‖ (norm_nonneg _)).mpr le_rfl).2
+        have h3 : -a⁻ ≤ a := by
+          have h := sub_le_sub_right hp0 a⁻
+          rwa [zero_sub, hpm] at h
+        exact (h1.trans h2).trans h3
+      · -- `a ≤ M`
+        have h1 : a ≤ a⁺ := by
+          have h := sub_le_sub_left hm0 a⁺
+          rwa [sub_zero, hpm] at h
+        have h2 : a⁺ ≤ algebraMap ℂ 𝒜 ((‖a⁺‖ : ℝ) : ℂ) :=
+          ((positive_basic_2_3a a⁺ hpsa ‖a⁺‖ (norm_nonneg _)).mpr le_rfl).2
+        exact (h1.trans h2).trans (algebraMap_ofReal_mono (le_max_left _ _))
+    -- `≥`: `a₊² + a₋² = a²`, so both parts are dominated by `a²` in norm
+    have hsq : a⁺ ^ 2 + a⁻ ^ 2 = a ^ 2 := by
+      have hexp : (a⁺ - a⁻) ^ 2 = a⁺ ^ 2 - a⁺ * a⁻ - a⁻ * a⁺ + a⁻ ^ 2 := by
+        noncomm_ring
+      conv_rhs => rw [← hpm]
+      rw [hexp, CFC.posPart_mul_negPart a, CFC.negPart_mul_posPart a]
+      simp
+    have key : ∀ b : 𝒜, IsSelfAdjoint b → 0 ≤ b → b ^ 2 ≤ a ^ 2 → ‖b‖ ≤ ‖a‖ := by
+      intro b hb hb0 hble
+      have h1 : ‖b ^ 2‖ ≤ ‖a ^ 2‖ :=
+        positive_basic_2_3c _ _ (positive_basic_2_4a b hb) hble
+      rw [cstar_involution_basic_13 b hb, cstar_involution_basic_13 a ha] at h1
+      nlinarith [norm_nonneg b, norm_nonneg a]
+    have hge : M ≤ ‖a‖ := by
+      refine max_le (key _ hpsa hp0 ?_) (key _ hmsa hm0 ?_)
+      · rw [← hsq]
+        simpa using add_le_add_left (positive_basic_2_4a a⁻ hmsa) (a⁺ ^ 2)
+      · rw [← hsq, add_comm]
+        simpa using add_le_add_left (positive_basic_2_4a a⁺ hpsa) (a⁻ ^ 2)
+    exact le_antisymm hle hge
+
 /-- **24IV** (`astara-positive`, cstar.tex:3729, Lemma): `a* a ≥ 0` for every
 element `a` of a C*-algebra.  (Mathlib: `star_mul_self_nonneg`.) -/
 theorem astara_positive (a : 𝒜) : 0 ≤ star a * a :=
@@ -5458,6 +5753,28 @@ theorem astara_pos_basic_3 (a b : 𝒜) (ha : 0 ≤ a) (hb : 0 ≤ b)
     tfae_finish
 
 /-- **25II** (`astara-pos-basic-consequences`, cstar.tex:3772, Exercise),
+part 3, closing clause: `a ≤ b` entails `b⁻¹ ≤ a⁻¹` for positive invertible
+`a` and `b`.
+
+*Class 1 — faithful*: it is the instance `(a) ⟺ (d)` of part 3 read at
+`b⁻¹` in place of `b` — `a ≤ b = (b⁻¹)⁻¹` iff `b⁻¹ ≤ a⁻¹` — the inverse
+being positive and invertible by **17VI**.5. -/
+theorem astara_pos_basic_3_inv_antitone (a b : 𝒜) (ha : 0 ≤ a) (hb : 0 ≤ b)
+    (hua : IsUnit a) (hub : IsUnit b) (hab : a ≤ b) :
+    Ring.inverse b ≤ Ring.inverse a :=
+  by
+    have hbi0 : (0 : 𝒜) ≤ Ring.inverse b := (positive_basic_2_5 b hub).mp hb
+    have hbiu : IsUnit (Ring.inverse b) := hub.ringInverse
+    have hbb : Ring.inverse (Ring.inverse b) = b := by
+      obtain ⟨u, rfl⟩ := hub
+      rw [Ring.inverse_unit, Ring.inverse_unit, inv_inv]
+    -- part 3 at the pair `(a, b⁻¹)`: clause 1 is `a ≤ (b⁻¹)⁻¹ = b`, clause 4
+    -- is `b⁻¹ ≤ a⁻¹`
+    have h := (astara_pos_basic_3 a (Ring.inverse b) ha hbi0 hua hbiu).out 0 3
+    rw [hbb] at h
+    exact h.mp hab
+
+/-- **25II** (`astara-pos-basic-consequences`, cstar.tex:3772, Exercise),
 part 4: `(1+a)⁻¹ a ≤ (1+b)⁻¹ b` for `0 ≤ a ≤ b`. -/
 theorem astara_pos_basic_4 (a b : 𝒜) (ha : 0 ≤ a) (hab : a ≤ b) :
     Ring.inverse (1 + a) * a ≤ Ring.inverse (1 + b) * b :=
@@ -5474,7 +5791,10 @@ theorem astara_pos_basic_4 (a b : 𝒜) (ha : 0 ≤ a) (hab : a ≤ b) :
       exact eq_sub_of_add_eq' h
     rw [key a hspa.isUnit, key b hspb.isUnit]
     refine sub_le_sub_left ?_ 1
-    exact CStarAlgebra.ringInverse_le_ringInverse (add_le_add_right hab 1) hspa
+    -- the exercise's own dependency: this is part 3's closing clause, not
+    -- Mathlib's `CStarAlgebra.ringInverse_le_ringInverse`
+    exact astara_pos_basic_3_inv_antitone (1 + a) (1 + b) hspa.nonneg hspb.nonneg
+      hspa.isUnit hspb.isUnit (add_le_add_right hab 1)
 
 end Sqrt
 
@@ -5801,9 +6121,11 @@ private theorem isLUB_pair {A : Type*} [CommCStarAlgebra A] [PartialOrder A]
       (isLUB_zero_posPart (b - a) hba)
     simpa using h
 
-/-- **26II** (`commutative-cstar-basic`, cstar.tex:3856, Exercise), part 4:
-an miu-map between commutative C*-algebras preserves finite suprema (and,
-dually, infima). -/
+/-- **26II** (`commutative-cstar-basic`, cstar.tex:3856, Exercise), part 4,
+binary case: an miu-map between commutative C*-algebras preserves binary
+suprema.  The Exercise asks for *finite* suprema and infima; those are
+`commutative_cstar_basic_4_finite`, `commutative_cstar_basic_4_inf` and
+`commutative_cstar_basic_4_finite_inf` below, each obtained from this one. -/
 theorem commutative_cstar_basic_4 {ℬ : Type*} [CommCStarAlgebra ℬ]
     [PartialOrder ℬ] [StarOrderedRing ℬ] (f : 𝒜 →⋆ₐ[ℂ] ℬ) (a b s : 𝒜)
     (h : IsLUB {a, b} s) : IsLUB {f a, f b} (f s) :=
@@ -5821,6 +6143,182 @@ theorem commutative_cstar_basic_4 {ℬ : Type*} [CommCStarAlgebra ℬ]
       rw [hs, map_add, map_posPart f (b - a) hba, map_sub]
     rw [hfs]
     exact isLUB_pair (f a) (f b) hfba
+
+/-- Auxiliary: if `s` is the supremum of `S` and `u` the supremum of
+`{x, s}`, then `u` is the supremum of `insert x S`. -/
+private theorem isLUB_insert_of {A : Type*} [Preorder A] {S : Set A} {s u x : A}
+    (h : IsLUB S s) (h2 : IsLUB ({x, s} : Set A) u) : IsLUB (insert x S) u :=
+  by
+    constructor
+    · intro y hy
+      rw [Set.mem_insert_iff] at hy
+      rcases hy with rfl | hy
+      · exact h2.1 (Set.mem_insert _ _)
+      · exact le_trans (h.1 hy) (h2.1 (Set.mem_insert_of_mem _ rfl))
+    · intro c hc
+      refine h2.2 ?_
+      rintro z (rfl | rfl)
+      · exact hc (Set.mem_insert _ _)
+      · exact h.2 fun y hy => hc (Set.mem_insert_of_mem _ hy)
+
+/-- Auxiliary: negation carries an infimum to a supremum. -/
+private theorem isLUB_neg_of_isGLB {A : Type*} [InvolutiveNeg A] [Preorder A]
+    (hneg : ∀ x y : A, -x ≤ -y ↔ y ≤ x) {S : Set A} {s : A} (h : IsGLB S s) :
+    IsLUB ((fun x => -x) '' S) (-s) :=
+  by
+    refine ⟨?_, ?_⟩
+    · rintro _ ⟨x, hx, rfl⟩
+      exact (hneg x s).mpr (h.1 hx)
+    · intro c hc
+      have h1 : -c ∈ lowerBounds S := by
+        intro x hx
+        have h2 : -x ≤ c := hc ⟨x, hx, rfl⟩
+        have h3 : -c ≤ -(-x) := (hneg c (-x)).mpr h2
+        rwa [neg_neg] at h3
+      have h4 : -s ≤ -(-c) := (hneg s (-c)).mpr (h.2 h1)
+      rwa [neg_neg] at h4
+
+/-- Auxiliary: and back. -/
+private theorem isGLB_of_isLUB_neg {A : Type*} [InvolutiveNeg A] [Preorder A]
+    (hneg : ∀ x y : A, -x ≤ -y ↔ y ≤ x) {S : Set A} {s : A}
+    (h : IsLUB ((fun x => -x) '' S) (-s)) : IsGLB S s :=
+  by
+    refine ⟨?_, ?_⟩
+    · intro x hx
+      exact (hneg x s).mp (h.1 ⟨x, hx, rfl⟩)
+    · intro c hc
+      have h1 : -c ∈ upperBounds ((fun x => -x) '' S) := by
+        rintro _ ⟨x, hx, rfl⟩
+        exact (hneg x c).mpr (hc hx)
+      exact (hneg s c).mp (h.2 h1)
+
+/-- Auxiliary (**26II**.3/.4): a nonempty finite set of self-adjoint elements
+of a commutative C*-algebra has a supremum, and an miu-map carries it to the
+supremum of the image.  Both halves are the binary case of parts 3 and 4,
+iterated along the finite set. -/
+private theorem finite_lub_aux {ℬ : Type*} [CommCStarAlgebra ℬ] [PartialOrder ℬ]
+    [StarOrderedRing ℬ] (f : 𝒜 →⋆ₐ[ℂ] ℬ) {T : Finset 𝒜} (hT : T.Nonempty) :
+    (∀ x ∈ T, IsSelfAdjoint x) →
+      ∃ s : 𝒜, IsLUB (T : Set 𝒜) s ∧ IsLUB (f '' (T : Set 𝒜)) (f s) :=
+  by
+    induction hT using Finset.Nonempty.cons_induction with
+    | singleton x =>
+        intro _
+        refine ⟨x, ?_, ?_⟩
+        · simpa using isLUB_singleton
+        · simp only [Finset.coe_singleton, Set.image_singleton]
+          exact isLUB_singleton
+    | cons x T hx hT ih =>
+        intro hsa
+        obtain ⟨s, hs, hfs⟩ := ih fun y hy => hsa y (Finset.mem_cons_of_mem hy)
+        have hxsa : IsSelfAdjoint x := hsa x (Finset.mem_cons_self ..)
+        obtain ⟨y, hy⟩ := hT
+        have hysa : IsSelfAdjoint y := hsa y (Finset.mem_cons_of_mem hy)
+        -- `s` is self-adjoint: `s = (s - y) + y` with `s - y ≥ 0`
+        have hssa : IsSelfAdjoint s := by
+          have h0 : (0 : 𝒜) ≤ s - y := sub_nonneg.mpr (hs.1 (Finset.mem_coe.mpr hy))
+          have h1 := (IsSelfAdjoint.of_nonneg h0).add hysa
+          simpa using h1
+        have hlub2 := commutative_cstar_basic_3 x s hxsa hssa
+        refine ⟨(2 : ℂ)⁻¹ • (x + s + CFC.abs (x - s)), ?_, ?_⟩
+        · rw [Finset.coe_cons]
+          exact isLUB_insert_of hs hlub2
+        · rw [Finset.coe_cons, Set.image_insert_eq]
+          exact isLUB_insert_of hfs (commutative_cstar_basic_4 f x s _ hlub2)
+
+/-- **26II** (`commutative-cstar-basic`, cstar.tex:3856, Exercise), part 3,
+finite form: every nonempty finite set of self-adjoint elements of a
+commutative C*-algebra has a supremum — `sa(𝒜)` being a lattice, part 3's
+binary supremum iterated.  (This is the form **29V** needs of
+`g₁ ∨ ⋯ ∨ g_N`.) -/
+theorem commutative_cstar_basic_3_finite {S : Set 𝒜} (hfin : S.Finite)
+    (hne : S.Nonempty) (hsa : ∀ x ∈ S, IsSelfAdjoint x) : ∃ s : 𝒜, IsLUB S s :=
+  by
+    classical
+    have hT : hfin.toFinset.Nonempty := by
+      rwa [Set.Finite.toFinset_nonempty]
+    obtain ⟨s, h, -⟩ := finite_lub_aux (StarAlgHom.id ℂ 𝒜) hT
+      (by simpa [hfin.coe_toFinset] using hsa)
+    rw [hfin.coe_toFinset] at h
+    exact ⟨s, h⟩
+
+/-- **26II** (`commutative-cstar-basic`, cstar.tex:3856, Exercise), part 4,
+in the Exercise's own *finite* form: an miu-map between commutative
+C*-algebras preserves the supremum of a nonempty finite set of self-adjoint
+elements.
+
+*Class 1 — faithful*: the solution's binary case (`commutative_cstar_basic_4`)
+iterated along the finite set. -/
+theorem commutative_cstar_basic_4_finite {ℬ : Type*} [CommCStarAlgebra ℬ]
+    [PartialOrder ℬ] [StarOrderedRing ℬ] (f : 𝒜 →⋆ₐ[ℂ] ℬ) {S : Set 𝒜}
+    (hfin : S.Finite) (hne : S.Nonempty) (hsa : ∀ x ∈ S, IsSelfAdjoint x)
+    {s : 𝒜} (h : IsLUB S s) : IsLUB (f '' S) (f s) :=
+  by
+    classical
+    have hT : hfin.toFinset.Nonempty := by
+      rwa [Set.Finite.toFinset_nonempty]
+    obtain ⟨s', h1, h2⟩ := finite_lub_aux f hT (by simpa [hfin.coe_toFinset] using hsa)
+    rw [hfin.coe_toFinset] at h1 h2
+    rw [h.unique h1]
+    exact h2
+
+/-- **26II** (`commutative-cstar-basic`, cstar.tex:3856, Exercise), part 4,
+infima (binary): an miu-map between commutative C*-algebras preserves binary
+infima.
+
+*Class 1 — faithful*: the solution's own last line, `a ∧ b = -((-a) ∨ (-b))`. -/
+theorem commutative_cstar_basic_4_inf {ℬ : Type*} [CommCStarAlgebra ℬ]
+    [PartialOrder ℬ] [StarOrderedRing ℬ] (f : 𝒜 →⋆ₐ[ℂ] ℬ) (a b s : 𝒜)
+    (h : IsGLB {a, b} s) : IsGLB {f a, f b} (f s) :=
+  by
+    have hnA : ∀ x y : 𝒜, -x ≤ -y ↔ y ≤ x := fun _ _ => neg_le_neg_iff
+    have hnB : ∀ x y : ℬ, -x ≤ -y ↔ y ≤ x := fun _ _ => neg_le_neg_iff
+    have h1 := isLUB_neg_of_isGLB hnA h
+    simp only [Set.image_insert_eq, Set.image_singleton] at h1
+    have h2 := commutative_cstar_basic_4 f (-a) (-b) (-s) h1
+    rw [map_neg, map_neg, map_neg] at h2
+    refine isGLB_of_isLUB_neg hnB ?_
+    simpa only [Set.image_insert_eq, Set.image_singleton] using h2
+
+/-- **26II** (`commutative-cstar-basic`, cstar.tex:3856, Exercise), part 4,
+infima (finite): an miu-map between commutative C*-algebras preserves the
+infimum of a nonempty finite set of self-adjoint elements. -/
+theorem commutative_cstar_basic_4_finite_inf {ℬ : Type*} [CommCStarAlgebra ℬ]
+    [PartialOrder ℬ] [StarOrderedRing ℬ] (f : 𝒜 →⋆ₐ[ℂ] ℬ) {S : Set 𝒜}
+    (hfin : S.Finite) (hne : S.Nonempty) (hsa : ∀ x ∈ S, IsSelfAdjoint x)
+    {s : 𝒜} (h : IsGLB S s) : IsGLB (f '' S) (f s) :=
+  by
+    have hnA : ∀ x y : 𝒜, -x ≤ -y ↔ y ≤ x := fun _ _ => neg_le_neg_iff
+    have hnB : ∀ x y : ℬ, -x ≤ -y ↔ y ≤ x := fun _ _ => neg_le_neg_iff
+    have h1 := isLUB_neg_of_isGLB hnA h
+    have hfin' : ((fun x : 𝒜 => -x) '' S).Finite := hfin.image _
+    have hne' : ((fun x : 𝒜 => -x) '' S).Nonempty := hne.image _
+    have hsa' : ∀ x ∈ (fun x : 𝒜 => -x) '' S, IsSelfAdjoint x := by
+      rintro _ ⟨x, hx, rfl⟩
+      exact (hsa x hx).neg
+    have h2 := commutative_cstar_basic_4_finite f hfin' hne' hsa' h1
+    rw [map_neg] at h2
+    refine isGLB_of_isLUB_neg hnB ?_
+    have himg : ⇑f '' ((fun x : 𝒜 => -x) '' S) = (fun y : ℬ => -y) '' (⇑f '' S) := by
+      ext y
+      constructor
+      · rintro ⟨_, ⟨x, hx, rfl⟩, rfl⟩
+        exact ⟨f x, ⟨x, hx, rfl⟩, (map_neg f x).symm⟩
+      · rintro ⟨_, ⟨x, hx, rfl⟩, rfl⟩
+        exact ⟨-x, ⟨x, hx, rfl⟩, map_neg f x⟩
+    rwa [himg] at h2
+
+/-- **26II** (`commutative-cstar-basic`, cstar.tex:3856, Exercise), part 3,
+finite form, infima: every nonempty finite set of self-adjoint elements of a
+commutative C*-algebra has an infimum. -/
+theorem commutative_cstar_basic_3_finite_inf {S : Set 𝒜} (hfin : S.Finite)
+    (hne : S.Nonempty) (hsa : ∀ x ∈ S, IsSelfAdjoint x) : ∃ s : 𝒜, IsGLB S s :=
+  by
+    have hnA : ∀ x y : 𝒜, -x ≤ -y ↔ y ≤ x := fun _ _ => neg_le_neg_iff
+    obtain ⟨s, hs⟩ := commutative_cstar_basic_3_finite (hfin.image (fun x : 𝒜 => -x))
+      (hne.image _) (by rintro _ ⟨x, hx, rfl⟩; exact (hsa x hx).neg)
+    refine ⟨-s, isGLB_of_isLUB_neg hnA ?_⟩
+    rwa [neg_neg]
 
 /-- **26II** (`commutative-cstar-basic`, cstar.tex:3856, Exercise), part 5:
 the C*-subalgebra generated by two commuting self-adjoint elements of an

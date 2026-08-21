@@ -23922,3 +23922,512 @@ is the first section above: **the audit's "cannot even be phrased" verdict on
 217I was too pessimistic** — the point quantifies over 211IX's *corresponding*
 pairs, not over unrelated choices, and the tree already has both halves of
 that correspondence.
+
+## Session 94 — A/CStar/Positive: **the first repair pass — eight of the nine non-`ok` rows repaired**, 24II.4 is stated at last (and `Matrices.lean` now reaches it through the thesis), and 26II.4 gets the *finite* form 29V needs (worker on `Theses/A/CStar/Positive.lean`)
+
+Scope: `docs/audit/acstar-positive.csv`, the 9 rows whose `stmt` is not `ok`
+(8 `weaker`, 1 `stronger`).  Eight repaired, one left (the benign
+`stronger`), one repaired only in part (14II) with the cost recorded below.
+The file compiles with no errors and no `sorry`; every statement added or
+changed was `#print axioms`-checked *in situ* (source copied to scratch,
+`#print axioms` appended, recompiled): all `[propext, Classical.choice,
+Quot.sound]`.  `A/CStar/Representation.lean` and `A/CStar/Matrices.lean`,
+the only dependents, were recompiled against the rebuilt olean.
+
+### Repaired — our mis-transcriptions, no ruling needed
+
+* **24II.4** `cstar_pos_neg_part_4` — `‖a‖ = ‖a₊‖ ∨ ‖a₋‖`, the clause added
+  by addendum `parsec-240.20`, was **stated nowhere in the tree and was
+  nevertheless used**: `A/CStar/Matrices.lean:843` reached it through
+  Mathlib's `IsSelfAdjoint.norm_eq_max_norm_posPart_negPart` to supply the
+  32XV.3 repair.  Now stated and proved the solution's way
+  (`asols.tex parsec-240.20`(4)): `≤` from the chain
+  `-(‖a₊‖ ∨ ‖a₋‖) ≤ -‖a₋‖ ≤ -a₋ ≤ a ≤ a₊ ≤ ‖a₊‖ ≤ ‖a₊‖ ∨ ‖a₋‖` with
+  **17VI**.3a; `≥` from `a₊² + a₋² = (a₊ - a₋)² = a²` (using `a₊a₋ = 0`), so
+  `a₊² ≤ a²` and `‖a₊‖² = ‖a₊²‖ ≤ ‖a²‖ = ‖a‖²` by **17VI**.3c and
+  **7III**.13.  (1)
+  **`Matrices.lean`'s use site is rerouted through it** (with the launching
+  agent's leave — no worker was on that file), so the fact now enters the
+  tree as a transcribed thesis point instead of from Mathlib.
+* **26II.4** `commutative_cstar_basic_4_finite`,
+  `commutative_cstar_basic_4_inf`, `commutative_cstar_basic_4_finite_inf` —
+  the point says an miu-map between commutative C*-algebras preserves
+  **finite suprema and infima**; we stated *binary suprema* only, and infima
+  not at all.  All three forms are now stated and proved from the solution's
+  binary case (which stays as `commutative_cstar_basic_4`, its doc comment
+  corrected to say it is the binary half): the finite case by induction along
+  the finite set through the new private `isLUB_insert_of`, the infima by
+  `a ∧ b = -((-a) ∨ (-b))`, the solution's own last line, through the new
+  private `isLUB_neg_of_isGLB`/`isGLB_of_isLUB_neg`.  (1)
+  Two further statements fall out of the same induction and are stated
+  because **29V** needs exactly them:
+  `commutative_cstar_basic_3_finite` and `commutative_cstar_basic_3_finite_inf`
+  — *every nonempty finite set of self-adjoint elements of a commutative
+  C*-algebra has a supremum (resp. infimum)*, i.e. 26II.3's Riesz-space
+  lattice iterated.  This is what `A/CStar/Representation`'s 29II proof needs
+  to form `g₁ ∨ ⋯ ∨ g_N` and conclude `τ(g) = 0`; **the tool that blocked
+  un-inverting 29II is now in the tree.**
+* **20aII** `cstar_equaliser_2_positive`, `cstar_equaliser_2_miu`,
+  `cstar_equaliser_2_pu` — we stated only the Exercise's *first* clause
+  ("ℰ = {a : f a = g a} is a closed C*-subalgebra").  The rest is now
+  stated.  `ℰ` is given as a definition, `cstarEqualiser f g`, with
+  `isClosed_cstarEqualiser` as an **instance**, which is what puts Mathlib's
+  `StarSubalgebra.cstarAlgebra` structure on `ℰ` *as a type* and so lets the
+  universal property be stated about the honest inclusion
+  `(cstarEqualiser f g).subtype` rather than about a parameterised stand-in
+  (contrast 47V in `A/VN/Basic`, where no von Neumann structure on a
+  subalgebra-as-a-type was available).  The inclusion is a positive miu-map
+  by **20V**.1 — *not* by 25II.2, which is four parsecs later; the equaliser
+  property in `CStar_miu` is `h` corestricted to `ℰ`
+  (`StarAlgHom.codRestrict`), and in `CStar_pu` the same corestriction, whose
+  positivity needs the inclusion to *reflect* positivity.  That reflection is
+  the new private `nonneg_of_map_nonneg`, run on the thesis's own norm
+  criterion **17V** (`‖ι x - t‖ ≤ t` at `t = ‖ι x‖/2`, both norms unchanged
+  by `ι`) rather than on 29VIII, which is downstream.  Since `𝒜` commutative
+  makes `ℰ` commutative, the same statements are the equaliser in
+  `cCStar_miu`/`cCStar_pu`, as the Exercise asks.  (1)
+* **20aI** `cstar_product_2_pu` — we had only the Exercise's *hint* for the
+  pu half (`cstar_product_2_positive`); the pu universal property itself was
+  nowhere.  Now stated: for pu-maps `fᵢ : ℬ → 𝒜ᵢ` there is a unique pu-map
+  `g : ℬ → ⊕ᵢ 𝒜ᵢ` with `πᵢ ∘ g = fᵢ`.  Proof is the Exercise's own: the
+  tuple `b ↦ (fᵢ b)ᵢ` lands in `⊕ᵢ 𝒜ᵢ` because the `fᵢ` are bounded (the
+  hint's route, here the pu form of **20II**.2, `‖f b‖ ≤ 2‖f 1‖‖b‖`), and it
+  is positive by the *other* hint, `cstar_product_2_positive`.  (1)
+* **20aI** `cstar_product_2_comm` — the commutative variants
+  (`cCStar_miu`, `cCStar_pu`) were not stated.  The content is that the
+  direct sum of commutative C*-algebras is again commutative; stated, and
+  both universal-property doc comments now point at it.  (1)
+* **25II.3** `astara_pos_basic_3_inv_antitone` — the Exercise's closing
+  parenthetical "(and so `a ≤ b` entails `b⁻¹ ≤ a⁻¹`)" was stated nowhere,
+  and **part 4 then used Mathlib's version of that fact
+  (`CStarAlgebra.ringInverse_le_ringInverse`), inverting the Exercise's own
+  dependency.**  The clause is now stated and proved as the instance
+  `(a) ⟺ (d)` of part 3 read at `b⁻¹` for `b` (the inverse being positive
+  and invertible by **17VI**.5), and **`astara_pos_basic_4` is rerouted
+  through it**, so part 4 now rests on our part 3 as the thesis intends.  (1)
+* **13II.2** `hadamard_2` — the Theorem's hypothesis is *convergence of the
+  ordered partial sums*; ours assumed `Summable`, i.e. unconditional
+  summability, which in an infinite-dimensional Banach space is strictly
+  stronger.  The hypothesis is now
+  `Tendsto (fun N => ∑_{n<N} zⁿ • aₙ) atTop (𝓝 L)`, and the thesis's own
+  proof runs on it unchanged: `zᴺ • a_N = S_{N+1} - S_N → 0`, so the terms
+  are bounded and `|z| ≤ R`.  No call sites.  (1)
+
+### Repaired in part — 14II, with the cost
+
+* **14II** `integral_norm_le` — the Exercise has four parts and we stated
+  part 4 alone.  The clause the audit names as genuinely missing — the bound
+  **`‖∫ f‖ ≤ ‖f‖`** that part 2 asks one to deduce, and that everything
+  later in the chapter actually uses — is now stated against 14II, in the
+  form the Bochner integral supplies (`‖f t‖ ≤ M` on `[0,1]` gives
+  `‖∫₀¹ f‖ ≤ M`).  (5)
+* **Left, with the cost**: parts 1–3 proper — existence and uniqueness of
+  the linear `∫ : S_𝒜 → 𝒜` with `∫ a·1_I = |I|a`, the disjoint-interval
+  normal form with `‖f‖ = supₙ‖aₙ‖` and `∑ₙ|Iₙ| ≤ 1`, and density of `S_𝒜`
+  in `C([0,1],𝒜)` — need the type `S_𝒜` of 𝒜-valued step functions, which
+  this tree does not have and which nothing else would use: the integral
+  itself is Mathlib's Bochner integral, so a transcribed `S_𝒜` would be an
+  orphan construction of a few hundred lines duplicating
+  `MeasureTheory`.  The `/-!` block for parsec 140 now says exactly this,
+  in place of the flat "delegated to Mathlib" it said before.
+
+### Left
+
+**Benign generalisation** — **25II.1** `astara_pos_basic_1` (`stronger`):
+ours drops the thesis's `b, c ∈ sa(𝒜)`, which `b ≤ c` in a
+`StarOrderedRing` already forces.  Not a defect; left, as the brief directs.
+
+**Thesis defect, the author's** — **15I**'s printed vertex formula
+`wₙ := c + r cos(2π/n) + i r sin(2π/n)` has the dummy `n` where `2πn/N` is
+meant.  Our `cauchy_formula` uses `c + r·exp(2πin/N)`, which is what is
+meant; the typo is *not* in `ERRATA.md` and putting it there is the author's
+call, so nothing is changed here.  (ERRATA's existing 15I row, about the
+asserted triangulation, is still accurate against the current `cstar.tex`.)
+
+### Binders left standing, and why
+
+* **`[∀ i, Nontrivial (𝒜 i)]`** on `cstar_product_2_miu`,
+  `cstar_product_2_positive`, `cstar_product_2_pu` is **Mathlib's, not
+  20aI's**: it is what Mathlib's only unital ring structure on `lp 𝒜 ∞`
+  demands — the same binder `A/VN/Basic`'s 47IV carries for the same reason,
+  and wave 1's ruling on those was to document and leave.  Both doc comments
+  now say so.
+* **`[PartialOrder (lp 𝒜 ∞)] [StarOrderedRing (lp 𝒜 ∞)]`** record that the
+  C*-order on the product is assumed rather than constructed.  That is this
+  file's convention for *every* C*-algebra in it (`𝒜` itself carries the
+  same two binders throughout), so it is not a 20aI-specific weakening;
+  constructing the instance would need the componentwise square root, i.e.
+  the functional calculus, which parsec 20a does not yet have.  Noted in the
+  doc comment.
+
+### Nothing new for the author
+
+No repair here needed a ruling.  The one finding worth carrying forward is
+for whoever holds `A/CStar/Representation`: **26II.4's finite form is now in
+the tree** (`commutative_cstar_basic_3_finite`,
+`commutative_cstar_basic_4_finite`, and the `_inf` duals), so 29II's proof
+can take the thesis's route through `g₁ ∨ ⋯ ∨ g_N` instead of the inverted
+one.
+
+## Session 94 — A/VN: **the first repair pass on `Division.lean` and `NormalFunctionals.lean`** — all eight `weaker` rows repaired, 89V gets its missing `UU*` half, and 87VIII drops a Banach–Steinhaus detour that rested on a stale "still `sorry`" (worker on `Theses/A/VN/Division.lean`, `Theses/A/VN/NormalFunctionals.lean`)
+
+Audit rows: `docs/audit/avn-division-normalfunctionals.csv` — 9 rows with
+`stmt` not `ok` (8 `weaker`, 1 `stronger`).  **All eight `weaker` rows
+repaired, the one `stronger` row left** (rule 3 of the repair brief).  Both
+files compile with **no errors and no `sorry`**; every declaration touched or
+added was `#print axioms`-checked *in situ* (source copied to the scratchpad,
+`#print axioms` appended, recompiled against freshly built oleans): all
+`[propext, Classical.choice, Quot.sound]`.  The three modules downstream of
+the two files — `A/Proc/Measurement`, `A/Proc/Tensor` (the one external call
+site of a changed statement) and `B/Dils/HilbertModules` — were recompiled
+against fresh oleans of both and are unchanged.
+
+### Repaired — our mis-transcriptions, no ruling needed (8 rows)
+
+* **79VI.1** `pseudoinverse_basic_2'_1` — 790.60.1 is a **three-way**
+  equivalence; the middle clause, *`a` is invertible in the corner
+  `⌈a⌉𝒜⌈a⌉`*, was in the doc comment but not in the statement, and the
+  corner was never formed.  It is now the first conjunct,
+  `∃ t, ⌈a⌉t⌈a⌉ = t ∧ at = ⌈a⌉ ∧ ta = ⌈a⌉` — membership in the corner plus
+  invertibility there, its unit being `⌈a⌉`.  No corner is built as a type;
+  that is **67IV**.1's convention for `c𝒜` and the doc says so.  `(1) ⇒ (2)`
+  is that `a^{∼1}` already lies in the corner (`pt = tat = t = tp` from
+  **79II**.4); `(2) ⇒ (1)` is **79II**.2 ⇒ .5, the two carrier bounds coming
+  from `⌈t⌋ ≤ ⌈⌈a⌉⌋ = ⌈a⌉` and its mirror.  (1)
+* **81II.3** `division_basic_3` — the fourth clause was a bare `∃!`, so the
+  unique `d` was never identified with `a∖c/b`, which is what the point is
+  about.  It now reads `∀ e, (c = aeb ∧ ⌈a⌋e = e ∧ e⌊b⌉ = e) ↔ e = a∖c/b`,
+  which delivers existence, uniqueness *and* the identification.  The value
+  `a∖c/b = ⌈a⌋d⌊b⌉` is read off the same two explicit descriptions the
+  proof already had.  (1)
+* **81VIII.2** `sequential_quotient_2` — the `∃!` was **vacuous**: it read
+  `∃! c, (three properties) ∧ UWTendsto … c`, and an ultraweak limit is
+  unique anyway, so uniqueness *among the three properties* — the thesis's
+  claim — was not delivered.  The two claims are now separate conjuncts:
+  `∃! c, 0 ≤ c ∧ a = √b c √b ∧ ⌈c⌉ ≤ ⌈b⌉`, **and** every such `c` is the
+  ultraweak limit of `∑_{m,n} tₘ a tₙ`.  No new mathematics: the existing
+  uniqueness argument already discarded the convergence hypothesis
+  (`rintro y ⟨⟨…⟩, -⟩`), which is exactly the symptom the audit named.  (1)
+* **84bV** `ha_equalisers` — only hereditary atomicity of `E` plus "range =
+  the set-theoretic equaliser" was stated; the Corollary's *equaliser*
+  property, in `haW*_miu` **and** `haW*_cpsu`, was in the doc and nowhere
+  else.  Both universal properties are now conjuncts, in the shape wave 1
+  gave **47V** in `A/VN/Basic` (`vn_equalisers_miu`, `vn_equalisers_cpsu`):
+  every nmiu- (resp. ncpsu-) map out of a **hereditarily atomic** `D` that
+  equalises `f` and `g` factors uniquely through `e`.  Since `haW*` is a
+  *full* subcategory of `W*`, each is 47V's clause instantiated — the
+  mediating map 47V produces lands in `haW*` automatically — so the two
+  proofs are one line each.  The existential also gained
+  `∃ (_ : VonNeumannAlgebra C)`, which 47V needs and `VNSub` supplies.  (1)
+* **88IV**.2 `carrier_vector_state_2` (new) — item 2 of 880.40, the carrier
+  of the vector functional `⟨x,(·)x⟩` **restricted to `S^□`**, was stated
+  nowhere; the old doc claimed it was "subsumed by the `IsLeast`
+  formulation", but the relative carrier is a different object.  It is now
+  `IsLeast {p | p ∈ S^□ ∧ IsStarProjection p ∧ ⟨x,(1−p)x⟩ = 0}
+  (⌈|x⟩⟨x|⌉_{S^□})` — `carrier_spec` read inside the von Neumann algebra
+  `S^□`, rendered in the ambient `B(H)` exactly as **88IX**
+  `commutant_cceil` renders the relative *central* carrier.  The proof is
+  the exercise's: `⟨x,(1−q)x⟩ = ‖(1−q)x‖²`, so the equation says `qx = x`,
+  which says `|x⟩⟨x|q = |x⟩⟨x|`, i.e. `⌈|x⟩⟨x|⌉ ≤ q`; minimality is
+  **88II**'s.  (1)
+* **88V**.1 `proto_double_commutant_1` and `amp_eq_sum_corners` (new) —
+  880.50 item 1 was a claim in its own right and was converted nowhere
+  (item 2's two halves already were).  Both halves are now stated: an np-map
+  `ω` on `B(H)` is `ω(t) = ⟨x′, ϱ′(t)x′⟩` for the vector `x′ ∈ ⊕ₙH`
+  assembled from **39IX** `bh_np`'s sequence, and `ϱ′(t) = ∑ₙ Pₙ* t Pₙ`.
+  The second is stated **strongly** — pointwise on `⊕ₙ H` — because in norm
+  the series does not converge (already at `t = 1`); the thesis writes the
+  bare equation.  It is `lp.hasSum_single` at `ϱ′(t)y`.  The main theorem's
+  doc now says which declaration is which item.  (1, with the convergence
+  mode made explicit)
+* **89V** `sigma_weak_lemma_2` — the Lemma's conclusion is **symmetric** and
+  only the `U*U` half was stated, so the hypothesis vectors `x_ω ∈ H` had no
+  conclusion attached to them at all (and the doc said "and symmetrically
+  for `UU*`", which the statement did not deliver).  The three `UU*`
+  conjuncts are now there: `UU*` is a projection, it lies in `ϱ(𝒜)^□`, and
+  `ϱ(∑_ω ⌈⌈ω⌉⌉)` is least among the projections of `ϱ(𝒜)^□` that are
+  central there and dominate it.  The proof is the `U*U` argument mirrored
+  under `π ↔ ϱ`, `K ↔ H`, `p_ω = U_ω*U_ω ↔ q_ω = U_ωU_ω*`, `P = V*V ↔
+  Q = VV*` — every ingredient was already in the proof (`hqle`, `horthH`,
+  `hVsumH` from **89III**, `hUfixH`/`hUprojH` from **89I**), and `Q` commutes
+  with `ϱ(𝒜)` by the same `V*ϱ(a) = π(a)V*` that gives `P` its commutation.
+  `centre_commutant` (**88VIII**) and `nmiu_central_preimage` are applied to
+  `ϱ` instead of `π`.  (1)
+  Its one consumer, `sigma_weak_lemma` (**89VII**), destructures the tuple;
+  the pattern gained three `-`s and nothing else changed.
+* **90II.1** `vn_center_separating_fundamental_1'` (new) — 900.20.1 says
+  `Ω′` is **order separating**, i.e. cstar.tex **21II**.1 for an *arbitrary*
+  element; ours was a two-element comparison with both elements assumed
+  self-adjoint, and **the two hypotheses were used nowhere** — the proof
+  goes straight to **30X** `nonneg_of_conjNP_of_centreSeparating`, which
+  takes an arbitrary element.  The statement was therefore weaker than our
+  own proof, and it did not use the tree's `OrderSeparating` predicate.  The
+  point's statement is now `OrderSeparating (fun (ω,s) : Ω × S ↦ ω(s*(·)s))`,
+  carrying the 90II.1 DISP, proved by 900.30's argument unchanged (30X for
+  the larger `Ξ`, plus ultrastrong continuity of `x ↦ ω(x*ax)`, which is
+  **72III**.1c's estimate).  The comparison form **keeps its name and
+  signature** — `A/Proc/Tensor:7256` `char_bounded` passes the two
+  self-adjointness arguments positionally, and the brief forbids editing
+  another module — and is now a two-line corollary of the primed statement,
+  with its binders renamed `_ha`, `_hb` and its doc saying plainly that they
+  are not needed.  (1)
+
+### Repaired — proof side
+
+* **87VIII** `ultraweakly_bounded_implies_bounded` carried an in-proof
+  comment justifying a detour — push the net into a faithful normal
+  representation and run Banach–Steinhaus **twice** on `H`, once on the
+  diagonal `⟨z,ϱ(bₐ)z⟩` and once, after polarisation, on the operators —
+  "because the thesis runs the uniform boundedness principle on the predual
+  `𝒜_*`, which needs **87III** and **87VI** (both still `sorry`)".  They are
+  proved, in this same file, seventy lines above.  The obsolete premise was
+  the only reason for the detour, so 87VIII now runs **870.90's own proof**:
+  `Φ_α : f ↦ f(b_α)` is a bounded functional on `𝒜_*`; `‖b_α‖ ≤ ‖Φ_α‖` by
+  **87VI** `norm_predual`; `𝒜_*` is complete by **87III**
+  `predual_complete`; and `sup_α|f(b_α)| < ∞` for each `f ∈ 𝒜_*` because
+  **72XI** `luws` splits `f = ∑_{k<4} i^k ω_k` into np-functionals, which is
+  where ultraweak boundedness enters.  Mathlib's `banach_steinhaus` then
+  finishes.  One new definition, `predualSub`, was needed: `predual A` as a
+  `Submodule ℂ (A →L[ℂ] ℂ)`, since the uniform boundedness principle wants a
+  complete normed space and not a subset.  (1)
+  This is the fifth divergence the audit found resting on a stale "still
+  `sorry`", and the first to be retired.
+
+### Fixed — stale prose, ours
+
+* **81II.1** `division_basic_1`'s doc had the thesis defect **backwards**.
+  vn.tex:5361 prints "for every element `c` of `b𝒜`", which cannot be meant
+  — `c/b` is defined (**81I**) only for `c ∈ 𝒜b` — and our Lean hypothesis
+  `∃ d, c = d·b` is the correct `𝒜b`, so the statement silently carries the
+  repair; the doc comment said the opposite.  It now records the defect the
+  right way round.  (No change to the statement; the erratum is `ERRATA.md`'s
+  to make, and **81II.1** is already on the triage list of thesis defects.)
+* Both module headers still read "Statements only; every proof is `sorry`"
+  on files that have none.  Removed.
+
+### Left, with the reason
+
+* **89VII** `sigma_weak_lemma` (the one `stronger` row) — 890.70 fixes `ϱ`
+  to be the inclusion of a von Neumann algebra of operators on `H` and `π`
+  to be `ϱ_Ω` over all np-maps; ours abstracts both (any injective nmiu-map
+  with von Neumann range, and any representation in which every np-map is a
+  vector functional).  A **benign generalisation** — it is proved, and the
+  thesis's case is an instance — so rule 3 of the repair brief applies.
+  Left, untouched.
+* **`pseudoinverse_basic_2'_4`** was left exactly as it is, per the brief:
+  its unused `hcomm` is what the author's ruling asked for, and vn.tex:5228
+  now reads "pseudoinvertible positive **commuting** elements".
+
+### Nothing new for the author
+
+No repair here needed a ruling.  The one thing worth carrying forward: the
+`UU*` half of **89V** is now available, and `sigma_weak_lemma` (89VII)
+currently discards it (`⟨…, -, -, -⟩`).  If the `ϱ`-side relative central
+carrier is ever wanted — 890.80's maximal-family argument is stated only on
+the `π` side — it is there for the taking.
+
+## Session 94 — A/Proc/Measurement: **the first repair pass — five of the nine non-`ok` rows repaired**, 101VII.1's missing middle clause is stated and proved, 106III.2 finally shows that axiom (B) *fails*, and three proof routes that rested on stale "still `sorry`" claims are put back on the thesis's own argument (worker on `Theses/A/Proc/Measurement.lean`)
+
+Audit rows: `docs/audit/aproc-measurement.csv` — 9 rows with `stmt` not `ok`
+(8 `weaker`, 1 `differs`).  **Five repaired, four left** (all four on rule 1
+or the missing-mathematics clause of the repair brief).  The file compiles
+with **no errors** and **exactly the two `sorry`s it started with** — no new
+one, and neither of the two touched as a proof.  Every declaration touched
+or added was `#print axioms`-checked *in situ* (source copied to the
+scratchpad, `#print axioms` appended, recompiled): all
+`[propext, Classical.choice, Quot.sound]`, except `centrally_similar_basic_5`
+which keeps its `sorryAx` (unchanged).  All four direct dependents —
+`A/Proc/Tensor`, `B/Dils/Pure`, `B/Dils/Stinespring`, `B/Eff/VNExamples` —
+were recompiled against a freshly built olean of the module and are
+unchanged.  No changed statement had a call site anywhere in the tree
+(checked by `grep` before each change).
+
+### Repaired — our mis-transcriptions, no ruling needed (5 rows)
+
+* **94II**.6 `corner_vna_basic_6` — the point has two clauses ("the supremum
+  … computed in `𝒜` is itself in `e𝒜e`, **and, in fact, the supremum of `D`
+  in `e𝒜e`**"); only the first was stated.  The second is now a conjunct:
+  whenever `D` is the image `Corner.saMap '' D'` of a set of self-adjoint
+  elements of `Corner A e`, every `IsLUB D' s'` has `s'.val = ⋁D`.  Proof is
+  part 5's coherence in both directions — the ambient supremum, which the
+  first clause puts in the corner, is an upper bound of `D'` there, and any
+  upper bound of `D'` in the corner is one of `D` in `𝒜`.  The declaration
+  gained `[Fact (IsStarProjection e)]` so that `Corner A e` can be formed;
+  it has no call sites.  (1)
+* **101VII**.1, **middle clause** — `equivalent_examples_1_corners` (new).
+  The point's three clauses are `a*(·)a`/`a(·)a*` on `𝒜`; *the same pair
+  between the corners `p𝒜p` and `q𝒜q` when `a*pa ≤ q`*; and "in
+  particular" `π_s`/`c_s`.  The middle one was **rendered nowhere**
+  (`grep Contraposed` found only the outer two).  It is now stated and
+  proved: for ncp-maps `f : p𝒜p → q𝒜q` and `g : q𝒜q → p𝒜p` given by
+  `f(b) = a*ba` and `g(b) = aba*`, `Contraposed f g`.  Carrying the two maps
+  as *given* by those formulas — the shape in which **94III**.2 `adNCP`
+  supplies the first — is what makes the clause true as printed: `a*pa ≤ q`
+  is exactly what puts `a*(·)a` inside `q𝒜q`, but nothing in the printed
+  hypotheses puts `a(·)a*` inside `p𝒜p`, and without something that does
+  the second map **does not exist** (`p = 0`, `q = 1`, `a = 1`: then
+  `a*pa = 0 ≤ q` while `a(·)a*` would be the identity `𝒜 → 0`).  So the
+  statement assumes neither `a*pa ≤ q` nor its mirror `aqa* ≤ p`, and both
+  instances of the clause supply their own.  The proof is
+  `equivalent_examples_1`'s argument read inside the corners: both sides say
+  `x a t = 0` for the projections `x` of `p𝒜p` and `t` of `q𝒜q`
+  (`conj_perp_eq_zero_iff` twice, `mul_triple_eq_zero_iff_star` once).
+  `equivalent_examples_1'` (the third clause) is **not** re-derived from it —
+  `π_s` has domain `𝒜`, not `Corner A 1`, and the two are isomorphic but not
+  identical — but its doc now says that the thesis reads it off the middle
+  clause at `p = 1`, `q = s`, `a = s`, and that ours runs the same argument
+  directly.  (1)
+* **104III**.5 `centrally_similar_basic_5` — the point asks one to show `p`
+  and `q` centrally similar **on the grounds that both `(p∧q)/p` and
+  `(p∧q)/q` are central**, and that grounds clause is the whole content of
+  the hint (it is exactly part 3's hypothesis).  Ours stated only the
+  conclusion.  The statement now reads
+  `div (meet p q) p ∈ centre A ∧ div (meet p q) q ∈ centre A ∧
+  CentrallySimilar p q`, and the proof derives the third conjunct from the
+  first two by `centrally_similar_basic_3` — so the single `sorry` now sits
+  on the grounds clause alone, which is where the missing mathematics is.
+  Also fixed: the binder `hcp` was **declared twice** (`⌈p⌉ = 1`, then the
+  commutation of `eₙ` with `p`), the second shadowing the first; the
+  commutation binders are now `hecp`/`hecq`.  (1, for the shape; the proof
+  is still parked — see below)
+* **106III**.1 `sequential_product_counterexample_1` (the one `differs`) —
+  the conjunct meant to be axiom **(C)** read
+  `⌈p⌉(⌈q⌉q⌈q⌉)⌈p⌉ = ⌈⌈p⌉p⌈p⌉⌉ q ⌈⌈p⌉p⌈p⌉⌉`, i.e. `p ∗ (q ∗ q) = (p ∗ p) ∗ q`,
+  where (C) is `p ∗ (p ∗ q) = (p ∗ p) ∗ q` — an inner `⌈q⌉` where `⌈p⌉` is
+  meant.  Nothing false was asserted (`⌈q⌉q⌈q⌉ = q` for an effect, so the two
+  coincide), but the displayed clause was not the axiom.  The inner `⌈q⌉` is
+  now `⌈p⌉` and the proof is two lines of idempotence instead of one
+  `hsandwich`.  The doc records what the clause used to say and why it was
+  harmless.  (4)
+* **106III**.2 `sequential_product_counterexample_2_ax2_is_false` (new) —
+  part 2 asks one to show the operation satisfies all axioms **except (B)**,
+  and ours proved (A), (C), (D), (E) and said nothing about (B), so the point
+  of the part — that (B) is not a consequence of the rest — was not rendered.
+  It is now proved.  Witness: `B(ℂ²)` at `p = e + ½e^⊥` with `e` the
+  projection onto `ℂ(1,0)`.  `⌊p⌋ = e` (a new private lemma
+  `effects_and_floor_proj_add_smul`: for `0 ≤ t < 1` a projection `w` below
+  `e + te^⊥` has `(e + te^⊥)w = w`, hence `(1−t)·e^⊥w = 0`, hence `ew = w`),
+  so `p − ⌊p⌋ = ½e^⊥` and `s := √(p−⌊p⌋)` satisfies `se = 0`, i.e. lives in
+  `e^⊥𝒜e^⊥`.  Hence `p ∗ q = eqe + s q s` depends on `q` only through `eqe`
+  and `e^⊥qe^⊥` — so it identifies the two rank-one projections onto
+  `ℂ(1,1)` and `ℂ(1,−1)` — while it is **faithful**: for `0 ≤ x` the two
+  summands are separately `0`, `exe = 0` gives `xe = 0` and `sxs = 0` gives
+  `xs = 0` hence `x·½e^⊥ = x s s = 0`, and `x = xe + xe^⊥ = 0`.  A pure map
+  computing it would therefore be a **filter** (**100VII**.1, faithful pure
+  ⇒ filter) and so **injective** (**98II**.2) — contradiction.  The matrix
+  side is the `Matrix.toEuclideanCLM` transport already used for the 101VII.2
+  and 106III.3 counterexamples, with rational entries only.  (1)
+
+### Proof routes put back on the thesis's argument (3 divergences retired)
+
+The audit's standing observation — "a stale *still `sorry`* is a live
+instruction to take the long way round" — was exactly right here.  Four such
+claims were in this file; all four were false, and three of them were the
+*stated reason* for a divergence.
+
+* **95II** `prop_corner` — the last step of the author's proof
+  (proc.tex:290) is "`f(a) = f(uu* a uu*)` by `cp-comprehension`".  Ours ran
+  it through `carrier_fundamental` (**63VI**) instead, "because 63IV is still
+  `sorry` in `A/VN`".  `cp_comprehension` is proved in
+  `A/VN/Projections.lean`; the step is now literally
+  `(cp_comprehension F (uu*) … hfq a).2.2`, and eight lines of carrier
+  bookkeeping go away.  (2 → 1)
+* **99XI** `filter_of_projection_multiplicative` — its `isFilter_cornerIncl`
+  used to prove the universal property of the corner inclusion **from
+  scratch**, on the ground that **96V** was "out of reach here — its proof
+  needs `sequential-douglas`, `div-approx` and `div-usc` (vn.tex 81VI, 81VII,
+  81IX), all still `sorry` in `A/VN/Division.lean`".  `A/VN/Division.lean` has
+  no `sorry`, and `canonical_filter`/`isFilter_ad` are proved 1200 lines
+  above in this very file.  `isFilter_cornerIncl` is now three lines:
+  `isFilter_ad` at `d = p`, using `⌊p⌉ = p`.  (The from-scratch route stays
+  as `conj_ncp_eq_of_le_proj`/`exists_ncpCorestrict`, which 100III and 102VII
+  use in their own right.)  99XI's own proof is unchanged — the audit rates
+  it `faithful` — but the parenthetical calling 96V "unavailable" is gone.
+  (3 → 1)
+* **99XII** `sharp_multiplicative` — the exercise's hint is "factor
+  `f = ζ ∘ h` where `ζ` is a filter for `f(1)` and `h` is an ncp-map".  Ours
+  deliberately did not follow it, "which would need **98II** `filter-basic`,
+  still `sorry`", and applied 99II's implications directly to the non-unital
+  `f`.  `filter_basic_1`/`_2`/`_3` are proved 1000 lines above.  The `(2) ⇒
+  (1)` step now *is* the hint: take `ζ = c_{f(1)}` (96V/98I), let `h` be the
+  map its universal property provides; under (2) the element `ζ(1) = f(1)` is
+  a projection, so `ζ` is multiplicative by **99XI** and injective by
+  **98II**.2, which makes `h` unital and carries (2) across to `h`; then `h`
+  is multiplicative by **99II** `gardner` **in its unital form**, which is
+  the whole point of the hint, and so is `f = ζ ∘ h`.  (2 → 1)
+
+The fourth stale claim is the **module header**, which said `exists_sqBracket`
+and `exists_diamondDown` were "still `sorry`" and that "while an `exists_`
+lemma is `sorry`, every statement about the map it defines is vacuous" — a
+reader's warning that had been false for a long time and that would have
+devalued everything about `[f]` and `f_⋄` in the file.  It now says all the
+existence lemmas are proved, and names the file's two actual `sorry`s.
+
+### Stale prose repaired
+
+* the module header (above);
+* `centrally_similar_basic_3_meet_cceil_counterexample` — its doc still
+  claimed "our transcription reads `p ∧ q` as the infimum of `{p,q}` in the
+  order of `𝒜` (`IsGLB`)" and argued at length for a route through Kadison's
+  anti-lattice theorem.  Both are superseded: `centrally_similar_basic_3` now
+  uses `Theses.A.CStar.meet`, and proc.tex 104III cites
+  `commutative-cstar-basic`(5).  The doc now says what the theorem does say —
+  that the repaired point 3's `⌈p⌉ = ⌈q⌉ = 1` cannot be weakened to equal
+  *central* carriers — and records the abandoned route as history.  While
+  there, the statement was **strengthened** to make the record bite the
+  statement actually transcribed: it now also asserts
+  `m = Theses.A.CStar.meet p q`, proved from `|p − (1−p)| = 1` (`2p−1` is a
+  symmetry), not merely `m = pq`;
+* `equivalent_examples_2` (101VII.2) and `centrally_similar_fundamental`
+  (104IV) — both carry unmarked repairs (`f 1 = 1`, `⌈q⌉ = 1`).  Both already
+  pointed at `ERRATA.md`; the citations now name the row and its status.
+
+### Left, with the reason
+
+* **101VII**.2 `equivalent_examples_2` (`weaker`) — the extra `f 1 = 1` is
+  not ours to drop: 101VII.2 is **false as printed**, machine-checked here as
+  `equivalent_examples_2_is_false` and recorded in `ERRATA.md` (row 101VII.2,
+  OPEN).  Rule 1 of the brief: thesis defect, author's call.  Doc citation
+  sharpened, statement untouched.
+* **104IV** `centrally_similar_fundamental` (`weaker`) — likewise: `⌈q⌉ = 1`
+  is used by the thesis's own proof but missing from its statement, and
+  without it the second conclusion is false
+  (`centrally_similar_fundamental_needs_faithful`, `ERRATA.md` row 104IV,
+  OPEN).  Rule 1.  Doc citation sharpened, statement untouched.
+* **106III**.3 `sequential_product_counterexample_3` (`weaker`, `sorry`) —
+  left entirely alone per the brief.  Its transcribed (E) clause is **false
+  as printed** (`sequential_product_counterexample_3_ax5_is_false`,
+  `ERRATA.md` row 106III.3, OPEN), so the `sorry` is not closable and the
+  statement must not be changed to match a falsehood.  Its unrendered closing
+  clause ("conclude that for `u_p := g(p)` with `g` Borel, `g(2/3)=1`,
+  `g(4/9)=−1`, `∗` satisfies everything except (C)") needs the same missing
+  tool as 106III.4 — see below.
+* **106III**.4 `sequential_product_counterexample_4` (`weaker`) — the second
+  and main claim, that `p ∗ q := √p g(p)* q g(p) √p` satisfies every axiom
+  except (E), needs the **Borel functional calculus** `p ↦ g(p)` for a Borel
+  `g : [0,1] → S¹`.  Mathlib's `cfc` is continuous-only, and there is no
+  Borel calculus in this tree.  This is the brief's "a repair that needs
+  mathematics the tree does not have": the statement is left exactly as it
+  is, the existing `FIXME(borel-calculus)` stands, and the cost is recorded
+  here.  It is the same tool 106III.3's closing clause wants, so **one**
+  piece of missing infrastructure blocks two clauses.
+
+### The cost, named
+
+**The Borel functional calculus is the only mathematical gap this module's
+audit rows show.**  Two clauses of 106III wait on it (part 4's main claim and
+part 3's closing "conclude"), and nothing else here is blocked by anything
+but an author ruling.  The remaining `sorry` in `centrally_similar_basic_5`
+is unchanged and still wants what its doc says: a form of **104III**.4
+relative to a projection unit `eₙ` rather than `1`.
+
+### Nothing new for the author
+
+No repair here needed a ruling.  One observation worth carrying forward: the
+**middle clause of 101VII.1 is under-hypothesised as printed** — with only
+`a*pa ≤ q` the map `a(·)a* : q𝒜q → p𝒜p` need not exist (`p = 0`, `q = 1`,
+`a = 1`).  Our statement sidesteps it by taking both maps as given, so
+nothing in the tree is wrong and no ruling is *required*; but if the author
+wants the Example to typecheck as written, the mirror hypothesis
+`aqa* ≤ p` is what it wants.  Both uses in the thesis — `adNCP` and the
+`π_s`/`c_s` pair — satisfy it.
