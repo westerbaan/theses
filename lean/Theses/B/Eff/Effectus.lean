@@ -23,6 +23,8 @@ Design:
 -/
 import Theses.B.Eff.EffectAlgebras
 import Theses.B.Eff.WStarCat
+-- for 189aII.3(c): Mathlib's `FinitaryExtensive (CompHausLike P)`
+import Mathlib.Topology.Category.CompHaus.Limits
 
 set_option warn.classDefReducibility false
 -- several proofs below do not need all of the ambient effectus structure
@@ -464,10 +466,10 @@ theorem cotupl_pcm_ea_iso (X Y : C) :
     show coprod.desc (coprod.inl ≫ r) (coprod.inr ≫ r) = r
     rw [← coprod.desc_comp, coprod.desc_inl_inr, Category.id_comp]
 
-/-- **181VII** (`coprod-prod`, eff.tex:1066, Proposition): the coproduct in
-an effectus in partial form is almost a biproduct — for `f : Z ⟶ X` and
-`g : Z ⟶ Y` with `1 ∘ f ⊥ 1 ∘ g` there is a unique `⟨f,g⟩ : Z ⟶ X + Y`
-with `▷₁ ∘ ⟨f,g⟩ = f` and `▷₂ ∘ ⟨f,g⟩ = g`. -/
+/-- `▷₁ ∘ (k + l) = [k, 0]`: the first partial projection absorbs a
+coproduct of maps.  A helper for `coprod_prod_converse` (181VII); until the
+audit repair this declaration carried the **181VII** doc comment, which
+belongs on `coprod_prod` below. -/
 private theorem map_pproj₁ {X Y X' Y' : C} (k : X ⟶ X') (l : Y ⟶ Y') :
     coprod.map k l ≫ pproj₁ X' Y' = coprod.desc k 0 := by
   refine coprod.hom_ext ?_ ?_
@@ -535,6 +537,13 @@ private theorem pair_unique (f : Z ⟶ X) (g : Z ⟶ Y) (q : Z ⟶ X ⨿ Y)
         exact PCM.ovee_congr (by rw [← Category.assoc, h₁])
           (by rw [← Category.assoc, h₂]) _ hk
 
+/-- **181VII** (`coprod-prod`, eff.tex:1066, Proposition): the coproduct in
+an effectus in partial form is almost a (bi)product — for `f : Z ⟶ X` and
+`g : Z ⟶ Y` with `1 ∘ f ⊥ 1 ∘ g` there is a **unique** `⟨f,g⟩ : Z ⟶ X + Y`
+with `▷₁ ∘ ⟨f,g⟩ = f` and `▷₂ ∘ ⟨f,g⟩ = g`, where `▷₁ = [id,0]` and
+`▷₂ = [0,id]`.  (The remaining halves of the bijective correspondence are
+`effPair_eq_ovee`, `⟨f,g⟩ = (κ₁ ∘ f) ⋁ (κ₂ ∘ g)`, and
+`coprod_prod_converse`.) -/
 theorem coprod_prod {f : Z ⟶ X} {g : Z ⟶ Y}
     (h : Perp (f ≫ truth X) (g ≫ truth Y)) :
     ∃! p : Z ⟶ X ⨿ Y, p ≫ pproj₁ X Y = f ∧ p ≫ pproj₂ X Y = g := by
@@ -2220,6 +2229,11 @@ variable {D : Type u} [Category.{v} D] [HasFiniteCoproducts D]
   [∀ X Y : D, PCM (X ⟶ Y)] [FinPAC D] [EffectusPartialForm D]
   [HasFiniteCoproducts (Tot D)] [HasTerminal (Tot D)]
 
+-- **181XIII**: the truth predicate on the final object of `Tot D` is an
+-- isomorphism.  Made a local instance so that `inv (1 : (⊤_ (Tot D)).base ⟶ I)`
+-- elaborates in the definition of the thesis's `P'` below.
+attribute [local instance] truth_terminal_isIso
+
 /-- **188III**: `▷₁ ∘ [g, κ₂] = (▷₁ ∘ g) ∘ ▷₁`. -/
 theorem tot_desc_tp₁ {Y Z : Tot D} (g : Y ⟶ Z ⨿ ⊤_ (Tot D)) :
     (coprod.desc g (coprod.inr : (⊤_ (Tot D)) ⟶ Z ⨿ ⊤_ (Tot D))).1 ≫ tp₁ Z (⊤_ (Tot D))
@@ -2251,35 +2265,136 @@ instance parTotFunctor_faithful : (parTotFunctor (D := D)).Faithful where
     exact (cancel_mono (truth (⊤_ (Tot D)).base)).mp
       (tot_snd_coord_eq (pval f) (pval g) h₁)
 
+/-- The second component of the thesis's inverse `P' f = ⟨f, (1 ∘ f)ᵖ⟩`
+(**188III**): the orthosupplement `(1 ∘ f)ᵖ`, read as a map into
+`(⊤_ (Tot D)).base` along the isomorphism `1 : (⊤_ (Tot D)).base ≅ I` that
+**181XIII** supplies (`truth_terminal_isIso`).  The transport is needed only
+because `⊤_ (Tot D)` is *a* final object of `Tot D`, not `Tot.of I` on the
+nose. -/
+noncomputable def parTotOrth {X Y : D} (f : X ⟶ Y) : X ⟶ (⊤_ (Tot D)).base :=
+  EffectusPartialForm.orth (f ≫ truth Y) ≫ inv (truth (⊤_ (Tot D)).base)
+
+theorem parTotOrth_truth {X Y : D} (f : X ⟶ Y) :
+    parTotOrth f ≫ truth (⊤_ (Tot D)).base
+      = EffectusPartialForm.orth (f ≫ truth Y) := by
+  rw [parTotOrth, Category.assoc, IsIso.inv_hom_id, Category.comp_id]
+
+theorem parTotOrth_perp {X Y : D} (f : X ⟶ Y) :
+    Perp (f ≫ truth Y) (parTotOrth f ≫ truth (⊤_ (Tot D)).base) := by
+  rw [parTotOrth_truth]
+  exact EffectusPartialForm.perp_orth _
+
+/-- **188III** (`proof-cho-thm`, eff.tex:1955): the thesis's inverse
+`P' f = ⟨f, (1 ∘ f)ᵖ⟩`, on morphisms.  It is total because
+`1 ∘ ⟨f, (1 ∘ f)ᵖ⟩ = (1 ∘ f) ⋁ (1 ∘ f)ᵖ = 1` (**181IX.2** and the effect
+algebra axiom for `ᵖ`). -/
+noncomputable def parTotInvMap {X Y : D} (f : X ⟶ Y) :
+    (Par.of (Tot.of X) : Par (Tot D)) ⟶ Par.of (Tot.of Y) :=
+  (⟨tpair (X := Tot.of Y) (Y := ⊤_ (Tot D)) f (parTotOrth f) (parTotOrth_perp f), by
+      refine Eq.trans
+        (tpair_truth (X := Tot.of Y) (Y := ⊤_ (Tot D)) f _ (parTotOrth_perp f)) ?_
+      refine (PCM.ovee_congr rfl (parTotOrth_truth f) _
+        (EffectusPartialForm.perp_orth _)).trans ?_
+      exact EffectusPartialForm.ovee_orth _⟩ :
+    (Tot.of X : Tot D) ⟶ Tot.of Y ⨿ ⊤_ (Tot D))
+
+/-- **188III**, the thesis's first computation:
+`P P' f = ▷₁ ∘ ⟨f, (1 ∘ f)ᵖ⟩ = f`. -/
+theorem parTotFunctor_map_inv {X Y : D} (f : X ⟶ Y) :
+    (parTotFunctor (D := D)).map (parTotInvMap f) = f :=
+  tpair_tp₁ (X := Tot.of Y) (Y := ⊤_ (Tot D)) f (parTotOrth f) (parTotOrth_perp f)
+
+/-- **188III**, the thesis's second computation:
+`P' P f = ⟨▷₁ ∘ f, (1 ∘ ▷₁ ∘ f)ᵖ⟩ = f`.
+
+The thesis writes this as
+`⟨▷₁ ∘ f, (1 ∘ ▷₁ ∘ f)ᵖ⟩ = (κ₁ ∘ ▷₁ ∘ f) ⋁ (κ₂ ∘ ▷₁ ∘ f)ᵖ = f`; the content
+is that the *second* projection of `f` is the orthosupplement of the first,
+`1 ∘ ▷₂ ∘ f = (1 ∘ ▷₁ ∘ f)ᵖ`, which is the decomposition of `1` along a
+coproduct (**181IX.2**, `truth_decomp`) together with totality of `f` and the
+uniqueness of orthosupplements. -/
+theorem parTotInvMap_map {X Y : Par (Tot D)} (f : X ⟶ Y) :
+    parTotInvMap ((parTotFunctor (D := D)).map f) = f := by
+  have hd : ovee (((pval f).1 ≫ tp₁ Y.base (⊤_ (Tot D))) ≫ truth Y.base.base)
+      (((pval f).1 ≫ tp₂ Y.base (⊤_ (Tot D))) ≫ truth (⊤_ (Tot D)).base)
+      (tp_perp (pval f).1) = truth X.base.base := by
+    rw [truth_decomp (pval f).1]
+    exact tot_total_base (pval f)
+  have horth : ((pval f).1 ≫ tp₂ Y.base (⊤_ (Tot D))) ≫ truth (⊤_ (Tot D)).base
+      = EffectusPartialForm.orth
+          (((pval f).1 ≫ tp₁ Y.base (⊤_ (Tot D))) ≫ truth Y.base.base) :=
+    EffectusPartialForm.orth_unique (tp_perp (pval f).1) hd
+  have key : parTotOrth ((parTotFunctor (D := D)).map f)
+      = (pval f).1 ≫ tp₂ Y.base (⊤_ (Tot D)) := by
+    show EffectusPartialForm.orth
+        (((pval f).1 ≫ tp₁ Y.base (⊤_ (Tot D))) ≫ truth Y.base.base)
+        ≫ inv (truth (⊤_ (Tot D)).base) = _
+    rw [← horth, Category.assoc, IsIso.hom_inv_id, Category.comp_id]
+  refine pval_inj (Subtype.ext (tp_jm (X := Y.base) (Y := ⊤_ (Tot D)) ?_ ?_))
+  · exact tpair_tp₁ (X := Tot.of Y.base.base) (Y := ⊤_ (Tot D)) _ _ _
+  · exact (tpair_tp₂ (X := Tot.of Y.base.base) (Y := ⊤_ (Tot D)) _ _ _).trans key
+
+/-- **188III** (`proof-cho-thm`, eff.tex:1955): the thesis's **inverse
+functor** `P' : D ⟶ Par (Tot D)`, `P' f = ⟨f, (1 ∘ f)ᵖ⟩`, identity on
+objects.  Functoriality is not argued separately in the thesis — it follows
+from the two computations `P P' = id` and `P' P = id` together with
+functoriality of `P`, and that is how it is obtained here. -/
+noncomputable def parTotInv : D ⥤ Par (Tot D) where
+  obj Z := Par.of (Tot.of Z)
+  map f := parTotInvMap f
+  map_id X := by
+    have h := parTotInvMap_map (𝟙 (Par.of (Tot.of X)))
+    rwa [(parTotFunctor (D := D)).map_id] at h
+  map_comp {X Y Z} f g := by
+    have h := parTotInvMap_map (parTotInvMap f ≫ parTotInvMap g)
+    rwa [(parTotFunctor (D := D)).map_comp, parTotFunctor_map_inv,
+      parTotFunctor_map_inv] at h
+
+/-- **188III**: `P ⋙ P' = 𝟭` — an equality of functors, on the nose. -/
+theorem parTotFunctor_comp_inv :
+    parTotFunctor (D := D) ⋙ parTotInv = 𝟭 (Par (Tot D)) := by
+  refine CategoryTheory.Functor.ext (fun _ => rfl) (fun _ _ f => ?_)
+  show parTotInvMap ((parTotFunctor (D := D)).map f) = 𝟙 _ ≫ f ≫ 𝟙 _
+  rw [Category.id_comp, Category.comp_id]
+  exact parTotInvMap_map f
+
+/-- **188III**: `P' ⋙ P = 𝟭` — an equality of functors, on the nose. -/
+theorem parTotInv_comp_functor :
+    parTotInv (D := D) ⋙ parTotFunctor = 𝟭 D := by
+  refine CategoryTheory.Functor.ext (fun _ => rfl) (fun _ _ f => ?_)
+  show (parTotFunctor (D := D)).map (parTotInvMap f) = 𝟙 _ ≫ f ≫ 𝟙 _
+  rw [Category.id_comp, Category.comp_id]
+  exact parTotFunctor_map_inv f
+
 instance parTotFunctor_full : (parTotFunctor (D := D)).Full where
-  map_surjective {X Y} h := by
-    have := truth_terminal_isIso (D := D)
-    have hq : (EffectusPartialForm.orth (h ≫ truth Y.base.base)
-          ≫ inv (truth (⊤_ (Tot D)).base)) ≫ truth (⊤_ (Tot D)).base
-        = EffectusPartialForm.orth (h ≫ truth Y.base.base) := by
-      rw [Category.assoc, IsIso.inv_hom_id, Category.comp_id]
-    have hperp : Perp (h ≫ truth Y.base.base)
-        ((EffectusPartialForm.orth (h ≫ truth Y.base.base)
-          ≫ inv (truth (⊤_ (Tot D)).base)) ≫ truth (⊤_ (Tot D)).base) := by
-      rw [hq]; exact EffectusPartialForm.perp_orth _
-    refine ⟨(⟨tpair (X := Y.base) (Y := ⊤_ (Tot D)) h
-      (EffectusPartialForm.orth (h ≫ truth Y.base.base)
-        ≫ inv (truth (⊤_ (Tot D)).base)) hperp, ?_⟩ :
-      X.base ⟶ Y.base ⨿ ⊤_ (Tot D)), ?_⟩
-    · refine Eq.trans (tpair_truth (X := Y.base) (Y := ⊤_ (Tot D)) h _ hperp) ?_
-      refine (PCM.ovee_congr rfl hq _ (EffectusPartialForm.perp_orth _)).trans ?_
-      exact EffectusPartialForm.ovee_orth _
-    · exact tpair_tp₁ (X := Y.base) (Y := ⊤_ (Tot D)) h _ hperp
+  map_surjective {_ _} h := ⟨parTotInvMap h, parTotFunctor_map_inv h⟩
 
 instance parTotFunctor_essSurj : (parTotFunctor (D := D)).EssSurj where
   mem_essImage Z := ⟨Par.of (Tot.of Z), ⟨Iso.refl Z⟩⟩
 
-/-- **188III** (`proof-cho-thm`, eff.tex:1943): `Par (Tot D) ≅ D`. -/
-theorem par_tot_equiv : Nonempty (Par (Tot D) ≌ D) :=
-  letI : (parTotFunctor (D := D)).IsEquivalence :=
+/-- **188III** (`proof-cho-thm`, eff.tex:1943): `Par (Tot D) ≅ D`.
+
+The thesis asserts an **isomorphism of categories**, not merely an
+equivalence: `P` is the *identity on objects* and has a genuine two-sided
+inverse `P' f = ⟨f, (1 ∘ f)ᵖ⟩`.  That is the first conjunct — two functors,
+both identity-on-objects (`parTotFunctor` and `parTotInv`), whose composites
+are equal to the identity functors *on the nose*.  (Until the audit repair
+only the second conjunct, `Nonempty (Par (Tot D) ≌ D)`, was stated; the
+weakening propagated into `cho_thm_3_par_tot`.  This is the same repair as
+179III.1 `ea_equiv_emod_two` in `B/Eff/EffectAlgebras`.)  The equivalence is
+kept as the second conjunct. -/
+theorem par_tot_equiv :
+    (∃ (P : Par (Tot D) ⥤ D) (P' : D ⥤ Par (Tot D)),
+        (∀ X : Par (Tot D), P.obj X = X.base.base) ∧
+        (∀ Z : D, P'.obj Z = Par.of (Tot.of Z)) ∧
+        P ⋙ P' = 𝟭 (Par (Tot D)) ∧ P' ⋙ P = 𝟭 D) ∧
+      Nonempty (Par (Tot D) ≌ D) := by
+  refine ⟨⟨parTotFunctor, parTotInv, fun _ => rfl, fun _ => rfl,
+    parTotFunctor_comp_inv, parTotInv_comp_functor⟩, ?_⟩
+  have : (parTotFunctor (D := D)).IsEquivalence :=
     { faithful := parTotFunctor_faithful, full := parTotFunctor_full,
       essSurj := parTotFunctor_essSurj }
-  ⟨(parTotFunctor (D := D)).asEquivalence⟩
+  exact ⟨(parTotFunctor (D := D)).asEquivalence⟩
 
 end ParTotEquiv
 
@@ -2320,12 +2435,75 @@ instance totParFunctor_full : (totParFunctor (C := C)).Full where
 instance totParFunctor_essSurj : (totParFunctor (C := C)).EssSurj where
   mem_essImage X := ⟨X.base.base, ⟨Iso.refl X⟩⟩
 
-/-- **188IV** (`proof-cho-thm`, eff.tex:1969): `Tot (Par C) ≅ C`. -/
-theorem tot_par_equiv : Nonempty (Tot (Par C) ≌ C) :=
-  letI : (totParFunctor (C := C)).IsEquivalence :=
+/-- **188IV** (`proof-cho-thm`, eff.tex:1975): the inverse of `Q` on
+morphisms.  This is the whole of the thesis's argument: "It is an isomorphism
+by the first part of `pardp`: for every `f` in `Tot (Par C)` there is a
+unique `g` in `C` with `f = ĝ`." -/
+noncomputable def totParInvMap {X Y : Tot (Par C)} (f : X ⟶ Y) :
+    X.base.base ⟶ Y.base.base :=
+  (pardp_1 (f.1 : Par.of X.base.base ⟶ Par.of Y.base.base) f.2).choose
+
+theorem totParInvMap_hat {X Y : Tot (Par C)} (f : X ⟶ Y) :
+    (f.1 : Par.of X.base.base ⟶ Par.of Y.base.base) = Par.hat (totParInvMap f) :=
+  (pardp_1 (f.1 : Par.of X.base.base ⟶ Par.of Y.base.base) f.2).choose_spec.1
+
+theorem totParInvMap_unique {X Y : Tot (Par C)} (f : X ⟶ Y)
+    (g : X.base.base ⟶ Y.base.base)
+    (hg : (f.1 : Par.of X.base.base ⟶ Par.of Y.base.base) = Par.hat g) :
+    g = totParInvMap f :=
+  (pardp_1 (f.1 : Par.of X.base.base ⟶ Par.of Y.base.base) f.2).choose_spec.2 g hg
+
+/-- **188IV** (`proof-cho-thm`, eff.tex:1975): the **inverse functor**
+`Q' : Tot (Par C) ⟶ C` of `Q g = ĝ`, identity on objects, sending `f` to the
+unique `g` with `f = ĝ` (**186VIII**.1).  Functoriality is the uniqueness
+half of `pardp` applied to `id = 𝟙̂` and to `ĝ ⊙ ĥ = (g ∘ h)^` — the two
+identities the thesis recalls just before defining `Q`. -/
+noncomputable def totParInv : Tot (Par C) ⥤ C where
+  obj X := X.base.base
+  map f := totParInvMap f
+  map_id X :=
+    (totParInvMap_unique (𝟙 X) (𝟙 X.base.base) (par_hat_id X.base.base).symm).symm
+  map_comp {X Y Z} f g :=
+    (totParInvMap_unique (f ≫ g) (totParInvMap f ≫ totParInvMap g) (by
+      show (f.1 ≫ g.1 : Par.of X.base.base ⟶ Par.of Z.base.base) = _
+      rw [totParInvMap_hat f, totParInvMap_hat g, par_hat_hat])).symm
+
+/-- **188IV**: `Q ⋙ Q' = 𝟭` — an equality of functors, on the nose. -/
+theorem totParFunctor_comp_inv :
+    totParFunctor (C := C) ⋙ totParInv = 𝟭 C := by
+  refine CategoryTheory.Functor.ext (fun _ => rfl) (fun _ _ f => ?_)
+  show totParInvMap ((totParFunctor (C := C)).map f) = 𝟙 _ ≫ f ≫ 𝟙 _
+  rw [Category.id_comp, Category.comp_id]
+  exact (totParInvMap_unique ((totParFunctor (C := C)).map f) f rfl).symm
+
+/-- **188IV**: `Q' ⋙ Q = 𝟭` — an equality of functors, on the nose. -/
+theorem totParInv_comp_functor :
+    totParInv (C := C) ⋙ totParFunctor = 𝟭 (Tot (Par C)) := by
+  refine CategoryTheory.Functor.ext (fun _ => rfl) (fun _ _ f => ?_)
+  show (totParFunctor (C := C)).map (totParInvMap f) = 𝟙 _ ≫ f ≫ 𝟙 _
+  rw [Category.id_comp, Category.comp_id]
+  exact Subtype.ext (totParInvMap_hat f).symm
+
+/-- **188IV** (`proof-cho-thm`, eff.tex:1969): `Tot (Par C) ≅ C`.
+
+As in 188III the thesis asserts an **isomorphism of categories**: `Q g = ĝ`
+is the identity on objects and is inverted by `pardp`.  That is the first
+conjunct — `totParFunctor` and `totParInv`, both identity-on-objects, with
+composites equal to the identity functors *on the nose*.  (Until the audit
+repair only the second conjunct was stated, and the weakening propagated into
+`cho_thm_3_tot_par`.)  The equivalence is kept as the second conjunct. -/
+theorem tot_par_equiv :
+    (∃ (Q : C ⥤ Tot (Par C)) (Q' : Tot (Par C) ⥤ C),
+        (∀ Z : C, Q.obj Z = Tot.of (Par.of Z)) ∧
+        (∀ X : Tot (Par C), Q'.obj X = X.base.base) ∧
+        Q ⋙ Q' = 𝟭 C ∧ Q' ⋙ Q = 𝟭 (Tot (Par C))) ∧
+      Nonempty (Tot (Par C) ≌ C) := by
+  refine ⟨⟨totParFunctor, totParInv, fun _ => rfl, fun _ => rfl,
+    totParFunctor_comp_inv, totParInv_comp_functor⟩, ?_⟩
+  have : (totParFunctor (C := C)).IsEquivalence :=
     { faithful := totParFunctor_faithful, full := totParFunctor_full,
       essSurj := totParFunctor_essSurj }
-  ⟨(totParFunctor (C := C)).asEquivalence.symm⟩
+  exact ⟨(totParFunctor (C := C)).asEquivalence.symm⟩
 
 end TotParEquiv
 
@@ -2351,6 +2529,11 @@ theorem cho_thm_1 :
 in 188IV): nothing is lost passing to partial maps: `Tot (Par C) ≅ C`, for the
 structure of an effectus in partial form on `Par C` constructed in `cho_thm_1`.
 
+"Nothing is lost" is an **isomorphism of categories**, and that is the first
+conjunct: two identity-on-objects functors whose composites are the identity
+functors on the nose (see `tot_par_equiv`).  Until the audit repair only the
+equivalence, now the second conjunct, was asserted.
+
 (An earlier formulation quantified over *every* structure of an effectus in
 partial form on `Par C`.  That is strictly stronger than 188IV: the notion of
 *total* map depends on the effect object `I` and the truth predicate `1` of the
@@ -2358,7 +2541,11 @@ structure, and we could not show — nor does the thesis claim — that it is
 independent of them.  See PROVING-LOG, session 12.) -/
 theorem cho_thm_3_tot_par :
     letI := parHasFiniteCoproducts (C := C)
-    Nonempty (Tot (Par C) ≌ C) :=
+    (∃ (Q : C ⥤ Tot (Par C)) (Q' : Tot (Par C) ⥤ C),
+        (∀ Z : C, Q.obj Z = Tot.of (Par.of Z)) ∧
+        (∀ X : Tot (Par C), Q'.obj X = X.base.base) ∧
+        Q ⋙ Q' = 𝟭 C ∧ Q' ⋙ Q = 𝟭 (Tot (Par C))) ∧
+      Nonempty (Tot (Par C) ≌ C) :=
   letI := parHasFiniteCoproducts (C := C)
   tot_par_equiv
 
@@ -2381,11 +2568,20 @@ theorem eff_partial_to_total : Nonempty (EffectusTotalStructure (Tot D)) :=
 
 /-- **180X.3** (`cho-thm`, eff.tex:948, Theorem (Cho)), first half (proved
 in 188III): `Par (Tot D) ≅ D`, for any structure of an effectus in total
-form on `Tot D` as produced by `eff_partial_to_total`. -/
+form on `Tot D` as produced by `eff_partial_to_total`.
+
+As in `cho_thm_3_tot_par`, "nothing is lost" is an **isomorphism of
+categories** — the first conjunct, `P` and `P'` both identity-on-objects with
+composites equal to the identity functors on the nose (see `par_tot_equiv`) —
+and not merely the equivalence, which is kept as the second conjunct. -/
 theorem cho_thm_3_par_tot (s : EffectusTotalStructure (Tot D)) :
     letI := s.hasFiniteCoproducts
     letI := s.hasTerminal
-    Nonempty (Par (Tot D) ≌ D) :=
+    (∃ (P : Par (Tot D) ⥤ D) (P' : D ⥤ Par (Tot D)),
+        (∀ X : Par (Tot D), P.obj X = X.base.base) ∧
+        (∀ Z : D, P'.obj Z = Par.of (Tot.of Z)) ∧
+        P ⋙ P' = 𝟭 (Par (Tot D)) ∧ P' ⋙ P = 𝟭 D) ∧
+      Nonempty (Par (Tot D) ≌ D) :=
   letI := s.hasFiniteCoproducts
   letI := s.hasTerminal
   par_tot_equiv
@@ -2774,10 +2970,51 @@ end ExtensiveEffectus
 
 /-- **189aII.3** (`effexamplesintro`, eff.tex:2043, Examples): every
 (finitary) extensive category with a final object is an effectus in total
-form.  (The other examples of 189a — `OUSᵒᵖ`, `OUGᵒᵖ`, `Set`, `CRngᵒᵖ`,
-`CH`, `EJAᵒᵖ` — are instances of general facts not formalized here.) -/
+form.
+
+Two of the point's three sub-items are formalized below —
+**(a) `Set`** as `extensive_effectus_set` and **(c) `CH`** as
+`extensive_effectus_compHaus`.  **(b) `CRngᵒᵖ`** is *not*, and this is a
+costing rather than an oversight: Mathlib has no `FinitaryExtensive` instance
+for `CommRingCatᵒᵖ`, and the only handle in reach is
+`FinitaryExtensive Scheme` (`Mathlib.AlgebraicGeometry.Limits`) transported
+along `AffineScheme ≌ CommRingCatᵒᵖ`, which additionally needs
+`AffineScheme.forgetToScheme` to preserve *and reflect* finite coproducts and
+pullbacks of coprojections — a development of its own, on top of an
+`AlgebraicGeometry` import nothing else in this tree uses.  Proving
+extensivity by hand is the same content: a coproduct in `CRngᵒᵖ` is the
+product ring `R × S`, and the van Kampen property is the statement that an
+`R × S`-algebra splits uniquely along the central idempotents `(1,0)` and
+`(0,1)`.
+
+The neighbouring examples 189aII.1 (`OUSᵒᵖ`), 189aII.2 (`OUGᵒᵖ`) and 189aIII
+(`EJAᵒᵖ`) are separate points, each citing `[effintro]`/`[eja]`, and none of
+those three categories exists in the tree. -/
 theorem extensive_effectus (C : Type u) [Category.{v} C]
     [HasFiniteCoproducts C] [HasTerminal C] [FinitaryExtensive C] :
     EffectusTotalForm C := ext_effectusTotalForm
+
+/-- **189aII.3(a)** (`effexamplesintro`, eff.tex:2049, Examples): `Set`, the
+category of sets and functions, is extensive with a final object — hence an
+effectus in total form.  Extensivity is Mathlib's `types.finitaryExtensive`;
+the rest is `extensive_effectus`. -/
+theorem extensive_effectus_set : EffectusTotalForm (Type u) :=
+  extensive_effectus (Type u)
+
+/-- **189aII.3(c)** (`effexamplesintro`, eff.tex:2056, Examples): `CH`, the
+category of compact Hausdorff spaces and continuous maps, is extensive with a
+final object — hence an effectus in total form.  Extensivity is Mathlib's
+instance for `CompHausLike P` (`CompHaus = CompHausLike (fun _ => True)`),
+obtained by reflection along the forgetful functor to `TopCat`.
+
+The `letI` is a universe-inference workaround, not mathematics: instance
+synthesis for `HasFiniteCoproducts CompHaus.{u}` gets stuck on
+`u =?= max ?v ?w`, because Mathlib's `CompHausLike` instance is stated in two
+universes, so `FinitaryExtensive.hasFiniteCoproducts` has to be named. -/
+theorem extensive_effectus_compHaus :
+    letI : HasFiniteCoproducts CompHaus.{u} := FinitaryExtensive.hasFiniteCoproducts
+    EffectusTotalForm CompHaus.{u} :=
+  letI : HasFiniteCoproducts CompHaus.{u} := FinitaryExtensive.hasFiniteCoproducts
+  extensive_effectus CompHaus.{u}
 
 end Theses.B.Eff

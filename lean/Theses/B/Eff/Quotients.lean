@@ -688,7 +688,18 @@ theorem compr_basics_3 (f : W ⟶ X) [IsIso f] :
     rw [← hk, Category.assoc, IsIso.hom_inv_id, Category.comp_id]
 
 /-- **199VII.4** (`compr-basics`, eff.tex:3979, Exercise): the zero map out
-of the zero object is a comprehension for `0`. -/
+of the zero object is a comprehension for `0`.
+
+*The running text is still wrong here.*  As printed the part reads "Zero
+maps are comprehensions (for `0`)", and that is **false** for any non-initial
+domain: the universal property applied to `g = 0 : Z ⟶ W` forces the
+factorisation through `π : W ⟶ X` to be unique, so `W ⟶ W` is a singleton
+for every `W`, and (with `id` and `0` both in it) `W ≅ 0`.  `berr.tex`'s
+erratum `compr-basics` says exactly this — "Not every zero map is a
+comprehension; only those from `0`" — but, unlike its twin for 197V.4
+(`quotient-basics`, whose correction *has* been absorbed: the running text
+now reads "Maps into `0` are quotients (for 1)"), it has **not** been carried
+into eff.tex.  The corrected form is what is stated here. -/
 theorem compr_basics_4 (X : C) :
     IsComprehension (0 : Pred X) (0 : (⊥_ C) ⟶ X) := by
   refine ⟨?_, ?_⟩
@@ -736,9 +747,11 @@ def IsCokernel {X Y W : C} (f : X ⟶ Y) (c : Y ⟶ W) : Prop :=
   f ≫ c = 0 ∧
     ∀ ⦃Z : C⦄ (g : Y ⟶ Z), f ≫ g = 0 → ∃! g' : W ⟶ Z, c ≫ g' = g
 
-/-- **200III** (`effectus-kernels`, eff.tex:4005, Proposition): an effectus
-with comprehension has all kernels; a kernel of `f` is given by a
-comprehension for `(1 ∘ f)ᵖ`. -/
+/-- **200III** (`effectus-kernels`, eff.tex:4005, Proposition), *second*
+sentence: a comprehension `π` for `(1 ∘ f)ᵖ` is a kernel of `f`.  The
+Proposition's headline — an effectus with comprehension has **all** kernels —
+is `effectus_has_all_kernels` below, which is this statement applied to the
+chosen comprehension. -/
 theorem effectus_kernels {W X Y : C} (f : X ⟶ Y) {π : W ⟶ X}
     (hπ : IsComprehension (orth (f ≫ truth Y)) π) : IsKernel f π := by
   have h1 : π ≫ f = 0 := by
@@ -750,6 +763,36 @@ theorem effectus_kernels {W X Y : C} (f : X ⟶ Y) {π : W ⟶ X}
   refine hπ.2 g ?_
   rw [← comp_orth_eq_zero_iff, eabasics_orth_orth, ← Category.assoc, hg,
     FinPAC.zero_comp]
+
+/-- **200III** (`effectus-kernels`, eff.tex:4005, Proposition), headline
+sentence: a category *has all kernels* when every map has a kernel.  (Named
+`HasAllKernels` rather than `HasKernels` to avoid a clash with Mathlib's
+`CategoryTheory.Limits.HasKernels`, which is stated for its own notion of
+kernel in a category with zero morphisms.) -/
+class HasAllKernels (C : Type u) [Category.{v} C] [HasFiniteCoproducts C]
+    [∀ X Y : C, PCM (X ⟶ Y)] [FinPAC C] [EffectusPartialForm C] : Prop where
+  ker : ∀ {X Y : C} (f : X ⟶ Y), ∃ (W : C) (k : W ⟶ X), IsKernel f k
+
+/-- **200III** (`effectus-kernels`, eff.tex:4005, Proposition), the
+Proposition's *first* sentence: **an effectus with comprehension has all
+kernels**.  (Until the audit repair only the second sentence,
+`effectus_kernels`, was stated, and it did not even take
+`[HasComprehension C]`.)
+
+The thesis's proof is exactly this: *the* kernel of `f` "is given by a
+comprehension `π_{(1 ∘ f)ᵖ}`", so the existence half is the chosen
+comprehension `π_{(1 ∘ f)ᵖ}` fed to `effectus_kernels`. -/
+instance effectus_has_all_kernels [HasComprehension C] : HasAllKernels C where
+  ker {_ Y} f :=
+    ⟨comprObj (orth (f ≫ truth Y)), comprMap (orth (f ≫ truth Y)),
+      effectus_kernels f (isComprehension_comprMap _)⟩
+
+/-- **200III**, in the explicit form the Proposition states it: in an
+effectus with comprehension, a chosen comprehension `π_{(1 ∘ f)ᵖ}` *is* a
+kernel of `f`. -/
+theorem isKernel_comprMap [HasComprehension C] {X Y : C} (f : X ⟶ Y) :
+    IsKernel f (comprMap (orth (f ≫ truth Y))) :=
+  effectus_kernels f (isComprehension_comprMap _)
 
 /-- **200V** (`compr-is-kernel`, eff.tex:4020, Exercise): in an effectus, a
 map is a comprehension for `p` if and only if it is a kernel of `pᵖ`. -/
@@ -1361,9 +1404,11 @@ theorem lattice_compr [HasComprehension C] [HasImages C] {X : C}
 
 /-! ## Cokernels (parsec 205) -/
 
-/-- **205II** (`effectus-cokernels`, eff.tex:4369, Proposition): an effectus
-with quotients and images has all cokernels; a cokernel of `f` is given by
-a quotient for `im f`. -/
+/-- **205II** (`effectus-cokernels`, eff.tex:4369, Proposition), *second*
+sentence: a quotient `ξ` for `im f` is a cokernel of `f`.  The Proposition's
+headline — an effectus with quotients and images has **all** cokernels — is
+`effectus_has_all_cokernels` below, which is this statement applied to the
+chosen quotient `ξ_{im f}`. -/
 theorem effectus_cokernels [HasImages C] {X Y Q : C} (f : X ⟶ Y)
     {ξ : Y ⟶ Q} (hξ : IsQuotient (imPred f) ξ) : IsCokernel f ξ := by
   have him : f ≫ orth (imPred f) = 0 :=
@@ -1383,6 +1428,36 @@ theorem effectus_cokernels [HasImages C] {X Y Q : C} (f : X ⟶ Y)
       FinPAC.zero_comp]
   exact eabasics_perp_iff_le_orth.mp
     (PCM.perp_comm (eabasics_perp_iff_le_orth.mpr hmin))
+
+/-- **205II** (`effectus-cokernels`, eff.tex:4369, Proposition), headline
+sentence: a category *has all cokernels* when every map has a cokernel.
+(Named `HasAllCokernels` rather than `HasCokernels` to avoid a clash with
+Mathlib's `CategoryTheory.Limits.HasCokernels`.) -/
+class HasAllCokernels (C : Type u) [Category.{v} C] [HasFiniteCoproducts C]
+    [∀ X Y : C, PCM (X ⟶ Y)] [FinPAC C] [EffectusPartialForm C] : Prop where
+  cok : ∀ {X Y : C} (f : X ⟶ Y), ∃ (W : C) (c : Y ⟶ W), IsCokernel f c
+
+/-- **205II** (`effectus-cokernels`, eff.tex:4369, Proposition), the
+Proposition's *first* sentence: **an effectus with quotients and images has
+all cokernels**.  (Until the audit repair only the second sentence,
+`effectus_cokernels`, was stated, and it assumed only `[HasImages C]`, so
+the existence half — which is what needs `[HasQuotients C]` — was nowhere.)
+
+The thesis's proof is exactly this: "a cokernel of a map `f` is given by a
+quotient `ξ_{IM f}` of `IM f`", so the existence half is the chosen quotient
+`ξ_{im f}` fed to `effectus_cokernels`. -/
+instance effectus_has_all_cokernels [HasQuotients C] [HasImages C] :
+    HasAllCokernels C where
+  cok {_ _} f :=
+    ⟨quotObj (imPred f), quotMap (imPred f),
+      effectus_cokernels f (isQuotient_quotMap _)⟩
+
+/-- **205II**, in the explicit form the Proposition states it: in an effectus
+with quotients and images, a chosen quotient `ξ_{im f}` *is* a cokernel
+of `f`. -/
+theorem isCokernel_quotMap [HasQuotients C] [HasImages C] {X Y : C} (f : X ⟶ Y) :
+    IsCokernel f (quotMap (imPred f)) :=
+  effectus_cokernels f (isQuotient_quotMap _)
 
 /-- **205IV** (`exc-cokernels`, eff.tex:4383, Exercise): in an effectus
 with comprehension and images, a map `f` is a quotient for a sharp
