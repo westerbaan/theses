@@ -815,12 +815,6 @@ Confirm that is the right treatment:
   `b ≤ ‖b‖·1`).
 * **177Ia** — see B4 above.
 
-### A4. 217I's independence-of-choice claim is not formalised
-Our `IsDaggerOf` is stated relative to the *chosen* `π_{IM f}`, so the theorem
-as transcribed does not assert that the dagger is independent of that choice —
-which is what 217I is about.  Not wrong, but weaker than the source.  Low
-priority; flagged so it is not mistaken for a full formalisation.
-
 ---
 
 ## Not for the authors — upstream Mathlib
