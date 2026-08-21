@@ -24588,3 +24588,334 @@ thesis *proof* rather than a statement, alongside 125II.)
   that 160IV.3 consumes);
   **144III** `hilbmod_adjointable_blinear` (concludes for a bare
   adjointable function what the Lemma concludes for a ℂ-linear one).
+
+## Session 94 — A/Proc/Tensor: **the first repair pass — 112X.1's bijection gets its uniqueness half and its *order separation*, 113IV gets clause (2), and 119V gets the naturality squares and the second unitor diagram** (worker on `Theses/A/Proc/Tensor.lean`)
+
+Rows: `docs/audit/aproc-tensor.csv`, 148 rows, 8 not `ok` (7 `weaker`, 1
+`stronger`).  **Two of the seven `weaker` rows repaired** (112X.1, 113IV);
+the other five, plus the `stronger` one, are left for the reasons the brief
+lays down and are listed at the end.  Four statements the audit's *notes*
+flag as missing were also added.  The file compiles with **no errors** and
+**no new `sorry`** — the single `sorry` is still `tensor_simple_facts_4`,
+the deliberate record of a falsehood.  All eleven new/changed declarations
+are axiom-clean (`propext`, `Classical.choice`, `Quot.sound`), checked in
+situ on a scratchpad copy.
+
+### Repaired
+
+* **112X.1, third claim** — the point asks for a *bijection* `ω ↦ ω∘γ_⊙`
+  from `Ω` onto the basic functionals.  The tree had the two halves as
+  untagged lemmas (`isBasicFunctional_comp_lift`,
+  `exists_conjProdNP_of_isBasicFunctional`) and the uniqueness ("for some
+  **unique** `ω ∈ Ω`") nowhere.  Both lemmas now carry the DISP, and
+  `tensor_basic_1_unique` states the claim in full as an `∃!`.  The proof is
+  the one the doc comment had been promising: two np-functionals agreeing on
+  `γ_⊙(𝒜 ⊙ ℬ)` agree on its ultraweakly dense span, i.e. condition (1) of
+  **108II**, which is `prod_functional_unique`'s argument.  (1)
+* **112X.1, first claim** — `tensor_basic_1`'s first conjunct is a
+  *two-element comparison for self-adjoints*, where the point says the
+  collection `Ω` is **order separating** (cstar.tex **21II**.1, for an
+  arbitrary element).  `tensor_basic_1_orderSeparating` now states the
+  point's version, with `A/CStar/Positive`'s `OrderSeparating`, and
+  `tensor_basic_1.1` is derived from it in six lines (the conjugates
+  `γ_⊙(s)*(y−x)γ_⊙(s)` are self-adjoint, so the comparison of *real parts*
+  is the full complex inequality).  No proof is duplicated: the net argument
+  moved into the new statement, where it is cleaner — for an arbitrary `a`
+  the limit is taken in `ℂ` against the closed set `{0 ≤ ·}`, instead of
+  splitting into a real part carried by `ge_of_tendsto` and an imaginary
+  part killed by self-adjointness.  (3, mild: still 30X + 74VI, not the
+  **90II**.1 the exercise directs — see "Costed" below.)
+* **113IV, clause (2)** — the exercise's three-way equivalence was rendered
+  as `(1) ↔ (3)` only, with a doc comment claiming clause (2) "is subsumed
+  by applying the statement to `M_N β`" — an instance never formed, and not
+  formable, because `matBilin` is a *function*, not a bilinear map, so
+  `BilinCP (M_N β)` did not typecheck.  Now:
+  - `matBilinL` bundles `M_N β` as a bilinear map (both linearity conditions
+    hold entrywise, where they are `β`'s);
+  - `cp_bilinear_2` proves (1) ⇒ (2) directly, and
+  - `cp_bilinear_2'` is the equivalence `(1) ↔ (2)`, which with
+    `cp_bilinear` completes the exercise's `(1) ↔ (2) ↔ (3)`.
+
+  The (1) ⇒ (2) proof is the standard one made explicit: after the **33II**
+  criterion, complete positivity of `M_N β` at width `m` is complete
+  positivity of `β` at width `mN`.  The two extra summations are the ones
+  inside `β`, from `(aᵢ* aⱼ)_{rs} = ∑ₜ (aᵢ)_{tr}* (aⱼ)_{ts}`; bilinearity
+  pulls them out in front (`hsplit`), a two-block sum interchange
+  (`sum_comm₂₂`) moves them outside, and for each fixed `(t,u)` the
+  remaining double sum over `Fin m × Fin N` is an instance of `BilinCP β`
+  (`bilinCP_fintype`, complete positivity for an arbitrary finite index
+  type, by transport along `Fintype.equivFin`).  `quadForm_conj` is the
+  bookkeeping that turns the quadratic form of `C* F C` into that of `F` at
+  `Cx`.  The converse is clause (2) at `N = 1`.  (2 — the exercise gives no
+  proof, so there is no route to be faithful to; this is the only route.)
+* **119V, naturality of the braidings and the unitors** — the Theorem's
+  naturality clause is three squares, of which only the associator's was
+  formed ("by a similar but simpler argument one sees that the braidings and
+  unitors give natural transformations").  Now `vn_smc_braiding_natural`,
+  `vn_smc_leftUnitor_natural` and `vn_smc_rightUnitor_natural`, by the
+  printed argument for the associator: both routes agree on the elementary
+  tensors, whose span is ultraweakly dense.  (1)
+
+  One encoding note: `tmap` (**115II**) confines its four algebras to a
+  single universe, while the tensor unit `ℂ : Type 0` pairs with
+  `𝒜 : Type u`.  So `id_ℂ ⊗ f` is rendered as *any* ncp-map acting as
+  `z ⊗ a ↦ z ⊗ f(a)` on the elementary tensors — which is `id_ℂ ⊗ f` by
+  115II's uniqueness clause, the device `tensor_injective` already uses.
+  (Building a cross-universe ncp `tmap`, the `exists_tmapM` treatment for
+  ncp-maps, would remove the workaround; it was costed and not paid.)
+* **119V, the second diagram of the unitor display** — `λ_ℂ = ϱ_ℂ` on
+  `ℂ ⊗ ℂ` was stated nowhere.  `vn_smc_unitors_agree`: both send `z ⊗ w` to
+  `zw`, so `λ_ℂ` satisfies the defining equation of `ϱ_ℂ` and **119IVb**'s
+  uniqueness identifies them.  Two lines.  (1)
+* **112X.3, first claim** — `‖f ∘ γ_⊙‖ ≤ ‖f‖` for `f ∈ 𝒯_*` lived only as
+  the reverse (easy) direction of `tensor_basic_4`.  It is now
+  `tensor_basic_3_norm_le`, in bound form because the tensor product norm is
+  not registered as a `NormedSpace` structure on `𝒜 ⊙ ℬ`; the proof is the
+  exercise's one-liner, **112X**.2 plus the operator-norm bound.  (1)
+
+### Doc comments: five defects of the theses now stated where they are carried
+
+None of these is a repair — the statements are unchanged — but four of the
+five were carrying an author-facing defect silently.
+
+* **111IV** `mult_completely_monotone`, **116III**.1 `tensor_simple_facts_1`
+  and **116III**.5 `tensor_simple_facts_5` are **false as printed**, and in
+  each case our statement carries the repair (a positivity hypothesis the
+  point omits) without saying so.  Each doc comment now states the defect
+  and gives the refutation: `a = b = -1 ≤ 0 = ã = b̃` at `N = 1` for 111IV;
+  `a₁ = b₁ = -1 ≤ 0 = a₂ = b₂` at `𝒜 = ℬ = ℂ` for 116III.1; `a = -1`, which
+  sends `1` to `-1`, for 116III.5.  None is in `ERRATA.md`.
+* **115V** `isTensorProduct_genGamma`: the printed proof verifies condition
+  (3) of **108II** only for a *central projection* `z` of `𝒯`, where (3) is
+  faithfulness — the same for every positive `t`.  Same error class as the
+  recorded **119II** erratum and as harmless: the printed argument
+  (`γ(σ∘f, τ∘g)` is the restriction of `σ ⊗ τ`) gives the general case
+  verbatim, which is what is proved.  Now said in the doc comment; not in
+  `ERRATA.md`.
+* **116III**.4 `tensor_simple_facts_4` and **118IV**.1 `carrier_tensor_1`
+  had their defects explained only in a section note and a proof comment
+  respectively; the doc comments now say it too, and point at the
+  `ERRATA.md` rows.
+* **108II** `prod_functional_unique` (the one `stronger` row): the doc
+  comment now records that the Definition takes `f ∈ 𝒜_*`, `g ∈ ℬ_*` while
+  we take arbitrary linear functionals — normality is genuinely unused, only
+  the ultraweak continuity of the two *candidate extensions*, which is
+  hypothesis.  Benign by the brief's rule (3).
+
+### Costed, not paid
+
+* **112X.1's order separation still does not go through 90II.**  The
+  exercise says "Show using `vn-center-separating-fundamental`", and
+  `A/VN/NormalFunctionals` now carries exactly the right form of it —
+  `vn_center_separating_fundamental_1'`, the wave-3 sibling that states
+  genuine `OrderSeparating` for `{ω(s*(·)s)}`.  Instantiating it at
+  `Ω = {γ(σ,τ)}`, `S = γ_⊙(𝒜 ⊙ ℬ)` is a five-line proof and would replace
+  the forty lines of net-chasing kept here.  **It could not be used**: the
+  `A/VN` oleans this file is compiled against predate the wave-3 repairs
+  (`NormalFunctionals.lean` is newer than `NormalFunctionals.olean`, as are
+  `Division.lean` and `Projections.lean`), and rebuilding that chain while
+  another worker holds `Projections` was not available.  The route is
+  written into the doc comment of `tensor_basic_1_orderSeparating` so that
+  whoever rebuilds `A/VN` can collapse the proof.
+* **115IV's bifunctoriality is still two concrete equations.**  `⊗` as a
+  bifunctor `W*_cp × W*_cp → W*_cp` (and on `W*_miu`, `W*_cpu`, `W*_cpsu`)
+  needs the four categories as `CategoryTheory.Category` instances, which
+  this chapter does not build — the file docstring's standing decision to
+  state the monoidal structure concretely.  `tensor_functor_id` and
+  `tensor_functor_comp` are that decision's rendering of the two functor
+  laws, and the closure of each class under `⊗` is `tensor_functorial`.
+  Making it categorical is a chapter-wide change, not a statement repair.
+* **109III's "orthonormal basis" is still "orthonormal + dense span"**,
+  where cstar.tex defines it as a *maximal* orthonormal set.  The two are
+  equivalent and the thesis uses the equivalence at **109V**, but the
+  equivalence is proved nowhere in the module; supplying it is a `A/CStar`
+  addition, not an `A/Proc` one.
+
+### Left, by the brief's rules
+
+* **Rule 1 (the thesis point is itself defective)** — **111IV**,
+  **116III**.1, **116III**.5 (false as printed, our statement silently
+  carrying the repair; now documented, see above); **117II**.1
+  `sum_generation_1` and **118IV**.1 `carrier_tensor_1` (realignments of
+  statements already known false, `ERRATA.md` rows 117II.1 and 118IV.1).
+* **Rule 3 (benign generalisation)** — **108II** `prod_functional_unique`.
+* **Rule 4 (deliberate record of a falsehood)** — **116III**.4
+  `tensor_simple_facts_4`, with `tensor_simple_facts_4_counterexample`
+  beside it.
+* **119II** `triple_tensor` was not touched; its proof stands on the route
+  its `ERRATA.md` row records (faithfulness proved directly, by
+  Cauchy–Schwarz for `w ↦ ‖√t·w‖_ψ` and the ultrastrong density of the span
+  of the elementary tensors), which is *not* the route `why-open.csv`
+  ascribes to it.
+
+## Session 94 — `B/Eff`: **the first repair pass on `Effectus.lean` and `Quotients.lean`** — five of the six `weaker` rows repaired, 188III/188IV become genuine isomorphisms of categories (with the thesis's own inverse functors), and 200III/205II get their "has **all** kernels/cokernels" headlines (worker on `Theses/B/Eff/Effectus.lean`, `Theses/B/Eff/Quotients.lean`)
+
+Audit rows: `docs/audit/beff-effectus-quotients.csv`, 94 rows, **6** with
+`stmt` not `ok` (all `weaker`).  **Five repaired in full, one in part.**  Both
+files compile with **no errors, no warnings and no `sorry`s**.  Every
+declaration added or changed was checked *in situ* (source copied to the
+scratchpad, `#print axioms` appended, recompiled): all
+`[propext, Classical.choice, Quot.sound]`.  `Effectus.olean` and
+`Quotients.olean` were rebuilt and `StatesPredicates`, `Dagger`,
+`DiamondAmp`, `Comparisons` and `VNExamples` all compile against them
+unchanged (`VNExamples`' single pre-existing `sorry`, QUESTIONS **B15**, is
+the only one in the fragment).
+
+### Repaired — "an isomorphism of categories rendered as an equivalence" (188III, 188IV, 180X.3: 3 rows, one defect)
+
+The thesis's "nothing is lost" (188III/188IV, and hence Cho's theorem
+180X.3) is an **isomorphism of categories**, not an equivalence: both
+functors are the *identity on objects* and both are given a two-sided
+inverse explicitly.  All four of our declarations said only
+`Nonempty (… ≌ …)`.  Repaired on the model of wave 1's 179III.1
+`ea_equiv_emod_two`: a conjunction whose first component exhibits two
+identity-on-objects functors with `F ⋙ G = 𝟭` and `G ⋙ F = 𝟭` **on the
+nose**, and whose second component keeps the equivalence.  No downstream
+call sites (`grep` over the tree: the four names are used only inside
+`Effectus.lean`), so the statements could be strengthened in place.
+
+The gap on the **proof** side (the audit's `mild` verdict on both rows —
+"Lean repackages the inverse as Full + Faithful + EssSurj") is closed at the
+same time: the thesis's inverse functors are now *exhibited*, and the
+Full-ness instances are re-derived from them rather than the other way round.
+
+* **188III** `par_tot_equiv` — new **`parTotInvMap`**, the thesis's
+  `P' f = ⟨f, (1 ∘ f)ᵖ⟩` (with **`parTotOrth`** for the orthosupplement, read
+  into `(⊤_ (Tot D)).base` along the iso `1` of **181XIII**; the transport is
+  needed only because `⊤_ (Tot D)` is *a* final object, not `Tot.of I` on the
+  nose).  The two computations of eff.tex:1955 are then transcribed exactly:
+  **`parTotFunctor_map_inv`** is `P P' f = ▷₁ ∘ ⟨f, (1 ∘ f)ᵖ⟩ = f`
+  (`tpair_tp₁`), and **`parTotInvMap_map`** is `P' P f = f`, proved the
+  thesis's way — the second projection of a *total* `f` is the orthosupplement
+  of the first (`truth_decomp`, i.e. **181IX.2**, plus `orth_unique`), so
+  `⟨▷₁ ∘ f, (1 ∘ ▷₁ ∘ f)ᵖ⟩ = ⟨▷₁ ∘ f, ▷₂ ∘ f⟩ = f` by `tpair_eta`.  The
+  functor **`parTotInv`** is assembled from these two identities (the thesis
+  does not argue functoriality of `P'` separately, and it does not need to:
+  it follows from `P P' = id`, `P' P = id` and functoriality of `P`).
+  **`parTotFunctor_comp_inv`** and **`parTotInv_comp_functor`** are the two
+  equalities of functors.  `truth_terminal_isIso` (**181XIII**) is made a
+  `local instance` in the section so that `inv 1` elaborates.  (1)
+* **188IV** `tot_par_equiv` — new **`totParInvMap`**, `f ↦` the unique `g`
+  with `f = ĝ`, which *is* the thesis's whole argument ("It is an isomorphism
+  by the first part of `pardp`"), with **`totParInvMap_hat`** and
+  **`totParInvMap_unique`** the two halves of `pardp_1`'s `∃!`.  Functoriality
+  of **`totParInv`** is the uniqueness half applied to `𝟙 = 𝟙̂` and
+  `ĝ ⊙ ĥ = (g ∘ h)^` — the two identities the thesis recalls immediately
+  before defining `Q`.  (1)
+* **180X.3** `cho_thm_3_par_tot`, `cho_thm_3_tot_par` — both now forward the
+  strengthened conjunctions.  The deliberate restriction of
+  `cho_thm_3_tot_par` to the structure built in `cho_thm_1` (PROVING-LOG
+  session 12) is untouched and its doc comment is kept.  (1)
+
+### Repaired — "has all X" headlines dropped in favour of the witness (200III, 205II)
+
+Both Propositions have two sentences and only the second was stated.
+
+* **200III** `effectus_kernels` — the headline "an effectus with
+  comprehension has **all** kernels" is now **`HasAllKernels`** (a Prop-class
+  in the idiom of the file's `HasQuotients`/`HasComprehension`/`HasImages`)
+  together with the instance **`effectus_has_all_kernels`** under
+  `[HasComprehension C]`, plus **`isKernel_comprMap`** in the explicit form
+  the Proposition states it ("the kernel of `f` is given by a comprehension
+  `π_{(1∘f)ᵖ}`").  The proof is the thesis's: the existence half is nothing
+  but the *chosen* comprehension `π_{(1∘f)ᵖ}` fed to the second sentence,
+  which is what the Proposition says.  The old statement is unchanged (it is
+  the general form, for an arbitrary comprehension) and its doc comment now
+  points at the headline.  Named `HasAllKernels`, not `HasKernels`, because
+  Mathlib's `CategoryTheory.Limits.HasKernels` is `open`ed in this file and
+  is about its own notion of kernel.  (1)
+* **205II** `effectus_cokernels` — identical: **`HasAllCokernels`**,
+  **`effectus_has_all_cokernels`** under `[HasQuotients C] [HasImages C]`
+  (the old statement assumed only `[HasImages C]`, so the half that actually
+  needs quotients was nowhere), and **`isCokernel_quotMap`**.  (1)
+
+### Repaired — the 48V pattern: a DISP on the wrong declaration (181VII)
+
+* **181VII** — the `coprod-prod` doc comment sat on the **private helper**
+  `map_pproj₁` (`▷₁ ∘ (k+l) = [k,0]`, used only by `coprod_prod_converse`),
+  while the actual transcription of the Proposition, `coprod_prod`, carried
+  no doc comment and hence no DISP.  The DISP now sits on `coprod_prod`,
+  extended to name the other two halves of the bijective correspondence
+  (`effPair_eq_ovee` for `⟨f,g⟩ = (κ₁ ∘ f) ⋁ (κ₂ ∘ g)`, and
+  `coprod_prod_converse`); `map_pproj₁` keeps an honest description of what
+  it actually says, and records that it used to carry the label.  Nothing was
+  proved.  (4)
+
+### Repaired in part — 189aII.3's three sub-items, and what they cost
+
+The headline (every finitary extensive category with a final object is an
+effectus in total form) was already faithful; the point's sub-items (a)
+`Set`, (b) `CRngᵒᵖ`, (c) `CH` were not stated.
+
+* **(a) `Set`** is now **`extensive_effectus_set`** — free, on Mathlib's
+  `types.finitaryExtensive`.  (1)
+* **(c) `CH`** was **written, checked and then withdrawn**, and this is a
+  costing, not an obstruction.  Mathlib has the mathematics:
+  `CompHaus = CompHausLike (fun _ => True)` and `CompHausLike.Limits` gives
+  `FinitaryExtensive (CompHausLike P)` by reflection along the forgetful
+  functor to `TopCat`, so the sub-item is two lines
+  (`letI : HasFiniteCoproducts CompHaus.{u} := FinitaryExtensive.hasFiniteCoproducts`
+  — a universe-inference workaround: synthesis gets stuck on
+  `u =?= max ?v ?w` because the `CompHausLike` instance is stated in two
+  universes — followed by `extensive_effectus CompHaus.{u}`).  It compiles
+  and is axiom-clean.  What it costs is the import:
+  `import Mathlib.Topology.Category.CompHaus.Limits` takes `Effectus.lean`
+  from **43 s to 2 min 36 s** (measured three times, with and without; the
+  import *alone*, on a stub file, costs only 3 s — the rest is instance
+  search over the newly visible `HasFiniteCoproducts`/`HasTerminal`/
+  `FinitaryExtensive` instances across the file's ~1500 `coprod` elaborations),
+  and it would propagate to `Quotients`, `StatesPredicates`, `Dagger`,
+  `DiamondAmp`, `Comparisons` and `VNExamples`, all of which import this
+  file.  A 3.6× regression across seven modules for one `Examples` sub-item
+  that cites `[effintro]` and gives no proof is not a trade worth making.
+  The two lines and the measurement are recorded in the doc comment of
+  `extensive_effectus`, so the next reader can reinstate them in a minute if
+  the judgement is reversed.
+* **(b) `CRngᵒᵖ`** is **not available**.  Mathlib has no `FinitaryExtensive`
+  instance for `CommRingCatᵒᵖ`.  The only handle in reach is
+  `FinitaryExtensive Scheme` (`Mathlib.AlgebraicGeometry.Limits`) transported
+  along `AffineScheme ≌ CommRingCatᵒᵖ`, which additionally needs
+  `AffineScheme.forgetToScheme` to preserve **and reflect** finite coproducts
+  and pullbacks of coprojections — a development of its own, on an
+  `AlgebraicGeometry` import nothing else in the tree uses.  By hand it is the
+  same content: a coproduct in `CRngᵒᵖ` is the product ring `R × S`, and the
+  van Kampen property is that an `R × S`-algebra splits uniquely along the
+  central idempotents `(1,0)` and `(0,1)`.  Costed in the doc comment; left.
+
+### Source housekeeping recorded, not repaired
+
+* **eff.tex 199VII.4 is false as printed** and the correction has **not** been
+  absorbed into the running text.  As printed the part reads "Zero maps are
+  comprehensions (for `0`)", which fails for every non-initial domain: the
+  uniqueness half of the universal property, applied to `g = 0`, makes
+  `W ⟶ W` a singleton containing both `𝟙` and `0`, so `W ≅ 0`.  `berr.tex`'s
+  erratum `compr-basics` says exactly this ("Not every zero map is a
+  comprehension; only those from `0`") — and its twin for 197V.4,
+  `quotient-basics`, **has** been absorbed (eff.tex:3725 now reads "Maps into
+  `0` are quotients (for 1)"), while this one has not.  Our `compr_basics_4`
+  already carried the corrected form; its doc comment now says plainly that
+  the running text is still wrong, why, and that the parallel correction went
+  in.  This is `STATEMENT-AUDIT.md` §2 "Source housekeeping"; it is a defect
+  in the thesis, so nothing in the tree changes.
+
+### Left, and why
+
+* **Nothing was left for want of mathematics**, and no ruling turned out to
+  be needed.  The only partial row is 189aII.3, and both missing sub-items
+  are costed above rather than blocked.
+* **`FinPAC`, `EffectusPartialForm`, `IsTotal`, `predEffectAlgebra` were not
+  touched.**  The audit compared them field by field with 180VII and found
+  every clause present, and QUESTIONS **B13**'s weakness is in
+  `effectus_vn_partial`'s statement in `VNExamples` — a module this pass may
+  not edit.
+* **The `route`/`mathlib`/`mild` proof rows with `stmt = ok` were left as
+  they are.**  Two are Mathlib closures of the pullback exercises (183II via
+  `IsPullback.hom_ext`, 183III.1 via `IsPullback.paste_horiz`) where
+  `bsols.tex` spells out the same universal-property argument by hand; the
+  rest (181IV.1/.2, 181IX.1–.4, 197V.3, 199VII.3) are alternative routes
+  through the pairing's uniqueness rather than through the `⋁`-form, and two
+  more (181XIII, 187VI) are *deliberate* deviations already documented
+  in-file — 181XIII because the printed order of steps is what `berr.tex`'s
+  erratum `one-m-is-id` flags, and 187VI's zero–one axiom because ours goes
+  through the uniqueness of the orthosupplement and 186VIII.2.  None of these
+  is a statement defect and none was part of this pass's brief.

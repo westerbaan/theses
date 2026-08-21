@@ -110,7 +110,13 @@ structure IsTensorProduct [VonNeumannAlgebra A₁] [VonNeumannAlgebra B₁]
 /-- **108II** (`tensor`, proc.tex:2034, Definition), embedded claim: by
 condition (1) there is *at most one* normal (here: ultraweakly continuous
 linear) functional `h` on `𝒯` with `h(γ(a,b)) = f(a)g(b)` — the
-**product functional** `γ(f,g)`. -/
+**product functional** `γ(f,g)`.
+
+The Definition takes `f ∈ 𝒜_*` and `g ∈ ℬ_*`; here they are arbitrary
+linear functionals, a benign generalisation — their normality is never
+used, only the ultraweak continuity of the two candidate extensions `h₁`,
+`h₂`, which is hypothesis, not conclusion.  (The thesis states this
+embedded uniqueness claim without proof.) -/
 theorem prod_functional_unique [VonNeumannAlgebra A₁]
     [VonNeumannAlgebra B₁] [VonNeumannAlgebra C₁]
     (γ : A₁ →ₗ[ℂ] B₁ →ₗ[ℂ] C₁) (hγ : IsTensorProduct γ)
@@ -732,7 +738,16 @@ theorem schur (N : ℕ) (a b : Matrix (Fin N) (Fin N) ℂ)
 
 /-- **111IV** (`mult-completely-monotone`, proc.tex:2428, Exercise): for
 positive matrices `a ≤ ã` and `b ≤ b̃` over `ℂ` (of the same dimensions)
-the Hadamard products satisfy `a ⊙ b ≤ ã ⊙ b̃`. -/
+the Hadamard products satisfy `a ⊙ b ≤ ã ⊙ b̃`.
+
+**The exercise is false as printed, and the two positivity hypotheses
+`ha`, `hb` are our repair.**  As printed it assumes only `a ≤ ã` and
+`b ≤ b̃`; at `N = 1` that permits `a = b = -1 ≤ 0 = ã = b̃`, and then
+`a ⊙ b = 1 ≰ 0 = ã ⊙ b̃`.  Positivity of `a` and `b` is what the sole
+consumer (**111VI**) has, and what any proof through Schur (**111II**)
+needs: the splitting below is a sum of three Hadamard products, and only
+`a ⊙ (b̃ - b)` and `(ã - a) ⊙ b` require it.  Not recorded in
+`ERRATA.md`; changing the printed statement is the author's call. -/
 theorem mult_completely_monotone (N : ℕ)
     (a a' b b' : Matrix (Fin N) (Fin N) ℂ) (ha : a.PosSemidef)
     (hb : b.PosSemidef) (hab : (a' - a).PosSemidef)
@@ -3074,14 +3089,19 @@ theorem conjProdNP_lift {γ : A →ₗ[ℂ] B →ₗ[ℂ] T} (hγ : IsTensorProd
   rw [conjProdNP_apply, ← lift_star γ hγ.miu.2.2, ← lift_mul γ hγ.miu.2.1,
     ← lift_mul γ hγ.miu.2.1, prodNP_lift hγ]
 
+/-- **112X** (`tensor-basic`, proc.tex:2868, Exercise), part 1, third
+claim (first half): the restriction `ω ∘ γ_⊙` of a member `ω` of `Ω` is a
+basic functional. -/
 theorem isBasicFunctional_comp_lift {γ : A →ₗ[ℂ] B →ₗ[ℂ] T}
     (hγ : IsTensorProduct γ) (σ : NPFunctional A) (τ : NPFunctional B)
     (s : A ⊗[ℂ] B) :
     IsBasicFunctional ((npLin (conjProdNP hγ σ τ s)).comp (TensorProduct.lift γ)) :=
   ⟨σ, τ, s, fun t => conjProdNP_lift hγ σ τ s t⟩
 
-/-- Conversely, every basic functional on `𝒜 ⊙ ℬ` is the restriction along
-`γ_⊙` of a (unique, by `prod_functional_unique`) member of `Ω`. -/
+/-- **112X** (`tensor-basic`, proc.tex:2868, Exercise), part 1, third
+claim (second half, existence): conversely, every basic functional on
+`𝒜 ⊙ ℬ` is the restriction along `γ_⊙` of a member of `Ω`.  The
+*uniqueness* the exercise asks for is `tensor_basic_1_unique` below. -/
 theorem exists_conjProdNP_of_isBasicFunctional {γ : A →ₗ[ℂ] B →ₗ[ℂ] T}
     (hγ : IsTensorProduct γ) (ω : A ⊗[ℂ] B →ₗ[ℂ] ℂ) (hω : IsBasicFunctional ω) :
     ∃ (σ : NPFunctional A) (τ : NPFunctional B) (s : A ⊗[ℂ] B),
@@ -3089,11 +3109,115 @@ theorem exists_conjProdNP_of_isBasicFunctional {γ : A →ₗ[ℂ] B →ₗ[ℂ]
   obtain ⟨σ, τ, s, hs⟩ := hω
   exact ⟨σ, τ, s, fun t => by rw [hs t, conjProdNP_lift hγ]⟩
 
+/-- **112X** (`tensor-basic`, proc.tex:2868, Exercise), part 1, third
+claim, in full: every basic functional `ω` on `𝒜 ⊙ ℬ` is the restriction
+along `γ_⊙` of a **unique** member of `Ω`.
+
+Uniqueness is condition (1) of **108II** again: two np-functionals on `𝒯`
+agreeing on `γ_⊙(𝒜 ⊙ ℬ)` agree on its ultraweakly dense linear span, and
+np-functionals are ultraweakly continuous — the argument of
+`prod_functional_unique`, which is what the doc comment on
+`exists_conjProdNP_of_isBasicFunctional` promised.  Note that the proof
+delivers more than the statement claims: the member of `Ω` is unique among
+*all* np-functionals on `𝒯` restricting to `ω`, not merely among those of
+`Ω`. -/
+theorem tensor_basic_1_unique (γ : A →ₗ[ℂ] B →ₗ[ℂ] T) (hγ : IsTensorProduct γ)
+    (ω : A ⊗[ℂ] B →ₗ[ℂ] ℂ) (hω : IsBasicFunctional ω) :
+    ∃! χ : NPFunctional T,
+      (∃ (σ : NPFunctional A) (τ : NPFunctional B) (s : A ⊗[ℂ] B),
+        χ = conjProdNP hγ σ τ s) ∧
+      ∀ t : A ⊗[ℂ] B, ω t = χ (TensorProduct.lift γ t) := by
+  obtain ⟨σ, τ, s, hs⟩ := exists_conjProdNP_of_isBasicFunctional hγ ω hω
+  refine ⟨conjProdNP hγ σ τ s, ⟨⟨σ, τ, s, rfl⟩, hs⟩, ?_⟩
+  rintro χ ⟨-, hχ⟩
+  letI : TopologicalSpace T := ultraweak T
+  refine DFunLike.coe_injective (Continuous.ext_on hγ.dense
+    (continuous_ultraweak_npFunctional χ)
+    (continuous_ultraweak_npFunctional (conjProdNP hγ σ τ s)) ?_)
+  intro t ht
+  rw [← range_lift_eq_span] at ht
+  obtain ⟨r, rfl⟩ := ht
+  exact ((hχ r).symm.trans (hs r))
+
+/-- **112X** (`tensor-basic`, proc.tex:2868, Exercise), part 1, first
+claim: the collection `Ω` of np-functionals `γ(σ,τ)(γ_⊙(s)*(·)γ_⊙(s))` is
+**order separating** in the sense of cstar.tex **21II**.1 — an *arbitrary*
+`a ∈ 𝒯` is positive as soon as `ω(a) ≥ 0` for every `ω ∈ Ω`.
+
+(The first conjunct of `tensor_basic_1` is this statement in the
+two-element comparison form its consumers use; it is derived from this one
+below.)
+
+The proof is the exercise's, save for the entry point: **30X**
+`nonneg_of_conjNP_of_centreSeparating` reduces positivity of `a` to
+`γ(σ,τ)(c* a c) ≥ 0` for *every* `c ∈ 𝒯`, and the hypothesis supplies this
+only for `c ∈ γ_⊙(𝒜 ⊙ ℬ)`; **74VI** `dense_subalgebra` produces a
+norm-bounded net from that subalgebra converging ultrastrongly to `c`, and
+**72III**.1c `bstaromega_lipschitz` transfers the limit.  The exercise
+instead directs one through **90II**.1, which packages exactly this
+argument — but in the form our `A/VN` carries it, that route needs the
+*primed* `vn_center_separating_fundamental_1'`. -/
+theorem tensor_basic_1_orderSeparating (γ : A →ₗ[ℂ] B →ₗ[ℂ] T)
+    (hγ : IsTensorProduct γ) :
+    Theses.A.CStar.OrderSeparating
+      (fun p : NPFunctional A × NPFunctional B × (A ⊗[ℂ] B) =>
+        npLin (conjProdNP hγ p.1 p.2.1 p.2.2)) := by
+  intro a
+  refine ⟨fun ha p => npFunctional_nonneg _ ha, fun H => ?_⟩
+  refine nonneg_of_conjNP_of_centreSeparating (prodFunctionals hγ)
+    (centreSeparatingConj_prodFunctionals hγ) ?_
+  rintro χ ⟨σ, τ, rfl⟩ c
+  set ω : NPFunctional T := prodNP hγ σ τ with hωdef
+  obtain ⟨ι, l, hl, s, hs, hlim⟩ :=
+    dense_subalgebra (tensorSpan γ hγ.miu) hγ.dense 1 one_pos c
+  have _ : l.NeBot := hl
+  have hnn : ∀ i, (0 : ℂ) ≤ ω (star (s i) * a * s i) := by
+    intro i
+    have hmem : s i ∈ Set.range ⇑(TensorProduct.lift γ) := by
+      rw [range_lift_eq_span]; exact (hs i).1
+    obtain ⟨v, hv⟩ := hmem
+    have hH : (0 : ℂ) ≤ conjProdNP hγ σ τ v a := H (σ, τ, v)
+    rw [conjProdNP_apply, hv] at hH
+    exact hH
+  set K : ℝ := ‖c‖ * (1 + 1) * omegaNorm T ω 1 + omegaNorm T ω c with hKdef
+  have hbnd : ∀ i, ‖ω (star (s i) * a * s i) - ω (star c * a * c)‖
+      ≤ omegaNorm T ω (s i - c) * (K * ‖a‖) := by
+    intro i
+    have hlip := bstaromega_lipschitz ω (s i) c a
+    have hsi : omegaNorm T ω (s i) ≤ ‖c‖ * (1 + 1) * omegaNorm T ω 1 := by
+      have h1 : omegaNorm T ω (s i * 1) ≤ ‖s i‖ * omegaNorm T ω 1 :=
+        omegaNorm_mul_le ω (s i) 1
+      rw [mul_one] at h1
+      exact h1.trans (mul_le_mul_of_nonneg_right (hs i).2 (omegaNorm_nonneg ω 1))
+    have h0 := omegaNorm_nonneg ω (s i - c)
+    have h1 : omegaNorm T ω (s i) + omegaNorm T ω c ≤ K := by rw [hKdef]; linarith
+    refine hlip.trans ?_
+    calc omegaNorm T ω (s i - c) * (omegaNorm T ω (s i) + omegaNorm T ω c) * ‖a‖
+        = omegaNorm T ω (s i - c)
+            * ((omegaNorm T ω (s i) + omegaNorm T ω c) * ‖a‖) := by ring
+      _ ≤ omegaNorm T ω (s i - c) * (K * ‖a‖) :=
+          mul_le_mul_of_nonneg_left
+            (mul_le_mul_of_nonneg_right h1 (norm_nonneg a)) h0
+  have hzero : Tendsto (fun i => omegaNorm T ω (s i - c) * (K * ‖a‖)) l (𝓝 0) := by
+    have hus := (usTendsto_iff s l c).mp hlim ω
+    simpa using hus.mul_const (K * ‖a‖)
+  have hconv : Tendsto (fun i => (ω (star (s i) * a * s i) : ℂ)) l
+      (𝓝 (ω (star c * a * c))) := by
+    rw [tendsto_iff_norm_sub_tendsto_zero]
+    exact squeeze_zero (fun i => norm_nonneg _) hbnd hzero
+  exact ge_of_tendsto hconv (Filter.Eventually.of_forall hnn)
+
 /-- **112X** (`tensor-basic`, proc.tex:2868, Exercise), part 1 (headline
 claims): for a tensor product `γ` the np-functionals of the form
 `γ(σ,τ)(γ_⊙(s)* (·) γ_⊙(s))` are order separating, and every
-np-functional on `𝒯` is an operator-norm limit of finite sums of such;
-their restrictions along `γ_⊙` are exactly the basic functionals. -/
+np-functional on `𝒯` is an operator-norm limit of finite sums of such.
+
+Order separation is stated here in the two-element comparison form that
+this file's consumers (`tensor_basic_2`, `char_bounded`) use, and derived
+from `tensor_basic_1_orderSeparating`, which is the point's own claim
+(cstar.tex **21II**.1, for an arbitrary element).  The part's third claim,
+that `ω ↦ ω ∘ γ_⊙` is a bijection of `Ω` onto the basic functionals, is
+`isBasicFunctional_comp_lift` and `tensor_basic_1_unique` above. -/
 theorem tensor_basic_1 (γ : A →ₗ[ℂ] B →ₗ[ℂ] T) (hγ : IsTensorProduct γ) :
     (∀ x y : T, IsSelfAdjoint x → IsSelfAdjoint y →
       (∀ (σ : NPFunctional A) (τ : NPFunctional B) (s : A ⊗[ℂ] B),
@@ -3109,74 +3233,37 @@ theorem tensor_basic_1 (γ : A →ₗ[ℂ] B →ₗ[ℂ] T) (hγ : IsTensorProdu
             (star (TensorProduct.lift γ (s i)) * t *
               TensorProduct.lift γ (s i))‖ ≤ ε * ‖t‖ := by
   constructor
-  · -- **Order separating.**  Put `a := y - x`.  By `nonneg_of_conjNP_of_centreSeparating`
-    -- (30X fed with `centreSeparatingConj_prodFunctionals`) it suffices that
-    -- `γ(σ,τ)(c* a c) ≥ 0` for *every* `c ∈ 𝒯`, while the hypothesis gives this
-    -- only for `c ∈ γ_⊙(𝒜 ⊙ ℬ)`.  **74VI** `dense_subalgebra` supplies a
-    -- norm-bounded net `s_α → c` ultrastrongly from that subalgebra, and
-    -- **72III**.1c `bstaromega_lipschitz` transfers the limit.
+  · -- **Order separating**, in the two-element comparison form: apply
+    -- `tensor_basic_1_orderSeparating` to `y - x`, whose conjugates
+    -- `γ_⊙(s)*(y-x)γ_⊙(s)` are self-adjoint, so that the hypothesis's
+    -- comparison of *real parts* is the full complex inequality.
     intro x y hx hy H
     rw [← sub_nonneg]
-    set a : T := y - x with hadef
-    have hasa : IsSelfAdjoint a := hy.sub hx
-    have hconj : ∀ d : T, IsSelfAdjoint (star d * a * d) := fun d => by
-      show star (star d * a * d) = star d * a * d
+    refine (tensor_basic_1_orderSeparating γ hγ (y - x)).mpr ?_
+    rintro ⟨σ, τ, s⟩
+    have hasa : IsSelfAdjoint (y - x) := hy.sub hx
+    have hconj : IsSelfAdjoint (star (TensorProduct.lift γ s) * (y - x) *
+        TensorProduct.lift γ s) := by
+      show star _ = _
       rw [star_mul, star_mul, star_star, hasa.star_eq, mul_assoc]
-    refine nonneg_of_conjNP_of_centreSeparating (prodFunctionals hγ)
-      (centreSeparatingConj_prodFunctionals hγ) ?_
-    rintro χ ⟨σ, τ, rfl⟩ c
-    set ω : NPFunctional T := prodNP hγ σ τ with hωdef
-    have hsplit : ∀ d : T,
-        ω (star d * a * d) = ω (star d * y * d) - ω (star d * x * d) := by
-      intro d
-      have e : star d * a * d = star d * y * d - star d * x * d := by
-        rw [hadef]; noncomm_ring
-      rw [e, npFunctional_sub]
-    obtain ⟨ι, l, hl, s, hs, hlim⟩ :=
-      dense_subalgebra (tensorSpan γ hγ.miu) hγ.dense 1 one_pos c
-    have _ : l.NeBot := hl
-    have hnn : ∀ i, 0 ≤ (ω (star (s i) * a * s i)).re := by
-      intro i
-      have hmem : s i ∈ Set.range ⇑(TensorProduct.lift γ) := by
-        rw [range_lift_eq_span]; exact (hs i).1
-      obtain ⟨v, hv⟩ := hmem
-      have hH := H σ τ v
-      rw [hv] at hH
+    show (0 : ℂ) ≤ conjProdNP hγ σ τ s (y - x)
+    rw [conjProdNP_apply]
+    have hsplit : (prodNP hγ σ τ (star (TensorProduct.lift γ s) * (y - x) *
+          TensorProduct.lift γ s) : ℂ)
+        = prodNP hγ σ τ (star (TensorProduct.lift γ s) * y * TensorProduct.lift γ s)
+          - prodNP hγ σ τ (star (TensorProduct.lift γ s) * x *
+              TensorProduct.lift γ s) := by
+      rw [show star (TensorProduct.lift γ s) * (y - x) * TensorProduct.lift γ s
+          = star (TensorProduct.lift γ s) * y * TensorProduct.lift γ s
+            - star (TensorProduct.lift γ s) * x * TensorProduct.lift γ s by
+            noncomm_ring, npFunctional_sub]
+    have him := npFunctional_im_eq_zero (prodNP hγ σ τ) hconj
+    have hre : (0 : ℝ) ≤ (prodNP hγ σ τ (star (TensorProduct.lift γ s) * (y - x) *
+        TensorProduct.lift γ s) : ℂ).re := by
       rw [hsplit, Complex.sub_re]
-      linarith
-    set K : ℝ := ‖c‖ * (1 + 1) * omegaNorm T ω 1 + omegaNorm T ω c with hKdef
-    have hbnd : ∀ i, ‖ω (star (s i) * a * s i) - ω (star c * a * c)‖
-        ≤ omegaNorm T ω (s i - c) * (K * ‖a‖) := by
-      intro i
-      have hlip := bstaromega_lipschitz ω (s i) c a
-      have hsi : omegaNorm T ω (s i) ≤ ‖c‖ * (1 + 1) * omegaNorm T ω 1 := by
-        have h1 : omegaNorm T ω (s i * 1) ≤ ‖s i‖ * omegaNorm T ω 1 :=
-          omegaNorm_mul_le ω (s i) 1
-        rw [mul_one] at h1
-        exact h1.trans (mul_le_mul_of_nonneg_right (hs i).2 (omegaNorm_nonneg ω 1))
-      have h0 := omegaNorm_nonneg ω (s i - c)
-      have h1 : omegaNorm T ω (s i) + omegaNorm T ω c ≤ K := by rw [hKdef]; linarith
-      refine hlip.trans ?_
-      calc omegaNorm T ω (s i - c) * (omegaNorm T ω (s i) + omegaNorm T ω c) * ‖a‖
-          = omegaNorm T ω (s i - c)
-              * ((omegaNorm T ω (s i) + omegaNorm T ω c) * ‖a‖) := by ring
-        _ ≤ omegaNorm T ω (s i - c) * (K * ‖a‖) :=
-            mul_le_mul_of_nonneg_left
-              (mul_le_mul_of_nonneg_right h1 (norm_nonneg a)) h0
-    have hzero : Tendsto (fun i => omegaNorm T ω (s i - c) * (K * ‖a‖)) l (𝓝 0) := by
-      have hus := (usTendsto_iff s l c).mp hlim ω
-      simpa using hus.mul_const (K * ‖a‖)
-    have hconv : Tendsto (fun i => ω (star (s i) * a * s i)) l
-        (𝓝 (ω (star c * a * c))) := by
-      rw [tendsto_iff_norm_sub_tendsto_zero]
-      exact squeeze_zero (fun i => norm_nonneg _) hbnd hzero
-    have hre : Tendsto (fun i => (ω (star (s i) * a * s i)).re) l
-        (𝓝 (ω (star c * a * c)).re) := (Complex.continuous_re.tendsto _).comp hconv
-    have hfin : (0 : ℝ) ≤ (ω (star c * a * c)).re :=
-      ge_of_tendsto hre (Filter.Eventually.of_forall hnn)
+      linarith [H σ τ s]
     rw [Complex.le_def]
-    exact ⟨by simpa using hfin, by
-      rw [Complex.zero_im, npFunctional_im_eq_zero ω (hconj c)]⟩
+    exact ⟨by simpa using hre, by simpa using him.symm⟩
   · -- **Every np-functional is a norm limit of finite sums from `Ω`** — this is
     -- **90II**.2 `vn_center_separating_fundamental_2` applied to the centre
     -- separating collection of product functionals and the ultrastrongly dense
@@ -3284,6 +3371,18 @@ theorem tensor_basic_2 (γ : A →ₗ[ℂ] B →ₗ[ℂ] T) (hγ : IsTensorProdu
           Real.sqrt_le_sqrt hfin
       _ = ‖y‖ := Real.sqrt_sq (norm_nonneg y)
 
+/-- **112X** (`tensor-basic`, proc.tex:2868, Exercise), part 3, first
+claim: `‖f ∘ γ_⊙‖ ≤ ‖f‖` for every `f ∈ 𝒯_*` — in bound form, since the
+tensor product norm is not registered as a `NormedSpace` structure on
+`𝒜 ⊙ ℬ`.  It is **112X**.2 (`γ_⊙` is an isometry) plus the operator-norm
+bound on `f`, which is the exercise's own one-line argument; the `≥`
+direction of the resulting equality is `tensor_basic_4`. -/
+theorem tensor_basic_3_norm_le (γ : A →ₗ[ℂ] B →ₗ[ℂ] T) (hγ : IsTensorProduct γ)
+    (f : T →L[ℂ] ℂ) (t : A ⊗[ℂ] B) :
+    ‖f (TensorProduct.lift γ t)‖ ≤ ‖f‖ * tensorNorm A B t := by
+  rw [← tensor_basic_2 γ hγ t]
+  exact f.le_opNorm _
+
 /-- **112X** (`tensor-basic`, proc.tex:2868, Exercise), part 3 (headline
 claim): `γ_⊙` is continuous from the ultraweak tensor product topology to
 the ultraweak topology on `𝒯` (and the restriction of an np-functional
@@ -3298,8 +3397,8 @@ theorem tensor_basic_3 (γ : A →ₗ[ℂ] B →ₗ[ℂ] T) (hγ : IsTensorProdu
   -- np-functional `h` on `𝒯`, in *operator* norm, by a finite sum of members
   -- of `Ω`; restricting along `γ_⊙` turns that sum into a simple functional
   -- (`isBasicFunctional_comp_lift`), and **112X**.2 converts `ε‖γ_⊙ t‖` into
-  -- `ε‖t‖` — which is the thesis's `‖f ∘ γ_⊙‖ ≤ ‖f‖`, here in the only form
-  -- it is used.  The first half then follows because `uwTensorTopology` is
+  -- `ε‖t‖` — the same step as `tensor_basic_3_norm_le` above, in the form
+  -- used here.  The first half then follows because `uwTensorTopology` is
   -- by definition the initial topology of exactly these functionals.
   have hnl : ∀ h : NPFunctional T,
       NormLimitOfSimple A B ((npLin h).comp (TensorProduct.lift γ)) := by
@@ -4052,9 +4151,9 @@ private theorem cp_matrix_nonneg {D E : Type u} [CStarAlgebra D]
 /-- **113IV** (`cp-bilinear`, proc.tex:3029, Exercise), parts 1 and 3: a
 bilinear map `β` is completely positive iff `(M_N β)(A,B) ≥ 0` for all
 positive `A ∈ M_N(𝒜)`, `B ∈ M_N(ℬ)` and all `N` (positivity of matrices
-rendered by the criterion of cstar.tex 33II).  (Part 2, complete
-positivity of `M_N β` itself, is subsumed by applying the statement to
-`M_N β`.) -/
+rendered by the criterion of cstar.tex 33II).  Part 2, complete positivity
+of `M_N β` itself, is `cp_bilinear_2` below; the two together are the
+exercise's three-way equivalence. -/
 theorem cp_bilinear (β : A →ₗ[ℂ] B →ₗ[ℂ] C) :
     BilinCP β ↔
       ∀ (N : ℕ) (M : CStarMatrix (Fin N) (Fin N) A)
@@ -4107,6 +4206,229 @@ theorem cp_bilinear (β : A →ₗ[ℂ] B →ₗ[ℂ] C) :
       fun y => (Theses.A.CStar.cstar_matrix_positive_iff _).mp
         (Theses.A.CStar.cstar_matrix_star_mul_nonneg b) y
     exact h n _ _ hM hM' c
+
+/-! ### Auxiliaries for **113IV**.2
+
+Clause (2) of the exercise ("`M_N β` is completely positive for each `N`")
+is a statement *about* `M_N β` as a bilinear map, so `M_N β` has first to be
+bundled as one (`matBilinL`); `matBilin` is only its underlying function.
+The proof of (1) ⇒ (2) then expands both sides down to entries: complete
+positivity of `M_N β` at width `m` is, after the criterion of **33II**,
+complete positivity of `β` at width `mN`, the two extra summations coming
+from the two matrix products `(a_i* a_j)_{rs} = ∑ₜ (a_i)_{tr}*(a_j)_{ts}`
+inside `β`, which bilinearity pulls out in front. -/
+
+/-- **113III** (proc.tex:3018, Notation), bundled: `M_N β` as a *bilinear*
+map `M_N(𝒜) × M_N(ℬ) → M_N(𝒞)`.  Both linearity conditions hold entrywise,
+where they are those of `β`. -/
+def matBilinL (β : A →ₗ[ℂ] B →ₗ[ℂ] C) (N : ℕ) :
+    CStarMatrix (Fin N) (Fin N) A →ₗ[ℂ] CStarMatrix (Fin N) (Fin N) B →ₗ[ℂ]
+      CStarMatrix (Fin N) (Fin N) C where
+  toFun M :=
+    { toFun := fun M' => matBilin β N M M'
+      map_add' := by intro M₁ M₂; ext i j; exact map_add (β (M i j)) _ _
+      map_smul' := by intro z M'; ext i j; exact map_smul (β (M i j)) _ _ }
+  map_add' := by
+    intro M₁ M₂; ext M' i j
+    show β (M₁ i j + M₂ i j) (M' i j) = β (M₁ i j) (M' i j) + β (M₂ i j) (M' i j)
+    rw [map_add]; rfl
+  map_smul' := by
+    intro z M; ext M' i j
+    show β (z • M i j) (M' i j) = z • β (M i j) (M' i j)
+    rw [map_smul]; rfl
+
+@[simp] theorem matBilinL_apply (β : A →ₗ[ℂ] B →ₗ[ℂ] C) (N : ℕ)
+    (M : CStarMatrix (Fin N) (Fin N) A) (M' : CStarMatrix (Fin N) (Fin N) B) :
+    matBilinL β N M M' = matBilin β N M M' := rfl
+
+/-- The entries of a finite sum of matrices. -/
+private theorem cstarMatrix_sum_apply {ι : Type*} {N : ℕ} (s : Finset ι)
+    (F : ι → CStarMatrix (Fin N) (Fin N) C) (p q : Fin N) :
+    (∑ i ∈ s, F i) p q = ∑ i ∈ s, F i p q := by
+  classical
+  induction s using Finset.induction with
+  | empty => simp
+  | insert a s ha ih =>
+      rw [Finset.sum_insert ha, Finset.sum_insert ha, CStarMatrix.add_apply, ih]
+
+/-- Moving a pair of inner summations outside a pair of outer ones. -/
+private theorem sum_comm₂₂ {M : Type*} [AddCommMonoid M] {ι κ ι' κ' : Type*}
+    [Fintype ι] [Fintype κ] [Fintype ι'] [Fintype κ']
+    (G : ι → κ → ι' → κ' → M) :
+    ∑ i, ∑ j, ∑ t, ∑ u, G i j t u = ∑ t, ∑ u, ∑ i, ∑ j, G i j t u := by
+  calc ∑ i, ∑ j, ∑ t, ∑ u, G i j t u
+      = ∑ i, ∑ t, ∑ j, ∑ u, G i j t u :=
+        Finset.sum_congr rfl fun i _ => Finset.sum_comm
+    _ = ∑ t, ∑ i, ∑ j, ∑ u, G i j t u := Finset.sum_comm
+    _ = ∑ t, ∑ i, ∑ u, ∑ j, G i j t u :=
+        Finset.sum_congr rfl fun t _ => Finset.sum_congr rfl fun i _ => Finset.sum_comm
+    _ = ∑ t, ∑ u, ∑ i, ∑ j, G i j t u :=
+        Finset.sum_congr rfl fun t _ => Finset.sum_comm
+
+/-- The quadratic form of `C* F C` at `x` is the quadratic form of `F` at
+`Cx`: this is what turns the **33II** criterion for the matrix
+`∑ᵢⱼ cᵢ* (M_N β)(…) cⱼ` into an instance of complete positivity of `β`. -/
+private theorem quadForm_conj {K : Type*} [Fintype K] {n : ℕ}
+    (F : K → K → C) (Cm : K → Fin n → C) (x : Fin n → C) :
+    ∑ p, ∑ q, star (x p) * (∑ k, ∑ l, star (Cm k p) * F k l * Cm l q) * x q
+      = ∑ k, ∑ l, star (∑ p, Cm k p * x p) * F k l * ∑ q, Cm l q * x q := by
+  have hL : ∀ p q : Fin n,
+      star (x p) * (∑ k, ∑ l, star (Cm k p) * F k l * Cm l q) * x q
+        = ∑ k, ∑ l, (star (x p) * star (Cm k p)) * F k l * (Cm l q * x q) := by
+    intro p q
+    rw [Finset.mul_sum, Finset.sum_mul]
+    refine Finset.sum_congr rfl fun k _ => ?_
+    rw [Finset.mul_sum, Finset.sum_mul]
+    exact Finset.sum_congr rfl fun l _ => by noncomm_ring
+  rw [Finset.sum_congr rfl fun p _ => Finset.sum_congr rfl fun q _ => hL p q,
+    sum_comm₂₂ (fun p q k l => (star (x p) * star (Cm k p)) * F k l * (Cm l q * x q))]
+  refine Finset.sum_congr rfl fun k _ => Finset.sum_congr rfl fun l _ => ?_
+  rw [star_sum]
+  rw [Finset.sum_mul, Finset.sum_mul]
+  refine Finset.sum_congr rfl fun p _ => ?_
+  rw [star_mul, Finset.mul_sum]
+
+/-- Complete positivity of `β` for tuples indexed by an arbitrary finite
+type, by transport along `Fintype.equivFin`. -/
+private theorem bilinCP_fintype {β : A →ₗ[ℂ] B →ₗ[ℂ] C} (hβ : BilinCP β)
+    {K : Type*} [Fintype K] (a : K → A) (b : K → B) (c : K → C) :
+    0 ≤ ∑ k, ∑ l, star (c k) * β (star (a k) * a l) (star (b k) * b l) * c l := by
+  classical
+  set e := Fintype.equivFin K with he
+  have h := hβ (Fintype.card K) (fun i => a (e.symm i)) (fun i => b (e.symm i))
+    (fun i => c (e.symm i))
+  have h1 : ∀ i : Fin (Fintype.card K),
+      ∑ j, star (c (e.symm i)) * β (star (a (e.symm i)) * a (e.symm j))
+          (star (b (e.symm i)) * b (e.symm j)) * c (e.symm j)
+        = ∑ l, star (c (e.symm i)) * β (star (a (e.symm i)) * a l)
+            (star (b (e.symm i)) * b l) * c l :=
+    fun i => Equiv.sum_comp e.symm (fun l => star (c (e.symm i))
+      * β (star (a (e.symm i)) * a l) (star (b (e.symm i)) * b l) * c l)
+  rw [Finset.sum_congr rfl fun i _ => h1 i] at h
+  rwa [Equiv.sum_comp e.symm
+    (fun k => ∑ l, star (c k) * β (star (a k) * a l) (star (b k) * b l) * c l)] at h
+
+/-- **113IV** (`cp-bilinear`, proc.tex:3029, Exercise), clause (1) ⇒ (2):
+if `β` is completely positive then so is `M_N β`, for every `N`. -/
+theorem cp_bilinear_2 (β : A →ₗ[ℂ] B →ₗ[ℂ] C) (hβ : BilinCP β) (N : ℕ) :
+    BilinCP (matBilinL β N) := by
+  classical
+  intro m a b c
+  -- The `(t,u)`-slice of `M_N β` at the Gram matrices: bilinearity splits
+  -- `β((a_i* a_j)_{rs}, (b_i* b_j)_{rs})` into `∑ₜ ∑ᵤ` of these.
+  set Mtu : Fin N → Fin N → Fin m → Fin m → CStarMatrix (Fin N) (Fin N) C :=
+    fun t u i j => CStarMatrix.ofMatrix (Matrix.of fun r s =>
+      β (star ((a i) t r) * (a j) t s) (star ((b i) u r) * (b j) u s)) with hMtu
+  have hMtu_apply : ∀ t u i j r s, Mtu t u i j r s
+      = β (star ((a i) t r) * (a j) t s) (star ((b i) u r) * (b j) u s) :=
+    fun _ _ _ _ _ _ => rfl
+  have hsplit : ∀ i j, matBilinL β N (star (a i) * a j) (star (b i) * b j)
+      = ∑ t, ∑ u, Mtu t u i j := by
+    intro i j
+    ext r s
+    rw [cstarMatrix_sum_apply]
+    have hb : ∀ t : Fin N, (∑ u, Mtu t u i j) r s
+        = ∑ u, β (star ((a i) t r) * (a j) t s) (star ((b i) u r) * (b j) u s) := by
+      intro t
+      rw [cstarMatrix_sum_apply]
+      exact Finset.sum_congr rfl fun u _ => hMtu_apply t u i j r s
+    rw [Finset.sum_congr rfl fun t _ => hb t]
+    show β ((star (a i) * a j) r s) ((star (b i) * b j) r s) = _
+    have ha : (star (a i) * a j) r s = ∑ t, star ((a i) t r) * (a j) t s := by
+      rw [CStarMatrix.mul_apply]
+      exact Finset.sum_congr rfl fun t _ => by rw [CStarMatrix.star_apply]
+    have hbb : (star (b i) * b j) r s = ∑ u, star ((b i) u r) * (b j) u s := by
+      rw [CStarMatrix.mul_apply]
+      exact Finset.sum_congr rfl fun u _ => by rw [CStarMatrix.star_apply]
+    rw [ha, hbb, map_sum β, LinearMap.sum_apply]
+    exact Finset.sum_congr rfl fun t _ => map_sum _ _ _
+  have hstep : ∑ i, ∑ j, star (c i) *
+        (matBilinL β N (star (a i) * a j) (star (b i) * b j)) * c j
+      = ∑ t, ∑ u, ∑ i, ∑ j, star (c i) * Mtu t u i j * c j := by
+    rw [← sum_comm₂₂ (fun i j t u => star (c i) * Mtu t u i j * c j)]
+    refine Finset.sum_congr rfl fun i _ => Finset.sum_congr rfl fun j _ => ?_
+    rw [hsplit i j, Finset.mul_sum, Finset.sum_mul]
+    refine Finset.sum_congr rfl fun t _ => ?_
+    rw [Finset.mul_sum, Finset.sum_mul]
+  rw [hstep]
+  refine Finset.sum_nonneg fun t _ => Finset.sum_nonneg fun u _ => ?_
+  refine (Theses.A.CStar.cstar_matrix_positive_iff _).mpr fun x => ?_
+  have hent : ∀ p q : Fin N, (∑ i, ∑ j, star (c i) * Mtu t u i j * c j) p q
+      = ∑ k : Fin m × Fin N, ∑ l : Fin m × Fin N,
+          star ((c k.1) k.2 p)
+            * β (star ((a k.1) t k.2) * (a l.1) t l.2)
+                (star ((b k.1) u k.2) * (b l.1) u l.2)
+            * ((c l.1) l.2 q) := by
+    intro p q
+    rw [cstarMatrix_sum_apply]
+    have h1 : ∀ i, (∑ j, star (c i) * Mtu t u i j * c j) p q
+        = ∑ j, ∑ s, ∑ r, star ((c i) r p)
+            * β (star ((a i) t r) * (a j) t s) (star ((b i) u r) * (b j) u s)
+            * ((c j) s q) := by
+      intro i
+      rw [cstarMatrix_sum_apply]
+      refine Finset.sum_congr rfl fun j _ => ?_
+      rw [CStarMatrix.mul_apply]
+      refine Finset.sum_congr rfl fun s _ => ?_
+      rw [CStarMatrix.mul_apply, Finset.sum_mul]
+      refine Finset.sum_congr rfl fun r _ => ?_
+      rw [CStarMatrix.star_apply, hMtu_apply]
+    have hswap : ∀ i : Fin m,
+        (∑ j, ∑ s, ∑ r, star ((c i) r p)
+            * β (star ((a i) t r) * (a j) t s) (star ((b i) u r) * (b j) u s)
+            * ((c j) s q))
+          = ∑ r, ∑ j, ∑ s, star ((c i) r p)
+            * β (star ((a i) t r) * (a j) t s) (star ((b i) u r) * (b j) u s)
+            * ((c j) s q) := fun i =>
+      (Finset.sum_congr rfl fun j _ => Finset.sum_comm).trans Finset.sum_comm
+    rw [Finset.sum_congr rfl fun i _ => (h1 i).trans (hswap i), Fintype.sum_prod_type]
+    refine Finset.sum_congr rfl fun i _ => Finset.sum_congr rfl fun r _ => ?_
+    rw [Fintype.sum_prod_type]
+  rw [Finset.sum_congr rfl fun p _ => Finset.sum_congr rfl fun q _ => by
+    rw [hent p q]]
+  rw [quadForm_conj (fun k l : Fin m × Fin N =>
+      β (star ((a k.1) t k.2) * (a l.1) t l.2)
+        (star ((b k.1) u k.2) * (b l.1) u l.2))
+    (fun k p => (c k.1) k.2 p) x]
+  exact bilinCP_fintype hβ (fun k : Fin m × Fin N => (a k.1) t k.2)
+    (fun k : Fin m × Fin N => (b k.1) u k.2)
+    (fun k : Fin m × Fin N => ∑ p, (c k.1) k.2 p * x p)
+
+/-- **113IV** (`cp-bilinear`, proc.tex:3029, Exercise), clause (2) and its
+equivalence with clause (1): `β` is completely positive iff `M_N β` is,
+for every `N`.  With `cp_bilinear` (clauses (1) and (3)) this is the
+exercise's three-way equivalence.
+
+The converse is clause (2) at `N = 1`: the `1×1` matrices over `𝒜` are
+`𝒜`, and a `1×1` matrix is positive iff its single entry is (**33II** with
+the vector `1`). -/
+theorem cp_bilinear_2' (β : A →ₗ[ℂ] B →ₗ[ℂ] C) :
+    BilinCP β ↔ ∀ N : ℕ, BilinCP (matBilinL β N) := by
+  refine ⟨fun hβ N => cp_bilinear_2 β hβ N, fun h n a b c => ?_⟩
+  set A₁ : Fin n → CStarMatrix (Fin 1) (Fin 1) A :=
+    fun i => CStarMatrix.ofMatrix (Matrix.of fun _ _ => a i) with hA₁
+  set B₁ : Fin n → CStarMatrix (Fin 1) (Fin 1) B :=
+    fun i => CStarMatrix.ofMatrix (Matrix.of fun _ _ => b i) with hB₁
+  set C₁ : Fin n → CStarMatrix (Fin 1) (Fin 1) C :=
+    fun i => CStarMatrix.ofMatrix (Matrix.of fun _ _ => c i) with hC₁
+  have hpos := (Theses.A.CStar.cstar_matrix_positive_iff _).mp
+    (h 1 n A₁ B₁ C₁) (fun _ => 1)
+  rw [Fin.sum_univ_one, Fin.sum_univ_one, star_one, one_mul, mul_one] at hpos
+  have hentry : (∑ i, ∑ j, star (C₁ i)
+        * matBilinL β 1 (star (A₁ i) * A₁ j) (star (B₁ i) * B₁ j) * C₁ j) 0 0
+      = ∑ i, ∑ j, star (c i) * β (star (a i) * a j) (star (b i) * b j) * c j := by
+    rw [cstarMatrix_sum_apply]
+    refine Finset.sum_congr rfl fun i _ => ?_
+    rw [cstarMatrix_sum_apply]
+    refine Finset.sum_congr rfl fun j _ => ?_
+    rw [CStarMatrix.mul_apply, Fin.sum_univ_one, CStarMatrix.mul_apply,
+      Fin.sum_univ_one, CStarMatrix.star_apply]
+    show star (c i) * β ((star (A₁ i) * A₁ j) 0 0) ((star (B₁ i) * B₁ j) 0 0) * c j
+      = star (c i) * β (star (a i) * a j) (star (b i) * b j) * c j
+    rw [CStarMatrix.mul_apply, Fin.sum_univ_one, CStarMatrix.mul_apply,
+      Fin.sum_univ_one, CStarMatrix.star_apply, CStarMatrix.star_apply]
+    rfl
+  rwa [hentry] at hpos
 
 /-- **113IV** (`cp-bilinear`, proc.tex:3029, Exercise), corollary:
 `h ∘ β ∘ (f × g)` is completely positive when `f`, `g`, `h` are cp-maps
@@ -5122,7 +5444,15 @@ theorem vtmul_nonneg (a : A) (b : B) (ha : 0 ≤ a) (hb : 0 ≤ b) :
 
 /-- **116III** (`tensor-simple-facts`, proc.tex:3427, Exercise), part 1:
 `a ⊗ b ≥ 0` for positive `a`, `b`; hence `a₁ ⊗ b₁ ≤ a₂ ⊗ b₂` for
-`0 ≤ a₁ ≤ a₂` and `0 ≤ b₁ ≤ b₂`. -/
+`0 ≤ a₁ ≤ a₂` and `0 ≤ b₁ ≤ b₂`.
+
+**The monotonicity half is false as printed, and the hypotheses
+`0 ≤ a₁`, `0 ≤ b₁` are our repair.**  The point says "for all `a₁ ≤ a₂`
+from `𝒜` and `b₁ ≤ b₂` from `ℬ`", with no positivity; at `𝒜 = ℬ = ℂ` take
+`a₁ = b₁ = -1 ≤ 0 = a₂ = b₂` and then `a₁ ⊗ b₁ = 1 ≰ 0 = a₂ ⊗ b₂`.
+Positivity is what the splitting `a₂ ⊗ b₂ - a₁ ⊗ b₁ = (a₂-a₁) ⊗ b₂ +
+a₁ ⊗ (b₂-b₁)` below needs, and what every consumer supplies.  Not recorded
+in `ERRATA.md`; changing the printed statement is the author's call. -/
 theorem tensor_simple_facts_1 (a : A) (b : B) (ha : 0 ≤ a) (hb : 0 ≤ b) :
     0 ≤ a ⊗ᵥ b ∧
       ∀ (a₂ : A) (b₂ : B), a ≤ a₂ → b ≤ b₂ → a ⊗ᵥ b ≤ a₂ ⊗ᵥ b₂ := by
@@ -5788,7 +6118,15 @@ the ultrastrong closure of a ∗-subalgebra `S`) plus **89XI**.2 (the
 ultraweak topology of a von Neumann subalgebra is induced); the product
 functionals come from **89XII** `functional-extension` along `f` and `g`;
 and faithfulness is inherited from `𝒞 ⊗ 𝒟` because the product functional
-of `(σ∘f, τ∘g)` for `γ` is the restriction of `σ ⊗ τ`. -/
+of `(σ∘f, τ∘g)` for `γ` is the restriction of `σ ⊗ τ`.
+
+A wrinkle in the printed proof: it verifies condition (3) of **108II**
+only for a *central projection* `z` of `𝒯`, whereas condition (3) is
+faithfulness — the same statement for every positive `t`.  This is the
+error class of the `ERRATA.md` row **119II**, and as harmless: the printed
+argument (that `γ(σ∘f, τ∘g)` is the restriction of `σ ⊗ τ` to `𝒯`) gives
+the general case verbatim, and that is what is proved here.  Not recorded
+in `ERRATA.md`. -/
 private theorem isTensorProduct_genGamma (f : NMIUMap A C) (g : NMIUMap B D)
     (hf : Function.Injective ⇑f) (hg : Function.Injective ⇑g) :
     IsTensorProduct (genGamma f g) := by
@@ -6138,7 +6476,11 @@ private theorem norm_sub_le_of_tmul_factor (F G : VNT A B →L[ℂ] ℂ)
   exact tensor_simple_facts_3 p p' q q' hp hp' hq hq'
 
 /-- **116III** (`tensor-simple-facts`, proc.tex:3427, Exercise), part 4:
-`⊗ : 𝒜 × ℬ → 𝒜 ⊗ ℬ` is (jointly) ultraweakly continuous. -/
+`⊗ : 𝒜 × ℬ → 𝒜 ⊗ ℬ` is (jointly) ultraweakly continuous.
+
+**This part of the thesis is false**, and the `sorry` is deliberate and not
+closable: see the note directly below, the `ERRATA.md` row **116III.4**, and
+the machine-checked refutation `tensor_simple_facts_4_counterexample`. -/
 theorem tensor_simple_facts_4 :
     @Continuous (A × B) (VNT A B)
       (@instTopologicalSpaceProd A B (ultraweak A) (ultraweak B))
@@ -6792,7 +7134,13 @@ theorem continuous_ultraweak_vtmul_left (b : B) :
 
 /-- **116III** (`tensor-simple-facts`, proc.tex:3427, Exercise), part 5:
 `a ⊗ (·) : ℬ → 𝒜 ⊗ ℬ` is an ncp-map for positive `a`, and `1 ⊗ (·)` is
-an nmiu-map. -/
+an nmiu-map.
+
+**The hypothesis `0 ≤ a` is our repair: as printed the part is false.**  It
+asks that `a ⊗ (·)` be an ncp-map "for every `a ∈ 𝒜`", but at `a = -1` the
+map `b ↦ (-1) ⊗ b` is not even positive — it sends the positive `1` to
+`-(1 ⊗ 1) = -1`.  Not recorded in `ERRATA.md`; changing the printed
+statement is the author's call. -/
 theorem tensor_simple_facts_5 (a : A) (ha : 0 ≤ a) :
     (∃ f : NCPMap B (VNT A B), ∀ b, f b = a ⊗ᵥ b) ∧
       ∃ ρ : NMIUMap B (VNT A B), ∀ b, ρ b = (1 : A) ⊗ᵥ b := by
@@ -8993,7 +9341,13 @@ theorem cceil_tensor (a : A) (b : B) :
   exact le_antisymm hle hge
 
 /-- **118IV** (`carrier-tensor`, proc.tex:3880, Exercise), part 1:
-`⌈f ⊗ g⌉ ≤ ⌈f⌉ ⊗ ⌈g⌉` for np-maps `f`, `g`. -/
+`⌈f ⊗ g⌉ ≤ ⌈f⌉ ⊗ ⌈g⌉` for np-maps `f`, `g`.
+
+Step 1 of the exercise asks *first* for `(f ⊗ g)(⌈f⌉ ⊗ ⌈g⌉) = 1 ⊗ 1` and
+then for this inequality; only the second is stated here, because the first
+is false unless `f` and `g` are unital — the `ERRATA.md` row **118IV.1**.
+Separately, the exercise says "np-maps", but `f ⊗ g` is defined (**115II**)
+only for ncp-maps, which is what we require. -/
 theorem carrier_tensor_1 (f : NCPMap A C) (g : NCPMap B D) :
     ncpCarrier (tmap f g) ≤ ncpCarrier f ⊗ᵥ ncpCarrier g := by
   -- *Divergence.*  The thesis asks for `(f ⊗ g)(⌈f⌉ ⊗ ⌈g⌉) = 1 ⊗ 1`, which
@@ -10416,7 +10770,10 @@ end TmapM
 associators form a natural transformation, i.e.
 `α ∘ (f ⊗ (g ⊗ h)) = ((f ⊗ g) ⊗ h) ∘ α` for all ncp-maps `f`, `g`, `h`.
 (The monoidal structure is stated concretely rather than through
-`CategoryTheory.MonoidalCategory`; cf. the file docstring.) -/
+`CategoryTheory.MonoidalCategory`; cf. the file docstring.)  The clause's
+second half — that the braidings and the unitors are natural too — is
+`vn_smc_braiding_natural`, `vn_smc_leftUnitor_natural` and
+`vn_smc_rightUnitor_natural` below. -/
 theorem vn_smc_associator_natural {A' B' C' : Type u} [CStarAlgebra A']
     [PartialOrder A'] [StarOrderedRing A'] [VonNeumannAlgebra A']
     [CStarAlgebra B'] [PartialOrder B'] [StarOrderedRing B']
@@ -10454,6 +10811,102 @@ theorem vn_smc_associator_natural {A' B' C' : Type u} [CStarAlgebra A']
     (congrArg (fun k : VNT A (VNT B C) →ₗ[ℂ] VNT (VNT A' B') C' => ⇑k) hkey) t
 
 
+/-- **119V** (`vn-smc`, proc.tex:4087, Theorem), naturality of the
+braidings — the "similar but simpler argument" the printed proof leaves to
+the reader: `γ_{𝒜',ℬ'} ∘ (f ⊗ g) = (g ⊗ f) ∘ γ_{𝒜,ℬ}` for all ncp-maps
+`f : 𝒜 → 𝒜'`, `g : ℬ → ℬ'`.  The argument is the associator's: both routes
+send `a ⊗ b` to `g(b) ⊗ f(a)`, and the linear span of the `a ⊗ b` is
+ultraweakly dense (**116IV**.1, here through condition (1) of **108II**). -/
+theorem vn_smc_braiding_natural {A' B' : Type u} [CStarAlgebra A']
+    [PartialOrder A'] [StarOrderedRing A'] [VonNeumannAlgebra A']
+    [CStarAlgebra B'] [PartialOrder B'] [StarOrderedRing B']
+    [VonNeumannAlgebra B'] (f : NCPMap A A') (g : NCPMap B B') (t : VNT A B) :
+    braiding A' B' (tmap f g t) = tmap g f (braiding A B t) := by
+  letI : TopologicalSpace (VNT A B) := ultraweak _
+  letI : TopologicalSpace (VNT A' B') := ultraweak _
+  letI : TopologicalSpace (VNT B' A') := ultraweak _
+  letI : TopologicalSpace (VNT B A) := ultraweak _
+  haveI : T2Space (VNT B' A') := vn_positive_basic_1.1
+  have hcf : @Continuous (VNT A B) (VNT A' B') (ultraweak _) (ultraweak _)
+      ⇑(tmap f g) :=
+    ((p_uwcont (ncpPositive (tmap f g))).out 2 0).mp (tmap f g).preservesDirSups'
+  have hcg : @Continuous (VNT B A) (VNT B' A') (ultraweak _) (ultraweak _)
+      ⇑(tmap g f) :=
+    ((p_uwcont (ncpPositive (tmap g f))).out 2 0).mp (tmap g f).preservesDirSups'
+  have hkey := tensor_linear_ext (vnTensor A B).isTensorProduct
+    ((nmiuLin (braiding A' B')).comp
+      (tmap f g).toCompletelyPositiveMap.toLinearMap)
+    ((tmap g f).toCompletelyPositiveMap.toLinearMap.comp
+      (nmiuLin (braiding A B)))
+    ((nmiu_uwContinuous (braiding A' B')).comp hcf)
+    (hcg.comp (nmiu_uwContinuous (braiding A B)))
+    (fun a b => by
+      show braiding A' B' (tmap f g (a ⊗ᵥ b)) = tmap g f (braiding A B (a ⊗ᵥ b))
+      rw [tmap_apply, braiding_apply, braiding_apply, tmap_apply])
+  exact congrFun
+    (congrArg (fun k : VNT A B →ₗ[ℂ] VNT B' A' => ⇑k) hkey) t
+
+/-- **119V** (`vn-smc`, proc.tex:4087, Theorem), naturality of the left
+unitor: `f ∘ λ_𝒜 = λ_{𝒜'} ∘ (id_ℂ ⊗ f)` for every ncp-map `f : 𝒜 → 𝒜'`.
+
+`id_ℂ ⊗ f` is rendered as an arbitrary ncp-map `h` acting as `z ⊗ a ↦
+z ⊗ f(a)` on the elementary tensors — which is `id_ℂ ⊗ f` by **115II**'s
+uniqueness clause, the device of `tensor_injective`.  It is used because
+`tmap` (115II) confines its four algebras to a single universe, while the
+tensor unit `ℂ` lives in `Type 0` and `𝒜` in `Type u`. -/
+theorem vn_smc_leftUnitor_natural {A' : Type u} [CStarAlgebra A']
+    [PartialOrder A'] [StarOrderedRing A'] [VonNeumannAlgebra A']
+    (f : NCPMap A A') (h : NCPMap (VNT ℂ A) (VNT ℂ A'))
+    (hh : ∀ (z : ℂ) (a : A), h (z ⊗ᵥ a) = z ⊗ᵥ f a) (t : VNT ℂ A) :
+    f (leftUnitor A t) = leftUnitor A' (h t) := by
+  letI : TopologicalSpace (VNT ℂ A) := ultraweak _
+  letI : TopologicalSpace (VNT ℂ A') := ultraweak _
+  letI : TopologicalSpace A := ultraweak _
+  letI : TopologicalSpace A' := ultraweak _
+  haveI : T2Space A' := vn_positive_basic_1.1
+  have hcf : @Continuous A A' (ultraweak _) (ultraweak _) ⇑f :=
+    ((p_uwcont (ncpPositive f)).out 2 0).mp f.preservesDirSups'
+  have hch : @Continuous (VNT ℂ A) (VNT ℂ A') (ultraweak _) (ultraweak _) ⇑h :=
+    ((p_uwcont (ncpPositive h)).out 2 0).mp h.preservesDirSups'
+  have hkey := tensor_linear_ext (vnTensor ℂ A).isTensorProduct
+    (f.toCompletelyPositiveMap.toLinearMap.comp (nmiuLin (leftUnitor A)))
+    ((nmiuLin (leftUnitor A')).comp h.toCompletelyPositiveMap.toLinearMap)
+    (hcf.comp (nmiu_uwContinuous (leftUnitor A)))
+    ((nmiu_uwContinuous (leftUnitor A')).comp hch)
+    (fun z a => by
+      show f (leftUnitor A (z ⊗ᵥ a)) = leftUnitor A' (h (z ⊗ᵥ a))
+      rw [leftUnitor_apply, hh, leftUnitor_apply]
+      exact map_smul f.toCompletelyPositiveMap.toLinearMap z a)
+  exact congrFun (congrArg (fun k : VNT ℂ A →ₗ[ℂ] A' => ⇑k) hkey) t
+
+/-- **119V** (`vn-smc`, proc.tex:4087, Theorem), naturality of the right
+unitor: `f ∘ ϱ_𝒜 = ϱ_{𝒜'} ∘ (f ⊗ id_ℂ)`.  As for the left unitor,
+`f ⊗ id_ℂ` is any ncp-map acting as `a ⊗ z ↦ f(a) ⊗ z`. -/
+theorem vn_smc_rightUnitor_natural {A' : Type u} [CStarAlgebra A']
+    [PartialOrder A'] [StarOrderedRing A'] [VonNeumannAlgebra A']
+    (f : NCPMap A A') (h : NCPMap (VNT A ℂ) (VNT A' ℂ))
+    (hh : ∀ (a : A) (z : ℂ), h (a ⊗ᵥ z) = f a ⊗ᵥ z) (t : VNT A ℂ) :
+    f (rightUnitor A t) = rightUnitor A' (h t) := by
+  letI : TopologicalSpace (VNT A ℂ) := ultraweak _
+  letI : TopologicalSpace (VNT A' ℂ) := ultraweak _
+  letI : TopologicalSpace A := ultraweak _
+  letI : TopologicalSpace A' := ultraweak _
+  haveI : T2Space A' := vn_positive_basic_1.1
+  have hcf : @Continuous A A' (ultraweak _) (ultraweak _) ⇑f :=
+    ((p_uwcont (ncpPositive f)).out 2 0).mp f.preservesDirSups'
+  have hch : @Continuous (VNT A ℂ) (VNT A' ℂ) (ultraweak _) (ultraweak _) ⇑h :=
+    ((p_uwcont (ncpPositive h)).out 2 0).mp h.preservesDirSups'
+  have hkey := tensor_linear_ext (vnTensor A ℂ).isTensorProduct
+    (f.toCompletelyPositiveMap.toLinearMap.comp (nmiuLin (rightUnitor A)))
+    ((nmiuLin (rightUnitor A')).comp h.toCompletelyPositiveMap.toLinearMap)
+    (hcf.comp (nmiu_uwContinuous (rightUnitor A)))
+    ((nmiu_uwContinuous (rightUnitor A')).comp hch)
+    (fun a z => by
+      show f (rightUnitor A (a ⊗ᵥ z)) = rightUnitor A' (h (a ⊗ᵥ z))
+      rw [rightUnitor_apply, hh, rightUnitor_apply]
+      exact map_smul f.toCompletelyPositiveMap.toLinearMap z a)
+  exact congrFun (congrArg (fun k : VNT A ℂ →ₗ[ℂ] A' => ⇑k) hkey) t
+
 /-- **119V** (`vn-smc`, proc.tex:4087, Theorem), pentagon: the pentagon
 coherence diagram for the associators commutes. -/
 theorem vn_smc_pentagon (t : VNT A (VNT B (VNT C D))) :
@@ -10483,8 +10936,9 @@ theorem vn_smc_pentagon (t : VNT A (VNT B (VNT C D))) :
       hkey) t
 
 
-/-- **119V** (`vn-smc`, proc.tex:4087, Theorem), triangle: the unitor
-coherence diagram commutes: `(ρ_𝒜 ⊗ id) ∘ α = id ⊗ λ_𝒞`. -/
+/-- **119V** (`vn-smc`, proc.tex:4087, Theorem), triangle: the first of the
+two diagrams of the unitor display commutes, `(ϱ_𝒜 ⊗ id) ∘ α = id ⊗ λ_𝒞`.
+The second, `λ_ℂ = ϱ_ℂ`, is `vn_smc_unitors_agree` below. -/
 theorem vn_smc_triangle (t : VNT A (VNT ℂ C)) :
     tmapM (rightUnitor A) (nmiuId C) (associator A ℂ C t) =
       tmapM (nmiuId A) (leftUnitor C) t := by
@@ -10507,6 +10961,16 @@ theorem vn_smc_triangle (t : VNT A (VNT ℂ C)) :
         show (a ⊗ᵥ (z • c)) = z • (a ⊗ᵥ c) from map_smul ((vnTensor A C).map a) z c])
   exact congrFun (congrArg (fun f : VNT A (VNT ℂ C) →ₗ[ℂ] VNT A C => ⇑f) hkey) t
 
+
+/-- **119V** (`vn-smc`, proc.tex:4087, Theorem), the second diagram of the
+unitor display: `λ_ℂ = ϱ_ℂ` on `ℂ ⊗ ℂ`.  Both send `z ⊗ w` to `zw`, so the
+left unitor at `ℂ` satisfies the defining equation of the right one, and
+the uniqueness clause of **119IVb** identifies them. -/
+theorem vn_smc_unitors_agree : leftUnitor ℂ = rightUnitor ℂ :=
+  rightUnitor_unique _ fun a z => by
+    show leftUnitor ℂ (a ⊗ᵥ z) = z • a
+    rw [leftUnitor_apply]
+    simp [smul_eq_mul, mul_comm]
 
 /-- **119V** (`vn-smc`, proc.tex:4087, Theorem), hexagon: the braiding
 satisfies the hexagon identity. -/
