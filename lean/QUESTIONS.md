@@ -332,6 +332,67 @@ So under reading (2) the missing step is exactly the single `sorry` in
 depends on which way this goes; `Effectus.lean`'s partial-form machinery was
 checked field by field against 180VII and is faithful either way.
 
+### B16. 191II's "equivalent to a subcategory of `EMod_M^op`" does not follow from faithfulness of `Pred` — a gap in the printed argument
+`eff.tex` parsec 1910, point 20 (`emod-effectus`, the Theorem) and point 70
+(its *Representation* step, which is where the claim is discharged);
+rendered as `emod_effectus_representation` in
+`Theses/B/Eff/StatesPredicates.lean`.
+
+**What the source claims.**  The Theorem's second sentence: "In fact: every
+effectus `C` in total form with scalars `M` and separating predicates is
+equivalent to a subcategory of `EMod_M^op`."  191VII establishes exactly one
+thing — `Pred f = Pred g` iff `p ∘ f = p ∘ g` for every `p ∈ Pred Y`, so that
+"the functor `Pred : C → EMod_M^op` is faithful if and only if `C` has
+separating predicates" — and then closes in a single sentence: "So if `C` has
+separating predicates, `C` is equivalent to the subcategory `Pred C` of
+`EMod_M^op`."
+
+**That inference is invalid.**  A faithful functor does not exhibit its domain
+as equivalent to a subcategory of its codomain.  Take `C` the discrete
+two-object category and `D = 1` the terminal category: the unique functor
+`C → D` is faithful (each hom-set of `C` is a singleton or empty, so no two
+arrows are identified), the only subcategories of `1` are `∅` and `1` itself,
+and `C` — which has two isomorphism classes — is equivalent to neither.  Nor
+is it enough to add that `Pred` is *full onto its image*: in that same example
+the functor onto the image subcategory is full **and** surjective on objects,
+and the equivalence still fails.  What faithfulness does not control is
+object identification, and that is exactly what breaks.
+
+**What would repair it**, in decreasing strength:
+
+1. `Pred` **full** as well as faithful.  Then `C` is equivalent to the *full*
+   subcategory of `EMod_M^op` on the objects `Pred X`, which is the standard
+   "fully faithful functors are embeddings" statement, and "subcategory" can
+   be read as "full subcategory".  Fullness is a substantial claim — for
+   `C = vN_cpsuᵒᵖ` it says that every `M`-effect-module map
+   `Pred 𝒜 → Pred ℬ` is `p ↦ p ∘ f` for some ncpsu-map `f` — and neither
+   `eff.tex` nor `bsols.tex` proves or even asserts it.
+2. `Pred` faithful **and injective on objects**.  Then `C` is *isomorphic* to
+   the (non-full) subcategory `Pred C`, which is the older sense in which a
+   faithful functor "is" a subcategory inclusion.  Also not claimed.
+3. Conclude only that `Pred` is faithful, i.e. that `C` is concrete over
+   `EMod_M^op`.  That is precisely what the printed proof delivers, and the
+   Theorem's second sentence would have to be weakened to say so.
+
+**What we have.**  `emod_effectus_representation` is reading 3, and is
+**proved**: it produces `F : Tot C ⥤ (EMod_{Scal C})^op` with object part
+`Pred X`, morphism part pinned to `p ↦ p ∘ f` (the pinning was the B6 defect,
+repaired in session 94), and `F.Faithful`.  The subcategory clause is stated
+nowhere in the tree.
+
+*Decision needed*: how "equivalent to a subcategory" is to be read.  Under 3
+there is nothing to do in Lean and the repair is one sentence of `eff.tex`.
+Under 1 or 2 the printed proof needs a genuinely new step (fullness, resp.
+injectivity on objects), and only then could the clause be added to
+`emod_effectus_representation` — the Lean cost is then the cost of that new
+step, not of the packaging.  No `sorry` turns on this; what turns on it is
+whether the Theorem's second sentence is provable as printed.
+
+(Unrelated, and *not* a question for the authors: the Theorem's **headline**
+— "with scalars `M` and separating predicates" — is also unasserted by our
+`emod_effectus`, but that is a missing tool for computing `Pred` and `Scal`
+of `Par C`, recorded on the declaration itself, not a defect in the source.)
+
 ### B8. Minor: `bsols.tex`'s `onb1` solution over-assumes
 Its solution assumes self-duality, which neither the exercise nor our statement
 requires.  Harmless; noted for tidiness.
@@ -422,6 +483,34 @@ proof**: the `q` that is constructed is `f ↦ (MemLp.toLp f)`, which is
 `rep_injective` + `filter_upwards` line.  Adding it therefore requires no
 reproving at all — only the ruling.
 
+
+**Update (2026-08-21, repair wave 3): confirmed free a second time, and the
+omission has since started to cost something.**  The `A/VN` repair pass
+re-checked the point independently and reports exactly the session-80 finding
+— the constructed `q = (f ↦ MemLp.toLp f)` *is* `ℂ`-linear, so the clause is
+one line and no reproving — and left the row unrepaired only for want of this
+ruling.  (It also observed, incidentally, that the completeness hypothesis
+`hμ` is never used by the proof.)
+
+What is new is a **downstream** consequence, which A9 previously had none of.
+When 129X `continuous_finite_measure_space_not_duplicable` was put back on the
+thesis's own integral state, the state had to be transported from
+`Linfty_vn`'s presentation `p : 𝓛^∞(X) → 𝒞` onto an arbitrary `IsLinftyOf`
+presentation `q : 𝓛^∞(X) → 𝒜` along the comparison map `Ψ : q f ↦ p f`
+(`exists_integralNP`, `Theses/A/Proc/Duplicators.lean`).  Because `Linfty_vn`
+carries no `smul` clause while `IsLinftyOf` does, `Ψ` could only be built as a
+bijective ∗-**ring** map, and its **normality had to come from its being an
+order isomorphism** (`0 ≤ x` iff `x = c*c`, which needs no linearity), with
+`ℂ`-linearity of the resulting `ω` recovered afterwards from the integral
+formula.  Granting the clause would make `Ψ` a ∗-algebra isomorphism outright
+and let that detour go.
+
+For the record: the sibling defect **D1** is absent from this file because it
+was ruled and implemented — `IsLinftyOf` has carried
+`smul : q (z • f) = z • q f` since 2026-08-16 — so A9 is the **only**
+surviving instance of the gap, and it is in `Linfty_vn`, not in the
+presentation `Prop`.
+
 ### A10. 28II.4 `functional-calculus` — **our** statement drops the identification of the unique element with `f(a)`
 
 **28II**.4 (`functional-calculus`, cstar.tex:4299 — the exercise's part 4),
@@ -488,6 +577,177 @@ proved.  So the ruling is the whole cost.
 
 Nothing downstream is affected: no declaration in `Theses/` uses
 `functional_calculus_4`.
+
+### A11. 132III.4 cannot be stated as an **equality** of categories at all — and `W*_miu` is still not a `MonoidalCategory` in the tree
+`proc.tex` parsec 1320, point 30 (`prop:dup-vna-is-monoid`, Exercise), item 4;
+rendered as `dup_vna_is_monoid_4` in `Theses/A/Proc/Duplicators.lean`.
+
+**What the point says.**  "Conclude that
+`CMon(W*_miu) = Mon(W*_miu) = CMon(W*_cpsu) = Mon(W*_cpsu)`."
+
+**What we state.**  `dup_vna_is_monoid_4` (proved): every monoid `M` in
+`W*_cpsu` is commutative (`m ∘ γ = m`) and its multiplication is an nmiu-map.
+Together with item 1 (`dup_vna_is_monoid_1`: a monoid in `W*_cpsu` is a
+duplicator) and item 3 (`dup_vna_is_monoid_3`: the monoid morphisms in either
+category are exactly the nmiu-maps) that is the whole *content* of item 4.
+The four-fold equality itself is not stated, and cannot be, for two
+independent reasons.
+
+**1. The shape — this is the part that needs a ruling.**  Mathlib renders the
+two constructions as *distinct structure types*:
+`CategoryTheory.Mon C` is `⟨X : C, [mon : MonObj X]⟩` and
+`CategoryTheory.CommMon C` is `⟨X : C, [mon : MonObj X], [comm : IsCommMonObj X]⟩`
+(with `CommMon` additionally requiring a `BraidedCategory` instance).  They
+are not the same type, so `CMon(W*_miu) = Mon(W*_miu)` is not expressible as
+an equality there at all.  The strongest available reading is an
+**equivalence** (or an isomorphism) of categories — `CommMon.toMon` is fully
+faithful and would be essentially surjective here — which is a change of
+statement, hence the ruling.  The same applies to the two cross-category
+equalities `Mon(W*_miu) = Mon(W*_cpsu)`: the two categories have different
+ambient hom-sets (nmiu-maps vs ncpsu-maps), so what item 3 gives is again an
+isomorphism-onto-the-image, not an equality.
+
+**2. The infrastructure — much smaller than it was, but not gone.**  Forming
+`Mon(-)` and `CMon(-)` needs `MonoidalCategory` (and `BraidedCategory`)
+instances on `W*_miu` and `W*_cpsu`.  **The mathematics for the `W*_miu` one
+now exists**: repair wave 3 stated 119V `vn-smc` concretely and in full in
+`Theses/A/Proc/Tensor.lean` — `vn_smc_pentagon`, `vn_smc_triangle`,
+`vn_smc_unitors_agree`, `vn_smc_hexagon`, `vn_smc_symmetry` and the four
+naturality lemmas, all proved, with `exists_braiding` (119IVc) no longer
+`sorry`.  What is missing is the *packaging*: a tensor bifunctor on the
+category `WMIU` (`Theses/A/Proc/QuantumLambda.lean`), associators and unitors
+as natural isomorphisms of that category, and the coherences restated in
+Mathlib's bundled form.  That is plumbing over proved equations, not new
+mathematics.  (⚠ The doc comment on `dup_vna_is_monoid_4` still says the
+coherences are "none of which the tree has"; wave 3 overtook it.)
+
+For `W*_cpsu` there is a further, purely organisational obstacle: `A/Proc`
+has no category of von Neumann algebras and ncpsu-maps.  The one that exists,
+`WStarCPSU`, is in `Theses/B/Eff/WStarCat.lean` and belongs to thesis B, so
+`A/Proc` cannot import it (the same reason `WMIU` was built separately from
+`WStar`, recorded at `QuantumLambda.lean`'s `Categorical` section).
+
+*Decision needed*: whether "=" in 132III.4 may be rendered as an equivalence
+of categories (and, in the cross-category cases, as a fully faithful
+essentially surjective comparison functor), or whether the point should be
+reworded — the natural rewording being "a monoid in either category is
+automatically commutative, its multiplication is the algebra's own, and its
+morphisms are the nmiu-maps", which is what we already prove.
+
+*What the ruling buys*: no `sorry` closes either way — it decides whether two
+clauses ever acquire statements.  Besides 132III.4 itself, **132III.5's first
+half** `Mon(W*_miu) ≅ dW*_miu` is blocked on exactly the same
+`MonoidalCategory` instance; its second half `dW*_miu ≃ Set^op` is proved
+(`dupEquivSetOp`).  If the ruling is "leave it", both should be recorded as
+deliberately unstated rather than as open work.
+
+### A12. 101VII.1's middle clause is under-hypothesised as printed — the second map need not exist
+`proc.tex` parsec 1010, point 70 (`equivalent-examples`, Examples), part 1,
+middle paragraph; rendered as `equivalent_examples_1_corners` in
+`Theses/A/Proc/Measurement.lean`.
+
+**What the point says.**  "If `p` and `q` are projections of `𝒜` with
+`a*pa ≤ q` (as in `ad-ncp`), then the maps `a*(·)a : p𝒜p → q𝒜q` and
+`a(·)a* : q𝒜q → p𝒜p` are contraposed."
+
+**The hypothesis governs only the first map.**  `a*pa ≤ q` is exactly the
+hypothesis of **94III** `ad-ncp` (parsec 940, point 30), and it is what puts
+`a*(·)a` inside `q𝒜q`: for `b ∈ p𝒜p` positive, `b ≤ ‖b‖p` gives
+`a*ba ≤ ‖b‖·a*pa ≤ ‖b‖q`.  It says nothing about `a(·)a*`, and without a
+hypothesis that map need not exist.  Take `p = 0`, `q = 1`, `a = 1`: then
+`a*pa = 0 ≤ 1 = q`, so the printed hypothesis holds, while `a(·)a*` is the
+identity of `𝒜` and `p𝒜p = {0}`.  The hypothesis that does the mirrored job
+is `aqa* ≤ p`, i.e. 94III read with `(p, a)` and `(q, a*)` exchanged.
+
+**Nothing in the tree is wrong.**  `equivalent_examples_1_corners` takes both
+maps as *given* ncp-maps `f : p𝒜p → q𝒜q` and `g : q𝒜q → p𝒜p` with
+`(f b).val = a* b a` and `(g b).val = a b a*`, and proves them contraposed;
+assuming the maps assumes neither `a*pa ≤ q` nor its mirror, so the statement
+is true and proved, and its doc comment records why it is phrased that way.
+Both places where the thesis uses the clause supply the mirror anyway:
+94III's `adNCP` is the first map, and the "in particular" `π_s`/`c_s` pair is
+`p = 1`, `q = s`, `a = s`, where `aqa* = s ≤ 1 = p`.
+
+*Decision needed*: whether 101VII.1 gains the hypothesis `aqa* ≤ p` — an
+erratum, since as printed the sentence names a map that need not exist — or
+whether the middle clause is to be read as being about two maps whose
+existence is presupposed, which is what we implement.  94III itself is
+correct as it stands and is used one-sidedly elsewhere, so it needs no
+change; only the mirrored *instance* of it is what the middle clause is
+missing.
+
+*What the ruling buys*: no `sorry`, but under the first reading we would
+restate `equivalent_examples_1_corners` with the two maps **constructed**
+from 94III and its mirror rather than assumed, which is strictly closer to
+the text and costs only plumbing — the proof is untouched, since both sides
+of the contraposition already reduce to `x a t = 0`.
+
+### A13. 34V.3 in the module setting — which `𝒜`-valued inner-product convention is the cp condition stated in?
+`cstar.tex` parsec 340, point 50 (`ad-cp`, Exercise), part 3; rendered — in
+the Hilbert-*space* case only — as `ad_cp_3` in
+`Theses/A/CStar/Matrices.lean`.
+
+**What the point says.**  For every element `x` of a Hilbert `𝒜`-module `X`,
+the vector functional `T ↦ ⟨x, Tx⟩ : ℬᵃ(X) → 𝒜` is completely positive.
+(Part 2 is the companion `T ↦ S*TS : ℬᵃ(X) → ℬᵃ(Y)` for adjointable
+`S : Y → X`.)
+
+**What we state.**  `ad_cp_3` is the case `𝒜 = ℂ`, `X = ℋ`: the vector
+functional `B(ℋ) → ℂ`.  Likewise `ad_cp_2`/`conjOperator` state only the
+Hilbert-space case of part 2.  All three doc comments say so, and the audit
+flagged all three rows as weaker.
+
+**Two obstructions; only the second needs a ruling.**
+
+1. *Infrastructure* (no ruling needed).  `ℬᵃ(X)` exists in the tree only as
+   the private `Bax 𝒜 X`, a subalgebra of `X →L[ℂ] X`, with **no cross-module
+   hom-sets**: `S*TS` for `S : Y → X` needs adjoints of maps between
+   *different* modules and a `star` that swaps hom-sets, neither of which is
+   there.
+2. *Convention* — the author's call.  **32I** `chilb-basic` (parsec 320,
+   point 10) defines an `𝒜`-valued inner product so that `⟨x, ·⟩` is a
+   **module map**: `X` is a right `𝒜`-module and the scalar acts on the right
+   of the second argument, `⟨x, y·a⟩ = ⟨x,y⟩·a`.  Mathlib's `CStarModule`
+   axiom is the mirror image, `⟪x, a • y⟫ = a * ⟪x, y⟫` — concretely, on `𝒜`
+   viewed over itself Mathlib takes `⟪x,y⟫ = y·x*` where 32I gives `x*·y`.
+   Under Mathlib's convention the `ℂ`-linear vector functional
+   `T ↦ inner 𝒜 x (T x)` **fails** our `IsCompletelyPositiveMap`
+   (`Theses/A/CStar/Basic.lean`), which asks
+   `0 ≤ ∑ᵢⱼ bᵢ* f(aᵢ*aⱼ) bⱼ`: writing `yᵢ := Tᵢ x`, the expression the module
+   makes positive is
+   `⟪∑ᵢ bᵢ•yᵢ, ∑ⱼ bⱼ•yⱼ⟫ = ∑ᵢⱼ bⱼ·⟪yᵢ,yⱼ⟫·bᵢ*` — the `b`'s on the *other*
+   sides from the ones the cp condition wants.  The form that does satisfy
+   the cp condition is `T ↦ ⟪Tx, x⟫` (then
+   `∑ᵢⱼ bᵢ*·⟪yⱼ,yᵢ⟫·bⱼ = ⟪∑ⱼ bⱼ*•yⱼ, ∑ᵢ bᵢ*•yᵢ⟫ ≥ 0`), and *that* map is
+   **conjugate-linear in `T`**, hence not a `𝒜 →ₗ[ℂ] ℬ` and not eligible for
+   `IsCompletelyPositiveMap` at all.
+
+*Decision needed*: which `𝒜`-valued convention the module-valued statements
+of the tree are phrased in.
+
+* **(a) Keep Mathlib's.**  Every Hilbert-module file already rests on
+  `CStarModule` — `B/Dils/{HilbertModules, SelfDual, SelfDualCompletion,
+  Paschke, Kaplansky}` and `A/CStar/{Matrices, TowardsVN}`, some 800 lines
+  mentioning it — so this is the cheap option.  The cost is that 34V.3 will
+  not read like the printed formula (the thesis's `⟨x, Tx⟩` becomes
+  Mathlib's `⟪Tx, x⟫`), and that the `𝒜`-valued cp condition wants a mirrored
+  companion to `IsCompletelyPositiveMap` (`∑ᵢⱼ bᵢ·f(aᵢaⱼ*)·bⱼ*`), which is a
+  new definition and so needs the ruling on its own account.
+* **(b) Introduce the thesis's convention** alongside Mathlib's, so that
+  34V.3 is transcribed verbatim.  This forfeits Mathlib's Hilbert-module API
+  (Cauchy–Schwarz, the induced norm, the constructions) for anything stated
+  in it, and would put two inner products on the same objects.
+* **(c) Status quo**: leave 34V.2/.3 in the Hilbert-space case, with the doc
+  comments recording the divergence, and mark the module versions as
+  deliberately unstated.
+
+*What the ruling buys*: no `sorry` closes either way, and nothing in the tree
+is currently wrong — the Hilbert-space cases we state are correct and proved.
+What it settles is the shape of 34V.2/.3 in the module setting and of every
+future `𝒜`-valued statement; the neighbouring module rows (32IV.2
+`paschke_inclusion_no_adjoint`, and 161II in `B/Dils`) are waiting on the
+sub-Hilbert-module infrastructure and would be written in whichever
+convention is chosen.
 
 ### A2. `parsec-340.60` (34VI.1) is an empty `\TODO{}`
 The solution slot exists but is empty, and it is the *last* entry in
