@@ -27589,3 +27589,352 @@ Also corrected in the file: the two inline comments that cited **16II** as
 fourteen `proof` verdicts or notes changed, one row added
 (`ball_subset_polygon`), and every deliberate omission above recorded in the
 `status` column.
+
+## Session 95 — `B/Eff` Effectus + Quotients + StatesPredicates: **no dependency inversions and no dead limb — four proofs back on the thesis's route, and two `mild` rows that had gone stale under the 188III/188IV statement repair are now `faithful`** (worker on `Theses/B/Eff/{Effectus,Quotients,StatesPredicates}.lean`)
+
+Proof-route pass over the 24 non-`faithful`, non-`none` rows of
+`docs/audit/beff-effectus-quotients.csv` and the `B/Eff/StatesPredicates`
+rows of `docs/audit/bdils-pure-beff-states-effectalgebras.csv` — 8 `route`,
+14 `mild`, 2 `mathlib`.  **Four proofs put back on the thesis's own argument,
+two verdicts corrected as stale, fourteen deliberately left with the reason
+recorded, no statement touched, no `sorry` added, axiom-clean in situ.**
+`beff-effectus-quotients.csv` goes 61 → 67 `faithful`, 4 → 2 `route`,
+9 → 5 `mild`.
+
+### Dependency inversions: none
+
+Checked mechanically and then by hand.  For every declaration in the three
+files carrying a `**DISP**` doc tag, the proof body was scanned for uses of
+other tagged declarations with a *later* parsec/point, comments and doc
+comments stripped.  Every hit that survived filtering is one of three benign
+shapes, none of them an inversion:
+
+* **statement-then-proof**, which is the thesis's own layout — `cho_thm_1`,
+  `cho_thm_3_*` and `eff_partial_to_total` are **180X**, stated up front and
+  proved out of parsecs 181–188, exactly as eff.tex does;
+* **transport into `Tot D`** — `tp_jm`, `tpair`, `tpair_tp`, `tp_perp`,
+  `tot_map_tp` are the **181VII**/**181IX** rules re-read in `Tot D` and so
+  necessarily come after `totCoprodIso` (**181XII**).  The thesis's own
+  **181XII** proves `Tot C` has coproducts from `cotupl-pcm`, *not* from the
+  pairing, so the order is the printed one;
+* **doc-tag placement** — e.g. `par_eq_zero_of_perp_one` is tagged
+  `**187VI**` but its doc sentence also names `**186VIII**.2`, and
+  `totHasTerminal` carries a `**181XII**` tag over what is **181XIII**
+  content.  Bookkeeping, not mathematics.
+
+### The dead-limb check: nothing, and that is the result
+
+Every `theorem`/`lemma`/`def`/`abbrev` in the three files (227 + 330 + 77
+tagged declarations) was grepped for consumers across `Theses/`, short name
+and qualified name both.  49 came back with zero uses.  Every one of them is
+either
+
+* a **terminal deliverable** — the statement of an exercise or point that
+  nothing above it needs (`aconvm_is_effectus`, `basic_divisoid_equiv`,
+  `exc_rng_eff_no_hom`, `n_times_one_aconvm`, `compr_grothendieck`,
+  `exc_quot_adjoint`, `quot_fact_system`, `toteff_zero_*`,
+  `distinction_part_tot_eff_2`, `cotupl_pcm_3`, `cotupl_pcm_ea_iso`, …), or
+* a `@[simp]` lemma used by `simp` without being named (`fn_hom`,
+  `predMapHom_toFun`, `pres_T`), or
+* a one-line `rfl` helper (`coeFinsupp_support`, `fn_id`, `mix_one`,
+  `mix_zero`).
+
+The one candidate that looked like the `A/CStar` 16II shape was
+**183III.1** `pullback_lemma_1`: a `mathlib` row *and* zero consumers.  It is
+not a shortcut fingerprint.  The thesis does not use clause 1 either —
+eff.tex:1495 invokes "the pullback lemma" three times in the proof of
+**185I** and every one of them is clause 2, the cancellation direction — and
+our `tot_pullbacks_left`, `tot_pullbacks_left_aux` and `tot_pullbacks_right`
+follow those three invocations exactly, through `pullback_lemma_2` fed by
+`exc_jointly_monic_pullback`.  Nothing hangs off `pullback_lemma_1` because
+nothing ever did.
+
+Nothing in `A/CStar`'s parsec-120–150 shape — no block of faithfully
+transcribed thesis hanging off a proof that took another route.
+
+### Put back on the thesis's route
+
+* **181IX.3** `eff_prod_rules_3`.  bsols.tex:1679 computes
+  `(k+l) ∘ ⟨f,g⟩ ≡ [κ₁∘k, κ₂∘l] ∘ ⟨f,g⟩ = (κ₁∘k∘f) ⋁ (κ₂∘l∘g) ≡ ⟨k∘f, l∘g⟩`
+  — that is, *by clause 1*.  Our proof verified the two partial projections
+  and appealed to uniqueness of the pairing, which is a correct argument that
+  leaves the solution's one ingredient unused.  It now rewrites `κ + λ` as
+  the cotuple, applies `eff_prod_rules_1`, and identifies the result with
+  `effPair` through `effPair_eq_ovee`.
+* **181IX.4** `eff_prod_rules_4`.  Same row shape, and the solution's proof
+  is one line of PCM-enrichment:
+  `⟨f,g⟩ ∘ k ≡ ((κ₁∘f) ⋁ (κ₂∘g)) ∘ k = (κ₁∘f∘k) ⋁ (κ₂∘g∘k) ≡ ⟨f∘k, g∘k⟩`.
+  `ovee_comp_left` — the finPAC axiom `ovee_comp` — does exactly that, so
+  the projections-plus-uniqueness detour is gone.
+* **197V.3** `quotient_basics_3` and **199VII.3** `compr_basics_3`.  Both
+  solutions run "`id` is a quotient (resp. comprehension) for `0` (resp.
+  `1`), and then so is every isomorphism *by clause 1*".  Both proofs built
+  the mediating map out of `inv f` directly for an arbitrary isomorphism,
+  skipping the printed appeal.  Both now do the two printed steps and hand
+  off to `quotient_basics_1` / `compr_basics_1`.
+
+That is the promised single decision on the **181IV.1/.2, 181IX.1–.4** family
+of "uniqueness of the pairing where bsols computes directly".  Of the six,
+**181IX.1** and **181IX.2** were already the solution's own computation
+through the `⋁` form (their `mild` is a local deviation, not a route);
+**181IX.3/.4** are repaired above; **181IV.1/.2** are left, see below.
+
+### Verified and left as documented deviations
+
+* **181XIII** `one_m_is_id`.  Verified against `berr.tex` erratum
+  `one-m-is-id` ("the stated equality `1 = 1 ∘ 1` isn't established yet, but
+  also irrelevant for the proof").  The erratum is real and our proof runs
+  the corrected order — `⊥` of `1` against `orth(id) ∘ 1` gives
+  `orth(id) ∘ 1 = 0`, hence `orth(id) = 0` and `1 = id_I`, and only *then*
+  `1 ∘ 1 = 1`.  Left, and rightly.
+* **187VI** `par_eq_zero_of_perp_one`.  Verified: eff.tex:1866 lifts the
+  bound along an instance of the right pullback square of the `pullbacks`
+  display, whereas we take uniqueness of the orthosupplement
+  (`par_orth_unique`, proved just above it, as in the thesis) together with
+  **186VIII**.2 (`pardp_2`).  Both ingredients precede the zero–one axiom in
+  eff.tex too, so this is a different chase inside one point, not a
+  reordering of the exposition.  The doc comment says so.  Left.
+
+### Corrected verdicts — two rows that had gone stale
+
+`188III` and `188IV` were recorded `weaker`/`mild` because "our statement is
+only `Nonempty (… ≌ …)`" and "Lean repackages the inverse as Full plus
+Faithful plus EssSurj".  Neither is true any more.  `par_tot_equiv` and
+`tot_par_equiv` now assert, as a first conjunct, the thesis's **isomorphism
+of categories**: two identity-on-objects functors with both composites equal
+to `𝟭` *on the nose* (`parTotFunctor_comp_inv`, `parTotInv_comp_functor`,
+`totParFunctor_comp_inv`, `totParInv_comp_functor`).  `parTotInv` is the
+thesis's own `P' f = ⟨f, (1 ∘ f)^⊥⟩` and `totParInv` is built out of
+`pardp_1`, i.e. **186VIII**.1, exactly where the thesis says "it is an
+isomorphism by the first part of `pardp`".  Both rows: `stmt` `weaker` → `ok`,
+`proof` `mild` → `faithful`, notes rewritten.  (The 7th `status` column of
+those rows already recorded the statement repair; the `stmt`/`proof` columns
+had not been brought along.)
+
+### Deliberately left, with the reason
+
+* **181IV.1/.2** `cotupl_pcm_1`, `cotupl_pcm_2` (`route`, both) — *the point
+  is not about the step, and re-proving would triple the proof.*  The thesis
+  gets clause 1's "if" direction and clause 2 out of one computation:
+  `[h,l] = [h,0] ⋁ [0,l]` (from the compatible-sum axiom applied to `h+l`),
+  then `[f,g] ⋁ [f',g'] = [f,0] ⋁ [0,g] ⋁ [f',0] ⋁ [0,g'] = [f⋁f',0] ⋁
+  [0,g⋁g'] = [f⋁f', g⋁g']`.  Restoring it needs two lemmas the tree does not
+  have plus a **middle-four PCM interchange** — four summands regrouped
+  through `PCM.isSumOf_perm` with the assoc/comm plumbing at both ends.  Our
+  route reaches the same conclusion from the same two finPAC axioms
+  (`untying` where the thesis uses `compatible_sum` twice), and clause 1's
+  "only if" is already the printed PCM-enrichment argument.  Nothing is
+  hidden; the repair would be longer and no clearer.
+* **183II** `exc_jointly_monic_pullback` (`mathlib`) — *criterion 4 is
+  satisfied, not evaded.*  `IsPullback.hom_ext` is literally the exercise's
+  statement, and bsols.tex:1697's three lines (lift `h` through the pullback,
+  conclude `h₁ = h₂ = h`) are its proof.  The lemma is live at six call
+  sites.
+* **183III.1** `pullback_lemma_1` (`mathlib`) — same judgement.
+  `IsPullback.paste_horiz` *is* the pasting lemma, proved in Mathlib by the
+  same mediating-map/limit-pasting argument.  Note that the half Mathlib does
+  **not** have — **183III.2**, the thesis's stronger cancellation with joint
+  monicity in place of "the right square is a pullback" — is hand-proved in
+  full at `pullback_lemma_2`, so the `mathlib` closure is not covering for a
+  missing argument.
+* **181XVI** `tot_jointlyMonic_cotuples` (`mild`) — runs the thesis's
+  argument; the only deviation is cancelling the mono `truth` through
+  `truth_terminal_isIso`, forced by `Tot D`'s chosen terminal not being
+  literally `Tot.of I`.  Bookkeeping.
+* **193IV**, **193IX**, **194I.4**, **196II** (`route`, all four) — *the
+  thesis's route needs something the tree lacks, and supplying it would mean
+  changing statements.*  All four rest on the **derivation calculus** of
+  Exercise `least-conv-cong`, whose harder half is not formalized.  Grepped
+  again this session: there is still no derivation relation anywhere in
+  `Theses/` (only doc-comment mentions).  Formalizing it means *adding* the
+  relation, its closure, the characterisation `x ∼ y ↔ η x ≈ η y` and parts
+  1–3 — a statement addition, which this pass forbids — at the 800–1200 line
+  cost recorded in-file at `least_conv_cong` by session 94.  **196II**
+  carries an extra reason: ERRATA already records the printed two-page
+  paragraph as garbled (`α`/`β` swapped, the `qᵢ` renumbered, two `κ`s
+  interchanged), so re-proving along it would be a regression.
+* **192III.3** (both rows), **194I** (`aconvalmosteffectus_coproducts`,
+  `aconvalmosteffectus_kappaPullback`), **195VI** (`mild`) — the recorded
+  deviations are ordering matters: the `D_M` coproduct justified through the
+  concrete cofan rather than through the Kleisli adjunction, binary
+  coproducts imported from `aconv_coprod` rather than re-derived, the
+  divisoid axioms discharged in a different order from the exercise's.  The
+  brief classes these as triviality-level; left, notes re-verified.
+
+### Build
+
+`Effectus.lean` and `Quotients.lean` edited; `StatesPredicates.lean`
+untouched (its rows are all "left").  Oleans rebuilt for `Effectus`,
+`StatesPredicates` and `Quotients`, and every importer recompiled clean:
+`DiamondAmp`, `Dagger`, `Comparisons`, `VNExamples` — the last still with
+exactly its one B15 `sorry` (VNExamples.lean:5920) and nothing else.
+`#print axioms` run **in situ** on scratchpad copies of both edited files:
+`eff_prod_rules_3`, `eff_prod_rules_4`, `quotient_basics_3`,
+`compr_basics_3` all `[propext, Classical.choice, Quot.sound]`.
+
+## Session 95 — A/CStar Basic + Positive: **the parsec-90 order bridge, mapped and costed — it is one lemma, and it cannot be untied inside the file it lives in; three duplicate entries into Mathlib's CFC removed, and 20II's citation of 17VI.3a corrected to the thesis's own copy** (worker on `Theses/A/CStar/Basic.lean`, `Theses/A/CStar/Positive.lean`)
+
+### The dependency picture
+
+Computed, not read off notes: a Lean meta-program walks the transitive
+constant closure of every `Theses.A.CStar.*` declaration and reports the ones
+that reach a constant of Mathlib's continuous functional calculus (name
+containing `cfc`/`CFC`/`ContinuousFunctionalCalculus`), together with the
+edges by which they reach it.
+
+Before this session, **51** declarations in the two files were CFC-reachable.
+They fall into four groups, and only the first is the knot the brief names:
+
+1. **The parsec-90 order bridge** — `norm_le_iff_neg_algebraMap_le` (17VI.3a,
+   `Basic.lean:1257`) with **five** distinct Mathlib entries:
+   `IsSelfAdjoint.le_algebraMap_norm_self`,
+   `IsSelfAdjoint.neg_algebraMap_norm_le_self`,
+   `CStarAlgebra.norm_or_neg_norm_mem_spectrum`,
+   `le_algebraMap_iff_spectrum_le`, `algebraMap_le_iff_le_spectrum`.  All five
+   live in `Mathlib/Analysis/CStarAlgebra/ContinuousFunctionalCalculus/{Order,
+   Unital}.lean` and all five are proved by `cfc`.  Downstream of it in
+   `Basic`: 9IV `cstar_positive_def` → 9VII `cstar_positive_sum` → 9X.1
+   `cstar_positive_1_cone`; 9X.5d `orderNorm_eq_norm` → `cstar_positive_5d`;
+   9X.5e; and, through 9X.2, the whole `orderNorm` block (9X.4a–c) and 10IV
+   `cstar_p_implies_i`.  Downstream in `Positive`: 20VI `cstar_isometry`,
+   22III.1 `order_ideal_basic_1`, 20VIII `order_separating_norm`, 21IV.2
+   `states_order_separating_2` — all four only through 10IV.
+2. **Two further, independent entries in the same section**: 9X.2
+   `cstar_positive_2` called `le_algebraMap_norm_self` a *second* time for the
+   fact 17VI.3a already gives, and 9X.5c `cstar_positive_5c` called
+   `StarOrderedRing.nonneg_iff_spectrum_nonneg` — Mathlib's CFC-backed form of
+   **25I** — for a fact its sibling 9X.5b already gives.
+3. **9X.5b** `cstar_positive_5b` (`ge_of_tendsto` through
+   `CStarAlgebra.instOrderClosedTopology`, i.e. `CStarAlgebra.isClosed_nonneg`)
+   and **9X.3** `cstar_positive_3` (`ContinuousLinearMap.instStarOrderedRing`,
+   forced by the statement, which is about `0 ≤` in `B(ℂ²)`).
+4. **Parsec 230–260 in `Positive`**, where `CFC.sqrt`, `CFC.abs`, `a⁺`, `a⁻`
+   appear in the *statements* (23VI, 24II, 24IV, 26I–26III, the `meet` block,
+   `riesz_decomposition_lemma`).  Statement-level and settled separately; not
+   this pass's business.
+
+**The finding that matters**: the thesis's own 17VI.3a is *already in the
+tree*, CFC-free, as `positive_basic_2_3a` (`Positive.lean:3187`), proved by
+the solution's spectral argument through `ThesisPos`.  The entire parsec-170
+block of `Positive.lean` — 17III `pos_spectrum`, 17V `cstar_positive_tfae`,
+17VI.1/.2/.3a/.3b/.3c/.4/.5/.6, 16II `norm_spectrum`, the 25I bridge
+`thesisPos_iff_nonneg` — reaches **no** CFC constant at all.  The knot is not
+that the thesis's grounding is missing; it is that it is on the wrong side of
+an import.
+
+### Why it cannot be untied in place
+
+`norm_le_iff_neg_algebraMap_le` is at parsec 90 of `Basic.lean`; the thesis
+proves it at parsec 170 (asols `parsec-170.60`(3)) from
+
+* **16II** `norm_spectrum` (`Positive.lean:2115`), which rests on parsecs
+  120–150 — the first ~2070 lines of that file, `goursat`, `cauchy_formula`,
+  `taylor`, `rigid_expansion`; and
+* **17V**/**25I**, the identification of "positive" with Mathlib's `0 ≤`,
+  which is `thesisPos_iff_nonneg` (`Positive.lean:3106`) and rests on the
+  square root (parsec 230) plus 19III and 24IV.
+
+`Positive.lean` imports `Basic.lean`.  So the thesis's route is unavailable
+here in the strict sense of the brief's second "do not repair" clause — not
+because the tree lacks it, but because the tree has it 2000 lines below.
+There is no elementary substitute: the reverse implication `-r ≤ a ≤ r ⟹
+‖a‖ ≤ r` *is* the spectral-radius theorem.
+
+**What untying would cost**, since the numbers are the deliverable.  The only
+change that undoes it is to move `Basic.lean`'s `Positive` section and the
+`Maps`/`Order` sub-section (lines 1215–1660 and 1697–1745, ≈ 490 lines,
+20 public declarations) below parsec 250 in `Positive.lean`.  The import
+surface makes this cheaper than it sounds: only two files import
+`A.CStar.Basic` directly — `A/CStar/Positive` and `A/VN/Basic` — and the
+latter also imports `A/CStar/Matrices`, hence `Positive` transitively.  So
+**every consumer in the tree already sees `Positive`, and no importer would
+break.**  Of the 20 declarations, 11 have zero uses outside `Basic.lean`
+(`cstar_positive_def`, `cstar_positive_sum`, `cstar_positive_1_cone`,
+`cstar_positive_3`, `orderNorm` and its four lemmas, `cstar_positive_5a`–`5e`);
+the ones with consumers are `norm_le_iff_neg_algebraMap_le` (9 uses in 5
+files), `cstar_p_implies_i` (33 uses in 13 files), `cstar_positive_1` (19),
+`effect_orthosupplement` (10), `cstar_positive_2` (1), and the four
+`algebraMap_*` helpers.
+
+I did **not** make that move.  It is not a proof change: it relocates twenty
+transcribed statements out of the file the audit records them in, it puts
+parsec-90 material after parsec-260 material (an exposition inversion in the
+other direction), and the brief reserves statement-level questions for a
+separate pass.  It should be decided, not slipped in.  The honest description
+of the present state is the one now in the `17VI` row of
+`docs/audit/acstar-basic.csv`.
+
+### What was repaired — three proofs
+
+* **9X.2 `cstar_positive_2`** (`mathlib` → `route`).  It called
+  `IsSelfAdjoint.le_algebraMap_norm_self` and `neg_algebraMap_norm_le_self`
+  directly, giving the section a second entry into the CFC for exactly the
+  statement 17VI.3a already carries.  It is now
+  `(norm_le_iff_neg_algebraMap_le ha (norm_nonneg a)).mp le_rfl` — the case
+  `λ = ‖a‖` — which is the idiom `Positive.lean` uses for this fact in six
+  places with the *thesis-grounded* 17VI.3a.  The thesis's own parsec-90
+  argument (`‖(a+‖a‖) − ‖a‖‖ ≤ ‖a‖`, so `a + ‖a‖` is positive **by
+  definition**) still cannot be transcribed: "positive by definition" is 25I
+  in this encoding.  That circle, correctly described by wave 1, stands.
+* **9X.5c `cstar_positive_5c`** (`mathlib` → `route`).  Was
+  `StarOrderedRing.nonneg_iff_spectrum_nonneg`, the CFC form of 25I.  It is
+  now its sibling **9X.5b**: the hypothesis says `0 ≤ a + 1/(n+1)`, and
+  `a + 1/(n+1) → a`, so closedness of the cone gives `0 ≤ a`.  9X.5b is
+  precisely what the thesis supplies for the whole of 9X.5 when it returns to
+  it at 17VI.2, so 5c now leans on the fact the thesis gives it rather than on
+  a second Mathlib lemma.  (`ha` becomes unused; the statement is untouched,
+  so the linter warning stays — there is precedent at `Basic.lean:800`.)
+* **9IV `cstar_positive_def`**: its forward direction re-derived `a ≤ ‖a‖`
+  from Mathlib instead of from 17VI.3a two lines above.  Now the latter.
+
+and, in `Positive.lean`, **the one genuine dependency inversion this pass
+found**:
+
+* **20II.1 `weak_russo_dye_1`**.  Erratum `parsec-200.30` says the bound is
+  `‖f(a)‖ ≤ ‖f(1)‖‖a‖` "by `\sref{parsec-170.60}`" — 17VI.3a.  Our proof cited
+  it three times and every citation went to the *parsec-90* copy: twice to
+  Mathlib's `le_algebraMap_norm_self` and once to `A/CStar/Basic`'s
+  `norm_le_iff_neg_algebraMap_le`.  `positive_basic_2_3a`, the thesis's own
+  proof of the identical statement, sits 230 lines above in the same file.  A
+  parsec-200 proof reaching past the parsec-170 theorem it names to a
+  parsec-90 surrogate.  All three now go to `positive_basic_2_3a`, and
+  **20II.1, 20II.2, the private `norm_map_le_two_mul` and 30V
+  `cstar_product_2_pu` no longer reach the continuous functional calculus at
+  all** — 51 CFC-reachable declarations down to 47.
+
+### The state after
+
+In parsecs 20–220 there are now exactly **three** edges from the tree into
+Mathlib's continuous functional calculus:
+
+1. `norm_le_iff_neg_algebraMap_le` — 17VI.3a at parsec 90, the knot above;
+2. `cstar_positive_5b` — 17VI.2 at parsec 90, via `OrderClosedTopology`;
+3. `cstar_positive_3` — forced by its statement (`0 ≤` in `B(ℂ²)`).
+
+Everything else that was CFC-reachable in the two files below parsec 230
+reaches it *only* through (1), and through (1) only via 9X.2 → 10IV.  So the
+cost of the move described above is now one declaration, not three: re-found
+17VI.3a and the parsec-90 order section is the thesis's throughout.
+
+### What was deliberately left
+
+* **9X.2's thesis argument** — reason: circular in this encoding (the thesis's
+  "positive by definition" is 25I).  Recorded on the row.
+* **9X.5a `cstar_positive_5a`** (`a² = star a * a`) — the sibling
+  `positive_basic_2_4a` in `Positive.lean` deliberately avoids this triviality
+  and uses 11XV.2 as the solution directs; here 11XV is 130 lines further down
+  the same file, so the thesis's route is not yet in scope.  Left, and the
+  duplication is the point of the move discussion above.
+* **9X.5b**, **9X.3** — the thesis's route needs 17VI.2 and, respectively, the
+  statement is about Mathlib's order on `B(ℂ²)`.
+* **10IV `cstar_p_implies_i`** — already the thesis's proof (wave 1); its CFC
+  reachability is inherited from 9X.2 and is not a fault of 10IV.  Its four
+  consumers in `Positive.lean` cite it correctly and were left alone.
+* **Parsec 230–260's `CFC.sqrt`/`CFC.abs`/`a⁺`/`a⁻`** — statement-level.
+
+Three files rebuilt and compiled clean, no new `sorry`; axioms verified in
+situ (source copied to the scratchpad with `#print axioms` appended) for
+`cstar_positive_2`, `cstar_positive_5c`, `cstar_positive_def`,
+`cstar_positive_sum`, `cstar_p_implies_i`, `orderNorm_eq_norm`,
+`weak_russo_dye_1`, `weak_russo_dye_2`, `cstar_product_2_pu` — all
+`[propext, Classical.choice, Quot.sound]`.

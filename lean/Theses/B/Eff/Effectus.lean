@@ -620,16 +620,19 @@ theorem eff_prod_rules_3 {X' Y' : C} (f : Z ⟶ X) (g : Z ⟶ Y)
     (h : Perp (f ≫ truth X) (g ≫ truth Y)) (k : X ⟶ X') (l : Y ⟶ Y')
     (h' : Perp ((f ≫ k) ≫ truth X') ((g ≫ l) ≫ truth Y')) :
     effPair f g h ≫ coprod.map k l = effPair (f ≫ k) (g ≫ l) h' := by
-  obtain ⟨hk, -, -⟩ := exists_pair (f ≫ k) (g ≫ l) h'
-  have e₁ : (effPair f g h ≫ coprod.map k l) ≫ pproj₁ X' Y' = f ≫ k := by
-    rw [Category.assoc, map_pproj₁, ← pproj₁_comp (Y := Y) k, ← Category.assoc,
-      (effPair_spec f g h).1]
-  have e₂ : (effPair f g h ≫ coprod.map k l) ≫ pproj₂ X' Y' = g ≫ l := by
-    rw [Category.assoc, map_pproj₂, ← pproj₂_comp (X := X) l, ← Category.assoc,
-      (effPair_spec f g h).2]
-  rw [pair_unique _ _ _ e₁ e₂ hk,
-    pair_unique _ _ _ (effPair_spec (f ≫ k) (g ≫ l) h').1
-      (effPair_spec (f ≫ k) (g ≫ l) h').2 hk]
+  -- bsols.tex:1679: `(k+l) ∘ ⟨f,g⟩ ≡ [κ₁∘k, κ₂∘l] ∘ ⟨f,g⟩
+  --   = (κ₁∘k∘f) ⋁ (κ₂∘l∘g) ≡ ⟨k∘f, l∘g⟩`, i.e. by the first point.
+  have hmap : (coprod.map k l : X ⨿ Y ⟶ X' ⨿ Y')
+      = coprod.desc (k ≫ coprod.inl) (l ≫ coprod.inr) := by
+    refine coprod.hom_ext ?_ ?_
+    · rw [coprod.inl_map, coprod.inl_desc]
+    · rw [coprod.inr_map, coprod.inr_desc]
+  obtain ⟨hp, he⟩ := eff_prod_rules_1 f g h (k ≫ (coprod.inl : X' ⟶ X' ⨿ Y'))
+    (l ≫ (coprod.inr : Y' ⟶ X' ⨿ Y'))
+  obtain ⟨hk', he'⟩ := effPair_eq_ovee (f ≫ k) (g ≫ l) h'
+  rw [hmap, he, he']
+  exact PCM.ovee_congr (Category.assoc f k coprod.inl).symm
+    (Category.assoc g l coprod.inr).symm _ _
 
 /-- **181IX.4** (`eff-prod-rules`, eff.tex:1137, Exercise):
 `⟨f,g⟩ ∘ k = ⟨f ∘ k, g ∘ k⟩`. -/
@@ -637,14 +640,13 @@ theorem eff_prod_rules_4 {W : C} (f : Z ⟶ X) (g : Z ⟶ Y)
     (h : Perp (f ≫ truth X) (g ≫ truth Y)) (k : W ⟶ Z)
     (h' : Perp ((k ≫ f) ≫ truth X) ((k ≫ g) ≫ truth Y)) :
     k ≫ effPair f g h = effPair (k ≫ f) (k ≫ g) h' := by
-  obtain ⟨hk, -, -⟩ := exists_pair (k ≫ f) (k ≫ g) h'
-  have e₁ : (k ≫ effPair f g h) ≫ pproj₁ X Y = k ≫ f := by
-    rw [Category.assoc, (effPair_spec f g h).1]
-  have e₂ : (k ≫ effPair f g h) ≫ pproj₂ X Y = k ≫ g := by
-    rw [Category.assoc, (effPair_spec f g h).2]
-  rw [pair_unique _ _ _ e₁ e₂ hk,
-    pair_unique _ _ _ (effPair_spec (k ≫ f) (k ≫ g) h').1
-      (effPair_spec (k ≫ f) (k ≫ g) h').2 hk]
+  -- bsols.tex:1688: `⟨f,g⟩ ∘ k ≡ ((κ₁∘f) ⋁ (κ₂∘g)) ∘ k
+  --   = (κ₁∘f∘k) ⋁ (κ₂∘g∘k) ≡ ⟨f∘k, g∘k⟩`, by PCM-enrichment.
+  obtain ⟨hk, he⟩ := effPair_eq_ovee f g h
+  obtain ⟨hk', he'⟩ := effPair_eq_ovee (k ≫ f) (k ≫ g) h'
+  rw [he, he', ovee_comp_left hk k (perp_comp_left hk k)]
+  exact PCM.ovee_congr (Category.assoc k f coprod.inl).symm
+    (Category.assoc k g coprod.inr).symm _ _
 
 end PartialToTotal
 

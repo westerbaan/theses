@@ -197,15 +197,15 @@ theorem quotient_basics_2 {p : Pred X} {ξ₁ : X ⟶ Q} {ξ₂ : X ⟶ Q'}
 quotients for `0`. -/
 theorem quotient_basics_3 (f : X ⟶ Q) [IsIso f] :
     IsQuotient (0 : Pred X) f := by
-  refine ⟨?_, ?_⟩
-  · rw [eabasics_orth_zero]; exact pred_le_truth _
-  · intro Y g _
-    refine ⟨inv f ≫ g, ?_, ?_⟩
-    · show f ≫ (inv f ≫ g) = g
-      rw [← Category.assoc, IsIso.hom_inv_id, Category.id_comp]
-    · intro g' hg'
-      replace hg' : f ≫ g' = g := hg'
-      rw [← hg', ← Category.assoc, IsIso.inv_hom_id, Category.id_comp]
+  -- bsols.tex:2643: `id` is a quotient for `0` — every `f` is the unique map
+  -- with `f' ∘ id = f` — and then so is every isomorphism, by the first point.
+  have hid : IsQuotient (0 : Pred X) (𝟙 X) := by
+    refine ⟨?_, ?_⟩
+    · rw [Category.id_comp, eabasics_orth_zero]; exact pred_le_truth _
+    · intro Y g _
+      exact ⟨g, Category.id_comp g, fun g' hg' => (Category.id_comp g').symm.trans hg'⟩
+  have h := quotient_basics_1 hid f
+  rwa [Category.id_comp] at h
 
 /-- **197V.4** (`quotient-basics`, eff.tex:3725, Exercise): maps into the
 zero object are quotients for `1`. -/
@@ -678,14 +678,15 @@ theorem compr_basics_2 {p : Pred X} {π₁ : W ⟶ X} {π₂ : W' ⟶ X}
 comprehensions for `1`. -/
 theorem compr_basics_3 (f : W ⟶ X) [IsIso f] :
     IsComprehension (1 : Pred X) f := by
-  refine ⟨rfl, ?_⟩
-  intro Z g _
-  refine ⟨g ≫ inv f, ?_, ?_⟩
-  · show (g ≫ inv f) ≫ f = g
-    rw [Category.assoc, IsIso.inv_hom_id, Category.comp_id]
-  · intro k hk
-    replace hk : k ≫ f = g := hk
-    rw [← hk, Category.assoc, IsIso.hom_inv_id, Category.comp_id]
+  -- bsols.tex:2801: `id` is a comprehension for `1` — every `f` is the unique
+  -- map with `f ∘ id = f` — and then so is every isomorphism, by the first
+  -- point.
+  have hid : IsComprehension (1 : Pred X) (𝟙 X) := by
+    refine ⟨rfl, ?_⟩
+    intro Z g _
+    exact ⟨g, Category.comp_id g, fun k hk => (Category.comp_id k).symm.trans hk⟩
+  have h := compr_basics_1 hid f
+  rwa [Category.comp_id] at h
 
 /-- **199VII.4** (`compr-basics`, eff.tex:3979, Exercise): the zero map out
 of the zero object is a comprehension for `0`.
