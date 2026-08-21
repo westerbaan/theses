@@ -57,16 +57,66 @@ variable {X Y : Type*}
   [NormedAddCommGroup X] [Module ℂ X] [SMul 𝒜 X] [CStarModule 𝒜 X]
   [NormedAddCommGroup Y] [Module ℂ Y] [SMul 𝒜 Y] [CStarModule 𝒜 Y]
 
-/-- **35VI** (`hellinger-toeplitz`, cstar.tex:6038, Theorem): an adjointable
-map `T : X → Y` between pre-Hilbert 𝒜-modules (here: `CStarModule`s over a
-C*-algebra `𝒜`) is bounded — together with its adjoint — as soon as either `X`
-or `Y` is complete (by symmetry we state the case that the domain `X` is
-complete).  The special case `𝒜 = ℂ`, `X = Y` a Hilbert space is the classical
-Hellinger–Toeplitz theorem (**35VIII**); Mathlib:
-`LinearMap.IsSymmetric.continuous`. -/
-theorem hellinger_toeplitz [CompleteSpace X] (T : X →ₗ[ℂ] Y) (S : Y →ₗ[ℂ] X)
+/-- Additivity of the 𝒜-valued inner product in its first argument.
+(Auxiliary for **35VI** and **36V**.) -/
+private theorem inner_add_left' (a b c : X) :
+    inner 𝒜 (a + b) c = inner 𝒜 a c + inner 𝒜 b c := by
+  rw [← CStarModule.star_inner (A := 𝒜), CStarModule.inner_add_right, star_add,
+    CStarModule.star_inner, CStarModule.star_inner]
+
+/-- Conjugate-homogeneity of the 𝒜-valued inner product in its first argument.
+(Auxiliary for **35VI** and **36V**.) -/
+private theorem inner_smul_left' (z : ℂ) (a c : X) :
+    inner 𝒜 (z • a) c = (starRingEnd ℂ) z • inner 𝒜 a c := by
+  rw [← CStarModule.star_inner (A := 𝒜), CStarModule.inner_smul_right_complex, star_smul,
+    CStarModule.star_inner]
+  rfl
+
+/-- Definiteness: the 𝒜-valued inner product separates the points of a
+pre-Hilbert 𝒜-module.  (Auxiliary for **35VI** and **36V**.) -/
+private theorem ext_inner_left' {a b : X} (h : ∀ c : X, inner 𝒜 a c = inner 𝒜 b c) :
+    a = b := by
+  have hsub : ∀ c : X, inner 𝒜 (a - b) c = 0 := by
+    intro c
+    have h1 : a - b = a + ((-1 : ℂ) • b) := by
+      rw [neg_one_smul]; exact (sub_eq_add_neg a b)
+    rw [h1, inner_add_left' (𝒜 := 𝒜), inner_smul_left' (𝒜 := 𝒜), h c]
+    simp
+  exact sub_eq_zero.mp (CStarModule.inner_self.mp (hsub (a - b)))
+
+/-- Auxiliary for **35VI**: an adjointable map between pre-Hilbert
+𝒜-modules is automatically ℂ-linear.  This is the clause **32I** flags when it
+says that an adjointable map "must be linear, and a module map": the inner
+product is definite, so `T (x + x')` and `T x + T x'` — which have the same
+inner product with every `y ∈ Y`, by adjointness and additivity of the inner
+product on `X` — are equal.  (Compare `adjointCLM` in `A/CStar/Basic`, which
+does the same for `𝒜 = ℂ` in the proof of **4XVI**.) -/
+private theorem linear_of_isAdjointTo {T : X → Y} {S : Y → X}
     (adj : ∀ (x : X) (y : Y), inner 𝒜 (T x) y = inner 𝒜 x (S y)) :
-    Continuous (⇑T) ∧ Continuous (⇑S) := by
+    ∃ T' : X →ₗ[ℂ] Y, ⇑T' = T := by
+  refine ⟨{ toFun := T, map_add' := ?_, map_smul' := ?_ }, rfl⟩
+  · intro x x'
+    refine ext_inner_left' (𝒜 := 𝒜) fun y => ?_
+    rw [adj, inner_add_left' (𝒜 := 𝒜), ← adj, ← adj, inner_add_left' (𝒜 := 𝒜)]
+  · intro c x
+    refine ext_inner_left' (𝒜 := 𝒜) fun y => ?_
+    rw [RingHom.id_apply, adj, inner_smul_left' (𝒜 := 𝒜), ← adj,
+      inner_smul_left' (𝒜 := 𝒜)]
+
+/-- Auxiliary for **35VI**: the adjointness relation is symmetric in `(T, X)`
+and `(S, Y)` — take the star of both sides (**32I**). -/
+private theorem isAdjointTo_swap' {T : X → Y} {S : Y → X}
+    (adj : ∀ (x : X) (y : Y), inner 𝒜 (T x) y = inner 𝒜 x (S y)) :
+    ∀ (y : Y) (x : X), inner 𝒜 (S y) x = inner 𝒜 y (T x) := by
+  intro y x
+  rw [← CStarModule.star_inner (A := 𝒜) x (S y), ← adj, CStarModule.star_inner]
+
+/-- Auxiliary for **35VI**: the case in which the *domain* `X` is complete.
+The public statement below takes either completeness hypothesis and reduces
+the second to this one by `isAdjointTo_swap'`. -/
+private theorem hellinger_toeplitz_aux [CompleteSpace X] (T : X → Y) (S : Y → X)
+    (adj : ∀ (x : X) (y : Y), inner 𝒜 (T x) y = inner 𝒜 x (S y)) :
+    Continuous T ∧ Continuous S := by
   -- Mathlib deliberately does not register `NormedSpace ℂ X` for a `CStarModule`
   -- (it wants to be able to replace the topology); the norm axiom is available
   -- as `CStarModule.normedSpaceCore`, and for the *given* norm on `X` it gives
@@ -141,7 +191,47 @@ theorem hellinger_toeplitz [CompleteSpace X] (T : X →ₗ[ℂ] Y) (S : Y →ₗ
     rcases eq_or_lt_of_le (norm_nonneg (S y)) with h0 | h0
     · rw [← h0]; positivity
     · nlinarith [norm_nonneg y]
-  exact ⟨(T.mkContinuous B hTb).continuous, (S.mkContinuous B hSb).continuous⟩
+  -- both maps are linear (`linear_of_isAdjointTo`), so the two bounds bundle
+  obtain ⟨T', hT'⟩ := linear_of_isAdjointTo (𝒜 := 𝒜) adj
+  obtain ⟨S', hS'⟩ := linear_of_isAdjointTo (𝒜 := 𝒜) (isAdjointTo_swap' (𝒜 := 𝒜) adj)
+  refine ⟨?_, ?_⟩
+  · rw [← hT']
+    exact (T'.mkContinuous B fun x => by rw [hT']; exact hTb x).continuous
+  · rw [← hS']
+    exact (S'.mkContinuous B fun y => by rw [hS']; exact hSb y).continuous
+
+/-- **35VI** (`hellinger-toeplitz`, cstar.tex:6038, Theorem): an adjointable
+map `T : X → Y` between pre-Hilbert 𝒜-modules (here: `CStarModule`s over a
+C*-algebra `𝒜`) is bounded — together with its adjoint — as soon as **either**
+`X` or `Y` is complete.  The special case `𝒜 = ℂ`, `X = Y` a Hilbert space is
+the classical Hellinger–Toeplitz theorem (**35VIII**); Mathlib:
+`LinearMap.IsSymmetric.continuous`.
+
+Neither `T` nor `S` is assumed linear.  The source's `T` is an *adjointable
+map*, and **32I** notes that such a map "must be linear, and a module map" —
+so ℂ-linearity is part of the **conclusion** here, derived from definiteness
+of the inner product by `linear_of_isAdjointTo`.  (The 𝒜-module-map half is
+not claimed by 35VI itself; it is `IsBoundedModuleMap`, delivered by **36V**.)
+This is the shape `A/CStar/Basic`'s **4XVI** takes for `𝒜 = ℂ`, where the
+adjoint is likewise a bare map `H → H`.
+
+The "either" is genuine: the statement is symmetric in `(T, X)` and `(S, Y)`
+— take the star of the adjointness relation — so the hypothesis is the
+*disjunction* of the two completeness assumptions, and the second disjunct is
+discharged by instantiating the first with the roles swapped. -/
+theorem hellinger_toeplitz (hc : CompleteSpace X ∨ CompleteSpace Y)
+    (T : X → Y) (S : Y → X)
+    (adj : ∀ (x : X) (y : Y), inner 𝒜 (T x) y = inner 𝒜 x (S y)) :
+    ∃ (T' : X →ₗ[ℂ] Y) (S' : Y →ₗ[ℂ] X),
+      ⇑T' = T ∧ ⇑S' = S ∧ Continuous T ∧ Continuous S := by
+  obtain ⟨T', hT'⟩ := linear_of_isAdjointTo (𝒜 := 𝒜) adj
+  obtain ⟨S', hS'⟩ := linear_of_isAdjointTo (𝒜 := 𝒜) (isAdjointTo_swap' (𝒜 := 𝒜) adj)
+  refine ⟨T', S', hT', hS', ?_⟩
+  rcases hc with h | h
+  · haveI := h
+    exact hellinger_toeplitz_aux (𝒜 := 𝒜) T S adj
+  · haveI := h
+    exact (hellinger_toeplitz_aux (𝒜 := 𝒜) S T (isAdjointTo_swap' (𝒜 := 𝒜) adj)).symm
 
 /-! **35VIII** (cstar.tex:6069, Remark): the Hellinger–Toeplitz theorem —
 every symmetric operator on a Hilbert space is bounded — is the special case
@@ -168,10 +258,29 @@ def IsBoundedModuleMap (T : X →ₗ[ℂ] Y) : Prop :=
 variable (𝒜 X) in
 /-- **36I** (`self-dual`, cstar.tex:6091, Definition): a Hilbert 𝒜-module `X`
 is *self-dual* when every bounded module map `r : X → 𝒜` is of the form
-`⟪y, ·⟫` for some `y ∈ X`.  (**36II**: by Riesz' representation theorem —
-Mathlib's `InnerProductSpace.toDual` — every Hilbert space is self-dual.) -/
+`⟪y, ·⟫` for some `y ∈ X`.  (**36II**, the Example that every Hilbert space is
+self-dual by Riesz, is `selfDual_hilbert` below.) -/
 def SelfDual : Prop :=
   ∀ r : X →ₗ[ℂ] 𝒜, IsBoundedModuleMap 𝒜 r → ∃ y : X, ∀ x : X, r x = inner 𝒜 y x
+
+/-- **36II** (cstar.tex:6104, Example): by Riesz' representation theorem
+(**5XI**, Mathlib's `InnerProductSpace.toDual`) every Hilbert space is
+self-dual — that is, `SelfDual ℂ H` for the pre-Hilbert ℂ-module `H`, whose
+𝒜-valued inner product (`𝒜 = ℂ`) is the ordinary one.
+
+This is the instance of **36I** at `𝒜 = ℂ`, and it is what makes **36V**
+applicable to a Hilbert space: `exists_rho` (**39IX**) and
+`bh_bounded_uw_complete` (**76III**, `A/VN/Completeness`) both represent a
+bounded form on `H` by instantiating 36V here, which is the thesis's own
+route in both places.  Note that a bounded module map over `𝒜 = ℂ` is just a
+continuous ℂ-linear functional: the module-map clause
+`r (c • x) = c • r x` is ℂ-linearity again. -/
+theorem selfDual_hilbert (H : Type*) [NormedAddCommGroup H]
+    [InnerProductSpace ℂ H] [CompleteSpace H] : SelfDual ℂ H := by
+  intro r hr
+  refine ⟨(InnerProductSpace.toDual ℂ H).symm ⟨r, hr.2⟩, fun x => ?_⟩
+  exact (InnerProductSpace.toDual_symm_apply (x := x)
+    (y := (⟨r, hr.2⟩ : H →L[ℂ] ℂ))).symm
 
 /-- **36III** (cstar.tex:6102, Exercise): for a C*-algebra `𝒜` the Hilbert
 𝒜-module `𝒜^N` of `N`-tuples (Mathlib: the type synonym
@@ -223,44 +332,23 @@ structure IsBoundedForm (B : X → Y → 𝒜) : Prop where
   bddModuleMap_left_star : ∀ y : Y,
     ∃ r : X →ₗ[ℂ] 𝒜, IsBoundedModuleMap 𝒜 r ∧ ∀ x : X, r x = star (B x y)
 
-/-- Additivity of the 𝒜-valued inner product in its first argument.
-(Auxiliary for **36V**.) -/
-private theorem inner_add_left' (a b c : X) :
-    inner 𝒜 (a + b) c = inner 𝒜 a c + inner 𝒜 b c := by
-  rw [← CStarModule.star_inner (A := 𝒜), CStarModule.inner_add_right, star_add,
-    CStarModule.star_inner, CStarModule.star_inner]
-
-/-- Conjugate-homogeneity of the 𝒜-valued inner product in its first argument.
-(Auxiliary for **36V**.) -/
-private theorem inner_smul_left' (z : ℂ) (a c : X) :
-    inner 𝒜 (z • a) c = (starRingEnd ℂ) z • inner 𝒜 a c := by
-  rw [← CStarModule.star_inner (A := 𝒜), CStarModule.inner_smul_right_complex, star_smul,
-    CStarModule.star_inner]
-  rfl
-
-/-- Definiteness: the 𝒜-valued inner product separates the points of a
-pre-Hilbert 𝒜-module.  (Auxiliary for **36V**.) -/
-private theorem ext_inner_left' {a b : X} (h : ∀ c : X, inner 𝒜 a c = inner 𝒜 b c) :
-    a = b := by
-  have hsub : ∀ c : X, inner 𝒜 (a - b) c = 0 := by
-    intro c
-    have h1 : a - b = a + ((-1 : ℂ) • b) := by
-      rw [neg_one_smul]; exact (sub_eq_add_neg a b)
-    rw [h1, inner_add_left' (𝒜 := 𝒜), inner_smul_left' (𝒜 := 𝒜), h c]
-    simp
-  exact sub_eq_zero.mp (CStarModule.inner_self.mp (hsub (a - b)))
-
 /-- **36V** (`chilb-form-representation`, cstar.tex:6118, Proposition): for
 every bounded form `[·,·] : X × Y → 𝒜` on self-dual Hilbert 𝒜-modules `X` and
 `Y` there is a unique adjointable bounded module map `T : X → Y` with
 `[x, y] = ⟪T x, y⟫` for all `x ∈ X`, `y ∈ Y`.
 
-**Completeness restored.**  The source says *Hilbert* 𝒜-modules, and a Hilbert
-𝒜-module is by definition (cstar.tex 32I) a pre-Hilbert module that is
-*complete*; our `CStarModule` hypotheses only give the pre-Hilbert structure.
-The thesis's proof genuinely needs it — it obtains boundedness of `T` and `S`
-from **35VI**, which is false without completeness (**35IX**) — so
-`[CompleteSpace X]` is added here.  One of the two suffices, by 35VI. -/
+**Completeness, half restored and half dropped.**  The source says *Hilbert*
+𝒜-modules, and a Hilbert 𝒜-module is by definition (cstar.tex 32I) a
+pre-Hilbert module that is *complete*; our `CStarModule` hypotheses only give
+the pre-Hilbert structure.  The thesis's proof genuinely needs completeness —
+it obtains boundedness of `T` and `S` from **35VI**, which is false without it
+(**35IX**) — so `[CompleteSpace X]` is added back.
+
+But only *one* of the two is added: the source assumes **both** `X` and `Y`
+complete, and `[CompleteSpace Y]` is **dropped** here, because 35VI needs only
+one of the two (that is the "either" of its statement, now carried by its
+hypothesis `hc`).  So relative to the point this statement is a genuine — and
+true — generalisation in `Y`, and a faithful transcription in `X`. -/
 theorem chilb_form_representation [CompleteSpace X]
     (hX : SelfDual 𝒜 X) (hY : SelfDual 𝒜 Y)
     {B : X → Y → 𝒜} (hB : IsBoundedForm 𝒜 B) :
@@ -329,7 +417,8 @@ theorem chilb_form_representation [CompleteSpace X]
     intro x y
     rw [hTapp, hSapp, ← hT₀, ← CStarModule.star_inner (A := 𝒜) (S₀ y) x, ← hS₀, star_star]
   -- … hence bounded, by **35VI**
-  have hcont := hellinger_toeplitz (𝒜 := 𝒜) T S hadj
+  obtain ⟨-, -, -, -, hcontT, -⟩ :=
+    hellinger_toeplitz (𝒜 := 𝒜) (Or.inl ‹CompleteSpace X›) (⇑T) (⇑S) hadj
   have hTmod : ∀ (a : 𝒜) (x : X), T (a • x) = a • T x := by
     intro a x
     refine ext_inner_left' (𝒜 := 𝒜) fun y => ?_
@@ -344,7 +433,7 @@ theorem chilb_form_representation [CompleteSpace X]
         CStarModule.star_inner (A := 𝒜) y (T₀ x)]
     rw [hTapp, hTapp, ← hT₀, hsm, ← hT₀]
     exact hB'
-  refine ⟨T, ⟨⟨hTmod, hcont.1⟩, ⟨S, hadj⟩, fun x y => by rw [hTapp]; exact hT₀ x y⟩, ?_⟩
+  refine ⟨T, ⟨⟨hTmod, hcontT⟩, ⟨S, hadj⟩, fun x y => by rw [hTapp]; exact hT₀ x y⟩, ?_⟩
   rintro T' ⟨-, -, hT'⟩
   refine LinearMap.ext fun x => ?_
   refine ext_inner_left' (𝒜 := 𝒜) fun y => ?_
@@ -416,10 +505,18 @@ theorem hilb_weakly_bounded_complete {ι : Type*} {l : Filter ι} [l.NeBot]
    characterized by
    `ContinuousLinearMapWOT.tendsto_iff_forall_inner_apply_tendsto`.
 
-2. the *strong operator topology (SOT)* on B(H) is the least topology making
-   `T ↦ ‖T x‖` continuous for every `x ∈ H` (net convergence: `‖T_α x - T x‖ →
-   0` pointwise); it is only mentioned for comparison (**37VI**, Remark) and
-   not used in the thesis, so we do not formalize it. -/
+2. the *strong operator topology (SOT)* on B(H) is the topology **induced by
+   the seminorms** `T ↦ ‖T x‖ = ⟪x, T* T x⟫^{1/2}`, `x ∈ H`.  Erratum
+   `parsec-370.50` is what fixes this wording — the first printing said "the
+   least topology with respect to which these seminorms are continuous",
+   "which is not always the least topology that makes all these seminorms
+   continuous" — and the current cstar.tex carries the corrected text, which
+   is the one transcribed here.  Net convergence is `‖T_α x - T x‖ → 0` for
+   every `x`, which is `sot_tendsto_iff` below, stated on Mathlib's type copy
+   `H →Lₚₜ[ℂ] H` (`PointwiseConvergenceCLM`, the topology of pointwise
+   convergence — Mathlib's own docstring records that this is what is
+   elsewhere called the strong operator topology).  The thesis mentions the
+   SOT only for comparison (**37VI**, Remark) and never uses it. -/
 
 /-- The polarization identity in the form used to pass between the thesis's
 diagonal description of the weak operator topology and Mathlib's:
@@ -460,6 +557,70 @@ theorem swot_tendsto_iff {ι : Type*} {l : Filter ι} (T : ι → H →L[ℂ] H)
     exact ((((h (x + y)).sub (h (x - y))).add
       ((h (x + Complex.I • y)).const_mul Complex.I)).sub
       ((h (x - Complex.I • y)).const_mul Complex.I)).div_const 4
+
+/-- **37V** (`swot`, cstar.tex:6220, Definition), part 1, the definition
+itself: Mathlib's weak operator topology on `H →WOT[ℂ] H` **is** the thesis's
+— *the least topology making `T ↦ ⟪x, T x⟫` continuous for every `x ∈ H`*,
+i.e. the infimum of the topologies induced by those maps.
+
+Mathlib takes the least topology making all of `T ↦ y (T x)`, `y` in the
+dual, continuous; the two agree by Riesz and polarization, which is what
+`inner_polarization` supplies and what the two inclusions below use.  (With
+this in hand `swot_tendsto_iff` is the *consequence* the point draws, not the
+definition itself.) -/
+theorem swot_topology_eq :
+    (inferInstance : TopologicalSpace (H →WOT[ℂ] H)) =
+      ⨅ x : H, TopologicalSpace.induced (fun T : H →WOT[ℂ] H => (⟪x, T x⟫ : ℂ))
+        inferInstance := by
+  refine le_antisymm (le_iInf fun x => continuous_iff_le_induced.mp ?_) ?_
+  · -- `⟪x, (·) x⟫` is WOT-continuous: it is `y (T x)` for `y = ⟪x, ·⟫` (Riesz)
+    simpa [InnerProductSpace.toDual_apply_apply] using
+      ContinuousLinearMapWOT.continuous_dual_apply (σ := RingHom.id ℂ) x
+        (InnerProductSpace.toDual ℂ H x)
+  · -- conversely, `T ↦ y (T x)` is a combination of diagonal values, so the
+    -- topology on the left makes Mathlib's inducing map continuous
+    letI tI : TopologicalSpace (H →WOT[ℂ] H) :=
+      ⨅ x : H, TopologicalSpace.induced (fun T : H →WOT[ℂ] H => (⟪x, T x⟫ : ℂ))
+        inferInstance
+    have hdiag : ∀ z : H, Continuous (fun T : H →WOT[ℂ] H => (⟪z, T z⟫ : ℂ)) := fun z =>
+      continuous_iInf_dom (i := z) continuous_induced_dom
+    have hcont : Continuous (ContinuousLinearMapWOT.inducingFn (RingHom.id ℂ) H H) := by
+      refine continuous_pi fun p => ?_
+      obtain ⟨x, y⟩ := p
+      obtain ⟨z, rfl⟩ : ∃ z, y = InnerProductSpace.toDual ℂ H z :=
+        ⟨(InnerProductSpace.toDual ℂ H).symm y, by simp⟩
+      have heq : ∀ T : H →WOT[ℂ] H,
+          ContinuousLinearMapWOT.inducingFn (RingHom.id ℂ) H H T
+              (x, InnerProductSpace.toDual ℂ H z) =
+          ((⟪x + z, T (x + z)⟫ : ℂ) - ⟪x - z, T (x - z)⟫ +
+            Complex.I * ⟪x + Complex.I • z, T (x + Complex.I • z)⟫ -
+            Complex.I * ⟪x - Complex.I • z, T (x - Complex.I • z)⟫) / 4 := by
+        intro T
+        rw [ContinuousLinearMapWOT.inducingFn_apply, InnerProductSpace.toDual_apply_apply]
+        exact inner_polarization (ContinuousLinearMapWOT.toCLM T) x z
+      simp only [heq]
+      exact ((((hdiag _).sub (hdiag _)).add ((hdiag _).const_mul _)).sub
+        ((hdiag _).const_mul _)).div_const 4
+    exact continuous_iff_le_induced.mp hcont
+
+/-- **37V** (`swot`, cstar.tex:6220, Definition), part 2, embedded claim: a
+net `(T_α)_α` converges to `T` in B(H) with respect to the *strong* operator
+topology — Mathlib's topology of pointwise convergence on `H →Lₚₜ[ℂ] H`,
+which is the topology induced by the seminorms `T ↦ ‖T x‖` of the definition's
+corrected text — if and only if `‖T_α x - T x‖ → 0` for every `x ∈ H`.
+
+This is the item-2 counterpart of `swot_tendsto_iff`; the thesis states it as
+the "so a net converges iff …" sentence of item 2 and never uses it. -/
+theorem sot_tendsto_iff {ι : Type*} {l : Filter ι} (T : ι → H →L[ℂ] H)
+    (T₀ : H →L[ℂ] H) :
+    Tendsto (fun α =>
+        UniformConvergenceCLM.ofFun (RingHom.id ℂ) H {s : Set H | Finite s} (T α)) l
+        (𝓝 (UniformConvergenceCLM.ofFun (RingHom.id ℂ) H {s : Set H | Finite s} T₀)) ↔
+      ∀ x : H, Tendsto (fun α => ‖T α x - T₀ x‖) l (𝓝 0) := by
+  rw [PointwiseConvergenceCLM.tendsto_iff_forall_tendsto]
+  refine forall_congr' fun x => ?_
+  rw [← tendsto_sub_nhds_zero_iff, ← tendsto_zero_iff_norm_tendsto_zero]
+  rfl
 
 /-- **37VII** (`bh-wot-bounded-complete`, cstar.tex:6260, Lemma): if
 `(T_α)_α` is a net of bounded operators on a Hilbert space `H` such that
@@ -1831,21 +1992,26 @@ private theorem ketbra_self_nonneg (x : H) : (0 : H →L[ℂ] H) ≤ ketbra x x 
 /-- **39IX**, first step: for a positive functional `ω` on `B(H)` there is a
 positive `ϱ ∈ B(H)` with `ω |y⟩⟨x| = ⟪x, ϱ y⟫`.
 
-The thesis obtains `ϱ` from **36V** (`chilb-form-representation`), applied to
-the bounded form `(x, y) ↦ ω |y⟩⟨x|` on the self-dual Hilbert ℂ-module `H`.
-36V is now proved above, but for `𝒜 = ℂ` it *is* the Riesz representation
-theorem — which is exactly how **36II** justifies self-duality of a Hilbert
-space — so we go through Riesz (Mathlib's `InnerProductSpace.toDual`) directly,
-which avoids threading `SelfDual ℂ H` and the bounded-form packaging through
-for no gain.  Positivity of `ϱ` is the thesis's own argument
-(`hilb-positive-operators`): `⟪x, ϱ x⟫ = ω |x⟩⟨x| ≥ 0`. -/
+This is the thesis's own route (cstar.tex:6666).  The map
+`(x, y) ↦ ω |y⟩⟨x|` is a bounded form in the sense of **36IV** on the Hilbert
+ℂ-module `H`, which is self-dual by **36II** (`selfDual_hilbert`), so **36V**
+(`chilb_form_representation`) represents it.  36V delivers a `T` with
+`ω |y⟩⟨x| = ⟪T x, y⟫` *together with its adjoint* `S`, and it is `ϱ := S` that
+the thesis's display `⟪x, ϱ y⟫` names; `S` is bounded by **35VI**, exactly as
+inside the proof of 36V.  (For `𝒜 = ℂ` the self-duality step *is* the Riesz
+representation theorem, which is what 36II says; going through 36V rather than
+through Mathlib's `InnerProductSpace.toDual` directly is what keeps 36V — and
+with it 35VI — on the path the thesis lays out.)  Positivity of `ϱ` is the
+thesis's own argument (`hilb-positive-operators`): `⟪x, ϱ x⟫ = ω |x⟩⟨x| ≥ 0`. -/
 private theorem exists_rho (ω : NPFunctional (H →L[ℂ] H)) :
     ∃ ϱ : H →L[ℂ] H, 0 ≤ ϱ ∧ ∀ x y : H, ω (ketbra y x) = ⟪x, ϱ y⟫ := by
   obtain ⟨C, hC⟩ := ω.toPositiveLinearMap.exists_norm_apply_le
   have hstar : ∀ T : H →L[ℂ] H, ω (star T) = star (ω T) :=
     cstar_p_implies_i ω.toPositiveLinearMap.toLinearMap
       (fun a ha => ω.toPositiveLinearMap.map_nonneg ha)
-  have hrep : ∀ y : H, ∃ u : H, ∀ x : H, ω (ketbra y x) = ⟪x, u⟫ := by
+  -- `z ↦ ω |z⟩⟨y|` is a bounded module map `H → ℂ`, for every `y`
+  have hlin : ∀ y : H, ∃ r : H →ₗ[ℂ] ℂ, IsBoundedModuleMap ℂ r ∧
+      ∀ x : H, r x = ω (ketbra x y) := by
     intro y
     have hb : ∀ x : H, ‖ω (ketbra x y)‖ ≤ ((C : ℝ) * ‖y‖) * ‖x‖ := by
       intro x
@@ -1858,51 +2024,36 @@ private theorem exists_rho (ω : NPFunctional (H →L[ℂ] H)) :
           rw [ketbra_add_left]; exact map_add ω.toPositiveLinearMap _ _
         map_smul' := fun c a => by
           rw [ketbra_smul_left]; exact map_smul ω.toPositiveLinearMap _ _ }
-    refine ⟨(InnerProductSpace.toDual ℂ H).symm (f.mkContinuous ((C : ℝ) * ‖y‖) hb),
-      fun x => ?_⟩
-    have hg : ⟪(InnerProductSpace.toDual ℂ H).symm (f.mkContinuous ((C : ℝ) * ‖y‖) hb), x⟫
-        = ω (ketbra x y) := InnerProductSpace.toDual_symm_apply
-    rw [← inner_conj_symm x, hg, ← ketbra_star x y, hstar]
-    rfl
-  choose ϱ₀ hϱ₀ using hrep
-  have hadd : ∀ y z : H, ϱ₀ (y + z) = ϱ₀ y + ϱ₀ z := by
-    intro y z
-    refine ext_inner_left ℂ fun v => ?_
-    rw [← hϱ₀, inner_add_right, ← hϱ₀, ← hϱ₀, ketbra_add_left]
-    exact map_add ω.toPositiveLinearMap _ _
-  have hsmul : ∀ (c : ℂ) (y : H), ϱ₀ (c • y) = c • ϱ₀ y := by
-    intro c y
-    refine ext_inner_left ℂ fun v => ?_
-    rw [← hϱ₀, inner_smul_right, ← hϱ₀, ketbra_smul_left]
-    exact map_smul ω.toPositiveLinearMap _ _
-  have hbdd : ∀ y : H, ‖ϱ₀ y‖ ≤ (C : ℝ) * ‖y‖ := by
-    intro y
-    have h1 : ‖(⟪ϱ₀ y, ϱ₀ y⟫ : ℂ)‖ ≤ (C : ℝ) * ‖y‖ * ‖ϱ₀ y‖ := by
-      rw [← hϱ₀ y (ϱ₀ y)]
-      refine le_trans (hC _) ?_
-      rw [ketbra_norm]
-      nlinarith [norm_nonneg (ϱ₀ y), norm_nonneg y, C.2]
-    rw [inner_self_eq_norm_sq_to_K, norm_pow] at h1
-    simp only [RCLike.norm_ofReal, abs_norm] at h1
-    rcases eq_or_lt_of_le (norm_nonneg (ϱ₀ y)) with h0 | h0
-    · rw [← h0]; positivity
-    · refine le_of_mul_le_mul_right ?_ h0
-      nlinarith
-  set ϱL : H →L[ℂ] H :=
-    LinearMap.mkContinuous { toFun := ϱ₀, map_add' := hadd, map_smul' := hsmul }
-      (C : ℝ) hbdd with hϱL
-  have hϱLapp : ∀ y : H, ϱL y = ϱ₀ y := fun _ => rfl
-  refine ⟨ϱL, ?_, fun x y => by rw [hϱLapp, hϱ₀]⟩
-  rw [ContinuousLinearMap.nonneg_iff_isPositive, ContinuousLinearMap.isPositive_iff_complex]
-  intro z
-  have hval : (0 : ℂ) ≤ ω (ketbra z z) := ω.toPositiveLinearMap.map_nonneg (ketbra_self_nonneg z)
-  have him : (ω (ketbra z z)).im = 0 := by simpa using (Complex.le_def.mp hval).2.symm
-  have h : (⟪ϱL z, z⟫ : ℂ) = ω (ketbra z z) := by
-    rw [hϱLapp, ← inner_conj_symm (ϱ₀ z) z, ← hϱ₀ z z]
-    exact Complex.conj_eq_iff_im.mpr him
-  rw [h]
-  exact ⟨(Complex.conj_eq_iff_re.mp (Complex.conj_eq_iff_im.mpr him)),
-    (Complex.le_def.mp hval).1⟩
+    exact ⟨f, ⟨fun c x => map_smul f c x, (f.mkContinuous _ hb).continuous⟩, fun _ => rfl⟩
+  -- hence `(x, y) ↦ ω |y⟩⟨x|` is a bounded form (**36IV**)
+  have hBform : IsBoundedForm ℂ (fun x y : H => ω (ketbra y x)) :=
+    { bddModuleMap_right := fun x => hlin x
+      bddModuleMap_left_star := fun y => by
+        obtain ⟨r, hr, hrB⟩ := hlin y
+        refine ⟨r, hr, fun x => ?_⟩
+        rw [hrB, ← ketbra_star y x, hstar] }
+  -- **36V**, at `𝒜 = ℂ`, with self-duality of `H` supplied by **36II**
+  obtain ⟨T, ⟨-, ⟨S, hadj⟩, hTB⟩, -⟩ :=
+    chilb_form_representation (𝒜 := ℂ) (selfDual_hilbert H) (selfDual_hilbert H) hBform
+  -- `S` — the thesis's `ϱ` — is bounded by **35VI**
+  obtain ⟨-, -, -, -, -, hScont⟩ :=
+    hellinger_toeplitz (𝒜 := ℂ) (Or.inl (inferInstance : CompleteSpace H)) (⇑T) (⇑S) hadj
+  refine ⟨⟨S, hScont⟩, ?_, ?_⟩
+  · -- positivity, by **25V** (`hilb-positive-operators`)
+    rw [ContinuousLinearMap.nonneg_iff_isPositive, ContinuousLinearMap.isPositive_iff_complex]
+    intro z
+    have hval : (0 : ℂ) ≤ ω (ketbra z z) :=
+      ω.toPositiveLinearMap.map_nonneg (ketbra_self_nonneg z)
+    have him : (ω (ketbra z z)).im = 0 := by simpa using (Complex.le_def.mp hval).2.symm
+    have hdiag : (⟪z, S z⟫ : ℂ) = ω (ketbra z z) := ((hTB z z).trans (hadj z z)).symm
+    have h : (⟪(⟨S, hScont⟩ : H →L[ℂ] H) z, z⟫ : ℂ) = ω (ketbra z z) := by
+      rw [show ((⟨S, hScont⟩ : H →L[ℂ] H) z) = S z from rfl, ← inner_conj_symm (S z) z, hdiag]
+      exact Complex.conj_eq_iff_im.mpr him
+    rw [h]
+    exact ⟨(Complex.conj_eq_iff_re.mp (Complex.conj_eq_iff_im.mpr him)),
+      (Complex.le_def.mp hval).1⟩
+  · intro x y
+    exact (hTB x y).trans (hadj x y)
 
 /-- **39IX** (`bh-np`, cstar.tex:6657, Theorem): every normal positive
 functional `ω : B(H) → ℂ` on a Hilbert space `H` is of the form

@@ -25781,3 +25781,177 @@ it belongs in `ERRATA.md`, which this pass may not edit.
 
 (1) faithful; (4) our mis-transcription.  No repair needed a different
 route, and none of the thesis's own arguments failed to go through.
+
+## Session 94 — A/CStar/TowardsVN + A/VN/Completeness: **the first repair pass — four of the eight non-`ok` rows repaired**, **36II is stated at last** and with it the 36V dependency inversion is undone in both places, 35VI gets its "either" and stops assuming linearity, and 73III.4 (addition on `ℝ²` is not jointly radially continuous) is converted (worker on `Theses/A/CStar/TowardsVN.lean`, `Theses/A/VN/Completeness.lean`)
+
+The audit gives these two modules **8 non-`ok` rows** (1 `stronger`, 7
+`weaker`) out of 144.  Outcome: **four rows repaired** — 35VI, 37V, 73III,
+77V — **four left**, one because it is a benign generalisation and three
+because they are the *recorded repairs of thesis defects* (`ERRATA.md`
+39VII and 72V.4), which must not be changed to match a falsehood.  Beyond the
+rows: **36II is stated for the first time**, and the two places that bypassed
+**36V** now go through it, so 36V and 35VI are no longer orphans; six stale
+prose defects are fixed.  Both files compile with **no errors** and **no new
+`sorry`s**, and every statement touched is axiom-clean (`propext`,
+`Classical.choice`, `Quot.sound`), checked in situ.
+
+### `TowardsVN.lean`
+
+**35VI `hellinger_toeplitz` — both weakenings repaired (class 1, faithful).**
+The point reads "as soon as **either** `X` or `Y` is complete", and its `T` is
+an *adjointable map*, which **32I** notes "must be linear, and a module map".
+Ours fixed `[CompleteSpace X]` and took `T`, `S` as given ℂ-linear maps.  Now:
+
+* the completeness hypothesis is the **disjunction** `hc : CompleteSpace X ∨
+  CompleteSpace Y`.  The second disjunct is discharged by instantiating the
+  first with the roles swapped, which is legitimate because the adjointness
+  relation is symmetric — `isAdjointTo_swap'`, one application of
+  `star_inner` (32I again).  The old proof survives verbatim as the private
+  `hellinger_toeplitz_aux`;
+* `T : X → Y` and `S : Y → X` are now **bare maps**, and ℂ-linearity of both
+  is part of the *conclusion*, derived in `linear_of_isAdjointTo` from
+  definiteness of the inner product: `T (x + x')` and `T x + T x'` have the
+  same inner product with every `y`, so they are equal.  This is exactly the
+  shape wave 1 gave `A/CStar/Basic`'s **4XVI** (`adjointCLM`), for `𝒜 = ℂ`.
+
+Conclusion is now `∃ (T' : X →ₗ[ℂ] Y) (S' : Y →ₗ[ℂ] X), ⇑T' = T ∧ ⇑S' = S ∧
+Continuous T ∧ Continuous S`.  The three private inner-product auxiliaries
+(`inner_add_left'`, `inner_smul_left'`, `ext_inner_left'`) moved up in the
+file, since 35VI now uses them too.  The single call site,
+`chilb_form_representation`, was updated; a `grep` confirms there are no
+others in the tree.
+
+**36II `selfDual_hilbert` — the missing statement (class 4).**  "Every Hilbert
+space is self-dual, by Riesz" had no declaration anywhere, only a
+parenthetical in the doc comment of `SelfDual`.  It is now a theorem, proved
+the Example's way (`InnerProductSpace.toDual`).  Nothing had to be
+transported: Mathlib's `instCStarModuleComplex` makes a complex inner product
+space a `CStarModule ℂ`, and its `inner ℂ x y` *is* `⟪x, y⟫` — `rfl` — so
+`SelfDual ℂ H` is literally the statement of 36I at `𝒜 = ℂ`.
+
+**The 36V dependency inversion, undone in both places (class 2 → class 1).**
+The audit's standing observation was that **36V, proved in full, was used by
+nothing**, because both of its consumers went straight to Mathlib's Riesz:
+
+* `exists_rho` (the first step of **39IX**) now does what cstar.tex:6666 says.
+  It builds `(x, y) ↦ ω |y⟩⟨x|` as an `IsBoundedForm ℂ` (**36IV**) — both
+  clauses out of one lemma, since `star (ω |y⟩⟨x|) = ω |x⟩⟨y|` — and applies
+  36V with `selfDual_hilbert` for both self-duality hypotheses.  Worth
+  recording: the thesis writes the conclusion as `ω|y⟩⟨x| = ⟪x, ϱ y⟫` where
+  36V delivers `[x,y] = ⟪T x, y⟫`.  These are not the same operator; `ϱ` is
+  the **adjoint** `S` that 36V's `∃!` carries alongside `T`, and `⟪T x, y⟫ =
+  ⟪x, S y⟫` is exactly the adjointness clause.  Boundedness of `S` is not in
+  36V's conclusion, so it is taken from **35VI** — which is what the proof of
+  36V does with it anyway.
+* `bh_bounded_uw_complete` (**76III**, `Completeness.lean`) likewise: the
+  thesis's `[x,y] = lim_α ⟪x, T_α y⟫` is now an `IsBoundedForm ℂ` and `T` comes
+  from 36V, again as the adjoint half.  The old code Riesz-represented `G y`
+  by hand and then re-proved additivity, homogeneity and boundedness of the
+  resulting `S` — about 25 lines that the form's own clauses now supply.
+
+So 36V has two consumers and 35VI has three, and the arrows run the way the
+thesis draws them.
+
+**37V `swot` — converted in full (class 1).**  Three gaps, all closed:
+
+* the *definition itself* is now stated, as `swot_topology_eq`: Mathlib's WOT
+  **is** `⨅ x, induced (T ↦ ⟪x, T x⟫)`, the least topology making every
+  diagonal map continuous.  `≤` is `continuous_dual_apply` at `y = ⟪x, ·⟫`
+  (Riesz); `≥` is the polarization identity `inner_polarization` already in
+  the file, which writes Mathlib's `y (T x)` as a combination of four
+  diagonal values.  The doc comment used to *assert* this equivalence;
+  now it is proved, and `swot_tendsto_iff` is its corollary rather than the
+  only trace of item 1;
+* item 2 (SOT) is formalized, as `sot_tendsto_iff`, on Mathlib's
+  `PointwiseConvergenceCLM` — whose own docstring records that the topology of
+  pointwise convergence is what is elsewhere called the strong operator
+  topology;
+* the doc's description of item 2 was **the pre-erratum text**: it said "the
+  least topology making `T ↦ ‖T x‖` continuous", which is what erratum
+  `parsec-370.50` corrects ("the topology induced by the seminorms … which is
+  not always the least topology that makes all these seminorms continuous").
+  The current cstar.tex carries the corrected wording; the doc now does too,
+  and cites the erratum.
+
+**36V `chilb_form_representation` — left (`stronger`, benign), doc fixed.**
+The doc claimed only that completeness had been *restored* (`[CompleteSpace
+X]`, which the source supplies by calling `X` and `Y` *Hilbert* modules).  It
+did not record the other half: `[CompleteSpace Y]` is **dropped**, and may be,
+because 35VI needs only one of the two — which is now visible in 35VI's own
+statement as the disjunction.  The statement is unchanged.
+
+### `Completeness.lean`
+
+**73III parts 3 and 4 — converted (class 2, our own witness).**  Part 4,
+"show that addition on `ℝ²` is not jointly radially continuous", is an
+ordinary mathematical assertion that was stated nowhere, and it is the part
+that justifies the whole `hahn_banach` detour: without it one would expect a
+topological-vector-space separation theorem to apply.  It is now
+`radialTopology_add_not_jointly_continuous`.
+
+The witness is `offParabola = {(x,y) : y ≠ x²} ∪ {0}`, radially open (a line
+meets a parabola twice at most, and a ray *from the origin* meets it at `0`
+and at most once more) but not open.  If addition were continuous for the
+product of the radial topologies, `offParabola` — a radially open set
+containing `0` — would pull back to a neighbourhood of `(0,0)`, hence contain
+`U + W` for radially open `U, W ∋ 0`; but radial openness along `(1,0)` and
+`(0,1)` puts `(x, 0) ∈ U` and `(0, x²) ∈ W` for all small `x > 0`, and their
+sum is a non-zero point of the parabola.
+
+Part 3 comes free and is stated too (`not_isOpen_offParabola`), with the
+divergence recorded in the doc: the exercise's set is a **picture** (two
+nested pairs of annuli plus the centre), ours is a formula.  The claim proved
+is part 3's; the witness is not.  Parts 1, 2, 5, 6 were already there.
+
+**77V `vn_extension_norm` — the "moreover" completed (class 1).**  The point
+says "`g` is bounded, and in fact `‖g‖ = ‖f‖`"; ours had only the `≤` half
+(`g` inherits every bound `C` that `f` satisfies).  Added:
+`vn_extension_norm_le`, the reverse (one rewrite by `hext`, since the
+inclusion `S → 𝒜` is isometric), and `vn_extension_norm_eq`, which states the
+equation itself in the form these unbundled `LinearMap`s allow — `f` and `g`
+admit **exactly the same** bounds, so the least one, i.e. the operator norm,
+is the same.
+
+**77V `vn_extension` — the replaced argument is now recorded in the file.**
+Its continuity paragraph runs the ultrastrong-gauge repair of the thesis's
+77VI, which extracts a single np-functional from an ultraweak neighbourhood
+of `0` that is in general a finite intersection.  Only `ERRATA.md` said so;
+the doc comment and a comment at step (6) now say it too, with the reason the
+`νᵢ` cannot be combined and the reason the ultrastrong seminorms can.
+
+**39VII and 72V — left, as recorded repairs of thesis defects.**
+`bh_np_lemma`'s square-partial-sum reading (`ERRATA.md` 39VII) and the two
+72V halves that drop the false clause 4 (`ERRATA.md` 72V.4) are `weaker` than
+the printed points *because the printed points are false*; the module even
+carries the formalized counterexample for 72V.4.  The 39VII doc already cited
+`ERRATA.md`; the two 72V docs now do (they described the defect at length but
+called it "Erratum (ours)", which is the wrong file).
+
+**Stale prose (class 4).**  The header of `Completeness.lean` said
+"Statements only; every proof is `sorry`" across 4246 `sorry`-free lines — it
+now says what is true.  The two **72III** docs said `vn.tex` writes the bound
+with a leading `‖ω‖` and that "that factor must not be there": the factor is
+already gone from the running text, removed by `asols.tex`'s erratum
+`parsec-720.30`, which neither doc cited.  Both now say the erratum is
+absorbed and keep the (correct) homogeneity argument for why it had to go.
+
+### Left, and why
+
+1. **The thesis point is itself defective** — 39VII `bh_np_lemma`, 72V
+   `normal_functionals_lemma`, 72V `normal_functionals_decomposition`.  All
+   three are in `ERRATA.md`; changing our statements to match would import a
+   falsehood.  Docs updated to cite the rows.
+2. **Benign generalisation** — 36V `chilb_form_representation` (`stronger`):
+   `[CompleteSpace Y]` dropped because 35VI needs only one of the two.  Doc
+   updated to say so.
+
+No row in these two modules turned out to need an author ruling, and none of
+the thesis's own arguments failed to go through.
+
+### Divergence classes used above
+
+(1) faithful — 35VI, 36II, the two 36V re-routings, 37V, 77V's norm halves;
+(2) different route — 73III.3, where the witness is ours and the exercise's is
+a picture; (4) our mis-transcription — the module header, the two 72III
+erratum notes, the 37V item-2 description, the two 72V citations, and the 36V
+doc's half-record of what changed.

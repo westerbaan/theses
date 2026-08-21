@@ -15,7 +15,8 @@ arXiv:1804.02203), chapter 2: Von Neumann Algebras — vn.tex, lines
                                  bounded ultraweakly complete; the unit ball
                                  is ultraweakly compact)
 
-Statements only; every proof is `sorry`.  See `Theses/A/VN/Basic.lean` for
+All statements of parsecs 720–770 are proved; this file contains no `sorry`.
+See `Theses/A/VN/Basic.lean` for
 the encoding of the ultraweak/ultrastrong topologies; "ultrastrongly Cauchy"
 for a net `(x_i)_{l}` is rendered as `‖x_i - x_j‖_ω → 0` along `l ×ˢ l` for
 every np-functional `ω`, and "ultraweakly Cauchy" as `Cauchy (l.map (ω ∘ x))`
@@ -79,12 +80,16 @@ theorem bstaromega_np (b : A) (ω : NPFunctional A) :
 /-- **72III** (`bstaromega-basic`, vn.tex:3850, Exercise), part 1b:
 `|ω(a* b c)| ≤ ‖a‖_ω ‖b‖ ‖c‖_ω`.
 
-**Erratum (author).**  vn.tex:3850 writes this bound with a leading `‖ω‖`
-(= `ω(1)`).  That factor must not be there: `‖a‖_ω = ω(a*a)^½` is unnormalised,
-so replacing `ω` by `tω` scales the left side by `t` and the right by `t²`.
-Counterexample `𝒜 = ℂ`, `ω = t·id` with `0 < t < 1`, `a = b = c = 1`: the left
-side is `t`, the right `t²`.  Cauchy–Schwarz gives the factor-free bound
-directly (cf. `norm_apply_star_mul_le`).  Same defect as **30IV**.2. -/
+**Erratum (author), already absorbed.**  The first printing wrote this bound
+with a leading `‖ω‖` (= `ω(1)`); erratum `parsec-720.30` in `asols.tex` removes
+that factor from both this inequality and the one in part 1c, and the current
+vn.tex already reads without it — so our statement matches the running text and
+there is nothing outstanding here.  Why the factor must go: `‖a‖_ω = ω(a*a)^½`
+is unnormalised, so replacing `ω` by `tω` scales the left side by `t` and the
+right by `t²`.  Counterexample `𝒜 = ℂ`, `ω = t·id` with `0 < t < 1`,
+`a = b = c = 1`: the left side is `t`, the right `t²`.  Cauchy–Schwarz gives
+the factor-free bound directly (cf. `norm_apply_star_mul_le`).  Same defect as
+**30IV**.2. -/
 theorem bstaromega_bound (ω : NPFunctional A) (a b c : A) :
     ‖ω (star a * b * c)‖ ≤
       omegaNorm A ω a * ‖b‖ * omegaNorm A ω c := by
@@ -97,8 +102,10 @@ theorem bstaromega_bound (ω : NPFunctional A) (a b c : A) :
 /-- **72III** (`bstaromega-basic`, vn.tex:3850, Exercise), part 1c:
 `‖b*ω - b'*ω‖ ≤ ‖b-b'‖_ω (‖b‖_ω + ‖b'‖_ω)` — rendered pointwise.
 
-**Erratum (author).**  As in part 1b, vn.tex:3850's leading `‖ω‖` must not be
-there — it breaks homogeneity in `ω` for the same reason. -/
+**Erratum (author), already absorbed.**  As in part 1b: the leading `‖ω‖` of
+the first printing breaks homogeneity in `ω` for the same reason, erratum
+`parsec-720.30` removes it here too, and the current vn.tex carries the
+corrected inequality that is transcribed here. -/
 theorem bstaromega_lipschitz (ω : NPFunctional A) (b b' : A) (a : A) :
     ‖bStarOmega A b ω a - bStarOmega A b' ω a‖ ≤
       omegaNorm A ω (b - b') *
@@ -417,7 +424,9 @@ np-functional `ω` and a linear `f : A → ℂ` the following are equivalent:
 `A` for the inner product `[a, c]_ω = ω(a* c)` (rendered by an existential
 completion `φ : A → H`).
 
-**Erratum (ours).**  vn.tex:3887 lists a fourth equivalent condition,
+**Erratum (author).**  Recorded in `ERRATA.md` under **72V**.4, with the
+counterexample below as its witness.  vn.tex:3887 lists a fourth equivalent
+condition,
 
 > (4) `f = f₀ + i f₁ - f₂ - i f₃` where the `f_k` are np-maps for which
 > there is `B > 0` with `f_k(a) ≤ B ω(a)` for all `a ∈ A⁺` and all `k`,
@@ -612,7 +621,8 @@ The thesis's argument, unchanged apart from the two adjustments forced on us:
 a `‖·‖_ω`-Cauchy sequence `b₁, b₂, …` in `A` approximating the Riesz vector
 `b ∈ ℋ_ω`, polarisation, and `bstaromega_cauchy` (**72III**.2) for the
 limits.  The *domination* `f_k ≤ B ω` claimed in vn.tex:3981 is **omitted**
-because it is false — see the erratum on `normal_functionals_lemma`. -/
+because it is false — `ERRATA.md` (**72V**.4), and see the erratum note on
+`normal_functionals_lemma` above. -/
 theorem normal_functionals_decomposition (ω : NPFunctional A) (f : A →ₗ[ℂ] ℂ)
     (hbdd : ∃ B : ℝ, 0 < B ∧ ∀ a : A, ‖f a‖ ≤ B * omegaNorm A ω a) :
     ∃ g : Fin 4 → NPFunctional A, ∀ a : A,
@@ -732,7 +742,8 @@ theorem normal_functionals_decomposition (ω : NPFunctional A) (f : A →ₗ[ℂ
 
 /-! ### The counterexample to **72V**.(4)
 
-See the erratum on `normal_functionals_lemma`.  On `B(H)` with `dim H ≥ 2`,
+See `ERRATA.md` (**72V**.4) and the erratum note on `normal_functionals_lemma`.
+On `B(H)` with `dim H ≥ 2`,
 the vector functional `ω = ⟪ξ, (·) ξ⟫` and the functional
 `f = ⟪η, (·) ξ⟫` (for orthonormal `ξ, η`) satisfy `|f(a)| ≤ ‖a‖_ω` — so all
 three conditions of `normal_functionals_lemma` hold — while `f` admits no
@@ -1004,9 +1015,8 @@ def radialTopology : TopologicalSpace V where
 
 /-- **73III** (vn.tex:4033, Exercise), part 2: with respect to the radial
 topology, translations and scalar multiplication are continuous.
-(Parts 3–4 — a radially open non-open subset of `ℝ²`, and the failure of
-joint continuity of addition — are pictorial counterexamples, not
-converted.) -/
+(Parts 3 and 4 follow below, on a witness of our own: see
+`not_isOpen_offParabola` and `radialTopology_add_not_jointly_continuous`.) -/
 theorem radialTopology_continuous (a : V) (c : ℝ) :
     @Continuous V V (radialTopology V) (radialTopology V) (fun x => x + a) ∧
       @Continuous V V (radialTopology V) (radialTopology V)
@@ -1033,6 +1043,147 @@ theorem radialTopology_continuous (a : V) (c : ℝ) :
       rw [smul_add, smul_comm]
     rw [e]
     exact h r hr0 hr
+
+/-- The complement of the parabola `y = x²` in `ℝ²`, with the origin put back
+in — the witness used for parts 3 and 4 of **73III**.
+
+A line meets a parabola in at most two points, so from any of its points every
+ray leaves the parabola immediately; putting the origin back in costs nothing,
+because a ray from the origin meets `y = x²` only at `0` and at most one
+further point.  So this set is radially open (`radiallyOpen_offParabola`) while
+failing to be open (`not_isOpen_offParabola`), and it is *not* the set the
+exercise depicts — part 3's blue picture is a rectangle punctured by two pairs
+of circles internally tangent at the origin, with the origin itself put back
+in.  We use this one because it is describable by a formula; the claim proved
+is part 3's, the witness is ours. -/
+def offParabola : Set (ℝ × ℝ) := {p : ℝ × ℝ | p.2 ≠ p.1 ^ 2} ∪ {0}
+
+/-- **73III** (vn.tex:4033, Exercise), part 3, first half: `offParabola` is
+radially open.  (The exercise's own witness is pictorial; see the note on
+`offParabola`.) -/
+theorem radiallyOpen_offParabola : RadiallyOpen (ℝ × ℝ) offParabola := by
+  rintro a ha v
+  rcases eq_or_ne v 0 with rfl | hv
+  · exact ⟨1, one_pos, fun r _ _ => by simpa using ha⟩
+  rcases ha with ha | ha
+  · -- `a` is off the parabola: the quadratic `r ↦ (a + rv).2 - (a + rv).1²` is
+    -- nonzero at `r = 0`, hence on a neighbourhood of it
+    have hcont : ContinuousAt (fun r : ℝ => (a.2 + r * v.2) - (a.1 + r * v.1) ^ 2) 0 := by
+      fun_prop
+    have hne : ((a.2 + (0:ℝ) * v.2) - (a.1 + (0:ℝ) * v.1) ^ 2) ≠ 0 := by
+      simpa [sub_eq_zero] using ha
+    obtain ⟨t, ht, h⟩ := Metric.eventually_nhds_iff.mp (hcont.eventually_ne hne)
+    refine ⟨t, ht, fun r hr0 hr => Or.inl ?_⟩
+    have := h (y := r) (by rw [Real.dist_eq, sub_zero, abs_of_nonneg hr0]; exact hr)
+    simpa [sub_eq_zero, Prod.ext_iff] using this
+  · -- `a = 0`: the ray meets the parabola at `0` and at most one further point
+    rw [Set.mem_singleton_iff] at ha
+    subst ha
+    have hpt : ∀ r : ℝ, ((0 : ℝ × ℝ) + r • v).2 = r * v.2 ∧
+        ((0 : ℝ × ℝ) + r • v).1 = r * v.1 := fun r => ⟨by simp, by simp⟩
+    rcases eq_or_ne v.1 0 with h1 | h1
+    · have hv2 : v.2 ≠ 0 := fun h2 => hv (Prod.ext h1 h2)
+      refine ⟨1, one_pos, fun r hr0 _ => ?_⟩
+      rcases eq_or_lt_of_le hr0 with rfl | hr
+      · exact Or.inr (by simp)
+      refine Or.inl ?_
+      rw [Set.mem_ofPred_eq, (hpt r).1, (hpt r).2, h1]
+      intro heq
+      simp only [mul_zero] at heq
+      exact hv2 (by simpa [hr.ne'] using heq)
+    · rcases le_or_gt v.2 0 with h2 | h2
+      · refine ⟨1, one_pos, fun r hr0 _ => ?_⟩
+        rcases eq_or_lt_of_le hr0 with rfl | hr
+        · exact Or.inr (by simp)
+        refine Or.inl ?_
+        rw [Set.mem_ofPred_eq, (hpt r).1, (hpt r).2]
+        intro heq
+        have hpos : 0 < (r * v.1) ^ 2 := by positivity
+        nlinarith [mul_nonpos_of_nonneg_of_nonpos hr0 h2]
+      · refine ⟨v.2 / v.1 ^ 2, by positivity, fun r hr0 hr => ?_⟩
+        rcases eq_or_lt_of_le hr0 with rfl | hrp
+        · exact Or.inr (by simp)
+        refine Or.inl ?_
+        rw [Set.mem_ofPred_eq, (hpt r).1, (hpt r).2]
+        intro heq
+        have hlt : r * v.1 ^ 2 < v.2 := by
+          rw [lt_div_iff₀ (by positivity)] at hr
+          linarith
+        nlinarith
+
+/-- **73III** (vn.tex:4033, Exercise), part 3, second half: a radially open
+subset of `ℝ²` need not be open — `offParabola` contains `0` but no ball
+around `0`, since every ball around `0` contains a point `(d, d²)` of the
+parabola.  (Witness ours, not the exercise's picture.) -/
+theorem not_isOpen_offParabola : ¬ IsOpen offParabola := by
+  intro hopen
+  obtain ⟨ε, hε, hsub⟩ := Metric.isOpen_iff.mp hopen 0 (Or.inr rfl)
+  set d : ℝ := min (ε / 2) 1 with hd
+  have hd0 : 0 < d := lt_min (by linarith) one_pos
+  have hd1 : d ≤ 1 := min_le_right _ _
+  have hdε : d < ε := lt_of_le_of_lt (min_le_left _ _) (by linarith)
+  have hmem : ((d, d ^ 2) : ℝ × ℝ) ∈ Metric.ball (0 : ℝ × ℝ) ε := by
+    rw [Metric.mem_ball, Prod.dist_eq]
+    refine max_lt ?_ ?_
+    · simpa [Real.dist_eq, abs_of_pos hd0] using hdε
+    · have : d ^ 2 ≤ d := by nlinarith
+      simpa [Real.dist_eq, abs_of_pos (by positivity : (0:ℝ) < d ^ 2)] using
+        lt_of_le_of_lt this hdε
+  rcases hsub hmem with h | h
+  · exact h rfl
+  · exact hd0.ne' (congrArg Prod.fst h)
+
+/-- **73III** (vn.tex:4033, Exercise), part 4: **addition on `ℝ²` is not
+jointly radially continuous** — that is, `(a, b) ↦ a + b` is not continuous
+from the *product* of two copies of the radial topology to the radial
+topology.  (Each summand separately *is* continuous: that is part 2's
+translation clause.)
+
+This is the part of the exercise that justifies the whole detour through
+**73IV** `hahn_banach`: the radial topology makes `V` no topological vector
+space, so no standard separation theorem applies to it and the proto-Hahn–
+Banach theorem has to be proved by hand.
+
+Proof: if it were continuous, the radially open `offParabola ∋ 0` would pull
+back to a neighbourhood of `(0, 0)`, hence would contain `U + W` for radially
+open `U, W ∋ 0`.  But radial openness of `U` at `0` along `(1, 0)` and of `W`
+at `0` along `(0, 1)` puts `(x, 0) ∈ U` and `(0, x²) ∈ W` for all small enough
+`x > 0`, and their sum `(x, x²)` is a non-zero point of the parabola. -/
+theorem radialTopology_add_not_jointly_continuous :
+    ¬ @Continuous ((ℝ × ℝ) × (ℝ × ℝ)) (ℝ × ℝ)
+      (@instTopologicalSpaceProd _ _ (radialTopology (ℝ × ℝ)) (radialTopology (ℝ × ℝ)))
+      (radialTopology (ℝ × ℝ)) (fun p => p.1 + p.2) := by
+  intro hcont
+  have hpre : @IsOpen ((ℝ × ℝ) × (ℝ × ℝ))
+      (@instTopologicalSpaceProd _ _ (radialTopology (ℝ × ℝ)) (radialTopology (ℝ × ℝ)))
+      ((fun p : (ℝ × ℝ) × (ℝ × ℝ) => p.1 + p.2) ⁻¹' offParabola) :=
+    (@continuous_def _ _ (@instTopologicalSpaceProd _ _ (radialTopology (ℝ × ℝ))
+      (radialTopology (ℝ × ℝ))) (radialTopology (ℝ × ℝ)) _).mp hcont _
+      radiallyOpen_offParabola
+  have hmem : ((0 : ℝ × ℝ), (0 : ℝ × ℝ)) ∈
+      (fun p : (ℝ × ℝ) × (ℝ × ℝ) => p.1 + p.2) ⁻¹' offParabola := by
+    simp only [Set.mem_preimage, offParabola]
+    exact Or.inr (by simp)
+  obtain ⟨U, W, hU, hW, h0U, h0W, hUW⟩ :=
+    (@isOpen_prod_iff _ _ (radialTopology (ℝ × ℝ)) (radialTopology (ℝ × ℝ)) _).mp hpre 0 0 hmem
+  obtain ⟨t₁, ht₁, h₁⟩ := (hU : RadiallyOpen (ℝ × ℝ) U) 0 h0U (1, 0)
+  obtain ⟨t₂, ht₂, h₂⟩ := (hW : RadiallyOpen (ℝ × ℝ) W) 0 h0W (0, 1)
+  set x : ℝ := min (t₁ / 2) (Real.sqrt t₂ / 2) with hxdef
+  have hx0 : 0 < x := lt_min (by linarith) (by positivity)
+  have hx1 : x < t₁ := lt_of_le_of_lt (min_le_left _ _) (by linarith)
+  have hx2 : x ^ 2 < t₂ := by
+    have h : x ≤ Real.sqrt t₂ / 2 := min_le_right _ _
+    have hs : Real.sqrt t₂ ^ 2 = t₂ := Real.sq_sqrt ht₂.le
+    nlinarith [Real.sqrt_nonneg t₂]
+  have hxU : ((x, 0) : ℝ × ℝ) ∈ U := by simpa using h₁ x hx0.le hx1
+  have hxW : ((0, x ^ 2) : ℝ × ℝ) ∈ W := by
+    simpa using h₂ (x ^ 2) (by positivity) hx2
+  have hin := hUW (Set.mk_mem_prod hxU hxW)
+  simp only [Set.mem_preimage, offParabola, Set.mem_union, Set.mem_ofPred_eq,
+    Set.mem_singleton_iff, Prod.mk_add_mk, add_zero, zero_add] at hin
+  rcases hin with h | h
+  · exact h rfl
+  · exact hx0.ne' (congrArg Prod.fst h)
 
 /-- **73III** (vn.tex:4033, Exercise), part 5: for radially open
 `s ⊆ V` and `x, y ∈ V` the set `{t ∈ ℝ | t•x + (1-t)•y ∈ s}` is open. -/
@@ -3581,7 +3732,14 @@ theorem bh_us_complete {ι : Type*} (l : Filter ι) [l.NeBot]
 
 /-- **76III** (`bh-bounded-uw-complete`, vn.tex:4744, Proposition): `B(H)`
 is bounded ultraweakly complete: every norm-bounded ultraweakly Cauchy net
-converges ultraweakly. -/
+converges ultraweakly.
+
+Proof is the thesis's (vn.tex:4748): polarisation makes `⟪x, T_α y⟫` Cauchy,
+the limit `[x, y]` is a bounded form (**36IV**) because the net is norm
+bounded, **36V** `chilb-form-representation` represents it by an operator —
+this is the *self-dual Hilbert ℂ-module* case, where self-duality of `H` is
+**36II** — and the head/tail split against **39IX** upgrades pointwise
+convergence to ultraweak convergence. -/
 theorem bh_bounded_uw_complete {ι : Type*} (l : Filter ι) [l.NeBot]
     (T : ι → H →L[ℂ] H) (hbdd : ∃ C : ℝ, ∀ i, ‖T i‖ ≤ C)
     (hcauchy : ∀ ω : NPFunctional (H →L[ℂ] H),
@@ -3619,7 +3777,13 @@ theorem bh_bounded_uw_complete {ι : Type*} (l : Filter ι) [l.NeBot]
     exact (((h₁.sub h₂).sub (tendsto_const_nhds.mul h₃)).add
       (tendsto_const_nhds.mul h₄)).div_const 4
   choose G hG using hform
-  -- (2) `G y` is a bounded linear functional; Riesz turns it into `T₀ y`
+  -- (2) the thesis's form `[x, y] = lim_α ⟪x, T_α y⟫` (**36IV** `chilb-form`)
+  set frm : H → H → ℂ := fun y x => (starRingEnd ℂ) (G x y) with hfrmdef
+  have hfrmval : ∀ y x : H, frm y x = (starRingEnd ℂ) (G x y) := fun _ _ => rfl
+  have hfrm : ∀ y x : H, Tendsto (fun i => (⟪y, (T i) x⟫ : ℂ)) l (𝓝 (frm y x)) := by
+    intro y x
+    rw [hfrmval]
+    simpa only [← starRingEnd_apply, inner_conj_symm] using (hG x y).star
   have hGadd : ∀ y a b : H, G y (a + b) = G y a + G y b := fun y a b =>
     tendsto_nhds_unique (hG y (a + b))
       (by simpa only [inner_add_right] using (hG y a).add (hG y b))
@@ -3633,33 +3797,45 @@ theorem bh_bounded_uw_complete {ι : Type*} (l : Filter ι) [l.NeBot]
       _ ≤ C * ‖y‖ * ‖x‖ := by
           gcongr
           exact ((T i).le_opNorm y).trans (by gcongr; exact hCb i)
-  set S : H → H := fun y => (InnerProductSpace.toDual ℂ H).symm
-    (LinearMap.mkContinuous
-      { toFun := G y, map_add' := hGadd y, map_smul' := hGsmul y }
-      (C * ‖y‖) (hGbound y)) with hSdef
-  have hSinner : ∀ y x : H, (⟪S y, x⟫ : ℂ) = G y x := fun y x =>
-    InnerProductSpace.toDual_symm_apply
-  have hSadd : ∀ a b : H, S (a + b) = S a + S b := by
-    intro a b
-    refine ext_inner_right ℂ fun v => ?_
-    rw [hSinner, inner_add_left, hSinner, hSinner]
-    exact tendsto_nhds_unique (hG (a + b) v)
-      (by simpa only [map_add, inner_add_left] using (hG a v).add (hG b v))
-  have hSsmul : ∀ (c : ℂ) (a : H), S (c • a) = c • S a := by
-    intro c a
-    refine ext_inner_right ℂ fun v => ?_
-    rw [hSinner, inner_smul_left, hSinner]
-    exact tendsto_nhds_unique (hG (c • a) v)
-      (by simpa only [map_smul, inner_smul_left, smul_eq_mul] using
-        (hG a v).const_mul ((starRingEnd ℂ) c))
-  have hSbound : ∀ y : H, ‖S y‖ ≤ C * ‖y‖ := by
-    intro y
-    rw [hSdef]
-    refine le_of_eq_of_le ((InnerProductSpace.toDual ℂ H).symm.norm_map _) ?_
-    exact LinearMap.mkContinuous_norm_le _ (by positivity) _
-  set T₀ : H →L[ℂ] H := LinearMap.mkContinuous
-    { toFun := S, map_add' := hSadd, map_smul' := hSsmul } C hSbound with hT₀def
-  have hT₀ : ∀ y x : H, (⟪T₀ y, x⟫ : ℂ) = G y x := hSinner
+  -- the form is bounded, "because `‖[x,y]‖ ≤ (sup_α ‖T_α‖)‖x‖‖y‖"
+  have hfrmForm : IsBoundedForm ℂ frm :=
+    { bddModuleMap_right := fun y => by
+        have hadd : ∀ a b : H, frm y (a + b) = frm y a + frm y b := by
+          intro a b
+          refine tendsto_nhds_unique (hfrm y (a + b)) ?_
+          simpa only [map_add, inner_add_right] using (hfrm y a).add (hfrm y b)
+        have hsmul : ∀ (c : ℂ) (a : H), frm y (c • a) = c • frm y a := by
+          intro c a
+          refine tendsto_nhds_unique (hfrm y (c • a)) ?_
+          simpa only [map_smul, inner_smul_right, smul_eq_mul] using
+            (hfrm y a).const_mul c
+        let r : H →ₗ[ℂ] ℂ := { toFun := frm y, map_add' := hadd, map_smul' := hsmul }
+        have hbd : ∀ x : H, ‖r x‖ ≤ (C * ‖y‖) * ‖x‖ := by
+          intro x
+          show ‖frm y x‖ ≤ (C * ‖y‖) * ‖x‖
+          rw [hfrmval, RCLike.norm_conj]
+          calc ‖G x y‖ ≤ C * ‖x‖ * ‖y‖ := hGbound x y
+            _ = (C * ‖y‖) * ‖x‖ := by ring
+        exact ⟨r, ⟨fun c a => map_smul r c a, (r.mkContinuous _ hbd).continuous⟩,
+          fun _ => rfl⟩
+      bddModuleMap_left_star := fun x => by
+        let r : H →ₗ[ℂ] ℂ :=
+          { toFun := G x, map_add' := hGadd x, map_smul' := hGsmul x }
+        refine ⟨r, ⟨fun c a => map_smul r c a,
+          (r.mkContinuous _ (hGbound x)).continuous⟩, fun y => ?_⟩
+        show G x y = star (frm y x)
+        rw [hfrmval, starRingEnd_apply, star_star] }
+  -- **36V** `chilb-form-representation` at `𝒜 = ℂ`, where `H` is self-dual by
+  -- **36II**: the form is `⟪T x, y⟫` for a unique adjointable `T`, and it is
+  -- the *adjoint* `S` of that `T` that the thesis's `⟪x, T y⟫ = [x,y]` names.
+  obtain ⟨Tl, ⟨-, ⟨Sl, hadjl⟩, hTfrm⟩, -⟩ :=
+    chilb_form_representation (𝒜 := ℂ) (selfDual_hilbert H) (selfDual_hilbert H) hfrmForm
+  -- `S` is bounded by **35VI**, exactly as inside the proof of 36V
+  obtain ⟨-, -, -, -, -, hSlcont⟩ :=
+    hellinger_toeplitz (𝒜 := ℂ) (Or.inl (inferInstance : CompleteSpace H)) (⇑Tl) (⇑Sl) hadjl
+  set T₀ : H →L[ℂ] H := ⟨Sl, hSlcont⟩ with hT₀def
+  have hT₀ : ∀ y x : H, (⟪y, T₀ x⟫ : ℂ) = frm y x := fun y x =>
+    ((hTfrm y x).trans (hadjl y x)).symm
   refine ⟨T₀, ?_⟩
   -- (3) `ω(T_α) → ω(T₀)` for every np-functional `ω`, by the ε-tail split
   rw [uwTendsto_iff]
@@ -3672,9 +3848,8 @@ theorem bh_bounded_uw_complete {ι : Type*} (l : Filter ι) [l.NeBot]
   have hpt : ∀ n, Tendsto (fun i => (⟪x n, (T i) (x n)⟫ : ℂ)) l
       (𝓝 (⟪x n, T₀ (x n)⟫ : ℂ)) := by
     intro n
-    have h := (hG (x n) (x n)).star
-    rw [← hT₀ (x n) (x n)] at h
-    simpa only [← starRingEnd_apply, inner_conj_symm] using h
+    rw [hT₀ (x n) (x n)]
+    exact hfrm (x n) (x n)
   set M : ℝ := C + ‖T₀‖ with hMdef
   have hM0 : (0 : ℝ) ≤ M := by positivity
   set d : ι → ℕ → ℂ :=
@@ -3948,7 +4123,24 @@ theorem uw_map_of_cont {S : StarSubalgebra ℂ A} (f : S →ₗ[ℂ] B)
 /-- **77V** (`vn-extension`, vn.tex:4879, Proposition): an ultraweakly
 continuous bounded linear map `f` on an ultraweakly dense ∗-subalgebra `S`
 of a von Neumann algebra `A` extends uniquely to an ultraweakly continuous
-(linear) map `g : A → B`. -/
+(linear) map `g : A → B`.
+
+**The thesis's continuity argument had to be replaced** (`ERRATA.md`, 77VI).
+The printed proof extracts a *single* np-functional `ν` from an ultraweak
+neighbourhood of `0`: "since `f` is ultraweakly continuous … there is `δ > 0`
+and an np-functional `ν` such that `|ν(s)| ≤ δ ⟹ |ω(f(s))| ≤ ε`".  A basic
+ultraweak neighbourhood of `0` is a **finite intersection** of such sets, and
+the `νᵢ` cannot be combined: `|(ν₁+ν₂)(s)|` bounds neither `|ν₁(s)|` nor
+`|ν₂(s)|` for non-positive `s`.  Step (6) below therefore runs the estimate in
+the **ultrastrong** gauge instead — where an ultraweakly open set does contain
+a `‖·‖_ν`-ball, and `‖·‖²_{ν₁+ν₂} = ‖·‖²_{ν₁} + ‖·‖²_{ν₂}` makes finitely many
+seminorms combine into one — and converts the resulting bound
+`|ω(g(a))| ≤ K‖a‖_ν` back into ultraweak continuity by **72XI** `luws`
+clause 5.  Everything else is the thesis's own argument.
+
+One further shade of difference: our `∃!` ranges over *linear* `g`, where the
+thesis's uniqueness is among ultraweakly continuous maps.  That is recoverable
+— `S` is ultraweakly dense and `B` is Hausdorff — but is not stated. -/
 theorem vn_extension (S : StarSubalgebra ℂ A)
     (hS : @Dense A (ultraweak A) (S : Set A)) (f : S →ₗ[ℂ] B)
     (hf : @Continuous S B (TopologicalSpace.induced Subtype.val (ultraweak A))
@@ -4090,7 +4282,14 @@ theorem vn_extension (S : StarSubalgebra ℂ A)
     have hB := hg0 a ι₁ l₁ inferInstance u₁ h₁ ⟨‖a‖ * (1 + 1), hbd₁⟩
     refine uwTendsto_unique hA ?_
     simpa using hB.smul c
-  -- (6) `g0` is ultraweakly continuous
+  -- (6) `g0` is ultraweakly continuous.  **This is the paragraph of the
+  -- thesis's proof (vn.tex:4899) that is wrong** — see `ERRATA.md` 77VI and
+  -- the doc comment above.  The printed argument wants one np-functional `ν`
+  -- out of an ultraweak neighbourhood of `0`, where a basic such
+  -- neighbourhood is a finite intersection and the `νᵢ` do not combine.  We
+  -- run the whole estimate in the ultrastrong gauge instead
+  -- (`exists_ultrastrong_ball_of_isOpen`, where they *do* combine) and return
+  -- to the ultraweak topology at the end by **72XI** `luws` (5) ⟹ (2).
   have hcont : @Continuous A B (ultraweak A) (ultraweak B) g0 := by
     refine continuous_ultraweak_of_npFunctional fun ω => ?_
     -- `ω ∘ f` is bounded on a `‖·‖_ν`-ball of `S`
@@ -4185,9 +4384,11 @@ theorem vn_extension (S : StarSubalgebra ℂ A)
       exact (hext ⟨x, hx⟩).symm
   exact LinearMap.ext fun a => congrFun hfun a
 
-/-- **77V** (`vn-extension`, vn.tex:4879, Proposition), norm part: the
-extension `g` is bounded with `‖g‖ = ‖f‖` — rendered: `g` satisfies every
-bound `C` that `f` does. -/
+/-- **77V** (`vn-extension`, vn.tex:4879, Proposition), norm part, hard half:
+`‖g‖ ≤ ‖f‖`, rendered as "`g` satisfies every bound `C` that `f` does".  The
+thesis's argument: the bound passes to the limit along the nets of **74VI**.
+The reverse inequality, and with it the point's `‖g‖ = ‖f‖`, is
+`vn_extension_norm_eq` below. -/
 theorem vn_extension_norm (S : StarSubalgebra ℂ A)
     (hS : @Dense A (ultraweak A) (S : Set A)) (f : S →ₗ[ℂ] B)
     (hf : @Continuous S B (TopologicalSpace.induced Subtype.val (ultraweak A))
@@ -4240,6 +4441,33 @@ theorem vn_extension_norm (S : StarSubalgebra ℂ A)
     rw [div_le_iff₀ h6]
     nlinarith
   linarith
+
+/-- **77V** (`vn-extension`, vn.tex:4879, Proposition), norm part, easy half:
+`‖f‖ ≤ ‖g‖`, i.e. every bound satisfied by the extension `g` is satisfied by
+`f`.  Immediate, since `g` extends `f` and `S → A` is isometric. -/
+theorem vn_extension_norm_le (S : StarSubalgebra ℂ A) (f : S →ₗ[ℂ] B)
+    (g : A →ₗ[ℂ] B) (hext : ∀ s : S, g s = f s) (C : ℝ)
+    (hg : ∀ a : A, ‖g a‖ ≤ C * ‖a‖) (s : S) : ‖f s‖ ≤ C * ‖(s : A)‖ := by
+  rw [← hext s]
+  exact hg (s : A)
+
+/-- **77V** (`vn-extension`, vn.tex:4879, Proposition), the "moreover" in
+full: `‖g‖ = ‖f‖`.  Since neither `f` nor `g` is bundled with an operator
+norm here, the equation is stated as what it amounts to — `f` and its
+extension `g` admit **exactly the same** bounds `C`, so the least such `C`
+(that is, the operator norm) is the same for both.  `⊇` is
+`vn_extension_norm` (the thesis's limit argument along the nets of **74VI**),
+`⊆` is `vn_extension_norm_le`. -/
+theorem vn_extension_norm_eq (S : StarSubalgebra ℂ A)
+    (hS : @Dense A (ultraweak A) (S : Set A)) (f : S →ₗ[ℂ] B)
+    (hf : @Continuous S B (TopologicalSpace.induced Subtype.val (ultraweak A))
+      (ultraweak B) ⇑f)
+    (g : A →ₗ[ℂ] B) (hg : @Continuous A B (ultraweak A) (ultraweak B) ⇑g)
+    (hext : ∀ s : S, g s = f s) :
+    {C : ℝ | ∀ a : A, ‖g a‖ ≤ C * ‖a‖} = {C : ℝ | ∀ s : S, ‖f s‖ ≤ C * ‖(s : A)‖} :=
+  Set.ext fun C =>
+    ⟨fun h => fun s => vn_extension_norm_le S f g hext C h s,
+      fun h => fun a => vn_extension_norm S hS f hf C h g hg hext a⟩
 
 end Complete
 
