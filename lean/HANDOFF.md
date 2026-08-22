@@ -868,6 +868,15 @@ de-privatise them and accept the A/VN rebuild.
     new **14VIII.5** here, and `polygon_winding` needs only *continuity* of
     `f` at `z₀`, not holomorphy.
 
+* **9II** — accepted; both the hint and the solution's chain now carry
+  "for `t ≥ 0`" at the end.  Row deleted.  The failure is confined to
+  `X = ∅`, where `C(X) = {0}` has `1 = 0`, so every constant `t·1` collapses:
+  `−t ≤ f−t ≤ t` and `0 ≤ f ≤ 2t` become `0 ≤ 0 ≤ 0` and say nothing about
+  `t`, while `‖f−t‖ ≤ t` still reads `0 ≤ t`.  For `X ≠ ∅` each of the three
+  does imply `t ≥ 0` and the chain is fine.  **9II's statement is true on
+  `X = ∅`** — all five clauses hold there — so the qualifier belongs to the
+  hint, not to the exercise.  No erratum: nothing printed becomes wrong.
+
 * **11XIII** (the proof, 11XIV) — accepted; erratum `parsec-110.140`.  The
   `n` was chosen for `‖a‖ < 2n+1` while the strict step needs `‖a‖² < 2n+1`;
   the hypothesis now reads `‖a‖² < 2n+1`.  Harmless either way — `n` only has

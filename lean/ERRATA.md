@@ -25,7 +25,6 @@ time the sources are edited.
 
 | # | defect | fix | status |
 |---|---|---|---|
-| **9II** | on `X = ∅` the "iff" in the `sup ∅` step fails for `t < 0` | harmless — only two directions are used | OPEN (nit) |
 | **7III.8 / 7III.13 / 9X.3** | counterexample solutions open "let `x,y` be … vectors" without exhibiting one | needs `dim ℋ ≥ 2`; `ℂ²` works in all three | OPEN (nit) |
 | **9X.3** | divides by `‖P − ‖x‖²‖` without excluding zero | degenerate case is fine anyway | OPEN (nit) |
 
