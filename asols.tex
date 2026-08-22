@@ -2589,9 +2589,7 @@ and so $f(a\wedge b)=f(a)\wedge f(b)$
 for all~$a,b\in\Real\scrA$
 (since~$a\wedge b = -((-a)\vee(-b))$.)
 \item
-We claim that~$\left|a+b\right|\leq \left|a\right|+\left|b\right|$
-(in this commutative setting.)
-Indeed,
+Both claims follow from
 \begin{alignat*}{3}
 \left|a\right| \,+\, \left|b\right|
 \ &= \ 
@@ -2609,6 +2607,22 @@ a\vee -a\,+\, b\vee -b
 \ &\geq \ 
 \left|a+b\right|.
 \end{alignat*}
+\item
+Let~$S$ be the linear span
+of~$\{\,a^nb^m\colon\, n,m\in\N\,\}$ in~$\scrB$.
+Since~$a$ and~$b$ commute, and are self-adjoint,
+$S$ is a linear subspace of~$\scrB$
+that contains~$1$, $a$ and~$b$,
+is closed under multiplication and involution,
+and is commutative.
+From this it follows easily
+that its norm closure, $C^*(a,b)$,
+is a $C^*$-subalgebra of~$\scrB$;
+it is the least one that contains~$a$ and~$b$,
+because any such subalgebra contains~$S$, and is closed.
+Finally, $C^*(a,b)$ is commutative,
+because that which commutes with the elements of a sequence
+commutes with its limit too.
 \end{enumerate}
 \end{solution}
 \begin{solution}{parsec-260.30}
