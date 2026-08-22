@@ -793,6 +793,29 @@ de-privatise them and accept the A/VN rebuild.
   * A typo in the solution, fixed in place: "the maps `⟨x,(·)x⟩` not all
     unital" was missing its "are".
 
+* **34VI.1 / QUESTIONS A2** — `parsec-340.60`'s `\TODO{}` is **a deliberate
+  marker**, not a defect: it is how the author records that a solution is
+  still to be written, and he will write it himself.  Row deleted from
+  ERRATA.md.  Nothing is owed by the formalization here, and the missing
+  solution is not a reason to treat `cstar_product_4` as suspect — it simply
+  has no author's argument to cross-check against yet.  (The same goes for any
+  other `\TODO{}` slot: do not read it as an erratum.)
+
+* **34XVI** — **the row is factually wrong; deleted from ERRATA.md.**  It said
+  the thesis derives `cp-russo-dye` from Russo–Dye (**34aVIII**), a later
+  point.  The printed proof, 34XVII, cites **20II** `weak-russo-dye` and
+  **34XIV** `cp-cs`, both earlier; `russo-dye` does not appear in it at all.
+  `weak-russo-dye` was read as Russo–Dye.
+  * **Lean side**: the consequence is the opposite of what
+    `PROVING-LOG.md:2213` records — `cp_russo_dye` does not take a better
+    dependency order than the thesis, it takes *the thesis's own*.  The log
+    entry's "a genuine reduction that avoids Russo–Dye entirely, and arguably
+    the better dependency order" should be struck.  (The audit had already
+    softened the proof classification to `mild`; the residue is the
+    `weaker` *statement*, `‖f(a)‖ ≤ ‖f(1)‖‖a‖` where 34XVI asserts the
+    equality — that part of the audit row stands, and `cp_russo_dye_norm`
+    addresses it.)
+
 ### Still open
 
 **0. RESOLVED — the formalization validates the thesis's own bootstrapping.**
