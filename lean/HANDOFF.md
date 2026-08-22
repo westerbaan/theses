@@ -770,6 +770,29 @@ de-privatise them and accept the A/VN rebuild.
     where a bounded module map `J → C[0,1]` has no adjoint; freeness is what
     makes it automatic here.
 
+* **32XV.3** — **the diagnosis is right and the repair was already there; row
+  deleted from ERRATA.md.**  Part 3 indeed does not follow from order
+  separation — **21VII** `order-separating-norm` is about *pu*-maps, and these
+  functionals are only subunital.  But the printed solution `parsec-320.150`
+  says so itself ("We cannot simply apply `parsec-210.70`, because the maps
+  `⟨x,(·)x⟩` are not all unital") and then gives the direct argument the row
+  asks for, in a stronger form than the row's: with `T_±^ε` (`ε > 0` dyadic)
+  in place of `√(T_±)`, `T_∓T_±^ε = 0` gives
+  `⟨T_±^ε y, T T_±^ε y⟩ = ±⟨√(T_±)T_±^ε y, √(T_±)T_±^ε y⟩`, whose supremum over
+  the unit ball is `‖√(T_±)T_±^ε‖² = ‖T_±‖^{1+2ε} → ‖T_±‖`; then **24II**.4.
+  Those vectors are not meant to exhaust the ball — they lie in it (whence the
+  wlog `‖T‖ ≤ 1`), so their supremum is a lower bound for the one in question,
+  and it already reaches `‖T_±‖` in the limit.  A single `ε` does *not* do:
+  `‖T_±‖^{1+2ε} < ‖T_±‖`.  (Our `chilb_vector_states_3` instead fixes
+  `ε = ½` and normalises by `(‖s‖‖x‖)⁻¹`, reaching `‖T_±‖² ≤ M‖T_±‖` with no
+  limit — a legitimate variant, not a repair of anything.)
+  * **Fixed in the exercise**: parts 1 and 2 keep the "Conclude that"; part 3
+    now sits behind its own "Moreover, show that", so it no longer reads as a
+    corollary of order separation.  No erratum, and no hint: the structural
+    break is the whole of the delta.
+  * A typo in the solution, fixed in place: "the maps `⟨x,(·)x⟩` not all
+    unital" was missing its "are".
+
 ### Still open
 
 **0. RESOLVED — the formalization validates the thesis's own bootstrapping.**

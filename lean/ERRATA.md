@@ -25,7 +25,6 @@ time the sources are edited.
 
 | # | defect | fix | status |
 |---|---|---|---|
-| **32XV**.3 (after erratum `parsec-320.150`) | the exercise says the subunital vector functionals are order separating and asks the reader to "conclude" 1/2/3. Part 3 does **not** follow: the model argument (250.30 for Hilbert spaces) reduces to `T ≥ 0` through **21VII** `order-separating-norm`, which is stated for **pu**-maps, and the erratum's whole point is that these functionals are only *subunital* (there may be no vector states at all). The step "`ω(a) ≤ ‖a‖·1` hence `a ≤ ‖a‖·1`" needs `ω(1) = 1` and is false for subunital `ω` | give part 3 a direct argument (ours: run 250.30's `‖⟨x,Tx⟩‖ = ‖T^{1/2}x‖²` separately on `a⁺` and `a⁻`, then `‖a‖ = ‖a⁺‖ ∨ ‖a⁻‖`), or restrict 21VII's use to the pu case. Both 32XV.2 and .3 are formalized and proved this way | OPEN |
 | **34VI.1** | solution slot `parsec-340.60` is an empty `\TODO{}` | — | OPEN |
 | **34XVI** | derives `cp-russo-dye` from Russo–Dye (**34aVIII**), a *later* point | forward reference; we derive it from 34XIV instead | OPEN |
 | **39VII** | `ω(A) = ∑_{e,e'∈E} ⟪e,Ae'⟫ ω(\|e⟩⟨e'\|)` is **false** if `∑` means the unordered sum of 6II: the family need not be absolutely summable (`ω = ⟪x,(·)x⟫` on `ℓ²`, `A` block diagonal with `N_k×N_k` DFT blocks, `N_k = k⁸`, `x` constant `k^{-5}` on block `k`) | read it as the limit of the **square** partial sums `∑_{e,e'∈F}`, `F ⊆ E` finite — which is what the proof establishes and what 39IX uses; our statement is realigned and **proved** | OPEN |
