@@ -868,6 +868,11 @@ de-privatise them and accept the A/VN rebuild.
     new **14VIII.5** here, and `polygon_winding` needs only *continuity* of
     `f` at `z₀`, not holomorphy.
 
+* **14VIII.2** — accepted; erratum `parsec-140.80`.  The first line of the
+  displayed computation had the dummy variable as its upper limit,
+  `i∫₀^t (a−it)/(a²+t²)dt`; it now reads `∫₀^b`, as the next two lines already
+  did.  Row deleted.
+
 * **15I, the statement** — accepted; erratum `parsec-150.10`.  The vertices
   were printed `wₙ := c + r cos(2π/n) + i r sin(2π/n)`, with the dummy `n`
   where `2πn/N` is meant — so `N` did not occur in the formula at all and `w₀`
