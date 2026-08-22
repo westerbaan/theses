@@ -868,6 +868,31 @@ de-privatise them and accept the A/VN rebuild.
     new **14VIII.5** here, and `polygon_winding` needs only *continuity* of
     `f` at `z₀`, not holomorphy.
 
+* **44III as cited by 44VII/44XIV** — **not a defect; row deleted, no source
+  change.**  The row said `vanishing-effects` is cited as a black box though
+  `(⋁D − d)/M` is only *eventually* an effect.  The author's ruling: "the
+  reader should realize they should not apply III directly, but to a subnet."
+  Applying a lemma to a tail is the reader's step, not a gap — the same
+  standard as the 7III/9X rows above.
+  * The claim is true under either reading of "bounded" in **42I**.  Norm
+    bounded and order bounded (above *and* below) coincide for self-adjoint
+    sets (`‖d‖ ≤ K ⟺ −K ≤ d ≤ K`, by 17VI); `BddAbove` — bounded above only,
+    which is what the tree takes — is strictly weaker, and is a **valid
+    reading**.  Under it, fix `d₀ ∈ D` and pass to `D' := {d ∈ D : d ≥ d₀}`:
+    that is *terminal*, not merely cofinal, so ultraweak convergence along `D`
+    and along `D'` are the same condition; `⋁D' = ⋁D` by directedness; and
+    `D' ⊆ [d₀, b]` is norm bounded, so `vanishing-effects` applies to it.
+    The two readings therefore define the same class of algebras — worth
+    recording, since it means the tree's `BddAbove` instance is not a
+    strengthening of 42I.
+  * So `vna_supremum_mult`'s detour ("whose second factor is *eventually*
+    bounded") is a **route divergence forced by the tree's own `BddAbove`**,
+    not a repair of anything.
+  * Where something *unwarranted is asserted*, the house remedy is spelled
+    out — see erratum `parsec-370.100`, "assuming, without loss of generality,
+    that `𝒟` has a least element `T₀` (replacing `𝒟` by `{T ∈ 𝒟 : T₀ ≤ T}` if
+    need be)".  44VII asserts nothing unwarranted, so it gets no such note.
+
 * **42III** — accepted; erratum `parsec-420.30`, two corrections in one block.
   (i) The ultraweak convergence clause read `ω(b_α) → b`, where `b ∈ 𝒜` and
   the limit must be `ω(b)`.  (ii) The ultrastrongly open sets were described
