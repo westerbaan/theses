@@ -836,6 +836,38 @@ de-privatise them and accept the A/VN rebuild.
   * Also fixed while there: the display ended in a full stop with the sentence
     continuing "for every normal p-map …"; it is now a comma.
 
+* **15I, the proof** — **the triangulation is the intended argument and is
+  elementary; row deleted from ERRATA.md.**  Ruled by the author: that
+  **14VIII** holds not only for a triangle but for a regular polygon is meant
+  to be a trivial consequence of Goursat — inside the polygon there is a
+  triangle `T` with `z₀ ∈ in(T)`, and `∫_T` is promoted to the integral over
+  the polygon (same orientation) by adding integrals of *holomorphic*
+  functions over the triangles filling the region between them, each zero by
+  **14IV** `goursat`.  So 15IV's "in the obvious manner" stands as printed.
+  * What was genuinely missing is that 15II cites `invint` for a sum over the
+    N-gon's edges while **14VIII.4 is stated for a triangle**.  `invint` now
+    has a **fifth item** carrying the polygon case (with the vertices numbered
+    counterclockwise, so the value is `1`), the hint being the promotion
+    above; 15II cites `\sref{invint}(5)`; and 14IX now reads "along a
+    triangle~`T` (or regular polygon)".  No erratum — nothing printed becomes
+    wrong.
+  * **Lean side — please reword two doc comments.**  The `A/CStar/Positive`
+    module header says 15I's winding number is one "which the thesis obtains
+    from a triangulation it asserts without constructing", and
+    `cauchy_formula`'s proof comment calls it "the thesis's route, with its
+    asserted triangulation replaced".  Both read as *gap repaired*; the
+    correct record is *route divergence*, and a larger one than
+    `polygon_winding` alone.  `cauchy_formula` restructures the whole proof:
+    `dslope f z₀` — differentiable on all of `U` — removes 15III's
+    `δ`/`‖f'(z₀)‖+37` estimate and with it the small triangle `T` around `z₀`;
+    Goursat is then applied to the **fan** `(w₀, wₙ, wₙ₊₁)`, where the interior
+    edges cancel immediately, so the region between a triangle and the N-gon
+    never arises; and the remaining scalar is `polygon_winding`, which proves
+    the polygon case outright rather than promoting 14VIII.4 to it.  Two
+    consequences worth recording: the tree uses neither **14VIII.4** nor the
+    new **14VIII.5** here, and `polygon_winding` needs only *continuity* of
+    `f` at `z₀`, not holomorphy.
+
 ### Still open
 
 **0. RESOLVED — the formalization validates the thesis's own bootstrapping.**

@@ -2372,14 +2372,28 @@ show that
 	\frac{1}{2\pi i}\int_T (z-z_0)^{-1}\,dz
 	\ =  \mathrm{wn}_T(z_0).
 \end{equation*}%
+\item
+Conclude that
+\begin{equation*}
+	\frac{1}{2\pi i}\sum_{n=0}^{N-1}\int_{w_n}^{w_{n+1}}(z-z_0)^{-1}\,dz
+	\ = \ 1
+\end{equation*}
+for a regular $N$-gon whose vertices $w_0,\dotsc,w_{N-1}$
+are numbered counterclockwise,
+where~$w_N:=w_0$,
+and~$z_0$ in its interior.
+
+(Hint: partition the region between the $N$-gon
+and a triangle~$T$ with~$z_0\in\mathrm{in}(T)$
+into triangles, and use~\sref{goursat}.)
 \end{enumerate}%
 \spacingfix{}%
 \end{point}%
 \begin{point}{90}%
 Thus integration of 
 $z\mapsto (z-z_0)^{-1}$
-along a triangle~$T$ detects
-the number of times~$T$ winds
+along a triangle~$T$ (or regular polygon) detects
+the number of times it winds
 around~$z_0$.
 There is nothing special about a triangle:
 a similar result---not needed here---holds
@@ -2411,7 +2425,7 @@ we have
 \end{equation*}
 \begin{point}{20}{Proof}%
 	Since~$\sum_{n=0}^{N-1} \int_{w_n}^{w_{n+1}} \frac{f(z_0)}{z-z_0}\,dz
-	= 2\pi i f(z_0)$ by~\sref{invint}
+	= 2\pi i f(z_0)$ by~\sref{invint}(5)
 it suffices to show that
 \begin{equation}
 \label{eq:cauchy-formula-1}
