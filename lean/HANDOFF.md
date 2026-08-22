@@ -751,6 +751,25 @@ de-privatise them and accept the A/VN rebuild.
     "fix" it never claimed.  A note that one axiom serves two purposes is not
     a defect; ERRATA.md's scope line is "only defects in the theses".
 
+* **33I.2** — **the redundancy is now in the printed statement's own text;
+  row deleted from ERRATA.md.**  The row said the surjectivity half never uses
+  the adjointability hypothesis.  True, and it uses no boundedness either:
+  `A_mn := (Te_n)_m` and `v = ∑ₙ eₙvₙ` need only additivity and 𝒜-linearity.
+  The printed *solution* already knew — `parsec-330.10` opens its surjectivity
+  paragraph "let `T : 𝒜^N → 𝒜^M` be **a module map**".  So nothing was wrong;
+  what the point lacked was the remark.  Point 2 now brackets the hypotheses
+  and adds: "(Yes, all module maps from `𝒜^N` to `𝒜^M` are bounded and
+  adjointable.)"  No addendum: the printed exercise is complete and correct as
+  it stands, and a reader of it loses nothing.
+  * **Lean side, authorised**: `cstar_matrices_2`'s third clause
+    (`A/CStar/Matrices.lean:906`) may drop both the `→L[ℂ]` bundling and the
+    `ModuleAdjointable` hypothesis — the latter is already discarded in the
+    proof (`fun T hT _ => ?_`) — and take a plain additive 𝒜-linear map.  The
+    new remark is worth a statement of its own: every module map
+    `𝒜^N → 𝒜^M` is bounded and adjointable.  Note the contrast with **32IV**,
+    where a bounded module map `J → C[0,1]` has no adjoint; freeness is what
+    makes it automatic here.
+
 ### Still open
 
 **0. RESOLVED — the formalization validates the thesis's own bootstrapping.**
