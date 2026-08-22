@@ -868,6 +868,16 @@ de-privatise them and accept the A/VN rebuild.
     new **14VIII.5** here, and `polygon_winding` needs only *continuity* of
     `f` at `z₀`, not holomorphy.
 
+* **42III** — accepted; erratum `parsec-420.30`, two corrections in one block.
+  (i) The ultraweak convergence clause read `ω(b_α) → b`, where `b ∈ 𝒜` and
+  the limit must be `ω(b)`.  (ii) The ultrastrongly open sets were described
+  as unions of finite intersections of `{a : ‖a−b‖_ω ≤ ε}` — **closed** balls,
+  which contradicts the point's own preceding sentence that the topology is
+  the one induced by the seminorms: declaring those open makes every closed
+  ball open, which is strictly finer, as `𝒜 = ℂ` with `ω = id` shows.  Now
+  `< ε`.  A third slip, "the union of a finite intersections", is fixed
+  without a block — grammar, not content.  Row deleted; **`vn.tex` 17 → 16**.
+
 * **7III.8 / 7III.13 / 9X.3, and 9X.3** — **a standing scope ruling, not just
   two deleted rows.**  The author: "Any mathematician worth their salt can
   produce two such independent vectors.  This is not a Lean proof, but a proof
