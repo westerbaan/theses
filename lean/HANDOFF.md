@@ -868,6 +868,12 @@ de-privatise them and accept the A/VN rebuild.
     new **14VIII.5** here, and `polygon_winding` needs only *continuity* of
     `f` at `z₀`, not holomorphy.
 
+* **15I, the statement** — accepted; erratum `parsec-150.10`.  The vertices
+  were printed `wₙ := c + r cos(2π/n) + i r sin(2π/n)`, with the dummy `n`
+  where `2πn/N` is meant — so `N` did not occur in the formula at all and `w₀`
+  was undefined.  Corrected to `c + r cos(2πn/N) + i r sin(2πn/N)`, which is
+  what the proof uses and what `cauchy_formula` states.  Row deleted.
+
 ### Still open
 
 **0. RESOLVED — the formalization validates the thesis's own bootstrapping.**
