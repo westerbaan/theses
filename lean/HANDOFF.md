@@ -868,6 +868,19 @@ de-privatise them and accept the A/VN rebuild.
     new **14VIII.5** here, and `polygon_winding` needs only *continuity* of
     `f` at `z₀`, not holomorphy.
 
+* **7III.8 / 7III.13 / 9X.3, and 9X.3** — **a standing scope ruling, not just
+  two deleted rows.**  The author: "Any mathematician worth their salt can
+  produce two such independent vectors.  This is not a Lean proof, but a proof
+  to be read by mathematicians."  So an unexhibited witness that obviously
+  exists, and an unstated case split both of whose branches give the
+  conclusion, are **not defects**.  The test before filing a row is whether a
+  *reader* would stumble, not whether a checker would.  Recorded in
+  ERRATA.md's "What does not belong here".  One real slip was fixed in
+  passing: `parsec-70.30`(8) had a full stop where a comma belongs, leaving a
+  fragment followed by a lowercase "define".
+  * **With this, `cstar.tex` has no open rows left** — 13 at the start of the
+    2026-08-22 session, 0 now.
+
 * **9II** — accepted; both the hint and the solution's chain now carry
   "for `t ≥ 0`" at the end.  Row deleted.  The failure is confined to
   `X = ∅`, where `C(X) = {0}` has `1 = 0`, so every constant `t·1` collapses:

@@ -25,8 +25,6 @@ time the sources are edited.
 
 | # | defect | fix | status |
 |---|---|---|---|
-| **7III.8 / 7III.13 / 9X.3** | counterexample solutions open "let `x,y` be … vectors" without exhibiting one | needs `dim ℋ ≥ 2`; `ℂ²` works in all three | OPEN (nit) |
-| **9X.3** | divides by `‖P − ‖x‖²‖` without excluding zero | degenerate case is fine anyway | OPEN (nit) |
 
 ## Thesis A — `vn.tex`
 
@@ -181,3 +179,21 @@ description is where a non-defect hides.**  The format of this file — one line
 naming the defect, one naming the fix — is itself the check.  Anything that
 cannot be written in that form is, by that very fact, not an erratum: it is a
 note about our formalization (→ PROVING-LOG) or a decision (→ QUESTIONS).
+
+**2026-08-22, ruled by Bram (author of thesis A).**  The theses are read by
+mathematicians, not by a proof assistant, and their standard of completeness
+is not the tree's.  A step any competent reader supplies without pausing is
+**not a defect**, and does not belong here:
+
+* **7III.8 / 7III.13 / 9X.3** asked the counterexample solutions to exhibit
+  the vectors they open with ("let `x,y` be non-zero orthogonal vectors from
+  some Hilbert space") — "any mathematician worth their salt can produce two
+  such independent vectors".  **Removed.**
+* **9X.3** asked that the division by `‖P − ‖x‖²‖` exclude zero, where the
+  conclusion `≤ ‖x‖²` holds in the degenerate case anyway.  **Removed.**
+
+Before filing a row, ask whether a reader would *stumble*, not whether a
+checker would.  A missing hypothesis, a false claim, a wrong reference, a step
+that does not go through — those are defects.  An unexhibited witness that
+obviously exists, or an unstated case split whose branches both give the
+conclusion, are not.
