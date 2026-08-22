@@ -694,6 +694,48 @@ de-privatise them and accept the A/VN rebuild.
     regardless; leave the `p ∧ q` clauses of .3, .4's third `iff` and .5's
     hint as they are until that is decided.
 
+### Resolved by the author (2026-08-22) — thesis-A rulings, incorporated
+
+* **26II** `commutative-cstar-basic` / `parsec-260.20` — the orphaned solution
+  item.  The printed exercise has four points and a five-point solution, whose
+  fifth proves an unasked bonus, `|a+b| ≤ |a|+|b|`.  That bonus is **promoted
+  to point 5 of the exercise**, in the sharper form the solution's own
+  computation already gives: `|a+b| ∨ |a−b| = |a|+|b|`.  The
+  commuting-subalgebra point added on 2026-08-19 becomes **point 6** and gains
+  a solution of its own (the least C\*-subalgebra containing `a` and `b` is the
+  norm closure of the span of the `aⁿbᵐ`; it is commutative because what
+  commutes with the elements of a sequence commutes with its limit).  No
+  erratum for either: a reader of the printed edition loses nothing by not
+  having them.  The solution to `parsec-270.100` still cites "item 5" and is
+  correct as it stands; `proc.tex`'s 104III now cites
+  `commutative-cstar-basic`(6).
+  * **Lean side, authorised**: `commutative_cstar_basic_5`
+    (`A/CStar/Positive.lean:6772`) is the thesis's **point 6** — rename it
+    `_6` and re-tag its doc comment, which frees `26II.5` for the triangle
+    inequality.  The sharper equality form is the one to state.
+
+* **20II.1** — **not an erratum; row deleted from ERRATA.md.**  The row read
+  "proof needs `f a` self-adjoint, never stated".  It *is* stated, ten parsecs
+  earlier: **10V**, the proof of **10IV** `cstar-p-implies-i`
+  (`cstar.tex:1344`), shows that a positive map sends self-adjoint elements to
+  self-adjoint ones, by exactly the `f(a) = f(‖a‖) − f(‖a‖−a)` argument; and
+  10IV's own conclusion gives it in one step, `f(a)* = f(a*) = f(a)`.  It is
+  not even a gap in 20III's chain: `≤` is defined (**9IV**
+  `cstar-positive-def`) as "the difference is positive", and positivity is
+  defined only for self-adjoint elements, so `−‖a‖f(1) ≤ f(a)`, which the
+  proof derives from positivity of `f`, already carries it.  The row's
+  proposed fix `a = a⁺ − a⁻` is unusable here anyway: the positive and
+  negative parts arrive at parsec 240, forty parsecs after 20II.
+  * **Lean side** (a simplification, not required): `weak_russo_dye_1`'s
+    eight-line `hfsa` block reconstructs 10V inline.  `cstar_p_implies_i`
+    (`A/CStar/Basic.lean:1736`) is already in the tree and yields
+    `IsSelfAdjoint (f a)` from `ha` in one line.
+  * Found while checking this and **fixed in `cstar.tex`**: 10V's
+    "`f(a) = f(‖a‖) − f(‖a‖−a)` being positive is self adjoint" said that
+    `f(a)` is positive, which it need not be.  It now reads "… are positive,
+    thus self adjoint, as is thus `f(a) = f(‖a‖) − f(‖a‖−a)`".  Ruled **not
+    worth an erratum**: the printed intent is unmistakable.
+
 ### Still open
 
 **0. RESOLVED — the formalization validates the thesis's own bootstrapping.**
