@@ -816,6 +816,26 @@ de-privatise them and accept the A/VN rebuild.
     equality — that part of the audit row stands, and `cp_russo_dye_norm`
     addresses it.)
 
+* **39VII** `bh-np-lemma` — **accepted; statement repaired, erratum
+  `parsec-390.70`.**  The row is right that the displayed sum, read over the
+  index set `ℰ×ℰ` — the sense the thesis uses elsewhere, and the sense a
+  doubly-indexed `∑` asks for — need not converge.  The counterexample checks
+  out: `A` block diagonal with `N_k×N_k` DFT blocks, `N_k = k⁸`, `x` constant
+  `k^{-5}` on block `k`, `ω = ⟨x,(·)x⟩`; then `‖A‖ = 1`,
+  `‖x‖² = ∑ₖ k^{-2} < ∞`, and block `k` contributes
+  `N_k²·N_k^{-1/2}·k^{-10} = k²` to the sum of absolute values.
+  * The statement now reads `ω(A) = lim_{ℱ ⊆ ℰ finite} ∑_{e,e'∈ℱ} …`, which is
+    what 39VIII proves (`ω(A − PAP) → 0` with `P = ∑_{e∈ℱ}|e⟩⟨e|`) and all
+    39X needs.  **The trap is that the squares `ℱ×ℱ` are cofinal among the
+    finite subsets of `ℰ×ℰ`** — convergence along a cofinal subfamily is not
+    convergence of the net, and the implication runs one way only.
+  * A third reading, the *iterated* sum `∑_e(∑_{e'} …)`, does hold — but it is
+    not what 39VIII gives, and deriving it in general goes through
+    `ω = ∑ₙ⟨xₙ,(·)xₙ⟩`, i.e. through 39IX, which rests on 39VII.  So it is not
+    available as a reading of this Lemma.
+  * Also fixed while there: the display ended in a full stop with the sentence
+    continuing "for every normal p-map …"; it is now a comma.
+
 ### Still open
 
 **0. RESOLVED — the formalization validates the thesis's own bootstrapping.**

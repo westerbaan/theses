@@ -6631,8 +6631,9 @@ Given a Hilbert space~$\scrH$
 with orthonormal basis~$\scrE$,
 we have
 \begin{equation*}
-	\omega(A)\ = \ 
-	\sum_{e,e'\in\scrE} \left<e,Ae'\right>\ \omega(\,\ketbra{e}{e'}\,).
+	\omega(A)\ = \
+	\lim_{\substack{\scrF\subseteq\scrE\\\text{finite}}}\ \
+	\sum_{e,e'\in\scrF} \left<e,Ae'\right>\ \omega(\,\ketbra{e}{e'}\,),
 \end{equation*}
 for every normal p-map $\omega\colon \scrB(\scrH)\to\C$
 and~$A\in\scrB(\scrH)$.
