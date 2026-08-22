@@ -736,6 +736,21 @@ de-privatise them and accept the A/VN rebuild.
     thus self adjoint, as is thus `f(a) = f(‖a‖) − f(‖a‖−a)`".  Ruled **not
     worth an erratum**: the printed intent is unmistakable.
 
+* **32I** — **not an erratum; row deleted from ERRATA.md.**  The row asked the
+  thesis to state definiteness in both arguments, because module-linearity of
+  an adjointable `T` uses the first and uniqueness of its adjoint the second.
+  Each is one line from the definiteness 32I already states (`cstar.tex:5088`):
+  put the difference into both slots.  Both elements lie in the module whose
+  definiteness is invoked, and `cstar.tex:5101` makes X and Y both pre-Hilbert,
+  so both are available — this *is* the derivation 32I calls "not difficult to
+  see", and it is what `eq_of_inner_left_eq`/`eq_of_inner_right_eq`
+  (`A/CStar/Matrices.lean:60`, `:68`) do in three lines each.  The 2026-08-20
+  audit rates all four 32I rows `ok`.
+  * The row came from a **note**, `PROVING-LOG.md:2232` ("The thesis states
+    definiteness once; both directions get used"), promoted to a defect with a
+    "fix" it never claimed.  A note that one axiom serves two purposes is not
+    a defect; ERRATA.md's scope line is "only defects in the theses".
+
 ### Still open
 
 **0. RESOLVED — the formalization validates the thesis's own bootstrapping.**
