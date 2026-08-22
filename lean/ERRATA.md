@@ -25,7 +25,6 @@ time the sources are edited.
 
 | # | defect | fix | status |
 |---|---|---|---|
-| **11XIII** (the proof, 11XIV) | "for `n` such that `‖a‖ < 2n+1`, we have `‖a+ni‖² = ‖a²+n²‖ ≤ ‖a‖²+n² < 2n+1+n² = (n+1)²`" — the strict step needs `‖a‖² < 2n+1`, but the `n` was chosen for `‖a‖ < 2n+1` | read "for `n` such that `‖a‖² < 2n+1`". Harmless: `n` is only required to be large enough. (Our `selfAdjoint_sub_I_isUnit` does not transcribe the trick — it goes through Mathlib's reality of the spectrum of a self-adjoint, which the thesis proves *from* 11XIII at **11XV**.1; the direction of dependency is reversed, though not circularly) | OPEN (nit) |
 | **9II** | on `X = ∅` the "iff" in the `sup ∅` step fails for `t < 0` | harmless — only two directions are used | OPEN (nit) |
 | **7III.8 / 7III.13 / 9X.3** | counterexample solutions open "let `x,y` be … vectors" without exhibiting one | needs `dim ℋ ≥ 2`; `ℂ²` works in all three | OPEN (nit) |
 | **9X.3** | divides by `‖P − ‖x‖²‖` without excluding zero | degenerate case is fine anyway | OPEN (nit) |

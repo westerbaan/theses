@@ -868,6 +868,11 @@ de-privatise them and accept the A/VN rebuild.
     new **14VIII.5** here, and `polygon_winding` needs only *continuity* of
     `f` at `z₀`, not holomorphy.
 
+* **11XIII** (the proof, 11XIV) — accepted; erratum `parsec-110.140`.  The
+  `n` was chosen for `‖a‖ < 2n+1` while the strict step needs `‖a‖² < 2n+1`;
+  the hypothesis now reads `‖a‖² < 2n+1`.  Harmless either way — `n` only has
+  to be large enough.  Row deleted.
+
 * **14VIII.2** — accepted; erratum `parsec-140.80`.  The first line of the
   displayed computation had the dummy variable as its upper limit,
   `i∫₀^t (a−it)/(a²+t²)dt`; it now reads `∫₀^b`, as the next two lines already
