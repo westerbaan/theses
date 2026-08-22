@@ -868,6 +868,15 @@ de-privatise them and accept the A/VN rebuild.
     new **14VIII.5** here, and `polygon_winding` needs only *continuity* of
     `f` at `z₀`, not holomorphy.
 
+* **53IV** — accepted; erratum `parsec-530.40`.  The second Urysohn paragraph
+  opened "Let `y ∈ spec(𝒜)∖U`" and then asked for `f` with `f(y) = 0` and
+  `f(x) = 1` on `closure U` — contradictory exactly on `closure U ∖ U`, which
+  is the only case that matters (otherwise `U` is already clopen).  Now
+  `y ∈ spec(𝒜) ∖ closure U`, in both places, after which Urysohn applies and
+  the two paragraphs give `⋁D = 𝟙_{closure U}` directly; nothing else in the
+  proof changes.  The `spec(X)` in the first paragraph is `spec(𝒜)`, in the
+  same block.  Row deleted; **`vn.tex` 15 → 14**.
+
 * **44III as cited by 44VII/44XIV** — **not a defect; row deleted, no source
   change.**  The row said `vanishing-effects` is cited as a black box though
   `(⋁D − d)/M` is only *eventually* an effect.  The author's ruling: "the

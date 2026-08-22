@@ -1849,7 +1849,7 @@ using here that~$\spec(\scrA)$ being a compact Hausdorff
 space, \sref{spectrum-calg-compact-hausdorff}, 
 is normal by~17.10 of~\cite{willard})
 there is $f\in [0,1]_{C(\spec(\scrA))}$
-with~$f(x)=1$ and~$f(y)=0$ for all~$y\in \spec(X)\backslash U$.
+with~$f(x)=1$ and~$f(y)=0$ for all~$y\in \spec(\scrA)\backslash U$.
 It follows that~$f\in D$,
 and~$f\leq \bigvee D\leq 1$,
 so that $1=f(x)\leq (\bigvee D)(x)\leq 1$,
@@ -1857,7 +1857,7 @@ and~$(\bigvee D)(x)=1$.
 By continuity of~$\bigvee D$,
 we get $(\bigvee D)(x)=1$ for all~$x\in \overline{U}$.
 
-Let~$y\in \spec(\scrA)\backslash U$ be given.
+Let~$y\in \spec(\scrA)\backslash \overline{U}$ be given.
 Again by Urysohn's lemma
 there is $f\in [0,1]_{C(\spec(\scrA))}$
 with~$f(y)=0$ and~$f(x)=1$ for all~$x\in \overline{U}$.
@@ -1866,7 +1866,7 @@ for every~$g\in D$,
 we get $\bigvee D\leq f$,
 and so~$0\leq (\bigvee D)(y)\leq f(y) =0$,
 which implies that~$(\bigvee D)(y)=0$.
-Hence~$(\bigvee D)(y)=0$ for all~$y\in \spec(\scrA)\backslash U$.
+Hence~$(\bigvee D)(y)=0$ for all~$y\in \spec(\scrA)\backslash \overline{U}$.
 
 All in all we have $\bigvee D = \mathbf{1}_{\overline{U}}$,
 and so~$\overline{U}$ is open.\qed
