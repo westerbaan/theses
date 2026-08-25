@@ -11,6 +11,7 @@ import Theses.A.VN.Projections
 import Theses.A.VN.Completeness
 import Theses.A.VN.Division
 import Theses.A.VN.NormalFunctionals
+import Theses.A.VN.Modular
 import Theses.A.Proc.Measurement
 import Theses.A.Proc.Tensor
 import Theses.A.Proc.QuantumLambda
