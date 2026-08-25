@@ -3263,18 +3263,23 @@ theorem p_uwcont [VonNeumannAlgebra A] [VonNeumannAlgebra B]
       continuous_ultraweak_npFunctional (compNP f hf ω)
   tfae_finish
 
-/-- **44XV** (`p-uwcont`, vn.tex:799, Exercise), conclusion: `b ↦ a* b a` is
-ultraweakly continuous for every `a` in a von Neumann algebra (it is normal
-by **44VIII**). -/
-theorem p_uwcont_ad [VonNeumannAlgebra A] (a : A) :
-    @Continuous A A (ultraweak A) (ultraweak A) fun b => star a * b * a := by
-  refine ((p_uwcont (adPositive a)).out 2 0).mp ?_
+/-- `b ↦ a* b a` is normal, i.e. preserves bounded directed suprema: this is
+**44VIII** (`ad_normal`) restated for `adPositive`. -/
+private theorem adPositive_normal [VonNeumannAlgebra A] (a : A) :
+    PreservesDirSups ⇑(adPositive a) := by
   intro D s hne hdir hlub
   have hh : D.Nonempty ∧ DirectedOn (· ≤ ·) D ∧ BddAbove D :=
     ⟨hne, hdir, ⟨s, hlub.1⟩⟩
   have hsup : dirSup D hh = s := (isLUB_dirSup D hh).unique hlub
   have := ad_normal a D hh
   rwa [hsup] at this
+
+/-- **44XV** (`p-uwcont`, vn.tex:799, Exercise), conclusion: `b ↦ a* b a` is
+ultraweakly continuous for every `a` in a von Neumann algebra (it is normal
+by **44VIII**). -/
+theorem p_uwcont_ad [VonNeumannAlgebra A] (a : A) :
+    @Continuous A A (ultraweak A) (ultraweak A) fun b => star a * b * a :=
+  ((p_uwcont (adPositive a)).out 2 0).mp (adPositive_normal a)
 
 /-! ## Parsec 450 -/
 
@@ -3502,18 +3507,34 @@ theorem cp_uscont [VonNeumannAlgebra A] [VonNeumannAlgebra B]
   rw [omegaNorm, hnorm, ← Real.sqrt_mul (norm_nonneg _)]
   exact Real.sqrt_le_sqrt hre
 
+/-- `ad_cp_1` is stated for `mulLeft (b*) ∘ mulRight b`, which is
+`adPositive b` up to associativity. -/
+private theorem adLinearMap_eq (b : A) :
+    ((LinearMap.mulLeft ℂ (star b)).comp (LinearMap.mulRight ℂ b))
+      = (adPositive b).toLinearMap :=
+  LinearMap.ext fun a => (mul_assoc (star b) a b).symm
+
+/-- `a ↦ b* a b` as an ncp-map: completely positive by **34V**.1
+(`ad_cp_1`, cstar.tex:5463), normal by **44VIII** (`ad_normal`).  This is the
+object **45IV** asks `cp_uscont` to be applied to. -/
+private noncomputable def adNCP [VonNeumannAlgebra A] (b : A) : NCPMap A A where
+  toCompletelyPositiveMap :=
+    { toLinearMap := (adPositive b).toLinearMap
+      map_cstarMatrix_nonneg' :=
+        (Theses.A.CStar.cp_iff (adPositive b).toLinearMap).out 0 1 |>.mp
+          (adLinearMap_eq b ▸ Theses.A.CStar.ad_cp_1 b) }
+  preservesDirSups' := adPositive_normal b
+
 /-- **45IV** (`mult-uws-cont`, vn.tex:868, Exercise), part 1: `a ↦ b* a b`
-is ultrastrongly continuous for every `b` in a von Neumann algebra. -/
+is ultrastrongly continuous for every `b` in a von Neumann algebra.
+
+This is the exercise's own route, verbatim: "Conclude (using `cp-uscont`
+and `ad-cp`) that the map `a ↦ b* a b` is ultrastrongly continuous".  The
+map is an ncp-map (`adNCP`: complete positivity is **34V**.1 `ad_cp_1`,
+normality is **44VIII** `ad_normal`), so **45II** `cp_uscont` applies. -/
 theorem mult_uws_cont_ad [VonNeumannAlgebra A] (b : A) :
-    @Continuous A A (ultrastrong A) (ultrastrong A) fun a => star b * a * b := by
-  -- `‖b* x b‖_ω = ‖b* x‖_{b*ω} ≤ ‖b‖ ‖x‖_{b*ω}`.  (The thesis obtains this
-  -- from `cp_uscont` and `ad_cp`; the direct estimate is shorter and avoids
-  -- the passage through complete positivity.)
-  refine continuous_ultrastrong_of_omegaNorm_bound (fun x y => by noncomm_ring) ?_
-  intro ω
-  refine ⟨conjNP b ω, ‖b‖, norm_nonneg b, fun x => ?_⟩
-  rw [omegaNorm_mul_right]
-  simpa using omegaNorm_mul_le (conjNP b ω) (star b) x
+    @Continuous A A (ultrastrong A) (ultrastrong A) fun a => star b * a * b :=
+  cp_uscont (adNCP b)
 
 /-- **45IV** (`mult-uws-cont`, vn.tex:868, Exercise), part 2: multiplication
 by a fixed element, `b ↦ ab` and `b ↦ ba`, is ultraweakly and ultrastrongly

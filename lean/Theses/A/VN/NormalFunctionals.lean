@@ -985,23 +985,6 @@ theorem norm_predual (a : A) :
   rw [hnorm_eq]
   exact hnorms
 
-/-- The norm estimate behind the polarisation step of **87VIII**. -/
-private theorem uwbib_pol_aux (a b c d : ℂ) :
-    ‖(a - b - Complex.I * c + Complex.I * d) / 4‖
-      ≤ (‖a‖ + ‖b‖ + ‖c‖ + ‖d‖) / 4 := by
-  rw [norm_div]
-  have h4 : ‖(4 : ℂ)‖ = 4 := by norm_num
-  rw [h4]
-  gcongr
-  calc ‖a - b - Complex.I * c + Complex.I * d‖
-      ≤ ‖a - b - Complex.I * c‖ + ‖Complex.I * d‖ := norm_add_le _ _
-    _ ≤ (‖a - b‖ + ‖Complex.I * c‖) + ‖Complex.I * d‖ := by
-        gcongr; exact norm_sub_le _ _
-    _ ≤ ((‖a‖ + ‖b‖) + ‖Complex.I * c‖) + ‖Complex.I * d‖ := by
-        gcongr; exact norm_sub_le _ _
-    _ = ‖a‖ + ‖b‖ + ‖c‖ + ‖d‖ := by
-        simp only [norm_mul, Complex.norm_I, one_mul]
-
 /-- The predual `A_*` as a **submodule** of `A →L[ℂ] ℂ` — the shape the
 principle of uniform boundedness needs in **87VIII**.  (Ultraweakly
 continuous functionals are closed under sums and scalars, so `predual A` is

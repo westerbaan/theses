@@ -3400,24 +3400,6 @@ private theorem us_add {x y : A} (hx : x ∈ @closure A (ultrastrong A) (S : Set
   rw [heq]
   exact lt_of_le_of_lt (omegaNorm_add_le ω _ _) (by linarith)
 
-omit [VonNeumannAlgebra A] in
-private theorem us_smul (c : ℂ) {x : A} (hx : x ∈ @closure A (ultrastrong A) (S : Set A)) :
-    c • x ∈ @closure A (ultrastrong A) (S : Set A) := by
-  rw [mem_usClosure_iff] at hx ⊢
-  intro ω ε hε
-  obtain ⟨z, hz, hz'⟩ := hx ω (ε / (‖c‖ + 1)) (by positivity)
-  refine ⟨c • z, SMulMemClass.smul_mem _ hz, ?_⟩
-  have heq : c • z - c • x = c • (z - x) := by rw [smul_sub]
-  rw [heq, omegaNorm_smul]
-  have h0 : (0 : ℝ) ≤ ‖c‖ := norm_nonneg c
-  have h1 : omegaNorm A ω (z - x) < ε / (‖c‖ + 1) := hz'
-  have h2 : ‖c‖ * omegaNorm A ω (z - x) ≤ (‖c‖ + 1) * omegaNorm A ω (z - x) :=
-    mul_le_mul_of_nonneg_right (by linarith) (omegaNorm_nonneg ω _)
-  have h3 : (‖c‖ + 1) * omegaNorm A ω (z - x) < (‖c‖ + 1) * (ε / (‖c‖ + 1)) :=
-    mul_lt_mul_of_pos_left h1 (by linarith)
-  rw [mul_div_cancel₀ _ (by positivity : (‖c‖ : ℝ) + 1 ≠ 0)] at h3
-  linarith
-
 private theorem us_mul {x y : A} (hx : x ∈ @closure A (ultrastrong A) (S : Set A))
     (hy : y ∈ @closure A (ultrastrong A) (S : Set A)) :
     x * y ∈ @closure A (ultrastrong A) (S : Set A) := by

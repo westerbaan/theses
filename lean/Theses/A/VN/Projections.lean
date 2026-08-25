@@ -842,11 +842,6 @@ theorem vna_ceil_comm (b : A) (hb : 0 ≤ b) (a : A) (h : a * b = b * a) :
   rw [hceil]
   exact hpcomm a ((hcomm' a).mp h)
 
-/-- Auxiliary: `⌈b^⊥⌉` is a projection (**56I**). -/
-private theorem ceil_isStarProjection {b : A} (hb : b ∈ effects A) :
-    IsStarProjection (ceil (1 - b)) :=
-  (vna_ceil (1 - b) (effect_orthosupplement b hb)).1.1
-
 /-- **56VI**.70–90 (`vna-floor`, vn.tex:2419), the thesis's construction: the
 chain `1 ≥ b ≥ b² ≥ b⁴ ≥ ⋯ ≥ 0` has an infimum `q = ⋀ₙ b^{2ⁿ}`
 (`infima_in_vna`, **43Ia**), `q` is a projection (**56VI**.90, two
@@ -1072,6 +1067,7 @@ theorem vna_floor_comm (b : A) (hb : b ∈ effects A) (a : A)
   obtain ⟨q, -, hglb, hcomm⟩ := exists_floor_inf b hb
   rw [← hglb.unique (vna_floor b hb).2]
   exact hcomm a h
+
 /-- **56XI** (`ceil-floor-second-property`, vn.tex:2471, Exercise), part 1:
 for an effect `a` and a projection `p`: `pa = a` iff `ap = a` iff
 `⌈a⌉ ≤ p`.  In particular `⌈a⌉` is the least projection `p` with `a = ap`,
