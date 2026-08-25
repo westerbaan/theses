@@ -429,10 +429,22 @@ from the commutation theorem for the corner algebras.**
 Three findings from those two rounds that changed the plan rather than merely
 executing it:
 
-* **σ-finiteness is not needed anywhere**, and neither is step 3's `ℓ²(ℕ)`
-  amplification. `exists_separating_corner` yields a genuine *separating*
-  vector, and `cyclic_and_separating_of_separating` finishes in ten lines. The
-  "rescale square-summably" apparatus of the classical account evaporates.
+* ~~**σ-finiteness is not needed anywhere**, and neither is step 3's `ℓ²(ℕ)`
+  amplification.~~ **RETRACTED 2026-08-26 — this was wrong, and I propagated it
+  into the plan and into three later briefs before it was checked.** The
+  amplification is structurally necessary. `CT_of_relCT` and `CT_of_compress`
+  consume a **monotone** net of cuts with supremum `1`, so the admissible cuts
+  must be *directed* — and for a cut `e ∈ 𝒜□`, the corner `𝒜_e` has `ξ` cyclic
+  iff `e = [𝒜ξ]` and separating iff also `e = [𝒜□ξ]`. **Neither family is closed
+  under joins.** Two counterexamples pin it: for `𝒜 = ℂ·1 ⊆ B(ℋ)` with
+  `dim ℋ ≥ 2` the cuts are all of `B(ℋ)`, but `𝒜_e = ℂe` has a cyclic vector
+  only when `dim eℋ = 1`, and rank-one projections do not increase to `1`; for
+  `𝒜 = B(ℋ)` the only cut is `e = 1`, and `B(ℋ)` has no separating vector.
+  Dualising via `CT_iff_vnComm` swaps the two examples, so **no orientation of
+  the cut and no choice of Zorn family works**. `exists_separating_corner` does
+  give a separating vector — but for a *non-directed* cut, which is exactly what
+  the amplification repairs, since `n` jointly cyclic vectors become one after
+  tensoring with `ℂⁿ`.
 * **The upward transport `(𝒜 ⊗̄ ℬ)_{e⊗f} = 𝒜_e ⊗̄ ℬ_f` is not needed and not
   proved.** Its `⊇` half is normality of `w ↦ PwP*` — a real chunk of work,
   absent from the tree. The reduction only needs `{w | PwP* ∈ 𝒯}` to be a von
