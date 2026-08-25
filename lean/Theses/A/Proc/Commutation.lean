@@ -295,141 +295,15 @@ continuous — but for a monotone net of *projections* Cauchy–Schwarz
 (**43I**.1, `norm_apply_star_mul_le`) does it, with
 `‖1 − p_i‖_ω = ω(1 − p_i)^{1/2} → 0` as the only estimate.
 
-`uwTendsto_of_isLUB_net` and `uwTendsto_compress` are verbatim copies of
-the two `private` lemmas `uwTendsto_of_isLUB` and `uw_compress_tendsto` of
-`A/Proc/QuantumLambda.lean` (which are not accessible from here).  They
-should be made public there and these copies deleted. -/
+Both ingredients — `uwTendsto_of_isLUB` (a repackaging of **44VI**
+`vna_supremum_uwlimit`) and `uw_compress_tendsto` itself — live in
+`A/Proc/QuantumLambda.lean`, where they were `private` until 2026-08-26;
+they are used from here directly rather than copied. -/
 
 section Compression
 
 variable {X : Type u} [CStarAlgebra X] [PartialOrder X] [StarOrderedRing X]
   [VonNeumannAlgebra X]
-
-/-- A monotone net of self-adjoint elements with supremum `s` converges
-ultraweakly to `s` (repackaging of **44VI** `vna_supremum_uwlimit`). -/
-theorem uwTendsto_of_isLUB_net {ι' : Type*} [Nonempty ι']
-    [Preorder ι'] [IsDirected ι' (· ≤ ·)] (P : ι' → X) (s : X)
-    (hsa : ∀ i, IsSelfAdjoint (P i)) (hmono : Monotone P)
-    (hlub : IsLUB (Set.range P) s) :
-    UWTendsto P atTop s := by
-  let _ : TopologicalSpace X := ultraweak X
-  have hssa : IsSelfAdjoint s := by
-    obtain ⟨i⟩ := ‹Nonempty ι'›
-    have h0 : (0 : X) ≤ s - P i := sub_nonneg.mpr (hlub.1 ⟨i, rfl⟩)
-    simpa using h0.isSelfAdjoint.add (hsa i)
-  set D : Set (selfAdjoint X) := Set.range (fun i => (⟨P i, hsa i⟩ : selfAdjoint X)) with hD
-  have hcoe : (fun d : selfAdjoint X => (d : X)) '' D = Set.range P := by
-    ext y
-    constructor
-    · rintro ⟨_, ⟨i, rfl⟩, rfl⟩; exact ⟨i, rfl⟩
-    · rintro ⟨i, rfl⟩; exact ⟨_, ⟨i, rfl⟩, rfl⟩
-  have hlubX : IsLUB ((fun d : selfAdjoint X => (d : X)) '' D) s := by rw [hcoe]; exact hlub
-  have hlubD : IsLUB D (⟨s, hssa⟩ : selfAdjoint X) := by
-    constructor
-    · rintro _ ⟨i, rfl⟩
-      exact Subtype.coe_le_coe.mp (hlubX.1 ⟨_, ⟨i, rfl⟩, rfl⟩)
-    · intro u hu
-      refine Subtype.coe_le_coe.mp (hlubX.2 ?_)
-      rintro _ ⟨d, hd, rfl⟩
-      exact Subtype.coe_le_coe.mpr (hu hd)
-  have hh : D.Nonempty ∧ DirectedOn (· ≤ ·) D ∧ BddAbove D := by
-    obtain ⟨i₀⟩ := ‹Nonempty ι'›
-    refine ⟨⟨_, ⟨i₀, rfl⟩⟩, ?_, ⟨_, hlubD.1⟩⟩
-    rintro _ ⟨i, rfl⟩ _ ⟨i', rfl⟩
-    obtain ⟨i'', hi1, hi2⟩ := directed_of (· ≤ ·) i i'
-    exact ⟨_, ⟨i'', rfl⟩, Subtype.coe_le_coe.mpr (hmono hi1),
-      Subtype.coe_le_coe.mpr (hmono hi2)⟩
-  have hds : dirSup D hh = (⟨s, hssa⟩ : selfAdjoint X) :=
-    (isLUB_dirSup D hh).unique hlubD
-  have hnet := vna_supremum_uwlimit D hh
-  rw [hds] at hnet
-  set ψ : ι' → D := fun i => ⟨⟨P i, hsa i⟩, ⟨i, rfl⟩⟩ with hψ
-  have hψmono : Monotone ψ := fun i i' hii' =>
-    Subtype.coe_le_coe.mpr (Subtype.coe_le_coe.mpr (hmono hii'))
-  have hψtend : Tendsto ψ atTop atTop :=
-    tendsto_atTop_atTop_of_monotone hψmono (by
-      rintro ⟨_, i, rfl⟩
-      exact ⟨i, le_rfl⟩)
-  exact hnet.comp hψtend
-
-omit [VonNeumannAlgebra X] in
-/-- Two-sided compression along a monotone net of projections increasing
-to `z`: `P i · x · P i → z x z` ultraweakly. -/
-theorem uwTendsto_compress {ι' : Type*} (z : X) (P : ι' → X)
-    (hP : ∀ i, star (P i) * P i = P i)
-    (hzP : ∀ i, star (z - P i) * (z - P i) = z - P i)
-    (hle : ∀ i, P i ≤ z)
-    {l : Filter ι'} (huw : UWTendsto P l z) (x : X) :
-    UWTendsto (fun i => P i * x * P i) l (z * x * z) := by
-  rw [uwTendsto_iff] at huw ⊢
-  intro ω
-  have hzsa : ∀ i, star (z - P i) = z - P i := fun i => by
-    have h : IsSelfAdjoint (z - P i) := by
-      rw [← hzP i]
-      exact (star_mul_self_nonneg (z - P i)).isSelfAdjoint
-    exact h
-  set K : ℝ := omegaNorm X ω (star (z * x)) + ‖x‖ * Real.sqrt ((ω z).re) with hK
-  have hom : ∀ i, omegaNorm X ω (z - P i) = Real.sqrt ((ω (z - P i)).re) := fun i => by
-    rw [omegaNorm, hzP i]
-  have homP : ∀ i, omegaNorm X ω (P i) ≤ Real.sqrt ((ω z).re) := fun i => by
-    rw [omegaNorm, hP i]
-    refine Real.sqrt_le_sqrt ?_
-    exact (Complex.le_def.mp (ω.toPositiveLinearMap.monotone (hle i))).1
-  have key : ∀ i, ‖(ω (z * x * z) : ℂ) - ω (P i * x * P i)‖
-      ≤ K * Real.sqrt ((ω (z - P i)).re) := by
-    intro i
-    have hsplit : z * x * z - P i * x * P i
-        = z * x * (z - P i) + (z - P i) * x * P i := by noncomm_ring
-    have hlin : (ω (z * x * z) : ℂ) - ω (P i * x * P i)
-        = ω (z * x * (z - P i)) + ω ((z - P i) * x * P i) := by
-      have h1 : (ω (z * x * z) : ℂ) - ω (P i * x * P i)
-          = ω (z * x * z - P i * x * P i) := (map_sub ω.toPositiveLinearMap _ _).symm
-      rw [h1, hsplit]
-      exact map_add ω.toPositiveLinearMap _ _
-    have hnn : (0 : ℝ) ≤ omegaNorm X ω (z - P i) := omegaNorm_nonneg _ _
-    have hA : ‖(ω (z * x * (z - P i)) : ℂ)‖
-        ≤ omegaNorm X ω (star (z * x)) * omegaNorm X ω (z - P i) := by
-      have h := norm_apply_star_mul_le ω (star (z * x)) (z - P i)
-      rwa [star_star] at h
-    have hB' : ‖(ω ((z - P i) * x * P i) : ℂ)‖
-        ≤ omegaNorm X ω (z - P i) * (‖x‖ * Real.sqrt ((ω z).re)) := by
-      have h := norm_apply_star_mul_le ω (z - P i) (x * P i)
-      rw [hzsa i, ← mul_assoc] at h
-      refine h.trans (mul_le_mul_of_nonneg_left ?_ hnn)
-      exact (omegaNorm_mul_le ω x (P i)).trans
-        (mul_le_mul_of_nonneg_left (homP i) (norm_nonneg x))
-    calc ‖(ω (z * x * z) : ℂ) - ω (P i * x * P i)‖
-        = ‖(ω (z * x * (z - P i)) : ℂ) + ω ((z - P i) * x * P i)‖ := by rw [hlin]
-      _ ≤ ‖(ω (z * x * (z - P i)) : ℂ)‖ + ‖(ω ((z - P i) * x * P i) : ℂ)‖ :=
-          norm_add_le _ _
-      _ ≤ omegaNorm X ω (star (z * x)) * omegaNorm X ω (z - P i)
-            + omegaNorm X ω (z - P i) * (‖x‖ * Real.sqrt ((ω z).re)) :=
-          add_le_add hA hB'
-      _ = K * omegaNorm X ω (z - P i) := by rw [hK]; ring
-      _ = K * Real.sqrt ((ω (z - P i)).re) := by rw [hom i]
-  have hs : Tendsto (fun i => Real.sqrt ((ω (z - P i)).re)) l (𝓝 0) := by
-    have h1 : Tendsto (fun i => (ω (z - P i) : ℂ)) l (𝓝 0) := by
-      have hz : ∀ i, (ω (z - P i) : ℂ) = ω z - ω (P i) := fun i =>
-        map_sub ω.toPositiveLinearMap z (P i)
-      simp only [hz]
-      have h := huw ω
-      have hc : Tendsto (fun _ : ι' => (ω z : ℂ)) l (𝓝 (ω z : ℂ)) := tendsto_const_nhds
-      have h2 : Tendsto (fun i => (ω z : ℂ) - ω (P i)) l (𝓝 ((ω z : ℂ) - ω z)) := hc.sub h
-      rwa [sub_self] at h2
-    have h2 : Tendsto (fun i => (ω (z - P i) : ℂ).re) l (𝓝 0) := by
-      have h := (Complex.reCLM.continuous.tendsto 0).comp h1
-      simpa [Function.comp_def] using h
-    have h3 := (Real.continuous_sqrt.tendsto 0).comp h2
-    simpa [Function.comp_def] using h3
-  have hK0 : Tendsto (fun i => K * Real.sqrt ((ω (z - P i)).re)) l (𝓝 0) := by
-    have := hs.const_mul K
-    simpa using this
-  have hsq : Tendsto (fun i => ‖(ω (P i * x * P i) : ℂ) - ω (z * x * z)‖) l (𝓝 0) := by
-    refine squeeze_zero (fun i => norm_nonneg _) (fun i => ?_) hK0
-    rw [norm_sub_rev]
-    exact key i
-  rw [tendsto_iff_norm_sub_tendsto_zero]
-  exact hsq
 
 /-- **The cutting principle.**  Let `(p_i)` be a monotone net of
 projections with supremum `1`.  Any `x` all of whose compressions
@@ -454,8 +328,8 @@ theorem mem_of_compress_mem {ι' : Type*} [Nonempty ι'] [Preorder ι']
     rw [hstar i] at h0
     exact sub_nonneg.mp h0
   have huw : UWTendsto P atTop (1 : X) :=
-    uwTendsto_of_isLUB_net P 1 (fun i => (hP i).isSelfAdjoint) hmono hlub
-  have hcomp := uwTendsto_compress (1 : X) P
+    uwTendsto_of_isLUB P 1 (fun i => (hP i).isSelfAdjoint) hmono hlub
+  have hcomp := uw_compress_tendsto (1 : X) P
     (fun i => by rw [(hP i).isSelfAdjoint]; exact (hP i).isIdempotentElem)
     hstar hle huw x
   rw [one_mul, mul_one] at hcomp
@@ -884,7 +758,7 @@ theorem tendsto_apply_of_isLUB_proj {ι : Type*} [Nonempty ι] [Preorder ι]
     (hmono : Monotone P) (hlub : IsLUB (Set.range P) 1) (x : H) :
     Tendsto (fun i => P i x) atTop (𝓝 x) := by
   have huw : UWTendsto P atTop (1 : H →L[ℂ] H) :=
-    uwTendsto_of_isLUB_net P 1 (fun i => (hP i).isSelfAdjoint) hmono hlub
+    uwTendsto_of_isLUB P 1 (fun i => (hP i).isSelfAdjoint) hmono hlub
   have hg := (uwTendsto_iff P atTop (1 : H →L[ℂ] H)).mp huw (vectorNP x)
   simp only [vectorNP_apply] at hg
   rw [show ((1 : H →L[ℂ] H) x) = x from rfl] at hg

@@ -5051,7 +5051,7 @@ private theorem gZS_isLUB : IsLUB (Set.range (fun F : Finset J => gZS Ψ F)) (1 
 /-- A monotone net of self-adjoint elements with supremum `s` converges
 ultraweakly to `s`.  (Repackaging of **44VI** `vna_supremum_uwlimit` for a
 net indexed by a directed type, as `haApprox` does inline.) -/
-private theorem uwTendsto_of_isLUB {X : Type u} [CStarAlgebra X] [PartialOrder X]
+theorem uwTendsto_of_isLUB {X : Type u} [CStarAlgebra X] [PartialOrder X]
     [StarOrderedRing X] [VonNeumannAlgebra X] {ι' : Type*} [Nonempty ι']
     [Preorder ι'] [IsDirected ι' (· ≤ ·)] (P : ι' → X) (s : X)
     (hsa : ∀ i, IsSelfAdjoint (P i)) (hmono : Monotone P)
@@ -5134,7 +5134,7 @@ section Compression
 
 set_option synthInstance.maxHeartbeats 400000
 
-private theorem uw_compress_tendsto {X : Type u} [CStarAlgebra X] [PartialOrder X]
+theorem uw_compress_tendsto {X : Type u} [CStarAlgebra X] [PartialOrder X]
     [StarOrderedRing X] [VonNeumannAlgebra X] {ι' : Type*}
     (z : X) (P : ι' → X)
     (hP : ∀ i, star (P i) * P i = P i)
