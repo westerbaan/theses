@@ -637,25 +637,6 @@ Definition): `y` is a *projection of `x` on* a linear subspace `C` when
 def IsProjectionOn (C : Submodule ℂ H) (x y : H) : Prop :=
   y ∈ C ∧ ∀ y' ∈ C, ‖x - y‖ ≤ ‖x - y'‖
 
-/-- Auxiliary: a projection on `C` realizes the infimum of the distances to
-the members of `C`, which is the form the Mathlib characterisation
-`Submodule.norm_eq_iInf_iff_inner_eq_zero` takes. -/
-private theorem IsProjectionOn.norm_eq_iInf {C : Submodule ℂ H} {x y : H}
-    (h : IsProjectionOn C x y) : ‖x - y‖ = ⨅ w : C, ‖x - w‖ := by
-  have hbdd : BddBelow (Set.range fun w : C => ‖x - (w : H)‖) := by
-    refine ⟨0, ?_⟩
-    rintro r ⟨w, rfl⟩
-    exact norm_nonneg _
-  refine le_antisymm (le_ciInf fun w => h.2 w w.2) ?_
-  exact ciInf_le hbdd (⟨y, h.1⟩ : C)
-
-/-- Auxiliary: a projection `y` of `x` on `C` has `x - y` orthogonal to `C`
-(**5VI**.4), via the Mathlib characterisation of minimisers. -/
-private theorem IsProjectionOn.inner_eq_zero {C : Submodule ℂ H} {x y : H}
-    (h : IsProjectionOn C x y) {y' : H} (hy' : y' ∈ C) : ⟪y', x - y⟫ = 0 := by
-  have hz := (C.norm_eq_iInf_iff_inner_eq_zero h.1).mp h.norm_eq_iInf y' hy'
-  simpa only [inner_conj_symm, map_zero] using congrArg (starRingEnd ℂ) hz
-
 /-- Auxiliary (**5IV**): the Pythagoras identity for the distance from `x` to
 a point of the line `ℂe` spanned by a unit vector `e`. -/
 private theorem norm_sub_smul_sq (x e : H) (he : ‖e‖ = 1) (c : ℂ) :
@@ -688,11 +669,38 @@ theorem projection_on_c00 (x : lp (fun _ : ℕ => ℂ) 2) :
       have hmem : ∀ n : ℕ, (lp.single 2 n (1 : ℂ)) ∈
           Submodule.span ℂ {f : lp (fun _ : ℕ => ℂ) 2 | ∃ n z, f = lp.single 2 n z} :=
         fun n => Submodule.subset_span ⟨n, 1, rfl⟩
+      -- for each coordinate `n`, the competitor `y + ((x-y) n) · eₙ` does
+      -- strictly better unless `(x - y) n = 0`
       have hcoord : ∀ n : ℕ, (x - y) n = 0 := by
         intro n
-        have h0 := hy.inner_eq_zero (hmem n)
-        rw [lp.inner_single_left] at h0
-        simpa using h0
+        set v : lp (fun _ : ℕ => ℂ) 2 := x - y with hv
+        set c : ℂ := v n with hc
+        set e : lp (fun _ : ℕ => ℂ) 2 := lp.single 2 n (1 : ℂ) with he
+        have hen : ‖e‖ = 1 := by rw [he, lp.norm_single (by norm_num), norm_one]
+        have hev : (⟪e, v⟫ : ℂ) = c := by
+          rw [he, lp.inner_single_left]
+          simp [hc]
+        have hve : (⟪v, e⟫ : ℂ) = (starRingEnd ℂ) c := by
+          rw [← hev, inner_conj_symm]
+        have hee : (⟪e, e⟫ : ℂ) = 1 := by
+          rw [inner_self_eq_norm_sq_to_K, hen]
+          norm_num
+        have horth : (⟪v - c • e, c • e⟫ : ℂ) = 0 := by
+          rw [inner_sub_left, inner_smul_right, inner_smul_left, inner_smul_right, hve, hee]
+          ring
+        -- Pythagoras (**4XV**.2): `‖v - c e‖² + ‖c‖² = ‖v‖²`
+        have hpy := norm_add_sq_of_inner_eq_zero (v - c • e) (c • e) horth
+        rw [sub_add_cancel] at hpy
+        have hce : ‖c • e‖ = ‖c‖ := by rw [norm_smul, hen, mul_one]
+        have hmin : ‖x - y‖ ≤ ‖x - (y + c • e)‖ :=
+          hy.2 _ (Submodule.add_mem _ hy.1 (Submodule.smul_mem _ c (hmem n)))
+        have hrw : x - (y + c • e) = v - c • e := by rw [hv]; abel
+        rw [hrw, ← hv] at hmin
+        have hc0 : ‖c‖ ^ 2 ≤ 0 := by
+          rw [hce] at hpy
+          nlinarith [norm_nonneg (v - c • e), norm_nonneg v]
+        have hcz : ‖c‖ = 0 := by nlinarith [norm_nonneg c]
+        exact norm_eq_zero.mp hcz
       have hxy : x - y = 0 := lp.ext (funext fun n => by simpa using hcoord n)
       rw [sub_eq_zero] at hxy
       rw [hxy]
@@ -740,21 +748,63 @@ theorem hilb_projection_basic_1 (C : Submodule ℂ H) (x y : H)
     obtain ⟨c, rfl⟩ := Submodule.mem_span_singleton.mp hy'
     exact h.2 _ (C.smul_mem c h.1)
 
+/-- Auxiliary: the claim solution `parsec-50.60` makes first — a projection
+`y` of `x` on `C` has `‖y‖² = ⟪y, x⟫`, i.e. `⟪y, x - y⟫ = 0`.  By **5VI**.1
+`y` is a projection of `x` on the line `ℂy = ℂe`, `e := y/‖y‖`, and **5IV**
+says that projection is `⟪e, x⟫ e`. -/
+private theorem IsProjectionOn.inner_self_sub_eq_zero {C : Submodule ℂ H} {x y : H}
+    (h : IsProjectionOn C x y) : ⟪y, x - y⟫ = 0 := by
+  rcases eq_or_ne y 0 with rfl | hy
+  · simp
+  have hn : (‖y‖ : ℝ) ≠ 0 := norm_ne_zero_iff.mpr hy
+  obtain ⟨e, hne, hspan⟩ : ∃ e : H, ‖e‖ = 1 ∧ (ℂ ∙ e) = (ℂ ∙ y) := by
+    refine ⟨((‖y‖⁻¹ : ℝ) : ℂ) • y, ?_, ?_⟩
+    · rw [norm_smul, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (by positivity),
+        inv_mul_cancel₀ hn]
+    · exact Submodule.span_singleton_smul_eq (Ne.isUnit (by simpa using inv_ne_zero hn)) _
+  have hproj : IsProjectionOn (ℂ ∙ e) x y := by
+    rw [hspan]; exact hilb_projection_basic_1 C x y h
+  have hy_eq := projection_on_line_unique x e hne y hproj
+  have hee : (⟪e, e⟫ : ℂ) = 1 := by
+    rw [inner_self_eq_norm_sq_to_K, hne]
+    norm_num
+  rw [hy_eq, inner_sub_right, inner_smul_left, inner_smul_left, inner_smul_right, hee,
+    mul_one]
+  ring
+
 /-- **5VI** (`hilb-projection-basic`, cstar.tex:755, Exercise), part 2: the
 projection of `x` on `C` is unique, and `⟪y, x - y⟫ = 0`. -/
 theorem hilb_projection_basic_2 (C : Submodule ℂ H) (x y y' : H)
     (h : IsProjectionOn C x y) (h' : IsProjectionOn C x y') :
     y' = y ∧ ⟪y, x - y⟫ = 0 :=
   by
-    have hmem := Submodule.sub_mem _ h'.1 h.1
-    have e1 := h.inner_eq_zero hmem
-    have e2 := h'.inner_eq_zero hmem
-    have hkey : (⟪y' - y, y' - y⟫ : ℂ) = 0 := by
-      have hy : y' - y = (x - y) - (x - y') := by abel
-      calc (⟪y' - y, y' - y⟫ : ℂ) = ⟪y' - y, (x - y) - (x - y')⟫ := by rw [← hy]
-        _ = 0 := by rw [inner_sub_right, e1, e2, sub_zero]
-    have hzero : y' - y = 0 := inner_self_eq_zero.mp hkey
-    exact ⟨sub_eq_zero.mp hzero, h.inner_eq_zero h.1⟩
+    refine ⟨?_, h.inner_self_sub_eq_zero⟩
+    -- the solution's translation: both `0` and `y' - y` are projections of
+    -- `x - y` on `C`, so they have the same distance to `x - y`, and
+    -- Pythagoras on `⟪y'-y, (x-y)-(y'-y)⟫ = 0` forces `y' - y = 0`
+    have hzC : y' - y ∈ C := Submodule.sub_mem _ h'.1 h.1
+    have hz0 : IsProjectionOn C (x - y) 0 := by
+      refine ⟨Submodule.zero_mem C, fun w hw => ?_⟩
+      rw [sub_zero, show x - y - w = x - (y + w) by abel]
+      exact h.2 _ (Submodule.add_mem _ h.1 hw)
+    have hzz : IsProjectionOn C (x - y) (y' - y) := by
+      refine ⟨hzC, fun w hw => ?_⟩
+      rw [show x - y - (y' - y) = x - y' by abel, show x - y - w = x - (y + w) by abel]
+      exact h'.2 _ (Submodule.add_mem _ h.1 hw)
+    have horth : (⟪x - y - (y' - y), y' - y⟫ : ℂ) = 0 := by
+      have h0 := hzz.inner_self_sub_eq_zero
+      simpa only [inner_conj_symm, map_zero] using congrArg (starRingEnd ℂ) h0
+    have hsum := norm_add_sq_of_inner_eq_zero (x - y - (y' - y)) (y' - y) horth
+    rw [show x - y - (y' - y) + (y' - y) = x - y by abel] at hsum
+    have hle1 : ‖x - y - (y' - y)‖ ≤ ‖x - y‖ := by
+      simpa using hzz.2 0 (Submodule.zero_mem C)
+    have hle2 : ‖x - y‖ ≤ ‖x - y - (y' - y)‖ := by
+      simpa using hz0.2 _ hzC
+    have hAC : ‖x - y - (y' - y)‖ = ‖x - y‖ := le_antisymm hle1 hle2
+    have hzero : ‖y' - y‖ ^ 2 = 0 := by rw [hAC] at hsum; linarith
+    have hz : y' - y = 0 :=
+      norm_eq_zero.mp (pow_eq_zero_iff (n := 2) (by norm_num) |>.mp hzero)
+    exact sub_eq_zero.mp hz
 
 /-- **5VI** (`hilb-projection-basic`, cstar.tex:755, Exercise), part 3:
 `y + c` is the projection of `x + c` on `C` for every `c ∈ C`. -/
@@ -773,7 +823,12 @@ theorem hilb_projection_basic_4 (C : Submodule ℂ H) (x y : H)
     (h : IsProjectionOn C x y) (y' : H) (hy' : y' ∈ C) :
     ⟪y', x - y⟫ = 0 :=
   by
-    exact h.inner_eq_zero hy'
+    -- the solution's trick: `y' = y + (y' - y)` is a projection of
+    -- `x' := x + (y' - y)` on `C` by part 3, and `x' - y' = x - y`
+    have h3 := hilb_projection_basic_3 C x y h (y' - y) (Submodule.sub_mem _ hy' h.1)
+    have h0 := h3.inner_self_sub_eq_zero
+    rw [show y + (y' - y) = y' by abel, show x + (y' - y) - y' = x - y by abel] at h0
+    exact h0
 
 /-- **5VII** (`projection-theorem`, cstar.tex:766, Projection Theorem): every
 vector `x` of a Hilbert space has a unique projection `y` on a closed linear
@@ -903,10 +958,14 @@ theorem cstar_involution_basic_2 (a b c : 𝒜) (hb : IsSelfAdjoint b)
 theorem cstar_involution_basic_3 (a : 𝒜) :
     (ℜ (star a) : 𝒜) = (ℜ a : 𝒜) ∧ (ℑ (star a) : 𝒜) = -(ℑ a : 𝒜) :=
   by
-    constructor
-    · rw [realPart_apply_coe, realPart_apply_coe, star_star, add_comm]
-    · rw [imaginaryPart_apply_coe, imaginaryPart_apply_coe, star_star, ← smul_neg, ← smul_neg,
-        neg_sub]
+    -- the solution deduces this from parts 1 and 2: `a* = ℜa + i·(-ℑa)`
+    have hstar : star a = (ℜ a : 𝒜) + Complex.I • (-(ℑ a : 𝒜)) := by
+      conv_lhs => rw [cstar_involution_basic_1 a]
+      rw [star_add, star_smul, selfAdjoint.star_val_eq, selfAdjoint.star_val_eq]
+      simp
+    obtain ⟨h1, h2⟩ := cstar_involution_basic_2 (star a) (ℜ a : 𝒜) (-(ℑ a : 𝒜))
+      (ℜ a).property ((ℑ a).property.neg) hstar
+    exact ⟨h1.symm, h2.symm⟩
 
 /-- **7III** (`cstar-involution-basic`, cstar.tex:1007, Exercise), part 4:
 `a` is self-adjoint iff `ℜa = a` iff `ℑa = 0`. -/
@@ -981,23 +1040,17 @@ theorem cstar_involution_basic_8 :
 theorem cstar_involution_basic_9 (a : 𝒜) :
     star a * a + a * star a = 2 * ((ℜ a : 𝒜) ^ 2 + (ℑ a : 𝒜) ^ 2) :=
   by
-    have ha : a = (ℜ a : 𝒜) + Complex.I • (ℑ a : 𝒜) := (realPart_add_I_smul_imaginaryPart a).symm
-    have has : star a = (ℜ a : 𝒜) - Complex.I • (ℑ a : 𝒜) := by
-      conv_lhs => rw [ha]
-      rw [star_add, star_smul, selfAdjoint.star_val_eq, selfAdjoint.star_val_eq]
-      simp [sub_eq_add_neg]
+    -- the solution's "combine point 3 and point 7": point 7 at `a*` computes
+    -- `a a*`, and point 3 turns `ℜ(a*), ℑ(a*)` into `ℜa, -ℑa`
     have h7 := (cstar_involution_basic_7 a).2
-    have h7' : a * star a = (ℜ a : 𝒜) ^ 2 + (ℑ a : 𝒜) ^ 2 -
-        Complex.I • ((ℜ a : 𝒜) * (ℑ a : 𝒜) - (ℑ a : 𝒜) * (ℜ a : 𝒜)) := by
-      calc a * star a
-          = ((ℜ a : 𝒜) + Complex.I • (ℑ a : 𝒜)) * ((ℜ a : 𝒜) - Complex.I • (ℑ a : 𝒜)) := by
-            rw [← has, ← ha]
-        _ = (ℜ a : 𝒜) ^ 2 + (ℑ a : 𝒜) ^ 2 -
-              Complex.I • ((ℜ a : 𝒜) * (ℑ a : 𝒜) - (ℑ a : 𝒜) * (ℜ a : 𝒜)) := by
-            rw [add_mul, mul_sub, mul_sub, smul_mul_assoc, smul_mul_assoc, mul_smul_comm,
-              mul_smul_comm, smul_smul, Complex.I_mul_I, neg_smul, one_smul, smul_sub, sq, sq]
-            abel
-    rw [h7, h7', two_mul]
+    have h7' := (cstar_involution_basic_7 (star a)).2
+    obtain ⟨hre, him⟩ := cstar_involution_basic_3 a
+    rw [star_star, hre, him] at h7'
+    rw [h7, h7']
+    have e1 : (-(ℑ a : 𝒜)) ^ 2 = (ℑ a : 𝒜) ^ 2 := by noncomm_ring
+    have e2 : (ℜ a : 𝒜) * (-(ℑ a : 𝒜)) - (-(ℑ a : 𝒜)) * (ℜ a : 𝒜)
+        = -((ℜ a : 𝒜) * (ℑ a : 𝒜) - (ℑ a : 𝒜) * (ℜ a : 𝒜)) := by noncomm_ring
+    rw [e1, e2, smul_neg, two_mul]
     abel
 
 /-- **7III** (`cstar-involution-basic`, cstar.tex:1007, Exercise), part 10:
@@ -1093,22 +1146,44 @@ theorem scalar_norm_1 [Subsingleton 𝒜] : ‖(1 : 𝒜)‖ = 0 :=
   by
     rw [Subsingleton.elim (1 : 𝒜) 0, norm_zero]
 
+/-- Auxiliary for **8II**: `‖1‖ = ‖1*1‖ = ‖1‖²`, so `‖1‖` is either `1` or
+`0`.  This is the observation solution `parsec-80.20` makes once and then
+uses in both part 2 and part 3, in place of a case split on whether `𝒜` is
+trivial. -/
+private theorem norm_one_eq_one_or_zero : ‖(1 : 𝒜)‖ = 1 ∨ ‖(1 : 𝒜)‖ = 0 := by
+  have h1 : ‖(1 : 𝒜)‖ * ‖(1 : 𝒜)‖ = ‖(1 : 𝒜)‖ := by
+    rw [← CStarRing.norm_star_mul_self (x := (1 : 𝒜)), star_one, mul_one]
+  rcases mul_eq_zero.mp (show ‖(1 : 𝒜)‖ * (‖(1 : 𝒜)‖ - 1) = 0 by nlinarith) with h | h
+  · exact Or.inr h
+  · exact Or.inl (by linarith)
+
 /-- **8II** (cstar.tex:1071, Exercise), part 2: `‖λ·1‖ ≤ |λ|` for every
 scalar `λ ∈ ℂ`. -/
 theorem scalar_norm_2 (z : ℂ) : ‖algebraMap ℂ 𝒜 z‖ ≤ ‖z‖ :=
   by
-    rcases subsingleton_or_nontrivial 𝒜 with h | h
-    · simp [Subsingleton.elim (algebraMap ℂ 𝒜 z) 0]
-    · rw [Algebra.algebraMap_eq_smul_one, norm_smul, norm_one, mul_one]
+    have hle : ‖(1 : 𝒜)‖ ≤ 1 := by
+      rcases norm_one_eq_one_or_zero (𝒜 := 𝒜) with h | h
+      · exact le_of_eq h
+      · rw [h]; norm_num
+    rw [Algebra.algebraMap_eq_smul_one, norm_smul]
+    calc ‖z‖ * ‖(1 : 𝒜)‖ ≤ ‖z‖ * 1 := mul_le_mul_of_nonneg_left hle (norm_nonneg z)
+      _ = ‖z‖ := mul_one _
 
 /-- **8II** (cstar.tex:1071, Exercise), part 3: `‖λ·1‖ = |λ|` holds when
 both sides are interpreted as elements of `𝒜`. -/
 theorem scalar_norm_3 (z : ℂ) :
     algebraMap ℂ 𝒜 (‖algebraMap ℂ 𝒜 z‖ : ℂ) = algebraMap ℂ 𝒜 (‖z‖ : ℂ) :=
   by
-    rcases subsingleton_or_nontrivial 𝒜 with h | h
-    · exact Subsingleton.elim _ _
-    · rw [Algebra.algebraMap_eq_smul_one (r := z), norm_smul, norm_one, mul_one]
+    -- the solution's reduction: it suffices that `‖1‖·1 = 1`, which holds in
+    -- both cases of `norm_one_eq_one_or_zero`
+    have hkey : algebraMap ℂ 𝒜 ((‖(1 : 𝒜)‖ : ℝ) : ℂ) = 1 := by
+      rcases norm_one_eq_one_or_zero (𝒜 := 𝒜) with h | h
+      · rw [h]; simp
+      · have h0 : (1 : 𝒜) = 0 := norm_eq_zero.mp h
+        rw [h, Complex.ofReal_zero, map_zero, h0]
+    have hnorm : ‖algebraMap ℂ 𝒜 z‖ = ‖z‖ * ‖(1 : 𝒜)‖ := by
+      rw [Algebra.algebraMap_eq_smul_one, norm_smul]
+    rw [hnorm, Complex.ofReal_mul, map_mul, hkey, mul_one]
 
 end Involution
 
@@ -1906,9 +1981,10 @@ self-adjoint `a`.
 
 The proof is the thesis's own trick: write `a - i = (a + ni) - (n+1)i` for
 `n` large, and apply **11VI**.2, the bound being
-`‖a+ni‖² = ‖(a+ni)*(a+ni)‖ = ‖a²+n²‖ ≤ ‖a‖²+n² < (n+1)²`.  (The thesis asks
-for `n` with `‖a‖ < 2n+1`; what its last step uses is `‖a‖² < 2n+1`, and
-that is what we choose `n` for.) -/
+`‖a+ni‖² = ‖(a+ni)*(a+ni)‖ = ‖a²+n²‖ ≤ ‖a‖²+n² < (n+1)²`.  The `n` is chosen
+for `‖a‖² < 2n+1`, which is what the strict step needs and what cstar.tex now
+prints (erratum `parsec-110.140`, incorporated 2026-08-22; the first printing
+asked for `‖a‖ < 2n+1`). -/
 theorem selfAdjoint_sub_I_isUnit (a : 𝒜) (ha : IsSelfAdjoint a) :
     IsUnit (a - algebraMap ℂ 𝒜 Complex.I) := by
   rcases subsingleton_or_nontrivial 𝒜 with hs | hs

@@ -15,10 +15,13 @@ arXiv:1804.02203), chapter 1: C*-algebras — cstar.tex, lines 1714–3886.
 
 **All statements of this file are proved**, parsecs 130–260 included.  The last
 two, `cauchy_formula` (**15I**) and `taylor` (**15V**), closed in session 74.
-15I needed the winding number of the regular `N`-gon around an interior point,
-which the thesis obtains from a triangulation it asserts without constructing;
-`polygon_winding` below replaces that step by a triangulation-free argument
-(ERRATA `15I`).
+Our `cauchy_formula` is a **route divergence**, not the repair of a gap: the
+thesis's own proof is complete as printed — the promotion of **14VIII**.4 from
+a triangle to a regular `N`-gon is its new part 5, whose hint is the partition
+15IV calls "the obvious manner", and that partition is elementary because each
+filling triangle carries a *holomorphic* integrand and dies by **14IV**
+`goursat`.  Ours restructures the whole proof instead; see the divergence note
+above `polygon_winding` below.
 
 Parsecs 120-150 are load-bearing: **16II** `norm_spectrum` is proved the
 thesis's way, from **15VII** `rigid_expansion`, which in turn is proved from
@@ -1075,13 +1078,14 @@ theorem invint_4 (w₀ w₁ w₂ z₀ : ℂ)
 
 /-! ### The winding number of a regular `N`-gon about an interior point
 
-⚠ **Divergence from the thesis, forced by a gap in it.**  The thesis's proof of
-**15I** partitions the region between a small triangle around `z₀` and the
-`N`-gon "in the obvious manner into triangles `T₁,…,T_M`" and sums `invint`(4)
-over them.  That triangulation is *asserted, never constructed*, and it carries
-the entire winding-number content of the theorem (ERRATA `15I`).  We replace it
-by a triangulation-free argument, which is the one the erratum proposes with
-holomorphy weakened to continuity:
+⚠ **Route divergence from the thesis — not the repair of a gap.**  The thesis
+proves the winding number of the `N`-gon as **14VIII**.5, by partitioning the
+region between a triangle `T` with `z₀ ∈ in(T)` and the `N`-gon "in the obvious
+manner into triangles `T₁,…,T_M`" and killing each by **14IV** `goursat`, the
+integrands there being holomorphic; 15II then cites `invint`(5).  That argument
+is elementary and complete as printed (author's ruling, 2026-08-22; the ERRATA
+row it once had is withdrawn).  We take a different route, which proves the
+polygon case outright and needs only *continuity* of `f` at `z₀`:
 
 * the `n`-th edge of the `N`-gon spans a supporting line of the polygon, so an
   interior point `z₀` satisfies `Re((z₀ − c)·conj(e^{iπ(2n+1)/N})) < r cos(π/N)`
@@ -1095,8 +1099,15 @@ holomorphy weakened to continuity:
   `S` takes values in `2πℤ` and is therefore constant on that segment;
 * at the centre every `ζₙ` is `e^{2πi/N}`, so `S(c) = N·(2π/N) = 2π`.
 
-This replaces the thesis's asserted triangulation by a genuine argument; nothing
-else in 15I diverges. -/
+The divergence is larger than this lemma: `cauchy_formula` below uses
+`dslope f z₀`, differentiable on all of `U`, which removes **15III**'s
+`δ`/`‖f'(z₀)‖+37` estimate and with it the small triangle `T` around `z₀`
+altogether; Goursat is then applied to the **fan** `(w₀, wₙ, wₙ₊₁)`, whose
+interior edges cancel immediately, so the region between a triangle and the
+`N`-gon never arises.  Two consequences worth recording: the tree uses neither
+**14VIII**.4 `invint_4` nor the thesis's new **14VIII**.5 here (both have zero
+consumers), and `polygon_winding` asks less of `f` than the thesis's route
+does. -/
 
 private theorem cos_step (N : ℕ) (hN : 0 < N) (t : ℤ) (h1 : 1 ≤ t) (h2 : t ≤ N) :
     Real.cos (Real.pi * t / N) ≤ Real.cos (Real.pi / N) := by
@@ -1738,8 +1749,10 @@ theorem cauchy_formula {U : Set ℂ} (hU : IsOpen U) (f : ℂ → 𝒜)
       ∑ n ∈ Finset.range N,
         segIntegral (fun z => (z - z₀)⁻¹ • f z) (w n) (w (n + 1)) :=
   by
-    -- The thesis's route, with its asserted triangulation replaced by
-    -- `polygon_winding` (see the divergence note above).
+    -- A route divergence from the thesis, not a gap repair: `dslope` removes
+    -- the small triangle of 15III, Goursat runs on the fan from `w₀`, and
+    -- `polygon_winding` proves the polygon case outright rather than promoting
+    -- **14VIII**.4 to it (see the divergence note above).
     have hw' : ∀ n, w n = c + (r : ℂ) * cisR (2 * Real.pi * n / N) :=
       polygon_vertex hN c r w hw
     have hwN : w N = w 0 := polygon_closed hN c r w hw'
@@ -3430,7 +3443,14 @@ theorem weak_russo_dye_1 (f : 𝒜 →ₗ[ℂ] ℬ) (hf : IsPositiveMap f) (a : 
   by
     have hfsa : IsSelfAdjoint (f a) := by
       -- `a = (‖a‖ + a) - ‖a‖` with both terms positive (**17VI**.3a); the
-      -- positive/negative parts are only available at parsec 240
+      -- positive/negative parts are only available at parsec 240.  This is
+      -- **10V**'s argument inline.  The author ruled on 2026-08-22 that
+      -- 20II.1's use of "`f a` is self-adjoint" is not a gap — 10V proves it
+      -- ten parsecs earlier — and the ERRATA row is withdrawn.  Citing
+      -- **10IV** `cstar_p_implies_i` instead would be one line, but it is
+      -- CFC-reachable through the parsec-90 order bridge, and session 95 took
+      -- 20II.1 off that bridge on purpose; the inline copy of 10V goes
+      -- through `ThesisPos` and stays off it.
       have hp1 : (0 : 𝒜) ≤ algebraMap ℂ 𝒜 ((‖a‖ : ℝ) : ℂ) + a :=
         (thesisPos_add_of_norm_le ha le_rfl).nonneg
       have hp0 : (0 : 𝒜) ≤ algebraMap ℂ 𝒜 ((‖a‖ : ℝ) : ℂ) :=
@@ -5170,86 +5190,34 @@ theorem states_order_separating_1 [Nontrivial 𝒜] (a : 𝒜)
       abs_of_nonneg (norm_nonneg a)]
 
 /-- **22VIII** (`states-order-separating`, cstar.tex:3464, Exercise), part 2:
-the states of a C*-algebra are order separating. -/
+the states of a C*-algebra are order separating.
+
+This is the exercise's own "conclude": by **21VII** `order_separating_norm`
+— the states are pu-maps — order separation is equivalent to clause (3),
+`‖a‖ = sup_ω ‖ω(a)‖` for positive `a`, and that is part 1 together with
+`‖ω(a)‖ ≤ ‖ω(1)‖‖a‖ = ‖a‖` (**20II**.1).  The trivial algebra, excluded from
+part 1 by erratum 220.80, is the case where both sides are `0`. -/
 theorem states_order_separating_2 :
     OrderSeparating fun ω : {ω : 𝒜 →ₗ[ℂ] ℂ // IsState ω} =>
       (ω : 𝒜 →ₗ[ℂ] ℂ) := by
-  intro a
-  constructor
-  · intro ha ω
-    exact ω.2.1 a ha
-  · intro H
-    rcases subsingleton_or_nontrivial 𝒜 with hsub | hnt
-    · exact le_of_eq (Subsingleton.elim 0 a)
-    -- states are involution preserving, so send self-adjoints to reals
-    have hsareal : ∀ (ω : 𝒜 →ₗ[ℂ] ℂ), IsState ω → ∀ x : 𝒜,
-        IsSelfAdjoint x → (ω x).im = 0 := by
-      intro ω hω x hx
-      have h := cstar_p_implies_i ω hω.1 x
-      rw [hx.star_eq] at h
-      have h2 := congrArg Complex.im h
-      rw [Complex.star_def, Complex.conj_im] at h2
-      linarith
-    -- `ℑ a = 0`, using part 1 on `ℑ a`
-    have him : (ℑ a : 𝒜) = 0 := by
-      obtain ⟨ω, hω, hnorm⟩ :=
-        states_order_separating_1 (𝒜 := 𝒜) (ℑ a : 𝒜) (ℑ a).property
-      have hωa := H ⟨ω, hω⟩
-      have hdec : ω a = ω (ℜ a : 𝒜) + Complex.I * ω (ℑ a : 𝒜) := by
-        conv_lhs => rw [← realPart_add_I_smul_imaginaryPart a]
-        rw [map_add, map_smul, smul_eq_mul]
-      have haim : (ω a).im = 0 := by
-        rw [Complex.le_def] at hωa
-        simpa using hωa.2.symm
-      have hreim : (ω (ℑ a : 𝒜)).re = 0 := by
-        have h2 := congrArg Complex.im hdec
-        rw [Complex.add_im, Complex.mul_im, Complex.I_re, Complex.I_im,
-          hsareal ω hω _ (ℜ a).property, haim] at h2
-        simpa using h2.symm
-      have himim : (ω (ℑ a : 𝒜)).im = 0 := hsareal ω hω _ (ℑ a).property
-      have hω0 : ω (ℑ a : 𝒜) = 0 := by
-        rw [Complex.ext_iff]
-        exact ⟨hreim, himim⟩
-      have h3 : ‖(ℑ a : 𝒜)‖ = 0 := by
-        rw [← hnorm, hω0, norm_zero]
-      exact norm_eq_zero.mp h3
-    have hasa : IsSelfAdjoint a := by
-      have haeq : a = (ℜ a : 𝒜) := by
-        conv_lhs => rw [← realPart_add_I_smul_imaginaryPart a]
-        rw [him, smul_zero, add_zero]
-      rw [haeq]
-      exact (ℜ a).property
-    -- now the norm argument
-    set t := ‖a‖ with ht
-    have hx : IsSelfAdjoint (algebraMap ℂ 𝒜 ((t : ℝ) : ℂ) - a) :=
-      (isSelfAdjoint_algebraMap_ofReal t).sub hasa
-    obtain ⟨ω, hω, hnorm⟩ := states_order_separating_1 (𝒜 := 𝒜) _ hx
-    have hval : ω (algebraMap ℂ 𝒜 ((t : ℝ) : ℂ) - a) = ((t : ℝ) : ℂ) - ω a := by
-      rw [map_sub, Algebra.algebraMap_eq_smul_one, map_smul, hω.2, smul_eq_mul,
-        mul_one]
-    -- ω a is a real number in [0, t]
-    have haim : (ω a).im = 0 := hsareal ω hω a hasa
-    have hare0 : 0 ≤ (ω a).re := by
-      have h := H ⟨ω, hω⟩
-      rw [Complex.le_def] at h
-      simpa using h.1
-    have haret : (ω a).re ≤ t := by
-      have hle : a ≤ algebraMap ℂ 𝒜 ((t : ℝ) : ℂ) :=
-        ((positive_basic_2_3a a hasa t (norm_nonneg a)).mpr le_rfl).2
-      have h2 := hω.1 _ (sub_nonneg.mpr hle)
-      rw [map_sub, Algebra.algebraMap_eq_smul_one, map_smul, hω.2, smul_eq_mul,
-        mul_one, Complex.le_def] at h2
-      have h3 := h2.1
-      simpa using h3
-    have hxnorm : ‖algebraMap ℂ 𝒜 ((t : ℝ) : ℂ) - a‖ ≤ t := by
-      rw [← hnorm, hval]
-      have he : ((t : ℝ) : ℂ) - ω a = (((t - (ω a).re : ℝ)) : ℂ) := by
-        rw [Complex.ext_iff]
-        simp [haim]
-      rw [he, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (by linarith)]
-      linarith
-    exact (nonneg_iff_norm_algebraMap_sub_le a hasa t (norm_nonneg a)
-      (by rw [ht]; linarith [norm_nonneg a])).mp hxnorm
+  have hbound : ∀ (ω : {ω : 𝒜 →ₗ[ℂ] ℂ // IsState ω}) (a : 𝒜), IsSelfAdjoint a →
+      ‖(ω : 𝒜 →ₗ[ℂ] ℂ) a‖ ≤ ‖a‖ := by
+    intro ω a ha
+    have h := weak_russo_dye_1 (ω : 𝒜 →ₗ[ℂ] ℂ) ω.2.1 a ha
+    rwa [ω.2.2, norm_one, one_mul] at h
+  refine ((order_separating_norm
+      (fun ω : {ω : 𝒜 →ₗ[ℂ] ℂ // IsState ω} => (ω : 𝒜 →ₗ[ℂ] ℂ))
+      (fun ω a ha => ω.2.1 a ha) (fun ω => ω.2.2)).out 2 0).mp ?_
+  intro a ha
+  have hsa : IsSelfAdjoint a := IsSelfAdjoint.of_nonneg ha
+  have hbdd : BddAbove (Set.range fun ω : {ω : 𝒜 →ₗ[ℂ] ℂ // IsState ω} =>
+      ‖(ω : 𝒜 →ₗ[ℂ] ℂ) a‖) := ⟨‖a‖, by rintro x ⟨ω, rfl⟩; exact hbound ω a hsa⟩
+  refine le_antisymm ?_ (Real.iSup_le (fun ω => hbound ω a hsa) (norm_nonneg a))
+  rcases subsingleton_or_nontrivial 𝒜 with hsub | hnt
+  · have hzero : a = 0 := Subsingleton.elim _ _
+    simp [hzero]
+  · obtain ⟨ω, hω, hnorm⟩ := states_order_separating_1 (𝒜 := 𝒜) a hsa
+    exact hnorm ▸ le_ciSup hbdd (⟨ω, hω⟩ : {ω : 𝒜 →ₗ[ℂ] ℂ // IsState ω})
 
 
 end OrderIdeals
@@ -6256,136 +6224,163 @@ theorem vectorFunctional_apply (x : H) (T : H →L[ℂ] H) :
     vectorFunctional x T = ⟪x, T x⟫ :=
   rfl
 
-/-- Auxiliary: every non-zero vector can be rescaled to a unit vector, and the
-quantity `⟪x, T x⟫` scales by the positive real factor `‖x‖²`. -/
-private theorem inner_self_scale_aux (T : H →L[ℂ] H) (x : H) (hx : x ≠ 0) :
-    ‖((‖x‖⁻¹ : ℝ) : ℂ) • x‖ = 1 ∧
-      (⟪x, T x⟫ : ℂ) = ((‖x‖ ^ 2 : ℝ) : ℂ) *
-        ⟪((‖x‖⁻¹ : ℝ) : ℂ) • x, T (((‖x‖⁻¹ : ℝ) : ℂ) • x)⟫ :=
-  by
-    have hnx : (‖x‖ : ℝ) ≠ 0 := norm_ne_zero_iff.mpr hx
-    constructor
-    · simp [norm_smul, abs_of_nonneg (norm_nonneg x), inv_mul_cancel₀ hnx]
-    · rw [map_smul, inner_smul_left, inner_smul_right, Complex.conj_ofReal]
-      push_cast
-      field_simp
-
 variable [CompleteSpace H]
 
-/-- Auxiliary: an operator is positive iff `⟪x, T x⟫ ≥ 0` for all unit vectors
-`x`; this is the content of both **25III** and **25V**.2 below. -/
-private theorem nonneg_clm_iff_inner_unit (T : H →L[ℂ] H) :
-    0 ≤ T ↔ ∀ x : H, ‖x‖ = 1 → 0 ≤ ⟪x, T x⟫ :=
-  by
-    rw [ContinuousLinearMap.nonneg_iff_isPositive]
-    constructor
-    · intro hT x _
-      exact hT.inner_nonneg_right x
-    · intro hx
-      have key : ∀ y : H, (0 : ℂ) ≤ ⟪y, T y⟫ := by
-        intro y
-        rcases eq_or_ne y 0 with rfl | hy
-        · simp
-        · obtain ⟨hu, he⟩ := inner_self_scale_aux T y hy
-          rw [he]
-          exact mul_nonneg (by positivity) (hx _ hu)
-      rw [ContinuousLinearMap.isPositive_iff]
-      constructor
-      · rw [LinearMap.isSymmetric_iff_inner_map_self_real]
-        intro v
-        simp only [ContinuousLinearMap.coe_coe]
-        have hk := key v
-        rw [Complex.le_def] at hk
-        rw [Complex.conj_eq_iff_im, ← inner_conj_symm (T v) v, Complex.conj_im, neg_eq_zero]
-        exact hk.2.symm
-      · intro x
-        rw [← inner_conj_symm (T x) x]
-        have h1 := key x
-        have h2 : (starRingEnd ℂ) ⟪x, T x⟫ = ⟪x, T x⟫ := by
-          refine Complex.conj_eq_iff_im.mpr ?_
-          rw [Complex.le_def] at h1
-          simpa using h1.2.symm
-        rw [h2]
-        exact h1
+/-- Auxiliary: the vector functionals are positive maps (**21IV**). -/
+private theorem vectorFunctional_isPositiveMap (x : {x : H // ‖x‖ = 1}) :
+    IsPositiveMap (vectorFunctional (x : H)) := by
+  intro T hT
+  rw [ContinuousLinearMap.nonneg_iff_isPositive] at hT
+  simpa using hT.inner_nonneg_right (x : H)
+
+omit [CompleteSpace H] in
+/-- Auxiliary: the vector functional of a unit vector is unital, so together
+with `vectorFunctional_isPositiveMap` the vector states are pu-maps. -/
+private theorem vectorFunctional_unital (x : {x : H // ‖x‖ = 1}) :
+    vectorFunctional (x : H) 1 = 1 := by
+  simp [inner_self_eq_norm_sq_to_K, x.2]
+
+/-- Auxiliary: the vector functionals are involution preserving. -/
+private theorem vectorFunctional_star (x : {x : H // ‖x‖ = 1}) (T : H →L[ℂ] H) :
+    vectorFunctional (x : H) (star T) = star (vectorFunctional (x : H) T) := by
+  show (⟪(x : H), (ContinuousLinearMap.adjoint T) (x : H)⟫ : ℂ)
+      = star (⟪(x : H), T (x : H)⟫ : ℂ)
+  rw [ContinuousLinearMap.adjoint_inner_right, ← inner_conj_symm]
+  rfl
+
+omit [CompleteSpace H] in
+/-- Auxiliary: `‖S‖ = sup { ‖S x‖ : ‖x‖ = 1 }`, the step "`‖T^{1/2}‖ =
+sup_{x ∈ (H)₁} ‖T^{1/2} x‖`" of the thesis's proof of **25III**.  It is
+**4IV** `operatorNorm_ball` at `r = 1`, which gives the supremum over the
+closed unit *ball*, together with the rescaling of a non-zero vector of the
+ball to the sphere.  (When `H` is trivial the sphere is empty and both sides
+are `0`.) -/
+private theorem norm_eq_iSup_unit_sphere (S : H →L[ℂ] H) :
+    ‖S‖ = ⨆ x : {x : H // ‖x‖ = 1}, ‖S (x : H)‖ := by
+  have hball := operatorNorm_ball S 1 zero_le_one
+  rw [one_mul] at hball
+  have hbdds : BddAbove (Set.range fun x : {x : H // ‖x‖ = 1} => ‖S (x : H)‖) :=
+    ⟨‖S‖, by rintro _ ⟨x, rfl⟩; simpa [x.2] using S.le_opNorm (x : H)⟩
+  set M : ℝ := ⨆ x : {x : H // ‖x‖ = 1}, ‖S (x : H)‖ with hM
+  have hMnn : (0 : ℝ) ≤ M := Real.iSup_nonneg fun _ => norm_nonneg _
+  refine le_antisymm ?_
+    (Real.iSup_le (fun x => by simpa [x.2] using S.le_opNorm (x : H)) (norm_nonneg S))
+  rw [hball]
+  refine Real.iSup_le (fun y => ?_) hMnn
+  rcases eq_or_ne (y : H) 0 with hy | hy
+  · simp [hy, hMnn]
+  · have hn : (0 : ℝ) < ‖(y : H)‖ := norm_pos_iff.mpr hy
+    have hu : ‖(‖(y : H)‖⁻¹ : ℝ) • (y : H)‖ = 1 := by
+      rw [norm_smul, Real.norm_eq_abs, abs_of_nonneg (by positivity),
+        inv_mul_cancel₀ (ne_of_gt hn)]
+    have hle := le_ciSup hbdds (⟨(‖(y : H)‖⁻¹ : ℝ) • (y : H), hu⟩ : {x : H // ‖x‖ = 1})
+    have hcalc : ‖S ((‖(y : H)‖⁻¹ : ℝ) • (y : H))‖ = ‖(y : H)‖⁻¹ * ‖S (y : H)‖ := by
+      rw [S.map_smul_of_tower, norm_smul, Real.norm_eq_abs, abs_of_nonneg (by positivity)]
+    rw [hcalc] at hle
+    have h2 := mul_le_mul_of_nonneg_left hle (le_of_lt hn)
+    rw [← mul_assoc, mul_inv_cancel₀ (ne_of_gt hn), one_mul] at h2
+    calc ‖S (y : H)‖ ≤ ‖(y : H)‖ * M := h2
+      _ ≤ 1 * M := mul_le_mul_of_nonneg_right y.2 hMnn
+      _ = M := one_mul M
 
 /-- **25III** (`hilb-vector-states-order-separating`, cstar.tex:3798,
 Proposition): the vector states `⟪x, (·) x⟫`, `‖x‖ = 1`, of B(H) are order
-separating, for every Hilbert space `H`. -/
+separating, for every Hilbert space `H`.
+
+This is the thesis's own proof (cstar.tex:3806): by **21VII**
+`order_separating_norm` it suffices to prove clause (3), that
+`‖T‖ = sup_{‖x‖=1} |⟪x, T x⟫|` for *positive* `T`; and writing `S := √T`
+(**23VII**), `|⟪x, T x⟫| = ⟪S x, S x⟫ = ‖S x‖²` while `‖T‖ = ‖S* S‖ = ‖S‖²`,
+so both sides are the square of `sup_{‖x‖=1} ‖S x‖`. -/
 theorem hilb_vector_states_order_separating :
-    OrderSeparating fun x : {x : H // ‖x‖ = 1} => vectorFunctional (x : H) :=
+    OrderSeparating fun x : {x : H // ‖x‖ = 1} => vectorFunctional (x : H) := by
+  refine ((order_separating_norm
+      (fun x : {x : H // ‖x‖ = 1} => vectorFunctional (x : H))
+      (fun x T hT => vectorFunctional_isPositiveMap x T hT)
+      (fun x => vectorFunctional_unital x)).out 2 0).mp ?_
+  intro T hT
+  set S : H →L[ℂ] H := CFC.sqrt T with hS
+  have hSsa : IsSelfAdjoint S := (CFC.sqrt_nonneg T).isSelfAdjoint
+  have hSS : S * S = T := CFC.sqrt_mul_sqrt_self T hT
+  -- `|⟪x, T x⟫| = ‖S x‖²`, because `S` is self-adjoint
+  have hkey : ∀ y : H, ‖(vectorFunctional y) T‖ = ‖S y‖ ^ 2 := by
+    intro y
+    have h1 : (⟪y, T y⟫ : ℂ) = ⟪S y, S y⟫ := by
+      have hTy : T y = S (S y) := by rw [← hSS]; rfl
+      have hadj : ContinuousLinearMap.adjoint S = S := hSsa
+      rw [hTy, ← ContinuousLinearMap.adjoint_inner_left S (S y) y, hadj]
+    rw [vectorFunctional_apply, h1, inner_self_eq_norm_sq_to_K]
+    simp [Complex.norm_real]
+  -- `‖T‖ = ‖S‖²`, by the C*-identity
+  have hnormT : ‖T‖ = ‖S‖ ^ 2 := by
+    rw [← hSS]
+    conv_lhs => rw [show S * S = star S * S from by rw [hSsa.star_eq]]
+    rw [CStarRing.norm_star_mul_self, sq]
+  rw [hnormT, norm_eq_iSup_unit_sphere S]
+  simp only [hkey]
+  rcases subsingleton_or_nontrivial H with hsub | hnt
+  · have hempty : IsEmpty {x : H // ‖x‖ = 1} :=
+      ⟨fun x => by simpa [Subsingleton.elim (x : H) 0] using x.2⟩
+    simp
+  · have : Nonempty {x : H // ‖x‖ = 1} := by
+      obtain ⟨x, hx⟩ := exists_ne (0 : H)
+      exact ⟨⟨(‖x‖⁻¹ : ℝ) • x, by
+        rw [norm_smul, Real.norm_eq_abs, abs_of_nonneg (by positivity),
+          inv_mul_cancel₀ (norm_ne_zero_iff.mpr hx)]⟩⟩
+    rw [← Real.iSup_pow (fun x : {x : H // ‖x‖ = 1} => norm_nonneg (S (x : H)))]
+
+/-- Auxiliary: an operator is positive iff `⟪x, T x⟫ ≥ 0` for all unit vectors
+`x` — **25III** with the subtype packaging removed, in the form **25V**.2
+states it. -/
+private theorem nonneg_clm_iff_inner_unit (T : H →L[ℂ] H) :
+    0 ≤ T ↔ ∀ x : H, ‖x‖ = 1 → 0 ≤ ⟪x, T x⟫ :=
   by
-    intro T
-    rw [nonneg_clm_iff_inner_unit T]
-    exact ⟨fun h x => h x x.2, fun h x hx => h ⟨x, hx⟩⟩
+    rw [hilb_vector_states_order_separating (H := H) T]
+    exact ⟨fun h x hx => h ⟨x, hx⟩, fun h x => h (x : H) x.2⟩
 
 /-- **25V** (`hilb-positive-operators`, cstar.tex:3819, Corollary), part 1:
 a bounded operator `T` on a Hilbert space is self-adjoint iff `⟪x, Tx⟫` is
-real for every unit vector `x`. -/
+real for every unit vector `x`.
+
+The thesis's own derivation (cstar.tex:3838): the vector states are order
+separating by **25III**, hence separating, and they are involution
+preserving, so this is **21V** `separating_self_adjoint` — `T` is
+self-adjoint iff every `⟪x, T x⟫` is, i.e. iff every `⟪x, T x⟫` is real. -/
 theorem hilb_positive_operators_1 (T : H →L[ℂ] H) :
     IsSelfAdjoint T ↔ ∀ x : H, ‖x‖ = 1 → (⟪x, T x⟫ : ℂ).im = 0 :=
   by
-    rw [ContinuousLinearMap.isSelfAdjoint_iff_isSymmetric,
-      LinearMap.isSymmetric_iff_inner_map_self_real]
-    have e : ∀ v : H,
-        ((starRingEnd ℂ) ⟪(T : H →ₗ[ℂ] H) v, v⟫ = ⟪(T : H →ₗ[ℂ] H) v, v⟫) ↔
-          (⟪v, T v⟫ : ℂ).im = 0 := by
-      intro v
-      simp only [ContinuousLinearMap.coe_coe]
-      rw [Complex.conj_eq_iff_im, ← inner_conj_symm (T v) v, Complex.conj_im, neg_eq_zero]
+    have hsep := (hilb_vector_states_order_separating (H := H)).separating _
+    rw [separating_self_adjoint (fun x : {x : H // ‖x‖ = 1} => vectorFunctional (x : H))
+      hsep vectorFunctional_star T]
     constructor
-    · intro h x _
-      exact (e x).mp (h x)
-    · intro h v
-      refine (e v).mpr ?_
-      rcases eq_or_ne v 0 with rfl | hv
-      · simp
-      · obtain ⟨hu, he⟩ := inner_self_scale_aux T v hv
-        rw [he, Complex.mul_im, h _ hu, mul_zero, zero_add, Complex.ofReal_im, zero_mul]
+    · intro hall x hx
+      have h := hall ⟨x, hx⟩
+      rwa [isSelfAdjoint_iff, Complex.star_def, Complex.conj_eq_iff_im] at h
+    · intro hall x
+      rw [isSelfAdjoint_iff, Complex.star_def, Complex.conj_eq_iff_im]
+      exact hall (x : H) x.2
 
 /-- **25V** (`hilb-positive-operators`, cstar.tex:3819, Corollary), part 2:
-`0 ≤ T` iff `0 ≤ ⟪x, Tx⟫` for every unit vector `x`. -/
+`0 ≤ T` iff `0 ≤ ⟪x, Tx⟫` for every unit vector `x`.  This is **25III**
+itself, as the thesis's proof says. -/
 theorem hilb_positive_operators_2 (T : H →L[ℂ] H) :
     0 ≤ T ↔ ∀ x : H, ‖x‖ = 1 → 0 ≤ ⟪x, T x⟫ :=
   nonneg_clm_iff_inner_unit T
 
 /-- **25V** (`hilb-positive-operators`, cstar.tex:3819, Corollary), part 3:
-`‖T‖ = sup_{‖x‖=1} |⟪x, Tx⟫|` for self-adjoint `T`. -/
+`‖T‖ = sup_{‖x‖=1} |⟪x, Tx⟫|` for self-adjoint `T`.
+
+The thesis's own derivation: this is clause (2) of **21VII**
+`order_separating_norm` for the vector states, which are order separating by
+**25III**. -/
 theorem hilb_positive_operators_3 (T : H →L[ℂ] H) (hT : IsSelfAdjoint T) :
     ‖T‖ = ⨆ x : {x : H // ‖x‖ = 1}, ‖⟪(x : H), T x⟫‖ :=
   by
-    set M := ⨆ x : {x : H // ‖x‖ = 1}, ‖⟪(x : H), T x⟫‖ with hMdef
-    have hcs : ∀ x : {x : H // ‖x‖ = 1}, ‖⟪(x : H), T x⟫‖ ≤ ‖T‖ := by
-      intro x
-      have h1 : ‖⟪(x : H), T x⟫‖ ≤ ‖(x : H)‖ * ‖T (x : H)‖ := norm_inner_le_norm _ _
-      have h2 : ‖T (x : H)‖ ≤ ‖T‖ * ‖(x : H)‖ := T.le_opNorm _
-      rw [x.2] at h1 h2
-      simp only [one_mul, mul_one] at h1 h2
-      exact h1.trans h2
-    have hbddA : BddAbove (Set.range fun x : {x : H // ‖x‖ = 1} => ‖⟪(x : H), T x⟫‖) :=
-      ⟨‖T‖, by rintro y ⟨x, rfl⟩; exact hcs x⟩
-    have hM0 : 0 ≤ M := Real.iSup_nonneg fun _ => norm_nonneg _
-    have hle : M ≤ ‖T‖ := Real.iSup_le hcs (norm_nonneg T)
-    have hbound : ∀ x : H, ‖⟪x, T x⟫‖ ≤ M * ‖x‖ ^ 2 := by
-      intro x
-      rcases eq_or_ne x 0 with rfl | hx
-      · simp
-      · obtain ⟨hu, he⟩ := inner_self_scale_aux T x hx
-        rw [he, norm_mul, Complex.norm_real, Real.norm_eq_abs,
-          abs_of_nonneg (by positivity : (0:ℝ) ≤ ‖x‖ ^ 2), mul_comm]
-        exact mul_le_mul_of_nonneg_right (le_ciSup hbddA ⟨_, hu⟩) (by positivity)
-    have hge : ‖T‖ ≤ M := by
-      rw [T.norm_eq_iSup_rayleighQuotient hT.isSymmetric]
-      refine ciSup_le fun x => ?_
-      rcases eq_or_ne x 0 with rfl | hx
-      · simpa using hM0
-      · have hx2 : (0:ℝ) < ‖x‖ ^ 2 := by positivity
-        have h1 : |T.reApplyInnerSelf x| ≤ ‖⟪x, T x⟫‖ := by
-          rw [ContinuousLinearMap.reApplyInnerSelf_apply, ← inner_conj_symm (𝕜 := ℂ) (T x) x]
-          rw [RCLike.conj_re]
-          exact RCLike.abs_re_le_norm _
-        rw [ContinuousLinearMap.rayleighQuotient, abs_div, abs_of_pos hx2, div_le_iff₀ hx2]
-        exact h1.trans (hbound x)
-    exact le_antisymm hge hle
+    have h := (order_separating_norm
+        (fun x : {x : H // ‖x‖ = 1} => vectorFunctional (x : H))
+        (fun x S hS => vectorFunctional_isPositiveMap x S hS)
+        (fun x => vectorFunctional_unital x)).out 0 1
+    exact h.mp (hilb_vector_states_order_separating (H := H)) T hT
 
 end VectorStates
 
@@ -6764,12 +6759,20 @@ theorem commutative_cstar_basic_3_finite_inf {S : Set 𝒜} (hfin : S.Finite)
     refine ⟨-s, isGLB_of_isLUB_neg hnA ?_⟩
     rwa [neg_neg]
 
-/-- **26II** (`commutative-cstar-basic`, cstar.tex:3856, Exercise), part 5:
+/-- **26II** (`commutative-cstar-basic`, cstar.tex:3856, Exercise), part 6:
 the C*-subalgebra generated by two commuting self-adjoint elements of an
 arbitrary C*-algebra is commutative — which is what makes the suprema and
 infima of part 3 available for such a pair, computed in that subalgebra.
-A C*-subalgebra is norm-closed (**3IV**), hence the `topologicalClosure`. -/
-theorem commutative_cstar_basic_5 {A : Type*} [CStarAlgebra A] {a b : A}
+A C*-subalgebra is norm-closed (**3IV**), hence the `topologicalClosure`.
+
+(This was point 5 until 2026-08-22, when the exercise gained the triangle
+inequality `|a+b| ∨ |a-b| = |a|+|b|` as its point 5 and this became point 6.
+The proof is the skeleton of the solution that arrived with the renumbering:
+the least C*-subalgebra containing `a` and `b` is the norm closure of the span
+of the `aⁿbᵐ`, which is commutative, and "that which commutes with the elements
+of a sequence commutes with its limit too" — here `StarAlgebra.adjoin` and
+`StarSubalgebra.commRingTopologicalClosure` are those two steps.) -/
+theorem commutative_cstar_basic_6 {A : Type*} [CStarAlgebra A] {a b : A}
     (ha : IsSelfAdjoint a) (hb : IsSelfAdjoint b) (hab : Commute a b) :
     IsMulCommutative ((StarAlgebra.adjoin ℂ ({a, b} : Set A)).topologicalClosure) :=
   by

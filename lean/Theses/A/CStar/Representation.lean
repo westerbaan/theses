@@ -981,8 +981,16 @@ theorem functional_calculus_2 (a : 𝒜) :
   refine ⟨⟨fun h => ?_, fun h => ?_⟩, ?_⟩
   · exact congrArg Subtype.val (h ⟨a, StarAlgebra.elemental.self_mem ℂ a⟩
       ⟨star a, StarAlgebra.elemental.star_self_mem ℂ a⟩)
-  · haveI : IsStarNormal a := ⟨h.symm⟩
-    exact fun x y => mul_comm x y
+  · -- the solution's route, part 1 twice: `a` commutes with itself and with
+    -- `a*`, so by **28II**.1b it commutes with every `b ∈ C*(a)`; likewise
+    -- `a*`; so every such `b` commutes with every `c ∈ C*(a)`
+    have hax : ∀ x : 𝒜, x ∈ StarAlgebra.elemental ℂ a → a * x = x * a := fun x hx =>
+      (functional_calculus_1b a x hx a rfl h.symm).symm
+    have hsx : ∀ x : 𝒜, x ∈ StarAlgebra.elemental ℂ a → star a * x = x * star a :=
+      fun x hx => (functional_calculus_1b a x hx (star a) h rfl).symm
+    intro x y
+    exact Subtype.ext
+      (functional_calculus_1b a (y : 𝒜) y.2 (x : 𝒜) (hax _ x.2) (hsx _ x.2)).symm
   · have hkey : star a * a - a * star a =
         (2 * Complex.I) • ((ℜ a : 𝒜) * (ℑ a : 𝒜) - (ℑ a : 𝒜) * (ℜ a : 𝒜)) := by
       rw [h7, h7']; module

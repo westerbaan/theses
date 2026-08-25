@@ -28509,3 +28509,1277 @@ same two its own header note lists.  Axiom-cleanliness verified in situ for
 all four repaired declarations by appending `#print axioms` to a scratch copy
 of each source and compiling the copy.  Oleans rebuilt for `Measurement` then
 `Tensor`, and every importer recompiled.
+
+## Session 95 — A/VN, second pass: **56VI was a dependency inversion and the previous round left it unrecorded; 45II `cp-uscont` had zero consumers until 45IV.1 was put back on the exercise's own route** (worker on `Theses/A/VN/{Basic,Projections,Completeness,Division,NormalFunctionals}.lean`)
+
+**Result: 4 proofs back on the thesis's route — three of them the 56VI
+cluster inherited half-finished from commit `bebf4a5`, verified against
+`vn.tex` and completed here, and one (45IV.1) of my own — plus 3 dead private
+limbs removed, 4 CSV records corrected as stale, and all 45 open CSV rows
+given a status.  All five files compile with exactly their pre-existing
+error/sorry multiset — 0 errors and 0 `sorry` in every one — and no statement
+moved.**  `route` across the five files goes 42 → 37; `mild` is unchanged at
+24.
+
+### The inherited round: 56VI `vna-floor`, and it *was* a dependency inversion
+
+Commit `bebf4a5` replaced the private `proj_le_iff_le_ceil_compl` with
+`exists_floor_inf` and reordered the floor cluster, then the worker was
+killed before writing anything down.  Checked against `vn.tex:2419`: the edit
+is right, and the thing it repaired is the most valuable class the brief
+names.
+
+Before it, `⌊b⌋` was produced from the duality `⌊b⌋ = ⌈b^⊥⌉^⊥`.  That duality
+is **56XIII**.1 — an *Exercise seven points later*, whose only proof in the
+tree was the very theorem it was being used to prove.  The thesis does the
+opposite: 56VI.70–90 builds `p := ⋀ₙ b^{2ⁿ}` outright (the chain
+`1 ≥ b ≥ b² ≥ b⁴ ≥ ⋯ ≥ 0`, its infimum by **43Ia** `infima-in-vna`, the
+projection property by two applications of `ad_normal_inf`, the commutation
+clause by a variation on **44XIII**), and 56VI.100 gets leastness from
+**55IX** `projection-below-effect` plus induction.  `exists_floor_inf` is
+that, and `exists_floor`, `floor_isGreatest`, `vna_floor` and
+`vna_floor_comm` are now all read off it.  `floor_eq_one_sub_ceil` survives
+unchanged as a *statement* and is now a three-line corollary of 56VI, which
+is where 56XIII.1 belongs.
+
+Two things the killed round did not do, done here:
+
+* `ceil_isStarProjection` — the private helper whose **only** consumer had
+  been `proj_le_iff_le_ceil_compl` — was left behind with zero uses.
+  Removed.
+* `vna_floor_comm` is 56VI.80 again rather than a corollary of
+  `vna_ceil_comm` through the duality, and its CSV note's claim that the
+  printed "then **`b`** commutes with `⌊b⌋`" defect is "not in ERRATA" was
+  stale: `ERRATA.md` carries the 56VI row.
+
+`exists_floor`, `floor_isGreatest`, `vna_floor`, `vna_floor_comm`,
+`floor_eq_one_sub_ceil` and `floor_spec` all verified **in situ** on
+`[propext, Classical.choice, Quot.sound]`.
+
+### The repair of my own: 45IV.1, and the limb it revives
+
+`vn.tex:868` states the exercise in one sentence: *"Conclude (using
+`cp-uscont` and `ad-cp`) that the map `a ↦ b*ab` is ultrastrongly continuous
+for every `b`."*  `mult_uws_cont_ad` used neither.  It ran a direct seminorm
+estimate `‖b*xb‖_ω = ‖b*x‖_{b*ω} ≤ ‖b‖‖x‖_{b*ω}`, with a comment saying so.
+
+The consequence is the brief's fifth check, exactly:
+
+    $ grep -rn "\bcp_uscont\b" Theses/ --include=*.lean
+    Theses/A/VN/Basic.lean:3479:theorem cp_uscont …          ← the declaration
+    Theses/A/VN/Basic.lean:3510:  -- from `cp_uscont` and `ad_cp`; …   ← a comment saying it is not used
+
+**45II `cp-uscont` — a Proposition with a transcribed proof — had zero
+consumers in the entire tree**, and the only other mention of it was the
+comment in the proof that went round it.
+
+It now has one.  `adNCP b` bundles `a ↦ b*ab` as an `NCPMap A A`: complete
+positivity is **34V**.1 `ad_cp_1` (transported across the associativity
+`b*(ab) = (b*a)b` by `adLinearMap_eq`), normality is **44VIII** `ad_normal`,
+factored out of `p_uwcont_ad` as `adPositive_normal` so that 44XV's
+conclusion and 45IV.1 share it.  Then
+
+    theorem mult_uws_cont_ad [VonNeumannAlgebra A] (b : A) :
+        @Continuous A A (ultrastrong A) (ultrastrong A) fun a => star b * a * b :=
+      cp_uscont (adNCP b)
+
+Statement byte-identical (only ` := by` became ` :=`).  `mult_uws_cont_ad`,
+`p_uwcont_ad` and `cp_uscont` verified in situ, all clean.
+
+45IV part **2** was left: its ultraweak halves already follow the exercise's
+hint (44II polarisation), and its ultrastrong halves are one-line seminorm
+estimates that routing through part 1 would only lengthen.  Part 1 is no
+longer orphaned either way.
+
+### The dead-limb sweep, in full
+
+I enumerated all 642 public `theorem` names across the five files and all 358
+private ones, and counted references in `Theses/`.
+
+* **`cp_uscont` (45II)** — zero consumers.  Repaired above.
+* **`abelian_projections_norm_dense` (64II)** — zero consumers, and this one
+  I could **not** close.  It was itself repaired in the 2026-08-21 pass (the
+  thesis's Gelfand/Stone–Weierstraß proof restored, the expired-`sorry`
+  premise retired), but **65IV** still reads itself off the spectral Riemann
+  sum `mem_closure_span_spectral`, so nothing consumes 64II.  Restoring the
+  thesis's reduction (`vn.tex:3279` goes through the commutative von Neumann
+  subalgebra `{a}^□□`) needs `{a}^□□` bundled as a *commutative von Neumann
+  algebra type* — 64II is stated for a type carrying `[CommCStarAlgebra]` and
+  `[VonNeumannAlgebra]` — and the tree's only such bundling, `VNSub`, lives
+  in `A/VN/Division.lean`, **three files downstream** of `Projections.lean`.
+  That is new machinery, not a proof change, so it is reported rather than
+  attempted.  **This is the pass's one open dead limb.**
+* **`uwbib_pol_aux` (`NormalFunctionals.lean`)** — the polarisation norm
+  estimate for the *old* proof of **87VIII**, orphaned when session 94 put
+  87VIII on 870.90's route (predual complete by 87III, `‖(·)(b_α)‖ = ‖b_α‖`
+  by 87VI).  Fifteen dead lines.  Removed.
+* **`us_smul` (`Completeness.lean`)** — written for
+  `usClosureSubalgebra`, which is a `StarSubalgebra` and therefore needs
+  `algebraMap_mem'`, not `smul_mem'`.  Never used.  Removed.
+* **`ceil_isStarProjection` (`Projections.lean`)** — orphaned by `bebf4a5`.
+  Removed.
+
+Checked and *clean*, against the notes that said a step was bypassed:
+
+* **86XIV** replaces the thesis's `cp-russo-dye` step by **86II**
+  `positive_functional_criterion` — but 86II's own forward direction **is**
+  `cp_russo_dye` (`NormalFunctionals.lean:143`), so 34XVI still carries the
+  step, one level down.
+* **69IX**'s shortcut round `gns_ceil` does not orphan it: **69VII** is
+  instantiated at `ϱ_Ω` as `gns_ceil_gnsRepFam` and drives entries 3 ⟺ 4 of
+  the TFAE.
+* **65IV**'s three relativised forms are all consumed
+  (`A/Proc/Measurement`, `A/Proc/Duplicators`, `A/VN/Completeness`), and the
+  spectral Riemann sum feeding them — `exists_spectral_approx` →
+  `mem_closure_span_spectral` → `projections_norm_dense` — is live inside
+  `Projections.lean` itself.
+* **49II** `bah-vn` cannot be a dead limb: it has no declaration at all, and
+  `B^a(X)` still has none in `A/CStar` (re-verified).
+
+The remaining unreferenced public names are exercise parts, counterexamples
+and examples — `vn_counterexamples_*`, `meagre_full_measure`,
+`ultracyclic_basic_1/2/4`, `us_cont_normal` — which are leaves by their
+nature, not by a shortcut above them.
+
+### The four stale records corrected
+
+1. `56VI exists_floor` carried the status *"left: the thesis's own
+   construction is in the tree … only the route to well-definedness goes
+   through the ceiling duality"* — written before `bebf4a5` put the route
+   itself back.  Verdict `route` → `faithful`.
+2. `56VI vna_floor_comm`'s note called the printed "then **`b`** commutes
+   with `⌊b⌋`" a *"NEW THESIS DEFECT (minor, not in ERRATA)"*.  `ERRATA.md`
+   carries the 56VI row.
+3. `56XIII.1 floor_eq_one_sub_ceil`'s note said it was *"proved early because
+   56VI is built on it"*.  That described the inverted arrangement and is now
+   false.
+4. `65IV projections_norm_dense_subalgebra_selfAdjoint`'s note said the
+   reduction *"would need the double commutant theorem 88VI, which is
+   `sorry`"*.  88VI **is** proved — but only for `B(H)`, which is the real
+   reason and what the in-file doc has said since 2026-08-21.
+
+### Dependency inversions
+
+One, and it is 56VI above (56VI from 56XIII.1).  It is fixed.
+
+I also ran a mechanical hunt for others: for every declaration in the five
+files, parse the thesis point in its doc comment and compare it with every
+point cited in its body, flagging any citation of a *later* point.  Once the
+forward pointers in prose ("used at 56VI", "see 55V") are discounted, nothing
+survives except one family, and it terminates at a **statement** question
+rather than a proof one:
+
+* **69IX** (2) ⇒ (3) and **44XI**'s `Ω`-form both want 30X's clause (1) to
+  speak about *this* `ϱ_Ω`.  `QUESTIONS.md` **A8** records that our 30X states
+  it existentially, so it cannot; restating it is a statement change, which
+  this pass forbids.  Four CSV rows rest on this.
+
+A near-miss worth naming, because the record was wrong about *why*: **65IV**'s
+relativised form would follow from 65IV if `{a}^□□ ⊆ S`, which is **88VI**.
+The CSV said 88VI "is `sorry`" — stale.  `double_commutant` **is** proved
+(`NormalFunctionals.lean:1757`), but only for `B(H)`, not for a von Neumann
+subalgebra of an abstract `A`, which is the real obstruction and what the
+in-file doc has said since 2026-08-21.
+
+### Left deliberately — by class
+
+Forty-five rows came into this round with an empty status field; four of them
+were repaired (above), leaving forty-one, plus 45II `cp_uscont` which stays a
+documented deviation but is no longer orphaned.
+
+* **The route would import a defect** — the deviation *is* an `ERRATA.md`
+  repair, so restoring the printed proof would restore the error: 53III
+  (ERRATA 53IV), 54XI.2 (54XII), 69II and 69III (69III), 74IV `kaplansky`
+  (74V), 74VI (74VII), 75VIII (75IX), 77I (77II), 83V `cceil_sum` (830.50),
+  86IX (86X).  **10 rows.**
+* **A local rendering deviation inside the thesis's own chain** — same
+  argument, same ingredients: 56I `exists_ceil_effect` (bounds the generators
+  directly instead of the `ad-normal` double supremum — and `ad_normal` has
+  five other consumers, so nothing is orphaned), 56I `exists_ceil` and 59I
+  `ceil_mem_ideal` (the 59I rescaling applied unconditionally), 54XI.1, 74I,
+  74IV `kaplansky_pos`, 76I, 77III, 84bIII, 86XIV, 88II.  **11 rows.**
+* **Not a thesis statement, so there is nothing to be faithful to**:
+  `ad_normal_inf` and `vna_infimum_commutes` (the `x ↦ −x` mirrors that
+  56VI.90 and 56VI.80 ask for, and now use), `mult_cancellation_left`,
+  `cceil_sum_relative`, the three relativised 65IVs, `exists_spectral_approx`,
+  `mem_closure_span_spectral`.  **9 rows.**
+* **Blocked by a *statement* question, not a proof one** — all four want
+  30X's clause (1) to be about `ϱ_Ω`, which `QUESTIONS.md` A8 records that our
+  30X cannot say: 44XI `nonneg_of_conjNP_of_centreSeparating` and the three
+  69IX rows.  **4 rows.**
+* **Exercise or Example with no thesis argument**: 43II.5, 45IV.2, 52IIIb,
+  79VI.4.  **4 rows.**
+* **Machinery unavailable at that point in the file**: 49IV.1 (49II `bah-vn`
+  unformalized, `B^a(X)` has no declaration in `A/CStar`) and 65IV
+  `projections_norm_dense` (`VNSub` is three files downstream).  **2 rows.**
+
+10 + 11 + 9 + 4 + 4 + 2 = 41.  Numbers, not shrugs.
+
+### Build
+
+`Basic`, `Projections`, `Completeness`, `Division`, `NormalFunctionals` all
+compile clean under `lean -DrelaxedAutoImplicit=false
+-DmaxSynthPendingDepth=3`: **0 errors, 0 `sorry`** in each, the same multiset
+they had at HEAD.  Oleans rebuilt in import order (`Basic` → `Projections` →
+`Completeness` → `Division` → `NormalFunctionals`) and every external
+importer — `A/Proc/Measurement`, `B/Dils/{HilbertModules,Stinespring,Kaplansky}`
+— recompiled against them: **0 errors each**, with their own unchanged
+`sorry` counts (2, 0, 1, 4 — none of those four files was touched).
+Statement lines re-diffed against HEAD
+mechanically: the only public declarations touched are `mult_uws_cont_ad` and
+`p_uwcont_ad`, whose signatures are byte-identical up to `:=` (tactic proof
+became a term).  Every repaired declaration axiom-checked **in situ** by
+copying the source to the scratchpad, appending `#print axioms`, and
+compiling the copy — all on `[propext, Classical.choice, Quot.sound]`.
+
+## Session 95 — `B/Dils` Paschke + Pure + Stinespring, second pass: **169VI's "and thus also normal" is back — the corestriction `ϑ : ℬ ≅ q𝒫q` is formed at last, and its premise had expired twice over**; no dead limb and no new dependency inversion in 12 880 lines (worker on `Theses/B/Dils/{Paschke,Pure,Stinespring}.lean`)
+
+**19 rows** were in scope — the `route` and `mild` rows of
+`bdils-paschke-stinespring.csv` and of the `B/Dils/Pure` part of
+`bdils-pure-beff-states-effectalgebras.csv` that the first pass left without
+a `status`: 9 in `Paschke`/`Stinespring` (4 `route`, 5 `mild`) and 10 in
+`Pure` (6 `route`, 4 `mild`).
+
+**One proof went back on the thesis's argument; one further verdict was
+stale and is corrected; the other seventeen are recorded below with the
+reason, checked against the tree rather than against the note.**  All three
+files compile with exactly their pre-existing diagnostics and **no new
+`sorry`**.
+
+### 1. **44VIII `pdil_theta_normal` (`Pure.lean`) — the expired premise, and the thesis's one-line proof**
+
+dils.tex **169VI** proves that `h` is a corner by corestricting
+`ϑ : b ↦ |e·b⟩⟨e|` to the corner `q𝒫q` of `q = ϑ(1) = |e⟩⟨e|`, observing
+that the corestriction is an miu-**isomorphism** with inverse
+`qTq ↦ h(qTq)`, and concluding: *"So `ϑ` is an miu-isomorphism and thus also
+normal."*  Our file did none of that.  It proved normality from scratch out
+of the vector forms `⟨x, ϑ(b)x⟩ = y* b y` — `ad_normal` in `ℬ` plus **144I**
+`ba_nonneg_iff` to detect the order of `𝒷ᵃ(X)` — 30 lines, with two private
+helpers (`pdil_theta_vec`, `pdil_theta_mono`) existing only to serve it.
+The section doc and the audit row both justified this by "the corestriction
+is not formed"; the audit row for the *definition* `pdil_theta` recorded the
+same thing as "**ONE DEPARTURE**".
+
+Every ingredient the thesis's sentence needs is now in the tree:
+
+* `Theses.A.VN.starAlgEquiv_preservesDirSups` — *"A ∗-isomorphism between
+  C\*-algebras is normal: it is an order isomorphism, so it carries suprema
+  to suprema."*  That **is** 169VI's "and thus also normal", and it has 43
+  occurrences in the tree, so it was never unavailable;
+* `cornerSet_vonNeumannAlgebra` (**94II**.8) and `cornerSet.val_normal`
+  (**94II**.6) — `q𝒫q` is a von Neumann algebra and its suprema *are* those
+  of `𝒫`, both **earlier in this same file** (lines 395, 432);
+* `ba_vonNeumannAlgebra` (**152X**) with `vonNeumannAlgebra_mulOpposite`
+  (`Paschke.lean`) — `𝒫 = 𝒷ᵃ(X)ᵐᵒᵖ` is a von Neumann algebra;
+* and the two identities the section doc *already named* — `pdil_h_theta`
+  (`h ∘ ϑ = id`) and `pdil_theta_h` (`ϑ ∘ h = q(·)q`) — are exactly the
+  inverse and the well-definedness of the corestriction.  `ϑ(b) = q ϑ(b) q`
+  is `pdil_theta_h` at `T = ϑ(b)` rewritten by `pdil_h_theta`; one line.
+
+So `pdil_theta_normal` now builds
+`Φ : ℬ ≃⋆ₐ[ℂ] cornerSet (Ba ℬ M.X)ᵐᵒᵖ (ϑ 1)` from the multiplicativity,
+linearity and star-preservation already proved above it, takes normality
+from `starAlgEquiv_preservesDirSups Φ`, and composes with the inclusion by
+`preservesDirSups_pmap_comp`.  The from-scratch computation and its two
+orphan helpers are gone: `Pure.lean` **5031 → 5032** lines (the proof is one
+line shorter than what it replaced; the doc grew).  Divergence class
+**(1) faithful**, where it was (2) `route`.  The `pdil_theta` row's
+"ONE DEPARTURE" is corrected too: the corestriction and its inverse are on
+record, inside the proof that uses them; what remains true is only that
+neither is a *top-level* definition.
+
+### 2. **157IV `paschke_correspondence_embedding` — a stale `route` verdict, corrected to `faithful`**
+
+The row still read `route`, with a note that opened "REPAIRED session 94".
+Checked against dils.tex: the (⇒) half of the order embedding *is* **157VII**
+(*"Let `T ∈ ϱ(𝒜)^□` be given such that `φ_T` is ncp.  We must show
+`T ≥ 0`"*) and the (⇐) half *is* the set-up point **157VI** (*"if `T ≤ S`
+… then `φ_{S−T} = φ_S − φ_T` is ncp and so `φ_T ≤_ncp φ_S`"*).  The proof is
+now precisely `phiT_reflects_nonneg` and `phiT_ncpLe`, with no appeal to
+part 3; the transport inside `phiT_reflects_nonneg` is **157IX**, which the
+thesis performs too.  Verdict corrected `route → faithful`.  (The note's
+second stale claim — that 157IV's linear clause is unrendered — was already
+retired by `phiT_add`/`phiT_smul`.)
+
+### The dead-limb check: **clean**
+
+Every declaration of the three files (12 880 lines) was matched against
+every `.lean` file in `Theses/`.  29 have no use anywhere.  All 29 are
+either **thesis endpoints the thesis itself does not use again** —
+`ksgns` (**155II**; dils.tex parsec 1550 is a two-point aside, `\sref{ksgns}`
+is never cited), `exc_chris_univ_prop` (**139IX**), `kraus_decomposition_findim`
+(**138VIII**), `dils_gns` (**135II**), `paschke_basics_1`–`_4` (**140X**,
+an Exercise), `existence_paschke_2` (**154III**.2's uniqueness clause),
+`phiT_add`/`phiT_smul`/`phiT_ncpLe_self` (**157IV**'s linear clause and
+**157VI**), `ncp_extreme_comp` (**172XII**), `stinespring_unital` — or
+`_apply`/plumbing lemmas of a family whose siblings are used
+(`ptens_smul_sum`, `ncInner_smul_left`, `rightMul_one`, `nc_norm`,
+`denseRange_ksEta`, `pTheta_mono`, six `X_apply` rfl-lemmas).  **No run-up
+hangs off nothing**: for each divergence I also checked what the thesis's
+route would have consumed, and every one of `hilmod_fixed_on_V` (5),
+`hilmod_fixed_on_V_eq` (5), `ncp_ceil` (20), `vna_ceil_sup` (10),
+`ncp_cp_cs` (7), `pure_fundamental` (10), `dils_filters_injective` (7),
+`dils_examples_pure_2` (2 consumers) is load-bearing elsewhere.  The two
+helpers the 169VI repair orphaned were deleted with it, so it created none.
+
+*One borderline observation, in a file this pass may not touch:*
+`hilmod_fixed_on_V_ncp` (`SelfDualCompletion.lean:3266`, **152IX**'s
+"the vector states are ncp-maps" clause) has **zero uses** — but it is the
+clause `hilmod_fixed_on_V`'s order-separation is *asserted of*, i.e. a
+statement of the Exercise rather than a run-up, so it is not the fingerprint.
+Noted, not acted on.
+
+### Dependency inversions: **none new**
+
+A mechanical scan was run: every declaration of the three files was mapped
+to its DISP through all 18 audit CSVs, its body stripped of comments, and
+every identifier in it that carries a DISP **of the same thesis** compared
+by (page, roman, part).  25 forward edges came out; all 25 are benign and
+were checked one by one:
+
+* 11 are a theorem using a point **of its own proof** — `existence_paschke`
+  and `ptprod_univ` (154III) using `ptensBInner` (154IV/V, the inner-product
+  formula displayed inside 154III's proof), `existence_paschke_5` (154III.5)
+  using `paschke_sigma_matrix` (154VIII, which the thesis proves *before*
+  point 5 and says so: *"Before we continue with 4, we will already prove the
+  uniqueness property for point 5"*), `paschke_correspondence_mem` (157IV.1)
+  using 157VI, `paschke_correspondence_surjective` (157IV.3) using 157VIII,
+  `h_is_corner_for_unital_map` (169V) using 169VI, `stinespring_aux` (135IV)
+  using 136II (dils.tex states Stinespring at line 37 and proves it at line
+  400, *after* 136II, citing it at line 452);
+* `exists_paschke_starAlgHom` (140VIII) using 154III is the row already
+  recorded as **"Not a rendering of 140VIII"** — the real 140VIII,
+  `Stinespring.paschke_unique_up_to_iso`, does not use 154III;
+* `dils_filter_basics_1`/`_2a` (169XI) using `dils_filters_injective`
+  (169XII) is what `bsols.tex` itself does (re-confirmed);
+* `pext_corner_iso` and `paschke_pure` using `pext_exists_ncpId` /
+  `pext_dilation_target_iso` are uses of **Lean-side** helpers that carry no
+  thesis content and are merely sited in the 172X section;
+* `rightMulEquiv` (141III) using `Ba` (143I) is the row already recorded as
+  "141III/143I cited as provenance, not as source", and the four edges out of
+  `pdil_theta_normal` are an artefact of its DISP: the row is labelled
+  **44VIII** because that is the point it *cites*, while the declaration
+  belongs to the 169VI development, so `pdil_theta` (169VI),
+  `ba_vonNeumannAlgebra` (152X) and `SelfDual` (149V) are all *earlier* than
+  the theorem it serves;
+* `kraus_decomposition_findim` (138VIII) using `StinespringDilation` (139I)
+  and `ess_uniq_pur` (139XI) using `PaschkeTriple` (140II) are uses of a
+  later **definition** to state an earlier Exercise — `bsols.tex`'s own
+  solution to `kraus-exercise` likewise says *"Recall that the standard
+  Stinespring dilation space …"*, and `ess-uniq-pur` is an Exercise\* whose
+  solution is written in the language of the dilations.
+
+The one real inversion in this chapter — **157VIII through the transported
+157VII**, i.e. through the 157IX step the thesis takes *after* it — was found
+and documented in the first pass.  Re-checked: it is still forced by the
+shape of the statement (`M` is an abstract `PaschkeModule`, which carries no
+`η`, and positivity is not settled by matrix elements on a non-dense
+separating set), and removing it needs a concrete-module
+`paschkeModuleOf_phiT_surjective`, a **new statement**.  Not made.
+
+**170II.1 `dils_examples_pure_1` through 171VII is an exposition-order
+inversion but not a circularity**, re-verified: dils.tex 171VIII cites
+`dils-examples-pure` for part **2** only, and `paschke_pure`'s Lean proof
+uses `dils_examples_pure_2`, never part 1.  There is no thesis proof of
+170II.1 to restore — dils.tex gives the Example none and `bsols.tex` no
+solution.
+
+### One place where the thesis's own route is *redundant*, and we are right not to take it
+
+**172III `ncp_extreme_paschke`, 3 ⇒ 1.**  The thesis, for self-adjoint `a`
+in the commutant with `h(a) = 0`, invokes **170II.2** (purity of `h`), splits
+`h = c ∘ h_p`, uses injectivity of filters to get `pap = 0`, and reads
+`ptp = λp` off that in order to conclude `φ_t(1) = λφ(1)` for `t = μa + λ`.
+But `h` is linear and `h(a) = 0` is the hypothesis, so
+`φ_t(1) = h(t) = μ·h(a) + λ·h(1) = λ·φ(1)` **immediately**; the whole
+purity detour is unnecessary.  Our proof takes `λ = 1/2` and finishes by the
+injectivity of `t ↦ φ_t` (157IV.2).  Not an erratum — the printed proof is
+correct — but the divergence is a simplification, not a gap, and 170II.2 is
+not orphaned by it (two consumers: `paschke_pure`, `ncp_extreme_comp`).
+
+### Left, with the reason verified against the tree
+
+* **needs a statement this pass may not add** (3): 156II
+  `paschke_injective_carrier` and `paschke_injective` — the carrier equality
+  `⌈ϱ⌉ = ⌈⌈φ⌉⌉` is never stated, so both halves rebuild the carrier facts
+  through 69IV and 63II.4 (checked for inversion: both are vn.tex points of
+  thesis A and precede parsec 1560); 157IV `paschke_correspondence_surjective`
+  — the `T ≤ 1` step, above.
+* **the thesis's ingredient is not in the tree and is not a thesis point**
+  (1): 154III `existence_paschke_4`.  The uniqueness half runs through
+  `paschke-uniqueness` **plus a λ-scaling lemma cited only as
+  `westerbaan2016universal`, lemma 9**.  Our two-line uniqueness
+  (`S(a ⊗ b) = b·S(ϱ(a)(1⊗1))`) needs neither.  The *existence* half is the
+  thesis's `S₀(a⊗b) = ϱ'(a)eb` verbatim; only the upgrade of
+  inner-product preservation off the elementary tensors uses part 1's
+  universal property instead of `hilmod-fixed-on-V`, which an abstract
+  `PaschkeModule` cannot state.  The note, which said the proof "deliberately
+  does not follow the thesis", is corrected to say which half.
+* **the tree lacks the construction** (4): 171II `paschke_corner` and
+  `pcorner_rho_surjective` — the thesis's steps 1 and 2 (`𝒜p` as a self-dual
+  Hilbert `p𝒜p`-module; `𝒜 ⊗_{h_p} p𝒜p ≅ 𝒜p`) exist nowhere in the tree,
+  and they are what carries the basis expansion; 169IV `pext_corner_iso` and
+  172X `pure_ncp_extreme` — re-verified the first pass's finding that
+  proc.tex **100III** `pure_fundamental` is proved and *is* importable but
+  does not bridge (`IsCornerFor`/`IsFilterFor` here quantify over
+  C\*-algebras, `A/Proc`'s over von Neumann algebras; `IsFilterFor` carries
+  the 2026-08-16 subunitality repair; `A/Proc`'s `IsPure` is the inductive
+  170I).
+* **re-proving would weaken the statement** (1): 169IV `ncp_eq_zero_ceil`.
+  Checked: `standard_corner_dils`'s universal clause introduces its test
+  object as `C` with `[CStarAlgebra C]` only, where dils.tex's definition
+  quantifies over von Neumann algebras.  **60V** `ncp_ceil` computes a
+  ceiling *in the target* and therefore does not apply; the substitute
+  (`⌈b⌉ = ⋁ₙ b^{1/2ⁿ}`, **56I**, plus Kadison **34XIV**) is the thesis's own
+  construction of the ceiling.
+* **the thesis's proof is gapped** (1): 138VIII `kraus_decomposition_findim`.
+  `bsols.tex` bounds `dim 𝒦'' ≤ (dim ℋ)²(dim 𝒦)` and then reads
+  `dim 𝒦' ≤ (dim ℋ)(dim 𝒦)` off `ℋ ⊗ 𝒦' ≅ 𝒦''` by **dividing by `dim ℋ`**
+  — invalid for `ℋ = 0` — and asserts that isomorphism "by construction" for
+  a `𝒦'` that `physics-stinespring` does not pin.  Not repairable as printed.
+* **cost, the argument being the same computation** (2): 138II
+  `nmiu_forall_mem` and `nmiu_between_type_I`.  138IV is a sub-point of
+  138II's own proof, so no inversion; the recast reads
+  `1 = ϱ(1) = ∑ᵢ ϱ(pᵢ) = ∑ᵢⱼ |r_ij⟩⟨r_ij|` as a supremum of partial sums
+  instead of an orthonormal-basis count, and transcribing the count needs
+  ONB machinery over an arbitrary index set plus
+  `orthogonal-tuple-of-projections`, neither of which the tree has.
+* **kept by choice, to stay in step with `A/Proc`** (1): 169X
+  `sfilter_factor`.  Re-verified: **81IX** runs *ultraweakly* (`div_uwc`) and
+  is reachable, so the thesis's normality route *is* available; the
+  bipositivity proof is kept because `Theses.A.Proc.canonicalFilter_factor`
+  renders the same proc.tex 96V and made the same choice.
+* **forced by `IsPureMap`'s normal form** (1): 171VII `paschke_pure`.
+  171VIII is followed in both directions; the thesis's "clearly
+  `h_{⌈⌈p⌉⌉}` is surjective" is re-derived inline because `paschke_corner`
+  pins `ϱ` only by its defining formula — exporting it is a new statement,
+  reported in the first pass and still not made.
+* **no thesis proof exists** (1): 170II.1 `dils_examples_pure_1`, above.
+* **our proof is shorter and the thesis's step is redundant** (1): 172III,
+  above.
+
+The five `mathlib` rows still without a status in these files
+(135II `dils_gns`, 136II `prop_complete_into_hilbert_space`, and the three
+`fact_isStarProjection_*` instance wrappers) are outside this pass's
+selection; the first pass had already recorded each as a triviality or a
+Mathlib-settled construction, and re-reading them confirms it.
+
+### Compile
+
+`Theses/B/Dils/Pure.lean` is the only file changed (proof + doc; `+50/−49`,
+5031 → 5032).  `Paschke.lean` and `Stinespring.lean` are untouched.
+
+    lean -DrelaxedAutoImplicit=false -DmaxSynthPendingDepth=3
+
+from source, never `lake`.  `Pure.lean`: **0 errors**, **27 warnings**,
+**1 `declaration uses sorry`** — byte-for-byte the pre-existing multiset
+(baseline: 0 / 27 / 1, the `sorry` at `surjective_nmiu_2`, line 2690 → 2691,
+the file having grown by one line).  Olean rebuilt; the one importer,
+`Theses/B/Eff/VNExamples.lean`, recompiled from source: **0 errors**, its one
+pre-existing `sorry` and no other.  The diff contains no occurrence of the
+token `sorry`.
+
+Statement lines re-diffed against `HEAD` declaration by declaration: **no
+statement moved**.  Two `private` helpers that existed only to serve the
+replaced proof and had no other consumer in the tree are deleted
+(`pdil_theta_vec`, `pdil_theta_mono`); neither carries an audit row.
+
+Axiom-checked **in situ** (source copied to the scratchpad, `#print axioms`
+appended, the copy compiled from source — not against oleans).
+`pdil_theta_normal` is `private`, so its two public consumers were checked:
+
+    'Theses.B.Dils.h_is_corner_for_unital_map' [propext, Classical.choice, Quot.sound]
+    'Theses.B.Dils.pure_ncp_extreme'           [propext, Classical.choice, Quot.sound]
+
+## Session 95 — `A/CStar/Matrices` + the remaining `B/Eff`: **33I had zero uses in the entire tree, and 32VI Cauchy–Schwarz had zero uses too — both because one proof above them took a shortcut**; four repairs, no dependency inversion in 22 000 lines, and 22 rows costed and left (worker on `Theses/A/CStar/Matrices.lean`, `Theses/B/Eff/{Effectus,Comparisons,StatesPredicates,VNExamples}.lean`)
+
+**Result: 4 proofs put back on the thesis's own route, all four in
+`A/CStar/Matrices.lean`; 1 private auxiliary and 3 of its helpers deleted as
+dead limbs of the route they served; 22 rows deliberately left, each with a
+named reason; 1 recorded verdict corrected as stale.  `Matrices.lean`
+compiles with 0 errors and 0 `sorry`, exactly as before, and all four of its
+importers (`A/VN/NormalFunctionals`, `A/VN/Basic`, `B/Dils/HilbertModules`,
+`B/Dils/Stinespring`) recompile clean against the new olean.  The four B/Eff
+files were not modified.**  Across the
+`Matrices.lean` rows of `acstar-matrices-representation.csv`, `faithful` goes
+27 → 31, `route` 13 → 10 and `mild` 6 → 5.  No statement was touched:
+every repair is byte-identical with a different proof term, and the only
+deletions are `private` auxiliaries.
+
+**No dependency inversion was found in any of the five files.**  Method: the
+`DISP` → `lean_name` map was read out of all eighteen audit CSVs, every
+declaration in the five files was matched to its own thesis number from its
+doc comment, and every proof body was scanned for references to results whose
+number is *later*.  The hits are all of three benign kinds: (a) a *theorem
+stated at point n and proved over points n+1 … n+k* — `tot_effectusTotalForm`
+is 181XI and its proof legitimately consumes 181XII–181XVI, `cho_thm_1` is
+187I and consumes 187III/187V; (b) `VNExamples`'s `su_*` concrete work, which
+is a *later* chapter instantiating earlier general theory (`su_hasDilations`
+citing 221II `HasDilations` is the point of the file); (c) my matcher taking
+the first `**NNNxxx**` of a doc comment to be the declaration's own number
+when it is in fact a citation (`normal_russo_dye` is 34aII, not the 28II it
+cites).
+
+### The four repairs, all in `A/CStar/Matrices.lean`
+
+**33II.1 `cstar_matrix_positive_iff` — the whole of 33I had zero uses in the
+tree, because this proof argued on matrices instead of following its own
+hint.**  cstar.tex:5425 says, in the exercise itself, "(Hint:
+use \sref{chilb-vector-states-order-separating})": transport `0 ≤ A` from
+`M_N(𝒜)` to `𝓑^a(𝒜^N)` along 33I and apply 32XV.2 there.  Our proof did not:
+it conjugated with the matrix of constant columns for `⇒`, and for `⇐`
+established self-adjointness of `A` by a polarisation lemma of its own
+(`sesq_eq_zero`) and then ran the negative-part trick.  The cost was that
+`cstar_matrices_1`, `cstar_matrices_2` and `cstar_matrices_3` — all three
+parts of 33I, faithfully transcribed — were referenced **nowhere in
+`Theses/`**, and 32XV.2 `chilb_vector_states_2` had exactly one reference,
+into `chilb_adjoint_mul_self_nonneg`, which is itself referenced nowhere.
+The transport is now written out: `0 ≤ A` iff `A = B B*` iff
+`toCLM A = R'.comp R` with `R'` adjoint to `R` — `cstar_matrices_1` supplies
+the adjoint (`Ā* = A*`), `cstar_matrices_3` the multiplicativity (reversed,
+because Mathlib's `toCLM` acts by `vecMul`), and `cstar_matrices_2` **both**
+its injectivity and its surjectivity, the latter being what turns an
+arbitrary adjointable `R` back into a matrix.  Then `chilb_vector_states_2`
+closes it, the vector functional of `Ā` at `x` being the exercise's sum at
+`aᵢ = xᵢ*`.  Four `private` helpers existed only for the old route and are
+deleted with it: `sesq_eq_zero` (which has an audit row, now marked REMOVED —
+its own note already said "the thesis gets self-adjointness for free from the
+order-separation route it hints at"), `conj_apply`, `eq_zero_of_diag_eq_zero`
+and `exists_negPart`.  `diag_nonneg` and `col_eq_zero` stay: 34XII still uses
+them.  The file went from 1 min 54 s to 1 min 05 s.
+
+**33II.3 `cstar_matrix_star_mul_nonneg` — 33II.2 was orphaned by its own
+sibling.**  The solution deduces part 3 from part 2 "by taking `X = 𝒜`"; ours
+exhibited `(aᵢ* aⱼ)ᵢⱼ` as `star M * M` for a hand-built `M` whose first row is
+`a`, and `cstar_matrix_gram_nonneg` (part 2) had zero uses anywhere.  It is
+now part 2 at `X = 𝒜`, the C*-algebra as a Hilbert module over itself.  The
+one wrinkle is the convention: Mathlib's inner product on `A` over itself is
+`⟪x,y⟫ = y x*` (`WithCStarModule.inner_def`), the conjugate of the thesis's,
+so the vectors to feed part 2 are `xᵢ = aᵢ*` — two lines.
+
+**34IV.3 `cp_of_mi` — 33III.2 had zero uses, and 34IV.3 is its only consumer
+in cstar.tex.**  The exercise's hint is one clause: "(Hint: `M_Nf` is a mi-map
+too.)"  Our proof instead computed `∑ᵢⱼ bᵢ* f(aᵢ*aⱼ) bⱼ = (∑ f(aᵢ)bᵢ)*(∑ f(aⱼ)bⱼ)`
+by hand, so `mnf_inherits` — the transcription of exactly that hint — sat
+unreferenced.  Now: `mnf_inherits` gives multiplicativity and
+involution-preservation of `M_N f`; 25II.2 `astara_pos_basic_2_mi` (a mi-map
+is positive) turns that into positivity of `M_N f` for every `N`; and 34IV.1
+`cp_iff`, the sibling clause, turns that into complete positivity.  Three
+lines, and the hint is load-bearing.
+
+**32IX.2 `chilb_norm_basic_2` — Cauchy–Schwarz, the centrepiece of parsec
+320, had zero uses in the whole tree.**  `chilb_cs` is 32VI, a Proposition
+with its own name and its own convention note; nothing referenced it.  The
+reason is one word in the note of this row: `‖⟨x,y⟩‖ ≤ ‖x‖‖y‖` "is handed to
+`CStarModule.norm_inner_le` rather than derived from Cauchy–Schwarz as the
+solution does" — and 32IX.2 is 32VI's only consumer inside parsec 320.  The
+clause now runs solution `parsec-320.90`(2) verbatim: `‖⟨x,y⟩‖² =
+‖⟨x,y⟩⟨y,x⟩‖ ≤ ‖ ‖⟨y,y⟩‖ ⟨x,x⟩ ‖ = ‖y‖²‖x‖²`, the middle step by `chilb_cs`
+and `CStarAlgebra.norm_le_norm_of_nonneg_of_le` (the thesis's
+`positive-basic-2`).  Symmetrically, the **eight** places inside
+`Matrices.lean` that invoked `CStarModule.norm_inner_le` — inside
+`chilb_form_bounded` (32X), `norm_adjoint_le`, `exists_clm_adjointTo_norm`,
+`module_maps_cstar_identity` (32XII), `exists_clm_adjointTo`, `bax_cstar`
+(32XIV) and `chilb_vector_states_3` (32XV.3) — now cite the file's own 32IX.2
+instead.  One of them carried the comment "the supremum is bounded by `‖T‖`
+(**32IX**.2)" while citing Mathlib.  Both 32VI and 32IX.2 are live now.
+
+### The dead-limb check: what it found and what could not be fixed
+
+Seven declarations that had **zero** references anywhere in `Theses/` are
+load-bearing again after the four repairs: `cstar_matrices_1`,
+`cstar_matrices_2`, `cstar_matrices_3`, `cstar_matrix_gram_nonneg`,
+`mnf_inherits`, `chilb_cs`, `chilb_norm_basic_2`; and `chilb_vector_states_2`
+went from one reference (into a dead lemma) to a real consumer.
+
+**The one dead limb that cannot be revived without work the tree does not
+have: 171VII `paschke_pure`.**  A grep of all seven `.tex` sources shows the
+*only* mathematical citation of `\sref{paschke-pure}` anywhere in either
+thesis is `bsols.tex:3375` — inside the solution to 224VI, the exercise in
+this scope.  (`eff.tex:149`, `bintr.tex:78`, `dils.tex:1261/5996/6006` and
+`proc.tex:163` are prose cross-references.)  Our 224VI
+(`VNExamples.lean:5721`) takes a much shorter route that needs neither GNS
+nor factoriality; the solution's route first classifies every non-zero pure
+map `𝒜 → ℂ` — purity gives `f = f(1)h` for a corner of `p`; `p𝒜p ≅ ℂ` forces
+`p` minimal; minimality makes `⌈⌈p⌉⌉𝒜` a **factor**; the GNS representation
+is surjective by `paschke-pure` and injective by factoriality, so
+`𝒜 ≅ 𝓑(ℋ) ⊕ 𝒞`; then `dim ℋ ≤ 2` and `𝒜 ≅ M₂`.  The tree has GNS (48III
+`gns_normal`) but **no notion of a factor**, no nmiu direct-sum decomposition
+`𝒜 ≅ 𝓑(ℋ) ⊕ 𝒞` to transport `π₁, π₂` across, and no minimal-projection
+theory of `𝓑(ℋ)`.  That is several hundred lines of von Neumann structure
+theory that exists nowhere in the development, so 224VI is left — but whoever
+holds `B/Dils/Pure` should know that 171VII has no other possible consumer.
+
+Three further zero-use declarations are *public statements* and were
+therefore reported rather than deleted: `spred_sup_of_quot` (208XII for an
+arbitrary quotient — the exact dual of the `spred_inf_of_compr` the Snake
+Lemma does use), `spred_isSup_unique` and `boxPull_one`, all in the
+`(–)_⋄`/`(–)^□` toolbox at `Comparisons.lean:953`.  The sup half never fires
+because 228II takes its suprema as hypotheses `m1`–`m4`.  One `private`
+duplicate is also dead and was left alone because it carries an audit row
+marked `faithful`: `bax_inner_nonneg` (Matrices.lean:652) is the easy half of
+32XV.2 inside `𝓑^a(X)`, and `chilb_vector_states_2` proves the same half
+inline in its own `mpr`.  Everything else the scan turned up — 
+`paschke_inclusion_no_adjoint`, `chilb_norm_basic_1`,
+`exists_clm_adjointTo_norm`, `chilb_vector_states_3`,
+`chilb_adjoint_mul_self_nonneg`, `unitary_basic_1/2/3`,
+`exc_divisoid_basics_1` — is terminal in the *thesis* too: cstar.tex and
+eff.tex have no `\sref` to them either, so they are not orphans of any
+shortcut.
+
+### 226II and 213III: the missing step **can** be stated, and here it is
+
+The standing question from the previous pass was whether 226II's third step —
+"By the same reasoning as in the final part of the proof of
+\sref{dagger-iso-mu}, there exists a (unique) pristine map `l` with …"
+(eff.tex:7437) — can be stated honestly, since 213III `perp_sharp_is_orth`
+gets a consumer only if 226II is re-proved on eff.tex's route.  It can.  What
+226II uses of `l` is exactly three equations, and in the tree's vocabulary
+they read: *for all `a b : Pred X` in a `DaggerPrimeEffectus` there is a
+pristine `l : X ⟶ X` with `asrt a ≫ asrt b = asrt (andThen b a) ≫ l`,
+`l ≫ pureDagger l = asrt (ceilPred (andThen b a))` and
+`pureDagger l ≫ l = asrt (ceilPred (andThen a b))`.*  Moreover `l` is
+constructible: it is `comprMap (ceilPred (andThen a b)) ≫ ν ≫
+zetaMap (ceilPred (andThen b a))` for the `ν` of `dagger_iso_mu`
+(`Dagger.lean:1544`), whose existence is `asrt_comp_standard_form` (219IX
+`pqqp-from-dagger`) — a comprehension after an iso after a quotient-dagger,
+hence pristine by the standard form 218VI.  So the obstacle is *not* that the
+step is unstateable; it is that stating it **adds** a lemma the thesis never
+displays, and this pass may not add statements.  Recorded on the 226II row as
+a statement-pass item.
+
+### The 22 rows left, by reason
+
+*Needs what the tree lacks* (5): 224VI (factors, `𝓑(ℋ) ⊕ 𝒞`, minimal
+projections — above); 194I.4 and 196II (both need the derivation calculus of
+193IV, which the tree states only in its existence half — `StatesPredicates.lean:5433`
+and `:5963` say so in their own doc comments); 194I `aconvalmosteffectus_kappaPullback`
+(stands on those two); 34XVIII `choi_2` (needs "`M_N` of a cp-map is cp",
+i.e. complete positivity of `M_N f` rather than the mere positivity `cp_iff`
+and `n_pos` give).
+
+*The printed route is the erratum'd one, and repairing would reintroduce the
+flaw* (4): 181XIII (berr.tex:72 `\begin{erratum}{one-m-is-id}` — verified
+present; our order is the corrected one); 225VI S3 (ERRATA.md:113 and :184
+record it as "not an erratum, but a *shorter route*"); 228II (ERRATA.md:117
+records "none of that is needed … This is how `snake_lemma` is formalized");
+196II again (ERRATA.md:102–105: the printed paragraph is garbled — `α`/`β`
+swapped, the `qᵢ` renumbered, two `κ`s interchanged — and both of our
+simplifications are recorded as informational).
+
+*eff.tex gives no proof at all; the Lean supplies one* (3): 224III.1
+(eff.tex:7170 is the single word "Dualizing"), 224III.2 (eff.tex:7171 "Now it
+is clear that …", against about fifty Lean lines), 226V.3 (eff.tex:7534
+"Unfolding definitions, it is easy to see …").  These are the *opposite* of a
+shortcut and nothing of the thesis's is bypassed.
+
+*The same content assembled differently, with nothing hidden and nothing
+orphaned* (10): 181IV.1 and 181IV.2 (the "if" half untwists with
+`FinPAC.untying` and applies `FinPAC.compatible_sum` to one map into `Z+Z`,
+the same two axioms eff.tex:1020 uses; the thesis's decomposition still needs
+`[h,0] ⊥ [0,l]` and `[h,l] = [h,0] ⋎ [0,l]`, neither in the tree — though
+`PCM.isSumOf_perm`, listed as missing in the old note, *is* in the tree now,
+so that part of the note is corrected); 181IX.1, 181IX.2, 181XVI, 187VI (the
+zero-one axiom by `par_orth_unique` + 186VIII.2 instead of lifting along the
+right pullback square — both ingredients precede it in eff.tex too);
+224VII (the solution's skeleton at `𝓑(ℂ²)` instead of `M₄`); 194I
+`aconvalmosteffectus_coproducts`; 195VI; 32XV.1 (polarising with `x+y` and
+`x+iy` instead of the four-term `¼∑iⁿ` sum — the standard real/imaginary
+split of it); 32XV.3.
+
+### One recorded verdict was stale
+
+`34XVIII` `choi_2`'s note says it "finishes with the private `col_eq_zero`
+because 34XII's final clause was not stated".  That has not been true for
+some time: 34XII's "in particular, if `p = 0` or `q = 0` then `a = a* = 0`"
+**is** stated, as `cstar_positive_2x2matrix_eq_zero` (`Matrices.lean:2168`),
+and `choi_2` (`Matrices.lean:2323`) already finishes with it exactly as the
+thesis does — `col_eq_zero` does not appear in `choi_2` at all.  The row's
+status now says so and names the one deviation that does remain.
+
+### Verification
+
+`Matrices.lean` compiles with `-DrelaxedAutoImplicit=false
+-DmaxSynthPendingDepth=3` at 0 errors and 0 `sorry`, its pre-existing
+multiset.  Every repaired declaration was axiom-checked *in situ* — the
+source copied to scratch with `#print axioms` appended and the copy compiled,
+not the olean — giving `[propext, Classical.choice, Quot.sound]` for
+`cstar_matrix_positive_iff`, `cstar_matrix_star_mul_nonneg`, `cp_of_mi`,
+`chilb_norm_basic_2`, and for `chilb_form_bounded`, `bax_cstar`,
+`chilb_vector_states_3` and `exists_clm_adjointTo`, whose proofs changed at
+the eight `norm_inner_le` sites.  `Matrices.olean` was rebuilt and all four
+importers recompiled clean.  `git diff` on the file shows no `+`/`-` on any
+public statement line; the only removed declarations are the four `private`
+auxiliaries named above.
+
+## Session 95 — A/CStar Basic + Positive + Representation, second pass: **21VII, 4IV, 7III.2/.3 and 28II.1b were dead limbs — the four statements the thesis proves *from* 21VII all bypassed it — and 5III turned out to be proved from a parsec-50.60 result** (worker on `Theses/A/CStar/Basic.lean`, `Theses/A/CStar/Positive.lean`, `Theses/A/CStar/Representation.lean`)
+
+Second proof-route pass over `A/CStar/Basic`, `A/CStar/Positive` and
+`A/CStar/Representation`.  The first pass annotated only the rows it acted
+on; this one worked the **60 `route`/`mild` rows whose `status` field was
+still empty** — 19 in `docs/audit/acstar-basic.csv`, 34 in
+`acstar-positive.csv`, and the 7 `Representation.lean` rows of
+`acstar-matrices-representation.csv`.
+
+**Thirteen proofs put back on the thesis's own argument, one dependency
+inversion removed, seven verdicts corrected without a code change (four
+stale notes, three that described the *exercise* where the *solution* says
+something else), one declaration renamed under the author's 2026-08-22
+ruling, and thirty-six rows deliberately left with a reason.  No statement
+touched, no `sorry` added, everything axiom-clean in situ.**  The proof
+column goes 43 → 53 `faithful` in `acstar-basic.csv` (22 → 11 `route`) and
+74 → 81 `faithful` in `acstar-positive.csv` (31 → 22 `route`).
+
+### The dead limb: 21VII had no consumer, and its four thesis consumers all had another route
+
+`grep -rn "\border_separating_norm\b" Theses/ --include=*.lean` returned the
+declaration and **three doc-comment mentions in `A/Proc/Tensor.lean`** — no
+Lean proof anywhere in the tree used **21VII** `order_separating_norm`, the
+Proposition "for a collection of pu-maps, order separating iff
+`‖a‖ = sup_ω ‖ω(a)‖`", ~100 transcribed lines.  Its four consumers in
+cstar.tex each had a different Lean proof:
+
+* **22VIII**.2 (`states-order-separating`, "Conclude that the set of states
+  is order separating") ran 80 lines of direct argument — show `ℑa = 0` using
+  part 1, then `a ≥ 0` using part 1 again;
+* **25III** (`hilb-vector-states-order-separating`) whose printed proof opens
+  *"By `\sref{order-separating-norm}` it suffices to show…"*, came instead
+  from a private `nonneg_clm_iff_inner_unit`, i.e. from Mathlib's
+  `ContinuousLinearMap.nonneg_iff_isPositive`;
+* **25V**.2 and **25V**.3, whose printed proof is *"This follows from
+  `separating-self-adjoint` and `order-separating-norm` because the vector
+  states are order separating"*, came from the same private lemma and from a
+  hand-rolled 35-line Rayleigh-quotient computation
+  (`ContinuousLinearMap.norm_eq_iSup_rayleighQuotient`).
+
+All four now go through 21VII, and **25V**.1 through **21V**
+`separating_self_adjoint`, as the thesis has it:
+
+* **22VIII**.2 is `(order_separating_norm …).out 2 0 |>.mp`, with clause (3)
+  from part 1 plus `‖ω(a)‖ ≤ ‖ω(1)‖‖a‖ = ‖a‖` (**20II**.1).  The `{0}` case,
+  which erratum 220.80 excludes from part 1, survives as the branch where
+  both sides of clause (3) are `0`.  80 lines → 20.
+* **25III** is the thesis's proof: by 21VII it suffices to prove clause (3),
+  `‖T‖ = sup_{‖x‖=1} ∣⟪x,Tx⟫∣` for **positive** `T`; with `S := √T`
+  (**23VII**), `∣⟪x,Tx⟫∣ = ⟪Sx,Sx⟫ = ‖Sx‖²` because `S` is self-adjoint, and
+  `‖T‖ = ‖S*S‖ = ‖S‖²` by the C*-identity, so both sides are the square of
+  `sup_{‖x‖=1} ‖Sx‖`.
+* **25V**.1 is 21V applied to the vector states — separating by 25III,
+  involution preserving because `⟪x,T*x⟫ = conj ⟪x,Tx⟫` — so `T` is
+  self-adjoint iff every `⟪x,Tx⟫` is, i.e. iff every `⟪x,Tx⟫` is real.
+* **25V**.2 is 25III with the subtype packaging removed;
+  `nonneg_clm_iff_inner_unit` survives under its own name but has moved
+  *below* 25III and is now proved *from* it.  Its old helper
+  `inner_self_scale_aux` lost its last consumer and was deleted.
+* **25V**.3 is clause (2) of 21VII, three lines.
+
+**And 4IV came back with it.**  The step "`‖T^{1/2}‖ = sup_{x ∈ (H)₁}
+‖T^{1/2}x‖`" of 25III's printed proof is **4IV** `operatorNorm_ball` at
+`r = 1` — which also had **zero uses in the tree**.  The new private
+`norm_eq_iSup_unit_sphere` derives the unit-*sphere* form from 4IV's
+unit-*ball* form by rescaling a non-zero vector of the ball (and both sides
+are `0` when `H` is trivial and the sphere is empty).  Mathlib's
+`ContinuousLinearMap.sSup_sphere_eq_norm` would have done it in four lines;
+using our own 4IV is the thesis's step and costs twenty.
+
+### The dependency inversion: 5III ← 5VI.4
+
+`projection_on_c00` (**5III**, cstar.tex:713, parsec **50.30**) proved that
+`x - y` is orthogonal to every coordinate vector by calling a private
+`IsProjectionOn.inner_eq_zero` — a rendering of **5VI**.4, parsec **50.60**.
+A parsec-50.30 exercise proved from a parsec-50.60 result, and that result
+was itself Mathlib's `Submodule.norm_eq_iInf_iff_inner_eq_zero`.
+
+5III now runs a self-contained variational argument at each coordinate:
+`y + ((x-y) n) · eₙ` is a competitor in `c₀₀`, and Pythagoras (**4XV**.2, the
+file's own `norm_add_sq_of_inner_eq_zero`) gives
+`‖v - c eₙ‖² = ‖v‖² - ‖c‖²`, so `‖c‖ ≤ 0`.  Confirmed by walking the
+transitive constant closure: `projection_on_c00` reaches **none** of
+`hilb_projection_basic_1`, `hilb_projection_basic_2`,
+`hilb_projection_basic_4`, `projection_on_line_unique`,
+`Submodule.norm_eq_iInf_iff_inner_eq_zero`.  This is *not* the thesis's own
+route — asols `parsec-50.30` argues with tails of the `ℓ²` sum, which needs
+finite-support extraction from `Submodule.span` plus `lp` tail-sum
+arithmetic, ~130 lines — but the inversion is gone and the argument is local.
+
+With 5III off it, **5VI** could go back to solution `parsec-50.60`, and both
+Mathlib entries left the file:
+
+* the private lemma, renamed `IsProjectionOn.inner_self_sub_eq_zero`, is now
+  the solution's own first claim: by **5VI**.1 `y` is a projection of `x` on
+  the line `ℂy = ℂe` with `e := y/‖y‖`, and **5IV**
+  `projection_on_line_unique` says that projection is `⟪e,x⟫·e`, whence
+  `⟪y,x⟫ = ⟪y,y⟫`;
+* **5VI**.2's uniqueness is the solution's translation argument — `0` and
+  `y'-y` are both projections of `x-y` on `C`, hence equidistant from `x-y`,
+  and Pythagoras on `⟪y'-y, (x-y)-(y'-y)⟫ = 0` forces `‖y'-y‖² = 0`;
+* **5VI**.4 is the solution's `x' := x + y' - y` trick through **5VI**.3.
+
+`IsProjectionOn.norm_eq_iInf`, the private bridge into the `iInf` form
+Mathlib's characterisation needs, is deleted.
+
+### Two more dead limbs, in parsec 70/80
+
+* **7III**.9 was recomputing `a a*` from scratch (12 lines of `smul`
+  bookkeeping) where the solution says, in three words, *"Combine point 3 and
+  point 7"*.  It now does: point 7 at `a*` computes `a a*`, and point 3
+  rewrites `ℜ(a*), ℑ(a*)`.  **7III**.3 had zero uses before this.
+* **7III**.3 in turn was computed from the definitions of `ℜ/ℑ`; the solution
+  deduces it from points 1 and 2 (`a* = ℜa + i(-ℑa)`, then point 2).  It now
+  does, and **7III**.2 — which had zero uses anywhere in the tree — is
+  load-bearing.
+* **8II**.2 and **8II**.3 split on `Subsingleton 𝒜`, which the solution
+  deliberately does not: it observes `‖1‖ = ‖1*1‖ = ‖1‖²`, so `‖1‖ ∈ {1,0}`,
+  and argues uniformly.  That observation is the new private
+  `norm_one_eq_one_or_zero`; part 2 is then `‖λ·1‖ = ∣λ∣‖1‖ ≤ ∣λ∣` and part 3
+  the solution's reduction "it suffices that `‖1‖·1 = 1`".
+
+### A fourth dead limb, in parsec 280: 28II.1b had no consumer
+
+`functional_calculus_1b` (**28II**.1's commutant clause, "`b ∈ C*(a)`
+commutes with every `c` commuting with `a` and `a*`") had **zero uses in the
+tree**.  The solution to 28II.2 uses it *twice* — it is the whole point of
+part 1b — but our 28II.2 closed the `⇐` direction with
+`haveI : IsStarNormal a := ⟨h.symm⟩` and Mathlib's `IsMulCommutative`
+instance for `StarAlgebra.elemental`, which is Mathlib's own double-commutant
+argument for the same fact.  It now runs the solution's: `a` commutes with
+itself and with `a*`, so by 1b it commutes with every `b ∈ C*(a)`; likewise
+`a*`; so every such `b` commutes with every `c ∈ C*(a)`.  The row stays
+`mild` because the *second* equivalence still reads both directions off the
+single identity `a*a − aa* = 2i·(ℜa ℑa − ℑa ℜa)` where the solution does the
+two computations separately.
+
+### Four notes that had gone stale
+
+Checked against the source, not against themselves — three of them are the
+audit's own dependency-inversion findings, already repaired by `acde73c`
+("the 11XIII chain restored") without the rows being updated:
+
+* **11XIII** `selfAdjoint_sub_I_isUnit` — the **fourth** of the four
+  inversions the brief names, and it is fixed: `Basic.lean:1912` runs the
+  thesis's `‖a+ni‖² = ‖a²+n²‖ ≤ ‖a‖²+n² < (n+1)²` trick through **11VI**.2,
+  and `IsSelfAdjoint.mem_spectrum_eq_re` is not in its closure.
+* **11XVI** `inverse_permanence` — runs the `(a + i/n)⁻¹` limit argument;
+  `StarSubalgebra.coe_isUnit` is gone and `hsa` *is* used (it is what makes
+  **11XV**.1 applicable inside `𝒮`).
+* **11XVIII** `improved_inverse_permanence` — follows the exercise's `a*a`
+  hint, so the improvement over 11XVI is now genuinely exhibited.
+* **25II**.4 `astara_pos_basic_4` — already calls
+  `astara_pos_basic_3_inv_antitone`, part 3's own closing clause, not
+  Mathlib's inverse antitonicity; verdict corrected `route` → `mild` (the
+  rewrite `(1+x)⁻¹x = 1 - (1+x)⁻¹` is the hint's addition performed as a
+  rewrite).
+
+### Left deliberately — the reasons, with numbers
+
+* **9X**.1 `ofReal_smul_nonneg` — the thesis's route (rescale the witness
+  `t` to `rt`) has to cross the **9IV** bridge in both directions, and 9IV's
+  forward half is **17VI**.3a, the parsec-90 knot session 95 measured.  This
+  lemma has **43 consumers** across the tree; the conjugation proof keeps all
+  43 off the knot.
+* **9X**.3, **7III**.8, **11XXI**.1' — statement-level.  9X.3 is about
+  Mathlib's `0 ≤` on `B(ℂ²)` (one of the three CFC entries session 95 found
+  irreducible); 7III.8's existential ranges over `Matrix (Fin 2) (Fin 2) ℂ`,
+  which carries no C*-norm here, so the solution's ketbras cannot be typed
+  into it; 11XXI.1' is missing the *clause* "and this matrix is not
+  self-adjoint", which is the point of the counterexample.
+* **21VII** itself — the ℓ^∞-product the thesis applies **20VI** to is built
+  in `A/VN/Basic`, which imports this file.  20VI's three steps are re-run on
+  the family directly.  Unchanged, but no longer unreferenced.
+* **26II**.2 — the solution needs "`c + (·)` is an order isomorphism" and
+  "order isomorphisms preserve suprema", neither in the tree; ~15 lines by
+  hand against ~40 to build the isomorphism and its transport.
+* **25I**'s three bridge halves, **17V**, **17VI**.2/.3b, **25I**'s
+  round-up, **10IV**'s private restatement, **9X**'s `half_smul_nonneg` —
+  encoding artefacts of stating positivity with Mathlib's `0 ≤`, all
+  documented in the `/-!` block above `ThesisPos`.
+* **14IV**, **14VIII**.1/.3, **15I**, **16VII**, **23II**.2, **23VII**,
+  **24IV**, **26III** — recorded individually on the rows; 15I and 16VII on
+  the brief's own instruction.
+* **30IX** and the five **30X** rows in `Representation.lean` —
+  statement-level, and already on record as `QUESTIONS.md` **A8**: our 30X.2
+  is stated existentially in the Hilbert space and its clause (1) cannot name
+  `ϱ_Ω`, so the thesis's route (1) ⇒ (3) through injectivity of `ϱ_Ω`, 29IX
+  and 30XIII is unavailable and the tree proves (2) ⇒ (3) directly.  30IX is
+  a Definition for which cstar.tex gives no proof.
+
+### The author's 2026-08-22 push, re-read mid-session
+
+Sixteen commits landed on `cstar.tex`, `asols.tex`, `vn.tex` and `ERRATA.md`
+while this pass was running, concentrated in exactly this scope, and
+**`cstar.tex` now has no open ERRATA rows at all** (13 that morning, 0 that
+night).  Every row this session's notes would have leaned on was re-read
+against the *new* text:
+
+* **15I** — both rows withdrawn, and this is the one that changed a verdict's
+  *reason*.  The vertex typo is corrected in the source (erratum
+  `parsec-150.10`), and the "partitioning in the obvious manner into triangles
+  `T₁,…,T_M`" row is deleted by ruling: the partition is elementary because
+  each filling triangle carries a *holomorphic* integrand and dies by **14IV**,
+  and `invint` has gained a fifth point carrying the polygon case, which 15II
+  now cites.  So our `cauchy_formula` is a **route divergence, not a gap
+  repair** — and a larger one than `polygon_winding` alone.  `HANDOFF.md` asks
+  for two doc comments to be reworded; three were (the module header, the
+  `polygon_winding` divergence block, and `cauchy_formula`'s own proof
+  comment), and the note now records what the divergence actually is:
+  `dslope f z₀` removes **15III**'s `δ`/`‖f'(z₀)‖+37` estimate and the small
+  triangle with it, Goursat runs on the fan `(w₀, wₙ, wₙ₊₁)` whose interior
+  edges cancel, and `polygon_winding` proves the polygon case outright.  Two
+  consequences recorded on the row: the tree uses **neither 14VIII.4 nor the
+  new 14VIII.5** — both have zero consumers — and `polygon_winding` asks only
+  for *continuity* of `f` at `z₀`.
+* **26II** — the exercise gained a point and renumbered.  The orphaned
+  solution item is promoted to point 5 (`|a+b| ∨ |a−b| = |a|+|b|`), the
+  commuting-subalgebra point became **point 6**, and point 6 **gained a
+  solution of its own**.  Our `commutative_cstar_basic_5` is that point:
+  renamed `commutative_cstar_basic_6` and re-tagged (it had zero consumers),
+  and its verdict goes `route` → `mild`, because the proof *is* the new
+  solution's skeleton — the least C\*-subalgebra containing `a` and `b` is the
+  norm closure of a commutative span, and what commutes with a sequence
+  commutes with its limit; `StarAlgebra.isMulCommutative_adjoin` and
+  `StarSubalgebra.commRingTopologicalClosure` are those two steps.  The audit's
+  "there is no thesis route to return to" is withdrawn.  **Not done**, and
+  recorded instead: stating the new 26II.5 is a new statement.
+* **20II**.1 — ruled *not* an erratum ("10V has proved it since parsec 100").
+  The row's note claimed the ERRATA row was "still OPEN and still accurate"
+  and that Lean supplied "exactly the fix ERRATA proposes"; both are now false
+  and the note is rewritten.  `HANDOFF.md` offers a one-line simplification —
+  cite **10IV** `cstar_p_implies_i` instead of reconstructing 10V inline — and
+  marks it not required.  **Declined, with the reason in the proof comment**:
+  `cstar_p_implies_i` is CFC-reachable through the parsec-90 order bridge, and
+  the session that measured that bridge took 20II.1 off it deliberately; the
+  inline copy of 10V runs through `ThesisPos` and stays off it.
+* **11XIII** — cstar.tex's 11XIV now reads "for `n` such that `‖a‖² < 2n+1`"
+  (erratum `parsec-110.140`), which is exactly what our proof chooses `n` for.
+  The docstring's parenthetical, which said the thesis asks for `‖a‖ < 2n+1`,
+  is reworded: the transcription is now the printed argument verbatim.
+* **14VIII**.2 — the dummy upper limit is corrected in the source (erratum
+  `parsec-140.80`); the row's parenthetical citing ERRATA is reworded.
+* **9II** — the hint now carries "for `t ≥ 0`" and the row is deleted; our
+  proof never used the direction that failed on `X = ∅`, so nothing changes.
+  Recorded on the row.
+* **7III**.8, **7III**.13, **9X**.3 — the ERRATA rows are deleted under a
+  **standing scope ruling**: an unexhibited witness that obviously exists, and
+  an unstated case split both of whose branches give the conclusion, are not
+  defects, because the test is whether a *reader* would stumble.  All three of
+  this session's "left" statuses already rested on the statement, not on the
+  errata, and each now records the ruling.  **No row was filed against the
+  theses in this session.**
+
+### Three audit notes that described the *exercise*, not the *solution*
+
+The brief says to check a note's claim against the source rather than against
+itself, and three rows I was about to leave with a cost turned out to be on
+the thesis's argument already.  I made the same mistake once myself, and
+record it rather than quietly fixing it:
+
+* **21X** `order_separating_dense_subset` — the audit note said "the thesis
+  gives no solution", and my first status said I had "re-verified" it.  I had
+  verified the *note*.  `asols.tex` has `solution parsec-210.100`, and it is
+  the argument the Lean proof runs: it suffices that `ω(a) ≥ 0` for `ω ∈ Ω`
+  since `Ω` is order separating; approximate `ω` in operator norm by
+  `ω' ∈ Ω'`, whose value at `a` is `≥ 0`.  `route` → `mild`; the one deviation
+  is an `ε`-family where the solution takes a sequence, and that is forced by
+  the statement's own `ε`-form of density.
+* **22III**.1 `order_ideal_basic_1` — the note said "the thesis's hint (the
+  kernel of a state is already maximal *as a linear subspace*) is not
+  followed".  The hint is cstar.tex's; the *solution*, `parsec-220.30`(1),
+  does not follow it either — it argues directly among order ideals, and our
+  proof is that argument verbatim (`x ∈ J ∖ ker ω`, scale to `ω(x) = 1`,
+  `1 − x ∈ ker ω ⊆ J`, so `1 ∈ J`).  `route` → `faithful`.
+* **11XX** `spectrum_matrix` — `Matrix.exists_mulVec_eq_zero_iff` *is* the
+  solution's opening step ("a square matrix is invertible iff its kernel is
+  `{0}`"); only the determinant packaging differs.  `route` → `mild`.
+
+### Verification
+
+`Basic.lean` compiles at rc = 0 with **38 warnings, the identical multiset to
+the session's start**, no errors and no `sorry`; `Positive.lean` at rc = 0
+with **67 warnings against the baseline's 69** (two `unused` warnings
+disappeared with the deleted auxiliaries); `Representation.lean` at rc = 0
+with **14 against 15** (the `haveI` style warning went with the
+`IsStarNormal` line).  No errors and no `sorry` in any of the three.  All
+three oleans were rebuilt from source, and `Matrices.lean`, `TowardsVN.lean`
+and `A/VN/Basic.lean` all recompile at rc = 0 against them.
+
+Axiom-checked **in situ** — source copied to the scratchpad with
+`#print axioms` appended and the *copy* compiled:
+`projection_on_c00`, `hilb_projection_basic_2`, `hilb_projection_basic_4`,
+`cstar_involution_basic_9`, `scalar_norm_2`, `scalar_norm_3`,
+`states_order_separating_2`, `hilb_vector_states_order_separating`,
+`hilb_positive_operators_1`, `hilb_positive_operators_2`,
+`hilb_positive_operators_3`, `functional_calculus_2` — all
+`[propext, Classical.choice, Quot.sound]`.
+The same scratch copies carried a transitive-closure check against a ban
+list, and that is what backs the claims above: `projection_on_c00` reaches
+none of the five parsec-50.40/50.60 constants; `hilb_projection_basic_2/4`
+reach `hilb_projection_basic_1` and `projection_on_line_unique` and not
+Mathlib's minimiser theorem; and all five `Positive` theorems reach
+`order_separating_norm` (25V.1 also `separating_self_adjoint`; 25III, 25V.2
+and 25V.3 also `operatorNorm_ball`); and `functional_calculus_2` reaches
+`functional_calculus_1b`.
+
+`git diff` on the three files shows **no `+`/`-` on any public statement
+line** — the one public declaration line that moved is
+`commutative_cstar_basic_5` → `commutative_cstar_basic_6`, the rename the
+author authorised, with its type byte-identical.  (`Representation.lean`'s
+code diff touches only the eight lines inside `functional_calculus_2`'s
+proof.)  The only declarations removed are three `private` auxiliaries
+(`IsProjectionOn.norm_eq_iInf`, `IsProjectionOn.inner_eq_zero` — renamed and
+re-proved as `IsProjectionOn.inner_self_sub_eq_zero` — and
+`inner_self_scale_aux`); five `private` auxiliaries were added.
+
+## Session 95 — `B/Dils` HilbertModules + SelfDual + SelfDualCompletion + Kaplansky: **`kaplansky_hilbmod` — 158II, the whole 2 100-line `Kaplansky.lean` — had zero consumers in the entire tree, because 166IV had taken another route; and 46II `usconv` had zero consumers for the same reason.  Both are load-bearing again.** No dependency inversion in 18 839 lines (worker on `Theses/B/Dils/{HilbertModules,SelfDual,SelfDualCompletion,Kaplansky}.lean`)
+
+**41 rows** were in scope — every `route` or `mild` row of
+`bdils-selfdual-kaplansky.csv` and
+`bdils-hilbertmodules-selfdualcompletion.csv` still without a `status`: 20 in
+`SelfDual`/`Kaplansky` (10 `route`, 10 `mild`) and 21 in
+`HilbertModules`/`SelfDualCompletion` (10 `route`, 11 `mild`).
+
+**Four proofs now follow the thesis's own argument; the other 37 are recorded
+with the reason, checked against the tree rather than against the note.**  All
+four files compile with exactly their pre-existing diagnostics — `HilbertModules`,
+`SelfDualCompletion` and `SelfDual` clean, `Kaplansky` with its four deliberate
+**158V** `sorry`s and no others — and **no new `sorry`**.  Every repaired
+declaration was axiom-checked *in situ* (source copied to scratch, `#print
+axioms` appended, recompiled): all `[propext, Classical.choice, Quot.sound]`.
+No statement line moved; `git diff` over both files shows no changed
+`theorem`/`def`/`instance` signature — the only declaration added anywhere is
+one `private` bridge lemma (§1).
+
+The four oleans were rebuilt from source *after* the merge at `603aa98` and
+the `A/VN`, `A/CStar/Matrices` and `B/Dils/Pure` commits that landed during
+this round, in dependency order, and all four recompile against them.
+
+### 0. The round killed at `bebf4a5`, finished and recorded
+
+The previous worker on this scope was killed mid-round just after its first
+repair, with its CSV rows and log section unwritten.  Its edit was read against
+`dils.tex:1520-1626` and is **correct and complete**; it is now recorded as the
+first two items below.  It had said it was "starting on 143IV back on 143V's own
+assembly" — that work is in fact *in* the committed diff (the section doc block
+was rewritten and `baInstCStarRing`/`baInstCompleteSpace` rerouted), so nothing
+was left half-done.
+
+### 1. **166IV `exttensor_dense_subsets` (`SelfDual.lean`) — the dead limb was the whole of `Kaplansky.lean`**
+
+`grep -rn "kaplansky_hilbmod\b" Theses/ --include=*.lean` returned **nine
+lines, every one of them a doc comment**.  158II — the Kaplansky density
+theorem for Hilbert C\*-modules, the point that `Kaplansky.lean` exists to
+prove, 2 100 lines through the linking algebra `ℬᵃ(X ⊕ ℬ)` and thesis A's
+74IV — had **no consumer anywhere in the tree**, and `SelfDual.lean`'s
+`import Theses.B.Dils.Kaplansky` bought nothing but those doc comments.
+
+`dils.tex` uses `kaplansky-hilbmod` in exactly one place: **166V**, the proof
+of 166IV.  And 166IV had been proved another way.  The same shortcut had
+orphaned **166II** `ultranorm_continuity_ext_tensor` (120 lines, a faithful
+transcription of 166III), whose only use in the thesis is likewise 166V.
+
+The old note costed the thesis's route as "roughly doubling the proof" and
+named the obstacle precisely: *166II is a statement about **nets**, ultranorm
+density is rendered one **entourage** at a time, and no lemma bridges the two
+forms.*  That bridge is now built, and it is 30 lines:
+
+```
+private theorem exists_bounded_net_of_entourage
+    (S : J → Finset (NPFunctional 𝒟)) (e : J → ℝ) (he : ∀ j, 0 < e j)
+    (hcof : ∀ ω ε, 0 < ε → ∀ᶠ j in l, ω ∈ S j ∧ e j ≤ ε)
+    (D : Set W) (w : W) (M : ℝ)
+    (h : ∀ n ωs ε, 0 < ε → ∃ d ∈ D, ‖d‖ ≤ M ∧ ∀ i, ‖w − d‖_{ωs i} ≤ ε) :
+    ∃ u : J → W, (∀ j, u j ∈ D) ∧ (∀ j, ‖u j‖ ≤ M) ∧ UnTendsto (inner 𝒟) u l w
+```
+
+`S j` names the np-functionals resolved at stage `j` and `e j` the precision
+reached there; `choose` over `(S j).equivFin` turns the entourage-wise
+approximation into the net, and the convergence is `hcof` plus
+`unSeminorm_neg_inner`.  The other direction was already in the file:
+`mem_unClosure_of_unTendsto` (parsec 1600) reads an entourage estimate back
+out of an `UnTendsto`.
+
+With those two, 166IV **is** 166V:
+
+* elementary tensors suffice, by **164II**.1 `ext_tensor_dense`;
+* for `x ⊗ y`, **158II** `kaplansky_hilbmod` at `A = (⊤ : StarSubalgebra ℂ 𝒜)`
+  gives norm-bounded nets `u_α → x` in `U` and `v_α → y` in `V`;
+* **166II** gives `u_α ⊗ v_α → x ⊗ y` ultranorm.
+
+The two nets are taken over **one** index —
+`(Finset (NPFunctional 𝒜) × Finset (NPFunctional ℬ)) × ℕ`, a finite family of
+functionals per leg plus a precision `1/(k+1)`, ordered componentwise — which
+is what lets 166II, a statement about two nets along *one* filter, apply at
+all.  158II's remaining hypotheses are met exactly as the old note predicted:
+`hUsub`/`hUsmul` *are* "`U` is an `𝒜`-submodule", `⟨d,d⟩ ∈ A` is vacuous at
+`A = ⊤`, and `0 ∈ U` follows from `hU` (a dense set is nonempty) and `hUsmul`
+via `(0 : 𝒜) • u = 0`.
+
+The four hypotheses `hUsub`, `hUsmul`, `hVsub`, `hVsmul` were carried "for
+fidelity" and used by nothing; they are used now, and the
+`set_option linter.unusedVariables false` above the declaration is gone.
+`SelfDual.lean` **9578 → 9637** lines: +59, not the doubling that was costed.
+Divergence class **(1) faithful**, where it was (2) `route`.
+
+### 2. **149VII `bddUnComplete_of_selfDual` (`HilbertModules.lean`) — 46II `usconv` had zero consumers too**
+
+Same shape, one file up.  `usconv` (**46II**, `A/VN/Basic.lean:3599`) is cited
+twice in the whole corpus — `dils.tex:2286`, which is this point, and
+`dils.tex:3451`, which is 152XII — and **both** Lean proofs had gone another
+way, leaving 46II with no consumer at all.
+
+The thesis bounds `τ` in one display: `τ(y)τ(y)* = uwlim_α ⟨x_α,y⟩⟨y,x_α⟩ ≤
+‖y‖²B²` **by `usconv`**.  Our proof instead bounded `‖τ(y)‖_ω` directly by
+`le_of_forall_pos_le_add`, picking a point of `F` inside an `ε`-ball and
+splitting with `omegaNorm_sub_le` — 30 lines, and the file's own doc called the
+deviation "forced", which it was not.  It is now the thesis's:
+
+```
+have huw : UWTendsto (fun x => star (inner 𝒷 x y) * inner 𝒷 x y) F
+             (star (t' y) * t' y) :=
+  ((usconv (fun x => (inner 𝒷 x y : 𝒷)) F (t' y)).mp (ht' y)).1
+```
+
+then `uwTendsto_iff` at `ω`, `Real.sqrt ∘ Complex.re` to turn it into
+`Tendsto (fun x => ‖[x,y]‖_ω) F (𝓝 ‖τ(y)‖_ω)` (`omegaNorm ω a` is by
+definition `√(ω(a*a)).re`), and `le_of_tendsto` against the pointwise bound
+`‖[x,y]‖_ω ≤ ‖y‖‖x‖_ω ≤ ‖y‖ B ω(1)^½` — which is **142III** `omegaNorm_inner_le`,
+exactly the estimate the thesis quotes.  `norm_le_of_omegaNorm_le` (**44XI**
+order separation) closes it as before.  21 lines for 30.  The only remaining
+deviation is notational: `τ(y)` is *unstarred* because it is the second
+argument of Mathlib's `[·,·]` that is `𝒷`-linear.  Divergence class
+**(1) faithful**, where it was (2) `mild`.
+
+`44III` `vanishing_effects` is in the same state and is **not** repaired — see
+§5.
+
+### 3. **143II `adjointable_cstar_identity_2` — 143III's own argument for `‖T*‖ = ‖T‖`** (from `bebf4a5`, verified here)
+
+The norm half had been delegated to `A/CStar`'s `chilb_form_bounded_adjoint`,
+which gets it from the symmetric bound applied twice.  143III argues instead:
+`‖⟨x,T*y⟩‖ = ‖⟨y,Tx⟩‖ ≤ ‖T‖‖y‖‖x‖`, so `‖T*‖ ≤ ‖T‖` **by part 1**; and adjoints
+being unique, `T` is an adjoint of `T*`, so `T** = T` and
+`‖T‖ = ‖T**‖ ≤ ‖T*‖ ≤ ‖T‖`.  Both steps are now in the file — the private
+`norm_adjoint_le` is the first (stated with the bound `‖T‖ + ε` because part 1
+demands a *strictly* positive bound, with `ε → 0` at the end), and
+`moduleAdjointTo_symm` is the second.  Class **(1) faithful**, where it was
+(2) `mild`.
+
+### 4. **143IV `Ba.instCStarAlgebra` — assembled as 143V assembles it** (from `bebf4a5`, verified here)
+
+The C\*-identity is now **143II**.2 rather than `A/CStar`'s 32XII, and
+completeness now goes through this chapter's `hilbmod_cstar` rather than citing
+`bax_cstar` at the instance.  Left at **`mild`, not `faithful`**, deliberately
+and for two reasons recorded on the row: the ∗-algebra closure clauses still go
+through cstar.tex 32III (`moduleAdjointTo_symm` / `moduleAdjointTo_add_smul`),
+which is what 143V's "it is easy to see" covers; and `hilbmod_cstar` is *defined
+as* `Theses.A.CStar.bax_cstar` rather than re-running the paragraph — the two
+are the same proposition with the same proof (Cauchy `T_n → T` in `B(X)`,
+`‖T_n* − T_m*‖ = ‖T_n − T_m‖` so `T_n* → S`, then `⟨Sx,y⟩ = ⟨x,Ty⟩`), and
+transcribing it twice would state nothing new.
+
+### 5. Dependency inversions: **none**
+
+Every doc block in the four files was scanned for a citation of a *later*
+parsec than its own.  Twenty-two hits, all read: every one is a helper stated
+in advance for its later consumer ("**142III** in the form used by **149VII**",
+`IsBoundedModuleMap` at 144 for 148I, `polar_decomposition`'s third conjunct at
+149 for 160IV.3, `exists_semC_entourage_subset` at 146 for 150X, …), never a
+proof of X drawing on something the thesis derives *from* X.
+
+The one hit worth a second look was **164II**.2a `ext_tensor_basis`, which uses
+`unSeminorm_eta_le_left/_right` — the two estimates of **166III**, two parsecs
+later.  Not an inversion: both estimates depend only on `η_inner` and
+monotonicity of the von Neumann tensor product, and 166III uses nothing from
+164II, so there is no circle.  The file already says so, in the parsec-1660
+section doc.
+
+### 6. The dead-limb check, in full
+
+Every declaration in the four files (783 of them) was counted against the whole
+of `Theses/`.  Beyond the two headline finds:
+
+* **`vanishing_effects` (44III, `A/VN/Basic.lean:1890`) has zero consumers
+  tree-wide** — its two `vn.tex` uses (695, 791) and its one `dils.tex` use
+  (5669, which is 166III) all took other routes.  Left, and **not** for the
+  reason an earlier draft of this section gave.  `dils.tex` leaves *"the maps
+  `b ↦ 1 ⊗ b` and `a ↦ a ⊗ 1` are ncp"* as a literal commented-out `\TODO{}`,
+  but by the 2026-08-22 author ruling in `ERRATA.md` that is not a defect —
+  a reader supplies it without pausing, and the tree supplies it too
+  (`vnTensor_legLeft_normal`).  The reason to leave it is that **the order
+  estimate is itself the finding**: the `ERRATA` row *166II (statement)*
+  records that only **one** of the two norm-boundedness hypotheses is needed,
+  and its stated evidence is exactly that our proof does not use `hxb`.  The
+  bound on the `x`-net is wanted only to make `⟨x_α−x, x_α−x⟩ ⊗ 1` an
+  **effect**, which is an artefact of routing through 44III; our
+  `Ω(⟨d,d⟩ ⊗ ⟨y_α,y_α⟩) ≤ M²·Ω(⟨d,d⟩ ⊗ 1)` needs no such thing.  Re-routing
+  through 44III would put `hxb` back and destroy the evidence for an OPEN
+  erratum.  Recorded on the 166II row; the `A/VN` end is not this scope's to
+  fix.
+* **`blinear_bounded_is_ultranorm` (148I) has zero consumers** — but this one is
+  a *shape* orphan, not a shortcut.  Its three thesis consumers
+  (`dils.tex:2585`, `3283`, `5186`) are all in these files, and all three use
+  `unSeminorm_boundedModuleMap_le`, which is 148II's estimate, rather than the
+  `ε`/`δ` package 148I wraps it in.  The argument is used everywhere; only the
+  packaging is unreferenced.  No repair: re-routing three proofs through a
+  strictly weaker restatement of what they already use would lose information.
+* **`summing_partial_isometries` (89III)** — checked because 162II replaces it,
+  and it is *not* orphaned (`A/VN/NormalFunctionals.lean:2757`).  Likewise
+  **`dense_subalgebra` (74VI)**, checked because 166VI declines its net form:
+  a dozen consumers in `A/VN` and `A/Proc`.
+* The remaining zero-use names are instances (found by class resolution, not by
+  name), `_apply`/`_coe` simp lemmas, and **leaf theorems of the thesis** —
+  `hilbmod_projthm_3` (160IV.3), `direct_prod_self_dual_basis`, `onb1_el2`,
+  `hilbmod_el2_inner`, `dils_uniform_spaces_basics_7`, `hilbmod_denseordersep`,
+  `dils_product_uniformity`, `hilbmod_adjointable_blinear`.  A top-level
+  Proposition of the thesis with no consumer is the normal state of a leaf, not
+  a fingerprint; each was checked to have *its own* ingredients consumed.
+
+### 7. The 37 left, by class
+
+Every one carries its reason in the CSV `status` field.  In summary:
+
+* **`left-unavailable` (2)** — 164II.1 `ext_tensor_dense` and 164II.2a
+  `ext_tensor_basis`: both want 164VII's `ℓ²((p_ij))` construction, the
+  600–1000-line item costed in session 94 and declined (it is what blocks the
+  161II rows too, which carry their own `left-cost` status from that session).
+* **`left-thesis` (7)** — the printed proof is false, absent, or there is no
+  printed proof at all: the three 158II rows (158V is false, ERRATA); 167I's
+  main claim (the passage from standard to arbitrary dilations survives only as
+  a LaTeX comment, ERRATA 167II); 163II `paschke_tprod_dense` (the thesis says
+  only "by construction", so there is nothing to be faithful to); 149V
+  `completeSpace` (150XV delivers a *Hilbert* module out of **149V**, which
+  yields only *ultranorm* completeness — an already-filed OPEN `ERRATA` row, and
+  a step that genuinely does not go through, since 146IX itself records the two
+  uniformities differ); and 166II, whose reason is in §6 and is *not* an
+  omission in the thesis.
+* **`left-benign` (26)** — the deviation is local, documented, orphans nothing,
+  and in most cases is *shorter*: the seven `SelfDualCompletion` rows that ride
+  on Mathlib's separated completion in place of 150V–150IX (none of which is in
+  the tree, so nothing hangs); the three 147I bridge lemmas, which transcribe no
+  argument at all; the two 160IV rows, where one Zorn argument is substituted
+  for another — 149VIII's, run inside `W` rather than extended to a basis of
+  `X` — with nothing orphaned on either side; 142III, 144V, 148IV, 149IX, 150II, 159IX, 161II, 162II,
+  165IV, 166VI, 167I's furthermore-clause, and the rest.
+* **`left-unavailable-as-stated` (1)** — 162II `total_mv_order`: 89III
+  `summing_partial_isometries` is transcribed **concretely**, for bounded
+  operators `H →L[ℂ] K`, and 162III wants it for a maximal *set* of partial
+  isometries inside an *abstract* von Neumann algebra, which would need a
+  representation first.  The maximal linking projection in `M₂(ℬ)` gets `v*v`
+  and `vv*` without one, and everything after that step (`cceil(q₀) = 1` in a
+  factor, polar decomposition of `q₀ a p₀`, the contradiction with maximality)
+  is 162III verbatim.  Checked that the substitution orphans nothing: 89III has
+  a consumer at `A/VN/NormalFunctionals.lean:2757`.
+* **`left, re-confirmed` (1)** — 147II.6, decided in session 95 and unchanged.
+
+**Two rows changed their justification after the 2026-08-22 author ruling in
+`ERRATA.md`** ("ask whether a reader would *stumble*, not whether a checker
+would"): 166II, whose reason is now the erratum it is evidence for rather than
+`dils.tex`'s commented-out `\TODO{}`, and the two 160IV rows, framed as a
+Zorn-for-Zorn substitution rather than as an omission in the thesis.  **No new
+`ERRATA` row was filed this round**, and none of the four repairs rests on one.
+
+The four open `mathlib` rows in these two CSVs were read as well, since the
+brief asks for the ones where the point *is* about the step Mathlib supplies:
+147II.3 (limits are unique in a Hausdorff space), 147II.4 (continuous maps
+preserve limits), 146V `hasBasis_uniformity` and 150II `denseRange_unEta` are
+all of the "the operator norm is a norm" kind.  None was touched; they are out
+of this round's `route`/`mild` scope and none meets the criterion.
