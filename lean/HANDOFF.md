@@ -694,6 +694,262 @@ de-privatise them and accept the A/VN rebuild.
     regardless; leave the `p ∧ q` clauses of .3, .4's third `iff` and .5's
     hint as they are until that is decided.
 
+### Resolved by the author (2026-08-22) — thesis-A rulings, incorporated
+
+* **26II** `commutative-cstar-basic` / `parsec-260.20` — the orphaned solution
+  item.  The printed exercise has four points and a five-point solution, whose
+  fifth proves an unasked bonus, `|a+b| ≤ |a|+|b|`.  That bonus is **promoted
+  to point 5 of the exercise**, in the sharper form the solution's own
+  computation already gives: `|a+b| ∨ |a−b| = |a|+|b|`.  The
+  commuting-subalgebra point added on 2026-08-19 becomes **point 6** and gains
+  a solution of its own (the least C\*-subalgebra containing `a` and `b` is the
+  norm closure of the span of the `aⁿbᵐ`; it is commutative because what
+  commutes with the elements of a sequence commutes with its limit).  No
+  erratum for either: a reader of the printed edition loses nothing by not
+  having them.  The solution to `parsec-270.100` still cites "item 5" and is
+  correct as it stands; `proc.tex`'s 104III now cites
+  `commutative-cstar-basic`(6).
+  * **Lean side, authorised**: `commutative_cstar_basic_5`
+    (`A/CStar/Positive.lean:6772`) is the thesis's **point 6** — rename it
+    `_6` and re-tag its doc comment, which frees `26II.5` for the triangle
+    inequality.  The sharper equality form is the one to state.
+
+* **20II.1** — **not an erratum; row deleted from ERRATA.md.**  The row read
+  "proof needs `f a` self-adjoint, never stated".  It *is* stated, ten parsecs
+  earlier: **10V**, the proof of **10IV** `cstar-p-implies-i`
+  (`cstar.tex:1344`), shows that a positive map sends self-adjoint elements to
+  self-adjoint ones, by exactly the `f(a) = f(‖a‖) − f(‖a‖−a)` argument; and
+  10IV's own conclusion gives it in one step, `f(a)* = f(a*) = f(a)`.  It is
+  not even a gap in 20III's chain: `≤` is defined (**9IV**
+  `cstar-positive-def`) as "the difference is positive", and positivity is
+  defined only for self-adjoint elements, so `−‖a‖f(1) ≤ f(a)`, which the
+  proof derives from positivity of `f`, already carries it.  The row's
+  proposed fix `a = a⁺ − a⁻` is unusable here anyway: the positive and
+  negative parts arrive at parsec 240, forty parsecs after 20II.
+  * **Lean side** (a simplification, not required): `weak_russo_dye_1`'s
+    eight-line `hfsa` block reconstructs 10V inline.  `cstar_p_implies_i`
+    (`A/CStar/Basic.lean:1736`) is already in the tree and yields
+    `IsSelfAdjoint (f a)` from `ha` in one line.
+  * Found while checking this and **fixed in `cstar.tex`**: 10V's
+    "`f(a) = f(‖a‖) − f(‖a‖−a)` being positive is self adjoint" said that
+    `f(a)` is positive, which it need not be.  It now reads "… are positive,
+    thus self adjoint, as is thus `f(a) = f(‖a‖) − f(‖a‖−a)`".  Ruled **not
+    worth an erratum**: the printed intent is unmistakable.
+
+* **32I** — **not an erratum; row deleted from ERRATA.md.**  The row asked the
+  thesis to state definiteness in both arguments, because module-linearity of
+  an adjointable `T` uses the first and uniqueness of its adjoint the second.
+  Each is one line from the definiteness 32I already states (`cstar.tex:5088`):
+  put the difference into both slots.  Both elements lie in the module whose
+  definiteness is invoked, and `cstar.tex:5101` makes X and Y both pre-Hilbert,
+  so both are available — this *is* the derivation 32I calls "not difficult to
+  see", and it is what `eq_of_inner_left_eq`/`eq_of_inner_right_eq`
+  (`A/CStar/Matrices.lean:60`, `:68`) do in three lines each.  The 2026-08-20
+  audit rates all four 32I rows `ok`.
+  * The row came from a **note**, `PROVING-LOG.md:2232` ("The thesis states
+    definiteness once; both directions get used"), promoted to a defect with a
+    "fix" it never claimed.  A note that one axiom serves two purposes is not
+    a defect; ERRATA.md's scope line is "only defects in the theses".
+
+* **33I.2** — **the redundancy is now in the printed statement's own text;
+  row deleted from ERRATA.md.**  The row said the surjectivity half never uses
+  the adjointability hypothesis.  True, and it uses no boundedness either:
+  `A_mn := (Te_n)_m` and `v = ∑ₙ eₙvₙ` need only additivity and 𝒜-linearity.
+  The printed *solution* already knew — `parsec-330.10` opens its surjectivity
+  paragraph "let `T : 𝒜^N → 𝒜^M` be **a module map**".  So nothing was wrong;
+  what the point lacked was the remark.  Point 2 now brackets the hypotheses
+  and adds: "(Yes, all module maps from `𝒜^N` to `𝒜^M` are bounded and
+  adjointable.)"  No addendum: the printed exercise is complete and correct as
+  it stands, and a reader of it loses nothing.
+  * **Lean side, authorised**: `cstar_matrices_2`'s third clause
+    (`A/CStar/Matrices.lean:906`) may drop both the `→L[ℂ]` bundling and the
+    `ModuleAdjointable` hypothesis — the latter is already discarded in the
+    proof (`fun T hT _ => ?_`) — and take a plain additive 𝒜-linear map.  The
+    new remark is worth a statement of its own: every module map
+    `𝒜^N → 𝒜^M` is bounded and adjointable.  Note the contrast with **32IV**,
+    where a bounded module map `J → C[0,1]` has no adjoint; freeness is what
+    makes it automatic here.
+
+* **32XV.3** — **the diagnosis is right and the repair was already there; row
+  deleted from ERRATA.md.**  Part 3 indeed does not follow from order
+  separation — **21VII** `order-separating-norm` is about *pu*-maps, and these
+  functionals are only subunital.  But the printed solution `parsec-320.150`
+  says so itself ("We cannot simply apply `parsec-210.70`, because the maps
+  `⟨x,(·)x⟩` are not all unital") and then gives the direct argument the row
+  asks for, in a stronger form than the row's: with `T_±^ε` (`ε > 0` dyadic)
+  in place of `√(T_±)`, `T_∓T_±^ε = 0` gives
+  `⟨T_±^ε y, T T_±^ε y⟩ = ±⟨√(T_±)T_±^ε y, √(T_±)T_±^ε y⟩`, whose supremum over
+  the unit ball is `‖√(T_±)T_±^ε‖² = ‖T_±‖^{1+2ε} → ‖T_±‖`; then **24II**.4.
+  Those vectors are not meant to exhaust the ball — they lie in it (whence the
+  wlog `‖T‖ ≤ 1`), so their supremum is a lower bound for the one in question,
+  and it already reaches `‖T_±‖` in the limit.  A single `ε` does *not* do:
+  `‖T_±‖^{1+2ε} < ‖T_±‖`.  (Our `chilb_vector_states_3` instead fixes
+  `ε = ½` and normalises by `(‖s‖‖x‖)⁻¹`, reaching `‖T_±‖² ≤ M‖T_±‖` with no
+  limit — a legitimate variant, not a repair of anything.)
+  * **Fixed in the exercise**: parts 1 and 2 keep the "Conclude that"; part 3
+    now sits behind its own "Moreover, show that", so it no longer reads as a
+    corollary of order separation.  No erratum, and no hint: the structural
+    break is the whole of the delta.
+  * A typo in the solution, fixed in place: "the maps `⟨x,(·)x⟩` not all
+    unital" was missing its "are".
+
+* **34VI.1 / QUESTIONS A2** — `parsec-340.60`'s `\TODO{}` is **a deliberate
+  marker**, not a defect: it is how the author records that a solution is
+  still to be written, and he will write it himself.  Row deleted from
+  ERRATA.md.  Nothing is owed by the formalization here, and the missing
+  solution is not a reason to treat `cstar_product_4` as suspect — it simply
+  has no author's argument to cross-check against yet.  (The same goes for any
+  other `\TODO{}` slot: do not read it as an erratum.)
+
+* **34XVI** — **the row is factually wrong; deleted from ERRATA.md.**  It said
+  the thesis derives `cp-russo-dye` from Russo–Dye (**34aVIII**), a later
+  point.  The printed proof, 34XVII, cites **20II** `weak-russo-dye` and
+  **34XIV** `cp-cs`, both earlier; `russo-dye` does not appear in it at all.
+  `weak-russo-dye` was read as Russo–Dye.
+  * **Lean side**: the consequence is the opposite of what
+    `PROVING-LOG.md:2213` records — `cp_russo_dye` does not take a better
+    dependency order than the thesis, it takes *the thesis's own*.  The log
+    entry's "a genuine reduction that avoids Russo–Dye entirely, and arguably
+    the better dependency order" should be struck.  (The audit had already
+    softened the proof classification to `mild`; the residue is the
+    `weaker` *statement*, `‖f(a)‖ ≤ ‖f(1)‖‖a‖` where 34XVI asserts the
+    equality — that part of the audit row stands, and `cp_russo_dye_norm`
+    addresses it.)
+
+* **39VII** `bh-np-lemma` — **accepted; statement repaired, erratum
+  `parsec-390.70`.**  The row is right that the displayed sum, read over the
+  index set `ℰ×ℰ` — the sense the thesis uses elsewhere, and the sense a
+  doubly-indexed `∑` asks for — need not converge.  The counterexample checks
+  out: `A` block diagonal with `N_k×N_k` DFT blocks, `N_k = k⁸`, `x` constant
+  `k^{-5}` on block `k`, `ω = ⟨x,(·)x⟩`; then `‖A‖ = 1`,
+  `‖x‖² = ∑ₖ k^{-2} < ∞`, and block `k` contributes
+  `N_k²·N_k^{-1/2}·k^{-10} = k²` to the sum of absolute values.
+  * The statement now reads `ω(A) = lim_{ℱ ⊆ ℰ finite} ∑_{e,e'∈ℱ} …`, which is
+    what 39VIII proves (`ω(A − PAP) → 0` with `P = ∑_{e∈ℱ}|e⟩⟨e|`) and all
+    39X needs.  **The trap is that the squares `ℱ×ℱ` are cofinal among the
+    finite subsets of `ℰ×ℰ`** — convergence along a cofinal subfamily is not
+    convergence of the net, and the implication runs one way only.
+  * A third reading, the *iterated* sum `∑_e(∑_{e'} …)`, does hold — but it is
+    not what 39VIII gives, and deriving it in general goes through
+    `ω = ∑ₙ⟨xₙ,(·)xₙ⟩`, i.e. through 39IX, which rests on 39VII.  So it is not
+    available as a reading of this Lemma.
+  * Also fixed while there: the display ended in a full stop with the sentence
+    continuing "for every normal p-map …"; it is now a comma.
+
+* **15I, the proof** — **the triangulation is the intended argument and is
+  elementary; row deleted from ERRATA.md.**  Ruled by the author: that
+  **14VIII** holds not only for a triangle but for a regular polygon is meant
+  to be a trivial consequence of Goursat — inside the polygon there is a
+  triangle `T` with `z₀ ∈ in(T)`, and `∫_T` is promoted to the integral over
+  the polygon (same orientation) by adding integrals of *holomorphic*
+  functions over the triangles filling the region between them, each zero by
+  **14IV** `goursat`.  So 15IV's "in the obvious manner" stands as printed.
+  * What was genuinely missing is that 15II cites `invint` for a sum over the
+    N-gon's edges while **14VIII.4 is stated for a triangle**.  `invint` now
+    has a **fifth item** carrying the polygon case (with the vertices numbered
+    counterclockwise, so the value is `1`), the hint being the promotion
+    above; 15II cites `\sref{invint}(5)`; and 14IX now reads "along a
+    triangle~`T` (or regular polygon)".  No erratum — nothing printed becomes
+    wrong.
+  * **Lean side — please reword two doc comments.**  The `A/CStar/Positive`
+    module header says 15I's winding number is one "which the thesis obtains
+    from a triangulation it asserts without constructing", and
+    `cauchy_formula`'s proof comment calls it "the thesis's route, with its
+    asserted triangulation replaced".  Both read as *gap repaired*; the
+    correct record is *route divergence*, and a larger one than
+    `polygon_winding` alone.  `cauchy_formula` restructures the whole proof:
+    `dslope f z₀` — differentiable on all of `U` — removes 15III's
+    `δ`/`‖f'(z₀)‖+37` estimate and with it the small triangle `T` around `z₀`;
+    Goursat is then applied to the **fan** `(w₀, wₙ, wₙ₊₁)`, where the interior
+    edges cancel immediately, so the region between a triangle and the N-gon
+    never arises; and the remaining scalar is `polygon_winding`, which proves
+    the polygon case outright rather than promoting 14VIII.4 to it.  Two
+    consequences worth recording: the tree uses neither **14VIII.4** nor the
+    new **14VIII.5** here, and `polygon_winding` needs only *continuity* of
+    `f` at `z₀`, not holomorphy.
+
+* **53IV** — accepted; erratum `parsec-530.40`.  The second Urysohn paragraph
+  opened "Let `y ∈ spec(𝒜)∖U`" and then asked for `f` with `f(y) = 0` and
+  `f(x) = 1` on `closure U` — contradictory exactly on `closure U ∖ U`, which
+  is the only case that matters (otherwise `U` is already clopen).  Now
+  `y ∈ spec(𝒜) ∖ closure U`, in both places, after which Urysohn applies and
+  the two paragraphs give `⋁D = 𝟙_{closure U}` directly; nothing else in the
+  proof changes.  The `spec(X)` in the first paragraph is `spec(𝒜)`, in the
+  same block.  Row deleted; **`vn.tex` 15 → 14**.
+
+* **44III as cited by 44VII/44XIV** — **not a defect; row deleted, no source
+  change.**  The row said `vanishing-effects` is cited as a black box though
+  `(⋁D − d)/M` is only *eventually* an effect.  The author's ruling: "the
+  reader should realize they should not apply III directly, but to a subnet."
+  Applying a lemma to a tail is the reader's step, not a gap — the same
+  standard as the 7III/9X rows above.
+  * The claim is true under either reading of "bounded" in **42I**.  Norm
+    bounded and order bounded (above *and* below) coincide for self-adjoint
+    sets (`‖d‖ ≤ K ⟺ −K ≤ d ≤ K`, by 17VI); `BddAbove` — bounded above only,
+    which is what the tree takes — is strictly weaker, and is a **valid
+    reading**.  Under it, fix `d₀ ∈ D` and pass to `D' := {d ∈ D : d ≥ d₀}`:
+    that is *terminal*, not merely cofinal, so ultraweak convergence along `D`
+    and along `D'` are the same condition; `⋁D' = ⋁D` by directedness; and
+    `D' ⊆ [d₀, b]` is norm bounded, so `vanishing-effects` applies to it.
+    The two readings therefore define the same class of algebras — worth
+    recording, since it means the tree's `BddAbove` instance is not a
+    strengthening of 42I.
+  * So `vna_supremum_mult`'s detour ("whose second factor is *eventually*
+    bounded") is a **route divergence forced by the tree's own `BddAbove`**,
+    not a repair of anything.
+  * Where something *unwarranted is asserted*, the house remedy is spelled
+    out — see erratum `parsec-370.100`, "assuming, without loss of generality,
+    that `𝒟` has a least element `T₀` (replacing `𝒟` by `{T ∈ 𝒟 : T₀ ≤ T}` if
+    need be)".  44VII asserts nothing unwarranted, so it gets no such note.
+
+* **42III** — accepted; erratum `parsec-420.30`, two corrections in one block.
+  (i) The ultraweak convergence clause read `ω(b_α) → b`, where `b ∈ 𝒜` and
+  the limit must be `ω(b)`.  (ii) The ultrastrongly open sets were described
+  as unions of finite intersections of `{a : ‖a−b‖_ω ≤ ε}` — **closed** balls,
+  which contradicts the point's own preceding sentence that the topology is
+  the one induced by the seminorms: declaring those open makes every closed
+  ball open, which is strictly finer, as `𝒜 = ℂ` with `ω = id` shows.  Now
+  `< ε`.  A third slip, "the union of a finite intersections", is fixed
+  without a block — grammar, not content.  Row deleted; **`vn.tex` 17 → 16**.
+
+* **7III.8 / 7III.13 / 9X.3, and 9X.3** — **a standing scope ruling, not just
+  two deleted rows.**  The author: "Any mathematician worth their salt can
+  produce two such independent vectors.  This is not a Lean proof, but a proof
+  to be read by mathematicians."  So an unexhibited witness that obviously
+  exists, and an unstated case split both of whose branches give the
+  conclusion, are **not defects**.  The test before filing a row is whether a
+  *reader* would stumble, not whether a checker would.  Recorded in
+  ERRATA.md's "What does not belong here".  One real slip was fixed in
+  passing: `parsec-70.30`(8) had a full stop where a comma belongs, leaving a
+  fragment followed by a lowercase "define".
+  * **With this, `cstar.tex` has no open rows left** — 13 at the start of the
+    2026-08-22 session, 0 now.
+
+* **9II** — accepted; both the hint and the solution's chain now carry
+  "for `t ≥ 0`" at the end.  Row deleted.  The failure is confined to
+  `X = ∅`, where `C(X) = {0}` has `1 = 0`, so every constant `t·1` collapses:
+  `−t ≤ f−t ≤ t` and `0 ≤ f ≤ 2t` become `0 ≤ 0 ≤ 0` and say nothing about
+  `t`, while `‖f−t‖ ≤ t` still reads `0 ≤ t`.  For `X ≠ ∅` each of the three
+  does imply `t ≥ 0` and the chain is fine.  **9II's statement is true on
+  `X = ∅`** — all five clauses hold there — so the qualifier belongs to the
+  hint, not to the exercise.  No erratum: nothing printed becomes wrong.
+
+* **11XIII** (the proof, 11XIV) — accepted; erratum `parsec-110.140`.  The
+  `n` was chosen for `‖a‖ < 2n+1` while the strict step needs `‖a‖² < 2n+1`;
+  the hypothesis now reads `‖a‖² < 2n+1`.  Harmless either way — `n` only has
+  to be large enough.  Row deleted.
+
+* **14VIII.2** — accepted; erratum `parsec-140.80`.  The first line of the
+  displayed computation had the dummy variable as its upper limit,
+  `i∫₀^t (a−it)/(a²+t²)dt`; it now reads `∫₀^b`, as the next two lines already
+  did.  Row deleted.
+
+* **15I, the statement** — accepted; erratum `parsec-150.10`.  The vertices
+  were printed `wₙ := c + r cos(2π/n) + i r sin(2π/n)`, with the dummy `n`
+  where `2πn/N` is meant — so `N` did not occur in the formula at all and `w₀`
+  was undefined.  Corrected to `c + r cos(2πn/N) + i r sin(2πn/N)`, which is
+  what the proof uses and what `cauchy_formula` states.  Row deleted.
+
 ### Still open
 
 **0. RESOLVED — the formalization validates the thesis's own bootstrapping.**

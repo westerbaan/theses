@@ -33,6 +33,9 @@ Don't follow the hints.
 should read
 	``$\|a-b\|\leq \frac12 \|a^{-1}\|^{-1}$''.
 \end{erratum}
+\begin{erratum}{parsec-110.140}
+``$\|a\|<2n+1$'' should read ``$\|a\|^2<2n+1$''.
+\end{erratum}
 \begin{erratum}{parsec-110.150}
 In the hint for point 3,
 ``$a^n+1 = \prod_{k=1}^n a+\zeta^{2k+1}$''
@@ -51,6 +54,14 @@ Also, in point~3,
 ``$f'(z)=0$ for all~$z\in \scrA$''
 should read
 ``$f'(z)=0$ for all~$z\in \C$''.
+\end{erratum}
+\begin{erratum}{parsec-140.80}
+In point~2, the upper limit ``$t$'' should be ``$b$''.
+\end{erratum}
+\begin{erratum}{parsec-150.10}
+``$w_n := c+r\cos(2\pi/n)+ir\sin(2\pi/n)$''
+should read
+``$w_n := c+r\cos(2\pi n/N)+ir\sin(2\pi n/N)$''.
 \end{erratum}
 \begin{erratum}{parsec-160.50}
 Here the $C^*$-algebra must be $\neq \{0\}$.
@@ -311,9 +322,29 @@ is bounded from below by~$\left<x,T_0x\right>$.
 Drop the ``if'' part of point~2:
 it is false, but not used later on.
 \end{erratum}
+\begin{erratum}{parsec-390.70}
+Here
+\begin{equation*}
+\text{``}\sum_{e,e'\in\scrE}\text{''}
+\qquad\text{should read}\qquad
+\text{``}\lim_{\substack{\scrF\subseteq\scrE\\\text{finite}}}
+\ \sum_{e,e'\in\scrF}\text{''}.
+\end{equation*}
+\end{erratum}
+\begin{erratum}{parsec-420.30}
+``$\omega(b_\alpha)\to b$'' should read ``$\omega(b_\alpha)\to \omega(b)$'',
+and ``$\|a-b\|_\omega\leq\varepsilon$''
+in ``$\{\,a\in\scrA\colon\,\|a-b\|_\omega\leq\varepsilon\,\}$''
+should read ``$\|a-b\|_\omega<\varepsilon$''.
+\end{erratum}
 \begin{erratum}{parsec-430.20}
 The remark in point~3 that~$a_\alpha^*a_\alpha$
 is norm-bounded is unwarranted.
+\end{erratum}
+\begin{erratum}{parsec-530.40}
+``$\spec(X)$'' should read ``$\spec(\scrA)$''.
+Further, ``$y\in \spec(\scrA)\backslash U$''
+should read ``$y\in \spec(\scrA)\backslash\overline{U}$'', twice.
 \end{erratum}
 \begin{erratum}{parsec-610.20}
 Both inequalities should be reversed.
@@ -1064,7 +1095,7 @@ because then~$a:= b+ic$ will do the job.
 Given any linearly independent vectors
 $x$ and~$y$
 from some Hilbert space~$\scrH$
-with $\left<x,y\right>\neq 0$.
+with $\left<x,y\right>\neq 0$,
 define~$b:=\ketbra{x}{x}$ and $c:=\ketbra{y}{y}$.
 Then~$bc = \ketbra{x}{y}\,\left<x,y\right> $
 and~$cb=\ketbra{y}{x}\,\left<y,x\right>$.
@@ -1160,13 +1191,14 @@ If~$f\equiv g^*g$ for some~$g\in C(X)$,
 Of course,
 $\text{5.}\implies \text{4.}$ is obvious.
 For the remainder,
-note that given~$t\in \R$ we have
+note that we have
     $\|f-t\|\equiv \sup\{\left|f(x)-t\right|\colon x\in X\}\leq t$
     iff $\left|f(x)-t\right|\leq t$ for all~$x\in X$
     iff $-t\leq f(x)-t \leq t $ for all~$x\in X$
     iff $0\leq f(x)\leq 2t$ for all~$x\in X$
     iff $0\leq f\leq 2t$
-    iff $0\leq f$ and~$\frac{1}{2}\|f\|\leq t$.
+    iff $0\leq f$ and~$\frac{1}{2}\|f\|\leq t$,
+    for $t\geq 0$.
 Hence $\text{4.}\implies\text{1.}\implies\text{5.}$.
 \end{solution}
 \begin{solution}{parsec-90.30}
@@ -2589,9 +2621,7 @@ and so $f(a\wedge b)=f(a)\wedge f(b)$
 for all~$a,b\in\Real\scrA$
 (since~$a\wedge b = -((-a)\vee(-b))$.)
 \item
-We claim that~$\left|a+b\right|\leq \left|a\right|+\left|b\right|$
-(in this commutative setting.)
-Indeed,
+Both claims follow from
 \begin{alignat*}{3}
 \left|a\right| \,+\, \left|b\right|
 \ &= \ 
@@ -2609,6 +2639,22 @@ a\vee -a\,+\, b\vee -b
 \ &\geq \ 
 \left|a+b\right|.
 \end{alignat*}
+\item
+Let~$S$ be the linear span
+of~$\{\,a^nb^m\colon\, n,m\in\N\,\}$ in~$\scrB$.
+Since~$a$ and~$b$ commute, and are self-adjoint,
+$S$ is a linear subspace of~$\scrB$
+that contains~$1$, $a$ and~$b$,
+is closed under multiplication and involution,
+and is commutative.
+From this it follows easily
+that its norm closure, $C^*(a,b)$,
+is a $C^*$-subalgebra of~$\scrB$;
+it is the least one that contains~$a$ and~$b$,
+because any such subalgebra contains~$S$, and is closed.
+Finally, $C^*(a,b)$ is commutative,
+because that which commutes with the elements of a sequence
+commutes with its limit too.
 \end{enumerate}
 \end{solution}
 \begin{solution}{parsec-260.30}
@@ -3924,8 +3970,8 @@ and thus~$T_-=0$.
 Let~$T\in\sa{\scrB^a(X)}$ be given;
 we must show that $\|T\|=\sup_{x\in (X)_{\leq 1}} \|\left<x,Tx\right>\|$.
 We cannot simply  apply~\sref{parsec-210.70},
-because the  maps  $\left<x,(\,\cdot\,)x\right>$ 
-not all unital.
+because the  maps  $\left<x,(\,\cdot\,)x\right>$
+are not all unital.
 
 Given~$x\in X$,
 we have
@@ -4025,13 +4071,13 @@ The assignment $A\mapsto \underline{A}$ is clearly linear.
 To see that~$A\mapsto \underline{A}$ is injective,
 we must show that an  $M\times N$-matrix (see erratum) is zero
 when $\underline{A}=0$.
-This is easy enough: simply apply~$\overline{A}$
+This is easy enough: simply apply~$\underline{A}$
 to the vector $e_n$ that is~$1$
 in the $n$-th coordinate and~$0$ elsewhere,
 to see that $0 = \underline{A}(e_n) = (A_{mn})_{m=1}^M$,
 so~$A_{mn} = 0$ for all~$m$ (and~$n$), so indeed~$A=0$.
 
-To establish surjectivety, let~$T\colon \scrA^N\to\scrA^M$ be a module map.
+To establish surjectivity, let~$T\colon \scrA^N\to\scrA^M$ be a module map.
 Then
 with the~$e_n$s as defined above, we have $v=\sum_{n=1}^N e_n v_n$
 for every vector $v\in \scrA^N$, and so

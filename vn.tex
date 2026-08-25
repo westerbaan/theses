@@ -218,7 +218,7 @@ $\omega\colon \scrA\to\C$ is an np-map,
 and $U$ is an open subset of~$\C$.
 One can verify that a net $(b_\alpha)_\alpha$
 in~$\scrA$ converges ultraweakly to some~$b$ in~$\scrA$
-    iff $\omega(b_\alpha)\to b$ for all
+    iff $\omega(b_\alpha)\to \omega(b)$ for all
     np-maps $\omega\colon \scrA\to\C$.
 The \Define{ultrastrong topology}%
 \index{ultraweak and ultrastrong}
@@ -231,9 +231,9 @@ associated to the np-maps $\omega\colon \scrA\to\C$
 $\|a\|_\omega \equiv \omega(a^*a)^{\nicefrac{1}{2}}$,
     see~\sref{omega-norm-basic});
 a subset of~$\scrA$ is ultrastrongly open
-iff it is the union of a finite intersections
+iff it is a union of finite intersections
 of sets of the form
-$\{\,a\in\scrA\colon\, \|a-b\|_\omega \leq \varepsilon\,\}$,
+$\{\,a\in\scrA\colon\, \|a-b\|_\omega < \varepsilon\,\}$,
 where~$b\in \scrA$, $\omega\colon \scrA\to\C$ is an np-map,
 and~$\varepsilon>0$.
 One can prove that a net~$(b_\alpha)_\alpha$
@@ -1849,7 +1849,7 @@ using here that~$\spec(\scrA)$ being a compact Hausdorff
 space, \sref{spectrum-calg-compact-hausdorff}, 
 is normal by~17.10 of~\cite{willard})
 there is $f\in [0,1]_{C(\spec(\scrA))}$
-with~$f(x)=1$ and~$f(y)=0$ for all~$y\in \spec(X)\backslash U$.
+with~$f(x)=1$ and~$f(y)=0$ for all~$y\in \spec(\scrA)\backslash U$.
 It follows that~$f\in D$,
 and~$f\leq \bigvee D\leq 1$,
 so that $1=f(x)\leq (\bigvee D)(x)\leq 1$,
@@ -1857,7 +1857,7 @@ and~$(\bigvee D)(x)=1$.
 By continuity of~$\bigvee D$,
 we get $(\bigvee D)(x)=1$ for all~$x\in \overline{U}$.
 
-Let~$y\in \spec(\scrA)\backslash U$ be given.
+Let~$y\in \spec(\scrA)\backslash \overline{U}$ be given.
 Again by Urysohn's lemma
 there is $f\in [0,1]_{C(\spec(\scrA))}$
 with~$f(y)=0$ and~$f(x)=1$ for all~$x\in \overline{U}$.
@@ -1866,7 +1866,7 @@ for every~$g\in D$,
 we get $\bigvee D\leq f$,
 and so~$0\leq (\bigvee D)(y)\leq f(y) =0$,
 which implies that~$(\bigvee D)(y)=0$.
-Hence~$(\bigvee D)(y)=0$ for all~$y\in \spec(\scrA)\backslash U$.
+Hence~$(\bigvee D)(y)=0$ for all~$y\in \spec(\scrA)\backslash \overline{U}$.
 
 All in all we have $\bigvee D = \mathbf{1}_{\overline{U}}$,
 and so~$\overline{U}$ is open.\qed
