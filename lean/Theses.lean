@@ -14,6 +14,7 @@ import Theses.A.VN.NormalFunctionals
 import Theses.A.VN.Modular
 import Theses.A.VN.StandardSubspace
 import Theses.A.VN.Tomita
+import Theses.A.VN.ModularTensor
 import Theses.A.Proc.Measurement
 import Theses.A.Proc.Tensor
 import Theses.A.Proc.QuantumLambda
