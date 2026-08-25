@@ -299,10 +299,8 @@ the factorisation step entirely.
 These are consumed by every route and have value on their own:
 
 1. ~~**The amplification theorem**~~ — **DONE**, `982d7f8`. See §6.
-2. **`concreteTensor`'s API and the concrete↔abstract bridge.** Without it a
-   proved 121II would close nothing. `special_tensor` (111VII) plus
-   `tensor_uniqueness` (114II) should give
-   `VNSub _ (concreteTensor H K SA SB) ≅ VNT (VNSub _ SA) (VNSub _ SB)`.
+2. ~~**`concreteTensor`'s API and the concrete↔abstract bridge**~~ — **DONE**,
+   see §6. The "and even then it would not connect" objection is gone.
 3. **One factor atomic type I**, `N ≅ ⊕_j B(𝒦_j)`: matrix units give the
    slice-map property directly. This is the existing `haE` device with `M_{n_j}`
    widened to `B(𝒦_j)`, and it strictly extends the reach of 125dII/125eVII.
@@ -315,6 +313,30 @@ These are consumed by every route and have value on their own:
 None of 1–4 closes any of the seven as stated. 3 widens the atomic branch.
 
 ## 6. Already banked
+
+**The concrete↔abstract bridge closes.** `concreteTensor` went from zero
+lemmas to a full API — including `concreteTensor_eq_wstar_spatialSpan`, which
+hands it everything already proved about `spatialSpan`, and
+`concreteTensor_inf_le_inf`, the easy half of 121II free from monotonicity.
+On top of it: `concreteTensorEquiv`, the canonical nmiu-isomorphism
+`VNSub _ (concreteTensor H K SA SB) ≅ VNT (VNSub _ SA) (VNSub _ SB)` from
+`special_tensor` (111VII) fed to `tensor_uniqueness` (114II), sending `a ⊗ b`
+to `a ⊗ᵥ b` and unique in doing so; the two-sided `tensorSub₂`; and the
+transport itself, `tensorSub_inf_of_intersectionTensorStatement` — **granted
+121II, the fully abstract identity `tensorSub 𝒞 S₁ ⊓ tensorSub 𝒞 S₂ =
+tensorSub 𝒞 (S₁ ⊓ S₂)` in `VNT 𝒜 𝒞`, with no concreteness assumption on `𝒜`
+or `𝒞`** (realised via `ngns_ulift` and transported). 121II is packaged as
+`IntersectionTensorStatement`, and a proved 121II is *literally* a proof of it:
+the `fun ... => intersection_tensor ...` term typechecks with no glue.
+616 insertions, zero deletions, no statement changed, axiom-clean in situ.
+
+**Residual caveat for whoever attacks 125IV**: what is delivered is the
+*binary* identity, matching 121II's own statement. If `equaliser_lemma`'s
+construction needs intersections of arbitrary or transfinitely indexed
+families rather than pairs, the binary form must be iterated, and 121II as
+stated does not give the infinitary version directly. Everything else 125IV
+needs — the cardinality bound, the construction of `𝒜̃`, the equaliser clause
+— is independent of the bridge.
 
 `982d7f8` — **the amplification theorem `(M ⊗ 1)' = M' ⊗̄ B(𝒦)`**, in three
 forms, with the ket/slice API for `HT ℋ 𝒦` that the tree lacked. Built
