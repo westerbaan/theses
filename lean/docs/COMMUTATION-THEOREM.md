@@ -311,6 +311,41 @@ These are consumed by every route and have value on their own:
 None of 1–4 closes any of the seven as stated. 3 widened the atomic branch, and
 is done.
 
+## 5a. Progress against the estimate
+
+*Updated 2026-08-26. Estimates are §4's; actuals are committed, `sorry`-free and
+axiom-clean in situ.*
+
+| piece | estimate | actual | commit |
+|---|---|---|---|
+| RvD §2 — `P,Q,R,T,J`, Prop. 2.2 | 500–900 | **683** | `fa6de2c` |
+| the bounded core (modular pairs, Lemmas A–D) | part of the 600–1200 scaffolding row | **828** | `5819fac` |
+| RvD Prop. 4.1 + the von Neumann bridge | not separately costed | **716** | `5ba287a` |
+| the reduction — steps 0–3, cutting, cancellation | 1500–2500 (revised to 3500–5200) | **1233** | `5ba287a` |
+| the corner Hilbert space and corner tensor | 1200–2000 (the revision's critical path) | **772** | `93287f6` |
+| amplification theorem + ket/slice API | in the 800–1500 row | **306** | `982d7f8` |
+| `concreteTensor` API + concrete↔abstract bridge | 400–800 | **616** | `affa026` |
+| atomic type I widening of `haE` (§5 item 3) | 400–700 | **1199** | `a992c23` |
+| **total so far** | | **≈ 6 350** | |
+
+Still open: RvD §3 to Prop. 3.7 and the §4 analytic core (Lemmas 4.3–4.9,
+Thm 4.2) — the largest single remaining piece; the tensor factorisation
+`J_ξ = J_ω ⊗ J_{ω'}`; the flip/associator transport and
+`B(L₁)⊗̄B(L₂) = B(L₁⊗L₂)`; and assembling the reduction's nets into one
+theorem.
+
+**What the actuals say about the estimate.** Four of the eight rows came in at
+or below the low end, one (the reduction's own critical path) at 60% of it, and
+one — the atomic type I widening — at 1.7× the high end. The single largest
+correction was not a line-count error at all but a *structural* one: the
+reduction's expensive step was thought to be transport of von Neumann algebras
+onto the corner, and it turned out that step is not needed (see §6).
+
+**Every worker so far has found at least one place where the brief named the
+wrong hard step.** That is now the expected outcome of a round rather than a
+surprise, and it is why each of these was scoped by a worker with licence to
+contradict the plan rather than handed down as a specification.
+
 ## 6. Already banked
 
 **Atomic type I is banked** (§5 item 3). The `haE` device now runs on
@@ -358,6 +393,53 @@ neither Mathlib nor the tree puts an `InnerProductSpace` structure on `ULift`.
 Nothing downstream needs it; it is plumbing, not mathematics, if anyone wants
 the containment on the record.
 
+
+**The amplify-and-cut reduction is complete.** `Commutation.lean` (`5ba287a`,
+1233 lines) has steps 0–3, the cutting principle, the reduction theorem
+`(M_e)□ = (M□)_e` — 35 lines, stated relative to `pB(ℋ)p` so that "extension by
+zero is the identity" does the work — and the cancellation half of step 4.
+`CornerTensor.lean` (`93287f6`, 772 lines) has the corner Hilbert space,
+`pB(ℋ)p ≅ B(eℋ)` in both directions, the corner reduction theorem, and the
+capstone `CT_of_CT_corner`. Together: **the general commutation theorem follows
+from the commutation theorem for the corner algebras.**
+
+Three findings from those two rounds that changed the plan rather than merely
+executing it:
+
+* **σ-finiteness is not needed anywhere**, and neither is step 3's `ℓ²(ℕ)`
+  amplification. `exists_separating_corner` yields a genuine *separating*
+  vector, and `cyclic_and_separating_of_separating` finishes in ten lines. The
+  "rescale square-summably" apparatus of the classical account evaporates.
+* **The upward transport `(𝒜 ⊗̄ ℬ)_{e⊗f} = 𝒜_e ⊗̄ ℬ_f` is not needed and not
+  proved.** Its `⊇` half is normality of `w ↦ PwP*` — a real chunk of work,
+  absent from the tree. The reduction only needs `{w | PwP* ∈ 𝒯}` to be a von
+  Neumann subalgebra, and by the corner reduction theorem that set is *literally
+  a commutant*, hence vN by 65III. This is why the critical path closed in one
+  round instead of two.
+* **`P = a² + abJ`, hence `𝒦 = a(fix J)`** — the bridge from the real subspace
+  to `dom Δ^{1/2}`, which appeared in no plan and without which there is no
+  route from `𝒦` to the modular pair at all. It needs `JaJ = b`, proved by
+  building `JaJ` as a *complex*-linear operator (it commutes with `i` because
+  `J` anticommutes twice).
+
+**RvD's own scaffolding is in.** `Modular.lean` (`5819fac`) — modular pairs,
+`D_{a,b}` self-adjoint positive injective, the normalisation lemma exhibiting
+the closure explicitly with its core, `(1+D²)⁻¹ = a²`, polar rigidity — and
+`StandardSubspace.lean` (`fa6de2c`) — `P`, `Q`, `R` complex-linear positive,
+`T`, `J` with `J² = 1` and `JR = (2−R)J`, `A = JT`, and `isModularPair_a_b`
+delivering the pair with no glue. `Tomita.lean` (`5ba287a`) joins them to von
+Neumann algebras: `𝒦 = closure(M_sa ω)` is standard (cyclic gives `⊔ = ⊤`,
+separating gives `⊓ = ⊥`), `dom D = 𝒦 + i𝒦`, `J(D(xω)) = x*ω`, and `Mω` a core
+— **all without ever defining `S_ω`**, so no unbounded conjugate-linear operator
+appears anywhere in the development.
+
+Two things worth knowing for whoever continues. `IsCommutingPair.hasCore`
+delivers a core of the form `a(E)` and **cannot** be used to show `Mω` is a core
+for `Δ_ω^{1/2}` — the only candidate `E := a⁻¹(Mω)` has density equivalent to
+the conclusion, so it is circular there; the graph-closure argument is reproved
+directly at `Tomita.lean:565-644`. And `Measurement.lean`'s `Corner A e` is the
+*abstract* corner with no Hilbert space attached, so it does not give
+`pB(ℋ)p ≅ B(eℋ)`.
 
 **The concrete↔abstract bridge closes.** `concreteTensor` went from zero
 lemmas to a full API — including `concreteTensor_eq_wstar_spatialSpan`, which
