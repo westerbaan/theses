@@ -991,20 +991,21 @@ theorem standard_corner_dils [VonNeumannAlgebra A] (a : A)
 * `h ∘ ϑ = id` (`pdil_h_theta`), and
 * `ϑ ∘ h = q(·)q` (`pdil_theta_h`),
 
-are all that is needed: the first gives uniqueness of the mediating map and
-the second turns **63IV** `cp_comprehension` into its existence.  ⚠️ The
-thesis's `ϑ` is an miu-**isomorphism** `ℬ ≅ q𝒫q`, and its inverse
-`q T q ↦ h(q T q)`; neither the inverse nor the corestriction to `q𝒫q` is
-needed here, and neither is **169IV**.
+are all that is needed for `IsCornerFor`: the first gives uniqueness of the
+mediating map and the second turns **63IV** `cp_comprehension` into its
+existence, so **169IV** is not used.  The same two identities are also
+exactly what makes the thesis's corestriction `ℬ ≅ q𝒫q` an
+miu-**isomorphism** with inverse `q T q ↦ h(q T q)`, and that is how
+`pdil_theta_normal` below gets normality, as the thesis does; the
+corestriction is formed inside that proof rather than as a definition.
 
 Everything is checked in the mirrored convention of `Paschke.lean`, where
 `|x⟩⟨y| : z ↦ ⟨y,z⟩ • x` (`mketbra`) and the product of `𝒫 = 𝒷ᵃ(X)ᵐᵒᵖ` is
 *reversed* composition, which is what makes `ϑ` multiplicative rather than
 antimultiplicative: `ϑ(b)ϑ(c) = op(|c•e⟩⟨e| ∘ |b•e⟩⟨e|) = ϑ(bc)`, using
 `⟨e,e⟩ = φ(1) = 1`.  Complete positivity of `ϑ` is then **34IV**.3
-`cp_of_mi`; normality is the vector-form computation
-`⟨x, ϑ(b)x⟩ = y* b y` for `y = ⟨x,e⟩` (`pdil_theta_vec`) together with
-**44VIII** `ad_normal` in ℬ and **144I** `ba_nonneg_iff`. -/
+`cp_of_mi`; normality is **169VI**'s own "an miu-isomorphism, and thus also
+normal" — see `pdil_theta_normal`. -/
 
 section StandardPaschkeCorner
 
@@ -1180,49 +1181,49 @@ private theorem pdil_theta_cp (hu : φ 1 = 1) :
   cp_of_mi _ (fun x y => (pdil_theta_mul M hu x y).symm)
     (fun x => (pdil_theta_star M x).symm)
 
-private theorem pdil_theta_mono (hu : φ 1 = 1) {b c : ℬ} (h : b ≤ c) :
-    pdil_theta M b ≤ pdil_theta M c := by
-  have h1 := astara_pos_basic_2_cp _ (pdil_theta_cp M hu) (c - b) (sub_nonneg.mpr h)
-  rw [map_sub] at h1
-  exact sub_nonneg.mp h1
-
-/-- The vector form of `ϑ(b)`: `⟨x, ϑ(b)x⟩ = y* b y` for `y = ⟨x,e⟩`. -/
-private theorem pdil_theta_vec (b : ℬ) (x : M.X) :
-    (inner ℬ x ((pdil_theta M b).unop.1 x) : ℬ)
-      = star (inner ℬ x (M.tprod 1 1) : ℬ) * b * inner ℬ x (M.tprod 1 1) := by
-  rw [pdil_theta_unop_apply, CStarModule.inner_op_smul_right,
-    CStarModule.inner_op_smul_right, CStarModule.star_inner, mul_assoc]
-
-/-- Normality of `ϑ`: the vector forms `⟨x, ϑ(·)x⟩ = y*(·)y` are normal by
-**44VIII** `ad_normal`, and they detect the order of `𝒷ᵃ(X)` by **144I**
-`ba_nonneg_iff`. -/
+/-- Normality of `ϑ`, by **169VI**'s own argument.  The thesis corestricts
+`ϑ` to the corner `q𝒫q` of `q = ϑ(1) = |e⟩⟨e|` and observes that the
+corestriction is an miu-**isomorphism**, with inverse `qTq ↦ h(qTq)`: that
+is exactly the pair of identities `h ∘ ϑ = id` (`pdil_h_theta`) and
+`ϑ ∘ h = q(·)q` (`pdil_theta_h`), the second of which also supplies
+`q ϑ(b) q = ϑ(b)`, i.e. that the corestriction is well defined.  Then "so
+`ϑ` is an miu-isomorphism and thus also normal" — a ∗-isomorphism is an
+order isomorphism, `Theses.A.VN.starAlgEquiv_preservesDirSups`.  Finally
+`ϑ` itself is that corestriction followed by the inclusion `q𝒫q ⊆ 𝒫`,
+which is normal because the corner's suprema *are* those of `𝒫` (**94II**.6
+`cornerSet.val_normal`).  `𝒫 = 𝒷ᵃ(X)ᵐᵒᵖ` is a von Neumann algebra by
+**152X** `ba_vonNeumannAlgebra` and `vonNeumannAlgebra_mulOpposite`. -/
 private theorem pdil_theta_normal (hu : φ 1 = 1) :
     PreservesDirSups (pdil_theta M) := by
-  intro D s hne hdir hlub
-  refine ⟨?_, fun U hU => ?_⟩
-  · rintro _ ⟨d, hd, rfl⟩
-    exact pdil_theta_mono M hu (Subtype.coe_le_coe.mpr (hlub.1 hd))
-  · rw [← sub_nonneg, mop_nonneg_iff]
-    have hsub : (U - pdil_theta M s).unop = U.unop - (pdil_theta M s).unop := rfl
-    rw [hsub, ba_nonneg_iff]
-    intro x
-    set y : ℬ := inner ℬ x (M.tprod 1 1) with hy
-    have hd : D.Nonempty ∧ DirectedOn (· ≤ ·) D ∧ BddAbove D :=
-      ⟨hne, hdir, ⟨s, hlub.1⟩⟩
-    have hnat := ad_normal y D hd
-    have hsd : s = dirSup D hd := hlub.unique (isLUB_dirSup D hd)
-    rw [← hsd] at hnat
-    have hub : (inner ℬ x (U.unop.1 x) : ℬ) ∈
-        upperBounds ((fun d : selfAdjoint ℬ => star y * (d : ℬ) * y) '' D) := by
-      rintro _ ⟨d, hd', rfl⟩
-      have hle : ((pdil_theta M (d : ℬ)).unop : Ba ℬ M.X) ≤ U.unop := hU ⟨d, hd', rfl⟩
-      have h2 := ba_inner_mono x hle
-      rwa [pdil_theta_vec] at h2
-    have hkey := hnat.2 hub
-    have hsub2 : (U.unop - (pdil_theta M s).unop).1 x
-        = U.unop.1 x - (pdil_theta M s).unop.1 x := rfl
-    rw [hsub2, CStarModule.inner_sub_right, sub_nonneg, pdil_theta_vec]
-    exact hkey
+  have : VonNeumannAlgebra (Ba ℬ M.X) := ba_vonNeumannAlgebra M.selfDual
+  have : Fact (IsStarProjection (pdil_theta M 1)) :=
+    ⟨⟨by rw [IsIdempotentElem, pdil_theta_mul M hu, mul_one],
+      by rw [IsSelfAdjoint, pdil_theta_star M 1, star_one]⟩⟩
+  -- `ϑ(b) = ϑ(h(ϑ(b))) = q ϑ(b) q`: the corestriction to `q𝒫q` is defined
+  have hmem : ∀ b : ℬ,
+      pdil_theta M 1 * pdil_theta M b * pdil_theta M 1 = pdil_theta M b := by
+    intro b
+    have h := pdil_theta_h M (pdil_theta M b)
+    rw [pdil_h_theta M hu b] at h
+    exact h.symm
+  -- the corestriction, an miu-isomorphism `ℬ ≅ q𝒫q` with inverse `h`
+  set Φ : ℬ ≃⋆ₐ[ℂ] cornerSet (Ba ℬ M.X)ᵐᵒᵖ (pdil_theta M 1) :=
+    { toFun := fun b => ⟨pdil_theta M b, hmem b⟩
+      invFun := fun s => M.h s.1
+      left_inv := fun b => pdil_h_theta M hu b
+      right_inv := fun s => Subtype.ext ((pdil_theta_h M s.1).trans s.2)
+      map_mul' := fun b c => Subtype.ext (pdil_theta_mul M hu b c).symm
+      map_add' := fun b c => Subtype.ext (map_add (pdil_thetaLin M) b c)
+      map_smul' := fun r b => Subtype.ext (map_smul (pdil_thetaLin M) r b)
+      map_star' := fun b => Subtype.ext (pdil_theta_star M b).symm } with hΦ
+  -- the inclusion `q𝒫q ⊆ 𝒫` as a positive linear map
+  set ι : cornerSet (Ba ℬ M.X)ᵐᵒᵖ (pdil_theta M 1) →ₚ[ℂ] (Ba ℬ M.X)ᵐᵒᵖ :=
+    { toFun := fun s => s.1
+      map_add' := fun _ _ => rfl
+      map_smul' := fun _ _ => rfl
+      monotone' := fun _ _ h => h } with hι
+  exact preservesDirSups_pmap_comp (starAlgHomP Φ.toStarAlgHom)
+    (starAlgEquiv_preservesDirSups Φ) ι cornerSet.val_normal
 
 /-- `ϑ` as an ncp-map. -/
 private noncomputable def pdil_thetaNcp (hu : φ 1 = 1) :
