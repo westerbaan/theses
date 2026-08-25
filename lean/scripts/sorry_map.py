@@ -107,7 +107,7 @@ def audit_rows():
                 continue
             status = ""
             if len(f) == 7:
-                status = re.split(r"[\s:,]", f[6].strip(), 1)[0].rstrip("-")
+                status = re.split(r"[\s:,]", f[6].strip(), maxsplit=1)[0].rstrip("-")
             name = f[1].strip()
             if not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_'\u2032\u1d63!.]*", name):
                 continue          # rows naming an `example`, a structure field, …
@@ -194,6 +194,7 @@ def main():
 
     sections = []
     acount = collections.Counter()
+    pcount = collections.Counter()
     for title, prefix, files in CHAPTERS:
         mods = [f"{prefix}.{f}" for f in files if f"{prefix}.{f}" in items]
         c = collections.Counter(i[2] for m in mods for i in items[m])
@@ -209,14 +210,18 @@ def main():
                 live = bool(av) and av != "ok" and st not in SETTLED
                 if live:
                     acount[av] += 1
-                mark = " aud" if live else ""
+                route = ap == "route"
+                if route:
+                    pcount[av or "ok"] += 1
+                mark = (" aud" if live else "") + (" prt" if route else "")
                 return (f'<i class="b k-{cat}{mark}" tabindex="0" '
                         f'data-d="{html.escape(d)}" data-n="{html.escape(nm)}" '
                         f'data-c="{cat}" data-k="{html.escape(bl)}" '
                         f'data-r="{html.escape(rs)}" data-a="{av}" data-ap="{ap}" '
                         f'data-s="{html.escape(st)}" '
                         f'data-t="{"1" if nm in touched else ""}" '
-                        f'data-an="{html.escape(an[:400])}"></i>')
+                        f'data-an="{html.escape(an[:400])}">'
+                        f'{"<i class=pw></i>" if route else ""}</i>')
             boxes = "".join(box(*t) for t in it)
             tail = ""
             if fc["blocked"]:
@@ -241,6 +246,7 @@ def main():
                         f'</h2>{"".join(rows_html)}</section>')
 
     abad = sum(acount.values())
+    pbad = sum(pcount.values())
     achips = "".join(
         f'<button class="acat" data-acat="{k}" aria-pressed="false">'
         f'<i class="sw aud"></i>stmt {k} <b>{acount[k]}</b></button>'
@@ -258,7 +264,7 @@ def main():
                             capture_output=True, text=True).stdout.strip()
 
     doc = TEMPLATE.format(
-        abad=abad, achips=achips, aaudited=len(aud),
+        abad=abad, achips=achips, aaudited=len(aud), pbad=pbad,
         total=total, proved=proved, blocked=blocked, sorry=sorry,
         pct=proved / total * 100, blkpct=blocked / total * 100,
         sorrypct=sorry / total * 100, commit=commit,
@@ -266,14 +272,15 @@ def main():
     open(DOCS + "sorry-map.html", "w").write(doc)
     print(f"wrote {DOCS}sorry-map.html — {total} boxes: "
           f"{proved} proved, {blocked} blocked, {sorry} sorry; "
-          f"{abad} carry a statement-audit flag")
+          f"{abad} carry a statement-audit flag, "
+          f"{pbad} a proof-route flag")
 
 
 TEMPLATE = '''<title>Sorry Map</title>
 <style>
-:root{{--ground:#f6f7f9;--panel:#fff;--ink:#1b1e24;--dim:#697079;--rule:#e3e5ea;--ok:#8fc7a6;--okd:#2f9e5f;--bad:#d43d4f;--warn:#e6a41c;--accent:#4c5fd7}}
-@media(prefers-color-scheme:dark){{:root:not([data-theme=light]){{--ground:#0f1116;--panel:#171a21;--ink:#e7e9ed;--dim:#8d949f;--rule:#252a33;--ok:#31543f;--okd:#3fbf76;--bad:#ff5d6c;--warn:#f5b62f;--accent:#8492f5}}}}
-:root[data-theme=dark]{{--ground:#0f1116;--panel:#171a21;--ink:#e7e9ed;--dim:#8d949f;--rule:#252a33;--ok:#31543f;--okd:#3fbf76;--bad:#ff5d6c;--warn:#f5b62f;--accent:#8492f5}}
+:root{{--ground:#f6f7f9;--panel:#fff;--ink:#1b1e24;--dim:#697079;--rule:#e3e5ea;--ok:#8fc7a6;--okd:#2f9e5f;--bad:#d43d4f;--warn:#e6a41c;--accent:#4c5fd7;--accent2:#0d8f8f}}
+@media(prefers-color-scheme:dark){{:root:not([data-theme=light]){{--ground:#0f1116;--panel:#171a21;--ink:#e7e9ed;--dim:#8d949f;--rule:#252a33;--ok:#31543f;--okd:#3fbf76;--bad:#ff5d6c;--warn:#f5b62f;--accent:#8492f5;--accent2:#3fd0c9}}}}
+:root[data-theme=dark]{{--ground:#0f1116;--panel:#171a21;--ink:#e7e9ed;--dim:#8d949f;--rule:#252a33;--ok:#31543f;--okd:#3fbf76;--bad:#ff5d6c;--warn:#f5b62f;--accent:#8492f5;--accent2:#3fd0c9}}
 *{{box-sizing:border-box}}
 body{{background:var(--ground);color:var(--ink);font:15px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif;margin:0;padding:0 20px 96px}}
 .wrap{{max-width:1120px;margin:0 auto}}
@@ -314,10 +321,16 @@ s{{text-decoration:none;font-weight:600}} s.r{{color:var(--bad)}} s.y{{color:var
 .aud::before{{content:"";position:absolute;top:0;right:0;width:0;height:0;
 border:5px solid transparent;border-top-color:var(--accent);border-right-color:var(--accent);border-radius:0 3px 0 0}}
 .sw.aud{{background:var(--rule)}}
+.pw{{content:"";position:absolute;left:0;bottom:0;width:0;height:0;
+border:5px solid transparent;border-bottom-color:var(--accent2);border-left-color:var(--accent2);border-radius:0 0 0 3px}}
+.sw.prt{{background:var(--rule);position:relative}}
+.sw.prt::after{{content:"";position:absolute;left:0;bottom:0;width:0;height:0;
+border:5px solid transparent;border-bottom-color:var(--accent2);border-left-color:var(--accent2);border-radius:0 0 0 3px}}
 .b:hover,.b:focus-visible{{transform:scale(1.7);z-index:2}}
 body.only .b.k-proved{{display:none}} body.only .file.clean{{display:none}}
 body.filt .b:not(.on){{display:none}} body.filt .file.clean{{display:none}}
 body.aonly .b:not(.aud){{display:none}}
+body.ponly .b:not(.prt){{display:none}}
 .read{{position:fixed;left:0;right:0;bottom:0;background:var(--panel);border-top:1px solid var(--rule);padding:9px 20px;font:12.5px/1.55 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--dim);min-height:54px}}
 .read b{{color:var(--ink)}} .read u{{text-decoration:none;color:var(--accent)}}
 @media(prefers-reduced-motion:reduce){{.b:hover,.b:focus-visible{{transform:none}}}}
@@ -329,13 +342,16 @@ body.aonly .b:not(.aud){{display:none}}
 <div><div class="big" style="color:var(--warn)">{blocked}</div><div class="lab">blocked on a sorry</div></div>
 <div><div class="big" style="color:var(--bad)">{sorry}</div><div class="lab">sorry</div></div>
 <div><div class="big">{pct:.1f}%</div><div class="lab">axiom-clean</div></div>
-<div><div class="big" style="color:var(--accent)">{abad}</div><div class="lab">statement ≠ source</div></div></div>
+<div><div class="big" style="color:var(--accent)">{abad}</div><div class="lab">statement ≠ source</div></div>
+<div><div class="big" style="color:var(--accent2)">{pbad}</div><div class="lab">proof ≠ thesis&#39;s</div></div></div>
 <div class="bar"><i style="background:var(--okd);width:{pct:.3f}%"></i><i style="background:var(--warn);width:{blkpct:.3f}%"></i><i style="background:var(--bad);width:{sorrypct:.3f}%"></i></div>
 <table><tbody>{legend}
 <tr><td><i class="sw aud"></i></td><td><code>stmt ≠ source</code></td><td class=num>{abad}</td>
 <td>corner wedge: this rendering still does not match its thesis point, independently of whether it is proved. The statement audit of 2026-08-20 checked {aaudited} declarations and flagged 253; all 30 modules were then repaired, and every flagged row was <b>re-verified against the tree on 2026-08-21</b>. A wedge means the row came back <code>open</code> (repairable, nothing blocking), <code>left-thesis</code> (the printed point is defective, so matching it would import a falsehood), <code>left-ruling</code> (an open question in <code>QUESTIONS.md</code> governs it) or <code>left-cost</code> (costed and declined). Rows that came back <code>repaired</code> or <code>left-benign</code> — a true generalisation the thesis's setting supplies — carry no wedge. Hover for the verdict, the finding and the current status.</td></tr>
+<tr><td><i class="sw prt"></i></td><td><code>proof ≠ thesis&#39;s</code></td><td class=num>{pbad}</td>
+<td>lower-left wedge: the statement is the thesis&#39;s, but the Lean proof does not follow the printed argument. This is the audit&#39;s <code>proof</code> column, which the proof-route passes of 2026-08-22/25 maintain: a row loses the wedge when its proof is put back on the thesis&#39;s route, and only then. A wedge is not by itself a defect — the thesis sometimes gives no proof at all, sometimes the printed route is the one an erratum corrects, and sometimes Mathlib states the same step — but it does mean the argument you read in the thesis is not the argument the machine checked. Hover for the finding and the reason it stands.</td></tr>
 </tbody></table>
-<div class="tools"><button id="a" aria-pressed="true">All {total}</button><button id="o" aria-pressed="false">Unproved {blocked}+{sorry}</button><button id="ab" aria-pressed="false"><i class="sw aud"></i>stmt ≠ source <b>{abad}</b></button>{chips}{achips}</div>
+<div class="tools"><button id="a" aria-pressed="true">All {total}</button><button id="o" aria-pressed="false">Unproved {blocked}+{sorry}</button><button id="ab" aria-pressed="false"><i class="sw aud"></i>stmt ≠ source <b>{abad}</b></button><button id="pb" aria-pressed="false"><i class="sw prt"></i>proof ≠ thesis&#39;s <b>{pbad}</b></button>{chips}{achips}</div>
 {sections}</div>
 <div class="read" id="rd">Hover or focus a box for its thesis number, category and reason.</div>
 <script>
@@ -346,15 +362,19 @@ let h='<b>'+t.dataset.d+'</b> &nbsp; '+t.dataset.n+(c=='proved'?' &nbsp; <em>pro
 if(a&&a!='ok')h+='<br><u>stmt '+a+'</u>'+(t.dataset.ap?' · proof '+t.dataset.ap:'')+
 (t.dataset.s?' · <b>'+t.dataset.s+'</b>':'')+
 (t.dataset.t?' · <em>declaration changed since the audit</em>':'')+' &nbsp; '+t.dataset.an;
+else if(t.dataset.ap=='route')h+='<br><u>proof route</u>'+
+(t.dataset.s?' · <b>'+t.dataset.s+'</b>':'')+
+(t.dataset.t?' · <em>declaration changed since the audit</em>':'')+' &nbsp; '+t.dataset.an;
 rd.innerHTML=h;}}
 document.addEventListener('mouseover',show);document.addEventListener('focusin',show);
-const cats=[...document.querySelectorAll('.cat')],acats=[...document.querySelectorAll('.acat')],ab=document.getElementById('ab');
-function clr(){{cats.forEach(c=>c.ariaPressed='false');acats.forEach(c=>c.ariaPressed='false');ab.ariaPressed='false';document.querySelectorAll('.b.on').forEach(b=>b.classList.remove('on'))}}
+const cats=[...document.querySelectorAll('.cat')],acats=[...document.querySelectorAll('.acat')],ab=document.getElementById('ab'),pb=document.getElementById('pb');
+function clr(){{cats.forEach(c=>c.ariaPressed='false');acats.forEach(c=>c.ariaPressed='false');ab.ariaPressed='false';pb.ariaPressed='false';document.querySelectorAll('.b.on').forEach(b=>b.classList.remove('on'))}}
 a.onclick=()=>{{clr();document.body.className='';a.ariaPressed='true';o.ariaPressed='false'}};
 o.onclick=()=>{{clr();document.body.className='only';o.ariaPressed='true';a.ariaPressed='false'}};
 cats.forEach(c=>c.onclick=()=>{{clr();a.ariaPressed='false';o.ariaPressed='false';c.ariaPressed='true';
 document.querySelectorAll('.b.k-'+c.dataset.cat).forEach(b=>b.classList.add('on'));document.body.className='filt'}});
 ab.onclick=()=>{{clr();a.ariaPressed='false';o.ariaPressed='false';ab.ariaPressed='true';document.body.className='aonly'}};
+pb.onclick=()=>{{clr();a.ariaPressed='false';o.ariaPressed='false';pb.ariaPressed='true';document.body.className='ponly'}};
 acats.forEach(c=>c.onclick=()=>{{clr();a.ariaPressed='false';o.ariaPressed='false';c.ariaPressed='true';
 document.querySelectorAll('.b[data-a="'+c.dataset.acat+'"]').forEach(b=>b.classList.add('on'));document.body.className='filt'}});
 </script>'''
