@@ -284,10 +284,33 @@ bounded `a,b`. That is the real saving, and it stands.
 estimated 800–1500 lines given the tree's `HT`/`opTensor`/Kaplansky. The bulk is
 the RvD single-algebra package: `𝒦 = closure(M_sa ω)` standard, the real
 projections `P,Q`, `R = P+Q` complex-linear and positive with `R, 2−R`
-injective, `J := (P−Q)T⁻¹` by continuous extension, and `Mω` a core. Note that
-our theorem needs only RvD §2, §3 up to Prop. 3.1, Prop. 4.1 and the Appendix
-Proposition — **not** Thm 4.2 (Tomita's theorem itself), not `Δ^{it}`, not KMS,
-and therefore not the Borel functional calculus RvD use for `R^{it}`.
+injective, `J := (P−Q)T⁻¹` by continuous extension, and `Mω` a core.
+
+**CORRECTION, 2026-08-26 — this paragraph used to end by claiming the
+conjugation half needs "not `Δ^{it}`, and therefore not the Borel functional
+calculus RvD use for `R^{it}`". That is wrong, and it was the central cost
+claim of this document.** The worker who read RvD §§3–4 in full traced the
+dependency: Lemma 4.9 proves `JMJ ⊆ M'` by pure algebra, but it *consumes*
+`JM'J ⊆ M`, which is **Lemma 4.8 at `t = 0`** — and 4.8's proof runs the whole
+one-parameter group, showing `g(t) = ⟨[y', Δ^{it}Jx'JΔ^{-it}]ξ, η⟩` satisfies
+`∫ e^{-φt}(2cosh πt)^{-1} g(t) dt = 0` for all `φ ∈ (−π,π)` and concluding
+`g ≡ 0` by the identity theorem plus Fourier injectivity. **`g(0) = 0` alone is
+not obtainable.** There is no algebraic shortcut: solving Lemma 4.5's
+`Δ^{1/2} y Δ^{1/2} = λΔx + λ̄xΔ` for `y` is inverting `2cosh(s + iφ/2)` where
+`e^{2ist}` is the modular flow — inherently a Fourier inversion.
+
+So `Δ^{it}` is needed. **But the Borel functional calculus still is not**, and
+that is what saves the route: for `Im z ≤ 0` the function `t ↦ t^{1+iz}` is
+continuous and bounded on `[0,2]`, so `cfc` gives `R^{1+iz}`; the pointwise
+bound `|t^{1+iz}|² ≤ 2^{-2Im z}·t²` gives `‖R^{1+iz}ζ‖ ≤ 2^{-Im z}‖Rζ‖` by cfc
+monotonicity; and `Rζ ↦ R^{1+iz}ζ` extends off the dense `ran R` by
+`LinearMap.extendOfNorm` — the same device already used for `J` and for the
+normalisation lemma. Holomorphy in `z` follows because `z ↦ (t ↦ t^{1+iz})` is
+a holomorphic `C([0,2])`-valued map and `cfcHom` is an isometric algebra map.
+That is Lemma 3.6 entire, ≈400–700 lines.
+
+What *is* skippable, confirmed by reading: all of §3 except Lemma 3.6 (Def. 3.4
+and Props 3.3/3.5/3.7 and Thms 3.8/3.9 are KMS), Thm 4.10, and all of §5.
 
 *Still worth obtaining.* Rieffel & van Daele, Bull. LMS **7** (1975) 257–260 —
 reference [10] of the 1977 paper, and about precisely this theorem. Both
