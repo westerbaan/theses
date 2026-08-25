@@ -1077,6 +1077,179 @@ theorem opTensor_star (a : H →L[ℂ] H) (b : K →L[ℂ] K) :
     star (opTensor a b) = opTensor (star a) (star b) :=
   opTensor_adjoint a b
 
+
+/-! ### The ket/slice operators `Q_e : ℋ → ℋ ⊗ 𝒦`
+
+Machinery with no thesis counterpart: `proc.tex` nowhere fixes a basis of
+`𝒦`, nor names the maps `x ↦ x ⊗ e`.  They are what the amplification
+theorem (`amplification`, in the `Spatial` section below) is proved with:
+`Q_e^* X Q_f` extracts the `(e,f)`-matrix entry over `B(ℋ)` of an operator
+`X ∈ B(ℋ ⊗ 𝒦)`, and the composition rules `Q_e^* Q_f = ⟨e,f⟩·1` and
+`Q_e Q_f^* = 1 ⊗ |e⟩⟨f|` are all that is needed of them.
+
+An equivalent API exists for the *other* Hilbert space tensor product of
+the tree, `Theses.B.Dils.hilbTensor` (`B/Dils/Stinespring.lean:1203`).  It
+is rebuilt here rather than transported along `hilb_tensor_unique`, because
+`A/Proc` may not import `B/Dils` and because the rebuild — six short
+lemmas on top of `htmul_inner` and `ext_htmul` — is shorter than the
+transport would be. -/
+
+/-- Companion of `htmul_smul_left`: `x ⊗ (c y) = c (x ⊗ y)`. -/
+theorem htmul_smul_right (c : ℂ) (x : H) (y : K) :
+    x ⊗ₕ (c • y) = c • (x ⊗ₕ y) := by
+  show (hilbTensor H K).map x (c • y) = _
+  rw [map_smul]; rfl
+
+/-- Companion of `htmul_add_left`: `x ⊗ 0 = 0`. -/
+theorem htmul_zero_right (x : H) : x ⊗ₕ (0 : K) = 0 := by
+  show (hilbTensor H K).map x 0 = _
+  rw [map_zero]
+
+/-- Companion of `htmul_add_left`: `(x - x') ⊗ y = x ⊗ y - x' ⊗ y`. -/
+theorem htmul_sub_left (x x' : H) (y : K) :
+    (x - x') ⊗ₕ y = x ⊗ₕ y - x' ⊗ₕ y := by
+  show (hilbTensor H K).map (x - x') y = _
+  rw [map_sub]; rfl
+
+/-- Machinery (no thesis counterpart): the **ket** operator
+`Q_e = |·⟩ ⊗ e : ℋ → ℋ ⊗ 𝒦`, `x ↦ x ⊗ e`.  It is bounded by `‖e‖`
+because `‖x ⊗ e‖ = ‖x‖ ‖e‖` (**109IV**.1). -/
+noncomputable def htKet (e : K) : H →L[ℂ] HT H K :=
+  LinearMap.mkContinuous
+    { toFun := fun x => x ⊗ₕ e
+      map_add' := fun x x' => htmul_add_left x x' e
+      map_smul' := fun c x => htmul_smul_left c x e } ‖e‖
+    (fun x => by
+      show ‖x ⊗ₕ e‖ ≤ ‖e‖ * ‖x‖
+      rw [norm_htmul]; exact le_of_eq (mul_comm _ _))
+
+@[simp] theorem htKet_apply (e : K) (x : H) : htKet (H := H) e x = x ⊗ₕ e := rfl
+
+/-- The adjoint of the ket operator is the **slice** map
+`Q_e^* : x ⊗ y ↦ ⟨e,y⟩ x`. -/
+theorem htKet_adjoint_htmul (e : K) (x : H) (y : K) :
+    ContinuousLinearMap.adjoint (htKet (H := H) e) (x ⊗ₕ y) = ⟪e, y⟫ • x := by
+  refine ext_inner_right ℂ fun v => ?_
+  rw [ContinuousLinearMap.adjoint_inner_left, htKet_apply, htmul_inner,
+    inner_smul_left, inner_conj_symm]
+  ring
+
+/-- `Q_e^* Q_f = ⟨e,f⟩ · 1`; in particular `Q_e` is an isometry for a unit
+vector `e`. -/
+theorem htKet_adjoint_comp (e f : K) :
+    (ContinuousLinearMap.adjoint (htKet (H := H) e)).comp (htKet (H := H) f)
+      = ⟪e, f⟫ • (1 : H →L[ℂ] H) := by
+  ext x
+  rw [ContinuousLinearMap.comp_apply, htKet_apply, htKet_adjoint_htmul]
+  rfl
+
+open Theses.A.CStar in
+/-- `Q_e Q_f^* = 1 ⊗ |e⟩⟨f|`: the kets turn the rank-one operators of
+`B(𝒦)` into elementary tensors. -/
+theorem htKet_comp_adjoint (e f : K) :
+    (htKet (H := H) e).comp (ContinuousLinearMap.adjoint (htKet (H := H) f))
+      = opTensor (1 : H →L[ℂ] H) (ketbra e f) := by
+  refine ext_htmul fun x y => ?_
+  rw [ContinuousLinearMap.comp_apply, htKet_adjoint_htmul, map_smul,
+    htKet_apply, opTensor_apply]
+  show ⟪f, y⟫ • (x ⊗ₕ e) = x ⊗ₕ (⟪f, y⟫ • e)
+  rw [htmul_smul_right]
+
+open Theses.A.CStar in
+/-- `Q_z^* (1 ⊗ |y⟩⟨e|) = ⟨z,y⟩ Q_e^*`: a rank-one factor absorbed into a
+slice map.  This is the one computation the amplification theorem needs. -/
+theorem htKet_adjoint_comp_opTensor (e y z : K) :
+    (ContinuousLinearMap.adjoint (htKet (H := H) z)).comp
+        (opTensor (1 : H →L[ℂ] H) (ketbra y e))
+      = ⟪z, y⟫ • (ContinuousLinearMap.adjoint (htKet (H := H) e)) := by
+  refine ext_htmul fun x w => ?_
+  rw [ContinuousLinearMap.comp_apply, opTensor_apply]
+  show ContinuousLinearMap.adjoint (htKet (H := H) z) (x ⊗ₕ (⟪e, w⟫ • y)) = _
+  rw [htmul_smul_right, map_smul, htKet_adjoint_htmul]
+  show ⟪e, w⟫ • (⟪z, y⟫ • x)
+      = ⟪z, y⟫ • (ContinuousLinearMap.adjoint (htKet (H := H) e) (x ⊗ₕ w))
+  rw [htKet_adjoint_htmul, smul_comm]
+
+/-- Machinery (no thesis counterpart): the degenerate case.  If `𝒦 = 0`
+then `ℋ ⊗ 𝒦 = 0`, because the elementary tensors span a dense subspace and
+all of them vanish. -/
+theorem ht_subsingleton (h : ∀ y : K, y = 0) (u v : HT H K) : u = v := by
+  refine eq_of_inner_htmul fun x y => ?_
+  rw [h y, htmul_zero_right]
+  simp
+
+/-- Machinery (no thesis counterpart): `a ↦ a ⊗ 1` is injective as soon as
+`𝒦 ≠ 0`. -/
+theorem opTensor_one_right_inj {y : K} (hy : y ≠ 0) {a a' : H →L[ℂ] H}
+    (h : opTensor a (1 : K →L[ℂ] K) = opTensor a' (1 : K →L[ℂ] K)) : a = a' := by
+  ext x
+  have h1 := congrArg (fun T : HT H K →L[ℂ] HT H K => T (x ⊗ₕ y)) h
+  simp only [opTensor_apply] at h1
+  have h2 : (a x - a' x) ⊗ₕ y = 0 := by
+    rw [htmul_sub_left]
+    show a x ⊗ₕ ((1 : K →L[ℂ] K) y) - a' x ⊗ₕ ((1 : K →L[ℂ] K) y) = 0
+    rw [h1, sub_self]
+  have h3 : ‖a x - a' x‖ * ‖y‖ = 0 := by rw [← norm_htmul, h2, norm_zero]
+  have h4 : ‖a x - a' x‖ = 0 := by
+    rcases mul_eq_zero.mp h3 with h | h
+    · exact h
+    · exact absurd (norm_eq_zero.mp h) hy
+  have h5 := norm_eq_zero.mp h4
+  rwa [sub_eq_zero] at h5
+
+open Theses.A.CStar in
+/-- Machinery (no thesis counterpart), the spatial heart of the
+amplification theorem: **an operator on `ℋ ⊗ 𝒦` commuting with `1 ⊗ B(𝒦)`
+is a scalar diagonal**, `X = a ⊗ 1`.
+
+The proof is the matrix one, but written with a single unit vector `e ∈ 𝒦`
+in place of a basis.  Put `a = Q_e^* X Q_e`.  Since `x ⊗ y` is
+`(1 ⊗ |y⟩⟨e|)(x ⊗ e)`, commutation and `htKet_adjoint_comp_opTensor` give
+`Q_z^* X Q_y = ⟨z,y⟩ a` for all `y, z ∈ 𝒦`, which says exactly that
+`⟨w ⊗ z, X (x ⊗ y)⟩ = ⟨w, a x⟩⟨z, y⟩ = ⟨w ⊗ z, (a ⊗ 1)(x ⊗ y)⟩`.
+(If `𝒦 = 0` there is no unit vector, but then `B(ℋ ⊗ 𝒦) = 0` and `a = 0`
+does.) -/
+theorem eq_opTensor_one_of_comm (X : HT H K →L[ℂ] HT H K)
+    (hX : ∀ b : K →L[ℂ] K,
+      X * opTensor (1 : H →L[ℂ] H) b = opTensor (1 : H →L[ℂ] H) b * X) :
+    ∃ a : H →L[ℂ] H, X = opTensor a (1 : K →L[ℂ] K) := by
+  by_cases hK : ∀ y : K, y = 0
+  · exact ⟨0, ContinuousLinearMap.ext fun u => ht_subsingleton hK _ _⟩
+  simp only [not_forall] at hK
+  obtain ⟨y₀, hy₀⟩ := hK
+  set e : K := (‖y₀‖⁻¹ : ℂ) • y₀ with he_def
+  have he : ‖e‖ = 1 := norm_smul_inv_norm hy₀
+  have hee : ⟪e, e⟫ = (1 : ℂ) := by
+    rw [inner_self_eq_norm_sq_to_K, he]; norm_num
+  set a : H →L[ℂ] H :=
+    (ContinuousLinearMap.adjoint (htKet (H := H) e)).comp
+      (X.comp (htKet (H := H) e)) with ha_def
+  -- `Q_z^* X Q_y = ⟨z,y⟩ a`
+  have hkey : ∀ (x : H) (y z : K),
+      ContinuousLinearMap.adjoint (htKet (H := H) z) (X (x ⊗ₕ y))
+        = ⟪z, y⟫ • (a x) := by
+    intro x y z
+    have h1 : (x : H) ⊗ₕ y
+        = opTensor (1 : H →L[ℂ] H) (ketbra y e) (x ⊗ₕ e) := by
+      rw [opTensor_apply]
+      show x ⊗ₕ y = x ⊗ₕ (⟪e, e⟫ • y)
+      rw [hee, one_smul]
+    rw [h1]
+    have h2 : X (opTensor (1 : H →L[ℂ] H) (ketbra y e) (x ⊗ₕ e))
+        = opTensor (1 : H →L[ℂ] H) (ketbra y e) (X (x ⊗ₕ e)) :=
+      congrArg (fun T : HT H K →L[ℂ] HT H K => T (x ⊗ₕ e)) (hX (ketbra y e))
+    rw [h2]
+    have h3 := congrArg (fun T : HT H K →L[ℂ] H => T (X (x ⊗ₕ e)))
+      (htKet_adjoint_comp_opTensor (H := H) e y z)
+    simpa [ha_def] using h3
+  refine ⟨a, ext_htmul fun x y => eq_of_inner_htmul fun w z => ?_⟩
+  have hL : ⟪w ⊗ₕ z, X (x ⊗ₕ y)⟫
+      = ⟪w, ContinuousLinearMap.adjoint (htKet (H := H) z) (X (x ⊗ₕ y))⟫ := by
+    rw [ContinuousLinearMap.adjoint_inner_right]; rfl
+  rw [hL, hkey x y z, opTensor_apply, htmul_inner, inner_smul_right]
+  show ⟪z, y⟫ * ⟪w, a x⟫ = ⟪w, a x⟫ * ⟪z, y⟫
+  ring
+
 end Hilbert
 
 /-! ## Von Neumann subalgebras as bundled algebras (for the spatial
@@ -1692,6 +1865,139 @@ theorem special_tensor (SA : StarSubalgebra ℂ (H →L[ℂ] H))
       (VNSub.restrictNP (vectorNP (x ⊗ₕ y))) fun a b => ?_
     show ⟪x ⊗ₕ y, opTensor a.val b.val (x ⊗ₕ y)⟫ = ⟪x, a.val x⟫ * ⟪y, b.val y⟫
     rw [opTensor_apply, htmul_inner]
+
+
+/-! ### The amplification theorem
+
+`(M ⊗ 1)^□ = M^□ ⊗̄ B(𝒦)` for a von Neumann subalgebra `M ⊆ B(ℋ)` and any
+Hilbert space `𝒦`.  It has no numbered counterpart in `proc.tex` — the
+thesis only ever uses the *commutation theorem* **121II**
+(`intersection_tensor`, `proc.tex:4473`, which it takes from Takesaki I,
+Cor. IV.5.10, and which is the one point of thesis A it does not prove).
+The amplification theorem is the one unqualifiedly elementary case of that
+theorem: it is step (E) of the route recorded in `PROVING-LOG.md` session
+83 and in `docs/COMMUTATION-THEOREM.md` §5.1, and every route to the
+general statement consumes it.
+
+The proof is `eq_opTensor_one_of_comm` (an operator commuting with
+`1 ⊗ B(𝒦)` is an `a ⊗ 1`) plus the Double Commutant Theorem **88VI**
+`double_commutant`. -/
+
+/-- Machinery (no thesis counterpart): the commutant of a set is the
+commutant of its linear span — `{w | w x = x w}` is a submodule. -/
+theorem commutant_span (S : Set (HT H K →L[ℂ] HT H K)) :
+    commutant (HT H K →L[ℂ] HT H K) (Submodule.span ℂ S : Set (HT H K →L[ℂ] HT H K))
+      = commutant (HT H K →L[ℂ] HT H K) S := by
+  refine Set.eq_of_subset_of_subset (Set.centralizer_subset Submodule.subset_span) ?_
+  intro x hx m hm
+  refine Submodule.span_induction (p := fun w _ => w * x = x * w) ?_ ?_ ?_ ?_ hm
+  · exact fun w hw => hx w hw
+  · simp
+  · intro u v _ _ hu hv; rw [add_mul, mul_add, hu, hv]
+  · intro c u _ hu; rw [smul_mul_assoc, mul_smul_comm, hu]
+
+/-- **The amplification theorem**, commutant form: for a von Neumann
+subalgebra `M ⊆ B(ℋ)` and any Hilbert space `𝒦`,
+`{a ⊗ b : a ∈ M^□, b ∈ B(𝒦)}^□ = M ⊗ 1`.
+
+`⊇` is the computation `(a⊗1)(c⊗b) = ac⊗b = ca⊗b = (c⊗b)(a⊗1)` for
+`a ∈ M`, `c ∈ M^□`.  For `⊆`: an `X` in the left-hand side commutes with
+every `1 ⊗ b` (take `a = 1 ∈ M^□`), so `X = a ⊗ 1` by
+`eq_opTensor_one_of_comm`; it commutes with every `c ⊗ 1`, `c ∈ M^□`, so
+`a ⊗ 1` and `c ⊗ 1` commute, so `a` and `c` commute by
+`opTensor_one_right_inj`, so `a ∈ M^□□ = M` by **88VI**.  (When `𝒦 = 0`
+injectivity fails, but then `B(ℋ ⊗ 𝒦) = 0` and `X = 0 ⊗ 1` with
+`0 ∈ M`.) -/
+theorem amplification_commutant (M : StarSubalgebra ℂ (H →L[ℂ] H))
+    (hM : IsVNSubalgebra (H →L[ℂ] H) M) :
+    commutant (HT H K →L[ℂ] HT H K)
+        {z | ∃ a ∈ commutant (H →L[ℂ] H) (M : Set (H →L[ℂ] H)),
+          ∃ b : K →L[ℂ] K, z = opTensor a b}
+      = {z | ∃ a ∈ (M : Set (H →L[ℂ] H)), z = opTensor a (1 : K →L[ℂ] K)} := by
+  have hMdc : commutant (H →L[ℂ] H) (commutant (H →L[ℂ] H) (M : Set (H →L[ℂ] H)))
+      = (M : Set (H →L[ℂ] H)) := by
+    have h := (double_commutant M).2.2
+    rwa [wstar_eq_of_isVNSubalgebra M hM] at h
+  apply Set.eq_of_subset_of_subset
+  · -- the substantial inclusion
+    intro X hX
+    have hX1 : ∀ b : K →L[ℂ] K,
+        X * opTensor (1 : H →L[ℂ] H) b = opTensor (1 : H →L[ℂ] H) b * X := fun b =>
+      (hX (opTensor (1 : H →L[ℂ] H) b)
+        ⟨1, (commutant_basic_2 (M : Set (H →L[ℂ] H))).1, b, rfl⟩).symm
+    obtain ⟨a, rfl⟩ := eq_opTensor_one_of_comm X hX1
+    by_cases hK : ∀ y : K, y = 0
+    · exact ⟨0, zero_mem M, ContinuousLinearMap.ext fun u => ht_subsingleton hK _ _⟩
+    simp only [not_forall] at hK
+    obtain ⟨y₀, hy₀⟩ := hK
+    refine ⟨a, ?_, rfl⟩
+    rw [← hMdc]
+    intro c hc
+    have h := hX (opTensor c (1 : K →L[ℂ] K)) ⟨c, hc, 1, rfl⟩
+    rw [← opTensor_mul, ← opTensor_mul, one_mul] at h
+    exact opTensor_one_right_inj (H := H) hy₀ h
+  · -- the easy inclusion
+    rintro _ ⟨a, ha, rfl⟩ _ ⟨c, hc, b, rfl⟩
+    rw [← opTensor_mul, ← opTensor_mul, one_mul, mul_one, hc a ha]
+
+/-- **The amplification theorem**: `M^□ ⊗̄ B(𝒦) = (M ⊗ 1)^□` for a von
+Neumann subalgebra `M ⊆ B(ℋ)` and any Hilbert space `𝒦`, where `⊗̄` is the
+von Neumann algebra generated by the elementary tensors.
+
+This is `amplification_commutant` with one more commutant taken: the
+generating set is `∗`-closed and spans the `∗`-subalgebra
+`spatialSpan M^□ ⊤` (whose `wstar` it therefore shares, by
+`wstar_spatialSpan`), so **88VI** `double_commutant` turns its double
+commutant into its `wstar`. -/
+theorem amplification (M : StarSubalgebra ℂ (H →L[ℂ] H))
+    (hM : IsVNSubalgebra (H →L[ℂ] H) M) :
+    (wstar (HT H K →L[ℂ] HT H K)
+        {z | ∃ a ∈ commutant (H →L[ℂ] H) (M : Set (H →L[ℂ] H)),
+          ∃ b : K →L[ℂ] K, z = opTensor a b} : Set (HT H K →L[ℂ] HT H K))
+      = commutant (HT H K →L[ℂ] HT H K)
+          {z | ∃ a ∈ (M : Set (H →L[ℂ] H)), z = opTensor a (1 : K →L[ℂ] K)} := by
+  obtain ⟨C, -, hCset⟩ :=
+    (commutant_basic_3' (M : Set (H →L[ℂ] H)) (fun _ ha => star_mem ha)).1
+  set G : Set (HT H K →L[ℂ] HT H K) :=
+    {z | ∃ a ∈ commutant (H →L[ℂ] H) (M : Set (H →L[ℂ] H)),
+      ∃ b : K →L[ℂ] K, z = opTensor a b} with hG
+  have hGG : {x : HT H K →L[ℂ] HT H K |
+      ∃ a ∈ C, ∃ b ∈ (⊤ : StarSubalgebra ℂ (K →L[ℂ] K)), x = opTensor a b} = G := by
+    ext x
+    constructor
+    · rintro ⟨a, ha, b, -, rfl⟩
+      have ha' : a ∈ (C : Set (H →L[ℂ] H)) := ha
+      rw [hCset] at ha'
+      exact ⟨a, ha', b, rfl⟩
+    · rintro ⟨a, ha, b, rfl⟩
+      have ha' : a ∈ (C : Set (H →L[ℂ] H)) := by rw [hCset]; exact ha
+      exact ⟨a, ha', b, StarSubalgebra.mem_top, rfl⟩
+  have hdc := (double_commutant (spatialSpan C (⊤ : StarSubalgebra ℂ (K →L[ℂ] K)))).2.2
+  rw [wstar_spatialSpan C (⊤ : StarSubalgebra ℂ (K →L[ℂ] K)), hGG] at hdc
+  rw [coe_spatialSpan, commutant_span, hGG] at hdc
+  rw [← hdc, amplification_commutant M hM]
+
+/-- **The amplification theorem**, the form `M ⊗̄ B(𝒦) = (M^□ ⊗ 1)^□`.
+This is `amplification` applied to the commutant `M^□` of `M`, which is
+again a von Neumann subalgebra (**65III**.3) and has `M^□□ = M`
+(**88VI**). -/
+theorem amplification' (M : StarSubalgebra ℂ (H →L[ℂ] H))
+    (hM : IsVNSubalgebra (H →L[ℂ] H) M) :
+    (wstar (HT H K →L[ℂ] HT H K)
+        {z | ∃ a ∈ (M : Set (H →L[ℂ] H)), ∃ b : K →L[ℂ] K, z = opTensor a b}
+        : Set (HT H K →L[ℂ] HT H K))
+      = commutant (HT H K →L[ℂ] HT H K)
+          {z | ∃ a ∈ commutant (H →L[ℂ] H) (M : Set (H →L[ℂ] H)),
+            z = opTensor a (1 : K →L[ℂ] K)} := by
+  have hMdc : commutant (H →L[ℂ] H) (commutant (H →L[ℂ] H) (M : Set (H →L[ℂ] H)))
+      = (M : Set (H →L[ℂ] H)) := by
+    have h := (double_commutant M).2.2
+    rwa [wstar_eq_of_isVNSubalgebra M hM] at h
+  obtain ⟨C, hCvn, hCset⟩ :=
+    (commutant_basic_3' (M : Set (H →L[ℂ] H)) (fun _ ha => star_mem ha)).1
+  have h := amplification (K := K) C hCvn
+  rw [hCset, hMdc] at h
+  exact h
 
 end Spatial
 
