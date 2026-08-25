@@ -301,18 +301,63 @@ These are consumed by every route and have value on their own:
 1. ~~**The amplification theorem**~~ — **DONE**, `982d7f8`. See §6.
 2. ~~**`concreteTensor`'s API and the concrete↔abstract bridge**~~ — **DONE**,
    see §6. The "and even then it would not connect" objection is gone.
-3. **One factor atomic type I**, `N ≅ ⊕_j B(𝒦_j)`: matrix units give the
-   slice-map property directly. This is the existing `haE` device with `M_{n_j}`
-   widened to `B(𝒦_j)`, and it strictly extends the reach of 125dII/125eVII.
+3. ~~**One factor atomic type I**, `N ≅ ⊕_j B(𝒦_j)`~~ — **DONE**. See §6.
 4. **Both algebras finite with cyclic trace vectors**: here `J` is *bounded*
    (`‖x*ω‖² = τ(xx*) = τ(x*x) = ‖xω‖²`), `JMJ = M'` is the Murray–von Neumann
    argument, and `J_{ω⊗ω'} = J_ω ⊗ J_{ω'}` is immediate — two bounded
    conjugations agreeing on a total set. A genuine, if restricted, commutation
    theorem for ~800–1200 lines.
 
-None of 1–4 closes any of the seven as stated. 3 widens the atomic branch.
+None of 1–4 closes any of the seven as stated. 3 widened the atomic branch, and
+is done.
 
 ## 6. Already banked
+
+**Atomic type I is banked** (§5 item 3). The `haE` device now runs on
+`𝒜 ≅ ⊕_j B(𝒦_j)` with the `𝒦_j` *arbitrary* nonzero Hilbert spaces, not only
+on `⊕_j M_{n_j}`: `AtomicTypeIRep`/`AtomicTypeI` (the sibling of 84bII
+`HereditarilyAtomic` that the tree did not have), the widened slice `atE`,
+both halves of the slice-map property (`atMem`, `atE_of_mem`), and two public
+consequences — `atomicTypeI_tensor_preimage`, which is **125VIIb** for atomic
+type I `𝒜`, and `atomicTypeI_tensorBsurjectivity`, which is **125eIII** for
+atomic type I `ℬ` in **both** directions, hence the atomic type I case of the
+`←` half that is still `sorry` in general. ~1200 lines in
+`A/Proc/QuantumLambda.lean`, no statement changed, axiom-clean in situ.
+
+*The only new mathematics is the convergence step, and it is cheap.* Finite
+dimensionally `∑_p u_{pp} = 1` on the nose, so the block expansion
+`z_j x = ∑_{k,l} E_{kl}(x)(1 ⊗ u_{kl})` is a finite identity and the only limit
+taken is the one over `Finset J` (`haApprox`). For `dim 𝒦_j = ∞` the partial
+sums `p_F = ∑_{p ∈ F} u_{pp}` merely *increase to* `1` — that is Parseval, and
+it is `bkP_isLUB` — so the expansion becomes the two-sided compression
+`(1 ⊗ p_F)·x·(1 ⊗ p_F) = ∑_{k,l ∈ F} E_{kl}(x)·(1 ⊗ u_{kl})` and the limit has
+to be taken *inside a product*. Ultraweak convergence does not survive
+multiplication; but for a **monotone net of projections** Cauchy–Schwarz
+(43I.1, `norm_apply_star_mul_le`) does it in four lines,
+`|ω(zxz − pxp)| ≤ (‖(zx)*‖_ω + ‖x‖·ω(z)^{1/2})·ω(z − p)^{1/2} → 0`
+(`uw_compress_tendsto`). No ultrastrong topology, no Kaplansky density, no
+joint continuity on bounded sets. So the answer to what §5 item 3 was really
+asking — *does the infinite-dimensional case lose the free convergence the
+finite one has?* — is: it loses it, and buys it back for four lines.
+
+*What did **not** widen, and why.* 125dII `ha_tensor_closed` and the 125eVII
+assembly are **not** widened, because doing so changes statements rather than
+proofs. `HaFreeExp` carries `ha : HereditarilyAtomic carrier` as a field *and*
+quantifies its universal property over hereditarily atomic `C'`, so the atomic
+type I version is a different theorem — the free exponential of the atomic
+type I subcategory — and its solution set (`HaSolProd`,
+`hereditarilyAtomic_haSolProd`, the 125II cardinality bound) is built out of
+the finite matrix combinatorics, with no `B(𝒦)` analogue in the tree. Recorded
+as a statement-level item for the author rather than attempted.
+
+*One formal gap worth naming.* `HereditarilyAtomic → AtomicTypeI` is true but
+is **not** proved. It needs `M_n ≅ B(ℂ^n)` (Mathlib has
+`Matrix.toEuclideanCLM`) plus a universe lift, because
+`EuclideanSpace ℂ (Fin n) : Type 0` while `AtomicTypeIRep.K : J → Type u`, and
+neither Mathlib nor the tree puts an `InnerProductSpace` structure on `ULift`.
+Nothing downstream needs it; it is plumbing, not mathematics, if anyone wants
+the containment on the record.
+
 
 **The concrete↔abstract bridge closes.** `concreteTensor` went from zero
 lemmas to a full API — including `concreteTensor_eq_wstar_spatialSpan`, which

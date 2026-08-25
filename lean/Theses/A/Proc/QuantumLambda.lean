@@ -4602,6 +4602,1205 @@ def TensorBSurjective (s : NMIUMap 𝒜 (VNT 𝒞 ℬ)) : Prop :=
 
 end TensorBSurj
 
+/-! # Parsec 1254–1255, widened: atomic type I second factors
+
+Session 86.  The `haE` device of the previous sections runs on
+`𝒜 ≅ ⊕ⱼ M_{nⱼ+1}` (**84bII** `HereditarilyAtomic`).  Everything below is
+the same device with the summands widened from `M_{nⱼ}` to `B(𝒦ⱼ)` for
+*arbitrary* nonzero Hilbert spaces `𝒦ⱼ` — the **atomic type I** von
+Neumann algebras, `AtomicTypeIRep` / `AtomicTypeI` below.
+
+The one genuinely new ingredient is convergence.  Finite dimensionally
+`∑_{p} u_{pp} = 1` on the nose, so the block expansion
+`z_j·x = ∑_{k,l} E_{kl}(x)·(1 ⊗ u_{kl})` is a finite identity and the only
+limit taken is over `Finset J` (`haApprox`).  For `dim 𝒦ⱼ = ∞` the partial
+sums `p_F = ∑_{p ∈ F} u_{pp}` merely *increase to* `1` (Parseval,
+`bkP_isLUB`), the expansion becomes the two-sided compression
+`(1 ⊗ p_F)·x·(1 ⊗ p_F) = ∑_{k,l ∈ F} E_{kl}(x)·(1 ⊗ u_{kl})`, and one has
+to pass to the limit in a *product*.  Ultraweak convergence `p_F → 1` does
+not survive multiplication, but for a monotone net of **projections** the
+Cauchy–Schwarz inequality **43I**.1 does the job in four lines:
+`|ω(z x z − p x p)| ≤ (‖(zx)*‖_ω + ‖x‖·ω(z)^{1/2})·ω(z − p)^{1/2} → 0`
+(`uw_compress_tendsto`).  That is the whole of the difference, and it is
+why this was worth doing: no other new mathematics is needed.
+
+Delivered: the widened slice `atE`, both halves of the slice-map property
+(`atMem`, `atE_of_mem`), and the widened `haTensorPreimage` /
+`haTensorBSurj` — packaged as the public `atomicTypeI_tensor_preimage`
+(125VIIb for atomic type I `𝒜`) and `atomicTypeI_tensorBsurjectivity`
+(125eIII for atomic type I `ℬ`, **both** directions).  None of this closes
+121II or any of its followers: those are general in exactly the slot that
+has to be atomic here (see `docs/COMMUTATION-THEOREM.md` §2). -/
+
+/-! ## Atomic type I: the matrix units of `B(𝒦)` -/
+
+section BKUnits
+
+variable {ι : Type*} {K : Type*} [NormedAddCommGroup K] [InnerProductSpace ℂ K]
+  [CompleteSpace K]
+
+private theorem conj_mul_re (z : ℂ) : ((starRingEnd ℂ) z * z).re = ‖z‖ ^ 2 := by
+  rw [Complex.sq_norm, Complex.normSq_apply, Complex.mul_re, Complex.conj_re,
+    Complex.conj_im]
+  ring
+
+private theorem hb_inner_self (e : HilbertBasis ι ℂ K) (o : ι) :
+    (⟪e o, e o⟫ : ℂ) = 1 := by
+  classical
+  have h := (orthonormal_iff_ite.mp e.orthonormal) o o
+  simpa using h
+
+private theorem hb_inner_ne (e : HilbertBasis ι ℂ K) {k l : ι} (h : k ≠ l) :
+    (⟪e k, e l⟫ : ℂ) = 0 := by
+  classical
+  have h2 := (orthonormal_iff_ite.mp e.orthonormal) k l
+  simpa [h] using h2
+
+/-- The matrix unit `|e_k⟩⟨e_l|` of `B(𝒦)` against a Hilbert basis `e`. -/
+def bkU (e : HilbertBasis ι ℂ K) (k l : ι) : K →L[ℂ] K :=
+  (innerSL ℂ (e l)).smulRight (e k)
+
+theorem bkU_apply (e : HilbertBasis ι ℂ K) (k l : ι) (x : K) :
+    bkU e k l x = (⟪e l, x⟫ : ℂ) • e k := rfl
+
+theorem bkU_star (e : HilbertBasis ι ℂ K) (k l : ι) :
+    star (bkU e k l) = bkU e l k := by
+  have h : bkU e l k = ContinuousLinearMap.adjoint (bkU e k l) := by
+    rw [ContinuousLinearMap.eq_adjoint_iff]
+    intro u v
+    rw [bkU_apply, bkU_apply, inner_smul_left, inner_smul_right, inner_conj_symm]
+    ring
+  rw [h]
+  rfl
+
+theorem bkU_mul_mul (e : HilbertBasis ι ℂ K) (o k l : ι) (T : K →L[ℂ] K) :
+    bkU e o k * T * bkU e l o = (⟪e k, T (e l)⟫ : ℂ) • bkU e o o := by
+  refine ContinuousLinearMap.ext fun x => ?_
+  have hl : bkU e l o x = (⟪e o, x⟫ : ℂ) • e l := rfl
+  show bkU e o k (T (bkU e l o x)) = ((⟪e k, T (e l)⟫ : ℂ) • bkU e o o) x
+  rw [hl, map_smul, bkU_apply, inner_smul_right, smul_apply,
+    bkU_apply, smul_smul, mul_comm]
+
+theorem bkU_mul_mul' (e : HilbertBasis ι ℂ K) (k l : ι) (T : K →L[ℂ] K) :
+    bkU e k k * T * bkU e l l = (⟪e k, T (e l)⟫ : ℂ) • bkU e k l := by
+  refine ContinuousLinearMap.ext fun x => ?_
+  have hl : bkU e l l x = (⟪e l, x⟫ : ℂ) • e l := rfl
+  show bkU e k k (T (bkU e l l x)) = ((⟪e k, T (e l)⟫ : ℂ) • bkU e k l) x
+  rw [hl, map_smul, bkU_apply, inner_smul_right, smul_apply,
+    bkU_apply, smul_smul, mul_comm]
+
+theorem bkU_diag_inner (e : HilbertBasis ι ℂ K) (o : ι) :
+    (⟪e o, (bkU e o o) (e o)⟫ : ℂ) = 1 := by
+  rw [bkU_apply, inner_smul_right, hb_inner_self, mul_one]
+
+/-- The finite-rank projection `∑_{k ∈ F} |e_k⟩⟨e_k|`. -/
+def bkP (e : HilbertBasis ι ℂ K) (F : Finset ι) : K →L[ℂ] K := ∑ k ∈ F, bkU e k k
+
+@[simp] theorem bkP_empty (e : HilbertBasis ι ℂ K) : bkP e ∅ = 0 := rfl
+
+theorem bkP_star (e : HilbertBasis ι ℂ K) (F : Finset ι) :
+    star (bkP e F) = bkP e F := by
+  rw [bkP, star_sum]
+  exact Finset.sum_congr rfl fun k _ => bkU_star e k k
+
+theorem bkU_diag_mul_self (e : HilbertBasis ι ℂ K) (k : ι) :
+    bkU e k k * bkU e k k = bkU e k k := by
+  have h := bkU_mul_mul' e k k (1 : K →L[ℂ] K)
+  rw [mul_one, show ((1 : K →L[ℂ] K) (e k)) = e k from rfl, hb_inner_self,
+    one_smul] at h
+  exact h
+
+theorem bkU_diag_mul_ne (e : HilbertBasis ι ℂ K) {k l : ι} (h : k ≠ l) :
+    bkU e k k * bkU e l l = 0 := by
+  have h2 := bkU_mul_mul' e k l (1 : K →L[ℂ] K)
+  rw [mul_one, show ((1 : K →L[ℂ] K) (e l)) = e l from rfl, hb_inner_ne e h,
+    zero_smul] at h2
+  exact h2
+
+theorem bkP_mul_self (e : HilbertBasis ι ℂ K) (F : Finset ι) :
+    bkP e F * bkP e F = bkP e F := by
+  classical
+  rw [bkP, Finset.sum_mul]
+  refine Finset.sum_congr rfl fun k hk => ?_
+  rw [Finset.mul_sum, Finset.sum_eq_single k]
+  · exact bkU_diag_mul_self e k
+  · intro l _ hlk
+    exact bkU_diag_mul_ne e (Ne.symm hlk)
+  · intro h; exact absurd hk h
+
+theorem bkP_nonneg (e : HilbertBasis ι ℂ K) (F : Finset ι) : 0 ≤ bkP e F := by
+  have h : bkP e F = star (bkP e F) * bkP e F := by
+    rw [bkP_star, bkP_mul_self]
+  rw [h]
+  exact star_mul_self_nonneg _
+
+theorem bkP_mono (e : HilbertBasis ι ℂ K) {F G : Finset ι} (h : F ⊆ G) :
+    bkP e F ≤ bkP e G := by
+  classical
+  have hsd : bkP e G - bkP e F = bkP e (G \ F) := by
+    have hs : (∑ k ∈ G \ F, bkU e k k) + (∑ k ∈ F, bkU e k k)
+        = ∑ k ∈ G, bkU e k k := Finset.sum_sdiff h
+    show (∑ k ∈ G, bkU e k k) - (∑ k ∈ F, bkU e k k) = ∑ k ∈ G \ F, bkU e k k
+    rw [← hs]; abel
+  rw [← sub_nonneg, hsd]
+  exact bkP_nonneg e _
+
+theorem bkP_le_one (e : HilbertBasis ι ℂ K) (F : Finset ι) :
+    bkP e F ≤ 1 := by
+  rw [← sub_nonneg]
+  have hsa : star ((1 : K →L[ℂ] K) - bkP e F) = 1 - bkP e F := by
+    rw [star_sub, star_one, bkP_star]
+  have hid : ((1 : K →L[ℂ] K) - bkP e F) * (1 - bkP e F) = 1 - bkP e F := by
+    rw [sub_mul, mul_sub, mul_sub, one_mul, mul_one, one_mul, bkP_mul_self]
+    abel
+  have h : (1 : K →L[ℂ] K) - bkP e F = star (1 - bkP e F) * (1 - bkP e F) := by
+    rw [hsa, hid]
+  rw [h]
+  exact star_mul_self_nonneg _
+
+theorem bkP_mul_mul (e : HilbertBasis ι ℂ K) (F : Finset ι) (T : K →L[ℂ] K) :
+    bkP e F * T * bkP e F
+      = ∑ k ∈ F, ∑ l ∈ F, (⟪e k, T (e l)⟫ : ℂ) • bkU e k l := by
+  have h : bkP e F * T * bkP e F
+      = ∑ k ∈ F, ∑ l ∈ F, (bkU e k k * T * bkU e l l) := by
+    rw [bkP, Finset.sum_mul, Finset.sum_mul]
+    exact Finset.sum_congr rfl fun k _ => Finset.mul_sum _ _ _
+  rw [h]
+  exact Finset.sum_congr rfl fun k _ =>
+    Finset.sum_congr rfl fun l _ => bkU_mul_mul' e k l T
+
+theorem inner_bkP_apply (e : HilbertBasis ι ℂ K) (F : Finset ι) (x : K) :
+    (⟪x, bkP e F x⟫ : ℂ) = ∑ k ∈ F, (⟪x, e k⟫ : ℂ) * ⟪e k, x⟫ := by
+  show (⟪x, (∑ k ∈ F, bkU e k k) x⟫ : ℂ) = _
+  rw [sum_apply, inner_sum]
+  refine Finset.sum_congr rfl fun k _ => ?_
+  rw [bkU_apply, inner_smul_right]
+  ring
+
+/-- `∑_{k ∈ F} |e_k⟩⟨e_k| ↑ 1`: the finite-rank projections attached to a
+Hilbert basis have supremum `1` in `B(𝒦)`.  This is Parseval, and it is
+where the infinite-dimensional slice device parts company with the
+finite-dimensional one, where `∑_k u_{kk} = 1` holds *on the nose*. -/
+theorem bkP_isLUB (e : HilbertBasis ι ℂ K) :
+    IsLUB (Set.range (bkP e)) (1 : K →L[ℂ] K) := by
+  refine ⟨?_, ?_⟩
+  · rintro _ ⟨F, rfl⟩; exact bkP_le_one e F
+  · intro y hy
+    have h0 : (0 : K →L[ℂ] K) ≤ y := by
+      have h := hy ⟨∅, rfl⟩
+      rwa [bkP_empty] at h
+    rw [← sub_nonneg, ContinuousLinearMap.nonneg_iff_isPositive]
+    have hysa : IsSelfAdjoint y := h0.isSelfAdjoint
+    have hsub : IsSelfAdjoint (y - 1) := hysa.sub (IsSelfAdjoint.one _)
+    have hsym : (↑(y - 1) : K →ₗ[ℂ] K).IsSymmetric :=
+      ContinuousLinearMap.isSelfAdjoint_iff_isSymmetric.mp hsub
+    refine (ContinuousLinearMap.isPositive_iff_complex (y - 1)).mpr fun x => ?_
+    have hreal : ((RCLike.re (⟪(y - 1) x, x⟫ : ℂ) : ℝ) : ℂ) = ⟪(y - 1) x, x⟫ := by
+      have h := hsym x x
+      have hc : (starRingEnd ℂ) (⟪(y - 1) x, x⟫ : ℂ) = ⟪(y - 1) x, x⟫ := by
+        rw [inner_conj_symm]; exact h.symm
+      have him : (⟪(y - 1) x, x⟫ : ℂ).im = 0 := Complex.conj_eq_iff_im.mp hc
+      show ((((⟪(y - 1) x, x⟫ : ℂ).re : ℝ)) : ℂ) = _
+      refine Complex.ext (Complex.ofReal_re _) ?_
+      rw [Complex.ofReal_im]
+      exact him.symm
+    refine ⟨hreal, ?_⟩
+    have hpar : HasSum (fun k : ι => ‖(⟪e k, x⟫ : ℂ)‖ ^ 2) ((⟪x, x⟫ : ℂ).re) := by
+      have h := e.hasSum_inner_mul_inner x x
+      have h2 := Complex.reCLM.hasSum h
+      simp only [Complex.reCLM_apply] at h2
+      refine h2.congr_fun fun k => ?_
+      rw [show (⟪x, e k⟫ : ℂ) = (starRingEnd ℂ) (⟪e k, x⟫ : ℂ) from
+        (inner_conj_symm x (e k)).symm, conj_mul_re]
+    have hle : ∀ F : Finset ι, ∑ k ∈ F, ‖(⟪e k, x⟫ : ℂ)‖ ^ 2 ≤ (⟪x, y x⟫ : ℂ).re := by
+      intro F
+      have hmono := hy ⟨F, rfl⟩
+      have hpos := (ContinuousLinearMap.isPositive_iff_complex (y - bkP e F)).mp
+        ((ContinuousLinearMap.nonneg_iff_isPositive _).mp (sub_nonneg.mpr hmono)) x
+      have hexp : (⟪x, bkP e F x⟫ : ℂ).re = ∑ k ∈ F, ‖(⟪e k, x⟫ : ℂ)‖ ^ 2 := by
+        rw [inner_bkP_apply, Complex.re_sum]
+        refine Finset.sum_congr rfl fun k _ => ?_
+        rw [show (⟪x, e k⟫ : ℂ) = (starRingEnd ℂ) (⟪e k, x⟫ : ℂ) from
+          (inner_conj_symm x (e k)).symm, conj_mul_re]
+      have hdiff : (⟪x, (y - bkP e F) x⟫ : ℂ).re
+          = (⟪x, y x⟫ : ℂ).re - (⟪x, bkP e F x⟫ : ℂ).re := by
+        rw [sub_apply, inner_sub_right, Complex.sub_re]
+      have hswap : (⟪(y - bkP e F) x, x⟫ : ℂ).re = (⟪x, (y - bkP e F) x⟫ : ℂ).re := by
+        rw [← inner_conj_symm x ((y - bkP e F) x), Complex.conj_re]
+      have h3 := hpos.2
+      rw [show (RCLike.re (⟪(y - bkP e F) x, x⟫ : ℂ)) = (⟪(y - bkP e F) x, x⟫ : ℂ).re from rfl,
+        hswap, hdiff, hexp] at h3
+      linarith
+    have hxx : (⟪x, x⟫ : ℂ).re ≤ (⟪x, y x⟫ : ℂ).re := hasSum_le_of_sum_le hpar hle
+    have hswap2 : (⟪(y - 1) x, x⟫ : ℂ).re = (⟪x, y x⟫ : ℂ).re - (⟪x, x⟫ : ℂ).re := by
+      have hs : (⟪(y - 1) x, x⟫ : ℂ).re = (⟪x, (y - 1) x⟫ : ℂ).re := by
+        rw [← inner_conj_symm x ((y - 1) x), Complex.conj_re]
+      rw [hs, sub_apply, inner_sub_right, Complex.sub_re]
+      rfl
+    show (0:ℝ) ≤ RCLike.re (⟪(y - 1) x, x⟫ : ℂ)
+    rw [show (RCLike.re (⟪(y - 1) x, x⟫ : ℂ)) = (⟪(y - 1) x, x⟫ : ℂ).re from rfl, hswap2]
+    linarith
+
+end BKUnits
+
+/-! ## The generic direct-sum layer
+
+`haZS`/`haApprox` above are stated for `⊕ⱼ M_{nⱼ+1}`, but their proofs use
+nothing about the summands; the versions here are the same arguments for an
+arbitrary family `𝒜`, together with the transported coprojection `gU` that
+carries the block algebra `𝒜 j` into `A`. -/
+
+section GenSum
+
+set_option synthInstance.maxHeartbeats 400000
+
+variable [VonNeumannAlgebra A] [VonNeumannAlgebra C]
+variable {J : Type u} {𝒜 : J → Type u} [∀ j, CStarAlgebra (𝒜 j)]
+  [∀ j, Nontrivial (𝒜 j)] [∀ j, PartialOrder (𝒜 j)] [∀ j, StarOrderedRing (𝒜 j)]
+  [∀ j, VonNeumannAlgebra (𝒜 j)]
+  (Ψ : A ≃⋆ₐ[ℂ] lp 𝒜 ∞)
+
+private theorem lpKappa_one_mul_right {I : Type*} {ℬ : I → Type*}
+    [∀ i, CStarAlgebra (ℬ i)] [∀ i, Nontrivial (ℬ i)] [∀ i, PartialOrder (ℬ i)]
+    [∀ i, StarOrderedRing (ℬ i)] (i : I) (x : lp ℬ ∞) :
+    x * lpKappa i (1 : ℬ i) = lpKappa i ((x : ∀ j, ℬ j) i) := by
+  have h := congrArg star (lpKappa_mul_left (𝒜 := ℬ) i (star x))
+  rw [star_mul, star_star, (lpKappa_sa (𝒜 := ℬ) i).star_eq, lpKappa_star] at h
+  rw [h]
+  congr 1
+  rw [show ((star x : lp ℬ ∞) : ∀ j, ℬ j) i = star ((x : ∀ j, ℬ j) i) from by
+    rw [lp.coeFn_star]; rfl, star_star]
+
+/-- `Ψ` as an nmiu-map. -/
+private def gPhi : NMIUMap A (lp 𝒜 ∞) :=
+  ⟨Ψ.toStarAlgHom, starAlgEquiv_preservesDirSups Ψ⟩
+
+/-- The `j`-th block of `a`. -/
+private def gPi (j : J) : NMIUMap A (𝒜 j) := nmiuComp (lpEvalNMIU _ j) (gPhi Ψ)
+
+private theorem gPi_apply (j : J) (a : A) : gPi Ψ j a = (Ψ a : ∀ j : J, 𝒜 j) j := rfl
+
+/-- The coprojection `κ_j : 𝒜 j → A`, transported along `Ψ`. -/
+private def gU (j : J) (m : 𝒜 j) : A := Ψ.symm (lpKappa j m)
+
+/-- The central projection carried by the `j`-th block. -/
+private def gZ (j : J) : A := gU Ψ j 1
+
+private theorem gU_add (j : J) (m m' : 𝒜 j) :
+    gU Ψ j (m + m') = gU Ψ j m + gU Ψ j m' := by
+  rw [gU, gU, gU, lpKappa_add]
+  exact map_add Ψ.symm.toStarAlgHom _ _
+
+private theorem gU_zero (j : J) : gU Ψ j 0 = 0 := by
+  rw [gU, lpKappa_zero]
+  exact map_zero Ψ.symm.toStarAlgHom
+
+private theorem gU_sub (j : J) (m m' : 𝒜 j) :
+    gU Ψ j (m - m') = gU Ψ j m - gU Ψ j m' := by
+  rw [gU, gU, gU, lpKappa_sub]
+  exact map_sub Ψ.symm.toStarAlgHom _ _
+
+private theorem gU_smul (j : J) (r : ℂ) (m : 𝒜 j) :
+    gU Ψ j (r • m) = r • gU Ψ j m := by
+  rw [gU, gU, lpKappa_smul]
+  exact map_smul Ψ.symm.toStarAlgHom _ _
+
+private theorem gU_star (j : J) (m : 𝒜 j) :
+    star (gU Ψ j m) = gU Ψ j (star m) := by
+  rw [gU, gU, ← lpKappa_star]
+  exact (map_star Ψ.symm.toStarAlgHom _).symm
+
+private theorem gU_mul (j : J) (m m' : 𝒜 j) :
+    gU Ψ j m * gU Ψ j m' = gU Ψ j (m * m') := by
+  rw [gU, gU, gU, ← lpKappa_mul]
+  exact (map_mul Ψ.symm.toStarAlgHom _ _).symm
+
+private theorem gU_sum (j : J) {ι' : Type*} (F : Finset ι') (f : ι' → 𝒜 j) :
+    gU Ψ j (∑ p ∈ F, f p) = ∑ p ∈ F, gU Ψ j (f p) := by
+  classical
+  induction F using Finset.induction with
+  | empty => simpa using gU_zero Ψ j
+  | insert p F hp ih =>
+      rw [Finset.sum_insert hp, Finset.sum_insert hp, gU_add, ih]
+
+private theorem gU_nonneg (j : J) {m : 𝒜 j} (hm : 0 ≤ m) : 0 ≤ gU Ψ j m := by
+  have h : (0 : A) = gU Ψ j 0 := (gU_zero Ψ j).symm
+  rw [h, gU, gU]
+  exact starAlgHom_mono' Ψ.symm.toStarAlgHom (lpKappa_le j hm)
+
+private theorem gU_le (j : J) {m m' : 𝒜 j} (h : m ≤ m') :
+    gU Ψ j m ≤ gU Ψ j m' := by
+  rw [← sub_nonneg, ← gU_sub]
+  exact gU_nonneg Ψ j (sub_nonneg.mpr h)
+
+private theorem gU_mul_mul (j : J) (m m' : 𝒜 j) (a : A) :
+    gU Ψ j m * a * gU Ψ j m' = gU Ψ j (m * (Ψ a : ∀ j : J, 𝒜 j) j * m') := by
+  have ha : a = Ψ.symm (Ψ a) := (Ψ.symm_apply_apply a).symm
+  rw [gU, gU, gU]
+  conv_lhs => rw [ha]
+  rw [← map_mul, ← map_mul]
+  congr 1
+  calc lpKappa j m * Ψ a * lpKappa j m'
+      = lpKappa j (m * (1 : 𝒜 j)) * Ψ a * lpKappa j m' := by rw [mul_one]
+    _ = lpKappa j m * lpKappa j (1 : 𝒜 j) * Ψ a * lpKappa j m' := by rw [lpKappa_mul]
+    _ = lpKappa j m * (lpKappa j (1 : 𝒜 j) * Ψ a) * lpKappa j m' := by
+        rw [mul_assoc (lpKappa j m) (lpKappa j (1 : 𝒜 j)) (Ψ a)]
+    _ = lpKappa j m * lpKappa j ((Ψ a : ∀ j : J, 𝒜 j) j) * lpKappa j m' := by
+        rw [lpKappa_mul_left]
+    _ = lpKappa j (m * (Ψ a : ∀ j : J, 𝒜 j) j * m') := by
+        rw [lpKappa_mul, lpKappa_mul]
+
+private theorem gZ_mul (j : J) (a : A) :
+    gZ Ψ j * a = gU Ψ j ((Ψ a : ∀ j : J, 𝒜 j) j) := by
+  rw [gZ, gU, gU]
+  conv_lhs => rw [show a = Ψ.symm (Ψ a) from (Ψ.symm_apply_apply a).symm]
+  rw [← map_mul, lpKappa_mul_left]
+
+private theorem gZ_comm (j : J) (a : A) : gZ Ψ j * a = a * gZ Ψ j := by
+  rw [gZ_mul, gZ, gU, gU]
+  conv_rhs => rw [show a = Ψ.symm (Ψ a) from (Ψ.symm_apply_apply a).symm]
+  rw [← map_mul, lpKappa_one_mul_right]
+
+private theorem gZ_sa (j : J) : IsSelfAdjoint (gZ Ψ j) := by
+  show star _ = _
+  rw [gZ, gU_star, star_one]
+
+/-- The block projections of a family of positive elements with supremum `1`
+in the block have supremum `z_j` in `A`. -/
+private theorem gU_isLUB (j : J) {ι' : Type*} [Nonempty ι'] (p : ι' → 𝒜 j)
+    (hp0 : ∀ i, 0 ≤ p i) (hlub : IsLUB (Set.range p) (1 : 𝒜 j)) :
+    IsLUB (Set.range fun i => gU Ψ j (p i)) (gZ Ψ j) := by
+  have hlp : IsLUB (Set.range fun i => lpKappa j (p i)) (lpKappa j (1 : 𝒜 j)) := by
+    constructor
+    · rintro _ ⟨i, rfl⟩
+      exact lpKappa_le j (hlub.1 ⟨i, rfl⟩)
+    · intro y hy
+      rw [lp_infty_le_iff]
+      intro q
+      by_cases hq : q = j
+      · subst hq
+        rw [lpKappa_apply_self]
+        refine hlub.2 ?_
+        rintro _ ⟨i, rfl⟩
+        have h := hy ⟨i, rfl⟩
+        rw [lp_infty_le_iff] at h
+        have h2 := h q
+        rwa [lpKappa_apply_self] at h2
+      · rw [lpKappa_apply_ne _ _ hq]
+        obtain ⟨i⟩ := ‹Nonempty ι'›
+        have h := hy ⟨i, rfl⟩
+        rw [lp_infty_le_iff] at h
+        have h2 := h q
+        rw [lpKappa_apply_ne _ _ hq] at h2
+        exact h2
+  have h2 := isLUB_image_of_orderIso ⇑Ψ.symm (starAlgEquiv_le_iff Ψ.symm)
+    Ψ.symm.surjective hlp
+  have himg : ⇑Ψ.symm '' (Set.range fun i => lpKappa j (p i))
+      = Set.range fun i => gU Ψ j (p i) := by
+    ext y
+    constructor
+    · rintro ⟨_, ⟨i, rfl⟩, rfl⟩; exact ⟨i, rfl⟩
+    · rintro ⟨i, rfl⟩; exact ⟨_, ⟨i, rfl⟩, rfl⟩
+  rwa [himg] at h2
+
+/-! ### The approximation step `∑_{j ∈ F} z_j ↑ 1`, for an arbitrary family -/
+
+private def gZS (F : Finset J) : A := ∑ j ∈ F, gZ Ψ j
+
+private theorem gZS_eq (F : Finset J) :
+    gZS Ψ F = Ψ.symm ((lpSumSA (𝒜 := 𝒜) F : selfAdjoint (lp 𝒜 ∞)) : lp 𝒜 ∞) := by
+  classical
+  show ∑ j ∈ F, Ψ.symm (lpKappa j 1) = _
+  rw [show ((lpSumSA (𝒜 := 𝒜) F : selfAdjoint (lp 𝒜 ∞)) : lp 𝒜 ∞)
+      = ∑ j ∈ F, lpKappa j (1 : 𝒜 j) from rfl]
+  exact (map_sum Ψ.symm.toStarAlgHom _ _).symm
+
+private theorem gZS_sa (F : Finset J) : IsSelfAdjoint (gZS Ψ F) := by
+  show star _ = _
+  rw [gZS_eq]
+  exact (map_star Ψ.symm.toStarAlgHom _).symm.trans
+    (congrArg ⇑Ψ.symm.toStarAlgHom (lpSumSA F).2.star_eq)
+
+private def gZSsa (F : Finset J) : selfAdjoint A := ⟨gZS Ψ F, gZS_sa Ψ F⟩
+
+private theorem gZS_mono {F G : Finset J} (hFG : F ⊆ G) : gZS Ψ F ≤ gZS Ψ G := by
+  rw [gZS_eq, gZS_eq]
+  exact starAlgHom_mono' Ψ.symm.toStarAlgHom
+    (Subtype.coe_le_coe.mpr (lpSumSA_mono hFG))
+
+private theorem gZS_isLUB : IsLUB (Set.range (fun F : Finset J => gZS Ψ F)) (1 : A) := by
+  have h1 : IsLUB ((fun d : selfAdjoint (lp 𝒜 ∞) => (d : lp 𝒜 ∞)) ''
+        Set.range (lpSumSA (𝒜 := 𝒜)))
+      ((⟨1, IsSelfAdjoint.one _⟩ : selfAdjoint (lp 𝒜 ∞)) : lp 𝒜 ∞) :=
+    isLUB_coe_of_isLUB' ⟨_, ⟨∅, rfl⟩⟩ lpSumSA_isLUB
+  have h2 := isLUB_image_of_orderIso ⇑Ψ.symm (starAlgEquiv_le_iff Ψ.symm)
+    Ψ.symm.surjective h1
+  have himg : ⇑Ψ.symm '' ((fun d : selfAdjoint (lp 𝒜 ∞) => (d : lp 𝒜 ∞)) ''
+        Set.range (lpSumSA (𝒜 := 𝒜)))
+      = Set.range (fun F : Finset J => gZS Ψ F) := by
+    ext y
+    constructor
+    · rintro ⟨_, ⟨_, ⟨F, rfl⟩, rfl⟩, rfl⟩
+      exact ⟨F, gZS_eq Ψ F⟩
+    · rintro ⟨F, rfl⟩
+      exact ⟨_, ⟨_, ⟨F, rfl⟩, rfl⟩, (gZS_eq Ψ F).symm⟩
+  rw [himg] at h2
+  rwa [show Ψ.symm ((⟨1, IsSelfAdjoint.one _⟩ : selfAdjoint (lp 𝒜 ∞)) : lp 𝒜 ∞) = 1 from
+    map_one Ψ.symm.toStarAlgHom] at h2
+
+/-- A monotone net of self-adjoint elements with supremum `s` converges
+ultraweakly to `s`.  (Repackaging of **44VI** `vna_supremum_uwlimit` for a
+net indexed by a directed type, as `haApprox` does inline.) -/
+private theorem uwTendsto_of_isLUB {X : Type u} [CStarAlgebra X] [PartialOrder X]
+    [StarOrderedRing X] [VonNeumannAlgebra X] {ι' : Type*} [Nonempty ι']
+    [Preorder ι'] [IsDirected ι' (· ≤ ·)] (P : ι' → X) (s : X)
+    (hsa : ∀ i, IsSelfAdjoint (P i)) (hmono : Monotone P)
+    (hlub : IsLUB (Set.range P) s) :
+    UWTendsto P atTop s := by
+  letI : TopologicalSpace X := ultraweak X
+  have hssa : IsSelfAdjoint s := by
+    obtain ⟨i⟩ := ‹Nonempty ι'›
+    have h0 : (0 : X) ≤ s - P i := sub_nonneg.mpr (hlub.1 ⟨i, rfl⟩)
+    simpa using h0.isSelfAdjoint.add (hsa i)
+  set D : Set (selfAdjoint X) := Set.range (fun i => (⟨P i, hsa i⟩ : selfAdjoint X)) with hD
+  have hcoe : (fun d : selfAdjoint X => (d : X)) '' D = Set.range P := by
+    ext y
+    constructor
+    · rintro ⟨_, ⟨i, rfl⟩, rfl⟩; exact ⟨i, rfl⟩
+    · rintro ⟨i, rfl⟩; exact ⟨_, ⟨i, rfl⟩, rfl⟩
+  have hlubX : IsLUB ((fun d : selfAdjoint X => (d : X)) '' D) s := by rw [hcoe]; exact hlub
+  have hlubD : IsLUB D (⟨s, hssa⟩ : selfAdjoint X) := by
+    constructor
+    · rintro _ ⟨i, rfl⟩
+      exact Subtype.coe_le_coe.mp (hlubX.1 ⟨_, ⟨i, rfl⟩, rfl⟩)
+    · intro u hu
+      refine Subtype.coe_le_coe.mp (hlubX.2 ?_)
+      rintro _ ⟨d, hd, rfl⟩
+      exact Subtype.coe_le_coe.mpr (hu hd)
+  have hh : D.Nonempty ∧ DirectedOn (· ≤ ·) D ∧ BddAbove D := by
+    obtain ⟨i₀⟩ := ‹Nonempty ι'›
+    refine ⟨⟨_, ⟨i₀, rfl⟩⟩, ?_, ⟨_, hlubD.1⟩⟩
+    rintro _ ⟨i, rfl⟩ _ ⟨i', rfl⟩
+    obtain ⟨i'', hi1, hi2⟩ := directed_of (· ≤ ·) i i'
+    exact ⟨_, ⟨i'', rfl⟩, Subtype.coe_le_coe.mpr (hmono hi1),
+      Subtype.coe_le_coe.mpr (hmono hi2)⟩
+  have hds : dirSup D hh = (⟨s, hssa⟩ : selfAdjoint X) :=
+    (isLUB_dirSup D hh).unique hlubD
+  have hnet := vna_supremum_uwlimit D hh
+  rw [hds] at hnet
+  set ψ : ι' → D := fun i => ⟨⟨P i, hsa i⟩, ⟨i, rfl⟩⟩ with hψ
+  have hψmono : Monotone ψ := fun i i' hii' =>
+    Subtype.coe_le_coe.mpr (Subtype.coe_le_coe.mpr (hmono hii'))
+  have hψtend : Tendsto ψ atTop atTop :=
+    tendsto_atTop_atTop_of_monotone hψmono (by
+      rintro ⟨_, i, rfl⟩
+      exact ⟨i, le_rfl⟩)
+  exact hnet.comp hψtend
+
+/-- **The ultraweak approximation step**, for an arbitrary family: `x` lies
+in every ultraweakly closed set containing all `(1 ⊗ ∑_{j∈F} z_j)·x`. -/
+private theorem gApprox (x : VNT C A) (T : Set (VNT C A))
+    (hT : @IsClosed (VNT C A) (ultraweak (VNT C A)) T)
+    (hmem : ∀ F : Finset J, ((1 : C) ⊗ᵥ gZS Ψ F) * x ∈ T) : x ∈ T := by
+  classical
+  letI : TopologicalSpace (VNT C A) := ultraweak (VNT C A)
+  letI : TopologicalSpace A := ultraweak A
+  have h1 : Tendsto (fun F : Finset J => gZS Ψ F) atTop
+      (@nhds A (ultraweak A) (1 : A)) :=
+    uwTendsto_of_isLUB (X := A) (fun F => gZS Ψ F) 1 (gZS_sa Ψ)
+      (fun F G hFG => gZS_mono Ψ hFG) (gZS_isLUB Ψ)
+  have hcont : @Continuous A (VNT C A) (ultraweak A) (ultraweak (VNT C A))
+      (fun b : A => ((1 : C) ⊗ᵥ b) * x) :=
+    ((mult_uws_cont x).2.1).comp (continuous_ultraweak_vtmul_right (1 : C))
+  have h2 := (hcont.tendsto (1 : A)).comp h1
+  have hone : ((1 : C) ⊗ᵥ (1 : A)) = 1 := (vnTensor C A).isTensorProduct.miu.1
+  rw [show ((1 : C) ⊗ᵥ (1 : A)) * x = x by rw [hone, one_mul]] at h2
+  exact hT.mem_of_tendsto h2 (Filter.Eventually.of_forall hmem)
+
+end GenSum
+
+/-! ## Two-sided compression along an increasing net of projections
+
+The finite-dimensional device compresses on one side only, because
+`∑_p u_{pp} = 1` is an identity there.  For `B(𝒦)` with `𝒦` infinite
+dimensional the partial sums `p_F = ∑_{p ∈ F} u_{pp}` merely *increase to*
+`1`, and the substitute is `p_F x p_F → x`.  Ultraweak convergence
+`p_F → 1` alone does not give this — multiplication is not jointly
+ultraweakly continuous — but for a monotone net of **projections** the
+Cauchy–Schwarz inequality **43I**.1 (`norm_apply_star_mul_le`) does, with
+`‖z − p_F‖_ω = ω(z − p_F)^{1/2} → 0` as the only estimate needed. -/
+
+section Compression
+
+set_option synthInstance.maxHeartbeats 400000
+
+private theorem uw_compress_tendsto {X : Type u} [CStarAlgebra X] [PartialOrder X]
+    [StarOrderedRing X] [VonNeumannAlgebra X] {ι' : Type*}
+    (z : X) (P : ι' → X)
+    (hP : ∀ i, star (P i) * P i = P i)
+    (hzP : ∀ i, star (z - P i) * (z - P i) = z - P i)
+    (hle : ∀ i, P i ≤ z)
+    {l : Filter ι'} (huw : UWTendsto P l z) (x : X) :
+    UWTendsto (fun i => P i * x * P i) l (z * x * z) := by
+  rw [uwTendsto_iff] at huw ⊢
+  intro ω
+  have hzsa : ∀ i, star (z - P i) = z - P i := fun i => by
+    have h : IsSelfAdjoint (z - P i) := by
+      rw [← hzP i]
+      exact (star_mul_self_nonneg (z - P i)).isSelfAdjoint
+    exact h
+  set K : ℝ := omegaNorm X ω (star (z * x)) + ‖x‖ * Real.sqrt ((ω z).re) with hK
+  have hom : ∀ i, omegaNorm X ω (z - P i) = Real.sqrt ((ω (z - P i)).re) := fun i => by
+    rw [omegaNorm, hzP i]
+  have homP : ∀ i, omegaNorm X ω (P i) ≤ Real.sqrt ((ω z).re) := fun i => by
+    rw [omegaNorm, hP i]
+    refine Real.sqrt_le_sqrt ?_
+    exact (Complex.le_def.mp (ω.toPositiveLinearMap.monotone (hle i))).1
+  have key : ∀ i, ‖(ω (z * x * z) : ℂ) - ω (P i * x * P i)‖
+      ≤ K * Real.sqrt ((ω (z - P i)).re) := by
+    intro i
+    have hsplit : z * x * z - P i * x * P i
+        = z * x * (z - P i) + (z - P i) * x * P i := by noncomm_ring
+    have hlin : (ω (z * x * z) : ℂ) - ω (P i * x * P i)
+        = ω (z * x * (z - P i)) + ω ((z - P i) * x * P i) := by
+      have h1 : (ω (z * x * z) : ℂ) - ω (P i * x * P i)
+          = ω (z * x * z - P i * x * P i) := (map_sub ω.toPositiveLinearMap _ _).symm
+      rw [h1, hsplit]
+      exact map_add ω.toPositiveLinearMap _ _
+    have hnn : (0 : ℝ) ≤ omegaNorm X ω (z - P i) := omegaNorm_nonneg _ _
+    have hA : ‖(ω (z * x * (z - P i)) : ℂ)‖
+        ≤ omegaNorm X ω (star (z * x)) * omegaNorm X ω (z - P i) := by
+      have h := norm_apply_star_mul_le ω (star (z * x)) (z - P i)
+      rwa [star_star] at h
+    have hB' : ‖(ω ((z - P i) * x * P i) : ℂ)‖
+        ≤ omegaNorm X ω (z - P i) * (‖x‖ * Real.sqrt ((ω z).re)) := by
+      have h := norm_apply_star_mul_le ω (z - P i) (x * P i)
+      rw [hzsa i, ← mul_assoc] at h
+      refine h.trans (mul_le_mul_of_nonneg_left ?_ hnn)
+      exact (omegaNorm_mul_le ω x (P i)).trans
+        (mul_le_mul_of_nonneg_left (homP i) (norm_nonneg x))
+    calc ‖(ω (z * x * z) : ℂ) - ω (P i * x * P i)‖
+        = ‖(ω (z * x * (z - P i)) : ℂ) + ω ((z - P i) * x * P i)‖ := by rw [hlin]
+      _ ≤ ‖(ω (z * x * (z - P i)) : ℂ)‖ + ‖(ω ((z - P i) * x * P i) : ℂ)‖ :=
+          norm_add_le _ _
+      _ ≤ omegaNorm X ω (star (z * x)) * omegaNorm X ω (z - P i)
+            + omegaNorm X ω (z - P i) * (‖x‖ * Real.sqrt ((ω z).re)) :=
+          add_le_add hA hB'
+      _ = K * omegaNorm X ω (z - P i) := by rw [hK]; ring
+      _ = K * Real.sqrt ((ω (z - P i)).re) := by rw [hom i]
+  have hs : Tendsto (fun i => Real.sqrt ((ω (z - P i)).re)) l (𝓝 0) := by
+    have h1 : Tendsto (fun i => (ω (z - P i) : ℂ)) l (𝓝 0) := by
+      have hz : ∀ i, (ω (z - P i) : ℂ) = ω z - ω (P i) := fun i =>
+        map_sub ω.toPositiveLinearMap z (P i)
+      simp only [hz]
+      have h := huw ω
+      have hc : Tendsto (fun _ : ι' => (ω z : ℂ)) l (𝓝 (ω z : ℂ)) := tendsto_const_nhds
+      have h2 : Tendsto (fun i => (ω z : ℂ) - ω (P i)) l (𝓝 ((ω z : ℂ) - ω z)) := hc.sub h
+      rwa [sub_self] at h2
+    have h2 : Tendsto (fun i => (ω (z - P i) : ℂ).re) l (𝓝 0) := by
+      have h := (Complex.reCLM.continuous.tendsto 0).comp h1
+      simpa [Function.comp_def] using h
+    have h3 := (Real.continuous_sqrt.tendsto 0).comp h2
+    simpa [Function.comp_def] using h3
+  have hK0 : Tendsto (fun i => K * Real.sqrt ((ω (z - P i)).re)) l (𝓝 0) := by
+    have := hs.const_mul K
+    simpa using this
+  have hsq : Tendsto (fun i => ‖(ω (P i * x * P i) : ℂ) - ω (z * x * z)‖) l (𝓝 0) := by
+    refine squeeze_zero (fun i => norm_nonneg _) (fun i => ?_) hK0
+    rw [norm_sub_rev]
+    exact key i
+  rw [tendsto_iff_norm_sub_tendsto_zero]
+  exact hsq
+
+end Compression
+
+/-! ## The atomic type I slice device
+
+The widened form of the `haE` device: `𝒜 ≅ ⊕_j B(𝒦_j)` with the `𝒦_j`
+arbitrary Hilbert spaces.  Everything is the same except that the block
+expansion is now the *compression* `p_F a p_F = ∑_{k,l ∈ F} a_{kl} u_{kl}`
+along a finite set `F` of basis indices, and the passage `F ↑ ⊤` needs
+`uw_compress_tendsto`. -/
+
+section AtSlice
+
+set_option synthInstance.maxHeartbeats 400000
+
+variable [VonNeumannAlgebra A] [VonNeumannAlgebra C]
+variable {J : Type u} {ιk : J → Type u} {K : J → Type u}
+  [∀ j, NormedAddCommGroup (K j)] [∀ j, InnerProductSpace ℂ (K j)]
+  [∀ j, CompleteSpace (K j)] [∀ j, Nontrivial (K j)] [∀ j, Nonempty (ιk j)]
+
+variable (e : ∀ j : J, HilbertBasis (ιk j) ℂ (K j))
+  (Ψ : A ≃⋆ₐ[ℂ] lp (fun j : J => (K j →L[ℂ] K j)) ∞)
+
+/-- The matrix units of `𝒜`. -/
+private def atU (j : J) (k l : ιk j) : A := gU Ψ j (bkU (e j) k l)
+
+/-- The block compressions of `𝒜`. -/
+private def atP (j : J) (F : Finset (ιk j)) : A := gU Ψ j (bkP (e j) F)
+
+/-- The `(k,l)` entry of the `j`-th block. -/
+private def atEnt (j : J) (a : A) (k l : ιk j) : ℂ :=
+  ⟪e j k, ((Ψ a : ∀ q : J, (K q →L[ℂ] K q)) j) (e j l)⟫
+
+private theorem atPsi_gU (j : J) (m : K j →L[ℂ] K j) :
+    (Ψ (gU Ψ j m) : ∀ q : J, (K q →L[ℂ] K q)) j = m := by
+  rw [gU, Ψ.apply_symm_apply, lpKappa_apply_self]
+
+private theorem atEnt_atU (j : J) (k l k' l' : ιk j) :
+    atEnt e Ψ j (atU e Ψ j k l) k' l' = ⟪e j k', (bkU (e j) k l) (e j l')⟫ := by
+  rw [atEnt, atU, atPsi_gU]
+
+private theorem atU_mul_mul (j : J) (o k l : ιk j) (a : A) :
+    atU e Ψ j o k * a * atU e Ψ j l o = (atEnt e Ψ j a k l) • atU e Ψ j o o := by
+  rw [atU, atU, atU, gU_mul_mul, bkU_mul_mul, gU_smul]
+  rfl
+
+private theorem atP_mul_mul (j : J) (F : Finset (ιk j)) (a : A) :
+    atP e Ψ j F * a * atP e Ψ j F
+      = ∑ k ∈ F, ∑ l ∈ F, (atEnt e Ψ j a k l) • atU e Ψ j k l := by
+  rw [atP, gU_mul_mul, bkP_mul_mul, gU_sum]
+  refine Finset.sum_congr rfl fun k _ => ?_
+  rw [gU_sum]
+  exact Finset.sum_congr rfl fun l _ => by rw [gU_smul]; rfl
+
+private theorem atP_sa (j : J) (F : Finset (ιk j)) :
+    star (atP e Ψ j F) * atP e Ψ j F = atP e Ψ j F := by
+  rw [atP, gU_star, gU_mul, bkP_star, bkP_mul_self]
+
+private theorem atP_le (j : J) (F : Finset (ιk j)) : atP e Ψ j F ≤ gZ Ψ j :=
+  gU_le Ψ j (bkP_le_one (e j) F)
+
+private theorem atP_isSelfAdjoint (j : J) (F : Finset (ιk j)) :
+    IsSelfAdjoint (atP e Ψ j F) := by
+  show star _ = _
+  rw [atP, gU_star, bkP_star]
+
+private theorem atP_mono (j : J) {F G : Finset (ιk j)} (h : F ⊆ G) :
+    atP e Ψ j F ≤ atP e Ψ j G :=
+  gU_le Ψ j (bkP_mono (e j) h)
+
+private theorem atP_isLUB (j : J) :
+    IsLUB (Set.range (atP e Ψ j)) (gZ Ψ j) :=
+  gU_isLUB Ψ j (bkP (e j)) (bkP_nonneg (e j)) (bkP_isLUB (e j))
+
+private theorem atGZ_sub_atP (j : J) (F : Finset (ιk j)) :
+    star (gZ Ψ j - atP e Ψ j F) * (gZ Ψ j - atP e Ψ j F) = gZ Ψ j - atP e Ψ j F := by
+  have hsub : gZ Ψ j - atP e Ψ j F = gU Ψ j (1 - bkP (e j) F) := by
+    rw [gU_sub, gZ, atP]
+  rw [hsub, gU_star, gU_mul, star_sub, star_one, bkP_star]
+  congr 1
+  rw [sub_mul, mul_sub, mul_sub, one_mul, mul_one, one_mul, bkP_mul_self]
+  abel
+
+/-- The distinguished basis index of the `j`-th block. -/
+private def atO (_e : ∀ j : J, HilbertBasis (ιk j) ℂ (K j)) (j : J) : ιk j :=
+  Classical.arbitrary (ιk j)
+
+/-- The np-functional `a ↦ ⟪e^j_0, a_j e^j_0⟫`. -/
+private def atOm (j : J) : NPFunctional A :=
+  compNP (nmiuP (gPi Ψ j)) (gPi Ψ j).preservesDirSups' (vectorNP (e j (atO e j)))
+
+private theorem atOm_apply (j : J) (a : A) :
+    (atOm e Ψ j a : ℂ) = atEnt e Ψ j a (atO e j) (atO e j) := rfl
+
+/-- The ncp-map `a ↦ ⟪e^j_0, a_j e^j_0⟫·1`. -/
+private def atKappa (j : J) : NCPMap A A := npScalar (atOm e Ψ j)
+
+private theorem atKappa_apply (j : J) (a : A) :
+    atKappa e Ψ j a = algebraMap ℂ A (atEnt e Ψ j a (atO e j) (atO e j)) := by
+  show algebraMap ℂ A (atOm e Ψ j a) = _
+  rw [atOm_apply]
+
+private theorem atKappa_atU (j : J) :
+    atKappa e Ψ j (atU e Ψ j (atO e j) (atO e j)) = 1 := by
+  rw [atKappa_apply, atEnt_atU, bkU_diag_inner, map_one]
+
+variable (C)
+
+/-- The widened slice operator
+`x ↦ (id ⊗ κ_j)((1 ⊗ u^j_{0k}) x (1 ⊗ u^j_{l0}))`. -/
+private def atE (j : J) (k l : ιk j) (x : VNT C A) : VNT C A :=
+  tmap (ncpId C) (atKappa e Ψ j)
+    (((1 : C) ⊗ᵥ atU e Ψ j (atO e j) k) * x * ((1 : C) ⊗ᵥ atU e Ψ j l (atO e j)))
+
+variable {C}
+
+private theorem atE_tmul (j : J) (k l : ιk j) (c : C) (a : A) :
+    atE C e Ψ j k l (c ⊗ᵥ a) = (atEnt e Ψ j a k l) • (c ⊗ᵥ (1 : A)) := by
+  rw [atE, vtmul_mul_vtmul, vtmul_mul_vtmul, one_mul, mul_one,
+    atU_mul_mul, vtmul_smul_right,
+    show (tmap (ncpId C) (atKappa e Ψ j))
+        ((atEnt e Ψ j a k l) • (c ⊗ᵥ atU e Ψ j (atO e j) (atO e j)))
+        = (atEnt e Ψ j a k l) •
+            (tmap (ncpId C) (atKappa e Ψ j)) (c ⊗ᵥ atU e Ψ j (atO e j) (atO e j)) from
+      map_smul (tmap (ncpId C) (atKappa e Ψ j)).toCompletelyPositiveMap.toLinearMap _ _,
+    tmap_apply, ncpId_apply, atKappa_atU]
+
+/-- `atE` as a linear map. -/
+private def atEL (j : J) (k l : ιk j) : VNT C A →ₗ[ℂ] VNT C A :=
+  ((tmap (ncpId C) (atKappa e Ψ j)).toCompletelyPositiveMap.toLinearMap).comp
+    (((LinearMap.mulRight ℂ ((1 : C) ⊗ᵥ atU e Ψ j l (atO e j))).comp
+      (LinearMap.mulLeft ℂ ((1 : C) ⊗ᵥ atU e Ψ j (atO e j) k))))
+
+private theorem atEL_apply (j : J) (k l : ιk j) (x : VNT C A) :
+    atEL e Ψ j k l x = atE C e Ψ j k l x := rfl
+
+private theorem atEL_continuous (j : J) (k l : ιk j) :
+    @Continuous (VNT C A) (VNT C A) (ultraweak _) (ultraweak _) ⇑(atEL e Ψ j k l) := by
+  letI : TopologicalSpace (VNT C A) := ultraweak (VNT C A)
+  have h1 : Continuous (fun x : VNT C A =>
+      ((1 : C) ⊗ᵥ atU e Ψ j (atO e j) k) * x * ((1 : C) ⊗ᵥ atU e Ψ j l (atO e j))) :=
+    continuous_uw_mulmul _ _
+  have h2 : Continuous ⇑(tmap (ncpId C) (atKappa e Ψ j)) :=
+    ((p_uwcont (ncpPositive (tmap (ncpId C) (atKappa e Ψ j)))).out 2 0).mp
+      (tmap (ncpId C) (atKappa e Ψ j)).preservesDirSups'
+  exact h2.comp h1
+
+private theorem atE_mem (j : J) (k l : ιk j) (x : VNT C A) :
+    ∃ c : C, atE C e Ψ j k l x = c ⊗ᵥ (1 : A) := by
+  letI : TopologicalSpace (VNT C A) := ultraweak (VNT C A)
+  haveI : T2Space (VNT C A) := vn_positive_basic_1.1
+  obtain ⟨hRvn⟩ : Nonempty (IsVNSubalgebra (VNT C A)
+      (nmiuTmulLeft C A).toStarAlgHom.range) :=
+    ⟨nmiu_image _⟩
+  have hRcl : IsClosed
+      ((nmiuTmulLeft C A).toStarAlgHom.range : Set (VNT C A)) :=
+    (vnsac _ hRvn).2
+  set W : Submodule ℂ (VNT C A) :=
+    Submodule.comap (atEL e Ψ j k l)
+      (Subalgebra.toSubmodule
+        (nmiuTmulLeft C A).toStarAlgHom.range.toSubalgebra) with hW
+  have hWcl : IsClosed (W : Set (VNT C A)) :=
+    hRcl.preimage (atEL_continuous e Ψ j k l)
+  have hspan : (Submodule.span ℂ
+      {t : VNT C A | ∃ a b, t = (vnTensor C A).map a b} : Set (VNT C A))
+      ⊆ (W : Set (VNT C A)) := by
+    refine Submodule.span_le.mpr ?_
+    rintro _ ⟨c, a, rfl⟩
+    have hmem : atE C e Ψ j k l (c ⊗ᵥ a) ∈
+        (nmiuTmulLeft C A).toStarAlgHom.range := by
+      rw [atE_tmul, ← vtmulLeft_smul]
+      exact ⟨(atEnt e Ψ j a k l) • c, rfl⟩
+    exact hmem
+  have hx : x ∈ W := by
+    have hd := (vnTensor C A).isTensorProduct.dense
+    have hcl : x ∈ closure ((Submodule.span ℂ
+        {t : VNT C A | ∃ a b, t = (vnTensor C A).map a b} : Set (VNT C A))) := by
+      rw [hd.closure_eq]; trivial
+    exact hWcl.closure_subset_iff.mpr hspan hcl
+  obtain ⟨c, hc⟩ := hx
+  exact ⟨c, hc.symm⟩
+
+/-- The widened block expansion: the *compression* of `x` by `1 ⊗ p^j_F` is
+the finite sum of its entries in `F`. -/
+private theorem atSliceEq (j : J) (F : Finset (ιk j)) (x : VNT C A) :
+    ((1 : C) ⊗ᵥ atP e Ψ j F) * x * ((1 : C) ⊗ᵥ atP e Ψ j F)
+      = ∑ k ∈ F, ∑ l ∈ F, atE C e Ψ j k l x * ((1 : C) ⊗ᵥ atU e Ψ j k l) := by
+  letI : TopologicalSpace (VNT C A) := ultraweak (VNT C A)
+  haveI : T2Space (VNT C A) := vn_positive_basic_1.1
+  set f : VNT C A →ₗ[ℂ] VNT C A :=
+    (LinearMap.mulRight ℂ ((1 : C) ⊗ᵥ atP e Ψ j F)).comp
+      (LinearMap.mulLeft ℂ ((1 : C) ⊗ᵥ atP e Ψ j F)) with hf
+  set g : VNT C A →ₗ[ℂ] VNT C A :=
+    ∑ k ∈ F, ∑ l ∈ F,
+      (LinearMap.mulRight ℂ ((1 : C) ⊗ᵥ atU e Ψ j k l)).comp (atEL e Ψ j k l) with hg
+  have hgapp : ∀ y : VNT C A, g y
+      = ∑ k ∈ F, ∑ l ∈ F, atE C e Ψ j k l y * ((1 : C) ⊗ᵥ atU e Ψ j k l) := by
+    intro y
+    rw [hg, LinearMap.sum_apply]
+    exact Finset.sum_congr rfl fun k _ => LinearMap.sum_apply _ _ _
+  have hcf : Continuous ⇑f := continuous_uw_mulmul _ _
+  have hcg : Continuous ⇑g := by
+    have h : ⇑g = fun y : VNT C A => ∑ k ∈ F, ∑ l ∈ F,
+        atE C e Ψ j k l y * ((1 : C) ⊗ᵥ atU e Ψ j k l) := funext hgapp
+    rw [h]
+    refine continuous_ultraweak_of_forall _ fun ν => ?_
+    have hnu : (fun y : VNT C A => (ν (∑ k ∈ F, ∑ l ∈ F,
+          atE C e Ψ j k l y * ((1 : C) ⊗ᵥ atU e Ψ j k l)) : ℂ))
+        = fun y : VNT C A => ∑ k ∈ F, ∑ l ∈ F,
+            (ν (atE C e Ψ j k l y * ((1 : C) ⊗ᵥ atU e Ψ j k l)) : ℂ) := by
+      funext y
+      exact (map_sum ν.toPositiveLinearMap _ _).trans
+        (Finset.sum_congr rfl fun k _ => map_sum ν.toPositiveLinearMap _ _)
+    rw [hnu]
+    refine continuous_finsetSum _ fun k _ => continuous_finsetSum _ fun l _ => ?_
+    have hc1 : Continuous (fun y : VNT C A =>
+        (ν (1 * y * ((1 : C) ⊗ᵥ atU e Ψ j k l)) : ℂ)) :=
+      continuous_ultraweak_conj ν 1 ((1 : C) ⊗ᵥ atU e Ψ j k l)
+    simp only [one_mul] at hc1
+    exact hc1.comp (atEL_continuous e Ψ j k l)
+  have hfg : f = g := by
+    refine tensor_linear_ext (vnTensor C A).isTensorProduct f g hcf hcg ?_
+    intro c a
+    show ((1 : C) ⊗ᵥ atP e Ψ j F) * (c ⊗ᵥ a) * ((1 : C) ⊗ᵥ atP e Ψ j F) = g (c ⊗ᵥ a)
+    rw [hgapp, vtmul_mul_vtmul, vtmul_mul_vtmul, one_mul, mul_one, atP_mul_mul]
+    have hsum : c ⊗ᵥ (∑ k ∈ F, ∑ l ∈ F, (atEnt e Ψ j a k l) • atU e Ψ j k l)
+        = ∑ k ∈ F, ∑ l ∈ F, (atEnt e Ψ j a k l) • (c ⊗ᵥ atU e Ψ j k l) := by
+      show (vnTensor C A).map c _ = _
+      rw [map_sum]
+      exact Finset.sum_congr rfl fun k _ => by
+        rw [map_sum]
+        exact Finset.sum_congr rfl fun l _ => map_smul ((vnTensor C A).map c) _ _
+    rw [hsum]
+    refine Finset.sum_congr rfl fun k _ => Finset.sum_congr rfl fun l _ => ?_
+    rw [atE_tmul, smul_mul_assoc, vtmul_mul_vtmul, mul_one, one_mul]
+  have h := congrFun (congrArg (fun L : VNT C A →ₗ[ℂ] VNT C A => ⇑L) hfg) x
+  rw [hgapp] at h
+  exact h
+
+end AtSlice
+
+/-! ### The two membership corollaries (the atomic type I slice-map property) -/
+
+section AtSliceProperty
+
+set_option synthInstance.maxHeartbeats 400000
+
+variable [VonNeumannAlgebra A] [VonNeumannAlgebra C] [VonNeumannAlgebra D]
+variable {J : Type u} {ιk : J → Type u} {K : J → Type u}
+  [∀ j, NormedAddCommGroup (K j)] [∀ j, InnerProductSpace ℂ (K j)]
+  [∀ j, CompleteSpace (K j)] [∀ j, Nontrivial (K j)] [∀ j, Nonempty (ιk j)]
+
+variable (e : ∀ j : J, HilbertBasis (ιk j) ℂ (K j))
+  (Ψ : A ≃⋆ₐ[ℂ] lp (fun j : J => (K j →L[ℂ] K j)) ∞)
+
+private theorem vtmulR_mul (a a' : A) :
+    ((1 : C) ⊗ᵥ a) * ((1 : C) ⊗ᵥ a') = (1 : C) ⊗ᵥ (a * a') := by
+  rw [vtmul_mul_vtmul, one_mul]
+
+private theorem vtmulR_star (a : A) :
+    star ((1 : C) ⊗ᵥ a) = (1 : C) ⊗ᵥ star a := by
+  have h := (vnTensor C A).isTensorProduct.miu.2.2 (1 : C) a
+  rw [star_one] at h
+  exact h
+
+private theorem vtmulR_sub (a a' : A) :
+    (1 : C) ⊗ᵥ (a - a') = ((1 : C) ⊗ᵥ a) - ((1 : C) ⊗ᵥ a') :=
+  map_sub ((vnTensor C A).map 1) a a'
+
+private theorem vtmulR_mono {a a' : A} (h : a ≤ a') :
+    ((1 : C) ⊗ᵥ a) ≤ ((1 : C) ⊗ᵥ a') := by
+  have h1 := vtmul_nonneg (1 : C) (a' - a) zero_le_one (sub_nonneg.mpr h)
+  rw [vtmulR_sub] at h1
+  exact sub_nonneg.mp h1
+
+/-- `1 ⊗ z_j` is central in `𝒞 ⊗ 𝒜`: it commutes with the elementary
+tensors, and the two multiplication maps are ultraweakly continuous. -/
+private theorem vtmul_gZ_comm (j : J) (x : VNT C A) :
+    ((1 : C) ⊗ᵥ gZ Ψ j) * x = x * ((1 : C) ⊗ᵥ gZ Ψ j) := by
+  letI : TopologicalSpace (VNT C A) := ultraweak (VNT C A)
+  haveI : T2Space (VNT C A) := vn_positive_basic_1.1
+  set f : VNT C A →ₗ[ℂ] VNT C A :=
+    LinearMap.mulLeft ℂ ((1 : C) ⊗ᵥ gZ Ψ j) with hf
+  set g : VNT C A →ₗ[ℂ] VNT C A :=
+    LinearMap.mulRight ℂ ((1 : C) ⊗ᵥ gZ Ψ j) with hg
+  have hcf : Continuous ⇑f := (mult_uws_cont ((1 : C) ⊗ᵥ gZ Ψ j)).1
+  have hcg : Continuous ⇑g := (mult_uws_cont ((1 : C) ⊗ᵥ gZ Ψ j)).2.1
+  have hfg : f = g := by
+    refine tensor_linear_ext (vnTensor C A).isTensorProduct f g hcf hcg ?_
+    intro c a
+    show ((1 : C) ⊗ᵥ gZ Ψ j) * (c ⊗ᵥ a) = (c ⊗ᵥ a) * ((1 : C) ⊗ᵥ gZ Ψ j)
+    rw [vtmul_mul_vtmul, vtmul_mul_vtmul, one_mul, mul_one, gZ_comm]
+  exact congrFun (congrArg (fun L : VNT C A →ₗ[ℂ] VNT C A => ⇑L) hfg) x
+
+private theorem gZ_mul_self (j : J) : gZ Ψ j * gZ Ψ j = gZ Ψ j := by
+  rw [gZ, gU_mul, one_mul]
+
+/-- The compressions `1 ⊗ p^j_F` converge ultraweakly to `1 ⊗ z_j` from
+both sides. -/
+private theorem atCompress_tendsto (j : J) (x : VNT C A) :
+    UWTendsto (fun F : Finset (ιk j) =>
+        ((1 : C) ⊗ᵥ atP e Ψ j F) * x * ((1 : C) ⊗ᵥ atP e Ψ j F)) atTop
+      (((1 : C) ⊗ᵥ gZ Ψ j) * x * ((1 : C) ⊗ᵥ gZ Ψ j)) := by
+  refine uw_compress_tendsto ((1 : C) ⊗ᵥ gZ Ψ j)
+    (fun F => (1 : C) ⊗ᵥ atP e Ψ j F) (fun F => ?_) (fun F => ?_) (fun F => ?_) ?_ x
+  · rw [vtmulR_star, vtmulR_mul, atP_sa]
+  · rw [← vtmulR_sub, vtmulR_star, vtmulR_mul, atGZ_sub_atP]
+  · exact vtmulR_mono (atP_le e Ψ j F)
+  · letI : TopologicalSpace A := ultraweak A
+    letI : TopologicalSpace (VNT C A) := ultraweak (VNT C A)
+    have h : UWTendsto (atP e Ψ j) atTop (gZ Ψ j) :=
+      uwTendsto_of_isLUB (X := A) (ι' := Finset (ιk j)) (atP e Ψ j) (gZ Ψ j)
+        (atP_isSelfAdjoint e Ψ j)
+        (fun F G hFG => atP_mono e Ψ j hFG) (atP_isLUB e Ψ j)
+    have hcont : @Continuous A (VNT C A) (ultraweak A) (ultraweak (VNT C A))
+        (fun b : A => (1 : C) ⊗ᵥ b) := continuous_ultraweak_vtmul_right (1 : C)
+    exact (hcont.tendsto (gZ Ψ j)).comp h
+
+/-- **The atomic type I slice-map property, containment half**: if every
+entry `atE j k l x` of `x` lies in `𝒮 ⊗ 𝒜`, then `x` does. -/
+private theorem atMem (S : StarSubalgebra ℂ C) (x : VNT C A)
+    (h : ∀ (j : J) (k l : ιk j), atE C e Ψ j k l x ∈ tensorSub A S) :
+    x ∈ tensorSub A S := by
+  classical
+  letI : TopologicalSpace (VNT C A) := ultraweak (VNT C A)
+  have hcl : @IsClosed (VNT C A) (ultraweak (VNT C A))
+      ((tensorSub A S : StarSubalgebra ℂ (VNT C A)) : Set (VNT C A)) :=
+    (vnsac _ (isVNSubalgebra_wstar _).1).2
+  refine gApprox Ψ x ((tensorSub A S : StarSubalgebra ℂ (VNT C A)) : Set (VNT C A))
+    hcl ?_
+  intro F
+  have hsplit : ((1 : C) ⊗ᵥ gZS Ψ F) * x = ∑ j ∈ F, ((1 : C) ⊗ᵥ gZ Ψ j) * x := by
+    have hd : ((1 : C) ⊗ᵥ gZS Ψ F) = ∑ j ∈ F, ((1 : C) ⊗ᵥ gZ Ψ j) :=
+      map_sum ((vnTensor C A).map 1) _ _
+    rw [hd, Finset.sum_mul]
+  rw [SetLike.mem_coe, hsplit]
+  refine sum_mem fun j _ => ?_
+  have hww : ((1 : C) ⊗ᵥ gZ Ψ j) * ((1 : C) ⊗ᵥ gZ Ψ j) = ((1 : C) ⊗ᵥ gZ Ψ j) := by
+    rw [vtmulR_mul, gZ_mul_self]
+  have hcomm := vtmul_gZ_comm Ψ j x
+  have hzz : ((1 : C) ⊗ᵥ gZ Ψ j) * x * ((1 : C) ⊗ᵥ gZ Ψ j)
+      = ((1 : C) ⊗ᵥ gZ Ψ j) * x :=
+    calc ((1 : C) ⊗ᵥ gZ Ψ j) * x * ((1 : C) ⊗ᵥ gZ Ψ j)
+        = ((1 : C) ⊗ᵥ gZ Ψ j) * (x * ((1 : C) ⊗ᵥ gZ Ψ j)) := mul_assoc _ _ _
+      _ = ((1 : C) ⊗ᵥ gZ Ψ j) * (((1 : C) ⊗ᵥ gZ Ψ j) * x) := by rw [hcomm]
+      _ = (((1 : C) ⊗ᵥ gZ Ψ j) * ((1 : C) ⊗ᵥ gZ Ψ j)) * x := (mul_assoc _ _ _).symm
+      _ = ((1 : C) ⊗ᵥ gZ Ψ j) * x := by rw [hww]
+  rw [← hzz]
+  refine hcl.mem_of_tendsto (atCompress_tendsto e Ψ j x)
+    (Filter.Eventually.of_forall fun F' => ?_)
+  rw [atSliceEq]
+  exact sum_mem fun k _ => sum_mem fun l _ =>
+    mul_mem (h j k l) (vtmul_one_mem S _)
+
+/-- Naturality of the widened slice operator in the first factor. -/
+private theorem atE_natural {C' : Type u} [CStarAlgebra C'] [PartialOrder C']
+    [StarOrderedRing C'] [VonNeumannAlgebra C'] (ρ : NMIUMap C' C)
+    (j : J) (k l : ιk j) (y : VNT C' A) :
+    tmapM ρ (nmiuId A) (atE C' e Ψ j k l y)
+      = atE C e Ψ j k l (tmapM ρ (nmiuId A) y) := by
+  have hcomm : ncpComp (nmiuNCP (tmapM ρ (nmiuId A))) (tmap (ncpId C') (atKappa e Ψ j))
+      = ncpComp (tmap (ncpId C) (atKappa e Ψ j)) (nmiuNCP (tmapM ρ (nmiuId A))) := by
+    refine (exists_tmap (nmiuNCP ρ) (atKappa e Ψ j)).unique (fun a b => ?_) (fun a b => ?_)
+    · simp only [ncpComp_apply, tmap_apply, ncpId_apply, nmiuNCP_apply, tmapM_apply,
+        nmiuId_apply]
+    · simp only [ncpComp_apply, tmap_apply, ncpId_apply, nmiuNCP_apply, tmapM_apply,
+        nmiuId_apply]
+  have hkey : ∀ z : VNT C' A, tmapM ρ (nmiuId A) (tmap (ncpId C') (atKappa e Ψ j) z)
+      = tmap (ncpId C) (atKappa e Ψ j) (tmapM ρ (nmiuId A) z) := fun z => by
+    have h := congrArg (fun F : NCPMap (VNT C' A) (VNT C A) => F z) hcomm
+    simpa only [ncpComp_apply, nmiuNCP_apply] using h
+  have hmul : ∀ z w : VNT C' A, tmapM ρ (nmiuId A) (z * w)
+      = tmapM ρ (nmiuId A) z * tmapM ρ (nmiuId A) w :=
+    fun z w => map_mul (tmapM ρ (nmiuId A)).toStarAlgHom z w
+  show tmapM ρ (nmiuId A) (tmap (ncpId C') (atKappa e Ψ j) _) = _
+  rw [hkey]
+  show _ = tmap (ncpId C) (atKappa e Ψ j) _
+  congr 1
+  rw [hmul, hmul, tmapM_vtmul_one, tmapM_vtmul_one]
+
+/-- **The atomic type I slice-map property, extraction half**: the entries
+of an element of `𝒮 ⊗ 𝒜` lie in `𝒮`. -/
+private theorem atE_of_mem (S : StarSubalgebra ℂ C) (hS : IsVNSubalgebra C S)
+    (x : VNT C A) (hx : x ∈ tensorSub A S) (j : J) (k l : ιk j) :
+    ∃ c ∈ S, atE C e Ψ j k l x = c ⊗ᵥ (1 : A) := by
+  have hrange : tensorSub A S ≤
+      (tmapM (VNSub.valNMIU (A := C) (S := S) (hS := hS)) (nmiuId A)).toStarAlgHom.range := by
+    refine sInf_le ⟨nmiu_image _, ?_⟩
+    rintro _ ⟨s, hs, a, rfl⟩
+    refine ⟨(⟨s, hs⟩ : VNSub C S hS) ⊗ᵥ a, ?_⟩
+    show tmapM (VNSub.valNMIU (A := C) (S := S) (hS := hS)) (nmiuId A)
+      ((⟨s, hs⟩ : VNSub C S hS) ⊗ᵥ a) = s ⊗ᵥ a
+    rw [tmapM_apply, nmiuId_apply]
+    rfl
+  obtain ⟨y, hy⟩ : x ∈
+      (tmapM (VNSub.valNMIU (A := C) (S := S) (hS := hS)) (nmiuId A)).toStarAlgHom.range :=
+    hrange hx
+  have hy' : tmapM (VNSub.valNMIU (A := C) (S := S) (hS := hS)) (nmiuId A) y = x := hy
+  obtain ⟨c, hc⟩ := atE_mem (C := VNSub C S hS) e Ψ j k l y
+  refine ⟨c.val, c.property, ?_⟩
+  rw [← hy', ← atE_natural e Ψ (VNSub.valNMIU (A := C) (S := S) (hS := hS)) j k l y, hc,
+    tmapM_apply, nmiuId_apply]
+  rfl
+
+/-- **The atomic type I form of 125VIIb** (`tensor-preimage`): for
+`𝒜 ≅ ⊕_j B(𝒦_j)` with the `𝒦_j` *arbitrary* Hilbert spaces,
+`(ρ ⊗ 𝒜)⁻¹(𝒮 ⊗ 𝒜) = ρ⁻¹(𝒮) ⊗ 𝒜`. -/
+private theorem atTensorPreimage
+    (e : ∀ j : J, HilbertBasis (ιk j) ℂ (K j))
+    (Ψ : A ≃⋆ₐ[ℂ] lp (fun j : J => (K j →L[ℂ] K j)) ∞) (ρ : NMIUMap C D)
+    (S : StarSubalgebra ℂ D) (hS : IsVNSubalgebra D S) (x : VNT C A) :
+    tmapM ρ (nmiuId A) x ∈ tensorSub A S ↔
+      x ∈ tensorSub A (S.comap ρ.toStarAlgHom) := by
+  rcases subsingleton_or_nontrivial A with hss | hnt
+  · haveI := hss
+    haveI : Subsingleton (VNT C A) := vnt_subsingleton
+    haveI : Subsingleton (VNT D A) := vnt_subsingleton
+    constructor
+    · intro _
+      rw [Subsingleton.elim x 0]
+      exact zero_mem _
+    · intro _
+      rw [Subsingleton.elim (tmapM ρ (nmiuId A) x) 0]
+      exact zero_mem _
+  haveI := hnt
+  constructor
+  · intro hx
+    refine atMem e Ψ _ _ (fun j k l => ?_)
+    obtain ⟨c', hc'⟩ := atE_mem (C := C) e Ψ j k l x
+    obtain ⟨d, hd, hde⟩ := atE_of_mem e Ψ S hS _ hx j k l
+    have hnat := atE_natural e Ψ ρ j k l x
+    rw [hc', hde, tmapM_apply, nmiuId_apply] at hnat
+    have hcd : ρ c' = d := vtmul_one_injective hnat
+    rw [hc']
+    refine (isVNSubalgebra_wstar _).2 ⟨c', ?_, 1, rfl⟩
+    show ρ.toStarAlgHom c' ∈ S
+    rw [show ρ.toStarAlgHom c' = d from hcd]
+    exact hd
+  · intro hx
+    have hle : tensorSub A (S.comap ρ.toStarAlgHom) ≤
+        (tensorSub A S).comap (tmapM ρ (nmiuId A)).toStarAlgHom := by
+      refine sInf_le ⟨isVNSubalgebra_comap (tmapM ρ (nmiuId A)).toStarAlgHom
+        (tmapM ρ (nmiuId A)).preservesDirSups' _ (isVNSubalgebra_wstar _).1, ?_⟩
+      rintro _ ⟨t, ht, a, rfl⟩
+      show tmapM ρ (nmiuId A) (t ⊗ᵥ a) ∈ tensorSub A S
+      rw [tmapM_apply, nmiuId_apply]
+      exact (isVNSubalgebra_wstar _).2 ⟨ρ t, ht, a, rfl⟩
+    exact hle hx
+
+end AtSliceProperty
+
+/-! ### The atomic type I form of 125eIII -/
+
+section AtSliceBSurj
+
+set_option synthInstance.maxHeartbeats 400000
+
+variable [VonNeumannAlgebra A] [VonNeumannAlgebra C] [VonNeumannAlgebra D]
+variable {J : Type u} {ιk : J → Type u} {K : J → Type u}
+  [∀ j, NormedAddCommGroup (K j)] [∀ j, InnerProductSpace ℂ (K j)]
+  [∀ j, CompleteSpace (K j)] [∀ j, Nontrivial (K j)] [∀ j, Nonempty (ιk j)]
+variable {Xs : Type u} [CStarAlgebra Xs] [PartialOrder Xs] [StarOrderedRing Xs]
+  [VonNeumannAlgebra Xs]
+
+/-- **The atomic type I form of 125eIII** (`tensorBsurjectivity`), the hard
+half: `(ρ ⊗ 𝒜) ∘ s` is `(·) ⊗ 𝒜`-surjective when `s` is and `ρ` is
+surjective, for `𝒜 ≅ ⊕_j B(𝒦_j)`. -/
+private theorem atTensorBSurj
+    (e : ∀ j : J, HilbertBasis (ιk j) ℂ (K j))
+    (Ψ : A ≃⋆ₐ[ℂ] lp (fun j : J => (K j →L[ℂ] K j)) ∞)
+    (s : NMIUMap Xs (VNT C A)) (hs : TensorBSurjective s) (ρ : NMIUMap C D)
+    (hρ : Function.Surjective ⇑ρ) :
+    TensorBSurjective (nmiuComp (tmapM ρ (nmiuId A)) s) := by
+  intro S hS hsub
+  have h1 : Set.range ⇑s ⊆
+      ((tensorSub A (S.comap ρ.toStarAlgHom) : StarSubalgebra ℂ (VNT C A)) :
+        Set (VNT C A)) := by
+    rintro _ ⟨a, rfl⟩
+    exact (atTensorPreimage e Ψ ρ S hS (s a)).mp (hsub ⟨a, rfl⟩)
+  have h2 := hs _ (isVNSubalgebra_comap ρ.toStarAlgHom ρ.preservesDirSups' S hS) h1
+  refine eq_top_iff.mpr fun d _ => ?_
+  obtain ⟨c, rfl⟩ := hρ d
+  have hc : c ∈ S.comap ρ.toStarAlgHom := by rw [h2]; trivial
+  exact hc
+
+end AtSliceBSurj
+
+/-! ## Atomic type I algebras: the packaged statements
+
+`HereditarilyAtomic` (**84bII**, `A/VN/Division.lean`) asks for
+`⊕ⱼ M_{nⱼ}`.  `AtomicTypeIRep` is its sibling with the summands widened to
+`B(𝒦ⱼ)` for arbitrary nonzero Hilbert spaces `𝒦ⱼ` — the *atomic type I*
+von Neumann algebras.  A hereditarily atomic algebra is atomic type I with
+all the `𝒦ⱼ` finite dimensional (`𝒦ⱼ = ℂ^{nⱼ}`); the implication
+`HereditarilyAtomic 𝒜 → AtomicTypeI 𝒜` is **not** proved here, because it
+needs `M_n ≅ B(ℂⁿ)` (Mathlib's `Matrix.toEuclideanCLM`) *plus* a universe
+lift — `EuclideanSpace ℂ (Fin n) : Type 0` while `AtomicTypeIRep.K :
+J → Type u`, and neither Mathlib nor the tree puts an `InnerProductSpace`
+on `ULift`.  Nothing below needs it. -/
+
+section AtomicTypeI
+
+set_option synthInstance.maxHeartbeats 400000
+
+/-- The data of an **atomic type I** presentation `𝒜 ≅ ⊕ⱼ B(𝒦ⱼ)`.  The
+`𝒦ⱼ` are arbitrary *nonzero* Hilbert spaces; requiring them nonzero keeps
+the summands nontrivial and loses no generality, exactly as the `Nᵢ + 1` of
+**84bII** does. -/
+structure AtomicTypeIRep (𝒜 : Type u) [CStarAlgebra 𝒜] [PartialOrder 𝒜]
+    [StarOrderedRing 𝒜] [VonNeumannAlgebra 𝒜] : Type (u + 1) where
+  /-- The index set of the blocks. -/
+  J : Type u
+  /-- The Hilbert space of the `j`-th block. -/
+  K : J → Type u
+  [nag : ∀ j, NormedAddCommGroup (K j)]
+  [ips : ∀ j, InnerProductSpace ℂ (K j)]
+  [cs : ∀ j, CompleteSpace (K j)]
+  [nt : ∀ j, Nontrivial (K j)]
+  /-- The identification `𝒜 ≅ ⊕ⱼ B(𝒦ⱼ)`. -/
+  iso : 𝒜 ≃⋆ₐ[ℂ] lp (fun j : J => (K j →L[ℂ] K j)) ∞
+
+attribute [instance] AtomicTypeIRep.nag AtomicTypeIRep.ips AtomicTypeIRep.cs
+  AtomicTypeIRep.nt
+
+variable (A) in
+/-- A von Neumann algebra is **atomic type I** when it is nmiu-isomorphic to
+a direct sum `⊕ⱼ B(𝒦ⱼ)` of type I factors. -/
+def AtomicTypeI [VonNeumannAlgebra A] : Prop := Nonempty (AtomicTypeIRep A)
+
+/-- A Hilbert basis of a nonzero Hilbert space has a nonempty index set. -/
+private theorem hilbertBasis_index_nonempty {ι : Type*} {Kk : Type*}
+    [NormedAddCommGroup Kk] [InnerProductSpace ℂ Kk] [Nontrivial Kk]
+    (e : HilbertBasis ι ℂ Kk) : Nonempty ι := by
+  by_contra hcon
+  rw [not_nonempty_iff] at hcon
+  obtain ⟨x, y, hxy⟩ := exists_pair_ne Kk
+  have hz : ∀ z : Kk, z = 0 := fun z =>
+    (e.hasSum_repr z).unique (hasSum_empty (f := fun i : ι => (e.repr z) i • e i))
+  exact hxy ((hz x).trans (hz y).symm)
+
+/-- **125VIIb** (`tensor-preimage`, proc.tex:5025) for an **atomic type I**
+tensored factor: for an nmiu-map `ρ : ℬ → 𝒞`, a von Neumann subalgebra
+`𝒮 ⊆ 𝒞` and `𝒜 ≅ ⊕ⱼ B(𝒦ⱼ)`, `(ρ ⊗ id_𝒜)⁻¹(𝒮 ⊗ 𝒜) = ρ⁻¹(𝒮) ⊗ 𝒜`.
+
+This widens `haTensorPreimage`, which asks for `𝒜` hereditarily atomic, to
+arbitrary — in particular infinite dimensional — atomic blocks.  It does
+*not* close 125VIIb itself, which quantifies over all `𝒜`. -/
+theorem atomicTypeI_tensor_preimage [VonNeumannAlgebra A] [VonNeumannAlgebra B]
+    [VonNeumannAlgebra C] (R : AtomicTypeIRep A) (ρ : NMIUMap B C)
+    (S : StarSubalgebra ℂ C) (hS : IsVNSubalgebra C S) :
+    ⇑(tmapM ρ (nmiuId A)) ⁻¹' (tensorSub A S : Set (VNT C A)) =
+      (tensorSub A (S.comap ρ.toStarAlgHom) : Set (VNT B A)) := by
+  classical
+  choose w b _hb using fun j : R.J => exists_hilbertBasis ℂ (R.K j)
+  haveI hne : ∀ j : R.J, Nonempty (↥(w j)) := fun j =>
+    hilbertBasis_index_nonempty (b j)
+  ext x
+  exact atTensorPreimage (ιk := fun j : R.J => ↥(w j)) b R.iso ρ S hS x
+
+/-- **125eIII** (`tensorBsurjectivity`, proc.tex:5600) for an **atomic type
+I** tensored factor `ℬ ≅ ⊕ⱼ B(𝒦ⱼ)`: `(ρ ⊗ ℬ) ∘ s` is `(·) ⊗ ℬ`-surjective
+iff `ρ` is surjective.
+
+The `→` half is `tensorBsurjectivity`'s own (it needs neither `hs` nor
+atomicity); the `←` half is the one still `sorry` in general, and this is
+the atomic type I case of it. -/
+theorem atomicTypeI_tensorBsurjectivity [VonNeumannAlgebra A] [VonNeumannAlgebra B]
+    [VonNeumannAlgebra C] [VonNeumannAlgebra D] (R : AtomicTypeIRep B)
+    (s : NMIUMap A (VNT C B)) (hs : TensorBSurjective s) (ρ : NMIUMap C D) :
+    TensorBSurjective (nmiuComp (tmapM ρ (nmiuId B)) s) ↔
+      Function.Surjective ⇑ρ := by
+  classical
+  refine ⟨fun hcomp => ?_, fun hρ => ?_⟩
+  · have hrange : Set.range ⇑(nmiuComp (tmapM ρ (nmiuId B)) s)
+        ⊆ ((tensorSub B ρ.toStarAlgHom.range : StarSubalgebra ℂ (VNT D B)) :
+          Set (VNT D B)) := by
+      rintro _ ⟨a, rfl⟩
+      exact tmapM_range_le ρ (s a)
+    have htop := hcomp ρ.toStarAlgHom.range (nmiu_image ρ) hrange
+    intro d
+    have hd : d ∈ ρ.toStarAlgHom.range := by rw [htop]; trivial
+    exact hd
+  · choose w bb _hb using fun j : R.J => exists_hilbertBasis ℂ (R.K j)
+    haveI hne : ∀ j : R.J, Nonempty (↥(w j)) := fun j =>
+      hilbertBasis_index_nonempty (bb j)
+    exact atTensorBSurj (ιk := fun j : R.J => ↥(w j)) bb R.iso s hs ρ hρ
+
+end AtomicTypeI
+
+
 section HaSliceBSurj
 
 set_option synthInstance.maxHeartbeats 400000
