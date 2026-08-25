@@ -27943,9 +27943,11 @@ situ (source copied to the scratchpad with `#print axioms` appended) for
 
 Proof-route pass over the 43 non-`faithful`, non-`none` rows of
 `docs/audit/aproc-duplicators-quantumlambda.csv` (28 `route`, 14 `mild`,
-1 `mathlib`).  **Three proofs put back on the thesis's own argument, no
-statement touched, no `sorry` added, everything axiom-clean in situ.**
-`route` goes 28 → 25, `mild` 14 → 13.  **No dependency inversion was found**
+1 `mathlib`).  **Two proofs put back on the thesis's own argument — 132VI and
+130II — and two more rows corrected where the tree was already back on it and
+the CSV had not caught up (129X, 130V).  No statement touched, no `sorry`
+added, everything axiom-clean in situ.**  `route` goes 28 → 25,
+`mild` 14 → 13.  **No dependency inversion was found**
 — see below; the scan that found none is worth recording, because it is the
 first thing the brief asks for.
 
@@ -28340,3 +28342,170 @@ depend on no axioms at all).  Every statement re-diffed against the
 pre-session source and byte-identical.  Oleans rebuilt down the whole
 `EffectAlgebras → Effectus → StatesPredicates → Quotients → DiamondAmp →
 Dagger → Comparisons → VNExamples` chain; every importer recompiles clean.
+
+## Session 95 — `A/Proc` Tensor + Measurement: **four proofs go back to the thesis's own argument, and the fifth check paid three times — 109III.1/.2, the corrected 81IX, and Schur's own proof were all hanging off nothing** (worker on `Theses/A/Proc/Tensor.lean`, `Theses/A/Proc/Measurement.lean`)
+
+**Result: 4 proofs put back on the thesis's route, 5 CSV rows corrected that
+were stale rather than wrong, and both files still compile clean — `Tensor`
+with its one deliberate `sorry` (116III.4, refuted in-tree) and `Measurement`
+with its two (104III.5, 106III.3), no new ones and no new axioms.**  Across
+the two files `route` goes 15 → 13, `mild` 21 → 18, and the single `mathlib`
+row is gone.  No statement was touched: all four repairs are byte-identical
+restatements with a different proof term.
+
+**No dependency inversion was found in either file.**  Every declaration in
+both files was mapped to its thesis number from the audit CSVs and every
+proof body scanned for references to results the thesis proves *later*
+(within the file, across `Theses/`, and through the definitions the
+statements themselves use).  The scan's twenty-odd hits are all of one benign
+kind: a *definition* introduced later in the theses being used in an earlier
+statement (`IsFilter` is 169VIII and lives in `B/Dils/Pure`; `Corner` is 94I;
+`HilbertTensor` and `VNTensorProduct` are the bundlings of 110VI and 115I).
+The one `mathlib` row was checked the other way too — Mathlib's Schur is not
+a later thesis result, it is 111II itself.
+
+### The four repairs
+
+**109III.3 `hilbertTensor_nonempty` (`Tensor.lean`) — parts 1 and 2 of the
+same exercise had zero consumers in the entire tree.**  The exercise proves
+`ℓ²(X) ⊗ ℓ²(Y) = ℓ²(X×Y)` (part 1), then that an orthonormal basis `E ⊆ ℋ` is
+the same thing as an isometric isomorphism `ℓ²(E) ≅ ℋ` (part 2), *in order to*
+get part 3, the existence of a tensor product.  Our part 3 instead took the
+completion of the algebraic tensor product `ℋ ⊗[ℂ] 𝒦` with Mathlib's inner
+product — so `l2_tensor` and `orthonormal_basis_iff_l2_iso`, both faithfully
+transcribed, were referenced *nowhere*.  The doc comment even said "(via
+orthonormal bases and part 1)"; the proof had not done that for as long as it
+has existed.  Now it does: `exists_hilbertBasis` gives `E ⊆ ℋ`, `F ⊆ 𝒦`, part
+2 turns them into `u : ℓ²(E) ≅ ℋ` and `v : ℓ²(F) ≅ 𝒦`, part 1 gives
+`γ₀ : ℓ²(E) × ℓ²(F) → ℓ²(E×F)`, and `γ₀.compl₁₂ u.symm v.symm` is a Hilbert
+tensor product because `u`, `v` are surjective (same range, so the same dense
+span) and isometric (`inner_map_map`).  Both parts are load-bearing again.
+
+**96V `canonicalFilter_factor` (`Measurement.lean`) — the corrected 81IX had
+no consumer, and its own doc comment named this proof as the one it is for.**
+`Theses.A.VN.div_uwc` is 81IX `div-usc` as the author ruled it on 2026-08-17:
+`a ↦ c∖a/b` is *ultraweakly* (not ultrastrongly, which is false) continuous
+on `c(𝒜)₁b`.  Its docstring reads "It is also what the one consumer needs —
+**96V** `canonical-filter` uses 81IX only for *normality* of `g = d*∖f(·)/d`".
+It had **zero** references anywhere in `Theses/` outside its own file: 96V
+derived normality of `g` from bipositivity of `c = d*(·)d` on the corner
+instead, on a note that was written when the printed 81IX was still believed
+false and never revisited after the ruling.  Now the thesis's step is the
+proof's: step (3) of the same proof already shows `f(b) = d*ed` with
+`‖e‖ ≤ ‖b‖`, so `f` maps `effects ℬ` into `d*(𝒜)₁d`; `div_uwc` is
+ultraweakly continuous there; `44XV` (2) ⇒ (3)
+(`preservesDirSups_of_continuousOn_effects`) turns that into normality of
+`F : ℬ → 𝒜`; and `Corner.isLUB_of_isLUB_image_val` moves the suprema into
+`⌊d⌉𝒜⌊d⌉`.  The bipositivity helper `hbipos` went with it.
+
+**112X.1 `tensor_basic_1_orderSeparating` (`Tensor.lean`) — 60 lines to 18,
+and the exercise's own citation restored.**  The exercise directs one through
+**90II**.1 `vn-center-separating-fundamental`.  Our proof went to **30X**
+`nonneg_of_conjNP_of_centreSeparating` and then re-ran 90II.1's argument
+inline — a `dense_subalgebra` (74VI) bounded net plus the `bstaromega_lipschitz`
+(72III.1c) estimate, which is *exactly* what 90II.1's proof is.  The in-file
+note gave as its reason that the exercise's route "needs the *primed*
+`vn_center_separating_fundamental_1'`" — and that primed form, the
+Proposition's own arbitrary-element statement, is in
+`A/VN/NormalFunctionals` and proved.  It is now used, at
+`Ω = prodFunctionals hγ` (centre separating by
+`centreSeparatingConj_prodFunctionals`) and `S = γ_⊙(𝒜 ⊙ ℬ)` (ultrastrongly
+dense by `dense_ultrastrong_tensorSpan`), which are precisely the exercise's
+two inputs.
+
+**111II `schur` (`Tensor.lean`) — the only `mathlib` row, and the step is the
+content.**  It was `ha.hadamard hb`.  Mathlib's `Matrix.PosSemidef.hadamard`
+does *not* prove Schur the way the thesis does: it goes through Kronecker
+products and a restriction to the support of `z`.  The author's proof
+(proc.tex:2380) is the elementary one — **33II**
+`when-a-matrix-over-a-cstar-algebra-is-positive` reduces positivity to
+`∑_{n,m} z̄ₙ aₙₘ bₙₘ zₘ ≥ 0`; writing `a = C*C` and `b = D*D` gives
+`aₙₘ = ∑ₖ c̄ₖₙcₖₘ`, `bₙₘ = ∑_ℓ d̄_ℓₙd_ℓₘ`, and regrouping the quadruple sum
+turns it into `∑_{k,ℓ} |∑ₙ z̄ₙ cₖₙ d_ℓₙ|²`.  That is now the proof, with 33II
+entering in the shape this file already uses for its Gram matrices
+(`Matrix.PosSemidef.of_dotProduct_mulVec_nonneg`).  **111IV**
+`mult_completely_monotone` was going straight to Mathlib too, while its own
+doc comment said "each summand is positive by Schur (**111II**)"; it now
+calls `schur`.
+
+### Five CSV rows that were stale, not wrong
+
+The wave-2 repairs in `Measurement` were never written back into
+`aproc-measurement.csv`.  **95II** `prop_corner` (the row still described the
+`carrier_fundamental` detour that session 94 undid — the proof goes through
+`cp_comprehension`, and the in-file comment says so) and **99XII**
+`sharp_multiplicative` (the row still said the exercise's hint "is not
+followed"; it is transcribed in full) are both `faithful`.  **102VII**
+`ad_rigid` / `canonical_quotient_rigid` were recorded as `route` on the
+ground that the proof "does not follow proc.tex:1272" and "needs neither the
+ultrastrong limit nor cp-uscont".  It does follow it — `e_N = ∑_{n<N} ⌈tₙ⌉_l`
+for an approximate pseudoinverse, `compress_eq_of_ceil` for "the identity on
+`eₙ𝒜eₙ` is rigid by `nmiu-rigid`", and `mult_jus_cont` for the limit — with
+one local deviation, that the limit is taken ultraweakly (`uwweaker_2`)
+rather than ultrastrongly, which is all the conclusion needs.  Corrected
+`route` → `mild`.
+
+### Left deliberately
+
+* **119II `triple_tensor` is a dead limb and stays one.**  It has no consumer:
+  119IV `isTensorProduct_assoc` reaches the associator *bilinearly*, through
+  `tensor_characterization` (116VII), where the thesis derives it from the
+  trilinear 119II.  Restoring the thesis's deduction needs a **trilinear**
+  analogue of 114II `tensor_uniqueness` (and the mirrored 119II for
+  `a ⊗ (b ⊗ c)`), and 114II rests on `tensor_universal_property` and
+  `tensor_universal_property_extra`, some 1300 lines that would have to be
+  re-run for trilinear maps.  The thesis prints 119IV as a Corollary with no
+  proof text at all, so there is no argument being hidden — only a citation.
+  *Divergence class: needs something the tree lacks.*
+* **110III `hilb_tensor_universal_property`** keeps the density route; the
+  printed one defines `β_γ` by the orthonormal-basis series and needs Bessel
+  and Parseval.  Its opening computation *is* transcribed and used
+  (`IsHilbertTensorProduct.gram_sum_re`).  The cost of the rest is why
+  **109IV.2 `hilb_tensor_basic_2`** (elementary tensors of two ONBs form an
+  ONB) remains the one transcription in `Tensor.lean` with no consumer.
+  *Divergence class: 1 — the tree's route is shorter and nothing is hidden.*
+* **116IV.1 `tensor_generation_1`** (the printed 116V proof appeals to
+  116III.4, which is false and refuted in-tree), **119II `triple_tensor`**'s
+  own proof (the printed one verifies centre separation where faithfulness is
+  wanted — `ERRATA.md` 119II), **115II `tmapBilin_normal`** (closes the gap
+  `ERRATA.md` records as 115II(e)), **98VI `corners_composition`**,
+  **100III `properlyPure_of_isPure`** (98XI's formula has its two partial
+  isometries swapped) and **104VII `positive_quotients_corner`** (the printed
+  reduction silently needs `Z(e𝒜e) = Z(𝒜)e`): all six are the thesis's route
+  being unavailable or false, already on record in `ERRATA.md`.
+  *Divergence class: the thesis's proof is false or gapped.*
+* **112X.2 `tensor_basic_2` and 116VII `char_bounded`** avoid the thesis's
+  renormalisation of `Ω` to its unital members, which is unavailable when
+  `ω(1) = 0` — 21VII's own argument is run instead.  **115V
+  `isTensorProduct_genGamma`** proves *more* than the printed proof (which
+  checks faithfulness only at a central projection).  Re-proving either would
+  weaken it.  *Divergence class: 4 — re-proving would weaken the statement.*
+* **101IV.2, 101VIII.2 and 101IX** (`diamond_suprema_2`,
+  `diamond_composition_2`, `diamond_sum`) have no consumers, and 118IV's note
+  says the printed route to `carrier_tensor_5` would use `diamond-suprema` and
+  `diamond-composition`.  But parts *1* of both are used heavily, and these
+  are numbered exercise parts whose statement is the deliverable — being
+  terminal is not the fingerprint the fifth check is after.  Left, recorded.
+
+### The dead-limb sweep
+
+Every declaration in both files was counted against `grep -rn "\bname\b"
+Theses/ --include=*.lean`.  Discounting `@[simp]` lemmas (used implicitly),
+dot-notation calls (`hγ.gram_sum_re` — that one is *not* dead), and numbered
+results that are terminal by nature, the zero-consumer list for
+`Tensor.lean` was `l2_tensor`, `orthonormal_basis_iff_l2_iso`,
+`hilb_tensor_basic_2`, `hilb_tensor_unique`, `triple_tensor`; for the
+`Measurement` neighbourhood, `div_uwc` and `div_uwc_corner` in
+`A/VN/Division`.  Three of those are load-bearing again (109III.1, 109III.2,
+81IX); `hilb_tensor_unique` and `hilb_tensor_basic_2` are 110V and 109IV.2,
+terminal statements; `triple_tensor` is the one left with its consumer
+missing, for the reason above.
+
+### Compilation
+
+`Tensor.lean`: 0 errors, 1 `sorry` (116III.4, deliberate and refuted below
+itself).  `Measurement.lean`: 0 errors, 2 `sorry`s (104III.5, 106III.3), the
+same two its own header note lists.  Axiom-cleanliness verified in situ for
+all four repaired declarations by appending `#print axioms` to a scratch copy
+of each source and compiling the copy.  Oleans rebuilt for `Measurement` then
+`Tensor`, and every importer recompiled.

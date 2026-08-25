@@ -594,18 +594,41 @@ theorem adjointable_cstar_identity_1 (T : X →ₗ[ℂ] Y) (B : ℝ) (hB : 0 < B
       ∀ (x : X) (y : Y), ‖inner 𝒷 y (T x)‖ ≤ B * ‖y‖ * ‖x‖ :=
   Theses.A.CStar.chilb_form_bounded T B hB
 
+/-- **143III** (dils.tex:1541), the step *"`‖⟨x,T*y⟩‖ = ‖⟨y,Tx⟩‖ ≤
+‖T‖‖y‖‖x‖` for all `x, y`, and so by the previous `‖T*‖ ≤ ‖T‖`"* — "the
+previous" being part 1, `adjointable_cstar_identity_1`.  Stated with the
+bound `‖T‖ + ε` because part 1 asks for a *strictly* positive bound; the
+limit `ε → 0` is taken at the end. -/
+private theorem norm_adjoint_le (T : X →L[ℂ] Y) (S : Y →L[ℂ] X)
+    (h : ModuleAdjointTo 𝒷 ⇑T ⇑S) : ‖S‖ ≤ ‖T‖ := by
+  refine le_of_forall_pos_le_add fun ε hε => ?_
+  refine S.opNorm_le_bound (by positivity) ?_
+  refine (adjointable_cstar_identity_1 (𝒷 := 𝒷) (S : Y →ₗ[ℂ] X) (‖T‖ + ε)
+    (by positivity)).mpr fun y x => ?_
+  show ‖inner 𝒷 x (S y)‖ ≤ (‖T‖ + ε) * ‖x‖ * ‖y‖
+  rw [← h x y]
+  calc ‖inner 𝒷 (T x) y‖ ≤ ‖T x‖ * ‖y‖ := CStarModule.norm_inner_le Y
+    _ ≤ (‖T‖ + ε) * ‖x‖ * ‖y‖ := by
+        gcongr
+        exact (T.le_opNorm x).trans (by nlinarith [norm_nonneg x, hε.le])
+
 /-- **143II** (`adjointable-cstar-identity`, dils.tex:1532, Lemma), part 2:
 for bounded adjointable `T` (with adjoint `S`): `‖T*‖ = ‖T‖` and
 `‖T*T‖ = ‖T‖²`.
 
-**143III** is the proof — not converted. -/
+**143III** is the proof, and is transcribed: `‖T*‖ ≤ ‖T‖` comes from part 1
+(`norm_adjoint_le` above), and `T** = T` — adjoints being unique, `T` is an
+adjoint of `T*` (`moduleAdjointTo_symm`) — turns that into `‖T‖ = ‖T**‖ ≤
+‖T*‖ ≤ ‖T‖`.  The C*-identity is then the point's own two estimates. -/
 theorem adjointable_cstar_identity_2 (T : X →L[ℂ] Y) (S : Y →L[ℂ] X)
     (h : ModuleAdjointTo 𝒷 ⇑T ⇑S) :
     ‖S‖ = ‖T‖ ∧ ‖S.comp T‖ = ‖T‖ ^ 2 := by
-  refine ⟨Theses.A.CStar.chilb_form_bounded_adjoint T S h, le_antisymm ?_ ?_⟩
+  have hST : ‖S‖ = ‖T‖ :=
+    le_antisymm (norm_adjoint_le T S h)
+      (norm_adjoint_le S T (Theses.A.CStar.moduleAdjointTo_symm T S h))
+  refine ⟨hST, le_antisymm ?_ ?_⟩
   · calc ‖S.comp T‖ ≤ ‖S‖ * ‖T‖ := S.opNorm_comp_le T
-      _ = ‖T‖ ^ 2 := by
-          rw [Theses.A.CStar.chilb_form_bounded_adjoint T S h]; ring
+      _ = ‖T‖ ^ 2 := by rw [hST]; ring
   · -- `‖Tx‖² = ‖⟨Tx,Tx⟩‖ = ‖⟨x, S(Tx)⟩‖ ≤ ‖x‖ ‖S T‖ ‖x‖`
     have key : ∀ x : X, ‖T x‖ ≤ Real.sqrt ‖S.comp T‖ * ‖x‖ := by
       intro x
@@ -646,12 +669,13 @@ end Adjointable
 /-! ## The C*-algebra `𝒷ᵃ(X)` as a type
 
 The C*-structure of **143IV** (`hilbmod-cstar`, dils.tex:1580) is assembled
-here from thesis A's cstar.tex 32X/32XII/32XIII (`chilb_form_bounded`,
-`module_maps_cstar_identity`, `bax_cstar`, all proved in
-`Theses.A.CStar.Matrices`): the adjointable bounded operators form a
-ℂ-subalgebra of `B(X)` which is closed (32XIII), the adjoint is an
-involutive conjugate-linear anti-automorphism (32III), and the C*-identity
-is 32XII. -/
+here as **143V** assembles it: the adjointable bounded operators form a
+ℂ-subalgebra of `B(X)` with the adjoint as an involutive conjugate-linear
+anti-automorphism (cstar.tex 32III, `moduleAdjointTo_symm` /
+`moduleAdjointTo_add_smul`); *"by `adjointable-cstar-identity` the C*-identity
+holds"* — that is **143II**.2, `adjointable_cstar_identity_2` above; and
+*"it only remains to be shown that `𝒷ᵃ(X)` is complete"* — that is
+`hilbmod_cstar` above, the closedness ingredient. -/
 
 section BaConstruction
 
@@ -729,17 +753,21 @@ noncomputable instance baInstStarModule : StarModule ℂ (baSubalgebra 𝒷 X) w
     ((Theses.A.CStar.moduleAdjointTo_add_smul (𝒜 := 𝒷) ⇑(T : X →L[ℂ] X)
       ⇑(T : X →L[ℂ] X) _ _ c (baAdj_spec T) (baAdj_spec T)).2)
 
+/-- **143V** (dils.tex:1585), *"by `adjointable-cstar-identity` the C*-identity
+holds"*: the C*-identity of `𝒷ᵃ(X)` is the second half of **143II**. -/
 instance baInstCStarRing : CStarRing (baSubalgebra 𝒷 X) where
   norm_mul_self_le T := by
     have h : ‖(baAdj T).comp (T : X →L[ℂ] X)‖ = ‖(T : X →L[ℂ] X)‖ ^ 2 :=
-      Theses.A.CStar.module_maps_cstar_identity (𝒜 := 𝒷) _ _ (baAdj_spec T)
+      (adjointable_cstar_identity_2 (𝒷 := 𝒷) _ _ (baAdj_spec T)).2
     have h' : ‖star T * T‖ = ‖(T : X →L[ℂ] X)‖ ^ 2 := h
     rw [h']
     exact le_of_eq (sq ‖(T : X →L[ℂ] X)‖).symm
 
+/-- **143V** (dils.tex:1585), *"it only remains to be shown that `𝒷ᵃ(X)` is
+complete"*: closedness of `𝒷ᵃ(X)` in `B(X)` is `hilbmod_cstar` above. -/
 instance baInstCompleteSpace [CompleteSpace X] :
     CompleteSpace (baSubalgebra 𝒷 X) :=
-  (Theses.A.CStar.bax_cstar (𝒜 := 𝒷) (X := X)).completeSpace_coe
+  (hilbmod_cstar (𝒷 := 𝒷) (X := X)).completeSpace_coe
 
 noncomputable instance baInstCStarAlgebra [CompleteSpace X] :
     CStarAlgebra (baSubalgebra 𝒷 X) where

@@ -425,35 +425,43 @@ variable (H K) in
 spaces has a tensor product (via orthonormal bases and part 1). -/
 theorem hilbertTensor_nonempty : Nonempty (HilbertTensor H K) := by
   classical
-  -- The completion of the algebraic tensor product `H ⊗[ℂ] K`, which
-  -- Mathlib equips with the inner product `⟪x ⊗ y, x' ⊗ y'⟫ = ⟪x,x'⟫⟪y,y'⟫`.
-  set T := UniformSpace.Completion (H ⊗[ℂ] K)
-  set γ : H →ₗ[ℂ] K →ₗ[ℂ] T :=
-    LinearMap.compr₂ (TensorProduct.mk ℂ H K)
-      (UniformSpace.Completion.toComplₗᵢ (𝕜 := ℂ)).toLinearMap with hγ
-  have hγ_apply : ∀ (x : H) (y : K), γ x y = ((x ⊗ₜ[ℂ] y : H ⊗[ℂ] K) : T) := by
-    intro x y; rfl
-  refine ⟨{ space := T, map := γ, isTensor := ⟨?_, ?_⟩ }⟩
-  · -- the span of the pure tensors contains the (dense) image of `H ⊗ K`
-    have hsub : Set.range ((↑) : (H ⊗[ℂ] K) → T) ⊆
-        (Submodule.span ℂ {t : T | ∃ x y, t = γ x y} : Set T) := by
-      rintro _ ⟨z, rfl⟩
-      induction z with
-      | zero =>
-          have hz : ((0 : H ⊗[ℂ] K) : T) = 0 := UniformSpace.Completion.coe_zero
-          rw [hz]
-          exact Submodule.zero_mem _
-      | tmul x y =>
-          exact Submodule.subset_span ⟨x, y, (hγ_apply x y).symm⟩
-      | add z w hz hw =>
-          have hadd : ((z + w : H ⊗[ℂ] K) : T) = (z : T) + (w : T) :=
-            UniformSpace.Completion.coe_add z w
-          rw [hadd]
-          exact Submodule.add_mem _ hz hw
-    exact UniformSpace.Completion.denseRange_coe.mono hsub
+  -- Orthonormal bases `E ⊆ ℋ` and `F ⊆ 𝒦`.
+  obtain ⟨E, bE, hbE⟩ := exists_hilbertBasis ℂ H
+  obtain ⟨F, bF, hbF⟩ := exists_hilbertBasis ℂ K
+  -- **109III**.2 turns them into isometric isomorphisms `ℓ²(E) ≅ ℋ`, `ℓ²(F) ≅ 𝒦`.
+  obtain ⟨u, -⟩ := (orthonormal_basis_iff_l2_iso E).mp
+    ⟨by rw [← hbE]; exact bE.orthonormal, by
+      refine Submodule.dense_iff_topologicalClosure_eq_top.mpr ?_
+      have h := bE.dense_span
+      rwa [hbE, Subtype.range_coe] at h⟩
+  obtain ⟨v, -⟩ := (orthonormal_basis_iff_l2_iso F).mp
+    ⟨by rw [← hbF]; exact bF.orthonormal, by
+      refine Submodule.dense_iff_topologicalClosure_eq_top.mpr ?_
+      have h := bF.dense_span
+      rwa [hbF, Subtype.range_coe] at h⟩
+  -- **109III**.1: `γ₀(f,g) = (f(e)g(f))` is a tensor product `ℓ²(E) × ℓ²(F) → ℓ²(E×F)`.
+  obtain ⟨γ₀, -, hγ₀⟩ := l2_tensor (E : Type u) (F : Type u)
+  refine ⟨{ space := lp (fun _ : E × F => ℂ) 2
+            map := γ₀.compl₁₂ (u.symm.toLinearEquiv.toLinearMap)
+              (v.symm.toLinearEquiv.toLinearMap)
+            isTensor := ⟨?_, ?_⟩ }⟩
+  · have hset : {t : lp (fun _ : E × F => ℂ) 2 | ∃ (x : H) (y : K),
+        t = (γ₀.compl₁₂ (u.symm.toLinearEquiv.toLinearMap)
+          (v.symm.toLinearEquiv.toLinearMap)) x y}
+        = {t : lp (fun _ : E × F => ℂ) 2 | ∃ f g, t = γ₀ f g} := by
+      ext t
+      constructor
+      · rintro ⟨x, y, rfl⟩; exact ⟨u.symm x, v.symm y, rfl⟩
+      · rintro ⟨f, g, rfl⟩
+        exact ⟨u f, v g, by
+          show γ₀ f g = γ₀ (u.symm (u f)) (v.symm (v g))
+          rw [u.symm_apply_apply, v.symm_apply_apply]⟩
+    rw [hset]
+    exact hγ₀.dense
   · intro x x' y y'
-    rw [hγ_apply, hγ_apply, UniformSpace.Completion.inner_coe,
-      TensorProduct.inner_tmul]
+    show ⟪γ₀ (u.symm x) (v.symm y), γ₀ (u.symm x') (v.symm y')⟫ = _
+    rw [hγ₀.inner_mul, u.symm.inner_map_map, v.symm.inner_map_map]
+
 
 variable (H K) in
 /-- **110VI** (proc.tex:2349, Notation): a chosen tensor product
@@ -731,10 +739,70 @@ theorem hilb_tensor_unique {T T' : Type u} [NormedAddCommGroup T]
 
 /-- **111II** (`schur`, proc.tex:2372, Lemma; part of Schur's product
 theorem): the entrywise (Hadamard) product of positive `N×N`-matrices
-over `ℂ` is positive. -/
+over `ℂ` is positive.
+
+The proof is the Lemma's own (proc.tex:2380).  **33II**
+(`when-a-matrix-over-a-cstar-algebra-is-positive`, here in the shape
+`Matrix.PosSemidef.of_dotProduct_mulVec_nonneg` that this file already uses
+for Gram matrices) reduces positivity to `∑_{n,m} z̄ₙ aₙₘ bₙₘ zₘ ≥ 0`;
+writing `a = C*C` and `b = D*D` gives `aₙₘ = ∑ₖ c̄ₖₙcₖₘ` and
+`bₙₘ = ∑_ℓ d̄_ℓₙd_ℓₘ`, and regrouping turns the double sum into
+`∑_{k,ℓ} |∑ₙ z̄ₙ cₖₙ d_ℓₙ|²`.  (Mathlib's `Matrix.PosSemidef.hadamard`,
+which closed this before, proves it a different way — through Kronecker
+products and a restriction to the support of `z` — so the author's
+sum-of-squares argument was not on record.) -/
 theorem schur (N : ℕ) (a b : Matrix (Fin N) (Fin N) ℂ)
     (ha : a.PosSemidef) (hb : b.PosSemidef) :
-    (Matrix.hadamard a b).PosSemidef := ha.hadamard hb
+    (Matrix.hadamard a b).PosSemidef := by
+  classical
+  -- `a = C*C` and `b = D*D`: `aₙₘ = ∑ₖ c̄ₖₙcₖₘ`, `bₙₘ = ∑_ℓ d̄_ℓₙd_ℓₘ`
+  obtain ⟨p, c, hc⟩ := Matrix.posSemidef_iff_eq_sum_vecMulVec.mp ha
+  obtain ⟨q, d, hd⟩ := Matrix.posSemidef_iff_eq_sum_vecMulVec.mp hb
+  set u : Fin p × Fin q → Fin N → ℂ := fun k i => c k.1 i * d k.2 i with hu
+  have hab : ∀ i j, Matrix.hadamard a b i j
+      = ∑ k : Fin p × Fin q, u k i * (starRingEnd ℂ) (u k j) := by
+    intro i j
+    have hai : a i j = ∑ k, c k i * (starRingEnd ℂ) (c k j) := by
+      rw [hc]; simp [Matrix.sum_apply, Matrix.vecMulVec_apply]
+    have hbi : b i j = ∑ l, d l i * (starRingEnd ℂ) (d l j) := by
+      rw [hd]; simp [Matrix.sum_apply, Matrix.vecMulVec_apply]
+    rw [Matrix.hadamard_apply, hai, hbi, Finset.sum_mul_sum, Fintype.sum_prod_type]
+    exact Finset.sum_congr rfl fun k _ => Finset.sum_congr rfl fun l _ => by
+      simp only [hu, map_mul]; ring
+  -- **33II**: it suffices that `∑_{n,m} z̄ₙ (a⊙b)ₙₘ zₘ ≥ 0`
+  refine Matrix.PosSemidef.of_dotProduct_mulVec_nonneg
+    (ha.isHermitian.hadamard hb.isHermitian) fun z => ?_
+  have hquad : dotProduct (star z) ((Matrix.hadamard a b).mulVec z)
+      = ∑ i, ∑ j, star (z i) * Matrix.hadamard a b i j * z j := by
+    simp only [dotProduct, Matrix.mulVec, Pi.star_apply, Finset.mul_sum, mul_assoc]
+  rw [hquad]
+  -- the double sum is `∑_{k,ℓ} |w_{kℓ}|²` with `w_{kℓ} = ∑ₙ z̄ₙ cₖₙ d_ℓₙ`
+  set w : Fin p × Fin q → ℂ := fun k => ∑ i, star (z i) * u k i with hw
+  have h1 : ∑ i, ∑ j, star (z i) * Matrix.hadamard a b i j * z j
+      = ∑ i, ∑ j, ∑ k : Fin p × Fin q,
+          star (z i) * u k i * ((starRingEnd ℂ) (u k j) * z j) := by
+    refine Finset.sum_congr rfl fun i _ => Finset.sum_congr rfl fun j _ => ?_
+    rw [hab i j, Finset.mul_sum, Finset.sum_mul]
+    exact Finset.sum_congr rfl fun k _ => by ring
+  have h2 : ∑ i, ∑ j, ∑ k : Fin p × Fin q,
+        star (z i) * u k i * ((starRingEnd ℂ) (u k j) * z j)
+      = ∑ k : Fin p × Fin q, ∑ i, ∑ j,
+          star (z i) * u k i * ((starRingEnd ℂ) (u k j) * z j) :=
+    (Finset.sum_congr rfl fun i _ => Finset.sum_comm).trans Finset.sum_comm
+  have h3 : ∀ k : Fin p × Fin q,
+      ∑ i, ∑ j, star (z i) * u k i * ((starRingEnd ℂ) (u k j) * z j)
+        = w k * (starRingEnd ℂ) (w k) := by
+    intro k
+    have hwk : w k = ∑ i, star (z i) * u k i := rfl
+    have hcw : (starRingEnd ℂ) (w k) = ∑ j, z j * (starRingEnd ℂ) (u k j) := by
+      rw [hwk]
+      simp only [map_sum, map_mul, Complex.star_def, Complex.conj_conj]
+    rw [hwk, hcw, Finset.sum_mul_sum]
+    exact Finset.sum_congr rfl fun i _ => Finset.sum_congr rfl fun j _ => by ring
+  rw [h1, h2, Finset.sum_congr rfl fun k (_ : k ∈ Finset.univ) => h3 k]
+  refine Finset.sum_nonneg fun k _ => ?_
+  rw [Complex.mul_conj]
+  exact Complex.zero_le_real.mpr (Complex.normSq_nonneg _)
 
 /-- **111IV** (`mult-completely-monotone`, proc.tex:2428, Exercise): for
 positive matrices `a ≤ ã` and `b ≤ b̃` over `ℂ` (of the same dimensions)
@@ -762,7 +830,8 @@ theorem mult_completely_monotone (N : ℕ)
     simp only [Matrix.hadamard_apply, Matrix.sub_apply, Matrix.add_apply]
     ring
   rw [hsplit]
-  exact ((ha.hadamard hbb).add (hab.hadamard hb)).add (hab.hadamard hbb)
+  exact ((schur N a (b' - b) ha hbb).add (schur N (a' - a) b hab hb)).add
+    (schur N (a' - a) (b' - b) hab hbb)
 
 /-- Auxiliary: `⟨u,u⟩ = ‖u‖²` as a *real* complex number. -/
 theorem inner_self_eq_ofReal_norm_sq {E : Type*} [NormedAddCommGroup E]
@@ -3148,15 +3217,13 @@ claim: the collection `Ω` of np-functionals `γ(σ,τ)(γ_⊙(s)*(·)γ_⊙(s))
 two-element comparison form its consumers use; it is derived from this one
 below.)
 
-The proof is the exercise's, save for the entry point: **30X**
-`nonneg_of_conjNP_of_centreSeparating` reduces positivity of `a` to
-`γ(σ,τ)(c* a c) ≥ 0` for *every* `c ∈ 𝒯`, and the hypothesis supplies this
-only for `c ∈ γ_⊙(𝒜 ⊙ ℬ)`; **74VI** `dense_subalgebra` produces a
-norm-bounded net from that subalgebra converging ultrastrongly to `c`, and
-**72III**.1c `bstaromega_lipschitz` transfers the limit.  The exercise
-instead directs one through **90II**.1, which packages exactly this
-argument — but in the form our `A/VN` carries it, that route needs the
-*primed* `vn_center_separating_fundamental_1'`. -/
+The proof is the exercise's own: **90II**.1
+`vn_center_separating_fundamental_1'` (in its primed, arbitrary-element
+form, which is the Proposition's) applied to the collection `γ(σ,τ)` of
+product functionals — centre separating by
+`centreSeparatingConj_prodFunctionals` — and to the ultrastrongly dense
+subset `γ_⊙(𝒜 ⊙ ℬ)` (`dense_ultrastrong_tensorSpan`), whose members are
+exactly the conjugators `γ_⊙(s)` the collection `Ω` uses. -/
 theorem tensor_basic_1_orderSeparating (γ : A →ₗ[ℂ] B →ₗ[ℂ] T)
     (hγ : IsTensorProduct γ) :
     Theses.A.CStar.OrderSeparating
@@ -3164,48 +3231,21 @@ theorem tensor_basic_1_orderSeparating (γ : A →ₗ[ℂ] B →ₗ[ℂ] T)
         npLin (conjProdNP hγ p.1 p.2.1 p.2.2)) := by
   intro a
   refine ⟨fun ha p => npFunctional_nonneg _ ha, fun H => ?_⟩
-  refine nonneg_of_conjNP_of_centreSeparating (prodFunctionals hγ)
-    (centreSeparatingConj_prodFunctionals hγ) ?_
-  rintro χ ⟨σ, τ, rfl⟩ c
-  set ω : NPFunctional T := prodNP hγ σ τ with hωdef
-  obtain ⟨ι, l, hl, s, hs, hlim⟩ :=
-    dense_subalgebra (tensorSpan γ hγ.miu) hγ.dense 1 one_pos c
-  have _ : l.NeBot := hl
-  have hnn : ∀ i, (0 : ℂ) ≤ ω (star (s i) * a * s i) := by
-    intro i
-    have hmem : s i ∈ Set.range ⇑(TensorProduct.lift γ) := by
-      rw [range_lift_eq_span]; exact (hs i).1
-    obtain ⟨v, hv⟩ := hmem
-    have hH : (0 : ℂ) ≤ conjProdNP hγ σ τ v a := H (σ, τ, v)
-    rw [conjProdNP_apply, hv] at hH
-    exact hH
-  set K : ℝ := ‖c‖ * (1 + 1) * omegaNorm T ω 1 + omegaNorm T ω c with hKdef
-  have hbnd : ∀ i, ‖ω (star (s i) * a * s i) - ω (star c * a * c)‖
-      ≤ omegaNorm T ω (s i - c) * (K * ‖a‖) := by
-    intro i
-    have hlip := bstaromega_lipschitz ω (s i) c a
-    have hsi : omegaNorm T ω (s i) ≤ ‖c‖ * (1 + 1) * omegaNorm T ω 1 := by
-      have h1 : omegaNorm T ω (s i * 1) ≤ ‖s i‖ * omegaNorm T ω 1 :=
-        omegaNorm_mul_le ω (s i) 1
-      rw [mul_one] at h1
-      exact h1.trans (mul_le_mul_of_nonneg_right (hs i).2 (omegaNorm_nonneg ω 1))
-    have h0 := omegaNorm_nonneg ω (s i - c)
-    have h1 : omegaNorm T ω (s i) + omegaNorm T ω c ≤ K := by rw [hKdef]; linarith
-    refine hlip.trans ?_
-    calc omegaNorm T ω (s i - c) * (omegaNorm T ω (s i) + omegaNorm T ω c) * ‖a‖
-        = omegaNorm T ω (s i - c)
-            * ((omegaNorm T ω (s i) + omegaNorm T ω c) * ‖a‖) := by ring
-      _ ≤ omegaNorm T ω (s i - c) * (K * ‖a‖) :=
-          mul_le_mul_of_nonneg_left
-            (mul_le_mul_of_nonneg_right h1 (norm_nonneg a)) h0
-  have hzero : Tendsto (fun i => omegaNorm T ω (s i - c) * (K * ‖a‖)) l (𝓝 0) := by
-    have hus := (usTendsto_iff s l c).mp hlim ω
-    simpa using hus.mul_const (K * ‖a‖)
-  have hconv : Tendsto (fun i => (ω (star (s i) * a * s i) : ℂ)) l
-      (𝓝 (ω (star c * a * c))) := by
-    rw [tendsto_iff_norm_sub_tendsto_zero]
-    exact squeeze_zero (fun i => norm_nonneg _) hbnd hzero
-  exact ge_of_tendsto hconv (Filter.Eventually.of_forall hnn)
+  refine (vn_center_separating_fundamental_1' (prodFunctionals hγ)
+    (centreSeparatingConj_prodFunctionals hγ)
+    ((tensorSpan γ hγ.miu : StarSubalgebra ℂ T) : Set T)
+    (dense_ultrastrong_tensorSpan hγ) a).mpr ?_
+  rintro ⟨⟨χ, σ, τ, rfl⟩, ⟨s, hs⟩⟩
+  obtain ⟨v, rfl⟩ : ∃ v, TensorProduct.lift γ v = s := by
+    rw [coe_tensorSpan, ← range_lift_eq_span] at hs
+    exact hs
+  have h := H (σ, τ, v)
+  have h' : (0 : ℂ) ≤ conjProdNP hγ σ τ v a := h
+  rw [conjProdNP_apply] at h'
+  show (0 : ℂ) ≤ prodNP hγ σ τ
+    (star (TensorProduct.lift γ v) * (a * TensorProduct.lift γ v))
+  rw [← mul_assoc]
+  exact h'
 
 /-- **112X** (`tensor-basic`, proc.tex:2868, Exercise), part 1 (headline
 claims): for a tensor product `γ` the np-functionals of the form

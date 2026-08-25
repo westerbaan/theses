@@ -1994,26 +1994,25 @@ theorem ldiv_div_ad [VonNeumannAlgebra A] (d x : A)
 `f(1) ≤ d*d` factors as `f = d*g(·)d` through an ncp-map
 `g : ℬ → ⌊d⌉𝒜⌊d⌉`, namely `g(b) = d*∖f(b)/d`.
 
-The author's argument, with one divergence.  *Existence* of the value is
+The author's argument.  *Existence* of the value is
 `sequential-douglas` (**81VI**.1) applied to `0 ≤ f(b) ≤ ‖b‖f(1) ≤ ‖b‖d*d`,
 extended off the positive cone by linearity; *positivity* is **81VI**.2;
 *complete positivity* is `ncp-uwlim` (**96III**.1) applied to the
 completely positive approximants `(∑_{n<N}t_n)* f(·) (∑_{n<N}t_n)`, which
 converge pointwise to `g` by `div-approx` (**81VII**).
 
-**Divergence.**  The thesis obtained *normality* of `g` from `div-usc`
-(**81IX**) — from ultra*strong* continuity of `a ↦ d*∖a/d` on `d*(𝒜)₁d`,
-which is **false** (see the section note above `div_uwc` in
-`Theses.A.VN.Division`).  On the author's ruling of 2026-08-17 both 81IX and
-this proof in vn.tex now run *ultraweakly*, which is sound (`div_uwc`), so
-the thesis's own route is valid again and this proof is one of two.  It
-derives normality instead from the two
-elementary properties of `c = d*(·)d` that this file already has: `c` is
-normal (`exists_adFromCorner`) and **bipositive** on the corner
-(`0 ≤ d*xd ⟹ 0 ≤ x`, again 81VI.2).  Given a directed `D` with supremum `s`
-and an upper bound `u` of `g(D)` in the corner, `f(x) = c(g(x)) ≤ c(u)` for
-`x ∈ D`, so `c(g(s)) = f(s) ≤ c(u)` by normality of `f`, and bipositivity
-gives `g(s) ≤ u`. -/
+*Normality* is `div-usc` (**81IX**), as the thesis says.  The printed 81IX
+claimed ultra*strong* continuity of `a ↦ d*∖a/d` on `d*(𝒜)₁d`, which is
+false (see the section note above `div_uwc` in `Theses.A.VN.Division`); on
+the author's ruling of 2026-08-17 both 81IX and this proof in vn.tex run
+*ultraweakly* instead, and that is `div_uwc`.  So: `f` carries the effects
+of `ℬ` into `d*(𝒜)₁d` (by (3) below, whose bound is `‖b‖ ≤ 1` there), on
+which `a ↦ d*∖a/d` is ultraweakly continuous, hence `g` is ultraweakly
+continuous on the effects and normal by **44XV** (2) ⇒ (3); the suprema
+transfer to the corner by `Corner.isLUB_of_isLUB_image_val`.  (Until this
+session the normality step instead used bipositivity of `c = d*(·)d` on the
+corner — sound, but it left the corrected 81IX with no consumer at all, and
+`div_uwc`'s own doc names this proof as the one it is for.) -/
 private theorem canonicalFilter_factor [VonNeumannAlgebra A]
     {B' : Type u} [CStarAlgebra B'] [PartialOrder B'] [StarOrderedRing B']
     [VonNeumannAlgebra B'] (d : A) (f : NCPMap B' A)
@@ -2043,11 +2042,7 @@ private theorem canonicalFilter_factor [VonNeumannAlgebra A]
   -- (1) the inversion formula `d*∖(d* x d)/d = x` for `x` in the corner
   have hinv : ∀ x : A, q * x * q = x →
       ldiv (star d) (div (star d * x * d) d) = x := fun x hx => ldiv_div_ad d x hx
-  -- (2) bipositivity and injectivity of `c = d*(·)d` on the corner
-  have hbipos : ∀ x : A, q * x * q = x → 0 ≤ star d * x * d → 0 ≤ x := by
-    intro x hx hpos
-    have h := sequential_douglas_2 (star d * x * d) d hpos ⟨x, rfl⟩
-    rwa [hinv x hx] at h
+  -- (2) injectivity of `c = d*(·)d` on the corner
   have hinj : ∀ x y : A, q * x * q = x → q * y * q = y →
       star d * x * d = star d * y * d → x = y := by
     intro x y hx hy h
@@ -2234,31 +2229,37 @@ private theorem canonicalFilter_factor [VonNeumannAlgebra A]
     ext i j
     rw [CStarMatrix.map_apply, CStarMatrix.map_apply, CStarMatrix.map_apply]
     rfl
-  · intro D s hne hdir hlub
-    constructor
-    · rintro _ ⟨x, hx, rfl⟩
-      exact hFmono (hlub.1 hx)
-    · intro u hu
-      show F ((s : selfAdjoint B') : B') ≤ u.val
-      have hfle : ∀ x ∈ D, (f ((x : selfAdjoint B') : B') : A)
-          ≤ star d * u.val * d := by
-        intro x hx
-        have h1 : F ((x : selfAdjoint B') : B') ≤ u.val := hu ⟨x, hx, rfl⟩
-        have h2 := star_left_conjugate_le_conjugate h1 d
-        rwa [(hF _).2] at h2
-      have hfl := f.preservesDirSups' D s hne hdir hlub
-      have hfs : (f ((s : selfAdjoint B') : B') : A) ≤ star d * u.val * d := by
-        refine hfl.2 ?_
-        rintro _ ⟨x, hx, rfl⟩
-        exact hfle x hx
-      have hz : q * (u.val - F ((s : selfAdjoint B') : B')) * q
-          = u.val - F ((s : selfAdjoint B') : B') := by
-        rw [mul_sub, sub_mul, u.property, (hF _).1]
-      have hzz : 0 ≤ star d * (u.val - F ((s : selfAdjoint B') : B')) * d := by
-        rw [mul_sub, sub_mul, (hF _).2, sub_nonneg]
-        exact hfs
-      have h := hbipos _ hz hzz
-      rwa [sub_nonneg] at h
+  · -- (7) normality: the thesis's own route, through **81IX**.  `f` carries
+    -- the effects of `ℬ` into `d*(𝒜)₁d`, on which `a ↦ d*∖a/d` is
+    -- ultraweakly continuous (`div_uwc`), so `F` is ultraweakly continuous
+    -- on the effects and hence normal by **44XV** (2) ⇒ (3).
+    have hFdiv : ∀ b : B', F b = ldiv (star d) (div ((f b : A)) d) := by
+      intro b
+      rw [← (hF b).2]
+      exact (hinv _ (hF b).1).symm
+    have hmaps : Set.MapsTo (fun b : B' => (f b : A)) (effects B')
+        {a : A | ∃ e : A, ‖e‖ ≤ 1 ∧ a = star d * e * d} := by
+      intro b hb
+      obtain ⟨e, hen, he⟩ := hposmem b hb.1
+      exact ⟨e, hen.trans (norm_le_one_of_mem_effects hb), he⟩
+    have hfcont : @Continuous B' A (ultraweak B') (ultraweak A)
+        (fun b : B' => (f b : A)) :=
+      ((p_uwcont (PositiveLinearMap.ofClass f.toCompletelyPositiveMap)).out 2 0).mp
+        f.preservesDirSups'
+    have hFcont : @ContinuousOn B' A (ultraweak B') (ultraweak A)
+        (fun b : B' => F b) (effects B') := by
+      letI : TopologicalSpace B' := ultraweak B'
+      letI : TopologicalSpace A := ultraweak A
+      exact (ContinuousOn.comp (div_uwc d (star d)).2 hfcont.continuousOn
+        hmaps).congr fun b _ => (hFdiv b).symm
+    have hFn : PreservesDirSups (fun b : B' => F b) :=
+      preservesDirSups_of_continuousOn_effects
+        ({ toLinearMap := Flin, monotone' := fun _ _ h => hFmono h } : B' →ₚ[ℂ] A)
+        hFcont
+    intro D s hne hdir hlub
+    refine Corner.isLUB_of_isLUB_image_val ?_
+    rw [Set.image_image]
+    exact hFn D s hne hdir hlub
 
 /-- **96V** (`canonical-filter`, proc.tex:414, Proposition), in the general
 form in which parsec 980 uses it: *any* ncp-map `c : e𝒜e → 𝒜` of the shape

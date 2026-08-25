@@ -847,86 +847,18 @@ private theorem ceil_isStarProjection {b : A} (hb : b ∈ effects A) :
     IsStarProjection (ceil (1 - b)) :=
   (vna_ceil (1 - b) (effect_orthosupplement b hb)).1.1
 
-/-- Auxiliary (the duality `⌊b⌋ = ⌈b^⊥⌉^⊥` behind **56VI**): for a projection
-`q` and an effect `b`,
-`q ≤ b  ↔  b^⊥q = 0  ↔  b^⊥ ≤ q^⊥  ↔  ⌈b^⊥⌉ ≤ q^⊥  ↔  q ≤ ⌈b^⊥⌉^⊥`. -/
-private theorem proj_le_iff_le_ceil_compl {b : A} (hb : b ∈ effects A)
-    {q : A} (hq : IsStarProjection q) : q ≤ b ↔ q ≤ 1 - ceil (1 - b) := by
-  have hb' : (1 : A) - b ∈ effects A := effect_orthosupplement b hb
-  obtain ⟨⟨hc, hbc⟩, hcleast⟩ := vna_ceil (1 - b) hb'
-  have e1 : q ≤ b ↔ q * (1 - b) = 0 := proj_le_iff hb hq
-  have e2 : ((1 : A) - b) * q = 0 ↔ q * (1 - b) = 0 := by
-    constructor <;> intro h <;>
-      simpa [(IsSelfAdjoint.of_nonneg hb'.1).star_eq, hq.isSelfAdjoint.star_eq]
-        using congrArg star h
-  have e3 : (1 : A) - b ≤ 1 - q ↔ ((1 : A) - b) * q = 0 := by
-    have h := le_proj_iff hb' hq.one_sub
-    rwa [sub_sub_cancel] at h
-  have e4 : ceil (1 - b) ≤ 1 - q ↔ (1 : A) - b ≤ 1 - q :=
-    ⟨fun h => hbc.trans h, fun h => hcleast ⟨hq.one_sub, h⟩⟩
-  rw [e1, ← e2, ← e3, ← e4]
-  exact le_sub_comm.symm
+/-- **56VI**.70–90 (`vna-floor`, vn.tex:2419), the thesis's construction: the
+chain `1 ≥ b ≥ b² ≥ b⁴ ≥ ⋯ ≥ 0` has an infimum `q = ⋀ₙ b^{2ⁿ}`
+(`infima_in_vna`, **43Ia**), `q` is a projection (**56VI**.90, two
+applications of `ad_normal_inf`), and whatever commutes with `b` commutes
+with `q` (**56VI**.80, a variation on **44XIII**).
 
-/-- **56VI** (`vna-floor`, vn.tex:2419, Proposition), well-definedness:
-every effect `b` of a von Neumann algebra has a greatest projection `p` with
-`p·b = p`. -/
-theorem exists_floor (b : A) (hb : b ∈ effects A) :
-    ∃! p : A, IsStarProjection p ∧ p * b = p ∧
-      ∀ q : A, IsStarProjection q → q * b = q → q ≤ p := by
-  have hple : (1 : A) - ceil (1 - b) ≤ b :=
-    (proj_le_iff_le_ceil_compl hb (ceil_isStarProjection hb).one_sub).mpr le_rfl
-  have hmem : ((1 : A) - ceil (1 - b)) * b = 1 - ceil (1 - b) :=
-    ((projection_below_effect b _ hb (ceil_isStarProjection hb).one_sub).out 0 7).mp hple
-  refine ⟨1 - ceil (1 - b), ⟨(ceil_isStarProjection hb).one_sub, hmem, fun q hq hqb => ?_⟩,
-    fun q hq => le_antisymm ?_ (hq.2.2 _ (ceil_isStarProjection hb).one_sub hmem)⟩
-  · exact (proj_le_iff_le_ceil_compl hb hq).mp
-      (((projection_below_effect b q hb hq).out 0 7).mpr hqb)
-  · exact (proj_le_iff_le_ceil_compl hb hq.1).mp
-      (((projection_below_effect b q hb hq.1).out 0 7).mpr hq.2.1)
-
-open scoped Classical in
-/-- **56VI** (`vna-floor`, vn.tex:2419, Proposition): the **floor** `⌊b⌋` of
-an effect `b` of a von Neumann algebra: the greatest projection below `b`
-(characterized as the greatest projection `p` with `p·b = p`, cf. 56XI).
-(Junk value `0` off the effects.) -/
-noncomputable def floor (b : A) : A :=
-  if hb : b ∈ effects A then (exists_floor b hb).choose else 0
-
-/-- The defining property of `⌊b⌋` for an effect `b`. -/
-theorem floor_spec {b : A} (hb : b ∈ effects A) :
-    IsStarProjection (floor b) ∧ floor b * b = floor b ∧
-      ∀ q : A, IsStarProjection q → q * b = q → q ≤ floor b := by
-  rw [floor, dif_pos hb]
-  exact (exists_floor b hb).choose_spec.1
-
-theorem floor_le {b : A} (hb : b ∈ effects A) : floor b ≤ b :=
-  ((projection_below_effect b _ hb (floor_spec hb).1).out 0 7).mpr (floor_spec hb).2.1
-
-/-- **56XIII**.1 in the form in which **56VI** produces it: `⌊b⌋ = ⌈b^⊥⌉^⊥`. -/
-theorem floor_eq_one_sub_ceil {b : A} (hb : b ∈ effects A) :
-    floor b = 1 - ceil (1 - b) := by
-  obtain ⟨h1, -, h3⟩ := floor_spec hb
-  have hcp : IsStarProjection (ceil (1 - b)) := ceil_isStarProjection hb
-  have hple : (1 : A) - ceil (1 - b) ≤ b :=
-    (proj_le_iff_le_ceil_compl hb hcp.one_sub).mpr le_rfl
-  refine le_antisymm ((proj_le_iff_le_ceil_compl hb h1).mp (floor_le hb)) ?_
-  exact h3 _ hcp.one_sub
-    (((projection_below_effect b _ hb hcp.one_sub).out 0 7).mp hple)
-
-/-- **56VI**: `⌊b⌋` is the greatest projection below the effect `b`. -/
-theorem floor_isGreatest {b : A} (hb : b ∈ effects A) :
-    IsGreatest {p : A | IsStarProjection p ∧ p ≤ b} (floor b) := by
-  obtain ⟨h1, -, h3⟩ := floor_spec hb
-  refine ⟨⟨h1, floor_le hb⟩, ?_⟩
-  rintro q ⟨hq, hqb⟩
-  exact h3 q hq (((projection_below_effect b q hb hq).out 0 7).mp hqb)
-
-/-- **56VI** (`vna-floor`, vn.tex:2419, Proposition): `⌊b⌋` is the greatest
-projection below the effect `b`, and equals `⋀ₙ b^{2ⁿ}`. -/
-theorem vna_floor (b : A) (hb : b ∈ effects A) :
-    IsGreatest {p : A | IsStarProjection p ∧ p ≤ b} (floor b) ∧
-      IsGLB (Set.range fun n : ℕ => b ^ (2 ^ n)) (floor b) := by
-  refine ⟨floor_isGreatest hb, ?_⟩
+Everything about `⌊b⌋` below — its existence, its being the greatest
+projection below `b`, the formula `⌊b⌋ = ⋀ₙ b^{2ⁿ}` and the commutation
+clause — is read off this one lemma, which is how vn.tex:2419 proceeds. -/
+private theorem exists_floor_inf (b : A) (hb : b ∈ effects A) :
+    ∃ q : A, IsStarProjection q ∧ IsGLB (Set.range fun n : ℕ => b ^ (2 ^ n)) q ∧
+      ∀ a : A, a * b = b * a → a * q = q * a := by
   -- **56VI**.70: the filtered set `1 ≥ b ≥ b² ≥ b⁴ ≥ ⋯ ≥ 0` and its infimum
   -- `q = ⋀ₙ b^{2ⁿ}` (`infima_in_vna`, **43Ia**)
   set E : ℕ → selfAdjoint A := fun n =>
@@ -955,12 +887,14 @@ theorem vna_floor (b : A) (hb : b ∈ effects A) :
     rintro _ ⟨n, rfl⟩; exact (pow_mem_effects hb (2 ^ n)).1)
   have hqb : q ≤ b := by simpa using hqle 0
   have hqeff : q ∈ effects A := ⟨hq0, hqb.trans hb.2⟩
-  -- **56VI**.80: `b` commutes with `q` (a variation on **44XIII**)
-  have hcomm : b * q = q * b :=
-    vna_infimum_commutes hne hdir hglbSA b (by
+  -- **56VI**.80: whatever commutes with `b` commutes with `b^{2ⁿ}` for every
+  -- `n`, hence with `q ≡ ⋀ₙ b^{2ⁿ}` (a variation on **44XIII**)
+  have hcomm' : ∀ a : A, a * b = b * a → a * q = q * a := fun a hab =>
+    vna_infimum_commutes hne hdir hglbSA a (by
       rintro _ ⟨n, rfl⟩
-      exact ((Commute.refl b).pow_right (2 ^ n)).eq)
-  -- and therefore so does `√q` (`sqrt`, cstar.tex **23VII**)
+      exact ((show Commute a b from hab).pow_right (2 ^ n)).eq)
+  have hcomm : b * q = q * b := hcomm' b rfl
+  -- and therefore `√q` commutes with `b` too (`sqrt`, cstar.tex **23VII**)
   have hsq0 : (0 : A) ≤ CFC.sqrt q := CFC.sqrt_nonneg q
   have hsqb : Commute (CFC.sqrt q) b := ((sqrt_commute q hq0 b hcomm).1).symm
   have hsqpow : ∀ k : ℕ, CFC.sqrt q * b ^ k = b ^ k * CFC.sqrt q := fun k =>
@@ -1027,7 +961,92 @@ theorem vna_floor (b : A) (hb : b ∈ effects A) :
     exact this ▸ hstep m
   have hqproj : IsStarProjection q :=
     ⟨le_antisymm (mul_self_le_self hqeff) hqq, p.2⟩
-  -- **56VI**.100: `q` is the greatest projection below `b`, i.e. `q = ⌊b⌋`
+  exact ⟨q, hqproj, hglb, hcomm'⟩
+
+/-- **56VI** (`vna-floor`, vn.tex:2419, Proposition), well-definedness:
+every effect `b` of a von Neumann algebra has a greatest projection `p` with
+`p·b = p`.
+
+This is the thesis's own route: `p := ⋀ₙ b^{2ⁿ}` by `exists_floor_inf`
+(**56VI**.70–90), and **56VI**.100 for the leastness — a projection `q ≤ b`
+satisfies `q ≤ b²` by **55IX** `projection-below-effect`, hence `q ≤ b^{2ⁿ}`
+for every `n` by induction, hence `q ≤ ⋀ₙ b^{2ⁿ}`. -/
+theorem exists_floor (b : A) (hb : b ∈ effects A) :
+    ∃! p : A, IsStarProjection p ∧ p * b = p ∧
+      ∀ q : A, IsStarProjection q → q * b = q → q ≤ p := by
+  obtain ⟨p, hpproj, hglb, -⟩ := exists_floor_inf b hb
+  have hpb : p ≤ b := by simpa using hglb.1 ⟨0, rfl⟩
+  have hpmem : p * b = p := ((projection_below_effect b p hb hpproj).out 0 7).mp hpb
+  -- **56VI**.100
+  have hgreat : ∀ q : A, IsStarProjection q → q * b = q → q ≤ p := by
+    intro q hq hqb
+    have hq0 : q ≤ b := ((projection_below_effect b q hb hq).out 0 7).mpr hqb
+    have hpow : ∀ n : ℕ, q ≤ b ^ 2 ^ n := by
+      intro n
+      induction n with
+      | zero => simpa using hq0
+      | succ m ih =>
+        have hmul : q * b ^ 2 ^ m = q :=
+          ((projection_below_effect (b ^ 2 ^ m) q (pow_mem_effects hb (2 ^ m)) hq).out
+            0 7).mp ih
+        have hsplit : b ^ 2 ^ (m + 1) = b ^ 2 ^ m * b ^ 2 ^ m := by
+          rw [← pow_add]; congr 1; rw [pow_succ]; ring
+        refine ((projection_below_effect (b ^ 2 ^ (m + 1)) q
+          (pow_mem_effects hb (2 ^ (m + 1))) hq).out 0 7).mpr ?_
+        rw [hsplit, ← mul_assoc, hmul, hmul]
+    exact hglb.2 (by rintro _ ⟨n, rfl⟩; exact hpow n)
+  exact ⟨p, ⟨hpproj, hpmem, hgreat⟩,
+    fun q hq => le_antisymm (hgreat q hq.1 hq.2.1) (hq.2.2 _ hpproj hpmem)⟩
+
+open scoped Classical in
+/-- **56VI** (`vna-floor`, vn.tex:2419, Proposition): the **floor** `⌊b⌋` of
+an effect `b` of a von Neumann algebra: the greatest projection below `b`
+(characterized as the greatest projection `p` with `p·b = p`, cf. 56XI).
+(Junk value `0` off the effects.) -/
+noncomputable def floor (b : A) : A :=
+  if hb : b ∈ effects A then (exists_floor b hb).choose else 0
+
+/-- The defining property of `⌊b⌋` for an effect `b`. -/
+theorem floor_spec {b : A} (hb : b ∈ effects A) :
+    IsStarProjection (floor b) ∧ floor b * b = floor b ∧
+      ∀ q : A, IsStarProjection q → q * b = q → q ≤ floor b := by
+  rw [floor, dif_pos hb]
+  exact (exists_floor b hb).choose_spec.1
+
+theorem floor_le {b : A} (hb : b ∈ effects A) : floor b ≤ b :=
+  ((projection_below_effect b _ hb (floor_spec hb).1).out 0 7).mpr (floor_spec hb).2.1
+
+/-- **56VI**: `⌊b⌋` is the greatest projection below the effect `b`. -/
+theorem floor_isGreatest {b : A} (hb : b ∈ effects A) :
+    IsGreatest {p : A | IsStarProjection p ∧ p ≤ b} (floor b) := by
+  obtain ⟨h1, -, h3⟩ := floor_spec hb
+  refine ⟨⟨h1, floor_le hb⟩, ?_⟩
+  rintro q ⟨hq, hqb⟩
+  exact h3 q hq (((projection_below_effect b q hb hq).out 0 7).mp hqb)
+
+/-- **56XIII**.1 for the floor: `⌊b⌋ = ⌈b^⊥⌉^⊥`.  Now a corollary of
+**56VI**, as in the thesis, and no longer a step towards it: `⌈b^⊥⌉^⊥` is a
+projection below `b`, hence `≤ ⌊b⌋`, while `b^⊥ ≤ ⌊b⌋^⊥` gives
+`⌈b^⊥⌉ ≤ ⌊b⌋^⊥` by leastness of the ceiling (**56I**). -/
+theorem floor_eq_one_sub_ceil {b : A} (hb : b ∈ effects A) :
+    floor b = 1 - ceil (1 - b) := by
+  obtain ⟨⟨hcproj, hbc⟩, hcleast⟩ := vna_ceil (1 - b) (effect_orthosupplement b hb)
+  have h1 : (1 : A) - ceil (1 - b) ≤ b := by
+    have h := sub_le_sub_left hbc 1
+    rwa [sub_sub_cancel] at h
+  have h2 : ceil (1 - b) ≤ 1 - floor b :=
+    hcleast ⟨(floor_spec hb).1.one_sub, sub_le_sub_left (floor_le hb) 1⟩
+  exact le_antisymm (le_sub_comm.mp h2) ((floor_isGreatest hb).2 ⟨hcproj.one_sub, h1⟩)
+
+/-- **56VI** (`vna-floor`, vn.tex:2419, Proposition): `⌊b⌋` is the greatest
+projection below the effect `b`, and equals `⋀ₙ b^{2ⁿ}`. -/
+theorem vna_floor (b : A) (hb : b ∈ effects A) :
+    IsGreatest {p : A | IsStarProjection p ∧ p ≤ b} (floor b) ∧
+      IsGLB (Set.range fun n : ℕ => b ^ (2 ^ n)) (floor b) := by
+  refine ⟨floor_isGreatest hb, ?_⟩
+  obtain ⟨q, hqproj, hglb, -⟩ := exists_floor_inf b hb
+  have hqb : q ≤ b := by simpa using hglb.1 ⟨0, rfl⟩
+  -- `⌊b⌋ ≤ b^{2ⁿ}` for every `n`, so `⌊b⌋ ≤ q`; and `q ≤ ⌊b⌋` by **56VI**.100
   have hfb : ∀ k : ℕ, floor b * b ^ k = floor b := by
     intro k
     induction k with
@@ -1042,15 +1061,17 @@ theorem vna_floor (b : A) (hb : b ∈ effects A) :
   rwa [hqf] at hglb
 
 /-- **56VI** (`vna-floor`, vn.tex:2419, Proposition), moreover: whatever
-commutes with `b` commutes with `⌊b⌋`. -/
+commutes with `b` commutes with `⌊b⌋`.  This is **56VI**.80 of the printed
+proof, read off `exists_floor_inf` through `⌊b⌋ = ⋀ₙ b^{2ⁿ}`.
+
+(vn.tex:2419 prints "if `a ∈ 𝒜` commutes with `b`, then `b` commutes with
+`⌊b⌋`"; the conclusion must be about `a`, and **56VI**.80 proves exactly
+that.) -/
 theorem vna_floor_comm (b : A) (hb : b ∈ effects A) (a : A)
     (h : a * b = b * a) : a * floor b = floor b * a := by
-  have hb' : (1 : A) - b ∈ effects A := effect_orthosupplement b hb
-  have h' : a * (1 - b) = (1 - b) * a := by
-    rw [mul_sub, sub_mul, mul_one, one_mul, h]
-  have hc := vna_ceil_comm (1 - b) hb'.1 a h'
-  rw [floor_eq_one_sub_ceil hb, mul_sub, sub_mul, mul_one, one_mul, hc]
-
+  obtain ⟨q, -, hglb, hcomm⟩ := exists_floor_inf b hb
+  rw [← hglb.unique (vna_floor b hb).2]
+  exact hcomm a h
 /-- **56XI** (`ceil-floor-second-property`, vn.tex:2471, Exercise), part 1:
 for an effect `a` and a projection `p`: `pa = a` iff `ap = a` iff
 `⌈a⌉ ≤ p`.  In particular `⌈a⌉` is the least projection `p` with `a = ap`,
