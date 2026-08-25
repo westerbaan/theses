@@ -4738,13 +4738,42 @@ theorem tensor_map_factorisation [VonNeumannAlgebra A]
 /-- **125eIII** (`tensorBsurjectivity`, proc.tex:5580, Lemma): given a
 `(·) ⊗ ℬ`-surjective nmiu-map `s : 𝒜 → 𝒞 ⊗ ℬ` and an nmiu-map
 `ρ : 𝒞 → 𝒟`, the composite `(ρ ⊗ ℬ) ∘ s` is `(·) ⊗ ℬ`-surjective iff
-`ρ` is surjective. -/
+`ρ` is surjective.
+
+**The two halves are not equally hard, and only one of them is open.**
+
+`mp` is proved below, in full generality, and needs neither `hs` nor
+hereditary atomicity: it is proc.tex:5620's argument that
+`range(ρ ⊗ ℬ) = ρ(𝒞) ⊗ ℬ`, which is `tmapM_range_le` applied to each
+`s a`, followed by `(·) ⊗ ℬ`-surjectivity of the composite at the von
+Neumann subalgebra `ρ(𝒞)` — an algebra by 69IVb `nmiu_image`.  So the
+composite being surjective forces `ρ(𝒞) = ⊤`.
+
+`mpr` is proc.tex:5600 and is the hard half: it needs **125VIIb**
+`tensor_preimage`, hence Tomiyama's slice-map property, hence the
+commutation theorem — see the 121II `intersection_tensor` docstring.
+The hereditarily atomic case IS proved, as `haTensorBSurj` above, where
+`haTensorPreimage` supplies the slice-map property from the matrix units;
+that is the only ingredient missing here. -/
 theorem tensorBsurjectivity [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     [VonNeumannAlgebra C] [VonNeumannAlgebra D]
     (s : NMIUMap A (VNT C B)) (hs : TensorBSurjective s)
     (ρ : NMIUMap C D) :
     TensorBSurjective (nmiuComp (tmapM ρ (nmiuId B)) s) ↔
-      Function.Surjective ⇑ρ := sorry
+      Function.Surjective ⇑ρ := by
+  refine ⟨fun hcomp => ?_, fun hρ => ?_⟩
+  · -- **proc.tex:5620**, and it uses neither `hs` nor atomicity.
+    have hrange : Set.range ⇑(nmiuComp (tmapM ρ (nmiuId B)) s)
+        ⊆ ((tensorSub B ρ.toStarAlgHom.range : StarSubalgebra ℂ (VNT D B)) :
+          Set (VNT D B)) := by
+      rintro _ ⟨a, rfl⟩
+      exact tmapM_range_le ρ (s a)
+    have htop := hcomp ρ.toStarAlgHom.range (nmiu_image ρ) hrange
+    intro d
+    have hd : d ∈ ρ.toStarAlgHom.range := by rw [htop]; trivial
+    exact hd
+  · -- **proc.tex:5600**: blocked on 125VIIb `tensor_preimage`.
+    sorry
 
 /-- **125eVI** (proc.tex:5630, Definition): two nmiu-maps
 `f₁ : 𝒜 → M_{n₁} ⊗ ℬ`, `f₂ : 𝒜 → M_{n₂} ⊗ ℬ` are
