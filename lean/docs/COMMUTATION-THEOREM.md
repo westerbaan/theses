@@ -349,13 +349,23 @@ axiom-clean in situ.*
 | amplification theorem + ket/slice API | in the 800–1500 row | **306** | `982d7f8` |
 | `concreteTensor` API + concrete↔abstract bridge | 400–800 | **616** | `affa026` |
 | atomic type I widening of `haE` (§5 item 3) | 400–700 | **1199** | `a992c23` |
-| **total so far** | | **≈ 6 350** | |
+| RvD Prop. 4.1 → Thm 4.2, conditional on Lemma 4.8 | part of the 1500–2500 §4 row | **1240** | `71cfef0` |
+| the tensor factorisation `J_ξ = J_ω ⊗ J_{ω'}` | 600–1000 | **1242** | `5d816fc` |
+| flip, associator, `B(L₁)⊗̄B(L₂)`, unitary transport | 800–1500 (with amplification) | **925** | `54859e6` |
+| the reduction's sharp limit (`CT_of_CT_finCyclic`) | — | **383** | `8dd8f97` |
+| `Δ^{it}` — RvD Lemma 3.6 and the modular group | 250–450 + 700–1200 | **1048** | `22767bd` |
+| RvD Lemmas 4.5 and 4.6 | 300–500 + 400–700 | **1138** | `6a0cc8d` |
+| **total so far** | | **≈ 12 300** | |
 
-Still open: RvD §3 to Prop. 3.7 and the §4 analytic core (Lemmas 4.3–4.9,
-Thm 4.2) — the largest single remaining piece; the tensor factorisation
-`J_ξ = J_ω ⊗ J_{ω'}`; the flip/associator transport and
-`B(L₁)⊗̄B(L₂) = B(L₁⊗L₂)`; and assembling the reduction's nets into one
-theorem.
+Still open, and it is now a short list: **RvD Lemmas 4.7 and 4.8**, which
+discharge the hypothesis `tomita_JMJ` already carries; the **`ℂⁿ` amplification
+transport**, which carries `CT_of_CT_finCyclic` the last step to the
+cyclic-and-separating case; and — *only if* Lemma 4.8 turns out to need it —
+holomorphy of `z ↦ R^{1+iz}`, deliberately left out of `ModularGroup.lean` with
+its route and a 250–350 line estimate recorded there.
+
+One instance of the theorem is already proved outright: `CT_top_right`
+(`54859e6`), the amplification case `(𝒜 ⊗̄ B(𝒦))□ = 𝒜□ ⊗̄ ℂ1`.
 
 **What the actuals say about the estimate.** Four of the eight rows came in at
 or below the low end, one (the reduction's own critical path) at 60% of it, and
