@@ -7880,39 +7880,71 @@ theorem ultranorm_continuity_ext_tensor [VonNeumannAlgebra 𝒜]
       (add_le_add (hterm1 i) (hterm2 i))
   · simpa using ((hx ω).const_mul M).add ((hy ξ).const_mul ‖x₀‖)
 
--- `hUsub`, `hUsmul`, `hVsub`, `hVsmul` are not used by the proof below,
--- which picks `u` and `v` one after the other rather than through a *net*
--- and so never needs `U`, `V` to be submodules.  They are the thesis's own
--- hypotheses, kept for fidelity; they are also exactly what the thesis's
--- route would feed to `kaplansky_hilbmod` (see the doc comment).
-set_option linter.unusedVariables false in
+/-! ### The net form of ultranorm approximation
+
+**166V** feeds *norm-bounded nets* to **166II**, while ultranorm density is
+rendered throughout these files one entourage at a time (`UnDense`,
+`unClosure`).  `exists_bounded_net_of_entourage` below turns the entourage
+form into a net; `mem_unClosure_of_unTendsto` (parsec 1600, above) reads an
+entourage estimate back out of one.  Together they are the bridge that lets
+**166IV** be proved as **166V** proves it. -/
+
+/-- From the entourage form of bounded approximation to a **net**.  Suppose
+every finite family of np-functionals and every precision admits an
+approximant of `w` from `D` of norm at most `M` — this is the conclusion of
+the Kaplansky density theorem **158II** (`kaplansky_hilbmod`).  Let `J` be an
+index whose filter `l` eventually resolves every np-functional at every
+precision: `S j` names the functionals resolved at stage `j` and `e j` the
+precision reached there.  Then the approximants assemble into a net over `J`,
+norm-bounded by `M` and converging ultranorm to `w`.
+
+The canonical `J` is a finite set of np-functionals together with a precision
+`1/(k+1)`, ordered by inclusion and by `k`; that is what **166IV** uses. -/
+private theorem exists_bounded_net_of_entourage {𝒟 : Type u} {W : Type u}
+    [CStarAlgebra 𝒟] [PartialOrder 𝒟] [StarOrderedRing 𝒟]
+    [NormedAddCommGroup W] [NormedSpace ℂ W] [SMul 𝒟 W] [CStarModule 𝒟 W]
+    {J : Type*} {l : Filter J} (S : J → Finset (NPFunctional 𝒟)) (e : J → ℝ)
+    (he : ∀ j, 0 < e j)
+    (hcof : ∀ (ω : NPFunctional 𝒟) (ε : ℝ), 0 < ε →
+      ∀ᶠ j in l, ω ∈ S j ∧ e j ≤ ε)
+    (D : Set W) (w : W) (M : ℝ)
+    (h : ∀ (n : ℕ) (ωs : Fin n → NPFunctional 𝒟) (ε : ℝ), 0 < ε →
+      ∃ d ∈ D, ‖d‖ ≤ M ∧
+        ∀ i, unSeminorm (ωs i) (inner 𝒟 : W → W → 𝒟) (w - d) ≤ ε) :
+    ∃ u : J → W, (∀ j, u j ∈ D) ∧ (∀ j, ‖u j‖ ≤ M) ∧
+      UnTendsto (inner 𝒟 : W → W → 𝒟) u l w := by
+  classical
+  choose u huD huM huS using fun j : J =>
+    h (S j).card (fun i => ((S j).equivFin.symm i : NPFunctional 𝒟)) (e j) (he j)
+  refine ⟨u, huD, huM, fun ω => Metric.tendsto_nhds.mpr fun ε hε => ?_⟩
+  filter_upwards [hcof ω (ε / 2) (by positivity)] with j hj
+  have hb : unSeminorm ω (inner 𝒟 : W → W → 𝒟) (w - u j) ≤ e j := by
+    simpa using huS j ((S j).equivFin ⟨ω, hj.1⟩)
+  have hneg : unSeminorm ω (inner 𝒟 : W → W → 𝒟) (u j - w)
+      = unSeminorm ω (inner 𝒟 : W → W → 𝒟) (w - u j) := by
+    rw [← unSeminorm_neg_inner (X := W) (ℬ := 𝒟) ω (w - u j), neg_sub]
+  rw [Real.dist_eq, sub_zero, abs_of_nonneg (unSeminorm_nonneg _ _ _), hneg]
+  linarith [hj.2]
+
 /-- **166IV** (`exttensor-dense-subsets`, dils.tex:5669, Lemma): for
 ultranorm-dense submodules `U ⊆ X` and `V ⊆ Y`, the linear span of
 `U ⊗ V = {u ⊗ v}` is ultranorm dense in `X ⊗ Y`.
 
-**Divergence, class 2.**  The thesis's proof (166V) obtains *norm-bounded*
-nets `u_α → x`, `v_α → y` from the Kaplansky density theorem for Hilbert
-C*-modules **158II** and then applies **166II**.  That route is *available*.
-158II **is** proved: `kaplansky_hilbmod` in `Kaplansky.lean`, through the
-linking algebra `ℬᵃ(X ⊕ ℬ)` and thesis A's **74IV**, and unconditionally —
-what is false is only the thesis's *printed* proof of it, the four **158V**
-estimates, which stay `sorry` to record the falsehood.  Its hypotheses are
-met here, with `A = (⊤ : StarSubalgebra ℂ 𝒜)`: `hUsub` and `hUsmul` say
-exactly that `U` is an `𝒜`-submodule, `hDinner` is vacuous for `A = ⊤`, and
-`0 ∈ U` follows from `hU` and `hUsmul` (checked; likewise for `V`).
+**166V** is the proof, and is transcribed.  It is enough to approximate the
+*elementary* tensors, since their span is ultranorm dense (**164II**.1,
+`ext_tensor_dense`); and for an elementary `x ⊗ y` the Kaplansky density
+theorem for Hilbert C*-modules (**158II**, `kaplansky_hilbmod`) supplies
+norm-bounded nets `u_α → x` in `U` and `v_α → y` in `V`, to which **166II**
+`ultranorm_continuity_ext_tensor` applies: `u_α ⊗ v_α → x ⊗ y`.
 
-It is not taken because it is *longer*, not shorter.  **166II** is a
-statement about nets, whereas ultranorm density is rendered here — as
-everywhere in these files — one entourage at a time, and no lemma bridges
-the two forms.  The thesis's route would have to manufacture the canonical
-net out of the entourage-wise output of `kaplansky_hilbmod` (the nearest
-analogue, the net indexed by finite sets of (functional, precision) inside
-`selfdual_completion_univ` in `SelfDualCompletion.lean`, costs some forty
-lines) and then read an entourage estimate back out of the resulting
-`UnTendsto`, roughly doubling the proof.  One entourage at a time no norm
-bound is needed at all: `u ∈ U` may be chosen *first* and `v ∈ V` afterwards,
-with an accuracy depending on the `‖u‖` already fixed.  The two estimates
-are those of **166III** (`unSeminorm_eta_le_left/_right`). -/
+**158II** is applied with `A = (⊤ : StarSubalgebra ℂ 𝒜)`, for which the
+hypothesis `⟨d,d⟩ ∈ A` is vacuous; `hUsub` and `hUsmul` are exactly its
+"`U` is an `𝒜`-submodule", and `0 ∈ U` follows from them together with
+`hU` (a dense set is nonempty).  The two nets are taken over one common
+index — a finite set of np-functionals for each leg, plus a precision — so
+that **166II**, which speaks of two nets along *one* filter, applies; that
+is what `exists_bounded_net_of_entourage` above assembles, and
+`mem_unClosure_of_unTendsto` reads the entourage estimate back out. -/
 theorem exttensor_dense_subsets [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
     [VonNeumannAlgebra 𝒞] [CompleteSpace X] [CompleteSpace Y]
     (hX : SelfDual 𝒜 X) (hY : SelfDual ℬ Y) (E : ExtTensor t ht X Y)
@@ -7939,45 +7971,72 @@ theorem exttensor_dense_subsets [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
         (fun j => by rw [Fin.append_right]; exact hv' j) i
     · rw [Fin.sum_univ_add]
       simp only [Fin.append_left, Fin.append_right]
+  -- **166V** applies **158II** `kaplansky_hilbmod` with `A = ⊤`; its
+  -- remaining hypotheses on `U` and `V` are `hUsub`/`hUsmul`, `hVsub`/`hVsmul`
+  -- and `0 ∈ U`, `0 ∈ V`
+  have hzX : ∀ w : X, ((0 : 𝒜) • w : X) = 0 := fun w =>
+    (CStarModule.inner_self (A := 𝒜)).mp (by
+      rw [CStarModule.inner_op_smul_right, zero_mul])
+  have hzY : ∀ w : Y, ((0 : ℬ) • w : Y) = 0 := fun w =>
+    (CStarModule.inner_self (A := ℬ)).mp (by
+      rw [CStarModule.inner_op_smul_right, zero_mul])
+  have hU0 : (0 : X) ∈ U := by
+    obtain ⟨d, hd, -⟩ := hU 0 0 Fin.elim0 1 one_pos
+    simpa [hzX d] using hUsmul 0 d hd
+  have hV0 : (0 : Y) ∈ V := by
+    obtain ⟨d, hd, -⟩ := hV 0 0 Fin.elim0 1 one_pos
+    simpa [hzY d] using hVsmul 0 d hd
+  have hAX : IsClosed ((⊤ : StarSubalgebra ℂ 𝒜) : Set 𝒜) := by
+    rw [StarSubalgebra.coe_top]; exact isClosed_univ
+  have hAY : IsClosed ((⊤ : StarSubalgebra ℂ ℬ) : Set ℬ) := by
+    rw [StarSubalgebra.coe_top]; exact isClosed_univ
+  -- the common index of the two nets, and its cofinality in each leg
+  have hprec : ∀ ε : ℝ, 0 < ε → ∃ k : ℕ, 1 / (k + 1 : ℝ) ≤ ε :=
+    fun ε hε => (exists_nat_one_div_lt hε).imp fun _ hk => hk.le
+  have hstep : ∀ (j : (Finset (NPFunctional 𝒜) × Finset (NPFunctional ℬ)) × ℕ)
+      (k : ℕ), k ≤ j.2 → ∀ ε : ℝ, 1 / (k + 1 : ℝ) ≤ ε → 1 / (j.2 + 1 : ℝ) ≤ ε := by
+    intro j k hk ε hε
+    refine le_trans (one_div_le_one_div_of_le (by positivity) ?_) hε
+    have : (k : ℝ) ≤ (j.2 : ℝ) := Nat.cast_le.mpr hk
+    linarith
+  have hcofA : ∀ (ω : NPFunctional 𝒜) (ε : ℝ), 0 < ε → ∀ᶠ j in
+      (atTop : Filter ((Finset (NPFunctional 𝒜) × Finset (NPFunctional ℬ)) × ℕ)),
+      ω ∈ j.1.1 ∧ 1 / (j.2 + 1 : ℝ) ≤ ε := by
+    intro ω ε hε
+    obtain ⟨k, hk⟩ := hprec ε hε
+    refine Filter.eventually_atTop.mpr ⟨(({ω}, ∅), k), fun j hj => ⟨?_, ?_⟩⟩
+    · exact Finset.singleton_subset_iff.mp (Prod.le_def.mp (Prod.le_def.mp hj).1).1
+    · exact hstep j k (Prod.le_def.mp hj).2 ε hk
+  have hcofB : ∀ (ω : NPFunctional ℬ) (ε : ℝ), 0 < ε → ∀ᶠ j in
+      (atTop : Filter ((Finset (NPFunctional 𝒜) × Finset (NPFunctional ℬ)) × ℕ)),
+      ω ∈ j.1.2 ∧ 1 / (j.2 + 1 : ℝ) ≤ ε := by
+    intro ω ε hε
+    obtain ⟨k, hk⟩ := hprec ε hε
+    refine Filter.eventually_atTop.mpr ⟨((∅, {ω}), k), fun j hj => ⟨?_, ?_⟩⟩
+    · exact Finset.singleton_subset_iff.mp (Prod.le_def.mp (Prod.le_def.mp hj).1).2
+    · exact hstep j k (Prod.le_def.mp hj).2 ε hk
   -- every *elementary* tensor is an ultranorm limit of elements of `U ⊗ V`
   have helem : ∀ (x : X) (y : Y), E.η x y ∈ unClosure 𝒞 (inner 𝒞) D' := by
-    intro x y n Ωs ε hε
-    obtain ⟨u, huU, hu⟩ := hU x n (fun i => vnTensorLegLeftNP ht (Ωs i))
-      (ε / (2 * (‖y‖ + 1))) (by positivity)
-    obtain ⟨v, hvV, hv⟩ := hV y n (fun i => vnTensorLegRightNP ht (Ωs i))
-      (ε / (2 * (‖u‖ + 1))) (by positivity)
-    refine ⟨E.η u v, ⟨1, fun _ => u, fun _ => v, fun _ => huU, fun _ => hvV, by simp⟩,
-      fun i => ?_⟩
-    have hsplit : E.η x y - E.η u v = E.η (x - u) y + E.η u (y - v) := by
-      have h1 : E.η (x - u) y + E.η u y = E.η x y := by
-        rw [← E.η_add_left]; congr 1; abel
-      have h2 : E.η u (y - v) + E.η u v = E.η u y := by
-        rw [← E.η_add_right]; congr 1; abel
-      rw [← h1, ← h2]; abel
-    have hb1 : ‖y‖ * unSeminorm (vnTensorLegLeftNP ht (Ωs i)) (inner 𝒜) (x - u)
-        ≤ ε / 2 := by
-      have h := mul_le_mul_of_nonneg_left (hu i) (norm_nonneg y)
-      refine h.trans ?_
-      rw [mul_div_assoc', div_le_div_iff₀ (by positivity) (by positivity)]
-      nlinarith [norm_nonneg y, hε.le]
-    have hb2 : ‖u‖ * unSeminorm (vnTensorLegRightNP ht (Ωs i)) (inner ℬ) (y - v)
-        ≤ ε / 2 := by
-      have h := mul_le_mul_of_nonneg_left (hv i) (norm_nonneg u)
-      refine h.trans ?_
-      rw [mul_div_assoc', div_le_div_iff₀ (by positivity) (by positivity)]
-      nlinarith [norm_nonneg u, hε.le]
-    calc unSeminorm (Ωs i) (inner 𝒞 : E.Z → E.Z → 𝒞) (E.η x y - E.η u v)
-        = unSeminorm (Ωs i) (inner 𝒞 : E.Z → E.Z → 𝒞)
-            (E.η (x - u) y + E.η u (y - v)) := by rw [hsplit]
-      _ ≤ unSeminorm (Ωs i) (inner 𝒞 : E.Z → E.Z → 𝒞) (E.η (x - u) y)
-            + unSeminorm (Ωs i) (inner 𝒞 : E.Z → E.Z → 𝒞) (E.η u (y - v)) :=
-          unSeminorm_add_le _ (cstarBInner 𝒞 E.Z) _ _
-      _ ≤ ‖y‖ * unSeminorm (vnTensorLegLeftNP ht (Ωs i)) (inner 𝒜) (x - u)
-            + ‖u‖ * unSeminorm (vnTensorLegRightNP ht (Ωs i)) (inner ℬ) (y - v) :=
-          add_le_add (unSeminorm_eta_le_left E _ _ _)
-            (unSeminorm_eta_le_right E _ _ _)
-      _ ≤ ε / 2 + ε / 2 := add_le_add hb1 hb2
-      _ = ε := by ring
+    intro x y
+    obtain ⟨u, huU, hun, hu⟩ := exists_bounded_net_of_entourage
+      (l := (atTop : Filter
+        ((Finset (NPFunctional 𝒜) × Finset (NPFunctional ℬ)) × ℕ)))
+      (fun j => j.1.1) (fun j => 1 / (j.2 + 1 : ℝ)) (fun _ => by positivity)
+      hcofA U x ‖x‖
+      (kaplansky_hilbmod (⊤ : StarSubalgebra ℂ 𝒜) hAX U hU0 hUsub
+        (fun a _ => hUsmul a) (fun _ _ => StarSubalgebra.mem_top) hU x)
+    obtain ⟨v, hvV, hvn, hv⟩ := exists_bounded_net_of_entourage
+      (l := (atTop : Filter
+        ((Finset (NPFunctional 𝒜) × Finset (NPFunctional ℬ)) × ℕ)))
+      (fun j => j.1.2) (fun j => 1 / (j.2 + 1 : ℝ)) (fun _ => by positivity)
+      hcofB V y ‖y‖
+      (kaplansky_hilbmod (⊤ : StarSubalgebra ℂ ℬ) hAY V hV0 hVsub
+        (fun b _ => hVsmul b) (fun _ _ => StarSubalgebra.mem_top) hV y)
+    exact mem_unClosure_of_unTendsto (X := E.Z) (ℬ := 𝒞) D'
+      (fun j => E.η (u j) (v j))
+      (fun j => ⟨1, fun _ => u j, fun _ => v j, fun _ => huU j, fun _ => hvV j,
+        by simp⟩) (E.η x y)
+      (ultranorm_continuity_ext_tensor hX hY E u x v y ⟨‖x‖, hun⟩ ⟨‖y‖, hvn⟩ hu hv)
   -- hence so is every finite sum of elementary tensors, and those are dense
   have hDsub : {z : E.Z | ∃ (n : ℕ) (x : Fin n → X) (y : Fin n → Y),
       z = ∑ i, E.η (x i) (y i)} ⊆ unClosure 𝒞 (inner 𝒞) D' := by

@@ -2441,20 +2441,19 @@ end OneImpliesThree
 /-- **149VII** (dils.tex:2258): (1) ⇒ (3) of **149V** — a self-dual
 pre-Hilbert 𝒷-module is norm-bounded ultranorm complete.
 
-Divergence class 1 (faithful) with one forced deviation, class 2, at the
-bound on `τ`.  The thesis's `τ(y) = (uslim_α ⟨y,x_α⟩)*` is *unstarred* in
-the mirrored convention — `τ(y) = uslim_α [x_α,y]` — because it is the
-*second* argument of Mathlib's `[·,·]` that is 𝒷-linear; the ultrastrong
-limit exists by **77I**.1 `Theses.A.VN.vn_complete_1` (whence the import of
-`Theses.A.VN.Completeness`), and `τ` is linear by uniqueness of ultrastrong
-limits (**44XI**.1).  Where the thesis identifies `τ(y)τ(y)*` with an
-ultraweak limit through **46II** (`usconv`), we bound `‖τ(y)‖_ω` directly by
-`‖y‖ B ω(1)^½` — every `‖[x_α,y]‖_ω` obeys that bound by **142III**, and
-`‖·‖_ω` is `‖·‖_ω`-continuous — and then turn the family of bounds into
-`‖τ(y)‖ ≤ B‖y‖` by order separation of the np-functionals (**44XI**), which
-is what `usconv` would have been used for.  The closing estimate is the
-thesis's verbatim, with Kadison's inequality in the form
-`norm_apply_le_omegaNorm`. -/
+Divergence class 1 (faithful), with one notational mirror.  The thesis's
+`τ(y) = (uslim_α ⟨y,x_α⟩)*` is *unstarred* here — `τ(y) = uslim_α [x_α,y]` —
+because it is the *second* argument of Mathlib's `[·,·]` that is 𝒷-linear;
+the ultrastrong limit exists by **77I**.1 `Theses.A.VN.vn_complete_1` (whence
+the import of `Theses.A.VN.Completeness`), and `τ` is linear by uniqueness of
+ultrastrong limits (**44XI**.1).  The bound on `τ` is the thesis's own: **46II**
+`usconv` turns the ultrastrong limit into the ultraweak limit
+`τ(y)*τ(y) = uwlim_α [y,x_α][x_α,y]` (the mirror of the thesis's
+`τ(y)τ(y)* = uwlim_α ⟨x_α,y⟩⟨y,x_α⟩`), whose terms **142III** bounds by
+`‖y‖²B²`; passing to the limit gives `‖τ(y)‖_ω ≤ ‖y‖ B ω(1)^½` for every
+np-functional, which is `‖τ(y)‖ ≤ B‖y‖` by order separation (**44XI**).  The
+closing estimate is the thesis's verbatim, with Kadison's inequality in the
+form `norm_apply_le_omegaNorm`. -/
 theorem bddUnComplete_of_selfDual [VonNeumannAlgebra 𝒷] (h : SelfDual 𝒷 X) :
     BddUnComplete 𝒷 X := by
   classical
@@ -2517,36 +2516,33 @@ theorem bddUnComplete_of_selfDual [VonNeumannAlgebra 𝒷] (h : SelfDual 𝒷 X)
         = fun x : X => (inner 𝒷 x (b • y) : 𝒷) :=
       funext fun x => CStarModule.inner_op_smul_right.symm
     rwa [heq] at h2
-  -- (d) `‖τ y‖_ω ≤ ‖y‖ B ω(1)^½`, hence `‖τ y‖ ≤ B ‖y‖` by order separation
+  -- (d) **46II** `usconv` turns the ultrastrong limit `τ(y)` into the
+  -- ultraweak limit `τ(y)*τ(y) = uwlim_α ⟨y,x_α⟩⟨x_α,y⟩` (the mirror of the
+  -- thesis's `τ(y)τ(y)* = uwlim_α ⟨x_α,y⟩⟨y,x_α⟩`), and each term of that net
+  -- is bounded by `‖y‖²B²` through **142III**; so `‖τ y‖_ω ≤ ‖y‖ B ω(1)^½`,
+  -- and `‖τ y‖ ≤ B ‖y‖` by order separation of the np-functionals (**44XI**)
   have hbound : ∀ (ω : NPFunctional 𝒷) (y : X),
       omegaNorm 𝒷 ω (t' y) ≤ ‖y‖ * M * Real.sqrt (ω 1).re := by
     intro ω y
-    refine le_of_forall_pos_le_add fun ε hε => ?_
-    have hmem : {x : X | omegaNorm 𝒷 ω ((inner 𝒷 x y : 𝒷) - t' y) < ε} ∈ F := by
-      have h0 := (usTendsto_iff _ _ _).mp (ht' y) ω
-      filter_upwards [(Metric.tendsto_nhds.mp h0) ε hε] with x hx
-      rwa [Real.dist_eq, sub_zero, abs_of_nonneg (omegaNorm_nonneg ω _)] at hx
-    obtain ⟨x, hx⟩ := Filter.nonempty_of_mem (inter_mem hmem hs₀F)
-    have e1 : omegaNorm 𝒷 ω (t' y - (inner 𝒷 x y : 𝒷))
-        = omegaNorm 𝒷 ω ((inner 𝒷 x y : 𝒷) - t' y) := by
-      rw [show t' y - (inner 𝒷 x y : 𝒷) = -((inner 𝒷 x y : 𝒷) - t' y) by abel,
-        omegaNorm_neg]
-    have e2 : omegaNorm 𝒷 ω ((inner 𝒷 x y : 𝒷))
-        ≤ ‖y‖ * M * Real.sqrt (ω 1).re := by
-      have hsq : (0 : ℝ) ≤ Real.sqrt (ω 1).re := Real.sqrt_nonneg _
-      have hxM := hs₀ x hx.2
-      calc omegaNorm 𝒷 ω ((inner 𝒷 x y : 𝒷))
-          ≤ ‖y‖ * unSeminorm ω (inner 𝒷 : X → X → 𝒷) x := omegaNorm_inner_le ω x y
-        _ ≤ ‖y‖ * (‖x‖ * Real.sqrt (ω 1).re) :=
-            mul_le_mul_of_nonneg_left (unSeminorm_le_norm_mul ω x) (norm_nonneg y)
-        _ ≤ ‖y‖ * (M * Real.sqrt (ω 1).re) :=
-            mul_le_mul_of_nonneg_left
-              (mul_le_mul_of_nonneg_right hxM hsq) (norm_nonneg y)
-        _ = ‖y‖ * M * Real.sqrt (ω 1).re := (mul_assoc _ _ _).symm
-    have h3 := omegaNorm_sub_le ω (t' y) (inner 𝒷 x y) 0
-    rw [sub_zero, sub_zero, e1] at h3
-    have hx1 : omegaNorm 𝒷 ω ((inner 𝒷 x y : 𝒷) - t' y) < ε := hx.1
-    linarith
+    have huw : UWTendsto
+        (fun x : X => star (inner 𝒷 x y : 𝒷) * (inner 𝒷 x y : 𝒷)) F
+        (star (t' y) * t' y) :=
+      ((usconv (fun x : X => (inner 𝒷 x y : 𝒷)) F (t' y)).mp (ht' y)).1
+    have hlim : Tendsto (fun x : X => omegaNorm 𝒷 ω (inner 𝒷 x y : 𝒷)) F
+        (𝓝 (omegaNorm 𝒷 ω (t' y))) :=
+      (Real.continuous_sqrt.tendsto _).comp
+        ((Complex.continuous_re.tendsto _).comp ((uwTendsto_iff _ F _).mp huw ω))
+    refine le_of_tendsto hlim ?_
+    filter_upwards [hs₀F] with x hx
+    have hsq : (0 : ℝ) ≤ Real.sqrt (ω 1).re := Real.sqrt_nonneg _
+    calc omegaNorm 𝒷 ω ((inner 𝒷 x y : 𝒷))
+        ≤ ‖y‖ * unSeminorm ω (inner 𝒷 : X → X → 𝒷) x := omegaNorm_inner_le ω x y
+      _ ≤ ‖y‖ * (‖x‖ * Real.sqrt (ω 1).re) :=
+          mul_le_mul_of_nonneg_left (unSeminorm_le_norm_mul ω x) (norm_nonneg y)
+      _ ≤ ‖y‖ * (M * Real.sqrt (ω 1).re) :=
+          mul_le_mul_of_nonneg_left
+            (mul_le_mul_of_nonneg_right (hs₀ x hx) hsq) (norm_nonneg y)
+      _ = ‖y‖ * M * Real.sqrt (ω 1).re := (mul_assoc _ _ _).symm
   have hnormbound : ∀ y : X, ‖t' y‖ ≤ M * ‖y‖ := fun y =>
     le_trans (norm_le_of_omegaNorm_le (a := t' y) (C := ‖y‖ * M)
       (mul_nonneg (norm_nonneg y) hMnn) (fun ω => hbound ω y))
