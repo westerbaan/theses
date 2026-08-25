@@ -103,10 +103,27 @@ structure** — `⊤` and `⊓` are advertised in its own docstring but do not e
 so our target's `∩` is unwriteable in Mathlib's types. The double commutant
 theorem is absent in every generality, as are Kaplansky density, the *completed*
 tensor product `H ⊗̄ K`, the ultraweak topology, any predual or trace-class
-ideal, states, normal maps, cyclic/separating vectors — and modular theory is
-missing at its foundations: no `IsClosable`, no polar decomposition of closed
-operators, no Borel functional calculus, no Stone's theorem. One cannot *define*
-`S = JΔ^{1/2}` there.
+ideal, states, normal maps, cyclic/separating vectors, and the whole of modular
+theory.
+
+**Correction, 2026-08-25.** An earlier draft of this file said Mathlib has no
+`IsClosable` and no unbounded-operator layer. That is wrong, and the error was
+in our favour. `Mathlib/Topology/Algebra/Module/LinearPMap.lean` has
+`LinearPMap.IsClosable`, `IsClosable.existsUnique`, `LinearPMap.closure` and
+`IsClosable.graph_closure_eq_closure_graph`; `Mathlib/Analysis/InnerProductSpace/LinearPMap.lean`
+has `IsFormalAdjoint`, `adjointDomain`, `adjoint` (`T†`),
+`LinearPMap.IsSelfAdjoint` and `IsSelfAdjoint.isClosed`. What Mathlib lacks is
+the *spectral* layer — Borel functional calculus, PVMs, Stone's theorem, polar
+decomposition of closed operators — not the bookkeeping. Verified by reading
+the sources.
+
+Also relevant and previously under-rated:
+`Mathlib/Analysis/InnerProductSpace/StandardSubspace.lean` (Tanimoto, 2026)
+supplies the `InnerProductSpace ℝ` structure obtained by restricting a complex
+inner product to its real part, `ClosedSubmodule ℝ H`, `mulI` and symplectic
+complements — i.e. exactly RvD's §2–3 scaffolding. Its own TODO is "define the
+Tomita conjugation, prove Tomita's theorem", so anything built here is
+upstreamable.
 
 What Mathlib does have and we would use: `Set.centralizer` with a full algebraic
 API and `Set.isClosed_centralizer`; WOT as `E →WOT[𝕜] F` with `Ring`,
@@ -183,7 +200,7 @@ Two to four months. About a third is the RvD analytic core, a third the
 reduction and the tensor plumbing, a third an unbounded-operator layer Mathlib
 does not have.
 
-### The one thing to check before anyone starts
+### The step that decides it — checked, and the verdict is mixed-but-good
 
 The step `J_ξ = J_ω ⊗ J_{ω'}` classically needs the spectral theorem for
 unbounded operators and product spectral measures — the single place the bounded
@@ -200,19 +217,88 @@ flagged as a reconstruction, not a citation**:
 > `closure(T₀)` is self-adjoint, and uniqueness of polar decomposition gives the
 > factorisation.
 
-If this is right it removes the only step that genuinely needed the unbounded
-spectral theorem. If it is wrong, the project stops being "hard but finite" and
-becomes a Mathlib-scale analysis undertaking. **It is being independently
-checked; do not budget against it until that lands.**
+**Two independent checks, 2026-08-25 — one instructed to refute it, one to
+derive the result from scratch and only then compare. They agree, and the
+outcome is better than the argument as written.**
+
+*What survives.* The RvD conventions are exactly right — `Δ = (2−R)R⁻¹` is
+verbatim from the paper (§2 p. 190, Appendix Prop. 3), confirmed independently
+by hand in `M₂(ℂ)` and numerically. `T₀` is well defined and symmetric; the `±i`
+identity holds; the density step is right (`ran(T₀±i)` is the image of the
+*dense* `ℋ ⊙ ℋ'`, not of `ran(a) ⊙ ran(a')`); the cross terms genuinely cancel
+because `a,b` are CFC of the same `R`. And the step flagged in advance as most
+suspect — **injectivity of `a ⊗ a'` on the completed tensor product — is simply
+true**: expand along an ONB of `ℋ'`, `a⊗1` acts coordinatewise on `⊕_j ℋ`, and
+`a⊗a' = (a⊗1)(1⊗a')`. One verifier attacked it specifically and could not break
+it.
+
+*What is missing.* Essential self-adjointness of `T₀` is a statement about `T₀`
+alone and never touches `(M ⊗̄ N, ξ)`. Two gaps:
+
+1. **Positivity, not just self-adjointness.** Polar uniqueness gives `J_ξ = U`
+   only if the positive factor is positive; self-adjoint alone yields
+   `J_ξ = U·sgn(C)`. One line — `⟨T₀(Av), Av⟩ = ⟨ABv, v⟩ ≥ 0` — but assumed.
+2. **The core property.** Running polar decomposition on `S_ξ` needs
+   `dom(T₀)` to be a **core** for `S_ξ`, which essential self-adjointness does
+   not supply. The tempting repair is circular: unwinding `Δ_ξ^{1/2} = J_ξ S_ξ`
+   shows `T₀ ⊆ Δ_ξ^{1/2}` is *equivalent to* `J_ξ = J_ω ⊗ J_{ω'}` on `ran(T₀)`,
+   which is the conclusion.
+
+*Both gaps are fillable with bounded operators*, and the independent
+reconstruction did it, with a route better suited to Lean than the original:
+
+* **Normalisation lemma.** For commuting positive injective `c,d` (here
+  `c = a⊗a'`, `d = b⊗b'`, where `c²+d² ≠ 1` — which is exactly why `T₀` is not
+  already closed), put `h := (c²+d²)^{1/2}`; then `hζ ↦ cζ` and `hζ ↦ dζ` are
+  contractive on the dense `ran h` and extend to `c̃, d̃` forming a *modular
+  pair*. This **exhibits the closure explicitly**, so self-adjointness needs no
+  deficiency-index criterion — and the isometry `η ↦ (c̃η, d̃η)` onto the graph
+  gives the core property for free: `c(E)` is a core for every dense `E`.
+* **Polar uniqueness, bounded.** `(1 + D²)⁻¹ = a²` as an everywhere-defined
+  bounded operator, so `D₁² = D₂² ⟹ a₁ = a₂ ⟹ D₁ = D₂` by uniqueness of the
+  *bounded* positive square root. This is what replaces uniqueness of unbounded
+  positive square roots.
+* **No antilinear tensor product is needed.** Instead of building
+  `J_ω ⊗ J_{ω'}` as an antilinear operator (a real Lean trap — the map is
+  ℝ-bilinear, not ℂ-bilinear, so it does not factor through `ℋ ⊗_ℂ ℋ'`), define
+  the ℂ-linear unitary `W(ζ⊗ζ') := J_ξ(J_ω ζ ⊗ J_{ω'} ζ')`, which *is*
+  ℂ-bilinear because two conjugations compose. The conclusion `W = 1` is the
+  factorisation.
+* The one place von Neumann algebra theory enters is **Kaplansky density**, to
+  show `span(Mω ⊙ Nω')` is a core for `S_ξ` — and the self-adjoint version
+  suffices, splitting `z = z₁ + iz₂`, which the tree already has as
+  `kaplansky_sa` (`A/VN/Completeness.lean:2432`).
+
+The whole chain — including the non-obvious
+`R_ξ/2 = c²(c²+d²)⁻¹` — was verified numerically to machine precision
+(2e-14) on `M₂ ⊗ M₃` with random densities, building `𝒦`, `P`, `Q`, `R` from
+scratch in the real Hilbert space.
+
+*The honest correction to the cost.* "Bounded operators only" is **not** what
+this buys. You still need closed densely defined operators, cores, adjoints and
+polar uniqueness — Mathlib has the bookkeeping for all of these (see §3). What
+RvD buys is that **`Δ^{1/2}` never needs a spectral measure**: it is `b a⁻¹` for
+bounded `a,b`. That is the real saving, and it stands.
+
+*And the cost re-weights.* The tensor step is **not** the expensive part —
+estimated 800–1500 lines given the tree's `HT`/`opTensor`/Kaplansky. The bulk is
+the RvD single-algebra package: `𝒦 = closure(M_sa ω)` standard, the real
+projections `P,Q`, `R = P+Q` complex-linear and positive with `R, 2−R`
+injective, `J := (P−Q)T⁻¹` by continuous extension, and `Mω` a core. Note that
+our theorem needs only RvD §2, §3 up to Prop. 3.1, Prop. 4.1 and the Appendix
+Proposition — **not** Thm 4.2 (Tomita's theorem itself), not `Δ^{it}`, not KMS,
+and therefore not the Borel functional calculus RvD use for `R^{it}`.
+
+*Still worth obtaining.* Rieffel & van Daele, Bull. LMS **7** (1975) 257–260 —
+reference [10] of the 1977 paper, and about precisely this theorem. Both
+verifiers hit paywalls. It predates the bounded reformulation and may sidestep
+the factorisation step entirely.
 
 ## 5. Worth building either way
 
 These are consumed by every route and have value on their own:
 
-1. **The amplification theorem** `(M ⊗ 1)' = M' ⊗̄ B(𝒦)` — session 83's step
-   (E), the one unqualifiedly elementary case. Its `⊆` half is
-   `wstar_opTensor_comm` (`Tensor.lean:9095`, private) plus uw-closedness of a
-   commutant; its `⊇` half needs the ket/slice API described in §3.
+1. ~~**The amplification theorem**~~ — **DONE**, `982d7f8`. See §6.
 2. **`concreteTensor`'s API and the concrete↔abstract bridge.** Without it a
    proved 121II would close nothing. `special_tensor` (111VII) plus
    `tensor_uniqueness` (114II) should give
@@ -229,6 +315,16 @@ These are consumed by every route and have value on their own:
 None of 1–4 closes any of the seven as stated. 3 widens the atomic branch.
 
 ## 6. Already banked
+
+`982d7f8` — **the amplification theorem `(M ⊗ 1)' = M' ⊗̄ B(𝒦)`**, in three
+forms, with the ket/slice API for `HT ℋ 𝒦` that the tree lacked. Built
+natively, not transported: the API has to live in `A/Proc/Tensor.lean` (the
+theorem needs `spatialSpan`/`opTensor`) and `A/Proc` cannot import `B/Dils` —
+the dependency runs the other way. The proof avoids orthonormal bases entirely,
+using a single unit vector `e` and `x ⊗ y = (1 ⊗ |y⟩⟨e|)(x ⊗ e)` rather than a
+matrix over an ONB, so there is no summation or convergence argument at all;
+`hilb_tensor_basic_2` is never needed. The degenerate `𝒦 = 0` case is handled
+by `ht_subsingleton`. 306 lines, no statement changed, axiom-clean in situ.
 
 `96e34ef` — **125eIII is half proved.** The `mp` direction needs neither the
 `(·)⊗ℬ`-surjectivity hypothesis nor atomicity: it is `proc.tex:5620` via
