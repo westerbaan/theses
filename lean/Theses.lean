@@ -21,6 +21,7 @@ import Theses.A.Proc.Tensor
 import Theses.A.Proc.QuantumLambda
 import Theses.A.Proc.Commutation
 import Theses.A.Proc.CornerTensor
+import Theses.A.Proc.TensorTransport
 import Theses.A.Proc.Duplicators
 import Theses.B.Dils.Stinespring
 import Theses.B.Dils.HilbertModules
