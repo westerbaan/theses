@@ -264,22 +264,44 @@ theorem chilb_norm_basic_1_norm :
 
 /-- **32IX** (`chilb-norm-basic`, cstar.tex:5161, Exercise), part 2:
 `‖x·b‖ ≤ ‖x‖ ‖b‖` (here in left-action notation `b • x`) and
-`‖⟨x,y⟩‖ ≤ ‖x‖ ‖y‖`. -/
+`‖⟨x,y⟩‖ ≤ ‖x‖ ‖y‖`.
+
+Both clauses run solution `parsec-320.90`(2).  The second is the solution's
+Cauchy–Schwarz argument: `‖⟨x,y⟩‖² = ‖⟨x,y⟩⟨y,x⟩‖ ≤ ‖ ‖⟨y,y⟩‖ ⟨x,x⟩ ‖ =
+‖y‖²‖x‖²`, the middle step by **32VI** `chilb_cs` and `positive-basic-2`
+(`CStarAlgebra.norm_le_norm_of_nonneg_of_le`).  It is *not* handed to
+`CStarModule.norm_inner_le`, which would close it without using **32VI** at
+all — and **32VI** has no other consumer in parsec 320. -/
 theorem chilb_norm_basic_2 (x y : X) (b : 𝒜) :
     ‖b • x‖ ≤ ‖x‖ * ‖b‖ ∧ ‖inner 𝒜 x y‖ ≤ ‖x‖ * ‖y‖ := by
-  refine ⟨?_, CStarModule.norm_inner_le X⟩
-  have h : inner 𝒜 (b • x) (b • x) = b * inner 𝒜 x x * star b := by
-    rw [CStarModule.inner_op_smul_left, CStarModule.inner_op_smul_right]
-  have hb : ‖b * inner 𝒜 x x * star b‖ ≤ (‖x‖ * ‖b‖) ^ 2 := by
-    refine (norm_mul_le _ _).trans ?_
-    refine (mul_le_mul_of_nonneg_right (norm_mul_le _ _) (norm_nonneg _)).trans ?_
-    rw [norm_star, ← CStarModule.norm_sq_eq (A := 𝒜) (x := x)]
-    ring_nf
-    exact le_rfl
-  rw [CStarModule.norm_eq_sqrt_norm_inner_self (A := 𝒜) (b • x), h]
-  calc Real.sqrt ‖b * inner 𝒜 x x * star b‖
-      ≤ Real.sqrt ((‖x‖ * ‖b‖) ^ 2) := Real.sqrt_le_sqrt hb
-    _ = ‖x‖ * ‖b‖ := Real.sqrt_sq (by positivity)
+  refine ⟨?_, ?_⟩
+  · have h : inner 𝒜 (b • x) (b • x) = b * inner 𝒜 x x * star b := by
+      rw [CStarModule.inner_op_smul_left, CStarModule.inner_op_smul_right]
+    have hb : ‖b * inner 𝒜 x x * star b‖ ≤ (‖x‖ * ‖b‖) ^ 2 := by
+      refine (norm_mul_le _ _).trans ?_
+      refine (mul_le_mul_of_nonneg_right (norm_mul_le _ _) (norm_nonneg _)).trans ?_
+      rw [norm_star, ← CStarModule.norm_sq_eq (A := 𝒜) (x := x)]
+      ring_nf
+      exact le_rfl
+    rw [CStarModule.norm_eq_sqrt_norm_inner_self (A := 𝒜) (b • x), h]
+    calc Real.sqrt ‖b * inner 𝒜 x x * star b‖
+        ≤ Real.sqrt ((‖x‖ * ‖b‖) ^ 2) := Real.sqrt_le_sqrt hb
+      _ = ‖x‖ * ‖b‖ := Real.sqrt_sq (by positivity)
+  · -- Cauchy–Schwarz (**32VI**): `⟨x,y⟩⟨y,x⟩ ≤ ‖⟨y,y⟩‖ ⟨x,x⟩`
+    have hcs := chilb_cs (𝒜 := 𝒜) x y
+    have hnn : (0 : 𝒜) ≤ inner 𝒜 y x * inner 𝒜 x y := by
+      rw [← CStarModule.star_inner (A := 𝒜) x y]
+      exact star_mul_self_nonneg _
+    have h1 : ‖inner 𝒜 x y‖ ^ 2 = ‖inner 𝒜 y x * inner 𝒜 x y‖ := by
+      rw [← CStarModule.star_inner (A := 𝒜) x y, CStarRing.norm_star_mul_self, sq]
+    have h2 : ‖inner 𝒜 y x * inner 𝒜 x y‖ ≤ ‖(‖inner 𝒜 y y‖ • inner 𝒜 x x : 𝒜)‖ :=
+      CStarAlgebra.norm_le_norm_of_nonneg_of_le hnn hcs
+    have h3 : ‖(‖inner 𝒜 y y‖ • inner 𝒜 x x : 𝒜)‖ = ‖y‖ ^ 2 * ‖x‖ ^ 2 := by
+      rw [norm_smul, ← CStarModule.norm_sq_eq (A := 𝒜) (x := x),
+        ← CStarModule.norm_sq_eq (A := 𝒜) (x := y)]
+      simp
+    nlinarith [norm_nonneg (inner 𝒜 x y : 𝒜), norm_nonneg x, norm_nonneg y,
+      mul_nonneg (norm_nonneg x) (norm_nonneg y)]
 
 /-- The nontrivial half of **32X**: a bound on the sesquilinear form bounds
 the map. -/
@@ -300,7 +322,7 @@ theorem chilb_form_bounded (T : X →ₗ[ℂ] Y) (B : ℝ) (hB : 0 < B) :
     (∀ x : X, ‖T x‖ ≤ B * ‖x‖) ↔
       ∀ (x : X) (y : Y), ‖inner 𝒜 y (T x)‖ ≤ B * ‖y‖ * ‖x‖ := by
   refine ⟨fun h x y => ?_, fun h => norm_le_of_inner_bound hB.le h⟩
-  calc ‖inner 𝒜 y (T x)‖ ≤ ‖y‖ * ‖T x‖ := CStarModule.norm_inner_le Y
+  calc ‖inner 𝒜 y (T x)‖ ≤ ‖y‖ * ‖T x‖ := (chilb_norm_basic_2 _ _ 0).2
     _ ≤ ‖y‖ * (B * ‖x‖) := by gcongr; exact h x
     _ = B * ‖y‖ * ‖x‖ := by ring
 
@@ -310,7 +332,7 @@ private theorem norm_adjoint_le (T : X →L[ℂ] Y) (S : Y →L[ℂ] X)
   refine norm_le_of_inner_bound (𝒜 := 𝒜) (T := ⇑S) (norm_nonneg T)
     (fun y' x' => ?_) y
   rw [← h x' y']
-  calc ‖inner 𝒜 (T x') y'‖ ≤ ‖T x'‖ * ‖y'‖ := CStarModule.norm_inner_le Y
+  calc ‖inner 𝒜 (T x') y'‖ ≤ ‖T x'‖ * ‖y'‖ := (chilb_norm_basic_2 _ _ 0).2
     _ ≤ ‖T‖ * ‖x'‖ * ‖y'‖ :=
         mul_le_mul_of_nonneg_right (T.le_opNorm x') (norm_nonneg y')
 
@@ -340,7 +362,7 @@ theorem exists_clm_adjointTo_norm {T : X →L[ℂ] Y} {S : Y → X}
   have hbound : ∀ (y : Y) (x : X), ‖inner 𝒜 x (S y)‖ ≤ ‖T‖ * ‖x‖ * ‖y‖ := by
     intro y x
     rw [← h' x y]
-    calc ‖inner 𝒜 (T x) y‖ ≤ ‖T x‖ * ‖y‖ := CStarModule.norm_inner_le Y
+    calc ‖inner 𝒜 (T x) y‖ ≤ ‖T x‖ * ‖y‖ := (chilb_norm_basic_2 _ _ 0).2
       _ ≤ ‖T‖ * ‖x‖ * ‖y‖ :=
           mul_le_mul_of_nonneg_right (T.le_opNorm x) (norm_nonneg y)
   have hnorm : ∀ y : Y, ‖S y‖ ≤ ‖T‖ * ‖y‖ :=
@@ -368,7 +390,7 @@ theorem module_maps_cstar_identity (T S : X →L[ℂ] X)
       intro x
       have h1 : ‖T x‖ ^ 2 ≤ ‖S.comp T‖ * ‖x‖ ^ 2 := by
         rw [CStarModule.norm_sq_eq (A := 𝒜) (x := T x), h x (T x)]
-        calc ‖inner 𝒜 x (S (T x))‖ ≤ ‖x‖ * ‖S (T x)‖ := CStarModule.norm_inner_le X
+        calc ‖inner 𝒜 x (S (T x))‖ ≤ ‖x‖ * ‖S (T x)‖ := (chilb_norm_basic_2 _ _ 0).2
           _ ≤ ‖x‖ * (‖S.comp T‖ * ‖x‖) := by
               gcongr
               exact (S.comp T).le_opNorm x
@@ -390,7 +412,7 @@ theorem exists_clm_adjointTo {T : X →L[ℂ] X} {S : X → X}
   have hbound : ∀ y x : X, ‖inner 𝒜 x (S y)‖ ≤ ‖T‖ * ‖x‖ * ‖y‖ := by
     intro y x
     rw [← h x y]
-    calc ‖inner 𝒜 (T x) y‖ ≤ ‖T x‖ * ‖y‖ := CStarModule.norm_inner_le X
+    calc ‖inner 𝒜 (T x) y‖ ≤ ‖T x‖ * ‖y‖ := (chilb_norm_basic_2 _ _ 0).2
       _ ≤ ‖T‖ * ‖x‖ * ‖y‖ :=
           mul_le_mul_of_nonneg_right (T.le_opNorm x) (norm_nonneg y)
   have hnorm : ∀ y, ‖S y‖ ≤ ‖T‖ * ‖y‖ :=
@@ -439,11 +461,11 @@ theorem bax_cstar [CompleteSpace X] :
       abel
     rw [e]
     refine (norm_add_le _ _).trans (add_le_add ?_ ?_)
-    · calc ‖inner 𝒜 ((T - Tn n) x) y‖ ≤ ‖(T - Tn n) x‖ * ‖y‖ := CStarModule.norm_inner_le X
+    · calc ‖inner 𝒜 ((T - Tn n) x) y‖ ≤ ‖(T - Tn n) x‖ * ‖y‖ := (chilb_norm_basic_2 _ _ 0).2
         _ ≤ ‖T - Tn n‖ * ‖x‖ * ‖y‖ := by
             gcongr
             exact (T - Tn n).le_opNorm x
-    · calc ‖inner 𝒜 x ((Sn n - S) y)‖ ≤ ‖x‖ * ‖(Sn n - S) y‖ := CStarModule.norm_inner_le X
+    · calc ‖inner 𝒜 x ((Sn n - S) y)‖ ≤ ‖x‖ * ‖(Sn n - S) y‖ := (chilb_norm_basic_2 _ _ 0).2
         _ ≤ ‖x‖ * (‖Sn n - S‖ * ‖y‖) := by
             gcongr
             exact (Sn n - S).le_opNorm y
@@ -634,16 +656,15 @@ private theorem bax_inner_nonneg [CompleteSpace X] {U : Bax 𝒜 X} (hU : 0 ≤ 
   exact CStarModule.inner_self_nonneg
 
 /-- `a⁻ a a⁻ = -(a⁻)³` for self-adjoint `a` (the negative part absorbs the
-positive part).  Cf. `exists_negPart` below, of which this is the first half;
-it is repeated here because that lemma is stated further down the file. -/
+positive part).  The first half of the negative-part argument of **32XV**.2. -/
 private theorem negPart_conj_aux {M : Type*} [CStarAlgebra M] [PartialOrder M]
     [StarOrderedRing M] {a : M} (hsa : IsSelfAdjoint a) :
     a⁻ * a * a⁻ = -(a⁻ * a⁻ * a⁻) := by
   conv_lhs => arg 1; arg 2; rw [← CFC.posPart_sub_negPart a hsa]
   rw [mul_sub, sub_mul, CFC.negPart_mul_posPart, zero_mul, zero_sub]
 
-/-- A self-adjoint element whose negative part cubes to zero is positive.  Cf.
-`exists_negPart` below, of which this is the second half. -/
+/-- A self-adjoint element whose negative part cubes to zero is positive.  The
+second half of the negative-part argument of **32XV**.2. -/
 private theorem nonneg_of_negPart_cube {M : Type*} [CStarAlgebra M] [PartialOrder M]
     [StarOrderedRing M] {a : M} (hsa : IsSelfAdjoint a) (h3 : a⁻ * a⁻ * a⁻ = 0) :
     0 ≤ a := by
@@ -724,7 +745,7 @@ theorem chilb_vector_states_3 [CompleteSpace X] (T : X →L[ℂ] X)
   -- the supremum is bounded by `‖T‖` (**32IX**.2)
   have hb : ∀ x : {x : X // ‖x‖ ≤ 1}, F x ≤ ‖T‖ := by
     intro x
-    calc F x ≤ ‖(x : X)‖ * ‖T (x : X)‖ := CStarModule.norm_inner_le X
+    calc F x ≤ ‖(x : X)‖ * ‖T (x : X)‖ := (chilb_norm_basic_2 _ _ 0).2
       _ ≤ 1 * (‖T‖ * 1) := by
           gcongr
           · exact x.2
@@ -972,88 +993,10 @@ private theorem exists_star_mul_self {M : Type*} [CStarAlgebra M] [PartialOrder 
     [StarOrderedRing M] {a : M} (ha : 0 ≤ a) : ∃ b, a = star b * b :=
   CStarAlgebra.nonneg_iff_eq_star_mul_self.mp ha
 
-/-- The negative part `b = a⁻` of a self-adjoint `a`, in the only form needed
-below: `b a b = -b³`, and `a` is positive as soon as `b³` vanishes.  Again stated
-for an abstract C*-algebra `M`, see `exists_star_mul_self`. -/
-private theorem exists_negPart {M : Type*} [CStarAlgebra M] [PartialOrder M]
-    [StarOrderedRing M] {a : M} (hsa : IsSelfAdjoint a) :
-    ∃ b : M, 0 ≤ b ∧ b * a * b = -(b * b * b) ∧ (b * b * b = 0 → 0 ≤ a) := by
-  refine ⟨a⁻, CFC.negPart_nonneg a, ?_, ?_⟩
-  · conv_lhs => arg 1; arg 2; rw [← CFC.posPart_sub_negPart a hsa]
-    rw [mul_sub, sub_mul, CFC.negPart_mul_posPart, zero_mul, zero_sub]
-  · intro h3
-    have hsab : IsSelfAdjoint (a⁻) := (CFC.negPart_nonneg a).isSelfAdjoint
-    have h4 : star (a⁻ * a⁻) * (a⁻ * a⁻) = 0 := by
-      rw [star_mul, hsab.star_eq]
-      calc a⁻ * a⁻ * (a⁻ * a⁻) = a⁻ * (a⁻ * a⁻ * a⁻) := by noncomm_ring
-        _ = 0 := by rw [h3, mul_zero]
-    have hbb : a⁻ * a⁻ = 0 := CStarRing.star_mul_self_eq_zero_iff _ |>.mp h4
-    have hb : a⁻ = 0 := by
-      refine CStarRing.star_mul_self_eq_zero_iff _ |>.mp ?_
-      rw [hsab.star_eq, hbb]
-    exact CStarAlgebra.nonneg_iff_isSelfAdjoint_and_negPart_eq_zero.mpr ⟨hsa, hb⟩
-
-omit [PartialOrder 𝒜] [StarOrderedRing 𝒜] in
-/-- An anti-self-adjoint `𝒜`-valued matrix `d` (`dᵢⱼ* = -dⱼᵢ`) whose sesquilinear
-form vanishes identically is zero.  This is the polarisation step behind the
-self-adjointness half of **33II**.1. -/
-private theorem sesq_eq_zero {d : Fin N → Fin N → 𝒜} (hd : ∀ i j, star (d i j) = -d j i)
-    (h : ∀ a : Fin N → 𝒜, ∑ i, ∑ j, star (a i) * d i j * a j = 0) (p q : Fin N) :
-    d p q = 0 := by
-  classical
-  have hsingle : ∀ (p q : Fin N) (x y : 𝒜),
-      ∑ i, ∑ j, star ((Pi.single p x : Fin N → 𝒜) i) * d i j * (Pi.single q y : Fin N → 𝒜) j
-        = star x * d p q * y := by
-    intro p q x y
-    simp [Pi.single_apply, apply_ite star, ite_mul, mul_ite]
-  have hbil : ∀ u v : Fin N → 𝒜, ∑ i, ∑ j, star ((u + v) i) * d i j * (u + v) j
-      = ((∑ i, ∑ j, star (u i) * d i j * u j) + ∑ i, ∑ j, star (u i) * d i j * v j)
-        + ((∑ i, ∑ j, star (v i) * d i j * u j) + ∑ i, ∑ j, star (v i) * d i j * v j) := by
-    intro u v
-    simp only [Pi.add_apply, star_add, add_mul, mul_add, Finset.sum_add_distrib]
-    abel
-  have hdiag : ∀ r, d r r = 0 := by
-    intro r
-    have := h (Pi.single r 1)
-    rw [hsingle r r 1 1] at this
-    simpa using this
-  have key : ∀ (p q : Fin N) (x y : 𝒜), star x * d p q * y + star y * d q p * x = 0 := by
-    intro p q x y
-    have := h (Pi.single p x + Pi.single q y)
-    rw [hbil, hsingle p p x x, hsingle p q x y, hsingle q p y x, hsingle q q y y,
-      hdiag p, hdiag q] at this
-    simpa using this
-  have hqp : d q p = -star (d p q) := by rw [hd p q]; rw [neg_neg]
-  have hsa : ∀ x y : 𝒜, star (star x * d p q * y) = star x * d p q * y := by
-    intro x y
-    have hk := key p q x y
-    have he : star y * d q p * x = -star (star x * d p q * y) := by
-      rw [hqp, star_mul, star_mul, star_star]
-      noncomm_ring
-    rw [he] at hk
-    exact (add_neg_eq_zero.mp hk).symm
-  have h1 : star (d p q) = d p q := by simpa using hsa 1 1
-  have h2 := hsa 1 (Complex.I • (1 : 𝒜))
-  rw [star_one, one_mul, mul_smul_comm, mul_one, star_smul, h1, Complex.star_def,
-    Complex.conj_I] at h2
-  have h3 : ((-Complex.I) - Complex.I) • d p q = 0 := by rw [sub_smul, h2, sub_self]
-  rcases smul_eq_zero.mp h3 with h4 | h4
-  · exact absurd h4 (by norm_num [Complex.ext_iff])
-  · exact h4
-
 section MatrixOrder
 
 variable [PartialOrder (CStarMatrix (Fin N) (Fin N) 𝒜)]
   [StarOrderedRing (CStarMatrix (Fin N) (Fin N) 𝒜)]
-
-omit [PartialOrder 𝒜] [StarOrderedRing 𝒜] [PartialOrder (CStarMatrix (Fin N) (Fin N) 𝒜)]
-  [StarOrderedRing (CStarMatrix (Fin N) (Fin N) 𝒜)] in
-/-- The `(k,l)` entry of `M* A M`. -/
-private theorem conj_apply (M A : CStarMatrix (Fin N) (Fin N) 𝒜) (k l : Fin N) :
-    (star M * A * M) k l = ∑ i, ∑ j, star (M i k) * A i j * M j l := by
-  rw [CStarMatrix.mul_apply]
-  simp only [CStarMatrix.mul_apply, CStarMatrix.star_apply, Finset.sum_mul]
-  rw [Finset.sum_comm]
 
 /-- The diagonal entries of a positive matrix are positive. -/
 private theorem diag_nonneg {B : CStarMatrix (Fin N) (Fin N) 𝒜} (hB : 0 ≤ B) (k : Fin N) :
@@ -1078,66 +1021,63 @@ private theorem col_eq_zero {B : CStarMatrix (Fin N) (Fin N) 𝒜} (hB : 0 ≤ B
   rw [CStarMatrix.mul_apply]
   simp [CStarMatrix.star_apply, hC]
 
-/-- A positive matrix with vanishing diagonal is zero. -/
-private theorem eq_zero_of_diag_eq_zero {B : CStarMatrix (Fin N) (Fin N) 𝒜} (hB : 0 ≤ B)
-    (h : ∀ k, B k k = 0) : B = 0 := by
-  ext i j
-  exact col_eq_zero hB (h j) i
-
 /-- **33II** (`when-a-matrix-over-a-cstar-algebra-is-positive`,
 cstar.tex:5339, Exercise), part 1: an `N×N`-matrix `A` over `𝒜` is positive
-iff `0 ≤ ∑_{i,j} aᵢ* Aᵢⱼ aⱼ` for all `a₁, …, a_N ∈ 𝒜`. -/
+iff `0 ≤ ∑_{i,j} aᵢ* Aᵢⱼ aⱼ` for all `a₁, …, a_N ∈ 𝒜`.
+
+This is the route the exercise's hint prescribes: transport the question to
+`𝓑^a(𝒜^N)` along **33I** and apply **32XV**.2 there.  The transport is
+`cstar_matrices_1` (the adjoint of `Ā` is `A*`), `cstar_matrices_2`
+(injectivity and surjectivity of `A ↦ Ā`) and `cstar_matrices_3` (`A ↦ Ā`
+is multiplicative — up to the order of composition, Mathlib's `toCLM` acting
+by `vecMul`), which together turn `0 ≤ A` — that is, `A = B B*` — into
+`Ā = R* R` for an adjointable `R`.  The vector functional of `Ā` at `x`
+is the exercise's sum at `aᵢ = xᵢ*`.  Neither half needs the self-adjointness
+of `A` to be established by hand. -/
 theorem cstar_matrix_positive_iff (A : CStarMatrix (Fin N) (Fin N) 𝒜) :
     0 ≤ A ↔ ∀ a : Fin N → 𝒜, 0 ≤ ∑ i, ∑ j, star (a i) * A i j * a j := by
+  have hct : ∀ B : CStarMatrix (Fin N) (Fin N) 𝒜,
+      (Matrix.conjTranspose B : CStarMatrix (Fin N) (Fin N) 𝒜) = star B := fun _ => rfl
+  -- **33I**: `0 ≤ A` iff `Ā` is of the form `R* R` in `𝓑^a(𝒜^N)`
+  have hop : (0 ≤ A) ↔ ∃ R R' : C⋆ᵐᵒᵈ(𝒜, Fin N → 𝒜) →L[ℂ] C⋆ᵐᵒᵈ(𝒜, Fin N → 𝒜),
+      ModuleAdjointTo 𝒜 ⇑R ⇑R' ∧ CStarMatrix.toCLM A = R'.comp R := by
+    constructor
+    · intro hA
+      obtain ⟨B, rfl⟩ := exists_star_mul_self hA
+      exact ⟨CStarMatrix.toCLM (star B), CStarMatrix.toCLM B,
+        by simpa [hct] using cstar_matrices_1 (star B), cstar_matrices_3 (star B) B⟩
+    · rintro ⟨R, R', hadj, heq⟩
+      obtain ⟨B, hB⟩ := (cstar_matrices_2 (𝒜 := 𝒜) (M := N) (N := N)).2.2 R
+        (moduleAdjointable_linear (𝒜 := 𝒜) ⇑R ⟨⇑R', hadj⟩).2.2 ⟨⇑R', hadj⟩
+      have hadj' : ModuleAdjointTo 𝒜 ⇑(CStarMatrix.toCLM B) ⇑R' := by rw [hB]; exact hadj
+      have hR' : ⇑R' = ⇑(CStarMatrix.toCLM (star B)) :=
+        moduleAdjointTo_unique _ _ _ hadj' (by simpa [hct] using cstar_matrices_1 B)
+      have hA : CStarMatrix.toCLM A = CStarMatrix.toCLM (B * star B) := by
+        rw [heq, cstar_matrices_3 B (star B), ← hB]
+        exact congrArg (fun f => ContinuousLinearMap.comp f (CStarMatrix.toCLM B))
+          (DFunLike.coe_injective hR')
+      rw [CStarMatrix.toCLM_injective hA]
+      exact mul_star_self_nonneg B
+  -- the vector functional of `Ā` at `x` is the exercise's sum at `aᵢ = xᵢ*`
+  have hinner : ∀ x : C⋆ᵐᵒᵈ(𝒜, Fin N → 𝒜),
+      (inner 𝒜 x (CStarMatrix.toCLM A x) : 𝒜)
+        = ∑ i, ∑ j, star (star (x i)) * A i j * star (x j) := by
+    intro x
+    simp only [CStarMatrix.toCLM_apply_eq_sum, WithCStarModule.pi_inner,
+      WithCStarModule.equiv_symm_pi_apply, WithCStarModule.inner_def, star_star,
+      Finset.sum_mul]
+    rw [Finset.sum_comm]
+  -- **32XV**.2: the vector functionals of `𝓑^a(𝒜^N)` are order separating
+  rw [hop, ← chilb_vector_states_2 (𝒜 := 𝒜) (X := C⋆ᵐᵒᵈ(𝒜, Fin N → 𝒜))
+    (CStarMatrix.toCLM A) ⟨_, cstar_matrices_1 A⟩]
   constructor
-  · intro hA a
-    rcases isEmpty_or_nonempty (Fin N) with _ | ⟨⟨k⟩⟩
-    · simp
-    · set M : CStarMatrix (Fin N) (Fin N) 𝒜 := CStarMatrix.ofMatrix (Matrix.of fun i _ => a i)
-        with hM
-      have hMe : ∀ i j : Fin N, M i j = a i := fun _ _ => rfl
-      have h2 := diag_nonneg (star_left_conjugate_nonneg hA M) k
-      rw [conj_apply] at h2
-      simpa only [hMe] using h2
-  · intro h
-    have hsa : IsSelfAdjoint A := by
-      have hstar : ∀ a : Fin N → 𝒜, star (∑ i, ∑ j, star (a i) * A i j * a j)
-          = ∑ i, ∑ j, star (a i) * star (A j i) * a j := by
-        intro a
-        simp only [star_sum, star_mul, star_star, mul_assoc]
-        exact Finset.sum_comm
-      have hzero : ∀ a : Fin N → 𝒜,
-          ∑ i, ∑ j, star (a i) * (A i j - star (A j i)) * a j = 0 := by
-        intro a
-        have hd : (∑ i, ∑ j, star (a i) * A i j * a j)
-            - (∑ i, ∑ j, star (a i) * star (A j i) * a j) = 0 := by
-          rw [← hstar a, (h a).isSelfAdjoint.star_eq, sub_self]
-        rw [← hd]
-        simp only [mul_sub, sub_mul, Finset.sum_sub_distrib]
-      have hd : ∀ i j : Fin N,
-          star (A i j - star (A j i)) = -(A j i - star (A i j)) := by
-        intro i j
-        rw [star_sub, star_star]
-        abel
-      change star A = A
-      ext i j
-      rw [CStarMatrix.star_apply]
-      exact (sub_eq_zero.mp (sesq_eq_zero hd hzero i j)).symm
-    obtain ⟨B, hB0, hBAB, hfin⟩ := exists_negPart hsa
-    have hBsa : star B = B := hB0.isSelfAdjoint.star_eq
-    have hB3 : 0 ≤ B * B * B := by
-      have := star_left_conjugate_nonneg hB0 B
-      rwa [hBsa] at this
-    refine hfin (eq_zero_of_diag_eq_zero hB3 fun k => ?_)
-    have hx : 0 ≤ (B * A * B) k k := by
-      have := h (fun i => B i k)
-      rw [← conj_apply B A k k, hBsa] at this
-      exact this
-    have hsum : (B * A * B) k k + (B * B * B) k k = 0 := by
-      rw [hBAB]
-      simp
-    have hneg : (B * B * B) k k = -((B * A * B) k k) := eq_neg_of_add_eq_zero_right hsum
-    exact le_antisymm (hneg ▸ neg_nonpos.mpr hx) (diag_nonneg hB3 k)
+  · intro h a
+    have h2 := h ((WithCStarModule.equiv 𝒜 (Fin N → 𝒜)).symm fun i => star (a i))
+    rw [hinner] at h2
+    simpa using h2
+  · intro h x
+    rw [hinner]
+    exact h fun i => star (x i)
 
 /-- **33II** (`when-a-matrix-over-a-cstar-algebra-is-positive`,
 cstar.tex:5339, Exercise), part 2: the Gram matrix `(⟨xᵢ, xⱼ⟩)ᵢⱼ` of vectors
@@ -1166,24 +1106,16 @@ theorem cstar_matrix_gram_nonneg {X : Type*} [NormedAddCommGroup X]
 
 /-- **33II** (`when-a-matrix-over-a-cstar-algebra-is-positive`,
 cstar.tex:5339, Exercise), part 3: the matrix `(aᵢ* aⱼ)ᵢⱼ` is positive for
-all `a₁, …, a_N ∈ 𝒜`. -/
+all `a₁, …, a_N ∈ 𝒜`.
+
+As the solution says, this is part 2 for `X = 𝒜` — the C*-algebra as a Hilbert
+module over itself, `⟨a,b⟩ = a* b`.  In Mathlib's opposite convention
+`⟪x,y⟫ = y x*` (`WithCStarModule.inner_def`), so the vectors to feed part 2
+are `xᵢ = aᵢ*`. -/
 theorem cstar_matrix_star_mul_nonneg (a : Fin N → 𝒜) :
     0 ≤ CStarMatrix.ofMatrix (Matrix.of fun i j => star (a i) * a j) := by
-  obtain _ | n := N
-  · have h : (CStarMatrix.ofMatrix (Matrix.of fun i j => star (a i) * a j) :
-        CStarMatrix (Fin 0) (Fin 0) 𝒜) = 0 := by
-      ext i _
-      exact i.elim0
-    rw [h]
-  · set M : CStarMatrix (Fin (n + 1)) (Fin (n + 1)) 𝒜 :=
-      CStarMatrix.ofMatrix (Matrix.of fun k i => if k = 0 then a i else 0) with hM
-    have h : CStarMatrix.ofMatrix (Matrix.of fun i j => star (a i) * a j)
-        = star M * M := by
-      ext i j
-      rw [CStarMatrix.mul_apply]
-      simp [hM, CStarMatrix.star_apply, apply_ite star, ite_zero_mul_ite_zero]
-    rw [h]
-    exact star_mul_self_nonneg M
+  have h := cstar_matrix_gram_nonneg (𝒜 := 𝒜) (X := 𝒜) fun i => star (a i)
+  simpa only [WithCStarModule.inner_def, star_star] using h
 
 end MatrixOrder
 
@@ -1505,19 +1437,19 @@ theorem cp_comp {𝒞 : Type*} [CStarAlgebra 𝒞] [PartialOrder 𝒞]
   exact hg' N _ (hf' N A hA)
 
 /-- **34IV** (`cp`, cstar.tex:5448, Exercise), part 3: every mi-map is
-completely positive. -/
+completely positive.
+
+The exercise's hint is "`M_N f` is a mi-map too": that is **33III**.2
+(`mnf_inherits`), and a mi-map is positive by **25II**.2
+(`astara_pos_basic_2_mi`), so `M_N f` is positive for every `N`, which is
+part 1 (`cp_iff`) of this same exercise. -/
 theorem cp_of_mi (f : 𝒜 →ₗ[ℂ] ℬ) (hm : IsMultiplicativeMap f)
     (hi : IsInvolutionPreserving f) : IsCompletelyPositiveMap f := by
-  have hm' : ∀ x y : 𝒜, f (x * y) = f x * f y := hm
-  have hi' : ∀ x : 𝒜, f (star x) = star (f x) := hi
-  intro n a b
-  have h : ∀ i j : Fin n, star (b i) * f (star (a i) * a j) * b j
-      = star (f (a i) * b i) * (f (a j) * b j) := by
-    intro i j
-    rw [hm', hi', star_mul]
-    simp [mul_assoc]
-  simp_rw [h, sum_star_mul_sum]
-  exact star_mul_self_nonneg _
+  refine (cp_iff f).out 1 0 |>.mp fun N A hA => ?_
+  have hmi := mnf_inherits (N := N) f
+  have hM : IsPositiveMap (CStarMatrix.mapₗ (R := ℂ) (S := ℂ) (n := Fin N) f) :=
+    astara_pos_basic_2_mi _ (fun x y => hmi.2.1 hm x y) fun x => hmi.2.2 hi x
+  exact hM A hA
 
 /-- **34V** (`ad-cp`, cstar.tex:5463, Exercise), part 1: the map
 `b ↦ a* b a : 𝒜 → 𝒜` is completely positive for every `a ∈ 𝒜`. -/
