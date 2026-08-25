@@ -13,9 +13,11 @@ import Theses.A.VN.Division
 import Theses.A.VN.NormalFunctionals
 import Theses.A.VN.Modular
 import Theses.A.VN.StandardSubspace
+import Theses.A.VN.Tomita
 import Theses.A.Proc.Measurement
 import Theses.A.Proc.Tensor
 import Theses.A.Proc.QuantumLambda
+import Theses.A.Proc.Commutation
 import Theses.A.Proc.Duplicators
 import Theses.B.Dils.Stinespring
 import Theses.B.Dils.HilbertModules
