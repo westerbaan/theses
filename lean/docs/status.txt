@@ -1516,7 +1516,7 @@ Theses.A.Proc.Tensor|Theses.A.Proc.sum_generation_1|green
 Theses.A.Proc.Tensor|Theses.A.Proc.sum_generation_1_is_false|green
 Theses.A.Proc.Tensor|Theses.A.Proc.sum_generation_2|green
 Theses.A.Proc.Commutation|Theses.A.Proc.tendsto_apply_of_isLUB_proj|green
-Theses.A.Proc.QuantumLambda|Theses.A.Proc.tensorBsurjectivity|red
+Theses.A.Proc.QuantumLambda|Theses.A.Proc.tensorBsurjectivity|green
 Theses.A.Proc.TensorTransport|Theses.A.Proc.tensorGen_vnComm_top|green
 Theses.A.Proc.Tensor|Theses.A.Proc.tensorNorm_add_le|green
 Theses.A.Proc.Tensor|Theses.A.Proc.tensorNorm_eq_zero_iff|green
@@ -1538,9 +1538,9 @@ Theses.A.Proc.Tensor|Theses.A.Proc.tensor_basic_3_norm_le|green
 Theses.A.Proc.Tensor|Theses.A.Proc.tensor_basic_4|green
 Theses.A.Proc.Tensor|Theses.A.Proc.tensor_basic_5|green
 Theses.A.Proc.Tensor|Theses.A.Proc.tensor_characterization|green
-Theses.A.Proc.QuantumLambda|Theses.A.Proc.tensor_closed|red
+Theses.A.Proc.QuantumLambda|Theses.A.Proc.tensor_closed|green
 Theses.A.Proc.Tensor|Theses.A.Proc.tensor_distributes_over_sums|green
-Theses.A.Proc.QuantumLambda|Theses.A.Proc.tensor_equalisers|red
+Theses.A.Proc.QuantumLambda|Theses.A.Proc.tensor_equalisers|green
 Theses.A.Proc.Tensor|Theses.A.Proc.tensor_functor_comp|green
 Theses.A.Proc.Tensor|Theses.A.Proc.tensor_functor_id|green
 Theses.A.Proc.Tensor|Theses.A.Proc.tensor_functorial|green
@@ -1548,8 +1548,8 @@ Theses.A.Proc.Tensor|Theses.A.Proc.tensor_generation_1|green
 Theses.A.Proc.Tensor|Theses.A.Proc.tensor_generation_2|green
 Theses.A.Proc.Tensor|Theses.A.Proc.tensor_injective|green
 Theses.A.Proc.Tensor|Theses.A.Proc.tensor_linear_ext|green
-Theses.A.Proc.QuantumLambda|Theses.A.Proc.tensor_map_factorisation|red
-Theses.A.Proc.QuantumLambda|Theses.A.Proc.tensor_preimage|red
+Theses.A.Proc.QuantumLambda|Theses.A.Proc.tensor_map_factorisation|green
+Theses.A.Proc.QuantumLambda|Theses.A.Proc.tensor_preimage|green
 Theses.A.Proc.Tensor|Theses.A.Proc.tensor_product_norm|green
 Theses.A.Proc.Tensor|Theses.A.Proc.tensor_simple_facts_1|green
 Theses.A.Proc.Tensor|Theses.A.Proc.tensor_simple_facts_2|green
@@ -4281,9 +4281,11 @@ Theses.A.Proc.QuantumLambda|Theses.A.Proc.exists_lp_congr|green
 Theses.A.Proc.QuantumLambda|Theses.A.Proc.exists_lp_factor|green
 Theses.A.Proc.QuantumLambda|Theses.A.Proc.exists_lp_reindex|green
 Theses.A.Proc.QuantumLambda|Theses.A.Proc.exists_matSumTensorIso|green
+Theses.A.Proc.QuantumLambda|Theses.A.Proc.exists_minimal_tensorSub|green
 Theses.A.Proc.QuantumLambda|Theses.A.Proc.exists_ncpsuCompNmiu'|green
 Theses.A.Proc.QuantumLambda|Theses.A.Proc.exists_ncpsuCorestrict|green
 Theses.A.Proc.QuantumLambda|Theses.A.Proc.exists_smallRealization|green
+Theses.A.Proc.QuantumLambda|Theses.A.Proc.exists_sumTensorIso|green
 Theses.A.Proc.QuantumLambda|Theses.A.Proc.gApprox|green
 Theses.A.Proc.QuantumLambda|Theses.A.Proc.gPi_apply|green
 Theses.A.Proc.QuantumLambda|Theses.A.Proc.gU_add|green
@@ -4350,8 +4352,10 @@ Theses.A.Proc.QuantumLambda|Theses.A.Proc.mul_lpKappa|green
 Theses.A.Proc.QuantumLambda|Theses.A.Proc.ncpsuCompNmiu_apply|green
 Theses.A.Proc.QuantumLambda|Theses.A.Proc.nmiuComp_bijective|green
 Theses.A.Proc.QuantumLambda|Theses.A.Proc.nmiuComp_punit|green
+Theses.A.Proc.QuantumLambda|Theses.A.Proc.nmiuEqualizer_injective|green
 Theses.A.Proc.QuantumLambda|Theses.A.Proc.nmiuNP_apply|green
 Theses.A.Proc.QuantumLambda|Theses.A.Proc.nmiuTmulLeft_apply|green
+Theses.A.Proc.QuantumLambda|Theses.A.Proc.nmiu_ext_of_tensorBSurjective|green
 Theses.A.Proc.QuantumLambda|Theses.A.Proc.nmiu_ext_of_wstar_top|green
 Theses.A.Proc.QuantumLambda|Theses.A.Proc.nontrivial_of_haIndex|green
 Theses.A.Proc.QuantumLambda|Theses.A.Proc.npScalarP_apply|green
@@ -4363,6 +4367,7 @@ Theses.A.Proc.QuantumLambda|Theses.A.Proc.punitEval_bijective|green
 Theses.A.Proc.QuantumLambda|Theses.A.Proc.punitEval_comp_inv|green
 Theses.A.Proc.QuantumLambda|Theses.A.Proc.punitSum_ha|green
 Theses.A.Proc.QuantumLambda|Theses.A.Proc.punitSum_nontrivial|green
+Theses.A.Proc.QuantumLambda|Theses.A.Proc.rSlice_mem_of_mem_tensorSub|green
 Theses.A.Proc.QuantumLambda|Theses.A.Proc.solNontrivial|green
 Theses.A.Proc.QuantumLambda|Theses.A.Proc.solution_set|green
 Theses.A.Proc.QuantumLambda|Theses.A.Proc.sum_haU_diag|green
@@ -4371,7 +4376,11 @@ Theses.A.Proc.QuantumLambda|Theses.A.Proc.surj_of_haTensorBSurj|green
 Theses.A.Proc.QuantumLambda|Theses.A.Proc.surj_of_haTensorBSurj2|green
 Theses.A.Proc.QuantumLambda|Theses.A.Proc.tensorBSurjective_congr|green
 Theses.A.Proc.QuantumLambda|Theses.A.Proc.tensorBSurjective_of_iso|green
+Theses.A.Proc.QuantumLambda|Theses.A.Proc.tensorBSurjective_of_minimal|green
 Theses.A.Proc.QuantumLambda|Theses.A.Proc.tensorB_ext_of_coords|green
+Theses.A.Proc.QuantumLambda|Theses.A.Proc.tensorSub_map_left|green
+Theses.A.Proc.QuantumLambda|Theses.A.Proc.tensorSub_map_right|green
+Theses.A.Proc.QuantumLambda|Theses.A.Proc.tensor_solution_set|green
 Theses.A.Proc.QuantumLambda|Theses.A.Proc.tmapM_comp_id|green
 Theses.A.Proc.QuantumLambda|Theses.A.Proc.tmapM_id|green
 Theses.A.Proc.QuantumLambda|Theses.A.Proc.tmapM_id_bijective|green
@@ -4379,6 +4388,7 @@ Theses.A.Proc.QuantumLambda|Theses.A.Proc.tmapM_injective|green
 Theses.A.Proc.QuantumLambda|Theses.A.Proc.tmapM_range_le|green
 Theses.A.Proc.QuantumLambda|Theses.A.Proc.tmapM_range_le2|green
 Theses.A.Proc.QuantumLambda|Theses.A.Proc.tmapM_vtmul_one|green
+Theses.A.Proc.QuantumLambda|Theses.A.Proc.tsolNontrivial|green
 Theses.A.Proc.QuantumLambda|Theses.A.Proc.two_toReal_pos|green
 Theses.A.Proc.QuantumLambda|Theses.A.Proc.vnsub_isLUB_of_val|green
 Theses.A.Proc.QuantumLambda|Theses.A.Proc.vnsub_isVNSubalgebra_map|green
@@ -4388,6 +4398,7 @@ Theses.A.Proc.QuantumLambda|Theses.A.Proc.vnsub_wstar_eq_top|green
 Theses.A.Proc.QuantumLambda|Theses.A.Proc.vnt_mat_nontrivial|green
 Theses.A.Proc.QuantumLambda|Theses.A.Proc.vnt_nontrivial|green
 Theses.A.Proc.QuantumLambda|Theses.A.Proc.vnt_subsingleton|green
+Theses.A.Proc.QuantumLambda|Theses.A.Proc.vnt_subsingleton_left|green
 Theses.A.Proc.QuantumLambda|Theses.A.Proc.vtmulLeft_add|green
 Theses.A.Proc.QuantumLambda|Theses.A.Proc.vtmulLeft_mono|green
 Theses.A.Proc.QuantumLambda|Theses.A.Proc.vtmulLeft_smul|green
@@ -6221,6 +6232,8 @@ Theses.A.CStar.Positive|Theses.A.CStar.ThesisPos.norm_le|green
 Theses.A.CStar.Positive|Theses.A.CStar.ThesisPos.spectrum_subset|green
 Theses.A.Proc.QuantumLambda|Theses.A.Proc.SolIdx.hS|green
 Theses.A.Proc.QuantumLambda|Theses.A.Proc.SolIdx.hnt|green
+Theses.A.Proc.QuantumLambda|Theses.A.Proc.TSolIdx.hS|green
+Theses.A.Proc.QuantumLambda|Theses.A.Proc.TSolIdx.hnt|green
 Theses.A.VN.Basic|Theses.A.VN.ContRep.clRep_mono|green
 Theses.A.VN.Basic|Theses.A.VN.ContRep.eq_of_isMeagre_ne|green
 Theses.A.VN.Basic|Theses.A.VN.ContRep.exists_contRep|green
