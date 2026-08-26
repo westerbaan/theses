@@ -23,7 +23,6 @@ import Theses.A.VN.TomitaAnalytic
 import Theses.A.VN.CommutationTomita
 import Theses.A.Proc.Measurement
 import Theses.A.Proc.Tensor
-import Theses.A.Proc.QuantumLambda
 import Theses.A.Proc.Commutation
 import Theses.A.Proc.CornerTensor
 import Theses.A.Proc.TensorTransport
@@ -32,7 +31,7 @@ import Theses.A.Proc.CommutationAmplify
 import Theses.A.Proc.Compression
 import Theses.A.Proc.CommutationCyclic
 import Theses.A.Proc.CommutationTheorem
-import Theses.A.Proc.EqualiserLemma
+import Theses.A.Proc.QuantumLambda
 import Theses.A.Proc.Duplicators
 import Theses.B.Dils.Stinespring
 import Theses.B.Dils.HilbertModules

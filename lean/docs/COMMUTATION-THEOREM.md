@@ -6,9 +6,10 @@ shortest correct proof in the literature. Written so that the next person to ask
 "why is `intersection_tensor` still open?" gets a costed answer instead of a
 shrug.*
 
-Read with [`docs/why-open.csv`](why-open.csv) rows `intersection_tensor` and
-`equaliser_lemma`, and `PROVING-LOG.md` session 83, which first established the
-equivalence recorded in §1.
+Read with `PROVING-LOG.md` session 83, which first established the equivalence
+recorded in §1.  (The `docs/why-open.csv` rows `intersection_tensor` and
+`equaliser_lemma` were deleted on 2026-08-26, when both statements closed; see
+the banner in §1.)
 
 ---
 
@@ -27,17 +28,33 @@ That is a fact about the subject, not about the formalization.
 
 ## 1. Everything blocked is blocked on one theorem
 
-Seven `sorry`s remain in `Theses/A/Proc/QuantumLambda.lean`:
+> **Closed, 2026-08-26.** 121II `intersection_tensor` and 125IV
+> `equaliser_lemma` are **proved**; the count below is now **five**, not seven.
+> The last obstacle was not mathematics but the import graph: `A/Proc/
+> Commutation.lean` imported `QuantumLambda.lean`, so the finished commutation
+> theorem sat *above* the statement it proves.  `concreteTensor` and its API,
+> `uwTendsto_of_isLUB` and `uw_compress_tendsto` — the only things
+> `Commutation.lean` used from `QuantumLambda.lean` — moved down into
+> `A/Proc/Tensor.lean`; `Commutation.lean` now imports `Tensor.lean`, and
+> `QuantumLambda.lean` imports `A/Proc/CommutationTheorem.lean` and discharges
+> 121II with `intersection_tensor'`.  125IV followed: the development that was
+> `A/Proc/EqualiserLemma.lean` (which had had to copy ~310 lines of
+> `QuantumLambda.lean`'s `private` auxiliaries verbatim in order to see them)
+> moved into the end of `QuantumLambda.lean`, the copies were deleted, and
+> `EqualiserLemma.lean` no longer exists.  The rest of this section is the
+> 2026-08-25 reconnaissance, kept for the record.
 
-| point | name | line |
-|---|---|---|
-| 121II | `intersection_tensor` | :314 |
-| 125IV | `equaliser_lemma` | :2032 |
-| 125VI | `tensor_equalisers` | :2060 |
-| 125VIIb | `tensor_preimage` | :2085 |
-| 125VIII | `tensor_closed` | :2116 |
-| 125eIIa | `tensor_map_factorisation` | :4727 |
-| 125eIII | `tensorBsurjectivity` (`mpr` only) | :4758 |
+Seven `sorry`s remained in `Theses/A/Proc/QuantumLambda.lean`:
+
+| point | name | line | status |
+|---|---|---|---|
+| 121II | `intersection_tensor` | :314 | **proved 2026-08-26** |
+| 125IV | `equaliser_lemma` | :2032 | **proved 2026-08-26** |
+| 125VI | `tensor_equalisers` | :2060 | open |
+| 125VIIb | `tensor_preimage` | :2085 | open |
+| 125VIII | `tensor_closed` | :2116 | open |
+| 125eIIa | `tensor_map_factorisation` | :4727 | open |
+| 125eIII | `tensorBsurjectivity` (`mpr` only) | :4758 | open |
 
 121II is Takesaki I, Cor. IV.5.10, and is **equivalent** to Thm IV.5.9, the
 commutation theorem `(M ⊗̄ N)' = M' ⊗̄ N'`, given the double commutant theorem —

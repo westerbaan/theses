@@ -32,13 +32,15 @@ theorem at all, only `concreteTensor_wstar_le` (the normality of `a ↦ a ⊗ 1`
 commutant theorem (88VI), and one application of IV.5.9 to the pair
 `(W*(𝒜₁'∪𝒜₂'), W*(ℬ₁'∪ℬ₂'))` finishes.
 
-**`Theses.A.Proc.intersection_tensor` (`QuantumLambda.lean:314`) cannot be
-proved in place**: `A/Proc/Commutation.lean` imports `QuantumLambda.lean`, so
-nothing on the commutation-theorem side can be imported back into it.  What
-this file provides instead is `intersection_tensor'`, *literally* the same
-statement, and — since a proof of 121II is a proof of
-`IntersectionTensorStatement` — the abstract form
-`tensorSub_inf` that 125IV consumes.
+`intersection_tensor'` is *literally* the statement of
+`Theses.A.Proc.intersection_tensor`.  It used to be all this file could offer,
+because `A/Proc/Commutation.lean` imported `QuantumLambda.lean` and so the whole
+commutation development sat *above* it.  That cycle is gone: `concreteTensor`,
+`uwTendsto_of_isLUB` and `uw_compress_tendsto` now live in `A/Proc/Tensor.lean`,
+`Commutation.lean` imports `Tensor.lean`, and `QuantumLambda.lean` imports *this*
+file and discharges 121II with `intersection_tensor'`.  The abstract forms
+`intersectionTensorStatement` and `tensorSub_inf`, which used to be stated here,
+have moved to `QuantumLambda.lean` alongside `IntersectionTensorStatement`.
 -/
 import Theses.A.Proc.CommutationCyclic
 import Theses.A.VN.CommutationTomita
@@ -233,9 +235,7 @@ Corollary IV.5.10): for von Neumann subalgebras `𝒜₁, 𝒜₂ ⊆ B(ℋ)` an
 for the concrete tensor products.
 
 This is *verbatim* the statement of `Theses.A.Proc.intersection_tensor`
-(`QuantumLambda.lean:314`), which cannot be proved in place: the commutation
-theorem lives above `QuantumLambda.lean` in the import order, since
-`A/Proc/Commutation.lean` imports it.
+(`QuantumLambda.lean`), which is proved by this theorem.
 
 The proof is the one recorded in `docs/COMMUTATION-THEOREM.md` §1: rewrite each
 factor as a double commutant using IV.5.9, collapse the intersection of the two
@@ -262,28 +262,6 @@ theorem intersection_tensor' (SA₁ SA₂ : StarSubalgebra ℂ (H →L[ℂ] H))
     commutation_theorem _ _ (isVNSubalgebra_wstar _).1 (isVNSubalgebra_wstar _).1,
     vnComm_wstar_union SA₁ SA₂ hA₁ hA₂, vnComm_wstar_union SB₁ SB₂ hB₁ hB₂]
 
-/-- 121II, packaged as `QuantumLambda.lean`'s `IntersectionTensorStatement` —
-the hypothesis its six downstream consumers were phrased against. -/
-theorem intersectionTensorStatement : IntersectionTensorStatement.{u} :=
-  fun SA₁ SA₂ SB₁ SB₂ hA₁ hA₂ hB₁ hB₂ =>
-    intersection_tensor' SA₁ SA₂ SB₁ SB₂ hA₁ hA₂ hB₁ hB₂
-
 end Intersection
-
-/-- **The abstract form of 121II**, unconditional: for von Neumann subalgebras
-`𝒮₁, 𝒮₂ ⊆ 𝒜` and any von Neumann algebra `𝒞`,
-
-  `(𝒮₁ ⊗ 𝒞) ∩ (𝒮₂ ⊗ 𝒞) = (𝒮₁ ∩ 𝒮₂) ⊗ 𝒞`
-
-inside the chosen tensor product `𝒜 ⊗ 𝒞`.  This is
-`tensorSub_inf_of_intersectionTensorStatement` with its hypothesis discharged;
-it is what 125IV `equaliser_lemma` consumes. -/
-theorem tensorSub_inf {𝒜 𝒞 : Type u}
-    [CStarAlgebra 𝒜] [PartialOrder 𝒜] [StarOrderedRing 𝒜] [VonNeumannAlgebra 𝒜]
-    [CStarAlgebra 𝒞] [PartialOrder 𝒞] [StarOrderedRing 𝒞] [VonNeumannAlgebra 𝒞]
-    (S₁ S₂ : StarSubalgebra ℂ 𝒜) (hS₁ : IsVNSubalgebra 𝒜 S₁)
-    (hS₂ : IsVNSubalgebra 𝒜 S₂) :
-    tensorSub 𝒞 S₁ ⊓ tensorSub 𝒞 S₂ = tensorSub 𝒞 (S₁ ⊓ S₂) :=
-  tensorSub_inf_of_intersectionTensorStatement intersectionTensorStatement S₁ S₂ hS₁ hS₂
 
 end Theses.A.Proc

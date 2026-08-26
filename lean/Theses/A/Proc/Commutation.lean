@@ -34,7 +34,7 @@ step cannot be *stated* for the tensor product; the passage from
 σ-finiteness to a cyclic and separating vector after amplification by
 `ℓ²(ℕ)`; and the flip/associativity unitaries).
 -/
-import Theses.A.Proc.QuantumLambda
+import Theses.A.Proc.Tensor
 
 open scoped ComplexOrder ComplexInnerProductSpace CStarAlgebra
   TensorProduct ENNReal
