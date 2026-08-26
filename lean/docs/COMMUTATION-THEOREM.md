@@ -357,12 +357,39 @@ axiom-clean in situ.*
 | RvD Lemmas 4.5 and 4.6 | 300–500 + 400–700 | **1138** | `6a0cc8d` |
 | **total so far** | | **≈ 12 300** | |
 
-Still open, and it is now a short list: **RvD Lemmas 4.7 and 4.8**, which
-discharge the hypothesis `tomita_JMJ` already carries; the **`ℂⁿ` amplification
-transport**, which carries `CT_of_CT_finCyclic` the last step to the
-cyclic-and-separating case; and — *only if* Lemma 4.8 turns out to need it —
-holomorphy of `z ↦ R^{1+iz}`, deliberately left out of `ModularGroup.lean` with
-its route and a 250–350 line estimate recorded there.
+Still open, and it is now a short list: **RvD Lemma 4.7**; the **`ℂⁿ`
+amplification transport**, which carries `CT_of_CT_finCyclic` the last step to
+the cyclic-and-separating case; and **holomorphy of `cfc (·^w)`**, which is
+Lemma 4.7's input.
+
+**The holomorphy question, settled 2026-08-26 — and the answer corrects what
+was recorded here yesterday.** `ModularGroup.lean` left holomorphy out and
+recorded a claim that Lemma 4.8 does not need it. *That claim is true.* Lemma
+4.8's identity-theorem step is holomorphy in the **Fourier parameter**, by
+dominated convergence, with no operator-valued holomorphy anywhere — now proved
+outright as `differentiableAt_lapl`. **But the conclusion drawn from it, that
+the conjugation half therefore needs no holomorphy of `R^{iz}`, is false.**
+Lemma 4.8's first line consumes **Lemma 4.7**, and 4.7 (RvD p. 204) applies
+Lemma 4.6 to
+`f(z) = ⟪R^{-z+1/2}(2−R)^{z+1/2} x R^{z+1/2}(2−R)^{-z+1/2} ξ, η⟫` on
+`|Re z| ≤ 1/2`, justified by the single sentence *"from Lemma 3.6 it follows
+that `f` satisfies the requirements of Lemma 4.6"* — i.e. precisely Lemma 3.6's
+continuity and analyticity clauses. **So `R^{iz}` holomorphy is on the critical
+path, consumed by 4.7 rather than by 4.8.**
+
+Two findings that re-cost it downward:
+
+* **Inside the open strip nothing but `cfc` is needed.** For `|Re z| < 1/2` all
+  four exponents `±z+1/2` have real part strictly in `(0,1)`, so every factor is
+  plain `cpowOp = cfc (·^w)`. `DifferentiableOn ℂ f opStrip` reduces to
+  `HasDerivAt (fun w ↦ cfc (·^w) X) (cfc (fun u ↦ u^w log u) X) w` for
+  `Re w > 0`, via `norm_cfc_le` and the scalar estimate `t^c(log t)² ≤ 4/c²`.
+  The `extendOfNorm` device is needed only on the **boundary** `Re z = ±1/2`,
+  and there only for *continuity*; boundedness is free, since `|t^w| ≤ 2` on
+  `[0,2]`.
+* **A convention trap.** Mathlib's inner product is conjugate-linear in the
+  first slot, so `z ↦ ⟪A(z)ξ, η⟫` is *anti*holomorphic. The function handed to
+  `lemma_4_6` must be `f z = ⟪η, A(z) ξ⟫`.
 
 One instance of the theorem is already proved outright: `CT_top_right`
 (`54859e6`), the amplification case `(𝒜 ⊗̄ B(𝒦))□ = 𝒜□ ⊗̄ ℂ1`.
