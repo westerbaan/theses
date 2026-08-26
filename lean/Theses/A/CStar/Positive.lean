@@ -730,11 +730,19 @@ theorem invint_1 (z : ℂ) (hz : z ≠ 0) :
     z⁻¹ = ((z.re : ℂ) - (z.im : ℂ) * Complex.I) /
       ((z.re : ℂ) ^ 2 + (z.im : ℂ) ^ 2) :=
   by
-    have h1 : ((z.re : ℂ) ^ 2 + (z.im : ℂ) ^ 2) = (Complex.normSq z : ℂ) := by
-      rw [Complex.normSq_apply]; push_cast; ring
-    have h2 : ((z.re : ℂ) - (z.im : ℂ) * Complex.I) = (starRingEnd ℂ) z := by
+    -- the solution's computation (asols.tex, `parsec-140.80`(1)): `z̄ z = |z|²`,
+    -- so `z · (z̄ |z|⁻²) = 1` and hence `z⁻¹ = z̄ (|z|²)⁻¹`; the identity then
+    -- follows from `z̄ = Re z - i Im z` and `|z|² = Re z² + Im z²`.
+    have hconj : ((z.re : ℂ) - (z.im : ℂ) * Complex.I) = (starRingEnd ℂ) z := by
       apply Complex.ext <;> simp
-    rw [h1, h2, Complex.inv_def, div_eq_mul_inv, Complex.ofReal_inv]
+    have hsq : ((z.re : ℂ) ^ 2 + (z.im : ℂ) ^ 2) = (starRingEnd ℂ) z * z := by
+      apply Complex.ext <;>
+        simp [pow_two, Complex.mul_re, Complex.mul_im] <;> ring
+    have hne : ((z.re : ℂ) ^ 2 + (z.im : ℂ) ^ 2) ≠ 0 := by
+      rw [hsq]
+      exact mul_ne_zero (by simpa using hz) hz
+    rw [eq_div_iff hne, hsq, hconj, mul_comm ((starRingEnd ℂ) z) z, ← mul_assoc,
+      inv_mul_cancel₀ hz, one_mul]
 
 /-! **Divergence from the thesis, recorded here for part 3 of 14VIII.**
 The thesis's route is 2 → 3 → 4: it computes the two axis-parallel segment
@@ -2314,14 +2322,27 @@ this statement.) -/
 theorem gelfand_mazur (h : ∀ a : 𝒜, a ≠ 0 → IsUnit a) :
     ∀ a : 𝒜, ∃ z : ℂ, a = algebraMap ℂ 𝒜 z :=
   by
+    -- the solution's argument (asols.tex, `parsec-160.61`): if `𝒜 = {0}` we are
+    -- done, so assume `𝒜 ≠ {0}`.  For *self-adjoint* `b` the spectrum is
+    -- non-empty by **16V** `spectrum_nonempty`, so `b - λ` fails to be invertible
+    -- for some `λ`; as `0` is the only non-invertible element of `𝒜`, that gives
+    -- `b = λ`.  Every element `a`, being `ℜa + i·ℑa` (**7III**.1), is then a
+    -- scalar too.
     intro a
     rcases subsingleton_or_nontrivial 𝒜 with _ | _
     · exact ⟨0, Subsingleton.elim _ _⟩
-    · obtain ⟨z, hz⟩ := spectrum.nonempty a
-      refine ⟨z, ?_⟩
-      rw [spectrum.mem_iff] at hz
-      by_contra hne
-      exact hz (h _ (sub_ne_zero.mpr (Ne.symm hne)))
+    · have key : ∀ b : 𝒜, IsSelfAdjoint b → ∃ z : ℂ, b = algebraMap ℂ 𝒜 z := by
+        intro b hb
+        obtain ⟨z, hz⟩ := spectrum_nonempty b hb
+        refine ⟨z, ?_⟩
+        rw [spectrum.mem_iff] at hz
+        by_contra hne
+        exact hz (h _ (sub_ne_zero.mpr (Ne.symm hne)))
+      obtain ⟨z₁, h₁⟩ := key (ℜ a : 𝒜) (ℜ a).property
+      obtain ⟨z₂, h₂⟩ := key (ℑ a : 𝒜) (ℑ a).property
+      refine ⟨z₁ + Complex.I * z₂, ?_⟩
+      rw [map_add, map_mul, ← h₁, ← h₂, ← Algebra.smul_def]
+      exact cstar_involution_basic_1 a
 
 /-! **16VIII** (`gelfand-mazur-predicament`, cstar.tex:2663, Remark): why the
 usual Banach-algebra route to Gelfand's representation theorem is avoided —
@@ -2686,16 +2707,38 @@ private theorem thesisPos_antisymm {a : 𝒜} (h : ThesisPos a) (h' : ThesisPos 
 /-- **17VI**.2 for `ThesisPos`: the thesis's positive cone is closed
 (the thesis's own argument, asols.tex:1727). -/
 private theorem isClosed_thesisPos : IsClosed {a : 𝒜 | ThesisPos a} := by
-  have hset : {a : 𝒜 | ThesisPos a}
-      = {a : 𝒜 | star a = a} ∩
-        {a : 𝒜 | ‖a - algebraMap ℂ 𝒜 ((‖a‖ : ℝ) : ℂ)‖ ≤ ‖a‖} := by
-    ext a
-    exact ⟨fun h => ⟨h.1, h.norm_le⟩, fun h => ⟨h.1, ‖a‖, h.2⟩⟩
-  rw [hset]
-  refine IsClosed.inter (isClosed_eq continuous_star continuous_id) (isClosed_le ?_ ?_)
-  · exact (continuous_id.sub ((continuous_algebraMap ℂ 𝒜).comp
-      (Complex.continuous_ofReal.comp continuous_norm))).norm
-  · exact continuous_norm
+  -- The solution's own argument (asols.tex, `parsec-170.60`(2)).  First its
+  -- **17V** step, in the form the argument needs: a thesis-positive `b` with
+  -- `‖b‖ ≤ t` already satisfies `‖b - t‖ ≤ t`, because
+  -- `spec(b) ⊆ [0,‖b‖] ⊆ [0,2t]` and **17III** `pos_spectrum`.
+  have step : ∀ (b : 𝒜) (t : ℝ), ThesisPos b → ‖b‖ ≤ t →
+      ‖b - algebraMap ℂ 𝒜 (t : ℂ)‖ ≤ t := by
+    intro b t hb hbt
+    have ht0 : 0 ≤ t := le_trans (norm_nonneg b) hbt
+    refine (pos_spectrum b hb.1 t ht0).mpr fun z hz => ?_
+    obtain ⟨r, hr0, hrz⟩ := hb.spectrum_subset hz
+    refine ⟨r, hr0, ?_, hrz⟩
+    have hzn : ‖z‖ ≤ ‖b‖ :=
+      (norm_le_iff_spectrum_norm_le b hb.1 ‖b‖ (norm_nonneg b)).mp le_rfl z hz
+    rw [hrz, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg hr0] at hzn
+    linarith
+  refine IsSeqClosed.isClosed fun {f a} hf hlim => ?_
+  -- `a` is self-adjoint, because `(·)*` is continuous
+  have hsa : IsSelfAdjoint a := by
+    have h1 : Filter.Tendsto (fun n => star (f n)) Filter.atTop (nhds (star a)) :=
+      hlim.star
+    have h2 : Filter.Tendsto f Filter.atTop (nhds (star a)) := by
+      simpa only [fun n => (hf n).1.star_eq] using h1
+    exact tendsto_nhds_unique h2 hlim
+  -- the sequence converges, hence is bounded: `‖fₙ‖ ≤ t` for some `t`
+  obtain ⟨t, ht⟩ := (hlim.norm).bddAbove_range
+  have htn : ∀ n, ‖f n‖ ≤ t := fun n => ht ⟨n, rfl⟩
+  refine ⟨hsa, t, ?_⟩
+  -- `‖fₙ - t‖ ≤ t` for every `n`; take the limit over `n`
+  have hconv : Filter.Tendsto (fun n => ‖f n - algebraMap ℂ 𝒜 (t : ℂ)‖)
+      Filter.atTop (nhds ‖a - algebraMap ℂ 𝒜 (t : ℂ)‖) :=
+    (hlim.sub tendsto_const_nhds).norm
+  exact le_of_tendsto hconv (.of_forall fun n => step (f n) t (hf n) (htn n))
 
 /-! #### The norm–order correspondence (**17VI**.3a) for `ThesisPos` -/
 
@@ -3233,20 +3276,21 @@ theorem positive_basic_2_3b (a : 𝒜) (ha : IsSelfAdjoint a) :
     ‖a‖ = sInf {lam : ℝ | 0 ≤ lam ∧
       -(algebraMap ℂ 𝒜 (lam : ℂ)) ≤ a ∧ a ≤ algebraMap ℂ 𝒜 (lam : ℂ)} :=
   by
-    have hset : {lam : ℝ | 0 ≤ lam ∧
-        -(algebraMap ℂ 𝒜 (lam : ℂ)) ≤ a ∧ a ≤ algebraMap ℂ 𝒜 (lam : ℂ)}
-          = Set.Ici ‖a‖ := by
-      ext lam
-      simp only [Set.mem_setOf_eq, Set.mem_Ici]
-      constructor
-      · rintro ⟨h0, h1, h2⟩
-        exact (positive_basic_2_3a a ha lam h0).mp ⟨h1, h2⟩
-      · intro h
-        refine ⟨le_trans (norm_nonneg a) h, ?_⟩
-        exact (positive_basic_2_3a a ha ‖a‖ (norm_nonneg a)).mpr le_rfl |>.imp
-          (fun hx => le_trans (neg_le_neg (algebraMap_ofReal_mono h)) hx)
-          (fun hx => le_trans hx (algebraMap_ofReal_mono h))
-    rw [hset, csInf_Ici]
+    -- the solution's own argument (asols.tex, `parsec-170.60`(3)): `‖a‖ₒ ≤ ‖a‖`
+    -- because `‖a‖` is itself one of the bounds (**9X**.2, `cstar_positive_2`),
+    -- and `‖a‖ ≤ ‖a‖ₒ` because every bound `λ` for `a` satisfies `‖a‖ ≤ λ` by
+    -- part 3a, so `‖a‖` is a lower bound of the set and hence below its
+    -- infimum.  (The solution takes a decreasing sequence `λₙ ↓ ‖a‖ₒ`; `le_csInf`
+    -- is that passage to the infimum.)
+    have hmem : ‖a‖ ∈ {lam : ℝ | 0 ≤ lam ∧
+        -(algebraMap ℂ 𝒜 (lam : ℂ)) ≤ a ∧ a ≤ algebraMap ℂ 𝒜 (lam : ℂ)} :=
+      ⟨norm_nonneg a, (positive_basic_2_3a a ha ‖a‖ (norm_nonneg a)).mpr le_rfl⟩
+    have hbdd : BddBelow {lam : ℝ | 0 ≤ lam ∧
+        -(algebraMap ℂ 𝒜 (lam : ℂ)) ≤ a ∧ a ≤ algebraMap ℂ 𝒜 (lam : ℂ)} :=
+      ⟨0, fun r hr => hr.1⟩
+    refine le_antisymm (le_csInf ⟨‖a‖, hmem⟩ ?_) (csInf_le hbdd hmem)
+    rintro r ⟨h0, h1, h2⟩
+    exact (positive_basic_2_3a a ha r h0).mp ⟨h1, h2⟩
 
 
 /-- **17VI** (`positive-basic-2`, cstar.tex:2756, Exercise), part 3c:
@@ -3735,20 +3779,47 @@ theorem cstar_product_2_positive {ι : Type*} {𝒜 : ι → Type*}
     [PartialOrder (lp 𝒜 ∞)] [StarOrderedRing (lp 𝒜 ∞)] (a : lp 𝒜 ∞) :
     0 ≤ a ↔ ∀ i, 0 ≤ (a : ∀ i, 𝒜 i) i :=
   by
+    -- The solution's argument (asols.tex, `parsec-201.10`) runs the thesis's
+    -- norm criterion (**17V**, parsec 170) in *both* directions: since
+    -- `‖a‖ = supᵢ ‖a(i)‖`, one has `‖a(i)‖ ≤ ‖a‖`, and so `a` is positive iff
+    -- `‖a - ‖a‖‖ ≤ ‖a‖` iff `‖a(i) - ‖a‖‖ ≤ ‖a‖` for every `i` iff every `a(i)`
+    -- is positive.  A single `t` therefore serves all the components at once,
+    -- and no square root — hence no continuous functional calculus, which the
+    -- thesis reaches only at parsec 270 — is needed in either direction.
+    have hco : ∀ (t : ℝ) (i : ι),
+        ((a - algebraMap ℂ (lp 𝒜 ∞) (t : ℂ) : lp 𝒜 ∞) : ∀ i, 𝒜 i) i
+          = (a : ∀ i, 𝒜 i) i - algebraMap ℂ (𝒜 i) (t : ℂ) := by
+      intro t i
+      rw [lp.coeFn_sub]
+      rfl
     constructor
-    · intro h
-      rw [StarOrderedRing.nonneg_iff] at h
-      induction h using AddSubmonoid.closure_induction with
-      | mem x hx =>
-          obtain ⟨s, rfl⟩ := hx
-          intro i
-          show (0 : 𝒜 i) ≤ star ((s : ∀ i, 𝒜 i) i) * ((s : ∀ i, 𝒜 i) i)
-          exact star_mul_self_nonneg _
-      | zero => intro i; exact le_of_eq rfl
-      | add x y _ _ hx hy =>
-          intro i
-          show (0 : 𝒜 i) ≤ (x : ∀ i, 𝒜 i) i + (y : ∀ i, 𝒜 i) i
-          exact add_nonneg (hx i) (hy i)
+    · intro h i
+      have hsa : IsSelfAdjoint a := IsSelfAdjoint.of_nonneg h
+      have hsai : IsSelfAdjoint ((a : ∀ i, 𝒜 i) i) := by
+        have := congrFun (congrArg (fun x : lp 𝒜 ∞ => (x : ∀ i, 𝒜 i))
+          hsa.star_eq) i
+        rwa [lp.coeFn_star] at this
+      set t : ℝ := ‖a‖ / 2 with ht
+      -- `0 ≤ a` gives `‖a - t‖ ≤ t` for every `t ≥ ‖a‖/2` (**17V**, 4 → 2)
+      have hAiff : (0 : lp 𝒜 ∞) ≤ a ↔
+          ∀ s : ℝ, ‖a‖ / 2 ≤ s → ‖a - algebraMap ℂ (lp 𝒜 ∞) (s : ℂ)‖ ≤ s :=
+        (cstar_positive_tfae a hsa).out 3 1
+      have hA : ‖a - algebraMap ℂ (lp 𝒜 ∞) (t : ℂ)‖ ≤ t := hAiff.mp h t le_rfl
+      -- the norm on `⊕ᵢ 𝒜ᵢ` is a supremum, so the same `t` works componentwise
+      have hAi : ‖(a : ∀ i, 𝒜 i) i - algebraMap ℂ (𝒜 i) (t : ℂ)‖ ≤ t := by
+        have hle := lp.norm_apply_le_norm ENNReal.top_ne_zero
+          (a - algebraMap ℂ (lp 𝒜 ∞) (t : ℂ)) i
+        rw [hco t i] at hle
+        linarith
+      -- and back to positivity of the component, again by **17V** (1 → 4)
+      have hti : ‖(a : ∀ i, 𝒜 i) i‖ / 2 ≤ t := by
+        have := lp.norm_apply_le_norm ENNReal.top_ne_zero a i
+        rw [ht]; linarith
+      have hiff : (∃ s : ℝ, ‖(a : ∀ i, 𝒜 i) i‖ / 2 ≤ s ∧
+          ‖(a : ∀ i, 𝒜 i) i - algebraMap ℂ (𝒜 i) (s : ℂ)‖ ≤ s) ↔
+            (0 : 𝒜 i) ≤ (a : ∀ i, 𝒜 i) i :=
+        (cstar_positive_tfae ((a : ∀ i, 𝒜 i) i) hsai).out 0 3
+      exact hiff.mp ⟨t, hti, hAi⟩
     · intro h
       -- The thesis's own criterion (**17V**, parsec 170) reads positivity off the
       -- norm: `0 ≤ x` iff `‖x - t‖ ≤ t` for every `t ≥ ‖x‖/2`.  On `⊕ᵢ 𝒜ᵢ` the
@@ -3777,11 +3848,7 @@ theorem cstar_product_2_positive {ι : Type*} {𝒜 : ι → Type*}
           (0 : lp 𝒜 ∞) ≤ a := (cstar_positive_tfae a hsa).out 0 3
       refine hmain.mp ⟨t, le_rfl, ?_⟩
       refine lp.norm_le_of_forall_le ht0 fun i => ?_
-      have hco : ((a - algebraMap ℂ (lp 𝒜 ∞) (t : ℂ) : lp 𝒜 ∞) : ∀ i, 𝒜 i) i
-          = (a : ∀ i, 𝒜 i) i - algebraMap ℂ (𝒜 i) (t : ℂ) := by
-        rw [lp.coeFn_sub]
-        rfl
-      rw [hco]
+      rw [hco t i]
       exact hai i
 
 /-- **20aI** (`cstar-product-2`, cstar.tex:3015, Exercise): the direct sum of
@@ -6452,29 +6519,14 @@ if `a` and `b` have a supremum `a ∨ b` then `c + a ∨ b` is the supremum of
 theorem commutative_cstar_basic_2 (a b c s : 𝒜) (h : IsLUB {a, b} s) :
     IsLUB {a + c, b + c} (c + s) :=
   by
-    obtain ⟨hub, hlub⟩ := h
-    constructor
-    · rintro y hy
-      simp only [Set.mem_insert_iff, Set.mem_singleton_iff] at hy
-      rcases hy with rfl | rfl
-      · rw [add_comm c s]
-        exact add_le_add_left (hub (Set.mem_insert _ _)) c
-      · rw [add_comm c s]
-        exact add_le_add_left (hub (Set.mem_insert_of_mem _ rfl)) c
-    · intro y hy
-      have hs : s ≤ -c + y := by
-        refine hlub ?_
-        rintro z hz
-        simp only [Set.mem_insert_iff, Set.mem_singleton_iff] at hz
-        rcases hz with rfl | rfl
-        · have h1 := hy (Set.mem_insert _ _)
-          have h2 := add_le_add_left h1 (-c)
-          simpa [add_comm, add_left_comm, add_assoc] using h2
-        · have h1 := hy (Set.mem_insert_of_mem _ rfl)
-          have h2 := add_le_add_left h1 (-c)
-          simpa [add_comm, add_left_comm, add_assoc] using h2
-      have h3 := add_le_add_left hs c
-      simpa [add_comm, add_left_comm, add_assoc] using h3
+    -- the solution's argument (asols.tex, `parsec-260.20`(2)): `c + (·)` is
+    -- order preserving and in fact an order *isomorphism* of `sa(𝒜)`, with
+    -- inverse `(-c) + (·)`; and order isomorphisms preserve suprema.
+    have himg : (OrderIso.addLeft c) '' ({a, b} : Set 𝒜) = {a + c, b + c} := by
+      simp [Set.image_insert_eq, Set.image_singleton, add_comm]
+    have hkey := (OrderIso.isLUB_image (OrderIso.addLeft c)
+      (s := ({a, b} : Set 𝒜)) (x := c + s)).mpr (by simpa using h)
+    rwa [himg] at hkey
 
 /-- **26II** (`commutative-cstar-basic`, cstar.tex:3856, Exercise), part 3:
 `sa(𝒜)` is a Riesz space: `½(a + b + |a - b|)` is the supremum of the

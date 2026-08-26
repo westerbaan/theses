@@ -365,6 +365,147 @@ theorem coproj_total_inr (X Y : C) : IsTotal (coprod.inr : Y ⟶ X ⨿ Y) := by
 
 variable {X Y Z : C}
 
+/-- Helper for `pcm_middle_four`: the two-element list `[a, b]` sums to
+`a ⋁ b`. -/
+private theorem pcm_isSumOf_pair {M : Type*} [PCM M] {a b : M} (h : Perp a b) :
+    PCM.IsSumOf [a, b] (ovee a b h) := by
+  have hb : PCM.IsSumOf [b] b := by
+    have hx := PCM.IsSumOf.cons (PCM.IsSumOf.nil (M := M)) (PCM.perp_zero b)
+    rwa [PCM.ovee_zero] at hx
+  exact PCM.IsSumOf.cons hb h
+
+/-- Helper for `pcm_middle_four`: inversion of `pcm_isSumOf_pair`. -/
+private theorem pcm_isSumOf_pair_iff {M : Type*} [PCM M] {a b s : M} :
+    PCM.IsSumOf [a, b] s ↔ ∃ h : Perp a b, ovee a b h = s := by
+  constructor
+  · intro hs
+    obtain ⟨t, ht, hat, e⟩ := PCM.isSumOf_cons_iff.mp hs
+    obtain ⟨t', ht', hbt', e'⟩ := PCM.isSumOf_cons_iff.mp ht
+    rw [PCM.isSumOf_nil_iff] at ht'
+    subst ht'
+    rw [PCM.ovee_zero] at e'
+    subst e'
+    exact ⟨hat, e⟩
+  · rintro ⟨h, rfl⟩
+    exact pcm_isSumOf_pair h
+
+/-- The **middle-four interchange** in a PCM: if `(a ⋁ b) ⋁ (c ⋁ d)` is
+defined, then so is `(a ⋁ c) ⋁ (b ⋁ d)`, with the same value.  This is
+174IV (`PCM.isSumOf_perm`) for the transposition `[a,b,c,d] ~ [a,c,b,d]`,
+and it is what licenses the regrouping in the four-summand computation of
+`cotupl-pcm` (eff.tex:1035). -/
+private theorem pcm_middle_four {M : Type*} [PCM M] {a b c d : M}
+    (hab : Perp a b) (hcd : Perp c d)
+    (h : Perp (ovee a b hab) (ovee c d hcd)) :
+    ∃ (hac : Perp a c) (hbd : Perp b d)
+      (h' : Perp (ovee a c hac) (ovee b d hbd)),
+      ovee (ovee a c hac) (ovee b d hbd) h'
+        = ovee (ovee a b hab) (ovee c d hcd) h := by
+  -- `[a, b, c, d]` sums to `(a ⋁ b) ⋁ (c ⋁ d)`
+  have hbcd : Perp b (ovee c d hcd) := PCM.perp_of_ovee_perp hab h
+  have habcd : Perp a (ovee b (ovee c d hcd) hbcd) :=
+    PCM.perp_ovee_of_ovee_perp hab h
+  have hl4 : PCM.IsSumOf [a, b, c, d]
+      (ovee a (ovee b (ovee c d hcd) hbcd) habcd) :=
+    PCM.IsSumOf.cons (PCM.IsSumOf.cons (pcm_isSumOf_pair hcd) hbcd) habcd
+  rw [(PCM.ovee_assoc hab h).symm] at hl4
+  -- transpose the middle two summands (174IV)
+  have hl5 := PCM.isSumOf_perm (List.Perm.cons a (List.Perm.swap c b [d])) hl4
+  obtain ⟨t₁, ht₁, hat₁, e₁⟩ := PCM.isSumOf_cons_iff.mp hl5
+  obtain ⟨t₂, ht₂, hct₂, e₂⟩ := PCM.isSumOf_cons_iff.mp ht₁
+  obtain ⟨hbd, e₃⟩ := pcm_isSumOf_pair_iff.mp ht₂
+  subst e₃; subst e₂
+  obtain ⟨hac, h', e⟩ := PCM.assoc_left hct₂ hat₁
+  exact ⟨hac, hbd, h', e.trans e₁⟩
+
+/-- `▷₁ ∘ (k + l) = [k, 0]`: the first partial projection absorbs a
+coproduct of maps.  A helper for `cotupl_pcm_key` (181IV) and for
+`coprod_prod_converse` (181VII); until the audit repair this declaration
+carried the **181VII** doc comment, which belongs on `coprod_prod` below. -/
+private theorem map_pproj₁ {X Y X' Y' : C} (k : X ⟶ X') (l : Y ⟶ Y') :
+    coprod.map k l ≫ pproj₁ X' Y' = coprod.desc k 0 := by
+  refine coprod.hom_ext ?_ ?_
+  · rw [← Category.assoc, coprod.inl_map, Category.assoc, inl_pproj₁,
+      Category.comp_id, coprod.inl_desc]
+  · rw [← Category.assoc, coprod.inr_map, Category.assoc, inr_pproj₁,
+      FinPAC.comp_zero, coprod.inr_desc]
+
+private theorem map_pproj₂ {X Y X' Y' : C} (k : X ⟶ X') (l : Y ⟶ Y') :
+    coprod.map k l ≫ pproj₂ X' Y' = coprod.desc 0 l := by
+  refine coprod.hom_ext ?_ ?_
+  · rw [← Category.assoc, coprod.inl_map, Category.assoc, inl_pproj₂,
+      FinPAC.comp_zero, coprod.inl_desc]
+  · rw [← Category.assoc, coprod.inr_map, Category.assoc, inr_pproj₂,
+      Category.comp_id, coprod.inr_desc]
+
+/-- The first display of the proof of `cotupl-pcm` (eff.tex:1020):
+`[k, 0] = ▷₁ ∘ (k + l) ⊥ ▷₂ ∘ (k + l) = [0, l]` by the compatible-sum axiom,
+and `[k, l] = [k, 0] ⋁ [0, l]` by PCM-enrichment and the two
+coprojections. -/
+private theorem desc_split (k : X ⟶ Z) (l : Y ⟶ Z) :
+    ∃ hp : Perp (coprod.desc k (0 : Y ⟶ Z)) (coprod.desc (0 : X ⟶ Z) l),
+      ovee _ _ hp = coprod.desc k l := by
+  have hb := FinPAC.compatible_sum (coprod.map k l : X ⨿ Y ⟶ Z ⨿ Z)
+  rw [map_pproj₁, map_pproj₂] at hb
+  refine ⟨hb, coprod.hom_ext ?_ ?_⟩
+  · rw [coprod.inl_desc, ovee_comp_left hb _ (perp_comp_left hb _)]
+    exact (PCM.ovee_congr (coprod.inl_desc _ _) (coprod.inl_desc _ _) _
+      (PCM.perp_zero k)).trans (PCM.ovee_zero k _)
+  · rw [coprod.inr_desc, ovee_comp_left hb _ (perp_comp_left hb _)]
+    exact (PCM.ovee_congr (coprod.inr_desc _ _) (coprod.inr_desc _ _) _
+      (PCM.zero_perp l)).trans (PCM.zero_ovee l)
+
+/-- The four-summand computation of eff.tex:1030–1045, which establishes
+the "if" half of clause 1 of `cotupl-pcm` and clause 2 at one stroke:
+`[f,0] = f ∘ ▷₁ ⊥ f' ∘ ▷₁ = [f',0]` and `[f ⋁ f', 0] = [f,0] ⋁ [f',0]` by
+PCM-enrichment, similarly `[0, g ⋁ g'] = [0,g] ⋁ [0,g']`, and then
+`[f,g] ⋁ [f',g'] = [f,0] ⋁ [0,g] ⋁ [f',0] ⋁ [0,g']
+   = [f ⋁ f', 0] ⋁ [0, g ⋁ g'] = [f ⋁ f', g ⋁ g']`
+using `desc_split` three times and the middle-four interchange. -/
+private theorem cotupl_pcm_key {f f' : X ⟶ Z} {g g' : Y ⟶ Z}
+    (hf : Perp f f') (hg : Perp g g') :
+    ∃ h : Perp (coprod.desc f g) (coprod.desc f' g'),
+      ovee _ _ h = coprod.desc (ovee f f' hf) (ovee g g' hg) := by
+  -- `[f, 0] ⊥ [f', 0]` and `[f, 0] ⋁ [f', 0] = [f ⋁ f', 0]`
+  have hA : Perp (coprod.desc f (0 : Y ⟶ Z)) (coprod.desc f' (0 : Y ⟶ Z)) := by
+    have hx := perp_comp_left hf (pproj₁ X Y)
+    rwa [pproj₁_comp, pproj₁_comp] at hx
+  have eA : ovee _ _ hA = coprod.desc (ovee f f' hf) (0 : Y ⟶ Z) := by
+    have hx := ovee_comp_left hf (pproj₁ X Y) (perp_comp_left hf (pproj₁ X Y))
+    rw [pproj₁_comp] at hx
+    exact (PCM.ovee_congr (pproj₁_comp (Y := Y) f).symm
+      (pproj₁_comp (Y := Y) f').symm hA _).trans hx.symm
+  -- `[0, g] ⊥ [0, g']` and `[0, g] ⋁ [0, g'] = [0, g ⋁ g']`
+  have hB : Perp (coprod.desc (0 : X ⟶ Z) g) (coprod.desc (0 : X ⟶ Z) g') := by
+    have hx := perp_comp_left hg (pproj₂ X Y)
+    rwa [pproj₂_comp, pproj₂_comp] at hx
+  have eB : ovee _ _ hB = coprod.desc (0 : X ⟶ Z) (ovee g g' hg) := by
+    have hx := ovee_comp_left hg (pproj₂ X Y) (perp_comp_left hg (pproj₂ X Y))
+    rw [pproj₂_comp] at hx
+    exact (PCM.ovee_congr (pproj₂_comp (X := X) g).symm
+      (pproj₂_comp (X := X) g').symm hB _).trans hx.symm
+  -- `[f ⋁ f', 0] ⊥ [0, g ⋁ g']`, with sum `[f ⋁ f', g ⋁ g']`
+  obtain ⟨hS, eS⟩ := desc_split (ovee f f' hf) (ovee g g' hg)
+  have hSS : Perp (ovee _ _ hA) (ovee _ _ hB) := by rw [eA, eB]; exact hS
+  -- regroup the four summands
+  obtain ⟨hac, hbd, h', hmf⟩ := pcm_middle_four hA hB hSS
+  obtain ⟨hfg, efg⟩ := desc_split f g
+  obtain ⟨hfg', efg'⟩ := desc_split f' g'
+  have e1 : ovee _ _ hac = coprod.desc f g :=
+    (PCM.ovee_congr rfl rfl hac hfg).trans efg
+  have e2 : ovee _ _ hbd = coprod.desc f' g' :=
+    (PCM.ovee_congr rfl rfl hbd hfg').trans efg'
+  have hres : Perp (coprod.desc f g) (coprod.desc f' g') := by
+    rw [← e1, ← e2]; exact h'
+  refine ⟨hres, ?_⟩
+  calc ovee _ _ hres = ovee (ovee _ _ hac) (ovee _ _ hbd) h' :=
+        PCM.ovee_congr e1.symm e2.symm _ _
+    _ = ovee (ovee _ _ hA) (ovee _ _ hB) hSS := hmf
+    _ = ovee (coprod.desc (ovee f f' hf) (0 : Y ⟶ Z))
+          (coprod.desc (0 : X ⟶ Z) (ovee g g' hg)) hS :=
+        PCM.ovee_congr eA eB _ _
+    _ = coprod.desc (ovee f f' hf) (ovee g g' hg) := eS
+
 /-- **181IV.1** (`cotupl-pcm`, eff.tex:999, Proposition): cotupling
 reflects and preserves `⊥`: `[f,g] ⊥ [f',g']` iff `f ⊥ f'` and
 `g ⊥ g'`. -/
@@ -372,45 +513,15 @@ theorem cotupl_pcm_1 (f f' : X ⟶ Z) (g g' : Y ⟶ Z) :
     Perp (coprod.desc f g) (coprod.desc f' g') ↔ Perp f f' ∧ Perp g g' := by
   constructor
   · intro h
+    -- eff.tex:1030, by PCM-enrichment: `f = [f,g] ∘ κ₁ ⊥ [f',g'] ∘ κ₁ = f'`
     refine ⟨?_, ?_⟩
     · have h₁ := perp_comp_left h (coprod.inl : X ⟶ X ⨿ Y)
       rwa [coprod.inl_desc, coprod.inl_desc] at h₁
     · have h₂ := perp_comp_left h (coprod.inr : Y ⟶ X ⨿ Y)
       rwa [coprod.inr_desc, coprod.inr_desc] at h₂
   · rintro ⟨hf, hg⟩
-    -- put the two summands into the two summands of `Z + Z` and use the
-    -- compatible sum axiom (cf. eff.tex:1020)
-    have hu : Perp (f ≫ (coprod.inl : Z ⟶ Z ⨿ Z)) (f' ≫ coprod.inr) :=
-      FinPAC.untying hf
-    have hv : Perp (g ≫ (coprod.inl : Z ⟶ Z ⨿ Z)) (g' ≫ coprod.inr) :=
-      FinPAC.untying hg
-    have hb := FinPAC.compatible_sum
-      (coprod.desc (ovee _ _ hu) (ovee _ _ hv) : X ⨿ Y ⟶ Z ⨿ Z)
-    have e₁ : coprod.desc (ovee _ _ hu) (ovee _ _ hv) ≫ pproj₁ Z Z
-        = coprod.desc f g := by
-      rw [coprod.desc_comp]
-      congr 1
-      · rw [ovee_comp_right hu _ (perp_comp_right hu _)]
-        refine (PCM.ovee_congr ?_ ?_ _ (PCM.perp_zero f)).trans (PCM.ovee_zero f _)
-        · rw [Category.assoc, inl_pproj₁, Category.comp_id]
-        · rw [Category.assoc, inr_pproj₁, FinPAC.comp_zero]
-      · rw [ovee_comp_right hv _ (perp_comp_right hv _)]
-        refine (PCM.ovee_congr ?_ ?_ _ (PCM.perp_zero g)).trans (PCM.ovee_zero g _)
-        · rw [Category.assoc, inl_pproj₁, Category.comp_id]
-        · rw [Category.assoc, inr_pproj₁, FinPAC.comp_zero]
-    have e₂ : coprod.desc (ovee _ _ hu) (ovee _ _ hv) ≫ pproj₂ Z Z
-        = coprod.desc f' g' := by
-      rw [coprod.desc_comp]
-      congr 1
-      · rw [ovee_comp_right hu _ (perp_comp_right hu _)]
-        refine (PCM.ovee_congr ?_ ?_ _ (PCM.zero_perp f')).trans (PCM.zero_ovee f')
-        · rw [Category.assoc, inl_pproj₂, FinPAC.comp_zero]
-        · rw [Category.assoc, inr_pproj₂, Category.comp_id]
-      · rw [ovee_comp_right hv _ (perp_comp_right hv _)]
-        refine (PCM.ovee_congr ?_ ?_ _ (PCM.zero_perp g')).trans (PCM.zero_ovee g')
-        · rw [Category.assoc, inl_pproj₂, FinPAC.comp_zero]
-        · rw [Category.assoc, inr_pproj₂, Category.comp_id]
-    rwa [e₁, e₂] at hb
+    -- eff.tex:1030–1045, the four-summand computation
+    exact (cotupl_pcm_key hf hg).choose
 
 /-- **181IV.2** (`cotupl-pcm`, eff.tex:999, Proposition):
 `[f,g] ⋁ [f',g'] = [f ⋁ f', g ⋁ g']`. -/
@@ -418,11 +529,8 @@ theorem cotupl_pcm_2 {f f' : X ⟶ Z} {g g' : Y ⟶ Z}
     (h : Perp (coprod.desc f g) (coprod.desc f' g'))
     (hf : Perp f f') (hg : Perp g g') :
     ovee _ _ h = coprod.desc (ovee f f' hf) (ovee g g' hg) := by
-  refine coprod.hom_ext ?_ ?_
-  · rw [coprod.inl_desc, ovee_comp_left h _ (perp_comp_left h _)]
-    exact PCM.ovee_congr (coprod.inl_desc _ _) (coprod.inl_desc _ _) _ hf
-  · rw [coprod.inr_desc, ovee_comp_left h _ (perp_comp_left h _)]
-    exact PCM.ovee_congr (coprod.inr_desc _ _) (coprod.inr_desc _ _) _ hg
+  obtain ⟨hp, e⟩ := cotupl_pcm_key hf hg
+  exact (PCM.ovee_congr rfl rfl h hp).trans e
 
 /-- **181IV.3** (`cotupl-pcm`, eff.tex:999, Proposition): `[0,0] = 0`. -/
 theorem cotupl_pcm_3 (X Y Z : C) :
@@ -465,26 +573,6 @@ theorem cotupl_pcm_ea_iso (X Y : C) :
     refine ⟨(coprod.inl ≫ r, coprod.inr ≫ r), ?_⟩
     show coprod.desc (coprod.inl ≫ r) (coprod.inr ≫ r) = r
     rw [← coprod.desc_comp, coprod.desc_inl_inr, Category.id_comp]
-
-/-- `▷₁ ∘ (k + l) = [k, 0]`: the first partial projection absorbs a
-coproduct of maps.  A helper for `coprod_prod_converse` (181VII); until the
-audit repair this declaration carried the **181VII** doc comment, which
-belongs on `coprod_prod` below. -/
-private theorem map_pproj₁ {X Y X' Y' : C} (k : X ⟶ X') (l : Y ⟶ Y') :
-    coprod.map k l ≫ pproj₁ X' Y' = coprod.desc k 0 := by
-  refine coprod.hom_ext ?_ ?_
-  · rw [← Category.assoc, coprod.inl_map, Category.assoc, inl_pproj₁,
-      Category.comp_id, coprod.inl_desc]
-  · rw [← Category.assoc, coprod.inr_map, Category.assoc, inr_pproj₁,
-      FinPAC.comp_zero, coprod.inr_desc]
-
-private theorem map_pproj₂ {X Y X' Y' : C} (k : X ⟶ X') (l : Y ⟶ Y') :
-    coprod.map k l ≫ pproj₂ X' Y' = coprod.desc 0 l := by
-  refine coprod.hom_ext ?_ ?_
-  · rw [← Category.assoc, coprod.inl_map, Category.assoc, inl_pproj₂,
-      FinPAC.comp_zero, coprod.inl_desc]
-  · rw [← Category.assoc, coprod.inr_map, Category.assoc, inr_pproj₂,
-      Category.comp_id, coprod.inr_desc]
 
 /-- The pairing `⟨f, g⟩ = (κ₁ ∘ f) ⋁ (κ₂ ∘ g)` of 181VII and its defining
 property (eff.tex:1090). -/

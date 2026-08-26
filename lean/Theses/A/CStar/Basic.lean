@@ -1302,24 +1302,19 @@ theorem isSelfAdjoint_algebraMap_ofReal (r : ℝ) :
   rw [← algebraMap_real_eq]
   exact IsSelfAdjoint.algebraMap 𝒜 (IsSelfAdjoint.all r)
 
-/-- Auxiliary (**9X**.1): a nonnegative real multiple of a positive element is
-positive.  (Proved by conjugating with the scalar `√r`.) -/
-theorem ofReal_smul_nonneg {a : 𝒜} (ha : 0 ≤ a) {r : ℝ} (hr : 0 ≤ r) :
-    0 ≤ (r : ℂ) • a := by
-  have h := star_left_conjugate_nonneg ha (algebraMap ℂ 𝒜 (Real.sqrt r : ℂ))
-  have he : star (algebraMap ℂ 𝒜 (Real.sqrt r : ℂ)) * a * algebraMap ℂ 𝒜 (Real.sqrt r : ℂ)
-      = (r : ℂ) • a := by
-    rw [← algebraMap_star_comm]
-    simp only [Complex.star_def, Complex.conj_ofReal, Algebra.algebraMap_eq_smul_one,
-      smul_mul_assoc, mul_smul_comm, one_mul, mul_one, smul_smul, ← Complex.ofReal_mul]
-    rw [Real.mul_self_sqrt hr]
-  rwa [he] at h
+/-- Auxiliary: a nonnegative real scalar is a positive element.
 
-/-- Auxiliary: a nonnegative real scalar is a positive element. -/
+This lemma sits *below* the **9IV** bridge `cstar_positive_def` (it is used,
+through `algebraMap_ofReal_mono`, in the proof of **17VI**.3a), so it cannot
+be read off the thesis's `‖r - r‖ ≤ r`; `√r·1` is its own square root. -/
 theorem algebraMap_ofReal_nonneg {r : ℝ} (hr : 0 ≤ r) :
     (0 : 𝒜) ≤ algebraMap ℂ 𝒜 (r : ℂ) := by
-  have h := ofReal_smul_nonneg (zero_le_one (α := 𝒜)) hr
-  rwa [← Algebra.algebraMap_eq_smul_one] at h
+  have he : algebraMap ℂ 𝒜 (r : ℂ)
+      = star (algebraMap ℂ 𝒜 (Real.sqrt r : ℂ)) * algebraMap ℂ 𝒜 (Real.sqrt r : ℂ) := by
+    rw [← algebraMap_star_comm, Complex.star_def, Complex.conj_ofReal, ← map_mul,
+      ← Complex.ofReal_mul, Real.mul_self_sqrt hr]
+  rw [he]
+  exact star_mul_self_nonneg _
 
 /-- Auxiliary: `r ↦ r·1` is monotone. -/
 theorem algebraMap_ofReal_mono {s t : ℝ} (h : s ≤ t) :
@@ -1404,6 +1399,31 @@ theorem cstar_positive_def (a : 𝒜) (ha : IsSelfAdjoint a) :
       have hkey := ((norm_le_iff_neg_algebraMap_le hsa ht0).mp ht).1
       rwa [le_sub_iff_add_le, neg_add_cancel] at hkey
 
+/-- Auxiliary form of the scalar clause of **9X**.1 (`cstar-positive`,
+cstar.tex:1209, Exercise, part 1): a nonnegative real multiple of a positive
+element is positive.
+
+This is the solution's own argument (asols.tex, `parsec-90.100`(1)), read
+through the bridge **9IV** `cstar_positive_def`: pick `t ∈ ℝ` with
+`‖a - t‖ ≤ t`; then `r a` is self-adjoint and
+`‖r a - r t‖ = r ‖a - t‖ ≤ r t`, so `r a` is positive.  (`cstar_positive_1`
+below is the same clause under its thesis name; this auxiliary is the form
+the rest of the tree applies.) -/
+theorem ofReal_smul_nonneg {a : 𝒜} (ha : 0 ≤ a) {r : ℝ} (hr : 0 ≤ r) :
+    0 ≤ (r : ℂ) • a := by
+  have hasa : IsSelfAdjoint a := .of_nonneg ha
+  have hc : IsSelfAdjoint ((r : ℝ) : ℂ) := Complex.conj_ofReal r
+  have hrsa : IsSelfAdjoint ((r : ℂ) • a) := hc.smul hasa
+  obtain ⟨t, ht⟩ := (cstar_positive_def a hasa).mp ha
+  refine (cstar_positive_def _ hrsa).mpr ⟨r * t, ?_⟩
+  have he : (r : ℂ) • a - algebraMap ℂ 𝒜 ((r * t : ℝ) : ℂ)
+      = (r : ℂ) • (a - algebraMap ℂ 𝒜 (t : ℂ)) := by
+    rw [smul_sub]
+    congr 1
+    rw [Algebra.smul_def, ← map_mul, Complex.ofReal_mul]
+  rw [he, norm_smul, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg hr]
+  exact mul_le_mul_of_nonneg_left ht hr
+
 /-! **9VI** (cstar.tex:1180, Example): a bounded operator `T` on a Hilbert
 space is positive iff `⟪x, Tx⟫ ≥ 0` for all `x` — stated at **25V**. -/
 
@@ -1475,13 +1495,26 @@ theorem cstar_positive_2 (a : 𝒜) (ha : IsSelfAdjoint a) :
     (0 : 𝒜) ≤ 1 ∧ -(algebraMap ℂ 𝒜 (‖a‖ : ℂ)) ≤ a ∧
       a ≤ algebraMap ℂ 𝒜 (‖a‖ : ℂ) :=
   by
-    -- the order-unit clause is the case `r = ‖a‖` of **17VI**.3a, which is the
-    -- idiom the thesis's own parsec-170 proof of this fact uses
-    -- (`positive_basic_2_3a … ‖a‖ (norm_nonneg a) |>.mpr le_rfl`, A/CStar/Positive).
-    -- Calling Mathlib's `le_algebraMap_norm_self` again here would give the
-    -- section a *second* entry into the continuous functional calculus for one
-    -- and the same fact; see the note on `norm_le_iff_neg_algebraMap_le`.
-    exact ⟨zero_le_one, (norm_le_iff_neg_algebraMap_le ha (norm_nonneg a)).mp le_rfl⟩
+    -- The solution's own argument (asols.tex, `parsec-90.100`(2)), read through
+    -- the bridge **9IV** `cstar_positive_def`: `1` is self-adjoint and positive
+    -- because `‖1 - 1‖ ≤ 1`; and `a + ‖a‖` and `‖a‖ - a` are self-adjoint and
+    -- positive because `‖(a + ‖a‖) - ‖a‖‖ = ‖a‖ ≤ ‖a‖` and
+    -- `‖(‖a‖ - a) - ‖a‖‖ = ‖-a‖ = ‖a‖ ≤ ‖a‖`.  Whence `-‖a‖ ≤ a ≤ ‖a‖`.
+    have hnorm : IsSelfAdjoint (algebraMap ℂ 𝒜 ((‖a‖ : ℝ) : ℂ)) :=
+      isSelfAdjoint_algebraMap_ofReal ‖a‖
+    have hone : (0 : 𝒜) ≤ 1 := by
+      refine (cstar_positive_def 1 (IsSelfAdjoint.one 𝒜)).mpr ⟨1, ?_⟩
+      norm_num
+    have hadd : (0 : 𝒜) ≤ a + algebraMap ℂ 𝒜 ((‖a‖ : ℝ) : ℂ) := by
+      refine (cstar_positive_def _ (ha.add hnorm)).mpr ⟨‖a‖, ?_⟩
+      simpa using le_refl ‖a‖
+    have hsub : (0 : 𝒜) ≤ algebraMap ℂ 𝒜 ((‖a‖ : ℝ) : ℂ) - a := by
+      refine (cstar_positive_def _ (hnorm.sub ha)).mpr ⟨‖a‖, ?_⟩
+      simpa using le_refl ‖a‖
+    refine ⟨hone, ?_, sub_nonneg.mp hsub⟩
+    have h := sub_nonneg.mp (by simpa [sub_neg_eq_add] using hadd :
+      (0 : 𝒜) ≤ a - -(algebraMap ℂ 𝒜 ((‖a‖ : ℝ) : ℂ)))
+    exact h
 
 /-- **9X** (`cstar-positive`, cstar.tex:1209, Exercise), part 3: the product
 of two positive elements need not be positive (example among the operators
@@ -1490,25 +1523,68 @@ theorem cstar_positive_3 :
     ∃ a b : EuclideanSpace ℂ (Fin 2) →L[ℂ] EuclideanSpace ℂ (Fin 2),
       0 ≤ a ∧ 0 ≤ b ∧ ¬(0 ≤ a * b) :=
   by
+    -- The solution's witnesses are `|x⟩⟨x|` and `|y⟩⟨y|` for a non-orthogonal
+    -- linearly independent pair `x, y` in a Hilbert space; here `x = e₀` and
+    -- `y = e₀ + e₁` in `ℂ²`, for which `|x⟩⟨x| = !![1,0;0,0]` and
+    -- `|y⟩⟨y| = !![1,1;1,1]`.  Positivity is the solution's own computation:
+    -- `|x⟩⟨x|² = ‖x‖²·|x⟩⟨x|`, whence `‖ |x⟩⟨x| - ‖x‖² ‖² = ‖x‖² ‖ |x⟩⟨x| - ‖x‖² ‖`
+    -- and so `‖ |x⟩⟨x| - ‖x‖² ‖ ≤ ‖x‖²`, which is positivity by **9IV**.
+    have key : ∀ (p : EuclideanSpace ℂ (Fin 2) →L[ℂ] EuclideanSpace ℂ (Fin 2))
+        (c : ℝ), 0 ≤ c → IsSelfAdjoint p → p * p = (c : ℂ) • p → 0 ≤ p := by
+      intro p c hc hp hsq
+      refine (cstar_positive_def p hp).mpr ⟨c, ?_⟩
+      set q := p - algebraMap ℂ (EuclideanSpace ℂ (Fin 2) →L[ℂ] EuclideanSpace ℂ (Fin 2))
+        ((c : ℝ) : ℂ) with hqdef
+      have hqsa : IsSelfAdjoint q := hp.sub (isSelfAdjoint_algebraMap_ofReal c)
+      -- `q² = -c·q`, since `p² = c·p`
+      have hq2 : q * q = ((-c : ℝ) : ℂ) • q := by
+        rw [hqdef, Algebra.algebraMap_eq_smul_one]
+        simp only [sub_mul, mul_sub, smul_mul_assoc, mul_smul_comm, one_mul, mul_one,
+          hsq, smul_smul, smul_sub]
+        push_cast
+        module
+      -- the C*-identity turns that into `‖q‖² = c‖q‖`
+      have hnq : ‖q‖ * ‖q‖ = c * ‖q‖ := by
+        have h1 : ‖q * q‖ = ‖q‖ * ‖q‖ := by
+          have h2 := CStarRing.norm_star_mul_self (x := q)
+          rwa [hqsa.star_eq] at h2
+        rw [← h1, hq2, norm_smul, Complex.norm_real, Real.norm_eq_abs, abs_neg,
+          abs_of_nonneg hc]
+      rcases eq_or_lt_of_le (norm_nonneg q) with h | h
+      · rw [← h]; exact hc
+      · exact le_of_eq (mul_right_cancel₀ (ne_of_gt h) hnq)
+    have hPsa : star (!![1, 0; 0, 0] : Matrix (Fin 2) (Fin 2) ℂ) = !![1, 0; 0, 0] := by
+      ext i j
+      fin_cases i <;> fin_cases j <;> simp
+    have hQsa : star (!![1, 1; 1, 1] : Matrix (Fin 2) (Fin 2) ℂ) = !![1, 1; 1, 1] := by
+      ext i j
+      fin_cases i <;> fin_cases j <;> simp
     refine ⟨Matrix.toEuclideanCLM (𝕜 := ℂ) (!![1, 0; 0, 0] : Matrix (Fin 2) (Fin 2) ℂ),
       Matrix.toEuclideanCLM (𝕜 := ℂ) (!![1, 1; 1, 1] : Matrix (Fin 2) (Fin 2) ℂ),
       ?_, ?_, ?_⟩
-    · have hP : (!![1, 0; 0, 0] : Matrix (Fin 2) (Fin 2) ℂ)
-          = star (!![1, 0; 0, 0] : Matrix (Fin 2) (Fin 2) ℂ) * !![1, 0; 0, 0] := by
-        ext i j
-        fin_cases i <;> fin_cases j <;>
-          simp [Matrix.mul_apply, Fin.sum_univ_succ, Matrix.star_eq_conjTranspose,
-            Matrix.conjTranspose_apply]
-      rw [hP, map_mul, map_star]
-      exact star_mul_self_nonneg _
-    · have hQ : (!![1, 1; 1, 1] : Matrix (Fin 2) (Fin 2) ℂ)
-          = star (!![1, 1; 0, 0] : Matrix (Fin 2) (Fin 2) ℂ) * !![1, 1; 0, 0] := by
-        ext i j
-        fin_cases i <;> fin_cases j <;>
-          simp [Matrix.mul_apply, Fin.sum_univ_succ, Matrix.star_eq_conjTranspose,
-            Matrix.conjTranspose_apply]
-      rw [hQ, map_mul, map_star]
-      exact star_mul_self_nonneg _
+    · -- `x = e₀`, `‖x‖² = 1`
+      refine key _ 1 zero_le_one ?_ ?_
+      · show star _ = _
+        rw [← map_star, hPsa]
+      · have hsq : (!![1, 0; 0, 0] : Matrix (Fin 2) (Fin 2) ℂ) * !![1, 0; 0, 0]
+            = ((1 : ℂ)) • (!![1, 0; 0, 0] : Matrix (Fin 2) (Fin 2) ℂ) := by
+          ext i j
+          fin_cases i <;> fin_cases j <;>
+            simp [Matrix.mul_apply, Fin.sum_univ_succ]
+        rw [← map_mul, hsq, map_smul]
+        norm_num
+    · -- `y = e₀ + e₁`, `‖y‖² = 2`
+      refine key _ 2 (by norm_num) ?_ ?_
+      · show star _ = _
+        rw [← map_star, hQsa]
+      · have hsq : (!![1, 1; 1, 1] : Matrix (Fin 2) (Fin 2) ℂ) * !![1, 1; 1, 1]
+            = ((2 : ℂ)) • (!![1, 1; 1, 1] : Matrix (Fin 2) (Fin 2) ℂ) := by
+          ext i j
+          fin_cases i <;> fin_cases j <;>
+            simp [Matrix.mul_apply, Fin.sum_univ_succ]
+          all_goals ring
+        rw [← map_mul, hsq, map_smul]
+        norm_num
     · intro hle
       have hsa := hle.isSelfAdjoint
       rw [← map_mul] at hsa

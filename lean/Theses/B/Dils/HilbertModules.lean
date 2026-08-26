@@ -355,76 +355,78 @@ the left-hand side interchanged, exactly as in `Theses.A.CStar.chilb_cs`.
 Stated without the swap it is *false*: for `𝒷 = M₂(ℂ)`, `X = 𝒷` with
 `[a,b] = b a*`, `x = e₁₁`, `y = e₂₁` it would assert `e₂₂ ≤ e₁₁`.
 
-**142IV** is the proof — not converted. -/
+**142IV** is the proof, and it is the proof below: the states are order
+separating (**22VIII**, `states_order_separating_2`), so it suffices to test
+the inequality at a single state `f`, where Cauchy–Schwarz for the
+complex-valued inner product `⟨·,·⟩_f` of **142II** (`innerFCore`, cstar.tex
+**4XV**.1) applies to the pair `x`, `y·⟨y,x⟩` — mirrored, `x` and
+`[y,x] • y`. -/
 theorem module_CS (B : BInner 𝒷 X) (x y : X) :
     B.inner y x * B.inner x y ≤ ‖B.inner y y‖ • B.inner x x := by
   set b : 𝒷 := B.inner y x with hb
   have hbs : star b = B.inner x y := B.star_inner y x
-  have hrs : ∀ (r : ℝ) (a : 𝒷), ((r : ℂ)) • a = r • a := fun r a =>
-    (RCLike.real_smul_eq_coe_smul (K := ℂ) r a).symm
-  have hpos : (0 : 𝒷) ≤ b * star b := by
-    simpa using star_mul_self_nonneg (star b)
   have hsa : IsSelfAdjoint (B.inner y y) := B.star_inner y y
-  -- `0 ≤ [b·y - t·x, b·y - t·x] = b[y,y]b* - 2t·bb* + t²·[x,x]`
-  have hexp : ∀ t : ℝ,
-      (2 * t) • (b * star b) ≤
-        b * B.inner y y * star b + (t ^ 2) • B.inner x x := by
-    intro t
-    have h0 := B.inner_self_nonneg (b • y - ((t : ℝ) : ℂ) • x)
-    have hz : B.inner (b • y - ((t : ℝ) : ℂ) • x) (b • y - ((t : ℝ) : ℂ) • x)
-        = (b * B.inner y y * star b + (t ^ 2) • B.inner x x)
-          - (2 * t) • (b * star b) := by
-      simp only [B.inner_sub_right, B.inner_sub_left, B.inner_op_smul_left,
-        B.inner_op_smul_right, B.inner_smul_left_complex,
-        B.inner_smul_right_complex, Complex.conj_ofReal, smul_smul, hrs,
-        ← hb, ← hbs, ← Complex.ofReal_mul, smul_mul_assoc, mul_smul_comm]
-      rw [show (t * t : ℝ) = t ^ 2 by ring, two_mul, add_smul]
-      abel
-    rw [hz] at h0
-    exact sub_nonneg.mp h0
-  rcases eq_or_lt_of_le (norm_nonneg (B.inner y y)) with hs | hs
-  · -- degenerate case `[y,y] = 0`: then `bb* ≤ ε[x,x]` for every `ε > 0`
-    have hyy : B.inner y y = 0 := by
-      rwa [eq_comm, norm_eq_zero] at hs
-    have hbound : ∀ ε : ℝ, 0 < ε → ‖b * star b‖ ≤ ‖B.inner x x‖ * ε := by
-      intro ε hε
-      have h1 := hexp (2 * ε)
-      rw [hyy] at h1
-      simp only [mul_zero, zero_mul, zero_add] at h1
-      have h2 := CStarAlgebra.norm_le_norm_of_nonneg_of_le
-        (a := (2 * (2 * ε)) • (b * star b)) (by positivity) h1
-      rw [norm_smul, norm_smul] at h2
-      simp only [Real.norm_eq_abs,
-        abs_of_nonneg (by positivity : (0:ℝ) ≤ 2 * (2 * ε)),
-        abs_of_nonneg (by positivity : (0:ℝ) ≤ (2 * ε) ^ 2)] at h2
-      nlinarith [norm_nonneg (b * star b), norm_nonneg (B.inner x x)]
-    have hzero : ‖b * star b‖ ≤ 0 := by
-      refine le_of_forall_pos_le_add fun ε hε => ?_
-      have hden : (0 : ℝ) < ‖B.inner x x‖ + 1 := by positivity
-      have := hbound (ε / (‖B.inner x x‖ + 1)) (by positivity)
-      rw [mul_div_assoc'] at this
-      have hle : ‖B.inner x x‖ * ε / (‖B.inner x x‖ + 1) ≤ ε := by
-        rw [div_le_iff₀ hden]
-        nlinarith [norm_nonneg (B.inner x x), hε.le]
-      linarith
-    have hbb : b * star b = 0 :=
-      norm_eq_zero.mp (le_antisymm hzero (norm_nonneg _))
-    rw [← hbs, hbb, ← hs, zero_smul]
-  · -- generic case: put `t = ‖[y,y]‖ > 0` and divide by it
-    have hconj : b * B.inner y y * star b ≤ ‖B.inner y y‖ • (b * star b) :=
-      CStarAlgebra.star_right_conjugate_le_norm_smul hsa
-    have h := (hexp ‖B.inner y y‖).trans
-      (add_le_add hconj (le_refl ((‖B.inner y y‖ ^ 2) • B.inner x x)))
-    have hsplit : (2 * ‖B.inner y y‖) • (b * star b)
-        = ‖B.inner y y‖ • (b * star b) + ‖B.inner y y‖ • (b * star b) := by
-      rw [two_mul, add_smul]
-    rw [hsplit] at h
-    have h2 : ‖B.inner y y‖ • (b * star b)
-        ≤ ‖B.inner y y‖ • (‖B.inner y y‖ • B.inner x x) := by
-      rw [smul_smul, ← pow_two]
-      exact le_of_add_le_add_left h
-    rw [← hbs]
-    exact le_of_smul_le_smul_left h2 hs
+  set K : ℝ := ‖B.inner y y‖ with hK
+  have hK0 : (0 : ℝ) ≤ K := norm_nonneg _
+  -- `⟨y,y⟩ ≤ ‖⟨y,y⟩‖`, conjugated: `⟨x,y⟩⟨y,y⟩⟨y,x⟩ ≤ ‖⟨y,y⟩‖ ⟨x,y⟩⟨y,x⟩`
+  have hconj : b * B.inner y y * star b ≤ K • (b * star b) :=
+    CStarAlgebra.star_right_conjugate_le_norm_smul hsa
+  rw [← hbs, ← sub_nonneg]
+  -- "Let `f : 𝒷 → ℂ` be any state.  Since the states on `𝒷` are order
+  -- separating, it suffices to show `f(⟨x,y⟩⟨y,x⟩) ≤ ‖⟨y,y⟩‖ f(⟨x,x⟩)`."
+  refine (states_order_separating_2 (𝒜 := 𝒷) _).mpr ?_
+  rintro ⟨f, hfs⟩
+  have hf : IsPositiveMap f := hfs.1
+  have hmono : ∀ a c : 𝒷, a ≤ c → (f a).re ≤ (f c).re := by
+    intro a c hac
+    have h := hf (c - a) (sub_nonneg.mpr hac)
+    rw [map_sub] at h
+    have h2 := (Complex.le_def.mp h).1
+    simp only [Complex.sub_re, Complex.zero_re] at h2
+    linarith
+  -- "Using Cauchy–Schwarz for `⟨·,·⟩_f`":
+  -- `f(⟨x,y⟩⟨y,x⟩)² = ⟨x, y⟨y,x⟩⟩_f² ≤ ‖x‖_f² ‖y⟨y,x⟩‖_f²`
+  let _core : PreInnerProductSpace.Core ℂ X := innerFCore f hf B
+  have hcs : ‖f (B.inner (b • y) x)‖ ^ 2
+      ≤ (f (B.inner (b • y) (b • y))).re * (f (B.inner x x)).re :=
+    Theses.A.CStar.inner_product_basic_1 (V := X) (b • y) x
+  have e1 : B.inner (b • y) x = b * star b := by
+    rw [B.inner_op_smul_left, ← hb]
+  have e2 : B.inner (b • y) (b • y) = b * B.inner y y * star b :=
+    B.inner_op_smul_self b y
+  rw [e1, e2] at hcs
+  have hreal : ∀ a : 𝒷, 0 ≤ a → f a = ((f a).re : ℂ) := by
+    intro a ha
+    have h := hf a ha
+    rw [Complex.le_def] at h
+    exact Complex.ext rfl (by simp [← h.2])
+  have hbb : (0 : 𝒷) ≤ b * star b := by
+    have h := star_mul_self_nonneg (star b)
+    rwa [star_star] at h
+  have hxx : (0 : 𝒷) ≤ B.inner x x := B.inner_self_nonneg x
+  set T : ℝ := (f (b * star b)).re with hT
+  set S : ℝ := (f (B.inner x x)).re with hS
+  have hT0 : 0 ≤ T := Complex.zero_re ▸ (Complex.le_def.mp (hf _ hbb)).1
+  have hS0 : 0 ≤ S := Complex.zero_re ▸ (Complex.le_def.mp (hf _ hxx)).1
+  have hnorm : ‖f (b * star b)‖ = T := by
+    rw [hreal _ hbb, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg hT0]
+  -- "`= ‖x‖_f² f(⟨x,y⟩⟨y,y⟩⟨y,x⟩) ≤ ‖x‖_f² ‖⟨y,y⟩‖ f(⟨x,y⟩⟨y,x⟩)`"
+  have hU : (f (b * B.inner y y * star b)).re ≤ K * T := by
+    have h := hmono _ _ hconj
+    rw [show (K • (b * star b)) = ((K : ℝ) : ℂ) • (b * star b) from
+      (RCLike.real_smul_eq_coe_smul (K := ℂ) _ _), map_smul] at h
+    simpa using h
+  rw [hnorm] at hcs
+  -- "which yields the inequality by dividing by `f(⟨x,y⟩⟨y,x⟩)`"
+  have hkey : T ≤ K * S := by
+    rcases eq_or_lt_of_le hT0 with h0 | h0
+    · nlinarith
+    · nlinarith
+  rw [map_sub, sub_nonneg,
+    show (K • B.inner x x) = ((K : ℝ) : ℂ) • B.inner x x from
+      (RCLike.real_smul_eq_coe_smul (K := ℂ) _ _), map_smul, smul_eq_mul,
+    hreal _ hbb, hreal _ hxx, ← Complex.ofReal_mul]
+  exact (RCLike.ofReal_le_ofReal (K := ℂ)).mpr hkey
 
 /-- **142V** (`module-seminorm`, dils.tex:1448, Exercise), part 1:
 `‖[x,y]‖ ≤ ‖x‖‖y‖` for the seminorm `‖x‖ = ‖[x,x]‖^½`. -/
@@ -937,16 +939,42 @@ theorem hilbmod_ordersep [CompleteSpace X] (T : X →L[ℂ] X)
       hcoe]
 
 /-- **144III** (dils.tex:1653, Lemma): an adjointable map between
-pre-Hilbert 𝒷-modules is 𝒷-linear (and ℂ-linear) — already stated in
-cstar.tex 32I as `moduleAdjointable_linear`, re-exported here.
+pre-Hilbert 𝒷-modules is 𝒷-linear (and ℂ-linear).  The same statement is
+cstar.tex **32I**'s embedded claim, `moduleAdjointable_linear`; the proof
+below is **144IV**'s own computation, *in situ*.
 
-**144IV** is the proof — not converted. -/
+**144IV**: *"We have `⟨y,(Tx)b⟩ = ⟨T*y,x⟩b = ⟨y,T(xb)⟩` for any `x`, `y`,
+`b`.  In particular we get `⟨(Tx)b − T(xb), (Tx)b − T(xb)⟩ = 0` taking
+`y = (Tx)b − T(xb)`, and so `T(x)b = T(xb)`."*  Mirrored (`[u,v] =
+⟨v,u⟩_thesis`, so the adjoint identity reads `[Tx,y] = [x,T*y]`), and run
+three times — for the sum, the scalar and the 𝒷-action — since the Lean
+statement asks for additivity and ℂ-linearity as well; `T` is a bare
+function here, not assumed linear. -/
 theorem hilbmod_adjointable_blinear (T : X → Y)
     (hT : ModuleAdjointable 𝒷 T) :
     (∀ x x' : X, T (x + x') = T x + T x') ∧
       (∀ (c : ℂ) (x : X), T (c • x) = c • T x) ∧
-      ∀ (b : 𝒷) (x : X), T (b • x) = b • T x :=
-  Theses.A.CStar.moduleAdjointable_linear T hT
+      ∀ (b : 𝒷) (x : X), T (b • x) = b • T x := by
+  obtain ⟨S, hS⟩ := hT
+  have hS' : ∀ (x : X) (y : Y), (inner 𝒷 (T x) y : 𝒷) = inner 𝒷 x (S y) := hS
+  -- "taking `y = (Tx)b − T(xb)`": a vector with zero inner product against
+  -- every `y` has zero inner product with itself, hence is zero
+  have key : ∀ d : Y, (∀ y : Y, (inner 𝒷 d y : 𝒷) = 0) → d = 0 := by
+    intro d hd
+    refine eq_of_inner_right_eq (𝒜 := 𝒷) fun y => ?_
+    rw [← CStarModule.star_inner (A := 𝒷) d y, hd, star_zero,
+      CStarModule.inner_zero_right]
+  refine ⟨fun x x' => ?_, fun c x => ?_, fun b x => ?_⟩
+  · refine sub_eq_zero.mp (key _ fun y => ?_)
+    rw [CStarModule.inner_sub_left, hS', CStarModule.inner_add_left,
+      CStarModule.inner_add_left, hS', hS', sub_self]
+  · refine sub_eq_zero.mp (key _ fun y => ?_)
+    rw [CStarModule.inner_sub_left, hS', CStarModule.inner_smul_left_complex,
+      CStarModule.inner_smul_left_complex, hS', sub_self]
+  · -- `[T(b·x), y] = [b·x, S y] = [x, S y] b* = [Tx, y] b* = [b·Tx, y]`
+    refine sub_eq_zero.mp (key _ fun y => ?_)
+    rw [CStarModule.inner_sub_left, hS', CStarModule.inner_op_smul_left,
+      CStarModule.inner_op_smul_left, hS', sub_self]
 
 end OrderSep
 
@@ -1369,12 +1397,39 @@ theorem dils_uniform_spaces_basics_5 (f : X → Y) (hf : UniformContinuous f) :
 
 /-- **147II** (`dils-uniform-spaces-basics`, dils.tex:1982, Exercise), part
 6: for a dense `D ⊆ X`, every point is the limit of a Cauchy filter living
-on `D`. -/
+on `D`.
+
+The solution's own construction: *"Pick for every `ε ∈ Φ` an element
+`d_ε ∈ D` with `x ε d_ε`.  Clearly `(d_ε)_{ε∈Φ}` is a net with inverse
+inclusion.  We have `d_ε → x` as `d_δ ε x` whenever `δ ⊆ ε`."*  The net is
+indexed by the entourages ordered by reverse inclusion — `(𝓤 X)`'s sets as
+an `OrderDual` subtype, directed because `𝓤 X` is a filter — and the Cauchy
+filter of the statement is the filter of that net, `map d atTop`; it is
+Cauchy because it converges. -/
 theorem dils_uniform_spaces_basics_6 (D : Set X) (hD : Dense D) (x : X) :
     ∃ F : Filter X, F.NeBot ∧ D ∈ F ∧ Cauchy F ∧ F ≤ 𝓝 x := by
-  have hne : (𝓝[D] x).NeBot := mem_closure_iff_nhdsWithin_neBot.mp (hD x)
-  exact ⟨𝓝[D] x, hne, self_mem_nhdsWithin,
-    cauchy_nhds.mono nhdsWithin_le_nhds, nhdsWithin_le_nhds⟩
+  -- "a net with inverse inclusion": `Φ` ordered by `δ ≥ ε ⟺ δ ⊆ ε`
+  have hdir : IsDirectedOrder ({V : Set (X × X) // V ∈ 𝓤 X})ᵒᵈ := by
+    refine ⟨fun V W => ⟨(⟨V.1 ∩ W.1, inter_mem V.2 W.2⟩ :
+      {V : Set (X × X) // V ∈ 𝓤 X}), ?_, ?_⟩⟩
+    · exact Set.inter_subset_left
+    · exact Set.inter_subset_right
+  -- "Pick for every `ε ∈ Φ` an element `d_ε ∈ D` with `x ε d_ε`"
+  have hpick : ∀ V : ({V : Set (X × X) // V ∈ 𝓤 X})ᵒᵈ,
+      ∃ p : X, p ∈ D ∧ (x, p) ∈ V.1 := by
+    intro V
+    obtain ⟨p, hp, hpD⟩ := mem_closure_iff_nhds.mp (hD x) _
+      (UniformSpace.ball_mem_nhds x V.2)
+    exact ⟨p, hpD, hp⟩
+  choose d hdD hdV using hpick
+  -- "`d_ε → x`, as `d_δ ε x` whenever `δ ⊆ ε`"
+  have htends : Tendsto d atTop (𝓝 x) := by
+    rw [(nhds_basis_uniformity' (Filter.basis_sets (𝓤 X))).tendsto_right_iff]
+    intro V hV
+    exact Filter.eventually_atTop.mpr ⟨⟨V, hV⟩, fun W hW => hW (hdV W)⟩
+  have hne : (Filter.map d atTop).NeBot := Filter.map_neBot
+  exact ⟨Filter.map d atTop, hne, Filter.mem_map.mpr (Filter.univ_mem' hdD),
+    cauchy_nhds.mono htends, htends⟩
 
 /-- **147II** (`dils-uniform-spaces-basics`, dils.tex:1982, Exercise), part
 7: continuous maps into a Hausdorff space agreeing on a dense set are equal.

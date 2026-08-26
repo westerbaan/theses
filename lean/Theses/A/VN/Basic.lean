@@ -7008,35 +7008,78 @@ theorem meagre_basic_6 (s t : Set X) (hs : AlmostClopen s)
 end Meagre
 
 /-- **52IIIb** (vn.tex:1776, Example): there is a meagre subset of `[0,1]`
-of Lebesgue measure `1`. -/
+of Lebesgue measure `1`.
+
+The thesis's own construction: enumerate the rationals as `q₀, q₁, …` and
+put `Bₘ = ⋃ₙ (qₙ − 2⁻ⁿ/2(m+1), qₙ + 2⁻ⁿ/2(m+1))`.  Each `Bₘ` is open and
+dense (it contains every rational) and has Lebesgue measure at most
+`2/(m+1)`, so `B = ⋂ₘ Bₘ` is negligible while remaining comeagre; hence
+`[0,1] \ B` is meagre of measure `1`.  (The thesis intersects each `Bₘ`
+with `[0,1]` and enumerates only the rationals *in* `[0,1]`; neither
+restriction is needed, and dropping them keeps the estimate the same.) -/
 theorem meagre_full_measure :
     ∃ s : Set ℝ, s ⊆ Set.Icc 0 1 ∧ IsMeagre s ∧ volume s = 1 := by
-  -- As in the thesis: cover `ℚ` by open (hence dense) sets `Uₙ` of measure
-  -- `< 1/(n+1)`; then `B = ⋂ₙ Uₙ` is negligible and comeagre, and
-  -- `[0,1] \ B` is meagre of measure `1`.  (The thesis writes down explicit
-  -- intervals around an enumeration of `ℚ ∩ [0,1]`; we get the `Uₙ` from
-  -- outer regularity of Lebesgue measure instead.)
-  have hQ0 : volume (Set.range ((↑) : ℚ → ℝ)) = 0 :=
-    (Set.countable_range _).measure_zero _
-  have hpos : ∀ n : ℕ, volume (Set.range ((↑) : ℚ → ℝ)) < ((n : ℝ≥0∞) + 1)⁻¹ := by
-    intro n
-    rw [hQ0]
-    exact ENNReal.inv_pos.mpr (by simp)
-  choose U hUsub hUopen hUvol using fun n : ℕ =>
-    Set.exists_isOpen_lt_of_lt (μ := volume) (Set.range ((↑) : ℚ → ℝ))
-      (((n : ℝ≥0∞) + 1)⁻¹) (hpos n)
-  have hBres : (⋂ n : ℕ, U n) ∈ residual ℝ :=
-    countable_iInter_mem.mpr fun n =>
-      residual_of_dense_open (hUopen n) (Rat.denseRange_cast.mono (hUsub n))
-  have hB0 : volume (⋂ n : ℕ, U n) = 0 := by
-    by_contra h
-    obtain ⟨n, hn⟩ := ENNReal.exists_inv_nat_lt h
-    have h1 : volume (⋂ n : ℕ, U n) < ((n : ℝ≥0∞) + 1)⁻¹ :=
-      lt_of_le_of_lt (measure_mono (Set.iInter_subset U n)) (hUvol n)
-    have h2 : ((n : ℝ≥0∞) + 1)⁻¹ ≤ (n : ℝ≥0∞)⁻¹ :=
-      ENNReal.inv_le_inv.mpr (le_add_right le_rfl)
-    exact absurd (h1.trans_le h2) (not_lt.mpr hn.le)
-  refine ⟨Set.Icc 0 1 \ (⋂ n : ℕ, U n), Set.sdiff_subset, ?_, ?_⟩
+  classical
+  set q : ℕ → ℝ := fun n => ((Denumerable.eqv ℚ).symm n : ℚ) with hq
+  set r : ℕ → ℕ → ℝ := fun m n => (1 / 2 : ℝ) ^ n / (2 * (m + 1)) with hr
+  set U : ℕ → Set ℝ := fun m => ⋃ n, Set.Ioo (q n - r m n) (q n + r m n) with hU
+  have hrpos : ∀ m n, 0 < r m n := by
+    intro m n
+    rw [hr]
+    positivity
+  have hUopen : ∀ m, IsOpen (U m) := fun m => isOpen_iUnion fun n => isOpen_Ioo
+  have hQU : ∀ m, Set.range ((↑) : ℚ → ℝ) ⊆ U m := by
+    rintro m _ ⟨s, rfl⟩
+    refine Set.mem_iUnion.mpr ⟨Denumerable.eqv ℚ s, ?_⟩
+    have hqs : q (Denumerable.eqv ℚ s) = (s : ℝ) := by
+      rw [hq]
+      simp
+    rw [Set.mem_Ioo, hqs]
+    exact ⟨by linarith [hrpos m (Denumerable.eqv ℚ s)],
+      by linarith [hrpos m (Denumerable.eqv ℚ s)]⟩
+  have hUvol : ∀ m : ℕ, volume (U m) ≤ ENNReal.ofReal (2 / (m + 1)) := by
+    intro m
+    have hsum : Summable (fun n : ℕ => 2 * r m n) := by
+      rw [hr]
+      simp only
+      exact ((summable_geometric_of_lt_one (by norm_num) (by norm_num)).div_const
+        (2 * (m + 1))).mul_left 2
+    calc volume (U m) ≤ ∑' n, volume (Set.Ioo (q n - r m n) (q n + r m n)) :=
+          measure_iUnion_le _
+      _ = ∑' n, ENNReal.ofReal (2 * r m n) := by
+          refine tsum_congr fun n => ?_
+          rw [Real.volume_Ioo]
+          congr 1
+          ring
+      _ = ENNReal.ofReal (∑' n, 2 * r m n) :=
+          (ENNReal.ofReal_tsum_of_nonneg (fun n => by positivity) hsum).symm
+      _ = ENNReal.ofReal (2 / (m + 1)) := by
+          congr 1
+          rw [hr]
+          simp only
+          rw [tsum_mul_left, tsum_div_const,
+            tsum_geometric_of_lt_one (by norm_num) (by norm_num)]
+          have hm : (0 : ℝ) < (m : ℝ) + 1 := by positivity
+          field_simp
+          norm_num
+  have hBres : (⋂ m : ℕ, U m) ∈ residual ℝ :=
+    countable_iInter_mem.mpr fun m =>
+      residual_of_dense_open (hUopen m) (Rat.denseRange_cast.mono (hQU m))
+  have hB0 : volume (⋂ m : ℕ, U m) = 0 := by
+    have hle : ∀ m : ℕ, volume (⋂ m : ℕ, U m) ≤ ENNReal.ofReal (2 / (m + 1)) :=
+      fun m => le_trans (measure_mono (Set.iInter_subset U m)) (hUvol m)
+    have htend : Filter.Tendsto (fun m : ℕ => ENNReal.ofReal (2 / ((m : ℝ) + 1)))
+        Filter.atTop (nhds 0) := by
+      rw [← ENNReal.ofReal_zero]
+      refine (ENNReal.continuous_ofReal.tendsto 0).comp ?_
+      have h1 : Filter.Tendsto (fun m : ℕ => 2 * (1 / ((m : ℝ) + 1)))
+          Filter.atTop (nhds (2 * 0)) :=
+        (tendsto_one_div_add_atTop_nhds_zero_nat).const_mul 2
+      rw [mul_zero] at h1
+      refine h1.congr fun m => ?_
+      ring
+    exact le_antisymm (ge_of_tendsto htend (Filter.Eventually.of_forall hle)) zero_le
+  refine ⟨Set.Icc 0 1 \ (⋂ m : ℕ, U m), Set.sdiff_subset, ?_, ?_⟩
   · exact Filter.mem_of_superset hBres fun x hx hx' => hx'.2 hx
   · rw [measure_sdiff_null hB0, Real.volume_Icc]
     norm_num

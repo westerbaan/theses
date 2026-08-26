@@ -520,46 +520,162 @@ section Homological
 
 variable [AndThenEffectus C]
 
+/-- Helper for 226II: the interior of the final part of the proof of 219XI
+(`dagger-iso-mu`, eff.tex:6360–6398), extracted in the shape in which the
+thesis's proof of `homology_lemma` (eff.tex:7434) invokes it — "by the same
+reasoning as in the final part of the proof of `dagger-iso-mu` there exists a
+(unique) pristine map `l` with …".  For predicates `a`, `b` on `X` there is a
+pristine `l` with (in the thesis's order) `asrt_b ∘ asrt_a = l ∘ asrt_{a&b} =
+asrt_{b&a} ∘ l`, `l† ∘ l = asrt_{⌈a&b⌉}` and `l ∘ l† = asrt_{⌈b&a⌉}`; below in
+diagrammatic order.  `l` is the pristine part 218X of `asrt_a ∘ asrt_b`, which
+is the `π_{⌈b&a⌉} ∘ ν⁻¹ ∘ ζ_{⌈a&b⌉}` of eff.tex:6360.  Kept `private`: it is
+the interior of a thesis proof, not a statement of eff.tex. -/
+private theorem exists_pristine_asrt_comp [DaggerPrimeEffectus C] {X : C}
+    (a b : Pred X) :
+    ∃ (l : X ⟶ X) (hl : IsPure l),
+      asrt a ≫ asrt b = asrt (andThen a b) ≫ l ∧
+      asrt a ≫ asrt b = l ≫ asrt (andThen b a) ∧
+      l ≫ pureDagger l hl = asrt (ceilPred (andThen a b)) ∧
+      pureDagger l hl ≫ l = asrt (ceilPred (andThen b a)) := by
+  have hf : IsPure (asrt a ≫ asrt b) :=
+    upm_closed_pure (asrt_spec a).1.1 (asrt_spec b).1.1
+  have htruth : (asrt a ≫ asrt b) ≫ truth X = andThen a b := by
+    rw [Category.assoc, (asrt_spec b).2]; rfl
+  -- `(asrt_b ∘ asrt_a)† = asrt_a ∘ asrt_b` (219XV), so `im = ⌈b & a⌉` (209II.2)
+  have hdagf : pureDagger (asrt a ≫ asrt b) hf = asrt b ≫ asrt a :=
+    pureDagger_asrt_comp a b
+  have him : imPred (asrt a ≫ asrt b) = ceilPred (andThen b a) := by
+    have hadj : DiamondAdjoint (asrt a ≫ asrt b) (asrt b ≫ asrt a) := by
+      have h := pureDagger_diamond_adjoint hf
+      rwa [hdagf] at h
+    have h := exc_diamond_adj_2 hadj
+    rwa [Category.assoc, (asrt_spec a).2] at h
+  -- 218X: `asrt_b ∘ asrt_a = l ∘ asrt_{a&b}` for a unique pristine `l` with
+  -- `1 ∘ l = ⌈a&b⌉`, and `(asrt_b ∘ asrt_a)† = l† ∘ asrt_{a&b}`
+  obtain ⟨l, ⟨hpris, h1, hd⟩, -⟩ := prist_asrt_decomp hf
+  have himl : imPred l = ceilPred (andThen b a) :=
+    (imPred_of_prist_asrt hpris h1 hd).trans him
+  have hdd := prist_asrt_decomp_dagger hf hpris h1 hd
+  rw [htruth] at h1 hd hdd
+  rw [hdagf] at hdd
+  -- `l ∘ l† = asrt_{1 ∘ l} = asrt_{⌈a&b⌉}` (218IX.3)
+  have h3 : l ≫ pureDagger l hpris.1 = asrt (ceilPred (andThen a b)) := by
+    rw [asrt_pristine_reverse_3 hpris, h1]
+  -- `l†` is pristine too, with `1 ∘ l† = im l = ⌈b&a⌉`, so 218IX.3 at `l†`
+  -- and `l†† = l` (218XII) give `l† ∘ l = asrt_{⌈b&a⌉}`
+  have hprisd : Pristine (pureDagger l hpris.1) :=
+    ⟨isPure_pureDagger hpris.1, by
+      rw [pristine_dagger_truth hpris]; exact isSharp_imPred C l⟩
+  have h4 : pureDagger l hpris.1 ≫ l = asrt (ceilPred (andThen b a)) := by
+    have hid : pureDagger (pureDagger l hpris.1) hprisd.1 = l :=
+      dagger_idempotent hpris.1
+    have h := asrt_pristine_reverse_3 hprisd
+    rw [hid, pristine_dagger_truth hpris, himl] at h
+    exact h
+  -- `l† ∘ (a&b) = b&a`, so 218IX.5 turns the decomposition around
+  have hlab : pureDagger l hpris.1 ≫ andThen a b = andThen b a := by
+    have h : (asrt b ≫ asrt a) ≫ truth X =
+        (pureDagger l hpris.1 ≫ asrt (andThen a b)) ≫ truth X := by rw [hdd]
+    simp only [Category.assoc] at h
+    rw [(asrt_spec a).2, (asrt_spec (andThen a b)).2] at h
+    exact h.symm
+  have hB : l ≫ asrt (andThen b a) = asrt (andThen a b) ≫ l := by
+    have h := asrt_pristine_reverse_5 hpris (p := andThen a b)
+      (by rw [h1]; exact le_ceilPred _)
+    rwa [hlab] at h
+  exact ⟨l, hpris.1, hd, hd.trans hB.symm, h3, h4⟩
+
 /-- **226II** (`homology-lemma`, eff.tex:7423, Lemma): for sharp predicates
 `s, t` on the same object of a †-effectus with `sᵖ ≤ t`, the predicate
 `s & t` is sharp. -/
 theorem homology_lemma [DaggerPrimeEffectus C] {X : C} {s t : Pred X}
     (hs : IsSharp s) (ht : IsSharp t) (h : orth s ≼ t) :
     IsSharp (andThen s t) := by
-  -- `sᵖ ≤ t` is `tᵖ ≤ s`, so `s & tᵖ = tᵖ` by the absorption rule 213V
-  have hts : orth t ≼ s := by
-    have h' := eabasics_le_iff_orth_le.mp h
-    rwa [eabasics_orth_orth] at h'
-  have habs : asrt s ≫ orth t = orth t := (simple_andthen_absorption hs).mp hts
-  -- (S1): `(s & t) ⋁ (s & tᵖ) = s & 1 = s`, so `s & t ⊥ tᵖ`, i.e. `s & t ≤ t`
-  obtain ⟨hperp, -⟩ := FinPAC.ovee_comp (EffectAlgebra.perp_orth t) (asrt s)
-  rw [habs] at hperp
-  have hle_t : andThen s t ≼ t := by
-    have h' := eabasics_perp_iff_le_orth.mp hperp
-    rwa [eabasics_orth_orth] at h'
-  -- `s & t ≤ s & 1 = s`
-  have hle_s : andThen s t ≼ s := by
-    have h' := comp_le_comp (asrt s) (pred_le_truth t)
-    rwa [(asrt_spec s).2] at h'
-  -- the infimum `m = s ∧ t` in `SPred X` (208IX)
-  obtain ⟨m, hms, hmt, hmax⟩ :
-      ∃ m : SPred X, m.1 ≼ s ∧ m.1 ≼ t ∧
-        ∀ r : SPred X, r.1 ≼ s → r.1 ≼ t → r.1 ≼ m.1 :=
-    ⟨_, spred_infimum ⟨s, hs⟩ ⟨t, ht⟩⟩
-  -- `⌈s & t⌉` is a sharp lower bound of `s` and `t`, hence below `m`
-  have hcm : ceilPred (andThen s t) ≼ m.1 := by
-    refine hmax ⟨ceilPred (andThen s t), isSharp_ceil _⟩ ?_ ?_
-    · have h' := ceil_mono hle_s; rwa [ceil_of_isSharp hs] at h'
-    · have h' := ceil_mono hle_t; rwa [ceil_of_isSharp ht] at h'
-  -- conversely `m = s & m ≤ s & t`, again by 213V
-  have hmst : m.1 ≼ andThen s t := by
-    have h' := comp_le_comp (asrt s) hmt
-    rwa [show asrt s ≫ m.1 = m.1 from (simple_andthen_absorption hs).mp hms] at h'
-  -- so `⌈s & t⌉ ≤ m ≤ s & t ≤ ⌈s & t⌉`
-  have hfix : ceilPred (andThen s t) = andThen s t :=
-    eabasics_le_antisymm (pcm_preorder_trans hcm hmst) (le_ceil _)
-  rw [← hfix]
-  exact isSharp_ceil _
+  have hos : IsSharp (orth s) := DiamondEffectus.orth_sharp hs
+  have hot : IsSharp (orth t) := DiamondEffectus.orth_sharp ht
+  -- `sᵖ ⊥ tᵖ` (as `sᵖ ≤ t = tᵖᵖ`), so `tᵖ & sᵖ = 0` by 213III
+  have hperp : Perp (orth s) (orth t) :=
+    eabasics_perp_iff_le_orth.mpr (by rwa [eabasics_orth_orth])
+  have hzero : asrt (orth t) ≫ orth s = (0 : Pred X) :=
+    (perp_sharp_is_orth hos hot hperp).2
+  -- hence `tᵖ & s = (tᵖ & s) ⋁ (tᵖ & sᵖ) = tᵖ & 1 = tᵖ`, which is sharp
+  obtain ⟨hp0, e0⟩ :=
+    FinPAC.ovee_comp (EffectAlgebra.perp_orth s) (asrt (orth t))
+  have e0' : orth t = ovee (asrt (orth t) ≫ s) (asrt (orth t) ≫ orth s) hp0 := by
+    rw [← e0, EffectAlgebra.ovee_orth s]; exact ((asrt_spec (orth t)).2).symm
+  have hab : asrt (orth t) ≫ s = orth t :=
+    ((PCM.ovee_congr rfl hzero hp0 (PCM.perp_zero _)).trans
+      (PCM.ovee_zero _ _)).symm.trans e0'.symm
+  have habeq : andThen (orth t) s = orth t := hab
+  have habsharp : IsSharp (andThen (orth t) s) := by
+    rw [habeq]; exact hot
+  -- the pristine `l` of 219XI for the pair `(tᵖ, s)`
+  obtain ⟨l, hl, hA, hB, h3, h4⟩ := exists_pristine_asrt_comp (orth t) s
+  -- `l ∘ asrt_{tᵖ & s} ∘ l† = asrt_{s & tᵖ}`, using `l† ∘ l = asrt_{⌈tᵖ&s⌉}`
+  have habsorb1 : asrt (ceilPred (andThen s (orth t))) ≫ asrt (andThen s (orth t))
+      = asrt (andThen s (orth t)) :=
+    (asrt_absorp_rule (asrt (andThen s (orth t)))
+      (isSharp_ceil (andThen s (orth t)))
+      (isSharp_ceil (andThen s (orth t)))).2.mp
+      (by rw [(asrt_spec (andThen s (orth t))).2]; exact le_ceilPred _)
+  have hK : pureDagger l hl ≫ asrt (andThen (orth t) s) ≫ l
+      = asrt (andThen s (orth t)) := by
+    calc pureDagger l hl ≫ asrt (andThen (orth t) s) ≫ l
+        = pureDagger l hl ≫ asrt (orth t) ≫ asrt s := by rw [hA]
+      _ = pureDagger l hl ≫ l ≫ asrt (andThen s (orth t)) := by rw [hB]
+      _ = (pureDagger l hl ≫ l) ≫ asrt (andThen s (orth t)) := by
+            rw [Category.assoc]
+      _ = asrt (andThen s (orth t)) := by rw [h4, habsorb1]
+  -- the computation of eff.tex:7445–7462
+  have habsorb2 : asrt (andThen (orth t) s) ≫ asrt (ceilPred (andThen (orth t) s))
+      = asrt (andThen (orth t) s) :=
+    (asrt_absorp_rule (asrt (andThen (orth t) s))
+      (isSharp_ceil (andThen (orth t) s))
+      (isSharp_ceil (andThen (orth t) s))).1.mp
+      (by rw [imPred_asrt]; exact pcm_preorder_refl _)
+  have hidem : asrt (andThen (orth t) s) ≫ asrt (andThen (orth t) s)
+      = asrt (andThen (orth t) s) := (sharp_prop _).2.mp habsharp
+  have hsq : asrt (andThen s (orth t)) ≫ asrt (andThen s (orth t))
+      = asrt (andThen s (orth t)) := by
+    calc asrt (andThen s (orth t)) ≫ asrt (andThen s (orth t))
+        = (pureDagger l hl ≫ asrt (andThen (orth t) s) ≫ l) ≫
+            (pureDagger l hl ≫ asrt (andThen (orth t) s) ≫ l) := by rw [hK]
+      _ = pureDagger l hl ≫ asrt (andThen (orth t) s) ≫
+            (l ≫ pureDagger l hl) ≫ asrt (andThen (orth t) s) ≫ l := by
+            simp only [Category.assoc]
+      _ = pureDagger l hl ≫ (asrt (andThen (orth t) s) ≫
+            asrt (ceilPred (andThen (orth t) s))) ≫
+            asrt (andThen (orth t) s) ≫ l := by
+            rw [h3]; simp only [Category.assoc]
+      _ = pureDagger l hl ≫ (asrt (andThen (orth t) s) ≫
+            asrt (andThen (orth t) s)) ≫ l := by
+            rw [habsorb2]; simp only [Category.assoc]
+      _ = pureDagger l hl ≫ asrt (andThen (orth t) s) ≫ l := by rw [hidem]
+      _ = asrt (andThen s (orth t)) := hK
+  -- so `s & tᵖ` is sharp by `sharp-prop` 208VII
+  have hy : IsSharp (andThen s (orth t)) := (sharp_prop _).2.mpr hsq
+  -- `(s & t) ⋁ (s & tᵖ) = s & 1 = s` and `s ⋁ sᵖ = 1`, so
+  -- `(s & t)ᵖ = (s & tᵖ) ⋁ sᵖ` is sharp by `diamond-oml` 208III
+  obtain ⟨hp1, e1⟩ := FinPAC.ovee_comp (EffectAlgebra.perp_orth t) (asrt s)
+  have e1' : s = ovee (asrt s ≫ t) (asrt s ≫ orth t) hp1 := by
+    rw [← e1, EffectAlgebra.ovee_orth t]; exact ((asrt_spec s).2).symm
+  have hp2 : Perp (ovee (asrt s ≫ t) (asrt s ≫ orth t) hp1) (orth s) := by
+    rw [← e1']; exact EffectAlgebra.perp_orth s
+  have hw : Perp (asrt s ≫ orth t) (orth s) := PCM.perp_of_ovee_perp hp1 hp2
+  have haw : Perp (asrt s ≫ t) (ovee (asrt s ≫ orth t) (orth s) hw) :=
+    PCM.perp_ovee_of_ovee_perp hp1 hp2
+  have hone : ovee (asrt s ≫ t) (ovee (asrt s ≫ orth t) (orth s) hw) haw = 1 :=
+    (PCM.ovee_assoc hp1 hp2).symm.trans
+      ((PCM.ovee_congr e1'.symm rfl hp2 (EffectAlgebra.perp_orth s)).trans
+        (EffectAlgebra.ovee_orth s))
+  have horth : ovee (asrt s ≫ orth t) (orth s) hw = orth (asrt s ≫ t) :=
+    EffectAlgebra.orth_unique haw hone
+  have hsharp_orth : IsSharp (orth (andThen s t)) := by
+    show IsSharp (orth (asrt s ≫ t))
+    rw [← horth]
+    exact isSharp_ovee hy hos hw
+  have hfin := DiamondEffectus.orth_sharp hsharp_orth
+  rwa [eabasics_orth_orth] at hfin
 
 /-- **226IV.1** (eff.tex:7466, Definition): the preorder on kernels:
 `n ≤ m` when `n` factors through `m` (Grandis; `n ≈ m` when both `n ≤ m`

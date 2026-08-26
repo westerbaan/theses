@@ -2912,9 +2912,27 @@ theorem mult_cancellation_1 (b c : A) :
   have hrb := (ceill_basic_2 b).1.1
   tfae_have 1 → 2 := by
     intro h
-    -- `c*c b = 0`, so `⌈c⌋b = 0`, so `(bb*)⌈c⌋ = 0`, so `⌊b⌉⌈c⌋ = 0`
-    have h1 : (star c * c) * b = 0 := by rw [mul_assoc, h, mul_zero]
-    have h2 : suppProj c * b = 0 := ceil_mul_eq_zero (star_mul_self_nonneg c) h1
+    -- The exercise's hint (vn.tex:2929): if `cb = 0` then
+    -- `⌈b* c* c b⌉ ≡ ⌈b* ⌈c* c⌉ b⌉ = 0` by **60VII** `ceil-fundamental`.
+    -- The left-hand side is `⌈(cb)*(cb)⌉ = ⌈0⌉ = 0` and the right-hand side
+    -- is `⌈(⌈c⌋b)*(⌈c⌋b)⌉`, so `⌈c⌋b = 0`; then `(bb*)⌈c⌋ = 0`, so
+    -- `⌊b⌉⌈c⌋ = 0`.
+    have hL : star b * (star c * c) * b = 0 := by
+      have e : star b * (star c * c) * b = star (c * b) * (c * b) := by
+        rw [star_mul]; noncomm_ring
+      rw [e, h, mul_zero]
+    have hR : star b * suppProj c * b = star (suppProj c * b) * (suppProj c * b) := by
+      rw [star_mul, hsc.isSelfAdjoint.star_eq]
+      calc star b * suppProj c * b
+          = star b * (suppProj c * suppProj c) * b := by rw [hsc.isIdempotentElem.eq]
+        _ = star b * suppProj c * (suppProj c * b) := by noncomm_ring
+    have hfund : ceil (star b * (star c * c) * b) = ceil (star b * suppProj c * b) :=
+      ceil_fundamental_1 b (star c * c) (star_mul_self_nonneg c)
+    have h2 : suppProj c * b = 0 := by
+      have h0 : ceil (star (suppProj c * b) * (suppProj c * b)) = 0 := by
+        rw [← hR, ← hfund, hL, ceil_zero]
+      exact (CStarRing.star_mul_self_eq_zero_iff _).mp
+        ((ceil_basic_3 _ (star_mul_self_nonneg _)).mpr h0)
     have h3 : (b * star b) * suppProj c = 0 := by
       have h' := congrArg star (by rw [← mul_assoc, h2, zero_mul] :
         suppProj c * (b * star b) = 0)
@@ -3873,7 +3891,8 @@ private theorem smul_one_eq (r : ℝ) : (r • (1 : A)) = algebraMap ℂ A ((r :
   rw [Algebra.algebraMap_eq_smul_one, ← algebraMap_smul ℂ r (1 : A)]
   simp
 
-/-- The spectral (Riemann-sum) approximation behind **64II**/**65IV**: a
+/-- The spectral (Riemann-sum) approximation behind the *relativised*
+**65IV**: a
 self-adjoint element of a von Neumann algebra is, up to `ε` in norm, a real
 linear combination of the spectral projections `⌈(a - t)⁺⌉`, each of which
 commutes with everything that commutes with `a` — and, since a von Neumann
@@ -4194,8 +4213,9 @@ carries projections to projections.
 
 (The spectral Riemann sum `mem_closure_span_spectral` above proves the same
 conclusion for an *arbitrary* von Neumann algebra, with no appeal to
-commutativity, and that is what **65IV** below is read off; but it is not
-64II's argument, and 64II's argument is what this Proposition is.) -/
+commutativity; that is what the *relativised* **65IV** below is read off,
+since a von Neumann subalgebra need not be commutative.  **65IV** itself is
+read off this Proposition, as vn.tex:3285 does.) -/
 theorem abelian_projections_norm_dense {C : Type*} [CommCStarAlgebra C]
     [PartialOrder C] [StarOrderedRing C] [VonNeumannAlgebra C] (a : C) :
     a ∈ closure (Submodule.span ℂ {p : C | IsStarProjection p} : Set C) := by
@@ -4385,27 +4405,213 @@ theorem commutant_basic_5 (R : Set A) :
     ⟨fun h => ⟨h.1, fun b hb => (h.2 b hb).symm⟩,
       fun h => ⟨h.1, fun b hb => (h.2 b hb).symm⟩⟩
 
+section CommutativeSubalgebra
+
+/-! ### A von Neumann subalgebra bundled as a von Neumann algebra
+
+The thesis proves **65IV** by applying **64II**
+`abelian-projections-norm-dense` to the commutative von Neumann subalgebra
+`{a}^□□` of **65III** (vn.tex:3285).  64II is stated for a commutative von
+Neumann algebra as a *type*, so the subalgebra has to be bundled as one.
+Mathlib supplies the C\*-structure of a closed `StarSubalgebra`
+(`StarSubalgebra.cstarAlgebra`); what is added here is the spectral order
+and the two clauses of **42I** `vna`.  The witness `IsVNSubalgebra A S` is
+carried as a `Fact` so that the pieces can be `local instance`s.  (The same
+bundling as a structure, `VNSub`, is built in `A/VN/Division` for the
+*relative* comparison theory — three files downstream of this one, which is
+why it is not reused here.) -/
+
+
+variable {S : StarSubalgebra ℂ A} [hSf : Fact (IsVNSubalgebra A S)]
+
+local instance instIsClosedSub : IsClosed (S : Set A) := hSf.out.isClosed
+
+omit [VonNeumannAlgebra A] in
+/-- The square root of a positive element of a closed star subalgebra again
+lies in it (Mathlib's `cfcₙ_mem`). -/
+private theorem sqrtSub_mem {a : A} (ha : 0 ≤ a) (hmem : a ∈ S) : CFC.sqrt a ∈ S := by
+  rw [CFC.sqrt_eq_real_sqrt a ha]
+  exact cfcₙ_mem (𝕜 := ℝ) (𝕜' := ℂ) Real.sqrt hmem
+
+/-- The order of `S` is that of `A`, and it is the C\*-order: the positives
+are the `s* s` for `s ∈ S` (take `s = √x`, which stays in `S`). -/
+noncomputable local instance instStarOrderedSub : StarOrderedRing ↥S := by
+  refine StarOrderedRing.of_nonneg_iff' (fun {x y} hxy z => ?_) (fun x => ?_)
+  · exact show ((z : A) + (x : A)) ≤ ((z : A) + (y : A)) from
+      add_le_add le_rfl (show (x : A) ≤ (y : A) from hxy)
+  · constructor
+    · intro hx
+      have hx' : (0 : A) ≤ (x : A) := hx
+      refine ⟨⟨CFC.sqrt (x : A), sqrtSub_mem hx' x.2⟩, ?_⟩
+      refine Subtype.ext ?_
+      have hsa : IsSelfAdjoint (CFC.sqrt (x : A)) :=
+        IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg (x : A))
+      show (x : A) = star (CFC.sqrt (x : A)) * CFC.sqrt (x : A)
+      rw [hsa.star_eq, CFC.sqrt_mul_sqrt_self (x : A) hx']
+    · rintro ⟨s, rfl⟩
+      exact show (0 : A) ≤ star (s : A) * (s : A) from star_mul_self_nonneg (s : A)
+
+/-- A self-adjoint element of `S`, viewed in `A`. -/
+private def saValSub (d : selfAdjoint ↥S) : selfAdjoint A :=
+  ⟨(d.1 : A), Subtype.ext_iff.mp d.2⟩
+
+omit [PartialOrder A] [StarOrderedRing A] [VonNeumannAlgebra A] hSf in
+@[simp] private theorem saValSub_coe (d : selfAdjoint ↥S) :
+    ((saValSub d : selfAdjoint A) : A) = (d.1 : A) := rfl
+
+omit [StarOrderedRing A] in
+private theorem isLUB_saValSub {D : Set (selfAdjoint ↥S)} {s : selfAdjoint ↥S}
+    (hne : D.Nonempty) (hdir : DirectedOn (· ≤ ·) D) (hlub : IsLUB D s) :
+    IsLUB (saValSub '' D) (saValSub s) := by
+  have hne' : (saValSub '' D).Nonempty := hne.image _
+  have hdir' : DirectedOn (· ≤ ·) (saValSub (S := S) '' D) := by
+    rintro _ ⟨x, hx, rfl⟩ _ ⟨z, hz, rfl⟩
+    obtain ⟨u, hu, hxu, hzu⟩ := hdir x hx z hz
+    exact ⟨saValSub u, ⟨u, hu, rfl⟩, hxu, hzu⟩
+  have hbdd' : BddAbove (saValSub (S := S) '' D) := by
+    refine ⟨saValSub s, ?_⟩
+    rintro _ ⟨x, hx, rfl⟩
+    exact hlub.1 hx
+  obtain ⟨s₀, hs₀⟩ :=
+    VonNeumannAlgebra.isLUB_of_bddAbove_directed _ hne' hdir' hbdd'
+  have hmem : (s₀ : A) ∈ S :=
+    hSf.out.dirSup_mem _ s₀ (by rintro _ ⟨x, hx, rfl⟩; exact x.1.2) hne' hdir' hs₀
+  have htsa : IsSelfAdjoint (⟨(s₀ : A), hmem⟩ : ↥S) := Subtype.ext s₀.2
+  have hlubt : IsLUB D ⟨⟨(s₀ : A), hmem⟩, htsa⟩ := by
+    refine ⟨fun d hd => hs₀.1 ⟨d, hd, rfl⟩, fun u hu => ?_⟩
+    have hub : saValSub u ∈ upperBounds (saValSub (S := S) '' D) := by
+      rintro _ ⟨x, hx, rfl⟩
+      exact hu hx
+    exact hs₀.2 hub
+  have hst : s = ⟨⟨(s₀ : A), hmem⟩, htsa⟩ := hlub.unique hlubt
+  rw [hst]
+  exact hs₀
+
+/-- Restriction of an np-functional to `S`. -/
+private noncomputable def restrictNPSub (ω : NPFunctional A) : NPFunctional ↥S where
+  toPositiveLinearMap :=
+    { toFun := fun a => ω (a : A)
+      map_add' := fun x y => map_add ω.toPositiveLinearMap _ _
+      map_smul' := fun c x => map_smul ω.toPositiveLinearMap _ _
+      monotone' := fun x y hxy => ω.toPositiveLinearMap.monotone hxy }
+  preservesDirSups' := by
+    intro D s hne hdir hlub
+    have hkey := ω.preservesDirSups' (saValSub '' D) (saValSub s) (hne.image _)
+      (by
+        rintro _ ⟨x, hx, rfl⟩ _ ⟨z, hz, rfl⟩
+        obtain ⟨u, hu, hxu, hzu⟩ := hdir x hx z hz
+        exact ⟨saValSub u, ⟨u, hu, rfl⟩, hxu, hzu⟩)
+      (isLUB_saValSub hne hdir hlub)
+    rw [← Set.image_comp] at hkey
+    exact hkey
+
+omit [StarOrderedRing A] in
+@[simp] private theorem restrictNPSub_apply (ω : NPFunctional A) (a : ↥S) :
+    (restrictNPSub ω : NPFunctional ↥S) a = ω (a : A) := rfl
+
+/-- **42V** part 4: a von Neumann subalgebra is a von Neumann algebra —
+directed suprema are computed in `A` and stay in `S`, and the restrictions
+of the np-functionals of `A` are still faithful. -/
+local instance instVNSubtype : VonNeumannAlgebra ↥S where
+  isLUB_of_bddAbove_directed := by
+    intro D hne hdir hbdd
+    obtain ⟨u, hu⟩ := hbdd
+    have hne' : (saValSub (S := S) '' D).Nonempty := hne.image _
+    have hdir' : DirectedOn (· ≤ ·) (saValSub (S := S) '' D) := by
+      rintro _ ⟨x, hx, rfl⟩ _ ⟨z, hz, rfl⟩
+      obtain ⟨v, hv, hxv, hzv⟩ := hdir x hx z hz
+      exact ⟨saValSub v, ⟨v, hv, rfl⟩, hxv, hzv⟩
+    have hbdd' : BddAbove (saValSub (S := S) '' D) := by
+      refine ⟨saValSub u, ?_⟩
+      rintro _ ⟨x, hx, rfl⟩
+      exact hu hx
+    obtain ⟨s₀, hs₀⟩ :=
+      VonNeumannAlgebra.isLUB_of_bddAbove_directed _ hne' hdir' hbdd'
+    have hmem : (s₀ : A) ∈ S :=
+      hSf.out.dirSup_mem _ s₀ (by rintro _ ⟨x, hx, rfl⟩; exact x.1.2) hne' hdir' hs₀
+    refine ⟨⟨⟨(s₀ : A), hmem⟩, Subtype.ext s₀.2⟩, fun d hd => hs₀.1 ⟨d, hd, rfl⟩,
+      fun v hv => ?_⟩
+    have hub : saValSub v ∈ upperBounds (saValSub (S := S) '' D) := by
+      rintro _ ⟨x, hx, rfl⟩
+      exact hv hx
+    exact hs₀.2 hub
+  np_faithful := by
+    intro a ha hω
+    refine Subtype.ext ?_
+    exact VonNeumannAlgebra.np_faithful (a : A) ha
+      (fun ω => by simpa using hω (restrictNPSub ω))
+
+/-- **64II** `abelian-projections-norm-dense` transported to a *commutative*
+von Neumann subalgebra `S` of `A`. -/
+private theorem abelian_projections_norm_dense_sub
+    (hcomm : ∀ x ∈ S, ∀ y ∈ S, x * y = y * x) {a : A} (haS : a ∈ S) :
+    a ∈ closure (Submodule.span ℂ {p : A | IsStarProjection p ∧ p ∈ S} : Set A) := by
+  letI : CommCStarAlgebra ↥S :=
+    { (inferInstance : CStarAlgebra ↥S) with
+      mul_comm := fun x y => Subtype.ext (hcomm (x : A) x.2 (y : A) y.2) }
+  have h64 := abelian_projections_norm_dense (⟨a, haS⟩ : ↥S)
+  set L : ↥S →ₗ[ℂ] A :=
+    { toFun := fun x => (x : A), map_add' := fun _ _ => rfl,
+      map_smul' := fun _ _ => rfl } with hL
+  have hmap : ∀ x ∈ (Submodule.span ℂ {p : ↥S | IsStarProjection p} : Set ↥S),
+      (x : A) ∈ (Submodule.span ℂ {p : A | IsStarProjection p ∧ p ∈ S} : Set A) := by
+    have hle : Submodule.map L (Submodule.span ℂ {p : ↥S | IsStarProjection p})
+        ≤ Submodule.span ℂ {p : A | IsStarProjection p ∧ p ∈ S} := by
+      rw [Submodule.map_span]
+      refine Submodule.span_le.mpr ?_
+      rintro _ ⟨p, hp, rfl⟩
+      exact Submodule.subset_span
+        ⟨⟨congrArg Subtype.val hp.isIdempotentElem,
+          congrArg Subtype.val hp.isSelfAdjoint⟩, p.2⟩
+    exact fun x hx => hle ⟨x, hx, rfl⟩
+  have h3 : a ∈ closure ((fun x : ↥S => (x : A)) ''
+      (Submodule.span ℂ {p : ↥S | IsStarProjection p} : Set ↥S)) :=
+    image_closure_subset_closure_image continuous_subtype_val ⟨⟨a, haS⟩, h64, rfl⟩
+  refine closure_mono ?_ h3
+  rintro _ ⟨x, hx, rfl⟩
+  exact hmap x hx
+
+end CommutativeSubalgebra
+
 /-- **65IV** (`projections-norm-dense`, vn.tex:3279, Proposition): every
 self-adjoint element `a` of a von Neumann algebra is the norm limit of
-linear combinations of projections from `{a}^□□`. -/
+linear combinations of projections from `{a}^□□`.
+
+This is the thesis's own proof (vn.tex:3285): `{a}^□□` is by **65III**
+`commutant-basic` a *commutative* von Neumann subalgebra of `A` containing
+`a`, so **64II** `abelian_projections_norm_dense` — applied to it through
+the bundling above — puts `a` in the closed span of its projections. -/
 theorem projections_norm_dense (a : A) (ha : IsSelfAdjoint a) :
     a ∈ closure (Submodule.span ℂ
       {p : A | IsStarProjection p ∧ p ∈ commutant A (commutant A {a})} :
         Set A) := by
-  -- The thesis reduces to **64II** through the commutative von Neumann
-  -- subalgebra `{a}^□□`; since our proof of **64II** is spectral, it already
-  -- produces projections inside `{a}^□□` (each `⌈(a - t)⁺⌉` commutes with
-  -- everything that commutes with `a`), so no reduction is needed.
-  have hset : {p : A | IsStarProjection p ∧ p ∈ commutant A (commutant A {a})}
-      = {p : A | IsStarProjection p ∧ ∀ x : A, a * x = x * a → x * p = p * x} := by
+  have hstar1 : ∀ s ∈ ({a} : Set A), star s ∈ ({a} : Set A) := by
+    rintro s rfl
+    exact ha.star_eq
+  obtain ⟨⟨T₁, hT₁vn, hT₁⟩, hcomm⟩ := commutant_basic_3' ({a} : Set A) hstar1
+  have hstar2 : ∀ s ∈ commutant A ({a} : Set A), star s ∈ commutant A ({a} : Set A) := by
+    intro s hs
+    rw [← hT₁] at hs ⊢
+    exact star_mem hs
+  obtain ⟨⟨T₂, hT₂vn, hT₂⟩, -⟩ := commutant_basic_3' (commutant A ({a} : Set A)) hstar2
+  haveI : Fact (IsVNSubalgebra A T₂) := ⟨hT₂vn⟩
+  have hself : ({a} : Set A) ⊆ commutant A ({a} : Set A) := by
+    rintro s rfl t ht
+    rw [Set.mem_singleton_iff] at ht
+    rw [ht]
+  have haT₂ : a ∈ T₂ := by
+    rw [← SetLike.mem_coe, hT₂]
+    exact (commutant_basic_1 ({a} : Set A) (∅ : Set A)).2.2.1 rfl
+  have hcomm₂ : ∀ x ∈ T₂, ∀ y ∈ T₂, x * y = y * x := by
+    intro x hx y hy
+    rw [← SetLike.mem_coe, hT₂] at hx hy
+    exact hcomm hself x hx y hy
+  have hres := abelian_projections_norm_dense_sub (S := T₂) hcomm₂ haT₂
+  have hset : {p : A | IsStarProjection p ∧ p ∈ T₂}
+      = {p : A | IsStarProjection p ∧ p ∈ commutant A (commutant A {a})} := by
     ext p
-    simp only [Set.mem_setOf_eq, commutant, Set.mem_centralizer_iff,
-      Set.mem_singleton_iff, forall_eq]
-  rw [hset]
-  refine closure_mono (SetLike.coe_subset_coe.mpr (Submodule.span_mono ?_))
-    (mem_closure_span_spectral a ha)
-  rintro p ⟨h1, h2, -⟩
-  exact ⟨h1, h2⟩
+    simp only [Set.mem_setOf_eq, ← SetLike.mem_coe, hT₂]
+  rwa [hset] at hres
 
 /-- **65IV** relativised to a von Neumann *subalgebra*, self-adjoint case:
 every self-adjoint element of a von Neumann subalgebra `S` of `A` is the

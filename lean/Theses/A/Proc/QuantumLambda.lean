@@ -885,7 +885,25 @@ theorem linfTmul_miu (X Y : Type u) : MIUBilinear (linfTmul X Y) := by
 /-- **123I** (proc.tex:4628, Exercise), part 3: the map
 `⊗ : ℓ^∞(X) × ℓ^∞(Y) → ℓ^∞(X × Y)`, `(f ⊗ g)(x,y) = f(x)g(y)` is a
 tensor product; whence `ℓ^∞(X × Y) ≅ ℓ^∞(X) ⊗ ℓ^∞(Y)` (and `ℓ^∞` is
-strong monoidal). -/
+strong monoidal).
+
+The exercise's own route is followed: "**using this**, and
+`tensor-characterization`" — `this` being parts 1 and 2.  Condition (1) of
+**116VII** is part 1 `linf_generated`, applied to `X × Y`: the elementary
+tensors `δ_x ⊗ δ_y` are exactly the `δ_{(x,y)}`, and those generate.
+Condition (3) is part 2 `linf_projections_order_separating`, again applied
+to `X × Y`: the product functionals are the point evaluations `π_{(x,y)}`,
+they are order separating, and an order separating collection is centre
+separating (take the conjugator `1`, and compare with `0`).  Only the two
+*hypotheses* `Σ`, `Γ` of 116VII — that the point evaluations on `ℓ^∞(X)`
+and on `ℓ^∞(Y)` are centre separating — are taken from **117II**.2
+`sum_generation_2`, which states them in the form 116VII asks for.
+
+The `Conclude that ℓ^∞(X × Y) ≅ ℓ^∞(X) ⊗ ℓ^∞(Y)` tail is not stated here
+as an isomorphism; it is obtained where it is used (`Duplicators`'
+`linf_nmiu_mul`) by feeding this into **114II** `tensor_uniqueness`.  The
+parenthetical "(in fact, it follows that `ℓ^∞` is strong monoidal)" is not
+formalized. -/
 theorem linf_tensor (X Y : Type u) :
     ∃ γ : linf X →ₗ[ℂ] linf Y →ₗ[ℂ] linf (X × Y),
       (∀ (f : linf X) (g : linf Y) (x : X) (y : Y),
@@ -907,34 +925,29 @@ theorem linf_tensor (X Y : Type u) :
     sum_generation_2 (fun _ : Y => ℂ) (fun _ => {Theses.A.VN.complexIdNP})
       (fun _ => centreSeparatingConj_complexId)
   refine (tensor_characterization Sg Γ hSg hΓ γ hmiu).mpr ⟨?_, ?_, ?_⟩
-  · -- (1) the `δ_{(x,y)} = δ_x ⊗ δ_y` generate, by **117II**.1
-    have hgen := sum_generation_1 (fun _ : X × Y => ℂ) (fun _ => (∅ : Set ℂ))
-      (fun _ => starSubalgebra_complex_eq_top _)
-    have hsub : ({x : linf (X × Y) | ∃ i, ∃ a ∈ (∅ : Set ℂ),
-          x = lp.single ∞ i a} ∪
-        {x : linf (X × Y) | ∃ i, x = lp.single ∞ i 1})
+  · -- (1) the `δ_{(x,y)} = δ_x ⊗ δ_y` generate, by **part 1**
+    have hsub : {f : linf (X × Y) | ∃ p : X × Y, f = lp.single ∞ p 1}
         ⊆ (tensorSpan γ hmiu : Set (linf (X × Y))) := by
-      rintro x (⟨i, a, ha, -⟩ | ⟨p, rfl⟩)
-      · exact ha.elim
-      · refine Submodule.subset_span ⟨lp.single ∞ p.1 1, lp.single ∞ p.2 1, ?_⟩
-        refine lp.ext (funext fun q => ?_)
-        by_cases hq : q = p
-        · subst hq
-          rw [lp.single_apply_self]
-          show (1 : ℂ) = ((lp.single ∞ q.1 (1 : ℂ) : linf X) : ∀ _ : X, ℂ) q.1
-            * ((lp.single ∞ q.2 (1 : ℂ) : linf Y) : ∀ _ : Y, ℂ) q.2
-          rw [lp.single_apply_self, lp.single_apply_self, one_mul]
-        · rw [lp.single_apply_ne _ _ _ hq]
-          show (0 : ℂ) = ((lp.single ∞ p.1 (1 : ℂ) : linf X) : ∀ _ : X, ℂ) q.1
-            * ((lp.single ∞ p.2 (1 : ℂ) : linf Y) : ∀ _ : Y, ℂ) q.2
-          by_cases h1 : q.1 = p.1
-          · have h2 : q.2 ≠ p.2 := fun h2 => hq (Prod.ext h1 h2)
-            rw [lp.single_apply_ne _ _ _ h2, mul_zero]
-          · rw [lp.single_apply_ne _ _ _ h1, zero_mul]
+      rintro x ⟨p, rfl⟩
+      refine Submodule.subset_span ⟨lp.single ∞ p.1 1, lp.single ∞ p.2 1, ?_⟩
+      refine lp.ext (funext fun q => ?_)
+      by_cases hq : q = p
+      · subst hq
+        rw [lp.single_apply_self]
+        show (1 : ℂ) = ((lp.single ∞ q.1 (1 : ℂ) : linf X) : ∀ _ : X, ℂ) q.1
+          * ((lp.single ∞ q.2 (1 : ℂ) : linf Y) : ∀ _ : Y, ℂ) q.2
+        rw [lp.single_apply_self, lp.single_apply_self, one_mul]
+      · rw [lp.single_apply_ne _ _ _ hq]
+        show (0 : ℂ) = ((lp.single ∞ p.1 (1 : ℂ) : linf X) : ∀ _ : X, ℂ) q.1
+          * ((lp.single ∞ p.2 (1 : ℂ) : linf Y) : ∀ _ : Y, ℂ) q.2
+        by_cases h1 : q.1 = p.1
+        · have h2 : q.2 ≠ p.2 := fun h2 => hq (Prod.ext h1 h2)
+          rw [lp.single_apply_ne _ _ _ h2, mul_zero]
+        · rw [lp.single_apply_ne _ _ _ h1, zero_mul]
     have htop : wstar (linf (X × Y))
         (tensorSpan γ hmiu : Set (linf (X × Y))) = ⊤ := by
       refine top_le_iff.mp ?_
-      rw [← hgen]
+      rw [← linf_generated (X × Y)]
       exact wstar_mono hsub
     exact dense_of_wstar_eq_top _ htop
   · -- (2) the product functional of two point evaluations is a point evaluation
@@ -944,19 +957,29 @@ theorem linf_tensor (X Y : Type u) :
     refine ⟨lpNP (x, y) Theses.A.VN.complexIdNP, fun f g => ?_⟩
     rw [lp_infty_np_apply, hσ f, hτ g]
     rfl
-  · -- (3) they are centre separating, again by **117II**.2
-    have h := sum_generation_2 (fun _ : X × Y => ℂ)
-      (fun _ => {Theses.A.VN.complexIdNP})
-      (fun _ => centreSeparatingConj_complexId)
-    refine centreSeparatingConj_mono h ?_
-    rintro χ ⟨p, ω, hω, hχ⟩
-    obtain rfl : ω = Theses.A.VN.complexIdNP := hω
-    refine ⟨lpNP p.1 Theses.A.VN.complexIdNP,
-      ⟨p.1, Theses.A.VN.complexIdNP, rfl, fun u => rfl⟩,
-      lpNP p.2 Theses.A.VN.complexIdNP,
-      ⟨p.2, Theses.A.VN.complexIdNP, rfl, fun u => rfl⟩, fun f g => ?_⟩
-    rw [hχ]
-    rfl
+  · -- (3) they are centre separating, by **part 2**
+    rw [centreSeparatingConj_iff]
+    intro a ha
+    refine ⟨fun h ω _ b => by rw [h]; simp, fun H => ?_⟩
+    have hzero : ∀ p : X × Y, ((a : ∀ _ : X × Y, ℂ) p) = 0 := by
+      intro p
+      have hmem : lpNP p Theses.A.VN.complexIdNP ∈
+          {h : NPFunctional (linf (X × Y)) | ∃ σ ∈ Sg, ∃ τ ∈ Γ,
+            ∀ (f : linf X) (g : linf Y), (h (γ f g) : ℂ) = σ f * τ g} := by
+        refine ⟨lpNP p.1 Theses.A.VN.complexIdNP,
+          ⟨p.1, Theses.A.VN.complexIdNP, rfl, fun u => rfl⟩,
+          lpNP p.2 Theses.A.VN.complexIdNP,
+          ⟨p.2, Theses.A.VN.complexIdNP, rfl, fun u => rfl⟩, fun f g => ?_⟩
+        rfl
+      have h1 := H _ hmem 1
+      rw [show (star (1 : linf (X × Y)) * a * 1) = a by simp] at h1
+      rw [lp_infty_np_apply] at h1
+      exact h1
+    have hsa : IsSelfAdjoint a := IsSelfAdjoint.of_nonneg ha
+    have hle : a ≤ 0 :=
+      linf_projections_order_separating (X × Y) a 0 hsa (IsSelfAdjoint.zero _)
+        (fun p => by rw [hzero p]; simp)
+    exact le_antisymm hle ha
 
 
 /-! ### Auxiliaries for **123II**

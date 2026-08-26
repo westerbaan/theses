@@ -426,6 +426,7 @@ spaces has a tensor product (via orthonormal bases and part 1). -/
 theorem hilbertTensor_nonempty : Nonempty (HilbertTensor H K) := by
   classical
   -- Orthonormal bases `E ⊆ ℋ` and `F ⊆ 𝒦`.
+  -- "Let `ℰ` and `ℱ` be orthonormal bases for `ℋ` and `𝒦`" (proc.tex:2260).
   obtain ⟨E, bE, hbE⟩ := exists_hilbertBasis ℂ H
   obtain ⟨F, bF, hbF⟩ := exists_hilbertBasis ℂ K
   -- **109III**.2 turns them into isometric isomorphisms `ℓ²(E) ≅ ℋ`, `ℓ²(F) ≅ 𝒦`.
@@ -624,7 +625,19 @@ theorem IsHilbertTensorProduct.gram_sum_re {T : Type u}
 a tensor product `γ : ℋ × 𝒦 → 𝒯` of Hilbert spaces is ℓ²-bounded (by 1)
 and initial as such: for any bilinear `β : ℋ × 𝒦 → ℒ` that is ℓ²-bounded
 by `B` there is a unique bounded linear map `β_γ : 𝒯 → ℒ` with
-`β_γ(γ(x,y)) = β(x,y)`; moreover `‖β_γ‖ ≤ B`. -/
+`β_γ(γ(x,y)) = β(x,y)`; moreover `‖β_γ‖ ≤ B`.
+
+The printed proof (proc.tex:2250) is transcribed: `γ` is ℓ²-bounded by `1`
+because the defining Gram sum *is* `‖∑ γ(xᵢ,yᵢ)‖²`; orthonormal bases `ℰ`
+of `ℋ` and `ℱ` of `𝒦` make `𝒢 = {γ(e,f)}` an orthonormal basis of `𝒯` by
+**109IV**.2 `hilb_tensor_basic_2`, on which `β_γ` is forced — whence
+uniqueness — and along which
+`β_γ(t) = ∑_{e,f} ⟨γ(e,f),t⟩ β(e,f)` is defined, its convergence and the
+bound `‖β_γ(t)‖ ≤ B‖t‖` coming from the displayed estimate
+`‖∑_{E×F} ⟨γ(e,f),t⟩ β(e,f)‖² ≤ B² ∑_{E×F} |⟨γ(e,f),t⟩|²`
+together with Bessel/Parseval (`Orthonormal.sum_inner_products_le`).  The
+closing sentence — that agreeing on `ℰ × ℱ` forces agreement on `ℋ × 𝒦` —
+is the two `ContinuousLinearMap.ext_on` steps at the end. -/
 theorem hilb_tensor_universal_property {T : Type u} [NormedAddCommGroup T]
     [InnerProductSpace ℂ T] [CompleteSpace T] (γ : H →ₗ[ℂ] K →ₗ[ℂ] T)
     (hγ : IsHilbertTensorProduct γ) :
@@ -633,60 +646,235 @@ theorem hilb_tensor_universal_property {T : Type u} [NormedAddCommGroup T]
         ∃ f : T →L[ℂ] L, (∀ x y, f (γ x y) = β x y) ∧ ‖f‖ ≤ bound ∧
           ∀ g : T →L[ℂ] L, (∀ x y, g (γ x y) = β x y) → g = f := by
   classical
-  -- `γ` is ℓ²-bounded by `1`: the defining Gram sum *is* `‖∑ γ(xᵢ,yᵢ)‖²`.
   refine ⟨⟨zero_le_one, fun n x y => ?_⟩, ?_⟩
   · rw [hγ.gram_sum_re n x y, one_pow, one_mul]
   intro β bound hβ
-  -- The span of the range of `γ` is the range of `β_⊙ = TensorProduct.lift γ`
-  -- on the algebraic tensor product, hence the latter is dense.
-  have hsub : Submodule.span ℂ {t : T | ∃ x y, t = γ x y} ≤
-      LinearMap.range (TensorProduct.lift γ) := by
-    rw [Submodule.span_le]
-    rintro t ⟨x, y, rfl⟩
-    exact ⟨x ⊗ₜ[ℂ] y, by simp⟩
-  have hdense : DenseRange ⇑(TensorProduct.lift γ) := by
-    refine Dense.mono ?_ hγ.dense
-    simpa only [LinearMap.coe_range] using (SetLike.coe_subset_coe.2 hsub)
-  -- ℓ²-boundedness of `β` by `bound` says exactly that
-  -- `‖β_⊙ z‖ ≤ bound · ‖γ_⊙ z‖` on the algebraic tensor product.
-  have hnorm : ∀ z : H ⊗[ℂ] K,
-      ‖TensorProduct.lift β z‖ ≤ bound * ‖TensorProduct.lift γ z‖ := by
-    intro z
-    obtain ⟨S, rfl⟩ := TensorProduct.exists_finset z
+  -- ℓ²-boundedness at `n = 1` is ordinary boundedness: `‖β(x,y)‖ ≤ B‖x‖‖y‖`.
+  have hβ1 : ∀ (x : H) (y : K), ‖β x y‖ ≤ bound * (‖x‖ * ‖y‖) := by
+    intro x y
+    have h := hβ.2 1 (fun _ => x) (fun _ => y)
+    simp only [Finset.univ_unique, Finset.sum_singleton] at h
+    have hre : ((⟪x, x⟫ * ⟪y, y⟫ : ℂ)).re = (‖x‖ * ‖y‖) ^ 2 := by
+      have hg := hγ.gram_sum_re 1 (fun _ => x) (fun _ => y)
+      simp only [Finset.univ_unique, Finset.sum_singleton] at hg
+      rw [hg, hilb_tensor_basic_1 γ hγ]
+    rw [hre, ← mul_pow] at h
+    exact le_of_pow_le_pow_left₀ two_ne_zero
+      (mul_nonneg hβ.1 (by positivity)) h
+  obtain ⟨E, bE, hbE⟩ := exists_hilbertBasis ℂ H
+  obtain ⟨F, bF, hbF⟩ := exists_hilbertBasis ℂ K
+  have hEo : Orthonormal ℂ (fun e : E => (e : H)) := by
+    rw [← hbE]; exact bE.orthonormal
+  have hFo : Orthonormal ℂ (fun f : F => (f : K)) := by
+    rw [← hbF]; exact bF.orthonormal
+  have hEd : Dense (Submodule.span ℂ (E : Set H) : Set H) := by
+    refine Submodule.dense_iff_topologicalClosure_eq_top.mpr ?_
+    have h := bE.dense_span
+    rwa [hbE, Subtype.range_coe] at h
+  have hFd : Dense (Submodule.span ℂ (F : Set K) : Set K) := by
+    refine Submodule.dense_iff_topologicalClosure_eq_top.mpr ?_
+    have h := bF.dense_span
+    rwa [hbF, Subtype.range_coe] at h
+  -- **109IV**.2: `{γ(e,f) : e ∈ ℰ, f ∈ ℱ}` is an orthonormal basis of `𝒯`.
+  obtain ⟨honG, hdG⟩ := hilb_tensor_basic_2 γ hγ E F ⟨hEo, hEd⟩ ⟨hFo, hFd⟩
+  set G : Set T := {t : T | ∃ e ∈ E, ∃ f ∈ F, t = γ e f} with hGdef
+  -- the basis is indexed by `ℰ × ℱ`: `(e,f) ↦ γ(e,f)` is injective
+  have hEF : ∀ (e e' : H) (f f' : K), e ∈ E → e' ∈ E → f ∈ F → f' ∈ F →
+      γ e f = γ e' f' → e = e' ∧ f = f' := by
+    intro e e' f f' he he' hf hf' h
+    have h1 : ⟪γ e f, γ e' f'⟫ = ⟪e, e'⟫ * ⟪f, f'⟫ := hγ.inner_mul e e' f f'
+    have h2 : ⟪γ e f, γ e' f'⟫ = 1 := by
+      rw [h, inner_self_eq_norm_sq_to_K, hilb_tensor_basic_1 γ hγ,
+        hEo.1 ⟨e', he'⟩, hFo.1 ⟨f', hf'⟩]
+      norm_num
+    rw [h2] at h1
+    constructor
+    · by_contra hne
+      have hz : ⟪e, e'⟫ = (0 : ℂ) :=
+        hEo.2 (i := ⟨e, he⟩) (j := ⟨e', he'⟩) (fun hh => hne (congrArg Subtype.val hh))
+      rw [hz, zero_mul] at h1
+      exact one_ne_zero h1
+    · by_contra hne
+      have hz : ⟪f, f'⟫ = (0 : ℂ) :=
+        hFo.2 (i := ⟨f, hf⟩) (j := ⟨f', hf'⟩) (fun hh => hne (congrArg Subtype.val hh))
+      rw [hz, mul_zero] at h1
+      exact one_ne_zero h1
+  have hrep : ∀ g : G, ∃ p : H × K, p.1 ∈ E ∧ p.2 ∈ F ∧ (g : T) = γ p.1 p.2 := by
+    rintro ⟨t, e, he, f, hf, rfl⟩
+    exact ⟨(e, f), he, hf, rfl⟩
+  choose rep hrepE hrepF hrepG using hrep
+  set bb : G → L := fun g => β (rep g).1 (rep g).2 with hbbdef
+  -- the displayed estimate of proc.tex:2276, in which ℓ²-boundedness of `β`
+  -- is applied to `(e, cᵍ f)` and the Gram sum collapses by orthonormality
+  -- of `𝒢`: `‖∑ cᵍ β(e,f)‖² ≤ B² ∑ |cᵍ|²`
+  have hkey : ∀ (S : Finset G) (c : G → ℂ),
+      ‖∑ g ∈ S, c g • bb g‖ ^ 2 ≤ bound ^ 2 * ∑ g ∈ S, ‖c g‖ ^ 2 := by
+    intro S c
     set n := S.card with hn
     set ee := S.equivFin with hee
-    have hsum : ∀ {M : Type u} [AddCommGroup M] [Module ℂ M]
-        (g : H × K → M), ∑ i ∈ S, g i = ∑ k : Fin n, g (ee.symm k) :=
-      fun {M} _ _ g => by
-        rw [← Finset.sum_coe_sort S g]
-        exact (Equiv.sum_comp ee.symm fun i : S => g (i : H × K)).symm
-    set x : Fin n → H := fun k => ((ee.symm k : H × K)).1 with hx
-    set y : Fin n → K := fun k => ((ee.symm k : H × K)).2 with hy
-    have hβS : TensorProduct.lift β (∑ i ∈ S, i.1 ⊗ₜ[ℂ] i.2)
-        = ∑ k : Fin n, β (x k) (y k) := by
-      rw [map_sum, hsum (M := L) fun i => TensorProduct.lift β (i.1 ⊗ₜ[ℂ] i.2)]
-      simp [hx, hy]
-    have hγS : TensorProduct.lift γ (∑ i ∈ S, i.1 ⊗ₜ[ℂ] i.2)
-        = ∑ k : Fin n, γ (x k) (y k) := by
-      rw [map_sum, hsum (M := T) fun i => TensorProduct.lift γ (i.1 ⊗ₜ[ℂ] i.2)]
-      simp [hx, hy]
-    rw [hβS, hγS]
-    refine le_of_pow_le_pow_left₀ two_ne_zero
-      (mul_nonneg hβ.1 (norm_nonneg _)) ?_
-    calc ‖∑ k : Fin n, β (x k) (y k)‖ ^ 2
-        ≤ bound ^ 2 * (∑ i, ∑ j, ⟪x i, x j⟫ * ⟪y i, y j⟫).re := hβ.2 n x y
-      _ = (bound * ‖∑ k : Fin n, γ (x k) (y k)‖) ^ 2 := by
-          rw [hγ.gram_sum_re n x y, mul_pow]
-  refine ⟨(TensorProduct.lift β).extendOfNorm (TensorProduct.lift γ),
-    fun x y => ?_, ?_, ?_⟩
-  · have h := LinearMap.extendOfNorm_eq (f := TensorProduct.lift β)
-      (e := TensorProduct.lift γ) hdense ⟨bound, hnorm⟩ (x ⊗ₜ[ℂ] y)
-    simpa using h
-  · exact LinearMap.opNorm_extendOfNorm_le hdense hβ.1 hnorm
-  · intro g hg
-    refine (LinearMap.extendOfNorm_unique hdense bound hnorm g ?_).symm
-    refine TensorProduct.ext' fun x y => ?_
-    simpa using hg x y
+    have hsum : ∀ {M : Type u} [AddCommMonoid M] (g : G → M),
+        ∑ i ∈ S, g i = ∑ k : Fin n, g (ee.symm k) := by
+      intro M _ g
+      rw [← Finset.sum_coe_sort S g]
+      exact (Equiv.sum_comp ee.symm fun i : S => g (i : G)).symm
+    set xx : Fin n → H := fun k => (rep (ee.symm k)).1 with hxx
+    set yy : Fin n → K := fun k => c (ee.symm k) • (rep (ee.symm k)).2 with hyy
+    have hL : ∑ k : Fin n, β (xx k) (yy k) = ∑ g ∈ S, c g • bb g := by
+      rw [hsum (M := L) fun g => c g • bb g]
+      refine Finset.sum_congr rfl fun k _ => ?_
+      show β (rep (ee.symm k)).1 (c (ee.symm k) • (rep (ee.symm k)).2)
+        = c (ee.symm k) • bb (ee.symm k)
+      rw [map_smul]
+    have hT : ∑ k : Fin n, γ (xx k) (yy k) = ∑ g ∈ S, c g • ((g : T)) := by
+      rw [hsum (M := T) fun g => c g • ((g : T))]
+      refine Finset.sum_congr rfl fun k _ => ?_
+      show γ (rep (ee.symm k)).1 (c (ee.symm k) • (rep (ee.symm k)).2)
+        = c (ee.symm k) • ((ee.symm k : G) : T)
+      rw [map_smul, ← hrepG (ee.symm k)]
+    have hnorm : ‖∑ g ∈ S, c g • ((g : T))‖ ^ 2 = ∑ g ∈ S, ‖c g‖ ^ 2 := by
+      have hinner := honG.inner_sum c c S
+      have hsum2 : ∑ g ∈ S, (starRingEnd ℂ) (c g) * c g
+          = ((∑ g ∈ S, ‖c g‖ ^ 2 : ℝ) : ℂ) := by
+        push_cast
+        exact Finset.sum_congr rfl fun g _ => by rw [Complex.conj_mul']
+      rw [hsum2, inner_self_eq_norm_sq_to_K] at hinner
+      have hre := congrArg Complex.re hinner
+      simpa [← Complex.ofReal_pow] using hre
+    have h := hβ.2 n xx yy
+    rw [hγ.gram_sum_re n xx yy, hL, hT, hnorm] at h
+    exact h
+  -- Parseval/Bessel (proc.tex:2290): `∑ |⟨γ(e,f),t⟩|² ≤ ‖t‖² < ∞`
+  have hsq : ∀ t : T, Summable (fun g : G => ‖⟪(g : T), t⟫‖ ^ 2) := by
+    intro t
+    exact summable_of_sum_le (fun g => by positivity)
+      fun S => honG.sum_inner_products_le t
+  -- "before we can do this we must first check that this series converges"
+  have hsummable : ∀ t : T, Summable (fun g : G => ⟪(g : T), t⟫ • bb g) := by
+    intro t
+    rw [summable_iff_vanishing_norm]
+    intro ε hε
+    obtain ⟨S, hS⟩ := summable_iff_vanishing_norm.1 (hsq t)
+      (ε ^ 2 / (bound ^ 2 + 1)) (by positivity)
+    refine ⟨S, fun S' hS' => ?_⟩
+    have h2 : ∑ g ∈ S', ‖⟪(g : T), t⟫‖ ^ 2 < ε ^ 2 / (bound ^ 2 + 1) := by
+      have h := hS S' hS'
+      rwa [Real.norm_of_nonneg (Finset.sum_nonneg fun g _ => by positivity)] at h
+    have h1 := hkey S' (fun g => ⟪(g : T), t⟫)
+    have hb2 : (0 : ℝ) ≤ bound ^ 2 := by positivity
+    have hlt : ‖∑ g ∈ S', ⟪(g : T), t⟫ • bb g‖ ^ 2 < ε ^ 2 := by
+      refine lt_of_le_of_lt h1 ?_
+      have hd : (0 : ℝ) < bound ^ 2 + 1 := by positivity
+      calc bound ^ 2 * ∑ g ∈ S', ‖⟪(g : T), t⟫‖ ^ 2
+          ≤ bound ^ 2 * (ε ^ 2 / (bound ^ 2 + 1)) :=
+            mul_le_mul_of_nonneg_left h2.le hb2
+        _ < ε ^ 2 := by
+            rw [mul_div_assoc', div_lt_iff₀ hd]
+            nlinarith [sq_nonneg ε]
+    exact lt_of_pow_lt_pow_left₀ 2 hε.le hlt
+  -- the series (tensor-universal-property-1) defining `β_γ`
+  set Bg : T → L := fun t => ∑' g : G, ⟪(g : T), t⟫ • bb g with hBgdef
+  have hHas : ∀ t : T, HasSum (fun g : G => ⟪(g : T), t⟫ • bb g) (Bg t) :=
+    fun t => (hsummable t).hasSum
+  have hadd : ∀ t t' : T, Bg (t + t') = Bg t + Bg t' := by
+    intro t t'
+    have hfun : (fun g : G => ⟪(g : T), t + t'⟫ • bb g)
+        = fun g : G => ⟪(g : T), t⟫ • bb g + ⟪(g : T), t'⟫ • bb g := by
+      funext g
+      rw [inner_add_right, add_smul]
+    show ∑' g : G, ⟪(g : T), t + t'⟫ • bb g = Bg t + Bg t'
+    rw [hfun]
+    exact ((hHas t).add (hHas t')).tsum_eq
+  have hsmul : ∀ (r : ℂ) (t : T), Bg (r • t) = r • Bg t := by
+    intro r t
+    have hfun : (fun g : G => ⟪(g : T), r • t⟫ • bb g)
+        = fun g : G => r • (⟪(g : T), t⟫ • bb g) := by
+      funext g
+      rw [inner_smul_right, smul_smul]
+    show ∑' g : G, ⟪(g : T), r • t⟫ • bb g = r • Bg t
+    rw [hfun]
+    exact ((hHas t).const_smul r).tsum_eq
+  have hbnd : ∀ t : T, ‖Bg t‖ ≤ bound * ‖t‖ := by
+    intro t
+    refine le_of_tendsto (hHas t).norm (Filter.Eventually.of_forall fun S => ?_)
+    have h1 := hkey S (fun g => ⟪(g : T), t⟫)
+    have h2 : ∑ g ∈ S, ‖⟪(g : T), t⟫‖ ^ 2 ≤ ‖t‖ ^ 2 := honG.sum_inner_products_le t
+    have h3 : ‖∑ g ∈ S, ⟪(g : T), t⟫ • bb g‖ ^ 2 ≤ (bound * ‖t‖) ^ 2 := by
+      refine h1.trans ?_
+      rw [mul_pow]
+      exact mul_le_mul_of_nonneg_left h2 (by positivity)
+    exact le_of_pow_le_pow_left₀ two_ne_zero (mul_nonneg hβ.1 (norm_nonneg _)) h3
+  set fL : T →ₗ[ℂ] L :=
+    { toFun := Bg
+      map_add' := hadd
+      map_smul' := hsmul } with hfLdef
+  -- `β_γ(γ(e,f)) = β(e,f)` for `e ∈ ℰ`, `f ∈ ℱ`
+  have hval : ∀ g : G, Bg (g : T) = bb g := by
+    intro g
+    have hfun : (fun g' : G => ⟪(g' : T), (g : T)⟫ • bb g')
+        = fun g' : G => if g' = g then bb g else 0 := by
+      funext g'
+      have hco := orthonormal_iff_ite.mp honG g' g
+      by_cases h : g' = g
+      · subst h
+        rw [hco]
+        simp
+      · rw [hco]
+        simp [h]
+    show ∑' g' : G, ⟪(g' : T), (g : T)⟫ • bb g' = bb g
+    rw [hfun, tsum_ite_eq]
+  have hvalEF : ∀ (e : H) (f : K), e ∈ E → f ∈ F → Bg (γ e f) = β e f := by
+    intro e f he hf
+    have hmem : γ e f ∈ G := ⟨e, he, f, hf, rfl⟩
+    have h := hval ⟨γ e f, hmem⟩
+    have hpair := hEF (rep ⟨γ e f, hmem⟩).1 e (rep ⟨γ e f, hmem⟩).2 f
+      (hrepE _) he (hrepF _) hf (by rw [← hrepG ⟨γ e f, hmem⟩])
+    rw [show ((⟨γ e f, hmem⟩ : G) : T) = γ e f from rfl] at h
+    rw [h, hbbdef]
+    show β (rep ⟨γ e f, hmem⟩).1 (rep ⟨γ e f, hmem⟩).2 = β e f
+    rw [hpair.1, hpair.2]
+  -- "implies that `β_γ(γ(x,y)) = β(x,y)` for all `x ∈ ℋ` and `y ∈ 𝒦`":
+  -- both sides are bounded linear and agree on the dense span of `ℰ`, then
+  -- of `ℱ`
+  have hstepA : ∀ (y : K), y ∈ F → ∀ x : H, Bg (γ x y) = β x y := by
+    intro y hy
+    have hc1 : ∀ x : H, ‖(γ.flip y) x‖ ≤ ‖y‖ * ‖x‖ := fun x => by
+      show ‖γ x y‖ ≤ ‖y‖ * ‖x‖
+      rw [hilb_tensor_basic_1 γ hγ, mul_comm]
+    have hc2 : ∀ x : H, ‖(β.flip y) x‖ ≤ bound * ‖y‖ * ‖x‖ := fun x => by
+      show ‖β x y‖ ≤ bound * ‖y‖ * ‖x‖
+      calc ‖β x y‖ ≤ bound * (‖x‖ * ‖y‖) := hβ1 x y
+        _ = bound * ‖y‖ * ‖x‖ := by ring
+    have hEq : (fL.mkContinuous bound hbnd).comp ((γ.flip y).mkContinuous ‖y‖ hc1)
+        = (β.flip y).mkContinuous (bound * ‖y‖) hc2 := by
+      refine ContinuousLinearMap.ext_on hEd fun e he => ?_
+      show Bg (γ e y) = β e y
+      exact hvalEF e y he hy
+    intro x
+    have h := congrArg (fun Q : H →L[ℂ] L => Q x) hEq
+    exact h
+  have hstepB : ∀ (x : H) (y : K), Bg (γ x y) = β x y := by
+    intro x y
+    have hc1 : ∀ z : K, ‖(γ x) z‖ ≤ ‖x‖ * ‖z‖ := fun z =>
+      le_of_eq (hilb_tensor_basic_1 γ hγ x z)
+    have hc2 : ∀ z : K, ‖(β x) z‖ ≤ bound * ‖x‖ * ‖z‖ := fun z => by
+      calc ‖β x z‖ ≤ bound * (‖x‖ * ‖z‖) := hβ1 x z
+        _ = bound * ‖x‖ * ‖z‖ := by ring
+    have hEq : (fL.mkContinuous bound hbnd).comp ((γ x).mkContinuous ‖x‖ hc1)
+        = (β x).mkContinuous (bound * ‖x‖) hc2 := by
+      refine ContinuousLinearMap.ext_on hFd fun f hf => ?_
+      show Bg (γ x f) = β x f
+      exact hstepA f hf x
+    have h := congrArg (fun Q : K →L[ℂ] L => Q y) hEq
+    exact h
+  refine ⟨fL.mkContinuous bound hbnd, hstepB, ?_, ?_⟩
+  · exact LinearMap.mkContinuous_norm_le fL hβ.1 hbnd
+  · -- uniqueness: `β_γ` is fixed on the orthonormal basis `𝒢`, whose span
+    -- is dense
+    intro g hg
+    refine ContinuousLinearMap.ext_on hdG fun t ht => ?_
+    obtain ⟨e, he, f, hf, rfl⟩ := ht
+    show g (γ e f) = Bg (γ e f)
+    rw [hg e f, hstepB e f]
 
 /-- **110V** (proc.tex:2338, Exercise): the tensor product of Hilbert
 spaces is unique up to a unique isometric isomorphism. -/
@@ -10604,47 +10792,51 @@ theorem isTensorProduct_assoc :
         rw [hβt]
         exact hgen b c)
     exact congrFun (congrArg (fun f : VNT B C →ₗ[ℂ] ℂ => ⇑f) hkey) t
-  -- (1) density: **116IV**.1 applied to `{a ⊗ b}` and `𝒞`
-  have hunivC : @Dense C (ultraweak C) (Submodule.span ℂ (Set.univ : Set C) : Set C) := by
-    rw [Submodule.span_univ, Submodule.top_coe]
-    exact @dense_univ C (ultraweak C)
+  -- **119II** `triple_tensor`: `(a,b,c) ↦ (a ⊗ b) ⊗ c` is a tensor product.
+  -- Its three conditions are exactly the three that `β` needs, once
+  -- **116VII** `tensor_characterization` has cut the second and third down
+  -- to the centre separating collection `{τ ⊗ υ}` on `ℬ ⊗ 𝒞`.
+  obtain ⟨γ₃, hγ₃t, hγ₃⟩ := triple_tensor (A := A) (B := B) (C := C)
+  have hβγ : ∀ (a : A) (b : B) (c : C), β a (b ⊗ᵥ c) = γ₃ a b c := by
+    intro a b c
+    rw [hβt, hγ₃t]
+  -- (1) density: condition (1) of **119II**
   have hdense : @Dense (VNT (VNT A B) C) (ultraweak (VNT (VNT A B) C))
       (Submodule.span ℂ {t : VNT (VNT A B) C | ∃ a t', t = β a t'} : Set _) := by
-    have hgen := tensor_generation_1 (A := VNT A B) (B := C)
-      {x : VNT A B | ∃ a b, x = a ⊗ᵥ b} Set.univ hAB.dense hunivC
-    refine Dense.mono ?_ hgen
+    refine Dense.mono ?_ hγ₃.dense
     refine Submodule.span_mono ?_
-    rintro x ⟨s, ⟨a, b, rfl⟩, c, -, rfl⟩
-    exact ⟨a, b ⊗ᵥ c, (hβt a b c).symm⟩
-  have hprodAB : ∀ (σ' : NPFunctional A) (τ' : NPFunctional B) (a : A) (b : B),
-      (prodNP hAB σ' τ' (a ⊗ᵥ b) : ℂ) = σ' a * τ' b :=
-    fun σ' τ' a b => prodNP_apply hAB σ' τ' a b
+    rintro x ⟨a, b, c, rfl⟩
+    exact ⟨a, b ⊗ᵥ c, (hβγ a b c).symm⟩
   have hprodBC : ∀ (τ' : NPFunctional B) (υ' : NPFunctional C) (b : B) (c : C),
       (prodNP hBC τ' υ' (b ⊗ᵥ c) : ℂ) = τ' b * υ' c :=
     fun τ' υ' b c => prodNP_apply hBC τ' υ' b c
-  have hprodABC : ∀ (ρ' : NPFunctional (VNT A B)) (υ' : NPFunctional C)
-      (x : VNT A B) (c : C),
-      (prodNP hABC ρ' υ' (x ⊗ᵥ c) : ℂ) = ρ' x * υ' c :=
-    fun ρ' υ' x c => prodNP_apply hABC ρ' υ' x c
   refine ⟨β, hβt, ?_⟩
   refine (tensor_characterization (A := A) (B := VNT B C) Set.univ
     (prodFunctionals hBC) centreSeparatingConj_univ
     (centreSeparatingConj_prodFunctionals hBC) β hmiu).mpr ⟨hdense, ?_, ?_⟩
-  · -- (2) the product functionals exist: `β(σ, τ ⊗ υ) = (σ ⊗ τ) ⊗ υ`
+  · -- (2) the product functionals exist: condition (2) of **119II**,
+    -- `γ₃(σ,τ,υ)`, carried from the elementary tensors by `hext`
     rintro σ - χ ⟨τ, υ, rfl⟩
-    refine ⟨prodNP hABC (prodNP hAB σ τ) υ, fun a t => ?_⟩
+    obtain ⟨h, hh⟩ := hγ₃.prod_exists σ τ υ
+    refine ⟨h, fun a t => ?_⟩
     refine hext a _ σ _ (fun b c => ?_) t
-    rw [hprodABC, hprodAB, hprodBC, mul_assoc]
-  · -- (3) they are centre separating: **116IV**.2, twice
-    have h1 := tensor_generation_2 (A := A) (B := B) Set.univ Set.univ
-      centreSeparatingConj_univ centreSeparatingConj_univ
-    have h2 := tensor_generation_2 (A := VNT A B) (B := C) _ Set.univ h1
-      centreSeparatingConj_univ
-    refine centreSeparatingConj_mono h2 ?_
-    rintro ψ ⟨χ, ⟨ω, -, θ, -, hχ⟩, υ, -, hψ⟩
-    refine ⟨ω, Set.mem_univ _, prodNP hBC θ υ, ⟨θ, υ, rfl⟩, fun a t => ?_⟩
-    refine hext a _ ω _ (fun b c => ?_) t
-    rw [hψ, hχ, hprodBC, mul_assoc]
+    rw [← hγ₃t, hh, hprodBC, mul_assoc]
+  · -- (3) they are centre separating.  Condition (3) of **119II** is the
+    -- stronger *faithfulness* of the very same collection (the `h` of the
+    -- previous bullet is `γ₃(σ,τ,υ)`), and a faithful collection is centre
+    -- separating: take the conjugator `1`.
+    rw [centreSeparatingConj_iff]
+    intro t ht
+    refine ⟨fun h ω _ b => by rw [h]; simp, fun hzero => ?_⟩
+    refine hγ₃.faithful t ht fun σ τ υ h hcompat => ?_
+    have hmem : h ∈ {h : NPFunctional (VNT (VNT A B) C) |
+        ∃ σ' ∈ (Set.univ : Set (NPFunctional A)), ∃ χ ∈ prodFunctionals hBC,
+          ∀ (a : A) (t : VNT B C), (h (β a t) : ℂ) = σ' a * χ t} := by
+      refine ⟨σ, Set.mem_univ _, prodNP hBC τ υ, ⟨τ, υ, rfl⟩, fun a t => ?_⟩
+      refine hext a _ σ _ (fun b c => ?_) t
+      rw [← hγ₃t, hcompat, hprodBC, mul_assoc]
+    have hz := hzero h hmem 1
+    simpa using hz
 
 
 

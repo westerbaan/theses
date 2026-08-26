@@ -1739,109 +1739,6 @@ theorem asrt_zeta_compr [DaggerPrimeEffectus C] {i : Pred Y} (hi : IsSharp i)
     _ = asrt (zetaMap i hi ≫ j) ≫ asrt i := by rw [Category.assoc, hζπ]
     _ = asrt (zetaMap i hi ≫ j) := habs
 
-/-- Functoriality of the dagger against an isomorphism on the left:
-`(θ ∘ f)† = f† ∘ θ⁻¹`.  (Post-composing with `θ` moves the standard form of `f`
-to a comprehension for `im f ∘ θ⁻¹`.) -/
-theorem pureDagger_comp_iso [DaggerPrimeEffectus C] {n : X ⟶ Y} (hn : IsPure n)
-    (θ : Y ≅ Z) :
-    pureDagger (n ≫ θ.hom)
-        (upm_closed_pure hn (isPure_of_isQuotient (quotient_basics_3 θ.hom))) =
-      θ.inv ≫ pureDagger n hn := by
-  have hinv : inv θ.hom = θ.inv := by simp
-  set c := n ≫ truth Y with hc
-  set j := imPred n with hj
-  have hjs : IsSharp j := isSharp_imPred C n
-  obtain ⟨γ, hγ⟩ := standard_form_of_eq hn (isSharp_ceil c) hjs rfl rfl
-  have hdn : pureDagger n hn =
-      zetaMap j hjs ≫ γ.inv ≫ comprMap (ceilPred c) ≫ asrt c :=
-    pureDagger_eq hn ⟨γ, hγ, rfl⟩
-  have ht : (n ≫ θ.hom) ≫ truth Z = c := by
-    rw [Category.assoc, iso_isTotal θ.hom]
-  have him : imPred (n ≫ θ.hom) = θ.inv ≫ j := by
-    rw [imPred_comp_iso, hinv]
-  have hJs : IsSharp (θ.inv ≫ j) := him ▸ isSharp_imPred C (n ≫ θ.hom)
-  have hcompr : IsComprehension (θ.inv ≫ j) (comprMap j ≫ θ.hom) := by
-    have h := isComprehension_comp_iso (isComprehension_comprMap j) θ.hom
-    rwa [hinv] at h
-  obtain ⟨δ, hδiso, hδ, -⟩ :=
-    compr_basics_2 hcompr (isComprehension_comprMap (θ.inv ≫ j))
-  have := hδiso
-  -- `ζ_{j ∘ θ⁻¹} = θ⁻¹ ∘ ζ_j ∘ δ`
-  have hzeta : (θ.inv ≫ zetaMap j hjs) ≫ δ = zetaMap (θ.inv ≫ j) hJs := by
-    refine zetaMap_eq_of_compr hJs (asIso δ) (m := comprMap j ≫ θ.hom) hδ ?_
-    rw [Category.assoc, ← Category.assoc (zetaMap j hjs),
-      (zetaMap_spec j hjs).2.2, ← Category.assoc,
-      asrt_iso (fun p => exists_sqrt_pred p) θ.inv j, Category.assoc,
-      θ.inv_hom_id, Category.comp_id]
-  refine pureDagger_eq _ (isDaggerOf_of_eq (isSharp_ceil c) hJs (by rw [ht]) him
-    (γ ≪≫ asIso δ) ?_ ?_)
-  · rw [ht, Iso.trans_hom, asIso_hom]
-    conv_lhs => rw [hγ]
-    simp only [Category.assoc]
-    rw [hδ]
-  · rw [ht, hdn, Iso.trans_inv, asIso_inv]
-    rw [← hzeta]
-    simp only [Category.assoc]
-    rw [← Category.assoc δ (inv δ), IsIso.hom_inv_id, Category.id_comp]
-
-/-- Functoriality of the dagger against a comprehension on the left:
-`(π_i ∘ f)† = f† ∘ ζ_i`.  (Comprehensions compose, 211XI, and
-`im (π_i ∘ π_{im f}) = im f ∘ ζ_i`.) -/
-theorem pureDagger_comp_compr [DaggerPrimeEffectus C] {i : Pred Y}
-    (hi : IsSharp i) {n : X ⟶ comprObj i} (hn : IsPure n) :
-    pureDagger (n ≫ comprMap i)
-        (upm_closed_pure hn
-          (isPure_comprehension C (isComprehension_comprMap i))) =
-      zetaMap i hi ≫ pureDagger n hn := by
-  set c := n ≫ truth (comprObj i) with hc
-  set j := imPred n with hj
-  have hjs : IsSharp j := isSharp_imPred C n
-  obtain ⟨γ, hγ⟩ := standard_form_of_eq hn (isSharp_ceil c) hjs rfl rfl
-  have hdn : pureDagger n hn =
-      zetaMap j hjs ≫ γ.inv ≫ comprMap (ceilPred c) ≫ asrt c :=
-    pureDagger_eq hn ⟨γ, hγ, rfl⟩
-  have ht : (n ≫ comprMap i) ≫ truth Y = c := by
-    rw [Category.assoc, compr_total (isComprehension_comprMap i)]
-  -- `π_i ∘ π_j` is a comprehension for `J = j ∘ ζ_i`
-  obtain ⟨r, hr⟩ := upm_closed_compr (isComprehension_comprMap j)
-    (isComprehension_comprMap i)
-  have hcompr : IsComprehension (zetaMap i hi ≫ j) (comprMap j ≫ comprMap i) := by
-    have h := isComprehension_imPred hr
-    rwa [imPred_compr_compr hi hjs] at h
-  have hJs : IsSharp (zetaMap i hi ≫ j) :=
-    imPred_compr_compr hi hjs ▸ isSharp_imPred C (comprMap j ≫ comprMap i)
-  -- `im (π_i ∘ n) = J`
-  have hepi : Epi (asrt c ≫ zetaMap (ceilPred c) (isSharp_ceil c) ≫ γ.hom) := by
-    have h : Epi (asrt c ≫ zetaMap (ceilPred c) (isSharp_ceil c)) :=
-      quotient_basics_6 (zeta_asrt_quot c)
-    rw [← Category.assoc]
-    exact epi_comp _ _
-  have him : imPred (n ≫ comprMap i) = zetaMap i hi ≫ j := by
-    have he : n ≫ comprMap i =
-        (asrt c ≫ zetaMap (ceilPred c) (isSharp_ceil c) ≫ γ.hom) ≫
-          (comprMap j ≫ comprMap i) := by
-      conv_lhs => rw [hγ]
-      simp only [Category.assoc]
-      rw [← hc]
-    rw [he, imPred_comp_of_epi, imPred_compr_compr hi hjs]
-  obtain ⟨δ, hδiso, hδ, -⟩ :=
-    compr_basics_2 hcompr (isComprehension_comprMap (zetaMap i hi ≫ j))
-  have := hδiso
-  -- `ζ_J = ζ_i ∘ ζ_j ∘ δ`
-  have hzeta : (zetaMap i hi ≫ zetaMap j hjs) ≫ δ = zetaMap (zetaMap i hi ≫ j) hJs := by
-    refine zetaMap_eq_of_compr hJs (asIso δ) (m := comprMap j ≫ comprMap i) hδ ?_
-    rw [Category.assoc, ← Category.assoc (zetaMap j hjs),
-      (zetaMap_spec j hjs).2.2, asrt_zeta_compr hi j]
-  refine pureDagger_eq _ (isDaggerOf_of_eq (isSharp_ceil c) hJs (by rw [ht]) him
-    (γ ≪≫ asIso δ) ?_ ?_)
-  · rw [ht, Iso.trans_hom, asIso_hom]
-    conv_lhs => rw [hγ]
-    simp only [Category.assoc]
-    rw [hδ]
-  · rw [ht, hdn, Iso.trans_inv, asIso_inv, ← hzeta]
-    simp only [Category.assoc]
-    rw [← Category.assoc δ (inv δ), IsIso.hom_inv_id, Category.id_comp]
-
 /-- **219XI** (`dagger-iso-mu`, eff.tex:6249, Proposition), restated as the
 functoriality of the dagger on assert maps: `(asrt_b ∘ asrt_a)† =
 asrt_a ∘ asrt_b`.  (216XI.Ax2 puts `asrt_b ∘ asrt_a` in standard form; 219XI
@@ -2049,140 +1946,733 @@ theorem pureDagger_compr_asrt_zeta [DaggerPrimeEffectus C] {t e : Pred Y} (ht : 
           (comprMap t ≫ asrt tp ≫ zetaMap t ht) := by simp only [Category.assoc]
     _ = zetaMap v hvs ≫ χ.inv ≫ comprMap (ceilPred u) ≫ asrt u := by rw [htail]
 
-/-- Functoriality of the dagger against a comprehension on the right:
-`(N ∘ π_s)† = ζ_s ∘ N†`.  Decompose `N = h ∘ asrt_c` with `h` pristine (218X):
-`N ∘ π_s` is then `π_{im h} ∘ γ ∘ (ζ_{1∘h} ∘ asrt_c ∘ π_s)`, whose last factor is
-219XIV. -/
-theorem pureDagger_compr_comp [DaggerPrimeEffectus C] {s : Pred Y}
-    (hs : IsSharp s) {N : Y ⟶ Z} (hN : IsPure N) :
-    pureDagger (comprMap s ≫ N)
-        (upm_closed_pure
-          (isPure_comprehension C (isComprehension_comprMap s)) hN) =
-      pureDagger N hN ≫ zetaMap s hs := by
-  obtain ⟨m, ⟨hm, h1, hd⟩, -⟩ := prist_asrt_decomp hN
-  obtain ⟨γ, hγ⟩ := standard_form_pristine hm
-  have hdm : pureDagger m hm.1 = zetaMap (imPred m) (isSharp_imPred C m) ≫
-      γ.inv ≫ comprMap (m ≫ truth Z) := asrt_pristine_reverse_1 hm γ hγ
-  have hdN : pureDagger N hN = pureDagger m hm.1 ≫ asrt (N ≫ truth Z) :=
-    prist_asrt_decomp_dagger hN hm h1 hd
-  have hpe : ceilPred (N ≫ truth Z) ≼ (m ≫ truth Z) := by
-    rw [h1]; exact pcm_preorder_refl _
-  have hApure : IsPure (comprMap s ≫ asrt (N ≫ truth Z) ≫
-      zetaMap (m ≫ truth Z) hm.2) := isPure_compr_asrt_zeta hm.2 _
-  have hAdag := pureDagger_compr_asrt_zeta hs hm.2 hpe
-  have hBpure : IsPure ((comprMap s ≫ asrt (N ≫ truth Z) ≫
-      zetaMap (m ≫ truth Z) hm.2) ≫ γ.hom) :=
-    upm_closed_pure hApure (isPure_of_isQuotient (quotient_basics_3 γ.hom))
-  have hBdag := pureDagger_comp_iso hApure γ
-  have hCdag := pureDagger_comp_compr (isSharp_imPred C m) hBpure
-  have hRpure : IsPure (((comprMap s ≫ asrt (N ≫ truth Z) ≫
-      zetaMap (m ≫ truth Z) hm.2) ≫ γ.hom) ≫ comprMap (imPred m)) :=
-    upm_closed_pure hBpure
-      (isPure_comprehension C (isComprehension_comprMap (imPred m)))
-  have key : comprMap s ≫ N = ((comprMap s ≫ asrt (N ≫ truth Z) ≫
-      zetaMap (m ≫ truth Z) hm.2) ≫ γ.hom) ≫ comprMap (imPred m) := by
-    conv_lhs => rw [hd, hγ]
-    simp only [Category.assoc]
-  refine (pureDagger_congr _ hRpure key).trans ?_
-  rw [hCdag, hBdag, hAdag, hdN, hdm]
+/-- Helper: the truth `1 ∘ M` of a map given in the standard form 212III. -/
+theorem standard_form_truth {M : X ⟶ Y} {c : Pred X} {i : Pred Y}
+    (Θ : comprObj (ceilPred c) ≅ comprObj i)
+    (hM : M = asrt c ≫ zetaMap (ceilPred c) (isSharp_ceil c) ≫ Θ.hom ≫ comprMap i) :
+    M ≫ truth Y = c := by
+  rw [hM]
+  simp only [Category.assoc]
+  rw [compr_total (isComprehension_comprMap i), iso_isTotal Θ.hom,
+    quotient_basics_5 (zetaMap_spec (ceilPred c) (isSharp_ceil c)).1,
+    eabasics_orth_orth, asrt_comp_ceil]
+
+/-- Helper: a map given in the standard form 212III is pure. -/
+theorem standard_form_isPure {M : X ⟶ Y} {c : Pred X} {i : Pred Y}
+    (Θ : comprObj (ceilPred c) ≅ comprObj i)
+    (hM : M = asrt c ≫ zetaMap (ceilPred c) (isSharp_ceil c) ≫ Θ.hom ≫ comprMap i) :
+    IsPure M := by
+  rw [hM]
+  exact upm_closed_pure (asrt_spec c).1.1
+    (upm_closed_pure (isPure_of_isQuotient (zetaMap_spec (ceilPred c) (isSharp_ceil c)).1)
+      (upm_closed_pure (isPure_of_isQuotient (quotient_basics_3 Θ.hom))
+        (isPure_comprehension C (isComprehension_comprMap i))))
+
+/-- Helper: the image `im M` of a map given in the standard form 212III. -/
+theorem standard_form_imPred {M : X ⟶ Y} {c : Pred X} {i : Pred Y} (hi : IsSharp i)
+    (Θ : comprObj (ceilPred c) ≅ comprObj i)
+    (hM : M = asrt c ≫ zetaMap (ceilPred c) (isSharp_ceil c) ≫ Θ.hom ≫ comprMap i) :
+    imPred M = i := by
+  have hepi : Epi (asrt c ≫ zetaMap (ceilPred c) (isSharp_ceil c) ≫ Θ.hom) := by
+    have h : Epi (asrt c ≫ zetaMap (ceilPred c) (isSharp_ceil c)) :=
+      quotient_basics_6 (zeta_asrt_quot c)
+    rw [← Category.assoc]; exact epi_comp _ _
+  have he : M = (asrt c ≫ zetaMap (ceilPred c) (isSharp_ceil c) ≫ Θ.hom) ≫ comprMap i := by
+    rw [hM]; simp only [Category.assoc]
+  rw [he, imPred_comp_of_epi, (img_of_compr i).2 i hi]
+
+/-! ### The Setting 219II (parsec 219) -/
+
+/-- Helper for `dagger_iso_chi` (the image computation of eff.tex:5989):
+`IM (ζ_{⌈p⌉} ∘ asrt_p ∘ π_t) = ⌈t ∘ asrt_p ∘ π_{⌈p⌉}⌉`, by 218II. -/
+theorem dagger_setting_im_chi [DaggerPrimeEffectus C] {t : Pred Y} (ht : IsSharp t)
+    (p : Pred Y) :
+    imPred (comprMap t ≫ asrt p ≫ zetaMap (ceilPred p) (isSharp_ceil p)) =
+      ceilPred (comprMap (ceilPred p) ≫ asrt p ≫ t) := by
+  have hpsa : diaPull (asrt p) = diaPush (asrt p) :=
+    diamond_squares_2 (asrt_spec p).1
+  have hadj : diaPull (comprMap (ceilPred p)) =
+      diaPush (zetaMap (ceilPred p) (isSharp_ceil p)) :=
+    quotcompr_diamond_adjoint (isSharp_ceil p)
+  have key : diaPush (asrt p ≫ zetaMap (ceilPred p) (isSharp_ceil p)) ⟨t, ht⟩ =
+      diaPull (comprMap (ceilPred p)) (diaPull (asrt p) ⟨t, ht⟩) := by
+    rw [diaPush_comp (asrt p) (zetaMap (ceilPred p) (isSharp_ceil p)) ⟨t, ht⟩, ← hadj, ← hpsa]
+  have h1 := congrArg Subtype.val key
+  refine h1.trans ?_
+  show ceilPred (comprMap (ceilPred p) ≫ ceilPred (asrt p ≫ t)) = _
+  rw [ceiling_within_ceiling]
+
+/-- Helper for `dagger_iso_chi` (the truth computation of eff.tex:5987):
+`1 ∘ ζ_{⌈p⌉} ∘ asrt_p ∘ π_t = p ∘ π_t`, by `asrt-absorp-rule`. -/
+theorem dagger_setting_truth_chi [DaggerPrimeEffectus C] (t p : Pred Y) :
+    (comprMap t ≫ asrt p ≫ zetaMap (ceilPred p) (isSharp_ceil p)) ≫
+      truth (comprObj (ceilPred p)) = comprMap t ≫ p := by
+  simp only [Category.assoc]
+  rw [quotient_basics_5 (zetaMap_spec (ceilPred p) (isSharp_ceil p)).1,
+    eabasics_orth_orth, asrt_comp_ceil]
+
+/-- **219II** (`dagger-setting`, eff.tex:5993, eq. `dagger-iso-chi`): in the
+Setting 219II there is a (unique) isomorphism `χ` with
+`ζ_{⌈p⌉} ∘ asrt_p ∘ π_t = π_{⌈t ∘ asrt_p ∘ π_{⌈p⌉}⌉} ∘ χ ∘ ζ_{⌈p ∘ π_t⌉} ∘
+asrt_{p ∘ π_t}`.  (The truth of `ζ_{⌈p⌉} ∘ asrt_p ∘ π_t` is `p ∘ π_t` by
+`asrt-absorp-rule`, its image is `⌈t ∘ asrt_p ∘ π_{⌈p⌉}⌉` by 218II.) -/
+theorem dagger_iso_chi [DaggerPrimeEffectus C] {t : Pred Y} (ht : IsSharp t)
+    (p : Pred Y) :
+    ∃ χ : comprObj (ceilPred (comprMap t ≫ p)) ≅
+        comprObj (ceilPred (comprMap (ceilPred p) ≫ asrt p ≫ t)),
+      comprMap t ≫ asrt p ≫ zetaMap (ceilPred p) (isSharp_ceil p) =
+        asrt (comprMap t ≫ p) ≫
+          zetaMap (ceilPred (comprMap t ≫ p)) (isSharp_ceil _) ≫ χ.hom ≫
+          comprMap (ceilPred (comprMap (ceilPred p) ≫ asrt p ≫ t)) := by
+  obtain ⟨χ, hχ⟩ := standard_form_of_eq (isPure_compr_asrt_zeta (isSharp_ceil p) p)
+    (isSharp_ceil (comprMap t ≫ p)) (isSharp_ceil _)
+    (by rw [dagger_setting_truth_chi]) (dagger_setting_im_chi ht p)
+  rw [dagger_setting_truth_chi] at hχ
+  exact ⟨χ, hχ⟩
+
+/-- **219II** (`dagger-setting`, eff.tex:6017, eq. `dagger-iso-omega`): in the
+Setting 219II there is a (unique) isomorphism `ω` with
+`asrt_{p ∘ k} ∘ asrt_q = π_{⌈p ∘ k⌉} ∘ ω ∘ ζ_{⌈p ∘ g⌉} ∘ asrt_{p ∘ g}`.
+(Its truth is `p ∘ g`; its image is `⌈p ∘ k⌉` because `p ∘ k ≤ ⌈q⌉`.) -/
+theorem dagger_iso_omega [DaggerPrimeEffectus C] {g : X ⟶ Y} {q : Pred X} {k : X ⟶ Y}
+    (hgk : g = asrt q ≫ k) (hk : k ≫ truth Y = ceilPred q) (p : Pred Y) :
+    ∃ ω : comprObj (ceilPred (g ≫ p)) ≅ comprObj (ceilPred (k ≫ p)),
+      asrt q ≫ asrt (k ≫ p) =
+        asrt (g ≫ p) ≫ zetaMap (ceilPred (g ≫ p)) (isSharp_ceil _) ≫ ω.hom ≫
+          comprMap (ceilPred (k ≫ p)) := by
+  have hpure : IsPure (asrt q ≫ asrt (k ≫ p)) :=
+    upm_closed_pure (asrt_spec q).1.1 (asrt_spec _).1.1
+  have htruth : (asrt q ≫ asrt (k ≫ p)) ≫ truth X = g ≫ p := by
+    rw [hgk]; simp only [Category.assoc]; rw [(asrt_spec (k ≫ p)).2]
+  obtain ⟨ν, hν⟩ := asrt_comp_standard_form q (k ≫ p)
+  have him0 : imPred (asrt q ≫ asrt (k ≫ p)) = ceilPred (andThen (k ≫ p) q) :=
+    standard_form_imPred (isSharp_ceil _) ν hν
+  have hle : ceilPred (k ≫ p) ≼ ceilPred q := by
+    have h1 : (k ≫ p) ≼ ceilPred q := by
+      have h := comp_le_comp k (pred_le_truth p)
+      rwa [hk] at h
+    have h2 := ceilPred_mono h1
+    rwa [ceil_of_isSharp (isSharp_ceil q)] at h2
+  have hqq : asrt (k ≫ p) ≫ ceilPred q = asrt (k ≫ p) ≫ truth X := by
+    refine eabasics_le_antisymm (comp_le_comp _ (pred_le_truth _)) ?_
+    rw [← (isImage_imPred (asrt (k ≫ p))).1]
+    exact comp_le_comp _ (by rw [imPred_asrt]; exact hle)
+  have him : imPred (asrt q ≫ asrt (k ≫ p)) = ceilPred (k ≫ p) := by
+    rw [him0]
+    show ceilPred (asrt (k ≫ p) ≫ q) = _
+    rw [← ceiling_within_ceiling q (asrt (k ≫ p)), hqq, (asrt_spec (k ≫ p)).2]
+  obtain ⟨ω, hω⟩ := standard_form_of_eq hpure (isSharp_ceil _) (isSharp_ceil _)
+    (by rw [htruth]) him
+  rw [htruth] at hω
+  exact ⟨ω, hω⟩
+
+/-- **219II** (`dagger-setting`, eff.tex:6035, eq. `dagger-iso-beta`): in the
+Setting 219II there is an isomorphism `β` with
+`ζ_{⌈p ∘ π_t⌉} ∘ ψ ∘ ζ_{⌈q⌉} = β ∘ ζ_{⌈p ∘ k⌉}` — quotients are closed under
+composition (199IX) and `⌈p ∘ π_t⌉ ∘ ψ ∘ ζ_{⌈q⌉} = ⌈p ∘ k⌉` by 210II. -/
+theorem dagger_iso_beta [DaggerPrimeEffectus C] {q : Pred X} {t : Pred Y}
+    (ψ : comprObj (ceilPred q) ≅ comprObj t) {k : X ⟶ Y}
+    (hk : k = zetaMap (ceilPred q) (isSharp_ceil q) ≫ ψ.hom ≫ comprMap t) (p : Pred Y) :
+    ∃ β : comprObj (ceilPred (k ≫ p)) ≅ comprObj (ceilPred (comprMap t ≫ p)),
+      zetaMap (ceilPred q) (isSharp_ceil q) ≫ ψ.hom ≫
+          zetaMap (ceilPred (comprMap t ≫ p)) (isSharp_ceil _) =
+        zetaMap (ceilPred (k ≫ p)) (isSharp_ceil _) ≫ β.hom := by
+  have hmq : IsQuotient (orth (ceilPred q))
+      (zetaMap (ceilPred q) (isSharp_ceil q) ≫ ψ.hom) :=
+    quotient_basics_1 (zetaMap_spec (ceilPred q) (isSharp_ceil q)).1 ψ.hom
+  have hmsharp : SharpMap (zetaMap (ceilPred q) (isSharp_ceil q) ≫ ψ.hom) :=
+    DaggerPrimeEffectus.quot_sharp (DiamondEffectus.orth_sharp (isSharp_ceil q)) hmq
+  have hmu : (zetaMap (ceilPred q) (isSharp_ceil q) ≫ ψ.hom) ≫
+      ceilPred (comprMap t ≫ p) = ceilPred (k ≫ p) := by
+    rw [← (sharp_ceil _).mp hmsharp (comprMap t ≫ p)]
+    refine congrArg ceilPred ?_
+    rw [hk]; simp only [Category.assoc]
+  have hcomp : IsQuotient (orth (ceilPred (k ≫ p)))
+      ((zetaMap (ceilPred q) (isSharp_ceil q) ≫ ψ.hom) ≫
+        zetaMap (ceilPred (comprMap t ≫ p)) (isSharp_ceil _)) := by
+    have h := quotients_composition hmq
+      (zetaMap_spec (ceilPred (comprMap t ≫ p)) (isSharp_ceil _)).1
+    rwa [hmu] at h
+  obtain ⟨β, hβiso, hβ, -⟩ := quotient_basics_2 hcomp
+    (zetaMap_spec (ceilPred (k ≫ p)) (isSharp_ceil _)).1
+  have := hβiso
+  refine ⟨asIso β, ?_⟩
+  rw [asIso_hom, hβ]
   simp only [Category.assoc]
 
-/-- Functoriality of the dagger against a quotient on the left:
-`(ζ_s ∘ n)† = n† ∘ π_s` — the dagger of `pureDagger_compr_comp` at `n†`
-(218XII). -/
-theorem pureDagger_comp_zeta [DaggerPrimeEffectus C] {s : Pred Y}
-    (hs : IsSharp s) {n : X ⟶ Y} (hn : IsPure n) :
-    pureDagger (n ≫ zetaMap s hs)
-        (upm_closed_pure hn (isPure_of_isQuotient (zetaMap_spec s hs).1)) =
-      comprMap s ≫ pureDagger n hn := by
-  have hd := pureDagger_compr_comp hs (isPure_pureDagger hn)
-  rw [dagger_idempotent hn] at hd
-  refine (pureDagger_congr _ (isPure_pureDagger
-    (upm_closed_pure (isPure_comprehension C (isComprehension_comprMap s))
-      (isPure_pureDagger hn))) hd.symm).trans ?_
-  exact dagger_idempotent _
+/-- Helper: `ζ_s ∘ φ⁻¹` is a sharp map. -/
+theorem sharpMap_zeta_comp_iso [DaggerPrimeEffectus C] {s : Pred Z} (hs : IsSharp s)
+    {W : C} (θ : comprObj s ⟶ W) [IsIso θ] : SharpMap (zetaMap s hs ≫ θ) := by
+  have hzs : SharpMap (zetaMap s hs) :=
+    DaggerPrimeEffectus.quot_sharp (DiamondEffectus.orth_sharp hs) (zetaMap_spec s hs).1
+  intro r hr
+  rw [Category.assoc]
+  exact hzs _ ⟨_, _, isImage_compr_comp_inv θ hr⟩
 
-/-- Functoriality of the dagger against a **pristine** map on the left:
-`(h ∘ n)† = n† ∘ h†`.  A pristine `h` is `π_{im h} ∘ γ ∘ ζ_{1∘h}` (218VI), so
-this is the three preceding lemmas in sequence. -/
-theorem pureDagger_comp_pristine [DaggerPrimeEffectus C] {h : Y ⟶ Z}
-    (hh : Pristine h) {n : X ⟶ Y} (hn : IsPure n) :
-    pureDagger (n ≫ h) (upm_closed_pure hn hh.1) =
-      pureDagger h hh.1 ≫ pureDagger n hn := by
-  obtain ⟨γ, hγ⟩ := standard_form_pristine hh
-  have hdh : pureDagger h hh.1 = zetaMap (imPred h) (isSharp_imPred C h) ≫
-      γ.inv ≫ comprMap (h ≫ truth Z) := asrt_pristine_reverse_1 hh γ hγ
-  have hApure : IsPure (n ≫ zetaMap (h ≫ truth Z) hh.2) :=
-    upm_closed_pure hn (isPure_of_isQuotient (zetaMap_spec _ hh.2).1)
-  have hBpure : IsPure ((n ≫ zetaMap (h ≫ truth Z) hh.2) ≫ γ.hom) :=
-    upm_closed_pure hApure (isPure_of_isQuotient (quotient_basics_3 γ.hom))
-  have hRpure : IsPure (((n ≫ zetaMap (h ≫ truth Z) hh.2) ≫ γ.hom) ≫
-      comprMap (imPred h)) :=
-    upm_closed_pure hBpure
-      (isPure_comprehension C (isComprehension_comprMap (imPred h)))
-  have key : n ≫ h =
-      ((n ≫ zetaMap (h ≫ truth Z) hh.2) ≫ γ.hom) ≫ comprMap (imPred h) := by
-    conv_lhs => rw [hγ]
+/-- **219II** (`dagger-setting`, eff.tex:6066, eq. `dagger-iso-alpha`): in the
+Setting 219II there is a (unique) isomorphism `α` with
+`π_s ∘ φ ∘ π_{⌈t ∘ asrt_p ∘ π_{⌈p⌉}⌉} = π_{⌈t ∘ f†⌉} ∘ α`.  (By 211XI the
+left-hand side is a comprehension; its image is
+`⌈t ∘ asrt_p ∘ π_{⌈p⌉} ∘ φ⁻¹ ∘ ζ_s⌉ = ⌈t ∘ f†⌉` by 218II and 210II.) -/
+theorem dagger_iso_alpha [DaggerPrimeEffectus C] {s : Pred Z} (hs : IsSharp s)
+    {p : Pred Y} (φ : comprObj (ceilPred p) ≅ comprObj s) (t : Pred Y) {d : Z ⟶ Y}
+    (hd : d = zetaMap s hs ≫ φ.inv ≫ comprMap (ceilPred p) ≫ asrt p) :
+    ∃ α : comprObj (ceilPred (comprMap (ceilPred p) ≫ asrt p ≫ t)) ≅
+        comprObj (ceilPred (d ≫ t)),
+      comprMap (ceilPred (comprMap (ceilPred p) ≫ asrt p ≫ t)) ≫ φ.hom ≫ comprMap s =
+        α.hom ≫ comprMap (ceilPred (d ≫ t)) := by
+  have hcomb : SharpMap (zetaMap s hs ≫ φ.inv) := sharpMap_zeta_comp_iso hs φ.inv
+  have hkey : zetaMap s hs ≫ φ.inv ≫
+      ceilPred (comprMap (ceilPred p) ≫ asrt p ≫ t) = ceilPred (d ≫ t) := by
+    rw [hd, show (zetaMap s hs ≫ φ.inv ≫ comprMap (ceilPred p) ≫ asrt p) ≫ t =
+        (zetaMap s hs ≫ φ.inv) ≫ (comprMap (ceilPred p) ≫ asrt p ≫ t) from by
+      simp only [Category.assoc],
+      (sharp_ceil _).mp hcomb (comprMap (ceilPred p) ≫ asrt p ≫ t)]
     simp only [Category.assoc]
-  refine (pureDagger_congr _ hRpure key).trans ?_
-  rw [pureDagger_comp_compr (isSharp_imPred C h) hBpure,
-    pureDagger_comp_iso hApure γ, pureDagger_comp_zeta hh.2 hn, hdh]
-  simp only [Category.assoc]
+  have hinv : inv φ.hom = φ.inv := by simp
+  have hjs : IsSharp (φ.inv ≫ ceilPred (comprMap (ceilPred p) ≫ asrt p ≫ t)) := by
+    have h := isSharp_imPred C
+      (comprMap (ceilPred (comprMap (ceilPred p) ≫ asrt p ≫ t)) ≫ φ.hom)
+    rwa [imPred_comp_iso, hinv,
+      (img_of_compr (ceilPred (comprMap (ceilPred p) ≫ asrt p ≫ t))).2 _
+        (isSharp_ceil _)] at h
+  have hc1 : IsComprehension (φ.inv ≫ ceilPred (comprMap (ceilPred p) ≫ asrt p ≫ t))
+      (comprMap (ceilPred (comprMap (ceilPred p) ≫ asrt p ≫ t)) ≫ φ.hom) := by
+    have h := isComprehension_comp_iso
+      (isComprehension_comprMap (ceilPred (comprMap (ceilPred p) ≫ asrt p ≫ t))) φ.hom
+    rwa [hinv] at h
+  obtain ⟨δ, hδiso, hδ, -⟩ := compr_basics_2 hc1
+    (isComprehension_comprMap (φ.inv ≫ ceilPred (comprMap (ceilPred p) ≫ asrt p ≫ t)))
+  have := hδiso
+  have him : imPred (comprMap (ceilPred (comprMap (ceilPred p) ≫ asrt p ≫ t)) ≫
+      φ.hom ≫ comprMap s) = ceilPred (d ≫ t) := by
+    have he : comprMap (ceilPred (comprMap (ceilPred p) ≫ asrt p ≫ t)) ≫
+        φ.hom ≫ comprMap s =
+        δ ≫ comprMap (φ.inv ≫ ceilPred (comprMap (ceilPred p) ≫ asrt p ≫ t)) ≫
+          comprMap s := by
+      conv_lhs => rw [← Category.assoc, ← hδ]
+      simp only [Category.assoc]
+    rw [he, imPred_comp_of_epi, imPred_compr_compr hs hjs, hkey]
+  obtain ⟨r, hr⟩ := upm_closed_compr hc1 (isComprehension_comprMap s)
+  have hcompr : IsComprehension (ceilPred (d ≫ t))
+      (comprMap (ceilPred (comprMap (ceilPred p) ≫ asrt p ≫ t)) ≫
+        φ.hom ≫ comprMap s) := by
+    have h := isComprehension_imPred hr
+    simp only [Category.assoc] at h
+    rwa [him] at h
+  obtain ⟨α, hαiso, hα, -⟩ := compr_basics_2 hcompr
+    (isComprehension_comprMap (ceilPred (d ≫ t)))
+  have := hαiso
+  exact ⟨asIso α, by rw [asIso_hom, hα]⟩
 
-/-- Functoriality of the dagger against an assert map on the right:
-`(M ∘ asrt_q)† = asrt_q ∘ M†`.  Decompose `M = m ∘ asrt_c` with `m` pristine
-(218X) and use `pureDagger_comp_pristine` and 219XI. -/
-theorem pureDagger_asrt_comp_left [DaggerPrimeEffectus C] (q : Pred X)
-    {M : X ⟶ Y} (hM : IsPure M) :
-    pureDagger (asrt q ≫ M) (upm_closed_pure (asrt_spec q).1.1 hM) =
-      pureDagger M hM ≫ asrt q := by
-  obtain ⟨m, ⟨hm, h1, hd⟩, -⟩ := prist_asrt_decomp hM
-  have hdM : pureDagger M hM = pureDagger m hm.1 ≫ asrt (M ≫ truth Y) :=
-    prist_asrt_decomp_dagger hM hm h1 hd
-  have hRpure : IsPure ((asrt q ≫ asrt (M ≫ truth Y)) ≫ m) :=
-    upm_closed_pure
-      (upm_closed_pure (asrt_spec q).1.1 (asrt_spec (M ≫ truth Y)).1.1) hm.1
-  have key : asrt q ≫ M = (asrt q ≫ asrt (M ≫ truth Y)) ≫ m := by
-    conv_lhs => rw [hd]
+/-- Helper: `1 ∘ k = ⌈q⌉` for the `k` of the Setting 219II. -/
+theorem dagger_setting_k_truth [DaggerPrimeEffectus C] {q : Pred X} {t : Pred Y}
+    (ψ : comprObj (ceilPred q) ≅ comprObj t) {k : X ⟶ Y}
+    (hk : k = zetaMap (ceilPred q) (isSharp_ceil q) ≫ ψ.hom ≫ comprMap t) :
+    k ≫ truth Y = ceilPred q := by
+  rw [hk]
+  simp only [Category.assoc]
+  rw [compr_total (isComprehension_comprMap t), iso_isTotal ψ.hom,
+    quotient_basics_5 (zetaMap_spec (ceilPred q) (isSharp_ceil q)).1,
+    eabasics_orth_orth]
+
+/-- Helper: `ψ ∘ ζ_{⌈q⌉}` is pristine. -/
+theorem dagger_setting_pristine [DaggerPrimeEffectus C] {q : Pred X} {t : Pred Y}
+    (ψ : comprObj (ceilPred q) ≅ comprObj t) :
+    Pristine (zetaMap (ceilPred q) (isSharp_ceil q) ≫ ψ.hom) := by
+  have hmq : IsQuotient (orth (ceilPred q))
+      (zetaMap (ceilPred q) (isSharp_ceil q) ≫ ψ.hom) :=
+    quotient_basics_1 (zetaMap_spec (ceilPred q) (isSharp_ceil q)).1 ψ.hom
+  refine ⟨upm_closed_pure (isPure_of_isQuotient
+    (zetaMap_spec (ceilPred q) (isSharp_ceil q)).1)
+    (isPure_of_isQuotient (quotient_basics_3 ψ.hom)), ?_⟩
+  rw [quotient_basics_5 hmq, eabasics_orth_orth]
+  exact isSharp_ceil q
+
+/-- **219II** (the `pristine-asrt` square of the diagram of 219IV, eff.tex:6094):
+`asrt_{p ∘ π_t} ∘ ψ ∘ ζ_{⌈q⌉} = ψ ∘ ζ_{⌈q⌉} ∘ asrt_{p ∘ k}`. -/
+theorem dagger_setting_pristine_asrt [DaggerPrimeEffectus C] {q : Pred X} {t : Pred Y}
+    (ψ : comprObj (ceilPred q) ≅ comprObj t) {k : X ⟶ Y}
+    (hk : k = zetaMap (ceilPred q) (isSharp_ceil q) ≫ ψ.hom ≫ comprMap t) (p : Pred Y) :
+    (zetaMap (ceilPred q) (isSharp_ceil q) ≫ ψ.hom) ≫ asrt (comprMap t ≫ p) =
+      asrt (k ≫ p) ≫ (zetaMap (ceilPred q) (isSharp_ceil q) ≫ ψ.hom) := by
+  have hmq : IsQuotient (orth (ceilPred q))
+      (zetaMap (ceilPred q) (isSharp_ceil q) ≫ ψ.hom) :=
+    quotient_basics_1 (zetaMap_spec (ceilPred q) (isSharp_ceil q)).1 ψ.hom
+  have hepi : Epi (zetaMap (ceilPred q) (isSharp_ceil q) ≫ ψ.hom) :=
+    quotient_basics_6 hmq
+  have him1 : imPred (zetaMap (ceilPred q) (isSharp_ceil q) ≫ ψ.hom) =
+      truth (comprObj t) := (cancel_epi _).mp (isImage_imPred _).1
+  have hkp : (zetaMap (ceilPred q) (isSharp_ceil q) ≫ ψ.hom) ≫ (comprMap t ≫ p) =
+      k ≫ p := by rw [hk]; simp only [Category.assoc]
+  have hpri := pristine_asrt (dagger_setting_pristine ψ) (p := comprMap t ≫ p)
+    (by rw [him1]; exact pred_le_truth _)
+  rwa [hkp] at hpri
+
+/-- Helper (the image computation of `dagger-iso-omega`, eff.tex:6019): if
+`⌈a⌉ ≤ ⌈b⌉` then `⌈a & b⌉ = ⌈a⌉`. -/
+theorem ceil_andThen_of_le [DaggerPrimeEffectus C] {a b : Pred X}
+    (hle : ceilPred a ≼ ceilPred b) : ceilPred (andThen a b) = ceilPred a := by
+  have hbb : asrt a ≫ ceilPred b = asrt a ≫ truth X := by
+    refine eabasics_le_antisymm (comp_le_comp _ (pred_le_truth _)) ?_
+    rw [← (isImage_imPred (asrt a)).1]
+    exact comp_le_comp _ (by rw [imPred_asrt]; exact hle)
+  show ceilPred (asrt a ≫ b) = _
+  rw [← ceiling_within_ceiling b (asrt a), hbb, (asrt_spec a).2]
+
+/-- Helper: `⌈p ∘ k⌉ ≤ ⌈q⌉` in the Setting 219II. -/
+theorem dagger_setting_ceil_le [DaggerPrimeEffectus C] {q : Pred X} {k : X ⟶ Y}
+    (hk : k ≫ truth Y = ceilPred q) (p : Pred Y) :
+    ceilPred (k ≫ p) ≼ ceilPred q := by
+  have h1 : (k ≫ p) ≼ ceilPred q := by
+    have h := comp_le_comp k (pred_le_truth p)
+    rwa [hk] at h
+  have h2 := ceilPred_mono h1
+  rwa [ceil_of_isSharp (isSharp_ceil q)] at h2
+
+/-- Helper: `dagger_iso_mu` (219XI) transported along equalities of the two
+ceilings involved. -/
+theorem dagger_iso_mu_of_eq [DaggerPrimeEffectus C] (a b : Pred X)
+    {e₁ e₂ : Pred X} (he₁ : IsSharp e₁) (he₂ : IsSharp e₂)
+    (h₁ : ceilPred (andThen a b) = e₁) (h₂ : ceilPred (andThen b a) = e₂)
+    (ν : comprObj e₂ ≅ comprObj e₁)
+    (hν : asrt b ≫ asrt a =
+      asrt (andThen b a) ≫ zetaMap e₂ he₂ ≫ ν.hom ≫ comprMap e₁) :
+    asrt a ≫ asrt b =
+      zetaMap e₁ he₁ ≫ ν.inv ≫ comprMap e₂ ≫ asrt (andThen b a) := by
+  subst h₁; subst h₂; exact dagger_iso_mu a b ν hν
+
+/-- **219III** (eff.tex:6072, Lemma): in the Setting 219II,
+`f ∘ g = π_{⌈t ∘ f†⌉} ∘ α ∘ χ ∘ β ∘ ω ∘ ζ_{⌈p ∘ g⌉} ∘ asrt_{p ∘ g}`. -/
+theorem dagger_of_fg_form [DaggerPrimeEffectus C]
+    {g : X ⟶ Y} {f : Y ⟶ Z} {p : Pred Y} {q : Pred X} {s : Pred Z} {t : Pred Y}
+    (φ : comprObj (ceilPred p) ≅ comprObj s) (ψ : comprObj (ceilPred q) ≅ comprObj t)
+    (hφ : f = asrt p ≫ zetaMap (ceilPred p) (isSharp_ceil p) ≫ φ.hom ≫ comprMap s)
+    (hψ : g = asrt q ≫ zetaMap (ceilPred q) (isSharp_ceil q) ≫ ψ.hom ≫ comprMap t)
+    {k : X ⟶ Y}
+    (hk : k = zetaMap (ceilPred q) (isSharp_ceil q) ≫ ψ.hom ≫ comprMap t)
+    {d : Z ⟶ Y}
+    {ω : comprObj (ceilPred (g ≫ p)) ≅ comprObj (ceilPred (k ≫ p))}
+    (hω : asrt q ≫ asrt (k ≫ p) =
+      asrt (g ≫ p) ≫ zetaMap (ceilPred (g ≫ p)) (isSharp_ceil _) ≫ ω.hom ≫
+        comprMap (ceilPred (k ≫ p)))
+    {β : comprObj (ceilPred (k ≫ p)) ≅ comprObj (ceilPred (comprMap t ≫ p))}
+    (hβ : zetaMap (ceilPred q) (isSharp_ceil q) ≫ ψ.hom ≫
+        zetaMap (ceilPred (comprMap t ≫ p)) (isSharp_ceil _) =
+      zetaMap (ceilPred (k ≫ p)) (isSharp_ceil _) ≫ β.hom)
+    {χ : comprObj (ceilPred (comprMap t ≫ p)) ≅
+      comprObj (ceilPred (comprMap (ceilPred p) ≫ asrt p ≫ t))}
+    (hχ : comprMap t ≫ asrt p ≫ zetaMap (ceilPred p) (isSharp_ceil p) =
+      asrt (comprMap t ≫ p) ≫
+        zetaMap (ceilPred (comprMap t ≫ p)) (isSharp_ceil _) ≫ χ.hom ≫
+        comprMap (ceilPred (comprMap (ceilPred p) ≫ asrt p ≫ t)))
+    {α : comprObj (ceilPred (comprMap (ceilPred p) ≫ asrt p ≫ t)) ≅
+      comprObj (ceilPred (d ≫ t))}
+    (hα : comprMap (ceilPred (comprMap (ceilPred p) ≫ asrt p ≫ t)) ≫ φ.hom ≫
+        comprMap s = α.hom ≫ comprMap (ceilPred (d ≫ t))) :
+    g ≫ f = asrt (g ≫ p) ≫ zetaMap (ceilPred (g ≫ p)) (isSharp_ceil _) ≫
+      ω.hom ≫ β.hom ≫ χ.hom ≫ α.hom ≫ comprMap (ceilPred (d ≫ t)) := by
+  -- the "pristine-asrt" square of the diagram
+  have hpri := dagger_setting_pristine_asrt ψ hk p
+  have hpriM : ∀ {W : C} (M : comprObj t ⟶ W),
+      zetaMap (ceilPred q) (isSharp_ceil q) ≫ ψ.hom ≫ asrt (comprMap t ≫ p) ≫ M =
+        asrt (k ≫ p) ≫ zetaMap (ceilPred q) (isSharp_ceil q) ≫ ψ.hom ≫ M := by
+    intro W M
+    have h := congrArg (fun x => x ≫ M) hpri
+    simpa only [Category.assoc] using h
+  have hχM : ∀ {W : C} (M : comprObj (ceilPred p) ⟶ W),
+      comprMap t ≫ asrt p ≫ zetaMap (ceilPred p) (isSharp_ceil p) ≫ M =
+        asrt (comprMap t ≫ p) ≫
+          zetaMap (ceilPred (comprMap t ≫ p)) (isSharp_ceil _) ≫ χ.hom ≫
+          comprMap (ceilPred (comprMap (ceilPred p) ≫ asrt p ≫ t)) ≫ M := by
+    intro W M
+    have h := congrArg (fun x => x ≫ M) hχ
+    simpa only [Category.assoc] using h
+  have hβM : ∀ {W : C} (M : comprObj (ceilPred (comprMap t ≫ p)) ⟶ W),
+      zetaMap (ceilPred q) (isSharp_ceil q) ≫ ψ.hom ≫
+          zetaMap (ceilPred (comprMap t ≫ p)) (isSharp_ceil _) ≫ M =
+        zetaMap (ceilPred (k ≫ p)) (isSharp_ceil _) ≫ β.hom ≫ M := by
+    intro W M
+    have h := congrArg (fun x => x ≫ M) hβ
+    simpa only [Category.assoc] using h
+  have hωM : ∀ {W : C} (M : X ⟶ W),
+      asrt q ≫ asrt (k ≫ p) ≫ M =
+        asrt (g ≫ p) ≫ zetaMap (ceilPred (g ≫ p)) (isSharp_ceil _) ≫ ω.hom ≫
+          comprMap (ceilPred (k ≫ p)) ≫ M := by
+    intro W M
+    have h := congrArg (fun x => x ≫ M) hω
+    simpa only [Category.assoc] using h
+  have hπζc : ∀ {W : C} (M : comprObj (ceilPred (k ≫ p)) ⟶ W),
+      comprMap (ceilPred (k ≫ p)) ≫
+        zetaMap (ceilPred (k ≫ p)) (isSharp_ceil _) ≫ M = M := by
+    intro W M
+    rw [← Category.assoc, (zetaMap_spec (ceilPred (k ≫ p)) (isSharp_ceil _)).2.1,
+      Category.id_comp]
+  conv_lhs => rw [hψ, hφ]
+  simp only [Category.assoc]
+  rw [hχM, hpriM, hβM, hα, hωM, hπζc]
+
+/-- Helper: `⌈p ∘ π_t⌉ ∘ ψ ∘ ζ_{⌈q⌉} = ⌈p ∘ k⌉`. -/
+theorem dagger_setting_ceil_pk [DaggerPrimeEffectus C] {q : Pred X} {t : Pred Y}
+    (ψ : comprObj (ceilPred q) ≅ comprObj t) {k : X ⟶ Y}
+    (hk : k = zetaMap (ceilPred q) (isSharp_ceil q) ≫ ψ.hom ≫ comprMap t) (p : Pred Y) :
+    (zetaMap (ceilPred q) (isSharp_ceil q) ≫ ψ.hom) ≫ ceilPred (comprMap t ≫ p) =
+      ceilPred (k ≫ p) := by
+  have hmq : IsQuotient (orth (ceilPred q))
+      (zetaMap (ceilPred q) (isSharp_ceil q) ≫ ψ.hom) :=
+    quotient_basics_1 (zetaMap_spec (ceilPred q) (isSharp_ceil q)).1 ψ.hom
+  have hmsharp : SharpMap (zetaMap (ceilPred q) (isSharp_ceil q) ≫ ψ.hom) :=
+    DaggerPrimeEffectus.quot_sharp (DiamondEffectus.orth_sharp (isSharp_ceil q)) hmq
+  rw [← (sharp_ceil _).mp hmsharp (comprMap t ≫ p)]
+  refine congrArg ceilPred ?_
+  rw [hk]; simp only [Category.assoc]
+
+/-- **219VII** (`dagger-iso-beta2`, eff.tex:6186, Lemma): the daggered version
+of `dagger-iso-beta`, `π_{⌈p ∘ k⌉} ∘ β⁻¹ = π_{⌈q⌉} ∘ ψ⁻¹ ∘ π_{⌈p ∘ π_t⌉}`. -/
+theorem dagger_iso_beta2 [DaggerPrimeEffectus C] {q : Pred X} {t : Pred Y}
+    (ψ : comprObj (ceilPred q) ≅ comprObj t) {k : X ⟶ Y}
+    (hk : k = zetaMap (ceilPred q) (isSharp_ceil q) ≫ ψ.hom ≫ comprMap t) (p : Pred Y)
+    {β : comprObj (ceilPred (k ≫ p)) ≅ comprObj (ceilPred (comprMap t ≫ p))}
+    (hβ : zetaMap (ceilPred q) (isSharp_ceil q) ≫ ψ.hom ≫
+        zetaMap (ceilPred (comprMap t ≫ p)) (isSharp_ceil _) =
+      zetaMap (ceilPred (k ≫ p)) (isSharp_ceil _) ≫ β.hom) :
+    β.inv ≫ comprMap (ceilPred (k ≫ p)) =
+      comprMap (ceilPred (comprMap t ≫ p)) ≫ ψ.inv ≫ comprMap (ceilPred q) := by
+  have hsqrt : ∀ {W : C} (r : Pred W), ∃ r', andThen r' r' = r := fun r =>
+    exists_sqrt_pred r
+  have habs : asrt (ceilPred (k ≫ p)) ≫ asrt (ceilPred q) = asrt (ceilPred (k ≫ p)) :=
+    (asrt_absorp_rule _ (isSharp_ceil q) (isSharp_ceil q)).1.mp (by
+      rw [imPred_asrt, ceil_of_isSharp (isSharp_ceil (k ≫ p))]
+      exact dagger_setting_ceil_le (dagger_setting_k_truth ψ hk) p)
+  refine comprMap_eq_of_zeta (isSharp_ceil (k ≫ p)) β hβ.symm ?_
+  calc (zetaMap (ceilPred q) (isSharp_ceil q) ≫ ψ.hom ≫
+        zetaMap (ceilPred (comprMap t ≫ p)) (isSharp_ceil _)) ≫
+        (comprMap (ceilPred (comprMap t ≫ p)) ≫ ψ.inv ≫ comprMap (ceilPred q))
+      = zetaMap (ceilPred q) (isSharp_ceil q) ≫ ψ.hom ≫
+          (zetaMap (ceilPred (comprMap t ≫ p)) (isSharp_ceil _) ≫
+            comprMap (ceilPred (comprMap t ≫ p))) ≫ ψ.inv ≫
+          comprMap (ceilPred q) := by simp only [Category.assoc]
+    _ = zetaMap (ceilPred q) (isSharp_ceil q) ≫
+          (ψ.hom ≫ asrt (ceilPred (comprMap t ≫ p))) ≫ ψ.inv ≫
+          comprMap (ceilPred q) := by
+        rw [(zetaMap_spec (ceilPred (comprMap t ≫ p)) (isSharp_ceil _)).2.2]
+        simp only [Category.assoc]
+    _ = zetaMap (ceilPred q) (isSharp_ceil q) ≫
+          asrt (ψ.hom ≫ ceilPred (comprMap t ≫ p)) ≫ (ψ.hom ≫ ψ.inv) ≫
+          comprMap (ceilPred q) := by
+        rw [asrt_iso hsqrt ψ.hom (ceilPred (comprMap t ≫ p))]
+        simp only [Category.assoc]
+    _ = (zetaMap (ceilPred q) (isSharp_ceil q) ≫
+          asrt (ψ.hom ≫ ceilPred (comprMap t ≫ p))) ≫ comprMap (ceilPred q) := by
+        rw [ψ.hom_inv_id, Category.id_comp]
+        simp only [Category.assoc]
+    _ = asrt (zetaMap (ceilPred q) (isSharp_ceil q) ≫ ψ.hom ≫
+          ceilPred (comprMap t ≫ p)) ≫
+          zetaMap (ceilPred q) (isSharp_ceil q) ≫ comprMap (ceilPred q) := by
+        rw [zeta_through_asrt hsqrt (isSharp_ceil q)
+          (quotcompr_diamond_adjoint (isSharp_ceil q))
+          (ψ.hom ≫ ceilPred (comprMap t ≫ p))]
+        simp only [Category.assoc]
+    _ = asrt (ceilPred (k ≫ p)) ≫ asrt (ceilPred q) := by
+        rw [(zetaMap_spec (ceilPred q) (isSharp_ceil q)).2.2,
+          ← dagger_setting_ceil_pk ψ hk p]
+        simp only [Category.assoc]
+    _ = asrt (ceilPred (k ≫ p)) := habs
+
+/-- **219IX** (`dagger-iso-alpha2`, eff.tex:6228, Exercise): the daggered
+version of `dagger-iso-alpha`,
+`α⁻¹ ∘ ζ_{⌈t ∘ f†⌉} = ζ_{⌈t ∘ asrt_p ∘ π_{⌈p⌉}⌉} ∘ φ⁻¹ ∘ ζ_s`. -/
+theorem dagger_iso_alpha2 [DaggerPrimeEffectus C] {s : Pred Z} (hs : IsSharp s)
+    {p : Pred Y} (φ : comprObj (ceilPred p) ≅ comprObj s) (t : Pred Y) {d : Z ⟶ Y}
+    (hd : d = zetaMap s hs ≫ φ.inv ≫ comprMap (ceilPred p) ≫ asrt p)
+    {α : comprObj (ceilPred (comprMap (ceilPred p) ≫ asrt p ≫ t)) ≅
+      comprObj (ceilPred (d ≫ t))}
+    (hα : comprMap (ceilPred (comprMap (ceilPred p) ≫ asrt p ≫ t)) ≫ φ.hom ≫
+        comprMap s = α.hom ≫ comprMap (ceilPred (d ≫ t))) :
+    zetaMap (ceilPred (d ≫ t)) (isSharp_ceil _) ≫ α.inv =
+      zetaMap s hs ≫ φ.inv ≫
+        zetaMap (ceilPred (comprMap (ceilPred p) ≫ asrt p ≫ t)) (isSharp_ceil _) := by
+  have hsqrt : ∀ {W : C} (r : Pred W), ∃ r', andThen r' r' = r := fun r =>
+    exists_sqrt_pred r
+  have hcomb : SharpMap (zetaMap s hs ≫ φ.inv) := sharpMap_zeta_comp_iso hs φ.inv
+  have hkey : zetaMap s hs ≫ φ.inv ≫
+      ceilPred (comprMap (ceilPred p) ≫ asrt p ≫ t) = ceilPred (d ≫ t) := by
+    rw [hd, show (zetaMap s hs ≫ φ.inv ≫ comprMap (ceilPred p) ≫ asrt p) ≫ t =
+        (zetaMap s hs ≫ φ.inv) ≫ (comprMap (ceilPred p) ≫ asrt p ≫ t) from by
+      simp only [Category.assoc],
+      (sharp_ceil _).mp hcomb (comprMap (ceilPred p) ≫ asrt p ≫ t)]
     simp only [Category.assoc]
-  refine (pureDagger_congr _ hRpure key).trans ?_
-  rw [pureDagger_comp_pristine hm
-      (upm_closed_pure (asrt_spec q).1.1 (asrt_spec (M ≫ truth Y)).1.1),
-    pureDagger_asrt_comp, hdM]
+  have hle : ceilPred (d ≫ t) ≼ s := by
+    rw [← hkey]
+    have h := comp_le_comp (zetaMap s hs) (pred_le_truth
+      (φ.inv ≫ ceilPred (comprMap (ceilPred p) ≫ asrt p ≫ t)))
+    rwa [quotient_basics_5 (zetaMap_spec s hs).1, eabasics_orth_orth] at h
+  have habs : asrt (ceilPred (d ≫ t)) ≫ asrt s = asrt (ceilPred (d ≫ t)) :=
+    (asrt_absorp_rule _ hs hs).1.mp (by
+      rw [imPred_asrt, ceil_of_isSharp (isSharp_ceil (d ≫ t))]; exact hle)
+  have hz : (zetaMap s hs ≫ φ.inv ≫
+      zetaMap (ceilPred (comprMap (ceilPred p) ≫ asrt p ≫ t)) (isSharp_ceil _)) ≫
+      (comprMap (ceilPred (comprMap (ceilPred p) ≫ asrt p ≫ t)) ≫ φ.hom ≫
+        comprMap s) = asrt (ceilPred (d ≫ t)) := by
+    calc (zetaMap s hs ≫ φ.inv ≫
+          zetaMap (ceilPred (comprMap (ceilPred p) ≫ asrt p ≫ t)) (isSharp_ceil _)) ≫
+          (comprMap (ceilPred (comprMap (ceilPred p) ≫ asrt p ≫ t)) ≫ φ.hom ≫
+            comprMap s)
+        = zetaMap s hs ≫ φ.inv ≫
+            (zetaMap (ceilPred (comprMap (ceilPred p) ≫ asrt p ≫ t)) (isSharp_ceil _) ≫
+              comprMap (ceilPred (comprMap (ceilPred p) ≫ asrt p ≫ t))) ≫ φ.hom ≫
+            comprMap s := by simp only [Category.assoc]
+      _ = zetaMap s hs ≫
+            (φ.inv ≫ asrt (ceilPred (comprMap (ceilPred p) ≫ asrt p ≫ t))) ≫ φ.hom ≫
+            comprMap s := by
+          rw [(zetaMap_spec (ceilPred (comprMap (ceilPred p) ≫ asrt p ≫ t))
+            (isSharp_ceil _)).2.2]
+          simp only [Category.assoc]
+      _ = zetaMap s hs ≫
+            asrt (φ.inv ≫ ceilPred (comprMap (ceilPred p) ≫ asrt p ≫ t)) ≫
+            (φ.inv ≫ φ.hom) ≫ comprMap s := by
+          rw [asrt_iso hsqrt φ.inv (ceilPred (comprMap (ceilPred p) ≫ asrt p ≫ t))]
+          simp only [Category.assoc]
+      _ = (zetaMap s hs ≫
+            asrt (φ.inv ≫ ceilPred (comprMap (ceilPred p) ≫ asrt p ≫ t))) ≫
+            comprMap s := by
+          rw [φ.inv_hom_id, Category.id_comp]; simp only [Category.assoc]
+      _ = asrt (zetaMap s hs ≫ φ.inv ≫
+            ceilPred (comprMap (ceilPred p) ≫ asrt p ≫ t)) ≫
+            zetaMap s hs ≫ comprMap s := by
+          rw [zeta_through_asrt hsqrt hs (quotcompr_diamond_adjoint hs)
+            (φ.inv ≫ ceilPred (comprMap (ceilPred p) ≫ asrt p ≫ t))]
+          simp only [Category.assoc]
+      _ = asrt (ceilPred (d ≫ t)) ≫ asrt s := by
+          rw [hkey, (zetaMap_spec s hs).2.2]
+      _ = asrt (ceilPred (d ≫ t)) := habs
+  have h := zetaMap_eq_of_compr (isSharp_ceil (d ≫ t)) α hα.symm hz
+  rw [← h]
   simp only [Category.assoc]
+  rw [α.hom_inv_id, Category.comp_id]
 
-/-- Functoriality of the dagger against an assert map on the left:
-`(asrt_q ∘ M)† = M† ∘ asrt_q` — the dagger of the previous lemma at `M†`. -/
-theorem pureDagger_comp_asrt [DaggerPrimeEffectus C] (q : Pred Y)
-    {M : X ⟶ Y} (hM : IsPure M) :
-    pureDagger (M ≫ asrt q) (upm_closed_pure hM (asrt_spec q).1.1) =
-      asrt q ≫ pureDagger M hM := by
-  have h := pureDagger_asrt_comp_left q (isPure_pureDagger hM)
-  rw [dagger_idempotent hM] at h
-  refine (pureDagger_congr _ (isPure_pureDagger
-    (upm_closed_pure (asrt_spec q).1.1 (isPure_pureDagger hM))) h.symm).trans ?_
-  exact dagger_idempotent _
+/-- **219X** (`dagger-iso-zeta2`, eff.tex:6239, Exercise): the daggered version
+of the `pristine-asrt` square,
+`π_{⌈q⌉} ∘ ψ⁻¹ ∘ asrt_{p ∘ π_t} = asrt_{p ∘ k} ∘ π_{⌈q⌉} ∘ ψ⁻¹`. -/
+theorem dagger_iso_zeta2 [DaggerPrimeEffectus C] {q : Pred X} {t : Pred Y}
+    (ψ : comprObj (ceilPred q) ≅ comprObj t) {k : X ⟶ Y}
+    (hk : k = zetaMap (ceilPred q) (isSharp_ceil q) ≫ ψ.hom ≫ comprMap t) (p : Pred Y) :
+    asrt (comprMap t ≫ p) ≫ ψ.inv ≫ comprMap (ceilPred q) =
+      ψ.inv ≫ comprMap (ceilPred q) ≫ asrt (k ≫ p) := by
+  have hpri := dagger_setting_pristine_asrt ψ hk p
+  have hnm : (ψ.inv ≫ comprMap (ceilPred q)) ≫
+      (zetaMap (ceilPred q) (isSharp_ceil q) ≫ ψ.hom) = 𝟙 (comprObj t) := by
+    simp only [Category.assoc]
+    rw [← Category.assoc (comprMap (ceilPred q))
+      (zetaMap (ceilPred q) (isSharp_ceil q)) ψ.hom,
+      (zetaMap_spec (ceilPred q) (isSharp_ceil q)).2.1, Category.id_comp, ψ.inv_hom_id]
+  have hmn : (zetaMap (ceilPred q) (isSharp_ceil q) ≫ ψ.hom) ≫
+      (ψ.inv ≫ comprMap (ceilPred q)) = asrt (ceilPred q) := by
+    simp only [Category.assoc]
+    rw [← Category.assoc ψ.hom ψ.inv (comprMap (ceilPred q)), ψ.hom_inv_id,
+      Category.id_comp, (zetaMap_spec (ceilPred q) (isSharp_ceil q)).2.2]
+  have habs : asrt (k ≫ p) ≫ asrt (ceilPred q) = asrt (k ≫ p) :=
+    (asrt_absorp_rule _ (isSharp_ceil q) (isSharp_ceil q)).1.mp (by
+      rw [imPred_asrt]; exact dagger_setting_ceil_le (dagger_setting_k_truth ψ hk) p)
+  have key : asrt (comprMap t ≫ p) ≫ (ψ.inv ≫ comprMap (ceilPred q)) =
+      (ψ.inv ≫ comprMap (ceilPred q)) ≫ asrt (k ≫ p) := by
+    calc asrt (comprMap t ≫ p) ≫ (ψ.inv ≫ comprMap (ceilPred q))
+        = (𝟙 (comprObj t) ≫ asrt (comprMap t ≫ p)) ≫
+            (ψ.inv ≫ comprMap (ceilPred q)) := by rw [Category.id_comp]
+      _ = (ψ.inv ≫ comprMap (ceilPred q)) ≫
+            ((zetaMap (ceilPred q) (isSharp_ceil q) ≫ ψ.hom) ≫
+              asrt (comprMap t ≫ p)) ≫ (ψ.inv ≫ comprMap (ceilPred q)) := by
+          rw [← hnm]; simp only [Category.assoc]
+      _ = (ψ.inv ≫ comprMap (ceilPred q)) ≫ asrt (k ≫ p) ≫
+            ((zetaMap (ceilPred q) (isSharp_ceil q) ≫ ψ.hom) ≫
+              (ψ.inv ≫ comprMap (ceilPred q))) := by
+          rw [hpri]; simp only [Category.assoc]
+      _ = (ψ.inv ≫ comprMap (ceilPred q)) ≫ asrt (k ≫ p) ≫ asrt (ceilPred q) := by
+          rw [hmn]
+      _ = (ψ.inv ≫ comprMap (ceilPred q)) ≫ asrt (k ≫ p) := by rw [habs]
+  rw [key]; simp only [Category.assoc]
+
+/-- **219XIII** (`dagger-iso-omega2`, eff.tex:6397, Corollary): the daggered
+version of `dagger-iso-omega`,
+`asrt_q ∘ asrt_{p ∘ k} = asrt_{p ∘ g} ∘ π_{⌈p ∘ g⌉} ∘ ω⁻¹ ∘ ζ_{⌈p ∘ k⌉}`. -/
+theorem dagger_iso_omega2 [DaggerPrimeEffectus C] {g : X ⟶ Y} {q : Pred X} {k : X ⟶ Y}
+    (hgk : g = asrt q ≫ k) (hk : k ≫ truth Y = ceilPred q) (p : Pred Y)
+    {ω : comprObj (ceilPred (g ≫ p)) ≅ comprObj (ceilPred (k ≫ p))}
+    (hω : asrt q ≫ asrt (k ≫ p) =
+      asrt (g ≫ p) ≫ zetaMap (ceilPred (g ≫ p)) (isSharp_ceil _) ≫ ω.hom ≫
+        comprMap (ceilPred (k ≫ p))) :
+    asrt (k ≫ p) ≫ asrt q =
+      zetaMap (ceilPred (k ≫ p)) (isSharp_ceil _) ≫ ω.inv ≫
+        comprMap (ceilPred (g ≫ p)) ≫ asrt (g ≫ p) := by
+  have hgp : andThen q (k ≫ p) = g ≫ p := by
+    show asrt q ≫ (k ≫ p) = g ≫ p
+    rw [hgk]; simp only [Category.assoc]
+  have h₁ : ceilPred (andThen (k ≫ p) q) = ceilPred (k ≫ p) :=
+    ceil_andThen_of_le (dagger_setting_ceil_le hk p)
+  have h₂ : ceilPred (andThen q (k ≫ p)) = ceilPred (g ≫ p) := by rw [hgp]
+  have hν : asrt q ≫ asrt (k ≫ p) =
+      asrt (andThen q (k ≫ p)) ≫ zetaMap (ceilPred (g ≫ p)) (isSharp_ceil _) ≫
+        ω.hom ≫ comprMap (ceilPred (k ≫ p)) := by rw [hgp]; exact hω
+  have h := dagger_iso_mu_of_eq (k ≫ p) q (isSharp_ceil (k ≫ p))
+    (isSharp_ceil (g ≫ p)) h₁ h₂ ω hν
+  rwa [hgp] at h
+
+/-- **219XIV** (`dagger-iso-chi2`, eff.tex:6412, Lemma): the daggered version of
+`dagger-iso-chi`,
+`ζ_t ∘ asrt_p ∘ π_{⌈p⌉} = asrt_{p ∘ π_t} ∘ π_{⌈p ∘ π_t⌉} ∘ χ⁻¹ ∘
+ζ_{⌈t ∘ asrt_p ∘ π_{⌈p⌉}⌉}` — the specialisation of the general
+`pureDagger_compr_asrt_zeta` to the Setting 219II. -/
+theorem dagger_iso_chi2 [DaggerPrimeEffectus C] {t : Pred Y} (ht : IsSharp t) (p : Pred Y)
+    {χ : comprObj (ceilPred (comprMap t ≫ p)) ≅
+      comprObj (ceilPred (comprMap (ceilPred p) ≫ asrt p ≫ t))}
+    (hχ : comprMap t ≫ asrt p ≫ zetaMap (ceilPred p) (isSharp_ceil p) =
+      asrt (comprMap t ≫ p) ≫
+        zetaMap (ceilPred (comprMap t ≫ p)) (isSharp_ceil _) ≫ χ.hom ≫
+        comprMap (ceilPred (comprMap (ceilPred p) ≫ asrt p ≫ t))) :
+    comprMap (ceilPred p) ≫ asrt p ≫ zetaMap t ht =
+      zetaMap (ceilPred (comprMap (ceilPred p) ≫ asrt p ≫ t)) (isSharp_ceil _) ≫
+        χ.inv ≫ comprMap (ceilPred (comprMap t ≫ p)) ≫ asrt (comprMap t ≫ p) := by
+  have hA := pureDagger_compr_asrt_zeta ht (isSharp_ceil p)
+    (p := p) (pcm_preorder_refl _)
+  rw [← hA]
+  refine pureDagger_eq (isPure_compr_asrt_zeta (isSharp_ceil p) p)
+    (isDaggerOf_of_eq (isSharp_ceil (comprMap t ≫ p)) (isSharp_ceil _)
+      (by rw [dagger_setting_truth_chi]) (dagger_setting_im_chi ht p) χ ?_ ?_)
+  · rw [dagger_setting_truth_chi]; exact hχ
+  · rw [dagger_setting_truth_chi]
+
+/-- **219V** (`dagger-of-fg`, eff.tex:6165, Corollary): in the Setting 219II,
+`(f ∘ g)† = asrt_{p ∘ g} ∘ π_{⌈p ∘ g⌉} ∘ ω⁻¹ ∘ β⁻¹ ∘ χ⁻¹ ∘ α⁻¹ ∘
+ζ_{⌈t ∘ f†⌉}`. -/
+theorem dagger_of_fg [DaggerPrimeEffectus C]
+    {g : X ⟶ Y} {f : Y ⟶ Z} (hgf : IsPure (g ≫ f))
+    {p : Pred Y} {q : Pred X} {s : Pred Z} {t : Pred Y}
+    (φ : comprObj (ceilPred p) ≅ comprObj s) (ψ : comprObj (ceilPred q) ≅ comprObj t)
+    (hφ : f = asrt p ≫ zetaMap (ceilPred p) (isSharp_ceil p) ≫ φ.hom ≫ comprMap s)
+    (hψ : g = asrt q ≫ zetaMap (ceilPred q) (isSharp_ceil q) ≫ ψ.hom ≫ comprMap t)
+    {k : X ⟶ Y}
+    (hk : k = zetaMap (ceilPred q) (isSharp_ceil q) ≫ ψ.hom ≫ comprMap t)
+    {d : Z ⟶ Y}
+    {ω : comprObj (ceilPred (g ≫ p)) ≅ comprObj (ceilPred (k ≫ p))}
+    (hω : asrt q ≫ asrt (k ≫ p) =
+      asrt (g ≫ p) ≫ zetaMap (ceilPred (g ≫ p)) (isSharp_ceil _) ≫ ω.hom ≫
+        comprMap (ceilPred (k ≫ p)))
+    {β : comprObj (ceilPred (k ≫ p)) ≅ comprObj (ceilPred (comprMap t ≫ p))}
+    (hβ : zetaMap (ceilPred q) (isSharp_ceil q) ≫ ψ.hom ≫
+        zetaMap (ceilPred (comprMap t ≫ p)) (isSharp_ceil _) =
+      zetaMap (ceilPred (k ≫ p)) (isSharp_ceil _) ≫ β.hom)
+    {χ : comprObj (ceilPred (comprMap t ≫ p)) ≅
+      comprObj (ceilPred (comprMap (ceilPred p) ≫ asrt p ≫ t))}
+    (hχ : comprMap t ≫ asrt p ≫ zetaMap (ceilPred p) (isSharp_ceil p) =
+      asrt (comprMap t ≫ p) ≫
+        zetaMap (ceilPred (comprMap t ≫ p)) (isSharp_ceil _) ≫ χ.hom ≫
+        comprMap (ceilPred (comprMap (ceilPred p) ≫ asrt p ≫ t)))
+    {α : comprObj (ceilPred (comprMap (ceilPred p) ≫ asrt p ≫ t)) ≅
+      comprObj (ceilPred (d ≫ t))}
+    (hα : comprMap (ceilPred (comprMap (ceilPred p) ≫ asrt p ≫ t)) ≫ φ.hom ≫
+        comprMap s = α.hom ≫ comprMap (ceilPred (d ≫ t))) :
+    pureDagger (g ≫ f) hgf =
+      zetaMap (ceilPred (d ≫ t)) (isSharp_ceil _) ≫ α.inv ≫ χ.inv ≫ β.inv ≫ ω.inv ≫
+        comprMap (ceilPred (g ≫ p)) ≫ asrt (g ≫ p) := by
+  have hform := dagger_of_fg_form φ ψ hφ hψ hk hω hβ hχ hα
+  have hform' : g ≫ f = asrt (g ≫ p) ≫
+      zetaMap (ceilPred (g ≫ p)) (isSharp_ceil _) ≫ (ω ≪≫ β ≪≫ χ ≪≫ α).hom ≫
+      comprMap (ceilPred (d ≫ t)) := by
+    rw [hform]; simp only [Iso.trans_hom, Category.assoc]
+  have htruth : (g ≫ f) ≫ truth Z = g ≫ p :=
+    standard_form_truth (ω ≪≫ β ≪≫ χ ≪≫ α) hform'
+  have him : imPred (g ≫ f) = ceilPred (d ≫ t) :=
+    standard_form_imPred (isSharp_ceil _) (ω ≪≫ β ≪≫ χ ≪≫ α) hform'
+  refine pureDagger_eq hgf (isDaggerOf_of_eq (isSharp_ceil (g ≫ p))
+    (isSharp_ceil (d ≫ t)) (by rw [htruth]) him (ω ≪≫ β ≪≫ χ ≪≫ α) ?_ ?_)
+  · rw [htruth]; exact hform'
+  · rw [htruth]; simp only [Iso.trans_inv, Category.assoc]
 
 /-- **219XVI** (`dagger-is-functor`, eff.tex:6535, Proposition): in a
-†'-effectus, `(f ∘ g)† = g† ∘ f†` for pure `f, g`. -/
+†'-effectus, `(f ∘ g)† = g† ∘ f†` for pure `f, g`.  The proof is the thesis's:
+set up the Setting 219II, form its four isomorphisms `χ`, `ω`, `β`, `α`, and
+run the six-step chain of eff.tex:6580 on `g† ∘ f†`, using the daggered
+squares 219VII, 219IX, 219X, 219XIII and 219XIV and closing with 219V. -/
 theorem dagger_is_functor [DaggerPrimeEffectus C] {g : X ⟶ Y} {f : Y ⟶ Z}
     (hg : IsPure g) (hf : IsPure f) :
     pureDagger (g ≫ f) (upm_closed_pure hg hf) =
       pureDagger f hf ≫ pureDagger g hg := by
-  obtain ⟨h, ⟨hh, h1, hd⟩, -⟩ := prist_asrt_decomp hf
-  have hdf : pureDagger f hf = pureDagger h hh.1 ≫ asrt (f ≫ truth Z) :=
-    prist_asrt_decomp_dagger hf hh h1 hd
-  have hApure : IsPure (g ≫ asrt (f ≫ truth Z)) :=
-    upm_closed_pure hg (asrt_spec (f ≫ truth Z)).1.1
-  have hRpure : IsPure ((g ≫ asrt (f ≫ truth Z)) ≫ h) :=
-    upm_closed_pure hApure hh.1
-  have key : g ≫ f = (g ≫ asrt (f ≫ truth Z)) ≫ h := by
-    conv_lhs => rw [hd]
-    simp only [Category.assoc]
-  refine (pureDagger_congr _ hRpure key).trans ?_
-  rw [pureDagger_comp_pristine hh hApure,
-    pureDagger_comp_asrt (f ≫ truth Z) hg, hdf]
+  -- Setting 219II
+  obtain ⟨φ, hφ⟩ := standard_form_of_eq hf (isSharp_ceil (f ≫ truth Z))
+    (isSharp_imPred C f) rfl rfl
+  obtain ⟨ψ, hψ⟩ := standard_form_of_eq hg (isSharp_ceil (g ≫ truth Y))
+    (isSharp_imPred C g) rfl rfl
+  obtain ⟨k, hk⟩ : ∃ k : X ⟶ Y, k =
+      zetaMap (ceilPred (g ≫ truth Y)) (isSharp_ceil _) ≫ ψ.hom ≫
+        comprMap (imPred g) := ⟨_, rfl⟩
+  obtain ⟨d, hd⟩ : ∃ d : Z ⟶ Y, d =
+      zetaMap (imPred f) (isSharp_imPred C f) ≫ φ.inv ≫
+        comprMap (ceilPred (f ≫ truth Z)) ≫ asrt (f ≫ truth Z) := ⟨_, rfl⟩
+  have hgk : g = asrt (g ≫ truth Y) ≫ k := by rw [hk]; exact hψ
+  have hktruth : k ≫ truth Y = ceilPred (g ≫ truth Y) := dagger_setting_k_truth ψ hk
+  have hdf : pureDagger f hf = d := pureDagger_eq hf ⟨φ, hφ, hd⟩
+  have hdg : pureDagger g hg = zetaMap (imPred g) (isSharp_imPred C g) ≫ ψ.inv ≫
+      comprMap (ceilPred (g ≫ truth Y)) ≫ asrt (g ≫ truth Y) :=
+    pureDagger_eq hg ⟨ψ, hψ, rfl⟩
+  -- the four isomorphisms of 219II
+  obtain ⟨χ, hχ⟩ := dagger_iso_chi (isSharp_imPred C g) (f ≫ truth Z)
+  obtain ⟨ω, hω⟩ := dagger_iso_omega hgk hktruth (f ≫ truth Z)
+  obtain ⟨β, hβ⟩ := dagger_iso_beta ψ hk (f ≫ truth Z)
+  obtain ⟨α, hα⟩ := dagger_iso_alpha (isSharp_imPred C f) φ (imPred g) hd
+  -- 219V and the daggered versions 219VII, 219IX, 219X, 219XIII, 219XV
+  have hV := dagger_of_fg (upm_closed_pure hg hf) φ ψ hφ hψ hk hω hβ hχ hα
+  have hchi2 := dagger_iso_chi2 (isSharp_imPred C g) (f ≫ truth Z) hχ
+  have hzeta2 := dagger_iso_zeta2 ψ hk (f ≫ truth Z)
+  have hbeta2 := dagger_iso_beta2 ψ hk (f ≫ truth Z) hβ
+  have halpha2 := dagger_iso_alpha2 (isSharp_imPred C f) φ (imPred g) hd hα
+  have homega2 := dagger_iso_omega2 hgk hktruth (f ≫ truth Z) hω
+  -- the six-step chain of eff.tex:6580
+  have hchi2M : ∀ {W : C} (M : comprObj (imPred g) ⟶ W),
+      comprMap (ceilPred (f ≫ truth Z)) ≫ asrt (f ≫ truth Z) ≫
+          zetaMap (imPred g) (isSharp_imPred C g) ≫ M =
+        zetaMap (ceilPred (comprMap (ceilPred (f ≫ truth Z)) ≫ asrt (f ≫ truth Z) ≫
+            imPred g)) (isSharp_ceil _) ≫ χ.inv ≫
+          comprMap (ceilPred (comprMap (imPred g) ≫ f ≫ truth Z)) ≫
+          asrt (comprMap (imPred g) ≫ f ≫ truth Z) ≫ M := by
+    intro W M
+    have h := congrArg (fun x => x ≫ M) hchi2
+    simpa only [Category.assoc] using h
+  have hzeta2M : ∀ {W : C} (M : X ⟶ W),
+      asrt (comprMap (imPred g) ≫ f ≫ truth Z) ≫ ψ.inv ≫
+          comprMap (ceilPred (g ≫ truth Y)) ≫ M =
+        ψ.inv ≫ comprMap (ceilPred (g ≫ truth Y)) ≫
+          asrt (k ≫ f ≫ truth Z) ≫ M := by
+    intro W M
+    have h := congrArg (fun x => x ≫ M) hzeta2
+    simpa only [Category.assoc] using h
+  have hbeta2M : ∀ {W : C} (M : X ⟶ W),
+      comprMap (ceilPred (comprMap (imPred g) ≫ f ≫ truth Z)) ≫ ψ.inv ≫
+          comprMap (ceilPred (g ≫ truth Y)) ≫ M =
+        β.inv ≫ comprMap (ceilPred (k ≫ f ≫ truth Z)) ≫ M := by
+    intro W M
+    have h := congrArg (fun x => x ≫ M) hbeta2.symm
+    simpa only [Category.assoc] using h
+  have hπζ : ∀ {W : C} (M : comprObj (ceilPred (k ≫ f ≫ truth Z)) ⟶ W),
+      comprMap (ceilPred (k ≫ f ≫ truth Z)) ≫
+        zetaMap (ceilPred (k ≫ f ≫ truth Z)) (isSharp_ceil _) ≫ M = M := by
+    intro W M
+    rw [← Category.assoc (comprMap (ceilPred (k ≫ f ≫ truth Z)))
+        (zetaMap (ceilPred (k ≫ f ≫ truth Z)) (isSharp_ceil _)) M,
+      (zetaMap_spec (ceilPred (k ≫ f ≫ truth Z)) (isSharp_ceil _)).2.1,
+      Category.id_comp]
+  have halpha2M : ∀ {W : C} (M : comprObj (ceilPred (comprMap (ceilPred (f ≫ truth Z)) ≫
+        asrt (f ≫ truth Z) ≫ imPred g)) ⟶ W),
+      zetaMap (imPred f) (isSharp_imPred C f) ≫ φ.inv ≫
+          zetaMap (ceilPred (comprMap (ceilPred (f ≫ truth Z)) ≫ asrt (f ≫ truth Z) ≫
+            imPred g)) (isSharp_ceil _) ≫ M =
+        zetaMap (ceilPred (d ≫ imPred g)) (isSharp_ceil _) ≫ α.inv ≫ M := by
+    intro W M
+    have h := congrArg (fun x => x ≫ M) halpha2.symm
+    simpa only [Category.assoc] using h
+  rw [hV, hdf, hdg]
+  conv_rhs => rw [hd]
   simp only [Category.assoc]
+  rw [hchi2M, hzeta2M, hbeta2M, homega2, hπζ, halpha2M]
 
 /-- **220II** (`dagger-thm-sufficiency`, eff.tex:6665), Ax. 1: a pure map is
 ⋄-adjoint to its dagger.  (Apply `(–)^⋄` to the standard form 212III of `f`,

@@ -941,28 +941,42 @@ theorem hilbmod_projthm_1 [VonNeumannAlgebra ℬ] [CompleteSpace X]
     rw [CStarModule.inner_smul_left_complex, hx v hv, smul_zero]
   -- "To show `V^⊥` is ultranorm closed … `⟨v, unlim xα⟩ = uslim ⟨v, xα⟩ = 0`"
   refine Set.eq_of_subset_of_subset (fun x hx v hv => ?_) (fun x hx n ωs ε hε => ?_)
-  · -- every np-functional kills `⟨x,v⟩`, so it is `0` (**44XI**)
-    refine np_separating _ fun ω => ?_
-    set C : ℝ := unSeminorm ω (cstarBInner ℬ X).inner v with hCdef
-    have hC : 0 ≤ C := unSeminorm_nonneg ω _ v
-    -- `|ω⟨x,v⟩| = |ω⟨x−d,v⟩| ≤ ‖x−d‖_ω ‖v‖_ω ≤ ε C` for every `ε > 0`
-    have key : ∀ ε : ℝ, 0 < ε → ‖ω (inner ℬ x v : ℬ)‖ ≤ ε * C := by
-      intro ε hε
-      obtain ⟨d, hd, hdist⟩ := hx 1 (fun _ => ω) ε hε
-      have hsplit : (inner ℬ x v : ℬ) = inner ℬ (x - d) v := by
-        rw [CStarModule.inner_sub_left, hd v hv, sub_zero]
-      calc ‖ω (inner ℬ x v : ℬ)‖
-          = ‖ω ((cstarBInner ℬ X).inner (x - d) v)‖ := by rw [hsplit]; rfl
-        _ ≤ unSeminorm ω (cstarBInner ℬ X).inner (x - d) * C :=
-            unSeminorm_inner_le ω (cstarBInner ℬ X) _ _
-        _ ≤ ε * C := mul_le_mul_of_nonneg_right (hdist 0) hC
-    have hzero : ‖ω (inner ℬ x v : ℬ)‖ ≤ 0 := by
-      refine le_of_forall_pos_le_add fun δ hδ => ?_
-      have h1 : δ / (C + 1) * C ≤ δ := by
-        rw [div_mul_eq_mul_div, div_le_iff₀ (by positivity)]
-        nlinarith
-      linarith [key (δ / (C + 1)) (by positivity)]
-    simpa using le_antisymm hzero (norm_nonneg _)
+  · -- the point's own citation: **148III**.2 `ultranormcontstruct_inner`,
+    -- `x ↦ ⟨v,x⟩` is uniformly continuous into the *ultrastrong*
+    -- uniformity of `ℬ`, so `⟨v, unlim_α d_α⟩ = uslim_α ⟨v, d_α⟩ = 0`
+    set a : ℬ := (inner ℬ v x : ℬ) with ha
+    have hzero : ∀ ω : NPFunctional ℬ, unSeminorm ω (mulInner ℬ) a = 0 := by
+      intro ω
+      refine le_antisymm (le_of_forall_pos_le_add fun ε hε => ?_)
+        (unSeminorm_nonneg ω (mulInner ℬ) a)
+      obtain ⟨δ, hδ0, hδ⟩ := ultranormcontstruct_inner (cstarBInner ℬ X) v ω ε hε
+      obtain ⟨d, hd, hdist⟩ := hx 1 (fun _ => ω) δ hδ0
+      have hvd : ((cstarBInner ℬ X).inner v d : ℬ) = 0 := by
+        have h := congrArg star (hd v hv)
+        rwa [CStarModule.star_inner, star_zero] at h
+      have h := hδ x d (hdist 0)
+      rw [hvd, sub_zero] at h
+      have h' : unSeminorm ω (mulInner ℬ) a ≤ ε := h
+      linarith
+    -- an element all of whose ultrastrong seminorms vanish is `0` (**44XI**)
+    have hnn : (0 : ℬ) ≤ a * star a := by
+      have h := star_mul_self_nonneg (star a)
+      rwa [star_star] at h
+    have haa : a * star a = 0 := by
+      refine np_separating _ fun ω => ?_
+      have h := hzero ω
+      rw [unSeminorm] at h
+      have hle : (ω (mulInner ℬ a a)).re ≤ 0 := Real.sqrt_eq_zero'.mp h
+      have hpos : (0 : ℂ) ≤ ω (a * star a) := npFunctional_nonneg ω hnn
+      refine Complex.ext (le_antisymm hle ?_) ?_
+      · exact Complex.zero_re ▸ (Complex.le_def.mp hpos).1
+      · exact ((Complex.le_def.mp hpos).2).symm
+    have ha0 : a = 0 := by
+      have h : ‖a‖ * ‖a‖ = 0 := by
+        rw [← CStarRing.norm_self_mul_star, haa, norm_zero]
+      exact norm_eq_zero.mp (by nlinarith [norm_nonneg a])
+    have h := congrArg star ha0
+    rwa [CStarModule.star_inner, star_zero] at h
   · exact ⟨x, hx, fun i => by simpa [unSeminorm] using hε.le⟩
 
 /-! ### Auxiliary for **160IV**.3: the orthonormalization, relativized
@@ -1046,23 +1060,30 @@ private theorem unClosure_unClosure (S : Set X) :
     _ ≤ ε / 2 + ε / 2 := add_le_add (h1 i) (h2 i)
     _ = ε := by ring
 
+/-- The additive half of **160VI**'s *"It follows from
+`ultranormcontstruct` that `W` is a submodule"*: the ultranorm closure of a
+set closed under addition is closed under addition.  Proof by **148III**.1,
+the uniform ultranorm continuity of `+`, as the point cites — a single `δ`
+serving the finitely many seminorms in play. -/
 private theorem unClosure_add {S : Set X}
     (hS : ∀ y ∈ S, ∀ z ∈ S, y + z ∈ S) {y z : X}
     (hy : y ∈ unClosure ℬ (inner ℬ) S) (hz : z ∈ unClosure ℬ (inner ℬ) S) :
     y + z ∈ unClosure ℬ (inner ℬ) S := by
+  classical
   intro n ωs ε hε
-  obtain ⟨d, hd, h1⟩ := hy n ωs (ε / 2) (by linarith)
-  obtain ⟨d', hd', h2⟩ := hz n ωs (ε / 2) (by linarith)
-  refine ⟨d + d', hS d hd d' hd', fun i => ?_⟩
-  have hsplit : y + z - (d + d') = (y - d) + (z - d') := by abel
-  calc unSeminorm (ωs i) (inner ℬ : X → X → ℬ) (y + z - (d + d'))
-      = unSeminorm (ωs i) (inner ℬ : X → X → ℬ) ((y - d) + (z - d')) := by
-        rw [hsplit]
-    _ ≤ unSeminorm (ωs i) (inner ℬ : X → X → ℬ) (y - d)
-        + unSeminorm (ωs i) (inner ℬ : X → X → ℬ) (z - d') :=
-        unSeminorm_add_le _ (cstarBInner ℬ X) _ _
-    _ ≤ ε / 2 + ε / 2 := add_le_add (h1 i) (h2 i)
-    _ = ε := by ring
+  choose δ hδ0 hδ using fun i : Fin n =>
+    ultranormcontstruct_add (cstarBInner ℬ X) (ωs i) ε hε
+  obtain ⟨m, hm0, hm⟩ : ∃ m > (0 : ℝ), ∀ i, m ≤ δ i := by
+    rcases Nat.eq_zero_or_pos n with rfl | hn
+    · exact ⟨1, one_pos, fun i => i.elim0⟩
+    · have hne : (Finset.univ : Finset (Fin n)).Nonempty :=
+        Finset.univ_nonempty_iff.mpr (Fin.pos_iff_nonempty.mp hn)
+      exact ⟨Finset.univ.inf' hne δ, (Finset.lt_inf'_iff hne).mpr
+        (fun i _ => hδ0 i), fun i => Finset.inf'_le δ (Finset.mem_univ i)⟩
+  obtain ⟨d, hd, h1⟩ := hy n ωs m hm0
+  obtain ⟨d', hd', h2⟩ := hz n ωs m hm0
+  exact ⟨d + d', hS d hd d' hd', fun i =>
+    hδ i y z d d' ((h1 i).trans (hm i)) ((h2 i).trans (hm i))⟩
 
 private theorem unClosure_neg {S : Set X} (hS : ∀ y ∈ S, -y ∈ S) {y : X}
     (hy : y ∈ unClosure ℬ (inner ℬ) S) : -y ∈ unClosure ℬ (inner ℬ) S := by

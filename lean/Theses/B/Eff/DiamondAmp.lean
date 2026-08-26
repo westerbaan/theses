@@ -1994,37 +1994,56 @@ section AndThenSharp
 variable [AndThenEffectus C] {X Y Z : C}
 
 /-- **213III** (`perp-sharp-is-orth`, eff.tex:5207, Lemma): in an
-&-effectus, if `s ⊥ t` for sharp `s, t` then `s & t = 0 = t & s`. -/
+&-effectus, if `s ⊥ t` for sharp `s, t` then `s & t = 0 = t & s`.
+
+The proof is eff.tex:5209's.  Write `r ≡ (a ⋁ b)ᵖ`, so that
+`1 = a ⋁ b ⋁ r`; then, as `a & a = a`,
+`a = a & 1 = (a & a) ⋁ (a & b) ⋁ (a & r) = a ⋁ ((a & b) ⋁ (a & r))`,
+whence `a & b ≤ (a & b) ⋁ (a & r) = 0`. -/
 theorem perp_sharp_is_orth {s t : Pred X} (hs : IsSharp s) (ht : IsSharp t)
     (h : Perp s t) : andThen s t = 0 ∧ andThen t s = 0 := by
-  have key : ∀ {a : Pred X}, IsSharp a → asrt a ≫ orth a = 0 := by
-    intro a ha
-    have hss : asrt a ≫ a = a := (sharp_prop a).1.mp ha
+  have main : ∀ {a b : Pred X}, IsSharp a → Perp a b → andThen a b = 0 := by
+    intro a b ha hab
+    -- `r ≡ (a ⋁ b)ᵖ`, so that `1 = (a ⋁ b) ⋁ r`
+    have hpr : Perp (ovee a b hab) (orth (ovee a b hab)) :=
+      EffectAlgebra.perp_orth _
+    have h1 : ovee (ovee a b hab) (orth (ovee a b hab)) hpr = 1 :=
+      EffectAlgebra.ovee_orth _
     have hone : asrt a ≫ (1 : Pred X) = a := (asrt_spec a).2
-    obtain ⟨h', e⟩ := FinPAC.ovee_comp (EffectAlgebra.perp_orth a) (asrt a)
-    rw [EffectAlgebra.ovee_orth a, hone] at e
-    have hperp : Perp a (asrt a ≫ orth a) := by
-      have h'' := h'
-      rwa [hss] at h''
-    have hcong : ∀ {x y : Pred X} (hx : x = y) (hp : Perp x (asrt a ≫ orth a))
-        (hq : Perp y (asrt a ≫ orth a)),
-        ovee x (asrt a ≫ orth a) hp = ovee y (asrt a ≫ orth a) hq := by
-      intro x y hx hp hq; subst hx; rfl
-    have e2 : a = ovee a (asrt a ≫ orth a) hperp :=
-      e.trans (hcong hss h' hperp)
-    have ecomm : ovee (asrt a ≫ orth a) a (PCM.perp_comm hperp)
+    have hss : asrt a ≫ a = a := (sharp_prop a).1.mp ha
+    -- `a & (a ⋁ b) = (a & a) ⋁ (a & b) = a ⋁ (a & b)`
+    obtain ⟨hq1, e1⟩ := FinPAC.ovee_comp hab (asrt a)
+    have hq1' : Perp a (asrt a ≫ b) := by
+      have h' := hq1; rwa [hss] at h'
+    have e1' : asrt a ≫ ovee a b hab = ovee a (asrt a ≫ b) hq1' :=
+      e1.trans (PCM.ovee_congr hss rfl _ _)
+    -- `a = a & 1 = (a & (a ⋁ b)) ⋁ (a & r)`
+    obtain ⟨hq2, e2⟩ := FinPAC.ovee_comp hpr (asrt a)
+    rw [h1, hone] at e2
+    have hq2' : Perp (ovee a (asrt a ≫ b) hq1')
+        (asrt a ≫ orth (ovee a b hab)) := by
+      rw [← e1']; exact hq2
+    have e3 : a = ovee (ovee a (asrt a ≫ b) hq1')
+        (asrt a ≫ orth (ovee a b hab)) hq2' :=
+      e2.trans (PCM.ovee_congr e1' rfl _ _)
+    -- regroup: `a = a ⋁ ((a & b) ⋁ (a & r))`
+    have hw : Perp (asrt a ≫ b) (asrt a ≫ orth (ovee a b hab)) :=
+      PCM.perp_of_ovee_perp hq1' hq2'
+    have haw : Perp a (ovee (asrt a ≫ b) (asrt a ≫ orth (ovee a b hab)) hw) :=
+      PCM.perp_ovee_of_ovee_perp hq1' hq2'
+    have e4 : a =
+        ovee a (ovee (asrt a ≫ b) (asrt a ≫ orth (ovee a b hab)) hw) haw :=
+      e3.trans (PCM.ovee_assoc hq1' hq2')
+    -- so `(a & b) ⋁ (a & r) = 0` by cancellation, and `a & b = 0`
+    have e5 : ovee (ovee (asrt a ≫ b) (asrt a ≫ orth (ovee a b hab)) hw) a
+          (PCM.perp_comm haw)
         = ovee (0 : Pred X) a (PCM.zero_perp a) := by
       rw [PCM.zero_ovee, ← PCM.ovee_comm]
-      exact e2.symm
-    exact eabasics_cancellation (PCM.perp_comm hperp) (PCM.zero_perp a) ecomm
-  constructor
-  · have hle := comp_le_comp (asrt s)
-      (eabasics_perp_iff_le_orth.mp (PCM.perp_comm h))
-    rw [key hs] at hle
-    exact eq_zero_of_le_zero hle
-  · have hle := comp_le_comp (asrt t) (eabasics_perp_iff_le_orth.mp h)
-    rw [key ht] at hle
-    exact eq_zero_of_le_zero hle
+      exact e4.symm
+    have hw0 : ovee (asrt a ≫ b) (asrt a ≫ orth (ovee a b hab)) hw = 0 :=
+      eabasics_cancellation (PCM.perp_comm haw) (PCM.zero_perp a) e5
+    exact (eabasics_positivity hw hw0).1
+  exact ⟨main hs h, main ht (PCM.perp_comm h)⟩
 
 /-- **213V** (`simple-andthen-absorption`, eff.tex:5222, Exercise): for
 sharp `s` and any predicate `p`: `p ≤ s ⟺ s & p = p`. -/

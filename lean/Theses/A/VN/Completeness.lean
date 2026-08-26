@@ -1237,124 +1237,323 @@ theorem radialTopology_add (s t : Set V) (hs : RadiallyOpen V s)
       linarith [mul_comm l d]
     · rw [smul_add, smul_smul, mul_div_cancel₀ r (ne_of_gt hl)]
 
+/-- Radial openness passes to `-s`. -/
+private theorem radiallyOpen_neg {s : Set V} (hs : RadiallyOpen V s) :
+    RadiallyOpen V (-s) := by
+  intro a ha v
+  obtain ⟨t, ht, h⟩ := hs (-a) (by rwa [Set.mem_neg] at ha) (-v)
+  refine ⟨t, ht, fun r hr0 hr => ?_⟩
+  have h' := h r hr0 hr
+  rw [Set.mem_neg]
+  have e : -(a + r • v) = -a + r • (-v) := by module
+  rwa [e]
+
+/-- Zorn's Lemma for the family of radially open convex sets missing `0`. -/
+private theorem exists_maximal_radiallyOpen_convex (K : Set V) (hK : RadiallyOpen V K)
+    (hconv : Convex ℝ K) (h0 : (0 : V) ∉ K) :
+    ∃ M : Set V, K ⊆ M ∧ RadiallyOpen V M ∧ Convex ℝ M ∧ (0 : V) ∉ M ∧
+      ∀ L : Set V, RadiallyOpen V L → Convex ℝ L → (0 : V) ∉ L → M ⊆ L → L = M := by
+  set S : Set (Set V) := {L | RadiallyOpen V L ∧ Convex ℝ L ∧ (0 : V) ∉ L} with hS
+  have H : ∀ c ⊆ S, IsChain (· ⊆ ·) c → c.Nonempty → ∃ ub ∈ S, ∀ s ∈ c, s ⊆ ub := by
+    intro c hcS hchain _
+    refine ⟨⋃₀ c, ⟨?_, ?_, ?_⟩, fun s hs => Set.subset_sUnion_of_mem hs⟩
+    · rintro a ⟨L, hLc, haL⟩ v
+      obtain ⟨t, ht, h⟩ := (hcS hLc).1 a haL v
+      exact ⟨t, ht, fun r hr0 hr => ⟨L, hLc, h r hr0 hr⟩⟩
+    · rintro x ⟨L₁, hL₁, hx⟩ y ⟨L₂, hL₂, hy⟩ p q hp hq hpq
+      rcases eq_or_ne L₁ L₂ with rfl | hne
+      · exact ⟨L₁, hL₁, (hcS hL₁).2.1 hx hy hp hq hpq⟩
+      rcases hchain hL₁ hL₂ hne with h | h
+      · exact ⟨L₂, hL₂, (hcS hL₂).2.1 (h hx) hy hp hq hpq⟩
+      · exact ⟨L₁, hL₁, (hcS hL₁).2.1 hx (h hy) hp hq hpq⟩
+    · rintro ⟨L, hLc, h0L⟩
+      exact (hcS hLc).2.2 h0L
+  obtain ⟨M, hKM, hMmax⟩ := zorn_subset_nonempty S H K ⟨hK, hconv, h0⟩
+  exact ⟨M, hKM, hMmax.1.1, hMmax.1.2.1, hMmax.1.2.2,
+    fun L hL1 hL2 hL3 hML => Set.Subset.antisymm (hMmax.2 ⟨hL1, hL2, hL3⟩ hML) hML⟩
+
 /-- **73IV** (`hahn-banach`, vn.tex:4072, Theorem): for every radially open
 convex subset `K` of a real vector space with `0 ∉ K` there is a linear
-`f : V → ℝ` with `f(x) > 0` for all `x ∈ K`. -/
+`f : V → ℝ` with `f(x) > 0` for all `x ∈ K`.
+
+This is the thesis's own proof (vn.tex:4079, after Theorem 1.1.2 of [KR]).
+By Zorn's Lemma `K` may be taken **maximal** among the radially open convex
+subsets of `V` that miss `0`.  Then
+
+* `x ∈ K, λ > 0 ⟹ λx ∈ K`, because `{λx : x ∈ K, λ > 0} ⊇ K` is radially
+  open (**73III**.6 `radialTopology_add`), convex and misses `0`, so
+  maximality collapses it onto `K`; and `x, y ∈ K ⟹ x + y ∈ K`, since
+  `x + y = 2(½x + ½y)`;
+* `K̄ := {x : x + y ∈ K for all y ∈ K}` is a cone, and `x ∈ K̄ ↔ -x ∉ K` —
+  again by maximality, applied to `{λx + y : y ∈ K, λ ≥ 0}`;
+* hence `H := {x : x ∉ K and -x ∉ K} = K̄ ∩ -K̄` is a linear subspace, and
+  `V/H` is one-dimensional: for `x ∈ K` and `y ∈ -K` the sets
+  `{s ∈ [0,1] : sx + s^⊥y ∈ K}` and `{s ∈ [0,1] : sx + s^⊥y ∈ -K}` are open
+  (**73III**.5 `radialTopology_segment`), nonempty and disjoint, so by
+  connectedness of `[0,1]` they cannot cover it, and any `s` outside both
+  puts `sx + s^⊥y` in `H`;
+* so there is a linear `f` with `ker f = H`; `f(K)` is convex and misses `0`
+  (as `H ∩ K = ∅`), hence lies in `(0,∞)` or in `(-∞,0)`, and `f` or `-f`
+  is the map wanted.
+
+No topology on `V` is used anywhere, which is the point of the Theorem:
+**73III**.3/4 show that the radial topology makes `V` no topological vector
+space. -/
 theorem hahn_banach (K : Set V) (hK : RadiallyOpen V K)
     (hconv : Convex ℝ K) (h0 : (0 : V) ∉ K) :
     ∃ f : V →ₗ[ℝ] ℝ, ∀ x ∈ K, 0 < f x := by
-  -- Divergence from vn.tex:4079: the thesis takes `K` maximal by Zorn's Lemma and
-  -- shows `V/H` is one-dimensional for `H = {x | -x, x ∉ K}`.  We instead run the
-  -- Minkowski-functional proof: `gauge C` for the translate `C = K - x₀` is
-  -- sublinear, `C = {gauge C < 1}` because `C` is radially open, and Mathlib's
-  -- algebraic Hahn–Banach (`exists_extension_of_le_sublinear`) extends the
-  -- functional `c·x₀ ↦ -c` from the line `ℝ x₀`.  No topology on `V` is used —
-  -- essential here, since 73III.3/4 show the radial topology is not a TVS.
-  rcases Set.eq_empty_or_nonempty K with rfl | ⟨x₀, hx₀⟩
+  rcases Set.eq_empty_or_nonempty K with rfl | ⟨y₀, hy₀⟩
   · exact ⟨0, fun x hx => absurd hx (Set.notMem_empty x)⟩
-  have hx₀ne : x₀ ≠ 0 := fun h => h0 (h ▸ hx₀)
-  -- translate `K` so that the translate `C` contains `0`
-  set C : Set V := (fun v => x₀ + v) ⁻¹' K with hCdef
-  have hCmem : ∀ v : V, v ∈ C ↔ x₀ + v ∈ K := fun _ => Iff.rfl
-  have hC0 : (0 : V) ∈ C := by rw [hCmem]; simpa using hx₀
-  have hCconv : Convex ℝ C := hconv.translate_preimage_right x₀
-  have hCrad : RadiallyOpen V C := by
-    intro a ha v
-    obtain ⟨t, ht, h⟩ := hK (x₀ + a) ha v
-    refine ⟨t, ht, fun r hr0 hr => ?_⟩
-    rw [hCmem, show x₀ + (a + r • v) = x₀ + a + r • v by abel]
-    exact h r hr0 hr
-  -- radial openness at `0` in the directions `x` and `-x` makes `C` absorbent
-  have habs : Absorbent ℝ C := by
+  obtain ⟨M, hKM, hMrad, hMconv, hM0, hMmax⟩ :=
+    exists_maximal_radiallyOpen_convex K hK hconv h0
+  have hx₀ : y₀ ∈ M := hKM hy₀
+  -- (1) `x ∈ M, l > 0 ⟹ l x ∈ M`
+  have hdil : ∀ x ∈ M, ∀ l : ℝ, 0 < l → l • x ∈ M := by
+    have hD : {x : V | ∃ l : ℝ, 0 < l ∧ ∃ a ∈ M, x = l • a} = M := by
+      refine hMmax _ (radialTopology_add M M hMrad hMrad).2 ?_ ?_
+        (fun x hx => ⟨1, one_pos, x, hx, (one_smul ℝ x).symm⟩)
+      · rintro _ ⟨l₁, hl₁, a₁, ha₁, rfl⟩ _ ⟨l₂, hl₂, a₂, ha₂, rfl⟩ p q hp hq hpq
+        have hμ : 0 < p * l₁ + q * l₂ := by
+          rcases lt_or_eq_of_le hp with hp' | hp'
+          · nlinarith
+          · have hq' : q = 1 := by linarith [hp'.symm]
+            nlinarith
+        refine ⟨p * l₁ + q * l₂, hμ, (p * l₁ / (p * l₁ + q * l₂)) • a₁ +
+          (q * l₂ / (p * l₁ + q * l₂)) • a₂, hMconv ha₁ ha₂ (by positivity) (by positivity)
+          (by field_simp), ?_⟩
+        match_scalars <;> field_simp
+      · rintro ⟨l, hl, a, ha, hla⟩
+        rcases smul_eq_zero.mp hla.symm with h | h
+        · exact absurd h (ne_of_gt hl)
+        · exact hM0 (h ▸ ha)
+    intro x hx l hl
+    rw [← hD]
+    exact ⟨l, hl, x, hx, rfl⟩
+  -- (2) `x, y ∈ M ⟹ x + y ∈ M`
+  have hadd : ∀ x ∈ M, ∀ y ∈ M, x + y ∈ M := by
+    intro x hx y hy
+    have h2 : (2 : ℝ) • ((1/2 : ℝ) • x + (1/2 : ℝ) • y) ∈ M :=
+      hdil _ (hMconv hx hy (by norm_num) (by norm_num) (by norm_num)) 2 two_pos
+    have e : (2 : ℝ) • ((1/2 : ℝ) • x + (1/2 : ℝ) • y) = x + y := by module
+    rwa [e] at h2
+  -- (3) `M ∩ (-M) = ∅`
+  have hdisj : ∀ x, x ∈ M → -x ∉ M := by
+    intro x hx hnx
+    have := hMconv hx hnx (by norm_num : (0:ℝ) ≤ 1/2) (by norm_num : (0:ℝ) ≤ 1/2) (by norm_num)
+    have e : (1/2 : ℝ) • x + (1/2 : ℝ) • (-x) = 0 := by module
+    rw [e] at this
+    exact hM0 this
+  -- (4) the cone `M̄ = {x | ∀ y ∈ M, x + y ∈ M}`, and `x ∈ M̄ ↔ -x ∉ M`
+  set Mbar : Set V := {x : V | ∀ y ∈ M, x + y ∈ M} with hMbar
+  have hmemMbar : ∀ x : V, x ∈ Mbar ↔ -x ∉ M := by
     intro x
-    obtain ⟨t₁, ht₁, H₁⟩ := hCrad 0 hC0 x
-    obtain ⟨t₂, ht₂, H₂⟩ := hCrad 0 hC0 (-x)
-    have htm : 0 < min t₁ t₂ := lt_min ht₁ ht₂
-    rw [absorbs_iff_norm]
-    refine ⟨2 / min t₁ t₂, fun c hc => ?_⟩
-    have hcpos : 0 < ‖c‖ := lt_of_lt_of_le (by positivity) hc
-    have hcne : c ≠ 0 := by simpa using norm_pos_iff.mp hcpos
-    have habsc : |c⁻¹| < min t₁ t₂ := by
-      rw [abs_inv]
-      have h1 : 2 / min t₁ t₂ ≤ |c| := by simpa [Real.norm_eq_abs] using hc
-      have h2 : 0 < |c| := by simpa [Real.norm_eq_abs] using hcpos
-      rw [inv_lt_iff_one_lt_mul₀ h2]
-      rw [div_le_iff₀ htm] at h1
-      nlinarith
-    have hmemC : c⁻¹ • x ∈ C := by
-      rcases lt_or_gt_of_ne hcne with hneg | hpos
-      · have hinvneg : c⁻¹ < 0 := inv_neg''.mpr hneg
-        have h := H₂ (-c⁻¹) (by linarith) (by
-          rw [abs_of_neg hinvneg] at habsc
-          exact lt_of_lt_of_le habsc (min_le_right _ _))
-        rw [zero_add, smul_neg, neg_smul, neg_neg] at h
-        exact h
-      · have hinvpos : 0 < c⁻¹ := inv_pos.mpr hpos
-        have h := H₁ c⁻¹ hinvpos.le (by
-          rw [abs_of_pos hinvpos] at habsc
-          exact lt_of_lt_of_le habsc (min_le_left _ _))
-        rwa [zero_add] at h
-    refine Set.singleton_subset_iff.mpr ⟨c⁻¹ • x, hmemC, ?_⟩
-    change c • (c⁻¹ • x) = x
-    rw [smul_smul, mul_inv_cancel₀ hcne, one_smul]
-  -- radial openness at `v ∈ C` in the direction `v` gives `gauge C v < 1`
-  have hgauge_lt : ∀ v ∈ C, gauge C v < 1 := by
-    intro v hv
-    obtain ⟨t, ht, H⟩ := hCrad v hv v
-    set r : ℝ := min (t / 2) 1 with hrdef
-    have hr0 : 0 < r := lt_min (by linarith) one_pos
-    have hrt : r < t := lt_of_le_of_lt (min_le_left _ _) (by linarith)
-    have h1r : (0 : ℝ) < 1 + r := by linarith
-    have hmem : (1 + r) • v ∈ C := by
-      have h := H r hr0.le hrt
-      rwa [show v + r • v = (1 + r) • v by module] at h
-    have hmem' : v ∈ (1 + r)⁻¹ • C :=
-      ⟨(1 + r) • v, hmem, by
-        change (1 + r)⁻¹ • (1 + r) • v = v
-        rw [smul_smul, inv_mul_cancel₀ (ne_of_gt h1r), one_smul]⟩
-    calc gauge C v ≤ (1 + r)⁻¹ := gauge_le_of_mem (by positivity) hmem'
-      _ < 1 := inv_lt_one_of_one_lt₀ (by linarith)
-  -- `-x₀ ∉ C` because `0 ∉ K`
-  have hgauge_ge : (1 : ℝ) ≤ gauge C (-x₀) := by
-    by_contra hlt
-    have hmem : -x₀ ∈ C :=
-      setOfPred_gauge_lt_one_subset_self hCconv hC0 habs (lt_of_not_ge hlt)
-    rw [hCmem] at hmem
-    exact h0 (by simpa using hmem)
-  -- the functional `c·x₀ ↦ -c` on `ℝ x₀` is dominated by the gauge
-  set f₀ : V →ₗ.[ℝ] ℝ := LinearPMap.mkSpanSingleton x₀ (-1 : ℝ) hx₀ne with hf₀
-  have hdom : ∀ z : f₀.domain, f₀ z ≤ gauge C (z : V) := by
-    rintro ⟨z, hz⟩
-    have hz' : z ∈ (ℝ ∙ x₀) := hz
-    obtain ⟨c, rfl⟩ := Submodule.mem_span_singleton.mp hz'
-    have h : f₀ ⟨c • x₀, hz⟩ = c • (-1 : ℝ) :=
-      LinearPMap.mkSpanSingleton'_apply x₀ (-1 : ℝ) _ c hz
-    rw [h]
-    change c • (-1 : ℝ) ≤ gauge C (c • x₀)
+    constructor
+    · intro hx hnx
+      have := hx (-x) hnx
+      rw [add_neg_cancel] at this
+      exact hM0 this
+    · intro hx
+      have hE : {z : V | ∃ l : ℝ, 0 ≤ l ∧ ∃ y ∈ M, z = l • x + y} = M := by
+        refine hMmax _ ?_ ?_ ?_ (fun y hy => ⟨0, le_rfl, y, hy, by simp⟩)
+        · rintro _ ⟨l, hl, y, hy, rfl⟩ v
+          obtain ⟨t, ht, h⟩ := hMrad y hy v
+          refine ⟨t, ht, fun r hr0 hr => ⟨l, hl, y + r • v, h r hr0 hr, ?_⟩⟩
+          module
+        · rintro _ ⟨l₁, hl₁, y₁, hy₁, rfl⟩ _ ⟨l₂, hl₂, y₂, hy₂, rfl⟩ p q hp hq hpq
+          refine ⟨p * l₁ + q * l₂, by positivity, p • y₁ + q • y₂,
+            hMconv hy₁ hy₂ hp hq hpq, ?_⟩
+          module
+        · rintro ⟨l, hl, y, hy, hz⟩
+          rcases lt_or_eq_of_le hl with hl' | hl'
+          · refine hx ?_
+            have e : -x = (l⁻¹) • y := by
+              have h' : y = -(l • x) := eq_neg_of_add_eq_zero_right hz.symm
+              rw [h', smul_neg, smul_smul, inv_mul_cancel₀ (ne_of_gt hl'), one_smul]
+            rw [e]
+            exact hdil y hy _ (by positivity)
+          · refine hM0 ?_
+            have hy0 : y = 0 := by
+              rw [← hl', zero_smul, zero_add] at hz
+              exact hz.symm
+            rw [← hy0]
+            exact hy
+      intro y hy
+      rw [← hE]
+      exact ⟨1, zero_le_one, y, hy, by rw [one_smul]⟩
+  -- (5) `H = {x | x ∉ M ∧ -x ∉ M}` is a linear subspace
+  have hcone_smul : ∀ (l : ℝ), 0 ≤ l → ∀ x ∈ Mbar, l • x ∈ Mbar := by
+    intro l hl x hx
+    rcases lt_or_eq_of_le hl with hl' | hl'
+    · intro y hy
+      have h1 : x + (l⁻¹) • y ∈ M := hx _ (hdil y hy _ (by positivity))
+      have h2 : l • (x + (l⁻¹) • y) ∈ M := hdil _ h1 l hl'
+      have e : l • (x + (l⁻¹) • y) = l • x + y := by
+        rw [smul_add, smul_smul, mul_inv_cancel₀ (ne_of_gt hl'), one_smul]
+      rwa [e] at h2
+    · intro y hy
+      rw [← hl', zero_smul, zero_add]
+      exact hy
+  have hcone_add : ∀ x ∈ Mbar, ∀ y ∈ Mbar, x + y ∈ Mbar := by
+    intro x hx y hy z hz
+    have := hx _ (hy z hz)
+    have e : x + (y + z) = x + y + z := by abel
+    rwa [e] at this
+  set Hset : Set V := {x : V | x ∉ M ∧ -x ∉ M} with hHset
+  have hHmem : ∀ x : V, x ∈ Hset ↔ (x ∈ Mbar ∧ -x ∈ Mbar) := by
+    intro x
+    rw [hHset, Set.mem_ofPred_eq, hmemMbar, hmemMbar, neg_neg]
+    tauto
+  have hH0 : (0 : V) ∈ Hset := by
+    rw [hHmem]
+    constructor
+    · intro y hy; rwa [zero_add]
+    · intro y hy; rw [neg_zero, zero_add]; exact hy
+  have hHadd : ∀ x ∈ Hset, ∀ y ∈ Hset, x + y ∈ Hset := by
+    intro x hx y hy
+    rw [hHmem] at hx hy ⊢
+    refine ⟨hcone_add x hx.1 y hy.1, ?_⟩
+    have e : -(x + y) = -x + -y := by abel
+    rw [e]
+    exact hcone_add _ hx.2 _ hy.2
+  have hHsmul : ∀ (c : ℝ) (x : V), x ∈ Hset → c • x ∈ Hset := by
+    intro c x hx
+    rw [hHmem] at hx ⊢
     rcases le_or_gt 0 c with hc | hc
-    · refine le_trans ?_ (gauge_nonneg _)
-      simp only [smul_eq_mul, mul_neg, mul_one, neg_nonpos]
-      exact hc
-    · rw [show c • x₀ = (-c) • (-x₀) by module,
-        gauge_smul_of_nonneg (by linarith : (0 : ℝ) ≤ -c)]
-      simp only [smul_eq_mul, mul_neg, mul_one]
-      nlinarith [hgauge_ge]
-  obtain ⟨g, hg₁, hg₂⟩ := exists_extension_of_le_sublinear f₀ (gauge C)
-    (fun c hc x => by rw [gauge_smul_of_nonneg hc.le]; simp)
-    (fun x y => gauge_add_le hCconv habs x y) hdom
-  have hx₀dom : x₀ ∈ f₀.domain := Submodule.mem_span_singleton_self x₀
-  have hgx₀ : g x₀ = -1 := by
-    have h := hg₁ ⟨x₀, hx₀dom⟩
-    rw [show ((⟨x₀, hx₀dom⟩ : f₀.domain) : V) = x₀ from rfl] at h
-    rw [h]
-    exact LinearPMap.mkSpanSingleton_apply ℝ ℝ hx₀ne (-1 : ℝ)
-  refine ⟨-g, fun x hx => ?_⟩
-  have hmemC : x - x₀ ∈ C := by rw [hCmem]; simpa using hx
-  have h1 : g (x - x₀) ≤ gauge C (x - x₀) := hg₂ _
-  have h2 : gauge C (x - x₀) < 1 := hgauge_lt _ hmemC
-  have h3 : g x - g x₀ = g (x - x₀) := by rw [map_sub]
-  simp only [LinearMap.neg_apply]
-  linarith
+    · exact ⟨hcone_smul c hc x hx.1, by
+        rw [show -(c • x) = c • (-x) by module]
+        exact hcone_smul c hc _ hx.2⟩
+    · refine ⟨?_, ?_⟩
+      · rw [show c • x = (-c) • (-x) by module]
+        exact hcone_smul _ (by linarith) _ hx.2
+      · rw [show -(c • x) = (-c) • x by module]
+        exact hcone_smul _ (by linarith) _ hx.1
+  -- (6) the separating step: `[0,1]` is connected
+  have hsep : ∀ x ∈ M, ∀ y : V, -y ∈ M → ∃ s : ℝ, 0 < s ∧ s < 1 ∧
+      s • x + (1 - s) • y ∈ Hset := by
+    intro x hx y hy
+    set u : Set ℝ := {t : ℝ | t • x + (1 - t) • y ∈ M} with hu
+    set w : Set ℝ := {t : ℝ | t • x + (1 - t) • y ∈ -M} with hw
+    have hu_open : IsOpen u := radialTopology_segment M hMrad x y
+    have hw_open : IsOpen w := radialTopology_segment (-M) (radiallyOpen_neg hMrad) x y
+    have h1u : (1 : ℝ) ∈ u := by
+      show (1 : ℝ) • x + (1 - 1) • y ∈ M
+      rw [one_smul, sub_self, zero_smul, add_zero]
+      exact hx
+    have h0w : (0 : ℝ) ∈ w := by
+      show (0 : ℝ) • x + (1 - 0) • y ∈ -M
+      rw [zero_smul, sub_zero, one_smul, zero_add, Set.mem_neg]
+      exact hy
+    have hcover : ¬ (Set.Icc (0 : ℝ) 1 ⊆ u ∪ w) := by
+      intro hsub
+      obtain ⟨t, -, htu, htw⟩ := isPreconnected_Icc u w hu_open hw_open hsub
+        ⟨1, Set.right_mem_Icc.mpr zero_le_one, h1u⟩
+        ⟨0, Set.left_mem_Icc.mpr zero_le_one, h0w⟩
+      rw [hw] at htw
+      rw [Set.mem_ofPred_eq, Set.mem_neg] at htw
+      exact hdisj _ htu htw
+    obtain ⟨s, hsIcc, hsnot⟩ := Set.not_subset.mp hcover
+    simp only [Set.mem_union, not_or] at hsnot
+    have hs0 : 0 < s := by
+      rcases lt_or_eq_of_le hsIcc.1 with h | h
+      · exact h
+      · exact absurd (h ▸ h0w) hsnot.2
+    have hs1 : s < 1 := by
+      rcases lt_or_eq_of_le hsIcc.2 with h | h
+      · exact h
+      · exact absurd (h ▸ h1u) hsnot.1
+    refine ⟨s, hs0, hs1, hsnot.1, ?_⟩
+    intro hmem
+    exact hsnot.2 (by rw [hw, Set.mem_ofPred_eq, Set.mem_neg]; exact hmem)
+  -- (7) every `v` is congruent to a multiple of `y₀` modulo `H`
+  have hspanM : ∀ v ∈ M, ∃ t : ℝ, v - t • y₀ ∈ Hset := by
+    intro v hv
+    obtain ⟨s, hs0, hs1, hmem⟩ := hsep y₀ hx₀ (-v) (by rwa [neg_neg])
+    have hne : (1 : ℝ) - s ≠ 0 := by linarith
+    refine ⟨s / (1 - s), ?_⟩
+    have h2 := hHsmul (-(1 - s)⁻¹) _ hmem
+    have e : (-(1 - s)⁻¹) • (s • y₀ + (1 - s) • (-v)) = v - (s / (1 - s)) • y₀ := by
+      match_scalars <;> field_simp
+    rwa [e] at h2
+  have hspan : ∀ v : V, ∃ t : ℝ, v - t • y₀ ∈ Hset := by
+    intro v
+    by_cases hv : v ∈ M
+    · exact hspanM v hv
+    by_cases hv' : -v ∈ M
+    · obtain ⟨t, ht⟩ := hspanM _ hv'
+      refine ⟨-t, ?_⟩
+      have e : v - (-t) • y₀ = (-1 : ℝ) • (-v - t • y₀) := by module
+      rw [e]
+      exact hHsmul _ _ ht
+    · exact ⟨0, by rw [zero_smul, sub_zero]; exact ⟨hv, hv'⟩⟩
+  -- (8) `V/H` is one-dimensional, so there is a linear `f` with kernel `H`
+  let W : Submodule ℝ V :=
+    { carrier := Hset
+      zero_mem' := hH0
+      add_mem' := fun {x y} hx hy => hHadd x hx y hy
+      smul_mem' := fun c x hx => hHsmul c x hx }
+  have hWmem : ∀ x : V, x ∈ W ↔ x ∈ Hset := fun _ => Iff.rfl
+  have hy₀W : y₀ ∉ W := fun h => ((hWmem y₀).mp h).1 hx₀
+  have he0 : W.mkQ y₀ ≠ 0 := fun h => hy₀W ((Submodule.Quotient.mk_eq_zero W).mp h)
+  set L : ℝ →ₗ[ℝ] (V ⧸ W) := LinearMap.toSpanSingleton ℝ (V ⧸ W) (W.mkQ y₀) with hL
+  have hLapp : ∀ t : ℝ, L t = t • W.mkQ y₀ := fun _ => rfl
+  have hLinj : Function.Injective L := by
+    intro t₁ t₂ h
+    rw [hLapp, hLapp, ← sub_eq_zero, ← sub_smul] at h
+    rcases smul_eq_zero.mp h with h' | h'
+    · linarith [sub_eq_zero.mp h']
+    · exact absurd h' he0
+  have hLsurj : Function.Surjective L := by
+    intro q
+    obtain ⟨v, rfl⟩ := W.mkQ_surjective q
+    obtain ⟨t, ht⟩ := hspan v
+    refine ⟨t, ?_⟩
+    rw [hLapp, ← map_smul]
+    exact ((Submodule.Quotient.eq W).mpr ht).symm
+  set E : ℝ ≃ₗ[ℝ] (V ⧸ W) := LinearEquiv.ofBijective L ⟨hLinj, hLsurj⟩ with hE
+  set f : V →ₗ[ℝ] ℝ := (E.symm : (V ⧸ W) →ₗ[ℝ] ℝ).comp W.mkQ with hf
+  have hfapp : ∀ v : V, f v = E.symm (W.mkQ v) := fun _ => rfl
+  have hker : ∀ v : V, f v = 0 ↔ v ∈ Hset := by
+    intro v
+    have hq : W.mkQ v = 0 ↔ v ∈ Hset := by
+      rw [Submodule.mkQ_apply, Submodule.Quotient.mk_eq_zero]
+      exact hWmem v
+    rw [hfapp, ← hq]
+    constructor
+    · intro h
+      have h' := congrArg E h
+      rwa [E.apply_symm_apply, map_zero] at h'
+    · intro h
+      rw [h, map_zero]
+  -- (9) `f` does not vanish on `M`, and has a constant sign there
+  have hne0 : ∀ k ∈ M, f k ≠ 0 := fun k hk h => ((hker k).mp h).1 hk
+  have hsign : ∀ k ∈ M, ∀ k' ∈ M, f k < 0 → 0 < f k' → False := by
+    intro k hk k' hk' hb ha
+    set a : ℝ := f k' with hadef
+    set b : ℝ := f k with hbdef
+    have hab : 0 < a - b := by linarith
+    have hp : 0 ≤ a / (a - b) := div_nonneg ha.le hab.le
+    have hq : 0 ≤ (-b) / (a - b) := div_nonneg (by linarith) hab.le
+    have hpq : a / (a - b) + (-b) / (a - b) = 1 := by
+      field_simp
+      ring
+    have hz : (a / (a - b)) • k + ((-b) / (a - b)) • k' ∈ M := hMconv hk hk' hp hq hpq
+    have hfz : f ((a / (a - b)) • k + ((-b) / (a - b)) • k') = 0 := by
+      rw [map_add, map_smul, map_smul, smul_eq_mul, smul_eq_mul, ← hadef, ← hbdef]
+      field_simp
+      ring
+    exact ((hker _).mp hfz).1 hz
+  rcases lt_or_gt_of_ne (hne0 y₀ hx₀) with hneg | hpos
+  · refine ⟨-f, fun x hx => ?_⟩
+    have hxM : x ∈ M := hKM hx
+    rcases lt_or_gt_of_ne (hne0 x hxM) with h | h
+    · simpa using h
+    · exact absurd (hsign y₀ hx₀ x hxM hneg h) (by simp)
+  · refine ⟨f, fun x hx => ?_⟩
+    have hxM : x ∈ M := hKM hx
+    rcases lt_or_gt_of_ne (hne0 x hxM) with h | h
+    · exact absurd (hsign x hxM y₀ hx₀ h hpos) (by simp)
+    · exact h
+
 
 end Radial
 
