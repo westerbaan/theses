@@ -465,34 +465,68 @@ theorem asrt_comp_standard_form (p q : Pred X) :
   exact ⟨β, hβ⟩
 
 /-- **216XIV** (`dagger-thm-necessity`, eff.tex:5630, Ax. 3): in a †-effectus
-`t ∘ ζ_s` is sharp for sharp `s` and `t`; indeed `⌈t ∘ ζ_s⌉ = im (π_s ∘ π_t)`
-because `ζ_s` is ⋄-adjoint to `π_s` (216VII), and `im (π_s ∘ π_t) ≤ t ∘ ζ_s`
-because `t ∘ ζ_s ∘ π_s ∘ π_t = 1 ∘ π_s ∘ π_t`. -/
+`t ∘ ζ_s` is sharp for sharp `s` and `t`.
+
+The proof is eff.tex:5630's own, which shows that `t ∘ ζ_s` **is** the image
+of `π_s ∘ π_t` — hence sharp.  (a) `t ∘ ζ_s ∘ π_s ∘ π_t = 1 ∘ π_s ∘ π_t`.
+(b) For sharp `p` with `p ∘ π_s ∘ π_t = 1 ∘ π_s ∘ π_t`: `p ∘ π_s ≥ IM π_t = t`,
+so `pᵖ ∘ π_s ≤ tᵖ` and `⌈pᵖ ∘ π_s⌉ ≤ tᵖ`; as `π_s` is ⋄-adjoint to `ζ_s`
+(216IX.1 `dagger_of_iso_adjoint`), `⌈pᵖ ∘ π_s⌉ = im (ζ_s ∘ π_{pᵖ})`, so
+`ζ_s ∘ π_{pᵖ}` kills `t` and therefore `t ∘ ζ_s ≤ ⌈t ∘ ζ_s⌉ ≤ p`.  Clause (b)
+at the sharp predicate `im (π_s ∘ π_t)` is the half that needs (b) at all. -/
 theorem sharpMap_zetaMap (d : DaggerEffectus C) {s : Pred X} (hs : IsSharp s) :
     SharpMap (zetaMap s hs) := by
   intro t ht
   obtain ⟨-, hπζ, -⟩ := zetaMap_spec s hs
-  have hadj : DiamondAdjoint (zetaMap s hs) (comprMap s) := by
-    have h := d.dag_diamond_adjoint (X := PureCat.of X)
-      (Y := PureCat.of (comprObj s))
-      ⟨zetaMap s hs, isPure_of_isQuotient (zetaMap_spec s hs).1⟩
-    rw [dagger_of_zeta d hs] at h
-    exact h
-  have hce : ceilPred (zetaMap s hs ≫ t) = imPred (comprMap t ≫ comprMap s) :=
-    congrArg Subtype.val (congrFun hadj ⟨t, ht⟩)
-  have hle : imPred (comprMap t ≫ comprMap s) ≼ zetaMap s hs ≫ t := by
-    refine (isImage_imPred (comprMap t ≫ comprMap s)).2 _ ?_
+  have hπtot : IsTotal (comprMap s) := compr_total (isComprehension_comprMap s)
+  -- 216IX.1: `π_s` is ⋄-adjoint to `ζ_s`
+  have hadj : DiamondAdjoint (comprMap s) (zetaMap s hs) :=
+    dagger_of_iso_adjoint d hs
+  -- (a) `t ∘ ζ_s ∘ π_s ∘ π_t = 1 ∘ π_s ∘ π_t`
+  have ha : (comprMap t ≫ comprMap s) ≫ zetaMap s hs ≫ t
+      = (comprMap t ≫ comprMap s) ≫ truth X := by
     calc (comprMap t ≫ comprMap s) ≫ zetaMap s hs ≫ t
         = comprMap t ≫ t := by
           rw [Category.assoc, ← Category.assoc (comprMap s) (zetaMap s hs) t,
             hπζ, Category.id_comp]
       _ = comprMap t ≫ truth (comprObj s) := (isComprehension_comprMap t).1
       _ = (comprMap t ≫ comprMap s) ≫ truth X := by
-          rw [Category.assoc, compr_total (isComprehension_comprMap s)]
-  have heq : zetaMap s hs ≫ t = ceilPred (zetaMap s hs ≫ t) :=
-    eabasics_le_antisymm (le_ceil _) (by rw [hce]; exact hle)
+          rw [Category.assoc, hπtot]
+  -- (b) every sharp `p` with `p ∘ π_s ∘ π_t = 1 ∘ π_s ∘ π_t` has `t ∘ ζ_s ≤ p`
+  have hb : ∀ p : Pred X, IsSharp p →
+      (comprMap t ≫ comprMap s) ≫ p = (comprMap t ≫ comprMap s) ≫ truth X →
+      zetaMap s hs ≫ t ≼ p := by
+    intro p hp hp1
+    -- `p ∘ π_s ≥ IM π_t = t`
+    have h1 : comprMap t ≫ comprMap s ≫ p
+        = comprMap t ≫ truth (comprObj s) := by
+      rw [← Category.assoc, hp1, Category.assoc, hπtot]
+    have h2 : t ≼ comprMap s ≫ p := by
+      have h := (isImage_imPred (comprMap t)).2 _ h1
+      rwa [(img_of_compr t).2 t ht] at h
+    -- so `pᵖ ∘ π_s ≤ tᵖ`, and `⌈pᵖ ∘ π_s⌉ ≤ tᵖ` as `tᵖ` is sharp
+    have h3 : comprMap s ≫ orth p ≼ orth t := by
+      rw [total_comp_orth hπtot]
+      exact eabasics_le_iff_orth_le.mp h2
+    have h4 : ceilPred (comprMap s ≫ orth p) ≼ orth t :=
+      (ceil_le_iff_of_isSharp (DiamondEffectus.orth_sharp ht)).mpr h3
+    -- 216IX.1 at `pᵖ`: `⌈pᵖ ∘ π_s⌉ = im (ζ_s ∘ π_{pᵖ})`
+    have h5 : ceilPred (comprMap s ≫ orth p)
+        = imPred (comprMap (orth p) ≫ zetaMap s hs) :=
+      congrArg Subtype.val
+        (congrFun hadj ⟨orth p, DiamondEffectus.orth_sharp hp⟩)
+    -- hence `t ∘ ζ_s ∘ π_{pᵖ} = 0`, i.e. `t ∘ ζ_s ≤ ⌈t ∘ ζ_s⌉ ≤ p`
+    have h6 : comprMap (orth p) ≫ zetaMap s hs ≫ t = 0 := by
+      rw [← Category.assoc]
+      exact (im_le_orth_iff _ t).mp (by rw [← h5]; exact h4)
+    exact (le_iff_compr_orth_comp_eq_zero hp _).mpr h6
+  -- so `t ∘ ζ_s` is the image of `π_s ∘ π_t`, and images are sharp
+  have heq : zetaMap s hs ≫ t = imPred (comprMap t ≫ comprMap s) :=
+    eabasics_le_antisymm
+      (hb _ (isSharp_imPred C _) (isImage_imPred (comprMap t ≫ comprMap s)).1)
+      ((isImage_imPred (comprMap t ≫ comprMap s)).2 _ ha)
   rw [heq]
-  exact isSharp_ceil _
+  exact isSharp_imPred C _
 
 /-- **216XI** (`dagger-thm-necessity`, eff.tex:5573, Theorem): a †-effectus
 is a †'-effectus. -/

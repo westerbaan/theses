@@ -5930,11 +5930,10 @@ theorem MConvexComb.map_const {M : Type u} [EffectMonoid M] {X : Type v}
 form `h(⋁ᵢ λᵢ|κ₁xᵢ⟩ ⋁ ⋁ⱼ σⱼ|κ₂yⱼ⟩)`, i.e. that the canonical affine map
 `𝒟_M(X+Y) → X + Y` is **surjective**; it then gives an explicit description of
 when two such expressions are equal (by *derivations*), which is what the
-thesis uses for 194I.4.  That description is not formalized (see 193IV).  It
-turns out not to be needed: surjectivity alone suffices, and it can be proved
-from the universal property alone, by cutting `X + Y` down to the image of
-`𝒟_M(X+Y)` and observing that the cut-down object again receives `κ₁` and
-`κ₂`, so that the corestriction splits the inclusion. -/
+thesis uses for 194I.4.  That description is not formalized (see 193IV).  The
+surjectivity below is proved **the way the Remark gets it** — "by our
+construction": `∼` is the least congruence of 193V and `q : 𝒟_M(X+Y) ↠ C` its
+quotient map, so every element of `C` is `q(φ) = h(𝒟_M[c₁,c₂](φ))`. -/
 
 /-- The canonical affine map `𝒟_M(X + Y) → X ⨿ Y`, `φ ↦ h(𝒟_M[κ₁,κ₂](φ))`. -/
 noncomputable def AConvMCat.coprodQuot {M : Type u} [EffectMonoid M]
@@ -5962,10 +5961,18 @@ theorem AConvMCat.coprodQuot_eta_inr {M : Type u} [EffectMonoid M]
 
 /-- **193IX** (`elements-coprod-conv`, eff.tex:2884, Remark), existence half:
 every element of `X ⨿ Y` is `h(⋁ λᵢ|κ₁xᵢ⟩ ⋁ ⋁ σⱼ|κ₂yⱼ⟩)` for some formal
-combination.  (The argument is ours: the thesis reads this off its explicit
-construction of the coproduct, while the proof below uses only the universal
-property.  Since session 94 that construction *is* pinned by `aconv_coprod`,
-so the thesis's own route is now available.)
+combination.
+
+The argument is the Remark's own — "by our construction, we know that every
+`z ∈ X + Y` is of the form …" (eff.tex:2891).  We rebuild 193V's construction:
+the least congruence `∼` on the free algebra `(𝒟_M(X+Y), μ)` containing
+`coprodRel` (`least_conv_cong`), its quotient `C = 𝒟_M(X+Y)/∼` with the affine
+quotient map `q` (`aconv_cong_quotient`), and the coprojections
+`cᵢ = q ∘ η ∘ κᵢ`.  `coprodQuot` is constant on `∼`-classes — its kernel is a
+congruence (193III) containing `coprodRel`, so it contains the least one — and
+therefore descends to an affine `e : C ⟶ X ⨿ Y` with `e ∘ q = coprodQuot` and
+`cᵢ ≫ e = κᵢ`; hence `[c₁,c₂] ≫ e = 𝟙` and `e` is a retraction.  As `q` is
+surjective, so then is `coprodQuot`.
 
 ⚠ The Remark's second half is not formalized (audit row 193IX, left
 unrepaired): the characterisation of **when two such expressions are equal**,
@@ -5979,50 +5986,81 @@ theorem AConvMCat.coprodQuot_surjective {M : Type u} [EffectMonoid M]
     (X Y : AConvMCat.{u, max u v} M) [HasBinaryCoproduct X Y] :
     Function.Surjective (AConvMCat.coprodQuot X Y).1 := by
   classical
-  -- the image of `𝒟_M(X+Y)` in `X ⨿ Y`
-  choose ch hch using
-    (fun s : {w : (X ⨿ Y).carrier // ∃ p, (AConvMCat.coprodQuot X Y).1 p = w} => s.2)
-  have hclosed : ∀ Ψ : MConvexComb M {w : (X ⨿ Y).carrier //
-        ∃ p, (AConvMCat.coprodQuot X Y).1 p = w},
-      ∃ p, (AConvMCat.coprodQuot X Y).1 p =
-        (X ⨿ Y).str.h (Ψ.map (fun s => (s : (X ⨿ Y).carrier))) := by
-    intro Ψ
-    refine ⟨MConvexComb.mu (Ψ.map ch), ?_⟩
-    have h2 : Ψ.map (fun s => (s : (X ⨿ Y).carrier))
-        = (Ψ.map ch).map (AConvMCat.coprodQuot X Y).1 := by
-      rw [MConvexComb.map_comp]
-      exact congrArg Ψ.map (funext fun s => (hch s).symm)
-    rw [h2]
-    exact (AConvMCat.coprodQuot X Y).2 (Ψ.map ch)
-  -- it is again an abstract `M`-convex set, and `val` is affine
-  let SObj : AConvMCat.{u, max u v} M :=
-    ⟨_, MConvex.restrict (X ⨿ Y).str
-      (fun w => ∃ p, (AConvMCat.coprodQuot X Y).1 p = w) hclosed⟩
-  let vv : SObj ⟶ X ⨿ Y := ⟨Subtype.val, fun _ => rfl⟩
-  -- the coprojections corestrict to the image
-  let k₁ : X ⟶ SObj :=
-    ⟨fun x => ⟨(coprod.inl : X ⟶ X ⨿ Y).1 x,
-        ⟨MConvexComb.eta (Sum.inl x), AConvMCat.coprodQuot_eta_inl x⟩⟩,
-      fun p => Subtype.ext (by
-        show (coprod.inl : X ⟶ X ⨿ Y).1 (X.str.h p) = (X ⨿ Y).str.h ((p.map _).map _)
-        rw [MConvexComb.map_comp]
-        exact (coprod.inl : X ⟶ X ⨿ Y).2 p)⟩
-  let k₂ : Y ⟶ SObj :=
-    ⟨fun y => ⟨(coprod.inr : Y ⟶ X ⨿ Y).1 y,
-        ⟨MConvexComb.eta (Sum.inr y), AConvMCat.coprodQuot_eta_inr y⟩⟩,
-      fun p => Subtype.ext (by
-        show (coprod.inr : Y ⟶ X ⨿ Y).1 (Y.str.h p) = (X ⨿ Y).str.h ((p.map _).map _)
-        rw [MConvexComb.map_comp]
-        exact (coprod.inr : Y ⟶ X ⨿ Y).2 p)⟩
-  have hm : coprod.desc k₁ k₂ ≫ vv = 𝟙 (X ⨿ Y) := by
+  -- 193V's construction, rebuilt: the free algebra `(𝒟_M(X+Y), μ)` …
+  let D : MConvex M (MConvexComb M (X.carrier ⊕ Y.carrier)) :=
+    MConvexComb.freeStr M (X.carrier ⊕ Y.carrier)
+  -- … the least congruence `∼` containing the relation of eff.tex:2787 …
+  obtain ⟨r, hrc, hrR, hrleast⟩ := least_conv_cong D (AConvMCat.coprodRel X Y)
+  -- … and its quotient `C = 𝒟_M(X+Y)/∼`, whose quotient map `q` is affine
+  obtain ⟨stC, hqaff⟩ := aconv_cong_quotient D r hrc
+  let C : AConvMCat.{u, max u v} M := ⟨Quotient r, stC⟩
+  -- the coprojections `cᵢ = q ∘ η ∘ κᵢ` are affine (eff.tex:2803)
+  have hc1 : MConvex.IsAffine X.str stC
+      (fun x => Quotient.mk r (MConvexComb.eta (Sum.inl x))) := by
+    intro p
+    have h1 : Quotient.mk r (p.map Sum.inl)
+        = Quotient.mk r (MConvexComb.eta (Sum.inl (X.str.h p))) :=
+      Quotient.sound (hrR _ _ (Or.inl ⟨p, rfl, rfl⟩))
+    have h2 := hqaff ((p.map Sum.inl).map MConvexComb.eta)
+    rw [show D.h ((p.map Sum.inl).map MConvexComb.eta) = p.map Sum.inl from
+      MConvexComb.mu_map_eta _] at h2
+    show Quotient.mk r (MConvexComb.eta (Sum.inl (X.str.h p))) = _
+    rw [← h1, h2, MConvexComb.map_comp, MConvexComb.map_comp]
+    rfl
+  have hc2 : MConvex.IsAffine Y.str stC
+      (fun y => Quotient.mk r (MConvexComb.eta (Sum.inr y))) := by
+    intro p
+    have h1 : Quotient.mk r (p.map Sum.inr)
+        = Quotient.mk r (MConvexComb.eta (Sum.inr (Y.str.h p))) :=
+      Quotient.sound (hrR _ _ (Or.inr ⟨p, rfl, rfl⟩))
+    have h2 := hqaff ((p.map Sum.inr).map MConvexComb.eta)
+    rw [show D.h ((p.map Sum.inr).map MConvexComb.eta) = p.map Sum.inr from
+      MConvexComb.mu_map_eta _] at h2
+    show Quotient.mk r (MConvexComb.eta (Sum.inr (Y.str.h p))) = _
+    rw [← h1, h2, MConvexComb.map_comp, MConvexComb.map_comp]
+    rfl
+  let c₁ : X ⟶ C := ⟨fun x => Quotient.mk r (MConvexComb.eta (Sum.inl x)), hc1⟩
+  let c₂ : Y ⟶ C := ⟨fun y => Quotient.mk r (MConvexComb.eta (Sum.inr y)), hc2⟩
+  -- `coprodQuot` is constant on `∼`-classes: its kernel is a congruence
+  -- (193III) containing `coprodRel`, hence contains the least such
+  have hker : ∀ a b : MConvexComb M (X.carrier ⊕ Y.carrier), r.r a b →
+      (AConvMCat.coprodQuot X Y).1 a = (AConvMCat.coprodQuot X Y).1 b := by
+    intro a b hab
+    refine hrleast (Setoid.ker (AConvMCat.coprodQuot X Y).1)
+      (affine_kernel_cong D (X ⨿ Y).str _ (AConvMCat.coprodQuot X Y).2) ?_ a b hab
+    rintro a' b' (⟨χ, rfl, rfl⟩ | ⟨χ, rfl, rfl⟩)
+    · show (X ⨿ Y).str.h _ = _
+      rw [MConvexComb.map_comp, AConvMCat.coprodQuot_eta_inl]
+      exact ((coprod.inl : X ⟶ X ⨿ Y).2 χ).symm
+    · show (X ⨿ Y).str.h _ = _
+      rw [MConvexComb.map_comp, AConvMCat.coprodQuot_eta_inr]
+      exact ((coprod.inr : Y ⟶ X ⨿ Y).2 χ).symm
+  -- so it descends to `e : C ⟶ X ⨿ Y` with `e ∘ q = coprodQuot`
+  let e0 : Quotient r → (X ⨿ Y).carrier :=
+    Quotient.lift (AConvMCat.coprodQuot X Y).1 hker
+  have he0 : MConvex.IsAffine stC (X ⨿ Y).str e0 := by
+    intro P
+    obtain ⟨P₀, hP₀⟩ := (aconv_cong_surjective (M := M) r).2.1 P
+    have hP₀' : P₀.map (Quotient.mk r) = P := hP₀
+    subst hP₀'
+    rw [← hqaff P₀, MConvexComb.map_comp]
+    exact (AConvMCat.coprodQuot X Y).2 P₀
+  let e : C ⟶ X ⨿ Y := ⟨e0, he0⟩
+  -- `cᵢ ≫ e = κᵢ`, so `[c₁,c₂] ≫ e = 𝟙`: `e` is a retraction
+  have he1 : c₁ ≫ e = (coprod.inl : X ⟶ X ⨿ Y) :=
+    Subtype.ext (funext fun x => AConvMCat.coprodQuot_eta_inl x)
+  have he2 : c₂ ≫ e = (coprod.inr : Y ⟶ X ⨿ Y) :=
+    Subtype.ext (funext fun y => AConvMCat.coprodQuot_eta_inr y)
+  have hm : coprod.desc c₁ c₂ ≫ e = 𝟙 (X ⨿ Y) := by
     refine coprod.hom_ext ?_ ?_
-    · rw [← Category.assoc, coprod.inl_desc, Category.comp_id]
-      exact Subtype.ext rfl
-    · rw [← Category.assoc, coprod.inr_desc, Category.comp_id]
-      exact Subtype.ext rfl
+    · rw [← Category.assoc, coprod.inl_desc, Category.comp_id, he1]
+    · rw [← Category.assoc, coprod.inr_desc, Category.comp_id, he2]
+  -- every element of `C` is `q(φ)`, so every element of `X ⨿ Y` is `e(q(φ))`
   intro w
-  refine ⟨((coprod.desc k₁ k₂).1 w).2.choose, ?_⟩
-  rw [((coprod.desc k₁ k₂).1 w).2.choose_spec]
+  obtain ⟨Φ, hΦ⟩ := Quotient.exists_rep ((coprod.desc c₁ c₂).1 w)
+  refine ⟨Φ, ?_⟩
+  show e.1 (Quotient.mk r Φ) = w
+  rw [hΦ]
   exact congrArg (fun t : (X ⨿ Y) ⟶ (X ⨿ Y) => t.1 w) hm
 
 /-- **194I.4**, first ingredient: `κ₁ : X → X + Y` is injective in `AConv_M`.
