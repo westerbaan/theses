@@ -30186,3 +30186,174 @@ checkable claim about what the tree lacks were re-verified against the tree
 rather than against themselves (§5), 5 have no thesis argument to be
 faithful to at all, and the rest were re-read and found accurate as written.
 83 route rows in scope before, 81 after.
+
+## Session 98 — `A/CStar/Matrices` + `A/CStar/Representation`, proof-route pass: **every one of the 16 `route` rows is repaired, reclassified or already-removed — including 30X, whose recorded reason ("the thesis's route cannot be taken while our statement does not name `ϱ_Ω`") confused the *statement* with the *proof*, and 32XV.3, left twice on the "same content, different assembly" excuse** (worker on `Theses/A/CStar/{Matrices,Representation}.lean`, `docs/audit/acstar-matrices-representation.csv`)
+
+Scope: the 16 `route` rows of `docs/audit/acstar-matrices-representation.csv`
+— 10 in `Matrices.lean`, 6 in `Representation.lean`.  Three of the sixteen
+(`sesq_eq_zero`, `norm_sum_smul_le_aux`, `norm_sum_smul_le_of_nonneg`) name
+declarations that earlier sessions already deleted; those were re-verified
+absent and re-statused, not re-opened.  Of the remaining thirteen, **seven
+were repaired onto the thesis's own proof**, **two reclassified to `none`**
+because the thesis gives no argument at all, and **four were deleted with the
+route they served**.  No `route` row in this file now names a live
+declaration.
+
+### 1. Cauchy–Schwarz for `⟨x, Ay⟩` — one new private lemma, two repairs
+
+**34XII** (`cstar-positive-2x2matrix`, cstar.tex:5704) and **33III**.3
+(`mnf`, solution `parsec-330.30`(3)) both *begin* with the same sentence:
+"since `(x,y) ↦ ⟨x,Ay⟩` gives an 𝒜-valued inner product on `𝒜²`,
+Cauchy–Schwarz gives …".  Neither Lean proof used it.  34XII substituted
+`x = −a`, `y = ‖p‖·1` into **33II**.1's positivity condition and called
+`star_left_conjugate_le_norm_smul`, with a case split on `‖p‖ = 0`; 33III.3
+used the maximally entangled projection in `M₂(M₂(ℂ))` and an explicit test
+vector.
+
+The obstacle was real but small: a merely *positive* `A` gives a
+**semi-definite** form, and Mathlib's `CStarModule` is a normed object, hence
+definite, so it cannot carry one.  Writing `A = C* C` realises the thesis's
+form inside the honest Hilbert module `C⋆ᵐᵒᵈ(𝒜, Fin N → 𝒜)` as
+`⟨x,Ay⟩ = ⟨Cx,Cy⟩`, whose Gram matrix at the standard basis is `A` again (the
+converse of **33II**.2).  That is the new private
+`pos_matrix_cs : Aᵢⱼ Aⱼᵢ ≤ ‖Aⱼⱼ‖ Aᵢᵢ` (`Matrices.lean:1180`), twenty lines,
+closed by **32VI** `chilb_cs`.
+
+* **34XII** is now six lines: both inequalities are `pos_matrix_cs` at the two
+  standard basis vectors, in the two orders — which is exactly what **34XIII**
+  says ("by a similar reasoning, we get `a* a ≤ ‖p‖ q`").  The private
+  `col_eq_zero` and `diag_nonneg`, which only the old route used, are deleted.
+* **33III**.3 now runs solution `parsec-330.30`(3) step for step.  The
+  solution's map is `j_𝒜 : 𝒜ᵒᵖ → 𝒜`; our statement fixes the domain to
+  `M₂(ℂ)`, and transposition **is** `j_{M₂(ℂ)}` transported along the
+  canonical `M₂(ℂ)ᵒᵖ ≅ M₂(ℂ)`.  For `b := aᵀ` the matrix `[[1,b],[b*,b* b]]`
+  is positive by **33II**.3; its image under `M₂ j` is `[[1,a],[a*,a a*]]`;
+  Cauchy–Schwarz gives `a* a ≤ ‖1‖(a a*) = a a*`; applying that to `a*` too
+  gives `a* a = a a*` for every `a`, i.e. every element of `M₂(ℂ)` would be
+  normal.  `e₀₁` is not.  `witnessM2`, `e00M2`, `e10M2` are deleted with the
+  old counterexample.
+
+### 2. 32XV.3 — the excuse was "the supremum over dyadic ε is a device for the same bound"
+
+That is the "same content, different assembly" excuse verbatim, and the
+machinery the solution's route needs turned out to be **present**:
+`CFC.nnrpow` on a C*-algebra with `nnrpow_add`, `sqrt_nnrpow`, `nnrpow_one`
+and the isometry lemma `norm_nnrpow`, plus `Real.continuousAt_const_rpow` for
+the limit.  The old proof took only `ε = 1/2` (`s = √(T±)`) and compensated by
+normalising `x` instead of `T` — which is precisely what makes the
+ε-supremum unnecessary.
+
+`norm_le_of_vector_bound` (`Matrices.lean:785`) is now solution
+`parsec-320.150`(3)'s chain, with the dyadic exponents `ε = 2⁻ⁿ` (dyadic and
+cofinal downwards, which is all the supremum needs):
+
+* `T∓ T±^ε = 0` from `T∓ T± = 0` by the solution's own lemma, new private
+  `mul_sqrt_eq_zero_of_mul_eq_zero` — "`ab = 0 ⟹ a√b = 0` for self-adjoint
+  `a` and positive `b`, because `‖a√b‖² = ‖aba‖ = 0`" (asols.tex:4013);
+* hence `T T±^ε = ± T± T±^ε` and
+  `⟨T±^ε y, T T±^ε y⟩ = ±⟨√T± T±^ε y, √T± T±^ε y⟩`;
+* the test vectors are in the unit ball because `‖T±‖ ≤ 1` — which is what
+  the WLOG buys, and the WLOG is done the solution's way, by scaling `T`
+  (new private `real_smul_nonneg`);
+* `‖√T± T±^ε‖² = ‖T±^{1+2ε}‖ = ‖T±‖^{1+2ε}`;
+* `ε ↓ 0` over these dyadic exponents gives `‖T±‖ ≤ M`.
+
+### 3. 30X — the recorded reason confused the statement with the proof
+
+Five of the six `Representation.lean` rows were left under "QUESTIONS **A8**:
+the thesis's route cannot be taken while the statement does not name `ϱ_Ω`".
+A8 is live and unchanged, and it is a real *statement* question — our clause
+(1) is existential.  But the **proof** of `proto_gelfand_naimark_1`
+((2) ⇔ (3)) never has to mention `ϱ_Ω` in a statement: 30X's own (2) ⇒ (3)
+goes (2) ⇒ (1) ⇒ (3) *through* `ϱ_Ω`, entirely inside the proof.  Nothing
+blocked it.
+
+`proto_gelfand_naimark_1` now runs the printed proof:
+
+* cstar.tex:5002 gives `ϱ_Ω` injective — new private
+  `dsumRep_gns_injective`, factored out of `proto_gelfand_naimark_2` (which
+  now uses it, and applies centre separation directly to the positive `a* a`,
+  as the printed proof does, instead of going through the self-adjoint
+  auxiliary);
+* cstar.tex:5030 gives `0 ≤ ϱ_ω(a)` for each `ω` — new private
+  `gnsStarAlgHom_nonneg`: **30XIII** order-separates the vector states of
+  `B(ℋ_ω)`, `{η_ω(b)}` is dense in `ℋ_ω`
+  (`UniformSpace.Completion.denseRange_coe`), and
+  `⟨η_ω(b), ϱ_ω(a) η_ω(b)⟩ = ω(b* a b)` by `preGNS_inner_def`;
+* coordinatewise positivity gives `0 ≤ ϱ_Ω(a)` — new private
+  `dsumRep_nonneg`, via `lp.inner_eq_tsum` and **25III**;
+* and **29IX** turns that into `0 ≤ a` — new private
+  `nonneg_of_injective_miu`: an injective miu-map is isometric (**29VIII**),
+  and **17V**'s norm criterion for positivity transfers.
+  `A/CStar/Positive.lean` carries the identical auxiliary for **20aII**, but
+  `private`; it is re-derived here rather than that file being touched.
+
+Deleted with the old route: `eq_zero_of_cube_eq_zero`, `conj_by_posPart`,
+`eq_zero_of_centreSeparating`, `nonneg_of_centreSeparating` — the four
+private auxiliaries with no thesis counterpart — and the ~25 lines that
+established self-adjointness of `a` by hand.  On the thesis's route
+self-adjointness comes free with the positivity of `ϱ_Ω(a)`.
+
+The stale `/-!` header at `Representation.lean:1794` — "Rather than
+constructing the direct sum representation here, its relevant properties are
+stated existentially in **30X** and **30XIV** below" — is corrected: `ϱ_Ω`
+**is** constructed there, as `dsumRep`, and both halves of 30X now run
+through it.
+
+### 4. Two smaller repairs, and two reclassifications
+
+* **32IV**.1 `paschke_ideal_closed` — was `isClosed_eq`, `J` as the equaliser
+  of `f ↦ f 0` and `f ↦ 0`.  Solution `parsec-320.40` says "the kernel of the
+  map miu-map `f ↦ f(0) : C[0,1] → ℂ`", and that is now the proof: the
+  preimage of the closed `{0}` under `ContinuousMap.evalStarAlgHom`.  The
+  statement stays `weaker` for the reason already recorded (the tail "and thus
+  a Hilbert `C[0,1]`-module" needs `J` as a *type* carrying `CStarModule`).
+* **33I**.2 `cstar_matrices_2` — injectivity was Mathlib's `toCLM_injective`.
+  It is now the solution's own two lines (asols.tex:4070): apply the map to
+  `eₙ` and read off the entries.
+* **33I**.3 `cstar_matrices_3` — **expired reason**.  The row said "closed by
+  `map_mul` for `toCLMNonUnitalAlgHom` rather than the solution's entrywise
+  computation"; `map_mul` had been gone for some time and the proof was
+  `Matrix.vecMul_vecMul`.  It is now the solution's displayed `alignat`
+  written out (asols.tex:4092).
+* **113II** `matBilin_nonneg_of_mi` → `none`.  proc.tex:3018 is the whole of
+  the point: "Show that a mi-bilinear map `β : 𝒜×ℬ→𝒞` between von Neumann
+  algebras is completely positive", followed immediately by a Notation.  No
+  Proof point; `asols.tex` carries solutions only for `parsec-260`–`340` and
+  `bsols.tex` indexes by label and has none for it.  There was never an
+  argument to be faithful to.  (Also noted: the row and the doc comment cite
+  QUESTIONS **B5**, deleted as resolved on 2026-08-16.)
+* **30IX** `dsumRep` → `none`.  cstar.tex:4966 is a Definition, followed
+  immediately by the Proposition.  Not a dead limb: `proto_gelfand_naimark_2`
+  consumed it before, and `proto_gelfand_naimark_1` does now too.
+
+### 5. Bookkeeping
+
+`docs/audit/acstar-matrices-representation.csv`: 16 rows re-statused, of which
+7 `route` → **faithful** (32IV.1, 32XV.3, 33I.2, 33I.3, 33III.3, 34XII, 30X
+`proto_gelfand_naimark_1`) and 2 `route` → **none** (113II, 30IX).  Drifted
+`cstar.tex` line references corrected in the doc comments of the points
+touched (32IV → 5166, 32XV → 5375, 34XII → 5704, 30IX → 4966, 30X → 4977).
+No statement was changed, so nothing was owed to `ERRATA.md` or
+`QUESTIONS.md`; **A8 stands, and still governs the statement of 30X.1**.
+Every repaired declaration was axiom-checked in a scratch copy
+(`propext, Classical.choice, Quot.sound` only); `A/CStar/TowardsVN.lean` and
+`A/VN/Basic.lean` were recompiled as downstream smoke tests.
+
+Net: **7 divergences put back on the thesis's own proof**, **2 rows that were
+never divergences reclassified**, **9 private declarations with no thesis
+counterpart deleted** (`col_eq_zero`, `diag_nonneg`, `witnessM2`, `e00M2`,
+`e10M2`, `eq_zero_of_cube_eq_zero`, `conj_by_posPart`,
+`eq_zero_of_centreSeparating`, `nonneg_of_centreSeparating`), together with
+the `key` / `main` blocks that carried the old routes inside 32XV.3 and 34XII, **3 recorded reasons found
+stale and corrected** (33I.3's, 30X's, 32XV.3's), and **0 `route` rows left
+naming a live declaration** in this file.  16 route rows in scope before, 7
+after — all seven naming declarations that no longer exist.
+
+### 6. No error found in the printed thesis
+
+Both proofs that were re-transcribed here (34XIII's Cauchy–Schwarz and
+`parsec-320.150`(3)'s dyadic-ε supremum) came out exactly as printed, and
+solution `parsec-330.30`(3)'s "`M₂ j_𝒜` is positive iff `𝒜` is commutative"
+is correct as stated.  The only defect met was in our own records, not in the
+theses.

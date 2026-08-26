@@ -1791,11 +1791,12 @@ theorem gns_starAlgHom_apply (ω : 𝒜 →ₚ[ℂ] ℂ) (a b : 𝒜) :
       ((ω.toPreGNS (a * b) : ω.PreGNS) : ω.GNS) := by
   simp [PositiveLinearMap.gnsStarAlgHom]
 
-/-! **30IX** (`gelfand-naimark-representation`, cstar.tex:4859, Definition):
+/-! **30IX** (`gelfand-naimark-representation`, cstar.tex:4966, Definition):
 given a collection `Ω` of p-maps on `𝒜`, the representation
-`ϱ_Ω : 𝒜 → B(⊕_{ω∈Ω} ℋ_ω)`, `ϱ_Ω(a) x = (ϱ_ω(a) x(ω))_ω`.  Rather than
-constructing the direct sum representation here, its relevant properties are
-stated existentially in **30X** and **30XIV** below. -/
+`ϱ_Ω : 𝒜 → B(⊕_{ω∈Ω} ℋ_ω)`, `ϱ_Ω(a) x = (ϱ_ω(a) x(ω))_ω`.  It *is*
+constructed below, as `dsumRep`, and both halves of **30X** run through it,
+as the Proposition's proof does; **30X**.2 and **30XIV** additionally state
+their conclusion existentially. -/
 
 variable (𝒜) in
 /-- The map `a ↦ b* a b` as a linear map (used to express condition 3 of
@@ -1803,147 +1804,83 @@ variable (𝒜) in
 noncomputable def conjMap (b : 𝒜) : 𝒜 →ₗ[ℂ] 𝒜 :=
   (LinearMap.mulLeft ℂ (star b)).comp (LinearMap.mulRight ℂ b)
 
-/-- Auxiliary (**30X**): a self-adjoint element of a C*-algebra whose cube
-vanishes is zero. -/
-private theorem eq_zero_of_cube_eq_zero (y : 𝒜) (hy : IsSelfAdjoint y)
-    (h : y ^ 3 = 0) : y = 0 := by
-  have h4 : y ^ 2 * y ^ 2 = 0 := by
-    have he : y ^ 2 * y ^ 2 = y * y ^ 3 := by noncomm_ring
-    rw [he, h, mul_zero]
-  have h2 : y ^ 2 = 0 := by
-    have hn : ‖y ^ 2‖ * ‖y ^ 2‖ = 0 := by
-      rw [← CStarRing.norm_star_mul_self, (hy.pow 2).star_eq, h4, norm_zero]
-    exact norm_eq_zero.mp (by nlinarith [norm_nonneg (y ^ 2)])
-  have hn : ‖y‖ * ‖y‖ = 0 := by
-    rw [← CStarRing.norm_star_mul_self, hy.star_eq, ← sq, h2, norm_zero]
-  exact norm_eq_zero.mp (by nlinarith [norm_nonneg y])
+/-- **29IX** (`injective-miu-iso-on-image`) in the form **30X**'s proof uses
+it: an injective miu-map *reflects* positivity.  The thesis puts it as "`ϱ_Ω`
+restricts to an miu-isomorphism from `𝒜` to `ϱ_Ω(𝒜)`, so in order to prove
+that `a ≥ 0` it suffices to show that `ϱ_Ω(a) ≥ 0`" (cstar.tex:5024).  The
+argument is **17V**'s norm criterion for positivity: `0 ≤ ρ x` gives
+`‖ρ x − t‖ ≤ t` at `t = ‖ρ x‖/2`, and both norms are unchanged by `ρ`
+(**29VIII** `injective_miu_isometry`), so `‖x − t‖ ≤ t` at `t = ‖x‖/2`.
+(`A/CStar/Positive.lean` has the same auxiliary for **20aII**, but private.) -/
+private theorem nonneg_of_injective_miu {ℬ : Type*} [CStarAlgebra ℬ]
+    [PartialOrder ℬ] [StarOrderedRing ℬ] (ρ : 𝒜 →⋆ₐ[ℂ] ℬ)
+    (hρ : Function.Injective ρ) (x : 𝒜) (h : 0 ≤ ρ x) : 0 ≤ x := by
+  have hiso : ∀ y : 𝒜, ‖ρ y‖ = ‖y‖ := injective_miu_isometry ρ hρ
+  have hisa : IsSelfAdjoint (ρ x) := IsSelfAdjoint.of_nonneg h
+  have hsa : IsSelfAdjoint x := hρ (by rw [map_star, hisa.star_eq])
+  have ht' : ‖ρ x‖ / 2 ≤ ‖x‖ / 2 := by rw [hiso]
+  have hfwd : (0 : ℬ) ≤ ρ x ↔
+      ∀ t : ℝ, ‖ρ x‖ / 2 ≤ t → ‖ρ x - algebraMap ℂ ℬ (t : ℂ)‖ ≤ t :=
+    (cstar_positive_tfae (ρ x) hisa).out 3 1
+  have h2 : ‖ρ x - algebraMap ℂ ℬ ((‖x‖ / 2 : ℝ) : ℂ)‖ ≤ ‖x‖ / 2 :=
+    hfwd.mp h (‖x‖ / 2) ht'
+  have h3 : ρ (x - algebraMap ℂ 𝒜 ((‖x‖ / 2 : ℝ) : ℂ))
+      = ρ x - algebraMap ℂ ℬ ((‖x‖ / 2 : ℝ) : ℂ) := by
+    rw [map_sub]
+    congr 1
+    exact AlgHomClass.commutes ρ _
+  rw [← h3, hiso] at h2
+  have hbwd : (∃ t : ℝ, ‖x‖ / 2 ≤ t ∧ ‖x - algebraMap ℂ 𝒜 (t : ℂ)‖ ≤ t) ↔ (0 : 𝒜) ≤ x :=
+    (cstar_positive_tfae x hsa).out 0 3
+  exact hbwd.mp ⟨‖x‖ / 2, le_rfl, h2⟩
 
-/-- Auxiliary (**30X**): conjugating a self-adjoint `x` by its positive part
-gives `(x⁺)³`, and by its negative part gives `-(x⁻)³`. -/
-private theorem conj_by_posPart (x : 𝒜) (hx : IsSelfAdjoint x) :
-    x⁺ * x * x⁺ = x⁺ ^ 3 ∧ x⁻ * x * x⁻ = -(x⁻ ^ 3) := by
-  have hd : x⁺ - x⁻ = x := CFC.posPart_sub_negPart x hx
-  have hpn : x⁺ * x⁻ = 0 := CFC.posPart_mul_negPart x
-  have hnp : x⁻ * x⁺ = 0 := CFC.negPart_mul_posPart x
-  constructor
-  · calc x⁺ * x * x⁺ = x⁺ * (x⁺ - x⁻) * x⁺ := by rw [hd]
-      _ = x⁺ ^ 3 - x⁺ * x⁻ * x⁺ := by noncomm_ring
-      _ = x⁺ ^ 3 := by rw [hpn, zero_mul, sub_zero]
-  · calc x⁻ * x * x⁻ = x⁻ * (x⁺ - x⁻) * x⁻ := by rw [hd]
-      _ = x⁻ * x⁺ * x⁻ - x⁻ ^ 3 := by noncomm_ring
-      _ = -(x⁻ ^ 3) := by rw [hnp, zero_mul, zero_sub]
+/-- `0 ≤ T` in `B(H)` gives `0 ≤ ⟨y, T y⟩` for *every* `y` — **25III**'s easy
+half, without the normalisation `‖y‖ = 1` that `OrderSeparating` carries. -/
+private theorem inner_nonneg_of_nonneg {H : Type*} [NormedAddCommGroup H]
+    [InnerProductSpace ℂ H] [CompleteSpace H] {T : H →L[ℂ] H} (hT : 0 ≤ T) (y : H) :
+    (0 : ℂ) ≤ ⟪y, T y⟫ := by
+  obtain ⟨S, hS⟩ := CStarAlgebra.nonneg_iff_eq_star_mul_self.mp hT
+  rw [hS]
+  simp only [ContinuousLinearMap.star_eq_adjoint, mul_apply_eq_comp,
+    ContinuousLinearMap.adjoint_inner_right]
+  rw [inner_self_eq_norm_sq_to_K]
+  positivity
 
-/-- Auxiliary (**30X**): for a centre separating collection `Ω` of p-maps, a
-self-adjoint `k` with `ω(b* k b) = 0` for all `ω ∈ Ω`, `b ∈ 𝒜` is zero. -/
-private theorem eq_zero_of_centreSeparating {ι : Type v} (ω : ι → (𝒜 →ₗ[ℂ] ℂ))
-    (hc : CentreSeparating (fun i => ω i)) (k : 𝒜) (hk : IsSelfAdjoint k)
-    (H : ∀ (i : ι) (b : 𝒜), ω i (star b * k * b) = 0) : k = 0 := by
-  obtain ⟨hp3, hn3⟩ := conj_by_posPart k hk
-  have hpsa : IsSelfAdjoint (k⁺) := IsSelfAdjoint.of_nonneg (CFC.posPart_nonneg k)
-  have hnsa : IsSelfAdjoint (k⁻) := IsSelfAdjoint.of_nonneg (CFC.negPart_nonneg k)
-  have hp : k⁺ = 0 := by
-    refine eq_zero_of_cube_eq_zero _ hpsa ?_
-    refine (hc (k⁺ ^ 3) (CStarAlgebra.pow_nonneg (CFC.posPart_nonneg k) 3)).mpr ?_
-    intro i b
-    have hrw : star (k⁺ * b) * k * (k⁺ * b) = star b * k⁺ ^ 3 * b := by
-      rw [star_mul, hpsa.star_eq, ← hp3]; noncomm_ring
-    rw [← hrw]
-    exact H i (k⁺ * b)
-  have hn : k⁻ = 0 := by
-    refine eq_zero_of_cube_eq_zero _ hnsa ?_
-    refine (hc (k⁻ ^ 3) (CStarAlgebra.pow_nonneg (CFC.negPart_nonneg k) 3)).mpr ?_
-    intro i b
-    have hrw : star (k⁻ * b) * k * (k⁻ * b) = star b * (k⁻ * k * k⁻) * b := by
-      rw [star_mul, hnsa.star_eq]; noncomm_ring
-    have h0 : ω i (star b * (k⁻ * k * k⁻) * b) = 0 := by
-      rw [← hrw]; exact H i (k⁻ * b)
-    rw [hn3, show star b * -(k⁻ ^ 3) * b = -(star b * k⁻ ^ 3 * b) by noncomm_ring,
-      map_neg, neg_eq_zero] at h0
-    exact h0
-  have hd := CFC.posPart_sub_negPart k hk
-  rw [hp, hn, sub_zero] at hd
-  exact hd.symm
+open PositiveLinearMap in
+/-- The step of **30X**'s proof at cstar.tex:5030–5044: `ϱ_ω(a)` is positive
+as soon as `ω(b* a b) ≥ 0` for every `b`.
 
-/-- Auxiliary (**30X**): for a centre separating collection `Ω` of p-maps, a
-self-adjoint `k` with `ω(b* k b) ≥ 0` for all `ω ∈ Ω`, `b ∈ 𝒜` is positive. -/
-private theorem nonneg_of_centreSeparating {ι : Type v} (ω : ι → (𝒜 →ₗ[ℂ] ℂ))
-    (hpos : ∀ i, IsPositiveMap (ω i)) (hc : CentreSeparating (fun i => ω i))
-    (k : 𝒜) (hk : IsSelfAdjoint k)
-    (H : ∀ (i : ι) (b : 𝒜), (0 : ℂ) ≤ ω i (star b * k * b)) : 0 ≤ k := by
-  obtain ⟨-, hn3⟩ := conj_by_posPart k hk
-  have hnsa : IsSelfAdjoint (k⁻) := IsSelfAdjoint.of_nonneg (CFC.negPart_nonneg k)
-  have hneg3 : (0 : 𝒜) ≤ k⁻ ^ 3 := CStarAlgebra.pow_nonneg (CFC.negPart_nonneg k) 3
-  have hn : k⁻ = 0 := by
-    refine eq_zero_of_cube_eq_zero _ hnsa ?_
-    refine (hc (k⁻ ^ 3) hneg3).mpr ?_
-    intro i b
-    have hle : (0 : ℂ) ≤ ω i (star b * k⁻ ^ 3 * b) :=
-      hpos i _ (star_left_conjugate_nonneg hneg3 b)
-    have hrw : star (k⁻ * b) * k * (k⁻ * b) = -(star b * k⁻ ^ 3 * b) := by
-      rw [star_mul, hnsa.star_eq, ← neg_neg (k⁻ ^ 3), ← hn3]
-      noncomm_ring
-    have hge := H i (k⁻ * b)
-    rw [hrw, map_neg] at hge
-    exact le_antisymm (neg_nonneg.mp hge) hle
-  have hd := CFC.posPart_sub_negPart k hk
-  rw [hn, sub_zero] at hd
-  rw [← hd]
-  exact CFC.posPart_nonneg k
-
-/-- **30X** (`proto-gelfand-naimark`, cstar.tex:4870, Proposition),
-equivalence (2) ↔ (3): a collection `Ω` of p-maps on `𝒜` is centre
-separating iff `Ω' = { ω(b* (·) b) : ω ∈ Ω, b ∈ 𝒜 }` is order separating. -/
-theorem proto_gelfand_naimark_1 {ι : Type v} (ω : ι → (𝒜 →ₗ[ℂ] ℂ))
-    (hpos : ∀ i, IsPositiveMap (ω i)) :
-    CentreSeparating (fun i => ω i) ↔
-      OrderSeparating (fun p : ι × 𝒜 => (ω p.1).comp (conjMap 𝒜 p.2)) := by
-  have hconj : ∀ (i : ι) (b x : 𝒜),
-      ((ω i).comp (conjMap 𝒜 b)) x = ω i (star b * x * b) := by
-    intro i b x
-    show ω i (star b * (x * b)) = ω i (star b * x * b)
-    rw [mul_assoc]
-  constructor
-  · intro hc a
-    refine ⟨fun ha p => ?_, fun H => ?_⟩
-    · simp only [hconj]
-      exact hpos p.1 _ (star_left_conjugate_nonneg ha p.2)
-    · have Hb : ∀ (i : ι) (b : 𝒜), (0 : ℂ) ≤ ω i (star b * a * b) := by
-        intro i b
-        have h := H (i, b)
-        simpa only [hconj] using h
-      have hsa : IsSelfAdjoint a := by
-        have hk : IsSelfAdjoint (Complex.I • (star a - a)) := by
-          show star (Complex.I • (star a - a)) = Complex.I • (star a - a)
-          rw [star_smul, star_sub, star_star, Complex.star_def, Complex.conj_I, neg_smul,
-            ← smul_neg, neg_sub]
-        have hzero : ∀ (i : ι) (b : 𝒜),
-            ω i (star b * (Complex.I • (star a - a)) * b) = 0 := by
-          intro i b
-          have h1 : star (ω i (star b * a * b)) = ω i (star b * a * b) :=
-            IsSelfAdjoint.of_nonneg (Hb i b)
-          have h2 : ω i (star (star b * a * b)) = star (ω i (star b * a * b)) :=
-            cstar_p_implies_i (ω i) (hpos i) _
-          have h3 : star (star b * a * b) = star b * star a * b := by
-            rw [star_mul, star_mul, star_star]; noncomm_ring
-          rw [h3, h1] at h2
-          have h4 : star b * (Complex.I • (star a - a)) * b
-              = Complex.I • (star b * star a * b - star b * a * b) := by
-            rw [mul_smul_comm, smul_mul_assoc, mul_sub, sub_mul]
-          rw [h4, map_smul, map_sub, h2, sub_self, smul_zero]
-        have hk0 := eq_zero_of_centreSeparating ω hc _ hk hzero
-        have h5 : star a - a = 0 := by
-          have h6 := congrArg (fun z : 𝒜 => (Complex.I⁻¹ : ℂ) • z) hk0
-          simpa [smul_smul, inv_mul_cancel₀ Complex.I_ne_zero] using h6
-        exact sub_eq_zero.mp h5
-      exact nonneg_of_centreSeparating ω hpos hc a hsa Hb
-  · intro ho a ha
-    refine ⟨fun h i b => by rw [h]; simp, fun H => ?_⟩
-    have h1 : (0 : 𝒜) ≤ -a := by
-      refine (ho (-a)).mpr fun p => ?_
-      simp only [hconj]
-      rw [show star p.2 * (-a) * p.2 = -(star p.2 * a * p.2) by noncomm_ring, map_neg,
-        H p.1 p.2, neg_zero]
-    exact le_antisymm (neg_nonneg.mp h1) ha
+"Since the vector states on `ℋ_ω` are order separating by **30XIII**, it
+suffices to show that `⟨x, ϱ_ω(a)x⟩ ≥ 0` for given `x ∈ ℋ_ω`.  Since
+`{η_ω(b) : b ∈ 𝒜}` is dense in `ℋ_ω`, we only need to prove that
+`0 ≤ ⟨η_ω(b), ϱ_ω(a) η_ω(b)⟩ ≡ ω(b* a b)` for given `b ∈ 𝒜`, but this is true
+by assumption." -/
+private theorem gnsStarAlgHom_nonneg (f : 𝒜 →ₚ[ℂ] ℂ) (a : 𝒜)
+    (h : ∀ b : 𝒜, (0 : ℂ) ≤ f (star b * a * b)) : 0 ≤ f.gnsStarAlgHom a := by
+  set T : f.GNS →L[ℂ] f.GNS := f.gnsStarAlgHom a with hT
+  -- `{x : 0 ≤ ⟨x, T x⟩}` is closed …
+  have hclosed : IsClosed {x : f.GNS | (0 : ℂ) ≤ ⟪x, T x⟫} := by
+    have hcont : Continuous fun x : f.GNS => (⟪x, T x⟫ : ℂ) :=
+      continuous_inner.comp (continuous_id.prodMk T.continuous)
+    exact isClosed_le continuous_const hcont
+  -- … and contains every `η_ω(b)`, where `⟨η_ω(b), T η_ω(b)⟩ = ω(b* a b)`
+  have hsub : ∀ b : 𝒜,
+      ((f.toPreGNS b : f.PreGNS) : f.GNS) ∈ {x : f.GNS | (0 : ℂ) ≤ ⟪x, T x⟫} := by
+    intro b
+    show (0 : ℂ) ≤ ⟪((f.toPreGNS b : f.PreGNS) : f.GNS), T _⟫
+    rw [hT, gns_starAlgHom_apply, UniformSpace.Completion.inner_coe, f.preGNS_inner_def,
+      f.ofPreGNS_toPreGNS, f.ofPreGNS_toPreGNS, ← mul_assoc]
+    exact h b
+  have hall : ∀ x : f.GNS, (0 : ℂ) ≤ ⟪x, T x⟫ := by
+    have hd : DenseRange (fun b : 𝒜 => ((f.toPreGNS b : f.PreGNS) : f.GNS)) := by
+      have hsurj : Function.Surjective (fun b : 𝒜 => (f.toPreGNS b : f.PreGNS)) :=
+        f.toPreGNS.surjective
+      simpa [DenseRange, Set.range_comp'] using
+        (UniformSpace.Completion.denseRange_coe (α := f.PreGNS))
+    intro x
+    exact hclosed.closure_subset_iff.mpr (Set.range_subset_iff.mpr hsub) (hd x)
+  -- **30XIII**: the vector states of `B(ℋ_ω)` are order separating
+  exact (hilb_vector_states_order_separating (H := f.GNS) T).mpr fun x => hall (x : f.GNS)
 
 /-! ### **30IX** `ϱ_Ω`: the Hilbert direct sum of a family of representations
 
@@ -2071,30 +2008,37 @@ theorem dsumRep_eq_zero_iff (a : 𝒜) : dsumRep ρ a = 0 ↔ ∀ i, ρ i a = 0 
     rw [dsumRep_apply, h i]
     simp
 
+/-- `ϱ_Ω(a)` is positive as soon as every `ϱ_ω(a)` is: by **25III** it is
+enough that `⟨x, ϱ_Ω(a)x⟩ = ∑_ω ⟨x(ω), ϱ_ω(a)x(ω)⟩ ≥ 0`, and every summand
+is. -/
+private theorem dsumRep_nonneg (a : 𝒜) (h : ∀ i, 0 ≤ ρ i a) : 0 ≤ dsumRep ρ a := by
+  refine (hilb_vector_states_order_separating (H := lp G 2) _).mpr ?_
+  intro x
+  show (0 : ℂ) ≤ ⟪(x : lp G 2), dsumRep ρ a (x : lp G 2)⟫
+  rw [lp.inner_eq_tsum]
+  refine tsum_nonneg fun i => ?_
+  rw [dsumRep_apply]
+  exact inner_nonneg_of_nonneg (h i) _
+
 end DirectSum
 
-/-- **30X** (`proto-gelfand-naimark`, cstar.tex:4870, Proposition),
-(2) ⇒ (1) and final claim: if `Ω` is centre separating then `ϱ_Ω` is
-injective, so `𝒜` is miu-isomorphic to a C*-algebra of bounded operators on
-the Hilbert space `ℋ_Ω` (by **29IX**).  Stated existentially. -/
-theorem proto_gelfand_naimark_2 {ι : Type v} (ω : ι → (𝒜 →ₗ[ℂ] ℂ))
-    (hpos : ∀ i, IsPositiveMap (ω i))
-    (hc : CentreSeparating (fun i => ω i)) :
-    ∃ (H : Type (max u v)) (_ : NormedAddCommGroup H)
-      (_ : InnerProductSpace ℂ H) (_ : CompleteSpace H)
-      (ρ : 𝒜 →⋆ₐ[ℂ] (H →L[ℂ] H)), Function.Injective ρ := by
-  classical
-  -- `ℋ_Ω = ⊕_{ω∈Ω} ℋ_ω` and `ϱ_Ω` (**30IX**), from the block above
-  set f : ι → (𝒜 →ₚ[ℂ] ℂ) := fun i => toPLM (ω i) (hpos i) with hf
-  refine ⟨lp (fun i => (f i).GNS) 2, inferInstance, inferInstance, inferInstance,
-    dsumRep (fun i => (f i).gnsStarAlgHom), ?_⟩
-  -- the thesis's argument (cstar.tex 300.120): `ϱ_Ω(a) = 0` forces
-  -- `‖ab‖_ω = 0` for every `b` and `ω`, and centre separation turns that into
-  -- `a* a = 0`, hence `a = 0`.
+/-- **30X** (`proto-gelfand-naimark`, cstar.tex:4977, Proposition),
+(2) ⇒ (1) — the argument of cstar.tex:5002 in the form the rest of the
+Proposition uses it: if `Ω` is centre separating then `ϱ_Ω` itself is
+injective.
+
+"Let `a ∈ 𝒜` with `ϱ_Ω(a) = 0` be given.  We must show that `a = 0`, and for
+this it is enough to prove that `a* a = 0`.  Let `b ∈ 𝒜` and `ω ∈ Ω` be given.
+Since `Ω` is centre separating, it suffices to show that
+`0 = ω(b* a* a b) ≡ ‖ab‖²_ω`.  Since `ϱ_Ω(a) = 0`, we have `ϱ_ω(a) = 0`, thus
+`0 = ϱ_ω(a) η_ω(b) = η_ω(ab)`, and so `‖ab‖_ω = 0`." -/
+private theorem dsumRep_gns_injective {ι : Type v} (f : ι → (𝒜 →ₚ[ℂ] ℂ))
+    (hc : ∀ x : 𝒜, 0 ≤ x → (x = 0 ↔ ∀ (i : ι) (b : 𝒜), f i (star b * x * b) = 0)) :
+    Function.Injective (dsumRep (fun i => (f i).gnsStarAlgHom)) := by
   have key : ∀ a : 𝒜, dsumRep (fun i => (f i).gnsStarAlgHom) a = 0 → a = 0 := by
     intro a ha
     have h0 : ∀ i, (f i).gnsStarAlgHom a = 0 := (dsumRep_eq_zero_iff _ a).mp ha
-    have hzero : ∀ (i : ι) (b : 𝒜), ω i (star b * (star a * a) * b) = 0 := by
+    have hzero : ∀ (i : ι) (b : 𝒜), f i (star b * (star a * a) * b) = 0 := by
       intro i b
       -- `0 = ϱ_ω(a) η_ω(b) = η_ω(ab)`
       have h1 : ((((f i).toPreGNS (a * b) : (f i).PreGNS) : (f i).GNS)) = 0 := by
@@ -2107,15 +2051,73 @@ theorem proto_gelfand_naimark_2 {ι : Type v} (ω : ι → (𝒜 →ₗ[ℂ] ℂ
       rw [h2] at h3
       have h4 : star (a * b) * (a * b) = star b * (star a * a) * b := by
         rw [star_mul]; noncomm_ring
-      have h5 : f i (star (a * b) * (a * b)) = ω i (star (a * b) * (a * b)) := rfl
-      rw [← h4, ← h5]
+      rw [← h4]
       simpa using h3.symm
-    have hsa : IsSelfAdjoint (star a * a) := IsSelfAdjoint.star_mul_self a
-    have hk := eq_zero_of_centreSeparating ω hc _ hsa hzero
+    -- centre separation, applied to the positive element `a* a`
+    have hk : star a * a = 0 := (hc _ (star_mul_self_nonneg a)).mpr hzero
     have hn : ‖a‖ * ‖a‖ = 0 := by rw [← CStarRing.norm_star_mul_self, hk, norm_zero]
     exact norm_eq_zero.mp (by nlinarith [norm_nonneg a])
   intro x y hxy
   exact sub_eq_zero.mp (key (x - y) (by rw [map_sub, hxy, sub_self]))
+
+/-- **30X** (`proto-gelfand-naimark`, cstar.tex:4977, Proposition),
+(2) ⇒ (1) and final claim: if `Ω` is centre separating then `ϱ_Ω` is
+injective, so `𝒜` is miu-isomorphic to a C*-algebra of bounded operators on
+the Hilbert space `ℋ_Ω` (by **29IX**).  Stated existentially. -/
+theorem proto_gelfand_naimark_2 {ι : Type v} (ω : ι → (𝒜 →ₗ[ℂ] ℂ))
+    (hpos : ∀ i, IsPositiveMap (ω i))
+    (hc : CentreSeparating (fun i => ω i)) :
+    ∃ (H : Type (max u v)) (_ : NormedAddCommGroup H)
+      (_ : InnerProductSpace ℂ H) (_ : CompleteSpace H)
+      (ρ : 𝒜 →⋆ₐ[ℂ] (H →L[ℂ] H)), Function.Injective ρ :=
+  -- `ℋ_Ω = ⊕_{ω∈Ω} ℋ_ω` and `ϱ_Ω` (**30IX**), from the block above
+  ⟨lp (fun i => (toPLM (ω i) (hpos i)).GNS) 2, inferInstance, inferInstance,
+    inferInstance, _, dsumRep_gns_injective (fun i => toPLM (ω i) (hpos i)) hc⟩
+
+/-- **30X** (`proto-gelfand-naimark`, cstar.tex:4977, Proposition),
+equivalence (2) ↔ (3): a collection `Ω` of p-maps on `𝒜` is centre
+separating iff `Ω' = { ω(b* (·) b) : ω ∈ Ω, b ∈ 𝒜 }` is order separating.
+
+*Class 1 — faithful.*  Both directions are the Proposition's own proof.
+"It is clear that (3) entails (2)" is the second bullet.  For (2) ⇒ (3) the
+thesis goes through (1): `ϱ_Ω` is injective by cstar.tex:5002
+(`dsumRep_gns_injective`), and then cstar.tex:5018 — by **29IX** it suffices
+that `ϱ_Ω(a) ≥ 0` (`nonneg_of_injective_miu`), which holds because each
+`ϱ_ω(a) ≥ 0` (`gnsStarAlgHom_nonneg`, by **30XIII** and the density of
+`{η_ω(b)}` in `ℋ_ω`).  In particular the self-adjointness of `a` is not
+established by hand: it comes free with the positivity of `ϱ_Ω(a)`. -/
+theorem proto_gelfand_naimark_1 {ι : Type v} (ω : ι → (𝒜 →ₗ[ℂ] ℂ))
+    (hpos : ∀ i, IsPositiveMap (ω i)) :
+    CentreSeparating (fun i => ω i) ↔
+      OrderSeparating (fun p : ι × 𝒜 => (ω p.1).comp (conjMap 𝒜 p.2)) := by
+  have hconj : ∀ (i : ι) (b x : 𝒜),
+      ((ω i).comp (conjMap 𝒜 b)) x = ω i (star b * x * b) := by
+    intro i b x
+    show ω i (star b * (x * b)) = ω i (star b * x * b)
+    rw [mul_assoc]
+  constructor
+  · intro hc a
+    refine ⟨fun ha p => ?_, fun H => ?_⟩
+    · simp only [hconj]
+      exact hpos p.1 _ (star_left_conjugate_nonneg ha p.2)
+    · have Hb : ∀ (i : ι) (b : 𝒜), (0 : ℂ) ≤ ω i (star b * a * b) := by
+        intro i b
+        simpa only [hconj] using H (i, b)
+      -- every `ϱ_ω(a)` is positive (cstar.tex:5030)
+      have hcoord : ∀ i, 0 ≤ (toPLM (ω i) (hpos i)).gnsStarAlgHom a :=
+        fun i => gnsStarAlgHom_nonneg _ a fun b => Hb i b
+      -- hence so is `ϱ_Ω(a)`; and `ϱ_Ω` is injective, so it reflects positivity
+      exact nonneg_of_injective_miu _
+        (dsumRep_gns_injective (fun i => toPLM (ω i) (hpos i)) hc) a
+        (dsumRep_nonneg _ a hcoord)
+  · intro ho a ha
+    refine ⟨fun h i b => by rw [h]; simp, fun H => ?_⟩
+    have h1 : (0 : 𝒜) ≤ -a := by
+      refine (ho (-a)).mpr fun p => ?_
+      simp only [hconj]
+      rw [show star p.2 * (-a) * p.2 = -(star p.2 * a * p.2) by noncomm_ring, map_neg,
+        H p.1 p.2, neg_zero]
+    exact le_antisymm (neg_nonneg.mp h1) ha
 
 end GNS
 
