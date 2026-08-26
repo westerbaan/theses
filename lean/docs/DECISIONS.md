@@ -42,7 +42,7 @@ in §4 rather than in front of you.
 | 2.6 | 51IX | may `q` be asked to be ℂ-linear? | 1 audit row | (a) yes |
 | 2.7 | 180V | should the effect object be pinned? | 1 audit row | (a) yes |
 | 3.1 | 101VII.1 | does the middle clause gain `aqa* ≤ p`? | nothing | (a) yes — erratum |
-| 3.2 | 132III.4 | may "=" be an equivalence of categories? | nothing | (b) reword |
+| 3.2 | 132III.4/.5, 123II.2 | may "=" be an equivalence of categories? | nothing | (b) reword |
 | 3.3 | 34V.3 | mirrored cp condition for modules? | nothing | (b) not yet |
 | 3.4 | 98VI | replace the hint or turn it round? | nothing | (a) replace |
 | 3.5 | 34VI.1 | the solution slot is an empty `\TODO{}` | nothing | your call |
@@ -733,9 +733,21 @@ proved (`vn_smc_pentagon`, `vn_smc_triangle`, `vn_smc_unitors_agree`,
 category of von Neumann algebras and ncpsu-maps, and the one that exists
 (`WStarCPSU`) belongs to thesis B, so `A/Proc` cannot import it.
 **132III.5's first half** `Mon(W*_miu) ≅ dW*_miu` is blocked on exactly the same
-packaging; its second half `dW*_miu ≃ Set^op` is proved (`dupEquivSetOp`).  If
-the answer is (b), both should be recorded as deliberately unstated rather than
-as open work.
+packaging; its second half `dW*_miu ≃ Set^op` is proved (`dupEquivSetOp`).
+
+A **third** clause hangs on this same ruling, added by the A/Proc statement pass
+of 2026-08-26: **123II.2's parenthetical** "(This makes `nsp` strong monoidal.)"
+(proc.tex:4688).  The part's own claim — that `(σ,τ) ↦ σ ⊗ τ` is a bijection
+`nsp(𝒜) × nsp(ℬ) → nsp(𝒜 ⊗ ℬ)` — is proved (`nsp_tensor_2_bijection`), and
+`nsp` is a functor in the tree (`nspFunctor : WMIUᵒᵖ ⥤ Type u`); `Type u` is
+already a `MonoidalCategory` in Mathlib.  The only thing missing is again
+`MonoidalCategory WMIUᵒᵖ`.  Stating strong monoidality *concretely* instead —
+naturality of the bijection in `𝒜` and `ℬ`, plus compatibility with the
+associators and unitors — would add statements the thesis never displays, which
+is the same choice (a)/(b) as above.
+
+If the answer is (b), all three clauses should be recorded as deliberately
+unstated rather than as open work.
 
 ### 3.3 — 34V.3 in the module setting: is the mirrored cp condition wanted?
 

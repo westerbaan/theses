@@ -949,23 +949,28 @@ theorem corner_vna_basic_5 (e : A) [Fact (IsStarProjection e)]
 
 /-- **94II** (`corner-vna-basic`, proc.tex:194, Exercise), part 6, **both**
 clauses: the supremum in `A` of a bounded directed set `D` of self-adjoint
-elements of the corner `e𝒜e` lies again in `e𝒜e`, **and is the supremum of
-`D` in `e𝒜e`** — i.e. whenever `D` is the image of a set `D'` of
-self-adjoint elements of `Corner A e`, the supremum of `D'` computed in the
-corner is that same element.
+elements of the corner `e𝒜e` lies again in `e𝒜e`, **and is, in fact, the
+supremum of `D` in `e𝒜e`** — i.e. whenever `D` is the image of a set `D'`
+of self-adjoint elements of `Corner A e`, that same element, read in the
+corner, *is* the least upper bound of `D'` there.
 
 (The second clause used to be left to the `VonNeumannAlgebra (Corner A e)`
 instance at `Corner.isLUB_saMap_image` above, which does produce the
 ambient supremum as the supremum in the corner; the DISP-tagged statement
-did not say it.) -/
+did not say it.  It was then stated only in the conditional form "*any*
+least upper bound of `D'` in the corner equals the ambient supremum", which
+is weaker than the point: the point asserts that the ambient supremum *is*
+the supremum in `e𝒜e`, and the conditional form is silent when `D'` has no
+least upper bound in the corner at all.  The conditional form follows from
+this one by `IsLUB.unique`.) -/
 theorem corner_vna_basic_6 [VonNeumannAlgebra A] (e : A)
     [Fact (IsStarProjection e)] (he : IsStarProjection e) (D : Set (selfAdjoint A))
     (hD : ∀ d ∈ D, (d : A) ∈ cornerSet A e)
     (h : D.Nonempty ∧ DirectedOn (· ≤ ·) D ∧ BddAbove D) :
     (dirSup D h : A) ∈ cornerSet A e ∧
-      ∀ (D' : Set (selfAdjoint (Corner A e))) (s' : selfAdjoint (Corner A e)),
-        Corner.saMap '' D' = D → IsLUB D' s' →
-          (s' : Corner A e).val = (dirSup D h : A) := by
+      ∀ D' : Set (selfAdjoint (Corner A e)), Corner.saMap '' D' = D →
+        ∃ s' : selfAdjoint (Corner A e),
+          (s' : Corner A e).val = (dirSup D h : A) ∧ IsLUB D' s' := by
   -- first clause: `e(·)e` is normal (44VIII), so it sends `⋁D` to `⋁ eDe = ⋁D`
   have hmem : (dirSup D h : A) ∈ cornerSet A e :=
     isLUB_mem_cornerSet e he D (dirSup D h) hD h.1 h.2.1 (isLUB_dirSup D h)
@@ -973,18 +978,18 @@ theorem corner_vna_basic_6 [VonNeumannAlgebra A] (e : A)
   -- second clause: the order of `e𝒜e` is that of `𝒜` (part 5), so the
   -- ambient supremum — which the first clause puts in the corner — is an
   -- upper bound of `D'` there, and any upper bound of `D'` in the corner is
-  -- one of `D` in `𝒜`
-  rintro D' s' rfl hlub
+  -- one of `D` in `𝒜`, so the ambient supremum is below it
+  rintro D' rfl
   set t : selfAdjoint A := dirSup (Corner.saMap '' D') h with ht
   have hlubA : IsLUB (Corner.saMap '' D') t := isLUB_dirSup _ h
   have htsa : IsSelfAdjoint (⟨(t : A), hmem⟩ : Corner A e) := Corner.val_injective t.2
-  have hub' : (⟨⟨(t : A), hmem⟩, htsa⟩ : selfAdjoint (Corner A e)) ∈ upperBounds D' :=
-    fun x hx => hlubA.1 ⟨x, hx, rfl⟩
-  have h2 : t ≤ Corner.saMap s' := by
-    refine hlubA.2 ?_
-    rintro _ ⟨x, hx, rfl⟩
-    exact hlub.1 hx
-  exact le_antisymm (hlub.2 hub') h2
+  refine ⟨⟨⟨(t : A), hmem⟩, htsa⟩, rfl, ?_, ?_⟩
+  · exact fun x hx => hlubA.1 ⟨x, hx, rfl⟩
+  · intro u hu
+    have hub : Corner.saMap u ∈ upperBounds (Corner.saMap '' D') := by
+      rintro _ ⟨x, hx, rfl⟩
+      exact hu hx
+    exact hlubA.2 hub
 
 namespace Corner
 
