@@ -17,16 +17,18 @@ descriptions (parsecs 1251–1255).
   existence (`Nonempty _`) is the content of the theorems — a concrete
   rendering of "the inclusion/`(-) ⊗ 𝒜` has a left adjoint", per the
   conversion policy's allowance for concrete phrasings of categorical
-  statements.  Three of the four are **proved**: 124III
-  `second_adjunction` (`Nonempty (FreeMIU 𝒜)`), 125bII
-  `ha_second_adjunction` (`Nonempty (HaFreeMIU 𝒜)`) and 125dII
-  `ha_tensor_closed` (`Nonempty (HaFreeExp ℬ 𝒜)`).  Only 125VIII
-  `tensor_closed` (`Nonempty (FreeExp ℬ 𝒜)`) is still `sorry`; its two
-  former blockers, 121II `intersection_tensor` and 125IV
-  `equaliser_lemma`, are now both proved (the first from
-  `A/Proc/CommutationTheorem.lean`'s `intersection_tensor'`, the second at
-  the end of this file), so what is left of 125VIII is 125VI
-  `tensor_equalisers`.
+  statements.  All four are **proved**: 124III `second_adjunction`
+  (`Nonempty (FreeMIU 𝒜)`), 125bII `ha_second_adjunction`
+  (`Nonempty (HaFreeMIU 𝒜)`), 125dII `ha_tensor_closed`
+  (`Nonempty (HaFreeExp ℬ 𝒜)`) and 125VIII `tensor_closed`
+  (`Nonempty (FreeExp ℬ 𝒜)`).  125VIII was the last to close: its blockers
+  were 121II `intersection_tensor` (now from
+  `A/Proc/CommutationTheorem.lean`'s `intersection_tensor'`) and 125IV
+  `equaliser_lemma`, and through 125VI `tensor_equalisers` and 125VIIb
+  `tensor_preimage` those are what it runs on.  Because they consume 125IV,
+  **125VI, 125VIIb, 125VIII, 125eIIa and 125eIII are stated at the very end
+  of this file**, after `equaliser_lemma`, rather than at their places in
+  parsecs 1250 and 1255.
 * `HereditarilyAtomic` is reused from `Theses/A/VN/Division.lean`.
   Matrix algebras are `MatAlg n = CStarMatrix (Fin n) (Fin n) ℂ`; in the
   concrete descriptions (125cIII, 125eVII) the summands are rendered as
@@ -2035,15 +2037,9 @@ def IsNMIUEqualizer {E : Type u} [CStarAlgebra E] [PartialOrder E]
       [StarOrderedRing D'] [VonNeumannAlgebra D'] (h : NMIUMap D' A),
       (∀ d, f (h d) = g (h d)) → ∃! k : NMIUMap D' E, ∀ d, h d = e (k d)
 
-/-- **125VI** (`tensor-equalisers`, proc.tex:4972, Proposition): if `e` is
-an equaliser of nmiu-maps `f, g : 𝒜 → ℬ`, then `e ⊗ id_𝒞` is an
-equaliser of `f ⊗ id` and `g ⊗ id`. -/
-theorem tensor_equalisers [VonNeumannAlgebra A] [VonNeumannAlgebra B]
-    [VonNeumannAlgebra C] {E : Type u} [CStarAlgebra E] [PartialOrder E]
-    [StarOrderedRing E] [VonNeumannAlgebra E] (f g : NMIUMap A B)
-    (e : NMIUMap E A) (he : IsNMIUEqualizer f g e) :
-    IsNMIUEqualizer (tmapM f (nmiuId C)) (tmapM g (nmiuId C))
-      (tmapM e (nmiuId C)) := sorry
+/- **125VI** (`tensor-equalisers`, proc.tex:4972, Proposition) is
+`tensor_equalisers`, at the very end of this file: its proof consumes 125IV
+`equaliser_lemma`, which is stated there. -/
 
 section TensorSub
 
@@ -2060,14 +2056,9 @@ def tensorSub (S : StarSubalgebra ℂ ℬ) : StarSubalgebra ℂ (VNT ℬ 𝒜) :
 
 end TensorSub
 
-/-- **125VIIb** (`tensor-preimage`, proc.tex:5025, Exercise): for an
-nmiu-map `ρ : ℬ → 𝒞` and a von Neumann subalgebra `𝒮 ⊆ 𝒞`,
-`(ρ ⊗ id_𝒜)⁻¹(𝒮 ⊗ 𝒜) = ρ⁻¹(𝒮) ⊗ 𝒜`. -/
-theorem tensor_preimage [VonNeumannAlgebra A] [VonNeumannAlgebra B]
-    [VonNeumannAlgebra C] (ρ : NMIUMap B C) (S : StarSubalgebra ℂ C)
-    (hS : IsVNSubalgebra C S) :
-    ⇑(tmapM ρ (nmiuId A)) ⁻¹' (tensorSub A S : Set (VNT C A)) =
-      (tensorSub A (S.comap ρ.toStarAlgHom) : Set (VNT B A)) := sorry
+/- **125VIIb** (`tensor-preimage`, proc.tex:5025, Exercise) is
+`tensor_preimage`, at the very end of this file: its proof consumes the
+slice-map property, i.e. 121II, through `EqL`'s `mem_tensorSub_of_image`. -/
 
 /-- **125VIII** (`tensor-closed`, proc.tex:5048, Theorem (Kornell)),
 bundled: a universal arrow witnessing the free exponential: an object
@@ -2091,11 +2082,9 @@ structure FreeExp (ℬ 𝒜 : Type u)
 
 attribute [instance] FreeExp.cstar FreeExp.po FreeExp.sor FreeExp.vna
 
-/-- **125VIII** (`tensor-closed`, proc.tex:5048, Theorem (Kornell)): the
-functor `(·) ⊗ 𝒜 : W*_miu → W*_miu` has a left adjoint `(·)^{*𝒜}` —
-rendered: every `ℬ` has a universal arrow `ℬ → ℬ^{*𝒜} ⊗ 𝒜`. -/
-theorem tensor_closed [VonNeumannAlgebra A] [VonNeumannAlgebra B] :
-    Nonempty (FreeExp B A) := sorry
+/- **125VIII** (`tensor-closed`, proc.tex:5048, Theorem (Kornell)) is
+`tensor_closed`, at the very end of this file: its proof consumes 125IV
+`equaliser_lemma`. -/
 
 /- **125X** (`cstar-no-model`, proc.tex:5105, Remark): no analogous free
 exponential exists for C*-algebras — remark, not converted. -/
@@ -3532,8 +3521,8 @@ von Neumann subalgebra — `IsVNSubalgebra` only carries norm closedness).
 slice-map property, and `haTensorPreimage`/`haTensorBSurj` are the private
 ha forms of **125VIIb** `tensor_preimage` and **125eIII**
 `tensorBsurjectivity`.  They do *not* close those two statements, which are
-stated for arbitrary second factors and remain blocked on the commutation
-theorem (PROVING-LOG, session 83). -/
+stated for arbitrary second factors; the general versions are at the end of
+this file, and go through the commutation theorem. -/
 
 /-- Monotonicity of the finite partial sums `∑_{j∈F} κⱼ(1)`. -/
 private theorem lpSumSA_mono {I : Type*} {𝒜 : I → Type*} [∀ i, CStarAlgebra (𝒜 i)]
@@ -5526,8 +5515,9 @@ I** tensored factor `ℬ ≅ ⊕ⱼ B(𝒦ⱼ)`: `(ρ ⊗ ℬ) ∘ s` is `(·) �
 iff `ρ` is surjective.
 
 The `→` half is `tensorBsurjectivity`'s own (it needs neither `hs` nor
-atomicity); the `←` half is the one still `sorry` in general, and this is
-the atomic type I case of it. -/
+atomicity); this is the atomic type I case of the `←` half, which was the
+one open at the time and is now proved in general at the end of this file
+(`tensorBsurjectivity`), from 125VIIb `tensor_preimage`. -/
 theorem atomicTypeI_tensorBsurjectivity [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     [VonNeumannAlgebra C] [VonNeumannAlgebra D] (R : AtomicTypeIRep B)
     (s : NMIUMap A (VNT C B)) (hs : TensorBSurjective s) (ρ : NMIUMap C D) :
@@ -5566,8 +5556,7 @@ variable {X : Type u} [CStarAlgebra X] [PartialOrder X] [StarOrderedRing X]
 /-- **The ha form of 125eIII** (`tensorBsurjectivity`), the easy half:
 if `(ρ ⊗ 𝒜) ∘ s` is `(·) ⊗ 𝒜`-surjective then `ρ` is surjective.
 
-Two things about this one, both found by the 2026-08-22 dead-limb sweep and
-both worth knowing to whoever attacks the general 125eIII (still `sorry`).
+Two things about this one, both found by the 2026-08-22 dead-limb sweep.
 It has **no consumer**: the 125eVII assembly needs the four algebras in four
 universes and so uses the twin `surj_of_haTensorBSurj2` below instead, which
 supersedes it.  And the proof uses **nothing** about hereditary atomicity —
@@ -5756,60 +5745,11 @@ private theorem haFreeExp_unit_tensorBSurjective {Aa Bb2 : Type u}
 
 end HaSliceBSurj
 
-/-- **125eIIa** (`tensor-map-factorisation`, proc.tex:5569): for any
-nmiu-map `s : 𝒜 → 𝒞 ⊗ ℬ` there is a von Neumann subalgebra
-`𝒞̃ ⊆ 𝒞` with `s(𝒜) ⊆ 𝒞̃ ⊗ ℬ` such that the restriction of `s` to
-`𝒜 → 𝒞̃ ⊗ ℬ` is `(·) ⊗ ℬ`-surjective. -/
-theorem tensor_map_factorisation [VonNeumannAlgebra A]
-    [VonNeumannAlgebra B] [VonNeumannAlgebra C]
-    (s : NMIUMap A (VNT C B)) :
-    ∃ (S : StarSubalgebra ℂ C) (hS : IsVNSubalgebra C S),
-      Set.range ⇑s ⊆ (tensorSub B S : Set (VNT C B)) ∧
-      ∃ (ι : NMIUMap (VNSub C S hS) C)
-        (st : NMIUMap A (VNT (VNSub C S hS) B)),
-        (∀ x, ι x = x.val) ∧
-        (∀ a : A, s a = tmapM ι (nmiuId B) (st a)) ∧
-        TensorBSurjective st := sorry
+/- **125eIIa** (`tensor-map-factorisation`, proc.tex:5569) is
+`tensor_map_factorisation`, at the very end of this file, and **125eIII**
+(`tensorBsurjectivity`, proc.tex:5580) is `tensorBsurjectivity` there: both
+consume the slice-map property, i.e. 121II. -/
 
-/-- **125eIII** (`tensorBsurjectivity`, proc.tex:5580, Lemma): given a
-`(·) ⊗ ℬ`-surjective nmiu-map `s : 𝒜 → 𝒞 ⊗ ℬ` and an nmiu-map
-`ρ : 𝒞 → 𝒟`, the composite `(ρ ⊗ ℬ) ∘ s` is `(·) ⊗ ℬ`-surjective iff
-`ρ` is surjective.
-
-**The two halves are not equally hard, and only one of them is open.**
-
-`mp` is proved below, in full generality, and needs neither `hs` nor
-hereditary atomicity: it is proc.tex:5620's argument that
-`range(ρ ⊗ ℬ) = ρ(𝒞) ⊗ ℬ`, which is `tmapM_range_le` applied to each
-`s a`, followed by `(·) ⊗ ℬ`-surjectivity of the composite at the von
-Neumann subalgebra `ρ(𝒞)` — an algebra by 69IVb `nmiu_image`.  So the
-composite being surjective forces `ρ(𝒞) = ⊤`.
-
-`mpr` is proc.tex:5600 and is the hard half: it needs **125VIIb**
-`tensor_preimage`, hence Tomiyama's slice-map property, hence the
-commutation theorem — see the 121II `intersection_tensor` docstring.
-The hereditarily atomic case IS proved, as `haTensorBSurj` above, where
-`haTensorPreimage` supplies the slice-map property from the matrix units;
-that is the only ingredient missing here. -/
-theorem tensorBsurjectivity [VonNeumannAlgebra A] [VonNeumannAlgebra B]
-    [VonNeumannAlgebra C] [VonNeumannAlgebra D]
-    (s : NMIUMap A (VNT C B)) (hs : TensorBSurjective s)
-    (ρ : NMIUMap C D) :
-    TensorBSurjective (nmiuComp (tmapM ρ (nmiuId B)) s) ↔
-      Function.Surjective ⇑ρ := by
-  refine ⟨fun hcomp => ?_, fun hρ => ?_⟩
-  · -- **proc.tex:5620**, and it uses neither `hs` nor atomicity.
-    have hrange : Set.range ⇑(nmiuComp (tmapM ρ (nmiuId B)) s)
-        ⊆ ((tensorSub B ρ.toStarAlgHom.range : StarSubalgebra ℂ (VNT D B)) :
-          Set (VNT D B)) := by
-      rintro _ ⟨a, rfl⟩
-      exact tmapM_range_le ρ (s a)
-    have htop := hcomp ρ.toStarAlgHom.range (nmiu_image ρ) hrange
-    intro d
-    have hd : d ∈ ρ.toStarAlgHom.range := by rw [htop]; trivial
-    exact hd
-  · -- **proc.tex:5600**: blocked on 125VIIb `tensor_preimage`.
-    sorry
 
 /-- **125eVI** (proc.tex:5630, Definition): two nmiu-maps
 `f₁ : 𝒜 → M_{n₁} ⊗ ℬ`, `f₂ : 𝒜 → M_{n₂} ⊗ ℬ` are
@@ -7476,6 +7416,701 @@ theorem equaliser_lemma [VonNeumannAlgebra A] [VonNeumannAlgebra C]
           ∀ x : VNSub A S hS, f (ι x) = g (ι x) :=
   equaliser_lemma_of_intersectionTensorStatement intersectionTensorStatement h
 
+
+
+/-! # Parsecs 1250 and 1255, concluded
+
+The five statements below are exactly those whose proofs consume 125IV
+`equaliser_lemma`, or the slice-map property (121II) that `EqL` packages;
+they therefore have to sit *after* those, that is, here, rather than at their
+places in parsecs 1250 and 1255.  Nothing between their original positions and
+here refers to them.
+
+The one genuinely new ingredient is the **converse** of `EqL`'s
+`mem_tensorSub_of_rSlice_mem`: the slices of an element of `𝒮 ⊗ B(ℋ)` lie in
+`𝒮`.  Together the two halves are Tomiyama's slice-map property, and with
+`mem_tensorSub_of_image` — which is where 121II enters — they give the
+general 125VIIb. -/
+
+section ParsecEnd
+
+open EqL
+
+/-! ## The slice-map property -/
+
+/-- `id ⊗ ρ` carries `𝒮 ⊗ 𝒜₁` into `𝒮 ⊗ 𝒜₂`. -/
+private theorem tensorSub_map_right {𝒞 𝒜₁ 𝒜₂ : Type u}
+    [CStarAlgebra 𝒞] [PartialOrder 𝒞] [StarOrderedRing 𝒞] [VonNeumannAlgebra 𝒞]
+    [CStarAlgebra 𝒜₁] [PartialOrder 𝒜₁] [StarOrderedRing 𝒜₁] [VonNeumannAlgebra 𝒜₁]
+    [CStarAlgebra 𝒜₂] [PartialOrder 𝒜₂] [StarOrderedRing 𝒜₂] [VonNeumannAlgebra 𝒜₂]
+    (ρ : NMIUMap 𝒜₁ 𝒜₂) (S : StarSubalgebra ℂ 𝒞) {z : VNT 𝒞 𝒜₁}
+    (hz : z ∈ tensorSub 𝒜₁ S) : tmapM (nmiuId 𝒞) ρ z ∈ tensorSub 𝒜₂ S := by
+  have hle : tensorSub 𝒜₁ S ≤
+      (tensorSub 𝒜₂ S).comap (tmapM (nmiuId 𝒞) ρ).toStarAlgHom := by
+    refine sInf_le ⟨isVNSubalgebra_comap (tmapM (nmiuId 𝒞) ρ).toStarAlgHom
+      (tmapM (nmiuId 𝒞) ρ).preservesDirSups' _ (isVNSubalgebra_wstar _).1, ?_⟩
+    rintro _ ⟨s, hs, a, rfl⟩
+    show tmapM (nmiuId 𝒞) ρ (s ⊗ᵥ a) ∈ tensorSub 𝒜₂ S
+    rw [tmapM_apply, nmiuId_apply]
+    exact (isVNSubalgebra_wstar _).2 ⟨s, hs, ρ a, rfl⟩
+  exact hle hz
+
+/-- **The converse of `mem_tensorSub_of_rSlice_mem`**: every slice `r_ξ(z)` of
+an element `z` of `𝒮 ⊗ B(ℋ)` lies in `𝒮`.
+
+The proof needs no commutation theorem: `𝒮 ⊗ B(ℋ)` is, on the nose, the range
+of `ι ⊗ id` for the inclusion `ι : 𝒮 ↪ 𝒞` (a von Neumann subalgebra of
+`𝒞 ⊗ B(ℋ)` containing the generators `s ⊗ b`, by 69IVb), and `r_ξ` is natural
+(`rSlice_natural`), so the slice of `(ι ⊗ id)(w)` is `ι` of the slice of
+`w`. -/
+private theorem rSlice_mem_of_mem_tensorSub {𝒞 : Type u}
+    [CStarAlgebra 𝒞] [PartialOrder 𝒞] [StarOrderedRing 𝒞] [VonNeumannAlgebra 𝒞]
+    {H : Type u} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
+    [Nontrivial (H →L[ℂ] H)]
+    (S : StarSubalgebra ℂ 𝒞) (hS : IsVNSubalgebra 𝒞 S) (ξ : H)
+    {z : VNT 𝒞 (H →L[ℂ] H)} (hz : z ∈ tensorSub (H →L[ℂ] H) S)
+    {c : 𝒞} (hc : rSlice 𝒞 ξ z = c ⊗ᵥ (1 : H →L[ℂ] H)) : c ∈ S := by
+  have hle : tensorSub (H →L[ℂ] H) S ≤
+      (tmapM (VNSub.valNMIU (A := 𝒞) (S := S) (hS := hS))
+        (nmiuId (H →L[ℂ] H))).toStarAlgHom.range := by
+    refine sInf_le ⟨nmiu_image _, ?_⟩
+    rintro _ ⟨s, hs, b, rfl⟩
+    refine ⟨(⟨s, hs⟩ : VNSub 𝒞 S hS) ⊗ᵥ b, ?_⟩
+    show tmapM (VNSub.valNMIU (A := 𝒞) (S := S) (hS := hS)) (nmiuId (H →L[ℂ] H))
+        ((⟨s, hs⟩ : VNSub 𝒞 S hS) ⊗ᵥ b) = s ⊗ᵥ b
+    rw [tmapM_apply, nmiuId_apply]
+    rfl
+  obtain ⟨w, hw⟩ := hle hz
+  have hwz : tmapM (VNSub.valNMIU (A := 𝒞) (S := S) (hS := hS))
+      (nmiuId (H →L[ℂ] H)) w = z := hw
+  obtain ⟨v, hv⟩ := rSlice_mem (VNSub 𝒞 S hS) ξ w
+  have hnat := rSlice_natural
+    (VNSub.valNMIU (A := 𝒞) (S := S) (hS := hS)) ξ w
+  rw [hv, tmapM_apply, nmiuId_apply, hwz, hc] at hnat
+  have hval : (v.val : 𝒞) = c := nmiuTmulLeft_injective hnat
+  exact hval ▸ v.property
+
+/-! ## 125VI `tensor-equalisers` -/
+
+/-- **Equaliser maps are injective** — what `proc.tex:4990` calls on (through
+`tensor-injective`) for the uniqueness clause of 125VI.  47V `vn_equalisers`
+builds *an* equaliser concretely, as a von Neumann subalgebra `Q ⊆ 𝒜` with the
+inclusion for its map; an abstract equaliser `e` corestricts to `Q` and the
+two universal properties make the corestriction a retract of the comparison
+map, so `e` is the composite of an injection with an injection. -/
+private theorem nmiuEqualizer_injective [VonNeumannAlgebra A] [VonNeumannAlgebra B]
+    {E : Type u} [CStarAlgebra E] [PartialOrder E] [StarOrderedRing E]
+    [VonNeumannAlgebra E] {f g : NMIUMap A B} {e : NMIUMap E A}
+    (he : IsNMIUEqualizer f g e) : Function.Injective ⇑e := by
+  obtain ⟨Q, hQ, hQset⟩ := vn_equalisers f g
+  have hmem : ∀ x : E, e x ∈ Q := by
+    intro x
+    have hx : e x ∈ {a : A | f a = g a} := he.1 x
+    rw [← hQset] at hx
+    exact hx
+  have hfgQ : ∀ x : VNSub A Q hQ,
+      f (VNSub.valNMIU (A := A) (S := Q) (hS := hQ) x)
+        = g (VNSub.valNMIU (A := A) (S := Q) (hS := hQ) x) := by
+    intro x
+    have hx : x.val ∈ (Q : Set A) := x.property
+    rw [hQset] at hx
+    exact hx
+  obtain ⟨k, hk, -⟩ := he.2 (VNSub A Q hQ) VNSub.valNMIU hfgQ
+  obtain ⟨k₀, -, huniq⟩ := he.2 E e (fun x => he.1 x)
+  have h1 : nmiuComp k (nmiuCorestrict e Q hQ hmem) = nmiuId E := by
+    refine (huniq (nmiuComp k (nmiuCorestrict e Q hQ hmem)) ?_).trans
+      (huniq (nmiuId E) (fun _ => rfl)).symm
+    intro x
+    show e x = e (k (nmiuCorestrict e Q hQ hmem x))
+    exact hk (nmiuCorestrict e Q hQ hmem x)
+  have h1' : ∀ x : E, k (nmiuCorestrict e Q hQ hmem x) = x := by
+    intro x
+    have h := congrArg (fun F : NMIUMap E E => F x) h1
+    rw [nmiuComp_apply, nmiuId_apply] at h
+    exact h
+  intro x y hxy
+  have hk'eq : nmiuCorestrict e Q hQ hmem x = nmiuCorestrict e Q hQ hmem y :=
+    VNSub.val_injective (by
+      rw [nmiuCorestrict_val, nmiuCorestrict_val, hxy])
+  rw [← h1' x, ← h1' y, hk'eq]
+
+/-- **125VI** (`tensor-equalisers`, proc.tex:4972, Proposition): if `e` is
+an equaliser of nmiu-maps `f, g : 𝒜 → ℬ`, then `e ⊗ id_𝒞` is an
+equaliser of `f ⊗ id` and `g ⊗ id`.
+
+This is proc.tex:4980 verbatim.  Uniqueness of the mediating map is
+injectivity of `e ⊗ id`, which is 114I `tensor-injective` applied to the
+injective `e` (`nmiuEqualizer_injective`).  Existence is 125IV
+`equaliser_lemma`: it factors `h` through `𝒜̃ ⊗ 𝒞` for a von Neumann
+subalgebra `𝒜̃ ⊆ 𝒜` on which `f` and `g` agree, and the equaliser property of
+`e` then factors the inclusion `𝒜̃ ↪ 𝒜` through `e`. -/
+theorem tensor_equalisers [VonNeumannAlgebra A] [VonNeumannAlgebra B]
+    [VonNeumannAlgebra C] {E : Type u} [CStarAlgebra E] [PartialOrder E]
+    [StarOrderedRing E] [VonNeumannAlgebra E] (f g : NMIUMap A B)
+    (e : NMIUMap E A) (he : IsNMIUEqualizer f g e) :
+    IsNMIUEqualizer (tmapM f (nmiuId C)) (tmapM g (nmiuId C))
+      (tmapM e (nmiuId C)) := by
+  have hein : Function.Injective ⇑e := nmiuEqualizer_injective he
+  have hinj : Function.Injective ⇑(tmapM e (nmiuId C)) :=
+    tmapM_injective e (nmiuId C) hein (nmiuId_bijective (X := C)).1
+  refine ⟨fun x => ?_, fun D' _ _ _ _ h hh => ?_⟩
+  · have hfe : nmiuComp f e = nmiuComp g e :=
+      DFunLike.coe_injective (funext fun y => he.1 y)
+    rw [tmapM_comp_id, tmapM_comp_id, hfe]
+  · obtain ⟨S, hS, G, -, -, ι, ht, -, hfact, heq⟩ :=
+      equaliser_lemma (A := A) (C := C) (D := D') h
+    obtain ⟨ιt, hιt, -⟩ := he.2 (VNSub A S hS) ι (heq B f g hh)
+    have hcomp : nmiuComp e ιt = ι :=
+      DFunLike.coe_injective (funext fun x => (hιt x).symm)
+    have hkmain : ∀ d : D',
+        h d = tmapM e (nmiuId C) (nmiuComp (tmapM ιt (nmiuId C)) ht d) := by
+      intro d
+      show h d = tmapM e (nmiuId C) (tmapM ιt (nmiuId C) (ht d))
+      rw [tmapM_comp_id, hcomp]
+      exact hfact d
+    exact ⟨nmiuComp (tmapM ιt (nmiuId C)) ht, hkmain, fun k' hk' =>
+      DFunLike.coe_injective (funext fun d => hinj ((hk' d).symm.trans (hkmain d)))⟩
+
+/-! ## 125VIIb `tensor-preimage` -/
+
+/-- **125VIIb** (`tensor-preimage`, proc.tex:5025, Exercise): for an
+nmiu-map `ρ : ℬ → 𝒞` and a von Neumann subalgebra `𝒮 ⊆ 𝒞`,
+`(ρ ⊗ id_𝒜)⁻¹(𝒮 ⊗ 𝒜) = ρ⁻¹(𝒮) ⊗ 𝒜`.
+
+The `⊇` half is elementary and general: `ρ⁻¹(𝒮) ⊗ 𝒜` is generated by
+elements `b ⊗ a` with `ρ(b) ∈ 𝒮`, whose images `ρ(b) ⊗ a` lie in `𝒮 ⊗ 𝒜`,
+and the preimage of a von Neumann subalgebra is one (`isVNSubalgebra_comap`).
+
+The `⊆` half **is** the slice-map property, and this is where the commutation
+theorem is spent.  Faithfully represent the tensored factor `𝒜` on a Hilbert
+space `ℋ` (125II `vn_gns_bound`).  For `x` with `(ρ ⊗ 𝒜)(x) ∈ 𝒮 ⊗ 𝒜`, every
+slice `r_ξ` of the image of `x` in `ℬ ⊗ B(ℋ)` is an element `b ⊗ 1` with
+`ρ(b) ∈ 𝒮` — because `r_ξ` is natural (`rSlice_natural`, `tmapM_swap`) and
+slices of `𝒮 ⊗ B(ℋ)` land in `𝒮` (`rSlice_mem_of_mem_tensorSub`).  So
+`mem_tensorSub_of_rSlice_mem` puts that image in `ρ⁻¹(𝒮) ⊗ B(ℋ)`, and
+`mem_tensorSub_of_image` — which is `𝒯 ⊗ 𝒜 = (𝒯 ⊗ B(ℋ)) ∩ (ℬ ⊗ 𝒜)`, i.e.
+121II — brings it back down to `ρ⁻¹(𝒮) ⊗ 𝒜`. -/
+theorem tensor_preimage [VonNeumannAlgebra A] [VonNeumannAlgebra B]
+    [VonNeumannAlgebra C] (ρ : NMIUMap B C) (S : StarSubalgebra ℂ C)
+    (hS : IsVNSubalgebra C S) :
+    ⇑(tmapM ρ (nmiuId A)) ⁻¹' (tensorSub A S : Set (VNT C A)) =
+      (tensorSub A (S.comap ρ.toStarAlgHom) : Set (VNT B A)) := by
+  classical
+  have hcomap : IsVNSubalgebra B (S.comap ρ.toStarAlgHom) :=
+    isVNSubalgebra_comap ρ.toStarAlgHom ρ.preservesDirSups' S hS
+  ext x
+  constructor
+  · intro hx
+    have hx' : tmapM ρ (nmiuId A) x ∈ tensorSub A S := hx
+    rcases subsingleton_or_nontrivial A with hss | hnt
+    · haveI := hss
+      haveI : Subsingleton (VNT B A) := vnt_subsingleton
+      have h0 : x = 0 := Subsingleton.elim _ _
+      rw [h0]
+      exact zero_mem _
+    · haveI := hnt
+      obtain ⟨rep, -⟩ := vn_gns_bound (A := A)
+      haveI hntBH : Nontrivial (rep.space →L[ℂ] rep.space) :=
+        ⟨⟨rep.rep 0, rep.rep 1, fun hc => zero_ne_one (rep.injective hc)⟩⟩
+      obtain ⟨w, e, -⟩ := exists_hilbertBasis ℂ rep.space
+      refine mem_tensorSub_of_image intersectionTensorStatement rep.rep
+        rep.injective _ hcomap x ?_
+      refine mem_tensorSub_of_rSlice_mem _ e _ ?_
+      intro ξ b hb
+      show ρ.toStarAlgHom b ∈ S
+      have hz : tmapM (nmiuId C) rep.rep (tmapM ρ (nmiuId A) x)
+          ∈ tensorSub (rep.space →L[ℂ] rep.space) S :=
+        tensorSub_map_right rep.rep S hx'
+      refine rSlice_mem_of_mem_tensorSub S hS ξ hz ?_
+      have hnat := rSlice_natural ρ ξ (tmapM (nmiuId B) rep.rep x)
+      rw [hb, tmapM_apply, nmiuId_apply, tmapM_swap] at hnat
+      exact hnat.symm
+  · intro hx
+    have hle : tensorSub A (S.comap ρ.toStarAlgHom) ≤
+        (tensorSub A S).comap (tmapM ρ (nmiuId A)).toStarAlgHom := by
+      refine sInf_le ⟨isVNSubalgebra_comap (tmapM ρ (nmiuId A)).toStarAlgHom
+        (tmapM ρ (nmiuId A)).preservesDirSups' _ (isVNSubalgebra_wstar _).1, ?_⟩
+      rintro _ ⟨t, ht, a, rfl⟩
+      show tmapM ρ (nmiuId A) (t ⊗ᵥ a) ∈ tensorSub A S
+      rw [tmapM_apply, nmiuId_apply]
+      exact (isVNSubalgebra_wstar _).2 ⟨ρ t, ht, a, rfl⟩
+    exact hle hx
+
+/-! ## 125eIII `tensorBsurjectivity` -/
+
+/-- **125eIII** (`tensorBsurjectivity`, proc.tex:5580, Lemma): given a
+`(·) ⊗ ℬ`-surjective nmiu-map `s : 𝒜 → 𝒞 ⊗ ℬ` and an nmiu-map
+`ρ : 𝒞 → 𝒟`, the composite `(ρ ⊗ ℬ) ∘ s` is `(·) ⊗ ℬ`-surjective iff
+`ρ` is surjective.
+
+`mp` (proc.tex:5620) needs neither `hs` nor 125VIIb: `range(ρ ⊗ ℬ)` sits
+inside `ρ(𝒞) ⊗ ℬ` by `tmapM_range_le`, and `ρ(𝒞)` is a von Neumann
+subalgebra by 69IVb `nmiu_image`, so surjectivity of the composite forces
+`ρ(𝒞) = ⊤`.  `mpr` (proc.tex:5600) is 125VIIb `tensor_preimage`: a von
+Neumann subalgebra `𝒮 ⊆ 𝒟` with `((ρ ⊗ ℬ) ∘ s)(𝒜) ⊆ 𝒮 ⊗ ℬ` pulls back to
+`s(𝒜) ⊆ ρ⁻¹(𝒮) ⊗ ℬ`, whence `ρ⁻¹(𝒮) = ⊤` and, `ρ` being onto, `𝒮 = ⊤`. -/
+theorem tensorBsurjectivity [VonNeumannAlgebra A] [VonNeumannAlgebra B]
+    [VonNeumannAlgebra C] [VonNeumannAlgebra D]
+    (s : NMIUMap A (VNT C B)) (hs : TensorBSurjective s)
+    (ρ : NMIUMap C D) :
+    TensorBSurjective (nmiuComp (tmapM ρ (nmiuId B)) s) ↔
+      Function.Surjective ⇑ρ := by
+  refine ⟨fun hcomp => ?_, fun hρ => ?_⟩
+  · -- **proc.tex:5620**, and it uses neither `hs` nor atomicity.
+    have hrange : Set.range ⇑(nmiuComp (tmapM ρ (nmiuId B)) s)
+        ⊆ ((tensorSub B ρ.toStarAlgHom.range : StarSubalgebra ℂ (VNT D B)) :
+          Set (VNT D B)) := by
+      rintro _ ⟨a, rfl⟩
+      exact tmapM_range_le ρ (s a)
+    have htop := hcomp ρ.toStarAlgHom.range (nmiu_image ρ) hrange
+    intro d
+    have hd : d ∈ ρ.toStarAlgHom.range := by rw [htop]; trivial
+    exact hd
+  · -- **proc.tex:5600**, through 125VIIb `tensor_preimage`.
+    intro S hS hsub
+    have h1 : Set.range ⇑s ⊆
+        ((tensorSub B (S.comap ρ.toStarAlgHom) : StarSubalgebra ℂ (VNT C B)) :
+          Set (VNT C B)) := by
+      rintro _ ⟨a, rfl⟩
+      have hmem : s a ∈ ⇑(tmapM ρ (nmiuId B)) ⁻¹'
+          ((tensorSub B S : StarSubalgebra ℂ (VNT D B)) : Set (VNT D B)) :=
+        hsub ⟨a, rfl⟩
+      rw [tensor_preimage (A := B) ρ S hS] at hmem
+      exact hmem
+    have h2 := hs _ (isVNSubalgebra_comap ρ.toStarAlgHom ρ.preservesDirSups' S hS) h1
+    refine eq_top_iff.mpr fun d _ => ?_
+    obtain ⟨c, rfl⟩ := hρ d
+    have hc : c ∈ S.comap ρ.toStarAlgHom := by rw [h2]; trivial
+    exact hc
+
+end ParsecEnd
+
+
+section ParsecEndTwo
+
+open EqL
+
+/-- The companion of `vnt_subsingleton` for a trivial **left** factor. -/
+private theorem vnt_subsingleton_left {Cc Aa : Type*} [CStarAlgebra Cc]
+    [PartialOrder Cc] [StarOrderedRing Cc] [VonNeumannAlgebra Cc]
+    [CStarAlgebra Aa] [PartialOrder Aa] [StarOrderedRing Aa] [VonNeumannAlgebra Aa]
+    [Subsingleton Cc] : Subsingleton (VNT Cc Aa) := by
+  have h1 : ((1 : Cc) ⊗ᵥ (1 : Aa)) = 1 := (vnTensor Cc Aa).isTensorProduct.miu.1
+  have h0 : ((1 : Cc) ⊗ᵥ (1 : Aa)) = 0 := by
+    rw [show (1 : Cc) = 0 from Subsingleton.elim _ _]
+    show (vnTensor Cc Aa).map 0 1 = 0
+    rw [map_zero, LinearMap.zero_apply]
+  exact subsingleton_of_zero_eq_one (h1.symm.trans h0).symm
+
+/-! ## The minimal `𝒮` with `s(𝒳) ⊆ 𝒮 ⊗ 𝒜`, and what it is good for -/
+
+/-- `f ⊗ id` carries `𝒮 ⊗ 𝒜` into `f(𝒮) ⊗ 𝒜`. -/
+private theorem tensorSub_map_left {𝒞₁ 𝒞₂ 𝒜 : Type u}
+    [CStarAlgebra 𝒞₁] [PartialOrder 𝒞₁] [StarOrderedRing 𝒞₁] [VonNeumannAlgebra 𝒞₁]
+    [CStarAlgebra 𝒞₂] [PartialOrder 𝒞₂] [StarOrderedRing 𝒞₂] [VonNeumannAlgebra 𝒞₂]
+    [CStarAlgebra 𝒜] [PartialOrder 𝒜] [StarOrderedRing 𝒜] [VonNeumannAlgebra 𝒜]
+    (f : NMIUMap 𝒞₁ 𝒞₂) (S : StarSubalgebra ℂ 𝒞₁) {z : VNT 𝒞₁ 𝒜}
+    (hz : z ∈ tensorSub 𝒜 S) :
+    tmapM f (nmiuId 𝒜) z ∈ tensorSub 𝒜 (S.map f.toStarAlgHom) := by
+  have hle : tensorSub 𝒜 S ≤
+      (tensorSub 𝒜 (S.map f.toStarAlgHom)).comap
+        (tmapM f (nmiuId 𝒜)).toStarAlgHom := by
+    refine sInf_le ⟨isVNSubalgebra_comap (tmapM f (nmiuId 𝒜)).toStarAlgHom
+      (tmapM f (nmiuId 𝒜)).preservesDirSups' _ (isVNSubalgebra_wstar _).1, ?_⟩
+    rintro _ ⟨t, ht, a, rfl⟩
+    show tmapM f (nmiuId 𝒜) (t ⊗ᵥ a) ∈ tensorSub 𝒜 (S.map f.toStarAlgHom)
+    rw [tmapM_apply, nmiuId_apply]
+    exact (isVNSubalgebra_wstar _).2 ⟨f t, ⟨t, ht, rfl⟩, a, rfl⟩
+  exact hle hz
+
+/-- **The least `𝒮` with `s(𝒳) ⊆ 𝒮 ⊗ 𝒜`**, for any nmiu-map
+`s : 𝒳 → 𝒞 ⊗ 𝒜`.
+
+It is `W*({r_ξ(s(x))})`, the von Neumann subalgebra generated by all the
+slices of all the values of `s` — the same generating set 125IV
+`equaliser_lemma` builds, and the proof that `s(𝒳) ⊆ 𝒮 ⊗ 𝒜` is 125IV's own
+(`mem_tensorSub_of_rSlice_mem` up in `𝒞 ⊗ B(ℋ)`, then
+`mem_tensorSub_of_image` — that is, 121II — to come back down to `𝒞 ⊗ 𝒜`).
+Minimality is the converse slice-map property
+`rSlice_mem_of_mem_tensorSub`.  No cardinality bound is claimed here; 125IV
+is the version that carries one. -/
+private theorem exists_minimal_tensorSub {X 𝒞 𝒜 : Type u}
+    [CStarAlgebra X] [PartialOrder X] [StarOrderedRing X] [VonNeumannAlgebra X]
+    [CStarAlgebra 𝒞] [PartialOrder 𝒞] [StarOrderedRing 𝒞] [VonNeumannAlgebra 𝒞]
+    [CStarAlgebra 𝒜] [PartialOrder 𝒜] [StarOrderedRing 𝒜] [VonNeumannAlgebra 𝒜]
+    (s : NMIUMap X (VNT 𝒞 𝒜)) :
+    ∃ (S : StarSubalgebra ℂ 𝒞) (hS : IsVNSubalgebra 𝒞 S),
+      Set.range ⇑s ⊆ (tensorSub 𝒜 S : Set (VNT 𝒞 𝒜)) ∧
+      ∀ S' : StarSubalgebra ℂ 𝒞, IsVNSubalgebra 𝒞 S' →
+        Set.range ⇑s ⊆ (tensorSub 𝒜 S' : Set (VNT 𝒞 𝒜)) → S ≤ S' := by
+  classical
+  rcases subsingleton_or_nontrivial 𝒜 with hss | hnt
+  · haveI := hss
+    haveI : Subsingleton (VNT 𝒞 𝒜) := vnt_subsingleton
+    refine ⟨wstar 𝒞 (∅ : Set 𝒞), (isVNSubalgebra_wstar _).1, ?_,
+      fun S' hS' _ => sInf_le ⟨hS', Set.empty_subset _⟩⟩
+    rintro _ ⟨x, rfl⟩
+    have h0 : s x = 0 := Subsingleton.elim _ _
+    rw [h0]
+    exact zero_mem _
+  · haveI := hnt
+    obtain ⟨rep, -⟩ := vn_gns_bound (A := 𝒜)
+    haveI hntBH : Nontrivial (rep.space →L[ℂ] rep.space) :=
+      ⟨⟨rep.rep 0, rep.rep 1, fun hc => zero_ne_one (rep.injective hc)⟩⟩
+    obtain ⟨w, e, -⟩ := exists_hilbertBasis ℂ rep.space
+    have hchoice : ∀ p : X × rep.space, ∃ c : 𝒞,
+        rSlice 𝒞 p.2 (tmapM (nmiuId 𝒞) rep.rep (s p.1))
+          = c ⊗ᵥ (1 : rep.space →L[ℂ] rep.space) :=
+      fun p => rSlice_mem 𝒞 p.2 _
+    choose r hr using hchoice
+    refine ⟨wstar 𝒞 (Set.range r), (isVNSubalgebra_wstar _).1, ?_, ?_⟩
+    · rintro _ ⟨x, rfl⟩
+      refine mem_tensorSub_of_image intersectionTensorStatement rep.rep
+        rep.injective _ (isVNSubalgebra_wstar _).1 (s x) ?_
+      refine mem_tensorSub_of_rSlice_mem _ e _ ?_
+      intro ξ c hc
+      have h1 : c ⊗ᵥ (1 : rep.space →L[ℂ] rep.space)
+          = r (x, ξ) ⊗ᵥ (1 : rep.space →L[ℂ] rep.space) := by
+        rw [← hc, hr (x, ξ)]
+      rw [nmiuTmulLeft_injective h1]
+      exact (isVNSubalgebra_wstar _).2 ⟨(x, ξ), rfl⟩
+    · intro S' hS' hsub
+      refine sInf_le ⟨hS', ?_⟩
+      rintro _ ⟨p, rfl⟩
+      obtain ⟨x, ξ⟩ := p
+      exact rSlice_mem_of_mem_tensorSub S' hS' ξ
+        (tensorSub_map_right rep.rep S' (hsub ⟨x, rfl⟩)) (hr (x, ξ))
+
+/-- **The corestriction of `s` to a least `𝒮` is `(·) ⊗ 𝒜`-surjective** —
+which is 125eII's definition read backwards, and is what makes `𝒮` unique. -/
+private theorem tensorBSurjective_of_minimal {X 𝒞 𝒜 : Type u}
+    [CStarAlgebra X] [PartialOrder X] [StarOrderedRing X] [VonNeumannAlgebra X]
+    [CStarAlgebra 𝒞] [PartialOrder 𝒞] [StarOrderedRing 𝒞] [VonNeumannAlgebra 𝒞]
+    [CStarAlgebra 𝒜] [PartialOrder 𝒜] [StarOrderedRing 𝒜] [VonNeumannAlgebra 𝒜]
+    (s : NMIUMap X (VNT 𝒞 𝒜)) (S : StarSubalgebra ℂ 𝒞) (hS : IsVNSubalgebra 𝒞 S)
+    (hmin : ∀ S' : StarSubalgebra ℂ 𝒞, IsVNSubalgebra 𝒞 S' →
+      Set.range ⇑s ⊆ (tensorSub 𝒜 S' : Set (VNT 𝒞 𝒜)) → S ≤ S')
+    (st : NMIUMap X (VNT (VNSub 𝒞 S hS) 𝒜))
+    (hst : ∀ x : X, tmapM (VNSub.valNMIU (A := 𝒞) (S := S) (hS := hS))
+      (nmiuId 𝒜) (st x) = s x) :
+    TensorBSurjective st := by
+  intro S' hS' hsub
+  have hT := vnsub_isVNSubalgebra_map S' hS'
+  have hrange : Set.range ⇑s ⊆
+      ((tensorSub 𝒜 (S'.map (VNSub.valStarAlgHom (A := 𝒞) (S := S) (hS := hS))) :
+        StarSubalgebra ℂ (VNT 𝒞 𝒜)) : Set (VNT 𝒞 𝒜)) := by
+    rintro _ ⟨x, rfl⟩
+    rw [← hst x]
+    exact tensorSub_map_left (VNSub.valNMIU (A := 𝒞) (S := S) (hS := hS)) S'
+      (hsub ⟨x, rfl⟩)
+  have hle := hmin _ hT hrange
+  refine eq_top_iff.mpr fun y _ => ?_
+  obtain ⟨z, hz, hzy⟩ := hle y.property
+  exact (VNSub.val_injective hzy : z = y) ▸ hz
+
+/-- **A `(·) ⊗ 𝒜`-surjective `s` is an epimorphism after `(·) ⊗ 𝒜`**: two
+nmiu-maps out of `P` that agree after tensoring on the values of `s` are
+equal.  This is the uniqueness clause of 125VIII, and it is again the
+slice-map property: the equaliser of `g` and `g'` (47V) is a von Neumann
+subalgebra `𝒬 ⊆ P`, every slice of every `s(x)` lands in it by naturality of
+`r_ξ`, hence `s(𝒳) ⊆ 𝒬 ⊗ 𝒜` and `𝒬 = P`. -/
+private theorem nmiu_ext_of_tensorBSurjective {X Pp 𝒜 Y : Type u}
+    [CStarAlgebra X] [PartialOrder X] [StarOrderedRing X] [VonNeumannAlgebra X]
+    [CStarAlgebra Pp] [PartialOrder Pp] [StarOrderedRing Pp] [VonNeumannAlgebra Pp]
+    [CStarAlgebra 𝒜] [PartialOrder 𝒜] [StarOrderedRing 𝒜] [VonNeumannAlgebra 𝒜]
+    [CStarAlgebra Y] [PartialOrder Y] [StarOrderedRing Y] [VonNeumannAlgebra Y]
+    (s : NMIUMap X (VNT Pp 𝒜)) (hs : TensorBSurjective s) (g g' : NMIUMap Pp Y)
+    (hgg : ∀ x : X, tmapM g (nmiuId 𝒜) (s x) = tmapM g' (nmiuId 𝒜) (s x)) :
+    g = g' := by
+  classical
+  obtain ⟨Q, hQ, hQset⟩ := vn_equalisers g g'
+  have hrange : Set.range ⇑s ⊆
+      ((tensorSub 𝒜 Q : StarSubalgebra ℂ (VNT Pp 𝒜)) : Set (VNT Pp 𝒜)) := by
+    rintro _ ⟨x, rfl⟩
+    rcases subsingleton_or_nontrivial 𝒜 with hss | hnt
+    · haveI := hss
+      haveI : Subsingleton (VNT Pp 𝒜) := vnt_subsingleton
+      have h0 : s x = 0 := Subsingleton.elim _ _
+      rw [h0]
+      exact zero_mem _
+    · haveI := hnt
+      obtain ⟨rep, -⟩ := vn_gns_bound (A := 𝒜)
+      haveI hntBH : Nontrivial (rep.space →L[ℂ] rep.space) :=
+        ⟨⟨rep.rep 0, rep.rep 1, fun hc => zero_ne_one (rep.injective hc)⟩⟩
+      obtain ⟨w, e, -⟩ := exists_hilbertBasis ℂ rep.space
+      refine mem_tensorSub_of_image intersectionTensorStatement rep.rep
+        rep.injective _ hQ (s x) ?_
+      refine mem_tensorSub_of_rSlice_mem _ e _ ?_
+      intro ξ c hc
+      have hg := rSlice_natural g ξ (tmapM (nmiuId Pp) rep.rep (s x))
+      have hg' := rSlice_natural g' ξ (tmapM (nmiuId Pp) rep.rep (s x))
+      rw [hc, tmapM_apply, nmiuId_apply, tmapM_swap] at hg
+      rw [hc, tmapM_apply, nmiuId_apply, tmapM_swap] at hg'
+      have hcc : g c ⊗ᵥ (1 : rep.space →L[ℂ] rep.space)
+          = g' c ⊗ᵥ (1 : rep.space →L[ℂ] rep.space) := by
+        rw [hg, hg', hgg x]
+      have hmem : c ∈ {p : Pp | g p = g' p} := nmiuTmulLeft_injective hcc
+      rw [← hQset] at hmem
+      exact hmem
+  have htop := hs Q hQ hrange
+  refine DFunLike.coe_injective (funext fun p => ?_)
+  have hp : p ∈ (Q : Set Pp) := by rw [htop]; trivial
+  rw [hQset] at hp
+  exact hp
+
+/-! ## 125eIIa `tensor-map-factorisation` -/
+
+/-- **125eIIa** (`tensor-map-factorisation`, proc.tex:5569): for any
+nmiu-map `s : 𝒜 → 𝒞 ⊗ ℬ` there is a von Neumann subalgebra
+`𝒞̃ ⊆ 𝒞` with `s(𝒜) ⊆ 𝒞̃ ⊗ ℬ` such that the restriction of `s` to
+`𝒜 → 𝒞̃ ⊗ ℬ` is `(·) ⊗ ℬ`-surjective.
+
+proc.tex:5575 says "by inspecting the proof of `equaliser-lemma`", and that
+is what `exists_minimal_tensorSub` does: 125IV's generating set
+`{r_ξ(s(a))}` generates not merely *a* `𝒞̃` that works but the *least* one,
+and least is exactly `(·) ⊗ ℬ`-surjective. -/
+theorem tensor_map_factorisation [VonNeumannAlgebra A]
+    [VonNeumannAlgebra B] [VonNeumannAlgebra C]
+    (s : NMIUMap A (VNT C B)) :
+    ∃ (S : StarSubalgebra ℂ C) (hS : IsVNSubalgebra C S),
+      Set.range ⇑s ⊆ (tensorSub B S : Set (VNT C B)) ∧
+      ∃ (ι : NMIUMap (VNSub C S hS) C)
+        (st : NMIUMap A (VNT (VNSub C S hS) B)),
+        (∀ x, ι x = x.val) ∧
+        (∀ a : A, s a = tmapM ι (nmiuId B) (st a)) ∧
+        TensorBSurjective st := by
+  obtain ⟨S, hS, hrange, hmin⟩ := exists_minimal_tensorSub s
+  obtain ⟨st, hst⟩ := exists_corestrict_tensorSub S hS s (fun a => hrange ⟨a, rfl⟩)
+  exact ⟨S, hS, hrange, VNSub.valNMIU, st, fun _ => rfl, fun a => (hst a).symm,
+    tensorBSurjective_of_minimal s S hS hmin st hst⟩
+
+/-! ## 125VIII `tensor-closed`
+
+Freyd's General Adjoint Functor Theorem, exactly as proc.tex:5061 runs it,
+with the same three ingredients as 124III `second_adjunction`: a solution
+set, the product over it, and a von Neumann subalgebra of that product cut
+out so that the unit generates.
+
+* The **solution set** is 124III's, `TSolIdx`: a von Neumann subalgebra of
+  `B(ℓ²(T))` for a subset `T` of a fixed index type `K`, together with an
+  nmiu-map `ℬ → 𝒟 ⊗ 𝒜` into its tensor.  The solution set *condition* is
+  125IV `equaliser_lemma`: it factors `h : ℬ → 𝒞 ⊗ 𝒜` through `𝒞̃ ⊗ 𝒜` with
+  `𝒞̃` generated by at most `#ℬ · 2^{#𝒜}` elements, whence
+  `#𝒞̃ ≤ 2^{2^{𝔠 + #ℬ·2^{#𝒜}}}` by 124I `vn_generation_bound` and `𝒞̃` sits
+  on `ℓ²(T)` by `exists_smallRealization`.  (proc.tex's `κ` is the same
+  cardinal, written as an ordinal.)
+* `(·) ⊗ 𝒜` turns the **product** `P = ⊕ᵢ 𝒟ᵢ` into the product of the
+  `𝒟ᵢ ⊗ 𝒜` — 117III `tensor_distributes_over_sums` through 119IVc
+  `exists_braiding`, packaged as `exists_sumTensorIso` — so the solution-set
+  maps assemble into a single `η : ℬ → P ⊗ 𝒜`.
+* The **carrier** is `VNSub P 𝒮₁` for the *least* `𝒮₁ ⊆ P` with
+  `η(ℬ) ⊆ 𝒮₁ ⊗ 𝒜`.  Least makes the unit `(·) ⊗ 𝒜`-surjective, and that is
+  precisely the uniqueness clause of the universal property
+  (`nmiu_ext_of_tensorBSurjective`). -/
+
+/-- **The products of `W*_miu` pass through `(·) ⊗ 𝒜`**:
+`(⊕ₚ 𝒟ₚ) ⊗ 𝒜 ≅ ⊕ₚ (𝒟ₚ ⊗ 𝒜)`, with the coordinates of the isomorphism the
+maps `πₚ ⊗ id`.  This is `exists_matSumTensorIso` with the summands
+arbitrary rather than matrix algebras — which makes it *shorter*, the
+`punitSum` universe shuffle being what the matrix version needed. -/
+private theorem exists_sumTensorIso {Aa : Type u} [CStarAlgebra Aa]
+    [PartialOrder Aa] [StarOrderedRing Aa] [VonNeumannAlgebra Aa] [Nontrivial Aa]
+    {P₀ : Type u} (𝒟 : P₀ → Type u) [∀ p, CStarAlgebra (𝒟 p)]
+    [∀ p, Nontrivial (𝒟 p)] [∀ p, PartialOrder (𝒟 p)]
+    [∀ p, StarOrderedRing (𝒟 p)] [∀ p, VonNeumannAlgebra (𝒟 p)]
+    [∀ p, Nontrivial (VNT (𝒟 p) Aa)] :
+    ∃ θ : NMIUMap (VNT (lp 𝒟 ∞) Aa) (lp (fun p : P₀ => VNT (𝒟 p) Aa) ∞),
+      Function.Bijective ⇑θ ∧
+      ∀ (x : VNT (lp 𝒟 ∞) Aa) (p : P₀),
+        ((θ x : lp (fun q : P₀ => VNT (𝒟 q) Aa) ∞) : ∀ q : P₀, VNT (𝒟 q) Aa) p
+          = tmapM (lpEvalNMIU 𝒟 p) (nmiuId Aa) x := by
+  classical
+  haveI hntp : ∀ p : P₀, Nontrivial (VNT Aa (𝒟 p)) := fun _ => vnt_nontrivial
+  obtain ⟨γ, hγe, hγ⟩ := tensor_distributes_over_sums (A := Aa) 𝒟
+  obtain ⟨φ, hφe, hφbij, -⟩ :=
+    tensor_uniqueness (vnTensor (lp 𝒟 ∞) Aa).map γ.flip
+      (vnTensor (lp 𝒟 ∞) Aa).isTensorProduct (isTensorProduct_flip hγ)
+  have hbr : ∀ p : P₀, ∃ s : NMIUMap (VNT Aa (𝒟 p)) (VNT (𝒟 p) Aa),
+      (∀ (a : Aa) (c : 𝒟 p), s (a ⊗ᵥ c) = c ⊗ᵥ a) ∧ Function.Bijective ⇑s :=
+    fun p => by
+      obtain ⟨sp, hsp, hspb, -⟩ := exists_braiding Aa (𝒟 p)
+      exact ⟨sp, hsp, hspb⟩
+  choose sb hse hsbij using hbr
+  obtain ⟨Ξ, hΞbij, hΞa⟩ := exists_lp_congr
+    (𝒳 := fun p : P₀ => VNT Aa (𝒟 p)) (𝒴 := fun p : P₀ => VNT (𝒟 p) Aa) sb hsbij
+  refine ⟨nmiuComp Ξ φ, nmiuComp_bijective _ _ hΞbij hφbij, ?_⟩
+  intro x p
+  have hgen : wstar (VNT (lp 𝒟 ∞) Aa)
+      {t : VNT (lp 𝒟 ∞) Aa | ∃ a b, t = (vnTensor (lp 𝒟 ∞) Aa).map a b} = ⊤ :=
+    wstar_eq_top_of_dense_span _ (vnTensor (lp 𝒟 ∞) Aa).isTensorProduct.dense
+  refine nmiu_ext_of_wstar_top
+    (nmiuComp (lpEvalNMIU (fun q : P₀ => VNT (𝒟 q) Aa) p) (nmiuComp Ξ φ))
+    (tmapM (lpEvalNMIU 𝒟 p) (nmiuId Aa)) _ hgen ?_ x
+  rintro _ ⟨c, a, rfl⟩
+  show ((Ξ (φ (c ⊗ᵥ a)) : lp (fun q : P₀ => VNT (𝒟 q) Aa) ∞) :
+      ∀ q : P₀, VNT (𝒟 q) Aa) p
+    = tmapM (lpEvalNMIU 𝒟 p) (nmiuId Aa) (c ⊗ᵥ a)
+  have hφe' : ∀ (y : lp 𝒟 ∞) (bb : Aa), φ (y ⊗ᵥ bb) = γ.flip y bb := hφe
+  have e2 : ((φ (c ⊗ᵥ a) : lp (fun q : P₀ => VNT Aa (𝒟 q)) ∞) :
+      ∀ q : P₀, VNT Aa (𝒟 q)) p = a ⊗ᵥ (c : ∀ q : P₀, 𝒟 q) p := by
+    rw [hφe' c a]
+    exact hγe a c p
+  rw [hΞa, e2, hse, tmapM_apply, nmiuId_apply]
+  rfl
+
+/-- The index of the solution set of **125VIII**: a von Neumann subalgebra
+of `B(ℓ²(T))` for a subset `T` of the fixed index type `K`, together with an
+nmiu-map from `ℬ` into its tensor with `𝒜`.  As in 124III's `SolIdx`, this
+lives in `Type u`, which is the whole point of the solution set condition. -/
+private structure TSolIdx (Bb Aa : Type u) [CStarAlgebra Bb] [PartialOrder Bb]
+    [StarOrderedRing Bb] [VonNeumannAlgebra Bb] [CStarAlgebra Aa] [PartialOrder Aa]
+    [StarOrderedRing Aa] [VonNeumannAlgebra Aa] (K : Type u) : Type u where
+  T : Set K
+  S : StarSubalgebra ℂ (opAlg T)
+  hS : IsVNSubalgebra (opAlg T) S
+  hnt : Nontrivial (VNSub (opAlg T) S hS)
+  γ : NMIUMap Bb (VNT (VNSub (opAlg T) S hS) Aa)
+
+private instance tsolNontrivial {Bb Aa : Type u} [CStarAlgebra Bb] [PartialOrder Bb]
+    [StarOrderedRing Bb] [VonNeumannAlgebra Bb] [CStarAlgebra Aa] [PartialOrder Aa]
+    [StarOrderedRing Aa] [VonNeumannAlgebra Aa] {K : Type u} (i : TSolIdx Bb Aa K) :
+    Nontrivial (VNSub (opAlg i.T) i.S i.hS) := i.hnt
+
+/-- The product `∏ᵢ 𝒟ᵢ` over the solution set (**47IV**). -/
+@[reducible] private def tsolProd (Bb Aa : Type u) [CStarAlgebra Bb] [PartialOrder Bb]
+    [StarOrderedRing Bb] [VonNeumannAlgebra Bb] [CStarAlgebra Aa] [PartialOrder Aa]
+    [StarOrderedRing Aa] [VonNeumannAlgebra Aa] (K : Type u) : Type u :=
+  lp (fun i : TSolIdx Bb Aa K => VNSub (opAlg i.T) i.S i.hS) ∞
+
+set_option maxHeartbeats 1000000 in
+/-- **The solution set condition** for 125VIII (proc.tex:5070): every
+nmiu-map `ℬ → 𝒞 ⊗ 𝒜` into a *nontrivial* `𝒞` factors as `(t ⊗ 𝒜) ∘ γᵢ` for
+one of the solution-set entries `γᵢ`.  This is 125IV `equaliser_lemma`
+followed by 124I `vn_generation_bound` and `exists_smallRealization`, in the
+shape of 124III's `solution_set`. -/
+private theorem tensor_solution_set (Bb Aa : Type u) [CStarAlgebra Bb]
+    [PartialOrder Bb] [StarOrderedRing Bb] [VonNeumannAlgebra Bb]
+    [CStarAlgebra Aa] [PartialOrder Aa] [StarOrderedRing Aa] [VonNeumannAlgebra Aa]
+    {K : Type u}
+    (hK : #K = 2 ^ ((2 : Cardinal.{u}) ^ (2 : Cardinal.{u}) ^
+      (Cardinal.continuum + #Bb * (2 : Cardinal.{u}) ^ #Aa)))
+    {C' : Type u} [CStarAlgebra C'] [PartialOrder C'] [StarOrderedRing C']
+    [VonNeumannAlgebra C'] [Nontrivial C'] (h : NMIUMap Bb (VNT C' Aa)) :
+    ∃ (i : TSolIdx Bb Aa K) (t : NMIUMap (VNSub (opAlg i.T) i.S i.hS) C'),
+      ∀ b : Bb, h b = tmapM t (nmiuId Aa) (i.γ b) := by
+  classical
+  have h2 : (2 : Cardinal.{u}) ≠ 0 := by norm_num
+  obtain ⟨S₀, hS₀, G, hSG, hcardG, ι, ht, -, hfact, -⟩ :=
+    equaliser_lemma (A := C') (C := Aa) (D := Bb) h
+  subst hSG
+  have hgen : wstar (VNSub C' (wstar C' G) hS₀) (VNSub.val ⁻¹' G) = ⊤ := by
+    refine vnsub_wstar_eq_top _ (isVNSubalgebra_wstar _).1 fun x hx => ?_
+    exact (isVNSubalgebra_wstar (A := VNSub C' (wstar C' G) hS₀)
+      (VNSub.val ⁻¹' G)).2 hx
+  have hcardG' : #((VNSub.val ⁻¹' G : Set (VNSub C' (wstar C' G) hS₀)))
+      ≤ #Bb * (2 : Cardinal.{u}) ^ #Aa := by
+    refine le_trans (Cardinal.mk_le_of_injective
+      (f := fun x : (VNSub.val ⁻¹' G : Set (VNSub C' (wstar C' G) hS₀)) =>
+        (⟨x.val.val, x.property⟩ : G)) ?_) hcardG
+    rintro ⟨x, hx⟩ ⟨y, hy⟩ hxy
+    exact Subtype.ext (VNSub.val_injective (congrArg Subtype.val hxy))
+  have hcard : #(VNSub C' (wstar C' G) hS₀) ≤
+      (2 : Cardinal.{u}) ^ (2 : Cardinal.{u}) ^
+        (Cardinal.continuum + #Bb * (2 : Cardinal.{u}) ^ #Aa) := by
+    refine le_trans (vn_generation_bound _ hgen) ?_
+    exact Cardinal.power_le_power_left h2 (Cardinal.power_le_power_left h2
+      (add_le_add le_rfl hcardG'))
+  obtain ⟨T, S, hS, ε, hεbij⟩ :=
+    exists_smallRealization (K := K) (VNSub C' (wstar C' G) hS₀)
+      (by rw [hK]; exact Cardinal.power_le_power_left h2 hcard)
+  have hntC : Nontrivial (VNSub C' (wstar C' G) hS₀) :=
+    ⟨⟨1, 0, fun hq => one_ne_zero (congrArg VNSub.val hq)⟩⟩
+  have hntS : Nontrivial (VNSub (opAlg T) S hS) :=
+    ⟨⟨ε 1, ε 0, fun hq => one_ne_zero (hεbij.1 hq)⟩⟩
+  refine ⟨⟨T, S, hS, hntS, nmiuComp (tmapM ε (nmiuId Aa)) ht⟩,
+    nmiuComp ι (nmiuSymm ε hεbij), fun b => ?_⟩
+  show h b = tmapM (nmiuComp ι (nmiuSymm ε hεbij)) (nmiuId Aa)
+    (tmapM ε (nmiuId Aa) (ht b))
+  rw [tmapM_comp_id]
+  have hmap : nmiuComp (nmiuComp ι (nmiuSymm ε hεbij)) ε = ι :=
+    DFunLike.coe_injective (funext fun y => by
+      show ι (nmiuSymm ε hεbij (ε y)) = ι y
+      rw [nmiuSymm_apply_apply])
+  rw [hmap]
+  exact hfact b
+
+set_option maxHeartbeats 1000000 in
+/-- **125VIII** (`tensor-closed`, proc.tex:5048, Theorem (Kornell)): the
+functor `(·) ⊗ 𝒜 : W*_miu → W*_miu` has a left adjoint `(·)^{*𝒜}` —
+rendered: every `ℬ` has a universal arrow `ℬ → ℬ^{*𝒜} ⊗ 𝒜`. -/
+theorem tensor_closed [VonNeumannAlgebra A] [VonNeumannAlgebra B] :
+    Nonempty (FreeExp B A) := by
+  classical
+  obtain ⟨K, hK⟩ : ∃ K : Type u, #K = (2 : Cardinal.{u}) ^ ((2 : Cardinal.{u}) ^
+      (2 : Cardinal.{u}) ^ (Cardinal.continuum + #B * (2 : Cardinal.{u}) ^ #A)) :=
+    ⟨_, Cardinal.mk_out _⟩
+  -- **weak initiality**: the mediating map `η : ℬ → P ⊗ 𝒜`, whose `i`-th
+  -- coordinate is the solution-set entry `i` itself
+  obtain ⟨η, hη⟩ : ∃ η : NMIUMap B (VNT (tsolProd B A K) A),
+      ∀ (i : TSolIdx B A K) (b : B),
+        tmapM (lpEvalNMIU
+          (fun q : TSolIdx B A K => VNSub (opAlg q.T) q.S q.hS) i) (nmiuId A) (η b)
+          = i.γ b := by
+    rcases subsingleton_or_nontrivial A with hss | hnt
+    · haveI := hss
+      haveI : Subsingleton (VNT (tsolProd B A K) A) := vnt_subsingleton
+      haveI : ∀ i : TSolIdx B A K,
+          Subsingleton (VNT (VNSub (opAlg i.T) i.S i.hS) A) :=
+        fun _ => vnt_subsingleton
+      exact ⟨nmiuOfSubsingleton B (VNT (tsolProd B A K) A),
+        fun i b => Subsingleton.elim _ _⟩
+    · haveI := hnt
+      haveI hntv : ∀ i : TSolIdx B A K,
+          Nontrivial (VNT (VNSub (opAlg i.T) i.S i.hS) A) :=
+        fun _ => vnt_nontrivial
+      obtain ⟨θ, hθbij, hθa⟩ := exists_sumTensorIso (Aa := A)
+        (fun i : TSolIdx B A K => VNSub (opAlg i.T) i.S i.hS)
+      obtain ⟨pr, hpr, -⟩ := vn_products_nmiu (B := B)
+        (fun i : TSolIdx B A K => VNT (VNSub (opAlg i.T) i.S i.hS) A) (fun i => i.γ)
+      refine ⟨nmiuComp (nmiuSymm θ hθbij) pr, fun i b => ?_⟩
+      have h1 := hθa (nmiuSymm θ hθbij (pr b)) i
+      rw [nmiuSymm_apply_apply'] at h1
+      show tmapM (lpEvalNMIU
+        (fun q : TSolIdx B A K => VNSub (opAlg q.T) q.S q.hS) i) (nmiuId A)
+          (nmiuSymm θ hθbij (pr b)) = i.γ b
+      rw [← h1]
+      exact hpr i b
+  -- **the carrier**: the least von Neumann subalgebra `𝒮₁ ⊆ P` with
+  -- `η(ℬ) ⊆ 𝒮₁ ⊗ 𝒜`
+  obtain ⟨S₁, hS₁, hrange, hmin⟩ := exists_minimal_tensorSub η
+  obtain ⟨un, hun⟩ :=
+    exists_corestrict_tensorSub S₁ hS₁ η (fun b => hrange ⟨b, rfl⟩)
+  have hsurj : TensorBSurjective un :=
+    tensorBSurjective_of_minimal η S₁ hS₁ hmin un hun
+  refine ⟨{ carrier := VNSub (tsolProd B A K) S₁ hS₁
+            unit := un
+            universal := fun C' _ _ _ _ h => ?_ }⟩
+  rcases subsingleton_or_nontrivial C' with hsub | hntC
+  · haveI := hsub
+    haveI : Subsingleton (VNT C' A) := vnt_subsingleton_left
+    exact ⟨nmiuOfSubsingleton (VNSub (tsolProd B A K) S₁ hS₁) C',
+      fun _ => Subsingleton.elim _ _,
+      fun _ _ => DFunLike.coe_injective (funext fun _ => Subsingleton.elim _ _)⟩
+  · haveI := hntC
+    obtain ⟨i, t, hti⟩ := tensor_solution_set B A hK h
+    have hmain : ∀ b : B, h b = tmapM
+        (nmiuComp (nmiuComp t (lpEvalNMIU
+            (fun q : TSolIdx B A K => VNSub (opAlg q.T) q.S q.hS) i))
+          (VNSub.valNMIU (A := tsolProd B A K) (S := S₁) (hS := hS₁)))
+        (nmiuId A) (un b) := by
+      intro b
+      rw [← tmapM_comp_id, ← tmapM_comp_id, hun b, hη i b]
+      exact hti b
+    exact ⟨_, hmain, fun g' hg' =>
+      nmiu_ext_of_tensorBSurjective un hsurj g' _
+        (fun b => (hg' b).symm.trans (hmain b))⟩
+
+end ParsecEndTwo
 
 end Theses.A.Proc
 

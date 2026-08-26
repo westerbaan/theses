@@ -1,18 +1,63 @@
 # `Theses/A/Proc/` — full survey of the remaining `sorry`s (worker 71, 2026-08-16; revised workers 72–90, sessions 47–90)
 
-**Headline count: A/Proc has 19 code `sorry`s** after session 90, which
-closed **125dII `ha_tensor_closed`** — and **none of the 19 is reachable**:
-`QuantumLambda`'s 7 are all downstream of 121II `intersection_tensor` (the
-commutation theorem, i.e. Tomita–Takesaki), `Tensor`'s 2 are the recorded
-non-targets, and `Measurement`'s 10 are gated on the open author question.
-Per file: `Tensor` **2**, `QuantumLambda` **7**,
+**Headline count: A/Proc has 12 code `sorry`s** after session 96, which
+closed the **last seven of `QuantumLambda.lean`** — 121II
+`intersection_tensor` and 125IV `equaliser_lemma` (the commutation theorem
+having landed), then 125VI `tensor_equalisers`, 125VIIb `tensor_preimage`,
+125VIII `tensor_closed`, 125eIIa `tensor_map_factorisation` and 125eIII
+`tensorBsurjectivity`.  **`QuantumLambda.lean` is `sorry`-free.**  What is
+left is not reachable: `Tensor`'s 2 are the recorded non-targets and
+`Measurement`'s 10 are gated on the open author question.
+Per file: `Tensor` **2**, `QuantumLambda` **0 — the file is finished**,
 `Measurement` **10**, `Duplicators` **0 — the file is finished**.
-(`QuantumLambda` compiler-verified in session 90, 0 errors; the other three
-in session 88.)
+(`QuantumLambda` compiler-verified in session 96, 0 errors and 0 `sorry`
+warnings; the other three in session 88/90.)
 **No statement in the project is `sorry`-tainted.**  (`grep -c sorry`
 over-counts, because the file docstrings mention `sorry` in prose; the code
 counts are the ones above.  Note `\bsorry\b` also matches "sorry-ed" in
 prose — count the compiler's `declaration uses \`sorry\`` warnings instead.)
+
+> **Session 96 — the last five of `QuantumLambda.lean` are CLOSED, and the
+> file is `sorry`-free.**  `QuantumLambda` **5 → 0**; A/Proc **17 → 12**, 0
+> errors, all five theorems axiom-clean (checked *in situ*:
+> `[propext, Classical.choice, Quot.sound]`).  **+726 / −91 lines**, all in
+> `QuantumLambda.lean`, all new names `private` except the five theorems.
+> Full working in PROVING-LOG, session 96.
+>
+> * **All five had to move to the end of the file**, below 125IV
+>   `equaliser_lemma` — the same species of obstacle as the import cycle that
+>   had blocked 121II.  Nothing between the old and new positions refers to
+>   any of them, and the ambient `variable` block is the same at both
+>   positions, so no statement changed (checked with `#check`).
+> * **The missing ingredient was the *converse* slice-map property** — *the
+>   slices of an element of `𝒮 ⊗ B(ℋ)` lie in `𝒮`* — which `EqL` did not
+>   have and three of the five need.  It costs fifteen lines and **no**
+>   commutation theorem: `𝒮 ⊗ B(ℋ)` is on the nose the range of `ι ⊗ id`,
+>   and `r_ξ` is natural.
+> * **125VIIb does not go through 125VI.**  The `proc.tex:5033` pullback hint
+>   is a route, not a requirement; with both halves of the slice-map property
+>   the Exercise is `mem_tensorSub_of_image`, i.e. 121II, directly.  The
+>   `why-open.csv` edge `tensor_preimage → tensor_equalisers` was wrong.
+> * **125eIIa's two halves were recorded inverted.**  `s(𝒜) ⊆ 𝒞̃ ⊗ ℬ` is
+>   125IV's own step and is free; the `(·)⊗ℬ`-surjectivity half is the one
+>   with content, because it says `𝒞̃` is *least*, and minimality is the
+>   converse slice-map property.
+> * **125VIII needs more than 125IV's cardinality clause.**  GAFT is not in
+>   the tree, so the free object is constructed: solution set (125IV + 124I
+>   + `exists_smallRealization`), distributivity `(⊕ᵢ𝒟ᵢ) ⊗ 𝒜 ≅ ⊕ᵢ(𝒟ᵢ ⊗ 𝒜)`
+>   (117III/119IVc, general summands — *shorter* than the matrix version),
+>   **and uniqueness**, which is minimality again, hence 121II again.
+> * **`proc.tex:4990` needs a step it states in passing**: an abstract
+>   equaliser gives a *monic* `e`, not an injective one.  `e` is compared
+>   with 47V's concrete equaliser to get injectivity
+>   (`nmiuEqualizer_injective`); without it 125VI does not close.
+> * Watch out: **`𝒫` is Mathlib's powerset notation** and cannot be used as a
+>   binder name; and `vnt_subsingleton` is about the *second* factor — a
+>   trivial *first* factor needs `vnt_subsingleton_left`.
+> * Nothing for ERRATA or QUESTIONS.  `docs/why-open.csv`: the five rows
+>   `tensor_equalisers`, `tensor_preimage`, `tensor_closed`,
+>   `tensor_map_factorisation` and `tensorBsurjectivity` are deleted.
+>   `docs/COMMUTATION-THEOREM.md` gains §7.
 
 > **Session 90 — 125dII `ha_tensor_closed` is CLOSED, and A/Proc is out of
 > reachable work.**  `QuantumLambda` **8 → 7**; A/Proc **20 → 19**, 0 errors,

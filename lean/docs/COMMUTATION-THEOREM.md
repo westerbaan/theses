@@ -28,6 +28,14 @@ That is a fact about the subject, not about the formalization.
 
 ## 1. Everything blocked is blocked on one theorem
 
+> **All seven closed, 2026-08-26.**  `Theses/A/Proc/QuantumLambda.lean` is
+> `sorry`-free, and with it the whole of `Theses/A/Proc`.  The last five —
+> 125VI `tensor_equalisers`, 125VIIb `tensor_preimage`, 125VIII
+> `tensor_closed`, 125eIIa `tensor_map_factorisation` and 125eIII
+> `tensorBsurjectivity` — went in one round on top of 121II and 125IV; see
+> §7 for what that round found, including two places where the plan named
+> the wrong hard step.
+>
 > **Closed, 2026-08-26.** 121II `intersection_tensor` and 125IV
 > `equaliser_lemma` are **proved**; the count below is now **five**, not seven.
 > The last obstacle was not mathematics but the import graph: `A/Proc/
@@ -50,11 +58,11 @@ Seven `sorry`s remained in `Theses/A/Proc/QuantumLambda.lean`:
 |---|---|---|---|
 | 121II | `intersection_tensor` | :314 | **proved 2026-08-26** |
 | 125IV | `equaliser_lemma` | :2032 | **proved 2026-08-26** |
-| 125VI | `tensor_equalisers` | :2060 | open |
-| 125VIIb | `tensor_preimage` | :2085 | open |
-| 125VIII | `tensor_closed` | :2116 | open |
-| 125eIIa | `tensor_map_factorisation` | :4727 | open |
-| 125eIII | `tensorBsurjectivity` (`mpr` only) | :4758 | open |
+| 125VI | `tensor_equalisers` | :2060 | **proved 2026-08-26** |
+| 125VIIb | `tensor_preimage` | :2085 | **proved 2026-08-26** |
+| 125VIII | `tensor_closed` | :2116 | **proved 2026-08-26** |
+| 125eIIa | `tensor_map_factorisation` | :4727 | **proved 2026-08-26** |
+| 125eIII | `tensorBsurjectivity` (`mpr` only) | :4758 | **proved 2026-08-26** |
 
 121II is Takesaki I, Cor. IV.5.10, and is **equivalent** to Thm IV.5.9, the
 commutation theorem `(M ⊗̄ N)' = M' ⊗̄ N'`, given the double commutant theorem —
@@ -618,3 +626,77 @@ is quoted in the 1977 paper's Prop. 4.1. Tomiyama, Pacific J. Math. **30**
 Thm IV.5.9 / Cor. IV.5.10; *Tomita's Theory of Modular Hilbert Algebras*, LNM
 128 (1970). Kadison–Ringrose II, chs. 9 and 11 — chapter titles verified,
 theorem numbers not.
+
+---
+
+## 7. The last five, and what closing them corrected
+
+*2026-08-26.  `QuantumLambda.lean` is `sorry`-free.  ~640 lines added, no
+statement changed, all five axiom-clean in situ
+(`propext`, `Classical.choice`, `Quot.sound`).*
+
+**The file-order problem again.** All five statements had to be **moved to
+the end of the file**, after `equaliser_lemma`.  This is the same species of
+obstacle as the import cycle that blocked 121II (§1's banner): 125IV sits at
+the end of `QuantumLambda.lean` because it needs `tensorSub₂`, and the five
+statements that consume it were at their parsec positions two thousand lines
+above it.  Nothing between the old and new positions refers to any of the
+five, so the move is free; but it is not optional, and a new module
+downstream cannot substitute, because the `sorry`s live in this file.
+
+**The one ingredient nobody had costed: the *converse* slice-map property.**
+`EqL` had `mem_tensorSub_of_rSlice_mem` — *if every slice `r_ξ(x)` lies in
+`𝒮`, then `x ∈ 𝒮 ⊗ B(ℋ)`*.  The other direction — *the slices of an element
+of `𝒮 ⊗ B(ℋ)` lie in `𝒮`* — was missing, and three of the five need it.  It
+is cheap and needs **no** commutation theorem: `𝒮 ⊗ B(ℋ)` is on the nose the
+range of `ι ⊗ id` for the inclusion `ι : 𝒮 ↪ 𝒞` (a von Neumann subalgebra by
+69IVb containing the generators), and `r_ξ` is natural, so the slice of
+`(ι ⊗ id)(w)` is `ι` of the slice of `w`.  Fifteen lines
+(`rSlice_mem_of_mem_tensorSub`).  With both halves in hand the general
+125VIIb is `mem_tensorSub_of_image` — that is, 121II — and nothing else.
+
+**Two places where the brief named the wrong hard step.**
+
+* *125eIIa.* The plan said "the `(·)⊗ℬ`-surjectivity half is free; only
+  `s(𝒜) ⊆ 𝒞̃⊗ℬ` is hard".  **It is exactly backwards.**  `s(𝒜) ⊆ 𝒞̃⊗ℬ` is
+  125IV's own `hmemS` step, already packaged; it is the free half.  The
+  surjectivity half is the one with content: it needs `𝒞̃` to be the
+  ***least*** von Neumann subalgebra with `s(𝒜) ⊆ 𝒞̃ ⊗ ℬ`, and minimality is
+  precisely the converse slice-map property above.  Once you build the least
+  one (`exists_minimal_tensorSub` — same generating set `{r_ξ(s(a))}` as
+  125IV, plus minimality), 125eIIa is four lines.
+* *125VIII.* The plan said `equaliser_lemma` is used "**only** for the
+  cardinality clause".  True of the *printed* proof, false of the formal
+  one, and the gap is not bookkeeping.  Freyd's GAFT is not in the tree, so
+  the free object has to be **constructed**, and the construction needs three
+  things, not one: (i) the solution-set condition — that is the cardinality
+  clause, 125IV + 124I + `exists_smallRealization`, exactly as costed;
+  (ii) distributivity `(⊕ᵢ𝒟ᵢ) ⊗ 𝒜 ≅ ⊕ᵢ(𝒟ᵢ ⊗ 𝒜)`, which is 117III through
+  119IVc and which `exists_matSumTensorIso` only had for *matrix* summands
+  (the general version is shorter — the `punitSum` universe shuffle was what
+  the matrix case needed); and (iii) the **uniqueness** clause of the
+  universal property, which is *not* downstream of the cardinality bound at
+  all.  Uniqueness holds because the unit is `(·) ⊗ 𝒜`-surjective, which is
+  again minimality, which is again the slice-map property, which is again
+  121II.  So 125VIII consumes 125VIIb-grade machinery and not merely 125IV.
+
+**And one step the plan did not mention at all: equaliser maps are
+injective.** `proc.tex:4990` gets uniqueness in 125VI from 114I
+`tensor-injective` applied to `e`, having said in passing that "the equaliser
+map `e` is injective".  In Lean `IsNMIUEqualizer` is an abstract universal
+property, from which one gets that `e` is **monic**, not injective, and the
+two are not the same thing a priori.  The repair is to compare with the
+concrete equaliser 47V `vn_equalisers` builds — a von Neumann subalgebra of
+`𝒜` with the inclusion for its map: `e` corestricts to it, the two universal
+properties make the corestriction a two-sided inverse of the comparison map,
+and `e` is then a composite of two injections (`nmiuEqualizer_injective`).
+Thirty lines, and without them 125VI does not close.
+
+**What is reusable.** `rSlice_mem_of_mem_tensorSub` (the converse slice-map
+property), `tensorSub_map_left` / `tensorSub_map_right` (functoriality of
+`𝒮 ⊗ 𝒜` in either factor), `exists_minimal_tensorSub` and
+`tensorBSurjective_of_minimal` (the least `𝒮`, and why least is 125eII's
+notion of surjectivity), `nmiu_ext_of_tensorBSurjective` (a
+`(·) ⊗ 𝒜`-surjective map is epi after `⊗ 𝒜` — the uniqueness engine of
+125VIII), `exists_sumTensorIso` (117III for arbitrary summands) and
+`nmiuEqualizer_injective`.  All at the end of `QuantumLambda.lean`.

@@ -29783,3 +29783,169 @@ brief asks for the ones where the point *is* about the step Mathlib supplies:
 preserve limits), 146V `hasBasis_uniformity` and 150II `denseRange_unEta` are
 all of the "the operator norm is a norm" kind.  None was touched; they are out
 of this round's `route`/`mild` scope and none meets the criterion.
+
+## Session 96 — `A/Proc/QuantumLambda.lean`: **the last five `sorry`s in `A/Proc`'s parsecs 1250/1255 are closed, and `QuantumLambda.lean` is `sorry`-free** — the plan had 125eIIa's two halves *inverted*, 125VIII needs the slice-map property and not only 125IV's cardinality clause, and 125VI needs a step nobody had costed: *equaliser maps are injective* (worker on `Theses/A/Proc/QuantumLambda.lean`)
+
+**Five statements, all proved, no statement changed, no `sorry` added, no
+import touched.**  125VI `tensor_equalisers`, 125VIIb `tensor_preimage`,
+125VIII `tensor_closed`, 125eIIa `tensor_map_factorisation` and 125eIII
+`tensorBsurjectivity` (`mpr`; `mp` was already proved).  `QuantumLambda.lean`
+compiles with **0 errors and 0 `declaration uses 'sorry'` warnings**; every
+one of the five was axiom-checked *in situ* (file copied to scratch,
+`#print axioms` appended, recompiled): all
+`[propext, Classical.choice, Quot.sound]`.  +726 / −91 lines, all in
+`QuantumLambda.lean`, everything new `private` except the five theorems
+themselves.
+
+### 0. The file-order problem, again
+
+All five had to be **moved to the end of the file**, below 125IV
+`equaliser_lemma`.  This is the same species of obstacle as the import cycle
+that had kept 121II open (`docs/COMMUTATION-THEOREM.md` §1): `equaliser_lemma`
+sits at the end of `QuantumLambda.lean` because it needs `EqL`'s `tensorSub₂`,
+and the five statements that consume it sat at their parsec positions two to
+four thousand lines *above* it.  Nothing between the old and the new positions
+mentions any of the five (checked by `grep` over the whole tree — they have no
+consumer at all yet), so the move is free.  It is not avoidable either: a new
+module downstream cannot discharge a `sorry` that lives in this file, and
+moving `equaliser_lemma` up would drag `tensorSub₂`, `rSlice` and
+`concreteTensorEquiv` with it.  The ambient `variable` block was checked to be
+the same at both positions (only `variable (…) in` forms occur in between), so
+no statement's elaborated type can have changed.
+
+### 1. The ingredient nobody had costed: the **converse** slice-map property
+
+`EqL` had one half — `mem_tensorSub_of_rSlice_mem`: *if every slice `r_ξ(x)`
+lies in `𝒮`, then `x ∈ 𝒮 ⊗ B(ℋ)`*.  The other half — *the slices of an
+element of `𝒮 ⊗ B(ℋ)` lie in `𝒮`* — was not there, and **three of the five
+need it**.
+
+It is cheap, and it needs **no commutation theorem at all**: `𝒮 ⊗ B(ℋ)` is on
+the nose the range of `ι ⊗ id` for the inclusion `ι : 𝒮 ↪ 𝒞` — that range is a
+von Neumann subalgebra by 69IVb `nmiu_image` and contains the generators
+`s ⊗ b`, so `sInf_le` gives the containment — and `r_ξ` is natural
+(`rSlice_natural`), so the slice of `(ι ⊗ id)(w)` is `ι` of the slice of `w`,
+which lies in `𝒮` by construction.  Fifteen lines,
+`rSlice_mem_of_mem_tensorSub`.
+
+With both halves in hand, **125VIIb `tensor_preimage` is 121II and nothing
+else**: represent the tensored factor `𝒜` faithfully on `ℋ` (125II
+`vn_gns_bound`); for `x` with `(ρ ⊗ 𝒜)(x) ∈ 𝒮 ⊗ 𝒜`, naturality
+(`rSlice_natural`, `tmapM_swap`) turns each slice `r_ξ` of the image of `x` in
+`ℬ ⊗ B(ℋ)` into an element `b ⊗ 1` with `ρ(b) ∈ 𝒮` — by the converse
+property — so `mem_tensorSub_of_rSlice_mem` places that image in
+`ρ⁻¹(𝒮) ⊗ B(ℋ)` and `mem_tensorSub_of_image`, which *is* 121II in the shape
+`𝒯 ⊗ 𝒜 = (𝒯 ⊗ B(ℋ)) ∩ (ℬ ⊗ 𝒜)`, brings it back down.  The `⊇` inclusion is
+the elementary `sInf_le` on generators, as recorded.
+
+**The `proc.tex:5033` hint is a route, not a requirement.**  The Exercise
+suggests presenting `ρ⁻¹(𝒮)` as a pullback and invoking 125VI; `why-open.csv`
+and `AProc-survey.md` both recorded 125VIIb as *blocked on* 125VI because of
+it.  The direct argument above uses **no** part of 125VI, and is much shorter
+than building pullbacks in `W*_miu` would have been.  125VIIb and 125VI are
+independent.
+
+### 2. 125eIIa: the brief had the two halves inverted
+
+The plan said "*the `(·)⊗ℬ`-surjectivity half is free; only `s(𝒜) ⊆ 𝒞̃⊗ℬ` is
+hard*".  **It is exactly backwards.**
+
+`s(𝒜) ⊆ 𝒞̃ ⊗ ℬ` is 125IV's own `hmemS` step and is already packaged
+(`mem_tensorSub_of_rSlice_mem` composed with `mem_tensorSub_of_image`); it is
+the free half.  The half with content is `(·) ⊗ ℬ`-surjectivity, because that
+says `𝒞̃` is the **least** von Neumann subalgebra with `s(𝒜) ⊆ 𝒞̃ ⊗ ℬ`, and
+minimality is exactly the converse slice-map property of §1: if
+`s(𝒜) ⊆ 𝒮' ⊗ ℬ` then every generator `r_ξ(s(a))` of `𝒞̃` already lies in
+`𝒮'`.
+
+So the shape of the proof is: build the least one once and for all
+(`exists_minimal_tensorSub`, on 125IV's own generating set `{r_ξ(s(a))}`),
+observe that least *is* 125eII's notion of surjectivity
+(`tensorBSurjective_of_minimal`), and 125eIIa is four lines on top of
+`exists_corestrict_tensorSub`.  proc.tex:5575's "by inspecting the proof of
+`equaliser-lemma`" is right; what it is inspecting for is *minimality*, which
+125IV itself never claims.
+
+### 3. 125VIII: "only for the cardinality clause" is true of the printed proof and false of the formal one
+
+The plan said 125VIII uses `equaliser-lemma` **only** for the cardinality
+clause of the solution set.  That is a correct reading of proc.tex:5061–5100,
+and it is misleading, because Freyd's GAFT is not in the tree: the free object
+has to be *constructed*, and the construction needs three things.
+
+* **(i) The solution-set condition** — this is the cardinality clause, and it
+  is costed correctly.  125IV factors `h : ℬ → 𝒞 ⊗ 𝒜` through `𝒞̃ ⊗ 𝒜` with
+  `𝒞̃` generated by `≤ #ℬ·2^{#𝒜}` elements; 124I `vn_generation_bound` then
+  gives `#𝒞̃ ≤ 2^{2^{𝔠 + #ℬ·2^{#𝒜}}}` and `exists_smallRealization` puts `𝒞̃`
+  on `ℓ²(T)` for a subset `T` of a fixed `K` of that cardinality.  This is
+  124III `solution_set` with `#𝒜` replaced by `#ℬ·2^{#𝒜}`, and `TSolIdx` is
+  `SolIdx` with the ncpsu-map replaced by an nmiu-map into a tensor.
+* **(ii) Distributivity** `(⊕ᵢ 𝒟ᵢ) ⊗ 𝒜 ≅ ⊕ᵢ (𝒟ᵢ ⊗ 𝒜)`, to assemble the
+  solution-set maps into a single `η : ℬ → P ⊗ 𝒜`.  125dII had this only for
+  *matrix* summands (`exists_matSumTensorIso`).  The general version,
+  `exists_sumTensorIso`, is **shorter** than the matrix one — 117III
+  `tensor_distributes_over_sums` flipped by 119IVc `exists_braiding` and moved
+  onto the chosen tensor product by 114II `tensor_uniqueness`, with the two
+  `exists_lp_congr` transports that the matrix case needed for its `punitSum`
+  universe shuffle simply deleted.
+* **(iii) The uniqueness clause of the universal property**, which is *not*
+  downstream of the cardinality bound at all.  Take the carrier to be
+  `VNSub P 𝒮₁` for the **least** `𝒮₁ ⊆ P` with `η(ℬ) ⊆ 𝒮₁ ⊗ 𝒜` (§2's
+  device).  Then the unit is `(·) ⊗ 𝒜`-surjective, and a
+  `(·) ⊗ 𝒜`-surjective map is epi after `⊗ 𝒜`
+  (`nmiu_ext_of_tensorBSurjective`): the equaliser of two competing `g, g'`
+  is a von Neumann subalgebra `𝒬 ⊆ P` (47V), every slice of every `η(b)`
+  lands in `𝒬` by naturality — **the slice-map property again, hence 121II
+  again** — so `η(ℬ) ⊆ 𝒬 ⊗ 𝒜` and `𝒬 = P`.
+
+So **125VIII consumes 125VIIb-grade machinery, not merely 125IV**.  Had 121II
+been proved and 125VIIb left open, 125VIII would still have been out of reach.
+
+### 4. 125VI: `proc.tex:4990` needs a step it states in passing
+
+The printed proof gets uniqueness of the mediating map from 114I
+`tensor-injective` applied to `e`, having said in one clause that "*since the
+equaliser map `e` is injective*".  In Lean `IsNMIUEqualizer` is an abstract
+universal property, and what it gives directly is that `e` is **monic**, which
+is not injectivity a priori.
+
+The repair is to compare with the concrete equaliser: 47V `vn_equalisers`
+builds `Q = {a | f a = g a}` as a von Neumann subalgebra of `𝒜`, and
+`VNSub 𝒜 Q` with the inclusion satisfies `IsNMIUEqualizer` too.  `e`
+corestricts to `Q`; the universal property of `e` applied to the inclusion
+gives a comparison map back; the two uniqueness clauses make the two
+composites identities; and `e` is then the inclusion after a bijection, hence
+injective (`nmiuEqualizer_injective`, ~30 lines).  Without it 125VI does not
+close.
+
+Everything else in 125VI is proc.tex:4980 verbatim: `equaliser_lemma` factors
+`h` through `𝒜̃ ⊗ 𝒞`, its equaliser clause says `f` and `g` agree on `𝒜̃`, the
+equaliser property of `e` factors `𝒜̃ ↪ 𝒜` through `e`, and `k` is
+`(ι̃ ⊗ id) ∘ h̃`.
+
+### 5. 125eIII
+
+`mpr` is `atTensorBSurj` with `atTensorPreimage` replaced by the general
+`tensor_preimage` — the atomic type I development had the right shape all
+along, and only the slice-map property was special about it.  `mp` was already
+proved in full generality.
+
+### 6. What is reusable
+
+All at the end of `QuantumLambda.lean`, all `private`:
+`rSlice_mem_of_mem_tensorSub` (§1), `tensorSub_map_left` /
+`tensorSub_map_right` (functoriality of `𝒮 ⊗ 𝒜` in either factor),
+`exists_minimal_tensorSub` and `tensorBSurjective_of_minimal` (§2),
+`nmiu_ext_of_tensorBSurjective` (§3(iii)), `exists_sumTensorIso` (§3(ii)),
+`nmiuEqualizer_injective` (§4), and the solution-set apparatus `TSolIdx` /
+`tsolProd` / `tensor_solution_set` (§3(i)).
+
+### 7. Bookkeeping
+
+`docs/why-open.csv`: the five rows `tensor_equalisers`, `tensor_preimage`,
+`tensor_closed`, `tensor_map_factorisation` and `tensorBsurjectivity` are
+deleted.  `docs/COMMUTATION-THEOREM.md` gains §7 and its §1 table is closed
+out.  `docs/AProc-survey.md` gains a session banner.  Nothing for ERRATA;
+nothing for QUESTIONS.  The one recorded route that turned out to be
+unnecessary is `proc.tex:5033`'s pullback hint for 125VIIb (§1) — a hint, not
+a claim, so it is not an erratum.
