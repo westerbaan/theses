@@ -284,9 +284,11 @@ private theorem abs_le_sup_witness {I J : Submodule ℂ 𝒜} (hI : IsRieszIdeal
   rw [hbre]
   exact abs_add_le _ _ (ℜ y).2 (ℜ z).2
 
-/-- **27X** (`riesz-ideal-basic`, cstar.tex:3983, Exercise), part 2: the sum
-`I + J` of two Riesz ideals is a Riesz ideal.  (That `I + J` might not be an
-order ideal for order ideals `I`, `J` is not converted.) -/
+/-- **27X** (`riesz-ideal-basic`, cstar.tex:3983, Exercise), part 2, first
+clause: the sum `I + J` of two Riesz ideals is a Riesz ideal.  The part's
+second clause — that `I + J` may fail to be an order ideal when `I` and `J`
+are only *order* ideals — is `riesz_ideal_basic_2_order_counterexample`
+below. -/
 theorem riesz_ideal_basic_2 (I J : Submodule ℂ 𝒜) (hI : IsRieszIdeal I)
     (hJ : IsRieszIdeal J) : IsRieszIdeal (I ⊔ J) := by
   have habs : ∀ b ∈ I ⊔ J, IsSelfAdjoint b → CFC.abs b ∈ I ⊔ J := by
@@ -311,6 +313,102 @@ theorem riesz_ideal_basic_2 (I J : Submodule ℂ 𝒜) (hI : IsRieszIdeal I)
       (CFC.negPart_nonneg c) (le_trans (le_trans hcn hcb) hle)
     rw [← CFC.posPart_sub_negPart c hcsa]
     exact Submodule.sub_mem _ h1 h2
+
+/-! ### 27X.2's second clause: order ideals are not closed under sums
+
+The Exercise's own contrast: `I + J` *is* a Riesz ideal when `I` and `J` are
+(`riesz_ideal_basic_2` above), "but `I + J` might not be an order ideal
+when `I` and `J` are order ideals".  The Exercise supplies no witness and
+`asols.tex` has no solution at `parsec-270.100`, so the witness below is
+ours.  It lives in the commutative C*-algebra `ℂ³` of the Setting **27II**,
+and is as small as it can be: in `ℂ²` every order ideal is one of `0`,
+`ℂ × 0`, `0 × ℂ`, a line `ℂ·(λ,μ)` with `λμ ∉ [0,∞)`, or the whole algebra,
+and those are closed under sums. -/
+
+/-- `u = (1, 1, -1)`, a self-adjoint element of `ℂ³` that is neither positive
+nor negative, so that the line `ℂ·u` meets the positive cone only in `0`. -/
+private noncomputable def ideal3u : Fin 3 → ℂ := ![1, 1, -1]
+
+/-- `v = (0, 0, 1)`, a positive element of `ℂ³` whose order interval
+`[-v, v]` already lies on the line `ℂ·v`. -/
+private noncomputable def ideal3v : Fin 3 → ℂ := ![0, 0, 1]
+
+/-- `ℂ·u` is an order ideal: it is a `⋆`-closed subspace, and it contains no
+positive element but `0` (if `c·u ≥ 0` then `c ≥ 0` from the first
+coordinate and `-c ≥ 0` from the third), so the interval condition is
+vacuous. -/
+private theorem ideal3u_isOrderIdeal : IsOrderIdeal (ℂ ∙ ideal3u) := by
+  constructor
+  · intro b hb
+    obtain ⟨c, rfl⟩ := Submodule.mem_span_singleton.mp hb
+    refine Submodule.mem_span_singleton.mpr ⟨starRingEnd ℂ c, ?_⟩
+    funext i; fin_cases i <;> simp [ideal3u]
+  · intro b hb hb0 a hle hge
+    obtain ⟨c, rfl⟩ := Submodule.mem_span_singleton.mp hb
+    have h0 : (0 : ℂ) ≤ c := by simpa [ideal3u] using hb0 0
+    have h2 : (0 : ℂ) ≤ -c := by simpa [ideal3u] using hb0 2
+    have hcz : c = 0 := le_antisymm (neg_nonneg.mp h2) h0
+    subst hcz
+    have ha : a = 0 := le_antisymm (by simpa using hge) (by simpa using hle)
+    rw [ha]
+    exact Submodule.zero_mem _
+
+/-- `ℂ·v` is an order ideal: `⋆`-closed, and for `b = c·v ≥ 0` an element of
+`[-b, b]` has vanishing first two coordinates, hence lies on the line. -/
+private theorem ideal3v_isOrderIdeal : IsOrderIdeal (ℂ ∙ ideal3v) := by
+  constructor
+  · intro b hb
+    obtain ⟨c, rfl⟩ := Submodule.mem_span_singleton.mp hb
+    refine Submodule.mem_span_singleton.mpr ⟨starRingEnd ℂ c, ?_⟩
+    funext i; fin_cases i <;> simp [ideal3v]
+  · intro b hb hb0 a hle hge
+    obtain ⟨c, rfl⟩ := Submodule.mem_span_singleton.mp hb
+    refine Submodule.mem_span_singleton.mpr ⟨a 2, ?_⟩
+    have e0 : a 0 = 0 := by
+      have h1 : -(c • ideal3v) 0 ≤ a 0 := hle 0
+      have h2 : a 0 ≤ (c • ideal3v) 0 := hge 0
+      simp [ideal3v] at h1 h2
+      exact le_antisymm h2 h1
+    have e1 : a 1 = 0 := by
+      have h1 : -(c • ideal3v) 1 ≤ a 1 := hle 1
+      have h2 : a 1 ≤ (c • ideal3v) 1 := hge 1
+      simp [ideal3v] at h1 h2
+      exact le_antisymm h2 h1
+    funext i; fin_cases i <;> simp [ideal3v, e0, e1]
+
+/-- Every element of `ℂ·u + ℂ·v` has its first two coordinates equal:
+`c·u + d·v = (c, c, -c + d)`. -/
+private theorem ideal3_mem_sup {x : Fin 3 → ℂ}
+    (hx : x ∈ (ℂ ∙ ideal3u) ⊔ (ℂ ∙ ideal3v)) : x 0 = x 1 := by
+  obtain ⟨y, hy, z, hz, rfl⟩ := Submodule.mem_sup.mp hx
+  obtain ⟨c, rfl⟩ := Submodule.mem_span_singleton.mp hy
+  obtain ⟨d, rfl⟩ := Submodule.mem_span_singleton.mp hz
+  simp [ideal3u, ideal3v]
+
+/-- **27X** (`riesz-ideal-basic`, cstar.tex:3983, Exercise), part 2, second
+clause: the sum of two *order* ideals need not be an order ideal.
+
+The witnesses are `I = ℂ·(1,1,-1)` and `J = ℂ·(0,0,1)` in `ℂ³`.  Their sum
+is the plane `{(x, x, z)}`, which contains the positive element
+`b = (1,1,0) = u + v`; but `a = (1,0,0)` satisfies `-b ≤ a ≤ b` and has
+unequal first two coordinates, so it is not in `I + J`. -/
+theorem riesz_ideal_basic_2_order_counterexample :
+    ∃ I J : Submodule ℂ (Fin 3 → ℂ),
+      IsOrderIdeal I ∧ IsOrderIdeal J ∧ ¬ IsOrderIdeal (I ⊔ J) := by
+  refine ⟨ℂ ∙ ideal3u, ℂ ∙ ideal3v, ideal3u_isOrderIdeal, ideal3v_isOrderIdeal, ?_⟩
+  intro h
+  set b : Fin 3 → ℂ := ![1, 1, 0] with hb
+  set a : Fin 3 → ℂ := ![1, 0, 0] with ha
+  have hbmem : b ∈ (ℂ ∙ ideal3u) ⊔ (ℂ ∙ ideal3v) := by
+    refine Submodule.mem_sup.mpr ⟨(1 : ℂ) • ideal3u, Submodule.smul_mem _ _
+      (Submodule.mem_span_singleton_self _), (1 : ℂ) • ideal3v,
+      Submodule.smul_mem _ _ (Submodule.mem_span_singleton_self _), ?_⟩
+    funext i; fin_cases i <;> simp [ideal3u, ideal3v, hb]
+  have hb0 : (0 : Fin 3 → ℂ) ≤ b := by intro i; fin_cases i <;> simp [hb]
+  have h1 : -b ≤ a := by intro i; fin_cases i <;> simp [ha, hb] <;> norm_num
+  have h2 : a ≤ b := by intro i; fin_cases i <;> simp [ha, hb]
+  have hcoord := ideal3_mem_sup (h.mem_of_mem_interval b hbmem hb0 a h1 h2)
+  simp [ha] at hcoord
 
 /-! ### The least Riesz ideal `(a)ₘ` (27X.1) -/
 

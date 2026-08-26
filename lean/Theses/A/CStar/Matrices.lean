@@ -135,10 +135,9 @@ theorem moduleAdjointTo_comp (T : X → Y) (S : Y → Z) (T' : Y → X)
 end HilbertModules
 
 /-- **32IV** (cstar.tex:5166, Exercise), part 1: `J = {f ∈ C[0,1] : f(0)=0}`
-is closed.  That it is an *ideal* is `paschke_ideal` below; the Hilbert
+is closed.  That it is an *ideal* is `paschke_ideal` below, and the Hilbert
 `C[0,1]`-module structure `⟨f, g⟩ = f* g` that the exercise then puts on `J`
-is not converted (it would need `J` as a type carrying a `CStarModule`
-instance), so part 2 below is stated in terms of `C[0,1]` itself.
+is `PaschkeJ` further below.
 
 *Class 1 — faithful.*  Solution `parsec-320.40` gets closedness from `J`
 being "the kernel of the map miu-map `f ↦ f(0) : C[0,1] → ℂ`", and that is
@@ -213,6 +212,281 @@ theorem paschke_inclusion_no_adjoint :
   rw [funext hone, hb0] at hcont
   exact one_ne_zero (tendsto_nhds_unique tendsto_const_nhds hcont)
 
+/-! ### `J` as a Hilbert `C[0,1]`-module, and the inclusion as a module map
+
+**32IV** asks for `J` itself: that it is a closed right ideal "and thus a
+Hilbert `C[0,1]`-module", and that "the inclusion `T : J → C[0,1]` is a
+bounded module map, which has no adjoint".  The two theorems above state the
+closed-ideal half and the exercise's own *route* to non-adjointability (no
+`b ∈ J` with `⟨b,a⟩ = a`); what follows carries `J` as a type, so that the
+Hilbert-module clause and the non-adjointability of `T` can be stated as the
+exercise states them.
+
+Mathlib's `CStarModule` convention is `⟪x, y⟫ = y x*` where the thesis writes
+`⟨x, y⟩ = x* y`; on the *commutative* `C[0,1]` the two agree. -/
+
+/-- **32IV** (cstar.tex:5166, Exercise): `J = {f ∈ C[0,1] : f(0) = 0}`, as a
+`ℂ`-submodule of `C[0,1]` — the carrier of the ideal `paschke_ideal`, in the
+form that gives it a type with a norm. -/
+noncomputable def paschkeJ : Submodule ℂ C(unitInterval, ℂ) where
+  carrier := {f : C(unitInterval, ℂ) | f 0 = 0}
+  add_mem' := by intro a b ha hb; simp_all
+  zero_mem' := by simp
+  smul_mem' := by intro c a ha; simp_all
+
+/-- **32IV** (cstar.tex:5166, Exercise): the type `J`. -/
+noncomputable abbrev PaschkeJ := ↥paschkeJ
+
+/-- `J` is a right ideal, so `C[0,1]` acts on it. -/
+noncomputable instance : SMul C(unitInterval, ℂ) PaschkeJ where
+  smul a x := ⟨a * (x : C(unitInterval, ℂ)),
+    show (a * (x : C(unitInterval, ℂ))) 0 = 0 by
+      rw [ContinuousMap.mul_apply, show (x : C(unitInterval, ℂ)) 0 = 0 from x.2,
+        mul_zero]⟩
+
+/-- **32IV** (cstar.tex:5166, Exercise), part 1, closing clause: `J` carries
+the `C[0,1]`-valued inner product `⟨f, g⟩ = f* g` of a pre-Hilbert
+`C[0,1]`-module.  Every axiom is inherited from `C[0,1]` as a module over
+itself, the ideal property being what keeps `f* g` and `a·f` inside `J`. -/
+noncomputable instance : CStarModule C(unitInterval, ℂ) PaschkeJ where
+  inner x y := (y : C(unitInterval, ℂ)) * star (x : C(unitInterval, ℂ))
+  inner_add_right := by
+    intro x y z
+    show ((y : C(unitInterval, ℂ)) + (z : C(unitInterval, ℂ))) * _ = _
+    ring
+  inner_self_nonneg := by intro x; exact mul_star_self_nonneg _
+  inner_self := by
+    intro x
+    show (x : C(unitInterval, ℂ)) * star (x : C(unitInterval, ℂ)) = 0 ↔ _
+    rw [CStarRing.mul_star_self_eq_zero_iff]
+    exact ⟨fun h => Subtype.ext h, fun h => by rw [h]; rfl⟩
+  inner_op_smul_right := by
+    intro a x y
+    show ((a • y : PaschkeJ) : C(unitInterval, ℂ)) * _ = a * ((y : C(unitInterval, ℂ)) * _)
+    show a * (y : C(unitInterval, ℂ)) * _ = _
+    rw [mul_assoc]
+  inner_smul_right_complex := by
+    intro z x y
+    show ((z • y : PaschkeJ) : C(unitInterval, ℂ)) * _ = z • ((y : C(unitInterval, ℂ)) * _)
+    show (z • (y : C(unitInterval, ℂ))) * _ = _
+    rw [smul_mul_assoc]
+  star_inner := by
+    intro x y
+    show star ((y : C(unitInterval, ℂ)) * star (x : C(unitInterval, ℂ)))
+      = (x : C(unitInterval, ℂ)) * star (y : C(unitInterval, ℂ))
+    rw [star_mul, star_star, mul_comm]
+  norm_eq_sqrt_norm_inner_self := by
+    intro x
+    show ‖x‖ = Real.sqrt ‖(x : C(unitInterval, ℂ)) * star (x : C(unitInterval, ℂ))‖
+    rw [← sq_eq_sq₀ (norm_nonneg _) (by positivity),
+      show ‖x‖ = ‖(x : C(unitInterval, ℂ))‖ from rfl]
+    simpa [sq] using
+      Eq.symm <| CStarRing.norm_self_mul_star (x := (x : C(unitInterval, ℂ)))
+
+/-- `J` is closed in the complete `C[0,1]`, hence complete. -/
+noncomputable instance : CompleteSpace PaschkeJ :=
+  (show IsClosed ((paschkeJ : Set C(unitInterval, ℂ))) from
+    paschke_ideal_closed).completeSpace_coe
+
+/-- **32IV** (cstar.tex:5166, Exercise), part 1, closing clause: `J` is a
+*Hilbert* `C[0,1]`-module — a pre-Hilbert module, and complete, which it is
+because it is closed in `C[0,1]`. -/
+noncomputable example : CStarModule C(unitInterval, ℂ) PaschkeJ := inferInstance
+
+example : CompleteSpace PaschkeJ := inferInstance
+
+/-- **32IV** (cstar.tex:5166, Exercise), part 2: the inclusion
+`T : J → C[0,1]`, as a bounded (indeed contractive) linear map. -/
+noncomputable def paschkeInclusion : PaschkeJ →L[ℂ] C(unitInterval, ℂ) :=
+  paschkeJ.subtypeL
+
+@[simp] theorem paschkeInclusion_apply (x : PaschkeJ) :
+    paschkeInclusion x = (x : C(unitInterval, ℂ)) := rfl
+
+/-- **32IV** (cstar.tex:5166, Exercise), part 2, as the Exercise states it:
+the inclusion `T : J → C[0,1]` is a bounded module map — boundedness is
+carried by its `→L[ℂ]` type, and the module-map clause is the first conjunct
+— **which has no adjoint**.
+
+*Class 1 — faithful.*  This is the Exercise's own parenthetical: "for if `T`
+had an adjoint `T*`, then `⟨T*1, a⟩ = ⟨1, Ta⟩ = a` for all `a ∈ J`", which
+is exactly the situation `paschke_inclusion_no_adjoint` rules out, with
+`b := T*(1)`. -/
+theorem paschke_inclusion_not_adjointable :
+    (∀ (a : C(unitInterval, ℂ)) (x : PaschkeJ),
+        paschkeInclusion (a • x) = a • paschkeInclusion x) ∧
+      ¬ ModuleAdjointable C(unitInterval, ℂ) ⇑paschkeInclusion := by
+  refine ⟨fun a x => rfl, ?_⟩
+  rintro ⟨S, hS⟩
+  -- `b := T*(1)` lies in `J`
+  refine paschke_inclusion_no_adjoint
+    ⟨(S 1 : C(unitInterval, ℂ)), (S 1).2, fun a ha => ?_⟩
+  -- `⟨T a, 1⟩ = ⟨a, T* 1⟩` reads `1 · a* = b · a*`, i.e. `a* = b a*`
+  have h := hS ⟨a, ha⟩ 1
+  show (star (S 1 : C(unitInterval, ℂ))) * a = a
+  have h2 : (1 : C(unitInterval, ℂ)) * star a
+      = (S 1 : C(unitInterval, ℂ)) * star a := h
+  have h' : star a = (S 1 : C(unitInterval, ℂ)) * star a := by rwa [one_mul] at h2
+  calc (star (S 1 : C(unitInterval, ℂ))) * a
+      = star ((S 1 : C(unitInterval, ℂ)) * star a) := by
+        rw [star_mul, star_star, mul_comm]
+    _ = star (star a) := by rw [← h']
+    _ = a := star_star a
+
+section AValuedInner
+
+variable {𝒜 : Type*} [CStarAlgebra 𝒜] [PartialOrder 𝒜] [StarOrderedRing 𝒜]
+variable {X : Type*} [AddCommGroup X] [Module ℂ X] [SMul 𝒜 X]
+
+/-- **32I** (`chilb-basic`, cstar.tex:4981, Definition): an *𝒜-valued inner
+product* on an 𝒜-module `X` — `⟨x, ·⟩` a module map, `⟨x,x⟩ ≥ 0`, and
+`⟨x,y⟩ = ⟨y,x⟩*`.  Definiteness is **not** required (32I calls a definite one
+a *pre-Hilbert 𝒜-module*), and `X` carries no norm.  This is the setting of
+**32VI**, which is stated "for every inner product on a right 𝒜-module `X`".
+
+The arguments are in Mathlib's order, `f x y = ⟨y, x⟩` of the thesis, so that
+the fields are literally those of `CStarModule` minus definiteness
+(`inner_self`) and minus the norm (`norm_eq_sqrt_norm_inner_self`); the
+thesis's right action `y · a` is `a* • y` here (cf. the convention note on
+`chilb_cs`). -/
+structure IsAValuedInner (𝒜 : Type*) {X : Type*} [CStarAlgebra 𝒜]
+    [PartialOrder 𝒜] [AddCommGroup X] [Module ℂ X] [SMul 𝒜 X]
+    (f : X → X → 𝒜) : Prop where
+  /-- `⟨x, ·⟩` is additive. -/
+  add_right : ∀ x y z, f x (y + z) = f x y + f x z
+  /-- `⟨x, ·⟩` is a module map. -/
+  smul_right : ∀ (a : 𝒜) (x y : X), f x (a • y) = a * f x y
+  /-- `⟨x, ·⟩` is ℂ-linear. -/
+  smul_right_complex : ∀ (c : ℂ) (x y : X), f x (c • y) = c • f x y
+  /-- `⟨x,x⟩ ≥ 0`. -/
+  self_nonneg : ∀ x, 0 ≤ f x x
+  /-- `⟨x,y⟩ = ⟨y,x⟩*`. -/
+  star_symm : ∀ x y, star (f x y) = f y x
+
+attribute [local instance] InnerProductSpace.Core.toPreInner'
+
+/-- The thesis's observation inside the proof of **32VI** (**32VIII**): for a
+state `ω` of `𝒜`, the map `(u,v) ↦ ω(⟨u,v⟩)` is a complex-valued inner
+product on `X` — *possibly indefinite*, so a `PreInnerProductSpace.Core`, the
+setting of **4XV** in `A/CStar/Basic`. -/
+private noncomputable def stateCore {f : X → X → 𝒜} (hf : IsAValuedInner 𝒜 f)
+    (ω : 𝒜 →ₗ[ℂ] ℂ) (hω : IsState ω) : PreInnerProductSpace.Core ℂ X where
+  inner u v := ω (f u v)
+  conj_inner_symm u v := by
+    have hi : IsInvolutionPreserving ω := cstar_p_implies_i ω hω.1
+    have h := hi (f v u)
+    rw [hf.star_symm] at h
+    simpa [Complex.star_def] using h.symm
+  re_inner_nonneg u := (Complex.le_def.mp (hω.1 _ (hf.self_nonneg u))).1
+  add_left u v z := by
+    have h : f (u + v) z = f u z + f v z := by
+      rw [← hf.star_symm z (u + v), hf.add_right z u v, star_add, hf.star_symm,
+        hf.star_symm]
+    show ω (f (u + v) z) = ω (f u z) + ω (f v z)
+    rw [h, map_add]
+  smul_left u v r := by
+    have h : f (r • u) v = (starRingEnd ℂ) r • f u v := by
+      rw [← hf.star_symm v (r • u), hf.smul_right_complex, star_smul, hf.star_symm]
+      rfl
+    show ω (f (r • u) v) = (starRingEnd ℂ) r * ω (f u v)
+    rw [h, map_smul, smul_eq_mul]
+
+/-- Cauchy–Schwarz for the scalar inner product `ω(⟨·,·⟩)` — **4XV**.1 in
+`A/CStar/Basic`, which the thesis's proof of **32VI** cites by name. -/
+private theorem state_cs {f : X → X → 𝒜} (hf : IsAValuedInner 𝒜 f)
+    (ω : 𝒜 →ₗ[ℂ] ℂ) (hω : IsState ω) (u v : X) :
+    ‖ω (f u v)‖ ^ 2 ≤ RCLike.re (ω (f u u)) * RCLike.re (ω (f v v)) :=
+  inner_product_basic_1 (V := X) (c := stateCore hf ω hω) u v
+
+/-- **32VI** (`chilb-cs`, cstar.tex:5096, Proposition (Cauchy–Schwarz)), in
+the generality the Proposition states it: `⟨x,y⟩⟨y,x⟩ ≤ ‖⟨y,y⟩‖ ⟨x,x⟩` for
+*every* 𝒜-valued inner product on an 𝒜-module `X` — definite or not, and
+with no norm on `X`.  (`chilb_cs` below is the special case of a
+`CStarModule`, which is where the rest of the file uses it.)
+
+*Class 1 — faithful.*  The proof is **32VIII**'s, step for step.  The states
+of `𝒜` are order separating (**22VIII**.2), so it suffices to show
+`ω(⟨x,y⟩⟨y,x⟩) ≤ ‖⟨y,y⟩‖ ω(⟨x,x⟩)` for each state `ω`; `(u,v) ↦ ω(⟨u,v⟩)` is
+a (possibly indefinite) complex inner product, and Cauchy–Schwarz for it
+(**4XV**.1) at the pair `(y⟨y,x⟩, x)` gives
+`ω(⟨x,y⟩⟨y,x⟩)² ≤ ω(⟨x,x⟩) ω(⟨x,y⟩⟨y,y⟩⟨y,x⟩)`, whose right factor is at most
+`‖⟨y,y⟩‖ ω(⟨x,y⟩⟨y,x⟩)` because `⟨y,y⟩ ≤ ‖⟨y,y⟩‖` (**9X**.2).  The conclusion
+follows, "also when `ω(⟨x,y⟩⟨y,x⟩) = 0`". -/
+theorem chilb_cs_general {f : X → X → 𝒜} (hf : IsAValuedInner 𝒜 f) (x y : X) :
+    f y x * f x y ≤ ‖f y y‖ • f x x := by
+  set p := f y x with hp
+  set q := f x y with hq
+  have hsq : star q = p := hf.star_symm x y
+  have hsp : star p = q := hf.star_symm y x
+  -- `⟨x,y⟩⟨y,x⟩ = q* q` is positive, and `⟨x, y⟨y,x⟩⟩ = ⟨x,y⟩⟨y,x⟩`
+  have hpq0 : (0 : 𝒜) ≤ p * q := by rw [← hsq]; exact star_mul_self_nonneg q
+  set z : X := p • y with hz
+  have hzx : f z x = p * q := by
+    rw [← hf.star_symm x z, hz, hf.smul_right, ← hq, star_mul, hsp, hsq]
+  have hzy : f z y = f y y * q := by
+    rw [← hf.star_symm y z, hz, hf.smul_right, star_mul, hsp,
+      (IsSelfAdjoint.of_nonneg (hf.self_nonneg y)).star_eq]
+  have hzz : f z z = p * f y y * q := by
+    rw [hz, hf.smul_right, ← hz, hzy, ← mul_assoc]
+  -- `⟨z,z⟩ = ⟨x,y⟩⟨y,y⟩⟨y,x⟩ ≤ ‖⟨y,y⟩‖ ⟨x,y⟩⟨y,x⟩`, since `⟨y,y⟩ ≤ ‖⟨y,y⟩‖`
+  have hzzle : f z z ≤ ‖f y y‖ • (p * q) := by
+    have h1 : f y y ≤ ‖f y y‖ • (1 : 𝒜) := by
+      have h := (cstar_positive_2 (f y y)
+        (IsSelfAdjoint.of_nonneg (hf.self_nonneg y))).2.2
+      rw [RCLike.real_smul_eq_coe_smul (K := ℂ), ← Algebra.algebraMap_eq_smul_one]
+      exact h
+    have h2 := star_left_conjugate_le_conjugate h1 q
+    rw [hsq] at h2
+    calc f z z = p * f y y * q := hzz
+      _ ≤ p * (‖f y y‖ • (1 : 𝒜)) * q := h2
+      _ = ‖f y y‖ • (p * q) := by rw [mul_smul_comm, smul_mul_assoc, mul_one]
+  -- the states are order separating (**22VIII**.2), so one state at a time
+  rw [← sub_nonneg]
+  refine (states_order_separating_2 (𝒜 := 𝒜) _).mpr ?_
+  rintro ⟨ω, hω⟩
+  show (0 : ℂ) ≤ ω (‖f y y‖ • f x x - p * q)
+  have hmono : ∀ a b : 𝒜, a ≤ b → ω a ≤ ω b := by
+    intro a b hab
+    have h := hω.1 _ (sub_nonneg.mpr hab)
+    rw [map_sub] at h
+    exact sub_nonneg.mp h
+  have hsmul : ∀ (r : ℝ) (a : 𝒜), ω (r • a) = (r : ℂ) * ω a := by
+    intro r a
+    rw [RCLike.real_smul_eq_coe_smul (K := ℂ), map_smul, smul_eq_mul]
+    rfl
+  have hT : (0 : ℂ) ≤ ω (p * q) := hω.1 _ hpq0
+  have hS : (0 : ℂ) ≤ ω (f x x) := hω.1 _ (hf.self_nonneg x)
+  set T : ℝ := RCLike.re (ω (p * q)) with hTdef
+  set S : ℝ := RCLike.re (ω (f x x)) with hSdef
+  have hT0 : 0 ≤ T := (Complex.le_def.mp hT).1
+  have hS0 : 0 ≤ S := (Complex.le_def.mp hS).1
+  have hTim : (ω (p * q)).im = 0 := ((Complex.le_def.mp hT).2).symm
+  have hSim : (ω (f x x)).im = 0 := ((Complex.le_def.mp hS).2).symm
+  have hTnorm : ‖ω (p * q)‖ = T := by
+    rw [hTdef]
+    conv_rhs => rw [Complex.eq_coe_norm_of_nonneg hT]
+    simp
+  -- Cauchy–Schwarz for `ω(⟨·,·⟩)` (**4XV**.1) at `(y⟨y,x⟩, x)`
+  have hcs := state_cs hf ω hω z x
+  rw [hzx, hTnorm] at hcs
+  have hzzω : RCLike.re (ω (f z z)) ≤ ‖f y y‖ * T := by
+    have h := hmono _ _ hzzle
+    rw [hsmul] at h
+    have h1 := (Complex.le_def.mp h).1
+    simpa [hTdef] using h1
+  have hM0 : (0 : ℝ) ≤ ‖f y y‖ := norm_nonneg _
+  have hle : T ≤ ‖f y y‖ * S := by
+    have hsq : T ^ 2 ≤ (‖f y y‖ * T) * S := le_trans hcs (by nlinarith [hS0])
+    rcases eq_or_lt_of_le hT0 with h0 | h0
+    · rw [← h0]; positivity
+    · nlinarith
+  rw [map_sub, hsmul, sub_nonneg]
+  refine Complex.le_def.mpr ⟨?_, ?_⟩
+  · simpa [hTdef, hSdef, hSim] using hle
+  · simp [hTim, hSim]
+
+end AValuedInner
+
 section CauchySchwarz
 
 variable {𝒜 : Type*} {X Y : Type*} [CStarAlgebra 𝒜]
@@ -221,9 +495,13 @@ variable {𝒜 : Type*} {X Y : Type*} [CStarAlgebra 𝒜]
   [NormedAddCommGroup Y] [NormedSpace ℂ Y] [SMul 𝒜 Y] [CStarModule 𝒜 Y]
 
 /-- **32VI** (`chilb-cs`, cstar.tex:5096, Proposition (Cauchy–Schwarz)):
-`⟨x,y⟩ ⟨y,x⟩ ≤ ‖⟨y,y⟩‖ ⟨x,x⟩` for an 𝒜-valued inner product.  (**32VII**,
-Remark: the norm sign cannot be removed; not converted.  Mathlib:
-`CStarModule.inner_mul_inner_swap_le`.)
+`⟨x,y⟩ ⟨y,x⟩ ≤ ‖⟨y,y⟩‖ ⟨x,x⟩`, for the 𝒜-valued inner product of a
+`CStarModule` — the case the rest of this file uses.  The Proposition itself,
+for *every* 𝒜-valued inner product on an 𝒜-module (definite or not, with no
+norm on `X`), is `chilb_cs_general` above, of which this is the immediate
+corollary: the fields of `IsAValuedInner` are those of `CStarModule` minus
+definiteness and minus the norm.  (**32VII**, Remark: the norm sign cannot be
+removed; not converted.)
 
 **Convention.** The thesis uses *right* 𝒜-modules with `⟨x, y·b⟩ = ⟨x,y⟩ b`,
 whereas Mathlib's `CStarModule` uses the opposite convention `⟪x, a•y⟫ =
@@ -232,9 +510,13 @@ therefore the thesis's inequality with the arguments swapped.  Stated without
 the swap it is *false*: for `𝒜 = M₂(ℂ)`, `X = C⋆ᵐᵒᵈ(𝒜,𝒜)`, `x = e₁₁`,
 `y = e₂₁` it would assert `e₂₂ ≤ e₁₁`. -/
 theorem chilb_cs (x y : X) :
-    inner 𝒜 y x * inner 𝒜 x y ≤ ‖inner 𝒜 y y‖ • inner 𝒜 x x := by
-  have h := CStarModule.inner_mul_inner_swap_le (A := 𝒜) (x := y) (y := x)
-  rwa [CStarModule.norm_sq_eq (A := 𝒜) (x := y)] at h
+    inner 𝒜 y x * inner 𝒜 x y ≤ ‖inner 𝒜 y y‖ • inner 𝒜 x x :=
+  chilb_cs_general (𝒜 := 𝒜)
+    { add_right := fun _ _ _ => CStarModule.inner_add_right
+      smul_right := fun _ _ _ => CStarModule.inner_op_smul_right
+      smul_right_complex := fun _ _ _ => CStarModule.inner_smul_right_complex
+      self_nonneg := fun _ => CStarModule.inner_self_nonneg
+      star_symm := fun u v => CStarModule.star_inner u v } x y
 
 /-- **32IX** (`chilb-norm-basic`, cstar.tex:5161, Exercise), part 1, the
 defining equation: `‖x‖ = ‖⟨x,x⟩‖^{1/2}` — in Mathlib this is the bundled
@@ -1717,6 +1999,100 @@ theorem ad_cp_2 {H K : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
   rw [hsum]
   exact (ContinuousLinearMap.nonneg_iff_isPositive _).mpr
     (ContinuousLinearMap.isPositive_adjoint_comp_self _)
+
+section AdCPModule
+
+variable {X Y : Type*}
+  [NormedAddCommGroup X] [NormedSpace ℂ X] [SMul 𝒜 X] [CStarModule 𝒜 X]
+  [CompleteSpace X]
+  [NormedAddCommGroup Y] [NormedSpace ℂ Y] [SMul 𝒜 Y] [CStarModule 𝒜 Y]
+  [CompleteSpace Y]
+
+/-- The converse half of **32XV**.2 inside `B^a(X)`: an operator with
+positive vector functionals is positive.  (`bax_inner_nonneg` above is the
+other half.) -/
+private theorem bax_nonneg_of_inner {U : Bax 𝒜 X}
+    (h : ∀ x : X, 0 ≤ inner 𝒜 x ((U : X →L[ℂ] X) x)) : 0 ≤ U := by
+  obtain ⟨R, R', hRR', hU⟩ := (chilb_vector_states_2 (U : X →L[ℂ] X) U.2).mp h
+  set A : Bax 𝒜 X := ⟨R, ⟨⇑R', hRR'⟩⟩ with hA
+  have hstar : ((star A : Bax 𝒜 X) : X →L[ℂ] X) = R' :=
+    ContinuousLinearMap.ext fun x =>
+      congrFun (moduleAdjointTo_unique (𝒜 := 𝒜) ⇑R _ _ (bax_star_spec A) hRR') x
+  have hUA : U = star A * A := by
+    refine Subtype.ext ?_
+    show (U : X →L[ℂ] X) = ((star A : Bax 𝒜 X) : X →L[ℂ] X) * (A : X →L[ℂ] X)
+    rw [hstar, hU]
+    rfl
+  rw [hUA]
+  exact star_mul_self_nonneg _
+
+/-- **34V** (`ad-cp`, cstar.tex:5463, Exercise), part 2: the map
+`T ↦ S* T S : 𝓑^a(X) → 𝓑^a(Y)` of an adjointable bounded module map
+`S : Y → X` between Hilbert 𝒜-modules, as a linear map. -/
+noncomputable def conjModule (S : Y →L[ℂ] X) (S' : X →L[ℂ] Y)
+    (hS : ModuleAdjointTo 𝒜 ⇑S ⇑S') : Bax 𝒜 X →ₗ[ℂ] Bax 𝒜 Y where
+  toFun T := ⟨S'.comp ((T : X →L[ℂ] X).comp S), by
+    refine ⟨⇑S' ∘ (⇑((star T : Bax 𝒜 X) : X →L[ℂ] X) ∘ ⇑S), ?_⟩
+    have h1 : ModuleAdjointTo 𝒜 (⇑S' ∘ ⇑(T : X →L[ℂ] X))
+        (⇑((star T : Bax 𝒜 X) : X →L[ℂ] X) ∘ ⇑S) :=
+      moduleAdjointTo_comp (⇑(T : X →L[ℂ] X)) (⇑S') _ (⇑S)
+        (bax_star_spec T) (moduleAdjointTo_symm _ _ hS)
+    exact moduleAdjointTo_comp (⇑S) (⇑S' ∘ ⇑(T : X →L[ℂ] X)) (⇑S') _ hS h1⟩
+  map_add' T T' := by
+    refine Subtype.ext (ContinuousLinearMap.ext fun y => ?_)
+    simp [ContinuousLinearMap.add_comp, ContinuousLinearMap.comp_add]
+  map_smul' c T := by
+    refine Subtype.ext (ContinuousLinearMap.ext fun y => ?_)
+    simp
+
+@[simp] theorem conjModule_apply (S : Y →L[ℂ] X) (S' : X →L[ℂ] Y)
+    (hS : ModuleAdjointTo 𝒜 ⇑S ⇑S') (T : Bax 𝒜 X) (y : Y) :
+    ((conjModule S S' hS T : Bax 𝒜 Y) : Y →L[ℂ] Y) y
+      = S' ((T : X →L[ℂ] X) (S y)) := rfl
+
+/-- **34V** (`ad-cp`, cstar.tex:5463, Exercise), part 2, as the Exercise
+states it: `T ↦ S* T S : 𝓑^a(X) → 𝓑^a(Y)` is completely positive for every
+adjointable operator `S : Y → X` between **Hilbert 𝒜-modules**.  (`ad_cp_2`
+below is the Hilbert-space case `𝒜 = ℂ`, which is what the rest of the tree
+uses.)
+
+*Class 1 — faithful.*  The computation of solution `parsec-340.50`(2): with
+`dᵢ := Tᵢ S Rᵢ : Y → X`, the sum `∑ᵢⱼ Rᵢ* S* Tᵢ* Tⱼ S Rⱼ` has vector
+functionals `⟨y, ∑ᵢⱼ …⟩ = ⟨∑ᵢ dᵢ y, ∑ⱼ dⱼ y⟩ ≥ 0`, and positivity in
+`𝓑^a(Y)` follows by **32XV**.2. -/
+theorem ad_cp_2_module (S : Y →L[ℂ] X) (S' : X →L[ℂ] Y)
+    (hS : ModuleAdjointTo 𝒜 ⇑S ⇑S') :
+    IsCompletelyPositiveMap (conjModule S S' hS) := by
+  intro n T R
+  set d : Fin n → (Y →L[ℂ] X) :=
+    fun i => ((T i : X →L[ℂ] X).comp S).comp ((R i : Y →L[ℂ] Y)) with hd
+  refine bax_nonneg_of_inner fun y => ?_
+  have key : ∀ i j : Fin n,
+      inner 𝒜 y (((star (R i) * conjModule S S' hS (star (T i) * T j) * R j :
+          Bax 𝒜 Y) : Y →L[ℂ] Y) y)
+        = inner 𝒜 (d i y) (d j y) := by
+    intro i j
+    have e1 : ((star (R i) * conjModule S S' hS (star (T i) * T j) * R j :
+        Bax 𝒜 Y) : Y →L[ℂ] Y) y
+        = ((star (R i) : Bax 𝒜 Y) : Y →L[ℂ] Y)
+            (S' (((star (T i) : Bax 𝒜 X) : X →L[ℂ] X)
+              ((T j : X →L[ℂ] X) (S (((R j : Bax 𝒜 Y) : Y →L[ℂ] Y) y))))) := rfl
+    rw [e1, ← bax_star_spec (R i), ← hS, ← bax_star_spec (T i)]
+    rfl
+  have hsum : ((∑ i, ∑ j, star (R i) * conjModule S S' hS (star (T i) * T j) * R j :
+      Bax 𝒜 Y) : Y →L[ℂ] Y) y
+      = ∑ i, ∑ j, ((star (R i) * conjModule S S' hS (star (T i) * T j) * R j :
+        Bax 𝒜 Y) : Y →L[ℂ] Y) y := by
+    push_cast
+    simp
+  rw [hsum, CStarModule.inner_sum_right]
+  simp_rw [CStarModule.inner_sum_right]
+  simp_rw [key]
+  simp_rw [← CStarModule.inner_sum_right]
+  rw [← CStarModule.inner_sum_left]
+  exact CStarModule.inner_self_nonneg
+
+end AdCPModule
 
 /-- **34V** (`ad-cp`, cstar.tex:5463, Exercise), part 3: the vector
 functional `T ↦ ⟨x, Tx⟩ : B(H) → ℂ` is completely positive. -/

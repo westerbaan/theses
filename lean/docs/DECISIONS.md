@@ -15,9 +15,9 @@ record the ruling.  Where an item is really an erratum acceptance we say so, and
 waiting on §1 below.  The eleventh, `centrally_similar_basic_5` (104III.5),
 needs no ruling at all — it was ruled on 2026-08-19 and what is left is
 mathematics.  Beyond the `sorry`s there are 85 open rows in `ERRATA.md` (those
-are corrections, not decisions, and are not repeated here) and seven audit rows
-in `docs/audit/` marked `left-ruling` — five of them are §2, the other two
-(139XI, 179III.2) hold up a `sorry` and are in §1.
+are corrections, not decisions, and are not repeated here) and eight audit rows
+in `docs/audit/` marked `left-ruling` — five of them are §2, one (34V.3) is
+§3.3, and the other two (139XI, 179III.2) hold up a `sorry` and are in §1.
 
 Point numbers are the primary key; the Lean name is given so we can find the
 declaration.  Sources were re-read for this document — several entries that
@@ -539,7 +539,7 @@ declaration itself.)*
 
 ### 2.4 — 30X `proto-gelfand-naimark`: may clause (1) name `ϱ_Ω`?
 
-*(`QUESTIONS.md` A8.  Audit row `acstar-matrices-representation.csv:118`,
+*(`QUESTIONS.md` A8.  Audit row `acstar-matrices-representation.csv:138`,
 `left-ruling`.  Lean: `proto_gelfand_naimark_2`.)*
 
 **What is being asked.**  30X states a three-way equivalence for a collection
@@ -574,7 +574,7 @@ Nothing downstream is affected: no declaration in `Theses/` uses
 
 ### 2.5 — 28II.4 `functional-calculus`: may the unique element be identified with `f(a)`?
 
-*(`QUESTIONS.md` A10.  Audit row `acstar-matrices-representation.csv:95`,
+*(`QUESTIONS.md` A10.  Audit row `acstar-matrices-representation.csv:114`,
 `left-ruling`.  Lean: `functional_calculus_4`.)*
 
 **What is being asked.**  The exercise asks: given `f ∈ C(spec(a))`, show that
@@ -751,7 +751,8 @@ unstated rather than as open work.
 
 ### 3.3 — 34V.3 in the module setting: is the mirrored cp condition wanted?
 
-*(`QUESTIONS.md` A13, partly stale — see §4.5.  Lean: `ad_cp_3`, `ad_cp_2`.)*
+*(`QUESTIONS.md` A13, partly stale — see §4.5.  Audit row
+`acstar-matrices-representation.csv:58`, `left-ruling`.  Lean: `ad_cp_3`.)*
 34V.3 says: for every element `x` of a Hilbert `𝒜`-module `X`, the vector
 functional `T ↦ ⟨x, Tx⟩ : ℬᵃ(X) → 𝒜` is completely positive.  We state the case
 `𝒜 = ℂ`, `X = ℋ` only.  The **convention** half of this question was already
@@ -771,13 +772,29 @@ which is why it needs a ruling.  **(b)** Leave 34V.2/.3 in the Hilbert-space
 case, with the doc comments recording the divergence, and mark the module
 versions deliberately unstated.
 
-**Recommendation: (b) for now.**  A second obstruction blocks (a) anyway and
-needs no ruling: `ℬᵃ(X)` exists in the tree only as the private `Bax 𝒜 X`, with
-**no cross-module hom-sets**, so `S*TS` for `S : Y → X` has nowhere to live.
-What the answer settles is the shape of every future `𝒜`-valued statement — the
-neighbouring module rows (32IV.2 `paschke_inclusion_no_adjoint`, and 161II in
-`B/Dils`) are waiting on the sub-Hilbert-module infrastructure and would be
-written in whichever form is chosen.
+**Recommendation: (a).**  *(Changed 2026-08-26.  The recommendation used to be
+(b), on the strength of "a second obstruction blocks (a) anyway and needs no
+ruling: `ℬᵃ(X)` exists in the tree only as the private `Bax 𝒜 X`, with no
+cross-module hom-sets, so `S*TS` for `S : Y → X` has nowhere to live."  That
+obstruction was not real and is gone.  `S*TS` is a map `Y → Y` and it is
+adjointable, so it lives in `Bax 𝒜 Y`; no hom-set type is needed, only `S`
+together with an adjoint.  **34V.2 is now stated and proved for Hilbert
+𝒜-modules** — `conjModule` and `ad_cp_2_module` in `A/CStar/Matrices.lean` —
+and so is the neighbouring 32IV, whose `J` now carries a `CStarModule C[0,1]`
+instance and whose inclusion is proved non-adjointable as a module map.  So
+34V.3 is the **only** part of 34V still in the Hilbert-space case, and this
+question is the only thing holding it.)*
+
+The exact shape of the clash, re-derived: Mathlib's `CStarModule 𝒜 X` is a
+**left** module with `⟪x, a•y⟫ = a⟪x,y⟫`, while the thesis has a right module
+with `⟨x, y·b⟩ = ⟨x,y⟩b`.  Both are ℂ-linear in the second argument, so the two
+conventions differ by the **opposite algebra**, not by a swap of arguments.  The
+ℂ-linear functional `φ T = ⟪x, Tx⟫` gives `φ(Tᵢ*Tⱼ) = ⟪Tᵢx, Tⱼx⟫`, and what the
+module structure makes positive is `∑ᵢⱼ bᵢ* ⟪Tⱼx, Tᵢx⟫ bⱼ` — the **transposed**
+matrix — whereas `IsCompletelyPositiveMap` asks for `∑ᵢⱼ bᵢ* ⟪Tᵢx, Tⱼx⟫ bⱼ`.
+For commutative `𝒜` the two coincide, which is why the Hilbert-space `ad_cp_3`
+is unaffected.  What the answer settles is the shape of every future `𝒜`-valued
+cp statement, 161II in `B/Dils` included.
 
 ### 3.4 — 98VI: replace the hint, or turn its inequality round?
 

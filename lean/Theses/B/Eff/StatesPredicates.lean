@@ -1928,24 +1928,22 @@ end RngEff
 `Rngᵒᵖ` of unital rings with unit-preserving homomorphisms, in the opposite
 direction, is an effectus in total form.
 
-⚠ **Part 1 of the Exercise is not in the tree** (audit row 191VIII, left
-unrepaired): "the predicates on `R` correspond to its idempotents; `p ⊥ q`
-iff `pq = qp = 0`, `p^⊥ = 1 - p` and `p ⋁ q = p + q`; so `2` is its effect
-monoid of scalars; conclude `Rngᵒᵖ` does **not** have separating predicates".
-The two sentences above this warning used to assert the idempotent and scalar
-description in prose only, which is why they have been removed from the
-headline.
+**Part 1 of the Exercise** is now largely in the tree.  Stated and proved
+below: the predicates on `R` correspond to its idempotents
+(`exc_rng_eff_pred_idem`, with the correspondence pinned by
+`exc_rng_eff_pred_idem_one`, `_zero` and `_orth`, the last of which is the
+part's `p^⊥ = 1 - p`), and the part's conclusion, that `Rngᵒᵖ` does **not**
+have separating predicates (`exc_rng_eff_no_separating_predicates`, on the
+Exercise's own witness `ℤ[X]`).
 
-The predicates in question are those of `Par (Rngᵒᵖ)`, i.e. ring maps
-`(⊤ ⨿ ⊤).unop → R`, and `(⊤ ⨿ ⊤).unop ≅ ℤ × ℤ` gives the bijection with
-idempotents (`f ↦ f(1,0)`; conversely `(a,b) ↦ ap + b(1-p)`, which is
-multiplicative because the image of the initial ring is central).  The
-orthocomplement and sum clauses need in addition the concrete PCM structure
-of `Par C` — `ParPerp f g = ∃ b, ParBound f g b` unfolded at `Rngᵒᵖ` — which
-the tree has no tool for; this is the same missing tool as in `emod_effectus`
-and 192III.3.  The failure of separating predicates then follows from a ring
-with only trivial idempotents and a non-trivial endomorphism (`ℤ[X]` with
-`X ↦ 0` and `X ↦ X`).  See the report of session 94. -/
+⚠ Still missing from part 1 are the two clauses about the *partial* PCM
+structure — `p ⊥ q` iff `pq = qp = 0`, and `p ⋁ q = p + q` — and the
+parenthetical "so `2` is its effect monoid of scalars".  All three need
+`ParPerp`/`parOvee` unfolded at `Rngᵒᵖ`, i.e. the analogue of
+`rngHomIdemEquiv` for `(rngI × rngI) × rngI` (ring maps out of it are triples
+of orthogonal idempotents summing to `1`), together with the transport of
+`(⊤ + ⊤) + ⊤` onto it and the computation of `Par.pproj₁`, `Par.pproj₂` and
+`parNabla` there.  Costed at 350–500 lines; see the audit row 191VIII. -/
 theorem exc_rng_eff : Nonempty (EffectusTotalStructure RingCat.{u}ᵒᵖ) := by
   refine ⟨{ hasFiniteCoproducts := inferInstance
             hasTerminal := inferInstance
@@ -1968,14 +1966,10 @@ theorem exc_rng_eff : Nonempty (EffectusTotalStructure RingCat.{u}ᵒᵖ) := by
 /-- **191VIII.2** (`exc-rng-eff`, eff.tex:2351, Exercise), first half: there
 is no unit-preserving ring homomorphism `ℤ₂ → ℤ`.
 
-⚠ The part's second half — "conclude `Rngᵒᵖ` does not have separating
-states" — is not stated (audit row 191VIII.2, left unrepaired).  The states
-of `X` in `Par (Rngᵒᵖ)` are the ring maps `X → ℤ`, so this half says: `ℤ₂`
-has no states, while there are two distinct partial maps out of `ℤ₂` (the
-identity and the zero map), so the states do not separate.  Stating it needs
-the same missing tool as `exc_rng_eff` part 1: a computation of `Stat` and of
-composition in `Par C` for a concrete total-form effectus `C`.  See the
-report of session 94. -/
+The part's second half — "conclude `Rngᵒᵖ` does not have separating states"
+— is `exc_rng_eff_no_separating_states` below, which runs the Exercise's own
+route: `ℤ₂` has no states (its states are the ring maps `ℤ₂ → ℤ`, by
+`parStatEquiv`), while `1` and `0` are distinct partial maps `ℤ₂ ⇸ 1`. -/
 theorem exc_rng_eff_no_hom : IsEmpty (ZMod 2 →+* ℤ) := by
   constructor
   intro f
@@ -1983,6 +1977,506 @@ theorem exc_rng_eff_no_hom : IsEmpty (ZMod 2 →+* ℤ) := by
   have h2 := congrArg f h
   rw [map_add, map_one, map_zero] at h2
   norm_num at h2
+
+
+/-! ### Tool: the states of `Par.of X` are the points of `X`
+
+The audit's standing complaint about `Par C` for a *concrete* total-form
+effectus `C` — that the tree has no way of computing `Stat` or `Pred` there —
+is answered for `Stat` by the two declarations below, which are 186VIII.1
+(`pardp`) read as a bijection. -/
+
+section ParStat
+
+variable {C : Type u} [Category.{v} C] [HasFiniteCoproducts C] [HasTerminal C]
+  [EffectusTotalForm C] [HasFiniteCoproducts (Par C)]
+
+/-- Helper: `ĝ = ĥ` forces `g = h` (`totParFunctor_faithful`, unbundled). -/
+theorem par_hat_inj {X Y : C} {g h : X ⟶ Y}
+    (e : (Par.hat g : Par.of X ⟶ Par.of Y) = Par.hat h) : g = h :=
+  totParFunctor.map_injective (Subtype.ext e)
+
+/-- **186VIII.1** (`pardp`) as a criterion: a partial map is **total**
+exactly when it is `ĝ` for some map `g` of `C`. -/
+theorem par_isTotal_iff_hat {X Y : C} (ω : Par.of X ⟶ Par.of Y) :
+    IsTotal ω ↔ ∃ g : X ⟶ Y, ω = Par.hat g := by
+  constructor
+  · intro h
+    exact ⟨_, (pardp_1 ω h).choose_spec.1⟩
+  · rintro ⟨g, rfl⟩
+    show (Par.hat g : Par.of X ⟶ Par.of Y) ≫ Par.one Y = Par.one X
+    rw [par_one_eq, par_hat_hat, par_one_eq]
+    congr 1
+    exact terminalIsTerminal.hom_ext _ _
+
+/-- **Tool**: the **states of `Par.of X` are the points of `X`** — a state is
+a total partial map `1 ⇸ X`, and by `pardp` those are exactly the `ĝ` for
+`g : ⊤_C ⟶ X`.  This is the computation of `Stat` for a concrete total-form
+effectus that the audit rows on 191VIII.2 and 191II record as missing. -/
+noncomputable def parStatEquiv (X : C) :
+    Stat (Par.of X) ≃ ((⊤_ C) ⟶ X) where
+  toFun ω := ((par_isTotal_iff_hat ω.1).mp ω.2).choose
+  invFun g := ⟨Par.hat g, (par_isTotal_iff_hat _).mpr ⟨g, rfl⟩⟩
+  left_inv ω := Subtype.ext ((par_isTotal_iff_hat ω.1).mp ω.2).choose_spec.symm
+  right_inv g :=
+    par_hat_inj ((par_isTotal_iff_hat
+      (Par.hat g : Par.of (⊤_ C) ⟶ Par.of X)).mp
+        ((par_isTotal_iff_hat _).mpr ⟨g, rfl⟩)).choose_spec.symm
+
+end ParStat
+
+/-! ### 191VIII.2, second half: `Rngᵒᵖ` has no separating states -/
+
+section RngStates
+
+open Opposite
+
+/-- The initial ring, as the unop of the chosen terminal of `Rngᵒᵖ`. -/
+private noncomputable abbrev rngI : RingCat.{u} := (⊤_ RingCat.{u}ᵒᵖ).unop
+
+/-- The unique ring map out of the initial ring. -/
+private noncomputable def rngIto (R : RingCat.{u}) : rngI.{u} ⟶ R :=
+  (terminal.from (op R)).unop
+
+/-- `ℤ₂`, as an object of `RingCat.{u}`. -/
+private noncomputable abbrev rngZmodTwo : RingCat.{u} :=
+  RingCat.of (ULift.{u} (ZMod 2))
+
+/-- There is no ring map `ℤ₂ → rngI`: composing with the unique
+`rngI → ULift ℤ` would give a unit-preserving `ℤ₂ → ℤ`, which
+`exc_rng_eff_no_hom` rules out.  (This is the Exercise's own route: "show
+there is no unit-preserving ring homomorphism `ℤ₂ → ℤ`; conclude …".) -/
+private theorem rng_no_hom_to_init : IsEmpty (rngZmodTwo.{u} ⟶ rngI.{u}) := by
+  constructor
+  intro f
+  have g : ULift.{u} (ZMod 2) →+* ULift.{u} ℤ :=
+    (rngIto (RingCat.of (ULift.{u} ℤ))).hom.comp f.hom
+  exact (exc_rng_eff_no_hom).elim
+    (ULift.ringEquiv.toRingHom.comp (g.comp ULift.ringEquiv.symm.toRingHom))
+
+/-- `ℤ₂` has **no states** in `Par (Rngᵒᵖ)`: by `parStatEquiv` they are the
+points `⊤ ⟶ ℤ₂` of `Rngᵒᵖ`, i.e. the ring maps `ℤ₂ → rngI`. -/
+private theorem rng_stat_empty [EffectusTotalForm RingCat.{u}ᵒᵖ] :
+    letI := parHasFiniteCoproducts (C := RingCat.{u}ᵒᵖ)
+    IsEmpty (Stat (Par.of (op rngZmodTwo.{u}))) := by
+  letI := parHasFiniteCoproducts (C := RingCat.{u}ᵒᵖ)
+  haveI := rng_no_hom_to_init.{u}
+  haveI : IsEmpty ((⊤_ RingCat.{u}ᵒᵖ) ⟶ op rngZmodTwo.{u}) :=
+    Function.isEmpty (fun f : (⊤_ RingCat.{u}ᵒᵖ) ⟶ op rngZmodTwo.{u} => f.unop)
+  exact Function.isEmpty (parStatEquiv (op rngZmodTwo.{u}))
+
+/-- The ring `rngI × rngI`, whose opposite is `⊤ + ⊤` in `Rngᵒᵖ`. -/
+private noncomputable abbrev rngII : RingCat.{u} :=
+  RingCat.of (rngI.{u} × rngI.{u})
+
+/-- The canonical iso `⊤ + ⊤ ≅ (rngI × rngI)ᵒᵖ` of `Rngᵒᵖ`, from `rngPres`. -/
+private noncomputable def rngTopCoprodIso :
+    ((⊤_ RingCat.{u}ᵒᵖ) ⨿ (⊤_ RingCat.{u}ᵒᵖ)) ≅ op rngII.{u} :=
+  IsColimit.coconePointUniqueUpToIso
+    (coprodIsCoprod (⊤_ RingCat.{u}ᵒᵖ) (⊤_ RingCat.{u}ᵒᵖ))
+    (rngPres.hP (⊤_ RingCat.{u}ᵒᵖ) (⊤_ RingCat.{u}ᵒᵖ))
+
+private theorem rngTopCoprodIso_inl :
+    (coprod.inl : (⊤_ RingCat.{u}ᵒᵖ) ⟶ _) ≫ rngTopCoprodIso.{u}.hom
+      = (RingCat.ofHom (RingHom.fst rngI.{u} rngI.{u})).op :=
+  IsColimit.comp_coconePointUniqueUpToIso_hom
+    (coprodIsCoprod (⊤_ RingCat.{u}ᵒᵖ) (⊤_ RingCat.{u}ᵒᵖ))
+    (rngPres.hP (⊤_ RingCat.{u}ᵒᵖ) (⊤_ RingCat.{u}ᵒᵖ))
+    (Discrete.mk WalkingPair.left)
+
+private theorem rngTopCoprodIso_inr :
+    (coprod.inr : (⊤_ RingCat.{u}ᵒᵖ) ⟶ _) ≫ rngTopCoprodIso.{u}.hom
+      = (RingCat.ofHom (RingHom.snd rngI.{u} rngI.{u})).op :=
+  IsColimit.comp_coconePointUniqueUpToIso_hom
+    (coprodIsCoprod (⊤_ RingCat.{u}ᵒᵖ) (⊤_ RingCat.{u}ᵒᵖ))
+    (rngPres.hP (⊤_ RingCat.{u}ᵒᵖ) (⊤_ RingCat.{u}ᵒᵖ))
+    (Discrete.mk WalkingPair.right)
+
+/-- The truth predicate on `ℤ₂` is **not** `0` in `Par (Rngᵒᵖ)`.  Through
+`⊤ + ⊤ ≅ rngI × rngI` the two sides become `(a,b) ↦ ι(a)` and `(a,b) ↦ ι(b)`,
+where `ι : rngI → ℤ₂` is the unique ring map; at `(1,0)` they give `1`
+and `0`. -/
+private theorem rng_truth_ne_zero :
+    (Par.one (op rngZmodTwo.{u}) :
+        Par.of (op rngZmodTwo.{u}) ⟶ Par.of (⊤_ RingCat.{u}ᵒᵖ))
+      ≠ Par.zero (op rngZmodTwo.{u}) (⊤_ RingCat.{u}ᵒᵖ) := by
+  intro h
+  have h1 : terminal.from (op rngZmodTwo.{u}) ≫
+        (coprod.inl : (⊤_ RingCat.{u}ᵒᵖ) ⟶ _)
+      = terminal.from (op rngZmodTwo.{u}) ≫
+        (coprod.inr : (⊤_ RingCat.{u}ᵒᵖ) ⟶ _) := congrArg pval h
+  have h2 := congrArg (fun m => m ≫ rngTopCoprodIso.{u}.hom) h1
+  simp only [Category.assoc, rngTopCoprodIso_inl, rngTopCoprodIso_inr] at h2
+  -- unop: the two ring maps `rngI × rngI → ℤ₂` agree
+  set ι : rngI.{u} ⟶ rngZmodTwo.{u} :=
+    (terminal.from (op rngZmodTwo.{u})).unop with hι
+  have h3 : RingCat.ofHom (RingHom.fst rngI.{u} rngI.{u}) ≫ ι
+      = RingCat.ofHom (RingHom.snd rngI.{u} rngI.{u}) ≫ ι := congrArg Quiver.Hom.unop h2
+  have h4 := congrArg
+    (fun m : rngII.{u} ⟶ rngZmodTwo.{u} =>
+      m.hom ((1 : rngI.{u}), (0 : rngI.{u}))) h3
+  simp only [RingCat.hom_comp, RingCat.hom_ofHom, RingHom.coe_comp,
+    Function.comp_apply, RingHom.coe_fst, RingHom.coe_snd, map_one,
+    map_zero] at h4
+  exact absurd (congrArg ULift.down h4) (by decide)
+
+/-- **191VIII.2** (`exc-rng-eff`, eff.tex:2351, Exercise), second half:
+`Rngᵒᵖ` does **not** have separating states.
+
+The Exercise's own route: `ℤ₂` has no states (`rng_stat_empty`, from
+`exc_rng_eff_no_hom`), so the joint-epicity condition is vacuous for the two
+distinct partial maps `1, 0 : ℤ₂ ⇸ 1` (`rng_truth_ne_zero`). -/
+theorem exc_rng_eff_no_separating_states [EffectusTotalForm RingCat.{u}ᵒᵖ] :
+    letI := parHasFiniteCoproducts (C := RingCat.{u}ᵒᵖ)
+    ¬ SeparatingStates (Par RingCat.{u}ᵒᵖ) := by
+  letI := parHasFiniteCoproducts (C := RingCat.{u}ᵒᵖ)
+  intro hsep
+  haveI := rng_stat_empty.{u}
+  refine rng_truth_ne_zero.{u} ?_
+  exact hsep (truth (Par.of (op rngZmodTwo.{u}))) 0 (fun ω => (isEmptyElim ω))
+
+end RngStates
+
+/-! ### 191VIII.1: the predicates on a ring are its idempotents -/
+
+section RngPredicates
+
+open Opposite
+
+/-- `rngI` is initial in `RingCat`: it is the unop of a terminal object of
+`Rngᵒᵖ`, so ring maps out of it are unique. -/
+private theorem rngI_hom_unique {R : RingCat.{u}} (f g : rngI.{u} ⟶ R) :
+    f = g :=
+  Quiver.Hom.op_inj (terminalIsTerminal.hom_ext (C := RingCat.{u}ᵒᵖ) f.op g.op)
+
+/-- The image of the initial ring is **central**: `κ(a)` commutes with every
+`r`, because `κ` factors through the centralizer of `r` (a subring, and the
+map into it composed with the inclusion is again a map out of `rngI`). -/
+private theorem rngIto_central (R : RingCat.{u}) (a : rngI.{u}) (r : R) :
+    (rngIto R).hom a * r = r * (rngIto R).hom a := by
+  let S : Subring R := Subring.centralizer {r}
+  have hfac : S.subtype.comp (rngIto (RingCat.of ↥S)).hom = (rngIto R).hom := by
+    have := rngI_hom_unique
+      (RingCat.ofHom (S.subtype.comp (rngIto (RingCat.of ↥S)).hom)) (rngIto R)
+    exact congrArg RingCat.Hom.hom this
+  have hval : (rngIto R).hom a = ((rngIto (RingCat.of ↥S)).hom a : R) := by
+    rw [← hfac]; rfl
+  have hmem : (rngIto R).hom a ∈ S := by
+    rw [hval]; exact ((rngIto (RingCat.of ↥S)).hom a).2
+  exact (hmem r rfl).symm
+
+/-- The unique map `rngI → rngI × rngI` is the diagonal. -/
+private theorem rngIto_prod_apply (a : rngI.{u}) :
+    (rngIto (RingCat.of (rngI.{u} × rngI.{u}))).hom a = (a, a) := by
+  have h₁ : RingCat.ofHom
+      ((RingHom.fst rngI.{u} rngI.{u}).comp
+        (rngIto (RingCat.of (rngI.{u} × rngI.{u}))).hom)
+      = RingCat.ofHom (RingHom.id rngI.{u}) := rngI_hom_unique _ _
+  have h₂ : RingCat.ofHom
+      ((RingHom.snd rngI.{u} rngI.{u}).comp
+        (rngIto (RingCat.of (rngI.{u} × rngI.{u}))).hom)
+      = RingCat.ofHom (RingHom.id rngI.{u}) := rngI_hom_unique _ _
+  refine Prod.ext ?_ ?_
+  · exact congrArg (fun m : rngI.{u} ⟶ rngI.{u} => m.hom a) h₁
+  · exact congrArg (fun m : rngI.{u} ⟶ rngI.{u} => m.hom a) h₂
+
+/-- The ring map `rngI × rngI → R` attached to an idempotent `e`:
+`(a, b) ↦ κ(a)·e + κ(b)·(1-e)`.  It is multiplicative because the image of
+the initial ring is central (`rngIto_central`). -/
+private noncomputable def rngHomOfIdem (R : RingCat.{u}) (e : R)
+    (he : IsIdempotentElem e) :
+    rngII.{u} ⟶ R :=
+  RingCat.ofHom
+    { toFun := fun p => (rngIto R).hom p.1 * e + (rngIto R).hom p.2 * (1 - e)
+      map_zero' := by
+        show (rngIto R).hom 0 * e + (rngIto R).hom 0 * (1 - e) = 0
+        rw [map_zero, zero_mul, zero_mul, add_zero]
+      map_one' := by
+        show (rngIto R).hom 1 * e + (rngIto R).hom 1 * (1 - e) = 1
+        rw [map_one, one_mul, one_mul]
+        abel
+      map_add' := by
+        rintro ⟨a, b⟩ ⟨a', b'⟩
+        show (rngIto R).hom (a + a') * e + (rngIto R).hom (b + b') * (1 - e)
+            = ((rngIto R).hom a * e + (rngIto R).hom b * (1 - e))
+              + ((rngIto R).hom a' * e + (rngIto R).hom b' * (1 - e))
+        rw [map_add, map_add, add_mul, add_mul]
+        abel
+      map_mul' := by
+        rintro ⟨a, b⟩ ⟨a', b'⟩
+        have hA' := rngIto_central R a'
+        have hB' := rngIto_central R b'
+        show (rngIto R).hom (a * a') * e + (rngIto R).hom (b * b') * (1 - e)
+            = ((rngIto R).hom a * e + (rngIto R).hom b * (1 - e))
+              * ((rngIto R).hom a' * e + (rngIto R).hom b' * (1 - e))
+        set A := (rngIto R).hom a
+        set B := (rngIto R).hom b
+        set A' := (rngIto R).hom a'
+        set B' := (rngIto R).hom b'
+        have hee : e * e = e := he
+        have hef : e * (1 - e) = 0 := by rw [mul_sub, mul_one, hee, sub_self]
+        have hfe : (1 - e) * e = 0 := by rw [sub_mul, one_mul, hee, sub_self]
+        have hff : (1 - e) * (1 - e) = 1 - e := by
+          rw [sub_mul, one_mul, hef, sub_zero]
+        have t1 : A * e * (A' * e) = A * A' * e := by
+          rw [mul_assoc A e (A' * e), ← mul_assoc e A' e, ← hA' e,
+            mul_assoc A' e e, hee, ← mul_assoc]
+        have t2 : A * e * (B' * (1 - e)) = 0 := by
+          rw [mul_assoc A e (B' * (1 - e)), ← mul_assoc e B' (1 - e), ← hB' e,
+            mul_assoc B' e (1 - e), hef, mul_zero, mul_zero]
+        have t3 : B * (1 - e) * (A' * e) = 0 := by
+          rw [mul_assoc B (1 - e) (A' * e), ← mul_assoc (1 - e) A' e,
+            ← hA' (1 - e), mul_assoc A' (1 - e) e, hfe, mul_zero, mul_zero]
+        have t4 : B * (1 - e) * (B' * (1 - e)) = B * B' * (1 - e) := by
+          rw [mul_assoc B (1 - e) (B' * (1 - e)), ← mul_assoc (1 - e) B' (1 - e),
+            ← hB' (1 - e), mul_assoc B' (1 - e) (1 - e), hff, ← mul_assoc]
+        rw [map_mul, map_mul, add_mul, mul_add, mul_add, t1, t2, t3, t4,
+          add_zero, zero_add] }
+
+/-- **191VIII.1** (`exc-rng-eff`, eff.tex:2339, Exercise), the correspondence
+itself: the ring maps `rngI × rngI → R` are in bijection with the
+**idempotents** of `R`, by `φ ↦ φ(1,0)`. -/
+private noncomputable def rngHomIdemEquiv (R : RingCat.{u}) :
+    (rngII.{u} ⟶ R) ≃ {e : R // IsIdempotentElem e} where
+  toFun φ := ⟨φ.hom ((1 : rngI.{u}), (0 : rngI.{u})), by
+    have hsq : ((1 : rngI.{u}), (0 : rngI.{u})) * (1, 0) = (1, 0) := by
+      refine Prod.ext ?_ ?_ <;> simp
+    show φ.hom (1, 0) * φ.hom (1, 0) = φ.hom (1, 0)
+    rw [← map_mul, hsq]⟩
+  invFun e := rngHomOfIdem R e.1 e.2
+  left_inv φ := by
+    -- `κ_R = φ ∘ δ` and `δ a = (a, a)`, so `κ(a)·φ(1,0) = φ(a,0)`
+    have hfac : ∀ a : rngI.{u}, (rngIto R).hom a = φ.hom (a, a) := by
+      intro a
+      have h := rngI_hom_unique (rngIto (RingCat.of (rngI.{u} × rngI.{u})) ≫ φ)
+        (rngIto R)
+      have h2 := congrArg (fun m : rngI.{u} ⟶ R => m.hom a) h
+      rw [← h2]
+      show φ.hom ((rngIto (RingCat.of (rngI.{u} × rngI.{u}))).hom a) = _
+      rw [rngIto_prod_apply]
+    apply RingCat.hom_ext
+    ext p
+    obtain ⟨a, b⟩ := p
+    show (rngIto R).hom a * φ.hom (1, 0)
+        + (rngIto R).hom b * (1 - φ.hom (1, 0)) = φ.hom (a, b)
+    have e1 : (rngIto R).hom a * φ.hom (1, 0) = φ.hom (a, 0) := by
+      rw [hfac a, ← map_mul]
+      congr 1
+      refine Prod.ext ?_ ?_ <;> simp
+    have hsum : φ.hom (1, 0) + φ.hom (0, 1) = 1 := by
+      rw [← map_add,
+        show ((1 : rngI.{u}), (0 : rngI.{u})) + (0, 1) = (1 : rngI.{u} × rngI.{u}) from
+          Prod.ext (by simp) (by simp)]
+      exact map_one _
+    have e2 : (1 : R) - φ.hom (1, 0) = φ.hom (0, 1) := by
+      rw [← hsum]; abel
+    have e3 : (rngIto R).hom b * φ.hom (0, 1) = φ.hom (0, b) := by
+      rw [hfac b, ← map_mul]
+      congr 1
+      refine Prod.ext ?_ ?_ <;> simp
+    rw [e1, e2, e3, ← map_add]
+    congr 1
+    refine Prod.ext ?_ ?_ <;> simp
+  right_inv e := by
+    apply Subtype.ext
+    show (rngIto R).hom 1 * e.1 + (rngIto R).hom 0 * (1 - e.1) = e.1
+    rw [map_one, map_zero, one_mul, zero_mul, add_zero]
+
+/-- `ψ(0,1) = 1 - ψ(1,0)`, since `(1,0) + (0,1) = 1`. -/
+private theorem rngHomIdem_compl {R : RingCat.{u}}
+    (ψ : rngII.{u} ⟶ R) :
+    ψ.hom ((0 : rngI.{u}), (1 : rngI.{u})) = 1 - ψ.hom ((1 : rngI.{u}), (0 : rngI.{u})) := by
+  have hsum : ψ.hom ((1 : rngI.{u}), (0 : rngI.{u})) + ψ.hom (0, 1) = 1 := by
+    rw [← map_add,
+      show ((1 : rngI.{u}), (0 : rngI.{u})) + (0, 1) = (1 : rngI.{u} × rngI.{u}) from
+        Prod.ext (by simp) (by simp)]
+    exact map_one _
+  rw [← hsum]; abel
+
+/-- The predicates on `R` in `Par (Rngᵒᵖ)` are the ring maps
+`rngI × rngI → R`, by the coproduct iso `⊤ + ⊤ ≅ rngI × rngI`. -/
+private noncomputable def rngPredHomEquiv (R : RingCat.{u}) :
+    ((op R : RingCat.{u}ᵒᵖ) ⟶ (⊤_ RingCat.{u}ᵒᵖ) ⨿ (⊤_ RingCat.{u}ᵒᵖ))
+      ≃ (rngII.{u} ⟶ R) where
+  toFun p := (p ≫ rngTopCoprodIso.{u}.hom).unop
+  invFun ψ := ψ.op ≫ rngTopCoprodIso.{u}.inv
+  left_inv p := by
+    show (Quiver.Hom.op (Quiver.Hom.unop (p ≫ rngTopCoprodIso.{u}.hom))) ≫
+      rngTopCoprodIso.{u}.inv = p
+    rw [Quiver.Hom.op_unop, Category.assoc, Iso.hom_inv_id, Category.comp_id]
+  right_inv ψ := by
+    show Quiver.Hom.unop ((ψ.op ≫ rngTopCoprodIso.{u}.inv) ≫ rngTopCoprodIso.{u}.hom) = ψ
+    rw [Category.assoc, Iso.inv_hom_id, Category.comp_id, Quiver.Hom.unop_op]
+
+/-- **191VIII.1** (`exc-rng-eff`, eff.tex:2339, Exercise), first clause: the
+**predicates on a ring `R`** — in `Par (Rngᵒᵖ)`, where the predicates of the
+Exercise live — **correspond to the idempotents of `R`**.
+
+The bijection is pinned by the three lemmas below: it sends `1` to `1`, `0`
+to `0` and `p^⊥` to `1 - p`, which are the Exercise's own clauses. -/
+noncomputable def exc_rng_eff_pred_idem [EffectusTotalForm RingCat.{u}ᵒᵖ]
+    (R : RingCat.{u}) :
+    letI := parHasFiniteCoproducts (C := RingCat.{u}ᵒᵖ)
+    Pred (Par.of (op R)) ≃ {e : R // IsIdempotentElem e} :=
+  letI := parHasFiniteCoproducts (C := RingCat.{u}ᵒᵖ)
+  (rngPredHomEquiv R).trans (rngHomIdemEquiv R)
+
+/-- `[κ₂,κ₁] ≫ γ = γ ≫ swapᵒᵖ`: the orthocomplement of `Par C` becomes the
+swap of `rngI × rngI`. -/
+private theorem rngSwapTop_gamma :
+    (parSwapTop : (⊤_ RingCat.{u}ᵒᵖ) ⨿ (⊤_ RingCat.{u}ᵒᵖ) ⟶ _) ≫ rngTopCoprodIso.{u}.hom
+      = rngTopCoprodIso.{u}.hom ≫
+        (RingCat.ofHom (RingHom.prod (RingHom.snd rngI.{u} rngI.{u})
+          (RingHom.fst rngI.{u} rngI.{u}))).op := by
+  refine coprod.hom_ext ?_ ?_
+  · rw [parSwapTop, ← Category.assoc, coprod.inl_desc, rngTopCoprodIso_inr,
+      ← Category.assoc, rngTopCoprodIso_inl]
+    apply Quiver.Hom.unop_inj
+    apply RingCat.hom_ext
+    exact RingHom.ext fun x => rfl
+  · rw [parSwapTop, ← Category.assoc, coprod.inr_desc, rngTopCoprodIso_inl,
+      ← Category.assoc, rngTopCoprodIso_inr]
+    apply Quiver.Hom.unop_inj
+    apply RingCat.hom_ext
+    exact RingHom.ext fun x => rfl
+
+private theorem exc_rng_eff_pred_idem_val [EffectusTotalForm RingCat.{u}ᵒᵖ]
+    (R : RingCat.{u}) :
+    letI := parHasFiniteCoproducts (C := RingCat.{u}ᵒᵖ)
+    ∀ p : Pred (Par.of (op R)),
+      ((exc_rng_eff_pred_idem R p).1 : R)
+        = ((pval p ≫ rngTopCoprodIso.{u}.hom).unop).hom
+            ((1 : rngI.{u}), (0 : rngI.{u})) :=
+  fun _ => rfl
+
+/-- **191VIII.1** (`exc-rng-eff`, eff.tex:2341, Exercise): under the
+correspondence, `p^⊥ = 1 - p`. -/
+theorem exc_rng_eff_pred_idem_orth [EffectusTotalForm RingCat.{u}ᵒᵖ]
+    (R : RingCat.{u}) :
+    letI := parHasFiniteCoproducts (C := RingCat.{u}ᵒᵖ)
+    ∀ p : Pred (Par.of (op R)),
+      ((exc_rng_eff_pred_idem R (orth p)).1 : R)
+        = 1 - ((exc_rng_eff_pred_idem R p).1 : R) := by
+  letI := parHasFiniteCoproducts (C := RingCat.{u}ᵒᵖ)
+  intro p
+  rw [exc_rng_eff_pred_idem_val R (orth p), exc_rng_eff_pred_idem_val R p,
+    show pval (orth p) = pval p ≫ parSwapTop from rfl,
+    ← rngHomIdem_compl, Category.assoc, rngSwapTop_gamma, ← Category.assoc]
+  rfl
+
+/-- **191VIII.1**: the truth predicate corresponds to the idempotent `1`. -/
+theorem exc_rng_eff_pred_idem_one [EffectusTotalForm RingCat.{u}ᵒᵖ]
+    (R : RingCat.{u}) :
+    letI := parHasFiniteCoproducts (C := RingCat.{u}ᵒᵖ)
+    ((exc_rng_eff_pred_idem R (truth (Par.of (op R)))).1 : R) = 1 := by
+  letI := parHasFiniteCoproducts (C := RingCat.{u}ᵒᵖ)
+  have h : pval (truth (Par.of (op R))) ≫ rngTopCoprodIso.{u}.hom
+      = terminal.from (op R) ≫ (RingCat.ofHom (RingHom.fst rngI.{u} rngI.{u})).op := by
+    show (terminal.from (op R) ≫ (coprod.inl : (⊤_ RingCat.{u}ᵒᵖ) ⟶ _))
+        ≫ rngTopCoprodIso.{u}.hom = _
+    rw [Category.assoc, rngTopCoprodIso_inl]
+  rw [exc_rng_eff_pred_idem_val R (truth (Par.of (op R))), h]
+  show ((terminal.from (op R)).unop).hom (1 : rngI.{u}) = 1
+  exact map_one _
+
+/-- **191VIII.1**: the zero predicate corresponds to the idempotent `0`. -/
+theorem exc_rng_eff_pred_idem_zero [EffectusTotalForm RingCat.{u}ᵒᵖ]
+    (R : RingCat.{u}) :
+    letI := parHasFiniteCoproducts (C := RingCat.{u}ᵒᵖ)
+    ((exc_rng_eff_pred_idem R (0 : Pred (Par.of (op R)))).1 : R) = 0 := by
+  letI := parHasFiniteCoproducts (C := RingCat.{u}ᵒᵖ)
+  have h : pval (0 : Pred (Par.of (op R))) ≫ rngTopCoprodIso.{u}.hom
+      = terminal.from (op R) ≫ (RingCat.ofHom (RingHom.snd rngI.{u} rngI.{u})).op := by
+    show (terminal.from (op R) ≫ (coprod.inr : (⊤_ RingCat.{u}ᵒᵖ) ⟶ _))
+        ≫ rngTopCoprodIso.{u}.hom = _
+    rw [Category.assoc, rngTopCoprodIso_inr]
+  rw [exc_rng_eff_pred_idem_val R (0 : Pred (Par.of (op R))), h]
+  show ((terminal.from (op R)).unop).hom (0 : rngI.{u}) = 0
+  exact map_zero _
+
+/-! ### 191VIII.1, the conclusion: `Rngᵒᵖ` has no separating predicates -/
+
+/-- `ℤ[X]`, as an object of `RingCat.{u}`. -/
+private noncomputable abbrev rngPoly : RingCat.{u} :=
+  RingCat.of (ULift.{u} (Polynomial ℤ))
+
+/-- The endomorphism `X ↦ 0` of `ℤ[X]`. -/
+private noncomputable def rngEv0 : rngPoly.{u} ⟶ rngPoly.{u} :=
+  RingCat.ofHom (RingHom.ulift.{u, u}
+    ((Polynomial.C (R := ℤ)).comp (Polynomial.evalRingHom (0 : ℤ))))
+
+private theorem rngEv0_ne_id : rngEv0.{u} ≠ 𝟙 rngPoly.{u} := by
+  intro h
+  have h1 := congrArg
+    (fun m : rngPoly.{u} ⟶ rngPoly.{u} => (m.hom (ULift.up Polynomial.X)).down) h
+  simp only [rngEv0, RingCat.hom_ofHom, RingHom.down_ulift_apply,
+    RingCat.hom_id, RingHom.id_apply] at h1
+  simp only [RingHom.coe_comp, Function.comp_apply, Polynomial.coe_evalRingHom,
+    Polynomial.eval_X, map_zero] at h1
+  exact Polynomial.X_ne_zero h1.symm
+
+/-- Every ring map `rngI × rngI → ℤ[X]` lands in the part of `ℤ[X]` fixed by
+`X ↦ 0`: it is `(a,b) ↦ κ(a)e + κ(b)(1-e)` for an idempotent `e`, `ℤ[X]` is a
+domain so `e ∈ {0,1}`, and `κ` is unchanged because it is the unique map out
+of the initial ring. -/
+private theorem rng_ev0_fixes (ψ : rngII.{u} ⟶ rngPoly.{u}) :
+    ψ ≫ rngEv0.{u} = ψ := by
+  -- `κ` is fixed
+  have hκ : rngIto rngPoly.{u} ≫ rngEv0.{u} = rngIto rngPoly.{u} :=
+    rngI_hom_unique _ _
+  -- `e = ψ(1,0)` is idempotent, hence `0` or `1`, hence fixed
+  set e := ψ.hom ((1 : rngI.{u}), (0 : rngI.{u})) with hedef
+  have he : IsIdempotentElem e := ((rngHomIdemEquiv rngPoly.{u}) ψ).2
+  have hedown : IsIdempotentElem e.down := congrArg ULift.down he
+  have he01 : e = 0 ∨ e = 1 := by
+    rcases IsIdempotentElem.iff_eq_zero_or_one.mp hedown with h | h
+    · exact Or.inl (ULift.down_injective h)
+    · exact Or.inr (ULift.down_injective h)
+  have hef : rngEv0.{u}.hom e = e := by
+    rcases he01 with h | h <;> rw [h] <;> simp
+  -- expand `ψ` through the idempotent correspondence
+  have hinv : rngHomOfIdem rngPoly.{u} e he = ψ := (rngHomIdemEquiv rngPoly.{u}).left_inv ψ
+  refine RingCat.hom_ext (RingHom.ext ?_)
+  rintro ⟨a, b⟩
+  show rngEv0.{u}.hom (ψ.hom (a, b)) = ψ.hom (a, b)
+  rw [← hinv]
+  show rngEv0.{u}.hom
+      ((rngIto rngPoly.{u}).hom a * e + (rngIto rngPoly.{u}).hom b * (1 - e))
+    = (rngIto rngPoly.{u}).hom a * e + (rngIto rngPoly.{u}).hom b * (1 - e)
+  have hκa : rngEv0.{u}.hom ((rngIto rngPoly.{u}).hom a) = (rngIto rngPoly.{u}).hom a :=
+    congrArg (fun m : rngI.{u} ⟶ rngPoly.{u} => m.hom a) hκ
+  have hκb : rngEv0.{u}.hom ((rngIto rngPoly.{u}).hom b) = (rngIto rngPoly.{u}).hom b :=
+    congrArg (fun m : rngI.{u} ⟶ rngPoly.{u} => m.hom b) hκ
+  rw [map_add, map_mul, map_mul, map_sub, map_one, hκa, hκb, hef]
+
+/-- **191VIII.1** (`exc-rng-eff`, eff.tex:2339, Exercise), the conclusion:
+`Rngᵒᵖ` does **not** have separating predicates.
+
+The Exercise's own witness: `ℤ[X]` has only the idempotents `0` and `1`, so
+by the correspondence `rngHomIdemEquiv` it carries only two predicates, and
+both are fixed by the two distinct endomorphisms `id` and `X ↦ 0`. -/
+theorem exc_rng_eff_no_separating_predicates [EffectusTotalForm RingCat.{u}ᵒᵖ] :
+    letI := parHasFiniteCoproducts (C := RingCat.{u}ᵒᵖ)
+    ¬ SeparatingPredicates (Par RingCat.{u}ᵒᵖ) := by
+  letI := parHasFiniteCoproducts (C := RingCat.{u}ᵒᵖ)
+  intro hsep
+  refine rngEv0_ne_id.{u} ?_
+  refine Quiver.Hom.op_inj ?_
+  refine par_hat_inj (Y := op rngPoly.{u}) ?_
+  refine hsep (Par.hat rngEv0.{u}.op) (Par.hat (𝟙 (op rngPoly.{u}))) ?_
+  intro p
+  refine pval_inj ?_
+  rw [par_hat_comp, par_hat_comp, Category.id_comp]
+  -- `p = ev₀ᵒᵖ ≫ p`, because `ev₀` fixes every ring map `rngI × rngI → ℤ[X]`
+  obtain ⟨q, hq⟩ : ∃ q : (op rngPoly.{u} : RingCat.{u}ᵒᵖ) ⟶
+      (⊤_ RingCat.{u}ᵒᵖ) ⨿ (⊤_ RingCat.{u}ᵒᵖ), pval p = q := ⟨pval p, rfl⟩
+  rw [hq]
+  refine (cancel_mono rngTopCoprodIso.{u}.hom).mp ?_
+  rw [Category.assoc]
+  exact congrArg Quiver.Hom.op
+    (rng_ev0_fixes.{u} ((q ≫ rngTopCoprodIso.{u}.hom).unop))
+
+end RngPredicates
 
 /-! ## The distribution monad `𝒟_M` (parsec 192) -/
 

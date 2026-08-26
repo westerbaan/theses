@@ -2885,6 +2885,155 @@ end DaggerTheorem
 
 end PureDagger
 
+/-! ## Coproducts of quotients and of comprehensions
+
+Six helpers used by 221IV.7 (and 221IV.5), proved in a plain effectus: the
+coproduct `ξ₁ + ξ₂` of two quotients is a quotient and the coproduct
+`π₁ + π₂` of two comprehensions is a comprehension, so `h₁ + h₂` is pure as
+soon as `h₁` and `h₂` are — **without** the &-effectus that closure of pure
+maps under composition (211XI) would need.  The Proposition asserts the
+purity and its proof passes over it in silence (ERRATA, `221IV.5/.6/.7`). -/
+
+section CoprodQuotCompr
+
+/-- Helper: `[p, q]ᵖ = [pᵖ, qᵖ]`. -/
+theorem orth_coprod_desc {X Y : C} (p : Pred X) (q : Pred Y) :
+    orth (coprod.desc p q) = coprod.desc (orth p) (orth q) := by
+  have hp := EffectAlgebra.perp_orth p
+  have hq := EffectAlgebra.perp_orth q
+  have hperp : Perp (coprod.desc p q) (coprod.desc (orth p) (orth q)) :=
+    (cotupl_pcm_1 _ _ _ _).2 ⟨hp, hq⟩
+  refine (EffectAlgebra.orth_unique hperp ?_).symm
+  rw [cotupl_pcm_2 hperp hp hq, EffectAlgebra.ovee_orth p, EffectAlgebra.ovee_orth q]
+  exact cotupl_pcm_one X Y
+
+/-- Helper: `[a₁,a₂] ≼ [b₁,b₂]` as soon as `a₁ ≼ b₁` and `a₂ ≼ b₂`. -/
+theorem coprod_desc_le {X Y : C} {a₁ b₁ : Pred X} {a₂ b₂ : Pred Y}
+    (h₁ : a₁ ≼ b₁) (h₂ : a₂ ≼ b₂) :
+    (coprod.desc a₁ a₂ : Pred (X ⨿ Y)) ≼ coprod.desc b₁ b₂ := by
+  obtain ⟨c₁, hc₁, e₁⟩ := h₁
+  obtain ⟨c₂, hc₂, e₂⟩ := h₂
+  have hperp : Perp (coprod.desc a₁ a₂) (coprod.desc c₁ c₂) :=
+    (cotupl_pcm_1 _ _ _ _).2 ⟨hc₁, hc₂⟩
+  exact ⟨coprod.desc c₁ c₂, hperp, by rw [cotupl_pcm_2 hperp hc₁ hc₂, e₁, e₂]⟩
+
+/-- Helper: `▷₁ ∘ (π₁ + π₂) = π₁ ∘ ▷₁` (the partial projections are natural
+for `+`). -/
+theorem coprod_map_pproj₁ {W₁ W₂ X₁ X₂ : C} (k : W₁ ⟶ X₁) (l : W₂ ⟶ X₂) :
+    coprod.map k l ≫ pproj₁ X₁ X₂ = pproj₁ W₁ W₂ ≫ k := by
+  refine coprod.hom_ext ?_ ?_
+  · rw [← Category.assoc, coprod.inl_map, Category.assoc, pproj₁,
+      coprod.inl_desc, Category.comp_id, ← Category.assoc, pproj₁,
+      coprod.inl_desc, Category.id_comp]
+  · rw [← Category.assoc, coprod.inr_map, Category.assoc, pproj₁,
+      coprod.inr_desc, FinPAC.comp_zero, ← Category.assoc, pproj₁,
+      coprod.inr_desc, FinPAC.zero_comp]
+
+theorem coprod_map_pproj₂ {W₁ W₂ X₁ X₂ : C} (k : W₁ ⟶ X₁) (l : W₂ ⟶ X₂) :
+    coprod.map k l ≫ pproj₂ X₁ X₂ = pproj₂ W₁ W₂ ≫ l := by
+  refine coprod.hom_ext ?_ ?_
+  · rw [← Category.assoc, coprod.inl_map, Category.assoc, pproj₂,
+      coprod.inl_desc, FinPAC.comp_zero, ← Category.assoc, pproj₂,
+      coprod.inl_desc, FinPAC.zero_comp]
+  · rw [← Category.assoc, coprod.inr_map, Category.assoc, pproj₂,
+      coprod.inr_desc, Category.comp_id, ← Category.assoc, pproj₂,
+      coprod.inr_desc, Category.id_comp]
+
+/-- Helper: every map into a coproduct is the pairing of its partial
+projections (181VII). -/
+theorem eq_effPair {X Y Z : C} (u : Z ⟶ X ⨿ Y) :
+    u = effPair (u ≫ pproj₁ X Y) (u ≫ pproj₂ X Y) (coprod_prod_converse u) :=
+  (coprod_prod (coprod_prod_converse u)).unique ⟨rfl, rfl⟩ (effPair_spec _ _ _)
+
+/-- Helper: the coproduct `ξ₁ + ξ₂` of two quotients is a quotient
+for `[p₁, p₂]`. -/
+theorem isQuotient_coprod_map {X₁ X₂ Q₁ Q₂ : C} {p₁ : Pred X₁} {p₂ : Pred X₂}
+    {ξ₁ : X₁ ⟶ Q₁} {ξ₂ : X₂ ⟶ Q₂} (h₁ : IsQuotient p₁ ξ₁)
+    (h₂ : IsQuotient p₂ ξ₂) :
+    IsQuotient (coprod.desc p₁ p₂) (coprod.map ξ₁ ξ₂) := by
+  have hone : coprod.map ξ₁ ξ₂ ≫ truth (Q₁ ⨿ Q₂)
+      = coprod.desc (ξ₁ ≫ truth Q₁) (ξ₂ ≫ truth Q₂) := by
+    rw [← cotupl_pcm_one Q₁ Q₂, coprod.map_desc]
+  refine ⟨?_, ?_⟩
+  · rw [orth_coprod_desc, hone]
+    exact coprod_desc_le h₁.1 h₂.1
+  · intro V f hf
+    rw [orth_coprod_desc] at hf
+    have hf₁ : ((coprod.inl : X₁ ⟶ X₁ ⨿ X₂) ≫ f) ≫ truth V ≼ orth p₁ := by
+      have := comp_le_comp (coprod.inl : X₁ ⟶ X₁ ⨿ X₂) hf
+      rwa [← Category.assoc, coprod.inl_desc] at this
+    have hf₂ : ((coprod.inr : X₂ ⟶ X₁ ⨿ X₂) ≫ f) ≫ truth V ≼ orth p₂ := by
+      have := comp_le_comp (coprod.inr : X₂ ⟶ X₁ ⨿ X₂) hf
+      rwa [← Category.assoc, coprod.inr_desc] at this
+    obtain ⟨f₁, hf₁', hu₁⟩ := h₁.2 _ hf₁
+    obtain ⟨f₂, hf₂', hu₂⟩ := h₂.2 _ hf₂
+    refine ⟨coprod.desc f₁ f₂, ?_, ?_⟩
+    · show coprod.map ξ₁ ξ₂ ≫ coprod.desc f₁ f₂ = f
+      rw [coprod.map_desc, hf₁', hf₂', ← coprod.desc_comp, coprod.desc_inl_inr,
+        Category.id_comp]
+    · intro g hg
+      refine coprod.hom_ext ?_ ?_
+      · rw [coprod.inl_desc]
+        refine hu₁ _ ?_
+        show ξ₁ ≫ _ = _
+        rw [← Category.assoc, ← coprod.inl_map ξ₁ ξ₂, Category.assoc, hg]
+      · rw [coprod.inr_desc]
+        refine hu₂ _ ?_
+        show ξ₂ ≫ _ = _
+        rw [← Category.assoc, ← coprod.inr_map ξ₁ ξ₂, Category.assoc, hg]
+
+/-- Helper: the coproduct `π₁ + π₂` of two comprehensions is a comprehension
+for `[q₁, q₂]`. -/
+theorem isComprehension_coprod_map [HasQuotients C] {W₁ W₂ X₁ X₂ : C}
+    {q₁ : Pred X₁} {q₂ : Pred X₂} {π₁ : W₁ ⟶ X₁} {π₂ : W₂ ⟶ X₂}
+    (h₁ : IsComprehension q₁ π₁) (h₂ : IsComprehension q₂ π₂) :
+    IsComprehension (coprod.desc q₁ q₂) (coprod.map π₁ π₂) := by
+  have ht₁ : IsTotal π₁ := compr_total h₁
+  have ht₂ : IsTotal π₂ := compr_total h₂
+  refine ⟨?_, ?_⟩
+  · rw [coprod.map_desc, ← cotupl_pcm_one X₁ X₂, coprod.map_desc, h₁.1, h₂.1]
+  · intro Z g hg
+    set g₁ := g ≫ pproj₁ X₁ X₂ with hg₁d
+    set g₂ := g ≫ pproj₂ X₁ X₂ with hg₂d
+    have hperp : Perp (g₁ ≫ truth X₁) (g₂ ≫ truth X₂) := coprod_prod_converse g
+    have hgp : g = effPair g₁ g₂ hperp := eq_effPair g
+    obtain ⟨hp1, e1⟩ := eff_prod_rules_1 g₁ g₂ hperp q₁ q₂
+    have e2 := eff_prod_rules_2 g₁ g₂ hperp
+    have hsum : ovee (g₁ ≫ q₁) (g₂ ≫ q₂) hp1
+        = ovee (g₁ ≫ truth X₁) (g₂ ≫ truth X₂) hperp := by
+      rw [← e1, ← e2, ← hgp]; exact hg
+    obtain ⟨eq1, eq2⟩ := eq_of_ovee_eq_of_le hp1 hperp
+      (comp_le_comp g₁ (pred_le_truth q₁)) (comp_le_comp g₂ (pred_le_truth q₂))
+      hsum
+    obtain ⟨g₁', hg₁', hu₁⟩ := h₁.2 g₁ eq1
+    obtain ⟨g₂', hg₂', hu₂⟩ := h₂.2 g₂ eq2
+    have hperp' : Perp (g₁' ≫ truth W₁) (g₂' ≫ truth W₂) := by
+      have a1 : g₁' ≫ truth W₁ = g₁ ≫ truth X₁ := by
+        rw [← ht₁, ← Category.assoc, hg₁']
+      have a2 : g₂' ≫ truth W₂ = g₂ ≫ truth X₂ := by
+        rw [← ht₂, ← Category.assoc, hg₂']
+      rw [a1, a2]; exact hperp
+    refine ⟨effPair g₁' g₂' hperp', ?_, ?_⟩
+    · show effPair g₁' g₂' hperp' ≫ coprod.map π₁ π₂ = g
+      refine (coprod_prod hperp).unique ⟨?_, ?_⟩ ⟨rfl, rfl⟩
+      · rw [Category.assoc, coprod_map_pproj₁, ← Category.assoc,
+          (effPair_spec g₁' g₂' hperp').1, hg₁']
+      · rw [Category.assoc, coprod_map_pproj₂, ← Category.assoc,
+          (effPair_spec g₁' g₂' hperp').2, hg₂']
+    · intro k hk
+      replace hk : k ≫ coprod.map π₁ π₂ = g := hk
+      have k1 : k ≫ pproj₁ W₁ W₂ = g₁' := by
+        refine hu₁ _ ?_
+        show (k ≫ pproj₁ W₁ W₂) ≫ π₁ = g₁
+        rw [Category.assoc, ← coprod_map_pproj₁ π₁ π₂, ← Category.assoc, hk]
+      have k2 : k ≫ pproj₂ W₁ W₂ = g₂' := by
+        refine hu₂ _ ?_
+        show (k ≫ pproj₂ W₁ W₂) ≫ π₂ = g₂
+        rw [Category.assoc, ← coprod_map_pproj₂ π₁ π₂, ← Category.assoc, hk]
+      exact (coprod_prod hperp').unique ⟨k1, k2⟩ (effPair_spec g₁' g₂' hperp')
+
+end CoprodQuotCompr
+
 /-! ## Dilations (parsecs 221–223) -/
 
 section Dilations
@@ -3031,18 +3180,25 @@ theorem dils_abstract_basics_4 {f : X ⟶ Y} {ϱ : P ⟶ Y} {h : X ⟶ P}
 quotient `ξ : X ⟶ Q` and `f : Q ⟶ Y` with dilation `(P, ϱ, h)`, the triple
 `(P, ϱ, h ∘ ξ)` is a dilation of `f ∘ ξ`.
 
-Purity of `h ∘ ξ` is a hypothesis here, where the Proposition asserts it.
-That is not a gratuitous weakening: the section assumes only a ⋄-effectus,
-and closure of pure maps under composition is 211XI, which needs an
-&-effectus — **and the thesis's own proof of this clause never addresses
-purity of `h ∘ ξ` either**, so the point as printed has a gap here.  How to
-close it is the author's call. -/
+Purity of `h ∘ ξ`, which the Proposition asserts and its proof passes over
+in silence (ERRATA, `221IV.5/.6/.7`), is **not** a hypothesis: it is
+discharged here from purity of `h` alone.  Writing `h = ξ' ∘ π` with `ξ'` a
+quotient and `π` a comprehension, `h ∘ ξ = π ∘ (ξ' ∘ ξ)`, and `ξ' ∘ ξ` is a
+quotient by **197IX** (`quotients_composition`) — so no appeal to 211XI, and
+no &-effectus, is needed. -/
 theorem dils_abstract_basics_5 {Q : C} {p : Pred X} {ξ : X ⟶ Q}
     (hξ : IsQuotient p ξ) {f : Q ⟶ Y} {ϱ : P ⟶ Y} {h : Q ⟶ P}
-    (d : IsDilation f ϱ h) (hpure : IsPure (ξ ≫ h)) :
+    (d : IsDilation f ϱ h) :
     IsDilation (ξ ≫ f) ϱ (ξ ≫ h) := by
   obtain ⟨hsϱ, htϱ, hph, hfac, huniv⟩ := d
   haveI : Epi ξ := quotient_basics_6 hξ
+  -- purity of `ξ ≫ h`: quotients compose (197IX)
+  have hpure : IsPure (ξ ≫ h) := by
+    obtain ⟨Q', ξ', π, p', q', hξ', hπ, he⟩ := hph
+    have hq : IsQuotient (orth (orth p)) ξ := by rwa [eabasics_orth_orth]
+    have hq' : IsQuotient (orth (orth p')) ξ' := by rwa [eabasics_orth_orth]
+    exact ⟨Q', ξ ≫ ξ', π, _, q', quotients_composition hq hq', hπ,
+      by rw [he, Category.assoc]⟩
   refine ⟨hsϱ, htϱ, hpure, by rw [Category.assoc, hfac], ?_⟩
   intro P' ϱ' h' hsϱ' htϱ' hfac'
   -- `h'` factors through the quotient `ξ`
@@ -3107,16 +3263,17 @@ dilations are closed under coproducts:
 
 The Proposition *asserts* that `[ϱ₁, ϱ₂]` is sharp and `h₁ + h₂` pure; here
 they are hypotheses, because the section only assumes a ⋄-effectus, in which
-neither the cotuple of two sharp maps nor the coproduct of two pure maps is
-known to be sharp resp. pure (closure of pure maps under composition is
-211XI and needs an &-effectus).  Totality of `[ϱ₁, ϱ₂]`, on the other hand,
-is *not* a hypothesis: it follows from totality of `ϱ₁` and `ϱ₂` by 181IV
-(`cotupl_pcm_one`). -/
+the Proposition asserts all three side conditions of the new triple and its
+proof addresses none of them (ERRATA, `221IV.5/.6/.7`), so all three are
+discharged here: sharpness of `[ϱ₁, ϱ₂]` from `img_tupling_sharp` (203XIV,
+`[s,t]` is sharp iff `s` and `t` are), purity of `h₁ + h₂` from
+`isQuotient_coprod_map` and `isComprehension_coprod_map` above, and totality
+of `[ϱ₁, ϱ₂]` from 181IV (`cotupl_pcm_one`).  No appeal to 211XI, hence no
+&-effectus, is needed. -/
 theorem dils_abstract_basics_7 {X₁ X₂ P₁ P₂ : C}
     {f₁ : X₁ ⟶ Y} {f₂ : X₂ ⟶ Y} {ϱ₁ : P₁ ⟶ Y} {ϱ₂ : P₂ ⟶ Y}
     {h₁ : X₁ ⟶ P₁} {h₂ : X₂ ⟶ P₂}
-    (d₁ : IsDilation f₁ ϱ₁ h₁) (d₂ : IsDilation f₂ ϱ₂ h₂)
-    (hcop : SharpMap (coprod.desc ϱ₁ ϱ₂) ∧ IsPure (coprod.map h₁ h₂)) :
+    (d₁ : IsDilation f₁ ϱ₁ h₁) (d₂ : IsDilation f₂ ϱ₂ h₂) :
     IsDilation (coprod.desc f₁ f₂) (coprod.desc ϱ₁ ϱ₂)
       (coprod.map h₁ h₂) := by
   obtain ⟨hs₁, ht₁, hp₁, hfac₁, huniv₁⟩ := d₁
@@ -3127,7 +3284,20 @@ theorem dils_abstract_basics_7 {X₁ X₂ P₁ P₂ : C}
     rw [← cotupl_pcm_one P₁ P₂, ← show ϱ₁ ≫ truth Y = truth P₁ from ht₁,
       ← show ϱ₂ ≫ truth Y = truth P₂ from ht₂]
     exact coprod.desc_comp _ _ _
-  refine ⟨hcop.1, htcop, hcop.2, ?_, ?_⟩
+  -- `[ϱ₁, ϱ₂] ∘ s = [ϱ₁ ∘ s, ϱ₂ ∘ s]` is sharp by 203XIV
+  have hscop : SharpMap (coprod.desc ϱ₁ ϱ₂) := by
+    intro s hs
+    rw [coprod.desc_comp]
+    exact (img_tupling_sharp _ _).mpr ⟨hs₁ s hs, hs₂ s hs⟩
+  -- `h₁ + h₂ = (ξ₁ + ξ₂) ; (π₁ + π₂)` is a quotient followed by a
+  -- comprehension
+  have hpcop : IsPure (coprod.map h₁ h₂) := by
+    obtain ⟨Q₁, ξ₁, π₁, r₁, s₁, hξ₁, hπ₁, e₁⟩ := hp₁
+    obtain ⟨Q₂, ξ₂, π₂, r₂, s₂, hξ₂, hπ₂, e₂⟩ := hp₂
+    refine ⟨Q₁ ⨿ Q₂, coprod.map ξ₁ ξ₂, coprod.map π₁ π₂, _, _,
+      isQuotient_coprod_map hξ₁ hξ₂, isComprehension_coprod_map hπ₁ hπ₂, ?_⟩
+    rw [e₁, e₂, coprod.map_map]
+  refine ⟨hscop, htcop, hpcop, ?_, ?_⟩
   · rw [coprod.map_desc, hfac₁, hfac₂]
   · intro P' ϱ' h' hsϱ' htϱ' hfac'
     have e₁ : (coprod.inl ≫ h') ≫ ϱ' = f₁ := by

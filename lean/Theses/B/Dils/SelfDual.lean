@@ -2005,10 +2005,12 @@ each of which is disjoint from `s`, and each half is estimated by the
 solution's Cauchy–Schwarz (`np_norm_sum_mul_star_le`) as a vanishing tail
 times the bounded factor `(Aω(1))^½`.
 
-(Note that our statement is only the *convergence* half of part 1; that
-`ℓ²((pᵢ)ᵢ)` is a right ℬ-module under the coordinatewise operations and a
-pre-Hilbert ℬ-module under this inner product — bsols.tex:972–1013 and
-1066–1075 — is not stated anywhere in this file.) -/
+(This theorem is the *convergence* clause of part 1 by itself.  The rest of
+part 1 — that `ℓ²((pᵢ)ᵢ)` is a right ℬ-module under the coordinatewise
+operations and that this inner product turns it into a pre-Hilbert
+ℬ-module, bsols.tex:972–1013 and 1066–1075 — is `hilbmod_el2_module` and
+`hilbmod_el2_preHilbert` in the section *Parsec 1610 concluded* below, which
+builds the module `L2 ℬ p` on top of this theorem.) -/
 theorem hilbmod_el2_inner [VonNeumannAlgebra ℬ] {ι : Type v} (b c : ι → ℬ)
     (hb : L2Summable ℬ b) (hc : L2Summable ℬ c) :
     ∃ s : ℬ, UWTendsto (fun t : Finset ι => ∑ i ∈ t, c i * star (b i))
@@ -2122,10 +2124,12 @@ three clauses come straight out of the two convergence clauses of
   `inner_sum_smul_orthogonal` plus absorption.
 
 Consequently the hypothesis `hX : SelfDual ℬ X` is **not used** — an
-orthonormal *basis* already carries everything.  (Note also that our
-statement is weaker than the exercise, which additionally asks for the
-right-module structure on `ℓ²((pᵢ))` and its self-duality; those are not
-formalized anywhere in this file.) -/
+orthonormal *basis* already carries everything.  (The exercise additionally
+asks for the right-module structure on `ℓ²((pᵢ))` and its self-duality, and
+for the coordinate map to be an isomorphism *of modules*; those are
+`hilbmod_el2_module`, `hilbmod_el2_selfDual` and `hilbmod_el2_iso` in the
+section *Parsec 1610 concluded* below.  `hilbmod_el2_iso` is this theorem
+repackaged against the module `L2 ℬ p`.) -/
 theorem hilbmod_el2 [VonNeumannAlgebra ℬ] [CompleteSpace X]
     (hX : SelfDual ℬ X) {ι : Type v} (e : ι → X) (he : IsONBasis ℬ e) :
     Set.BijOn (fun (x : X) (i : ι) => inner ℬ (e i) x) Set.univ
@@ -2329,9 +2333,7 @@ The isomorphism is one of Hilbert ℬ-modules, so `Φ` is additive and
 *module* `ℓ²((pᵢ))`: the `δᵢ` are an orthonormal basis (**161II**), so
 `(δᵢuᵢ)ᵢ` is another one by part 1 of this exercise, and the second half of
 **161II** then produces the isomorphism with `ℓ²((⟨δᵢuᵢ, δᵢuᵢ⟩)ᵢ) =
-ℓ²((qᵢ))`.  That route is unavailable here because `ℓ²((pᵢ))` is not
-formalized as a *module* at all (see `hilbmod_el2`), so the bijection is
-written down directly instead: `Φ(b)ᵢ = bᵢuᵢ*` (mirrored from the thesis's
+ℓ²((qᵢ))`.  The bijection is written down directly instead: `Φ(b)ᵢ = bᵢuᵢ*` (mirrored from the thesis's
 `bᵢ ↦ uᵢ*bᵢ`), with inverse `bᵢ ↦ bᵢuᵢ`.  Absorption `bᵢpᵢ = bᵢ` makes
 `Φ(c)ᵢ Φ(b)ᵢ* = cᵢ pᵢ bᵢ* = cᵢbᵢ*` termwise, so the two nets of partial sums
 are *equal*, which is why the inner-product clause is an equality of
@@ -2437,8 +2439,9 @@ theorem onb1_el2 [VonNeumannAlgebra ℬ] {ι : Type v} (p q : ι → ℬ)
 basis of `X` with distinguished indices `i₁ ≠ i₂` and
 `⟨e_{i₁},e_{i₁}⟩ + ⟨e_{i₂},e_{i₂}⟩ ≤ 1`, then removing `e_{i₁}, e_{i₂}`
 and inserting `e_{i₁} + e_{i₂}` again yields an orthonormal basis.  (The
-consequence `pℬ ⊕ qℬ ≅ (p+q)ℬ` for `p + q ≤ 1` is not converted
-separately.) -/
+exercise's consequence `pℬ ⊕ qℬ ≅ (p+q)ℬ` for `p + q ≤ 1` is `onb2_2`,
+below, which runs the exercise's own "conclude" — this theorem applied to
+the basis `(δ₁,δ₂)` of `ℓ²((p,q))`, then **161II**.) -/
 theorem onb2 [VonNeumannAlgebra ℬ] [CompleteSpace X] {ι : Type v}
     [DecidableEq ι]
     (e : ι → X) (he : IsONBasis ℬ e) (i₁ i₂ : ι) (hne : i₁ ≠ i₂)
@@ -2626,6 +2629,1048 @@ theorem onb2 [VonNeumannAlgebra ℬ] [CompleteSpace X] {ι : Type v}
     simp only [Function.comp_apply, hkey s]
 
 end L2
+
+/-! ## Parsec 1610 concluded: `ℓ²((pᵢ)ᵢ)` as a module
+
+**161II** asks for three things: that `ℓ²((pᵢ))` is a right ℬ-module under
+the coordinatewise operations, that `∑ᵢ bᵢ*cᵢ` converges ultraweakly and
+turns it into a pre-Hilbert ℬ-module, and that it is self dual and receives
+every self-dual `X` with an orthonormal basis.  Only the convergence clause
+(`hilbmod_el2_inner`) and the coordinate bijection (`hilbmod_el2`) were
+stated above; this section supplies the module itself, and with it the two
+missing clauses of **161II** and the second half of **161V**.
+
+`L2 ℬ p` is the thesis's `ℓ²((pᵢ))` as a *type* — `hilbmod_el2_module`
+identifies its carrier with `L2Set ℬ p` for a family of projections.  It
+carries `Module ℂ`, `Module ℬ` (the mirrored right action), the ℬ-valued
+inner product `L2.binner` of **161II**.1, a `NormedAddCommGroup` and a
+`CStarModule ℬ` structure (**141II**: the inner product is definite, so the
+seminorm `‖x‖ = ‖⟨x,x⟩‖^½` of **142V** is a norm), and — through the
+solution's orthonormal basis `(δᵢ)` and **149XI** — self-duality.
+
+Neither `hilbmod_el2_inner` nor `hilbmod_el2` changes; they are the two
+clauses this section builds on. -/
+
+section L2Helpers
+
+variable {ℬ : Type u}
+  [CStarAlgebra ℬ] [PartialOrder ℬ] [StarOrderedRing ℬ]
+
+/-! ### closure of ℓ²-summability -/
+
+/-- `(x+y)(x+y)* ≤ 2xx* + 2yy*`, because `(x−y)(x−y)* ≥ 0`. -/
+private theorem mul_star_add_le (x y : ℬ) :
+    (x + y) * star (x + y)
+      ≤ (x * star x + x * star x) + (y * star y + y * star y) := by
+  have h : (0 : ℬ) ≤ (x - y) * star (x - y) := mul_star_self_nonneg _
+  have hid : (x * star x + x * star x) + (y * star y + y * star y)
+      - (x + y) * star (x + y) = (x - y) * star (x - y) := by
+    rw [star_add, star_sub]; noncomm_ring
+  rw [← sub_nonneg, hid]
+  exact h
+
+private theorem l2Summable_add {ι : Type v} {b c : ι → ℬ}
+    (hb : L2Summable ℬ b) (hc : L2Summable ℬ c) :
+    L2Summable ℬ fun i => b i + c i := by
+  obtain ⟨Mb, hMb⟩ := hb
+  obtain ⟨Mc, hMc⟩ := hc
+  refine ⟨(Mb + Mb) + (Mc + Mc), fun t => ?_⟩
+  have hnn : (0 : ℬ) ≤ ∑ i ∈ t, (b i + c i) * star (b i + c i) :=
+    Finset.sum_nonneg fun i _ => mul_star_self_nonneg _
+  have hle : (∑ i ∈ t, (b i + c i) * star (b i + c i))
+      ≤ ((∑ i ∈ t, b i * star (b i)) + ∑ i ∈ t, b i * star (b i))
+        + ((∑ i ∈ t, c i * star (c i)) + ∑ i ∈ t, c i * star (c i)) := by
+    have h1 : (∑ i ∈ t, (b i + c i) * star (b i + c i))
+        ≤ ∑ i ∈ t, ((b i * star (b i) + b i * star (b i))
+          + (c i * star (c i) + c i * star (c i))) :=
+      Finset.sum_le_sum fun i _ => mul_star_add_le (b i) (c i)
+    refine h1.trans_eq ?_
+    simp [Finset.sum_add_distrib]
+  refine (CStarAlgebra.norm_le_norm_of_nonneg_of_le hnn hle).trans ?_
+  refine (norm_add_le _ _).trans (add_le_add ?_ ?_)
+  · exact (norm_add_le _ _).trans (add_le_add (hMb t) (hMb t))
+  · exact (norm_add_le _ _).trans (add_le_add (hMc t) (hMc t))
+
+private theorem l2Summable_smul {ι : Type v} (z : ℂ) {c : ι → ℬ}
+    (hc : L2Summable ℬ c) : L2Summable ℬ fun i => z • c i := by
+  obtain ⟨M, hM⟩ := hc
+  have hM0 : (0 : ℝ) ≤ M := by simpa using hM ∅
+  refine ⟨‖z‖ * ‖z‖ * M, fun t => ?_⟩
+  have hEq : (∑ i ∈ t, (z • c i) * star (z • c i))
+      = (z * star z) • ∑ i ∈ t, c i * star (c i) := by
+    rw [Finset.smul_sum]
+    refine Finset.sum_congr rfl fun i _ => ?_
+    rw [star_smul, smul_mul_assoc, mul_smul_comm, smul_smul]
+  rw [hEq, norm_smul, norm_mul, norm_star]
+  exact mul_le_mul_of_nonneg_left (hM t) (by positivity)
+
+/-- ℓ²-summable families are closed under the (mirrored) right action of `ℬ`:
+`∑ᵢ (b aᵢ)(b aᵢ)* = b (∑ᵢ aᵢaᵢ*) b*`. -/
+private theorem l2Summable_op_smul {ι : Type v} (b : ℬ) {c : ι → ℬ}
+    (hc : L2Summable ℬ c) : L2Summable ℬ fun i => b * c i := by
+  obtain ⟨M, hM⟩ := hc
+  refine ⟨‖b‖ * ‖b‖ * M, fun t => ?_⟩
+  have hEq : (∑ i ∈ t, (b * c i) * star (b * c i))
+      = b * (∑ i ∈ t, c i * star (c i)) * star b := by
+    rw [Finset.mul_sum, Finset.sum_mul]
+    exact Finset.sum_congr rfl fun i _ => by rw [star_mul]; noncomm_ring
+  rw [hEq]
+  calc ‖b * (∑ i ∈ t, c i * star (c i)) * star b‖
+      ≤ ‖b * (∑ i ∈ t, c i * star (c i))‖ * ‖star b‖ := norm_mul_le _ _
+    _ ≤ (‖b‖ * ‖∑ i ∈ t, c i * star (c i)‖) * ‖b‖ := by
+        rw [norm_star]; gcongr; exact norm_mul_le _ _
+    _ ≤ (‖b‖ * M) * ‖b‖ := by gcongr; exact hM t
+    _ = ‖b‖ * ‖b‖ * M := by ring
+
+
+end L2Helpers
+
+section L2Mod
+
+variable {ℬ : Type u}
+  [CStarAlgebra ℬ] [PartialOrder ℬ] [StarOrderedRing ℬ] [VonNeumannAlgebra ℬ]
+variable {ι : Type v}
+
+variable (ℬ) in
+/-- **161II**.1: `ℓ²((pᵢ)ᵢ)` as an ℂ-submodule of `ι → ℬ`. -/
+def L2Sub (p : ι → ℬ) : Submodule ℂ (ι → ℬ) where
+  carrier := {b | L2Summable ℬ b ∧ ∀ i, b i * p i = b i}
+  add_mem' := fun {b} {c} hb hc =>
+    ⟨l2Summable_add hb.1 hc.1, fun i => by
+      show (b i + c i) * p i = b i + c i
+      rw [add_mul, hb.2 i, hc.2 i]⟩
+  zero_mem' := ⟨⟨0, fun t => by simp⟩, fun i => by simp⟩
+  smul_mem' := fun z b hb =>
+    ⟨l2Summable_smul z hb.1, fun i => by
+      show (z • b i) * p i = z • b i
+      rw [smul_mul_assoc, hb.2 i]⟩
+
+variable (ℬ) in
+/-- **161II**.1: `ℓ²((pᵢ)ᵢ)` as a type. -/
+def L2 (p : ι → ℬ) : Type (max u v) := ↥(L2Sub ℬ p)
+
+namespace L2
+
+variable {p : ι → ℬ}
+
+/-- The underlying tuple. -/
+def val (x : L2 ℬ p) : ι → ℬ := Subtype.val x
+
+theorem val_mem (x : L2 ℬ p) : val x ∈ L2Sub ℬ p := Subtype.property x
+
+theorem val_injective : Function.Injective (val (ℬ := ℬ) (p := p)) :=
+  Subtype.val_injective
+
+theorem l2Summable (x : L2 ℬ p) : L2Summable ℬ (val x) := (val_mem x).1
+
+theorem absorb (x : L2 ℬ p) (i : ι) : val x i * p i = val x i := (val_mem x).2 i
+
+noncomputable instance : AddCommGroup (L2 ℬ p) := inferInstanceAs (AddCommGroup ↥(L2Sub ℬ p))
+noncomputable instance : Module ℂ (L2 ℬ p) := inferInstanceAs (Module ℂ ↥(L2Sub ℬ p))
+
+@[simp] theorem val_add (x y : L2 ℬ p) : val (x + y) = fun i => val x i + val y i := rfl
+@[simp] theorem val_zero : val (0 : L2 ℬ p) = fun _ => 0 := rfl
+@[simp] theorem val_neg (x : L2 ℬ p) : val (-x) = fun i => -val x i := rfl
+@[simp] theorem val_sub (x y : L2 ℬ p) : val (x - y) = fun i => val x i - val y i := rfl
+@[simp] theorem val_smul (c : ℂ) (x : L2 ℬ p) : val (c • x) = fun i => c • val x i := rfl
+
+/-- The (mirrored) right action of `ℬ`, coordinatewise. -/
+noncomputable instance : Module ℬ (L2 ℬ p) where
+  smul b x := ⟨fun i => b * val x i,
+    ⟨l2Summable_op_smul b (l2Summable x), fun i => by
+      show b * val x i * p i = b * val x i
+      rw [mul_assoc, absorb x i]⟩⟩
+  one_smul x := val_injective (funext fun i => one_mul _)
+  mul_smul a b x := val_injective (funext fun i => mul_assoc _ _ _)
+  smul_zero a := val_injective (funext fun i => mul_zero _)
+  smul_add a x y := val_injective (funext fun i => mul_add _ _ _)
+  add_smul a b x := val_injective (funext fun i => add_mul _ _ _)
+  zero_smul x := val_injective (funext fun i => zero_mul _)
+
+@[simp] theorem val_op_smul (b : ℬ) (x : L2 ℬ p) :
+    val (b • x) = fun i => b * val x i := rfl
+
+/-! ### the ℬ-valued inner product -/
+
+/-- The ℓ²-inner product `⟨x,y⟩ = ∑ᵢ xᵢ*yᵢ` (mirrored: `∑ᵢ yᵢxᵢ*`), the
+ultraweak sum of **161II**.1 (`hilbmod_el2_inner`). -/
+noncomputable def inner' (x y : L2 ℬ p) : ℬ :=
+  (hilbmod_el2_inner (val x) (val y) (l2Summable x) (l2Summable y)).choose
+
+theorem uwTendsto_inner (x y : L2 ℬ p) :
+    UWTendsto (fun t : Finset ι => ∑ i ∈ t, val y i * star (val x i)) atTop
+      (inner' x y) :=
+  (hilbmod_el2_inner (val x) (val y) (l2Summable x) (l2Summable y)).choose_spec
+
+private theorem uwTendsto_star'' {κ : Type*} {l : Filter κ} {f : κ → ℬ} {a : ℬ}
+    (h : UWTendsto f l a) : UWTendsto (fun i => star (f i)) l (star a) := by
+  rw [uwTendsto_iff] at h ⊢
+  intro ω
+  have h1 := (h ω).star
+  simp only [npFunctional_star] at h1 ⊢
+  exact h1
+
+/-- The inner product is additive in the second (mirrored: first) slot. -/
+theorem inner'_add_right (x y z : L2 ℬ p) :
+    inner' x (y + z) = inner' x y + inner' x z := by
+  refine uwTendsto_unique₂ (uwTendsto_inner x (y + z)) ?_
+  have h := uwTendsto_add' (uwTendsto_inner x y) (uwTendsto_inner x z)
+  refine h.congr fun t => ?_
+  simp only [val_add, ← Finset.sum_add_distrib]
+  exact Finset.sum_congr rfl fun i _ => (add_mul _ _ _).symm
+
+theorem inner'_op_smul_right (b : ℬ) (x y : L2 ℬ p) :
+    inner' x (b • y) = b * inner' x y := by
+  refine uwTendsto_unique₂ (uwTendsto_inner x (b • y)) ?_
+  have h := uwTendsto_mul_left_right (A := ℬ) b 1 (uwTendsto_inner x y)
+  rw [mul_one] at h
+  refine h.congr fun t => ?_
+  rw [mul_one, Finset.mul_sum]
+  exact Finset.sum_congr rfl fun i _ => by simp [mul_assoc]
+
+theorem inner'_smul_right_complex (c : ℂ) (x y : L2 ℬ p) :
+    inner' x (c • y) = c • inner' x y := by
+  refine uwTendsto_unique₂ (uwTendsto_inner x (c • y)) ?_
+  have h := uwTendsto_smul' (A := ℬ) c (uwTendsto_inner x y)
+  refine h.congr fun t => ?_
+  rw [Finset.smul_sum]
+  exact Finset.sum_congr rfl fun i _ => by simp
+
+theorem star_inner' (x y : L2 ℬ p) : star (inner' x y) = inner' y x := by
+  refine uwTendsto_unique₂ (uwTendsto_star'' (uwTendsto_inner x y)) ?_
+  refine (uwTendsto_inner y x).congr fun t => ?_
+  rw [star_sum]
+  exact Finset.sum_congr rfl fun i _ => by rw [star_mul, star_star]
+
+theorem inner'_self_nonneg (x : L2 ℬ p) : 0 ≤ inner' x x := by
+  have hsa : IsSelfAdjoint (inner' x x) := star_inner' x x
+  refine np_orderSeparating 0 _ (IsSelfAdjoint.zero ℬ) hsa fun ω => ?_
+  have hlim := (uwTendsto_iff _ _ _).mp (uwTendsto_inner x x) ω
+  have hre : Tendsto (fun t : Finset ι =>
+      (ω (∑ i ∈ t, val x i * star (val x i))).re) atTop (𝓝 (ω (inner' x x)).re) :=
+    (Complex.continuous_re.tendsto _).comp hlim
+  have him : Tendsto (fun t : Finset ι =>
+      (ω (∑ i ∈ t, val x i * star (val x i))).im) atTop (𝓝 (ω (inner' x x)).im) :=
+    (Complex.continuous_im.tendsto _).comp hlim
+  have hnn : ∀ t : Finset ι, (0 : ℝ) ≤ (ω (∑ i ∈ t, val x i * star (val x i))).re :=
+    fun t => np_re_nonneg' ω (Finset.sum_nonneg fun i _ => mul_star_self_nonneg _)
+  have hz : ∀ t : Finset ι, (ω (∑ i ∈ t, val x i * star (val x i))).im = 0 :=
+    fun t => npFunctional_im_eq_zero ω
+      (IsSelfAdjoint.of_nonneg (Finset.sum_nonneg fun i _ => mul_star_self_nonneg _))
+  have h1 : (0 : ℝ) ≤ (ω (inner' x x)).re := ge_of_tendsto' hre fun t => hnn t
+  have h2 : (ω (inner' x x)).im = 0 := by
+    refine tendsto_nhds_unique him ?_
+    simp only [hz]
+    exact tendsto_const_nhds
+  rw [npFunctional_zero]
+  exact Complex.le_def.mpr ⟨by simpa using h1, by simpa using h2.symm⟩
+
+/-- The ℓ²-inner product is **definite**: the solution's own argument — if
+`∑ᵢ aᵢ*aᵢ = 0` then each `aᵢ*aᵢ = 0`, hence each `aᵢ = 0`. -/
+theorem inner'_definite (x : L2 ℬ p) (h : inner' x x = 0) : x = 0 := by
+  classical
+  have hmono : ∀ (ω : NPFunctional ℬ) (t₀ t : Finset ι), t₀ ≤ t →
+      (ω (∑ i ∈ t₀, val x i * star (val x i))).re
+        ≤ (ω (∑ i ∈ t, val x i * star (val x i))).re := by
+    intro ω t₀ t ht
+    have hsub : (∑ i ∈ t₀, val x i * star (val x i))
+        ≤ ∑ i ∈ t, val x i * star (val x i) :=
+      Finset.sum_le_sum_of_subset_of_nonneg ht
+        (fun i _ _ => mul_star_self_nonneg _)
+    have := npFunctional_mono ω hsub
+    exact (Complex.le_def.mp this).1
+  have hzero : ∀ (ω : NPFunctional ℬ) (i : ι), ω (val x i * star (val x i)) = 0 := by
+    intro ω i
+    have hlim := (uwTendsto_iff _ _ _).mp (uwTendsto_inner x x) ω
+    rw [h, npFunctional_zero] at hlim
+    have hre : Tendsto (fun t : Finset ι =>
+        (ω (∑ i ∈ t, val x i * star (val x i))).re) atTop (𝓝 (0 : ℝ)) := by
+      simpa [Function.comp_def] using (Complex.continuous_re.tendsto _).comp hlim
+    have hle : (ω (∑ j ∈ ({i} : Finset ι), val x j * star (val x j))).re ≤ 0 :=
+      ge_of_tendsto hre ((eventually_ge_atTop ({i} : Finset ι)).mono
+        fun t ht => hmono ω _ t ht)
+    have hge : (0 : ℝ) ≤ (ω (val x i * star (val x i))).re :=
+      np_re_nonneg' ω (mul_star_self_nonneg _)
+    rw [Finset.sum_singleton] at hle
+    have him : (ω (val x i * star (val x i))).im = 0 :=
+      npFunctional_im_eq_zero ω (IsSelfAdjoint.of_nonneg (mul_star_self_nonneg _))
+    exact Complex.ext (by rw [Complex.zero_re]; linarith) (by simpa using him)
+  refine val_injective (funext fun i => ?_)
+  have hii : val x i * star (val x i) = 0 :=
+    np_separating _ fun ω => hzero ω i
+  have hn : ‖val x i‖ * ‖val x i‖ = 0 := by
+    rw [← CStarRing.norm_self_mul_star (x := val x i), hii, norm_zero]
+  have : ‖val x i‖ = 0 := by nlinarith [norm_nonneg (val x i)]
+  simpa using norm_eq_zero.mp this
+
+variable (ℬ p) in
+/-- **161II**.1: the ℓ²-inner product turns `ℓ²((pᵢ)ᵢ)` into a pre-Hilbert
+ℬ-module. -/
+noncomputable def binner : BInner ℬ (L2 ℬ p) where
+  inner := inner'
+  inner_add_right := inner'_add_right
+  inner_op_smul_right := fun b x y => inner'_op_smul_right b x y
+  inner_smul_right_complex := fun c x y => inner'_smul_right_complex c x y
+  star_inner := star_inner'
+  inner_self_nonneg := inner'_self_nonneg
+
+@[simp] theorem binner_inner : (binner ℬ p).inner = inner' (ℬ := ℬ) (p := p) := rfl
+
+theorem binner_definite : (binner ℬ p).Definite := inner'_definite
+
+/-! ### the norm, and `ℓ²((pᵢ))` as a Hilbert ℬ-module -/
+
+noncomputable instance : NormedAddCommGroup (L2 ℬ p) :=
+  AddGroupNorm.toNormedAddCommGroup
+    { toFun := (binner ℬ p).norm
+      map_zero' := by
+        show Real.sqrt ‖inner' (0 : L2 ℬ p) 0‖ = 0
+        rw [show inner' (0 : L2 ℬ p) 0 = 0 by
+          simpa using inner'_smul_right_complex (0 : ℂ) (0 : L2 ℬ p) 0]
+        simp
+      add_le' := fun x y => (module_seminorm_2 (binner ℬ p) x y 1 1).1
+      neg' := fun x => by
+        have h := (module_seminorm_2 (binner ℬ p) x x (-1) 1).2.1
+        rw [show ((-1 : ℂ) • x) = -x by simp] at h
+        simpa using h
+      eq_zero_of_map_eq_zero' := fun x hx => by
+        have hx' : Real.sqrt ‖inner' x x‖ = 0 := hx
+        have h0 : ‖inner' x x‖ = 0 := by
+          nlinarith [Real.sq_sqrt (norm_nonneg (inner' x x)),
+            norm_nonneg (inner' x x)]
+        exact inner'_definite x (norm_eq_zero.mp h0) }
+
+theorem norm_def (x : L2 ℬ p) : ‖x‖ = Real.sqrt ‖inner' x x‖ := rfl
+
+noncomputable instance : NormedSpace ℂ (L2 ℬ p) where
+  norm_smul_le c x := le_of_eq (module_seminorm_2 (binner ℬ p) x x c 1).2.1
+
+noncomputable instance : CStarModule ℬ (L2 ℬ p) where
+  inner := inner'
+  inner_add_right := inner'_add_right _ _ _
+  inner_self_nonneg := inner'_self_nonneg _
+  inner_self := fun {x} => ⟨inner'_definite x, by
+    rintro rfl
+    simpa using inner'_smul_right_complex (0 : ℂ) (0 : L2 ℬ p) 0⟩
+  inner_op_smul_right := inner'_op_smul_right _ _ _
+  inner_smul_right_complex := inner'_smul_right_complex _ _ _
+  star_inner := star_inner'
+  norm_eq_sqrt_norm_inner_self := fun x => rfl
+
+@[simp] theorem inner_eq (x y : L2 ℬ p) : (inner ℬ x y : ℬ) = inner' x y := rfl
+
+/-- Over a finite index the ℓ²-inner product is the finite sum: the net of
+partial sums is eventually constant. -/
+theorem inner'_of_fintype [Fintype ι] (x y : L2 ℬ p) :
+    inner' x y = ∑ i, val y i * star (val x i) := by
+  refine uwTendsto_unique₂ (uwTendsto_inner x y) ?_
+  have hconst : UWTendsto (fun _ : Finset ι => ∑ i, val y i * star (val x i)) atTop
+      (∑ i, val y i * star (val x i)) := by
+    rw [uwTendsto_iff]; intro ω; exact tendsto_const_nhds
+  refine Filter.Tendsto.congr' ?_ hconst
+  filter_upwards [eventually_ge_atTop (Finset.univ : Finset ι)] with t ht
+  rw [Finset.eq_univ_of_forall fun i => ht (Finset.mem_univ i)]
+
+/-! ### the orthonormal basis `(δᵢ)` and self-duality -/
+
+/-- The ω-Parseval sum: `ω⟨x,x⟩ = ∑ᵢ ω(xᵢxᵢ*)`, the ultraweak limit read
+off at `ω`. -/
+theorem hasSum_np_inner_self (x : L2 ℬ p) (ω : NPFunctional ℬ) :
+    HasSum (fun i => (ω (val x i * star (val x i))).re) ((ω (inner' x x)).re) := by
+  have hlim := (uwTendsto_iff _ _ _).mp (uwTendsto_inner x x) ω
+  have hre : Tendsto (fun t : Finset ι =>
+      (ω (∑ i ∈ t, val x i * star (val x i))).re) atTop (𝓝 (ω (inner' x x)).re) := by
+    simpa [Function.comp_def] using (Complex.continuous_re.tendsto _).comp hlim
+  refine hre.congr fun t => ?_
+  rw [show ω (∑ i ∈ t, val x i * star (val x i))
+      = ∑ i ∈ t, ω (val x i * star (val x i)) from
+    map_sum ω.toPositiveLinearMap _ t, Complex.re_sum]
+
+section Delta
+
+variable [DecidableEq ι]
+
+/-- The restriction of `x` to a finite set of coordinates. -/
+def restrict (x : L2 ℬ p) (s : Finset ι) : L2 ℬ p :=
+  ⟨fun i => if i ∈ s then val x i else 0,
+    ⟨by
+      obtain ⟨M, hM⟩ := l2Summable x
+      refine ⟨M, fun t => ?_⟩
+      have hpt : ∀ i, (if i ∈ s then val x i else 0) * star (if i ∈ s then val x i else 0)
+          = if i ∈ s then val x i * star (val x i) else 0 := by
+        intro i; by_cases h : i ∈ s <;> simp [h]
+      simp only [hpt, ← Finset.sum_filter]
+      exact hM _,
+    fun i => by by_cases h : i ∈ s <;> simp [h, absorb x i]⟩⟩
+
+@[simp] theorem val_restrict (x : L2 ℬ p) (s : Finset ι) :
+    val (restrict x s) = fun i => if i ∈ s then val x i else 0 := rfl
+
+/-- **161II**, the tail estimate: `‖x|_s − x‖_ω² = ω⟨x,x⟩ − ∑_{i∈s} ω(xᵢxᵢ*)`,
+the ω-Parseval sum minus its partial sum. -/
+theorem unSeminorm_restrict_sub (x : L2 ℬ p) (ω : NPFunctional ℬ) (s : Finset ι) :
+    unSeminorm ω (inner ℬ) (restrict x s - x)
+      = Real.sqrt ((ω (inner' x x)).re
+          - ∑ i ∈ s, (ω (val x i * star (val x i))).re) := by
+  set G : ℝ := (ω (inner' x x)).re with hG
+  set g : ι → ℝ := fun i => (ω (val x i * star (val x i))).re with hg
+  have hgsum : HasSum g G := hasSum_np_inner_self x ω
+  set z : L2 ℬ p := restrict x s - x with hz
+  have hzval : ∀ i, val z i = if i ∈ s then 0 else -val x i := by
+    intro i; by_cases h : i ∈ s <;> simp [hz, h]
+  have hfun : (fun i => (ω (val z i * star (val z i))).re)
+      = fun i => if i ∈ s then 0 else g i := by
+    funext i
+    by_cases h : i ∈ s <;> simp [hzval i, h, hg]
+  have hs2 : ∑ i ∈ s, (if i ∈ s then g i else 0) = ∑ i ∈ s, g i :=
+    Finset.sum_congr rfl fun i hi => by simp [hi]
+  have hsum2 : HasSum (fun i => if i ∈ s then g i else 0)
+      (∑ i ∈ s, (if i ∈ s then g i else 0)) :=
+    hasSum_sum_of_ne_finset_zero fun i hi => by simp [hi]
+  rw [hs2] at hsum2
+  have hsub : HasSum (fun i => if i ∈ s then 0 else g i) (G - ∑ i ∈ s, g i) := by
+    refine (hgsum.sub hsum2).congr_fun fun i => ?_
+    by_cases h : i ∈ s <;> simp [h]
+  have hzz : (ω (inner' z z)).re = G - ∑ i ∈ s, g i := by
+    have h1 := hasSum_np_inner_self z ω
+    rw [hfun] at h1
+    exact h1.unique hsub
+  show Real.sqrt (ω (inner ℬ z z)).re = _
+  rw [inner_eq, hzz]
+
+/-- **161II**: the restrictions of `x` to finite sets of coordinates converge
+to `x` in the ultranorm uniformity — the "which indeed it does, as we already
+saw" of the solution. -/
+theorem unTendsto_restrict (x : L2 ℬ p) :
+    UnTendsto (inner ℬ) (fun s : Finset ι => restrict x s) atTop x := by
+  intro ω
+  set G : ℝ := (ω (inner' x x)).re with hG
+  set g : ι → ℝ := fun i => (ω (val x i * star (val x i))).re with hg
+  have hgsum : HasSum g G := hasSum_np_inner_self x ω
+  simp only [unSeminorm_restrict_sub x ω, ← hG, ← hg]
+  have h0 : Tendsto (fun s : Finset ι => G - ∑ i ∈ s, g i) atTop (𝓝 (G - G)) :=
+    tendsto_const_nhds.sub hgsum
+  rw [sub_self] at h0
+  have hfin := (Real.continuous_sqrt.tendsto (0 : ℝ)).comp h0
+  simpa [Function.comp_def] using hfin
+
+
+/-! ### the orthonormal basis `(δᵢ)` -/
+
+variable (hp : ∀ i, IsStarProjection (p i))
+
+include hp in
+private theorem delta_l2Summable (i : ι) :
+    L2Summable ℬ (fun j => if j = i then p i else 0) := by
+  refine ⟨‖p i‖, fun t => ?_⟩
+  have hpt : ∀ j, (if j = i then p i else 0) * star (if j = i then p i else 0)
+      = if j = i then p i else 0 := by
+    intro j
+    by_cases h : j = i
+    · simp [h, (hp i).isSelfAdjoint.star_eq, (hp i).isIdempotentElem.eq]
+    · simp [h]
+  simp only [hpt, Finset.sum_ite_eq']
+  by_cases h : i ∈ t <;> simp [h]
+
+/-- `δᵢ`: the tuple with `pᵢ` in the coordinate `i` and `0` elsewhere. -/
+def delta (i : ι) : L2 ℬ p :=
+  ⟨fun j => if j = i then p i else 0,
+    delta_l2Summable hp i,
+    fun j => by
+      by_cases h : j = i
+      · simp [h, (hp i).isIdempotentElem.eq]
+      · simp [h]⟩
+
+@[simp] theorem val_delta (i : ι) :
+    val (delta hp i) = fun j => if j = i then p i else 0 := rfl
+
+/-- `⟨δᵢ, x⟩ = xᵢ`: the coordinate functionals of the basis are the
+coordinates.  The defining net is eventually constant. -/
+theorem inner'_delta_left (x : L2 ℬ p) (i : ι) : inner' (delta hp i) x = val x i := by
+  classical
+  refine uwTendsto_unique₂ (uwTendsto_inner (delta hp i) x) ?_
+  have hconst : UWTendsto (fun _ : Finset ι => val x i) atTop (val x i) := by
+    rw [uwTendsto_iff]; intro ω; exact tendsto_const_nhds
+  refine Filter.Tendsto.congr' ?_ hconst
+  filter_upwards [eventually_ge_atTop ({i} : Finset ι)] with t ht
+  have hsub : ({i} : Finset ι) ⊆ t := ht
+  have hpt : ∀ j, val x j * star (val (delta hp i) j)
+      = if j = i then val x j * p j else 0 := by
+    intro j
+    by_cases h : j = i
+    · subst h; simp [(hp j).isSelfAdjoint.star_eq]
+    · simp [h]
+  simp only [hpt, Finset.sum_ite_eq']
+  have hmem : i ∈ t := hsub (Finset.mem_singleton_self i)
+  simp [hmem, absorb x i]
+
+theorem inner'_delta (i j : ι) :
+    inner' (delta hp i) (delta hp j) = if i = j then p i else 0 := by
+  rw [inner'_delta_left hp (delta hp j) i, val_delta]
+  by_cases h : i = j
+  · subst h; simp
+  · simp [h]
+
+/-- The partial sums `∑ᵢ cᵢ·δᵢ` are the restrictions of the tuple `(cᵢpᵢ)`. -/
+theorem val_sum_smul_delta (s : Finset ι) (c : ι → ℬ) (j : ι) :
+    val (∑ i ∈ s, c i • delta hp i) j = if j ∈ s then c j * p j else 0 := by
+  classical
+  induction s using Finset.induction with
+  | empty => simp
+  | insert a s ha ih =>
+      rw [Finset.sum_insert ha]
+      have hval : val ((c a • delta hp a) + ∑ i ∈ s, c i • delta hp i) j
+          = c a * (if j = a then p a else 0)
+            + val (∑ i ∈ s, c i • delta hp i) j := rfl
+      rw [hval, ih]
+      by_cases h : j = a
+      · subst h; simp [ha]
+      · simp [h, Finset.mem_insert]
+
+end Delta
+
+section SelfDualL2
+
+variable [DecidableEq ι]
+
+/-- The subtype of coordinates that carry a *non-zero* projection: `δᵢ` is
+zero at the others, so the orthonormal basis of `ℓ²((pᵢ))` is indexed by
+these.  (The exercise says "clearly `E ≡ {δᵢ}` is an orthonormal set", which
+is off by the degenerate coordinates: `⟨δᵢ,δᵢ⟩ = pᵢ` must be *non-zero* for
+`E` to be orthonormal in the sense of **149I**.) -/
+def NZ (p : ι → ℬ) : Set ι := {i | p i ≠ 0}
+
+/-- A vector of `ℓ²((pᵢ))` vanishes at every degenerate coordinate. -/
+private theorem val_eq_zero_of_not_nz (x : L2 ℬ p) {i : ι} (hi : i ∉ NZ p) :
+    val x i = 0 := by
+  have hpi : p i = 0 := by simpa [NZ] using hi
+  rw [← absorb x i, hpi, mul_zero]
+
+/-- The restrictions of `x` to finite sets of *non-degenerate* coordinates
+still converge to `x`. -/
+theorem unTendsto_restrict_nz (x : L2 ℬ p) :
+    UnTendsto (inner ℬ) (fun s : Finset (NZ p) => restrict x (s.image Subtype.val))
+      atTop x := by
+  intro ω
+  set G : ℝ := (ω (inner' x x)).re with hG
+  set g : ι → ℝ := fun i => (ω (val x i * star (val x i))).re with hg
+  have hsupp : Function.support g ⊆ NZ p := by
+    intro i hi
+    by_contra hni
+    exact hi (by simp [hg, val_eq_zero_of_not_nz x hni])
+  have hgsum : HasSum (g ∘ (Subtype.val : NZ p → ι)) G :=
+    (hasSum_subtype_iff_of_support_subset hsupp).mpr (hasSum_np_inner_self x ω)
+  have himg : ∀ s : Finset (NZ p), ∑ i ∈ s.image Subtype.val, g i = ∑ k ∈ s, g k.val :=
+    fun s => Finset.sum_image fun a _ b _ h => Subtype.ext h
+  simp only [unSeminorm_restrict_sub x ω, himg, ← hG, ← hg]
+  have h0 : Tendsto (fun s : Finset (NZ p) => G - ∑ k ∈ s, g k.val) atTop (𝓝 (G - G)) :=
+    tendsto_const_nhds.sub hgsum
+  rw [sub_self] at h0
+  have hfin := (Real.continuous_sqrt.tendsto (0 : ℝ)).comp h0
+  simpa [Function.comp_def] using hfin
+
+/-- **161II**: `(δᵢ)` is an orthonormal basis of `ℓ²((pᵢ))`, indexed by the
+coordinates with `pᵢ ≠ 0`. -/
+theorem delta_isONBasis (hp : ∀ i, IsStarProjection (p i)) :
+    IsONBasis ℬ (fun k : NZ p => delta hp k.1) := by
+  classical
+  have hinjOn : ∀ s : Finset (NZ p), Set.InjOn (Subtype.val : NZ p → ι) ↑s :=
+    fun s a _ b _ h => Subtype.ext h
+  -- the partial sums are the restrictions
+  have hsum : ∀ (c : ι → ℬ) (s : Finset (NZ p)) (y : L2 ℬ p),
+      (∀ j, val y j = c j * p j) →
+      (∑ k ∈ s, c k.1 • delta hp k.1) = restrict y (s.image Subtype.val) := by
+    intro c s y hy
+    refine val_injective (funext fun j => ?_)
+    rw [show (∑ k ∈ s, c k.1 • delta hp k.1)
+        = ∑ i ∈ s.image Subtype.val, c i • delta hp i from
+      (Finset.sum_image (f := fun i => c i • delta hp i) (hinjOn s)).symm,
+      val_sum_smul_delta hp, val_restrict]
+    by_cases h : j ∈ s.image Subtype.val <;> simp [h, hy j]
+  refine ⟨⟨fun k l hkl => ?_, fun k => ?_⟩, fun x => ?_, fun b hb => ?_⟩
+  · have hne : ¬ (k.1 = l.1) := fun h => hkl (Subtype.ext h)
+    rw [inner_eq, inner'_delta hp]
+    simp [hne]
+  · have hkk : (inner ℬ (delta hp k.1) (delta hp k.1) : ℬ) = p k.1 := by
+      rw [inner_eq, inner'_delta hp]; simp
+    rw [hkk]
+    exact ⟨hp k.1, k.2⟩
+  · have he : (fun s : Finset (NZ p) => ∑ k ∈ s, (inner ℬ (delta hp k.1) x : ℬ) • delta hp k.1)
+        = fun s : Finset (NZ p) => restrict x (s.image Subtype.val) := by
+      funext s
+      refine (hsum (fun j => val x j) s x fun j => (absorb x j).symm).symm.trans ?_ |>.symm
+      exact Finset.sum_congr rfl fun k _ => by
+        rw [inner_eq, inner'_delta_left hp]
+    rw [he]
+    exact unTendsto_restrict_nz x
+  · -- clause (b) of `IsONBasis`: every ℓ²-summable family of coefficients sums
+    obtain ⟨M, hM⟩ := hb
+    set cc : ι → ℬ := fun j => if h : j ∈ NZ p then b ⟨j, h⟩ else 0 with hcc
+    have hcc_nz : ∀ k : NZ p, cc k.1 = b k := fun k => by simp [hcc, k.2]
+    have hcc_zero : ∀ j, j ∉ NZ p → cc j = 0 := fun j hj => by simp [hcc, hj]
+    have habs : ∀ j, cc j * p j * p j = cc j * p j := fun j => by
+      rw [mul_assoc, (hp j).isIdempotentElem.eq]
+    have hl2 : L2Summable ℬ fun j => cc j * p j := by
+      refine ⟨M, fun t => ?_⟩
+      have hnn : (0 : ℬ) ≤ ∑ j ∈ t, (cc j * p j) * star (cc j * p j) :=
+        Finset.sum_nonneg fun j _ => mul_star_self_nonneg _
+      have hstep : ∀ j, (cc j * p j) * star (cc j * p j) ≤ cc j * star (cc j) := by
+        intro j
+        have h1 : (cc j * p j) * star (cc j * p j) = cc j * p j * star (cc j) := by
+          rw [star_mul, (hp j).isSelfAdjoint.star_eq, ← mul_assoc, habs j]
+        rw [h1, show cc j * star (cc j) = cc j * 1 * star (cc j) by rw [mul_one]]
+        exact star_right_conjugate_le_conjugate (hp j).le_one (cc j)
+      have hle : (∑ j ∈ t, (cc j * p j) * star (cc j * p j))
+          ≤ ∑ j ∈ t, cc j * star (cc j) :=
+        Finset.sum_le_sum fun j _ => hstep j
+      refine (CStarAlgebra.norm_le_norm_of_nonneg_of_le hnn hle).trans ?_
+      have hzero : ∀ j ∈ t, j ∉ NZ p → cc j * star (cc j) = 0 := by
+        intro j _ hj; rw [hcc_zero j hj]; simp
+      have e1 : ∑ j ∈ t, cc j * star (cc j)
+          = ∑ j ∈ t with j ∈ NZ p, cc j * star (cc j) := by
+        rw [Finset.sum_filter]
+        exact Finset.sum_congr rfl fun j hj => by
+          by_cases h : j ∈ NZ p
+          · simp [h]
+          · simp [h, hzero j hj h]
+      have e2 : ∑ j ∈ t with j ∈ NZ p, cc j * star (cc j)
+          = ∑ k ∈ Finset.subtype (· ∈ NZ p) t, b k * star (b k) := by
+        rw [← Finset.sum_subtype_eq_sum_filter]
+        exact Finset.sum_congr rfl fun k _ => by rw [hcc_nz k]
+      rw [e1, e2]
+      exact hM _
+    refine ⟨⟨fun j => cc j * p j, hl2, habs⟩, ?_⟩
+    have hval : ∀ j, val (⟨fun j => cc j * p j, hl2, habs⟩ : L2 ℬ p) j = cc j * p j :=
+      fun j => rfl
+    have he : (fun s : Finset (NZ p) => ∑ k ∈ s, b k • delta hp k.1)
+        = fun s : Finset (NZ p) =>
+          restrict (⟨fun j => cc j * p j, hl2, habs⟩ : L2 ℬ p) (s.image Subtype.val) := by
+      funext s
+      rw [← hsum cc s _ hval]
+      exact Finset.sum_congr rfl fun k _ => by rw [hcc_nz k]
+    rw [he]
+    exact unTendsto_restrict_nz _
+
+/-- **161II**: `ℓ²((pᵢ)ᵢ)` is self dual — the exercise's "Conclude
+`ℓ²((pᵢ))` is self-dual", by **149XI** (`selfDual_of_isONBasis`) applied to
+the basis `(δᵢ)`. -/
+theorem selfDual_l2 (hp : ∀ i, IsStarProjection (p i)) : SelfDual ℬ (L2 ℬ p) :=
+  selfDual_of_isONBasis (delta_isONBasis hp)
+
+end SelfDualL2
+
+end L2
+
+/-! ### **161II**.1 and its conclusion, stated -/
+
+variable {p : ι → ℬ}
+
+/-- **161II** (`hilbmod-el2`, dils.tex:4602, Exercise), part 1, first claim:
+`ℓ²((pᵢ)ᵢ)` **is a right ℬ-module with coordinatewise operations**.  The
+module is `L2 ℬ p`; its underlying set is the thesis's `L2Set ℬ p`, and its
+addition, its ℂ-action and its (mirrored) ℬ-action are computed coordinate
+by coordinate.  The module laws themselves are the `Module ℂ` and `Module ℬ`
+instances on `L2 ℬ p`. -/
+theorem hilbmod_el2_module (hp : ∀ i, IsStarProjection (p i)) :
+    (∀ b : ι → ℬ, b ∈ L2Set ℬ p ↔ ∃ x : L2 ℬ p, L2.val x = b) ∧
+      (∀ x y : L2 ℬ p, L2.val (x + y) = fun i => L2.val x i + L2.val y i) ∧
+      (∀ (c : ℂ) (x : L2 ℬ p), L2.val (c • x) = fun i => c • L2.val x i) ∧
+      (∀ (b : ℬ) (x : L2 ℬ p), L2.val (b • x) = fun i => b * L2.val x i) :=
+  ⟨fun b => by
+      rw [mem_l2Set_iff hp]
+      exact ⟨fun h => ⟨⟨b, h⟩, rfl⟩, fun ⟨x, hx⟩ => hx ▸ L2.val_mem x⟩,
+    fun _ _ => rfl, fun _ _ => rfl, fun _ _ => rfl⟩
+
+/-- **161II** (`hilbmod-el2`, dils.tex:4602, Exercise), part 1, second claim:
+the ultraweakly convergent sum `⟨(bᵢ)ᵢ,(cᵢ)ᵢ⟩ = ∑ᵢ bᵢ*cᵢ` (mirrored:
+`∑ᵢ cᵢbᵢ*`) **turns `ℓ²((pᵢ)ᵢ)` into a pre-Hilbert ℬ-module**: it is a
+ℬ-valued inner product (`L2.binner`, whose fields are the four axioms of
+**141II**) and it is definite. -/
+theorem hilbmod_el2_preHilbert :
+    (∀ x y : L2 ℬ p, UWTendsto
+        (fun t : Finset ι => ∑ i ∈ t, L2.val y i * star (L2.val x i)) atTop
+        ((L2.binner ℬ p).inner x y)) ∧ (L2.binner ℬ p).Definite :=
+  ⟨L2.uwTendsto_inner, L2.binner_definite⟩
+
+/-- **161II** (`hilbmod-el2`, dils.tex:4602, Exercise), part 2, first claim:
+`ℓ²((pᵢ)ᵢ)` **is self dual**. -/
+theorem hilbmod_el2_selfDual (hp : ∀ i, IsStarProjection (p i)) :
+    SelfDual ℬ (L2 ℬ p) := by
+  classical
+  exact L2.selfDual_l2 hp
+
+section NormComplete
+
+variable {X : Type v}
+  [NormedAddCommGroup X] [NormedSpace ℂ X] [SMul ℬ X] [CStarModule ℬ X]
+
+/-- The converse of **146IX** `unSeminorm_le_norm_mul`, by order separation:
+a uniform bound `‖x‖_ω ≤ C ω(1)^½` on the ultranorm seminorms is a norm
+bound (up to the factor `‖1‖^½`, which is `1` unless `ℬ = {0}`). -/
+theorem norm_le_of_unSeminorm_le {C : ℝ} (hC : 0 ≤ C) {x : X}
+    (h : ∀ ω : NPFunctional ℬ,
+      unSeminorm ω (inner ℬ : X → X → ℬ) x ≤ C * Real.sqrt (ω 1).re) :
+    ‖x‖ ≤ C * Real.sqrt ‖(1 : ℬ)‖ := by
+  have hxx : (0 : ℬ) ≤ inner ℬ x x := CStarModule.inner_self_nonneg
+  have hle : (inner ℬ x x : ℬ) ≤ (C ^ 2 : ℝ) • (1 : ℬ) := by
+    refine np_orderSeparating _ _ (IsSelfAdjoint.of_nonneg hxx)
+      (IsSelfAdjoint.of_nonneg (smul_nonneg (by positivity) zero_le_one)) fun ω => ?_
+    have h1 := h ω
+    have hnn : (0 : ℝ) ≤ (ω (inner ℬ x x : ℬ)).re := np_re_nonneg' ω hxx
+    have hone : (0 : ℝ) ≤ (ω 1).re := np_re_nonneg' ω zero_le_one
+    have hsq : (ω (inner ℬ x x : ℬ)).re ≤ C ^ 2 * (ω 1).re := by
+      have h2 : Real.sqrt (ω (inner ℬ x x : ℬ)).re ≤ C * Real.sqrt (ω 1).re := h1
+      have h3 := Real.sq_sqrt hnn
+      have h4 := Real.sq_sqrt hone
+      nlinarith [Real.sqrt_nonneg (ω (inner ℬ x x : ℬ)).re, Real.sqrt_nonneg (ω 1).re]
+    have him1 : (ω (inner ℬ x x : ℬ)).im = 0 :=
+      npFunctional_im_eq_zero ω (IsSelfAdjoint.of_nonneg hxx)
+    have hsm : (ω ((C ^ 2 : ℝ) • (1 : ℬ)) : ℂ) = ((C ^ 2 : ℝ) : ℂ) * ω 1 := by
+      rw [show ((C ^ 2 : ℝ) • (1 : ℬ)) = (((C ^ 2 : ℝ) : ℂ)) • (1 : ℬ) from
+        RCLike.real_smul_eq_coe_smul (K := ℂ) _ _]
+      exact (map_smul ω.toPositiveLinearMap _ _).trans (smul_eq_mul _ _)
+    have him2 : (ω (1 : ℬ)).im = 0 :=
+      npFunctional_im_eq_zero ω (IsSelfAdjoint.one ℬ)
+    rw [Complex.le_def, hsm]
+    refine ⟨?_, ?_⟩
+    · rw [Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im, him2]
+      simpa using hsq
+    · rw [Complex.mul_im, Complex.ofReal_re, Complex.ofReal_im, him2, him1]
+      ring
+  have hnorm : ‖(inner ℬ x x : ℬ)‖ ≤ C ^ 2 * ‖(1 : ℬ)‖ := by
+    have := CStarAlgebra.norm_le_norm_of_nonneg_of_le hxx hle
+    rwa [norm_smul, Real.norm_eq_abs, abs_of_nonneg (by positivity : (0:ℝ) ≤ C ^ 2)] at this
+  calc ‖x‖ = Real.sqrt ‖(inner ℬ x x : ℬ)‖ :=
+        CStarModule.norm_eq_sqrt_norm_inner_self (A := ℬ) x
+    _ ≤ Real.sqrt (C ^ 2 * ‖(1 : ℬ)‖) := Real.sqrt_le_sqrt hnorm
+    _ = C * Real.sqrt ‖(1 : ℬ)‖ := by
+        rw [Real.sqrt_mul (by positivity), Real.sqrt_sq hC]
+
+/-- A pre-Hilbert ℬ-module whose ultranorm uniformity is complete is complete
+for the norm `‖x‖ = ‖⟨x,x⟩‖^½`, i.e. a *Hilbert* ℬ-module.  (No clause of
+**149V** supplies this; the route is the one used for the carrier of the
+self-dual completion: a norm-Cauchy filter is ultranorm Cauchy by **146IX**,
+so it has an ultranorm limit, and inserting a filter element into the
+triangle inequality bounds `‖x − x₀‖_ω` uniformly, whence
+`norm_le_of_unSeminorm_le`.) -/
+theorem completeSpace_of_unComplete
+    (h : UnComplete (inner ℬ : X → X → ℬ)) : CompleteSpace X := by
+  set c : ℝ := Real.sqrt ‖(1 : ℬ)‖ with hc
+  have hc0 : (0 : ℝ) ≤ c := Real.sqrt_nonneg _
+  refine ⟨fun {F} hF => ?_⟩
+  have hne := hF.1
+  have hmet := Metric.cauchy_iff.mp hF
+  have huc : UnCauchy (inner ℬ : X → X → ℬ) F := by
+    intro ω ε hε
+    obtain ⟨t, htF, ht⟩ := hmet.2 (ε / (Real.sqrt (ω 1).re + 1)) (by positivity)
+    refine ⟨t, htF, fun x hx y hy => ?_⟩
+    have h1 : ‖x - y‖ < ε / (Real.sqrt (ω 1).re + 1) := by
+      rw [← dist_eq_norm]; exact ht x hx y hy
+    have h2 := unSeminorm_le_norm_mul ω (x - y)
+    have h4 : ‖x - y‖ * (Real.sqrt (ω 1).re + 1) ≤ ε :=
+      ((lt_div_iff₀ (by positivity)).mp h1).le
+    nlinarith [norm_nonneg (x - y), Real.sqrt_nonneg (ω 1).re]
+  obtain ⟨x₀, hx₀⟩ := h F hF.1 huc
+  refine ⟨x₀, (Metric.nhds_basis_ball (x := x₀)).ge_iff.mpr fun ε hε => ?_⟩
+  have hε'0 : (0 : ℝ) < ε / (2 * (c + 1)) := by positivity
+  obtain ⟨t, htF, ht⟩ := hmet.2 (ε / (2 * (c + 1))) hε'0
+  filter_upwards [htF] with x hx
+  have hbnd : ∀ ω : NPFunctional ℬ,
+      unSeminorm ω (inner ℬ : X → X → ℬ) (x - x₀)
+        ≤ (ε / (2 * (c + 1))) * Real.sqrt (ω 1).re := by
+    intro ω
+    refine le_of_forall_pos_le_add fun η hη => ?_
+    obtain ⟨y, hy, hyt⟩ :=
+      (((tendsto_order.mp (hx₀ ω)).2 η hη).and (Filter.eventually_mem_set.mpr htF)).exists
+    simp only [id_eq] at hy
+    have h1 : unSeminorm ω (inner ℬ : X → X → ℬ) (x - x₀)
+        ≤ unSeminorm ω (inner ℬ : X → X → ℬ) (x - y)
+          + unSeminorm ω (inner ℬ : X → X → ℬ) (y - x₀) := by
+      have hadd := unSeminorm_add_le ω (cstarBInner ℬ X) (x - y) (y - x₀)
+      rw [show x - y + (y - x₀) = x - x₀ by abel] at hadd
+      exact hadd
+    have h2 : unSeminorm ω (inner ℬ : X → X → ℬ) (x - y)
+        ≤ (ε / (2 * (c + 1))) * Real.sqrt (ω 1).re := by
+      have h3 := unSeminorm_le_norm_mul ω (x - y)
+      have h4 : ‖x - y‖ < ε / (2 * (c + 1)) := by
+        rw [← dist_eq_norm]; exact ht x hx y hyt
+      nlinarith [Real.sqrt_nonneg (ω 1).re]
+    linarith
+  have hnorm := norm_le_of_unSeminorm_le hε'0.le hbnd
+  rw [← hc] at hnorm
+  rw [Metric.mem_ball, dist_eq_norm]
+  have hlt : ε / (2 * (c + 1)) * c < ε := by
+    rw [div_mul_eq_mul_div, div_lt_iff₀ (by positivity)]
+    nlinarith
+  linarith
+
+end NormComplete
+
+section L2Iso
+
+variable {X : Type v}
+  [NormedAddCommGroup X] [NormedSpace ℂ X] [SMul ℬ X] [CStarModule ℬ X]
+
+/-- **161II** (`hilbmod-el2`, dils.tex:4602, Exercise), part 2, second claim:
+for every self-dual Hilbert ℬ-module `X` with orthonormal basis `(eᵢ)ᵢ`,
+`X ≅ ℓ²((⟨eᵢ,eᵢ⟩)ᵢ)` — an isomorphism **of Hilbert ℬ-modules**: the
+coordinate map `ϑ(x) = (⟨eᵢ,x⟩)ᵢ` is a bijection onto the module
+`L2 ℬ (⟨eᵢ,eᵢ⟩)`, additive, ℂ-linear, ℬ-linear, and inner-product
+preserving.  (The solution's `ϑ`, bsols.tex:1099–1119.) -/
+theorem hilbmod_el2_iso [CompleteSpace X]
+    (hX : SelfDual ℬ X) {ι : Type v} (e : ι → X) (he : IsONBasis ℬ e) :
+    ∃ Φ : X → L2 ℬ (fun i => (inner ℬ (e i) (e i) : ℬ)),
+      Function.Bijective Φ ∧
+      (∀ x y : X, Φ (x + y) = Φ x + Φ y) ∧
+      (∀ (c : ℂ) (x : X), Φ (c • x) = c • Φ x) ∧
+      (∀ (b : ℬ) (x : X), Φ (b • x) = b • Φ x) ∧
+      (∀ x y : X, (inner ℬ (Φ x) (Φ y) : ℬ) = inner ℬ x y) ∧
+      (∀ (x : X) (i : ι), L2.val (Φ x) i = inner ℬ (e i) x) := by
+  classical
+  obtain ⟨hbij, hnet⟩ := hilbmod_el2 hX e he
+  set p : ι → ℬ := fun i => (inner ℬ (e i) (e i) : ℬ) with hpdef
+  have hp : ∀ i, IsStarProjection (p i) := fun i => (he.1.2 i).1
+  have hmem : ∀ x : X, (fun i => (inner ℬ (e i) x : ℬ)) ∈ L2Sub ℬ p := by
+    intro x
+    exact (mem_l2Set_iff hp _).mp (hbij.1 (Set.mem_univ x))
+  refine ⟨fun x => ⟨fun i => (inner ℬ (e i) x : ℬ), hmem x⟩, ⟨?_, ?_⟩,
+    fun x y => L2.val_injective (funext fun i => CStarModule.inner_add_right),
+    fun c x => L2.val_injective (funext fun i => CStarModule.inner_smul_right_complex),
+    fun b x => L2.val_injective (funext fun i => CStarModule.inner_op_smul_right),
+    ?_, fun x i => rfl⟩
+  · intro x y hxy
+    exact hbij.2.1 (Set.mem_univ x) (Set.mem_univ y) (congrArg L2.val hxy)
+  · intro y
+    obtain ⟨x, -, hx⟩ := hbij.2.2 ((mem_l2Set_iff hp _).mpr (L2.val_mem y))
+    exact ⟨x, L2.val_injective hx⟩
+  · intro x y
+    show L2.inner' _ _ = _
+    exact uwTendsto_unique₂ (L2.uwTendsto_inner _ _) (hnet x y)
+
+end L2Iso
+
+section Onb2Two
+
+variable {ℬ : Type u}
+  [CStarAlgebra ℬ] [PartialOrder ℬ] [StarOrderedRing ℬ] [VonNeumannAlgebra ℬ]
+
+variable (ℬ) in
+/-- The two-element family `(p,q)`; `ℓ²((p,q))` **is** `pℬ ⊕ qℬ` (mirrored:
+`ℬp ⊕ ℬq`), by `hilbmod_el2_module`. -/
+def pairFam (p q : ℬ) : ULift.{u} Bool → ℬ := fun i => if i.down then p else q
+
+@[simp] theorem pairFam_true (p q : ℬ) : pairFam ℬ p q ⟨true⟩ = p := rfl
+@[simp] theorem pairFam_false (p q : ℬ) : pairFam ℬ p q ⟨false⟩ = q := rfl
+
+private theorem l2Sub_const {κ : Type w} [Fintype κ] (r b : ℬ) (hb : b * r = b) :
+    (fun _ : κ => b) ∈ L2Sub ℬ (fun _ : κ => r) := by
+  refine ⟨⟨(Fintype.card κ : ℝ) * ‖b * star b‖, fun t => ?_⟩, fun _ => hb⟩
+  calc ‖∑ _i ∈ t, b * star b‖ ≤ ∑ _i ∈ t, ‖b * star b‖ := norm_sum_le _ _
+    _ = (t.card : ℝ) * ‖b * star b‖ := by rw [Finset.sum_const, nsmul_eq_mul]
+    _ ≤ (Fintype.card κ : ℝ) * ‖b * star b‖ :=
+        mul_le_mul_of_nonneg_right (by exact_mod_cast Finset.card_le_univ t) (norm_nonneg _)
+
+/-- **161II**, second half, at a *one-element* orthonormal basis: if the
+self-dual Hilbert ℬ-module `X` has an orthonormal basis indexed by a
+one-element type, with `⟨e,e⟩ = r`, then `X ≅ ℓ²((r))` over a one-element
+index — which by `hilbmod_el2_module` is `ℬr` (mirrored `rℬ`). -/
+private theorem exists_l2_iso_punit {X : Type v}
+    [NormedAddCommGroup X] [NormedSpace ℂ X] [SMul ℬ X] [CStarModule ℬ X]
+    [CompleteSpace X] (hX : SelfDual ℬ X) {κ : Type v} (f : κ → X)
+    (hf : IsONBasis ℬ f) (k₀ : κ) (huniq : ∀ k : κ, k = k₀) (r : ℬ)
+    (hr : ∀ k : κ, (inner ℬ (f k) (f k) : ℬ) = r) :
+    ∃ Φ : X → L2 ℬ (fun _ : PUnit.{v+1} => r),
+      Function.Bijective Φ ∧
+      (∀ x y, Φ (x + y) = Φ x + Φ y) ∧
+      (∀ (c : ℂ) x, Φ (c • x) = c • Φ x) ∧
+      (∀ (b : ℬ) x, Φ (b • x) = b • Φ x) ∧
+      (∀ x y, (inner ℬ (Φ x) (Φ y) : ℬ) = inner ℬ x y) := by
+  classical
+  have hss : Subsingleton κ := ⟨fun a b => (huniq a).trans (huniq b).symm⟩
+  have : Fintype κ := Fintype.ofSubsingleton k₀
+  have hcard : Fintype.card κ = 1 := Fintype.card_eq_one_iff.mpr ⟨k₀, huniq⟩
+  have hfamEq : (fun k : κ => (inner ℬ (f k) (f k) : ℬ)) = fun _ : κ => r := funext hr
+  have hiso := hilbmod_el2_iso hX f hf
+  rw [hfamEq] at hiso
+  obtain ⟨Φ₀, hbij, hadd, hsmc, hsmb, hinner, -⟩ := hiso
+  have habs : ∀ x, L2.val (Φ₀ x) k₀ * r = L2.val (Φ₀ x) k₀ :=
+    fun x => L2.absorb (Φ₀ x) k₀
+  set Ψ : X → L2 ℬ (fun _ : PUnit.{v+1} => r) :=
+    fun x => ⟨fun _ : PUnit.{v+1} => L2.val (Φ₀ x) k₀, l2Sub_const _ _ (habs x)⟩ with hΨdef
+  have hΨ : ∀ (x : X) (u : PUnit.{v+1}), L2.val (Ψ x) u = L2.val (Φ₀ x) k₀ :=
+    fun x u => rfl
+  refine ⟨Ψ, ⟨?_, ?_⟩, ?_, ?_, ?_, ?_⟩
+  · intro x y hxy
+    refine hbij.1 (L2.val_injective (funext fun k => ?_))
+    rw [huniq k]
+    have hval := congrFun (congrArg L2.val hxy) PUnit.unit
+    rwa [hΨ, hΨ] at hval
+  · intro z
+    obtain ⟨x, hx⟩ := hbij.2 (⟨fun _ : κ => L2.val z PUnit.unit,
+      l2Sub_const _ _ (L2.absorb z PUnit.unit)⟩ : L2 ℬ fun _ : κ => r)
+    refine ⟨x, L2.val_injective (funext fun u => ?_)⟩
+    rw [hΨ, hx]
+    cases u
+    rfl
+  · intro x y
+    exact L2.val_injective (funext fun u => by
+      simp only [hΨ, L2.val_add, hadd x y])
+  · intro c x
+    exact L2.val_injective (funext fun u => by
+      simp only [hΨ, L2.val_smul, hsmc c x])
+  · intro b x
+    exact L2.val_injective (funext fun u => by
+      simp only [hΨ, L2.val_op_smul, hsmb b x])
+  · intro x y
+    have hR : (inner ℬ (Φ₀ x) (Φ₀ y) : ℬ)
+        = L2.val (Φ₀ y) k₀ * star (L2.val (Φ₀ x) k₀) := by
+      rw [L2.inner_eq, L2.inner'_of_fintype]
+      have hterm : ∀ k : κ, L2.val (Φ₀ y) k * star (L2.val (Φ₀ x) k)
+          = L2.val (Φ₀ y) k₀ * star (L2.val (Φ₀ x) k₀) := fun k => by rw [huniq k]
+      simp only [hterm, Finset.sum_const, Finset.card_univ, hcard, one_smul]
+    rw [← hinner x y, hR, L2.inner_eq, L2.inner'_of_fintype]
+    simp [hΨ]
+
+/-- **161V** (`onb2`, dils.tex:4696, Exercise), second half: *"Conclude
+`pℬ ⊕ qℬ ≅ (p+q)ℬ` for projections `p,q ∈ ℬ` with `p+q ≤ 1`."*
+
+`pℬ ⊕ qℬ` is `ℓ²((p,q))` over a two-element index and `(p+q)ℬ` is
+`ℓ²((p+q))` over a one-element index — by `hilbmod_el2_module` the tuples of
+`ℓ²((r))` over a one-element index are exactly the `b` with `b r = b`, i.e.
+`ℬr` (mirrored `rℬ`).  The isomorphism is one of Hilbert ℬ-modules:
+bijective, additive, ℂ-linear, ℬ-linear and inner-product preserving.
+
+The route is the exercise's own *"conclude"*: `(δ₁,δ₂)` is an orthonormal
+basis of `ℓ²((p,q))` (**161II**, `L2.delta_isONBasis`); the first half of
+this exercise (`onb2`) replaces it by the one-element basis `(δ₁+δ₂)`, whose
+`⟨e,e⟩` is `p+q`; and **161II**'s second half (`hilbmod_el2_iso`, through
+`exists_l2_iso_punit`) turns that basis into the isomorphism with
+`ℓ²((p+q))`.
+
+The two degenerate cases are separated out, because the exercise's *"clearly
+`E ≡ {δᵢ}` is an orthonormal set"* passes over them: `⟨δᵢ,δᵢ⟩ = pᵢ` has to
+be **non-zero** for `E` to be orthonormal in the sense of **149I**.  If
+exactly one of `p, q` is zero, `(δᵢ)` is already the one-element basis and
+`onb2` is not needed; if both are zero, both modules are `0`.  No hypothesis
+beyond the exercise's `p + q ≤ 1` is used. -/
+theorem onb2_2 (p q : ℬ) (hp : IsStarProjection p) (hq : IsStarProjection q)
+    (hpq : p + q ≤ 1) :
+    ∃ Φ : L2 ℬ (pairFam ℬ p q) → L2 ℬ (fun _ : PUnit.{u+1} => p + q),
+      Function.Bijective Φ ∧
+      (∀ x y, Φ (x + y) = Φ x + Φ y) ∧
+      (∀ (c : ℂ) x, Φ (c • x) = c • Φ x) ∧
+      (∀ (b : ℬ) x, Φ (b • x) = b • Φ x) ∧
+      (∀ x y, (inner ℬ (Φ x) (Φ y) : ℬ) = inner ℬ x y) := by
+  classical
+  set pf : ULift.{u} Bool → ℬ := pairFam ℬ p q with hpfdef
+  have hproj : ∀ i, IsStarProjection (pf i) := by
+    rintro ⟨(_ | _)⟩
+    · exact hq
+    · exact hp
+  have hONBδ : IsONBasis ℬ (fun k : L2.NZ pf => L2.delta hproj k.1) :=
+    L2.delta_isONBasis hproj
+  have hX : SelfDual ℬ (L2 ℬ pf) := hilbmod_el2_selfDual hproj
+  have hcomp : CompleteSpace (L2 ℬ pf) :=
+    completeSpace_of_unComplete (unComplete_of_isONBasis hONBδ)
+  by_cases hp0 : p = 0
+  · by_cases hq0 : q = 0
+    · -- both projections are `0`: both modules are trivial
+      have hpf0 : ∀ i, pf i = 0 := by
+        rintro ⟨(_ | _)⟩
+        · exact hq0
+        · exact hp0
+      have hzeroX : ∀ x : L2 ℬ pf, x = 0 := by
+        intro x
+        refine L2.val_injective (funext fun i => ?_)
+        have habs := L2.absorb x i
+        rw [hpf0 i, mul_zero] at habs
+        simpa using habs.symm
+      have hzeroT : ∀ z : L2 ℬ (fun _ : PUnit.{u+1} => p + q), z = 0 := by
+        intro z
+        refine L2.val_injective (funext fun i => ?_)
+        have habs := L2.absorb z i
+        have hpq0 : p + q = 0 := by rw [hp0, hq0, add_zero]
+        have hz : z.val i * (0 : ℬ) = z.val i := by rw [← hpq0]; exact habs
+        rw [mul_zero] at hz
+        simpa using hz.symm
+      refine ⟨fun _ => 0, ⟨fun x y _ => (hzeroX x).trans (hzeroX y).symm,
+        fun z => ⟨0, (hzeroT z).symm⟩⟩, fun x y => by simp, fun c x => by simp,
+        fun b x => by simp, fun x y => ?_⟩
+      rw [hzeroX x, hzeroX y, CStarModule.inner_zero_right,
+        CStarModule.inner_zero_right]
+    · -- `p = 0 ≠ q`: the basis `(δᵢ)` already has the single element `δ_false`
+      have hk₀ : (⟨false⟩ : ULift.{u} Bool) ∈ L2.NZ pf := by
+        show pf ⟨false⟩ ≠ 0
+        simpa [hpfdef] using hq0
+      refine exists_l2_iso_punit hX _ hONBδ ⟨⟨false⟩, hk₀⟩ ?_ (p + q) ?_
+      · rintro ⟨⟨(_ | _)⟩, hb⟩
+        · rfl
+        · exact absurd (show pf ⟨true⟩ = 0 by simpa [hpfdef] using hp0) hb
+      · rintro ⟨⟨(_ | _)⟩, hb⟩
+        · show (inner ℬ (L2.delta hproj ⟨false⟩) (L2.delta hproj ⟨false⟩) : ℬ) = p + q
+          rw [L2.inner_eq, L2.inner'_delta hproj]
+          simp [hpfdef, hp0]
+        · exact absurd (show pf ⟨true⟩ = 0 by simpa [hpfdef] using hp0) hb
+  · by_cases hq0 : q = 0
+    · -- `q = 0 ≠ p`: symmetrically, the single element is `δ_true`
+      have hk₀ : (⟨true⟩ : ULift.{u} Bool) ∈ L2.NZ pf := by
+        show pf ⟨true⟩ ≠ 0
+        simpa [hpfdef] using hp0
+      refine exists_l2_iso_punit hX _ hONBδ ⟨⟨true⟩, hk₀⟩ ?_ (p + q) ?_
+      · rintro ⟨⟨(_ | _)⟩, hb⟩
+        · exact absurd (show pf ⟨false⟩ = 0 by simpa [hpfdef] using hq0) hb
+        · rfl
+      · rintro ⟨⟨(_ | _)⟩, hb⟩
+        · exact absurd (show pf ⟨false⟩ = 0 by simpa [hpfdef] using hq0) hb
+        · show (inner ℬ (L2.delta hproj ⟨true⟩) (L2.delta hproj ⟨true⟩) : ℬ) = p + q
+          rw [L2.inner_eq, L2.inner'_delta hproj]
+          simp [hpfdef, hq0]
+    · -- both non-zero: the exercise's own route, through `onb2`
+      set ι₂ : Type u := ↥(L2.NZ pf) with hι₂
+      set e : ι₂ → L2 ℬ pf := fun k => L2.delta hproj k.1 with hedef
+      have hne0 : ∀ i, pf i ≠ 0 := by
+        rintro ⟨(_ | _)⟩
+        · exact hq0
+        · exact hp0
+      set i₁ : ι₂ := ⟨⟨true⟩, hne0 ⟨true⟩⟩ with hi₁
+      set i₂ : ι₂ := ⟨⟨false⟩, hne0 ⟨false⟩⟩ with hi₂
+      have hnei : i₁ ≠ i₂ := by
+        intro h
+        exact Bool.noConfusion (congrArg ULift.down (congrArg Subtype.val h))
+      have hei : ∀ k : ι₂, (inner ℬ (e k) (e k) : ℬ) = pf k.1 := by
+        intro k
+        rw [hedef, L2.inner_eq, L2.inner'_delta hproj]
+        simp
+      have hle : (inner ℬ (e i₁) (e i₁) : ℬ) + inner ℬ (e i₂) (e i₂) ≤ 1 := by
+        rw [hei i₁, hei i₂]
+        exact hpq
+      have hONB2 := onb2 e hONBδ i₁ i₂ hnei hle
+      set κ : Type u := {i : ι₂ // i ≠ i₂} with hκ
+      set f : κ → L2 ℬ pf :=
+        fun i => if (i : ι₂) = i₁ then e i₁ + e i₂ else e i with hfdef
+      set k₀ : κ := ⟨i₁, hnei⟩ with hk₀
+      have huniq : ∀ k : κ, k = k₀ := by
+        rintro ⟨⟨⟨(_ | _)⟩, hb⟩, hk⟩
+        · exact absurd (Subtype.ext rfl) hk
+        · rfl
+      have hfk₀ : f k₀ = e i₁ + e i₂ := by rw [hfdef]; simp [hk₀]
+      refine exists_l2_iso_punit hX f hONB2 k₀ huniq (p + q) fun k => ?_
+      rw [huniq k, hfk₀]
+      have hcross : (inner ℬ (e i₁) (e i₂) : ℬ) = 0 := by
+        rw [hedef, L2.inner_eq, L2.inner'_delta hproj]
+        simp [hi₁, hi₂]
+      have hcross' : (inner ℬ (e i₂) (e i₁) : ℬ) = 0 := by
+        rw [hedef, L2.inner_eq, L2.inner'_delta hproj]
+        simp [hi₁, hi₂]
+      rw [CStarModule.inner_add_right, CStarModule.inner_add_left,
+        CStarModule.inner_add_left, hcross, hcross', hei i₁, hei i₂]
+      simp [hi₁, hi₂, hpfdef]
+
+
+end Onb2Two
+
+end L2Mod
+
 
 /-! ## Parsec 1620: comparison of projections and the normal form
 
