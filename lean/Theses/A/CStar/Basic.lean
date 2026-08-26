@@ -1027,13 +1027,29 @@ theorem cstar_involution_basic_8 :
       (ℜ a : Matrix (Fin 2) (Fin 2) ℂ) * (ℑ a : Matrix (Fin 2) (Fin 2) ℂ) ≠
         (ℑ a : Matrix (Fin 2) (Fin 2) ℂ) * (ℜ a : Matrix (Fin 2) (Fin 2) ℂ) :=
   by
-    refine ⟨!![0, 1; 0, 0], fun hcomm => ?_⟩
-    have h := congrFun (congrFun hcomm 0) 0
-    rw [realPart_apply_coe, imaginaryPart_apply_coe] at h
-    simp [Matrix.mul_apply, Fin.sum_univ_succ, Matrix.star_eq_conjTranspose,
-      Matrix.conjTranspose_apply, Matrix.smul_apply, Matrix.add_apply,
-      Matrix.sub_apply] at h
-    exact Complex.I_ne_zero (by linear_combination 2 * h)
+    -- The solution's own reduction (asols.tex, `parsec-70.30`(8)): "It suffices
+    -- to find self-adjoint elements `b` and `c` of some C*-algebra `𝒜` with
+    -- `bc ≠ cb`, because then `a := b + ic` will do the job."  Its witnesses are
+    -- `b = |x⟩⟨x|` and `c = |y⟩⟨y|` for linearly independent `x, y` with
+    -- `⟪x,y⟫ ≠ 0`; here `x = e₀` and `y = e₀ + e₁`, for which
+    -- `|x⟩⟨x| = !![1,0;0,0]` and `|y⟩⟨y| = !![1,1;1,1]` — the same pair as in
+    -- **9X**.3 `cstar_positive_3`.  `bc` and `cb` differ already at the entry
+    -- `(0,1)`, where they are `1` and `0`.
+    have hb : IsSelfAdjoint (!![1, 0; 0, 0] : Matrix (Fin 2) (Fin 2) ℂ) := by
+      show star _ = _
+      ext i j; fin_cases i <;> fin_cases j <;> simp
+    have hc : IsSelfAdjoint (!![1, 1; 1, 1] : Matrix (Fin 2) (Fin 2) ℂ) := by
+      show star _ = _
+      ext i j; fin_cases i <;> fin_cases j <;> simp
+    refine ⟨(!![1, 0; 0, 0] : Matrix (Fin 2) (Fin 2) ℂ)
+        + Complex.I • (!![1, 1; 1, 1] : Matrix (Fin 2) (Fin 2) ℂ), ?_⟩
+    rw [map_add, map_add, realPart_I_smul, imaginaryPart_I_smul,
+      hb.imaginaryPart, hc.imaginaryPart]
+    simp only [neg_zero, add_zero, zero_add]
+    rw [hb.coe_realPart, hc.coe_realPart]
+    intro hcomm
+    have h := congrFun (congrFun hcomm 0) 1
+    simp [Matrix.mul_apply, Fin.sum_univ_succ] at h
 
 /-- **7III** (`cstar-involution-basic`, cstar.tex:1007, Exercise), part 9:
 `a* a + a a* = 2((ℜa)² + (ℑa)²)`. -/
@@ -1479,12 +1495,20 @@ theorem cstar_positive_1_cone :
       (∀ a : 𝒜, a ≤ a) ∧
       (∀ a b c : 𝒜, a ≤ b → b ≤ c → a ≤ c) :=
   by
-    refine ⟨le_refl 0, fun a b ha hb => cstar_positive_sum a b ha hb,
+    -- the solution's own argument (asols.tex, `parsec-90.100`(1)): `0` is
+    -- positive "because `0* = 0` and `‖0 - 0‖ ≤ 0`"; `a + b` is **9VII**
+    -- (`parsec-90.70`); `r a` is the scalar clause above.  "Since `0` is
+    -- positive, we have `a ≤ a` for all `a`.  Further, when `a ≤ b ≤ c`, then
+    -- `b - a` and `c - b` are positive, so `c - a ≡ (c - b) + (b - a)` is
+    -- positive, that is `a ≤ c`."
+    have hzero : (0 : 𝒜) ≤ 0 :=
+      (cstar_positive_def 0 (IsSelfAdjoint.zero 𝒜)).mpr ⟨0, by simp⟩
+    refine ⟨hzero, fun a b ha hb => cstar_positive_sum a b ha hb,
       fun a r ha hr => cstar_positive_1 a ha r hr, fun a => ?_, fun a b c hab hbc => ?_⟩
-    · have h : (0 : 𝒜) ≤ a - a := by simp
+    · have h : (0 : 𝒜) ≤ a - a := le_of_le_of_eq hzero (sub_self a).symm
       exact sub_nonneg.mp h
-    · have h := cstar_positive_sum (b - a) (c - b) (sub_nonneg.mpr hab) (sub_nonneg.mpr hbc)
-      have e : b - a + (c - b) = c - a := by abel
+    · have h := cstar_positive_sum (c - b) (b - a) (sub_nonneg.mpr hbc) (sub_nonneg.mpr hab)
+      have e : c - b + (b - a) = c - a := by abel
       rw [e] at h
       exact sub_nonneg.mp h
 
@@ -2416,35 +2440,22 @@ while the matrix is not self-adjoint. -/
 theorem spectrum_basic_1' :
     spectrum ℂ (!![0, 2; 0, 0] : Matrix (Fin 2) (Fin 2) ℂ) = {0} :=
   by
-    rw [spectrum_matrix]
+    -- the solution's own argument (asols.tex, `parsec-110.210`(1)): "we must
+    -- show that `0` is the only eigenvalue of `(0 2; 0 0)`, that is, that `0`
+    -- is the only root of the characteristic polynomial
+    -- `det((0 2; 0 0) - λ) = λ²`, which is so."
     ext z
-    simp only [Set.mem_setOf_eq, Set.mem_singleton_iff]
-    constructor
-    · rintro ⟨v, hv, hvz⟩
-      by_contra hz
-      refine hv (funext fun i => ?_)
-      have h0 := congrFun hvz 0
-      have h1 := congrFun hvz 1
-      simp [Matrix.mulVec, dotProduct, Fin.sum_univ_succ,
-        Matrix.vecHead, Matrix.vecTail] at h0 h1
-      have hv1 : v 1 = 0 := by
-        rcases h1 with h1 | h1
-        · exact absurd h1 hz
-        · exact h1
-      rw [hv1, mul_zero] at h0
-      have hv0 : v 0 = 0 := by
-        rcases mul_eq_zero.mp h0.symm with h | h
-        · exact absurd h hz
-        · exact h
-      fin_cases i <;> simp [hv0, hv1]
-    · rintro rfl
-      refine ⟨![1, 0], ?_, ?_⟩
-      · intro hc
-        have := congrFun hc 0
-        simp at this
-      · funext i
-        fin_cases i <;>
-          simp [Matrix.mulVec, dotProduct, Fin.sum_univ_succ]
+    rw [Set.mem_singleton_iff, spectrum.mem_iff, Matrix.isUnit_iff_isUnit_det,
+      isUnit_iff_ne_zero, not_not]
+    have hdet : (algebraMap ℂ (Matrix (Fin 2) (Fin 2) ℂ) z
+        - !![0, 2; 0, 0]).det = z ^ 2 := by
+      have hmat : (algebraMap ℂ (Matrix (Fin 2) (Fin 2) ℂ) z
+          - !![0, 2; 0, 0]) = !![z, -2; 0, z] := by
+        ext i j
+        fin_cases i <;> fin_cases j <;> simp [Algebra.algebraMap_eq_smul_one]
+      rw [hmat, Matrix.det_fin_two_of]
+      ring
+    rw [hdet, pow_eq_zero_iff two_ne_zero]
 
 /-- **11XXI** (`spectrum-basic`, cstar.tex:1648, Exercise), part 2:
 `spec(a²) ⊆ [0,∞)` for self-adjoint `a`. -/

@@ -627,6 +627,14 @@ its ℂ-module and its 𝒷-action, and the possible *indefiniteness* of `B` is
 handled for free because the completion of a non-separated uniform space is
 the separated completion.  (Precedent in the tree: **136II**.)
 
+The thesis licenses this itself.  **150V** opens: "As we need some details
+in its construction, we will explicitly define `V̄` … There are other ways
+to construct a completion of a uniform space, see for instance
+[willard, thm. 39.12]" (dils.tex:2735–2740).  The details it wants are the
+entourage relations `ε̂` and `ε̃`; here their place is taken by
+`exists_semC_entourage_subset` below, which is **150X**'s own "the extended
+seminorms induce the same uniformity".
+
 `UnUnif B` is `V` carrying that uniformity; it is a type synonym so that the
 uniformity — which depends on the *term* `B` — can be an instance. -/
 
@@ -3318,7 +3326,10 @@ and `a₁, …, aₙ ∈ 𝒜`, the map `φ : 𝒜 → Mₙ𝒜`, `φ(d) = (aᵢ
 ncp-map.
 
 The author's solution routes through **153I** `hilbmod_ad_ncp` (`φ = ad_T`
-for the row vector `T : 𝒜ⁿ → 𝒜`, `(bᵢ)ᵢ ↦ ∑ᵢ bᵢaᵢ`).  An earlier revision
+for the row vector `T : 𝒜ⁿ → 𝒜`, `(bᵢ)ᵢ ↦ ∑ᵢ aᵢbᵢ` — the solution prints
+`∑ᵢ bᵢaᵢ`, which is not `𝒜`-linear and whose stated adjoint is not its
+adjoint; its own next display uses the order given here.  `ERRATA.md`,
+**153IV**, second row).  An earlier revision
 said 153I "is still open here — it waits on **152X**"; that is stale, both
 are proved above in this file.  What is missing for the author's route is
 the two identifications `𝒷ᵃ(𝒜ⁿ) ≅ Mₙ𝒜` and `𝒷ᵃ(𝒜) ≅ 𝒜ᵒᵖ`: the first is

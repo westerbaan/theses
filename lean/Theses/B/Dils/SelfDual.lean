@@ -1874,119 +1874,117 @@ private theorem mem_l2Set_iff [VonNeumannAlgebra ℬ] {ι : Type v} {p : ι → 
   and_congr_right fun _ =>
     forall_congr' fun i => ceil_star_mul_self_le_iff (b i) (hp i)
 
-/-! ### Auxiliary for **161II**.1: ℓ²-summability and ultraweak convergence -/
+/-! ### Auxiliary for **161II**.1: ℓ²-summability and ultraweak convergence
 
-/-- `(x+y)(x+y)* ≤ 2xx* + 2yy*`, because `(x−y)(x−y)* ≥ 0`. -/
-private theorem mul_star_add_le (x y : ℬ) :
-    (x + y) * star (x + y)
-      ≤ (x * star x + x * star x) + (y * star y + y * star y) := by
-  have h : (0 : ℬ) ≤ (x - y) * star (x - y) := mul_star_self_nonneg _
-  have hid : (x * star x + x * star x) + (y * star y + y * star y)
-      - (x + y) * star (x + y) = (x - y) * star (x - y) := by
-    rw [star_add, star_sub]; noncomm_ring
-  rw [← sub_nonneg, hid]
-  exact h
+The author's solution (bsols.tex:1015–1065) proves the convergence of
+`∑ᵢ bᵢ*cᵢ` (mirrored: `∑ᵢ cᵢbᵢ*`) like this: the net of partial sums is
+norm-bounded and ultraweakly Cauchy — both by Cauchy–Schwarz — and so
+converges by bounded ultraweak completeness (**77I**.2, `vn_complete_2`).
+The two estimates are instances of the thesis's own Cauchy–Schwarz: for the
+norm bound, **142V**.1 for the ℬ-valued inner product `[x,y] = ∑ᵢ yᵢxᵢ*` of
+a *finite* tuple (bsols.tex:1023–1035); for the ω-estimate, Kadison's
+inequality `|ω(u*v)| ≤ ‖u‖_ω‖v‖_ω` (cstar.tex **30IV**,
+`norm_apply_star_mul_le`) termwise followed by the classical Cauchy–Schwarz
+(bsols.tex:1026–1033 and 1048–1055). -/
 
-/-- ℓ²-summable families are closed under addition (**161II**, first part of
-the author's solution) — here without the Cauchy–Schwarz estimate the
-solution uses, since `(x+y)(x+y)* ≤ 2xx* + 2yy*` already bounds the partial
-sums. -/
-private theorem l2Summable_add {ι : Type v} {b c : ι → ℬ}
-    (hb : L2Summable ℬ b) (hc : L2Summable ℬ c) :
-    L2Summable ℬ fun i => b i + c i := by
-  obtain ⟨Mb, hMb⟩ := hb
-  obtain ⟨Mc, hMc⟩ := hc
-  refine ⟨(Mb + Mb) + (Mc + Mc), fun t => ?_⟩
-  have hnn : (0 : ℬ) ≤ ∑ i ∈ t, (b i + c i) * star (b i + c i) :=
-    Finset.sum_nonneg fun i _ => mul_star_self_nonneg _
-  have hle : (∑ i ∈ t, (b i + c i) * star (b i + c i))
-      ≤ ((∑ i ∈ t, b i * star (b i)) + ∑ i ∈ t, b i * star (b i))
-        + ((∑ i ∈ t, c i * star (c i)) + ∑ i ∈ t, c i * star (c i)) := by
-    have h1 : (∑ i ∈ t, (b i + c i) * star (b i + c i))
-        ≤ ∑ i ∈ t, ((b i * star (b i) + b i * star (b i))
-          + (c i * star (c i) + c i * star (c i))) :=
-      Finset.sum_le_sum fun i _ => mul_star_add_le (b i) (c i)
-    refine h1.trans_eq ?_
-    simp [Finset.sum_add_distrib]
-  refine (CStarAlgebra.norm_le_norm_of_nonneg_of_le hnn hle).trans ?_
-  refine (norm_add_le _ _).trans (add_le_add ?_ ?_)
-  · exact (norm_add_le _ _).trans (add_le_add (hMb t) (hMb t))
-  · exact (norm_add_le _ _).trans (add_le_add (hMc t) (hMc t))
+/-- The ℬ-valued inner product `[x,y] = ∑ᵢ yᵢxᵢ*` on a *finite* tuple: the
+ℓ²-inner product of **161II** restricted to finitely many coordinates, where
+no convergence question arises.  It is what makes the solution's two
+Cauchy–Schwarz estimates instances of **142III**/**142V**. -/
+private noncomputable def tupleBInner (κ : Type v) [Fintype κ] :
+    BInner ℬ (κ → ℬ) where
+  inner x y := ∑ i, y i * star (x i)
+  inner_add_right x y z := by simp [add_mul, Finset.sum_add_distrib]
+  inner_op_smul_right b x y := by simp [Finset.mul_sum, mul_assoc]
+  inner_smul_right_complex c x y := by simp [Finset.smul_sum]
+  star_inner x y := by simp [star_sum, star_mul]
+  inner_self_nonneg x := Finset.sum_nonneg fun i _ => mul_star_self_nonneg _
 
-/-- ℓ²-summable families are closed under scalar multiplication. -/
-private theorem l2Summable_smul {ι : Type v} (z : ℂ) {c : ι → ℬ}
-    (hc : L2Summable ℬ c) : L2Summable ℬ fun i => z • c i := by
-  obtain ⟨M, hM⟩ := hc
-  have hM0 : (0 : ℝ) ≤ M := by simpa using hM ∅
-  refine ⟨‖z‖ * ‖z‖ * M, fun t => ?_⟩
-  have hEq : (∑ i ∈ t, (z • c i) * star (z • c i))
-      = (z * star z) • ∑ i ∈ t, c i * star (c i) := by
-    rw [Finset.smul_sum]
-    refine Finset.sum_congr rfl fun i _ => ?_
-    rw [star_smul, smul_mul_assoc, mul_smul_comm, smul_smul]
-  rw [hEq, norm_smul, norm_mul, norm_star]
-  exact mul_le_mul_of_nonneg_left (hM t) (by positivity)
+private theorem tupleBInner_inner (κ : Type v) [Fintype κ] (x y : κ → ℬ) :
+    (tupleBInner (ℬ := ℬ) κ).inner x y = ∑ i, y i * star (x i) := rfl
 
-/-- The partial sums `∑ᵢ dᵢdᵢ*` of an ℓ²-summable family are a monotone,
-norm-bounded net of positive elements, so they converge ultraweakly to their
-supremum by **44VI**. -/
-private theorem exists_uwTendsto_l2_diag [VonNeumannAlgebra ℬ] {ι : Type v}
-    (d : ι → ℬ) (hd : L2Summable ℬ d) :
-    ∃ s : ℬ, UWTendsto (fun t : Finset ι => ∑ i ∈ t, d i * star (d i))
-      atTop s := by
+/-- **161II**, the solution's first estimate (bsols.tex:1023–1035): with
+`∑ᵢ bᵢbᵢ* ≤ A` and `∑ᵢ cᵢcᵢ* ≤ B`, the partial sums of `∑ᵢ cᵢbᵢ*` are
+bounded by `(AB)^½`.  This is the thesis's Cauchy–Schwarz (**142V**.1)
+applied to the finite tuples `(bᵢ)_{i∈t}`, `(cᵢ)_{i∈t}`.
+
+(The solution derives norm-boundedness from `|f(∑_{i∈S} aᵢ*bᵢ)| ≤ (AB)^½`
+for every normal state `f`.  That inference costs a factor: the supremum of
+`|f(x)|` over the states is the numerical radius, which for a non-normal `x`
+can be half the norm — `x = |0⟩⟨1|` in `M₂` has `sup_f |f(x)| = ½‖x‖`.  The
+bound `(AB)^½` itself is correct, and Cauchy–Schwarz for the ℬ-valued inner
+product gives it directly, which is what is done here.) -/
+private theorem norm_sum_mul_star_le {ι : Type v} (b c : ι → ℬ) {A B : ℝ}
+    (hA : ∀ t : Finset ι, ‖∑ i ∈ t, b i * star (b i)‖ ≤ A)
+    (hB : ∀ t : Finset ι, ‖∑ i ∈ t, c i * star (c i)‖ ≤ B)
+    (t : Finset ι) :
+    ‖∑ i ∈ t, c i * star (b i)‖ ≤ Real.sqrt A * Real.sqrt B := by
   classical
-  obtain ⟨M, hM⟩ := hd
-  have hnn : ∀ t : Finset ι, (0 : ℬ) ≤ ∑ i ∈ t, d i * star (d i) :=
-    fun t => Finset.sum_nonneg fun i _ => mul_star_self_nonneg _
-  set f : Finset ι → selfAdjoint ℬ := fun t =>
-    ⟨∑ i ∈ t, d i * star (d i), IsSelfAdjoint.of_nonneg (hnn t)⟩ with hfdef
-  have hmono : Monotone f := by
-    intro s t hst
-    refine Subtype.coe_le_coe.mp ?_
-    exact Finset.sum_le_sum_of_subset_of_nonneg hst
-      fun i _ _ => mul_star_self_nonneg _
-  have hbdd : BddAbove (Set.range f) := by
-    refine ⟨⟨algebraMap ℂ ℬ ((M : ℝ) : ℂ), isSelfAdjoint_algebraMap_ofReal M⟩,
-      ?_⟩
-    rintro _ ⟨t, rfl⟩
-    refine Subtype.coe_le_coe.mp ?_
-    have h1 : (∑ i ∈ t, d i * star (d i))
-        ≤ algebraMap ℂ ℬ ((‖∑ i ∈ t, d i * star (d i)‖ : ℝ) : ℂ) := by
-      have h := IsSelfAdjoint.le_algebraMap_norm_self
-        (IsSelfAdjoint.of_nonneg (hnn t))
-      rwa [algebraMap_real_eq] at h
-    exact h1.trans (algebraMap_ofReal_mono (hM t))
-  have hne : (Set.range f).Nonempty := Set.range_nonempty f
-  have hdir : DirectedOn (· ≤ ·) (Set.range f) := by
-    rintro _ ⟨s, rfl⟩ _ ⟨t, rfl⟩
-    exact ⟨f (s ⊔ t), ⟨s ⊔ t, rfl⟩, hmono le_sup_left, hmono le_sup_right⟩
-  have h3 : (Set.range f).Nonempty ∧ DirectedOn (· ≤ ·) (Set.range f)
-      ∧ BddAbove (Set.range f) := ⟨hne, hdir, hbdd⟩
-  exact ⟨((dirSup (Set.range f) h3 : selfAdjoint ℬ) : ℬ),
-    uwTendsto_of_monotone_isLUB f hmono _ (isLUB_dirSup (Set.range f) h3)⟩
+  have h := module_seminorm_1 (tupleBInner (ℬ := ℬ) {x // x ∈ t})
+    (fun i : {x // x ∈ t} => b i) (fun i : {x // x ∈ t} => c i)
+  rw [tupleBInner_inner] at h
+  have e0 : (∑ i : {x // x ∈ t}, c i * star (b i)) = ∑ i ∈ t, c i * star (b i) :=
+    Finset.sum_coe_sort t fun i => c i * star (b i)
+  have eb : (∑ i : {x // x ∈ t}, b i * star (b i))
+      = ∑ i ∈ t, b i * star (b i) :=
+    Finset.sum_coe_sort t fun i => b i * star (b i)
+  have ec : (∑ i : {x // x ∈ t}, c i * star (c i))
+      = ∑ i ∈ t, c i * star (c i) :=
+    Finset.sum_coe_sort t fun i => c i * star (c i)
+  have e1 : (tupleBInner (ℬ := ℬ) {x // x ∈ t}).norm (fun i : {x // x ∈ t} => b i)
+      = Real.sqrt ‖∑ i ∈ t, b i * star (b i)‖ := by
+    rw [BInner.norm, tupleBInner_inner, eb]
+  have e2 : (tupleBInner (ℬ := ℬ) {x // x ∈ t}).norm (fun i : {x // x ∈ t} => c i)
+      = Real.sqrt ‖∑ i ∈ t, c i * star (c i)‖ := by
+    rw [BInner.norm, tupleBInner_inner, ec]
+  rw [e0, e1, e2] at h
+  exact h.trans (mul_le_mul (Real.sqrt_le_sqrt (hA t)) (Real.sqrt_le_sqrt (hB t))
+    (Real.sqrt_nonneg _) (Real.sqrt_nonneg _))
 
-/-- The polarization identity for the ℬ-valued form `(x,y) ↦ y x*`:
-`4 y x* = (x+y)(x+y)* − (x−y)(x−y)* − i(x+iy)(x+iy)* + i(x−iy)(x−iy)*`. -/
-private theorem polarization_mul_star (x y : ℬ) :
-    (4 : ℂ) • (y * star x)
-      = ((x + y) * star (x + y) - (x + (-1 : ℂ) • y) * star (x + (-1 : ℂ) • y)
-          - Complex.I • ((x + Complex.I • y) * star (x + Complex.I • y)))
-        + Complex.I • ((x + (-Complex.I) • y) * star (x + (-Complex.I) • y)) := by
-  have hexp : ∀ z : ℂ, (x + z • y) * star (x + z • y)
-      = x * star x + (star z) • (x * star y) + z • (y * star x)
-        + (z * star z) • (y * star y) := by
-    intro z
-    rw [star_add, star_smul]
-    simp only [add_mul, mul_add, smul_mul_assoc, mul_smul_comm]
-    match_scalars <;> ring
-  have hone : star (1 : ℂ) = 1 := star_one ℂ
-  have hnone : star (-1 : ℂ) = -1 := by rw [star_neg, star_one]
-  have hI : star (Complex.I) = -Complex.I := Complex.conj_I
-  have hnI : star (-Complex.I) = Complex.I := by rw [star_neg, hI, neg_neg]
-  have h0 : (x + y) * star (x + y) = (x + (1 : ℂ) • y) * star (x + (1 : ℂ) • y) := by
-    rw [one_smul]
-  rw [h0, hexp, hexp, hexp, hexp, hone, hnone, hI, hnI]
-  match_scalars <;> simp [Complex.ext_iff] <;> ring
+/-- `ω(x) ≤ ‖x‖ ω(1)` for `x ≥ 0`, i.e. `x ≤ ‖x‖·1` under an np-functional:
+what turns the ℓ²-bound `∑ᵢ dᵢdᵢ* ≤ M` into the bound `∑ᵢ ω(dᵢdᵢ*) ≤ Mω(1)`
+that makes the solution's `∑ᵢ f(aᵢ*aᵢ)` converge. -/
+private theorem np_re_le_norm_mul (ω : NPFunctional ℬ) {x : ℬ} (hx : 0 ≤ x) :
+    (ω x).re ≤ ‖x‖ * (ω 1).re := by
+  have h1 : x ≤ (‖x‖ : ℝ) • (1 : ℬ) := le_norm_smul_one hx
+  have h2 : (ω x : ℂ) ≤ ω ((‖x‖ : ℝ) • (1 : ℬ)) := npFunctional_mono ω h1
+  have hsm : ((‖x‖ : ℝ) • (1 : ℬ)) = (((‖x‖ : ℝ) : ℂ)) • (1 : ℬ) :=
+    RCLike.real_smul_eq_coe_smul (K := ℂ) _ _
+  have hmap : ω ((((‖x‖ : ℝ)) : ℂ) • (1 : ℬ)) = (((‖x‖ : ℝ)) : ℂ) * ω 1 :=
+    map_smul ω.toPositiveLinearMap _ _
+  have h3 : ω ((‖x‖ : ℝ) • (1 : ℬ)) = ((‖x‖ : ℝ) : ℂ) * ω 1 := by
+    rw [hsm, hmap]
+  rw [h3] at h2
+  have h4 := (Complex.le_def.mp h2).1
+  simpa using h4
+
+/-- **161II**, the solution's Cauchy–Schwarz estimate at a normal state
+(bsols.tex:1026–1033, reused at 1048–1055):
+`|ω(∑_{i∈u} cᵢbᵢ*)| ≤ (∑_{i∈u} ω(cᵢcᵢ*))^½ (∑_{i∈u} ω(bᵢbᵢ*))^½`.  The
+solution's own two steps: Cauchy–Schwarz for the ℬ-valued inner product
+termwise (`|[aᵢ,bᵢ]_f| ≤ ‖aᵢ‖_f‖bᵢ‖_f`, i.e. Kadison's inequality
+`norm_apply_star_mul_le`), then the classical Cauchy–Schwarz for the finite
+sum. -/
+private theorem np_norm_sum_mul_star_le (ω : NPFunctional ℬ) {ι : Type v}
+    (b c : ι → ℬ) (u : Finset ι) :
+    ‖ω (∑ i ∈ u, c i * star (b i))‖
+      ≤ Real.sqrt (∑ i ∈ u, (ω (c i * star (c i))).re)
+        * Real.sqrt (∑ i ∈ u, (ω (b i * star (b i))).re) := by
+  classical
+  have hms : ω (∑ i ∈ u, c i * star (b i)) = ∑ i ∈ u, ω (c i * star (b i)) :=
+    map_sum ω.toPositiveLinearMap _ u
+  calc ‖ω (∑ i ∈ u, c i * star (b i))‖
+      = ‖∑ i ∈ u, ω (c i * star (b i))‖ := by rw [hms]
+    _ ≤ ∑ i ∈ u, ‖ω (c i * star (b i))‖ := norm_sum_le _ _
+    _ ≤ ∑ i ∈ u, Real.sqrt ((ω (c i * star (c i))).re)
+          * Real.sqrt ((ω (b i * star (b i))).re) := by
+        refine Finset.sum_le_sum fun i _ => ?_
+        have h := norm_apply_star_mul_le ω (star (c i)) (star (b i))
+        rw [star_star] at h
+        simpa [omegaNorm, star_star] using h
+    _ ≤ _ := Real.sum_sqrt_mul_sqrt_le u
+          (fun i => np_re_nonneg' ω (mul_star_self_nonneg _))
+          (fun i => np_re_nonneg' ω (mul_star_self_nonneg _))
 
 /-- **161II** (`hilbmod-el2`, dils.tex:4602, Exercise), part 1: for
 ℓ²-summable tuples `(bᵢ)`, `(cᵢ)` over a von Neumann algebra the inner
@@ -1994,70 +1992,102 @@ product `∑ᵢ bᵢ* cᵢ` (mirrored: `∑ᵢ cᵢ bᵢ*`) converges ultraweakl
 the coordinatewise operations this turns `ℓ²((pᵢ)ᵢ)` into a (pre-)Hilbert
 ℬ-module.
 
-**Divergence (class 2).**  The author's solution shows the net of partial
-sums is norm-bounded and ultraweakly Cauchy (two Cauchy–Schwarz estimates
-and an ε-argument) and appeals to bounded ultraweak completeness
-(**77I**.2).  The proof below instead *polarizes*: `4 cᵢbᵢ*` is a fixed
-ℂ-combination of four diagonal terms `dᵢdᵢ*`, each of whose partial sums is
-a monotone bounded net of positives, hence ultraweakly convergent by
-**44VI** alone.  No completeness and no Cauchy–Schwarz is used. -/
+The proof is the author's own (bsols.tex:1015–1065): the net of partial sums
+over the finite subsets of `ι` is norm-bounded by `(AB)^½`
+(`norm_sum_mul_star_le`) and ultraweakly Cauchy, so it converges by bounded
+ultraweak completeness (**77I**.2, `vn_complete_2`).  For the Cauchy
+property, fix an np-functional `ω`: the diagonal sums `∑ᵢ ω(cᵢcᵢ*)` and
+`∑ᵢ ω(bᵢbᵢ*)` are nonnegative with partial sums below `Bω(1)` and `Aω(1)`
+(`np_re_le_norm_mul`), so the first is summable and its tails vanish
+(`Summable.vanishing`); and for finite `s ⊆ t, t'`,
+`|ω(∑_{i∈t} cᵢbᵢ*) − ω(∑_{i∈t'} cᵢbᵢ*)|` splits over `t∖t'` and `t'∖t`,
+each of which is disjoint from `s`, and each half is estimated by the
+solution's Cauchy–Schwarz (`np_norm_sum_mul_star_le`) as a vanishing tail
+times the bounded factor `(Aω(1))^½`.
+
+(Note that our statement is only the *convergence* half of part 1; that
+`ℓ²((pᵢ)ᵢ)` is a right ℬ-module under the coordinatewise operations and a
+pre-Hilbert ℬ-module under this inner product — bsols.tex:972–1013 and
+1066–1075 — is not stated anywhere in this file.) -/
 theorem hilbmod_el2_inner [VonNeumannAlgebra ℬ] {ι : Type v} (b c : ι → ℬ)
     (hb : L2Summable ℬ b) (hc : L2Summable ℬ c) :
     ∃ s : ℬ, UWTendsto (fun t : Finset ι => ∑ i ∈ t, c i * star (b i))
       atTop s := by
   classical
-  obtain ⟨s0, hs0⟩ := exists_uwTendsto_l2_diag (fun i => b i + c i)
-    (l2Summable_add hb hc)
-  obtain ⟨s1, hs1⟩ := exists_uwTendsto_l2_diag
-    (fun i => b i + (-1 : ℂ) • c i) (l2Summable_add hb (l2Summable_smul _ hc))
-  obtain ⟨s2, hs2⟩ := exists_uwTendsto_l2_diag
-    (fun i => b i + Complex.I • c i)
-    (l2Summable_add hb (l2Summable_smul _ hc))
-  obtain ⟨s3, hs3⟩ := exists_uwTendsto_l2_diag
-    (fun i => b i + (-Complex.I) • c i)
-    (l2Summable_add hb (l2Summable_smul _ hc))
-  refine ⟨(4⁻¹ : ℂ) • (s0 - s1 - Complex.I • s2 + Complex.I • s3), ?_⟩
-  have hcomb : UWTendsto
-      (fun t : Finset ι => (4⁻¹ : ℂ) •
-        (((∑ i ∈ t, (b i + c i) * star (b i + c i))
-            - ∑ i ∈ t, (b i + (-1 : ℂ) • c i) * star (b i + (-1 : ℂ) • c i)
-            - Complex.I • ∑ i ∈ t,
-              (b i + Complex.I • c i) * star (b i + Complex.I • c i))
-          + Complex.I • ∑ i ∈ t,
-            (b i + (-Complex.I) • c i) * star (b i + (-Complex.I) • c i)))
-      atTop ((4⁻¹ : ℂ) • (s0 - s1 - Complex.I • s2 + Complex.I • s3)) := by
-    have hsub : ∀ {f g : Finset ι → ℬ} {u v : ℬ}, UWTendsto f atTop u →
-        UWTendsto g atTop v → UWTendsto (fun t => f t - g t) atTop (u - v) := by
-      intro f g u v hf hg
-      have h := uwTendsto_add' hf (uwTendsto_smul' (-1 : ℂ) hg)
-      simpa only [neg_smul, one_smul, ← sub_eq_add_neg] using h
-    exact uwTendsto_smul' _
-      (uwTendsto_add' (hsub (hsub hs0 hs1) (uwTendsto_smul' Complex.I hs2))
-        (uwTendsto_smul' Complex.I hs3))
-  have hEq : (fun t : Finset ι => ∑ i ∈ t, c i * star (b i))
-      = fun t : Finset ι => (4⁻¹ : ℂ) •
-        (((∑ i ∈ t, (b i + c i) * star (b i + c i))
-            - ∑ i ∈ t, (b i + (-1 : ℂ) • c i) * star (b i + (-1 : ℂ) • c i)
-            - Complex.I • ∑ i ∈ t,
-              (b i + Complex.I • c i) * star (b i + Complex.I • c i))
-          + Complex.I • ∑ i ∈ t,
-            (b i + (-Complex.I) • c i) * star (b i + (-Complex.I) • c i)) := by
-    funext t
-    have hsum : (((∑ i ∈ t, (b i + c i) * star (b i + c i))
-            - ∑ i ∈ t, (b i + (-1 : ℂ) • c i) * star (b i + (-1 : ℂ) • c i)
-            - Complex.I • ∑ i ∈ t,
-              (b i + Complex.I • c i) * star (b i + Complex.I • c i))
-          + Complex.I • ∑ i ∈ t,
-            (b i + (-Complex.I) • c i) * star (b i + (-Complex.I) • c i))
-        = ∑ i ∈ t, ((4 : ℂ) • (c i * star (b i))) := by
-      simp only [Finset.smul_sum, ← Finset.sum_sub_distrib,
-        ← Finset.sum_add_distrib]
-      exact Finset.sum_congr rfl fun i _ =>
-        (polarization_mul_star (b i) (c i)).symm
-    rw [hsum, ← Finset.smul_sum, smul_smul]
-    norm_num
-  rw [hEq]
-  exact hcomb
+  obtain ⟨A, hA⟩ := hb
+  obtain ⟨B, hB⟩ := hc
+  -- "We have shown that `∑_{i∈S} aᵢ*bᵢ` is a norm-bounded net in `S`."
+  refine vn_complete_2 atTop _
+    ⟨Real.sqrt A * Real.sqrt B, fun t => norm_sum_mul_star_le b c hA hB t⟩ ?_
+  -- "We claim it is ultraweakly Cauchy as well."
+  intro ω
+  have hone : 0 ≤ (ω 1).re := np_re_nonneg' ω zero_le_one
+  have hre : ∀ (u : Finset ι) (f : ι → ℬ),
+      (ω (∑ i ∈ u, f i)).re = ∑ i ∈ u, (ω (f i)).re := by
+    intro u f
+    have hms : ω (∑ i ∈ u, f i) = ∑ i ∈ u, ω (f i) :=
+      map_sum ω.toPositiveLinearMap f u
+    rw [hms, Complex.re_sum]
+  have hdiag : ∀ (d : ι → ℬ) (M : ℝ),
+      (∀ t : Finset ι, ‖∑ i ∈ t, d i * star (d i)‖ ≤ M) →
+      ∀ u : Finset ι, ∑ i ∈ u, (ω (d i * star (d i))).re ≤ M * (ω 1).re := by
+    intro d M hM u
+    have h0 : (0 : ℬ) ≤ ∑ i ∈ u, d i * star (d i) :=
+      Finset.sum_nonneg fun i _ => mul_star_self_nonneg _
+    calc ∑ i ∈ u, (ω (d i * star (d i))).re
+        = (ω (∑ i ∈ u, d i * star (d i))).re := (hre u _).symm
+      _ ≤ ‖∑ i ∈ u, d i * star (d i)‖ * (ω 1).re := np_re_le_norm_mul ω h0
+      _ ≤ M * (ω 1).re := mul_le_mul_of_nonneg_right (hM u) hone
+  have hgc0 : ∀ i, 0 ≤ (ω (c i * star (c i))).re :=
+    fun i => np_re_nonneg' ω (mul_star_self_nonneg _)
+  -- "The sum `∑ᵢ f(aᵢ*aᵢ)` converges and so `∑_{i ∈ S−T} f(aᵢ*aᵢ)` can be
+  -- made arbitrarily small by picking sufficiently large `S ∩ T`."
+  have hsummable : Summable fun i => (ω (c i * star (c i))).re :=
+    summable_of_sum_le (fun i => hgc0 i) (hdiag c B hB)
+  set K : ℝ := Real.sqrt (A * (ω 1).re) with hKdef
+  have hK0 : 0 ≤ K := Real.sqrt_nonneg _
+  refine Metric.cauchySeq_iff.mpr fun ε hε => ?_
+  have hpos : 0 < ε / 2 / (K + 1) := by positivity
+  obtain ⟨s₀, hs₀⟩ := hsummable.vanishing
+    (Metric.ball_mem_nhds (0 : ℝ) (pow_pos hpos 2))
+  have hkey : ∀ u : Finset ι, Disjoint u s₀ →
+      ‖ω (∑ i ∈ u, c i * star (b i))‖ < ε / 2 := by
+    intro u hu
+    have h1 := np_norm_sum_mul_star_le ω b c u
+    have h2 : ∑ i ∈ u, (ω (c i * star (c i))).re < (ε / 2 / (K + 1)) ^ 2 := by
+      have h := hs₀ u hu
+      rw [Metric.mem_ball, Real.dist_eq, sub_zero] at h
+      exact lt_of_abs_lt h
+    have h3 : Real.sqrt (∑ i ∈ u, (ω (c i * star (c i))).re)
+        < ε / 2 / (K + 1) := by
+      have h := Real.sqrt_lt_sqrt (Finset.sum_nonneg fun i _ => hgc0 i) h2
+      rwa [Real.sqrt_sq hpos.le] at h
+    have h4 : Real.sqrt (∑ i ∈ u, (ω (b i * star (b i))).re) ≤ K :=
+      Real.sqrt_le_sqrt (hdiag b A hA u)
+    have h5 : Real.sqrt (∑ i ∈ u, (ω (c i * star (c i))).re)
+        * Real.sqrt (∑ i ∈ u, (ω (b i * star (b i))).re)
+        ≤ (ε / 2 / (K + 1)) * K :=
+      mul_le_mul h3.le h4 (Real.sqrt_nonneg _) hpos.le
+    have h6 : (ε / 2 / (K + 1)) * K < ε / 2 := by
+      rw [div_mul_eq_mul_div, div_lt_iff₀ (by positivity)]
+      nlinarith
+    exact lt_of_le_of_lt (h1.trans h5) h6
+  refine ⟨s₀, fun t ht t' ht' => ?_⟩
+  have hdt : Disjoint (t \ t') s₀ :=
+    Finset.disjoint_left.mpr fun a ha has => (Finset.mem_sdiff.mp ha).2 (ht' has)
+  have hdt' : Disjoint (t' \ t) s₀ :=
+    Finset.disjoint_left.mpr fun a ha has => (Finset.mem_sdiff.mp ha).2 (ht has)
+  have hsplit : (∑ i ∈ t, c i * star (b i)) - ∑ i ∈ t', c i * star (b i)
+      = (∑ i ∈ t \ t', c i * star (b i)) - ∑ i ∈ t' \ t, c i * star (b i) :=
+    (Finset.sum_sdiff_sub_sum_sdiff (s₁ := t') (s₂ := t)
+      (f := fun i => c i * star (b i))).symm
+  rw [dist_eq_norm, ← npFunctional_sub, hsplit, npFunctional_sub]
+  calc ‖ω (∑ i ∈ t \ t', c i * star (b i))
+        - ω (∑ i ∈ t' \ t, c i * star (b i))‖
+      ≤ ‖ω (∑ i ∈ t \ t', c i * star (b i))‖
+        + ‖ω (∑ i ∈ t' \ t, c i * star (b i))‖ := norm_sub_le _ _
+    _ < ε / 2 + ε / 2 := add_lt_add (hkey _ hdt) (hkey _ hdt')
+    _ = ε := by ring
 
 
 variable {X : Type v}
@@ -6703,7 +6733,9 @@ half of the universal property gives `P = id`, i.e. `D^⊥⊥ = X ⊗ Y`.
 still needed: `D` absorbs elementary tensors only, so its `𝒞`-span is
 strictly bigger, and `bSpan D ⊆ unClosure D` is the thesis's
 "`𝒜 ⊙ ℬ` ultrastrongly dense in `𝒜 ⊗ ℬ`, hence `E(𝒜 ⊙ ℬ)` ultranorm dense
-in `E(𝒜 ⊗ ℬ)`" (`unDense_tSpan` and `unSeminorm_op_smul_le` above). -/
+in `E(𝒜 ⊗ ℬ)`" — `unDense_tSpan` together with **148III**.3
+`ultranormcontstruct_smul`, which is the "see `ultranormcontstruct`" of
+dils.tex:5165 itself. -/
 theorem ext_tensor_dense [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
     [VonNeumannAlgebra 𝒞] [CompleteSpace X] [CompleteSpace Y]
     (hX : SelfDual 𝒜 X) (hY : SelfDual ℬ Y) (E : ExtTensor t ht X Y) :
@@ -6736,23 +6768,28 @@ theorem ext_tensor_dense [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
     exact Finset.sum_induction _ (fun w => w ∈ D) (fun w w' hw hw' => hDadd w hw w' hw')
       hD0 fun i _ => hDt (a i) (b i) z hz
   -- the `𝒞`-span of `D` lies in its ultranorm closure: this is **164VII**
+  -- (`ultranorm-dense-tensor-base`, dils.tex:5165), and its step
+  -- "so `E(𝒜 ⊙ ℬ)` is ultranorm dense in `E(𝒜 ⊗ ℬ)`, see
+  -- `ultranormcontstruct`" is **148III**.3 `ultranormcontstruct_smul` at
+  -- `x₀ = v`: `c ↦ c · v` is uniformly continuous from the ultrastrong
+  -- uniformity of `𝒞` to the ultranorm uniformity of `X ⊗ Y`, so an
+  -- ultrastrong approximant `d ∈ 𝒜 ⊙ ℬ` of `c` (`unDense_tSpan`) makes
+  -- `d • v` an ultranorm approximant of `c • v`.  (148III.3 gives one `δ`
+  -- per np-functional, so the finitely many `ωs i` are served by their
+  -- minimum, exactly as in `unClosure_add`.)
   have hsmul : ∀ (c : 𝒞), ∀ v ∈ D, c • v ∈ unClosure 𝒞 (inner 𝒞) D := by
     intro c v hv n ωs ε hε
-    obtain ⟨d, hd, hdist⟩ := unDense_tSpan ht c n ωs (ε / (‖v‖ + 1)) (by positivity)
-    refine ⟨d • v, hDspan d hd v hv, fun i => ?_⟩
-    have hsub : c • v - d • v = (c - d) • v := by
-      have h : (c - d) • v + d • v = c • v := by
-        rw [← op_add_smul]; congr 1; abel
-      rw [← h]; abel
-    calc unSeminorm (ωs i) (inner 𝒞 : E.Z → E.Z → 𝒞) (c • v - d • v)
-        = unSeminorm (ωs i) (inner 𝒞 : E.Z → E.Z → 𝒞) ((c - d) • v) := by rw [hsub]
-      _ ≤ ‖v‖ * unSeminorm (ωs i) (mulInner 𝒞) (c - d) :=
-          unSeminorm_op_smul_le _ _ _
-      _ ≤ ‖v‖ * (ε / (‖v‖ + 1)) :=
-          mul_le_mul_of_nonneg_left (hdist i) (norm_nonneg v)
-      _ ≤ ε := by
-          rw [mul_div_assoc', div_le_iff₀ (by positivity)]
-          nlinarith [norm_nonneg v, hε.le]
+    choose δ hδ0 hδ using fun i : Fin n =>
+      ultranormcontstruct_smul (cstarBInner 𝒞 E.Z) v (ωs i) ε hε
+    obtain ⟨m, hm0, hm⟩ : ∃ m > (0 : ℝ), ∀ i, m ≤ δ i := by
+      rcases Nat.eq_zero_or_pos n with rfl | hn
+      · exact ⟨1, one_pos, fun i => i.elim0⟩
+      · have hne : (Finset.univ : Finset (Fin n)).Nonempty :=
+          Finset.univ_nonempty_iff.mpr (Fin.pos_iff_nonempty.mp hn)
+        exact ⟨Finset.univ.inf' hne δ, (Finset.lt_inf'_iff hne).mpr
+          (fun i _ => hδ0 i), fun i => Finset.inf'_le δ (Finset.mem_univ i)⟩
+    obtain ⟨d, hd, hdist⟩ := unDense_tSpan ht c n ωs m hm0
+    exact ⟨d • v, hDspan d hd v hv, fun i => hδ i c d ((hdist i).trans (hm i))⟩
   have hbSpan : bSpan 𝒞 D ⊆ unClosure 𝒞 (inner 𝒞) D := by
     rintro _ ⟨n, c, b, v, hv, rfl⟩
     refine Finset.sum_induction _ (fun w => w ∈ unClosure 𝒞 (inner 𝒞) D)
@@ -9029,7 +9066,22 @@ elementary tensors in one go.  The two densities are the thesis's own
 `𝒜' = 𝒜₁ ⊙ 𝒜₂` (ultrastrongly dense by `unDense_tSpan`) and `ℬ' = ℬ₁₂`,
 `η₂`'s from **166IV** `exttensor_dense_subsets` at the elementary tensors of
 the two Paschke modules (`paschke_tprod_dense`).  The inner-product
-computation of 167IV is `ptmEtaA_inner`. -/
+computation of 167IV is `ptmEtaA_inner`.
+
+**Why 167V is not run literally** (route pass 2026-08-26).  Its two steps
+are not symmetric in this tree.  The *second* step — the universal property
+of the exterior tensor product — is present, as `ExtTensor.univ`; but it
+*consumes* a bilinear `T : X₁ → X₂ → W` defined on all of `X₁ × X₂`, which
+is exactly 167V's intermediate `U₁`.  And `U₁` is a bounded `ℬ₁ ⊙ ℬ₂`-linear
+map on the **incomplete** pre-module `X₁ ⊙ X₂`, which no extension lemma
+here produces: **151Ia** `selfdual_completion_univ` (and hence **163II**)
+extends a bounded module map from a pre-module only *into a self-dual,
+complete* target, so from the pair core `(𝒜₁ ⊙ ℬ₁) ⊙ (𝒜₂ ⊙ ℬ₂)` it lands in
+`X₁ ⊗ X₂` — never in `X₁ ⊙ X₂`.  Producing `U₁` on its own would take a new
+extension theorem into a non-complete pre-module, plus its `IsExtBilin` and
+`ExtTensor.univ` bound checks, plus the density arguments for
+inner-product preservation (**148V**) and surjectivity that **163II** here
+supplies — and it would produce the same `U`. -/
 
 section PaschkeTensorModuleAux
 

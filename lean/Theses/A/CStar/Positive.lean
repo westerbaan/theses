@@ -3277,14 +3277,15 @@ theorem positive_basic_2_3b (a : 𝒜) (ha : IsSelfAdjoint a) :
       -(algebraMap ℂ 𝒜 (lam : ℂ)) ≤ a ∧ a ≤ algebraMap ℂ 𝒜 (lam : ℂ)} :=
   by
     -- the solution's own argument (asols.tex, `parsec-170.60`(3)): `‖a‖ₒ ≤ ‖a‖`
-    -- because `‖a‖` is itself one of the bounds (**9X**.2, `cstar_positive_2`),
+    -- because "in `parsec-90.100` we already saw that `‖a‖ₒ ≤ ‖a‖`", i.e.
+    -- because `‖a‖` is itself one of the bounds (**9X**.2, `cstar_positive_2`);
     -- and `‖a‖ ≤ ‖a‖ₒ` because every bound `λ` for `a` satisfies `‖a‖ ≤ λ` by
-    -- part 3a, so `‖a‖` is a lower bound of the set and hence below its
-    -- infimum.  (The solution takes a decreasing sequence `λₙ ↓ ‖a‖ₒ`; `le_csInf`
-    -- is that passage to the infimum.)
+    -- the previous paragraph (part 3a), so `‖a‖` is a lower bound of the set
+    -- and hence below its infimum.  (The solution takes a decreasing sequence
+    -- `λₙ ↓ ‖a‖ₒ`; `le_csInf` is that passage to the infimum.)
     have hmem : ‖a‖ ∈ {lam : ℝ | 0 ≤ lam ∧
         -(algebraMap ℂ 𝒜 (lam : ℂ)) ≤ a ∧ a ≤ algebraMap ℂ 𝒜 (lam : ℂ)} :=
-      ⟨norm_nonneg a, (positive_basic_2_3a a ha ‖a‖ (norm_nonneg a)).mpr le_rfl⟩
+      ⟨norm_nonneg a, (cstar_positive_2 a ha).2⟩
     have hbdd : BddBelow {lam : ℝ | 0 ≤ lam ∧
         -(algebraMap ℂ 𝒜 (lam : ℂ)) ≤ a ∧ a ≤ algebraMap ℂ 𝒜 (lam : ℂ)} :=
       ⟨0, fun r hr => hr.1⟩
@@ -3747,9 +3748,18 @@ theorem cstar_product_2_miu {ι : Type*} {𝒜 : ι → Type*}
     ∃! g : ℬ →⋆ₐ[ℂ] lp 𝒜 ∞, ∀ (i : ι) (b : ℬ),
       (g b : ∀ i, 𝒜 i) i = f i b :=
   by
+    -- The solution's construction (asols.tex:2053-2062, read for miu-maps at
+    -- asols.tex:2085-2088): `g(b)(i) = f_i(b)` defines an element of
+    -- `⊕ᵢ 𝒜ᵢ` because the `f_i` are bounded -- the Exercise's own hint,
+    -- "use here that the projections `π_j` are bounded by `norm-mi-map`",
+    -- i.e. **20V** `norm_mi_map_contractive` above.  `g` is then clearly miu,
+    -- and unique because `g'(b)(i) = π_i(g'(b)) = f_i(b) = g(b)(i)`.
     have hmem : ∀ b : ℬ, Memℓp (fun i => f i b) ∞ := fun b =>
       memℓp_infty ⟨‖b‖, by
         rintro y ⟨i, rfl⟩
+        -- `norm_mi_map_contractive` above is this statement under its thesis
+        -- name; it cannot be cited here, because its section carries order
+        -- instances on the two algebras that `⊕ᵢ 𝒜ᵢ` has no reason to have.
         exact NonUnitalStarAlgHom.norm_apply_le (f i) b⟩
     refine ⟨{ toFun := fun b => ⟨fun i => f i b, hmem b⟩
               map_one' := by ext i; simp
@@ -6195,25 +6205,49 @@ theorem astara_pos_basic_3 (a b : 𝒜) (ha : 0 ≤ a) (hb : 0 ≤ b)
       rw [← norm_star (CFC.sqrt b * CFC.sqrt a), star_mul,
         (IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg a)).star_eq,
         (IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg b)).star_eq]
+    -- (a) ⟺ (b) is the solution's own argument (asols.tex:2496-2506), which
+    -- runs on part 1 of this exercise, `astara_pos_basic_1`, in both
+    -- directions: "if `a ≤ b⁻¹` then `√b a √b ≤ √b b⁻¹ √b = 1`, by part 1 of
+    -- this exercise, where we used that `√(b⁻¹)` is the inverse of `√b`.  On
+    -- the other hand, if `√b a √b ≤ 1`, then
+    -- `a ≡ (√b)⁻¹ √b a √b (√b)⁻¹ ≤ b⁻¹`, again using part 1."  The solution's
+    -- preceding observation -- that `√b` is invertible with
+    -- `(√b)⁻¹ = √(b⁻¹)` -- enters only through `(√b)⁻¹ (√b)⁻¹ = b⁻¹`.
     have key12 : ∀ x y : 𝒜, 0 ≤ x → 0 ≤ y → IsUnit y →
         (x ≤ Ring.inverse y ↔ CFC.sqrt y * x * CFC.sqrt y ≤ 1) := by
-      intro x y hx hy huy
-      have hsp : IsStrictlyPositive y := ⟨hy, huy⟩
-      have hspi : IsStrictlyPositive (Ring.inverse y) := hsp.ringInverse
-      have hone : CFC.conjSqrt y (Ring.inverse y) = 1 := by
-        have h1 := CFC.conjSqrt_conjSqrt_ringInverse y 1 hsp
-        rwa [CFC.conjSqrt_one (Ring.inverse y) hspi.nonneg] at h1
+      intro x y _hx hy huy
+      set s := CFC.sqrt y with hs
+      have hssa : IsSelfAdjoint s := IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg y)
+      have hsq : s * s = y := CFC.sqrt_mul_sqrt_self y hy
+      have hus : IsUnit s := (CFC.isUnit_sqrt_iff y hy).mpr huy
+      set t := Ring.inverse s with ht
+      have hts : t * s = 1 := Ring.inverse_mul_cancel s hus
+      have hst : s * t = 1 := Ring.mul_inverse_cancel s hus
+      have htsa : IsSelfAdjoint t := by
+        rw [IsSelfAdjoint, ht, ← Ring.inverse_star, hssa.star_eq]
+      have htt : t * t = Ring.inverse y := by
+        rw [← hsq, Ring.mul_inverse_rev' (Commute.refl s)]
       constructor
       · intro hle
-        have h2 := CFC.conjSqrt_le_conjSqrt (c := y) hle
-        rwa [hone, CFC.conjSqrt_apply] at h2
+        have h := astara_pos_basic_1 s x (Ring.inverse y) hle
+        rw [hssa.star_eq] at h
+        have hone : s * Ring.inverse y * s = 1 := by
+          rw [← htt, ← mul_assoc, mul_assoc s t t, ← mul_assoc, hst, one_mul, hts]
+        rwa [hone] at h
       · intro hle
-        have h2 := CFC.conjSqrt_le_conjSqrt (c := Ring.inverse y) hle
-        rwa [← CFC.conjSqrt_apply, CFC.conjSqrt_ringInverse_conjSqrt y x hsp,
-          CFC.conjSqrt_one (Ring.inverse y) hspi.nonneg] at h2
+        have h := astara_pos_basic_1 t (s * x * s) 1 hle
+        rw [htsa.star_eq] at h
+        have h1 : t * (s * x * s) * t = x := by
+          rw [← mul_assoc, ← mul_assoc, hts, one_mul, mul_assoc, hst, mul_one]
+        have h2 : t * 1 * t = Ring.inverse y := by rw [mul_one, htt]
+        rwa [h1, h2] at h
+    -- (b) ⟺ (c) "follows from `parsec-170.60`(3)" (asols.tex:2508-2513), i.e.
+    -- from **17VI**.3a `positive_basic_2_3a` at `λ = 1`: the solution's
+    -- displayed `(-1 ≤) √b a √b ≤ 1 iff ‖√a √b‖² ≡ ‖√b a √b‖ ≤ 1 iff
+    -- ‖√a √b‖ ≤ 1`, with the parenthetical `-1 ≤` free because `√b a √b ≥ 0`.
     have key23 : ∀ x y : 𝒜, 0 ≤ x → 0 ≤ y →
         (CFC.sqrt y * x * CFC.sqrt y ≤ 1 ↔ ‖CFC.sqrt x * CFC.sqrt y‖ ≤ 1) := by
-      intro x y hx hy
+      intro x y hx _hy
       have heq : star (CFC.sqrt x * CFC.sqrt y) * (CFC.sqrt x * CFC.sqrt y)
           = CFC.sqrt y * x * CFC.sqrt y := by
         rw [star_mul, (IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg x)).star_eq,
@@ -6224,8 +6258,24 @@ theorem astara_pos_basic_3 (a b : 𝒜) (ha : 0 ≤ a) (hb : 0 ≤ b)
         rw [CFC.sqrt_mul_sqrt_self x hx]
       have hnn : (0 : 𝒜) ≤ CFC.sqrt y * x * CFC.sqrt y :=
         conjugate_nonneg_of_nonneg hx (CFC.sqrt_nonneg y)
-      rw [← CStarAlgebra.norm_le_one_iff_of_nonneg _ hnn, ← heq,
-        CStarRing.norm_star_mul_self, ← sq, sq_le_one_iff₀ (norm_nonneg _)]
+      have hsa : IsSelfAdjoint (CFC.sqrt y * x * CFC.sqrt y) :=
+        IsSelfAdjoint.of_nonneg hnn
+      have hone : algebraMap ℂ 𝒜 ((1 : ℝ) : ℂ) = 1 := by norm_num
+      have h3a := positive_basic_2_3a (CFC.sqrt y * x * CFC.sqrt y) hsa 1 zero_le_one
+      rw [hone] at h3a
+      have hneg : -(1 : 𝒜) ≤ CFC.sqrt y * x * CFC.sqrt y :=
+        le_trans (neg_nonpos.mpr (zero_le_one (α := 𝒜))) hnn
+      have hnsq : ‖CFC.sqrt y * x * CFC.sqrt y‖ = ‖CFC.sqrt x * CFC.sqrt y‖ ^ 2 := by
+        rw [← heq, CStarRing.norm_star_mul_self, sq]
+      constructor
+      · intro hle
+        have hn := h3a.mp ⟨hneg, hle⟩
+        rw [hnsq] at hn
+        nlinarith [norm_nonneg (CFC.sqrt x * CFC.sqrt y)]
+      · intro hle
+        refine (h3a.mpr ?_).2
+        rw [hnsq]
+        nlinarith [norm_nonneg (CFC.sqrt x * CFC.sqrt y)]
     tfae_have 1 ↔ 2 := key12 a b ha hb hub
     tfae_have 2 ↔ 3 := key23 a b ha hb
     tfae_have 4 ↔ 3 := by rw [key12 b a hb ha hua, key23 b a hb ha, hstar]

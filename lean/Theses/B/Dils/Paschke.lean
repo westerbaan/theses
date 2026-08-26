@@ -292,10 +292,25 @@ set_option maxHeartbeats 1000000 in
 -- the φ-compatibility bound is a long chain of `Finset` rewrites
 /-- Shifting a φ-compatible map on the right, `(a, b) ↦ T (a a₀) b`, again
 gives a φ-compatible map (mirrored: this is the thesis's *left* shift
-`(a,b) ↦ T (a₀a) b`).  Only the bound needs an argument, and it is complete
-positivity of `φ` at the two families `(aᵢa₀)*` and `(aᵢc)*`, where
-`c c* = K − a₀a₀*` for `K = ‖a₀‖² + 1`; adding the two gives
-`S₁ + S₂ = K · S₀`, so `0 ≤ S₁ ≤ K · S₀`.
+`(a,b) ↦ T (a₀a) b`).  Only the bound needs an argument, and it is the
+thesis's own display at dils.tex:3689–3696 (**154VI**, `2: ϱ`, dils.tex:3670):
+with the row vector `a = (a₁ ⋯ aₙ)` and the column vector `b`,
+
+  `‖∑ᵢ B(aᵢ,bᵢ)‖² = ‖b* (Mₙφ)(a*a₀*a₀a) b‖ ≤ ‖a₀*a₀‖ ‖b* (Mₙφ)(a*a) b‖`.
+
+Mirrored, the two matrices are `A₁ = (aᵢa₀(aⱼa₀)*)ᵢⱼ` and `A₀ = (aᵢaⱼ*)ᵢⱼ`
+in `M_n(𝒜) = CStarMatrix (Fin n) (Fin n) 𝒜`, and the three steps are:
+`A₁ ≤ ‖a₀‖²·A₀` — because `(‖a₀‖²·A₀ − A₁)ᵢⱼ = aᵢ(‖a₀‖²1 − a₀a₀*)aⱼ*`, whose
+conjugate by a vector `c` is `u(‖a₀‖²1 − a₀a₀*)u*` for `u = ∑ᵢ cᵢ*aᵢ`, so
+**33II** (`cstar_matrix_positive_iff`, the row-vector form of positivity)
+applies; then `Mₙφ` is positive by complete positivity of `φ` (**34IV**,
+`cp_iff`); then **33II** again, conjugating by the column vector `b`, gives
+`S₁ ≤ ‖a₀‖²·S₀` in ℬ, and the norms follow since `0 ≤ S₁`.
+
+Only the *witness* differs from the thesis: **154II** asks for an `r > 0`,
+and the display gives `r‖a₀‖²`, which is `0` when `a₀ = 0`; the witness taken
+here is the (larger) `r(‖a₀‖² + 1)`, the thesis's inequality being used
+unchanged.
 
 This is what makes `ϱ(a₀)` exist (**154III**.2) and what lets the
 intertwining clause of **154III**.4 be checked on elementary tensors. -/
@@ -309,6 +324,9 @@ theorem PhiCompatible.mul_right (φ : NCPMap 𝒜 ℬ) {Y : Type u}
   have hcp : IsCompletelyPositiveMap ψ :=
     ((cp_iff _).out 1 0).mp fun N A hA =>
       φ.toCompletelyPositiveMap.map_cstarMatrix_nonneg' N A hA
+  -- **34IV**: `M_N φ` is a positive map for every `N`
+  have hcpmat : ∀ (N : ℕ) (A : CStarMatrix (Fin N) (Fin N) 𝒜), 0 ≤ A → 0 ≤ A.map ⇑ψ :=
+    (cp_iff ψ).out 0 1 |>.mp hcp
   obtain ⟨r, hr0, hr⟩ := hT.bound
   refine { add_left := fun a a' b => by
              rw [add_mul]; exact hT.add_left _ _ _
@@ -317,80 +335,92 @@ theorem PhiCompatible.mul_right (φ : NCPMap 𝒜 ℬ) {Y : Type u}
              rw [smul_mul_assoc]; exact hT.smul_complex _ _ _
            smul_action := fun a b c => hT.smul_action _ _ _
            bound := ⟨r * (‖a₀‖ ^ 2 + 1), by positivity, fun n a b => ?_⟩ }
-  set K : ℝ := ‖a₀‖ ^ 2 + 1 with hK
-  have hK0 : (0 : ℝ) ≤ K := by positivity
+  -- `a₀a₀* ≤ ‖a₀a₀*‖·1 = ‖a₀‖²·1`, the thesis's `‖a₀*a₀‖` step
   have hcast : ∀ t : ℝ, algebraMap ℝ 𝒜 t = ((t : ℂ)) • (1 : 𝒜) := by
     intro t
     rw [IsScalarTower.algebraMap_apply ℝ ℂ 𝒜, Algebra.algebraMap_eq_smul_one]
     norm_num
   have hnorm2 : ‖a₀ * star a₀‖ = ‖a₀‖ ^ 2 := by
     rw [CStarRing.norm_self_mul_star]; ring
-  have hle : a₀ * star a₀ ≤ ((K : ℝ) : ℂ) • (1 : 𝒜) := by
+  have hle : a₀ * star a₀ ≤ ((‖a₀‖ ^ 2 : ℝ) : ℂ) • (1 : 𝒜) := by
     have h1 := (IsSelfAdjoint.mul_star_self a₀).le_algebraMap_norm_self
-    rw [hcast] at h1
-    refine h1.trans ?_
-    rw [← sub_nonneg, ← sub_smul]
-    have h2 : ((K : ℝ) : ℂ) - ((‖a₀ * star a₀‖ : ℝ) : ℂ) = 1 := by
-      rw [hnorm2, hK]; push_cast; ring
-    rw [h2, one_smul]
-    exact zero_le_one
-  set c : 𝒜 := CFC.sqrt (((K : ℝ) : ℂ) • (1 : 𝒜) - a₀ * star a₀) with hcdef
-  have hcc : c * star c = ((K : ℝ) : ℂ) • (1 : 𝒜) - a₀ * star a₀ := by
-    have h0 : (0 : 𝒜) ≤ ((K : ℝ) : ℂ) • (1 : 𝒜) - a₀ * star a₀ := sub_nonneg.mpr hle
-    have hsa : star c = c := IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg _)
-    rw [hsa, hcdef, CFC.sqrt_mul_sqrt_self _ h0]
-  -- the three conjugated sums
+    rw [hcast, hnorm2] at h1
+    exact h1
+  set t : 𝒜 := ((‖a₀‖ ^ 2 : ℝ) : ℂ) • (1 : 𝒜) - a₀ * star a₀ with htdef
+  have htnn : (0 : 𝒜) ≤ t := sub_nonneg.mpr hle
   set S0 : ℬ := ∑ i, ∑ j, b i * ψ (a i * star (a j)) * star (b j) with hS0def
-  set S1 : ℬ := ∑ i, ∑ j, b i * ψ (a i * a₀ * star (a j * a₀)) * star (b j)
-    with hS1def
-  set S2 : ℬ := ∑ i, ∑ j, b i * ψ (a i * c * star (a j * c)) * star (b j)
-    with hS2def
+  set S1 : ℬ := ∑ i, ∑ j, b i * ψ (a i * a₀ * star (a j * a₀)) * star (b j) with hS1def
+  -- the thesis's two matrices `a*a₀*a₀a` and `a*a` over 𝒜 (mirrored)
+  set A1 : CStarMatrix (Fin n) (Fin n) 𝒜 :=
+    CStarMatrix.ofMatrix (Matrix.of fun i j => a i * a₀ * star (a j * a₀)) with hA1def
+  set A0 : CStarMatrix (Fin n) (Fin n) 𝒜 :=
+    CStarMatrix.ofMatrix (Matrix.of fun i j => a i * star (a j)) with hA0def
+  have hA1app : ∀ i j, A1 i j = a i * a₀ * star (a j * a₀) := by
+    intro i j; rw [hA1def]; simp [CStarMatrix.ofMatrix_apply]
+  have hA0app : ∀ i j, A0 i j = a i * star (a j) := by
+    intro i j; rw [hA0def]; simp [CStarMatrix.ofMatrix_apply]
+  have hentry : ∀ i j, (((‖a₀‖ ^ 2 : ℝ) : ℂ) • A0 - A1) i j = a i * t * star (a j) := by
+    intro i j
+    rw [CStarMatrix.sub_apply, CStarMatrix.smul_apply, hA1app, hA0app, htdef]
+    rw [mul_sub, sub_mul, mul_smul_comm, mul_one, smul_mul_assoc, star_mul]
+    noncomm_ring
+  -- `a*a₀*a₀a ≤ ‖a₀‖²·a*a` in `M_n(𝒜)`, by **33II** at the vector `c`
+  have hmatle : A1 ≤ ((‖a₀‖ ^ 2 : ℝ) : ℂ) • A0 := by
+    rw [← sub_nonneg, cstar_matrix_positive_iff]
+    intro c
+    have hstar : star (∑ i, star (c i) * a i) = ∑ j, star (a j) * c j := by
+      simp [star_sum, star_mul]
+    have hkey : ∑ i, ∑ j, star (c i) * ((((‖a₀‖ ^ 2 : ℝ) : ℂ) • A0 - A1) i j) * c j
+        = (∑ i, star (c i) * a i) * t * star (∑ i, star (c i) * a i) := by
+      simp only [hentry]
+      calc ∑ i, ∑ j, star (c i) * (a i * t * star (a j)) * c j
+          = (∑ i, star (c i) * a i * t) * (∑ j, star (a j) * c j) := by
+            rw [Finset.sum_mul_sum]
+            exact Finset.sum_congr rfl fun i _ =>
+              Finset.sum_congr rfl fun j _ => by noncomm_ring
+        _ = (∑ i, star (c i) * a i) * t * star (∑ i, star (c i) * a i) := by
+            simp only [hstar, Finset.sum_mul]
+    rw [hkey]
+    exact star_right_conjugate_nonneg htnn _
+  -- apply `M_n φ` and conjugate by the column vector `b`, again by **33II**
+  have hentry2 : ∀ i j, ((((‖a₀‖ ^ 2 : ℝ) : ℂ) • A0 - A1).map ⇑ψ) i j
+      = ((‖a₀‖ ^ 2 : ℝ) : ℂ) • ψ (a i * star (a j)) - ψ (a i * a₀ * star (a j * a₀)) := by
+    intro i j
+    rw [CStarMatrix.map_apply, CStarMatrix.sub_apply, CStarMatrix.smul_apply, hA0app, hA1app,
+      map_sub, map_smul]
+  have hS1le : S1 ≤ ((‖a₀‖ ^ 2 : ℝ) : ℂ) • S0 := by
+    have h := (cstar_matrix_positive_iff _).mp (hcpmat n _ (sub_nonneg.mpr hmatle))
+      (fun i => star (b i))
+    simp only [star_star, hentry2] at h
+    have hsum2 : ∑ i, ∑ j, b i * (((‖a₀‖ ^ 2 : ℝ) : ℂ) • ψ (a i * star (a j))
+          - ψ (a i * a₀ * star (a j * a₀))) * star (b j)
+        = ((‖a₀‖ ^ 2 : ℝ) : ℂ) • S0 - S1 := by
+      rw [hS0def, hS1def, Finset.smul_sum, ← Finset.sum_sub_distrib]
+      refine Finset.sum_congr rfl fun i _ => ?_
+      rw [Finset.smul_sum, ← Finset.sum_sub_distrib]
+      refine Finset.sum_congr rfl fun j _ => ?_
+      rw [mul_sub, sub_mul, mul_smul_comm, smul_mul_assoc]
+    rw [hsum2] at h
+    exact sub_nonneg.mp h
   have hS1nn : (0 : ℬ) ≤ S1 := by
     have h := hcp n (fun i => star (a i * a₀)) (fun i => star (b i))
     simp only [star_star] at h
     exact h
-  have hS2nn : (0 : ℬ) ≤ S2 := by
-    have h := hcp n (fun i => star (a i * c)) (fun i => star (b i))
-    simp only [star_star] at h
-    exact h
-  have hpoint : ∀ i j : Fin n,
-      b i * ψ (a i * a₀ * star (a j * a₀)) * star (b j)
-        + b i * ψ (a i * c * star (a j * c)) * star (b j)
-      = ((K : ℝ) : ℂ) • (b i * ψ (a i * star (a j)) * star (b j)) := by
-    intro i j
-    have hsum : a₀ * star a₀ + c * star c = ((K : ℝ) : ℂ) • (1 : 𝒜) := by
-      rw [hcc]; abel
-    have h1 : a i * a₀ * star (a j * a₀) + a i * c * star (a j * c)
-        = ((K : ℝ) : ℂ) • (a i * star (a j)) := by
-      calc a i * a₀ * star (a j * a₀) + a i * c * star (a j * c)
-          = a i * (a₀ * star a₀ + c * star c) * star (a j) := by
-            simp only [star_mul]; noncomm_ring
-        _ = a i * (((K : ℝ) : ℂ) • (1 : 𝒜)) * star (a j) := by rw [hsum]
-        _ = ((K : ℝ) : ℂ) • (a i * star (a j)) := by
-            rw [mul_smul_comm, smul_mul_assoc, mul_one]
-    rw [← add_mul, ← mul_add, ← map_add ψ, h1, map_smul, mul_smul_comm,
-      smul_mul_assoc]
-  have hSum : S1 + S2 = ((K : ℝ) : ℂ) • S0 := by
-    rw [hS0def, hS1def, hS2def, Finset.smul_sum]
-    rw [← Finset.sum_add_distrib]
-    refine Finset.sum_congr rfl fun i _ => ?_
-    rw [← Finset.sum_add_distrib, Finset.smul_sum]
-    exact Finset.sum_congr rfl fun j _ => hpoint i j
-  have hS1le : S1 ≤ ((K : ℝ) : ℂ) • S0 := by
-    rw [← hSum]
-    simpa using add_le_add_left hS2nn S1
-  have hnormS1 : ‖S1‖ ≤ K * ‖S0‖ := by
+  have hnormS1 : ‖S1‖ ≤ ‖a₀‖ ^ 2 * ‖S0‖ := by
     have h := CStarAlgebra.norm_le_norm_of_nonneg_of_le hS1nn hS1le
-    rwa [norm_smul, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg hK0] at h
+    rwa [norm_smul, Complex.norm_real, Real.norm_eq_abs,
+      abs_of_nonneg (by positivity : (0:ℝ) ≤ ‖a₀‖ ^ 2)] at h
   have hkey := hr n (fun i => a i * a₀) b
   simp only [← hψ] at hS0def hS1def
   calc ‖∑ i, T (a i * a₀) (b i)‖ ^ 2
       ≤ r * ‖S1‖ := by rw [hS1def]; simpa [hψ] using hkey
-    _ ≤ r * (K * ‖S0‖) := mul_le_mul_of_nonneg_left hnormS1 hr0.le
-    _ = r * K * ‖S0‖ := by ring
+    _ ≤ r * (‖a₀‖ ^ 2 * ‖S0‖) := mul_le_mul_of_nonneg_left hnormS1 hr0.le
+    _ ≤ r * ((‖a₀‖ ^ 2 + 1) * ‖S0‖) := by
+        refine mul_le_mul_of_nonneg_left ?_ hr0.le
+        exact mul_le_mul_of_nonneg_right (by linarith) (norm_nonneg _)
     _ = r * (‖a₀‖ ^ 2 + 1)
           * ‖∑ i, ∑ j, b i * φ (a i * star (a j)) * star (b j)‖ := by
-        rw [hS0def, hK]
+        rw [hS0def]; ring
 
 /-- **154III** (`existence-paschke`, dils.tex:3558, Theorem), the data: the
 self-dual Hilbert ℬ-module `𝒜 ⊗_φ ℬ` with its φ-compatible bilinear map
@@ -3407,17 +3437,115 @@ theorem paschke_injective_carrier [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra �
     have hϑ : (ϑ (D.ρ p) : (Ba ℬ M.X)ᵐᵒᵖ) = ϑ 0 := by rw [hϑρ p, hM, hϑ0]
     exact hbij.1 hϑ
 
-/-- **156II** (`paschke-injective`, dils.tex:3875, Theorem): the Paschke
-representation `ϱ` is injective if and only if `φ` maps no non-zero
-central projection to zero (`⌈⌈φ⌉⌉ = 1`).
+/-- Auxiliary for **156II**: a *central* projection `z` killed by `φ` is
+killed at every conjugate, `φ(a*za) = 0` — because `a*za = z(a*a)z ≤ ‖a*a‖z`
+by centrality, and `φ` is positive.  This is the *central* case of the
+thesis's chain at dils.tex:3905–3912 (`a*pa ≤ ⌈φ⌉^⊥` iff `a⌈φ⌉a* ≤ p^⊥`, by
+`ad-contraposed` and `cceil-fundamental`), which is all that **156II** needs
+of it: it is applied at `p = ⌈⌈φ⌉⌉^⊥`. -/
+private theorem ncp_conj_central_eq_zero (φ : NCPMap 𝒜 ℬ) {z : 𝒜}
+    (hz : IsStarProjection z) (hzc : IsCentral 𝒜 z) (hφz : φ z = 0) (a : 𝒜) :
+    φ (star a * z * a) = 0 := by
+  have hcnn : (0 : 𝒜) ≤ star a * a := star_mul_self_nonneg a
+  have hzs : star z = z := hz.isSelfAdjoint.star_eq
+  have hconj := star_left_conjugate_le_conjugate (le_norm_smul_one hcnn) z
+  have h1 : star z * (star a * a) * z = star a * z * a := by
+    calc star z * (star a * a) * z = z * (star a * a) * z := by rw [hzs]
+      _ = star a * a * z * z := by rw [hzc (star a * a)]
+      _ = star a * a * z := by rw [mul_assoc, hz.isIdempotentElem.eq]
+      _ = star a * (a * z) := by rw [mul_assoc]
+      _ = star a * z * a := by rw [← hzc a, mul_assoc]
+  have h2 : star z * ((‖star a * a‖ : ℝ) • (1 : 𝒜)) * z
+      = (‖star a * a‖ : ℝ) • z := by
+    rw [hzs, mul_smul_comm, smul_mul_assoc, mul_one, hz.isIdempotentElem.eq]
+  rw [h1, h2] at hconj
+  have hup : (φ (star a * z * a) : ℬ) ≤ φ ((‖star a * a‖ : ℝ) • z) :=
+    OrderHomClass.mono φ.toCompletelyPositiveMap hconj
+  have hφsmul : (φ ((‖star a * a‖ : ℝ) • z) : ℬ) = 0 := by
+    have hc : ((‖star a * a‖ : ℝ) • z) = ((‖star a * a‖ : ℂ)) • z :=
+      (Complex.coe_smul _ _).symm
+    have hs : (φ (((‖star a * a‖ : ℂ)) • z) : ℬ)
+        = ((‖star a * a‖ : ℂ)) • φ z :=
+      map_smul φ.toCompletelyPositiveMap _ _
+    rw [hc, hs, hφz, smul_zero]
+  have hlow : (0 : ℬ) ≤ φ (star a * z * a) := by
+    have h0 : (0 : 𝒜) ≤ star a * z * a := by
+      rw [← h1]
+      exact star_left_conjugate_nonneg hcnn z
+    have hmono : (φ (0 : 𝒜) : ℬ) ≤ φ (star a * z * a) :=
+      OrderHomClass.mono φ.toCompletelyPositiveMap h0
+    have hφ0 : (φ (0 : 𝒜) : ℬ) = 0 :=
+      map_zero φ.toCompletelyPositiveMap.toLinearMap
+    rwa [hφ0] at hmono
+  exact le_antisymm (by rwa [hφsmul] at hup) hlow
 
-Both halves run through the carrier form above.  `⇒`: a central projection
-`z` with `φ(z) = 0` satisfies `a* z a = z (a* a) z ≤ ‖a*a‖ z`, so
-`φ(a* z a) = 0` and `ϱ(z) = 0 = ϱ(0)`.  `⇐`: `⌈ϱ⌉` is a *central*
-projection by **69IV** `carrier_miu` and `ϱ(⌈ϱ⌉^⊥) = 0`, so the carrier
-form (at `a = 1`) gives `φ(⌈ϱ⌉^⊥) = 0`, the hypothesis gives `⌈ϱ⌉ = 1`,
-and **63II**.4 `carrier_basic_4` turns that into injectivity.  (The thesis
-instead reads both off the identity `⌈ϱ⌉ = ⌈⌈φ⌉⌉`.)
+/-- **156II** (`paschke-injective`, dils.tex:3875, Theorem), the equation
+itself: `⌈ϱ⌉ = ⌈⌈φ⌉⌉` (dils.tex:3886), the carrier of the Paschke
+representation is the central carrier of `φ` (**69I** `cceilMap`, the
+`cceil` of the carrier).
+
+Both halves run through the thesis's own carrier form
+`paschke_injective_carrier` (dils.tex:3900–3903, 3917–3919):
+`⌈⌈φ⌉⌉ ≤ ⌈ϱ⌉` because `ϱ(⌈ϱ⌉^⊥) = 0` gives `φ(⌈ϱ⌉^⊥) = 0` (the carrier form
+at `a = 1`) while `⌈ϱ⌉` is *central* by **69IV** `carrier_miu`, so the
+leastness of `⌈⌈φ⌉⌉` among central effects annihilating `φ`
+(**69I** `cceilMap_least`) applies; and `⌈ϱ⌉ ≤ ⌈⌈φ⌉⌉` because `⌈⌈φ⌉⌉^⊥` is a
+central projection with `φ(⌈⌈φ⌉⌉^⊥) = 0`, hence `φ(a*⌈⌈φ⌉⌉^⊥a) = 0` for all
+`a` (`ncp_conj_central_eq_zero`, the central case of the thesis's
+dils.tex:3905–3912), hence `ϱ(⌈⌈φ⌉⌉^⊥) = 0` by the carrier form, and `⌈ϱ⌉`
+is the least projection with that property. -/
+theorem paschke_carrier_eq_cceil [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
+    (φ : NCPMap 𝒜 ℬ) (D : PaschkeTriple 𝒜 ℬ) (hD : IsPaschkeDilationOf D ⇑φ) :
+    letI := D.vn
+    carrier (nmiuP D.ρ) D.ρ.preservesDirSups'
+      = cceilMap (ncpPositive φ) φ.preservesDirSups' := by
+  letI := D.vn
+  set g : 𝒜 →ₚ[ℂ] D.P := nmiuP D.ρ with hgdef
+  have hgnorm : PreservesDirSups ⇑g := D.ρ.preservesDirSups'
+  set f : 𝒜 →ₚ[ℂ] ℬ := ncpPositive φ with hfdef
+  have hfnorm : PreservesDirSups ⇑f := φ.preservesDirSups'
+  have hcarr := carrier_spec g hgnorm
+  have hccen : IsCentral 𝒜 (carrier g hgnorm) :=
+    (carrier_miu D.ρ g hgnorm (fun _ => rfl)).1
+  -- `⌈⌈φ⌉⌉ ≤ ⌈ϱ⌉`, since `φ(⌈ϱ⌉^⊥) = 0` and `⌈ϱ⌉` is a central effect
+  have hφ0 : (f ((1 : 𝒜) - carrier g hgnorm) : ℬ) = 0 := by
+    have h := (paschke_injective_carrier φ D hD _ hcarr.1.one_sub).mp hcarr.2.1 1
+    rw [star_one, one_mul, mul_one] at h
+    exact h
+  have hle1 : cceilMap f hfnorm ≤ carrier g hgnorm := by
+    have hcl := cceilMap_least f hfnorm (carrier g hgnorm)
+      ⟨hcarr.1.nonneg, hcarr.1.le_one⟩ hccen
+    exact hcl.2.mp (hcl.1.mp hφ0)
+  -- `⌈ϱ⌉ ≤ ⌈⌈φ⌉⌉`: `⌈⌈φ⌉⌉^⊥` is a central projection killed by `φ`
+  have hcc : IsStarProjection (cceilMap f hfnorm) ∧ IsCentral 𝒜 (cceilMap f hfnorm) := by
+    have := (cceil_isLeast (carrier f hfnorm)).1
+    exact ⟨this.1, this.2.1⟩
+  have hccle : carrier f hfnorm ≤ cceilMap f hfnorm := by
+    have hcl := cceilMap_least f hfnorm (cceilMap f hfnorm)
+      ⟨hcc.1.nonneg, hcc.1.le_one⟩ hcc.2
+    exact hcl.2.mpr le_rfl
+  have hfz : (φ ((1 : 𝒜) - cceilMap f hfnorm) : ℬ) = 0 := by
+    have hcl := cceilMap_least f hfnorm (cceilMap f hfnorm)
+      ⟨hcc.1.nonneg, hcc.1.le_one⟩ hcc.2
+    exact hcl.1.mpr hccle
+  have hzc : IsCentral 𝒜 ((1 : 𝒜) - cceilMap f hfnorm) := fun b => by
+    rw [sub_mul, mul_sub, one_mul, mul_one, hcc.2 b]
+  have hρz : (D.ρ ((1 : 𝒜) - cceilMap f hfnorm) : D.P) = 0 :=
+    (paschke_injective_carrier φ D hD _ hcc.1.one_sub).mpr
+      (fun a => ncp_conj_central_eq_zero φ hcc.1.one_sub hzc hfz a)
+  exact le_antisymm (hcarr.2.2 _ hcc.1 hρz) hle1
+
+/-- **156II** (`paschke-injective`, dils.tex:3875, Theorem), the "thus"
+(dils.tex:3888): the Paschke representation `ϱ` is injective if and only if
+`φ` maps no non-zero central projection to zero (`⌈⌈φ⌉⌉ = 1`).
+
+Both halves are read off the thesis's identity `⌈ϱ⌉ = ⌈⌈φ⌉⌉`
+(`paschke_carrier_eq_cceil`), exactly as the thesis does: injectivity of `ϱ`
+is `⌈ϱ⌉ = 1` by **63II**.4 `carrier_basic_4`, and `⌈⌈φ⌉⌉ = 1` is the
+kill-no-central-projection condition by the leastness of `⌈⌈φ⌉⌉` among
+central effects annihilating `φ` (**69I** `cceilMap_least`): if `φ(z) = 0`
+for a central projection `z` then `⌈⌈φ⌉⌉ ≤ z^⊥`, and conversely `z = ⌈⌈φ⌉⌉^⊥`
+is itself a central projection with `φ(z) = 0`.
 
 See the warning on `paschke_injective_carrier` about `[VonNeumannAlgebra ℬ]`. -/
 theorem paschke_injective [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
@@ -3425,60 +3553,39 @@ theorem paschke_injective [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
     Function.Injective ⇑D.ρ ↔
       ∀ z : 𝒜, IsStarProjection z → IsCentral 𝒜 z → φ z = 0 → z = 0 := by
   letI := D.vn
+  set g : 𝒜 →ₚ[ℂ] D.P := nmiuP D.ρ with hgdef
+  have hgnorm : PreservesDirSups ⇑g := D.ρ.preservesDirSups'
+  set f : 𝒜 →ₚ[ℂ] ℬ := ncpPositive φ with hfdef
+  have hfnorm : PreservesDirSups ⇑f := φ.preservesDirSups'
+  -- the identity of **156II**
+  have hkey : carrier g hgnorm = cceilMap f hfnorm := paschke_carrier_eq_cceil φ D hD
+  -- `ϱ` injective iff `⌈ϱ⌉ = 1`, **63II**.4
+  have hinj : carrier g hgnorm = 1 ↔ Function.Injective ⇑D.ρ :=
+    carrier_basic_4 g hgnorm (fun a b => map_mul D.ρ.toStarAlgHom a b)
+  have hcc : IsStarProjection (cceilMap f hfnorm) ∧ IsCentral 𝒜 (cceilMap f hfnorm) := by
+    have := (cceil_isLeast (carrier f hfnorm)).1
+    exact ⟨this.1, this.2.1⟩
+  rw [← hinj, hkey]
   constructor
-  · intro hinj z hz hzc hφz
-    have hall : ∀ a : 𝒜, φ (star a * z * a) = 0 := by
-      intro a
-      have hcnn : (0 : 𝒜) ≤ star a * a := star_mul_self_nonneg a
-      have hzs : star z = z := hz.isSelfAdjoint.star_eq
-      have hconj := star_left_conjugate_le_conjugate (le_norm_smul_one hcnn) z
-      have h1 : star z * (star a * a) * z = star a * z * a := by
-        calc star z * (star a * a) * z = z * (star a * a) * z := by rw [hzs]
-          _ = star a * a * z * z := by rw [hzc (star a * a)]
-          _ = star a * a * z := by rw [mul_assoc, hz.isIdempotentElem.eq]
-          _ = star a * (a * z) := by rw [mul_assoc]
-          _ = star a * z * a := by rw [← hzc a, mul_assoc]
-      have h2 : star z * ((‖star a * a‖ : ℝ) • (1 : 𝒜)) * z
-          = (‖star a * a‖ : ℝ) • z := by
-        rw [hzs, mul_smul_comm, smul_mul_assoc, mul_one, hz.isIdempotentElem.eq]
-      rw [h1, h2] at hconj
-      have hup : (φ (star a * z * a) : ℬ) ≤ φ ((‖star a * a‖ : ℝ) • z) :=
-        OrderHomClass.mono φ.toCompletelyPositiveMap hconj
-      have hφsmul : (φ ((‖star a * a‖ : ℝ) • z) : ℬ) = 0 := by
-        have hc : ((‖star a * a‖ : ℝ) • z) = ((‖star a * a‖ : ℂ)) • z :=
-          (Complex.coe_smul _ _).symm
-        have hs : (φ (((‖star a * a‖ : ℂ)) • z) : ℬ)
-            = ((‖star a * a‖ : ℂ)) • φ z :=
-          map_smul φ.toCompletelyPositiveMap _ _
-        rw [hc, hs, hφz, smul_zero]
-      have hlow : (0 : ℬ) ≤ φ (star a * z * a) := by
-        have h0 : (0 : 𝒜) ≤ star a * z * a := by
-          rw [← h1]
-          exact star_left_conjugate_nonneg hcnn z
-        have hmono : (φ (0 : 𝒜) : ℬ) ≤ φ (star a * z * a) :=
-          OrderHomClass.mono φ.toCompletelyPositiveMap h0
-        have hφ0 : (φ (0 : 𝒜) : ℬ) = 0 :=
-          map_zero φ.toCompletelyPositiveMap.toLinearMap
-        rwa [hφ0] at hmono
-      exact le_antisymm (by rwa [hφsmul] at hup) hlow
-    have hρ0 : (D.ρ (0 : 𝒜) : D.P) = 0 := map_zero D.ρ.toStarAlgHom
-    refine hinj ?_
-    rw [(paschke_injective_carrier φ D hD z hz).mpr hall, hρ0]
+  · intro h1 z hz hzc hφz
+    have hcl := cceilMap_least f hfnorm (1 - z) (effect_orthosupplement z ⟨hz.nonneg, hz.le_one⟩)
+      (fun b => by rw [sub_mul, mul_sub, one_mul, mul_one, hzc b])
+    have hfz : (f ((1 : 𝒜) - (1 - z)) : ℬ) = 0 := by rw [sub_sub_cancel]; exact hφz
+    have hle : cceilMap f hfnorm ≤ 1 - z := hcl.2.mp (hcl.1.mp hfz)
+    rw [h1] at hle
+    exact le_antisymm (by simpa using le_sub_iff_add_le.mp hle) hz.nonneg
   · intro H
-    set g : 𝒜 →ₚ[ℂ] D.P := nmiuP D.ρ with hgdef
-    have hgnorm : PreservesDirSups ⇑g := D.ρ.preservesDirSups'
-    have hcarr := carrier_spec g hgnorm
-    have hccen : IsCentral 𝒜 (carrier g hgnorm) :=
-      (carrier_miu D.ρ g hgnorm (fun _ => rfl)).1
-    have hz0 : (D.ρ (1 - carrier g hgnorm) : D.P) = 0 := hcarr.2.1
-    have hφ : φ ((1 : 𝒜) - carrier g hgnorm) = 0 := by
-      have := (paschke_injective_carrier φ D hD _ hcarr.1.one_sub).mp hz0 1
-      simpa using this
-    have hone : (1 : 𝒜) - carrier g hgnorm = 0 :=
-      H _ hcarr.1.one_sub
-        (fun b => by rw [sub_mul, mul_sub, one_mul, mul_one, hccen b]) hφ
-    exact (carrier_basic_4 g hgnorm
-      (fun a b => map_mul D.ρ.toStarAlgHom a b)).mp (sub_eq_zero.mp hone).symm
+    have hccle : carrier f hfnorm ≤ cceilMap f hfnorm := by
+      have hcl := cceilMap_least f hfnorm (cceilMap f hfnorm)
+        ⟨hcc.1.nonneg, hcc.1.le_one⟩ hcc.2
+      exact hcl.2.mpr le_rfl
+    have hfz : (φ ((1 : 𝒜) - cceilMap f hfnorm) : ℬ) = 0 := by
+      have hcl := cceilMap_least f hfnorm (cceilMap f hfnorm)
+        ⟨hcc.1.nonneg, hcc.1.le_one⟩ hcc.2
+      exact hcl.1.mpr hccle
+    have hzero : (1 : 𝒜) - cceilMap f hfnorm = 0 :=
+      H _ hcc.1.one_sub (fun b => by rw [sub_mul, mul_sub, one_mul, mul_one, hcc.2 b]) hfz
+    exact (sub_eq_zero.mp hzero).symm
 
 end Injective
 

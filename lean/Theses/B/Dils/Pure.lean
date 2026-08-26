@@ -4488,6 +4488,54 @@ private noncomputable def ncpSMul (r : ℝ) (hr : 0 ≤ r) (f : NCPMap A B) : NC
 @[simp] private theorem ncpSMul_apply (r : ℝ) (hr : 0 ≤ r) (f : NCPMap A B) (a : A) :
     ncpSMul r hr f a = (r : ℂ) • f a := rfl
 
+/-- **172III**'s "Using `cstar-positive` and some easy algebra, we can find
+`0 < μ, λ` such that `¼ ≤ μa + λ ≤ ¾`" (dils.tex:6492), for self-adjoint `a`.
+`cstar-positive`.2 (cstar.tex:1209) is `-‖a‖ ≤ a ≤ ‖a‖`, i.e. Mathlib's
+`norm_le_iff_neg_algebraMap_le`; scaling by `μ = (4(‖a‖+1))⁻¹` puts `μa` in
+`[-¼, ¼]` and `λ = ½` shifts it into `[¼, ¾]`.
+
+Deliberately stated as an **existential**: the proof of 172III below uses
+only `0 < μ`, `0 < λ` and the two bounds, never the values, so that the
+upper bound `λ < 1` has to be read off `ptp = λp` as the thesis reads it. -/
+private theorem exists_mu_lambda {P : Type*} [CStarAlgebra P] [PartialOrder P]
+    [StarOrderedRing P] {a : P} (hsa : IsSelfAdjoint a) :
+    ∃ μ l : ℝ, 0 < μ ∧ 0 < l ∧
+      ((1/4 : ℝ) : ℂ) • (1 : P) ≤ ((μ : ℝ) : ℂ) • a + ((l : ℝ) : ℂ) • (1 : P) ∧
+      ((μ : ℝ) : ℂ) • a + ((l : ℝ) : ℂ) • (1 : P) ≤ ((3/4 : ℝ) : ℂ) • (1 : P) := by
+  have hden : (0 : ℝ) < 4 * (‖a‖ + 1) := by positivity
+  set μ : ℝ := (4 * (‖a‖ + 1))⁻¹ with hμdef
+  have hμ0 : 0 < μ := by rw [hμdef]; positivity
+  have hsa' : IsSelfAdjoint (((μ : ℝ) : ℂ) • a) := by
+    refine IsSelfAdjoint.smul ?_ hsa
+    simp [IsSelfAdjoint]
+  have hna' : ‖((μ : ℝ) : ℂ) • a‖ ≤ 1 / 4 := by
+    rw [norm_smul]
+    simp only [Complex.norm_real, Real.norm_eq_abs, abs_of_pos hμ0]
+    rw [hμdef]
+    rw [inv_mul_eq_div, div_le_div_iff₀ hden (by norm_num : (0:ℝ) < 4)]
+    nlinarith [norm_nonneg a]
+  have hb := (norm_le_iff_neg_algebraMap_le hsa' (by norm_num : (0:ℝ) ≤ 1/4)).mp hna'
+  have halg : ∀ r : ℝ, algebraMap ℂ P ((r : ℝ) : ℂ) = ((r : ℝ) : ℂ) • (1 : P) :=
+    fun r => Algebra.algebraMap_eq_smul_one _
+  rw [halg] at hb
+  obtain ⟨hb1, hb2⟩ := hb
+  have hneg : -((((1/4 : ℝ)) : ℂ) • (1 : P)) = (((-(1/4) : ℝ)) : ℂ) • (1 : P) := by
+    push_cast; rw [neg_smul]
+  rw [hneg] at hb1
+  refine ⟨μ, 1/2, hμ0, by norm_num, ?_, ?_⟩
+  · have h4 : ((((-(1/4) : ℝ)) : ℂ) • (1 : P)) + ((((1/2 : ℝ)) : ℂ) • 1)
+        = ((((1/4 : ℝ)) : ℂ) • (1 : P)) := by
+      rw [← add_smul]; push_cast; ring_nf
+    calc (((1/4 : ℝ) : ℂ) • (1 : P))
+        = ((((-(1/4) : ℝ)) : ℂ) • (1 : P)) + ((((1/2 : ℝ)) : ℂ) • 1) := h4.symm
+      _ ≤ ((μ : ℝ) : ℂ) • a + ((((1/2 : ℝ)) : ℂ) • 1) := add_le_add hb1 le_rfl
+  · have h4 : ((((1/4 : ℝ)) : ℂ) • (1 : P)) + ((((1/2 : ℝ)) : ℂ) • 1)
+        = ((((3/4 : ℝ)) : ℂ) • (1 : P)) := by
+      rw [← add_smul]; push_cast; ring_nf
+    calc ((μ : ℝ) : ℂ) • a + ((((1/2 : ℝ)) : ℂ) • 1)
+        ≤ ((((1/4 : ℝ)) : ℂ) • (1 : P)) + ((((1/2 : ℝ)) : ℂ) • 1) := add_le_add hb2 le_rfl
+      _ = ((((3/4 : ℝ)) : ℂ) • (1 : P)) := h4
+
 /-- **172III** (`ncp-extreme-paschke`, dils.tex:6426, Theorem): for an
 ncp-map `φ` with Paschke dilation `(𝒫, ϱ, h)` the following are
 equivalent: (1) `h` is injective on the commutant `ϱ(A)′`; (2) `h` is
@@ -4497,19 +4545,26 @@ injective on `[0,1]_{ϱ(A)′}`; (3) `φ` is ncp-extreme.
 `λψ ≤_ncp φ`, so `λψ = φ_t` for some `t ∈ [0,1]_{ϱ(A)′}` by **157IV**.3, and
 `h(t) = φ_t(1) = λφ(1) = h(λ1)` forces `t = λ1`.
 
-**3 ⇒ 1 diverges from the thesis, which routes it through purity of `h`**
-(**170II**.2, itself resting on 169IV/169X and hence on proc.tex) to split
-`h = c ∘ h_p` and read `0 < λ < 1` off `ptp = λp`.  None of that is needed:
-`λ` is ours to choose.  For self-adjoint `a` in the commutant with `h(a) = 0`
-put `t = μa + ½` with `μ = (4(‖a‖+1))⁻¹`, so that `¼ ≤ t ≤ ¾`; then
-`φ_t(1) = μh(a) + ½h(1) = ½φ(1)` *directly*, `2φ_t` and `2φ_{1-t}` are
-ncp-maps agreeing with `φ` at `1`, and ncp-extremity gives `φ_t = φ_{½1}`,
-whence `t = ½1` by the injectivity of `t ↦ φ_t` (**157IV**.2) and `a = 0`.
+**3 ⇒ 1 is the thesis's own argument** (dils.tex:6475-6510), step for step.
+For self-adjoint `a` in the commutant with `h(a) = 0`: by **170II**.2
+`dils_examples_pure_2` the map `h` is pure, so `h = c ∘ k` with `k` a corner
+(the thesis's standard corner `h_p`, `p = ⌈h⌉`) and `c` a filter; filters are
+injective (**169XII** `dils_filters_injective`), so `k(a) = 0` — the thesis's
+`pap = 0`.  `cstar-positive`.2 (cstar.tex:1209, `-‖x‖ ≤ x ≤ ‖x‖`) supplies
+`0 < μ, λ` with `¼ ≤ t ≤ ¾` for `t = μa + λ` (`exists_mu_lambda`; the values
+are *not* used below, only the existential, exactly as in the thesis).
+Applying `k` gives `k(t) = λ k(1)` — the thesis's `ptp = λp` — and hence
+`¼ k(1) ≤ λ k(1) ≤ ¾ k(1)`, off which `0 < λ < 1` is read: if `λ ≥ 1` then
+`k(1) = 0`, which is the thesis's degenerate case `p = 0`.  There the thesis
+says "`φ = 0` hence `𝒫 = {0}`"; that minimality is available here as the
+injectivity of `t ↦ φ_t` (**157IV**.2), which turns `φ_0 = φ_1` into
+`0 = 1` in `𝒫`, so `a = 0`.  In the non-trivial case `ψ₁ = λ⁻¹φ_t` and
+`ψ₂ = (1-λ)⁻¹φ_{1-t}` are ncp-maps with `ψ₁(1) = ψ₂(1) = φ(1)` and
+`λψ₁ + (1-λ)ψ₂ = φ`, so ncp-extremity gives `φ_t = λφ = φ_{λ1}`, whence
+`t = λ1` by **157IV**.2 and `μa = 0`, i.e. `a = 0`.
 The general element is handled by its real and imaginary parts, which are
-again in the commutant and again killed by `h`.
-
-So **172III does not depend on 170II.2** — the survey's row saying it does
-was reading the thesis's proof, not the statement. -/
+again in the commutant and again killed by `h`, as the thesis does
+(dils.tex:6478). -/
 theorem ncp_extreme_paschke [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     (φ : NCPMap A B) (D : PaschkeTriple A B)
     (hD : IsPaschkeDilationOf D ⇑φ) :
@@ -4617,52 +4672,54 @@ theorem ncp_extreme_paschke [VonNeumannAlgebra A] [VonNeumannAlgebra B]
           star_star]
       rw [h3] at h2
       exact h2.symm
+    -- **170II**.2 (dils.tex:6484): `h` is pure, so it splits as `h = c ∘ k`
+    -- with `k` a corner (the thesis's standard corner `h_p`, `p = ⌈h⌉`) and
+    -- `c` a filter.
+    obtain ⟨Cp, _, _, _, k, c, -, hcfilter, hsplit⟩ := dils_examples_pure_2 φ D hD
+    -- **169XII** (dils.tex:6489): filters are injective.
+    have hcinj : Function.Injective ⇑c := dils_filters_injective c hcfilter
+    have hc0 : (c (0 : Cp) : B) = 0 := map_zero c.toCompletelyPositiveMap
+    have hcsmul : ∀ (z : ℂ) (x : Cp), (c (z • x) : B) = z • c x := fun z x =>
+      map_smul c.toCompletelyPositiveMap.toLinearMap z x
+    have hkadd : ∀ x y : D.P, (k (x + y) : Cp) = k x + k y := fun x y =>
+      map_add k.toCompletelyPositiveMap.toLinearMap x y
+    have hksmul : ∀ (z : ℂ) (x : D.P), (k (z • x) : Cp) = z • k x := fun z x =>
+      map_smul k.toCompletelyPositiveMap.toLinearMap z x
+    have hkmono : ∀ x y : D.P, x ≤ y → (k x : Cp) ≤ k y := fun _ _ hxy =>
+      (ncpPos k).monotone hxy
+    have hk1 : (0 : Cp) ≤ k 1 := by
+      have h := hkmono 0 1 zero_le_one
+      rwa [show (k (0 : D.P) : Cp) = 0 from map_zero k.toCompletelyPositiveMap] at h
     -- the self-adjoint core
     have hcore : ∀ a : D.P, a ∈ commutant D.P (Set.range ⇑D.ρ) → IsSelfAdjoint a →
         (D.h a : B) = 0 → a = 0 := by
       intro a ha hsa h0
-      have hden : (0 : ℝ) < 4 * (‖a‖ + 1) := by positivity
-      set μ : ℝ := (4 * (‖a‖ + 1))⁻¹ with hμdef
-      have hμ0 : 0 < μ := by rw [hμdef]; positivity
+      -- `c` is injective and `0 = h(a) = c(k a)`, so `k a = 0` (`pap = 0`)
+      have hka : (k a : Cp) = 0 := by
+        refine hcinj ?_
+        show (c (k a) : B) = c 0
+        rw [← hsplit a, h0, hc0]
+      -- `cstar-positive` and some easy algebra: `¼ ≤ μa + λ ≤ ¾` (dils.tex:6492)
+      obtain ⟨μ, l, hμ0, hl0, hlo, hhi⟩ := exists_mu_lambda hsa
       have hμne : ((μ : ℝ) : ℂ) ≠ 0 := by simpa using hμ0.ne'
-      have hsa' : IsSelfAdjoint (((μ : ℝ) : ℂ) • a) := by
-        refine IsSelfAdjoint.smul ?_ hsa
-        simp [IsSelfAdjoint]
-      have hna' : ‖((μ : ℝ) : ℂ) • a‖ ≤ 1 / 4 := by
-        rw [norm_smul]
-        simp only [Complex.norm_real, Real.norm_eq_abs, abs_of_pos hμ0]
-        rw [hμdef]
-        rw [inv_mul_eq_div, div_le_div_iff₀ hden (by norm_num : (0:ℝ) < 4)]
-        nlinarith [norm_nonneg a]
-      have hb := (norm_le_iff_neg_algebraMap_le hsa' (by norm_num : (0:ℝ) ≤ 1/4)).mp hna'
-      have halg : ∀ r : ℝ, algebraMap ℂ D.P ((r : ℝ) : ℂ) = ((r : ℝ) : ℂ) • (1 : D.P) :=
-        fun r => Algebra.algebraMap_eq_smul_one _
-      rw [halg] at hb
-      obtain ⟨hb1, hb2⟩ := hb
-      set t : D.P := ((μ : ℝ) : ℂ) • a + (((1/2 : ℝ)) : ℂ) • 1 with htdef
-      have hneg : -((((1/4 : ℝ)) : ℂ) • (1 : D.P)) = (((-(1/4) : ℝ)) : ℂ) • (1 : D.P) := by
-        push_cast; rw [neg_smul]
-      rw [hneg] at hb1
-      have ht0 : (0 : D.P) ≤ t := by
-        have h4 : ((((-(1/4) : ℝ)) : ℂ) • (1 : D.P)) + ((((1/2 : ℝ)) : ℂ) • 1)
-            = ((((1/4 : ℝ)) : ℂ) • (1 : D.P)) := by
-          rw [← add_smul]; push_cast; ring_nf
-        have h5 : (0 : D.P) ≤ ((((1/4 : ℝ)) : ℂ) • (1 : D.P)) :=
-          ofReal_smul_nonneg zero_le_one (by norm_num)
-        calc (0 : D.P) ≤ ((((1/4 : ℝ)) : ℂ) • (1 : D.P)) := h5
-          _ = ((((-(1/4) : ℝ)) : ℂ) • (1 : D.P)) + ((((1/2 : ℝ)) : ℂ) • 1) := h4.symm
-          _ ≤ t := by rw [htdef]; exact add_le_add hb1 le_rfl
+      have hcancel : ∀ r : ℝ, r ≠ 0 → ∀ x : B,
+          ((r⁻¹ : ℝ) : ℂ) • (((r : ℝ) : ℂ) • x) = x := by
+        intro r hr x
+        rw [smul_smul, ← Complex.ofReal_mul, inv_mul_cancel₀ hr, Complex.ofReal_one,
+          one_smul]
+      have hcancel' : ∀ r : ℝ, r ≠ 0 → ∀ x : B,
+          ((r : ℝ) : ℂ) • (((r⁻¹ : ℝ) : ℂ) • x) = x := by
+        intro r hr x
+        rw [smul_smul, ← Complex.ofReal_mul, mul_inv_cancel₀ hr, Complex.ofReal_one,
+          one_smul]
+      set t : D.P := ((μ : ℝ) : ℂ) • a + ((l : ℝ) : ℂ) • 1 with htdef
+      have hq0 : (0 : D.P) ≤ ((1/4 : ℝ) : ℂ) • (1 : D.P) :=
+        ofReal_smul_nonneg zero_le_one (by norm_num)
+      have ht0 : (0 : D.P) ≤ t := le_trans hq0 hlo
       have ht1 : t ≤ 1 := by
-        have h4 : ((((1/4 : ℝ)) : ℂ) • (1 : D.P)) + ((((1/2 : ℝ)) : ℂ) • 1)
-            = ((((3/4 : ℝ)) : ℂ) • (1 : D.P)) := by
-          rw [← add_smul]; push_cast; ring_nf
-        have h6 : ((((3/4 : ℝ)) : ℂ) • (1 : D.P)) ≤ 1 := by
-          have := hone_mono (by norm_num : (3/4 : ℝ) ≤ 1)
-          rwa [hsmul_one_one] at this
-        calc t ≤ ((((1/4 : ℝ)) : ℂ) • (1 : D.P)) + ((((1/2 : ℝ)) : ℂ) • 1) := by
-              rw [htdef]; exact add_le_add hb2 le_rfl
-          _ = ((((3/4 : ℝ)) : ℂ) • (1 : D.P)) := h4
-          _ ≤ 1 := h6
+        refine le_trans hhi ?_
+        have h := hone_mono (by norm_num : (3/4 : ℝ) ≤ 1)
+        rwa [hsmul_one_one] at h
       have htc : ∀ b : A, t * D.ρ b = D.ρ b * t := by
         intro b
         have hab := (ha (D.ρ b) ⟨b, rfl⟩).symm
@@ -4671,52 +4728,98 @@ theorem ncp_extreme_paschke [VonNeumannAlgebra A] [VonNeumannAlgebra B]
       have htcm : t ∈ commutant D.P (Set.range ⇑D.ρ) := by
         rintro m ⟨b, rfl⟩
         exact (htc b).symm
-      have hht : (D.h t : B) = (((1/2 : ℝ)) : ℂ) • φ 1 := by
-        rw [htdef, hhadd, hhsmul, hhsmul, h0, smul_zero, zero_add, hh1]
-      obtain ⟨δ₁, hδ₁⟩ := exists_phiT_ncp D t ht0 htc
-      obtain ⟨δ₂, hδ₂⟩ := exists_phiT_ncp D (1 - t) (sub_nonneg.mpr ht1)
-        (fun b => by rw [sub_mul, mul_sub, one_mul, mul_one, htc b])
-      set ψ₁ : NCPMap A B := ncpSMul (2 : ℝ) (by norm_num) δ₁ with hψ₁def
-      set ψ₂ : NCPMap A B := ncpSMul (2 : ℝ) (by norm_num) δ₂ with hψ₂def
-      have hψ₁1 : ψ₁ 1 = φ 1 := by
-        rw [hψ₁def, ncpSMul_apply, hδ₁ 1, hρ1, mul_one, hht]
-        push_cast
-        module
-      have hψ₂1 : ψ₂ 1 = φ 1 := by
-        rw [hψ₂def, ncpSMul_apply, hδ₂ 1, hρ1, mul_one, hhsub, hh1, hht]
-        push_cast
-        module
-      have hsum : ∀ b, φ b
-          = (((1/2 : ℝ)) : ℂ) • ψ₁ b + ((1 - (1/2 : ℝ) : ℝ) : ℂ) • ψ₂ b := by
-        intro b
-        have hkey : (D.h (t * D.ρ b) : B) + D.h ((1 - t) * D.ρ b) = φ b := by
-          rw [← hhadd, show t * D.ρ b + (1 - t) * D.ρ b = D.ρ b by noncomm_ring,
-            hD.1 b]
-        rw [hψ₁def, hψ₂def, ncpSMul_apply, ncpSMul_apply, hδ₁ b, hδ₂ b, ← hkey]
-        push_cast
-        module
-      obtain ⟨hex1, -⟩ :=
-        hext (1/2 : ℝ) (by norm_num) (by norm_num) ψ₁ ψ₂ hψ₁1 hψ₂1 hsum
-      have hs0 : (0 : D.P) ≤ (((1/2 : ℝ)) : ℂ) • (1 : D.P) :=
-        ofReal_smul_nonneg zero_le_one (by norm_num)
-      have hs1 : (((1/2 : ℝ)) : ℂ) • (1 : D.P) ≤ 1 := by
-        have := hone_mono (by norm_num : (1/2 : ℝ) ≤ 1)
-        rwa [hsmul_one_one] at this
-      have hphit : ∀ b, phiT D t b = phiT D ((((1/2 : ℝ)) : ℂ) • (1 : D.P)) b := by
-        intro b
-        have h1 := hex1 b
-        rw [hψ₁def, ncpSMul_apply, hδ₁ b] at h1
-        rw [hphiT_smul_one]
-        show (D.h (t * D.ρ b) : B) = _
-        rw [← h1]
-        push_cast
-        module
-      have hteq := hphiT_inj t _ htcm ht0 ht1 (hcomm_smul_one _) hs0 hs1 hphit
-      rw [htdef] at hteq
-      have hz : ((μ : ℝ) : ℂ) • a = 0 := by
-        have := sub_eq_zero.mpr hteq
-        simpa using this
-      exact (smul_eq_zero.mp hz).resolve_left hμne
+      -- `k t = λ k 1`, the thesis's `ptp = λp` (dils.tex:6497)
+      have hkt : (k t : Cp) = ((l : ℝ) : ℂ) • k 1 := by
+        rw [htdef, hkadd, hksmul, hksmul, hka, smul_zero, zero_add]
+      -- so `λ k 1 ≤ ¾ k 1`, off which `λ < 1` is read
+      have hbnd : ((l : ℝ) : ℂ) • (k 1 : Cp) ≤ ((3/4 : ℝ) : ℂ) • k 1 := by
+        have h := hkmono _ _ hhi
+        rwa [hkt, hksmul] at h
+      have hht : (D.h t : B) = ((l : ℝ) : ℂ) • φ 1 := by
+        rw [hsplit t, hkt, hcsmul, ← hsplit 1, hh1]
+      by_cases hl1 : l < 1
+      · -- the non-trivial case `0 < λ < 1` (dils.tex:6503)
+        have hnl0 : (0 : ℝ) < 1 - l := by linarith
+        obtain ⟨δ₁, hδ₁⟩ := exists_phiT_ncp D t ht0 htc
+        obtain ⟨δ₂, hδ₂⟩ := exists_phiT_ncp D (1 - t) (sub_nonneg.mpr ht1)
+          (fun b => by rw [sub_mul, mul_sub, one_mul, mul_one, htc b])
+        set ψ₁ : NCPMap A B := ncpSMul l⁻¹ (inv_pos.mpr hl0).le δ₁ with hψ₁def
+        set ψ₂ : NCPMap A B := ncpSMul (1 - l)⁻¹ (inv_pos.mpr hnl0).le δ₂ with hψ₂def
+        have hh1t : (D.h (1 - t) : B) = ((1 - l : ℝ) : ℂ) • φ 1 := by
+          rw [hhsub, hh1, hht]
+          push_cast
+          module
+        have hψ₁1 : ψ₁ 1 = φ 1 := by
+          rw [hψ₁def, ncpSMul_apply, hδ₁ 1, hρ1, mul_one, hht]
+          exact hcancel l hl0.ne' (φ 1)
+        have hψ₂1 : ψ₂ 1 = φ 1 := by
+          rw [hψ₂def, ncpSMul_apply, hδ₂ 1, hρ1, mul_one, hh1t]
+          exact hcancel (1 - l) hnl0.ne' (φ 1)
+        have hsum : ∀ b, φ b
+            = ((l : ℝ) : ℂ) • ψ₁ b + ((1 - l : ℝ) : ℂ) • ψ₂ b := by
+          intro b
+          have hkey : (D.h (t * D.ρ b) : B) + D.h ((1 - t) * D.ρ b) = φ b := by
+            rw [← hhadd, show t * D.ρ b + (1 - t) * D.ρ b = D.ρ b by noncomm_ring,
+              hD.1 b]
+          rw [hψ₁def, hψ₂def, ncpSMul_apply, ncpSMul_apply, hδ₁ b, hδ₂ b,
+            hcancel' l hl0.ne' _, hcancel' (1 - l) hnl0.ne' _, hkey]
+        obtain ⟨hex1, -⟩ := hext l hl0 hl1 ψ₁ ψ₂ hψ₁1 hψ₂1 hsum
+        have hs0 : (0 : D.P) ≤ ((l : ℝ) : ℂ) • (1 : D.P) :=
+          ofReal_smul_nonneg zero_le_one hl0.le
+        have hs1 : ((l : ℝ) : ℂ) • (1 : D.P) ≤ 1 := by
+          have h := hone_mono hl1.le
+          rwa [hsmul_one_one] at h
+        have hphit : ∀ b, phiT D t b = phiT D (((l : ℝ) : ℂ) • (1 : D.P)) b := by
+          intro b
+          have h1 := hex1 b
+          rw [hψ₁def, ncpSMul_apply, hδ₁ b] at h1
+          rw [hphiT_smul_one]
+          show (D.h (t * D.ρ b) : B) = ((l : ℝ) : ℂ) • φ b
+          rw [← h1, hcancel' l hl0.ne' _]
+        have hteq := hphiT_inj t _ htcm ht0 ht1 (hcomm_smul_one _) hs0 hs1 hphit
+        rw [htdef] at hteq
+        have hz : ((μ : ℝ) : ℂ) • a = 0 := by
+          have h := sub_eq_zero.mpr hteq
+          simpa using h
+        exact (smul_eq_zero.mp hz).resolve_left hμne
+      · -- `λ ≥ 1` is the thesis's degenerate case `p = 0` (dils.tex:6501)
+        push_neg at hl1
+        have hs : (0 : ℝ) < l - 3/4 := by linarith
+        have hzk : (((l - 3/4 : ℝ)) : ℂ) • (k 1 : Cp) = 0 := by
+          refine le_antisymm ?_ (ofReal_smul_nonneg hk1 hs.le)
+          have hsub : ((l : ℝ) : ℂ) • (k 1 : Cp) - ((3/4 : ℝ) : ℂ) • k 1 ≤ 0 :=
+            sub_nonpos.mpr hbnd
+          have he : (((l - 3/4 : ℝ)) : ℂ) • (k 1 : Cp)
+              = ((l : ℝ) : ℂ) • k 1 - ((3/4 : ℝ) : ℂ) • k 1 := by
+            push_cast; rw [sub_smul]
+          rw [he]
+          exact hsub
+        have hk10 : (k (1 : D.P) : Cp) = 0 :=
+          (smul_eq_zero.mp hzk).resolve_left (Complex.ofReal_ne_zero.mpr hs.ne')
+        -- `p = 0` means `h = 0`, hence `φ = 0`
+        have hh10 : (D.h (1 : D.P) : B) = 0 := by rw [hsplit 1, hk10, hc0]
+        have hhzero : ∀ x : D.P, (D.h x : B) = 0 := by
+          intro x
+          have hcs := ncp_cp_cs D.h x
+          rw [hh10, norm_zero, zero_smul] at hcs
+          exact (CStarRing.star_mul_self_eq_zero_iff _).mp
+            (le_antisymm hcs (star_mul_self_nonneg _))
+        -- and then `𝒫 = {0}`, by the injectivity of `t ↦ φ_t` (**157IV**.2)
+        have hzm : (0 : D.P) ∈ commutant D.P (Set.range ⇑D.ρ) := by
+          rintro m ⟨b, rfl⟩
+          rw [mul_zero, zero_mul]
+        have hom : (1 : D.P) ∈ commutant D.P (Set.range ⇑D.ρ) := by
+          rintro m ⟨b, rfl⟩
+          rw [mul_one, one_mul]
+        have heq01 : ∀ b : A, phiT D 0 b = phiT D 1 b := by
+          intro b
+          show (D.h (0 * D.ρ b) : B) = D.h (1 * D.ρ b)
+          rw [hhzero, hhzero]
+        have h01 : (0 : D.P) = 1 :=
+          hphiT_inj 0 1 hzm le_rfl zero_le_one hom zero_le_one le_rfl heq01
+        calc a = a * 1 := (mul_one a).symm
+          _ = a * 0 := by rw [← h01]
+          _ = 0 := mul_zero a
     -- ### the general case, by taking real and imaginary parts
     intro x hx y hy hxy
     have hw : (x - y) ∈ commutant D.P (Set.range ⇑D.ρ) := by
@@ -4754,23 +4857,24 @@ theorem ncp_extreme_paschke [VonNeumannAlgebra A] [VonNeumannAlgebra B]
 /-- **172VIII** (`nmiu-ncp-extreme`, dils.tex:6512, Corollary): every
 nmiu-map (as an ncp-map) is ncp-extreme.
 
-**No `[VonNeumannAlgebra]` binders**, where the corollary's setting has
-them, and that is the reason the author's own proof is *not* the one below
-(see the comment inside): **172IX** routes through **172III**
-`ncp_extreme_paschke`, which needs both algebras von Neumann — both to have
-a Paschke dilation at all and for the criterion itself.  The direct
-argument below needs neither, so it proves the corollary for arbitrary
-C\*-algebras; adopting the thesis's route would *lose* that. -/
+**The thesis's own proof is `nmiu_ncp_extreme_paschke` below** — 172IX,
+dils.tex:6523: `(ℬ, ϱ, id)` is a Paschke dilation of `ϱ` and `id` is
+injective, so **172III** `ncp_extreme_paschke` applies.  That route needs
+`[VonNeumannAlgebra]` on both algebras (172III does, and a Paschke dilation
+needs it to exist at all), which is the corollary's own setting.
+
+This declaration is the **strictly stronger generalisation**: no
+`[VonNeumannAlgebra]` binders, so it holds for arbitrary C\*-algebras.  It
+is kept, with its direct argument, precisely because the thesis's route
+cannot reach it; the printed route is discharged by
+`nmiu_ncp_extreme_paschke`. -/
 theorem nmiu_ncp_extreme (ϱ : NMIUMap A B) (φ : NCPMap A B)
     (hφ : ∀ a, φ a = ϱ a) :
     NCPExtreme φ := by
-  -- The author's proof (**172IX**) is: `(ℬ, ϱ, id)` is a Paschke dilation of
-  -- `ϱ` and `id` is injective, so **172III** `ncp_extreme_paschke` applies.
-  -- That theorem was still `sorry` when this was written; it has since been
-  -- proved (above), so the divergence is no longer *forced* — but it is now
-  -- deliberate: 172III carries `[VonNeumannAlgebra]` on both algebras, and
-  -- the direct argument below does not need them.  We argue directly, by
-  -- strict convexity of `b ↦ b* b` with Choi's inequality **34XVIII**.1.
+  -- The author's proof (**172IX**) is `nmiu_ncp_extreme_paschke` below; it
+  -- carries `[VonNeumannAlgebra]` on both algebras, which this statement does
+  -- not.  We argue directly, by strict convexity of `b ↦ b* b` with Choi's
+  -- inequality **34XVIII**.1.
   intro l hl0 hl1 φ₁ φ₂ h1 h2 hsum
   -- Kadison–Schwarz for a unital ncp-map (**34XVIII**.1 `choi_1`).
   have kad : ∀ ψ : NCPMap A B, ψ 1 = 1 → ∀ a : A,
@@ -4867,6 +4971,37 @@ theorem nmiu_ncp_extreme (ϱ : NMIUMap A B) (φ : NCPMap A B)
     rw [key a, hNL, ← add_smul] at hs
     rw [hs, hLdef]
     rw [show (l : ℂ) + (1 - (l : ℂ)) = 1 by ring, one_smul]
+
+/-- **172VIII** (`nmiu-ncp-extreme`, dils.tex:6520, Corollary) **in the
+thesis's own setting** — both algebras von Neumann — **by the thesis's own
+proof**, **172IX** (dils.tex:6523): "Easy: `(ℬ, ϱ, id)` is a Paschke dilation
+of `ϱ` and `id` is injective."
+
+Both halves are immediate.  The universal property of `(ℬ, ϱ, id)` holds
+because the mediating map for a competing triple `(𝒫′, ϱ′, h′)` is forced to
+be `h′` itself by `id ∘ σ = h′`, and `h′` does satisfy `h′ ∘ ϱ′ = ϱ`; and
+`id` is injective on every subset.  **172III** `ncp_extreme_paschke`, clause
+1 ⇒ 3, then gives ncp-extremity.
+
+`nmiu_ncp_extreme` above is the same corollary without the
+`[VonNeumannAlgebra]` binders — strictly stronger, and out of reach of this
+route, which is why both are kept.  (Same shape as **157VII**
+`phiT_reflects_nonneg` in `Paschke.lean`.) -/
+theorem nmiu_ncp_extreme_paschke [VonNeumannAlgebra A] [VonNeumannAlgebra B]
+    (ϱ : NMIUMap A B) (φ : NCPMap A B) (hφ : ∀ a, φ a = ϱ a) :
+    NCPExtreme φ := by
+  have hD : IsPaschkeDilationOf
+      (⟨B, ‹VonNeumannAlgebra B›, ϱ, ncpId B⟩ : PaschkeTriple A B) ⇑φ := by
+    refine ⟨fun a => (hφ a).symm, ?_⟩
+    intro D' hD'
+    refine ⟨D'.h, ⟨fun a => ?_, fun c => rfl⟩, ?_⟩
+    · show (D'.h (D'.ρ a) : B) = ϱ a
+      rw [hD' a, hφ a]
+    · rintro σ ⟨-, hσ⟩
+      exact DFunLike.ext _ _ fun c => hσ c
+  refine ((ncp_extreme_paschke φ ⟨B, ‹VonNeumannAlgebra B›, ϱ, ncpId B⟩ hD).out 0 2).mp ?_
+  intro x _ y _ hxy
+  exact hxy
 
 /-- **172X** (dils.tex:6520, Theorem): every pure ncp-map is
 ncp-extreme.
