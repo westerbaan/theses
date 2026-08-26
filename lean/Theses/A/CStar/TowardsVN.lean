@@ -1811,22 +1811,32 @@ theorem sum_ketbras_3 (E : Set H) (hE : IsOrthonormalBasis E)
       ((((ω (1 : H →L[ℂ] H)).re : ℝ)) : ℂ) := Complex.hasSum_ofReal.mpr hR
   simpa only [hre, hre1] using h2
 
-/-- **39VII** (`bh-np-lemma`, cstar.tex:6611, Lemma): for a Hilbert space `H`
-with orthonormal basis `E`, a normal positive functional `ω : B(H) → ℂ`, and
-`A ∈ B(H)`, `ω A = ∑_{e, e' ∈ E} ⟪e, A e'⟫ ω (|e⟩⟨e'|)`.
+/-- **39VII** (`bh-np-lemma`, cstar.tex:6643, Lemma), verbatim: for a Hilbert
+space `H` with orthonormal basis `E`, a normal positive functional
+`ω : B(H) → ℂ`, and `A ∈ B(H)`,
 
-⚠️ **The double sum must be read as the limit of the square partial sums**
-`∑_{e, e' ∈ F}` over finite `F ⊆ E` — which is exactly what the thesis's proof
-establishes — and *not* as an unordered sum over `E × E`, which is what the
-thesis's own convention for `∑_{i ∈ I}` (6II) would dictate and which is
-**false**.  See ERRATA.md (39VII): already for a vector functional
-`ω = ⟪x, (·) x⟫` on `ℓ²` the family `(⟪e, A e'⟫ ω(|e⟩⟨e'|))_{e,e'}` need not be
-absolutely — hence, in `ℂ`, not unconditionally — summable; take `A` block
-diagonal with `N×N` discrete-Fourier blocks (unitary, all entries of modulus
-`N^{-1/2}`) of sizes `N_k = k⁸` and `x` constant `c_k` on the `k`-th block with
-`N_k c_k² = k⁻²`, so that `∑ ‖x‖² < ∞` while
-`∑ |A_{ee'}| |x_e| |x_{e'}| = ∑_k N_k^{3/2} c_k² = ∑_k k² = ∞`.  The square
-limit below is the form 39IX uses. -/
+`ω A = lim_{F ⊆ E finite} ∑_{e, e' ∈ F} ⟪e, A e'⟫ ω (|e⟩⟨e'|)`,
+
+which is the statement below.
+
+The printed Lemma **used to** display the bare double sum `∑_{e, e' ∈ E}`,
+and that reading is false: under the thesis's own convention for `∑_{i ∈ I}`
+(6II) it is the *unordered* sum over `E × E`, and already for a vector
+functional `ω = ⟪x, (·) x⟫` on `ℓ²` the family `(⟪e, A e'⟫ ω(|e⟩⟨e'|))_{e,e'}`
+need not be absolutely — hence, in `ℂ`, not unconditionally — summable: take
+`A` block diagonal with `N×N` discrete-Fourier blocks (unitary, all entries of
+modulus `N^{-1/2}`) of sizes `N_k = k⁸` and `x` constant `c_k` on the `k`-th
+block with `N_k c_k² = k⁻²`, so that `∑ ‖x‖² < ∞` while
+`∑ |A_{ee'}| |x_e| |x_{e'}| = ∑_k N_k^{3/2} c_k² = ∑_k k² = ∞`.  The trap is
+that the squares `F × F` are *cofinal* among the finite subsets of `E × E`,
+and convergence along a cofinal subfamily is not convergence of the net.
+
+**This was erratum `parsec-390.70`, and it has been applied**: since
+2026-08-22 (`29fc8c6`) the source itself prints the limit over the square
+partial sums, so our statement is now the printed one and no divergence
+remains.  It is also exactly what the Lemma's own proof establishes, and the
+form 39IX consumes. (The ERRATA.md row was removed with the fix; do not
+restore it.) -/
 theorem bh_np_lemma (E : Set H) (hE : IsOrthonormalBasis E)
     (ω : NPFunctional (H →L[ℂ] H)) (A : H →L[ℂ] H) :
     Tendsto (fun F : Finset E =>
