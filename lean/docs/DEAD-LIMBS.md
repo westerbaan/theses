@@ -438,21 +438,27 @@ consumer-free, which is correct: they are the thesis statements.
 
 ---
 
-## 10. Stale documentation found in passing
+## 10. Stale documentation found in passing — **all six fixed 2026-08-26** (§12)
 
 * `Commutation.lean:12–16` advertises `CT_iff_vnComm` as a main result; dead and
-  now vacuous.
+  now vacuous. ✔ removed from the header; the declaration now carries an "on
+  the record only" note.
 * `ModularGroup.lean`'s "Main results" advertises `jConj_cpowOp`, `J_modPow`,
-  `jConj_modPow`; all dead.
+  `jConj_modPow`; all dead. ✔ moved into a new "On the record only — nothing
+  consumes these" section of the module docstring.
 * `ModularGroup.lean:560–562` says `TomitaTakesaki` is "downstream of this
-  file"; it is not.
+  file"; it is not. ✔ replaced by the true import-graph statement: siblings,
+  meeting at `TomitaFourier`.
 * `tensorSub_inf`'s docstring claims 125IV consumes it; 125IV consumes the
-  two-sided form.
+  two-sided form. ✔ corrected — on `tensorSub_inf` **and** on
+  `tensorSub_inf_of_intersectionTensorStatement`, which carried the same claim
+  and which this list had missed.
 * `StandardSubspace.lean:637` says `modularPair_data` has "no dependency on
-  `Modular.lean`"; the file imports it.
+  `Modular.lean`"; the file imports it. ✔ corrected.
 * `EqL.rSlice_mem` (`QuantumLambda:6801`) cross-references "the argument of
   `atE_mem`" — inside the 813-line dead block, i.e. the later round reproved the
-  argument rather than reusing it.
+  argument rather than reusing it. ✔ the cross-reference is gone; the docstring
+  now says the argument is self-contained.
 
 ---
 
@@ -470,26 +476,34 @@ consumer-free, which is correct: they are the thesis statements.
    move `opTensor_comp`/`opTensor_adjoint'` there under the unprimed names.
    Four copies of one operator, with two files calling the same map "left" and
    "right", is a live naming hazard, not just clutter.
-3. **Fix the six stale docstrings in §10.** Ten minutes, and they are actively
-   misleading — two of them assert dependency facts that are false.
-4. **Route `modularConj_htmul` and `J_htmul` through `modularConj_apply` /
+3. ~~**Fix the six stale docstrings in §10.** Ten minutes, and they are actively
+   misleading — two of them assert dependency facts that are false.~~
+   **Done 2026-08-26** — seven of them in the end; see §10 and §12.
+4. ~~**Route `modularConj_htmul` and `J_htmul` through `modularConj_apply` /
    `Jequiv_apply`** (§7). The only place the `show …; rfl` style is load-bearing
-   in a way that will break.
+   in a way that will break.~~ **Done 2026-08-26.** Both now go through
+   `modularConj_apply`; `Jequiv_apply` turned out not to be needed, because
+   `modularConj_apply` unfolds all the way to the bare `J` in one step and
+   `Jequiv` never appears in either goal.
 5. **Decide on the atomic-type-I block (§5a).** 813 lines, superseded, and a
    statement-level call the author should make — not a cleanup.
 6. **Leave the packages and the accessors alone**, or delete them wholesale;
    either is fine. They cost nothing and re-deriving them is cheap. Do not spend
    a round on them.
 
-Items 1–4 are mechanical and total maybe a day. Item 5 needs the author. Item 6
-is the 45 accessors plus the `section Package` blocks — the bulk of the raw
-count and none of the cost.
+Items 1–4 are mechanical and total maybe a day; **3 and 4 are done** (§12).
+Items 1 and 2 are not, deliberately: both move declarations between files and
+retire public names, which is the author's call. Item 5 needs the author.
+Item 6 is the 45 accessors plus the `section Package` blocks — the bulk of the
+raw count and none of the cost.
 
 ---
 
-## 12. Changes applied by this audit
+## 12. Changes applied
 
-Two, both statement-preserving. Everything else in this document is left for a
+Four now: two by the audit itself (1 and 2 below), and two by the bookkeeping
+round of 2026-08-26 that applied §11 items 3 and 4 (3 and 4 below). All
+statement-preserving. Everything else in this document is left for a
 later round with the author's eye on it — anything that moves a declaration
 between files, retires a public name, or changes a proof route stays here as
 text.
@@ -542,7 +556,53 @@ Identical to the pre-edit baseline in every case.
 files. A `lake build` will recompile them and their dependents; nothing else is
 needed.
 
-**Considered and not applied.** Deleting `tomita_JM'J`, and every item in §8 and
-§11 — all of them either retire a public name, move a declaration between files,
-or change a route, which is exactly the class this audit was told to describe
-rather than perform.
+**3. The seven stale docstrings of §10 — corrected 2026-08-26.** Comment-only;
+no statement, proof term or `import` changed.
+
+| file | what was false | now |
+|---|---|---|
+| `A/VN/StandardSubspace.lean` | `modularPair_data`'s "no dependency on `Theses/A/VN/Modular.lean`" | says the *statement* names nothing from `Modular.lean` but the file imports it on line 53; also records that it is the unbundled twin of `isModularPair_a_b` and has no consumer |
+| `A/VN/ModularGroup.lean` | "`TomitaTakesaki` … downstream of this file; the two are deliberately independent" | siblings — `TomitaTakesaki` ← `Tomita` ← `StandardSubspace`, this file ← `StandardSubspace` — meeting at `TomitaFourier`, where only `adJ` is used |
+| `A/VN/ModularGroup.lean` | "Main results" listing `jConj_cpowOp`, `J_modPow`, `jConj_modPow` | those three moved to a new "On the record only — nothing consumes these" section naming the whole `jConj` layer |
+| `A/Proc/Commutation.lean` | header advertising `CT_iff_vnComm` as a main result | header clause deleted; the declaration carries an "on the record only" note pointing at §7 |
+| `A/Proc/QuantumLambda.lean` | `tensorSub_inf`: "it is what 125IV `equaliser_lemma` consumes" | says nothing consumes it, and names the two-sided form 125IV does consume |
+| `A/Proc/QuantumLambda.lean` | `tensorSub_inf_of_intersectionTensorStatement`: "i.e. what 125IV `equaliser_lemma` actually needs" — **the same false claim, one declaration earlier, which §10 had missed** | corrected the same way |
+| `A/Proc/QuantumLambda.lean` | `EqL.rSlice_mem` citing "the argument of `atE_mem`", inside the dead `:4730–5542` block | cross-reference removed; the argument is stated as self-contained |
+
+**4. `modularConj_htmul` and `J_htmul` rerouted 2026-08-26** (§11 item 4).
+`ModularTensor.lean:1192` and `CommutationTomita.lean:93` were term-mode proofs
+that typechecked a `J`-shaped term against a `modularConj`-shaped goal (and the
+reverse) purely by definitional unfolding. Both now go through the `@[simp]`
+unfolder `modularConj_apply`:
+
+```lean
+  -- modularConj_htmul
+  simp only [modularConj_apply]
+  exact (tensor_factorisation …).1 ζ ζ'
+
+  -- J_htmul
+  simpa only [modularConj_apply] using modularConj_htmul …
+```
+
+`Jequiv_apply` was not needed after all: `modularConj_apply` rewrites straight
+to the bare `J`, so `Jequiv` never appears in either goal. Statements
+byte-identical.
+
+**Verification of 3 and 4.** Every touched file recompiled with
+`lean -DrelaxedAutoImplicit=false -DmaxSynthPendingDepth=3` against the same
+`LEAN_PATH`, and its output diffed against a pre-edit baseline taken the same
+session:
+
+| file | result |
+|---|---|
+| `A/VN/StandardSubspace.lean` | exit 0, no output — byte-identical to baseline |
+| `A/VN/ModularGroup.lean` | exit 0, no output — byte-identical |
+| `A/VN/ModularTensor.lean` | exit 0, no output — byte-identical |
+| `A/VN/CommutationTomita.lean` | exit 0, no output — byte-identical |
+| `A/Proc/Commutation.lean` | exit 0, no output — byte-identical |
+| `A/Proc/QuantumLambda.lean` | exit 0, 0 errors, 0 `sorry` warnings — its own pre-existing linter noise only, identical to baseline modulo shifted line numbers |
+
+**Considered and not applied.** Deleting `tomita_JM'J`, §11 items 1 and 2, and
+every item in §8 — all of them either retire a public name, move a declaration
+between files, or change a route, which is exactly the class this audit was
+told to describe rather than perform.

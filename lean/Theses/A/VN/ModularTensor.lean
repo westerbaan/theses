@@ -1194,8 +1194,11 @@ theorem modularConj_htmul (ζ : ℋ) (ζ' : 𝒦) :
         (isCyclicVector_vnTensor M N ω ω' hcycM hcycN)
         (isSeparatingVector_vnTensor M N ω ω' hsepM hMbi hsepN hNbi)
         (bicommutant_vnTensor M N) (ζ ⊗ₕ ζ')
-      = modularConj M ω hcycM hsepM hMbi ζ ⊗ₕ modularConj N ω' hcycN hsepN hNbi ζ' :=
-  (tensor_factorisation M N ω ω'
+      = modularConj M ω hcycM hsepM hMbi ζ ⊗ₕ modularConj N ω' hcycN hsepN hNbi ζ' := by
+  -- `tensor_factorisation` is phrased in the bare `J`; go through the `@[simp]` unfolder
+  -- `modularConj_apply` rather than relying on `modularConj` being reducible.
+  simp only [modularConj_apply]
+  exact (tensor_factorisation M N ω ω'
     (isStandard M ω hcycM hsepM hMbi).1 (isStandard M ω hcycM hsepM hMbi).2
     (isStandard N ω' hcycN hsepN hNbi).1 (isStandard N ω' hcycN hsepN hNbi).2
     (isStandard_vnTensor M N ω ω' hcycM hsepM hMbi hcycN hsepN hNbi).1

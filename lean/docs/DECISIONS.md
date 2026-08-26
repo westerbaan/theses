@@ -881,38 +881,56 @@ A3 should be deleted.
   ingredient being that a positive map killing `(0,1)` kills `0 ⊕ ℬ` because
   `b ≤ ‖b‖·1`.
 
-**4.8 — `docs/why-open.csv` as a whole.**  It lists 65 unproved declarations.
-Eleven of them are still unproved; the other 54 are done — `exists_braiding`,
-`exists_tmapM`, all five `vn_smc_*`, all seven `FreeExp`/`HaFreeExp` fields,
-`linf_tensor`, `mn_vna_3`, `ngelfand_vna`, `ngelfand_normal`, the whole 270
-Riesz-ideal chain, `gelfand_naimark`, `dup_vna_is_monoid_4`, and the rest.  Five
-of its eight `awaiting-ruling` rows point at rulings that have already landed:
-the four 104III rows (§4.2) and `div_usc`, which was ruled on 81IX and is
-proved.  The file is ours to fix, not yours to read.
+**4.8 — `docs/why-open.csv` as a whole.  Fixed 2026-08-26.**  It listed 65
+unproved declarations, of which only eleven were still unproved; the other 54
+were done — `exists_braiding`, `exists_tmapM`, all five `vn_smc_*`, all seven
+`FreeExp`/`HaFreeExp` fields, `linf_tensor`, `mn_vna_3`, `ngelfand_vna`,
+`ngelfand_normal`, the whole 270 Riesz-ideal chain, `gelfand_naimark`,
+`dup_vna_is_monoid_4`, and the rest — and five of its eight `awaiting-ruling`
+rows pointed at rulings that had already landed: the four 104III rows (§4.2)
+and `div_usc`, which was ruled on 81IX (and which, incidentally, names no
+declaration in the tree at all — the ultraweak form is `div_uwc`).  The file
+now carries exactly the eleven rows that `docs/status.txt` marks red, each
+naming the item of §1 that would clear it.  Still ours to fix, not yours to
+read.
 
 ---
 
 ## 5. Suggested follow-ups (ours, not the authors')
 
 Listed because the constraints on this document forbade touching those files.
+**Items 1, 2, 3, 4, 6 and 7 were applied on 2026-08-26**; item 5 is a proving
+job and is still open.  The list is kept so the reasoning behind each edit
+stays on the record.
 
-1. **Rewrite `docs/why-open.csv`.**  54 of its 65 rows describe finished work,
-   and five of its eight `awaiting-ruling` rows point at rulings that have
-   landed (§4.8).  As it stands it is the most misleading file in `docs/`.
-2. **Delete `QUESTIONS.md` A3** and move its two informational remarks into
+1. ~~**Rewrite `docs/why-open.csv`.**  54 of its 65 rows describe finished
+   work, and five of its eight `awaiting-ruling` rows point at rulings that
+   have landed (§4.8).  As it stands it is the most misleading file in
+   `docs/`.~~  **Done 2026-08-26**: 65 rows down to the 11 that
+   `docs/status.txt` marks red, each pointing at the §1 item that clears it.
+2. ~~**Delete `QUESTIONS.md` A3** and move its two informational remarks into
    `ERRATA.md` as `OPEN (informational)` rows, which is the class that file
-   already uses (§4.7).  In particular the dangling "see B4 above" must go.
-3. **Reframe B12** to the live question (§1.4) and delete the three-option list
-   the author has already answered.
-4. **Trim B13's session-84 correction paragraph** (§4.3) and A11's cost estimate
-   (§4.6); both describe a tree that no longer exists.
+   already uses (§4.7).  In particular the dangling "see B4 above" must
+   go.~~  **Done 2026-08-26**; the two remarks are now `ERRATA.md` rows under
+   **180V** and **189aII.3**.
+3. ~~**Reframe B12** to the live question (§1.4) and delete the three-option
+   list the author has already answered.~~  **Done 2026-08-26.**
+4. ~~**Trim B13's session-84 correction paragraph** (§4.3) and A11's cost
+   estimate (§4.6); both describe a tree that no longer exists.~~
+   **Done 2026-08-26.**  Note that A11's ⚠ about `dup_vna_is_monoid_4`'s doc
+   comment was itself stale: that doc comment had already been brought into
+   line with wave 3 and is accurate.
 5. **Realign `ess_uniq_pur` to the current `dils.tex`.**  This needs no ruling —
    the source changed under us, so restating is a transcription fix, not a
    strengthening.  It is the one statement in the tree the audit calls *false as
-   ours*.
-6. **Fix a DISP label in D7.**  `QUESTIONS.md` D7 cites "proc.tex **100IX**
+   ours*.  **Still open** (it is a proving job, not a bookkeeping one).
+6. ~~**Fix a DISP label in D7.**  `QUESTIONS.md` D7 cites "proc.tex **100IX**
    `iso`"; `iso` is at proc.tex:878, inside parsec 990 point 90, i.e. **99IX** —
    which is what `Pure.lean`'s own doc comment says.  The audit's standing note
-   applies: a wrong label sends the next reader to the wrong point.
-7. **Record in `QUESTIONS.md` A13** that the convention half was ruled in
-   session 2 (§4.5), so the entry reads as the narrower question it now is.
+   applies: a wrong label sends the next reader to the wrong point.~~
+   **Done 2026-08-26**, in `QUESTIONS.md` and also in `docs/BDils-survey.md`
+   row 170IV.2, which carried the same wrong label and which neither audit had
+   caught.
+7. ~~**Record in `QUESTIONS.md` A13** that the convention half was ruled in
+   session 2 (§4.5), so the entry reads as the narrower question it now
+   is.~~  **Done 2026-08-26.**

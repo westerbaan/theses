@@ -11,8 +11,7 @@ consumes, and which the tree did not have:
 * `vnComm`, the commutant of a von Neumann subalgebra of `B(ℋ)` as a
   bundled `StarSubalgebra`, with `vnComm_vnComm` (88VI in bundled form);
 * `CT`, the statement of the commutation theorem for a pair of von
-  Neumann subalgebras, and `CT_iff_vnComm` — the self-duality
-  `CT(M,N) ↔ CT(M^□,N^□)` obtained by taking commutants of both sides;
+  Neumann subalgebras;
 * the **reduction theorem** `(R_p)^□ = (R^□)_p` for a projection
   `p ∈ R^□`, in the form that never leaves `B(ℋ)`: the commutant of
   `R p` *inside the corner* `p B(ℋ) p` is `R^□ p`.  The proof is
@@ -266,7 +265,15 @@ theorem CT_vnComm {SA : StarSubalgebra ℂ (H →L[ℂ] H)}
       = concreteTensor H K (vnComm (vnComm SA)) (vnComm (vnComm SB))
   rw [← h1, vnComm_vnComm _ hA, vnComm_vnComm _ hB]
 
-/-- `CT(𝒜,ℬ) ↔ CT(𝒜^□,ℬ^□)`. -/
+/-- `CT(𝒜,ℬ) ↔ CT(𝒜^□,ℬ^□)`.
+
+*On the record only.*  Neither this nor its feeder `CT_vnComm` has a consumer
+anywhere in `Theses/`: the reduction runs on `CT_comm` and
+`CT_iff_bicommutant`.  `docs/COMMUTATION-THEOREM.md` once described
+"dualising via `CT_iff_vnComm`" — that was a prose argument, never a
+dependency — and now that `commutation_theorem` is unconditional both sides
+of this iff are theorems.  It was advertised in this file's header as a main
+result until 2026-08-26; see `docs/DEAD-LIMBS.md` §7. -/
 theorem CT_iff_vnComm {SA : StarSubalgebra ℂ (H →L[ℂ] H)}
     {SB : StarSubalgebra ℂ (K →L[ℂ] K)}
     (hA : IsVNSubalgebra (H →L[ℂ] H) SA) (hB : IsVNSubalgebra (K →L[ℂ] K) SB) :

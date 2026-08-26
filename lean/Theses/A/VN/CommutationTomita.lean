@@ -92,8 +92,10 @@ include hcycM hsepM hMbi hcycN hsepN hNbi
 the standard subspace, not on the proofs that it is standard). -/
 theorem J_htmul (ζ : ℋ) (ζ' : 𝒦) :
     J (Ksub (vnTensor M N) (ω ⊗ₕ ω')) (ζ ⊗ₕ ζ')
-      = J (Ksub M ω) ζ ⊗ₕ J (Ksub N ω') ζ' :=
-  modularConj_htmul M N ω ω' hcycM hsepM hMbi hcycN hsepN hNbi ζ ζ'
+      = J (Ksub M ω) ζ ⊗ₕ J (Ksub N ω') ζ' := by
+  -- via the `@[simp]` unfolder rather than by definitional unfolding of `modularConj`
+  simpa only [modularConj_apply] using
+    modularConj_htmul M N ω ω' hcycM hsepM hMbi hcycN hsepN hNbi ζ ζ'
 
 variable (hsM : Ksub M ω ⊓ (Ksub M ω).mulI = ⊥) (hcM : Ksub M ω ⊔ (Ksub M ω).mulI = ⊤)
 variable (hsN : Ksub N ω' ⊓ (Ksub N ω').mulI = ⊥) (hcN : Ksub N ω' ⊔ (Ksub N ω').mulI = ⊤)

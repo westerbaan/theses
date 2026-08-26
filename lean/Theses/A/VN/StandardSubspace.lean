@@ -635,8 +635,14 @@ lemma b_injective (hsep : K ⊓ K.mulI = ⊥) : Function.Injective (b K) := by
   simp only [smul_apply] at h
   exact two_sub_R_injective K hsep (smul_right_injective H (by norm_num : (2⁻¹ : ℝ) ≠ 0) h)
 
-/-- The five properties of a modular pair, in elementary terms and with no dependency on
-`Theses/A/VN/Modular.lean`. -/
+/-- The five properties of a modular pair, spelled out in elementary terms: the *statement*
+names nothing from `Theses/A/VN/Modular.lean`, though this file does import it (line 53), so
+there is no import-graph independence here.
+
+(This is the unbundled twin of `isModularPair_a_b` below — same proof term, same hypotheses —
+and it currently has no consumer; see `docs/DEAD-LIMBS.md` §8.  An earlier version of this
+docstring claimed "no dependency on `Theses/A/VN/Modular.lean`", which the import contradicts.
+Corrected 2026-08-26.) -/
 theorem modularPair_data (hsep : K ⊓ K.mulI = ⊥) (hcyc : K ⊔ K.mulI = ⊤) :
     0 ≤ a K ∧ 0 ≤ b K ∧ Commute (a K) (b K) ∧ Function.Injective (a K) ∧
       Function.Injective (b K) ∧ a K * a K + b K * b K = 1 :=

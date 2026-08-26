@@ -6510,8 +6510,8 @@ def IntersectionTensorStatement : Prop :=
       concreteTensor H K (SA₁ ⊓ SA₂) (SB₁ ⊓ SB₂)
 
 set_option maxHeartbeats 1000000 in
-/-- **The abstract form of 121II**, i.e. what 125IV `equaliser_lemma`
-actually needs: granted the concrete 121II, for von Neumann subalgebras
+/-- **The abstract form of 121II**, one-sided: granted the concrete 121II, for
+von Neumann subalgebras
 `𝒮₁, 𝒮₂ ⊆ 𝒜` and any von Neumann algebra `𝒞`,
 `(𝒮₁ ⊗ 𝒞) ∩ (𝒮₂ ⊗ 𝒞) = (𝒮₁ ∩ 𝒮₂) ⊗ 𝒞` inside the chosen tensor
 product `𝒜 ⊗ 𝒞`.
@@ -6519,7 +6519,14 @@ product `𝒜 ⊗ 𝒞`.
 The proof realises `𝒜` and `𝒞` concretely (111X `ngns_ulift`), transports
 everything along the resulting nmiu-isomorphisms (`exists_vntEquiv`,
 `mem_tensorSub₂_map`) and along the bridge `concreteTensorEquiv`, and
-applies the concrete statement there. -/
+applies the concrete statement there.
+
+⚠ **125IV does not consume this form.**  It needs the *two-sided*
+`EqL.tensorSub₂_inf_of_intersectionTensorStatement` below, because the
+intersection it takes, `(𝒜̃ ⊗ B(ℋ)) ∩ (𝒜 ⊗ 𝒞)`, varies in both factors.
+Its only consumer is `tensorSub_inf` just below, which has none.  (This
+docstring said "i.e. what 125IV `equaliser_lemma` actually needs" until
+2026-08-26; see `docs/DEAD-LIMBS.md` §5d and §10.) -/
 theorem tensorSub_inf_of_intersectionTensorStatement
     (h121 : IntersectionTensorStatement.{u})
     (S₁ S₂ : StarSubalgebra ℂ 𝒜) (hS₁ : IsVNSubalgebra 𝒜 S₁)
@@ -6592,8 +6599,14 @@ theorem intersectionTensorStatement : IntersectionTensorStatement.{u} :=
   `(𝒮₁ ⊗ 𝒞) ∩ (𝒮₂ ⊗ 𝒞) = (𝒮₁ ∩ 𝒮₂) ⊗ 𝒞`
 
 inside the chosen tensor product `𝒜 ⊗ 𝒞`.  This is
-`tensorSub_inf_of_intersectionTensorStatement` with its hypothesis discharged;
-it is what 125IV `equaliser_lemma` consumes. -/
+`tensorSub_inf_of_intersectionTensorStatement` with its hypothesis discharged.
+
+⚠ **Nothing consumes this.**  125IV `equaliser_lemma` goes through the
+*two-sided* `EqL.tensorSub₂_inf_of_intersectionTensorStatement` below, whose
+intersection `(𝒜̃ ⊗ B(ℋ)) ∩ (𝒜 ⊗ 𝒞)` varies in both factors; this
+one-sided form is kept on the record as the unconditional statement of the
+abstract 121II.  (This docstring claimed "it is what 125IV `equaliser_lemma`
+consumes" until 2026-08-26; see `docs/DEAD-LIMBS.md` §5d and §10.) -/
 theorem tensorSub_inf {𝒜 𝒞 : Type u}
     [CStarAlgebra 𝒜] [PartialOrder 𝒜] [StarOrderedRing 𝒜] [VonNeumannAlgebra 𝒜]
     [CStarAlgebra 𝒞] [PartialOrder 𝒞] [StarOrderedRing 𝒞] [VonNeumannAlgebra 𝒞]
@@ -6797,9 +6810,15 @@ theorem rSliceL_continuous (ξ : H) :
       (ultraweak _) (ultraweak _) ⇑(rSliceL 𝒜 ξ) :=
   ((p_uwcont (ncpPositive (rSlice 𝒜 ξ))).out 2 0).mp (rSlice 𝒜 ξ).preservesDirSups'
 
-/-- Every value of `r_ξ` lies in the copy `𝒜 ⊗ 1` of `𝒜`.  (The argument
-of `atE_mem` in `QuantumLambda.lean`: the set of `x` whose image does is an
-ultraweakly closed subspace containing the elementary tensors.) -/
+/-- Every value of `r_ξ` lies in the copy `𝒜 ⊗ 1` of `𝒜`.  The argument is
+self-contained: the set of `x` whose image does is an ultraweakly closed
+subspace containing the elementary tensors.
+
+*(This used to be cited as "the argument of `atE_mem`".  `atE_mem` is inside
+the superseded atomic-type-I block at `:4730–5542`, which nothing outside
+itself reaches — the shared argument was reproved here rather than reused, so
+the cross-reference sent the reader into dead code.  Corrected 2026-08-26; see
+`docs/DEAD-LIMBS.md` §5a and §10.)* -/
 theorem rSlice_mem (ξ : H) (x : VNT 𝒜 (H →L[ℂ] H)) :
     ∃ a : 𝒜, rSlice 𝒜 ξ x = a ⊗ᵥ (1 : H →L[ℂ] H) := by
   let _ : TopologicalSpace (VNT 𝒜 (H →L[ℂ] H)) := ultraweak (VNT 𝒜 (H →L[ℂ] H))

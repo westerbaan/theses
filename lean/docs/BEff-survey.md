@@ -526,7 +526,10 @@ work upstream.
    eight dependants.  See the entry below for what remains.
 
 3. **`vn_is_andthen_eff` (211IV) needs `A/Proc`, which is not on the import
-   path** — a correction to `VNExamples.lean`'s own header, which says "`A/Proc`
+   path** — ⚠ *both halves of this finding have since expired: the import was
+   added in session 88, and 105V `positive_map_uniqueness` became axiom-clean
+   in session 91 when 104VII closed.  See the table row above and
+   `docs/DECISIONS.md` §1.2.* — a correction to `VNExamples.lean`'s own header, which says "`A/Proc`
    … nothing here has been shown to need it".  eff.tex:4859 proves the two
    &-effectus axioms by citing **105V** `positive-map-uniqueness` and **100III**
    `pure-fundamental`, and both live in `Theses/A/Proc/Measurement.lean`.
@@ -534,10 +537,13 @@ work upstream.
    is blocked on an A/Proc item *and* on an import that must first be added.
 
 4. **Three of the four non-`VNExamples` items are literature parks, not
-   targets** (QUESTIONS **A3**); only `exc_dm_effectus_kleisli` is a live
+   targets** (then QUESTIONS **A3**; *A3 was deleted on 2026-08-26 as answered
+   — the only live park left is 179III.2, which is QUESTIONS **B14** /
+   `docs/DECISIONS.md` §1.5*); only `exc_dm_effectus_kleisli` is a live
    target, and it has a complete author solution.
 
-5. **QUESTIONS A3 is stale in two places**: it lists
+5. **QUESTIONS A3 was stale in two places** (*A3 has since been deleted,
+   2026-08-26*): it listed
    `finite_effectMonoid_commutative` and `exists_noncommutative_effectMonoid`
    as parked, but both are **proved** (`EffectAlgebras.lean:2780`, `:2300`;
    line numbers as of session 84).
@@ -555,8 +561,8 @@ work upstream.
 | **proved (session 85)** | `cancellative_iso_convex` (192V.4) — `StatesPredicates.lean` is finished |
 | **reachable, live target** | *(none left outside the gated eight)* |
 | **transport now available** | the eight hypothetical vN examples below: the uniqueness-of-`I` lemma they were gated on is **proved** (session 85, `vn_effObj_iso`); each is now open on its own mathematics alone |
-| **blocked outside B/Eff** | `vn_is_andthen_eff` (A/Proc 105V + missing import) — and **only** that one |
-| **awaiting a ruling / literature park** | `effectModule_unitInterval_representation` (QUESTIONS **A3** *and* **B14** — do not attack before the B14 ruling) — the only one left |
+| **blocked outside B/Eff** | ~~`vn_is_andthen_eff` (A/Proc 105V + missing import)~~ — **no longer blocked outside B/Eff as of session 91/92**: `VNExamples.lean` imports `Theses.A.Proc.Measurement`, and 105V `positive_map_uniqueness` is axiom-clean now that 104VII is proved.  What is left is one hypothesis, a definitional mismatch between eff.tex 206II.4 and proc.tex 103I — `docs/DECISIONS.md` §1.2, QUESTIONS **B15** |
+| **awaiting a ruling / literature park** | `effectModule_unitInterval_representation` (QUESTIONS **B14**, `docs/DECISIONS.md` §1.5 — do not attack before that ruling) — the only one left.  *(The parking half used to be QUESTIONS A3, deleted 2026-08-26.)* |
 | **known false** | none in this directory |
 
 Nothing in `B/Eff` is known false, and nothing is waiting on a thesis-B
@@ -574,8 +580,10 @@ mathematics has to be supplied.
 ### The root: `effectus_vn` (180V) and `effectus_vn_partial` (180V)
 
 *Route.* eff.tex:832 says only "**To see `vNᵒᵖ` is an effectus in total form,
-adapt the proof of `emod-effectus`**" — QUESTIONS **A3** already records that
-there is no proof to transcribe.  `emod_effectus` (191II) *is* proved, in
+adapt the proof of `emod-effectus`**" — there is no proof to transcribe, and
+what "adapt the proof" actually comes to is now recorded as an
+`OPEN (informational)` row under **180V** in `ERRATA.md`.  *(It used to be a
+bullet of QUESTIONS A3, deleted 2026-08-26.)*  `emod_effectus` (191II) *is* proved, in
 `StatesPredicates.lean:1480`, and the bridge it goes through,
 **`effectusTotalForm_of_pres`** (`StatesPredicates.lean:819`), is exactly what
 `effectus_vn` should use: it reduces `EffectusTotalForm D` to the three axioms
@@ -787,8 +795,8 @@ for anyone who does not want to build 180V.*
     `Ortholattice`, which a finite effect monoid is not known to be until this
     theorem is proved.  Anyone re-costing similar items should discount it.
 * **`effectModule_unitInterval_representation` (179III.2, eff.tex:739)** —
-  Gudder–Pulmannová, cited only.  QUESTIONS **A3** for the parking, and
-  **QUESTIONS B14** (new, session 84) for the separate defect that
+  Gudder–Pulmannová, cited only.  **QUESTIONS B14** and `docs/DECISIONS.md`
+  §1.5 for the defect that
   **our statement is weaker than the cited result**: it produces
   `[PartialOrder V] [IsOrderedAddMonoid V]` and `0 ≤ u` where the source needs
   an *ordered real vector space* (positive cone closed under nonnegative

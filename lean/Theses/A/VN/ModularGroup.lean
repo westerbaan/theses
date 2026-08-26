@@ -50,13 +50,24 @@ the dense subspace `ran R` and extends to all of `H` by
   the operator norm, whence `IsPowBase.continuous_opPow_apply`, the strong
   continuity of `s ↦ X^{is}`.
 * `IsPowBase.opPow_commute`: powers of two commuting bases commute.
-* `jConj_cpowOp`: `J X^w J = (J X J)^{\bar w}`, obtained from
-  `StarAlgHom.map_cfc` for the *real* calculus after splitting `X^w` into its
-  real and imaginary parts (`IsPowBase.cpowOp_eq_re_add_im`).
 * `modPow_mem_unitary`, `modPow_add`, `modPow_zero`, `star_modPow`,
-  `norm_modPow_apply`, `continuous_modPow_apply`, `J_modPow`, `jConj_modPow`:
-  `Δ^{it}` is a strongly continuous one-parameter unitary group with
-  `J Δ^{it} = Δ^{it} J`.
+  `norm_modPow_apply`, `continuous_modPow_apply`: `Δ^{it}` is a strongly
+  continuous one-parameter unitary group.
+
+## On the record only — nothing consumes these
+
+The whole `jConj` layer below (`jConjRe`, `jConj`, `jConjHom` and their
+lemmas, ~300 lines) and the two commutation statements built on it,
+`jConj_cpowOp` (`J X^w J = (J X J)^{\bar w}`, from `StarAlgHom.map_cfc` for
+the *real* calculus after splitting `X^w` into real and imaginary parts,
+`IsPowBase.cpowOp_eq_re_add_im`) and `J_modPow` / `jConj_modPow`
+(`J Δ^{it} = Δ^{it} J`), have **no consumer anywhere in `Theses/`**.
+`A/VN/TomitaFourier.lean` defines `modFlow x' t := Δ^{it}(J x' J)Δ^{-it}`
+directly and never performs the rearrangement that would have needed them.
+`jConj` also duplicates `A/VN/TomitaTakesaki.lean`'s live `adJ` verbatim.
+These three were advertised as "main results" until 2026-08-26; they are
+kept as a record of the identity, not as machinery.  See
+`docs/DEAD-LIMBS.md` §5b.
 
 ## Not here
 
@@ -558,8 +569,13 @@ linear, so complex scalars come out conjugated — and it is isometric, hence co
 exactly the input `StarAlgHom.map_cfc` wants, and it turns `RvD Prop. 3.1`, `J R = (2 − R) J`,
 into `J f(R) J = f(2 − R)` for every continuous real `f`.
 
-(`A/VN/TomitaTakesaki.lean` builds the same map under the name `adJ`, for a different purpose and
-downstream of this file; the two are deliberately independent.) -/
+(`A/VN/TomitaTakesaki.lean` builds the same map under the name `adJ`, with the same definition.
+The two files are **siblings**, not one downstream of the other: `TomitaTakesaki` imports
+`Tomita`, which like this file imports only `StandardSubspace`.  They first meet at
+`A/VN/TomitaFourier.lean`, where both are in scope and only `adJ` is used — `jConj` and
+everything built on it below is unconsumed.  See `docs/DEAD-LIMBS.md` §5b and §8, which
+proposes keeping the single copy in `StandardSubspace.lean`.  An earlier version of this note
+said `TomitaTakesaki` was "downstream of this file"; it is not.  Corrected 2026-08-26.) -/
 
 section Conjugation
 

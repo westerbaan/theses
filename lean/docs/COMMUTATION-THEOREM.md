@@ -454,6 +454,9 @@ Two findings that re-cost it downward:
 
 One instance of the theorem is already proved outright: `CT_top_right`
 (`54859e6`), the amplification case `(𝒜 ⊗̄ B(𝒦))□ = 𝒜□ ⊗̄ ℂ1`.
+*(Status report of 2026-08-25, not a dependency: `commutation_theorem` is now
+unconditional and subsumes `CT_top_right`, `CT_top_left` and `CT_top_top`,
+which are consumer-free special cases — `docs/DEAD-LIMBS.md` §5c.)*
 
 **What the actuals say about the estimate.** Four of the eight rows came in at
 or below the low end, one (the reduction's own critical path) at 60% of it, and
@@ -539,7 +542,9 @@ executing it:
   only when `dim eℋ = 1`, and rank-one projections do not increase to `1`; for
   `𝒜 = B(ℋ)` the only cut is `e = 1`, and `B(ℋ)` has no separating vector.
   Dualising via `CT_iff_vnComm` swaps the two examples, so **no orientation of
-  the cut and no choice of Zorn family works**. `exists_separating_corner` does
+  the cut and no choice of Zorn family works**.  (That dualisation is a *prose*
+  argument about the two counterexamples; the Lean `CT_iff_vnComm` was never
+  invoked for it, and has no consumer — `docs/DEAD-LIMBS.md` §7.) `exists_separating_corner` does
   give a separating vector — but for a *non-directed* cut, which is exactly what
   the amplification repairs, since `n` jointly cyclic vectors become one after
   tensoring with `ℂⁿ`.
