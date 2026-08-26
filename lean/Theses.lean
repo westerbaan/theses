@@ -19,6 +19,7 @@ import Theses.A.VN.ModularTensor
 import Theses.A.VN.TomitaTakesaki
 import Theses.A.VN.TomitaStrip
 import Theses.A.VN.TomitaFourier
+import Theses.A.VN.TomitaAnalytic
 import Theses.A.Proc.Measurement
 import Theses.A.Proc.Tensor
 import Theses.A.Proc.QuantumLambda

@@ -355,7 +355,16 @@ axiom-clean in situ.*
 | the reduction's sharp limit (`CT_of_CT_finCyclic`) | — | **383** | `8dd8f97` |
 | `Δ^{it}` — RvD Lemma 3.6 and the modular group | 250–450 + 700–1200 | **1048** | `22767bd` |
 | RvD Lemmas 4.5 and 4.6 | 300–500 + 400–700 | **1138** | `6a0cc8d` |
-| **total so far** | | **≈ 12 300** | |
+| RvD Lemma 4.8 and the Laplace layer | 300–500 | **731** | `0ebe52b` |
+| RvD Lemma 3.6 (analyticity) + Lemma 4.7 | 250–350 (a,b only) | **1179** | `?` |
+| **total so far** | | **≈ 14 200** | |
+
+**`J M J = M'` is proved, unconditionally** (`tomita_JMJ_unconditional`), for a
+von Neumann algebra with a cyclic and separating vector. That is Tomita's
+theorem, the conjugation half — the piece this whole route was built to reach,
+and the one the literature says needs modular theory. It needs no Borel
+functional calculus, no projection-valued measure, and no spectral theorem for
+unbounded operators anywhere in its dependency cone.
 
 Still open, and it is now a short list: **RvD Lemma 4.7**; the **`ℂⁿ`
 amplification transport**, which carries `CT_of_CT_finCyclic` the last step to
