@@ -29,6 +29,7 @@ import Theses.A.Proc.TensorTransport
 import Theses.A.Proc.CommutationReduction
 import Theses.A.Proc.CommutationAmplify
 import Theses.A.Proc.Compression
+import Theses.A.Proc.CommutationCyclic
 import Theses.A.Proc.Duplicators
 import Theses.B.Dils.Stinespring
 import Theses.B.Dils.HilbertModules
