@@ -29949,3 +29949,240 @@ out.  `docs/AProc-survey.md` gains a session banner.  Nothing for ERRATA;
 nothing for QUESTIONS.  The one recorded route that turned out to be
 unnecessary is `proc.tex:5033`'s pullback hint for 125VIIb (§1) — a hint, not
 a claim, so it is not an erratum.
+
+## Session 97 — `A/VN` + `B/Dils`, proof-route pass: **81IX is back on the erratum's own repaired proof, and that closed a dead limb — 81II.5 `division_basic_5` had zero consumers in the entire tree because the Lean proof took a compactness detour**; two more dead limbs found and costed, two recorded reasons found stale (worker on `Theses/A/VN/{Division,Basic}.lean`, `Theses/B/Dils/HilbertModules.lean`, `docs/audit/{avn,bdils}-*.csv`)
+
+Scope: the `route` rows of `docs/audit/avn-*.csv` and `docs/audit/bdils-*.csv`
+— **83** rows, 31 in `A/VN` (Basic 8, Division+NormalFunctionals 6,
+Projections 17) and 52 in `B/Dils`+`B/Eff` (HilbertModules+SelfDualCompletion
+11, Paschke+Stinespring 7, Pure+`B/Eff` 18, SelfDual+Kaplansky 16).  All but
+five already carried a 7th `status` field from sessions 94–95, and those
+five are `B/Eff/EffectAlgebras` rows (174IV, 178III.1/.2/.2/.4) where the
+thesis gives no argument at all — a bare citation to `basmsc`.  So the job
+was the *expiry* check, not the triage.
+
+### 1. The repair: 81IX `div_uwc` / `div_uwc_corner`, route → faithful
+
+The recorded status said, in full:
+
+> the erratum's route is not available.  `parsec-810.90`'s repaired proof
+> reduces the second map to the first through `c∖x = (x*/c*)*` plus
+> ultraweak continuity of the adjoint — but that needs the **first** map
+> ultraweakly continuous, and the tree has it only ultrastrongly
+> (`div_usc_ball`).
+
+The premise is a half-truth.  It is true that no declaration gave the first
+map ultraweakly, and true that ultrastrong continuity does not imply
+ultraweak continuity.  But the *thesis's own argument* for the first map
+(vn.tex:5547) runs verbatim in the ultraweak topology: **81V**.2
+`proto_douglas_2` makes the partial sums `a ↦ ∑_{n<N} a tₙ` converge to
+`a/b` uniformly on `(A)₁b` in each `‖·‖_ω`; Cauchy–Schwarz
+`|ω(x)| ≤ ‖x‖_ω ω(1)^½` — **43I**.1 `norm_apply_le_omegaNorm`, already in
+`A/VN/Basic` — turns that into uniform convergence in each `|ω(·)|`; each
+partial sum is `a ↦ a·d`, ultraweakly continuous by **45IV**
+`mult_uws_cont`; and a uniform limit of continuous functions is continuous.
+Nothing was missing.  The status was written against the *declarations* in
+the tree rather than against the *ingredients*.
+
+Three declarations added, no statement touched:
+
+* `continuous_ultraweak_star` — the adjoint is ultraweakly continuous, the
+  positive half of **43II**.4, which vn.tex:5565 uses in passing (`a ↦ a*`
+  "being so").  Two lines from `continuous_ultraweak_of_forall` and
+  `npFunctional_star`.  Its negative half, `vn_counterexamples_4_star`, is
+  exactly why the *printed ultrastrong* second conjunct cannot be repaired
+  this way, and the file now says so.
+* `div_uwc_ball_of_norm_le b λ` — the first map, ultraweakly, on `(A)_λ b`.
+  The λ is not decoration: 81IX's second half applies the first map on
+  `c(A)₁b ⊆ (A)_‖c‖ b`, and `proto_douglas_2`'s uniform estimate is stated
+  for `a*a ≤ b*b`.  It is applied to `(λ+1)⁻¹·a`, which does lie in
+  `(A)₁b`, and scaled back with `div_smul_left`.
+* `div_uwc_ball` — the `λ = 1` case, i.e. 810.90's first clause as the
+  2026-08-17 ruling states it ("both ultrastrongly and ultraweakly
+  continuous").  That clause had *no declaration at all*: `div_usc_ball`
+  was only its ultrastrong half.
+
+`div_uwc_corner` then becomes vn.tex:5563 verbatim — `c∖x = (x*/c*)*` for
+`x ∈ c(A)₁` by **81II**.5 `division_basic_5`, so `c∖(·)` is ultraweakly
+continuous, the adjoint being so; `(·)/b` maps `c(A)₁b` into `c(A)₁`
+(explicitly, `(cdb)/b = cd⌊b⌉`); compose.  Twenty-five lines where the
+compactness argument took ninety.  `div_uwc` is now
+`⟨div_uwc_ball b, div_uwc_corner b c⟩`, which is also the thesis's *order*:
+the second map reduces to the first, not the first to the second.
+
+**The dead limb this closed.**  Before this session **81II**.5
+`division_basic_5` — "for `c ∈ Ab`: `c* ∈ b*A` and `b*∖c* = (c/b)*`",
+faithfully transcribed — had **zero consumers anywhere in `Theses/`**.  Its
+only use in vn.tex is inside the repaired proof of 81IX, and 81IX's Lean
+proof had gone round it.  It now has a consumer (`Division.lean:3288`).
+This is the fingerprint the brief describes, found by grepping the tex label
+of every unconsumed DISP-carrying declaration in `A/VN` and `B/Dils` against
+`vn.tex`/`dils.tex`/`bsols.tex`.
+
+What the old proof used and no longer does: `vn_ball_compact` (**77III**),
+which keeps two other consumers (`NormalFunctionals`, `TomitaTakesaki`), and
+`ldiv_div_corner`/`ldiv_div_ball`, which keep theirs.  One casualty:
+`ldiv_one` (`1∖a = a`) existed only to read `div_uwc`'s first conjunct off
+`div_uwc_corner` at `c = 1`, which is the *inverted* order; it is now
+unconsumed and is recorded as such in the CSV.  Three lines against a
+revived thesis point.
+
+Axiom-clean in situ (`propext`, `Classical.choice`, `Quot.sound`) for all
+five of `continuous_ultraweak_star`, `div_uwc_ball_of_norm_le`,
+`div_uwc_ball`, `div_uwc_corner`, `div_uwc`, and for `division_basic_5`.
+`Division.lean` compiles with a byte-identical warning multiset and no
+errors; its one importer, `NormalFunctionals.lean`, compiles clean against
+the rebuilt olean.  Statement diff against `HEAD`: 162 declarations before,
+165 after, **none changed, none removed**.
+
+### 2. Two more dead limbs, found and costed but *not* repaired
+
+**140X `paschke_basics_4`** (`B/Dils/Stinespring:3511`).  Zero consumers.
+`\sref{paschke-basics}` occurs exactly twice in either thesis —
+`bsols.tex:1307` and `:1313` — and both are applications of *part 4*, both
+inside the solution to 169XI.1.  Lean's `dils_filter_basics_1`
+(`Pure.lean:2135`) deliberately does not take that route: bsols rescales the
+whole dilation by `λ = ‖φ(1)‖⁻¹`, which forces a `φ(1) ≤ 1` case split and a
+`φ(1) ≠ 0` side condition, while Lean rescales the mediating `h'` alone by
+`λ = (‖φ(1)‖+1)⁻¹` and needs neither.  Restoring bsols's route means
+splitting a 60-line proof in two and reinstating a division — strictly more
+casework for a bookkeeping step that is not the exercise's content.
+Recorded on both the `paschke_basics_4` row and the `dils_filter_basics_1`
+row.  Parts 1–3 of 140X are also unconsumed, but they are unconsumed in the
+*thesis* too — terminal exercise clauses, not a limb.
+
+**148III `ultranormcontstruct`** (`B/Dils/HilbertModules`).  All *six*
+declarations — the three uniform-continuity forms and the three `_unTendsto`
+net forms — have zero consumers, while `dils.tex` cites
+`ultranormcontstruct` seven times.  The cause is a shortcut that is already
+documented and deliberate one level up: 148III's consumer in dils.tex is
+**150IX**, and 150V–150IX are deliberately replaced by
+`UniformSpace.Completion` (the 150VIII `UnCompl` row).  The thesis's other
+citations (dils.tex:2440, 2469, 2487, 4520, 4528, 5165, 5358) land on
+proofs whose Lean forms phrase ultranorm closure through the entourage
+predicate `unClosure` rather than through nets, and therefore use the
+underlying estimates directly — `unSeminorm_add_le` (**142II**) alone has 27
+call sites.  Restoring the citations is a change of *formulation*, not of
+argument.  Recorded; and one stale in-file claim corrected, since the doc of
+`ultranormcontstruct_add_unTendsto` asserted it was "kept because it is the
+form the net arguments of parsec 1490 use", which is false.
+
+A consequence: the 148IV `ultranormscalar` row's status said "Nothing is
+orphaned: `unSeminorm_op_smul_right_le` ... is consumed by
+`ultranormcontstruct_smul`".  That was one level short — the consumer is
+itself orphaned.  Corrected on the row; the row's own verdict stands.
+
+### 3. The second stale premise: 49IV, and the FIXME at parsec 490
+
+The two 49IV rows (`exists_isLUB_matForm`, `mn_vna_1`) said, re-verified as
+recently as 2026-08-25, that "`B^a(X)` has no declaration anywhere in
+`A/CStar`".  **That is false.**  `Theses/A/CStar/Matrices.lean` proves
+**32XIII** `bax_cstar` and its `Bax` section carries the whole
+`CStarAlgebra` structure on `Bax 𝒜 X` — involution the adjoint, C*-identity
+from **32XII**, completeness from `bax_cstar` — together with the spectral
+order; and `A/VN/Basic` imports that file.  The in-file `FIXME` at the head
+of parsec 490 carried the same claim ("has no Mathlib counterpart and is not
+formalized in `Theses/A/CStar`") and has been corrected in place.
+
+The route still cannot be restored, for two reasons that are now stated
+accurately: `Bax` is `private` to `Matrices.lean`, so nothing downstream can
+name it; and **49II** `bah-vn` is *unstated* — neither "`B^a(X)` is a von
+Neumann algebra for self-dual `X`" nor "`M_N(𝒜) ≅ B^a(𝒜^N)`" has a
+declaration anywhere.  Exporting `Bax` and stating 49II are statement
+additions, which this pass forbids.  Comment-only change; `Basic.lean`
+compiles clean and no statement line moved.
+
+### 4. Dependency inversions: none new
+
+A mechanical sweep over all 50 files of `Theses/`: build the map
+(declaration ⟼ its DISP label) from the leading `**NNNRoman**` of each doc
+comment, strip comments from every declaration body, and report every use
+whose target's parsec number exceeds the user's.  147 raw hits in `A/VN` and
+`B/Dils`; every one inspected.  All are one of
+
+* a **definition** carried by a later point but needed earlier (`conjNP`
+  tagged 72III, `unSeminorm`/`mulInner` tagged 146VII/146VIII, `UnCompl`
+  tagged 150VIII, `orthoCompl` tagged 160III, `ptensBInner` tagged 154V) —
+  Lean must define before it uses;
+* a **private helper** whose doc opens with a cross-reference rather than
+  its own number (`ceil_mem_ideal` tagged 59I, `spectrum_abs_le` tagged
+  74IV, `gnsRepOn_injective` tagged 21II);
+* a **within-parsec** step of one construction spread over adjacent points
+  (`dils_selfdual` 149V from 149VII–149XI; `existence_paschke_*` 154III from
+  154V/154VIII; `paschke_correspondence_*` 157IV from 157VI–157VIII — the
+  last of these being session 95's own deliberate repair);
+* or an already-recorded, already-justified order swap: `dils_filter_basics_1`
+  (169XI) from `dils_filters_injective` (169XII), whose doc says so and
+  which is not circular because 169XII's own route is the standard filter
+  and `mult-cancellation`; and `dils_examples_pure_1` (170II) from
+  `paschke_pure` (171VII), the exposition-order inversion already named in
+  the CSV.
+
+No new circularity.  In particular the one alarming-looking hit —
+`projections_norm_dense` (65IV) using `double_commutant` (88VI) — was an
+artefact of comment stripping and disappears under a correct scanner;
+`Projections.lean` cannot even import `NormalFunctionals.lean`.
+
+### 5. Recorded reasons re-verified against the tree and found to hold
+
+* **65IV `projections_norm_dense`** — the pass's standing live dead limb.
+  `abelian_projections_norm_dense` (64II) still has **zero** consumers, and
+  the reason is unchanged: 64II is stated for a *type* carrying
+  `[CommCStarAlgebra]` and `[VonNeumannAlgebra]`, the reduction needs
+  `{a}^□□` bundled as such a type, and the tree's only such bundling
+  (`VNSub`) is in `A/VN/Division.lean`, three files downstream of
+  `Projections.lean`.  New machinery, not a proof change.
+* **65IV, relativised** — 88VI `double_commutant` is still stated only for
+  `StarSubalgebra ℂ (H →L[ℂ] H)`, i.e. for `B(H)`, not for a von Neumann
+  subalgebra of an abstract `A`.  Checked against `A/VN/NormalFunctionals`
+  and the new modular-theory layer; the commutation theorem does not supply
+  it either.
+* **84II `fdcstar`** — 840.40 `suprema-in-fdvna` ("a finite-dimensional
+  C*-algebra is a von Neumann algebra") still has no declaration anywhere;
+  only prose mentions it (`Division.lean:3768`).  Statement gap, not a proof
+  gap.
+* **171II `paschke_corner` / `pcorner_rho_surjective`** — nothing in the
+  tree makes a corner `Ap` of a von Neumann algebra a self-dual Hilbert
+  `pAp`-module, and `A ⊗_{h_p} pAp ≅ Ap` is absent.  Re-verified.
+* **154III `existence_paschke_4`** — the λ-scaling lemma is cited only as
+  `westerbaan2016universal` lemma 9 (dils.tex:905, 3780); it is not a
+  numbered point of either thesis and is not in the tree.
+* **161II, 164II.1** — the `ℓ²((pᵢ))` module structure is still the
+  600–1000 line item costed in session 94.
+* **193IV, 193IX, 194I.4, 196II** (`B/Eff`, reached through the shared
+  `bdils-pure-beff-*.csv`) — the derivation calculus is still absent and
+  still costed at 800–1200 lines; 196II additionally carries three ERRATA
+  rows saying **do not repair**.
+* **172VIII `nmiu_ncp_extreme`** — the divergence's premise has indeed
+  expired (172III is proved), but restoring the thesis's two-line route
+  would reimpose `[VonNeumannAlgebra]` on both algebras and *weaken* the
+  statement.  Left, correctly.
+* **81IX `div_uwc_corner`'s sibling `div_usc_ball`**, **158II**, **167I**,
+  **138VIII**, **142III**, **150VIII–150XIII**, **160IV**, **169IV**,
+  **170II.1** — statuses re-read against the tree, all still accurate.
+
+### 6. Bookkeeping
+
+`docs/audit/avn-basic.csv`: 2 rows corrected (49IV ×2).
+`docs/audit/avn-division-normalfunctionals.csv`: 2 rows `route` → **faithful**
+(81IX `div_uwc`, `div_uwc_corner`), 3 rows added for the new declarations,
+3 rows re-statused (`division_basic_5`, `ldiv_div_corner`, `ldiv_one`,
+`suppProj_one`).
+`docs/audit/bdils-paschke-stinespring.csv`: 4 rows (140X.1–.4).
+`docs/audit/bdils-pure-beff-states-effectalgebras.csv`: 1 row (169XI.1).
+`docs/audit/bdils-hilbertmodules-selfdualcompletion.csv`: 4 rows (148III ×3,
+148IV).
+Nothing for `ERRATA.md`; nothing for `QUESTIONS.md`.  `docs/why-open.csv` was
+not touched — another worker owns it this round.
+
+Net: **1 divergence put back on the thesis's route** (81IX, both halves, and
+its first clause given the declaration it never had), **1 dead limb closed**
+(81II.5), **2 dead limbs found and costed** (140X.4, 148III), **2 recorded
+reasons found stale and corrected** (81IX's, 49IV's — the latter also in the
+Lean source), **1 stale in-file doc claim corrected** (148III's
+`_unTendsto` forms), **0 new dependency inversions in 147 candidate hits**,
+and **81 route rows left** — of which the 13 whose recorded reason makes a
+checkable claim about what the tree lacks were re-verified against the tree
+rather than against themselves (§5), 5 have no thesis argument to be
+faithful to at all, and the rest were re-read and found accurate as written.
+83 route rows in scope before, 81 after.

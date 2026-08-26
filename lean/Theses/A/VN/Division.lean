@@ -3057,23 +3057,167 @@ touch its ultraweak analogue (there `‖dₙ‖_ω = 1` for a *fixed* vector sta
 while `ω(dₙ) = ⟨0|ρ|n⟩ → 0` for every trace-class `ρ`), and in fact the
 ultraweak statement is **true** for both maps — see `div_uwc`.
 
-The argument is not the thesis's.  It rests on the *characterisation* of
-`c∖a/b` rather than on any approximation: for `a ∈ c(A)b`, `x = c∖a/b` is
-the unique element of the corner `⌈c⌋A⌊b⌉` with `cxb = a`
-(`ldiv_div_corner` above, which is **81II**), and on `c(A)₁b` it is explicitly `⌈c⌋d⌊b⌉` for
-any witness `a = cdb` with `‖d‖ ≤ 1` (`ldiv_div_ball`), hence lies in the
-unit ball.  The unit ball is ultraweakly **compact** (**77III**
-`vn_ball_compact`), so it suffices to identify the cluster points: if `y` is
-a cluster point of the values, then `y` lies in the corner (which is
-ultraweakly closed, being the equaliser of the ultraweakly continuous
-`z ↦ ⌈c⌋z⌊b⌉` with the identity — **45IV**), and `cyb` is a cluster point of
-`(c(c∖a/b)b)_a = (a)_a → a₀`, so `cyb = a₀` by Hausdorffness (**44XI**.1);
-uniqueness then forces `y = c∖a₀/b`.
+This is the thesis's own repaired proof (vn.tex:5546, as corrected on
+2026-08-17), in both halves.
 
-Note the contrast with the ultrastrong case: everything here except
-compactness holds ultrastrongly too, and it is exactly compactness that
-fails — **43II**.5 (`vn_counterexamples_5`) records that the unit ball of
-`B(ℓ²)` is *not* ultrastrongly compact, by the sequence `(|0⟩⟨n|)ₙ`. -/
+*First map.*  `div_uwc_ball` runs vn.tex:5547 verbatim in the ultraweak
+topology: by **81V**.2 (`proto_douglas_2`) the partial sums `a ↦ ∑_{n<N} a tₙ`
+converge to `a/b` uniformly on `(A)₁b` in each `‖·‖_ω`, hence — by
+Cauchy–Schwarz `|ω(x)| ≤ ‖x‖_ω ω(1)^½` (**43I**.1
+`norm_apply_le_omegaNorm`) — uniformly in each `|ω(·)|`; each partial sum
+`a ↦ a·(∑_{n<N} tₙ)` is ultraweakly continuous by **45IV**
+(`mult_uws_cont`); and a uniform limit of continuous functions is
+continuous.  `div_uwc_ball_of_norm_le` is the same statement on `(A)_λ b`,
+which is what the second half needs; it comes out of the same estimate,
+rescaled by `λ+1`.
+
+*Second map.*  `div_uwc_corner` is vn.tex:5563 verbatim: `c∖x = (x*/c*)*`
+for `x ∈ c(A)₁` — that is **81II**.5 `division_basic_5` — so `c∖(·)` is
+ultraweakly continuous, the adjoint being so (`continuous_ultraweak_star`,
+the positive half of **43II**.4, whose negative half
+`vn_counterexamples_4_star` is exactly why the printed *ultrastrong* claim
+cannot be repaired this way); and `(·)/b` maps `c(A)₁b` into `c(A)₁`, so
+the composite `c∖·/b` is ultraweakly continuous too.
+
+An earlier proof of `div_uwc_corner` avoided **81II**.5 by identifying the
+value through its characterisation (`ldiv_div_corner`, `ldiv_div_ball`) and
+appealing to ultraweak **compactness** of the unit ball (**77III**
+`vn_ball_compact`).  It is sound, but it is not the printed argument and it
+left **81II**.5 without a consumer anywhere in the tree.  Note the contrast
+it turned on: everything in it except compactness holds ultrastrongly too,
+and it is exactly compactness that fails — **43II**.5
+(`vn_counterexamples_5`) records that the unit ball of `B(ℓ²)` is *not*
+ultrastrongly compact, by the sequence `(|0⟩⟨n|)ₙ`. -/
+
+omit [VonNeumannAlgebra A] in
+/-- The adjoint is **ultraweakly** continuous: `ω(a*) = conj ω(a)` for every
+np-functional, and conjugation is continuous on `ℂ`.  This is the positive
+half of **43II**.4, whose negative half — `vn_counterexamples_4_star`, the
+adjoint is *not* ultrastrongly continuous — is exactly what stops the
+printed ultrastrong form of 81IX's second map from being repairable along
+the same lines. -/
+theorem continuous_ultraweak_star :
+    @Continuous A A (ultraweak A) (ultraweak A) (fun a : A => star a) := by
+  refine continuous_ultraweak_of_forall _ fun ω => ?_
+  have hform : ∀ a : A, (ω (star a) : ℂ) = star (ω a) := fun a => npFunctional_star ω a
+  simp only [hform]
+  exact @Continuous.comp A ℂ ℂ (ultraweak A) _ _ _ _ continuous_star
+    (continuous_ultraweak_npFunctional ω)
+
+/-- **81IX** (`div-usc`, vn.tex:5533, Lemma), first map, **ultraweakly**, on
+the ball of radius `λ`: `a ↦ a/b` is ultraweakly continuous on `(A)_λ b`.
+
+This is the thesis's proof (vn.tex:5547) with `λ` carried along, because the
+second half of 81IX applies the first map on `c(A)₁b ⊆ (A)_‖c‖ b`.  The
+uniform estimate of **81V**.2 (`proto_douglas_2`) is stated for
+`a*a ≤ b*b`; here it is applied to `(λ+1)⁻¹·a`, which lies in `(A)₁b`, and
+scaled back by `div_smul_left`. -/
+theorem div_uwc_ball_of_norm_le (b : A) (l : ℝ) (hl : 0 ≤ l) :
+    @ContinuousOn A A (ultraweak A) (ultraweak A) (fun a => div a b)
+      {a : A | ∃ d : A, ‖d‖ ≤ l ∧ a = d * b} := by
+  classical
+  set S : Set A := {a : A | ∃ d : A, ‖d‖ ≤ l ∧ a = d * b} with hSdef
+  obtain ⟨t, ht⟩ := approximate_pseudoinverse b
+  set L : ℝ := l + 1 with hLdef
+  have hL : 0 < L := by rw [hLdef]; linarith
+  -- the partial sums converge to `a/b` uniformly on `(A)_λ b` in each `‖·‖_ω`
+  have hunif : ∀ (ω : NPFunctional A) (ε : ℝ), 0 < ε → ∃ N : ℕ, ∀ a ∈ S,
+      omegaNorm A ω (div a b - ∑ n ∈ Finset.range N, a * t n) ≤ ε := by
+    intro ω ε hε
+    obtain ⟨N, hN⟩ := proto_douglas_2 b t ht ω (ε / L) (by positivity)
+    refine ⟨N, ?_⟩
+    rintro a ⟨d, hd, rfl⟩
+    have hnorm : ‖((L : ℂ))⁻¹ • d‖ ≤ 1 := by
+      rw [norm_smul, norm_inv, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hL]
+      rw [inv_mul_le_iff₀ hL, hLdef]
+      linarith
+    have hmem : star (((L : ℂ))⁻¹ • (d * b)) * (((L : ℂ))⁻¹ • (d * b)) ≤ star b * b := by
+      have h := (douglas_1 (((L : ℂ))⁻¹ • (d * b)) b 1 zero_le_one).1.1
+        ⟨((L : ℂ))⁻¹ • d, hnorm, by rw [smul_mul_assoc]⟩
+      simpa using h
+    have hsm := hN (((L : ℂ))⁻¹ • (d * b)) hmem N le_rfl
+    have hdiv : div (((L : ℂ))⁻¹ • (d * b)) b = ((L : ℂ))⁻¹ • div (d * b) b :=
+      div_smul_left (d * b) b _ ⟨d, rfl⟩
+    have hsum : (∑ n ∈ Finset.range N, ((L : ℂ))⁻¹ • (d * b) * t n)
+        = ((L : ℂ))⁻¹ • ∑ n ∈ Finset.range N, (d * b) * t n := by
+      rw [Finset.smul_sum]
+      exact Finset.sum_congr rfl fun n _ => by rw [smul_mul_assoc]
+    rw [hdiv, hsum, ← smul_sub, omegaNorm_smul, norm_inv, Complex.norm_real,
+      Real.norm_eq_abs, abs_of_pos hL] at hsm
+    rw [inv_mul_le_iff₀ hL] at hsm
+    calc omegaNorm A ω (div (d * b) b - ∑ n ∈ Finset.range N, (d * b) * t n)
+        ≤ L * (ε / L) := hsm
+      _ = ε := by field_simp
+  intro a₀ ha₀
+  have hkey : UWTendsto (fun a => div a b) (@nhdsWithin A (ultraweak A) a₀ S)
+      (div a₀ b) := by
+    rw [uwTendsto_iff]
+    intro ω
+    refine Metric.tendsto_nhds.mpr fun ε hε => ?_
+    set K : ℝ := Real.sqrt (ω 1).re + 1 with hKdef
+    have hK : 0 < K := by
+      have := Real.sqrt_nonneg (ω 1).re
+      rw [hKdef]; linarith
+    obtain ⟨N, hN⟩ := hunif ω (ε / (3 * K)) (by positivity)
+    set d : A := ∑ n ∈ Finset.range N, t n with hddef
+    have hsum : ∀ x : A, ∑ n ∈ Finset.range N, x * t n = x * d :=
+      fun x => (Finset.mul_sum _ _ _).symm
+    -- the uniform bound in the form `|ω(a/b) − ω(a·d)| ≤ ε/3`, by **43I**.1
+    have hbnd : ∀ a ∈ S, ‖(ω (div a b) : ℂ) - ω (a * d)‖ ≤ ε / 3 := by
+      intro a ha
+      have h := hN a ha
+      rw [hsum a] at h
+      have h2 := norm_apply_le_omegaNorm ω (div a b - a * d)
+      rw [npFunctional_sub] at h2
+      calc ‖(ω (div a b) : ℂ) - ω (a * d)‖
+          ≤ omegaNorm A ω (div a b - a * d) * Real.sqrt (ω 1).re := h2
+        _ ≤ (ε / (3 * K)) * Real.sqrt (ω 1).re := by gcongr
+        _ ≤ ε / 3 := by
+            rw [div_mul_eq_mul_div, div_le_div_iff₀ (by positivity) (by norm_num)]
+            have : Real.sqrt (ω 1).re ≤ K := by rw [hKdef]; linarith
+            nlinarith [Real.sqrt_nonneg (ω 1).re, hε.le]
+    -- each partial sum `a ↦ a·d` is ultraweakly continuous (**45IV**)
+    have hc : @Continuous A A (ultraweak A) (ultraweak A) (fun x : A => x * d) :=
+      (mult_uws_cont d).2.1
+    have hmid : Tendsto (fun a : A => (ω (a * d) : ℂ))
+        (@nhdsWithin A (ultraweak A) a₀ S) (𝓝 (ω (a₀ * d))) := by
+      have hcc : @Continuous A ℂ (ultraweak A) _ (fun x : A => (ω (x * d) : ℂ)) := by
+        let _ : TopologicalSpace A := ultraweak A
+        exact (continuous_ultraweak_npFunctional ω).comp hc
+      exact (@Continuous.tendsto A ℂ (ultraweak A) _ _ hcc a₀).mono_left
+        (@nhdsWithin_le_nhds A (ultraweak A) a₀ S)
+    have hev : ∀ᶠ a in (@nhdsWithin A (ultraweak A) a₀ S),
+        ‖(ω (a * d) : ℂ) - ω (a₀ * d)‖ < ε / 3 := by
+      have := Metric.tendsto_nhds.mp hmid (ε / 3) (by linarith)
+      filter_upwards [this] with a ha
+      rwa [Complex.dist_eq] at ha
+    filter_upwards [@self_mem_nhdsWithin A (ultraweak A) a₀ S, hev] with a haS haM
+    rw [Complex.dist_eq]
+    have h1 := hbnd a haS
+    have h3 := hbnd a₀ ha₀
+    calc ‖(ω (div a b) : ℂ) - ω (div a₀ b)‖
+        ≤ ‖(ω (div a b) : ℂ) - ω (a * d)‖ + ‖(ω (a * d) : ℂ) - ω (div a₀ b)‖ := by
+          simpa using norm_sub_le_norm_sub_add_norm_sub
+            ((ω (div a b) : ℂ)) (ω (a * d)) (ω (div a₀ b))
+      _ ≤ ‖(ω (div a b) : ℂ) - ω (a * d)‖ + (‖(ω (a * d) : ℂ) - ω (a₀ * d)‖
+            + ‖(ω (a₀ * d) : ℂ) - ω (div a₀ b)‖) := by
+          gcongr
+          simpa using norm_sub_le_norm_sub_add_norm_sub
+            ((ω (a * d) : ℂ)) (ω (a₀ * d)) (ω (div a₀ b))
+      _ < ε := by
+          rw [← norm_neg ((ω (a₀ * d) : ℂ) - ω (div a₀ b)), neg_sub] at *
+          linarith
+  exact hkey
+
+/-- **81IX** (`div-usc`, vn.tex:5533, Lemma), **first map, ultraweakly**:
+`a ↦ a/b` is ultraweakly continuous on `(A)₁b`.  The `λ = 1` case of
+`div_uwc_ball_of_norm_le`; together with `div_usc_ball` this is 81IX's first
+clause as corrected on 2026-08-17 ("both ultrastrongly and ultraweakly
+continuous"). -/
+theorem div_uwc_ball (b : A) :
+    @ContinuousOn A A (ultraweak A) (ultraweak A) (fun a => div a b)
+      {a : A | ∃ d : A, ‖d‖ ≤ 1 ∧ a = d * b} :=
+  div_uwc_ball_of_norm_le b 1 zero_le_one
 
 /-- `⌈1⌋ = 1`. -/
 theorem suppProj_one : suppProj (1 : A) = 1 := by
@@ -3082,86 +3226,68 @@ theorem suppProj_one : suppProj (1 : A) = 1 := by
   rw [one_mul] at h
   exact h
 
-/-- `1∖a = a`, so the first map of 81IX is the second one at `c = 1`. -/
+/-- `1∖a = a`, so the second map of 81IX is the first one at `c = 1`. -/
 theorem ldiv_one (y : A) : ldiv 1 y = y :=
   ldiv_eq (one_mul y).symm (by rw [suppProj_one, one_mul])
 
 /-- **81IX** (`div-usc`, vn.tex:5533, Lemma), second map as corrected:
-`a ↦ c∖a/b` is **ultraweakly** continuous on `c(A)₁b`.  See the section note
-above for the argument, and for why the printed ultrastrong claim is
-false. -/
+`a ↦ c∖a/b` is **ultraweakly** continuous on `c(A)₁b`.
+
+This is the thesis's repaired proof (vn.tex:5563) verbatim: `c∖x = (x*/c*)*`
+for `x ∈ c(A)₁` by **81II**.5 (`division_basic_5`), so `c∖(·)` is ultraweakly
+continuous because the adjoint is (`continuous_ultraweak_star`); and `(·)/b`
+maps `c(A)₁b` into `c(A)₁` — explicitly, `(cdb)/b = cd⌊b⌉` — so it is
+ultraweakly continuous there by `div_uwc_ball_of_norm_le` at `λ = ‖c‖`, and
+the composite is ultraweakly continuous.  See the section note above for
+why the printed *ultrastrong* claim is false. -/
 theorem div_uwc_corner (b c : A) :
     @ContinuousOn A A (ultraweak A) (ultraweak A)
       (fun a => ldiv c (div a b))
       {a : A | ∃ d : A, ‖d‖ ≤ 1 ∧ a = c * d * b} := by
   let _instA : TopologicalSpace A := ultraweak A
-  have : T2Space A := vn_positive_basic_1.1
   set S : Set A := {a : A | ∃ d : A, ‖d‖ ≤ 1 ∧ a = c * d * b} with hS
-  set f : A → A := fun a => ldiv c (div a b) with hfdef
-  have hp : IsStarProjection (suppProj c) := (ceill_basic_1 c).1.1
+  set T : Set A := {y : A | ∃ e : A, ‖e‖ ≤ 1 ∧ y = e * star c} with hT
   have hq : IsStarProjection (rangeProj b) := (ceill_basic_2 b).1.1
-  -- the three properties of the value on `c(A)₁b`
-  have hval : ∀ a ∈ S, suppProj c * f a * rangeProj b = f a ∧ c * f a * b = a ∧
-      ‖f a‖ ≤ 1 := by
+  have hb : rangeProj b * b = b := (ceill_basic_2 b).1.2
+  -- `(cdb)/b = cd⌊b⌉`, by the explicit characterisation of the quotient
+  have hdivval : ∀ d : A, div (c * d * b) b = c * d * rangeProj b := by
+    intro d
+    refine div_eq ?_ ?_
+    · rw [mul_assoc (c * d), hb]
+    · rw [mul_assoc (c * d), hq.isIdempotentElem.eq]
+  -- `c(A)₁b ⊆ (A)_‖c‖ b`, so `(·)/b` is ultraweakly continuous on it
+  have hSsub : S ⊆ {a : A | ∃ d : A, ‖d‖ ≤ ‖c‖ ∧ a = d * b} := by
     rintro a ⟨d, hd, rfl⟩
-    have hc : c * suppProj c = c := (ceill_basic_1 c).1.2
-    have hb : rangeProj b * b = b := (ceill_basic_2 b).1.2
-    have hfa : f (c * d * b) = suppProj c * d * rangeProj b := ldiv_div_ball b c d
-    rw [hfa]
-    refine ⟨?_, ?_, ?_⟩
-    · calc suppProj c * (suppProj c * d * rangeProj b) * rangeProj b
-          = (suppProj c * suppProj c) * d * (rangeProj b * rangeProj b) := by noncomm_ring
-        _ = suppProj c * d * rangeProj b := by
-            rw [hp.isIdempotentElem.eq, hq.isIdempotentElem.eq]
-    · calc c * (suppProj c * d * rangeProj b) * b
-          = (c * suppProj c) * d * (rangeProj b * b) := by noncomm_ring
-        _ = c * d * b := by rw [hc, hb]
-    · calc ‖suppProj c * d * rangeProj b‖
-          ≤ ‖suppProj c * d‖ * ‖rangeProj b‖ := norm_mul_le _ _
-        _ ≤ (‖suppProj c‖ * ‖d‖) * ‖rangeProj b‖ := by
-            gcongr; exact norm_mul_le _ _
-        _ ≤ (1 * 1) * 1 := by
-            gcongr
-            · exact IsStarProjection.norm_le _ hp
-            · exact IsStarProjection.norm_le _ hq
+    refine ⟨c * d, ?_, by noncomm_ring⟩
+    calc ‖c * d‖ ≤ ‖c‖ * ‖d‖ := norm_mul_le _ _
+      _ ≤ ‖c‖ * 1 := by gcongr
+      _ = ‖c‖ := mul_one _
+  have hA : ContinuousOn (fun a => div a b) S :=
+    (div_uwc_ball_of_norm_le b ‖c‖ (norm_nonneg c)).mono hSsub
+  have hB : ContinuousOn (fun a => star (div a b)) S :=
+    continuous_ultraweak_star.comp_continuousOn hA
+  -- `(·)/b` maps `c(A)₁b` into `c(A)₁`, so its adjoint lands in `(A)₁c*`
+  have hmaps : Set.MapsTo (fun a => star (div a b)) S T := by
+    rintro a ⟨d, hd, rfl⟩
+    refine ⟨rangeProj b * star d, ?_, ?_⟩
+    · calc ‖rangeProj b * star d‖ ≤ ‖rangeProj b‖ * ‖star d‖ := norm_mul_le _ _
+        _ ≤ 1 * 1 := by rw [norm_star]; gcongr; exact hq.norm_le
         _ = 1 := by norm_num
-  intro a₀ ha₀
-  -- multiplication by fixed elements is ultraweakly continuous (**45IV**)
-  have hΦ : Continuous (fun z : A => c * z * b) :=
-    ((mult_uws_cont b).2.1).comp (mult_uws_cont c).1
-  have hΨ : Continuous (fun z : A => suppProj c * z * rangeProj b) :=
-    ((mult_uws_cont (rangeProj b)).2.1).comp (mult_uws_cont (suppProj c)).1
-  have hC : IsClosed {z : A | suppProj c * z * rangeProj b = z} :=
-    isClosed_eq hΨ continuous_id
-  have hmemK : ∀ᶠ x in 𝓝[S] a₀, f x ∈ Metric.closedBall (0 : A) 1 := by
-    filter_upwards [self_mem_nhdsWithin] with a ha
-    simpa using (hval a ha).2.2
-  -- the values lie in the ultraweakly compact unit ball (**77III**)
-  refine vn_ball_compact.tendsto_nhds_of_unique_mapClusterPt hmemK ?_
-  intro y _ hcl
-  -- (1) a cluster point `y` of the values lies in the corner `⌈c⌋A⌊b⌉`
-  have hyC : suppProj c * y * rangeProj b = y := by
-    have hsub : Filter.map f (𝓝[S] a₀) ≤
-        Filter.principal {z : A | suppProj c * z * rangeProj b = z} := by
-      rw [Filter.le_principal_iff, Filter.mem_map]
-      filter_upwards [self_mem_nhdsWithin] with a ha
-      exact (hval a ha).1
-    have := (hcl.clusterPt.mono hsub)
-    rw [← mem_closure_iff_clusterPt, hC.closure_eq] at this
-    exact this
-  -- (2) `cyb` is a cluster point of the identity net, so `cyb = a₀`
-  have hΦy : c * y * b = a₀ := by
-    have htend : Tendsto (fun z : A => c * z * b) (Filter.map f (𝓝[S] a₀)) (𝓝 a₀) := by
-      rw [Filter.tendsto_map'_iff]
-      refine Tendsto.congr' ?_ (nhdsWithin_le_nhds (s := S) (a := a₀))
-      filter_upwards [self_mem_nhdsWithin] with a ha
-      exact ((hval a ha).2.1).symm
-    have := ClusterPt.map hcl.clusterPt hΦ.continuousAt htend
-    exact eq_of_nhds_neBot this
-  -- (3) so `y` is the value at `a₀`, by uniqueness of the quotient
-  calc y = ldiv c (div (c * y * b) b) := (ldiv_div_corner hyC).symm
-    _ = ldiv c (div a₀ b) := by rw [hΦy]
-    _ = f a₀ := rfl
+    · show star (div (c * d * b) b) = rangeProj b * star d * star c
+      rw [hdivval d, star_mul, star_mul, hq.isSelfAdjoint.star_eq]
+      noncomm_ring
+  have hC : ContinuousOn (fun a => div (star (div a b)) (star c)) S :=
+    (div_uwc_ball (star c)).comp hB hmaps
+  have hD : ContinuousOn (fun a => star (div (star (div a b)) (star c))) S :=
+    continuous_ultraweak_star.comp_continuousOn hC
+  refine hD.congr ?_
+  intro a ha
+  have hmem : ∃ x : A, star (div a b) = x * star c := by
+    obtain ⟨e, -, he⟩ := hmaps ha
+    exact ⟨e, he⟩
+  have h := (division_basic_5 (star c) (star (div a b)) hmem).2
+  rw [star_star, star_star] at h
+  exact h.symm
 
 /-- **81IX** (`div-usc`, vn.tex:5533, Lemma) with "ultrastrongly" replaced
 throughout by "ultraweakly": **both** maps `a ↦ a/b : (A)₁b → A` and
@@ -3175,20 +3301,18 @@ ultraweak one.  It is also what the one consumer needs — **96V**
 proof in vn.tex now runs ultraweakly throughout.  The printed second
 conjunct is false and is no longer transcribed; see the section note above.
 
-Note the thesis's repaired proof is *not* this one: it goes through
-`c∖x = (x*/c*)*` (81II(5)) and ultraweak continuity of the adjoint, whereas
-the proof below identifies the value by its characterisation and uses
-ultraweak compactness of the unit ball. -/
+Both conjuncts are the thesis's repaired proof: the first is `div_uwc_ball`
+(the partial sums of **81V**.2, uniformly on `(A)₁b`), and the second is
+`div_uwc_corner`, which reduces to the first through `c∖x = (x*/c*)*`
+(**81II**.5) and ultraweak continuity of the adjoint, exactly as
+vn.tex:5563 directs. -/
 theorem div_uwc (b c : A) :
     @ContinuousOn A A (ultraweak A) (ultraweak A) (fun a => div a b)
         {a : A | ∃ d : A, ‖d‖ ≤ 1 ∧ a = d * b} ∧
       @ContinuousOn A A (ultraweak A) (ultraweak A)
         (fun a => ldiv c (div a b))
         {a : A | ∃ d : A, ‖d‖ ≤ 1 ∧ a = c * d * b} := by
-  refine ⟨?_, div_uwc_corner b c⟩
-  have h := div_uwc_corner b (1 : A)
-  simp only [one_mul, ldiv_one] at h
-  exact h
+  exact ⟨div_uwc_ball b, div_uwc_corner b c⟩
 
 /-! ## Parsec 820: polar decomposition -/
 

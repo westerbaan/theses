@@ -1657,7 +1657,22 @@ below — Cauchy–Schwarz (**142III**) for `x ↦ [x₀,x]`, and the conjugatio
 bound for `b ↦ x₀·b` (mirrored `b ↦ b • x₀`), the map for which no bounded
 𝒷-linear packaging is available here because `SMul 𝒷 X` carries no module
 axioms.  Limit preservation, the weaker form, follows and is recorded
-afterwards as `ultranormcontstruct_*_unTendsto`. -/
+afterwards as `ultranormcontstruct_*_unTendsto`.
+
+**Dead limb, recorded 2026-08-26.**  All six declarations of this
+sub-section have *no consumer anywhere in* `Theses/`.  The reason is
+structural and already deliberate: 148III's consumer in dils.tex is
+**150IX**, which extends the operations to `V̄`, and 150IX–150V are
+deliberately not transcribed (`B/Dils/SelfDualCompletion` takes `V̄` to be
+Mathlib's `UniformSpace.Completion`, whose functorial extension supplies
+that step).  The thesis's other citations of `ultranormcontstruct`
+(dils.tex:2440, 2469, 2487, 4520, 4528, 5165, 5358) all land on proofs
+whose Lean forms phrase ultranorm closure through the entourage predicate
+`unClosure` rather than through nets, and so use the underlying estimates —
+`unSeminorm_add_le` (**142II**, 27 call sites), `unSeminorm_inner_le`,
+`unSeminorm_boundedModuleMap_le` — directly.  Restoring the citations would
+mean re-phrasing those proofs in terms of nets, which is a change of
+formulation, not of argument, so this is recorded and not repaired. -/
 
 /-- The estimate behind **148III** part 2, by Cauchy–Schwarz (**142III**):
 `‖[x₀,d]‖_ω ≤ ‖[x₀,x₀]‖^½ ‖d‖_ω`, the mirrored ultrastrong seminorm on the
@@ -1764,8 +1779,11 @@ theorem ultranormcontstruct_smul [VonNeumannAlgebra 𝒷] (B : BInner 𝒷 X)
 variable {ι : Type w} {l : Filter ι}
 
 /-- **148III**, part 1, in the weaker net form: addition preserves
-ultranorm limits.  (A corollary of `ultranormcontstruct_add`; kept because
-it is the form the net arguments of parsec 1490 use.) -/
+ultranorm limits.  (A corollary of `ultranormcontstruct_add`.  The claim
+that used to stand here — "kept because it is the form the net arguments of
+parsec 1490 use" — is **false**: parsec 1490's Lean proofs go through
+`unSeminorm_add_le` and `unSeminorm_inner_le` directly, and this form has no
+consumer.  See the sub-section note above.) -/
 theorem ultranormcontstruct_add_unTendsto (B : BInner 𝒷 X) (x y : ι → X)
     (x₀ y₀ : X) (hx : UnTendsto B.inner x l x₀) (hy : UnTendsto B.inner y l y₀) :
     UnTendsto B.inner (fun i => x i + y i) l (x₀ + y₀) := by
