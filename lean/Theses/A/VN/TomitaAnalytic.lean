@@ -1162,17 +1162,18 @@ theorem tomita_JMJ_unconditional
   tomita_JMJ_of_lemma_4_7 M ω hsep hcyc hMdense hM'dense hM
     (fun _ hx' _ hφ => lemma_4_7 M ω hsep hcyc hM hM'dense hx' hφ)
 
-/-- **`J M' J = M`**, the other half. -/
+/-- **`J M' J = M`**, the other half — a corollary of `tomita_JMJ_unconditional`,
+since `adJ` is an involution (`vnAdJ_vnAdJ`): apply `adJ ''` to both sides of
+`J M J = M'`. -/
 theorem tomita_JM'J_unconditional
     (hMdense : Dense {y : ℋ | ∃ x ∈ M, y = x ω})
     (hM'dense : Dense {y : ℋ | ∃ x ∈ commutantSA M, y = x ω})
     (hM : commutant (ℋ →L[ℂ] ℋ) (commutant (ℋ →L[ℂ] ℋ) (M : Set (ℋ →L[ℂ] ℋ)))
       = (M : Set (ℋ →L[ℂ] ℋ))) :
     (fun x => vnAdJ M ω hsep hcyc x) '' (commutant (ℋ →L[ℂ] ℋ) (M : Set (ℋ →L[ℂ] ℋ)))
-      = (M : Set (ℋ →L[ℂ] ℋ)) :=
-  tomita_JM'J M ω hsep hcyc hMdense hM'dense
-    (adJ_commutant_subset M ω hsep hcyc hM
-      (fun _ hx' _ hφ => lemma_4_7 M ω hsep hcyc hM hM'dense hx' hφ))
+      = (M : Set (ℋ →L[ℂ] ℋ)) := by
+  rw [← tomita_JMJ_unconditional M ω hsep hcyc hMdense hM'dense hM, Set.image_image]
+  simp only [vnAdJ_vnAdJ, Set.image_id']
 
 end Lemma47
 

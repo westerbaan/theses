@@ -306,8 +306,6 @@ lemma vnAdJ_vnAdJ (x : ℋ →L[ℂ] ℋ) :
     vnAdJ M ω hsep hcyc (vnAdJ M ω hsep hcyc x) = x :=
   adJ_adJ _ hsep hcyc x
 
-@[simp] lemma vnAdJ_one : vnAdJ M ω hsep hcyc 1 = 1 := adJ_one _ hsep hcyc
-
 /-- `J (x + i y) J = J x J - i J y J`. -/
 lemma vnAdJ_sa_decomp (p q : ℋ →L[ℂ] ℋ) :
     vnAdJ M ω hsep hcyc (p + I • q)
