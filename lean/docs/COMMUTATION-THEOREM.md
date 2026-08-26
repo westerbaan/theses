@@ -366,10 +366,37 @@ and the one the literature says needs modular theory. It needs no Borel
 functional calculus, no projection-valued measure, and no spectral theorem for
 unbounded operators anywhere in its dependency cone.
 
-Still open, and it is now a short list: **RvD Lemma 4.7**; the **`ℂⁿ`
-amplification transport**, which carries `CT_of_CT_finCyclic` the last step to
-the cyclic-and-separating case; and **holomorphy of `cfc (·^w)`**, which is
-Lemma 4.7's input.
+**Open, as of 2026-08-26, and it is one statement:** *the compression of a von
+Neumann algebra is a von Neumann algebra* — `(f𝒯f)□ = 𝒯□f` for `f ∈ 𝒯`, i.e.
+normality of `w ↦ PwP*`. `CornerTensor.lean` deliberately avoided it and the
+tree does not have it. The classical proof extends `y ∈ (f𝒯f)□` to
+`ŷ(x f ζ) := x ỹ f ζ` on the dense `𝒯fℋ`; well-definedness and boundedness are
+the content.
+
+Everything else is done. Tomita's theorem is proved unconditionally; the
+reduction runs from the general case down to **algebras with a cyclic vector**
+(`CT_of_CT_cyclic`); and the one remaining step is from *cyclic* to
+*cyclic-and-separating*, which needs exactly the statement above.
+
+**Why that last step is not optional, proved two ways (2026-08-26).** The plan
+said the `ℂⁿ` amplification carries `CT_of_CT_finCyclic` to the
+cyclic-and-separating case. It does not.
+* **Amplification never manufactures a separating vector.** Take `𝒜 = B(ℋ)`
+  with `dim ℋ = ∞`: every nonzero vector is cyclic, so `HasFinCyclic` holds,
+  and `𝒜 ⊗̄ B(ℒ) = B(ℋ⊗ℒ)`, which has a separating vector only if `dim ≤ 1`.
+* **Nor can the cutting machinery reach it, in any orientation.** The cuts
+  `CT_of_relCT` admits are `e ∈ 𝒜□`, and `𝒜_e` has a cyclic *and* separating
+  vector iff `[𝒜ξ] = e = [𝒜□ξ]` — the first forces `e ∈ 𝒜□`, the second
+  `e ∈ 𝒜`, so `e ∈ Z(𝒜)`. For a factor with no separating vector the only
+  central cuts are `0` and `1`.
+
+This sharpens the retraction below: it is not merely that the cyclic family
+fails to be directed, it is that **the target class is unreachable by cutting.**
+What the amplification *does* buy is essential — cyclicity of `ξ` makes the
+carrier `f = [(𝒜□⊗1)ξ]` have central carrier `1`, so a single non-directed cut
+suffices in principle — but `f` lies **in the algebra**, not the commutant, and
+transporting `CT` across a cut inside the algebra is exactly the hard half of
+the reduction theorem.
 
 **The holomorphy question, settled 2026-08-26 — and the answer corrects what
 was recorded here yesterday.** `ModularGroup.lean` left holomorphy out and
