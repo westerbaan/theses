@@ -4995,63 +4995,48 @@ def IsCentral (a : A) : Prop := ∀ b : A, a * b = b * a
 /-- **67II** (`central-examples`, vn.tex:3370, Examples), part 3: in `B(H)`
 only the scalars are central.  (Parts 1–2 — commutative algebras and direct
 sums — are immediate from the definitions and not converted.  **67III**,
-Remark: such von Neumann algebras are called *factors*.) -/
+Remark: such von Neumann algebras are called *factors*.)
+
+This is the thesis's own computation (vn.tex:3383–3392).  Write `|x⟩⟨y|`
+for the rank-one operator `z ↦ ⟪y,z⟫·x`.  If `T` is central then
+`T|x⟩⟨y| = |x⟩⟨y|T`, and evaluating both sides at `y` gives the printed
+display
+
+    ‖y‖²·T x  =  (T |x⟩⟨y|) y  =  (|x⟩⟨y| T) y  =  ⟪y, T y⟫·x ,
+
+so that dividing by `‖y‖² ≠ 0` for one fixed `y ≠ 0` exhibits `T` as the
+scalar `⟪y,Ty⟫/‖y‖²`.
+
+Two notes on the rendering.  The thesis runs the display for a *positive*
+central `A` and writes the right-hand scalar as `‖√A y‖²`; that is only an
+identification of `⟪y, A y⟫` (`√A` is self-adjoint and `√A√A = A`), and
+positivity enters the argument nowhere else, so the computation is given
+here for an arbitrary central `T`, which is what the statement asks for.
+And the thesis pairs the display against `x`, reading it as an equality of
+quadratic forms; the unpaired form above is that same equality one step
+earlier, so no polarisation is needed to undo the pairing. -/
 theorem central_examples_3 {H : Type*} [NormedAddCommGroup H]
     [InnerProductSpace ℂ H] [CompleteSpace H] (T : H →L[ℂ] H) :
     IsCentral (H →L[ℂ] H) T ↔ ∃ z : ℂ, T = z • (1 : H →L[ℂ] H) := by
   constructor
   · intro hT
-    -- every vector is an eigenvector: `T` commutes with `|x⟩⟨x|`
-    have hev : ∀ x : H, ∃ l : ℂ, T x = l • x := by
-      intro x
-      rcases eq_or_ne x 0 with rfl | hx
-      · exact ⟨0, by simp⟩
-      have hxx : (⟪x, x⟫ : ℂ) ≠ 0 := by
-        simpa [inner_self_eq_zero] using hx
-      have h := hT ((innerSL ℂ x).smulRight x)
-      have h0 := congrArg (fun S : H →L[ℂ] H => S x) h
-      simp only [mul_apply_eq_comp, ContinuousLinearMap.smulRight_apply,
-        ContinuousLinearMap.comp_apply, map_smul] at h0
-      have h1 : (⟪x, x⟫ : ℂ) • T x = (⟪x, T x⟫ : ℂ) • x := h0
-      refine ⟨(⟪x, T x⟫ : ℂ) / ⟪x, x⟫, ?_⟩
-      rw [div_eq_inv_mul, ← smul_smul, ← h1, smul_smul, inv_mul_cancel₀ hxx, one_smul]
-    -- a linear map with every vector an eigenvector is a scalar
     rcases subsingleton_or_nontrivial H with hsub | hnt
     · refine ⟨0, ?_⟩
       ext y
       simp [Subsingleton.elim y 0]
-    obtain ⟨x₀, hx₀⟩ := exists_ne (0 : H)
-    obtain ⟨z, hz⟩ := hev x₀
-    refine ⟨z, ?_⟩
-    ext y
-    show T y = z • y
-    rcases eq_or_ne y 0 with rfl | hy
-    · simp
-    obtain ⟨l, hl⟩ := hev y
-    by_cases hdep : ∃ c : ℂ, y = c • x₀
-    · obtain ⟨c, rfl⟩ := hdep
-      rw [map_smul, hz, smul_smul, smul_smul, mul_comm]
-    · -- `x₀` and `y` are independent, so the eigenvalue on `x₀ + y` forces `l = z`
-      obtain ⟨m, hm⟩ := hev (x₀ + y)
-      rw [map_add, hz, hl, smul_add] at hm
-      have h1 : (z - m) • x₀ + (l - m) • y = 0 := by
-        rw [sub_smul, sub_smul]
-        rw [show z • x₀ - m • x₀ + (l • y - m • y)
-          = z • x₀ + l • y - (m • x₀ + m • y) by abel, hm, sub_self]
-      have hlm : l - m = 0 := by
-        by_contra hne
-        refine hdep ⟨-((l - m)⁻¹ * (z - m)), ?_⟩
-        refine smul_right_injective H hne ?_
-        show (l - m) • y = (l - m) • ((-((l - m)⁻¹ * (z - m))) • x₀)
-        rw [smul_smul, show (l - m) * -((l - m)⁻¹ * (z - m)) = -(z - m) by
-          field_simp, neg_smul, eq_neg_iff_add_eq_zero, add_comm]
-        exact h1
-      have hzm : z - m = 0 := by
-        have := h1
-        rw [hlm, zero_smul, add_zero, smul_eq_zero] at this
-        exact this.resolve_right hx₀
-      rw [hl, show l = m from by linear_combination hlm,
-        show m = z from by linear_combination -hzm]
+    obtain ⟨y, hy⟩ := exists_ne (0 : H)
+    have hyy : (⟪y, y⟫ : ℂ) ≠ 0 := by
+      simpa [inner_self_eq_zero] using hy
+    refine ⟨(⟪y, T y⟫ : ℂ) / ⟪y, y⟫, ?_⟩
+    ext x
+    -- `T |x⟩⟨y| = |x⟩⟨y| T`, evaluated at `y`
+    have h := hT ((innerSL ℂ y).smulRight x)
+    have h0 := congrArg (fun S : H →L[ℂ] H => S y) h
+    simp only [mul_apply_eq_comp, ContinuousLinearMap.smulRight_apply,
+      ContinuousLinearMap.comp_apply, map_smul] at h0
+    have h1 : (⟪y, y⟫ : ℂ) • T x = (⟪y, T y⟫ : ℂ) • x := h0
+    show T x = ((⟪y, T y⟫ : ℂ) / ⟪y, y⟫) • x
+    rw [div_eq_inv_mul, ← smul_smul, ← h1, smul_smul, inv_mul_cancel₀ hyy, one_smul]
   · rintro ⟨z, rfl⟩ b
     simp [smul_mul_assoc, mul_smul_comm]
 
