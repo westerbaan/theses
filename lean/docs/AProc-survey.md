@@ -1,15 +1,23 @@
 # `Theses/A/Proc/` — full survey of the remaining `sorry`s (worker 71, 2026-08-16; revised workers 72–90, sessions 47–90)
 
-**Headline count: A/Proc has 12 code `sorry`s** after session 96, which
+**Headline count: A/Proc has 3 unproved declarations** after session 96, which
 closed the **last seven of `QuantumLambda.lean`** — 121II
 `intersection_tensor` and 125IV `equaliser_lemma` (the commutation theorem
 having landed), then 125VI `tensor_equalisers`, 125VIIb `tensor_preimage`,
 125VIII `tensor_closed`, 125eIIa `tensor_map_factorisation` and 125eIII
 `tensorBsurjectivity`.  **`QuantumLambda.lean` is `sorry`-free.**  What is
-left is not reachable: `Tensor`'s 2 are the recorded non-targets and
-`Measurement`'s 10 are gated on the open author question.
-Per file: `Tensor` **2**, `QuantumLambda` **0 — the file is finished**,
-`Measurement` **10**, `Duplicators` **0 — the file is finished**.
+left is not reachable: `Tensor`'s 1 is a recorded non-target (116III.4,
+refuted in-tree) and `Measurement`'s 2 are gated on the open author question.
+Per file: `Tensor` **1**, `QuantumLambda` **0 — the file is finished**,
+`Measurement` **2**, `Duplicators` **0 — the file is finished**.
+
+*(Corrected 2026-08-26.  The session-96 revision of this headline said "12
+code `sorry`s", counting raw `grep` hits — which include the prose of this
+very survey, the stale-claim notes inside `Measurement.lean`, and
+`Measurement.lean:30`'s own sentence "The file has exactly two `sorry`s".
+The rule stated three lines below — count the compiler's `declaration uses
+`sorry`` warnings — is the right one, and gives 1 + 2.  `docs/status.txt`
+agrees: 11 unproved declarations tree-wide, 3 of them in A/Proc.)*
 (`QuantumLambda` compiler-verified in session 96, 0 errors and 0 `sorry`
 warnings; the other three in session 88/90.)
 **No statement in the project is `sorry`-tainted.**  (`grep -c sorry`
@@ -18,7 +26,7 @@ counts are the ones above.  Note `\bsorry\b` also matches "sorry-ed" in
 prose — count the compiler's `declaration uses \`sorry\`` warnings instead.)
 
 > **Session 96 — the last five of `QuantumLambda.lean` are CLOSED, and the
-> file is `sorry`-free.**  `QuantumLambda` **5 → 0**; A/Proc **17 → 12**, 0
+> file is `sorry`-free.**  `QuantumLambda` **5 → 0**; A/Proc **8 → 3**, 0
 > errors, all five theorems axiom-clean (checked *in situ*:
 > `[propext, Classical.choice, Quot.sound]`).  **+726 / −91 lines**, all in
 > `QuantumLambda.lean`, all new names `private` except the five theorems.
