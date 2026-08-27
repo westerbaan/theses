@@ -38,6 +38,16 @@ in the prose, because an opening citation ("by **88VI** `double_commutant`")
 reads the same to a looser matcher and a 220-character window reported 202
 where the strict rule reports 139.  False negatives are the safe direction.
 
+A row names a declaration by its qualified name (`DPoset.sub_left_cancel`),
+so the tagged declaration is matched under every enclosing-namespace suffix,
+as in the phantom check.  Matching the bare name alone reported 15 rowed
+B/Eff declarations as unrowed, and 28 more elsewhere, on 2026-08-27; a
+worker's natural repair for that is to STRIP the namespace out of
+`lean_name`, which loses information the audit deliberately records.  Two
+further sources of false reports are described on `tagged_declarations`:
+prose inside a doc comment read as a declaration, and a doc comment on an
+anonymous `instance` attributed to the next named declaration.
+
 4. PHANTOM ROWS
 
 A row naming a declaration that no longer exists.  Every comma-separated
@@ -78,6 +88,29 @@ NS_OPEN = re.compile(r'^\s*namespace\s+(\S+)')
 NS_END = re.compile(r'^\s*end\s+(\S+)\s*$')
 
 
+def code_lines(path):
+    """(lineno, line) for every line, with block and doc comment spans blanked.
+
+    Comment text must be removed, not merely skipped line-by-line: a line that
+    CLOSES a comment carries prose before its `-/`, and yielding it whole is
+    how `instance clashes on lattice carriers.) -/` produced a declaration
+    named `clashes`.  Eleven such phantoms existed tree-wide, and because
+    tree_declarations() feeds the phantom check, a row naming one of them
+    would have PASSED it.
+    """
+    depth = 0
+    for i, ln in enumerate(open(path, encoding='utf-8'), 1):
+        out, j = [], 0
+        while j < len(ln):
+            if depth == 0 and ln.startswith('/-', j):
+                depth += 1; j += 2
+            elif depth > 0 and ln.startswith('-/', j):
+                depth -= 1; j += 2
+            else:
+                out.append(' ' if depth else ln[j]); j += 1
+        yield i, ''.join(out)
+
+
 def tree_declarations():
     """Every declaration name under Theses/, qualified by every enclosing
     namespace suffix -- the audit may name it at any depth."""
@@ -85,7 +118,7 @@ def tree_declarations():
     for path in glob.glob(os.path.join(ROOT, 'Theses', '**', '*.lean'),
                           recursive=True):
         stack = []
-        for ln in open(path, encoding='utf-8'):
+        for _, ln in code_lines(path):
             m = NS_OPEN.match(ln)
             if m:
                 stack.extend(m.group(1).split('.'))
@@ -111,10 +144,13 @@ def tree_sorries():
                           recursive=True):
         rel = os.path.relpath(path, ROOT)
         cur = None
-        for ln in open(path, encoding='utf-8'):
+        for _, ln in code_lines(path):
             m = DECL.match(ln)
             if m:
                 cur = m.group(1)
+                # a one-line `:= by sorry` lives on the declaration line itself
+                if SORRY.search(ln[m.end():]):
+                    out[cur] = rel
                 continue
             if cur and '`' not in ln:
                 code = ln.split('--')[0]
@@ -158,29 +194,90 @@ TAG_OPENS = re.compile(r'^/--\s*\**\s*\*\*(\d{1,3}[a-z]?[IVXL]+(?:\.[0-9a-z]+)?)
 PRIVATE = re.compile(r'^\s*(?:@\[[^\]]*\]\s*)*private\b')
 
 
+# Lines that may sit between a doc comment and the declaration it documents
+# without breaking the pairing: attributes, and the `open X in` /
+# `set_option ... in` / `attribute [...] in` prefixes.
+CARRIES_DOC = re.compile(r'^\s*(?:@\[|attribute\b)|(?:\bin)$')
+
+
 def tagged_declarations():
-    """(disp, name, private, location) for each declaration whose doc comment
-    opens with a DISP tag."""
+    """(disp, name, names, private, location) for each declaration whose doc
+    comment opens with a DISP tag.
+
+    `names` is the declaration's name under every enclosing namespace suffix,
+    the same convention `tree_declarations` uses, because that is how the
+    audit cites it: a declaration inside `namespace DPoset` is
+    `DPoset.sub_left_cancel` in a row, and matching only the bare name
+    reported 15 rowed declarations as unrowed on 2026-08-27.
+
+    Two things the first version of this got wrong, both of which made it
+    report declarations that do not exist, or not the ones documented:
+
+    * `DECL` was matched against every line, INCLUDING PROSE INSIDE THE DOC
+      COMMENT.  A doc comment that wraps as "... to avoid\ninstance clashes
+      on lattice carriers" was read as a declaration named `clashes`; eleven
+      such phantoms were reported across the tree, and the same regex feeds
+      `tree_declarations`, so a row naming one of them would have passed the
+      phantom check.
+    * A doc comment on an ANONYMOUS declaration (`instance : Category
+      HilbObj`) matches no name, so the doc stayed pending and was attributed
+      to the *next* named declaration -- `hilb_comp` was reported as carrying
+      214II, and three more elsewhere (`dupEquivSetOp`, `algebraMap_coe`,
+      `le_def`).  A doc block not followed by a nameable declaration is now
+      dropped: a false negative, which is the safe direction, and the same
+      blind spot as the 198II `PredSquare.category` phantom.
+    """
     out = []
     for path in glob.glob(os.path.join(ROOT, 'Theses', '**', '*.lean'),
                           recursive=True):
         rel = os.path.relpath(path, ROOT)
+        stack = []
         doc = None
+        in_comment = False
+        in_doc = False
         for i, ln in enumerate(open(path, encoding='utf-8'), 1):
             s = ln.strip()
+            if in_comment:
+                if in_doc:
+                    doc = doc + ' ' + s
+                if '-/' in s:
+                    in_comment = False
+                    in_doc = False
+                continue
             if s.startswith('/--'):
                 doc = s
-            elif doc is not None:
-                doc = doc + ' ' + s
+                in_comment = '-/' not in s[3:]
+                in_doc = in_comment
+                continue
+            if s.startswith('/-'):
+                doc = None
+                in_comment = '-/' not in s[2:]
+                continue
+            m = NS_OPEN.match(ln)
+            if m:
+                stack.extend(m.group(1).split('.'))
+                doc = None
+                continue
+            m = NS_END.match(ln)
+            if m:
+                parts = m.group(1).split('.')
+                if stack[-len(parts):] == parts:
+                    del stack[-len(parts):]
+                doc = None
+                continue
             m = DECL.match(ln)
             if m:
                 if doc:
                     d = TAG_OPENS.match(doc)
                     if d:
-                        out.append((d.group(1), m.group(1),
+                        n = m.group(1)
+                        names = {n} | {'.'.join(stack[k:] + [n])
+                                       for k in range(len(stack))}
+                        out.append((d.group(1), n, names,
                                     bool(PRIVATE.match(ln)), f'{rel}:{i}'))
                 doc = None
-            elif s.startswith('/-!'):
+                continue
+            if s and not CARRIES_DOC.search(s):
                 doc = None
     return out
 
@@ -213,8 +310,8 @@ def main():
     for _, _, f in rows:
         for n in name_list(f[1]) or []:
             all_names.add(n)
-    unrowed = [t for t in tagged_declarations() if t[1] not in all_names]
-    for disp, name, priv, loc in unrowed:
+    unrowed = [t for t in tagged_declarations() if not (t[2] & all_names)]
+    for disp, name, _names, priv, loc in unrowed:
         print(f'UNROWED    {loc}  {disp}  {name}'
               f'{"  (private)" if priv else ""}')
 
