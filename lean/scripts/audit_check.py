@@ -18,7 +18,17 @@ cite ("blocked on 125IV") long after the block is gone.
   ORPHANED   row says `sorry`, the declaration is proved  -> the row is stale
   UNRECORDED declaration is `sorry`, no row says so       -> the audit is blind
 
-2. PHANTOM ROWS
+2. SCHEMA
+
+A row is `DISP|lean_name|module|stmt|proof|note[|status]` -- six or seven
+fields.  Prose that contains a literal `|` silently splits into extra ones,
+and every field after the break is then read as the wrong column.  Three
+causes have occurred: ASCII norms `||a||`, modulus and ket-bra bars (`|z|`,
+`|z><z|`) and maps-to arrows (`|->`), and dated status notes appended with a
+`|` instead of merged.  32 rows across seven files were broken this way
+before the check existed.
+
+3. PHANTOM ROWS
 
 A row naming a declaration that no longer exists.  Proof repairs delete the
 machinery they replace, and the rows survive them -- inflating every count
@@ -101,6 +111,18 @@ def tree_sorries():
     return out
 
 
+def schema_violations():
+    """Rows whose prose has split into extra columns."""
+    bad = []
+    for path in sorted(glob.glob(os.path.join(ROOT, 'docs', 'audit', '*.csv'))):
+        for i, line in enumerate(open(path, encoding='utf-8'), 1):
+            f = line.rstrip('\n').split('|')
+            if len(f) > 1 and len(f) not in (6, 7):
+                bad.append((os.path.basename(path), i, len(f),
+                            f[0], f[1] if len(f) > 1 else ''))
+    return bad
+
+
 def audit_rows():
     for path in sorted(glob.glob(os.path.join(ROOT, 'docs', 'audit', '*.csv'))):
         for i, line in enumerate(open(path, encoding='utf-8'), 1):
@@ -124,6 +146,11 @@ def main():
         print(f'UNRECORDED {rel}  {name}')
         print(f'           declaration is `sorry`; no audit row records it')
 
+    schema = schema_violations()
+    for fname, i, nf, disp, name in schema:
+        print(f'SCHEMA     {fname}:{i}  {disp}  {name}')
+        print(f'           {nf} fields, expected 6 or 7 -- a literal `|` in the prose')
+
     # Phantom rows.
     names = tree_declarations()
     by_point = {}
@@ -143,8 +170,8 @@ def main():
 
     print(f'\n{len(tree)} sorries in the tree, {len(recorded)} rows classed '
           f'`sorry`; {len(orphaned)} orphaned, {len(unrecorded)} unrecorded, '
-          f'{len(phantom)} phantom')
-    return 1 if (orphaned or unrecorded or phantom) else 0
+          f'{len(phantom)} phantom, {len(schema)} schema')
+    return 1 if (orphaned or unrecorded or phantom or schema) else 0
 
 
 if __name__ == '__main__':
