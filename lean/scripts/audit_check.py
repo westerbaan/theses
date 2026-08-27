@@ -30,7 +30,9 @@ before the check existed.
 
 3. PHANTOM ROWS
 
-A row naming a declaration that no longer exists.  Proof repairs delete the
+A row naming a declaration that no longer exists.  Every comma-separated
+name in `lean_name` is checked; a `lean_name` that is prose rather than a name
+list (`Mathlib EuclideanSpace C (Fin N)`) is skipped.  Proof repairs delete the
 machinery they replace, and the rows survive them -- inflating every count
 taken off the audit.  Thirteen were found this way on 2026-08-26, seven left
 by one repair and two by a deletion committed minutes earlier in the same
@@ -123,6 +125,25 @@ def schema_violations():
     return bad
 
 
+def name_list(field):
+    """The declaration names a `lean_name` field cites, or None if it is prose.
+
+    A field is a name list when every comma-separated part is a bare
+    identifier -- no spaces, no parentheses.  Anything else (`Mathlib
+    EuclideanSpace C (Fin N)`, `... (no declaration; Basic.lean:47)`) names a
+    Mathlib carrier or a doc block rather than a declaration of ours, and is
+    not checked.
+
+    Multi-name rows were invisible to the phantom check until 2026-08-27: the
+    check skipped any field containing a space, which is every list of two or
+    more names.  46 rows were exempt and one of them was a phantom.
+    """
+    parts = [p.strip() for p in field.split(',')]
+    if all(p and ' ' not in p and '(' not in p for p in parts):
+        return parts
+    return None
+
+
 def audit_rows():
     for path in sorted(glob.glob(os.path.join(ROOT, 'docs', 'audit', '*.csv'))):
         for i, line in enumerate(open(path, encoding='utf-8'), 1):
@@ -156,15 +177,25 @@ def main():
     by_point = {}
     for _, _, f in rows:
         by_point.setdefault(f[0], []).append(f)
-    phantom = [(fn, i, f) for fn, i, f in rows
-               if ' ' not in f[1] and f[1] not in names]
-    for fn, i, f in phantom:
-        print(f'PHANTOM    {fn}:{i}  {f[0]}  {f[1]}  (proof={f[4]})')
-        live = [g for g in by_point[f[0]]
-                if g[1] != f[1] and ' ' not in g[1] and g[1] in names]
+    phantom = []
+    for fn, i, f in rows:
+        cited = name_list(f[1])
+        if cited is None:
+            continue
+        missing = [n for n in cited if n not in names]
+        if missing:
+            phantom.append((fn, i, f, missing))
+    for fn, i, f, missing in phantom:
+        print(f'PHANTOM    {fn}:{i}  {f[0]}  {", ".join(missing)}  '
+              f'(proof={f[4]})')
+        live = []
+        for g in by_point[f[0]]:
+            for n in name_list(g[1]) or []:
+                if n not in missing and n in names:
+                    live.append((n, g[4]))
         if live:
             print(f'           {f[0]} still covered by: '
-                  + ', '.join(f'{g[1]} ({g[4]})' for g in live))
+                  + ', '.join(f'{n} ({pr})' for n, pr in live))
         else:
             print(f'           {f[0]} HAS NO OTHER LIVE ROW -- coverage lost')
 

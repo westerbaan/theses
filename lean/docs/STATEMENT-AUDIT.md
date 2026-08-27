@@ -30,10 +30,14 @@ One row per thesis statement, pipe-separated, in
 DISP|lean_name|module|stmt|proof|note
 ```
 
-* **`stmt`** — does our statement match the thesis's?
+* **`stmt`** — **is the thesis's point stated in the tree?**  Not "does this
+  one declaration say all of it" — see *What `stmt` is a verdict about*
+  below.
   * `ok` — faithful: same hypotheses, same conclusion, same quantifiers, same
-    direction and variance.
-  * `weaker` — ours assumes more, or concludes less.
+    direction and variance.  Also the verdict when the named declaration
+    renders part of the point and named **siblings** carry the rest.
+  * `weaker` — ours assumes more, or concludes less, **and no declaration in
+    the tree makes up the difference**.
   * `stronger` — ours assumes less, or concludes more.  (Also false-as-ours
     if the extra strength is not actually true.)
   * `differs` — neither weaker nor stronger; a different shape.
@@ -53,6 +57,54 @@ DISP|lean_name|module|stmt|proof|note
 
 Rows are in DISP order.  A statement transcribed by several Lean declarations
 gets one row per declaration.
+
+### What `stmt` is a verdict about
+
+**`stmt` grades the thesis point, not the declaration in isolation.**  The
+count of `weaker` rows is read as "this many of the theses' points are not
+fully stated in the tree", and it only means that if the class is assigned
+that way.
+
+So: a row is `weaker` **only when the point it records is not fully stated
+anywhere in the tree** — not by the named declaration, not by a sibling in
+the same file, not by a declaration in another module, not by the Mathlib
+carrier the module builds on.  Concretely, when the named declaration renders
+less than the point:
+
+1. **Look for the rest of the point before grading.**  A clause the audit
+   once found missing is very often added later beside the declaration, under
+   a name the row never learned.  Grep the module for the point's other
+   clauses by their *content*, not by the row's `lean_name`.
+2. **If a sibling carries the rest, the row is `ok`.**  Extend `lean_name` to
+   name every declaration that carries a clause, comma-separated, and say in
+   the note **which declaration carries which clause**.  A reader must be
+   able to get from the row to the whole point without re-deriving the search.
+3. **If a separate row already exists for the sibling**, leave `lean_name`
+   alone — the duplicate name buys nothing — and name that row in the note
+   instead.  The row is still `ok`.
+4. **If some clause is genuinely nowhere**, the row stays `weaker`, the note
+   names *exactly* the missing clause, and — this is the part that keeps
+   going wrong — the note also names the siblings that do carry the other
+   clauses, so the next pass does not re-discover them.
+5. A row may stay `weaker` while its declaration is the tree's *best* form of
+   the point: adding a hypothesis the printed statement lacks is "assumes
+   more" even when the printed statement is false without it.  Those rows
+   carry an `ERRATA.md` row or an author ruling, and the note says which.
+
+**What must never survive is a `weaker` row whose own note says the point is
+fully covered.**  If the note ends "…now stated in full as `foo_bar`", the
+class is wrong, not the note.  Between 2026-08-21 and 2026-08-26 four repair
+waves left 39 such rows behind — the repair was made, the sibling was named
+in the note, and the class was left at `weaker` "for the named declaration".
+That made the `weaker` count 85 where the honest figure was 46, and nobody
+could tell from the number which rows were real.
+
+The same rule decides `lean_name`: it is the list of declarations that
+together carry the point, so **`scripts/audit_check.py`'s phantom check reads
+every comma-separated name in it**.  A `lean_name` that is prose rather than
+a name list (`Mathlib EuclideanSpace ℂ (Fin N) (no declaration; …)`, used
+where the carrier is Mathlib's and the tree only documents it) is skipped by
+that check, so use it only when there really is no declaration to name.
 
 ## Locating a statement in the sources
 
@@ -101,6 +153,14 @@ structures and private auxiliaries.
 `stronger`, 30 `differs`, **0 `unsure`**.  On the proof side, 753 are
 `faithful` and 975 have no thesis proof to match (`none`); 520 diverge — 247 a
 different route, 141 mild, 114 closed by Mathlib, 18 `sorry`.
+
+*(That is the 2026-08-20 snapshot and is kept as one.  Live counts, 2026-08-27:
+2336 rows, **46 `weaker`**, 57 `stronger`, 39 `differs`, 2194 `ok`.  The
+`weaker` figure fell from 85 to 46 in the stmt-class pass of 2026-08-27, which
+did not repair anything: 39 of the 85 named points that four earlier repair
+waves had **already** put in the tree, under sibling declarations, and had left
+classed `weaker` anyway.  See *What `stmt` is a verdict about* above for the
+rule that keeps this from recurring.)*
 
 ### Standing observations
 
@@ -197,6 +257,40 @@ different route, 141 mild, 114 closed by Mathlib, 18 `sorry`.
   compared field by field with 180VII and **every clause is present**.  So
   QUESTIONS **B13**'s weakness is in `effectus_vn_partial`'s statement in
   `VNExamples`, not in the definitions it rests on.
+
+* **A repair lands under a new name, and the row keeps the old verdict.**
+  This is now the audit's most common defect, and it is invisible from the
+  class column alone.  Four repair waves between 2026-08-21 and 2026-08-26
+  added the missing clause *beside* the flagged declaration — `vn_equalisers`
+  got `vn_equalisers_miu`/`_cpsu`, 48V's `varrho_Omega_normal` got
+  `gnsRepFam_normal`, 161II's `hilbmod_el2` got the whole `L2` module — wrote
+  the sibling into the row's *note*, and then left the class at `weaker`
+  "for the named declaration".  39 rows were in that state on 2026-08-27, 46%
+  of the `weaker` count.  Two passes differed on the convention, which is why
+  it went unnoticed: the B/Eff pass extended `lean_name`, the A/VN passes
+  named the sibling only in prose.  The rule is now written down under
+  *What `stmt` is a verdict about*.
+
+* **A negative grep has a short shelf life, and it is not evidence a later
+  pass can inherit.**  Two rows added by the coverage pass of 2026-08-27
+  (3VII, 4IX in `acstar-basic`) each rested on a stated grep result that was
+  *already false when written*: 3VII said nothing in the tree exhibits two
+  non-commuting matrices (`bhTwoProj_not_commute_swap`,
+  `A/Proc/Measurement:6073`, does), and 4IX said `c₀₀` is absent from the tree
+  (`projection_on_c00`, `A/CStar/Basic:660`, is stated over it — 200 lines
+  below the doc block the row is about).  Both verdicts survive on *narrower*
+  grounds, but a reason of the form "grep finds nothing" must name the pattern
+  and the scope, or the next reader cannot tell a real absence from a search
+  that looked for the wrong token.
+
+* **A check that skips a shape stops seeing that shape.**
+  `scripts/audit_check.py`'s phantom check excluded any `lean_name` containing
+  a space — a guard meant for prose entries like `Mathlib EuclideanSpace ℂ
+  (Fin N)`, which silently exempted every row naming two or more declarations.
+  46 rows were unchecked and one of them, 198II's `PredSquare.category`, was a
+  phantom: the category structure it named is an anonymous `instance` with no
+  name at all.  The check now reads every comma-separated name and skips only
+  fields that are genuinely prose.
 
 * **A missing field in a `structure` propagates silently.**  `B/Dils`'s
   **164II `ExtTensor`** omits the point's clause that `η` is *injective*
