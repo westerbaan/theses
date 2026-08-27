@@ -20,7 +20,10 @@ Design:
   `π_s` and `ζ_s`; that the value is independent of that choice — the
   actual content of 217I — is the separate
   `pureDagger_indep_of_choice`.
-* Not separately formalized: the examples 214II (`Hilb`), 215II/215VIa–VII
+* 214II (`Hilb` is a †-category with the adjoint as †) is `HilbObj` and
+  its `DaggerCat` instance below; Mathlib has no category of Hilbert
+  spaces, so the objects are bundled here.
+* Not separately formalized: the examples 215II/215VIa–VII
   (the concrete description of the dagger on `vN`), the Setting 219II with
   its internal lemmas 219III, 219V, 219VII, 219IX, 219X and 219XIII
   (proof infrastructure for 219XVI, represented here by the standalone
@@ -73,6 +76,47 @@ def DaggerCat.IsPositive {X : D} (f : X ⟶ X) : Prop :=
 def DaggerCat.Unitary {X Y : D} (α : X ≅ Y) : Prop := α.inv = dag α.hom
 
 end DaggerCat
+
+/-! ### `Hilb` is a †-category (214II) -/
+
+section Hilb
+
+/-- An object of **`Hilb`**, the category of complex Hilbert spaces
+(**214II**, eff.tex:5274, Example).  Bundled, because Mathlib has no
+category of Hilbert spaces. -/
+structure HilbObj : Type (u + 1) where
+  /-- The underlying type. -/
+  carrier : Type u
+  [nacg : NormedAddCommGroup carrier]
+  [ips : InnerProductSpace ℂ carrier]
+  [complete : CompleteSpace carrier]
+
+attribute [instance] HilbObj.nacg HilbObj.ips HilbObj.complete
+
+/-- **214II**: `Hilb` — Hilbert spaces with **bounded linear maps**. -/
+instance : Category.{u, u + 1} HilbObj where
+  Hom X Y := X.carrier →L[ℂ] Y.carrier
+  id X := ContinuousLinearMap.id ℂ X.carrier
+  comp f g := g.comp f
+
+@[simp] theorem hilb_comp {X Y Z : HilbObj} (f : X ⟶ Y) (g : Y ⟶ Z) :
+    f ≫ g = g.comp f := rfl
+
+@[simp] theorem hilb_id (X : HilbObj) :
+    𝟙 X = ContinuousLinearMap.id ℂ X.carrier := rfl
+
+/-- **214II** (eff.tex:5274, Example): **`Hilb` is a †-category with the
+familiar adjoint as †.**  The three laws are Mathlib's
+`ContinuousLinearMap.adjoint_comp`, `adjoint_id` and `adjoint_adjoint`;
+identity-on-objects is built into `DaggerCat.dag`, whose type already
+returns a map `Y ⟶ X`. -/
+noncomputable instance : DaggerCat HilbObj where
+  dag {X Y} f := ContinuousLinearMap.adjoint (𝕜 := ℂ) f
+  dag_comp {X Y Z} f g := ContinuousLinearMap.adjoint_comp (𝕜 := ℂ) g f
+  dag_id X := ContinuousLinearMap.adjoint_id (𝕜 := ℂ)
+  dag_dag {X Y} f := ContinuousLinearMap.adjoint_adjoint (𝕜 := ℂ) f
+
+end Hilb
 
 /-! ## †-effectuses (parsec 215) -/
 

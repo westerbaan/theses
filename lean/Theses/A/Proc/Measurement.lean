@@ -3019,6 +3019,44 @@ theorem square_f [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     rw [hxdef] at hx0
     exact (sub_eq_zero.mp hx0).symm
 
+/-- **98X** (proc.tex:729, Example), the identification of a corner at the
+unit: `Corner.val : 1·𝒜·1 → 𝒜` is surjective (it is always injective,
+`Corner.val_injective`), so the corner of the unit *is* the algebra. -/
+theorem corner_val_surjective_one [VonNeumannAlgebra A] {e : A} (he : e = 1) :
+    Function.Surjective (Corner.val : Corner A e → A) := fun a =>
+  ⟨⟨a, by rw [he, one_mul, mul_one]⟩, rfl⟩
+
+/-- **98X** (proc.tex:729, Example), first sentence: **`[f] = f` for a
+faithful unital ncp-map**.  Under `f(1) = 1` the standard filter
+`c_{f(1)} = c_1` is the inclusion, so the commuting square of **98IX**
+collapses to `[f](a) = f(a)` for every `a` of `⌈f⌉𝒜⌈f⌉`; and under
+`⌈f⌉ = 1` — the Example's faithfulness — that corner is all of `𝒜` and the
+codomain corner `⌈f(1)⌉ℬ⌈f(1)⌉ = ⌈1⌉ℬ⌈1⌉` is all of `ℬ`, both by
+`corner_val_surjective_one`.  The three conjuncts together are the
+Example's `[f] = f`, `Corner.val` being the identification of a corner at
+the unit with its algebra (the tree keeps `⌈f⌉𝒜⌈f⌉` a distinct type, cf.
+the note at `equivalent_examples_1'`).
+
+The Example's *second* sentence — that such an `f` need not be an
+isomorphism, witnessed by `(λ,μ) ↦ ½(λ+μ) : ℂ² → ℂ` — is **not** converted
+here: `ℂ²` carries no von Neumann algebra instance in `A/Proc` (the
+product instance lives downstream in `B/Eff/VNExamples`). -/
+theorem sqBracket_eq_self [VonNeumannAlgebra A] [VonNeumannAlgebra B]
+    (f : NCPMap A B) (hfaith : ncpCarrier f = 1) (hu : (f 1 : B) = 1) :
+    Function.Surjective (Corner.val : Corner A (ncpCarrier f) → A) ∧
+      Function.Surjective (Corner.val : Corner B (ceil (f 1)) → B) ∧
+      ∀ x : Corner A (ncpCarrier f), ((sqBracket f x).val : B) = f x.val := by
+  have hsq : CFC.sqrt (f 1 : B) = 1 := by rw [hu]; exact CFC.sqrt_one
+  have hceil : ceil (f 1 : B) = 1 := by
+    rw [hu]; exact ceil_of_isStarProjection (IsStarProjection.one B)
+  refine ⟨corner_val_surjective_one hfaith, corner_val_surjective_one hceil,
+    fun x => ?_⟩
+  have hproj : (cornerProjMap (ncpCarrier f)).toNCPMap x.val = x :=
+    Corner.val_injective (by rw [cornerProjMap_apply]; exact x.property)
+  have h := (square_f f).1 x.val
+  rw [hproj] at h
+  rw [h, stdFilter_apply, hsq, one_mul, mul_one]
+
 /-- An ncp-map commutes with subtraction (it is linear; `NCPMap` carries no
 `AddMonoidHomClass` instance, so this goes through its
 `CompletelyPositiveMap`). -/

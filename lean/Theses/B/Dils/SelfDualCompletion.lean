@@ -2254,8 +2254,10 @@ end CompletionCarrier
 
 /-! ## Parsec 1520: sesquilinear forms and 𝒷ᵃ(X) for self-dual X
 
-**152I** (dils.tex:3320): introduction; **152III**/**152IV** (Example) —
-nothing to formalize.  **152VI** is the proof of **152V**;
+**152I** (dils.tex:3320): introduction; **152III** (Example) is
+`ba_isBoundedBSesq` below (its sesquilinearity half is `ba_isBSesquilinear`,
+142VIII); **152IV**, the Example's closing remark, is **152V** itself.
+**152VI** is the proof of **152V**;
 **152XI**–**152XIII** the proof of **152X** — not converted. -/
 
 section SelfDualBa
@@ -2722,6 +2724,24 @@ theorem ba_isBSesquilinear [CompleteSpace X] (Z : Ba 𝒷 X) :
         rfl
       smul_right_complex := fun c x y => by
         simp only [map_smul Z.1, CStarModule.inner_smul_right_complex] }
+
+/-- **152III** (dils.tex:3335, Example): for `T ∈ 𝒷ᵃ(X)` the map
+`⟨(·), T(·)⟩` is a **bounded** 𝒷-sesquilinear form in the sense of
+**152II** `IsBoundedBSesq`.  Sesquilinearity is `ba_isBSesquilinear`
+(142VIII); the bound is Cauchy–Schwarz for Hilbert C*-modules
+(`CStarModule.norm_inner_le`) followed by `‖Ty‖ ≤ ‖T‖‖y‖`, so `r = ‖T‖`
+works.  (The thesis states the Example for a pre-Hilbert module; ours
+carries `[CompleteSpace X]`, which is what `Ba 𝒷 X` is set up with here.) -/
+theorem ba_isBoundedBSesq [CompleteSpace X] (Z : Ba 𝒷 X) :
+    ∃ r : ℝ, 0 ≤ r ∧
+      IsBoundedBSesq r (fun x y : X => (inner 𝒷 x (Z.1 y) : 𝒷)) := by
+  let _ : NormedSpace ℂ X := NormedSpace.ofCore (CStarModule.normedSpaceCore 𝒷)
+  refine ⟨‖Z.1‖, norm_nonneg _, ba_isBSesquilinear Z, fun x y => ?_⟩
+  calc ‖(inner 𝒷 x (Z.1 y) : 𝒷)‖
+      ≤ ‖x‖ * ‖Z.1 y‖ := CStarModule.norm_inner_le X
+    _ ≤ ‖x‖ * (‖Z.1‖ * ‖y‖) :=
+        mul_le_mul_of_nonneg_left (Z.1.le_opNorm y) (norm_nonneg x)
+    _ = ‖Z.1‖ * ‖x‖ * ‖y‖ := by ring
 
 /-! Elementary stability properties of ultrastrong limits in `𝒷`.  These
 belong in `Theses.A.VN.Basic` next to `usTendsto_iff` and **45IV**; they are
