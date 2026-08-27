@@ -215,6 +215,28 @@ private theorem conj_ortho_eq_zero_iff {x p : A} (hx : x ∈ effects A)
 end EffectsAux
 
 omit [PartialOrder A] [StarOrderedRing A] in
+/-- **55II** (vn.tex:2204, Definition): an element `p` of a C*-algebra is a
+**projection** when `p* p = p`.  The tree renders this by Mathlib's
+`IsStarProjection` (idempotent *and* self-adjoint); this is the one place
+where the two are shown to agree, so that the rendering is verified rather
+than asserted.  (`p* p = p` forces `p* = p`: starring it gives
+`p* p = p*`.) -/
+theorem isStarProjection_iff_star_mul_self (p : A) :
+    IsStarProjection p ↔ star p * p = p := by
+  constructor
+  · intro hp
+    calc star p * p = p * p := by rw [hp.isSelfAdjoint.star_eq]
+      _ = p := hp.isIdempotentElem
+  · intro h
+    have hsa : IsSelfAdjoint p := by
+      have h2 := congrArg star h
+      rw [star_mul, star_star, h] at h2
+      exact h2.symm
+    refine ⟨?_, hsa⟩
+    calc p * p = star p * p := by rw [hsa.star_eq]
+      _ = p := h
+
+omit [PartialOrder A] [StarOrderedRing A] in
 /-- **55IV** (`projection-basic`, vn.tex:2232, Exercise), part 1: `0` and
 `1` are projections. -/
 theorem projection_basic_1 :

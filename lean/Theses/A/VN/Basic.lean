@@ -3720,9 +3720,14 @@ theorem npuws [VonNeumannAlgebra A] (ω : A →ₚ[ℂ] ℂ) :
 **47II** (vn.tex:960, Definition): the categories `W*_cpsu` (von Neumann
 algebras with normal cpsu-maps) and `W*_miu` (with nmiu-maps).  The
 morphisms are formalized as `Theses.NCPSUMap` and `Theses.NMIUMap`; the
-categorical structure itself is not bundled here — the product (47IV) and
+categorical structure itself is not bundled *here* — the product (47IV) and
 equaliser (47V) below are stated through their universal properties, which
-is what the thesis uses.
+is what the thesis uses.  It **is** bundled downstream, and this sentence
+should not be read as "nowhere": `W*_miu` is `WMIU` with its `Category`
+instance in `A/Proc/QuantumLambda.lean`, and `W*_cpsu` is `WStarCPSU` with
+its `Category` instance in `B/Eff/WStarCat.lean` (whose `WStarNCPU` is the
+thesis's `vN`).  What really is unbundled is `CStar_pu` (needed for 84aI)
+and the full subcategories `haW*_miu`, `haW*_cpsu`.
 
 **47VI** (`vn-effectus`, vn.tex:1017): the sketch that `(W*_cpsu)^op` is an
 effectus refers forward to the precise treatment in thesis B (eff.tex);
@@ -5054,26 +5059,33 @@ theorem ngns (A : Type u) [CStarAlgebra A] [PartialOrder A]
 the C*-algebra `B^a(X)` of bounded adjointable module maps on a self-dual
 Hilbert `𝒜`-module `X` is a von Neumann algebra, and `⟨x,(·)x⟩` is normal
 for every `x ∈ X`.
--- FIXME(typecheck): not converted.  *Corrected 2026-08-26*: this used to
-say that `B^a(X)` "has no Mathlib counterpart and is not formalized in
-`Theses/A/CStar`".  The second half is **false** — cstar **32XIII**
-`bax_cstar` is proved in `Theses/A/CStar/Matrices.lean`, and the `Bax`
-section there carries the whole `CStarAlgebra` structure (involution the
-adjoint, C*-identity from **32XII**, completeness from `bax_cstar`) together
-with its spectral order, on `Bax 𝒜 X`.  What actually blocks the thesis's
-route is (i) `Bax` is `private` to that file, so nothing downstream can name
-it, and (ii) 49II itself is unstated: neither "`B^a(X)` is a von Neumann
-algebra for self-dual `X`" nor "`M_N(𝒜) ≅ B^a(𝒜^N)`" has a declaration
-anywhere.  Its rôle here (producing `M_N(𝒜)`) is covered by the direct
-statement 49IV below. -/
+
+**Proved, in `Theses/A/VN/BaX.lean`** (2026-08-27) — but not under that
+name, and the reason is worth keeping.  cstar **32XIII** `bax_cstar` is
+proved in `Theses/A/CStar/Matrices.lean`, and the `Bax` section there
+carries the whole `CStarAlgebra` structure (involution the adjoint,
+C*-identity from **32XII**, completeness from `bax_cstar`) together with its
+spectral order, on `Bax 𝒜 X` — but `Bax` is `private` to that file, so
+`VonNeumannAlgebra (Bax 𝒜 X)` cannot be *written* outside it.  `A/VN/BaX`
+therefore states both clauses of **42I** for `B^a(X)` through the
+vector-functional order, which by **32XV** `chilb_vector_states_2` *is* the
+order of `B^a(X)`: `bah_vn_sup` (suprema exist, and `⟨x,(·)x⟩` preserves
+them — 49II's two halves) and `bah_vn_np_faithful` (enough np-functionals).
+Exporting `Bax` is the single remaining step; with it,
+`VonNeumannAlgebra (Bax 𝒜 X)` is a short assembly from those two.
+
+The other half of the thesis's route to `M_N(𝒜)`, the isomorphism
+`M_N(𝒜) ≅ B^a(𝒜^N)`, is still unstated; but 49IV does not need it, being
+proved directly below. -/
 
 /-! ### Auxiliary machinery for **49IV**: the `𝒜`-valued quadratic form of a
 matrix
 
 The thesis proves 49IV.1 by way of 49II (`bah-vn`), i.e. by realising
-`M_N(𝒜)` as `B^a(𝒜^N)`; 49II is not formalized and the C*-algebra `B^a(X)`
-that would carry it is `private` (see the FIXME above), so the supremum is
-constructed here directly, out of the same ingredient that makes 49II work: the `𝒜`-valued
+`M_N(𝒜)` as `B^a(𝒜^N)`; the C*-algebra `B^a(X)` that would carry 49II is
+`private` and the isomorphism `M_N(𝒜) ≅ B^a(𝒜^N)` is unstated (see the note
+above), so the supremum is constructed here directly, out of the same
+ingredient that makes 49II work: the `𝒜`-valued
 sesquilinear form `⟨x, M y⟩ = ∑ᵢⱼ xᵢ* Mᵢⱼ yⱼ` of the Hilbert `𝒜`-module
 `𝒜^N`.  Its two properties are **33II** (`cstar_matrix_positive_iff`: the
 form detects positivity) and **44VIII**+**44XIV** (each `M ↦ ⟨x, M x⟩`

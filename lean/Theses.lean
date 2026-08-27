@@ -21,6 +21,7 @@ import Theses.A.VN.TomitaStrip
 import Theses.A.VN.TomitaFourier
 import Theses.A.VN.TomitaAnalytic
 import Theses.A.VN.CommutationTomita
+import Theses.A.VN.BaX
 import Theses.A.Proc.Measurement
 import Theses.A.Proc.Tensor
 import Theses.A.Proc.Commutation

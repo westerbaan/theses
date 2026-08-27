@@ -104,13 +104,17 @@ different route, 141 mild, 114 closed by Mathlib, 18 `sorry`.
 
 ### Standing observations
 
-* **A missing statement can orphan a proved one.**  36II ("every Hilbert
-  space is self-dual") has no declaration; `exists_rho` (39IX) and
-  `bh_bounded_uw_complete` (76III) both go straight to Mathlib's Riesz instead
-  of instantiating 36V at `𝒜 = ℂ`.  The consequence is that **36V, proved in
-  full, is used by nothing in the tree.**  This is the 24II.4 pattern with the
-  arrow reversed: there a missing statement was silently used, here a present
-  one is silently bypassed.
+* **A missing statement can orphan a proved one — and closing it un-orphans
+  the other.**  36II ("every Hilbert space is self-dual") had no declaration,
+  so `exists_rho` (39IX) and `bh_bounded_uw_complete` (76III) went straight to
+  Mathlib's Riesz instead of instantiating 36V at `𝒜 = ℂ`, leaving **36V**
+  proved in full and used by nothing.  *Closed 2026-08-27*: 36II is
+  `selfDual_hilbert` (`TowardsVN.lean:278`), with four consumers, and 36V
+  `chilb_form_representation` now has five — `exists_rho` takes the thesis's
+  own route through 36II and 36V (`TowardsVN.lean:2019`).  The observation is
+  kept because the mechanism is general and the tree took months to notice
+  this instance of it: the audit records what each declaration says, and a
+  point nobody stated has no row to be wrong.
 
 * **A stale "still `sorry`" has now driven two live divergences.**
   `A/Proc/Duplicators`' 129X takes an arbitrary np-functional instead of the
@@ -355,9 +359,9 @@ QUESTIONS **B6** already had repaired for 192III.1/.2 in session 10, a repair
 never carried across to `predMap_functor`, `stat_functor`,
 `emod_effectus_representation` or `stat_mconvex`.
 
-Two clauses are missing from the tree altogether while being *used*: **24II.4**
-(reached through Mathlib) and **36II** (whose absence leaves **36V**, proved in
-full, used by nothing).  **191VIII.1**, **73III.4** and **101VII.1**'s middle
+One clause is missing from the tree altogether while being *used*: **24II.4**
+(reached through Mathlib).  **36II** was the other; it was stated on
+2026-08-27 as `selfDual_hilbert`, and **36V** is no longer unused.  **191VIII.1**, **73III.4** and **101VII.1**'s middle
 clause are simply absent.
 
 The 49 `stronger` rows are mostly benign generalisations; the exception is
