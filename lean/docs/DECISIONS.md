@@ -43,11 +43,12 @@ in §4 rather than in front of you.
 | 2.7 | 180V | should the effect object be pinned? | 1 audit row | (a) yes |
 | 3.1 | 101VII.1 | does the middle clause gain `aqa* ≤ p`? | nothing | (a) yes — erratum |
 | 3.2 | 132III.4/.5, 123II.2 | may "=" be an equivalence of categories? | nothing | (b) reword |
-| 3.3 | 34V.3 | mirrored cp condition for modules? | nothing | (b) not yet |
+| 3.3 | 34V.3, 32II, 33I, 141III | mirrored cp condition for modules? | nothing | (a) add the mirrored condition |
 | 3.4 | 98VI | replace the hint or turn it round? | nothing | (a) replace |
 | 3.5 | 34VI.1 | the solution slot is an empty `\TODO{}` | nothing | your call |
 | 3.6 | `onb1` | the solution over-assumes | nothing | leave it |
 | 3.7 | — | bridge Kadison to Mathlib's Sakai `WStarAlgebra`? | nothing | scope question |
+| 3.8 | 169II / 169VIII | may a corner's / filter's test object be a bare C\*-algebra? | 4 audit rows | (a) narrow to von Neumann |
 
 §4 lists seven things `QUESTIONS.md` still asks that the current sources have
 already answered.  **Do not spend time on those.**
@@ -757,8 +758,14 @@ unstated rather than as open work.
 functional `T ↦ ⟨x, Tx⟩ : ℬᵃ(X) → 𝒜` is completely positive.  We state the case
 `𝒜 = ℂ`, `X = ℋ` only.  The **convention** half of this question was already
 settled in session 2 — Mathlib's `CStarModule` convention was approved, and it
-is the mirror of the thesis's (`⟪x,y⟫_Mathlib = ⟨y,x⟩_thesis`).  What is left is
-narrower.
+is the mirror of the thesis's.  *(Careful: the shorthand this document and §4.5
+used to give for that mirror, `⟪x,y⟫_Mathlib = ⟨y,x⟩_thesis`, is not the
+relation; the relation is the **opposite algebra**, re-derived at the foot of
+this item, and the argument swap is what you get after composing the mirror with
+a `star`.  Files that transcribe a printed formula do exactly that — see the
+`star ∘ mirror` recipe in `B/Dils/Kaplansky.lean:158` — which is why both
+descriptions circulate.  For a `⟨y,y⟩` or a commutative `𝒜` they agree.)*
+What is left is narrower.
 
 Under Mathlib's convention the ℂ-linear map `T ↦ inner 𝒜 x (T x)` **fails** our
 `IsCompletelyPositiveMap`, which asks `0 ≤ ∑ᵢⱼ bᵢ* f(aᵢ*aⱼ) bⱼ`: what the module
@@ -795,6 +802,35 @@ matrix — whereas `IsCompletelyPositiveMap` asks for `∑ᵢⱼ bᵢ* ⟪Tᵢx,
 For commutative `𝒜` the two coincide, which is why the Hilbert-space `ad_cp_3`
 is unaffected.  What the answer settles is the shape of every future `𝒜`-valued
 cp statement, 161II in `B/Dils` included.
+
+**Three statements in the tree already carry the mirror, and a reader who takes
+the printed formula literally will read them backwards.**  Found by the
+statement-class sweeps of 2026-08-27 and recorded here rather than in
+`ERRATA.md`, because none of the three printed points is *wrong* — it is our
+carrier that mirrors them, and which convention `ℬᵃ(X)` and `𝒜^N` are read in is
+the ruling this item asks for.
+
+* **32II** (`acstar-matrices-representation.csv`, `differs`).  `𝒜^N` is
+  Mathlib's `C⋆ᵐᵒᵈ(𝒜, Fin N → 𝒜)`, whose inner product is built coordinatewise
+  out of `inner x y := y * star x`
+  (`Mathlib/Analysis/CStarAlgebra/Module/Constructions.lean:79`), so ours is
+  `∑ₙ (yₙ)·(xₙ)*` where cstar.tex 32II displays `∑ₙ (xₙ)*·(yₙ)`.  The two agree
+  exactly when `𝒜` is commutative.  Nothing downstream is wrong; every `𝒜^N`
+  computation in `A/CStar/Matrices.lean` and `A/CStar/TowardsVN.lean` is
+  consistent with *ours*.
+* **33I** `matrixBaxEquiv` (`A/CStar/Matrices.lean:1527`, `differs`).  Because
+  Mathlib's module is a **left** module, the adjointables on `𝒜^N` are the right
+  multiplications and compose backwards, so what is true is
+  `M_N(𝒜)ᵐᵒᵖ ≅ ℬᵃ(𝒜^N)`; `M_N(𝒜) ≅ ℬᵃ(𝒜^N)` as 33I.4 prints it is **false**
+  under these conventions, and `a ↦ a̲` is a ∗-anti-isomorphism.  Nothing is lost
+  by the `ᵐᵒᵖ` — it preserves star, positivity, the order and its suprema.
+* **141III** `rightMulEquiv` (`B/Dils/Paschke.lean:2087`, `differs`).  The `N = 1`
+  case of the same thing: `ℬ ≅ ℬᵃ(ℬ)ᵐᵒᵖ`, with `rightMul_mul` proving
+  `R_s R_t = R_{ts}`.
+
+Answering (a) would let 34V.3, 161II and these three be restated in the thesis's
+convention; answering (b) leaves them as they are, with the `ᵐᵒᵖ`s standing and
+this item as the place a reader is sent.
 
 ### 3.4 — 98VI: replace the hint, or turn its inequality round?
 
@@ -838,6 +874,56 @@ Proving them equivalent would unlock a lot of Mathlib reuse in `A/VN`.  This is
 a scope question, not a defect: nothing is blocked, and we would not start it
 without a "yes".
 
+### 3.8 — 169II / 169VIII: may a corner's and a filter's test object be a bare C*-algebra?
+
+*(Found by the `stronger`/`differs` sweep of 2026-08-27.  Audit rows
+`bdils-pure-beff-states-effectalgebras.csv` 169XII, 169XI.1, 169XI.2a, 169XI.2b.
+Lean: `IsCornerFor` `B/Dils/Pure.lean:679`, `IsFilterFor` `:1353`.  Distinct
+from §1.1 and from `QUESTIONS.md` D7, which are about ncp vs ncpsu.)*
+
+Both definitions quantify their test object over C\*-algebras —
+`∀ (C : Type u) (_ : CStarAlgebra C) (_ : PartialOrder C) (_ : StarOrderedRing C)` —
+where dils.tex:6068 and :6124 quantify over the chapter's von Neumann algebras.
+More test maps means a harder universal property, so **both predicates are
+strictly stronger than the printed ones**.
+
+That is harmless where the predicate is *concluded* — 169IV, 169V, 169VI, 169X
+and 170IV.1 all prove the stronger form, and their rows are correctly `stronger`.
+It is a **gap** where the predicate is *assumed*: 169XII `dils_filters_injective`,
+169XI.1 `dils_filter_basics_1`, 169XI.2 `dils_filter_basics_2a` and `_2b` each
+take `IsFilter`/`IsFilterFor` as a hypothesis, so a filter in the printed sense
+need not satisfy it and **none of those four statements implies the printed
+point**.  No sibling states them for printed filters.  The four rows were graded
+`stronger` on the strength of dropped `[VonNeumannAlgebra]` binders; two of those
+binder-drops were repaired in session 70 without the grade being moved, which is
+how it went unnoticed.  They are now `differs`, `differs`, `weaker`, `weaker`.
+
+**Nothing false is proved and nothing is blocked** — the four are true as stated.
+
+**Options.**  **(a)** Add `[VonNeumannAlgebra C]` to the test-object quantifier
+in both definitions, matching the print.  **(b)** Rule that the widened test
+class is wanted (it is the stronger and more useful predicate), and record the
+four rows as deliberate.
+
+**Recommendation: (a).**  The widening buys nothing at any site: every one of the
+eight instantiations already lands on a von Neumann algebra —
+`Pure.lean:1922` at `CU = ULift ℂ`, `:2181` at `D'.P` (a `PaschkeTriple`'s `P`,
+which carries `vn`), `:2241` at `A`, `:2377` passes its own `C` through, and
+`VNExamples.lean:3445`, `:3552`, `:3845`, `:3878` at objects of `WStarCPSU`.
+
+**Cost, if (a).**  ~150–250 lines touched, no new mathematics, in two files.
+The two definitions gain a binder; the ten declarations that *prove* the
+predicate (`isFilterFor_ncpId` `:701`, `standard_corner_dils` `:944`,
+`pdil_isCornerFor` `:1255`, `h_is_corner_for_unital_map` `:1299`,
+`dils_stand_filter` `:1821`, `isCorner_comp_nmiuBij` `:2356`,
+`isCornerFor_comp` `:4022`, and in `B/Eff/VNExamples.lean`
+`su_isQuotient_of_isFilterFor` `:3829`, `su_isComprehension_of_isCornerFor`
+`:3862`, `su_stand_corner_ceil`) accept one more binder each; the eight
+instantiation sites above supply one more instance each.  **One real
+prerequisite:** the `VonNeumannAlgebra (ULift ℂ)` instance lives at
+`B/Eff/VNExamples.lean:758`, *downstream* of `B/Dils/Pure.lean`, and would have
+to move upstream (~20 lines) for `dils_filters_injective` to instantiate at `CU`.
+
 ---
 
 ## 4. Stale — do not answer these
@@ -875,7 +961,7 @@ the statement, which is why A8 appears above as §2.4 rather than as a blocker.
 
 **4.5 — A13's convention half.**  "Which `𝒜`-valued convention are the module
 statements phrased in?" was answered in session 2: Mathlib's, approved, with the
-swap `⟪x,y⟫_Mathlib = ⟨y,x⟩_thesis` recorded in the affected doc comments and
+mirror recorded in the affected doc comments and
 two statements corrected (`chilb_cs`, `cstar_matrix_gram_nonneg`).  Option (b)
 of A13 — introduce the thesis's convention alongside — is not live.  Only §3.3
 remains.

@@ -48,7 +48,17 @@ further sources of false reports are described on `tagged_declarations`:
 prose inside a doc comment read as a declaration, and a doc comment on an
 anonymous `instance` attributed to the next named declaration.
 
-4. PHANTOM ROWS
+4. MISPLACED ROWS
+
+A row whose declaration exists, but not in the module the row names.  The
+phantom check matches names tree-wide, so a rename is invisible whenever some
+*other* file happens to define a declaration of the old name: `avn-projections`
+named `CentreSeparating` long after it became `CentrePositiveSeparating`, and
+passed, because an unrelated `CentreSeparating` lives in `A/CStar/Positive`.
+A negative grep on such a row reads false today while being true of what it
+meant.
+
+5. PHANTOM ROWS
 
 A row naming a declaration that no longer exists.  Every comma-separated
 name in `lean_name` is checked; a `lean_name` that is prose rather than a name
@@ -109,6 +119,44 @@ def code_lines(path):
             else:
                 out.append(' ' if depth else ln[j]); j += 1
         yield i, ''.join(out)
+
+
+def declaration_files():
+    """name -> the set of files defining it, for locating a row's declaration."""
+    where = {}
+    for path in glob.glob(os.path.join(ROOT, 'Theses', '**', '*.lean'),
+                          recursive=True):
+        rel = os.path.relpath(path, ROOT)
+        stack = []
+        for _, ln in code_lines(path):
+            m = NS_OPEN.match(ln)
+            if m:
+                stack.extend(m.group(1).split('.')); continue
+            m = NS_END.match(ln)
+            if m:
+                parts = m.group(1).split('.')
+                if stack[-len(parts):] == parts:
+                    del stack[-len(parts):]
+                continue
+            m = DECL.match(ln)
+            if m:
+                n = m.group(1)
+                where.setdefault(n, set()).add(rel)
+                for i in range(len(stack)):
+                    where.setdefault('.'.join(stack[i:] + [n]), set()).add(rel)
+    return where
+
+
+def module_file(field):
+    """The .lean path a row's `module` field names, or None if it is loose."""
+    f = field.strip()
+    if not f:
+        return None
+    if not f.endswith('.lean'):
+        f = f + '.lean'
+    if not f.startswith('Theses/'):
+        f = 'Theses/' + f
+    return f if os.path.exists(os.path.join(ROOT, f)) else None
 
 
 def tree_declarations():
@@ -315,6 +363,21 @@ def main():
         print(f'UNROWED    {loc}  {disp}  {name}'
               f'{"  (private)" if priv else ""}')
 
+    # Misplaced rows: the declaration exists, but not where the row says.
+    where = declaration_files()
+    misplaced = []
+    for fn, i, f in rows:
+        mf = module_file(f[2])
+        if mf is None:
+            continue
+        for n in name_list(f[1]) or []:
+            homes = where.get(n)
+            if homes and mf not in homes:
+                misplaced.append((fn, i, f[0], n, mf, sorted(homes)))
+    for fn, i, disp, n, mf, homes in misplaced:
+        print(f'MISPLACED  {fn}:{i}  {disp}  {n}')
+        print(f'           row says {mf}; defined in {", ".join(homes)}')
+
     schema = schema_violations()
     for fname, i, nf, disp, name in schema:
         print(f'SCHEMA     {fname}:{i}  {disp}  {name}')
@@ -350,8 +413,9 @@ def main():
     print(f'\n{len(tree)} sorries in the tree, {len(recorded)} rows classed '
           f'`sorry`; {len(orphaned)} orphaned, {len(unrecorded)} unrecorded, '
           f'{len(phantom)} phantom, {len(schema)} schema, '
-          f'{len(unrowed)} unrowed')
-    return 1 if (orphaned or unrecorded or phantom or schema or unrowed) else 0
+          f'{len(unrowed)} unrowed, {len(misplaced)} misplaced')
+    return 1 if (orphaned or unrecorded or phantom or schema or unrowed
+                 or misplaced) else 0
 
 
 if __name__ == '__main__':

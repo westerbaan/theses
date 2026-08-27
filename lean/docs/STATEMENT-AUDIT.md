@@ -154,13 +154,23 @@ structures and private auxiliaries.
 `faithful` and 975 have no thesis proof to match (`none`); 520 diverge — 247 a
 different route, 141 mild, 114 closed by Mathlib, 18 `sorry`.
 
-*(That is the 2026-08-20 snapshot and is kept as one.  Live counts, 2026-08-27:
-2336 rows, **46 `weaker`**, 57 `stronger`, 39 `differs`, 2194 `ok`.  The
-`weaker` figure fell from 85 to 46 in the stmt-class pass of 2026-08-27, which
-did not repair anything: 39 of the 85 named points that four earlier repair
-waves had **already** put in the tree, under sibling declarations, and had left
+*(That is the 2026-08-20 snapshot and is kept as one.  Live counts, 2026-08-27
+after the `stronger`/`differs` sweep: **2475 rows, 66 `weaker`, 50 `stronger`,
+38 `differs`, 2321 `ok`**.  Earlier that day the figures were 2336 rows, 46
+`weaker`, 57 `stronger`, 39 `differs` — rows have been added since by the
+coverage and 42I/49II passes, so read a count only with its date.  The `weaker`
+figure had fallen from 85 to 46 in the stmt-class pass of 2026-08-27, which did
+not repair anything: 39 of the 85 named points that four earlier repair waves
+had **already** put in the tree, under sibling declarations, and had left
 classed `weaker` anyway.  See *What `stmt` is a verdict about* above for the
-rule that keeps this from recurring.)*
+rule that keeps this from recurring.
+
+The `stronger`/`differs` sweep of the same day moved ten rows: three
+`stronger → differs` (169XII, 169XI.1, 153I — mixed direction), three
+`stronger → weaker` (169XI.2a, 169XI.2b, 153IV — the reason for `stronger` had
+expired and nothing was left pulling that way), and four to `ok` (164IX,
+158V.3, 158V.4, and three of the four 49II `differs` rows, whose point is stated
+on the type by the sibling `bah_vn`).)*
 
 ### Standing observations
 
@@ -236,10 +246,13 @@ rule that keeps this from recurring.)*
   "still `sorry`" is not cosmetic: it is a live instruction to take the long
   way round.
 * **A displayed axiom can be mistyped without asserting anything false.**
-  106III.1's conjunct for axiom (C) reads `p ∗ (q ∗ q) = (p ∗ p) ∗ q` where (C)
-  is `p ∗ (p ∗ q) = (p ∗ p) ∗ q` — an inner `⌈q⌉` for `⌈p⌉`.  The two coincide
-  for effects, so the theorem is true; it just is not the axiom.  Verdict
-  `differs`, not `weaker`.
+  106III.1's conjunct for axiom (C) *used to read* `p ∗ (q ∗ q) = (p ∗ p) ∗ q`
+  where (C) is `p ∗ (p ∗ q) = (p ∗ p) ∗ q` — an inner `⌈q⌉` for `⌈p⌉`.  The two
+  coincide for effects, so the theorem was true; it just was not the axiom.
+  *Repaired, and re-read 2026-08-27* (`Measurement.lean:8747` is now the axiom);
+  the row stays `differs` for a different reason — the point's "except (A)" is
+  rendered as `¬ IsSequentialProduct` rather than as `¬(A)`.  The observation is
+  kept because the shape is general.
 
 * **An isomorphism of categories rendered as an equivalence.**  188III and
   188IV build identity-on-objects functors with two-sided inverses; our
@@ -293,11 +306,16 @@ rule that keeps this from recurring.)*
   fields that are genuinely prose.
 
 * **A missing field in a `structure` propagates silently.**  `B/Dils`'s
-  **164II `ExtTensor`** omits the point's clause that `η` is *injective*
-  (equivalently, definiteness of the inner product on `X ⊙ Y`, which 164VI
-  proves).  It is not a field and is stated nowhere — so `univprop_ext_tensor`
-  is `weaker` in turn, and `ext_tensor_uniqueness` is `stronger`, quantifying
-  over a wider class than the thesis does.  Nothing downstream looks wrong.
+  **164II `ExtTensor`** *used to omit* the point's clause that `η` is
+  *injective* (equivalently, definiteness of the inner product on `X ⊙ Y`, which
+  164VI proves) — it was not a field and was stated nowhere, so
+  `univprop_ext_tensor` was `weaker` in turn and `ext_tensor_uniqueness`
+  `stronger`, quantifying over a wider class than the thesis does.  Nothing
+  downstream looked wrong, which is the point of the observation.  *Closed, and
+  re-read 2026-08-27*: `η_injective` is a field (`SelfDual.lean:6077`, in kernel
+  form), `univprop_ext_tensor` is `ok`, and `ext_tensor_uniqueness` was moved
+  from `stronger` to `ok` in the sweep of that day — its `stronger` grade had
+  outlived the repair by four days.
   Audit `class`/`structure`/`def` field by field against the point.
 * **An unformalized construction can hollow out a statement that looks fine.**
   **161II**'s right-`ℬ`-module, pre-Hilbert-module and self-duality structure
