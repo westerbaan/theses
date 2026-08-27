@@ -28,7 +28,17 @@ causes have occurred: ASCII norms `||a||`, modulus and ket-bra bars (`|z|`,
 `|` instead of merged.  32 rows across seven files were broken this way
 before the check existed.
 
-3. PHANTOM ROWS
+3. UNROWED DECLARATIONS
+
+The audit's stated invariant is one row per DISP-carrying declaration.  The
+inverse of a phantom: a declaration whose doc comment OPENS with a DISP tag,
+so it claims to carry that point, and which no row names.  Detection is
+deliberately strict -- only `/-- **NNN**` counts, not a DISP appearing later
+in the prose, because an opening citation ("by **88VI** `double_commutant`")
+reads the same to a looser matcher and a 220-character window reported 202
+where the strict rule reports 139.  False negatives are the safe direction.
+
+4. PHANTOM ROWS
 
 A row naming a declaration that no longer exists.  Every comma-separated
 name in `lean_name` is checked; a `lean_name` that is prose rather than a name
@@ -144,6 +154,37 @@ def name_list(field):
     return None
 
 
+TAG_OPENS = re.compile(r'^/--\s*\**\s*\*\*(\d{1,3}[a-z]?[IVXL]+(?:\.[0-9a-z]+)?)\*\*')
+PRIVATE = re.compile(r'^\s*(?:@\[[^\]]*\]\s*)*private\b')
+
+
+def tagged_declarations():
+    """(disp, name, private, location) for each declaration whose doc comment
+    opens with a DISP tag."""
+    out = []
+    for path in glob.glob(os.path.join(ROOT, 'Theses', '**', '*.lean'),
+                          recursive=True):
+        rel = os.path.relpath(path, ROOT)
+        doc = None
+        for i, ln in enumerate(open(path, encoding='utf-8'), 1):
+            s = ln.strip()
+            if s.startswith('/--'):
+                doc = s
+            elif doc is not None:
+                doc = doc + ' ' + s
+            m = DECL.match(ln)
+            if m:
+                if doc:
+                    d = TAG_OPENS.match(doc)
+                    if d:
+                        out.append((d.group(1), m.group(1),
+                                    bool(PRIVATE.match(ln)), f'{rel}:{i}'))
+                doc = None
+            elif s.startswith('/-!'):
+                doc = None
+    return out
+
+
 def audit_rows():
     for path in sorted(glob.glob(os.path.join(ROOT, 'docs', 'audit', '*.csv'))):
         for i, line in enumerate(open(path, encoding='utf-8'), 1):
@@ -166,6 +207,16 @@ def main():
     for name, rel in sorted(unrecorded.items()):
         print(f'UNRECORDED {rel}  {name}')
         print(f'           declaration is `sorry`; no audit row records it')
+
+    # Unrowed DISP-tagged declarations.
+    all_names = set()
+    for _, _, f in rows:
+        for n in name_list(f[1]) or []:
+            all_names.add(n)
+    unrowed = [t for t in tagged_declarations() if t[1] not in all_names]
+    for disp, name, priv, loc in unrowed:
+        print(f'UNROWED    {loc}  {disp}  {name}'
+              f'{"  (private)" if priv else ""}')
 
     schema = schema_violations()
     for fname, i, nf, disp, name in schema:
@@ -201,8 +252,9 @@ def main():
 
     print(f'\n{len(tree)} sorries in the tree, {len(recorded)} rows classed '
           f'`sorry`; {len(orphaned)} orphaned, {len(unrecorded)} unrecorded, '
-          f'{len(phantom)} phantom, {len(schema)} schema')
-    return 1 if (orphaned or unrecorded or phantom or schema) else 0
+          f'{len(phantom)} phantom, {len(schema)} schema, '
+          f'{len(unrowed)} unrowed')
+    return 1 if (orphaned or unrecorded or phantom or schema or unrowed) else 0
 
 
 if __name__ == '__main__':
