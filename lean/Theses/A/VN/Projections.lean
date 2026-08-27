@@ -7085,294 +7085,31 @@ theorem nmiu_factors_maps (f : NMIUMap A B) (g : A →ₚ[ℂ] B)
 
 /-- **69IVb** (`nmiu-image`, vn.tex:3637): the image of an nmiu-map
 `f : A → B` between von Neumann algebras is a von Neumann subalgebra of
-`B`. -/
+`B`.
+
+This is the route vn.tex:3637 prints — "use this, and
+`injective-nmiu-iso-on-image`, to show that `f(𝒜)` is a von Neumann
+subalgebra of `ℬ`": **69IVa**'s factorisation `f = H ∘ G` with `G` onto the
+corner `⌈⌈f⌉⌉A` and `H` injective gives `f(𝒜) = H(⌈⌈f⌉⌉𝒜)`, and **48VI**.1
+(`isVNSubalgebra_range`) applies to the injective normal `H`.  (The corner
+lives in `A`'s universe and `B` in its own, so the form of 48VI.1 used here
+is `isVNSubalgebra_range_general`, which is `isVNSubalgebra_range` with the
+common-universe constraint dropped.) -/
 theorem nmiu_image (f : NMIUMap A B) :
     IsVNSubalgebra B f.toStarAlgHom.range := by
-  classical
-  set g : A →ₚ[ℂ] B := nmiuP f with hgdef
-  have hg : PreservesDirSups ⇑g := f.preservesDirSups'
-  have heqg : ∀ a, (g a : B) = f a := fun a => rfl
-  set c : A := carrier g hg with hcdef
-  have hc : IsStarProjection c := (carrier_spec g hg).1
-  obtain ⟨hcen, hker⟩ := carrier_miu f g hg heqg
-  rw [← hcdef] at hcen hker
-  have hfc : ∀ a : A, (f (c * a) : B) = f a := fun a =>
-    (nmiu_factors f g hg heqg a a).1.symm
-  have hsub : ∀ x y : A, (f (x - y) : B) = f x - f y := fun x y =>
-    map_sub f.toStarAlgHom x y
-  have hcc : c * c = c := hc.isIdempotentElem.eq
-  -- ## the corner `cA` is mapped isometrically
-  have hiso : ∀ x : A, c * x = x → ‖(f x : B)‖ = ‖x‖ := by
-    intro a ha
-    have hone : (1 - c) * ((1 - c) : A) = 1 - c := by
-      have h1 : (1 - c) * ((1 - c) : A) = 1 - c - c + c * c := by noncomm_ring
-      rw [h1, hcc]; abel
-    have hcomm : ∀ x : A, (1 - c) * x = x * (1 - c) := by
-      intro x
-      have h1 : (1 - c) * x = x - c * x := by noncomm_ring
-      have h2 : x * ((1 : A) - c) = x - x * c := by noncomm_ring
-      rw [h1, h2, hcen x]
-    set φ : A →⋆ₙₐ[ℂ] B × A :=
-      { toFun := fun x => (f x, (1 - c) * x)
-        map_smul' := fun r x => by
-          refine Prod.ext (map_smul f.toStarAlgHom r x) ?_
-          show (1 - c) * (r • x) = r • ((1 - c) * x)
-          rw [mul_smul_comm]
-        map_zero' := by
-          refine Prod.ext (map_zero f.toStarAlgHom) ?_
-          show (1 - c) * (0 : A) = 0
-          rw [mul_zero]
-        map_add' := fun x y => by
-          refine Prod.ext (map_add f.toStarAlgHom x y) ?_
-          show (1 - c) * (x + y) = (1 - c) * x + (1 - c) * y
-          rw [mul_add]
-        map_mul' := fun x y => by
-          refine Prod.ext (map_mul f.toStarAlgHom x y) ?_
-          show (1 - c) * (x * y) = ((1 - c) * x) * ((1 - c) * y)
-          calc (1 - c) * (x * y) = ((1 - c) * (1 - c)) * (x * y) := by rw [hone]
-            _ = (1 - c) * ((1 - c) * x) * y := by noncomm_ring
-            _ = (1 - c) * (x * (1 - c)) * y := by rw [hcomm x]
-            _ = ((1 - c) * x) * ((1 - c) * y) := by noncomm_ring
-        map_star' := fun x => by
-          refine Prod.ext (map_star f.toStarAlgHom x) ?_
-          show (1 - c) * star x = star ((1 - c) * x)
-          rw [star_mul, star_sub, star_one, hc.isSelfAdjoint.star_eq, hcomm (star x)] } with hφ
-    have hinj : Function.Injective φ := by
-      intro x y hxy
-      have h1 : (f x : B) = f y := congrArg Prod.fst hxy
-      have h2 : (1 - c) * x = (1 - c) * y := congrArg Prod.snd hxy
-      have h3 : (f (x - y) : B) = 0 := by rw [hsub, h1, sub_self]
-      have h4 : c * (x - y) = 0 := (hker _).mp h3
-      have h5 : (1 - c) * (x - y) = 0 := by rw [mul_sub, h2, sub_self]
-      refine sub_eq_zero.mp ?_
-      have h6 : c * (x - y) + (1 - c) * (x - y) = x - y := by noncomm_ring
-      rw [h4, h5, add_zero] at h6
-      exact h6.symm
-    have hn := NonUnitalStarAlgHom.norm_map φ hinj a
-    have hz : (1 - c) * a = 0 := by rw [sub_mul, one_mul, ha, sub_self]
-    have hpn : ‖(φ a : B × A)‖ = max ‖(f a : B)‖ ‖(1 - c) * a‖ := rfl
-    rw [hn, hz, norm_zero] at hpn
-    rw [max_eq_left (norm_nonneg (f a : B))] at hpn
-    exact hpn.symm
-  -- ## `f` reflects the order on the corner
-  have hmul : ∀ u v : A, (f (u * v) : B) = f u * f v := fun u v =>
-    map_mul f.toStarAlgHom u v
-  have hstar : ∀ u : A, (f (star u) : B) = star (f u) := fun u =>
-    map_star f.toStarAlgHom u
-  have hneg : ∀ u : A, (f (-u) : B) = -f u := fun u => map_neg f.toStarAlgHom u
-  have hsmul : ∀ (r : ℂ) (u : A), (f (r • u) : B) = r • f u := fun r u =>
-    map_smul f.toStarAlgHom r u
-  have hadd : ∀ u v : A, (f (u + v) : B) = f u + f v := fun u v =>
-    map_add f.toStarAlgHom u v
-  have hrefl : ∀ x y : A, IsSelfAdjoint x → IsSelfAdjoint y → c * (y - x) = y - x →
-      (f x : B) ≤ f y → x ≤ y := by
-    intro x y hx hy hw hle
-    set w : A := y - x with hwdef
-    have hwsa : IsSelfAdjoint w := hy.sub hx
-    have hfw : (0 : B) ≤ f w := by rw [hwdef, hsub]; exact sub_nonneg.mpr hle
-    set n : A := negPart w with hndef
-    have hnn : (0 : A) ≤ n := CFC.negPart_nonneg w
-    have hnsa : IsSelfAdjoint n := IsSelfAdjoint.of_nonneg hnn
-    have hd : posPart w - negPart w = w := CFC.posPart_sub_negPart w hwsa
-    have hnp : negPart w * posPart w = 0 := CFC.negPart_mul_posPart w
-    have hconj : n * w * n = -(n ^ 3) := by
-      calc n * w * n = n * (posPart w - negPart w) * n := by rw [hd]
-        _ = n * posPart w * n - n ^ 3 := by rw [hndef]; noncomm_ring
-        _ = -(n ^ 3) := by rw [hnp, zero_mul, zero_sub]
-    have hle3 : (f (n ^ 3) : B) ≤ 0 := by
-      have hpos : (0 : B) ≤ star (f n) * f w * f n :=
-        star_left_conjugate_nonneg hfw _
-      rw [← hstar, hnsa.star_eq] at hpos
-      have hrw : (f n : B) * f w * f n = -(f (n ^ 3)) := by
-        rw [← hmul, ← hmul, hconj, hneg]
-      rw [hrw] at hpos
-      exact neg_nonneg.mp hpos
-    have hnn3 : (0 : B) ≤ f (n ^ 3) := nmiu_nonneg f (CStarAlgebra.pow_nonneg hnn 3)
-    have hcn3 : c * n ^ 3 = 0 := (hker _).mp (le_antisymm hle3 hnn3)
-    have hcomm_n : Commute c n := hcen n
-    have hcn : c * n = 0 := by
-      refine eq_zero_of_pow_three_eq_zero ?_ ?_
-      · show star (c * n) = c * n
-        rw [star_mul, hnsa.star_eq, hc.isSelfAdjoint.star_eq, ← hcen n]
-      · rw [hcomm_n.mul_pow]
-        have h3 : c ^ 3 = c := by
-          have h : c ^ 3 = c * c * c := by rw [pow_succ, sq]
-          rw [h, hcc, hcc]
-        rw [h3, hcn3]
-    have hwp : w = c * posPart w := by
-      have h1 : c * w = c * posPart w - c * n := by
-        conv_lhs => rw [← hd]
-        rw [mul_sub, hndef]
-      rw [hcn, sub_zero] at h1
-      rw [← h1, hwdef, hw]
-    have hpos : (0 : A) ≤ c * posPart w := by
-      have hpc : c * posPart w = star c * posPart w * c := by
-        rw [hc.isSelfAdjoint.star_eq]
-        calc c * posPart w = (c * c) * posPart w := by rw [hcc]
-          _ = c * (c * posPart w) := by rw [mul_assoc]
-          _ = c * (posPart w * c) := by rw [hcen (posPart w)]
-          _ = c * posPart w * c := by rw [← mul_assoc]
-      rw [hpc]
-      exact star_left_conjugate_nonneg (CFC.posPart_nonneg w) c
-    have : (0 : A) ≤ w := by rw [hwp]; exact hpos
-    rw [hwdef] at this
-    exact sub_nonneg.mp this
-  -- ## the range is closed
-  have hrange : ((f.toStarAlgHom.range : StarSubalgebra ℂ B) : Set B)
-      = Set.range (fun a : A => (f a : B)) := by
-    ext b; exact ⟨fun hb => hb, fun hb => hb⟩
-  have hcorner_sub : ∀ u v : A, c * u = u → c * v = v → c * (u - v) = u - v := by
-    intro u v hu hv; rw [mul_sub, hu, hv]
-  have hclosed : IsClosed ((f.toStarAlgHom.range : StarSubalgebra ℂ B) : Set B) := by
-    rw [hrange]
-    refine isClosed_of_closure_subset ?_
-    intro b hb
-    obtain ⟨u, hu, hlim⟩ := mem_closure_iff_seq_limit.mp hb
-    choose a ha using hu
-    set x : ℕ → A := fun n => c * a n with hxdef
-    have hcx : ∀ n, c * x n = x n := by
-      intro n; rw [hxdef]; show c * (c * a n) = c * a n; rw [← mul_assoc, hcc]
-    have hfx : ∀ n, (f (x n) : B) = u n := by
-      intro n; rw [hxdef]; show (f (c * a n) : B) = u n; rw [hfc]; exact ha n
-    have hdist : ∀ m n, ‖x m - x n‖ = ‖u m - u n‖ := by
-      intro m n
-      rw [← hiso _ (hcorner_sub _ _ (hcx m) (hcx n)), hsub, hfx, hfx]
-    have hcauchyx : CauchySeq x := by
-      have hcu : CauchySeq u := hlim.cauchySeq
-      rw [Metric.cauchySeq_iff] at hcu ⊢
-      intro ε hε
-      obtain ⟨N, hN⟩ := hcu ε hε
-      refine ⟨N, fun m hm n hn => ?_⟩
-      have h := hN m hm n hn
-      rw [dist_eq_norm] at h ⊢
-      rw [hdist]
-      exact h
-    obtain ⟨y, hy⟩ := cauchySeq_tendsto_of_complete hcauchyx
-    have hcy : c * y = y := by
-      have h1 : Tendsto (fun n => c * x n) atTop (𝓝 (c * y)) :=
-        ((continuous_const_mul c).tendsto y).comp hy
-      have h2 : Tendsto (fun n => c * x n) atTop (𝓝 y) := by
-        simpa only [hcx] using hy
-      exact tendsto_nhds_unique h1 h2
-    refine ⟨y, ?_⟩
-    have hufy : Tendsto u atTop (𝓝 (f y : B)) := by
-      rw [Metric.tendsto_atTop]
-      intro ε hε
-      rw [Metric.tendsto_atTop] at hy
-      obtain ⟨N, hN⟩ := hy ε hε
-      refine ⟨N, fun n hn => ?_⟩
-      have h := hN n hn
-      rw [dist_eq_norm] at h ⊢
-      have : ‖u n - (f y : B)‖ = ‖x n - y‖ := by
-        rw [← hfx n, ← hsub, hiso _ (hcorner_sub _ _ (hcx n) hcy)]
-      rw [this]
-      exact h
-    show (f y : B) = b
-    exact tendsto_nhds_unique hufy hlim
-  refine ⟨hclosed, ?_⟩
-  -- ## the range is closed under bounded directed suprema
-  intro D s hDsub hne hdir hlub
-  have hsaMap : ∀ x : selfAdjoint A, IsSelfAdjoint (f (x : A) : B) := by
-    intro x
-    show star (f (x : A) : B) = f (x : A)
-    rw [← hstar, x.2.star_eq]
-  set saMap : selfAdjoint A → selfAdjoint B := fun x => ⟨f (x : A), hsaMap x⟩ with hsaMapDef
-  have hpull : ∀ d ∈ D, ∃ x : selfAdjoint A, c * (x : A) = x ∧ saMap x = d := by
-    intro d hd
-    have hmem : (d : B) ∈ ((f.toStarAlgHom.range : StarSubalgebra ℂ B) : Set B) := hDsub d hd
-    rw [hrange] at hmem
-    obtain ⟨a0, ha0'⟩ := hmem
-    have ha0 : (f a0 : B) = (d : B) := ha0'
-    set a1 : A := ((2 : ℂ)⁻¹ • (a0 + star a0)) with ha1
-    have hfa1 : (f a1 : B) = d := by
-      have h1 : (f a1 : B) = (2 : ℂ)⁻¹ • (f a0 + star (f a0)) := by
-        rw [ha1, hsmul, hadd, hstar]
-      rw [h1, ha0, d.2.star_eq]
-      rw [← two_smul ℂ (d : B), smul_smul]
-      norm_num
-    set x0 : A := c * a1 with hx0
-    have hx0sa : IsSelfAdjoint x0 := by
-      show star (c * a1) = c * a1
-      have hst : star a1 = a1 := by
-        rw [ha1, star_smul, star_add, star_star]
-        simp only [star_inv₀, RCLike.star_def, Complex.conj_ofNat]
-        rw [add_comm]
-      rw [star_mul, hst, hc.isSelfAdjoint.star_eq, ← hcen a1]
-    refine ⟨⟨x0, hx0sa⟩, ?_, ?_⟩
-    · show c * (c * a1) = c * a1
-      rw [← mul_assoc, hcc]
-    · refine Subtype.ext ?_
-      show (f x0 : B) = (d : B)
-      rw [hx0, hfc, hfa1]
-  obtain ⟨d₀, hd₀⟩ := hne
-  set Dt : Set (selfAdjoint B) := {d | d ∈ D ∧ d₀ ≤ d} with hDtDef
-  have hDtne : Dt.Nonempty := ⟨d₀, hd₀, le_refl _⟩
-  have hDtdir : DirectedOn (· ≤ ·) Dt := by
-    rintro x ⟨hxD, hx0⟩ y ⟨hyD, _⟩
-    obtain ⟨z, hzD, hxz, hyz⟩ := hdir x hxD y hyD
-    exact ⟨z, ⟨hzD, le_trans hx0 hxz⟩, hxz, hyz⟩
-  have hDtlub : IsLUB Dt s := by
-    refine ⟨fun d hd => hlub.1 hd.1, fun v hv => hlub.2 fun d hd => ?_⟩
-    obtain ⟨z, hzD, hdz, h0z⟩ := hdir d hd d₀ hd₀
-    exact le_trans hdz (hv ⟨hzD, h0z⟩)
-  set D' : Set (selfAdjoint A) :=
-    {x : selfAdjoint A | c * (x : A) = x ∧ saMap x ∈ Dt} with hD'Def
-  have himg : saMap '' D' = Dt := by
-    refine Set.Subset.antisymm ?_ fun d hd => ?_
-    · rintro _ ⟨x, hx, rfl⟩; exact hx.2
-    · obtain ⟨x, hxc, hx⟩ := hpull d hd.1
-      exact ⟨x, ⟨hxc, by rw [hx]; exact hd⟩, hx⟩
-  have hd₀t : d₀ ∈ Dt := ⟨hd₀, le_refl _⟩
-  have hD'ne : D'.Nonempty := by
-    obtain ⟨x, hxc, hx⟩ := hpull d₀ hd₀
-    exact ⟨x, hxc, by rw [hx]; exact hd₀t⟩
-  have hD'dir : DirectedOn (· ≤ ·) D' := by
-    intro x hx y hy
-    obtain ⟨d, hdD, hxd, hyd⟩ := hDtdir (saMap x) hx.2 (saMap y) hy.2
-    obtain ⟨z, hzc, hz⟩ := hpull d hdD.1
-    have hzmem : z ∈ D' := ⟨hzc, by rw [hz]; exact hdD⟩
-    refine ⟨z, hzmem, ?_, ?_⟩
-    · refine Subtype.coe_le_coe.mp (hrefl _ _ x.2 z.2 ?_ ?_)
-      · exact hcorner_sub _ _ hzc hx.1
-      · exact Subtype.coe_le_coe.mpr (hz ▸ hxd)
-    · refine Subtype.coe_le_coe.mp (hrefl _ _ y.2 z.2 ?_ ?_)
-      · exact hcorner_sub _ _ hzc hy.1
-      · exact Subtype.coe_le_coe.mpr (hz ▸ hyd)
-  set M : ℝ := ‖(s : B) - (d₀ : B)‖ + ‖(d₀ : B)‖ with hMDef
-  have hM0 : 0 ≤ M := by positivity
-  have hD'bdd : BddAbove D' := by
-    have hsa : IsSelfAdjoint (algebraMap ℂ A ((M : ℝ) : ℂ)) :=
-      IsSelfAdjoint.of_nonneg (Theses.A.CStar.algebraMap_ofReal_nonneg hM0)
-    refine ⟨⟨algebraMap ℂ A ((M : ℝ) : ℂ), hsa⟩, fun x hx => ?_⟩
-    have hd : saMap x ∈ Dt := hx.2
-    have h1 : (0 : B) ≤ (saMap x : B) - (d₀ : B) :=
-      sub_nonneg.mpr (Subtype.coe_le_coe.mpr hd.2)
-    have h2 : (saMap x : B) - (d₀ : B) ≤ (s : B) - (d₀ : B) :=
-      sub_le_sub_right (Subtype.coe_le_coe.mpr (hDtlub.1 hd)) _
-    have h3 : ‖(saMap x : B) - (d₀ : B)‖ ≤ ‖(s : B) - (d₀ : B)‖ :=
-      CStarAlgebra.norm_le_norm_of_nonneg_of_le h1 h2
-    have h4 : ‖(saMap x : B)‖ ≤ M := by
-      have := norm_add_le ((saMap x : B) - (d₀ : B)) ((d₀ : B))
-      simp only [sub_add_cancel] at this
-      exact le_trans this (by rw [hMDef]; gcongr)
-    have h5 : ‖(x : A)‖ ≤ M := by rw [← hiso _ hx.1]; exact h4
-    refine Subtype.coe_le_coe.mp ?_
-    refine le_trans ?_ (Theses.A.CStar.algebraMap_ofReal_mono h5)
-    have := IsSelfAdjoint.le_algebraMap_norm_self x.2
-    rwa [Theses.A.CStar.algebraMap_real_eq] at this
-  set t : selfAdjoint A := dirSup D' ⟨hD'ne, hD'dir, hD'bdd⟩ with htDef
-  have htlub : IsLUB D' t := isLUB_dirSup D' ⟨hD'ne, hD'dir, hD'bdd⟩
-  have hkey := hg D' t hD'ne hD'dir htlub
-  have hsets : (fun x : selfAdjoint A => (g (x : A) : B)) '' D' = Subtype.val '' Dt := by
-    rw [← himg, ← Set.image_comp]
-    rfl
-  rw [hsets] at hkey
-  have hslub : IsLUB (Subtype.val '' Dt) ((s : selfAdjoint B) : B) :=
-    isLUB_coe_of_isLUB hDtne hDtlub
-  have hst : (g (t : A) : B) = (s : B) := hkey.unique hslub
-  show (s : B) ∈ ((f.toStarAlgHom.range : StarSubalgebra ℂ B) : Set B)
-  rw [hrange, ← hst]
-  exact ⟨(t : A), rfl⟩
+  obtain ⟨c, G, H, -, -, -, hGs, hHi, hfa⟩ :=
+    nmiu_factors_maps f (nmiuP f) f.preservesDirSups' (fun _ => rfl)
+  -- `f(𝒜) = H(⌈⌈f⌉⌉𝒜)`, because `G` is onto the corner and `f = H ∘ G`
+  have hr : f.toStarAlgHom.range = H.toStarAlgHom.range := by
+    ext b
+    constructor
+    · rintro ⟨a, rfl⟩
+      exact ⟨G a, (hfa a).symm⟩
+    · rintro ⟨x, rfl⟩
+      obtain ⟨a, rfl⟩ := hGs x
+      exact ⟨a, hfa a⟩
+  rw [hr]
+  exact isVNSubalgebra_range_general H.toStarAlgHom hHi H.preservesDirSups'
 
 /-- `a* e a` is positive for a projection `e`. -/
 private theorem conj_proj_nonneg {e : A} (he : IsStarProjection e) (a : A) :

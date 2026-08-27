@@ -230,7 +230,92 @@ Six. For each: the dead declaration, the point whose printed argument would
 consume it, and what the repair would cost. **None of these was repaired in this
 sweep**; they are reported.
 
-### 5.1 `selfdual_compl_defining_dense` (163II) — the argument written three times
+### 5.1 `selfdual_compl_defining_dense` (163II) — **the premise was wrong: the
+projection argument is ours, and the thesis prints it at none of the three
+points**
+
+> **Corrected 2026-08-27, after acting on it.**  This was §11's item 5.  It
+> does not survive reading `dils.tex`, and the correction runs the opposite
+> way to §5.2's: there the *finding* was wrong, here the *diagnosis* is.
+>
+> **The four prose citations are ours, not the thesis's.**  `dils.tex` cites
+> `selfdual-compl-defining` exactly once, at **164IX** (dils.tex:5300), and
+> what it cites is the *uniqueness* half — "with the same reasoning as in
+> `selfdual-compl-defining`".  The tree honours that: 163I
+> `selfdual_compl_defining_unique` is live — `paschke_tensor_module` (167I)
+> calls it (`SelfDual.lean:10537`).  The dead limb is the *moreover*-clause, and the
+> argument the four citations name is printed at none of its three sites:
+>
+> * **163III** (dils.tex:4959-4990), 163II's own proof, runs no projection
+>   argument.  It compares `X` with the **150II** completion, whose image is
+>   dense by construction, obtains mutually inverse `U`, `W` from the two
+>   universal properties, and transports the density along the surjective
+>   ultranorm-continuous `U`.  No `D^⊥⊥`, no **160IV**.
+> * **164II**.1's proof is one sentence (dils.tex:5310): "Property 1 … follows
+>   immediately from the fact that the exterior tensor product is unique up to
+>   an isomorphism which respects the embeddings" — the same transport, with
+>   **164IX** as the comparison.
+> * `paschke_tprod_dense` transcribes no thesis point at all; its own row has
+>   said so since the 2026-08-26 route pass.
+>
+> So this is not the class-1 shape.  The thesis does not cite the dead
+> declaration anywhere, and the two re-derivations are not re-derivations of
+> what it does cite.
+>
+> **The recorded repair, re-costed.**  The duplicated block is **22** lines at
+> 163II (`SelfDual.lean:5290-5311`), **29** at `ext_tensor_dense` and **20**
+> at `paschke_tprod_dense` — **71** in all, not "roughly 60 removed at each of
+> two sites".  The linear-from-bilinear bridge is about **100** lines: the
+> linear `η̃ = extLift E.η` and its four module-map facts (~15), its
+> `extBInner`-preservation (~20), and the transfer of the universal property
+> (~60), which is not routine — `((a·x) ⊗ (b·y)) ⊗ 1` and `(x ⊗ y) ⊗ t a b`
+> are equal only *modulo the degenerate inner product*, so the bilinear datum
+> for `ExtTensor.univ` has to be extracted through the null-vector step
+> `‖T v‖ ≤ C‖v‖_B = 0`.  **It has exactly one customer**: Paschke's universal
+> property is over a different `BInner` (`ptensBInner φ` on `𝒜 ⊙ ℬ`) and would
+> need a second bridge of its own, for a 20-line saving.  And it buys no
+> faithfulness, because 163II is not what the thesis cites at either site.
+> **Verdict: do not build it.**
+>
+> **What was done instead.**  `ext_tensor_dense` (**164II**.1) now runs the
+> thesis's own proof, dils.tex:5310: `extTensorOfCompl` names the `ExtTensor`
+> carried by the **150II** completion of `(X ⊙ Y) ⊙ 𝒞` — for which the density
+> is the completion's own `dense` field, modulo 164VII's `bSpan`-to-`unClosure`
+> step, extracted as `extTensor_bSpan_unClosure` — and **164IX**
+> `ext_tensor_uniqueness` carries it to an arbitrary `ExtTensor`, exactly, the
+> comparison map preserving the inner product and hence the ultranorm
+> seminorms.  **Measured**: the 29-line projection block is gone and
+> `ext_tensor_dense`'s own proof is 29 lines; the model costs four private
+> declarations (`extTensorOfCompl`, `_eta`, `_dense`, `exists_extTensor_dense`)
+> and the extracted `extTensor_bSpan_unClosure`, whose *new* text is about 60
+> lines — the other 108 lines of them are moved, not written.  `SelfDual.lean`
+> grows **10 755 → 10 871**, +116, of which about 60 lines are doc comment
+> (this correction is written into three of them); the code delta is about
+> **+56 against 29 removed**.  `hX`, `hY` are used at last, so the file's
+> `set_option linter.unusedVariables false` suppression is gone.  The row moves
+> `route` → `faithful`, and its recorded reason (that property 1 needs the
+> unbuilt `ℓ²((pᵢⱼ))` construction) was false: 164VII proves property 1 for the
+> thesis's *own* model only, and point 100 is what proves it for an arbitrary
+> one.
+>
+> **The limb stays dead, and it moves to §6.**  163II's moreover-clause has no
+> consumer left to gain: at the one site where the printed transport is
+> available the tree now runs it *directly*, without 163II; and 163II itself
+> cannot run it, for a reason that is neither a shortcut nor an omission but a
+> universe restriction — `dils_completion B` yields a
+> `SelfDualCompletion.{u, v, max u v}`, carrier in `Type (max u v)`, while
+> 163II's `huniv` quantifies over codomains in `Type v` only, so the comparison
+> map cannot be formed.  Its own doc comment and audit row, which both claimed
+> "class 1 (faithful), the thesis's argument is exactly this one", are
+> corrected.
+>
+> One erratum came out of the reading: **163III**'s last three sentences
+> quantify over `X` where they mean `V`, and join the inner-product display to
+> the density claim with an "As …, we know …" that is not an implication.
+> Filed in `ERRATA.md` as a nit.
+
+*Original section follows, retained because it is what the correction is
+against:*
 
 `B/Dils/SelfDual.lean:5246`, 78 lines, `green`, doc-comment class **"Divergence
 class 1 (faithful)"** — i.e. it is the thesis's own argument, transcribed.
@@ -290,17 +375,31 @@ this section's premise was wrong**
 > (`starAlgHom_nonneg`, `starAlgHom_mono`, `starAlgHom_le_iff`) are all pinned
 > to one universe — ~155 lines of *audited* statements, not 102 lines of one.
 >
-> **A live opportunity remains, and it is not this one.**  The hint route was
-> built and compiled in scratch, axiom-clean: `nmiu_image` via
-> `nmiu_factors_maps` then 48VI.1 on the injective `H` is **14 lines**,
-> against the **287**-line direct proof at `Projections.lean:7089–7375`.
-> §11's "40–80 lines replacing ~150" was wrong in both directions.  Taking it
-> needs the four pinned statements restated universe-polymorphically with the
-> audited forms re-derived verbatim (net ≈ +20 in `Basic`, −273 in
-> `Projections`).  That is a faithfulness win worth having — but it is a
-> separate item, it touches four audited statements, and **it still would not
-> give this limb a consumer**.  Left for an author ruling with the measured
-> numbers on the 69IVb row.
+> **A live opportunity remained, and it is not this one — it was taken on
+> 2026-08-27.**  The hint route replaces the **287**-line direct proof at
+> `Projections.lean:7089–7375` with a **15-line declaration** (27 lines with its doc comment): `nmiu_factors_maps`
+> (69IVa) gives `f = H ∘ G` with `G` onto the corner and `H` injective, so
+> `f(𝒜) = H(⌈⌈f⌉⌉𝒜)`, and 48VI.1 applies to `H`.  §11's "40–80 lines replacing
+> ~150" was wrong in both directions.
+>
+> **It needed no author ruling, and the earlier framing here — "left for an
+> author ruling" — was wrong.**  The four pinned statements were restated
+> universe-polymorphically under new names (`starAlgHom_nonneg_general`,
+> `starAlgHom_mono_general`, `starAlgHom_le_iff_general`,
+> `isVNSubalgebra_range_general`) and each audited statement was then
+> **re-derived from its general form under its own name**.  A statement
+> re-derived byte-identically is not a statement change: all four types were
+> printed with `pp.explicit` + `pp.universes` + `pp.fullNames` against the old
+> and the new olean and diffed to nothing, down to binder names.  No consumer
+> moved; no row for those four changed; two rows were *added*, for the two
+> general forms whose doc comments open with a DISP tag.  Measured deltas:
+> `Basic.lean` **+33 net** (82 inserted, 49 deleted), `Projections.lean`
+> **−263 net** — against the costed +20 / −273.  `nmiu_image` is axiom-clean
+> in situ.  69IVb's proof class moves `route` → `faithful`.
+>
+> **It still does not give this limb a consumer.**  `injective_nmiu_iso_on_image_2'`
+> is the Lemma's *second* conclusion, which 69IVb does not ask for; it stays
+> terminal and belongs in §6.
 
 *Original section follows, retained because the reasoning is what led to the
 correction:*
@@ -529,6 +628,15 @@ here:
   the one place the theses cite it — 194I.4 `AConvMCat.coprod_inl_injective` —
   is itself left under a costed machinery reason. Cannot be closed until that is.
 * **`paschke_pure` (171VII)** is **no longer dead** — see §9.
+* **`injective_nmiu_iso_on_image_2'` (48VI part 2)**, `A/VN/Basic.lean:4814`,
+  74 lines.  **Moved here from §5.2, 2026-08-27**, where it had been nominated
+  as a fingerprint on a premise that does not survive reading `vn.tex:1119`.
+  It is that Lemma's *second* conclusion — an injective nmiu-map restricts to
+  an nmiu-**isomorphism** onto its image.  The one place the theses point at
+  that Lemma is 69IVb (`vn.tex:3637`), which asks only for the *first*
+  conclusion, and which took it on 2026-08-27 (§5.2).  The second conclusion
+  yields neither closedness of the range nor that its suprema are computed in
+  `ℬ`, so no proof of 69IVb can spend it.  Terminal.
 
 ---
 
@@ -1110,10 +1218,13 @@ make them the fingerprint the check is after. Left, recorded, re-confirmed.
    and the recommendation was wrong** — see the correction at the head of §5.2.
    69IVb asks only for the Lemma's *first* conclusion; the dead limb is the
    second, and no proof of 69IVb can consume it.  The row was fixed; the limb
-   stays dead and moves to §6.  What the attempt did find is worth a separate
-   item: the thesis's hint route is **14 lines against our 287**, blocked only
-   by ~155 lines of universe-pinned audited statements.  Costed on the 69IVb
-   row, awaiting an author ruling.
+   stays dead and moves to §6.  The separate item the attempt turned up — the
+   thesis's hint route, **15 lines against our 287**, blocked by
+   universe-pinned audited statements — was **also taken, 2026-08-27**, and it
+   needed **no author ruling**: the four pinned statements were generalized
+   under new names and the audited ones re-derived from them byte-identically,
+   which is a proof change, not a statement change.  Measured: `Basic` +33 net,
+   `Projections` −263 net; 69IVb moves `route` → `faithful`.
 2. **§5.3's row, not its proof.** Re-cost the 125VIIb row: 125VI is `green`
    since `61d6f49` and "which is itself blocked" is stale. Cheap, and it
    unblocks nothing but stops the next reader inheriting a false reason.
@@ -1126,8 +1237,15 @@ make them the fingerprint the check is after. Left, recorded, re-confirmed.
 4. **A cone pass**, to re-decide §10b and §10c cluster 2, and to check the 44
    dead instances that the textual method is blind to. Budget an hour of compute
    and use a pointer-cached constant walk (§1).
-5. **§5.1, the three copies of 163II's projection argument.** Only if the
-   linear-from-bilinear bridge is wanted for something else as well.
+5. ~~**§5.1, the three copies of 163II's projection argument.**~~ **DONE
+   2026-08-27, and the recommendation's premise was wrong** — see the
+   correction at the head of §5.1.  The thesis cites the *uniqueness* half of
+   163II, which is live; the projection argument is ours, printed at none of
+   the three sites.  The bridge was costed at ~100 lines against 71
+   duplicated (the *measured* duplication, not the recorded "60 at each of two
+   sites"), with **one** customer, and was **not built**.  What was built
+   is the thesis's own proof of **164II**.1 (dils.tex:5310), which removed one
+   of the three copies; the limb keeps no consumer and moves to §6.
 6. **Leave §5.4, §5.5, §5.6, §6 and §8 alone.** Each has a written reason, and
    in the case of §5.6 the repair would weaken the statement.
 

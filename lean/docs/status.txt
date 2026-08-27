@@ -1927,6 +1927,7 @@ Theses.A.VN.Projections|Theses.A.VN.isStarProjection_iff_star_mul_self|green
 Theses.A.VN.NormalFunctionals|Theses.A.VN.isStarProjection_le_of_fix_subset|green
 Theses.A.VN.Projections|Theses.A.VN.isStarProjection_sum|green
 Theses.A.VN.Basic|Theses.A.VN.isVNSubalgebra_range|green
+Theses.A.VN.Basic|Theses.A.VN.isVNSubalgebra_range_general|green
 Theses.A.VN.Completeness|Theses.A.VN.isVNSubalgebra_usClosureSubalgebra|green
 Theses.A.VN.Basic|Theses.A.VN.isVNSubalgebra_wstar|green
 Theses.A.VN.Completeness|Theses.A.VN.kadisons_lemma|green
@@ -2210,8 +2211,11 @@ Theses.A.VN.Basic|Theses.A.VN.starAlgEquiv_preservesDirSups|green
 Theses.A.VN.Basic|Theses.A.VN.starAlgHomP_apply|green
 Theses.A.VN.Basic|Theses.A.VN.starAlgHom_apply_norm_le|green
 Theses.A.VN.Basic|Theses.A.VN.starAlgHom_le_iff|green
+Theses.A.VN.Basic|Theses.A.VN.starAlgHom_le_iff_general|green
 Theses.A.VN.Basic|Theses.A.VN.starAlgHom_mono|green
+Theses.A.VN.Basic|Theses.A.VN.starAlgHom_mono_general|green
 Theses.A.VN.Basic|Theses.A.VN.starAlgHom_nonneg|green
+Theses.A.VN.Basic|Theses.A.VN.starAlgHom_nonneg_general|green
 Theses.A.VN.Basic|Theses.A.VN.starAlgHom_preservesDirSups_of_vectors|green
 Theses.A.VN.NormalFunctionals|Theses.A.VN.star_mem_commutant_of_starSubalgebra|green
 Theses.A.VN.Basic|Theses.A.VN.sum_matEmb|green

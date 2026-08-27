@@ -3966,8 +3966,13 @@ variable {H : Type u} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
 
 section StarAlgHomAux
 
-/-- A ∗-homomorphism between C*-algebras is positive. -/
-theorem starAlgHom_nonneg (φ : A →⋆ₐ[ℂ] C) {x : A} (hx : 0 ≤ x) : 0 ≤ φ x := by
+variable {X : Type*} [CStarAlgebra X] [PartialOrder X] [StarOrderedRing X]
+variable {Y : Type*} [CStarAlgebra Y] [PartialOrder Y] [StarOrderedRing Y]
+
+/-- A ∗-homomorphism between C*-algebras is positive.  General form: domain
+and codomain need not lie in a *common* universe.  (`starAlgHom_nonneg` just
+below is this statement with both in `Type u`, and is what the audit records.) -/
+theorem starAlgHom_nonneg_general (φ : X →⋆ₐ[ℂ] Y) {x : X} (hx : 0 ≤ x) : 0 ≤ φ x := by
   have hs : CFC.sqrt x * CFC.sqrt x = x := CFC.sqrt_mul_sqrt_self x hx
   have hsa : IsSelfAdjoint (CFC.sqrt x) := IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg x)
   have h : φ x = star (φ (CFC.sqrt x)) * φ (CFC.sqrt x) := by
@@ -3975,11 +3980,20 @@ theorem starAlgHom_nonneg (φ : A →⋆ₐ[ℂ] C) {x : A} (hx : 0 ≤ x) : 0 �
   rw [h]
   exact star_mul_self_nonneg _
 
-/-- A ∗-homomorphism between C*-algebras is monotone. -/
-theorem starAlgHom_mono (φ : A →⋆ₐ[ℂ] C) {x y : A} (hxy : x ≤ y) : φ x ≤ φ y := by
-  have h := starAlgHom_nonneg φ (sub_nonneg.mpr hxy)
+/-- A ∗-homomorphism between C*-algebras is monotone.  General form; see
+`starAlgHom_nonneg_general`. -/
+theorem starAlgHom_mono_general (φ : X →⋆ₐ[ℂ] Y) {x y : X} (hxy : x ≤ y) : φ x ≤ φ y := by
+  have h := starAlgHom_nonneg_general φ (sub_nonneg.mpr hxy)
   rw [map_sub] at h
   exact sub_nonneg.mp h
+
+/-- A ∗-homomorphism between C*-algebras is positive. -/
+theorem starAlgHom_nonneg (φ : A →⋆ₐ[ℂ] C) {x : A} (hx : 0 ≤ x) : 0 ≤ φ x :=
+  starAlgHom_nonneg_general φ hx
+
+/-- A ∗-homomorphism between C*-algebras is monotone. -/
+theorem starAlgHom_mono (φ : A →⋆ₐ[ℂ] C) {x y : A} (hxy : x ≤ y) : φ x ≤ φ y :=
+  starAlgHom_mono_general φ hxy
 
 /-- A ∗-homomorphism between C*-algebras, viewed as a positive linear map. -/
 noncomputable def starAlgHomP (φ : A →⋆ₐ[ℂ] C) : A →ₚ[ℂ] C where
@@ -4006,19 +4020,21 @@ theorem eq_zero_of_pow_three_eq_zero {y : A} (hy : IsSelfAdjoint y) (h : y ^ 3 =
     rw [← CStarRing.norm_star_mul_self, hy.star_eq, ← sq, h2, norm_zero]
   exact norm_eq_zero.mp (by nlinarith [norm_nonneg y])
 
-/-- **48VI**.2 in its general C*-form: an *injective* ∗-homomorphism between
-C*-algebras reflects the order (hence is an order embedding). -/
-theorem starAlgHom_le_iff (φ : A →⋆ₐ[ℂ] C) (hφ : Function.Injective φ) {x y : A} :
-    φ x ≤ φ y ↔ x ≤ y := by
-  refine ⟨fun h => ?_, fun h => starAlgHom_mono φ h⟩
-  set z : A := y - x with hz
-  have hφz : (0 : C) ≤ φ z := by rw [hz, map_sub]; exact sub_nonneg.mpr h
+/-- **48VI**.2 in its general C*-form, without the common-universe constraint:
+an *injective* ∗-homomorphism between C*-algebras reflects the order.
+(`starAlgHom_le_iff` just below is this statement with both algebras in
+`Type u`, and is what the audit records.) -/
+theorem starAlgHom_le_iff_general (φ : X →⋆ₐ[ℂ] Y) (hφ : Function.Injective φ)
+    {x y : X} : φ x ≤ φ y ↔ x ≤ y := by
+  refine ⟨fun h => ?_, fun h => starAlgHom_mono_general φ h⟩
+  set z : X := y - x with hz
+  have hφz : (0 : Y) ≤ φ z := by rw [hz, map_sub]; exact sub_nonneg.mpr h
   have hzsa : IsSelfAdjoint z := by
     have h1 : φ (star z) = φ z := by rw [map_star, (IsSelfAdjoint.of_nonneg hφz).star_eq]
     exact hφ h1
   have hn0 : negPart z = 0 := by
-    have hnn : (0 : A) ≤ negPart z := CFC.negPart_nonneg z
-    have hcube : (0 : A) ≤ negPart z ^ 3 := CStarAlgebra.pow_nonneg hnn 3
+    have hnn : (0 : X) ≤ negPart z := CFC.negPart_nonneg z
+    have hcube : (0 : X) ≤ negPart z ^ 3 := CStarAlgebra.pow_nonneg hnn 3
     have hnsa : IsSelfAdjoint (negPart z) := IsSelfAdjoint.of_nonneg hnn
     have hconj : negPart z * z * negPart z = -(negPart z ^ 3) := by
       have hd : posPart z - negPart z = z := CFC.posPart_sub_negPart z hzsa
@@ -4028,7 +4044,7 @@ theorem starAlgHom_le_iff (φ : A →⋆ₐ[ℂ] C) (hφ : Function.Injective φ
         _ = negPart z * posPart z * negPart z - negPart z ^ 3 := by noncomm_ring
         _ = -(negPart z ^ 3) := by rw [hnp, zero_mul, zero_sub]
     have hle : φ (negPart z ^ 3) ≤ 0 := by
-      have hpos : (0 : C) ≤ star (φ (negPart z)) * φ z * φ (negPart z) :=
+      have hpos : (0 : Y) ≤ star (φ (negPart z)) * φ z * φ (negPart z) :=
         star_left_conjugate_nonneg hφz _
       rw [← map_star, hnsa.star_eq] at hpos
       have hrw : φ (negPart z) * φ z * φ (negPart z) = -φ (negPart z ^ 3) := by
@@ -4036,12 +4052,12 @@ theorem starAlgHom_le_iff (φ : A →⋆ₐ[ℂ] C) (hφ : Function.Injective φ
       rw [hrw] at hpos
       exact neg_nonneg.mp hpos
     have hzero : φ (negPart z ^ 3) = 0 :=
-      le_antisymm hle (starAlgHom_nonneg φ hcube)
+      le_antisymm hle (starAlgHom_nonneg_general φ hcube)
     have h3 : negPart z ^ 3 = 0 := by
       have := hφ (by rw [hzero, map_zero] : φ (negPart z ^ 3) = φ 0)
       exact this
     exact eq_zero_of_pow_three_eq_zero hnsa h3
-  have hzpos : (0 : A) ≤ z := by
+  have hzpos : (0 : X) ≤ z := by
     have hd : posPart z - negPart z = z := CFC.posPart_sub_negPart z hzsa
     rw [hn0, sub_zero] at hd
     rw [← hd]
@@ -4049,6 +4065,12 @@ theorem starAlgHom_le_iff (φ : A →⋆ₐ[ℂ] C) (hφ : Function.Injective φ
   rw [hz] at hzpos
   exact sub_nonneg.mp hzpos
 
+
+/-- **48VI**.2 in its general C*-form: an *injective* ∗-homomorphism between
+C*-algebras reflects the order (hence is an order embedding). -/
+theorem starAlgHom_le_iff (φ : A →⋆ₐ[ℂ] C) (hφ : Function.Injective φ) {x y : A} :
+    φ x ≤ φ y ↔ x ≤ y :=
+  starAlgHom_le_iff_general φ hφ
 
 /-- Composition of normal positive maps is normal. -/
 theorem preservesDirSups_pmap_comp (f : A →ₚ[ℂ] B) (hf : PreservesDirSups ⇑f)
@@ -4495,28 +4517,33 @@ section VNRange
 
 variable [VonNeumannAlgebra A] [VonNeumannAlgebra C]
 
-/-- **48VI**.1 in its general form: the image of an injective normal
-∗-homomorphism between von Neumann algebras is a von Neumann subalgebra. -/
-theorem isVNSubalgebra_range (φ : A →⋆ₐ[ℂ] C) (hφ : Function.Injective φ)
-    (hn : PreservesDirSups ⇑φ) : IsVNSubalgebra C φ.range := by
+/-- **48VI**.1 in its general form, without the common-universe constraint:
+the image of an injective normal ∗-homomorphism between von Neumann algebras
+is a von Neumann subalgebra.  (`isVNSubalgebra_range` just below is this
+statement with both algebras in `Type u`, and is what the audit records.) -/
+theorem isVNSubalgebra_range_general {X : Type*} [CStarAlgebra X] [PartialOrder X]
+    [StarOrderedRing X] [VonNeumannAlgebra X] {Y : Type*} [CStarAlgebra Y]
+    [PartialOrder Y] [StarOrderedRing Y] [VonNeumannAlgebra Y] (φ : X →⋆ₐ[ℂ] Y)
+    (hφ : Function.Injective φ) (hn : PreservesDirSups ⇑φ) :
+    IsVNSubalgebra Y φ.range := by
   classical
-  have hnorm : ∀ x : A, ‖φ x‖ = ‖x‖ := NonUnitalStarAlgHom.norm_map φ hφ
-  have hiso : Isometry (φ : A → C) := NonUnitalStarAlgHom.isometry φ hφ
-  have hrange : ((φ.range : StarSubalgebra ℂ C) : Set C) = Set.range (φ : A → C) := by
+  have hnorm : ∀ x : X, ‖φ x‖ = ‖x‖ := NonUnitalStarAlgHom.norm_map φ hφ
+  have hiso : Isometry (φ : X → Y) := NonUnitalStarAlgHom.isometry φ hφ
+  have hrange : ((φ.range : StarSubalgebra ℂ Y) : Set Y) = Set.range (φ : X → Y) := by
     ext x
     exact ⟨fun hx => hx, fun hx => hx⟩
-  have hsaMap : ∀ x : selfAdjoint A, IsSelfAdjoint (φ (x : A)) := fun x => by
-    show star (φ (x : A)) = φ (x : A)
+  have hsaMap : ∀ x : selfAdjoint X, IsSelfAdjoint (φ (x : X)) := fun x => by
+    show star (φ (x : X)) = φ (x : X)
     rw [← map_star, x.2.star_eq]
-  set saMap : selfAdjoint A → selfAdjoint C := fun x => ⟨φ (x : A), hsaMap x⟩ with hsaMapDef
+  set saMap : selfAdjoint X → selfAdjoint Y := fun x => ⟨φ (x : X), hsaMap x⟩ with hsaMapDef
   refine ⟨?_, ?_⟩
   · rw [hrange]
     exact (hiso.isUniformInducing.isComplete_range).isClosed
   intro D s hDsub hne hdir hlub
-  -- every member of `D` comes from a self-adjoint element of `A`
-  have hpull : ∀ d ∈ D, ∃ x : selfAdjoint A, saMap x = d := by
+  -- every member of `D` comes from a self-adjoint element of `X`
+  have hpull : ∀ d ∈ D, ∃ x : selfAdjoint X, saMap x = d := by
     intro d hd
-    have hmem : (d : C) ∈ (φ.range : Set C) := hDsub d hd
+    have hmem : (d : Y) ∈ (φ.range : Set Y) := hDsub d hd
     rw [hrange] at hmem
     obtain ⟨c, hc⟩ := hmem
     have hcsa : IsSelfAdjoint c := by
@@ -4525,7 +4552,7 @@ theorem isVNSubalgebra_range (φ : A →⋆ₐ[ℂ] C) (hφ : Function.Injective
     exact ⟨⟨c, hcsa⟩, Subtype.ext hc⟩
   -- pass to the cofinal tail above a fixed `d₀ ∈ D`
   obtain ⟨d₀, hd₀⟩ := hne
-  set Dt : Set (selfAdjoint C) := {d | d ∈ D ∧ d₀ ≤ d} with hDtDef
+  set Dt : Set (selfAdjoint Y) := {d | d ∈ D ∧ d₀ ≤ d} with hDtDef
   have hDtne : Dt.Nonempty := ⟨d₀, hd₀, le_refl _⟩
   have hDtdir : DirectedOn (· ≤ ·) Dt := by
     rintro x ⟨hxD, hx0⟩ y ⟨hyD, _⟩
@@ -4536,7 +4563,7 @@ theorem isVNSubalgebra_range (φ : A →⋆ₐ[ℂ] C) (hφ : Function.Injective
     obtain ⟨z, hzD, hdz, h0z⟩ := hdir d hd d₀ hd₀
     exact le_trans hdz (hu ⟨hzD, h0z⟩)
   -- the pullback of the tail
-  set D' : Set (selfAdjoint A) := saMap ⁻¹' Dt with hD'Def
+  set D' : Set (selfAdjoint X) := saMap ⁻¹' Dt with hD'Def
   have himg : saMap '' D' = Dt := by
     refine Set.Subset.antisymm (Set.image_preimage_subset _ _) fun d hd => ?_
     obtain ⟨x, hx⟩ := hpull d hd.1
@@ -4551,46 +4578,52 @@ theorem isVNSubalgebra_range (φ : A →⋆ₐ[ℂ] C) (hφ : Function.Injective
     obtain ⟨z, hz⟩ := hpull d hdD.1
     refine ⟨z, by rw [hD'Def]; simpa [hz] using hdD, ?_, ?_⟩
     · exact Subtype.coe_le_coe.mp
-        ((starAlgHom_le_iff φ hφ).mp (Subtype.coe_le_coe.mpr (hz ▸ hxd)))
+        ((starAlgHom_le_iff_general φ hφ).mp (Subtype.coe_le_coe.mpr (hz ▸ hxd)))
     · exact Subtype.coe_le_coe.mp
-        ((starAlgHom_le_iff φ hφ).mp (Subtype.coe_le_coe.mpr (hz ▸ hyd)))
+        ((starAlgHom_le_iff_general φ hφ).mp (Subtype.coe_le_coe.mpr (hz ▸ hyd)))
   -- the pullback is norm bounded, hence order bounded
-  set M : ℝ := ‖(s : C) - (d₀ : C)‖ + ‖(d₀ : C)‖ with hMDef
+  set M : ℝ := ‖(s : Y) - (d₀ : Y)‖ + ‖(d₀ : Y)‖ with hMDef
   have hM0 : 0 ≤ M := by positivity
   have hD'bdd : BddAbove D' := by
-    have hsa : IsSelfAdjoint (algebraMap ℂ A ((M : ℝ) : ℂ)) :=
+    have hsa : IsSelfAdjoint (algebraMap ℂ X ((M : ℝ) : ℂ)) :=
       IsSelfAdjoint.of_nonneg (Theses.A.CStar.algebraMap_ofReal_nonneg hM0)
-    refine ⟨⟨algebraMap ℂ A ((M : ℝ) : ℂ), hsa⟩, fun x hx => ?_⟩
+    refine ⟨⟨algebraMap ℂ X ((M : ℝ) : ℂ), hsa⟩, fun x hx => ?_⟩
     have hd : saMap x ∈ Dt := hx
-    have h1 : (0 : C) ≤ (saMap x : C) - (d₀ : C) :=
+    have h1 : (0 : Y) ≤ (saMap x : Y) - (d₀ : Y) :=
       sub_nonneg.mpr (Subtype.coe_le_coe.mpr hd.2)
-    have h2 : (saMap x : C) - (d₀ : C) ≤ (s : C) - (d₀ : C) :=
+    have h2 : (saMap x : Y) - (d₀ : Y) ≤ (s : Y) - (d₀ : Y) :=
       sub_le_sub_right (Subtype.coe_le_coe.mpr (hDtlub.1 hd)) _
-    have h3 : ‖(saMap x : C) - (d₀ : C)‖ ≤ ‖(s : C) - (d₀ : C)‖ :=
+    have h3 : ‖(saMap x : Y) - (d₀ : Y)‖ ≤ ‖(s : Y) - (d₀ : Y)‖ :=
       CStarAlgebra.norm_le_norm_of_nonneg_of_le h1 h2
-    have h4 : ‖(saMap x : C)‖ ≤ M := by
-      have := norm_add_le ((saMap x : C) - (d₀ : C)) ((d₀ : C))
+    have h4 : ‖(saMap x : Y)‖ ≤ M := by
+      have := norm_add_le ((saMap x : Y) - (d₀ : Y)) ((d₀ : Y))
       simp only [sub_add_cancel] at this
       exact le_trans this (by rw [hMDef]; gcongr)
-    have h5 : ‖(x : A)‖ ≤ M := by rw [← hnorm]; exact h4
+    have h5 : ‖(x : X)‖ ≤ M := by rw [← hnorm]; exact h4
     refine Subtype.coe_le_coe.mp ?_
     refine le_trans ?_ (Theses.A.CStar.algebraMap_ofReal_mono h5)
     have := IsSelfAdjoint.le_algebraMap_norm_self x.2
     rwa [Theses.A.CStar.algebraMap_real_eq] at this
   -- the supremum of the pullback maps onto `s`
-  set t : selfAdjoint A := dirSup D' ⟨hD'ne, hD'dir, hD'bdd⟩ with htDef
+  set t : selfAdjoint X := dirSup D' ⟨hD'ne, hD'dir, hD'bdd⟩ with htDef
   have htlub : IsLUB D' t := isLUB_dirSup D' ⟨hD'ne, hD'dir, hD'bdd⟩
   have hkey := hn D' t hD'ne hD'dir htlub
-  have hsets : (fun x : selfAdjoint A => φ (x : A)) '' D' = Subtype.val '' Dt := by
+  have hsets : (fun x : selfAdjoint X => φ (x : X)) '' D' = Subtype.val '' Dt := by
     rw [← himg, ← Set.image_comp]
     rfl
   rw [hsets] at hkey
-  have hslub : IsLUB (Subtype.val '' Dt) ((s : selfAdjoint C) : C) :=
+  have hslub : IsLUB (Subtype.val '' Dt) ((s : selfAdjoint Y) : Y) :=
     isLUB_coe_of_isLUB hDtne hDtlub
-  have hst : φ (t : A) = (s : C) := hkey.unique hslub
-  show (s : C) ∈ (φ.range : Set C)
+  have hst : φ (t : X) = (s : Y) := hkey.unique hslub
+  show (s : Y) ∈ (φ.range : Set Y)
   rw [hrange, ← hst]
-  exact ⟨(t : A), rfl⟩
+  exact ⟨(t : X), rfl⟩
+
+/-- **48VI**.1 in its general form: the image of an injective normal
+∗-homomorphism between von Neumann algebras is a von Neumann subalgebra. -/
+theorem isVNSubalgebra_range (φ : A →⋆ₐ[ℂ] C) (hφ : Function.Injective φ)
+    (hn : PreservesDirSups ⇑φ) : IsVNSubalgebra C φ.range :=
+  isVNSubalgebra_range_general φ hφ hn
 
 end VNRange
 
