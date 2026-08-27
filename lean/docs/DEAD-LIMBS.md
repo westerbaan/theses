@@ -1,57 +1,94 @@
-# Dead limbs in the commutation-theorem development
+# Dead limbs
 
-*Audit of 2026-08-26, over the ~20,000 lines added in eighteen rounds by
-eighteen workers on 2026-08-25/26: `A/VN/{Modular, StandardSubspace,
-ModularGroup, Tomita, ModularTensor, TomitaTakesaki, TomitaStrip, TomitaFourier,
-TomitaAnalytic, CommutationTomita}.lean`, `A/Proc/{Commutation, CornerTensor,
-TensorTransport, CommutationReduction, CommutationAmplify, Compression,
-CommutationCyclic, CommutationTheorem}.lean`, and the additions to
-`A/Proc/{Tensor, QuantumLambda}.lean`.*
+*Sweep of **2026-08-27**, commit `9a69966`, over the **whole tree** — all 49
+files of `Theses/A` and `Theses/B`, 163,848 lines, 7,493 hand-written named
+declarations.*
+
+*Counts were taken at `9a69966`. Two other workers were live in the tree during
+the sweep and have since touched `A/CStar/Basic.lean`, `A/CStar/TowardsVN.lean`,
+`A/VN/Basic.lean` and four audit CSVs; every declaration named individually
+below was re-checked against the working tree afterwards and none of them
+acquired a consumer. The aggregate counts of §2 and §3 are as at `9a69966`.*
+
+*Supersedes the sweep of 2026-08-26 (commit `e0ef561`), which covered only the
+twenty files of the commutation-theorem development. That sweep's findings are
+not discarded: they are restated with their current status in §10, and the six
+of its limbs that have since acquired a consumer are named with the commit that
+closed them in §9.*
 
 The standing check: enumerate every declaration with no consumer, and for each
-ask whether it is genuinely terminal or the fingerprint of a proof that went
-around something. Read with `docs/COMMUTATION-THEOREM.md`.
+ask whether it is genuinely terminal or **the fingerprint of a proof that went
+around it**. A declaration the thesis cites, which nothing consumes, is the
+shape a bypassed argument leaves behind. Three repairs in the week to
+2026-08-27 were found exactly that way (§9).
 
-**Read this first.** The single number to quote is **≈ 1,456 lines in 129
-declarations that lie outside the dependency cone of every headline theorem**,
-plus two further blocks of **813** and **~130** lines, for **≈ 2,270 lines with
-no consumer out of ~20,000 — about 11%.** Nothing here is broken, nothing is
-`sorry`-ed, and no headline result is at risk. Most of it is over-generated API,
-not abandoned mathematics. The parts that cost something are named in §7.
+**Read this first.** The single number to quote is **916 declarations with zero
+uses out of 7,493 — 12.2%**; of those, **169 are accessors the method cannot
+see** and **512 are thesis statements whose being terminal is the point**. The
+band that wants a human is the remaining **235 untagged helpers, 3,549 lines**,
+and inside it the **six case-1 fingerprints named in §5**. Nothing here is
+broken, nothing is `sorry`-ed beyond the eleven deliberate ones, and no headline
+result is at risk.
 
 ---
 
-## 1. Method, and a tooling trap worth an hour
+## 1. Method, and what each method is blind to
 
-A Lean meta-program walked `env.header.moduleData` and computed, for every
-declaration in the twenty files, the set of declarations anywhere in `Theses/`
-whose **type or proof term** mentions it. Two corrections were needed before the
-numbers meant anything.
+A declaration is **dead** when nothing anywhere in `Theses/` uses it. Uses are
+counted over the comment-stripped source of all 49 files: **a mention inside a
+doc comment is not a use**, and neither is a backtick-quoted name in prose. A
+declaration's own body is excluded.
 
-**`ConstantInfo.value?` returns `none` for theorems in Lean 4.34.** You must
-either match `.thmInfo v => v.value` explicitly or call
-`ConstantInfo.value? (allowOpaque := true)`. With the default, proof bodies are
-invisible and only *statements* contribute edges; the first run of this audit
-reported 77% of the development unused. If a future pass produces an
-implausible number, this is why.
+This round the count is **textual**, not a Lean meta-program walk of
+`env.header.moduleData` as on 2026-08-26. Both are approximations and they are
+blind to different things; the choice is recorded here so the next sweep can
+reproduce it.
 
-**`@[simp]`/`rfl` lemmas cannot be detected by this method at all.** A
-definitional rewrite leaves no constant behind, so a live `@[simp] … := rfl`
-lemma is indistinguishable from a dead one — and a *textual* grep does not help
-either, because a bare `simp` names nothing. Two such lemmas were compile-tested
-during this audit (`extOut_apply`, `htKetR_apply`) and both turned out to be
-load-bearing. **45 of the 156 candidate hits are in this class and are presumed
-live.** See §4.
+| | Lean term walk | textual walk |
+|---|---|---|
+| use inside a proof term | seen | seen (the name is in the source) |
+| name in `simp only [f]`, `rw [f]`, `exact f` | seen | seen |
+| `@[simp]` lemma fired by a **bare** `simp` | **blind** | **blind** |
+| lemma reached by `rfl`/definitional unfolding | **blind** | **blind** |
+| instance found by typeclass synthesis | seen | **blind** |
+| dot-notation `hγ.gram_sum_re` | seen | seen (suffix-indexed) |
+| cost | ≫ 1 h, ≫ 5 GB on the whole tree | 4 s |
 
-A second, stronger pass computed reverse reachability from a root set consisting
-of every declaration outside the eighteen new files together with the nine
-headline theorems. **This cone computation is the fixpoint** — it already
-subsumes the cascade of declarations that become dead once the first layer goes
-— so its figure, not the raw zero-use count, is the one to quote.
+Three implementation traps, all of which produced wrong numbers before they
+were fixed, and all of which will recur:
 
-Scripts were scratch-only and are not committed; the whole analysis is about
-forty lines of `CoreM` over `moduleData` and is cheaper to rewrite than to
-maintain.
+* **`ConstantInfo.value?` returns `none` for theorems in Lean 4.34.** Call it
+  with `(allowOpaque := true)`. With the default, proof bodies are invisible and
+  the first run of the 2026-08-26 audit reported 77% of the development unused.
+* **`Expr.getUsedConstants` has no DAG cache**, so it is exponential on shared
+  proof terms. A term walk of the whole tree does not finish in ten minutes with
+  it; a pointer-cached traversal is required. This is why the whole-tree pass is
+  textual and the 2026-08-26 pass, over twenty files, was not.
+* **A tokeniser that is not Unicode-aware is not a tokeniser for this tree.**
+  `paschkeModule_h_ρ`, `kaplansky_hilbmod_A₂'` and `onb₁` all contain
+  identifier characters outside ASCII; and `aconv_coprod.{u, v}` must not
+  tokenise as `aconv_coprod.`. Both bugs reported live declarations as dead in
+  the first pass of this sweep — `aconv_coprod` (193V) among them.
+
+**The textual count is conservative in the direction that matters.** A name that
+appears nowhere in 163,848 lines of source cannot be used except through bare
+`simp`, `aesop`, or instance synthesis. Those three exits are quarantined: the
+169 accessors of §8, and the **44 dead `instance` declarations**, are reported
+separately and are *not* to be deleted on the strength of this scan.
+
+**Agreement with the 2026-08-26 Lean pass.** On the twenty files that pass
+covered, the two methods agree closely: `Tomita` 11 hard zero-use both ways,
+`StandardSubspace` 4/4, `ModularTensor` 4/4, `TomitaAnalytic` 3/3,
+`CommutationCyclic` 2/2, `CommutationReduction` 1/1, `Commutation` 5/5,
+`TensorTransport` 7 then 8, `Modular` 9 then 7. Totals over the twenty files:
+**111 hard zero-use then, 119 now**, against a tree that has grown.
+
+**What this sweep does *not* reproduce is the cone.** The 2026-08-26 pass also
+computed reverse reachability from the headline theorems, which finds a
+*self-supporting block whose members all have consumers and whose block has
+none* — `ModularGroup.lean`'s `jConj` layer, 1 hard zero-use but 26 outside the
+cone (§10b). Direct zero-use cannot see that shape and this sweep does not
+claim to. Those findings stand as recorded until someone re-runs a cone pass.
 
 ---
 
@@ -59,550 +96,683 @@ maintain.
 
 | quantity | count |
 |---|---|
-| public declarations in the twenty files | 1,593 |
-| zero uses anywhere in `Theses/` | 209 |
-| — of those, compiler-generated (`.congr_simp`, `.ctorIdx`, notation) | 53 |
-| real source declarations with zero uses | 156 |
-| — of those, `@[simp]`/`rfl` accessors (undecidable, presumed live) | 45 |
-| **hard zero-use** | **111** |
-| — in the eighteen new files | 57 |
-| — new additions to `Tensor.lean` / `QuantumLambda.lean` | 12 |
-| — pre-existing declarations (thesis statements: `vn_smc_*`, `tensor_simple_facts_*`) | 42 |
-| **outside the dependency cone of every headline theorem** (the fixpoint) | **129 decls ≈ 1,456 lines** |
+| hand-written named declarations in `Theses/A` + `Theses/B` | 7,493 |
+| **zero uses anywhere in `Theses/`** | **916 (12.2%)** |
+| — accessor class (`@[simp]`, `rfl`-proved, or `_apply`/`_coe`/`_val`/`_def`-named) | 169 |
+| **hard zero-use** | **747** (21,557 lines) |
+| — carrying an opening DISP tag, i.e. a thesis statement | 512 (18,008 lines) |
+| — untagged helpers | 235 (3,549 lines) |
+| —— of those, named by an audit row | 45 |
+| —— of those, named by no row at all (*the machinery pool*) | 190 (2,111 lines) |
+| dead `instance` declarations (synthesis blind spot, not scored) | 44 |
 
-Add the `QuantumLambda` atomic-type-I island (813 lines, §5a) and the
-`cornerTransfer` island (~130 lines, §5c), neither of which the cone figure
-covers because both sit in files whose *other* contents are load-bearing:
-**≈ 2,270 lines total.**
+And against the thesis points rather than the declarations:
+
+| quantity | count |
+|---|---|
+| thesis points carried by at least one declaration | 889 |
+| — points **every** declaration of which is dead | 145 |
+| — points with a dead clause **and** a live sibling | 174 |
+
+The second row of that table is the one to look at when hunting fingerprints.
+A point all of whose clauses are dead is usually a leaf of the thesis. A point
+with a dead clause *beside a live one* is where a route went round a part of its
+own statement — which is exactly the shape of 123I, repaired this week (§9).
+
+Of the 512 dead thesis statements: **276 are Exercises**, **105 are called
+Theorem, Proposition or Lemma**, **35 are Examples**, and **35 are refutations
+or counterexamples** (`*_counterexample`, `*_is_false`, `*_not_*`). The 105 are
+the interesting band — a Lemma exists in order to be used — and §5 works through
+the largest of them.
 
 ---
 
 ## 3. Per-file breakdown
 
-Hard zero-use (excluding compiler-generated and `simp`/`rfl`), and lines outside
-the headline cone.
+Hard zero-use (excluding the accessor class), with the lines they occupy.
+Files with none are omitted; `CommutationTheorem`, `CommutationTomita`,
+`TomitaFourier`, `WStarCat` and `Common` are fully consumed.
 
-| file | hard zero-use | outside cone |
-|---|---|---|
-| `A/Proc/Tensor.lean` | 31 | *(pre-existing; not scored)* |
-| `A/Proc/QuantumLambda.lean` | 23 | *(pre-existing; see §5a)* |
-| `A/VN/Tomita.lean` | 11 | 19 decls / ~105 lines |
-| `A/VN/Modular.lean` | 9 | 13 / ~92 |
-| `A/Proc/TensorTransport.lean` | 7 | 24 / ~389 |
-| `A/Proc/Commutation.lean` | 5 | 7 / ~156 |
-| `A/VN/StandardSubspace.lean` | 4 | 7 / ~41 |
-| `A/VN/ModularTensor.lean` | 4 | 8 / ~131 |
-| `A/Proc/Compression.lean` | 4 | 6 / ~39 |
-| `A/VN/TomitaTakesaki.lean` | 3 | 7 / ~72 |
-| `A/VN/TomitaAnalytic.lean` | 3 | 4 / ~24 |
-| `A/Proc/CornerTensor.lean` | 3 | 5 / ~63 |
-| `A/Proc/CommutationCyclic.lean` | 2 | 2 / ~13 |
-| `A/VN/ModularGroup.lean` | 1 | **26 / ~301** |
-| `A/Proc/CommutationReduction.lean` | 1 | 1 / ~30 |
-| `A/VN/TomitaStrip.lean` | 0 | 0 |
-| `A/Proc/CommutationAmplify.lean` | 0 | 0 |
-| `A/Proc/CommutationTheorem.lean` | 0 | 0 |
-| `A/VN/CommutationTomita.lean` | 0 | 0 |
+| file | hard | dead | total | lines |
+|---|---|---|---|---|
+| `A/CStar/Basic.lean` | 59 | 59 | 139 | 1,126 |
+| `A/Proc/Measurement.lean` | 59 | 61 | 402 | 2,638 |
+| `A/CStar/Positive.lean` | 54 | 55 | 320 | 1,358 |
+| `A/VN/Projections.lean` | 44 | 57 | 313 | 1,519 |
+| `A/VN/Basic.lean` | 38 | 45 | 480 | 1,181 |
+| `B/Eff/StatesPredicates.lean` | 38 | 51 | 397 | 1,049 |
+| `A/Proc/Tensor.lean` | 32 | 40 | 481 | 948 |
+| `B/Eff/EffectAlgebras.lean` | 30 | 34 | 248 | 612 |
+| `A/CStar/Representation.lean` | 27 | 28 | 119 | 628 |
+| `A/Proc/QuantumLambda.lean` | 27 | 37 | 384 | 1,000 |
+| `B/Dils/HilbertModules.lean` | 21 | 23 | 161 | 431 |
+| `B/Dils/Paschke.lean` | 21 | 37 | 250 | 456 |
+| `B/Dils/SelfDual.lean` | 21 | 29 | 355 | 1,055 |
+| `B/Eff/Effectus.lean` | 21 | 23 | 262 | 262 |
+| `A/CStar/Matrices.lean` | 20 | 24 | 133 | 401 |
+| `B/Eff/DiamondAmp.lean` | 20 | 22 | 138 | 331 |
+| `B/Eff/VNExamples.lean` | 19 | 47 | 317 | 485 |
+| `A/VN/Division.lean` | 17 | 17 | 163 | 798 |
+| `A/Proc/Duplicators.lean` | 15 | 15 | 135 | 714 |
+| `B/Dils/SelfDualCompletion.lean` | 13 | 22 | 219 | 157 |
+| `B/Dils/Stinespring.lean` | 12 | 14 | 140 | 890 |
+| `B/Eff/Dagger.lean` | 12 | 14 | 136 | 326 |
+| `A/VN/Tomita.lean` | 11 | 16 | 69 | 52 |
+| `B/Dils/Kaplansky.lean` | 10 | 13 | 124 | 226 |
+| `B/Dils/Pure.lean` | 10 | 14 | 183 | 362 |
+| `B/Eff/Comparisons.lean` | 10 | 10 | 74 | 797 |
+| `B/Eff/Quotients.lean` | 10 | 10 | 92 | 243 |
+| `A/CStar/TowardsVN.lean` | 9 | 11 | 73 | 225 |
+| `A/Proc/TensorTransport.lean` | 8 | 11 | 70 | 108 |
+| `A/VN/Completeness.lean` | 8 | 10 | 174 | 275 |
+| `A/VN/Modular.lean` | 7 | 10 | 73 | 45 |
+| `A/VN/NormalFunctionals.lean` | 7 | 8 | 105 | 423 |
+| `A/Proc/Commutation.lean` | 5 | 6 | 44 | 100 |
+| `A/Proc/CornerTensor.lean` | 4 | 5 | 62 | 51 |
+| `A/VN/ModularTensor.lean` | 4 | 6 | 50 | 78 |
+| `A/VN/StandardSubspace.lean` | 4 | 6 | 103 | 19 |
+| `A/VN/TomitaTakesaki.lean` | 4 | 6 | 72 | 53 |
+| `A/VN/BaX.lean` | 3 | 4 | 17 | 39 |
+| `A/VN/ModularGroup.lean` | 3 | 3 | 84 | 15 |
+| `A/VN/TomitaAnalytic.lean` | 3 | 4 | 70 | 16 |
+| `A/Proc/CommutationCyclic.lean` | 2 | 2 | 8 | 17 |
+| `A/Proc/Compression.lean` | 2 | 3 | 50 | 17 |
+| `A/Proc/CommutationAmplify.lean` | 1 | 1 | 31 | 4 |
+| `A/Proc/CommutationReduction.lean` | 1 | 1 | 9 | 24 |
+| `A/VN/TomitaStrip.lean` | 1 | 2 | 61 | 3 |
 
-Note `ModularGroup.lean`: one hard zero-use declaration, but 26 outside the
-cone. That gap *is* the finding of §5b — a self-supporting block in which every
-member has a consumer and the block as a whole has none. It is the reason the
-cone pass exists.
+The two `A/CStar` files at the top of the table are not a defect and should not
+be read as one. `Basic.lean` is the opening chapter: 59 of its 139 declarations
+are Exercises and Lemmas of parsecs 3–8 stated for the record, and almost every
+one of them is Mathlib's own fact restated in the thesis's words. That is the
+purest form of case 2 in the tree.
 
-Four files are fully consumed: `TomitaStrip`, `CommutationAmplify`,
-`CommutationTheorem`, `CommutationTomita`.
+`A/VN/BaX.lean` is new since the previous sweep (17 declarations, 3 hard dead —
+`bah_vn_sup`, `vecFunctional_normal`, `bah_vn`, all clauses of 49II). It is the
+youngest file in the tree and its dead fraction is the ordinary one for a file
+whose consumers have not been written yet.
 
 ---
 
 ## 4. Classification
 
-| class | count | what it is |
+| class | count | what it is | verdict |
+|---|---|---|---|
+| **4 — accessor noise** | 169 | `@[simp]`/`rfl` unfolders and `_apply`-shaped lemmas | not scored; do not delete (§8) |
+| **2 — genuinely terminal** | ~490 | thesis statements whose being stated *is* the deliverable: Exercises, Examples, counterexamples, headline packagings | not a defect (§6) |
+| **3 — superseded machinery** | ~190 | helpers whose consumer was rewritten (the machinery pool) | deletion candidates (§7) |
+| **1 — the fingerprint** | **6 diagnosed** | the thesis cites it and our proof went round it | §5 — the valuable one |
+
+The class boundaries are not sharp and the counts of classes 2 and 3 are
+estimates from the DISP-tag and audit-row signals, not a per-declaration
+reading of 747 items. The class-1 list is a per-declaration reading and is
+complete only in the sense that it is what the two automatic signals (a `route`
+or `mild` audit row naming a point that a dead declaration carries; a dead
+Lemma/Proposition/Theorem beside a live sibling) turned up and a human then
+confirmed against the source.
+
+---
+
+## 5. Class 1 — the fingerprints
+
+Six. For each: the dead declaration, the point whose printed argument would
+consume it, and what the repair would cost. **None of these was repaired in this
+sweep**; they are reported.
+
+### 5.1 `selfdual_compl_defining_dense` (163II) — the argument written three times
+
+`B/Dils/SelfDual.lean:5246`, 78 lines, `green`, doc-comment class **"Divergence
+class 1 (faithful)"** — i.e. it is the thesis's own argument, transcribed.
+Zero consumers.
+
+The argument it contains — the orthogonal projection `P` onto `D^⊥⊥` fixes the
+image, so `P` and `id` both factor `η` through itself, so the uniqueness half
+of the universal property gives `P = id` — is written out a **second** time
+inside `ext_tensor_dense` (**164II**.1, `SelfDual.lean:7784`), whose own doc
+comment says so in as many words:
+
+> "its place is taken by the projection argument of **163II**
+> (`selfdual_compl_defining_dense`)"
+
+and a **third** time inside `paschke_tprod_dense` (`SelfDual.lean:9224`), whose
+doc says "This is the Paschke-module analogue of `selfdual_compl_defining_dense`
+(**163II**) and of `ext_tensor_dense` (**164II**.1), and it is the easiest of
+the three". A fourth site, the `section TensorDense` header at `:6245`, says
+"exactly as in `selfdual_compl_defining_dense` (**163II**)".
+
+So the tree contains four prose citations of one declaration and no call of it.
+
+**Point implicated:** 164II.1, and behind it the whole `SelfDual` density
+layer.
+
+**Cost.** Not small, and this is why it happened. 163II's universal property is
+stated over *bounded module maps* `V → Y`; `ExtTensor`'s is stated over
+*bilinear* maps. To call 163II from `ext_tensor_dense` one must first exhibit
+`E.Z` as the self-dual completion of the algebraic tensor product `V = X ⊙ Y`
+with its `BInner`, i.e. derive the linear universal property from the bilinear
+one (`extTensor_map_ext` plus a `tSpan`-to-`V` transfer). Estimate **80–150
+lines of new bridging**, against roughly **60 duplicated lines removed at each
+of two sites**. Worth doing if the bridge is wanted for anything else; not
+otherwise. Recommend: **leave, and record here** — which is what this entry is.
+
+### 5.2 `injective_nmiu_iso_on_image_2'` (48VI part 2) — the exercise's own hint, half followed
+
+`A/VN/Basic.lean:4781`, 74 lines, `green`. The *full* form of 48VI part 2: an
+injective nmiu-map restricts to an nmiu-**isomorphism** onto its image. Its own
+doc comment says the sibling `injective_nmiu_iso_on_image_2` (used four times)
+is "the working form of" it. Zero consumers. Four of 48VI's five declarations
+are live; this one is not.
+
+The audit row for **69IVb** `nmiu_image` (`docs/audit/avn-projections.csv`,
+proof class `route`) records:
+
+> "its hint says to use 69IVa and injective-nmiu-iso-on-image, and ours does
+> neither"
+
+**Point implicated:** 69IVb, `A/VN/Projections.lean:7089`.
+
+**Two corrections to that row, both verified here.** (i) The row is half stale:
+`nmiu_image`'s proof *does* use 69IVa — it calls `nmiu_factors`
+(`Projections.lean:6935`/`:7042`) three times. What it does not use is 48VI.2'.
+(ii) The dead limb is therefore precisely the unfollowed half of the hint.
+
+**Cost.** `nmiu_image` currently proves the image is a von Neumann subalgebra
+by building the corner isometry by hand — the injective star-hom
+`x ↦ (f x, (1−c)x)` into `B × A`, order reflection, then closedness and
+directed-sup-closedness of the range: about 150 lines. The printed route is
+69IVa's factorisation `f = (restriction to the corner) ∘ (compression)` followed
+by 48VI.2' applied to the injective restriction, plus `injective_nmiu_iso_on_image_1`
+(which is already `isVNSubalgebra_range`) to conclude. All three inputs are in
+the tree and live. Estimate **40–80 lines replacing ~150**, with a real risk in
+the middle: the `Type`-level identification of `↥f.range` with the corner
+carries an induced order that 48VI.2' states over `↥f.toStarAlgHom.range` while
+69IVb needs it over `f.range` inside `B`. **This is the strongest of the six**
+— the inputs exist, the hint is printed, and the row already admits the
+divergence. Recommend: **a fixing round should take this one first.**
+
+### 5.3 `tensor_equalisers` (125VI) — the recorded reason has expired
+
+`A/Proc/QuantumLambda.lean:7589`, 42 lines, `green`, doc comment: **"This is
+proc.tex:4980 verbatim."** Zero consumers.
+
+The audit row for **125VIIb** `tensor_preimage`
+(`docs/audit/aproc-duplicators-quantumlambda.csv`, proof class `route`) says:
+
+> "The thesis's hint (express rho^-1(S) as a pullback in W\*_miu) routes through
+> 125VI, **which is itself blocked**."
+
+**125VI is not blocked.** `tensor_equalisers` is `green` in `docs/status.txt` —
+axiom-clean, no `sorry`, direct or indirect. It became so when 125IV
+`equaliser_lemma` was discharged at commit `61d6f49` ("121II and 125IV
+discharged in place: seven sorries become five"). The row's stated reason has
+expired and the row should be re-costed against what is *actually* missing.
+
+**Point implicated:** 125VIIb, `QuantumLambda.lean:7635`.
+
+**Cost, honestly.** Re-costing the row is cheap and should be done. Restoring
+the route is not: what the printed hint needs beyond 125VI is the expression of
+`ρ⁻¹(𝒮)` as a **pullback in W\*_miu**, and the tree has no pullbacks in
+W\*_miu as such. The current proof goes through the commutation theorem instead
+(slice maps, `rSlice_natural`, `mem_tensorSub_of_image` = 121II) and is sound.
+Estimate for the printed route: **pullbacks in W\*_miu, several hundred lines,
+a statement-level decision** — not a repair. Recommend: **re-cost the row; leave
+the proof.** I have not edited the row: re-costing it is a claim about the
+thesis's hint, not about the tree, and belongs to whoever owns that CSV.
+
+### 5.4 `powerSeries_hasDerivAt` (13IV) — a Proposition with no consumer, 48 lines above its consumer
+
+`A/CStar/Positive.lean:198`, 47 lines, `green`, the **only** declaration
+carrying 13IV. Zero consumers.
+
+**13VI** `powerseries_uniqueness_coeffients` sits at `:246` — 48 lines below
+it — and its in-proof comment says:
+
+> "the solution differentiates the series repeatedly and reads `f⁽ⁿ⁾(0) = n aₙ`
+> off **13IV** `powerSeries_hasDerivAt`. (That was once justified here by
+> **13IV** being `sorry`; it is proved now, and this is *not* the reason any
+> more.)"
+
+**Point implicated:** 13VI.
+
+**Cost.** The comment then costs the repair itself, correctly: the solution's
+route needs, beyond 13IV, that the **term-wise derivative series is summable on
+the same disc** — the radius of the derived series, which cstar.tex:1949 asserts
+in passing — plus an induction producing the `n`-th derivative. 13IV delivers the
+derivative only as a `tsum`. Estimate: a derived-radius lemma plus the
+`n`-fold iteration, **120–200 lines**, against the 12-line
+`HasFPowerSeriesAt.eq_zero` route in place. This is a genuine class-1
+divergence with a fair reason already written down; the limb is the price.
+Recommend: **leave**. It is here because a reader of the file should be told
+that 13IV's only purpose in the thesis is a proof the tree does not run.
+
+### 5.5 `selfDual_pi` (36III) — named as available by the row that leaves the divergence standing
+
+`A/CStar/TowardsVN.lean:289`, 39 lines, `green`, the **only** declaration
+carrying 36III. Zero consumers.
+
+The audit row for **153IV** `hilbmod_adj_vector_ncp`
+(`docs/audit/bdils-hilbertmodules-selfdualcompletion.csv`, `weaker`/`route`)
+says:
+
+> "of the three theorems it named as missing, one is NOT missing — cstar 36III
+> `Theses.A.CStar.selfDual_pi` makes `A^n` a self-dual Hilbert A-module and is
+> on the import path, modulo a short transfer between A/CStar's `SelfDual`
+> (boundedness = `Continuous`) and 141IIa's (boundedness = `∃ C`). The other
+> two, `Bᵃ(Aⁿ) ≅ Mₙ A` and `Bᵃ(A) ≅ Aᵒᵖ`, are genuinely absent."
+
+**Point implicated:** 153IV.
+
+**Cost.** The row costs it. The transfer between the two `SelfDual`
+definitions is short — **20–40 lines** — but closing the limb needs all three
+inputs, and two of them are genuinely absent (`Bᵃ(A) ≅ Aᵒᵖ` exists only
+downstream as `rightMulEquiv` in `Paschke.lean`, which *imports* this file, so
+it cannot be used here without moving it). Against a self-contained 140-line
+computation, the row concludes "class 2, LEFT" and that is right.
+Recommend: **leave**. Recorded so that nobody re-derives `selfDual_pi` a second
+time under a different name.
+
+### 5.6 `vanishing_effects` (44III) — the thesis's hint at two sites, followed at neither
+
+`A/VN/Basic.lean:1890`, 55 lines, `green`. Zero consumers. Its shared estimate
+`norm_apply_mul_le_of_nonneg` (`Basic.lean:170`, doc: "The estimate behind
+**44III** and **44VII**") *is* consumed, so what is dead is the packaged Lemma.
+
+**Two proofs declare in their own comments that they are going round it.**
+
+**44VII** `vna_supremum_mult`, ninety lines below it in the same file
+(`A/VN/Basic.lean:1982`):
+
+> "The thesis's hint is to use `vanishing_effects`; concretely we use the
+> estimate behind it, `|ω((⋁D−d)a)| ≤ ω(⋁D−d)^½ ω(a*(⋁D−d)a)^½`, whose second
+> factor is *eventually* bounded because `a*(⋁D−d)a` decreases."
+
+**166II** `ultranorm_continuity_ext_tensor` (`B/Dils/SelfDual.lean:8899`):
+
+> "**166III** is the proof; transcribed below, with its appeal to **44III**
+> `vanishing_effects` replaced by the order estimate `Ω(⟨d,d⟩ ⊗ ⟨yα,yα⟩) ≤ M² ·
+> Ω(⟨d,d⟩ ⊗ 1)`"
+
+**Points implicated:** 44VII and 166II. A Lemma cited as the route by two
+proofs and called by neither is the cleanest instance of the pattern this check
+exists for; it is listed sixth only because the verdict goes the other way.
+
+**Cost, and why it should not be paid.** Both substitutions are deliberate and
+both are *improvements*. 166II's comment explains that 44III's vanishing net
+must consist of **effects**, which is why the thesis needs both norm bounds,
+while the order estimate needs only one — so 166II's `hxb` is genuinely unused
+and the lemma is true with either bound. 44VII's substitution replaces a
+uniform bound with an eventual one. Restoring 44III's use at either site means
+re-imposing a hypothesis and **weakening the tree's statement** to match the
+printed route. Recommend: **leave; do not repair.** Recorded so that a future
+sweep does not rediscover 44III as an open question, and so that nobody
+"repairs" it into a weaker theorem.
+
+### Shortlist — not yet read, same two signals
+
+These are dead Lemma/Proposition/Theorem statements with a **live sibling** on
+the same point, which is the 123I shape. Each is worth twenty minutes; none has
+been checked against the printed argument.
+
+| point | declaration | file:line | lines | live siblings |
+|---|---|---|---|---|
+| 118II | `cceil_tensor` | `A/Proc/Tensor.lean:9748` | 134 | 1/2 |
+| 81IX | `div_usc_ball` | `A/VN/Division.lean:2975` | 114 | 4/5 |
+| 106I | `uniqueness_sequential_product_exists` | `A/Proc/Measurement.lean:8611` | 79 | 1/3 |
+| 4XIII | `positive_2x2matrix_2` | `A/CStar/Basic.lean:284` | 67 | 1/2 |
+| 82I | `polar_decomposition_2` | `A/VN/Division.lean:3446` | 55 | 3/4 |
+| 156II | `paschke_injective` | `B/Dils/Paschke.lean:3551` | 48 | 2/3 |
+| 160IV | `hilbmod_projthm_3` | `B/Dils/SelfDual.lean:1387` | 45 | 2/3 |
+| 96III | `ncp_uwlim_2` | `A/Proc/Measurement.lean:1797` | 39 | 2/3 |
+| 23II | `sqrt_lemma_monotone` | `A/CStar/Positive.lean:5708` | 35 | 3/6 |
+| 154III | `existence_paschke_2` | `B/Dils/Paschke.lean:1406` | 32 | 13/14 |
+
+`existence_paschke_2` was read and is **not** a fingerprint: it is 154III part
+2's uniqueness clause, and its content is already reachable structurally through
+`M.univ` and `M.ρ_tprod`, both of which are used. It is a terminal repackaging.
+`div_usc_ball` was read and is the sound first clause of 81IX, terminal by
+intent (§6). The other eight are unread.
+
+---
+
+## 6. Class 2 — genuinely terminal
+
+Roughly 490 of the 747, and the great bulk of the count. Not a defect. The four
+recurring shapes:
+
+* **The Exercise or Example stated for the record.** 276 dead statements have
+  "Exercise" in their opening doc line and 35 have "Example". `A/CStar/Basic`'s
+  `boundedOperators_basic_{1,2,3}`, `uniqueness_adjoint_{1,2}`,
+  `isAdjointTo_{add,smul,comp}`, `inner_product_basic_{2,3,4}` are the type: the
+  thesis's exercises of parsecs 4–5, each a Mathlib fact in the thesis's words,
+  each complete in itself.
+* **The refutation.** 35 dead statements are counterexamples or explicit
+  falsity claims — `tensor_simple_facts_4_counterexample` (133 lines),
+  `equivalent_examples_2_is_false`, `omega_norm_basic_2_counterexamples`,
+  `vn_counterexamples_{3,6,11}`. Their whole purpose is to be stated. The four
+  `kaplansky_hilbmod_A{₁,₁',₂,₂'}` in `B/Dils/Kaplansky.lean` are the sharpest
+  case: they carry four of the tree's eleven deliberate `sorry`s and exist to
+  record that 158V, the thesis's printed route, is **false**.
+* **The headline packaging over a working `_aux`.** `stinespring` and
+  `stinespring_unital` (135IV) are nine and twelve lines over `stinespring_aux`,
+  which has three consumers. `continuous_measure_space` (129VIII) is a six-line
+  specialisation of `continuous_measure_space_subset`, which has two.
+  `cvn_linfty` (70III) is the existential packaging of the `cvn` /
+  `cvn_direct_sum` / `exists_linftyPresentation` layer, all live — and its own
+  doc says so ("`cvn` above is left as it stands — it is destructured at
+  `A/Proc/Duplicators.lean:4038`"). The Theorem as the thesis states it is the
+  deliverable; the aux is what proofs want.
+* **The clause the tree cannot connect because the surrounding notion is
+  absent.** All nine `vn_smc_*` declarations for **119V** (253 lines:
+  `associator_natural`, `braiding_natural`, `leftUnitor_natural`,
+  `rightUnitor_natural`, `pentagon`, `triangle`, `unitors_agree`, `hexagon`,
+  `symmetry`) are dead as a block. The audit row for 132III explains it: "the
+  isomorphism `Mon(W*_miu) = dW*_miu` is not stated (no categories in the
+  tree)". The coherence conditions are stated and proved; nothing can consume
+  them until W\*_miu is a `Category`. **Not a fingerprint** — this is the
+  statement-level decision recorded at 132III, and it is 253 of the 18,008
+  lines in the DISP-tagged band.
+
+Two more, both named in the brief for this sweep and both confirmed terminal
+here:
+
+* **`emond_lemma_for_conv` (178V)**, `B/Eff/EffectAlgebras.lean:3232`, 18 lines.
+  Dead. It is the `Fin n` form over the live `emond_lemma_for_conv_list`, and
+  the one place the theses cite it — 194I.4 `AConvMCat.coprod_inl_injective` —
+  is itself left under a costed machinery reason. Cannot be closed until that is.
+* **`paschke_pure` (171VII)** is **no longer dead** — see §9.
+
+---
+
+## 7. Class 3 — superseded machinery, and what was deleted
+
+**190 declarations, 2,111 lines**: untagged (no thesis point in the doc
+comment), unrowed (no audit row names them), not accessors. This is the
+deletion pool. Its largest members:
+
+| lines | declaration | file:line |
 |---|---|---|
-| **dead-on-arrival accessor** | 45 | `@[simp]`/`rfl` unfolders. Not scored as dead; see below. |
-| **genuinely terminal** | ~35 | Headline statements, dual restatements, deliberately exposed interfaces. |
-| **superseded** | ~30 | A later round proved the general form and the earlier one is now unreachable. |
-| **orphan** | ~25 | Machinery for a route that was then not taken. The interesting class. |
-| **duplicate** | ~20 | A second copy of something the tree already had. §6. |
+| 119 | `paschkeModuleId` | `B/Dils/Paschke.lean:2190` |
+| 112 | `PhiCompatible.mul_right` | `B/Dils/Paschke.lean:317` |
+| 48 | `concreteTensor_top_cancel` | `A/Proc/Commutation.lean:565` |
+| 46 | `conj_ncp_eq_of_le_proj` (private) | `A/Proc/Measurement.lean:3485` |
+| 46 | `concreteTensor_top_top` | `A/Proc/TensorTransport.lean:661` |
+| 38 | `paschke_rho_forces_cyclic` | `B/Dils/Paschke.lean:521` |
+| 36 | `IsCompatExt.norm_ipVal_self_le` | `B/Dils/SelfDualCompletion.lean:1636` |
+| 34 | `cyclic_and_separating_of_separating` | `A/Proc/Commutation.lean:475` |
+| 34 | `op_smul_comm_complex'` | `B/Dils/SelfDualCompletion.lean:1057` |
+| 33 | `modularSqrt_orbit` | `A/VN/ModularTensor.lean:1130` |
+| 32 | `paschke_inner_conj_forces_zero` | `B/Dils/Paschke.lean:488` |
+| 31 | `npFunctional_tendsto_of_isLUB` | `B/Dils/Paschke.lean:870` |
 
-**The 45 dead-on-arrival accessors are a fact about how this development was
-written, not a defect.** These files discharge goals by `show …; rfl` against
-definitional unfolding rather than by rewriting with the accessor, so lemmas
-like `htmulL_apply`, `htmulR_apply`, `adJre_apply`, `mem_powStrip`,
-`Jequiv_apply`, `stdConj_apply`, `modularConj_apply`, `Phire_apply`,
-`opRatio_domain` never fire. Written to the same template as the ones that do
-fire, they are simply dead on arrival. Two consequences:
+By file: `B/Dils/SelfDualCompletion` 28, `B/Dils/Paschke` 16,
+`B/Eff/StatesPredicates` 15, `A/Proc/QuantumLambda` 13, `B/Eff/EffectAlgebras`
+11, `A/VN/Tomita` 11, `A/Proc/TensorTransport` 10, `A/CStar/Positive` 10.
 
-* Do not delete them on the strength of a usage scan. The scan cannot see them,
-  and at least two (`extOut_apply`, `htKetR_apply`) are load-bearing through
-  bare `simp`.
-* The style has a real cost elsewhere: proofs that unfold with `show …; rfl`
-  break the moment the definition becomes irreducible. §7 names the one place
-  this matters.
+### Nothing was deleted in this sweep, and the reason is operational
+
+1. **Two workers hold the same files.** One is adding declarations in
+   `A/CStar` and `A/VN`; one is verifying `differs`/`stronger` audit rows. The
+   pool is spread across exactly those files.
+2. **Confirming a class-3 deletion requires a compile**, and compiling any of
+   these files rebuilds oleans that both workers are reading. A bare `lake
+   build` is forbidden here for the same reason.
+3. **A deletion is not one edit.** `scripts/audit_check.py`'s phantom check
+   reads 2,486 audit rows; each deletion has to take its row with it in the same
+   edit, and thirteen phantom rows were found on 2026-08-26 left behind by
+   exactly this omission.
+
+So the pool is *recorded*, not spent. A fixing round with the tree to itself can
+take it in one pass, file by file, deleting and re-running
+`python3 scripts/audit_check.py` after each.
+
+**Two items in the pool are not deletable and should be moved out of it by
+hand:** `cyclic_and_separating_of_separating` and `CT_iff_vnComm` were
+individually diagnosed on 2026-08-26 (§10) as retraction casualties with a
+recorded reason; they carry no DISP tag, so the automatic filter puts them in
+the pool, but the earlier reading stands.
+
+**Two more dead declarations are class 3 by their own doc comment but carry a
+DISP tag, so they stay:**
+
+* `atomicTypeI_tensorBsurjectivity` (**125eIII**), `A/Proc/QuantumLambda.lean:5544`.
+  Its doc now reads: the `←` half "was the one open at the time and **is now
+  proved in general at the end of this file** (`tensorBsurjectivity`), from
+  125VIIb `tensor_preimage`." Superseded by its own general form, exactly as the
+  brief for this sweep reported. Both it and `atomicTypeI_tensor_preimage`
+  (**125VIIb**) remain the tree's only record of the atomic-type-I case *as a
+  case*. DISP-tagged, so not noise: **leave and report**, and retiring them
+  stays a statement-level decision for the author (§10a).
+* `ultranormcontstruct_add_unTendsto` (**148III** part 1, net form),
+  `B/Dils/HilbertModules.lean:1842`. Its doc comment already withdraws its own
+  justification: "The claim that used to stand here — 'kept because it is the
+  form the net arguments of parsec 1490 use' — is **false**: parsec 1490's Lean
+  proofs go through `unSeminorm_add_le` and `unSeminorm_inner_le` directly, and
+  this form has no consumer." Confirmed dead here. DISP-tagged: **leave and
+  report.** It is the cleanest deletion candidate in the tree the moment an
+  author ruling permits removing a stated clause of 148III.
 
 ---
 
-## 5. The blocks
+## 8. Class 4 — accessor noise
 
-### 5a. `QuantumLambda.lean:4730–5542` — 813 lines, superseded
+**169 declarations tree-wide** (40 of them in the twenty files the 2026-08-26
+sweep covered, where it counted 45). These are `@[simp]`/`rfl` unfolders and
+`_apply`/`_coe`/`_val`/`_def`-shaped lemmas: 128 carry `@[simp]`, 69 are proved
+by `rfl` or `show …; rfl`, 112 are named in the accessor style.
 
-The atomic-type-I widening (commit `a992c23`). Verified to be a closed island:
-*every* reference into the range from outside it is compiler-generated
-(projections, `.eq_1`, `recOn`). The apparent exceptions, `EqL.vtmulR_*`, are a
-separate later copy at `:6957`.
+**Neither method can see whether these are used.** A definitional rewrite leaves
+no constant behind, and a bare `simp` names nothing for a textual scan to find.
+The 2026-08-26 sweep compile-tested two of them — `extOut_apply` and
+`htKetR_apply` — and found both load-bearing. `extOut_apply` now has an explicit
+consumer (`A/Proc/Compression.lean:428`) and so has left the class; `htKetR_apply`
+still shows zero textual uses and is still live through bare `simp`. That is the
+whole argument for the quarantine, in one pair of declarations.
 
-`atomicTypeI_tensor_preimage` and `atomicTypeI_tensorBsurjectivity` are
-character-for-character the conclusions of `tensor_preimage` (`:7593`) and
-`tensorBsurjectivity` (`:7652`) **with an extra hypothesis**. Both general
-statements were later proved outright through 121II and go around the `atE`
-device entirely. This is superseded, not orphaned: it was the right thing to
-build when the commutation theorem was still open.
+The style has a real cost, and it is not the dead lemmas: proofs that discharge
+goals by `show …; rfl` against definitional unfolding break the moment a
+definition becomes irreducible. The one place where this matters is recorded at
+§10, `Defeq fragility`.
 
-Of the 1,199-line commit, roughly 210 lines (`BKUnits`) and 147
+**Do not churn this class.** Reported; not counted as dead; not to be deleted on
+the strength of any usage scan.
+
+Add to it the **44 dead `instance` declarations**, which the textual method
+cannot see at all because typeclass synthesis mentions no name in the source.
+The Lean term walk *can* see those; a future cone pass should re-check them.
+
+---
+
+## 9. Previously recorded limbs that have since been closed
+
+Six, all verified against the tree at `9a69966` and all named with the commit
+that gave them a consumer. **These are recorded rather than dropped**: several
+standing observations in this project have turned out to be stale claims about
+our own work, and the record of a closure is worth as much as the record of a
+limb.
+
+| limb | point | closed by | consumer |
+|---|---|---|---|
+| `hilb_tensor_basic_2` | 109IV.2 | `49a49f0` | 110III's proof, `A/Proc/Tensor.lean:679` |
+| `triple_tensor` | 119II | `49a49f0` | 119IV `isTensorProduct_assoc`, `Tensor.lean:10799` |
+| `perp_sharp_is_orth` | 213III | `49a49f0` | `B/Eff/Comparisons.lean:600` |
+| `ultranormcontstruct_smul` | 148III.3 | `027dc77` | `ext_tensor_dense` (164II.1), `B/Dils/SelfDual.lean:7828` |
+| `dagger_of_iso_adjoint` | 216IX.1 | `0f036ad` | `B/Eff/Dagger.lean:528` |
+| `paschke_pure` | 171VII | `7aa3dc0` | `pure_iff_stinespring_surjective`, `B/Dils/Pure.lean:4229` |
+
+Three of these overturn a claim recorded in this file or in the brief for this
+sweep, and each overturning is the point of the check:
+
+* **`hilb_tensor_basic_2` (109IV.2)** was "the one transcription in
+  `Tensor.lean` with no consumer" (PROVING-LOG, session 94), because 110III kept
+  the density route. It is now consumed by 110III's own proof at
+  `Tensor.lean:679` — the orthonormal-basis argument the thesis prints.
+* **`triple_tensor` (119II)** was recorded as "the one left with its consumer
+  missing" and as needing "a **trilinear** analogue of 114II … some 1300 lines".
+  It is consumed at `Tensor.lean:10799`, where 119IV obtains `γ₃` from it
+  directly. The 1,300-line estimate was not needed.
+* **`ultranormcontstruct_smul` (148III.3)** was a long-standing dead limb, and
+  the brief for this sweep expected it to be *genuinely unconsumable* — its
+  natural consumer `unClosure_op_smul` closes under `x ↦ x·b` (148IV) rather
+  than `b ↦ x₀·b` (148III.3). It has a consumer anyway, and not the expected
+  one: `ext_tensor_dense` (164II.1) uses it for the `bSpan D ⊆ unClosure D`
+  step, which its doc calls "the 'see `ultranormcontstruct`' of dils.tex:5165
+  itself".
+
+Also confirmed closed or absent, from the 2026-08-26 §7 list:
+
+* `vnAdJ_one` — **deleted** at `e0ef561`, as §7 recorded. Absent from the tree.
+* `extOut_apply` — has an explicit consumer at `A/Proc/Compression.lean:428`.
+* `l2_tensor`, `orthonormal_basis_iff_l2_iso`, `hilb_tensor_unique`, `div_uwc`,
+  `div_uwc_corner` — all consumed; the session-94 zero-consumer list for
+  `Tensor.lean` and the `Measurement` neighbourhood is now empty except for the
+  terminal `hilb_tensor_unique` (110V), which has four consumers.
+* `IsHilbertTensorProduct.gram_sum_re` — five consumers, all by dot-notation
+  (`hγ.gram_sum_re`). This is the one PROVING-LOG warned about; a scan that does
+  not index dotted suffixes reports it dead, and the first pass of this sweep
+  did exactly that before the tokeniser was fixed (§1).
+
+And two from the brief that are **still dead**, as expected:
+
+* `atomicTypeI_tensorBsurjectivity` and `atomicTypeI_tensor_preimage` — §7.
+* `ultranormcontstruct_add_unTendsto` — §7.
+
+---
+
+## 10. The 2026-08-26 commutation-development findings, restated
+
+Carried forward with their status at `9a69966`. Nothing below was re-derived by
+this sweep's method except where a status is given.
+
+### 10a. `QuantumLambda.lean` — the atomic-type-I island, 813 lines. **Unchanged.**
+
+Commit `a992c23`. `atomicTypeI_tensor_preimage` and
+`atomicTypeI_tensorBsurjectivity` are character-for-character the conclusions of
+`tensor_preimage` (`:7635`) and `tensorBsurjectivity` (`:7694`) **with an extra
+hypothesis**; both general statements were later proved outright through 121II
+and go round the `atE` device entirely. **Both confirmed dead here.** Superseded,
+not orphaned: it was the right thing to build when the commutation theorem was
+still open. Of the 1,199-line commit, ~210 lines (`BKUnits`) and 147
 (`uwTendsto_of_isLUB`, `uw_compress_tendsto`, since relocated to `Tensor.lean`)
-were salvaged by later rounds and are load-bearing for `equaliser_lemma` and for
-the reduction. The other 68% is unreachable. The pre-existing `haE` layer is
-untouched and still live.
+are load-bearing; the other 68% is unreachable. *Largest single item in this
+document.* Retiring it is a statement-level decision for the author.
 
-*Largest single item in this document.* Retiring it is a statement-level
-decision for the author: the two theorems are true, proved, and are the only
-record of the atomic-type-I case as a case.
+### 10b. `ModularGroup.lean` — the `jConj` layer, ~300 lines. **Cone finding; not re-derivable here.**
 
-### 5b. `ModularGroup.lean` — the `jConj` layer, ~300 lines, orphan
+Twenty-six declarations recorded as outside the cone of every headline theorem
+while every member has a consumer inside the block. This sweep's method counts
+direct uses only and therefore sees the block as live (`jConj` alone has 33
+uses); it finds exactly **one** hard zero-use declaration in the file,
+`jConj_modPow` (`:1057`) — which is the single hard zero-use the 2026-08-26
+per-file table also reports. The two methods agree where they can and the cone
+finding stands unverified until a cone pass is run again. The module docstring
+still advertises `jConj_cpowOp`, `J_modPow` and `jConj_modPow` as **main
+results**; `jConj_cpowOp` and `J_modPow` have one use each, `jConj_modPow` none.
 
-Twenty-six declarations: `jConjRe`, `jConj`, `jConj_{apply,one,mul,add,zero,
-smul,star,R,two_sub_R,cfc_real,cpowOp,modPow}`, `jConjHom`,
-`continuous_jConjHom`, `norm_jConj_le`, `J_apply_eq_jConj`, `J_opPow`,
-`J_modPow`, `cpow_conj_ofReal`, `IsPowBase.cpowOp_eq_re_add_im`,
-`inner_J_map_map`, `real_inner_J_map_map`. Verified to be a closed island: only
-compiler-generated references enter it.
+### 10c. `TensorTransport.lean` — two clusters. **Partly closed.**
 
-The module docstring advertises `jConj_cpowOp`, `J_modPow` and `jConj_modPow`
-as **main results**. Nothing consumes them. `TomitaFourier` defines
-`modFlow x' t := Δ^{it}(Jx'J)Δ^{-it}` directly and never performs the
-rearrangement of RvD Lemma 4.8's `g(t)` that would have needed
-`J Δ^{it} = Δ^{it} J`.
+Cluster 1, the `CT_top_*` family: `CT_top_right` now has **2** consumers and
+`tensorGen_vnComm_top` **1**; `CT_top_left`, `CT_top_top` and `mem_vnComm_top`
+remain dead. Superseded and harmless to keep — readable special cases with short
+proofs, now subsumed by `commutation_theorem`.
 
-This block also duplicates `adJ` (§6).
+Cluster 2, `cornerTransfer` (`:811–922`, ~130 lines): **no longer an orphan by
+direct count** — `cornerTransfer` has 4 consumers, `adjoint_cornerTransfer` and
+`isUnitaryCLM_cornerTransfer` 3 each, `uconj_cornerAlg` and
+`cext_cornerTransfer_cmpr` 2 each, `CT_cornerAlg_congr` 1. Only
+`CT_of_CT_corner_any` (`:906`) is dead. The 2026-08-26 reading — that this is a
+self-supporting island nothing outside consumes — is a cone claim and is not
+contradicted; it is not confirmed either.
 
-### 5c. `TensorTransport.lean` — two clusters
+### 10d. `QuantumLambda.lean` — the one-sided `tensorSub_inf` chain, ~106 lines. **Unchanged.**
 
-`CT_top_right` / `CT_top_left` / `CT_top_top` / `mem_vnComm_top` /
-`tensorGen_vnComm_top`, ~70 lines. `CT_top_right`'s only users are the other
-two, which are themselves zero-use. When `COMMUTATION-THEOREM.md` §5a called
-`CT_top_right` "the first instance of the theorem itself", that was a status
-report on an open problem, not a dependency. `commutation_theorem` now subsumes
-all three. **Superseded, and harmless to keep** — they are readable special
-cases with short proofs.
-
-`CT_of_CT_corner_any`, `CT_cornerAlg_congr`, `uconj_cornerAlg`,
-`cext_cornerTransfer_cmpr`, `isUnitaryCLM_cornerTransfer`,
-`adjoint_cornerTransfer`, `cornerTransfer` (`:790–922`), ~130 lines. **Orphan.**
-The docstring says this is what `CT_of_CT_corner` was missing, but
-`CT_of_CT_finCyclic` quantifies its hypothesis over *all* Hilbert spaces, so the
-corner realisation is supplied by the caller and the choice never varies. The
-transport was never needed.
-
-### 5d. `QuantumLambda.lean` — the one-sided `tensorSub_inf` chain, ~106 lines
-
-`:6468–6488`, `:6511–6579`, `:6588–6603`. Superseded not by unconditionality but
+`tensorSub_inf` (`:6633`), `tensorSub₂_mono` (`:6229`) and
+`tensorSub_inf_of_intersection_tensor` (`:6495`) all confirmed dead. Superseded
 by the **two-sided** form: 125IV consumes
-`tensorSub₂_inf_of_intersectionTensorStatement` (`:6678`), because its
+`tensorSub₂_inf_of_intersectionTensorStatement` (`:6714`, 1 use), because its
 intersection `(𝒜̃ ⊗ B(ℋ)) ∩ (𝒜 ⊗ 𝒞)` varies in both factors.
-**`tensorSub_inf`'s own docstring is false** where it says "it is what 125IV
-`equaliser_lemma` consumes". It was orphaned inside its own commit.
+**`tensorSub_inf`'s own docstring is still false** where it says "it is what
+125IV `equaliser_lemma` consumes". It was orphaned inside its own commit.
 
----
+### 10e. The `section Package` pattern — the structural finding. **Mostly unchanged.**
 
-## 6. The `section Package` pattern — the structural finding
+> A worker finishes a file, wraps a complete-looking API around it, and the next
+> worker downstream works at the raw layer instead.
 
-`Tomita.lean:645–716` bundles `modularSqrt`/`modularConj` with nine lemmas.
-**The two definitions are used downstream; all nine lemmas are dead.**
-`ModularTensor.lean`, the only consumer, reaches past them to the raw layer
-(`mp`, `orbit_hasCore`, `J_D_orbit`, `orbit_mem_domain`, `Jli`, `J_inner_real`)
-and then builds *its own* parallel package at `:1195–1240`. And
-`CommutationTomita.lean:93` is literally `J_htmul`, "restated for the bare
-conjugation `J`" — the only real consumer's first move is to unwrap.
+The `ModularTensor` `Δ^{1/2}` package: `opTensor_mem_modularSqrt_domain`
+(`:1082`), `modularSqrt_orbit` (`:1130`), `modularSqrt_hasCore_orbitSpan`
+(`:1209`) and `modularSqrt_htmul_pkg` (`:1223`) confirmed dead;
+`modularSqrt_opTensor` (`:1096`) now has 1 use and `modularSqrt_htmul`
+(`:1113`) 2, so the chain is no longer dead end to end. The diagnosis stands and
+is sharper than "unused": `Tomita.lean`'s package ships its own
+domain-membership dischargers and `ModularTensor.lean`'s ships none, so a
+consumer of `modularSqrt_htmul_pkg` must drop out of the package vocabulary to
+produce its hypothesis. **Had the package been used even once, that gap would
+have closed.**
 
-This is the dominant failure mode of the development. It is not abandoned
-mathematics: **a worker finishes a file, wraps a complete-looking API around it,
-and the next worker downstream works at the raw layer instead.**
+*Cost of this block: low.* `orbitSpan_hasCore_tensor` (`:748`, ~150 lines), the
+expensive part, is consumed inside `tensor_factorisation`'s own proof.
 
-### The `ModularTensor` `Δ^{1/2}` package — six declarations, ~105 lines
+The smaller instances of the same shape, all re-confirmed dead here:
+`HasCyclicSeparating.hasCyclic`, `hasCyclicSeparating_of_dense_orbit`,
+`hasFinCyclic_of_cyclic`, `mem_vnComm_of_forall`; the mirror pairs
+`b_real_symm`/`b_b_apply`, `unitary_add_I_smul`/`unitary_sub_I_smul`,
+`normFst_mul`/`normSnd_mul`; and `standardSubspace_toClosedSubmodule`
+(`Tomita.lean:508`). Of the two `StandardSubspace` upstreaming wrappers,
+`stdConj` now has 5 uses and `standardSubspace` 1; only the accessors
+(`stdConj_apply`, `Jequiv_apply`) remain dead, i.e. class 4.
 
-`MT:1082–1151` and `MT:1206–1240`, entirely unreachable:
+### 10f. Individually diagnosed items — status
 
-```
-tensor_factorisation.2.1 / .2.2
-  ├─ opTensor_mem_modularSqrt_domain (1082)   DEAD
-  └─ modularSqrt_opTensor (1096)              DEAD
-       └─ modularSqrt_htmul (1113)            DEAD
-            ├─ modularSqrt_orbit (1130)       DEAD
-            └─ modularSqrt_htmul_pkg (1220)   DEAD
-  modularSqrt_hasCore_orbitSpan (1206)        DEAD
-```
+| item | 2026-08-26 verdict | status at `9a69966` |
+|---|---|---|
+| `tomita_JM'J_unconditional` | terminal by intent; the general fact was proved locally | still dead, unchanged |
+| `vnAdJ_one` | strictly redundant — **deleted** | absent from the tree |
+| `sepSet_subset_Ksub` | orphan | still dead |
+| `CT_iff_vnComm` | orphan, and the docs oversold it | still dead |
+| `cyclic_and_separating_of_separating` | the sharpest retraction casualty | still dead |
+| `IsCommutingPair.symm` | cannot be used as written | short name is `symm`; the textual method cannot separate it from Mathlib's. Unresolved; needs a term-level check |
+| `concreteTensor_inf_le_inf`, `tensorSub₂_mono` | superseded | both still dead |
+| Defeq fragility | the one place a reroute is advisable | unchanged; see §8 |
 
-The file's docstring states two goals: `J_ξ = J_ω ⊗ J_{ω'}` **and**
-`Δ_ξ^{1/2} = closure(Δ_ω^{1/2} ⊙ Δ_{ω'}^{1/2})`. `tensor_factorisation`
-(`MT:921`) returns a triple; the `J`-half feeds the live `modularConj_htmul`,
-which `CommutationTomita` uses. The `Δ^{1/2}` components `hfa`/`hfb` are
-consumed only inside the dead block.
-
-**Diagnosis — and it is sharper than "unused".** `Tomita.lean`'s package ships
-its own domain-membership dischargers (`orbit_mem_modularSqrt_domain`,
-`mem_modularSqrt_domain`). **`ModularTensor.lean`'s package ships none.**
-`opTensor_mem_modularSqrt_domain` stayed behind in the `Full` section, phrased
-over `mp … .D` with the six raw standardness hypotheses
-`hsM hcM hsN hcN hsT hcT`. So a consumer of `modularSqrt_htmul_pkg` must drop
-out of the package vocabulary and re-derive `isStandard` / `isStandard_vnTensor`
-by hand to produce its hypothesis `h`. **Had the package been used even once,
-that gap would have closed.** The `J`-half of the same section has no such gap —
-because it was used.
-
-Commit order agrees. `ModularTensor.lean` is one commit, `5d816fc`; its consumer
-`CommutationTomita.lean` is the later `d179cda`, and took only
-`modularConj_htmul`, `isCyclicVector_vnTensor`, `isSeparatingVector_vnTensor`,
-`isStandard_vnTensor`.
-
-*Mitigating.* The expensive part is not dead: `orbitSpan_hasCore_tensor`
-(`MT:748`, ~150 lines) is consumed inside `tensor_factorisation`'s own proof at
-`MT:943`. And `hfa`/`hfb` fall out of the same `IsModularPair.eq_one_of_comp`
-application as the `J`-half, so almost nothing was built *for* the dead
-statements. **Cost of this block: low. Keep it, or delete it, freely.**
-
-### The same shape, smaller
-
-* **Speculative direction-guessing at class boundaries.**
-  `HasCyclicSeparating.hasCyclic`, `hasCyclicSeparating_of_dense_orbit`,
-  `hasFinCyclic_of_cyclic`, `mem_vnComm_of_forall`, `CommCmpr.{one,mul,smul}` —
-  each the mirror of the one the next round actually needed.
-* **Mirror-pair over-generation.** `b_real_symm`/`b_b_apply`,
-  `unitary_add_I_smul`/`unitary_sub_I_smul`, `normFst_mul`/`normSnd_mul`.
-* **Two `StandardSubspace` upstreaming wrappers, both 100% dead**:
-  `StandardSubspace.lean`'s `section Std` (`stdConj` + 3 lemmas, `:654–682`) and
-  `Tomita.lean`'s `standardSubspace` + `standardSubspace_toClosedSubmodule`
-  (`:503–512`). Same idea, two rounds, ~40 lines. Defensible as the natural
-  Mathlib-upstreaming interface; as they stand, decoration.
-
----
-
-## 7. Individually diagnosed items
-
-### `tomita_JM'J_unconditional` — terminal, but was redundant. **Fixed.**
-
-`TomitaAnalytic:1165`. Terminal by intent: `COMMUTATION-THEOREM.md` §4 scopes
-the project to "only the *conjugation* half `JMJ = M'`", and this is the dual,
-exposed for the record.
-
-It is *not* an overlooked-lemma case. `CommutationTomita.lean` needed
-`J S□ J = (J S J)□` for an **arbitrary set** `S` (`adJ_image_commutant`),
-applied to a bicommutant in the generators `elemOps M N` — a shape a statement
-about `M` itself cannot serve, so the general algebraic fact was proved locally
-and subsumes this one.
-
-But it was **a three-line corollary of its own sibling that was not proved as
-one**: `adJ` is an involution (`adJ_adJ`), so applying `adJ ''` to
-`J M J = M'` gives `J M' J = M`. Instead it re-derived from `tomita_JM'J` +
-`adJ_commutant_subset`, a parallel path whose only purpose was this theorem.
-
-**Applied 2026-08-26** (§12): reproved as
-
-```lean
-  rw [← tomita_JMJ_unconditional M ω hsep hcyc hMdense hM'dense hM,
-    Set.image_image]
-  simp only [vnAdJ_vnAdJ, Set.image_id']
-```
-
-Statement byte-identical, axiom-clean. **Consequence: `tomita_JM'J`
-(`TomitaTakesaki:534`, ~12 lines) is now zero-use.** Deleting it retires a
-public name in another file and is left for the author. `adJ_commutant_subset`
-remains live via `TomitaFourier:680`.
-
-### `vnAdJ_one` — strictly redundant. **Deleted.**
-
-`vnAdJ` is a `noncomputable abbrev`, hence reducible, so the already-`@[simp]`
-`adJ_one` applies verbatim. Verified by probe: both `simp [-vnAdJ_one]` and
-`simp only [adJ_one]` close `vnAdJ M ω hsep hcyc 1 = 1`. It was the one member
-of the eight-lemma `vnAdJ_*` wrapper block that nobody needed. See §12.
-
-### `sepSet_subset_Ksub` — orphan
-
-`TomitaTakesaki:669`. `sepSet ⊆ 𝒦`, three lines. Orphan of a "run the
-nearest-point projection inside the real Hilbert space `𝒦`" framing. The proof
-that shipped (`exists_separating_of_notMem`, `:785`) separates in `ℋ` and
-projects only at the very end via `P_apply_mem` at `:835`, and never needs the
-containment. The module docstring already records the departure as deliberate.
-
-### `CT_iff_vnComm` — orphan, and the docs oversold it
-
-`Commutation:270`, with its only feeder `CT_vnComm` (`:257`), dead as a block,
-and advertised in the module docstring as a main result.
-`COMMUTATION-THEOREM.md`'s "dualising via `CT_iff_vnComm` swaps the two
-examples" describes a **prose** argument that was never formalized. What the
-proof needed were `CT_comm` and `CT_iff_bicommutant`, both live. And now that
-`commutation_theorem` is unconditional, both sides of the iff are theorems.
-
-### `cyclic_and_separating_of_separating` — the sharpest retraction casualty
-
-`Commutation:468`, ~28 lines, and it drags `reducedSet` (`:373`) with it. It
-produces a cut `f ∈ vnComm M` — in the **commutant** — whereas the transport
-that closed the reduction (`CT_of_CT_compression_of_dense`) needs a cut
-`e ∈ SA`, **inside the algebra**. `CommutationAmplify.lean:54` names it in the
-retraction by name.
-
-### `Modular.lean`'s advertised "Lemma A" is transitively dead
-
-`IsModularPair.injective_apply` and `dense_range` are zero-use;
-`inner_nonneg`'s only consumer is the dead `modularSqrt_inner_nonneg`. Only
-`isSelfAdjoint` is load-bearing, via `isClosed`. **Positivity, injectivity and
-dense range of `Δ^{1/2}` are used nowhere in the commutation theorem** —
-precisely the machinery the bounded resolvent argument (Lemmas C/D) replaced.
-
-### `IsCommutingPair.symm` cannot be used as written
-
-`Modular:570`. Built to derive ~8 mirrored `_snd` lemmas from their `_fst`
-twins, and it cannot: `sqrtSumSq c d` and `sqrtSumSq d c` are not syntactically
-equal. Either add `sqrtSumSq_comm` and route through it, or delete.
-
-### `concreteTensor_inf_le_inf`, `tensorSub₂_mono` — superseded
-
-`Tensor:11479`, `QL:6206`. Built for "easy half by monotonicity, hard half by
-the real theorem". `intersection_tensor'` proves the equality outright by a
-rewrite chain; `le_antisymm` never appears.
-
-### Defeq fragility — the one place a reroute is advisable
-
-`ModularTensor.modularConj_htmul` and `CommutationTomita.J_htmul` close
-`modularConj`-shaped goals with bare `J`-shaped terms. Those proofs break the
-moment `modularConj`/`Jequiv` become irreducible. They should go through the
-(currently unused, §4) `modularConj_apply` / `Jequiv_apply`. **This is the item
-where the `show …; rfl` style has a real cost.**
-
----
-
-## 8. Duplication, with a verdict on each
-
-| duplicate | which copy survives, and why |
-|---|---|
-| `jConjRe`/`jConj`/`jConjHom` (`ModularGroup:597–737`) vs `adJre`/`adJ` (`TomitaTakesaki:154–223`) | **Identical definitions.** `adJ` survives — it is live, consumed by `CommutationTomita`; `jConj*` is entirely dead (§5b). Both need only `StandardSubspace.lean`'s `J`, `J_norm`, `J_J`, `J_smul_I`, `smul_complex_of_smul_I`; **that is where the single copy belongs.** If `J X^w J = (J X J)^{w̄}` is wanted on the record, restate it on `adJ` and keep `jConjHom` as `adJHom`. **`ModularGroup:560–562`'s claim that `TomitaTakesaki` is "downstream of this file" is false** — `TomitaTakesaki` imports only `Tomita`; the two meet at `TomitaFourier`, where both are in scope and only one is used. |
-| `Jli`+`J_inner_real` (`Tomita:131,135`) vs `Jisometry`+`real_inner_J_map_map` (`ModularGroup:571,574`) | Same definition, and **both are live** — `Jli` → `ModularTensor`, `TomitaTakesaki`; `Jisometry` → `TomitaFourier`, `TomitaAnalytic`. One copy, in `StandardSubspace.lean`. Of the two lemmas keep `J_inner_real` (used); `real_inner_J_map_map` is dead. |
-| `J_inner_map_map` (`TomitaTakesaki:148`) vs `inner_J_map_map` (`ModularGroup:578`) | Exact type match. Keep `J_inner_map_map`: five lines via `J_inner_swap`, versus twenty, and the twenty-line one is dead. |
-| `real_inner_le_of_le` (`TomitaTakesaki:949`) vs `real_inner_le_of_le'` (`ModularGroup:210`) | **Character-for-character identical proofs.** The *primed* one is live (`IsPowBase.norm_cpowOp_apply_le`); the unprimed one is dead. Keep the live one, drop the prime, move to a common ancestor. Mathlib-level; check `ContinuousLinearMap.reApplyInnerSelf` first. |
-| `opTensor_comp` / `opTensor_adjoint'` (`CornerTensor:572,582`) vs `opTensor_mul` / `opTensor_adjoint` (`Tensor:1012,1067`) | The primed forms are the general (different Hilbert spaces) versions, and `opTensor_adjoint'`'s proof is character-identical to `opTensor_adjoint`. **`Tensor.lean` already states `opTensor_add_left` across different spaces**, so the general forms belong there under the unprimed names, with the endomorphism cases as one-line corollaries (`opTensor_mul` has 4 external users, `opTensor_adjoint` 1). |
-| **The ket operator — four copies** | `htKet e : x ↦ x ⊗ e` (`Tensor:1117`) is canonical, 4 external users. `htmulL y` (`ModularTensor:212`) is the *same map* under another name. And `y ↦ x ⊗ y` exists three times: `htmulR` (`ModularTensor:220`), `htKetL` (`TensorTransport:77`), `htKetR` (`Compression:753`) — `Compression` and `TensorTransport` are siblings, hence the third copy, **and they pick opposite names for the same map** ("left ket" vs "ket in the second variable"). One copy, in `Tensor.lean`, and settle the name. (`B/Dils`'s `hilbTensorKet*` is a different tensor product; leave it.) |
-| `htmul_add_right` (`ModularTensor:397` and `TensorTransport:65`) | Character-identical, two namespaces. Belongs in `Tensor.lean` beside `htmul_add_left`. Likewise `htmul_zero_left` (`TensorTransport:71`, dead) beside `htmul_zero_right`. |
-| `vnTensor` (`ModularTensor:540`) vs `concreteTensor` (`Tensor:11394`); `commutantSA` (`Tomita:290`) vs `vnComm` (`Commutation:59`) | **The same objects under two names each**, bridged at `CommutationTomita:247,253`. This is the `A/VN`↔`A/Proc` seam; it is documented, but it means new code in `A/VN` uses names nothing else in the tree uses. Retire `vnTensor`/`commutantSA` in favour of the `A/Proc` names, or at least stop growing the `A/VN` copies. |
-| `isClosed_image_of_uwCompact` (`TomitaTakesaki:588`) vs `..._real` (`:614`) | Same 25-line filter/cluster-point proof twice, `inner ℂ` versus `inner ℝ`. Only the real one is used — its own docstring says so, because `P` is only ℝ-linear. The ℂ version was written first and never adapted. **The one place a deletion would also remove genuinely duplicated proof text.** |
-| `bicommutant_eq_of_uwClosed` (`Tomita:482`) vs `isClosed_uw_of_bicommutant` (`TomitaTakesaki:640`) | Two directions of one iff, same one-line proof from `(double_commutant M).2.1`, written by two rounds. Collapse; the `Tomita` direction is dead. |
-| `isVNSubalgebra_top` (`TensorTransport:710`) vs `isVNSubalgebra_top'` (`QuantumLambda:7075`) | Identical proofs; the `QuantumLambda` one is more general (arbitrary C\*-algebra) and should absorb the special case. |
-| `opRatio_domain` (`Modular:136`) vs `IsModularPair.D_domain` (`:178`); `modularPair_data` (`StandardSubspace:640`) vs `isModularPair_a_b` (`:650`); `isCyclicVector_htmul` vs `isCyclicVector_vnTensor` (`ModularTensor:599,1169`) | Same statement twice, tens of lines apart; in each case one is dead. **`modularPair_data`'s stated justification — "no dependency on `Modular.lean`" — is contradicted by the file's own `import Theses.A.VN.Modular` on line 53.** |
-
-Deliberate and documented, leave alone: `intersection_tensor'` vs
-`intersection_tensor` (import-graph driven), `tomita_JMJ` vs
-`tomita_JMJ_unconditional`, `Jequiv`/`modularConj`/`stdConj`.
-
----
-
-## 9. Headline theorems: all reachable, all clean
-
-Axiom-checked, all `[propext, Classical.choice, Quot.sound]`:
-`commutation_theorem`, `intersection_tensor`, `equaliser_lemma`,
-`tensor_equalisers`, `tensor_preimage`, `tensor_closed`,
-`tensor_map_factorisation`, `tensorBsurjectivity`, `tomita_JMJ_unconditional`,
-`tomita_JM'J_unconditional`, `CT_of_cyclicSeparating`,
-`CT_of_CT_cyclicSeparating`. The only `sorry` in any of these files is the
-deliberate `tensor_simple_facts_4` (`Tensor.lean:6833`), documented false in
-`ERRATA.md`.
-
-The chain, verified transitively:
-
-```
-lemma_4_7 (TomitaAnalytic:1074)
-  → tomita_JMJ_unconditional (TomitaAnalytic:1155)
-      ├→ adJ_image_elemOps (CommutationTomita:175)            [M, and N]
-      └→ commutant_vnTensor_eq_vnTensor_commutant (:210)      [M ⊗̄ N]
-  → CT_of_cyclicSeparating_bicommutant (CommutationTomita:267)
-  → CT_of_cyclicSeparating (:284)
-  → cyclicSeparatingCTStatement (Proc/CommutationTheorem:102)
-  → CT_of_isVNSubalgebra (:135)     [via CT_of_CT_cyclicSeparating, the reduction]
-  → commutation_theorem (:143)
-  → intersection_tensor' (:244)
-  → Proc.intersection_tensor (QuantumLambda:309, 121II)
-```
-
-`modularConj_htmul`, `lemma_4_6`, `modPow`, `adJ`, `CT_of_CT_corner`,
-`CT_of_CT_compression_of_dense` are all inside the cone of
-`commutation_theorem`. `intersection_tensor` is inside the cone of
-`tensor_preimage`, `tensor_closed` and `tensor_map_factorisation`. Nothing is
-stranded. The five Kornell statements and `commutation_theorem` are themselves
-consumer-free, which is correct: they are the thesis statements.
-
----
-
-## 10. Stale documentation found in passing — **all six fixed 2026-08-26** (§12)
-
-* `Commutation.lean:12–16` advertises `CT_iff_vnComm` as a main result; dead and
-  now vacuous. ✔ removed from the header; the declaration now carries an "on
-  the record only" note.
-* `ModularGroup.lean`'s "Main results" advertises `jConj_cpowOp`, `J_modPow`,
-  `jConj_modPow`; all dead. ✔ moved into a new "On the record only — nothing
-  consumes these" section of the module docstring.
-* `ModularGroup.lean:560–562` says `TomitaTakesaki` is "downstream of this
-  file"; it is not. ✔ replaced by the true import-graph statement: siblings,
-  meeting at `TomitaFourier`.
-* `tensorSub_inf`'s docstring claims 125IV consumes it; 125IV consumes the
-  two-sided form. ✔ corrected — on `tensorSub_inf` **and** on
-  `tensorSub_inf_of_intersectionTensorStatement`, which carried the same claim
-  and which this list had missed.
-* `StandardSubspace.lean:637` says `modularPair_data` has "no dependency on
-  `Modular.lean`"; the file imports it. ✔ corrected.
-* `EqL.rSlice_mem` (`QuantumLambda:6801`) cross-references "the argument of
-  `atE_mem`" — inside the 813-line dead block, i.e. the later round reproved the
-  argument rather than reusing it. ✔ the cross-reference is gone; the docstring
-  now says the argument is self-contained.
+`101IV.2`, `101VIII.2` and `101IX` (`diamond_suprema_2`,
+`diamond_composition_2`, `diamond_sum`) are all still dead, as recorded in
+PROVING-LOG session 94: parts *1* of both are used heavily, these are numbered
+exercise parts whose statement is the deliverable, and 118IV's note that the
+printed route would use `diamond-suprema` and `diamond-composition` does not
+make them the fingerprint the check is after. Left, recorded, re-confirmed.
 
 ---
 
 ## 11. If given a fixing round, in this order
 
-1. **Move the J-conjugation layer into `StandardSubspace.lean` and keep one
-   copy.** This is the only item that removes real duplicated *proof text*
-   (~300 lines in `ModularGroup`, plus `real_inner_le_of_le`,
-   `inner_J_map_map`, `Jisometry`, and the 25-line `isClosed_image_of_uwCompact`
-   twin in `TomitaTakesaki`). Everything needed lives in `StandardSubspace.lean`
-   already; the duplication exists purely because `ModularGroup` and
-   `Tomita`/`TomitaTakesaki` are siblings in the import graph. **Highest value,
-   lowest risk, and it prevents recurrence.**
-2. **Settle the ket operator and the `htmul_*` lemmas in `Tensor.lean`**, and
-   move `opTensor_comp`/`opTensor_adjoint'` there under the unprimed names.
-   Four copies of one operator, with two files calling the same map "left" and
-   "right", is a live naming hazard, not just clutter.
-3. ~~**Fix the six stale docstrings in §10.** Ten minutes, and they are actively
-   misleading — two of them assert dependency facts that are false.~~
-   **Done 2026-08-26** — seven of them in the end; see §10 and §12.
-4. ~~**Route `modularConj_htmul` and `J_htmul` through `modularConj_apply` /
-   `Jequiv_apply`** (§7). The only place the `show …; rfl` style is load-bearing
-   in a way that will break.~~ **Done 2026-08-26.** Both now go through
-   `modularConj_apply`; `Jequiv_apply` turned out not to be needed, because
-   `modularConj_apply` unfolds all the way to the bare `J` in one step and
-   `Jequiv` never appears in either goal.
-5. **Decide on the atomic-type-I block (§5a).** 813 lines, superseded, and a
-   statement-level call the author should make — not a cleanup.
-6. **Leave the packages and the accessors alone**, or delete them wholesale;
-   either is fine. They cost nothing and re-deriving them is cheap. Do not spend
-   a round on them.
-
-Items 1–4 are mechanical and total maybe a day; **3 and 4 are done** (§12).
-Items 1 and 2 are not, deliberately: both move declarations between files and
-retire public names, which is the author's call. Item 5 needs the author.
-Item 6 is the 45 accessors plus the `section Package` blocks — the bulk of the
-raw count and none of the cost.
+1. **§5.2, `injective_nmiu_iso_on_image_2'` / 69IVb.** The only case-1 item all
+   of whose inputs are in the tree and live, with the hint printed and the
+   divergence already admitted in its own audit row. 40–80 lines replacing ~150.
+   Fix the row's "does neither" in the same edit — it does use 69IVa.
+2. **§5.3's row, not its proof.** Re-cost the 125VIIb row: 125VI is `green`
+   since `61d6f49` and "which is itself blocked" is stale. Cheap, and it
+   unblocks nothing but stops the next reader inheriting a false reason.
+3. **§7's pool, file by file, with the tree to yourself.** 190 declarations,
+   2,111 lines. Delete and re-run `scripts/audit_check.py` after each file. Do
+   not start this while another worker holds `A/CStar` or `A/VN`.
+4. **A cone pass**, to re-decide §10b and §10c cluster 2, and to check the 44
+   dead instances that the textual method is blind to. Budget an hour of compute
+   and use a pointer-cached constant walk (§1).
+5. **§5.1, the three copies of 163II's projection argument.** Only if the
+   linear-from-bilinear bridge is wanted for something else as well.
+6. **Leave §5.4, §5.5, §5.6, §6 and §8 alone.** Each has a written reason, and
+   in the case of §5.6 the repair would weaken the statement.
 
 ---
 
-## 12. Changes applied
+## 12. Changes applied in this sweep
 
-Four now: two by the audit itself (1 and 2 below), and two by the bookkeeping
-round of 2026-08-26 that applied §11 items 3 and 4 (3 and 4 below). All
-statement-preserving. Everything else in this document is left for a
-later round with the author's eye on it — anything that moves a declaration
-between files, retires a public name, or changes a proof route stays here as
-text.
+**None to the tree.** No declaration was deleted, no statement changed, no
+`sorry` added or removed (the count stands at eleven, all deliberate), and no
+audit row edited. The two row corrections this sweep found — 69IVb's "ours does
+neither" and 125VIIb's "125VI … is itself blocked" — are reported in §5.2 and
+§5.3 and left for whoever re-costs those rows, because both are claims about the
+theses' printed arguments rather than about the tree.
 
-**1. `TomitaAnalytic.lean` — `tomita_JM'J_unconditional` reproved from its
-sibling** (§7). Was:
-
-```lean
-  tomita_JM'J M ω hsep hcyc hMdense hM'dense
-    (adJ_commutant_subset M ω hsep hcyc hM
-      (fun _ hx' _ hφ => lemma_4_7 M ω hsep hcyc hM hM'dense hx' hφ))
-```
-
-now:
-
-```lean
-  rw [← tomita_JMJ_unconditional M ω hsep hcyc hMdense hM'dense hM,
-    Set.image_image]
-  simp only [vnAdJ_vnAdJ, Set.image_id']
-```
-
-Statement byte-identical; docstring extended to name the route.
-**`tomita_JM'J` (`TomitaTakesaki:534`, ~12 lines) is now zero-use** — deleting
-it retires a public name in another file and was not done.
-`adJ_commutant_subset` remains live via `TomitaFourier:680`.
-
-**2. `TomitaTakesaki.lean` — `vnAdJ_one` deleted** (§7). Two lines. Zero-use in
-the constant closure, and `adJ_one` covers the same goals through the reducible
-`abbrev`, verified by probe before deleting.
-
-**Verification.** Both edits were checked by rebuilding the whole downstream
-chain against a shadow olean tree, so that the `@[simp]` removal was tested
-against *recompiled* consumers rather than stale oleans:
-
-| file | result |
-|---|---|
-| `A/VN/TomitaTakesaki.lean` | exit 0, no output |
-| `A/VN/TomitaStrip.lean` | exit 0, no output |
-| `A/VN/TomitaFourier.lean` | exit 0, no output |
-| `A/VN/TomitaAnalytic.lean` | exit 0, no output |
-| `A/VN/CommutationTomita.lean` | exit 0, no output |
-| `A/Proc/CommutationTheorem.lean` | exit 0, no output |
-| `A/Proc/QuantumLambda.lean` | exit 0, **0 errors, 0 `sorry` warnings**, only its own pre-existing linter noise |
-
-Identical to the pre-edit baseline in every case.
-`tomita_JM'J_unconditional` and `tomita_JMJ_unconditional` axiom-checked in situ:
-`[propext, Classical.choice, Quot.sound]`.
-
-*Not rebuilt:* `.lake/build` still holds the pre-edit oleans for the two touched
-files. A `lake build` will recompile them and their dependents; nothing else is
-needed.
-
-**3. The seven stale docstrings of §10 — corrected 2026-08-26.** Comment-only;
-no statement, proof term or `import` changed.
-
-| file | what was false | now |
-|---|---|---|
-| `A/VN/StandardSubspace.lean` | `modularPair_data`'s "no dependency on `Theses/A/VN/Modular.lean`" | says the *statement* names nothing from `Modular.lean` but the file imports it on line 53; also records that it is the unbundled twin of `isModularPair_a_b` and has no consumer |
-| `A/VN/ModularGroup.lean` | "`TomitaTakesaki` … downstream of this file; the two are deliberately independent" | siblings — `TomitaTakesaki` ← `Tomita` ← `StandardSubspace`, this file ← `StandardSubspace` — meeting at `TomitaFourier`, where only `adJ` is used |
-| `A/VN/ModularGroup.lean` | "Main results" listing `jConj_cpowOp`, `J_modPow`, `jConj_modPow` | those three moved to a new "On the record only — nothing consumes these" section naming the whole `jConj` layer |
-| `A/Proc/Commutation.lean` | header advertising `CT_iff_vnComm` as a main result | header clause deleted; the declaration carries an "on the record only" note pointing at §7 |
-| `A/Proc/QuantumLambda.lean` | `tensorSub_inf`: "it is what 125IV `equaliser_lemma` consumes" | says nothing consumes it, and names the two-sided form 125IV does consume |
-| `A/Proc/QuantumLambda.lean` | `tensorSub_inf_of_intersectionTensorStatement`: "i.e. what 125IV `equaliser_lemma` actually needs" — **the same false claim, one declaration earlier, which §10 had missed** | corrected the same way |
-| `A/Proc/QuantumLambda.lean` | `EqL.rSlice_mem` citing "the argument of `atE_mem`", inside the dead `:4730–5542` block | cross-reference removed; the argument is stated as self-contained |
-
-**4. `modularConj_htmul` and `J_htmul` rerouted 2026-08-26** (§11 item 4).
-`ModularTensor.lean:1192` and `CommutationTomita.lean:93` were term-mode proofs
-that typechecked a `J`-shaped term against a `modularConj`-shaped goal (and the
-reverse) purely by definitional unfolding. Both now go through the `@[simp]`
-unfolder `modularConj_apply`:
-
-```lean
-  -- modularConj_htmul
-  simp only [modularConj_apply]
-  exact (tensor_factorisation …).1 ζ ζ'
-
-  -- J_htmul
-  simpa only [modularConj_apply] using modularConj_htmul …
-```
-
-`Jequiv_apply` was not needed after all: `modularConj_apply` rewrites straight
-to the bare `J`, so `Jequiv` never appears in either goal. Statements
-byte-identical.
-
-**Verification of 3 and 4.** Every touched file recompiled with
-`lean -DrelaxedAutoImplicit=false -DmaxSynthPendingDepth=3` against the same
-`LEAN_PATH`, and its output diffed against a pre-edit baseline taken the same
-session:
-
-| file | result |
-|---|---|
-| `A/VN/StandardSubspace.lean` | exit 0, no output — byte-identical to baseline |
-| `A/VN/ModularGroup.lean` | exit 0, no output — byte-identical |
-| `A/VN/ModularTensor.lean` | exit 0, no output — byte-identical |
-| `A/VN/CommutationTomita.lean` | exit 0, no output — byte-identical |
-| `A/Proc/Commutation.lean` | exit 0, no output — byte-identical |
-| `A/Proc/QuantumLambda.lean` | exit 0, 0 errors, 0 `sorry` warnings — its own pre-existing linter noise only, identical to baseline modulo shifted line numbers |
-
-**Considered and not applied.** Deleting `tomita_JM'J`, §11 items 1 and 2, and
-every item in §8 — all of them either retire a public name, move a declaration
-between files, or change a route, which is exactly the class this audit was
-told to describe rather than perform.
+`scripts/audit_check.py`: all five checks at 0. `scripts/coverage.py`: 669/669
+claims, 64/64 mixed.

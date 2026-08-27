@@ -622,6 +622,34 @@ theorem sot_tendsto_iff {ι : Type*} {l : Filter ι} (T : ι → H →L[ℂ] H)
   rw [← tendsto_sub_nhds_zero_iff, ← tendsto_zero_iff_norm_tendsto_zero]
   rfl
 
+omit [CompleteSpace H] in
+/-- **37V** (`swot`, cstar.tex:6268, Definition), part 2, the definition
+*itself*: the strong operator topology on `B(H)` **is** the topology induced
+by the seminorms `T ↦ ‖T x‖`, `x ∈ H`.
+
+This is the item-2 counterpart of `swot_topology_eq`, and it is what makes
+`sot_tendsto_iff` above a *consequence* of the definition rather than a
+substitute for it.  The carrier is Mathlib's `H →Lₚₜ[ℂ] H`
+(`PointwiseConvergenceCLM (RingHom.id ℂ) H H`, which is by definition the
+`UniformConvergenceCLM … {s : Set H | Finite s}` that `sot_tendsto_iff` is
+stated over), and `WithSeminorms` is Mathlib's "the topology is induced by
+this family of seminorms" — *not* "the least topology making them
+continuous", which is the form erratum `parsec-370.50` corrects and warns is
+not always the same thing.
+
+*Class 5 — closed by Mathlib.*  `PointwiseConvergenceCLM.withSeminorms` says
+exactly this; the Definition has no proof to match. -/
+theorem sot_withSeminorms :
+    WithSeminorms (PointwiseConvergenceCLM.seminormFamily (RingHom.id ℂ) H H) :=
+  PointwiseConvergenceCLM.withSeminorms
+
+omit [CompleteSpace H] in
+/-- The seminorms of `sot_withSeminorms` are the thesis's: the one indexed by
+`x ∈ H` sends `T` to `‖T x‖` — the definition's own formula, whose second
+description `⟪x, T* T x⟫^{1/2}` is `‖T x‖` again. -/
+theorem sot_seminorm_apply (x : H) (T : H →Lₚₜ[ℂ] H) :
+    PointwiseConvergenceCLM.seminorm x T = ‖T x‖ := rfl
+
 /-- **37VII** (`bh-wot-bounded-complete`, cstar.tex:6260, Lemma): if
 `(T_α)_α` is a net of bounded operators on a Hilbert space `H` such that
 `⟪x, T_α x⟫` is Cauchy and bounded for every `x ∈ H`, then `(T_α)_α`

@@ -8611,6 +8611,310 @@ end ContRep
 
 end ContRep
 
+/-! ### Normality of an `L^∞`-presentation — the "n" of **54XI**'s
+"nmiu-isomorphism"
+
+`cvn_faithful_4` below renders 54XI's clause that
+`f ↦ f° : C(spec 𝒜) → L^∞(spec 𝒜)` is an nmiu-isomorphism in *presentation*
+form — a map `q` from the bounded measurable functions onto `𝒜` that is
+additive, ℂ-homogeneous, multiplicative, ∗-preserving and unital with kernel
+exactly the `μ`-a.e.-zero functions — because the tree has no `L^∞` carrier
+for an `≃⋆ₐ` to land in (the same convention as 51IX `Linfty_vn` and
+`A/Proc/Duplicators`' `IsLinftyOf`).  That form delivers "miu-isomorphism"
+but *not* the leading "n".
+
+Normality of an actual `≃⋆ₐ` is `starAlgEquiv_preservesDirSups`, and it is
+unavailable here for exactly the reason the presentation form exists: there
+is no `≃⋆ₐ` to apply it to.  What follows supplies the clause directly, and
+in the strongest form: **every** such presentation is automatically normal.
+The route is the one `starAlgHom_le_iff` (**48VI**.2) takes for an injective
+∗-homomorphism, transported across `q`'s kernel clause rather than across
+injectivity:
+
+* `linftyPresentation_le_iff` — `q f ≤ q g` iff `f ≤ g` almost everywhere.
+  Forward by the square root of the difference; backward by the thesis's own
+  cube trick, `n q(f) n = -q(n)³` for `n` the negative part, which forces
+  `q(n)³ = 0` and hence `q n = 0` (`eq_zero_of_pow_three_eq_zero`).
+* `linftyPresentation_isLUB` — `q` carries a supremum for the a.e. order to a
+  supremum in `𝒞`, which is normality.  Note that *no directedness is
+  needed*: `q` is an order isomorphism modulo a.e. equality, so it preserves
+  whichever suprema exist, and `PreservesDirSups`'s directed ones in
+  particular.  Since the presentation is a bijection modulo a.e. equality,
+  normality of `q` is normality of `f ↦ f°`, which is what 54XI asserts. -/
+
+section LinftyPresentation
+
+variable {X : Type u} [MeasurableSpace X] {μ : Measure X}
+variable {𝒞 : Type u} [CStarAlgebra 𝒞] [PartialOrder 𝒞] [StarOrderedRing 𝒞]
+
+private theorem pres_bm_sub {f g : X → ℂ} (hf : IsBoundedMeasurable X f)
+    (hg : IsBoundedMeasurable X g) : IsBoundedMeasurable X (f - g) := by
+  obtain ⟨hfm, Cf, hCf⟩ := hf
+  obtain ⟨hgm, Cg, hCg⟩ := hg
+  exact ⟨hfm.sub hgm, Cf + Cg, fun x => (norm_sub_le _ _).trans (add_le_add (hCf x) (hCg x))⟩
+
+private theorem pres_bm_mul {f g : X → ℂ} (hf : IsBoundedMeasurable X f)
+    (hg : IsBoundedMeasurable X g) : IsBoundedMeasurable X (f * g) := by
+  obtain ⟨hfm, Cf, hCf⟩ := hf
+  obtain ⟨hgm, Cg, hCg⟩ := hg
+  refine ⟨hfm.mul hgm, max Cf 0 * max Cg 0, fun x => ?_⟩
+  rw [Pi.mul_apply, norm_mul]
+  exact mul_le_mul ((hCf x).trans (le_max_left _ _)) ((hCg x).trans (le_max_left _ _))
+    (norm_nonneg _) (le_max_right _ _)
+
+private theorem pres_bm_neg {f : X → ℂ} (hf : IsBoundedMeasurable X f) :
+    IsBoundedMeasurable X (-f) := by
+  obtain ⟨hfm, Cf, hCf⟩ := hf
+  exact ⟨hfm.neg, Cf, fun x => by simpa using hCf x⟩
+
+private theorem pres_bm_star {f : X → ℂ} (hf : IsBoundedMeasurable X f) :
+    IsBoundedMeasurable X (star f) := by
+  obtain ⟨hfm, Cf, hCf⟩ := hf
+  exact ⟨(Complex.continuous_conj.measurable).comp hfm, Cf, fun x => by simpa using hCf x⟩
+
+omit [PartialOrder 𝒞] [StarOrderedRing 𝒞] in
+/-- A presentation respects equality almost everywhere: that is what its
+kernel clause says. -/
+private theorem pres_congr_ae {q : (X → ℂ) → 𝒞}
+    (hadd : ∀ f g, IsBoundedMeasurable X f → IsBoundedMeasurable X g →
+      q (f + g) = q f + q g)
+    (hker : ∀ f, IsBoundedMeasurable X f → (q f = 0 ↔ f =ᵐ[μ] 0))
+    {f g : X → ℂ} (hf : IsBoundedMeasurable X f) (hg : IsBoundedMeasurable X g)
+    (hfg : f =ᵐ[μ] g) : q f = q g := by
+  have hsub : IsBoundedMeasurable X (f - g) := pres_bm_sub hf hg
+  have h0 : q (f - g) = 0 := (hker _ hsub).mpr (by filter_upwards [hfg] with x hx; simp [hx])
+  have h := hadd (f - g) g hsub hg
+  rw [sub_add_cancel, h0, zero_add] at h
+  exact h
+
+omit [PartialOrder 𝒞] [StarOrderedRing 𝒞] in
+private theorem pres_zero {q : (X → ℂ) → 𝒞}
+    (hker : ∀ f, IsBoundedMeasurable X f → (q f = 0 ↔ f =ᵐ[μ] 0)) : q 0 = 0 :=
+  (hker 0 ⟨measurable_const, 0, fun x => by simp⟩).mpr (by rfl)
+
+omit [PartialOrder 𝒞] [StarOrderedRing 𝒞] in
+private theorem pres_neg {q : (X → ℂ) → 𝒞}
+    (hadd : ∀ f g, IsBoundedMeasurable X f → IsBoundedMeasurable X g →
+      q (f + g) = q f + q g)
+    (hker : ∀ f, IsBoundedMeasurable X f → (q f = 0 ↔ f =ᵐ[μ] 0))
+    {f : X → ℂ} (hf : IsBoundedMeasurable X f) : q (-f) = - q f := by
+  have h := hadd (-f) f (pres_bm_neg hf) hf
+  rw [neg_add_cancel, pres_zero hker] at h
+  have h2 : q (-f) + q f = -q f + q f := by rw [← h]; simp
+  exact add_right_cancel h2
+
+omit [PartialOrder 𝒞] [StarOrderedRing 𝒞] in
+private theorem pres_sub {q : (X → ℂ) → 𝒞}
+    (hadd : ∀ f g, IsBoundedMeasurable X f → IsBoundedMeasurable X g →
+      q (f + g) = q f + q g)
+    {f g : X → ℂ} (hf : IsBoundedMeasurable X f) (hg : IsBoundedMeasurable X g) :
+    q (f - g) = q f - q g := by
+  have h := hadd (f - g) g (pres_bm_sub hf hg) hg
+  rw [sub_add_cancel] at h
+  rw [h]
+  abel
+
+/-- A presentation is positive: an almost-everywhere nonnegative bounded
+measurable `f` is `g* g` for the bounded measurable `g = √(ℜf)`, so `q f` is
+`q(g)* q(g)`. -/
+private theorem pres_nonneg {q : (X → ℂ) → 𝒞}
+    (hadd : ∀ f g, IsBoundedMeasurable X f → IsBoundedMeasurable X g →
+      q (f + g) = q f + q g)
+    (hmul : ∀ f g, IsBoundedMeasurable X f → IsBoundedMeasurable X g →
+      q (f * g) = q f * q g)
+    (hstar : ∀ f, IsBoundedMeasurable X f → q (star f) = star (q f))
+    (hker : ∀ f, IsBoundedMeasurable X f → (q f = 0 ↔ f =ᵐ[μ] 0))
+    {f : X → ℂ} (hf : IsBoundedMeasurable X f) (hpos : 0 ≤ᵐ[μ] f) :
+    0 ≤ q f := by
+  obtain ⟨hfm, C, hC⟩ := hf
+  set s : X → ℂ := fun x => ((Real.sqrt (f x).re : ℝ) : ℂ) with hs
+  have hsm : Measurable s :=
+    Complex.measurable_ofReal.comp (Real.continuous_sqrt.measurable.comp
+      (Complex.measurable_re.comp hfm))
+  have hsb : IsBoundedMeasurable X s := by
+    refine ⟨hsm, Real.sqrt C, fun x => ?_⟩
+    have h1 : ‖s x‖ = Real.sqrt (f x).re := by
+      simp [hs, Complex.norm_real, abs_of_nonneg (Real.sqrt_nonneg _)]
+    rw [h1]
+    exact Real.sqrt_le_sqrt ((Complex.abs_re_le_norm (f x)).trans' (le_abs_self _) |>.trans (hC x))
+  have hss : (s * s) =ᵐ[μ] f := by
+    filter_upwards [hpos] with x hx
+    have hre : (0:ℝ) ≤ (f x).re := (Complex.le_def.mp hx).1
+    have him : (f x).im = 0 := ((Complex.le_def.mp hx).2).symm
+    have hfx : (f x) = ((f x).re : ℂ) := by apply Complex.ext <;> simp [him]
+    rw [Pi.mul_apply, hs]
+    simp only
+    rw [← Complex.ofReal_mul, Real.mul_self_sqrt hre, ← hfx]
+  have hstarS : star s = s := by
+    funext x; simp [hs, Pi.star_apply, Complex.conj_ofReal]
+  have hq : q f = star (q s) * q s := by
+    rw [← pres_congr_ae hadd hker (pres_bm_mul hsb hsb) ⟨hfm, C, hC⟩ hss,
+      hmul s s hsb hsb, ← hstar s hsb, hstarS]
+  rw [hq]
+  exact star_mul_self_nonneg _
+
+/-- A presentation *reflects* positivity.  The thesis's cube trick, in the
+form `starAlgHom_le_iff` uses it: with `n` the negative part of `f`,
+`n f n = -n³` almost everywhere, so `q(n)³ ≤ 0` while `0 ≤ q(n)³`, whence
+`q n = 0` and `n` vanishes almost everywhere. -/
+private theorem pres_ae_nonneg {q : (X → ℂ) → 𝒞}
+    (hadd : ∀ f g, IsBoundedMeasurable X f → IsBoundedMeasurable X g →
+      q (f + g) = q f + q g)
+    (hmul : ∀ f g, IsBoundedMeasurable X f → IsBoundedMeasurable X g →
+      q (f * g) = q f * q g)
+    (hstar : ∀ f, IsBoundedMeasurable X f → q (star f) = star (q f))
+    (hker : ∀ f, IsBoundedMeasurable X f → (q f = 0 ↔ f =ᵐ[μ] 0))
+    {f : X → ℂ} (hf : IsBoundedMeasurable X f) (hq : 0 ≤ q f) :
+    0 ≤ᵐ[μ] f := by
+  obtain ⟨hfm, C, hC⟩ := hf
+  have hf' : IsBoundedMeasurable X f := ⟨hfm, C, hC⟩
+  -- `q f` is self-adjoint, so `f` is real almost everywhere
+  have hreal : ∀ᵐ x ∂μ, (f x).im = 0 := by
+    have h1 : q (star f) = q f := by
+      rw [hstar f hf', (IsSelfAdjoint.of_nonneg hq).star_eq]
+    have h2 := hadd (star f - f) f (pres_bm_sub (pres_bm_star hf') hf') hf'
+    rw [sub_add_cancel, h1] at h2
+    have h3 : q (star f - f) = 0 := by
+      have h4 : q (star f - f) + q f = 0 + q f := by rw [← h2]; simp
+      exact add_right_cancel h4
+    have h5 := (hker _ (pres_bm_sub (pres_bm_star hf') hf')).mp h3
+    filter_upwards [h5] with x hx
+    have hx0 : star f x - f x = 0 := hx
+    have h7 : (starRingEnd ℂ) (f x) = f x := sub_eq_zero.mp hx0
+    have h6 := congrArg Complex.im h7
+    simp only [Complex.conj_im] at h6
+    linarith
+  -- the negative part of `f`
+  set n : X → ℂ := fun x => ((max (-(f x).re) 0 : ℝ) : ℂ) with hn
+  have hnm : Measurable n :=
+    Complex.measurable_ofReal.comp
+      (((Complex.measurable_re.comp hfm).neg).max measurable_const)
+  have hnb : IsBoundedMeasurable X n := by
+    refine ⟨hnm, max C 0, fun x => ?_⟩
+    have h1 : ‖n x‖ = max (-(f x).re) 0 := by
+      simp [hn, Complex.norm_real, abs_of_nonneg (le_max_right _ (0:ℝ))]
+    rw [h1]
+    refine max_le ?_ (le_max_right _ _)
+    refine le_trans ?_ (le_max_left C 0)
+    refine le_trans ?_ (hC x)
+    have h2 := Complex.abs_re_le_norm (f x)
+    have h3 : -(f x).re ≤ |(f x).re| := neg_le_abs _
+    linarith
+  have hnstar : star n = n := by
+    funext x; simp [hn, Pi.star_apply, Complex.conj_ofReal]
+  have hnnonneg : 0 ≤ᵐ[μ] n := by
+    filter_upwards with x
+    have h1 : (0:ℝ) ≤ max (-(f x).re) 0 := le_max_right _ _
+    simp [hn, Complex.le_def, h1]
+  have hqn : 0 ≤ q n := pres_nonneg hadd hmul hstar hker hnb hnnonneg
+  have hqnsa : IsSelfAdjoint (q n) := IsSelfAdjoint.of_nonneg hqn
+  have hkey : (n * f * n) =ᵐ[μ] (-(n * n * n)) := by
+    filter_upwards [hreal] with x hx
+    have hfx : f x = ((f x).re : ℂ) := by apply Complex.ext <;> simp [hx]
+    rcases le_or_gt 0 ((f x).re) with h | h
+    · have h0 : n x = 0 := by simp [hn, max_eq_right (by linarith : -(f x).re ≤ (0:ℝ))]
+      simp [Pi.mul_apply, Pi.neg_apply, h0]
+    · have h0 : n x = ((-(f x).re : ℝ) : ℂ) := by
+        simp [hn, max_eq_left (by linarith : (0:ℝ) ≤ -(f x).re)]
+      rw [Pi.mul_apply, Pi.mul_apply, Pi.neg_apply, Pi.mul_apply, Pi.mul_apply, h0, hfx]
+      push_cast
+      simp only [Complex.ofReal_re]
+      ring
+  have hcube : q n * q f * q n = -(q n ^ 3) := by
+    have h1 : q (n * f * n) = q n * q f * q n := by
+      rw [hmul _ _ (pres_bm_mul hnb hf') hnb, hmul _ _ hnb hf']
+    have h2 : q (-(n * n * n)) = -(q n ^ 3) := by
+      rw [pres_neg hadd hker (pres_bm_mul (pres_bm_mul hnb hnb) hnb),
+        hmul _ _ (pres_bm_mul hnb hnb) hnb, hmul _ _ hnb hnb]
+      noncomm_ring
+    rw [← h1, ← h2]
+    exact pres_congr_ae hadd hker (pres_bm_mul (pres_bm_mul hnb hf') hnb)
+      (pres_bm_neg (pres_bm_mul (pres_bm_mul hnb hnb) hnb)) hkey
+  have hle : q n ^ 3 ≤ 0 := by
+    have h1 : (0:𝒞) ≤ star (q n) * q f * q n := star_left_conjugate_nonneg hq _
+    rw [hqnsa.star_eq, hcube] at h1
+    exact neg_nonneg.mp h1
+  have hge : (0:𝒞) ≤ q n ^ 3 := CStarAlgebra.pow_nonneg hqn 3
+  have hz : q n = 0 := eq_zero_of_pow_three_eq_zero hqnsa (le_antisymm hle hge)
+  have hn0 := (hker n hnb).mp hz
+  filter_upwards [hreal, hn0] with x hx hx0
+  have h1 : max (-(f x).re) 0 = 0 := by
+    have h2 : ((max (-(f x).re) 0 : ℝ) : ℂ) = 0 := hx0
+    exact_mod_cast h2
+  have h3 : (0:ℝ) ≤ (f x).re := by
+    have h4 := le_max_left (-(f x).re) (0:ℝ)
+    rw [h1] at h4
+    linarith
+  exact Complex.le_def.mpr ⟨h3, hx.symm⟩
+
+/-- **54XI**, the "n" of "nmiu", first half: an `L^∞`-presentation `q` of a
+C\*-algebra `𝒞` — additive, multiplicative, ∗-preserving, with kernel exactly
+the `μ`-a.e.-zero functions — is an *order embedding* for the almost-everywhere
+order.  This is `starAlgHom_le_iff` (**48VI**.2) with `q`'s kernel clause in
+place of injectivity, and neither ℂ-homogeneity nor unitality is needed. -/
+theorem linftyPresentation_le_iff {q : (X → ℂ) → 𝒞}
+    (hadd : ∀ f g, IsBoundedMeasurable X f → IsBoundedMeasurable X g →
+      q (f + g) = q f + q g)
+    (hmul : ∀ f g, IsBoundedMeasurable X f → IsBoundedMeasurable X g →
+      q (f * g) = q f * q g)
+    (hstar : ∀ f, IsBoundedMeasurable X f → q (star f) = star (q f))
+    (hker : ∀ f, IsBoundedMeasurable X f → (q f = 0 ↔ f =ᵐ[μ] 0))
+    {f g : X → ℂ} (hf : IsBoundedMeasurable X f) (hg : IsBoundedMeasurable X g) :
+    q f ≤ q g ↔ f ≤ᵐ[μ] g := by
+  have hsub : IsBoundedMeasurable X (g - f) := pres_bm_sub hg hf
+  have hqs : q (g - f) = q g - q f := pres_sub hadd hg hf
+  constructor
+  · intro h
+    have h0 : 0 ≤ q (g - f) := by rw [hqs]; exact sub_nonneg.mpr h
+    have h1 := pres_ae_nonneg hadd hmul hstar hker hsub h0
+    filter_upwards [h1] with x hx
+    have h2 : (0:ℂ) ≤ g x - f x := hx
+    exact sub_nonneg.mp h2
+  · intro h
+    have h0 : 0 ≤ᵐ[μ] (g - f) := by
+      filter_upwards [h] with x hx
+      show (0:ℂ) ≤ g x - f x
+      exact sub_nonneg.mpr hx
+    have h1 := pres_nonneg hadd hmul hstar hker hsub h0
+    rw [hqs] at h1
+    exact sub_nonneg.mp h1
+
+/-- **54XI**, the "n" of "nmiu": an `L^∞`-presentation is **normal**.  If `s`
+is a least upper bound of `D` for the almost-everywhere order on bounded
+measurable functions, then `q s` is a least upper bound of `q '' D` in `𝒞`.
+
+Directedness of `D` is not assumed and is not needed: by
+`linftyPresentation_le_iff` together with surjectivity, `q` is an order
+isomorphism modulo equality almost everywhere, so it carries *every* supremum
+that exists to a supremum — the directed ones of `PreservesDirSups` among
+them.  Because `q` is that isomorphism, this is equally the normality of the
+map `f ↦ f°` of 54XI, of which `q` is the inverse. -/
+theorem linftyPresentation_isLUB {q : (X → ℂ) → 𝒞}
+    (hsurj : ∀ y : 𝒞, ∃ f, IsBoundedMeasurable X f ∧ q f = y)
+    (hadd : ∀ f g, IsBoundedMeasurable X f → IsBoundedMeasurable X g →
+      q (f + g) = q f + q g)
+    (hmul : ∀ f g, IsBoundedMeasurable X f → IsBoundedMeasurable X g →
+      q (f * g) = q f * q g)
+    (hstar : ∀ f, IsBoundedMeasurable X f → q (star f) = star (q f))
+    (hker : ∀ f, IsBoundedMeasurable X f → (q f = 0 ↔ f =ᵐ[μ] 0))
+    {D : Set (X → ℂ)} {s : X → ℂ}
+    (hD : ∀ f ∈ D, IsBoundedMeasurable X f) (hs : IsBoundedMeasurable X s)
+    (hub : ∀ f ∈ D, f ≤ᵐ[μ] s)
+    (hleast : ∀ t : X → ℂ, IsBoundedMeasurable X t →
+      (∀ f ∈ D, f ≤ᵐ[μ] t) → s ≤ᵐ[μ] t) :
+    IsLUB (q '' D) (q s) := by
+  constructor
+  · rintro _ ⟨f, hfD, rfl⟩
+    exact (linftyPresentation_le_iff hadd hmul hstar hker (hD f hfD) hs).mpr (hub f hfD)
+  · intro a ha
+    obtain ⟨t, ht, rfl⟩ := hsurj a
+    refine (linftyPresentation_le_iff hadd hmul hstar hker hs ht).mpr
+      (hleast t ht fun f hfD => ?_)
+    exact (linftyPresentation_le_iff hadd hmul hstar hker (hD f hfD) ht).mp (ha ⟨f, hfD, rfl⟩)
+
+end LinftyPresentation
+
+
 section CVNFaithful
 
 variable {A : Type*} [CommCStarAlgebra A] [PartialOrder A] [StarOrderedRing A]
@@ -8806,6 +9110,59 @@ theorem cvn_faithful_4 [MeasurableSpace (characterSpace ℂ A)]
         q (f : characterSpace ℂ A → ℂ) = (gelfandStarTransform A).symm f) := by
   haveI := vn_spectrum_extremally_disconnected A
   exact ContRep.exists_presentation hms μ hμ A (gelfandStarTransform A)
+
+/-- **54XI** (vn.tex:2035-2037), the isomorphism clause **in full**: the
+presentation of `cvn_faithful_4` is not merely an miu-isomorphism but an
+**nmiu**-isomorphism — `q` is *normal*.
+
+The eight conjuncts before the last are `cvn_faithful_4`'s, verbatim; the
+last is the "n".  It says that `q` carries a least upper bound for the
+almost-everywhere order on `𝓛^∞(spec 𝒜)` to a least upper bound in `𝒜`, and
+since `q` is a bijection modulo a.e. equality that is exactly normality of
+the thesis's `f ↦ f°` in the direction the presentation form makes
+available.  Directedness of `D` is not needed (see
+`linftyPresentation_isLUB`), so the clause is stronger than
+`PreservesDirSups` would ask.
+
+Normality is *not* automatic from `starAlgEquiv_preservesDirSups` here: that
+lemma is about an actual `≃⋆ₐ`, and the `L^∞` carrier such an equivalence
+would need is exactly what the tree does not have — which is why the
+isomorphism is in presentation form to begin with.  It is, however, automatic
+from the other eight clauses, by `linftyPresentation_isLUB`. -/
+theorem cvn_faithful_5 [MeasurableSpace (characterSpace ℂ A)]
+    (hms : ∀ s : Set (characterSpace ℂ A), MeasurableSet s ↔ AlmostClopen s)
+    (μ : Measure (characterSpace ℂ A))
+    (hμ : ∀ s : Set (characterSpace ℂ A), AlmostClopen s →
+      (μ s = 0 ↔ IsMeagre s)) :
+    ∃ q : (characterSpace ℂ A → ℂ) → A,
+      (∀ y : A, ∃ f, IsBoundedMeasurable (characterSpace ℂ A) f ∧ q f = y) ∧
+      (∀ f g, IsBoundedMeasurable (characterSpace ℂ A) f →
+        IsBoundedMeasurable (characterSpace ℂ A) g →
+        q (f + g) = q f + q g) ∧
+      (∀ (z : ℂ) f, IsBoundedMeasurable (characterSpace ℂ A) f →
+        q (z • f) = z • q f) ∧
+      (∀ f g, IsBoundedMeasurable (characterSpace ℂ A) f →
+        IsBoundedMeasurable (characterSpace ℂ A) g →
+        q (f * g) = q f * q g) ∧
+      (∀ f, IsBoundedMeasurable (characterSpace ℂ A) f →
+        q (star f) = star (q f)) ∧
+      q 1 = 1 ∧
+      (∀ f, IsBoundedMeasurable (characterSpace ℂ A) f →
+        (q f = 0 ↔ f =ᵐ[μ] 0)) ∧
+      (∀ f : C(characterSpace ℂ A, ℂ),
+        q (f : characterSpace ℂ A → ℂ) = (gelfandStarTransform A).symm f) ∧
+      (∀ (D : Set (characterSpace ℂ A → ℂ)) (s : characterSpace ℂ A → ℂ),
+        (∀ f ∈ D, IsBoundedMeasurable (characterSpace ℂ A) f) →
+        IsBoundedMeasurable (characterSpace ℂ A) s →
+        (∀ f ∈ D, f ≤ᵐ[μ] s) →
+        (∀ t, IsBoundedMeasurable (characterSpace ℂ A) t →
+          (∀ f ∈ D, f ≤ᵐ[μ] t) → s ≤ᵐ[μ] t) →
+        IsLUB (q '' D) (q s)) := by
+  obtain ⟨q, hsurj, hadd, hsmul, hmul, hstar, hone, hker, hcont⟩ :=
+    cvn_faithful_4 hms μ hμ
+  exact ⟨q, hsurj, hadd, hsmul, hmul, hstar, hone, hker, hcont,
+    fun D s hD hs hub hleast =>
+      linftyPresentation_isLUB hsurj hadd hmul hstar hker hD hs hub hleast⟩
 
 /-! **54XIII** (vn.tex:2172): transition to the projections needed for the
 full classification (70III, `Theses/A/VN/Projections.lean`) — nothing to

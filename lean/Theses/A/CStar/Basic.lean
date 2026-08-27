@@ -58,6 +58,39 @@ C*-algebra, and every finite-dimensional C*-algebra is of this form
 (with conjugation as involution and modulus as norm). -/
 noncomputable example : CommCStarAlgebra ℂ := inferInstance
 
+/-- **3VII** (`cstar-matrices-example`, cstar.tex:214, Example), the point of
+the Example: for `n > 1` the C*-algebra `M_n = CStarMatrix (Fin n) (Fin n) ℂ`
+is **non-commutative** — it is the thesis's first example of one, and that is
+the whole reason the Example is there.
+
+The C*-structure itself is Mathlib's, and is recorded by the
+general-coefficient `example` at 33I.4 in `A/CStar/Matrices.lean`;
+what is asserted here is only the failure of commutativity, exhibited on the
+matrix units `e₀₁` and `e₁₀`, whose products `e₀₁e₁₀ = e₀₀` and
+`e₁₀e₀₁ = e₁₁` differ in the `(0,0)` entry.  `n > 1` is what makes the two
+indices available, and it is necessary: `M_1 ≅ ℂ` is commutative.
+
+*Definition/Example, so the thesis gives no proof.* -/
+theorem cstar_matrices_noncommutative {n : ℕ} (hn : 1 < n) :
+    ∃ A B : CStarMatrix (Fin n) (Fin n) ℂ, A * B ≠ B * A := by
+  classical
+  set i : Fin n := ⟨0, by omega⟩ with hi
+  set j : Fin n := ⟨1, hn⟩ with hj
+  have hij : i ≠ j := by simp [hi, hj, Fin.ext_iff]
+  refine ⟨CStarMatrix.ofMatrix (Matrix.single i j 1),
+    CStarMatrix.ofMatrix (Matrix.single j i 1), fun h => ?_⟩
+  have hmul : ∀ a b : Matrix (Fin n) (Fin n) ℂ,
+      CStarMatrix.ofMatrix a * CStarMatrix.ofMatrix b = CStarMatrix.ofMatrix (a * b) :=
+    fun _ _ => rfl
+  rw [hmul, hmul] at h
+  have h' : Matrix.single i j (1 : ℂ) * Matrix.single j i 1
+      = Matrix.single j i (1 : ℂ) * Matrix.single i j 1 :=
+    CStarMatrix.ofMatrix.injective h
+  rw [Matrix.single_mul_single_same, Matrix.single_mul_single_same, mul_one] at h'
+  have hentry := congrFun (congrFun h' i) i
+  rw [Matrix.single_apply_same, Matrix.single_apply_of_row_ne (Ne.symm hij)] at hentry
+  exact one_ne_zero hentry
+
 /-! ## Parsec 40 (`hilb`): Hilbert spaces and bounded operators -/
 
 section Operators
