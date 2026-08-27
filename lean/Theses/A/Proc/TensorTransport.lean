@@ -67,11 +67,6 @@ theorem htmul_add_right (x : H) (y y' : K) :
   show (hilbTensor H K).map x (y + y') = _
   rw [map_add]; rfl
 
-/-- Companion of `htmul_zero_right`: `0 ⊗ y = 0`. -/
-theorem htmul_zero_left (y : K) : (0 : H) ⊗ₕ y = 0 := by
-  show (hilbTensor H K).map 0 y = _
-  simp
-
 /-- The **left ket** operator `x ⊗ |·⟩ : 𝒦 → ℋ ⊗ 𝒦`, `y ↦ x ⊗ y`; the
 mirror of `htKet`. -/
 def htKetL (x : H) : K →L[ℂ] HT H K :=
@@ -124,17 +119,12 @@ include hU
 theorem ucext_cmpr (x : H' →L[ℂ] H') : cext U (cmpr U x) = x := by
   rw [cext_cmpr hU, one_mul, mul_one]
 
-theorem ucext_surjective : Function.Surjective (cext U) :=
-  fun x => ⟨cmpr U x, ucext_cmpr hU x⟩
-
 theorem ucext_one : cext U (1 : H →L[ℂ] H) = 1 := cext_one hU
 
 theorem ucmpr_mul (x x' : H' →L[ℂ] H') :
     cmpr U (x * x') = cmpr U x * cmpr U x' := by
   have h := cmpr_mul_mid hU x x'
   rwa [mul_one] at h
-
-theorem ucmpr_one : cmpr U (1 : H' →L[ℂ] H') = 1 := cmpr_one hU
 
 /-- The adjoint of a unitary is a unitary. -/
 theorem IsUnitaryCLM.adjoint : IsUnitaryCLM (ContinuousLinearMap.adjoint U) := by
@@ -773,18 +763,6 @@ theorem CT_top_right (M : StarSubalgebra ℂ (H →L[ℂ] H))
   refine SetLike.ext' ?_
   rw [coe_vnComm, hL, hdc, concreteTensor_def, hgen]
 
-/-- **The commutation theorem holds when the first factor is all of
-`B(ℋ)`.** -/
-theorem CT_top_left (N : StarSubalgebra ℂ (K →L[ℂ] K))
-    (hN : IsVNSubalgebra (K →L[ℂ] K) N) :
-    CT (H := H) (⊤ : StarSubalgebra ℂ (H →L[ℂ] H)) N :=
-  (CT_comm N (⊤ : StarSubalgebra ℂ (H →L[ℂ] H))).mp (CT_top_right N hN)
-
-/-- `CT(B(ℋ), B(𝒦))`. -/
-theorem CT_top_top :
-    CT (⊤ : StarSubalgebra ℂ (H →L[ℂ] H)) (⊤ : StarSubalgebra ℂ (K →L[ℂ] K)) :=
-  CT_top_right _ isVNSubalgebra_top
-
 end TopTensor
 
 /-! ## Independence of the choice of corner
@@ -899,26 +877,6 @@ section CornerPayoff
 variable {H K : Type u}
   [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
   [NormedAddCommGroup K] [InnerProductSpace ℂ K] [CompleteSpace K]
-
-/-- **`CT_of_CT_corner` with arbitrary corner realisations.**  The chosen
-corner `cornerRep` of `A/Proc/CornerTensor.lean` may be replaced by any
-family of realisations of the cutting projections. -/
-theorem CT_of_CT_corner_any {ι κ : Type*} [Nonempty ι] [Preorder ι]
-    [IsDirected ι (· ≤ ·)] [Nonempty κ] [Preorder κ] [IsDirected κ (· ≤ ·)]
-    {SA : StarSubalgebra ℂ (H →L[ℂ] H)} {SB : StarSubalgebra ℂ (K →L[ℂ] K)}
-    (e : ι → H →L[ℂ] H) (he : ∀ i, IsStarProjection (e i))
-    (hemem : ∀ i, e i ∈ vnComm SA) (hemono : Monotone e) (helub : IsLUB (Set.range e) 1)
-    (f : κ → K →L[ℂ] K) (hf : ∀ j, IsStarProjection (f j))
-    (hfmem : ∀ j, f j ∈ vnComm SB) (hfmono : Monotone f) (hflub : IsLUB (Set.range f) 1)
-    (Re : ∀ i, CornerRep H (e i)) (Rf : ∀ j, CornerRep K (f j))
-    (hcorner : ∀ (i : ι) (j : κ),
-      CT (cornerAlg (Re i).isCorner SA (hemem i))
-         (cornerAlg (Rf j).isCorner SB (hfmem j))) :
-    CT SA SB :=
-  CT_of_CT_corner e he hemem hemono helub f hf hfmem hfmono hflub
-    fun i j => (CT_cornerAlg_congr (Re i).isCorner (cornerRep (e i) (he i)).isCorner
-      (Rf j).isCorner (cornerRep (f j) (hf j)).isCorner
-      (hemem i) (hfmem j)).mp (hcorner i j)
 
 end CornerPayoff
 

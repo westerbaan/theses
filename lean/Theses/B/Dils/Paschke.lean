@@ -1076,32 +1076,6 @@ theorem pTheta_sum {n : ℕ} (a : Fin n → 𝒜) (b : Fin n → ℬ) (d : 𝒜)
   show (ptensBInner φ).inner _ (prmul d _) = _
   rw [hprm, ptensBInner_sum]
 
-theorem pTheta_add (v : 𝒜 ⊗[ℂ] ℬ) (d d' : 𝒜) :
-    pTheta φ v (d + d') = pTheta φ v d + pTheta φ v d' := by
-  have h : prmul (d + d') v = prmul d v + prmul d' v := by
-    have : prmul (𝒜 := 𝒜) (ℬ := ℬ) (d + d') = prmul d + prmul d' := by
-      refine TensorProduct.ext' fun a b => ?_
-      show (a * (d + d')) ⊗ₜ[ℂ] b = (a * d) ⊗ₜ[ℂ] b + (a * d') ⊗ₜ[ℂ] b
-      rw [mul_add, TensorProduct.add_tmul]
-    rw [this]; rfl
-  show (ptensBInner φ).inner v (prmul (d + d') v) = _
-  rw [h, (ptensBInner φ).inner_add_right]
-  rfl
-
-theorem pTheta_nonneg (v : 𝒜 ⊗[ℂ] ℬ) {d : 𝒜} (hd : 0 ≤ d) :
-    (0 : ℬ) ≤ pTheta φ v d := by
-  obtain ⟨n, a, b, rfl⟩ := exists_fin_tmul v
-  rw [pTheta_sum]
-  set e : 𝒜 := CFC.sqrt d with he
-  have hsa : star e = e := IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg d)
-  have hee : e * e = d := CFC.sqrt_mul_sqrt_self d hd
-  have hterm : ∀ i j : Fin n, a i * d * star (a j) = (a i * e) * star (a j * e) := by
-    intro i j
-    rw [star_mul, hsa, ← hee]
-    noncomm_ring
-  simp only [hterm]
-  exact phi_gram_nonneg φ (fun i => a i * e) b
-
 /-- **154III**.2, the analytic core: the vector form `d ↦ ⟨v, ϱ(d) v⟩` of
 `ϱ`, paired with an np-functional `ω` of `ℬ`, is normal.
 

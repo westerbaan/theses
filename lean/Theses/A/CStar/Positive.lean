@@ -799,13 +799,6 @@ private theorem affine_mem_slitPlane {ζ : ℂ}
   field_simp
   ring
 
-/-- Auxiliary: on the right half plane `arg` is `arctan` of the slope. -/
-private theorem arg_eq_arctan {x : ℂ} (hx : 0 < x.re) :
-    x.arg = Real.arctan (x.im / x.re) := by
-  have h := Complex.abs_arg_lt_pi_div_two_iff.mpr (Or.inl hx)
-  rw [abs_lt] at h
-  rw [← Complex.tan_arg, Real.arctan_tan h.1 h.2]
-
 /-- The content of **14VIII**.3: `∫_w^{w'} (z-z₀)⁻¹ dz = Log((w'-z₀)/(w-z₀))`.
 (Parts 2 and 2′ are its `z₀ = 0` case, but are proved on their own, the thesis's
 way; part 4 is the thesis's own argument from part 3.) -/
@@ -2653,10 +2646,6 @@ private theorem thesisPos_algebraMap {r : ℝ} (hr : 0 ≤ r) :
 
 private theorem thesisPos_zero : ThesisPos (0 : 𝒜) := by
   have h := thesisPos_algebraMap (𝒜 := 𝒜) (r := 0) le_rfl
-  simpa using h
-
-private theorem thesisPos_one : ThesisPos (1 : 𝒜) := by
-  have h := thesisPos_algebraMap (𝒜 := 𝒜) (r := 1) zero_le_one
   simpa using h
 
 private theorem thesisPos_add {a b : 𝒜} (ha : ThesisPos a) (hb : ThesisPos b) :
@@ -7055,13 +7044,6 @@ theorem meet_mul_add {a b : A} (ha : 0 ≤ a) (hb : 0 ≤ b) (hab : a * b = b * 
     rw [smul_mul_assoc, mul_smul_comm, smul_smul]; norm_num
   rw [hM, hsq, hMM, smul_mul_assoc]
   module
-
-/-- For commuting positives, `ab ≤ (a ∧ b)(a + b)`. -/
-theorem mul_le_meet_mul_add {a b : A} (ha : 0 ≤ a) (hb : 0 ≤ b)
-    (hab : a * b = b * a) : a * b ≤ meet a b * (a + b) := by
-  rw [meet_mul_add ha hb hab, ← sub_nonneg, add_sub_cancel_left]
-  have hm := meet_nonneg ha hb hab
-  exact mul_nonneg_of_commute hm hm rfl
 
 /-- `(a ∧ b)·w = (aw) ∧ (bw)` for `w ≥ 0` commuting with `a` and `b`.
 Pointwise this is `min(x,y)·u = min(xu, yu)` for `u ≥ 0`.  With `w` a

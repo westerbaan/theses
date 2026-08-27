@@ -103,12 +103,6 @@ lemma a_real_symm (x y : H) : inner ℝ (a K x) y = inner ℝ x (a K y) := by
   simp only [ContinuousLinearMap.coe_coe] at h
   exact congrArg Complex.re h
 
-lemma b_real_symm (x y : H) : inner ℝ (b K x) y = inner ℝ x (b K y) := by
-  have h := ContinuousLinearMap.isSelfAdjoint_iff_isSymmetric.mp
-    (IsSelfAdjoint.of_nonneg (b_nonneg K)) x y
-  simp only [ContinuousLinearMap.coe_coe] at h
-  exact congrArg Complex.re h
-
 lemma a_a_apply (x : H) : a K (a K x) = (2⁻¹ : ℝ) • (R K x) := by
   have := congrArg (fun f : H →L[ℂ] H => f x) (a_mul_a K)
   simpa using this

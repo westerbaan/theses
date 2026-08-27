@@ -560,44 +560,6 @@ theorem commutant_concreteTensor_top (M : StarSubalgebra ℂ (H →L[ℂ] H))
       ∃ b : K →L[ℂ] K, x = opTensor a b}).2.2.2
   rw [coe_concreteTensor_top M, h3, ← hamp]
 
-/-- **Cancellation**: `M ⊗̄ B(𝒦) = N ⊗̄ B(𝒦)` forces `M = N`, provided
-`𝒦 ≠ 0`. -/
-theorem concreteTensor_top_cancel {M N : StarSubalgebra ℂ (H →L[ℂ] H)}
-    (hM : IsVNSubalgebra (H →L[ℂ] H) M) (hN : IsVNSubalgebra (H →L[ℂ] H) N)
-    {y₀ : K} (hy₀ : y₀ ≠ 0)
-    (h : concreteTensor H K M (⊤ : StarSubalgebra ℂ (K →L[ℂ] K))
-        = concreteTensor H K N (⊤ : StarSubalgebra ℂ (K →L[ℂ] K))) :
-    M = N := by
-  have h1 : {z : HT H K →L[ℂ] HT H K |
-        ∃ a ∈ commutant (H →L[ℂ] H) (M : Set (H →L[ℂ] H)),
-          z = opTensor a (1 : K →L[ℂ] K)}
-      = {z : HT H K →L[ℂ] HT H K |
-        ∃ a ∈ commutant (H →L[ℂ] H) (N : Set (H →L[ℂ] H)),
-          z = opTensor a (1 : K →L[ℂ] K)} := by
-    rw [← commutant_concreteTensor_top M hM, ← commutant_concreteTensor_top N hN, h]
-  have hset : commutant (H →L[ℂ] H) (M : Set (H →L[ℂ] H))
-      = commutant (H →L[ℂ] H) (N : Set (H →L[ℂ] H)) := by
-    refine Set.eq_of_subset_of_subset (fun a ha => ?_) (fun a ha => ?_)
-    · have hmem : opTensor a (1 : K →L[ℂ] K) ∈
-        {z : HT H K →L[ℂ] HT H K |
-          ∃ c ∈ commutant (H →L[ℂ] H) (M : Set (H →L[ℂ] H)),
-            z = opTensor c (1 : K →L[ℂ] K)} := ⟨a, ha, rfl⟩
-      rw [h1] at hmem
-      obtain ⟨c, hc, hac⟩ := hmem
-      rwa [opTensor_one_right_inj (H := H) hy₀ hac]
-    · have hmem : opTensor a (1 : K →L[ℂ] K) ∈
-        {z : HT H K →L[ℂ] HT H K |
-          ∃ c ∈ commutant (H →L[ℂ] H) (N : Set (H →L[ℂ] H)),
-            z = opTensor c (1 : K →L[ℂ] K)} := ⟨a, ha, rfl⟩
-      rw [← h1] at hmem
-      obtain ⟨c, hc, hac⟩ := hmem
-      rwa [opTensor_one_right_inj (H := H) hy₀ hac]
-  have hvc : vnComm M = vnComm N := by
-    refine SetLike.ext' ?_
-    rw [coe_vnComm, coe_vnComm, hset]
-  have h2 := congrArg vnComm hvc
-  rwa [vnComm_vnComm M hM, vnComm_vnComm N hN] at h2
-
 end Amplification
 
 /-! ## The Zorn step: an orthogonal family of separating corners

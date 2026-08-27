@@ -1125,29 +1125,6 @@ theorem modularSqrt_htmul (ζ : ℋ) (ζ' : 𝒦)
       = ⟨opTensor (a (Ksub M ω)) (a (Ksub N ω')) (ζ ⊗ₕ ζ'), hmem⟩ := Subtype.ext hζ.symm
   rw [hcast, modularSqrt_opTensor M N ω ω' hsM hcM hsN hcN hsT hcT, opTensor_apply]
 
-/-- **The factorisation on the orbit**: for `x ∈ M` and `y ∈ N`,
-`Δ_ξ^{1/2} (xω ⊗ yω') = Δ_ω^{1/2}(xω) ⊗ Δ_{ω'}^{1/2}(yω')`. -/
-theorem modularSqrt_orbit {x : ℋ →L[ℂ] ℋ} {y : 𝒦 →L[ℂ] 𝒦}
-    (h : x ω ⊗ₕ y ω' ∈ (mp (Ksub (vnTensor M N) (ω ⊗ₕ ω')) hsT hcT).D.domain)
-    (hxm : x ω ∈ (mp (Ksub M ω) hsM hcM).D.domain)
-    (hym : y ω' ∈ (mp (Ksub N ω') hsN hcN).D.domain) :
-    ((mp (Ksub (vnTensor M N) (ω ⊗ₕ ω')) hsT hcT).D ⟨x ω ⊗ₕ y ω', h⟩ : HT ℋ 𝒦)
-      = ((mp (Ksub M ω) hsM hcM).D ⟨x ω, hxm⟩ : ℋ)
-          ⊗ₕ ((mp (Ksub N ω') hsN hcN).D ⟨y ω', hym⟩ : 𝒦) := by
-  obtain ⟨u, hu⟩ : ∃ u : ℋ, a (Ksub M ω) u = x ω := id hxm
-  obtain ⟨v, hv⟩ : ∃ v : 𝒦, a (Ksub N ω') v = y ω' := id hym
-  have hval1 : ((mp (Ksub M ω) hsM hcM).D ⟨x ω, hxm⟩ : ℋ) = b (Ksub M ω) u :=
-    (mp (Ksub M ω) hsM hcM).D_apply' _ u hu
-  have hval2 : ((mp (Ksub N ω') hsN hcN).D ⟨y ω', hym⟩ : 𝒦) = b (Ksub N ω') v :=
-    (mp (Ksub N ω') hsN hcN).D_apply' _ v hv
-  have hxy : a (Ksub M ω) u ⊗ₕ a (Ksub N ω') v = x ω ⊗ₕ y ω' := by rw [hu, hv]
-  have hmem2 : a (Ksub M ω) u ⊗ₕ a (Ksub N ω') v
-      ∈ (mp (Ksub (vnTensor M N) (ω ⊗ₕ ω')) hsT hcT).D.domain := hxy ▸ h
-  have hcast : (⟨x ω ⊗ₕ y ω', h⟩ :
-      (mp (Ksub (vnTensor M N) (ω ⊗ₕ ω')) hsT hcT).D.domain)
-      = ⟨a (Ksub M ω) u ⊗ₕ a (Ksub N ω') v, hmem2⟩ := Subtype.ext hxy.symm
-  rw [hcast, modularSqrt_htmul M N ω ω' hsM hcM hsN hcN hsT hcT, hval1, hval2]
-
 end Full
 
 /-! ## Part 6: the package

@@ -3291,10 +3291,6 @@ private theorem haU_mul_mul (j : J) (o k l : Fin (nn j + 1)) (a : A) :
     lpKappa_smul]
   exact map_smul Φ.symm.toStarAlgHom _ _
 
-private theorem sum_haU_diag (j : J) : ∑ p : Fin (nn j + 1), haU Φ j p p = haZ Φ j := by
-  rw [haZ, ← sum_matU_diag (m := nn j + 1), lpKappa_sum, map_sum]
-  rfl
-
 private theorem haZ_mul (j : J) (a : A) :
     haZ Φ j * a = ∑ k : Fin (nn j + 1), ∑ l : Fin (nn j + 1),
       (haEnt Φ j a k l) • haU Φ j k l := by
@@ -4868,10 +4864,6 @@ private theorem gZ_comm (j : J) (a : A) : gZ Ψ j * a = a * gZ Ψ j := by
   conv_rhs => rw [show a = Ψ.symm (Ψ a) from (Ψ.symm_apply_apply a).symm]
   rw [← map_mul, lpKappa_one_mul_right]
 
-private theorem gZ_sa (j : J) : IsSelfAdjoint (gZ Ψ j) := by
-  show star _ = _
-  rw [gZ, gU_star, star_one]
-
 /-- The block projections of a family of positive elements with supremum `1`
 in the block have supremum `z_j` in `A`. -/
 private theorem gU_isLUB (j : J) {ι' : Type*} [Nonempty ι'] (p : ι' → 𝒜 j)
@@ -4927,8 +4919,6 @@ private theorem gZS_sa (F : Finset J) : IsSelfAdjoint (gZS Ψ F) := by
   rw [gZS_eq]
   exact (map_star Ψ.symm.toStarAlgHom _).symm.trans
     (congrArg ⇑Ψ.symm.toStarAlgHom (lpSumSA F).2.star_eq)
-
-private def gZSsa (F : Finset J) : selfAdjoint A := ⟨gZS Ψ F, gZS_sa Ψ F⟩
 
 private theorem gZS_mono {F G : Finset J} (hFG : F ⊆ G) : gZS Ψ F ≤ gZS Ψ G := by
   rw [gZS_eq, gZS_eq]
@@ -6088,11 +6078,14 @@ subalgebras of `B(ℋ ⊗ 𝒦)`; its consumers (125IV, 125VI, 125VIIb,
 * `tensorSub₂` — the two-sided companion of `tensorSub`, and
   `concreteTensorEquiv_mem_tensorSub₂`, which says the bridge carries
   `concreteTensor` to `tensorSub₂`;
-* `tensorSub₂_inf_of_intersection_tensor` and
-  `tensorSub_inf_of_intersection_tensor` — the transport of a `⊓`-fact
+* `tensorSub₂_inf_of_intersection_tensor` — the transport of a `⊓`-fact
   about `concreteTensor` (i.e. of 121II) to the corresponding `⊓`-fact
-  about `tensorSub₂`/`tensorSub`.  121II is taken as an explicit
-  hypothesis, so that these are usable the moment it is proved. -/
+  about `tensorSub₂`.  121II is taken as an explicit hypothesis, so that
+  it is usable the moment it is proved.  (The one-sided companion
+  `tensorSub_inf_of_intersection_tensor` stood here until 2026-08-27 and
+  was deleted with the `A/` half of the `docs/DEAD-LIMBS.md` §7 pool: it
+  never acquired a consumer, 125IV `equaliser_lemma` going through the
+  two-sided form, whose intersection varies in both factors.) -/
 
 section WstarTransport
 
@@ -6123,17 +6116,6 @@ theorem mem_wstar_image_iff (φ : NMIUMap X Y) (hφ : Function.Bijective ⇑φ)
         (isVNSubalgebra_wstar _).1, fun g hg => ?_⟩
       exact (isVNSubalgebra_wstar _).2 ⟨g, hg, rfl⟩
     exact hle hx
-
-theorem coe_wstar_image (φ : NMIUMap X Y) (hφ : Function.Bijective ⇑φ)
-    (G : Set X) :
-    (wstar Y (⇑φ '' G) : Set Y) = ⇑φ '' (wstar X G : Set X) := by
-  ext y
-  constructor
-  · intro hy
-    obtain ⟨x, rfl⟩ := hφ.2 y
-    exact ⟨x, (mem_wstar_image_iff φ hφ G x).mp hy, rfl⟩
-  · rintro ⟨x, hx, rfl⟩
-    exact (mem_wstar_image_iff φ hφ G x).mpr hx
 
 end WstarTransport
 
@@ -6218,18 +6200,6 @@ def tensorSub₂ (S : StarSubalgebra ℂ 𝒜) (T : StarSubalgebra ℂ ℬ) :
     StarSubalgebra ℂ (VNT 𝒜 ℬ) :=
   wstar (VNT 𝒜 ℬ) {x : VNT 𝒜 ℬ | ∃ a ∈ S, ∃ b ∈ T, x = a ⊗ᵥ b}
 
-theorem vtmul_mem_tensorSub₂ {S : StarSubalgebra ℂ 𝒜} {T : StarSubalgebra ℂ ℬ}
-    {a : 𝒜} {b : ℬ} (ha : a ∈ S) (hb : b ∈ T) : a ⊗ᵥ b ∈ tensorSub₂ S T :=
-  (isVNSubalgebra_wstar _).2 ⟨a, ha, b, hb, rfl⟩
-
-theorem isVNSubalgebra_tensorSub₂ (S : StarSubalgebra ℂ 𝒜)
-    (T : StarSubalgebra ℂ ℬ) :
-    IsVNSubalgebra (VNT 𝒜 ℬ) (tensorSub₂ S T) := (isVNSubalgebra_wstar _).1
-
-theorem tensorSub₂_mono {S S' : StarSubalgebra ℂ 𝒜} {T T' : StarSubalgebra ℂ ℬ}
-    (hS : S ≤ S') (hT : T ≤ T') : tensorSub₂ S T ≤ tensorSub₂ S' T' :=
-  wstar_mono (by rintro _ ⟨a, ha, b, hb, rfl⟩; exact ⟨a, hS ha, b, hT hb, rfl⟩)
-
 /-- `tensorSub` is `tensorSub₂` with a full second factor. -/
 theorem tensorSub_eq_tensorSub₂ (S : StarSubalgebra ℂ 𝒜) :
     tensorSub ℬ S = tensorSub₂ S (⊤ : StarSubalgebra ℂ ℬ) := by
@@ -6313,19 +6283,6 @@ theorem concreteTensorEquiv_opTensor {SA : StarSubalgebra ℂ (H →L[ℂ] H)}
     (b : VNSub (K →L[ℂ] K) SB hSB) (hx : x.val = opTensor a.val b.val) :
     concreteTensorEquiv SA SB hSA hSB x = a ⊗ᵥ b :=
   (exists_concreteTensorEquiv SA SB hSA hSB).choose_spec.2.1 x a b hx
-
-/-- The bridge is the *unique* nmiu-map respecting the elementary
-tensors. -/
-theorem concreteTensorEquiv_unique {SA : StarSubalgebra ℂ (H →L[ℂ] H)}
-    {SB : StarSubalgebra ℂ (K →L[ℂ] K)}
-    (hSA : IsVNSubalgebra (H →L[ℂ] H) SA) (hSB : IsVNSubalgebra (K →L[ℂ] K) SB)
-    (ψ : NMIUMap (ConcreteTensorAlg SA SB)
-      (VNT (VNSub (H →L[ℂ] H) SA hSA) (VNSub (K →L[ℂ] K) SB hSB)))
-    (hψ : ∀ (x : ConcreteTensorAlg SA SB) (a : VNSub (H →L[ℂ] H) SA hSA)
-        (b : VNSub (K →L[ℂ] K) SB hSB),
-      x.val = opTensor a.val b.val → ψ x = a ⊗ᵥ b) :
-    ψ = concreteTensorEquiv SA SB hSA hSB :=
-  (exists_concreteTensorEquiv SA SB hSA hSB).choose_spec.2.2 ψ hψ
 
 end ConcreteBridge
 
@@ -6487,27 +6444,6 @@ theorem tensorSub₂_inf_of_intersection_tensor
   · intro h
     obtain ⟨h1, h2⟩ := hinf.mp (e3.mp h)
     exact ⟨e1.mpr h1, e2.mpr h2⟩
-
-/-- **Transport of 121II**, the one-sided form needed by 125IV: for von
-Neumann subalgebras `𝒜₁, 𝒜₂ ⊆ 𝒜` of a *concretely realised* von Neumann
-algebra `𝒜 = VNSub B(ℋ) SA`, and `𝒞 = VNSub B(𝒦) SB`,
-`(𝒜₁ ⊗ 𝒞) ∩ (𝒜₂ ⊗ 𝒞) = (𝒜₁ ∩ 𝒜₂) ⊗ 𝒞` in `𝒜 ⊗ 𝒞`, granted 121II. -/
-theorem tensorSub_inf_of_intersection_tensor
-    (SA₁ SA₂ : StarSubalgebra ℂ (H →L[ℂ] H))
-    (hA₁ : SA₁ ≤ SA) (hA₂ : SA₂ ≤ SA)
-    (h121 : concreteTensor H K SA₁ SB ⊓ concreteTensor H K SA₂ SB =
-      concreteTensor H K (SA₁ ⊓ SA₂) SB) :
-    tensorSub (VNSub (K →L[ℂ] K) SB hSB) (VNSub.restrict hSA SA₁) ⊓
-        tensorSub (VNSub (K →L[ℂ] K) SB hSB) (VNSub.restrict hSA SA₂) =
-      tensorSub (VNSub (K →L[ℂ] K) SB hSB)
-        (VNSub.restrict hSA SA₁ ⊓ VNSub.restrict hSA SA₂) := by
-  have hSBinf : SB ⊓ SB = SB := inf_idem _
-  have key := tensorSub₂_inf_of_intersection_tensor hSA hSB SA₁ SA₂ SB SB
-    hA₁ hA₂ le_rfl le_rfl (by rw [hSBinf]; exact h121)
-  rw [hSBinf] at key
-  rw [tensorSub_eq_tensorSub₂, tensorSub_eq_tensorSub₂, tensorSub_eq_tensorSub₂,
-    ← VNSub.restrict_self (hS := hSB), ← VNSub.restrict_inf]
-  exact key
 
 end ConcreteTransport
 

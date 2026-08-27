@@ -123,7 +123,6 @@ Theses.A.VN.Tomita|Theses.RvD.b_b_apply|green
 Theses.A.VN.StandardSubspace|Theses.RvD.b_injective|green
 Theses.A.VN.StandardSubspace|Theses.RvD.b_mul_b|green
 Theses.A.VN.StandardSubspace|Theses.RvD.b_nonneg|green
-Theses.A.VN.Tomita|Theses.RvD.b_real_symm|green
 Theses.A.VN.TomitaStrip|Theses.RvD.bdry_congr|green
 Theses.A.VN.TomitaStrip|Theses.RvD.bdry_const_mul|green
 Theses.A.VN.TomitaStrip|Theses.RvD.bdry_eq_zero|green
@@ -321,7 +320,6 @@ Theses.A.VN.ModularTensor|Theses.RvD.modularSqrt_htmul_pkg|green
 Theses.A.VN.Tomita|Theses.RvD.modularSqrt_inner_nonneg|green
 Theses.A.VN.Tomita|Theses.RvD.modularSqrt_isSelfAdjoint|green
 Theses.A.VN.ModularTensor|Theses.RvD.modularSqrt_opTensor|green
-Theses.A.VN.ModularTensor|Theses.RvD.modularSqrt_orbit|green
 Theses.A.VN.ModularGroup|Theses.RvD.mul_abs_log_le|green
 Theses.A.VN.TomitaAnalytic|Theses.RvD.neg_I_mul_I_mul|green
 Theses.A.VN.TomitaAnalytic|Theses.RvD.neg_add_half_mem_powStrip|green
@@ -680,7 +678,6 @@ Theses.A.CStar.Matrices|Theses.A.CStar.moduleAdjointTo_symm|green
 Theses.A.CStar.Matrices|Theses.A.CStar.moduleAdjointTo_unique|green
 Theses.A.CStar.Matrices|Theses.A.CStar.moduleAdjointable_linear|green
 Theses.A.CStar.Matrices|Theses.A.CStar.module_maps_cstar_identity|green
-Theses.A.CStar.Positive|Theses.A.CStar.mul_le_meet_mul_add|green
 Theses.A.CStar.Representation|Theses.A.CStar.multiplicative_state_on_cx|green
 Theses.A.CStar.Matrices|Theses.A.CStar.n_pos|green
 Theses.A.CStar.Basic|Theses.A.CStar.norm_le_iff_neg_algebraMap_le|green
@@ -843,7 +840,6 @@ Theses.A.Proc.CommutationAmplify|Theses.A.Proc.CT_of_CT_ampLeft|green
 Theses.A.Proc.Compression|Theses.A.Proc.CT_of_CT_compression|green
 Theses.A.Proc.Compression|Theses.A.Proc.CT_of_CT_compression_of_dense|green
 Theses.A.Proc.CornerTensor|Theses.A.Proc.CT_of_CT_corner|green
-Theses.A.Proc.TensorTransport|Theses.A.Proc.CT_of_CT_corner_any|green
 Theses.A.Proc.CommutationAmplify|Theses.A.Proc.CT_of_CT_cyclic|green
 Theses.A.Proc.CommutationCyclic|Theses.A.Proc.CT_of_CT_cyclicSeparating|green
 Theses.A.Proc.CommutationAmplify|Theses.A.Proc.CT_of_CT_cyclic_finCyclic|green
@@ -851,9 +847,7 @@ Theses.A.Proc.CommutationReduction|Theses.A.Proc.CT_of_CT_finCyclic|green
 Theses.A.Proc.Commutation|Theses.A.Proc.CT_of_compress|green
 Theses.A.Proc.CommutationTheorem|Theses.A.Proc.CT_of_isVNSubalgebra|green
 Theses.A.Proc.Commutation|Theses.A.Proc.CT_of_relCT|green
-Theses.A.Proc.TensorTransport|Theses.A.Proc.CT_top_left|green
 Theses.A.Proc.TensorTransport|Theses.A.Proc.CT_top_right|green
-Theses.A.Proc.TensorTransport|Theses.A.Proc.CT_top_top|green
 Theses.A.Proc.TensorTransport|Theses.A.Proc.CT_uconj_iff|green
 Theses.A.Proc.Commutation|Theses.A.Proc.CT_vnComm|green
 Theses.A.Proc.QuantumLambda|Theses.A.Proc.Fha_concrete|green
@@ -1001,7 +995,6 @@ Theses.A.Proc.Tensor|Theses.A.Proc.coe_tensorSpan|green
 Theses.A.Proc.TensorTransport|Theses.A.Proc.coe_uconj|green
 Theses.A.Proc.Commutation|Theses.A.Proc.coe_vnComm|green
 Theses.A.Proc.CommutationAmplify|Theses.A.Proc.coe_vnComm_vnComm|green
-Theses.A.Proc.QuantumLambda|Theses.A.Proc.coe_wstar_image|green
 Theses.A.Proc.Compression|Theses.A.Proc.commutant_cmpr_image|green
 Theses.A.Proc.Commutation|Theses.A.Proc.commutant_concreteTensor_top|green
 Theses.A.Proc.Tensor|Theses.A.Proc.commutant_span|green
@@ -1012,7 +1005,6 @@ Theses.A.Proc.Measurement|Theses.A.Proc.commute_spectralProj_spectralProj|green
 Theses.A.Proc.QuantumLambda|Theses.A.Proc.concreteTensorEquiv_bijective|green
 Theses.A.Proc.QuantumLambda|Theses.A.Proc.concreteTensorEquiv_mem_tensorSub₂|green
 Theses.A.Proc.QuantumLambda|Theses.A.Proc.concreteTensorEquiv_opTensor|green
-Theses.A.Proc.QuantumLambda|Theses.A.Proc.concreteTensorEquiv_unique|green
 Theses.A.Proc.Tensor|Theses.A.Proc.concreteTensor_def|green
 Theses.A.Proc.Tensor|Theses.A.Proc.concreteTensor_eq_closure_spatialSpan|green
 Theses.A.Proc.Tensor|Theses.A.Proc.concreteTensor_eq_wstar_spatialSpan|green
@@ -1021,7 +1013,6 @@ Theses.A.Proc.Tensor|Theses.A.Proc.concreteTensor_le|green
 Theses.A.Proc.Tensor|Theses.A.Proc.concreteTensor_le_iff|green
 Theses.A.Proc.Commutation|Theses.A.Proc.concreteTensor_le_vnComm_concreteTensor|green
 Theses.A.Proc.Tensor|Theses.A.Proc.concreteTensor_mono|green
-Theses.A.Proc.Commutation|Theses.A.Proc.concreteTensor_top_cancel|green
 Theses.A.Proc.Commutation|Theses.A.Proc.concreteTensor_top_gen|green
 Theses.A.Proc.TensorTransport|Theses.A.Proc.concreteTensor_top_top|green
 Theses.A.Proc.Commutation|Theses.A.Proc.concreteTensor_vnComm_le|green
@@ -1234,7 +1225,6 @@ Theses.A.Proc.Tensor|Theses.A.Proc.htmul_inner|green
 Theses.A.Proc.Tensor|Theses.A.Proc.htmul_smul_left|green
 Theses.A.Proc.Tensor|Theses.A.Proc.htmul_smul_right|green
 Theses.A.Proc.Tensor|Theses.A.Proc.htmul_sub_left|green
-Theses.A.Proc.TensorTransport|Theses.A.Proc.htmul_zero_left|green
 Theses.A.Proc.Tensor|Theses.A.Proc.htmul_zero_right|green
 Theses.A.Proc.Compression|Theses.A.Proc.inner_apply_sub|green
 Theses.A.Proc.QuantumLambda|Theses.A.Proc.inner_bkP_apply|green
@@ -1310,7 +1300,6 @@ Theses.A.Proc.Tensor|Theses.A.Proc.isVNSubalgebra_diagBool|green
 Theses.A.Proc.Duplicators|Theses.A.Proc.isVNSubalgebra_diagSub|green
 Theses.A.Proc.Tensor|Theses.A.Proc.isVNSubalgebra_map|green
 Theses.A.Proc.QuantumLambda|Theses.A.Proc.isVNSubalgebra_nmiu_map|green
-Theses.A.Proc.QuantumLambda|Theses.A.Proc.isVNSubalgebra_tensorSub₂|green
 Theses.A.Proc.TensorTransport|Theses.A.Proc.isVNSubalgebra_top|green
 Theses.A.Proc.TensorTransport|Theses.A.Proc.isVNSubalgebra_uconj|green
 Theses.A.Proc.Commutation|Theses.A.Proc.isVNSubalgebra_vnComm|green
@@ -1550,9 +1539,7 @@ Theses.A.Proc.Tensor|Theses.A.Proc.tensorNorm_zero|green
 Theses.A.Proc.QuantumLambda|Theses.A.Proc.tensorSub_eq_tensorSub₂|green
 Theses.A.Proc.QuantumLambda|Theses.A.Proc.tensorSub_inf|green
 Theses.A.Proc.QuantumLambda|Theses.A.Proc.tensorSub_inf_of_intersectionTensorStatement|green
-Theses.A.Proc.QuantumLambda|Theses.A.Proc.tensorSub_inf_of_intersection_tensor|green
 Theses.A.Proc.QuantumLambda|Theses.A.Proc.tensorSub₂_inf_of_intersection_tensor|green
-Theses.A.Proc.QuantumLambda|Theses.A.Proc.tensorSub₂_mono|green
 Theses.A.Proc.Tensor|Theses.A.Proc.tensor_basic_1|green
 Theses.A.Proc.Tensor|Theses.A.Proc.tensor_basic_1_orderSeparating|green
 Theses.A.Proc.Tensor|Theses.A.Proc.tensor_basic_1_unique|green
@@ -1596,9 +1583,7 @@ Theses.A.Proc.Duplicators|Theses.A.Proc.tomiyama|green
 Theses.A.Proc.Tensor|Theses.A.Proc.triple_tensor|green
 Theses.A.Proc.TensorTransport|Theses.A.Proc.ucext_cmpr|green
 Theses.A.Proc.TensorTransport|Theses.A.Proc.ucext_one|green
-Theses.A.Proc.TensorTransport|Theses.A.Proc.ucext_surjective|green
 Theses.A.Proc.TensorTransport|Theses.A.Proc.ucmpr_mul|green
-Theses.A.Proc.TensorTransport|Theses.A.Proc.ucmpr_one|green
 Theses.A.Proc.TensorTransport|Theses.A.Proc.uconj_adjoint_uconj|green
 Theses.A.Proc.TensorTransport|Theses.A.Proc.uconj_concreteTensor|green
 Theses.A.Proc.TensorTransport|Theses.A.Proc.uconj_cornerAlg|green
@@ -1641,7 +1626,6 @@ Theses.A.Proc.Tensor|Theses.A.Proc.vn_smc_triangle|green
 Theses.A.Proc.Tensor|Theses.A.Proc.vn_smc_unitors_agree|green
 Theses.A.Proc.Tensor|Theses.A.Proc.vnt_linear_ext₂|green
 Theses.A.Proc.Tensor|Theses.A.Proc.vnt_linear_ext₃|green
-Theses.A.Proc.QuantumLambda|Theses.A.Proc.vtmul_mem_tensorSub₂|green
 Theses.A.Proc.Tensor|Theses.A.Proc.vtmul_nonneg|green
 Theses.A.Proc.CommutationAmplify|Theses.A.Proc.wstar_coe_eq_vnComm_vnComm|green
 Theses.A.Proc.Tensor|Theses.A.Proc.wstar_eq_top_of_dense_span|green
@@ -2504,7 +2488,6 @@ Theses.B.Dils.SelfDualCompletion|Theses.B.Dils.ipf_conj|green
 Theses.B.Dils.SelfDualCompletion|Theses.B.Dils.ipf_op_smul|green
 Theses.B.Dils.SelfDualCompletion|Theses.B.Dils.ipf_self|green
 Theses.B.Dils.SelfDualCompletion|Theses.B.Dils.ipf_smul_right|green
-Theses.B.Dils.SelfDualCompletion|Theses.B.Dils.ipf_sub_right|green
 Theses.B.Dils.SelfDualCompletion|Theses.B.Dils.ipf_unEta|green
 Theses.B.Dils.SelfDualCompletion|Theses.B.Dils.ipf_zero_right|green
 Theses.B.Dils.SelfDualCompletion|Theses.B.Dils.isCompatExt_range|green
@@ -2614,8 +2597,6 @@ Theses.B.Dils.HilbertModules|Theses.B.Dils.op_smul_comm_complex|green
 Theses.B.Dils.HilbertModules|Theses.B.Dils.op_smul_complex_smul|green
 Theses.B.Dils.HilbertModules|Theses.B.Dils.op_smul_zero|green
 Theses.B.Dils.HilbertModules|Theses.B.Dils.op_zero_smul|green
-Theses.B.Dils.Paschke|Theses.B.Dils.pTheta_add|green
-Theses.B.Dils.Paschke|Theses.B.Dils.pTheta_nonneg|green
 Theses.B.Dils.Paschke|Theses.B.Dils.pTheta_normal|green
 Theses.B.Dils.Paschke|Theses.B.Dils.pTheta_sum|green
 Theses.B.Dils.Paschke|Theses.B.Dils.pVecLin_apply|green
@@ -3931,7 +3912,6 @@ Theses.A.CStar.Matrices|Theses.A.CStar.tensor_nonneg|green
 Theses.A.CStar.Matrices|Theses.A.CStar.transposeM2_apply|green
 Theses.A.CStar.Matrices|Theses.A.CStar.transposeM2_pos|green
 Theses.A.CStar.Positive|Theses.A.CStar.affine_mem_slitPlane|green
-Theses.A.CStar.Positive|Theses.A.CStar.arg_eq_arctan|green
 Theses.A.CStar.Positive|Theses.A.CStar.ball_subset_polygon|green
 Theses.A.CStar.Positive|Theses.A.CStar.cisR_add|green
 Theses.A.CStar.Positive|Theses.A.CStar.cisR_add_int_two_pi|green
@@ -4074,7 +4054,6 @@ Theses.A.CStar.Positive|Theses.A.CStar.thesisPos_norm_of_spectrum|green
 Theses.A.CStar.Positive|Theses.A.CStar.thesisPos_ofReal_smul|green
 Theses.A.CStar.Positive|Theses.A.CStar.thesisPos_of_nonneg|green
 Theses.A.CStar.Positive|Theses.A.CStar.thesisPos_of_pow_odd|green
-Theses.A.CStar.Positive|Theses.A.CStar.thesisPos_one|green
 Theses.A.CStar.Positive|Theses.A.CStar.thesisPos_pow|green
 Theses.A.CStar.Positive|Theses.A.CStar.thesisPos_sq|green
 Theses.A.CStar.Positive|Theses.A.CStar.thesisPos_star_mul_self|green
@@ -4388,7 +4367,6 @@ Theses.A.Proc.QuantumLambda|Theses.A.Proc.gZS_sa|green
 Theses.A.Proc.QuantumLambda|Theses.A.Proc.gZ_comm|green
 Theses.A.Proc.QuantumLambda|Theses.A.Proc.gZ_mul|green
 Theses.A.Proc.QuantumLambda|Theses.A.Proc.gZ_mul_self|green
-Theses.A.Proc.QuantumLambda|Theses.A.Proc.gZ_sa|green
 Theses.A.Proc.QuantumLambda|Theses.A.Proc.haApprox|green
 Theses.A.Proc.QuantumLambda|Theses.A.Proc.haAstarhaB_concrete_aux|green
 Theses.A.Proc.QuantumLambda|Theses.A.Proc.haEL_apply|green
@@ -4452,7 +4430,6 @@ Theses.A.Proc.QuantumLambda|Theses.A.Proc.punitSum_nontrivial|green
 Theses.A.Proc.QuantumLambda|Theses.A.Proc.rSlice_mem_of_mem_tensorSub|green
 Theses.A.Proc.QuantumLambda|Theses.A.Proc.solNontrivial|green
 Theses.A.Proc.QuantumLambda|Theses.A.Proc.solution_set|green
-Theses.A.Proc.QuantumLambda|Theses.A.Proc.sum_haU_diag|green
 Theses.A.Proc.QuantumLambda|Theses.A.Proc.sum_matU_diag|green
 Theses.A.Proc.QuantumLambda|Theses.A.Proc.surj_of_haTensorBSurj|green
 Theses.A.Proc.QuantumLambda|Theses.A.Proc.surj_of_haTensorBSurj2|green
@@ -6259,10 +6236,8 @@ Theses.B.Eff.StatesPredicates|Theses.B.Eff.MConvex.ofConvex_h|green
 Theses.B.Eff.StatesPredicates|Theses.B.Eff.MConvexComb.bin_apply|green
 Theses.B.Eff.StatesPredicates|Theses.B.Eff.MConvexComb.bin_comm|green
 Theses.B.Eff.StatesPredicates|Theses.B.Eff.MConvexComb.bin_eq_zero|green
-Theses.B.Eff.StatesPredicates|Theses.B.Eff.MConvexComb.bin_one|green
 Theses.B.Eff.StatesPredicates|Theses.B.Eff.MConvexComb.bin_self|green
 Theses.B.Eff.StatesPredicates|Theses.B.Eff.MConvexComb.bin_sum_one|green
-Theses.B.Eff.StatesPredicates|Theses.B.Eff.MConvexComb.bin_zero|green
 Theses.B.Eff.StatesPredicates|Theses.B.Eff.MConvexComb.cmix_eta_eta|green
 Theses.B.Eff.StatesPredicates|Theses.B.Eff.MConvexComb.coeFinsupp_apply|green
 Theses.B.Eff.StatesPredicates|Theses.B.Eff.MConvexComb.coeFinsupp_cmix|green

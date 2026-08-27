@@ -7857,32 +7857,7 @@ variable {M : Type u} [EffectMonoid M]
 -- above, because 192V.1 already needs them.)
 
 open Classical in
-/-- `bin 1 a b = η a`. -/
-theorem bin_one {X : Type v} (a b : X) : bin (1 : M) a b = eta a := by
-  by_cases hab : a = b
-  · subst hab; exact bin_self 1 a
-  refine MConvexComb.ext (funext fun z => ?_)
-  rw [bin_apply (1 : M) hab z, eabasics_orth_one]
-  show _ = if z = a then (1 : M) else 0
-  by_cases hz : z = a
-  · rw [if_pos hz, if_pos hz]
-  · rw [if_neg hz, if_neg hz]
-    by_cases hz2 : z = b
-    · rw [if_pos hz2]
-    · rw [if_neg hz2]
-
 open Classical in
-/-- `bin 0 a b = η b`. -/
-theorem bin_zero {X : Type v} (a b : X) : bin (0 : M) a b = eta b := by
-  by_cases hab : a = b
-  · subst hab; exact bin_self 0 a
-  refine MConvexComb.ext (funext fun z => ?_)
-  rw [bin_apply (0 : M) hab z, eabasics_orth_zero]
-  show _ = if z = b then (1 : M) else 0
-  by_cases hz : z = a
-  · rw [if_pos hz, if_neg (by rw [hz]; exact hab)]
-  · rw [if_neg hz]
-
 -- (`map_spec_of_list`, `map_bin`, `mu_spec_of_subset` and `mu_bin` were
 -- stated here originally; they are now next to `bin_eq_zero`, above, because
 -- 192V.4 (`cancellative_iso_convex`) already needs them.)

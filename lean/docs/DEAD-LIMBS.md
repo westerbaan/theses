@@ -51,7 +51,7 @@ reproduce it.
 | `@[simp]` lemma fired by a **bare** `simp` | **blind** | **blind** |
 | lemma reached by `rfl`/definitional unfolding | **blind** | **blind** |
 | instance found by typeclass synthesis | seen | **blind** |
-| dot-notation `hγ.gram_sum_re` | seen | seen (suffix-indexed) |
+| dot-notation `hγ.gram_sum_re` | seen | seen (indexed over every dotted run — §7b) |
 | cost | ≫ 1 h, ≫ 5 GB on the whole tree | 4 s |
 
 Three implementation traps, all of which produced wrong numbers before they
@@ -69,6 +69,17 @@ were fixed, and all of which will recur:
   identifier characters outside ASCII; and `aconv_coprod.{u, v}` must not
   tokenise as `aconv_coprod.`. Both bugs reported live declarations as dead in
   the first pass of this sweep — `aconv_coprod` (193V) among them.
+* **A use is any contiguous run of dotted components, not a suffix of the
+  token and not a prefix of it.** `hW.norm_ipVal_self_le` needs the suffix
+  (§7a); `le_vnComm_comm.mpr` and `summable_diagTerm.hasSum` need the prefix,
+  because a projection *out of* a theorem's conclusion puts the name it needs
+  first; and `hΩ.centralProj.conj` and `h.isStarProjection.isIdempotentElem`
+  need a run that is neither. Index `Foo.bar.baz` under all six of `Foo`,
+  `Foo.bar`, `Foo.bar.baz`, `bar`, `bar.baz`, `baz`. Indexing suffixes alone
+  reported **25 live declarations as dead** on 2026-08-27, `le_vnComm_comm`
+  among them — the Galois connection the commutation theorem's proof runs on.
+  A cone pass over compiled terms found the same 25 independently and agrees.
+  See §7b.
 
 **The textual count is conservative in the direction that matters.** A name that
 appears nowhere in 163,848 lines of source cannot be used except through bare
@@ -527,8 +538,11 @@ here:
 comment), unrowed (no audit row names them), not accessors. This is the
 deletion pool. Its largest members:
 
-**The B half of it has since been spent, and the count did not survive contact
-with the tree — read §7a before quoting any number in this section.** Two of
+**Both halves have since been spent, and the count did not survive contact with
+the tree — read §7a and §7b before quoting any number in this section.** The
+pool re-derives to **130 declarations, not 190**; three of the twelve members
+its table names below are live, rowed or ruled-kept; and of the 74 candidates
+put in front of a compiler across the two rounds, 40 were deleted. Two of
 the members named below are not dead (`IsCompatExt.norm_ipVal_self_le`) or not
 unrowed (`PhiCompatible.mul_right`), and the deletable fraction measured on the
 four `B/` files is about a quarter of the pool, not all of it.
@@ -694,6 +708,209 @@ declarations, 53 lines, whose only consumer was one of them: `ipf_sub_right`
 were **live at `a4df27b`** and so outside the pool this round was given; they
 are left in place, and they are the cone effect §11.4 predicts, now measured:
 one round at 19 deletions produced five new limbs.
+
+### 7b. The A half of the pool, spent (2026-08-27, tree to itself)
+
+**26 declarations, 225 lines deleted** — 21 from the `A/` half of the pool
+(173 lines) and the 5 declarations the `B/` round of §7a orphaned (52 lines),
+which were live when the pool was drawn and so were outside its scope then.
+`git` reports 250 lines removed, the difference being the blank separators the
+deletions left behind.  Every edited file and every file downstream of one was
+rebuilt individually at exit 0, and the tree was then rebuilt whole.
+`scripts/audit_check.py` stays at 0 on all six checks and `scripts/coverage.py`
+at 669/669, 64/64.  The `sorry` count is untouched at eleven.  None of the 26
+carried an audit row, so no row was deleted; one *doc comment* was edited, and
+it is named below.
+
+Deleted:
+
+* `A/CStar/Positive` — `arg_eq_arctan`, `thesisPos_one`, `mul_le_meet_mul_add`,
+  15 lines.  The whole of that file's pool.  Two are `private`, so the compile
+  is a proof of their deadness.
+* `A/Proc/QuantumLambda` — `sum_haU_diag`, `gZ_sa`, `gZSsa`, `coe_wstar_image`,
+  `vtmul_mem_tensorSub₂`, `isVNSubalgebra_tensorSub₂`, `tensorSub₂_mono`,
+  `concreteTensorEquiv_unique`, `tensorSub_inf_of_intersection_tensor`,
+  58 lines.  Two of them — `tensorSub₂_mono` and
+  `tensorSub_inf_of_intersection_tensor` — are §10d's one-sided `tensorSub_inf`
+  chain, dead in two consecutive sweeps; the chain's third member
+  `tensorSub_inf` is kept, for the reason below.
+  **This is the one deletion that took prose with it**:
+  the `WstarTransport` section overview at `:6092` listed
+  `tensorSub_inf_of_intersection_tensor` beside its two-sided companion, and
+  that bullet was rewritten in the same edit to name only the companion — which
+  is the form 125IV `equaliser_lemma` actually consumes — and to record where
+  the one-sided form went.
+* `A/Proc/TensorTransport` — `htmul_zero_left`, `ucext_surjective`, `ucmpr_one`,
+  `CT_top_left`, `CT_top_top`, `CT_of_CT_corner_any`, 36 lines.  The three
+  `CT_*` are §10c's cluster 1 and cluster 2 remnant, "superseded and harmless
+  to keep"; superseded is the definition of class 3, and this round spent them.
+* `A/Proc/Commutation` — `concreteTensor_top_cancel`, 37 lines: §7's
+  third-largest member.
+* `A/VN/ModularTensor` — `modularSqrt_orbit`, 22 lines: §7's table names it,
+  §10e confirmed it dead, and its content survives in `modularSqrt_htmul`
+  (2 uses), of which it was a three-line transport.
+* `A/VN/Tomita` — `b_real_symm`, 5 lines: the dead half of the
+  `a_real_symm`/`b_real_symm` mirror pair §10e names.  `a_real_symm` has a
+  consumer; this one never did.
+* The five orphans of §7a — `ipf_sub_right` (`SelfDualCompletion`), `pTheta_add`
+  and `pTheta_nonneg` (`Paschke`), `MConvexComb.bin_one` and `bin_zero`
+  (`StatesPredicates`), 52 lines.  All five were re-checked as still zero-use
+  before deletion.
+
+**The fourth mechanism by which a textual zero-use lies, and it is the largest
+one yet: the dotted PREFIX.**  §7a fixed the *suffix* — `h.bar` as a use of
+`Foo.bar` — by indexing every declaration under the last component of its
+qualified name.  That fix does not see the other side of the dot.  A use of the
+form `f.mp`, `f.mpr`, `f.hasSum`, `f.comp`, `f.isComplete`, `f.symm`,
+`f.induction_on`, `f.opTensor` — a *projection out of* the declaration's own
+conclusion — tokenises as a single dotted identifier whose **first** component
+is the declaration.  An index built from suffixes alone never contains it, and
+the declaration reads as having zero uses.
+
+Indexing every contiguous dotted run `parts[i:j]` rather than only the suffixes
+`parts[i:]` removes **25 declarations from the pool tree-wide, 13 in `A/` and 12
+in `B/`** — the whole pool falls from 155 to 130 and the `A/` half from 96 to
+83.  Every one of the 25 is live and would have compiled as an error if
+deleted:
+
+| declaration | the use the suffix index could not see |
+|---|---|
+| `mem_vnComm_top` | `TensorTransport.lean:735`, `mem_vnComm_top.mp hb` |
+| `le_vnComm_comm` | `Commutation.lean:239`, `le_vnComm_comm.mpr …` (and 2 more) |
+| `summable_diagTerm` | `Tensor.lean:7194`, `summable_diagTerm.hasSum` |
+| `continuous_diagChi` | `Tensor.lean:7252`, `continuous_diagChi.comp hcont` |
+| `Corner.isClosed_cornerSet` | `Measurement.lean:597`, `isClosed_cornerSet.isComplete` |
+| `IsCorner.isStarProjection` | `CornerTensor.lean:106`, `h.isStarProjection.isIdempotentElem` — **suffix and prefix at once** |
+| `isUnitaryCLM_one` | `CommutationAmplify.lean:374`, `isUnitaryCLM_one.opTensor …` |
+| `le_iff_matForm` | `Basic.lean:5390`, `le_iff_matForm.mpr` (and 2 more) |
+| `suppProj_eq_zero_iff` | `Projections.lean:2996`, `suppProj_eq_zero_iff.mp` |
+| `IsPowBase.denseRange_mul_self` | `ModularGroup.lean:380`, `h.denseRange_mul_self.induction_on` |
+
+and three more in `A/` (`CentrePositiveSeparating.centralProj`,
+`IsPowBase.lipschitzWith_cpowOp`, `differentiable_sinq`) with twelve in `B/`
+(`rf_continuous`, `lipschitz_lk_fst`, `lipschitz_lk_snd`,
+`SPred.isSup_iff_isSupSet`, `SPred.isInf_iff_isInfSet`, `pcm_isSumOf_pair_iff`,
+`CoprodPres.eTTT`, `op_le_iff`, `unitInterval_le_iff`, `prod_le_iff`,
+`saDown_le_iff`, `cuUpLin`).  Note that **`mem_vnComm_top` is named as dead by
+both §7 and §10c**, and it is not: the older Lean term walk saw the use and the
+textual walk of this sweep did not.  `IsCorner.isStarProjection` needs both
+halves of the fix at once, so a scanner that has one and not the other still
+loses it.
+
+**A cone pass over compiled terms, run independently and finishing while this
+round was in progress, found the same mechanism and the same 25 declarations**,
+and reported that it accounts for 33 of the 36 non-instance declarations the
+textual method calls dead and the terms call live.  Two methods that are blind
+in different places (§1) agreeing on the identity of a defect is the strongest
+evidence this document has for any of its numbers.  Where they disagree the
+cone is right: it walks terms, not text.
+
+**Added to §1** by this round, completing the entry §7a opened: a use is any
+*contiguous dotted run* of the token, not a suffix of it and not a prefix of it.
+Index `Foo.bar.baz` under all six of `Foo`, `Foo.bar`, `Foo.bar.baz`, `bar`,
+`bar.baz`, `baz`, and test the index on a `Foo.bar` reached as `h.bar`, on one
+reached as `bar.mp`, and on one reached as `h.bar.mp`.  §1's dot-notation row
+now reads **"seen (indexed over every dotted run)"** in place of
+"suffix-indexed", and §1 carries the rule as its fourth implementation trap.
+
+**A fifth thing the pool's filters miss, cheaper than the others.** §8's
+accessor class is matched by name *suffix* — `_apply`, `_coe`, `_val`, `_def`.
+It does not catch the same shapes written the other way round: `coe_orbitSub`
+(`A/VN/Tomita.lean`, proved `rfl`) and `mem_saOrbit_iff` (same file, proved
+`Iff.rfl`) are accessors by §8's own description — "`rfl`-proved" — and are
+therefore out of the pool by the pool's own definition, but the name filter put
+them in it.  Both were kept.  A `rfl`/`Iff.rfl` body is the reliable signal
+here; the name is not.
+
+**Kept, each with its reason** (all zero-use, all untagged, all unrowed):
+
+* **The whole of `A/VN/Tomita.lean`'s Part IV, `section Package`** — eight
+  declarations, and this is the largest keep in either half.  §10e reads the
+  package pattern as waste; the reason to keep *this* package is in §10e's own
+  diagnosis.  Its two definitions `modularSqrt` and `modularConj` are **not**
+  dead — `A/VN/ModularTensor.lean` uses them at `:1193`, `:1197`, `:1210`,
+  `:1225` and `:1229` — so the block is reached, and what §10e names as the
+  difference between this package and `ModularTensor`'s is precisely that
+  "`Tomita.lean`'s package ships its own domain-membership dischargers and
+  `ModularTensor.lean`'s ships none".  The dischargers are
+  `orbit_mem_modularSqrt_domain`, `exists_Ksub_repr` and
+  `mem_modularSqrt_domain`.  Deleting them deletes the thing §10e names as the
+  repair.
+* `bicommutant_eq_of_uwClosed` (`Tomita.lean:482`): named in that file's own
+  header under **"Main results"**, as are `modularSqrt_hasCore`,
+  `modularConj_modularSqrt_orbit` and `modularConj_modularSqrt`.  Prose-cited
+  terminal record, the §7a criterion.
+* `concreteTensor_top_top` (`TensorTransport.lean`, §7's table, 46 lines): its
+  own file's header cites it at `:32`, and `A/Proc/CommutationAmplify.lean:61`
+  rests a **recorded refutation** on it — "amplification never manufactures a
+  separating vector", because `𝒜 ⊗̄ B(ℒ) = B(ℋ ⊗ ℒ)` has a separating vector
+  only when `dim (ℋ ⊗ ℒ) ≤ 1`.  Class 2, not class 3.
+* `tensorSub_inf` (`QuantumLambda.lean`): its docstring carries a ⚠ note added
+  on 2026-08-26 saying in as many words that nothing consumes it and that it is
+  "kept on the record as the unconditional statement of the abstract 121II".
+  The tree's own written ruling; left standing while §10d's other two members
+  went.
+* `opTensor_mem_modularSqrt_domain`, `modularSqrt_hasCore_orbitSpan`,
+  `modularSqrt_htmul_pkg` (`ModularTensor.lean`, Part 6): the first is the
+  domain discharger for `modularSqrt_opTensor`, which is live; the other two
+  are the package block whose third member `modularConj_htmul` is live.  Same
+  argument as Tomita's Part IV, one step weaker.
+* `CT_iff_vnComm` and `cyclic_and_separating_of_separating`: §7 already moves
+  these out of the pool by hand and the 2026-08-26 reading stands.
+* `coe_orbitSub`, `mem_saOrbit_iff`: §8, per the accessor note above.
+
+**A third member of §7's own table is not in the pool.** §7a found two —
+`IsCompatExt.norm_ipVal_self_le` not dead, `PhiCompatible.mul_right` not
+unrowed.  The third is **`conj_ncp_eq_of_le_proj`** (`A/Proc/Measurement.lean`,
+46 lines, §7's fourth-largest member).  The section doc seven lines above it
+says: "The elementary route is kept below as
+`conj_ncp_eq_of_le_proj`/`exists_ncpCorestrict`, which the corestriction
+arguments of 100III and 102VII use in their own right."  It is a written keep
+ruling, in the tree, in the same doc comment block.  The pool's filters read
+only the declaration's *own* doc comment for a DISP tag and never the section
+prose above it, so a keep ruling written one paragraph up is invisible to them.
+Left untouched.  **Three of the twelve members §7 names by name are wrong** —
+one live, one rowed, one ruled kept — which is the measurement to quote about
+that table, not its line counts.
+
+**The A-half count, re-derived.** Per file, at `5a0bd16`, with the prefix fix,
+correct declaration ends and `@[simp]`/`instance` quarantined:
+`A/VN/Tomita` **12** (§7: 11), `A/Proc/QuantumLambda` **10** (§7: 13),
+`A/Proc/TensorTransport` **7** (§7: 10), `A/CStar/Positive` **3** (§7: 10).
+The whole `A/` half is **83** and the whole pool **130**, against §7's 190.
+`A/CStar/Positive` is the sharpest correction, and unlike the `B/` half's it is
+**not** explained by `@[simp]` and accessor noise.  That file has 54 zero-use
+declarations; **51 of them carry an opening DISP tag or an audit row** — it is
+the opening chapter, and §3 already says so — and two more are `instance`s,
+which leaves exactly three.  §7's ten is not reproducible under §7's own stated
+filters: widening the DISP-tag regex (§7's `\d{1,3}[a-z]?[IVXL]+` rejects a
+label with a trailing lowercase letter, e.g. `**125VIIb**`) and matching audit
+rows at the bare last component as well as the qualified name together move
+exactly **one** declaration tree-wide, and restoring §7a's declaration-end bug
+moves Positive not at all.  Whatever produced the 10 is not recorded, which is
+the argument for re-deriving rather than quoting.
+
+Of the 83, this round worked the four files §7 names by file and the five `A/`
+declarations its table names by line — 42 candidates in seven files — and
+deleted 21 of them.  **41 candidates in fourteen other `A/` files are
+untouched**, the largest being `A/VN/Modular` 8, `A/Proc/Tensor` 6,
+`A/Proc/CornerTensor` 4, `A/VN/StandardSubspace` 4, `A/VN/TomitaTakesaki` 4.
+
+**Two rounds, one measured deletable fraction.** 19 of the `B/` half's 32
+worked candidates and 21 of the `A/` half's 42: **40 of 74, a little over half
+of what is put in front of a compiler, and 40 of the pool's 130.** §7a's "nearer
+a quarter" holds tree-wide; the per-file rate, once the pool is re-derived
+honestly, is about one in two.
+
+**One deletion round creates the next, again, and the effect is compounding.**
+The 21 `A/` deletions orphaned **three** more declarations, 51 lines, whose only
+consumer was one of them: `CT_top_right` (30 lines, `TensorTransport`) — §10c
+recorded it as having two consumers and both were `CT_top_left` and
+`CT_top_top`; `CT_cornerAlg_congr` (9 lines, same file) — §10c recorded one
+consumer and it was `CT_of_CT_corner_any`; and `sum_matU_diag` (12 lines,
+`QuantumLambda`), whose only consumer was `sum_haU_diag`.  They were live at
+`5a0bd16` and are left in place.  Note that all three were named in §10c/§10e as
+*evidence that a block was not dead*; the evidence was one deletion deep.
 
 ---
 
@@ -900,9 +1117,12 @@ make them the fingerprint the check is after. Left, recorded, re-confirmed.
 2. **§5.3's row, not its proof.** Re-cost the 125VIIb row: 125VI is `green`
    since `61d6f49` and "which is itself blocked" is stale. Cheap, and it
    unblocks nothing but stops the next reader inheriting a false reason.
-3. **§7's pool, file by file, with the tree to yourself.** 190 declarations,
-   2,111 lines. Delete and re-run `scripts/audit_check.py` after each file. Do
-   not start this while another worker holds `A/CStar` or `A/VN`.
+3. ~~**§7's pool, file by file, with the tree to yourself.**~~ **DONE
+   2026-08-27, both halves** — §7a (`B/`) and §7b (`A/`). 45 declarations, 339
+   lines deleted — 40 of them pool members, five of them limbs the first round
+   itself created — out of a pool that re-derives to 130, not 190. What is left is
+   109 members in twenty-odd files, of which 34 were kept with a written reason
+   and 75 were never examined; §7b names the largest untouched files.
 4. **A cone pass**, to re-decide §10b and §10c cluster 2, and to check the 44
    dead instances that the textual method is blind to. Budget an hour of compute
    and use a pointer-cached constant walk (§1).
@@ -952,7 +1172,60 @@ still listed there until it is regenerated. Nothing reads it except
 `scripts/sorry_map.py`, and it was not regenerated here because doing so
 rebuilds the whole tree, which the `A/` worker held.
 
-The `A/` half of the pool is untouched and remains as §7 describes it.
+The `A/` half of the pool was spent the same day; see §12b.
+
+### 12b. The fixing round of 2026-08-27 (§11 item 3, `A/` half)
+
+**26 declarations, 225 lines deleted** — 21 from the `A/` half of §7's pool and
+the five that §7a's own deletions orphaned.  Full account, including the
+eight-declaration package kept whole, the fourth mechanism by which a textual
+zero-use lies, and the third member of §7's own table that turns out to be ruled
+kept, in §7b.
+
+* `A/Proc/QuantumLambda.lean` — 9 declarations, 58 lines.
+* `A/Proc/TensorTransport.lean` — 6 declarations, 36 lines.
+* `A/Proc/Commutation.lean` — 1 declaration, 37 lines.
+* `A/VN/ModularTensor.lean` — 1 declaration, 22 lines.
+* `A/CStar/Positive.lean` — 3 declarations, 15 lines: the whole of that file's
+  re-derived pool.
+* `A/VN/Tomita.lean` — 1 declaration, 5 lines.  The other eleven candidates are
+  kept, eight of them as one block.
+* `B/Dils/SelfDualCompletion.lean`, `B/Dils/Paschke.lean`,
+  `B/Eff/StatesPredicates.lean` — the five orphans of §7a, 52 lines.
+
+No statement was changed, no `sorry` added or removed (eleven, all deliberate),
+and no audit row was edited or deleted — none of the 26 was rowed.  **One doc
+comment was changed**, and it is the only prose edit in either half of this
+round: the `WstarTransport` section overview in `A/Proc/QuantumLambda.lean`
+listed `tensorSub_inf_of_intersection_tensor` in a bullet beside its two-sided
+companion, so that bullet was rewritten in the same edit to name only the
+companion and to record where the one-sided form went.
+
+Every edited file and every file downstream of one was rebuilt individually at
+exit 0 — which, because `A/CStar/Positive` sits at the head of the import chain,
+is the whole tree in import order from `A/CStar/Basic` to `B/Eff/VNExamples` —
+and a full `lake build` then confirmed it.  `scripts/audit_check.py`: 0
+orphaned, 0 unrecorded, 0 phantom, 0 schema, 0 unrowed, 0 misplaced.
+`scripts/coverage.py`: 669/669 claims, 64/64 mixed.
+
+`docs/status.txt` is now stale by 45 rows — §12a's 19 and these 26.  It is
+written by `scripts/StatusDump.lean` and names every declaration, so the deleted
+ones are still listed there until it is regenerated; nothing reads it except
+`scripts/sorry_map.py`.
+
+**Where the pool stands.**  Re-derived at `5a0bd16` — that is, after §7a — it
+is **130 declarations, 83 in `A/` and 47 in `B/`**, not §7's 190.  Across the
+two halves **74 candidates were put in front of a compiler and 40 were deleted**,
+a little over one in two; §7a's 19 came out of 32 `B/` candidates and this
+round's 21 out of 42 `A/` ones.  What is left after this round is **109**: 62 in
+`A/` (41 never examined, 21 examined and kept) and 47 in `B/` (34 never
+examined, 13 examined and kept).  §7b names the fourteen `A/` files that hold
+the untouched 41.
+
+The three declarations this round orphaned, and the five that §7a orphaned and
+this round deleted, are the cone effect of §11.4 measured twice: **two rounds,
+eight new limbs, and the second round's three were all cited in §10 as evidence
+that a block was not dead.**
 
 ---
 

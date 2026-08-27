@@ -1232,12 +1232,6 @@ theorem ipf_zero_right (ω : NPFunctional 𝒷) (x : UnCompl B) : ipf B ω x 0 =
   have := ipf_smul_right B ω 0 x 0
   simpa using this
 
-theorem ipf_sub_right (ω : NPFunctional 𝒷) (x y z : UnCompl B) :
-    ipf B ω x (y - z) = ipf B ω x y - ipf B ω x z := by
-  rw [sub_eq_add_neg, ipf_add_right, show -z = (-1 : ℂ) • z by simp,
-    ipf_smul_right]
-  ring
-
 /-! ### The inner product determined by `ipf`
 
 Because the np-functionals separate the points of `𝒷` (**44XI**), an element
