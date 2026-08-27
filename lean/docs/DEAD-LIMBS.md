@@ -953,3 +953,368 @@ still listed there until it is regenerated. Nothing reads it except
 rebuilds the whole tree, which the `A/` worker held.
 
 The `A/` half of the pool is untouched and remains as §7 describes it.
+
+---
+
+## 13. The cone pass (2026-08-27, commit `5a0bd16`)
+
+*§11 item 4, run.  **The walk finished**: 8 min 22 s wall, 5.4 GB peak RSS,
+exit 0, over the compiled `.olean`s.  No Lean was written into `Theses/`,
+nothing was deleted, and no audit row was touched.*
+
+**As-of.** The environment walked is the tree's oleans at `5a0bd16`, with one
+known drift: the `A/` worker had already rebuilt `A/CStar/Positive.olean` when
+the walk started, so three declarations present in `5a0bd16`'s source
+(`arg_eq_arctan`, `thesisPos_one`, `mul_le_meet_mul_add`) are absent from the
+environment.  Nothing else in the tree had drifted — every other one of the
+7,471 source declarations at `5a0bd16` paired with an environment constant.
+
+### 13.1 The method that worked, and its cost
+
+`Expr.getUsedConstants` was **not** used; §1 is right that it has no DAG cache.
+What worked is a walk memoised on `ExprStructEq` — `Expr`'s hash is cached
+inside the node, so a repeat visit to a shared subterm is an O(1) hash hit:
+
+```lean
+structure St where
+  seen : Std.HashSet ExprStructEq := {}
+  out  : Std.HashSet Name := {}
+
+partial def visit (e : Expr) : StateM St Unit := do
+  match e with
+  | .bvar _ | .fvar _ | .mvar _ | .sort _ | .lit _ => return
+  | .const n _ => modify fun s => { s with out := s.out.insert n }
+  | _ =>
+    if (← get).seen.contains ⟨e⟩ then return      -- the cache §1 says is required
+    modify fun s => { s with seen := s.seen.insert ⟨e⟩ }
+    match e with
+    | .app f a       => do visit f; visit a
+    | .lam _ t b _   => do visit t; visit b
+    | .forallE _ t b _ => do visit t; visit b
+    | .letE _ t v b _  => do visit t; visit v; visit b
+    | .mdata _ b     => visit b
+    | .proj n _ b    => do modify (fun s => { s with out := s.out.insert n }); visit b
+    | _ => return
+```
+
+driven over `ci.type` **and** `ci.value? (allowOpaque := true)` (§1's first
+trap) for every constant whose module is `Theses.A*`/`Theses.B*`, with a fresh
+cache per declaration so memory stays flat.  Edges are kept only where the
+target is also a `Theses` constant — Mathlib compiles before `Theses`, so no
+`Theses` fact can be reached through a Mathlib one, and the internal graph is
+complete.
+
+* **13,702** environment constants in `Theses` modules (7,471 of them
+  hand-written source declarations; the rest are projections, `.rec`, `.mk`,
+  `_proof_*`, `match_*`, which are collapsed onto the source declaration they
+  belong to before any count is taken).
+* **95,882** `Theses` → `Theses` edges.
+* **8 min 22 s / 5.4 GB / exit 0**, of which ~10 s is `import Theses`.  No
+  declaration stalled; the walk is linear in the size of the term DAG, which is
+  exactly what §1 predicted a cached traversal would be.
+* Run as a single `elab` command in a scratch file under the §1 invocation
+  (`LEAN_PATH=…` plus both `-D` flags); it never recompiles anything, so it is
+  safe to run while another worker holds the tree.  Stream the output to a file
+  handle and flush every 500 declarations — a version that accumulated the rows
+  in an `Array` and wrote at the end gave no way to tell a slow run from a hung
+  one.
+
+The **textual** side was re-derived here too, from a checkout of `5a0bd16`, so
+that the two methods could be compared declaration by declaration.  That
+re-derivation reproduces this document's published numbers closely enough to
+stand in for the original scan: the per-file *total* declaration count matches
+§3 exactly on all 44 files (bar the two files §7a has since shrunk), the
+per-file *dead* count matches on 39 of them, and it finds **exactly the 44 dead
+named `instance`s** of §2 and §8.
+
+### 13.2 Question 1 — the 44 dead instances: **38 are live, 6 are not**
+
+The Lean walk sees typeclass synthesis, so this is decidable and now decided.
+**38 of the 44 have consumers**, several of them heavy ones —
+`UnUnif.instUniformSpace` 123, `vonNeumannAlgebra_lp_infty` 58, `ksSMul` 37,
+`factIsStarProjectionCeil` 34, `ncUniformSMul` 34, `scalEffectMonoid` 26,
+`instVonNeumannAlgebraCU` 23.  §8's quarantine was right and the instances
+should not be counted as dead.
+
+The six with **no consumer anywhere in the compiled tree**:
+
+| declaration | file:line (`5a0bd16`) | DISP | could anything downstream want it? |
+|---|---|---|---|
+| `Theses.A.Proc.factIsStarProjectionSuppProj` | `A/Proc/Measurement.lean:334` | — | **The only one that is noise.** One of four sibling `Fact (IsStarProjection …)` registrations; the other three have 34, 15 and 10 consumers. Costs two lines; any future lemma about `suppProj` that wants a `Fact` would find it. **Keep, do not count.** |
+| `Theses.A.Proc.linfCoreflective` | `A/Proc/QuantumLambda.lean:659` | 122VI.3 | No. It *is* the Exercise's second half (`Set` is coreflective in `(W*_miu)^op`). Nothing can consume it until W\*_miu is a `Category` — the same statement-level block §6 records for the nine `vn_smc_*` of 119V. Class 2. |
+| `Theses.B.Eff.effectus_has_all_kernels` | `B/Eff/Quotients.lean:786` | 200III | No. It is 200III's first sentence, packaged as a `HasAllKernels` instance; the form proofs use is its sibling `isKernel_comprMap` eight lines below. Class 2. |
+| `Theses.B.Eff.effectus_has_all_cokernels` | `B/Eff/Quotients.lean:1450` | 205II | No. Same shape as the row above, for 205II. Class 2. |
+| `Theses.B.Eff.unitInterval.effectDivisoid` | `B/Eff/StatesPredicates.lean:6936` | 195V.1 | No — it is an Example (`[0,1]` is an effect divisoid). Class 2. |
+| `Theses.B.Eff.prodEffectDivisoid` | `B/Eff/StatesPredicates.lean:7056` | 195V.2 | No — the Example that the product of two effect divisoids is one. Class 2. |
+
+So **five of the six are DISP-tagged thesis statements, terminal by intent**,
+and the sixth is a two-line `Fact`.  There is nothing to delete here, and §8's
+sentence "the Lean term walk *can* see those; a future cone pass should
+re-check them" is now discharged: **the instance census yields no deletion.**
+
+One hazard the census exposes: `prodEffectMonoid`
+(`B/Eff/StatesPredicates.lean:7034`, untagged, unrowed) has exactly **one**
+consumer, `prodEffectDivisoid`, which has none.  It is a dead two-block whose
+head carries 195V.2, so `prodEffectMonoid` must not be deleted on its own.  It
+is inside §8's instance quarantine, which is what protects it.
+
+### 13.3 The cone, and what it is measured against
+
+Roots: every declaration whose doc comment **opens** with a DISP tag (1,959) or
+which an audit row names (2,322) — union **2,574**.  Forward closure over the
+dependency graph:
+
+| | count |
+|---|---|
+| source declarations at `5a0bd16` | 7,471 |
+| **in the cone of something the theses claim** | **6,981** |
+| **outside it** | **490 (6.6%)** |
+| — of those, with at least one term-level consumer | **100** |
+| — of those, textually *live* | 208 |
+
+Those **100** are the shape direct zero-use cannot see: every member has a
+consumer, and the block has none.  Grouped into weakly connected components,
+the components of three or more are:
+
+| size | where | what |
+|---|---|---|
+| 26 | `A/VN/ModularGroup.lean` | **the `jConj` layer — §10b, confirmed below** |
+| 17 | `B/Eff/EffectAlgebras.lean` | the `WrightTriangle` refutation, kept unreferenced by design (§6, §7a) |
+| 15 | `A/VN/Tomita.lean` 9, `A/VN/ModularTensor.lean` 5, `A/VN/Modular.lean` 1 | the `modularSqrt` (Δ^{1/2}) package — **§10e, and see below** |
+| 14 | `B/Dils/Kaplansky.lean` | the `inv1p`/`rf` resolvent layer under the known-false 158V |
+| 10 | `A/Proc/TensorTransport.lean` | **§10c cluster 2, plus three more — confirmed below** |
+| 9 | `A/Proc/TensorTransport.lean` 7, `A/Proc/Tensor.lean` 2 | **§10c cluster 1**, plus `amplification`, `amplification'` |
+| 8 | `B/Dils/Paschke.lean` | the `paschkeModuleId` non-vacuity check, kept by ruling (§7a) |
+| 5 | `A/Proc/QuantumLambda.lean` | the one-sided `tensorSub_inf` chain — §10d, confirmed |
+| 5 | `A/VN/Projections.lean` | `saIncl_isLUB`, `compress_surjective`, `restrictNMIU`, `restrictNMIU_apply`, `nmiu_factors_maps` |
+| 4 | `B/Eff/StatesPredicates.lean` | the "`AConv₂ ≅ Set`" record, kept by prose citation (§7a) |
+| 4 | `A/VN/StandardSubspace.lean` | the `stdConj` wrappers (§10e's smaller instances) |
+
+Five of the eleven are already recorded in this document with a reason, which
+is itself a result: **the cone re-derives the previous sweep's hand findings
+without being told them.**
+
+### 13.4 Question 2 — §10b, the `jConj` layer: **the 2026-08-26 cone finding is confirmed, exactly**
+
+The cone finds **26** declarations in `A/VN/ModularGroup.lean` outside the cone
+of every DISP-tagged and every audit-rowed declaration in the tree — the same
+26 the 2026-08-26 pass reported — and they form a *single* connected component,
+i.e. a genuine block and not 26 unrelated limbs:
+
+`real_inner_J_map_map` (`:590`), `inner_J_map_map` (`:593`), `jConjRe`
+(`:612`), `jConjRe_smul_I` (`:616`), `jConj` (`:621`), `jConj_apply` (`:629`),
+`J_apply_eq_jConj` (`:632`), `jConj_one` (`:636`), `jConj_mul` (`:639`),
+`jConj_add` (`:646`), `jConj_zero` (`:653`), `jConj_smul` (`:656`),
+`jConj_star` (`:664`), `norm_jConj_le` (`:685`), `jConjHom` (`:691`),
+`jConjHom_apply` (`:708`), `continuous_jConjHom` (`:711`), `jConj_R` (`:723`),
+`jConj_two_sub_R` (`:729`), `jConj_cfc_real` (`:735`), `cpow_conj_ofReal`
+(`:756`), `IsPowBase.cpowOp_eq_re_add_im` (`:772`), `jConj_cpowOp` (`:810`),
+`J_opPow` (`:1011`), `J_modPow` (`:1029`), `jConj_modPow` (`:1056`).
+
+`jConj` alone has **18** consumers and every one of them is inside this block;
+that is why §10b's direct count saw only one hard zero-use (`jConj_modPow`) and
+concluded nothing.  **The direct count was not wrong, it was blind, and the
+cone is right.**
+
+Two refinements to §10b:
+
+* **The block does not start where the module docstring says.**  `Jisometry`
+  (`:586`), which the docstring groups with the layer, is **in** the cone: it
+  has two external consumers, `commute_modPow_T` and `modPow_neg_eq_prod` in
+  `A/VN/TomitaAnalytic.lean`.  The dead block begins one declaration later.
+* Two further members of the file are dead as a *pair* rather than as part of
+  the layer: `IsPowBase.denseRange_mul_self` (`:371`, one consumer,
+  `opPow_mul`) and `IsPowBase.lipschitzWith_cpowOp` (`:535`, one consumer,
+  `continuous_cpowOp`) are inside the cone — they are named here only because
+  they are in §7's deletion pool by the textual filters (see §13.6).
+
+The rest of `ModularGroup.lean` — `IsPowBase`, `cpowOp`, `opPow`, `modPow` and
+their 60-odd lemmas — is squarely in the cone, reached through
+`A/VN/TomitaAnalytic.lean` and `A/VN/TomitaFourier.lean`.  So the file is not
+a dead file with a live island; it is a live file with **one dead limb of ~300
+lines**, exactly as its own docstring says ("On the record only — nothing
+consumes these").  **Verdict: the docstring is accurate, §10b stands as
+written, and the layer is a class-2 record — kept, not deleted, because it is
+the tree's only statement of `J Δ^{it} J = Δ^{it}`.**
+
+### 13.5 Question 3 — §10c cluster 2: **confirmed, and larger than recorded**
+
+§10c called cluster 2 "no longer an orphan by direct count" and left the cone
+claim "not contradicted; not confirmed either".  It is now **confirmed**.  All
+seven members of the `cornerTransfer` block are outside the cone, together with
+three declarations upstream of them that §10c did not name:
+
+| declaration | line | term-level consumers | all inside the block? |
+|---|---|---|---|
+| `coe_uconj` | `:201` | 1 | yes |
+| `uconj_concreteTensor` | `:536` | 1 | yes |
+| `CT_uconj_iff` | `:551` | 1 | yes |
+| `cornerTransfer` | `:809` | 5 | yes |
+| `adjoint_cornerTransfer` | `:814` | 2 | yes |
+| `isUnitaryCLM_cornerTransfer` | `:822` | 2 | yes |
+| `cext_cornerTransfer_cmpr` | `:843` | 1 | yes |
+| `uconj_cornerAlg` | `:865` | 1 | yes |
+| `CT_cornerAlg_congr` | `:884` | 1 | yes |
+| `CT_of_CT_corner_any` | `:903` | 0 | — |
+
+`cornerTransfer`'s four-to-five consumers are real and they are all its own
+siblings.  **Where the two methods disagree, the cone is right**: §10c's
+"no longer an orphan" reads the block's internal traffic as life.
+
+The same holds for **cluster 1**, which §10c called "partly closed" on the
+strength of `CT_top_right` acquiring two consumers and `tensorGen_vnComm_top`
+one.  Both are outside the cone, and so are their consumers:
+`exists_smul_one_of_central` (`:621`), `concreteTensor_top_top` (`:650`),
+`mem_vnComm_top` (`:716`), `tensorGen_vnComm_top` (`:725`), `CT_top_right`
+(`:743`), `CT_top_left` (`:776`), `CT_top_top` (`:783`), together with
+`amplification` and `amplification'` in `A/Proc/Tensor.lean`.  **Cluster 1 is
+not partly closed; it is closed nowhere.**
+
+The file's live part ends at `isVNSubalgebra_top` (`:710`).  Everything from
+`:621` to the end of the file — 24 of its 70 declarations, roughly 300 of its
+925 lines — supports nothing either thesis claims.  **Re-decision: §10c
+clusters 1 and 2 are one finding, not two, and the honest description is
+"`TensorTransport.lean` stops carrying weight at line 710."**  Whether to
+retire it is the same kind of author ruling as §10a's atomic-type-I island:
+these are readable special cases of `commutation_theorem`, harmless to keep,
+and the cone's verdict is a record, not a deletion order.
+
+### 13.6 The fourth disagreement — and it is the expensive one
+
+Comparing the two methods declaration by declaration over the 7,471 paired
+source declarations:
+
+| | count |
+|---|---|
+| dead by both methods | 810 |
+| **textually dead, but the compiled terms use it** | **74** |
+| — of those, `instance` (the §8 blind spot, expected) | 38 |
+| — of those, **not** an instance | **36** |
+| **textually live, but nothing in the tree uses it** | **121** |
+
+**(a) `f.mpr` — the mirror of the trap §7a fixed, and it is still open.**
+
+§7a taught the scanner to index a declaration under its bare last component, so
+that `IsCompatExt.norm_ipVal_self_le` reached as `hW.norm_ipVal_self_le` is
+seen.  That fix covers the *suffix* case.  The **prefix** case was never fixed:
+a use written `le_vnComm_comm.mpr` tokenises as the single identifier
+`le_vnComm_comm.mpr`, whose suffixes are `le_vnComm_comm.mpr` and `mpr` —
+**never `le_vnComm_comm`**.  Every `foo.mp`, `foo.mpr`, `foo.symm`, `foo.1`,
+`foo.le`, `foo.choose` use of a named lemma is therefore invisible.
+
+That is the mechanism behind **33 of the 36**: for each of them the textual
+scan finds no bare occurrence anywhere in 163,848 lines, and the source does
+contain the name in a `name.something` form.  **Where the two disagree here, the
+cone is right and the textual scan is wrong**, and the cost is not theoretical:
+**25 of these declarations are inside §7's class-3 deletion pool** — untagged,
+unrowed, not accessors, no `@[simp]` — i.e. they are on the list a fixing round
+is told it may delete.
+
+| declaration | file:line (`5a0bd16`) | term consumers | consuming files |
+|---|---|---|---|
+| `A.Proc.le_vnComm_comm` | `A/Proc/Commutation.lean:210` | 4 | `A/Proc/Commutation.lean`, `A/Proc/CommutationTheorem.lean`, `A/Proc/Compression.lean` |
+| `A.VN.le_iff_matForm` | `A/VN/Basic.lean:5218` | 4 | `A/VN/Basic.lean`, `A/VN/Completeness.lean` |
+| `B.Eff.saDown_le_iff` | `B/Eff/VNExamples.lean:490` | 3 | `B/Eff/VNExamples.lean` |
+| `A.Proc.IsCorner.isStarProjection` | `A/Proc/CornerTensor.lean:97` | 2 | `A/Proc/CornerTensor.lean` |
+| `A.VN.suppProj_eq_zero_iff` | `A/VN/Projections.lean:2922` | 2 | `A/VN/Projections.lean` |
+| `RvD.differentiable_sinq` | `A/VN/TomitaStrip.lean:424` | 2 | `A/VN/TomitaStrip.lean` |
+| `B.Dils.rf_continuous` | `B/Dils/Kaplansky.lean:190` | 2 | `B/Dils/Kaplansky.lean` |
+| `B.Eff.SPred.isSup_iff_isSupSet` | `B/Eff/DiamondAmp.lean:236` | 2 | `B/Eff/DiamondAmp.lean` |
+| `B.Eff.CoprodPres.eTTT` | `B/Eff/StatesPredicates.lean:820` | 2 | `B/Eff/StatesPredicates.lean` |
+| `A.Proc.isUnitaryCLM_one` | `A/Proc/CommutationAmplify.lean:361` | 1 | `A/Proc/CommutationAmplify.lean` |
+| `A.Proc.Corner.isClosed_cornerSet` | `A/Proc/Measurement.lean:587` | 1 | `A/Proc/Measurement.lean` |
+| `A.Proc.continuous_diagChi` | `A/Proc/Tensor.lean:7204` | 1 | `A/Proc/Tensor.lean` |
+| `A.Proc.summable_diagTerm` | `A/Proc/Tensor.lean:7184` | 1 | `A/Proc/Tensor.lean` |
+| `A.Proc.mem_vnComm_top` | `A/Proc/TensorTransport.lean:717` | 1 | `A/Proc/TensorTransport.lean` |
+| `RvD.IsPowBase.denseRange_mul_self` | `A/VN/ModularGroup.lean:371` | 1 | `A/VN/ModularGroup.lean` |
+| `RvD.IsPowBase.lipschitzWith_cpowOp` | `A/VN/ModularGroup.lean:535` | 1 | `A/VN/ModularGroup.lean` |
+| `A.VN.CentrePositiveSeparating.centralProj` | `A/VN/Projections.lean:7633` | 1 | `A/VN/Projections.lean` |
+| `B.Dils.lipschitz_lk_fst` | `B/Dils/Kaplansky.lean:1565` | 1 | `B/Dils/Kaplansky.lean` |
+| `B.Dils.lipschitz_lk_snd` | `B/Dils/Kaplansky.lean:1571` | 1 | `B/Dils/Kaplansky.lean` |
+| `B.Eff.SPred.isInf_iff_isInfSet` | `B/Eff/DiamondAmp.lean:252` | 1 | `B/Eff/DiamondAmp.lean` |
+| `B.Eff.pcm_isSumOf_pair_iff` | `B/Eff/Effectus.lean:378` | 1 | `B/Eff/Effectus.lean` |
+| `B.Eff.op_le_iff` | `B/Eff/StatesPredicates.lean:5391` | 1 | `B/Eff/DiamondAmp.lean` |
+| `B.Eff.prod_le_iff` | `B/Eff/StatesPredicates.lean:7024` | 1 | `B/Eff/StatesPredicates.lean` |
+| `B.Eff.unitInterval_le_iff` | `B/Eff/StatesPredicates.lean:6920` | 1 | `B/Eff/StatesPredicates.lean` |
+| `B.Eff.cuUpLin` | `B/Eff/VNExamples.lean:2171` | 1 | `B/Eff/VNExamples.lean` |
+
+The first row is the sharpest.  `le_vnComm_comm` is the Galois connection for
+the bundled commutant; three of its four consumers are in
+`A/Proc/CommutationTheorem.lean` and `A/Proc/Compression.lean` — and §3's table
+calls `CommutationTheorem` "fully consumed".  **Deleting it on this document's
+own pool list would break the proof of the commutation theorem.**  It was in
+the pool at `9a69966` too; the `B/` half of §7a happened to contain none of
+these 25, which is why the deletion round of 2026-08-27 got away with it.
+
+**Add to §1, as the fourth implementation trap:** *index a use token under
+**every contiguous run of its dotted components**, not only its suffixes.*  A
+scanner that indexes `le_vnComm_comm.mpr` under `mpr` but not under
+`le_vnComm_comm` will delete live lemmas, and every `_iff` lemma in the tree is
+exposed to it.  Suffixes alone are not enough and prefixes alone are not
+either: `CentrePositiveSeparating.centralProj` is used at
+`A/VN/Projections.lean:7719` as `hΩ.centralProj.conj`, where the name it needs
+to be found under is neither the first component nor the last.
+
+The other eleven of the 36 are already quarantined by §8 or by a DISP tag and
+are **not** at risk: `eabasics_le_iff_orth_le` (175V.6, **36** consumers),
+`PartialMap` (180I, 12 — an `abbrev`, so it can be consumed with no constant
+left behind at all), `bax_le_iff` (32XV, 4), `open_almost_clopen` (54IX, 2),
+`totIsInitial` (181XII, 2), `spectrum_bounded_3` (11VI, 1),
+`bax_isSelfAdjoint_iff` and `mem_bax_iff` (both rowed), and the three `@[simp]`
+lemmas `mem_cstarEqualiser`, `freeMap_comp`, `freeMap_id`.
+
+**(b) The other direction: 121 declarations the textual scan calls live are
+term-dead.**  These are suffix collisions — the price of §7a's fix.  The worst
+is `RvD.IsCommutingPair.symm` (`A/VN/Modular.lean:570`) with **1,777** textual
+"uses", every one of them somebody else's `symm`; then `PCMCat.of` (424),
+`CommCmpr.one` (178), `CommCmpr.mul` (169), `CommCmpr.smul` (108), and a long
+tail of `.val_one` / `.val_zero` / `.norm_def` / `.le_def` accessors whose last
+component is shared across four or five namespaces.  **This resolves the one
+item §10f left open**: `IsCommutingPair.symm` was recorded as "cannot be used
+as written… the textual method cannot separate it from Mathlib's.  Unresolved;
+needs a term-level check."  The check has been run: **zero consumers.  The
+2026-08-26 verdict was right.**
+
+Netting the two directions, the tree's true zero-consumer count at `5a0bd16` is
+**931 of 7,471 source declarations (12.5%)** — close to §2's 916, but not the
+same 916: 74 of §2's are live and 121 declarations it counts as live are not.
+
+### 13.7 Two corrections to §10 that the cone forces
+
+* **§10e is too generous to itself.**  It records that
+  `modularSqrt_opTensor` "now has 1 use" and `modularSqrt_htmul` "2, so the
+  chain is no longer dead end to end".  Both are outside the cone.
+  `modularSqrt_opTensor`'s one consumer is `modularSqrt_htmul`;
+  `modularSqrt_htmul`'s two are `modularSqrt_htmul_pkg` and
+  `modularSqrt_orbit`, which have none.  The whole Δ^{1/2} package —
+  `A/VN/Tomita.lean:658–708` (`modularSqrt`, which has **10** consumers, all
+  its own siblings) together with `A/VN/ModularTensor.lean:1081–1230` — is
+  dead **as a block**, 15 declarations across three files.  §10e's structural
+  diagnosis ("the package ships no domain-membership dischargers, so a consumer
+  must drop out of the package vocabulary") is exactly right and is now
+  measured: the package has never once been entered from outside.
+* **§10c's cluster 1 / cluster 2 split does not survive.**  See §13.5.
+
+### 13.8 What a next pass should not repeat
+
+* The whole-tree term walk is **tractable** and the 2026-08-26 failure was the
+  missing cache, nothing else.  It need not be attempted textually again.
+  Budget ten minutes and 6 GB, not an hour and 5 GB.
+* Do **not** accumulate the output in memory and write at the end.  The first
+  attempt here did, ran for six minutes with nothing on disk, and could not be
+  distinguished from a hang; it was killed on suspicion and the run wasted.
+  Stream and flush.
+* `Lean.Meta.isInstance` is `CoreM`, so it needs `liftCoreM` inside a
+  `CommandElabM` `elab`; and `meta` is a reserved token, so it cannot be a
+  `let mut` name.  Both cost a five-minute reload of Mathlib to discover.
+* Two concurrent `lean` processes each holding the `Theses` environment is
+  ~10 GB and will be killed on this box.  Check for an already-running walk
+  before launching one.
+
+### 13.9 Changes applied
+
+**None to the tree.**  No declaration deleted, no statement changed, no `sorry`
+added or removed, no audit row edited.  This section is the whole of the
+output.  The one action item it creates for someone else is §13.6's prefix-
+indexing fix to the textual scanner, and the 25 declarations it names must come
+off §7's deletion pool before the `A/` half of that pool is spent.
