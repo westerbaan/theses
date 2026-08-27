@@ -124,20 +124,6 @@ theorem eq_zero_of_one_eq_zero {E : Type u} [EffectAlgebra E] (h : (1 : E) = 0)
   rw [h] at hac
   exact (eabasics_positivity hc hac).1
 
-/-- Helper: multiplication in an effect monoid is monotone in its right
-argument (a consequence of distributivity). -/
-theorem emon_mul_le_mul_left {M : Type u} [EffectMonoid M] (x : M) {c d : M}
-    (h : c ≼ d) : x * c ≼ x * d := by
-  obtain ⟨e, he, rfl⟩ := h
-  have hd := EffectMonoid.distrib (PCM.perp_zero x) he
-  rw [PCM.ovee_zero x (PCM.perp_zero x)] at hd
-  -- the first entry of a sum is below the sum
-  have key : ∀ s : M, PCM.IsSumOf [x * c, 0 * c, x * e, 0 * e] s → x * c ≼ s := by
-    intro s hs
-    cases hs with
-    | cons hl hp => exact ⟨_, hp, rfl⟩
-  exact key _ hd
-
 /-- Helper: the sum of a list is uniquely determined by the list. -/
 theorem isSumOf_unique {M : Type u} [PCM M] {l : List M} {s t : M}
     (hs : PCM.IsSumOf l s) (ht : PCM.IsSumOf l t) : s = t := by
@@ -724,9 +710,6 @@ theorem hom_ext {X Y Z : D} {a b : d.P X Y ⟶ Z}
   rintro ⟨⟨⟩⟩
   · exact h₁
   · exact h₂
-
-theorem desc_self {X Y : D} : d.desc (d.pinl X Y) (d.pinr X Y) = 𝟙 (d.P X Y) := by
-  refine d.hom_ext ?_ ?_ <;> simp
 
 /-- The coproduct of two morphisms for the concrete coproduct. -/
 noncomputable def pmap {X X' Y Y' : D} (f : X ⟶ X') (g : Y ⟶ Y') :
@@ -8303,18 +8286,6 @@ theorem map_apply_mix {X' Y' : AConvMCat.{u, max u v} M} [HasBinaryCoproduct X' 
     congrArg (fun m : Y ⟶ X' ⨿ Y' => m.1 y) (coprod.inr_map f g)
   rw [mix, hom_apply_bin, h1, h2]
   rfl
-
-/-- `κ₁ x` is the mixture with `λ = 1`. -/
-theorem mix_one (x : X.carrier) (y : Y.carrier) :
-    mix X Y 1 x y = (coprod.inl : X ⟶ X ⨿ Y).1 x := by
-  rw [mix, MConvexComb.bin_one]
-  exact (X ⨿ Y).str.h_eta _
-
-/-- `κ₂ y` is the mixture with `λ = 0`. -/
-theorem mix_zero (x : X.carrier) (y : Y.carrier) :
-    mix X Y 0 x y = (coprod.inr : Y ⟶ X ⨿ Y).1 y := by
-  rw [mix, MConvexComb.bin_zero]
-  exact (X ⨿ Y).str.h_eta _
 
 /-- `q(𝒟_M κ₁ (χ)) = κ₁(h_X χ)`. -/
 theorem coprodQuot_map_inl (χ : MConvexComb M X.carrier) :

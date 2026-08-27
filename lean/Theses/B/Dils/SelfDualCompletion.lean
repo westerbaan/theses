@@ -954,14 +954,6 @@ theorem semC_smul_complex (ω : NPFunctional 𝒷) (c : ℂ) (x : UnCompl B) :
   rw [← UniformSpace.Completion.coe_smul, semC_coe, semC_coe]
   exact map_smul_eq_mul _ _ _
 
-theorem semC_neg (ω : NPFunctional 𝒷) (x : UnCompl B) :
-    semC B ω (-x) = semC B ω x := by
-  refine UniformSpace.Completion.induction_on x
-    (isClosed_eq ((continuous_semC B ω).comp continuous_neg)
-      (continuous_semC B ω)) fun a => ?_
-  rw [← UniformSpace.Completion.coe_neg, semC_coe, semC_coe]
-  exact map_neg_eq_map _ _
-
 /-- **150IX**/**150X**: the 𝒷-action transforms the extended seminorms by
 `ω ↦ b*ω`. -/
 theorem semC_op_smul (ω : NPFunctional 𝒷) (b : 𝒷) (x : UnCompl B) :
@@ -999,23 +991,6 @@ theorem coe_eq_coe_of_inner_zero {x y : UnUnif B}
     rw [h0]; exact hr
   exact (hins.map (UniformSpace.Completion.continuous_coe _)).eq
 
-theorem op_smul_add' (b : 𝒷) (x y : UnCompl B) :
-    b • (x + y) = b • x + b • y := by
-  refine UniformSpace.Completion.induction_on₂ x y
-    (isClosed_eq ((continuous_const_smul b).comp continuous_add)
-      (((continuous_const_smul b).comp continuous_fst).add
-        ((continuous_const_smul b).comp continuous_snd))) fun a c => ?_
-  rw [← UniformSpace.Completion.coe_add, ← UniformSpace.Completion.coe_smul,
-    ← UniformSpace.Completion.coe_smul, ← UniformSpace.Completion.coe_smul,
-    ← UniformSpace.Completion.coe_add]
-  refine coe_eq_coe_of_inner_zero B ?_
-  set A := UnUnif.binner B
-  simp only [show (b • (a + c) - (b • a + b • c) : UnUnif B)
-    = b • (a + c) - b • a - b • c by abel]
-  simp only [A.inner_sub_left, A.inner_sub_right, A.inner_add_left,
-    A.inner_add_right, A.inner_op_smul_left, A.inner_op_smul_right]
-  noncomm_ring
-
 theorem add_op_smul' (b b' : 𝒷) (x : UnCompl B) :
     (b + b') • x = b • x + b' • x := by
   refine UniformSpace.Completion.induction_on x
@@ -1031,19 +1006,6 @@ theorem add_op_smul' (b b' : 𝒷) (x : UnCompl B) :
     A.inner_op_smul_right, star_add]
   noncomm_ring
 
-theorem mul_op_smul' (b b' : 𝒷) (x : UnCompl B) :
-    (b * b') • x = b • (b' • x) := by
-  refine UniformSpace.Completion.induction_on x
-    (isClosed_eq (continuous_const_smul (b * b'))
-      ((continuous_const_smul b).comp (continuous_const_smul b'))) fun a => ?_
-  rw [← UniformSpace.Completion.coe_smul, ← UniformSpace.Completion.coe_smul,
-    ← UniformSpace.Completion.coe_smul]
-  refine coe_eq_coe_of_inner_zero B ?_
-  set A := UnUnif.binner B
-  simp only [A.inner_sub_left, A.inner_sub_right, A.inner_op_smul_left,
-    A.inner_op_smul_right, star_mul]
-  noncomm_ring
-
 theorem one_op_smul' (x : UnCompl B) : (1 : 𝒷) • x = x := by
   refine UniformSpace.Completion.induction_on x
     (isClosed_eq (continuous_const_smul (1 : 𝒷)) continuous_id) fun a => ?_
@@ -1053,20 +1015,6 @@ theorem one_op_smul' (x : UnCompl B) : (1 : 𝒷) • x = x := by
   simp only [A.inner_sub_left, A.inner_sub_right, A.inner_op_smul_left,
     A.inner_op_smul_right, star_one]
   noncomm_ring
-
-theorem op_smul_comm_complex' (b : 𝒷) (c : ℂ) (x : UnCompl B) :
-    b • (c • x) = c • (b • x) := by
-  refine UniformSpace.Completion.induction_on x
-    (isClosed_eq ((continuous_const_smul b).comp (continuous_const_smul c))
-      ((continuous_const_smul c).comp (continuous_const_smul b))) fun a => ?_
-  rw [← UniformSpace.Completion.coe_smul, ← UniformSpace.Completion.coe_smul,
-    ← UniformSpace.Completion.coe_smul, ← UniformSpace.Completion.coe_smul]
-  refine coe_eq_coe_of_inner_zero B ?_
-  set A := UnUnif.binner B
-  simp only [A.inner_sub_left, A.inner_sub_right, A.inner_op_smul_left,
-    A.inner_op_smul_right, A.inner_smul_left_complex, A.inner_smul_right_complex]
-  simp only [smul_smul, smul_mul_assoc, mul_smul_comm, mul_assoc]
-  abel
 
 end UnCompletion
 
@@ -1267,14 +1215,6 @@ theorem ipf_conj (ω : NPFunctional 𝒷) (x y : UnCompl B) :
   rw [ipf_coe, ipf_coe, starRingEnd_apply, ← npFunctional_star,
     (UnUnif.binner B).star_inner]
 
-theorem ipf_add_left (ω : NPFunctional 𝒷) (x y z : UnCompl B) :
-    ipf B ω (x + y) z = ipf B ω x z + ipf B ω y z := by
-  rw [ipf_conj, ipf_add_right, map_add, ← ipf_conj, ← ipf_conj]
-
-theorem ipf_smul_left (ω : NPFunctional 𝒷) (c : ℂ) (x y : UnCompl B) :
-    ipf B ω (c • x) y = (starRingEnd ℂ) c * ipf B ω x y := by
-  rw [ipf_conj, ipf_smul_right, map_mul, ← ipf_conj]
-
 /-- The 𝒷-action transforms `ipf` by `ω ↦ b*ω` — the form of **150IX** that
 survives to the completion, and the only handle we have on the module
 action there. -/
@@ -1292,18 +1232,11 @@ theorem ipf_zero_right (ω : NPFunctional 𝒷) (x : UnCompl B) : ipf B ω x 0 =
   have := ipf_smul_right B ω 0 x 0
   simpa using this
 
-theorem ipf_zero_left (ω : NPFunctional 𝒷) (x : UnCompl B) : ipf B ω 0 x = 0 := by
-  rw [ipf_conj, ipf_zero_right, map_zero]
-
 theorem ipf_sub_right (ω : NPFunctional 𝒷) (x y z : UnCompl B) :
     ipf B ω x (y - z) = ipf B ω x y - ipf B ω x z := by
   rw [sub_eq_add_neg, ipf_add_right, show -z = (-1 : ℂ) • z by simp,
     ipf_smul_right]
   ring
-
-theorem ipf_sub_left (ω : NPFunctional 𝒷) (x y z : UnCompl B) :
-    ipf B ω (x - y) z = ipf B ω x z - ipf B ω y z := by
-  rw [ipf_conj, ipf_sub_right, map_sub, ← ipf_conj, ← ipf_conj]
 
 /-! ### The inner product determined by `ipf`
 
@@ -1399,9 +1332,6 @@ theorem ipVal_op_smul (b : 𝒷) {x y : UnCompl B} (h : HasIP B x y) :
     rw [hc, ipVal_spec B h, ipf_op_smul]
 
 variable (B)
-
-theorem hasIP_zero_right (x : UnCompl B) : HasIP B x 0 :=
-  ⟨0, fun ω => by rw [npFunctional_zero, ipf_zero_right]⟩
 
 @[simp] theorem ipVal_zero_right (x : UnCompl B) : ipVal B x 0 = 0 :=
   ipVal_eq B fun ω => by rw [npFunctional_zero, ipf_zero_right]

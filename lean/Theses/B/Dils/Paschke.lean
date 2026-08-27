@@ -646,10 +646,6 @@ theorem ptens_smul_add (b : ℬ) (x y : 𝒜 ⊗[ℂ] ℬ) :
     b • (x + y) = b • x + b • y :=
   map_add (LinearMap.lTensor 𝒜 (LinearMap.mulLeft ℂ b)) x y
 
-theorem ptens_smul_sum {ι : Type*} (b : ℬ) (s : Finset ι) (f : ι → 𝒜 ⊗[ℂ] ℬ) :
-    b • (∑ i ∈ s, f i) = ∑ i ∈ s, b • f i :=
-  map_sum (LinearMap.lTensor 𝒜 (LinearMap.mulLeft ℂ b)) f s
-
 /-- The φ-inner product on `𝒜 ⊙ ℬ` (**154V**, mirrored):
 `⟨a ⊗ b, a' ⊗ b'⟩ = b' φ(a' a*) b*`.  (The formula is displayed in 154V,
 the first point of the *proof* of **154III**; 154IV is only that proof's
@@ -1105,16 +1101,6 @@ theorem pTheta_nonneg (v : 𝒜 ⊗[ℂ] ℬ) {d : 𝒜} (hd : 0 ≤ d) :
     noncomm_ring
   simp only [hterm]
   exact phi_gram_nonneg φ (fun i => a i * e) b
-
-theorem pTheta_mono (v : 𝒜 ⊗[ℂ] ℬ) {d d' : 𝒜} (h : d ≤ d') :
-    pTheta φ v d ≤ pTheta φ v d' := by
-  rw [← sub_nonneg]
-  have h0 : pTheta φ v (d' - d) + pTheta φ v d = pTheta φ v d' := by
-    rw [← pTheta_add, sub_add_cancel]
-  have hsub : pTheta φ v d' - pTheta φ v d = pTheta φ v (d' - d) := by
-    rw [← h0]; abel
-  rw [hsub]
-  exact pTheta_nonneg φ _ (sub_nonneg.mpr h)
 
 /-- **154III**.2, the analytic core: the vector form `d ↦ ⟨v, ϱ(d) v⟩` of
 `ϱ`, paired with an np-functional `ω` of `ℬ`, is normal.
@@ -2059,11 +2045,6 @@ theorem rightMul_mul (s t : ℬ) : rightMul s * rightMul t = rightMul (t * s) :=
   show (rightMul s).1 ((rightMul t).1 x) = x * (t * s)
   rw [rightMul_apply, rightMul_apply, mul_assoc]
 
-theorem rightMul_one : rightMul (1 : ℬ) = 1 := by
-  refine Subtype.ext (ContinuousLinearMap.ext fun x => ?_)
-  show x * (1 : ℬ) = x
-  rw [mul_one]
-
 theorem rightMul_star (t : ℬ) : star (rightMul t) = rightMul (star t) := by
   refine Subtype.ext (ContinuousLinearMap.ext fun x => ?_)
   have h1 : ModuleAdjointTo ℬ ⇑(rightMul t).1 ⇑((star (rightMul t) : Ba ℬ ℬ)).1 :=
@@ -2467,8 +2448,6 @@ private noncomputable instance (B : BInner ℬ V) : SeminormedAddCommGroup (NC B
         rw [show (-(x : V)) = (-1 : ℂ) • (x : V) from (neg_one_smul ℂ (x : V)).symm, h]
         simp }
 
-private theorem nc_norm (B : BInner ℬ V) (x : NC B) : ‖x‖ = B.norm x := rfl
-
 private instance ncUniformSMul (B : BInner ℬ V) : UniformContinuousConstSMul ℂ (NC B) where
   uniformContinuous_const_smul c := by
     have hl : LipschitzWith ‖c‖₊ (fun x : NC B => c • x) := by
@@ -2581,16 +2560,6 @@ private theorem ncInner_add_left (B : BInner ℬ V) (ξ ξ' η : Completion (NC 
       ((continuous_ncInner_right B ξ).add (continuous_ncInner_right B ξ'))) ?_
   intro w
   rw [ncInner_coe_right, ncInner_coe_right, ncInner_coe_right, map_add, star_add]
-
-private theorem ncInner_smul_left (B : BInner ℬ V) (c : ℂ) (ξ η : Completion (NC B)) :
-    ncInner B (c • ξ) η = (starRingEnd ℂ) c • ncInner B ξ η := by
-  refine Completion.induction_on (p := fun η =>
-    ncInner B (c • ξ) η = (starRingEnd ℂ) c • ncInner B ξ η) η
-    (isClosed_eq (continuous_ncInner_right B (c • ξ))
-      ((continuous_const_smul _).comp (continuous_ncInner_right B ξ))) ?_
-  intro w
-  rw [ncInner_coe_right, ncInner_coe_right, map_smul, star_smul]
-  simp
 
 private theorem ncInner_sub_left (B : BInner ℬ V) (ξ ξ' η : Completion (NC B)) :
     ncInner B (ξ - ξ') η = ncInner B ξ η - ncInner B ξ' η := by
@@ -3111,9 +3080,6 @@ private theorem ksEta_add (u v : NC (ksBInner φ hφ)) :
 private theorem ksEta_smul (c : ℂ) (u : NC (ksBInner φ hφ)) :
     ksEta φ hφ (c • u) = c • ksEta φ hφ u :=
   Completion.coe_smul c _
-
-private theorem denseRange_ksEta : DenseRange (ksEta φ hφ) :=
-  Completion.denseRange_coe
 
 private theorem ksRhoCLM_one (u : NC (ksBInner φ hφ)) : ksRhoCLM φ hφ 1 u = u :=
   ksRhoLM_one u

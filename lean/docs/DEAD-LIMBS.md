@@ -527,6 +527,12 @@ here:
 comment), unrowed (no audit row names them), not accessors. This is the
 deletion pool. Its largest members:
 
+**The B half of it has since been spent, and the count did not survive contact
+with the tree — read §7a before quoting any number in this section.** Two of
+the members named below are not dead (`IsCompatExt.norm_ipVal_self_le`) or not
+unrowed (`PhiCompatible.mul_right`), and the deletable fraction measured on the
+four `B/` files is about a quarter of the pool, not all of it.
+
 | lines | declaration | file:line |
 |---|---|---|
 | 119 | `paschkeModuleId` | `B/Dils/Paschke.lean:2190` |
@@ -547,6 +553,9 @@ By file: `B/Dils/SelfDualCompletion` 28, `B/Dils/Paschke` 16,
 11, `A/VN/Tomita` 11, `A/Proc/TensorTransport` 10, `A/CStar/Positive` 10.
 
 ### Nothing was deleted in this sweep, and the reason is operational
+
+*(Superseded for the four `B/` files by §7a, 2026-08-27: they were spent in a
+round with the tree to itself. The reasoning below stands for the `A/` half.)*
 
 1. **Two workers hold the same files.** One is adding declarations in
    `A/CStar` and `A/VN`; one is verifying `differs`/`stronger` audit rows. The
@@ -588,6 +597,103 @@ DISP tag, so they stay:**
   this form has no consumer." Confirmed dead here. DISP-tagged: **leave and
   report.** It is the cleanest deletion candidate in the tree the moment an
   author ruling permits removing a stated clause of 148III.
+
+### 7a. The B half of the pool, spent (2026-08-27, tree to itself)
+
+**19 declarations, 114 lines deleted** from the four `B/` files the pool names
+(`B/Dils/SelfDualCompletion` 9, `B/Dils/Paschke` 6, `B/Eff/StatesPredicates` 4,
+`B/Eff/EffectAlgebras` 0). Every deletion was made and then *compiled*: each
+edited file and every file downstream of it — `Kaplansky`, `Paschke`,
+`SelfDual`, `Pure`, `Quotients`, `DiamondAmp`, `Dagger`, `Comparisons`,
+`VNExamples` — rebuilt at exit 0. None of the 19 carried an audit row, so no
+row was deleted; `audit_check.py` stays at 0 on all six checks and
+`coverage.py` at 669/669, 64/64. The `sorry` count is untouched at 11.
+
+Deleted:
+
+* `SelfDualCompletion`: `semC_neg`, `op_smul_add'`, `mul_op_smul'`,
+  `op_smul_comm_complex'`, `ipf_add_left`, `ipf_smul_left`, `ipf_zero_left`,
+  `ipf_sub_left`, `hasIP_zero_right` — 61 lines. The `'`-suffixed module
+  axioms on `V̄` and the left-argument halves of the `ipf` family: the
+  instances were built from the *other* halves and these were never consumed.
+* `Paschke`: `ptens_smul_sum`, `pTheta_mono`, `rightMul_one`, `nc_norm`,
+  `ncInner_smul_left`, `denseRange_ksEta` — 28 lines. The last three are
+  `private`, so the compile is a *proof* of their deadness: no external use is
+  possible and a bare `simp` inside the file would have failed.
+* `StatesPredicates`: `emon_mul_le_mul_left`, `CoprodPres.desc_self`,
+  `AConvMCat.mix_one`, `AConvMCat.mix_zero` — 25 lines.
+
+**Two of the seven B members this section names by name were not dead at all,
+and the method is why.**
+
+* **`IsCompatExt.norm_ipVal_self_le`** (listed above at 36 lines) has **three
+  consumers**: `SelfDualCompletion.lean:1733` and `:1734`
+  (`hW.norm_ipVal_self_le`) and `:2038` (`E.isCompat.norm_ipVal_self_le`).
+  All three are dot-notation, which §1's table claims the textual walk sees
+  "suffix-indexed". For a name qualified by a *structure* namespace
+  (`IsCompatExt.`) it evidently did not. **Add to §1: index every declaration
+  under its bare last component as well as its qualified name, and test the
+  index on a `Foo.bar` reached as `h.bar`.**
+* **`PhiCompatible.mul_right`** (112 lines, the second-largest member) **is
+  rowed**: `docs/audit/bdils-paschke-stinespring.csv` row 9, DISP **154III**,
+  `stronger`/`faithful`. The pool is defined as *unrowed*, so its presence
+  here is a defect in the pool, not a finding about the declaration. Its doc
+  does not *open* with a DISP tag (it opens "Shifting a φ-compatible map on
+  the right"), which is why the tag filter missed it; the row filter should
+  have caught it and did not. **Left untouched.**
+
+**A third trap for §1, found while reconstructing the pool.** A scanner must
+end a declaration's own body at the next **top-level command**, not at the next
+**named** declaration. Anonymous `instance : …` blocks have no name, so a
+scanner that stops at the next name swallows the anonymous instance's body and
+loses every use inside it. This reports as dead:
+`CompatExt.ipVal_neg_neg` (used at `SelfDualCompletion.lean:1962`, inside
+`noncomputable instance : NormedAddCommGroup E.Car`) and `isSumOf_op` (38
+lines, used at `StatesPredicates.lean:5404`, inside an anonymous instance).
+Both would have been deleted by a scan that did not fix this.
+
+**Kept, each with its reason** (all zero-use, all untagged, all unrowed — the
+pool's filter has no signal for any of these):
+
+* `paschkeModuleId` (93 lines, the pool's largest member): its own doc says
+  "**Non-vacuity check** … Kept in the tree deliberately: two separate
+  mirroring defects left `PaschkeModule` *uninhabited* and nine theorems of
+  this file vacuous". Class 2, not class 3.
+* `paschke_inner_conj_forces_zero`, `paschke_rho_forces_cyclic`: both docs
+  open "**Negative result** (kept in the tree; `PROVING-LOG.md` session 15)",
+  and the head of `Paschke.lean` cites both as the record of two renderings
+  that left `PaschkeModule` uninhabited.
+* `msc_cor14_1_sup`, `msc_cor14_2_sup_below`: `PROVING-LOG.md` (the 177Ia
+  repair) rules that they "stay unreferenced *by design*: like the
+  `WrightTriangle` refutations they are the record of the false first
+  printing", and the 177Ia row's note says so too.
+* `npFunctional_tendsto_of_isLUB`: **class 1 shaped, not class 3.**
+  `Pure.lean:2893` names it in prose as the justification of the step "`∑ᵢ qᵢ
+  ↑ ⌈⌈p⌉⌉` ultrastrongly", and the Lean proof of that step does not use it.
+  Worth a look in the next cone pass.
+* `two_convex_nonempty` / `two_convex_unique` (together "`AConv₂ ≅ Set`"),
+  `tuple_desc` (the binary instance of the thesis's tuple identity),
+  `emon_mul_orth_comm` (`a ⊙ aᵖ = aᵖ ⊙ a` in any effect monoid): each is a
+  terminal record cited by name in the tree's own prose.
+* `isDiff_ominus`, `MConvexComb.coeFinsupp_support`, `DMKleisli.fn_id`:
+  accessors (`isDiff_ominus` is the defining property of the choice-defined
+  `ominus`), so §8, so out of the pool by its own definition.
+
+**The pool's B-half count is too high by roughly a factor of two.** This round
+re-derived it per file with the same filters plus a Unicode tokeniser, correct
+declaration ends, and `@[simp]`/`instance` quarantined: 9 / 10 / 9 / 4
+candidates against this section's 28 / 16 / 15 / 11. The difference is
+`@[simp]` lemmas and `_apply`/`_val`-shaped accessors that §8 already
+quarantines. **Do not re-quote 190 as a deletable count**; on the B evidence
+the deletable fraction of the pool is nearer a quarter of it.
+
+**One deletion round creates the next.** Removing the 19 orphaned five more
+declarations, 53 lines, whose only consumer was one of them: `ipf_sub_right`
+(5), `pTheta_add` (11) and `pTheta_nonneg` (13) in `Paschke`,
+`MConvexComb.bin_one` (14) and `bin_zero` (11) in `StatesPredicates`. They
+were **live at `a4df27b`** and so outside the pool this round was given; they
+are left in place, and they are the cone effect §11.4 predicts, now measured:
+one round at 19 deletions produced five new limbs.
 
 ---
 
@@ -818,3 +924,32 @@ theses' printed arguments rather than about the tree.
 
 `scripts/audit_check.py`: all five checks at 0. `scripts/coverage.py`: 669/669
 claims, 64/64 mixed.
+
+### 12a. The fixing round of 2026-08-27 (§11 item 3, `B/` half)
+
+**19 declarations, 114 lines deleted** — the first thing this document has ever
+removed from the tree. Full account, including the six kept with reasons and
+the two members of §7's own table that turned out to be live or rowed, in §7a.
+
+* `B/Dils/SelfDualCompletion.lean` — 9 declarations, 61 lines.
+* `B/Dils/Paschke.lean` — 6 declarations, 28 lines.
+* `B/Eff/StatesPredicates.lean` — 4 declarations, 25 lines.
+* `B/Eff/EffectAlgebras.lean` — nothing: all four of its candidates are kept
+  with a reason (two "unreferenced by design", one prose-cited, one accessor).
+
+No statement was changed, no `sorry` added or removed (eleven, all deliberate),
+and no audit row was edited or deleted — none of the 19 was rowed. Every edited
+file and every file downstream of one was rebuilt individually at exit 0:
+`SelfDualCompletion`, `Kaplansky`, `Paschke`, `SelfDual`, `Pure`,
+`StatesPredicates`, `Quotients`, `DiamondAmp`, `Dagger`, `Comparisons`,
+`VNExamples`. `scripts/audit_check.py`: 0 orphaned, 0 unrecorded, 0 phantom,
+0 schema, 0 unrowed, 0 misplaced. `scripts/coverage.py`: 669/669 claims, 64/64
+mixed.
+
+`docs/status.txt` is now stale by 19 rows: it is written by
+`scripts/StatusDump.lean` and names every declaration, so the deleted ones are
+still listed there until it is regenerated. Nothing reads it except
+`scripts/sorry_map.py`, and it was not regenerated here because doing so
+rebuilds the whole tree, which the `A/` worker held.
+
+The `A/` half of the pool is untouched and remains as §7 describes it.
