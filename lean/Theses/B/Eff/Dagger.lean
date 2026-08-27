@@ -2035,17 +2035,6 @@ theorem standard_form_truth {M : X ⟶ Y} {c : Pred X} {i : Pred Y}
     quotient_basics_5 (zetaMap_spec (ceilPred c) (isSharp_ceil c)).1,
     eabasics_orth_orth, asrt_comp_ceil]
 
-/-- Helper: a map given in the standard form 212III is pure. -/
-theorem standard_form_isPure {M : X ⟶ Y} {c : Pred X} {i : Pred Y}
-    (Θ : comprObj (ceilPred c) ≅ comprObj i)
-    (hM : M = asrt c ≫ zetaMap (ceilPred c) (isSharp_ceil c) ≫ Θ.hom ≫ comprMap i) :
-    IsPure M := by
-  rw [hM]
-  exact upm_closed_pure (asrt_spec c).1.1
-    (upm_closed_pure (isPure_of_isQuotient (zetaMap_spec (ceilPred c) (isSharp_ceil c)).1)
-      (upm_closed_pure (isPure_of_isQuotient (quotient_basics_3 Θ.hom))
-        (isPure_comprehension C (isComprehension_comprMap i))))
-
 /-- Helper: the image `im M` of a map given in the standard form 212III. -/
 theorem standard_form_imPred {M : X ⟶ Y} {c : Pred X} {i : Pred Y} (hi : IsSharp i)
     (Θ : comprObj (ceilPred c) ≅ comprObj i)

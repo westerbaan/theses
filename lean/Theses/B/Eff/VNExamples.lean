@@ -1680,15 +1680,6 @@ theorem ncpsu_scal_ext {f g : Theses.NCPSUMap (ULift.{u} ℂ) A}
   conv_rhs => rw [← hz]
   rw [hf, hg, h]
 
-/-- The value at `1` of an ncpsu-map out of the scalars is an effect. -/
-theorem ncpsu_scal_nonneg (f : Theses.NCPSUMap (ULift.{u} ℂ) A) :
-    0 ≤ f.toNCPMap 1 := by
-  have h := OrderHomClass.mono f.toNCPMap.toCompletelyPositiveMap
-    (show (0 : ULift.{u} ℂ) ≤ 1 from by
-      show (0 : ℂ) ≤ (1 : ℂ)
-      exact zero_le_one)
-  rwa [map_zero] at h
-
 /-- A normal completely positive map killing `1` is zero. -/
 theorem ncp_eq_zero_of_one (f : Theses.NCPMap A B) (h1 : f 1 = 0) (a : A) :
     f a = 0 := by
@@ -1975,9 +1966,6 @@ noncomputable def wUnitSU (A : Type u) [CStarAlgebra A] [PartialOrder A]
 @[simp] theorem wUnitSU_apply (A : Type u) [CStarAlgebra A] [PartialOrder A]
     [StarOrderedRing A] (z : ULift.{u} ℂ) :
     (wUnitSU A).toNCPMap z = z.down • (1 : A) := rfl
-
-theorem wUnitSU_one (A : Type u) [CStarAlgebra A] [PartialOrder A]
-    [StarOrderedRing A] : (wUnitSU A).toNCPMap 1 = (1 : A) := (wUnit A).unital'
 
 /-- An ncpsu-map out of the scalars is `z ↦ z·f(1)`. -/
 theorem ncpsu_scal_apply {A : Type u} [CStarAlgebra A] [PartialOrder A]
@@ -5826,18 +5814,6 @@ theorem vn_effObj_iso (s : EffectusPartialStructure WStarCPSU.{u}ᵒᵖ) :
   obtain ⟨hfc, pcm, hfin, E⟩ := s
   subst hpcm
   exact @su_effObj_iso E
-
-/-- **The total maps are the ncpu-maps**, for an arbitrary
-`EffectusPartialStructure` on `vN_cpsuᵒᵖ`. -/
-theorem vn_isTotal_iff (s : EffectusPartialStructure WStarCPSU.{u}ᵒᵖ)
-    {X Y : WStarCPSU.{u}ᵒᵖ} (f : X ⟶ Y) :
-    (f ≫ s.effectus.one Y = s.effectus.one X) ↔ f.unop.toNCPMap 1 = 1 := by
-  have : HasFiniteCoproducts (WStarCPSU.{u}ᵒᵖ) := suHasFiniteCoproducts
-  have hpcm : s.homPCM = suPCM :=
-    effectusPartialStructure_homPCM_unique s vnPartialStructure
-  obtain ⟨hfc, pcm, hfin, E⟩ := s
-  subst hpcm
-  exact @su_isTotal_iff E X Y f
 
 
 end Wrapper

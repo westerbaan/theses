@@ -105,22 +105,6 @@ theorem hasFinCyclic_mono {S T : Set (H →L[ℂ] H)} (hST : S ⊆ T)
   rintro y ⟨x, hx, η, hη, rfl⟩
   exact ⟨x, hST hx, η, hη, rfl⟩
 
-omit [CompleteSpace H] in
-/-- A cyclic vector gives a (one-element) finite jointly cyclic family. -/
-theorem hasFinCyclic_of_cyclic {S : Set (H →L[ℂ] H)} {ξ : H}
-    (h : Dense ((Submodule.span ℂ {y : H | ∃ x ∈ S, y = x ξ} : Submodule ℂ H) : Set H)) :
-    HasFinCyclic S := by
-  refine ⟨{ξ}, Set.finite_singleton ξ, ?_⟩
-  have hset : {y : H | ∃ x ∈ S, ∃ η ∈ ({ξ} : Set H), y = x η}
-      = {y : H | ∃ x ∈ S, y = x ξ} := by
-    ext y
-    exact ⟨fun ⟨x, hx, η, hη, hy⟩ => ⟨x, hx, by rwa [Set.mem_singleton_iff.mp hη] at hy⟩,
-      fun ⟨x, hx, hy⟩ => ⟨x, hx, ξ, rfl, hy⟩⟩
-  show Dense ((Submodule.span ℂ {y : H | ∃ x ∈ S, ∃ η ∈ ({ξ} : Set H), y = x η} :
-    Submodule ℂ H) : Set H)
-  rw [hset]
-  exact h
-
 end Cyclic
 
 /-! ## A separating vector for the corner pins the corner down

@@ -54,8 +54,11 @@ reproduce it.
 | dot-notation `hγ.gram_sum_re` | seen | seen (indexed over every dotted run — §7b) |
 | cost | ≫ 1 h, ≫ 5 GB on the whole tree | 4 s |
 
-Three implementation traps, all of which produced wrong numbers before they
-were fixed, and all of which will recur:
+Seven implementation traps, every one of which produced wrong numbers before
+it was fixed, and all of which will recur.  The first three are about reading
+the *source*; the next three (added by §7c) are about reading the *audit*, the
+*tags* and the *extent of a declaration*; the last is the dotted-run rule §7a
+and §7b arrived at:
 
 * **`ConstantInfo.value?` returns `none` for theorems in Lean 4.34.** Call it
   with `(allowOpaque := true)`. With the default, proof bodies are invisible and
@@ -69,6 +72,25 @@ were fixed, and all of which will recur:
   identifier characters outside ASCII; and `aconv_coprod.{u, v}` must not
   tokenise as `aconv_coprod.`. Both bugs reported live declarations as dead in
   the first pass of this sweep — `aconv_coprod` (193V) among them.
+* **A row filter that reads only `lean_name` does not know what the audit
+  names.** An audit row names declarations in its free-text `note` and `status`
+  fields as well as in `lean_name`, and one such note is a keep ruling in as
+  many words ("removing them would be a statement change, so they are reported
+  here rather than deleted", 228II). **Eight** declarations were held out of
+  the §7c round by this alone, and no check in this repository would have
+  reported the rows those deletions falsified. Index the whole row. See §7c.
+* **The DISP-tag regex cannot read a parenthesised sub-clause.**
+  `\d{1,3}[a-z]?[IVXL]+(?:\.[0-9a-z]+)?` matches `189aII.3` inside
+  `**189aII.3(a)**` and then demands the closing `**`, so a tagged declaration
+  reads as untagged. `scripts/audit_check.py` shares the defect, which is why
+  its *unrowed* check passes on two declarations that open with a DISP tag no
+  row names. See §7c.
+* **The extent of a declaration begins before its doc comment.** A backward
+  walk that skips attributes and `omit`/`open`/`variable … in` modifiers first
+  and the doc block second stops at the doc block; the `omit … in` above it is
+  left behind and attaches itself to whatever command comes next. That is how
+  one of §7c's 40 deletions broke `A/Proc/CommutationReduction` at its
+  `end Cyclic`, 259 lines further on. The walk must RESUME after the doc block.
 * **A use is any contiguous run of dotted components, not a suffix of the
   token and not a prefix of it.** `hW.norm_ipVal_self_le` needs the suffix
   (§7a); `le_vnComm_comm.mpr` and `summable_diagTerm.hasSum` need the prefix,
@@ -1020,6 +1042,225 @@ consumer and it was `CT_of_CT_corner_any`; and `sum_matU_diag` (12 lines,
 `5a0bd16` and are left in place.  Note that all three were named in §10c/§10e as
 *evidence that a block was not dead*; the evidence was one deletion deep.
 
+### 7c. The pool's remainder, spent (2026-08-28, tree to itself)
+
+**40 declarations, 295 lines deleted** across twenty files — 28 in `A/` (203
+lines) and 12 in `B/` (92).  **75 candidates were put in front of a compiler
+and 35 survived**, so the one-in-two rate §7b measured held almost exactly
+(40/75 = 53%, against §7a+§7b's 40/74 = 54%).  Every edited file and every file
+downstream of one was rebuilt — which, because `A/VN/Basic` and `A/Proc/Tensor`
+are near the head of the import chain, is the whole tree — and a full `lake
+build` finished at exit 0.  `scripts/audit_check.py` stays at 0 on all six
+checks and `scripts/coverage.py` at 669/669, 64/64.  The `sorry` count is
+untouched at eleven.  None of the 40 carried an audit row, so no row was
+deleted, and **no doc comment was edited**: every prose citation this round
+found is a citation of something it kept.
+
+The 75 are the whole of what §7b left: the **41** in the fourteen `A/` files
+§7b names, the **2** in `A/Proc/Commutation` its per-line pass did not reach,
+the **3** limbs §7b's own deletions orphaned (`CT_top_right`,
+`CT_cornerAlg_congr`, `sum_matU_diag`), and the **29** that remain of §7a/§7b's
+34 unexamined `B/` members once the five §7b deleted as §7a's orphans are taken
+out.  With this round the pool defined by §7 is **exhausted**: the re-derived scan
+now reports **71** declarations, and they are the **67** examined and ruled
+kept across §7a, §7b and this section (32 + 35) plus four of the five limbs
+this round itself created.  Nothing in the pool is unexamined.
+
+Deleted:
+
+* `A/Proc/Tensor` — `htKet_comp_adjoint`, `ncpMap_ortho_eq_zero` (private),
+  `concreteTensor_le_iff`, `spatialSpan_le_concreteTensor`,
+  `concreteTensor_eq_closure_spatialSpan`, `concreteTensor_inf_le_inf`, 55
+  lines.  The last is §10f's "superseded" verdict spent: 121II's rowed carrier
+  is `intersection_tensor'`, which proves the whole Proposition, and the "easy
+  half" helper never fired.  The four `concreteTensor_*`/`spatialSpan_*` are
+  the unconsumed remainder of the `concreteTensor` API that
+  `docs/COMMUTATION-THEOREM.md` records as built in one go.
+* `A/Proc/Commutation` — `mem_vnComm_of_forall`, `reduced_commutant_eq`, 21
+  lines.  The first is §10e's `section Package` shape at its smallest (an
+  `.mpr` wrapper on a live `mem_vnComm`); the second is the reduction theorem
+  in a set-comprehension form nothing asks for — `mem_vnComm_iff_comm_reduced`,
+  which it wraps, has consumers.
+* `A/Proc/CommutationCyclic` — `HasCyclicSeparating.hasCyclic`,
+  `hasCyclicSeparating_of_dense_orbit`, 15 lines; `A/Proc/CommutationReduction`
+  — `hasFinCyclic_of_cyclic`, 16 lines.  §10e names all three as the small
+  instances of the package pattern and re-confirmed them dead; this round spent
+  them.
+* `A/Proc/Compression` — `commutant_cmpr_image`, 15 lines: the set-level
+  restatement of `vnComm_cornerAlgVN`, which is live.
+* `A/Proc/CornerTensor` — `cmpr_surjective`, 4 lines.  Its own doc calls it
+  the "second half" of `e B(ℋ) e ≅ B(eℋ)`, but the content is `cmpr_cext`,
+  which has consumers in this file and two more downstream; the *first* half
+  `range_cext` is kept (below).
+* `A/Proc/TensorTransport` — `CT_cornerAlg_congr`, 11 lines, and
+  `A/Proc/QuantumLambda` — `sum_matU_diag` (private), 12 lines: two of the
+  three limbs §7b's own round created.  The third, `CT_top_right`, is kept.
+* `A/VN/Basic` — `gnsElemVecs_separating`, `chi_le_one`, 10 lines;
+  `A/VN/NormalFunctionals` — `gnsElemVecsOn_separating`, 4 lines.  The two
+  `gns*_separating` are the `gnsHilb`/`gnsHilbOn` specialisations of
+  `gnsElemVecsFam_separating`, which is used at the family level directly.
+* `A/VN/Modular` — `unitary_add_I_smul`, `unitary_sub_I_smul` (§10e's mirror
+  pair, both halves dead), `isSelfAdjoint_sqrtSumSq`, 13 lines.
+* `A/VN/StandardSubspace` — `stdConj_stdConj`, `stdConj_R`, `stdIsModularPair`,
+  12 lines: three more of §10e's upstreaming wrappers, each a one-line
+  restatement of a live `J_J`/`J_R`/`isModularPair_a_b` at
+  `S.toClosedSubmodule`.
+* `A/VN/TomitaAnalytic` — `powExt_zero`, `kMass_nonneg`, 8 lines;
+  `A/VN/TomitaTakesaki` — `sepSet_subset_Ksub` (§10f's "orphan, still dead"),
+  `absOp_isSelfAdjoint`, 7 lines.
+* `B/Eff/Effectus` — `isTotal_map`, `par_map_hat`, `par_ovee_eq'`, 26 lines.
+* `B/Eff/VNExamples` — `ncpsu_scal_nonneg`, `wUnitSU_one`, `vn_isTotal_iff`, 24
+  lines.  `vn_isTotal_iff` is the sharpest of the three: PROVING-LOG session 85
+  calls it "the form the eight will use", and the eight hypothetical von
+  Neumann examples all reach past it to `su_isTotal_iff` after destructuring
+  `s` themselves.  Its companion `vn_effObj_iso` **is** used that way in prose
+  and is kept.
+* `B/Dils/HilbertModules` — `mul_smul'`, `sum_smul'`, 17 lines: two of the five
+  private module laws forced out of `CStarModule`'s bare `SMul`.  PROVING-LOG
+  parsec 7487 rules on them itself — "the polar construction is arranged to
+  avoid them … 149IX needs `sub_smul'` only".
+* `B/Dils/SelfDual` — `vnTensor_legRight_nonneg`, `ext_smul_sum` (private), 9
+  lines; `B/Eff/Dagger` — `standard_form_isPure`, 11 lines (its sibling
+  `standard_form_truth` has a consumer at `:2661`; this one never did);
+  `B/Eff/DiamondAmp` — `pcm_sup_unique`, 5 lines.
+
+**The seventh mechanism by which a textual zero-use lies — and this one is not
+about the text at all.  A declaration can be named by an audit row in the row's
+`note` or `status` field instead of its `lean_name` field.**  The pool is
+defined as *unrowed*, and every row filter written for it — and every one of
+`scripts/audit_check.py`'s six checks — reads `lean_name` and nothing else.
+Eight of this round's 75 candidates are named in a note, and one of those notes
+is a keep ruling in as many words:
+
+| declaration | the row, and what its note says |
+|---|---|
+| `spred_sup_of_quot`, `spred_isSup_unique`, `boxPull_one` | **228II** (`beff-vnexamples.csv:74`): "All three are public statements of the toolbox the block announces itself as collecting, and **removing them would be a statement change, so they are reported here rather than deleted**." |
+| `purelyAtomic_not_discrete_of_measure_zero` | **129II** (`aproc-duplicators-quantumlambda.csv:26`): "the exception is exhibited by `purelyAtomic_not_discrete_of_measure_zero`" — the machine-checked counterexample the row's `differs` verdict rests on |
+| `spred_isInf_orth` | **207V.4**: "helpers `spred_isSup_orth`, `spred_isInf_orth`" |
+| `ovee_le_of_le` | **208III**: "`ovee_le_of_le` survives, still used by the orthomodular law" |
+| `extensive_effectus_set`, `extensive_effectus_compHaus` | **189aII.3**: "(a) Set and (c) CH are now formalized, as `extensive_effectus_set` and `extensive_effectus_compHaus`" — the two clauses that hold the row's `weaker` verdict to clause (b) alone |
+
+Deleting any of the eight leaves an audit row asserting something false about
+the tree, **and no check in this repository would report it.**  Note also that
+two of the eight notes are already half-stale — `spred_isInf_orth` was
+superseded by `spred_isInfSet_orth` in the 207V.4 repair, and 208III's
+"still used by the orthomodular law" was overtaken on 2026-08-22 by
+`ovee_le_of_le`'s own docstring ("Scaffolding of the route 208III used to take
+… nothing appeals to it any more") — so the mechanism protects stale prose as
+readily as live prose.  **Add to §1: index the whole of every audit row, not
+its `lean_name` field, when deciding whether a declaration is rowed.**
+
+**An eighth, cheap and mechanical: the DISP-tag regex cannot read a
+parenthesised sub-clause label.**  `extensive_effectus_set` and
+`extensive_effectus_compHaus` open `/-- **189aII.3(a)** …` and `/-- **189aII.3(c)**
+…`.  Both the pool scanner's tag regex and `scripts/audit_check.py`'s
+`TAG_OPENS` (`\d{1,3}[a-z]?[IVXL]+(?:\.[0-9a-z]+)?`) match `189aII.3` and then
+demand a closing `**`, which `(a)` is in the way of.  So the two read as
+untagged, which is what put them in the pool.  The same blind spot means
+`audit_check.py`'s *unrowed* check (check 3) does not see them either: they
+open with a DISP tag, no row names them in `lean_name`, and the checker
+reports 0 unrowed.  **Widening the regex by one optional group would make
+`audit_check.py` report two unrowed declarations**, whose repair is to add both
+names to row 189aII.3's `lean_name`.  Not done here — it is an audit edit, not
+a deletion — but it is the one concrete defect this round found in a checker
+rather than in a scanner.
+
+**Mechanism 6 — the keep ruling written above the declaration rather than in
+it — was the single largest cause of a keep this round, and it fired eight
+times in one specific place: the file's own module docstring under "Main
+results".**  §7b kept `bicommutant_eq_of_uwClosed` for exactly this reason and
+recorded it as a one-off; it is not.  A module header that lists its
+deliverables by name is a keep ruling for every name on the list, and three
+files' headers between them saved eight candidates:
+
+* `A/VN/Modular.lean` names `.dense_range` as part of **Lemma A**,
+  `eq_one_of_eq_compPMap` as half of **Lemma D**, and states Lemma B's
+  deliverable as "`c̃ h = c`, `d̃ h = d`" — which is `normFst_mul` and
+  `normSnd_mul` and nothing else in the tree.  Four keeps from one header.
+* `A/VN/TomitaTakesaki.lean` names `tomita_JM'J` as half of **RvD Theorem
+  4.2(1)** and `isClosed_image_of_uwCompact` as the compactness transfer;
+  `A/VN/TomitaAnalytic.lean` names `tomita_JM'J_unconditional`, confirming
+  §10f's "terminal by intent".
+* `A/Proc/TensorTransport.lean`'s header cites `CT_top_right` by name at `:28`
+  — in the *same bullet* that cites `concreteTensor_top_top`, which is why
+  §7b kept that one.  So `CT_top_right`, which §7b's own deletions orphaned
+  and `docs/COMMUTATION-THEOREM.md` calls a "consumer-free special case",
+  **stays**: the header is a citation and the two siblings §7b deleted
+  (`CT_top_left`, `CT_top_top`) were not cited there.
+
+**Kept, each with its reason** (35 declarations; all zero-use, all untagged by
+the filters, all unrowed by `lean_name`):
+
+* **§8, by the `rfl` signal §7b added** — 7: `mem_cornerAlg` and
+  `CentralProj.mem_sub_iff` and `mem_lkSub` and `par_perp_iff` (`Iff.rfl`),
+  `IsModularPair.D_domain` and `par_zero_eq'` and `saDown_saUp` (`rfl`).  None
+  is named in the accessor style, and the name filter is why they were in the
+  pool at all.
+* **Named in an audit row's note** — 8, tabled above.  Seven are in `B/`; the
+  eighth, `purelyAtomic_not_discrete_of_measure_zero`, is the counterexample
+  129II's `differs` verdict rests on.
+* **Named by a written ruling in `PROVING-LOG.md` or `ERRATA.md`** — 3:
+  `linfty_ae_le` and `pairLp_one` (PROVING-LOG parsec 28085 rules on both by
+  name: "Neither is worth removing"); `isPure_of_comp_isComprehension`
+  (`ERRATA.md`'s 221IV.5/.6/.7 row: "proved in plain effectus generality,
+  alongside `isPure_of_comp_isComprehension`").
+* **Named in the file's own prose — mechanism 6** — 13: the eight from module
+  headers above, plus `range_cext` (`CornerTensor.lean`'s header: "`cext` is an
+  injective ∗-homomorphism **onto the corner `e B(ℋ) e`**", and that is the
+  only statement of it), `cornerAlg_one` (its section prose: "### The trivial
+  corner — a sanity anchor for the definitions", i.e. class 2, a non-vacuity
+  check), `isPureMap_of_isFilter` (`Pure.lean:2309` names it beside
+  `isPureMap_of_isCorner`, and it is the filter half of **170I**'s "filters and
+  corners are pure"), `vn_effObj_iso` (`VNExamples.lean:2103`, "what the eight
+  examples downstream actually use is … the *uniqueness* statement
+  `vn_effObj_iso`, which is proved" — and again at `:2127`), and
+  `modularPair_data` (`StandardSubspace.lean:42`).
+* **`inv1p_nonneg`, `inv1p_comm`, `inv1p_conj_le_one`** (`B/Dils/Kaplansky`)
+  — 3, and PROVING-LOG parsec 6167 calls the last two "the two facts the
+  thesis lists at dils.tex:4213":
+  the doc comment of the *definition* `inv1p`, four declarations above them,
+  states "`0 ≤ inv1p b ≤ 1` as well as `0 ≤ b * inv1p b ≤ 1` (dils.tex:4213)"
+  — the four facts these three and the live `inv1p_le_one` render.  They are
+  the toolbox of the four `kaplansky_hilbmod_A*` statements, which are among
+  the tree's eleven deliberate `sorry`s; deleting them removes the tree's only
+  rendering of a sentence the thesis prints.
+* **`jConj_modPow`** (`A/VN/ModularGroup`): §13.4 of this document already
+  ruled on it — the `jConj` layer "is a class-2 record — kept, not deleted,
+  because it is the tree's only statement of `J Δ^{it} J = Δ^{it}`" — and the
+  module docstring advertises it under **main results**.  It is the single hard
+  zero-use of that file and it stays.
+
+**One deletion failed to compile, and the cause was the deletion tool, not the
+declaration.**  `A/Proc/CommutationReduction` broke on
+`hasFinCyclic_of_cyclic`: the declaration is preceded by a doc comment which is
+itself preceded by `omit [CompleteSpace H] in`, and a backward walk that skips
+attributes and `… in` modifiers *first* and the doc block *second* stops at the
+doc block and leaves the `omit` behind.  The orphaned `omit … in` then attached
+itself to the next command, `end Cyclic`, and Lean reported "Unexpected name
+`Cyclic` after `end`" 259 lines further on.  **Add to §1's implementation
+traps: a declaration's extent runs from the first of its modifier lines, and
+the walk backwards over attributes, bare modifiers and `omit`/`open`/`variable
+… in` must RESUME after the doc comment, not stop at it.**  The whole tree was
+scanned for the same residue after the repair and this was the only instance.
+No other deletion of the 40 failed: the remaining 39 compiled at the first
+attempt, and the five `private` ones among them —
+`ncpMap_ortho_eq_zero`, `sum_matU_diag`, `mul_smul'`, `sum_smul'`,
+`ext_smul_sum` — are compile-*proved* dead, since no external use of a
+`private` declaration is possible and a bare `simp` inside its own file would
+have failed.
+
+**One deletion round creates the next, a third time, and the effect is
+shrinking.**  The 40 deletions orphaned **five** declarations, 43 lines, whose
+only consumer was one of them: `CT_uconj_iff` (16 lines) and `uconj_cornerAlg`
+(14 lines) in `TensorTransport`, both consumed only by `CT_cornerAlg_congr`;
+`zero_smul'` (7 lines, `HilbertModules`), consumed only by `sum_smul'`; and the
+two definitions `gnsElemVecs` (`A/VN/Basic`) and `gnsElemVecsOn`
+(`A/VN/NormalFunctionals`), 3 lines each, whose only consumers were the two
+`*_separating` wrappers deleted above — `gnsElemVecsOn` is **rowed**, so it is
+outside the pool by definition and should not be chased.  All five were live at
+`0e9f7ff` and are left in place.  Three rounds, thirteen new limbs: 5, then 3,
+then 5.
+
 ---
 
 ## 8. Class 4 — accessor noise
@@ -1228,12 +1469,16 @@ make them the fingerprint the check is after. Left, recorded, re-confirmed.
 2. **§5.3's row, not its proof.** Re-cost the 125VIIb row: 125VI is `green`
    since `61d6f49` and "which is itself blocked" is stale. Cheap, and it
    unblocks nothing but stops the next reader inheriting a false reason.
-3. ~~**§7's pool, file by file, with the tree to yourself.**~~ **DONE
-   2026-08-27, both halves** — §7a (`B/`) and §7b (`A/`). 45 declarations, 339
-   lines deleted — 40 of them pool members, five of them limbs the first round
-   itself created — out of a pool that re-derives to 130, not 190. What is left is
-   109 members in twenty-odd files, of which 34 were kept with a written reason
-   and 75 were never examined; §7b names the largest untouched files.
+3. ~~**§7's pool, file by file, with the tree to yourself.**~~ **DONE, and the
+   pool is now EXHAUSTED** — §7a (`B/`) and §7b (`A/`) on 2026-08-27, §7c (the
+   remainder, 75 candidates in twenty-seven files) on 2026-08-28. **85
+   declarations, 634 lines deleted** — 80 of them pool members put in front of
+   a compiler, five of them limbs an earlier round created — out of a pool that
+   re-derives to 130, not 190. What is left is **71 declarations, every one of
+   them examined and ruled kept with a written reason**: 67 across the three
+   sections, plus four of the five limbs §7c itself created. Nothing in the
+   pool is unexamined. The deletable fraction, measured three times
+   independently, is **one in two** (19/32, 21/42, 40/75).
 4. **A cone pass**, to re-decide §10b and §10c cluster 2, and to check the 44
    dead instances that the textual method is blind to. Budget an hour of compute
    and use a pointer-cached constant walk (§1).
@@ -1344,6 +1589,61 @@ The three declarations this round orphaned, and the five that §7a orphaned and
 this round deleted, are the cone effect of §11.4 measured twice: **two rounds,
 eight new limbs, and the second round's three were all cited in §10 as evidence
 that a block was not dead.**
+
+### 12c. The fixing round of 2026-08-28 (§11 item 3, the pool's remainder)
+
+**40 declarations, 295 lines deleted** — the whole of what §7a and §7b left
+unexamined, and two of the three limbs §7b's own deletions created.  Full
+account, including the **seventh** mechanism by which a textual zero-use lies
+(a declaration named in an audit row's `note` field, not its `lean_name`), an
+eighth in the DISP-tag regex, and the eight keeps that came out of module
+docstrings' "Main results", in §7c.
+
+* `A/Proc/Tensor.lean` — 6 declarations, 55 lines.
+* `A/Proc/Commutation.lean` — 2 declarations, 21 lines.
+* `A/Proc/CommutationCyclic.lean` — 2 declarations, 15 lines.
+* `A/Proc/CommutationReduction.lean` — 1 declaration, 16 lines.
+* `A/Proc/Compression.lean` — 1 declaration, 15 lines.
+* `A/Proc/QuantumLambda.lean` — 1 declaration, 12 lines.
+* `A/Proc/TensorTransport.lean` — 1 declaration, 11 lines.
+* `A/Proc/CornerTensor.lean` — 1 declaration, 4 lines.
+* `A/VN/Modular.lean` — 3 declarations, 13 lines.
+* `A/VN/StandardSubspace.lean` — 3 declarations, 12 lines.
+* `A/VN/Basic.lean` — 2 declarations, 10 lines.
+* `A/VN/TomitaAnalytic.lean` — 2 declarations, 8 lines.
+* `A/VN/TomitaTakesaki.lean` — 2 declarations, 7 lines.
+* `A/VN/NormalFunctionals.lean` — 1 declaration, 4 lines.
+* `B/Eff/Effectus.lean` — 3 declarations, 26 lines.
+* `B/Eff/VNExamples.lean` — 3 declarations, 24 lines.
+* `B/Dils/HilbertModules.lean` — 2 declarations, 17 lines.
+* `B/Eff/Dagger.lean` — 1 declaration, 11 lines.
+* `B/Dils/SelfDual.lean` — 2 declarations, 9 lines.
+* `B/Eff/DiamondAmp.lean` — 1 declaration, 5 lines.
+
+No statement was changed, no `sorry` added or removed (eleven, all deliberate),
+no audit row was edited or deleted — none of the 40 was rowed in `lean_name` —
+and, unlike §12b, **no doc comment was changed either**: every prose citation
+this round turned up is a citation of something it kept, which is why it kept
+it.  A full `lake build` finished at exit 0 after the whole tree had been
+rebuilt in import order from `A/CStar/Basic` to `B/Eff/VNExamples`.
+`scripts/audit_check.py`: 0 orphaned, 0 unrecorded, 0 phantom, 0 schema,
+0 unrowed, 0 misplaced.  `scripts/coverage.py`: 669/669 claims, 64/64 mixed.
+
+**Where the pool stands: it is spent.**  The re-derived scan reports **71**
+declarations, and every one of them has a written reason — 67 examined and
+ruled kept across §7a (13), §7b (19) and §7c (35), and four of the five limbs
+this round created.  Across the three rounds **149 pool candidates were put in
+front of a compiler and 80 were deleted** — 19 of §7a's 32, 21 of §7b's 42, 40
+of §7c's 75, a hair over one in two every time — and with §7b's five orphans
+that is **85 declarations and 634 lines** (114 + 225 + 295), against a pool §7
+recorded as 190 declarations and 2,111 lines.
+
+The five declarations this round orphaned — `CT_uconj_iff` and
+`uconj_cornerAlg` (`TensorTransport`), `zero_smul'` (`HilbertModules`),
+`gnsElemVecs` (`A/VN/Basic`) and the rowed `gnsElemVecsOn`
+(`A/VN/NormalFunctionals`) — are the cone effect of §11.4 measured a third
+time: **three rounds, thirteen new limbs (5, 3, 5), and each round's are
+outside the pool the next one is handed.**
 
 ---
 

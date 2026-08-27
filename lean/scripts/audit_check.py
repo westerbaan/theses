@@ -238,7 +238,10 @@ def name_list(field):
     return None
 
 
-TAG_OPENS = re.compile(r'^/--\s*\**\s*\*\*(\d{1,3}[a-z]?[IVXL]+(?:\.[0-9a-z]+)?)\*\*')
+# A sub-clause label may carry a parenthesised part -- `**189aII.3(a)**`.
+# Without the optional group the number matches but the closing `**` does not,
+# so such a declaration reads as untagged and the unrowed check never sees it.
+TAG_OPENS = re.compile(r'^/--\s*\**\s*\*\*(\d{1,3}[a-z]?[IVXL]+(?:\.[0-9a-z]+)?(?:\([a-z]\))?)\*\*')
 PRIVATE = re.compile(r'^\s*(?:@\[[^\]]*\]\s*)*private\b')
 
 

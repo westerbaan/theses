@@ -2764,23 +2764,6 @@ private theorem sub_smul' (a b : 𝒷) (x : X) : (a - b) • x = a • x - b •
   rw [sub_add_cancel] at h
   rw [eq_sub_iff_add_eq, ← h]
 
-private theorem mul_smul' (a b : 𝒷) (x : X) : (a * b) • x = a • (b • x) := by
-  have h : (inner 𝒷 ((a * b) • x - a • (b • x))
-      ((a * b) • x - a • (b • x)) : 𝒷) = 0 := by
-    simp only [CStarModule.inner_sub_left, CStarModule.inner_sub_right,
-      CStarModule.inner_op_smul_left, CStarModule.inner_op_smul_right, star_mul]
-    noncomm_ring
-  have := (CStarModule.inner_self (A := 𝒷)).mp h
-  rwa [sub_eq_zero] at this
-
-private theorem sum_smul' {κ : Type*} (s : Finset κ) (f : κ → 𝒷) (x : X) :
-    (∑ i ∈ s, f i) • x = ∑ i ∈ s, f i • x := by
-  classical
-  induction s using Finset.induction_on with
-  | empty => simpa using zero_smul' x
-  | insert a s ha ih =>
-    rw [Finset.sum_insert ha, Finset.sum_insert ha, add_smul', ih]
-
 /-- `‖ω(a)‖ = Re ω(a)` for positive `a`. -/
 private theorem norm_np_eq_re (ω : NPFunctional 𝒷) {a : 𝒷} (ha : 0 ≤ a) :
     ‖ω a‖ = (ω a).re := by

@@ -664,10 +664,6 @@ noncomputable def sepSet : Set ℋ :=
   (fun x : ℋ →L[ℂ] ℋ => P (Ksub M ω) (lam • ((2⁻¹ : ℂ) • (x ω + (star x) ω)))) ''
     (Metric.closedBall (0 : ℋ →L[ℂ] ℋ) 1 ∩ (M : Set (ℋ →L[ℂ] ℋ)))
 
-lemma sepSet_subset_Ksub : sepSet M ω lam ⊆ (Ksub M ω : Set ℋ) := by
-  rintro _ ⟨x, -, rfl⟩
-  exact P_apply_mem _ _
-
 lemma sepSet_nonempty : (sepSet M ω lam).Nonempty :=
   ⟨_, ⟨0, ⟨by simp, zero_mem M⟩, rfl⟩⟩
 
@@ -887,9 +883,6 @@ noncomputable def signApprox (h : ℋ →L[ℂ] ℋ) (ε : ℝ) : ℋ →L[ℂ] 
 
 lemma absOp_nonneg (h : ℋ →L[ℂ] ℋ) : 0 ≤ absOp h :=
   cfc_nonneg (fun x _ => abs_nonneg x)
-
-lemma absOp_isSelfAdjoint (h : ℋ →L[ℂ] ℋ) : IsSelfAdjoint (absOp h) :=
-  .of_nonneg (absOp_nonneg h)
 
 lemma le_absOp {h : ℋ →L[ℂ] ℋ} (hhs : IsSelfAdjoint h) : h ≤ absOp h := by
   have hid : cfc (fun t : ℝ => t) h = h := cfc_id' ℝ h

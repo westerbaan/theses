@@ -3207,18 +3207,6 @@ private theorem matU_mul_mul (o k l : Fin m) (M : MatAlg m) :
     show (matE.symm M : Matrix (Fin m) (Fin m) ℂ) k l = M k l from rfl,
     matU, ← map_smul, Matrix.smul_single, smul_eq_mul, mul_one]
 
-private theorem sum_matU_diag : ∑ p : Fin m, matU p p = (1 : MatAlg m) := by
-  rw [show ∑ p : Fin m, matU p p
-      = matE (∑ p : Fin m, Matrix.single p p (1:ℂ)) from (map_sum matE _ _).symm,
-    show ∑ p : Fin m, Matrix.single p p (1:ℂ) = 1 from ?_, map_one]
-  conv_rhs => rw [Matrix.matrix_eq_sum_single (1 : Matrix (Fin m) (Fin m) ℂ)]
-  refine Finset.sum_congr rfl fun p _ => ?_
-  rw [Finset.sum_eq_single p]
-  · rw [Matrix.one_apply_eq]
-  · intro q _ hq
-    rw [Matrix.one_apply_ne (Ne.symm hq), Matrix.single_zero]
-  · intro h; exact absurd (Finset.mem_univ p) h
-
 private theorem matrix_eq_sum_matU (M : MatAlg m) :
     M = ∑ k : Fin m, ∑ l : Fin m, (M k l) • matU k l := by
   have h : ∀ k l : Fin m, (M k l) • matU k l = matE (Matrix.single k l (M k l)) := by

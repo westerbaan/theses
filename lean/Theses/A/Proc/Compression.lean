@@ -564,21 +564,6 @@ theorem isVNSubalgebra_cornerAlg (h : IsCorner sub e)
     IsVNSubalgebra (E →L[ℂ] E) (cornerAlg h (vnComm T) (le_vnComm_vnComm T heT)) :=
   vnComm_cornerAlgVN h T hT heT ▸ isVNSubalgebra_vnComm _
 
-/-- The same, as an identity of *sets* of operators:
-`(f 𝒯 f)^□ = 𝒯^□ f` with both sides written as images of the compression. -/
-theorem commutant_cmpr_image (h : IsCorner sub e)
-    (T : StarSubalgebra ℂ (H →L[ℂ] H)) (hT : IsVNSubalgebra (H →L[ℂ] H) T)
-    (heT : e ∈ T) :
-    commutant (E →L[ℂ] E) (cmpr sub '' (T : Set (H →L[ℂ] H)))
-      = cmpr sub '' ((vnComm T : StarSubalgebra ℂ (H →L[ℂ] H)) : Set (H →L[ℂ] H)) := by
-  have h1 : (cornerAlgVN h T heT : Set (E →L[ℂ] E))
-      = cmpr sub '' (T : Set (H →L[ℂ] H)) := coe_cornerAlgVN hT
-  have h2 := congrArg (fun S : StarSubalgebra ℂ (E →L[ℂ] E) => (S : Set (E →L[ℂ] E)))
-    (vnComm_cornerAlgVN h T hT heT)
-  simp only [coe_vnComm] at h2
-  rw [← h1, h2]
-  rfl
-
 /-! ### Two small corner identities -/
 
 theorem cmpr_e_mul (h : IsCorner sub e) (x : H →L[ℂ] H) :

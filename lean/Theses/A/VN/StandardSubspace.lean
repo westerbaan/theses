@@ -672,18 +672,6 @@ noncomputable def stdConj : H ≃ₗᵢ⋆[ℂ] H :=
 
 @[simp] lemma stdConj_apply (x : H) : stdConj S x = J S.toClosedSubmodule x := rfl
 
-lemma stdConj_stdConj (x : H) : stdConj S (stdConj S x) = x :=
-  J_J S.toClosedSubmodule S.IsSeparating S.IsCyclic x
-
-/-- `J R = (2 - R) J` for a standard subspace. -/
-lemma stdConj_R (x : H) :
-    stdConj S (R S.toClosedSubmodule x) = (2 - R S.toClosedSubmodule) (stdConj S x) :=
-  J_R S.toClosedSubmodule S.IsSeparating S.IsCyclic x
-
-/-- The modular pair of a standard subspace. -/
-theorem stdIsModularPair : IsModularPair (a S.toClosedSubmodule) (b S.toClosedSubmodule) :=
-  isModularPair_a_b S.toClosedSubmodule S.IsSeparating S.IsCyclic
-
 end Std
 
 end Theses.RvD

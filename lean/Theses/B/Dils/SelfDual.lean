@@ -5635,11 +5635,6 @@ theorem vnTensor_legLeft_normal [VonNeumannAlgebra 𝒞] {t : 𝒜 → ℬ → �
     exact Subtype.coe_le_coe.mpr hfin
 
 omit [StarOrderedRing 𝒜] in
-/-- The right leg `b ↦ 1 ⊗ b` is positive. -/
-theorem vnTensor_legRight_nonneg {t : 𝒜 → ℬ → 𝒞} (ht : IsVNTensor t) {b : ℬ}
-    (hb : 0 ≤ b) : 0 ≤ t 1 b :=
-  vnTensor_legLeft_nonneg (vnTensor_flip ht) hb
-
 omit [StarOrderedRing 𝒜] in
 /-- The right leg is monotone. -/
 theorem vnTensor_legRight_mono {t : 𝒜 → ℬ → 𝒞} (ht : IsVNTensor t) {b b' : ℬ}
@@ -6916,10 +6911,6 @@ private theorem ext_smul_add (c : 𝒞) (v w : (X ⊗[ℂ] Y) ⊗[ℂ] 𝒞) :
 
 private theorem ext_smul_zero (c : 𝒞) : c • (0 : (X ⊗[ℂ] Y) ⊗[ℂ] 𝒞) = 0 :=
   map_zero (LinearMap.lTensor (X ⊗[ℂ] Y) (LinearMap.mulLeft ℂ c))
-
-private theorem ext_smul_sum {κ : Type*} (c : 𝒞) (s : Finset κ)
-    (f : κ → (X ⊗[ℂ] Y) ⊗[ℂ] 𝒞) : c • (∑ i ∈ s, f i) = ∑ i ∈ s, c • f i :=
-  map_sum (LinearMap.lTensor (X ⊗[ℂ] Y) (LinearMap.mulLeft ℂ c)) f s
 
 variable (t) in
 /-- The `𝒞`-valued pairing of `X ⊙ Y` in the second slot, for a fixed

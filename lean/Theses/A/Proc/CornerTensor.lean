@@ -267,10 +267,6 @@ theorem range_cext (h : IsCorner sub e) :
   · intro hx
     exact ⟨cmpr sub x, by rw [cext_cmpr h]; exact hx⟩
 
-/-- **`e B(ℋ) e ≅ B(eℋ)`**, second half: the compression is surjective. -/
-theorem cmpr_surjective (h : IsCorner sub e) : Function.Surjective (cmpr sub) :=
-  fun y => ⟨cext sub y, cmpr_cext h y⟩
-
 end Calculus
 
 /-! ### Existence: every star projection has a corner -/

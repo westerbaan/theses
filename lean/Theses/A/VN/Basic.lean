@@ -4482,10 +4482,6 @@ open scoped Classical in
 def gnsElemVecs : Set (gnsHilb A) :=
   gnsElemVecsFam (fun ω : NPFunctional A => ω)
 
-theorem gnsElemVecs_separating (R : gnsHilb A →L[ℂ] gnsHilb A)
-    (h : ∀ y ∈ gnsElemVecs (A := A), R y = 0) : R = 0 :=
-  gnsElemVecsFam_separating _ R h
-
 theorem gnsRep_injective : Function.Injective (gnsRep (A := A)) := by
   classical
   have hker : ∀ a : A, gnsRep a = 0 → a = 0 := by
@@ -7449,12 +7445,6 @@ theorem chi_nonneg (C : Set X) : (0 : C(X, ℂ)) ≤ chi C := by
     · rw [chi_of_mem h hx]; simp
     · rw [chi_of_notMem h hx]; simp
   · rw [chi, dif_neg h]
-
-theorem chi_le_one {C : Set X} (hC : IsClopen C) : chi C ≤ 1 := by
-  refine ContinuousMap.le_def.mpr fun x => ?_
-  by_cases hx : x ∈ C
-  · rw [chi_of_mem hC hx]; rfl
-  · rw [chi_of_notMem hC hx]; simp
 
 theorem chi_mono {C D : Set X} (hC : IsClopen C) (hD : IsClopen D) (h : C ⊆ D) :
     chi C ≤ chi D := by

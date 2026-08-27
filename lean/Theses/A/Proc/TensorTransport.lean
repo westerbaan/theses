@@ -859,17 +859,6 @@ theorem uconj_cornerAlg (hse : IsCorner sube e) (hse' : IsCorner sube' e)
 variable {SB : StarSubalgebra ℂ (K →L[ℂ] K)} {f : K →L[ℂ] K}
   {subf : F →L[ℂ] K} {subf' : F' →L[ℂ] K}
 
-/-- **The commutation theorem for the corners does not depend on the
-realisations chosen.**  This is what `CT_of_CT_corner` was missing. -/
-theorem CT_cornerAlg_congr (hse : IsCorner sube e) (hse' : IsCorner sube' e)
-    (hsf : IsCorner subf f) (hsf' : IsCorner subf' f)
-    (heA : e ∈ vnComm SA) (hfB : f ∈ vnComm SB) :
-    CT (cornerAlg hse SA heA) (cornerAlg hsf SB hfB)
-      ↔ CT (cornerAlg hse' SA heA) (cornerAlg hsf' SB hfB) := by
-  rw [← uconj_cornerAlg hse hse' heA, ← uconj_cornerAlg hsf hsf' hfB]
-  exact (CT_uconj_iff (isUnitaryCLM_cornerTransfer hse hse')
-    (isUnitaryCLM_cornerTransfer hsf hsf') _ _).symm
-
 end CornerChoice
 
 section CornerPayoff

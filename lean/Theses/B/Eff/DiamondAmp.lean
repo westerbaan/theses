@@ -613,11 +613,6 @@ theorem image_sharp_is_order_sharp {p s : Pred X} (hs : IsSharp s)
     exact h.symm
   exact eq_zero_of_le_zero (by rw [← hc0]; exact le_ceil p)
 
-/-- Suprema for the algebraic order are unique. -/
-theorem pcm_sup_unique {E : Type*} [EffectAlgebra E] {a b j j' : E}
-    (h : PCM.IsSup a b j) (h' : PCM.IsSup a b j') : j = j' :=
-  eabasics_le_antisymm (h.2.2 j' h'.1 h'.2.1) (h'.2.2 j h.1 h.2.1)
-
 /-- Orthogonal sharp predicates have infimum `0` (208III, "Ortholattice"). -/
 theorem isInf_zero_of_perp {X : C} {s t : Pred X} (hs : IsSharp s)
     (h : Perp s t) : PCM.IsInf s t 0 := by

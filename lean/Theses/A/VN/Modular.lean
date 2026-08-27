@@ -209,16 +209,6 @@ theorem unitary_add_smul (h : IsModularPair a b) {ε : ℂ} (hε : ε * ε = -1)
   · rw [hstar, expand, hmul2, one_smul]
     rw [show (-ε) • (b * a) + ε • (a * b) = 0 by rw [h.commute.eq]; module, add_zero, hbase]
 
-/-- `b + i a` is unitary. -/
-theorem unitary_add_I_smul (h : IsModularPair a b) :
-    (b + Complex.I • a) ∈ unitary (ℋ →L[ℂ] ℋ) :=
-  h.unitary_add_smul Complex.I_mul_I (by simp)
-
-/-- `b - i a` is unitary. -/
-theorem unitary_sub_I_smul (h : IsModularPair a b) :
-    (b + (-Complex.I) • a) ∈ unitary (ℋ →L[ℂ] ℋ) :=
-  h.unitary_add_smul (by rw [neg_mul_neg]; exact Complex.I_mul_I) (by simp)
-
 /-- `(D ± i)` maps `ran a` onto all of `ℋ`: this is the surjectivity that upgrades symmetry
 to self-adjointness. -/
 theorem exists_apply_add_smul (h : IsModularPair a b) {ε : ℂ} (hε : ε * ε = -1)
@@ -585,9 +575,6 @@ theorem nonneg_sumSq (p : IsCommutingPair c d) : (0 : ℋ →L[ℂ] ℋ) ≤ c *
 
 theorem sqrtSumSq_nonneg (c d : ℋ →L[ℂ] ℋ) : (0 : ℋ →L[ℂ] ℋ) ≤ sqrtSumSq c d :=
   CFC.sqrt_nonneg _
-
-theorem isSelfAdjoint_sqrtSumSq (c d : ℋ →L[ℂ] ℋ) : IsSelfAdjoint (sqrtSumSq c d) :=
-  ((ContinuousLinearMap.nonneg_iff_isPositive _).1 (sqrtSumSq_nonneg c d)).isSelfAdjoint
 
 theorem sqrtSumSq_mul_self (p : IsCommutingPair c d) :
     sqrtSumSq c d * sqrtSumSq c d = c * c + d * d :=

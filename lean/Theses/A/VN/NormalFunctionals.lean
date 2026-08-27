@@ -3785,10 +3785,6 @@ open scoped Classical in
 def gnsElemVecsOn (Ω : Set (NPFunctional A)) : Set (gnsHilbOn A Ω) :=
   gnsElemVecsFam (Subtype.val : Ω → NPFunctional A)
 
-theorem gnsElemVecsOn_separating (R : gnsHilbOn A Ω →L[ℂ] gnsHilbOn A Ω)
-    (h : ∀ y ∈ gnsElemVecsOn Ω, R y = 0) : R = 0 :=
-  gnsElemVecsFam_separating _ R h
-
 theorem gnsRepOn_normal : PreservesDirSups ⇑(gnsRepOn (A := A) Ω) :=
   gnsRepFam_normal _
 

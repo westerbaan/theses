@@ -451,10 +451,6 @@ theorem norm_powExt_apply_le_two (h : IsPowBase X) (hw : w ∈ powStrip) (ξ : H
   rw [Real.rpow_one] at this
   exact mul_le_mul_of_nonneg_right this (norm_nonneg _)
 
-/-- `X^0 = 1`. -/
-theorem powExt_zero (h : IsPowBase X) : powExt X 0 = 1 := by
-  rw [powExt, mul_zero, h.opPow_zero]
-
 /-- The group law on the closed half plane. -/
 theorem powExt_mul (h : IsPowBase X) (hw : 0 ≤ w.re) (hw' : 0 ≤ w'.re) :
     powExt X w * powExt X w' = powExt X (w + w') := by
@@ -969,10 +965,6 @@ lemma integrable_kInt (x' : ℋ →L[ℂ] ℋ) {φ : ℝ} (hφ : |φ| < Real.pi)
 
 /-- The `L¹` mass of the RvD kernel's dominating function. -/
 noncomputable def kMass (φ : ℝ) : ℝ := ∫ s : ℝ, Real.exp (-(Real.pi - |φ|) * |s|)
-
-omit hsep hcyc in
-lemma kMass_nonneg (φ : ℝ) : 0 ≤ kMass φ :=
-  MeasureTheory.integral_nonneg fun _ => (Real.exp_pos _).le
 
 lemma norm_kInt_le (x' : ℋ →L[ℂ] ℋ) {φ : ℝ} (hφ : |φ| < Real.pi) (u v : ℋ) :
     ‖kInt M ω hsep hcyc x' φ u v‖ ≤ kMass φ * (‖x'‖ * ‖u‖ * ‖v‖) := by

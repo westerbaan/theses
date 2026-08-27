@@ -77,21 +77,6 @@ def HasCyclicSeparating (S : Set (H →L[ℂ] H)) : Prop :=
     Dense ((Submodule.span ℂ {y : H | ∃ x ∈ S, y = x ξ} : Submodule ℂ H) : Set H) ∧
     SeparatingFor S ξ
 
-omit [CompleteSpace H] in
-theorem HasCyclicSeparating.hasCyclic {S : Set (H →L[ℂ] H)}
-    (h : HasCyclicSeparating S) : HasCyclic S :=
-  let ⟨ξ, hc, _⟩ := h; ⟨ξ, hc⟩
-
-/-- The convenient introduction rule: for a ∗-subalgebra the orbit
-`{x ξ : x ∈ X}` is already a linear subspace, so density of the orbit itself
-suffices.  This is the form `A/VN/Tomita.lean`'s `IsCyclicVector` /
-`IsSeparatingVector` come in. -/
-theorem hasCyclicSeparating_of_dense_orbit (X : StarSubalgebra ℂ (H →L[ℂ] H))
-    {ξ : H} (hc : Dense {y : H | ∃ x ∈ X, y = x ξ})
-    (hs : ∀ x ∈ X, x ξ = 0 → x = 0) :
-    HasCyclicSeparating ((X : Set (H →L[ℂ] H))) :=
-  ⟨ξ, hc.mono Submodule.subset_span, hs⟩
-
 /-! ## The corner at `e = [𝒜^□ξ]` has a cyclic and separating vector
 
 Everything here is driven by the single equation `e ξ = ξ`. -/

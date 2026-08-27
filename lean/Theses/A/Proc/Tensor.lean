@@ -1332,17 +1332,6 @@ theorem htKet_adjoint_comp (e f : K) :
   rfl
 
 open Theses.A.CStar in
-/-- `Q_e Q_f^* = 1 ⊗ |e⟩⟨f|`: the kets turn the rank-one operators of
-`B(𝒦)` into elementary tensors. -/
-theorem htKet_comp_adjoint (e f : K) :
-    (htKet (H := H) e).comp (ContinuousLinearMap.adjoint (htKet (H := H) f))
-      = opTensor (1 : H →L[ℂ] H) (ketbra e f) := by
-  refine ext_htmul fun x y => ?_
-  rw [ContinuousLinearMap.comp_apply, htKet_adjoint_htmul, map_smul,
-    htKet_apply, opTensor_apply]
-  show ⟪f, y⟫ • (x ⊗ₕ e) = x ⊗ₕ (⟪f, y⟫ • e)
-  rw [htmul_smul_right]
-
 open Theses.A.CStar in
 /-- `Q_z^* (1 ⊗ |y⟩⟨e|) = ⟨z,y⟩ Q_e^*`: a rank-one factor absorbed into a
 slice map.  This is the one computation the amplification theorem needs. -/
@@ -10116,16 +10105,6 @@ private theorem ncpCarrier_spec (h : NCPMap A C) :
       ∀ q : A, IsStarProjection q → (h (1 - q) : C) = 0 → ncpCarrier h ≤ q :=
   (exists_ncpCarrier h).choose_spec.1
 
-/-- If `⌈h⌉ ≤ q` for a projection `q` then `h(q^⊥) = 0`. -/
-private theorem ncpMap_ortho_eq_zero (h : NCPMap A C) {q : A}
-    (hq : IsStarProjection q) (hle : ncpCarrier h ≤ q) : (h (1 - q) : C) = 0 := by
-  obtain ⟨hp, hz, -⟩ := ncpCarrier_spec h
-  have hmono : (h (1 - q) : C) ≤ h (1 - ncpCarrier h) :=
-    OrderHomClass.mono h.toCompletelyPositiveMap (sub_le_sub_left hle 1)
-  have hnn : (0 : C) ≤ h (1 - q) := ncpMap_nonneg h (sub_nonneg.mpr hq.le_one)
-  rw [hz] at hmono
-  exact le_antisymm hmono hnn
-
 /-- **118IV**.5, first step: the carrier of an ncp-map is the supremum of
 the carriers of the np-functionals `ν ∘ h`. -/
 private theorem ncpCarrier_eq_projSup (h : NCPMap A C) :
@@ -11625,14 +11604,6 @@ theorem concreteTensor_le {SA : StarSubalgebra ℂ (H →L[ℂ] H)}
     concreteTensor H K SA SB ≤ T :=
   sInf_le ⟨hT, by rintro _ ⟨a, ha, b, hb, rfl⟩; exact hgen a ha b hb⟩
 
-theorem concreteTensor_le_iff {SA : StarSubalgebra ℂ (H →L[ℂ] H)}
-    {SB : StarSubalgebra ℂ (K →L[ℂ] K)}
-    {T : StarSubalgebra ℂ (HT H K →L[ℂ] HT H K)}
-    (hT : IsVNSubalgebra (HT H K →L[ℂ] HT H K) T) :
-    concreteTensor H K SA SB ≤ T ↔ ∀ a ∈ SA, ∀ b ∈ SB, opTensor a b ∈ T :=
-  ⟨fun h _ ha _ hb => h (opTensor_mem_concreteTensor ha hb),
-    fun h => concreteTensor_le hT h⟩
-
 theorem concreteTensor_mono {SA SA' : StarSubalgebra ℂ (H →L[ℂ] H)}
     {SB SB' : StarSubalgebra ℂ (K →L[ℂ] K)} (hA : SA ≤ SA') (hB : SB ≤ SB') :
     concreteTensor H K SA SB ≤ concreteTensor H K SA' SB' :=
@@ -11648,32 +11619,6 @@ theorem concreteTensor_eq_wstar_spatialSpan (SA : StarSubalgebra ℂ (H →L[ℂ
       wstar (HT H K →L[ℂ] HT H K) (spatialSpan SA SB : Set (HT H K →L[ℂ] HT H K)) :=
   (wstar_spatialSpan SA SB).symm
 
-theorem spatialSpan_le_concreteTensor (SA : StarSubalgebra ℂ (H →L[ℂ] H))
-    (SB : StarSubalgebra ℂ (K →L[ℂ] K)) :
-    spatialSpan SA SB ≤ concreteTensor H K SA SB := by
-  rw [concreteTensor_eq_wstar_spatialSpan]
-  exact (isVNSubalgebra_wstar _).2
-
-/-- The concrete tensor product is the ultraweak closure of `𝒜 ⊙ ℬ`
-(Double Commutant, through `spatialSpan`). -/
-theorem concreteTensor_eq_closure_spatialSpan (SA : StarSubalgebra ℂ (H →L[ℂ] H))
-    (SB : StarSubalgebra ℂ (K →L[ℂ] K)) :
-    (concreteTensor H K SA SB : Set (HT H K →L[ℂ] HT H K)) =
-      @closure (HT H K →L[ℂ] HT H K) (ultraweak (HT H K →L[ℂ] HT H K))
-        (spatialSpan SA SB : Set (HT H K →L[ℂ] HT H K)) := by
-  rw [concreteTensor_eq_wstar_spatialSpan, ← (double_commutant (spatialSpan SA SB)).2.2,
-    (double_commutant (spatialSpan SA SB)).2.1]
-
-/-- The easy half of 121II: the concrete tensor product of the
-intersections is contained in the intersection of the concrete tensor
-products.  (The content of `intersection_tensor` is the other
-inclusion.) -/
-theorem concreteTensor_inf_le_inf (SA₁ SA₂ : StarSubalgebra ℂ (H →L[ℂ] H))
-    (SB₁ SB₂ : StarSubalgebra ℂ (K →L[ℂ] K)) :
-    concreteTensor H K (SA₁ ⊓ SA₂) (SB₁ ⊓ SB₂) ≤
-      concreteTensor H K SA₁ SB₁ ⊓ concreteTensor H K SA₂ SB₂ :=
-  le_inf (concreteTensor_mono inf_le_left inf_le_left)
-    (concreteTensor_mono inf_le_right inf_le_right)
 end Concrete
 
 /-! ## Ultraweak limits of monotone nets, and two-sided compression

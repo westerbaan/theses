@@ -76,9 +76,6 @@ theorem mul_comm_of_mem_vnComm {S : StarSubalgebra ℂ (H →L[ℂ] H)} {x : H �
     (hx : x ∈ vnComm S) {s : H →L[ℂ] H} (hs : s ∈ S) : s * x = x * s :=
   mem_vnComm.mp hx s hs
 
-theorem mem_vnComm_of_forall {S : StarSubalgebra ℂ (H →L[ℂ] H)} {x : H →L[ℂ] H}
-    (h : ∀ s ∈ S, s * x = x * s) : x ∈ vnComm S := mem_vnComm.mpr h
-
 theorem vnComm_antitone {S T : StarSubalgebra ℂ (H →L[ℂ] H)} (h : S ≤ T) :
     vnComm T ≤ vnComm S := by
   intro x hx
@@ -168,24 +165,6 @@ theorem mem_vnComm_iff_comm_reduced {R : StarSubalgebra ℂ (H →L[ℂ] H)}
       _ = y * p * x := by rw [hyp]
       _ = y * (p * x) := by noncomm_ring
       _ = y * (x * p) := by rw [mem_vnComm.mp hpR x hx]
-
-/-- The reduction theorem in the form "the relative commutant of `R_p` in
-the corner `p B(ℋ) p` is the corner `p R^□ p` of the commutant". -/
-theorem reduced_commutant_eq {R : StarSubalgebra ℂ (H →L[ℂ] H)} {p : H →L[ℂ] H}
-    (hp : p * p = p) (hpR : p ∈ vnComm R) :
-    {y : H →L[ℂ] H | p * y * p = y ∧ ∀ x ∈ R, (x * p) * y = y * (x * p)}
-      = {y : H →L[ℂ] H | ∃ c ∈ vnComm R, y = p * c * p} := by
-  have hcorner : ∀ z : H →L[ℂ] H, p * (p * z * p) * p = p * z * p := by
-    intro z
-    calc p * (p * z * p) * p = p * p * z * (p * p) := by noncomm_ring
-      _ = p * z * p := by rw [hp]
-  ext y
-  constructor
-  · rintro ⟨hy, hcomm⟩
-    exact ⟨y, (mem_vnComm_iff_comm_reduced hp hpR hy).mp hcomm, hy.symm⟩
-  · rintro ⟨c, hc, rfl⟩
-    refine ⟨hcorner c, (mem_vnComm_iff_comm_reduced hp hpR (hcorner c)).mpr ?_⟩
-    exact mem_vnComm_of_corner hpR hc
 
 end Reduction
 

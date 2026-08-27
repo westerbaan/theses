@@ -799,22 +799,6 @@ theorem isTotal_desc {X Y Z : D} {f : X ⟶ Z} {g : Y ⟶ Z}
 theorem isTotal_initial (X : D) : IsTotal (initial.to X) :=
   initialIsInitial.hom_ext _ _
 
-/-- Coproduct maps of total maps are total. -/
-theorem isTotal_map {X Y X' Y' : D} {f : X ⟶ X'} {g : Y ⟶ Y'}
-    (hf : IsTotal f) (hg : IsTotal g) : IsTotal (coprod.map f g) := by
-  show coprod.map f g ≫ truth (X' ⨿ Y') = truth (X ⨿ Y)
-  refine coprod.hom_ext ?_ ?_
-  · rw [← Category.assoc, coprod.inl_map, Category.assoc,
-      show (coprod.inl : X' ⟶ X' ⨿ Y') ≫ truth (X' ⨿ Y') = truth X' from
-        coproj_total_inl X' Y',
-      show f ≫ truth X' = truth X from hf,
-      show (coprod.inl : X ⟶ X ⨿ Y) ≫ truth (X ⨿ Y) = truth X from coproj_total_inl X Y]
-  · rw [← Category.assoc, coprod.inr_map, Category.assoc,
-      show (coprod.inr : Y' ⟶ X' ⨿ Y') ≫ truth (X' ⨿ Y') = truth Y' from
-        coproj_total_inr X' Y',
-      show g ≫ truth Y' = truth Y from hg,
-      show (coprod.inr : Y ⟶ X ⨿ Y) ≫ truth (X ⨿ Y) = truth Y from coproj_total_inr X Y]
-
 /-- The partial projections are jointly monic (the uniqueness half of
 **181VII**). -/
 theorem pproj_jm {X Y Z : D} {p q : Z ⟶ X ⨿ Y}
@@ -1859,12 +1843,6 @@ theorem par_map_pproj₂ {X Y X' Y' : C} (u : Par.of X ⟶ Par.of X') (w : Par.o
   · rw [← Category.assoc, ← Category.assoc, par_inr_map, par_hat_pproj₂_inr,
       Category.assoc, par_hat_pproj₂_inr, Category.comp_id, Category.id_comp]
 
-theorem par_map_hat {X Y X' Y' : C} (u : X ⟶ X') (w : Y ⟶ Y') :
-    Par.map (Par.hat u) (Par.hat w) = Par.hat (coprod.map u w) := by
-  refine par_hom_ext ?_ ?_
-  · rw [par_inl_map, par_hat_hat, par_hat_hat, coprod.inl_map]
-  · rw [par_inr_map, par_hat_hat, par_hat_hat, coprod.inr_map]
-
 theorem par_one_eq (X : C) : Par.one X = Par.hat (terminal.from X) := rfl
 
 
@@ -2079,10 +2057,6 @@ theorem par_zero_eq' (X Y : Par C) : (0 : X ⟶ Y) = Par.zero X.base Y.base := r
 
 theorem par_perp_iff {X Y : Par C} {f g : X ⟶ Y} :
     Perp f g ↔ ∃ b, ParBound f g b := Iff.rfl
-
-theorem par_ovee_eq' {X Y : Par C} {f g : X ⟶ Y} (h : Perp f g)
-    {b : X ⟶ Par.of (Y.base ⨿ Y.base)} (hb : ParBound f g b) :
-    ovee f g h = b ≫ parNabla Y.base := parOvee_eq h hb
 
 /-! ### `Par C` has finite coproducts -/
 
