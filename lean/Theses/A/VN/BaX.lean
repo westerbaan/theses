@@ -6,25 +6,24 @@
 (**32XIII** `bax_cstar`) of bounded adjointable module maps on `X` is a von
 Neumann algebra, and `⟨x, (·) x⟩ : 𝓑^a(X) → 𝒜` is normal for every `x ∈ X`.
 
-## What is here, and what is not
+## Two pictures of `𝓑^a(X)`, and why both are here
 
-The thesis's statement quantifies over the *type* `𝓑^a(X)`.  That type exists
-in the tree — `Bax 𝒜 X` at `Theses/A/CStar/Matrices.lean:849`, carrying the
-whole `CStarAlgebra` structure together with its spectral order — but it is
-`private` to that file, so no statement outside `A/CStar/Matrices` can name
-it.  Until it is exported, `VonNeumannAlgebra (Bax 𝒜 X)` cannot be *written*
-here.
-
-What can be written, and is written below, is the entire mathematical content
-of 49II with the type replaced by its intrinsic description.  By **32XV**
-(`chilb_vector_states_2`, `Theses/A/CStar/Matrices.lean`) the order of
+The thesis's statement quantifies over the *type* `𝓑^a(X)`: `bah_vn` at the
+foot of this file is `VonNeumannAlgebra (Bax 𝒜 X)`, where `Bax 𝒜 X`
+(`Theses/A/CStar/Matrices.lean`) is the subalgebra of adjointable operators
+carrying the C*-structure whose involution is the adjoint, together with its
+spectral order.  `Bax` was file-`private` until 2026-08-27, which is why the
+substance below is stated first about bare operators `X →L[ℂ] X` under an
+adjointability hypothesis, and only then transported.  The transport is kept
+because it is where the mathematics lives: by **32XV**
+(`chilb_vector_states_2`, and its order form `bax_le_iff`) the order of
 `𝓑^a(X)` is the vector-functional order
 
     T ≼ S   ⟺   ⟨x, T x⟩ ≤ ⟨x, S x⟩ for all x ∈ X,
 
-which is `VecLE` below, and self-adjointness of `T` in `𝓑^a(X)` is
-`ModuleAdjointTo 𝒜 T T`.  In those terms 49II says exactly two things, and
-both are proved here with no `sorry`:
+which is `VecLE` below, and self-adjointness of `T` in `𝓑^a(X)`
+(`bax_isSelfAdjoint_iff`) is `ModuleAdjointTo 𝒜 T T`.  In those terms 49II
+says exactly two things, and both are proved here with no `sorry`:
 
 * **suprema** — `bah_vn_sup`: a nonempty, `≼`-directed, `≼`-bounded set of
   self-adjoint adjointable operators has a least upper bound `S` for `≼`, and
@@ -33,10 +32,10 @@ both are proved here with no `sorry`:
 * **enough np-functionals** — `bah_vn_np_faithful`: if `ξ(⟨x, T x⟩) = 0` for
   every np-functional `ξ` on `𝒜` and every `x`, then `T = 0`.
 
-Together these are the two clauses of **42I** (`vna`) for `𝓑^a(X)`.  Once
-`Bax` is exported, `VonNeumannAlgebra (Bax 𝒜 X)` follows from the two by
-transporting `≼` along 32XV; that step is the only thing missing, and it is
-blocked on a file this pass may not edit.
+Together these are the two clauses of **42I** (`vna`) for `𝓑^a(X)`, and
+`bah_vn` assembles them into the instance, with `vecFunctional_normal` for
+the second clause of the Theorem (`⟨x, (·) x⟩` is normal) and `baxNP` for the
+np-functionals `ξ ∘ ⟨x, (·) x⟩` the thesis's faithfulness argument uses.
 
 ## The proof is the thesis's
 
@@ -372,9 +371,9 @@ theorem exists_isLUB_vecForm [CompleteSpace X] (hX : SelfDual 𝒜 X)
 /-- **49II** (`bah-vn`, vn.tex:1176, Theorem), first clause, in the shape 42I
 asks for: a nonempty `≼`-directed `≼`-bounded set of self-adjoint adjointable
 operators on a self-dual `X` has a *least upper bound* for `≼`, and each
-`⟨x, (·) x⟩` carries it to the supremum of the images.  With `Bax` exported
-this is `VonNeumannAlgebra.isLUB_of_bddAbove_directed` for `𝓑^a(X)`, by
-**32XV**. -/
+`⟨x, (·) x⟩` carries it to the supremum of the images.  Read through **32XV**
+(`bax_le_iff`) this is `VonNeumannAlgebra.isLUB_of_bddAbove_directed` for
+`𝓑^a(X)`, which is how `exists_isLUB_bax` below uses it. -/
 theorem bah_vn_sup [CompleteSpace X] (hX : SelfDual 𝒜 X)
     {𝒟 : Set (X →L[ℂ] X)} {S₀ : X →L[ℂ] X}
     (hne : 𝒟.Nonempty)
@@ -409,6 +408,176 @@ theorem bah_vn_np_faithful {T : X →L[ℂ] X}
     (h : ∀ (ξ : NPFunctional 𝒜) (x : X), ξ (inner 𝒜 x (T x)) = 0) : T = 0 :=
   eq_zero_of_vecForm_eq_zero fun x =>
     VonNeumannAlgebra.np_faithful _ (hpos x) fun ξ => h ξ x
+
+
+/-! ## 49II itself: `𝓑^a(X)` is a von Neumann algebra
+
+Everything above is stated about operators `X →L[ℂ] X` carrying an
+adjointability hypothesis, because that is all one can say without naming the
+*type* `𝓑^a(X)`.  `Bax 𝒜 X` (`Theses/A/CStar/Matrices.lean`) is that type —
+the subalgebra of adjointable operators, with the C*-structure whose
+involution is the adjoint and the spectral order that goes with it — and since
+2026-08-27 it is exported rather than file-private, so 49II can be stated as
+the thesis states it:
+
+    VonNeumannAlgebra (Bax 𝒜 X)   for `X` a self-dual Hilbert `𝒜`-module.
+
+The transport between the two pictures is **32XV**
+(`chilb-vector-states-order-separating`): `bax_le_iff` says the spectral
+order of `𝓑^a(X)` *is* the vector-functional order `VecLE`, and
+`bax_isSelfAdjoint_iff` says `Re 𝓑^a(X)` is the adjointable operators that
+are their own adjoint.  With those two, both clauses of **42I** for
+`Bax 𝒜 X` are exactly `bah_vn_sup` and `bah_vn_np_faithful` above.
+-/
+
+section VNA
+
+variable [CompleteSpace X]
+
+/-- The vector functional `⟨x, (·) x⟩` on the self-adjoint part of
+`𝓑^a(X)`, valued in the self-adjoint part of `𝒜`.  (The analogue of
+`lpEvalSA` for the direct sum, and used the same way.) -/
+def vecFunctionalSA (x : X) (d : selfAdjoint (Bax 𝒜 X)) : selfAdjoint 𝒜 :=
+  ⟨inner 𝒜 x (((d : Bax 𝒜 X) : X →L[ℂ] X) x),
+    isSelfAdjoint_vecForm (bax_isSelfAdjoint_iff.mp d.2) x⟩
+
+omit [VonNeumannAlgebra 𝒜] in
+theorem vecFunctionalSA_mono (x : X) {d e : selfAdjoint (Bax 𝒜 X)} (h : d ≤ e) :
+    vecFunctionalSA x d ≤ vecFunctionalSA x e :=
+  bax_le_iff.mp (Subtype.coe_le_coe.mpr h) x
+
+/-- **49II** (`bah-vn`, vn.tex:1176, Theorem) in the type `𝓑^a(X)`: a
+nonempty bounded directed set of self-adjoint elements of `𝓑^a(X)` has a
+supremum there, and every vector functional `⟨x, (·) x⟩` carries it to the
+supremum of the images.  This is `exists_isLUB_vecForm` read through **32XV**
+(`bax_le_iff`, `bax_isSelfAdjoint_iff`); the mathematics is all in that
+theorem, and the thesis's proof is what it runs. -/
+theorem exists_isLUB_bax (hX : SelfDual 𝒜 X)
+    (D : Set (selfAdjoint (Bax 𝒜 X))) (hne : D.Nonempty)
+    (hdir : DirectedOn (· ≤ ·) D) (hbdd : BddAbove D) :
+    ∃ s : selfAdjoint (Bax 𝒜 X), IsLUB D s ∧
+      ∀ x : X, IsLUB (vecFunctionalSA x '' D) (vecFunctionalSA x s) := by
+  obtain ⟨S₀, hS₀⟩ := hbdd
+  set 𝒟 : Set (X →L[ℂ] X) :=
+    (fun d : selfAdjoint (Bax 𝒜 X) => ((d : Bax 𝒜 X) : X →L[ℂ] X)) '' D with h𝒟
+  have hsa : ∀ T ∈ 𝒟, ModuleAdjointTo 𝒜 ⇑T ⇑T := by
+    rintro _ ⟨d, hd, rfl⟩
+    exact bax_isSelfAdjoint_iff.mp d.2
+  have hdir' : ∀ T ∈ 𝒟, ∀ S ∈ 𝒟, ∃ R ∈ 𝒟, VecLE 𝒜 T R ∧ VecLE 𝒜 S R := by
+    rintro _ ⟨d, hd, rfl⟩ _ ⟨e, he, rfl⟩
+    obtain ⟨f, hf, hdf, hef⟩ := hdir d hd e he
+    exact ⟨_, ⟨f, hf, rfl⟩, bax_le_iff.mp (Subtype.coe_le_coe.mpr hdf),
+      bax_le_iff.mp (Subtype.coe_le_coe.mpr hef)⟩
+  have hub' : ∀ T ∈ 𝒟, VecLE 𝒜 T ((S₀ : Bax 𝒜 X) : X →L[ℂ] X) := by
+    rintro _ ⟨d, hd, rfl⟩
+    exact bax_le_iff.mp (Subtype.coe_le_coe.mpr (hS₀ hd))
+  obtain ⟨S, hSsa, hSlub⟩ :=
+    exists_isLUB_vecForm hX (hne.image _) hsa hdir' hub'
+  have hSmem : S ∈ Bax 𝒜 X := mem_bax_iff.mpr ⟨⇑S, hSsa⟩
+  have hset : ∀ x : X, {a : 𝒜 | ∃ T ∈ 𝒟, a = inner 𝒜 x (T x)}
+      = Subtype.val '' (vecFunctionalSA (𝒜 := 𝒜) x '' D) := by
+    intro x
+    ext a
+    constructor
+    · rintro ⟨_, ⟨d, hd, rfl⟩, rfl⟩
+      exact ⟨vecFunctionalSA x d, ⟨d, hd, rfl⟩, rfl⟩
+    · rintro ⟨_, ⟨d, hd, rfl⟩, rfl⟩
+      exact ⟨_, ⟨d, hd, rfl⟩, rfl⟩
+  refine ⟨⟨⟨S, hSmem⟩, bax_isSelfAdjoint_iff.mpr hSsa⟩, ⟨?_, ?_⟩, fun x => ?_⟩
+  · intro d hd
+    refine Subtype.coe_le_coe.mp (bax_le_iff.mpr fun x => ?_)
+    exact (hSlub x).1 ⟨_, ⟨d, hd, rfl⟩, rfl⟩
+  · intro u hu
+    refine Subtype.coe_le_coe.mp (bax_le_iff.mpr fun x => ?_)
+    refine (hSlub x).2 ?_
+    rintro _ ⟨_, ⟨d, hd, rfl⟩, rfl⟩
+    exact bax_le_iff.mp (Subtype.coe_le_coe.mpr (hu hd)) x
+  · refine isLUB_sa_of_isLUB ?_
+    have h := hSlub x
+    rw [hset x] at h
+    exact h
+
+/-- **49II**'s second clause: the vector functional
+`⟨x, (·) x⟩ : 𝓑^a(X) → 𝒜` is a positive linear map.  Positivity is
+**32XV**.2 (`bax_le_iff`). -/
+def vecFunctional (x : X) : Bax 𝒜 X →ₚ[ℂ] 𝒜 where
+  toLinearMap :=
+    { toFun := fun T => inner 𝒜 x ((T : X →L[ℂ] X) x)
+      map_add' := fun T S => by
+        show inner 𝒜 x (((T : X →L[ℂ] X) + (S : X →L[ℂ] X)) x) = _
+        rw [ContinuousLinearMap.add_apply, CStarModule.inner_add_right]
+      map_smul' := fun c T => by
+        show inner 𝒜 x ((c • (T : X →L[ℂ] X)) x) = _
+        rw [ContinuousLinearMap.smul_apply, CStarModule.inner_smul_right_complex]
+        rfl }
+  monotone' := fun T S h => bax_le_iff.mp h x
+
+omit [VonNeumannAlgebra 𝒜] in
+@[simp] theorem vecFunctional_apply (x : X) (T : Bax 𝒜 X) :
+    vecFunctional x T = inner 𝒜 x ((T : X →L[ℂ] X) x) := rfl
+
+/-- **49II**, second clause: `⟨x, (·) x⟩ : 𝓑^a(X) → 𝒜` is **normal**, i.e.
+preserves the suprema of bounded directed sets of self-adjoint elements —
+which is what `exists_isLUB_bax` computes them to be. -/
+theorem vecFunctional_normal (hX : SelfDual 𝒜 X) (x : X) :
+    PreservesDirSups ⇑(vecFunctional (𝒜 := 𝒜) (X := X) x) := by
+  intro D s hne hdir hlub
+  obtain ⟨s', hs', hev⟩ := exists_isLUB_bax hX D hne hdir ⟨s, hlub.1⟩
+  obtain rfl := hlub.unique hs'
+  have h := isLUB_coe_of_isLUB (hne.image _) (hev x)
+  rwa [Set.image_image] at h
+
+/-- The thesis's np-functionals on `𝓑^a(X)`: `ξ ∘ ⟨x, (·) x⟩` for an
+np-functional `ξ` on `𝒜` and a vector `x ∈ X` (vn.tex:1245).  Normality is
+`vecFunctional_normal`, positivity is **32XV**.2. -/
+noncomputable def baxNP (hX : SelfDual 𝒜 X) (x : X) (ξ : NPFunctional 𝒜) :
+    NPFunctional (Bax 𝒜 X) where
+  toPositiveLinearMap :=
+    { toLinearMap :=
+        ξ.toPositiveLinearMap.toLinearMap.comp (vecFunctional x).toLinearMap
+      monotone' := fun T S h =>
+        ξ.toPositiveLinearMap.monotone' (bax_le_iff.mp h x) }
+  preservesDirSups' := by
+    intro D s hne hdir hlub
+    obtain ⟨s', hs', hev⟩ := exists_isLUB_bax hX D hne hdir ⟨s, hlub.1⟩
+    obtain rfl := hlub.unique hs'
+    have hdir' : DirectedOn (· ≤ ·) (vecFunctionalSA (𝒜 := 𝒜) x '' D) := by
+      rintro _ ⟨d, hd, rfl⟩ _ ⟨e, he, rfl⟩
+      obtain ⟨f, hf, hdf, hef⟩ := hdir d hd e he
+      exact ⟨vecFunctionalSA x f, ⟨f, hf, rfl⟩, vecFunctionalSA_mono x hdf,
+        vecFunctionalSA_mono x hef⟩
+    have h := ξ.preservesDirSups' _ _ (hne.image _) hdir' (hev x)
+    rwa [Set.image_image] at h
+
+theorem baxNP_apply (hX : SelfDual 𝒜 X) (x : X) (ξ : NPFunctional 𝒜)
+    (T : Bax 𝒜 X) : baxNP hX x ξ T = ξ (inner 𝒜 x ((T : X →L[ℂ] X) x)) := rfl
+
+/-- **49II** (`bah-vn`, vn.tex:1176, Theorem): for a von Neumann algebra `𝒜`
+and a **self-dual** (**36I**) Hilbert `𝒜`-module `X`, the C*-algebra
+`𝓑^a(X)` (**32XIII**) of bounded adjointable module maps on `X` **is a von
+Neumann algebra**.
+
+Both clauses of **42I** come from the work above, read through **32XV**:
+suprema are `exists_isLUB_bax` (whose content is `exists_isLUB_vecForm`, the
+thesis's own construction of `S` out of the form `[y,z]`), and faithfulness
+of the np-functionals is `bah_vn_np_faithful`, applied to the np-functionals
+`ξ ∘ ⟨x, (·) x⟩` of `baxNP` — which is exactly the thesis's argument at
+vn.tex:1241–1250.
+
+Stated as a theorem and not an `instance` because self-duality of `X` is a
+hypothesis, not a class. -/
+theorem bah_vn (hX : SelfDual 𝒜 X) : VonNeumannAlgebra (Bax 𝒜 X) where
+  isLUB_of_bddAbove_directed D hne hdir hbdd :=
+    let ⟨s, hs, _⟩ := exists_isLUB_bax hX D hne hdir hbdd
+    ⟨s, hs⟩
+  np_faithful U hU h := by
+    have hzero : (U : X →L[ℂ] X) = 0 :=
+      bah_vn_np_faithful (bax_nonneg_iff.mp hU) fun ξ x =>
+        (baxNP_apply hX x ξ U).symm.trans (h (baxNP hX x ξ))
+    exact Subtype.ext hzero
+
+end VNA
+
 
 end Main
 

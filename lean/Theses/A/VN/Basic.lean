@@ -5065,25 +5065,36 @@ name, and the reason is worth keeping.  cstar **32XIII** `bax_cstar` is
 proved in `Theses/A/CStar/Matrices.lean`, and the `Bax` section there
 carries the whole `CStarAlgebra` structure (involution the adjoint,
 C*-identity from **32XII**, completeness from `bax_cstar`) together with its
-spectral order, on `Bax 𝒜 X` — but `Bax` is `private` to that file, so
-`VonNeumannAlgebra (Bax 𝒜 X)` cannot be *written* outside it.  `A/VN/BaX`
-therefore states both clauses of **42I** for `B^a(X)` through the
-vector-functional order, which by **32XV** `chilb_vector_states_2` *is* the
-order of `B^a(X)`: `bah_vn_sup` (suprema exist, and `⟨x,(·)x⟩` preserves
-them — 49II's two halves) and `bah_vn_np_faithful` (enough np-functionals).
-Exporting `Bax` is the single remaining step; with it,
-`VonNeumannAlgebra (Bax 𝒜 X)` is a short assembly from those two.
+spectral order, on `Bax 𝒜 X`.  `Bax` was `private` to that file until
+2026-08-27, so `VonNeumannAlgebra (Bax 𝒜 X)` could not be *written* outside
+it at all — which is why `A/VN/BaX` first stated both clauses of **42I**
+through the vector-functional order, which by **32XV**
+`chilb_vector_states_2` *is* the order of `B^a(X)`: `bah_vn_sup` and
+`bah_vn_np_faithful`.
 
-The other half of the thesis's route to `M_N(𝒜)`, the isomorphism
-`M_N(𝒜) ≅ B^a(𝒜^N)`, is still unstated; but 49IV does not need it, being
-proved directly below. -/
+`Bax` and the eight instances its elaboration needs are now exported, and
+49II is stated as the thesis states it, `bah_vn : VonNeumannAlgebra
+(Bax 𝒜 X)`, with its second clause `vecFunctional_normal` as a statement of
+its own.  It is the same shape as the tree's B-side twin
+`ba_vonNeumannAlgebra` (**152X**), so the theorem both theses prove now has
+one rendering.
+
+The other half of the thesis's route to `M_N(𝒜)` is `matrixBaxEquiv` — but
+**not** as printed: the thesis's `𝒜^N` is a *right* module, Mathlib's
+`C⋆ᵐᵒᵈ(𝒜, Fin N → 𝒜)` is a *left* one, and its adjointables are the right
+multiplications, which compose backwards (`cstar_matrices_3` already says
+so).  So what holds is `M_N(𝒜)ᵐᵒᵖ ≅ B^a(𝒜^N)`.  This is the same left/right
+gap `docs/DECISIONS.md` §3.3 records for 34V.3, and nothing is lost by it:
+`ᵐᵒᵖ` preserves star, positivity, order and suprema.  49IV still does not
+need any of it, being proved directly below. -/
 
 /-! ### Auxiliary machinery for **49IV**: the `𝒜`-valued quadratic form of a
 matrix
 
 The thesis proves 49IV.1 by way of 49II (`bah-vn`), i.e. by realising
-`M_N(𝒜)` as `B^a(𝒜^N)`; the C*-algebra `B^a(X)` that would carry 49II is
-`private` and the isomorphism `M_N(𝒜) ≅ B^a(𝒜^N)` is unstated (see the note
+`M_N(𝒜)` as `B^a(𝒜^N)`.  Both are now available — `bah_vn` and
+`matrixBaxEquiv`, the latter with `M_N(𝒜)ᵐᵒᵖ` for the reason given in the
+note above — but this route is kept, being independent of them (see the note
 above), so the supremum is constructed here directly, out of the same
 ingredient that makes 49II work: the `𝒜`-valued
 sesquilinear form `⟨x, M y⟩ = ∑ᵢⱼ xᵢ* Mᵢⱼ yⱼ` of the Hilbert `𝒜`-module

@@ -839,14 +839,31 @@ composites) and **32XII** (the C*-identity) that makes `B^a(X)` a C*-algebra.
 The block below packages exactly that: the subalgebra `Bax 𝒜 X` of `X →L[ℂ] X`
 carrying a `CStarAlgebra` structure whose involution is `T ↦ T*`, together with
 its spectral order.  It is the setting in which the proofs of **32XV**.2 and
-**32XV**.3 run. -/
+**32XV**.3 run.
+
+**What is exported, and why.**  `Bax` and its structure instances were
+file-`private` until 2026-08-27, which made `𝓑^a(X)` unnameable outside this
+file — and vn **49II** (`bah-vn`) says *`𝓑^a(X)` is a von Neumann algebra*,
+a statement about the type.  The export is deliberately narrow: `Bax` itself,
+the instances that `VonNeumannAlgebra (Bax 𝒜 X)` needs to elaborate, and the
+bridge lemmas a statement about `𝓑^a(X)` cannot do without: `mem_bax_iff`
+(how to place an operator in `𝓑^a(X)`), `bax_star_eq` (what its involution
+is), `bax_isSelfAdjoint_iff` (what `Re 𝓑^a(X)` is), and `bax_le_iff` /
+`bax_nonneg_iff` further down (what its order is, by **32XV**).  Everything
+else here stays private: the choice
+of adjoint (`bax_exists_adjoint`, `bax_star_spec`), the norm
+transfer (`bax_norm_coe`) and the computations `bax_inner_conj`,
+`bax_inner_star_mul`, `bax_inner_nonneg`, `bax_nonneg_of_inner`,
+`norm_le_of_vector_bound` — all of them machinery for the proofs in this
+file, with no thesis statement of their own beyond what the exported lemmas
+say. -/
 
 section Bax
 
 variable (𝒜 X) in
 /-- `B^a(X)`: the adjointable bounded module maps on `X`, as a subalgebra of
 `X →L[ℂ] X` (**32XIII**). -/
-private def Bax : Subalgebra ℂ (X →L[ℂ] X) where
+def Bax : Subalgebra ℂ (X →L[ℂ] X) where
   carrier := {T | ModuleAdjointable 𝒜 ⇑T}
   mul_mem' := by
     rintro T S ⟨T', hT⟩ ⟨S', hS⟩
@@ -868,7 +885,7 @@ private theorem bax_exists_adjoint (T : Bax 𝒜 X) :
   obtain ⟨S, hS⟩ := T.2
   exact exists_clm_adjointTo hS
 
-private noncomputable instance : Star (Bax 𝒜 X) where
+noncomputable instance : Star (Bax 𝒜 X) where
   star T := ⟨Classical.choose (bax_exists_adjoint T),
     ⟨_, moduleAdjointTo_symm _ _ (Classical.choose_spec (bax_exists_adjoint T))⟩⟩
 
@@ -877,12 +894,32 @@ private theorem bax_star_spec (T : Bax 𝒜 X) :
     ModuleAdjointTo 𝒜 ⇑(T : X →L[ℂ] X) ⇑((star T : Bax 𝒜 X) : X →L[ℂ] X) :=
   Classical.choose_spec (bax_exists_adjoint T)
 
-private theorem bax_star_eq {T S : Bax 𝒜 X}
+/-- The involution of `𝓑^a(X)` is *characterised* by adjointness: if `S` is
+an adjoint of `T` then `T* = S`, adjoints being unique (**32I**).  Exported
+alongside `Bax` because it is what identifies `star` on the type with the
+adjoint of a concretely given operator. -/
+theorem bax_star_eq {T S : Bax 𝒜 X}
     (h : ModuleAdjointTo 𝒜 ⇑(T : X →L[ℂ] X) ⇑(S : X →L[ℂ] X)) : star T = S :=
   Subtype.ext (DFunLike.coe_injective
     (moduleAdjointTo_unique _ _ _ (bax_star_spec T) h))
 
-private noncomputable instance : StarRing (Bax 𝒜 X) where
+/-- Membership in `𝓑^a(X)` is adjointability (**32I**); the `Subalgebra`
+`Bax 𝒜 X` carries no further condition.  Exported so that an operator built
+outside this file can be *placed* in `𝓑^a(X)`. -/
+theorem mem_bax_iff {T : X →L[ℂ] X} :
+    T ∈ Bax 𝒜 X ↔ ModuleAdjointable 𝒜 ⇑T := Iff.rfl
+
+/-- Self-adjointness in `𝓑^a(X)` is self-adjointness as a module map: the
+involution of `Bax 𝒜 X` *is* the adjoint (**32III**), so `T* = T` says
+exactly `⟨Tx, y⟩ = ⟨x, Ty⟩`.  Exported for **49II**, which quantifies over
+`Re 𝓑^a(X)`. -/
+theorem bax_isSelfAdjoint_iff {T : Bax 𝒜 X} :
+    IsSelfAdjoint T ↔ ModuleAdjointTo 𝒜 ⇑(T : X →L[ℂ] X) ⇑(T : X →L[ℂ] X) := by
+  refine ⟨fun h => ?_, fun h => bax_star_eq h⟩
+  have h1 := bax_star_spec T
+  rwa [h.star_eq] at h1
+
+noncomputable instance : StarRing (Bax 𝒜 X) where
   star_involutive T := bax_star_eq (moduleAdjointTo_symm _ _ (bax_star_spec T))
   star_mul T S := bax_star_eq (moduleAdjointTo_comp (⇑(S : X →L[ℂ] X)) (⇑(T : X →L[ℂ] X))
     (⇑((star S : Bax 𝒜 X) : X →L[ℂ] X)) (⇑((star T : Bax 𝒜 X) : X →L[ℂ] X))
@@ -890,21 +927,21 @@ private noncomputable instance : StarRing (Bax 𝒜 X) where
   star_add T S :=
     bax_star_eq (moduleAdjointTo_add_smul _ _ _ _ 0 (bax_star_spec T) (bax_star_spec S)).1
 
-private instance : StarModule ℂ (Bax 𝒜 X) where
+instance : StarModule ℂ (Bax 𝒜 X) where
   star_smul c T :=
     bax_star_eq (moduleAdjointTo_add_smul _ _ _ _ c (bax_star_spec T) (bax_star_spec T)).2
 
-private instance : CStarRing (Bax 𝒜 X) where
+instance : CStarRing (Bax 𝒜 X) where
   norm_mul_self_le T := by
     have h : ‖(star T * T : Bax 𝒜 X)‖ = ‖T‖ ^ 2 :=
       module_maps_cstar_identity (𝒜 := 𝒜) (T : X →L[ℂ] X)
         ((star T : Bax 𝒜 X) : X →L[ℂ] X) (bax_star_spec T)
     rw [h, sq]
 
-private instance [CompleteSpace X] : CompleteSpace (Bax 𝒜 X) :=
+instance [CompleteSpace X] : CompleteSpace (Bax 𝒜 X) :=
   (bax_cstar (𝒜 := 𝒜) (X := X)).completeSpace_coe
 
-private noncomputable instance [CompleteSpace X] : CStarAlgebra (Bax 𝒜 X) where
+noncomputable instance [CompleteSpace X] : CStarAlgebra (Bax 𝒜 X) where
 
 /-- **32XIII** (`bax-cstar`, cstar.tex:5210, Proposition): `𝓑^a(X)` *is* a
 C*-algebra, for `X` a Hilbert 𝒜-module.  `bax_cstar` above is the single
@@ -914,10 +951,10 @@ ingredient the thesis's proof (**32XIV**) has to supply — closedness in
 **33I**.4 for `M_N(𝒜)`.) -/
 noncomputable example [CompleteSpace X] : CStarAlgebra (Bax 𝒜 X) := inferInstance
 
-private noncomputable instance [CompleteSpace X] : PartialOrder (Bax 𝒜 X) :=
+noncomputable instance [CompleteSpace X] : PartialOrder (Bax 𝒜 X) :=
   CStarAlgebra.spectralOrder _
 
-private instance [CompleteSpace X] : StarOrderedRing (Bax 𝒜 X) :=
+instance [CompleteSpace X] : StarOrderedRing (Bax 𝒜 X) :=
   CStarAlgebra.spectralOrderedRing _
 
 
@@ -1430,6 +1467,86 @@ Mathlib the instance `CStarMatrix.instCStarAlgebra` on
 `CStarMatrix (Fin N) (Fin N) 𝒜`. -/
 noncomputable example : CStarAlgebra (CStarMatrix (Fin N) (Fin N) 𝒜) :=
   inferInstance
+
+/-! ### `M_N(𝒜) ≅ 𝓑^a(𝒜^N)`
+
+**33I**.4 says "conclude that `M_N(𝒜)` is a C*-algebra with matrix
+multiplication, conjugate transpose as involution, and the operator norm
+(so `‖A‖ = ‖Ā‖`)" — that is, `M_N(𝒜)` *is* the C*-algebra of adjointable
+module maps on the Hilbert 𝒜-module `𝒜^N`, and vn **49IV** is meant to be
+read off that together with **49II**.  The `example` just above renders
+33I.4 by handing the C*-structure to Mathlib, which leaves the
+identification itself unrecorded; parts 1–3 of 33I are its three halves
+(adjoints, linear bijectivity, composition) and what follows assembles them
+into the isomorphism, now that `Bax` can be named.
+
+**Why the `ᵐᵒᵖ`.**  The thesis's `𝒜^N` is a *right* 𝒜-module and a matrix
+acts on the left, so `A ↦ Ā` composes in the same order and the thesis's `≅`
+is an isomorphism outright.  Mathlib's `C⋆ᵐᵒᵈ(𝒜, Fin N → 𝒜)` is a *left*
+module (`a • v = (a vᵢ)ᵢ`), and its adjointable maps are the *right*
+multiplications `v ↦ v A` — which compose backwards: `cstar_matrices_3`,
+proved above, is `toCLM (A * B) = toCLM B ∘ toCLM A`.  So over Mathlib's
+conventions the algebra of adjointable operators on `𝒜^N` is `M_N(𝒜)ᵒᵖ`, and
+`A ↦ Ā` is a `*`-ANTI-isomorphism.  This is the same left/right convention
+gap that `docs/DECISIONS.md` records for **34V**.3; it is stated here in the
+one form that is *true* rather than in the thesis's, and nothing is lost —
+`ᵐᵒᵖ` preserves `star`, positivity, the order and its suprema, so every use
+the thesis makes of the identification (49IV above all) transports across it
+unchanged. -/
+
+variable (𝒜 N) in
+/-- `A ↦ Ā : M_N(𝒜) → 𝓑^a(𝒜^N)`, the map of **33I**, with its range pinned
+to the type `𝓑^a(𝒜^N)`: `Ā` is adjointable by **33I**.1. -/
+noncomputable def toCLMBax (A : CStarMatrix (Fin N) (Fin N) 𝒜) :
+    Bax 𝒜 C⋆ᵐᵒᵈ(𝒜, Fin N → 𝒜) :=
+  ⟨CStarMatrix.toCLM A, mem_bax_iff.mpr ⟨_, cstar_matrices_1 A⟩⟩
+
+/-- **33I**.2, injectivity, with the range pinned to `𝓑^a(𝒜^N)`. -/
+theorem toCLMBax_injective : Function.Injective (toCLMBax 𝒜 N) :=
+  fun _ _ h => (cstar_matrices_2 (𝒜 := 𝒜) (M := N) (N := N)).2.1 (congrArg Subtype.val h)
+
+/-- **33I**.2, surjectivity, with the range pinned to `𝓑^a(𝒜^N)`: *every*
+adjointable operator on `𝒜^N` is a matrix.  The 𝒜-linearity that
+`cstar_matrices_2` asks for separately is automatic here, because an
+adjointable map is a module map (`moduleAdjointable_linear`, **32I**). -/
+theorem toCLMBax_surjective : Function.Surjective (toCLMBax 𝒜 N) := by
+  intro T
+  obtain ⟨A, hA⟩ := (cstar_matrices_2 (𝒜 := 𝒜) (M := N) (N := N)).2.2 _
+    (fun a x => (moduleAdjointable_linear _ T.2).2.2 a x) T.2
+  exact ⟨A, Subtype.ext hA⟩
+
+variable (𝒜 N) in
+/-- **33I**.4 (`cstar-matrices`, cstar.tex:5307, Exercise): `M_N(𝒜)` is the
+C*-algebra of adjointable module maps on the Hilbert 𝒜-module `𝒜^N`.
+Stated over `M_N(𝒜)ᵐᵒᵖ` because Mathlib's `𝒜^N` is a left module and
+`A ↦ Ā` therefore reverses composition — see the block above.  The fields
+are exactly **33I**.1 (`map_star'`), **33I**.2
+(`toCLMBax_injective` / `toCLMBax_surjective`, plus `map_add'`/`map_smul'`)
+and **33I**.3 (`map_mul'`); `toCLMBax_norm` below is 33I.4's
+`‖A‖ = ‖Ā‖`. -/
+noncomputable def matrixBaxEquiv :
+    (CStarMatrix (Fin N) (Fin N) 𝒜)ᵐᵒᵖ ≃⋆ₐ[ℂ] Bax 𝒜 C⋆ᵐᵒᵈ(𝒜, Fin N → 𝒜) where
+  toFun A := toCLMBax 𝒜 N A.unop
+  invFun T := MulOpposite.op (Function.surjInv (toCLMBax_surjective (𝒜 := 𝒜) (N := N)) T)
+  left_inv _ := MulOpposite.unop_injective
+    (toCLMBax_injective (Function.surjInv_eq (toCLMBax_surjective (𝒜 := 𝒜) (N := N)) _))
+  right_inv T := Function.surjInv_eq (toCLMBax_surjective (𝒜 := 𝒜) (N := N)) T
+  map_mul' A B := Subtype.ext (cstar_matrices_3 B.unop A.unop)
+  map_add' A B := Subtype.ext (map_add CStarMatrix.toCLM A.unop B.unop)
+  map_star' A := (bax_star_eq (cstar_matrices_1 A.unop)).symm
+  map_smul' c A := Subtype.ext (map_smul CStarMatrix.toCLM c A.unop)
+
+@[simp] theorem matrixBaxEquiv_apply (A : (CStarMatrix (Fin N) (Fin N) 𝒜)ᵐᵒᵖ) :
+    ((matrixBaxEquiv 𝒜 N A : Bax 𝒜 C⋆ᵐᵒᵈ(𝒜, Fin N → 𝒜)) :
+        C⋆ᵐᵒᵈ(𝒜, Fin N → 𝒜) →L[ℂ] C⋆ᵐᵒᵈ(𝒜, Fin N → 𝒜))
+      = CStarMatrix.toCLM A.unop := rfl
+
+/-- **33I**.4's norm clause, `‖A‖ = ‖Ā‖`: Mathlib *defines* the norm of a
+`CStarMatrix` as the operator norm of `toCLM A`, and the norm of `Bax 𝒜 X`
+is the operator norm of the underlying operator, so the two agree by
+definition.  Stated because it is part of what 33I.4 asks one to conclude. -/
+@[simp] theorem toCLMBax_norm (A : CStarMatrix (Fin N) (Fin N) 𝒜) :
+    ‖toCLMBax 𝒜 N A‖ = ‖A‖ := rfl
 
 /-- `0 ≤ a` in a C*-algebra gives `a = b* b`.  Stated for an abstract C*-algebra
 because Mathlib's typeclass search cannot find the continuous functional calculus
@@ -2025,6 +2142,29 @@ private theorem bax_nonneg_of_inner {U : Bax 𝒜 X}
     rfl
   rw [hUA]
   exact star_mul_self_nonneg _
+
+/-- **32XV** (`chilb-vector-states-order-separating`, cstar.tex:5375,
+Exercise), part 2 in the C*-algebra `𝓑^a(X)` *itself*: `0 ≤ T` iff every
+vector functional `⟨x, T x⟩` is positive.  `chilb_vector_states_2` above says
+the same thing with `0 ≤ T` unfolded as `T = R'∘R`; this is the two halves
+`bax_inner_nonneg` and `bax_nonneg_of_inner` put back together against the
+spectral order of `Bax 𝒜 X`, which is the form **49II** needs. -/
+theorem bax_nonneg_iff {U : Bax 𝒜 X} :
+    0 ≤ U ↔ ∀ x : X, 0 ≤ inner 𝒜 x ((U : X →L[ℂ] X) x) :=
+  ⟨fun h => bax_inner_nonneg h, bax_nonneg_of_inner⟩
+
+/-- **32XV** (`chilb-vector-states-order-separating`, cstar.tex:5375,
+Exercise), part 2, as the Exercise's *title* puts it: the vector functionals
+`⟨x, (·) x⟩` are **order separating** on `𝓑^a(X)` — `T ≤ S` iff
+`⟨x, T x⟩ ≤ ⟨x, S x⟩` for every `x ∈ X`.  Immediate from `bax_nonneg_iff`
+applied to `S - T`.  This is what transports **49II**'s suprema between the
+spectral order of `𝓑^a(X)` and the vector-functional order. -/
+theorem bax_le_iff {T S : Bax 𝒜 X} :
+    T ≤ S ↔ ∀ x : X, inner 𝒜 x ((T : X →L[ℂ] X) x) ≤ inner 𝒜 x ((S : X →L[ℂ] X) x) := by
+  rw [← sub_nonneg, bax_nonneg_iff]
+  refine forall_congr' fun x => ?_
+  rw [show ((S - T : Bax 𝒜 X) : X →L[ℂ] X) = (S : X →L[ℂ] X) - T from rfl,
+    ContinuousLinearMap.sub_apply, CStarModule.inner_sub_right, sub_nonneg]
 
 /-- **34V** (`ad-cp`, cstar.tex:5463, Exercise), part 2: the map
 `T ↦ S* T S : 𝓑^a(X) → 𝓑^a(Y)` of an adjointable bounded module map
