@@ -255,7 +255,45 @@ lines of new bridging**, against roughly **60 duplicated lines removed at each
 of two sites**. Worth doing if the bridge is wanted for anything else; not
 otherwise. Recommend: **leave, and record here** — which is what this entry is.
 
-### 5.2 `injective_nmiu_iso_on_image_2'` (48VI part 2) — the exercise's own hint, half followed
+### 5.2 `injective_nmiu_iso_on_image_2'` (48VI part 2) — **NOT a fingerprint;
+this section's premise was wrong**
+
+> **Corrected 2026-08-27, after acting on it.**  This was §11's *first*
+> recommendation and it does not survive reading the source.
+>
+> `injective-nmiu-iso-on-image` (`vn.tex:1119`) is one Lemma with **two**
+> conclusions: (a) `f(𝒜)` is a von Neumann subalgebra, and (b) `f` restricts
+> to an nmiu-isomorphism onto it.  **69IVb asks for (a) only** — `vn.tex:3637`
+> reads "Use this, and `injective-nmiu-iso-on-image`, to show that `f(𝒜)` is a
+> von Neumann subalgebra of `ℬ`".  That is `injective_nmiu_iso_on_image_1` /
+> `isVNSubalgebra_range`, which the proof *does* use.  The dead limb is (b),
+> the terminal second conclusion, which yields neither closedness of the range
+> nor that its suprema are computed in `ℬ` — so **no proof of 69IVb can spend
+> it**.  It belongs in §6 (genuinely terminal), not here.
+>
+> Two further corrections.  The row's staleness is smaller than claimed below:
+> `nmiu_image` calls 69IVa `nmiu_factors` **once** (`Projections.lean:7100`);
+> the "three times" counted the whole file, two of them inside
+> `nmiu_factors_maps`.  And the universe obstacle binds **wider** than
+> recorded: `isVNSubalgebra_range` and the three auxiliaries its proof calls
+> (`starAlgHom_nonneg`, `starAlgHom_mono`, `starAlgHom_le_iff`) are all pinned
+> to one universe — ~155 lines of *audited* statements, not 102 lines of one.
+>
+> **A live opportunity remains, and it is not this one.**  The hint route was
+> built and compiled in scratch, axiom-clean: `nmiu_image` via
+> `nmiu_factors_maps` then 48VI.1 on the injective `H` is **14 lines**,
+> against the **287**-line direct proof at `Projections.lean:7089–7375`.
+> §11's "40–80 lines replacing ~150" was wrong in both directions.  Taking it
+> needs the four pinned statements restated universe-polymorphically with the
+> audited forms re-derived verbatim (net ≈ +20 in `Basic`, −273 in
+> `Projections`).  That is a faithfulness win worth having — but it is a
+> separate item, it touches four audited statements, and **it still would not
+> give this limb a consumer**.  Left for an author ruling with the measured
+> numbers on the 69IVb row.
+
+*Original section follows, retained because the reasoning is what led to the
+correction:*
+
 
 `A/VN/Basic.lean:4781`, 74 lines, `green`. The *full* form of 48VI part 2: an
 injective nmiu-map restricts to an nmiu-**isomorphism** onto its image. Its own
@@ -745,10 +783,14 @@ make them the fingerprint the check is after. Left, recorded, re-confirmed.
 
 ## 11. If given a fixing round, in this order
 
-1. **§5.2, `injective_nmiu_iso_on_image_2'` / 69IVb.** The only case-1 item all
-   of whose inputs are in the tree and live, with the hint printed and the
-   divergence already admitted in its own audit row. 40–80 lines replacing ~150.
-   Fix the row's "does neither" in the same edit — it does use 69IVa.
+1. ~~**§5.2, `injective_nmiu_iso_on_image_2'` / 69IVb.**~~ **DONE 2026-08-27,
+   and the recommendation was wrong** — see the correction at the head of §5.2.
+   69IVb asks only for the Lemma's *first* conclusion; the dead limb is the
+   second, and no proof of 69IVb can consume it.  The row was fixed; the limb
+   stays dead and moves to §6.  What the attempt did find is worth a separate
+   item: the thesis's hint route is **14 lines against our 287**, blocked only
+   by ~155 lines of universe-pinned audited statements.  Costed on the 69IVb
+   row, awaiting an author ruling.
 2. **§5.3's row, not its proof.** Re-cost the 125VIIb row: 125VI is `green`
    since `61d6f49` and "which is itself blocked" is stale. Cheap, and it
    unblocks nothing but stops the next reader inheriting a false reason.
