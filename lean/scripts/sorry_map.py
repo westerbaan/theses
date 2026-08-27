@@ -90,6 +90,72 @@ def disp_numbers():
 AUDIT_COMMIT = "4d92c75"   # the commit at which the statement audit was complete
 
 
+#: verdicts a status field may carry.  Longest first, so `left-benign` is not
+#: shadowed by a prefix match, and `left-under-reason-N` folds to `left-cost`.
+VERDICTS = (
+    # the four numbered grounds the 2026-08-26/27 passes used.  They are NOT
+    # one category: (2) is a defect in the printed text, (3) wants an author
+    # ruling on a statement, (4) is costed machinery.
+    ("under (2)",            "left-thesis"),
+    ("under reason 2",       "left-thesis"),
+    ("under (3)",            "left-needs-statement"),
+    ("under reason 3",       "left-needs-statement"),
+    ("under (4)",            "left-cost"),
+    ("under reason 4",       "left-cost"),
+    ("left, reason 2",       "left-thesis"),
+    ("left, reason 3",       "left-needs-statement"),
+    ("left, reason 4",       "left-cost"),
+    ("printed one is wrong", "left-thesis"),
+    ("new public declaration", ""),
+    ("left-needs-statement", "left-needs-statement"),
+    ("left-under-reason",    "left-cost"),
+    # repairs, under the several names the passes gave them
+    ("recorded blocker is gone", "repaired"),
+    ("phantom name removed", "repaired"),
+    ("stale flag corrected", "repaired"),
+    ("no longer private",    "repaired"),
+    ("dead limb closed",     "repaired"),
+    ("reclassified",         "repaired"),
+    ("strengthened",         "repaired"),
+    ("repaired",             "repaired"),
+    # a row written for a declaration that had none is not a mismatch
+    ("new row",              ""),
+    ("new declaration",      ""),
+    ("row added",            ""),
+    ("left-benign",          "left-benign"),
+    ("left-thesis",          "left-thesis"),
+    ("left-ruling",          "left-ruling"),
+    ("left-cost",            "left-cost"),
+    ("open",                 "open"),
+)
+
+
+def verdict_of(field):
+    """The verdict a status field carries, wherever in it that sits.
+
+    The first token is not reliable: passes since 2026-08-26 open the field
+    with an ISO date and a pass label ("2026-08-27 A/VN stmt pass: REPAIRED"),
+    which a first-token rule reports as the category `2026-08-27`.  Eighteen
+    rows were miscounted that way.  Scan for a known verdict instead, and only
+    fall back to the first token when none is found.
+    """
+    t = field.strip().lower()
+    for needle, canon in VERDICTS:
+        if needle in t:
+            return canon
+    # the numbered grounds again, when a row names one further into a sentence
+    # ("LEFT, on two grounds ... (i) reason 2")
+    for n, canon in (("reason 2", "left-thesis"),
+                     ("reason 3", "left-needs-statement"),
+                     ("reason 4", "left-cost")):
+        if n in t:
+            return canon
+    # a dated pass label is not a category: drop it before falling back, or the
+    # date itself is reported as one.
+    bare = re.sub(r"^\d{4}-\d{2}-\d{2}[^:]{0,60}:\s*", "", field.strip())
+    return re.split(r"[\s:,]", bare, maxsplit=1)[0].rstrip("-").lower()
+
+
 def audit_rows():
     """`lean_name` -> (stmt, proof, note, status) from docs/audit/*.csv.
 
@@ -107,7 +173,7 @@ def audit_rows():
                 continue
             status = ""
             if len(f) == 7:
-                status = re.split(r"[\s:,]", f[6].strip(), maxsplit=1)[0].rstrip("-")
+                status = verdict_of(f[6])
             name = f[1].strip()
             if not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_'\u2032\u1d63!.]*", name):
                 continue          # rows naming an `example`, a structure field, …
