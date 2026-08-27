@@ -5235,7 +5235,27 @@ into a self-dual Hilbert ℬ-module has the universal property (every
 bounded module map `V → Y` into a self-dual `Y` factors uniquely through
 `η`), then the image of `η` is ultranorm dense.
 
-Divergence class 1 (faithful).  The thesis's argument is exactly this one:
+**Divergence, class 2 — and forced, by universes.**  Corrected on
+2026-08-27, when the claim below that this *is* the thesis's argument was
+checked
+against the source and is not: **163III** (dils.tex:4959-4990) runs no
+projection argument at all.  It takes the completion `η₁ : V → X₁` of
+**150II**, whose image is ultranorm dense by construction; obtains from the
+two universal properties the mutually inverse `U : X₁ → X` and
+`W : X → X₁`; and concludes that `η(V) = U(η₁(V))` is ultranorm dense
+because `U` is ultranorm continuous and surjective.
+
+That route is unavailable at the generality stated here, and the obstacle is
+a universe one: `dils_completion B` produces a
+`SelfDualCompletion.{u, v, max u v}`, whose carrier lives in
+`Type (max u v)`, while `huniv` below quantifies over codomains in `Type v`
+only — so `U` cannot be obtained.  (`selfdual_compl_defining_unique` has the
+same restriction: it compares two completions whose carriers are both in
+`Type v`.)  Where the universes do line up, the printed route *is* the one
+that is run: see **164II**.1 `ext_tensor_dense`, whose proof is
+dils.tex:5310.
+
+What is run here instead is a projection argument, and it is ours:
 `W = ηV^{⊥⊥}` is a self-dual (ultranorm-closed) submodule, so `X` splits as
 `W ⊕ W^⊥` (**160IV**.3) and the projection `P` onto `W` is a bounded module
 map fixing `ηV`; both `P` and `id` factor `η` through itself, so the
@@ -6240,17 +6260,17 @@ the input to the `𝒜 ⊙ ℬ → 𝒜 ⊗ ℬ` coefficient upgrade there); it 
 unchanged, so that `univprop_ext_tensor` could stay where it is.
 
 The thesis's **164VII** (`ultranorm-dense-tensor-base`) reads the density off
-its own construction of `X ⊗ Y` as `ℓ²((pᵢⱼ))`.  Our statement quantifies
-over an *arbitrary* `E : ExtTensor`, so the density has to come from the
-universal property instead — exactly as in `selfdual_compl_defining_dense`
-(**163II**), through the orthogonal projection onto `D^⊥⊥` (`exists_orthoProj`)
-and **160IV**.2.  The one step that does not transfer verbatim is that
-**160IV**.2 identifies `D^⊥⊥` with the ultranorm closure of the `𝒞`-**span**
-of `D = {∑ᵢ xᵢ ⊗ yᵢ}`, which is strictly bigger than `D`: the latter absorbs
-elementary tensors `t a b` only.  Bridging that gap *is* the thesis's own
-argument for 164VII — `𝒜 ⊙ ℬ` is ultrastrongly dense in `𝒜 ⊗ ℬ` (by `tensor`
-and `ultraclosed`), so `D·(𝒜 ⊙ ℬ)` is ultranorm dense in `D·(𝒜 ⊗ ℬ)` — and
-it is developed here.  Note that no *bounded* net is needed for it, so
+its own construction of `X ⊗ Y` as `ℓ²((pᵢⱼ))`.  Our model is not that one
+(see `univprop_ext_tensor`), so the density has to be got from the
+completion's own `dense` field instead, and carried to an arbitrary
+`E : ExtTensor` by **164IX** — which is the thesis's own route for property
+1 (dils.tex:5310).  The one step that does not transfer verbatim is that
+what is dense in the completion is the `𝒞`-**span** of `D = {∑ᵢ xᵢ ⊗ yᵢ}`,
+which is strictly bigger than `D`: the latter absorbs elementary tensors
+`t a b` only.  Bridging that gap *is* the thesis's own argument for
+164VII — `𝒜 ⊙ ℬ` is ultrastrongly dense in `𝒜 ⊗ ℬ` (by `tensor` and
+`ultraclosed`), so `D·(𝒜 ⊙ ℬ)` is ultranorm dense in `D·(𝒜 ⊗ ℬ)` — and it
+is developed here.  Note that no *bounded* net is needed for it, so
 Kaplansky density (**158Ia**, `kaplansky_bounded_approx`) does not enter. -/
 
 section TensorDense
@@ -7228,6 +7248,19 @@ private theorem extEta_smul (a : 𝒜) (b : ℬ) (x : X) (y : Y) :
   rw [hexp, hAA, hAB, hBA, hBB]
   abel
 
+/-- The expansion of `η` on a finite representation of `(X ⊙ Y) ⊙ 𝒞`:
+`η(∑ₖ (xₖ ⊗ yₖ) ⊗ cₖ) = ∑ₖ cₖ · η(xₖ, yₖ)`.  Used by the universal property
+in `extTensorOfCompl` and by `extTensorOfCompl_dense`. -/
+private theorem extEta_rep {n : ℕ} (x : Fin n → X) (y : Fin n → Y)
+    (c : Fin n → 𝒞) :
+    E.η (∑ k, (x k ⊗ₜ[ℂ] y k) ⊗ₜ[ℂ] c k)
+      = ∑ k, c k • extEta t ht E (x k) (y k) := by
+  rw [show E.η (∑ k, (x k ⊗ₜ[ℂ] y k) ⊗ₜ[ℂ] c k)
+      = ∑ k, E.η ((x k ⊗ₜ[ℂ] y k) ⊗ₜ[ℂ] c k) from
+    map_sum (extEtaHom ht E) _ _]
+  refine Finset.sum_congr rfl fun k _ => ?_
+  rw [extEta, ← E.η_smul, ext_smul_tmul, mul_one]
+
 end EtaFields
 
 section UnivField
@@ -7356,44 +7389,115 @@ private theorem extLift_bounded (ht : IsVNTensor t) (hT : IsExtBilin t T) {C : �
 
 end UnivField
 
-/-- **164II** (`univprop-ext-tensor`, dils.tex:5024, Theorem), existence:
-for self-dual `X`, `Y` over von Neumann algebras the self-dual exterior
-tensor product exists.
+/-- The step of **164VII** that survives a change of model
+(dils.tex:5163-5166): the `𝒞`-span of `D = η(X ⊙ Y)` lies inside the
+ultranorm closure of `D` itself.  `D` absorbs the *elementary* tensors
+`t a b` only, so its `𝒞`-span is strictly bigger; the thesis closes the gap
+with "`𝒜 ⊙ ℬ` is ultrastrongly dense in `𝒜 ⊗ ℬ`, so `E(𝒜 ⊙ ℬ)` is ultranorm
+dense in `E(𝒜 ⊗ ℬ)`, see `ultranormcontstruct`", which is `unDense_tSpan`
+together with **148III**.3 `ultranormcontstruct_smul`.  (148III.3 gives one
+`δ` per np-functional, so the finitely many `ωs i` are served by their
+minimum, exactly as in `unClosure_add`.) -/
+private theorem extTensor_bSpan_unClosure [VonNeumannAlgebra 𝒜]
+    [VonNeumannAlgebra ℬ] [VonNeumannAlgebra 𝒞] [CompleteSpace X]
+    [CompleteSpace Y] (E : ExtTensor t ht X Y) :
+    bSpan 𝒞 {z : E.Z | ∃ (n : ℕ) (x : Fin n → X) (y : Fin n → Y),
+        z = ∑ i, E.η (x i) (y i)}
+      ⊆ unClosure 𝒞 (inner 𝒞)
+        {z : E.Z | ∃ (n : ℕ) (x : Fin n → X) (y : Fin n → Y),
+          z = ∑ i, E.η (x i) (y i)} := by
+  classical
+  set D : Set E.Z := {z : E.Z | ∃ (n : ℕ) (x : Fin n → X) (y : Fin n → Y),
+    z = ∑ i, E.η (x i) (y i)} with hDdef
+  -- `D` is closed under sums, complex scalars and *elementary* tensors
+  have hD0 : (0 : E.Z) ∈ D := ⟨0, Fin.elim0, Fin.elim0, by simp⟩
+  have hDadd : ∀ z ∈ D, ∀ z' ∈ D, z + z' ∈ D := by
+    rintro _ ⟨n, x, y, rfl⟩ _ ⟨m, x', y', rfl⟩
+    refine ⟨n + m, Fin.append x x', Fin.append y y', ?_⟩
+    rw [Fin.sum_univ_add]
+    simp only [Fin.append_left, Fin.append_right]
+  have hDc : ∀ (c : ℂ), ∀ z ∈ D, c • z ∈ D := by
+    rintro c _ ⟨n, x, y, rfl⟩
+    refine ⟨n, fun i => c • x i, y, ?_⟩
+    rw [Finset.smul_sum]
+    exact Finset.sum_congr rfl fun i _ => (E.η_smul_complex c (x i) (y i)).symm
+  have hDt : ∀ (a : 𝒜) (b : ℬ), ∀ z ∈ D, t a b • z ∈ D := by
+    rintro a b _ ⟨n, x, y, rfl⟩
+    refine ⟨n, fun i => a • x i, fun i => b • y i, ?_⟩
+    rw [op_smul_sum]
+    exact Finset.sum_congr rfl fun i _ => (E.η_smul a b (x i) (y i)).symm
+  have hDspan : ∀ c ∈ tSpan t, ∀ z ∈ D, c • z ∈ D := by
+    rintro _ ⟨n, a, b, rfl⟩ z hz
+    rw [add_smul_sum]
+    exact Finset.sum_induction _ (fun w => w ∈ D) (fun w w' hw hw' => hDadd w hw w' hw')
+      hD0 fun i _ => hDt (a i) (b i) z hz
+  -- the `𝒞`-span of `D` lies in its ultranorm closure: this is **164VII**
+  -- (`ultranorm-dense-tensor-base`, dils.tex:5165), and its step
+  -- "so `E(𝒜 ⊙ ℬ)` is ultranorm dense in `E(𝒜 ⊗ ℬ)`, see
+  -- `ultranormcontstruct`" is **148III**.3 `ultranormcontstruct_smul` at
+  -- `x₀ = v`: `c ↦ c · v` is uniformly continuous from the ultrastrong
+  -- uniformity of `𝒞` to the ultranorm uniformity of `X ⊗ Y`, so an
+  -- ultrastrong approximant `d ∈ 𝒜 ⊙ ℬ` of `c` (`unDense_tSpan`) makes
+  -- `d • v` an ultranorm approximant of `c • v`.  (148III.3 gives one `δ`
+  -- per np-functional, so the finitely many `ωs i` are served by their
+  -- minimum, exactly as in `unClosure_add`.)
+  have hsmul : ∀ (c : 𝒞), ∀ v ∈ D, c • v ∈ unClosure 𝒞 (inner 𝒞) D := by
+    intro c v hv n ωs ε hε
+    choose δ hδ0 hδ using fun i : Fin n =>
+      ultranormcontstruct_smul (cstarBInner 𝒞 E.Z) v (ωs i) ε hε
+    obtain ⟨m, hm0, hm⟩ : ∃ m > (0 : ℝ), ∀ i, m ≤ δ i := by
+      rcases Nat.eq_zero_or_pos n with rfl | hn
+      · exact ⟨1, one_pos, fun i => i.elim0⟩
+      · have hne : (Finset.univ : Finset (Fin n)).Nonempty :=
+          Finset.univ_nonempty_iff.mpr (Fin.pos_iff_nonempty.mp hn)
+        exact ⟨Finset.univ.inf' hne δ, (Finset.lt_inf'_iff hne).mpr
+          (fun i _ => hδ0 i), fun i => Finset.inf'_le δ (Finset.mem_univ i)⟩
+    obtain ⟨d, hd, hdist⟩ := unDense_tSpan ht c n ωs m hm0
+    exact ⟨d • v, hDspan d hd v hv, fun i => hδ i c d ((hdist i).trans (hm i))⟩
+  have hbSpan : bSpan 𝒞 D ⊆ unClosure 𝒞 (inner 𝒞) D := by
+    rintro _ ⟨n, c, b, v, hv, rfl⟩
+    refine Finset.sum_induction _ (fun w => w ∈ unClosure 𝒞 (inner 𝒞) D)
+      (fun w w' hw hw' => unClosure_add hDadd hw hw') (subset_unClosure _ hD0)
+      fun i _ => ?_
+    rw [← op_smul_complex_smul]
+    exact hsmul _ _ (hv i)
+  exact hbSpan
 
-**Divergence, class 2.**  The thesis constructs `X ⊗ Y` as `ℓ²((pᵢⱼ))` for
-a chosen pair of orthonormal bases (**164III**–**164VII**); that
-construction is *not* run here.  Instead `X ⊗ Y` is the self-dual completion
-(**150II**) of the module `(X ⊗_ℂ Y) ⊗_ℂ 𝒞` carrying `extBInner`, and the
-universal property comes from **151Ia** (`selfdual_completion_univ`).  So
-**164IV** (`η`) and **164V** (`η` preserves the inner product) are replaced
-by `extEta` and `extEta_inner`, and **164VII** (density) is replaced by
-**164II**.1 `ext_tensor_dense`, proved for an arbitrary `ExtTensor` from the
-universal property.  **164VI** (injectivity of `η`) *is* run, as
-`extTensor_eta_injective`, since it is what discharges the `η_injective`
-field. -/
-theorem univprop_ext_tensor [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
-    [VonNeumannAlgebra 𝒞] [CompleteSpace X] [CompleteSpace Y]
-    (hX : SelfDual 𝒜 X) (hY : SelfDual ℬ Y) :
-    Nonempty (ExtTensor t ht X Y) := by
+/-- The self-dual exterior tensor product carried by a self-dual completion
+`E` of `(X ⊙ Y) ⊙ 𝒞` (**150II** applied to `extBInner`): the carrier is
+`E.X`, and `η(x,y) = E.η((x ⊗ y) ⊗ 1)`.
+
+Named, rather than left inside the existence proof, because **164II**.1
+`ext_tensor_dense` needs *this* model as the comparison object of **164IX**:
+for it the ultranorm density that the thesis reads off its own `ℓ²`
+construction (**164VII**) is free — it is the `dense` field of
+`SelfDualCompletion` — and 164IX then carries it to an arbitrary
+`ExtTensor`, which is the thesis's own proof of property 1
+(dils.tex:5310). -/
+private noncomputable def extTensorOfCompl [VonNeumannAlgebra 𝒜]
+    [VonNeumannAlgebra ℬ] [VonNeumannAlgebra 𝒞] [CompleteSpace X]
+    [CompleteSpace Y] (ht : IsVNTensor t) (hX : SelfDual 𝒜 X)
+    (hY : SelfDual ℬ Y)
+    (E : SelfDualCompletion.{u, u, u} (extBInner (X := X) (Y := Y) t ht)) :
+    ExtTensor t ht X Y := by
   have hSt : ∀ (a : 𝒜) (b : ℬ), t a b ∈ tSpanSubalg ht := fun a b => t_mem_tSpan a b
   have hSrep : ∀ z ∈ tSpanSubalg ht, ∃ (m : ℕ) (a : Fin m → 𝒜) (b : Fin m → ℬ),
       z = ∑ l, t (a l) (b l) := fun z hz => hz
   have hSdense : UnDense (mulInner 𝒞) ((tSpanSubalg ht : StarSubalgebra ℂ 𝒞) : Set 𝒞) :=
     unDense_tSpan ht
-  obtain ⟨E⟩ := dils_completion (𝒷 := 𝒞) (extBInner (X := X) (Y := Y) t ht)
-  refine ⟨{ Z := E.X
-            selfDual := E.selfDual
-            η := extEta t ht E
-            η_add_left := extEta_add_left ht E
-            η_add_right := extEta_add_right ht E
-            η_smul_complex := extEta_smul_complex ht E
-            η_smul := extEta_smul ht E
-            η_inner := extEta_inner ht E
-            η_injective := fun n x y hxy =>
-              extTensor_eta_injective ht hX hY (extEta t ht E)
-                (extEta_add_left ht E) (extEta_add_right ht E) (extEta_smul ht E)
-                (extEta_inner ht E) x y hxy
-            univ := ?_ }⟩
+  refine { Z := E.X
+           selfDual := E.selfDual
+           η := extEta t ht E
+           η_add_left := extEta_add_left ht E
+           η_add_right := extEta_add_right ht E
+           η_smul_complex := extEta_smul_complex ht E
+           η_smul := extEta_smul ht E
+           η_inner := extEta_inner ht E
+           η_injective := fun n x y hxy =>
+             extTensor_eta_injective ht hX hY (extEta t ht E)
+               (extEta_add_left ht E) (extEta_add_right ht E) (extEta_smul ht E)
+               (extEta_inner ht E) x y hxy
+           univ := ?_ }
   intro W inacg innsp insmul incstar incompl hW T hTl hTr hTsm hbd
   letI := inacg
   letI := innsp
@@ -7418,17 +7522,83 @@ theorem univprop_ext_tensor [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
   · refine hT'u S' ⟨hS'.1, fun v => ?_⟩
     obtain ⟨C', hSb⟩ := hS'.1
     obtain ⟨n, x, y, c, rfl⟩ := exists_fin_rep v
-    have hη : E.η (∑ k, (x k ⊗ₜ[ℂ] y k) ⊗ₜ[ℂ] c k)
-        = ∑ k, c k • extEta t ht E (x k) (y k) := by
-      rw [show E.η (∑ k, (x k ⊗ₜ[ℂ] y k) ⊗ₜ[ℂ] c k)
-          = ∑ k, E.η ((x k ⊗ₜ[ℂ] y k) ⊗ₜ[ℂ] c k) from
-        map_sum (extEtaHom ht E) _ _]
-      refine Finset.sum_congr rfl fun k _ => ?_
-      rw [extEta, ← E.η_smul, ext_smul_tmul, mul_one]
+    have hη := extEta_rep ht E x y c
     rw [hη, bmm_sum hSb, extLift_rep]
     refine Finset.sum_congr rfl fun k _ => ?_
     rw [hSb.smul, hS'.2]
 
+
+/-- Ultranorm density of the elementary tensors in the model
+`extTensorOfCompl`: the image of the completion map `E.η` is ultranorm dense
+by the `dense` field of **150II**, and it lies in the `𝒞`-span of the
+elementary tensors, which `extTensor_bSpan_unClosure` puts back inside their
+ultranorm closure.  This is what **164VII** supplies for the thesis's `ℓ²`
+model. -/
+private theorem extTensorOfCompl_dense [VonNeumannAlgebra 𝒜]
+    [VonNeumannAlgebra ℬ] [VonNeumannAlgebra 𝒞] [CompleteSpace X]
+    [CompleteSpace Y] (ht : IsVNTensor t) (hX : SelfDual 𝒜 X)
+    (hY : SelfDual ℬ Y)
+    (E : SelfDualCompletion.{u, u, u} (extBInner (X := X) (Y := Y) t ht)) :
+    UnDense (inner 𝒞)
+      {z : (extTensorOfCompl ht hX hY E).Z | ∃ (n : ℕ) (x : Fin n → X)
+        (y : Fin n → Y), z = ∑ i, (extTensorOfCompl ht hX hY E).η (x i) (y i)} := by
+  classical
+  set D : Set (extTensorOfCompl ht hX hY E).Z :=
+    {z : (extTensorOfCompl ht hX hY E).Z | ∃ (n : ℕ) (x : Fin n → X)
+      (y : Fin n → Y), z = ∑ i, (extTensorOfCompl ht hX hY E).η (x i) (y i)}
+    with hDdef
+  -- every `E.η v` is a `𝒞`-combination of elementary tensors
+  have hrange : Set.range E.η ⊆ bSpan 𝒞 D := by
+    rintro _ ⟨v, rfl⟩
+    obtain ⟨n, x, y, c, rfl⟩ := exists_fin_rep v
+    refine ⟨n, fun _ => 1, c,
+      fun k => (extTensorOfCompl ht hX hY E).η (x k) (y k),
+      fun k => ⟨1, fun _ => x k, fun _ => y k, by simp⟩, ?_⟩
+    simp only [one_smul]
+    exact extEta_rep ht E x y c
+  intro z n ωs ε hε
+  have hz : z ∈ unClosure 𝒞 (inner 𝒞) D := by
+    rw [← unClosure_unClosure D]
+    exact unClosure_mono
+      (hrange.trans (extTensor_bSpan_unClosure (extTensorOfCompl ht hX hY E)))
+      (E.dense z)
+  exact hz n ωs ε hε
+
+/-- A model with the density of **164II**.1 already in hand: the
+`ExtTensor` carried by the **150II** completion of `(X ⊙ Y) ⊙ 𝒞`.  This is
+what `ext_tensor_dense` compares an arbitrary `ExtTensor` against, and what
+`univprop_ext_tensor` returns. -/
+private theorem exists_extTensor_dense [VonNeumannAlgebra 𝒜]
+    [VonNeumannAlgebra ℬ] [VonNeumannAlgebra 𝒞] [CompleteSpace X]
+    [CompleteSpace Y] (ht : IsVNTensor t) (hX : SelfDual 𝒜 X)
+    (hY : SelfDual ℬ Y) :
+    ∃ E : ExtTensor t ht X Y, UnDense (inner 𝒞)
+      {z : E.Z | ∃ (n : ℕ) (x : Fin n → X) (y : Fin n → Y),
+        z = ∑ i, E.η (x i) (y i)} := by
+  obtain ⟨E⟩ := dils_completion (𝒷 := 𝒞) (extBInner (X := X) (Y := Y) t ht)
+  exact ⟨extTensorOfCompl ht hX hY E, extTensorOfCompl_dense ht hX hY E⟩
+
+/-- **164II** (`univprop-ext-tensor`, dils.tex:5024, Theorem), existence:
+for self-dual `X`, `Y` over von Neumann algebras the self-dual exterior
+tensor product exists.
+
+**Divergence, class 2.**  The thesis constructs `X ⊗ Y` as `ℓ²((pᵢⱼ))` for
+a chosen pair of orthonormal bases (**164III**–**164VII**); that
+construction is *not* run here.  Instead `X ⊗ Y` is the self-dual completion
+(**150II**) of the module `(X ⊗_ℂ Y) ⊗_ℂ 𝒞` carrying `extBInner`, and the
+universal property comes from **151Ia** (`selfdual_completion_univ`).  So
+**164IV** (`η`) and **164V** (`η` preserves the inner product) are replaced
+by `extEta` and `extEta_inner`, and **164VII** (density) is replaced by
+**164II**.1 `ext_tensor_dense`, proved for an arbitrary `ExtTensor` from the
+universal property.  **164VI** (injectivity of `η`) *is* run, as
+`extTensor_eta_injective`, since it is what discharges the `η_injective`
+field. -/
+theorem univprop_ext_tensor [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
+    [VonNeumannAlgebra 𝒞] [CompleteSpace X] [CompleteSpace Y]
+    (hX : SelfDual 𝒜 X) (hY : SelfDual ℬ Y) :
+    Nonempty (ExtTensor t ht X Y) := by
+  obtain ⟨E, -⟩ := exists_extTensor_dense ht hX hY
+  exact ⟨E⟩
 end UnivPropExistence
 
 /-- **Non-vacuity check** for `ExtTensor` — the analogue of
@@ -7757,30 +7927,33 @@ theorem ext_tensor_uniqueness [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
     exact extTensor_map_ext E₁ E₂.selfDual _ _ _ _ hCU' hCU
       fun x y => by rw [hU'η, hUη]
 
--- `hX`, `hY` are not used: the universal property is a *field* of
--- `ExtTensor`, and the self-duality that the argument needs is `E.selfDual`.
-set_option linter.unusedVariables false in
 /-- **164II** (`univprop-ext-tensor`, dils.tex:5024, Theorem), property 1:
 the (span of the) image of `η` is ultranorm dense in `X ⊗ Y`.
 
-**Divergence, class 2 (and forced).**  The thesis proves this at **164VII**
-(`ultranorm-dense-tensor-base`) *for its own construction* of `X ⊗ Y` as
-`ℓ²((pᵢⱼ))`, where "the linear span of `E(𝒜 ⊗ ℬ)` is by construction
-ultranorm dense" is read off the definition.  Our statement is about an
-arbitrary `E : ExtTensor`, so that last step is unavailable and its place is
-taken by the projection argument of **163II**
-(`selfdual_compl_defining_dense`): the orthogonal projection `P` onto
-`D^⊥⊥` (`exists_orthoProj`, from **160IV**.3) fixes every elementary
-tensor, so `P` and `id` both factor `η` through itself and the uniqueness
-half of the universal property gives `P = id`, i.e. `D^⊥⊥ = X ⊗ Y`.
-**160IV**.2 then identifies `D^⊥⊥` with the ultranorm closure of the
-`𝒞`-span of `D`, and it is exactly here that the thesis's own argument is
-still needed: `D` absorbs elementary tensors only, so its `𝒞`-span is
-strictly bigger, and `bSpan D ⊆ unClosure D` is the thesis's
-"`𝒜 ⊙ ℬ` ultrastrongly dense in `𝒜 ⊗ ℬ`, hence `E(𝒜 ⊙ ℬ)` ultranorm dense
-in `E(𝒜 ⊗ ℬ)`" — `unDense_tSpan` together with **148III**.3
-`ultranormcontstruct_smul`, which is the "see `ultranormcontstruct`" of
-dils.tex:5165 itself. -/
+This is the thesis's own proof of property 1, which is one sentence
+(dils.tex:5310): "Property 1 from the statement of the Theorem follows
+immediately from the fact that the exterior tensor product is unique up to
+an isomorphism which respects the embeddings."  The statement is about an
+*arbitrary* `E : ExtTensor` — that is what "for any such `X ⊗ Y`" means at
+dils.tex:5054 — and the argument compares `E` with one model for which the
+density is known.  Here that model is `exists_extTensor_dense`, and the
+comparison is **164IX** `ext_tensor_uniqueness`; since the comparison map
+preserves the inner product it preserves the ultranorm seminorms exactly, so
+the approximants transport with no loss.
+
+**One divergence, class 2 — and it is inside the model, not in this
+argument.**  The thesis's model is `ℓ²((pᵢⱼ))`, for which the density of
+`η(X ⊙ Y)` is read off the construction (**164VII**); ours is the self-dual
+completion of `(X ⊙ Y) ⊙ 𝒞`, for which what is free is the density of the
+image of the *completion* map, i.e. of the `𝒞`-span of the elementary
+tensors.  Closing that gap is 164VII's own argument, and is
+`extTensor_bSpan_unClosure`.  The choice of model is **164II**-existence's
+divergence (`univprop_ext_tensor`), recorded there.
+
+Before 2026-08-27 this was proved instead by transcribing the projection
+argument of **163II** onto `D^⊥⊥`; that argument is the thesis's at neither
+point (see `selfdual_compl_defining_dense`), and it is no longer used
+here. -/
 theorem ext_tensor_dense [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
     [VonNeumannAlgebra 𝒞] [CompleteSpace X] [CompleteSpace Y]
     (hX : SelfDual 𝒜 X) (hY : SelfDual ℬ Y) (E : ExtTensor t ht X Y) :
@@ -7788,89 +7961,28 @@ theorem ext_tensor_dense [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
       {z : E.Z | ∃ (n : ℕ) (x : Fin n → X) (y : Fin n → Y),
         z = ∑ i, E.η (x i) (y i)} := by
   classical
-  set D : Set E.Z := {z : E.Z | ∃ (n : ℕ) (x : Fin n → X) (y : Fin n → Y),
-    z = ∑ i, E.η (x i) (y i)} with hDdef
-  -- `D` is closed under sums, complex scalars and *elementary* tensors
-  have hD0 : (0 : E.Z) ∈ D := ⟨0, Fin.elim0, Fin.elim0, by simp⟩
-  have hDadd : ∀ z ∈ D, ∀ z' ∈ D, z + z' ∈ D := by
-    rintro _ ⟨n, x, y, rfl⟩ _ ⟨m, x', y', rfl⟩
-    refine ⟨n + m, Fin.append x x', Fin.append y y', ?_⟩
-    rw [Fin.sum_univ_add]
-    simp only [Fin.append_left, Fin.append_right]
-  have hDc : ∀ (c : ℂ), ∀ z ∈ D, c • z ∈ D := by
-    rintro c _ ⟨n, x, y, rfl⟩
-    refine ⟨n, fun i => c • x i, y, ?_⟩
-    rw [Finset.smul_sum]
-    exact Finset.sum_congr rfl fun i _ => (E.η_smul_complex c (x i) (y i)).symm
-  have hDt : ∀ (a : 𝒜) (b : ℬ), ∀ z ∈ D, t a b • z ∈ D := by
-    rintro a b _ ⟨n, x, y, rfl⟩
-    refine ⟨n, fun i => a • x i, fun i => b • y i, ?_⟩
-    rw [op_smul_sum]
-    exact Finset.sum_congr rfl fun i _ => (E.η_smul a b (x i) (y i)).symm
-  have hDspan : ∀ c ∈ tSpan t, ∀ z ∈ D, c • z ∈ D := by
-    rintro _ ⟨n, a, b, rfl⟩ z hz
-    rw [add_smul_sum]
-    exact Finset.sum_induction _ (fun w => w ∈ D) (fun w w' hw hw' => hDadd w hw w' hw')
-      hD0 fun i _ => hDt (a i) (b i) z hz
-  -- the `𝒞`-span of `D` lies in its ultranorm closure: this is **164VII**
-  -- (`ultranorm-dense-tensor-base`, dils.tex:5165), and its step
-  -- "so `E(𝒜 ⊙ ℬ)` is ultranorm dense in `E(𝒜 ⊗ ℬ)`, see
-  -- `ultranormcontstruct`" is **148III**.3 `ultranormcontstruct_smul` at
-  -- `x₀ = v`: `c ↦ c · v` is uniformly continuous from the ultrastrong
-  -- uniformity of `𝒞` to the ultranorm uniformity of `X ⊗ Y`, so an
-  -- ultrastrong approximant `d ∈ 𝒜 ⊙ ℬ` of `c` (`unDense_tSpan`) makes
-  -- `d • v` an ultranorm approximant of `c • v`.  (148III.3 gives one `δ`
-  -- per np-functional, so the finitely many `ωs i` are served by their
-  -- minimum, exactly as in `unClosure_add`.)
-  have hsmul : ∀ (c : 𝒞), ∀ v ∈ D, c • v ∈ unClosure 𝒞 (inner 𝒞) D := by
-    intro c v hv n ωs ε hε
-    choose δ hδ0 hδ using fun i : Fin n =>
-      ultranormcontstruct_smul (cstarBInner 𝒞 E.Z) v (ωs i) ε hε
-    obtain ⟨m, hm0, hm⟩ : ∃ m > (0 : ℝ), ∀ i, m ≤ δ i := by
-      rcases Nat.eq_zero_or_pos n with rfl | hn
-      · exact ⟨1, one_pos, fun i => i.elim0⟩
-      · have hne : (Finset.univ : Finset (Fin n)).Nonempty :=
-          Finset.univ_nonempty_iff.mpr (Fin.pos_iff_nonempty.mp hn)
-        exact ⟨Finset.univ.inf' hne δ, (Finset.lt_inf'_iff hne).mpr
-          (fun i _ => hδ0 i), fun i => Finset.inf'_le δ (Finset.mem_univ i)⟩
-    obtain ⟨d, hd, hdist⟩ := unDense_tSpan ht c n ωs m hm0
-    exact ⟨d • v, hDspan d hd v hv, fun i => hδ i c d ((hdist i).trans (hm i))⟩
-  have hbSpan : bSpan 𝒞 D ⊆ unClosure 𝒞 (inner 𝒞) D := by
-    rintro _ ⟨n, c, b, v, hv, rfl⟩
-    refine Finset.sum_induction _ (fun w => w ∈ unClosure 𝒞 (inner 𝒞) D)
-      (fun w w' hw hw' => unClosure_add hDadd hw hw') (subset_unClosure _ hD0)
-      fun i _ => ?_
-    rw [← op_smul_complex_smul]
-    exact hsmul _ _ (hv i)
-  -- the projection onto `D^⊥⊥` fixes `D`, so the universal property makes it `id`
-  obtain ⟨hW0, hWadd, hWb, hWc, hWcl⟩ := hilbmod_projthm_1 E.selfDual (orthoCompl 𝒞 D)
-  obtain ⟨P, hPbdd, hPW, hPfix⟩ :=
-    exists_orthoProj E.selfDual (orthoCompl 𝒞 (orthoCompl 𝒞 D)) hW0 hWadd hWb hWc hWcl
-  have hbound : ∃ C : ℝ, ∀ (n : ℕ) (x : Fin n → X) (y : Fin n → Y),
-      ‖∑ i, E.η (x i) (y i)‖ ^ 2 ≤
-        C * ‖∑ i, ∑ j, t (inner 𝒜 (x i) (x j)) (inner ℬ (y i) (y j))‖ :=
-    ⟨1, fun n x y => by rw [extTensor_gram E n x y, one_mul]⟩
-  obtain ⟨T', -, hT'uniq⟩ := E.univ E.Z inferInstance inferInstance inferInstance
-    inferInstance inferInstance E.selfDual E.η E.η_add_left E.η_add_right
-    E.η_smul hbound
-  have hPid : P = id := by
-    have h1 : P = T' := hT'uniq P ⟨⟨1, hPbdd⟩, fun x y =>
-      hPfix (E.η x y) (subset_biorthoCompl _
-        ⟨1, fun _ => x, fun _ => y, by simp⟩)⟩
-    have h2 : id = T' := hT'uniq id
-      ⟨⟨1, ⟨fun x y => rfl, fun c x => rfl, fun b x => rfl,
-        fun x => le_of_eq (one_mul _).symm⟩⟩, fun x y => rfl⟩
-    exact h1.trans h2.symm
+  obtain ⟨E₀, h₀⟩ := exists_extTensor_dense ht hX hY
+  -- **164IX**: the isomorphism respecting the embeddings
+  obtain ⟨U, ⟨⟨CU, hU⟩, hUbij, hUip, hUη⟩, -⟩ := ext_tensor_uniqueness hX hY E₀ E
+  have hUsub : ∀ z z' : E₀.Z, U z - U z' = U (z - z') := by
+    intro z z'
+    have h := hU.add (z - z') z'
+    rw [sub_add_cancel] at h
+    rw [h]; abel
   intro z n ωs ε hε
-  have hzW : z ∈ orthoCompl 𝒞 (orthoCompl 𝒞 D) := by
-    have h := hPW z
-    rwa [hPid] at h
-  rw [hilbmod_projthm_2 E.selfDual D] at hzW
-  have hz : z ∈ unClosure 𝒞 (inner 𝒞) D := by
-    rw [← unClosure_unClosure D]
-    exact unClosure_mono hbSpan hzW
-  exact hz n ωs ε hε
-
+  obtain ⟨z₀, rfl⟩ := hUbij.surjective z
+  obtain ⟨d₀, ⟨m, x, y, rfl⟩, hd⟩ := h₀ z₀ n ωs ε hε
+  refine ⟨∑ i, E.η (x i) (y i), ⟨m, x, y, rfl⟩, fun i => ?_⟩
+  have hUd : U (∑ i, E₀.η (x i) (y i)) = ∑ i, E.η (x i) (y i) := by
+    rw [bmm_sum hU]
+    exact Finset.sum_congr rfl fun i _ => hUη (x i) (y i)
+  have hsem : unSeminorm (ωs i) (inner 𝒞 : E.Z → E.Z → 𝒞)
+        (U z₀ - U (∑ i, E₀.η (x i) (y i)))
+      = unSeminorm (ωs i) (inner 𝒞 : E₀.Z → E₀.Z → 𝒞)
+        (z₀ - ∑ i, E₀.η (x i) (y i)) := by
+    rw [hUsub, unSeminorm, unSeminorm, hUip]
+  rw [← hUd, hsem]
+  exact hd i
 section EtaEstimates
 
 variable [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ] [VonNeumannAlgebra 𝒞]
@@ -9212,15 +9324,19 @@ private theorem unSeminorm_tprod_right (φ : NCPMap 𝒜 ℬ) (M : PaschkeModule
     _ = Real.sqrt ‖φ (a * star a)‖ * unSeminorm ω (mulInner ℬ) e := rfl
 
 /-- **The elementary tensors of `𝒜 ⊗_φ ℬ` are ultranorm dense.**  This is
-the Paschke-module analogue of `selfdual_compl_defining_dense` (**163II**)
-and of `ext_tensor_dense` (**164II**.1), and it is the easiest of the three:
-the set `D` of finite sums `∑ᵢ aᵢ ⊗ bᵢ` is *already* a ℬ-submodule
+the Paschke-module analogue of `selfdual_compl_defining_dense` (**163II**),
+and it is the easier of the two: the set `D` of finite sums `∑ᵢ aᵢ ⊗ bᵢ` is
+*already* a ℬ-submodule
 (`PhiCompatible.smul_action`, `c·(a ⊗ b) = a ⊗ (cb)`), so `bSpan D = D` and
 **160IV**.2 identifies `D^⊥⊥` with the ultranorm closure of `D` outright.
 The projection onto `D^⊥⊥` fixes every elementary tensor, hence equals `id`
 by the uniqueness half of the universal property of `𝒜 ⊗_φ ℬ`
 (**154III**.1), so `D^⊥⊥` is everything.  The thesis states this only
-implicitly, in the "by construction" of **151V**/**164VII**. -/
+implicitly, in the "by construction" of **151V**/**164VII**, so there is no
+printed proof here to be faithful to; the projection argument is ours, as it
+is at 163II.  (**164II**.1 `ext_tensor_dense` used to be a third copy of it;
+since 2026-08-27 it runs the thesis's own argument instead, which is
+available there and is not available at either of these two points.) -/
 theorem paschke_tprod_dense (φ : NCPMap 𝒜 ℬ) (M : PaschkeModule φ) :
     UnDense (inner ℬ)
       {z : M.X | ∃ (n : ℕ) (a : Fin n → 𝒜) (b : Fin n → ℬ),
