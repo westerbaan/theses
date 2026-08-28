@@ -188,6 +188,9 @@ theorem mem_uconj {S : StarSubalgebra ℂ (H →L[ℂ] H)} {y : H' →L[ℂ] H'}
 theorem cext_mem_uconj {S : StarSubalgebra ℂ (H →L[ℂ] H)} {x : H →L[ℂ] H}
     (hx : x ∈ S) : cext U x ∈ uconj hU S := ⟨x, hx, rfl⟩
 
+/-- (No consumer since 2026-08-28: its only one was `uconj_cornerAlg`, deleted
+with the `cornerTransfer` block in the fourth pool round, `docs/DEAD-LIMBS.md`
+§12d.  Kept as the `rfl` that names what `uconj` *is* as a set.) -/
 theorem coe_uconj (S : StarSubalgebra ℂ (H →L[ℂ] H)) :
     (uconj hU S : Set (H' →L[ℂ] H')) = cext U '' (S : Set (H →L[ℂ] H)) := rfl
 
@@ -541,7 +544,15 @@ theorem uconj_concreteTensor (hU : IsUnitaryCLM U) (hV : IsUnitaryCLM V)
 /-- **The commutation theorem is invariant under conjugation by
 unitaries.**  This is the statement that lets any realisation of a corner
 (or of any other Hilbert space defined up to unitary equivalence) be used
-where a chosen one was named. -/
+where a chosen one was named.
+
+That customer is gone: `CT_of_CT_corner_any`, the one declaration that used
+this to drop the *chosen* corner from `CT_of_CT_corner`, was deleted on
+2026-08-27 (`docs/DEAD-LIMBS.md` §12c), and the `cornerTransfer` block that
+supported it followed on 2026-08-28 (§12d).  This lemma and
+`uconj_concreteTensor`, its only user, are what is left: the statement the
+module header advertises as the transport of `CT` along a unitary, with
+nothing downstream of it. -/
 theorem CT_uconj_iff (hU : IsUnitaryCLM U) (hV : IsUnitaryCLM V)
     (SA : StarSubalgebra ℂ (H →L[ℂ] H)) (SB : StarSubalgebra ℂ (K →L[ℂ] K)) :
     CT (uconj hU SA) (uconj hV SB) ↔ CT SA SB := by
@@ -764,109 +775,5 @@ theorem CT_top_right (M : StarSubalgebra ℂ (H →L[ℂ] H))
   rw [coe_vnComm, hL, hdc, concreteTensor_def, hgen]
 
 end TopTensor
-
-/-! ## Independence of the choice of corner
-
-`CT_of_CT_corner` (`A/Proc/CornerTensor.lean`) has to name the *chosen*
-corner `cornerRep (e i) (he i)`, because nothing said that the
-commutation theorem for the compressed algebras does not depend on which
-realisation of the corner is used.  It does not: any two realisations of
-the same projection differ by the unitary `sub'^* sub`, and conjugation
-by it carries `cornerAlg` to `cornerAlg` and `CT` to `CT`. -/
-
-section CornerChoice
-
-variable {H K E E' F F' : Type u}
-  [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
-  [NormedAddCommGroup K] [InnerProductSpace ℂ K] [CompleteSpace K]
-  [NormedAddCommGroup E] [InnerProductSpace ℂ E] [CompleteSpace E]
-  [NormedAddCommGroup E'] [InnerProductSpace ℂ E'] [CompleteSpace E']
-  [NormedAddCommGroup F] [InnerProductSpace ℂ F] [CompleteSpace F]
-  [NormedAddCommGroup F'] [InnerProductSpace ℂ F'] [CompleteSpace F']
-
-/-- The unitary `sub'^* sub : E → E'` between two realisations of the same
-corner. -/
-def cornerTransfer (sub : E →L[ℂ] H) (sub' : E' →L[ℂ] H) : E →L[ℂ] E' :=
-  ContinuousLinearMap.adjoint sub' ∘L sub
-
-theorem adjoint_cornerTransfer (sub : E →L[ℂ] H) (sub' : E' →L[ℂ] H) :
-    ContinuousLinearMap.adjoint (cornerTransfer sub sub')
-      = ContinuousLinearMap.adjoint sub ∘L sub' := by
-  rw [cornerTransfer, ContinuousLinearMap.adjoint_comp,
-    ContinuousLinearMap.adjoint_adjoint]
-
-variable {e : H →L[ℂ] H} {sube : E →L[ℂ] H} {sube' : E' →L[ℂ] H}
-
-/-- Two realisations of the same corner differ by a unitary. -/
-theorem isUnitaryCLM_cornerTransfer (hse : IsCorner sube e) (hse' : IsCorner sube' e) :
-    IsUnitaryCLM (cornerTransfer sube sube') := by
-  constructor
-  · refine ContinuousLinearMap.ext fun v => ?_
-    rw [adjoint_cornerTransfer]
-    show ContinuousLinearMap.adjoint sube
-      (sube' (ContinuousLinearMap.adjoint sube' (sube v))) = v
-    rw [hse'.sub_adjoint_apply]
-    have h : e (sube v) = sube v :=
-      congrArg (fun T : E →L[ℂ] H => T v) hse.mul_sub
-    rw [h, hse.apply_adjoint_apply]
-  · refine ContinuousLinearMap.ext fun v => ?_
-    rw [adjoint_cornerTransfer]
-    show ContinuousLinearMap.adjoint sube'
-      (sube (ContinuousLinearMap.adjoint sube (sube' v))) = v
-    rw [hse.sub_adjoint_apply]
-    have h : e (sube' v) = sube' v :=
-      congrArg (fun T : E' →L[ℂ] H => T v) hse'.mul_sub
-    rw [h, hse'.apply_adjoint_apply]
-
-/-- Conjugation by `sub'^* sub` turns the compression along `sub` into the
-compression along `sub'`. -/
-theorem cext_cornerTransfer_cmpr (hse : IsCorner sube e) (hse' : IsCorner sube' e)
-    (x : H →L[ℂ] H) :
-    cext (cornerTransfer sube sube') (cmpr sube x) = cmpr sube' x := by
-  refine ContinuousLinearMap.ext fun v => ?_
-  rw [cext_apply, adjoint_cornerTransfer]
-  show ContinuousLinearMap.adjoint sube'
-      (sube (ContinuousLinearMap.adjoint sube
-        (x (sube (ContinuousLinearMap.adjoint sube (sube' v))))))
-    = ContinuousLinearMap.adjoint sube' (x (sube' v))
-  rw [hse.sub_adjoint_apply, hse.sub_adjoint_apply]
-  have h1 : e (sube' v) = sube' v :=
-    congrArg (fun T : E' →L[ℂ] H => T v) hse'.mul_sub
-  rw [h1]
-  have h2 : ContinuousLinearMap.adjoint sube' (e (x (sube' v)))
-      = ContinuousLinearMap.adjoint sube' (x (sube' v)) :=
-    congrArg (fun T : H →L[ℂ] E' => T (x (sube' v))) hse'.adjoint_mul
-  exact h2
-
-variable {SA : StarSubalgebra ℂ (H →L[ℂ] H)}
-
-/-- **The compressed algebra does not depend on the realisation of the
-corner.** -/
-theorem uconj_cornerAlg (hse : IsCorner sube e) (hse' : IsCorner sube' e)
-    (heA : e ∈ vnComm SA) :
-    uconj (isUnitaryCLM_cornerTransfer hse hse') (cornerAlg hse SA heA)
-      = cornerAlg hse' SA heA := by
-  refine SetLike.ext' ?_
-  rw [coe_uconj]
-  ext y
-  constructor
-  · rintro ⟨_, ⟨x, hx, rfl⟩, rfl⟩
-    rw [cext_cornerTransfer_cmpr hse hse']
-    exact ⟨x, hx, rfl⟩
-  · rintro ⟨x, hx, rfl⟩
-    exact ⟨cmpr sube x, ⟨x, hx, rfl⟩, cext_cornerTransfer_cmpr hse hse' x⟩
-
-variable {SB : StarSubalgebra ℂ (K →L[ℂ] K)} {f : K →L[ℂ] K}
-  {subf : F →L[ℂ] K} {subf' : F' →L[ℂ] K}
-
-end CornerChoice
-
-section CornerPayoff
-
-variable {H K : Type u}
-  [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
-  [NormedAddCommGroup K] [InnerProductSpace ℂ K] [CompleteSpace K]
-
-end CornerPayoff
 
 end Theses.A.Proc

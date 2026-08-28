@@ -1366,7 +1366,14 @@ still open. Of the 1,199-line commit, ~210 lines (`BKUnits`) and 147
 are load-bearing; the other 68% is unreachable. *Largest single item in this
 document.* Retiring it is a statement-level decision for the author.
 
-### 10b. `ModularGroup.lean` — the `jConj` layer, ~300 lines. **Cone finding; not re-derivable here.**
+### 10b. `ModularGroup.lean` — the `jConj` layer, ~300 lines. **DECIDED at §13.4: kept.**
+
+*The paragraph below is the state of the question before the cone pass, kept
+because it records what the direct count could and could not see.  §13.4 ran
+the cone on 2026-08-27 and settled it: the 26 declarations are one connected
+component that nothing outside reaches, the layer is a class-2 record, and it
+**stays**, because `J Δ^{it} J = Δ^{it}` is stated nowhere else in the tree.
+§13.4 also moves the block's first member: `Jisometry` is in the cone.*
 
 Twenty-six declarations recorded as outside the cone of every headline theorem
 while every member has a consumer inside the block. This sweep's method counts
@@ -1378,7 +1385,17 @@ finding stands unverified until a cone pass is run again. The module docstring
 still advertises `jConj_cpowOp`, `J_modPow` and `jConj_modPow` as **main
 results**; `jConj_cpowOp` and `J_modPow` have one use each, `jConj_modPow` none.
 
-### 10c. `TensorTransport.lean` — two clusters. **Partly closed.**
+### 10c. `TensorTransport.lean` — two clusters. **Superseded by §13.5; cluster 2 is now deleted.**
+
+*The paragraph below reads the two clusters by direct count and is left as
+written, because the direct count is exactly what §13.5 overturns.  §13.5
+found both clusters wholly outside the cone and re-described them as one
+finding — "`TensorTransport.lean` stops carrying weight at line 710".  Cluster
+2 was afterwards emptied not by that verdict but by §7's pool: once §12c
+deleted `CT_cornerAlg_congr` and `CT_of_CT_corner_any`, the rest of the block
+fell to zero uses by direct count and went in the fourth pool round, §12d.
+Cluster 1 stands; `CT_top_right` is kept, for the reason §12c gives: the
+module header cites it by name at `:28`.*
 
 Cluster 1, the `CT_top_*` family: `CT_top_right` now has **2** consumers and
 `tensorGen_vnComm_top` **1**; `CT_top_left`, `CT_top_top` and `mem_vnComm_top`
@@ -1479,9 +1496,14 @@ make them the fingerprint the check is after. Left, recorded, re-confirmed.
    sections, plus four of the five limbs §7c itself created. Nothing in the
    pool is unexamined. The deletable fraction, measured three times
    independently, is **one in two** (19/32, 21/42, 40/75).
-4. **A cone pass**, to re-decide §10b and §10c cluster 2, and to check the 44
-   dead instances that the textual method is blind to. Budget an hour of compute
-   and use a pointer-cached constant walk (§1).
+4. ~~**A cone pass**, to re-decide §10b and §10c cluster 2, and to check the 44
+   dead instances that the textual method is blind to.~~ **DONE 2026-08-27,
+   §13.** It cost 8m22s and 5.4 GB with the pointer-cached walk, and it
+   answered all three questions: §10b's layer is real and is kept (§13.4);
+   §10c's two clusters are one finding and both are outside the cone (§13.5);
+   of the 44 "dead" instances **38 are live** and 6 are not (§13.2). The
+   fourth answer was the one not asked for — the two methods disagree on 810
+   declarations, and where they disagree the cone is right (§13.6).
 5. ~~**§5.1, the three copies of 163II's projection argument.**~~ **DONE
    2026-08-27, and the recommendation's premise was wrong** — see the
    correction at the head of §5.1.  The thesis cites the *uniqueness* half of
@@ -1644,6 +1666,48 @@ The five declarations this round orphaned — `CT_uconj_iff` and
 (`A/VN/NormalFunctionals`) — are the cone effect of §11.4 measured a third
 time: **three rounds, thirteen new limbs (5, 3, 5), and each round's are
 outside the pool the next one is handed.**
+
+### 12d. The fourth pool round (2026-08-28, `A/Proc/TensorTransport.lean`)
+
+§12c's forty deletions left five limbs behind and said they were "left in
+place".  Two of them were in `TensorTransport`, and taking them meant taking
+the block they belonged to, because the block's remaining members consumed
+only each other.  So the fourth round is a *block* deletion rather than a list
+of independent ones, and the criterion has to be stated at the block level:
+**no declaration outside the block used any member of it.**  That was checked
+against `e612c93` for each of the five, not against the working tree, and it
+held for all five.
+
+| deleted | line at `e612c93` | direct uses, all inside the block |
+|---|---|---|
+| `cornerTransfer` | `:789` | 4 |
+| `adjoint_cornerTransfer` | `:792` | 3 |
+| `isUnitaryCLM_cornerTransfer` | `:801` | 1 |
+| `cext_cornerTransfer_cmpr` | `:823` | 2 |
+| `uconj_cornerAlg` | `:845` | 0 |
+
+**104 lines, 5 declarations** (56 → 51), together with the `section
+CornerChoice` header, its `variable` block, the section prose *"Independence of
+the choice of corner"* — whose subject `CT_of_CT_corner_any` §12c had already
+deleted — and the `section CornerPayoff` that §12b had emptied and left
+standing.  None of the five is named by an audit row: `scripts/audit_check.py`
+reports 0 phantom rows after the deletion.
+
+**This is the pool, not the cone.**  §13.5 put ten declarations of this file
+outside the cone and re-described clusters 1 and 2 as one finding; that verdict
+is a record and not a deletion order, and it is not what was executed here.
+What made these five deletable is the ordinary pool test — zero direct use,
+unrowed, untagged — which they failed at `0e9f7ff` and passed only after §12c
+removed their last two external consumers.  Cluster 1 is equally outside the
+cone and is **untouched**, because `CT_top_right` is cited by name in the
+module header (§12c) and its siblings were already gone.
+
+**And the round created three more limbs, in the same file.**  `coe_uconj`
+(`:191`) and `CT_uconj_iff` (`:545`) are now at zero uses; `uconj_concreteTensor`
+(`:527`) has two, both inside `CT_uconj_iff`.  §12c had already named
+`CT_uconj_iff` as one of its five and left it; it is left again, with the other
+two.  Four rounds now, and the tail is not shrinking as fast as §12c hoped: 5,
+3, 5, 3.
 
 ---
 

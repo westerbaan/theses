@@ -66,8 +66,15 @@ the *real* calculus after splitting `X^w` into real and imaginary parts,
 directly and never performs the rearrangement that would have needed them.
 `jConj` also duplicates `A/VN/TomitaTakesaki.lean`'s live `adJ` verbatim.
 These three were advertised as "main results" until 2026-08-26; they are
-kept as a record of the identity, not as machinery.  See
-`docs/DEAD-LIMBS.md` §5b.
+kept as a record of the identity, not as machinery.  The term-level cone
+pass of 2026-08-27 (`docs/DEAD-LIMBS.md` §13.4) confirmed the layer is a
+single connected component of 26 declarations that nothing outside it
+reaches, and ruled that it stays: `J Δ^{it} J = Δ^{it}` is stated nowhere
+else in `Theses/`.  One correction it makes to the sentence above: the
+layer begins at `real_inner_J_map_map`, not at `Jisometry` (`:586`), which
+is in the cone through `commute_modPow_T` and `modPow_neg_eq_prod` in
+`A/VN/TomitaAnalytic.lean`.  See `docs/DEAD-LIMBS.md` §13.4, which
+supersedes the undecided §10b.
 
 ## Not here
 
@@ -573,8 +580,8 @@ into `J f(R) J = f(2 − R)` for every continuous real `f`.
 The two files are **siblings**, not one downstream of the other: `TomitaTakesaki` imports
 `Tomita`, which like this file imports only `StandardSubspace`.  They first meet at
 `A/VN/TomitaFourier.lean`, where both are in scope and only `adJ` is used — `jConj` and
-everything built on it below is unconsumed.  See `docs/DEAD-LIMBS.md` §5b and §8, which
-proposes keeping the single copy in `StandardSubspace.lean`.  An earlier version of this note
+everything built on it below is unconsumed.  See `docs/DEAD-LIMBS.md` §13.4, whose ruling of
+2026-08-27 is to keep the layer as a record.  An earlier version of this note
 said `TomitaTakesaki` was "downstream of this file"; it is not.  Corrected 2026-08-26.) -/
 
 section Conjugation

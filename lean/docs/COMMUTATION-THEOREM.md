@@ -455,8 +455,14 @@ Two findings that re-cost it downward:
 One instance of the theorem is already proved outright: `CT_top_right`
 (`54859e6`), the amplification case `(𝒜 ⊗̄ B(𝒦))□ = 𝒜□ ⊗̄ ℂ1`.
 *(Status report of 2026-08-25, not a dependency: `commutation_theorem` is now
-unconditional and subsumes `CT_top_right`, `CT_top_left` and `CT_top_top`,
-which are consumer-free special cases — `docs/DEAD-LIMBS.md` §5c.)*
+unconditional and subsumes `CT_top_right`, which is a consumer-free special
+case — `docs/DEAD-LIMBS.md` §10c.  Its two siblings `CT_top_left` and
+`CT_top_top` were deleted on 2026-08-27, §12b; `CT_top_right` was kept, on the
+strength of this sentence and of the module docstring of
+`A/Proc/TensorTransport.lean`.  The term-level cone pass of 2026-08-27
+(§13.5 of `DEAD-LIMBS.md`) then placed `CT_top_right` outside the cone too,
+along with both of the consumers that §10c had counted for it, so the keep
+rests on the record the statement makes and not on a consumer.)*
 
 **What the actuals say about the estimate.** Four of the eight rows came in at
 or below the low end, one (the reduction's own critical path) at 60% of it, and

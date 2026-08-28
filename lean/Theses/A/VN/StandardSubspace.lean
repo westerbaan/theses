@@ -40,7 +40,11 @@ For a closed *real* subspace `K` of a complex Hilbert space `H`:
   `J R = (2 - R) J` (RvD Prop. 3.1); `Jequiv` bundles `J` as an `H ≃ₗᵢ⋆[ℂ] H`.
 * `isModularPair_a_b` : `(a, b)` is a modular pair in the sense of
   `Theses/A/VN/Modular.lean` — the hand-off point.  `modularPair_data` is the same
-  statement spelled out, with no dependency on that file.
+  statement spelled out in elementary terms: its *statement* names nothing from that
+  file, but this one imports it (line 53), so there is no import-graph independence.
+  (This header said "with no dependency on that file" until 2026-08-28;
+  `modularPair_data`'s own docstring retracted that on 2026-08-26 and the header did
+  not follow.)
 
 The definition of `J` deliberately uses only the *complex* functional calculus of `R`
 (`T` is `CFC.sqrt` of the complex-linear `R (2 - R)`); no functional calculus in the real
