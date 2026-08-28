@@ -6716,7 +6716,26 @@ and then wants part 4's third `iff` for `eₙp, eₙq`, whose carriers are `eₙ
 rather than `1`; a form of part 4 relative to a projection unit is what is
 missing.  Note that the final step does *not* need `Z(e𝒜e) = Z(𝒜)e`: corner
 centrality of `γeₙ` kills `eₙ(γa − aγ)eₙ` for every `n`, and `⋃ₙ eₙ = 1`
-finishes, as in session 91's proof of 104VII. -/
+finishes, as in session 91's proof of 104VII.
+
+**Two of the relative pieces were checked on 2026-08-28 and are cheap; the
+third is the job.**  Both were compiled against this tree, outside it, and are
+not added here because nothing consumes them yet.
+
+* `pinv_two_sided` **does not need its faithfulness hypothesis.**  Its proof
+  only rewrites `suppProj x` to `ceil x`, so the same three lines give
+  `pinv x * x = ceil x` and `x * pinv x = ceil x` for any pseudoinvertible
+  positive `x`.  That is the relative two-sided inverse the corner form wants,
+  and it is a hypothesis deletion, not a new proof.
+* **`⌈e·p⌉ = e`** for a projection `e` commuting with a faithful positive `p`:
+  about twenty lines, and it reuses `ceil_mul_proj_mul_of_comm` rather than
+  redoing it.  Apply that lemma to `√p` instead of `p` — `√p e √p = e p`, and
+  `⌈√p⌉ = 1` because `p·⌈√p⌉ = √p(√p·⌈√p⌉) = p` makes `⌈p⌉ ≤ ⌈√p⌉` by
+  leastness; `e` commutes with `√p` by `Commute.cfc_nnreal`.
+
+What is **not** done, and is the real cost: the third `iff` of part 4 with the
+unit `eₙ` in place of `1`, and the compatibility that turns `γ = (p∧q)/p` into
+`(eₙp ∧ eₙq)/(eₙp)` on multiplication by `eₙ`.  Neither was attempted. -/
 theorem centrally_similar_basic_5 [VonNeumannAlgebra A] (p q : A)
     (hp : 0 ≤ p) (hq : 0 ≤ q) (hcp : ceil p = 1) (hcq : ceil q = 1)
     (hcomm : p * q = q * p) (e : ℕ → A)
