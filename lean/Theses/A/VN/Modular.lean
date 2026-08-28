@@ -557,6 +557,24 @@ namespace IsCommutingPair
 
 variable {c d : ℋ →L[ℂ] ℋ}
 
+/-- Swapping the two members of a commuting pair.
+
+**Unused, and it is not an oversight** (`docs/DEAD-LIMBS.md` §10f).  It has no
+term-level reference anywhere in `Theses/` — checked with
+`scripts/UsesOf.lean`, since the short name `symm` cannot be told from
+Mathlib's by grep, which is why the dead-limb sweep left this row "unresolved".
+
+The reason nothing uses it is structural.  `sqrtSumSq c d` is
+`CFC.sqrt (c * c + d * d)` and `sqrtSumSq d c` is `CFC.sqrt (d * d + c * c)`:
+propositionally equal, definitionally not, and this file proves no
+`sqrtSumSq_comm`.  So `p.symm` hands back an `IsCommutingPair d c` whose derived
+operators are `sqrtSumSq d c`, `normFst d c`, `normSnd d c`, while every lemma
+the caller then wants is stated about `sqrtSumSq c d`, `normFst c d`,
+`normSnd c d`.  Making the swap usable means `sqrtSumSq_comm` plus the two
+transports `normFst d c = normSnd c d` and `normSnd d c = normFst c d` — three
+short lemmas, not built here, because no consumer has ever asked for them and
+an API written ahead of its first consumer is the pattern
+`docs/DEAD-LIMBS.md` §10e is about. -/
 theorem symm (p : IsCommutingPair c d) : IsCommutingPair d c :=
   ⟨p.nonneg_snd, p.nonneg_fst, p.commute.symm, p.injective_snd, p.injective_fst⟩
 

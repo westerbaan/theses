@@ -1612,7 +1612,7 @@ The smaller instances of the same shape, all re-confirmed dead here:
 | `sepSet_subset_Ksub` | orphan | still dead |
 | `CT_iff_vnComm` | orphan, and the docs oversold it | still dead |
 | `cyclic_and_separating_of_separating` | the sharpest retraction casualty | still dead |
-| `IsCommutingPair.symm` | cannot be used as written | short name is `symm`; the textual method cannot separate it from Mathlib's. Unresolved; needs a term-level check |
+| `IsCommutingPair.symm` | cannot be used as written | **RESOLVED 2026-08-28: dead, and the 2026-08-26 verdict was right about why.** `scripts/UsesOf.lean` walks the environment for term-level references and finds **none** in `Theses/` — the check §10f asked for. The cause is in the file: `sqrtSumSq c d` and `sqrtSumSq d c` are propositionally but not definitionally equal and no `sqrtSumSq_comm` is proved, so `p.symm` returns a pair whose derived operators no downstream lemma is stated about. Written into the declaration's own doc comment; the three-lemma repair is named there and deliberately not built |
 | `concreteTensor_inf_le_inf`, `tensorSub₂_mono` | superseded | both still dead |
 | Defeq fragility | the one place a reroute is advisable | unchanged; see §8 |
 
