@@ -2806,6 +2806,15 @@ Theses.B.Eff.Dagger|Theses.B.Eff.asrt_pristine_reverse_5|green
 Theses.B.Eff.DiamondAmp|Theses.B.Eff.asrt_spec|green
 Theses.B.Eff.DiamondAmp|Theses.B.Eff.asrt_unique|green
 Theses.B.Eff.Dagger|Theses.B.Eff.asrt_zeta_compr|green
+Theses.B.Eff.VNExamples|Theses.B.Eff.avgLin_apply|green
+Theses.B.Eff.VNExamples|Theses.B.Eff.avgLin_cp|green
+Theses.B.Eff.VNExamples|Theses.B.Eff.avgLin_normal|green
+Theses.B.Eff.VNExamples|Theses.B.Eff.avgLin_positive|green
+Theses.B.Eff.VNExamples|Theses.B.Eff.avgNCP_apply|green
+Theses.B.Eff.VNExamples|Theses.B.Eff.avgNCP_carrier|green
+Theses.B.Eff.VNExamples|Theses.B.Eff.avgNCP_faithful|green
+Theses.B.Eff.VNExamples|Theses.B.Eff.avgNCP_not_injective|green
+Theses.B.Eff.VNExamples|Theses.B.Eff.avgNCP_unital|green
 Theses.B.Eff.StatesPredicates|Theses.B.Eff.basic_divisoid_equiv|green
 Theses.B.Eff.Comparisons|Theses.B.Eff.boxPull_asrt_self|green
 Theses.B.Eff.DiamondAmp|Theses.B.Eff.boxPull_comp|green
@@ -3076,6 +3085,7 @@ Theses.B.Eff.StatesPredicates|Theses.B.Eff.exc_rng_eff_no_separating_states|gree
 Theses.B.Eff.StatesPredicates|Theses.B.Eff.exc_rng_eff_pred_idem_one|green
 Theses.B.Eff.StatesPredicates|Theses.B.Eff.exc_rng_eff_pred_idem_orth|green
 Theses.B.Eff.StatesPredicates|Theses.B.Eff.exc_rng_eff_pred_idem_zero|green
+Theses.B.Eff.VNExamples|Theses.B.Eff.exists_faithful_unital_ncp_not_bijective|green
 Theses.B.Eff.StatesPredicates|Theses.B.Eff.exists_isSumOf_of_truth|green
 Theses.B.Eff.VNExamples|Theses.B.Eff.exists_ncpsu_state|green
 Theses.B.Eff.VNExamples|Theses.B.Eff.exists_ncpsu_state_of_np|green
@@ -3377,6 +3387,7 @@ Theses.B.Eff.VNExamples|Theses.B.Eff.preservesDirSups_comp'|green
 Theses.B.Eff.VNExamples|Theses.B.Eff.preservesDirSups_fstFun|green
 Theses.B.Eff.VNExamples|Theses.B.Eff.preservesDirSups_inlFun|green
 Theses.B.Eff.VNExamples|Theses.B.Eff.preservesDirSups_inrFun|green
+Theses.B.Eff.VNExamples|Theses.B.Eff.preservesDirSups_ofReal_smul|green
 Theses.B.Eff.VNExamples|Theses.B.Eff.preservesDirSups_prodFun|green
 Theses.B.Eff.VNExamples|Theses.B.Eff.preservesDirSups_sndFun|green
 Theses.B.Eff.VNExamples|Theses.B.Eff.preservesDirSups_zeroFun|green

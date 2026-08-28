@@ -866,6 +866,149 @@ noncomputable def wUnit (A : Type u) [CStarAlgebra A] [PartialOrder A]
 @[simp] theorem wUnit_apply (z : ULift.{u} ℂ) :
     (wUnit A).toNCPMap z = z.down • (1 : A) := rfl
 
+/-! ### **98X**: a faithful unital ncp-map need not be an isomorphism
+
+The Example's second sentence (proc.tex:733).  It cannot be stated in
+`A/Proc` — there is no von Neumann structure on `ℂ²` upstream of
+`Measurement.lean`; both `instVonNeumannAlgebraProd` and
+`instVonNeumannAlgebraCU` are here — so it is stated here, at the first
+point where its witness exists. -/
+
+/-- Normality is preserved by a positive real scalar multiple.  The `½` of
+98X's witness needs this, and `preservesDirSups_add` alone does not give it. -/
+theorem preservesDirSups_ofReal_smul {f : A → B} (hf : Theses.PreservesDirSups f)
+    {r : ℝ} (hr : 0 < r) :
+    Theses.PreservesDirSups (fun a => ((r : ℝ) : ℂ) • f a) := by
+  have hmono : ∀ t : ℝ, 0 ≤ t → ∀ {x y : B}, x ≤ y →
+      ((t : ℝ) : ℂ) • x ≤ ((t : ℝ) : ℂ) • y := by
+    intro t ht x y h
+    have := ofReal_smul_nonneg (sub_nonneg.mpr h) ht
+    rwa [smul_sub, sub_nonneg] at this
+  intro D s hne hdir hlub
+  have h := hf D s hne hdir hlub
+  constructor
+  · rintro _ ⟨d, hd, rfl⟩
+    exact hmono r hr.le (h.1 ⟨d, hd, rfl⟩)
+  · intro c hc
+    have hub : ((r⁻¹ : ℝ) : ℂ) • c ∈ upperBounds ((fun d : selfAdjoint A => f d) '' D) := by
+      rintro _ ⟨d, hd, rfl⟩
+      have hstep := hmono r⁻¹ (inv_pos.mpr hr).le (hc ⟨d, hd, rfl⟩)
+      rwa [smul_smul, ← Complex.ofReal_mul, inv_mul_cancel₀ hr.ne', Complex.ofReal_one,
+        one_smul] at hstep
+    have hstep := hmono r hr.le (h.2 hub)
+    rwa [smul_smul, ← Complex.ofReal_mul, mul_inv_cancel₀ hr.ne', Complex.ofReal_one,
+      one_smul] at hstep
+
+/-- 98X's witness `(λ, μ) ↦ ½(λ + μ)`, as a `ℂ`-linear map. -/
+noncomputable def avgLin : (ULift.{u} ℂ × ULift.{u} ℂ) →ₗ[ℂ] ULift.{u} ℂ :=
+  (2⁻¹ : ℂ) • (LinearMap.fst ℂ (ULift.{u} ℂ) (ULift.{u} ℂ)
+    + LinearMap.snd ℂ (ULift.{u} ℂ) (ULift.{u} ℂ))
+
+theorem avgLin_apply (x : ULift.{u} ℂ × ULift.{u} ℂ) :
+    avgLin x = (2⁻¹ : ℂ) • (x.1 + x.2) := rfl
+
+theorem avgLin_positive : IsPositiveMap (avgLin.{u}) := by
+  intro a ha
+  obtain ⟨h1, h2⟩ := Prod.le_def.mp ha
+  rw [avgLin_apply]
+  have hsum : (0 : ULift.{u} ℂ) ≤ a.1 + a.2 := add_nonneg h1 h2
+  have h : ((2⁻¹ : ℝ) : ℂ) • (a.1 + a.2) = (2⁻¹ : ℂ) • (a.1 + a.2) := by norm_num
+  rw [← h]
+  exact ofReal_smul_nonneg hsum (by norm_num)
+
+/-- Complete positivity, from **34IX**.2 `cp_commutative_dom`: the domain
+`ℂ²` is commutative, so positivity is enough. -/
+theorem avgLin_cp : IsCompletelyPositiveMap (avgLin.{u}) := by
+  letI : CommCStarAlgebra (ULift.{u} ℂ × ULift.{u} ℂ) :=
+    { mul_comm := fun a b => by
+        refine Prod.ext ?_ ?_ <;> · apply ULift.ext; simp [mul_comm] }
+  exact cp_commutative_dom _ avgLin_positive
+
+theorem avgLin_normal : Theses.PreservesDirSups (avgLin.{u}) := by
+  have hadd : Theses.PreservesDirSups
+      (fun x : ULift.{u} ℂ × ULift.{u} ℂ => x.1 + x.2) :=
+    preservesDirSups_add preservesDirSups_fstFun preservesDirSups_sndFun
+  have h := preservesDirSups_ofReal_smul hadd (r := (2⁻¹ : ℝ)) (by norm_num)
+  have hfun : (fun x : ULift.{u} ℂ × ULift.{u} ℂ => (((2⁻¹ : ℝ) : ℂ) • (x.1 + x.2)))
+      = ⇑(avgLin.{u}) := by
+    funext x; rw [avgLin_apply]; norm_num
+  rwa [hfun] at h
+
+/-- 98X's witness as an ncp-map. -/
+noncomputable def avgNCP : Theses.NCPMap (ULift.{u} ℂ × ULift.{u} ℂ) (ULift.{u} ℂ) :=
+  mkNCP avgLin.{u} avgLin_cp avgLin_normal
+
+@[simp] theorem avgNCP_apply (x : ULift.{u} ℂ × ULift.{u} ℂ) :
+    avgNCP.{u} x = (2⁻¹ : ℂ) • (x.1 + x.2) := rfl
+
+theorem avgNCP_unital : avgNCP.{u} 1 = 1 := by
+  rw [avgNCP_apply]
+  apply ULift.ext
+  show (2⁻¹ : ℂ) * ((1 : ℂ) + 1) = 1
+  norm_num
+
+theorem avgNCP_not_injective : ¬ Function.Injective ⇑(avgNCP.{u}) := by
+  intro hinj
+  have h : avgNCP.{u} (ULift.up 1, ULift.up (-1)) = avgNCP.{u} 0 := by
+    rw [avgNCP_apply, avgNCP_apply]
+    apply ULift.ext
+    show (2⁻¹ : ℂ) * ((1 : ℂ) + -1) = (2⁻¹ : ℂ) * ((0 : ℂ) + 0)
+    norm_num
+  have h1 : (ULift.up (1 : ℂ) : ULift.{u} ℂ) = ULift.up 0 := congrArg Prod.fst (hinj h)
+  exact one_ne_zero (ULift.up.inj h1)
+
+theorem avgNCP_faithful {x : ULift.{u} ℂ × ULift.{u} ℂ} (hx : 0 ≤ x)
+    (h : avgNCP.{u} x = 0) : x = 0 := by
+  obtain ⟨h1, h2⟩ := Prod.le_def.mp hx
+  have h1' : (0 : ℂ) ≤ x.1.down := h1
+  have h2' : (0 : ℂ) ≤ x.2.down := h2
+  have hd : (2⁻¹ : ℂ) * (x.1.down + x.2.down) = 0 := by
+    have hdown := congrArg ULift.down h
+    rw [avgNCP_apply] at hdown
+    exact hdown
+  have hsum : x.1.down + x.2.down = 0 := by
+    rcases mul_eq_zero.mp hd with h0 | h0
+    · exact absurd h0 (by norm_num)
+    · exact h0
+  obtain ⟨hr1, hi1⟩ := Complex.nonneg_iff.mp h1'
+  obtain ⟨hr2, hi2⟩ := Complex.nonneg_iff.mp h2'
+  have hre : x.1.down.re + x.2.down.re = 0 := by
+    have := congrArg Complex.re hsum; simpa using this
+  have e1 : x.1.down.re = 0 := le_antisymm (by linarith) hr1
+  have e2 : x.2.down.re = 0 := le_antisymm (by linarith) hr2
+  refine Prod.ext ?_ ?_ <;> apply ULift.ext <;> apply Complex.ext
+  · exact e1
+  · exact hi1.symm
+  · exact e2
+  · exact hi2.symm
+
+theorem avgNCP_carrier : Theses.A.Proc.ncpCarrier avgNCP.{u} = 1 := by
+  have hP1 : IsStarProjection (1 : ULift.{u} ℂ × ULift.{u} ℂ) ∧
+      avgNCP.{u} (1 - 1) = 0 ∧
+      ∀ q : ULift.{u} ℂ × ULift.{u} ℂ, IsStarProjection q →
+        avgNCP.{u} (1 - q) = 0 → (1 : ULift.{u} ℂ × ULift.{u} ℂ) ≤ q := by
+    refine ⟨IsStarProjection.one _, ?_, ?_⟩
+    · rw [sub_self, avgNCP_apply]
+      apply ULift.ext
+      show (2⁻¹ : ℂ) * ((0 : ℂ) + 0) = 0
+      norm_num
+    · intro q hq hfq
+      have hq1 : (0 : ULift.{u} ℂ × ULift.{u} ℂ) ≤ 1 - q := sub_nonneg.mpr hq.le_one
+      have hq' : q = 1 := (sub_eq_zero.mp (avgNCP_faithful hq1 hfq)).symm
+      rw [hq']
+  exact (Theses.A.Proc.exists_ncpCarrier avgNCP.{u}).unique
+    (Theses.A.Proc.exists_ncpCarrier avgNCP.{u}).choose_spec.1 hP1
+
+/-- **98X** (proc.tex:733, Example), second sentence: a **faithful unital
+ncp-map need not be an isomorphism**.  The witness is the thesis's own,
+`f : ℂ² → ℂ`, `(λ, μ) ↦ ½(λ + μ)`: unital, with carrier `1` (faithful), and
+not injective, since it kills `(1, −1)`. -/
+theorem exists_faithful_unital_ncp_not_bijective :
+    ∃ f : Theses.NCPMap (ULift.{u} ℂ × ULift.{u} ℂ) (ULift.{u} ℂ),
+      f 1 = 1 ∧ Theses.A.Proc.ncpCarrier f = 1 ∧ ¬ Function.Bijective ⇑f :=
+  ⟨avgNCP.{u}, avgNCP_unital, avgNCP_carrier, fun h => avgNCP_not_injective h.1⟩
+
+
 end
 
 section
