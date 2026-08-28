@@ -128,6 +128,10 @@ VERDICTS = (
     ("new declaration",      ""),
     ("row added",            ""),
     ("left-benign",          "left-benign"),
+    # the passes' own name for ground (2): the printed route is what an erratum
+    # corrects.  Without it the fallback reached the word OPEN further down the
+    # field -- which was the ERRATUM's status, not the row's verdict.
+    ("left-erratum",         "left-thesis"),
     ("left-thesis",          "left-thesis"),
     ("left-ruling",          "left-ruling"),
     ("left-cost",            "left-cost"),
@@ -142,7 +146,9 @@ VERDICTS = (
     ("left-mathlib",         "left-mathlib"),
     ("left-unavailable",     "left-unavailable"),
     ("left-by-choice",       "left-by-choice"),
-    ("open",                 "open"),
+    # `open` is short enough to match inside other words, and it did: a status
+    # naming `TAG_OPENS` was filed under it.  Matched on a word boundary below,
+    # not here.
 )
 
 
@@ -174,6 +180,8 @@ def verdict_of(field):
     # are verified leaves and the fallback was filing them under `left`, which
     # is not a category.  Only the *bare* word counts: every `left-...` form
     # above has already been matched.
+    if re.search(r"\bopen\b", t):
+        return "open"
     if re.match(r"left\b(?![-\w])", bare, re.I):
         return "left-reasoned"
     return re.split(r"[\s:,]", bare, maxsplit=1)[0].rstrip("-").lower()

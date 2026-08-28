@@ -114,11 +114,21 @@ because the `VERDICTS` table says in its own comment that ground (3) "wants an
 author ruling on a statement", which is not a thing anyone here can supply.
 `left-cost` and `open` are ours.  Everything else is not a defect.
 
-| | statement (153) | proof (230) |
+| | statement (152) | proof (230) |
 |---|---|---|
-| not a defect | 83 | 167 |
-| **ours** — `left-cost`, `open` | **40** | **38** |
-| **the author's** — `left-thesis`, `left-ruling`, `left-needs-statement` | **30** | **25** |
+| not a defect | 83 | 168 |
+| **ours** — `left-cost`, `open` | **39** | **36** |
+| **the author's** — `left-thesis`, `left-ruling`, `left-needs-statement` | **30** | **26** |
+
+*Three classifier defects were fixed on 2026-08-29 to get these numbers, and all
+three were the same shape — a needle matching text that was not a verdict.*
+`open` is four letters and matched inside `TAG_OPENS`, in a status field
+describing the regex bug that had hidden the row; it is word-bounded now.  The
+word `OPEN` also appears in "`ERRATA.md` row 148IV, OPEN", which is the
+*erratum's* status and not the row's, so `left-erratum` — the passes' own name
+for ground (2) — is a declared needle now and matches first.  And a status
+opening "ADDED …" fell through to the first token.  A verdict table is only as
+good as the words it refuses to guess at.
 
 *A correction to the first count of this, made on 2026-08-28:* it reported 22
 author-side and 50 ours for the statement column, having filed
