@@ -2215,6 +2215,26 @@ is told it may delete.
 | `B.Eff.unitInterval_le_iff` | `B/Eff/StatesPredicates.lean:6920` | 1 | `B/Eff/StatesPredicates.lean` |
 | `B.Eff.cuUpLin` | `B/Eff/VNExamples.lean:2171` | 1 | `B/Eff/VNExamples.lean` |
 
+**All twenty-five survive — checked 2026-08-28, and this is the check the
+warning was for.**  §7's pool was spent in four rounds after this table was
+written (§12a–§12d, 90 declarations deleted), and every one of the twenty-five
+is still defined in the tree: `SPred.isSup_iff_isSupSet`,
+`SPred.isInf_iff_isInfSet` and `CentrePositiveSeparating.centralProj` are
+declared with their namespace in the name, the other twenty-two plainly.  The
+warning was heeded, or the rounds were lucky; either way nothing was lost.
+
+**And the rule now has one implementation in the repository.**  The scanner
+this table indicts is not checked in — it was a worker's script — but
+`scripts/limb_check.py` counts uses for the same purpose, and it had the trap
+half-fixed: its bound allowed a dot *after* the name, so `le_vnComm_comm.mpr`
+counted, and forbade one *before* it, so `hW.norm_ipVal_self_le` and
+`hΩ.centralProj.conj` did not.  Bounding on identifier characters alone fixes
+both directions; measured on this table's own names, `centralProj` goes 0 → 2,
+`SPred.isSup_iff_isSupSet` 0 → 5, and `norm_ipVal_self_le` 0 → 4, while
+`le_vnComm_comm` was already right at 7.  It over-counts a short name against
+Mathlib's, which is the safe direction: over-counting reports a limb alive and a
+person looks, under-counting confirms a stale dead-claim in silence.
+
 The first row is the sharpest.  `le_vnComm_comm` is the Galois connection for
 the bundled commutant; three of its four consumers are in
 `A/Proc/CommutationTheorem.lean` and `A/Proc/Compression.lean` — and §3's table
@@ -2295,6 +2315,14 @@ added or removed, no audit row edited.  This section is the whole of the
 output.  The one action item it creates for someone else is §13.6's prefix-
 indexing fix to the textual scanner, and the 25 declarations it names must come
 off §7's deletion pool before the `A/` half of that pool is spent.
+
+*Closed 2026-08-28.*  Both halves of that item are discharged: the twenty-five
+were checked one by one after the pool was spent and **all twenty-five are still
+in the tree**, and the indexing rule is implemented in the one use-counter the
+repository actually contains, `scripts/limb_check.py` — see §13.6.  What is
+*not* discharged, and cannot be from here, is the scanner itself: it was never
+checked in, so the next person to write one inherits §1's trap list and nothing
+more.
 
 ---
 

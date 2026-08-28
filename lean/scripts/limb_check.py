@@ -98,7 +98,17 @@ def main():
     def count(name):
         if name in uses:
             return uses[name]
-        pat = re.compile(r'(?<![\w.\'])' + re.escape(name) + r'(?![\w\'])')
+        # §13.6's fourth implementation trap: a use token has to be found under
+        # *every contiguous run of its dotted components*, not only its suffixes
+        # and not only its prefixes.  `le_vnComm_comm.mpr` is a use of
+        # `le_vnComm_comm`; `hW.norm_ipVal_self_le` is a use of
+        # `norm_ipVal_self_le`; `hΩ.centralProj.conj` is a use of `centralProj`,
+        # which is neither the first component nor the last.  Bounding on
+        # identifier characters only -- letting a dot sit on either side -- finds
+        # all three.  It over-counts a short name against Mathlib's, and that is
+        # the safe direction here: over-counting reports a limb as alive and a
+        # person checks, under-counting silently confirms a stale dead-claim.
+        pat = re.compile(r"(?<![A-Za-z0-9_'])" + re.escape(name) + r"(?![A-Za-z0-9_'])")
         n = sum(len(pat.findall(code)) for _, code in sources)
         uses[name] = max(0, n - (1 if name in defined else 0))
         return uses[name]
