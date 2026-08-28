@@ -106,6 +106,26 @@ a name list (`Mathlib EuclideanSpace ℂ (Fin N) (no declaration; …)`, used
 where the carrier is Mathlib's and the tree only documents it) is skipped by
 that check, so use it only when there really is no declaration to name.
 
+### Who each mismatch is waiting on (2026-08-29)
+
+With every row verdicted, the two columns split like this.  `left-thesis`,
+`left-ruling` and **`left-needs-statement`** are the author's — the third
+because the `VERDICTS` table says in its own comment that ground (3) "wants an
+author ruling on a statement", which is not a thing anyone here can supply.
+`left-cost` and `open` are ours.  Everything else is not a defect.
+
+| | statement (153) | proof (230) |
+|---|---|---|
+| not a defect | 83 | 167 |
+| **ours** — `left-cost`, `open` | **40** | **38** |
+| **the author's** — `left-thesis`, `left-ruling`, `left-needs-statement` | **30** | **25** |
+
+*A correction to the first count of this, made on 2026-08-28:* it reported 22
+author-side and 50 ours for the statement column, having filed
+`left-needs-statement` under ours.  Eight rows move.  The overlap between the
+two columns is large — they are mostly the same points seen twice — so these are
+not 55 distinct author questions.
+
 ### The verdict vocabulary, declared (2026-08-28)
 
 A row's `note` says what differs; its **status** field says what should happen
