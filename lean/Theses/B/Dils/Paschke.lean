@@ -2230,7 +2230,7 @@ end Inhabited
 
 /-! ## Parsec 1550: KSGNS
 
-**155I**, **155III** (dils.tex:3849, 3859): discussion — nothing to
+**155I**, **155III** (dils.tex:3849, 3867): discussion — nothing to
 formalize. -/
 
 /-! ### The KSGNS construction

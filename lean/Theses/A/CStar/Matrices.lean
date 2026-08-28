@@ -26,7 +26,7 @@ namespace Theses.A.CStar
 
 /-! ## Parsec 320: Hilbert 𝒜-modules
 
-**31I** (cstar.tex:4961): introduction — nothing to formalize.
+**31I** (cstar.tex:5068): introduction — nothing to formalize.
 
 **32I** (`chilb-basic`, cstar.tex:5088, Definition): an *𝒜-valued inner
 product* on an 𝒜-module `X`, definiteness, *pre-Hilbert 𝒜-module*, *Hilbert
@@ -95,7 +95,7 @@ theorem moduleAdjointable_linear (T : X → Y) (hT : ModuleAdjointable 𝒜 T) :
   · simp [hS']
   · simp [hS']
 
-/-! **32II** (cstar.tex:5038, Example): `𝒜^N` with
+/-! **32II** (cstar.tex:5145, Example): `𝒜^N` with
 `⟨x, y⟩ = ∑ₙ xₙ* yₙ` is a Hilbert 𝒜-module — Mathlib:
 `WithCStarModule 𝒜 (Fin N → 𝒜)` (notation `C⋆ᵐᵒᵈ(𝒜, Fin N → 𝒜)`) with its
 `CStarModule` instance. -/
@@ -3007,7 +3007,7 @@ theorem choi_2 (f : 𝒜 →ₗ[ℂ] ℬ) (hf : IsCompletelyPositiveMap f)
 
 /-! ## Parsec 341 (34a): Russo–Dye
 
-**34aI** (cstar.tex:5724): introduction — nothing to formalize. -/
+**34aI** (cstar.tex:5836): introduction — nothing to formalize. -/
 
 /-- **34aII** (`normal-russo-dye`, cstar.tex:5863, Lemma):
 `‖f(a)‖ ≤ ‖f(1)‖ ‖a‖` for every p-map `f : 𝒜 → ℬ` and *normal* `a ∈ 𝒜`.

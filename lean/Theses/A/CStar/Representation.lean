@@ -30,8 +30,8 @@ namespace Theses.A.CStar
 
 /-! ## Parsec 270: Gelfand's representation theorem
 
-**27I** (cstar.tex:3890): introduction — nothing to formalize.
-**27II** (cstar.tex:3899, Setting): `𝒜` is a commutative C*-algebra.
+**27I** (cstar.tex:3919): introduction — nothing to formalize.
+**27II** (cstar.tex:3928, Setting): `𝒜` is a commutative C*-algebra.
 
 **27III** (`gelfand-representation`, cstar.tex:3931, Definition): the
 *spectrum* `spec(𝒜)` of `𝒜` is the set of miu-maps `f : 𝒜 → ℂ` with the
@@ -42,9 +42,9 @@ C*-algebra are exactly the miu-maps, automatically continuous by
 `γ : 𝒜 → C(spec 𝒜)`, `γ(a)(f) = f(a)`, is Mathlib's
 `gelfandTransform ℂ 𝒜` (star-preserving version: `gelfandStarTransform`).
 
-**27V** (cstar.tex:3922, Remark): the relation between `spec(𝒜)` and
+**27V** (cstar.tex:3951, Remark): the relation between `spec(𝒜)` and
 `spec(a)` appears at **27XVII**; nothing to formalize.
-**27VI** (cstar.tex:3932): program — nothing to formalize. -/
+**27VI** (cstar.tex:3961): program — nothing to formalize. -/
 
 section GelfandRepresentation
 
@@ -843,7 +843,7 @@ theorem inv_mult_state (a : 𝒜) (ha : IsSelfAdjoint a) :
     -- by **27X**.3, and apply **27XIII**.  Until the 270 chain was proved this
     -- direction went through Mathlib's Gelfand theory, which reaches the
     -- character space through maximal *ring* ideals — exactly the route
-    -- **16VIII** (cstar.tex:2663) rejects.  That detour is gone.
+    -- **16VIII** (cstar.tex:2678) rejects.  That detour is gone.
     intro h
     have hproper : (1 : 𝒜) ∉ rieszIdealGen a := fun h1 =>
       h (isUnit_of_one_mem_rieszIdealGen ha h1)
@@ -996,7 +996,7 @@ Theorem): for a commutative C*-algebra `𝒜` the Gelfand representation
 star-preserving by `gelfand_representation_basic_2`, so a ⋆-isomorphism:
 `gelfandStarTransform`).
 
-*Class 1 — faithful.*  The assembly of **27XXVIII** (cstar.tex:4228):
+*Class 1 — faithful.*  The assembly of **27XXVIII** (cstar.tex:4317):
 injectivity is **27XVIII**.2, and for surjectivity the range of `γ` is a
 closed ⋆-subalgebra of `C(spec 𝒜)` by **27XVIII**.2's second clause which
 separates the points of `spec 𝒜` — two characters agreeing on every `γ(a)`
@@ -1252,7 +1252,7 @@ end FunctionalCalculus
 
 /-! ## Parsec 290 (`gelfand-equivalence`): duality with compact Hausdorff spaces
 
-**29I** (cstar.tex:4475): the functors `C : CH → (cCStar_miu)^op` and
+**29I** (cstar.tex:4582): the functors `C : CH → (cCStar_miu)^op` and
 `spec : (cCStar_miu)^op → CH`, and the statement that the Gelfand
 representations form a natural isomorphism giving an equivalence
 `(cCStar_miu)^op ≃ CH`.  The construction of the categories is out of scope
@@ -1270,7 +1270,7 @@ movements around the set
 
   `Z = { x ∈ X : h(x) ≠ 0 for some h ≥ 0 in C(X) with τ(h) = 0 }`.
 
-**29V** (cstar.tex:4540) — if `f ≥ 0` vanishes outside `Z` then `τ(f) = 0`:
+**29V** (cstar.tex:4647) — if `f ≥ 0` vanishes outside `Z` then `τ(f) = 0`:
 each `x` with `f(x) > 0` lies in `Z`, so some `h ≥ 0` with `τ(h) = 0` has
 `h(x) > 0`, and `g := (f(x)/h(x) + 1)·h` is a positive element with
 `τ(g) = 0` and `g(x) > f(x)`; the sets `{ f < g }` cover the compact
@@ -1279,12 +1279,12 @@ each `x` with `f(x) > 0` lies in `Z`, so some `h ≥ 0` with `τ(h) = 0` has
 **26II**.4, so `τ(g₁ ∨ ⋯ ∨ g_N) = 0` — dominates `f` up to `ε`.  Hence
 `0 ≤ τ(f) ≤ ε` for every `ε > 0`.
 
-**29IV** (cstar.tex:4530) — `X \ Z` has at most one point: for `x ≠ y`
+**29IV** (cstar.tex:4637) — `X \ Z` has at most one point: for `x ≠ y`
 Urysohn gives `p, q ≥ 0` with `pq = 0`, `p(x) = 1`, `q(y) = 1`, and
 `0 = τ(pq) = τ(p)τ(q)` puts `x` or `y` into `Z`.  It is non-empty because
 `f = 1` in **29V** would otherwise give `1 = τ(1) = 0`.
 
-**29VI** (cstar.tex:4560) — with `x₀` the unique point outside `Z`, the
+**29VI** (cstar.tex:4667) — with `x₀` the unique point outside `Z`, the
 element `d := f − f(x₀)` has `(d*d)(x) ≠ 0 ⟹ x ≠ x₀ ⟹ x ∈ Z`, so **29V**
 gives `0 = τ(d*d) = |τ(f) − f(x₀)|²`.
 

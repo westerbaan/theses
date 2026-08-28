@@ -66,7 +66,7 @@ def disp_repair(write):
                  for tex in sorted(cc.ROOT.glob("*.tex"))}
     tables_now = {k: cc.with_proofs(v) for k, v in plain_now.items()}
     revs, cache = {}, {}
-    fixed, stuck = [], []
+    fixed, stuck, unwritable = [], [], []
 
     def table_at(tex, rev):
         if (tex, rev) not in cache:
@@ -82,20 +82,13 @@ def disp_repair(write):
         rel = src.relative_to(ROOT)
         lines = src.read_text(errors="replace").splitlines(keepends=True)
         changed = False
-        for i, line in enumerate(lines):
-            m = cc.TAG.match(line)
-            if not m:
-                continue
-            head = "".join(lines[i:i + 3])
-            ref = cc.SELFREF.search(head)
-            if not ref:
-                continue
-            tex, num = ref.group(1), int(ref.group(2))
+        for i, dec, tex, num, _head, is_self in cc.tag_claims(
+                [l.rstrip("\n") for l in lines]):
             if tex in cc.NO_PARSECS:
                 continue
-            key = (str(int(m.group(1)) * 10 + (ord(m.group(2)) - 96 if m.group(2) else 0)),
-                   str(cc.roman(m.group(3)) * 10))
-            tag = f"{m.group(1)}{m.group(2)}{m.group(3)}"
+            parsec, point, tag = dec
+            key = (parsec, point)
+            span = 3 if is_self else 1
             here = tables_now.get(tex, {}).get(key)
             anchor = plain_now.get(tex, {}).get(key)
             if here is None or here[0] <= num <= here[1]:
@@ -108,11 +101,21 @@ def disp_repair(write):
                 if old and old[0] <= num <= old[1]:
                     offset = num - old_plain[key][0]
                     new = anchor[0] + offset
-                    # the reference may be on any of the doc comment's first lines
-                    for j in range(i, min(i + 3, len(lines))):
+                    # a self-citation may sit on any of the doc comment's first
+                    # lines; a cross-reference is on the line it was read from
+                    # only the first element of a pair carries the file name:
+                    # `(dils.tex:3849, 3867)` holds "3867" and no "dils.tex:3867",
+                    # so a blind replace is a silent no-op.  Claim a repair only
+                    # if the text really changed.
+                    done = False
+                    for j in range(i, min(i + span, len(lines))):
                         if f"{tex}:{num}" in lines[j]:
                             lines[j] = lines[j].replace(f"{tex}:{num}", f"{tex}:{new}", 1)
+                            done = True
                             break
+                    if not done:
+                        unwritable.append((rel, i + 1, tag, tex, num, new))
+                        break
                     fixed.append((rel, i + 1, tag, tex, num, new, offset, rev[:7]))
                     changed = True
                     break
@@ -128,7 +131,12 @@ def disp_repair(write):
         print(f"UNFIXED {rel}:{ln}  **{tag}** cites {tex}:{num}; no revision of {tex} "
               f"ever put that line inside the point the tag decodes to "
               f"(now {tex}:{here[0]}-{here[1]})")
-    print(f"\n{len(fixed)} DISP self-citations repaired by history, {len(stuck)} left alone")
+    for rel, ln, tag, tex, num, new in unwritable:
+        print(f"MANUAL  {rel}:{ln}  **{tag}** should cite {tex}:{new}, not {num}; the "
+              f"reference does not carry the file name (a second element of a pair) "
+              f"and cannot be rewritten safely")
+    print(f"\n{len(fixed)} DISP references repaired by history, {len(stuck)} with no "
+          f"revision to support them, {len(unwritable)} needing a hand")
     return 0
 
 

@@ -51,7 +51,7 @@ universe u
 
 namespace Theses.B.Dils
 
-/-! **168I**–**168IV** (dils.tex:5976–6054, `dils-pure-discussion`):
+/-! **168I**–**168IV** (dils.tex:6051–6054, `dils-pure-discussion`):
 introduction and discussion of rejected alternative notions of purity —
 nothing to formalize. -/
 
@@ -4672,11 +4672,13 @@ theorem ncp_extreme_paschke [VonNeumannAlgebra A] [VonNeumannAlgebra B]
           star_star]
       rw [h3] at h2
       exact h2.symm
-    -- **170II**.2 (dils.tex:6484): `h` is pure, so it splits as `h = c ∘ k`
-    -- with `k` a corner (the thesis's standard corner `h_p`, `p = ⌈h⌉`) and
-    -- `c` a filter.
+    -- **170II**.2 (`dils-examples-pure`, dils.tex:6203): `h` is pure, so it
+    -- splits as `h = c ∘ k` with `k` a corner (the thesis's standard corner
+    -- `h_p`, `p = ⌈h⌉`) and `c` a filter.  The thesis applies it at
+    -- dils.tex:6484.
     obtain ⟨Cp, _, _, _, k, c, -, hcfilter, hsplit⟩ := dils_examples_pure_2 φ D hD
-    -- **169XII** (dils.tex:6489): filters are injective.
+    -- **169XII** (`dils-filters-injective`, dils.tex:6188): filters are
+    -- injective; applied at dils.tex:6489.
     have hcinj : Function.Injective ⇑c := dils_filters_injective c hcfilter
     have hc0 : (c (0 : Cp) : B) = 0 := map_zero c.toCompletelyPositiveMap
     have hcsmul : ∀ (z : ℂ) (x : Cp), (c (z • x) : B) = z • c x := fun z x =>

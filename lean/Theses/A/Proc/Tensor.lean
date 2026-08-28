@@ -1058,7 +1058,8 @@ theorem gram_posSemidef {E : Type*} [NormedAddCommGroup E]
     rw [gram_quad_eq, inner_self_eq_ofReal_norm_sq]
     exact Complex.zero_le_real.2 (by positivity)
 
-/-- Auxiliary for **111V** (proc.tex:2500): for a bounded operator `A` we
+/-- Auxiliary for **111V** (proc.tex:2490, the display in its proof): for a
+bounded operator `A` we
 have `(⟨Avᵢ,Avⱼ⟩)ᵢⱼ ≤ ‖A‖² (⟨vᵢ,vⱼ⟩)ᵢⱼ` as matrices. -/
 theorem gram_op_le_posSemidef {E F : Type*} [NormedAddCommGroup E]
     [InnerProductSpace ℂ E] [NormedAddCommGroup F] [InnerProductSpace ℂ F]

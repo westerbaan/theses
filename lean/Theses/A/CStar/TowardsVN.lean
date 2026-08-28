@@ -26,7 +26,7 @@ namespace Theses.A.CStar
 
 /-! ## Parsec 350: Directed suprema — uniform boundedness and Hellinger–Toeplitz
 
-**35I** (cstar.tex:5955): introduction — B(H) has suprema of norm-bounded
+**35I** (cstar.tex:5987): introduction — B(H) has suprema of norm-bounded
 directed sets of self-adjoint operators, the vector functionals preserve them,
 and every functional preserving them is a sum of vector functionals (39IX
 below).  Nothing to formalize. -/
@@ -233,7 +233,7 @@ theorem hellinger_toeplitz (hc : CompleteSpace X ∨ CompleteSpace Y)
   · haveI := h
     exact (hellinger_toeplitz_aux (𝒜 := 𝒜) S T (isAdjointTo_swap' (𝒜 := 𝒜) adj)).symm
 
-/-! **35VIII** (cstar.tex:6069, Remark): the Hellinger–Toeplitz theorem —
+/-! **35VIII** (cstar.tex:6101, Remark): the Hellinger–Toeplitz theorem —
 every symmetric operator on a Hilbert space is bounded — is the special case
 of **35VI** noted in its doc comment; not converted separately.
 
@@ -444,7 +444,7 @@ end HilbertModules
 
 /-! ## Parsec 370: The weak operator topology and directed suprema in B(H)
 
-**37I** (cstar.tex:6146): "another consequence of 35II is this" — nothing to
+**37I** (cstar.tex:6178): "another consequence of 35II is this" — nothing to
 formalize. -/
 
 section BH
@@ -1498,7 +1498,7 @@ theorem vector_functional_convergence_2 {ι : Type*} {l : Filter ι} [l.NeBot]
 
 /-! ## Parsec 390: Orthonormal bases and the normality theorem for B(H)
 
-**39I** (cstar.tex:6482): introduction to the final project — every normal
+**39I** (cstar.tex:6514): introduction to the final project — every normal
 positive functional on B(H) is `∑ₙ ⟪xₙ, (·) xₙ⟫`; nothing to formalize. -/
 
 /-- **39II** (cstar.tex:6525, Definition): a subset `E` of a Hilbert space is
@@ -2228,7 +2228,7 @@ theorem bh_np (ω : NPFunctional (H →L[ℂ] H)) :
 
 end BH
 
-/-! **40I** (cstar.tex:6715): closing remarks of the chapter — nothing to
+/-! **40I** (cstar.tex:6748): closing remarks of the chapter — nothing to
 formalize. -/
 
 end Theses.A.CStar

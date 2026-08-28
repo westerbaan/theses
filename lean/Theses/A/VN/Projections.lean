@@ -4433,7 +4433,8 @@ section CommutativeSubalgebra
 
 The thesis proves **65IV** by applying **64II**
 `abelian-projections-norm-dense` to the commutative von Neumann subalgebra
-`{a}^□□` of **65III** (vn.tex:3285).  64II is stated for a commutative von
+`{a}^□□` of **65III** (`commutant-basic`, vn.tex:3221), which vn.tex:3285
+invokes.  64II is stated for a commutative von
 Neumann algebra as a *type*, so the subalgebra has to be bundled as one.
 Mathlib supplies the C\*-structure of a closed `StarSubalgebra`
 (`StarSubalgebra.cstarAlgebra`); what is added here is the spectral order

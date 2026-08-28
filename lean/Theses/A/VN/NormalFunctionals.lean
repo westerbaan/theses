@@ -42,7 +42,7 @@ downstream is unaffected. -/
 
 /-! ## Parsec 860: ultraweak boundedness
 
-**85I** (vn.tex:6233) and **86I** (vn.tex:6259): overview — nothing to
+**85I** (vn.tex:6261) and **86I** (vn.tex:6287): overview — nothing to
 formalize. -/
 
 /-- `(y + ziz)*(y + zi) = y² + z²` for self-adjoint `y` and real `z`; the
@@ -853,7 +853,7 @@ theorem predual_complete : IsComplete (predual A) := by
   show @Continuous A ℂ (ultraweak A) _ ⇑x
   exact uwcont_on_ball (x : A →ₗ[ℂ] ℂ) hcontOn
 
-/-! **87V** (vn.tex:6548): motivation for the next lemma — nothing to
+/-! **87V** (vn.tex:6576): motivation for the next lemma — nothing to
 formalize. -/
 
 /-- **87VI** (`norm-predual`, vn.tex:6591, Lemma):
@@ -1082,7 +1082,7 @@ theorem ultraweakly_bounded_implies_bounded {ι : Type*} (x : ι → A)
 
 /-! ## Parsec 880: ultraweak permanence and the double commutant theorem
 
-**88I** (vn.tex:6622): overview — nothing to formalize. -/
+**88I** (vn.tex:6650): overview — nothing to formalize. -/
 
 variable (A) in
 /-- **88II** (`commutant-ceil`, vn.tex:6697, Proposition), definition part:
@@ -3619,7 +3619,7 @@ theorem functional_extension (ρ : NMIUMap A B)
 
 /-! ## Parsec 900: centre separating collections
 
-**90I** (vn.tex:7191): introduction — nothing to formalize. -/
+**90I** (vn.tex:7219): introduction — nothing to formalize. -/
 
 /-- `x ↦ ω(x* k x)` is ultrastrongly continuous: it is `‖·‖_ω`-locally
 Lipschitz by **72III**.1c. -/
@@ -4071,7 +4071,7 @@ theorem vn_center_separating_fundamental_2 (Ω : Set (NPFunctional A))
 
 end GNSSumOn
 
-/-! **91I** (vn.tex:7311): closing remarks of the chapter — nothing to
+/-! **91I** (vn.tex:7339): closing remarks of the chapter — nothing to
 formalize. -/
 
 end Permanence

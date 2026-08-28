@@ -3495,7 +3495,7 @@ theorem polar_decomposition_2 (a : A) :
 
 /-! ## Parsec 830: the Murray–von Neumann preorder
 
-**83I** (vn.tex:5656): introduction — nothing to formalize. -/
+**83I** (vn.tex:5684): introduction — nothing to formalize. -/
 
 variable (A) in
 /-- **83II** (`vmleq`, vn.tex:5694, Proposition): the **Murray–von Neumann
@@ -3760,7 +3760,7 @@ end Pseudoinverse
 
 /-! ## Parsec 840: finite-dimensional C*-algebras
 
-**84I** (vn.tex:5752): introduction — nothing to formalize. -/
+**84I** (vn.tex:5780): introduction — nothing to formalize. -/
 
 /-! ### Ingredients for 84II
 
@@ -4432,7 +4432,7 @@ categorical framework. -/
 
 /-! ## Parsec 842: hereditarily atomic von Neumann algebras
 
-**84bI** (vn.tex:6101): introduction (Kornell's programme) — nothing to
+**84bI** (vn.tex:6129): introduction (Kornell's programme) — nothing to
 formalize. -/
 
 variable (A) in
@@ -5463,7 +5463,7 @@ theorem ha_equalisers [VonNeumannAlgebra A] [VonNeumannAlgebra B]
   · intro D _ _ _ _ _ h hfg
     exact vn_equalisers_cpsu f g ⟨e₀, hnorm⟩ VNSub.val_injective hrange h hfg
 
-/-! **84bVI** (vn.tex:6224, Remark): `haW*_miu` is the least full
+/-! **84bVI** (vn.tex:6252, Remark): `haW*_miu` is the least full
 subcategory of `W*_miu` closed under limits containing the
 finite-dimensional von Neumann algebras — categorical remark, not
 converted. -/

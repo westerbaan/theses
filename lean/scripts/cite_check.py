@@ -50,6 +50,24 @@ BARE = re.compile(r'\b([a-z]+\.tex):(\d+)')
 TAG = re.compile(r'^/--\s*\**\s*\*\*(\d{1,3})([a-z]?)([IVXL]+)'
                  r'(?:\.[0-9a-z]+)?(?:\([a-z]\))?\*\*(.*)')
 SELFREF = re.compile(r'\(\s*`?([a-z]+\.tex):(\d+)`?')
+# **44VIII** (cstar.tex:1234) -- a tag naming some *other* point, with its line.
+# The same decoding checks it, and there are three times as many of these as
+# there are self-citations.
+XREF = re.compile(r'\*\*(\d{1,3})([a-z]?)([IVXL]+)(?:\.[0-9a-z]+)?(?:\([a-z]\))?\*\*'
+                  r'(?:\.[0-9a-z]+)?[^*(\d\n]{0,40}\(\s*`?([a-z]+\.tex):(\d+)`?')
+# Digits are excluded from that gap on purpose.  `... of **157II**.  223V
+# (eff.tex:7076)` would otherwise read 157II against 223V's line: the tag
+# nearest the paren is not the tag the paren belongs to.
+
+# **155I**, **155III** (dils.tex:3849, 3859) and **137I**--**137VII**
+# (dils.tex:397--585): two tags, two lines, paired in order.  Read tag-by-tag
+# these say the wrong thing twice over, so they are matched first and the
+# single-tag reader is held off them.
+TAGPAIR = re.compile(
+    r'\*\*(\d{1,3}[a-z]?[IVXL]+(?:\.[0-9a-z]+)?)\*\*\s*(?:,|--|–|-|and)\s*'
+    r'\*\*(\d{1,3}[a-z]?[IVXL]+(?:\.[0-9a-z]+)?)\*\*'
+    r'[^*(\n]{0,40}\(\s*`?([a-z]+\.tex):(\d+)\s*(?:,|--|–|-)\s*(\d+)')
+TAGSPLIT = re.compile(r'^(\d{1,3})([a-z]?)([IVXL]+)')
 ROMAN = {"I": 1, "V": 5, "X": 10, "L": 50}
 # The solution files carry `\begin{solution}{label}` and no parsecs, so a tag
 # cited against one is naming the *solution* to that exercise; it is checkable
@@ -169,6 +187,47 @@ def contains(spans, n):
     return any(a <= n <= b for a, b in spans)
 
 
+def tag_claims(lines):
+    """Every locating claim a DISP tag makes in one source file.
+
+    Yields (line index, decoded tag, tex, line number, the text it was read
+    from, is_self).  A doc comment's *first* reference locates the declaration
+    itself; a tag met anywhere else is citing some other point, and the tree
+    has three of those for every two of the first kind.
+    """
+    out = []
+    for i, line in enumerate(lines):
+        m = TAG.match(line)
+        if m:
+            head = " ".join(lines[i:i + 3])
+            ref = SELFREF.search(head)
+            if ref:
+                out.append((i, decode(m.group(1), m.group(2), m.group(3)),
+                            ref.group(1), int(ref.group(2)), head, True))
+        masked = []
+        for pair in TAGPAIR.finditer(line):
+            masked.append(pair.span())
+            for tag, num in ((pair.group(1), pair.group(4)),
+                             (pair.group(2), pair.group(5))):
+                t = TAGSPLIT.match(tag)
+                out.append((i, decode(t.group(1), t.group(2), t.group(3)),
+                            pair.group(3), int(num), line, False))
+        for x in XREF.finditer(line):
+            if m and x.start() == 0:
+                continue              # that is the self-citation, already taken
+            if any(a <= x.start() < b for a, b in masked):
+                continue
+            out.append((i, decode(x.group(1), x.group(2), x.group(3)),
+                        x.group(4), int(x.group(5)), line, False))
+    return out
+
+
+def decode(num, sub, rom):
+    """(parsec key, point key, printable tag) for one decoded DISP tag."""
+    return (str(int(num) * 10 + (ord(sub) - 96 if sub else 0)),
+            str(roman(rom) * 10), f"{num}{sub}{rom}")
+
+
 def with_proofs(table):
     """Extend each point's extent over the proof that follows it.
 
@@ -200,29 +259,24 @@ def with_proofs(table):
 
 
 def disp_check():
-    """Check the self-citation of every DISP-tagged doc comment against its tag."""
+    """Check every reference a DISP tag makes -- to itself, and to other points."""
     tables = {tex.name: with_proofs(points(tex.read_text(errors="replace")))
               for tex in sorted(ROOT.glob("*.tex"))}
     bad_line, bad_kind, unknown, ok = [], [], [], 0
+    n_self = n_xref = 0
     for src in sorted(LEAN.rglob("*.lean")):
         if ".lake" in src.parts:
             continue
         rel = src.relative_to(ROOT)
         lines = src.read_text(errors="replace").splitlines()
-        for i, line in enumerate(lines):
-            m = TAG.match(line)
-            if not m:
-                continue
-            head = " ".join(lines[i:i + 3])
-            ref = SELFREF.search(head)
-            if not ref:
-                continue
-            tex, num = ref.group(1), int(ref.group(2))
+        for i, m, tex, num, head, is_self in tag_claims(lines):
+            if is_self:
+                n_self += 1
+            else:
+                n_xref += 1
             if tex in NO_PARSECS:
                 continue
-            parsec = str(int(m.group(1)) * 10 + (ord(m.group(2)) - 96 if m.group(2) else 0))
-            point = str(roman(m.group(3)) * 10)
-            tag = f"{m.group(1)}{m.group(2)}{m.group(3)}"
+            parsec, point, tag = m
             where = tables.get(tex, {}).get((parsec, point))
             if where is None:
                 unknown.append((rel, i + 1, tag, tex, num, parsec, point))
@@ -245,9 +299,11 @@ def disp_check():
               f"{{{pt}}}, which {tex} does not have")
     for rel, ln, tag, claimed, real in bad_kind:
         print(f"TAGKIND {rel}:{ln}  **{tag}** calls it a {claimed}; the source says {real}")
-    print(f"\n{ok} DISP self-citations land in the point their tag decodes to, "
-          f"{len(bad_line)} do not, {len(unknown)} decode to a point that is not "
-          f"there; {len(bad_kind)} name a different kind than the source")
+    print(f"\n{ok} of {n_self + n_xref} DISP references land in the point their "
+          f"tag decodes to ({n_self} a doc comment locating itself, {n_xref} one "
+          f"tag citing another point), {len(bad_line)} do not, {len(unknown)} "
+          f"decode to a point that is not there; {len(bad_kind)} name a different "
+          f"kind than the source")
     return bad_line or unknown or bad_kind
 
 

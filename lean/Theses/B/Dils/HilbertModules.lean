@@ -2353,7 +2353,7 @@ def BddUnComplete : Prop :=
 
 /-! ### The four implications of **149V**
 
-**149VI** (dils.tex:2249) fixes the route `1 ⇒ 3 ⇒ 4 ⇒ 2 ⇒ 4 ⇒ 1`; the four
+**149VI** (dils.tex:2257) fixes the route `1 ⇒ 3 ⇒ 4 ⇒ 2 ⇒ 4 ⇒ 1`; the four
 non-trivial implications are stated separately below, so that they can be
 used (and proved) one at a time.  All four are proved (`3 ⇒ 4` through
 **80IV** `approximate_pseudoinverse`, `4 ⇒ 2` through **87VIII**

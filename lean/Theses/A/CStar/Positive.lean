@@ -39,9 +39,9 @@ namespace Theses.A.CStar
 
 /-! ## Parsec 120: holomorphic 𝒜-valued functions
 
-**12I** (cstar.tex:1717): introduction — nothing to formalize.
+**12I** (cstar.tex:1718): introduction — nothing to formalize.
 
-**12II** (cstar.tex:1739, Setting): an *𝒜-valued function* is a partial map
+**12II** (cstar.tex:1740, Setting): an *𝒜-valued function* is a partial map
 `f : ℂ → 𝒜` with open domain; it is *holomorphic* at `x` when the difference
 quotients `(f x - f y)/(x - y)` norm-converge as `y → x`, and the limit is its
 *derivative* `f' x`.  In Mathlib this is differentiability of `f : ℂ → 𝒜` on
@@ -272,7 +272,7 @@ theorem powerseries_uniqueness_coeffients (a : ℕ → 𝒜) (r : ℝ) (hr : 0 <
 
 /-! ## Parsec 140: integration and Goursat's theorem
 
-**14II** (cstar.tex:2000, Exercise): the *construction* of the integral
+**14II** (cstar.tex:2001, Exercise): the *construction* of the integral
 `∫ f ∈ 𝒜` of a continuous `f : [0,1] → 𝒜` — part 1 (the linear
 `∫ : S_𝒜 → 𝒜` with `∫ a·1_I = |I|a`), part 2's disjoint-interval normal form
 `‖f‖ = supₙ‖aₙ‖`, `∑ₙ|Iₙ| ≤ 1`, and part 3 (density of `S_𝒜` in
@@ -2253,7 +2253,7 @@ theorem norm_spectrum (a : 𝒜) (ha : IsSelfAdjoint a) :
       rwa [inv_mul_cancel₀ hanorm.ne'] at h
     linarith
 
-/-! **16IV** (cstar.tex:2625, Remark): for non-self-adjoint `a` the formula
+/-! **16IV** (cstar.tex:2640, Remark): for non-self-adjoint `a` the formula
 may fail (e.g. `[[0,1],[0,0]]`); the general formula
 `sup |spec(a)| = limsup ‖aⁿ‖^{1/n}` is not needed here.  Not converted. -/
 
@@ -3435,8 +3435,8 @@ end Order
 
 /-! ## Parsec 190: `a*a` cannot be negative
 
-**18I** (cstar.tex:2808): moved to `cstar-product-2` (20aI below) — nothing to
-formalize.  **19I** (cstar.tex:2812): introduction — nothing to formalize. -/
+**18I** (cstar.tex:2823): moved to `cstar-product-2` (20aI below) — nothing to
+formalize.  **19I** (cstar.tex:2827): introduction — nothing to formalize. -/
 
 /-- **19Ia** (`prod-spec`, cstar.tex:2834, Lemma): for elements `a`, `b` of a
 C*-algebra, `spec(ab) \ {0} = spec(ba) \ {0}`. -/
@@ -4123,7 +4123,7 @@ theorem Faithful.centreSeparating (ω : ∀ i, 𝒜 →ₗ[ℂ] ℬf i) (h : Fai
       refine (h a ha).mpr fun i => ?_
       simpa using hb i 1
 
-/-! **21III**–**21IV** (cstar.tex:3140, Examples): the states, the
+/-! **21III**–**21IV** (cstar.tex:3198, Examples): the states, the
 multiplicative states (on a commutative C*-algebra), and the vector
 functionals (on B(H)) are order separating — stated at 22VIII, 27–, and 25III
 respectively; the four levels of separation differ — not converted. -/
@@ -4791,7 +4791,7 @@ theorem order_ideal_basic_5 [Nontrivial 𝒜] (a : 𝒜) (ha : IsSelfAdjoint a) 
 /-! ### 22IV: every maximal order ideal is the kernel of a state -/
 
 /-- `x ≼ y` modulo the order ideal `I`: `q x ≤ q y` in the quotient order
-from the thesis's proof of **22IV** (cstar.tex:3374). -/
+from the thesis's proof of **22IV** (cstar.tex:3388). -/
 private def QLe (I : Submodule ℂ 𝒜) (x y : 𝒜) : Prop :=
   ∃ c : 𝒜, 0 ≤ c ∧ y - x - c ∈ I
 
@@ -5348,7 +5348,7 @@ private theorem sqrtApproxSeq_nonneg (a : 𝒜) (h0 : 0 ≤ a) (n : ℕ) :
     exact half_smul_nonneg
       (add_nonneg h0 (positive_basic_2_4a _ (IsSelfAdjoint.of_nonneg ih)))
 
-/-- The existence half of **23II** (cstar.tex:3495–3570). -/
+/-- The existence half of **23II** (cstar.tex:3509–3570). -/
 private theorem sqrt_lemma_exists (a : 𝒜) (h0 : 0 ≤ a) (h1 : a ≤ 1) :
     ∃ b : 𝒜, Tendsto (sqrtApproxSeq a) atTop (𝓝 b) ∧ 0 ≤ b ∧ b ≤ 1 ∧
       (1 - b) ^ 2 = 1 - a ∧ ∀ c : 𝒜, c * a = a * c → c * b = b * c := by
@@ -5896,7 +5896,7 @@ theorem sqrt_4 :
 
 /-! ## Parsec 240: positive and negative parts
 
-**24I** (cstar.tex:3683, Definition): for self-adjoint `a`:
+**24I** (cstar.tex:3699, Definition): for self-adjoint `a`:
 `|a| := √(a²)`, the *positive part* `a₊ := ½(|a| + a)` and the *negative
 part* `a₋ := ½(|a| - a)`.  In Mathlib: `CFC.abs a` (`= CFC.sqrt (star a * a)`,
 which equals `CFC.sqrt (a ^ 2)` for self-adjoint `a`), `a⁺` (`CFC.posPart`)

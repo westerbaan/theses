@@ -4760,7 +4760,7 @@ some `n ∈ ℕ` and projection `p`.  Stated through bases (cf. **161II**):
 `i`, or the basis is finite and `⟨eᵢ,eᵢ⟩ = 1` for all but (at most) one
 index.
 
-**162V**–**162VII** are the proof; **162VIII** (dils.tex:4908, discussion
+**162V**–**162VII** are the proof; **162VIII** (dils.tex:4916, discussion
 of non-uniqueness of κ) — not converted. -/
 theorem selfdual_normalish_form [VonNeumannAlgebra ℬ] [CompleteSpace X]
     (hF : IsFactor ℬ) (hX : SelfDual ℬ X) :
@@ -8247,7 +8247,7 @@ theorem ext_tensor_basis [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
 the linear span of `D = {|(e'ᵢa) ⊗ (d'ⱼb)⟩⟨e_k ⊗ d_l|}` is **ultraweakly
 dense** in `𝒞ᵃ(X ⊗ Y)` — in the entourage form (given finitely many
 np-functionals and an `ε > 0`, some element of the span is within `ε` of
-`T` on all of them).  **164X**–**164XI** (dils.tex:5327) are the proof;
+`T` on all of them).  **164X**–**164XI** (dils.tex:5335) are the proof;
 **164XII** (Examples) — not converted.
 
 📌 *Author ruling, 2026-08-18 (QUESTIONS **D6**, now closed).*  This

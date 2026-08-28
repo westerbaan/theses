@@ -200,11 +200,47 @@ the comparison was restricted to words that are actually kinds; without that
 restriction it read the prose after the reference and reported "calls it a
 `the`" five times.
 
-What is still unchecked: **867 `file.tex:N` references that are neither the
-first reference of a tagged doc comment nor paired with a label** — the
-cross-references a doc comment makes to *other* points as it explains itself.
-Each would need its own tag or label to be pinned, and most do carry one in
-prose; extracting it is the next extension and it is not built.
+**The same decoding reaches the cross-references, and there are more of those
+than of self-citations.**  A doc comment cites other points as it explains
+itself — `**44VIII** (cstar.tex:1234)` — and the tag pins those exactly as it
+pins the first one.  `--disp` reads every tag that names a line, wherever it
+sits: **449 cross-references against 326 self-citations**, and **46 of the 449
+were stale**.  42 were repaired by the history walk and four by hand.
+
+Reading those four is what the check is for, because none of them was drift:
+
+* **111V** was cited 4 lines past the end of its own proof, at the *next*
+  Theorem.  The declaration renders the display inside the proof, and now says
+  so (`proc.tex:2490, the display in its proof`).
+* **65III** was cited at `vn.tex:3285` — a line inside **65IV**'s proof, where
+  65III is *invoked*.  The citation now names `commutant-basic` and 65III's own
+  line, and says that 3285 invokes it.
+* **170II**.2 and **169XII** were both cited at their *use* sites in the proof
+  of 172III, 281 and 301 lines below where they are stated.  Both now cite the
+  statement and name the application separately.
+
+Three shapes had to be added to the reader before those four were the only
+survivors, and each had been quietly reporting the wrong thing:
+
+* `**155I**, **155III** (dils.tex:3849, 3859)` and `**137I**–**137VII**
+  (dils.tex:397–585)` pair two tags with two lines.  Read one tag at a time
+  they say the wrong thing twice.
+* `... of **157II**.  223V (eff.tex:7076)` — the tag nearest a parenthesis is
+  not always the tag the parenthesis belongs to.  Digits are now barred from
+  the gap, which costs nothing and removes the whole class.
+* A clause suffix outside the bold, `**170II**.2 (…)`, is a tag like any other.
+
+And one trap in the repair tool, worth recording because it is the failure mode
+that leaves no trace: the second element of a pair is written `, 3867` with no
+file name, so a replace of `dils.tex:3859` matches nothing and *succeeds*.  The
+tool now checks that the text really changed before it claims a repair, and
+prints what it could not write.
+
+What is still unchecked: **867 `file.tex:N` references carrying neither a label
+nor a tag** — almost all of them inline `--` comments recording where in the
+thesis a proof step or a divergence sits ("the thesis's own argument,
+asols.tex:1727").  Nothing in the reference identifies what it points at, so
+nothing can verify it; pinning them would mean writing a tag into each.
 
 ## Roll-up — **complete**
 
