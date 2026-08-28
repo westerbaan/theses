@@ -27,6 +27,10 @@ What each one guards, and how strict it is:
                         `BinderDump.lean` writes.
 * `xref_check`       -- `docs/FILE.md §N` references resolve.  Qualified ones
                         only; a bare `§N` may mean another document.
+* `lean_line_check`  -- `name` (`File.lean:N`) references against where the
+                        declaration is.  **Exact** for the named form, which is
+                        repairable with `--write` because the name pins the
+                        target; bare `.lean:N` references are counted only.
 * `errata_check`     -- `ERRATA.md` against its own three rules.  STATUS,
                         NOPOINT and DUP are exact; PHANTOM is a shortlist.
 * `questions_check`  -- references to `QUESTIONS.md` questions that are gone.
@@ -55,6 +59,7 @@ CHECKS = [
     ("limb_check",        ["limb_check.py"],             True),
     ("vn_setting_check",  ["vn_setting_check.py"],       True),
     ("xref_check",        ["xref_check.py"],             True),
+    ("lean_line_check",   ["lean_line_check.py"],        True),
     ("errata_check",      ["errata_check.py"],           False),
     ("questions_check",   ["questions_check.py"],        False),
 ]
