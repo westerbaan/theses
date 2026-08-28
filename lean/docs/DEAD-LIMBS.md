@@ -577,11 +577,10 @@ printed route. Recommend: **leave; do not repair.** Recorded so that a future
 sweep does not rediscover 44III as an open question, and so that nobody
 "repairs" it into a weaker theorem.
 
-### Shortlist — not yet read, same two signals
+### Shortlist — **all read, 2026-08-28**; see §5.7 for what they turned out to be
 
 These are dead Lemma/Proposition/Theorem statements with a **live sibling** on
-the same point, which is the 123I shape. Each is worth twenty minutes; none has
-been checked against the printed argument.
+the same point, which is the 123I shape.
 
 | point | declaration | file:line | lines | live siblings |
 |---|---|---|---|---|
@@ -600,7 +599,79 @@ been checked against the printed argument.
 2's uniqueness clause, and its content is already reachable structurally through
 `M.univ` and `M.ρ_tprod`, both of which are used. It is a terminal repackaging.
 `div_usc_ball` was read and is the sound first clause of 81IX, terminal by
-intent (§6). The other eight are unread.
+intent (§6). **The other eight were read on 2026-08-28 — §5.7.**  One of them
+is not a limb at all but a trap, and the "live siblings" column is wrong in two
+rows: the sibling that keeps 96III's and 4XIII's counts above zero is in each
+case *another dead declaration*.
+
+### 5.7 The shortlist, read (2026-08-28)
+
+Eight declarations, one verdict each.  The headline: **seven are terminal and
+one is a trap**, and the check that found the trap is not the one the shortlist
+was built on.
+
+**`sqrt_lemma_monotone` (23II) — a trap, not a limb.**  The thesis's Lemma
+states the approximating sequence is monotone, and the tree proves it — through
+`mul_nonneg_of_commute`, the product of commuting positives.  That lemma is
+proved from `sqrt_exists_core` → `sqrt_unit_exists` → `sqrt_lemma_exists`,
+which is **the existence half of this same Lemma**.  The thesis rules the route
+out in as many words at cstar.tex:3543 — "we have carefully avoided using the
+fact here that the product of positive commuting elements is positive, which is
+not available to us until `ineq-square-root`" — and proves monotonicity instead
+from the positivity of the coefficients of `qₙ₊₁ − qₙ` as polynomials.  Nothing
+breaks today: the declaration has no consumer, and the existence half gets
+convergence the way the thesis does, from the Cauchy estimate
+`‖bₙ − b_N‖ ≤ qₙ(1) − q_N(1)`.  Wiring this lemma into that chain closes a
+cycle.  **Action taken:** the docstring now says so.  This is the one case where
+being dead is what makes the tree correct, so the limb must not be "repaired"
+and must not be deleted either.
+
+**`ncp_uwlim_2` (96III) — the row's own count was wrong, and the block is
+closed.**  The table says 2 of 3 siblings live.  In fact `ncp_uwlim_1` is dead
+too, and `ncp_uwlim`'s single consumer is `ncp_uwlim_2` — so all three
+declarations in `A/Proc/Measurement.lean` are one block that nothing outside
+reaches, ~110 lines.  The live rendering of 96III.1 is a *fourth* declaration
+in a different file, `sfilter_cp_uwlim` (`B/Dils/Pure.lean`), whose own
+docstring already says why: `ncp_uwlim_1` "asks for" a von Neumann structure on
+the domain "and never uses it".  Rowed, so outside §7's pool by definition;
+recorded, not deleted.
+
+**`positive_2x2matrix_2` (4XIII) — a closed pair, same shape.**  Part 1's only
+consumer is part 2, and part 2 has none.  Both halves of the Lemma, 76 lines,
+reached from nothing.  Rowed; recorded.
+
+**`cceil_tensor` (118II) — terminal, and the duplication is already declared.**
+Its *argument* is re-run 400 lines below in the private `tensor_projSup_le`,
+which says so in its own doc comment.  The two conclusions differ
+(`⌈⌈a⊗b⌉⌉ = ⌈⌈a⌉⌉⊗⌈⌈b⌉⌉` against `⋁P ⊗ ⋁Q ≤ z`), so calling the Lemma would not
+have served, and the shared machinery `ncp_union_2` is already factored out.
+Nothing to do.
+
+**`hilbmod_projthm_3` (160IV) — terminal, reason already written.**  The
+docstring records the divergence: existence is `exists_orthogonal_decomp`, run
+inside `V^⊥⊥` rather than extended to a basis of `X`, and uniqueness is the
+sharper `V^⊥⊥ ∩ V^⊥ = {0}`.  `selfdual_compl_defining_dense` cites 160IV.3 in
+prose and reaches for the machinery form, which is what a consumer needs.
+
+**`polar_decomposition_2` (82I) — terminal.**  `[a*] = [a]*`; the live sibling
+`polar_decomposition_1` has seven consumers across three files, and no proof in
+the tree re-derives the starred identity inline.  A packaged clause of the
+Proposition with no customer.
+
+**`uniqueness_sequential_product_exists` (106I) and `paschke_injective`
+(156II) — terminal by intent.**  Both are chapter endpoints: 106I's *uniqueness*
+half is equally consumer-free, and `paschke_injective` is the headline the
+`paschke_injective_carrier` machinery exists to state.  Class 2.
+
+**What the eight say as a set.**  Three of them (23II's family, 96III's trio,
+4XIII's pair) are **closed blocks whose internal traffic reads as life** — the
+same thing §13.5 found in `TensorTransport`, arrived at from the other
+direction.  A direct-use count cannot see them and the shortlist's "live
+siblings" column inherits the blindness; it should be read as "siblings with a
+mention", not as "siblings that are reached".  And the one real find came from
+asking a question the shortlist does not ask — not *is this dead*, but *why is
+the thesis's proof different from ours* — which is what turned up the ordering
+constraint the thesis states and the tree quietly violates.
 
 ---
 
@@ -1515,6 +1586,28 @@ make them the fingerprint the check is after. Left, recorded, re-confirmed.
    of the three copies; the limb keeps no consumer and moves to §6.
 6. **Leave §5.4, §5.5, §5.6, §6 and §8 alone.** Each has a written reason, and
    in the case of §5.6 the repair would weaken the statement.
+   **Re-checked 2026-08-28, and unlike §5.1 and §5.2 they hold.**  That check
+   was owed: §5.1 and §5.2 came out of the same sweep, in the same voice, and
+   both premises dissolved on contact with the source.  These three do not.
+   Every factual claim underneath them was put back to the tree and the .tex:
+   all three limbs are still at zero consumers; 13VI's in-proof comment is
+   where §5.4 quotes it, and cstar.tex:1949 does assert the derived series'
+   radius in passing, in those words ("because the radius of convergence of
+   `∑ₙ aₙ n z^{n−1}` is `R>r`"); §5.6's two quoted comments are both still
+   there, and the shared estimate `norm_apply_mul_le_of_nonneg` is still
+   consumed, so what is dead really is only the packaged Lemma.  The one claim
+   worth singling out is §5.5's, because its *form* is the one that was wrong
+   about `ModularGroup`/`TomitaTakesaki`: "`rightMulEquiv` … in `Paschke.lean`,
+   which **imports** this file, so it cannot be used here".  The import graph
+   was walked: `Theses.B.Dils.Paschke` does reach
+   `Theses.A.CStar.TowardsVN`, and `TowardsVN` does not reach `Paschke`.  The
+   direction is right and the reason stands.
+7. ~~**The §5 shortlist, eight declarations unread.**~~ **DONE 2026-08-28,
+   §5.7.** Seven terminal, one a *trap* — `sqrt_lemma_monotone` proves a clause
+   of 23II through a lemma that rests on 23II's own existence half, which the
+   thesis rules out in as many words. It is annotated, and it must not be
+   deleted: being dead is what keeps the tree acyclic. The pass also corrected
+   two rows of the shortlist's own table.
 
 ---
 

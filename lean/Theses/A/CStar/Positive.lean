@@ -5693,7 +5693,23 @@ theorem sqrt_lemma_existsUnique (a : 𝒜) (h0 : 0 ≤ a) (h1 : a ≤ 1) :
     exact (sqrt_lemma_unique a h0 h1 b hlim hb0 hbsq b' hb'0 hb'1 hb'a hb'sq).symm
 
 /-- **23II** (cstar.tex:3501, Lemma), part 2: the sequence
-`b₀ ≤ b₁ ≤ ⋯` given by `b₀ = 0`, `b_{n+1} = ½(a + bₙ²)` is monotone. -/
+`b₀ ≤ b₁ ≤ ⋯` given by `b₀ = 0`, `b_{n+1} = ½(a + bₙ²)` is monotone.
+
+**Do not use this in the construction of the square root.**  The proof below
+goes through `mul_nonneg_of_commute` — the product of commuting positives is
+positive — and that lemma is proved from `sqrt_exists_core`, hence from
+`sqrt_unit_exists`, hence from `sqrt_lemma_exists`, which is the existence
+half of this very Lemma.  The thesis rules the route out in as many words at
+cstar.tex:3543: "we have carefully avoided using the fact here that the product
+of positive commuting elements is positive, which is not available to us until
+`ineq-square-root`", and proves monotonicity instead from the positivity of the
+coefficients of `qₙ₊₁ − qₙ` as *polynomials*.
+
+Nothing breaks today, because this declaration has no consumer and the
+existence half does not need monotonicity: convergence is obtained the way the
+thesis obtains it, from the Cauchy estimate `‖bₙ − b_N‖ ≤ qₙ(1) − q_N(1)`
+(`sqrtApproxSeq_cauchy`).  Wiring this lemma into that chain would close a
+cycle.  Read 2026-08-28; `docs/DEAD-LIMBS.md` §5.7. -/
 theorem sqrt_lemma_monotone (a : 𝒜) (h0 : 0 ≤ a) (h1 : a ≤ 1) :
     Monotone (sqrtApproxSeq a) :=
   by
