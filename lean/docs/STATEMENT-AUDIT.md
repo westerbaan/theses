@@ -119,10 +119,42 @@ number `NxR` decodes as:
   `b` ↦ `{N2}`, …  So `125d` ↦ `\begin{parsec}{1254}` and `84b` ↦ `{842}`.
 * `R` — a roman numeral giving the point *inside* that parsec:
   `\begin{point}{R0}`, e.g. `II` ↦ `{20}`, `XI` ↦ `{110}`.
+* **A lowercase letter *after* the roman numeral is a sub-point**, and it is
+  not the same thing as the sub-parsec letter before it: `a`, `b`, `c` add 1,
+  2, 3 to the point number.  `125VIIb` ↦ parsec `{1250}`, point `{72}`
+  (`tensor-preimage`); `69IVa` ↦ `{690}`/`{41}` (`nmiu-factors`); `141IIa` ↦
+  `{1410}`/`{21}`, whose own audit row calls it "the moved definition at point
+  21".  `125eIIa` carries one of each.  Fifteen tags in the tree have this
+  shape.
 * A trailing `.k` or `.2b` names a numbered clause within the point.
 
 The proof, where there is one, is normally the *next* point (`Proof`), or the
 following few.
+
+### The sub-point letter was undocumented, and two checkers were blind to it (2026-08-28)
+
+The rule above — a lowercase letter *after* the roman numeral — was not written
+down here until now, and neither `scripts/audit_check.py` nor
+`scripts/cite_check.py` matched it.  Both read a letter only *before* the roman
+numeral, so `125VIIb`, `69IVa`, `141IIa`, `19Ia` and eleven more matched no tag
+pattern at all.
+
+Two consequences, one of them a live defect:
+
+* **`audit_check.py`'s unrowed check could not see those declarations.**  With
+  the regex widened it found one across the whole tree:
+  **`atomicTypeI_tensor_preimage`** (`A/Proc/QuantumLambda.lean:5504`) has
+  carried the tag `**125VIIb**` since it was written and no audit row named it.
+  A row is now in place, and its sibling `atomicTypeI_tensorBsurjectivity` was
+  rowed all along, which is what made the gap invisible to a reader.
+* **`cite_check.py --disp` skipped every reference those tags carry.**  789
+  tag references are checkable now against 775 before; the 14 recovered ones
+  all land, so nothing had drifted behind the blind spot.
+
+One stale note turned up beside the new row: 125eIII `haTensorBSurj` says its
+proof replaces "the general 125VIIb `tensor_preimage` — which is `sorry`".  It
+has been green since `61d6f49`.  The substitution still describes what the
+proof does; it is no longer forced, and the row says so.
 
 ### The drift is now measured, and repaired (2026-08-28)
 

@@ -47,13 +47,14 @@ BARE = re.compile(r'\b([a-z]+\.tex):(\d+)')
 # tag alone decodes to a parsec and a point (docs/STATEMENT-AUDIT.md).  That is
 # a second, label-free way to check a file:line reference -- the one that reaches
 # the 331 self-citations carrying no label at all.
-TAG = re.compile(r'^/--\s*\**\s*\*\*(\d{1,3})([a-z]?)([IVXL]+)'
+TAG = re.compile(r'^/--\s*\**\s*\*\*(\d{1,3})([a-z]?)([IVXL]+)([a-z]?)'
                  r'(?:\.[0-9a-z]+)?(?:\([a-z]\))?\*\*(.*)')
 SELFREF = re.compile(r'\(\s*`?([a-z]+\.tex):(\d+)`?')
 # **44VIII** (cstar.tex:1234) -- a tag naming some *other* point, with its line.
 # The same decoding checks it, and there are three times as many of these as
 # there are self-citations.
-XREF = re.compile(r'\*\*(\d{1,3})([a-z]?)([IVXL]+)(?:\.[0-9a-z]+)?(?:\([a-z]\))?\*\*'
+XREF = re.compile(r'\*\*(\d{1,3})([a-z]?)([IVXL]+)([a-z]?)'
+                  r'(?:\.[0-9a-z]+)?(?:\([a-z]\))?\*\*'
                   r'(?:\.[0-9a-z]+)?[^*(\d\n]{0,40}\(\s*`?([a-z]+\.tex):(\d+)`?')
 # Digits are excluded from that gap on purpose.  `... of **157II**.  223V
 # (eff.tex:7076)` would otherwise read 157II against 223V's line: the tag
@@ -64,10 +65,10 @@ XREF = re.compile(r'\*\*(\d{1,3})([a-z]?)([IVXL]+)(?:\.[0-9a-z]+)?(?:\([a-z]\))?
 # these say the wrong thing twice over, so they are matched first and the
 # single-tag reader is held off them.
 TAGPAIR = re.compile(
-    r'\*\*(\d{1,3}[a-z]?[IVXL]+(?:\.[0-9a-z]+)?)\*\*\s*(?:,|--|–|-|and)\s*'
-    r'\*\*(\d{1,3}[a-z]?[IVXL]+(?:\.[0-9a-z]+)?)\*\*'
+    r'\*\*(\d{1,3}[a-z]?[IVXL]+[a-z]?(?:\.[0-9a-z]+)?)\*\*\s*(?:,|--|–|-|and)\s*'
+    r'\*\*(\d{1,3}[a-z]?[IVXL]+[a-z]?(?:\.[0-9a-z]+)?)\*\*'
     r'[^*(\n]{0,40}\(\s*`?([a-z]+\.tex):(\d+)\s*(?:,|--|–|-)\s*(\d+)')
-TAGSPLIT = re.compile(r'^(\d{1,3})([a-z]?)([IVXL]+)')
+TAGSPLIT = re.compile(r'^(\d{1,3})([a-z]?)([IVXL]+)([a-z]?)')
 ROMAN = {"I": 1, "V": 5, "X": 10, "L": 50}
 # The solution files carry `\begin{solution}{label}` and no parsecs, so a tag
 # cited against one is naming the *solution* to that exercise; it is checkable
@@ -202,7 +203,7 @@ def tag_claims(lines):
             head = " ".join(lines[i:i + 3])
             ref = SELFREF.search(head)
             if ref:
-                out.append((i, decode(m.group(1), m.group(2), m.group(3)),
+                out.append((i, decode(m.group(1), m.group(2), m.group(3), m.group(4)),
                             ref.group(1), int(ref.group(2)), head, True))
         masked = []
         for pair in TAGPAIR.finditer(line):
@@ -210,15 +211,15 @@ def tag_claims(lines):
             for tag, num in ((pair.group(1), pair.group(4)),
                              (pair.group(2), pair.group(5))):
                 t = TAGSPLIT.match(tag)
-                out.append((i, decode(t.group(1), t.group(2), t.group(3)),
+                out.append((i, decode(t.group(1), t.group(2), t.group(3), t.group(4)),
                             pair.group(3), int(num), line, False))
         for x in XREF.finditer(line):
             if m and x.start() == 0:
                 continue              # that is the self-citation, already taken
             if any(a <= x.start() < b for a, b in masked):
                 continue
-            out.append((i, decode(x.group(1), x.group(2), x.group(3)),
-                        x.group(4), int(x.group(5)), line, False))
+            out.append((i, decode(x.group(1), x.group(2), x.group(3), x.group(4)),
+                        x.group(5), int(x.group(6)), line, False))
     return out
 
 
@@ -261,7 +262,7 @@ def bare_claims(lines):
     for i, line in enumerate(lines):
         m = TAG.match(line)
         if m:
-            tag = decode(m.group(1), m.group(2), m.group(3))
+            tag = decode(m.group(1), m.group(2), m.group(3), m.group(4))
         for mm in BARE.finditer(line):
             if any(a == i and b <= mm.start() < c for a, b, c in covered):
                 continue
@@ -302,10 +303,18 @@ def bare_check():
     return 0
 
 
-def decode(num, sub, rom):
-    """(parsec key, point key, printable tag) for one decoded DISP tag."""
+def decode(num, sub, rom, pt=""):
+    """(parsec key, point key, printable tag) for one decoded DISP tag.
+
+    A letter *before* the roman numeral is a sub-parsec (`125e` -> `{1251}`); a
+    letter *after* it is a sub-point (`VIIb` -> `{72}`, beside `VII` -> `{70}`).
+    Both are in use, `125eIIa` carries one of each, and the second was unread
+    until 2026-08-28 -- so fifteen tags matched nothing at all and every
+    reference they carry went unchecked.
+    """
     return (str(int(num) * 10 + (ord(sub) - 96 if sub else 0)),
-            str(roman(rom) * 10), f"{num}{sub}{rom}")
+            str(roman(rom) * 10 + (ord(pt) - 96 if pt else 0)),
+            f"{num}{sub}{rom}{pt}")
 
 
 def with_proofs(table):

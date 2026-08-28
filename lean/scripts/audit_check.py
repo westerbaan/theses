@@ -241,7 +241,13 @@ def name_list(field):
 # A sub-clause label may carry a parenthesised part -- `**189aII.3(a)**`.
 # Without the optional group the number matches but the closing `**` does not,
 # so such a declaration reads as untagged and the unrowed check never sees it.
-TAG_OPENS = re.compile(r'^/--\s*\**\s*\*\*(\d{1,3}[a-z]?[IVXL]+(?:\.[0-9a-z]+)?(?:\([a-z]\))?)\*\*')
+# A DISP tag can carry a letter on either side of the roman numeral, and they
+# mean different things: `125e III` is a sub-*parsec*, `125 VIIb` a sub-*point*
+# (parsec {1250}, point {72}).  Only the first was matched until 2026-08-28, so
+# the fifteen tags of the second shape -- 125VIIb, 69IVa, 141IIa, 19Ia, ... --
+# read as untagged and the unrowed check could not see them.
+TAG_OPENS = re.compile(r'^/--\s*\**\s*\*\*(\d{1,3}[a-z]?[IVXL]+[a-z]?'
+                       r'(?:\.[0-9a-z]+)?(?:\([a-z]\))?)\*\*')
 PRIVATE = re.compile(r'^\s*(?:@\[[^\]]*\]\s*)*private\b')
 
 
