@@ -19,12 +19,18 @@ spectral measures.  Here everything is done with bounded operators.
 Only the `J` half leaves this file.  `A/VN/CommutationTomita.lean` consumes
 `modularConj_htmul` together with `isCyclicVector_vnTensor`,
 `isSeparatingVector_vnTensor` and `isStandard_vnTensor`; **nothing consumes the
-`Δ^{1/2}` half**, and its five declarations
+`Δ^{1/2}` half**, and its six declarations here
 (`opTensor_mem_modularSqrt_domain`, `modularSqrt_opTensor`, `modularSqrt_htmul`,
-`modularSqrt_hasCore_orbitSpan`, `modularSqrt_htmul_pkg`) form a chain that
-reaches nothing outside itself.  They stay: the displayed factorisation above is
-the file's stated purpose, both halves of it, and the tree states the `Δ^{1/2}`
-half nowhere else.
+`modularSqrt_hasCore_orbitSpan`, `modularSqrt_htmul_pkg`,
+`htmul_mem_modularSqrt_domain`) reach nothing outside themselves.
+
+The block does not stop at this file.  A term-level walk of the whole
+environment (`scripts/UsesOf.lean`, 2026-08-28) puts nine more with them —
+`modularSqrt` itself and eight of its siblings in `A/VN/Tomita.lean`'s Part IV,
+whose *only* references are these.  Fifteen declarations, entered from nowhere,
+exactly as `docs/DEAD-LIMBS.md` §13.7 found by cone.  They stay: the displayed
+factorisation above is the file's stated purpose, both halves of it, and the
+tree states the `Δ^{1/2}` half nowhere else.
 
 `docs/DEAD-LIMBS.md` §10e had a sharper diagnosis than "unused" — that the
 package shipped no domain-membership discharger, so a consumer of

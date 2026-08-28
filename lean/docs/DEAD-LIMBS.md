@@ -1054,6 +1054,17 @@ here; the name is not.
   `orbit_mem_modularSqrt_domain`, `exists_Ksub_repr` and
   `mem_modularSqrt_domain`.  Deleting them deletes the thing §10e names as the
   repair.
+  **Half of that reason is false, and the term-level walk of 2026-08-28 says
+  which half.**  `modularConj` is live: four references, one of them
+  `modularConj_htmul`, which `A/VN/CommutationTomita.lean` consumes.
+  `modularSqrt` is not: **eleven references and every one inside the package**,
+  its own siblings plus `ModularTensor.lean`'s `Δ^{1/2}` chain — and
+  `ModularTensor` is the block, so it cannot be the evidence that the block is
+  reached.  The three dischargers named above have **no reference at all**, nor
+  do `modularSqrt_hasCore`, `modularConj_modularSqrt`,
+  `modularConj_modularSqrt_orbit`, `modularSqrt_isSelfAdjoint` and
+  `modularSqrt_inner_nonneg`.  The keep stands, on §10e's ground and not on
+  this one.
 * `bicommutant_eq_of_uwClosed` (`Tomita.lean:482`): named in that file's own
   header under **"Main results"**, as are `modularSqrt_hasCore`,
   `modularConj_modularSqrt_orbit` and `modularConj_modularSqrt`.  Prose-cited
@@ -1539,6 +1550,20 @@ alike:
 Five declarations, one closed chain.  Deleting them would delete the second
 displayed conclusion of a file written for both, and the tree states it
 nowhere else — the same ground on which §13.4 kept the `jConj` layer.
+
+**The block is larger than this file, and §13.7 said so before this ruling
+did.**  A term-level walk of the whole environment (`scripts/UsesOf.lean`,
+2026-08-28) confirms §13.7's cone finding declaration by declaration:
+`modularSqrt` has **11 references and every one is inside the package**, and
+`modularSqrt_hasCore`, `orbit_mem_modularSqrt_domain`, `mem_modularSqrt_domain`,
+`exists_Ksub_repr`, `modularConj_modularSqrt`, `modularConj_modularSqrt_orbit`,
+`modularSqrt_isSelfAdjoint` and `modularSqrt_inner_nonneg` have **none**.  With
+this file's six — the five above plus the new `htmul_mem_modularSqrt_domain` —
+that is **fifteen declarations across two files, entered from nowhere**.  The
+ruling covers all fifteen; the first version of this section covered five and
+was measuring one file.  `modularConj` is *not* among them: it has four
+references and one, `modularConj_htmul`, is consumed by `CommutationTomita`, so
+the `J` half is live and the two halves of the same package differ.
 
 **One correction to the paragraph below, and it is the eighth mechanism
 again.**  `modularSqrt_hasCore_orbitSpan` reads as having one use.  It has

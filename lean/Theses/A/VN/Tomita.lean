@@ -635,7 +635,30 @@ end Tomita
 
 /-! ## Part IV: the package
 
-The three hypotheses `ω` cyclic, `ω` separating and `M'' = M` in one place. -/
+The three hypotheses `ω` cyclic, `ω` separating and `M'' = M` in one place.
+
+**Its `Δ^{1/2}` half is never entered from outside; its `J` half is.**  Measured
+at the term level on 2026-08-28 with `scripts/UsesOf.lean`, over the whole
+environment rather than by grep:
+
+* `modularConj` has four references and one of them, `modularConj_htmul`
+  (`A/VN/ModularTensor.lean`), is consumed by `A/VN/CommutationTomita.lean`.
+  The `J` half carries the commutation theorem and is live.
+* `modularSqrt` has **eleven references and every one is inside the package** —
+  its own siblings here, and the `Δ^{1/2}` chain of `ModularTensor.lean`.
+  `modularSqrt_hasCore`, `orbit_mem_modularSqrt_domain`, `mem_modularSqrt_domain`,
+  `exists_Ksub_repr`, `modularConj_modularSqrt` and
+  `modularConj_modularSqrt_orbit` have **none at all**, and neither do
+  `modularSqrt_isSelfAdjoint` and `modularSqrt_inner_nonneg`.
+
+So the `Δ^{1/2}` package is one dead block of fifteen declarations across this
+file and `ModularTensor.lean`, exactly as `docs/DEAD-LIMBS.md` §13.7 found by
+cone.  It is **kept** (§10e): the tree states
+`Δ_ξ^{1/2} = closure (Δ_ω^{1/2} ⊙ Δ_{ω'}^{1/2})` nowhere else, and the file's
+displayed purpose is both halves of RvD's factorisation.  What is *not* true is
+§12b's stated reason for keeping this section — "`modularSqrt` and `modularConj`
+are not dead, `ModularTensor.lean` uses them" — since `ModularTensor` is the
+block.  `modularConj` carries that keep; `modularSqrt` does not. -/
 
 section Package
 
