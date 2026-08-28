@@ -116,6 +116,11 @@ VERDICTS = (
     ("no longer private",    "repaired"),
     ("dead limb closed",     "repaired"),
     ("reclassified",         "repaired"),
+    # five more names the passes gave a correction, none of them declared
+    ("verdict corrected",    "repaired"),
+    ("re-verdicted",         "repaired"),
+    ("note was stale",       "repaired"),
+    ("stale note",           "repaired"),
     ("strengthened",         "repaired"),
     ("repaired",             "repaired"),
     # a row written for a declaration that had none is not a mismatch
@@ -126,6 +131,17 @@ VERDICTS = (
     ("left-thesis",          "left-thesis"),
     ("left-ruling",          "left-ruling"),
     ("left-cost",            "left-cost"),
+    # the proof column grew its own vocabulary and none of it was ever declared
+    # here, so `verdict_of`'s first-token fallback was reporting these as
+    # categories by accident.  They are categories -- they just were not in the
+    # table.  A proof divergence can be left because the encoding forces it,
+    # because Mathlib states the step, because the thesis's own route is
+    # unavailable in the tree, or as a deliberate choice.
+    ("left-encoding",        "left-encoding"),
+    ("left-forced",          "left-forced"),
+    ("left-mathlib",         "left-mathlib"),
+    ("left-unavailable",     "left-unavailable"),
+    ("left-by-choice",       "left-by-choice"),
     ("open",                 "open"),
 )
 
@@ -153,6 +169,13 @@ def verdict_of(field):
     # a dated pass label is not a category: drop it before falling back, or the
     # date itself is reported as one.
     bare = re.sub(r"^\d{4}-\d{2}-\d{2}[^:]{0,60}:\s*", "", field.strip())
+    # `left 2026-08-25: the deviation is polarising with x+y ...` -- 47 proof
+    # rows are a bare LEFT followed by a date and a substantive reason.  They
+    # are verified leaves and the fallback was filing them under `left`, which
+    # is not a category.  Only the *bare* word counts: every `left-...` form
+    # above has already been matched.
+    if re.match(r"left\b(?![-\w])", bare, re.I):
+        return "left-reasoned"
     return re.split(r"[\s:,]", bare, maxsplit=1)[0].rstrip("-").lower()
 
 

@@ -106,6 +106,41 @@ a name list (`Mathlib EuclideanSpace ℂ (Fin N) (no declaration; …)`, used
 where the carrier is Mathlib's and the tree only documents it) is skipped by
 that check, so use it only when there really is no declaration to name.
 
+### The verdict vocabulary, declared (2026-08-28)
+
+A row's `note` says what differs; its **status** field says what should happen
+about it, and `scripts/sorry_map.py` buckets the tree by reading a verdict out
+of that field.  The statement side had a declared vocabulary — `repaired`,
+`left-benign`, `left-cost`, `left-thesis`, `left-needs-statement`,
+`left-ruling`, `open`.  **The proof side had grown one and never declared it**,
+so `verdict_of`'s first-token fallback was reporting phrases as categories: 47
+rows under `left` (which is a bare `LEFT` followed by a date and a real
+reason), and singletons under `verdict`, `stale`, `renamed`, `note`.
+
+Five proof-side verdicts were in use and are now in the table, because they are
+real distinctions and the passes were already making them:
+
+* `left-forced` — the route differs because ours is stated at a generality the
+  thesis's argument does not reach (30V's degenerate inner product, 54XI's
+  arbitrary presentation).
+* `left-mathlib` — Mathlib states the step, so the printed argument is not
+  transcribed.
+* `left-unavailable` — there is **no printed route to follow**: the solution
+  asserts the step, or the point it appeals to is not converted.
+* `left-encoding` — the deviation is the encoding, not the argument (transport
+  along a chosen coproduct).
+* `left-by-choice` — a deliberate substitution with the reason recorded.
+
+A bare `LEFT <date>: <reason>` now reads as **`left-reasoned`**: a divergence
+left in place with a written, dated reason.  It is not a category anyone chose;
+it is what 47 rows say, and calling it `left` was calling a word a verdict.
+
+**Every row in both columns now carries a verdict.**  Before this: 26 statement
+rows and 45 proof rows had none at all, and 13 more read as blank because
+`verdict_of` returns `""` for "row added" — a phrase that sorts ahead of every
+verdict name, so appending a verdict after it does nothing.  If you add one to
+a row that says "row added", reword that phrase or the verdict is invisible.
+
 ## Locating a statement in the sources
 
 **Line references drift** — every doc comment carries one (`dils.tex:5024`)
