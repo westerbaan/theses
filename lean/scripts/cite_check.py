@@ -222,6 +222,86 @@ def tag_claims(lines):
     return out
 
 
+def bare_claims(lines):
+    """Bare `file.tex:N` references read against the declaration they sit in.
+
+    Most references in the tree carry neither a label nor a tag of their own --
+    they are inline `--` comments recording where a proof step or a divergence
+    sits ("the thesis's own computation (cstar.tex:2320)").  Nothing in the
+    reference identifies its target, but the *declaration* it sits in usually
+    has a DISP tag, and a reference inside a proof of point P usually points
+    into P.  So they are read against the enclosing tag: 1610 of them land in
+    it.
+
+    Landing outside it is not an error -- a doc comment cites other points all
+    the time -- and there is **no way to tell the two apart mechanically**.  A
+    history walk was tried, on the rule that a line some revision had inside the
+    enclosing point is a stale self-reference; it proposed 42 repairs and the
+    first two read were both wrong, each a correct reference to a *different*
+    point that an old revision happened to overlap.  A label or a tag identifies
+    its target and can be repaired; a bare reference identifies nothing.  So
+    this is a measurement, not a defect list.
+
+    Yields (line index, decoded enclosing tag, tex, line number).
+    """
+    # A labelled citation and the bare reader match at *different* offsets --
+    # one at the backtick, one at the file name -- so a covered set keyed on the
+    # match start marks nothing.  It has to be keyed on the span: 65 correct
+    # labelled citations were queued for "repair" before this was fixed.
+    covered = []
+    for i, line in enumerate(lines):
+        for rx in (CITE, PARENCITE, PAIRED):
+            for m in rx.finditer(line):
+                covered.append((i, m.start(), m.end()))
+    tagged = set()
+    for i, _dec, tex, num, _head, _self in tag_claims(lines):
+        tagged.add((i, tex, num))
+
+    out, tag = [], None
+    for i, line in enumerate(lines):
+        m = TAG.match(line)
+        if m:
+            tag = decode(m.group(1), m.group(2), m.group(3))
+        for mm in BARE.finditer(line):
+            if any(a == i and b <= mm.start() < c for a, b, c in covered):
+                continue
+            if (i, mm.group(1), int(mm.group(2))) in tagged:
+                continue
+            if tag is None or mm.group(1) in NO_PARSECS:
+                continue
+            out.append((i, tag, mm.group(1), int(mm.group(2))))
+    return out
+
+
+def bare_check():
+    """Report bare references that fall outside the point their declaration is tagged with."""
+    tables = {tex.name: with_proofs(points(tex.read_text(errors="replace")))
+              for tex in sorted(ROOT.glob("*.tex"))}
+    inside = outside = absent = 0
+    rows = []
+    for src in sorted(LEAN.rglob("*.lean")):
+        if ".lake" in src.parts:
+            continue
+        rel = src.relative_to(ROOT)
+        for i, tag, tex, num in bare_claims(src.read_text(errors="replace").splitlines()):
+            where = tables.get(tex, {}).get((tag[0], tag[1]))
+            if where is None:
+                absent += 1
+            elif where[0] <= num <= where[1]:
+                inside += 1
+            else:
+                outside += 1
+                rows.append((rel, i + 1, tag[2], tex, num, where))
+    for rel, ln, tag, tex, num, w in rows:
+        print(f"OUTSIDE {rel}:{ln}  in **{tag}** ({tex}:{w[0]}-{w[1]}), a bare "
+              f"reference to {tex}:{num}")
+    print(f"\n{inside} bare references land inside the point their declaration is "
+          f"tagged with, {outside} land elsewhere (not a defect list -- a comment "
+          f"may cite any point, and nothing in a bare reference says which), "
+          f"{absent} whose tag names a point the cited file does not have")
+    return 0
+
+
 def decode(num, sub, rom):
     """(parsec key, point key, printable tag) for one decoded DISP tag."""
     return (str(int(num) * 10 + (ord(sub) - 96 if sub else 0)),
@@ -310,6 +390,8 @@ def disp_check():
 def main():
     if "--disp" in sys.argv:
         return 1 if disp_check() else 0
+    if "--bare" in sys.argv:
+        return bare_check()
     ext = extents()
     drifted, unknown = [], []
     ok = paired = bare_total = skipped = 0

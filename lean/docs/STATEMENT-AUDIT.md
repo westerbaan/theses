@@ -236,11 +236,31 @@ file name, so a replace of `dils.tex:3859` matches nothing and *succeeds*.  The
 tool now checks that the text really changed before it claims a repair, and
 prints what it could not write.
 
-What is still unchecked: **867 `file.tex:N` references carrying neither a label
-nor a tag** — almost all of them inline `--` comments recording where in the
-thesis a proof step or a divergence sits ("the thesis's own argument,
-asols.tex:1727").  Nothing in the reference identifies what it points at, so
-nothing can verify it; pinning them would mean writing a tag into each.
+### The bare references cannot be repaired, and that was worth finding out
+
+The remaining **867 `file.tex:N` references carry neither a label nor a tag** —
+inline `--` comments recording where in the thesis a proof step or a divergence
+sits ("the thesis's own argument, asols.tex:1727").  There is one thing that
+places them: the declaration they sit in usually *is* tagged, and a reference
+inside the proof of point P usually points into P.  `cite_check.py --bare` reads
+them that way, and **191 of the 367 that sit inside a tagged declaration land in
+its point**; 164 land elsewhere and 12 name a point their file does not have.
+
+Landing elsewhere is not an error, and **the two cases cannot be told apart
+mechanically**.  The history walk that repairs a named citation was tried here
+on the rule "a line some revision had inside the enclosing point is a stale
+self-reference".  It proposed 42 repairs.  The first two read were both wrong:
+`StatesPredicates.lean:6469` cites `eff.tex:2787` for "the relation of
+eff.tex:2787", and that line *is* the relation — its own previous line says it
+is rebuilding **193V**'s construction while the declaration is tagged
+**193IX**; `Dagger.lean:2261` correctly cites the `pristine-asrt` cell of a
+diagram from a declaration tagged with another point.  Over 800 revisions of a
+.tex, "some revision had this line inside that point" is not evidence — points
+move by hundreds of lines and the coincidence is cheap.
+
+What makes the 307 labelled and 106 tagged repairs sound is that the label or
+the tag **identifies the target**.  A bare reference identifies nothing.  The
+repair mode was written, tested, and removed; `--bare` measures and stops.
 
 ### The setting a doc comment claims, against the one the type has (2026-08-28)
 

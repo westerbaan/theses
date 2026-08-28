@@ -16,6 +16,21 @@ extent, at any revision, is reported and left alone -- it is a different kind of
 error and not one a shift can fix.
 
 Run with --write to apply; without it, prints the repairs it would make.
+
+**There is no `--bare` mode, and the reason is worth keeping.**  It was written:
+for a bare `file.tex:N` inside a declaration tagged `P`, walk the history and
+re-anchor if some revision put that line inside `P`.  It proposed 42 repairs and
+the first two read were both wrong.  `StatesPredicates.lean:6469` cites
+`eff.tex:2787` for "the relation of eff.tex:2787" and that line *is* the
+relation — the comment says in its previous line that it is rebuilding **193V**'s
+construction, while the declaration is tagged **193IX**.  `Dagger.lean:2261`
+cites the `pristine-asrt` cell of a diagram, again correctly, from a declaration
+tagged with a different point.  Over 800 revisions of a .tex, "some revision had
+this line inside that point" is not evidence: points move by hundreds of lines
+and the coincidence is cheap.  What makes the named repairs sound is that the
+label or the tag *identifies the target*; a bare reference identifies nothing,
+so nothing can repair it mechanically.  `cite_check.py --bare` measures how many
+sit in their own declaration's point and stops there.
 """
 
 import re
