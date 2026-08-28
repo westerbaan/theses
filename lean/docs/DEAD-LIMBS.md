@@ -1561,9 +1561,13 @@ docstring had in fact been repaired on 2026-08-26 — it now carries a ⚠ note
 saying 125IV goes through the two-sided form and recording the old claim as
 withdrawn — and the same repair is on
 `tensorSub_inf_of_intersectionTensorStatement` above it.  What *was* still
-wrong is that both repairs pointed the reader at "`docs/DEAD-LIMBS.md` §5d",
-a section this document has never had under its present numbering; they point
-at §10d now, and `scripts/xref_check.py` is what found it.
+wrong is that both repairs pointed the reader at a section of this document
+numbered **5d**, which it has never had under its present numbering — 5a and 5d
+were what §10a and §10d are called now.  They point at §10d today, and
+`scripts/xref_check.py` is what found them.  (The pointer is spelled out here
+without its `docs/` prefix on purpose: that script cannot tell a reference from
+a quotation of one, and quoting it in full would leave the check reporting this
+sentence forever.)
 
 ### 10e. The `section Package` pattern — the structural finding. **DECIDED 2026-08-28: kept, and the gap is closed.**
 
