@@ -2633,7 +2633,7 @@ theorem baVec_image_directed [CompleteSpace X] (x : X)
 
 /-- **142VIII** (dils.tex:1495, Example): `⟨·, Z·⟩` is a 𝒷-sesquilinear
 form for every `Z ∈ 𝒷ᵃ(X)`. -/
-theorem ba_isBSesquilinear [CompleteSpace X] (Z : Ba 𝒷 X) :
+theorem ba_isBSesquilinear (Z : Ba 𝒷 X) :
     IsBSesquilinear (fun x y : X => (inner 𝒷 x (Z.1 y) : 𝒷)) := by
   have hmod := (moduleAdjointable_linear (𝒜 := 𝒷) ⇑(Z.1) Z.2).2.2
   exact
@@ -2654,9 +2654,16 @@ theorem ba_isBSesquilinear [CompleteSpace X] (Z : Ba 𝒷 X) :
 **152II** `IsBoundedBSesq`.  Sesquilinearity is `ba_isBSesquilinear`
 (142VIII); the bound is Cauchy–Schwarz for Hilbert C*-modules
 (`CStarModule.norm_inner_le`) followed by `‖Ty‖ ≤ ‖T‖‖y‖`, so `r = ‖T‖`
-works.  (The thesis states the Example for a pre-Hilbert module; ours
-carries `[CompleteSpace X]`, which is what `Ba 𝒷 X` is set up with here.) -/
-theorem ba_isBoundedBSesq [CompleteSpace X] (Z : Ba 𝒷 X) :
+works.
+
+Stated for a **pre-Hilbert** module, as the Example is.  It carried
+`[CompleteSpace X]` until 2026-08-29, recorded on its audit row as the one
+respect in which it was weaker; the binder was never needed — `Ba 𝒷 X` is
+defined at `HilbertModules.lean:811` without it, the `[CompleteSpace X]` there
+being a section variable introduced *after* it for 143IV's C\*-structure, and
+neither this proof nor `ba_isBSesquilinear`'s uses completeness.  Dropping it
+from both was the whole repair. -/
+theorem ba_isBoundedBSesq (Z : Ba 𝒷 X) :
     ∃ r : ℝ, 0 ≤ r ∧
       IsBoundedBSesq r (fun x y : X => (inner 𝒷 x (Z.1 y) : 𝒷)) := by
   let _ : NormedSpace ℂ X := NormedSpace.ofCore (CStarModule.normedSpaceCore 𝒷)
