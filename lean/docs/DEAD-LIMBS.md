@@ -1553,8 +1553,17 @@ contradicted; it is not confirmed either.
 by the **two-sided** form: 125IV consumes
 `tensorSub₂_inf_of_intersectionTensorStatement` (`:6714`, 1 use), because its
 intersection `(𝒜̃ ⊗ B(ℋ)) ∩ (𝒜 ⊗ 𝒞)` varies in both factors.
-**`tensorSub_inf`'s own docstring is still false** where it says "it is what
-125IV `equaliser_lemma` consumes". It was orphaned inside its own commit.
+It was orphaned inside its own commit.
+
+*Corrected 2026-08-28:* this section said "**`tensorSub_inf`'s own docstring is
+still false** where it says 'it is what 125IV `equaliser_lemma` consumes'".  The
+docstring had in fact been repaired on 2026-08-26 — it now carries a ⚠ note
+saying 125IV goes through the two-sided form and recording the old claim as
+withdrawn — and the same repair is on
+`tensorSub_inf_of_intersectionTensorStatement` above it.  What *was* still
+wrong is that both repairs pointed the reader at "`docs/DEAD-LIMBS.md` §5d",
+a section this document has never had under its present numbering; they point
+at §10d now, and `scripts/xref_check.py` is what found it.
 
 ### 10e. The `section Package` pattern — the structural finding. **DECIDED 2026-08-28: kept, and the gap is closed.**
 

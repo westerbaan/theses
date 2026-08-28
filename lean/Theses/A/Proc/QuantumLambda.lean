@@ -6475,7 +6475,7 @@ applies the concrete statement there.
 intersection it takes, `(𝒜̃ ⊗ B(ℋ)) ∩ (𝒜 ⊗ 𝒞)`, varies in both factors.
 Its only consumer is `tensorSub_inf` just below, which has none.  (This
 docstring said "i.e. what 125IV `equaliser_lemma` actually needs" until
-2026-08-26; see `docs/DEAD-LIMBS.md` §5d and §10.) -/
+2026-08-26; see `docs/DEAD-LIMBS.md` §10d.) -/
 theorem tensorSub_inf_of_intersectionTensorStatement
     (h121 : IntersectionTensorStatement.{u})
     (S₁ S₂ : StarSubalgebra ℂ 𝒜) (hS₁ : IsVNSubalgebra 𝒜 S₁)
@@ -6555,7 +6555,7 @@ inside the chosen tensor product `𝒜 ⊗ 𝒞`.  This is
 intersection `(𝒜̃ ⊗ B(ℋ)) ∩ (𝒜 ⊗ 𝒞)` varies in both factors; this
 one-sided form is kept on the record as the unconditional statement of the
 abstract 121II.  (This docstring claimed "it is what 125IV `equaliser_lemma`
-consumes" until 2026-08-26; see `docs/DEAD-LIMBS.md` §5d and §10.) -/
+consumes" until 2026-08-26; see `docs/DEAD-LIMBS.md` §10d.) -/
 theorem tensorSub_inf {𝒜 𝒞 : Type u}
     [CStarAlgebra 𝒜] [PartialOrder 𝒜] [StarOrderedRing 𝒜] [VonNeumannAlgebra 𝒜]
     [CStarAlgebra 𝒞] [PartialOrder 𝒞] [StarOrderedRing 𝒞] [VonNeumannAlgebra 𝒞]
@@ -6767,7 +6767,7 @@ subspace containing the elementary tensors.
 the superseded atomic-type-I block at `:4730–5542`, which nothing outside
 itself reaches — the shared argument was reproved here rather than reused, so
 the cross-reference sent the reader into dead code.  Corrected 2026-08-26; see
-`docs/DEAD-LIMBS.md` §5a and §10.)* -/
+`docs/DEAD-LIMBS.md` §10a.)* -/
 theorem rSlice_mem (ξ : H) (x : VNT 𝒜 (H →L[ℂ] H)) :
     ∃ a : 𝒜, rSlice 𝒜 ξ x = a ⊗ᵥ (1 : H →L[ℂ] H) := by
   let _ : TopologicalSpace (VNT 𝒜 (H →L[ℂ] H)) := ultraweak (VNT 𝒜 (H →L[ℂ] H))

@@ -2054,8 +2054,9 @@ thesis only ever uses the *commutation theorem* **121II**
 Cor. IV.5.10, and which is the one point of thesis A it does not prove).
 The amplification theorem is the one unqualifiedly elementary case of that
 theorem: it is step (E) of the route recorded in `PROVING-LOG.md` session
-83 and in `docs/COMMUTATION-THEOREM.md` §5.1, and every route to the
-general statement consumes it.
+83 and in `docs/COMMUTATION-THEOREM.md` §5, item 1 (that document numbers its
+items inside §5 and has no §5.1), and every route to the general statement
+consumes it.
 
 The proof is `eq_opTensor_one_of_comm` (an operator commuting with
 `1 ⊗ B(𝒦)` is an `a ⊗ 1`) plus the Double Commutant Theorem **88VI**
