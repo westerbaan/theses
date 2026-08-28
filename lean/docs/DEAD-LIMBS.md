@@ -1459,7 +1459,37 @@ And two from the brief that are **still dead**, as expected:
 Carried forward with their status at `9a69966`. Nothing below was re-derived by
 this sweep's method except where a status is given.
 
-### 10a. `QuantumLambda.lean` — the atomic-type-I island, 813 lines. **Unchanged.**
+### 10a. `QuantumLambda.lean` — the atomic-type-I island, 813 lines. **Still the author's call, but the call is on two rows, not on 43 declarations (measured 2026-08-28).**
+
+*The paragraph below is the 2026-08-26 reading and stands.  What it does not
+give is the shape of the decision, and that is what an author needs.*
+
+**Measured as the island stands today**, from the "atomic type I slice device"
+header to `end AtomicTypeI`: **586 lines, 43 declarations, of which 39 are
+`private`.**  (§10a's 813 is a count over commit `a992c23`, which also carries
+`BKUnits` and `GenSum`, part of them load-bearing.)  Four are public —
+`AtomicTypeIRep`, `AtomicTypeI`, `atomicTypeI_tensor_preimage`,
+`atomicTypeI_tensorBsurjectivity` — and **nothing outside `QuantumLambda.lean`
+names any of the four**; inside the file the only mentions of the two theorems
+are prose in a doc comment at `:4522`.
+
+**Only two of the 43 are rowed thesis statements**: 125VIIb
+`atomicTypeI_tensor_preimage` and 125eIII `atomicTypeI_tensorBsurjectivity`.
+(The first was *unrowed* until 2026-08-28 — its tag has a sub-point letter and
+nothing matched that shape; see `docs/STATEMENT-AUDIT.md`.)  The other 41,
+definitions included, are untagged and unrowed: ordinary §7 pool material the
+moment the two statements go.  So the ruling is on two rows and the rest
+follows.
+
+**And retiring them costs no coverage.**  Both rows are `stmt=ok` on the
+schema's sibling clause: 125VIIb is carried by `tensorSub` and `tensor_preimage`
+and 125eIII by `surj_of_haTensorBSurj`, `haTensorBSurj` and
+`tensorBsurjectivity` — all green, all in the same file.  `coverage.py` stays at
+669/669 either way.  What is lost is not a point of either thesis but the
+*widening*: the atomic type I forms are the only place the tree proves 125VIIb
+and 125eIII for infinite-dimensional atomic blocks, `haTensorPreimage` and
+`haTensorBSurj` asking for hereditarily atomic.  That is the thing to weigh, and
+it is a smaller and more definite question than "813 lines".
 
 Commit `a992c23`. `atomicTypeI_tensor_preimage` and
 `atomicTypeI_tensorBsurjectivity` are character-for-character the conclusions of
