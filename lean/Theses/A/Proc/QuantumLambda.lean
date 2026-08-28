@@ -1506,7 +1506,9 @@ private theorem card_npFunctional_le {𝒳 : Type u} [CStarAlgebra 𝒳]
     Cardinal.aleph0_mul_eq h𝒳]
 
 /-- Infrastructure for **125II**: the direct-sum GNS space of a *nontrivial*
-von Neumann algebra has at most `2^#𝒳` vectors (proc.tex:4820). -/
+C*-algebra has at most `2^#𝒳` vectors (proc.tex:4820).  (125II is about von
+Neumann algebras; the binders here are `CStarAlgebra` and `Nontrivial`, which
+is all the cardinal count uses.) -/
 private theorem card_gnsHilb_le {𝒳 : Type u} [CStarAlgebra 𝒳]
     [PartialOrder 𝒳] [StarOrderedRing 𝒳] [Nontrivial 𝒳] :
     #(gnsHilb 𝒳) ≤ (2 : Cardinal.{u}) ^ #𝒳 := by

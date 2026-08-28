@@ -4586,8 +4586,16 @@ end TensorBasic
 
 omit [PartialOrder A] [StarOrderedRing A] [PartialOrder B]
   [StarOrderedRing B] in
-/-- **113II** (proc.tex:3018, Exercise): an mi-bilinear map between von
-Neumann algebras is completely positive. -/
+/-- **113II** (proc.tex:3018, Exercise): an mi-bilinear map is completely
+positive.
+
+The thesis says "between von Neumann algebras"; the binders here are
+`CStarAlgebra` (`:209`), and the two domain orders are `omit`ted outright, so
+what is proved is the C*-algebra statement — `stronger`, and rowed as such
+since 2026-08-28.  The proof needs no more: multiplicativity and
+involution-preservation are all it uses.  The tree's other rendering of 113II,
+`Theses.A.CStar.matBilin_nonneg_of_mi`, makes the same generalisation and drops
+ℂ-homogeneity as well. -/
 theorem mi_bilinear_cp (β : A →ₗ[ℂ] B →ₗ[ℂ] C) (hm : BilinMult β)
     (hi : BilinStar β) : BilinCP β := by
   -- The exercise's index entry points at Schur's product theorem, but no
@@ -4955,8 +4963,11 @@ theorem cp_bilinear_2' (β : A →ₗ[ℂ] B →ₗ[ℂ] C) :
   rwa [hentry] at hpos
 
 /-- **113IV** (`cp-bilinear`, proc.tex:3035, Exercise), corollary:
-`h ∘ β ∘ (f × g)` is completely positive when `f`, `g`, `h` are cp-maps
-between von Neumann algebras. -/
+`h ∘ β ∘ (f × g)` is completely positive when `f`, `g`, `h` are cp-maps.
+
+The thesis says "cp-maps between von Neumann algebras"; the binders here and
+on the rest of the 113IV family are `CStarAlgebra`, so the C*-algebra statement
+is what is proved.  Rowed `stronger` since 2026-08-28, with the other three. -/
 theorem cp_bilinear_comp {A' B' C' : Type u} [CStarAlgebra A']
     [PartialOrder A'] [StarOrderedRing A'] [CStarAlgebra B']
     [PartialOrder B'] [StarOrderedRing B'] [CStarAlgebra C']

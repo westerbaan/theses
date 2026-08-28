@@ -2934,9 +2934,14 @@ private theorem positiveLinearMap_real_smul (f : A →ₚ[ℂ] B) (r : ℝ) (a :
   rw [real_smul_eq_complex_smul, real_smul_eq_complex_smul, map_smul]
 
 omit [StarOrderedRing A] [StarOrderedRing B] in
-/-- A map into a von Neumann algebra is ultraweakly continuous as soon as
-every np-functional composed with it is: the ultraweak topology of the
-codomain *is* the initial topology of the np-functionals (**42III**). -/
+/-- A map into the codomain is ultraweakly continuous as soon as every
+np-functional composed with it is: the ultraweak topology *is* the initial
+topology of the np-functionals (**42III**).
+
+Stated over `CStarAlgebra`, not `VonNeumannAlgebra` — `ultraweak` and
+`NPFunctional` are defined in that setting and the argument uses nothing more.
+The sibling `continuous_ultraweak_conj` below does carry the von Neumann
+binder, and the difference is deliberate. -/
 theorem continuous_ultraweak_of_forall (f : A → B)
     (h : ∀ ω : NPFunctional B,
       @Continuous A ℂ (ultraweak A) _ (fun x => (ω (f x) : ℂ))) :

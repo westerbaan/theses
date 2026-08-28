@@ -3788,7 +3788,8 @@ private theorem isLinftyOf_corner {X : Type u} [MeasurableSpace X] (μ : Measure
       rw [hstep, extZero_ne_zero, ← comap_val_apply μ hK hmeas]
       simpa using h0
 
-/-- The trivial von Neumann algebra is `ℓ^∞(∅)`. -/
+/-- A trivial C*-algebra is `ℓ^∞(∅)`.  (Used where the ambient statement is
+about von Neumann algebras; the binders here ask only for `Subsingleton`.) -/
 private theorem exists_ell_of_subsingleton (𝒜 : Type u) [CStarAlgebra 𝒜]
     [PartialOrder 𝒜] [StarOrderedRing 𝒜] [Subsingleton 𝒜] :
     ∃ (Y : Type u) (φ : NMIUMap 𝒜 (linf Y)), Function.Bijective ⇑φ := by

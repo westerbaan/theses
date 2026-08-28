@@ -1775,9 +1775,9 @@ theorem ncp_uwlim_1 [VonNeumannAlgebra A] [VonNeumannAlgebra B] {ι : Type*}
   filter_upwards with i using hcp i n a b
 
 /-- Infrastructure for 96III.2: the `ContinuousOn` counterpart of
-`Theses.A.VN.continuous_ultraweak_of_forall` — a map into a von Neumann
-algebra is ultraweakly continuous on a set as soon as `ω ∘ F` is, for every
-np-functional `ω`.  (Immediate from **42III** `uwTendsto_iff`, which is
+`Theses.A.VN.continuous_ultraweak_of_forall` — a map is ultraweakly
+continuous on a set as soon as `ω ∘ F` is, for every np-functional `ω`.
+Stated over `CStarAlgebra`, like the lemma it counterparts.  (Immediate from **42III** `uwTendsto_iff`, which is
 stated for an arbitrary filter and so applies to `𝓝[s] x`.) -/
 private theorem continuousOn_ultraweak_of_forall (F : A → B) (s : Set A)
     (h : ∀ ω : NPFunctional B,

@@ -242,6 +242,51 @@ thesis a proof step or a divergence sits ("the thesis's own argument,
 asols.tex:1727").  Nothing in the reference identifies what it points at, so
 nothing can verify it; pinning them would mean writing a tag into each.
 
+### The setting a doc comment claims, against the one the type has (2026-08-28)
+
+A row's `stmt` is a verdict about our statement against the thesis's, and it is
+read off the doc comment as much as off the signature.  When the two disagree —
+the comment says "between von Neumann algebras" over binders the elaborator
+resolved to `CStarAlgebra` — the row gets graded against a statement the tree
+does not make.
+
+That is not hypothetical.  **113II `mi_bilinear_cp` and all four renderings of
+113IV sat at `stmt=ok`** with doc comments quoting the thesis's von Neumann
+form, while a *fifth* rendering of the same generalisation,
+`A/CStar.matBilin_nonneg_of_mi`, had been graded `stronger` for it all along —
+and that row's own note had asked, in as many words, for "a look in the
+ok-class sweep".  All five are now `stronger`; the schema's `stronger` is
+"ours assumes less", and C\*-algebra for von Neumann algebra is assuming less.
+
+The binders cannot be read off the source: `variable`, `omit … in`, section
+structure and superclass instances all intervene.  So they are taken from the
+elaborated environment.  `scripts/BinderDump.lean` walks it and writes
+`docs/binders.txt` — one line per hand-written theorem, listing which of
+`CStarAlgebra`, `Theses.VonNeumannAlgebra`, `CStarModule`,
+`NormedAddCommGroup`, `InnerProductSpace`, `CompleteSpace` occur in its type —
+and `scripts/vn_setting_check.py` flags every doc comment whose first sentence
+says "von Neumann" over a type that carries `CStarAlgebra` and not
+`Theses.VonNeumannAlgebra`.  **Eleven at the first run — 113II's own comment
+was the twelfth and had been fixed by hand an hour earlier — and now zero.**
+
+Six of the eleven were not defects, and they taught the check its one
+exclusion: a *von Neumann subalgebra* and a *von Neumann tensor product* are
+objects named in the statement, carried by `IsVNSubalgebra` and by `vnTensor`,
+and a declaration about them needs no von Neumann binder on the ambient type.
+Of the five that were real, only `cp_bilinear_comp` changed a grade; 42III's
+`continuous_ultraweak_of_forall`, 96III.2's `ContinuousOn` counterpart, 125II's
+cardinal bound and `exists_ell_of_subsingleton` are auxiliaries whose rows
+already call them auxiliaries.  What was wrong there was the sentence, and the
+sentence is what a reader trusts.
+
+**And note what the check does *not* reach.**  It compares the doc comment
+with the type.  Three of the five regraded rows — `cp_bilinear`,
+`cp_bilinear_2`, `cp_bilinear_2'` — were never flagged, because their comments
+do not say "von Neumann"; they were regraded because reading proc.tex:3036
+showed the *thesis* says it and they share the binders.  The check finds the
+doc-against-type mismatch.  The thesis-against-type mismatch, which is the one
+`stmt` is actually a verdict about, still needs a person with the .tex open.
+
 ## Roll-up — **complete**
 
 All 30 modules audited, 2026-08-20.  Rows exceed the 1759 DISP-carrying
