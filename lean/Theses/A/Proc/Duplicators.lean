@@ -101,7 +101,7 @@ end Effects
 /-! ## Parsec 1270: duplicators -/
 
 variable (A) in
-/-- **127I** (`def:duplicator`, proc.tex:5854, Definition): a
+/-- **127I** (`def:duplicator`, proc.tex:5860, Definition): a
 **duplicator** on a von Neumann algebra `𝒜` is an npsu-map
 `δ : 𝒜 ⊗ 𝒜 → 𝒜` together with a **unit** `u ∈ [0,1]_𝒜` satisfying
 `δ(a ⊗ u) = a = δ(u ⊗ a)`.  (Neither associativity nor commutativity is
@@ -116,21 +116,21 @@ structure Duplicator [VonNeumannAlgebra A] : Type u where
   right_unit : ∀ a : A, δ (a ⊗ᵥ unit) = a
 
 variable (A) in
-/-- **127I** (`def:duplicator`, proc.tex:5854, Definition): a von Neumann
+/-- **127I** (`def:duplicator`, proc.tex:5860, Definition): a von Neumann
 algebra is **duplicable** if there is a duplicator on it. -/
 def Duplicable [VonNeumannAlgebra A] : Prop := Nonempty (Duplicator A)
 
-/-! **127III** (`duplicable`, proc.tex:5881, Theorem), the main equivalence,
+/-! **127III** (`duplicable`, proc.tex:5887, Theorem), the main equivalence,
 is the theorem `duplicable` at the very end of this file: its proof needs the
 whole of the chapter's measure theory (parsecs 1290–1300) together with the
 `L^∞` presentation of a commutative von Neumann algebra, so it is stated where
 those are available. -/
 
-/-! **127III** (`duplicable`, proc.tex:5881, Theorem), uniqueness, is
+/-! **127III** (`duplicable`, proc.tex:5887, Theorem), uniqueness, is
 `duplicable_unique` below — it is stated after **128VIII**
 `uniqueness_duplicator`, which supplies its second conjunct. -/
 
-/-- **127VI** (`lem:unit-duplicator`, proc.tex:5925, Lemma): the unit of a
+/-- **127VI** (`lem:unit-duplicator`, proc.tex:5931, Lemma): the unit of a
 duplicator is `1`, and `δ(1 ⊗ 1) = 1`. -/
 theorem unit_duplicator [VonNeumannAlgebra A] (d : Duplicator A) :
     d.unit = 1 ∧ d.δ ((1 : A) ⊗ᵥ (1 : A)) = 1 := by
@@ -164,7 +164,7 @@ theorem unit_duplicator [VonNeumannAlgebra A] (d : Duplicator A) :
 
 /-! ## Parsec 1280: Tomiyama's theorem and commutativity -/
 
-/-- **128II** (`tomiyama`, proc.tex:5948, Theorem (Tomiyama)): a linear
+/-- **128II** (`tomiyama`, proc.tex:5954, Theorem (Tomiyama)): a linear
 surjection `f : 𝒜 → ℬ` of a von Neumann algebra onto a von Neumann
 subalgebra `ℬ ⊆ 𝒜` with `f ∘ f = f` and `‖f(a)‖ ≤ ‖a‖` satisfies
 `b·f(a) = f(b·a)` for all `a ∈ 𝒜`, `b ∈ ℬ`. -/
@@ -432,7 +432,7 @@ theorem isVNSubalgebra_diagSub [VonNeumannAlgebra A] :
     have := (hev 0).unique (himg ▸ hev 1)
     exact congrArg Subtype.val this
 
-/-- **128VI** (`lem:sef-instrument`, proc.tex:6015, Lemma): for a pu-map
+/-- **128VI** (`lem:sef-instrument`, proc.tex:6021, Lemma): for a pu-map
 `f : 𝒜 ⊕ 𝒜 → 𝒜` with `f(a,a) = a`, the element `p := f(1,0)` is
 central and `f(a,b) = a·p + b·p^⊥`. -/
 theorem sef_instrument [VonNeumannAlgebra A]
@@ -515,7 +515,7 @@ theorem sef_instrument [VonNeumannAlgebra A]
 
 end Pairs
 
-/-- **128VIII** (`lem:uniqueness-duplicator`, proc.tex:6059, Lemma): a
+/-- **128VIII** (`lem:uniqueness-duplicator`, proc.tex:6065, Lemma): a
 von Neumann algebra with a duplicator `δ` is commutative, and
 `δ(a ⊗ b) = a·b`. -/
 theorem uniqueness_duplicator [VonNeumannAlgebra A] (d : Duplicator A) :
@@ -608,7 +608,7 @@ theorem uniqueness_duplicator [VonNeumannAlgebra A] (d : Duplicator A) :
       rw [hs, map_smul, hx, mul_smul_comm]
     · intro q hq; exact (key q hq).2 a
 
-/-- **127III** (`duplicable`, proc.tex:5881, Theorem), uniqueness: in that
+/-- **127III** (`duplicable`, proc.tex:5887, Theorem), uniqueness: in that
 case the duplicator is unique, given by `δ(a ⊗ b) = a·b` and `u = 1`.
 (Stated here rather than at parsec 1270 because its second conjunct is
 **128VIII**.) -/
@@ -616,7 +616,7 @@ theorem duplicable_unique [VonNeumannAlgebra A] (d : Duplicator A) :
     d.unit = 1 ∧ ∀ a b : A, d.δ (a ⊗ᵥ b) = a * b :=
   ⟨(unit_duplicator d).1, (uniqueness_duplicator d).2⟩
 
-/-- **128XI** (`cor:duplicability-multiplication`, proc.tex:6109,
+/-- **128XI** (`cor:duplicability-multiplication`, proc.tex:6115,
 Corollary): `𝒜` is duplicable iff there is an np-map
 `δ : 𝒜 ⊗ 𝒜 → 𝒜` with `δ(a ⊗ b) = a·b` (and in that case `𝒜` is
 commutative). -/
@@ -644,7 +644,7 @@ theorem duplicability_multiplication [VonNeumannAlgebra A] :
   · rintro ⟨d⟩
     exact (uniqueness_duplicator d).1
 
-/-- **127III** (`duplicable`, proc.tex:5881, Theorem), the easy direction:
+/-- **127III** (`duplicable`, proc.tex:5887, Theorem), the easy direction:
 `ℓ^∞(X)` is duplicable.
 
 The thesis says only "the result is obviously true for discrete spaces"
@@ -678,7 +678,7 @@ private theorem linf_nmiu_mul (X : Type u) :
   refine lp.ext (funext fun x => ?_)
   rw [hdiag, hγ a b x x, lp.infty_coeFn_mul, Pi.mul_apply]
 
-/-- **127III** (`duplicable`, proc.tex:5881, Theorem), the easy direction:
+/-- **127III** (`duplicable`, proc.tex:5887, Theorem), the easy direction:
 `ℓ^∞(X)` is duplicable. -/
 private theorem linf_duplicable (X : Type u) : Duplicable (linf X) := by
   obtain ⟨ρ, hρ⟩ := linf_nmiu_mul X
@@ -721,7 +721,7 @@ private theorem lpKappa_normal {I : Type u} (𝒜 : I → Type u)
       have h2 := (lp_infty_le_iff _ _).mp hu₀ j
       rwa [lpKappa_apply_ne _ _ hj] at h2
 
-/-- **128XIII** (`cor:duplicable-product`, proc.tex:6128, Corollary): when
+/-- **128XIII** (`cor:duplicable-product`, proc.tex:6134, Corollary): when
 a direct sum of von Neumann algebras is duplicable, so is each summand.
 (Stated for an arbitrary family; the thesis states the binary case
 `𝒜 ⊕ ℬ`.) -/
@@ -861,14 +861,14 @@ section MeasureTheory
 
 variable {X : Type u} [MeasurableSpace X] (μ : Measure X)
 
-/-- **129II** (proc.tex:6188, Definition), part 1: a measurable subset `S`
+/-- **129II** (proc.tex:6194, Definition), part 1: a measurable subset `S`
 of a finite complete measure space is **atomic** if `0 < μ(S)` and every
 measurable `S' ⊆ S` of positive measure has `μ(S') = μ(S)`. -/
 def AtomicSet (S : Set X) : Prop :=
   MeasurableSet S ∧ 0 < μ S ∧
     ∀ S' ⊆ S, MeasurableSet S' → 0 < μ S' → μ S' = μ S
 
-/-- **129II** (proc.tex:6188, Definition), part 2, **as repaired by the
+/-- **129II** (proc.tex:6194, Definition), part 2, **as repaired by the
 author** (ruling of Bas Westerbaan, 2026-08-16, QUESTIONS **A6**): `X` is
 **discrete** if `X` can be *partitioned* into atomic measurable subsets.
 
@@ -899,7 +899,7 @@ asserted; see `discrete_iff_purelyAtomic`. -/
 def PurelyAtomic : Prop :=
   ∀ E : Set X, MeasurableSet E → 0 < μ E → ∃ A ⊆ E, AtomicSet μ A
 
-/-- **129II** (proc.tex:6188, Definition), part 3: `X` is **continuous**
+/-- **129II** (proc.tex:6194, Definition), part 3: `X` is **continuous**
 (atomless) if it contains no atomic subsets. -/
 def ContinuousSpace : Prop := ∀ S : Set X, ¬ AtomicSet μ S
 
@@ -1084,7 +1084,7 @@ theorem purelyAtomic_not_discrete_of_measure_zero :
     obtain ⟨A, hA, -⟩ := (Set.eq_univ_iff_forall.mp hcov) ()
     exact absurd (hat A hA).2.1 (by simp)
 
-/-- **129IV** (`lem:measure-zorn`, proc.tex:6221, Lemma; a choice-free
+/-- **129IV** (`lem:measure-zorn`, proc.tex:6227, Lemma; a choice-free
 variant of Zorn's lemma): if a collection `𝒮` of measurable subsets of a
 finite complete measure space is closed under countable ascending chains,
 then every `A ∈ 𝒮` is contained in a `B ∈ 𝒮` that is maximal in the
@@ -1163,7 +1163,7 @@ theorem measure_zorn [IsFiniteMeasure μ] (hμ : μ.IsComplete)
   exact le_trans (le_iSup₂ (f := fun D (_ : D ∈ {D | D ∈ 𝒮 ∧ T ⊆ D}) => μ D) T'
     ⟨hT', hTT'⟩) hβT
 
-/-- **129VI** (`lem:measure-space-continuous-discrete`, proc.tex:6279,
+/-- **129VI** (`lem:measure-space-continuous-discrete`, proc.tex:6285,
 Lemma): each finite complete measure space contains a discrete measurable
 subset `D` such that `X ∖ D` is continuous.
 
@@ -1197,7 +1197,7 @@ theorem measure_space_continuous_discrete [IsFiniteMeasure μ]
   exact ⟨⋃₀ 𝒞, MeasurableSet.sUnion hcount fun A hA => (hat A hA).1,
     ⟨𝒞, hat, hdisj, rfl⟩, hnoatom⟩
 
-/-- **129VIII** (`lem:continuous-measure-space`, proc.tex:6305, Lemma), in
+/-- **129VIII** (`lem:continuous-measure-space`, proc.tex:6311, Lemma), in
 the *relative* form the dyadic partition of **129X** needs: for a
 continuous finite complete measure space `X`, a measurable `B ⊆ X` and
 `r ∈ [0, μ(B)]` there is a measurable `A ⊆ B` with `μ(A) = r`.
@@ -1304,7 +1304,7 @@ private theorem continuous_measure_space_subset [IsFiniteMeasure μ]
     (by rw [heq, add_zero])
   exact absurd hCpos (by rw [hC0]; exact lt_irrefl 0)
 
-/-- **129VIII** (`lem:continuous-measure-space`, proc.tex:6305, Lemma):
+/-- **129VIII** (`lem:continuous-measure-space`, proc.tex:6311, Lemma):
 for a continuous finite complete measure space `X` and
 `r ∈ [0, μ(X)]` there is a measurable `A ⊆ X` with `μ(A) = r`. -/
 theorem continuous_measure_space [IsFiniteMeasure μ] (hμ : μ.IsComplete)
@@ -2460,7 +2460,7 @@ theorem algebraMap_nonneg_reflect {𝒞 : Type*} [CStarAlgebra 𝒞]
   rw [← hre]
   exact Complex.zero_le_real.mpr hr
 
-/-- **130II** (`lem:atomic-measure-space`, proc.tex:6471, Lemma): for an
+/-- **130II** (`lem:atomic-measure-space`, proc.tex:6477, Lemma): for an
 atomic measure space `A` we have `L^∞(A) ≅ ℂ`.
 
 The author's argument (proc.tex:6474) is the first half: every
@@ -2817,7 +2817,7 @@ private theorem linfty_ae_bound (ν : Measure X) (𝒞 : Type*) [CStarAlgebra �
     (measure_iUnion_null fun k => key _ (by positivity))
 
 
-/-- **130IV** (`lem:measure-space-partition`, proc.tex:6518, Exercise):
+/-- **130IV** (`lem:measure-space-partition`, proc.tex:6524, Exercise):
 `L^∞(X) ≅ ⊕_{A ∈ 𝒫} L^∞(A)` for every **countable** partition `𝒫` of a
 finite measure space `X` into measurable subsets — rendered for a
 partition indexed by an arbitrary countable type `ι` and abstract copies
@@ -3017,7 +3017,7 @@ theorem measure_space_partition [IsFiniteMeasure μ] (hμ : μ.IsComplete)
              starAlgEquiv_preservesDirSups' (StarAlgEquiv.ofBijective Ψ hΨbij) },
     hΨbij⟩
 
-/-- **130V** (`cor:discrete-ell-x`, proc.tex:6525, Corollary): for a
+/-- **130V** (`cor:discrete-ell-x`, proc.tex:6531, Corollary): for a
 discrete measure space `X` with `μ(X) < ∞` there is a set `Y` with
 `L^∞(X) ≅ ℓ^∞(Y)`.
 
@@ -4212,7 +4212,7 @@ private theorem duplicable_of_nmiu_bijective [VonNeumannAlgebra A] [VonNeumannAl
     rw [hPφ, hδmul, hPinv, ← hE a, ← hE b, ← map_mul E]
     exact E.symm_apply_apply (a * b)
 
-/-- **127III** (`duplicable`, proc.tex:5881, Theorem), main equivalence: a
+/-- **127III** (`duplicable`, proc.tex:5887, Theorem), main equivalence: a
 von Neumann algebra `𝒜` is duplicable iff it is nmiu-isomorphic to
 `ℓ^∞(X)` for some set `X`.
 
@@ -4243,13 +4243,13 @@ end Assembly
 
 /-! ## Parsec 1320: monoids in `W*_miu` and `W*_cpsu`
 
-**132II** (proc.tex:6607): the standard notions of (commutative) monoid
+**132II** (proc.tex:6613): the standard notions of (commutative) monoid
 and monoid morphism in a symmetric monoidal category — rendered
 concretely below (multiplication + unit element, laws on pure tensors),
 cf. the file docstring. -/
 
 variable (A) in
-/-- **132II** (proc.tex:6607), rendered: a monoid on `𝒜` in `W*_cpsu`
+/-- **132II** (proc.tex:6613), rendered: a monoid on `𝒜` in `W*_cpsu`
 (multiplication an ncpsu-map, unit an effect; associativity and unit laws
 on pure tensors). -/
 structure MonoidInWcpsu [VonNeumannAlgebra A] : Type u where
@@ -4263,7 +4263,7 @@ structure MonoidInWcpsu [VonNeumannAlgebra A] : Type u where
   right_unit : ∀ a : A, m.toNCPMap (a ⊗ᵥ e) = a
 
 variable (A) in
-/-- **132II** (proc.tex:6607), rendered: a monoid on `𝒜` in `W*_miu`
+/-- **132II** (proc.tex:6613), rendered: a monoid on `𝒜` in `W*_miu`
 (multiplication an nmiu-map; the unit map `ℂ → 𝒜`, being unital, is
 determined and its value at `1` is `1`). -/
 structure MonoidInWmiu [VonNeumannAlgebra A] : Type u where
@@ -4273,7 +4273,7 @@ structure MonoidInWmiu [VonNeumannAlgebra A] : Type u where
   left_unit : ∀ a : A, m ((1 : A) ⊗ᵥ a) = a
   right_unit : ∀ a : A, m (a ⊗ᵥ (1 : A)) = a
 
-/-- **132III** (`prop:dup-vna-is-monoid`, proc.tex:6677, Exercise),
+/-- **132III** (`prop:dup-vna-is-monoid`, proc.tex:6683, Exercise),
 part 1: any monoid structure on `𝒜` in `W*_cpsu` is a duplicator. -/
 theorem dup_vna_is_monoid_1 [VonNeumannAlgebra A] (M : MonoidInWcpsu A) :
     Duplicable A :=
@@ -4303,7 +4303,7 @@ private theorem monoid_e_and_mul [VonNeumannAlgebra A] (M : MonoidInWcpsu A) :
       right_unit := M.right_unit } with hd
   exact ⟨(unit_duplicator d).1, (uniqueness_duplicator d).2⟩
 
-/-- **132III** (`prop:dup-vna-is-monoid`, proc.tex:6677, Exercise),
+/-- **132III** (`prop:dup-vna-is-monoid`, proc.tex:6683, Exercise),
 part 2: there is a monoid structure on `𝒜` in `W*_miu` or `W*_cpsu` iff
 `𝒜` is duplicable iff `𝒜 ≅ ℓ^∞(X)` for some `X`; and in that case the
 multiplication is commutative and uniquely fixed by `m(a ⊗ b) = a·b`. -/
@@ -4360,7 +4360,7 @@ theorem dup_vna_is_monoid_2 [VonNeumannAlgebra A] :
                  rw [hρ, mul_one] }⟩
   exact ⟨hmiu, hcpsu, duplicable, fun M a b => (monoid_e_and_mul M).2 a b⟩
 
-/-- **132III** (`prop:dup-vna-is-monoid`, proc.tex:6677, Exercise),
+/-- **132III** (`prop:dup-vna-is-monoid`, proc.tex:6683, Exercise),
 part 3: the monoid morphisms in `W*_miu` and `W*_cpsu` are precisely the
 (unital, multiplicative — hence nmiu) maps. -/
 theorem dup_vna_is_monoid_3 [VonNeumannAlgebra A] [VonNeumannAlgebra B]
@@ -4384,7 +4384,7 @@ theorem dup_vna_is_monoid_3 [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     rw [hm₁, hm₂]
     exact hmul a b
 
-/-- **132III** (`prop:dup-vna-is-monoid`, proc.tex:6677, Exercise),
+/-- **132III** (`prop:dup-vna-is-monoid`, proc.tex:6683, Exercise),
 part 4: `CMon(W*_miu) = Mon(W*_miu) = CMon(W*_cpsu) = Mon(W*_cpsu)` —
 rendered: every monoid in `W*_cpsu` is commutative (`m ∘ γ = m`) and its
 multiplication is an nmiu-map.
@@ -4560,7 +4560,7 @@ private theorem nsp_eq_linfEval {Y : Type u} [VonNeumannAlgebra B]
   have h := congrArg (fun χ : nsp (linf Y) => χ (ψ b)) hy
   simpa using h.symm
 
-/-- **132III** (`prop:dup-vna-is-monoid`, proc.tex:6677, Exercise),
+/-- **132III** (`prop:dup-vna-is-monoid`, proc.tex:6683, Exercise),
 part 5: `Mon(W*_miu) ≅ dW*_miu ≃ Set^op` — rendered: for duplicable
 `𝒜`, `ℬ` the functor `nsp` is bijective on nmiu-maps `𝒜 → ℬ`.
 
@@ -4643,7 +4643,7 @@ private theorem exists_ncpsuEval [VonNeumannAlgebra A] [VonNeumannAlgebra B]
   refine le_trans ?_ (le_of_eq (map_one χ.toStarAlgHom))
   exact OrderHomClass.mono (nmiuNCP χ).toCompletelyPositiveMap f.subunital'
 
-/-- **132IV** (`thm:free-monoid-in-vNAMIU`, proc.tex:6719, Theorem),
+/-- **132IV** (`thm:free-monoid-in-vNAMIU`, proc.tex:6725, Theorem),
 well-definedness of the unit: `η : 𝒜 → ℓ^∞(nsp(𝒜))`,
 `η(a)(φ) = φ(a)`, is an nmiu-map. -/
 theorem exists_freeMonoidUnit [VonNeumannAlgebra A] :
@@ -4717,7 +4717,7 @@ theorem exists_freeMonoidUnit [VonNeumannAlgebra A] :
 noncomputable def freeMonoidUnit [VonNeumannAlgebra A] :
     NMIUMap A (linf (nsp A)) := (exists_freeMonoidUnit (A := A)).choose
 
-/-- **132IV** (`thm:free-monoid-in-vNAMIU`, proc.tex:6719, Theorem):
+/-- **132IV** (`thm:free-monoid-in-vNAMIU`, proc.tex:6725, Theorem):
 `ℓ^∞(nsp(𝒜))` is the free (commutative) monoid on `𝒜` in `W*_miu` via
 `η`: for every monoid `ℬ` in `W*_miu` and nmiu-map `f : 𝒜 → ℬ` there is
 a unique monoid morphism `g : ℓ^∞(nsp(𝒜)) → ℬ` with `g ∘ η = f`. -/
@@ -4795,7 +4795,7 @@ theorem free_monoid_in_vNAMIU [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     show ψ (g' u) = ψ (nmiuSymm ψ hψ (linfMap k u))
     rw [nmiuSymm_apply_apply' ψ hψ (linfMap k u), happ u, hkk]
 
-/-- **132VI** (proc.tex:6766, Corollary), well-definedness of the unit:
+/-- **132VI** (proc.tex:6772, Corollary), well-definedness of the unit:
 evaluation `𝒜 → ℓ^∞(W*_cpsu(𝒜, ℂ))` is an ncpsu-map. -/
 theorem exists_freeMonoidUnitCpsu [VonNeumannAlgebra A] :
     ∃ η : NCPSUMap A (linf (NCPSUMap A ℂ)),
@@ -4915,7 +4915,7 @@ private theorem freeMIU_nsp_bijective [VonNeumannAlgebra A] (F : FreeMIU A) :
     refine ⟨nmiuComp (linfEval PUnit.{u + 1} PUnit.unit) χ', ncpsu_ext' fun a => ?_⟩
     rw [hΘ, nmiuComp_apply, ← hχ' a, hω' a]
 
-/-- **132VI** (proc.tex:6766, Corollary): `ℓ^∞(W*_cpsu(𝒜, ℂ))` is the
+/-- **132VI** (proc.tex:6772, Corollary): `ℓ^∞(W*_cpsu(𝒜, ℂ))` is the
 free (commutative) monoid on `𝒜` in `W*_cpsu`: every ncpsu-map from `𝒜`
 to a monoid in `W*_cpsu` factors uniquely through it by a monoid
 morphism. -/
@@ -5077,7 +5077,7 @@ instance : linfDup.{u}.EssSurj where
             hom_inv_id := WMIU.hom_ext fun a => nmiuSymm_apply_apply ψ hψ a
             inv_hom_id := WMIU.hom_ext fun b => nmiuSymm_apply_apply' ψ hψ b }
 
-/-- **132III** (`prop:dup-vna-is-monoid`, proc.tex:6677, Exercise), part 5,
+/-- **132III** (`prop:dup-vna-is-monoid`, proc.tex:6683, Exercise), part 5,
 second half: `dW*_miu ≃ Set^op` — as an equivalence of categories, with
 `ℓ^∞` as the (contravariant) functor realizing it. -/
 instance : linfDup.{u}.IsEquivalence where

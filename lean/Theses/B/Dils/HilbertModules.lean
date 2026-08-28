@@ -44,7 +44,7 @@ namespace Theses.B.Dils
 
 /-! ## Parsec 1410: Hilbert C*-modules
 
-**141I** (dils.tex:1269): introduction — nothing to formalize. -/
+**141I** (dils.tex:1277): introduction — nothing to formalize. -/
 
 section BInnerDef
 
@@ -52,7 +52,7 @@ variable (𝒷 : Type u) (X : Type v)
   [CStarAlgebra 𝒷] [PartialOrder 𝒷] [StarOrderedRing 𝒷]
   [AddCommGroup X] [Module ℂ X] [SMul 𝒷 X]
 
-/-- **141II** (`dils-basicdfns`, dils.tex:1302, Definition): a **𝒷-valued
+/-- **141II** (`dils-basicdfns`, dils.tex:1310, Definition): a **𝒷-valued
 inner product** on a (right) 𝒷-module `X` for a C*-algebra `𝒷`: a map
 `X × X → 𝒷` which is 𝒷-linear in the second argument, conjugate symmetric
 and positive.  (Not necessarily definite; mirrored to Mathlib's left-action
@@ -72,12 +72,12 @@ structure BInner : Type (max u v) where
 
 variable {𝒷 X}
 
-/-- **141II** (`dils-basicdfns`, dils.tex:1302, Definition): a 𝒷-valued
+/-- **141II** (`dils-basicdfns`, dils.tex:1310, Definition): a 𝒷-valued
 inner product is **definite** when `[x,x] = 0` implies `x = 0`. -/
 def BInner.Definite (B : BInner 𝒷 X) : Prop :=
   ∀ x : X, B.inner x x = 0 → x = 0
 
-/-- **141II** (`dils-basicdfns`, dils.tex:1302, Definition), the seminorm
+/-- **141II** (`dils-basicdfns`, dils.tex:1310, Definition), the seminorm
 `‖x‖ = ‖[x,x]‖^½` of a 𝒷-valued inner product (that this is a seminorm is
 **142V**). -/
 noncomputable def BInner.norm (B : BInner 𝒷 X) (x : X) : ℝ :=
@@ -176,7 +176,7 @@ variable (𝒷 : Type u) (X : Type v)
   [CStarAlgebra 𝒷] [PartialOrder 𝒷] [StarOrderedRing 𝒷]
   [NormedAddCommGroup X] [Module ℂ X] [SMul 𝒷 X] [CStarModule 𝒷 X]
 
-/-- **141IIa** (`moved-dfn-selfdual`, dils.tex:1331): a pre-Hilbert
+/-- **141IIa** (`moved-dfn-selfdual`, dils.tex:1339): a pre-Hilbert
 𝒷-module `X` is **self dual** if every bounded 𝒷-linear map `τ : X → 𝒷`
 is of the form `τ = ⟨t, ·⟩` for some `t ∈ X`.
 
@@ -189,7 +189,7 @@ def SelfDual : Prop :=
 
 end SelfDualDef
 
-/-- **141III** (dils.tex:1331, Examples): a C*-algebra `𝒷` is self dual as
+/-- **141III** (dils.tex:1357, Examples): a C*-algebra `𝒷` is self dual as
 a Hilbert `𝒷`-module over itself, because a `𝒷`-linear `τ : 𝒷 → 𝒷` is
 `τ x = x · τ 1 = ⟨(τ 1)*, x⟩` (boundedness is not needed).  Used in
 `Paschke.lean` to run the universal property of `𝒜 ⊗_φ ℬ` against `ℬ`
@@ -205,7 +205,7 @@ theorem selfDual_self (𝒷 : Type u) [CStarAlgebra 𝒷] [PartialOrder 𝒷]
 
 /-! ## Parsec 1420: Cauchy–Schwarz and sesquilinear forms
 
-**142I** (dils.tex:1388): introduction — nothing to formalize. -/
+**142I** (dils.tex:1396): introduction — nothing to formalize. -/
 
 section CauchySchwarz
 
@@ -263,18 +263,18 @@ theorem inner_op_smul_self (b : 𝒷) (x : X) :
 end BInner
 
 
-/-- **142II** (`module-innerprod-state`, dils.tex:1399, Definition): for a
+/-- **142II** (`module-innerprod-state`, dils.tex:1407, Definition): for a
 𝒷-valued inner product and a positive functional `f : 𝒷 → ℂ`, the
 complex-valued form `⟨x,y⟩_f = f([x,y])`. -/
 noncomputable def innerF (f : 𝒷 →ₗ[ℂ] ℂ) (B : BInner 𝒷 X) (x y : X) : ℂ :=
   f (B.inner x y)
 
-/-- **142II** (`module-innerprod-state`, dils.tex:1399, Definition): the
+/-- **142II** (`module-innerprod-state`, dils.tex:1407, Definition): the
 seminorm `‖x‖_f = ⟨x,x⟩_f^½`. -/
 noncomputable def seminormF (f : 𝒷 →ₗ[ℂ] ℂ) (B : BInner 𝒷 X) (x : X) : ℝ :=
   Real.sqrt (f (B.inner x x)).re
 
-/-- **142II** (`module-innerprod-state`, dils.tex:1399, Definition), two of
+/-- **142II** (`module-innerprod-state`, dils.tex:1407, Definition), two of
 the four identities that make `⟨·,·⟩_f` an inner product: conjugate symmetry
 and positivity.  This is **weaker than the point**, whose stated conclusion
 is that `‖·‖_f` is a seminorm; that is `seminormF_seminorm` below, and the
@@ -297,7 +297,7 @@ theorem innerF_inner_product (f : 𝒷 →ₗ[ℂ] ℂ) (hf : IsPositiveMap f)
     · show (f (B.inner x x)).im = 0
       simpa using h.2.symm
 
-/-- **142II** (`module-innerprod-state`, dils.tex:1399, Definition), the
+/-- **142II** (`module-innerprod-state`, dils.tex:1407, Definition), the
 embedded claim in full: *"this `⟨·,·⟩_f` is a complex-valued inner
 product"*.  Bundled as Mathlib's `PreInnerProductSpace.Core ℂ X`, which is
 exactly the possibly-indefinite complex inner product of cstar.tex **4XV**
@@ -323,14 +323,14 @@ noncomputable def innerFCore (f : 𝒷 →ₗ[ℂ] ℂ) (hf : IsPositiveMap f)
     show f (B.inner (r • x) y) = starRingEnd ℂ r * f (B.inner x y)
     rw [B.inner_smul_left_complex, map_smul, smul_eq_mul]
 
-/-- **142II** (`module-innerprod-state`, dils.tex:1399, Definition), the
+/-- **142II** (`module-innerprod-state`, dils.tex:1407, Definition), the
 point's **conclusion**: *"Hence, by `inner-product-basic`, we know that
 `‖·‖_f` is a seminorm"* — nonnegative, absolutely homogeneous and
 subadditive.  The proof is the point's own: `⟨·,·⟩_f` is a complex-valued
 inner product (`innerFCore`), so cstar.tex **4XV**
 `inner_product_seminorm` applies verbatim.
 
-**142IIa** (dils.tex:1411): discussion — nothing to formalize. -/
+**142IIa** (dils.tex:1419): discussion — nothing to formalize. -/
 theorem seminormF_seminorm (f : 𝒷 →ₗ[ℂ] ℂ) (hf : IsPositiveMap f)
     (B : BInner 𝒷 X) (x y : X) (c : ℂ) :
     0 ≤ seminormF f B x ∧
@@ -343,7 +343,7 @@ theorem seminormF_seminorm (f : 𝒷 →ₗ[ℂ] ℂ) (hf : IsPositiveMap f)
   rw [hs, hs, hs] at h
   exact h
 
-/-- **142III** (`module-CS`, dils.tex:1419, Proposition (Cauchy–Schwarz)):
+/-- **142III** (`module-CS`, dils.tex:1427, Proposition (Cauchy–Schwarz)):
 for a (possibly indefinite) 𝒷-valued inner product,
 `⟨x,y⟩⟨y,x⟩ ≤ ‖⟨y,y⟩‖ ⟨x,x⟩`.
 
@@ -428,7 +428,7 @@ theorem module_CS (B : BInner 𝒷 X) (x y : X) :
     hreal _ hbb, hreal _ hxx, ← Complex.ofReal_mul]
   exact (RCLike.ofReal_le_ofReal (K := ℂ)).mpr hkey
 
-/-- **142V** (`module-seminorm`, dils.tex:1448, Exercise), part 1:
+/-- **142V** (`module-seminorm`, dils.tex:1456, Exercise), part 1:
 `‖[x,y]‖ ≤ ‖x‖‖y‖` for the seminorm `‖x‖ = ‖[x,x]‖^½`. -/
 theorem module_seminorm_1 (B : BInner 𝒷 X) (x y : X) :
     ‖B.inner x y‖ ≤ B.norm x * B.norm y := by
@@ -451,10 +451,10 @@ theorem module_seminorm_1 (B : BInner 𝒷 X) (x y : X) :
   have hny : 0 ≤ B.norm y := Real.sqrt_nonneg _
   nlinarith [norm_nonneg (B.inner x y), mul_nonneg hnx hny]
 
-/-- **142V** (`module-seminorm`, dils.tex:1448, Exercise), part 2:
+/-- **142V** (`module-seminorm`, dils.tex:1456, Exercise), part 2:
 `‖x‖ = ‖[x,x]‖^½` is a seminorm with `‖x·b‖ ≤ ‖x‖‖b‖`.
 
-**142VI** (dils.tex:1458): uniform continuity of the operations — the
+**142VI** (dils.tex:1466): uniform continuity of the operations — the
 quantitative statements appear as **148I**–**148V** below. -/
 theorem module_seminorm_2 (B : BInner 𝒷 X) (x y : X) (c : ℂ) (b : 𝒷) :
     B.norm (x + y) ≤ B.norm x + B.norm y ∧
@@ -519,7 +519,7 @@ theorem module_seminorm_2 (B : BInner 𝒷 X) (x y : X) (c : ℂ) (b : 𝒷) :
     have := Real.sqrt_le_sqrt hb
     rwa [Real.sqrt_sq (by positivity)] at this
 
-/-- **142VII** (dils.tex:1468, Definition): a **𝒷-sesquilinear form** on a
+/-- **142VII** (dils.tex:1476, Definition): a **𝒷-sesquilinear form** on a
 𝒷-module `V`: a map `B : V × V → 𝒷` which is 𝒷-linear in the second
 argument and conjugate-𝒷-linear in the first; in the mirrored convention:
 `B (β • x) (b • y) = b * B x y * star β`.
@@ -533,11 +533,11 @@ structure IsBSesquilinear (B : X → X → 𝒷) : Prop where
     ∀ (c : ℂ) (x y : X), B (c • x) y = starRingEnd ℂ c • B x y
   smul_right_complex : ∀ (c : ℂ) (x y : X), B x (c • y) = c • B x y
 
-/-! **142VIII** (dils.tex:1487, Example): `⟨·, T·⟩` is a 𝒷-sesquilinear
+/-! **142VIII** (dils.tex:1495, Example): `⟨·, T·⟩` is a 𝒷-sesquilinear
 form for every 𝒷-linear `T` — subsumed by
 `hilbmod_sesquilinear_forms` (152V, in `SelfDualCompletion.lean`). -/
 
-/-- **142IX** (`hilbmod-polarization`, dils.tex:1498, Exercise): the
+/-- **142IX** (`hilbmod-polarization`, dils.tex:1506, Exercise): the
 polarization identity `B(x,y) = ¼ ∑_{k=0}^{3} iᵏ B(iᵏx + y, iᵏx + y)` for a
 𝒷-sesquilinear form `B`. -/
 theorem hilbmod_polarization (B : X → X → 𝒷) (hB : IsBSesquilinear B)
@@ -566,11 +566,11 @@ end CauchySchwarz
 
 /-! ## Parsec 1430: adjointable maps and 𝒷ᵃ(X)
 
-**143I** (dils.tex:1509, Definition): adjointable maps between pre-Hilbert
+**143I** (dils.tex:1517, Definition): adjointable maps between pre-Hilbert
 𝒷-modules and the set `𝒷ᵃ(X)` of adjointable bounded operators — already
 formalized in `Theses.A.CStar.Matrices` as `ModuleAdjointTo` /
 `ModuleAdjointable` (with uniqueness of adjoints, `moduleAdjointTo_unique`).
-**143Ia** (dils.tex:1526): discussion — nothing to formalize. -/
+**143Ia** (dils.tex:1534): discussion — nothing to formalize. -/
 
 section Adjointable
 
@@ -587,7 +587,7 @@ def IsPositiveOp (𝒷 : Type u) [CStarAlgebra 𝒷] [PartialOrder 𝒷]
     [SMul 𝒷 X] [CStarModule 𝒷 X] (T : X →L[ℂ] X) : Prop :=
   ∃ R R' : X →L[ℂ] X, ModuleAdjointTo 𝒷 ⇑R ⇑R' ∧ T = R'.comp R
 
-/-- **143II** (`adjointable-cstar-identity`, dils.tex:1532, Lemma), part 1:
+/-- **143II** (`adjointable-cstar-identity`, dils.tex:1540, Lemma), part 1:
 for a linear map `T : X → Y` between pre-Hilbert 𝒷-modules and `B > 0`:
 `‖Tx‖ ≤ B‖x‖` for all `x` iff `‖⟨y,Tx⟩‖ ≤ B‖y‖‖x‖` for all `x, y`.
 (Same statement as cstar.tex 32X, `chilb_form_bounded`.) -/
@@ -596,7 +596,7 @@ theorem adjointable_cstar_identity_1 (T : X →ₗ[ℂ] Y) (B : ℝ) (hB : 0 < B
       ∀ (x : X) (y : Y), ‖inner 𝒷 y (T x)‖ ≤ B * ‖y‖ * ‖x‖ :=
   Theses.A.CStar.chilb_form_bounded T B hB
 
-/-- **143III** (dils.tex:1541), the step *"`‖⟨x,T*y⟩‖ = ‖⟨y,Tx⟩‖ ≤
+/-- **143III** (dils.tex:1567), the step *"`‖⟨x,T*y⟩‖ = ‖⟨y,Tx⟩‖ ≤
 ‖T‖‖y‖‖x‖` for all `x, y`, and so by the previous `‖T*‖ ≤ ‖T‖`"* — "the
 previous" being part 1, `adjointable_cstar_identity_1`.  Stated with the
 bound `‖T‖ + ε` because part 1 asks for a *strictly* positive bound; the
@@ -614,7 +614,7 @@ private theorem norm_adjoint_le (T : X →L[ℂ] Y) (S : Y →L[ℂ] X)
         gcongr
         exact (T.le_opNorm x).trans (by nlinarith [norm_nonneg x, hε.le])
 
-/-- **143II** (`adjointable-cstar-identity`, dils.tex:1532, Lemma), part 2:
+/-- **143II** (`adjointable-cstar-identity`, dils.tex:1540, Lemma), part 2:
 for bounded adjointable `T` (with adjoint `S`): `‖T*‖ = ‖T‖` and
 `‖T*T‖ = ‖T‖²`.
 
@@ -651,7 +651,7 @@ theorem adjointable_cstar_identity_2 (T : X →L[ℂ] Y) (S : Y →L[ℂ] X)
           pow_le_pow_left₀ (norm_nonneg T) hT 2
       _ = ‖S.comp T‖ := Real.sq_sqrt (norm_nonneg _)
 
-/-- **143IV** (`hilbmod-cstar`, dils.tex:1580, Proposition), *one
+/-- **143IV** (`hilbmod-cstar`, dils.tex:1588, Proposition), *one
 ingredient only*, and strictly weaker than the Proposition: for a Hilbert
 𝒷-module `X` the adjointable bounded operators are a **closed** subset of
 `B(X)`.  As in cstar.tex 32XIII (`bax_cstar`) this is the missing
@@ -670,7 +670,7 @@ end Adjointable
 
 /-! ## The C*-algebra `𝒷ᵃ(X)` as a type
 
-The C*-structure of **143IV** (`hilbmod-cstar`, dils.tex:1580) is assembled
+The C*-structure of **143IV** (`hilbmod-cstar`, dils.tex:1588) is assembled
 here as **143V** assembles it: the adjointable bounded operators form a
 ℂ-subalgebra of `B(X)` with the adjoint as an involutive conjugate-linear
 anti-automorphism (cstar.tex 32III, `moduleAdjointTo_symm` /
@@ -687,7 +687,7 @@ variable {𝒷 : Type u} {X : Type v}
 
 variable (𝒷 X)
 
-/-- **143IV** (`hilbmod-cstar`, dils.tex:1580, Proposition), the algebraic
+/-- **143IV** (`hilbmod-cstar`, dils.tex:1588, Proposition), the algebraic
 half: the adjointable bounded operators form a unital ℂ-subalgebra of
 `B(X)` (cstar.tex 32III). -/
 def baSubalgebra : Subalgebra ℂ (X →L[ℂ] X) where
@@ -755,7 +755,7 @@ noncomputable instance baInstStarModule : StarModule ℂ (baSubalgebra 𝒷 X) w
     ((Theses.A.CStar.moduleAdjointTo_add_smul (𝒜 := 𝒷) ⇑(T : X →L[ℂ] X)
       ⇑(T : X →L[ℂ] X) _ _ c (baAdj_spec T) (baAdj_spec T)).2)
 
-/-- **143V** (dils.tex:1585), *"by `adjointable-cstar-identity` the C*-identity
+/-- **143V** (dils.tex:1611), *"by `adjointable-cstar-identity` the C*-identity
 holds"*: the C*-identity of `𝒷ᵃ(X)` is the second half of **143II**. -/
 instance baInstCStarRing : CStarRing (baSubalgebra 𝒷 X) where
   norm_mul_self_le T := by
@@ -765,7 +765,7 @@ instance baInstCStarRing : CStarRing (baSubalgebra 𝒷 X) where
     rw [h']
     exact le_of_eq (sq ‖(T : X →L[ℂ] X)‖).symm
 
-/-- **143V** (dils.tex:1585), *"it only remains to be shown that `𝒷ᵃ(X)` is
+/-- **143V** (dils.tex:1611), *"it only remains to be shown that `𝒷ᵃ(X)` is
 complete"*: closedness of `𝒷ᵃ(X)` in `B(X)` is `hilbmod_cstar` above. -/
 instance baInstCompleteSpace [CompleteSpace X] :
     CompleteSpace (baSubalgebra 𝒷 X) :=
@@ -807,7 +807,7 @@ variable (𝒷 : Type u) {X : Type v}
 
 variable (X) in
 /-- The set `𝒷ᵃ(X)` of adjointable bounded operators on a (pre-)Hilbert
-𝒷-module `X` (**143I**, dils.tex:1509), as a type. -/
+𝒷-module `X` (**143I**, dils.tex:1517), as a type. -/
 def Ba : Type v :=
   {T : X →L[ℂ] X // ModuleAdjointable 𝒷 ⇑T}
 
@@ -816,7 +816,7 @@ def Ba.toCLM (T : Ba 𝒷 X) : X →L[ℂ] X := T.1
 
 variable [CompleteSpace X]
 
-/-- **143IV** (`hilbmod-cstar`, dils.tex:1580, Proposition), as an
+/-- **143IV** (`hilbmod-cstar`, dils.tex:1588, Proposition), as an
 instance: `𝒷ᵃ(X)` is a C*-algebra for a Hilbert 𝒷-module `X`.  The
 structure is that of the closed ℂ-subalgebra `baSubalgebra 𝒷 X` of `B(X)`,
 to which `Ba 𝒷 X` is definitionally equal; the `NormedSpace ℂ X` needed to
@@ -849,7 +849,7 @@ variable {𝒷 : Type u} {X Y : Type v}
   [NormedAddCommGroup Y] [Module ℂ Y] [SMul 𝒷 Y] [CStarModule 𝒷 Y]
 
 set_option maxHeartbeats 1000000 in
-/-- **144I** (`hilbmod-ordersep`, dils.tex:1623, Proposition): the vector
+/-- **144I** (`hilbmod-ordersep`, dils.tex:1631, Proposition): the vector
 states on `𝒷ᵃ(X)` are order separating: for adjointable bounded `T`,
 `T ≥ 0` (i.e. `T = S*S`) iff `⟨x, Tx⟩ ≥ 0` for all `x ∈ X`.
 
@@ -938,7 +938,7 @@ theorem hilbmod_ordersep [CompleteSpace X] (T : X →L[ℂ] X)
     rw [ContinuousLinearMap.comp_apply, ← baSubalgebra_coe_mul_apply, hssa, hss,
       hcoe]
 
-/-- **144III** (dils.tex:1653, Lemma): an adjointable map between
+/-- **144III** (dils.tex:1661, Lemma): an adjointable map between
 pre-Hilbert 𝒷-modules is 𝒷-linear (and ℂ-linear).  The same statement is
 cstar.tex **32I**'s embedded claim, `moduleAdjointable_linear`; the proof
 below is **144IV**'s own computation, *in situ*.
@@ -995,7 +995,7 @@ structure IsBoundedModuleMap (B₁ : BInner 𝒷 X) (B₂ : BInner 𝒷 Y)
   smul : ∀ (b : 𝒷) (x : X), T (b • x) = b • T x
   bound : ∀ x : X, B₂.norm (T x) ≤ C * B₁.norm x
 
-/-- **144V** (`blinear-inprod-inequality`, dils.tex:1670, Proposition): a
+/-- **144V** (`blinear-inprod-inequality`, dils.tex:1678, Proposition): a
 𝒷-linear map `T : X → Y` between 𝒷-modules with 𝒷-valued inner products
 which is bounded by `C ≥ 0` satisfies `[Tx, Tx] ≤ C² [x, x]`.
 
@@ -1101,7 +1101,7 @@ variable {𝒷 : Type u} {X : Type v}
   [CStarAlgebra 𝒷] [PartialOrder 𝒷] [StarOrderedRing 𝒷]
   [NormedAddCommGroup X] [Module ℂ X] [SMul 𝒷 X] [CStarModule 𝒷 X]
 
-/-- **145I** (`hilbmod-vectstates-cp`, dils.tex:1706, Proposition): for a
+/-- **145I** (`hilbmod-vectstates-cp`, dils.tex:1714, Proposition): for a
 von Neumann algebra `𝒷`, a Hilbert 𝒷-module `X` and `x ∈ X`, the vector
 state `h(T) = ⟨x, Tx⟩` on `𝒷ᵃ(X)` is completely positive: for adjointable
 `T₁, …, Tₙ` (with adjoints `Sᵢ`) and `b₁, …, bₙ ∈ 𝒷`,
@@ -1147,14 +1147,14 @@ end VectStatesCP
 
 /-! ## Parsec 1460: the ultranorm uniformity
 
-**146I** (dils.tex:1730): introduction — nothing to formalize.
-**146II** (`dils-dfn-uniformity`, dils.tex:1762, Definition): uniform
+**146I** (dils.tex:1738): introduction — nothing to formalize.
+**146II** (`dils-dfn-uniformity`, dils.tex:1770, Definition): uniform
 spaces — Mathlib's `UniformSpace`; **146III** discussion.
-**146IIIa** (dils.tex:1820, Definition): subbases for uniformities. -/
+**146IIIa** (dils.tex:1828, Definition): subbases for uniformities. -/
 
 section Uniformity
 
-/-- **146IV** (`exc-subbase`, dils.tex:1827, Exercise): a family `B` of
+/-- **146IV** (`exc-subbase`, dils.tex:1835, Exercise): a family `B` of
 relations on `X` satisfying reflexivity, the half-entourage axiom and the
 symmetry axiom (a *subbase*, **146IIIa**) generates a uniformity: there is
 a uniform space structure whose uniformity filter is generated by `B`.
@@ -1201,7 +1201,7 @@ section Ultranorm
 variable {𝒷 : Type u}
   [CStarAlgebra 𝒷] [PartialOrder 𝒷] [StarOrderedRing 𝒷]
 
-/-- **146VII** (`dils-ultranorm`, dils.tex:1889, Definition): the seminorm
+/-- **146VII** (`dils-ultranorm`, dils.tex:1897, Definition): the seminorm
 `‖x‖_ω = ω([x,x])^½` of an np-functional `ω : 𝒷 → ℂ`, for a 𝒷-module with
 𝒷-valued inner product `B` (given as a bare function `B : X → X → 𝒷` so
 that this applies to `BInner`s, to `CStarModule`s via `inner 𝒷`, and to `𝒷`
@@ -1263,7 +1263,7 @@ theorem unSeminorm_complex {X : Type v} [AddCommGroup X] [Module ℂ X]
   rw [unSeminorm, BInner.norm, ← ha, hlin, hnorm, Complex.mul_re, him]
   simp [Real.sqrt_mul hre, mul_comm]
 
-/-- **147I**.1 (`uniformity-basics`, dils.tex:1930, Definition),
+/-- **147I**.1 (`uniformity-basics`, dils.tex:1938, Definition),
 specialized to the ultranorm uniformity: a net `x : ι → X` (along a filter
 `l`) *converges ultranorm* to `x₀` when `‖x i - x₀‖_ω → 0` for every
 np-functional `ω`. -/
@@ -1271,7 +1271,7 @@ def UnTendsto {ι : Type w} (B : X → X → 𝒷) (x : ι → X) (l : Filter ι
     (x₀ : X) : Prop :=
   ∀ ω : NPFunctional 𝒷, Tendsto (fun i => unSeminorm ω B (x i - x₀)) l (𝓝 0)
 
-/-- **147I**.2 (`uniformity-basics`, dils.tex:1930, Definition),
+/-- **147I**.2 (`uniformity-basics`, dils.tex:1938, Definition),
 specialized to the ultranorm uniformity: a filter `F` on `X` (e.g. the
 eventuality filter of a net) is *ultranorm Cauchy* when it contains, for
 every `ω` and `ε > 0`, a set of diameter `≤ ε` for `‖·‖_ω`. -/
@@ -1279,7 +1279,7 @@ def UnCauchy (B : X → X → 𝒷) (F : Filter X) : Prop :=
   ∀ (ω : NPFunctional 𝒷) (ε : ℝ), 0 < ε →
     ∃ s ∈ F, ∀ x ∈ s, ∀ y ∈ s, unSeminorm ω B (x - y) ≤ ε
 
-/-- **147I**.5 (`uniformity-basics`, dils.tex:1930, Definition),
+/-- **147I**.5 (`uniformity-basics`, dils.tex:1938, Definition),
 specialized to the ultranorm uniformity: a subset `D ⊆ X` is *ultranorm
 dense* when every `x ∈ X` is approximated within every entourage (finitely
 many seminorms, `ε > 0`) by an element of `D`. -/
@@ -1287,7 +1287,7 @@ def UnDense (B : X → X → 𝒷) (D : Set X) : Prop :=
   ∀ (x : X) (n : ℕ) (ωs : Fin n → NPFunctional 𝒷) (ε : ℝ), 0 < ε →
     ∃ d ∈ D, ∀ i, unSeminorm (ωs i) B (x - d) ≤ ε
 
-/-- **147I**.2 (`uniformity-basics`, dils.tex:1930, Definition), continued:
+/-- **147I**.2 (`uniformity-basics`, dils.tex:1938, Definition), continued:
 the ultranorm uniformity on `X` is *complete* when every (nontrivial)
 ultranorm Cauchy filter converges. -/
 def UnComplete (B : X → X → 𝒷) : Prop :=
@@ -1297,7 +1297,7 @@ end Ultranorm
 
 /-! ## Parsec 1470: basics of uniform spaces
 
-**147I** (`uniformity-basics`, dils.tex:1930, Definition): convergence,
+**147I** (`uniformity-basics`, dils.tex:1938, Definition): convergence,
 Cauchy nets, (uniform) continuity, equivalence of Cauchy nets, density —
 Mathlib's `Tendsto`/`Cauchy`/`UniformContinuous`/`Dense` (for the ultranorm
 uniformity, the specialized predicates above). -/
@@ -1312,7 +1312,7 @@ variable {X Y : Type v} [UniformSpace X] [UniformSpace Y]
 def FilterEquiv (F G : Filter X) : Prop :=
   ∀ V ∈ 𝓤 X, ∃ s ∈ F, ∃ t ∈ G, s ×ˢ t ⊆ V
 
-/-- **147II** (`dils-uniform-spaces-basics`, dils.tex:1982, Exercise), part
+/-- **147II** (`dils-uniform-spaces-basics`, dils.tex:1990, Exercise), part
 1, **both claims**: equivalence of Cauchy filters is reflexive, symmetric
 and transitive; *and* a subnet of a Cauchy net is equivalent to it.
 
@@ -1350,7 +1350,7 @@ theorem dils_uniform_spaces_basics_1 :
     obtain ⟨s, hs, t, ht, hst⟩ := Filter.mem_prod_iff.mp (hG.2 hV)
     exact ⟨s, hFG hs, t, ht, hst⟩
 
-/-- **147II** (`dils-uniform-spaces-basics`, dils.tex:1982, Exercise), part
+/-- **147II** (`dils-uniform-spaces-basics`, dils.tex:1990, Exercise), part
 2: equivalent Cauchy filters have the same limits. -/
 theorem dils_uniform_spaces_basics_2 (F G : Filter X) (hF : Cauchy F)
     (hG : Cauchy G) (h : FilterEquiv F G) (x : X) (hFx : F ≤ 𝓝 x) :
@@ -1365,7 +1365,7 @@ theorem dils_uniform_spaces_basics_2 (F G : Filter X) (hF : Cauchy F)
   refine Filter.mem_map.mpr (Filter.mem_of_superset ht fun z hz => ?_)
   exact hWV ⟨y, hy₂, hst (Set.mk_mem_prod hy₁ hz)⟩
 
-/-- **147II** (`dils-uniform-spaces-basics`, dils.tex:1982, Exercise), part
+/-- **147II** (`dils-uniform-spaces-basics`, dils.tex:1990, Exercise), part
 3: limits are unique in a Hausdorff uniform space (Mathlib:
 `tendsto_nhds_unique`). -/
 theorem dils_uniform_spaces_basics_3 [T2Space X] {ι : Type w} (l : Filter ι)
@@ -1373,7 +1373,7 @@ theorem dils_uniform_spaces_basics_3 [T2Space X] {ι : Type w} (l : Filter ι)
     (hb : Tendsto x l (𝓝 b)) : a = b :=
   tendsto_nhds_unique ha hb
 
-/-- **147II** (`dils-uniform-spaces-basics`, dils.tex:1982, Exercise), part
+/-- **147II** (`dils-uniform-spaces-basics`, dils.tex:1990, Exercise), part
 4: continuous maps preserve limits of nets (Mathlib:
 `Continuous.tendsto.comp`). -/
 theorem dils_uniform_spaces_basics_4 (f : X → Y) (hf : Continuous f)
@@ -1381,7 +1381,7 @@ theorem dils_uniform_spaces_basics_4 (f : X → Y) (hf : Continuous f)
     (ha : Tendsto x l (𝓝 a)) : Tendsto (f ∘ x) l (𝓝 (f a)) :=
   (hf.tendsto a).comp ha
 
-/-- **147II** (`dils-uniform-spaces-basics`, dils.tex:1982, Exercise), part
+/-- **147II** (`dils-uniform-spaces-basics`, dils.tex:1990, Exercise), part
 5: uniformly continuous maps send Cauchy filters to Cauchy filters and
 preserve equivalence (Mathlib: `Cauchy.map`). -/
 theorem dils_uniform_spaces_basics_5 (f : X → Y) (hf : UniformContinuous f) :
@@ -1395,7 +1395,7 @@ theorem dils_uniform_spaces_basics_5 (f : X → Y) (hf : UniformContinuous f) :
   rintro ⟨a, b⟩ ⟨⟨a', ha', rfl⟩, ⟨b', hb', rfl⟩⟩
   exact hst (Set.mk_mem_prod ha' hb')
 
-/-- **147II** (`dils-uniform-spaces-basics`, dils.tex:1982, Exercise), part
+/-- **147II** (`dils-uniform-spaces-basics`, dils.tex:1990, Exercise), part
 6: for a dense `D ⊆ X`, every point is the limit of a Cauchy filter living
 on `D`.
 
@@ -1431,7 +1431,7 @@ theorem dils_uniform_spaces_basics_6 (D : Set X) (hD : Dense D) (x : X) :
   exact ⟨Filter.map d atTop, hne, Filter.mem_map.mpr (Filter.univ_mem' hdD),
     cauchy_nhds.mono htends, htends⟩
 
-/-- **147II** (`dils-uniform-spaces-basics`, dils.tex:1982, Exercise), part
+/-- **147II** (`dils-uniform-spaces-basics`, dils.tex:1990, Exercise), part
 7: continuous maps into a Hausdorff space agreeing on a dense set are equal.
 
 The exercise's own instruction is *"Conclude from
@@ -1457,7 +1457,7 @@ theorem dils_uniform_spaces_basics_7 [T2Space Y] (f g : X → Y)
   exact dils_uniform_spaces_basics_3 (X := Y) F (f ∘ id) (f x) (g x) hfx
     (hgx.congr' hEq)
 
-/-- **147III** (`dils-product-uniformity`, dils.tex:2021, Exercise): the
+/-- **147III** (`dils-product-uniformity`, dils.tex:2029, Exercise): the
 relations `(x_i)_i ε̂ (y_i)_i ⟺ x_{i₀} ε y_{i₀}` of the exercise, one for
 each `i₀ ∈ I` and each entourage `ε ∈ Φ_{i₀}`. -/
 def piSubbase {ι : Type w} (Z : ι → Type v) [∀ i, UniformSpace (Z i)] :
@@ -1465,7 +1465,7 @@ def piSubbase {ι : Type w} (Z : ι → Type v) [∀ i, UniformSpace (Z i)] :
   {V | ∃ (i : ι) (ε : Set (Z i × Z i)), ε ∈ 𝓤 (Z i) ∧
     V = {q : (∀ i, Z i) × (∀ i, Z i) | (q.1 i, q.2 i) ∈ ε}}
 
-/-- **147III** (`dils-product-uniformity`, dils.tex:2021, Exercise), **all
+/-- **147III** (`dils-product-uniformity`, dils.tex:2029, Exercise), **all
 three claims**.
 
 1. The relations `ε̂` are a *subbase* (**146IIIa**) for the product
@@ -1646,7 +1646,7 @@ theorem unSeminorm_boundedModuleMap_le (B₁ : BInner 𝒷 X) (B₂ : BInner �
     _ = C * Real.sqrt (ω (B₁.inner x x)).re := by
         rw [Real.sqrt_mul (sq_nonneg C), Real.sqrt_sq hC]
 
-/-- **148I** (`blinear-bounded-is-ultranorm`, dils.tex:2041, Proposition):
+/-- **148I** (`blinear-bounded-is-ultranorm`, dils.tex:2049, Proposition):
 a bounded 𝒷-linear map `T : X → Y` between 𝒷-modules with 𝒷-valued inner
 products is uniformly ultranorm continuous: for every `ω` and `ε > 0` there
 is `δ > 0` with `‖x-y‖_ω ≤ δ ⟹ ‖Tx-Ty‖_ω ≤ ε`.
@@ -1775,7 +1775,7 @@ theorem unSeminorm_op_smul_right_le (B : BInner 𝒷 X) (ω : NPFunctional 𝒷)
         Real.sqrt_le_sqrt hre
     _ = _ := Real.sqrt_mul (norm_nonneg _) _
 
-/-- **148III** (`ultranormcontstruct`, dils.tex:2060, Corollary), part 1:
+/-- **148III** (`ultranormcontstruct`, dils.tex:2068, Corollary), part 1:
 `(x,y) ↦ x + y : X × X → X` is **uniformly** continuous for the ultranorm
 uniformity (the product uniformity on `X × X` being the one of **147III**,
 whose subbase relations are the two coordinatewise ones — hence the two
@@ -1793,7 +1793,7 @@ theorem ultranormcontstruct_add (B : BInner 𝒷 X) (ω : NPFunctional 𝒷)
     _ ≤ ε / 2 + ε / 2 := add_le_add hx hy
     _ = ε := by ring
 
-/-- **148III** (`ultranormcontstruct`, dils.tex:2060, Corollary), part 2:
+/-- **148III** (`ultranormcontstruct`, dils.tex:2068, Corollary), part 2:
 for fixed `x₀`, the map `x ↦ [x₀, x] : X → 𝒷` is **uniformly** continuous
 from the ultranorm uniformity of `X` to the ultrastrong uniformity of `𝒷`
 (the ultranorm uniformity of `mulInner`). -/
@@ -1812,7 +1812,7 @@ theorem ultranormcontstruct_inner [VonNeumannAlgebra 𝒷] (B : BInner 𝒷 X)
         rw [mul_div_assoc', div_le_iff₀ (by positivity)]
         nlinarith
 
-/-- **148III** (`ultranormcontstruct`, dils.tex:2060, Corollary), part 3:
+/-- **148III** (`ultranormcontstruct`, dils.tex:2068, Corollary), part 3:
 for fixed `x₀`, the map `b ↦ x₀ · b : 𝒷 → X` (mirrored: `b • x₀`) is
 **uniformly** continuous from the ultrastrong uniformity of `𝒷` to the
 ultranorm uniformity of `X`. -/
@@ -1875,7 +1875,7 @@ theorem ultranormcontstruct_smul_unTendsto [VonNeumannAlgebra 𝒷]
   · exact unSeminorm_op_smul_right_le B ω x₀ (b i) blim
   · simpa using (hb ω).const_mul (Real.sqrt ‖B.inner x₀ x₀‖)
 
-/-- **148IV** (`ultranormscalar`, dils.tex:2072, Exercise): for fixed
+/-- **148IV** (`ultranormscalar`, dils.tex:2080, Exercise): for fixed
 `b ∈ 𝒷`, the map `x ↦ x·b` (mirrored: `b • x`) is ultranorm continuous:
 it preserves ultranorm limits. -/
 theorem ultranormscalar [VonNeumannAlgebra 𝒷] (B : BInner 𝒷 X) (b : 𝒷)
@@ -1892,7 +1892,7 @@ theorem ultranormscalar [VonNeumannAlgebra 𝒷] (B : BInner 𝒷 X) (b : 𝒷)
     rw [unSeminorm, unSeminorm, hexp, ← conjNP_apply (star b) ω]
   simpa only [key] using hx (conjNP (star b) ω)
 
-/-- **148V** (`innerprod-ultraweak`, dils.tex:2078, Proposition): if
+/-- **148V** (`innerprod-ultraweak`, dils.tex:2086, Proposition): if
 `x_α → x` and `y_α → y` in the ultranorm uniformity, then
 `[x_α, y_α] → [x, y]` ultraweakly.
 
@@ -1950,7 +1950,7 @@ ultranorm-dense subset `D` are nonnegative on a bounded 𝒷-linear `T`, then
 continuity of `x ↦ ⟨x,Tx⟩`) followed by order separation of the
 np-functionals, **44XI** (`Theses.A.VN.nonneg_of_conjNP`), and needs `𝒷` to
 be a von Neumann algebra — as does the ultranorm uniformity itself
-(**146VII**, dils.tex:1889).  Together with **144I** this gives **148VII**
+(**146VII**, dils.tex:1897).  Together with **144I** this gives **148VII**
 below. -/
 theorem unDense_inner_nonneg [VonNeumannAlgebra 𝒷] (D : Set X)
     (hD : UnDense (inner 𝒷) D) (T : X →L[ℂ] X)
@@ -2092,14 +2092,14 @@ theorem unDense_inner_nonneg [VonNeumannAlgebra 𝒷] (D : Set X)
   rw [hrw]
   exact hall _ ω
 
-/-- **148VII** (`hilbmod-denseordersep`, dils.tex:2116, Corollary): for a
+/-- **148VII** (`hilbmod-denseordersep`, dils.tex:2124, Corollary): for a
 Hilbert 𝒷-module `X` with ultranorm-dense subset `D`, the vector states
 from `D` are order separating: for adjointable bounded `T`, `T ≥ 0` iff
 `⟨x, Tx⟩ ≥ 0` for all `x ∈ D`.
 
 The `[VonNeumannAlgebra 𝒷]` hypothesis is the thesis's: the ultranorm
 uniformity — and hence the phrase "ultranorm-dense" in the statement — is
-defined only for a von Neumann algebra `𝒷` (**146VII**, dils.tex:1889, "Let
+defined only for a von Neumann algebra `𝒷` (**146VII**, dils.tex:1897, "Let
 𝒷 be a von Neumann algebra").  Order separation of `𝒷`'s np-functionals
 (**44XI**) is what the proof consumes, and that is exactly the faithfulness
 clause of `VonNeumannAlgebra`. -/
@@ -2124,13 +2124,13 @@ variable {𝒷 : Type u} {X : Type v} {ι : Type w}
 
 variable (𝒷)
 
-/-- **149I** (`dfn-selfdual-basis`, dils.tex:2127, Definition), part 1: a
+/-- **149I** (`dfn-selfdual-basis`, dils.tex:2135, Definition), part 1: a
 family in a pre-Hilbert 𝒷-module is **orthogonal** when distinct members
 have inner product `0`. -/
 def OrthogonalFam (e : ι → X) : Prop :=
   ∀ i j : ι, i ≠ j → inner 𝒷 (e i) (e j) = 0
 
-/-- **149I** (`dfn-selfdual-basis`, dils.tex:2127, Definition), part 2: an
+/-- **149I** (`dfn-selfdual-basis`, dils.tex:2135, Definition), part 2: an
 orthogonal family is **orthonormal** when moreover each `⟨e,e⟩` is a
 non-zero projection. -/
 def OrthonormalFam (e : ι → X) : Prop :=
@@ -2139,13 +2139,13 @@ def OrthonormalFam (e : ι → X) : Prop :=
       inner 𝒷 (e i) (e i) ≠ 0
 
 variable (X) in
-/-- **149I** (`dfn-selfdual-basis`, dils.tex:2127, Definition), part 3: a
+/-- **149I** (`dfn-selfdual-basis`, dils.tex:2135, Definition), part 3: a
 family `(bᵢ)` in `𝒷` is **ℓ²-summable** when the partial sums of
 `∑ᵢ bᵢ* bᵢ` are (norm-)bounded (mirrored: `∑ᵢ bᵢ bᵢ*`). -/
 def L2Summable (b : ι → 𝒷) : Prop :=
   ∃ M : ℝ, ∀ s : Finset ι, ‖∑ i ∈ s, b i * star (b i)‖ ≤ M
 
-/-- **149I** (`dfn-selfdual-basis`, dils.tex:2127, Definition), part 4: an
+/-- **149I** (`dfn-selfdual-basis`, dils.tex:2135, Definition), part 4: an
 orthonormal family `(eᵢ)` is an **(orthonormal) basis** when (a) every
 `x ∈ X` is the ultranorm limit of `∑ᵢ eᵢ⟨eᵢ,x⟩` (mirrored:
 `∑ᵢ ⟨eᵢ,x⟩ • eᵢ`), and (b) `∑ᵢ eᵢbᵢ` converges ultranorm for every
@@ -2221,7 +2221,7 @@ private theorem uwTendsto_unique' [VonNeumannAlgebra 𝒷] {l : Filter ι} [l.Ne
   @tendsto_nhds_unique 𝒷 ι (ultraweak 𝒷) (vn_positive_basic_1 (A := 𝒷)).1
     f l a c _ ha hc
 
-/-- **149III** (`mod-projelabs`, dils.tex:2216, Exercise): if `⟨e,e⟩` is a
+/-- **149III** (`mod-projelabs`, dils.tex:2224, Exercise): if `⟨e,e⟩` is a
 projection, then `e⟨e,e⟩ = e` (mirrored: `⟨e,e⟩ • e = e`). -/
 theorem mod_projelabs (e : X) (he : IsStarProjection (inner 𝒷 e e)) :
     inner 𝒷 e e • e = e := by
@@ -2303,7 +2303,7 @@ theorem mod_bessel {e : ι → X} (he : OrthonormalFam 𝒷 e) (x : X) (s : Fins
   rw [sub_self, sub_zero, hQ] at h0
   exact sub_nonneg.mp h0
 
-/-- **149IV** (`mod-parseval`, dils.tex:2225, Exercise (Parseval's
+/-- **149IV** (`mod-parseval`, dils.tex:2233, Exercise (Parseval's
 identity)): for an orthonormal basis `(eᵢ)` of a pre-Hilbert 𝒷-module over
 a von Neumann algebra, `⟨x,x⟩ = ∑ᵢ ⟨x,eᵢ⟩⟨eᵢ,x⟩`, the sum converging
 ultraweakly. -/
@@ -2511,7 +2511,7 @@ theorem unSeminorm_le_norm_mul (ω : NPFunctional 𝒷) (x : X) :
 
 end OneImpliesThree
 
-/-- **149VII** (dils.tex:2258): (1) ⇒ (3) of **149V** — a self-dual
+/-- **149VII** (dils.tex:2266): (1) ⇒ (3) of **149V** — a self-dual
 pre-Hilbert 𝒷-module is norm-bounded ultranorm complete.
 
 Divergence class 1 (faithful), with one notational mirror.  The thesis's
@@ -3316,7 +3316,7 @@ theorem inner_eq_zero_of_polar [VonNeumannAlgebra 𝒷] {y u : X}
         * rangeProj (inner 𝒷 z u : 𝒷)) * (inner 𝒷 z u : 𝒷) := by rw [mul_assoc]
     _ = 0 := by rw [h2, zero_mul]
 
-/-- **149VIII** (`selfdual-bcompl-then-basis`, dils.tex:2328): (3) ⇒ (4) of
+/-- **149VIII** (`selfdual-bcompl-then-basis`, dils.tex:2354): (3) ⇒ (4) of
 **149V** — a norm-bounded ultranorm complete pre-Hilbert 𝒷-module has an
 orthonormal basis.
 
@@ -3425,7 +3425,7 @@ theorem exists_isONBasis_of_bddUnComplete [VonNeumannAlgebra 𝒷]
     rwa [← hxeq] at hy
   exact ⟨↥E, fun i => (i : X), horth, hclausea, hclauseb⟩
 
-/-- **149IX** (dils.tex:2461): (4) ⇒ (2) of **149V** — a pre-Hilbert
+/-- **149IX** (dils.tex:2487): (4) ⇒ (2) of **149V** — a pre-Hilbert
 𝒷-module with an orthonormal basis is ultranorm complete.
 
 Divergence class 1 (faithful), mirrored.  The limit is `∑ₑ e bₑ` with
@@ -3645,13 +3645,13 @@ theorem unComplete_of_isONBasis [VonNeumannAlgebra 𝒷] {e : ι → X}
     _ < ε := by rw [hδdef]; linarith
 
 omit [StarOrderedRing 𝒷] in
-/-- **149X** (dils.tex:2565): (2) ⇒ (3) of **149V** — trivially, since a
+/-- **149X** (dils.tex:2573): (2) ⇒ (3) of **149V** — trivially, since a
 norm-bounded ultranorm-Cauchy filter is in particular ultranorm Cauchy. -/
 theorem bddUnComplete_of_unComplete (h : UnComplete (inner 𝒷 : X → X → 𝒷)) :
     BddUnComplete 𝒷 X :=
   fun F hF hCauchy _ => h F hF hCauchy
 
-/-- **149XI** (dils.tex:2569): (4) ⇒ (1) of **149V** — a pre-Hilbert
+/-- **149XI** (dils.tex:2577): (4) ⇒ (1) of **149V** — a pre-Hilbert
 𝒷-module with an orthonormal basis is self dual.
 
 Divergence class 1 (faithful).  Given a bounded 𝒷-linear `τ : X → 𝒷`, the
@@ -3761,7 +3761,7 @@ theorem selfDual_of_isONBasis [VonNeumannAlgebra 𝒷] {e : ι → X}
     simpa only [← hkey1] using h
   exact uwTendsto_unique' hnet2 hnet1
 
-/-- **149V** (`dils-selfdual`, dils.tex:2236, Theorem): for a pre-Hilbert
+/-- **149V** (`dils-selfdual`, dils.tex:2244, Theorem): for a pre-Hilbert
 𝒷-module `X` over a von Neumann algebra `𝒷` the following are equivalent:
 (1) `X` is self dual; (2) `X` is ultranorm complete; (3) every norm-bounded
 ultranorm-Cauchy net converges; (4) `X` has an orthonormal basis (indexed

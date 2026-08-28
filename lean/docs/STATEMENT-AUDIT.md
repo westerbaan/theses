@@ -109,7 +109,9 @@ that check, so use it only when there really is no declaration to name.
 ## Locating a statement in the sources
 
 **Line references drift** — every doc comment carries one (`dils.tex:5024`)
-and they are a starting point only.  Locate by point number instead.  A DISP
+and, until 2026-08-28, 41% of them were stale.  They are now checked on demand
+(below) and every one of them lands, but the *point number* is still what
+identifies a statement: it survives editing, and a line does not.  A DISP
 number `NxR` decodes as:
 
 * `N` — the parsec: `\begin{parsec}{N0}`, e.g. `164` ↦ `{1640}`.
@@ -121,6 +123,88 @@ number `NxR` decodes as:
 
 The proof, where there is one, is normally the *next* point (`Proof`), or the
 following few.
+
+### The drift is now measured, and repaired (2026-08-28)
+
+`scripts/cite_check.py` reads every `` `label`, file.tex:N `` citation in the
+tree and asks whether line `N` still falls inside the *extent* of the thing
+`label` names — the `\begin{point}` … `\end{point}` it opens, or the parsec or
+solution, or, for an equation label, the point that encloses it.  Containment
+rather than equality is the test on purpose: 374 citations in the tree point at
+an interior line and 133 of them more than one line in — a display, a numbered
+clause — and a checker that demanded the opening line would report the tree's
+most careful citations as errors.
+
+At `e612c93` **622 of 1512 citations — 41% — pointed outside the point they
+named**: 261 into `cstar.tex`, 162 into `proc.tex`, 155 into `dils.tex`, 43
+into `vn.tex`, 1 into `eff.tex`.  None of it is transcription error; the .tex
+files gained lines above the cited points and no line reference in the tree
+moved with them.  The drift is *blocky* — one constant offset per region of a
+source file, `+15` over one span of `cstar.tex`, `+112` over another, `+27`
+across all of `vn.tex`'s `NormalFunctionals` range — which is what an insertion
+upstream of a run of points looks like.
+
+`scripts/cite_repair.py` repairs them from history rather than by guess: for
+each stale citation it walks that .tex file's revisions newest-first until it
+finds one in which the cited line *did* sit inside the label's extent, takes
+the offset the citation had inside the point *then*, and re-anchors it to
+today's opening line plus that same offset.  Snapping everything to the
+opening line would have been easier and would have destroyed those 133.  Of
+the 622: **312** had already been corrected in the working tree by the pass
+that preceded this one, **307** were repaired by the history walk, and **3** by
+hand.  The tree now stands at **1529 of 1529**.
+
+Three citations were wrong in a way no shift could fix, and each was a
+different mistake: `ad_cp_1` and `intersection_tensor` spelled tex labels as
+Lean identifiers (`ad-cp`, `intersection-tensor`), and **217I** borrowed the
+label of **217II** because 217I carries none of its own.
+
+A **second citation shape** turned up while reading those: `` `label`
+(file.tex:N) ``, with a paren where the common form has a comma.  There are 20
+in the tree and the shape is ambiguous — `` `k` (eff.tex:2853) `` names a Lean
+binder, not a label — so it is checked only when the name really is a label of
+the file it names.  Thirteen were, and **six of the thirteen were stale**,
+including two that had been reporting `ineq-square-root` sixteen and
+eighty-three lines above where it is.
+
+### The tag is a second, label-free way to locate (2026-08-28)
+
+Many references carry no label at all — `/-- **3III** (cstar.tex:135, Example)`.
+Nothing pins those to a label, but the **tag pins them by itself**: `3III`
+decodes to parsec `{30}`, point `{30}`, and the parsec ranges are disjoint
+across the five source files (`cstar` 20–400, `vn` 410–910, `proc` 920–1320,
+`dils` 1350–1720, `eff` 1730–2280), so the tag fixes the file too.
+`scripts/cite_check.py --disp` checks the first reference of every DISP-tagged
+doc comment against the point its own tag decodes to.  **135 of 325 did not
+land**; `scripts/cite_repair.py --disp` repaired 64 of the survivors by the same
+history walk and three were repaired by hand, and it now reads **323 of 323**.
+
+Two conventions had to be taught to the checker before its output meant
+anything, and both are in this document:
+
+* **A statement may be cited through its proof.**  "The proof, where there is
+  one, is normally the *next* point (`Proof`), or the following few" — so the
+  region a self-citation may land in runs from the tagged point to the next
+  point that states something new, across `Proof`, across unlabelled
+  continuation points, and across the ones headed by a case of a case split.
+  Six of the eleven that survived the history walk were citing a proof.  The
+  extension stops at the end of the parsec: without that cap one tag's region
+  swallowed three hundred lines of the next subject.
+* **`asols.tex` and `bsols.tex` have no parsecs.**  A tag cited against a
+  solution file names the *solution* to that exercise, and is checkable by
+  label, not by decoding.
+
+The tag also asserts a **kind** — `(cstar.tex:135, Example)` — and that is
+checked against the source's `\begin{point}{N}{Kind}`.  **0 mismatches**, once
+the comparison was restricted to words that are actually kinds; without that
+restriction it read the prose after the reference and reported "calls it a
+`the`" five times.
+
+What is still unchecked: **867 `file.tex:N` references that are neither the
+first reference of a tagged doc comment nor paired with a label** — the
+cross-references a doc comment makes to *other* points as it explains itself.
+Each would need its own tag or label to be pinned, and most do carry one in
+prose; extracting it is the next extension and it is not built.
 
 ## Roll-up — **complete**
 

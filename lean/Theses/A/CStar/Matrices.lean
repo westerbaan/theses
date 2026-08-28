@@ -28,7 +28,7 @@ namespace Theses.A.CStar
 
 **31I** (cstar.tex:4961): introduction — nothing to formalize.
 
-**32I** (`chilb-basic`, cstar.tex:4981, Definition): an *𝒜-valued inner
+**32I** (`chilb-basic`, cstar.tex:5088, Definition): an *𝒜-valued inner
 product* on an 𝒜-module `X`, definiteness, *pre-Hilbert 𝒜-module*, *Hilbert
 𝒜-module* — in Mathlib the class `CStarModule 𝒜 X` (which also bundles the
 norm of **32IX**), completeness being `[CompleteSpace X]`.  Adjointness of a
@@ -44,13 +44,13 @@ variable (𝒜 : Type*) {X Y Z : Type*} [CStarAlgebra 𝒜]
   [NormedAddCommGroup Y] [Module ℂ Y] [SMul 𝒜 Y] [CStarModule 𝒜 Y]
   [NormedAddCommGroup Z] [Module ℂ Z] [SMul 𝒜 Z] [CStarModule 𝒜 Z]
 
-/-- **32I** (`chilb-basic`, cstar.tex:4981, Definition): a map `T : X → Y`
+/-- **32I** (`chilb-basic`, cstar.tex:5088, Definition): a map `T : X → Y`
 between pre-Hilbert 𝒜-modules is *adjoint to* `S : Y → X` when
 `⟨Tx, y⟩ = ⟨x, Sy⟩` for all `x, y`. -/
 def ModuleAdjointTo (T : X → Y) (S : Y → X) : Prop :=
   ∀ (x : X) (y : Y), inner 𝒜 (T x) y = inner 𝒜 x (S y)
 
-/-- **32I** (`chilb-basic`, cstar.tex:4981, Definition): a map between
+/-- **32I** (`chilb-basic`, cstar.tex:5088, Definition): a map between
 pre-Hilbert 𝒜-modules is *adjointable* when it is adjoint to some map. -/
 def ModuleAdjointable (T : X → Y) : Prop :=
   ∃ S : Y → X, ModuleAdjointTo 𝒜 T S
@@ -73,14 +73,14 @@ theorem eq_of_inner_right_eq {W : Type*} [NormedAddCommGroup W]
     rw [CStarModule.inner_sub_right, h (a - b), sub_self]
   exact sub_eq_zero.mp (CStarModule.inner_self.mp h0)
 
-/-- **32I** (`chilb-basic`, cstar.tex:4981, Definition), embedded claim: a
+/-- **32I** (`chilb-basic`, cstar.tex:5088, Definition), embedded claim: a
 map is adjoint to at most one map, denoted `T*`. -/
 theorem moduleAdjointTo_unique (T : X → Y) (S S' : Y → X)
     (h : ModuleAdjointTo 𝒜 T S) (h' : ModuleAdjointTo 𝒜 T S') : S = S' := by
   funext y
   exact eq_of_inner_right_eq fun x => ((h x y).symm.trans (h' x y))
 
-/-- **32I** (`chilb-basic`, cstar.tex:4981, Definition), embedded claim: an
+/-- **32I** (`chilb-basic`, cstar.tex:5088, Definition), embedded claim: an
 adjointable map is automatically linear and a module map. -/
 theorem moduleAdjointable_linear (T : X → Y) (hT : ModuleAdjointable 𝒜 T) :
     (∀ x x' : X, T (x + x') = T x + T x') ∧
@@ -100,7 +100,7 @@ theorem moduleAdjointable_linear (T : X → Y) (hT : ModuleAdjointable 𝒜 T) :
 `WithCStarModule 𝒜 (Fin N → 𝒜)` (notation `C⋆ᵐᵒᵈ(𝒜, Fin N → 𝒜)`) with its
 `CStarModule` instance. -/
 
-/-- **32III** (cstar.tex:5044, Exercise), part 1: if `T` is adjoint to `S`
+/-- **32III** (cstar.tex:5151, Exercise), part 1: if `T` is adjoint to `S`
 then `S` is adjoint to `T` (so `T** = T`). -/
 theorem moduleAdjointTo_symm (T : X → Y) (S : Y → X)
     (h : ModuleAdjointTo 𝒜 T S) : ModuleAdjointTo 𝒜 S T := by
@@ -108,7 +108,7 @@ theorem moduleAdjointTo_symm (T : X → Y) (S : Y → X)
   rw [← CStarModule.star_inner (A := 𝒜) x (S y), ← h x y,
     CStarModule.star_inner]
 
-/-- **32III** (cstar.tex:5044, Exercise), part 2: `(T + T')* = T* + T'*` and
+/-- **32III** (cstar.tex:5151, Exercise), part 2: `(T + T')* = T* + T'*` and
 `(λT)* = λ̄ T*`. -/
 theorem moduleAdjointTo_add_smul (T T' : X → Y) (S S' : Y → X) (c : ℂ)
     (h : ModuleAdjointTo 𝒜 T S) (h' : ModuleAdjointTo 𝒜 T' S') :
@@ -123,7 +123,7 @@ theorem moduleAdjointTo_add_smul (T T' : X → Y) (S S' : Y → X) (c : ℂ)
   · intro x y
     simp [h₁]
 
-/-- **32III** (cstar.tex:5044, Exercise), part 3: `ST` is adjoint to
+/-- **32III** (cstar.tex:5151, Exercise), part 3: `ST` is adjoint to
 `T* S*`, i.e. `(ST)* = T* S*`. -/
 theorem moduleAdjointTo_comp (T : X → Y) (S : Y → Z) (T' : Y → X)
     (S' : Z → Y) (hT : ModuleAdjointTo 𝒜 T T') (hS : ModuleAdjointTo 𝒜 S S') :
@@ -338,7 +338,7 @@ section AValuedInner
 variable {𝒜 : Type*} [CStarAlgebra 𝒜] [PartialOrder 𝒜] [StarOrderedRing 𝒜]
 variable {X : Type*} [AddCommGroup X] [Module ℂ X] [SMul 𝒜 X]
 
-/-- **32I** (`chilb-basic`, cstar.tex:4981, Definition): an *𝒜-valued inner
+/-- **32I** (`chilb-basic`, cstar.tex:5088, Definition): an *𝒜-valued inner
 product* on an 𝒜-module `X` — `⟨x, ·⟩` a module map, `⟨x,x⟩ ≥ 0`, and
 `⟨x,y⟩ = ⟨y,x⟩*`.  Definiteness is **not** required (32I calls a definite one
 a *pre-Hilbert 𝒜-module*), and `X` carries no norm.  This is the setting of
@@ -398,7 +398,7 @@ private theorem state_cs {f : X → X → 𝒜} (hf : IsAValuedInner 𝒜 f)
     ‖ω (f u v)‖ ^ 2 ≤ RCLike.re (ω (f u u)) * RCLike.re (ω (f v v)) :=
   inner_product_basic_1 (V := X) (c := stateCore hf ω hω) u v
 
-/-- **32VI** (`chilb-cs`, cstar.tex:5096, Proposition (Cauchy–Schwarz)), in
+/-- **32VI** (`chilb-cs`, cstar.tex:5203, Proposition (Cauchy–Schwarz)), in
 the generality the Proposition states it: `⟨x,y⟩⟨y,x⟩ ≤ ‖⟨y,y⟩‖ ⟨x,x⟩` for
 *every* 𝒜-valued inner product on an 𝒜-module `X` — definite or not, and
 with no norm on `X`.  (`chilb_cs` below is the special case of a
@@ -494,7 +494,7 @@ variable {𝒜 : Type*} {X Y : Type*} [CStarAlgebra 𝒜]
   [NormedAddCommGroup X] [NormedSpace ℂ X] [SMul 𝒜 X] [CStarModule 𝒜 X]
   [NormedAddCommGroup Y] [NormedSpace ℂ Y] [SMul 𝒜 Y] [CStarModule 𝒜 Y]
 
-/-- **32VI** (`chilb-cs`, cstar.tex:5096, Proposition (Cauchy–Schwarz)):
+/-- **32VI** (`chilb-cs`, cstar.tex:5203, Proposition (Cauchy–Schwarz)):
 `⟨x,y⟩ ⟨y,x⟩ ≤ ‖⟨y,y⟩‖ ⟨x,x⟩`, for the 𝒜-valued inner product of a
 `CStarModule` — the case the rest of this file uses.  The Proposition itself,
 for *every* 𝒜-valued inner product on an 𝒜-module (definite or not, with no
@@ -518,7 +518,7 @@ theorem chilb_cs (x y : X) :
       self_nonneg := fun _ => CStarModule.inner_self_nonneg
       star_symm := fun u v => CStarModule.star_inner u v } x y
 
-/-- **32IX** (`chilb-norm-basic`, cstar.tex:5161, Exercise), part 1, the
+/-- **32IX** (`chilb-norm-basic`, cstar.tex:5268, Exercise), part 1, the
 defining equation: `‖x‖ = ‖⟨x,x⟩‖^{1/2}` — in Mathlib this is the bundled
 norm of the `CStarModule` class
 (`CStarModule.norm_eq_sqrt_norm_inner_self`), recorded here.  That this
@@ -528,7 +528,7 @@ theorem chilb_norm_basic_1 (x : X) :
     ‖x‖ = Real.sqrt ‖inner 𝒜 x x‖ :=
   CStarModule.norm_eq_sqrt_norm_inner_self (A := 𝒜) x
 
-/-- **32IX** (`chilb-norm-basic`, cstar.tex:5161, Exercise), part 1: the
+/-- **32IX** (`chilb-norm-basic`, cstar.tex:5268, Exercise), part 1: the
 quantity `‖x‖ = ‖⟨x,x⟩‖^{1/2}` really *is* a norm — definiteness,
 ℂ-homogeneity and the triangle inequality, the three clauses spelled out in
 solution `parsec-320.90`(1).
@@ -548,7 +548,7 @@ theorem chilb_norm_basic_1_norm :
     (CStarModule.normedSpaceCore (A := 𝒜) (E := X)).norm_smul,
     CStarModule.norm_triangle 𝒜⟩
 
-/-- **32IX** (`chilb-norm-basic`, cstar.tex:5161, Exercise), part 2:
+/-- **32IX** (`chilb-norm-basic`, cstar.tex:5268, Exercise), part 2:
 `‖x·b‖ ≤ ‖x‖ ‖b‖` (here in left-action notation `b • x`) and
 `‖⟨x,y⟩‖ ≤ ‖x‖ ‖y‖`.
 
@@ -601,7 +601,7 @@ private theorem norm_le_of_inner_bound {T : X → Y} {B : ℝ} (hB : 0 ≤ B)
     exact mul_nonneg hB (norm_nonneg x)
   · nlinarith [norm_nonneg x]
 
-/-- **32X** (`chilb-form-bounded`, cstar.tex:5178, Lemma): for a linear map
+/-- **32X** (`chilb-form-bounded`, cstar.tex:5285, Lemma): for a linear map
 `T : X → Y` between pre-Hilbert 𝒜-modules and `B > 0`: `T` is bounded by
 `B` iff `‖⟨y, Tx⟩‖ ≤ B ‖y‖ ‖x‖` for all `x, y`. -/
 theorem chilb_form_bounded (T : X →ₗ[ℂ] Y) (B : ℝ) (hB : 0 < B) :
@@ -622,14 +622,14 @@ private theorem norm_adjoint_le (T : X →L[ℂ] Y) (S : Y →L[ℂ] X)
     _ ≤ ‖T‖ * ‖x'‖ * ‖y'‖ :=
         mul_le_mul_of_nonneg_right (T.le_opNorm x') (norm_nonneg y')
 
-/-- **32X** (`chilb-form-bounded`, cstar.tex:5178, Lemma), second part: for
+/-- **32X** (`chilb-form-bounded`, cstar.tex:5285, Lemma), second part: for
 an adjointable bounded map, `‖T*‖ = ‖T‖`. -/
 theorem chilb_form_bounded_adjoint (T : X →L[ℂ] Y) (S : Y →L[ℂ] X)
     (h : ModuleAdjointTo 𝒜 ⇑T ⇑S) : ‖S‖ = ‖T‖ :=
   le_antisymm (norm_adjoint_le T S h)
     (norm_adjoint_le S T (moduleAdjointTo_symm T S h))
 
-/-- **32X** (`chilb-form-bounded`, cstar.tex:5178, Lemma), the "moreover" the
+/-- **32X** (`chilb-form-bounded`, cstar.tex:5285, Lemma), the "moreover" the
 Lemma itself draws: if `T : X → Y` is a bounded module map and `S : Y → X` is
 merely a *map* adjoint to it, then `S` is automatically bounded — it is a
 continuous linear map — and `‖T*‖ = ‖T‖`.
@@ -663,7 +663,7 @@ theorem exists_clm_adjointTo_norm {T : X →L[ℂ] Y} {S : Y → X}
     { toFun := S, map_add' := hadd, map_smul' := fun c y => hsmul c y } ‖T‖ hnorm,
     fun _ => rfl, chilb_form_bounded_adjoint T _ h⟩
 
-/-- **32XII** (`module-maps-cstar-identity`, cstar.tex:5220, Exercise):
+/-- **32XII** (`module-maps-cstar-identity`, cstar.tex:5327, Exercise):
 `‖T* T‖ = ‖T‖²` for every adjointable bounded map `T` on a pre-Hilbert
 𝒜-module. -/
 theorem module_maps_cstar_identity (T S : X →L[ℂ] X)
@@ -712,7 +712,7 @@ theorem exists_clm_adjointTo {T : X →L[ℂ] X} {S : X → X}
   exact ⟨LinearMap.mkContinuous
     { toFun := S, map_add' := hadd, map_smul' := fun c y => hsmul c y } ‖T‖ hnorm, h⟩
 
-/-- **32XIII** (`bax-cstar`, cstar.tex:5225, Proposition): the adjointable
+/-- **32XIII** (`bax-cstar`, cstar.tex:5332, Proposition): the adjointable
 bounded module maps on a Hilbert 𝒜-module `X` form a C*-algebra `B^a(X)`.
 The missing ingredient beyond **4VII** and **32XII** is that `B^a(X)` is
 closed in the bounded operators on `X`, which is stated here. -/
@@ -943,7 +943,7 @@ instance [CompleteSpace X] : CompleteSpace (Bax 𝒜 X) :=
 
 noncomputable instance [CompleteSpace X] : CStarAlgebra (Bax 𝒜 X) where
 
-/-- **32XIII** (`bax-cstar`, cstar.tex:5210, Proposition): `𝓑^a(X)` *is* a
+/-- **32XIII** (`bax-cstar`, cstar.tex:5340, Proposition): `𝓑^a(X)` *is* a
 C*-algebra, for `X` a Hilbert 𝒜-module.  `bax_cstar` above is the single
 ingredient the thesis's proof (**32XIV**) has to supply — closedness in
 `X →L[ℂ] X`; the involution is the adjoint (**32III**) and the C*-identity is
@@ -1338,7 +1338,7 @@ theorem chilb_vector_states_3 [CompleteSpace X] (T : X →L[ℂ] X)
     _ = max ‖(a⁺ : Bax 𝒜 X)‖ ‖(a⁻ : Bax 𝒜 X)‖ := hmax
     _ ≤ M := max_le h1 h2
 
-/-- **32XVI** (cstar.tex:5292, Corollary): `T* T` is positive in `B^a(X)`
+/-- **32XVI** (cstar.tex:5402, Corollary): `T* T` is positive in `B^a(X)`
 for every adjointable bounded `T : X → Y` between Hilbert 𝒜-modules.  The
 first conjunct is the immediate computation `⟨x, T*Tx⟩ = ⟨Tx, Tx⟩ ≥ 0`; the
 second is positivity in `B^a(X)` itself (in the form used in **32XV**.2),
@@ -1383,7 +1383,7 @@ composed with transposition of the index types, and it is why the composition
 order is reversed in part 3.  We state all three parts over the two index sets
 `Fin M`, `Fin N` in Mathlib's convention. -/
 
-/-- **33I** (`cstar-matrices`, cstar.tex:5307, Exercise), part 1: an
+/-- **33I** (`cstar-matrices`, cstar.tex:5417, Exercise), part 1: an
 `M×N`-matrix `A` over `𝒜` gives a bounded module map between `𝒜^M` and `𝒜^N`
 (Mathlib: `CStarMatrix.toCLM`, a `→L[ℂ]`, so boundedness is part of the
 object), adjoint to the one of its conjugate transpose `Ā`. -/
@@ -1392,7 +1392,7 @@ theorem cstar_matrices_1 {M : ℕ} (A : CStarMatrix (Fin M) (Fin N) 𝒜) :
   fun _ _ => (CStarMatrix.inner_toCLM_conjTranspose_right (M := A)).symm
 
 omit [PartialOrder ℬ] [StarOrderedRing ℬ] in
-/-- **33I** (`cstar-matrices`, cstar.tex:5307, Exercise), part 2:
+/-- **33I** (`cstar-matrices`, cstar.tex:5417, Exercise), part 2:
 `A ↦ toCLM A` is a *linear* bijection between the `M×N`-matrices over `𝒜`
 and the adjointable bounded module maps `𝒜^M → 𝒜^N`.  Linearity is the first
 clause, injectivity the second, surjectivity the third. -/
@@ -1445,7 +1445,7 @@ theorem cstar_matrices_2 {M : ℕ} :
   rfl
 
 omit [PartialOrder 𝒜] [StarOrderedRing 𝒜] [PartialOrder ℬ] [StarOrderedRing ℬ] in
-/-- **33I** (`cstar-matrices`, cstar.tex:5307, Exercise), part 3: for an
+/-- **33I** (`cstar-matrices`, cstar.tex:5417, Exercise), part 3: for an
 `M×N`-matrix `A` and an `N×K`-matrix `B` the assignment `A ↦ toCLM A` is
 multiplicative up to the order of composition (Mathlib's `toCLM` acts by
 `vecMul`, hence reverses composition). -/
@@ -1461,7 +1461,7 @@ theorem cstar_matrices_3 {M K : ℕ} (A : CStarMatrix (Fin M) (Fin N) 𝒜)
     Finset.mul_sum, Finset.sum_mul, mul_assoc]
   exact Finset.sum_comm
 
-/-- **33I** (`cstar-matrices`, cstar.tex:5307, Exercise), part 4: the
+/-- **33I** (`cstar-matrices`, cstar.tex:5417, Exercise), part 4: the
 `N×N`-matrices over a C*-algebra `𝒜` form a C*-algebra `M_N(𝒜)` — in
 Mathlib the instance `CStarMatrix.instCStarAlgebra` on
 `CStarMatrix (Fin N) (Fin N) 𝒜`. -/
@@ -1516,7 +1516,7 @@ theorem toCLMBax_surjective : Function.Surjective (toCLMBax 𝒜 N) := by
   exact ⟨A, Subtype.ext hA⟩
 
 variable (𝒜 N) in
-/-- **33I**.4 (`cstar-matrices`, cstar.tex:5307, Exercise): `M_N(𝒜)` is the
+/-- **33I**.4 (`cstar-matrices`, cstar.tex:5417, Exercise): `M_N(𝒜)` is the
 C*-algebra of adjointable module maps on the Hilbert 𝒜-module `𝒜^N`.
 Stated over `M_N(𝒜)ᵐᵒᵖ` because Mathlib's `𝒜^N` is a left module and
 `A ↦ Ā` therefore reverses composition — see the block above.  The fields
@@ -1803,7 +1803,7 @@ theorem matBilin_nonneg_of_mi {𝒜' ℬ' 𝒞 : Type*} [CStarAlgebra 𝒜']
 
 end MatBilin
 
-/-- **33III** (`mnf`, cstar.tex:5358, Exercise), part 1: applying a linear
+/-- **33III** (`mnf`, cstar.tex:5470, Exercise), part 1: applying a linear
 map `f : 𝒜 → ℬ` entrywise to matrices gives a *linear* map
 `M_N f : M_N(𝒜) → M_N(ℬ)`.  Mathlib bundles it as `CStarMatrix.mapₗ`; the
 statements below use the unbundled `CStarMatrix.map`, so linearity is
@@ -1814,7 +1814,7 @@ theorem mnf_linear (f : 𝒜 →ₗ[ℂ] ℬ) (c : ℂ) (A B : CStarMatrix (Fin 
       M.map ⇑f = CStarMatrix.mapₗ (R := ℂ) (S := ℂ) f M := fun _ => rfl
   rw [h, h, h, map_add, map_smul]
 
-/-- **33III** (`mnf`, cstar.tex:5358, Exercise), part 2: `M_N f` is unital
+/-- **33III** (`mnf`, cstar.tex:5470, Exercise), part 2: `M_N f` is unital
 when `f` is, multiplicative when `f` is, and involution preserving when `f`
 is.  (Part 1, that `M_N f` is linear, is `mnf_linear` above.) -/
 theorem mnf_inherits (f : 𝒜 →ₗ[ℂ] ℬ) :
@@ -1862,7 +1862,7 @@ private theorem transposeM2_pos : IsPositiveMap transposeM2 := by
 
 private def e01M2 : CStarMatrix (Fin 2) (Fin 2) ℂ := CStarMatrix.ofMatrix !![0, 1; 0, 0]
 
-/-- **33III** (`mnf`, cstar.tex:5358, Exercise), part 3, first clause:
+/-- **33III** (`mnf`, cstar.tex:5470, Exercise), part 3, first clause:
 `M_N f` need not be positive when `f` is: the transpose map on `M₂` is
 positive but `M₂` of it is not.  (The exercise's second clause, that `M_n f`
 *is* bounded by `n²‖f‖` when `f` is bounded — the form erratum
@@ -1954,7 +1954,7 @@ private theorem cstarMatrix_norm_le_sum {n : ℕ} (M : CStarMatrix (Fin n) (Fin 
   gcongr
   exact WithCStarModule.norm_apply_le_norm v i
 
-/-- **33III** (`mnf`, cstar.tex:5358, Exercise), part 3, second clause, in the
+/-- **33III** (`mnf`, cstar.tex:5470, Exercise), part 3, second clause, in the
 form given by erratum `parsec-330.30`: `M_N f` is bounded by `N²‖f‖` when `f`
 is bounded.
 
@@ -1979,7 +1979,7 @@ theorem mnf_bounded (f : 𝒜 →L[ℂ] ℬ) (A : CStarMatrix (Fin N) (Fin N) �
 
 /-! ## Parsec 340: completely positive maps -/
 
-/-- **34II** (`n-pos`, cstar.tex:5407, Lemma): for a linear map
+/-- **34II** (`n-pos`, cstar.tex:5519, Lemma): for a linear map
 `f : 𝒜 → ℬ` between C*-algebras and `N ∈ ℕ` the following are equivalent:
 (1) `M_N f` is positive; (2) `∑_{i,j} bᵢ* f(aᵢ* aⱼ) bⱼ ≥ 0` for all
 `a ∈ 𝒜^N`, `b ∈ ℬ^N`; (3) the matrix `(f(aᵢ* aⱼ))ᵢⱼ` is positive for all
@@ -2014,7 +2014,7 @@ theorem n_pos (f : 𝒜 →ₗ[ℂ] ℬ) (N : ℕ) :
     exact Finset.sum_nonneg fun m _ => h2 (fun i => C m i) b
   tfae_finish
 
-/-- **34IV** (`cp`, cstar.tex:5448, Exercise), part 1: a linear map `f`
+/-- **34IV** (`cp`, cstar.tex:5560, Exercise), part 1: a linear map `f`
 between C*-algebras is completely positive iff `M_N f` is positive for every
 `N` iff `(f(aᵢ* aⱼ))ᵢⱼ ≥ 0` for every `N` and `a ∈ 𝒜^N`.  (Mathlib's
 bundled cp maps `𝒜 →CP ℬ` are defined by the first of these conditions.) -/
@@ -2029,7 +2029,7 @@ theorem cp_iff (f : 𝒜 →ₗ[ℂ] ℬ) :
   tfae_have 3 → 1 := fun h3 N => (n_pos f N).out 2 1 |>.mp (h3 N)
   tfae_finish
 
-/-- **34IV** (`cp`, cstar.tex:5448, Exercise), part 2: the composition of
+/-- **34IV** (`cp`, cstar.tex:5560, Exercise), part 2: the composition of
 cp-maps is completely positive. -/
 theorem cp_comp {𝒞 : Type*} [CStarAlgebra 𝒞] [PartialOrder 𝒞]
     [StarOrderedRing 𝒞] (f : 𝒜 →ₗ[ℂ] ℬ) (g : ℬ →ₗ[ℂ] 𝒞)
@@ -2042,7 +2042,7 @@ theorem cp_comp {𝒞 : Type*} [CStarAlgebra 𝒞] [PartialOrder 𝒞]
   refine (cp_iff (g.comp f)).out 1 0 |>.mp fun N A hA => ?_
   exact hg' N _ (hf' N A hA)
 
-/-- **34IV** (`cp`, cstar.tex:5448, Exercise), part 3: every mi-map is
+/-- **34IV** (`cp`, cstar.tex:5560, Exercise), part 3: every mi-map is
 completely positive.
 
 The exercise's hint is "`M_N f` is a mi-map too": that is **33III**.2
@@ -2057,7 +2057,7 @@ theorem cp_of_mi (f : 𝒜 →ₗ[ℂ] ℬ) (hm : IsMultiplicativeMap f)
     astara_pos_basic_2_mi _ (fun x y => hmi.2.1 hm x y) fun x => hmi.2.2 hi x
   exact hM A hA
 
-/-- **34V** (`ad-cp`, cstar.tex:5463, Exercise), part 1: the map
+/-- **34V** (`ad-cp`, cstar.tex:5575, Exercise), part 1: the map
 `b ↦ a* b a : 𝒜 → 𝒜` is completely positive for every `a ∈ 𝒜`. -/
 theorem ad_cp_1 (a : 𝒜) :
     IsCompletelyPositiveMap
@@ -2088,7 +2088,7 @@ noncomputable def conjOperator {H K : Type*} [NormedAddCommGroup H]
     ext x
     simp
 
-/-- **34V** (`ad-cp`, cstar.tex:5463, Exercise), part 2: the map
+/-- **34V** (`ad-cp`, cstar.tex:5575, Exercise), part 2: the map
 `T ↦ S* T S : B^a(X) → B^a(Y)` is completely positive for every adjointable
 `S : Y → X` — stated here, as in **34V** part 3, for Hilbert spaces (the
 thesis states it for Hilbert 𝒜-modules, whose algebras `B^a(X)` are not
@@ -2166,7 +2166,7 @@ theorem bax_le_iff {T S : Bax 𝒜 X} :
   rw [show ((S - T : Bax 𝒜 X) : X →L[ℂ] X) = (S : X →L[ℂ] X) - T from rfl,
     ContinuousLinearMap.sub_apply, CStarModule.inner_sub_right, sub_nonneg]
 
-/-- **34V** (`ad-cp`, cstar.tex:5463, Exercise), part 2: the map
+/-- **34V** (`ad-cp`, cstar.tex:5575, Exercise), part 2: the map
 `T ↦ S* T S : 𝓑^a(X) → 𝓑^a(Y)` of an adjointable bounded module map
 `S : Y → X` between Hilbert 𝒜-modules, as a linear map. -/
 noncomputable def conjModule (S : Y →L[ℂ] X) (S' : X →L[ℂ] Y)
@@ -2190,7 +2190,7 @@ noncomputable def conjModule (S : Y →L[ℂ] X) (S' : X →L[ℂ] Y)
     ((conjModule S S' hS T : Bax 𝒜 Y) : Y →L[ℂ] Y) y
       = S' ((T : X →L[ℂ] X) (S y)) := rfl
 
-/-- **34V** (`ad-cp`, cstar.tex:5463, Exercise), part 2, as the Exercise
+/-- **34V** (`ad-cp`, cstar.tex:5575, Exercise), part 2, as the Exercise
 states it: `T ↦ S* T S : 𝓑^a(X) → 𝓑^a(Y)` is completely positive for every
 adjointable operator `S : Y → X` between **Hilbert 𝒜-modules**.  (`ad_cp_2`
 below is the Hilbert-space case `𝒜 = ℂ`, which is what the rest of the tree
@@ -2234,7 +2234,7 @@ theorem ad_cp_2_module (S : Y →L[ℂ] X) (S' : X →L[ℂ] Y)
 
 end AdCPModule
 
-/-- **34V** (`ad-cp`, cstar.tex:5463, Exercise), part 3: the vector
+/-- **34V** (`ad-cp`, cstar.tex:5575, Exercise), part 3: the vector
 functional `T ↦ ⟨x, Tx⟩ : B(H) → ℂ` is completely positive. -/
 theorem ad_cp_3 {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
     [CompleteSpace H] (x : H) :
@@ -2281,7 +2281,7 @@ private theorem lp_infty_nonneg {ι : Type*} {𝒜f : ι → Type*}
   rw [hx]
   exact star_mul_self_nonneg _
 
-/-- **34VI** (`cstar-product-4`, cstar.tex:5486, Exercise), part 1: the
+/-- **34VI** (`cstar-product-4`, cstar.tex:5598, Exercise), part 1: the
 direct sum `⊕ᵢ 𝒜ᵢ` is the product in `CStar_cpsu`: every family of cpsu-maps
 `fᵢ : ℬ → 𝒜ᵢ` factors uniquely through the projections by a cpsu-map.
 (Complete positivity and subunitality of the mediating map `g` are spelled
@@ -2349,7 +2349,7 @@ theorem cstar_product_4 {ι : Type*} {𝒜f : ι → Type*}
     refine LinearMap.ext fun b => lp.ext (funext fun i => ?_)
     rw [hg'i i b, hgi i b]
 
-/-! **34VI** (`cstar-product-4`, cstar.tex:5486, Exercise), part 2: the
+/-! **34VI** (`cstar-product-4`, cstar.tex:5598, Exercise), part 2: the
 equaliser of miu-maps `f, g : 𝒜 → ℬ` in `CStar_cpsu` is (the inclusion of)
 the C*-subalgebra `{a : f(a) = g(a)}` — which is a closed subalgebra by
 **20aII** (`cstar_equaliser_1`); the universal property amounts to: every
@@ -2358,7 +2358,7 @@ set-theoretically immediate.  Not converted beyond **20aII**. -/
 
 section CCStarPosMat
 
-/-- **34VI** (`cstar-product-4`, cstar.tex:5486, Exercise), part 1, the
+/-- **34VI** (`cstar-product-4`, cstar.tex:5598, Exercise), part 1, the
 projections: the coordinate maps `π_i : ⊕ⱼ 𝒜ⱼ → 𝒜ᵢ` are miu-maps, hence
 cpsu (indeed cpu).  Together with `cstar_product_4` above this says that
 `⊕ᵢ 𝒜ᵢ`
@@ -2644,7 +2644,7 @@ end Approx
 
 end CCStarPosMat
 
-/-- **34VII** (`ccstar-pos-mat`, cstar.tex:5504, Lemma): for a commutative
+/-- **34VII** (`ccstar-pos-mat`, cstar.tex:5616, Lemma): for a commutative
 C*-algebra `𝒜`, the matrices of the form `∑ₖ aₖ Bₖ` with `aₖ ∈ 𝒜₊` and
 `Bₖ ∈ M_N(ℂ)₊` are norm dense in `M_N(𝒜)₊`. -/
 theorem ccstar_pos_mat {𝒜 : Type*} [CommCStarAlgebra 𝒜] [PartialOrder 𝒜]
@@ -2723,7 +2723,7 @@ private theorem sum_comm3 {M : Type*} [AddCommMonoid M] {n K : ℕ}
 
 end CPDom
 
-/-- **34IX** (`cp-commutative`, cstar.tex:5563, Proposition), case 1: a
+/-- **34IX** (`cp-commutative`, cstar.tex:5675, Proposition), case 1: a
 positive map into a commutative C*-algebra is completely positive. -/
 theorem cp_commutative_cod {𝒞 : Type*} [CommCStarAlgebra 𝒞] [PartialOrder 𝒞]
     [StarOrderedRing 𝒞] (f : 𝒜 →ₗ[ℂ] 𝒞) (hf : IsPositiveMap f) :
@@ -2749,7 +2749,7 @@ theorem cp_commutative_cod {𝒞 : Type*} [CommCStarAlgebra 𝒞] [PartialOrder 
   rw [hw, map_mul, map_star]
   exact star_mul_self_nonneg _
 
-/-- **34IX** (`cp-commutative`, cstar.tex:5563, Proposition), case 2: a
+/-- **34IX** (`cp-commutative`, cstar.tex:5675, Proposition), case 2: a
 positive map out of a commutative C*-algebra is completely positive. -/
 theorem cp_commutative_dom {𝒞 : Type*} [CommCStarAlgebra 𝒞] [PartialOrder 𝒞]
     [StarOrderedRing 𝒞] (f : 𝒞 →ₗ[ℂ] ℬ) (hf : IsPositiveMap f) :
@@ -2864,7 +2864,7 @@ theorem cstar_positive_2x2matrix_eq_zero
     rw [hq, norm_zero, zero_smul] at h2
     exact h2
 
-/-- **34XIV** (`cp-cs`, cstar.tex:5629, Lemma): for a positive map
+/-- **34XIV** (`cp-cs`, cstar.tex:5741, Lemma): for a positive map
 `f : 𝒜 → ℬ` such that `M₂ f` is positive (expressed by condition 2 of
 **34II**), and `a, b ∈ 𝒜`:
 `f(a* b) f(b* a) ≤ ‖f(b* b)‖ f(a* a)`. -/
@@ -2905,7 +2905,7 @@ theorem norm_unitalBoundCLM (f : 𝒜 →ₗ[ℂ] ℬ)
     exact norm_nonneg _
   · simpa [unitalBoundCLM] using hle
 
-/-- **34XVI** (`cp-russo-dye`, cstar.tex:5655, Corollary), the substantial
+/-- **34XVI** (`cp-russo-dye`, cstar.tex:5767, Corollary), the substantial
 half: `‖f(a)‖ ≤ ‖f(1)‖ ‖a‖` for every cp-map `f : 𝒜 → ℬ` between C*-algebras.
 The Corollary's equality `‖f‖ = ‖f(1)‖` itself is `cp_russo_dye_norm` below,
 which adds the reverse bound. -/
@@ -2947,7 +2947,7 @@ theorem cp_russo_dye (f : 𝒜 →ₗ[ℂ] ℬ) (hf : IsCompletelyPositiveMap f)
       _ = (‖f 1‖ * ‖a‖) ^ 2 := by ring
   exact (pow_le_pow_iff_left₀ (norm_nonneg (f a)) (by positivity) two_ne_zero).mp hsq
 
-/-- **34XVI** (`cp-russo-dye`, cstar.tex:5655, Corollary), the equality the
+/-- **34XVI** (`cp-russo-dye`, cstar.tex:5767, Corollary), the equality the
 Corollary actually states: the operator norm of a cp-map `f : 𝒜 → ℬ` is
 `‖f‖ = ‖f(1)‖`.  `cp_russo_dye` above is the substantial half `‖f‖ ≤ ‖f(1)‖`;
 the reverse bound `‖f(1)‖ ≤ ‖f‖‖1‖ = ‖f‖` is the evaluation at `1`. -/
@@ -2955,7 +2955,7 @@ theorem cp_russo_dye_norm (f : 𝒜 →ₗ[ℂ] ℬ) (hf : IsCompletelyPositiveM
     ‖unitalBoundCLM f (cp_russo_dye f hf)‖ = ‖f 1‖ :=
   norm_unitalBoundCLM f _
 
-/-- **34XVIII** (`choi`, cstar.tex:5674, Lemma (Choi)), part 1:
+/-- **34XVIII** (`choi`, cstar.tex:5786, Lemma (Choi)), part 1:
 `f(a)* f(a) ≤ f(a* a)` for every cpu-map `f : 𝒜 → ℬ` and `a ∈ 𝒜`. -/
 theorem choi_1 (f : 𝒜 →ₗ[ℂ] ℬ) (hf : IsCompletelyPositiveMap f)
     (hu : f 1 = 1) (a : 𝒜) :
@@ -2967,7 +2967,7 @@ theorem choi_1 (f : 𝒜 →ₗ[ℂ] ℬ) (hf : IsCompletelyPositiveMap f)
     have := cp_cs f hp (hf 2) a 1
     simpa [hi a, hu] using this
 
-/-- **34XVIII** (`choi`, cstar.tex:5674, Lemma (Choi)), part 2: if
+/-- **34XVIII** (`choi`, cstar.tex:5786, Lemma (Choi)), part 2: if
 `f(a* a) = f(a)* f(a)` for a cpu-map `f` and some `a`, then
 `f(b a) = f(b) f(a)` for all `b ∈ 𝒜`. -/
 theorem choi_2 (f : 𝒜 →ₗ[ℂ] ℬ) (hf : IsCompletelyPositiveMap f)
@@ -3009,7 +3009,7 @@ theorem choi_2 (f : 𝒜 →ₗ[ℂ] ℬ) (hf : IsCompletelyPositiveMap f)
 
 **34aI** (cstar.tex:5724): introduction — nothing to formalize. -/
 
-/-- **34aII** (`normal-russo-dye`, cstar.tex:5751, Lemma):
+/-- **34aII** (`normal-russo-dye`, cstar.tex:5863, Lemma):
 `‖f(a)‖ ≤ ‖f(1)‖ ‖a‖` for every p-map `f : 𝒜 → ℬ` and *normal* `a ∈ 𝒜`.
 
 *Class 1 — faithful.*  The Lemma's own three-line proof (cstar.tex:5757):
@@ -3047,11 +3047,11 @@ theorem normal_russo_dye (f : 𝒜 →ₗ[ℂ] ℬ) (hf : IsPositiveMap f) (a : 
   rw [hga, hga] at h
   simpa using h
 
-/-! **34aIV** (`cstar-unitary`, cstar.tex:5766, Definition): an element `u`
+/-! **34aIV** (`cstar-unitary`, cstar.tex:5878, Definition): an element `u`
 of a C*-algebra is *unitary* when `u* u = 1 = u u*` — Mathlib's submonoid
 `unitary 𝒜` (membership `u ∈ unitary 𝒜`). -/
 
-/-- **34aV** (cstar.tex:5773, Exercise), part 1: every `λ ∈ ℂ` with
+/-- **34aV** (cstar.tex:5885, Exercise), part 1: every `λ ∈ ℂ` with
 `|λ| = 1` is unitary in `𝒜`; in particular `1` is. -/
 theorem unitary_basic_1 (z : ℂ) (hz : ‖z‖ = 1) :
     algebraMap ℂ 𝒜 z ∈ unitary 𝒜 := by
@@ -3065,7 +3065,7 @@ theorem unitary_basic_1 (z : ℂ) (hz : ‖z‖ = 1) :
   · rw [hz1, map_one]
   · rw [hz2, map_one]
 
-/-- **34aV** (cstar.tex:5773, Exercise), part 2: a unitary `u` is invertible
+/-- **34aV** (cstar.tex:5885, Exercise), part 2: a unitary `u` is invertible
 with inverse `u*`, and `u*` is unitary. -/
 theorem unitary_basic_2 (u : 𝒜) (hu : u ∈ unitary 𝒜) :
     IsUnit u ∧ Ring.inverse u = star u ∧ star u ∈ unitary 𝒜 := by
@@ -3076,13 +3076,13 @@ theorem unitary_basic_2 (u : 𝒜) (hu : u ∈ unitary 𝒜) :
     _ = Ring.inverse u * u * star u := (mul_assoc _ _ _).symm
     _ = star u := by rw [Ring.inverse_mul_cancel u hu', one_mul]
 
-/-- **34aV** (cstar.tex:5773, Exercise), part 3: the product of unitaries is
+/-- **34aV** (cstar.tex:5885, Exercise), part 3: the product of unitaries is
 unitary. -/
 theorem unitary_basic_3 (u v : 𝒜) (hu : u ∈ unitary 𝒜) (hv : v ∈ unitary 𝒜) :
     u * v ∈ unitary 𝒜 :=
   mul_mem hu hv
 
-/-- **34aV** (cstar.tex:5773, Exercise), part 4: every unitary is normal;
+/-- **34aV** (cstar.tex:5885, Exercise), part 4: every unitary is normal;
 and a normal `a` is unitary iff `Re(a)² + Im(a)² = 1`. -/
 theorem unitary_basic_4 (a : 𝒜) :
     (a ∈ unitary 𝒜 → IsStarNormal a) ∧
@@ -3095,7 +3095,7 @@ theorem unitary_basic_4 (a : 𝒜) :
   have hcomm : a * star a = star a * a := ha.star_comm_self.eq.symm
   rw [Unitary.mem_iff, hcomm, key, and_self]
 
-/-- **34aV** (cstar.tex:5773, Exercise), part 5: every self-adjoint `a` with
+/-- **34aV** (cstar.tex:5885, Exercise), part 5: every self-adjoint `a` with
 `‖a‖ ≤ 1` is the real part of some unitary (e.g. `u = a + i√(1-a²)`). -/
 theorem unitary_basic_5 (a : 𝒜) (ha : IsSelfAdjoint a) (h1 : ‖a‖ ≤ 1) :
     ∃ u ∈ unitary 𝒜, a = (ℜ u : 𝒜) := by
@@ -3133,7 +3133,7 @@ theorem unitary_basic_5 (a : 𝒜) (ha : IsSelfAdjoint a) (h1 : ‖a‖ ≤ 1) :
   · rw [map_add, realPart_I_smul, hbsa.imaginaryPart]
     simp [ha.coe_realPart]
 
-/-- **34aV** (cstar.tex:5773, Exercise), part 6: every invertible `a` can be
+/-- **34aV** (cstar.tex:5885, Exercise), part 6: every invertible `a` can be
 written `a = u √(a* a)` with `u` unitary (a variation on the polar
 decomposition, cf. vn.tex 82I). -/
 theorem unitary_basic_6 (a : 𝒜) (ha : IsUnit a) :
@@ -3165,7 +3165,7 @@ theorem unitary_basic_6 (a : 𝒜) (ha : IsUnit a) :
           rw [Ring.mul_inverse_cancel a ha, Ring.inverse_mul_cancel _ ha.star, one_mul]
   · rw [mul_assoc, hkh, mul_one]
 
-/-- **34aVI** (cstar.tex:5812, Exercise), part 1: every invertible `a` with
+/-- **34aVI** (cstar.tex:5924, Exercise), part 1: every invertible `a` with
 `‖a‖ ≤ 2` is the sum of two unitaries. -/
 theorem sum_of_unitaries_1 (a : 𝒜) (ha : IsUnit a) (h2 : ‖a‖ ≤ 2) :
     ∃ u ∈ unitary 𝒜, ∃ v ∈ unitary 𝒜, a = u + v := by
@@ -3195,7 +3195,7 @@ theorem sum_of_unitaries_1 (a : 𝒜) (ha : IsUnit a) (h2 : ‖a‖ ≤ 2) :
   refine ⟨w * u, mul_mem hw hu, w * star u, mul_mem hw (Unitary.star_mem hu), ?_⟩
   rw [haw, ← hsum, mul_add]
 
-/-- **34aVI** (cstar.tex:5812, Exercise), part 2: `u + a` is the sum of two
+/-- **34aVI** (cstar.tex:5924, Exercise), part 2: `u + a` is the sum of two
 unitaries for unitary `u` and `‖a‖ < 1`. -/
 theorem sum_of_unitaries_2 (u a : 𝒜) (hu : u ∈ unitary 𝒜) (ha : ‖a‖ < 1) :
     ∃ v ∈ unitary 𝒜, ∃ w ∈ unitary 𝒜, u + a = v + w := by
@@ -3215,7 +3215,7 @@ theorem sum_of_unitaries_2 (u a : 𝒜) (hu : u ∈ unitary 𝒜) (ha : ‖a‖ 
   rw [← mul_add, ← hvw, mul_add, mul_one, ← mul_assoc,
     Unitary.mul_star_self_of_mem hu, one_mul]
 
-/-- **34aVI** (cstar.tex:5812, Exercise), part 3: every `a` with `‖a‖ < N`
+/-- **34aVI** (cstar.tex:5924, Exercise), part 3: every `a` with `‖a‖ < N`
 is the sum of `N + 2` unitaries.  (Part 4 of the exercise, to prove the
 following theorem, is **34aVII**.) -/
 theorem sum_of_unitaries_3 (a : 𝒜) (N : ℕ) (hN : ‖a‖ < N) :
@@ -3257,7 +3257,7 @@ theorem sum_of_unitaries_3 (a : 𝒜) (N : ℕ) (hN : ‖a‖ < N) :
   rw [mul_inv_cancel₀ hpos.ne', one_smul]
   abel
 
-/-- **34aVII** (`russo-dye`, cstar.tex:5842, Theorem (Russo–Dye)): every
+/-- **34aVII** (`russo-dye`, cstar.tex:5954, Theorem (Russo–Dye)): every
 element `a` of a C*-algebra with `‖a‖ < 1 - 2/N` for some natural number
 `N > 0` can be written as `a = (u₁ + ⋯ + u_N)/N` for some unitaries
 `u₁, …, u_N`.  (Hence the convex combinations of unitaries are norm dense in
@@ -3296,7 +3296,7 @@ theorem russo_dye (a : 𝒜) (N : ℕ) (hN0 : 0 < N) (hN : ‖a‖ < 1 - 2 / N) 
     have hne : ((M + 2 : ℕ) : ℂ) ≠ 0 := Nat.cast_ne_zero.mpr (by omega)
     exact ⟨u, hu, by rw [← hsum, smul_smul, inv_mul_cancel₀ hne, one_smul]⟩
 
-/-- **34aVIII** (`russo-dye-cor`, cstar.tex:5850, Corollary), the substantial
+/-- **34aVIII** (`russo-dye-cor`, cstar.tex:5962, Corollary), the substantial
 half: `‖f(a)‖ ≤ ‖f(1)‖ ‖a‖` for every positive map `f : 𝒜 → ℬ` between
 C*-algebras.  The Corollary's equality `‖f‖ = ‖f(1)‖` itself is
 `russo_dye_cor_norm` below, which adds the reverse bound.
@@ -3358,7 +3358,7 @@ theorem russo_dye_cor (f : 𝒜 →ₗ[ℂ] ℬ) (hf : IsPositiveMap f) (a : �
     refine h.trans (le_of_eq ?_)
     field_simp
 
-/-- **34aVIII** (`russo-dye-cor`, cstar.tex:5850, Corollary), the equality the
+/-- **34aVIII** (`russo-dye-cor`, cstar.tex:5962, Corollary), the equality the
 Corollary actually states: the operator norm of a positive map `f : 𝒜 → ℬ` is
 `‖f‖ = ‖f(1)‖`.  `russo_dye_cor` above is the half `‖f‖ ≤ ‖f(1)‖`; the reverse
 bound `‖f(1)‖ ≤ ‖f‖‖1‖ = ‖f‖` is the evaluation at `1`. -/

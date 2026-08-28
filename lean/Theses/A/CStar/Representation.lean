@@ -33,7 +33,7 @@ namespace Theses.A.CStar
 **27I** (cstar.tex:3890): introduction — nothing to formalize.
 **27II** (cstar.tex:3899, Setting): `𝒜` is a commutative C*-algebra.
 
-**27III** (`gelfand-representation`, cstar.tex:3902, Definition): the
+**27III** (`gelfand-representation`, cstar.tex:3931, Definition): the
 *spectrum* `spec(𝒜)` of `𝒜` is the set of miu-maps `f : 𝒜 → ℂ` with the
 topology of pointwise convergence — in Mathlib `WeakDual.characterSpace ℂ 𝒜`
 (its elements are the non-zero continuous algebra homomorphisms, which for a
@@ -50,14 +50,14 @@ section GelfandRepresentation
 
 variable {𝒜 : Type*} [CommCStarAlgebra 𝒜]
 
-/-- **27IV** (`gelfand-representation-basic`, cstar.tex:3916, Exercise),
+/-- **27IV** (`gelfand-representation-basic`, cstar.tex:3945, Exercise),
 part 1: the evaluation map `f ↦ f(a)` on `spec(𝒜)` is continuous for every
 `a ∈ 𝒜`. -/
 theorem gelfand_representation_basic_1 (a : 𝒜) :
     Continuous fun φ : characterSpace ℂ 𝒜 => φ a :=
   (gelfandTransform ℂ 𝒜 a).continuous
 
-/-- **27IV** (`gelfand-representation-basic`, cstar.tex:3916, Exercise),
+/-- **27IV** (`gelfand-representation-basic`, cstar.tex:3945, Exercise),
 part 2: the Gelfand representation is an miu-map; multiplicativity and
 unitality are part of the bundled `gelfandTransform`, so involution
 preservation remains. -/
@@ -69,12 +69,12 @@ section Order
 
 variable [PartialOrder 𝒜] [StarOrderedRing 𝒜]
 
-/-- **27VII** (cstar.tex:3949, Definition): a *Riesz ideal* of `𝒜` is an
+/-- **27VII** (cstar.tex:3978, Definition): a *Riesz ideal* of `𝒜` is an
 order ideal `I` with `|a| ∈ I` for every self-adjoint `a ∈ I`. -/
 def IsRieszIdeal (I : Submodule ℂ 𝒜) : Prop :=
   IsOrderIdeal I ∧ ∀ a ∈ I, IsSelfAdjoint a → CFC.abs a ∈ I
 
-/-- **27VII** (cstar.tex:3949, Definition): a *maximal Riesz ideal* is a
+/-- **27VII** (cstar.tex:3978, Definition): a *maximal Riesz ideal* is a
 proper Riesz ideal maximal among the proper Riesz ideals. -/
 def IsMaximalRieszIdeal (I : Submodule ℂ 𝒜) : Prop :=
   (IsRieszIdeal I ∧ (1 : 𝒜) ∉ I) ∧
@@ -190,7 +190,7 @@ private theorem riesz_mul_mem_of_left_isSelfAdjoint {I : Submodule ℂ 𝒜}
   rw [he]
   exact I.add_mem h1 (I.smul_mem _ h2)
 
-/-- **27VIII** (`riesz-ideal-ring-ideal`, cstar.tex:3963, Lemma): a Riesz
+/-- **27VIII** (`riesz-ideal-ring-ideal`, cstar.tex:3989, Lemma): a Riesz
 ideal `I` of `𝒜` is a ring ideal: `a x ∈ I` for `a ∈ 𝒜`, `x ∈ I`. -/
 theorem riesz_ideal_ring_ideal (I : Submodule ℂ 𝒜) (hI : IsRieszIdeal I)
     (a : 𝒜) (x : 𝒜) (hx : x ∈ I) : a * x ∈ I := by
@@ -201,7 +201,7 @@ theorem riesz_ideal_ring_ideal (I : Submodule ℂ 𝒜) (hI : IsRieszIdeal I)
   rw [he]
   exact I.add_mem h1 (I.smul_mem _ h2)
 
-/-- **27X** (`riesz-ideal-basic`, cstar.tex:3983, Exercise), part 3: each
+/-- **27X** (`riesz-ideal-basic`, cstar.tex:4009, Exercise), part 3: each
 proper Riesz ideal is contained in a maximal Riesz ideal. -/
 theorem riesz_ideal_basic_3 (I : Submodule ℂ 𝒜) (hI : IsRieszIdeal I)
     (h1 : (1 : 𝒜) ∉ I) :
@@ -284,7 +284,7 @@ private theorem abs_le_sup_witness {I J : Submodule ℂ 𝒜} (hI : IsRieszIdeal
   rw [hbre]
   exact abs_add_le _ _ (ℜ y).2 (ℜ z).2
 
-/-- **27X** (`riesz-ideal-basic`, cstar.tex:3983, Exercise), part 2, first
+/-- **27X** (`riesz-ideal-basic`, cstar.tex:4009, Exercise), part 2, first
 clause: the sum `I + J` of two Riesz ideals is a Riesz ideal.  The part's
 second clause — that `I + J` may fail to be an order ideal when `I` and `J`
 are only *order* ideals — is `riesz_ideal_basic_2_order_counterexample`
@@ -385,7 +385,7 @@ private theorem ideal3_mem_sup {x : Fin 3 → ℂ}
   obtain ⟨d, rfl⟩ := Submodule.mem_span_singleton.mp hz
   simp [ideal3u, ideal3v]
 
-/-- **27X** (`riesz-ideal-basic`, cstar.tex:3983, Exercise), part 2, second
+/-- **27X** (`riesz-ideal-basic`, cstar.tex:4009, Exercise), part 2, second
 clause: the sum of two *order* ideals need not be an order ideal.
 
 The witnesses are `I = ℂ·(1,1,-1)` and `J = ℂ·(0,0,1)` in `ℂ³`.  Their sum
@@ -557,7 +557,7 @@ private theorem rieszIdealGen_least {a : 𝒜} (ha : IsSelfAdjoint a)
     (J.smul_mem Complex.I (hdom _ (sa_coe (ℑ b)) hbi))
   rwa [realPart_add_I_smul_imaginaryPart] at h
 
-/-- **27X** (`riesz-ideal-basic`, cstar.tex:3983, Exercise), part 1: the
+/-- **27X** (`riesz-ideal-basic`, cstar.tex:4009, Exercise), part 1: the
 least Riesz ideal containing a self-adjoint `a` is
 `(a)ₘ = { b : |Re b|, |Im b| ≤ n|a| for some n ∈ ℕ }`. -/
 theorem riesz_ideal_basic_1 (a : 𝒜) (ha : IsSelfAdjoint a) :
@@ -649,7 +649,7 @@ private theorem mem_or_mem_of_mul_eq_zero {I : Submodule ℂ 𝒜}
   exact hI.1.2 (hI.1.1.1.mem_of_mem_interval _ huvI huv0 1
     (le_trans (neg_nonpos_of_nonneg huv0) zero_le_one) huv)
 
-/-- **27XI** (`maximal-riesz-ideal-maximal-order-ideal`, cstar.tex:4010,
+/-- **27XI** (`maximal-riesz-ideal-maximal-order-ideal`, cstar.tex:4036,
 Lemma): a maximal Riesz ideal is a maximal order ideal.
 
 The proof now printed at cstar.tex 270.120 is the **corrected** one of
@@ -676,7 +676,7 @@ theorem maximal_riesz_ideal_maximal_order_ideal (I : Submodule ℂ 𝒜)
     exact J.add_mem hboth.1 hboth.2
   exact hI.2 J hJriesz hJ.2 hIJ
 
-/-- **27XIII** (`riesz-ideal-miu-map`, cstar.tex:4075, Lemma): for every
+/-- **27XIII** (`riesz-ideal-miu-map`, cstar.tex:4101, Lemma): for every
 maximal Riesz ideal `I` of `𝒜` there is an miu-map `f : 𝒜 → ℂ` with
 `ker(f) = I`. -/
 theorem riesz_ideal_miu_map (I : Submodule ℂ 𝒜) (hI : IsMaximalRieszIdeal I) :
@@ -765,7 +765,7 @@ private theorem isUnit_of_one_mem_rieszIdealGen {a : 𝒜} (ha : IsSelfAdjoint a
   rw [h1sa.coe_realPart, CFC.abs_one] at hn
   exact (isUnit_abs_iff ha).mp (isUnit_of_one_le_rsmul (CFC.abs_nonneg a) hn)
 
-/-- **27X** (`riesz-ideal-basic`, cstar.tex:3983, Exercise), part 1b: the
+/-- **27X** (`riesz-ideal-basic`, cstar.tex:4009, Exercise), part 1b: the
 least Riesz ideal containing a self-adjoint `a` is all of `𝒜` iff `a` is
 invertible. -/
 theorem riesz_ideal_basic_1b (a : 𝒜) (ha : IsSelfAdjoint a)
@@ -801,7 +801,7 @@ theorem riesz_ideal_basic_1b (a : 𝒜) (ha : IsSelfAdjoint a)
             rsmul_mono' (Nat.le_ceil _) (CFC.abs_nonneg a)
     refine eq_top_iff.mpr fun b _ => ⟨hdom _ (sa_coe (ℜ b)), hdom _ (sa_coe (ℑ b))⟩
 
-/-- **27X** (`riesz-ideal-basic`, cstar.tex:3983, Exercise), part 1c: for
+/-- **27X** (`riesz-ideal-basic`, cstar.tex:4009, Exercise), part 1c: for
 positive `a` the least Riesz ideal `(a)ₘ` coincides with the least order
 ideal `(a)` (of **22III**).  (For non-positive `a` they may differ; that
 claim is not converted.) -/
@@ -832,7 +832,7 @@ theorem riesz_ideal_basic_1c (a : 𝒜) (ha : 0 ≤ a) (I J : Submodule ℂ 𝒜
     exact CFC.abs_nonneg c
   exact le_antisymm (hIleast J hJriesz haJ) (hJleast I hI.1 haI)
 
-/-- **27XV** (`inv-mult-state`, cstar.tex:4055, Proposition): a self-adjoint
+/-- **27XV** (`inv-mult-state`, cstar.tex:4122, Proposition): a self-adjoint
 element `a` of the commutative C*-algebra `𝒜` is not invertible iff
 `f(a) = 0` for some `f ∈ spec(𝒜)`. -/
 theorem inv_mult_state (a : 𝒜) (ha : IsSelfAdjoint a) :
@@ -864,7 +864,7 @@ theorem inv_mult_state (a : 𝒜) (ha : IsSelfAdjoint a) :
 
 end Order
 
-/-- **27XVII** (`spectrum-miu`, cstar.tex:4078, Exercise):
+/-- **27XVII** (`spectrum-miu`, cstar.tex:4145, Exercise):
 `spec(a) = { f(a) : f ∈ spec(𝒜) }` for self-adjoint `a ∈ 𝒜`.
 
 *Class 1 — faithful.*  The exercise's own derivation from **27XV**
@@ -896,7 +896,7 @@ theorem spectrum_miu (a : 𝒜) (ha : IsSelfAdjoint a) :
   · rintro ⟨φ, rfl⟩
     exact WeakDual.CharacterSpace.apply_mem_spectrum φ a
 
-/-- **27XVIII** (`gelfand-representation-isometry`, cstar.tex:4082,
+/-- **27XVIII** (`gelfand-representation-isometry`, cstar.tex:4149,
 Exercise), part 1: the Gelfand representation is an isometry,
 `‖γ(a)‖ = ‖a‖`.
 
@@ -935,7 +935,7 @@ theorem gelfand_representation_isometry (a : 𝒜) :
       CStarRing.norm_star_mul_self]
   nlinarith [norm_nonneg (gelfandTransform ℂ 𝒜 a), norm_nonneg a]
 
-/-- **27XVIII** (`gelfand-representation-isometry`, cstar.tex:4082,
+/-- **27XVIII** (`gelfand-representation-isometry`, cstar.tex:4149,
 Exercise), part 2, first clause: consequently `γ` is injective.
 
 *Class 1 — faithful.*  The Exercise's own "conclude": `γ(a) = γ(b)` makes
@@ -947,7 +947,7 @@ theorem gelfand_representation_injective :
     rw [← gelfand_representation_isometry (a - b), map_sub, hab, sub_self, norm_zero]
   exact sub_eq_zero.mp (norm_eq_zero.mp h)
 
-/-- **27XVIII** (`gelfand-representation-isometry`, cstar.tex:4082,
+/-- **27XVIII** (`gelfand-representation-isometry`, cstar.tex:4149,
 Exercise), part 2, second clause: the range of `γ` is a *C*-subalgebra* of
 `C(spec 𝒜)` — a ⋆-subalgebra whose carrier is closed — and `γ` is an
 miu-isomorphism of `𝒜` onto it.
@@ -966,7 +966,7 @@ theorem gelfand_representation_range :
   exact (AddMonoidHomClass.isometry_of_norm (gelfandTransform ℂ 𝒜)
     gelfand_representation_isometry).isClosedEmbedding.isClosed_range
 
-/-- **27XX** (`stone-weierstrass`, cstar.tex:4103, Theorem
+/-- **27XX** (`stone-weierstrass`, cstar.tex:4170, Theorem
 (Stone–Weierstraß)): a C*-subalgebra `𝒮` of `C(X)`, `X` compact Hausdorff,
 which separates the points of `X` is all of `C(X)`.  (Mathlib:
 `ContinuousMap.starSubalgebra_topologicalClosure_eq_top_of_separatesPoints`.) -/
@@ -983,14 +983,14 @@ theorem stone_weierstrass {X : Type*} [TopologicalSpace X] [CompactSpace X]
   calc (⊤ : StarSubalgebra ℂ C(X, ℂ)) = S.topologicalClosure := h.symm
     _ ≤ S := StarSubalgebra.topologicalClosure_minimal le_rfl hS
 
-/-- **27XXV** (`spectrum-calg-compact-hausdorff`, cstar.tex:4186, Lemma): the
+/-- **27XXV** (`spectrum-calg-compact-hausdorff`, cstar.tex:4253, Lemma): the
 spectrum `spec(𝒜)` of a commutative C*-algebra is a compact Hausdorff space.
 (Mathlib instances on `characterSpace ℂ 𝒜`.) -/
 theorem spectrum_calg_compact_hausdorff :
     CompactSpace (characterSpace ℂ 𝒜) ∧ T2Space (characterSpace ℂ 𝒜) :=
   ⟨inferInstance, inferInstance⟩
 
-/-- **27XXVII** (`gelfand`, cstar.tex:4221, Gelfand's Representation
+/-- **27XXVII** (`gelfand`, cstar.tex:4288, Gelfand's Representation
 Theorem): for a commutative C*-algebra `𝒜` the Gelfand representation
 `γ : 𝒜 → C(spec 𝒜)` is an miu-isomorphism — it is bijective (and
 star-preserving by `gelfand_representation_basic_2`, so a ⋆-isomorphism:
@@ -1031,7 +1031,7 @@ section FunctionalCalculus
 
 variable {𝒜 : Type*} [CStarAlgebra 𝒜]
 
-/-- **28II** (`functional-calculus`, cstar.tex:4258, Exercise), part 1: there
+/-- **28II** (`functional-calculus`, cstar.tex:4325, Exercise), part 1: there
 is a least C*-subalgebra `C*(a)` of `𝒜` containing `a` — Mathlib's
 `StarAlgebra.elemental ℂ a`. -/
 theorem functional_calculus_1 (a : 𝒜) :
@@ -1040,7 +1040,7 @@ theorem functional_calculus_1 (a : 𝒜) :
   ⟨⟨StarAlgebra.elemental.self_mem ℂ a, StarAlgebra.elemental.isClosed ℂ a⟩,
     fun _ hS => StarAlgebra.elemental.le_of_mem hS.2 hS.1⟩
 
-/-- **28II** (`functional-calculus`, cstar.tex:4258, Exercise), part 1b:
+/-- **28II** (`functional-calculus`, cstar.tex:4325, Exercise), part 1b:
 every `b ∈ C*(a)` commutes with every `c` that commutes with `a` (and with
 `a*`). -/
 theorem functional_calculus_1b (a b : 𝒜) (hb : b ∈ StarAlgebra.elemental ℂ a)
@@ -1051,7 +1051,7 @@ theorem functional_calculus_1b (a b : 𝒜) (hb : b ∈ StarAlgebra.elemental �
   have hbmem := StarAlgebra.elemental.le_centralizer_centralizer (R := ℂ) a hb
   exact (((StarSubalgebra.mem_centralizer_iff ℂ).mp hbmem) c hcmem).1.symm
 
-/-- **28II** (`functional-calculus`, cstar.tex:4258, Exercise), part 2: `a`
+/-- **28II** (`functional-calculus`, cstar.tex:4325, Exercise), part 2: `a`
 is *normal* (`C*(a)` commutative, Mathlib: `IsStarNormal a`) iff
 `a a* = a* a` iff `Re(a) Im(a) = Im(a) Re(a)`. -/
 theorem functional_calculus_2 (a : 𝒜) :
@@ -1112,7 +1112,7 @@ and `CFC.rpow a α` for the powers `a^α`, `a ≥ 0`, `α ∈ (0,∞)`.
 the exercise asks one to produce first *is* stated, as
 `functional_calculus_3_j` below. -/
 
-/-- **28II** (`functional-calculus`, cstar.tex:4258, Exercise), part 3, first
+/-- **28II** (`functional-calculus`, cstar.tex:4325, Exercise), part 3, first
 clause: `j : ρ ↦ ρ(a)` maps `spec(C*(a))` into `spec(a)`, and does so
 continuously.  (Mathlib: `StarAlgebra.elemental.characterSpaceToSpectrum` and
 `StarAlgebra.elemental.continuous_characterSpaceToSpectrum`.)  It is this map
@@ -1131,7 +1131,7 @@ theorem functional_calculus_3_j (a : 𝒜) [IsStarNormal a] :
 section Ordered
 variable [PartialOrder 𝒜] [StarOrderedRing 𝒜]
 
-/-- **28II** (`functional-calculus`, cstar.tex:4258, Exercise), part 3
+/-- **28II** (`functional-calculus`, cstar.tex:4325, Exercise), part 3
 (sample property): `a^α a^β = a^{α+β}` for `a ≥ 0` and `α, β ∈ (0,∞)`. -/
 theorem functional_calculus_3 (a : 𝒜) (ha : 0 ≤ a) (α β : ℝ) (hα : 0 < α)
     (hβ : 0 < β) :
@@ -1147,7 +1147,7 @@ theorem functional_calculus_3 (a : 𝒜) (ha : 0 ≤ a) (α β : ℝ) (hα : 0 <
 
 end Ordered
 
-/-- **28II** (`functional-calculus`, cstar.tex:4299, Exercise), part 4:
+/-- **28II** (`functional-calculus`, cstar.tex:4325, Exercise), part 4:
 `f(a)` is the unique element `b` of `C*(a)` with `φ(b) = f(φ(a))` for all
 `φ ∈ spec(C*(a))`.
 
@@ -1201,7 +1201,7 @@ theorem functional_calculus_4 (a : 𝒜) [IsStarNormal a] (f : ℂ → ℂ)
     rw [← (gelfandStarTransform (StarAlgebra.elemental ℂ a)).symm_apply_apply b,
       (key b).1 hb]
 
-/-- **28II** (`functional-calculus`, cstar.tex:4258, Exercise), part 5
+/-- **28II** (`functional-calculus`, cstar.tex:4325, Exercise), part 5
 (Spectral mapping theorem): `spec(f(a)) = f(spec(a))` for normal `a` and
 `f ∈ C(spec a)`.  (Mathlib: `cfc_map_spectrum`.) -/
 theorem functional_calculus_5 (a : 𝒜) [IsStarNormal a] (f : ℂ → ℂ)
@@ -1209,7 +1209,7 @@ theorem functional_calculus_5 (a : 𝒜) [IsStarNormal a] (f : ℂ → ℂ)
     spectrum ℂ (cfc f a) = f '' spectrum ℂ a :=
   cfc_map_spectrum f a
 
-/-- **28II** (`functional-calculus`, cstar.tex:4258, Exercise), part 6:
+/-- **28II** (`functional-calculus`, cstar.tex:4325, Exercise), part 6:
 `spec(ρ(a)) ⊆ spec(a)` and `ρ(f(a)) = f(ρ(a))` for every miu-map
 `ρ : 𝒜 → ℬ`. -/
 theorem functional_calculus_6 {ℬ : Type*} [CStarAlgebra ℬ]
@@ -1220,7 +1220,7 @@ theorem functional_calculus_6 {ℬ : Type*} [CStarAlgebra ℬ]
     (AddMonoidHomClass.continuous_of_bound ρ 1 fun x => by
       simpa using NonUnitalStarAlgHom.norm_apply_le ρ x)⟩
 
-/-- **28II** (`functional-calculus`, cstar.tex:4258, Exercise), part 7:
+/-- **28II** (`functional-calculus`, cstar.tex:4325, Exercise), part 7:
 `g(f(a)) = (g ∘ f)(a)` for normal `a`.  (Mathlib: `cfc_comp`.) -/
 theorem functional_calculus_7 (a : 𝒜) [IsStarNormal a] (f g : ℂ → ℂ)
     (hf : ContinuousOn f (spectrum ℂ a))
@@ -1231,14 +1231,14 @@ theorem functional_calculus_7 (a : 𝒜) [IsStarNormal a] (f g : ℂ → ℂ)
 section Ordered2
 variable [PartialOrder 𝒜] [StarOrderedRing 𝒜]
 
-/-- **28II** (`functional-calculus`, cstar.tex:4258, Exercise), part 7b:
+/-- **28II** (`functional-calculus`, cstar.tex:4325, Exercise), part 7b:
 `(a^α)^β = a^{αβ}` for `a ≥ 0` and `α, β ∈ (0,∞)`. -/
 theorem functional_calculus_7b (a : 𝒜) (ha : 0 ≤ a) (α β : ℝ) (hα : 0 < α)
     (hβ : 0 < β) :
     CFC.rpow (CFC.rpow a α) β = CFC.rpow a (α * β) :=
   CFC.rpow_rpow_of_exponent_nonneg a α β hα.le hβ.le ha
 
-/-- **28III** (`sqrt-monotone`, cstar.tex:4353, Theorem): `0 ≤ a ≤ b`
+/-- **28III** (`sqrt-monotone`, cstar.tex:4420, Theorem): `0 ≤ a ≤ b`
 implies `a^α ≤ b^α` for `α ∈ (0, 1]`; in particular the square root is
 monotone on the positive elements. -/
 theorem sqrt_monotone (a b : 𝒜) (ha : 0 ≤ a) (hab : a ≤ b) (α : ℝ)
@@ -1262,7 +1262,7 @@ section Duality
 
 variable {X : Type*} [TopologicalSpace X] [CompactSpace X] [T2Space X]
 
-/-- **29II** (cstar.tex:4503, Lemma): every miu-map `τ : C(X) → ℂ`, `X`
+/-- **29II** (cstar.tex:4610, Lemma): every miu-map `τ : C(X) → ℂ`, `X`
 compact Hausdorff, is given by evaluation at some point `x ∈ X`.
 
 *Class 1 — faithful.*  The Lemma's own proof (cstar.tex:4520–4560), in three
@@ -1471,7 +1471,7 @@ theorem multiplicative_state_on_cx (τ : C(X, ℂ) →⋆ₐ[ℂ] ℂ) :
   rw [hddef, map_sub, map_smul, map_one, smul_eq_mul, mul_one, sub_eq_zero] at hd0
   exact hd0
 
-/-- **29VII** (cstar.tex:4563, Exercise): the map `x ↦ δₓ` (with
+/-- **29VII** (cstar.tex:4670, Exercise): the map `x ↦ δₓ` (with
 `δₓ(f) = f(x)`, an miu-map) is a homeomorphism from `X` onto `spec(C(X))`.
 
 *Class 1 — faithful.*  The Exercise's own three steps.  That `δₓ` is miu and
@@ -1517,7 +1517,7 @@ theorem eval_homeomorphism :
 
 variable {𝒜 ℬ : Type*} [CStarAlgebra 𝒜] [CStarAlgebra ℬ]
 
-/-- **29VIII** (`injective-miu-isometry`, cstar.tex:4573, Exercise): every
+/-- **29VIII** (`injective-miu-isometry`, cstar.tex:4680, Exercise): every
 injective miu-map between C*-algebras is an isometry.  (The intermediate
 categorical steps — mono = injective and epi = surjective in `CH` — are part
 of the proof and not converted separately.) -/
@@ -1525,13 +1525,13 @@ theorem injective_miu_isometry (ρ : 𝒜 →⋆ₐ[ℂ] ℬ)
     (hρ : Function.Injective ρ) (a : 𝒜) : ‖ρ a‖ = ‖a‖ :=
   NonUnitalStarAlgHom.norm_map ρ hρ a
 
-/-- **29IX** (`injective-miu-iso-on-image`, cstar.tex:4600, Exercise), first
+/-- **29IX** (`injective-miu-iso-on-image`, cstar.tex:4707, Exercise), first
 clause: the range of an injective miu-map `ρ : 𝒜 → ℬ` is closed. -/
 theorem injective_miu_iso_on_image (ρ : 𝒜 →⋆ₐ[ℂ] ℬ)
     (hρ : Function.Injective ρ) : IsClosed (Set.range ρ) :=
   (NonUnitalStarAlgHom.isometry ρ hρ).isClosedEmbedding.isClosed_range
 
-/-- **29IX** (`injective-miu-iso-on-image`, cstar.tex:4600, Exercise), the
+/-- **29IX** (`injective-miu-iso-on-image`, cstar.tex:4707, Exercise), the
 conclusion the Exercise asks one to draw: `ρ(𝒜)` is a *C*-subalgebra* of `ℬ`
 — a ⋆-subalgebra with closed carrier — and `ρ` is an miu-isomorphism of `𝒜`
 onto it.
@@ -1552,14 +1552,14 @@ end Duality
 
 /-! ## Parsec 300: representation by bounded operators
 
-**30I** (`completion-inner-product-space`, cstar.tex:4613): the plan for the
+**30I** (`completion-inner-product-space`, cstar.tex:4720): the plan for the
 Gelfand–Naimark theorem via the GNS construction — nothing to formalize. -/
 
 section GNS
 
 variable {𝒜 : Type u} [CStarAlgebra 𝒜] [PartialOrder 𝒜] [StarOrderedRing 𝒜]
 
-/-- **30II** (`state-inner-product`, cstar.tex:4662, Lemma): for every p-map
+/-- **30II** (`state-inner-product`, cstar.tex:4769, Lemma): for every p-map
 `ω : 𝒜 → ℂ` on a C*-algebra, `[a, b]_ω = ω(a* b)` defines an inner product
 on `𝒜` (positive semi-definite, conjugate symmetric; linearity in the second
 argument is automatic). -/
@@ -1570,7 +1570,7 @@ theorem state_inner_product (ω : 𝒜 →ₗ[ℂ] ℂ) (hω : IsPositiveMap ω)
     simpa [star_mul] using (cstar_p_implies_i ω hω (star a * b)).symm⟩
 
 /-- The seminorm `‖a‖_ω = ω(a* a)^{1/2}` induced by a positive functional
-`ω` (**30IV**, `omega-norm-basic`, cstar.tex:4680). -/
+`ω` (**30IV**, `omega-norm-basic`, cstar.tex:4787). -/
 noncomputable def omegaSeminorm (ω : 𝒜 →ₗ[ℂ] ℂ) (a : 𝒜) : ℝ :=
   Real.sqrt (ω (star a * a)).re
 
@@ -1587,7 +1587,7 @@ private def toPLM (ω : 𝒜 →ₗ[ℂ] ℂ) (hω : IsPositiveMap ω) : 𝒜 �
 private theorem toPLM_apply (ω : 𝒜 →ₗ[ℂ] ℂ) (hω : IsPositiveMap ω) (a : 𝒜) :
     toPLM ω hω a = ω a := rfl
 
-/-- **30IV** (`omega-norm-basic`, cstar.tex:4680, Exercise), part 1
+/-- **30IV** (`omega-norm-basic`, cstar.tex:4787, Exercise), part 1
 (Kadison's inequality): `|ω(a* b)|² ≤ ω(a* a) ω(b* b)` for a p-map `ω`. -/
 theorem omega_norm_basic_1 (ω : 𝒜 →ₗ[ℂ] ℂ) (hω : IsPositiveMap ω)
     (a b : 𝒜) :
@@ -1606,7 +1606,7 @@ theorem omega_norm_basic_1 (ω : 𝒜 →ₗ[ℂ] ℂ) (hω : IsPositiveMap ω)
   rw [← hA, ← hB, ← mul_pow]
   exact_mod_cast RCLike.ofReal_le_ofReal (K := ℂ) |>.mpr hsq
 
-/-- **30IV** (`omega-norm-basic`, cstar.tex:4680, Exercise), part 2, the
+/-- **30IV** (`omega-norm-basic`, cstar.tex:4787, Exercise), part 2, the
 inequality (in the corrected form of erratum `parsec-300.40`, without the
 `‖ω‖` factor): `‖ab‖_ω ≤ ‖a‖ ‖b‖_ω`, using `a* a ≤ ‖a‖²`.  The four
 counterexamples the exercise also asks for are
@@ -1687,7 +1687,7 @@ private theorem half_lt_sqrt_half : (1/2 : ℝ) < Real.sqrt (1/2) := by
   rw [show (1/2 : ℝ) = Real.sqrt ((1/2) ^ 2) by rw [Real.sqrt_sq]; norm_num]
   exact Real.sqrt_lt_sqrt (by positivity) (by norm_num)
 
-/-- **30IV** (`omega-norm-basic`, cstar.tex:4680, Exercise), part 2, the four
+/-- **30IV** (`omega-norm-basic`, cstar.tex:4787, Exercise), part 2, the four
 counterexamples: for the p-map `ω : M ↦ M₀₀` on `M₂(ℂ)` none of
 
 * `‖ab‖_ω ≤ ‖a‖_ω ‖b‖`,
@@ -1749,7 +1749,7 @@ theorem omega_norm_basic_2_counterexamples :
     rw [h1, h2]
     norm_num
 
-/-- **30V** (`inner-product-completion`, cstar.tex:4733, Exercise), the
+/-- **30V** (`inner-product-completion`, cstar.tex:4840, Exercise), the
 headline: every complex inner product space `V` can be completed to a Hilbert
 space `H` in which it embeds densely (Mathlib: `UniformSpace.Completion` with
 its `InnerProductSpace` instance; the intermediate steps — the metric on
@@ -1775,7 +1775,7 @@ section DegenerateInner
 -- written `⟪·,·⟫`, as in **4XV** (`A/CStar/Basic`).
 attribute [local instance] InnerProductSpace.Core.toPreInner'
 
-/-- **30V** (`inner-product-completion`, cstar.tex:4733, Exercise), the
+/-- **30V** (`inner-product-completion`, cstar.tex:4840, Exercise), the
 headline for a possibly *degenerate* inner product — which is how the
 exercise states it: "note, however, that `η` need not be injective: show that
 `η(a) = η(b)` iff `‖a−b‖ = 0` for all `a,b ∈ V`".  So `V` carries only a
@@ -1837,7 +1837,7 @@ theorem inner_product_completion_degenerate (V : Type v) [AddCommGroup V] [Modul
 
 end DegenerateInner
 
-/-- **30V** (`inner-product-completion`, cstar.tex:4733, Exercise), the
+/-- **30V** (`inner-product-completion`, cstar.tex:4840, Exercise), the
 uniform-extension clause: every uniformly continuous map `f : V → X` into a
 complete space extends *uniquely* to a uniformly continuous map on the
 completion `H` of `V` (where "`g` extends `f`" means `f = g ∘ η`). -/
@@ -1852,7 +1852,7 @@ theorem inner_product_completion_extension (V : Type v) [NormedAddCommGroup V]
   rintro g ⟨hgc, hg⟩
   exact (UniformSpace.Completion.extension_unique hf hgc fun v => (hg v).symm).symm
 
-/-- **30V** (`inner-product-completion`, cstar.tex:4733, Exercise), the final
+/-- **30V** (`inner-product-completion`, cstar.tex:4840, Exercise), the final
 clause: every bounded linear map `f : V → K` into a Hilbert space `K` extends
 *uniquely* to a bounded linear map on the completion `H` of `V`.
 
@@ -1873,7 +1873,7 @@ theorem inner_product_completion_extendL (V : Type v) [NormedAddCommGroup V]
   ext v
   exact hg v
 
-/-! **30VI** (`gns`, cstar.tex:4779, Definition (Gelfand–Naimark–Segal
+/-! **30VI** (`gns`, cstar.tex:4886, Definition (Gelfand–Naimark–Segal
 construction)): for a p-map `ω : 𝒜 → ℂ`, the Hilbert space `ℋ_ω` is the
 completion of `𝒜` under `[·,·]_ω`, with embedding `η_ω : 𝒜 → ℋ_ω`, and
 `ϱ_ω(a) : ℋ_ω → ℋ_ω` is the continuous extension of `b ↦ ab`.  In Mathlib
@@ -1881,7 +1881,7 @@ completion of `𝒜` under `[·,·]_ω`, with embedding `η_ω : 𝒜 → ℋ_ω
 `ω : 𝒜 →ₚ[ℂ] ℂ`: `ω.PreGNS` (= `𝒜` with the `[·,·]_ω` inner product),
 `ω.GNS` (its completion), and `ω.gnsStarAlgHom : 𝒜 →⋆ₐ[ℂ] B(ω.GNS)`. -/
 
-/-- **30VII** (cstar.tex:4812, Proposition): `ϱ_ω : 𝒜 → B(ℋ_ω)` is an
+/-- **30VII** (cstar.tex:4919, Proposition): `ϱ_ω : 𝒜 → B(ℋ_ω)` is an
 miu-map — Mathlib's `ω.gnsStarAlgHom` is bundled as one; the defining
 property `ϱ_ω(a) η_ω(b) = η_ω(ab)` is recorded here. -/
 theorem gns_starAlgHom_apply (ω : 𝒜 →ₚ[ℂ] ℂ) (a b : 𝒜) :
@@ -2219,7 +2219,7 @@ theorem proto_gelfand_naimark_1 {ι : Type v} (ω : ι → (𝒜 →ₗ[ℂ] ℂ
 
 end GNS
 
-/-- **30XIV** (`gelfand-naimark`, cstar.tex:4941, Theorem
+/-- **30XIV** (`gelfand-naimark`, cstar.tex:5048, Theorem
 (Gelfand–Naimark)): every C*-algebra `𝒜` is miu-isomorphic to a C*-algebra
 of bounded operators on a Hilbert space. -/
 theorem gelfand_naimark (𝒜 : Type u) [CStarAlgebra 𝒜] :

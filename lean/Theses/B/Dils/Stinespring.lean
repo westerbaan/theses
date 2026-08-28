@@ -559,9 +559,13 @@ private theorem adPos_normal [VonNeumannAlgebra 𝒜] (a : 𝒜) :
   rw [hs] at h
   exact h
 
-/-- **135IV**, part 2 (dils.tex:555): the Stinespring representation of a
-*normal* cp-map on a von Neumann algebra is normal, together with the
-minimality of the dilation (used for **139I**). -/
+/-- **135IV**, part 2 (`stinespring-theorem`, dils.tex:37, Theorem): the
+Stinespring representation of a *normal* cp-map on a von Neumann algebra is
+normal, together with the minimality of the dilation (used for **139I**).
+
+The thesis states 135IV without proof and defers the argument to the separate
+point `dils-proof-stinespring`; what this declaration renders is the normality
+half of it, at `dils-proof-stinespring`, dils.tex:555. -/
 private theorem stinespring_normal_aux [VonNeumannAlgebra 𝒜]
     (φ : 𝒜 →ₗ[ℂ] (H →L[ℂ] H)) (hφ : IsCompletelyPositiveMap φ)
     (hn : PreservesDirSups ⇑φ) :
@@ -2838,7 +2842,7 @@ end EssUniq
 
 /-! ## Parsec 1400: Paschke dilations
 
-**140I** (dils.tex:1027): introduction — nothing to formalize. -/
+**140I** (dils.tex:1035): introduction — nothing to formalize. -/
 
 section Paschke
 
@@ -2846,7 +2850,7 @@ variable {𝒜 ℬ : Type u}
   [CStarAlgebra 𝒜] [PartialOrder 𝒜] [StarOrderedRing 𝒜]
   [CStarAlgebra ℬ] [PartialOrder ℬ] [StarOrderedRing ℬ]
 
-/-- **140II** (`def-paschke`, dils.tex:1049, Definition), the data: a
+/-- **140II** (`def-paschke`, dils.tex:1057, Definition), the data: a
 **Paschke triple** over von Neumann algebras `𝒜`, `ℬ`: a von Neumann
 algebra `𝒫` with an nmiu-map `ϱ : 𝒜 → 𝒫` and an ncp-map `h : 𝒫 → ℬ`.
 (The von Neumann algebra structure is carried as a proof field `vn` so that
@@ -2870,7 +2874,7 @@ structure PaschkeTriple (𝒜 ℬ : Type u)
 
 attribute [instance] PaschkeTriple.pc PaschkeTriple.pp PaschkeTriple.ps
 
-/-- **140II** (`def-paschke`, dils.tex:1049, Definition): a Paschke triple
+/-- **140II** (`def-paschke`, dils.tex:1057, Definition): a Paschke triple
 `(𝒫, ϱ, h)` is a **Paschke dilation** of an ncp-map `φ : 𝒜 → ℬ` when
 `φ = h ∘ ϱ` and for every triple `(𝒫', ϱ', h')` with `φ = h' ∘ ϱ'` there is
 a unique mediating ncp-map `σ : 𝒫' → 𝒫` with `σ ∘ ϱ' = ϱ` and
@@ -2957,7 +2961,7 @@ private theorem conjOperator_conjOperator {X Y Z : Type u}
 set_option maxHeartbeats 1000000 in
 -- The proof assembles several bundled structures (an ncp-map out of
 -- `cp_iff`/`cp_comp`, an nmiu-composite) whose defeq checks are costly.
-/-- **140III** (`stinespring-is-paschke`, dils.tex:1074, Theorem): if
+/-- **140III** (`stinespring-is-paschke`, dils.tex:1082, Theorem): if
 `(𝒦, ϱ, V)` is a minimal normal Stinespring dilation of an ncp-map
 `φ : 𝒜 → B(ℋ)`, then `(B(𝒦), ϱ, ad_V)` is a Paschke dilation of `φ`.
 
@@ -3065,7 +3069,7 @@ theorem stinespring_is_paschke [VonNeumannAlgebra 𝒜]
 file, as `paschke_unique_up_to_iso`: it needs the identity and composition
 of ncp-maps, whose (private) constructions come below.
 
-**140VII** (dils.tex:1157): discussion; **140IX** is the proof. -/
+**140VII** (dils.tex:1165): discussion; **140IX** is the proof. -/
 
 /-! ### Infrastructure: scalar multiples and composites of ncp-maps
 
@@ -3164,7 +3168,7 @@ private theorem exists_ncpCompNMIU {A B C : Type u} [CStarAlgebra A]
                g.preservesDirSups' (ncpP f) f.preservesDirSups' },
     fun _ => rfl⟩
 
-/-- **140X** (`paschke-basics`, dils.tex:1204, Exercise), part 1:
+/-- **140X** (`paschke-basics`, dils.tex:1212, Exercise), part 1:
 `(ℬ, ϱ, id)` is a Paschke dilation of an nmiu-map `ϱ : 𝒜 → ℬ`. -/
 theorem paschke_basics_1 (vnB : VonNeumannAlgebra ℬ) (ϱ : NMIUMap 𝒜 ℬ) :
     ∃ h : NCPMap ℬ ℬ, (∀ b, h b = b) ∧
@@ -3177,7 +3181,7 @@ theorem paschke_basics_1 (vnB : VonNeumannAlgebra ℬ) (ϱ : NMIUMap 𝒜 ℬ) :
   have h := hσ c
   rwa [hid] at h
 
-/-- **140X** (`paschke-basics`, dils.tex:1204, Exercise), part 2: if
+/-- **140X** (`paschke-basics`, dils.tex:1212, Exercise), part 2: if
 `(𝒫, ϱ, h)` is a Paschke dilation (of some map), then `(𝒫, id, h)` is a
 Paschke dilation of `h`. -/
 theorem paschke_basics_2 (φ : 𝒜 → ℬ) (D : PaschkeTriple 𝒜 ℬ)
@@ -3429,7 +3433,7 @@ private theorem exists_nmiuCompNCP {Q : Type u} [CStarAlgebra Q] [PartialOrder Q
 
 end Biproduct
 
-/-- **140X** (`paschke-basics`, dils.tex:1204, Exercise), part 3: if
+/-- **140X** (`paschke-basics`, dils.tex:1212, Exercise), part 3: if
 `(𝒫ᵢ, ϱᵢ, hᵢ)` is a Paschke dilation of `φᵢ : 𝒜 → ℬᵢ` (i = 1,2), then
 `(𝒫₁ ⊕ 𝒫₂, ⟨ϱ₁, ϱ₂⟩, h₁ ⊕ h₂)` is a Paschke dilation of `⟨φ₁, φ₂⟩ : 𝒜 →
 ℬ₁ ⊕ ℬ₂`.  (The direct sums are represented abstractly: von Neumann
@@ -3501,11 +3505,11 @@ theorem paschke_basics_3 {ℬ₁ ℬ₂ ℬp : Type u}
       · rw [← ht₁, he₁, ← (hσ c).1]
       · rw [← ht₂, he₂, ← (hσ c).2]
 
-/-- **140X** (`paschke-basics`, dils.tex:1204, Exercise), part 4: if
+/-- **140X** (`paschke-basics`, dils.tex:1212, Exercise), part 4: if
 `(𝒫, ϱ, h)` is a Paschke dilation of `φ` and `λ > 0`, then `(𝒫, ϱ, λh)` is
 a Paschke dilation of `λφ`.
 
-**140XI** (dils.tex:1236, Examples): forward references to
+**140XI** (dils.tex:1244, Examples): forward references to
 `paschke-tensor`, `paschke-corner`, `paschke-pure`,
 `dils-filter-basics-exercise` — not converted here. -/
 theorem paschke_basics_4 (φ : 𝒜 → ℬ) (D : PaschkeTriple 𝒜 ℬ)
@@ -3538,7 +3542,7 @@ theorem paschke_basics_4 (φ : 𝒜 → ℬ) (D : PaschkeTriple 𝒜 ℬ)
 /-! ### **140VIII**: Paschke dilations are unique up to a unique
 nmiu-isomorphism -/
 
-/-- **140VIII** (`paschke-unique-up-to-iso`, dils.tex:1176, Lemma): two
+/-- **140VIII** (`paschke-unique-up-to-iso`, dils.tex:1184, Lemma): two
 Paschke dilations `(𝒫₁, ϱ₁, h₁)`, `(𝒫₂, ϱ₂, h₂)` of the same ncp-map `φ`
 are related by a unique nmiu-isomorphism `ϑ : 𝒫₁ → 𝒫₂` with `ϑ ∘ ϱ₁ = ϱ₂`
 and `h₂ ∘ ϑ = h₁`.

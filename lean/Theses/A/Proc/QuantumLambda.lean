@@ -202,7 +202,7 @@ theorem exists_kappa_one (φ : NMIUMap (lp 𝒜 ∞) ℂ) :
   have hle : (1 : ℂ) ≤ 0 := hlub.2 (fun z hz => le_of_eq hz)
   exact absurd hle (by simp [Complex.le_def])
 
-/-- **122IV** (`nmiu-functional-product`, proc.tex:4585, Lemma), in its
+/-- **122IV** (`nmiu-functional-product`, proc.tex:4591, Lemma), in its
 universe-polymorphic form: an nmiu-functional on a direct sum `⊕ᵢ 𝒜ᵢ`
 factors as `φ' ∘ πᵢ`.  (The statement `nmiu_functional_product` below is
 this one; it is restated there because the section it belongs to fixes
@@ -301,7 +301,7 @@ variable {H K : Type u}
   [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
   [NormedAddCommGroup K] [InnerProductSpace ℂ K] [CompleteSpace K]
 
-/-- **121II** (`intersection-tensor`, proc.tex:4450, Proposition;
+/-- **121II** (`intersection-tensor`, proc.tex:4456, Proposition;
 Takesaki IV.5.10): for von Neumann subalgebras `𝒜₁, 𝒜₂ ⊆ B(ℋ)` and
 `ℬ₁, ℬ₂ ⊆ B(𝒦)`,
 `(𝒜₁ ⊗ ℬ₁) ∩ (𝒜₂ ⊗ ℬ₂) = (𝒜₁ ∩ 𝒜₂) ⊗ (ℬ₁ ∩ ℬ₂)` (concrete tensor
@@ -322,17 +322,17 @@ end Concrete
 /-! ## Parsec 1220: the first adjunction -/
 
 variable (A) in
-/-- **122I** (proc.tex:4480, Definition): the set `nsp(𝒜)` of
+/-- **122I** (proc.tex:4486, Definition): the set `nsp(𝒜)` of
 nmiu-functionals on a von Neumann algebra `𝒜` — the object part of the
 functor `nsp = W*_miu(·, ℂ) : (W*_miu)^op → Set`. -/
 abbrev nsp : Type u := NMIUMap A ℂ
 
-/-- **122I** (proc.tex:4480, Definition), morphism part: an nmiu-map
+/-- **122I** (proc.tex:4486, Definition), morphism part: an nmiu-map
 `f : 𝒜 → ℬ` induces `nsp(f) : nsp(ℬ) → nsp(𝒜)`, `φ ↦ φ ∘ f`. -/
 noncomputable def nspMap (f : NMIUMap A B) (φ : nsp B) : nsp A :=
   nmiuComp φ f
 
-/-- **122II** (`first-adjunction`, proc.tex:4493, Proposition),
+/-- **122II** (`first-adjunction`, proc.tex:4499, Proposition),
 well-definedness of the unit: for `x ∈ X` evaluation at `x` is an
 nmiu-functional on `ℓ^∞(X)`. -/
 theorem exists_linfEval (X : Type u) (x : X) :
@@ -347,7 +347,7 @@ theorem linfEval_apply (X : Type u) (x : X) (f : linf X) :
     linfEval X x f = (f : ∀ _ : X, ℂ) x :=
   (exists_linfEval X x).choose_spec f
 
-/-- **122II** (`first-adjunction`, proc.tex:4493, Proposition): the map
+/-- **122II** (`first-adjunction`, proc.tex:4499, Proposition): the map
 `η : X → nsp(ℓ^∞(X))` is universal: for every map `f : X → nsp(𝒜)` there
 is a unique nmiu-map `g : 𝒜 → ℓ^∞(X)` with `nsp(g) ∘ η = f`.  (Hence
 `X ↦ ℓ^∞(X)` extends to a functor `Set → (W*_miu)^op` left adjoint to
@@ -365,7 +365,7 @@ theorem first_adjunction [VonNeumannAlgebra A] (X : Type u)
   · rw [linfEval_apply, hg x a]
   · rw [← linfEval_apply, ← hg' x a]
 
-/-- **122II** (`first-adjunction`, proc.tex:4493, Proposition), the
+/-- **122II** (`first-adjunction`, proc.tex:4499, Proposition), the
 functor `ℓ^∞` on maps: `ℓ^∞(f)(h) = h ∘ f` is an nmiu-map
 `ℓ^∞(Y) → ℓ^∞(X)`. -/
 theorem exists_linfMap {X Y : Type u} (f : X → Y) :
@@ -385,7 +385,7 @@ variable {I : Type u} (𝒜 : I → Type u) [∀ i, CStarAlgebra (𝒜 i)]
   [∀ i, Nontrivial (𝒜 i)] [∀ i, PartialOrder (𝒜 i)]
   [∀ i, StarOrderedRing (𝒜 i)] [∀ i, VonNeumannAlgebra (𝒜 i)]
 
-/-- **122IV** (`nmiu-functional-product`, proc.tex:4585, Lemma): an
+/-- **122IV** (`nmiu-functional-product`, proc.tex:4591, Lemma): an
 nmiu-functional on a direct sum `⊕ᵢ 𝒜ᵢ` is of the form `φ' ∘ πᵢ` for
 some `i` and nmiu-functional `φ'` on `𝒜ᵢ`.
 
@@ -398,7 +398,7 @@ theorem nmiu_functional_product (φ : NMIUMap (lp 𝒜 ∞) ℂ) :
   lp_nmiu_functional_factors φ
 
 
-/-- **122VI** (`cor:linf-ff`, proc.tex:4612, Exercise), part 1: the
+/-- **122VI** (`cor:linf-ff`, proc.tex:4618, Exercise), part 1: the
 functor `nsp` preserves coproducts: every nmiu-functional on `⊕ᵢ 𝒜ᵢ`
 factors through exactly one summand. -/
 theorem cor_linf_ff_1 (φ : NMIUMap (lp 𝒜 ∞) ℂ) :
@@ -428,7 +428,7 @@ theorem cor_linf_ff_1 (φ : NMIUMap (lp 𝒜 ∞) ℂ) :
 
 end Sums
 
-/-- **122VI** (`cor:linf-ff`, proc.tex:4612, Exercise), part 2: the unit
+/-- **122VI** (`cor:linf-ff`, proc.tex:4618, Exercise), part 2: the unit
 `η : X → nsp(ℓ^∞(X))` is a bijection. -/
 theorem cor_linf_ff_2 (X : Type u) : Function.Bijective (linfEval X) := by
   classical
@@ -449,7 +449,7 @@ theorem cor_linf_ff_2 (X : Type u) : Function.Bijective (linfEval X) := by
     funext f
     rw [linfEval_apply, hφ' f, hid φ']
 
-/-- **122VI** (`cor:linf-ff`, proc.tex:4612, Exercise), part 3: the
+/-- **122VI** (`cor:linf-ff`, proc.tex:4618, Exercise), part 3: the
 functor `ℓ^∞ : Set → (W*_miu)^op` is full and faithful; whence `Set` is
 (isomorphic to) a coreflective subcategory of `(W*_miu)^op`.
 
@@ -624,7 +624,7 @@ def linfNspHomEquiv (X : Type u) (A : WMIU.{u}ᵒᵖ) :
     exact DFunLike.coe_injective (funext fun a =>
       ((first_adjunction (A := A.unop) X (fun x : X => f x)).choose_spec.1 x a).symm)
 
-/-- **122II** (`first-adjunction`, proc.tex:4493, Proposition), second
+/-- **122II** (`first-adjunction`, proc.tex:4499, Proposition), second
 sentence: `X ↦ ℓ^∞(X)` is a functor `Set → (W*_miu)^op` and it is **left
 adjoint** to `nsp`. -/
 def linfNspAdjunction : linfFunctor.{u} ⊣ nspFunctor.{u} :=
@@ -652,7 +652,7 @@ def linfNspAdjunction : linfFunctor.{u} ⊣ nspFunctor.{u} :=
           = nmiuComp (nmiuComp (linfEval X x) (WMIU.hom f.unop)) (WMIU.hom g.unop)
         exact DFunLike.coe_injective rfl }
 
-/-- **122VI** (`cor:linf-ff`, proc.tex:4612, Exercise), part 3, second
+/-- **122VI** (`cor:linf-ff`, proc.tex:4618, Exercise), part 3, second
 half: `Set` is a **coreflective subcategory** of `(W*_miu)^op` — the
 functor `ℓ^∞` is full and faithful (part 3, first half, `cor_linf_ff_3`)
 and is a left adjoint (**122II**). -/
@@ -673,7 +673,7 @@ end Categorical
 
 /-! ## Parsec 1230: `ℓ^∞` and `nsp` are strong monoidal -/
 
-/-- **123I** (proc.tex:4628, Exercise), part 1: the indicator functions
+/-- **123I** (proc.tex:4634, Exercise), part 1: the indicator functions
 `x̂ = single x 1` generate `ℓ^∞(X)`.
 
 No author argument (an exercise past parsec 340, so no published solution
@@ -809,7 +809,7 @@ theorem linf_generated (X : Type u) [DecidableEq X] :
   exact add_mem (key_sa _ (realPart f).2)
     (SMulMemClass.smul_mem _ (key_sa _ (imaginaryPart f).2))
 
-/-- **123I** (proc.tex:4628, Exercise), part 2: the coordinate projections
+/-- **123I** (proc.tex:4634, Exercise), part 2: the coordinate projections
 `π_x : ℓ^∞(X) → ℂ` form an order separating collection of
 nmiu-functionals on `ℓ^∞(X)`. -/
 theorem linf_projections_order_separating (X : Type u) (f g : linf X)
@@ -882,7 +882,7 @@ theorem linfTmul_miu (X Y : Type u) : MIUBilinear (linfTmul X Y) := by
     refine lp.ext (funext fun p => ?_)
     simp only [linfTmul_apply, lp.coeFn_star, Pi.star_apply, star_mul']
 
-/-- **123I** (proc.tex:4628, Exercise), part 3: the map
+/-- **123I** (proc.tex:4634, Exercise), part 3: the map
 `⊗ : ℓ^∞(X) × ℓ^∞(Y) → ℓ^∞(X × Y)`, `(f ⊗ g)(x,y) = f(x)g(y)` is a
 tensor product; whence `ℓ^∞(X × Y) ≅ ℓ^∞(X) ⊗ ℓ^∞(Y)` (and `ℓ^∞` is
 strong monoidal).
@@ -1074,7 +1074,7 @@ private noncomputable def nmiuTmulLeft (A B : Type u) [CStarAlgebra A]
     [VonNeumannAlgebra B] (a : A) :
     nmiuTmulLeft A B a = a ⊗ᵥ (1 : B) := rfl
 
-/-- **123II** (proc.tex:4663, Exercise), part 1: an nmiu-functional `φ` on
+/-- **123II** (proc.tex:4669, Exercise), part 1: an nmiu-functional `φ` on
 `𝒜 ⊗ ℬ` restricts to nmiu-functionals `σ = φ((·) ⊗ 1)` and
 `τ = φ(1 ⊗ (·))` with `φ(a ⊗ b) = σ(a)τ(b)`. -/
 theorem nsp_tensor_1 [VonNeumannAlgebra A] [VonNeumannAlgebra B]
@@ -1099,7 +1099,7 @@ theorem nsp_tensor_1 [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     show (φ (a ⊗ᵥ b) : ℂ) = φ (a ⊗ᵥ (1 : B)) * φ (ρ b)
     rw [hρ, ← h1, hmulφ]
 
-/-- **123II** (proc.tex:4663, Exercise), part 2, well-definedness half:
+/-- **123II** (proc.tex:4669, Exercise), part 2, well-definedness half:
 every pair `(σ, τ)` extends to a *unique* nmiu-functional `σ ⊗ τ` on
 `𝒜 ⊗ ℬ` with `(σ ⊗ τ)(a ⊗ b) = σ(a)τ(b)`.  That the resulting map
 `nsp(𝒜) × nsp(ℬ) → nsp(𝒜 ⊗ ℬ)` is a **bijection**, which is what the
@@ -1229,7 +1229,7 @@ theorem nsp_tensor_2 [VonNeumannAlgebra A] [VonNeumannAlgebra B]
   have h2 := congrArg (fun L : VNT A B →ₗ[ℂ] ℂ => L x) h
   simpa using h2
 
-/-- **123II** (proc.tex:4663, Exercise), part 2, as the Exercise states it:
+/-- **123II** (proc.tex:4669, Exercise), part 2, as the Exercise states it:
 `(σ, τ) ↦ σ ⊗ τ` is a **bijection** `nsp(𝒜) × nsp(ℬ) → nsp(𝒜 ⊗ ℬ)`.
 The map itself is `nsp_tensor_2` (well-definedness, and the formula
 `(σ ⊗ τ)(a ⊗ b) = σ(a)τ(b)` that pins it down); **surjectivity is part 1**,
@@ -1341,7 +1341,7 @@ private theorem card_starAdjoin_le {𝒳 : Type u} [CStarAlgebra 𝒳] (S : Set 
     Cardinal.lift_continuum] at h
   exact le_trans h (max_le (max_le (le_add_right le_rfl) hunion) hbig)
 
-/-- **124I** (`vn-generation-bound`, proc.tex:4688, Lemma): if a von
+/-- **124I** (`vn-generation-bound`, proc.tex:4694, Lemma): if a von
 Neumann algebra `𝒜` is generated by `S ⊆ 𝒜`, then
 `#𝒜 ≤ 2^(2^(#ℂ + #S))`.
 
@@ -1377,7 +1377,7 @@ described in the next block.  It is therefore stated here; the rest of parsec
 1250 follows 124III as printed. -/
 
 variable (A) in
-/-- **125II** (`vn-gns-bound`, proc.tex:4814, Lemma), bundled: a faithful
+/-- **125II** (`vn-gns-bound`, proc.tex:4820, Lemma), bundled: a faithful
 representation of a von Neumann algebra on a Hilbert space. -/
 structure ConcreteRep [VonNeumannAlgebra A] : Type (u + 1) where
   space : Type u
@@ -1541,7 +1541,7 @@ private theorem card_gnsHilb_le {𝒳 : Type u} [CStarAlgebra 𝒳]
     _ = (2 : Cardinal.{u}) ^ #𝒳 := Cardinal.add_one_eq hinf2
 
 variable (A) in
-/-- **125II** (`vn-gns-bound`, proc.tex:4814, Lemma): a von Neumann
+/-- **125II** (`vn-gns-bound`, proc.tex:4820, Lemma): a von Neumann
 algebra `𝒜` can be faithfully represented on a Hilbert space with no more
 than `2^#𝒜` vectors.
 
@@ -1952,7 +1952,7 @@ end SecondAdjunction
 
 
 variable (A) in
-/-- **124III** (`second-adjunction`, proc.tex:4718, Theorem), bundled: a
+/-- **124III** (`second-adjunction`, proc.tex:4724, Theorem), bundled: a
 universal arrow from the von Neumann algebra `𝒜` to the inclusion
 `W*_miu → W*_cpsu`: an object `F(𝒜)` with an ncpsu-unit `η : 𝒜 → F(𝒜)`
 through which every ncpsu-map into a von Neumann algebra factors by a
@@ -1973,7 +1973,7 @@ attribute [instance] FreeMIU.cstar FreeMIU.po FreeMIU.sor FreeMIU.vna
 
 set_option maxHeartbeats 1000000 in
 variable (A) in
-/-- **124III** (`second-adjunction`, proc.tex:4718, Theorem): the
+/-- **124III** (`second-adjunction`, proc.tex:4724, Theorem): the
 inclusion `W*_miu → W*_cpsu` has a left adjoint `F` — rendered: every von
 Neumann algebra has a universal arrow to the inclusion. -/
 theorem second_adjunction [VonNeumannAlgebra A] : Nonempty (FreeMIU A) := by
@@ -2044,12 +2044,12 @@ theorem second_adjunction [VonNeumannAlgebra A] : Nonempty (FreeMIU A) := by
 (**125II** `vn-gns-bound` and its `ConcreteRep` are stated above, ahead of
 this parsec, because **124III**'s proof uses them.) -/
 
-/- **125IV** (`equaliser-lemma`, proc.tex:4846, Lemma (Kornell)) is
+/- **125IV** (`equaliser-lemma`, proc.tex:4852, Lemma (Kornell)) is
 `equaliser_lemma`, at the very end of this file: its proof needs the
 two-sided abstract form of 121II, and hence `tensorSub₂`, which is only
 available there. -/
 
-/-- **125VI** (`tensor-equalisers`, proc.tex:4972, Proposition),
+/-- **125VI** (`tensor-equalisers`, proc.tex:4978, Proposition),
 definition part: `e : ℰ → 𝒜` is an **equaliser** of nmiu-maps
 `f, g : 𝒜 → ℬ` when `f ∘ e = g ∘ e` and every nmiu-map `h` with
 `f ∘ h = g ∘ h` factors uniquely through `e`. -/
@@ -2060,7 +2060,7 @@ def IsNMIUEqualizer {E : Type u} [CStarAlgebra E] [PartialOrder E]
       [StarOrderedRing D'] [VonNeumannAlgebra D'] (h : NMIUMap D' A),
       (∀ d, f (h d) = g (h d)) → ∃! k : NMIUMap D' E, ∀ d, h d = e (k d)
 
-/- **125VI** (`tensor-equalisers`, proc.tex:4972, Proposition) is
+/- **125VI** (`tensor-equalisers`, proc.tex:4978, Proposition) is
 `tensor_equalisers`, at the very end of this file: its proof consumes 125IV
 `equaliser_lemma`, which is stated there. -/
 
@@ -2079,11 +2079,11 @@ def tensorSub (S : StarSubalgebra ℂ ℬ) : StarSubalgebra ℂ (VNT ℬ 𝒜) :
 
 end TensorSub
 
-/- **125VIIb** (`tensor-preimage`, proc.tex:5025, Exercise) is
+/- **125VIIb** (`tensor-preimage`, proc.tex:5031, Exercise) is
 `tensor_preimage`, at the very end of this file: its proof consumes the
 slice-map property, i.e. 121II, through `EqL`'s `mem_tensorSub_of_image`. -/
 
-/-- **125VIII** (`tensor-closed`, proc.tex:5048, Theorem (Kornell)),
+/-- **125VIII** (`tensor-closed`, proc.tex:5054, Theorem (Kornell)),
 bundled: a universal arrow witnessing the free exponential: an object
 `ℬ^{*𝒜}` with an nmiu-unit `η : ℬ → ℬ^{*𝒜} ⊗ 𝒜` through which every
 nmiu-map `ℬ → 𝒞 ⊗ 𝒜` factors by a unique nmiu-map. -/
@@ -2105,17 +2105,17 @@ structure FreeExp (ℬ 𝒜 : Type u)
 
 attribute [instance] FreeExp.cstar FreeExp.po FreeExp.sor FreeExp.vna
 
-/- **125VIII** (`tensor-closed`, proc.tex:5048, Theorem (Kornell)) is
+/- **125VIII** (`tensor-closed`, proc.tex:5054, Theorem (Kornell)) is
 `tensor_closed`, at the very end of this file: its proof consumes 125IV
 `equaliser_lemma`. -/
 
-/- **125X** (`cstar-no-model`, proc.tex:5105, Remark): no analogous free
+/- **125X** (`cstar-no-model`, proc.tex:5111, Remark): no analogous free
 exponential exists for C*-algebras — remark, not converted. -/
 
 /-! ## Parsecs 1251–1252: the hereditarily atomic second adjunction -/
 
 variable (A) in
-/-- **125bII** (proc.tex:5240, Proposition), bundled: a universal arrow
+/-- **125bII** (proc.tex:5246, Proposition), bundled: a universal arrow
 from a hereditarily atomic von Neumann algebra `𝒜` to the inclusion
 `haW*_miu → haW*_cpsu`. -/
 structure HaFreeMIU [VonNeumannAlgebra A] : Type (u + 1) where
@@ -2431,7 +2431,7 @@ end HaSecondAdjunction
 
 set_option maxHeartbeats 1000000 in
 variable (A) in
-/-- **125bII** (proc.tex:5240, Proposition): the inclusion
+/-- **125bII** (proc.tex:5246, Proposition): the inclusion
 `haW*_miu → haW*_cpsu` has a left adjoint `F_ha`.
 
 Freyd, exactly as in 124III `second_adjunction`: `F_ha(𝒜)` is the von
@@ -2517,7 +2517,7 @@ same spectral order that `mn_vna_1` is stated against, so the two agree
 definitionally.) -/
 instance (n : ℕ) : VonNeumannAlgebra (MatAlg n) := Theses.A.VN.mn_vna_1 n
 
-/-- **125cII** (proc.tex:5284): two ncpsu-maps
+/-- **125cII** (proc.tex:5290): two ncpsu-maps
 `f₁ : 𝒜 → M_{n₁}`, `f₂ : 𝒜 → M_{n₂}` are **miu-equivalent** when there
 is an nmiu-isomorphism `φ : M_{n₁} → M_{n₂}` with `φ ∘ f₁ = f₂`. -/
 def MIUEquiv {n₁ n₂ : ℕ} (f₁ : NCPSUMap A (MatAlg n₁))
@@ -2525,7 +2525,7 @@ def MIUEquiv {n₁ n₂ : ℕ} (f₁ : NCPSUMap A (MatAlg n₁))
   ∃ φ : NMIUMap (MatAlg n₁) (MatAlg n₂), Function.Bijective ⇑φ ∧
     ∀ a : A, φ (f₁.toNCPMap a) = f₂.toNCPMap a
 
-/-- **125cII** (proc.tex:5284): the maps considered in the concrete
+/-- **125cII** (proc.tex:5290): the maps considered in the concrete
 description of `F_ha`: ncpsu-maps `f : 𝒜 → M_n` with
 `W*(f(𝒜)) = M_n`. -/
 def GeneratesMat {n : ℕ} (f : NCPSUMap A (MatAlg n)) : Prop :=
@@ -2881,7 +2881,7 @@ private theorem wstar_unit_eq_top [VonNeumannAlgebra A] (F : HaFreeMIU A) :
 
 end FhaAux
 
-/-- **125cIII** (`Fha-concrete`, proc.tex:5300, Theorem): for a
+/-- **125cIII** (`Fha-concrete`, proc.tex:5306, Theorem): for a
 hereditarily atomic `𝒜` with a set of representatives
 `r_i : 𝒜 → M_{N_i+1}` (`i ∈ I`) for miu-equivalence of the generating
 ncpsu-maps into matrix algebras, the unique nmiu-map
@@ -3833,7 +3833,7 @@ end HaSlice
 
 /-! ## Parsec 1254: the hereditarily atomic free exponential -/
 
-/-- **125dII** (proc.tex:5528, Proposition), bundled: a universal arrow
+/-- **125dII** (proc.tex:5534, Proposition), bundled: a universal arrow
 witnessing the hereditarily atomic free exponential `ℬ^{*_ha 𝒜}`. -/
 structure HaFreeExp (ℬ 𝒜 : Type u)
     [CStarAlgebra ℬ] [PartialOrder ℬ] [StarOrderedRing ℬ]
@@ -4240,7 +4240,7 @@ private theorem nontrivial_of_haIndex {Aa : Type u} [CStarAlgebra Aa]
 
 set_option maxHeartbeats 2000000 in
 set_option synthInstance.maxHeartbeats 400000 in
-/-- **125dII** (proc.tex:5528, Proposition): for hereditarily atomic `𝒜`
+/-- **125dII** (proc.tex:5534, Proposition): for hereditarily atomic `𝒜`
 the functor `(·) ⊗ 𝒜 : haW*_miu → haW*_miu` has a left adjoint
 `(·)^{*_ha 𝒜}`.
 
@@ -4484,7 +4484,7 @@ variable {𝒜 : Type u} {ℬ : Type v} {𝒞 : Type w}
   [CStarAlgebra 𝒞] [PartialOrder 𝒞] [StarOrderedRing 𝒞]
   [VonNeumannAlgebra 𝒞]
 
-/-- **125eII** (proc.tex:5557, Definition): an nmiu-map
+/-- **125eII** (proc.tex:5563, Definition): an nmiu-map
 `s : 𝒜 → 𝒞 ⊗ ℬ` is **`(·) ⊗ ℬ`-surjective** when the only von Neumann
 subalgebra `𝒮 ⊆ 𝒞` with `s(𝒜) ⊆ 𝒮 ⊗ ℬ` is `𝒮 = 𝒞`. -/
 def TensorBSurjective (s : NMIUMap 𝒜 (VNT 𝒞 ℬ)) : Prop :=
@@ -5492,7 +5492,7 @@ private theorem hilbertBasis_index_nonempty {ι : Type*} {Kk : Type*}
     (e.hasSum_repr z).unique (hasSum_empty (f := fun i : ι => (e.repr z) i • e i))
   exact hxy ((hz x).trans (hz y).symm)
 
-/-- **125VIIb** (`tensor-preimage`, proc.tex:5025) for an **atomic type I**
+/-- **125VIIb** (`tensor-preimage`, proc.tex:5031) for an **atomic type I**
 tensored factor: for an nmiu-map `ρ : ℬ → 𝒞`, a von Neumann subalgebra
 `𝒮 ⊆ 𝒞` and `𝒜 ≅ ⊕ⱼ B(𝒦ⱼ)`, `(ρ ⊗ id_𝒜)⁻¹(𝒮 ⊗ 𝒜) = ρ⁻¹(𝒮) ⊗ 𝒜`.
 
@@ -5746,13 +5746,13 @@ private theorem haFreeExp_unit_tensorBSurjective {Aa Bb2 : Type u}
 
 end HaSliceBSurj
 
-/- **125eIIa** (`tensor-map-factorisation`, proc.tex:5569) is
+/- **125eIIa** (`tensor-map-factorisation`, proc.tex:5575) is
 `tensor_map_factorisation`, at the very end of this file, and **125eIII**
-(`tensorBsurjectivity`, proc.tex:5580) is `tensorBsurjectivity` there: both
+(`tensorBsurjectivity`, proc.tex:5586) is `tensorBsurjectivity` there: both
 consume the slice-map property, i.e. 121II. -/
 
 
-/-- **125eVI** (proc.tex:5630, Definition): two nmiu-maps
+/-- **125eVI** (proc.tex:5636, Definition): two nmiu-maps
 `f₁ : 𝒜 → M_{n₁} ⊗ ℬ`, `f₂ : 𝒜 → M_{n₂} ⊗ ℬ` are
 **`(·) ⊗ ℬ`-equivalent** when there is an nmiu-isomorphism
 `φ : M_{n₁} → M_{n₂}` with `(φ ⊗ ℬ) ∘ f₁ = f₂`. -/
@@ -6013,7 +6013,7 @@ private theorem haAstarhaB_concrete_aux {Aa Bb2 : Type u}
 
 end AstarhaBAux
 
-/-- **125eVII** (`AstarhaB-concrete`, proc.tex:5652, Theorem): for
+/-- **125eVII** (`AstarhaB-concrete`, proc.tex:5658, Theorem): for
 hereditarily atomic `𝒜`, `ℬ` with a set of representatives
 `s_i : 𝒜 → M_{N_i+1} ⊗ ℬ` (`i ∈ I`) for `(·) ⊗ ℬ`-equivalence of the
 `(·) ⊗ ℬ`-surjective nmiu-maps into matrix algebras tensor `ℬ`, the
@@ -7359,7 +7359,7 @@ theorem equaliser_lemma_of_intersectionTensorStatement
         rw [← hval f, ← hval g, hnat f, hnat g, hfg d]
       exact nmiuTmulLeft_injective hkey
 
-/-- **125IV** (`equaliser-lemma`, proc.tex:4846, Lemma (Kornell)): every
+/-- **125IV** (`equaliser-lemma`, proc.tex:4852, Lemma (Kornell)): every
 nmiu-map `h : 𝒟 → 𝒜 ⊗ 𝒞` factors as `(ι ⊗ id) ∘ h̃` through
 `𝒜̃ ⊗ 𝒞` for a von Neumann subalgebra `𝒜̃ ⊆ 𝒜` generated by at most
 `#𝒟 · 2^#𝒞` elements, such that nmiu-maps `f, g : 𝒜 → ℬ` with
@@ -7500,7 +7500,7 @@ private theorem nmiuEqualizer_injective [VonNeumannAlgebra A] [VonNeumannAlgebra
       rw [nmiuCorestrict_val, nmiuCorestrict_val, hxy])
   rw [← h1' x, ← h1' y, hk'eq]
 
-/-- **125VI** (`tensor-equalisers`, proc.tex:4972, Proposition): if `e` is
+/-- **125VI** (`tensor-equalisers`, proc.tex:4978, Proposition): if `e` is
 an equaliser of nmiu-maps `f, g : 𝒜 → ℬ`, then `e ⊗ id_𝒞` is an
 equaliser of `f ⊗ id` and `g ⊗ id`.
 
@@ -7539,7 +7539,7 @@ theorem tensor_equalisers [VonNeumannAlgebra A] [VonNeumannAlgebra B]
 
 /-! ## 125VIIb `tensor-preimage` -/
 
-/-- **125VIIb** (`tensor-preimage`, proc.tex:5025, Exercise): for an
+/-- **125VIIb** (`tensor-preimage`, proc.tex:5031, Exercise): for an
 nmiu-map `ρ : ℬ → 𝒞` and a von Neumann subalgebra `𝒮 ⊆ 𝒞`,
 `(ρ ⊗ id_𝒜)⁻¹(𝒮 ⊗ 𝒜) = ρ⁻¹(𝒮) ⊗ 𝒜`.
 
@@ -7604,7 +7604,7 @@ theorem tensor_preimage [VonNeumannAlgebra A] [VonNeumannAlgebra B]
 
 /-! ## 125eIII `tensorBsurjectivity` -/
 
-/-- **125eIII** (`tensorBsurjectivity`, proc.tex:5580, Lemma): given a
+/-- **125eIII** (`tensorBsurjectivity`, proc.tex:5586, Lemma): given a
 `(·) ⊗ ℬ`-surjective nmiu-map `s : 𝒜 → 𝒞 ⊗ ℬ` and an nmiu-map
 `ρ : 𝒞 → 𝒟`, the composite `(ρ ⊗ ℬ) ∘ s` is `(·) ⊗ ℬ`-surjective iff
 `ρ` is surjective.
@@ -7826,7 +7826,7 @@ private theorem nmiu_ext_of_tensorBSurjective {X Pp 𝒜 Y : Type u}
 
 /-! ## 125eIIa `tensor-map-factorisation` -/
 
-/-- **125eIIa** (`tensor-map-factorisation`, proc.tex:5569): for any
+/-- **125eIIa** (`tensor-map-factorisation`, proc.tex:5575): for any
 nmiu-map `s : 𝒜 → 𝒞 ⊗ ℬ` there is a von Neumann subalgebra
 `𝒞̃ ⊆ 𝒞` with `s(𝒜) ⊆ 𝒞̃ ⊗ ℬ` such that the restriction of `s` to
 `𝒜 → 𝒞̃ ⊗ ℬ` is `(·) ⊗ ℬ`-surjective.
@@ -8006,7 +8006,7 @@ private theorem tensor_solution_set (Bb Aa : Type u) [CStarAlgebra Bb]
   exact hfact b
 
 set_option maxHeartbeats 1000000 in
-/-- **125VIII** (`tensor-closed`, proc.tex:5048, Theorem (Kornell)): the
+/-- **125VIII** (`tensor-closed`, proc.tex:5054, Theorem (Kornell)): the
 functor `(·) ⊗ 𝒜 : W*_miu → W*_miu` has a left adjoint `(·)^{*𝒜}` —
 rendered: every `ℬ` has a universal arrow `ℬ → ℬ^{*𝒜} ⊗ 𝒜`. -/
 theorem tensor_closed [VonNeumannAlgebra A] [VonNeumannAlgebra B] :

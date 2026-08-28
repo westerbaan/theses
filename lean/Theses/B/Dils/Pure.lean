@@ -51,7 +51,7 @@ universe u
 
 namespace Theses.B.Dils
 
-/-! **168I**–**168IV** (dils.tex:5968–6054, `dils-pure-discussion`):
+/-! **168I**–**168IV** (dils.tex:5976–6054, `dils-pure-discussion`):
 introduction and discussion of rejected alternative notions of purity —
 nothing to formalize. -/
 
@@ -663,7 +663,7 @@ end Scalars
 
 /-! ## Parsec 1690: corners and filters
 
-**169I** (dils.tex:6056) and **169VII** (dils.tex:6113): introduction —
+**169I** (dils.tex:6064) and **169VII** (dils.tex:6121): introduction —
 nothing to formalize.  **169III**, **169IX** (Remarks) — not converted. -/
 
 section CornersFilters
@@ -672,7 +672,7 @@ variable {A B : Type u}
   [CStarAlgebra A] [PartialOrder A] [StarOrderedRing A]
   [CStarAlgebra B] [PartialOrder B] [StarOrderedRing B]
 
-/-- **169II** (`dils-corner`, dils.tex:6060, Definition): an ncp-map
+/-- **169II** (`dils-corner`, dils.tex:6068, Definition): an ncp-map
 `h : A → B` is a **corner** for an effect `a ∈ [0,1]_A` when `h(a) = h(1)`
 and every ncp-map `f : A → C` with `f(a) = f(1)` factors uniquely through
 `h` (as `f = f' ∘ h`). -/
@@ -682,7 +682,7 @@ def IsCornerFor (h : NCPMap A B) (a : A) : Prop :=
     (_ : StarOrderedRing C) (f : NCPMap A C), f a = f 1 →
     ∃! f' : NCPMap B C, ∀ x, f' (h x) = f x
 
-/-- **169II** (`dils-corner`, dils.tex:6060, Definition): a **corner** is
+/-- **169II** (`dils-corner`, dils.tex:6068, Definition): a **corner** is
 an ncp-map which is a corner for some effect. -/
 def IsCorner (h : NCPMap A B) : Prop :=
   ∃ a : A, IsCornerFor h a
@@ -938,7 +938,7 @@ private theorem cornerInclNcp_apply (c : cornerSet A p) :
 
 end StandardCorner
 
-/-- **169IV** (`standard-corner-dils`, dils.tex:6080, Example): the
+/-- **169IV** (`standard-corner-dils`, dils.tex:6088, Example): the
 **standard corner** `h_a : A → ⌊a⌋A⌊a⌋`, `b ↦ ⌊a⌋b⌊a⌋`, is a corner for
 the effect `a` (see proc.tex 98I, 95II). -/
 theorem standard_corner_dils [VonNeumannAlgebra A] (a : A)
@@ -1273,7 +1273,7 @@ end Theta
 
 end StandardPaschkeCorner
 
-/-- **169V** (`h-is-corner-for-unital-map`, dils.tex:6088, Lemma): if
+/-- **169V** (`h-is-corner-for-unital-map`, dils.tex:6096, Lemma): if
 `(𝒫, ϱ, h)` is a Paschke dilation of a *unital* ncp-map, then `h` is a
 corner.
 
@@ -1325,7 +1325,7 @@ theorem h_is_corner_for_unital_map [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     · refine hf'2 g fun T => ?_
       rw [hf₀, ← hg (ϑinv T), ← hh (ϑinv T), hfg]
 
-/-- **169VIII** (`dils-def-filter`, dils.tex:6116, Definition): an ncp-map
+/-- **169VIII** (`dils-def-filter`, dils.tex:6124, Definition): an ncp-map
 `c : A → B` is a **filter** for `b ∈ B`, `b ≥ 0`, when `c(1) ≤ b` and
 every ncp-map `f : C → B` with `f(1) ≤ b` factors uniquely through `c` (as
 `f = c ∘ f'`) **by a subunital `f'`**.
@@ -1356,7 +1356,7 @@ def IsFilterFor (c : NCPMap A B) (b : B) : Prop :=
     (_ : StarOrderedRing C) (f : NCPMap C B), f 1 ≤ b →
     ∃! f' : NCPSUMap C A, ∀ x, c (f'.toNCPMap x) = f x
 
-/-- **169VIII** (`dils-def-filter`, dils.tex:6116, Definition): a
+/-- **169VIII** (`dils-def-filter`, dils.tex:6124, Definition): a
 **filter** is an ncp-map which is a filter for some positive element. -/
 def IsFilter (c : NCPMap A B) : Prop :=
   ∃ b : B, IsFilterFor c b
@@ -1815,7 +1815,7 @@ private theorem sfilter_factor [VonNeumannAlgebra B] (d : B) (q : B)
     rwa [sub_nonneg] at h
 
 end StandardFilter
-/-- **169X** (`dils-stand-filter`, dils.tex:6150, Example): the **standard
+/-- **169X** (`dils-stand-filter`, dils.tex:6158, Example): the **standard
 filter** `c_b : ⌈b⌉B⌈b⌉ → B`, `a ↦ √b a √b`, is a filter for `b ≥ 0` (see
 proc.tex 96V, 98I). -/
 theorem dils_stand_filter [VonNeumannAlgebra B] (b : B) (hb : 0 ≤ b) :
@@ -1874,7 +1874,7 @@ theorem dils_stand_filter [VonNeumannAlgebra B] (b : B) (hb : 0 ≤ b) :
 its parts use the injectivity of filters, and Lean needs that declaration
 first.  The three statements are otherwise unchanged. -/
 
-/-- **169XII** (`dils-filters-injective`, dils.tex:6180, Exercise): filters
+/-- **169XII** (`dils-filters-injective`, dils.tex:6188, Exercise): filters
 are injective.
 
 The hint (and the `bsols.tex` solution) route this through the *standard*
@@ -2106,7 +2106,7 @@ private theorem smul_norm_succ_inv_le_one {P : Type*} [CStarAlgebra P]
     rwa [show (((1 : ℝ)) : ℂ) = 1 by norm_num, map_one] at h
   exact h2.trans (h3 ▸ h4)
 
-/-- **169XI** (`dils-filter-basics-exercise`, dils.tex:6158, Exercise),
+/-- **169XI** (`dils-filter-basics-exercise`, dils.tex:6166, Exercise),
 part 1: if `(𝒫, ϱ, h)` is a Paschke dilation of `φ : A → B` and
 `c : B → C` a filter, then `(𝒫, ϱ, c ∘ h)` is a Paschke dilation of
 `c ∘ φ`.
@@ -2202,7 +2202,7 @@ theorem dils_filter_basics_1 {C : Type u} [CStarAlgebra C] [PartialOrder C]
     rw [← hh', hcg x]
     exact h
 
-/-- **169XI** (`dils-filter-basics-exercise`, dils.tex:6158, Exercise),
+/-- **169XI** (`dils-filter-basics-exercise`, dils.tex:6166, Exercise),
 part 2, first half: for a filter `c' : C' → B` of `φ(1)` there is a unique
 unital ncp-map `φ'` with `φ = c' ∘ φ'`.
 
@@ -2254,7 +2254,7 @@ theorem dils_filter_basics_2a [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     rw [hφ'1]
   exact congrArg NCPSUMap.toNCPMap (hψu ⟨φ', hsu⟩ hφ'2)
 
-/-- **169XI** (`dils-filter-basics-exercise`, dils.tex:6158, Exercise),
+/-- **169XI** (`dils-filter-basics-exercise`, dils.tex:6166, Exercise),
 part 2, second half: if moreover `(𝒫, ϱ, h)` is a Paschke dilation of
 `φ'`, then `(𝒫, ϱ, c' ∘ h)` is a Paschke dilation of `φ`.
 
@@ -2290,7 +2290,7 @@ variable {A B : Type u}
   [CStarAlgebra A] [PartialOrder A] [StarOrderedRing A]
   [CStarAlgebra B] [PartialOrder B] [StarOrderedRing B]
 
-/-- **170I** (`dils-def-pure`, dils.tex:6186, Definition): an ncp-map is
+/-- **170I** (`dils-def-pure`, dils.tex:6194, Definition): an ncp-map is
 **pure** when it is a composition of filters and corners; equivalently (by
 proc.tex 100III `pure-fundamental`, cf. **170Ia**) a filter after a
 corner, which is the form used here.
@@ -2380,7 +2380,7 @@ private theorem isCorner_comp_nmiuBij {P Q R : Type u} [CStarAlgebra P]
     · refine hf'2 f'' fun y => ?_
       have h1 : (f'' (h y) : C) = f'' (k (g y)) := by rw [hk, hϑg]
       rw [h1, hf'' (g y), hfg]
-/-- **170II** (`dils-examples-pure`, dils.tex:6195, Examples), part 2: the
+/-- **170II** (`dils-examples-pure`, dils.tex:6203, Examples), part 2: the
 right-hand side `h` of any Paschke dilation is pure.
 
 ⚠️ **The two `[VonNeumannAlgebra]` binders are new.**  They are the
@@ -2444,7 +2444,7 @@ theorem dils_examples_pure_2 [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     k, c', isCorner_comp_nmiuBij D'.h hcorner ϑ hbij k hkval, ⟨φ 1, hc'⟩, fun x => ?_⟩
   rw [hkval, ← hh₂, hϑh]
 
-/-- **170IV** (`surjective-nmiu`, dils.tex:6223, Exercise), first half:
+/-- **170IV** (`surjective-nmiu`, dils.tex:6231, Exercise), first half:
 every surjective nmiu-map **between von Neumann algebras** is a corner of a
 central projection (hence pure).
 
@@ -2663,7 +2663,7 @@ theorem surjective_nmiu_1 [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     have h1 : (φ a : B) = b := by rw [hφ, ha]
     rw [← h1, hk' a, hk, hσ, hφ, hσϱ, hfzx]
 
-/-- **170IV** (`surjective-nmiu`, dils.tex:6223, Exercise), first half, the
+/-- **170IV** (`surjective-nmiu`, dils.tex:6231, Exercise), first half, the
 trailing clause: a surjective nmiu-map between von Neumann algebras is
 **pure**.
 
@@ -2680,7 +2680,7 @@ theorem surjective_nmiu_1_pure [VonNeumannAlgebra A] [VonNeumannAlgebra B]
   obtain ⟨z, -, -, hcorner⟩ := surjective_nmiu_1 ϱ hs φ hφ
   exact isPureMap_of_isCorner φ ⟨z, hcorner⟩
 
-/-- **170IV** (`surjective-nmiu`, dils.tex:6223, Exercise), second half:
+/-- **170IV** (`surjective-nmiu`, dils.tex:6231, Exercise), second half:
 conversely, every corner of a central projection **in a von Neumann
 algebra** is (equal as a map to) a surjective nmiu-map.  (For the
 `[VonNeumannAlgebra]` binders see the first half.)
@@ -3943,7 +3943,7 @@ private theorem pext_dilation_target_iso {P B₁ B₂ : Type u} [CStarAlgebra P]
 
 /-! ## Parsec 1710: purity via the Paschke dilation
 
-**171I** (dils.tex:6232): introduction; **171III**–**171VI** and
+**171I** (dils.tex:6240): introduction; **171III**–**171VI** and
 **171VIII** are proofs — not converted. -/
 
 section PaschkePure
@@ -3952,7 +3952,7 @@ variable {A B : Type u}
   [CStarAlgebra A] [PartialOrder A] [StarOrderedRing A]
   [CStarAlgebra B] [PartialOrder B] [StarOrderedRing B]
 
-/-- **171II** (`paschke-corner`, dils.tex:6237, Theorem): for a projection
+/-- **171II** (`paschke-corner`, dils.tex:6245, Theorem): for a projection
 `p` in a von Neumann algebra `A`, a Paschke dilation of the standard
 corner `h_p : A → pAp` is `(⌈⌈p⌉⌉A, h_{⌈⌈p⌉⌉}, h'_p)`, where `⌈⌈p⌉⌉` is
 the central carrier of `p`, `h_{⌈⌈p⌉⌉}` the standard corner for `⌈⌈p⌉⌉`,
@@ -4047,7 +4047,7 @@ private theorem isCornerFor_comp {P Q R : Type u} [CStarAlgebra P]
     have hg''g : g'' = g := hguniq g'' fun x => by rw [hg'', ← hk, hf'' x]
     rw [← hg'', hg''g]
 
-/-- **171VII** (`paschke-pure`, dils.tex:6365, Theorem): an ncp-map `φ`
+/-- **171VII** (`paschke-pure`, dils.tex:6373, Theorem): an ncp-map `φ`
 with Paschke dilation `(𝒫, ϱ, h)` is pure if and only if `ϱ` is
 surjective.
 
@@ -4228,7 +4228,7 @@ private theorem pure_iff_stinespring_surjective
   obtain ⟨vnK, hncp, hval, hpasch⟩ := stinespring_is_paschke φ D hmin
   exact paschke_pure φ _ hpasch
 
-/-- **170II** (`dils-examples-pure`, dils.tex:6195, Examples), part 1: the
+/-- **170II** (`dils-examples-pure`, dils.tex:6203, Examples), part 1: the
 pure maps `B(ℋ) → B(𝒦)` are precisely the maps `ad_T` for bounded
 operators `T : 𝒦 → ℋ`.
 
@@ -4383,7 +4383,7 @@ end PureTypeI
 
 /-! ## Parsec 1720: ncp-extreme maps
 
-**172I** (dils.tex:6404): introduction; **172IV**–**172VII**, **172IX**,
+**172I** (dils.tex:6412): introduction; **172IV**–**172VII**, **172IX**,
 **172XI** are proofs — not converted. -/
 
 section Extreme
@@ -4392,7 +4392,7 @@ variable {A B : Type u}
   [CStarAlgebra A] [PartialOrder A] [StarOrderedRing A]
   [CStarAlgebra B] [PartialOrder B] [StarOrderedRing B]
 
-/-- **172II** (dils.tex:6408, Definition): an ncp-map `φ` is
+/-- **172II** (dils.tex:6416, Definition): an ncp-map `φ` is
 **ncp-extreme** when it is an extreme point among the ncp-maps with the
 same value on `1`: `λφ₁ + (1-λ)φ₂ = φ` with `0 < λ < 1` and
 `φ₁(1) = φ₂(1) = φ(1)` forces `φ₁ = φ₂ = φ`. -/
@@ -4536,7 +4536,7 @@ private theorem exists_mu_lambda {P : Type*} [CStarAlgebra P] [PartialOrder P]
         ≤ ((((1/4 : ℝ)) : ℂ) • (1 : P)) + ((((1/2 : ℝ)) : ℂ) • 1) := add_le_add hb2 le_rfl
       _ = ((((3/4 : ℝ)) : ℂ) • (1 : P)) := h4
 
-/-- **172III** (`ncp-extreme-paschke`, dils.tex:6426, Theorem): for an
+/-- **172III** (`ncp-extreme-paschke`, dils.tex:6434, Theorem): for an
 ncp-map `φ` with Paschke dilation `(𝒫, ϱ, h)` the following are
 equivalent: (1) `h` is injective on the commutant `ϱ(A)′`; (2) `h` is
 injective on `[0,1]_{ϱ(A)′}`; (3) `φ` is ncp-extreme.
@@ -4854,7 +4854,7 @@ theorem ncp_extreme_paschke [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     exact sub_eq_zero.mp hw00
   tfae_finish
 
-/-- **172VIII** (`nmiu-ncp-extreme`, dils.tex:6512, Corollary): every
+/-- **172VIII** (`nmiu-ncp-extreme`, dils.tex:6520, Corollary): every
 nmiu-map (as an ncp-map) is ncp-extreme.
 
 **The thesis's own proof is `nmiu_ncp_extreme_paschke` below** — 172IX,
@@ -5003,7 +5003,7 @@ theorem nmiu_ncp_extreme_paschke [VonNeumannAlgebra A] [VonNeumannAlgebra B]
   intro x _ y _ hxy
   exact hxy
 
-/-- **172X** (dils.tex:6520, Theorem): every pure ncp-map is
+/-- **172X** (dils.tex:6528, Theorem): every pure ncp-map is
 ncp-extreme.
 
 **172XI** is the proof, transcribed with two divergences.
@@ -5141,7 +5141,7 @@ theorem pure_ncp_extreme [VonNeumannAlgebra A] [VonNeumannAlgebra B]
   have hx0 : x = 0 := by rw [← hxz, hzx]
   exact Subtype.ext (sub_eq_zero.mp hx0)
 
-/-- **172XII** (`ncp-extreme-comp`, dils.tex:6544, Corollary): every
+/-- **172XII** (`ncp-extreme-comp`, dils.tex:6552, Corollary): every
 ncp-map is the composition of two ncp-extreme maps. -/
 theorem ncp_extreme_comp [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     (φ : NCPMap A B) :

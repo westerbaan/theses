@@ -3206,7 +3206,7 @@ private theorem ncp_isCompletelyPositiveMap (f : NCPMap A B) :
 theorem ncp_star (f : NCPMap A B) (a : A) : (f (star a) : B) = star (f a) :=
   Theses.A.CStar.cstar_p_implies_i _ (ncp_isPositiveMap f) a
 
-/-- **34XIV** (`cp-cs`, cstar.tex:5629, Kadison's inequality) for an
+/-- **34XIV** (`cp-cs`, cstar.tex:5741, Kadison's inequality) for an
 ncp-map, in the form in which **45II** and **61II** use it:
 `f(a)* f(a) ≤ ‖f(1)‖ · f(a* a)`.  (The thesis writes `‖f(1)‖²`; the sharper
 `‖f(1)‖` is what `cp_cs` delivers, and either constant serves.) -/
@@ -3515,7 +3515,7 @@ private theorem adLinearMap_eq (b : A) :
   LinearMap.ext fun a => (mul_assoc (star b) a b).symm
 
 /-- `a ↦ b* a b` as an ncp-map: completely positive by **34V**.1
-(`ad_cp_1`, cstar.tex:5463), normal by **44VIII** (`ad_normal`).  This is the
+(`ad-cp`.1, cstar.tex:5575), normal by **44VIII** (`ad_normal`).  This is the
 object **45IV** asks `cp_uscont` to be applied to. -/
 private noncomputable def adNCP [VonNeumannAlgebra A] (b : A) : NCPMap A A where
   toCompletelyPositiveMap :=

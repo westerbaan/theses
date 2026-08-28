@@ -226,7 +226,7 @@ theorem vnComm_concreteTensor_inf_vnComm_concreteTensor
     · exact hle₁ (opTensor_mem_concreteTensor (one_mem A₁) hb)
     · exact hle₂ (opTensor_mem_concreteTensor (one_mem A₂) hb)
 
-/-- **121II** (`intersection-tensor`, `proc.tex:4450`, Proposition; Takesaki I,
+/-- **121II** (`intersection-tensor`, `proc.tex:4456`, Proposition; Takesaki I,
 Corollary IV.5.10): for von Neumann subalgebras `𝒜₁, 𝒜₂ ⊆ B(ℋ)` and
 `ℬ₁, ℬ₂ ⊆ B(𝒦)`,
 

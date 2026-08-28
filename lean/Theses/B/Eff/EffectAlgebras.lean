@@ -1613,7 +1613,7 @@ theorem not_ea_modularity_prop :
   obtain ⟨j, _, hj, _⟩ := H W a1 a2 0 perp_a1_a2 isInf_a1_a2
   exact no_sup_a1_a2 ⟨j, hj⟩
 
-/-- **The lemma of `modularity-lemma-proof` (eff.tex:492) was false too in
+/-- **The lemma of `modularity-lemma-proof` (eff.tex:512) was false too in
 its first printing**, even when strengthened by `c ⊥ d`: with `x = a₁ ⋁ a₂`,
 `c = a₁`, `d = a₂` one has
 `x ⊖ c = a₂`, `x ⊖ d = a₁`, whose infimum is `0`, while `c ∨ d` does not

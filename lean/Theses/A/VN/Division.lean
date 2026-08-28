@@ -3316,7 +3316,7 @@ theorem div_uwc (b c : A) :
 
 /-! ## Parsec 820: polar decomposition -/
 
-/-- **82I** (`polar-decomposition`, vn.tex:5579, Proposition (Polar
+/-- **82I** (`polar-decomposition`, vn.tex:5607, Proposition (Polar
 Decomposition)): the partial isometry `[a] = a/√(a*a)` of the polar
 decomposition `a = [a]√(a*a)`. -/
 noncomputable def polar (a : A) : A := div a (CFC.sqrt (star a * a))
@@ -3342,7 +3342,7 @@ theorem sqrt_star_self_spec (a : A) :
   · rw [rangeProj, hssa, hss, suppProj]
   · rw [← hceil]; exact (ceil_spec hspos).2.1
 
-/-- **82I** (`polar-decomposition`, vn.tex:5579, Proposition (Polar
+/-- **82I** (`polar-decomposition`, vn.tex:5607, Proposition (Polar
 Decomposition)), main claim: every `a` can be written *uniquely* as
 `a = u√(a*a)` with `u ∈ A⌈a⌋`; namely `u = [a]`. -/
 theorem polar_decomposition (a : A) :
@@ -3367,7 +3367,7 @@ theorem rangeProj_mul_polar (a : A) : rangeProj a * polar a = polar a := by
     exact (proto_douglas_1 a _ (by rw [hssa, hss]) t ht).1
   exact (division_basic_1 (CFC.sqrt (star a * a)) a hex).1
 
-/-- **82I** (`polar-decomposition`, vn.tex:5579, Proposition), part 1:
+/-- **82I** (`polar-decomposition`, vn.tex:5607, Proposition), part 1:
 `[a]` is a partial isometry with `[a]*[a] = ⌈a*a⌉ = ⌈a⌋` and
 `[a][a]* = ⌈aa*⌉ = ⌊a⌉`. -/
 theorem polar_decomposition_1 (a : A) :
@@ -3441,7 +3441,7 @@ theorem polar_decomposition_1 (a : A) :
       _ = u * star u := by
           rw [huustar]; exact ceil_of_isStarProjection (ceill_basic_2 u).1.1
 
-/-- **82I** (`polar-decomposition`, vn.tex:5579, Proposition), part 2:
+/-- **82I** (`polar-decomposition`, vn.tex:5607, Proposition), part 2:
 `[a*] = [a]*`, so that `√(aa*)[a] = a = [a]√(a*a)`. -/
 theorem polar_decomposition_2 (a : A) :
     polar (star a) = star (polar a) ∧
@@ -3498,13 +3498,13 @@ theorem polar_decomposition_2 (a : A) :
 **83I** (vn.tex:5656): introduction — nothing to formalize. -/
 
 variable (A) in
-/-- **83II** (`vmleq`, vn.tex:5666, Proposition): the **Murray–von Neumann
+/-- **83II** (`vmleq`, vn.tex:5694, Proposition): the **Murray–von Neumann
 preorder**: `e' ⊴ e` when `e' = u*u` and `uu* ≤ e` for some partial
 isometry `u`. -/
 def MvNLE (e' e : A) : Prop :=
   ∃ u : A, IsPartialIsometry A u ∧ star u * u = e' ∧ u * star u ≤ e
 
-/-- **83II** (`vmleq`, vn.tex:5666, Proposition): for projections `e'`,
+/-- **83II** (`vmleq`, vn.tex:5694, Proposition): for projections `e'`,
 `e` the following are equivalent: (1) `e' = ⌈a*ea⌉` for some `a`;
 (2) `e' = ⌈a⌋` and `⌊a⌉ ≤ e` for some `a`; (3) `e' ⊴ e`. -/
 theorem vmleq (e' e : A) (he' : IsStarProjection e')
@@ -3548,7 +3548,7 @@ theorem vmleq (e' e : A) (he' : IsStarProjection e')
         _ = e := rangeProj_of_isStarProjection he
   tfae_finish
 
-/-- **83IV** (`mvn-preorders`, vn.tex:5702, Exercise): `⊴` preorders the
+/-- **83IV** (`mvn-preorders`, vn.tex:5730, Exercise): `⊴` preorders the
 projections of a von Neumann algebra. -/
 theorem mvn_preorders :
     (∀ p : A, IsStarProjection p → MvNLE A p p) ∧
@@ -3595,7 +3595,7 @@ theorem mvn_preorders :
         _ = v * star v := h4
         _ ≤ r := hv2
 
-/-- **83V** (`cceil-sum`, vn.tex:5706, Lemma): for a projection `e` there
+/-- **83V** (`cceil-sum`, vn.tex:5734, Lemma): for a projection `e` there
 is a family `(eᵢ)` of non-zero pairwise orthogonal projections with
 `⌈⌈e⌉⌉ = ∑ᵢ eᵢ` and `eᵢ ⊴ e` for all `i`. -/
 theorem cceil_sum (e : A) (he : IsStarProjection e) :
@@ -4268,7 +4268,7 @@ algebras.  Reducible, so that instance search and `simp` see through it. -/
 private abbrev MatProd (M : ℕ) (N : Fin M → ℕ) :=
   ∀ m : Fin M, Matrix (Fin (N m)) (Fin (N m)) ℂ
 
-/-- **84II** (`fdcstar`, vn.tex:5756, Theorem): every finite-dimensional
+/-- **84II** (`fdcstar`, vn.tex:5784, Theorem): every finite-dimensional
 C*-algebra is (miu-isomorphic to) a finite direct sum of full matrix
 algebras `⊕ₘ M_{Nₘ}`. -/
 theorem fdcstar (A : Type u) [CStarAlgebra A] [FiniteDimensional ℂ A] :
@@ -4422,7 +4422,7 @@ theorem fdcstar (A : Type u) [CStarAlgebra A] [FiniteDimensional ℂ A] :
 
 end FDCStar
 
-/-! **84aI** (`cstar-no-pu-equalisers-example`, vn.tex:6007, Example): the
+/-! **84aI** (`cstar-no-pu-equalisers-example`, vn.tex:6035, Example): the
 pu-maps `f, g : ℂ⁴ → ℂ`, `f(a,b,c,d) = ½(a+b)`, `g(a,b,c,d) = ½(c+d)` have
 no equaliser in the category `CStar_pu`.
 -- FIXME(typecheck): not converted — the category `CStar_pu` is not
@@ -4436,7 +4436,7 @@ categorical framework. -/
 formalize. -/
 
 variable (A) in
-/-- **84bII** (`def:hereditarily-atomic`, vn.tex:6143, Definition): a von
+/-- **84bII** (`def:hereditarily-atomic`, vn.tex:6171, Definition): a von
 Neumann algebra is **hereditarily atomic** if it is nmiu-isomorphic to a
 direct sum `⊕ᵢ M_{Nᵢ}` of (possibly infinitely many) full matrix algebras.
 (The summands are rendered as `M_{Nᵢ₊₁}` to keep them nontrivial, which
@@ -4742,7 +4742,7 @@ end VNSub
 
 variable [VonNeumannAlgebra A]
 
-/-- **83V** (`cceil-sum`, vn.tex:5706, Lemma) **relative to a von Neumann
+/-- **83V** (`cceil-sum`, vn.tex:5734, Lemma) **relative to a von Neumann
 subalgebra** `S`, in the form 89IX needs it: if the least central projection
 of `S` above a projection `e ∈ S` is `1`, then there are partial isometries
 `(vᵢ)` in `S` with `∑ᵢ vᵢ*vᵢ = 1` (as a supremum of projections) and
@@ -5226,7 +5226,7 @@ private def cstarMatrixCongr {a b : ℕ} (h : a = b) :
     CStarMatrix (Fin a) (Fin a) ℂ ≃⋆ₐ[ℂ] CStarMatrix (Fin b) (Fin b) ℂ := by
   subst h; exact StarAlgEquiv.refl (R := ℂ) (A := CStarMatrix (Fin a) (Fin a) ℂ)
 
-/-- **84bIII** (vn.tex:6157, Proposition): a von Neumann subalgebra of a
+/-- **84bIII** (vn.tex:6185, Proposition): a von Neumann subalgebra of a
 hereditarily atomic von Neumann algebra is hereditarily atomic — rendered:
 if `B` embeds into hereditarily atomic `A` by an injective nmiu-map, then
 `B` is hereditarily atomic. -/
@@ -5394,7 +5394,7 @@ theorem hereditarilyAtomic_subalgebra [VonNeumannAlgebra A]
 
 end HAMain
 
-/-- **84bV** (`ha-equalisers`, vn.tex:6209, Corollary): for nmiu-maps
+/-- **84bV** (`ha-equalisers`, vn.tex:6237, Corollary): for nmiu-maps
 `f, g : A → B` between hereditarily atomic von Neumann algebras, the
 equaliser `E = {a | f(a) = g(a)}` is (the image of) a hereditarily atomic
 von Neumann algebra, **and its inclusion `e` is an equaliser of `f` and `g`

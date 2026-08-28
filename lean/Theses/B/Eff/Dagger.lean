@@ -726,7 +726,9 @@ theorem isDaggerOf_pureDagger [DaggerPrimeEffectus C] (f : X ⟶ Y)
     (hf : IsPure f) : IsDaggerOf f (pureDagger f hf) :=
   (pureDagger_existsUnique f hf).exists.choose_spec
 
-/-- **217I** (`dagger-definition2`, eff.tex:5653–5718): the formula
+/-- **217I** (eff.tex:5653–5720, which carries no label of its own; the
+Definition it justifies is **217II**, `dagger-definition2`, eff.tex:5721):
+the formula
 `f† = asrt_{1∘f} ∘ π_{⌈1∘f⌉} ∘ α⁻¹ ∘ ζ_{im f}` is **independent of the
 choice** of comprehension `π'` for `im f` and quotient `ζ'` for
 `⌈1∘f⌉ᵖ` — which is what justifies declaring it a definition.

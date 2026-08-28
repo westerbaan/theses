@@ -7334,7 +7334,7 @@ def CentrePositiveSeparating (Ω : Set (NPFunctional A)) : Prop :=
   ∀ a : A, IsCentral A a → 0 ≤ a → (∀ ω ∈ Ω, ω a = 0) → a = 0
 
 variable (A) in
-/-- **21II**.4 (`separating`, cstar.tex:3098, Definition), which is **69IX**
+/-- **21II**.4 (`separating`, cstar.tex:3113, Definition), which is **69IX**
 item **1** — the thesis's *centre separating*.  Quoting cstar.tex:
 
 > A collection `Ω` of linear maps on a C\*-algebra `𝒜` will be called […]

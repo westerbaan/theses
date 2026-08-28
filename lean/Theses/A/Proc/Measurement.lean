@@ -6755,7 +6755,7 @@ theorem centrally_similar_fundamental_needs_faithful [VonNeumannAlgebra A]
   · rw [hz, ceil_zero]; exact he.nonneg
   · rw [hz, ceil_zero]; exact he.one_sub.nonneg
 
-/-- **104IV** (`centrally-similar-fundamental`, proc.tex:1519, Lemma):
+/-- **104IV** (`centrally-similar-fundamental`, proc.tex:1525, Lemma):
 if `⌈q ϑ(e) q⌉ ≤ e` and `⌈q ϑ(e^⊥) q⌉ ≤ e^⊥` for a projection `e`,
 positive `q` **with `⌈q⌉ = 1`**, and an miu-map `ϑ : 𝒜 → 𝒜`, then `eq = qe`
 and `ϑ(e) = e`.
@@ -6843,7 +6843,7 @@ theorem centrally_similar_fundamental [VonNeumannAlgebra A] (e q : A)
   · rw [hrq]; exact (ceill_basic_1 e).1.1.le_one
   · rw [← hqe, hcomm]
 
-/-- **104VI** (`centrally-similar-corollary`, proc.tex:1546, Corollary): a
+/-- **104VI** (`centrally-similar-corollary`, proc.tex:1552, Corollary): a
 positive `q` with `⌈q⌉ = 1` is central provided there is an miu-map `ϑ`
 with `⌈q ϑ(e) q⌉ ≤ e` for every projection `e`; and then `ϑ = id`. -/
 theorem centrally_similar_corollary [VonNeumannAlgebra A] (q : A)
@@ -7138,7 +7138,7 @@ theorem spectralProj_mono {a : A} (ha : 0 ≤ a) {s t : ℝ} (hst : s ≤ t) :
 
 /-! #### Steps 1–2 of the proof of 104VII -/
 
-/-- **104VII**, step 1 (proc.tex:1560): `⌈pep⌉ = e` for a projection `e`
+/-- **104VII**, step 1 (proc.tex:1562): `⌈pep⌉ = e` for a projection `e`
 commuting with a faithful positive `p` — because `pep = ep²` and
 `⌈p²⌉ = ⌈p⌉ = 1`. -/
 theorem ceil_mul_proj_mul_of_comm {p e : A} (hp : 0 ≤ p) (hcp : ceil p = 1)
@@ -7180,7 +7180,7 @@ theorem ceil_mul_proj_mul_of_comm {p e : A} (hp : 0 ≤ p) (hcp : ceil p = 1)
     have h5 := congrArg star h4
     rwa [star_mul, hrp.isSelfAdjoint.star_eq, he.isSelfAdjoint.star_eq, eq_comm] at h5
 
-/-- **104VII**, steps 1–2 (proc.tex:1560): under the hypotheses of 104VII,
+/-- **104VII**, steps 1–2 (proc.tex:1562): under the hypotheses of 104VII,
 `ϑ` fixes every projection commuting with `p`, and `q` commutes with it; so
 `pq = qp` and `ϑ(p) = p`, because `p` is a norm limit of linear
 combinations of projections from `{p}^□□` (**65IV**). -/
@@ -7556,7 +7556,7 @@ theorem nonneg_of_central_of_mul_nonneg {d s : A} (hs : 0 ≤ s) (hcs : ceil s =
 
 /-! #### 104VII itself -/
 
-/-- **104VII** (`positive-quotients-centrally-similar`, proc.tex:1556,
+/-- **104VII** (`positive-quotients-centrally-similar`, proc.tex:1562,
 Proposition): positive `p, q` with `⌈p⌉ = ⌈q⌉ = 1` are centrally similar
 when there is an miu-isomorphism `ϑ` with `⌈p e p⌉ = ⌈q ϑ(e) q⌉` for all
 projections `e`; and in that case `ϑ = id`.
@@ -7806,7 +7806,7 @@ theorem positive_quotients_centrally_similar (p q : A) (hp : 0 ≤ p) (hq : 0 �
 
 end Aux104VII
 
-/-- **104IX** (`faithful-positive-map-uniqueness`, proc.tex:1628,
+/-- **104IX** (`faithful-positive-map-uniqueness`, proc.tex:1634,
 Proposition): a faithful ⋄-positive map `f : 𝒜 → 𝒜` is of the form
 `f = √p(·)√p` where `p := f(1)`.
 
@@ -7979,7 +7979,7 @@ theorem faithful_positive_map_uniqueness [VonNeumannAlgebra A]
 
 /-! ## Parsec 1050: the map `⟨f⟩` -/
 
-/-- **105II** (`chevron-f`, proc.tex:1690, Definition), well-definedness:
+/-- **105II** (`chevron-f`, proc.tex:1696, Definition), well-definedness:
 for an ncp-map `f : 𝒜 → ℬ` the formula `a ↦ ⌈f(1)⌉ f(a) ⌈f(1)⌉` (the
 composite `π_{⌈f(1)⌉} ∘ f ∘ c_{⌈f⌉}`, cf. 105III part 1) gives an ncp-map
 `⌈f⌉𝒜⌈f⌉ → ⌈f(1)⌉ℬ⌈f(1)⌉`; by choice `chevron`. -/
@@ -7994,7 +7994,7 @@ theorem exists_chevron [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     (ncpComp f (cornerIncl (ncpCarrier f)).toNCPMap), fun a => ?_⟩
   rw [ncpComp_apply, ncpComp_apply, cornerIncl_apply, cornerProjMap_apply]
 
-/-- **105II** (`chevron-f`, proc.tex:1690, Definition): the ncp-map
+/-- **105II** (`chevron-f`, proc.tex:1696, Definition): the ncp-map
 `⟨f⟩ : ⌈f⌉𝒜⌈f⌉ → ⌈f(1)⌉ℬ⌈f(1)⌉` with
 `c_{⌈f(1)⌉} ∘ ⟨f⟩ ∘ π_{⌈f⌉} = f`. -/
 noncomputable def chevron [VonNeumannAlgebra A] [VonNeumannAlgebra B]
@@ -8002,7 +8002,7 @@ noncomputable def chevron [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     NCPMap (Corner A (ncpCarrier f)) (Corner B (ceil (f 1))) :=
   (exists_chevron f).choose
 
-/-- **105II** (`chevron-f`, proc.tex:1690, Definition), defining property:
+/-- **105II** (`chevron-f`, proc.tex:1696, Definition), defining property:
 `⟨f⟩` is the unique ncp-map with `c_{⌈f(1)⌉} ∘ ⟨f⟩ ∘ π_{⌈f⌉} = f` (the
 filter of the projection `⌈f(1)⌉` being the inclusion of the corner). -/
 theorem chevron_unique [VonNeumannAlgebra A] [VonNeumannAlgebra B]
@@ -8041,7 +8041,7 @@ theorem chevron_unique [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     _ = (chevron f ((cornerProjMap (ncpCarrier f)).toNCPMap b.val)).val := hmain _
     _ = (chevron f b).val := by rw [hsurj]
 
-/-- **105III** (`chevron-f-basic`, proc.tex:1717, Exercise), parts 1–2:
+/-- **105III** (`chevron-f-basic`, proc.tex:1723, Exercise), parts 1–2:
 `⟨f⟩ = π_{⌈f(1)⌉} ∘ f ∘ c_{⌈f⌉}` (the defining formula of `chevron`) and
 `⟨f⟩ = π_{⌈f(1)⌉} ∘ c_{f(1)} ∘ [f]`, i.e.
 `⟨f⟩(a) = √f(1) [f](a) √f(1)`. -/
@@ -8062,7 +8062,7 @@ theorem chevron_f_basic_12 [VonNeumannAlgebra A] [VonNeumannAlgebra B]
   rw [hsurj, stdFilter_apply] at h
   rw [hch, ceilOne_conj, h]
 
-/-- **105III** (`chevron-f-basic`, proc.tex:1717, Exercise), part 3:
+/-- **105III** (`chevron-f-basic`, proc.tex:1723, Exercise), part 3:
 `⟨f⟩` is faithful and `⟨f⟩(1) = f(1)`. -/
 theorem chevron_f_basic_3 [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     (f : NCPMap A B) :
@@ -8138,7 +8138,7 @@ theorem chevron_f_basic_3 [VonNeumannAlgebra A] [VonNeumannAlgebra B]
       rw [mul_one, he.isIdempotentElem.eq]
     rw [hch, Corner.val_one, h1, ceilOne_conj]
 
-/-- **105III** (`chevron-f-basic`, proc.tex:1717, Exercise), part 4: if
+/-- **105III** (`chevron-f-basic`, proc.tex:1723, Exercise), part 4: if
 `f` is pure then `⟨f⟩` is pure, and hence a filter. -/
 theorem chevron_f_basic_4 [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     (f : NCPMap A B) (hf : IsPure f) :
@@ -8289,7 +8289,7 @@ private theorem isDiamondSelfAdjoint_cornerMap [VonNeumannAlgebra A]
     rw [hiff s t hs ht, hiff t s ht hs]
     exact hf.2 s.val t.val (hproj_val s hs) (hproj_val t ht)
 
-/-- **105IV** (`chevron-f-purely-positive`, proc.tex:1742, Exercise),
+/-- **105IV** (`chevron-f-purely-positive`, proc.tex:1748, Exercise),
 part 1: for ⋄-self-adjoint `f : 𝒜 → 𝒜` (so `⌈f⌉ = ⌈f(1)⌉` and `⟨f⟩` can
 be regarded as a map `⌈f⌉𝒜⌈f⌉ → ⌈f⌉𝒜⌈f⌉`), `⟨f⟩` is ⋄-self-adjoint.
 (Rendered on the corner `⌈f(1)⌉𝒜⌈f(1)⌉` via the chevron formula.) -/
@@ -8301,7 +8301,7 @@ theorem chevron_f_purely_positive_1 [VonNeumannAlgebra A] (f : NCPMap A A)
       IsDiamondSelfAdjoint g :=
   isDiamondSelfAdjoint_cornerMap f hf (ceil (f 1)) rfl
 
-/-- **105IV** (`chevron-f-purely-positive`, proc.tex:1742, Exercise),
+/-- **105IV** (`chevron-f-purely-positive`, proc.tex:1748, Exercise),
 part 2: for ⋄-self-adjoint `f`, `⟨f²⟩ = ⟨f⟩²` — rendered elementwise: for
 `a` in the corner `⌈f(1)⌉𝒜⌈f(1)⌉`,
 `⌈f(1)⌉ f(f(a)) ⌈f(1)⌉ = ⌈f(1)⌉ f(⌈f(1)⌉ f(a) ⌈f(1)⌉) ⌈f(1)⌉`.
@@ -8328,7 +8328,7 @@ theorem chevron_f_purely_positive_2 [VonNeumannAlgebra A] (f : NCPMap A A)
   rw [← hce]
   conv_rhs => rw [← hfund (f a)]
 
-/-- **105IV** (`chevron-f-purely-positive`, proc.tex:1742, Exercise),
+/-- **105IV** (`chevron-f-purely-positive`, proc.tex:1748, Exercise),
 part 3: if `f` is ⋄-positive then `⟨f⟩` is ⋄-positive (rendered on the
 corner `⌈f(1)⌉𝒜⌈f(1)⌉` as in part 1). -/
 theorem chevron_f_purely_positive_3 [VonNeumannAlgebra A] (f : NCPMap A A)
@@ -8360,7 +8360,7 @@ theorem chevron_f_purely_positive_3 [VonNeumannAlgebra A] (f : NCPMap A A)
     rw [← he]; exact a.property
   rw [ncpComp_apply, hkval, hkval, hkey a.val hmem, hfval a.val]
 
-/-- **105V** (`positive-map-uniqueness`, proc.tex:1766, Theorem),
+/-- **105V** (`positive-map-uniqueness`, proc.tex:1772, Theorem),
 existence: `√p(·)√p` is a ⋄-positive map with value `p` at `1`. -/
 theorem positive_map_uniqueness_exists [VonNeumannAlgebra A] (p : A)
     (hp : 0 ≤ p) :
@@ -8375,7 +8375,7 @@ theorem positive_map_uniqueness_exists [VonNeumannAlgebra A] (p : A)
   · rw [adSelf_apply, hsa, mul_one, CFC.sqrt_mul_sqrt_self p hp]
   · rw [adSelf_apply, hsa]
 
-/-- **105V** (`positive-map-uniqueness`, proc.tex:1766, Theorem),
+/-- **105V** (`positive-map-uniqueness`, proc.tex:1772, Theorem),
 uniqueness: any ⋄-positive `f : 𝒜 → 𝒜` with `f(1) = p` is
 `√p(·)√p`.
 
@@ -8503,7 +8503,7 @@ theorem positive_map_uniqueness [VonNeumannAlgebra A] (p : A) (hp : 0 ≤ p)
   rw [hfund a, ← ceilOne_conj f (ceil (f 1) * a * ceil (f 1)), ← hv, hthis, hval2]
 
 
-/-- **105VII** (`sqrt-axiom`, proc.tex:1792, Corollary, "Square Root
+/-- **105VII** (`sqrt-axiom`, proc.tex:1798, Corollary, "Square Root
 Axiom"): given positive `p` there is a unique ⋄-positive `g : 𝒜 → 𝒜`
 with `g(g(1)) = p`, namely `g = ⁴√p(·)⁴√p`.
 
@@ -8551,7 +8551,7 @@ theorem sqrt_axiom [VonNeumannAlgebra A] (p : A) (hp : 0 ≤ p) :
 
 /-! ## Parsec 1060: the sequential product -/
 
-/-- **106I** (`uniqueness-sequential-product`, proc.tex:1811, Theorem), the
+/-- **106I** (`uniqueness-sequential-product`, proc.tex:1817, Theorem), the
 axioms: a binary operation `∗` on (the effects of) a von Neumann algebra
 `𝒜` is a **sequential product** when for all effects `p`:
 (A) `p ∗ 1 = p`; (B) `p ∗ (·)` is given on effects by a pure map;
@@ -8605,7 +8605,7 @@ private theorem effect_le_isStarProjection_iff [VonNeumannAlgebra A] {b q : A}
     rw [he] at hz
     exact sub_nonneg.mp hz
 
-/-- **106I** (`uniqueness-sequential-product`, proc.tex:1811, Theorem),
+/-- **106I** (`uniqueness-sequential-product`, proc.tex:1817, Theorem),
 existence: `p ∗ q = √p q √p` is a sequential product on the effects of
 any von Neumann algebra. -/
 theorem uniqueness_sequential_product_exists [VonNeumannAlgebra A] :
@@ -8676,7 +8676,7 @@ theorem uniqueness_sequential_product_exists [VonNeumannAlgebra A] :
       ← hd e₁, ← hd e₂]
     exact hcon e₁ e₂ h₁ h₂
 
-/-- **106I** (`uniqueness-sequential-product`, proc.tex:1811, Theorem),
+/-- **106I** (`uniqueness-sequential-product`, proc.tex:1817, Theorem),
 uniqueness: any sequential product on the effects of a von Neumann algebra
 is given by `p ∗ q = √p q √p`.
 
@@ -8733,7 +8733,7 @@ theorem uniqueness_sequential_product [VonNeumannAlgebra A] (op : A → A → A)
     _ = CFC.sqrt p * q * CFC.sqrt p := hkey q
 
 
-/-- **106III** (proc.tex:1858, Exercise), part 1: `p ∗ q := ⌈p⌉q⌈p⌉`
+/-- **106III** (proc.tex:1864, Exercise), part 1: `p ∗ q := ⌈p⌉q⌈p⌉`
 satisfies all axioms of 106I except (A) (which fails when `A` is
 nontrivial).  The conjuncts are (B), (C), (D), (E), `¬(A)`, each written
 out at this `∗`; the (C) conjunct is
@@ -8900,7 +8900,7 @@ theorem sequential_product_counterexample_1 [VonNeumannAlgebra A]
       norm_num at this
     exact one_ne_zero ((smul_eq_zero.mp hzero).resolve_left hne)
 
-/-- **106III** (proc.tex:1858, Exercise), part 2:
+/-- **106III** (proc.tex:1864, Exercise), part 2:
 `p ∗ q := ⌊p⌋q⌊p⌋ + √(p−⌊p⌋) q √(p−⌊p⌋)` satisfies axioms (A), (C),
 (D), (E) of 106I.  That (B) **fails** — the other half of the part, and the
 reason it is stated — is
@@ -9257,7 +9257,7 @@ private theorem spc2_S_ne : spc2S ≠ spc2S' := by
   simp [spc2S, spc2S'] at h01
   norm_num at h01
 
-/-- **106III** (proc.tex:1858, Exercise), part 2, the **failing** axiom:
+/-- **106III** (proc.tex:1864, Exercise), part 2, the **failing** axiom:
 there is a von Neumann algebra and an effect `p` of it for which
 `q ↦ ⌊p⌋q⌊p⌋ + √(p−⌊p⌋) q √(p−⌊p⌋)` is **not** given by any pure map — so
 axiom (B) does not follow from (A), (C), (D), (E), which is the point of
@@ -9482,7 +9482,7 @@ private theorem spc3_S0 : ∃ T0 : Matrix (Fin 2) (Fin 2) ℂ, star T0 * T0 = sp
     norm_num [spc3S, Matrix.mul_apply, Fin.sum_univ_two, Matrix.star_apply, hrc, hr]
 
 open scoped Classical in
-/-- **106III** (proc.tex:1858, Exercise), part 3: its claim that `∗` obeys
+/-- **106III** (proc.tex:1864, Exercise), part 3: its claim that `∗` obeys
 axiom (E) as soon as `u_p^* = u_p` is **FALSE as printed**; this is the
 counterexample.  Work in `𝒜 = B(ℂ²)`, put `p := diag(1, 9/25)` (so
 `⌈p⌉ = 1` and `√p = diag(1, 3/5)`), and take the family `u_p := ` the flip
@@ -9646,7 +9646,7 @@ theorem sequential_product_counterexample_3_ax5_is_false :
 
 end SPC3
 
-/-- **106III** (proc.tex:1858, Exercise), part 3: for a family `u` of
+/-- **106III** (proc.tex:1864, Exercise), part 3: for a family `u` of
 unitaries `u_p` of the corners `⌈p⌉𝒜⌈p⌉`, the operation
 `p ∗ q := √p u_p* q u_p √p` satisfies (A) and (B); it moreover satisfies
 (C) when `u_p² = u_{p²}`, (D) when `p u_p = u_p p`, and (E) when
@@ -9679,7 +9679,7 @@ theorem sequential_product_counterexample_3 [VonNeumannAlgebra A]
         IsStarProjection e₂ →
         (op p e₁ ≤ 1 - e₂ ↔ op p e₂ ≤ 1 - e₁)) := sorry
 
-/-- **106III** (proc.tex:1858, Exercise), part 4, first claim: there is a
+/-- **106III** (proc.tex:1864, Exercise), part 4, first claim: there is a
 Borel function `g : [0,1] → S¹` with `g(½) ≠ 1` and `g(λ²) = g(λ)²`.
 FIXME(borel-calculus): the second claim — that
 `p ∗ q := √p g(p)* q g(p) √p` satisfies all axioms of 106I except (E) —
@@ -9710,9 +9710,9 @@ theorem sequential_product_counterexample_4 :
       rw [Real.log_pow]; push_cast; ring]
     rw [mul_assoc, Complex.exp_nat_mul]
 
-/- **106IV** (`fourth-axiom`, proc.tex:1901, Problem): open problem (is
+/- **106IV** (`fourth-axiom`, proc.tex:1907, Problem): open problem (is
 axiom (D) redundant?) — not formalizable as a theorem; skipped.
-**106V** (proc.tex:1908, Remark): historical remark on the axioms of
+**106V** (proc.tex:1914, Remark): historical remark on the axioms of
 [westerbaan2016universal]; skipped. -/
 
 end Theses.A.Proc

@@ -35,7 +35,7 @@ universe u v w
 
 namespace Theses.B.Dils
 
-/-! **158I** (dils.tex:4084) and **158Ib** (dils.tex:4129): introduction and
+/-! **158I** (dils.tex:4092) and **158Ib** (dils.tex:4137): introduction and
 discussion — nothing to formalize. -/
 
 section Kaplansky
@@ -49,7 +49,7 @@ theorem unSeminorm_mulInner_eq (ω : NPFunctional ℬ) (x : ℬ) :
     unSeminorm ω (mulInner ℬ) x = omegaNorm ℬ ω (star x) := by
   rw [omegaNorm, unSeminorm, star_star]; rfl
 
-/-- **158Ia** (dils.tex:4121, Kaplansky density theorem), the variant of
+/-- **158Ia** (dils.tex:4129, Kaplansky density theorem), the variant of
 thesis A's `kaplansky` (vn.tex 74IV) used here: for an ultrastrongly dense
 C*-subalgebra `𝒜` of a von Neumann algebra `ℬ` and every `b ∈ ℬ`, there is
 a net in `𝒜`, norm-bounded by `‖b‖`, converging ultrastrongly to `b`.
@@ -100,7 +100,7 @@ theorem kaplansky_bounded_approx [VonNeumannAlgebra ℬ]
 variable {X : Type v}
   [NormedAddCommGroup X] [Module ℂ X] [SMul ℬ X] [CStarModule ℬ X]
 
-/-! **158II** (`kaplansky-hilbmod`, dils.tex:4135, Kaplansky density theorem
+/-! **158II** (`kaplansky-hilbmod`, dils.tex:4143, Kaplansky density theorem
 for Hilbert C*-modules) is stated and **proved** at the end of this file, as
 `kaplansky_hilbmod`, because its proof (through the linking algebra) needs
 the whole of the file: the np-functional helpers of the `WeakToStrong`
@@ -256,7 +256,7 @@ private theorem inv1p_conj_le_one {b : ℬ} (hb : 0 ≤ b) :
 
 variable {ι : Type w} {l : Filter ι}
 
-/-- **158V**.1 (dils.tex:4193, the term `A₁` of `kaplansky-splitting`): if
+/-- **158V**.1 (dils.tex:4201, the term `A₁` of `kaplansky-splitting`): if
 `y_α → y` ultranorm, then
 
   `A₁ = ⟨y,y⟩ (1+⟨y,y⟩)⁻² - (1+⟨y_α,y_α⟩)⁻¹ ⟨y,y⟩ (1+⟨y,y⟩)⁻¹ → 0`
@@ -1152,7 +1152,7 @@ private theorem kaplansky_weak_of_commutative
       _ ≤ η / 2 + η / 2 := add_le_add hPδ hPsq
       _ = η := by ring
 
-/-- **158II, the commutative case** (`kaplansky-hilbmod`, dils.tex:4135,
+/-- **158II, the commutative case** (`kaplansky-hilbmod`, dils.tex:4143,
 restricted): the Kaplansky density theorem for Hilbert C*-modules over a
 *commutative* von Neumann algebra `ℬ` — the hypotheses of
 `kaplansky_hilbmod` plus commutativity, with the same conclusion.
@@ -1709,7 +1709,7 @@ theorem kaplansky_hilbmod_of_closure
     have : M * δ + M * δ = 2 * M * δ := by ring
     linarith
 
-/-- **158II** (`kaplansky-hilbmod`, dils.tex:4135) for a **self-dual**
+/-- **158II** (`kaplansky-hilbmod`, dils.tex:4143) for a **self-dual**
 Hilbert module, proved through the linking algebra.  Self-duality is *not* a
 hypothesis of 158II: this is the intermediate step of the replacement proof
 (the linking algebra `ℬᵃ(X ⊕ ℬ)` needs `X ⊕ ℬ` self dual, **152X**), and the
@@ -1946,7 +1946,7 @@ private theorem unDense_trans {Y : Type*} [NormedAddCommGroup Y] [Module ℂ Y]
   show unSeminorm (ωs i) (inner ℬ) (y - η d) ≤ ε
   linarith [htri, h1, h2]
 
-/-- **158II** (`kaplansky-hilbmod`, dils.tex:4135, Kaplansky density
+/-- **158II** (`kaplansky-hilbmod`, dils.tex:4143, Kaplansky density
 theorem for Hilbert C*-modules): let `X` be a Hilbert ℬ-module for a von
 Neumann algebra `ℬ` with an ultranorm-dense 𝒜-submodule `D ⊆ X`, where
 `𝒜 ⊆ ℬ` is a C*-subalgebra with `⟨y,y⟩ ∈ 𝒜` for all `y ∈ D`.  Then every

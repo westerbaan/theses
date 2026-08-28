@@ -2468,7 +2468,7 @@ The step of **224VI** that replaces the printed solution's GNS analysis is
 `su_state_sqrtConj`: a *state* `ω` with `ω(a) = 1` satisfies
 `ω(√a x √a) = ω(x)` for every `x`.  (For a vector state `⟨v, ·v⟩` this says
 `a v = v ⟹ √a v = v`.)  It rests on Cauchy–Schwarz for positive
-functionals, **30IV**.1 (`omega-norm-basic`, cstar.tex:4767)
+functionals, **30IV**.1 (`omega-norm-basic`, cstar.tex:4787)
 `omega_norm_basic_1`. -/
 
 section StateSqrt
@@ -2504,7 +2504,7 @@ theorem su_sq_le_self {d : A} (h0 : 0 ≤ d) (h1 : d ≤ 1) : d * d ≤ d := by
   rwa [e1, e2] at key
 
 /-- A corollary of **Cauchy–Schwarz** for positive functionals
-(**30IV**.1, `omega-norm-basic`, cstar.tex:4767, `omega_norm_basic_1`): a
+(**30IV**.1, `omega-norm-basic`, cstar.tex:4787, `omega_norm_basic_1`): a
 positive functional killing an effect `d` kills every product with `d`.
 This is a consequence of 30IV.1, not a transcription of it. -/
 theorem su_posFun_mul_eq_zero (ω : A →ₗ[ℂ] ℂ) (hω : IsPositiveMap ω) {d : A}

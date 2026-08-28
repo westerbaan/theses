@@ -126,7 +126,7 @@ private theorem pfc_key (g : A →L[ℂ] ℂ) (hg1 : g 1 = 1) (hgn : ‖g‖ ≤
   rw [hgbr]
   simpa [Complex.le_def] using hr0
 
-/-- **86II** (`positive-functional-criterion`, vn.tex:6265, Lemma): a
+/-- **86II** (`positive-functional-criterion`, vn.tex:6293, Lemma): a
 (bounded) linear functional `f` on a C*-algebra is positive iff
 `‖f‖ ≤ f(1)`. -/
 theorem positive_functional_criterion (f : A →L[ℂ] ℂ) :
@@ -202,7 +202,7 @@ private theorem vbep_norm (u : A) (h : ℝ → ℝ) (hc : Continuous h) :
     cfc_mul h (fun t : ℝ => t) (star u * u) hc.continuousOn (by fun_prop),
     cfc_id' (R := ℝ) (a := star u * u) hpsa]
 
-/-- **86VI** (`vn-ball-extreme-point`, vn.tex:6320, Lemma): an extreme
+/-- **86VI** (`vn-ball-extreme-point`, vn.tex:6348, Lemma): an extreme
 point `u` of the unit ball of a C*-algebra is a partial isometry (i.e.
 `u*u` is a projection) with `(uu*)^⊥ A (u*u)^⊥ = {0}`.  (**86VII**,
 Remark: the converse also holds but is not needed — not converted.) -/
@@ -591,7 +591,7 @@ theorem preservesDirSups_of_continuousOn_effects_functional (g : A →ₚ[ℂ] �
   preservesDirSups_of_continuousOn_effects g (by rwa [ultraweak_complex])
 
 
-/-- **86IX** (`polar-decomposition-of-functional`, vn.tex:6373, Theorem
+/-- **86IX** (`polar-decomposition-of-functional`, vn.tex:6401, Theorem
 (Polar decomposition of functionals)): every linear functional `f` on a von
 Neumann algebra that is ultraweakly continuous on the unit ball is of the
 form `f = f(uu*(·)) = f((·)u*u)` for a partial isometry `u` such that
@@ -707,7 +707,7 @@ theorem polar_decomposition_of_functional (f : A →ₗ[ℂ] ℂ)
     rw [hA a] at h
     linear_combination h
 
-/-- **86XII** (`uwcont-on-ball`, vn.tex:6435, Corollary): a functional on a
+/-- **86XII** (`uwcont-on-ball`, vn.tex:6463, Corollary): a functional on a
 von Neumann algebra that is ultraweakly continuous on the unit ball is
 ultraweakly continuous. -/
 theorem uwcont_on_ball (f : A →ₗ[ℂ] ℂ)
@@ -756,7 +756,7 @@ theorem uwcont_on_ball (f : A →ₗ[ℂ] ℂ)
   letI : TopologicalSpace A := ultraweak A
   exact hfinal.congr hfg
 
-/-- **86XIV** (`functional-norm`, vn.tex:6460, Lemma): for a normal
+/-- **86XIV** (`functional-norm`, vn.tex:6488, Lemma): for a normal
 (= ultraweakly continuous) functional `f` and a partial isometry `u` with
 `f(u(·))` positive and `f = f(uu*(·))`: `‖f‖ = f(u)`. -/
 theorem functional_norm (f : A →L[ℂ] ℂ)
@@ -800,7 +800,7 @@ theorem functional_norm (f : A →L[ℂ] ℂ)
 /-! ## Parsec 870: the predual -/
 
 variable (A) in
-/-- **87I** (vn.tex:6480, Definition): the **predual** `A_*` of a von
+/-- **87I** (vn.tex:6508, Definition): the **predual** `A_*` of a von
 Neumann algebra: the (normed vector) space of ultraweakly continuous
 functionals on `A`, rendered as a subset of the continuous dual.
 (**87II**, Remark: Sakai's theorem `(A_*)* ≅ A` is neither needed nor
@@ -808,7 +808,7 @@ converted.) -/
 def predual : Set (A →L[ℂ] ℂ) :=
   {f : A →L[ℂ] ℂ | @Continuous A ℂ (ultraweak A) _ ⇑f}
 
-/-- **87III** (`predual-complete`, vn.tex:6509, Proposition): the predual
+/-- **87III** (`predual-complete`, vn.tex:6537, Proposition): the predual
 of a von Neumann algebra is complete with respect to the operator norm. -/
 theorem predual_complete : IsComplete (predual A) := by
   intro F hF hFle
@@ -856,7 +856,7 @@ theorem predual_complete : IsComplete (predual A) := by
 /-! **87V** (vn.tex:6548): motivation for the next lemma — nothing to
 formalize. -/
 
-/-- **87VI** (`norm-predual`, vn.tex:6563, Lemma):
+/-- **87VI** (`norm-predual`, vn.tex:6591, Lemma):
 `‖a‖ = sup {|f(a)| : f ∈ (A_*)₁}` for every element `a` of a von Neumann
 algebra. -/
 theorem norm_predual (a : A) :
@@ -1003,7 +1003,7 @@ def predualSub : Submodule ℂ (A →L[ℂ] ℂ) where
     letI : TopologicalSpace A := ultraweak A
     exact (continuous_const.mul hf : Continuous fun a : A => c * f a)
 
-/-- **87VIII** (`ultraweakly-bounded-implies-bounded`, vn.tex:6584,
+/-- **87VIII** (`ultraweakly-bounded-implies-bounded`, vn.tex:6612,
 Theorem): a net `(b_α)_α` in a von Neumann algebra is norm bounded provided
 it is **ultraweakly bounded**, i.e. `sup_α |ω(b_α)| < ∞` for every
 np-functional `ω`.
@@ -1085,12 +1085,12 @@ theorem ultraweakly_bounded_implies_bounded {ι : Type*} (x : ι → A)
 **88I** (vn.tex:6622): overview — nothing to formalize. -/
 
 variable (A) in
-/-- **88II** (`commutant-ceil`, vn.tex:6669, Proposition), definition part:
+/-- **88II** (`commutant-ceil`, vn.tex:6697, Proposition), definition part:
 the projection `⌈e⌉_{S^□} = ⋃_{a∈S} ⌈a* e a⌉`. -/
 noncomputable def commutantCeil (S : Set A) (e : A) : A :=
   projSup {x : A | ∃ a ∈ S, x = ceil (star a * e * a)}
 
-/-- **88II** (`commutant-ceil`, vn.tex:6669, Proposition): for a subset `S`
+/-- **88II** (`commutant-ceil`, vn.tex:6697, Proposition): for a subset `S`
 of a von Neumann algebra closed under multiplication and involution and
 containing `1`, and a projection `e`: `⌈e⌉_{S^□} = ⋃_{a∈S} ⌈a* e a⌉` is
 the least projection in `S^□` above `e`. -/
@@ -1270,7 +1270,7 @@ theorem exists_cyclic_projection (S : StarSubalgebra ℂ (H →L[ℂ] H)) (x : H
   ext y
   exact Submodule.starProjection_eq_self_iff
 
-/-- **88IV** (`carrier-vector-state`, vn.tex:6714, Exercise): for a vector
+/-- **88IV** (`carrier-vector-state`, vn.tex:6742, Exercise): for a vector
 `x` of a Hilbert space `H` and a unital ∗-subalgebra `S` of `B(H)`, the
 least projection in `S^□` above `⌈|x⟩⟨x|⌉` equals
 `⋃_{a∈S} ⌈|ax⟩⟨ax|⌉` and is the projection onto `closure (S x)` (a
@@ -1347,7 +1347,7 @@ theorem carrier_vector_state (S : StarSubalgebra ℂ (H →L[ℂ] H)) (x : H) :
       _ = (T * p) x := by rw [hpcomm T hT]
       _ = T x := by show T (p x) = T x; rw [hpx]
 
-/-- **88IV** (`carrier-vector-state`, vn.tex:6714, Exercise), **item 2**:
+/-- **88IV** (`carrier-vector-state`, vn.tex:6742, Exercise), **item 2**:
 the same projection is `⌈⟨x,(·)x⟩|S^□⌉`, the carrier of the vector
 functional given by `x` *restricted to* `S^□`.
 
@@ -1416,7 +1416,7 @@ theorem carrier_vector_state_2 (S : StarSubalgebra ℂ (H →L[ℂ] H)) (x : H) 
     _ = inner ℂ x w := by
         rw [← ContinuousLinearMap.star_eq_adjoint, hqproj.isSelfAdjoint.star_eq, hqx]
 
-/-- **88IV** (`carrier-vector-state`, vn.tex:6714, Exercise), conclusion:
+/-- **88IV** (`carrier-vector-state`, vn.tex:6742, Exercise), conclusion:
 `closure (S^□□ x) = closure (S x)`. -/
 theorem carrier_vector_state' (S : StarSubalgebra ℂ (H →L[ℂ] H)) (x : H) :
     closure {y : H | ∃ T ∈ commutant (H →L[ℂ] H)
@@ -1642,7 +1642,7 @@ theorem wstar_eq_of_isVNSubalgebra (R : StarSubalgebra ℂ (H →L[ℂ] H))
   le_antisymm (sInf_le ⟨hR, subset_rfl⟩)
     (fun _ ha => (isVNSubalgebra_wstar (R : Set (H →L[ℂ] H))).2 ha)
 
-/-- **88V** (`proto-double-commutant`, vn.tex:6737), **item 1**, second
+/-- **88V** (`proto-double-commutant`, vn.tex:6765), **item 1**, second
 half: `ρ'(t) = ∑ₙ Pₙ* t Pₙ`, where `Pₙ : ⊕ₙ H → H` is the `n`-th projection
 and `Pₙ*` the corresponding coordinate embedding.  The series converges
 strongly — pointwise on `⊕ₙ H` — which is the only sense it can have (in
@@ -1660,7 +1660,7 @@ theorem amp_eq_sum_corners (t : H →L[ℂ] H) (y : lp (fun _ : ℕ => H) 2) :
     intro n; rw [amp_apply]; rfl
   simpa only [heq] using h0
 
-/-- **88V** (`proto-double-commutant`, vn.tex:6737), **item 1**, first
+/-- **88V** (`proto-double-commutant`, vn.tex:6765), **item 1**, first
 half: an np-map `ω : B(H) → ℂ` is `ω(t) = ⟨x', ρ'(t)x'⟩` for the vector
 `x' ≡ (x₁, x₂, …)` of `H' = ⊕ₙ H` assembled from the sequence that **39IX**
 (`bh_np`) supplies, `ω = ∑ₙ ⟨xₙ, (·)xₙ⟩`.  (Square-summability of the `xₙ`
@@ -1686,7 +1686,7 @@ theorem proto_double_commutant_1 (ω : NPFunctional (H →L[ℂ] H)) :
   simp only [heq]
   exact ((hx t).tsum_eq).symm
 
-/-- **88V** (`proto-double-commutant`, vn.tex:6737), **item 3**: for a
+/-- **88V** (`proto-double-commutant`, vn.tex:6765), **item 3**: for a
 unital ∗-subalgebra `S` of `B(H)`, the double commutant `S^□□` is contained
 in the ultrastrong closure of `S`.  (Item 1 is `proto_double_commutant_1`
 and `amp_eq_sum_corners` above; item 2's two halves are
@@ -1733,7 +1733,7 @@ theorem proto_double_commutant (S : StarSubalgebra ℂ (H →L[ℂ] H)) :
   rw [hnorm] at hd2
   rwa [show s - t = -(t - s) by abel, omegaNorm_neg]
 
-/-- **88VI** (`double-commutant`, vn.tex:6781, Double Commutant Theorem):
+/-- **88VI** (`double-commutant`, vn.tex:6809, Double Commutant Theorem):
 for a unital ∗-subalgebra `S` of `B(H)` the following coincide: the double
 commutant `S^□□`, the ultrastrong closure of `S`, the ultraweak closure of
 `S`, and the least von Neumann subalgebra `W*(S)` containing `S`. -/
@@ -1769,7 +1769,7 @@ theorem double_commutant (S : StarSubalgebra ℂ (H →L[ℂ] H)) :
     subset_antisymm (hAB.trans hBC) fun z hz => hDA (hCD hz),
     subset_antisymm ((hAB.trans hBC).trans hCD) hDA⟩
 
-/-- **88VIII** (`centre-commutant`, vn.tex:6824, Exercise): for a von
+/-- **88VIII** (`centre-commutant`, vn.tex:6852, Exercise): for a von
 Neumann subalgebra `R` of `B(H)`: `Z(R) = Z(R^□)`, i.e. the central
 elements of `R` coincide with those of its commutant. -/
 theorem centre_commutant (R : StarSubalgebra ℂ (H →L[ℂ] H))
@@ -1794,7 +1794,7 @@ private theorem isStarProjection_mul_of_comm {M : Type*} [CStarAlgebra M]
   · show star (p * q) = p * q
     rw [star_mul, hp.isSelfAdjoint.star_eq, hq.isSelfAdjoint.star_eq, ← h]
 
-/-- **88IX** (`commutant-cceil`, vn.tex:6831): for an np-map
+/-- **88IX** (`commutant-cceil`, vn.tex:6859): for an np-map
 `f : B(H) → B` and a von Neumann subalgebra `R` of `B(H)`, the central
 carrier of `f` relative to `R` coincides with the central carrier of `f`
 relative to `R^□`: some projection is least among the central projections
@@ -1978,7 +1978,7 @@ theorem commutant_cceil [VonNeumannAlgebra B]
 
 variable [VonNeumannAlgebra A]
 
-/-- **89I** (`gns-mapping-property`, vn.tex:6839, Lemma): if an
+/-- **89I** (`gns-mapping-property`, vn.tex:6867, Lemma): if an
 np-functional `ω` on a von Neumann algebra is represented by nmiu-maps
 `ρ : A → B(H)` and `π : A → B(K)` with vectors `x ∈ H`, `y ∈ K` — i.e.
 `⟨x,ρ(·)x⟩ = ω = ⟨y,π(·)y⟩` — then there is a bounded `U : K → H` with
@@ -2383,7 +2383,7 @@ private theorem exists_sum_of_partial_isometries {ι : Type*} (U : ι → (E →
 
 end SumOfPartialIsometries
 
-/-- **89III** (`summing-partial-isometries`, vn.tex:6901, Exercise): given
+/-- **89III** (`summing-partial-isometries`, vn.tex:6929, Exercise): given
 bounded operators `Uᵢ : H → K` such that the `Uᵢ*Uᵢ` are pairwise
 orthogonal projections and the `UᵢUᵢ*` are pairwise orthogonal
 projections, there is a bounded `V : H → K` with
@@ -2630,7 +2630,7 @@ theorem nmiu_central_preimage (π : NMIUMap A (L →L[ℂ] L)) {p : L →L[ℂ] 
 
 end Helpers
 
-/-- **89V** (`sigma-weak-lemma-2`, vn.tex:6952, Lemma): let `Ω` be a
+/-- **89V** (`sigma-weak-lemma-2`, vn.tex:6980, Lemma): let `Ω` be a
 collection of np-functionals on a von Neumann algebra `A` with pairwise
 orthogonal central carriers, and let `ρ : A → B(H)`, `π : A → B(K)` be
 nmiu-maps such that each `ω ∈ Ω` is given by vectors `x_ω ∈ H` and
@@ -3074,7 +3074,7 @@ theorem sigma_weak_lemma_2 (Ω : Set (NPFunctional A))
       _ = pp := hzρ
 
 
-/-- **89VII** (`sigma-weak-lemma`, vn.tex:7052, Corollary): let `A` be
+/-- **89VII** (`sigma-weak-lemma`, vn.tex:7080, Corollary): let `A` be
 (represented as) a von Neumann algebra of operators on `H` via an injective
 nmiu-map `ρ` with von Neumann subalgebra range, and let
 `π : A → B(K)` be a representation in which *every* np-functional of `A`
@@ -3431,7 +3431,7 @@ theorem exists_nat_index {ι : Type*} (ρ : NMIUMap A (H →L[ℂ] H)) (ω : NPF
     simpa [← Complex.ofReal_pow] using this.summable
   · refine key (fun z => ⟪z, ρ a z⟫) (ω a) (by simp) (hx a)
 
-/-- **89IX** (`normal-functional`, vn.tex:7089, Theorem): every
+/-- **89IX** (`normal-functional`, vn.tex:7117, Theorem): every
 np-functional `ω` on a von Neumann subalgebra `A` of `B(H)` (given by an
 injective nmiu-map `ρ : A → B(H)` with von Neumann subalgebra range) is of
 the form `ω = ∑ₙ ⟨xₙ,(·)xₙ⟩` for some `x₁, x₂, … ∈ H` with
@@ -3485,7 +3485,7 @@ section Permanence
 
 variable [VonNeumannAlgebra A] [VonNeumannAlgebra B]
 
-/-- **89XI** (`functional-permanence`, vn.tex:7155, Corollary), part 1: for
+/-- **89XI** (`functional-permanence`, vn.tex:7183, Corollary), part 1: for
 a von Neumann subalgebra `A` of `B` (an injective nmiu-map `ρ : A → B`
 with von Neumann subalgebra range), every np-functional `ω` on `A` extends
 to an np-functional `ξ` on `B`: `ξ ∘ ρ = ω`. -/
@@ -3521,7 +3521,7 @@ theorem functional_permanence_1 (ρ : NMIUMap A B)
   rw [hν]
   exact (hsum a).tsum_eq
 
-/-- **89XI** (`functional-permanence`, vn.tex:7155, Corollary), part 2
+/-- **89XI** (`functional-permanence`, vn.tex:7183, Corollary), part 2
 (**ultraweak permanence**): the ultraweak topology of a von Neumann
 subalgebra `A` of `B` is the restriction of the ultraweak topology of
 `B`. -/
@@ -3549,7 +3549,7 @@ theorem functional_permanence_2 (ρ : NMIUMap A B)
     have heq : (fun a : A => (ξ (ρ a) : ℂ)) = fun a : A => (ω a : ℂ) := funext hξ
     rw [heq]
 
-/-- **89XI** (`functional-permanence`, vn.tex:7155, Corollary), part 3
+/-- **89XI** (`functional-permanence`, vn.tex:7183, Corollary), part 3
 (**ultrastrong permanence**): likewise for the ultrastrong topologies. -/
 theorem functional_permanence_3 (ρ : NMIUMap A B)
     (hρ : Function.Injective ⇑ρ)
@@ -3606,7 +3606,7 @@ theorem functional_permanence_3 (ρ : NMIUMap A B)
     show omegaNorm B ξ (ρ a - ρ b) < ε ↔ omegaNorm A ω (a - b) < ε
     rw [hcomp]
 
-/-- **89XII** (`functional-extension`, vn.tex:7175, Exercise): every
+/-- **89XII** (`functional-extension`, vn.tex:7203, Exercise): every
 np-functional `ω` on `A` extends along any injective nmiu-map
 `ρ : A → B`: there is an np-functional `ω'` on `B` with `ω' ∘ ρ = ω`.
 (The thesis writes `ρ ∘ ω' = ω`, an obvious slip.) -/
@@ -3668,7 +3668,7 @@ theorem continuous_ultrastrong_conjFunctional (ω : NPFunctional A) (k : A) :
     _ ≤ δ * C := hmul
     _ < ε := hδC
 
-/-- **90II** (`vn-center-separating-fundamental`, vn.tex:7206,
+/-- **90II** (`vn-center-separating-fundamental`, vn.tex:7234,
 Proposition), part 1: for a centre separating collection `Ω` of
 np-functionals (cstar.tex **21II**.4, `CentreSeparatingConj`) and an
 ultrastrongly dense subset `S` of a von Neumann algebra `𝒜`, the collection
@@ -3924,7 +3924,7 @@ private theorem gnsVec_approx_functional (ω : NPFunctional A) {S : Set A}
     _ ≤ η / 2 * ‖a‖ + η / 2 * ‖a‖ := add_le_add (hstep1 a) hstep2
     _ = η * ‖a‖ := by ring
 
-/-- **90II** (`vn-center-separating-fundamental`, vn.tex:7206,
+/-- **90II** (`vn-center-separating-fundamental`, vn.tex:7234,
 Proposition), part 2: the finite sums `Ω''` of members of `Ω'` are
 operator-norm dense in the positive part of the predual: every
 np-functional `f` is an operator-norm limit of sums

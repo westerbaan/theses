@@ -249,7 +249,7 @@ end MulOppositeVN
 
 /-! ## Parsec 1540: existence of Paschke dilations
 
-**154I** (dils.tex:3529): introduction — nothing to formalize. -/
+**154I** (dils.tex:3537): introduction — nothing to formalize. -/
 
 section Existence
 
@@ -257,7 +257,7 @@ variable {𝒜 ℬ : Type u}
   [CStarAlgebra 𝒜] [PartialOrder 𝒜] [StarOrderedRing 𝒜]
   [CStarAlgebra ℬ] [PartialOrder ℬ] [StarOrderedRing ℬ]
 
-/-- **154II** (`phi-compatible-paschke`, dils.tex:3541, Definition): for an
+/-- **154II** (`phi-compatible-paschke`, dils.tex:3549, Definition): for an
 ncp-map `φ : 𝒜 → ℬ` between von Neumann algebras, a complex bilinear map
 `T : 𝒜 × ℬ → X` into a (self-dual) Hilbert ℬ-module is **φ-compatible**
 when `T(a, b₁b₂) = T(a, b₁)b₂` (mirrored: `c • T a b = T a (c * b)`) and
@@ -422,7 +422,7 @@ theorem PhiCompatible.mul_right (φ : NCPMap 𝒜 ℬ) {Y : Type u}
           * ‖∑ i, ∑ j, b i * φ (a i * star (a j)) * star (b j)‖ := by
         rw [hS0def]; ring
 
-/-- **154III** (`existence-paschke`, dils.tex:3558, Theorem), the data: the
+/-- **154III** (`existence-paschke`, dils.tex:3566, Theorem), the data: the
 self-dual Hilbert ℬ-module `𝒜 ⊗_φ ℬ` with its φ-compatible bilinear map
 `⊗`, the nmiu-map `ϱ : 𝒜 → ℬᵃ(𝒜 ⊗_φ ℬ)` fixed by
 `ϱ(a₀)(a ⊗ b) = (a₀a) ⊗ b` and the ncp-map `h(T) = ⟨1 ⊗ 1, T(1 ⊗ 1)⟩`,
@@ -1299,7 +1299,7 @@ noncomputable def pVecNCP (hX : SelfDual ℬ X) (e : X) : NCPMap (Ba ℬ X)ᵐ�
 end VectorState
 
 
-/-- **154III** (`existence-paschke`, dils.tex:3558, Theorem), parts 1–3,
+/-- **154III** (`existence-paschke`, dils.tex:3566, Theorem), parts 1–3,
 as a *term*: the module `𝒜 ⊗_φ ℬ` built on a self-dual completion `E` of
 `(𝒜 ⊙ ℬ, ⟨·,·⟩_φ)`, with `⊗ = η(· ⊗ ·)`, `ϱ` and `h(T) = ⟨η(1⊗1), T η(1⊗1)⟩`.
 
@@ -1330,7 +1330,7 @@ noncomputable def paschkeModuleOf [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra �
     (E : SelfDualCompletion.{u, u, u} (ptensBInner φ)) (a : 𝒜) (b : ℬ) :
     (paschkeModuleOf φ E).tprod a b = E.η (a ⊗ₜ[ℂ] b) := rfl
 
-/-- **154III** (`existence-paschke`, dils.tex:3558, Theorem), parts 1–3:
+/-- **154III** (`existence-paschke`, dils.tex:3566, Theorem), parts 1–3:
 the module `𝒜 ⊗_φ ℬ`, the representation `ϱ` and the vector state `h`
 exist.
 
@@ -1360,7 +1360,7 @@ private theorem ba_isBoundedModuleMap {X : Type u} [NormedAddCommGroup X]
   have h0 : (0 : ℝ) ≤ ‖x‖ := norm_nonneg x
   nlinarith
 
-/-- **154III** (`existence-paschke`, dils.tex:3558, Theorem), part 2,
+/-- **154III** (`existence-paschke`, dils.tex:3566, Theorem), part 2,
 uniqueness clause: for each `a₀ ∈ 𝒜` the operator `ϱ(a₀)` is the unique
 adjointable operator with `ϱ(a₀)(a ⊗ b) = (a a₀) ⊗ b` (mirrored). -/
 theorem existence_paschke_2 [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
@@ -1377,7 +1377,7 @@ theorem existence_paschke_2 [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
     hT'uniq _ ⟨ba_isBoundedModuleMap _, fun a b => M.ρ_tprod a₀ a b⟩
   exact Subtype.ext (DFunLike.coe_injective (h1.trans h2.symm))
 
-/-- **154III** (`existence-paschke`, dils.tex:3558, Theorem), part 4
+/-- **154III** (`existence-paschke`, dils.tex:3566, Theorem), part 4
 (`paschke-spatial`): universal property of `(ϱ, 1 ⊗ 1)`: for every
 nmiu-map `ϱ' : 𝒜 → ℬᵃ(Y)ᵐᵒᵖ` into the operators on a self-dual Hilbert
 ℬ-module `Y` and every `e ∈ Y` with `φ = ⟨e, ϱ'(·) e⟩`, there is a unique
@@ -1796,7 +1796,7 @@ theorem paschkeModule_ba_ext [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
   have h2 : ⇑R.1 = F := hFuniq _ ⟨⟨CR, hCR⟩, fun a b => (h a b).symm⟩
   exact Subtype.ext (DFunLike.coe_injective (h1.trans h2.symm))
 
-/-- **154VIII** (`paschke-uniqueness`, dils.tex:3719): a mediating ncp-map
+/-- **154VIII** (`paschke-uniqueness`, dils.tex:3727): a mediating ncp-map
 `σ` has determined matrix elements on the elementary tensors. -/
 theorem paschke_sigma_matrix [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
     (φ : NCPMap 𝒜 ℬ) (M : PaschkeModule φ)
@@ -1835,7 +1835,7 @@ theorem paschke_sigma_matrix [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
     CStarModule.inner_op_smul_left, hkey]
   exact (mul_assoc _ _ _).symm
 
-/-- **154III** (`existence-paschke`, dils.tex:3558, Theorem), part 5:
+/-- **154III** (`existence-paschke`, dils.tex:3566, Theorem), part 5:
 `(ℬᵃ(𝒜 ⊗_φ ℬ), ϱ, h)` is a Paschke dilation of `φ`.  (In particular every
 ncp-map between von Neumann algebras has a Paschke dilation.)
 
@@ -2230,7 +2230,7 @@ end Inhabited
 
 /-! ## Parsec 1550: KSGNS
 
-**155I**, **155III** (dils.tex:3841, 3859): discussion — nothing to
+**155I**, **155III** (dils.tex:3849, 3859): discussion — nothing to
 formalize. -/
 
 /-! ### The KSGNS construction
@@ -3293,7 +3293,7 @@ end Assembly
 end KSGNS
 
 
-/-- **155II** (dils.tex:3849, Theorem (KSGNS)): for a cp-map
+/-- **155II** (dils.tex:3857, Theorem (KSGNS)): for a cp-map
 `φ : 𝒜 → ℬᵃ(X)`, with `𝒜`, `ℬ` C*-algebras and `X` a Hilbert ℬ-module,
 there are a Hilbert ℬ-module `Y`, an miu-map `ϱ : 𝒜 → ℬᵃ(Y)` and an
 adjointable ℬ-linear `T : X → Y` with `φ = ad_T ∘ ϱ`, i.e.
@@ -3313,7 +3313,7 @@ theorem ksgns {𝒜 ℬ : Type u}
 
 /-! ## Parsec 1560: injectivity of the Paschke representation
 
-**156I** (dils.tex:3868): introduction; **156III** is the proof — not
+**156I** (dils.tex:3876): introduction; **156III** is the proof — not
 converted. -/
 
 section Injective
@@ -3322,7 +3322,7 @@ variable {𝒜 ℬ : Type u}
   [CStarAlgebra 𝒜] [PartialOrder 𝒜] [StarOrderedRing 𝒜]
   [CStarAlgebra ℬ] [PartialOrder ℬ] [StarOrderedRing ℬ]
 
-/-- **156II** (`paschke-injective`, dils.tex:3875, Theorem), carrier form:
+/-- **156II** (`paschke-injective`, dils.tex:3883, Theorem), carrier form:
 for an ncp-map `φ : 𝒜 → ℬ` with Paschke dilation `(𝒫, ϱ, h)` we have
 `⌈ϱ⌉ = ⌈⌈φ⌉⌉` (the carrier of `ϱ` is the central carrier of `φ`); stated
 via the characterization used in the proof: for every projection
@@ -3419,7 +3419,7 @@ private theorem ncp_conj_central_eq_zero (φ : NCPMap 𝒜 ℬ) {z : 𝒜}
     rwa [hφ0] at hmono
   exact le_antisymm (by rwa [hφsmul] at hup) hlow
 
-/-- **156II** (`paschke-injective`, dils.tex:3875, Theorem), the equation
+/-- **156II** (`paschke-injective`, dils.tex:3883, Theorem), the equation
 itself: `⌈ϱ⌉ = ⌈⌈φ⌉⌉` (dils.tex:3886), the carrier of the Paschke
 representation is the central carrier of `φ` (**69I** `cceilMap`, the
 `cceil` of the carrier).
@@ -3475,7 +3475,7 @@ theorem paschke_carrier_eq_cceil [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ
       (fun a => ncp_conj_central_eq_zero φ hcc.1.one_sub hzc hfz a)
   exact le_antisymm (hcarr.2.2 _ hcc.1 hρz) hle1
 
-/-- **156II** (`paschke-injective`, dils.tex:3875, Theorem), the "thus"
+/-- **156II** (`paschke-injective`, dils.tex:3883, Theorem), the "thus"
 (dils.tex:3888): the Paschke representation `ϱ` is injective if and only if
 `φ` maps no non-zero central projection to zero (`⌈⌈φ⌉⌉ = 1`).
 
@@ -3531,7 +3531,7 @@ end Injective
 
 /-! ## Parsec 1570: the order correspondence
 
-**157I** (dils.tex:3918): introduction; **157IIIa**, **157V**–**157X** are
+**157I** (dils.tex:3926): introduction; **157IIIa**, **157V**–**157X** are
 discussion and the proof of **157IV** — not converted. -/
 
 section Correspondence
@@ -3540,17 +3540,17 @@ variable {𝒜 ℬ : Type u}
   [CStarAlgebra 𝒜] [PartialOrder 𝒜] [StarOrderedRing 𝒜]
   [CStarAlgebra ℬ] [PartialOrder ℬ] [StarOrderedRing ℬ]
 
-/-- **157II** (dils.tex:3927, Definition): for maps `ψ, χ : 𝒜 → ℬ`, `ψ` is
+/-- **157II** (dils.tex:3935, Definition): for maps `ψ, χ : 𝒜 → ℬ`, `ψ` is
 **ncp-below** `χ` (`ψ ≤_ncp χ`) when `χ - ψ` is an ncp-map. -/
 def NCPLe (ψ χ : 𝒜 → ℬ) : Prop :=
   ∃ δ : NCPMap 𝒜 ℬ, ∀ a, χ a = ψ a + δ a
 
-/-- **157II** (dils.tex:3927, Definition), continued: the interval
+/-- **157II** (dils.tex:3935, Definition), continued: the interval
 `[0, φ]_ncp` of maps `ψ` with `0 ≤_ncp ψ ≤_ncp φ`. -/
 def ncpInterval (φ : 𝒜 → ℬ) : Set (𝒜 → ℬ) :=
   {ψ | NCPLe (fun _ => 0) ψ ∧ NCPLe ψ φ}
 
-/-- **157III** (dils.tex:3940, Definition): for an ncp-map `φ` with Paschke
+/-- **157III** (dils.tex:3948, Definition): for an ncp-map `φ` with Paschke
 dilation `(𝒫, ϱ, h)` and `t` in the commutant of `ϱ(𝒜)`, the map
 `φ_t = h(t ϱ(·)) : 𝒜 → ℬ`. -/
 noncomputable def phiT (D : PaschkeTriple 𝒜 ℬ) (t : D.P) : 𝒜 → ℬ :=
@@ -4036,7 +4036,7 @@ theorem paschkeModule_phiT_surjective [VonNeumannAlgebra 𝒜]
     rw [sub_mul, hMhsub, one_mul, paschkeModule_h_ρ, hval a, hsum a]
     abel
 
-/-- **157VI** (dils.tex:3966, the Set-up of the proof of **157IV**): for
+/-- **157VI** (dils.tex:3974, the Set-up of the proof of **157IV**): for
 `0 ≤ s` in the commutant of `ϱ(𝒜)` the map `φ_s = h(s ϱ(·))` is ncp,
 because `√s` again commutes with `ϱ(𝒜)`, so `φ_s(a) = h(√s ϱ(a) √s)` is the
 composite of the three ncp-maps `ϱ`, `ad_{√s}` and `h`.
@@ -4101,7 +4101,7 @@ theorem exists_phiT_ncp [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
     _ = CFC.sqrt s * (CFC.sqrt s * D.ρ a) := by rw [← hrc]
     _ = s * D.ρ a := by rw [← mul_assoc, hr2]
 
-/-- **157IV** (`paschke-correspondence`, dils.tex:3950, Theorem), the
+/-- **157IV** (`paschke-correspondence`, dils.tex:3958, Theorem), the
 *linear* clause: `t ↦ φ_t` is additive.  Immediate from the definition —
 `h` is linear and `(s + t)ϱ(a) = sϱ(a) + tϱ(a)` — but the point does assert
 it, and it was stated in none of the three parts. -/
@@ -4118,7 +4118,7 @@ theorem phiT_smul (D : PaschkeTriple 𝒜 ℬ) (c : ℂ) (t : D.P) (a : 𝒜) :
   rw [smul_mul_assoc]
   exact map_smul D.h.toCompletelyPositiveMap.toLinearMap _ _
 
-/-- **157VI** (dils.tex:3966, the Set-up of the proof of **157IV**), second
+/-- **157VI** (dils.tex:3974, the Set-up of the proof of **157IV**), second
 clause: `t ↦ φ_t` is *monotone* — if `t ≤ s` for `s, t` in the commutant of
 `ϱ(𝒜)` then `φ_t ≤_ncp φ_s`.
 
@@ -4139,7 +4139,7 @@ theorem phiT_ncpLe [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
   rw [hδ a, ← hhadd,
     show t * D.ρ a + (s - t) * D.ρ a = s * D.ρ a from by noncomm_ring]
 
-/-- **157VI** (dils.tex:3966, the Set-up of the proof of **157IV**), third
+/-- **157VI** (dils.tex:3974, the Set-up of the proof of **157IV**), third
 clause: `φ_1 = φ`.  (Together with the second clause: `T ≤ 1` gives
 `φ_T ≤_ncp φ`, which is how 157VI closes.)  This is `h ∘ ϱ = φ`, the first
 half of `IsPaschkeDilationOf`. -/
@@ -4160,7 +4160,7 @@ theorem phiT_ncpLe_self [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
   rw [← phiT_one φ D hD]
   exact phiT_ncpLe D 1 t (fun a => by rw [one_mul, mul_one]) htc ht1
 
-/-- **157IV** (`paschke-correspondence`, dils.tex:3950, Theorem), part 1:
+/-- **157IV** (`paschke-correspondence`, dils.tex:3958, Theorem), part 1:
 for `t` in `[0,1]` of the commutant of `ϱ(𝒜)`, the map `φ_t` lies in
 `[0, φ]_ncp`.
 
@@ -4187,7 +4187,7 @@ theorem paschke_correspondence_mem [VonNeumannAlgebra 𝒜]
     rw [show t * D.ρ a + (1 - t) * D.ρ a = D.ρ a by noncomm_ring] at hadd
     rw [show (phiT D t a : ℬ) = D.h (t * D.ρ a) from rfl, ← hadd, hD.1 a]
 
-/-- **157IV** (`paschke-correspondence`, dils.tex:3950, Theorem), part 2:
+/-- **157IV** (`paschke-correspondence`, dils.tex:3958, Theorem), part 2:
 `t ↦ φ_t` is an order embedding of `[0,1]_{ϱ(𝒜)'}` into `[0,φ]_ncp`: for
 `s, t` in the positive unit interval of the commutant,
 `φ_t ≤_ncp φ_s` iff `t ≤ s` (in particular `t ↦ φ_t` is injective and
@@ -4224,7 +4224,7 @@ theorem paschke_correspondence_embedding [VonNeumannAlgebra 𝒜]
     abel
   · exact fun hts => phiT_ncpLe D s t hsc htc hts
 
-/-- **157IV** (`paschke-correspondence`, dils.tex:3950, Theorem), part 3:
+/-- **157IV** (`paschke-correspondence`, dils.tex:3958, Theorem), part 3:
 `t ↦ φ_t` maps `[0,1]_{ϱ(𝒜)'}` *onto* `[0,φ]_ncp`.
 
 **157VIII** transcribed on the constructed module

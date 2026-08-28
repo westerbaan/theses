@@ -60,28 +60,28 @@ variable {A₁ : Type u} {B₁ : Type v} {C₁ : Type w}
   [CStarAlgebra B₁] [PartialOrder B₁] [StarOrderedRing B₁]
   [CStarAlgebra C₁] [PartialOrder C₁] [StarOrderedRing C₁]
 
-/-- **108I** (`bilinear-basic`, proc.tex:2006, Definition), part 1: a
+/-- **108I** (`bilinear-basic`, proc.tex:2012, Definition), part 1: a
 bilinear map between von Neumann algebras is **unital** when
 `β(1,1) = 1`. -/
 def BilinUnital (β : A₁ →ₗ[ℂ] B₁ →ₗ[ℂ] C₁) : Prop := β 1 1 = 1
 
-/-- **108I** (`bilinear-basic`, proc.tex:2006, Definition), part 2: a
+/-- **108I** (`bilinear-basic`, proc.tex:2012, Definition), part 2: a
 bilinear map is **multiplicative** if `β(ab, cd) = β(a,c)·β(b,d)`. -/
 def BilinMult (β : A₁ →ₗ[ℂ] B₁ →ₗ[ℂ] C₁) : Prop :=
   ∀ a b : A₁, ∀ c d : B₁, β (a * b) (c * d) = β a c * β b d
 
-/-- **108I** (`bilinear-basic`, proc.tex:2006, Definition), part 3: a
+/-- **108I** (`bilinear-basic`, proc.tex:2012, Definition), part 3: a
 bilinear map is **involution preserving** if `β(a,b)* = β(a*, b*)`. -/
 def BilinStar (β : A₁ →ₗ[ℂ] B₁ →ₗ[ℂ] C₁) : Prop :=
   ∀ (a : A₁) (b : B₁), star (β a b) = β (star a) (star b)
 
-/-- **108I** (`bilinear-basic`, proc.tex:2006, Definition): a bilinear map
+/-- **108I** (`bilinear-basic`, proc.tex:2012, Definition): a bilinear map
 is **miu-bilinear** when it is multiplicative, involution preserving and
 unital. -/
 def MIUBilinear (β : A₁ →ₗ[ℂ] B₁ →ₗ[ℂ] C₁) : Prop :=
   BilinUnital β ∧ BilinMult β ∧ BilinStar β
 
-/-- **112II** (`tensor-extra`, proc.tex:2681, Definitions), part 4c: a
+/-- **112II** (`tensor-extra`, proc.tex:2687, Definitions), part 4c: a
 bilinear map is **completely positive** when
 `∑_{i,j} cᵢ* β(aᵢ*aⱼ, bᵢ*bⱼ) cⱼ ≥ 0`. -/
 def BilinCP (β : A₁ →ₗ[ℂ] B₁ →ₗ[ℂ] C₁) : Prop :=
@@ -89,7 +89,7 @@ def BilinCP (β : A₁ →ₗ[ℂ] B₁ →ₗ[ℂ] C₁) : Prop :=
     0 ≤ ∑ i, ∑ j,
       star (c i) * β (star (a i) * a j) (star (b i) * b j) * c j
 
-/-- **108II** (`tensor`, proc.tex:2034, Definition): an miu-bilinear map
+/-- **108II** (`tensor`, proc.tex:2040, Definition): an miu-bilinear map
 `γ : 𝒜 × ℬ → 𝒯` between von Neumann algebras is a **tensor product** of
 `𝒜` and `ℬ` when (1) the linear span of its range is ultraweakly dense in
 `𝒯`; (2) for all np-functionals `σ`, `τ` the product functional
@@ -107,7 +107,7 @@ structure IsTensorProduct [VonNeumannAlgebra A₁] [VonNeumannAlgebra B₁]
     (∀ (σ : NPFunctional A₁) (τ : NPFunctional B₁) (h : NPFunctional C₁),
       (∀ (a : A₁) (b : B₁), h (γ a b) = σ a * τ b) → h t = 0) → t = 0
 
-/-- **108II** (`tensor`, proc.tex:2034, Definition), embedded claim: by
+/-- **108II** (`tensor`, proc.tex:2040, Definition), embedded claim: by
 condition (1) there is *at most one* normal (here: ultraweakly continuous
 linear) functional `h` on `𝒯` with `h(γ(a,b)) = f(a)g(b)` — the
 **product functional** `γ(f,g)`.
@@ -223,7 +223,7 @@ variable {H K L H' K' : Type u}
   [NormedAddCommGroup H'] [InnerProductSpace ℂ H'] [CompleteSpace H']
   [NormedAddCommGroup K'] [InnerProductSpace ℂ K'] [CompleteSpace K']
 
-/-- **109II** (proc.tex:2101, Definition): a bilinear map
+/-- **109II** (proc.tex:2107, Definition): a bilinear map
 `γ : ℋ × 𝒦 → 𝒯` between Hilbert spaces is a **tensor product** when the
 linear span of its range is dense in `𝒯` and
 `⟨γ(x,y), γ(x',y')⟩ = ⟨x,x'⟩⟨y,y'⟩`. -/
@@ -335,7 +335,7 @@ private theorem l2Gamma_dense :
 
 end L2Aux
 
-/-- **109III** (proc.tex:2117, Exercise), part 1: the map
+/-- **109III** (proc.tex:2123, Exercise), part 1: the map
 `γ(f,g) = (f(x)g(y))_{x,y} : ℓ²(X) × ℓ²(Y) → ℓ²(X×Y)` is a tensor
 product of Hilbert spaces. -/
 theorem l2_tensor (X Y : Type u) :
@@ -345,7 +345,7 @@ theorem l2_tensor (X Y : Type u) :
   ⟨l2Gamma, fun _ _ _ _ => rfl, l2Gamma_dense, fun f f' g g' =>
     l2Gamma_inner f f' g g'⟩
 
-/-- **109III** (proc.tex:2117, Exercise), part 2: a subset `E` of a
+/-- **109III** (proc.tex:2123, Exercise), part 2: a subset `E` of a
 Hilbert space `ℋ` is an orthonormal basis iff `x ↦ ∑_{e∈E} x_e e` is an
 isometric isomorphism `ℓ²(E) → ℋ`. -/
 theorem orthonormal_basis_iff_l2_iso (E : Set H) :
@@ -407,7 +407,7 @@ theorem orthonormal_basis_iff_l2_iso (E : Set H) :
         _ = 0 := map_zero _
 
 variable (H K) in
-/-- **110VI** (proc.tex:2349, Notation): a bundled (chosen) tensor product
+/-- **110VI** (proc.tex:2355, Notation): a bundled (chosen) tensor product
 of the Hilbert spaces `H` and `K`. -/
 structure HilbertTensor : Type (u + 1) where
   space : Type u
@@ -421,7 +421,7 @@ attribute [instance] HilbertTensor.nacg HilbertTensor.ips
   HilbertTensor.complete
 
 variable (H K) in
-/-- **109III** (proc.tex:2117, Exercise), part 3: any pair of Hilbert
+/-- **109III** (proc.tex:2123, Exercise), part 3: any pair of Hilbert
 spaces has a tensor product (via orthonormal bases and part 1). -/
 theorem hilbertTensor_nonempty : Nonempty (HilbertTensor H K) := by
   classical
@@ -465,7 +465,7 @@ theorem hilbertTensor_nonempty : Nonempty (HilbertTensor H K) := by
 
 
 variable (H K) in
-/-- **110VI** (proc.tex:2349, Notation): a chosen tensor product
+/-- **110VI** (proc.tex:2355, Notation): a chosen tensor product
 `⊗ : ℋ × 𝒦 → ℋ ⊗ 𝒦` of Hilbert spaces. -/
 noncomputable def hilbTensor : HilbertTensor H K :=
   (hilbertTensor_nonempty H K).some
@@ -479,7 +479,7 @@ noncomputable def htmul (x : H) (y : K) : HT H K := (hilbTensor H K).map x y
 
 @[inherit_doc] scoped infixr:70 " ⊗ₕ " => htmul
 
-/-- **109IV** (`hilb-tensor-basic`, proc.tex:2145, Proposition), part 1:
+/-- **109IV** (`hilb-tensor-basic`, proc.tex:2151, Proposition), part 1:
 `‖γ(x,y)‖ = ‖x‖·‖y‖` for a tensor product of Hilbert spaces. -/
 theorem hilb_tensor_basic_1 {T : Type u} [NormedAddCommGroup T]
     [InnerProductSpace ℂ T] [CompleteSpace T] (γ : H →ₗ[ℂ] K →ₗ[ℂ] T)
@@ -496,7 +496,7 @@ theorem hilb_tensor_basic_1 {T : Type u} [NormedAddCommGroup T]
     _ = Real.sqrt ((‖x‖ * ‖y‖) ^ 2) := by rw [hsq]
     _ = ‖x‖ * ‖y‖ := Real.sqrt_sq (by positivity)
 
-/-- **109IV** (`hilb-tensor-basic`, proc.tex:2145, Proposition), part 2:
+/-- **109IV** (`hilb-tensor-basic`, proc.tex:2151, Proposition), part 2:
 for orthonormal bases `ℰ` of `ℋ` and `ℱ` of `𝒦` the set
 `{γ(e,f) : e ∈ ℰ, f ∈ ℱ}` is an orthonormal basis of `𝒯`. -/
 theorem hilb_tensor_basic_2 {T : Type u} [NormedAddCommGroup T]
@@ -593,7 +593,7 @@ theorem hilb_tensor_basic_2 {T : Type u} [NormedAddCommGroup T]
       exact hMclosed.closure_subset_iff.mpr hsub
     exact huniv (Set.mem_univ t)
 
-/-- **110I** (proc.tex:2201, Definition): a bilinear map
+/-- **110I** (proc.tex:2207, Definition): a bilinear map
 `β : ℋ × 𝒦 → ℒ` between Hilbert spaces is **ℓ²-bounded** by
 `B ∈ [0,∞)` when
 `‖∑ᵢ β(xᵢ,yᵢ)‖² ≤ B² ∑_{i,j} ⟨xᵢ,xⱼ⟩⟨yᵢ,yⱼ⟩`. -/
@@ -621,7 +621,7 @@ theorem IsHilbertTensorProduct.gram_sum_re {T : Type u}
   rw [key, inner_self_eq_norm_sq_to_K]
   simp [← Complex.ofReal_pow]
 
-/-- **110III** (`hilb-tensor-universal-property`, proc.tex:2232, Theorem):
+/-- **110III** (`hilb-tensor-universal-property`, proc.tex:2238, Theorem):
 a tensor product `γ : ℋ × 𝒦 → 𝒯` of Hilbert spaces is ℓ²-bounded (by 1)
 and initial as such: for any bilinear `β : ℋ × 𝒦 → ℒ` that is ℓ²-bounded
 by `B` there is a unique bounded linear map `β_γ : 𝒯 → ℒ` with
@@ -876,7 +876,7 @@ theorem hilb_tensor_universal_property {T : Type u} [NormedAddCommGroup T]
     show g (γ e f) = Bg (γ e f)
     rw [hg e f, hstepB e f]
 
-/-- **110V** (proc.tex:2338, Exercise): the tensor product of Hilbert
+/-- **110V** (proc.tex:2344, Exercise): the tensor product of Hilbert
 spaces is unique up to a unique isometric isomorphism. -/
 theorem hilb_tensor_unique {T T' : Type u} [NormedAddCommGroup T]
     [InnerProductSpace ℂ T] [CompleteSpace T] [NormedAddCommGroup T']
@@ -925,7 +925,7 @@ theorem hilb_tensor_unique {T T' : Type u} [NormedAddCommGroup T]
 
 /-! ## Parsec 1110: Schur's product theorem; the spatial tensor product -/
 
-/-- **111II** (`schur`, proc.tex:2372, Lemma; part of Schur's product
+/-- **111II** (`schur`, proc.tex:2378, Lemma; part of Schur's product
 theorem): the entrywise (Hadamard) product of positive `N×N`-matrices
 over `ℂ` is positive.
 
@@ -992,7 +992,7 @@ theorem schur (N : ℕ) (a b : Matrix (Fin N) (Fin N) ℂ)
   rw [Complex.mul_conj]
   exact Complex.zero_le_real.mpr (Complex.normSq_nonneg _)
 
-/-- **111IV** (`mult-completely-monotone`, proc.tex:2428, Exercise): for
+/-- **111IV** (`mult-completely-monotone`, proc.tex:2434, Exercise): for
 positive matrices `a ≤ ã` and `b ≤ b̃` over `ℂ` (of the same dimensions)
 the Hadamard products satisfy `a ⊙ b ≤ ã ⊙ b̃`.
 
@@ -1101,7 +1101,7 @@ theorem sum_entries_nonneg {n : ℕ} {M : Matrix (Fin n) (Fin n) ℂ}
   rw [quadForm_eq] at h
   simpa using h
 
-/-- **111V** (`hilb-tensor-functor`, proc.tex:2436, Proposition): for
+/-- **111V** (`hilb-tensor-functor`, proc.tex:2442, Proposition): for
 bounded linear maps `A : ℋ → ℋ'` and `B : 𝒦 → 𝒦'` there is a unique
 bounded linear map `A ⊗ B : ℋ ⊗ 𝒦 → ℋ' ⊗ 𝒦'` with
 `(A ⊗ B)(x ⊗ y) = Ax ⊗ By`. -/
@@ -1992,7 +1992,7 @@ theorem spatial_dense (SA : StarSubalgebra ℂ (H →L[ℂ] H))
   rw [hclosure]
   exact t.property
 
-/-- **111VII** (`special-tensor`, proc.tex:2491, Theorem): for von Neumann
+/-- **111VII** (`special-tensor`, proc.tex:2497, Theorem): for von Neumann
 algebras `𝒜 ⊆ B(ℋ)`, `ℬ ⊆ B(𝒦)` of operators, the map
 `(A, B) ↦ A ⊗ B : 𝒜 × ℬ → B(ℋ ⊗ 𝒦)` is miu-bilinear, and its restriction
 to the von Neumann subalgebra `𝒯 ⊆ B(ℋ ⊗ 𝒦)` generated by its range is a
@@ -2049,7 +2049,7 @@ theorem special_tensor (SA : StarSubalgebra ℂ (H →L[ℂ] H))
 `(M ⊗ 1)^□ = M^□ ⊗̄ B(𝒦)` for a von Neumann subalgebra `M ⊆ B(ℋ)` and any
 Hilbert space `𝒦`.  It has no numbered counterpart in `proc.tex` — the
 thesis only ever uses the *commutation theorem* **121II**
-(`intersection_tensor`, `proc.tex:4473`, which it takes from Takesaki I,
+(`intersection-tensor`, `proc.tex:4473`, which it takes from Takesaki I,
 Cor. IV.5.10, and which is the one point of thesis A it does not prove).
 The amplification theorem is the one unqualifiedly elementary case of that
 theorem: it is step (E) of the route recorded in `PROVING-LOG.md` session
@@ -2648,7 +2648,7 @@ theorem exists_vnLift (𝒳 : Type p) [CStarAlgebra 𝒳] [PartialOrder 𝒳]
     nmiuCorestrict f S hS hmem,
     nmiuCorestrict_bijective f S hS hmem hinj hsurj⟩
 
-/-- **111XII** (proc.tex:2583, Exercise): every pair of (abstract) von
+/-- **111XII** (proc.tex:2589, Exercise): every pair of (abstract) von
 Neumann algebras has a tensor product (via the normal Gelfand–Naimark
 representation, vn.tex 48VIII, and 111VII). -/
 theorem vnTensorProduct_exists [VonNeumannAlgebra A] [VonNeumannAlgebra B] :
@@ -2681,7 +2681,7 @@ noncomputable def odotF (f : A →ₗ[ℂ] ℂ) (g : B →ₗ[ℂ] ℂ) :
 def npLin (σ : NPFunctional A) : A →ₗ[ℂ] ℂ :=
   σ.toPositiveLinearMap.toLinearMap
 
-/-- **112II** (`tensor-extra`, proc.tex:2681, Definitions), part 1: a
+/-- **112II** (`tensor-extra`, proc.tex:2687, Definitions), part 1: a
 **basic functional** on `𝒜 ⊙ ℬ` is one of the form
 `(σ ⊙ τ)(t* (·) t)` for np-functionals `σ`, `τ` and `t ∈ 𝒜 ⊙ ℬ`. -/
 def IsBasicFunctional [VonNeumannAlgebra A] [VonNeumannAlgebra B]
@@ -2689,7 +2689,7 @@ def IsBasicFunctional [VonNeumannAlgebra A] [VonNeumannAlgebra B]
   ∃ (σ : NPFunctional A) (τ : NPFunctional B) (t : A ⊗[ℂ] B),
     ∀ s : A ⊗[ℂ] B, ω s = odotF (npLin σ) (npLin τ) (star t * s * t)
 
-/-- **112II** (`tensor-extra`, proc.tex:2681, Definitions), part 1: a
+/-- **112II** (`tensor-extra`, proc.tex:2687, Definitions), part 1: a
 **simple functional** on `𝒜 ⊙ ℬ` is a finite sum of basic functionals. -/
 def IsSimpleFunctional [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     (ω : A ⊗[ℂ] B →ₗ[ℂ] ℂ) : Prop :=
@@ -2697,7 +2697,7 @@ def IsSimpleFunctional [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     (∀ i, IsBasicFunctional (ωs i)) ∧ ω = ∑ i, ωs i
 
 variable (A B) in
-/-- **112II** (`tensor-extra`, proc.tex:2681, Definitions), part 2: the
+/-- **112II** (`tensor-extra`, proc.tex:2687, Definitions), part 2: the
 **tensor product norm** on `𝒜 ⊙ ℬ`:
 `‖t‖ = sup_ω ‖t‖_ω = sup_ω ω(t*t)^½` over the basic functionals `ω` with
 `ω(1) ≤ 1`. -/
@@ -2707,7 +2707,7 @@ noncomputable def tensorNorm [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     (ω 1).re ≤ 1 ∧ r = Real.sqrt (ω (star t * t)).re}
 
 variable (A B) in
-/-- **112II** (`tensor-extra`, proc.tex:2681, Definitions), part 3: a
+/-- **112II** (`tensor-extra`, proc.tex:2687, Definitions), part 3: a
 functional on `𝒜 ⊙ ℬ` is an **operator norm limit of simple
 functionals** when it can be approximated by simple functionals uniformly
 with respect to the tensor product norm. -/
@@ -2718,7 +2718,7 @@ def NormLimitOfSimple [VonNeumannAlgebra A] [VonNeumannAlgebra B]
 
 set_option warn.classDefReducibility false in
 variable (A B) in
-/-- **112II** (`tensor-extra`, proc.tex:2681, Definitions), part 3: the
+/-- **112II** (`tensor-extra`, proc.tex:2687, Definitions), part 3: the
 **ultraweak tensor product topology** on `𝒜 ⊙ ℬ` — the least topology
 making all operator norm limits of simple functionals continuous. -/
 noncomputable def uwTensorTopology [VonNeumannAlgebra A]
@@ -2726,7 +2726,7 @@ noncomputable def uwTensorTopology [VonNeumannAlgebra A]
   ⨅ f : {f : A ⊗[ℂ] B →ₗ[ℂ] ℂ // NormLimitOfSimple A B f},
     TopologicalSpace.induced (fun t => f.1 t) inferInstance
 
-/-- **112II** (`tensor-extra`, proc.tex:2681, Definitions), part 4a: a
+/-- **112II** (`tensor-extra`, proc.tex:2687, Definitions), part 4a: a
 bilinear map `β : 𝒜 × ℬ → 𝒞` between von Neumann algebras is **bounded**
 when its extension `β_⊙ : 𝒜 ⊙ ℬ → 𝒞` is bounded with respect to the
 tensor product norm. -/
@@ -2735,7 +2735,7 @@ def BilinBounded [VonNeumannAlgebra A] [VonNeumannAlgebra B]
   ∃ M : ℝ, 0 ≤ M ∧ ∀ t : A ⊗[ℂ] B,
     ‖TensorProduct.lift β t‖ ≤ M * tensorNorm A B t
 
-/-- **112II** (`tensor-extra`, proc.tex:2681, Definitions), part 4b: a
+/-- **112II** (`tensor-extra`, proc.tex:2687, Definitions), part 4b: a
 bilinear map is **normal** when `β_⊙` is continuous from the ultraweak
 tensor product topology to the ultraweak topology on `𝒞`. -/
 def BilinNormal [VonNeumannAlgebra A] [VonNeumannAlgebra B]
@@ -2831,7 +2831,7 @@ private theorem odotF_star (σ : A →ₚ[ℂ] ℂ) (τ : B →ₚ[ℂ] ℂ)
       simp [odotF, TensorProduct.star_tmul, hσ, hτ]
   | add y z hy hz => simp [star_add, hy, hz]
 
-/-- **112III** (`product-state-positive`, proc.tex:2781, Lemma): for
+/-- **112III** (`product-state-positive`, proc.tex:2787, Lemma): for
 C*-algebras and positive functionals `σ`, `τ`,
 `(σ ⊙ τ)(t* t) ≥ 0` for all `t ∈ 𝒜 ⊙ ℬ`. -/
 theorem product_state_positive (σ : A →ₚ[ℂ] ℂ) (τ : B →ₚ[ℂ] ℂ)
@@ -2856,7 +2856,7 @@ theorem product_state_positive (σ : A →ₚ[ℂ] ℂ) (τ : B →ₚ[ℂ] ℂ)
   simp only [Matrix.hadamard_apply, Matrix.of_apply] at hsum
   simpa [odotF] using hsum
 
-/-- **112V** (`basic-state-inner-product`, proc.tex:2808, Exercise): for a
+/-- **112V** (`basic-state-inner-product`, proc.tex:2814, Exercise): for a
 basic functional `ω`, `[s,t]_ω = ω(s* t)` is an inner product (a
 positive-semidefinite sesquilinear form): it is conjugate-symmetric and
 positive. -/
@@ -2885,7 +2885,7 @@ theorem basic_state_inner_product [VonNeumannAlgebra A]
       simp [star_mul, mul_assoc]
     rwa [heq] at h
 
-/-- **112VI** (proc.tex:2815, Lemma): product functionals formed from
+/-- **112VI** (proc.tex:2821, Lemma): product functionals formed from
 separating collections `Ω`, `Ξ` of linear functionals on C*-algebras are
 separating: if `(σ ⊙ τ)(t) = 0` for all `σ ∈ Ω`, `τ ∈ Ξ`, then
 `t = 0`. -/
@@ -3227,7 +3227,7 @@ theorem tensorNorm_eq_zero_iff [VonNeumannAlgebra A] [VonNeumannAlgebra B]
   rw [← tensorNorm_eq_sSup, h] at hmem
   linarith
 
-/-- **112VIII** (`tensor-product-norm`, proc.tex:2849, Exercise): the
+/-- **112VIII** (`tensor-product-norm`, proc.tex:2855, Exercise): the
 tensor product norm is a norm on `𝒜 ⊙ ℬ`. -/
 theorem tensor_product_norm [VonNeumannAlgebra A] [VonNeumannAlgebra B] :
     (∀ t : A ⊗[ℂ] B, 0 ≤ tensorNorm A B t) ∧
@@ -3350,7 +3350,7 @@ private theorem continuous_uwTensor_of_basic [VonNeumannAlgebra A]
   exact iInf_le _ (⟨ω, hnl⟩ :
     {h : A ⊗[ℂ] B →ₗ[ℂ] ℂ // NormLimitOfSimple A B h})
 
-/-- **112IX** (`product-functional`, proc.tex:2854, Exercise): for bounded
+/-- **112IX** (`product-functional`, proc.tex:2860, Exercise): for bounded
 ultraweakly continuous functionals `f ∈ 𝒜_*` and `g ∈ ℬ_*` the
 functional `f ⊙ g` is bounded (w.r.t. the tensor norm) and continuous
 w.r.t. the ultraweak tensor product topology.
@@ -3641,7 +3641,7 @@ theorem conjProdNP_lift {γ : A →ₗ[ℂ] B →ₗ[ℂ] T} (hγ : IsTensorProd
   rw [conjProdNP_apply, ← lift_star γ hγ.miu.2.2, ← lift_mul γ hγ.miu.2.1,
     ← lift_mul γ hγ.miu.2.1, prodNP_lift hγ]
 
-/-- **112X** (`tensor-basic`, proc.tex:2868, Exercise), part 1, third
+/-- **112X** (`tensor-basic`, proc.tex:2874, Exercise), part 1, third
 claim (first half): the restriction `ω ∘ γ_⊙` of a member `ω` of `Ω` is a
 basic functional. -/
 theorem isBasicFunctional_comp_lift {γ : A →ₗ[ℂ] B →ₗ[ℂ] T}
@@ -3650,7 +3650,7 @@ theorem isBasicFunctional_comp_lift {γ : A →ₗ[ℂ] B →ₗ[ℂ] T}
     IsBasicFunctional ((npLin (conjProdNP hγ σ τ s)).comp (TensorProduct.lift γ)) :=
   ⟨σ, τ, s, fun t => conjProdNP_lift hγ σ τ s t⟩
 
-/-- **112X** (`tensor-basic`, proc.tex:2868, Exercise), part 1, third
+/-- **112X** (`tensor-basic`, proc.tex:2874, Exercise), part 1, third
 claim (second half, existence): conversely, every basic functional on
 `𝒜 ⊙ ℬ` is the restriction along `γ_⊙` of a member of `Ω`.  The
 *uniqueness* the exercise asks for is `tensor_basic_1_unique` below. -/
@@ -3661,7 +3661,7 @@ theorem exists_conjProdNP_of_isBasicFunctional {γ : A →ₗ[ℂ] B →ₗ[ℂ]
   obtain ⟨σ, τ, s, hs⟩ := hω
   exact ⟨σ, τ, s, fun t => by rw [hs t, conjProdNP_lift hγ]⟩
 
-/-- **112X** (`tensor-basic`, proc.tex:2868, Exercise), part 1, third
+/-- **112X** (`tensor-basic`, proc.tex:2874, Exercise), part 1, third
 claim, in full: every basic functional `ω` on `𝒜 ⊙ ℬ` is the restriction
 along `γ_⊙` of a **unique** member of `Ω`.
 
@@ -3691,7 +3691,7 @@ theorem tensor_basic_1_unique (γ : A →ₗ[ℂ] B →ₗ[ℂ] T) (hγ : IsTens
   obtain ⟨r, rfl⟩ := ht
   exact ((hχ r).symm.trans (hs r))
 
-/-- **112X** (`tensor-basic`, proc.tex:2868, Exercise), part 1, first
+/-- **112X** (`tensor-basic`, proc.tex:2874, Exercise), part 1, first
 claim: the collection `Ω` of np-functionals `γ(σ,τ)(γ_⊙(s)*(·)γ_⊙(s))` is
 **order separating** in the sense of cstar.tex **21II**.1 — an *arbitrary*
 `a ∈ 𝒯` is positive as soon as `ω(a) ≥ 0` for every `ω ∈ Ω`.
@@ -3730,7 +3730,7 @@ theorem tensor_basic_1_orderSeparating (γ : A →ₗ[ℂ] B →ₗ[ℂ] T)
   rw [← mul_assoc]
   exact h'
 
-/-- **112X** (`tensor-basic`, proc.tex:2868, Exercise), part 1 (headline
+/-- **112X** (`tensor-basic`, proc.tex:2874, Exercise), part 1 (headline
 claims): for a tensor product `γ` the np-functionals of the form
 `γ(σ,τ)(γ_⊙(s)* (·) γ_⊙(s))` are order separating, and every
 np-functional on `𝒯` is an operator-norm limit of finite sums of such.
@@ -3804,7 +3804,7 @@ theorem tensor_basic_1 (γ : A →ₗ[ℂ] B →ₗ[ℂ] T) (hγ : IsTensorProdu
     simp only [hu]
     simpa only [hστ] using hbound t
 
-/-- **112X** (`tensor-basic`, proc.tex:2868, Exercise), part 2 (headline
+/-- **112X** (`tensor-basic`, proc.tex:2874, Exercise), part 2 (headline
 claim): `γ_⊙ : 𝒜 ⊙ ℬ → 𝒯` is an isometry for the tensor product
 norm. -/
 theorem tensor_basic_2 (γ : A →ₗ[ℂ] B →ₗ[ℂ] T) (hγ : IsTensorProduct γ)
@@ -3894,7 +3894,7 @@ theorem tensor_basic_2 (γ : A →ₗ[ℂ] B →ₗ[ℂ] T) (hγ : IsTensorProdu
           Real.sqrt_le_sqrt hfin
       _ = ‖y‖ := Real.sqrt_sq (norm_nonneg y)
 
-/-- **112X** (`tensor-basic`, proc.tex:2868, Exercise), part 3, first
+/-- **112X** (`tensor-basic`, proc.tex:2874, Exercise), part 3, first
 claim: `‖f ∘ γ_⊙‖ ≤ ‖f‖` for every `f ∈ 𝒯_*` — in bound form, since the
 tensor product norm is not registered as a `NormedSpace` structure on
 `𝒜 ⊙ ℬ`.  It is **112X**.2 (`γ_⊙` is an isometry) plus the operator-norm
@@ -3906,7 +3906,7 @@ theorem tensor_basic_3_norm_le (γ : A →ₗ[ℂ] B →ₗ[ℂ] T) (hγ : IsTen
   rw [← tensor_basic_2 γ hγ t]
   exact f.le_opNorm _
 
-/-- **112X** (`tensor-basic`, proc.tex:2868, Exercise), part 3 (headline
+/-- **112X** (`tensor-basic`, proc.tex:2874, Exercise), part 3 (headline
 claim): `γ_⊙` is continuous from the ultraweak tensor product topology to
 the ultraweak topology on `𝒯` (and the restriction of an np-functional
 along `γ_⊙` is an operator norm limit of simple functionals). -/
@@ -3949,7 +3949,7 @@ theorem tensor_basic_3 (γ : A →ₗ[ℂ] B →ₗ[ℂ] T) (hγ : IsTensorProdu
   exact iInf_le _ (⟨(npLin ω).comp (TensorProduct.lift γ), hnl ω⟩ :
     {f : A ⊗[ℂ] B →ₗ[ℂ] ℂ // NormLimitOfSimple A B f})
 
-/-- **112X** (`tensor-basic`, proc.tex:2868, Exercise), part 4:
+/-- **112X** (`tensor-basic`, proc.tex:2874, Exercise), part 4:
 `‖f ∘ γ_⊙‖ = ‖f‖` for every `f ∈ 𝒯_*` — rendered in bound form: `f` and
 `f ∘ γ_⊙` have the same bounds. -/
 theorem tensor_basic_4 (γ : A →ₗ[ℂ] B →ₗ[ℂ] T) (hγ : IsTensorProduct γ)
@@ -4041,7 +4041,7 @@ private noncomputable def npCLM (ω : NPFunctional T) : T →L[ℂ] ℂ :=
 @[simp] private theorem npCLM_apply (ω : NPFunctional T) (a : T) :
     npCLM ω a = ω a := rfl
 
-/-- **112X** (`tensor-basic`, proc.tex:2868, Exercise), part 5: every
+/-- **112X** (`tensor-basic`, proc.tex:2874, Exercise), part 5: every
 operator norm limit of simple functionals extends uniquely along `γ_⊙` to
 an np-functional on `𝒯`; consequently `γ_⊙` is an ultraweak topological
 embedding. -/
@@ -4233,7 +4233,7 @@ private theorem norm_le_of_uwTendsto {ι : Type*} {l : Filter ι} [l.NeBot]
       simpa using hbdd i)
   simpa using h
 
-/-- **112XI** (`tensor-universal-property`, proc.tex:2980, Theorem): a
+/-- **112XI** (`tensor-universal-property`, proc.tex:2986, Theorem): a
 tensor product `γ : 𝒜 × ℬ → 𝒯` has the universal property that every
 normal bounded bilinear map `β : 𝒜 × ℬ → 𝒞` extends uniquely to an
 ultraweakly continuous linear map `β_γ : 𝒯 → 𝒞` with `β_γ ∘ γ = β`;
@@ -4585,7 +4585,7 @@ end TensorBasic
 
 omit [PartialOrder A] [StarOrderedRing A] [PartialOrder B]
   [StarOrderedRing B] in
-/-- **113II** (proc.tex:3012, Exercise): an mi-bilinear map between von
+/-- **113II** (proc.tex:3018, Exercise): an mi-bilinear map between von
 Neumann algebras is completely positive. -/
 theorem mi_bilinear_cp (β : A →ₗ[ℂ] B →ₗ[ℂ] C) (hm : BilinMult β)
     (hi : BilinStar β) : BilinCP β := by
@@ -4608,7 +4608,7 @@ theorem mi_bilinear_cp (β : A →ₗ[ℂ] B →ₗ[ℂ] C) (hm : BilinMult β)
         rw [Finset.mul_sum]
         exact Finset.sum_congr rfl fun j _ => (key i j).symm
 
-/-- **113III** (proc.tex:3018, Notation): the entrywise bilinear map
+/-- **113III** (proc.tex:3024, Notation): the entrywise bilinear map
 `M_N β : M_N(𝒜) × M_N(ℬ) → M_N(𝒞)`,
 `(M_N β)(A, B)ᵢⱼ = β(Aᵢⱼ, Bᵢⱼ)` (as a plain function). -/
 def matBilin (β : A →ₗ[ℂ] B →ₗ[ℂ] C) (N : ℕ)
@@ -4671,7 +4671,7 @@ private theorem cp_matrix_nonneg {D E : Type u} [CStarAlgebra D]
   rw [hrw]
   exact Finset.sum_nonneg fun k _ => hh N (fun i => Z k i) c
 
-/-- **113IV** (`cp-bilinear`, proc.tex:3029, Exercise), parts 1 and 3: a
+/-- **113IV** (`cp-bilinear`, proc.tex:3035, Exercise), parts 1 and 3: a
 bilinear map `β` is completely positive iff `(M_N β)(A,B) ≥ 0` for all
 positive `A ∈ M_N(𝒜)`, `B ∈ M_N(ℬ)` and all `N` (positivity of matrices
 rendered by the criterion of cstar.tex 33II).  Part 2, complete positivity
@@ -4741,7 +4741,7 @@ complete positivity of `β` at width `mN`, the two extra summations coming
 from the two matrix products `(a_i* a_j)_{rs} = ∑ₜ (a_i)_{tr}*(a_j)_{ts}`
 inside `β`, which bilinearity pulls out in front. -/
 
-/-- **113III** (proc.tex:3018, Notation), bundled: `M_N β` as a *bilinear*
+/-- **113III** (proc.tex:3024, Notation), bundled: `M_N β` as a *bilinear*
 map `M_N(𝒜) × M_N(ℬ) → M_N(𝒞)`.  Both linearity conditions hold entrywise,
 where they are those of `β`. -/
 def matBilinL (β : A →ₗ[ℂ] B →ₗ[ℂ] C) (N : ℕ) :
@@ -4831,7 +4831,7 @@ private theorem bilinCP_fintype {β : A →ₗ[ℂ] B →ₗ[ℂ] C} (hβ : Bili
   rwa [Equiv.sum_comp e.symm
     (fun k => ∑ l, star (c k) * β (star (a k) * a l) (star (b k) * b l) * c l)] at h
 
-/-- **113IV** (`cp-bilinear`, proc.tex:3029, Exercise), clause (1) ⇒ (2):
+/-- **113IV** (`cp-bilinear`, proc.tex:3035, Exercise), clause (1) ⇒ (2):
 if `β` is completely positive then so is `M_N β`, for every `N`. -/
 theorem cp_bilinear_2 (β : A →ₗ[ℂ] B →ₗ[ℂ] C) (hβ : BilinCP β) (N : ℕ) :
     BilinCP (matBilinL β N) := by
@@ -4917,7 +4917,7 @@ theorem cp_bilinear_2 (β : A →ₗ[ℂ] B →ₗ[ℂ] C) (hβ : BilinCP β) (N
     (fun k : Fin m × Fin N => (b k.1) u k.2)
     (fun k : Fin m × Fin N => ∑ p, (c k.1) k.2 p * x p)
 
-/-- **113IV** (`cp-bilinear`, proc.tex:3029, Exercise), clause (2) and its
+/-- **113IV** (`cp-bilinear`, proc.tex:3035, Exercise), clause (2) and its
 equivalence with clause (1): `β` is completely positive iff `M_N β` is,
 for every `N`.  With `cp_bilinear` (clauses (1) and (3)) this is the
 exercise's three-way equivalence.
@@ -4953,7 +4953,7 @@ theorem cp_bilinear_2' (β : A →ₗ[ℂ] B →ₗ[ℂ] C) :
     rfl
   rwa [hentry] at hpos
 
-/-- **113IV** (`cp-bilinear`, proc.tex:3029, Exercise), corollary:
+/-- **113IV** (`cp-bilinear`, proc.tex:3035, Exercise), corollary:
 `h ∘ β ∘ (f × g)` is completely positive when `f`, `g`, `h` are cp-maps
 between von Neumann algebras. -/
 theorem cp_bilinear_comp {A' B' C' : Type u} [CStarAlgebra A']
@@ -5234,7 +5234,7 @@ variable [VonNeumannAlgebra A] [VonNeumannAlgebra B] [VonNeumannAlgebra C]
 variable {T : Type u} [CStarAlgebra T] [PartialOrder T] [StarOrderedRing T]
   [VonNeumannAlgebra T]
 
-/-- **114I** (`tensor-universal-property-extra`, proc.tex:3053, Exercise):
+/-- **114I** (`tensor-universal-property-extra`, proc.tex:3059, Exercise):
 for a tensor product `γ` and a normal bounded bilinear `β` with extension
 `β_γ` (any uw-continuous `g` with `g ∘ γ = β`): (1) `β_γ` is
 multiplicative iff `β` is; (2) involution preserving iff `β` is;
@@ -5480,7 +5480,7 @@ theorem tensor_universal_property_extra (γ : A →ₗ[ℂ] B →ₗ[ℂ] T)
       show (0 : C) ≤ ∑ i, ∑ j, star (c i) * g (star (S i x) * S j x) * c j
       simpa only [ht] using hb'
 
-/-- **114II** (`tensor-uniqueness`, proc.tex:3087, Exercise): the tensor
+/-- **114II** (`tensor-uniqueness`, proc.tex:3093, Exercise): the tensor
 product of von Neumann algebras is unique: for tensor products
 `γ : 𝒜 × ℬ → 𝒯` and `γ' : 𝒜 × ℬ → 𝒯'` there is a unique
 nmiu-isomorphism `φ : 𝒯 → 𝒯'` with `φ(γ(a,b)) = γ'(a,b)`. -/
@@ -5610,7 +5610,7 @@ variable (𝒜 : Type u) (ℬ : Type v)
   [CStarAlgebra ℬ] [PartialOrder ℬ] [StarOrderedRing ℬ]
   [VonNeumannAlgebra ℬ]
 
-/-- **115I** (proc.tex:3103, Notation), bundled: a chosen tensor product of
+/-- **115I** (proc.tex:3109, Notation), bundled: a chosen tensor product of
 the von Neumann algebras `𝒜` and `ℬ`. -/
 structure VNTensorProduct : Type (max u v + 1) where
   carrier : Type (max u v)
@@ -5624,7 +5624,7 @@ structure VNTensorProduct : Type (max u v + 1) where
 attribute [instance] VNTensorProduct.cstar VNTensorProduct.po
   VNTensorProduct.sor VNTensorProduct.vna
 
-/-- **111XII** (proc.tex:2583, Exercise), bundled form: a tensor product
+/-- **111XII** (proc.tex:2589, Exercise), bundled form: a tensor product
 of `𝒜` and `ℬ` exists. -/
 theorem vnTensorProduct_nonempty : Nonempty (VNTensorProduct 𝒜 ℬ) := by
   obtain ⟨ι, f, SA, hSA, hfmem, hfsurj, hfinj⟩ := ngns_ulift.{u, v} 𝒜
@@ -5637,12 +5637,12 @@ theorem vnTensorProduct_nonempty : Nonempty (VNTensorProduct 𝒜 ℬ) := by
              (nmiuCorestrict_bijective f SA hSA hfmem hfinj hfsurj) _
              (nmiuCorestrict_bijective g SB hSB hgmem hginj hgsurj) hγ₀ }⟩
 
-/-- **115I** (proc.tex:3103, Notation): we pick one tensor product
+/-- **115I** (proc.tex:3109, Notation): we pick one tensor product
 `⊗ : 𝒜 × ℬ → 𝒜 ⊗ ℬ` of von Neumann algebras. -/
 noncomputable def vnTensor : VNTensorProduct 𝒜 ℬ :=
   (vnTensorProduct_nonempty 𝒜 ℬ).some
 
-/-- **115I** (proc.tex:3103, Notation): the carrier `𝒜 ⊗ ℬ` of the chosen
+/-- **115I** (proc.tex:3109, Notation): the carrier `𝒜 ⊗ ℬ` of the chosen
 tensor product. -/
 abbrev VNT : Type (max u v) := (vnTensor 𝒜 ℬ).carrier
 
@@ -5965,7 +5965,7 @@ theorem vtmul_nonneg (a : A) (b : B) (ha : 0 ≤ a) (hb : 0 ≤ b) :
   rw [ha', hb', hmul, ← hstar]
   exact star_mul_self_nonneg _
 
-/-- **116III** (`tensor-simple-facts`, proc.tex:3427, Exercise), part 1:
+/-- **116III** (`tensor-simple-facts`, proc.tex:3433, Exercise), part 1:
 `a ⊗ b ≥ 0` for positive `a`, `b`; hence `a₁ ⊗ b₁ ≤ a₂ ⊗ b₂` for
 `0 ≤ a₁ ≤ a₂` and `0 ≤ b₁ ≤ b₂`.
 
@@ -6454,7 +6454,7 @@ theorem tmapBilin_normal (f : NCPMap A C) (g : NCPMap B D) :
 
 /-! ### **115II** itself -/
 
-/-- **115II** (`tensor-functorial`, proc.tex:3114, Proposition),
+/-- **115II** (`tensor-functorial`, proc.tex:3120, Proposition),
 well-definedness: for ncp-maps `f : 𝒜 → 𝒞` and `g : ℬ → 𝒟` there is a
 unique ncp-map `f ⊗ g : 𝒜 ⊗ ℬ → 𝒞 ⊗ 𝒟` with
 `(f ⊗ g)(a ⊗ b) = f(a) ⊗ g(b)`. -/
@@ -6520,7 +6520,7 @@ noncomputable def tmap (f : NCPMap A C) (g : NCPMap B D) :
 theorem tmap_apply (f : NCPMap A C) (g : NCPMap B D) (a : A) (b : B) :
     tmap f g (a ⊗ᵥ b) = f a ⊗ᵥ g b := (exists_tmap f g).choose_spec.1 a b
 
-/-- **115II** (`tensor-functorial`, proc.tex:3114, Proposition), parts
+/-- **115II** (`tensor-functorial`, proc.tex:3120, Proposition), parts
 1–3: `f ⊗ g` is multiplicative when `f` and `g` are, involution
 preserving when `f` and `g` are, and (sub)unital when `f` and `g` are. -/
 theorem tensor_functorial (f : NCPMap A C) (g : NCPMap B D) :
@@ -6567,7 +6567,7 @@ theorem tensor_functorial (f : NCPMap A C) (g : NCPMap B D) :
     refine h.trans (le_of_eq ?_)
     exact (vnTensor C D).isTensorProduct.miu.1
 
-/-- **115IV** (`tensor-functor`, proc.tex:3275, Exercise), identity law:
+/-- **115IV** (`tensor-functor`, proc.tex:3281, Exercise), identity law:
 the assignments `(𝒜,ℬ) ↦ 𝒜 ⊗ ℬ`, `(f,g) ↦ f ⊗ g` give a bifunctor on
 `W*_miu`, `W*_cp`, `W*_cpu` and `W*_cpsu` — rendered concretely:
 `id ⊗ id = id`. -/
@@ -6575,7 +6575,7 @@ theorem tensor_functor_id : tmap (ncpId A) (ncpId B) = ncpId (VNT A B) :=
   (exists_tmap (ncpId A) (ncpId B)).unique (tmap_apply (ncpId A) (ncpId B))
     (fun a b => by rw [ncpId_apply, ncpId_apply, ncpId_apply])
 
-/-- **115IV** (`tensor-functor`, proc.tex:3275, Exercise), composition
+/-- **115IV** (`tensor-functor`, proc.tex:3281, Exercise), composition
 law: `(f' ∘ f) ⊗ (g' ∘ g) = (f' ⊗ g') ∘ (f ⊗ g)`. -/
 theorem tensor_functor_comp {A' B' : Type u} [CStarAlgebra A']
     [PartialOrder A'] [StarOrderedRing A'] [VonNeumannAlgebra A']
@@ -6745,7 +6745,7 @@ private theorem isTensorProduct_genGamma (f : NMIUMap A C) (g : NMIUMap B D)
       (VNSub.restrictNP ω) (fun a b => hω (f a) (g b))
     exact this
 
-/-- **115V** (`tensor-injective`, proc.tex:3288, Proposition): given
+/-- **115V** (`tensor-injective`, proc.tex:3294, Proposition): given
 injective nmiu-maps `f : 𝒜 → 𝒞`, `g : ℬ → 𝒟`, the map
 `f ⊗ g : 𝒜 ⊗ ℬ → 𝒞 ⊗ 𝒟` is injective (rendered for any ncp-map
 agreeing with `f ⊗ g` on pure tensors). -/
@@ -6818,7 +6818,7 @@ private theorem clm_ext_of_tmul {h₁ h₂ : VNT A B →L[ℂ] ℂ}
   rintro _ ⟨t, rfl⟩
   exact hkey t
 
-/-- **116I** (`product-functional-norm`, proc.tex:3403, Lemma),
+/-- **116I** (`product-functional-norm`, proc.tex:3409, Lemma),
 well-definedness (from 112IX and 112XI): bounded ultraweakly continuous
 functionals `f ∈ 𝒜_*`, `g ∈ ℬ_*` induce a unique normal functional
 `f ⊗ g` on `𝒜 ⊗ ℬ`. -/
@@ -6846,7 +6846,7 @@ noncomputable def predualTensor (f : A →L[ℂ] ℂ) (g : B →L[ℂ] ℂ)
     (hg : @Continuous B ℂ (ultraweak B) _ ⇑g) : VNT A B →L[ℂ] ℂ :=
   (exists_predualTensor f g hf hg).choose
 
-/-- **116I** (`product-functional-norm`, proc.tex:3403, Lemma):
+/-- **116I** (`product-functional-norm`, proc.tex:3409, Lemma):
 `‖f ⊗ g‖ = ‖f‖·‖g‖` for `f ∈ 𝒜_*`, `g ∈ ℬ_*`. -/
 theorem product_functional_norm (f : A →L[ℂ] ℂ) (g : B →L[ℂ] ℂ)
     (hf : @Continuous A ℂ (ultraweak A) _ ⇑f)
@@ -6916,7 +6916,7 @@ theorem product_functional_norm (f : A →L[ℂ] ℂ) (g : B →L[ℂ] ℂ)
   have := hFw.symm.trans hval
   exact_mod_cast this
 
-/-- **116III** (`tensor-simple-facts`, proc.tex:3427, Exercise), part 3:
+/-- **116III** (`tensor-simple-facts`, proc.tex:3433, Exercise), part 3:
 `⊗ : 𝒜_* × ℬ_* → (𝒜 ⊗ ℬ)_*` is norm continuous — rendered by the
 estimate `‖f ⊗ g − f' ⊗ g'‖ ≤ ‖f − f'‖·‖g‖ + ‖f'‖·‖g − g'‖`. -/
 theorem tensor_simple_facts_3 (f f' : A →L[ℂ] ℂ) (g g' : B →L[ℂ] ℂ)
@@ -6998,7 +6998,7 @@ private theorem norm_sub_le_of_tmul_factor (F G : VNT A B →L[ℂ] ℂ)
   rw [hFeq, hGeq]
   exact tensor_simple_facts_3 p p' q q' hp hp' hq hq'
 
-/-- **116III** (`tensor-simple-facts`, proc.tex:3427, Exercise), part 4:
+/-- **116III** (`tensor-simple-facts`, proc.tex:3433, Exercise), part 4:
 `⊗ : 𝒜 × ℬ → 𝒜 ⊗ ℬ` is (jointly) ultraweakly continuous.
 
 **This part of the thesis is false**, and the `sorry` is deliberate and not
@@ -7448,7 +7448,7 @@ theorem norm_vtmul (a : A) (b : B) : ‖a ⊗ᵥ b‖ = ‖a‖ * ‖b‖ := by
   rw [h, tensor_basic_2 (vnTensor A B).map (vnTensor A B).isTensorProduct]
   exact le_tensorNorm_tmul a b
 
-/-- **116III** (`tensor-simple-facts`, proc.tex:3427, Exercise), part 2:
+/-- **116III** (`tensor-simple-facts`, proc.tex:3433, Exercise), part 2:
 `‖a ⊗ b‖ = ‖a‖·‖b‖`, and `⊗ : 𝒜 × ℬ → 𝒜 ⊗ ℬ` is norm continuous. -/
 theorem tensor_simple_facts_2 :
     (∀ (a : A) (b : B), ‖a ⊗ᵥ b‖ = ‖a‖ * ‖b‖) ∧
@@ -7655,7 +7655,7 @@ theorem continuous_ultraweak_vtmul_left (b : B) :
         _ = ε * ‖a‖ := by ring
   exact hF
 
-/-- **116III** (`tensor-simple-facts`, proc.tex:3427, Exercise), part 5:
+/-- **116III** (`tensor-simple-facts`, proc.tex:3433, Exercise), part 5:
 `a ⊗ (·) : ℬ → 𝒜 ⊗ ℬ` is an ncp-map for positive `a`, and `1 ⊗ (·)` is
 an nmiu-map.
 
@@ -7742,7 +7742,7 @@ theorem tensor_simple_facts_5 (a : A) (ha : 0 ≤ a) :
                   monotone' := fun x y hxy => hpos 1 zero_le_one x y hxy }
                 (fun _ => rfl) }, fun _ => rfl⟩
 
-/-- **116IV** (`tensor-generation`, proc.tex:3489, Proposition), part 1:
+/-- **116IV** (`tensor-generation`, proc.tex:3495, Proposition), part 1:
 if the linear spans of `S ⊆ 𝒜` and `T ⊆ ℬ` are ultraweakly dense, then
 the linear span of `{s ⊗ t}` is ultraweakly dense in `𝒜 ⊗ ℬ`. -/
 theorem tensor_generation_1 (S : Set A) (T : Set B)
@@ -7836,7 +7836,7 @@ theorem tensor_generation_1 (S : Set A) (T : Set B)
     trivial
   exact Submodule.dense_iff_topologicalClosure_eq_top.mpr hMtop
 
-/-- **116IV** (`tensor-generation`, proc.tex:3489, Proposition), part 2:
+/-- **116IV** (`tensor-generation`, proc.tex:3495, Proposition), part 2:
 centre separating collections `Ω`, `Θ` of np-functionals on `𝒜`, `ℬ`
 yield a centre separating collection `{ω ⊗ θ}` on `𝒜 ⊗ ℬ`. -/
 theorem tensor_generation_2 (Ω : Set (NPFunctional A))
@@ -8241,7 +8241,7 @@ private theorem nmiuInv_apply {X Y : Type u} [CStarAlgebra X]
 
 end Characterization
 
-/-- **116VII** (`tensor-characterization`, proc.tex:3578, Theorem): given
+/-- **116VII** (`tensor-characterization`, proc.tex:3584, Theorem): given
 centre separating collections `Σ`, `Γ` of np-functionals on `𝒜`, `ℬ`, an
 miu-bilinear map `γ : 𝒜 × ℬ → 𝒯` is a tensor product iff (1) the span of
 its range is ultraweakly dense, (2) for `σ ∈ Σ`, `τ ∈ Γ` the product
@@ -8869,7 +8869,7 @@ variable {I : Type*} (𝒜 : I → Type*) [∀ i, CStarAlgebra (𝒜 i)]
   [∀ i, Nontrivial (𝒜 i)] [∀ i, PartialOrder (𝒜 i)]
   [∀ i, StarOrderedRing (𝒜 i)] [∀ i, VonNeumannAlgebra (𝒜 i)]
 
-/-- **117II** (`sum-generation`, proc.tex:3733, Exercise), part 1: if
+/-- **117II** (`sum-generation`, proc.tex:3739, Exercise), part 1: if
 `Aᵢ ⊆ 𝒜ᵢ` generates `𝒜ᵢ` for each `i`, then `⋃ᵢ κᵢ(Aᵢ)` generates the
 direct sum `⊕ᵢ 𝒜ᵢ`.
 
@@ -8964,7 +8964,7 @@ theorem isVNSubalgebra_diagBool :
       Set.image_congr fun d hd => Subtype.ext (hDS d hd)
     exact congrArg Subtype.val ((hev true).unique (himg ▸ hev false))
 
-/-- **117II**.1 (`sum-generation`, proc.tex:3733, Exercise) is **false as
+/-- **117II**.1 (`sum-generation`, proc.tex:3739, Exercise) is **false as
 printed** — see the doc comment of `sum_generation_1` above.  Witness:
 `I = Bool`, `𝒜ᵢ = ℂ`, `Aᵢ = ∅` (which does generate `ℂ`, by
 `starSubalgebra_complex_eq_top`), while `W*(∅) ⊆ ℂ·1 ⊊ ℂ ⊕ ℂ` because the
@@ -8987,7 +8987,7 @@ theorem sum_generation_1_is_false :
   rw [lp.single_apply_self, lp.single_apply_ne _ _ _ (by simp)] at hmem
   exact one_ne_zero hmem
 
-/-- **117II** (`sum-generation`, proc.tex:3733, Exercise), part 2: centre
+/-- **117II** (`sum-generation`, proc.tex:3739, Exercise), part 2: centre
 separating collections `Ωᵢ` on the `𝒜ᵢ` give the centre separating
 collection `{ω ∘ πᵢ}` on `⊕ᵢ 𝒜ᵢ`. -/
 theorem sum_generation_2 (Ω : ∀ i, Set (NPFunctional (𝒜 i)))
@@ -9089,7 +9089,7 @@ theorem sumTmulBilin_miu : MIUBilinear (sumTmulBilin 𝒜 (A := A)) := by
     simp only [sumTmulBilin_apply, lp.coeFn_star, Pi.star_apply]
     exact (vnTensor A (𝒜 i)).isTensorProduct.miu.2.2 a ((b : ∀ i, 𝒜 i) i)
 
-/-- **117III** (`tensor-distributes-over-sums`, proc.tex:3758,
+/-- **117III** (`tensor-distributes-over-sums`, proc.tex:3764,
 Proposition): the bilinear map
 `γ : 𝒜 × ⊕ᵢ ℬᵢ → ⊕ᵢ (𝒜 ⊗ ℬᵢ)`, `(a, b) ↦ (a ⊗ bᵢ)ᵢ` is a tensor
 product; whence `𝒜 ⊗ ⊕ᵢ ℬᵢ ≅ ⊕ᵢ (𝒜 ⊗ ℬᵢ)`. -/
@@ -9180,7 +9180,7 @@ theorem tensor_distributes_over_sums :
 
 end SumsTensor
 
-/-! ### Infrastructure for **118IV**.4 (`carrier-tensor`, proc.tex:3880)
+/-! ### Infrastructure for **118IV**.4 (`carrier-tensor`, proc.tex:3886)
 
 The exercise's steps 2 and 3 are spatial: they compute the carrier of a
 *vector* functional on a von Neumann algebra of operators as a projection
@@ -9456,7 +9456,7 @@ private theorem continuous_htmul_left (y : K) : Continuous (fun u : H => u ⊗�
     (fun u => by rw [show (((hilbTensor H K).map).flip y) u = u ⊗ₕ y from rfl,
       norm_htmul, mul_comm])
 
-/-- **118IV**.2–3 (proc.tex:3880), the spatial heart of the exercise: if
+/-- **118IV**.2–3 (proc.tex:3886), the spatial heart of the exercise: if
 `pA` is the least projection of `𝒜 ⊆ B(ℋ)` fixing every `xᵢ` and `pB` the
 least projection of `ℬ ⊆ B(𝒦)` fixing every `yⱼ`, then every projection
 `E` of `𝒜 ⊗ ℬ` fixing every `xᵢ ⊗ yⱼ` dominates `pA ⊗ pB`.
@@ -9614,7 +9614,7 @@ section Carriers
 variable [VonNeumannAlgebra A] [VonNeumannAlgebra B] [VonNeumannAlgebra C]
   [VonNeumannAlgebra D]
 
-/-- **118II** (proc.tex:3802, Lemma), part 1:
+/-- **118II** (proc.tex:3808, Lemma), part 1:
 `⌈a ⊗ b⌉ = ⌈a⌉ ⊗ ⌈b⌉` for positive `a`, `b`. -/
 theorem ceil_tensor (a : A) (b : B) (ha : 0 ≤ a) (hb : 0 ≤ b) :
     ceil (a ⊗ᵥ b) = ceil a ⊗ᵥ ceil b := by
@@ -9732,7 +9732,7 @@ private theorem vtmulPR_normal (a : A) (ha : 0 ≤ a) :
   ((p_uwcont (vtmulPR (B := B) a ha)).out 0 2).mp
     (continuous_ultraweak_vtmul_right a)
 
-/-- **118II** (proc.tex:3802, Lemma), part 2:
+/-- **118II** (proc.tex:3808, Lemma), part 2:
 `⌈⌈a ⊗ b⌉⌉ = ⌈⌈a⌉⌉ ⊗ ⌈⌈b⌉⌉` (central supports/carriers). -/
 theorem cceil_tensor (a : A) (b : B) :
     cceil (a ⊗ᵥ b) = cceil a ⊗ᵥ cceil b := by
@@ -9862,7 +9862,7 @@ theorem cceil_tensor (a : A) (b : B) :
     exact hstep2 p hp
   exact le_antisymm hle hge
 
-/-- **118IV** (`carrier-tensor`, proc.tex:3880, Exercise), part 1:
+/-- **118IV** (`carrier-tensor`, proc.tex:3886, Exercise), part 1:
 `⌈f ⊗ g⌉ ≤ ⌈f⌉ ⊗ ⌈g⌉` for np-maps `f`, `g`.
 
 Step 1 of the exercise asks *first* for `(f ⊗ g)(⌈f⌉ ⊗ ⌈g⌉) = 1 ⊗ 1` and
@@ -9927,7 +9927,7 @@ theorem carrier_tensor_1 (f : NCPMap A C) (g : NCPMap B D) :
   exact (exists_ncpCarrier (tmap f g)).choose_spec.1.2.2 _ hpq hzero
 
 set_option maxHeartbeats 2000000 in
-/-- **118IV** (`carrier-tensor`, proc.tex:3880, Exercise), part 4 (the
+/-- **118IV** (`carrier-tensor`, proc.tex:3886, Exercise), part 4 (the
 case of functionals): `⌈σ ⊗ τ⌉ = ⌈σ⌉ ⊗ ⌈τ⌉` for np-functionals `σ`,
 `τ` — for any np-functional `χ` on `𝒜 ⊗ ℬ` restricting to the product.
 (Parts 2–3, the Hilbert-space steps toward it are the spatial development
@@ -10166,7 +10166,7 @@ private theorem tensor_projSup_le {P : Set A} {Q : Set B}
   rintro _ ⟨p, hp, rfl⟩
   exact hstep2 p hp
 
-/-- **118IV** (`carrier-tensor`, proc.tex:3880, Exercise), part 5:
+/-- **118IV** (`carrier-tensor`, proc.tex:3886, Exercise), part 5:
 `⌈f ⊗ g⌉ = ⌈f⌉ ⊗ ⌈g⌉` for np-maps `f`, `g`. -/
 theorem carrier_tensor_5 (f : NCPMap A C) (g : NCPMap B D) :
     ncpCarrier (tmap f g) = ncpCarrier f ⊗ᵥ ncpCarrier g := by
@@ -10205,7 +10205,7 @@ private theorem diamondDown_eq_ncpCarrier (f : NCPMap A C) (e : C)
   · rw [← hval]; exact hc0
   · rw [hval]; exact hd0
 
-/-- **118IV** (`carrier-tensor`, proc.tex:3880, Exercise), part 6:
+/-- **118IV** (`carrier-tensor`, proc.tex:3886, Exercise), part 6:
 `(f ⊗ g)_⋄(s ⊗ t) = f_⋄(s) ⊗ g_⋄(t)` for projections `s ∈ 𝒞`,
 `t ∈ 𝒟`. -/
 theorem carrier_tensor_6 (f : NCPMap A C) (g : NCPMap B D) (s : C) (t : D)
@@ -10257,7 +10257,7 @@ section Monoidal
 variable [VonNeumannAlgebra A] [VonNeumannAlgebra B] [VonNeumannAlgebra C]
   [VonNeumannAlgebra D]
 
-/-- **119II** (proc.tex:3994, Proposition), trilinear tensor products
+/-- **119II** (proc.tex:4000, Proposition), trilinear tensor products
 (cf. 119I): a trilinear map `γ : 𝒜 × ℬ × 𝒞 → 𝒯` is a **tensor product**
 when it is miu-trilinear, the span of its range is ultraweakly dense, the
 product functionals of np-functionals exist and are positive, and they
@@ -10526,7 +10526,7 @@ private theorem tensorTriple_faithful (t : VNT (VNT A B) C) (ht : 0 ≤ t)
     linarith [hstep.trans (hmul.trans hfin)]
   exact (hzero w).mp (hall w)
 
-/-- **119II** (proc.tex:3994, Proposition): the trilinear map
+/-- **119II** (proc.tex:4000, Proposition): the trilinear map
 `(a,b,c) ↦ (a ⊗ b) ⊗ c : 𝒜 × ℬ × 𝒞 → (𝒜 ⊗ ℬ) ⊗ 𝒞` is a tensor
 product. -/
 theorem triple_tensor :
@@ -10654,7 +10654,7 @@ end NestedExt
 
 This is the *bilinear* route to the associator **119IV**: it feeds plain
 **114II** `tensor_uniqueness` and so needs no trilinear development.  Its
-three conditions are the thesis's own for **119II** (proc.tex:3994) —
+three conditions are the thesis's own for **119II** (proc.tex:4000) —
 density from **116IV**.1, product functionals `(σ ⊗ τ) ⊗ υ`, centre
 separation from **116IV**.2 — read through **116VII**
 `tensor_characterization`, which is what lets the product functionals be
@@ -10819,7 +10819,7 @@ theorem isTensorProduct_assoc :
 
 
 
-/-- **119IV** (`associator`, proc.tex:4031, Corollary) at a single universe:
+/-- **119IV** (`associator`, proc.tex:4037, Corollary) at a single universe:
 the associator exists and is unique when `𝒜`, `ℬ`, `𝒞` all live in `Type u`
 (which is what **114II** `tensor_uniqueness` requires).  The general form
 `exists_associator` lifts to this one. -/
@@ -10867,7 +10867,7 @@ variable (𝒜 : Type u) (ℬ : Type v) (𝒞 : Type w)
   [CStarAlgebra 𝒞] [PartialOrder 𝒞] [StarOrderedRing 𝒞]
   [VonNeumannAlgebra 𝒞]
 
-/-- **119IV** (`associator`, proc.tex:4031, Corollary): there is a unique
+/-- **119IV** (`associator`, proc.tex:4037, Corollary): there is a unique
 nmiu-isomorphism `α : 𝒜 ⊗ (ℬ ⊗ 𝒞) → (𝒜 ⊗ ℬ) ⊗ 𝒞` with
 `α(a ⊗ (b ⊗ c)) = (a ⊗ b) ⊗ c`. -/
 theorem exists_associator :
@@ -10948,7 +10948,7 @@ variable {𝒜 ℬ 𝒞} in
     associator 𝒜 ℬ 𝒞 (a ⊗ᵥ (b ⊗ᵥ c)) = (a ⊗ᵥ b) ⊗ᵥ c :=
   (exists_associator 𝒜 ℬ 𝒞).choose_spec.1 a b c
 
-/-- **119IVc** (proc.tex:4072, Exercise): the bilinear map
+/-- **119IVc** (proc.tex:4078, Exercise): the bilinear map
 `(a, b) ↦ b ⊗ a : 𝒜 × ℬ → ℬ ⊗ 𝒜` is a tensor product; hence there is a
 unique nmiu-isomorphism (braiding) `γ_{𝒜,ℬ} : 𝒜 ⊗ ℬ → ℬ ⊗ 𝒜` with
 `γ(a ⊗ b) = b ⊗ a`. -/
@@ -11015,7 +11015,7 @@ noncomputable def braiding : NMIUMap (VNT 𝒜 ℬ) (VNT ℬ 𝒜) :=
 
 end AssocBraid
 
-/-- **119IVb** (proc.tex:4053, Exercise): the bilinear maps
+/-- **119IVb** (proc.tex:4059, Exercise): the bilinear maps
 `(z, a) ↦ z·a : ℂ × 𝒜 → 𝒜` and `(a, z) ↦ z·a : 𝒜 × ℂ → 𝒜` are tensor
 products; hence there are unique nmiu-isomorphisms (unitors)
 `λ_𝒜 : ℂ ⊗ 𝒜 → 𝒜` and `ρ_𝒜 : 𝒜 ⊗ ℂ → 𝒜` with `λ(z ⊗ a) = z·a = ρ(a ⊗ z)`. -/
@@ -11282,7 +11282,7 @@ noncomputable def tmapM (ρ : NMIUMap A₂ C₂) (σ : NMIUMap B₂ D₂) :
 
 end TmapM
 
-/-- **119V** (`vn-smc`, proc.tex:4087, Theorem), naturality: the
+/-- **119V** (`vn-smc`, proc.tex:4093, Theorem), naturality: the
 associators form a natural transformation, i.e.
 `α ∘ (f ⊗ (g ⊗ h)) = ((f ⊗ g) ⊗ h) ∘ α` for all ncp-maps `f`, `g`, `h`.
 (The monoidal structure is stated concretely rather than through
@@ -11327,7 +11327,7 @@ theorem vn_smc_associator_natural {A' B' C' : Type u} [CStarAlgebra A']
     (congrArg (fun k : VNT A (VNT B C) →ₗ[ℂ] VNT (VNT A' B') C' => ⇑k) hkey) t
 
 
-/-- **119V** (`vn-smc`, proc.tex:4087, Theorem), naturality of the
+/-- **119V** (`vn-smc`, proc.tex:4093, Theorem), naturality of the
 braidings — the "similar but simpler argument" the printed proof leaves to
 the reader: `γ_{𝒜',ℬ'} ∘ (f ⊗ g) = (g ⊗ f) ∘ γ_{𝒜,ℬ}` for all ncp-maps
 `f : 𝒜 → 𝒜'`, `g : ℬ → ℬ'`.  The argument is the associator's: both routes
@@ -11362,7 +11362,7 @@ theorem vn_smc_braiding_natural {A' B' : Type u} [CStarAlgebra A']
   exact congrFun
     (congrArg (fun k : VNT A B →ₗ[ℂ] VNT B' A' => ⇑k) hkey) t
 
-/-- **119V** (`vn-smc`, proc.tex:4087, Theorem), naturality of the left
+/-- **119V** (`vn-smc`, proc.tex:4093, Theorem), naturality of the left
 unitor: `f ∘ λ_𝒜 = λ_{𝒜'} ∘ (id_ℂ ⊗ f)` for every ncp-map `f : 𝒜 → 𝒜'`.
 
 `id_ℂ ⊗ f` is rendered as an arbitrary ncp-map `h` acting as `z ⊗ a ↦
@@ -11395,7 +11395,7 @@ theorem vn_smc_leftUnitor_natural {A' : Type u} [CStarAlgebra A']
       exact map_smul f.toCompletelyPositiveMap.toLinearMap z a)
   exact congrFun (congrArg (fun k : VNT ℂ A →ₗ[ℂ] A' => ⇑k) hkey) t
 
-/-- **119V** (`vn-smc`, proc.tex:4087, Theorem), naturality of the right
+/-- **119V** (`vn-smc`, proc.tex:4093, Theorem), naturality of the right
 unitor: `f ∘ ϱ_𝒜 = ϱ_{𝒜'} ∘ (f ⊗ id_ℂ)`.  As for the left unitor,
 `f ⊗ id_ℂ` is any ncp-map acting as `a ⊗ z ↦ f(a) ⊗ z`. -/
 theorem vn_smc_rightUnitor_natural {A' : Type u} [CStarAlgebra A']
@@ -11423,7 +11423,7 @@ theorem vn_smc_rightUnitor_natural {A' : Type u} [CStarAlgebra A']
       exact map_smul f.toCompletelyPositiveMap.toLinearMap z a)
   exact congrFun (congrArg (fun k : VNT A ℂ →ₗ[ℂ] A' => ⇑k) hkey) t
 
-/-- **119V** (`vn-smc`, proc.tex:4087, Theorem), pentagon: the pentagon
+/-- **119V** (`vn-smc`, proc.tex:4093, Theorem), pentagon: the pentagon
 coherence diagram for the associators commutes. -/
 theorem vn_smc_pentagon (t : VNT A (VNT B (VNT C D))) :
     associator (VNT A B) C D (associator A B (VNT C D) t) =
@@ -11452,7 +11452,7 @@ theorem vn_smc_pentagon (t : VNT A (VNT B (VNT C D))) :
       hkey) t
 
 
-/-- **119V** (`vn-smc`, proc.tex:4087, Theorem), triangle: the first of the
+/-- **119V** (`vn-smc`, proc.tex:4093, Theorem), triangle: the first of the
 two diagrams of the unitor display commutes, `(ϱ_𝒜 ⊗ id) ∘ α = id ⊗ λ_𝒞`.
 The second, `λ_ℂ = ϱ_ℂ`, is `vn_smc_unitors_agree` below. -/
 theorem vn_smc_triangle (t : VNT A (VNT ℂ C)) :
@@ -11478,7 +11478,7 @@ theorem vn_smc_triangle (t : VNT A (VNT ℂ C)) :
   exact congrFun (congrArg (fun f : VNT A (VNT ℂ C) →ₗ[ℂ] VNT A C => ⇑f) hkey) t
 
 
-/-- **119V** (`vn-smc`, proc.tex:4087, Theorem), the second diagram of the
+/-- **119V** (`vn-smc`, proc.tex:4093, Theorem), the second diagram of the
 unitor display: `λ_ℂ = ϱ_ℂ` on `ℂ ⊗ ℂ`.  Both send `z ⊗ w` to `zw`, so the
 left unitor at `ℂ` satisfies the defining equation of the right one, and
 the uniqueness clause of **119IVb** identifies them. -/
@@ -11488,7 +11488,7 @@ theorem vn_smc_unitors_agree : leftUnitor ℂ = rightUnitor ℂ :=
     rw [leftUnitor_apply]
     simp [smul_eq_mul, mul_comm]
 
-/-- **119V** (`vn-smc`, proc.tex:4087, Theorem), hexagon: the braiding
+/-- **119V** (`vn-smc`, proc.tex:4093, Theorem), hexagon: the braiding
 satisfies the hexagon identity. -/
 theorem vn_smc_hexagon (t : VNT A (VNT B C)) :
     associator C A B (braiding (VNT A B) C (associator A B C t)) =
@@ -11515,7 +11515,7 @@ theorem vn_smc_hexagon (t : VNT A (VNT B C)) :
     (congrArg (fun f : VNT A (VNT B C) →ₗ[ℂ] VNT (VNT C A) B => ⇑f) hkey) t
 
 
-/-- **119V** (`vn-smc`, proc.tex:4087, Theorem), symmetry:
+/-- **119V** (`vn-smc`, proc.tex:4093, Theorem), symmetry:
 `γ_{ℬ,𝒜} ∘ γ_{𝒜,ℬ} = id` and `λ_ℬ ∘ γ_{ℬ,ℂ} = ρ_ℬ`. -/
 theorem vn_smc_symmetry :
     (∀ t : VNT A B, braiding B A (braiding A B t) = t) ∧

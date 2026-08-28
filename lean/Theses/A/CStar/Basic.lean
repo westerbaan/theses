@@ -1976,14 +1976,14 @@ section Invertibles
 
 variable {𝒜 : Type*} [CStarAlgebra 𝒜]
 
-/-- **11II** (`geometric`, cstar.tex:1403, Lemma), part 1: for `‖a‖ < 1`
+/-- **11II** (`geometric`, cstar.tex:1404, Lemma), part 1: for `‖a‖ < 1`
 the geometric series `∑ aⁿ` converges absolutely. -/
 theorem geometric_1 (a : 𝒜) (ha : ‖a‖ < 1) :
     Summable fun n : ℕ => ‖a ^ n‖ :=
   by
     exact summable_norm_geometric_of_norm_lt_one ha
 
-/-- **11II** (`geometric`, cstar.tex:1403, Lemma), part 2: for `‖a‖ < 1`
+/-- **11II** (`geometric`, cstar.tex:1404, Lemma), part 2: for `‖a‖ < 1`
 the element `a^⊥ = 1 - a` is invertible with inverse `∑ₙ aⁿ`. -/
 theorem geometric_2 (a : 𝒜) (ha : ‖a‖ < 1) :
     IsUnit (1 - a) ∧ (1 - a) * ∑' n : ℕ, a ^ n = 1 ∧
@@ -1991,7 +1991,7 @@ theorem geometric_2 (a : 𝒜) (ha : ‖a‖ < 1) :
   by
     exact ⟨⟨Units.oneSub a ha, rfl⟩, mul_neg_geom_series a ha, geom_series_mul_neg a ha⟩
 
-/-- **11VI** (`spectrum-bounded`, cstar.tex:1450, Exercise), part 1:
+/-- **11VI** (`spectrum-bounded`, cstar.tex:1451, Exercise), part 1:
 `a - λ` is invertible for every `λ ∈ ℂ` with `‖a‖ < |λ|`.
 
 The proof is the solution's own: `‖a λ⁻¹‖ = |λ|⁻¹ ‖a‖ < 1`, so `1 - a λ⁻¹`
@@ -2018,7 +2018,7 @@ theorem spectrum_bounded_1 (a : 𝒜) (z : ℂ) (h : ‖a‖ < ‖z‖) :
       rw [hfac] at hprod
       simpa using hprod.neg
 
-/-- **11VI** (`spectrum-bounded`, cstar.tex:1450, Exercise), part 2:
+/-- **11VI** (`spectrum-bounded`, cstar.tex:1451, Exercise), part 2:
 `a - b` is invertible when `b` is invertible and `a` is small compared
 to `b`.  (The first printing stated the hypothesis as `‖a‖ < ‖b‖`; cstar.tex
 now prints the standard — and provable — bound `‖a‖ < ‖b⁻¹‖⁻¹`, incorporated
@@ -2043,7 +2043,7 @@ theorem spectrum_bounded_2 (a : 𝒜) (b : 𝒜ˣ)
     simp only [Units.mul_inv, one_mul] at h3
     simpa using h3.neg
 
-/-- **11VI** (`spectrum-bounded`, cstar.tex:1450, Exercise), part 3: the
+/-- **11VI** (`spectrum-bounded`, cstar.tex:1451, Exercise), part 3: the
 invertible elements form an open subset of `𝒜`.
 
 The proof is the solution's own: around an invertible `b` take the radius
@@ -2067,7 +2067,7 @@ theorem spectrum_bounded_3 : IsOpen {b : 𝒜 | IsUnit b} :=
       rw [Units.val_neg, sub_neg_eq_add, sub_add_cancel]
     rwa [he] at h
 
-/-- **11VII** (`geometric-convergence`, cstar.tex:1466, Lemma): for
+/-- **11VII** (`geometric-convergence`, cstar.tex:1467, Lemma): for
 self-adjoint `a` the series `∑ₙ aⁿ` converges iff `‖a‖ < 1` (and then
 converges absolutely, see **11II**). -/
 theorem geometric_convergence (a : 𝒜) (ha : IsSelfAdjoint a) :
@@ -2099,7 +2099,7 @@ theorem geometric_convergence (a : 𝒜) (ha : IsSelfAdjoint a) :
     · intro h
       exact summable_geometric_of_norm_lt_one h
 
-/-- **11X** (`cstar-inv-continuous`, cstar.tex:1507, Lemma): the assignment
+/-- **11X** (`cstar-inv-continuous`, cstar.tex:1508, Lemma): the assignment
 `a ↦ a⁻¹` is continuous on the set of invertible elements. -/
 theorem cstar_inv_continuous :
     ContinuousOn (Ring.inverse : 𝒜 → 𝒜) {a : 𝒜 | IsUnit a} :=
@@ -2109,7 +2109,7 @@ theorem cstar_inv_continuous :
     rw [ha.unit_spec] at h
     exact h.continuousWithinAt
 
-/-- **11XIII** (cstar.tex:1547, Lemma): `a - i` is invertible for
+/-- **11XIII** (cstar.tex:1548, Lemma): `a - i` is invertible for
 self-adjoint `a`.
 
 The proof is the thesis's own trick: write `a - i = (a + ni) - (n+1)i` for
@@ -2179,7 +2179,7 @@ theorem selfAdjoint_sub_I_isUnit (a : 𝒜) (ha : IsSelfAdjoint a) :
     rw [add_sub_assoc, ← map_sub, hz, map_neg, ← sub_eq_add_neg]
   rwa [heq] at hmain
 
-/-- **11XV** (`spectrum-self-adjoint-real`, cstar.tex:1569, Exercise),
+/-- **11XV** (`spectrum-self-adjoint-real`, cstar.tex:1570, Exercise),
 part 1: `a - λ` is invertible for self-adjoint `a` and `λ ∈ ℂ \ ℝ`. -/
 theorem spectrum_self_adjoint_real_1 (a : 𝒜) (ha : IsSelfAdjoint a)
     (z : ℂ) (hz : z.im ≠ 0) : IsUnit (a - algebraMap ℂ 𝒜 z) := by
@@ -2227,7 +2227,7 @@ private theorem mem_spectrum_eq_re_of_isSelfAdjoint {a : 𝒜} (ha : IsSelfAdjoi
   exact (spectrum.mem_iff.mp hz)
     (by simpa using (spectrum_self_adjoint_real_1 a ha z him).neg)
 
-/-- **11XV** (`spectrum-self-adjoint-real`, cstar.tex:1569, Exercise),
+/-- **11XV** (`spectrum-self-adjoint-real`, cstar.tex:1570, Exercise),
 part 2: `aⁿ - λ` is invertible for self-adjoint `a`, even `n` (in
 particular `n = 2`) and `λ ∈ ℂ \ [0,∞)`. -/
 theorem spectrum_self_adjoint_real_2 (a : 𝒜) (ha : IsSelfAdjoint a)
@@ -2282,7 +2282,7 @@ theorem spectrum_self_adjoint_real_2 (a : 𝒜) (ha : IsSelfAdjoint a)
     · -- `λ ∉ ℝ`: part 1, applied to the self-adjoint element `aⁿ`
       exact spectrum_self_adjoint_real_1 (a ^ n) (ha.pow n) z him
 
-/-- **11XV** (`spectrum-self-adjoint-real`, cstar.tex:1569, Exercise),
+/-- **11XV** (`spectrum-self-adjoint-real`, cstar.tex:1570, Exercise),
 part 3: for self-adjoint `a` and *odd* `n`: `aⁿ - λ` is invertible for all
 `λ ∈ ℂ \ [0,∞)` iff `a - λ` is invertible for all `λ ∈ ℂ \ [0,∞)`. -/
 theorem spectrum_self_adjoint_real_3 (a : 𝒜) (ha : IsSelfAdjoint a)
@@ -2326,7 +2326,7 @@ theorem spectrum_self_adjoint_real_3 (a : 𝒜) (ha : IsSelfAdjoint a)
 
 variable {ℬ : Type*} [CStarAlgebra ℬ]
 
-/-- **11XVI** (`inverse-permanence`, cstar.tex:1594, Proposition): if a
+/-- **11XVI** (`inverse-permanence`, cstar.tex:1595, Proposition): if a
 self-adjoint element `a` of a closed ∗-subalgebra `𝒮` of a C*-algebra `ℬ`
 has an inverse in `ℬ`, then `a⁻¹ ∈ 𝒮`.
 
@@ -2404,7 +2404,7 @@ theorem inverse_permanence (𝒮 : StarSubalgebra ℂ ℬ)
       exact hcont.tendsto.comp hshift
     exact h𝒮.mem_of_tendsto hlim (Filter.Eventually.of_forall hmem)
 
-/-- **11XVIII** (`improved-inverse-permanence`, cstar.tex:1615, Exercise):
+/-- **11XVIII** (`improved-inverse-permanence`, cstar.tex:1616, Exercise):
 the self-adjointness assumption in **11XVI** may be dropped.  Following the
 exercise's hint, we apply **11XVI** to the self-adjoint element `a* a`. -/
 theorem improved_inverse_permanence (𝒮 : StarSubalgebra ℂ ℬ)
@@ -2429,11 +2429,11 @@ theorem improved_inverse_permanence (𝒮 : StarSubalgebra ℂ ℬ)
     rw [key]
     exact mul_mem h2 hstar
 
-/-! **11XIX** (`spectrum-of-element`, cstar.tex:1622, Definition): the
+/-! **11XIX** (`spectrum-of-element`, cstar.tex:1623, Definition): the
 *spectrum* of `a` is the set of `λ ∈ ℂ` for which `a - λ` is not
 invertible — Mathlib's `spectrum ℂ a`. -/
 
-/-- **11XX** (cstar.tex:1632, Exercise), part 1: the spectrum of a
+/-- **11XX** (cstar.tex:1633, Exercise), part 1: the spectrum of a
 continuous function `f`, as an element of the C*-algebra `C(X)`, is its
 image.  (Mathlib: `ContinuousMap.spectrum_eq_range`.) -/
 theorem spectrum_continuousMap {X : Type*} [TopologicalSpace X]
@@ -2442,7 +2442,7 @@ theorem spectrum_continuousMap {X : Type*} [TopologicalSpace X]
   by
     exact ContinuousMap.spectrum_eq_range f
 
-/-- **11XX** (cstar.tex:1632, Exercise), part 2: the spectrum of a square
+/-- **11XX** (cstar.tex:1633, Exercise), part 2: the spectrum of a square
 matrix `A ∈ Mₙ` is its set of eigenvalues. -/
 theorem spectrum_matrix {n : ℕ} (A : Matrix (Fin n) (Fin n) ℂ) :
     spectrum ℂ A = {z : ℂ | ∃ v : Fin n → ℂ, v ≠ 0 ∧ A.mulVec v = z • v} :=
@@ -2459,7 +2459,7 @@ theorem spectrum_matrix {n : ℕ} (A : Matrix (Fin n) (Fin n) ℂ) :
       isUnit_iff_ne_zero, not_not, ← Matrix.exists_mulVec_eq_zero_iff]
     exact exists_congr fun v => and_congr_right fun _ => key v
 
-/-- **11XXI** (`spectrum-basic`, cstar.tex:1648, Exercise), part 1: the
+/-- **11XXI** (`spectrum-basic`, cstar.tex:1649, Exercise), part 1: the
 spectrum of a self-adjoint element is real. -/
 theorem spectrum_basic_1 (a : 𝒜) (ha : IsSelfAdjoint a) :
     spectrum ℂ a ⊆ Set.range ((↑) : ℝ → ℂ) :=
@@ -2467,7 +2467,7 @@ theorem spectrum_basic_1 (a : 𝒜) (ha : IsSelfAdjoint a) :
     intro z hz
     exact ⟨z.re, (mem_spectrum_eq_re_of_isSelfAdjoint ha hz).symm⟩
 
-/-- **11XXI** (`spectrum-basic`, cstar.tex:1648, Exercise), part 1
+/-- **11XXI** (`spectrum-basic`, cstar.tex:1649, Exercise), part 1
 (counterexample): the converse fails, e.g. `spec [[0,2],[0,0]] = {0}`
 while the matrix is not self-adjoint. -/
 theorem spectrum_basic_1' :
@@ -2490,7 +2490,7 @@ theorem spectrum_basic_1' :
       ring
     rw [hdet, pow_eq_zero_iff two_ne_zero]
 
-/-- **11XXI** (`spectrum-basic`, cstar.tex:1648, Exercise), part 2:
+/-- **11XXI** (`spectrum-basic`, cstar.tex:1649, Exercise), part 2:
 `spec(a²) ⊆ [0,∞)` for self-adjoint `a`. -/
 theorem spectrum_basic_2 (a : 𝒜) (ha : IsSelfAdjoint a) :
     spectrum ℂ (a ^ 2) ⊆ {z : ℂ | ∃ r : ℝ, 0 ≤ r ∧ z = r} :=
@@ -2504,7 +2504,7 @@ theorem spectrum_basic_2 (a : 𝒜) (ha : IsSelfAdjoint a) :
     exact (spectrum.mem_iff.mp hz)
       (by simpa using (spectrum_self_adjoint_real_2 a ha 2 even_two z hne).neg)
 
-/-- **11XXI** (`spectrum-basic`, cstar.tex:1648, Exercise), part 3:
+/-- **11XXI** (`spectrum-basic`, cstar.tex:1649, Exercise), part 3:
 `|λ| ≤ ‖a‖` for every `λ ∈ spec(a)`. -/
 theorem spectrum_basic_3 (a : 𝒜) (z : ℂ) (hz : z ∈ spectrum ℂ a) :
     ‖z‖ ≤ ‖a‖ :=
@@ -2514,7 +2514,7 @@ theorem spectrum_basic_3 (a : 𝒜) (z : ℂ) (hz : z ∈ spectrum ℂ a) :
     push_neg at hcon
     exact (spectrum.mem_iff.mp hz) (by simpa using (spectrum_bounded_1 a z hcon).neg)
 
-/-- **11XXI** (`spectrum-basic`, cstar.tex:1648, Exercise), part 4: the
+/-- **11XXI** (`spectrum-basic`, cstar.tex:1649, Exercise), part 4: the
 spectrum is closed, hence compact. -/
 theorem spectrum_basic_4 (a : 𝒜) :
     IsClosed (spectrum ℂ a) ∧ IsCompact (spectrum ℂ a) :=
@@ -2533,7 +2533,7 @@ theorem spectrum_basic_4 (a : 𝒜) :
     refine (Metric.isBounded_closedBall (x := (0 : ℂ)) (r := ‖a‖)).subset fun z hz => ?_
     simpa using spectrum_basic_3 a z hz
 
-/-- **11XXI** (`spectrum-basic`, cstar.tex:1648, Exercise), part 5:
+/-- **11XXI** (`spectrum-basic`, cstar.tex:1649, Exercise), part 5:
 `spec(a + z) = { λ + z : λ ∈ spec(a) }` for `z ∈ ℂ`. -/
 theorem spectrum_basic_5 (a : 𝒜) (z : ℂ) :
     spectrum ℂ (a + algebraMap ℂ 𝒜 z) = (fun w => w + z) '' spectrum ℂ a :=
@@ -2551,7 +2551,7 @@ theorem spectrum_basic_5 (a : 𝒜) (z : ℂ) :
     · rintro ⟨v, hv, rfl⟩
       simpa using hv
 
-/-- **11XXI** (`spectrum-basic`, cstar.tex:1648, Exercise), part 6:
+/-- **11XXI** (`spectrum-basic`, cstar.tex:1649, Exercise), part 6:
 `spec(a⁻¹) = { λ⁻¹ : λ ∈ spec(a) }` for invertible `a`. -/
 theorem spectrum_basic_6 (a : 𝒜ˣ) :
     spectrum ℂ ((a⁻¹ : 𝒜ˣ) : 𝒜) = (fun z => z⁻¹) '' spectrum ℂ (a : 𝒜) :=
@@ -2565,7 +2565,7 @@ theorem spectrum_basic_6 (a : 𝒜ˣ) :
     · rintro ⟨v, hv, rfl⟩
       simpa using hv
 
-/-- **11XXIII** (`spectral-permanence`, cstar.tex:1694, Theorem (Spectral
+/-- **11XXIII** (`spectral-permanence`, cstar.tex:1695, Theorem (Spectral
 Permanence)): for a closed ∗-subalgebra `𝒮` of a C*-algebra `ℬ` and
 `a ∈ 𝒮`, the spectrum of `a` computed in `𝒮` equals the one computed in
 `ℬ`.

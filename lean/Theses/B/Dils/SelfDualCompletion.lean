@@ -33,7 +33,7 @@ namespace Theses.B.Dils
 
 /-! ## Parsec 1500: the self-dual completion
 
-**150I** (dils.tex:2624): introduction — nothing to formalize.
+**150I** (dils.tex:2632): introduction — nothing to formalize.
 **150III**–**150XV** (fast nets, the uniform space `N`, the uniformity on
 `V̄`, the module structure, extending the seminorms, the transfinite
 induction on compatible extensions, self-duality) are the proof of
@@ -45,7 +45,7 @@ variable {𝒷 : Type u} {V : Type v}
   [CStarAlgebra 𝒷] [PartialOrder 𝒷] [StarOrderedRing 𝒷]
   [AddCommGroup V] [Module ℂ V] [SMul 𝒷 V]
 
-/-- **150II** (`dils-completion`, dils.tex:2632, Theorem), the data: a
+/-- **150II** (`dils-completion`, dils.tex:2640, Theorem), the data: a
 **self-dual completion** of a 𝒷-module `V` with 𝒷-valued inner product
 `B`: a self-dual Hilbert 𝒷-module `X` together with a 𝒷-linear
 inner-product-preserving `η : V → X` whose image is ultranorm dense. -/
@@ -81,7 +81,7 @@ extension).  Only the *proof* moved; the statement is unchanged. -/
 
 /-! ## Parsec 1510: the universal property of the completion
 
-**151I** (dils.tex:3249): introduction — nothing to formalize.
+**151I** (dils.tex:3257): introduction — nothing to formalize.
 **151II** is the proof of **151Ia**, transcribed below. -/
 
 /-! ### Elementary properties of the ultranorm seminorms
@@ -209,7 +209,7 @@ private theorem un_bmm_le (B₁ : BInner 𝒷 V') (Cc : ℝ) (hCc : 0 ≤ Cc) (S
 
 end UnivHelpers
 
-/-- **151Ia** (`selfdual-completion-univ`, dils.tex:3254, Lemma): let
+/-- **151Ia** (`selfdual-completion-univ`, dils.tex:3262, Lemma): let
 `η : V → X` be an inner-product-preserving 𝒷-linear map into a self-dual
 Hilbert 𝒷-module with ultranorm dense image (e.g. a self-dual completion,
 **150II**).  Then for every bounded 𝒷-linear `T : V → Y` into a self-dual
@@ -1374,7 +1374,7 @@ private theorem smul_cancel {c : ℂ} (hc : c ≠ 0) {u v : 𝒷} (h : c • u =
   have h2 := congrArg (fun z : 𝒷 => c⁻¹ • z) h
   simpa [smul_smul, inv_mul_cancel₀ hc] using h2
 
-/-- **150XI** (`dils-completion-setup`, dils.tex:3035, Definition), rephrased:
+/-- **150XI** (`dils-completion-setup`, dils.tex:3043, Definition), rephrased:
 a **compatible extension** is a subset of `V̄` containing `V₀ = η(V)`, closed
 under the operations, and on which the inner product exists.
 
@@ -2146,7 +2146,7 @@ omit [StarOrderedRing 𝒷] in
     (B.ulift).inner x y = B.inner x.down y.down := rfl
 
 
-/-- **150II** (`dils-completion`, dils.tex:2632, Theorem): for a von
+/-- **150II** (`dils-completion`, dils.tex:2640, Theorem): for a von
 Neumann algebra `𝒷`, every 𝒷-module `V` with (possibly indefinite)
 𝒷-valued inner product has a self-dual completion.
 
@@ -2178,7 +2178,7 @@ end CompletionCarrier
 
 /-! ## Parsec 1520: sesquilinear forms and 𝒷ᵃ(X) for self-dual X
 
-**152I** (dils.tex:3320): introduction; **152III** (Example) is
+**152I** (dils.tex:3328): introduction; **152III** (Example) is
 `ba_isBoundedBSesq` below (its sesquilinearity half is `ba_isBSesquilinear`,
 142VIII); **152IV**, the Example's closing remark, is **152V** itself.
 **152VI** is the proof of **152V**;
@@ -2191,12 +2191,12 @@ variable {𝒷 : Type u} {X Y : Type v}
   [NormedAddCommGroup X] [Module ℂ X] [SMul 𝒷 X] [CStarModule 𝒷 X]
   [NormedAddCommGroup Y] [Module ℂ Y] [SMul 𝒷 Y] [CStarModule 𝒷 Y]
 
-/-- **152II** (dils.tex:3325, Definition): a sesquilinear form `B` on a
+/-- **152II** (dils.tex:3333, Definition): a sesquilinear form `B` on a
 normed 𝒷-module is **bounded** (by `r`) when `‖B(x,y)‖ ≤ r ‖x‖ ‖y‖`. -/
 def IsBoundedBSesq (r : ℝ) (B : X → X → 𝒷) : Prop :=
   IsBSesquilinear B ∧ ∀ x y : X, ‖B x y‖ ≤ r * ‖x‖ * ‖y‖
 
-/-- **152V** (`hilbmod-sesquilinear-forms`, dils.tex:3343, Proposition):
+/-- **152V** (`hilbmod-sesquilinear-forms`, dils.tex:3351, Proposition):
 on a self-dual Hilbert 𝒷-module every bounded 𝒷-sesquilinear form is
 `⟨·, T ·⟩` for a unique adjointable bounded operator `T`. -/
 theorem hilbmod_sesquilinear_forms [CompleteSpace X] (hX : SelfDual 𝒷 X)
@@ -2283,7 +2283,7 @@ theorem hilbmod_sesquilinear_forms [CompleteSpace X] (hX : SelfDual 𝒷 X)
     exact eq_of_inner_right_eq (𝒜 := 𝒷) fun x =>
       (hT'.2 x y).symm.trans (hT0 y x)
 
-/-- **152VIII** (`hilbmod-adjoint-exists`, dils.tex:3388, Exercise): a
+/-- **152VIII** (`hilbmod-adjoint-exists`, dils.tex:3396, Exercise): a
 bounded 𝒷-linear map `T : X → Y` between Hilbert 𝒷-modules with `X` self
 dual is adjointable. -/
 theorem hilbmod_adjoint_exists [CompleteSpace X] [CompleteSpace Y]
@@ -2347,7 +2347,7 @@ variable {𝒷 : Type u} {V : Type v}
   [CStarAlgebra 𝒷] [PartialOrder 𝒷] [StarOrderedRing 𝒷]
   [AddCommGroup V] [Module ℂ V] [SMul 𝒷 V]
 
-/-- **152IX** (`hilmod-fixed-on-V`, dils.tex:3394, Exercise), part 1: for a
+/-- **152IX** (`hilmod-fixed-on-V`, dils.tex:3402, Exercise), part 1: for a
 self-dual completion `η : V → X`, the vector states `⟨η v, (·) η v⟩` are
 **order separating** on `𝒷ᵃ(X)`: an adjointable `T` is positive iff
 `⟨η v, T (η v)⟩ ≥ 0` for all `v ∈ V`.
@@ -2368,7 +2368,7 @@ theorem hilmod_fixed_on_V [VonNeumannAlgebra 𝒷] (B : BInner 𝒷 V)
   rintro _ ⟨v, rfl⟩
   exact hv v
 
-/-- **152IX** (`hilmod-fixed-on-V`, dils.tex:3394, Exercise), part 2:
+/-- **152IX** (`hilmod-fixed-on-V`, dils.tex:3402, Exercise), part 2:
 consequently adjointable operators agreeing on the vector states of the
 dense image are equal: `S = T` iff `⟨η v, T (η v)⟩ = ⟨η v, S (η v)⟩` for
 all `v ∈ V`. -/
@@ -2543,7 +2543,7 @@ private theorem ba_nonneg_of_vector [CompleteSpace X] (Z : Ba 𝒷 X)
 
 /-! ### The proof of **152X**
 
-The thesis's argument (**152XI**–**152XIII**, dils.tex:3413–3505) verbatim:
+The thesis's argument (**152XI**–**152XIII**, dils.tex:3421–3505) verbatim:
 for a bounded directed net `(T_α)` of self-adjoint elements of `𝒷ᵃ(X)` the
 vector forms `⟨x, T_α x⟩` form a bounded directed net in `𝒷`, which
 converges ultrastrongly to its supremum by **44XIV** `vna_supremum_uslimit`;
@@ -2631,7 +2631,7 @@ theorem baVec_image_directed [CompleteSpace X] (x : X)
   obtain ⟨c, hc, hac, hbc⟩ := hdir a ha b hb
   exact ⟨baVec x c, ⟨c, hc, rfl⟩, baVec_mono x hac, baVec_mono x hbc⟩
 
-/-- **142VIII** (dils.tex:1487, Example): `⟨·, Z·⟩` is a 𝒷-sesquilinear
+/-- **142VIII** (dils.tex:1495, Example): `⟨·, Z·⟩` is a 𝒷-sesquilinear
 form for every `Z ∈ 𝒷ᵃ(X)`. -/
 theorem ba_isBSesquilinear [CompleteSpace X] (Z : Ba 𝒷 X) :
     IsBSesquilinear (fun x y : X => (inner 𝒷 x (Z.1 y) : 𝒷)) := by
@@ -2649,7 +2649,7 @@ theorem ba_isBSesquilinear [CompleteSpace X] (Z : Ba 𝒷 X) :
       smul_right_complex := fun c x y => by
         simp only [map_smul Z.1, CStarModule.inner_smul_right_complex] }
 
-/-- **152III** (dils.tex:3335, Example): for `T ∈ 𝒷ᵃ(X)` the map
+/-- **152III** (dils.tex:3343, Example): for `T ∈ 𝒷ᵃ(X)` the map
 `⟨(·), T(·)⟩` is a **bounded** 𝒷-sesquilinear form in the sense of
 **152II** `IsBoundedBSesq`.  Sesquilinearity is `ba_isBSesquilinear`
 (142VIII); the bound is Cauchy–Schwarz for Hilbert C*-modules
@@ -2730,7 +2730,7 @@ private theorem usTendsto_unique' [VonNeumannAlgebra 𝒷] {ι : Type*}
 
 set_option maxHeartbeats 1000000 in
 -- the six stages of the proof in one declaration; see the note above
-/-- **152XII** (dils.tex:3417, "bounded order completeness"): a nonempty
+/-- **152XII** (dils.tex:3425, "bounded order completeness"): a nonempty
 bounded directed set of self-adjoint elements of `𝒷ᵃ(X)` has a supremum, and
 — the extra clause **152XIII** needs — its vector forms compute it:
 `⟨x, (⋁D) x⟩ = ⋁_{d ∈ D} ⟨x, d x⟩`. -/
@@ -3011,7 +3011,7 @@ noncomputable def baVecNP [VonNeumannAlgebra 𝒷] [CompleteSpace X]
 set_option maxHeartbeats 1000000 in
 -- elaborating the two `VonNeumannAlgebra` fields against the subtype `Ba 𝒷 X`
 -- (whose C*-structure is that of `baSubalgebra`) is heartbeat-hungry
-/-- **152X** (dils.tex:3409, Theorem): for a self-dual Hilbert 𝒷-module
+/-- **152X** (dils.tex:3417, Theorem): for a self-dual Hilbert 𝒷-module
 `X` over a von Neumann algebra `𝒷`, the algebra `𝒷ᵃ(X)` is a von Neumann
 algebra (bounded directed suprema exist and the vector states are
 separating normal states). -/
@@ -3034,7 +3034,7 @@ theorem ba_vonNeumannAlgebra [VonNeumannAlgebra 𝒷] [CompleteSpace X]
 
 /-! ## Parsec 1530: `ad_T` -/
 
-/-- **153I** (`hilbmod-ad-ncp`, dils.tex:3487, Proposition), part 1: for an
+/-- **153I** (`hilbmod-ad-ncp`, dils.tex:3495, Proposition), part 1: for an
 adjointable bounded module map `T : X → Y` (with adjoint `T'`) between
 Hilbert 𝒷-modules, the map `ad_T : 𝒷ᵃ(Y) → 𝒷ᵃ(X)`, `ad_T(S) = T* S T`,
 is completely positive.
@@ -3115,7 +3115,7 @@ theorem hilbmod_ad_cp [CompleteSpace X] [CompleteSpace Y]
 
 set_option maxHeartbeats 1000000 in
 -- as for `ba_isLUB`: instance search through `Ba 𝒷 X` is slow
-/-- **153I** (`hilbmod-ad-ncp`, dils.tex:3487, Proposition), part 2: if `X`
+/-- **153I** (`hilbmod-ad-ncp`, dils.tex:3495, Proposition), part 2: if `X`
 and `Y` are moreover self-dual, then `ad_T` is normal, i.e. an ncp-map.
 
 The proof is **153III**, the author's own: by **48II** `normal_faithful`
@@ -3199,7 +3199,7 @@ variable {𝒷 : Type u} {V : Type v}
   [CStarAlgebra 𝒷] [PartialOrder 𝒷] [StarOrderedRing 𝒷]
   [AddCommGroup V] [Module ℂ V] [SMul 𝒷 V]
 
-/-- **152IX** (`hilmod-fixed-on-V`, dils.tex:3394, Exercise), the clause the
+/-- **152IX** (`hilmod-fixed-on-V`, dils.tex:3402, Exercise), the clause the
 order separation of `hilmod_fixed_on_V` is asserted *of*: the vector states
 `⟨η v, (·) η v⟩ : 𝒷ᵃ(X) → 𝒷` of a self-dual completion are **ncp-maps**.
 
@@ -3264,7 +3264,7 @@ private theorem sum_star_mul_sum' {ι : Type*} [Fintype ι] (z : ι → 𝒜) :
   rw [star_sum, Finset.sum_mul]
   exact Finset.sum_congr rfl fun k _ => (Finset.mul_sum _ _ _).symm
 
-/-- **153IV** (`hilbmod-adj-vector-ncp`, dils.tex:3517, Exercise): for a
+/-- **153IV** (`hilbmod-adj-vector-ncp`, dils.tex:3525, Exercise): for a
 C*-algebra `𝒜` (here: von Neumann algebra, so that normality makes sense)
 and `a₁, …, aₙ ∈ 𝒜`, the map `φ : 𝒜 → Mₙ𝒜`, `φ(d) = (aᵢ* d aⱼ)ᵢⱼ`, is an
 ncp-map.

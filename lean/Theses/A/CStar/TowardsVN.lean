@@ -36,7 +36,7 @@ section UniformBoundedness
 variable {𝒳 𝒴 : Type*} [NormedAddCommGroup 𝒳] [NormedSpace ℂ 𝒳]
   [NormedAddCommGroup 𝒴] [NormedSpace ℂ 𝒴]
 
-/-- **35II** (`pub`, cstar.tex:5983, Theorem (Uniform Boundedness)): a family
+/-- **35II** (`pub`, cstar.tex:6015, Theorem (Uniform Boundedness)): a family
 `F` of bounded linear maps from a complete normed vector space `𝒳` to a normed
 vector space `𝒴` is bounded, `sup_T ‖T‖ < ∞`, provided that `sup_T ‖T x‖ < ∞`
 for every `x ∈ 𝒳`.  Mathlib: `banach_steinhaus`. -/
@@ -200,7 +200,7 @@ private theorem hellinger_toeplitz_aux [CompleteSpace X] (T : X → Y) (S : Y �
   · rw [← hS']
     exact (S'.mkContinuous B fun y => by rw [hS']; exact hSb y).continuous
 
-/-- **35VI** (`hellinger-toeplitz`, cstar.tex:6038, Theorem): an adjointable
+/-- **35VI** (`hellinger-toeplitz`, cstar.tex:6070, Theorem): an adjointable
 map `T : X → Y` between pre-Hilbert 𝒜-modules (here: `CStarModule`s over a
 C*-algebra `𝒜`) is bounded — together with its adjoint — as soon as **either**
 `X` or `Y` is complete.  The special case `𝒜 = ℂ`, `X = Y` a Hilbert space is
@@ -237,7 +237,7 @@ theorem hellinger_toeplitz (hc : CompleteSpace X ∨ CompleteSpace Y)
 every symmetric operator on a Hilbert space is bounded — is the special case
 of **35VI** noted in its doc comment; not converted separately.
 
-**35IX** (`hellinger-toeplitz-needs-complete`, cstar.tex:6077, Example):
+**35IX** (`hellinger-toeplitz-needs-complete`, cstar.tex:6109, Example):
 completeness may not be dropped in **35VI**: on the incomplete inner product
 space `c₀₀` of finitely supported sequences, `T α = (n αₙ)ₙ` is symmetric but
 unbounded.  Skipped: stating the counterexample requires either constructing
@@ -256,14 +256,14 @@ def IsBoundedModuleMap (T : X →ₗ[ℂ] Y) : Prop :=
   (∀ (a : 𝒜) (x : X), T (a • x) = a • T x) ∧ Continuous (⇑T)
 
 variable (𝒜 X) in
-/-- **36I** (`self-dual`, cstar.tex:6091, Definition): a Hilbert 𝒜-module `X`
+/-- **36I** (`self-dual`, cstar.tex:6123, Definition): a Hilbert 𝒜-module `X`
 is *self-dual* when every bounded module map `r : X → 𝒜` is of the form
 `⟪y, ·⟫` for some `y ∈ X`.  (**36II**, the Example that every Hilbert space is
 self-dual by Riesz, is `selfDual_hilbert` below.) -/
 def SelfDual : Prop :=
   ∀ r : X →ₗ[ℂ] 𝒜, IsBoundedModuleMap 𝒜 r → ∃ y : X, ∀ x : X, r x = inner 𝒜 y x
 
-/-- **36II** (cstar.tex:6104, Example): by Riesz' representation theorem
+/-- **36II** (cstar.tex:6130, Example): by Riesz' representation theorem
 (**5XI**, Mathlib's `InnerProductSpace.toDual`) every Hilbert space is
 self-dual — that is, `SelfDual ℂ H` for the pre-Hilbert ℂ-module `H`, whose
 𝒜-valued inner product (`𝒜 = ℂ`) is the ordinary one.
@@ -282,7 +282,7 @@ theorem selfDual_hilbert (H : Type*) [NormedAddCommGroup H]
   exact (InnerProductSpace.toDual_symm_apply (x := x)
     (y := (⟨r, hr.2⟩ : H →L[ℂ] ℂ))).symm
 
-/-- **36III** (cstar.tex:6102, Exercise): for a C*-algebra `𝒜` the Hilbert
+/-- **36III** (cstar.tex:6134, Exercise): for a C*-algebra `𝒜` the Hilbert
 𝒜-module `𝒜^N` of `N`-tuples (Mathlib: the type synonym
 `WithCStarModule 𝒜 (Fin N → 𝒜)`, notation `C⋆ᵐᵒᵈ(𝒜, Fin N → 𝒜)`) is
 self-dual. -/
@@ -321,7 +321,7 @@ theorem selfDual_pi (𝒜 : Type*) [CStarAlgebra 𝒜] [PartialOrder 𝒜]
             simp [WithCStarModule.inner_def]
 
 variable (𝒜) in
-/-- **36IV** (`chilb-form`, cstar.tex:6107, Definition): a *(bounded) form* on
+/-- **36IV** (`chilb-form`, cstar.tex:6139, Definition): a *(bounded) form* on
 Hilbert 𝒜-modules `X` and `Y` is a map `[·,·] : X × Y → 𝒜` such that
 `[x, ·] : Y → 𝒜` and `[·, y]* : X → 𝒜` are (bounded) module maps for all
 `x ∈ X` and `y ∈ Y`.  (Since `B` is a bare function, the module-map conditions
@@ -332,7 +332,7 @@ structure IsBoundedForm (B : X → Y → 𝒜) : Prop where
   bddModuleMap_left_star : ∀ y : Y,
     ∃ r : X →ₗ[ℂ] 𝒜, IsBoundedModuleMap 𝒜 r ∧ ∀ x : X, r x = star (B x y)
 
-/-- **36V** (`chilb-form-representation`, cstar.tex:6118, Proposition): for
+/-- **36V** (`chilb-form-representation`, cstar.tex:6150, Proposition): for
 every bounded form `[·,·] : X × Y → 𝒜` on self-dual Hilbert 𝒜-modules `X` and
 `Y` there is a unique adjointable bounded module map `T : X → Y` with
 `[x, y] = ⟪T x, y⟫` for all `x ∈ X`, `y ∈ Y`.
@@ -451,7 +451,7 @@ section BH
 
 variable {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
 
-/-- **37II** (`hilb-weakly-bounded-complete`, cstar.tex:6150, Proposition):
+/-- **37II** (`hilb-weakly-bounded-complete`, cstar.tex:6182, Proposition):
 given a net `(y_α)_α` in a Hilbert space `H` for which `⟪y_α, x⟫` is Cauchy
 *and bounded* for every `x ∈ H`, there is a unique `y ∈ H` with
 `⟪y, x⟫ = lim_α ⟪y_α, x⟫` for all `x ∈ H`.  (**37IV**, Remark, not converted:
@@ -494,7 +494,7 @@ theorem hilb_weakly_bounded_complete {ι : Type*} {l : Filter ι} [l.NeBot]
     rw [InnerProductSpace.toDual_symm_apply]
     exact tendsto_nhds_unique (hz x) (hφ x)
 
-/-! **37V** (`swot`, cstar.tex:6220, Definition):
+/-! **37V** (`swot`, cstar.tex:6252, Definition):
 
 1. the *weak operator topology (WOT)* on B(H) is the least topology making
    `T ↦ ⟪x, T x⟫ : B(H) → ℂ` continuous for every `x ∈ H`.  In Mathlib the
@@ -533,7 +533,7 @@ private theorem inner_polarization (S : H →L[ℂ] H) (x y : H) : ⟪y, S x⟫ 
   rw [Complex.I_sq]
   ring
 
-/-- **37V** (`swot`, cstar.tex:6220, Definition), part 1, embedded claim: a
+/-- **37V** (`swot`, cstar.tex:6252, Definition), part 1, embedded claim: a
 net `(T_α)_α` converges to `T` in B(H) with respect to the weak operator
 topology (Mathlib: `H →WOT[ℂ] H`) if and only if `⟪x, T_α x⟫ → ⟪x, T x⟫` for
 every `x ∈ H` (the thesis's diagonal condition; equivalent to Mathlib's
@@ -558,7 +558,7 @@ theorem swot_tendsto_iff {ι : Type*} {l : Filter ι} (T : ι → H →L[ℂ] H)
       ((h (x + Complex.I • y)).const_mul Complex.I)).sub
       ((h (x - Complex.I • y)).const_mul Complex.I)).div_const 4
 
-/-- **37V** (`swot`, cstar.tex:6220, Definition), part 1, the definition
+/-- **37V** (`swot`, cstar.tex:6252, Definition), part 1, the definition
 itself: Mathlib's weak operator topology on `H →WOT[ℂ] H` **is** the thesis's
 — *the least topology making `T ↦ ⟪x, T x⟫` continuous for every `x ∈ H`*,
 i.e. the infimum of the topologies induced by those maps.
@@ -603,7 +603,7 @@ theorem swot_topology_eq :
         ((hdiag _).const_mul _)).div_const 4
     exact continuous_iff_le_induced.mp hcont
 
-/-- **37V** (`swot`, cstar.tex:6220, Definition), part 2, embedded claim: a
+/-- **37V** (`swot`, cstar.tex:6252, Definition), part 2, embedded claim: a
 net `(T_α)_α` converges to `T` in B(H) with respect to the *strong* operator
 topology — Mathlib's topology of pointwise convergence on `H →Lₚₜ[ℂ] H`,
 which is the topology induced by the seminorms `T ↦ ‖T x‖` of the definition's
@@ -650,7 +650,7 @@ description `⟪x, T* T x⟫^{1/2}` is `‖T x‖` again. -/
 theorem sot_seminorm_apply (x : H) (T : H →Lₚₜ[ℂ] H) :
     PointwiseConvergenceCLM.seminorm x T = ‖T x‖ := rfl
 
-/-- **37VII** (`bh-wot-bounded-complete`, cstar.tex:6260, Lemma): if
+/-- **37VII** (`bh-wot-bounded-complete`, cstar.tex:6292, Lemma): if
 `(T_α)_α` is a net of bounded operators on a Hilbert space `H` such that
 `⟪x, T_α x⟫` is Cauchy and bounded for every `x ∈ H`, then `(T_α)_α`
 WOT-converges to some bounded operator `T ∈ B(H)`.
@@ -849,7 +849,7 @@ private theorem re_diag_tendsto_of_wot {D : Set (selfAdjoint (H →L[ℂ] H))}
       (𝓝 (⟪x, (T' : H →L[ℂ] H) x⟫).re) :=
   (Complex.continuous_re.tendsto _).comp ((swot_tendsto_iff _ _).mp hT' x)
 
-/-- **37IX** (`hilb-suprema`, cstar.tex:6303, Proposition), part 1: an upwards
+/-- **37IX** (`hilb-suprema`, cstar.tex:6335, Proposition), part 1: an upwards
 directed set `D` of self-adjoint operators on a Hilbert space `H` with
 `sup_{T ∈ D} ⟪x, T x⟫ < ∞` for all `x ∈ H` — viewed as the net `(T)_{T ∈ D}`
 indexed by itself — converges in the weak operator topology to some
@@ -942,7 +942,7 @@ theorem hilb_suprema_1 (D : Set (selfAdjoint (H →L[ℂ] H)))
   filter_upwards [hFev] with T hT
   rw [hT]
 
-/-- **37IX** (`hilb-suprema`, cstar.tex:6303, Proposition), part 2: the WOT
+/-- **37IX** (`hilb-suprema`, cstar.tex:6335, Proposition), part 2: the WOT
 limit `T'` of such a directed set `D` (cf. `hilb_suprema_1`) is the supremum
 of `D` among the self-adjoint operators. -/
 theorem hilb_suprema_2 (D : Set (selfAdjoint (H →L[ℂ] H)))
@@ -969,7 +969,7 @@ theorem hilb_suprema_2 (D : Set (selfAdjoint (H →L[ℂ] H)))
     refine le_of_tendsto (re_diag_tendsto_of_wot hT' x) (Eventually.of_forall fun T => ?_)
     exact re_inner_mono (hS T.2) x
 
-/-- **37IX** (`hilb-suprema`, cstar.tex:6303, Proposition), part 3: for the
+/-- **37IX** (`hilb-suprema`, cstar.tex:6335, Proposition), part 3: for the
 WOT limit `T'` of such a directed set `D` one has
 `⟪x, T' x⟫ = sup_{T ∈ D} ⟪x, T x⟫` for all `x ∈ H` (stated as an `IsLUB` in ℂ
 with the order from `ComplexOrder`). -/
@@ -1002,7 +1002,7 @@ theorem hilb_suprema_3 (D : Set (selfAdjoint (H →L[ℂ] H)))
     refine le_of_tendsto (re_diag_tendsto_of_wot hT' x) (Eventually.of_forall fun T => ?_)
     exact (Complex.le_def.mp (hc ⟨T.1, T.2, rfl⟩)).1
 
-/-- **37XI** (cstar.tex:6376, Definition), well-definedness claim: every
+/-- **37XI** (cstar.tex:6408, Definition), well-definedness claim: every
 nonempty norm-bounded directed subset `D` of the self-adjoint part of B(H)
 has a supremum there (this repackages **37IX**: norm-boundedness gives the
 pointwise bounds `sup_{T ∈ D} ⟪x, T x⟫ < ∞`). -/
@@ -1028,7 +1028,7 @@ theorem exists_isLUB_of_normBounded_directed (D : Set (selfAdjoint (H →L[ℂ] 
   obtain ⟨T', hT'⟩ := hilb_suprema_1 D hne hdir hb
   exact ⟨T', hilb_suprema_2 D hne hdir hb T' hT'⟩
 
-/-- **37XI** (cstar.tex:6376, Definition): the supremum `⋁ D` of a nonempty
+/-- **37XI** (cstar.tex:6408, Definition): the supremum `⋁ D` of a nonempty
 norm-bounded directed subset `D` of the self-adjoint part of B(H), which
 exists by **37IX** (`exists_isLUB_of_normBounded_directed`). -/
 noncomputable def bhSup (D : Set (selfAdjoint (H →L[ℂ] H)))
@@ -1037,7 +1037,7 @@ noncomputable def bhSup (D : Set (selfAdjoint (H →L[ℂ] H)))
     selfAdjoint (H →L[ℂ] H) :=
   (exists_isLUB_of_normBounded_directed D h.1 h.2.1 h.2.2).choose
 
-/-- **37XI** (cstar.tex:6376, Definition): `⋁ D` is the least upper bound of
+/-- **37XI** (cstar.tex:6408, Definition): `⋁ D` is the least upper bound of
 `D`. -/
 theorem isLUB_bhSup (D : Set (selfAdjoint (H →L[ℂ] H)))
     (h : D.Nonempty ∧ DirectedOn (· ≤ ·) D ∧
@@ -1047,7 +1047,7 @@ theorem isLUB_bhSup (D : Set (selfAdjoint (H →L[ℂ] H)))
 
 /-! ## Parsec 380: Normal functionals on B(H) -/
 
-/-- **38I** (`bh-normal`, cstar.tex:6387, Definition): a positive functional
+/-- **38I** (`bh-normal`, cstar.tex:6419, Definition): a positive functional
 `ω : B(H) → ℂ` is *normal* when `ω (⋁ D) = ⋁_{T ∈ D} ω T` for every bounded
 directed subset `D` of the self-adjoint part of B(H).  This is precisely
 `Theses.PreservesDirSups` from `Theses.Common` (specialized to `A = B(H)`,
@@ -1055,13 +1055,13 @@ where every nonempty bounded directed set of self-adjoint elements actually
 has a supremum, by **37IX**); the *normal positive functionals* on B(H) are
 `Theses.NPFunctional (H →L[ℂ] H)`.
 
-**38Ia** (`bh-normal-abbreviation`, cstar.tex:6395, Notation): "n" abbreviates
+**38Ia** (`bh-normal-abbreviation`, cstar.tex:6427, Notation): "n" abbreviates
 "normal": np-map, npu-map, … — cf. `Theses.NPFunctional`; not converted
 separately. -/
 abbrev BHNormal (ω : (H →L[ℂ] H) → ℂ) : Prop :=
   PreservesDirSups ω
 
-/-- **38II** (cstar.tex:6402, Example): all vector functionals `⟪x, (·) x⟫` on
+/-- **38II** (cstar.tex:6434, Example): all vector functionals `⟪x, (·) x⟫` on
 B(H) are normal, by **37IX**. -/
 theorem vector_functional_normal (x : H) :
     BHNormal (fun T : H →L[ℂ] H => ⟪x, T x⟫) := by
@@ -1109,7 +1109,7 @@ private theorem re_inner_le_norm_mul (T : H →L[ℂ] H) (x : H) :
     _ ≤ ‖x‖ * (‖T‖ * ‖x‖) := by gcongr; exact T.le_opNorm _
     _ = ‖T‖ * ‖x‖ ^ 2 := by ring
 
-/-- **38III** (`bh-normal-effects`, cstar.tex:6407, Exercise): a positive
+/-- **38III** (`bh-normal-effects`, cstar.tex:6439, Exercise): a positive
 functional `ω : B(H) → ℂ` is normal provided it preserves suprema of directed
 sets of *effects* (self-adjoint `T` with `0 ≤ T ≤ 1`). -/
 theorem bh_normal_effects (ω : (H →L[ℂ] H) →ₚ[ℂ] ℂ)
@@ -1278,7 +1278,7 @@ private theorem inner_le_inner_of_le {S T : H →L[ℂ] H} (h : S ≤ T) (y : H)
   rw [ContinuousLinearMap.sub_apply, inner_sub_right] at hnn
   exact sub_nonneg.mp hnn
 
-/-- **38IV** (`bh-functional-lemma`, cstar.tex:6416, Lemma), part 1
+/-- **38IV** (`bh-functional-lemma`, cstar.tex:6448, Lemma), part 1
 (convergence): for a sequence `x₁, x₂, …` in a Hilbert space `H` with
 `∑ₙ ‖xₙ‖² < ∞` and any `T ∈ B(H)`, the sum `∑ₙ ⟪xₙ, T xₙ⟫` converges. -/
 theorem bh_functional_lemma_1 (x : ℕ → H) (hx : Summable fun n => ‖x n‖ ^ 2)
@@ -1289,7 +1289,7 @@ theorem bh_functional_lemma_1 (x : ℕ → H) (hx : Summable fun n => ‖x n‖ 
     _ ≤ ‖x n‖ * (‖T‖ * ‖x n‖) := by gcongr; exact T.le_opNorm _
     _ = ‖T‖ * ‖x n‖ ^ 2 := by ring
 
-/-- **38IV** (`bh-functional-lemma`, cstar.tex:6416, Lemma), part 2: every
+/-- **38IV** (`bh-functional-lemma`, cstar.tex:6448, Lemma), part 2: every
 sequence `x₁, x₂, …` in a Hilbert space `H` with `∑ₙ ‖xₙ‖² < ∞` gives an
 np-map (normal positive functional) `ω : B(H) → ℂ` defined by
 `ω T = ∑ₙ ⟪xₙ, T xₙ⟫`. -/
@@ -1397,7 +1397,7 @@ theorem vectorFunctionalCLM_apply (x : H) (T : H →L[ℂ] H) :
     vectorFunctionalCLM x T = ⟪x, T x⟫ :=
   rfl
 
-/-- **38VI** (`vector-functional-convergence`, cstar.tex:6461, Exercise),
+/-- **38VI** (`vector-functional-convergence`, cstar.tex:6493, Exercise),
 part 1: for a family `(x_α)_α` in a Hilbert space `H`, `∑_α ‖x_α‖² < ∞` if and
 only if `∑_α ⟪x_α, (·) x_α⟫` converges with respect to the operator norm to
 some bounded functional on B(H). -/
@@ -1452,7 +1452,7 @@ theorem vector_functional_convergence_1 {ι : Type*} (x : ι → H) :
           have := norm_sub_norm_le (∑ α ∈ F ∪ F₀, vectorFunctionalCLM (x α)) φ
           linarith
 
-/-- **38VI** (`vector-functional-convergence`, cstar.tex:6461, Exercise),
+/-- **38VI** (`vector-functional-convergence`, cstar.tex:6493, Exercise),
 part 2: for a net `(x_α)_α` in a Hilbert space `H` and `x ∈ H`, if `x_α → x`
 then `⟪x_α, (·) x_α⟫` operator-norm converges to `⟪x, (·) x⟫`.
 
@@ -1501,7 +1501,7 @@ theorem vector_functional_convergence_2 {ι : Type*} {l : Filter ι} [l.NeBot]
 **39I** (cstar.tex:6482): introduction to the final project — every normal
 positive functional on B(H) is `∑ₙ ⟪xₙ, (·) xₙ⟫`; nothing to formalize. -/
 
-/-- **39II** (cstar.tex:6493, Definition): a subset `E` of a Hilbert space is
+/-- **39II** (cstar.tex:6525, Definition): a subset `E` of a Hilbert space is
 *orthonormal* if `⟪e, e'⟫ = 0` for distinct `e, e' ∈ E` and `⟪e, e⟫ = 1` for
 `e ∈ E` (Mathlib: `Orthonormal ℂ ((↑) : E → H)`); a *maximal* orthonormal
 subset is called an *orthonormal basis* (cf. Mathlib's `HilbertBasis`, and
@@ -1511,7 +1511,7 @@ def IsOrthonormalBasis (E : Set H) : Prop :=
   Orthonormal ℂ ((↑) : E → H) ∧
     ∀ E' : Set H, E ⊆ E' → Orthonormal ℂ ((↑) : E' → H) → E' = E
 
-/-- **39IV** (`orthonormal`, cstar.tex:6517, Proposition), part 1 (Bessel's
+/-- **39IV** (`orthonormal`, cstar.tex:6549, Proposition), part 1 (Bessel's
 inequality): for an orthonormal subset `E` of a Hilbert space `H` and `x ∈ H`,
 `∑_{e ∈ E} |⟪e, x⟫|² ≤ ‖x‖²` (the sum in particular converges).  Mathlib:
 `Orthonormal.tsum_inner_products_le`. -/
@@ -1520,7 +1520,7 @@ theorem orthonormal_1 (E : Set H) (hE : Orthonormal ℂ ((↑) : E → H)) (x : 
       ∑' e : E, ‖⟪(e : H), x⟫‖ ^ 2 ≤ ‖x‖ ^ 2 :=
   ⟨hE.inner_products_summable x, hE.tsum_inner_products_le x⟩
 
-/-- **39IV** (`orthonormal`, cstar.tex:6517, Proposition), part 2: for an
+/-- **39IV** (`orthonormal`, cstar.tex:6549, Proposition), part 2: for an
 orthonormal subset `E` and `x ∈ H`, the sum `∑_{e ∈ E} ⟪e, x⟫ e` converges in
 `H`. -/
 theorem orthonormal_2 (E : Set H) (hE : Orthonormal ℂ ((↑) : E → H)) (x : H) :
@@ -1531,7 +1531,7 @@ theorem orthonormal_2 (E : Set H) (hE : Orthonormal ℂ ((↑) : E → H)) (x : 
   simp only [LinearIsometry.toSpanSingleton_apply] at hs
   exact ⟨_, hs.hasSum⟩
 
-/-- **39IV** (`orthonormal`, cstar.tex:6517, Proposition), part 3: if `E` is a
+/-- **39IV** (`orthonormal`, cstar.tex:6549, Proposition), part 3: if `E` is a
 maximal orthonormal subset (an orthonormal basis), then
 `∑_{e ∈ E} ⟪e, x⟫ e = x` for every `x ∈ H`. -/
 theorem orthonormal_3 (E : Set H) (hE : IsOrthonormalBasis E) (x : H) :
@@ -1543,7 +1543,7 @@ theorem orthonormal_3 (E : Set H) (hE : IsOrthonormalBasis E) (x : H) :
   have hb := (HilbertBasis.mkOfOrthogonalEqBot hE.1 hsp).hasSum_repr x
   simpa [HilbertBasis.repr_apply_apply, HilbertBasis.coe_mkOfOrthogonalEqBot] using hb
 
-/-- **39IV** (`orthonormal`, cstar.tex:6517, Proposition), part 4 (Parseval's
+/-- **39IV** (`orthonormal`, cstar.tex:6549, Proposition), part 4 (Parseval's
 identity): if `E` is an orthonormal basis, then
 `∑_{e ∈ E} |⟪e, x⟫|² = ‖x‖²` for every `x ∈ H`. -/
 theorem orthonormal_4 (E : Set H) (hE : IsOrthonormalBasis E) (x : H) :
@@ -1563,7 +1563,7 @@ theorem orthonormal_4 (E : Set H) (hE : IsOrthonormalBasis E) (x : H) :
 /-! The rank-one operator `|x⟩⟨y| : z ↦ ⟪y, z⟫ • x` is **4XIX** (`ketbra`,
 cstar.tex:671), defined in `Theses.A.CStar.Basic` and imported here. -/
 
-/-- **39VI** (`sum-ketbras`, cstar.tex:6590, Exercise), part 1: for an
+/-- **39VI** (`sum-ketbras`, cstar.tex:6622, Exercise), part 1: for an
 orthonormal basis `E` of a Hilbert space `H`, `∑_{e ∈ E} |e⟩⟨e|` converges to
 `1` in the weak operator topology. -/
 theorem sum_ketbras_1 (E : Set H) (hE : IsOrthonormalBasis E) :
@@ -1584,7 +1584,7 @@ theorem sum_ketbras_1 (E : Set H) (hE : IsOrthonormalBasis E) :
   have h := (orthonormal_3 E hE x).mapL (innerSL ℂ y)
   simpa [key, inner_sum, ContinuousLinearMapWOT.ofCLM_apply, HasSum] using h
 
-/-- **39VI** (`sum-ketbras`, cstar.tex:6590, Exercise), part 2:
+/-- **39VI** (`sum-ketbras`, cstar.tex:6622, Exercise), part 2:
 `∑_{e ∈ E} |e⟩⟨e| = 1` also in the sense that the directed set of partial sums
 `∑_{e ∈ F} |e⟩⟨e|` over finite `F ⊆ E` has `1` as its supremum in B(H). -/
 theorem sum_ketbras_2 (E : Set H) (hE : IsOrthonormalBasis E) :
@@ -1769,7 +1769,7 @@ private theorem npf_kadison (ω : NPFunctional (H →L[ℂ] H)) (a b : H →L[�
   rwa [Complex.mul_re, hAim, hBim, mul_zero, sub_zero, ← Complex.ofReal_pow,
     Complex.ofReal_re] at hre
 
-/-- **39VI** (`sum-ketbras`, cstar.tex:6590, Exercise), part 3: consequently
+/-- **39VI** (`sum-ketbras`, cstar.tex:6622, Exercise), part 3: consequently
 `ω 1 = ∑_{e ∈ E} ω (|e⟩⟨e|)` for every np-map `ω : B(H) → ℂ`. -/
 theorem sum_ketbras_3 (E : Set H) (hE : IsOrthonormalBasis E)
     (ω : NPFunctional (H →L[ℂ] H)) :
@@ -2105,7 +2105,7 @@ private theorem exists_rho (ω : NPFunctional (H →L[ℂ] H)) :
   · intro x y
     exact (hTB x y).trans (hadj x y)
 
-/-- **39IX** (`bh-np`, cstar.tex:6657, Theorem): every normal positive
+/-- **39IX** (`bh-np`, cstar.tex:6690, Theorem): every normal positive
 functional `ω : B(H) → ℂ` on a Hilbert space `H` is of the form
 `ω = ∑ₙ ⟪xₙ, (·) xₙ⟫` for some sequence `x₁, x₂, … ∈ H` with
 `∑ₙ ‖xₙ‖² = ‖ω‖` (for a positive functional `‖ω‖ = ω 1`, which is how the

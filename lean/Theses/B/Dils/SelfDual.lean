@@ -50,7 +50,7 @@ namespace Theses.B.Dils
 
 /-! ## Parsec 1590: the operators |x⟩⟨y|
 
-**159I** (dils.tex:4282): introduction — nothing to formalize. -/
+**159I** (dils.tex:4290): introduction — nothing to formalize. -/
 
 section Ketbra
 
@@ -64,7 +64,7 @@ they are what is needed to *define* the operator `|x⟩⟨y| : z ↦ ⟨y,z⟩ �
 **159II** as a `LinearMap.mkContinuous`. -/
 
 variable (ℬ) in
-/-- **159II** (dils.tex:4292, Definition): for `x, y` in a Hilbert
+/-- **159II** (dils.tex:4300, Definition): for `x, y` in a Hilbert
 ℬ-module `X`, the bounded operator `|x⟩⟨y| : z ↦ x⟨y,z⟩` (mirrored:
 `⟨y,z⟩ • x`; in the literature `θ_{x,y}`, **159IIa**).
 
@@ -88,14 +88,14 @@ noncomputable def mketbra (x y : X) : X →L[ℂ] X :=
         _ = ‖y‖ * ‖x‖ * ‖z‖ := by ring
 
 variable (ℬ) in
-/-- **159II** (dils.tex:4292, Definition), characterizing property:
+/-- **159II** (dils.tex:4300, Definition), characterizing property:
 `|x⟩⟨y| z = ⟨y,z⟩ • x`. -/
 theorem mketbra_apply (x y z : X) :
     mketbra ℬ x y z = inner ℬ y z • x :=
   rfl
 
 variable (ℬ) in
-/-- **159III** (`hilbmodketbrarules`, dils.tex:4302): `|x⟩⟨y|` is
+/-- **159III** (`hilbmodketbrarules`, dils.tex:4310): `|x⟩⟨y|` is
 adjointable, with adjoint `|y⟩⟨x|`. -/
 theorem mketbra_adjointable (x y : X) :
     ModuleAdjointTo ℬ (⇑(mketbra ℬ x y) : X → X) ⇑(mketbra ℬ y x) := by
@@ -104,7 +104,7 @@ theorem mketbra_adjointable (x y : X) :
     CStarModule.inner_op_smul_right, CStarModule.star_inner]
 
 variable (ℬ) in
-/-- **159III** (`hilbmodketbrarules`, dils.tex:4302): the calculus of the
+/-- **159III** (`hilbmodketbrarules`, dils.tex:4310): the calculus of the
 `|x⟩⟨y|`: `|xb⟩⟨y| = |x⟩⟨yb*|` (mirrored) and
 `|x⟩⟨y| |v⟩⟨w| = |x⟨y,v⟩⟩⟨w|`; if `⟨e,e⟩` is a projection then `|e⟩⟨e|`
 is a projection; and `T|x⟩⟨y| = |Tx⟩⟨y|`, `|x⟩⟨y| T* = |x⟩⟨Ty|` for
@@ -141,7 +141,7 @@ variable [CompleteSpace X]
 
 /-! ### Infrastructure for **159IV**: the projections `p_S = ∑_{i∈S} |eᵢ⟩⟨eᵢ|`
 
-**159VI** (`ketbra-dense-pt1`, dils.tex:4330) — the heart of **159IV**.  The
+**159VI** (`ketbra-dense-pt1`, dils.tex:4338) — the heart of **159IV**.  The
 `p_S`, indexed by the finite subsets of the basis, form an increasing net of
 effects of `𝒷ᵃ(X)` with supremum `1`: their vector forms are the partial
 Parseval sums (**149IV**), which are bounded by `⟨x,x⟩` (Bessel, `mod_bessel`)
@@ -359,7 +359,7 @@ private theorem sq_le_self_of_effect {A : Type*} [CStarAlgebra A] [PartialOrder 
   calc E * E = r * E * r := by rw [← hr]; noncomm_ring
     _ ≤ E := h
 
-/-- **159VIII** (dils.tex:4390), the first half: `‖1 − p_S‖_ω → 0` for every
+/-- **159VIII** (`err159IV`, dils.tex:4369), the first half: `‖1 − p_S‖_ω → 0` for every
 np-functional `ω` of `𝒷ᵃ(X)`.  (This is the `f(1 − p_S) → 0` of the printed
 proof, with `f` on the algebra where it belongs; see
 `onbProj_compress_uwTendsto` below, which is the point's conclusion and the
@@ -457,7 +457,7 @@ theorem onbProj_compress {e : ι → X} (he : IsONBasis ℬ e) (T : Ba ℬ X)
   rw [hleft, hcomp]
   rfl
 
-/-- **159VIII** (dils.tex:4390, label `err159IV`), the conclusion: the
+/-- **159VIII** (`err159IV`, dils.tex:4369), the conclusion: the
 compressions `p_S T p_S` converge **ultraweakly** to `T` along the net of
 finite subsets `S` of the basis.  Together with **159VII**
 `onbProj_compress` (which puts each `p_S T p_S` in the span of the
@@ -549,7 +549,7 @@ end KetbraProj
 -- hypothesis, which by **149XI** `selfDual_of_isONBasis` already follows from
 -- the orthonormal basis (see ERRATA.md).
 set_option linter.unusedVariables false in
-/-- **159IV** (`ketbra-ultraweakly-dense`, dils.tex:4319, Proposition): for
+/-- **159IV** (`ketbra-ultraweakly-dense`, dils.tex:4327, Proposition): for
 a self-dual Hilbert ℬ-module `X` with orthonormal basis `(eᵢ)`, the linear
 span of the operators `|eᵢb⟩⟨eⱼ|` is ultraweakly dense in `ℬᵃ(X)`: every
 `T` is the ultraweak limit of a net (canonically `p_S T p_S`, indexed by
@@ -574,7 +574,7 @@ theorem ketbra_ultraweakly_dense [VonNeumannAlgebra ℬ]
     exact Submodule.subset_span ⟨i, j, inner ℬ (e i) (T.1 (e j)), rfl⟩
   · exact onbProj_compress_uwTendsto he T
 
-/-- **159IX** (`ketbra-ultranorm-continuous`, dils.tex:4378, Proposition):
+/-- **159IX** (`ketbra-ultranorm-continuous`, dils.tex:4386, Proposition):
 for a self-dual Hilbert ℬ-module `X`: if a norm-bounded net `x_α → x`
 ultranorm, then `|x_α⟩⟨y| → |x⟩⟨y|` ultraweakly.
 
@@ -731,7 +731,7 @@ end Ketbra
 
 /-! ## Parsec 1600: orthocomplements
 
-**160I** (dils.tex:4456): introduction — nothing to formalize. -/
+**160I** (dils.tex:4464): introduction — nothing to formalize. -/
 
 section Ortho
 
@@ -777,7 +777,7 @@ private theorem tendsto_finset_toRight_atTop {ι κ : Type v} :
     ⟨t.map Function.Embedding.inr, fun _ hs _ hi =>
       Finset.mem_toRight.mpr (hs (Finset.mem_map_of_mem _ hi))⟩
 
-/-- **160II** (`direct-prod-self-dual-basis`, dils.tex:4465, Exercise): the
+/-- **160II** (`direct-prod-self-dual-basis`, dils.tex:4473, Exercise): the
 direct sum of self-dual Hilbert ℬ-modules `X ⊕ Y` (represented abstractly:
 a Hilbert ℬ-module `Z` with module embeddings `κ₁, κ₂` which are mutually
 orthogonal, inner-product-preserving and jointly surjective) has
@@ -900,7 +900,7 @@ theorem direct_prod_self_dual_basis [VonNeumannAlgebra ℬ]
   exact ⟨hbasis, selfDual_of_isONBasis hbasis⟩
 
 variable (ℬ) in
-/-- **160III** (dils.tex:4476, Definition): the **orthocomplement**
+/-- **160III** (dils.tex:4484, Definition): the **orthocomplement**
 `V^⊥ = {x : ⟨x,v⟩ = 0 for all v ∈ V}` of a subset `V` of a Hilbert
 C*-module. -/
 def orthoCompl (V : Set X) : Set X :=
@@ -920,7 +920,7 @@ def bSpan (V : Set X) : Set X :=
   {x : X | ∃ (n : ℕ) (c : Fin n → ℂ) (b : Fin n → ℬ) (v : Fin n → X),
     (∀ i, v i ∈ V) ∧ x = ∑ i, c i • b i • v i}
 
-/-- **160IV** (`hilbmod-projthm`, dils.tex:4488, Proposition), part 1: for
+/-- **160IV** (`hilbmod-projthm`, dils.tex:4496, Proposition), part 1: for
 a subset `V` of a self-dual Hilbert ℬ-module `X`, the orthocomplement
 `V^⊥` is an ultranorm-closed ℬ-submodule of `X` (and hence so is
 `V^⊥⊥`). -/
@@ -1324,7 +1324,7 @@ private theorem exists_orthogonal_decomp [VonNeumannAlgebra ℬ] [CompleteSpace 
     ge_of_tendsto hlim (Filter.Eventually.of_forall hbound)
   simpa using le_antisymm hle (norm_nonneg _)
 
-/-- **160IV** (`hilbmod-projthm`, dils.tex:4488, Proposition), part 2:
+/-- **160IV** (`hilbmod-projthm`, dils.tex:4496, Proposition), part 2:
 `V^⊥⊥` is the ultranorm closure of the ℬ-linear span of `V`.
 
 **Divergence, class 2.**  The thesis proves 2 and 3 together, in the order
@@ -1374,7 +1374,7 @@ theorem hilbmod_projthm_2 [VonNeumannAlgebra ℬ] [CompleteSpace X]
         unClosure_mono hspan
       _ = orthoCompl ℬ (orthoCompl ℬ V) := hWcl
 
-/-- **160IV** (`hilbmod-projthm`, dils.tex:4488, Proposition), part 3:
+/-- **160IV** (`hilbmod-projthm`, dils.tex:4496, Proposition), part 3:
 `V^⊥⊥ ⊕ V^⊥ ≅ X` via `(x,y) ↦ x + y`: every element of `X` decomposes
 uniquely as a sum of an element of `V^⊥⊥` and one of `V^⊥`.
 
@@ -1436,7 +1436,7 @@ private theorem uwTendsto_unique₂ [VonNeumannAlgebra ℬ] {κ : Type*}
   @tendsto_nhds_unique ℬ κ (ultraweak ℬ) (vn_positive_basic_1 (A := ℬ)).1
     f l a c _ ha hc
 
-/-- **160IX** (`selfdual-orthn-basis`, dils.tex:4565, Exercise): for an
+/-- **160IX** (`selfdual-orthn-basis`, dils.tex:4573, Exercise): for an
 orthonormal family `(eᵢ)` in a self-dual Hilbert ℬ-module: (1) `(eᵢ)` is a
 basis of `E^⊥⊥` (every `x ∈ E^⊥⊥` is the ultranorm limit of its basis
 expansion); (2) `x ∈ E^⊥⊥` iff `⟨x,x⟩ = ∑ᵢ ⟨x,eᵢ⟩⟨eᵢ,x⟩` (mirrored).
@@ -1669,7 +1669,7 @@ private theorem exists_orthoProj [VonNeumannAlgebra ℬ] [CompleteSpace X]
   · refine huniq w w hw fun w' _ => ?_
     rw [sub_self, CStarModule.inner_zero_left]
 
-/-- **160X** (`selfdual-gramschmidt`, dils.tex:4581, Exercise): for
+/-- **160X** (`selfdual-gramschmidt`, dils.tex:4589, Exercise): for
 `x₁, …, xₙ` in a self-dual Hilbert ℬ-module there is a finite orthonormal
 basis of `{x₁,…,xₙ}^⊥⊥` of at most `n` elements (each `xᵢ` is its finite
 basis expansion).
@@ -1822,7 +1822,7 @@ end Ortho
 
 /-! ## Parsec 1610: ℓ²((pᵢ)) and orthonormal bases
 
-**161I** (`thel2matter`, dils.tex:4594) and **161III** (`hilbel-matter`,
+**161I** (`thel2matter`, dils.tex:4602) and **161III** (`hilbel-matter`,
 dils.tex:4625, counterexamples): discussion — nothing to formalize. -/
 
 section L2
@@ -1986,7 +1986,7 @@ private theorem np_norm_sum_mul_star_le (ω : NPFunctional ℬ) {ι : Type v}
           (fun i => np_re_nonneg' ω (mul_star_self_nonneg _))
           (fun i => np_re_nonneg' ω (mul_star_self_nonneg _))
 
-/-- **161II** (`hilbmod-el2`, dils.tex:4602, Exercise), part 1: for
+/-- **161II** (`hilbmod-el2`, dils.tex:4610, Exercise), part 1: for
 ℓ²-summable tuples `(bᵢ)`, `(cᵢ)` over a von Neumann algebra the inner
 product `∑ᵢ bᵢ* cᵢ` (mirrored: `∑ᵢ cᵢ bᵢ*`) converges ultraweakly; with
 the coordinatewise operations this turns `ℓ²((pᵢ)ᵢ)` into a (pre-)Hilbert
@@ -2096,7 +2096,7 @@ variable {X : Type v}
   [NormedAddCommGroup X] [NormedSpace ℂ X] [SMul ℬ X] [CStarModule ℬ X]
 
 set_option linter.unusedVariables false in
-/-- **161II** (`hilbmod-el2`, dils.tex:4602, Exercise), part 2:
+/-- **161II** (`hilbmod-el2`, dils.tex:4610, Exercise), part 2:
 `ℓ²((pᵢ)ᵢ)` is self dual, and every self-dual Hilbert ℬ-module `X` with
 orthonormal basis `(eᵢ)ᵢ` is isomorphic to `ℓ²((⟨eᵢ,eᵢ⟩)ᵢ)` via the
 coordinate map `x ↦ (⟨eᵢ,x⟩)ᵢ`: the coordinate map is injective, additive,
@@ -2214,7 +2214,7 @@ theorem hilbmod_el2 [VonNeumannAlgebra ℬ] [CompleteSpace X]
     exact ⟨x, Set.mem_univ x,
       funext fun i => inner_of_unTendsto_sum_smul horth b hbabs hx i⟩
 
-/-- **161IV** (`onb1`, dils.tex:4673, Exercise), part 1: if `(eᵢ)` is an
+/-- **161IV** (`onb1`, dils.tex:4681, Exercise), part 1: if `(eᵢ)` is an
 orthonormal basis of a Hilbert ℬ-module `X` and `(uᵢ)` are partial
 isometries with `uᵢuᵢ* = ⟨eᵢ,eᵢ⟩`, then `(eᵢuᵢ)ᵢ` (mirrored:
 `star uᵢ • eᵢ`) is an orthonormal basis of `X`. -/
@@ -2321,7 +2321,7 @@ theorem onb1 [VonNeumannAlgebra ℬ] [CompleteSpace X] {ι : Type v}
 def MvNEquiv (p q : ℬ) : Prop :=
   ∃ u : ℬ, star u * u = p ∧ u * star u = q
 
-/-- **161IV** (`onb1`, dils.tex:4673, Exercise), part 2:
+/-- **161IV** (`onb1`, dils.tex:4681, Exercise), part 2:
 `ℓ²((pᵢ)ᵢ) ≅ ℓ²((qᵢ)ᵢ)` for pointwise Murray–von Neumann equivalent
 families of projections: there is a bijection between the tuple sets that
 identifies the (ultraweakly converging) inner products.
@@ -2435,7 +2435,7 @@ theorem onb1_el2 [VonNeumannAlgebra ℬ] {ι : Type v} (p q : ι → ℬ)
       exact Finset.sum_congr rfl fun i _ => (hΦinner b c hc' i).symm
     rw [hEq]
 
-/-- **161V** (`onb2`, dils.tex:4696, Exercise): if `(eᵢ)` is an orthonormal
+/-- **161V** (`onb2`, dils.tex:4704, Exercise): if `(eᵢ)` is an orthonormal
 basis of `X` with distinguished indices `i₁ ≠ i₂` and
 `⟨e_{i₁},e_{i₁}⟩ + ⟨e_{i₂},e_{i₂}⟩ ≤ 1`, then removing `e_{i₁}, e_{i₂}`
 and inserting `e_{i₁} + e_{i₂}` again yields an orthonormal basis.  (The
@@ -3265,7 +3265,7 @@ end L2
 
 variable {p : ι → ℬ}
 
-/-- **161II** (`hilbmod-el2`, dils.tex:4602, Exercise), part 1, first claim:
+/-- **161II** (`hilbmod-el2`, dils.tex:4610, Exercise), part 1, first claim:
 `ℓ²((pᵢ)ᵢ)` **is a right ℬ-module with coordinatewise operations**.  The
 module is `L2 ℬ p`; its underlying set is the thesis's `L2Set ℬ p`, and its
 addition, its ℂ-action and its (mirrored) ℬ-action are computed coordinate
@@ -3281,7 +3281,7 @@ theorem hilbmod_el2_module (hp : ∀ i, IsStarProjection (p i)) :
       exact ⟨fun h => ⟨⟨b, h⟩, rfl⟩, fun ⟨x, hx⟩ => hx ▸ L2.val_mem x⟩,
     fun _ _ => rfl, fun _ _ => rfl, fun _ _ => rfl⟩
 
-/-- **161II** (`hilbmod-el2`, dils.tex:4602, Exercise), part 1, second claim:
+/-- **161II** (`hilbmod-el2`, dils.tex:4610, Exercise), part 1, second claim:
 the ultraweakly convergent sum `⟨(bᵢ)ᵢ,(cᵢ)ᵢ⟩ = ∑ᵢ bᵢ*cᵢ` (mirrored:
 `∑ᵢ cᵢbᵢ*`) **turns `ℓ²((pᵢ)ᵢ)` into a pre-Hilbert ℬ-module**: it is a
 ℬ-valued inner product (`L2.binner`, whose fields are the four axioms of
@@ -3292,7 +3292,7 @@ theorem hilbmod_el2_preHilbert :
         ((L2.binner ℬ p).inner x y)) ∧ (L2.binner ℬ p).Definite :=
   ⟨L2.uwTendsto_inner, L2.binner_definite⟩
 
-/-- **161II** (`hilbmod-el2`, dils.tex:4602, Exercise), part 2, first claim:
+/-- **161II** (`hilbmod-el2`, dils.tex:4610, Exercise), part 2, first claim:
 `ℓ²((pᵢ)ᵢ)` **is self dual**. -/
 theorem hilbmod_el2_selfDual (hp : ∀ i, IsStarProjection (p i)) :
     SelfDual ℬ (L2 ℬ p) := by
@@ -3411,7 +3411,7 @@ section L2Iso
 variable {X : Type v}
   [NormedAddCommGroup X] [NormedSpace ℂ X] [SMul ℬ X] [CStarModule ℬ X]
 
-/-- **161II** (`hilbmod-el2`, dils.tex:4602, Exercise), part 2, second claim:
+/-- **161II** (`hilbmod-el2`, dils.tex:4610, Exercise), part 2, second claim:
 for every self-dual Hilbert ℬ-module `X` with orthonormal basis `(eᵢ)ᵢ`,
 `X ≅ ℓ²((⟨eᵢ,eᵢ⟩)ᵢ)` — an isomorphism **of Hilbert ℬ-modules**: the
 coordinate map `ϑ(x) = (⟨eᵢ,x⟩)ᵢ` is a bijection onto the module
@@ -3531,7 +3531,7 @@ private theorem exists_l2_iso_punit {X : Type v}
     rw [← hinner x y, hR, L2.inner_eq, L2.inner'_of_fintype]
     simp [hΨ]
 
-/-- **161V** (`onb2`, dils.tex:4696, Exercise), second half: *"Conclude
+/-- **161V** (`onb2`, dils.tex:4704, Exercise), second half: *"Conclude
 `pℬ ⊕ qℬ ≅ (p+q)ℬ` for projections `p,q ∈ ℬ` with `p+q ≤ 1`."*
 
 `pℬ ⊕ qℬ` is `ℓ²((p,q))` over a two-element index and `(p+q)ℬ` is
@@ -3674,7 +3674,7 @@ end L2Mod
 
 /-! ## Parsec 1620: comparison of projections and the normal form
 
-**162I** (dils.tex:4708): introduction — nothing to formalize. -/
+**162I** (dils.tex:4716): introduction — nothing to formalize. -/
 
 section NormalForm
 
@@ -4036,7 +4036,7 @@ private theorem mvn_proj_add {e g : ℬ} (he : IsStarProjection e) (hg : IsStarP
 
 end MvnLinking
 
-/-- **162II** (`total-mv-order`, dils.tex:4717, Proposition): in a factor,
+/-- **162II** (`total-mv-order`, dils.tex:4725, Proposition): in a factor,
 any two projections are comparable: `p ≲ q` or `q ≲ p`.
 
 **162III** is the proof; see the section note above for the one divergence
@@ -4752,7 +4752,7 @@ private theorem normalish_step (hF : IsFactor ℬ) (hX : SelfDual ℬ X) (V : Se
 
 end Step
 
-/-- **162IV** (`selfdual-normalish-form`, dils.tex:4747, Theorem): every
+/-- **162IV** (`selfdual-normalish-form`, dils.tex:4755, Theorem): every
 self-dual Hilbert ℬ-module over a factor `ℬ` is isomorphic to
 `ℓ²((1)_{α∈κ})` for an infinite cardinal `κ`, or to `ℓ²((1,…,1,p))` for
 some `n ∈ ℕ` and projection `p`.  Stated through bases (cf. **161II**):
@@ -5101,7 +5101,7 @@ end NormalForm
 
 /-! ## Parsec 1630: the completion is determined by its universal property
 
-**163I** (dils.tex:4927): introduction; **163III** is the proof — not
+**163I** (dils.tex:4935): introduction; **163III** is the proof — not
 converted. -/
 
 section CompletionDefining
@@ -5110,7 +5110,7 @@ variable {ℬ : Type u} {V : Type v}
   [CStarAlgebra ℬ] [PartialOrder ℬ] [StarOrderedRing ℬ]
   [AddCommGroup V] [Module ℂ V] [SMul ℬ V]
 
-/-- **163II** (`selfdual-compl-defining`, dils.tex:4935, Proposition),
+/-- **163II** (`selfdual-compl-defining`, dils.tex:4943, Proposition),
 uniqueness half: two self-dual completions of the same 𝒷-module with
 𝒷-valued inner product (each has the universal property by **151Ia**) are
 isomorphic by a unique inner-product-preserving module isomorphism
@@ -5229,7 +5229,7 @@ theorem selfdual_compl_defining_unique [VonNeumannAlgebra ℬ]
   rintro U' ⟨hU'b, -, -, hU'η⟩
   exact hUuniq U' ⟨hU'b, hU'η⟩
 
-/-- **163II** (`selfdual-compl-defining`, dils.tex:4935, Proposition),
+/-- **163II** (`selfdual-compl-defining`, dils.tex:4943, Proposition),
 moreover-clause: if an inner-product-preserving module map `η : V → X`
 into a self-dual Hilbert ℬ-module has the universal property (every
 bounded module map `V → Y` into a self-dual `Y` factors uniquely through
@@ -5718,7 +5718,7 @@ noncomputable def vnTensorLegRightNP [VonNeumannAlgebra 𝒞] {t : 𝒜 → ℬ 
 
 /-! ### Auxiliary material for **165IV**
 
-The estimate of **165IV** (dils.tex:5433) needs: positivity of
+The estimate of **165IV** (dils.tex:5441) needs: positivity of
 `Mₙ(⊗)` — thesis A's **113II**/**113IV**, available here as
 `Theses.A.CStar.matBilin_nonneg_of_mi` — together with its two-sided
 monotonicity, which follows from positivity and additivity; and positivity
@@ -5882,7 +5882,7 @@ private theorem gram_sub_nonneg {n : ℕ} (S : Ba 𝒜 X) (x : Fin n → X) :
 
 end Gram
 
-/-- The estimate of **165IV** (dils.tex:5433): `Θ(x,y) = (Sx) ⊗ (Ty)` is
+/-- The estimate of **165IV** (dils.tex:5441): `Θ(x,y) = (Sx) ⊗ (Ty)` is
 bounded by `‖S‖‖T‖`, in the Gram form in which `ExtTensor.univ` asks for
 it.  This is the displayed computation of **165IV**, with the row vector
 `s` of `1`s replaced by the equivalent `c = (1,…,1)` in `Mₙ(⊗)`'s
@@ -6032,7 +6032,7 @@ end VNTensor
 
 /-! ## Parsec 1640: the self-dual exterior tensor product
 
-**164I** (dils.tex:4987): introduction — nothing to formalize. -/
+**164I** (dils.tex:4995): introduction — nothing to formalize. -/
 
 section ExtTensor
 
@@ -6044,7 +6044,7 @@ variable {𝒜 ℬ 𝒞 : Type u}
   [NormedAddCommGroup X] [NormedSpace ℂ X] [SMul 𝒜 X] [CStarModule 𝒜 X]
   [NormedAddCommGroup Y] [NormedSpace ℂ Y] [SMul ℬ Y] [CStarModule ℬ Y]
 
-/-- **164II** (`univprop-ext-tensor`, dils.tex:5024, Theorem), the data:
+/-- **164II** (`univprop-ext-tensor`, dils.tex:5032, Theorem), the data:
 a **self-dual exterior tensor product** of a self-dual Hilbert 𝒜-module
 `X` and a self-dual Hilbert ℬ-module `Y` over the von Neumann tensor
 product `𝒞 = 𝒜 ⊗ ℬ` (given by `t`): a self-dual Hilbert 𝒞-module `Z`
@@ -7569,7 +7569,7 @@ private theorem exists_extTensor_dense [VonNeumannAlgebra 𝒜]
   obtain ⟨E⟩ := dils_completion (𝒷 := 𝒞) (extBInner (X := X) (Y := Y) t ht)
   exact ⟨extTensorOfCompl ht hX hY E, extTensorOfCompl_dense ht hX hY E⟩
 
-/-- **164II** (`univprop-ext-tensor`, dils.tex:5024, Theorem), existence:
+/-- **164II** (`univprop-ext-tensor`, dils.tex:5032, Theorem), existence:
 for self-dual `X`, `Y` over von Neumann algebras the self-dual exterior
 tensor product exists.
 
@@ -7862,7 +7862,7 @@ private theorem extTensor_inner_diff_ext (E : ExtTensor t ht X Y)
 end ExtTensorAux
 
 
-/-- **164IX** (`ext-tensor-uniqueness`, dils.tex:5286, Uniqueness — stated
+/-- **164IX** (`ext-tensor-uniqueness`, dils.tex:5294, Uniqueness — stated
 in **164II** as "up-to-isomorphism unique"): two self-dual exterior tensor
 products are isomorphic by a unique inner-product-preserving module
 isomorphism commuting with the embeddings.  164IX assumes `η₂` injective;
@@ -7918,7 +7918,7 @@ theorem ext_tensor_uniqueness [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
     exact extTensor_map_ext E₁ E₂.selfDual _ _ _ _ hCU' hCU
       fun x y => by rw [hU'η, hUη]
 
-/-- **164II** (`univprop-ext-tensor`, dils.tex:5024, Theorem), property 1:
+/-- **164II** (`univprop-ext-tensor`, dils.tex:5032, Theorem), property 1:
 the (span of the) image of `η` is ultranorm dense in `X ⊗ Y`.
 
 This is the thesis's own proof of property 1, which is one sentence
@@ -8032,7 +8032,7 @@ private theorem unSeminorm_eta_le_right (E : ExtTensor t ht X Y)
 
 end EtaEstimates
 
-/-- **164II** (`univprop-ext-tensor`, dils.tex:5024, Theorem), property 2a:
+/-- **164II** (`univprop-ext-tensor`, dils.tex:5032, Theorem), property 2a:
 for orthonormal bases `(eᵢ)` of `X` and `(dⱼ)` of `Y`, the family
 `(eᵢ ⊗ dⱼ)` is an orthonormal basis of `X ⊗ Y`.
 
@@ -8243,7 +8243,7 @@ theorem ext_tensor_basis [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
   rw [← unClosure_unClosure (bSpan 𝒞 (Set.range f))]
   exact unClosure_mono hD (ext_tensor_dense hX hY E z)
 
-/-- **164II** (`univprop-ext-tensor`, dils.tex:5024, Theorem), property 2b:
+/-- **164II** (`univprop-ext-tensor`, dils.tex:5032, Theorem), property 2b:
 the linear span of `D = {|(e'ᵢa) ⊗ (d'ⱼb)⟩⟨e_k ⊗ d_l|}` is **ultraweakly
 dense** in `𝒞ᵃ(X ⊗ Y)` — in the entourage form (given finitely many
 np-functionals and an `ε > 0`, some element of the span is within `ε` of
@@ -8507,7 +8507,7 @@ theorem ext_tensor_ketbra_uwDense [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra �
 
 /-! ## Parsec 1650: 𝒷ᵃ(X) ⊗ 𝒷ᵃ(Y) ≅ 𝒷ᵃ(X ⊗ Y)
 
-**165I** (dils.tex:5407): introduction; **165II** (Setting) — nothing to
+**165I** (dils.tex:5415): introduction; **165II** (Setting) — nothing to
 formalize. -/
 
 -- `hX`, `hY` are not used below: the universal property is a *field* of
@@ -8516,7 +8516,7 @@ formalize. -/
 -- `E` already carries is needed.  They are kept for uniformity with the
 -- neighbouring statements of parsecs 1640-1670.
 set_option linter.unusedVariables false in
-/-- **165III** (`dfn-tensor-of-hilbmod-maps`, dils.tex:5426, Proposition):
+/-- **165III** (`dfn-tensor-of-hilbmod-maps`, dils.tex:5434, Proposition):
 for `S ∈ 𝒜ᵃ(X)` and `T ∈ ℬᵃ(Y)` there is a unique operator
 `S ⊗ T ∈ 𝒞ᵃ(X ⊗ Y)` with `(S ⊗ T)(x ⊗ y) = (Sx) ⊗ (Ty)`.
 
@@ -8597,7 +8597,7 @@ theorem dfn_tensor_of_hilbmod_maps [VonNeumannAlgebra 𝒜]
     (extTensor_map_ext E E.selfDual C' CF _ _ hC' hCF fun x y => by
       rw [hR' x y]; exact (hFη x y).symm))
 
-/-- **165V** (`hilbmod-tensor-ketbra`, dils.tex:5506, Exercise): the rules
+/-- **165V** (`hilbmod-tensor-ketbra`, dils.tex:5514, Exercise): the rules
 for `⊗` of module operators: (1) `|x₁⟩⟨x₂| ⊗ |y₁⟩⟨y₂| = |x₁⊗y₁⟩⟨x₂⊗y₂|`;
 (2) `1 ⊗ 1 = 1`; (3) `(S ⊗ T)(S' ⊗ T') = SS' ⊗ TT'`;
 (4) `(S ⊗ T)* = S* ⊗ T*`.  (Stated for operators characterized by their
@@ -8757,7 +8757,7 @@ private theorem baVec_centreSeparatingConj {𝒷 : Type u} [CStarAlgebra 𝒷]
     rw [he, CStarModule.inner_neg_right, hvec v, neg_zero]
   exact le_antisymm hle ha
 
-/-- **165VI** (`ba-ext-tensor-pres`, dils.tex:5531, Theorem): there is an
+/-- **165VI** (`ba-ext-tensor-pres`, dils.tex:5539, Theorem): there is an
 nmiu-isomorphism `𝒜ᵃ(X) ⊗ ℬᵃ(Y) ≅ 𝒞ᵃ(X ⊗ Y)` sending `S ⊗ T` to
 `S ⊗ T`; stated as: the bilinear map `Θ(S,T) = S ⊗ T` exhibits
 `𝒞ᵃ(X ⊗ Y)` as the von Neumann tensor product of `𝒜ᵃ(X)` and `ℬᵃ(Y)`.
@@ -8773,7 +8773,7 @@ is `ba_ext_tensor_iso` below, which runs 165VII's appeal to **114II**
 `tensor_uniqueness`; it cannot be stated here because the `IsVNTensor` →
 `IsTensorProduct` bridge it needs is developed only in
 `PaschkeTensorInfra`.  The route is the thesis's own: verify the three
-conditions of **116VII** `tensor_characterization` (thesis A, proc.tex:3578,
+conditions of **116VII** `tensor_characterization` (thesis A, proc.tex:3584,
 now proved) for the centre separating collections `Ω_X`, `Ω_Y` of *vector*
 np-functionals, and read `IsVNTensor` off the resulting `IsTensorProduct`.
 It is only for this that `Theses.A.Proc.Tensor` is imported: **116VII** is
@@ -8976,7 +8976,7 @@ theorem ba_ext_tensor_pres [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
 
 /-! ## Parsec 1660: ultranorm continuity of the exterior tensor product
 
-**166I** (dils.tex:5625): introduction; **166III**, **166V**, **166VII**
+**166I** (dils.tex:5633): introduction; **166III**, **166V**, **166VII**
 are proofs — not converted.
 
 The two estimates of **166III** (`unSeminorm_eta_le_left/_right`) live in
@@ -8993,7 +8993,7 @@ The two estimates of **166III** (`unSeminorm_eta_le_left/_right`) live in
 -- the other way, `xα ⊗ (yα − y) + (xα − x) ⊗ y`, would use `hxb` and not
 -- `hyb`, so the lemma is true with either one of the two bounds.)
 set_option linter.unusedVariables false in
-/-- **166II** (`ultranorm-continuity-ext-tensor`, dils.tex:5630, Lemma): if
+/-- **166II** (`ultranorm-continuity-ext-tensor`, dils.tex:5638, Lemma): if
 `x_α → x` and `y_α → y` ultranorm for norm-bounded nets, then
 `x_α ⊗ y_α → x ⊗ y` ultranorm.
 
@@ -9132,7 +9132,7 @@ private theorem exists_bounded_net_of_entourage {𝒟 : Type u} {W : Type u}
   rw [Real.dist_eq, sub_zero, abs_of_nonneg (unSeminorm_nonneg _ _ _), hneg]
   linarith [hj.2]
 
-/-- **166IV** (`exttensor-dense-subsets`, dils.tex:5669, Lemma): for
+/-- **166IV** (`exttensor-dense-subsets`, dils.tex:5677, Lemma): for
 ultranorm-dense submodules `U ⊆ X` and `V ⊆ Y`, the linear span of
 `U ⊗ V = {u ⊗ v}` is ultranorm dense in `X ⊗ Y`.
 
@@ -9379,7 +9379,7 @@ theorem paschke_tprod_dense (φ : NCPMap 𝒜 ℬ) (M : PaschkeModule φ) :
 
 end DilationSpaceDense
 
-/-- **166VI** (`dilationspace-dense-subset`, dils.tex:5695, Lemma): for an
+/-- **166VI** (`dilationspace-dense-subset`, dils.tex:5703, Lemma): for an
 ncp-map `φ : 𝒜 → ℬ` between von Neumann algebras with ultrastrongly dense
 ∗-subalgebras `𝒜' ⊆ 𝒜`, `ℬ' ⊆ ℬ`, the linear span of
 `{a ⊗ b : a ∈ 𝒜', b ∈ ℬ'}` is ultranorm dense in `𝒜 ⊗_φ ℬ`. -/
@@ -10614,7 +10614,7 @@ end PTMain2
 
 end PaschkeTensorModuleAux
 
-/-- **167I** (`paschke-tensor`, dils.tex:5746, Theorem), furthermore-claim
+/-- **167I** (`paschke-tensor`, dils.tex:5754, Theorem), furthermore-claim
 (dils.tex:5754): the dilation spaces satisfy
 `(𝒜₁ ⊗_{φ₁} ℬ₁) ⊗ (𝒜₂ ⊗_{φ₂} ℬ₂) ≅ (𝒜₁ ⊗ 𝒜₂) ⊗_{φ₁⊗φ₂} (ℬ₁ ⊗ ℬ₂)`,
 via the map determined on elementary tensors. -/
@@ -10647,7 +10647,7 @@ theorem paschke_tensor_module
   rw [ptmEta2_eta_tprod M₁ M₂ E a₁ b₁ a₂ b₂]
   exact hUη ((a₁ ⊗ₜ[ℂ] a₂) ⊗ₜ[ℂ] tB b₁ b₂)
 
-/-- **167I** (`paschke-tensor`, dils.tex:5746, Theorem), main claim: if
+/-- **167I** (`paschke-tensor`, dils.tex:5754, Theorem), main claim: if
 `(𝒫ᵢ, ϱᵢ, hᵢ)` is a Paschke dilation of the ncp-map `φᵢ : 𝒜ᵢ → ℬᵢ`
 (i = 1,2), then `(𝒫₁ ⊗ 𝒫₂, ϱ₁ ⊗ ϱ₂, h₁ ⊗ h₂)` is a Paschke dilation of
 `φ₁ ⊗ φ₂`.  (The tensor products of algebras are given through the
