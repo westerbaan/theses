@@ -190,6 +190,17 @@ record it as open mathematics rather than as a pending decision.
 
 ### 1.3 — 158III–158V `kaplansky-hilbmod`: the printed proof is false; how should it be replaced?
 
+*(Arithmetic re-checked 2026-08-28.  The falsity rests on a computation carried
+out on paper, and every other falsity verdict in the tree that the author is
+asked to accept — 106III.3, 116III.4 — is machine-checked.  This one is now
+reproducible at least: `scripts/kaplansky_witness.py` redoes it exactly over ℚ,
+the witness living in the span of `e₁, e₂, eₙ`, and **all nine recorded values
+come out**, the factor-4 identity `1/9 = 4(−1/12 − 1/18 + 0 + 1/6)` included.
+It is still not a Lean proof.  It also found two slips in our own prose, both
+now fixed in `Kaplansky.lean`: the module action's side and the mirrored inner
+product's argument order were written the way the thesis writes them, and read
+literally in that file's own convention two of the six values are `0`.)*
+
 *(`QUESTIONS.md` B10.  Blocks four of the eleven: `kaplansky_hilbmod_A₁`,
 `A₁'`, `A₂`, `A₂'` in `Theses/B/Dils/Kaplansky.lean`.)*
 
@@ -285,7 +296,15 @@ question `QUESTIONS.md` still prints — "which of three repairs?" — is answer
 **What is being asked now.**  Case **(ii)** is false as printed, because the
 complements are taken in `ℋ ⊗ 𝒦'` where they must be taken in `𝒦'`.
 
-**Counterexample** (paper, derived for this document; not machine-checked):
+**Counterexample** (paper, derived for this document; not machine-checked).
+*Reviewed 2026-08-28, and unlike §1.3's witness there is nothing here to
+recompute:* its content is a dimension count, not an arithmetic one, so a
+script would add nothing and only a Lean proof would raise its standing.  What
+the review does confirm is the sentence the witness turns on — that it attacks
+**(ii) alone**: (i) asks both dilations to be minimal and `𝒱 = ℋ ⊗ ran S₂` is
+not `ℋ ⊗ 𝒦'`, (iii) asks `ℋ` and `𝒦` to be finite-dimensional and both are
+infinite.  And `(ran S₁)^⊥`, `(ran S₂)^⊥` really are the spans of `e₀` and of
+`e₀, e₁`, dimensions `1` and `2`.
 
 > `ℋ = 𝒦' = ℓ²`, `𝒦 = ℋ ⊗ 𝒦'`.  Let `S₁` be the unilateral shift and `S₂` the
 > shift by two.  Put `W = 1 ⊗ S₁` and `V = 1 ⊗ S₂`.  Both dilate

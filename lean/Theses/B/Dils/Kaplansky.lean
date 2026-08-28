@@ -138,15 +138,28 @@ vector functional `ω₀ = ⟨e₁, · e₁⟩` gives, *independently of `n`*,
 so none of them tends to `0`.  The step that fails is the right-hand half
 of `kaplanskytodo2` (dils.tex:4251), the one whose "different, but simpler"
 proof the thesis omits: here
-`⟨y₀, yₙ - y₀⟩(1+⟨yₙ,yₙ⟩)⁻¹ = |e₁⟩⟨eₙ| - ⅓|e₁⟩⟨w|` has `ω₀`-value `-1/3`.
+`⟨y₀, yₙ - y₀⟩(1+⟨yₙ,yₙ⟩)⁻¹ = |e₁⟩⟨eₙ| - ⅓|e₁⟩⟨w|` has `ω₀`-value `-1/3`
+— written in the *thesis's* argument order, which under this file's mirrored
+`⟨a,b⟩ = b a*` is `inner (yₙ - y₀) y₀`.  Read literally in the mirrored order
+the same display has `ω₀`-value `0`.
 (The left-hand half *is* fine: `⟨y_α-y, y_α(1+⟨y_α,y_α⟩)⁻¹⟩` is Cauchy–Schwarz
 against a vector of norm `≤ 1`, and the resolvent bounds below are exactly
 what that argument needs.)  The four `sorry`s are therefore *not* closable;
 see `PROVING-LOG.md` and `ERRATA.md`.
 
+**The whole computation was re-checked in exact rational arithmetic on
+2026-08-28** and all nine recorded values reproduce: `scripts/kaplansky_witness.py`,
+which is a 3×3 matrix calculation over `ℚ` because everything above lives in the
+span of `e₁, e₂, eₙ`.  It is *not* a Lean proof — `docs/DECISIONS.md` §1.3 still
+records the falsity as disproved-on-paper — but it is reproducible, and it
+caught the two convention slips flagged in this block: read on the side the
+prose writes them, two of the six values come out `0`.
+
 Two further defects fell out of the same computation.  (i) `kaplansky-splitting`
-is off by a factor `4`: with `h y = y·2/(1+⟨y,y⟩)` the left-hand side carries the
-square of that `2`, and indeed `⟨h y - h yₙ, h y - h yₙ⟩ = 4(A₁+A₁'+A₂+A₂')`
+is off by a factor `4`: with `h y = 2(1+⟨y,y⟩)⁻¹·y` — the scalar on the **left**,
+which is the side this file's mirrored `⟨a,b⟩ = b a*` forces; on the right the
+value is `0`, not `1/9` — the left-hand side carries the square of that `2`, and
+indeed `⟨h y - h yₙ, h y - h yₙ⟩ = 4(A₁+A₁'+A₂+A₂')`
 (`1/9 = 4·(-1/12 - 1/18 + 0 + 1/6)`).  (ii) *Ours*, repaired in session 94:
 `kaplansky_hilbmod_A₂` and `kaplansky_hilbmod_A₂'` below had been transcribed
 with the arguments of their inner products in the thesis's order rather than
