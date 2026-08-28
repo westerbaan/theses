@@ -202,6 +202,7 @@ Theses.A.VN.TomitaFourier|Theses.RvD.hasDerivAt_laplTerm|green
 Theses.A.VN.ModularTensor|Theses.RvD.htmulL_apply|green
 Theses.A.VN.ModularTensor|Theses.RvD.htmulR_apply|green
 Theses.A.VN.ModularTensor|Theses.RvD.htmul_add_right|green
+Theses.A.VN.ModularTensor|Theses.RvD.htmul_mem_modularSqrt_domain|green
 Theses.A.VN.StandardSubspace|Theses.RvD.im_inner|green
 Theses.A.VN.ModularTensor|Theses.RvD.injective_of_denseRange|green
 Theses.A.VN.ModularGroup|Theses.RvD.inner_J_map_map|green
@@ -849,7 +850,6 @@ Theses.A.Proc.Measurement|Theses.A.Proc.ad_bipositive|green
 Theses.A.Proc.Measurement|Theses.A.Proc.ad_injective|green
 Theses.A.Proc.Measurement|Theses.A.Proc.ad_ncp_1|green
 Theses.A.Proc.Measurement|Theses.A.Proc.ad_rigid|green
-Theses.A.Proc.TensorTransport|Theses.A.Proc.adjoint_cornerTransfer|green
 Theses.A.Proc.TensorTransport|Theses.A.Proc.adjoint_htFlip_htmul|green
 Theses.A.Proc.Duplicators|Theses.A.Proc.ae_const_of_atomic|green
 Theses.A.Proc.Duplicators|Theses.A.Proc.ae_const_real_of_atomic|green
@@ -929,7 +929,6 @@ Theses.A.Proc.CornerTensor|Theses.A.Proc.cext_apply|green
 Theses.A.Proc.CornerTensor|Theses.A.Proc.cext_cmpr|green
 Theses.A.Proc.CornerTensor|Theses.A.Proc.cext_cmpr_mul|green
 Theses.A.Proc.CommutationAmplify|Theses.A.Proc.cext_comp|green
-Theses.A.Proc.TensorTransport|Theses.A.Proc.cext_cornerTransfer_cmpr|green
 Theses.A.Proc.TensorTransport|Theses.A.Proc.cext_htAssoc_opTensor|green
 Theses.A.Proc.TensorTransport|Theses.A.Proc.cext_htFlip_opTensor|green
 Theses.A.Proc.CommutationAmplify|Theses.A.Proc.cext_htInterchange_opTensor|green
@@ -1271,7 +1270,6 @@ Theses.A.Proc.Tensor|Theses.A.Proc.isTensorProduct_comp|green
 Theses.A.Proc.Tensor|Theses.A.Proc.isTensorProduct_comp_target|green
 Theses.A.Proc.Tensor|Theses.A.Proc.isTensorProduct_flip|green
 Theses.A.Proc.CommutationAmplify|Theses.A.Proc.isUnitaryCLM_comp|green
-Theses.A.Proc.TensorTransport|Theses.A.Proc.isUnitaryCLM_cornerTransfer|green
 Theses.A.Proc.TensorTransport|Theses.A.Proc.isUnitaryCLM_htAssoc|green
 Theses.A.Proc.TensorTransport|Theses.A.Proc.isUnitaryCLM_htFlip|green
 Theses.A.Proc.CommutationAmplify|Theses.A.Proc.isUnitaryCLM_htInterchange|green
@@ -1568,7 +1566,6 @@ Theses.A.Proc.TensorTransport|Theses.A.Proc.ucext_one|green
 Theses.A.Proc.TensorTransport|Theses.A.Proc.ucmpr_mul|green
 Theses.A.Proc.TensorTransport|Theses.A.Proc.uconj_adjoint_uconj|green
 Theses.A.Proc.TensorTransport|Theses.A.Proc.uconj_concreteTensor|green
-Theses.A.Proc.TensorTransport|Theses.A.Proc.uconj_cornerAlg|green
 Theses.A.Proc.TensorTransport|Theses.A.Proc.uconj_htFlip_concreteTensor|green
 Theses.A.Proc.CommutationAmplify|Theses.A.Proc.uconj_htInterchange_concreteTensor|green
 Theses.A.Proc.CommutationAmplify|Theses.A.Proc.uconj_htInterchange_vnComm|green
