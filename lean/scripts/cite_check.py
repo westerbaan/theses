@@ -287,6 +287,10 @@ def bare_check():
         for i, tag, tex, num in bare_claims(src.read_text(errors="replace").splitlines()):
             where = tables.get(tex, {}).get((tag[0], tag[1]))
             if where is None:
+                # The declaration's tag belongs to one source file and the
+                # reference points into another -- a `54XI` doc comment citing
+                # `proc.tex`.  That is an ordinary cross-file reference, not a
+                # defect; the enclosing tag simply cannot place it.
                 absent += 1
             elif where[0] <= num <= where[1]:
                 inside += 1
@@ -299,7 +303,8 @@ def bare_check():
     print(f"\n{inside} bare references land inside the point their declaration is "
           f"tagged with, {outside} land elsewhere (not a defect list -- a comment "
           f"may cite any point, and nothing in a bare reference says which), "
-          f"{absent} whose tag names a point the cited file does not have")
+          f"{absent} point into a different source file than the declaration's "
+          f"tag, which the tag cannot place")
     return 0
 
 
