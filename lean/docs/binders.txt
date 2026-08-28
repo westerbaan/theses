@@ -202,6 +202,7 @@ Theses.A.VN.TomitaFourier|Theses.RvD.hasDerivAt_laplTerm|
 Theses.A.VN.ModularTensor|Theses.RvD.htmulL_apply|NormedAddCommGroup,InnerProductSpace,CompleteSpace
 Theses.A.VN.ModularTensor|Theses.RvD.htmulR_apply|NormedAddCommGroup,InnerProductSpace,CompleteSpace
 Theses.A.VN.ModularTensor|Theses.RvD.htmul_add_right|NormedAddCommGroup,InnerProductSpace,CompleteSpace
+Theses.A.VN.ModularTensor|Theses.RvD.htmul_mem_modularSqrt_domain|NormedAddCommGroup,InnerProductSpace,CompleteSpace
 Theses.A.VN.StandardSubspace|Theses.RvD.im_inner|NormedAddCommGroup,InnerProductSpace
 Theses.A.VN.ModularTensor|Theses.RvD.injective_of_denseRange|NormedAddCommGroup,InnerProductSpace,CompleteSpace
 Theses.A.VN.ModularGroup|Theses.RvD.inner_J_map_map|NormedAddCommGroup,InnerProductSpace,CompleteSpace

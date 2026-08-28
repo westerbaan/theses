@@ -127,6 +127,11 @@ claim to. Those findings stand as recorded until someone re-runs a cone pass.
 
 ## 2. Headline numbers
 
+*Snapshot of the sweep (2026-08-27) and not maintained since.*  85 declarations
+were deleted by §12a–§12c and five more by §12d, and §5.7 and §13 correct
+several of the classifications below; where this table and a later section
+disagree, the later section is the one that was checked.
+
 | quantity | count |
 |---|---|
 | hand-written named declarations in `Theses/A` + `Theses/B` | 7,493 |
@@ -1491,7 +1496,67 @@ intersection `(𝒜̃ ⊗ B(ℋ)) ∩ (𝒜 ⊗ 𝒞)` varies in both factors.
 **`tensorSub_inf`'s own docstring is still false** where it says "it is what
 125IV `equaliser_lemma` consumes". It was orphaned inside its own commit.
 
-### 10e. The `section Package` pattern — the structural finding. **Mostly unchanged.**
+### 10e. The `section Package` pattern — the structural finding. **DECIDED 2026-08-28: kept, and the gap is closed.**
+
+*Ruling, ahead of the paragraph that framed the question.*  The `Δ^{1/2}` half
+of `ModularTensor.lean` **stays**, and the reason is the asymmetry the block
+sits in rather than its use count.  The file's own header displays two
+conclusions — `J_ξ = J_ω ⊗ J_{ω'}` **and**
+`Δ_ξ^{1/2} = closure (Δ_ω^{1/2} ⊙ Δ_{ω'}^{1/2})` — and they are not consumed
+alike:
+
+| | consumers outside the file |
+|---|---|
+| `isCyclicVector_vnTensor` | 1 (`CommutationTomita`) |
+| `isSeparatingVector_vnTensor` | 1 (`CommutationTomita`) |
+| `isStandard_vnTensor` | 1 (`CommutationTomita`) |
+| `modularConj_htmul` | 1 (`CommutationTomita`) |
+| `opTensor_mem_modularSqrt_domain` | 0 |
+| `modularSqrt_opTensor` | 0 (one use, `modularSqrt_htmul`) |
+| `modularSqrt_htmul` | 0 (one use, `modularSqrt_htmul_pkg`) |
+| `modularSqrt_hasCore_orbitSpan` | 0 |
+| `modularSqrt_htmul_pkg` | 0 |
+
+Five declarations, one closed chain.  Deleting them would delete the second
+displayed conclusion of a file written for both, and the tree states it
+nowhere else — the same ground on which §13.4 kept the `jConj` layer.
+
+**One correction to the paragraph below, and it is the eighth mechanism
+again.**  `modularSqrt_hasCore_orbitSpan` reads as having one use.  It has
+none: the single occurrence is inside `modularSqrt_htmul_pkg`'s *doc comment*
+("Together with `modularSqrt_hasCore_orbitSpan` …"), prose in a `/-- … -/`
+block.  §10e's own text called it dead and was right; the count was not.
+
+**And the diagnosis was actionable after all.**  §10e said the package ships no
+domain-membership discharger, so a consumer of `modularSqrt_htmul_pkg` must
+leave the package vocabulary to produce its hypothesis, and that "had the
+package been used even once, that gap would have closed."  It is closed now, by
+`htmul_mem_modularSqrt_domain` (`ModularTensor.lean`, Package section), and
+**it was one lemma wide**: `modularSqrt` unfolds to `(mp … ).D` and `mp`'s two
+arguments are `Prop`s, so proof irrelevance makes the two operators defeq and
+`opTensor_mem_modularSqrt_domain` transports with a single `rwa
+[opTensor_apply]`.  Compiled at exit 0 on the first attempt.
+
+Stated plainly, because it is the honest reading: **the block is now complete
+and still unused.**  Those are two different facts and only the first was ours
+to change.  The new discharger is itself unconsumed, which is one more
+declaration in a dead block — accepted, because what it buys is that the next
+reader who wants the `Δ^{1/2}` half can state it without dropping a layer, and
+that was the whole content of the finding.
+
+(§12b's keep of `Tomita.lean`'s own `section Package` rests on the same
+sentence, and cites `ModularTensor.lean:1193, 1197, 1210, 1225, 1229` as the
+uses that keep `modularSqrt` and `modularConj` alive.  Two edits moved them: the
+module header gained 20 lines and `htmul_mem_modularSqrt_domain` 24 more, so the
+citations above the new lemma are +20 and those below it +44.  The uses are the
+same ones; `modularSqrt_hasCore_orbitSpan` is now at `:1206` and
+`modularSqrt_htmul_pkg` at `:1244`.)
+
+*What follows is the state of the question before this ruling, kept because it
+is where the diagnosis was made.*
+
+**10e, as written on 2026-08-27 — the `section Package` pattern, "mostly
+unchanged".**
 
 > A worker finishes a file, wraps a complete-looking API around it, and the next
 > worker downstream works at the raw layer instead.

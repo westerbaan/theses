@@ -13,6 +13,26 @@ algebras `M ⊆ B(ℋ)` and `N ⊆ B(𝒦)` with cyclic separating vectors `ω`,
 
 Classically this needs the spectral theorem for unbounded operators and product
 spectral measures.  Here everything is done with bounded operators.
+
+## The two halves are not consumed alike
+
+Only the `J` half leaves this file.  `A/VN/CommutationTomita.lean` consumes
+`modularConj_htmul` together with `isCyclicVector_vnTensor`,
+`isSeparatingVector_vnTensor` and `isStandard_vnTensor`; **nothing consumes the
+`Δ^{1/2}` half**, and its five declarations
+(`opTensor_mem_modularSqrt_domain`, `modularSqrt_opTensor`, `modularSqrt_htmul`,
+`modularSqrt_hasCore_orbitSpan`, `modularSqrt_htmul_pkg`) form a chain that
+reaches nothing outside itself.  They stay: the displayed factorisation above is
+the file's stated purpose, both halves of it, and the tree states the `Δ^{1/2}`
+half nowhere else.
+
+`docs/DEAD-LIMBS.md` §10e had a sharper diagnosis than "unused" — that the
+package shipped no domain-membership discharger, so a consumer of
+`modularSqrt_htmul_pkg` had to leave the package vocabulary to produce its
+hypothesis, and that "had the package been used even once, that gap would have
+closed".  It is closed now, by `htmul_mem_modularSqrt_domain`, and it turned out
+to be one lemma wide.  The block is complete and still unused; those are two
+different facts and only the first was in our hands.
 -/
 import Theses.A.VN.Tomita
 import Theses.A.Proc.Tensor
@@ -1191,6 +1211,30 @@ theorem modularSqrt_hasCore_orbitSpan :
   orbitSpan_hasCore_tensor M N ω ω'
     (isStandard_vnTensor M N ω ω' hcycM hsepM hMbi hcycN hsepN hNbi).1
     (isStandard_vnTensor M N ω ω' hcycM hsepM hMbi hcycN hsepN hNbi).2
+
+include hcycM hsepM hMbi hcycN hsepN hNbi in
+/-- **The domain hypothesis of `modularSqrt_htmul_pkg`, discharged in the package's own
+vocabulary.**  `a_ω ζ ⊗ a_{ω'} ζ'` is in the domain of `Δ_ξ^{1/2}`.
+
+This is `opTensor_mem_modularSqrt_domain` restated with `modularSqrt` in place of
+`(mp … hsT hcT).D`, and it is here because without it the package was unusable as
+shipped: a consumer of `modularSqrt_htmul_pkg` had to leave the package vocabulary to
+produce its `h`, which is exactly the gap `docs/DEAD-LIMBS.md` §10e names — "`Tomita.lean`'s
+package ships its own domain-membership dischargers and `ModularTensor.lean`'s ships none".
+The two operators are the same by `modularSqrt`'s definition and proof irrelevance in `mp`'s
+two `Prop` arguments, so nothing is proved twice. -/
+theorem htmul_mem_modularSqrt_domain (ζ : ℋ) (ζ' : 𝒦) :
+    a (Ksub M ω) ζ ⊗ₕ a (Ksub N ω') ζ'
+      ∈ (modularSqrt (vnTensor M N) (ω ⊗ₕ ω')
+          (isCyclicVector_vnTensor M N ω ω' hcycM hcycN)
+          (isSeparatingVector_vnTensor M N ω ω' hsepM hMbi hsepN hNbi)
+          (bicommutant_vnTensor M N)).domain := by
+  have h := opTensor_mem_modularSqrt_domain M N ω ω'
+    (isStandard M ω hcycM hsepM hMbi).1 (isStandard M ω hcycM hsepM hMbi).2
+    (isStandard N ω' hcycN hsepN hNbi).1 (isStandard N ω' hcycN hsepN hNbi).2
+    (isStandard_vnTensor M N ω ω' hcycM hsepM hMbi hcycN hsepN hNbi).1
+    (isStandard_vnTensor M N ω ω' hcycM hsepM hMbi hcycN hsepN hNbi).2 (ζ ⊗ₕ ζ')
+  rwa [opTensor_apply] at h
 
 include hcycM hsepM hMbi hcycN hsepN hNbi in
 /-- **`Δ_ξ^{1/2} = closure (Δ_ω^{1/2} ⊙ Δ_{ω'}^{1/2})`**, evaluated: on `ran a_ω ⊙ ran a_{ω'}`
