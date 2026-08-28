@@ -465,7 +465,19 @@ carries an induced order that 48VI.2' states over `↥f.toStarAlgHom.range` whil
 — the inputs exist, the hint is printed, and the row already admits the
 divergence. Recommend: **a fixing round should take this one first.**
 
-### 5.3 `tensor_equalisers` (125VI) — the recorded reason has expired
+### 5.3 `tensor_equalisers` (125VI) — the recorded reason has expired. **The row was re-costed the same day; §5.3 did not notice.**
+
+*Status, added 2026-08-28.*  The recommendation below — "re-cost the row; leave
+the proof", and "I have not edited the row" — **was carried out hours later, by
+`4008ef8`, on 2026-08-27.**  The row now says "which is **NOT** blocked --
+`tensor_equalisers` has been proved since `61d6f49` and is green; what the hint
+still needs, and the tree still lacks, is pullbacks in W*_miu", and its status
+field costs that: a category structure on W\*_miu with pullbacks plus a
+limit-preservation theorem for `(·) ⊗ 𝒜`, several hundred lines and a
+statement-level addition.  Both this section and §11's item 2 went on reading as
+open for a day; checked and closed on 2026-08-28.  Nothing else about the
+diagnosis changes — the limb stays dead and the proof stays as it is.
+
 
 `A/Proc/QuantumLambda.lean:7589`, 42 lines, `green`, doc comment: **"This is
 proc.tex:4980 verbatim."** Zero consumers.
@@ -1056,11 +1068,16 @@ here; the name is not.
   "kept on the record as the unconditional statement of the abstract 121II".
   The tree's own written ruling; left standing while §10d's other two members
   went.
-* `opTensor_mem_modularSqrt_domain`, `modularSqrt_hasCore_orbitSpan`,
-  `modularSqrt_htmul_pkg` (`ModularTensor.lean`, Part 6): the first is the
-  domain discharger for `modularSqrt_opTensor`, which is live; the other two
-  are the package block whose third member `modularConj_htmul` is live.  Same
-  argument as Tomita's Part IV, one step weaker.
+* `modularSqrt_hasCore_orbitSpan`, `modularSqrt_htmul_pkg`
+  (`ModularTensor.lean`, Part 6): the package block whose third member
+  `modularConj_htmul` is live.  Same argument as Tomita's Part IV, one step
+  weaker.  *(This bullet named a third declaration,
+  `opTensor_mem_modularSqrt_domain`, as the zero-use domain discharger for the
+  live `modularSqrt_opTensor`.  Hours later on 2026-08-28, §10e's ruling added
+  `htmul_mem_modularSqrt_domain`, which consumes it; it is live by direct count
+  now and outside the pool for the ordinary reason.
+  `scripts/limb_check.py` caught the stale line, and it was the first thing
+  that script found.)*
 * `CT_iff_vnComm` and `cyclic_and_separating_of_separating`: §7 already moves
   these out of the pool by hand and the 2026-08-26 reading stands.
 * `coe_orbitSub`, `mem_saOrbit_iff`: §8, per the accessor note above.
@@ -1619,9 +1636,13 @@ make them the fingerprint the check is after. Left, recorded, re-confirmed.
    under new names and the audited ones re-derived from them byte-identically,
    which is a proof change, not a statement change.  Measured: `Basic` +33 net,
    `Projections` −263 net; 69IVb moves `route` → `faithful`.
-2. **§5.3's row, not its proof.** Re-cost the 125VIIb row: 125VI is `green`
-   since `61d6f49` and "which is itself blocked" is stale. Cheap, and it
-   unblocks nothing but stops the next reader inheriting a false reason.
+2. ~~**§5.3's row, not its proof.** Re-cost the 125VIIb row: 125VI is `green`
+   since `61d6f49` and "which is itself blocked" is stale.~~ **DONE 2026-08-27
+   by `4008ef8`, hours after this list was written, and neither this item nor
+   §5.3 was updated to say so.** Verified 2026-08-28: the row reads "which is
+   NOT blocked" and its status field carries the re-cost (pullbacks in W\*_miu
+   plus limit-preservation for `(·) ⊗ 𝒜`; several hundred lines and a
+   statement-level addition). The proof is unchanged, as recommended.
 3. ~~**§7's pool, file by file, with the tree to yourself.**~~ **DONE, and the
    pool is now EXHAUSTED** — §7a (`B/`) and §7b (`A/`) on 2026-08-27, §7c (the
    remainder, 75 candidates in twenty-seven files) on 2026-08-28. **85
@@ -2231,3 +2252,45 @@ added or removed, no audit row edited.  This section is the whole of the
 output.  The one action item it creates for someone else is §13.6's prefix-
 indexing fix to the textual scanner, and the 25 declarations it names must come
 off §7's deletion pool before the `A/` half of that pool is spent.
+
+---
+
+## 14. Re-checking this document (`scripts/limb_check.py`, 2026-08-28)
+
+Every "confirmed dead", every "zero consumers", every "still dead" in the
+pages above was true when it was written, and nothing rechecks any of them.
+That is how §5.1 and §5.2 both came to rest on premises that had expired, and
+how §10c's "no longer an orphan by direct count" survived until a cone pass
+contradicted it.  `scripts/limb_check.py` re-counts them: it pulls the names
+out of the dead-claims, counts their *code* uses in `Theses/` with comments
+blanked and the defining occurrence not counted, and reports the ones that are
+alive.  A name the tree no longer has is reported apart — that is a deletion
+this document records, not a stale claim.
+
+**What it reads, and why so little.**  Prose is not read at all.  The first
+version read sentences and was wrong eleven times out of twelve, always the
+same way: the document was saying a name is *alive* in the very sentence that
+carried a dead-claim about something else — "parsec 1490's proofs go through
+`unSeminorm_add_le` directly", "**`mem_vnComm_top` is named as dead by both §7
+and §10c**, and it is not".  A sentence cannot be read for its subject with a
+regex.  So only two structured positions are used: the names a **bullet opens
+with**, and the **first cell of a table row**, which is where this document
+puts the declaration a claim is about.  Parenthesised annotations are dropped,
+because the convention here is `` `ipf_sub_right` (`SelfDualCompletion`) `` and
+some file names are also declaration names.
+
+That buys precision at the cost of recall: **28 names re-counted** out of a
+document that mentions hundreds.  It is a check on the claims that are stated
+in the form the sweep states them, not a liveness audit of the tree.  It
+inherits §1's eight ways a textual zero-use lies, so a name it reports as alive
+really does occur, and a name it passes may still be reached through a dotted
+projection.
+
+**The first thing it found was a line eight hours old.**  §12c's kept-list
+opened a bullet with `opTensor_mem_modularSqrt_domain` among the zero-use
+declarations; §10e's ruling, taken the same day, added
+`htmul_mem_modularSqrt_domain`, which consumes it.  The bullet was rewritten and
+the check reads zero.  The lesson is not about that declaration: a document
+this size grows stale claims faster than a sweep can reread it, and the only
+claims worth stating in the sweep's structured form are the ones a script can
+keep honest.
