@@ -524,13 +524,47 @@ def report_conflicts():
                 chosen = verdict_of(parts[6])
                 bad.append((f, i, parts[0], chosen,
                             [x for x in found if x != chosen]))
+    # A SECOND class, and the more dangerous one: a field matching exactly ONE
+    # needle, which is the wrong one.  `--conflicts` cannot see these, because
+    # nothing about them is ambiguous -- they are silently and consistently
+    # misreported.
+    #
+    # `LEFT-under-reason-N` is spelled with hyphens, so it never matches the
+    # `"under reason 2"` / `"under (3)"` entries and always falls through to the
+    # generic `left-under-reason` needle, which maps to `left-cost` FOR EVERY N.
+    # Nineteen rows are affected.  And no single mapping can fix it, because the
+    # two 2026-08-26 passes numbered their grounds differently: a route-pass
+    # "reason 1" is about the thesis's own proof being followed, while a
+    # statement-pass "reason 1" is "the printed form is FALSE" -- which is
+    # `left-thesis`, the near-opposite of costed machinery.  Five live
+    # thesis-defect rows were being counted as ours-to-build.
+    #
+    # So this reports rather than guesses.  Each row needs its ground written out
+    # in words; once none are left, the generic needle can go.
+    under = []
+    for f in sorted(glob.glob(DOCS + "audit/*.csv")):
+        for i, line in enumerate(_pl.Path(f).read_text().splitlines(), 1):
+            parts = line.split("|")
+            if len(parts) < 7:
+                continue
+            m = re.search(r'under-reason-(\d)', parts[6], re.I)
+            if m:
+                pas = ("statement" if "stmt pass" in parts[6].lower()
+                       else "route" if "route pass" in parts[6].lower() else "unlabelled")
+                under.append((f, i, parts[0], m.group(1), pas, verdict_of(parts[6])))
+
     for rel, i, disp, chosen, others in bad:
         print(f"AMBIG    {rel}:{i}  {disp} reads back as {chosen!r}, "
               f"also matches {others}")
+    for f, i, disp, n, pas, chosen in under:
+        print(f"NUMBERED {f}:{i}  {disp} grounds itself as reason {n} of the {pas} "
+              f"pass; reads back as {chosen!r} because the hyphenated spelling "
+              f"matches only the generic needle")
     print(f"\n{rows} rows carry a status field; {len(bad)} match more than one "
           f"verdict, so what they report depends on VERDICTS' order rather than on "
-          f"the row")
-    return 1 if bad else 0
+          f"the row; {len(under)} more name a NUMBERED ground whose meaning differs "
+          f"between the two passes and are all read as `left-cost` regardless")
+    return 1 if (bad or under) else 0
 
 
 if __name__ == "__main__":
