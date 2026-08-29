@@ -27,10 +27,10 @@ contraposition (`f^⋄`/`f_⋄`), rigidity, ⋄-self-adjointness and
   (101II) included, so no statement about the maps they define is vacuous.
   (This note used to say that those two were still `sorry`; that was
   obsolete, and three proof routes elsewhere in the file were justified by
-  similarly stale claims.  The file has exactly two `sorry`s:
-  `centrally_similar_basic_5` (104III.5, waiting on a form of 104III.4
-  relative to a projection unit) and `sequential_product_counterexample_3`
-  (106III.3, whose transcribed (E) clause is false as printed — `ERRATA.md`).)
+  similarly stale claims.  The file has exactly one `sorry`:
+  `sequential_product_counterexample_3` (106III.3, whose transcribed (E)
+  clause is false as printed — `ERRATA.md`).  `centrally_similar_basic_5`
+  (104III.5) was the other, and was proved on 2026-08-29.)
 * The universal properties are Prop-valued structures `IsCornerOf` (95I)
   and `IsFilter` (96I) quantifying over all von Neumann algebras in the
   same universe `u`.  A **corner** map simpliciter (`IsCornerMap`) is a
@@ -6689,6 +6689,291 @@ theorem centrally_similar_basic_5_cceil_counterexample :
       by rw [ceil_one]; exact (ceil_spec hw.nonneg).1.le_one⟩
   · rw [bhTwoProj_cceil, bhTwoOne_cceil]
 
+/-- Auxiliary: `⌈ep⌉ = e` for a projection `e` commuting with a faithful
+positive `p`.  (`ceil_mul_proj_mul_of_comm` below is the same statement for
+`pep`, proved later and for `p²`; this one is the form the corners of
+**104III**.5 need, and it is not a special case of that one.) -/
+private theorem ceil_proj_mul_of_comm [VonNeumannAlgebra A] {p e : A} (hp : 0 ≤ p)
+    (hcp : ceil p = 1) (he : IsStarProjection e) (hcomm : e * p = p * e) :
+    ceil (e * p) = e := by
+  have hnn : (0 : A) ≤ e * p := Theses.A.CStar.sqrt_1 e p he.nonneg hp hcomm
+  refine le_antisymm ((ceil_le_iff hnn he).mpr ?_) ?_
+  · rw [mul_assoc, ← hcomm, ← mul_assoc, he.isIdempotentElem.eq]
+  · set r : A := ceil (e * p) with hrdef
+    have hrp : IsStarProjection r := (ceil_spec hnn).1
+    have h1 : e * p * r = e * p := (ceil_spec hnn).2.1
+    have h2 : r * (e * p) = e * p := by
+      have h := congrArg star h1
+      rwa [star_mul, hrp.isSelfAdjoint.star_eq,
+        (IsSelfAdjoint.of_nonneg hnn).star_eq] at h
+    have h3 : ((1 : A) - r) * e * p = 0 := by
+      have hexp : ((1 : A) - r) * e * p = e * p - r * (e * p) := by noncomm_ring
+      rw [hexp, h2, sub_self]
+    have h4 : ((1 : A) - r) * e = 0 := eq_zero_of_mul_faithful hp hcp h3
+    rw [sub_mul, one_mul, sub_eq_zero] at h4
+    refine (he.le_iff_mul_eq_left hrp).mpr ?_
+    have h5 := congrArg star h4
+    rwa [star_mul, hrp.isSelfAdjoint.star_eq, he.isSelfAdjoint.star_eq, eq_comm] at h5
+
+/-- Auxiliary: nothing is annihilated on the right by every member of a
+family of projections whose supremum is `1` — `z⌈z*z⌉ = z`, and every `eₙ`
+lies below `⌈z*z⌉^⊥`. -/
+private theorem eq_zero_of_mul_projSup [VonNeumannAlgebra A] {e : ℕ → A} {z : A}
+    (he : ∀ n, IsStarProjection (e n)) (hsup : projSup (Set.range e) = 1)
+    (h : ∀ n, z * e n = 0) : z = 0 := by
+  have hW : (0 : A) ≤ star z * z := star_mul_self_nonneg z
+  have hz : ∀ n, e n * ceil (star z * z) = 0 := by
+    intro n
+    have h1 : (star z * z) * e n = 0 := by rw [mul_assoc, h n, mul_zero]
+    have h2 := ceil_mul_eq_zero hW h1
+    have h3 := congrArg star h2
+    rwa [star_mul, (he n).isSelfAdjoint.star_eq, (ceil_spec hW).1.isSelfAdjoint.star_eq,
+      star_zero] at h3
+  have hX : IsStarProjection (ceil (star z * z)) := (ceil_spec hW).1
+  have hproj : ∀ f ∈ Set.range e, IsStarProjection f := by
+    rintro _ ⟨n, rfl⟩; exact he n
+  have hle : projSup (Set.range e) ≤ 1 - ceil (star z * z) := by
+    refine (projSup_spec hproj).2.2 _ hX.one_sub ?_
+    rintro _ ⟨n, rfl⟩
+    refine ((he n).le_iff_mul_eq_left hX.one_sub).mpr ?_
+    rw [mul_sub, mul_one, hz n, sub_zero]
+  rw [hsup] at hle
+  have h2 : (0 : A) ≤ -ceil (star z * z) := by
+    have h3 := sub_nonneg.mpr hle
+    have h4 : (1 : A) - ceil (star z * z) - 1 = -ceil (star z * z) := by abel
+    rwa [h4] at h3
+  have hX0 : ceil (star z * z) = 0 := le_antisymm (neg_nonneg.mp h2) hX.nonneg
+  have hvz : star z * z = 0 := by
+    have h5 := (ceil_spec hW).2.1
+    rw [hX0, mul_zero] at h5
+    exact h5.symm
+  exact (CStarRing.star_mul_self_eq_zero_iff z).mp hvz
+
+/-- Auxiliary: nothing is killed by every corner `eₙ·eₙ` of an increasing
+family of projections whose supremum is `1`.  (The analogue of `hvanish` in
+the proof of **104VII**, where the family is `specPair p q n`.) -/
+private theorem eq_zero_of_corner_projSup [VonNeumannAlgebra A] {e : ℕ → A} {y : A}
+    (he : ∀ n, IsStarProjection (e n)) (hmono : Monotone e)
+    (hsup : projSup (Set.range e) = 1)
+    (h : ∀ n, e n * y * e n = 0) : y = 0 := by
+  have hmul : ∀ m n : ℕ, m ≤ n → e m * e n = e m := fun m n hmn =>
+    ((he m).le_iff_mul_eq_left (he n)).mp (hmono hmn)
+  have hmul' : ∀ m n : ℕ, m ≤ n → e n * e m = e m := by
+    intro m n hmn
+    have hs := congrArg star (hmul m n hmn)
+    rwa [star_mul, (he m).isSelfAdjoint.star_eq, (he n).isSelfAdjoint.star_eq] at hs
+  have hmk : ∀ m k : ℕ, e m * y * e k = 0 := by
+    intro m k
+    have hm : e m * e (max m k) = e m := hmul m _ (le_max_left m k)
+    have hk : e (max m k) * e k = e k := hmul' k _ (le_max_right m k)
+    calc e m * y * e k = (e m * e (max m k)) * y * (e (max m k) * e k) := by rw [hm, hk]
+      _ = e m * (e (max m k) * y * e (max m k)) * e k := by noncomm_ring
+      _ = 0 := by rw [h (max m k), mul_zero, zero_mul]
+  have hleft : ∀ m : ℕ, e m * y = 0 := fun m =>
+    eq_zero_of_mul_projSup he hsup fun k => hmk m k
+  refine star_eq_zero.mp (eq_zero_of_mul_projSup he hsup fun m => ?_)
+  have hs := congrArg star (hleft m)
+  rwa [star_mul, (he m).isSelfAdjoint.star_eq, star_zero] at hs
+
+/-- Auxiliary: `a ∧ b = b ∧ a`, since `|a − b| = |b − a|`. -/
+private theorem meet_comm' (a b : A) :
+    Theses.A.CStar.meet a b = Theses.A.CStar.meet b a := by
+  rw [Theses.A.CStar.meet, Theses.A.CStar.meet, ← neg_sub a b, CFC.abs_neg,
+    add_comm b a]
+
+/-- Auxiliary, the corner step of **104III**.5: for a projection `E`
+commuting with the faithful commuting positives `p, q`, with `Ep`
+pseudoinvertible and `Ep` centrally similar to `Eq`, the localisation `cE`
+of any `c` with `cp = p ∧ q` is central in the corner `E𝒜E`.
+
+`⌈Ep⌉ = E` makes `(Ep)^∼¹` a two-sided inverse of `Ep` *relative to `E`*, so
+`meet_mul_right` twice gives `cE = (p∧q)E(Ep)^∼¹ = E ∧ (Eq)(Ep)^∼¹`.  The
+central similarity `u(Ep) = v(Eq)`, multiplied on the right by `(Ep)^∼¹`,
+reads `uE = vW` for `W := (Eq)(Ep)^∼¹`; for `b` in the corner both `v(bW)`
+and `v(Wb)` are `ub`, so `v` kills `bW − Wb`, and `E = ⌈Eq⌉ ≤ ⌈v⌉` cancels
+it.  Then `commute_meet` carries the commutation from `W` to `E ∧ W`. -/
+private theorem centrally_similar_basic_5_corner [VonNeumannAlgebra A] (p q E c : A)
+    (hp : 0 ≤ p) (hq : 0 ≤ q) (hcp : ceil p = 1) (hcq : ceil q = 1)
+    (hcomm : p * q = q * p) (hE : IsStarProjection E)
+    (hEp : E * p = p * E) (hEq : E * q = q * E)
+    (hpin : Pseudoinvertible A (E * p))
+    (hcs : CentrallySimilar (E * p) (E * q))
+    (hc : c * p = Theses.A.CStar.meet p q)
+    (b : A) (hb : E * b * E = b) :
+    (c * E) * b = b * (c * E) := by
+  have hEE : E * E = E := hE.isIdempotentElem.eq
+  have hEb : E * b = b := by
+    calc E * b = E * (E * b * E) := by rw [hb]
+      _ = (E * E) * b * E := by noncomm_ring
+      _ = b := by rw [hEE, hb]
+  have hbE : b * E = b := by
+    calc b * E = (E * b * E) * E := by rw [hb]
+      _ = E * b * (E * E) := by noncomm_ring
+      _ = b := by rw [hEE, hb]
+  -- the two corner elements, and the inverse of `Ep` relative to `E`
+  have hx0 : (0 : A) ≤ E * p := Theses.A.CStar.sqrt_1 E p hE.nonneg hp hEp
+  have hy0 : (0 : A) ≤ E * q := Theses.A.CStar.sqrt_1 E q hE.nonneg hq hEq
+  have hcx : ceil (E * p) = E := ceil_proj_mul_of_comm hp hcp hE hEp
+  have hcy : ceil (E * q) = E := ceil_proj_mul_of_comm hq hcq hE hEq
+  have hP0 : (0 : A) ≤ pinv (E * p) := pinv_nonneg hx0 hpin
+  have hPx : pinv (E * p) * (E * p) = E := by
+    obtain ⟨h1, -, -, -⟩ := pinv_spec hpin
+    rwa [suppProj_of_nonneg hx0, hcx] at h1
+  have hxP : (E * p) * pinv (E * p) = E := by
+    obtain ⟨-, -, -, h4⟩ := pinv_spec hpin
+    rwa [rangeProj_eq_suppProj_of_isSelfAdjoint (IsSelfAdjoint.of_nonneg hx0),
+      suppProj_of_nonneg hx0, hcx] at h4
+  have hEy : E * (E * q) = E * q := by rw [← mul_assoc, hEE]
+  have hyE : (E * q) * E = E * q := by
+    calc (E * q) * E = E * (q * E) := by noncomm_ring
+      _ = E * (E * q) := by rw [hEq]
+      _ = E * q := hEy
+  have hxy : (E * p) * (E * q) = (E * q) * (E * p) := by
+    have h1 : (E * p) * (E * q) = E * E * (p * q) := by
+      calc (E * p) * (E * q) = E * (p * E) * q := by noncomm_ring
+        _ = E * (E * p) * q := by rw [hEp]
+        _ = E * E * (p * q) := by noncomm_ring
+    have h2 : (E * q) * (E * p) = E * E * (q * p) := by
+      calc (E * q) * (E * p) = E * (q * E) * p := by noncomm_ring
+        _ = E * (E * q) * p := by rw [hEq]
+        _ = E * E * (q * p) := by noncomm_ring
+    rw [h1, h2, hcomm]
+  -- `Eq` commutes with `(Ep)^∼¹`
+  have hPy : pinv (E * p) * (E * q) = (E * q) * pinv (E * p) := by
+    calc pinv (E * p) * (E * q) = pinv (E * p) * ((E * q) * E) := by rw [hyE]
+      _ = pinv (E * p) * ((E * q) * ((E * p) * pinv (E * p))) := by rw [hxP]
+      _ = pinv (E * p) * ((E * q) * (E * p)) * pinv (E * p) := by noncomm_ring
+      _ = pinv (E * p) * ((E * p) * (E * q)) * pinv (E * p) := by rw [hxy]
+      _ = (pinv (E * p) * (E * p)) * ((E * q) * pinv (E * p)) := by noncomm_ring
+      _ = E * ((E * q) * pinv (E * p)) := by rw [hPx]
+      _ = (E * (E * q)) * pinv (E * p) := by noncomm_ring
+      _ = (E * q) * pinv (E * p) := by rw [hEy]
+  have hW0 : (0 : A) ≤ (E * q) * pinv (E * p) :=
+    Theses.A.CStar.sqrt_1 _ _ hy0 hP0 hPy.symm
+  have hEW : E * ((E * q) * pinv (E * p)) = (E * q) * pinv (E * p) := by
+    rw [← mul_assoc, ← mul_assoc, hEE]
+  -- `cE = E ∧ (Eq)(Ep)^∼¹`
+  have hcE : c * E = Theses.A.CStar.meet E ((E * q) * pinv (E * p)) := by
+    have hmE : Theses.A.CStar.meet p q * E = Theses.A.CStar.meet (E * p) (E * q) := by
+      rw [Theses.A.CStar.meet_mul_right hp hq hE.nonneg hEp.symm hEq.symm, ← hEp, ← hEq]
+    have hstep : Theses.A.CStar.meet (E * p) (E * q) * pinv (E * p)
+        = Theses.A.CStar.meet ((E * p) * pinv (E * p)) ((E * q) * pinv (E * p)) :=
+      Theses.A.CStar.meet_mul_right hx0 hy0 hP0 (by rw [hxP, hPx]) hPy.symm
+    calc c * E = c * ((E * p) * pinv (E * p)) := by rw [hxP]
+      _ = c * (p * E) * pinv (E * p) := by rw [← hEp]; noncomm_ring
+      _ = (c * p) * E * pinv (E * p) := by noncomm_ring
+      _ = Theses.A.CStar.meet (E * p) (E * q) * pinv (E * p) := by rw [hc, hmE]
+      _ = Theses.A.CStar.meet ((E * p) * pinv (E * p)) ((E * q) * pinv (E * p)) := hstep
+      _ = Theses.A.CStar.meet E ((E * q) * pinv (E * p)) := by rw [hxP]
+  -- central similarity makes `(Eq)(Ep)^∼¹` central in the corner
+  obtain ⟨u, v, hu, hv, hu0, hv0, huv, -, hyv⟩ := hcs
+  have hub : b * u = u * b := hu b (Set.mem_univ b)
+  have hvb : b * v = v * b := hv b (Set.mem_univ b)
+  have hueq : u * E = v * ((E * q) * pinv (E * p)) := by
+    calc u * E = u * ((E * p) * pinv (E * p)) := by rw [hxP]
+      _ = (u * (E * p)) * pinv (E * p) := by noncomm_ring
+      _ = (v * (E * q)) * pinv (E * p) := by rw [huv]
+      _ = v * ((E * q) * pinv (E * p)) := by noncomm_ring
+  have hEv : E ≤ ceil v := by rw [← hcy]; exact hyv
+  have hEcv : E * ceil v = E := (hE.le_iff_mul_eq_left (ceil_spec hv0).1).mp hEv
+  have hA : v * (b * ((E * q) * pinv (E * p))) = u * b := by
+    calc v * (b * ((E * q) * pinv (E * p)))
+        = (v * b) * ((E * q) * pinv (E * p)) := by noncomm_ring
+      _ = (b * v) * ((E * q) * pinv (E * p)) := by rw [hvb]
+      _ = b * (v * ((E * q) * pinv (E * p))) := by noncomm_ring
+      _ = b * (u * E) := by rw [← hueq]
+      _ = (b * u) * E := by noncomm_ring
+      _ = (u * b) * E := by rw [hub]
+      _ = u * (b * E) := by noncomm_ring
+      _ = u * b := by rw [hbE]
+  have hB : v * (((E * q) * pinv (E * p)) * b) = u * b := by
+    calc v * (((E * q) * pinv (E * p)) * b)
+        = (v * ((E * q) * pinv (E * p))) * b := by noncomm_ring
+      _ = (u * E) * b := by rw [← hueq]
+      _ = u * (E * b) := by noncomm_ring
+      _ = u * b := by rw [hEb]
+  have hkill : v * (b * ((E * q) * pinv (E * p)) - ((E * q) * pinv (E * p)) * b) = 0 := by
+    rw [mul_sub, hA, hB, sub_self]
+  have h2 := ceil_mul_eq_zero hv0 hkill
+  have h3 : E * (b * ((E * q) * pinv (E * p)) - ((E * q) * pinv (E * p)) * b) = 0 := by
+    calc E * (b * ((E * q) * pinv (E * p)) - ((E * q) * pinv (E * p)) * b)
+        = (E * ceil v) * (b * ((E * q) * pinv (E * p))
+            - ((E * q) * pinv (E * p)) * b) := by rw [hEcv]
+      _ = E * (ceil v * (b * ((E * q) * pinv (E * p))
+            - ((E * q) * pinv (E * p)) * b)) := by noncomm_ring
+      _ = 0 := by rw [h2, mul_zero]
+  have h5 : E * (b * ((E * q) * pinv (E * p)) - ((E * q) * pinv (E * p)) * b)
+      = b * ((E * q) * pinv (E * p)) - ((E * q) * pinv (E * p)) * b := by
+    rw [mul_sub]
+    congr 1
+    · rw [← mul_assoc, hEb]
+    · rw [← mul_assoc, hEW]
+  have hbW : b * ((E * q) * pinv (E * p)) = ((E * q) * pinv (E * p)) * b := by
+    refine sub_eq_zero.mp ?_
+    rw [← h5]; exact h3
+  rw [hcE]
+  refine (Theses.A.CStar.commute_meet hE.nonneg hW0 ?_ ?_).symm
+  · rw [hEb, hbE]
+  · exact hbW
+
+/-- Auxiliary, half of the grounds clause of **104III**.5: `(p∧q)/p` is
+central.  When `p∧q ∉ 𝒜p` the quotient is the junk value `0`, which is
+central, so let `c := (p∧q)/p` satisfy `cp = p∧q`.  Then `c` commutes with
+everything that commutes with `p` and with `p∧q` — if `zp = pz` and
+`z(p∧q) = (p∧q)z` then `(zc − cz)p = 0` and `⌈p⌉ = 1` cancels `p` — and in
+particular with each `eₙ`.  So `eₙ(ca − ac)eₙ = (ceₙ)(eₙaeₙ) − (eₙaeₙ)(ceₙ)`,
+which vanishes by `centrally_similar_basic_5_corner`; `⋃ₙ eₙ = 1` then gives
+`ca = ac`.  (This last step needs no `Z(e𝒜e) = Z(𝒜)e`.) -/
+private theorem centrally_similar_basic_5_ground [VonNeumannAlgebra A] (p q : A)
+    (hp : 0 ≤ p) (hq : 0 ≤ q) (hcp : ceil p = 1) (hcq : ceil q = 1)
+    (hcomm : p * q = q * p) (e : ℕ → A)
+    (he : ∀ n, IsStarProjection (e n)) (hmono : Monotone e)
+    (hecp : ∀ n, e n * p = p * e n) (hecq : ∀ n, e n * q = q * e n)
+    (hsup : projSup (Set.range e) = 1)
+    (hpin : ∀ n, Pseudoinvertible A (e n * p))
+    (hcs : ∀ n, CentrallySimilar (e n * p) (e n * q)) :
+    div (Theses.A.CStar.meet p q) p ∈ centre A := by
+  by_cases hex : ∃ x : A, Theses.A.CStar.meet p q = x * p
+  · set c : A := div (Theses.A.CStar.meet p q) p with hcdef
+    have hc : c * p = Theses.A.CStar.meet p q :=
+      (div_spec (Theses.A.CStar.meet p q) p hex).1.symm
+    have hccomm : ∀ z : A, z * p = p * z →
+        z * Theses.A.CStar.meet p q = Theses.A.CStar.meet p q * z → z * c = c * z := by
+      intro z hzp hzm
+      refine sub_eq_zero.mp (eq_zero_of_mul_faithful hp hcp ?_)
+      calc (z * c - c * z) * p = z * (c * p) - c * (z * p) := by noncomm_ring
+        _ = z * Theses.A.CStar.meet p q - c * (p * z) := by rw [hc, hzp]
+        _ = Theses.A.CStar.meet p q * z - (c * p) * z := by rw [hzm]; noncomm_ring
+        _ = 0 := by rw [hc, sub_self]
+    have hem : ∀ n, e n * Theses.A.CStar.meet p q = Theses.A.CStar.meet p q * e n :=
+      fun n => Theses.A.CStar.commute_meet hp hq (hecp n) (hecq n)
+    have hec : ∀ n, e n * c = c * e n := fun n => hccomm (e n) (hecp n) (hem n)
+    intro a _
+    refine sub_eq_zero.mp (eq_zero_of_corner_projSup he hmono hsup fun n => ?_)
+    have hEE : e n * e n = e n := (he n).isIdempotentElem.eq
+    have hbcorner : e n * (e n * a * e n) * e n = e n * a * e n := by
+      calc e n * (e n * a * e n) * e n = (e n * e n) * a * (e n * e n) := by noncomm_ring
+        _ = e n * a * e n := by rw [hEE]
+    have hkey := centrally_similar_basic_5_corner p q (e n) c hp hq hcp hcq hcomm
+      (he n) (hecp n) (hecq n) (hpin n) (hcs n) hc (e n * a * e n) hbcorner
+    have expand1 : (e n * a * e n) * (c * e n) = e n * a * c * e n := by
+      calc (e n * a * e n) * (c * e n) = e n * a * (e n * c) * e n := by noncomm_ring
+        _ = e n * a * (c * e n) * e n := by rw [hec n]
+        _ = e n * a * c * (e n * e n) := by noncomm_ring
+        _ = e n * a * c * e n := by rw [hEE]
+    have expand2 : (c * e n) * (e n * a * e n) = e n * c * a * e n := by
+      calc (c * e n) * (e n * a * e n) = c * (e n * e n) * a * e n := by noncomm_ring
+        _ = c * e n * a * e n := by rw [hEE]
+        _ = e n * c * a * e n := by rw [hec n]
+    calc e n * (a * c - c * a) * e n
+        = e n * a * c * e n - e n * c * a * e n := by noncomm_ring
+      _ = (e n * a * e n) * (c * e n) - (c * e n) * (e n * a * e n) := by
+          rw [expand1, expand2]
+      _ = 0 := by rw [hkey, sub_self]
+  · rw [div, dif_neg hex]
+    intro a _
+    rw [mul_zero, zero_mul]
+
 /-- **104III** (`centrally-similar-basic`, proc.tex:1465, Exercise),
 part 5: if `p, q` commute and `e₁ ≤ e₂ ≤ ⋯` are projections commuting
 with `p` and `q`, with `⋃ₙ eₙ = ⌈p⌉`, such that the `eₙp` and `eₙq` are
@@ -6698,7 +6983,8 @@ similar **on the grounds that both `(p∧q)/p` and `(p∧q)/q` are central**.
 That last clause is an assertion in its own right — it is the whole content
 of the hint, and it is exactly the hypothesis of part 3 — so it is stated
 here as the first two conjuncts, with `CentrallySimilar p q` obtained from
-them by `centrally_similar_basic_3`.  Only the grounds clause is `sorry`.
+them by `centrally_similar_basic_3`.  The grounds clause carries the whole
+proof; it is `centrally_similar_basic_5_ground` applied twice.
 
 **Repaired by the author on 2026-08-19** (erratum `parsec-1040.30`), first
 with `⌈p⌉ = ⌈q⌉` and then, the same day, with the full faithfulness
@@ -6711,31 +6997,35 @@ exercise's *stated route* — "on the grounds that both `(p∧q)/p` and
 `(p∧q)/p = ⌈p⌉ = diag(1,0)` is not central.  Under `⌈p⌉ = ⌈q⌉ = 1` that
 witness is gone and the grounds clause is exactly the hypothesis of part 3.
 
-Still `sorry`: the route runs `(p∧q)eₙ = (peₙ) ∧ (qeₙ)` (`meet_mul_right`)
-and then wants part 4's third `iff` for `eₙp, eₙq`, whose carriers are `eₙ`
-rather than `1`; a form of part 4 relative to a projection unit is what is
-missing.  Note that the final step does *not* need `Z(e𝒜e) = Z(𝒜)e`: corner
-centrality of `γeₙ` kills `eₙ(γa − aγ)eₙ` for every `n`, and `⋃ₙ eₙ = 1`
-finishes, as in session 91's proof of 104VII.
+**Proved 2026-08-29.**  The route is the one the hint indicates —
+`(p∧q)eₙ = (peₙ) ∧ (qeₙ)` by `meet_mul_right`, then a corner argument, then
+`⋃ₙ eₙ = 1` — but arranged so that **no relative form of part 4 is needed**,
+and part 4 is not invoked at all.  Write `m := p ∧ q`, `c := m/p`, `E := eₙ`.
 
-**Two of the relative pieces were checked on 2026-08-28 and are cheap; the
-third is the job.**  Both were compiled against this tree, outside it, and are
-not added here because nothing consumes them yet.
+* If `m ∉ 𝒜p` then `m/p` is the junk value `0`, which is central; so assume
+  `cp = m`.  Then `c` commutes with everything commuting with `p` and with
+  `m`: `zp = pz` and `zm = mz` give `(zc − cz)p = zm − mz = 0`, and `⌈p⌉ = 1`
+  cancels `p` (`eq_zero_of_mul_faithful`).  In particular `cE = Ec`.
+* `⌈Ep⌉ = E` (`ceil_proj_mul_of_comm`), so `(Ep)^∼¹` is a two-sided inverse
+  of `Ep` *relative to `E`* — this is `pinv_two_sided` with its faithfulness
+  hypothesis deleted, its proof being nothing but the rewriting of `⌈·⌋` to
+  `⌈·⌉`.  Two applications of `meet_mul_right` then give
+  `cE = m E (Ep)^∼¹ = (Ep ∧ Eq)(Ep)^∼¹ = E ∧ (Eq)(Ep)^∼¹`.
+* The central similarity `u(Ep) = v(Eq)`, multiplied on the right by
+  `(Ep)^∼¹`, reads `uE = vW` for `W := (Eq)(Ep)^∼¹`.  For `b = EaE` both
+  `v(bW)` and `v(Wb)` equal `ub`, so `v` kills `bW − Wb`, and
+  `E = ⌈Eq⌉ ≤ ⌈v⌉` cancels it; `commute_meet` carries this from `W` to
+  `E ∧ W = cE`.  That is `centrally_similar_basic_5_corner`.
+* Hence `eₙ(ca − ac)eₙ = (ceₙ)(eₙaeₙ) − (eₙaeₙ)(ceₙ) = 0` for every `n`, and
+  `⋃ₙ eₙ = ⌈p⌉ = 1` gives `ca = ac` (`eq_zero_of_corner_projSup`).  As
+  foretold, this step needs no `Z(e𝒜e) = Z(𝒜)e`; it is the `hvanish` of
+  session 91's 104VII with `specPair p q n` replaced by `eₙ`.
 
-* `pinv_two_sided` **does not need its faithfulness hypothesis.**  Its proof
-  only rewrites `suppProj x` to `ceil x`, so the same three lines give
-  `pinv x * x = ceil x` and `x * pinv x = ceil x` for any pseudoinvertible
-  positive `x`.  That is the relative two-sided inverse the corner form wants,
-  and it is a hypothesis deletion, not a new proof.
-* **`⌈e·p⌉ = e`** for a projection `e` commuting with a faithful positive `p`:
-  about twenty lines, and it reuses `ceil_mul_proj_mul_of_comm` rather than
-  redoing it.  Apply that lemma to `√p` instead of `p` — `√p e √p = e p`, and
-  `⌈√p⌉ = 1` because `p·⌈√p⌉ = √p(√p·⌈√p⌉) = p` makes `⌈p⌉ ≤ ⌈√p⌉` by
-  leastness; `e` commutes with `√p` by `Commute.cfc_nnreal`.
-
-What is **not** done, and is the real cost: the third `iff` of part 4 with the
-unit `eₙ` in place of `1`, and the compatibility that turns `γ = (p∧q)/p` into
-`(eₙp ∧ eₙq)/(eₙp)` on multiplication by `eₙ`.  Neither was attempted. -/
+The second half of the grounds clause is `centrally_similar_basic_5_ground`
+again with `p` and `q` interchanged (`meet_comm'`), which is where `hqin` and
+the symmetry of `CentrallySimilar` enter.  What the argument does *not* use is
+`hcs`'s carrier condition `⌈eₙp⌉ ≤ ⌈u⌉`: only `⌈eₙq⌉ ≤ ⌈v⌉` is needed for
+each half, and the two halves need opposite ones. -/
 theorem centrally_similar_basic_5 [VonNeumannAlgebra A] (p q : A)
     (hp : 0 ≤ p) (hq : 0 ≤ q) (hcp : ceil p = 1) (hcq : ceil q = 1)
     (hcomm : p * q = q * p) (e : ℕ → A)
@@ -6749,8 +7039,16 @@ theorem centrally_similar_basic_5 [VonNeumannAlgebra A] (p q : A)
       div (Theses.A.CStar.meet p q) q ∈ centre A ∧ CentrallySimilar p q := by
   -- the exercise's *grounds* clause is the whole content; given it, the
   -- conclusion is part 3 applied to `p`, `q`
+  have hsup1 : projSup (Set.range e) = 1 := by rw [hsup, hcp]
   have grounds : div (Theses.A.CStar.meet p q) p ∈ centre A ∧
-      div (Theses.A.CStar.meet p q) q ∈ centre A := sorry
+      div (Theses.A.CStar.meet p q) q ∈ centre A := by
+    refine ⟨centrally_similar_basic_5_ground p q hp hq hcp hcq hcomm e he hmono
+      hecp hecq hsup1 hpin hcs, ?_⟩
+    rw [meet_comm' p q]
+    refine centrally_similar_basic_5_ground q p hq hp hcq hcp hcomm.symm e he hmono
+      hecq hecp hsup1 hqin fun n => ?_
+    obtain ⟨u, v, hu, hv, hu0, hv0, huv, hxu, hyv⟩ := hcs n
+    exact ⟨v, u, hv, hu, hv0, hu0, huv.symm, hyv, hxu⟩
   exact ⟨grounds.1, grounds.2,
     centrally_similar_basic_3 p q hp hq hcp hcq hcomm grounds.1 grounds.2⟩
 
