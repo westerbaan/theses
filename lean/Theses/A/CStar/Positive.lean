@@ -240,35 +240,163 @@ theorem powerSeries_hasDerivAt (a : ℕ → 𝒜) (z : ℂ)
     rw [hg.tsum_eq]
     exact hda
 
+/-! ### The solution's route for 13VI
+
+`parsec-130.60` (asols.tex:1594) proves **13VI** by differentiating the series
+repeatedly: `f` is `0` on the disk, hence so is `f'`, and `f'(0)` reads off
+the first coefficient by **13IV**; iterate.  The three private lemmas below
+are what that route needs beyond **13IV** — the radius bound `r ≤ R` of
+**13II**.2, and summability of the term-wise derivative series on the same
+disk, which **13IV** does not deliver (it gives the derivative only as a
+`tsum`).  The derived radius that cstar.tex:1949 asserts in passing is not
+recomputed: the disk `|z| < r` is exhausted from inside, and on `|z| ≤ t < s <
+r` the bound `‖aₙ‖sⁿ ≤ C` of **13II**.1 dominates `(n+1)‖aₙ₊₁‖tⁿ` by
+`(C/s)(n+1)(t/s)ⁿ`.
+
+A slip in the printed solution, reported and not filed: it writes
+`0 = f⁽ⁿ⁾(0) = n aₙ` (asols.tex:1614) where the coefficient is `n!·aₙ` —
+already wrong at `n = 3`.  The conclusion `aₙ = 0` is unaffected, both being
+nonzero multiples of `aₙ`, and the induction below reads each `aₙ` off the
+constant term of the `n`-th derived series, so it never meets the slip. -/
+
+/-- Convergence of `∑ₙ aₙ zⁿ` on the disk of radius `r` forces `r ≤ R`; this
+is **13II**.2 `hadamard_2` applied at every real point of the disk. -/
+private theorem radius_ge_of_hasSum (a : ℕ → 𝒜) (r : ℝ)
+    (h : ∀ z : ℂ, ‖z‖ < r → HasSum (fun n : ℕ => z ^ n • a n) 0) :
+    ENNReal.ofReal r ≤ radiusOfConvergence a := by
+  refine ENNReal.le_of_forall_nnreal_lt fun t ht => ?_
+  have htr : (t : ℝ) < r := by
+    have h1 : (t : ℝ≥0∞) < ENNReal.ofReal r := ht
+    rw [ENNReal.lt_ofReal_iff_toReal_lt (by simp)] at h1
+    simpa using h1
+  have hz : ‖((t : ℝ) : ℂ)‖ < r := by
+    simpa [Complex.norm_real, abs_of_nonneg t.coe_nonneg] using htr
+  have hh := hadamard_2 a ((t : ℝ) : ℂ) 0 ((h _ hz).tendsto_sum_nat)
+  simpa [Complex.nnnorm_real, abs_of_nonneg t.coe_nonneg] using hh
+
+/-- A point of the disk of radius `r ≤ R` is strictly inside the disk of
+convergence. -/
+private theorem enorm_lt_radius (a : ℕ → 𝒜) (r : ℝ) (hr : 0 < r)
+    (hR : ENNReal.ofReal r ≤ radiusOfConvergence a) (w : ℂ) (hw : ‖w‖ < r) :
+    (‖w‖₊ : ℝ≥0∞) < radiusOfConvergence a := by
+  refine lt_of_lt_of_le ?_ hR
+  rw [ENNReal.coe_nnreal_eq]
+  simpa using (ENNReal.ofReal_lt_ofReal_iff hr).mpr hw
+
+/-- The term-wise derivative series `∑ₙ (n+1) aₙ₊₁ zⁿ` is summable strictly
+inside the disk of radius `r ≤ R`.  This is the one step the solution takes
+for granted (cstar.tex:1949, "the radius of convergence of `∑ₙ aₙ n zⁿ⁻¹` is
+`R > r`"); here it comes from **13II**.1 at an intermediate radius `s` with
+`‖z‖ < s < r`, since `‖aₙ‖sⁿ` is then bounded and `∑ₙ (n+1)qⁿ` converges for
+`q = ‖z‖/s < 1`. -/
+private theorem summable_deriv (a : ℕ → 𝒜) (r : ℝ) (hr : 0 < r)
+    (hR : ENNReal.ofReal r ≤ radiusOfConvergence a) (z : ℂ) (hz : ‖z‖ < r) :
+    Summable (fun n : ℕ => z ^ n • (((n : ℂ) + 1) • a (n + 1))) := by
+  have ht0 : 0 ≤ ‖z‖ := norm_nonneg z
+  obtain ⟨s, hts, hsr⟩ : ∃ s : ℝ, ‖z‖ < s ∧ s < r :=
+    ⟨(‖z‖ + r) / 2, by linarith, by linarith⟩
+  have hs0 : 0 < s := by linarith
+  have hsR := enorm_lt_radius a r hr hR ((s : ℝ) : ℂ)
+    (by simpa [Complex.norm_real, abs_of_nonneg hs0.le] using hsr)
+  have hsum := hadamard_1 a ((s : ℝ) : ℂ) hsR
+  have hsum' : Summable (fun n : ℕ => ‖a n‖ * s ^ n) := by
+    simpa [Complex.norm_real, abs_of_nonneg hs0.le] using hsum
+  set C := ∑' n : ℕ, ‖a n‖ * s ^ n with hCdef
+  have hCb : ∀ n : ℕ, ‖a n‖ * s ^ n ≤ C := fun n =>
+    hsum'.le_tsum n (fun m _ => by positivity)
+  have hC0 : 0 ≤ C := le_trans (by positivity) (hCb 0)
+  clear_value C
+  have hq0 : 0 ≤ ‖z‖ / s := by positivity
+  have hq1 : ‖z‖ / s < 1 := (div_lt_one hs0).2 hts
+  have hgeo : Summable (fun n : ℕ => ((n : ℝ) + 1) * (‖z‖ / s) ^ n) := by
+    have h1 : Summable (fun n : ℕ => (n : ℝ) ^ 1 * (‖z‖ / s) ^ n) :=
+      summable_pow_mul_geometric_of_norm_lt_one 1
+        (by rwa [Real.norm_eq_abs, abs_of_nonneg hq0])
+    have h2 : Summable (fun n : ℕ => (‖z‖ / s) ^ n) := summable_geometric_of_lt_one hq0 hq1
+    refine (h1.add h2).congr fun n => ?_
+    ring
+  refine Summable.of_norm ?_
+  refine Summable.of_nonneg_of_le (fun n => norm_nonneg _) (fun n => ?_) (hgeo.mul_left (C / s))
+  have hkey : ‖a (n + 1)‖ ≤ C / s ^ (n + 1) := by
+    rw [le_div_iff₀ (by positivity)]
+    exact hCb (n + 1)
+  have hnc : ‖((n : ℂ) + 1)‖ = (n : ℝ) + 1 := by
+    have hcast : ((n : ℂ) + 1) = ((n + 1 : ℕ) : ℂ) := by push_cast; ring
+    rw [hcast, Complex.norm_natCast]
+    push_cast; ring
+  rw [norm_smul, norm_smul, norm_pow, hnc]
+  calc ‖z‖ ^ n * (((n : ℝ) + 1) * ‖a (n + 1)‖)
+      ≤ ‖z‖ ^ n * (((n : ℝ) + 1) * (C / s ^ (n + 1))) := by gcongr
+  _ = C / s * (((n : ℝ) + 1) * (‖z‖ / s) ^ n) := by
+        rw [div_pow]
+        field_simp
+        ring
+
+/-- The solution's inductive step: if `∑ₙ aₙ zⁿ` is `0` on the disk of radius
+`r`, so is its term-wise derivative `∑ₙ (n+1) aₙ₊₁ zⁿ`.  `f' = 0` because `f`
+vanishes on a neighbourhood of each point of the disk, and `f'` is the
+term-wise derivative by **13IV** `powerSeries_hasDerivAt`. -/
+private theorem deriv_hasSum_zero (a : ℕ → 𝒜) (r : ℝ) (hr : 0 < r)
+    (h : ∀ z : ℂ, ‖z‖ < r → HasSum (fun n : ℕ => z ^ n • a n) 0) :
+    ∀ z : ℂ, ‖z‖ < r → HasSum (fun n : ℕ => z ^ n • (((n : ℂ) + 1) • a (n + 1))) 0 := by
+  intro z hz
+  have hR := radius_ge_of_hasSum a r h
+  have hsum := summable_deriv a r hr hR z hz
+  have hd := powerSeries_hasDerivAt a z (enorm_lt_radius a r hr hR z hz)
+  have hd0 : HasDerivAt (fun w : ℂ => ∑' n : ℕ, w ^ n • a n) 0 z := by
+    have heq : (fun w : ℂ => ∑' n : ℕ, w ^ n • a n) =ᶠ[𝓝 z] fun _ => (0 : 𝒜) := by
+      filter_upwards [Metric.ball_mem_nhds z (by linarith : (0:ℝ) < r - ‖z‖)] with w hw
+      refine (h w ?_).tsum_eq
+      rw [Metric.mem_ball, dist_eq_norm] at hw
+      calc ‖w‖ ≤ ‖z‖ + ‖w - z‖ := by simpa using norm_le_norm_add_norm_sub' w z
+        _ < r := by linarith
+    exact (hasDerivAt_const z (0 : 𝒜)).congr_of_eventuallyEq heq
+  have huniq : (∑' n : ℕ, ((n : ℂ) * z ^ (n - 1)) • a n) = 0 := hd.unique hd0
+  set V := ∑' n : ℕ, z ^ n • (((n : ℂ) + 1) • a (n + 1)) with hV
+  have hL : HasSum (fun n : ℕ => z ^ n • (((n : ℂ) + 1) • a (n + 1))) V := hsum.hasSum
+  have h2 : HasSum (fun b : ℕ => (((b + 1 : ℕ) : ℂ) * z ^ ((b + 1) - 1)) • a (b + 1)) V := by
+    refine hL.congr_fun fun b => ?_
+    rw [smul_smul]
+    congr 1
+    push_cast
+    ring
+  have h3 := (hasSum_nat_add_iff (f := fun n : ℕ => ((n : ℂ) * z ^ (n - 1)) • a n) 1).mp h2
+  have h4 : HasSum (fun n : ℕ => ((n : ℂ) * z ^ (n - 1)) • a n) V := by simpa using h3
+  have hV0 : V = 0 := by rw [← huniq, h4.tsum_eq]
+  rw [← hV0]
+  exact hL
+
 /-- **13VI** (`powerseries-uniqueness-coeffients`, cstar.tex:1959, Exercise):
 if a power series `∑ₙ aₙ zⁿ` sums to `0` on some disk around `0` of positive
-radius, then all its coefficients vanish. -/
+radius, then all its coefficients vanish.
+
+*Class 1 — the solution's own route* (`parsec-130.60`, asols.tex:1594): the
+constant term is `f(0) = 0`; the derivative is again a power series summing to
+`0` on the same disk (`deriv_hasSum_zero`, which is **13IV**
+`powerSeries_hasDerivAt` plus `summable_deriv`); induct.  This replaced, in the
+route pass of 2026-08-29, a shorter proof by `HasFPowerSeriesAt.eq_zero`. -/
 theorem powerseries_uniqueness_coeffients (a : ℕ → 𝒜) (r : ℝ) (hr : 0 < r)
     (h : ∀ z : ℂ, ‖z‖ < r → HasSum (fun n : ℕ => z ^ n • a n) 0) :
     ∀ n, a n = 0 :=
   by
-    -- Divergence from the thesis's proof (asols.tex:1562): the solution
-    -- differentiates the series repeatedly and reads `f⁽ⁿ⁾(0) = n aₙ` off
-    -- **13IV** `powerSeries_hasDerivAt`.  (That was once justified here by
-    -- **13IV** being `sorry`; it is proved now, and this is *not* the reason
-    -- any more.)  What the solution's route needs beyond **13IV** is that the
-    -- term-wise derivative series is *summable* on the same disk — **13IV**
-    -- delivers the derivative only as a `tsum` — i.e. the radius of the
-    -- derived series, which the thesis asserts in passing (cstar.tex:1949)
-    -- and which is exactly the analytic content that Mathlib's
-    -- `HasFPowerSeriesAt.eq_zero` already packages.  So the shorter route is
-    -- taken: the series represents the zero function on `ball 0 r`, and
-    -- `HasFPowerSeriesAt.eq_zero` gives the conclusion outright.
-    have hpow : HasFPowerSeriesOnBall (0 : ℂ → 𝒜) (fpsOfCoeffs a) 0 (ENNReal.ofReal r) := by
-      refine fpsOfCoeffs_hasFPowerSeriesOnBall a 0 0 r hr ?_
-      intro z hz
-      rw [Metric.mem_ball, dist_zero_right] at hz
-      simpa using h z hz
-    have hzero : fpsOfCoeffs a = 0 := hpow.hasFPowerSeriesAt.eq_zero
     intro n
-    have hn : fpsOfCoeffs a n = 0 := by rw [hzero]; rfl
-    rw [fpsOfCoeffs, ContinuousMultilinearMap.mkPiRing_eq_zero_iff] at hn
-    exact hn
+    induction n generalizing a with
+    | zero =>
+      have hs := h 0 (by simpa using hr)
+      have hsingle : HasSum (fun n : ℕ => (0 : ℂ) ^ n • a n) ((0 : ℂ) ^ (0 : ℕ) • a 0) := by
+        refine hasSum_single 0 fun b hb => ?_
+        simp [zero_pow hb]
+      have hfin := hsingle.unique hs
+      simpa using hfin
+    | succ k ih =>
+      have hb := deriv_hasSum_zero a r hr h
+      have hk := ih (fun n : ℕ => ((n : ℂ) + 1) • a (n + 1)) hb
+      have hne : ((k : ℂ) + 1) ≠ 0 := by
+        have hpos : ((k + 1 : ℕ) : ℂ) ≠ 0 := Nat.cast_ne_zero.mpr (Nat.succ_ne_zero k)
+        simpa using hpos
+      rcases smul_eq_zero.mp hk with hzz | hzz
+      · exact absurd hzz hne
+      · exact hzz
 
 /-! ## Parsec 140: integration and Goursat's theorem
 
