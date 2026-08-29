@@ -843,7 +843,7 @@ the ruling this item asks for.
   `M_N(𝒜)ᵐᵒᵖ ≅ ℬᵃ(𝒜^N)`; `M_N(𝒜) ≅ ℬᵃ(𝒜^N)` as 33I.4 prints it is **false**
   under these conventions, and `a ↦ a̲` is a ∗-anti-isomorphism.  Nothing is lost
   by the `ᵐᵒᵖ` — it preserves star, positivity, the order and its suprema.
-* **141III** `rightMulEquiv` (`B/Dils/Paschke.lean:2087`, `differs`).  The `N = 1`
+* **141III** `rightMulEquiv` (`B/Dils/Paschke.lean:2049`, `differs`).  The `N = 1`
   case of the same thing: `ℬ ≅ ℬᵃ(ℬ)ᵐᵒᵖ`, with `rightMul_mul` proving
   `R_s R_t = R_{ts}`.
 

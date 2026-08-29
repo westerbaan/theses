@@ -351,13 +351,13 @@ Zero consumers.
 The argument it contains — the orthogonal projection `P` onto `D^⊥⊥` fixes the
 image, so `P` and `id` both factor `η` through itself, so the uniqueness half
 of the universal property gives `P = id` — is written out a **second** time
-inside `ext_tensor_dense` (**164II**.1, `SelfDual.lean:7784`), whose own doc
+inside `ext_tensor_dense` (**164II**.1, `SelfDual.lean:7948`), whose own doc
 comment says so in as many words:
 
 > "its place is taken by the projection argument of **163II**
 > (`selfdual_compl_defining_dense`)"
 
-and a **third** time inside `paschke_tprod_dense` (`SelfDual.lean:9224`), whose
+and a **third** time inside `paschke_tprod_dense` (`SelfDual.lean:9609`), whose
 doc says "This is the Paschke-module analogue of `selfdual_compl_defining_dense`
 (**163II**) and of `ext_tensor_dense` (**164II**.1), and it is the easiest of
 the three". A fourth site, the `section TensorDense` header at `:6245`, says
@@ -395,7 +395,7 @@ this section's premise was wrong**
 > it**.  It belongs in §6 (genuinely terminal), not here.
 >
 > Two further corrections.  The row's staleness is smaller than claimed below:
-> `nmiu_image` calls 69IVa `nmiu_factors` **once** (`Projections.lean:7100`);
+> `nmiu_image` calls 69IVa `nmiu_factors` **once** (`Projections.lean:6942`);
 > the "three times" counted the whole file, two of them inside
 > `nmiu_factors_maps`.  And the universe obstacle binds **wider** than
 > recorded: `isVNSubalgebra_range` and the three auxiliaries its proof calls
@@ -573,7 +573,7 @@ time under a different name.
 > estimate behind it, `|ω((⋁D−d)a)| ≤ ω(⋁D−d)^½ ω(a*(⋁D−d)a)^½`, whose second
 > factor is *eventually* bounded because `a*(⋁D−d)a` decreases."
 
-**166II** `ultranorm_continuity_ext_tensor` (`B/Dils/SelfDual.lean:8899`):
+**166II** `ultranorm_continuity_ext_tensor` (`B/Dils/SelfDual.lean:9283`):
 
 > "**166III** is the proof; transcribed below, with its appeal to **44III**
 > `vanishing_effects` replaced by the order estimate `Ω(⟨d,d⟩ ⊗ ⟨yα,yα⟩) ≤ M² ·
@@ -606,11 +606,11 @@ the same point, which is the 123I shape.
 | 106I | `uniqueness_sequential_product_exists` | `A/Proc/Measurement.lean:8611` | 79 | 1/3 |
 | 4XIII | `positive_2x2matrix_2` | `A/CStar/Basic.lean:284` | 67 | 1/2 |
 | 82I | `polar_decomposition_2` | `A/VN/Division.lean:3446` | 55 | 3/4 |
-| 156II | `paschke_injective` | `B/Dils/Paschke.lean:3551` | 48 | 2/3 |
+| 156II | `paschke_injective` | `B/Dils/Paschke.lean:3498` | 48 | 2/3 |
 | 160IV | `hilbmod_projthm_3` | `B/Dils/SelfDual.lean:1387` | 45 | 2/3 |
 | 96III | `ncp_uwlim_2` | `A/Proc/Measurement.lean:1797` | 39 | 2/3 |
 | 23II | `sqrt_lemma_monotone` | `A/CStar/Positive.lean:5708` | 35 | 3/6 |
-| 154III | `existence_paschke_2` | `B/Dils/Paschke.lean:1406` | 32 | 13/14 |
+| 154III | `existence_paschke_2` | `B/Dils/Paschke.lean:1373` | 32 | 13/14 |
 
 `existence_paschke_2` was read and is **not** a fingerprint: it is 154III part
 2's uniqueness clause, and its content is already reachable structurally through
@@ -767,13 +767,13 @@ four `B/` files is about a quarter of the pool, not all of it.
 
 | lines | declaration | file:line |
 |---|---|---|
-| 119 | `paschkeModuleId` | `B/Dils/Paschke.lean:2190` |
+| 119 | `paschkeModuleId` | `B/Dils/Paschke.lean:2152` |
 | 112 | `PhiCompatible.mul_right` | `B/Dils/Paschke.lean:317` |
 | 48 | `concreteTensor_top_cancel` | `A/Proc/Commutation.lean:565` |
 | 46 | `conj_ncp_eq_of_le_proj` (private) | `A/Proc/Measurement.lean:3485` |
 | 46 | `concreteTensor_top_top` | `A/Proc/TensorTransport.lean:661` |
 | 38 | `paschke_rho_forces_cyclic` | `B/Dils/Paschke.lean:521` |
-| 36 | `IsCompatExt.norm_ipVal_self_le` | `B/Dils/SelfDualCompletion.lean:1636` |
+| 36 | `IsCompatExt.norm_ipVal_self_le` | `B/Dils/SelfDualCompletion.lean:1560` |
 | 34 | `cyclic_and_separating_of_separating` | `A/Proc/Commutation.lean:475` |
 | 34 | `op_smul_comm_complex'` | `B/Dils/SelfDualCompletion.lean:1057` |
 | 33 | `modularSqrt_orbit` | `A/VN/ModularTensor.lean:1130` |
@@ -994,14 +994,14 @@ deleted:
 | declaration | the use the suffix index could not see |
 |---|---|
 | `mem_vnComm_top` | `TensorTransport.lean:735`, `mem_vnComm_top.mp hb` |
-| `le_vnComm_comm` | `Commutation.lean:239`, `le_vnComm_comm.mpr …` (and 2 more) |
+| `le_vnComm_comm` | `Commutation.lean:189`, `le_vnComm_comm.mpr …` (and 2 more) |
 | `summable_diagTerm` | `Tensor.lean:7194`, `summable_diagTerm.hasSum` |
-| `continuous_diagChi` | `Tensor.lean:7252`, `continuous_diagChi.comp hcont` |
+| `continuous_diagChi` | `Tensor.lean:7208`, `continuous_diagChi.comp hcont` |
 | `Corner.isClosed_cornerSet` | `Measurement.lean:597`, `isClosed_cornerSet.isComplete` |
 | `IsCorner.isStarProjection` | `CornerTensor.lean:106`, `h.isStarProjection.isIdempotentElem` — **suffix and prefix at once** |
 | `isUnitaryCLM_one` | `CommutationAmplify.lean:374`, `isUnitaryCLM_one.opTensor …` |
-| `le_iff_matForm` | `Basic.lean:5390`, `le_iff_matForm.mpr` (and 2 more) |
-| `suppProj_eq_zero_iff` | `Projections.lean:2996`, `suppProj_eq_zero_iff.mp` |
+| `le_iff_matForm` | `Basic.lean:5252`, `le_iff_matForm.mpr` (and 2 more) |
+| `suppProj_eq_zero_iff` | `Projections.lean:2922`, `suppProj_eq_zero_iff.mp` |
 | `IsPowBase.denseRange_mul_self` | `ModularGroup.lean:380`, `h.denseRange_mul_self.induction_on` |
 
 and three more in `A/` (`CentrePositiveSeparating.centralProj`,
@@ -1315,12 +1315,12 @@ the filters, all unrowed by `lean_name`):
   injective ∗-homomorphism **onto the corner `e B(ℋ) e`**", and that is the
   only statement of it), `cornerAlg_one` (its section prose: "### The trivial
   corner — a sanity anchor for the definitions", i.e. class 2, a non-vacuity
-  check), `isPureMap_of_isFilter` (`Pure.lean:2309` names it beside
+  check), `isPureMap_of_isFilter` (`Pure.lean:2341` names it beside
   `isPureMap_of_isCorner`, and it is the filter half of **170I**'s "filters and
-  corners are pure"), `vn_effObj_iso` (`VNExamples.lean:2103`, "what the eight
+  corners are pure"), `vn_effObj_iso` (`VNExamples.lean:5951`, "what the eight
   examples downstream actually use is … the *uniqueness* statement
   `vn_effObj_iso`, which is proved" — and again at `:2127`), and
-  `modularPair_data` (`StandardSubspace.lean:42`).
+  `modularPair_data` (`StandardSubspace.lean:650`).
 * **`inv1p_nonneg`, `inv1p_comm`, `inv1p_conj_le_one`** (`B/Dils/Kaplansky`)
   — 3, and PROVING-LOG parsec 6167 calls the last two "the two facts the
   thesis lists at dils.tex:4213":
@@ -1409,9 +1409,9 @@ limb.
 | limb | point | closed by | consumer |
 |---|---|---|---|
 | `hilb_tensor_basic_2` | 109IV.2 | `49a49f0` | 110III's proof, `A/Proc/Tensor.lean:679` |
-| `triple_tensor` | 119II | `49a49f0` | 119IV `isTensorProduct_assoc`, `Tensor.lean:10799` |
+| `triple_tensor` | 119II | `49a49f0` | 119IV `isTensorProduct_assoc`, `Tensor.lean:10681` |
 | `perp_sharp_is_orth` | 213III | `49a49f0` | `B/Eff/Comparisons.lean:600` |
-| `ultranormcontstruct_smul` | 148III.3 | `027dc77` | `ext_tensor_dense` (164II.1), `B/Dils/SelfDual.lean:7828` |
+| `ultranormcontstruct_smul` | 148III.3 | `027dc77` | `ext_tensor_dense` (164II.1), `B/Dils/SelfDual.lean:7948` |
 | `dagger_of_iso_adjoint` | 216IX.1 | `0f036ad` | `B/Eff/Dagger.lean:528` |
 | `paschke_pure` | 171VII | `7aa3dc0` | `pure_iff_stinespring_surjective`, `B/Dils/Pure.lean:4229` |
 

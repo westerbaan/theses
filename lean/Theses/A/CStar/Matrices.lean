@@ -1734,16 +1734,19 @@ its data: `M_N t` sends a pair of positive matrices to a positive one.
 multiplicativity and involution preservation — which is exactly what
 `IsVNTensor` has: the positivity clause that an earlier revision proposed
 to *add* to it is derivable, so no ruling is outstanding here.  (That
-revision deferred to `QUESTIONS.md` B5, which was deleted as resolved on
-2026-08-16 — the question no longer exists.  Nor is one needed: von Neumann
+revision deferred to the **B5** item of `QUESTIONS.md`, which in the end
+asked nothing of the authors — all three of its halves were settled by
+2026-08-15, the positivity clause being derivable — and was deleted on
+2026-08-16, commit f277d72.  Nor is a ruling needed: von Neumann
 algebras are C*-algebras, mi-bilinear maps are automatically
 `ℂ`-homogeneous, and `IsVNTensor` needs the generality it has.)
 
 Lives here rather than in `A/Proc/Tensor.lean` (where it was first proved)
 because its content is about matrices over C*-algebras and it is needed by
-`B/Dils`, which imports this file but not `A/Proc`.  (The earlier pointer
-to `QUESTIONS.md` D3 dangles for the same reason; D3 was deleted the same
-day.) -/
+`B/Dils`, which imports this file but not `A/Proc`.  (The move was itself the
+**D3** item of `QUESTIONS.md` — option 2, authorised by Bas, worker 43 — and
+that entry was deleted on 2026-08-16 once it had been carried out, commit
+f277d72.) -/
 theorem matBilin_nonneg_of_mi {𝒜' ℬ' 𝒞 : Type*} [CStarAlgebra 𝒜']
     [PartialOrder 𝒜'] [StarOrderedRing 𝒜'] [CStarAlgebra ℬ'] [PartialOrder ℬ']
     [StarOrderedRing ℬ'] [CStarAlgebra 𝒞] [PartialOrder 𝒞] [StarOrderedRing 𝒞]

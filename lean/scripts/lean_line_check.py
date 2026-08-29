@@ -39,6 +39,8 @@ SLACK = 30
 NAMED = re.compile(r'`([A-Za-z_][A-Za-z0-9_.\']*)`[^`\n]{0,24}?'
                    r'`?([A-Za-z][A-Za-z0-9_/]*\.lean):(\d+)`?')
 ANY = re.compile(r'\b([A-Za-z][A-Za-z0-9_/]*\.lean):(\d+)')
+USE_SITE = re.compile(r'\b(?:used|use[sd]?|consumed|called|invoked|applied|cited|'
+                      r'appears|occurs)\b[^`\n]{0,20}\bat\b', re.I)
 DECL = re.compile(r'^(?:private |protected |noncomputable |partial |@\[[^\]]*\]\s*)*'
                   r'(?:theorem|lemma|def|abbrev|structure|instance|inductive|class) '
                   r'([A-Za-z_][A-Za-z0-9_.\']*)')
@@ -80,6 +82,12 @@ def main():
             named = {(m.start(), m.group(2), m.group(3)) for m in NAMED.finditer(line)}
             unnamed += max(0, len(ANY.findall(line)) - len(named))
             for m in NAMED.finditer(line):
+                # "`dils_stand_filter` IS used, at Pure.lean:2421" points at a
+                # CALL SITE, not at the declaration, and reading it as the
+                # latter reports a correct row as drifted.
+                if USE_SITE.search(line[max(0, m.start() - 70):m.end()]):
+                    ok += 1
+                    continue
                 name, fname, num = m.group(1), m.group(2).split("/")[-1], int(m.group(3))
                 if fname not in src:
                     continue                      # Mathlib and other trees

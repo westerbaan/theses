@@ -114,11 +114,11 @@ because the `VERDICTS` table says in its own comment that ground (3) "wants an
 author ruling on a statement", which is not a thing anyone here can supply.
 `left-cost` and `open` are ours.  Everything else is not a defect.
 
-| | statement (152) | proof (230) |
+| | statement (151) | proof (229) |
 |---|---|---|
-| not a defect | 83 | 168 |
-| **ours** — `left-cost`, `open` | **39** | **36** |
-| **the author's** — `left-thesis`, `left-ruling`, `left-needs-statement` | **30** | **26** |
+| not a defect | 83 | 170 |
+| **ours** — `left-cost`, `open` | **46** | **36** |
+| **the author's** — `left-thesis`, `left-ruling`, `left-needs-statement` | **22** | **23** |
 
 *Three classifier defects were fixed on 2026-08-29 to get these numbers, and all
 three were the same shape — a needle matching text that was not a verdict.*
@@ -135,6 +135,61 @@ author-side and 50 ours for the statement column, having filed
 `left-needs-statement` under ours.  Eight rows move.  The overlap between the
 two columns is large — they are mostly the same points seen twice — so these are
 not 55 distinct author questions.
+
+*The numbers above are the ones after the 2026-08-29 re-check of the author-side
+rows described below; before it they read 30 and 26.*  The two totals also moved
+by one each, which is not the re-check's doing: `aproc-measurement.csv` and
+`bdils-selfdual-kaplansky.csv` were under concurrent edit while it ran.
+
+#### The 2026-08-29 re-check of the author-side rows
+
+Somebody had to ask whether the *reasons* on the author-side rows still hold,
+which is not a thing `audit_check.py` can test — it compares sets of names, and
+these rows fail by their prose going stale underneath them.  All 56 were read
+against the current tree, the current `.tex`, `ERRATA.md`, `QUESTIONS.md`,
+`docs/DECISIONS.md` and `docs/status.txt`.  Forty-five held.  Eleven did not,
+in three shapes:
+
+* **Eight were ours, filed as the author's, by one word.**  `14II`
+  `integral_scalar_smul`, `20aI` ×2, `34VI` `cstar_product_4`, `42V`
+  `vonNeumannAlgebra_lp_infty` and `47IV` ×3 all say "LEFT under reason 2" while
+  describing, at length and with a line estimate, Mathlib machinery: the
+  `[∀ i, Nontrivial]` binder on `lp 𝒜 ∞`, or the `𝒜`-valued step functions 14II
+  would need.  Ground (2) is a defect in the *printed text*; costed machinery is
+  ground (4).  Four of the eight open with `left-cost` and one glosses itself
+  "(machinery)", so the passes knew what they meant and wrote the wrong numeral
+  — and `verdict_of` reads the numeral.  Re-filed under ground 4.
+* **Two had every recorded blocker expire.**  `49IV` `exists_isLUB_matForm` and
+  `mn_vna_1` are left because "`Bax` is `private`", "49II `bah-vn` is unstated"
+  and "`M_N(𝒜) ≅ B^a(𝒜^N)` has a declaration nowhere".  `Bax` has been public
+  since 2026-08-27 (`A/CStar/Matrices.lean:866`), 49II is `bah_vn`
+  (`A/VN/BaX.lean:569`, green, with all thirteen declarations of that module
+  green), and the isomorphism is `matrixBaxEquiv` (`A/CStar/Matrices.lean:1527`,
+  green, at `M_N(𝒜)ᵐᵒᵖ`).  All three items of the rows' own costing are done, and
+  `A/VN/Basic.lean:5086-5125` says outright that the direct route "is kept, being
+  independent of them" — a choice of ours, `left-by-choice`, not an author
+  question.
+* **One had already declared itself void and could not say so.**  `156II`
+  `paschke_injective_carrier`'s status opens "SUPERSEDED — the
+  '`left-needs-statement`' verdict is void", and `verdict_of` scanned that
+  quoted name and filed the row under it for three days.  Same shape as the three
+  classifier defects above, one layer out: the needle matched *the row's own
+  report of a needle*.
+
+Two more were corrected without changing the verdict.  `69IX`
+`vn_center_separating`'s status has said since 2026-08-26 that the statement half
+was mended — the TFAE carries item 3 verbatim, `gnsRepFam_injective_iff` at
+`A/VN/Projections.lean:7584` joining entries 3 and 4 at `:7661` — but its `stmt`
+column still reads `differs`, so the statement count still charges it to the
+author; the column, not the status, is what wants fixing.  And `139XI`
+`ess_uniq_pur` is filed against `QUESTIONS.md` B12, which §4.1 of
+`docs/DECISIONS.md` lists as already answered; the live question is §1.4, and the
+row now says so.
+
+Line references drift and several of these rows carry stale ones — `202IV` names
+three `VNExamples` declarations at numbers that are all wrong, and the `69IX`
+rows cite `proto_gelfand_naimark_2` at `:2080` where it now sits at `:2165`.
+Those are hints, not addresses, and none of them changed a verdict.
 
 ### The verdict vocabulary, declared (2026-08-28)
 

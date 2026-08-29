@@ -9102,8 +9102,9 @@ backwards through that descent: the induced map `C(spec A) → L^∞(spec A)` is
 The `ℂ`-homogeneity clause `q (z • f) = z • q f` is stated: without it `q`
 would be a `∗`-*ring* map only and the statement would not say "miu" — the
 defect QUESTIONS **A9** raises against 51IX's own rendering, and the one
-ruled in for `IsLinftyOf` under QUESTIONS D1.  (A9 is about `Linfty_vn`'s
-clause list, which is untouched here.)
+ruled in for `IsLinftyOf` on 2026-08-16 (that item was filed as **D1** in
+`QUESTIONS.md` and deleted from it in the implementing commit 43e270f).
+(A9 is about `Linfty_vn`'s clause list, which is untouched here.)
 
 Neither `ω` nor its faithfulness occurs: all the isomorphism needs of the
 measure is that its null sets are the meagre almost clopen sets, which is

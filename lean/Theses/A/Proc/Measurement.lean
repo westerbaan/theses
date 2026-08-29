@@ -9734,6 +9734,359 @@ axiom (D) redundant?) — not formalizable as a theorem; skipped.
 **106V** (proc.tex:1914, Remark): historical remark on the axioms of
 [westerbaan2016universal]; skipped. -/
 
+/-! ## 98XI (`ad-pure`, proc.tex:736, Example)
+
+Placed here, out of numerical order: the Example needs `Corner.val_ceil`
+(above, among the infrastructure for 104VII) to compute `⌈f(1)⌉` inside the
+corner `t𝒜t`, and `exists_ncpCorestrict` (parsec 980) to corestrict
+`a*(·)a` to `t𝒜t`; both come after **98IX** `square_f` in this file.
+
+Notation.  The thesis's `\ceilr{a}` is the **range** projection
+`⌊a⌉ = ⌈aa*⌉`, which is `rangeProj a` here, and its `\ceill{a}` is the
+**support** projection `⌈a⌋ = ⌈a*a⌉`, which is `suppProj a`
+(vn.tex:2683, `ceill`).  So the Example's hypotheses read
+`rangeProj a ≤ s` and `suppProj a ≤ t`.  (Beware: the doc comment on
+`isStarProjection_suppProj` above uses `⌈·⌉ᵣ` for the *support*, the
+opposite of the thesis's subscript; the Lean names are unambiguous and are
+what is used below.)
+
+**The formula stated below is the corrected one.**  ERRATA **98XI**
+records that the printed formula has its two partial isometries swapped.
+The Example reads `[f] ≡ √(a*a)∖a*(·)a/√(a*a) ≡ [a](·)[a]*` and labels the
+bottom arrow of its diagram `[a](·)[a]*`; but that arrow runs
+`⌊a⌉𝒜⌊a⌉ → ⌈a⌋𝒜⌈a⌋`, whereas `[a](·)[a]*` runs the other way — by the
+Example's own sentence `[a]*[a] = ⌈a⌋` and `[a][a]* = ⌊a⌉`
+(`polar_decomposition_1`).  The first, correct, half of the printed
+formula gives the right map: `a = [a]√(a*a)` yields
+`a*xa = √(a*a)·([a]*x[a])·√(a*a)`, hence `[f](x) = [a]*x[a]`.  Concretely
+in `M₂` at `a = e₀₁`: `⌈f⌉ = ⌊a⌉ = e₀₀`, `f(1) = a*a = e₁₁`, `[a] = a`, and
+`[f](e₀₀) = e₁₁ = [a]*e₀₀[a]`, while `[a]e₀₀[a]* = 0`.  What is stated
+below is therefore `[f] = [a]*(·)[a]`; the Example's conclusion is
+untouched, since `[a]*` is a partial isometry with initial projection
+`⌊a⌉` and final projection `⌈a⌋`, so `[f]` is still an ncpu-isomorphism.
+
+Nothing in the tree depends on this Example: **100III**, its only consumer,
+is proved by `properlyPure_corner_comp_filter` without it. -/
+
+/-- Infrastructure for 98XI: the square root of a positive element of the
+corner `e𝒜e` is computed in the corner exactly as it is in `𝒜` (the
+companion of `Corner.val_ceil`).  `√(x.val)` lies in the corner
+(`Corner.sqrt_mem`) and squares to `x.val`, so it *is* the square root of
+`x` by uniqueness of positive square roots. -/
+theorem Corner.val_sqrt {e : A} [Fact (IsStarProjection e)] (x : Corner A e)
+    (hx : 0 ≤ x) : (CFC.sqrt x).val = CFC.sqrt x.val := by
+  have hxv : (0 : A) ≤ x.val := hx
+  have hy : (0 : Corner A e) ≤ ⟨CFC.sqrt x.val, Corner.sqrt_mem x.val hxv x.property⟩ :=
+    show (0 : A) ≤ CFC.sqrt x.val from CFC.sqrt_nonneg _
+  have h : CFC.sqrt x = (⟨CFC.sqrt x.val, Corner.sqrt_mem x.val hxv x.property⟩ :
+      Corner A e) :=
+    CFC.sqrt_unique (Corner.val_injective
+      (show CFC.sqrt x.val * CFC.sqrt x.val = x.val from
+        CFC.sqrt_mul_sqrt_self x.val hxv)) hy
+  rw [h]
+
+section AdPure
+
+variable [VonNeumannAlgebra A]
+
+omit [VonNeumannAlgebra A] in
+/-- Infrastructure for 98XI: for projections `p ≤ q` one has `pq = qp = p`
+(**60III**.7 in the form `le_iff_mul_eq_left`, plus its adjoint). -/
+private theorem adPure_absorb {p q : A} (hp : IsStarProjection p)
+    (hq : IsStarProjection q) (h : p ≤ q) : p * q = p ∧ q * p = p := by
+  have h1 : p * q = p := (hp.le_iff_mul_eq_left hq).mp h
+  refine ⟨h1, ?_⟩
+  have h2 := congrArg star h1
+  rwa [star_mul, hp.isSelfAdjoint.star_eq, hq.isSelfAdjoint.star_eq] at h2
+
+variable (a : A) {s t : A} [Fact (IsStarProjection s)] [Fact (IsStarProjection t)]
+
+/-- Infrastructure for 98XI: the absorption facts that the Example's two
+hypotheses `⌊a⌉ ≤ s` and `⌈a⌋ ≤ t` amount to.  `⌊a⌉a = a` and `a⌈a⌋ = a`
+(**59VI** `ceill-basic`) push `s` and `t` off `a`, and `⌊a⌉[a] = [a]`
+(**81II**.1, `rangeProj_mul_polar`) pushes `s` off the partial isometry
+`[a]` of the polar decomposition. -/
+private theorem adPure_facts (hs : rangeProj a ≤ s) (ht : suppProj a ≤ t) :
+    s * a = a ∧ a * t = a ∧ star a * s = star a ∧ t * star a = star a ∧
+      s * rangeProj a * s = rangeProj a ∧
+      s * polar a = polar a ∧ star (polar a) * s = star (polar a) := by
+  have hrp : IsStarProjection (rangeProj a) := (ceill_basic_2 a).1.1
+  have hsp : IsStarProjection (suppProj a) := (ceill_basic_1 a).1.1
+  have hra : rangeProj a * a = a := (ceill_basic_2 a).1.2
+  have has : a * suppProj a = a := (ceill_basic_1 a).1.2
+  obtain ⟨hrs, hsr⟩ := adPure_absorb hrp (Corner.proj s) hs
+  obtain ⟨hst, hts⟩ := adPure_absorb hsp (Corner.proj t) ht
+  have hsa : s * a = a := by
+    calc s * a = s * (rangeProj a * a) := by rw [hra]
+      _ = (s * rangeProj a) * a := by noncomm_ring
+      _ = a := by rw [hsr, hra]
+  have hat : a * t = a := by
+    calc a * t = (a * suppProj a) * t := by rw [has]
+      _ = a * (suppProj a * t) := by noncomm_ring
+      _ = a := by rw [hst, has]
+  have hstara : star a * s = star a := by
+    have h := congrArg star hsa
+    rwa [star_mul, (Corner.proj s).isSelfAdjoint.star_eq] at h
+  have htstara : t * star a = star a := by
+    have h := congrArg star hat
+    rwa [star_mul, (Corner.proj t).isSelfAdjoint.star_eq] at h
+  have hpol : s * polar a = polar a := by
+    calc s * polar a = s * (rangeProj a * polar a) := by rw [rangeProj_mul_polar]
+      _ = (s * rangeProj a) * polar a := by noncomm_ring
+      _ = polar a := by rw [hsr, rangeProj_mul_polar]
+  have hpolstar : star (polar a) * s = star (polar a) := by
+    have h := congrArg star hpol
+    rwa [star_mul, (Corner.proj s).isSelfAdjoint.star_eq] at h
+  exact ⟨hsa, hat, hstara, htstara, by rw [hsr, hrs], hpol, hpolstar⟩
+
+/-- **98XI** (`ad-pure`, proc.tex:736, Example), the map: for `⌊a⌉ ≤ s` and
+`⌈a⌋ ≤ t` the assignment `b ↦ a*ba` is an ncp-map `s𝒜s → t𝒜t`.  It is
+`exists_adFromCorner` (`b ↦ a*ba : s𝒜s → 𝒜`) corestricted along
+`exists_ncpCorestrict`; the corestriction hypothesis `t·a*ba·t = a*ba` is
+exactly where `⌈a⌋ ≤ t` enters, through `at = a`. -/
+theorem exists_adPureMap (hs : rangeProj a ≤ s) (ht : suppProj a ≤ t) :
+    ∃ f : NCPMap (Corner A s) (Corner A t),
+      ∀ b : Corner A s, (f b).val = star a * b.val * a := by
+  obtain ⟨-, hat, -, htstara, -, -, -⟩ := adPure_facts a hs ht
+  obtain ⟨f₀, hf₀⟩ := exists_adFromCorner s a
+  obtain ⟨f, hf⟩ := exists_ncpCorestrict t f₀ (by
+    intro b
+    rw [hf₀]
+    calc t * (star a * b.val * a) * t = (t * star a) * b.val * (a * t) := by
+          noncomm_ring
+      _ = star a * b.val * a := by rw [htstara, hat])
+  exact ⟨f, fun b => by rw [hf b, hf₀ b]⟩
+
+variable (f : NCPMap (Corner A s) (Corner A t))
+
+/-- **98XI** (`ad-pure`, proc.tex:736, Example): `f(1) = a*a`, and hence
+`⌈f(1)⌉ = ⌈a⌋` — the codomain of `[f]` is `⌈a⌋𝒜⌈a⌋`.  The unit of `s𝒜s`
+is `s`, and `a*sa = a*a` because `sa = a`. -/
+theorem adPure_one (hs : rangeProj a ≤ s) (ht : suppProj a ≤ t)
+    (hf : ∀ b : Corner A s, (f b).val = star a * b.val * a) :
+    (f 1).val = star a * a ∧ (ceil (f 1)).val = suppProj a := by
+  obtain ⟨-, -, hstara, -, -, -, -⟩ := adPure_facts a hs ht
+  have hone : (f 1).val = star a * a := by
+    rw [hf 1, Corner.val_one, hstara]
+  refine ⟨hone, ?_⟩
+  rw [Corner.val_ceil (f 1) (ncpMap_nonneg f zero_le_one), hone]
+  rfl
+
+/-- **98XI** (`ad-pure`, proc.tex:736, Example): `⌈f⌉ = ⌊a⌉` — the domain
+of `[f]` is `⌊a⌉𝒜⌊a⌉`.  `f(s − ⌊a⌉) = a*a − a*a = 0` gives `⌈f⌉ ≤ ⌊a⌉` by
+minimality of the carrier; conversely `f(s − ⌈f⌉) = 0` says
+`(s−⌈f⌉)a = 0`, i.e. `⌈f⌉a = a`, whence `⌊a⌉ ≤ ⌈f⌉` by **59VI**
+`ceill-basic`.2. -/
+theorem adPure_carrier (hs : rangeProj a ≤ s) (ht : suppProj a ≤ t)
+    (hf : ∀ b : Corner A s, (f b).val = star a * b.val * a) :
+    (ncpCarrier f).val = rangeProj a := by
+  obtain ⟨hsa, -, hstara, -, hrmem, -, -⟩ := adPure_facts a hs ht
+  have hrp : IsStarProjection (rangeProj a) := (ceill_basic_2 a).1.1
+  have hra : rangeProj a * a = a := (ceill_basic_2 a).1.2
+  have hstarra : star a * rangeProj a = star a := by
+    have h := congrArg star hra
+    rwa [star_mul, hrp.isSelfAdjoint.star_eq] at h
+  have hcspec : IsStarProjection (ncpCarrier f) ∧
+      (f (1 - ncpCarrier f) : Corner A t) = 0 ∧
+      ∀ q : Corner A s, IsStarProjection q → f (1 - q) = 0 → ncpCarrier f ≤ q :=
+    (exists_ncpCarrier f).choose_spec.1
+  set R : Corner A s := ⟨rangeProj a, hrmem⟩ with hR
+  have hRproj : IsStarProjection R := (Corner.isStarProjection_iff R).mpr hrp
+  have hfR : f (1 - R) = 0 := by
+    refine Corner.val_injective ?_
+    rw [hf (1 - R)]
+    show star a * ((1 : Corner A s).val - R.val) * a = (0 : A)
+    rw [Corner.val_one, hR]
+    calc star a * (s - rangeProj a) * a
+        = (star a * s) * a - (star a * rangeProj a) * a := by noncomm_ring
+      _ = 0 := by rw [hstara, hstarra, sub_self]
+  have hle₁ : (ncpCarrier f).val ≤ rangeProj a := hcspec.2.2 R hRproj hfR
+  refine le_antisymm hle₁ ?_
+  set c : Corner A s := ncpCarrier f with hc
+  have hcp : IsStarProjection c.val := (Corner.isStarProjection_iff c).mp hcspec.1
+  have hcs : s * c.val = c.val := Corner.mul_left c
+  have hsc : c.val * s = c.val := Corner.mul_right c
+  have hzero : star a * (s - c.val) * a = 0 := by
+    have h := congrArg Corner.val hcspec.2.1
+    rw [hf (1 - c)] at h
+    simpa [Corner.val_one] using h
+  have hqa : (s - c.val) * a = 0 := by
+    refine (CStarRing.star_mul_self_eq_zero_iff _).mp ?_
+    have hqsa : star (s - c.val) = s - c.val := by
+      rw [star_sub, (Corner.proj s).isSelfAdjoint.star_eq, hcp.isSelfAdjoint.star_eq]
+    have hqq : (s - c.val) * (s - c.val) = s - c.val := by
+      have hss : s * s = s := (Corner.proj s).isIdempotentElem.eq
+      have hcc : c.val * c.val = c.val := hcp.isIdempotentElem.eq
+      calc (s - c.val) * (s - c.val)
+          = s * s - s * c.val - c.val * s + c.val * c.val := by noncomm_ring
+        _ = s - c.val := by rw [hss, hcs, hsc, hcc]; abel
+    calc star ((s - c.val) * a) * ((s - c.val) * a)
+        = star a * ((s - c.val) * (s - c.val)) * a := by
+          rw [star_mul, hqsa]; noncomm_ring
+      _ = 0 := by rw [hqq, hzero]
+  have hca : c.val * a = a := by
+    have h : s * a - c.val * a = 0 := by rw [← sub_mul]; exact hqa
+    have h2 : c.val * a = s * a := (sub_eq_zero.mp h).symm
+    rw [h2, hsa]
+  exact (ceill_basic_2 a).2 ⟨hcp, hca⟩
+
+/-- **98XI** (`ad-pure`, proc.tex:736, Example), the formula for `[f]`, in
+the **corrected** form of ERRATA **98XI**: `[f] = [a]*(·)[a]`, not the
+printed `[a](·)[a]*`.  Written out at the level of `𝒜`, the map
+`[f] : ⌊a⌉𝒜⌊a⌉ → ⌈a⌋𝒜⌈a⌋` of **98IX** sends `x` to `[a]*x[a]`.
+
+The proof is by the uniqueness half of **98IX**: `√(a*a)·[a]*x[a]·√(a*a)
+= a*xa` because `[a]√(a*a) = a` (**82I** `polar-decomposition`), so
+`[a]*x[a]` and `[f](x)` have the same image under the standard filter
+`c_{f(1)}`, which is injective (**98II**.2, `stdFilter_injective`).  Both
+lie in `⌈a⌋𝒜⌈a⌋` because `[a]⌈a⌋ = [a]`. -/
+theorem adPure_sqBracket (hs : rangeProj a ≤ s) (ht : suppProj a ≤ t)
+    (hf : ∀ b : Corner A s, (f b).val = star a * b.val * a)
+    (x : Corner (Corner A s) (ncpCarrier f)) :
+    (sqBracket f x).val.val = star (polar a) * x.val.val * polar a := by
+  obtain ⟨hone, hceilval⟩ := adPure_one a f hs ht hf
+  have hsproj : IsStarProjection (suppProj a) := (ceill_basic_1 a).1.1
+  have hp0 : (0 : Corner A t) ≤ f 1 := ncpMap_nonneg f zero_le_one
+  have hsqrtval : (CFC.sqrt (f 1)).val = CFC.sqrt (star a * a) := by
+    rw [Corner.val_sqrt (f 1) hp0, hone]
+  have hpa : polar a * CFC.sqrt (star a * a) = a := (polar_decomposition a).2.1.symm
+  have hpe : polar a * suppProj a = polar a := (polar_decomposition a).2.2
+  have hsqsa : star (CFC.sqrt (star a * a)) = CFC.sqrt (star a * a) :=
+    (IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg _)).star_eq
+  have hsp' : CFC.sqrt (star a * a) * star (polar a) = star a := by
+    have h := congrArg star hpa
+    rwa [star_mul, hsqsa] at h
+  have hep : suppProj a * star (polar a) = star (polar a) := by
+    have h := congrArg star hpe
+    rwa [star_mul, hsproj.isSelfAdjoint.star_eq] at h
+  obtain ⟨hst, -⟩ := adPure_absorb hsproj (Corner.proj t) ht
+  have hpt : polar a * t = polar a := by
+    calc polar a * t = (polar a * suppProj a) * t := by rw [hpe]
+      _ = polar a * (suppProj a * t) := by noncomm_ring
+      _ = polar a := by rw [hst, hpe]
+  have htp : t * star (polar a) = star (polar a) := by
+    have h := congrArg star hpt
+    rwa [star_mul, (Corner.proj t).isSelfAdjoint.star_eq] at h
+  have hzt : t * (star (polar a) * x.val.val * polar a) * t
+      = star (polar a) * x.val.val * polar a := by
+    calc t * (star (polar a) * x.val.val * polar a) * t
+        = (t * star (polar a)) * x.val.val * (polar a * t) := by noncomm_ring
+      _ = _ := by rw [htp, hpt]
+  have hzP : suppProj a * (star (polar a) * x.val.val * polar a) * suppProj a
+      = star (polar a) * x.val.val * polar a := by
+    calc suppProj a * (star (polar a) * x.val.val * polar a) * suppProj a
+        = (suppProj a * star (polar a)) * x.val.val * (polar a * suppProj a) := by
+          noncomm_ring
+      _ = _ := by rw [hep, hpe]
+  have hZmem : ceil (f 1) * (⟨_, hzt⟩ : Corner A t) * ceil (f 1) = ⟨_, hzt⟩ := by
+    refine Corner.val_injective ?_
+    show (ceil (f 1)).val * (star (polar a) * x.val.val * polar a)
+        * (ceil (f 1)).val = star (polar a) * x.val.val * polar a
+    rw [hceilval]; exact hzP
+  have hsurj : (cornerProjMap (ncpCarrier f)).toNCPMap x.val = x :=
+    Corner.val_injective (by rw [cornerProjMap_apply]; exact x.property)
+  have hsq := (square_f f).1 x.val
+  rw [hsurj] at hsq
+  have hrhs : (stdFilter (f 1) (sqBracket f x)).val = star a * x.val.val * a := by
+    rw [← hsq, hf x.val]
+  have hlhs : (stdFilter (f 1)
+      (⟨⟨_, hzt⟩, hZmem⟩ : Corner (Corner A t) (ceil (f 1)))).val
+      = star a * x.val.val * a := by
+    rw [stdFilter_apply]
+    show (CFC.sqrt (f 1)).val * (star (polar a) * x.val.val * polar a)
+        * (CFC.sqrt (f 1)).val = star a * x.val.val * a
+    rw [hsqrtval]
+    calc CFC.sqrt (star a * a) * (star (polar a) * x.val.val * polar a)
+            * CFC.sqrt (star a * a)
+        = (CFC.sqrt (star a * a) * star (polar a)) * x.val.val
+            * (polar a * CFC.sqrt (star a * a)) := by noncomm_ring
+      _ = star a * x.val.val * a := by rw [hsp', hpa]
+  have hkey := stdFilter_injective hp0
+    (Corner.val_injective (hlhs.trans hrhs.symm))
+  exact (congrArg (fun w : Corner (Corner A t) (ceil (f 1)) => w.val.val) hkey).symm
+
+/-- **98XI** (`ad-pure`, proc.tex:736, Example), last claim: `[f]` is an
+ncpu-isomorphism.  Its inverse is `[a](·)[a]*` — which, with the erratum
+applied, is the *printed* formula, now in its correct place as the map
+`⌈a⌋𝒜⌈a⌋ → ⌊a⌉𝒜⌊a⌉` back.  Both composites are the identity because `[a]`
+is a partial isometry with `[a]*[a] = ⌈a⌋` and `[a][a]* = ⌊a⌉` (**82I**
+`polar-decomposition`.1), and unitality is `[a]⌈a⌋[a]* = ⌊a⌉`. -/
+theorem adPure_sqBracket_iso (hs : rangeProj a ≤ s) (ht : suppProj a ≤ t)
+    (hf : ∀ b : Corner A s, (f b).val = star a * b.val * a) :
+    ∃ g : NCPMap (Corner (Corner A t) (ceil (f 1)))
+        (Corner (Corner A s) (ncpCarrier f)),
+      (∀ y : Corner (Corner A t) (ceil (f 1)),
+          (g y).val.val = polar a * y.val.val * star (polar a)) ∧
+        ncpComp g (sqBracket f) = ncpId (Corner (Corner A s) (ncpCarrier f)) ∧
+        ncpComp (sqBracket f) g = ncpId (Corner (Corner A t) (ceil (f 1))) ∧
+        sqBracket f 1 = 1 ∧ g 1 = 1 := by
+  obtain ⟨-, -, -, -, -, hpol, hpolstar⟩ := adPure_facts a hs ht
+  obtain ⟨hone, hceilval⟩ := adPure_one a f hs ht hf
+  have hcarrier : (ncpCarrier f).val = rangeProj a := adPure_carrier a f hs ht hf
+  have hbr := adPure_sqBracket a f hs ht hf
+  have hpp : polar a * star (polar a) = rangeProj a := (polar_decomposition_1 a).2.2
+  have hpsp : star (polar a) * polar a = suppProj a := (polar_decomposition_1 a).2.1
+  have hrpol : rangeProj a * polar a = polar a := rangeProj_mul_polar a
+  have hpolr : star (polar a) * rangeProj a = star (polar a) := by
+    have h := congrArg star hrpol
+    rwa [star_mul, ((ceill_basic_2 a).1.1).isSelfAdjoint.star_eq] at h
+  -- the inverse `y ↦ [a]y[a]*`, built like `f` itself: `ad` followed by two
+  -- corestrictions, into `s𝒜s` and then into `⌊a⌉(s𝒜s)⌊a⌉`
+  obtain ⟨g₀, hg₀⟩ := exists_adFromCorner t (star (polar a))
+  have hG0 : ∀ y : Corner (Corner A t) (ceil (f 1)),
+      ((ncpComp g₀ (cornerIncl (ceil (f 1))).toNCPMap) y : A)
+        = polar a * y.val.val * star (polar a) := by
+    intro y
+    rw [ncpComp_apply, cornerIncl_apply, hg₀, star_star]
+  obtain ⟨g₁, hg₁0⟩ := exists_ncpCorestrict s
+    (ncpComp g₀ (cornerIncl (ceil (f 1))).toNCPMap) (by
+      intro y
+      rw [hG0]
+      calc s * (polar a * y.val.val * star (polar a)) * s
+          = (s * polar a) * y.val.val * (star (polar a) * s) := by noncomm_ring
+        _ = _ := by rw [hpol, hpolstar])
+  have hg₁ : ∀ y : Corner (Corner A t) (ceil (f 1)),
+      (g₁ y).val = polar a * y.val.val * star (polar a) := by
+    intro y; rw [hg₁0 y, hG0]
+  obtain ⟨g, hg0⟩ := exists_ncpCorestrict (ncpCarrier f) g₁ (by
+    intro y
+    refine Corner.val_injective ?_
+    show (ncpCarrier f).val * (g₁ y).val * (ncpCarrier f).val = (g₁ y).val
+    rw [hcarrier, hg₁]
+    calc rangeProj a * (polar a * y.val.val * star (polar a)) * rangeProj a
+        = (rangeProj a * polar a) * y.val.val * (star (polar a) * rangeProj a) := by
+          noncomm_ring
+      _ = _ := by rw [hrpol, hpolr])
+  have hg : ∀ y : Corner (Corner A t) (ceil (f 1)),
+      (g y).val.val = polar a * y.val.val * star (polar a) := by
+    intro y; rw [hg0 y, hg₁]
+  refine ⟨g, hg, ?_, ?_, (square_f f).2.2.1, ?_⟩
+  · refine DFunLike.ext _ _ fun x => Corner.val_injective (Corner.val_injective ?_)
+    rw [ncpComp_apply, hg, hbr, ncpId_apply]
+    have hx := congrArg Corner.val x.property
+    rw [Corner.val_mul, Corner.val_mul, hcarrier] at hx
+    calc polar a * (star (polar a) * x.val.val * polar a) * star (polar a)
+        = (polar a * star (polar a)) * x.val.val * (polar a * star (polar a)) := by
+          noncomm_ring
+      _ = rangeProj a * x.val.val * rangeProj a := by rw [hpp]
+      _ = x.val.val := hx
+  · refine DFunLike.ext _ _ fun y => Corner.val_injective (Corner.val_injective ?_)
+    rw [ncpComp_apply, hbr, hg, ncpId_apply]
+    have hy := congrArg Corner.val y.property
+    rw [Corner.val_mul, Corner.val_mul, hceilval] at hy
+    calc star (polar a) * (polar a * y.val.val * star (polar a)) * polar a
+        = (star (polar a) * polar a) * y.val.val * (star (polar a) * polar a) := by
+          noncomm_ring
+      _ = suppProj a * y.val.val * suppProj a := by rw [hpsp]
+      _ = y.val.val := hy
+  · refine Corner.val_injective (Corner.val_injective ?_)
+    rw [hg]
+    show polar a * (ceil (f 1)).val * star (polar a) = (ncpCarrier f).val
+    have hpe : polar a * suppProj a = polar a := (polar_decomposition a).2.2
+    rw [hceilval, hcarrier, hpe, hpp]
+
+end AdPure
+
 end Theses.A.Proc
 
 

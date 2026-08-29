@@ -56,9 +56,10 @@ for `X = ℬ` one has `𝒷ᵃ(ℬ) = {R_t} ≅ ℬᵐᵒᵖ` with `h(R_t) = t`,
 `h : 𝒷ᵃ(ℬ) → ℬ` is `unop`, which is the transpose on `M₂` and hence
 positive but *not* completely positive, while `h : 𝒷ᵃ(ℬ)ᵐᵒᵖ → ℬ` is a
 ∗-isomorphism.  With these fields `h (ρ a) = φ a` holds on the nose
-(`paschkeModule_h_ρ`), so `IsPaschkeDilationOf` (`Stinespring.lean:1179`),
+(`paschkeModule_h_ρ`), so `IsPaschkeDilationOf` (`Stinespring.lean:2882`),
 which asks for `h (ρ a) = φ a` with no `star`, is correct as it stands
-(ruling of the author, QUESTIONS **D2**).
+(ruling of the author, Bas, 2026-08-15: "the definition of Paschke dilation
+should not include the star").
 
 Two earlier renderings are recorded as machine-checked negative results:
 `paschke_inner_conj_forces_zero` (the inner product `b' φ(a'* a) b*`,
@@ -66,7 +67,11 @@ i.e. no `star` on the `𝒜`-argument of `tprod`, forces `φ = 0`) and
 `paschke_rho_forces_cyclic` (the inner product below together with a `ρ`
 into `𝒷ᵃ(X)` rather than `𝒷ᵃ(X)ᵐᵒᵖ` forces `φ` to be cyclic, which fails
 for `φ = id` on `M₂`).  Both left `PaschkeModule` uninhabited.  See
-`PROVING-LOG.md`, sessions 14–16, and QUESTIONS **D2**.
+`PROVING-LOG.md`, sessions 14–16.  The whole mirroring defect was filed as
+**D2** in `QUESTIONS.md`; Bas ruled on it (2026-08-15 as above, then
+2026-08-16 "Ok, fix the transcription please"), session 43 implemented the
+`ᵐᵒᵖ` rendering described here, and the entry was deleted on 2026-08-16 once
+implemented (commit f277d72).
 -/
 import Theses.B.Dils.Stinespring
 import Theses.B.Dils.SelfDualCompletion
@@ -472,7 +477,9 @@ attribute [instance] PaschkeModule.nacg PaschkeModule.mod PaschkeModule.smul
 /-- **154III**, part 3 on part 2: `h ∘ ϱ = φ`, the first half of
 `IsPaschkeDilationOf`.  This is the computation the mirroring had to get
 right: `h (ρ a) = ⟨1 ⊗ 1, 1a ⊗ 1⟩ = 1 · φ(a · 1*) · 1* = φ a`, with no
-`star` anywhere (QUESTIONS **D2**). -/
+`star` anywhere — see the head of the file for the **D2** ruling that fixed
+the transcription (that entry of `QUESTIONS.md` was deleted on 2026-08-16
+once implemented). -/
 theorem paschkeModule_h_ρ (φ : NCPMap 𝒜 ℬ) (M : PaschkeModule φ) (a : 𝒜) :
     M.h (M.ρ a) = φ a := by
   rw [M.h_def, M.ρ_tprod, M.inner_tprod]

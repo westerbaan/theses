@@ -5006,7 +5006,9 @@ thesis B's `IsVNTensor` (dils.tex 165II) supplies its data (`M_N t` sends a
 pair of positive matrices to a positive one), is stated and proved as
 `Theses.A.CStar.matBilin_nonneg_of_mi` in `A/CStar/Matrices.lean`: its
 content is about matrices over C*-algebras, and `B/Dils` needs it but does
-not import `A/Proc`.  See `QUESTIONS.md` D3. -/
+not import `A/Proc`.  The relocation was the **D3** item of `QUESTIONS.md`
+(option 2, authorised by Bas; worker 43), and that entry was deleted on
+2026-08-16 once it had been carried out — commit f277d72. -/
 
 /-! ## Parsec 1140: extra universal properties and uniqueness -/
 

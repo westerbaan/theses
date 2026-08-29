@@ -675,8 +675,11 @@ corrected Proposition, so the detour is no longer needed.  (The avoided
 argument, for the record: `s ∨ t ≤ s ⋁ t` since `s ⋁ t` is an upper bound,
 and `s ⋁ t ≤ s ∨ t` since `s` and `t` both vanish on `π_{(s∨t)ᵖ}` — the
 second half is `ovee_le_of_le`, which is still in the file but is no
-longer appealed to anywhere.  QUESTIONS.md B4, which recorded the gap, was
-deleted as resolved on 2026-08-16.) -/
+longer appealed to anywhere.  The gap was recorded as **B4** in
+`QUESTIONS.md`; it was settled on 2026-08-14 by the machine-checked
+counterexample `WrightTriangle.not_ea_modularity_prop`, leaving only how to
+amend the printed Proposition, and the entry was deleted on 2026-08-16 once
+eff.tex had been corrected — commit f277d72.) -/
 theorem isSharp_ovee {X : C} {s t : Pred X} (hs : IsSharp s) (ht : IsSharp t)
     (h : Perp s t) : IsSharp (ovee s t h) := by
   -- 204V: the join `s ∨ t` exists among all predicates, and is sharp

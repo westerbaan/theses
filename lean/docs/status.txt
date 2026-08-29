@@ -845,6 +845,10 @@ Theses.A.Proc.TensorTransport|Theses.A.Proc.CT_top_right|green
 Theses.A.Proc.TensorTransport|Theses.A.Proc.CT_uconj_iff|green
 Theses.A.Proc.Commutation|Theses.A.Proc.CT_vnComm|green
 Theses.A.Proc.QuantumLambda|Theses.A.Proc.Fha_concrete|green
+Theses.A.Proc.Measurement|Theses.A.Proc.adPure_carrier|green
+Theses.A.Proc.Measurement|Theses.A.Proc.adPure_one|green
+Theses.A.Proc.Measurement|Theses.A.Proc.adPure_sqBracket|green
+Theses.A.Proc.Measurement|Theses.A.Proc.adPure_sqBracket_iso|green
 Theses.A.Proc.Measurement|Theses.A.Proc.adSelf_apply|green
 Theses.A.Proc.Measurement|Theses.A.Proc.ad_bipositive|green
 Theses.A.Proc.Measurement|Theses.A.Proc.ad_injective|green
@@ -1097,6 +1101,7 @@ Theses.A.Proc.Measurement|Theses.A.Proc.equivalent_examples_3|green
 Theses.A.Proc.CommutationAmplify|Theses.A.Proc.euclidRankOne_single|green
 Theses.A.Proc.Measurement|Theses.A.Proc.exists_adFromCorner|green
 Theses.A.Proc.Measurement|Theses.A.Proc.exists_adNCP|green
+Theses.A.Proc.Measurement|Theses.A.Proc.exists_adPureMap|green
 Theses.A.Proc.Measurement|Theses.A.Proc.exists_adSelf|green
 Theses.A.Proc.Measurement|Theses.A.Proc.exists_adToCorner|green
 Theses.A.Proc.Tensor|Theses.A.Proc.exists_associator|green
@@ -2394,6 +2399,15 @@ Theses.B.Dils.Paschke|Theses.B.Dils.exists_phiT_ncp|green
 Theses.B.Dils.Paschke|Theses.B.Dils.exists_prho|green
 Theses.B.Dils.SelfDualCompletion|Theses.B.Dils.exists_semC_entourage_subset|green
 Theses.B.Dils.HilbertModules|Theses.B.Dils.exists_unTendsto_of_l2Summable|green
+Theses.B.Dils.SelfDual|Theses.B.Dils.extAlgSpan_eta_mem|green
+Theses.B.Dils.SelfDual|Theses.B.Dils.extAlgSpan_le_extPlainTensor|green
+Theses.B.Dils.SelfDual|Theses.B.Dils.extAlgSpan_sum_mem|green
+Theses.B.Dils.SelfDual|Theses.B.Dils.extPlainTensor_completeSpace|green
+Theses.B.Dils.SelfDual|Theses.B.Dils.extPlainTensor_eta_mem|green
+Theses.B.Dils.SelfDual|Theses.B.Dils.extPlainTensor_isClosed|green
+Theses.B.Dils.SelfDual|Theses.B.Dils.extPlainTensor_op_smul_mem|green
+Theses.B.Dils.SelfDual|Theses.B.Dils.extPlainTensor_unDense|green
+Theses.B.Dils.SelfDual|Theses.B.Dils.extTensor_ultranorm_completion|green
 Theses.B.Dils.SelfDual|Theses.B.Dils.ext_tensor_basis|green
 Theses.B.Dils.SelfDual|Theses.B.Dils.ext_tensor_dense|green
 Theses.B.Dils.SelfDual|Theses.B.Dils.ext_tensor_ketbra_uwDense|green
@@ -2505,6 +2519,8 @@ Theses.B.Dils.Stinespring|Theses.B.Dils.kraus_decomposition|green
 Theses.B.Dils.Stinespring|Theses.B.Dils.kraus_decomposition_findim|green
 Theses.B.Dils.Paschke|Theses.B.Dils.ksgns|green
 Theses.B.Dils.HilbertModules|Theses.B.Dils.mem_baSubalgebra|green
+Theses.B.Dils.SelfDual|Theses.B.Dils.mem_extAlgSpan_iff|green
+Theses.B.Dils.SelfDual|Theses.B.Dils.mem_extPlainTensor_iff|green
 Theses.B.Dils.SelfDualCompletion|Theses.B.Dils.mem_sigmaSubmodule|green
 Theses.B.Dils.SelfDual|Theses.B.Dils.mketbraBa_coe|green
 Theses.B.Dils.SelfDual|Theses.B.Dils.mketbra_adjointable|green
@@ -4203,6 +4219,8 @@ Theses.A.Proc.Duplicators|Theses.A.Proc.nsp_eq_linfEval|green
 Theses.A.Proc.Duplicators|Theses.A.Proc.punitLinf_bijective|green
 Theses.A.Proc.Duplicators|Theses.A.Proc.star_mul_apply|green
 Theses.A.Proc.Duplicators|Theses.A.Proc.sum_range_two_mul|green
+Theses.A.Proc.Measurement|Theses.A.Proc.adPure_absorb|green
+Theses.A.Proc.Measurement|Theses.A.Proc.adPure_facts|green
 Theses.A.Proc.Measurement|Theses.A.Proc.bhTwoOne_cceil|green
 Theses.A.Proc.Measurement|Theses.A.Proc.bhTwoProjCompl_cceil|green
 Theses.A.Proc.Measurement|Theses.A.Proc.bhTwoProjCompl_ne_zero|green
@@ -5176,12 +5194,16 @@ Theses.B.Dils.SelfDual|Theses.B.Dils.extEta_add_left|green
 Theses.B.Dils.SelfDual|Theses.B.Dils.extEta_add_right|green
 Theses.B.Dils.SelfDual|Theses.B.Dils.extEta_eq_of_inner_zero|green
 Theses.B.Dils.SelfDual|Theses.B.Dils.extEta_inner|green
+Theses.B.Dils.SelfDual|Theses.B.Dils.extEta_isExtBilin|green
 Theses.B.Dils.SelfDual|Theses.B.Dils.extEta_rep|green
 Theses.B.Dils.SelfDual|Theses.B.Dils.extEta_smul|green
 Theses.B.Dils.SelfDual|Theses.B.Dils.extEta_smul_complex|green
 Theses.B.Dils.SelfDual|Theses.B.Dils.extEta_sub|green
 Theses.B.Dils.SelfDual|Theses.B.Dils.extLift0_tmul|green
 Theses.B.Dils.SelfDual|Theses.B.Dils.extLift_bounded|green
+Theses.B.Dils.SelfDual|Theses.B.Dils.extLift_eta_inner|green
+Theses.B.Dils.SelfDual|Theses.B.Dils.extLift_eta_inner_alg|green
+Theses.B.Dils.SelfDual|Theses.B.Dils.extLift_eta_unDense|green
 Theses.B.Dils.SelfDual|Theses.B.Dils.extLift_op_smul|green
 Theses.B.Dils.SelfDual|Theses.B.Dils.extLift_rep|green
 Theses.B.Dils.SelfDual|Theses.B.Dils.extLift_tmul|green
@@ -5578,6 +5600,7 @@ Theses.A.Proc.Measurement|Theses.A.Proc.Corner.val_neg|green
 Theses.A.Proc.Measurement|Theses.A.Proc.Corner.val_nsmul|green
 Theses.A.Proc.Measurement|Theses.A.Proc.Corner.val_one|green
 Theses.A.Proc.Measurement|Theses.A.Proc.Corner.val_smul|green
+Theses.A.Proc.Measurement|Theses.A.Proc.Corner.val_sqrt|green
 Theses.A.Proc.Measurement|Theses.A.Proc.Corner.val_star|green
 Theses.A.Proc.Measurement|Theses.A.Proc.Corner.val_sub|green
 Theses.A.Proc.Measurement|Theses.A.Proc.Corner.val_zero|green

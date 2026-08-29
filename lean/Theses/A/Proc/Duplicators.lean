@@ -869,7 +869,9 @@ def AtomicSet (S : Set X) : Prop :=
     ∀ S' ⊆ S, MeasurableSet S' → 0 < μ S' → μ S' = μ S
 
 /-- **129II** (proc.tex:6194, Definition), part 2, **as repaired by the
-author** (ruling of Bas Westerbaan, 2026-08-16, QUESTIONS **A6**): `X` is
+author** (ruling of Bas Westerbaan, 2026-08-16, on the item filed as **A6**
+in `QUESTIONS.md` — deleted from that file the same day once implemented, in
+commit ffd073b, whose subject line names A5): `X` is
 **discrete** if `X` can be *partitioned* into atomic measurable subsets.
 
 ⚠️ **This is deliberately not the printed definition**, and is the one
@@ -1324,7 +1326,9 @@ von Neumann algebra with `∫` faithful normal positive, so there is no source
 statement to transcribe here and the fields were assembled to say "`q`
 presents `𝒜` as `L^∞(X, μ)`".
 
-`smul` was added on 2026-08-16 (QUESTIONS D1, ruled by Bas).  Without it the
+`smul` was added on 2026-08-16, on a ruling by Bas.  The item was filed as
+**D1** in `QUESTIONS.md` and deleted from it in the very commit that
+implemented the ruling (43e270f), whose message now carries it.  Without it the
 fields make `q` only a `∗`-*ring* map, and the intended reading of the
 consumers — "every `f` is a.e. constant, hence `L^∞ ≅ ℂ`, hence an nmiu-map"
 — does not follow: a `∗`-ring isomorphism `ℂ → 𝒜` need not be `ℂ`-linear, as
@@ -1668,7 +1672,8 @@ is a faithful np-functional on `𝒜` with `ω(q f) = ∫f dμ`.
 
 Two notes on the transport.  `Linfty_vn`'s presentation `p` is stated as a
 ∗-*ring* map (it carries no `smul` clause, unlike our `IsLinftyOf` — cf. the
-`IsLinftyOf` docstring and QUESTIONS D1), so `Ψ` is built as a ∗-ring
+`IsLinftyOf` docstring, which records the ruling of 2026-08-16 on the item
+then filed as **D1** in `QUESTIONS.md`), so `Ψ` is built as a ∗-ring
 isomorphism and its normality comes from its being an *order* isomorphism,
 which needs no linearity: `0 ≤ x` iff `x = c*c` in either algebra.
 `ℂ`-linearity of `ω` is then recovered from the integral formula, where
@@ -2477,10 +2482,11 @@ element of `𝒜` was shown to be invertible, and 16VII then delivered
 surjectivity of `algebraMap`.  The stated ground for that detour — that
 `IsLinftyOf` "records only that `q` is additive and multiplicative", so
 that a ∗-ring isomorphism `ℂ → 𝒜` need not be `ℂ`-linear — **expired**
-when the `smul` clause was added to `IsLinftyOf` on 2026-08-16
-(QUESTIONS D1); see the note on `IsLinftyOf`, which recorded 130II as the
-one consumer proved before the fix.  Consequence, recorded here because
-this pass is looking for the reverse pattern: 130II was **16VII**'s only
+when the `smul` clause was added to `IsLinftyOf` on 2026-08-16 — the ruling
+on the item then filed as **D1** in `QUESTIONS.md`, deleted from it in the
+implementing commit 43e270f.  See the note on `IsLinftyOf`, which recorded
+130II as the one consumer proved before the fix.  Consequence, recorded
+here because this pass is looking for the reverse pattern: 130II was **16VII**'s only
 consumer in the tree, so `gelfand_mazur` now has none.  16VII is a Theorem
 of cstar.tex in its own right, not run-up machinery, so that is a fact
 about the tree rather than a defect in it.

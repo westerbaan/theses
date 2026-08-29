@@ -594,9 +594,12 @@ noncomputable def predMapHom {X Y : C} (f : X ⟶ Y) (hf : IsTotal f) :
 Given directly rather than existentially, so that both halves are pinned:
 the object part is *literally* `Pred X` and the action on maps is
 *literally* `p ↦ p ∘ f` (`predFunctor_obj`, `predFunctor_map`, both `rfl`).
-Compare the warning in the doc of `192V.3`, and the defect that the ruling
-recorded as QUESTIONS B6 repaired for 192III.1/.2 (B6 was deleted as
-resolved on 2026-08-16; the ruling is in the commit that implemented it). -/
+Compare the warning in the doc of `192V.3`, and the defect that the same
+ruling repaired for 192III.1/.2.  It was filed as **B6** in `QUESTIONS.md`,
+answered by Bas on 2026-08-15 ("yes, please fix the statements"),
+implemented in session 39, and the entry then deleted on 2026-08-16 under
+that file's house rule that an answered item is removed rather than marked
+(commit f277d72); the ruling survives there and in PROVING-LOG. -/
 noncomputable def predFunctor : Tot C ⥤ (EModCat.{v, v} (Scal C))ᵒᵖ where
   obj X := Opposite.op (EModCat.of (Scal C) (Pred X.base))
   map {_ _} f := Quiver.Hom.op (predMapHom f.1 f.2)
@@ -619,8 +622,10 @@ functor `Tot C → EMod_M^op` (the substitution functor).
 Both halves of the functor are pinned: the object part is `Pred X`, and the
 action on maps is `p ↦ p ∘ f`.  (Until the audit repair this asserted only
 `(F.obj X).unop.carrier = Pred X`, which any functor transported along a
-family of bijections satisfies — the defect QUESTIONS.md B6 had repaired for
-192III.1 and 192III.2.) -/
+family of bijections satisfies — the defect that the **B6** ruling had
+already repaired for 192III.1 and 192III.2.  That item was filed in
+`QUESTIONS.md`, answered by Bas on 2026-08-15, implemented in session 39 and
+deleted on 2026-08-16 once implemented, commit f277d72.) -/
 theorem predMap_functor :
     ∃ F : Tot C ⥤ (EModCat.{v, v} (Scal C))ᵒᵖ,
       (∀ X : Tot C, (F.obj X).unop.carrier = Pred X.base) ∧
@@ -1564,7 +1569,9 @@ an effectus in partial form with scalars `M = Scal C`.)
 
 The morphism action is now pinned (audit row 191II, repaired in session 94):
 asserting only `(F.obj X).unop.carrier = Pred X` constrains nothing about
-`F.map`, the defect QUESTIONS.md B6 had repaired for 192III.1/.2.
+`F.map`, the defect that the **B6** ruling had repaired for 192III.1/.2
+(filed in `QUESTIONS.md`, answered by Bas on 2026-08-15 and deleted there on
+2026-08-16 once implemented, commit f277d72).
 
 ⚠ Still weaker than the Theorem in one respect: the source concludes "`C` is
 **equivalent to the subcategory** `Pred C` of `EMod_M^op`", and that does not
@@ -3718,9 +3725,11 @@ changed in the move. -/
 /-- `𝒟_M` of a one-element set is a one-element set: every formal
 `M`-convex combination over `PUnit` is the Dirac one.  (This holds also for
 the trivial effect monoid `1 = 0`, where both sides are the zero function — the
-case QUESTIONS B7 was about, settled by berr.tex's erratum
-`aconvalmosteffectus` and recorded at `aconvalmosteffectus_coproducts`
-below; B7 itself was deleted as resolved on 2026-08-16.) -/
+case that **B7** of `QUESTIONS.md` was about.  Bas answered it on 2026-08-15:
+effect monoids stay possibly trivial and 194I makes the case split, so no Lean
+change was needed; berr.tex's erratum `aconvalmosteffectus` carries it, and it
+is recorded at `aconvalmosteffectus_coproducts` below.  The entry was deleted
+on 2026-08-16 once implemented, commit f277d72.) -/
 theorem MConvexComb.eq_eta_punit {M : Type u} [EffectMonoid M]
     (p : MConvexComb M PUnit.{v + 1}) : p = MConvexComb.eta PUnit.unit := by
   classical
@@ -4108,7 +4117,11 @@ The structure is given directly rather than existentially: the object part is
 `MConvexComb.map` (`exc_dm_effectus_functor_obj`, `_map`, both `rfl`).  Until
 session 10 this read `∃ F : Type u ⥤ Type u, ∀ X, F.obj X = MConvexComb M X`,
 which constrains only the object part and is satisfied by any functor
-transported along a bijection — see QUESTIONS.md B6 and PROVING-LOG. -/
+transported along a bijection.  That was the defect filed as **B6** in
+`QUESTIONS.md`, answered by Bas on 2026-08-15 ("yes, please fix the
+statements") and implemented here in session 39; the entry was deleted on
+2026-08-16 under that file's house rule (commit f277d72), so PROVING-LOG and
+that commit are now where the ruling lives. -/
 noncomputable def exc_dm_effectus_functor : Type u ⥤ Type u where
   obj X := MConvexComb M X
   map {_ _} f := TypeCat.ofHom fun p => p.map (TypeCat.Hom.hom f)
@@ -5774,7 +5787,9 @@ is affine for total `f`, and `Stat : Tot C → AConv_{Mᵒᵖ}` is a functor.
 Both halves of the functor are pinned: the object part is `Stat X` and the
 action on maps is `ω ↦ f ∘ ω` (`statMap`).  Asserting only
 `(F.obj X).carrier = Stat X` constrains no more than the object part — the
-defect QUESTIONS.md B6 had repaired for 192III.1 and 192III.2. -/
+defect that the **B6** ruling had repaired for 192III.1 and 192III.2 (filed
+in `QUESTIONS.md`, answered by Bas on 2026-08-15 and deleted there on
+2026-08-16 once implemented, commit f277d72). -/
 theorem stat_functor :
     ∃ F : Tot C ⥤ AConvMCat.{v, v} (Scal C)ᵐᵒᵖ,
       (∀ X : Tot C, (F.obj X).carrier = Stat X.base) ∧
@@ -6584,9 +6599,11 @@ initial object" fails for the **trivial** effect monoid `M` (`1 = 0`): there
 object of `AConv_M` at all.  `AConv_M` is then equivalent to the one-object,
 one-arrow category and `1` is initial, so the proposition itself survives —
 the proof below splits on `1 = 0`.  The thesis now makes that same case split
-(erratum on `aconvalmosteffectus`), which settled the question recorded as
-QUESTIONS B7 — effect monoids are *not* required to satisfy `1 ≠ 0`; B7 was
-deleted as resolved on 2026-08-16. -/
+(erratum on `aconvalmosteffectus`), which settled the item recorded as **B7**
+in `QUESTIONS.md`: Bas answered it on 2026-08-15 — effect monoids are *not*
+required to satisfy `1 ≠ 0`, and 194I performs the split instead, so no Lean
+change was needed.  That entry was deleted on 2026-08-16 once implemented
+(commit f277d72). -/
 theorem aconvalmosteffectus_coproducts :
     HasFiniteCoproducts (AConvMCat.{u, max u v} M) := by
   classical

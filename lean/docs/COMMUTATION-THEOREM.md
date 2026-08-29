@@ -185,7 +185,7 @@ The one thing worth harvesting from `B/Dils` is not module theory at all:
 `Stinespring.lean` has the **ket/slice operator API** that `A/Proc` lacks —
 `hilbTensorKet` (:1203), `hilbTensorKet_adjoint_mk` (:1213),
 `conjOperator_ketAdjoint` (:1326) — built for a *different* Hilbert tensor
-product, transportable along `hilb_tensor_unique` (`Tensor.lean:693`).
+product, transportable along `hilb_tensor_unique` (`Tensor.lean:881`).
 
 ## 4. The route, if we take it
 
@@ -292,7 +292,7 @@ reconstruction did it, with a route better suited to Lean than the original:
 * The one place von Neumann algebra theory enters is **Kaplansky density**, to
   show `span(Mω ⊙ Nω')` is a core for `S_ξ` — and the self-adjoint version
   suffices, splitting `z = z₁ + iz₂`, which the tree already has as
-  `kaplansky_sa` (`A/VN/Completeness.lean:2432`).
+  `kaplansky_sa` (`A/VN/Completeness.lean:2631`).
 
 The whole chain — including the non-obvious
 `R_ξ/2 = c²(c²+d²)⁻¹` — was verified numerically to machine precision

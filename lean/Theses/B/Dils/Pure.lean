@@ -1286,8 +1286,11 @@ first transcription of this point, which therefore claimed the lemma for
 arbitrary C\*-algebras `A`, `B`.  That is strictly stronger and out of
 reach: the proof below (and the thesis's) reduces to the *standard* dilation
 of **154III**, whose construction `existence_paschke` needs both algebras to
-be von Neumann.  This is the same repair the author ruled on for **170IV**
-(QUESTIONS **D5**, "restore the hypothesis"); see PROVING-LOG session 70.
+be von Neumann.  This is the same repair the author ruled on for **170IV** —
+the item filed as **D5** in `QUESTIONS.md`, ruled "fix transcription"
+(i.e. restore the hypothesis) and implemented on 2026-08-16 in commit
+3aa13e7, which is also where that entry was deleted under the file's house
+rule; see PROVING-LOG session 70.
 
 **169VI** is the proof, transcribed: it is enough to prove it for the
 standard dilation `(𝒷ᵃ(𝒜 ⊗_φ ℬ)ᵐᵒᵖ, ϱ, h)` of **154III**, because
@@ -1330,8 +1333,11 @@ theorem h_is_corner_for_unital_map [VonNeumannAlgebra A] [VonNeumannAlgebra B]
 every ncp-map `f : C → B` with `f(1) ≤ b` factors uniquely through `c` (as
 `f = c ∘ f'`) **by a subunital `f'`**.
 
-⚠️ **Repaired, by a ruling of the author (2026-08-16; QUESTIONS B11, now
-closed; ERRATA).**  As printed, dils.tex asks only for an *ncp* mediating
+⚠️ **Repaired, by a ruling of the author** (Bas, 2026-08-16).  The item was
+filed as **B11** in `QUESTIONS.md` and deleted from it the same day once
+implemented; the ruling survives in PROVING-LOG session 63 and in commit
+ffd073b, whose subject line names A5 rather than B11.  See also ERRATA.
+As printed, dils.tex asks only for an *ncp* mediating
 map `f'`, and under that reading **169XI**.2a `dils_filter_basics_2a` is
 false: for `A = B = C' = ℂ`, `φ = id` and `c' = ½·id` the factorisation
 `f' = 2·id` is ncp, so `c'` is a filter for `φ(1) = 1`, yet no *unital* `φ'`
@@ -2207,7 +2213,9 @@ part 2, first half: for a filter `c' : C' → B` of `φ(1)` there is a unique
 unital ncp-map `φ'` with `φ = c' ∘ φ'`.
 
 This was `sorry` for six sessions as **false under the printed reading of
-`IsFilterFor`** (QUESTIONS B11): with a merely *ncp* mediating map,
+`IsFilterFor`** — the defect filed as **B11** in `QUESTIONS.md` and deleted
+from it on 2026-08-16 once the ruling below was implemented (PROVING-LOG
+session 63, commit ffd073b).  With a merely *ncp* mediating map,
 `A = B = C' = ℂ`, `φ = id`, `c' = ½·id` makes `c'` a filter for `φ(1) = 1`
 (factor `f` as `f' = 2f`), yet the unital `φ'` demanded here would need
 `c'(1) = φ(1)`, i.e. `½ = 1`.  The author ruled on 2026-08-16 that the
@@ -2388,8 +2396,10 @@ chapter's standing hypothesis (dils.tex **140II** opens "let `φ : 𝒜 → ℬ`
 any ncp-map **between von Neumann algebras**") and every sibling statement
 about a `PaschkeTriple` carries them; they were dropped in the first
 transcription of this point.  This is the same repair the author ruled on
-for **169V** and for **170IV** (QUESTIONS **D5**, "restore the
-hypothesis"): the proof reduces to the *standard* dilation of **154III**,
+for **169V** and for **170IV** — the item filed as **D5** in `QUESTIONS.md`,
+ruled "fix transcription" (i.e. restore the hypothesis) and implemented on
+2026-08-16, which is when that entry was deleted (commit 3aa13e7): the proof
+reduces to the *standard* dilation of **154III**,
 whose construction `existence_paschke` needs both algebras to be von
 Neumann.
 
@@ -2450,8 +2460,10 @@ central projection (hence pure).
 
 The two `[VonNeumannAlgebra]` binders are the exercise's own hypothesis; they
 were missing from the first transcription of this point, which therefore
-claimed the result for arbitrary C\*-algebras (QUESTIONS **D5**, ruled on by
-Bas: restore the hypothesis).  They are not decoration — the central
+claimed the result for arbitrary C\*-algebras — the defect filed as **D5** in
+`QUESTIONS.md`, ruled on by Bas ("fix transcription": restore the hypothesis)
+and implemented on 2026-08-16, when that entry was deleted (commit 3aa13e7).
+They are not decoration — the central
 projection is produced by **69IV** `carrier_miu`, which needs them.
 
 The exercise's trailing **"hence pure"** is `surjective_nmiu_1_pure`
@@ -2711,7 +2723,9 @@ claim at every central projection `z` (take `φ = λ·h_z`), so nothing is
 special about `z = 1`.
 
 This is the *same* defect as the one already ruled on for **filters** in
-**169VIII** (QUESTIONS **B11**, `IsFilterFor`): the mediating map of a
+**169VIII** (the `IsFilterFor` item, filed as **B11** in `QUESTIONS.md` and
+deleted from it on 2026-08-16 once that ruling was implemented; PROVING-LOG
+session 63, commit ffd073b): the mediating map of a
 universal property among ncp-maps has to be subunital.  It is not repaired by
 the same edit, though — for filters the hypothesis `f(1) ≤ b ≤ 1` makes the
 quantified `f` subunital by itself, whereas `f a = f 1` constrains nothing,
