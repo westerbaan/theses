@@ -2513,6 +2513,20 @@ theorem spectrum_basic_1' :
       ring
     rw [hdet, pow_eq_zero_iff two_ne_zero]
 
+/-- **11XXI** (`spectrum-basic`, cstar.tex:1649, Exercise), part 1
+(counterexample), the clause that makes it one: `(0 2; 0 0)` is *not*
+self-adjoint.  Without this, `spectrum_basic_1'` is only a computation; with
+it the pair witnesses the Exercise's claim that the converse of part 1 — that
+a real spectrum forces self-adjointness — does not hold. -/
+theorem spectrum_basic_1'_not_isSelfAdjoint :
+    ¬ IsSelfAdjoint (!![0, 2; 0, 0] : Matrix (Fin 2) (Fin 2) ℂ) :=
+  by
+    intro h
+    -- the `(0,1)` entry of `M* = M` reads `star (M 1 0) = M 0 1`, i.e. `0 = 2`
+    have h01 := congrFun (congrFun h.star_eq 0) 1
+    rw [Matrix.star_eq_conjTranspose, Matrix.conjTranspose_apply] at h01
+    norm_num at h01
+
 /-- **11XXI** (`spectrum-basic`, cstar.tex:1649, Exercise), part 2:
 `spec(a²) ⊆ [0,∞)` for self-adjoint `a`. -/
 theorem spectrum_basic_2 (a : 𝒜) (ha : IsSelfAdjoint a) :

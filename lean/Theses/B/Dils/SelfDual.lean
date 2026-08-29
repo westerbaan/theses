@@ -9858,10 +9858,19 @@ and it is the easier of the two: the set `D` of finite sums `∑ᵢ aᵢ ⊗ b�
 **160IV**.2 identifies `D^⊥⊥` with the ultranorm closure of `D` outright.
 The projection onto `D^⊥⊥` fixes every elementary tensor, hence equals `id`
 by the uniqueness half of the universal property of `𝒜 ⊗_φ ℬ`
-(**154III**.1), so `D^⊥⊥` is everything.  The thesis states this only
-implicitly, in the "by construction" of **151V**/**164VII**, so there is no
-printed proof here to be faithful to; the projection argument is ours, as it
-is at 163II.  (**164II**.1 `ext_tensor_dense` used to be a third copy of it;
+(**154III**.1), so `D^⊥⊥` is everything.
+
+The projection argument is ours, but **not** for the reason this comment
+used to give.  It said the thesis states the density "only implicitly, in
+the 'by construction' of **151V**/**164VII**, so there is no printed proof
+here to be faithful to".  That was false twice.  There is no point 151V --
+`151V` occurs nowhere in `dils.tex` -- and the thesis *does* state the dense
+range of `η` for this very module, at dils.tex:3641 inside 154III.1's own
+proof, with the general form printed as 163II's moreover-clause and proved
+at 163III.  What actually blocks the printed route is that `PaschkeModule`
+is axiomatised by its universal property with no `dense` field, so 163III's
+transport would need a uniqueness-up-to-iso for it that the tree does not
+have.  (**164II**.1 `ext_tensor_dense` used to be a third copy of it;
 since 2026-08-27 it runs the thesis's own argument instead, which is
 available there and is not available at either of these two points.) -/
 theorem paschke_tprod_dense (φ : NCPMap 𝒜 ℬ) (M : PaschkeModule φ) :

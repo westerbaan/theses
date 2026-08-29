@@ -2833,9 +2833,15 @@ The index set was `ℕ` until 2026-08-21, which excluded the *finite*
 partitions the Exercise also asks for: padding a finite partition out to
 `ℕ` with `∅` forces `ℬᵢ = {0}` on the padding, and the `Nontrivial ℬᵢ`
 binder forbids that.  That gap is what stopped **130V** below from being
-proved by its printed route ("combine 130IV with 130II"); with `ι`
-arbitrary the printed route goes through, and `discrete_ell_x` now takes
-it.
+proved at all; with `ι` arbitrary the argument goes through, and
+`discrete_ell_x` now takes it.
+
+That route is **ours, not the thesis's**, and this comment used to say
+otherwise: it attributed to proc.tex a printed route quoted as "combine
+130IV with 130II".  There is no such sentence.  130V is
+`cor:discrete-ell-x` (proc.tex:6531), a Corollary with **no proof point at
+all**, and the word "combine" does not occur anywhere in `proc.tex` -- by
+grep of the current text and of its history, 2026-08-29.
 
 `[∀ i, Nontrivial (ℬ i)]` is **Mathlib's** binder, not ours: `lp ℬ ∞`
 carries a `Ring` (and hence a `VonNeumannAlgebra`) instance only through
