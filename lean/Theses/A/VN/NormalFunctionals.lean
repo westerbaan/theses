@@ -1270,6 +1270,26 @@ theorem exists_cyclic_projection (S : StarSubalgebra ℂ (H →L[ℂ] H)) (x : H
   ext y
   exact Submodule.starProjection_eq_self_iff
 
+/-- **88IV** (`carrier-vector-state`, vn.tex:6742, Exercise), **item 1**:
+`⌈|x⟩⟨x|⌉_{S□}` really is *the least projection in `S^□` above*
+`⌈|x⟩⟨x|⌉` — the first of the four things the Exercise asks to coincide,
+stated here in its own right.
+
+It is **88II** `commutant_ceil` at `e = ⌈|x⟩⟨x|⌉`, whose three hypotheses
+(closure under multiplication and involution, and `1 ∈ S`) a
+`StarSubalgebra` satisfies; the point is that the Exercise names this
+projection first and the other three items below are identified with it, so
+it should not have to be recovered by instantiating 88II at each call site.
+-/
+theorem carrier_vector_state_1 (S : StarSubalgebra ℂ (H →L[ℂ] H)) (x : H) :
+    IsLeast {p : H →L[ℂ] H | IsStarProjection p ∧
+        p ∈ commutant (H →L[ℂ] H) (S : Set (H →L[ℂ] H)) ∧
+        ceil (ketbra x x) ≤ p}
+      (commutantCeil (H →L[ℂ] H) S (ceil (ketbra x x))) :=
+  commutant_ceil (A := H →L[ℂ] H) (S : Set (H →L[ℂ] H))
+    (fun a ha b hb => mul_mem ha hb) (fun a ha => star_mem ha) (one_mem S)
+    _ (ceil_spec (ketbra_self_nonneg x)).1
+
 /-- **88IV** (`carrier-vector-state`, vn.tex:6742, Exercise): for a vector
 `x` of a Hilbert space `H` and a unital ∗-subalgebra `S` of `B(H)`, the
 least projection in `S^□` above `⌈|x⟩⟨x|⌉` equals

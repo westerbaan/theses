@@ -189,6 +189,29 @@ def verdict_negated(field, chosen):
     return None
 
 
+# A verdict named as SUPERSEDED is not a competing verdict.  The tree's own
+# convention -- and what every rewrite this week was asked to produce -- is to
+# say "was left-cost until 2026-08-29, now repaired", or "the field read
+# LEFT-UNAVAILABLE and the ground was filed under the wrong verdict".  Naming the
+# old verdict is what makes the correction auditable, so flagging it would push
+# authors to delete the history to satisfy the checker.
+SUPERSEDED = re.compile(
+    r"(?:\bwas\b|\bread\b|\breads\b|\bfiled\b|\bfiled the row\b|\buntil\b"
+    r"|\bpreviously\b|\bformerly\b|\bno longer\b|\bused to\b|\bhad been\b"
+    r"|\bstopped being\b|\bwithdrawn\b|\bretracted\b|\bnot\b"
+    # the tree's own idiom for a history paragraph deliberately preserved
+    r"|\bearlier record\b|\bearlier finding\b|\bthe original finding\b"
+    r"|\bfollows\b|\bhistory\b)"
+    # allow the marker to close its own sentence ("… EARLIER RECORD, kept.  repaired:")
+    # and to sit a clause or two back, which is where these paragraphs put it
+    r"[^.]{0,110}?\.?\s*$", re.IGNORECASE)
+
+
+def _superseded_at(field, m):
+    """True when the verdict matched at `m` is named as a former verdict."""
+    return bool(SUPERSEDED.search(field[max(0, m.start() - 130):m.start()]))
+
+
 def verdict_conflicts(field):
     """Every DISTINCT verdict the needles in `VERDICTS` find in one status field.
 
@@ -207,8 +230,13 @@ def verdict_conflicts(field):
     t = field.strip().lower()
     found = []
     for needle, canon in VERDICTS:
-        if needle in t and canon and canon not in found:
+        if not canon or canon in found:
+            continue
+        for m in re.finditer(re.escape(needle), t):
+            if _superseded_at(t, m):
+                continue                       # named as a former verdict
             found.append(canon)
+            break
     return found
 
 

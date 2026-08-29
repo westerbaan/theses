@@ -8050,6 +8050,47 @@ private theorem exists_linftyPresentation (A : Type u) [CStarAlgebra A]
   exact ⟨characterSpace ℂ A, almostClopenMS _, μ, hfin, hcomp, q, hq.1, hq.2.1,
     hq.2.2.1, hq.2.2.2.1, hq.2.2.2.2.1, hq.2.2.2.2.2.1, hq.2.2.2.2.2.2.1⟩
 
+/-- `exists_linftyPresentation` with the **"n" of "nmiu"**: the presentation
+`q` of **54XI** is *normal* as well.  The seven clauses above are unchanged;
+the eighth says that `q` carries a least upper bound for the
+almost-everywhere order on bounded measurable functions to a least upper
+bound in `A`, which is what normality of the thesis's `f ↦ f°` comes to in
+presentation form (`A/VN/Basic`'s `cvn_faithful_5`, whose last conjunct is
+`linftyPresentation_isLUB` over `cvn_faithful_4`'s eight).  Directedness of
+`D` is neither assumed nor needed. -/
+private theorem exists_linftyPresentation_normal (A : Type u) [CStarAlgebra A]
+    [PartialOrder A] [StarOrderedRing A] [VonNeumannAlgebra A]
+    (hcomm : ∀ x y : A, x * y = y * x) (ω : NPFunctional A)
+    (hω : ∀ a : A, 0 ≤ a → ω a = 0 → a = 0) :
+    ∃ (X : Type u) (_ : MeasurableSpace X) (μ : Measure X),
+      IsFiniteMeasure μ ∧ μ.IsComplete ∧
+      ∃ q : (X → ℂ) → A,
+        (∀ y : A, ∃ f, IsBoundedMeasurable X f ∧ q f = y) ∧
+        (∀ f g, IsBoundedMeasurable X f → IsBoundedMeasurable X g →
+          q (f + g) = q f + q g) ∧
+        (∀ (z : ℂ) f, IsBoundedMeasurable X f → q (z • f) = z • q f) ∧
+        (∀ f g, IsBoundedMeasurable X f → IsBoundedMeasurable X g →
+          q (f * g) = q f * q g) ∧
+        (∀ f, IsBoundedMeasurable X f → q (star f) = star (q f)) ∧
+        q 1 = 1 ∧
+        (∀ f, IsBoundedMeasurable X f → (q f = 0 ↔ f =ᵐ[μ] 0)) ∧
+        (∀ (D : Set (X → ℂ)) (s : X → ℂ),
+          (∀ f ∈ D, IsBoundedMeasurable X f) →
+          IsBoundedMeasurable X s →
+          (∀ f ∈ D, f ≤ᵐ[μ] s) →
+          (∀ t, IsBoundedMeasurable X t →
+            (∀ f ∈ D, f ≤ᵐ[μ] t) → s ≤ᵐ[μ] t) →
+          IsLUB (q '' D) (q s)) := by
+  letI : CommCStarAlgebra A := { ‹CStarAlgebra A› with mul_comm := hcomm }
+  haveI : ExtremallyDisconnected (characterSpace ℂ A) :=
+    vn_spectrum_extremally_disconnected (A := A)
+  obtain ⟨μ, ⟨hnull, -, hfin, hcomp⟩, -⟩ := cvn_faithful_1 ω hω
+  obtain ⟨q, hq⟩ := @cvn_faithful_5 A _ _ _ _ (almostClopenMS _)
+    (almostClopen_sigmaAlgebra _) μ hnull
+  exact ⟨characterSpace ℂ A, almostClopenMS _, μ, hfin, hcomp, q, hq.1, hq.2.1,
+    hq.2.2.1, hq.2.2.2.1, hq.2.2.2.2.1, hq.2.2.2.2.2.1, hq.2.2.2.2.2.2.1,
+    hq.2.2.2.2.2.2.2.2⟩
+
 /-- **70III** (`cvn`, vn.tex:3758, Theorem), in full: **every commutative von
 Neumann algebra `C` is nmiu-isomorphic to a direct sum `⊕ᵢ L^∞(Xᵢ)`, where
 the `Xᵢ` are finite complete measure spaces.**
@@ -8109,6 +8150,60 @@ theorem cvn_linfty {C : Type w} [CommCStarAlgebra C] [PartialOrder C]
     inferInstance, inferInstance, X, mX, μ, hfin, hcomp, hcomm,
     fun i => ⟨q i, hq i⟩, Φ, hbij⟩
 
+
+/-- **70III** (`cvn`, vn.tex:3758, Theorem) with the **"n" of "nmiu"** on the
+summands: `cvn_linfty`'s decomposition, in which each presentation
+`qᵢ : 𝓛^∞(Xᵢ) → 𝒜ᵢ` is *normal* as well — it carries a least upper bound
+for the a.e. order to a least upper bound in `𝒜ᵢ`.
+
+The thesis says the isomorphism `𝒜ᵢ ≅ L^∞(Xᵢ)` of 54XI is an
+**nmiu**-isomorphism; `cvn_linfty` states its miu clauses, and this states
+the remaining "n".  It is not new mathematics: the clause is 54XI's own, it
+is automatic from the other eight (`A/VN/Basic`'s `linftyPresentation_isLUB`,
+packaged as `cvn_faithful_5`), and the proof here is `cvn_linfty`'s with
+`exists_linftyPresentation_normal` in place of `exists_linftyPresentation`.
+Normality of the ambient `Φ : C → ⊕ᵢ 𝒜ᵢ` is not at issue — `Φ` is an
+`NMIUMap` in both.
+
+`cvn_linfty` is left exactly as it stands: it is what the rest of the tree
+reads, and adding a conjunct to it would be a change of statement. -/
+theorem cvn_linfty_normal {C : Type w} [CommCStarAlgebra C] [PartialOrder C]
+    [StarOrderedRing C] [VonNeumannAlgebra C] :
+    ∃ (ι : Type w) (𝒜 : ι → Type w) (_ : ∀ i, CStarAlgebra (𝒜 i))
+      (_ : ∀ i, Nontrivial (𝒜 i)) (_ : ∀ i, PartialOrder (𝒜 i))
+      (_ : ∀ i, StarOrderedRing (𝒜 i)) (_ : ∀ i, VonNeumannAlgebra (𝒜 i))
+      (X : ι → Type w) (_ : ∀ i, MeasurableSpace (X i))
+      (μ : ∀ i, Measure (X i)),
+      (∀ i, IsFiniteMeasure (μ i)) ∧
+      (∀ i, (μ i).IsComplete) ∧
+      (∀ (i : ι) (x y : 𝒜 i), x * y = y * x) ∧
+      (∀ i, ∃ q : (X i → ℂ) → 𝒜 i,
+        (∀ y : 𝒜 i, ∃ f, IsBoundedMeasurable (X i) f ∧ q f = y) ∧
+        (∀ f g, IsBoundedMeasurable (X i) f → IsBoundedMeasurable (X i) g →
+          q (f + g) = q f + q g) ∧
+        (∀ (z : ℂ) f, IsBoundedMeasurable (X i) f → q (z • f) = z • q f) ∧
+        (∀ f g, IsBoundedMeasurable (X i) f → IsBoundedMeasurable (X i) g →
+          q (f * g) = q f * q g) ∧
+        (∀ f, IsBoundedMeasurable (X i) f → q (star f) = star (q f)) ∧
+        q 1 = 1 ∧
+        (∀ f, IsBoundedMeasurable (X i) f → (q f = 0 ↔ f =ᵐ[μ i] 0)) ∧
+        (∀ (D : Set (X i → ℂ)) (s : X i → ℂ),
+          (∀ f ∈ D, IsBoundedMeasurable (X i) f) →
+          IsBoundedMeasurable (X i) s →
+          (∀ f ∈ D, f ≤ᵐ[μ i] s) →
+          (∀ t, IsBoundedMeasurable (X i) t →
+            (∀ f ∈ D, f ≤ᵐ[μ i] t) → s ≤ᵐ[μ i] t) →
+          IsLUB (q '' D) (q s))) ∧
+      ∃ Φ : NMIUMap C (lp 𝒜 ∞), Function.Bijective ⇑Φ := by
+  classical
+  obtain ⟨ι, ω, c, hntriv, -, -, -, hcomm, hfaith, Φ, hbij, -⟩ :=
+    cvn_direct_sum (C := C)
+  choose X mX μ hfin hcomp q hq using fun i : ι =>
+    exists_linftyPresentation_normal ((c i).sub) (hcomm i) ((c i).restrictNP (ω i))
+      (hfaith i)
+  exact ⟨ι, fun i => (c i).sub, inferInstance, hntriv, inferInstance,
+    inferInstance, inferInstance, X, mX, μ, hfin, hcomp, hcomm,
+    fun i => ⟨q i, hq i⟩, Φ, hbij⟩
 end Classification
 
 end Theses.A.VN
