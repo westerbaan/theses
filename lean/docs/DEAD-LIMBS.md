@@ -278,7 +278,7 @@ points**
 >   dense by construction, obtains mutually inverse `U`, `W` from the two
 >   universal properties, and transports the density along the surjective
 >   ultranorm-continuous `U`.  No `D^⊥⊥`, no **160IV**.
-> * **164II**.1's proof is one sentence (dils.tex:5310): "Property 1 … follows
+> * **164II**.1's proof is one sentence (dils.tex:5311): "Property 1 … follows
 >   immediately from the fact that the exterior tensor product is unique up to
 >   an isomorphism which respects the embeddings" — the same transport, with
 >   **164IX** as the comparison.
@@ -305,7 +305,7 @@ points**
 > **Verdict: do not build it.**
 >
 > **What was done instead.**  `ext_tensor_dense` (**164II**.1) now runs the
-> thesis's own proof, dils.tex:5310: `extTensorOfCompl` names the `ExtTensor`
+> thesis's own proof, dils.tex:5311: `extTensorOfCompl` names the `ExtTensor`
 > carried by the **150II** completion of `(X ⊙ Y) ⊙ 𝒞` — for which the density
 > is the completion's own `dense` field, modulo 164VII's `bSpan`-to-`unClosure`
 > step, extracted as `extTensor_bSpan_unClosure` — and **164IX**
@@ -1743,7 +1743,7 @@ make them the fingerprint the check is after. Left, recorded, re-confirmed.
    the three sites.  The bridge was costed at ~100 lines against 71
    duplicated (the *measured* duplication, not the recorded "60 at each of two
    sites"), with **one** customer, and was **not built**.  What was built
-   is the thesis's own proof of **164II**.1 (dils.tex:5310), which removed one
+   is the thesis's own proof of **164II**.1 (dils.tex:5311), which removed one
    of the three copies; the limb keeps no consumer and moves to §6.
 6. **Leave §5.4, §5.5, §5.6, §6 and §8 alone.** Each has a written reason, and
    in the case of §5.6 the repair would weaken the statement.
