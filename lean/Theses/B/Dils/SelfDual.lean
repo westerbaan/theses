@@ -8252,6 +8252,249 @@ end Completion
 
 end PlainExtTensor
 
+section HilbExtTensor
+
+/-! ### **164XII**.1: the Hilbert space tensor product as an exterior
+tensor product
+
+**164XII** (dils.tex:5367, Examples), item 1, second sentence: "For Hilbert
+spaces `H` and `K` we have `H ⊗_Hilb K ≅ H ⊗_ext K`."  (The first sentence,
+that every Hilbert space is a self-dual Hilbert ℂ-module, is **36II**
+`Theses.A.CStar.selfDual_hilbert`; it is redone below as
+`selfDual_complex_hilbert` for `B/Dils`'s own `SelfDual`, **141IIa**, which
+asks for a bound where 36I asks for continuity.)
+
+The second sentence is converted in the shape item 2 is converted in: rather
+than build an isomorphism, the Hilbert space tensor product is exhibited *as*
+a self-dual exterior tensor product over `ℂ = ℂ ⊗ ℂ`, the tensor being
+`vnTensor_mul_complex` — multiplication.  Since any two exterior tensor
+products of the same pair satisfy the same universal property (**164IX**
+`ext_tensor_uniqueness`), that is the asserted isomorphism.  Stated for an
+arbitrary Hilbert space tensor product `γ` (**109II**
+`Theses.A.Proc.IsHilbertTensorProduct`), and specialised to thesis A's chosen
+one in `extTensorHilbTensor`.
+
+**Divergence, class 3 (weaker): `H` and `K` are restricted to `Type 0`.**
+`ExtTensor.{u}` wants its three algebras in `Type u` alongside `X` and `Y`,
+and the only tensor available here is `vnTensor_mul_complex`, which is
+`IsVNTensor.{0}` because `ℂ : Type 0`.  So
+`ExtTensor (fun a b : ℂ => a * b) vnTensor_mul_complex H K` forms for
+`H K : Type` and does *not* form for `H K : Type u` with `u > 0`: the
+elaborator rejects `IsVNTensor.{0}` against `IsVNTensor.{u}`.  Lifting the
+statement to a general universe means running parsec 1640 over `ULift ℂ`
+instead: an `IsVNTensor` for multiplication there (transportable from
+`vnTensor_mul_complex`, but its `NPFunctional`s, its `wstar` and its product
+functionals must all be moved), and a `CStarModule (ULift ℂ) H`, which
+Mathlib does not have and which would be a second module structure on `H`
+beside the `CStarModule ℂ H` it does supply.  Neither is done here; the
+thesis's Example is stated for all Hilbert spaces, and this is the `Type 0`
+case of it.
+
+Two obstacles inside the proof, both about `ℂ` being met from two sides.
+(i) `ExtTensor.univ` quantifies over a target `W` given as a `CStarModule ℂ`,
+while the tool for it — **110III**
+`Theses.A.Proc.hilb_tensor_universal_property` — is stated for an
+`InnerProductSpace ℂ` target, and Mathlib has that bridge in one direction
+only (`WithCStarModule.instCStarModuleComplex`).  The converse is written out
+below as `cstarInnerProductSpace`, a `def` and deliberately not an
+`instance`: with Mathlib's it would loop.  (ii) `CStarModule 𝒜 E` carries its
+own `[SMul 𝒜 E]`, which at `𝒜 = ℂ` need not be the scalar multiplication of
+the complex vector space; the two do agree, because the inner product is
+definite, and every step below that exchanges them is that argument
+(`eq_of_inner_right_eq`). -/
+
+set_option linter.overlappingInstances false in
+/-- Auxiliary for **164XII**.1: a Hilbert C*-module over `ℂ` is an inner
+product space — the converse of Mathlib's
+`WithCStarModule.instCStarModuleComplex`.  A `def`, never an `instance`:
+paired with Mathlib's the two would loop. -/
+@[reducible] private noncomputable def cstarInnerProductSpace (W : Type*)
+    [NormedAddCommGroup W] [NormedSpace ℂ W] [SMul ℂ W] [CStarModule ℂ W] :
+    InnerProductSpace ℂ W :=
+  { (inferInstance : NormedSpace ℂ W) with
+    inner := fun x y => (inner ℂ x y : ℂ)
+    norm_sq_eq_re_inner := fun x => by
+      have h0 : (0 : ℂ) ≤ (inner ℂ x x : ℂ) := CStarModule.inner_self_nonneg
+      rw [Complex.le_def] at h0
+      have him : (inner ℂ x x : ℂ) = (((inner ℂ x x : ℂ).re : ℝ) : ℂ) :=
+        Complex.ext rfl (by simpa using h0.2.symm)
+      have hre : ‖(inner ℂ x x : ℂ)‖ = (inner ℂ x x : ℂ).re := by
+        rw [him, Complex.norm_real, Real.norm_eq_abs,
+          abs_of_nonneg (by simpa using h0.1)]
+        simp
+      rw [CStarModule.norm_sq_eq (A := ℂ), hre]
+      rfl
+    conj_inner_symm := fun x y => CStarModule.star_inner y x
+    add_left := fun x y z => CStarModule.inner_add_left
+    smul_left := fun x y r => by
+      rw [CStarModule.inner_smul_left_complex]
+      simp [smul_eq_mul] }
+
+/-- **164XII**.1 (dils.tex:5367, Examples), first sentence, in `B/Dils`'s
+reading of self-duality (**141IIa**, a bounded rather than a continuous
+module map): a Hilbert space is a self-dual Hilbert ℂ-module.  This is
+**36II** `Theses.A.CStar.selfDual_hilbert` again — same Riesz representation,
+different `SelfDual` — and it is what discharges the `selfDual` field of
+`extTensorHilb`. -/
+private theorem selfDual_complex_hilbert (Z : Type*) [NormedAddCommGroup Z]
+    [InnerProductSpace ℂ Z] [CompleteSpace Z] : SelfDual ℂ Z := by
+  intro τ _ ⟨C, hC⟩
+  have hcont : Continuous ⇑τ := (τ.mkContinuous C hC).continuous
+  refine ⟨(InnerProductSpace.toDual ℂ Z).symm ⟨τ, hcont⟩, fun x => ?_⟩
+  exact (InnerProductSpace.toDual_symm_apply (x := x)
+    (y := (⟨τ, hcont⟩ : Z →L[ℂ] ℂ))).symm
+
+variable {H K Z : Type}
+  [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
+  [NormedAddCommGroup K] [InnerProductSpace ℂ K] [CompleteSpace K]
+  [NormedAddCommGroup Z] [InnerProductSpace ℂ Z] [CompleteSpace Z]
+
+omit [CompleteSpace H] [CompleteSpace K] in
+/-- Auxiliary for **164XII**.1, the analogue of `extTensor_gram` for a
+Hilbert space tensor product: the Gram sum `∑ᵢⱼ ⟨xᵢ,xⱼ⟩⟨yᵢ,yⱼ⟩` is
+`⟨∑ᵢ γ(xᵢ,yᵢ), ∑ᵢ γ(xᵢ,yᵢ)⟩`, so its norm is its real part.  This is what
+turns `ExtTensor.univ`'s boundedness hypothesis, which is stated with a
+norm, into **110I** `L2Bounded`, which is stated with a real part. -/
+private theorem hilbTensor_gram_norm (γ : H →ₗ[ℂ] K →ₗ[ℂ] Z)
+    (hγ : Theses.A.Proc.IsHilbertTensorProduct γ) (n : ℕ)
+    (x : Fin n → H) (y : Fin n → K) :
+    ‖∑ i, ∑ j, (inner ℂ (x i) (x j) : ℂ) * inner ℂ (y i) (y j)‖
+      = (∑ i, ∑ j, (inner ℂ (x i) (x j) : ℂ) * inner ℂ (y i) (y j)).re := by
+  have key : (∑ i, ∑ j, (inner ℂ (x i) (x j) : ℂ) * inner ℂ (y i) (y j))
+      = inner ℂ (∑ i, γ (x i) (y i)) (∑ i, γ (x i) (y i)) := by
+    rw [sum_inner]
+    refine Finset.sum_congr rfl fun i _ => ?_
+    rw [inner_sum]
+    exact Finset.sum_congr rfl fun j _ =>
+      (hγ.inner_mul (x i) (x j) (y i) (y j)).symm
+  rw [key, inner_self_eq_norm_sq_to_K]
+  simp [← Complex.ofReal_pow]
+
+/-- **164XII**.1 (dils.tex:5367, Examples), second sentence, for `Type 0`
+Hilbert spaces: `H ⊗_Hilb K` **is** a self-dual exterior tensor product of
+`H` and `K` over `ℂ = ℂ ⊗ ℂ`, so by **164IX** `ext_tensor_uniqueness` it is
+isomorphic to `H ⊗_ext K`.  Stated for an arbitrary Hilbert space tensor
+product `γ` (**109II**); see `extTensorHilbTensor` for thesis A's chosen one.
+
+`η = γ`, and every field but the last two is bilinearity of `γ` and its
+defining `⟨γ(x,y), γ(x',y')⟩ = ⟨x,x'⟩⟨y,y'⟩`.  Injectivity is **164VI**
+`extTensor_eta_injective`, exactly as at the other two construction sites.
+The universal property is **110III**: `ExtTensor.univ`'s bound
+`‖∑ᵢ T(xᵢ,yᵢ)‖² ≤ C‖∑ᵢⱼ ⟨xᵢ,xⱼ⟩⟨yᵢ,yⱼ⟩‖` becomes `L2Bounded` at
+`√(max C 0)` through `hilbTensor_gram_norm`, and 110III's unique continuous
+linear `f` is the unique bounded module map, a bounded module map over `ℂ`
+being a bounded ℂ-linear one.  The `Type 0` restriction and the two
+`ℂ`-from-two-sides obstacles are discussed in the section note above. -/
+noncomputable def extTensorHilb (γ : H →ₗ[ℂ] K →ₗ[ℂ] Z)
+    (hγ : Theses.A.Proc.IsHilbertTensorProduct γ) :
+    ExtTensor (fun a b : ℂ => a * b) vnTensor_mul_complex H K := by
+  have hadd_l : ∀ (x x' : H) (y : K), γ (x + x') y = γ x y + γ x' y :=
+    fun x x' y => by rw [map_add]; rfl
+  have hadd_r : ∀ (x : H) (y y' : K), γ x (y + y') = γ x y + γ x y' :=
+    fun x y y' => by rw [map_add]
+  have hsm : ∀ (a b : ℂ) (x : H) (y : K),
+      γ (a • x) (b • y) = (a * b) • γ x y := fun a b x y => by
+    rw [map_smul γ a x, LinearMap.smul_apply, map_smul, smul_smul]
+  have hin : ∀ (x x' : H) (y y' : K),
+      (inner ℂ (γ x y) (γ x' y') : ℂ) = inner ℂ x x' * inner ℂ y y' :=
+    fun x x' y y' => hγ.inner_mul x x' y y'
+  exact
+  { Z := Z
+    selfDual := selfDual_complex_hilbert Z
+    η := fun x y => γ x y
+    η_add_left := hadd_l
+    η_add_right := hadd_r
+    η_smul_complex := fun c x y => by rw [map_smul]; rfl
+    η_smul := hsm
+    η_inner := hin
+    η_injective := fun n x y h =>
+      extTensor_eta_injective vnTensor_mul_complex
+        (selfDual_complex_hilbert H) (selfDual_complex_hilbert K)
+        (fun x y => γ x y) hadd_l hadd_r hsm hin x y h
+    univ := by
+      intro W iW₁ iW₂ iW₃ iW₄ iW₅ _ T hadd_l hadd_r hsmul hbnd
+      letI := iW₁; letI := iW₂; letI := iW₃; letI := iW₄; letI := iW₅
+      letI : InnerProductSpace ℂ W := cstarInnerProductSpace W
+      have hkey : ∀ v v' : W,
+          (∀ z : W, (inner ℂ z v : ℂ) = inner ℂ z v') → v = v' :=
+        fun v v' h => eq_of_inner_right_eq (𝒜 := ℂ) h
+      -- `T` is ℂ-bilinear for the *vector space* action on `W`
+      obtain ⟨β, hβapp⟩ : ∃ β : H →ₗ[ℂ] K →ₗ[ℂ] W, ∀ x y, β x y = T x y := by
+        refine ⟨LinearMap.mk₂ ℂ T hadd_l ?_ hadd_r ?_, fun _ _ => rfl⟩
+        · intro c x y
+          have h1 := hsmul c 1 x y
+          rw [one_smul, mul_one] at h1
+          rw [h1]
+          refine hkey _ _ fun z => ?_
+          rw [CStarModule.inner_op_smul_right,
+            CStarModule.inner_smul_right_complex, smul_eq_mul]
+        · intro c x y
+          have h1 := hsmul 1 c x y
+          rw [one_smul, one_mul] at h1
+          rw [h1]
+          refine hkey _ _ fun z => ?_
+          rw [CStarModule.inner_op_smul_right,
+            CStarModule.inner_smul_right_complex, smul_eq_mul]
+      -- ℓ²-boundedness of `β`, from `univ`'s hypothesis
+      obtain ⟨C, hC⟩ := hbnd
+      set B : ℝ := Real.sqrt (max C 0)
+      have hB0 : (0 : ℝ) ≤ B := Real.sqrt_nonneg _
+      have hBsq : B ^ 2 = max C 0 := Real.sq_sqrt (le_max_right C 0)
+      have hL2 : Theses.A.Proc.L2Bounded β B := by
+        refine ⟨hB0, fun n x y => ?_⟩
+        have hgn := hilbTensor_gram_norm γ hγ n x y
+        have hre : (0 : ℝ) ≤ (∑ i, ∑ j, (inner ℂ (x i) (x j) : ℂ)
+            * inner ℂ (y i) (y j)).re := by
+          rw [← hgn]; exact norm_nonneg _
+        have hCbound := hC n x y
+        rw [hgn] at hCbound
+        have hEq : (∑ i, (β (x i)) (y i)) = ∑ i, T (x i) (y i) :=
+          Finset.sum_congr rfl fun i _ => hβapp (x i) (y i)
+        rw [hBsq, hEq]
+        exact hCbound.trans (mul_le_mul_of_nonneg_right (le_max_left C 0) hre)
+      -- **110III**
+      obtain ⟨-, huniv⟩ :=
+        Theses.A.Proc.hilb_tensor_universal_property (L := W) γ hγ
+      obtain ⟨f, hf, -, hfu⟩ := huniv β B hL2
+      refine ⟨⇑f, ⟨⟨‖f‖, ?_, ?_, ?_, ?_⟩,
+        fun x y => (hf x y).trans (hβapp x y)⟩, ?_⟩
+      · exact fun z z' => map_add f z z'
+      · intro c z
+        exact f.map_smul c z
+      · intro b z
+        rw [f.map_smul]
+        refine hkey _ _ fun w => ?_
+        rw [CStarModule.inner_smul_right_complex,
+          CStarModule.inner_op_smul_right, smul_eq_mul]
+      · intro z
+        rw [cstarBInner_norm, cstarBInner_norm]
+        exact f.le_opNorm z
+      · rintro T'' ⟨⟨C'', hadd, hsc, -, hbd⟩, hT''⟩
+        have hbd' : ∀ z : Z, ‖T'' z‖ ≤ C'' * ‖z‖ := by
+          intro z
+          have := hbd z
+          rwa [cstarBInner_norm, cstarBInner_norm] at this
+        set g : Z →L[ℂ] W :=
+          LinearMap.mkContinuous ⟨⟨T'', hadd⟩, hsc⟩ C'' hbd'
+        have hgf : g = f := hfu g fun x y => (hT'' x y).trans (hβapp x y).symm
+        funext z
+        exact congrArg (fun (h : Z →L[ℂ] W) => h z) hgf }
+
+/-- **164XII**.1 (dils.tex:5367, Examples), second sentence, at thesis A's
+*chosen* Hilbert space tensor product (**110VI**,
+`Theses.A.Proc.hilbTensor`): `H ⊗ K` is a self-dual exterior tensor product
+of `H` and `K` over `ℂ`.  The `Type 0` restriction of `extTensorHilb` is
+inherited. -/
+noncomputable def extTensorHilbTensor (H K : Type) [NormedAddCommGroup H]
+    [InnerProductSpace ℂ H] [CompleteSpace H] [NormedAddCommGroup K]
+    [InnerProductSpace ℂ K] [CompleteSpace K] :
+    ExtTensor (fun a b : ℂ => a * b) vnTensor_mul_complex H K :=
+  extTensorHilb (Theses.A.Proc.hilbTensor H K).map
+    (Theses.A.Proc.hilbTensor H K).isTensor
+
+end HilbExtTensor
+
+
 section EtaEstimates
 
 variable [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ] [VonNeumannAlgebra 𝒞]
@@ -8525,8 +8768,19 @@ theorem ext_tensor_basis [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
 the linear span of `D = {|(e'ᵢa) ⊗ (d'ⱼb)⟩⟨e_k ⊗ d_l|}` is **ultraweakly
 dense** in `𝒞ᵃ(X ⊗ Y)` — in the entourage form (given finitely many
 np-functionals and an `ε > 0`, some element of the span is within `ε` of
-`T` on all of them).  **164X**–**164XI** (dils.tex:5335) are the proof;
-**164XII** (Examples) — not converted.
+`T` on all of them).  **164X**–**164XI** (dils.tex:5335) are the proof.  All four **164XII**
+Examples (dils.tex:5367) are converted.  Item 1's first sentence is
+**36II** `selfDual_hilbert`, redone as `selfDual_complex_hilbert` for
+`B/Dils`'s own `SelfDual`, and its second, `H ⊗_Hilb K ≅ H ⊗_ext K`, is
+`extTensorHilb` with `extTensorHilbTensor` — but for `H` and `K` in
+`Type 0` only, a universe restriction the section note there records.
+Item 2 is `selfDual_self` (`B/Dils/HilbertModules.lean`) for its first
+sentence and `extTensorSelf` below for its second, that declaration
+exhibiting `𝒜 ⊗ ℬ` over itself as an `ExtTensor t ht 𝒜 ℬ` — which, every
+exterior tensor product satisfying the same universal property, is the
+asserted isomorphism.  Item 3 is `extPlainTensor` and
+`extTensor_ultranorm_completion`, and item 4 is a forward reference,
+discharged at **167I** by `paschke_tensor_module`.
 
 📌 *Author ruling, 2026-08-18 (QUESTIONS **D6**, now closed).*  This
 declaration replaces an earlier transcription, `ext_tensor_ketbra_dense`,
