@@ -849,10 +849,15 @@ here, and left. -/
 variable {I : Type*} (𝒜 : I → Type u) [∀ i, CStarAlgebra (𝒜 i)]
   [∀ i, Nontrivial (𝒜 i)]
 
-/-- The direct sum `⊕ᵢ 𝒜ᵢ = lp 𝒜 ∞` of unital C*-algebras is a unital
-C*-algebra (Mathlib provides all the pieces but only registers the
-commutative unital instance; this mirrors `lp.inftyCommCStarAlgebra`). -/
-noncomputable instance : CStarAlgebra (lp 𝒜 ∞) where
+-- The unital `CStarAlgebra (lp 𝒜 ∞)` instance is NOT declared here.  It was,
+-- anonymously, until 2026-08-29, and it shadowed `lpInftyCStarAlgebra`
+-- (`A/CStar/Positive.lean:3768`), which this file already imports through
+-- `A/CStar/Representation`.  The two were definitionally equal and the shadow
+-- won synthesis downstream, so it was redundant rather than dangerous -- but it
+-- was also strictly less general (`Type u` with `𝒜` explicit, against `Type*`
+-- with `𝒜` implicit).  Both doc comments were right that *Mathlib* registers
+-- only the non-unital and commutative cases; neither mentioned that we had
+-- already supplied this one.
 
 /-- The canonical (spectral) order on the direct sum `lp 𝒜 ∞`, mirroring
 `CStarMatrix.instPartialOrder`. -/

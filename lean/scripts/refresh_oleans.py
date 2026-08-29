@@ -100,8 +100,48 @@ def dirty():
     return out
 
 
+def downstream_of(root, mods):
+    """`root` and every module that imports it, transitively.
+
+    Changing a definition or an instance in a module cannot be verified by
+    recompiling that module: the question is whether everything BELOW it still
+    elaborates.  With a full `lake build` ruled out by the memory ceiling, the
+    only way to ask is to rebuild the closure one file at a time, in dependency
+    order, through the lock -- which is what `--downstream-of` does.
+    """
+    rev = {}
+    for m, src in mods.items():
+        for i in IMPORT.findall(src.read_text()):
+            rev.setdefault(i, set()).add(m)
+    seen, frontier = {root}, {root}
+    while frontier:
+        nxt = set()
+        for m in frontier:
+            for c in rev.get(m, ()):
+                if c not in seen:
+                    seen.add(c)
+                    nxt.add(c)
+        frontier = nxt
+    return seen
+
+
 def main():
     mods = modules()
+    for i, a in enumerate(sys.argv):
+        if a == "--downstream-of":
+            root = sys.argv[i + 1]
+            if root not in mods:
+                return print(f"no such module: {root}") or 1
+            targets = downstream_of(root, mods)
+            held = dirty() - {root}
+            if targets & held:
+                print("refusing: these are mid-edit -- "
+                      + ", ".join(sorted(targets & held)))
+                return 1
+            seq = order(targets, mods)
+            print(f"rebuilding {root} and its {len(seq) - 1} dependants, in "
+                  f"dependency order, through the compile lock")
+            return rebuild(seq, mods)
     bad = stale(mods)
     if not bad:
         print(f"{len(mods)} modules, every olean at least as new as its source")
@@ -126,6 +166,14 @@ def main():
     seq = order(targets, mods)
     print(f"\nrebuilding {len(seq)} in dependency order, one at a time through the "
           f"compile lock")
+    rc = rebuild(seq, mods)
+    tail = f"; {len(skipped)} skipped as mid-edit" if skipped else ""
+    if rc == 0:
+        print(f"\n{len(seq)} rebuilt{tail}")
+    return rc
+
+
+def rebuild(seq, mods):
     failed = []
     for i, mod in enumerate(seq, 1):
         dest = olean(mod)
@@ -149,8 +197,6 @@ def main():
         print(f"\n{len(seq) - len(failed)} rebuilt, {len(failed)} FAILED: "
               f"{', '.join(failed)}")
         return 1
-    tail = f"; {len(skipped)} skipped as mid-edit" if skipped else ""
-    print(f"\n{len(seq)} rebuilt{tail}")
     return 0
 
 
