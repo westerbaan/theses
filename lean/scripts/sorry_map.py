@@ -621,6 +621,35 @@ def report_conflicts():
     for rel, i, disp, chosen, others in bad:
         print(f"AMBIG    {rel}:{i}  {disp} reads back as {chosen!r}, "
               f"also matches {others}")
+    # A status field whose verdict is not in the vocabulary at all.
+    #
+    # `verdict_of` falls back to the field's first token when it finds no needle,
+    # which turns "2026-08-29 note: ..." into the category `note` and "row added"
+    # into `row`.  On 2026-08-29 that produced 44 rows filed under `status`,
+    # `added`, `converted`, `kept`, `proved`, `costing`, `->` and even `10`,
+    # beside 127 with no verdict at all -- 171 of 833, a fifth of the audit,
+    # whose verdict no reader or tool can recover.
+    #
+    # The vocabulary is closed and small, so this is decidable: anything outside
+    # it is a row that needs a verdict written, not a new category.
+    KNOWN = {"repaired", "left-benign", "left-cost", "left-thesis", "left-ruling",
+             "left-needs-statement", "left-forced", "left-mathlib",
+             "left-unavailable", "left-encoding", "left-by-choice",
+             "left-reasoned", "left-erratum", "open", ""}
+    unreadable = []
+    for f in sorted(glob.glob(DOCS + "audit/*.csv")):
+        for i, line in enumerate(_pl.Path(f).read_text().splitlines(), 1):
+            parts = line.split("|")
+            if len(parts) < 7 or not parts[6].strip():
+                continue
+            k = verdict_of(parts[6])
+            if k not in KNOWN:
+                unreadable.append((f, i, parts[0], k))
+    for f, i, disp, k in unreadable[:40]:
+        print(f"NOVERDICT {f}:{i}  {disp} resolves to {k!r}, which is not a verdict")
+    if len(unreadable) > 40:
+        print(f"          ... and {len(unreadable) - 40} more")
+
     negated = []
     for f in sorted(glob.glob(DOCS + "audit/*.csv")):
         for i, line in enumerate(_pl.Path(f).read_text().splitlines(), 1):
@@ -643,8 +672,9 @@ def report_conflicts():
           f"verdict, so what they report depends on VERDICTS' order rather than on "
           f"the row; {len(under)} more name a NUMBERED ground whose meaning differs "
           f"between the two passes and are all read as `left-cost` regardless; "
-          f"{len(negated)} report a verdict their own sentence denies")
-    return 1 if (bad or under or negated) else 0
+          f"{len(negated)} report a verdict their own sentence denies; "
+          f"{len(unreadable)} resolve to something that is not a verdict at all")
+    return 1 if (bad or under or negated or unreadable) else 0
 
 
 if __name__ == "__main__":
