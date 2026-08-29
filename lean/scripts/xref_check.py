@@ -20,6 +20,14 @@ A section exists when some heading of the file opens with its number: `## 5.`,
 `### 5.1`, `### 10a.`, `### 13.4`.  Sub-numbering is not invented — `§5` does
 not stand in for `§5.1` — because a reader following `§5` lands on the section
 and a reader following `§5d` lands nowhere.
+**Two forms count as a section heading.**  The obvious one is a Markdown heading
+opening with the number.  The second was found on 2026-08-29: `docs/DECISIONS.md`
+writes the whole of its section 4 as bold run-in items -- `**4.1 - B12 as
+QUESTIONS.md prints it.**`, `**4.2 - "104III.5 is waiting on a ruling".**` -- with
+no `#` at all.  They are sections in every sense that matters to a reader: they
+are numbered, they are named, and the document refers to them as `§4.2`.  The
+first reference anyone wrote to one was reported DANGLING, which is the checker
+being wrong about the document rather than the document being wrong.
 """
 
 import pathlib
@@ -31,6 +39,10 @@ DOCS = ROOT / "docs"
 LEAN = ROOT / "Theses"
 
 HEADING = re.compile(r'^#{1,4}\s+(\d+(?:\.\d+)?[a-z]?)\.?\s')
+# `**4.2 — "104III.5 is waiting on a ruling".**` — DECISIONS.md §4's run-in
+# style.  Anchored at line start and requiring the bold to open with the number,
+# so a bold phrase mid-paragraph is not mistaken for a section.
+BOLD_HEADING = re.compile(r'^\*\*(\d+(?:\.\d+)?[a-z]?)\s*[.\u2014-]')
 QUALIFIED = re.compile(r'`?docs/([A-Za-z-]+\.md)`?\s*§\s*(\d+(?:\.\d+)?[a-z]?)')
 BARE = re.compile(r'§\s*(\d+(?:\.\d+)?[a-z]?)')
 
@@ -38,8 +50,9 @@ BARE = re.compile(r'§\s*(\d+(?:\.\d+)?[a-z]?)')
 def anchors():
     out = {}
     for md in sorted(DOCS.glob("*.md")):
-        out[md.name] = {m.group(1) for m in
-                        (HEADING.match(l) for l in md.read_text().splitlines()) if m}
+        lines = md.read_text().splitlines()
+        out[md.name] = ({m.group(1) for m in (HEADING.match(l) for l in lines) if m}
+                        | {m.group(1) for m in (BOLD_HEADING.match(l) for l in lines) if m})
     return out
 
 
@@ -79,9 +92,12 @@ def main():
 
     for where, lineno, fname, sec, why in bad:
         print(f"DANGLING {where}:{lineno}  {fname} §{sec} — {why}")
-    print(f"\n{checked} qualified section cross-references resolved, {len(bad)} name "
-          f"a section that is not there; {unqualified} bare §N references inside the "
-          f"documents are counted and not checked")
+    # `checked` counts every reference examined, dangling ones included, so it is not
+    # the number that resolved -- reporting it as such implied one more reference than
+    # the tree contains ("39 resolved, 1 not there" for 39 references).
+    print(f"\n{checked - len(bad)} of {checked} qualified section cross-references "
+          f"resolve, {len(bad)} name a section that is not there; {unqualified} bare "
+          f"§N references inside the documents are counted and not checked")
     return 1 if bad else 0
 
 

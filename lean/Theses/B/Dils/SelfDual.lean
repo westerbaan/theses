@@ -5462,10 +5462,12 @@ theorem vnTensor_smul_complex_right {t : 𝒜 → ℬ → 𝒞} (ht : IsVNTensor
 
 /-! ### The legs of a von Neumann tensor product
 
-`QUESTIONS.md` B5 asks whether `IsVNTensor` should carry a *normality*
+`QUESTIONS.md` B5 asked whether `IsVNTensor` should carry a *normality*
 clause for its legs `a ↦ a ⊗ 1`, `b ↦ 1 ⊗ b` (dils.tex 166III leaves the
 justification as a commented-out `\TODO`).  It should not: normality is a
-consequence of the faithfulness of the product functionals, as follows. -/
+consequence of the faithfulness of the product functionals, as follows —
+which is why B5 was deleted 2026-08-16 as answered, and no clause was
+added. -/
 
 omit [StarOrderedRing 𝒜] [StarOrderedRing ℬ] in
 /-- The flip `(b,a) ↦ a ⊗ b` of a von Neumann tensor product is again one
@@ -9219,8 +9221,10 @@ Two general facts, used only in `ba_ext_tensor_pres`. -/
 /-- Membership of the *ultraweak* closure from approximation against finitely
 many np-functionals at a time — the ultraweak counterpart of
 `mem_usClosure_iff`.  Needed because **164XI** `ext_tensor_ketbra_uwDense`
-delivers its density in that entourage form (its net form **is false**, see
-QUESTIONS **D6**), while **116VII** and `wstar_eq_top_of_dense_span` want
+delivers its density in that entourage form (its net form **is false** — the
+thesis's own statement is the true one and is proved; this was `QUESTIONS.md`
+**D6**, deleted 2026-08-18 in abc3af3 once that was settled), while
+**116VII** and `wstar_eq_top_of_dense_span` want
 `Dense` for the topology `ultraweak`.  The net that witnesses the closure
 membership is indexed by `Finset (NPFunctional A) × ℕ` — finitely many
 functionals, accuracy `1/(n+1)`. -/

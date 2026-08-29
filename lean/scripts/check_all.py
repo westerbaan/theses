@@ -62,6 +62,10 @@ CHECKS = [
     ("lean_line_check",   ["lean_line_check.py"],        True),
     ("errata_check",      ["errata_check.py"],           False),
     ("questions_check",   ["questions_check.py"],        False),
+    # guards the SELF_DESCRIBING exemption that question_check applies: it must
+    # still report a bare "(see QUESTIONS **B5**)".  Widening that vocabulary is
+    # how the check silently stops checking anything.
+    ("questions --self-test", ["questions_check.py", "--self-test"], True),
 ]
 
 
