@@ -432,6 +432,47 @@ def main():
         print(f'MISPLACED  {fn}:{i}  {disp}  {n}')
         print(f'           row says {mf}; defined in {", ".join(homes)}')
 
+    # A `(not converted)` placeholder alongside real rows for the same point.
+    #
+    # These rows are how the audit records that a thesis point has no counterpart
+    # in the tree.  When the point IS later converted the placeholder must go, and
+    # on 2026-08-29 one had not: `aproc-measurement.csv` carried six rows for 98XI
+    # -- five naming real declarations, landed in 312cef8, and one still saying
+    # `(not converted)` with `proof=none`.  Nothing flagged it, because every
+    # individual row was well-formed.  I read that placeholder, briefed an agent to
+    # convert a point that had been converted for days, and it burned a whole run
+    # discovering that.  A stale record cost more than the work would have.
+    #
+    # A placeholder that SCOPES ITSELF to a part is not stale, and is the normal
+    # way a multi-clause point is recorded part-converted: 55III has rows for parts
+    # 1 and 3 and a placeholder saying "part 2 ONLY, the remaining unconverted
+    # clause", and 202IV had one reading "202IV, SECOND sentence".  Those are
+    # exactly right and must not be reported.  What is stale is a placeholder that
+    # still speaks for the WHOLE point while rows beside it name declarations.
+    scoped = re.compile(r'\b(?:parts?|clauses?|items?)\s+\d'
+                        r'|\b(?:first|second|third|fourth)\s+'
+                        r'(?:sentence|clause|part|half|item)\b', re.I)
+    stale_placeholder = {}
+    real_for_disp = {}
+    for fn, i, f in rows:
+        if f[1] == '(not converted)':
+            if len(f) > 5 and scoped.search(f[5]):
+                continue
+            stale_placeholder.setdefault((fn, f[0]), []).append(i)
+        else:
+            real_for_disp.setdefault((fn, f[0]), []).append((i, f[1]))
+    contradicted = []
+    for key, lines in sorted(stale_placeholder.items()):
+        real = real_for_disp.get(key)
+        if real:
+            contradicted.append((key[0], lines, key[1], real))
+    for fname, lines, disp, real in contradicted:
+        at = ', '.join(f'{fname}:{n}' for n in lines)
+        print(f'PLACEHOLDER {at}  {disp}  says `(not converted)`')
+        print(f'            but {len(real)} row(s) for {disp} name real declarations: '
+              f'{", ".join(n for _, n in real[:4])}'
+              f'{" ..." if len(real) > 4 else ""}')
+
     schema = schema_violations()
     for fname, i, nf, disp, name in schema:
         print(f'SCHEMA     {fname}:{i}  {disp}  {name}')

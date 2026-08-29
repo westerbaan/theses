@@ -71,6 +71,11 @@ CHECKS = [
     # stale on 2026-08-29 and the whole ProcPure section was invisible to every
     # compile in the tree, with nothing anywhere reporting it.
     ("olean_staleness",   ["refresh_oleans.py"],         False),
+    # status fields that match more than one verdict, so which one they report is
+    # decided by VERDICTS' table order rather than by the row.  A note: many are
+    # honest append-only histories.  The point is that nothing distinguished those
+    # from the ones the ordering gets backwards.
+    ("verdict_conflicts", ["sorry_map.py", "--conflicts"], False),
 ]
 
 

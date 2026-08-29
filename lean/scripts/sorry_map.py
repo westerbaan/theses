@@ -152,6 +152,29 @@ VERDICTS = (
 )
 
 
+def verdict_conflicts(field):
+    """Every DISTINCT verdict the needles in `VERDICTS` find in one status field.
+
+    `verdict_of` returns the first needle in TABLE order that appears anywhere in
+    the field, which silently makes table position outrank what the row says.  On
+    2026-08-29 a row re-filed from `left-by-choice` to `left-forced` -- a live,
+    forced divergence -- read back as `repaired`, a closed one, because the word
+    "reclassified" sits at table index 19 and "left-forced" at 48.  That is the
+    same shape as the bug that let a voided row count for three days.
+
+    Resolution order is left alone here: these fields are append-only prose and
+    changing which match wins would silently re-verdict rows nobody has read.  What
+    was missing is any signal that a field says two things at once, so this reports
+    it and the row gets reworded.
+    """
+    t = field.strip().lower()
+    found = []
+    for needle, canon in VERDICTS:
+        if needle in t and canon and canon not in found:
+            found.append(canon)
+    return found
+
+
 def verdict_of(field):
     """The verdict a status field carries, wherever in it that sits.
 
@@ -477,5 +500,40 @@ document.querySelectorAll('.b[data-a="'+c.dataset.acat+'"]').forEach(b=>b.classL
 </script>'''
 
 
+def report_conflicts():
+    """List status fields that match more than one verdict.
+
+    A row whose field says two things is resolved by TABLE POSITION, not by what
+    the row means, so which of the two it reports is an accident of how VERDICTS
+    happens to be ordered.  Many are honest append-only histories ("was left-cost,
+    now repaired") where the later word is the operative one -- but the reader
+    cannot tell those from the ones the ordering gets backwards, and neither can
+    any consumer of this file.
+    """
+    import glob
+    import pathlib as _pl
+    rows, bad = 0, []
+    for f in sorted(glob.glob(DOCS + "audit/*.csv")):
+        for i, line in enumerate(_pl.Path(f).read_text().splitlines(), 1):
+            parts = line.split("|")
+            if len(parts) < 7:
+                continue
+            rows += 1
+            found = verdict_conflicts(parts[6])
+            if len(found) > 1:
+                chosen = verdict_of(parts[6])
+                bad.append((f, i, parts[0], chosen,
+                            [x for x in found if x != chosen]))
+    for rel, i, disp, chosen, others in bad:
+        print(f"AMBIG    {rel}:{i}  {disp} reads back as {chosen!r}, "
+              f"also matches {others}")
+    print(f"\n{rows} rows carry a status field; {len(bad)} match more than one "
+          f"verdict, so what they report depends on VERDICTS' order rather than on "
+          f"the row")
+    return 1 if bad else 0
+
+
 if __name__ == "__main__":
+    if "--conflicts" in sys.argv:
+        sys.exit(report_conflicts())
     sys.exit(main())
