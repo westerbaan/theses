@@ -401,17 +401,39 @@ def disp_check():
     return bad_line or unknown or bad_kind
 
 
+def doc_sources():
+    """The documents whose `.tex` references nobody was checking.
+
+    `cite_check` has always walked `Theses/**/*.lean` and stopped there, so the
+    1017 `file.tex:N` references in `ERRATA.md`, `docs/*.md` and the audit CSVs
+    were checked by nothing -- in `ERRATA.md`'s case, the document that goes to
+    the authors.  That is not hypothetical: on 2026-08-29 the 116III.4 row cited
+    `proc.tex:3427`, which is mid-formula inside the *preceding* proof; the
+    Exercise it means opens at :3433 and its part 4 is at :3459.
+
+    `PROVING-LOG.md` and the `*-survey.md` files are excluded, as everywhere
+    else: they are dated records of what was true when written, and a reference
+    that has since drifted is correct there.
+    """
+    out = [LEAN / "ERRATA.md"]
+    out += [p for p in sorted((LEAN / "docs").glob("*.md"))
+            if p.name != "PROVING-LOG.md" and not p.name.endswith("-survey.md")]
+    out += sorted((LEAN / "docs" / "audit").glob("*.csv"))
+    return out
+
+
 def main():
     if "--disp" in sys.argv:
         return 1 if disp_check() else 0
     if "--bare" in sys.argv:
         return bare_check()
+    docs = "--docs" in sys.argv
+    sources = doc_sources() if docs else [
+        p for p in sorted(LEAN.rglob("*.lean")) if ".lake" not in p.parts]
     ext = extents()
     drifted, unknown = [], []
     ok = paired = bare_total = skipped = 0
-    for src in sorted(LEAN.rglob("*.lean")):
-        if ".lake" in src.parts:
-            continue
+    for src in sources:
         rel = src.relative_to(ROOT)
         for i, line in enumerate(src.read_text(errors="replace").splitlines(), 1):
             bare_total += len(BARE.findall(line))
@@ -426,6 +448,17 @@ def main():
                 else:
                     drifted.append((rel, i, lab, tex, num, ext[lab][tex]))
             for lab, tex, num in citations(line):
+                # In prose, a backticked token next to a `.tex` reference is far
+                # more often a LEAN declaration than a label -- "`paschke_tprod_dense`,
+                # dils.tex:5791-5799".  The two vocabularies separate cleanly and
+                # checkably: of the 719 `\begin{point}` labels in the five sources,
+                # **none** contains an underscore, and Lean names are snake_case.
+                # So an underscored token is a Lean name and this is an ordinary
+                # cross-reference, not a label citation.  Only in `--docs`: inside
+                # `.lean` doc comments the grammar was already right.
+                if docs and "_" in lab:
+                    skipped += 1
+                    continue
                 paired += 1
                 where = ext.get(lab, {})
                 if tex not in where:
@@ -442,7 +475,9 @@ def main():
         seen = (" (found in " + ", ".join(elsewhere) + ")") if elsewhere else " (no label of that name)"
         print(f"NOLABEL {rel}:{i}  `{lab}` cited at {tex}:{num}{seen}")
 
-    print(f"\n{ok} of {paired} label+line citations land inside the labelled extent, "
+    where_scanned = ("ERRATA/docs/audit" if docs else "Theses/**/*.lean")
+    print(f"\n[{where_scanned}] "
+          f"{ok} of {paired} label+line citations land inside the labelled extent, "
           f"{len(drifted)} outside it, {len(unknown)} name a label the cited file "
           f"does not carry; {skipped} parenthesised references name something that "
           f"is not a label of the file and are skipped; {bare_total - paired} "

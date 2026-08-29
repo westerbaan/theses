@@ -56,6 +56,11 @@ CHECKS = [
     ("cite_check",        ["cite_check.py"],             True),
     ("cite_check --disp", ["cite_check.py", "--disp"],   True),
     ("cite_check --bare", ["cite_check.py", "--bare"],   False),
+    # the same label+line check over ERRATA.md, docs/*.md and the audit CSVs.
+    # `cite_check` walked only `Theses/**/*.lean` until 2026-08-29, so ~1000
+    # `.tex` references in the documents -- including the ones in the errata that
+    # go to the authors -- were checked by nothing.  Six were wrong.
+    ("cite_check --docs", ["cite_check.py", "--docs"],   True),
     ("limb_check",        ["limb_check.py"],             True),
     ("vn_setting_check",  ["vn_setting_check.py"],       True),
     ("xref_check",        ["xref_check.py"],             True),
