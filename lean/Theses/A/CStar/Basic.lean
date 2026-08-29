@@ -1321,12 +1321,35 @@ theorem cx_positive (f : C(X, ℂ)) (hf : IsSelfAdjoint f) :
       exact ⟨by linarith [(abs_le.mp hpt).1], (him x).symm⟩
     tfae_finish
 
+/-- The key step of the solution to **9III** (asols `parsec-90.30`): an
+`f ∈ C(X,ℂ)` is invertible precisely when it is nowhere zero, the inverse
+being given pointwise by `x ↦ f x⁻¹`.
+
+Mathlib has this as `ContinuousMap.isUnit_iff_forall_ne_zero`, and that is
+what this proof used until 2026-08-29.  Mathlib reaches it by a different
+route from the solution's -- `ContinuousMap.unitsLift` together with
+`NormedRing.inverse_continuousAt`, the continuity of inversion in a Banach
+algebra, four declarations and some forty lines -- whereas the solution says
+only "with inverse given by `f⁻¹(x) = f(x)⁻¹`", which over `ℂ` is
+`Continuous.inv₀`.  So the solution's own argument is the one below. -/
+theorem cx_isUnit_iff_forall_ne_zero (f : C(X, ℂ)) : IsUnit f ↔ ∀ x, f x ≠ 0 := by
+  constructor
+  · rintro ⟨u, rfl⟩ x hx
+    have h := ContinuousMap.congr_fun u.mul_inv x
+    simp only [ContinuousMap.mul_apply, ContinuousMap.one_apply] at h
+    rw [hx, zero_mul] at h
+    exact zero_ne_one h
+  · intro h
+    exact ⟨⟨f, ⟨(⇑f)⁻¹, f.continuous.inv₀ h⟩,
+      by ext x; simpa using mul_inv_cancel₀ (h x),
+      by ext x; simpa using inv_mul_cancel₀ (h x)⟩, rfl⟩
+
 /-- **9III** (cstar.tex:1123, Exercise): `λ ∈ f(X)` iff `f - λ` is not
 invertible in `C(X)`. -/
 theorem cx_mem_range_iff_not_isUnit (f : C(X, ℂ)) (z : ℂ) :
     (∃ x, f x = z) ↔ ¬IsUnit (f - algebraMap ℂ C(X, ℂ) z) :=
   by
-    rw [ContinuousMap.isUnit_iff_forall_ne_zero]
+    rw [cx_isUnit_iff_forall_ne_zero]
     simp only [not_forall, not_not, ContinuousMap.sub_apply, sub_eq_zero]
     constructor
     · rintro ⟨x, hx⟩

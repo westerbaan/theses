@@ -1315,9 +1315,9 @@ the filters, all unrowed by `lean_name`):
   injective ∗-homomorphism **onto the corner `e B(ℋ) e`**", and that is the
   only statement of it), `cornerAlg_one` (its section prose: "### The trivial
   corner — a sanity anchor for the definitions", i.e. class 2, a non-vacuity
-  check), `isPureMap_of_isFilter` (`Pure.lean:2341` names it beside
+  check), `isPureMap_of_isFilter` (`Pure.lean:2388` names it beside
   `isPureMap_of_isCorner`, and it is the filter half of **170I**'s "filters and
-  corners are pure"), `vn_effObj_iso` (`VNExamples.lean:5951`, "what the eight
+  corners are pure"), `vn_effObj_iso` (`VNExamples.lean:6216`, "what the eight
   examples downstream actually use is … the *uniqueness* statement
   `vn_effObj_iso`, which is proved" — and again at `:2127`), and
   `modularPair_data` (`StandardSubspace.lean:650`).

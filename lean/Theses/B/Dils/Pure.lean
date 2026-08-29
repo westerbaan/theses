@@ -1584,10 +1584,30 @@ false — see `Theses.A.VN.div_usc`", and both halves have expired.  There is
 no `Theses.A.VN.div_usc`: what is false is the *printed*, ultra**strong**
 form, recorded in the section note above `div_uwc` in `A/VN/Division`.  On
 the author's ruling of **2026-08-17** both 81IX and its vn.tex proof run
-*ultraweakly*, which is sound and proved as `Theses.A.VN.div_uwc`; the
-sibling `Theses.A.Proc.canonicalFilter_factor` was updated to say so.  The
-thesis's route is therefore **valid again**, and this proof is one of two —
-kept, not forced.)* -/
+*ultraweakly*, which is sound and proved as `Theses.A.VN.div_uwc`.)*
+
+*(Re-derived 2026-08-29, and the sentence that closed the paragraph above —
+"the thesis's route is therefore valid again, and this proof is one of two —
+kept, not forced" — is **withdrawn**, together with its claim that the
+sibling `Theses.A.Proc.canonicalFilter_factor` made the same choice.  Both
+are false.  The sibling made the **opposite** choice: it now runs the
+thesis's route, calling `(div_uwc d (star d)).2` together with
+`preservesDirSups_of_continuousOn_effects`.  It can, and this cannot,
+because* **the domain `D` here is a bare C\*-algebra** *(see the binders at
+the top of this section).  Its only call site discharges the universal
+property of our 169VIII `IsFilterFor`, which quantifies its test object over
+C\*-algebras, where proc.tex 96I and dils.tex 169VIII both quantify over von
+Neumann algebras; A/Proc's `IsFilter` follows the source and so
+`canonicalFilter_factor` carries `[VonNeumannAlgebra]` on its domain.  The
+thesis's normality step needs `f` ultraweakly continuous on the unit ball of
+its* **domain** *(96V: "as is `f` by `p-uwcont`"), and `p_uwcont` and
+`preservesDirSups_of_continuousOn_effects` both require
+`[VonNeumannAlgebra]` there — on a bare C\*-algebra there is no ultraweak
+topology at all.  So the bipositivity route is* **forced**, *by our own
+strengthening of 169VIII, and undoing it is a statement change.  `div_uwc`
+lives on the codomain side, where `B` is a von Neumann algebra, so a route
+pushing the directed net through it on the `B` side may exist; that is not
+the thesis's argument and has not been built.)* -/
 private theorem sfilter_factor [VonNeumannAlgebra B] (d : B) (q : B)
     [Fact (IsStarProjection q)] (hqr : q = rangeProj d)
     (f : NCPMap D B) (hf1 : (f 1 : B) ≤ star d * d) :

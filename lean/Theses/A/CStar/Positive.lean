@@ -6157,9 +6157,11 @@ theorem cstar_positive_final (a : 𝒜) (ha : IsSelfAdjoint a) :
     tfae_have 3 → 4 := by
       rintro ⟨b, hb, rfl⟩
       exact ⟨b, by rw [hb.star_eq, sq]⟩
+    -- the exercise's own 4 ⟹ 1: "that `c*c` is positive for all `c` was
+    -- already shown in `parsec-240.40`" (asols.tex:2398), i.e. **24IV**.
     tfae_have 4 → 1 := by
       rintro ⟨c, rfl⟩
-      exact star_mul_self_nonneg c
+      exact astara_positive c
     tfae_have 1 ↔ 5 := nonneg_iff_spectrum_ofReal_nonneg a ha
     tfae_finish
 
