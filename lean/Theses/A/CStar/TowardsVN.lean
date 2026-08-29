@@ -2109,8 +2109,9 @@ and convergence along a cofinal subfamily is not convergence of the net.
 2026-08-22 (`29fc8c6`) the source itself prints the limit over the square
 partial sums, so our statement is now the printed one and no divergence
 remains.  It is also exactly what the Lemma's own proof establishes, and the
-form 39IX consumes. (The ERRATA.md row was removed with the fix; do not
-restore it.) -/
+form 39IX consumes.  The row that carried this defect was deleted from
+`ERRATA.md` by that same commit, together with the fix it asked for; there is
+nothing left to look up there and nothing to restore. -/
 theorem bh_np_lemma (E : Set H) (hE : IsOrthonormalBasis E)
     (ω : NPFunctional (H →L[ℂ] H)) (A : H →L[ℂ] H) :
     Tendsto (fun F : Finset E =>

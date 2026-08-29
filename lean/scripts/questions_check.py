@@ -13,9 +13,12 @@ taken, which is exactly the mistake `docs/DECISIONS.md` §4 exists to undo.
 
 The keys the preamble records as deleted are listed here so a hit can say
 whether the question was answered or never existed.  Keep the list in step with
-the file; it is prose there and cannot be parsed reliably -- and note that it is
-already **incomplete**: `D6`, `B11`, `D1`, `D5`, `A6`, `A7`, `D4`, `A5` and `B1`
-are cited across the tree and are in neither the file nor the list.
+the file; it is prose there and cannot be parsed reliably.  It once warned that
+`D6`, `B11`, `D1`, `D5`, `A6`, `A7`, `D4`, `A5` and `B1` were cited across the
+tree while being in neither the file nor the list -- all nine were traced to
+their removal commits on 2026-08-29 and are in `DELETED` below, so the warning
+is retired.  The list is complete as of then; the next deletion has to be added
+by hand.
 
 **Historical documents are counted apart, not reported.**  `PROVING-LOG.md` and
 the `*-survey.md` files are dated records of what was true when they were

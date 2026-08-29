@@ -3526,9 +3526,12 @@ ones of `Theses/B/Dils/Pure.lean`, read in the opposite category:
 * a **quotient** for `p` on `X` is a map `ξ : X ⟶ Q`, i.e. an ncpsu-map
   `c : Q.unop → X.unop`, with `c(1) ≼ pᗮ`, universal among ncpsu-maps into
   `X.unop` bounded by `pᗮ` — that is exactly `IsFilterFor c (1 − a)`
-  (dils.tex 169VIII, in the form repaired under QUESTIONS **B11**, whose
-  mediating map is *subunital*: precisely what a morphism of this category
-  is).
+  (dils.tex 169VIII, in the form the author ruled on 2026-08-16: the
+  mediating map is *subunital*, precisely what a morphism of this category
+  is.  This was QUESTIONS **B11**, deleted 2026-08-16 in `ffd073b` once the
+  ruling was implemented; the ruling itself is in `IsFilterFor`
+  (`B/Dils/Pure.lean`), and the erratum it settles is the **169VIII** row of
+  `ERRATA.md`).
 
 Both are `Prop`-valued classes with existential fields, so no canonical
 choice of corner or filter has to be made. -/
@@ -3993,9 +3996,11 @@ an *arbitrary* filter is a quotient, and an arbitrary *unital* corner is a
 comprehension.  Both are the definitions of `IsFilterFor`/`IsCornerFor`
 (dils.tex 169VIII, 169II) transported through `suPredVal`, and the two
 mismatches are the ones the section header above records: `IsFilterFor`'s
-mediating map is subunital (the repair of QUESTIONS **B11**), which is
-exactly a morphism, and `IsCornerFor`'s is merely ncp, which is a morphism
-only because the corner is unital.
+mediating map is subunital (the author's ruling of 2026-08-16; this was
+QUESTIONS **B11**, deleted 2026-08-16 in `ffd073b` once the ruling was
+implemented, and the erratum is the **169VIII** row of `ERRATA.md`), which
+is exactly a morphism, and `IsCornerFor`'s is merely ncp, which is a
+morphism only because the corner is unital.
 
 **Unitality of the corner is a real hypothesis, not a convenience.**  Under
 169II as printed, `λ·h_a` is again a corner for `a` when `0 < λ < 1`

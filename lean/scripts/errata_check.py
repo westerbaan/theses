@@ -14,10 +14,16 @@ This does all four:
 
 The first three are exact.  **PHANTOM is a shortlist**, for the reason the bare
 `.tex` references hit in `cite_check.py`: a citation of a *removed* row is not a
-defect -- `A/CStar/TowardsVN.lean:1866` says so in as many words, "the ERRATA.md
-row was removed with the fix" -- and a DISP near the file name is sometimes the
-*point a row is about* rather than the row's key, as at `152XII`, whose defect
-is about `42I`.  Read the hits; do not expect zero.
+defect -- `A/CStar/TowardsVN.lean` says exactly that of `parsec-390.70`, whose
+row was deleted with the fix on 2026-08-22 -- and a DISP near the file name is
+sometimes the *point a row is about* rather than the row's key, as at `152XII`,
+whose defect is about `42I`.  Read the hits; do not expect zero.
+
+That said, the three hits live on 2026-08-29 were all repaired rather than
+tolerated, and none of them was what the shortlist is for: two cited a row
+deleted on 2026-08-22 without saying so (they say so now, and no longer put a
+DISP next to the file name), and the third, `221IV.5/.6/.7`, was never a phantom
+at all -- the row is there, in a key shape `ROW` could not read.
 
 1. **STATUS**  -- a row whose status is not `OPEN`, against the file's own rule.
 2. **PHANTOM** -- a DISP cited as an `ERRATA.md` row from the Lean tree or from
@@ -50,8 +56,13 @@ exec(compile(_src, "cite_check", "exec"), cc.__dict__)
 # `**14VIII**.3` are both in use, and a reader of one form would not guess the
 # other.  Reading only the second missed 101VII entirely and reported the audit
 # rows that cite it as phantoms.
+# A key may also carry further clauses or a qualifier *inside* the bold --
+# `**221IV.5/.6/.7**`, `**140X.2 solution**`, `**170IV solution**` -- and reading
+# only up to the first clause missed all four such rows, so `221IV` looked absent
+# and the audit row citing it was reported as a phantom while the row sat there.
 ROW = re.compile(r'^\|\s*\*\*(\d{1,3}[a-z]?[IVXL]+[a-z]?)(\.[0-9a-z]+)?'
-                 r'(?:\s*[-–—]+\s*(\d{1,3}[a-z]?[IVXL]+[a-z]?))?\*\*(\.[0-9a-z]+)?')
+                 r'(?:\s*[-–—]+\s*(\d{1,3}[a-z]?[IVXL]+[a-z]?))?'
+                 r'(?:[./,]+[0-9a-z]+|\s+solution)*\*\*(\.[0-9a-z]+)?')
 # A citation of the file, from anywhere: "ERRATA.md as 101VII.1", "ERRATA.md row
 # 148IV", "ERRATA.md:117 (228III-228VI)".  Every DISP in the window counts, not
 # just the first: "the proof of 49II is unaffected ... filed as the second 49III
