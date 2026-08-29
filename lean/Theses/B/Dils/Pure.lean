@@ -17,30 +17,50 @@ of thesis A) are defined here from scratch following **169II** and
 **169VIII**; `Theses/A/Proc/Measurement.lean` has since acquired a parallel
 development, which should be merged with this one.
 
-⚠️ **The two developments are not interchangeable, and the merge is a
-project rather than an edit.**  `Theses.A.Proc.Measurement` *is* on this
-file's import path (`Theses.B.Dils.SelfDual → Theses.A.Proc.Tensor →
-Theses.A.Proc.Measurement`), so its declarations are already reachable — the
-earlier claim that it is "off this import path", repeated in several doc
-comments below, was wrong.  What blocks reuse is that the predicates differ:
+`Theses.A.Proc.Measurement` *is* on this file's import path
+(`Theses.B.Dils.SelfDual → Theses.A.Proc.Tensor → Theses.A.Proc.Measurement`),
+so its declarations are already reachable — the earlier claim that it is
+"off this import path", repeated in several doc comments below, was wrong.
+The predicates nevertheless differ, in four ways.  All four are still true
+of the definitions as they stand; **two of them do not obstruct**, and the
+bridge is built out of them in `section ProcPure` at parsec 1700
+(`isPureMap_of_procIsPure`, `procIsPure_of_factorisation`).
 
-* `IsCornerFor`/`IsFilterFor` here quantify their test object over
+* *Test objects.*  `IsCornerFor`/`IsFilterFor` here quantify over
   **C\*-algebras**, where `Theses.A.Proc.IsCornerOf`/`.IsFilter` quantify
-  over **von Neumann algebras** — so ours are strictly *stronger* and cannot
-  be obtained from theirs;
-* `IsFilterFor` here carries the author's 2026-08-16 repair (the mediating
-  map is **subunital**, `NCPSUMap`) and a filtered element `b` with only
-  `c 1 ≤ b`, where `Theses.A.Proc.IsFilter` has an unrepaired *ncp*
-  mediating map and reads `f 1 ≤ c 1`;
-* `Theses.A.Proc.IsCornerMap` (the corner half of its `IsPure`) is
-  **unital**, where `IsCorner` here is not;
-* `Theses.A.Proc.IsPure` is the inductive "filters, corners and their
-  composites" of **170I**, with a `[VonNeumannAlgebra]` binder on every
-  intermediate algebra, where `IsPureMap` here is the normal form.
+  over **von Neumann algebras**.  Ours are the harder property to obtain —
+  but obtainable, because **169IV** `standard_corner_dils` and **169X**
+  `dils_stand_filter` prove it for the *standard* corner and filter, and
+  proc.tex 98IV.1/98II.1 make every corner and filter isomorphic to a
+  standard one.  Not an obstruction.
+* *The subunitality repair.*  `IsFilterFor` here carries the author's
+  2026-08-16 repair (the mediating map is **subunital**, `NCPSUMap`) and a
+  filtered element `b` with only `c 1 ≤ b`, where `Theses.A.Proc.IsFilter`
+  has an unrepaired *ncp* mediating map and reads `f 1 ≤ c 1`.  Note that
+  this makes the two predicates *incomparable* rather than ours stronger:
+  our existence clause is the stronger, our uniqueness clause the weaker,
+  being quantified over the subunital maps only.  Both gaps close —
+  ncp-uniqueness from **169XII** `dils_filters_injective`, subunitality from
+  the standard filter.  Not an obstruction.
+* *Unital corners.*  `Theses.A.Proc.IsCornerMap` (the corner half of its
+  `IsPure`) is **unital**, where `IsCorner` here is not.  Costs three lines
+  in the converse (a non-unital corner is the standard one followed by an
+  ncp-isomorphism, and an ncp-isomorphism is pure by proc.tex 100II) and
+  nothing in the forward direction.
+* *`[VonNeumannAlgebra]` on the intermediate algebra.*  This is the one that
+  bites.  `Theses.A.Proc.IsPure` is the inductive "filters, corners and
+  their composites" of **170I**, and its `comp` constructor carries a
+  `[VonNeumannAlgebra]` binder on the algebra in the middle — its `filter`
+  and `corner` constructors carry none, so "on every intermediate algebra"
+  is right only for composites — where `IsPureMap` here is the normal form
+  with a bare C\*-algebra in the middle.  `procIsPure_of_factorisation` has
+  to take that binder as a hypothesis; dropping it would mean changing one
+  of the two definitions.
 
-Consequently proc.tex **100III** `Theses.A.Proc.pure_fundamental` — proved,
-and reachable — does *not* bridge `Theses.A.Proc.IsPure` to `IsPureMap`;
-see the doc of `IsPureMap` at parsec 1700.
+So proc.tex **100III** `Theses.A.Proc.pure_fundamental` *does* bridge
+`Theses.A.Proc.IsPure` to `IsPureMap`, in the direction 170I ⟹ 168IV, at von
+Neumann objects; the earlier claim that bridging "is a merge of the two
+developments, not a lemma" was wrong.  See `section ProcPure` at parsec 1700.
 -/
 import Theses.B.Dils.SelfDual
 
@@ -2303,21 +2323,28 @@ variable {A B : Type u}
 proc.tex 100III `pure-fundamental`, cf. **170Ia**) a filter after a
 corner, which is the form used here.
 
-⚠️ **This is 168IV's normal form, not 170I's inductive definition**, and the
-equivalence is *asserted*, not proved in the tree.  proc.tex 100III is
-proved as `Theses.A.Proc.pure_fundamental` and is reachable from here, but
-it states the equivalence for `Theses.A.Proc.IsPure` / `.IsCornerMap` /
-`.IsFilter`, and none of those three is the predicate used here (test
-objects von Neumann rather than C\*; corners unital; filters without the
-author's subunitality repair; `[VonNeumannAlgebra]` on every intermediate
-algebra).  Bridging them is a merge of the two developments, not a lemma;
-see the file header.
+**This is 168IV's normal form, not 170I's inductive definition.**  The
+equivalence is proved below, in `section ProcPure`, against
+`Theses.A.Proc.IsPure` — 170I as printed — and it is a lemma, not the merge
+of the two developments that this doc comment used to claim:
 
-The gap is not idle.  Both base cases of 170I are available —
-`isPureMap_of_isCorner` and `isPureMap_of_isFilter` below — but the closure
-under *composition* is not, which is why **171VII** `paschke_pure` has to
-compose two corners by hand (`isCornerFor_comp`) where the thesis simply
-says "a composite of pure maps is pure". -/
+* `isPureMap_of_procIsPure`: at von Neumann objects, every 170I-pure map is
+  an `IsPureMap`.  This is proc.tex 100III `Theses.A.Proc.pure_fundamental`
+  plus `isCorner_of_procIsCornerMap` and `isFilter_of_procIsFilter`, which
+  strengthen proc.tex's von-Neumann-tested universal properties to this
+  chapter's C\*-tested ones by transporting them across the isomorphism to
+  the standard corner (**169IV**) and standard filter (**169X**).
+* `procIsPure_of_factorisation`: the converse, and it needs the intermediate
+  algebra `C` to be a von Neumann algebra — 170I's `comp` constructor
+  demands that, and `IsPureMap` does not.  That hypothesis is the one real
+  residue of the two developments' disagreement.
+
+Both base cases of 170I are available here directly —
+`isPureMap_of_isCorner` and `isPureMap_of_isFilter` below — and the closure
+under *composition* is now available too, as `isPureMap_ncpComp`, though
+only with von Neumann algebras throughout.  **171VII** `paschke_pure` still
+composes two corners by hand (`isCornerFor_comp`), because it is stated
+without that binder on the middle algebra. -/
 def IsPureMap (φ : NCPMap A B) : Prop :=
   ∃ (C : Type u) (_ : CStarAlgebra C) (_ : PartialOrder C)
     (_ : StarOrderedRing C) (h : NCPMap A C) (c : NCPMap C B),
@@ -2344,6 +2371,293 @@ theorem isPureMap_of_isFilter (c : NCPMap A B) (hc : IsFilter c) :
     ⟨1, ⟨zero_le_one, le_rfl⟩, rfl, fun _ _ _ _ f _ =>
       ⟨f, fun _ => rfl, fun _ hf => DFunLike.ext _ _ fun x => hf x⟩⟩,
     hc, fun _ => rfl⟩
+
+/-! ### **170I** against `Theses.A.Proc.IsPure`: the two notions of purity
+
+`Theses.A.Proc.IsPure` (`Theses/A/Proc/Measurement.lean`) is **170I** as
+printed — the inductive closure of filters and corners under composition —
+where `IsPureMap` above is **168IV**'s normal form.  The file header lists
+four differences between the two developments; the declarations below take
+them apart, and **two of the four turn out not to obstruct at all**.
+
+* *Test objects.*  `IsCornerFor`/`IsFilterFor` quantify over C\*-algebras,
+  `Theses.A.Proc.IsCornerOf`/`.IsFilter` over von Neumann algebras.  Ours are
+  therefore the easy direction to *give up* — `procIsCornerOf_of_isCornerFor`
+  and `procIsFilter_of_isFilterFor` below — and the hard direction to obtain.
+  But it is obtainable: **169IV** `standard_corner_dils` and **169X**
+  `dils_stand_filter` prove the C\*-strength universal property for the
+  *standard* corner and filter, and proc.tex 98IV.1/98II.1
+  (`Theses.A.Proc.corner_unique`, `.filter_unique`) say every corner and
+  every filter is isomorphic to the standard one; C\*-strength then rides
+  across the isomorphism (`isCornerFor_of_ncpIso`, `isFilterFor_of_ncpIso`).
+  This is what `isCorner_of_procIsCornerMap` and `isFilter_of_procIsFilter` do.
+
+* *The subunitality repair.*  `IsFilterFor`'s mediating map is an
+  `NCPSUMap` and its filtered element `b` satisfies only `c 1 ≤ b`, where
+  `Theses.A.Proc.IsFilter` asks for an ncp mediating map and reads
+  `f 1 ≤ c 1`.  Neither predicate is a restriction of the other — B's
+  *existence* clause is the stronger and its *uniqueness* clause the weaker,
+  being quantified over a smaller class — so the header's "ours are strictly
+  stronger" is right for corners and wrong for filters.  Both gaps close:
+  ncp-uniqueness comes from **169XII** `dils_filters_injective`, and
+  subunitality of the mediating map is read off the isomorphism to the
+  standard filter, whose own mediating maps are subunital by **169X**.
+
+* *Unital corners.*  `Theses.A.Proc.IsCornerMap` demands `π 1 = 1` and
+  `IsCorner` does not.  Harmless in the direction below that consumes it,
+  and repaired in the other by `corner_unique`: at a von Neumann
+  intermediate algebra every corner is the (unital) standard corner followed
+  by an ncp-isomorphism, and an ncp-isomorphism is pure (proc.tex 100II).
+
+* *`[VonNeumannAlgebra]` on the intermediate algebra.*  This is the one that
+  bites, and only in the converse.  `Theses.A.Proc.IsPure`'s `comp`
+  constructor carries `[VonNeumannAlgebra B]` on the algebra in the middle
+  (its `filter` and `corner` constructors carry no such binder — so the
+  header's "on every intermediate algebra" is right only for composites),
+  where `IsPureMap`'s intermediate algebra `C` is a bare C\*-algebra.
+  `procIsPure_of_factorisation` therefore carries `[VonNeumannAlgebra C]` as
+  a hypothesis; it cannot be dropped without changing 170I's own definition.
+
+So the forward direction — everything 170I calls pure is an `IsPureMap` — is
+a theorem outright (`isPureMap_of_procIsPure`), and the converse is a theorem
+once the intermediate algebra is von Neumann. -/
+
+section ProcPure
+
+/-- Our corners are corners in the sense of proc.tex **95I**: `h a = h 1` is
+`h(1 − a) = 0` by linearity, and the universal property is being asked of
+*fewer* test objects there (von Neumann rather than all C\*-algebras). -/
+theorem procIsCornerOf_of_isCornerFor {h : NCPMap A B} {a : A}
+    (hh : IsCornerFor h a) : Theses.A.Proc.IsCornerOf a h where
+  map_perp := by
+    have hL : (h (1 - a) : B) = h 1 - h a :=
+      map_sub h.toCompletelyPositiveMap.toLinearMap 1 a
+    rw [hL, hh.2.1, sub_self]
+  universal := by
+    intro C _ _ _ _ f hf
+    have hfa : (f a : C) = f 1 := by
+      have hL : (f (1 - a) : C) = f 1 - f a :=
+        map_sub f.toCompletelyPositiveMap.toLinearMap 1 a
+      rw [hL] at hf
+      linear_combination (norm := module) -hf
+    obtain ⟨g, hg, hu⟩ := hh.2.2 C inferInstance inferInstance inferInstance f hfa
+    exact ⟨g, fun x => (hg x).symm, fun g' hg' => hu g' fun x => (hg' x).symm⟩
+
+/-- Our filters are filters in the sense of proc.tex **96I**.  Two clauses
+have to be crossed, not merely weakened: `f 1 ≤ c 1 ≤ b` supplies the
+hypothesis of `IsFilterFor`, whose mediating map is then forgotten from
+`NCPSUMap` to `NCPMap`; and uniqueness *among ncp-maps* — which
+`IsFilterFor` does not give, its `∃!` ranging over the subunital ones only —
+is recovered from **169XII** `dils_filters_injective`. -/
+theorem procIsFilter_of_isFilterFor {c : NCPMap A B} {b : B}
+    (hc : IsFilterFor c b) : Theses.A.Proc.IsFilter c where
+  universal := by
+    intro D _ _ _ _ f hf
+    obtain ⟨f', hf', -⟩ :=
+      hc.2.2 D inferInstance inferInstance inferInstance f (hf.trans hc.2.1)
+    refine ⟨f'.toNCPMap, fun x => (hf' x).symm, fun g hg => ?_⟩
+    refine DFunLike.ext _ _ fun x => dils_filters_injective c ⟨b, hc⟩ ?_
+    rw [← hg x, hf' x]
+
+/-- `IsCornerFor` transports backwards along an ncp-map `β` with a left
+inverse `β'`: if the corner `h` factors as `β ∘ π`, then `π` is a corner for
+the same effect.  Used with the mutually inverse pair produced by
+`Theses.A.Proc.corner_unique`, this is what carries the C\*-strength
+universal property of the standard corner over to an abstract one. -/
+theorem isCornerFor_of_ncpIso {C : Type u} [CStarAlgebra C] [PartialOrder C]
+    [StarOrderedRing C] {h : NCPMap A C} {a : A} (hh : IsCornerFor h a)
+    {π : NCPMap A B} (β : NCPMap B C) (β' : NCPMap C B)
+    (hβ : ∀ x, (h x : C) = β (π x)) (hβ'β : ∀ x, β' (β x) = x) :
+    IsCornerFor π a := by
+  refine ⟨hh.1, ?_, ?_⟩
+  · have h1 : (β (π a) : C) = β (π 1) := by rw [← hβ, ← hβ, hh.2.1]
+    calc (π a : B) = β' (β (π a)) := (hβ'β _).symm
+      _ = β' (β (π 1)) := by rw [h1]
+      _ = π 1 := hβ'β _
+  intro D _ _ _ f hf
+  obtain ⟨f', hf', hu⟩ := hh.2.2 D inferInstance inferInstance inferInstance f hf
+  obtain ⟨g, hg⟩ := Theses.A.Proc.exists_ncpComp f' β
+  refine ⟨g, fun x => ?_, fun g'' hg'' => ?_⟩
+  · rw [hg, ← hβ, hf']
+  obtain ⟨k, hk⟩ := Theses.A.Proc.exists_ncpComp g'' β'
+  have hkf' : k = f' := by
+    refine hu k fun x => ?_
+    rw [hk, hβ, hβ'β, hg'']
+  refine DFunLike.ext _ _ fun y => ?_
+  rw [hg]
+  calc (g'' y : D) = g'' (β' (β y)) := by rw [hβ'β]
+    _ = k (β y) := (hk _).symm
+    _ = f' (β y) := by rw [hkf']
+
+/-- `IsFilterFor` transports along a *unital* ncp-isomorphism of the domain.
+Unitality of `α` is what keeps `c 1 ≤ b`, and unitality of its inverse is
+what keeps the mediating maps subunital; `Theses.A.Proc.filter_unique`
+delivers exactly this (`α 1 = 1` is one of its conclusions). -/
+theorem isFilterFor_of_ncpIso {C : Type u} [CStarAlgebra C] [PartialOrder C]
+    [StarOrderedRing C] {d : NCPMap C B} {b : B} (hd : IsFilterFor d b)
+    {c : NCPMap A B} (α : NCPMap A C) (α' : NCPMap C A)
+    (hα : ∀ x, (c x : B) = d (α x)) (hα1 : (α 1 : C) = 1)
+    (hα'α : ∀ x, α' (α x) = x) (hαα' : ∀ y, α (α' y) = y) :
+    IsFilterFor c b := by
+  have hα'1 : (α' 1 : A) = 1 := by rw [← hα1, hα'α]
+  have hαmono : ∀ x y : A, x ≤ y → (α x : C) ≤ α y := fun _ _ hxy =>
+    (ncpPositive α).monotone hxy
+  have hα'mono : ∀ x y : C, x ≤ y → (α' x : A) ≤ α' y := fun _ _ hxy =>
+    (ncpPositive α').monotone hxy
+  refine ⟨hd.1, ?_, ?_⟩
+  · rw [hα 1, hα1]; exact hd.2.1
+  intro D _ _ _ f hf
+  obtain ⟨f', hf', hu⟩ := hd.2.2 D inferInstance inferInstance inferInstance f hf
+  obtain ⟨g, hg⟩ := Theses.A.Proc.exists_ncpComp α' f'.toNCPMap
+  have hgsu : Subunital ⇑g := by
+    show (g 1 : A) ≤ 1
+    rw [hg, ← hα'1]
+    exact hα'mono _ _ f'.subunital'
+  refine ⟨⟨g, hgsu⟩, fun x => ?_, ?_⟩
+  · show (c (g x) : B) = f x
+    rw [hα, hg, hαα', hf']
+  rintro ⟨g'', hg''su⟩ hg''
+  have hcomp : ∀ x, (c (g'' x) : B) = f x := hg''
+  obtain ⟨k, hk⟩ := Theses.A.Proc.exists_ncpComp α g''
+  have hksu : Subunital ⇑k := by
+    show (k 1 : C) ≤ 1
+    rw [hk, ← hα1]
+    exact hαmono _ _ hg''su
+  have hkf' : (⟨k, hksu⟩ : NCPSUMap D C) = f' := by
+    refine hu _ fun x => ?_
+    show (d (k x) : B) = f x
+    rw [hk, ← hα, hcomp]
+  have hkv : ∀ x, (k x : C) = f'.toNCPMap x := fun x =>
+    congrArg (fun m : NCPSUMap D C => m.toNCPMap x) hkf'
+  have hgg : g'' = g := by
+    refine DFunLike.ext _ _ fun x => ?_
+    rw [hg]
+    calc (g'' x : A) = α' (α (g'' x)) := (hα'α _).symm
+      _ = α' (k x) := by rw [hk]
+      _ = α' (f'.toNCPMap x) := by rw [hkv]
+  subst hgg
+  rfl
+
+/-- **A corner map in the sense of proc.tex 95I is a corner here.**  The
+C\*-strength universal property comes from the *standard* corner
+(**169IV** `standard_corner_dils`), which is a corner of the same effect in
+proc.tex's sense too, so proc.tex 98IV.1 `Theses.A.Proc.corner_unique`
+makes the two isomorphic; `isCornerFor_of_ncpIso` moves the property across.
+Unitality of `π` is not used. -/
+theorem isCorner_of_procIsCornerMap [VonNeumannAlgebra A] [VonNeumannAlgebra B]
+    {π : NCPMap A B} (hπ : Theses.A.Proc.IsCornerMap π) : IsCorner π := by
+  obtain ⟨-, p, hp, hcor⟩ := hπ
+  obtain ⟨h, -, hCF⟩ := standard_corner_dils p hp
+  have _vn : VonNeumannAlgebra (cornerSet A (floor p)) :=
+    cornerSet_vonNeumannAlgebra A (floor p)
+  obtain ⟨β, hβ, β', hβ'β, -⟩ :=
+    Theses.A.Proc.corner_unique p h (procIsCornerOf_of_isCornerFor hCF) π hcor
+  exact ⟨p, isCornerFor_of_ncpIso hCF β β' hβ hβ'β⟩
+
+/-- **A filter in the sense of proc.tex 96I is a filter here.**  Same route:
+the standard filter `c_{c(1)}` of **169X** has the C\*-strength property,
+`c` and it agree at `1`, so proc.tex 98II.1 `Theses.A.Proc.filter_unique`
+makes them isomorphic by a *unital* isomorphism and `isFilterFor_of_ncpIso`
+moves the property across.  The one step that is not bookkeeping is
+`c_{c(1)}(1) = c(1)`: `≤` is part of `IsFilterFor`, and `≥` because `c`
+itself factors through `c_{c(1)}` by a subunital map. -/
+theorem isFilter_of_procIsFilter [VonNeumannAlgebra A] [VonNeumannAlgebra B]
+    {c : NCPMap A B} (hc : Theses.A.Proc.IsFilter c) : IsFilter c := by
+  have hb : (0 : B) ≤ c 1 := Theses.A.Proc.ncpMap_nonneg c zero_le_one
+  obtain ⟨cb, -, hCF⟩ := dils_stand_filter (c 1) hb
+  have _vn : VonNeumannAlgebra (cornerSet B (ceil (c 1))) :=
+    cornerSet_vonNeumannAlgebra B (ceil (c 1))
+  have hcb1 : (cb 1 : B) = c 1 := by
+    refine le_antisymm hCF.2.1 ?_
+    obtain ⟨w, hw, -⟩ :=
+      hCF.2.2 A inferInstance inferInstance inferInstance c le_rfl
+    calc (c 1 : B) = cb (w.toNCPMap 1) := (hw 1).symm
+      _ ≤ cb 1 := (ncpPositive cb).monotone w.subunital'
+  obtain ⟨α, hα, hα1, α', hα'α, hαα'⟩ :=
+    Theses.A.Proc.filter_unique c hc cb (procIsFilter_of_isFilterFor hCF) hcb1.symm
+  exact ⟨c 1, isFilterFor_of_ncpIso hCF α α' hα hα1 hα'α hαα'⟩
+
+/-- **170I ⟹ 168IV: every pure map is an `IsPureMap`** (at von Neumann
+objects).  proc.tex **100III** `Theses.A.Proc.pure_fundamental` puts a pure
+map in the normal form "a filter after a *unital* corner" with a von Neumann
+algebra in the middle; the two lemmas above then say that its two halves are
+a corner and a filter in *this* chapter's stronger, C\*-tested sense.
+
+This is the half of the equivalence that the file header called a merge
+rather than a lemma.  It is a lemma; the converse
+(`procIsPure_of_factorisation`) needs the intermediate algebra to be a von
+Neumann algebra, which `IsPureMap` does not require. -/
+theorem isPureMap_of_procIsPure [VonNeumannAlgebra A] [VonNeumannAlgebra B]
+    {φ : NCPMap A B} (hφ : Theses.A.Proc.IsPure φ) : IsPureMap φ := by
+  obtain ⟨Z, _, _, _, _, π, c, hπ, hc, hfac⟩ :=
+    ((Theses.A.Proc.pure_fundamental φ).out 0 1).mp hφ
+  exact ⟨Z, inferInstance, inferInstance, inferInstance, π, c,
+    isCorner_of_procIsCornerMap hπ, isFilter_of_procIsFilter hc,
+    fun a => by rw [hfac, Theses.A.Proc.ncpComp_apply]⟩
+
+/-- **168IV ⟹ 170I**, given a von Neumann intermediate algebra: a filter
+after a corner is pure in the inductive sense of 170I.  The corner need not
+be unital — by **169IV** and proc.tex 98IV.1 it is the (unital) standard
+corner followed by an ncp-isomorphism, and an ncp-isomorphism is pure by
+proc.tex 100II — and the filter half is `procIsFilter_of_isFilterFor`
+followed by `Theses.A.Proc.IsPure.filter`, which carries no von Neumann
+binder at all.
+
+`[VonNeumannAlgebra C]` is the irreducible hypothesis: 170I's `comp`
+constructor demands it of the algebra in the middle, and `IsPureMap` asks
+only for a C\*-algebra there.  Stating this as `IsPureMap φ → IsPure φ`
+would therefore require changing one of the two definitions. -/
+theorem procIsPure_of_factorisation [VonNeumannAlgebra A] [VonNeumannAlgebra B]
+    {C : Type u} [CStarAlgebra C] [PartialOrder C] [StarOrderedRing C]
+    [VonNeumannAlgebra C] {φ : NCPMap A B} {h : NCPMap A C} {c : NCPMap C B}
+    (hh : IsCorner h) (hc : IsFilter c) (hfac : ∀ a, (φ a : B) = c (h a)) :
+    Theses.A.Proc.IsPure φ := by
+  obtain ⟨a, hCF⟩ := hh
+  obtain ⟨hp, hpval, hpCF⟩ := standard_corner_dils a hCF.1
+  have _vn : VonNeumannAlgebra (cornerSet A (floor a)) :=
+    cornerSet_vonNeumannAlgebra A (floor a)
+  obtain ⟨β, hβ, β', hβ'β, hββ'⟩ :=
+    Theses.A.Proc.corner_unique a hp (procIsCornerOf_of_isCornerFor hpCF) h
+      (procIsCornerOf_of_isCornerFor hCF)
+  have hpu : (hp 1 : cornerSet A (floor a)) = 1 := by
+    refine Subtype.ext ?_
+    have hproj : IsStarProjection (floor a) := cornerSet.proj (floor a)
+    rw [hpval, cornerSet.val_one, mul_one, hproj.isIdempotentElem.eq]
+  have hpCM : Theses.A.Proc.IsCornerMap hp :=
+    ⟨hpu, a, hCF.1, procIsCornerOf_of_isCornerFor hpCF⟩
+  have hheq : h = Theses.A.Proc.ncpComp β' hp := by
+    refine DFunLike.ext _ _ fun x => ?_
+    rw [Theses.A.Proc.ncpComp_apply, hβ x, hβ'β]
+  have hhpure : Theses.A.Proc.IsPure h := by
+    rw [hheq]
+    exact Theses.A.Proc.IsPure.comp
+      (Theses.A.Proc.isPure_of_iso β' β hββ' hβ'β)
+      (Theses.A.Proc.IsPure.corner hpCM)
+  obtain ⟨b, hFF⟩ := hc
+  have hcpure : Theses.A.Proc.IsPure c :=
+    Theses.A.Proc.IsPure.filter (procIsFilter_of_isFilterFor hFF)
+  have hφeq : φ = Theses.A.Proc.ncpComp c h := by
+    refine DFunLike.ext _ _ fun x => ?_
+    rw [Theses.A.Proc.ncpComp_apply, hfac]
+  rw [hφeq]
+  exact Theses.A.Proc.IsPure.comp hcpure hhpure
+
+/-- **Pure maps compose** — the closure 170I asserts and `IsPureMap`'s
+normal form does not, obtained by going out through 170I and back.  This is
+what **171VII** `paschke_pure` has to do by hand with `isCornerFor_comp`;
+that proof is left alone, since it is stated without the von Neumann binder
+on the middle algebra that this needs. -/
+theorem isPureMap_ncpComp {D : Type u} [CStarAlgebra D] [PartialOrder D]
+    [StarOrderedRing D] [VonNeumannAlgebra A] [VonNeumannAlgebra B]
+    [VonNeumannAlgebra D] {φ : NCPMap A B} {ψ : NCPMap B D}
+    (hφ : Theses.A.Proc.IsPure φ) (hψ : Theses.A.Proc.IsPure ψ)
+    (χ : NCPMap A D) (hχ : ∀ a, (χ a : D) = ψ (φ a)) : IsPureMap χ := by
+  have hχeq : χ = Theses.A.Proc.ncpComp ψ φ :=
+    DFunLike.ext _ _ fun x => by rw [Theses.A.Proc.ncpComp_apply, hχ]
+  rw [hχeq]
+  exact isPureMap_of_procIsPure (Theses.A.Proc.IsPure.comp hψ hφ)
+
+end ProcPure
 
 variable {H K : Type u}
   [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
