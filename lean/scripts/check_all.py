@@ -66,6 +66,11 @@ CHECKS = [
     # still report a bare "(see QUESTIONS **B5**)".  Widening that vocabulary is
     # how the check silently stops checking anything.
     ("questions --self-test", ["questions_check.py", "--self-test"], True),
+    # a note, not an exact check: staleness is the normal state while work is in
+    # flight.  It is listed so it cannot go unnoticed -- `Pure.olean` was 46 minutes
+    # stale on 2026-08-29 and the whole ProcPure section was invisible to every
+    # compile in the tree, with nothing anywhere reporting it.
+    ("olean_staleness",   ["refresh_oleans.py"],         False),
 ]
 
 
