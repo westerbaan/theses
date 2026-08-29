@@ -23,6 +23,24 @@ written, and a question that was open then is correctly cited there; 84 of the
 first run's 163 hits were `PROVING-LOG.md` alone.  What is a defect is a live
 pointer -- in a doc comment, an audit row, `ERRATA.md`, or a current document --
 telling the next reader that a decision is pending when it has been taken.
+
+**Self-describing citations are not defects either.**  That last sentence is the
+actual test, and applying it on 2026-08-29 showed the checker was over-reporting.
+A current document may name a deleted question precisely *in order to say it was
+deleted* -- `ERRATA.md` rows carrying "*(Moved here from `QUESTIONS.md` A3 on
+2026-08-26, when A3 was deleted as answered.)*", `docs/DECISIONS.md`'s
+"`QUESTIONS.md` A7 was deleted, and 2a, 3, ...", a struck-through follow-up item
+reading "~~**Delete `QUESTIONS.md` A3**~~", `docs/STATEMENT-AUDIT.md`'s "QUESTIONS
+**B6** already had repaired for 192III.1/.2 in session 10".  None of these sends
+the reader anywhere; each tells them the decision is *taken*, which is what the
+checker wants.  Flagging them trains the reader to ignore the output.
+
+So a citation is exempt when its own sentence narrates the deletion, the move or
+the past session.  The test is deliberately narrow -- a marker within 200
+characters of the key -- because the failure it must keep catching is a bare
+"(see QUESTIONS **A7**)", which has no such marker.  Two of those were live in
+`ERRATA.md` when this exemption was written and were repaired rather than
+exempted, by naming where the answer went.
 """
 
 import pathlib
@@ -52,6 +70,28 @@ DELETED = {
 }
 
 
+# A citation is self-describing -- and so not a defect -- when the text around it
+# says the question is gone or narrates a finished action, rather than sending the
+# reader to it.  Kept narrow on purpose: a bare "(see QUESTIONS **A7**)" matches
+# none of these and is still reported.
+SELF_DESCRIBING = re.compile(
+    r"was deleted|deleted as answered|is deleted|now deleted|Moved here from"
+    r"|moved out of|answered and (?:deleted|removed)|closed as answered"
+    # "deleted 2026-08-19 in 5f19f62", "deleted 2026-08-16 as answered" -- the form
+    # a repaired pointer takes once it names when the question went and where the
+    # answer landed, which is the shape we want repairs to converge on
+    r"|deleted\s+\d{4}-\d{2}-\d{2}"
+    r"|~~|already had|in session \d+",
+    re.IGNORECASE)
+WINDOW = 200
+
+
+def self_describing(line, m):
+    """True when the prose around citation `m` narrates its deletion or its past."""
+    return bool(SELF_DESCRIBING.search(
+        line[max(0, m.start() - WINDOW):min(len(line), m.end() + WINDOW)]))
+
+
 def sections():
     return {m.group(1) for m in
             (SECTION.match(l) for l in (LEAN / "QUESTIONS.md").read_text().splitlines()) if m}
@@ -64,7 +104,7 @@ def main():
                      + list((LEAN / "docs").glob("*.md"))
                      + [LEAN / "ERRATA.md", LEAN / "PROVING-LOG.md"])
     historical = lambda p: p.name == "PROVING-LOG.md" or p.name.endswith("-survey.md")
-    dead, ok, logged = [], 0, 0
+    dead, ok, logged, narrated = [], 0, 0, 0
     for path in targets:
         if ".lake" in path.parts or path.name == "QUESTIONS.md":
             continue
@@ -78,6 +118,9 @@ def main():
                 if historical(path):
                     logged += 1
                     continue
+                if self_describing(line, m):
+                    narrated += 1
+                    continue
                 if (rel, i, key) not in [(a, b, c) for a, b, c, _ in dead]:
                     dead.append((rel, i, key, DELETED.get(key)))
 
@@ -86,8 +129,8 @@ def main():
                f"does not record it as deleted")
         print(f"GONE     {rel}:{i}  cites QUESTIONS.md {key} -- {why}")
     print(f"\n{len(have)} questions open; {ok} references resolve, {len(dead)} live pointers "
-          f"name a question that is not there, {logged} more are in the historical logs and are "
-          f"not defects")
+          f"name a question that is not there, {logged} more are in the historical logs and "
+          f"{narrated} narrate their own deletion -- neither is a defect")
     return 1 if dead else 0
 
 
