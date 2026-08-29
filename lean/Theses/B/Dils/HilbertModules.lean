@@ -1212,9 +1212,12 @@ below.
 
 **146VIII**'s two identifications are `unSeminorm_complex` and
 `unSeminorm_mulInner_eq_omegaNorm` below; of **146IX** (Beware) the
-quantitative half is `unSeminorm_le_norm_mul`, its converse ("but not
-necessarily the other way around", which needs a counterexample) is not
-formalized, and **146X** (Remarks) has nothing to formalize. -/
+quantitative half is `unSeminorm_le_norm_mul` and its converse ("but not
+necessarily the other way around") is `unTendsto_not_norm_tendsto` below,
+whose counterexample is `|n⟩⟨0|` on `ℓ²`.  146IX's remaining clause — that
+the ultranorm uniformity is "in general not given by a single norm" — is
+stated nowhere in this tree.  **146X** (Remarks) has nothing to
+formalize. -/
 noncomputable def unSeminorm {X : Type v} [AddCommGroup X]
     (ω : NPFunctional 𝒷) (B : X → X → 𝒷) (x : X) : ℝ :=
   Real.sqrt (ω (B x x)).re
@@ -1292,6 +1295,57 @@ the ultranorm uniformity on `X` is *complete* when every (nontrivial)
 ultranorm Cauchy filter converges. -/
 def UnComplete (B : X → X → 𝒷) : Prop :=
   ∀ F : Filter X, F.NeBot → UnCauchy B F → ∃ x₀, UnTendsto B id F x₀
+
+section Converse
+
+local notation "ℓ²" => lp (fun _ : ℕ => ℂ) 2
+
+/-- **146IX** (`dils-ultranorm`, dils.tex:1918, Beware), the converse half:
+*"norm convergence implies ultranorm convergence, but not necessarily the
+other way around"*.  The quantitative forward half is
+`unSeminorm_le_norm_mul` below; here is the counterexample for the converse,
+which the thesis leaves to the reader.
+
+Take `𝒷 = X = B(ℓ²)` with `mulInner`, and `xₙ = |n⟩⟨0|`.  Then `xₙ → 0`
+ultranorm: by `unSeminorm_mulInner_eq_omegaNorm` the ultranorm seminorms of
+`mulInner` are the ultrastrong seminorms of `𝒷` composed with `star`, and
+`(xₙ)* = |0⟩⟨n| → 0` ultrastrongly by **43II**.4
+(`Theses.A.VN.vn_counterexamples_4_ket`).  But `(xₙ)` converges in norm to
+*nothing at all*: norm convergence implies ultrastrong convergence (from
+`‖a‖_ω ≤ ‖a‖ ‖1‖_ω`), and **43II**.4's second half
+(`Theses.A.VN.vn_counterexamples_4_bra`) says `(xₙ)` has no ultrastrong
+limit.  So the ultranorm uniformity is *strictly* weaker than the norm
+uniformity. -/
+theorem unTendsto_not_norm_tendsto :
+    UnTendsto (mulInner (ℓ² →L[ℂ] ℓ²)) (fun n : ℕ => ketbraNat n 0) atTop 0 ∧
+      ¬∃ T : ℓ² →L[ℂ] ℓ²,
+        Tendsto (fun n : ℕ => ketbraNat n 0) atTop (𝓝 T) := by
+  constructor
+  · -- `‖xₙ‖_ω = ‖(xₙ)*‖_ω = ‖|0⟩⟨n|‖_ω → 0`
+    intro ω
+    have h := (usTendsto_iff (fun n : ℕ => ketbraNat 0 n) atTop 0).mp
+      vn_counterexamples_4_ket ω
+    refine h.congr fun n => ?_
+    rw [sub_zero, sub_zero, unSeminorm_mulInner_eq_omegaNorm,
+      (vn_counterexamples_1 0 0 0 n).1]
+  · -- a norm limit would be an ultrastrong limit, and there is none
+    rintro ⟨T, hT⟩
+    refine vn_counterexamples_4_bra.2 ⟨T, ?_⟩
+    rw [usTendsto_iff]
+    intro ω
+    have h0 : Tendsto (fun n : ℕ => ketbraNat n 0 - T) atTop (𝓝 0) :=
+      tendsto_sub_nhds_zero_iff.mpr hT
+    have hnorm : Tendsto (fun n : ℕ => ‖ketbraNat n 0 - T‖) atTop (𝓝 0) :=
+      tendsto_zero_iff_norm_tendsto_zero.mp h0
+    have hbd : Tendsto
+        (fun n : ℕ => ‖ketbraNat n 0 - T‖ * omegaNorm (ℓ² →L[ℂ] ℓ²) ω 1)
+        atTop (𝓝 0) := by
+      simpa using hnorm.mul_const (omegaNorm (ℓ² →L[ℂ] ℓ²) ω 1)
+    refine squeeze_zero (fun n => omegaNorm_nonneg _ _) (fun n => ?_) hbd
+    have h := omegaNorm_mul_le ω (ketbraNat n 0 - T) 1
+    rwa [mul_one] at h
+
+end Converse
 
 end Ultranorm
 
@@ -2491,8 +2545,8 @@ implies ultranorm convergence"*, as the estimate `‖x‖_ω ≤ ‖x‖ ω(1)^�
 the form that **149VII** uses.  (Earlier revisions of this file labelled it
 146VIII, whose two identifications are `unSeminorm_complex` and
 `unSeminorm_mulInner_eq_omegaNorm` above.  The converse half of 146IX —
-"but not necessarily the other way around" — needs a counterexample and is
-not formalized.) -/
+"but not necessarily the other way around" — is `unTendsto_not_norm_tendsto`
+above, with the counterexample `|n⟩⟨0|` on `ℓ²`.) -/
 theorem unSeminorm_le_norm_mul (ω : NPFunctional 𝒷) (x : X) :
     unSeminorm ω (inner 𝒷 : X → X → 𝒷) x ≤ ‖x‖ * Real.sqrt (ω 1).re := by
   have hle : (inner 𝒷 x x : 𝒷) ≤ (‖(inner 𝒷 x x : 𝒷)‖ : ℝ) • (1 : 𝒷) :=

@@ -196,20 +196,35 @@ def verdict_negated(field, chosen):
 # old verdict is what makes the correction auditable, so flagging it would push
 # authors to delete the history to satisfy the checker.
 SUPERSEDED = re.compile(
-    r"(?:\bwas\b|\bread\b|\breads\b|\bfiled\b|\bfiled the row\b|\buntil\b"
-    r"|\bpreviously\b|\bformerly\b|\bno longer\b|\bused to\b|\bhad been\b"
-    r"|\bstopped being\b|\bwithdrawn\b|\bretracted\b|\bnot\b"
-    # the tree's own idiom for a history paragraph deliberately preserved
-    r"|\bearlier record\b|\bearlier finding\b|\bthe original finding\b"
-    r"|\bfollows\b|\bhistory\b)"
-    # allow the marker to close its own sentence ("… EARLIER RECORD, kept.  repaired:")
-    # and to sit a clause or two back, which is where these paragraphs put it
+    # PHRASES only.  An earlier version of this used bare words -- `not`, `was`,
+    # `read`, `follows` -- inside a 130-character window, and in dense prose that
+    # matches almost anything: it suppressed the *operative* verdict of two rows
+    # whose fields happen to describe their own history immediately before
+    # stating it ("this field previously read as two verdicts at once: the
+    # operative verdict is REPAIRED").  A marker has to be an unambiguous
+    # introduction of a FORMER verdict, not a word that often precedes one.
+    r"(?:earlier record|earlier finding|the original finding"
+    r"|the field read|previously read|used to read|no longer reads"
+    r"|it read|filed the row|filed as|filed under|had filed"
+    r"|was reclassified|reclassified from|superseded"
+    r"|withdrawn|retracted|no longer|used to be"
+    r"|until \d{4}-\d{2}-\d{2}|~~)"
     r"[^.]{0,110}?\.?\s*$", re.IGNORECASE)
+
+
+# A bare auxiliary immediately in front of the verdict word -- "was reclassified",
+# "had been repaired".  Kept separate from SUPERSEDED and given a much tighter
+# window, because these words are far too common to search a whole clause for:
+# at 130 characters they suppressed the operative verdict of two rows, while at
+# 15 they catch exactly the construction they are for.
+ADJACENT_PAST = re.compile(r"\b(?:was|were|had been|is no longer|are no longer)\s+$",
+                           re.IGNORECASE)
 
 
 def _superseded_at(field, m):
     """True when the verdict matched at `m` is named as a former verdict."""
-    return bool(SUPERSEDED.search(field[max(0, m.start() - 130):m.start()]))
+    before = field[max(0, m.start() - 130):m.start()]
+    return bool(SUPERSEDED.search(before)) or bool(ADJACENT_PAST.search(before[-15:]))
 
 
 def verdict_conflicts(field):
@@ -243,6 +258,19 @@ def verdict_conflicts(field):
 def verdict_of(field):
     """The verdict a status field carries, wherever in it that sits.
 
+    A verdict named as SUPERSEDED is skipped, the same rule `verdict_conflicts`
+    uses.  Without it the two disagreed, and only the reporting half was honest:
+    `--conflicts` would call a row clean while `verdict_of` -- which drives the
+    sorry map and every count -- still returned the stale verdict out of a
+    deliberately kept "EARLIER RECORD".  Two rows were doing exactly that on
+    2026-08-29, after I had reported them fixed.
+
+    Note this does not make table order irrelevant, only harmless in the common
+    case: `verdict_of` still returns the first match in TABLE order, so a field
+    whose operative verdict is appended after a stale one that is *not* marked
+    superseded will still read backwards.  That shape is caught by the AMBIG
+    class instead, which sees both.
+
     The first token is not reliable: passes since 2026-08-26 open the field
     with an ISO date and a pass label ("2026-08-27 A/VN stmt pass: REPAIRED"),
     which a first-token rule reports as the category `2026-08-27`.  Eighteen
@@ -251,7 +279,9 @@ def verdict_of(field):
     """
     t = field.strip().lower()
     for needle, canon in VERDICTS:
-        if needle in t:
+        for mm in re.finditer(re.escape(needle), t):
+            if _superseded_at(t, mm):
+                continue          # named as a FORMER verdict, not this row's
             return canon
     # the numbered grounds again, when a row names one further into a sentence
     # ("LEFT, on two grounds ... (i) reason 2")
