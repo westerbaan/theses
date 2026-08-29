@@ -38,7 +38,11 @@ variable {A : Type u} {B : Type v} [CStarAlgebra A] [PartialOrder A] [StarOrdere
 (idempotent and self-adjoint, an equivalent rendering).
 
 **55III** (vn.tex:2210, Examples): the projections of `ℂ`, `L^∞(X)` and
-`B(H)` — descriptive examples, not converted. -/
+`B(H)`.  Parts 1 and 3 are `projection_examples_1` and
+`projection_examples_3` below; part 2 (`L^∞(X)`) is **not** converted,
+because `L^∞(X)` has no carrier in the tree — 51IX `Linfty_vn` delivers it
+only as an existentially quantified algebra with a quotient map, so there
+is no object whose projections could be enumerated. -/
 
 /-! ### Auxiliary: effects versus a projection
 
@@ -235,6 +239,73 @@ theorem isStarProjection_iff_star_mul_self (p : A) :
     refine ⟨?_, hsa⟩
     calc p * p = star p * p := by rw [hsa.star_eq]
       _ = p := h
+
+/-- **55III** (vn.tex:2210, Examples), part 1: the only projections in `ℂ`
+are `0` and `1`.  Self-adjointness is automatic here: an idempotent of a
+field is `0` or `1`, and both are self-adjoint. -/
+theorem projection_examples_1 (p : ℂ) : IsStarProjection p ↔ p = 0 ∨ p = 1 := by
+  refine ⟨fun hp => IsIdempotentElem.iff_eq_zero_or_one.mp hp.isIdempotentElem, ?_⟩
+  rintro (rfl | rfl)
+  · exact IsStarProjection.zero ℂ
+  · exact IsStarProjection.one ℂ
+
+/-- **55III** (vn.tex:2210, Examples), part 3: given a closed linear
+subspace `C` of a Hilbert space `H`, the inclusion `E : C → H` is bounded
+and `P_C := E E* : H → H` is a projection in `B(H)`; and every projection
+in `B(H)` is of this form.  Here `E` is `C.subtypeL` and `E*` its adjoint;
+`CompleteSpace C` is the thesis's "closed" (the two agree for a subspace of
+a Hilbert space, and the closedness is asserted as well, so that the
+statement is the thesis's and not merely Mathlib's).
+
+The mathematics is Mathlib's `isStarProjection_iff_eq_starProjection_range`;
+what is added here is the identification `P_C = E E*` of the thesis's
+operator with Mathlib's `Submodule.starProjection` (by
+`Submodule.adjoint_subtypeL`, `E* = orthogonalProjectionOnto C`) and the
+observation that the subspace produced — the range of the projection — is
+closed, being the kernel of `1 - p`.
+
+(Part 2 — the projections of `L^∞(X)` are exactly the indicators `1_A` —
+is *not* converted: it is a statement about `L^∞(X)`, which has no carrier
+in the tree.  51IX `Linfty_vn` delivers `L^∞(X)` only as an existentially
+quantified algebra with a quotient map, so there is no object here whose
+projections could be enumerated.  See the `55III` row of
+`docs/audit/avn-projections.csv`.) -/
+theorem projection_examples_3 {H : Type*} [NormedAddCommGroup H]
+    [InnerProductSpace ℂ H] [CompleteSpace H] (p : H →L[ℂ] H) :
+    IsStarProjection p ↔ ∃ (C : Submodule ℂ H) (_ : CompleteSpace C),
+      IsClosed (C : Set H) ∧
+        p = C.subtypeL ∘L ContinuousLinearMap.adjoint C.subtypeL := by
+  -- `P_C = E E*` is `Submodule.starProjection C`, since `E*` is the
+  -- orthogonal projection of `H` onto `C`.
+  have key : ∀ (C : Submodule ℂ H) (_ : CompleteSpace C),
+      C.subtypeL ∘L ContinuousLinearMap.adjoint C.subtypeL = C.starProjection := by
+    intro C _
+    rw [Submodule.adjoint_subtypeL]
+    rfl
+  constructor
+  · intro hp
+    obtain ⟨hOP, hpe⟩ := isStarProjection_iff_eq_starProjection_range.mp hp
+    -- the range of a projection is closed: it is the kernel of `p^⊥`
+    have hker : LinearMap.range (p : H →ₗ[ℂ] H)
+        = LinearMap.ker ((1 - p : H →L[ℂ] H) : H →ₗ[ℂ] H) := by
+      ext y
+      constructor
+      · rintro ⟨x, rfl⟩
+        have hpp : p (p x) = p x :=
+          congrArg (fun S : H →L[ℂ] H => S x) hp.isIdempotentElem.eq
+        simp [hpp]
+      · intro hy
+        simp only [LinearMap.mem_ker, ContinuousLinearMap.coe_coe, sub_apply,
+          one_apply_eq_self] at hy
+        exact ⟨y, (sub_eq_zero.mp hy).symm⟩
+    have hcl : IsClosed ((LinearMap.range (p : H →ₗ[ℂ] H) : Submodule ℂ H) : Set H) := by
+      rw [hker]; exact ContinuousLinearMap.isClosed_ker _
+    have hcs : CompleteSpace (LinearMap.range (p : H →ₗ[ℂ] H) : Submodule ℂ H) :=
+      hcl.completeSpace_coe
+    exact ⟨_, hcs, hcl, hpe.trans (key _ hcs).symm⟩
+  · rintro ⟨C, hC, -, rfl⟩
+    rw [key C hC]
+    exact isStarProjection_starProjection
 
 omit [PartialOrder A] [StarOrderedRing A] in
 /-- **55IV** (`projection-basic`, vn.tex:2232, Exercise), part 1: `0` and
