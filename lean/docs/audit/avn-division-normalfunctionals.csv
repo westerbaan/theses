@@ -173,7 +173,7 @@
 88V|ampLM|Theses/A/VN/NormalFunctionals.lean|ok|none|infrastructure, not a transcription
 88V|ampLM_apply|Theses/A/VN/NormalFunctionals.lean|ok|none|infrastructure, not a transcription
 88V|ampLM_norm_le|Theses/A/VN/NormalFunctionals.lean|ok|none|infrastructure, not a transcription
-88V|amp|Theses/A/VN/NormalFunctionals.lean|ok|none|880.50 item 1's map rho-prime, as an object. The item's two CLAIMS about it are not stated — see `proto_double_commutant`
+88V|amp|Theses/A/VN/NormalFunctionals.lean|ok|none|880.50 item 1's map rho-prime, as an object. Definition, no thesis proof|repaired 2026-08-29: the note said 'the item's two CLAIMS about it are not stated'. BOTH ARE STATED, and were read in situ today. The sum-of-corners claim is amp_eq_sum_corners (NormalFunctionals.lean:1670), which gives it as a HasSum over the single-coordinate compressions - strongly, pointwise on the direct sum, which is the only sense it can have, since in norm it does not converge even for t = 1. The functional claim is proto_double_commutant_1 (:1688): for every np-functional omega there is x' in the square-summable direct sum with omega t = the inner product of x' with amp t x', which is 88II bh_np's decomposition omega = sum of the vector states at x_n. So the row recorded a gap that the file does not have; only the DEFINITION carries no thesis proof, which is what the proof column already said
 88V|amp_apply|Theses/A/VN/NormalFunctionals.lean|ok|none|infrastructure, not a transcription
 88V|lp_clm_ext|Theses/A/VN/NormalFunctionals.lean|ok|none|infrastructure, not a transcription
 88V|amp_star|Theses/A/VN/NormalFunctionals.lean|ok|none|infrastructure, not a transcription
