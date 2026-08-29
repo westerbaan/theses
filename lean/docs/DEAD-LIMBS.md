@@ -1321,15 +1321,20 @@ the filters, all unrowed by `lean_name`):
   examples downstream actually use is … the *uniqueness* statement
   `vn_effObj_iso`, which is proved" — and again at `:2127`), and
   `modularPair_data` (`StandardSubspace.lean:650`).
-* **`inv1p_nonneg`, `inv1p_comm`, `inv1p_conj_le_one`** (`B/Dils/Kaplansky`)
-  — 3, and PROVING-LOG parsec 6167 calls the last two "the two facts the
-  thesis lists at dils.tex:4213":
+* **`inv1p_nonneg`, `inv1p_comm`** (`B/Dils/Kaplansky`)
+  — 2, and PROVING-LOG parsec 6167 calls `inv1p_comm` and `inv1p_conj_le_one`
+  "the two facts the thesis lists at dils.tex:4213":
   the doc comment of the *definition* `inv1p`, four declarations above them,
   states "`0 ≤ inv1p b ≤ 1` as well as `0 ≤ b * inv1p b ≤ 1` (dils.tex:4213)"
-  — the four facts these three and the live `inv1p_le_one` render.  They are
-  the toolbox of the four `kaplansky_hilbmod_A*` statements, which are among
-  the tree's eleven deliberate `sorry`s; deleting them removes the tree's only
-  rendering of a sentence the thesis prints.
+  — the four facts these two, `inv1p_conj_le_one` and the live `inv1p_le_one`
+  render.  They are the toolbox of the `kaplansky_hilbmod_A*` statements, three
+  of which are among the tree's deliberate `sorry`s; deleting them removes the
+  tree's only rendering of a sentence the thesis prints.
+  **`inv1p_conj_le_one` left this list on 2026-08-29**: it is now consumed, and it
+  is not dead.  `kaplansky_hilbmod_A₂` — the one of the four estimates that turned
+  out to be *true* — is now proved, and `inv1p_conj_le_one` is what bounds
+  `⟨(1+⟨y_α,y_α⟩)⁻¹·y_α, (1+⟨y_α,y_α⟩)⁻¹·y_α⟩ ≤ 1` in that proof, which is the
+  step the whole estimate turns on.
 * **`jConj_modPow`** (`A/VN/ModularGroup`): §13.4 of this document already
   ruled on it — the `jConj` layer "is a class-2 record — kept, not deleted,
   because it is the tree's only statement of `J Δ^{it} J = Δ^{it}`" — and the

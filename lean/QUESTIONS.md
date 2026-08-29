@@ -124,9 +124,14 @@ analysis left open.
    stale since session 61: `dils_completion` is proved, and both
    `kaplansky_hilbmod` and the **self-dual case**
    `kaplansky_hilbmod_of_selfDual` are unconditional and axiom-clean.  The
-   only `sorry`s in `Kaplansky.lean` are the four `kaplansky_hilbmod_A*`,
-   which record that 158V is false and which `kaplansky_hilbmod` does not
-   use.)
+   only `sorry`s in `Kaplansky.lean` are three of the four
+   `kaplansky_hilbmod_A*`, which record that 158V is false and which
+   `kaplansky_hilbmod` does not use.  **Corrected 2026-08-29**: it used to say
+   four.  The fourth, `A₂`, is *true* and is now proved — the counterexample
+   gives it the value `0` at `ω₀`, which was read as one functional failing to
+   see it, and it is not that.  What separates `A₂` from `A₂'` is which
+   resolvent moves with `α`; see the file's own ⚠ block.  158V itself is still
+   false and the request below is unchanged.)
 
 *Decision needed*: how to repair the thesis.  Concretely, 158III–158V should
 be deleted or demoted, and the proof of `kaplansky-hilbmod` replaced by the

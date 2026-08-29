@@ -7,12 +7,15 @@ lines 4082–4279.
 
 **158Ia** and **158II** are proved (158II through the linking algebra, at the
 end of the file; it uses **150II** `dils_completion`, which is now itself
-proved, so 158II is unconditional); the four **158V** estimates are `sorry`
-(they are *false*, see below).  The thesis's route to 158II is therefore
-dead; the proof here runs the **linking algebra** `ℬᵃ(X ⊕ ℬ)` and thesis A's
-**74IV** `kaplansky` instead — see the section comment before
-`kaplansky_hilbmod_of_selfDual`, which is the self-dual case and is
-axiom-clean.  Two earlier partial results are kept, both still of interest:
+proved, so 158II is unconditional); **three** of the four **158V** estimates are
+`sorry` (they are *false*, see below), and the fourth — `A₂`,
+`kaplansky_hilbmod_A₂` — is **proved**: it is the one the counterexample
+never touched, and the thesis's own Cauchy–Schwarz argument does close it.
+The thesis's route to 158II is therefore dead; the proof here runs the
+**linking algebra** `ℬᵃ(X ⊕ ℬ)` and thesis A's **74IV** `kaplansky`
+instead — see the section comment before `kaplansky_hilbmod_of_selfDual`,
+which is the self-dual case and is axiom-clean.  Two earlier partial results
+are kept, both still of interest:
 `kaplansky_hilbmod_of_weak` (158II reduces, by a Mazur-style variational
 argument, to *weak* bounded approximation) and
 `kaplansky_hilbmod_of_commutative` (the commutative case, proved through the
@@ -117,9 +120,14 @@ For `h y = y · 2/(1+⟨y,y⟩)` and a net `y_α → y` ultranorm, the splitting
 and each of the four terms is shown to converge ultraweakly to `0`; that
 gives `h y_α → h y` ultranorm.  The four estimates are the four theorems
 below.  (`A₁`, `A₁'` are dual to each other under swapping `y` and `y_α`,
-as are `A₂`, `A₂'`, but the thesis states — and uses — all four.)
+and so, *formally*, are `A₂`, `A₂'`; the thesis states — and uses — all four.
+That formal duality is what misled: swapping `y` and `y_α` also swaps which
+resolvent is the constant one, and the estimate is true on one side of the
+swap and false on the other.  See the ⚠ block.)
 
-⚠️ **158V is false as stated, and so are all four estimates.**  Take
+⚠️ **158V is false as stated, and so are three of its four estimates**
+(`A₁`, `A₁'`, `A₂'`; `A₂` is *true* — see below and its own docstring).
+Take
 `ℬ = B(ℓ²)`, `X = ℬ` over itself (`inner a b = b a*`), `pₙ = |eₙ⟩⟨eₙ|`,
 
   `y₀ = |e₁⟩⟨e₂|`,  `yₙ = |e₁ + eₙ⟩⟨e₂|`  (`n ≥ 2`).
@@ -134,8 +142,15 @@ vector functional `ω₀ = ⟨e₁, · e₁⟩` gives, *independently of `n`*,
   `ω₀(A₁) = -1/12`,  `ω₀(A₁') = -1/18`,  `ω₀(A₂') = 1/6`,
   `ω₀(⟨h y₀ - h yₙ, h y₀ - h yₙ⟩) = 1/9`
 
-(and `ω₀(A₂) = 0`, which only means this one functional does not see `A₂`),
-so none of them tends to `0`.  The step that fails is the right-hand half
+so none of *those* tends to `0`.  The fourth value is `ω₀(A₂) = 0`, and that
+is **not** this one functional failing to see `A₂`, which is what this block
+said until 2026-08-29: `A₂` really does converge, for every `ω`, and
+`kaplansky_hilbmod_A₂` below proves it.  The asymmetry is which resolvent
+moves with `α` — in `A₂` the varying one multiplies the *bounded* vector `y_α`
+and the constant one the *small* vector `y_α - y`, in `A₂'` the other way
+round — so the thesis's "the proofs for `A₂, A₂' → 0` are very similar"
+(dils.tex:4273) is wrong twice over: they are not similar, and only one of
+them is true.  The step that fails is the right-hand half
 of `kaplanskytodo2` (dils.tex:4251), the one whose "different, but simpler"
 proof the thesis omits: here
 `⟨y₀, yₙ - y₀⟩(1+⟨yₙ,yₙ⟩)⁻¹ = |e₁⟩⟨eₙ| - ⅓|e₁⟩⟨w|` has `ω₀`-value `-1/3`
@@ -144,8 +159,9 @@ proof the thesis omits: here
 the same display has `ω₀`-value `0`.
 (The left-hand half *is* fine: `⟨y_α-y, y_α(1+⟨y_α,y_α⟩)⁻¹⟩` is Cauchy–Schwarz
 against a vector of norm `≤ 1`, and the resolvent bounds below are exactly
-what that argument needs.)  The four `sorry`s are therefore *not* closable;
-see `PROVING-LOG.md` and `ERRATA.md`.
+what that argument needs — and it is exactly the argument that closes `A₂`.)
+The three `sorry`s that remain are therefore *not* closable; see
+`PROVING-LOG.md` and `ERRATA.md`.
 
 **The whole computation was re-checked in exact rational arithmetic on
 2026-08-28** and all nine recorded values reproduce: `scripts/kaplansky_witness.py`,
@@ -176,7 +192,8 @@ factor order is visible), and `A₂`, `A₂'` now do it too: the thesis's
 `⟨y_α − y, y_α⟩` is `inner ℬ (y i) (y i - y₀)` and its `⟨y − y_α, y⟩` is
 `inner ℬ y₀ (y₀ - y i)`.  Since `star` is ultraweakly continuous and the
 claim is convergence to `0`, `star ∘ mirror` transcribes the thesis's claim
-faithfully.  All four remain false, and remain `sorry`. -/
+faithfully.  `A₁`, `A₁'` and `A₂'` remain false, and remain `sorry`; `A₂` is
+proved. -/
 
 /-- `inv1p b = (1 + b)⁻¹`, the resolvent occurring throughout **158V**; for
 `b ≥ 0` in a C*-algebra `1 + b` is invertible, so `Ring.inverse` is the
@@ -269,7 +286,7 @@ private theorem inv1p_conj_le_one {b : ℬ} (hb : 0 ≤ b) :
 
 variable {ι : Type w} {l : Filter ι}
 
-/-- **158V**.1 (dils.tex:4201, the term `A₁` of `kaplansky-splitting`): if
+/-- **158V**.1 (dils.tex:4198, the term `A₁` of `kaplansky-splitting`): if
 `y_α → y` ultranorm, then
 
   `A₁ = ⟨y,y⟩ (1+⟨y,y⟩)⁻² - (1+⟨y_α,y_α⟩)⁻¹ ⟨y,y⟩ (1+⟨y,y⟩)⁻¹ → 0`
@@ -288,7 +305,7 @@ private theorem kaplansky_hilbmod_A₁ [VonNeumannAlgebra ℬ] [CompleteSpace X]
               * (inner ℬ y₀ y₀ * inv1p (inner ℬ y₀ y₀))) l 0 :=
   sorry
 
-/-- **158V**.2 (dils.tex:4196, the term `A₁'` of `kaplansky-splitting`): if
+/-- **158V**.2 (dils.tex:4200, the term `A₁'` of `kaplansky-splitting`): if
 `y_α → y` ultranorm, then
 
   `A₁' = ⟨y_α,y_α⟩ (1+⟨y_α,y_α⟩)⁻² - (1+⟨y,y⟩)⁻¹ ⟨y_α,y_α⟩ (1+⟨y_α,y_α⟩)⁻¹ → 0`
@@ -304,23 +321,92 @@ private theorem kaplansky_hilbmod_A₁' [VonNeumannAlgebra ℬ] [CompleteSpace X
               * (inner ℬ (y i) (y i) * inv1p (inner ℬ (y i) (y i)))) l 0 :=
   sorry
 
-/-- **158V**.3 (dils.tex:4200, the term `A₂` of `kaplansky-splitting`): if
+/-- **158V**.3 (dils.tex:4204, the term `A₂` of `kaplansky-splitting`): if
 `y_α → y` ultranorm, then
 
   `A₂ = (1+⟨y,y⟩)⁻¹ ⟨y_α - y, y_α⟩ (1+⟨y_α,y_α⟩)⁻¹ → 0`
 
-ultraweakly; "the proofs for `A₂, A₂' → 0` are very similar"
-(dils.tex:4273) — the middle factor is exactly the quantity bounded by
-Cauchy–Schwarz in the proof of `A₁`, and the outer resolvents are bounded
-by `1`. -/
+ultraweakly — "the proofs for `A₂, A₂' → 0` are very similar"
+(dils.tex:4273).
+
+✅ **This one is true, and is proved here**, unlike its three companions;
+the ⚠ block above says why they fail and this does not.  The counterexample
+recorded there already shows the difference: it gives `ω₀(A₁) = -1/12`,
+`ω₀(A₁') = -1/18` and `ω₀(A₂') = 1/6` — but `ω₀(A₂) = 0`, and that is not
+an accident of the functional.
+
+What separates them is **which resolvent is allowed to move with `α`**.
+Mirrored, the two outer factors fold into the two slots of the inner product
+(`c * [x,z] = [x, c • z]` and `[x,z] * c = [star c • x, z]`), so
+
+  `A₂ i = [ (1+⟨y_α,y_α⟩)⁻¹ • y_α , (1+⟨y,y⟩)⁻¹ • (y_α - y) ]`,
+
+and it is the **constant** resolvent that multiplies the small vector, the
+varying one the bounded vector.  So the proof is the thesis's own toolbox and
+nothing else: `inv1p_conj_le_one` read at `ω` bounds the first slot
+uniformly, `‖(1+⟨y_α,y_α⟩)⁻¹ • y_α‖_ω ≤ √ω(1)`; Cauchy–Schwarz for `‖·‖_ω`
+(**142III**, `unSeminorm_inner_le`) then gives
+
+  `|ω(⟨y_α, y_α - y⟩(1+⟨y_α,y_α⟩)⁻¹)| ≤ √ω(1) · ‖y_α - y‖_ω → 0`,
+
+so the `α`-dependent half tends to `0` ultraweakly; and multiplying on the
+left by the *constant* `(1+⟨y,y⟩)⁻¹` preserves that
+(`uwTendsto_mul_left_right`, which is the `mult-uws-cont` the thesis cites).
+
+In `A₂'` the two resolvents change places — the varying one lands on the small
+vector `y - y_α`, where no fixed np-functional seminorm controls it — and that
+is precisely where the counterexample bites.  The thesis's "very similar" is
+therefore wrong: the two are not symmetric, and only one of them is true. -/
 private theorem kaplansky_hilbmod_A₂ [VonNeumannAlgebra ℬ] [CompleteSpace X]
     (y : ι → X) (y₀ : X) (hy : UnTendsto (inner ℬ) y l y₀) :
     UWTendsto (fun i =>
         inv1p (inner ℬ y₀ y₀) * inner ℬ (y i) (y i - y₀)
-          * inv1p (inner ℬ (y i) (y i))) l 0 :=
-  sorry
+          * inv1p (inner ℬ (y i) (y i))) l 0 := by
+  -- fold the *varying* resolvent into the first slot, `[x,z]*c = [star c • x, z]`
+  have habs : ∀ i, inner ℬ (y i) (y i - y₀) * inv1p (inner ℬ (y i) (y i))
+      = (cstarBInner ℬ X).inner
+          (inv1p (inner ℬ (y i) (y i)) • y i) (y i - y₀) := by
+    intro i
+    have hQ : (0 : ℬ) ≤ inner ℬ (y i) (y i) :=
+      (cstarBInner ℬ X).inner_self_nonneg (y i)
+    rw [BInner.inner_op_smul_left, inv1p_star hQ]
+    rfl
+  -- the `α`-dependent half converges ultraweakly, by Cauchy–Schwarz at each `ω`
+  have key : UWTendsto (fun i =>
+      inner ℬ (y i) (y i - y₀) * inv1p (inner ℬ (y i) (y i))) l 0 := by
+    refine (uwTendsto_iff _ _ _).mpr fun ω => ?_
+    have hω0 : ω (0 : ℬ) = 0 := map_zero ω.toPositiveLinearMap
+    rw [hω0]
+    have hC : (0 : ℝ) ≤ (ω 1).re :=
+      (Complex.le_def.mp (npFunctional_nonneg ω zero_le_one)).1
+    -- `‖(1+⟨y_α,y_α⟩)⁻¹ • y_α‖_ω ≤ √ω(1)`, uniformly in `α`
+    have hb : ∀ i, unSeminorm ω (cstarBInner ℬ X).inner
+        (inv1p (inner ℬ (y i) (y i)) • y i) ≤ Real.sqrt (ω 1).re := by
+      intro i
+      have hQ : (0 : ℬ) ≤ inner ℬ (y i) (y i) :=
+        (cstarBInner ℬ X).inner_self_nonneg (y i)
+      have h1 : (cstarBInner ℬ X).inner (inv1p (inner ℬ (y i) (y i)) • y i)
+            (inv1p (inner ℬ (y i) (y i)) • y i) ≤ 1 := by
+        rw [BInner.inner_op_smul_self, inv1p_star hQ]
+        exact inv1p_conj_le_one hQ
+      exact Real.sqrt_le_sqrt (Complex.le_def.mp (npFunctional_mono ω h1)).1
+    refine squeeze_zero_norm (fun i => ?_)
+      (by simpa using (hy ω).const_mul (Real.sqrt (ω 1).re))
+    rw [habs i]
+    calc ‖ω ((cstarBInner ℬ X).inner
+            (inv1p (inner ℬ (y i) (y i)) • y i) (y i - y₀))‖
+        ≤ unSeminorm ω (cstarBInner ℬ X).inner
+              (inv1p (inner ℬ (y i) (y i)) • y i)
+            * unSeminorm ω (cstarBInner ℬ X).inner (y i - y₀) :=
+          unSeminorm_inner_le ω (cstarBInner ℬ X) _ _
+      _ ≤ Real.sqrt (ω 1).re * unSeminorm ω (inner ℬ) (y i - y₀) :=
+          mul_le_mul_of_nonneg_right (hb i) (unSeminorm_nonneg _ _ _)
+  -- multiplying on the left by the *constant* resolvent preserves it
+  have h2 := uwTendsto_mul_left_right (A := ℬ) (inv1p (inner ℬ y₀ y₀)) 1 key
+  simp only [mul_one, mul_zero] at h2
+  simpa [mul_assoc] using h2
 
-/-- **158V**.4 (dils.tex:4202, the term `A₂'` of `kaplansky-splitting`): if
+/-- **158V**.4 (dils.tex:4208, the term `A₂'` of `kaplansky-splitting`): if
 `y_α → y` ultranorm, then
 
   `A₂' = (1+⟨y_α,y_α⟩)⁻¹ ⟨y - y_α, y⟩ (1+⟨y,y⟩)⁻¹ → 0`

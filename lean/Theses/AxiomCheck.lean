@@ -105,7 +105,8 @@ elab "#sorry_leaks" : command => do
         -- `_private` begins with an underscore and so every private declaration
         -- is `isInternalDetail`.  Both tests had to change: until 2026-08-26 this
         -- filter silently excluded 3353 declarations under `Theses`, among them
-        -- the four private `sorry`s of 158V.
+        -- the private `sorry`s of 158V (four then, three since 2026-08-29,
+        -- `A₂` having turned out to be true and been proved).
         let user := (privateToUserName? n).getD n
         if (`Theses).isPrefixOf user && !user.isInternalDetail then acc.push n else acc)
       #[]

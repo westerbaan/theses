@@ -436,7 +436,7 @@ factor; Zorn + halving, genuinely hard).  Everything else is 150II, an item
 downstream of it, known-false, or blocked outside `B/Dils`:
 
 * `Kaplansky.lean`'s remaining **4** are exactly the known-false
-  `kaplansky_hilbmod_A₁/_A₁'/_A₂/_A₂'` — **the file is finished** (158II
+  `kaplansky_hilbmod_A₁/_A₁'/_A₂'` (the fourth, `_A₂`, was proved on 2026-08-29) — **the file is finished** (158II
   itself was proved in session 57).
 * `Stinespring.lean`'s remaining **1** is the known-false 139XI.
 * `HilbertModules.lean` is 0.

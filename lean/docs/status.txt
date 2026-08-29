@@ -4993,7 +4993,7 @@ Theses.B.Dils.Kaplansky|Theses.B.Dils.isSelfAdjoint_iota|green
 Theses.B.Dils.Kaplansky|Theses.B.Dils.isUnit_one_add|green
 Theses.B.Dils.Kaplansky|Theses.B.Dils.kaplansky_hilbmod_A₁|red
 Theses.B.Dils.Kaplansky|Theses.B.Dils.kaplansky_hilbmod_A₁'|red
-Theses.B.Dils.Kaplansky|Theses.B.Dils.kaplansky_hilbmod_A₂|red
+Theses.B.Dils.Kaplansky|Theses.B.Dils.kaplansky_hilbmod_A₂|green
 Theses.B.Dils.Kaplansky|Theses.B.Dils.kaplansky_hilbmod_A₂'|red
 Theses.B.Dils.Kaplansky|Theses.B.Dils.kaplansky_weak_of_commutative|green
 Theses.B.Dils.Kaplansky|Theses.B.Dils.le_rsq|green

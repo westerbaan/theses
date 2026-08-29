@@ -1,8 +1,15 @@
 #!/usr/bin/env python3
 """Check the 158V counterexample of `B/Dils/Kaplansky.lean`, in exact arithmetic.
 
-Four `sorry`s in that file are `sorry` because **158V is false as printed**, and
-the whole of the evidence is a computation carried out on paper.  Everything in
+Three `sorry`s in that file are `sorry` because **158V is false as printed**, and
+the whole of the evidence is a computation carried out on paper.  There were four
+until 2026-08-29, when this script's own output overturned one of them: it prints
+`omega_0(A_2) = 0`, and `Kaplansky.lean` read that as one functional failing to
+see `A_2`.  It is not that -- `A_2` is true, and `kaplansky_hilbmod_A_2` is now
+proved.  What the four values actually show is an asymmetry: the estimates whose
+*varying* resolvent multiplies the small vector (`A_1`, `A_1'`, `A_2'`) fail, and
+the one whose varying resolvent multiplies the bounded vector (`A_2`) does not.
+The checks below are unchanged; only their reading is.  Everything in
 it lives in the span of `e₁, e₂, eₙ`, so it is a 3×3 matrix computation and can
 be reproduced exactly over ℚ.  This does that.
 
@@ -11,7 +18,8 @@ with the tree's **mirrored** inner product `⟨a,b⟩ = b a*`, and
 
     y₀ = |e₁⟩⟨e₂|,   yₙ = |e₁ + eₙ⟩⟨e₂|   (n ≥ 2),   ω₀ = ⟨e₁, · e₁⟩.
 
-All six recorded values reproduce.  Two of them only reproduce once the *side*
+All six recorded values reproduce, `omega_0(A_2) = 0` among them -- and that
+zero is the true value of a convergent term, not a blind spot.  Two of them only reproduce once the *side*
 of the module action is read the way the mirrored inner product forces, which is
 not the side the prose writes them on — see the two `CONVENTION` notes below.
 That is why this is a script and not a sentence.

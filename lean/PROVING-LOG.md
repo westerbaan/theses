@@ -30687,3 +30687,111 @@ stated in presentation form, and choosing that form is a statement-design
 decision.  The ten `sorry`s are all blocked on statements, errata or open
 questions.  Every exact check is clean, 175 named line references land, and
 all 51 oleans are current.
+
+## Session 101 — the ten `sorry`s' own reasons, re-derived: **one of them was not a falsehood at all — 158V's `A₂` is true, and is now proved, so the tree has nine** (worker on `Theses/B/Dils/{Kaplansky,Stinespring}.lean`, `docs/audit/bdils-*.csv`, `ERRATA.md`, `docs/DECISIONS.md`, `docs/DEAD-LIMBS.md`, `scripts/kaplansky_witness.py`)
+
+Each of the ten `sorry`s carried a recorded reason for being one, and those
+reasons were the last unaudited claims in the tree.  Three groups were
+re-derived from the sources — 139XI `ess_uniq_pur`, 170IV.2
+`surjective_nmiu_2`, and the four 158V Kaplansky estimates.  Two grounds held.
+The third did not.
+
+### 1. **158V.3 `kaplansky_hilbmod_A₂` is true, and is proved**
+
+`scripts/kaplansky_witness.py` reproduces all nine recorded values of the
+158V counterexample, exactly, over `ℚ`.  Four of them are the four estimates
+at the vector functional `ω₀`:
+
+  `ω₀(A₁) = −1/12`,  `ω₀(A₁') = −1/18`,  `ω₀(A₂') = 1/6`,  **`ω₀(A₂) = 0`**.
+
+`Kaplansky.lean` read that last zero as "this one functional does not see
+`A₂`", and every document downstream — the audit rows, `ERRATA.md`,
+`docs/DECISIONS.md` §1.3, `AxiomCheck.lean`'s own comment — repeated "all
+four are false" on the strength of it.  It is not a blind spot.  **`A₂`
+converges for every np-functional**, and the argument is the thesis's own.
+
+What separates `A₂` from its three companions is **which resolvent is allowed
+to move with `α`**.  Folding the two outer factors into the two slots of the
+inner product — `c * [x,z] = [x, c • z]` and `[x,z] * c = [star c • x, z]`,
+both of them Mathlib `CStarModule` lemmas — rewrites the file's `A₂` as
+
+  `A₂ i = [ (1+⟨y_α,y_α⟩)⁻¹ • y_α , (1+⟨y,y⟩)⁻¹ • (y_α − y) ]`.
+
+The **varying** resolvent multiplies the *bounded* vector, the **constant**
+one the *small* vector.  So `inv1p_conj_le_one` — which was in the file
+already, and which `DEAD-LIMBS.md` listed as a zero-use declaration — bounds
+the first slot by `1`, hence its `ω`-seminorm by `√ω(1)` uniformly in `α`;
+Cauchy–Schwarz for the `ω`-seminorms (**142III**, `unSeminorm_inner_le`) then
+gives `√ω(1) · ‖y_α − y‖_ω → 0`; and left multiplication by the *constant*
+`(1+⟨y,y⟩)⁻¹` preserves ultraweak convergence (`uwTendsto_mul_left_right`,
+which is the `mult-uws-cont` the thesis cites by name).  Forty lines.
+
+In `A₂'` the two resolvents change places, the varying one lands on the small
+vector where no fixed np-functional seminorm controls it, and that is exactly
+where `ω₀(A₂') = 1/6` bites.  So dils.tex:4273's "the proofs for `A₂, A₂' → 0`
+are very similar" is wrong **twice over**: they are not similar, and only one
+of them is true.  158V itself is unchanged — `h` is still not ultranorm
+continuous and the printed proof of 158II still has to be replaced — but it is
+three of its four estimates that fail, not four.
+
+*What the failure mode was.* The witness was machine-checked, re-run and
+re-affirmed, and it was right every time.  Nobody asked what its one zero
+*meant*.  A counterexample that refutes three of four claims is evidence
+about three of them and silence about the fourth, and "so none of them tends
+to `0`" was written over a value of `0`.
+
+Nine documents said "the four": `Kaplansky.lean` (header and two docstrings),
+`AxiomCheck.lean`, five audit rows plus the three 158V rows, `ERRATA.md`,
+`docs/DECISIONS.md` §1.3, `docs/DEAD-LIMBS.md`, `docs/BDils-survey.md` and
+`kaplansky_witness.py`'s own docstring.  All are corrected.  The four
+docstring line citations into `dils.tex` were wrong too (`4201`, `4196`,
+`4200`, `4202` for displays that sit at `4198`, `4200`, `4204`, `4208`);
+`cite_check` never saw them, because it only checks citations that name a
+label.
+
+### 2. 139XI `ess_uniq_pur` — ground holds, and one consequence was missing
+
+Re-read `dils.tex` 139XI itself: the corrected exercise's three alternatives
+are **(i)** both dilations minimal, **(ii)** `dim 𝒱^⊥ = dim 𝒲^⊥`, **(iii)**
+`ℋ`, `𝒦` finite dimensional, exactly as the docstring prints them.  Our
+statement carries **none** of them — it is the first printing — and the shift
+counterexample refutes precisely that: `conjOperator` is `T ↦ S*TS`, so with
+`W = 1` and `V = 1 ⊗ S` both hypotheses read `a ⊗ 1`, while `V = (1 ⊗ U)W`
+forces `U = S`.  The counterexample does **not** refute the exercise as
+printed today, since the shift witness satisfies none of (i), (ii), (iii).
+
+The consequence nobody had drawn: **realigning our statement to the printed
+disjunction would not close the `sorry` either**, because the disjunction is
+itself false — case (ii) takes the complements in `ℋ ⊗ 𝒦'` where the argument
+needs them in `𝒦'`, and `docs/DECISIONS.md` §1.4's double shift satisfies (ii)
+and fails the conclusion.  So the declaration waits on the §1.4 ruling, not
+merely on a realignment.  The docstring said "realigning it is a change of
+statement, so it is left for the author", which §1.4 contradicts in as many
+words; both are now consistent.  `ERRATA.md`'s 139XI row still prints the
+pre-2026-08-18 repair list and still says "a ruling is wanted, see
+QUESTIONS B12" — flagged in the audit row, not rewritten, because its verdict
+("false as stated") happens to remain true of the current printing.
+
+### 3. 170IV.2 `surjective_nmiu_2` — ground holds; the row was answering the
+wrong question
+
+Its reason opened "Checked against the printed statement and it IS the printed
+statement", which says what is *not* wrong and never says what blocks the
+proof.  Nothing does: the statement is **refutable**.  `IsCornerFor` is 169II
+as printed (the mediating `f` quantified over *ncp* maps, not ncpsu), which is
+what lets `λ·h_z` be a corner again, and `surjective_nmiu_2_false` exhibits the
+witness axiom-clean.  The two `[VonNeumannAlgebra]` binders do not save it —
+`Theses.VonNeumannAlgebra` is a `Prop` class and `instVonNeumannAlgebraCU`
+gives `ULift ℂ` the instance, downstream of `Pure.lean` only for import
+reasons.  And the binder-expiry hint does not apply: `su_procIsPure_of_isPureMap`
+retires a binder on a *different* declaration, and dropping a binder generalises
+a statement, so it can never unblock a refuted one.
+
+### 4. Where the tree stands
+
+**Nine `sorry`s**, nine rows classed `sorry`, and `docs/sorry-map.html`
+regenerated.  `Kaplansky.lean` recompiles clean.  Every exact check passes:
+`audit_check`, `errata_check`, `questions_check`, `limb_check`, `xref_check`,
+`lean_line_check` (178 named references, 0 adrift after the five that my own
+edit moved were repaired), `vn_setting_check`, `cite_check`, and
+`kaplansky_witness.py` at 9 of 9.

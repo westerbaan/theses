@@ -18,8 +18,10 @@ Every statement in this file is proved, except **139XI**
 (`ess_uniq_pur`), which is `sorry` — and stays `sorry` because our statement
 transcribes the *first* printing of the exercise, which is false.  dils.tex
 was corrected on 2026-08-18 to add one of three hypotheses (both dilations
-minimal / `dim 𝒱^⊥ = dim 𝒲^⊥` / `ℋ`, `𝒦` finite dimensional); realigning our
-statement with it is the author's call, see ERRATA.md 139XI.  See
+minimal / `dim 𝒱^⊥ = dim 𝒲^⊥` / `ℋ`, `𝒦` finite dimensional).  Realigning our
+statement with that needs no ruling, but would not close the `sorry` either:
+the second of the three is itself false.  See the declaration's own comment,
+ERRATA.md 139XI and `docs/DECISIONS.md` §1.4.  See
 CONVENTIONS.md for the numbering
 (**135II** = parsec 1350, point 20) and naming conventions.
 
@@ -2824,10 +2826,29 @@ for some unitary `U : 𝒦' → 𝒦'`.
 
 ⚠ **This transcribes the first printing, which is false**, and it is why the
 proof is `sorry`.  dils.tex was corrected on 2026-08-18 to demand one of
-three extra hypotheses — both dilations minimal (`𝒱 = ℋ ⊗ 𝒦' = 𝒲`), or
-`dim 𝒱^⊥ = dim 𝒲^⊥`, or `ℋ` and `𝒦` finite dimensional — and the statement
-below still carries none of them.  Realigning it is a change of statement,
-so it is left for the author; see `ERRATA.md` 139XI. -/
+three extra hypotheses — **(i)** both dilations minimal (`𝒱 = ℋ ⊗ 𝒦' = 𝒲`),
+**(ii)** `dim 𝒱^⊥ = dim 𝒲^⊥`, or **(iii)** `ℋ` and `𝒦` finite dimensional —
+and the statement below carries none of them, so it corresponds to no case
+of the corrected exercise.
+
+*Re-derived 2026-08-29, with one thing this comment used to get wrong.*
+The witness against the statement below is the unilateral shift: `𝒦' = ℓ²`,
+`𝒦 = ℋ ⊗ ℓ²` for any `ℋ ≠ 0`, `W = 1` and `V = 1 ⊗ S`.  Since `conjOperator`
+is `T ↦ S*TS`, both hypotheses read `a ⊗ 1` (using `S*S = 1`), while
+`V = (1 ⊗ U)W` forces `U = S`, which is not unitary (`SS* ≠ 1`).  Note that
+this refutes *our* statement and **not** the exercise as printed today: the
+shift witness satisfies none of (i), (ii), (iii).
+
+The correction: realigning this statement with the current `dils.tex` needs
+no author ruling (`docs/DECISIONS.md` §1.4 says so in as many words) — but it
+would **not** close the `sorry` either, because the printed disjunction is
+itself false.  Case (ii) takes the complements in `ℋ ⊗ 𝒦'` where the argument
+needs them in `𝒦'`, and the double shift (`W = 1 ⊗ S₁`, `V = 1 ⊗ S₂`) satisfies
+(ii) while failing the conclusion.  What this declaration waits on is therefore
+the §1.4 ruling — (a) complements in `𝒦'`, (b) keep (ii) and add `dim ℋ < ∞`,
+(c) delete (ii) — after which the proof is real work.  See `ERRATA.md` 139XI,
+`QUESTIONS.md` B12 (whose printed three-option question was answered on
+2026-08-18; only the residue is live) and `docs/DECISIONS.md` §1.4. -/
 theorem ess_uniq_pur (φ : NCPMap (H →L[ℂ] H) (K →L[ℂ] K))
     (V W : K →L[ℂ] hilbTensor H K')
     (hV : ∀ a : H →L[ℂ] H, φ a = conjOperator V (tensorCLM a 1))

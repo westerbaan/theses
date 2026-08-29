@@ -35,7 +35,7 @@ in §4 rather than in front of you.
 |---|---|---|---|---|
 | 1.1 | 169II / 170IV | corner: ncp or ncpsu universal property? | `surjective_nmiu_2` | (a) read it in `W*_cpsu` |
 | 1.2 | 206II.2/.4 / 211IV | must the ⋄-self-adjoint square root be pure? | `vn_is_andthen_eff` | (a) yes, it is meant to be |
-| 1.3 | 158III–158V | printed proof is false — replace it how? | 4 × `kaplansky_hilbmod_A*` | (a) delete, use the linking algebra |
+| 1.3 | 158III–158V | printed proof is false — replace it how? | 3 × `kaplansky_hilbmod_A*` | (a) delete, use the linking algebra |
 | 1.4 | 139XI | case (ii) takes the complement in the wrong space | `ess_uniq_pur` | (a) complements in `𝒦'` |
 | 1.5 | 179III.2 | strengthen our statement, or drop the point? | `effectModule_unitInterval_representation` | (a) strengthen, else (b) drop |
 | 1.6 | 106III.3, 116III.4 | two errata to accept | 2 red rows | accept |
@@ -206,8 +206,18 @@ now fixed in `Kaplansky.lean`: the module action's side and the mirrored inner
 product's argument order were written the way the thesis writes them, and read
 literally in that file's own convention two of the six values are `0`.)*
 
-*(`QUESTIONS.md` B10.  Blocks four of the eleven: `kaplansky_hilbmod_A₁`,
-`A₁'`, `A₂`, `A₂'` in `Theses/B/Dils/Kaplansky.lean`.)*
+*(`QUESTIONS.md` B10.  Blocks three: `kaplansky_hilbmod_A₁`, `A₁'` and `A₂'`
+in `Theses/B/Dils/Kaplansky.lean`.  **Corrected 2026-08-29**: it used to say
+four, counting `A₂` — but `A₂` is *true*, and is now proved.  The witness gives
+it the value `0` at `ω₀`, which this document and the file both read as one
+functional failing to see it; it is not that.  What separates `A₂` from `A₂'` is
+which resolvent moves with `α`: in `A₂` the varying one multiplies the bounded
+vector `y_α` and the constant one the small vector `y_α − y`, so Cauchy–Schwarz
+for the `ω`-seminorms plus `inv1p_conj_le_one` plus ultraweak continuity of
+multiplication by a **constant** closes it — the thesis's own argument.  In `A₂'`
+the two change places, and that is where `ω₀(A₂') = 1/6` bites.  Nothing else in
+this section changes: 158V itself is still false, and the printed proof of 158II
+still has to be replaced.)*
 
 **What is being asked.**  **158II** itself is **true and proved** — `kaplansky_hilbmod`
 and the self-dual case `kaplansky_hilbmod_of_selfDual` are unconditional and
@@ -275,9 +285,10 @@ renormalizer of that form.  (b) costs pages for a route that is now known to be
 dead; if you want the record kept, the erratum entry and this document already
 hold it.
 
-**What we do.**  Under (a) or (b) the four `kaplansky_hilbmod_A*` `sorry`s are
-**deleted** — they exist only to record that the printed estimates are false —
-and the tree goes from 11 unproved declarations to 7.  `kaplansky_hilbmod_of_weak`
+**What we do.**  Under (a) or (b) the three remaining `kaplansky_hilbmod_A*`
+`sorry`s are **deleted** — they exist only to record that the printed estimates
+are false — and the tree goes from 10 unproved declarations to 7.  (`A₂`, the
+fourth, is proved and stays either way.)  `kaplansky_hilbmod_of_weak`
 (158II from *weak* bounded approximation) and `kaplansky_hilbmod_of_commutative`
 stay as independent partial results.  Under (c) we would need the hypotheses
 before anything changes.
