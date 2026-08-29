@@ -1420,12 +1420,28 @@ theorem dils_uniform_spaces_basics_2 (F G : Filter X) (hF : Cauchy F)
   exact hWV ⟨y, hy₂, hst (Set.mk_mem_prod hy₁ hz)⟩
 
 /-- **147II** (`dils-uniform-spaces-basics`, dils.tex:1990, Exercise), part
-3: limits are unique in a Hausdorff uniform space (Mathlib:
-`tendsto_nhds_unique`). -/
+3: limits are unique in a Hausdorff uniform space.
+
+*Class 1 — faithful.*  The proof is the printed solution's
+(`bsols.tex:543`, item 3): given an entourage `ε`, pick `δ` with `δ² ⊆ ε` and
+`δ' ⊆ δ⁻¹`; the net is eventually `δ`-close to `a` and `δ'`-close to `b`, so
+`a ε b`; and since this holds for every entourage and the space is Hausdorff,
+`a = b`. -/
 theorem dils_uniform_spaces_basics_3 [T2Space X] {ι : Type w} (l : Filter ι)
     [l.NeBot] (x : ι → X) (a b : X) (ha : Tendsto x l (𝓝 a))
-    (hb : Tendsto x l (𝓝 b)) : a = b :=
-  tendsto_nhds_unique ha hb
+    (hb : Tendsto x l (𝓝 b)) : a = b := by
+  -- "as our space is Hausdorff", it is enough to get `a ε b` for every `ε`
+  refine eq_of_uniformity fun {V} hV => ?_
+  -- "pick `δ` and `δ'` with `δ² ⊆ ε` and `δ' ⊆ δ⁻¹`"
+  obtain ⟨δ, hδ, hδV⟩ := comp_mem_uniformity_sets hV
+  have hδs : Prod.swap ⁻¹' δ ∈ 𝓤 X := symm_le_uniformity hδ
+  rw [nhds_eq_comap_uniformity, Filter.tendsto_comap_iff] at ha hb
+  -- "there is an `α₀` such that `x_α δ a` and `x_α δ' b` for all `α ≥ α₀`"
+  have h₁ : ∀ᶠ i in l, (a, x i) ∈ δ := ha hδ
+  have h₂ : ∀ᶠ i in l, (x i, b) ∈ δ := hb hδs
+  obtain ⟨i, hi₁, hi₂⟩ := (h₁.and h₂).exists
+  -- "thus `a ε b`", through `δ ○ δ ⊆ ε` at the point `x i` of the net
+  exact hδV ⟨x i, hi₁, hi₂⟩
 
 /-- **147II** (`dils-uniform-spaces-basics`, dils.tex:1990, Exercise), part
 4: continuous maps preserve limits of nets (Mathlib:
