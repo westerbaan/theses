@@ -5124,17 +5124,27 @@ The other half of the thesis's route to `M_N(𝒜)` is `matrixBaxEquiv` — but
 multiplications, which compose backwards (`cstar_matrices_3` already says
 so).  So what holds is `M_N(𝒜)ᵐᵒᵖ ≅ B^a(𝒜^N)`.  This is the same left/right
 gap `docs/DECISIONS.md` §3.3 records for 34V.3, and nothing is lost by it:
-`ᵐᵒᵖ` preserves star, positivity, order and suprema.  49IV still does not
-need any of it, being proved directly below. -/
+`ᵐᵒᵖ` preserves star, positivity, order and suprema.  49IV neither needs nor
+*could cite* any of it — this file is upstream of `A/VN/BaX` — and is proved
+directly below; see the note there. -/
 
 /-! ### Auxiliary machinery for **49IV**: the `𝒜`-valued quadratic form of a
 matrix
 
-The thesis proves 49IV.1 by way of 49II (`bah-vn`), i.e. by realising
-`M_N(𝒜)` as `B^a(𝒜^N)`.  Both are now available — `bah_vn` and
+The thesis prints no proof of 49IV at all: vn.tex 490.40 `mn-vna` is an
+Exercise, and `asols.tex` has no solution for it — that file's solutions stop
+at parsec 340.  What it does print is 490.10's announcement that 49II
+(`bah-vn`) is proved "to this end", i.e. that `M_N(𝒜)` is to be realised as
+`B^a(𝒜^N)`.  Both halves of that realisation now exist — `bah_vn` and
 `matrixBaxEquiv`, the latter with `M_N(𝒜)ᵐᵒᵖ` for the reason given in the
-note above — but this route is kept, being independent of them (see the note
-above), so the supremum is constructed here directly, out of the same
+note above — but **neither may be cited here**.  `bah_vn` lives in
+`Theses/A/VN/BaX.lean`, which imports `A.VN.Completeness`, which imports
+`A.VN.Projections`, which imports this file: 49II is proved three modules
+*downstream* of the module 49IV is stated in, so naming it here is an import
+cycle.  Nor can 49IV move down to meet it, `CStarMatrix` being used in
+`Projections`, in `Completeness` (the Kaplansky `M₂` argument) and in
+`Division`, all upstream of `BaX`, where instance search wants `mn_vna_1`.
+So the supremum is constructed here directly, out of the same
 ingredient that makes 49II work: the `𝒜`-valued
 sesquilinear form `⟨x, M y⟩ = ∑ᵢⱼ xᵢ* Mᵢⱼ yⱼ` of the Hilbert `𝒜`-module
 `𝒜^N`.  Its two properties are **33II** (`cstar_matrix_positive_iff`: the
