@@ -235,14 +235,260 @@ theorem hellinger_toeplitz (hc : CompleteSpace X ∨ CompleteSpace Y)
 
 /-! **35VIII** (cstar.tex:6101, Remark): the Hellinger–Toeplitz theorem —
 every symmetric operator on a Hilbert space is bounded — is the special case
-of **35VI** noted in its doc comment; not converted separately.
+of **35VI** noted in its doc comment; not converted separately. -/
 
-**35IX** (`hellinger-toeplitz-needs-complete`, cstar.tex:6109, Example):
-completeness may not be dropped in **35VI**: on the incomplete inner product
-space `c₀₀` of finitely supported sequences, `T α = (n αₙ)ₙ` is symmetric but
-unbounded.  Skipped: stating the counterexample requires either constructing
-`c₀₀` or an unwieldy existential over types with instances; neither yields a
-crisp claim. -/
+section C00
+
+/-! ### 35IX: completeness may not be dropped
+
+**35IX** (`hellinger-toeplitz-needs-complete`, cstar.tex:6109, Example): the
+condition that either `X` or `Y` be complete may not be dropped from **35VI**:
+the linear map `T : c₀₀ → c₀₀`, `T α = (n αₙ)ₙ`, on the finitely supported
+sequences is self-adjoint but not bounded.
+
+The carrier is the one **5III** (`A/CStar/Basic`, `projection_on_c00`) already
+works with: `c₀₀` sits inside `ℓ² = lp (fun _ : ℕ => ℂ) 2` as a `Submodule`,
+which supplies the pre-Hilbert structure (`Submodule.innerProductSpace`) for
+free — no new instance on `Finsupp` is needed.  Here it is carved out by
+finite support rather than as the span of the coordinate vectors, which is
+what the definition of `T` needs; `c00_eq_span` checks the two descriptions
+agree.
+
+The Example's point comes out as three declarations: `c00T_isAdjointTo`
+(self-adjointness, in the file's own sense from **4VIII**),
+`c00T_not_continuous` (unboundedness), and — the reason this is no
+counterexample to **35VI** — `c00_not_complete`. -/
+
+/-- A finitely supported sequence is square-summable. -/
+private theorem memLp_two_of_finite_support {f : ℕ → ℂ}
+    (hf : (Function.support f).Finite) : Memℓp f 2 := by
+  refine memℓp_gen (summable_of_ne_finset_zero (s := hf.toFinset) ?_)
+  intro b hb
+  have hb0 : f b = 0 := by
+    by_contra h
+    exact hb (hf.mem_toFinset.2 h)
+  simp [hb0]
+
+/-- **35IX** (`hellinger-toeplitz-needs-complete`, cstar.tex:6109, Example):
+`c₀₀`, the finitely supported sequences, as a linear subspace of `ℓ²`.  Its
+pre-Hilbert structure is the one Mathlib puts on a submodule of an inner
+product space; it is *not* complete (`c00_not_complete`). -/
+def c00 : Submodule ℂ (lp (fun _ : ℕ => ℂ) 2) where
+  carrier := {f | (Function.support (f : ℕ → ℂ)).Finite}
+  add_mem' {f g} hf hg := by
+    simp only [Set.mem_ofPred_eq, lp.coeFn_add] at hf hg ⊢
+    exact (hf.union hg).subset (Function.support_add _ _)
+  zero_mem' := by
+    simp only [Set.mem_ofPred_eq, lp.coeFn_zero, Function.support_zero]
+    exact Set.finite_empty
+  smul_mem' c f hf := by
+    simp only [Set.mem_ofPred_eq, lp.coeFn_smul] at hf ⊢
+    refine hf.subset fun n hn => ?_
+    simp only [Function.mem_support, Pi.smul_apply, smul_eq_mul] at hn ⊢
+    intro h
+    exact hn (by rw [h, mul_zero])
+
+theorem mem_c00_iff {f : lp (fun _ : ℕ => ℂ) 2} :
+    f ∈ c00 ↔ (Function.support (f : ℕ → ℂ)).Finite := Iff.rfl
+
+/-- The coordinate vectors of **5III** lie in `c₀₀`. -/
+theorem single_mem_c00 (n : ℕ) (z : ℂ) : lp.single 2 n z ∈ c00 := by
+  rw [mem_c00_iff]
+  refine (Set.finite_singleton n).subset fun m hm => ?_
+  simp only [Function.mem_support, lp.coeFn_single] at hm
+  by_contra hne
+  exact hm (Pi.single_eq_of_ne hne _)
+
+/-- The carrier used here is the one **5III** (`projection_on_c00`) works
+with: carving `c₀₀` out by finite support gives the same subspace as spanning
+it by the coordinate vectors `lp.single 2 n z`. -/
+theorem c00_eq_span :
+    c00 = Submodule.span ℂ {f : lp (fun _ : ℕ => ℂ) 2 | ∃ n z, f = lp.single 2 n z} := by
+  apply le_antisymm
+  · intro f hf
+    have hsupp : (Function.support (f : ℕ → ℂ)).Finite := mem_c00_iff.1 hf
+    have hrepr : f = ∑ k ∈ hsupp.toFinset, lp.single 2 k ((f : ℕ → ℂ) k) := by
+      apply lp.ext
+      funext n
+      rw [lp.coeFn_sum]
+      simp only [Finset.sum_apply, lp.coeFn_single, Finset.sum_pi_single]
+      by_cases h : n ∈ hsupp.toFinset
+      · simp [h]
+      · simp only [h, ite_false]
+        by_contra hne
+        exact h (hsupp.mem_toFinset.2 hne)
+    rw [hrepr]
+    exact sum_mem fun k _ => Submodule.subset_span ⟨k, _, rfl⟩
+  · rw [Submodule.span_le]
+    rintro f ⟨n, z, rfl⟩
+    exact single_mem_c00 n z
+
+/-- The support of `n ↦ n · αₙ` is contained in that of `α`. -/
+private theorem support_mulNat_subset (x : lp (fun _ : ℕ => ℂ) 2) :
+    (Function.support fun n : ℕ => (n : ℂ) * x n) ⊆ Function.support (x : ℕ → ℂ) := by
+  intro n hn
+  simp only [Function.mem_support] at hn ⊢
+  intro h
+  exact hn (by rw [h, mul_zero])
+
+/-- The underlying `ℓ²` sequence of `T α = (n αₙ)ₙ`. -/
+private noncomputable def mulNat (x : c00) : lp (fun _ : ℕ => ℂ) 2 :=
+  ⟨fun n => (n : ℂ) * (x : lp (fun _ : ℕ => ℂ) 2) n,
+    memLp_two_of_finite_support (((mem_c00_iff.1 x.2)).subset (support_mulNat_subset _))⟩
+
+private theorem mulNat_apply (x : c00) (n : ℕ) :
+    (mulNat x : ℕ → ℂ) n = (n : ℂ) * (x : lp (fun _ : ℕ => ℂ) 2) n := rfl
+
+private theorem mulNat_mem (x : c00) : mulNat x ∈ c00 :=
+  (mem_c00_iff.1 x.2).subset (support_mulNat_subset _)
+
+/-- **35IX** (`hellinger-toeplitz-needs-complete`, cstar.tex:6109, Example):
+the linear map `T : c₀₀ → c₀₀` given by `T α = (n αₙ)ₙ`.  It stays inside
+`c₀₀` because multiplying coordinatewise does not enlarge the support. -/
+noncomputable def c00T : c00 →ₗ[ℂ] c00 where
+  toFun x := ⟨mulNat x, mulNat_mem x⟩
+  map_add' x y := by
+    apply Subtype.ext
+    apply lp.ext
+    funext n
+    simp only [mulNat_apply, Submodule.coe_add, lp.coeFn_add, Pi.add_apply]
+    ring
+  map_smul' c x := by
+    apply Subtype.ext
+    apply lp.ext
+    funext n
+    simp only [mulNat_apply, SetLike.val_smul, lp.coeFn_smul, Pi.smul_apply, smul_eq_mul,
+      RingHom.id_apply]
+    ring
+
+@[simp] theorem c00T_apply (x : c00) (n : ℕ) :
+    ((c00T x : lp (fun _ : ℕ => ℂ) 2) : ℕ → ℂ) n = (n : ℂ) * (x : lp (fun _ : ℕ => ℂ) 2) n := rfl
+
+/-- **35IX**, first half: `T` is self-adjoint, in the sense of **4VIII**
+(`IsAdjointTo`) that **35VI** takes as its hypothesis.  Termwise in the `ℓ²`
+inner product, `conj (n αₙ) βₙ = conj αₙ (n βₙ)` because `n` is real. -/
+theorem c00T_isAdjointTo : IsAdjointTo (⇑c00T) (⇑c00T) := by
+  intro x y
+  rw [Submodule.coe_inner, Submodule.coe_inner, lp.inner_eq_tsum, lp.inner_eq_tsum]
+  refine tsum_congr fun n => ?_
+  simp only [c00T_apply, RCLike.inner_apply, map_mul, Complex.conj_natCast]
+  ring
+
+/-- **35IX**: `c00T_isAdjointTo` in Mathlib's vocabulary — `T` is a symmetric
+operator, the hypothesis of `LinearMap.IsSymmetric.continuous` (**35VIII**). -/
+theorem c00T_isSymmetric : LinearMap.IsSymmetric c00T := c00T_isAdjointTo
+
+/-- **35IX**: the thesis's own witnesses `x_N = (1, 1/2, …, 1/N, 0, …)`. -/
+noncomputable def xN (N : ℕ) : c00 :=
+  ⟨∑ k ∈ Finset.Icc 1 N, lp.single 2 k ((k : ℂ)⁻¹),
+    sum_mem fun k _ => single_mem_c00 k _⟩
+
+/-- **35IX**: `T` maps `x_N = (1, 1/2, …, 1/N, 0, …)` to `(1, …, 1, 0, …)`. -/
+theorem c00T_xN (N : ℕ) :
+    (c00T (xN N) : lp (fun _ : ℕ => ℂ) 2)
+      = ∑ k ∈ Finset.Icc 1 N, lp.single 2 k (1 : ℂ) := by
+  apply lp.ext
+  funext n
+  simp only [c00T_apply, xN, lp.coeFn_sum, Finset.sum_apply, lp.coeFn_single,
+    Finset.sum_pi_single]
+  by_cases h : n ∈ Finset.Icc 1 N
+  · have hn : 1 ≤ n := (Finset.mem_Icc.1 h).1
+    have hne : (n : ℂ) ≠ 0 := Nat.cast_ne_zero.2 (by omega)
+    simp [h, mul_inv_cancel₀ hne]
+  · simp [h]
+
+/-- **35IX**: `‖T x_N‖ = √N`, the thesis's computation. -/
+theorem norm_c00T_xN (N : ℕ) : ‖c00T (xN N)‖ = Real.sqrt N := by
+  have h2 : ‖c00T (xN N)‖ ^ 2 = (N : ℝ) := by
+    have h := lp.norm_sum_single (E := fun _ : ℕ => ℂ) (p := 2) (by norm_num)
+      (fun _ : ℕ => (1 : ℂ)) (Finset.Icc 1 N)
+    simp only [ENNReal.toReal_ofNat] at h
+    rw [Submodule.coe_norm, c00T_xN]
+    rw [show ((2 : ℝ)) = ((2 : ℕ) : ℝ) by norm_num] at h
+    rw [Real.rpow_natCast] at h
+    simp only [Real.rpow_natCast, norm_one, one_pow, Finset.sum_const, Nat.card_Icc,
+      nsmul_eq_mul, mul_one] at h
+    rw [h]
+    simp
+  rw [← h2, Real.sqrt_sq (norm_nonneg _)]
+
+/-- **35IX**: the `x_N` are norm-bounded — `‖x_N‖² = ∑_{k=1}^N 1/k²` is at most
+`∑' k, 1/k²`.  (The thesis names the bound `π/√6`, i.e. the Basel sum; the
+value is irrelevant to the argument, and `∑ 1/n² = π²/6` lives in
+`Mathlib.NumberTheory.ZetaValues`, far from this file's imports.) -/
+theorem norm_xN_le (N : ℕ) :
+    ‖xN N‖ ≤ Real.sqrt (∑' k : ℕ, 1 / (k : ℝ) ^ 2) := by
+  have hsummable : Summable (fun k : ℕ => 1 / (k : ℝ) ^ 2) :=
+    Real.summable_one_div_nat_pow.2 (by norm_num)
+  have h2 : ‖xN N‖ ^ 2 = ∑ k ∈ Finset.Icc 1 N, 1 / (k : ℝ) ^ 2 := by
+    have h := lp.norm_sum_single (E := fun _ : ℕ => ℂ) (p := 2) (by norm_num)
+      (fun k : ℕ => ((k : ℂ))⁻¹) (Finset.Icc 1 N)
+    simp only [ENNReal.toReal_ofNat] at h
+    rw [show ((2 : ℝ)) = ((2 : ℕ) : ℝ) by norm_num, Real.rpow_natCast] at h
+    simp only [Real.rpow_natCast] at h
+    rw [Submodule.coe_norm]
+    show ‖∑ k ∈ Finset.Icc 1 N, lp.single 2 k ((k : ℂ))⁻¹‖ ^ 2 = _
+    rw [h]
+    refine Finset.sum_congr rfl fun k _ => ?_
+    rw [norm_inv, Complex.norm_natCast]
+    field_simp
+  have hle : ‖xN N‖ ^ 2 ≤ ∑' k : ℕ, 1 / (k : ℝ) ^ 2 := by
+    rw [h2]
+    exact hsummable.sum_le_tsum _ (fun i _ => by positivity)
+  have h := Real.sqrt_le_sqrt hle
+  rwa [Real.sqrt_sq (norm_nonneg _)] at h
+
+/-- **35IX**, second half: `T` is not bounded.  This is the thesis's argument:
+`T` maps `x_N = (1, 1/2, …, 1/N, 0, …)`, whose 2-norms are bounded, to
+`(1, …, 1, 0, …)`, of 2-norm `√N`. -/
+theorem c00T_not_bounded : ¬ ∃ C : ℝ, ∀ x : c00, ‖c00T x‖ ≤ C * ‖x‖ := by
+  rintro ⟨C, hC⟩
+  set B := Real.sqrt (∑' k : ℕ, 1 / (k : ℝ) ^ 2) with hB
+  have hB0 : 0 ≤ B := Real.sqrt_nonneg _
+  have hC0 : 0 ≤ C := by
+    by_contra hneg
+    rw [not_le] at hneg
+    have h1 := hC (xN 1)
+    rw [norm_c00T_xN, Nat.cast_one, Real.sqrt_one] at h1
+    nlinarith [norm_nonneg (xN 1)]
+  have key : ∀ N : ℕ, Real.sqrt N ≤ C * B := fun N =>
+    (norm_c00T_xN N ▸ hC (xN N)).trans (mul_le_mul_of_nonneg_left (norm_xN_le N) hC0)
+  obtain ⟨N, hN⟩ := exists_nat_gt ((C * B) ^ 2)
+  have h3 : C * B < Real.sqrt N := (Real.lt_sqrt (mul_nonneg hC0 hB0)).2 hN
+  linarith [key N]
+
+/-- **35IX**, second half, in the form **35VI** denies: `T` is not
+continuous. -/
+theorem c00T_not_continuous : ¬ Continuous (⇑c00T) := by
+  intro h
+  set F : c00 →L[ℂ] c00 := ⟨c00T, h⟩ with hF
+  exact c00T_not_bounded ⟨‖F‖, fun x => F.le_opNorm x⟩
+
+/-- **35IX**, and the missing clause of **4IX** (`hilb-basic-examples`): `c₀₀`
+is an inner product space that is *not* complete.  This is what keeps 35IX
+from contradicting **35VI**, and the argument is 35VI itself: were `c₀₀`
+complete, its symmetric operator `T` would be bounded.
+
+That is `hellinger_toeplitz` (:222), *this file's* rendering of the Theorem,
+applied at `𝒜 = ℂ` with `T` as its own adjoint.  Mathlib's
+`LinearMap.IsSymmetric.continuous` closes the goal too — and did, until
+2026-08-29 — but through Mathlib rather than through the tree's 35VI, which
+made the divergence invisible to the audit row and left `c00T_isAdjointTo`
+carrying the 4VIII hypothesis for no consumer. -/
+theorem c00_not_complete : ¬ CompleteSpace c00 := by
+  intro h
+  obtain ⟨_, _, _, _, hcont, _⟩ :=
+    hellinger_toeplitz (𝒜 := ℂ) (Or.inl h) (⇑c00T) (⇑c00T) c00T_isAdjointTo
+  exact c00T_not_continuous hcont
+
+/-- **35IX** (`hellinger-toeplitz-needs-complete`, cstar.tex:6109, Example):
+completeness may not be dropped from **35VI** — on `c₀₀` there is a
+self-adjoint linear map that is not continuous. -/
+theorem hellinger_toeplitz_needs_complete :
+    ∃ T : c00 →ₗ[ℂ] c00, IsAdjointTo (⇑T) (⇑T) ∧ ¬ Continuous (⇑T) :=
+  ⟨c00T, c00T_isAdjointTo, c00T_not_continuous⟩
+
+end C00
 
 /-! ## Parsec 360: Self-dual Hilbert modules and bounded forms -/
 

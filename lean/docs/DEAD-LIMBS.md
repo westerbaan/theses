@@ -534,7 +534,7 @@ that 13IV's only purpose in the thesis is a proof the tree does not run.
 
 ### 5.5 `selfDual_pi` (36III) — named as available by the row that leaves the divergence standing
 
-`A/CStar/TowardsVN.lean:289`, 39 lines, `green`, the **only** declaration
+`A/CStar/TowardsVN.lean:527`, 39 lines, `green`, the **only** declaration
 carrying 36III. Zero consumers.
 
 The audit row for **153IV** `hilbmod_adj_vector_ncp`

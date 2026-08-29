@@ -516,9 +516,9 @@ on the type by the sibling `bah_vn`).)*
   so `exists_rho` (39IX) and `bh_bounded_uw_complete` (76III) went straight to
   Mathlib's Riesz instead of instantiating 36V at `𝒜 = ℂ`, leaving **36V**
   proved in full and used by nothing.  *Closed 2026-08-27*: 36II is
-  `selfDual_hilbert` (`TowardsVN.lean:278`), with four consumers, and 36V
+  `selfDual_hilbert` (`TowardsVN.lean:516`), with four consumers, and 36V
   `chilb_form_representation` now has five — `exists_rho` takes the thesis's
-  own route through 36II and 36V (`TowardsVN.lean:2019`).  The observation is
+  own route through 36II and 36V (`TowardsVN.lean:2257`).  The observation is
   kept because the mechanism is general and the tree took months to notice
   this instance of it: the audit records what each declaration says, and a
   point nobody stated has no row to be wrong.
