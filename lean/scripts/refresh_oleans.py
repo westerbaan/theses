@@ -39,8 +39,19 @@ IMPORT = re.compile(r'^import\s+([\w.]+)', re.M)
 
 
 def modules():
-    return {str(p.relative_to(LEAN).with_suffix("")).replace("/", "."): p
-            for p in sorted((LEAN / "Theses").rglob("*.lean"))}
+    """Every module of the two theses, INCLUDING the root aggregator `Theses.lean`.
+
+    Globbing `Theses/**/*.lean` misses `lean/Theses.lean`, the file that imports
+    them all -- and that is the module `Theses/AxiomCheck.lean` actually imports.
+    Without it `AxiomCheck` appears to depend on nothing in the tree and sorts
+    first in any rebuild, ahead of the very modules it exists to check.
+    """
+    out = {str(p.relative_to(LEAN).with_suffix("")).replace("/", "."): p
+           for p in sorted((LEAN / "Theses").rglob("*.lean"))}
+    root = LEAN / "Theses.lean"
+    if root.exists():
+        out["Theses"] = root
+    return out
 
 
 def olean(mod):
@@ -60,9 +71,35 @@ def stale(mods):
 
 
 def order(targets, mods):
-    """Topological order over the targets, following imports within the tree."""
-    deps = {m: {i for i in IMPORT.findall(mods[m].read_text()) if i in targets}
-            for m in targets}
+    """Topological order over the targets, by TRANSITIVE dependency.
+
+    Following only the direct imports *between targets* is wrong, and quietly so.
+    `Theses/AxiomCheck.lean` imports `Theses`, not the individual modules, so in a
+    target set of {AxiomCheck, Kaplansky, Stinespring} it has no edges at all and
+    sorts first -- which on 2026-08-29 ran its `#sorry_leaks` against the stale
+    `Kaplansky.olean` it was rebuilt to check.  It reported success, from the old
+    data.
+
+    So reachability is computed over the whole module graph and then restricted to
+    the targets: `a` precedes `b` when `b` reaches `a` through any chain, however
+    many non-target modules it passes through.
+    """
+    reach = {}
+
+    def deps_of(m, seen=None):
+        if m in reach:
+            return reach[m]
+        seen = seen or set()
+        if m in seen:                       # Lean forbids cycles; be safe anyway
+            return set()
+        acc = set()
+        for i in IMPORT.findall(mods[m].read_text()) if m in mods else ():
+            acc.add(i)
+            acc |= deps_of(i, seen | {m})
+        reach[m] = acc
+        return acc
+
+    deps = {m: deps_of(m) & targets for m in targets}
     out, seen, stack = [], set(), set()
     def visit(m):
         if m in seen:
