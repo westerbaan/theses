@@ -30496,3 +30496,112 @@ being re-derived, which is how §4.2 survived three of them.
 The costing is not the cheap part of the work.  A note that says *why* a point
 is hard is a claim about the mathematics, and it decays exactly like any other
 claim in the tree — except that nothing compiles it.
+
+## Session 100 — the whole verdict vocabulary re-derived: **95 recorded reasons checked, 61 wrong**, and the audit was over-counting our own debt by fourteen rows (workers on `docs/audit/*.csv`, `Theses/{A/CStar/Basic,A/Proc/Duplicators,B/Dils/SelfDual}.lean`, `scripts/`)
+
+Scope: every `left-*` verdict whose recorded ground had not been re-checked
+since it was written, plus every status field that read back as a verdict
+different from the one it states.  Four rounds, seven workers, 95 reasons
+re-derived from the `.tex` and the current tree rather than read.
+
+**Sixty-one were wrong.**  Not wrong about difficulty — wrong about the
+mathematics, or about what the theses say.  This is a continuation of
+Session 99 §7, at ten times the sample, and it settles the question that
+section raised: the costings are not occasionally stale, they are
+*unreliable as a class*.
+
+### 1. What it does to the totals
+
+    left-benign  46 -> 51      left-thesis          10 -> 19
+    repaired     33 -> 29      left-ruling           3 -> 11
+    left-cost    37 -> 23      left-needs-statement   7 ->  3
+
+**Fourteen rows recorded as machinery of ours to build are thesis defects or
+author rulings.**  The tree owes substantially less than the audit said, and
+the authors are owed substantially more.
+
+### 2. Three reasons cited things that do not exist
+
+* `discrete_ell_x` said 130V is proved by "its printed route (*combine 130IV
+  with 130II*)".  **The word "combine" occurs zero times in `proc.tex`**, by
+  grep of the current text and of its history; 130V is `cor:discrete-ell-x`
+  (proc.tex:6531), a Corollary with no proof point.  The route is ours.
+* `paschke_tprod_dense` said the thesis states its density "only implicitly,
+  in the by-construction of **151V**/164VII, so there is no printed proof
+  here to be faithful to".  **`151V` occurs nowhere in `dils.tex`** — and the
+  thesis *does* state it, at dils.tex:3641 inside 154III.1's own proof, with
+  the general form printed as 163II's moreover-clause and proved at 163III.
+* `154III`'s uniqueness half rests on `\cite[lemma 9]{westerbaan2016universal}`
+  — a numbered point of neither thesis, in neither `bsols.tex` nor
+  `berr.tex`, and in no Lean declaration.  Filed `left-cost` for machinery we
+  were behind on; it is `left-unavailable`, there being no printed route.
+
+Both doc comments are repaired in place and recompiled.
+
+### 3. A defect class that the ambiguity check could not see
+
+`--conflicts` (Session 99 §6) finds fields matching several verdicts.  It
+cannot see the worse case: a field matching exactly **one** needle, which is
+the wrong one.
+
+`LEFT-under-reason-N` is spelled with hyphens, so it never matches the
+`"under reason 2"` entries and always fell through to a generic needle
+mapping to `left-cost` **for every N**.  Nineteen rows, five of them live
+thesis-defect rows counted as ours-to-build.  And no mapping could fix it:
+the two 2026-08-26 passes numbered their grounds differently — a *route*-pass
+"reason 1" means the thesis's own proof is followed, a *statement*-pass
+"reason 1" means **the printed form is FALSE**.  Picking either reading makes
+half the rows wrong in a way nothing reports.
+
+So the checker reports rather than guesses, and all nineteen rows now state
+their ground in words.  The needle is retired, not re-pointed.  Two workers
+reached this finding independently from opposite ends of the tree.
+
+### 4. Rows that said one thing and reported another
+
+`140X` read as `repaired` when the word occurred in its field only ever as
+**"NOT REPAIRED"**.  Five rows — 34V, 28II, 30X, 51IX, 69IX — said
+`left-ruling` in prose and a numbered ground in numerals, and the numeral
+won, filing five author decisions as costed work.  `169IV` was filed
+`left-needs-statement` by a misreading of `DECISIONS.md` §3.8, which in fact
+lists it among the rows that *correctly* prove the stronger form.
+
+### 5. Repairs
+
+**11XXI** read as fully closed while a real clause was missing;
+`spectrum_basic_1'_not_isSelfAdjoint` (`A/CStar/Basic.lean:2521`) supplies
+the fact that makes the counterexample one.  **9III** is back on asols
+`parsec-90.30` verbatim, its reason having claimed Mathlib proves it
+pointwise in ~15 lines when Mathlib goes via `unitsLift` in five
+declarations and the pointwise route is the *thesis's*.  **25I**'s 4 → 1 now
+uses the exercise's own `astara_positive`.  **35IX**'s `c00_not_complete`
+now goes through this tree's 35VI instead of Mathlib's Hellinger–Toeplitz,
+250 lines above it, while the row asserted the proof was mild "for one
+reason, and only one".
+
+### 6. Bookkeeping found wrong on the way
+
+`ERRATA.md`:144's two `dils.tex` references were both off by +8 and its row
+is headed 167II, not 167I.  `DECISIONS.md` §2.3 and §1.5 cited audit rows 84
+and 225, which are different declarations.  `DECISIONS.md`'s "eight audit
+rows marked `left-ruling`" is now nine.  Every drifted line number met along
+the way was re-pinned rather than noted.
+
+### 7. Reported, not edited
+
+`ERRATA.md`'s 148IV repair sentence writes the moved functional as
+`a ↦ f(bab*)`, where the thesis's right-module convention (dils.tex:2080-2084,
+used at bsols.tex:733 and in the erratum's own M₂(ℂ) counterexample) requires
+`a ↦ f(b*ab)`.  The stars are on the wrong side — but the sentence mixes two
+conventions, the Lean it cites (`ultranormscalar`) being mirrored and saying
+so, and which convention it should live in is the author's call.
+
+### 8. The conclusion Session 99 stopped short of
+
+A note recording *why* a point is hard is a claim about the mathematics, and
+it decays like any other claim in the tree — except that nothing compiles it.
+Several of the sixty-one had been re-read and re-affirmed by later sessions
+without ever being re-derived, which is exactly how they survived.  The
+practice this session settles on: **never brief work, cost a conversion, or
+accept a verdict off a recorded reason.**  Re-derive, and say so in the
+brief; every worker told to do that found errors.
