@@ -192,53 +192,206 @@ theorem hadamard_2 (a : ℕ → 𝒜) (z : ℂ) (L : 𝒜)
     have h0 := hterm.norm
     simpa [fpsOfCoeffs_coeff, norm_smul, mul_comm] using h0
 
+/-- The dominating series of the thesis's proof of **13IV**: if `‖aₙ‖sⁿ` is
+summable and `0 < r < s`, then `2 ∑ₙ n ‖aₙ‖ rⁿ⁻¹` converges.  This is the step
+cstar.tex:1949 asserts in passing — "the radius of convergence of
+`∑ₙ aₙ n zⁿ⁻¹` is `R > r`" — obtained not by recomputing a limsup but from the
+bound `‖aₙ‖sⁿ ≤ C` of **13II**.1 at the intermediate radius `s`, which
+dominates `2n‖aₙ‖rⁿ⁻¹` by `(2C/r)·n·(r/s)ⁿ`. -/
+private theorem summable_deriv_bound (a : ℕ → 𝒜) (r s : ℝ) (hr : 0 < r) (hrs : r < s)
+    (hsum : Summable fun n : ℕ => ‖a n‖ * s ^ n) :
+    Summable fun n : ℕ => 2 * (n : ℝ) * r ^ (n - 1) * ‖a n‖ := by
+  have hs0 : 0 < s := hr.trans hrs
+  set C := ∑' n : ℕ, ‖a n‖ * s ^ n with hC
+  have hCb : ∀ n : ℕ, ‖a n‖ * s ^ n ≤ C := fun n =>
+    hsum.le_tsum n fun m _ => by positivity
+  have hC0 : 0 ≤ C := le_trans (by positivity) (hCb 0)
+  clear_value C
+  have hq0 : 0 ≤ r / s := by positivity
+  have hq1 : r / s < 1 := (div_lt_one hs0).2 hrs
+  have hgeo : Summable fun n : ℕ => (n : ℝ) * (r / s) ^ n := by
+    simpa using summable_pow_mul_geometric_of_norm_lt_one (R := ℝ) 1
+      (by rwa [Real.norm_eq_abs, abs_of_nonneg hq0])
+  refine Summable.of_nonneg_of_le (fun n => by positivity) (fun n => ?_)
+    (hgeo.mul_left (2 * C / r))
+  rcases Nat.eq_zero_or_pos n with rfl | hn
+  · simp
+  · have hkey : ‖a n‖ ≤ C / s ^ n := by
+      rw [le_div_iff₀ (by positivity)]
+      exact hCb n
+    have hrpow : r ^ (n - 1) = r ^ n / r := by
+      rw [eq_div_iff hr.ne', ← pow_succ]
+      congr 1
+      omega
+    rw [hrpow]
+    calc 2 * (n : ℝ) * (r ^ n / r) * ‖a n‖
+        ≤ 2 * (n : ℝ) * (r ^ n / r) * (C / s ^ n) := by
+          have h0 : (0:ℝ) ≤ 2 * (n : ℝ) * (r ^ n / r) := by positivity
+          exact mul_le_mul_of_nonneg_left hkey h0
+      _ = 2 * C / r * ((n : ℝ) * (r / s) ^ n) := by
+          rw [div_pow]
+          field_simp
+
 /-- **13IV** (cstar.tex:1869, Proposition): the function given by a power
 series `∑ₙ aₙ zⁿ` is holomorphic on the disk `|z| < R`, with derivative
-`∑ₙ n aₙ zⁿ⁻¹`. -/
+`∑ₙ n aₙ zⁿ⁻¹`.
+
+*Class 1 — faithful*: the thesis's own proof (cstar.tex:1912-1955).  Pick
+`|z| < r < R`.  The difference quotient minus the candidate derivative is the
+tsum of
+
+  `((z+h)ⁿ - zⁿ)/h - n zⁿ⁻¹ = ∑_{i<n} ((z+h)ⁱ - zⁱ) zⁿ⁻¹⁻ⁱ`  (`hkey`),
+
+the thesis's rearranged identity, here in the equivalent index-reversed form
+that `geom_sum₂_mul` delivers.  Each term of that sum has norm at most
+`2rⁿ⁻¹`, so the whole is at most `2n rⁿ⁻¹` (`hev`), which is the thesis's
+`\eqref{power-series-derivative-2}`; each individual term tends to `0` as
+`h → 0` (`hab`), which is its `\eqref{power-series-derivative-1}`; and the
+dominating series `2 ∑ₙ n‖aₙ‖rⁿ⁻¹` converges (`summable_deriv_bound`).  The
+"tails vanish uniformly in `h`" step is Mathlib's
+`tendsto_tsum_of_dominated_convergence`, dominated convergence for a tsum
+along an arbitrary filter — here `𝓝[≠] z`. -/
 theorem powerSeries_hasDerivAt (a : ℕ → 𝒜) (z : ℂ)
     (hz : (‖z‖₊ : ℝ≥0∞) < radiusOfConvergence a) :
     HasDerivAt (fun w : ℂ => ∑' n : ℕ, w ^ n • a n)
-      (∑' n : ℕ, ((n : ℂ) * z ^ (n - 1)) • a n) z :=
-  by
-    -- Divergence from the thesis's proof (cstar.tex:1868), which dominates the
-    -- difference quotients uniformly by `2 ∑ₙ n‖aₙ‖ rⁿ⁻¹`.  Here: the series
-    -- is its own power-series expansion on `ball 0 R`, so it is differentiable
-    -- there, and `HasFPowerSeriesOnBall.fderiv` identifies its derivative with
-    -- the term-wise derivative through `derivSeries_coeff_one`.
-    rw [radiusOfConvergence_eq] at hz
-    set p : FormalMultilinearSeries ℂ ℂ 𝒜 := fpsOfCoeffs a with hpdef
-    have hpos : 0 < p.radius := lt_of_le_of_lt zero_le hz
-    have hfun : (fun w : ℂ => ∑' n : ℕ, w ^ n • a n) = p.sum := by
-      funext w
-      exact (tsum_congr fun n => fpsOfCoeffs_apply a n w).symm
-    have hp : HasFPowerSeriesOnBall (fun w : ℂ => ∑' n : ℕ, w ^ n • a n) p 0 p.radius := by
-      rw [hfun]; exact p.hasFPowerSeriesOnBall hpos
-    have hzmem : z ∈ Metric.eball (0 : ℂ) p.radius := by
-      simpa [Metric.mem_eball, edist_eq_enorm_sub, enorm_eq_nnnorm] using hz
-    -- the sum is differentiable at `z`
-    have hdiff : DifferentiableAt ℂ (fun w : ℂ => ∑' n : ℕ, w ^ n • a n) z :=
-      (hp.analyticOnNhd z hzmem).differentiableAt
-    have hda := hdiff.hasFDerivAt.hasDerivAt
-    -- and its derivative is the term-wise derivative
-    have hsum := hp.fderiv.hasSum_sub hzmem
-    have hsum1 := (ContinuousLinearMap.apply ℂ 𝒜 (1 : ℂ)).hasSum hsum
-    simp only [ContinuousLinearMap.apply_apply, FormalMultilinearSeries.apply_eq_pow_smul_coeff,
-      smul_apply, FormalMultilinearSeries.derivSeries_coeff_one, sub_zero] at hsum1
-    have hg : HasSum (fun n : ℕ => ((n : ℂ) * z ^ (n - 1)) • a n)
-        ((fderiv ℂ (fun w : ℂ => ∑' n : ℕ, w ^ n • a n) z) 1) := by
-      have hshift : (fun b : ℕ => ((((b + 1) : ℕ) : ℂ) * z ^ ((b + 1) - 1)) • a (b + 1))
-          = fun b : ℕ => z ^ b • ((b + 1) • p.coeff (b + 1)) := by
-        funext b
-        rw [hpdef, fpsOfCoeffs_coeff, ← Nat.cast_smul_eq_nsmul ℂ, smul_smul]
-        push_cast
-        ring_nf
-      have h2 : HasSum (fun b : ℕ => ((((b + 1) : ℕ) : ℂ) * z ^ ((b + 1) - 1)) • a (b + 1))
-          ((fderiv ℂ (fun w : ℂ => ∑' n : ℕ, w ^ n • a n) z) 1) := by
-        rw [hshift]; exact hsum1
-      have h3 := (hasSum_nat_add_iff (f := fun n : ℕ => ((n : ℂ) * z ^ (n - 1)) • a n) 1).mp h2
-      simpa using h3
-    rw [hg.tsum_eq]
-    exact hda
+      (∑' n : ℕ, ((n : ℂ) * z ^ (n - 1)) • a n) z := by
+  -- Pick `‖z‖ < r < s < R`, as the thesis picks `|z| < r < R`.
+  obtain ⟨u, hzu, huR⟩ := ENNReal.lt_iff_exists_nnreal_btwn.mp hz
+  obtain ⟨v, huv, hvR⟩ := ENNReal.lt_iff_exists_nnreal_btwn.mp huR
+  set r : ℝ := (u : ℝ) with hrdef
+  set s : ℝ := (v : ℝ) with hsdef
+  have hzr : ‖z‖ < r := by exact_mod_cast ENNReal.coe_lt_coe.mp hzu
+  have hr0 : 0 < r := lt_of_le_of_lt (norm_nonneg z) hzr
+  have hrs : r < s := by exact_mod_cast ENNReal.coe_lt_coe.mp huv
+  have hs0 : 0 < s := hr0.trans hrs
+  -- **13II**.1 at the real point `s`
+  have hnn : ‖((s : ℝ) : ℂ)‖₊ = v := by
+    ext
+    simp [hsdef]
+  have hsR : (‖((s : ℝ) : ℂ)‖₊ : ℝ≥0∞) < radiusOfConvergence a := by rw [hnn]; exact hvR
+  have hsum : Summable fun n : ℕ => ‖a n‖ * s ^ n := by
+    have h := hadamard_1 a ((s : ℝ) : ℂ) hsR
+    simpa [Complex.norm_real, abs_of_nonneg hs0.le] using h
+  -- The dominating series `2 ∑ₙ n ‖aₙ‖ rⁿ⁻¹` of the thesis's proof.
+  have hB : Summable fun n : ℕ => 2 * (n : ℝ) * r ^ (n - 1) * ‖a n‖ :=
+    summable_deriv_bound a r s hr0 hrs hsum
+  have hsummable : ∀ w : ℂ, ‖w‖ ≤ r → Summable fun n : ℕ => w ^ n • a n := by
+    intro w hw
+    refine Summable.of_norm (Summable.of_nonneg_of_le (fun n => norm_nonneg _)
+      (fun n => ?_) hsum)
+    rw [norm_smul, norm_pow, mul_comm]
+    gcongr
+    exact hw.trans hrs.le
+  have hgsum : Summable fun n : ℕ => ((n : ℂ) * z ^ (n - 1)) • a n := by
+    refine Summable.of_norm (Summable.of_nonneg_of_le (fun n => norm_nonneg _)
+      (fun n => ?_) hB)
+    rw [norm_smul, norm_mul, Complex.norm_natCast, norm_pow]
+    have h1 : (n : ℝ) * ‖z‖ ^ (n - 1) * ‖a n‖ ≤ (n : ℝ) * r ^ (n - 1) * ‖a n‖ := by
+      gcongr
+    have h2 : (0:ℝ) ≤ (n : ℝ) * r ^ (n - 1) * ‖a n‖ := by positivity
+    have h3 : 2 * (n : ℝ) * r ^ (n - 1) * ‖a n‖
+        = (n : ℝ) * r ^ (n - 1) * ‖a n‖ + (n : ℝ) * r ^ (n - 1) * ‖a n‖ := by ring
+    rw [h3]
+    linarith
+  have hball : Metric.ball (0 : ℂ) r ∈ 𝓝 z :=
+    Metric.isOpen_ball.mem_nhds (by simpa [mem_ball_zero_iff] using hzr)
+  -- The thesis's rearranged identity, cstar.tex:1930.
+  have hkey : ∀ w : ℂ, w ≠ z → ∀ n : ℕ,
+      (w - z)⁻¹ * (w ^ n - z ^ n) - (n : ℂ) * z ^ (n - 1)
+        = ∑ i ∈ Finset.range n, (w ^ i - z ^ i) * z ^ (n - 1 - i) := by
+    intro w hwne n
+    have hwz : w - z ≠ 0 := sub_ne_zero.mpr hwne
+    have h1 : (∑ i ∈ Finset.range n, w ^ i * z ^ (n - 1 - i)) * (w - z) = w ^ n - z ^ n :=
+      geom_sum₂_mul w z n
+    have h2 : (w - z)⁻¹ * (w ^ n - z ^ n) = ∑ i ∈ Finset.range n, w ^ i * z ^ (n - 1 - i) := by
+      rw [← h1]
+      field_simp
+    have h3 : ∀ i ∈ Finset.range n, z ^ i * z ^ (n - 1 - i) = z ^ (n - 1) := by
+      intro i hi
+      rw [← pow_add]
+      congr 1
+      have := Finset.mem_range.mp hi
+      omega
+    have h4 : (∑ i ∈ Finset.range n, z ^ i * z ^ (n - 1 - i)) = (n : ℂ) * z ^ (n - 1) := by
+      rw [Finset.sum_congr rfl h3, Finset.sum_const, Finset.card_range, nsmul_eq_mul]
+    rw [h2, ← h4, ← Finset.sum_sub_distrib]
+    exact Finset.sum_congr rfl fun i _ => by ring
+  -- The thesis's estimate, cstar.tex:1934: each difference quotient is
+  -- dominated by `2 n rⁿ⁻¹ ‖aₙ‖`, uniformly in `w`.
+  have hev : ∀ᶠ w : ℂ in 𝓝[≠] z, ∀ n : ℕ,
+      ‖((w - z)⁻¹ * (w ^ n - z ^ n) - (n : ℂ) * z ^ (n - 1)) • a n‖
+        ≤ 2 * (n : ℝ) * r ^ (n - 1) * ‖a n‖ := by
+    filter_upwards [self_mem_nhdsWithin, mem_nhdsWithin_of_mem_nhds hball] with w hwne hwball n
+    have hwne' : w ≠ z := hwne
+    have hwr : ‖w‖ ≤ r := le_of_lt (by simpa [mem_ball_zero_iff] using hwball)
+    rw [norm_smul, hkey w hwne' n]
+    have hterm : ∀ i ∈ Finset.range n,
+        ‖(w ^ i - z ^ i) * z ^ (n - 1 - i)‖ ≤ 2 * r ^ (n - 1) := by
+      intro i hi
+      have hi' := Finset.mem_range.mp hi
+      rw [norm_mul, norm_pow]
+      have e1 : ‖w ^ i - z ^ i‖ ≤ 2 * r ^ i := by
+        refine le_trans (norm_sub_le _ _) ?_
+        rw [norm_pow, norm_pow]
+        have f1 : ‖w‖ ^ i ≤ r ^ i := by gcongr
+        have f2 : ‖z‖ ^ i ≤ r ^ i := by gcongr
+        linarith
+      have e2 : ‖z‖ ^ (n - 1 - i) ≤ r ^ (n - 1 - i) := by gcongr
+      calc ‖w ^ i - z ^ i‖ * ‖z‖ ^ (n - 1 - i) ≤ (2 * r ^ i) * r ^ (n - 1 - i) := by
+            refine mul_le_mul e1 e2 (by positivity) (by positivity)
+        _ = 2 * r ^ (n - 1) := by
+            rw [mul_assoc, ← pow_add]
+            congr 2
+            omega
+    have hsumle : ‖∑ i ∈ Finset.range n, (w ^ i - z ^ i) * z ^ (n - 1 - i)‖
+        ≤ 2 * (n : ℝ) * r ^ (n - 1) := by
+      refine le_trans (norm_sum_le _ _) ?_
+      calc ∑ i ∈ Finset.range n, ‖(w ^ i - z ^ i) * z ^ (n - 1 - i)‖
+          ≤ ∑ _i ∈ Finset.range n, 2 * r ^ (n - 1) := Finset.sum_le_sum hterm
+        _ = 2 * (n : ℝ) * r ^ (n - 1) := by
+            rw [Finset.sum_const, Finset.card_range, nsmul_eq_mul]
+            ring
+    calc ‖∑ i ∈ Finset.range n, (w ^ i - z ^ i) * z ^ (n - 1 - i)‖ * ‖a n‖
+        ≤ (2 * (n : ℝ) * r ^ (n - 1)) * ‖a n‖ :=
+          mul_le_mul_of_nonneg_right hsumle (norm_nonneg _)
+      _ = 2 * (n : ℝ) * r ^ (n - 1) * ‖a n‖ := by ring
+  -- Termwise, the difference quotients tend to `0` (cstar.tex:1941).
+  have hab : ∀ n : ℕ, Tendsto (fun w : ℂ =>
+      ((w - z)⁻¹ * (w ^ n - z ^ n) - (n : ℂ) * z ^ (n - 1)) • a n) (𝓝[≠] z) (𝓝 0) := by
+    intro n
+    have hslope := hasDerivAt_iff_tendsto_slope.mp (hasDerivAt_pow n z)
+    have h0 : Tendsto (fun w : ℂ => (w - z)⁻¹ * (w ^ n - z ^ n) - (n : ℂ) * z ^ (n - 1))
+        (𝓝[≠] z) (𝓝 0) := by
+      have h := hslope.sub_const ((n : ℂ) * z ^ (n - 1))
+      rw [sub_self] at h
+      refine h.congr fun w => ?_
+      simp [slope_def_field, div_eq_inv_mul]
+    simpa using h0.smul_const (a n)
+  -- Dominated convergence for the tsum along `𝓝[≠] z` (cstar.tex:1947).
+  have hdom : Tendsto (fun w : ℂ => ∑' n : ℕ,
+      ((w - z)⁻¹ * (w ^ n - z ^ n) - (n : ℂ) * z ^ (n - 1)) • a n) (𝓝[≠] z) (𝓝 0) := by
+    have h := tendsto_tsum_of_dominated_convergence
+      (f := fun (w : ℂ) (n : ℕ) => ((w - z)⁻¹ * (w ^ n - z ^ n) - (n : ℂ) * z ^ (n - 1)) • a n)
+      (g := fun _ : ℕ => (0 : 𝒜))
+      (bound := fun n : ℕ => 2 * (n : ℝ) * r ^ (n - 1) * ‖a n‖) hB hab hev
+    simpa using h
+  rw [hasDerivAt_iff_tendsto_slope]
+  have hfinal := hdom.add_const (∑' n : ℕ, ((n : ℂ) * z ^ (n - 1)) • a n)
+  rw [zero_add] at hfinal
+  refine Filter.Tendsto.congr' ?_ hfinal
+  filter_upwards [self_mem_nhdsWithin, mem_nhdsWithin_of_mem_nhds hball] with w hwne hwball
+  have hwne' : w ≠ z := hwne
+  have hwr : ‖w‖ ≤ r := le_of_lt (by simpa [mem_ball_zero_iff] using hwball)
+  have hws := (hsummable w hwr).hasSum
+  have hzs := (hsummable z hzr.le).hasSum
+  have hpsi : HasSum (fun n : ℕ => ((w - z)⁻¹ * (w ^ n - z ^ n) - (n : ℂ) * z ^ (n - 1)) • a n)
+      ((w - z)⁻¹ • ((∑' n : ℕ, w ^ n • a n) - ∑' n : ℕ, z ^ n • a n)
+        - ∑' n : ℕ, ((n : ℂ) * z ^ (n - 1)) • a n) := by
+    refine HasSum.congr_fun (((hws.sub hzs).const_smul (w - z)⁻¹).sub hgsum.hasSum) ?_
+    intro n
+    simp [smul_sub, smul_smul, sub_smul, mul_sub]
+  rw [hpsi.tsum_eq]
+  simp [slope, vsub_eq_sub]
 
 /-! ### The solution's route for 13VI
 
