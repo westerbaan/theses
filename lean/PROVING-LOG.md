@@ -30605,3 +30605,85 @@ without ever being re-derived, which is exactly how they survived.  The
 practice this session settles on: **never brief work, cost a conversion, or
 accept a verdict off a recorded reason.**  Re-derive, and say so in the
 brief; every worker told to do that found errors.
+
+## Session 100, closing round — **a duplicate instance had been winning synthesis tree-wide**, and the errata checker could not read four of its own rows (worker on `Theses/A/VN/Basic.lean`, `Theses/A/CStar/TowardsVN.lean`, `Theses/B/Eff/VNExamples.lean`, `scripts/`)
+
+Scope: the three items left after the verdict sweep — the duplicate
+`CStarAlgebra (lp 𝒜 ∞)` instance, three citations naming an `ERRATA.md` row
+that does not exist, and three naming a deleted `QUESTIONS.md` entry.  All
+three are closed; what is left in the tree after them wants an author.
+
+### 1. The duplicate instance, and why it survived
+
+`A/VN/Basic.lean:855` declared an anonymous `CStarAlgebra (lp 𝒜 ∞)` that
+shadowed `lpInftyCStarAlgebra` (`A/CStar/Positive.lean:3768`), which the
+same file already imports through `A/CStar/Representation`.  The shadow won
+synthesis downstream while being **strictly the weaker of the two** —
+`Type u` with `𝒜` explicit, against `Type*` with `𝒜` implicit.
+
+It survived because **both doc comments were true**.  Each says Mathlib
+"provides all the pieces but only registers the commutative unital
+instance", and that is correct: `Mathlib/Analysis/CStarAlgebra/lpSpace.lean`
+has `NonUnitalCStarAlgebra`, `NonUnitalCommCStarAlgebra` and
+`CommCStarAlgebra` for `lp A ∞`, and no unital one.  Neither comment
+mentioned the other's existence, so each read as the only one there was.
+A note can be true sentence by sentence and still mislead by omission —
+which is a failure mode the audit has no column for.
+
+Removed, and **verified rather than assumed: all 33 modules of the
+downstream closure rebuilt in dependency order, exit 0** — the whole of
+`A/VN`, ten `A/Proc` modules including the Tomita chain, seven `B/Dils`,
+and `B/Eff/VNExamples`.  The `PartialOrder` and `StarOrderedRing` instances
+immediately below now resolve through `lpInftyCStarAlgebra`.
+
+`scripts/refresh_oleans.py --downstream-of <module>` is what made that
+checkable.  Changing an instance cannot be verified by recompiling its own
+module — the question is whether everything *below* it still elaborates —
+and the 7.2 GB memory ceiling had taken the usual answer, `lake build`,
+away.  The closure rebuilds one file at a time through the compile lock,
+and refuses if any target is mid-edit.
+
+### 2. One of the three "phantom" errata rows was there
+
+`errata_check.py` reported three citations naming a row `ERRATA.md` does
+not have.  The third was not a phantom: the row is at `ERRATA.md:104`,
+keyed `**221IV.5/.6/.7**`, and `ROW` stopped at the first clause, so the
+closing `**` never matched and the row was never registered.  Three others
+were invisible the same way — `**140X.2 solution**`, `**169XI.2
+solution**`, `**170IV solution**`.  None of the four had ever been checked
+for status, for whether its point exists, or for duplication.  Row count
+97 → **101**, all four OPEN and decoding to real points.
+
+That is the **fourth** checker this session found unable to see the defect
+it exists for, after `questions_check` (self-describing citations),
+`xref_check` (bold run-in sections) and `vn_setting_check` (contrastive
+mentions).  The pattern is consistent and worth naming: each was written
+against the shapes the tree had when it was written, and the tree went on
+growing shapes it could not parse.  A checker that reports zero is not
+evidence until you know it can still see a positive.
+
+The other two cited the 39VII row, deleted 2026-08-22 in `29fc8c6` —
+Bram's own commit, which in the same breath rewrote `cstar.tex:6643` to
+print the square-partial-sum limit the row had asked for.  Both were true
+but nameless; one also located the row **by line number**, against
+`ERRATA.md`'s own rule ("Locate by point number, never by line").
+
+### 3. A citation that was wrong, not stale
+
+Both `B11` pointers in `VNExamples.lean` credited that question's *proposed*
+repair — `c(1) ≤ b` becoming `c(1) = b`.  The `ERRATA.md` 169VIII row says
+in as many words that this is **not** what was chosen: the author ruled the
+mediating map subunital with `c(1) ≤ b` kept.  The citations described the
+ruling correctly and attributed it to the wrong source.  They now credit
+the ruling and point at `IsFilterFor` and the 169VIII row.
+
+### 4. Where the tree stands
+
+The conversion worklist is exhausted.  The five remaining `(not converted)`
+rows are three pieces of prose the audit correctly declares nothing to
+formalise (149II, 227IV, 168I) and two — 55III part 2 and 56XII — blocked
+on the same thing: `L^∞(X)` has no carrier in the tree, so they can only be
+stated in presentation form, and choosing that form is a statement-design
+decision.  The ten `sorry`s are all blocked on statements, errata or open
+questions.  Every exact check is clean, 175 named line references land, and
+all 51 oleans are current.
