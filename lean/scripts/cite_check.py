@@ -475,6 +475,40 @@ def main():
         seen = (" (found in " + ", ".join(elsewhere) + ")") if elsewhere else " (no label of that name)"
         print(f"NOLABEL {rel}:{i}  `{lab}` cited at {tex}:{num}{seen}")
 
+    impossible = []
+    if docs:
+        # A reference that names a line which CANNOT be a target, whatever point
+        # it meant.  `--bare` explains at length that a reference landing outside
+        # the enclosing point is not a defect and cannot be told mechanically from
+        # a legitimate cross-citation -- a history walk tried, proposed 42 repairs,
+        # and the first two read were both wrong.  That argument is about *which
+        # point* was meant.  It does not apply to a line that is `\end{point}` or
+        # blank: nobody cites the closing line of an environment or an empty line,
+        # so the number is wrong no matter what was intended, and it can be said so
+        # without guessing the target.
+        #
+        # 25 of the documents' 923 references are like that, one wrong number
+        # (`dils.tex:5310`) repeated five times across two documents.
+        src = {t.name: t.read_text(errors="replace").splitlines()
+               for t in sorted(ROOT.glob("*.tex"))}
+        for f in sources:
+            rel = f.relative_to(ROOT)
+            for i, line in enumerate(f.read_text(errors="replace").splitlines(), 1):
+                for tex, num in BARE.findall(line):
+                    n = int(num)
+                    if tex not in src:
+                        continue
+                    if n > len(src[tex]):
+                        impossible.append((rel, i, tex, n, "past the end of the file"))
+                        continue
+                    body = src[tex][n - 1].strip()
+                    if re.fullmatch(r"\\end\{point\}%?", body):
+                        impossible.append((rel, i, tex, n, r"the line is `\end{point}`"))
+                    elif body == "":
+                        impossible.append((rel, i, tex, n, "the line is blank"))
+        for rel, i, tex, n, why in impossible:
+            print(f"NOTARGET {rel}:{i}  cites {tex}:{n} -- {why}")
+
     where_scanned = ("ERRATA/docs/audit" if docs else "Theses/**/*.lean")
     print(f"\n[{where_scanned}] "
           f"{ok} of {paired} label+line citations land inside the labelled extent, "
@@ -482,7 +516,10 @@ def main():
           f"does not carry; {skipped} parenthesised references name something that "
           f"is not a label of the file and are skipped; {bare_total - paired} "
           f"further file:line references carry no label and are not checked")
-    return 1 if drifted or unknown else 0
+    if docs:
+        print(f"         {len(impossible)} further references name a line that cannot "
+              f"be a target at all (`\\end{{point}}`, blank, or past EOF)")
+    return 1 if (drifted or unknown or impossible) else 0
 
 
 if __name__ == "__main__":
