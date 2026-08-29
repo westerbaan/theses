@@ -509,7 +509,7 @@ def main():
     for name in stale:
         print(f'STALE      docs/status.txt  {name}')
         print(f'           status.txt names a declaration the tree does not have; '
-              f'regenerate with `lake env lean scripts/StatusDump.lean`')
+              f'regenerate with `scripts/lean1.sh scripts/StatusDump.lean`')
 
     print(f'\n{len(tree)} sorries in the tree, {len(recorded)} rows classed '
           f'`sorry`; {len(orphaned)} orphaned, {len(unrecorded)} unrecorded, '

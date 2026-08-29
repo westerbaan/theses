@@ -14,7 +14,12 @@ structure and superclass instances all intervene -- so they are taken from
 `docs/binders.txt`, which `scripts/BinderDump.lean` writes by walking the
 elaborated environment.  Regenerate it after changing any signature:
 
-    lake env lean scripts/BinderDump.lean
+    scripts/lean1.sh scripts/BinderDump.lean
+
+and NOT with `lake env lean`: that runs outside the compile lock, and one
+`lean` on this tree peaks at 7.2 GB on a 14 GB swapless box (see
+`scripts/lean1.sh`).  `BinderDump` imports everything, so it is one of the
+heaviest runs there is.
 
 A doc comment is flagged when its **first sentence** says "von Neumann" and the
 declaration's type carries `CStarAlgebra` without `Theses.VonNeumannAlgebra`.
@@ -23,6 +28,15 @@ Two phrases are not claims about the setting and are excluded: a *von Neumann
 subalgebra* and a *von Neumann tensor product* are objects named in the
 statement, carried by predicates like `IsVNSubalgebra` and by `vnTensor`, and a
 declaration about them needs no von Neumann binder on the ambient type.
+
+A **contrastive** mention is excluded too, and for the same reason: it is the
+opposite of a claim.  `procIsCornerOf_of_isCornerFor` says its universal property
+"is being asked of *fewer* test objects there (von Neumann rather than all
+C\*-algebras)" -- describing the SOURCE's setting precisely in order to say the
+tree's is wider.  Flagging that would be exactly backwards, and would push the
+next author to reword a doc comment that is right.  The marker has to follow the
+mention closely (40 characters), so that a doc which claims the setting in one
+clause and says "not" in some unrelated later one is still reported.
 """
 
 import pathlib
@@ -39,11 +53,17 @@ TAG = re.compile(r'\*\*(\d{1,3}[a-z]?[IVXL]+(?:\.[0-9a-z]+)?)\*\*')
 OBJECTS = ("von Neumann subalgebra", "von Neumann subalgebras",
            "von Neumann tensor product")
 
+# "von Neumann rather than all C*-algebras" -- the source's setting, named to
+# contrast with ours.  Kept tight to the mention on purpose; see the module doc.
+CONTRAST = re.compile(r'on Neumann[^.]{0,40}?'
+                      r'(?:rather than|instead of|as opposed to|whereas|not all)',
+                      re.I)
+
 
 def binder_table():
     out = {}
     if not BINDERS.exists():
-        sys.exit(f"{BINDERS} is missing; run `lake env lean scripts/BinderDump.lean`")
+        sys.exit(f"{BINDERS} is missing; run `scripts/lean1.sh scripts/BinderDump.lean`")
     for line in BINDERS.read_text().splitlines():
         parts = line.split("|")
         if len(parts) == 3:
@@ -99,7 +119,7 @@ def main():
     binders = binder_table()
     for name in stale(binders):
         print(f"STALE   docs/binders.txt names {name}, which the tree no longer has; "
-              f"regenerate with `lake env lean scripts/BinderDump.lean`")
+              f"regenerate with `scripts/lean1.sh scripts/BinderDump.lean`")
     hits = []
     for src in sorted(LEAN.rglob("*.lean")):
         lines = src.read_text().splitlines()
@@ -112,6 +132,8 @@ def main():
                 continue
             first = doc.split(". ")[0]
             if "on Neumann" not in first or any(o in first for o in OBJECTS):
+                continue
+            if CONTRAST.search(first):
                 continue
             cand = [k for k in binders if k == m.group(1) or k.endswith("." + m.group(1))]
             if not cand:

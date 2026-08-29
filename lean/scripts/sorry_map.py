@@ -25,7 +25,7 @@ no number), and a map that hides a `sorry` is worse than no map.
 
 Usage, from `lean/`:
 
-    lake env lean scripts/StatusDump.lean     # refresh docs/status.txt
+    scripts/lean1.sh scripts/StatusDump.lean  # refresh docs/status.txt
     python3 scripts/sorry_map.py              # rebuild docs/sorry-map.html
 
 Keeping `docs/why-open.csv` current is manual: when a statement closes its row
