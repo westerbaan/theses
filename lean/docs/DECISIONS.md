@@ -353,7 +353,7 @@ proof — which is real work, not a free close.
 
 *(`QUESTIONS.md` B14.  Blocks `effectModule_unitInterval_representation` in
 `Theses/B/Eff/EffectAlgebras.lean`.  Audit row
-`bdils-pure-beff-states-effectalgebras.csv:225`, `left-ruling`.)*
+`bdils-pure-beff-states-effectalgebras.csv:228`, `left-ruling`.)*
 
 **What is being asked.**  eff.tex:737 (Examples 179III.2) says: "If `V` is an
 **ordered real vector space with order unit** `u`, then `[0,u]` is an effect
@@ -512,7 +512,7 @@ mathematics, and the audit already records exactly which proofs are affected, so
 ### 2.3 — 191II: what does "equivalent to a subcategory of `EMod_M^op`" mean?
 
 *(`QUESTIONS.md` B16.  Audit row
-`bdils-pure-beff-states-effectalgebras.csv:84`, `left-ruling`.  Lean:
+`bdils-pure-beff-states-effectalgebras.csv:86`, `left-ruling`.  Lean:
 `emod_effectus_representation`, `Theses/B/Eff/StatesPredicates.lean`.)*
 
 **What is being asked.**  The Theorem's second sentence (eff.tex:2206) reads:

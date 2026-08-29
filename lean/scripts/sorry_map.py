@@ -108,7 +108,14 @@ VERDICTS = (
     ("printed one is wrong", "left-thesis"),
     ("new public declaration", ""),
     ("left-needs-statement", "left-needs-statement"),
-    ("left-under-reason",    "left-cost"),
+    # `("left-under-reason", "left-cost")` used to sit here and matched
+    # `LEFT-under-reason-N` for EVERY N, because the hyphenated spelling misses the
+    # `"under reason 2"` entries above.  Nineteen rows read as costed machinery on
+    # that account, five of them live thesis-defect rows.  All nineteen have since
+    # had their ground written out in words, so the needle matches nothing and is
+    # gone.  It is not re-added: no mapping can be right for both 2026-08-26
+    # passes, which numbered their grounds differently.  If the spelling comes
+    # back, `--conflicts` reports it under NUMBERED.
     # repairs, under the several names the passes gave them
     ("recorded blocker is gone", "repaired"),
     ("phantom name removed", "repaired"),
