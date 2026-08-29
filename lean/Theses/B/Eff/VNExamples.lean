@@ -4826,6 +4826,221 @@ theorem su_quot_after_compr_pure {X Y Z : WStarCPSU.{u}ᵒᵖ}
     (Theses.A.Proc.IsPure.corner (su_isCornerMap_of_isComprehension hπ))
     (Theses.A.Proc.IsPure.filter (su_isFilter_of_isQuotient hξ))
 
+/-! ### **201III**, second sentence: the pure maps `B(ℋ) → B(𝒦)`
+
+eff.tex:4038 goes on: *"The pure maps `B(ℋ) → B(𝒦)` are exactly the maps of
+the form `ad_T` where `T` is a contractive map `𝒦 → ℋ`."*  dils.tex
+**170II**.1 (`Theses.B.Dils.dils_examples_pure_1`) prints the same sentence
+one category over — for ncp-maps, and for an arbitrary *bounded* `T` — and
+the two printings agree rather than conflict: the morphisms of `vN_cpsuᵒᵖ`
+are **subunital**, `ad_T(1) = T*T` has norm `‖T‖²`, and so `ad_T` is a
+morphism of this category exactly when `T` is a contraction
+(`su_conjOperator_subunital_iff`).
+
+Three things have to be added to 170II.1: `B(ℋ)` as an object of the
+effectus (`suBH`), the contractivity clause, and the bridge from
+effectus-purity to the purity of `B/Dils`.  The first sentence of 201III
+(`su_procPure_of_isPure`, `su_isPure_of_procPure`, above) carries
+effectus-purity as far as `Theses.A.Proc.IsPure`; the remaining leg is
+`Theses.B.Dils.isPureMap_of_procIsPure` and its converse
+`su_procIsPure_of_isPureMap` below.
+
+(An audit note of 2026-08-28 costed this at "the order of 145 lines" on the
+ground that the leg cannot be walked at all — that the two purity predicates
+are "a merge of the two developments, not a lemma".  Both halves of that are
+retracted: `B/Dils`' `section ProcPure` proved the merge on 2026-08-29, and
+the `[VonNeumannAlgebra C]` residue it leaves is not needed here, or
+anywhere, once the factorisation is merely *assumed to exist*.) -/
+
+omit [EffectusPartialForm (WStarCPSU.{u}ᵒᵖ)] [DiamondEffectus (WStarCPSU.{u}ᵒᵖ)] in
+/-- **168IV ⟹ 170I at von Neumann objects, with no hypothesis on the
+intermediate algebra**: a `Theses.B.Dils.IsPureMap` between von Neumann
+algebras is pure in the inductive sense of **170I**,
+`Theses.A.Proc.IsPure`.
+
+`Theses.B.Dils.procIsPure_of_factorisation` proves this of a *given*
+factorisation `φ = c ∘ h`, and needs `[VonNeumannAlgebra C]` on the algebra
+in the middle — 170I's `comp` constructor demands it and `IsPureMap`, whose
+intermediate algebra is a bare C\*-algebra, does not supply it.  The
+hypothesis is dispensable once the factorisation is only *assumed to exist*:
+a filter `c` for `b` and the standard filter `c_b : ⌈b⌉B⌈b⌉ → B` of **169X**
+mediate each other, and filters are injective (**169XII**
+`dils_filters_injective`), so the two mediating maps `w`, `w'` are mutually
+inverse; `w' ∘ h` is then again a corner for the same effect
+(`isCornerFor_of_ncpIso`), and `φ = c_b ∘ (w' ∘ h)` is a factorisation whose
+middle is `⌈b⌉B⌈b⌉` — a von Neumann algebra.
+
+With `Theses.B.Dils.isPureMap_of_procIsPure` this makes the two chapters'
+notions of purity **equivalent** at von Neumann objects.  The statement is a
+`B/Dils` one and belongs beside `procIsPure_of_factorisation`; it is here
+because this file is the leaf in which 201III lives. -/
+theorem su_procIsPure_of_isPureMap {A B : Type u} [CStarAlgebra A]
+    [PartialOrder A] [StarOrderedRing A] [CStarAlgebra B] [PartialOrder B]
+    [StarOrderedRing B] [Theses.VonNeumannAlgebra A] [Theses.VonNeumannAlgebra B]
+    {φ : Theses.NCPMap A B} (hφ : Theses.B.Dils.IsPureMap φ) :
+    Theses.A.Proc.IsPure φ := by
+  obtain ⟨C, _, _, _, h, c, hcorner, hfilter, hfac⟩ := hφ
+  obtain ⟨b, hb⟩ := hfilter
+  obtain ⟨a, hCF⟩ := hcorner
+  obtain ⟨cst, -, hcst⟩ := Theses.B.Dils.dils_stand_filter b hb.1
+  letI _vn := Theses.B.Dils.cornerSet_vonNeumannAlgebra B (Theses.A.VN.ceil b)
+  obtain ⟨w, hw, -⟩ :=
+    hb.2.2 _ inferInstance inferInstance inferInstance cst hcst.2.1
+  obtain ⟨w', hw', -⟩ :=
+    hcst.2.2 C inferInstance inferInstance inferInstance c hb.2.1
+  have hcinj : Function.Injective ⇑c :=
+    Theses.B.Dils.dils_filters_injective c ⟨b, hb⟩
+  have hcstinj : Function.Injective ⇑cst :=
+    Theses.B.Dils.dils_filters_injective cst ⟨b, hcst⟩
+  have hww' : ∀ x : C, w.toNCPMap (w'.toNCPMap x) = x := fun x =>
+    hcinj (by rw [hw (w'.toNCPMap x), hw' x])
+  have hw'w : ∀ y, w'.toNCPMap (w.toNCPMap y) = y := fun y =>
+    hcstinj (by rw [hw' (w.toNCPMap y), hw y])
+  obtain ⟨π, hπ⟩ := Theses.A.Proc.exists_ncpComp w'.toNCPMap h
+  have hcorner' : Theses.B.Dils.IsCornerFor π a :=
+    Theses.B.Dils.isCornerFor_of_ncpIso hCF w.toNCPMap w'.toNCPMap
+      (fun x => by rw [hπ, hww']) hw'w
+  exact Theses.B.Dils.procIsPure_of_factorisation ⟨a, hcorner'⟩ ⟨b, hcst⟩
+    fun x => by rw [hπ, hw', hfac]
+
+section BofH
+
+open scoped ComplexInnerProductSpace
+
+variable {H K : Type u}
+  [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
+  [NormedAddCommGroup K] [InnerProductSpace ℂ K] [CompleteSpace K]
+
+omit [EffectusPartialForm (WStarCPSU.{u}ᵒᵖ)] [DiamondEffectus (WStarCPSU.{u}ᵒᵖ)] in
+/-- `ad_T` is a positive map: **34V**.2 `ad_cp_2` says it is completely
+positive, and **25II**.2 `astara_pos_basic_2_cp` that a completely positive
+map is positive. -/
+theorem su_conjOperator_nonneg (T : K →L[ℂ] H) {a : H →L[ℂ] H} (ha : 0 ≤ a) :
+    0 ≤ conjOperator T a :=
+  astara_pos_basic_2_cp (conjOperator T) (ad_cp_2 T) a ha
+
+/-- `ad_T : B(ℋ) → B(𝒦)`, `a ↦ T*aT`, as a positive linear map. -/
+noncomputable def suAdP (T : K →L[ℂ] H) : (H →L[ℂ] H) →ₚ[ℂ] (K →L[ℂ] K) where
+  toLinearMap := conjOperator T
+  monotone' := fun a a' h => by
+    have h2 := su_conjOperator_nonneg T (sub_nonneg.mpr h)
+    rw [map_sub] at h2
+    exact sub_nonneg.mp h2
+
+omit [EffectusPartialForm (WStarCPSU.{u}ᵒᵖ)] [DiamondEffectus (WStarCPSU.{u}ᵒᵖ)] in
+@[simp] theorem suAdP_apply (T : K →L[ℂ] H) (a : H →L[ℂ] H) :
+    suAdP T a = conjOperator T a := rfl
+
+omit [EffectusPartialForm (WStarCPSU.{u}ᵒᵖ)] [DiamondEffectus (WStarCPSU.{u}ᵒᵖ)] in
+/-- `ad_T` is **normal**: by **48II** `normal_faithful` it is enough that
+`ω ∘ ad_T` be normal for the vector functionals `ω`, which separate
+(**42V**.2), and `⟪y, T*a(Ty)⟫ = ⟪Ty, a(Ty)⟫` is again one. -/
+theorem suAdP_normal (T : K →L[ℂ] H) : Theses.PreservesDirSups ⇑(suAdP T) := by
+  set Ω : Set (NPFunctional (K →L[ℂ] K)) :=
+    {ν | ∃ y ∈ (Set.univ : Set K), ν = Theses.A.VN.vectorNP y} with hΩ
+  have hfaith : Theses.A.VN.FaithfulCollection Ω :=
+    Theses.A.VN.faithfulCollection_vectorNP Set.univ
+      (fun R h => ContinuousLinearMap.ext fun y => h y (Set.mem_univ y))
+  refine (Theses.A.VN.normal_faithful Ω hfaith (suAdP T)).mpr ?_
+  rintro ν ⟨y, -, rfl⟩
+  have hpt : ∀ a : H →L[ℂ] H, (Theses.A.VN.vectorNP y (suAdP T a) : ℂ)
+      = Theses.A.VN.vectorNP (T y) a := by
+    intro a
+    have happ : (conjOperator T a) y
+        = ContinuousLinearMap.adjoint T (a (T y)) := rfl
+    rw [Theses.A.VN.vectorNP_apply, Theses.A.VN.vectorNP_apply, suAdP_apply, happ,
+      ContinuousLinearMap.adjoint_inner_right]
+  intro D s hne hdir hlub
+  have h := (Theses.A.VN.vectorNP (T y)).preservesDirSups' D s hne hdir hlub
+  simp only [hpt]
+  exact h
+
+/-- `ad_T : B(ℋ) → B(𝒦)` as an ncp-map. -/
+noncomputable def suAdNCP (T : K →L[ℂ] H) :
+    Theses.NCPMap (H →L[ℂ] H) (K →L[ℂ] K) where
+  toCompletelyPositiveMap :=
+    { toLinearMap := conjOperator T
+      map_cstarMatrix_nonneg' := ((cp_iff (conjOperator T)).out 0 1).mp (ad_cp_2 T) }
+  preservesDirSups' := suAdP_normal T
+
+omit [EffectusPartialForm (WStarCPSU.{u}ᵒᵖ)] [DiamondEffectus (WStarCPSU.{u}ᵒᵖ)] in
+@[simp] theorem suAdNCP_apply (T : K →L[ℂ] H) (a : H →L[ℂ] H) :
+    suAdNCP T a = conjOperator T a := rfl
+
+omit [EffectusPartialForm (WStarCPSU.{u}ᵒᵖ)] [DiamondEffectus (WStarCPSU.{u}ᵒᵖ)] in
+/-- `ad_T(1) = T*T`. -/
+theorem su_conjOperator_one (T : K →L[ℂ] H) :
+    conjOperator T (1 : H →L[ℂ] H) = ContinuousLinearMap.adjoint T ∘L T := by
+  refine ContinuousLinearMap.ext fun x => ?_
+  simp [conjOperator]
+
+omit [EffectusPartialForm (WStarCPSU.{u}ᵒᵖ)] [DiamondEffectus (WStarCPSU.{u}ᵒᵖ)] in
+/-- **The contractivity clause of 201III**: `ad_T` is subunital — i.e. is a
+morphism of `vN_cpsuᵒᵖ` — exactly when `T` is a contraction.  `ad_T(1) =
+T*T` is positive with `‖T*T‖ = ‖T‖²`, and a positive element is `≤ 1` iff
+its norm is (Mathlib's `CStarAlgebra.norm_le_one_iff_of_nonneg`). -/
+theorem su_conjOperator_subunital_iff (T : K →L[ℂ] H) :
+    conjOperator T (1 : H →L[ℂ] H) ≤ 1 ↔ ‖T‖ ≤ 1 := by
+  rw [← CStarAlgebra.norm_le_one_iff_of_nonneg _
+      (su_conjOperator_nonneg T (zero_le_one (α := H →L[ℂ] H))),
+    su_conjOperator_one, ContinuousLinearMap.norm_adjoint_comp_self]
+  constructor
+  · intro h; nlinarith [norm_nonneg T]
+  · intro h; nlinarith [norm_nonneg T]
+
+/-- `B(ℋ)` as an object of `vNᵒᵖ`. -/
+noncomputable abbrev suBH (H : Type u) [NormedAddCommGroup H]
+    [InnerProductSpace ℂ H] [CompleteSpace H] : WStarCPSU.{u}ᵒᵖ :=
+  Opposite.op (WStarCPSU.of (WStar.of (H →L[ℂ] H)))
+
+/-- `ad_T`, for a contraction `T : 𝒦 → ℋ`, as a morphism
+`B(ℋ) → B(𝒦)` of `vNᵒᵖ`. -/
+noncomputable def suAdHom (T : K →L[ℂ] H) (hT : ‖T‖ ≤ 1) : suBH K ⟶ suBH H :=
+  Quiver.Hom.op ⟨suAdNCP T, (su_conjOperator_subunital_iff T).mpr hT⟩
+
+omit [EffectusPartialForm (WStarCPSU.{u}ᵒᵖ)] [DiamondEffectus (WStarCPSU.{u}ᵒᵖ)] in
+@[simp] theorem suAdHom_apply (T : K →L[ℂ] H) (hT : ‖T‖ ≤ 1) (a : H →L[ℂ] H) :
+    (suAdHom T hT).unop.toNCPMap a = conjOperator T a := rfl
+
+/-- **201III** (eff.tex:4038, Example), **second sentence**: the pure maps
+`B(ℋ) → B(𝒦)` of `vNᵒᵖ` are exactly the maps `ad_T`, `a ↦ T*aT`, for a
+**contractive** `T : 𝒦 → ℋ`.
+
+**⇒** the first sentence (`su_procPure_of_isPure`) makes the ncpsu-map of a
+pure map pure in the sense of proc.tex **100I**, `isPureMap_of_procIsPure`
+turns that into dils.tex's **168IV** normal form, and **170II**.1
+`dils_examples_pure_1` produces the bounded `T`.  It is contractive because
+`ad_T(1) = f(1) ≤ 1`, `f` being a morphism of `vN_cpsuᵒᵖ`.
+
+**⇐** the same three steps backwards, the middle one being
+`su_procIsPure_of_isPureMap`; the contractivity hypothesis is not used here,
+since `f` is a morphism already.
+
+`su_pure_bh_ad` is the other half of "exactly": every contraction does give
+such a morphism, and it is pure. -/
+theorem su_pure_bh_iff (f : suBH K ⟶ suBH H) :
+    IsPure f ↔ ∃ T : K →L[ℂ] H, ‖T‖ ≤ 1 ∧
+      ∀ a : H →L[ℂ] H, f.unop.toNCPMap a = conjOperator T a := by
+  constructor
+  · intro hf
+    obtain ⟨T, hT⟩ := (Theses.B.Dils.dils_examples_pure_1 f.unop.toNCPMap).mp
+      (Theses.B.Dils.isPureMap_of_procIsPure (su_procPure_of_isPure hf))
+    refine ⟨T, ?_, hT⟩
+    refine (su_conjOperator_subunital_iff T).mp ?_
+    rw [← hT 1]
+    exact f.unop.subunital'
+  · rintro ⟨T, -, hT⟩
+    exact su_isPure_of_procPure (su_procIsPure_of_isPureMap
+      ((Theses.B.Dils.dils_examples_pure_1 f.unop.toNCPMap).mpr ⟨T, hT⟩))
+
+/-- **201III**, second sentence, the "every `ad_T` occurs" half: for a
+contraction `T : 𝒦 → ℋ` the morphism `ad_T : B(ℋ) → B(𝒦)` of `vNᵒᵖ` is
+pure. -/
+theorem su_pure_bh_ad (T : K →L[ℂ] H) (hT : ‖T‖ ≤ 1) : IsPure (suAdHom T hT) :=
+  (su_pure_bh_iff (suAdHom T hT)).mpr ⟨T, hT, fun _ => rfl⟩
+
+end BofH
+
 /-! ### The ⋄-layer of 211II, and where eff.tex and proc.tex part company
 
 `su_exists_asrt` above settles the *existence* half of 211II.1.  For
