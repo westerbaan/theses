@@ -473,6 +473,39 @@ def main():
               f'{", ".join(n for _, n in real[:4])}'
               f'{" ..." if len(real) > 4 else ""}')
 
+    # `docs/why-open.csv` against `docs/status.txt`.
+    #
+    # `docs/DECISIONS.md` §4.8 states as a fact that why-open.csv "carries
+    # exactly the rows that `docs/status.txt` marks red".  It is a good
+    # invariant and it was silently false: on 2026-08-29 `kaplansky_hilbmod_A₂`
+    # was proved, `status.txt` was regenerated and dropped it, and why-open.csv
+    # went on listing it as unproved.  Only `sorry_map.py` reads that file, and
+    # only to render it, so nothing noticed.
+    #
+    # This is the same shape as the `status.txt` staleness already guarded
+    # below, one file further out: a record that says a declaration is unproved
+    # when the tree proves it.  A prose invariant nothing enforces is a claim
+    # with a decay rate, so it is enforced here.
+    why_path = os.path.join(ROOT, 'docs', 'why-open.csv')
+    why_extra, why_missing = [], []
+    if os.path.exists(why_path):
+        why = [l.split('|')[0] for l in
+               open(why_path, encoding='utf-8').read().splitlines() if l.strip()]
+        red = set()
+        spath = os.path.join(ROOT, 'docs', 'status.txt')
+        if os.path.exists(spath):
+            for l in open(spath, encoding='utf-8').read().splitlines():
+                if l.endswith('|red'):
+                    red.add(l.split('|')[1].rsplit('.', 1)[-1])
+        why_extra = [w for w in why if w not in red]
+        why_missing = sorted(r for r in red if r not in why)
+    for n in why_extra:
+        print(f'WHYOPEN    docs/why-open.csv  {n}')
+        print(f'           listed as unproved; status.txt does not mark it red')
+    for n in why_missing:
+        print(f'WHYOPEN    docs/status.txt  {n}')
+        print(f'           marked red; why-open.csv does not say why')
+
     schema = schema_violations()
     for fname, i, nf, disp, name in schema:
         print(f'SCHEMA     {fname}:{i}  {disp}  {name}')
@@ -515,7 +548,9 @@ def main():
           f'`sorry`; {len(orphaned)} orphaned, {len(unrecorded)} unrecorded, '
           f'{len(phantom)} phantom, {len(schema)} schema, '
           f'{len(unrowed)} unrowed, {len(misplaced)} misplaced, '
-          f'{len(stale)} stale in status.txt')
+          f'{len(stale)} stale in status.txt, '
+          f'{len(why_extra) + len(why_missing)} disagreeing between why-open.csv '
+          f'and status.txt')
     return 1 if (orphaned or unrecorded or phantom or schema or unrowed
                  or misplaced or stale) else 0
 

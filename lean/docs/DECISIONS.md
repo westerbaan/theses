@@ -20,9 +20,16 @@ list: it was proved on 2026-08-29** — see §4.2, which used to explain why it
 was waiting on mathematics rather than on you.
 
 Beyond the `sorry`s there are 100 open rows in `ERRATA.md` (those are
-corrections, not decisions, and are not repeated here) and eight audit rows
-in `docs/audit/` marked `left-ruling` — five of them are §2, one (34V.3) is
-§3.3, and the other two (139XI, 179III.2) hold up a `sorry` and are in §1.
+corrections, not decisions, and are not repeated here) and **twelve** audit
+rows in `docs/audit/` marked `left-ruling`, re-counted 2026-08-29 after a
+pass that re-derived every verdict in the audit: five are §2 (191II §2.3,
+30X and 69IX §2.4, 28II §2.5, 51IX §2.6), two are §3 (132III §3.2, 34V
+§3.3), and four are §1 (199V §1.1, 215II §1.2, and 139XI §1.4 and 179III.2
+§1.5, which are the two that hold up a `sorry`).
+
+The twelfth, **180V** `effectus_vn_partial`, names no item of this file at
+all — it points only at `QUESTIONS.md` B13.  So a reader working through
+§1–§3 will not meet it, which is why it is named here.
 
 Point numbers are the primary key; the Lean name is given so we can find the
 declaration.  Sources were re-read for this document — several entries that
@@ -1051,9 +1058,12 @@ were done — `exists_braiding`, `exists_tmapM`, all five `vn_smc_*`, all seven
 rows pointed at rulings that had already landed: the four 104III rows (§4.2)
 and `div_usc`, which was ruled on 81IX (and which, incidentally, names no
 declaration in the tree at all — the ultraweak form is `div_uwc`).  The file
-now carries exactly the eleven rows that `docs/status.txt` marks red, each
-naming the item of §1 that would clear it.  Still ours to fix, not yours to
-read.
+now carries exactly the rows that `docs/status.txt` marks red — **nine**
+since `kaplansky_hilbmod_A₂` was proved on 2026-08-29, eleven when this
+paragraph was written — each naming the item of §1 that would clear it.
+That "exactly" was prose until 2026-08-29 and had already gone false once,
+the file still listing `A₂` after the proof landed; `audit_check.py` now
+enforces it in both directions.  Still ours to fix, not yours to read.
 
 ---
 
