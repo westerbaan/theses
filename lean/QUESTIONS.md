@@ -16,11 +16,19 @@ themselves are preserved in the commit messages that implemented them and in
 PROVING-LOG.md, so nothing is lost; git history has the full text.  Do not
 re-add a resolved item.
 
-**The list above was incomplete, and nine more keys are still cited across the
-tree.**  `scripts/questions_check.py` found 56 live pointers naming a question
-that is not here; for nine of the keys this file said nothing at all, so a
-reader following one could not even learn that it had been answered.  Each was
-removed by a commit whose message carries the ruling — that is where to read it:
+**The list above was incomplete, and nine more keys were cited across the tree
+with no record here.**  `scripts/questions_check.py` found 56 live pointers
+naming a question that is not here; for nine of the keys this file said nothing
+at all, so a reader following one could not even learn that it had been
+answered.  Each was removed by a commit whose message carries the ruling — that
+is where to read it:
+
+*(Closed 2026-08-29.  All nine keys are in the table below and in the script's
+`DELETED` list, and the checker now reports **0** live pointers naming a
+question that is not here: 29 of the 56 were rows recording an answer rather
+than asking for one, and the rest were repaired by naming where the answer
+went.  The nine are listed because a reader may still meet one of these keys in
+a commit message or a dated log.)*
 
 | key | removed | commit |
 |---|---|---|

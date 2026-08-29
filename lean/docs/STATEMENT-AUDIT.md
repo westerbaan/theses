@@ -487,7 +487,11 @@ structures and private auxiliaries.
 | **total** | **2248** | **253** | **520** |
 
 **253 of 2248 statements do not match their source** — 174 `weaker`, 49
-`stronger`, 30 `differs`, **0 `unsure`**.  On the proof side, 753 are
+`stronger`, 30 `differs`, **0 `unsure`**.  *(Those are the 2026-08-20 figures
+and the table above is that snapshot, not a live count; this document records
+and does not repair.  Re-counted 2026-08-29: **146 of 2504** rows are not
+`ok` — 54 `weaker`, 55 `stronger`, 37 `differs`, still 0 `unsure`.  The
+`weaker` column is a third of what it was, the other two slightly larger.)*  On the proof side, 753 are
 `faithful` and 975 have no thesis proof to match (`none`); 520 diverge — 247 a
 different route, 141 mild, 114 closed by Mathlib, 18 `sorry`.
 
@@ -799,7 +803,7 @@ faithful field by field.
 
 ### 4. Our statements to repair — needs an author ruling
 
-The 174 `weaker` rows, dominated by three shapes: a **multi-part exercise
+The `weaker` rows — 174 when this was written on 2026-08-20, **54** on 2026-08-29 — dominated by three shapes: a **multi-part exercise
 rendered by one clause** (much the commonest); an **isomorphism, or a
 "has all X" headline, rendered by a witness or a consequence** (70III, 67IV.2,
 69IVa, 84bV, 188III/188IV, 179III.1, 191II, 200III, 205II, 220II, 193V,

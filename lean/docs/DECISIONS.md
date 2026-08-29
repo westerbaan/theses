@@ -10,8 +10,11 @@ Nothing else is needed; we will make the source edits and the Lean edits and
 record the ruling.  Where an item is really an erratum acceptance we say so, and
 "accept" is a complete answer.
 
-**Where things stand.**  **10 declarations are unproved**, and **nothing else
-in the tree depends on a `sorry`**.  All ten are waiting on §1 below.  (The
+**Where things stand.**  **9 declarations are unproved**, and **nothing else
+in the tree depends on a `sorry`**.  All nine are waiting on §1 below.  (It
+was ten until 2026-08-29, when `kaplansky_hilbmod_A₂` turned out to be
+**true** — the witness reports `ω₀(A₂) = 0`, which had been read as the
+functional not seeing it.)  (The
 declaration total was 8931 at the last full build; it has grown since and is
 not re-counted here, but the `sorry` count is checked on every commit.)
 
@@ -46,7 +49,7 @@ in §4 rather than in front of you.
 | 1.4 | 139XI | case (ii) takes the complement in the wrong space | `ess_uniq_pur` | (a) complements in `𝒦'` |
 | 1.5 | 179III.2 | strengthen our statement, or drop the point? | `effectModule_unitInterval_representation` | (a) strengthen, else (b) drop |
 | 1.6 | 106III.3, 116III.4 | two errata to accept | 2 red rows | accept |
-| 2.1 | — | may we match the printed statement without asking? | ~174 audit rows | (a) standing authorisation |
+| 2.1 | — | may we match the printed statement without asking? | 54 audit rows | (a) standing authorisation |
 | 2.2 | — | does "no forward references" apply outside `A/CStar`? | 520 audit rows | (b) forward only; label the rest |
 | 2.3 | 191II | what does "equivalent to a subcategory" mean? | 1 audit row | (c) weaken to faithful |
 | 2.4 | 30X | may clause (1) name `ϱ_Ω`? | 1 audit row | (a) yes |
@@ -462,9 +465,14 @@ a false proof — but it now generates a queue of individually trivial questions
 of exactly one shape: *our statement says less than the printed one; may we make
 it match?*
 
-The audit found **174 such rows** (`weaker`) out of 2248.  A8, A9, A10 and B13
-below are four of them that happen to have been noticed by hand before the audit
-ran.
+The audit found **174 such rows** (`weaker`) out of 2248 when it ran on
+2026-08-20.  **Re-counted 2026-08-29 it is 54 of 2504** — the intervening
+sessions repaired most of them as ordinary work, which is what option (a)
+below anticipates.  So the scope of this ruling is now a third of what the
+paragraph was written for.  (The other two columns moved the other way:
+`stronger` 49 → 55, `differs` 30 → 37, for 146 rows not `ok` against the
+recorded 253.)  A8, A9, A10 and B13 below are four of them that happen to
+have been noticed by hand before the audit ran.
 
 **Options.**
 
@@ -480,10 +488,10 @@ ran.
 ask whether a reader would stumble, not whether a checker would"* — applies with
 full force here.  A reader does not stumble over 51IX; only our own
 bookkeeping does.  Under (a) the four items below are answered at a stroke,
-along with most of the 174, and the queue in front of you stays what it should
+along with most of the remaining 54, and the queue in front of you stays what it should
 be: places where the *thesis* is unclear or wrong.
 
-**What we do.**  Under (a) we work the 174 rows down as ordinary repairs and
+**What we do.**  Under (a) we work those 54 rows down as ordinary repairs and
 report the count; the ones that turn out **not** to be free (because the
 strengthened statement needs new mathematics) come back to you individually.
 Under (b) or (c) we answer 2.4–2.7 as asked and file the rest one at a time.
