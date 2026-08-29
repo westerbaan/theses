@@ -30357,3 +30357,142 @@ Both proofs that were re-transcribed here (34XIII's Cauchy–Schwarz and
 solution `parsec-330.30`(3)'s "`M₂ j_𝒜` is positive iff `𝒜` is commutative"
 is correct as stated.  The only defect met was in our own records, not in the
 theses.
+
+## Session 99 — 104III.5, 164XII.1, the purity bridge and 55III: **four recorded reasons were checked against the tree and four were wrong**, one of them believed for three sessions; and six agents were OOM-killed because one `lean` is 7.2 GB (worker on `Theses/A/Proc/Measurement.lean`, `Theses/B/Dils/{Pure,SelfDual}.lean`, `Theses/A/VN/Projections.lean`, `scripts/`)
+
+Scope: the last closable `sorry` in the tree, three `(not converted)` points,
+and the free-file half of the `QUESTIONS.md` pointer sweep.  Everything landed
+here was costed by an earlier session, and **every one of those costings was
+wrong about something load-bearing** — not wrong about the difficulty, wrong
+about the mathematics.  That is the finding of the session; the four
+conversions are below and §7 collects the pattern.
+
+### 1. 104III.5 — the last closable `sorry`, and `DECISIONS.md` §4.2 was wrong about it
+
+`centrally_similar_basic_5`'s grounds clause (proc.tex 104III part 5) is
+**proved**.  The statement is byte-identical to the one the author ruled on;
+only `:= sorry` became a nine-line proof, resting on six new privates at
+`Measurement.lean`:6696 `ceil_proj_mul_of_comm`, :6721
+`eq_zero_of_mul_projSup`, :6755 `eq_zero_of_corner_projSup`, :6779
+`meet_comm'`, :6795 `centrally_similar_basic_5_corner` and :6927
+`centrally_similar_basic_5_ground`.
+
+`docs/DECISIONS.md` §4.2 said the route "wants part 4's third `iff` for
+`eₙp, eₙq` … a form of part 4 relative to a projection unit", and that account
+had stood for three sessions.  **Part 4 of 104III is never invoked at all.**
+With `m := p∧q`, `c := m/p`, `E := eₙ` and `W := (Eq)(Ep)^∼¹`, the corner step
+needs one right-multiplication of `u(Ep) = v(Eq)` by `(Ep)^∼¹`, and
+`Z(e𝒜e) = Z(𝒜)e` is not used either.  §4.2 is rewritten.
+
+### 2. The bridge a module header called "a merge of the two developments, not a lemma" is two lemmas
+
+`Pure.lean`'s own header listed four mismatches between `Theses.A.Proc.IsPure`
+and `IsPureMap` and concluded the bridge could not be stated.  Both directions
+are now proved in a new `section ProcPure`: :2590 `isPureMap_of_procIsPure`,
+with **no hypothesis beyond the two von Neumann binders already in the
+statement**; :2610 `procIsPure_of_factorisation`, the converse, which does need
+`[VonNeumannAlgebra C]` on the *intermediate* algebra and that is irreducible;
+and :2650 `isPureMap_ncpComp`, composition at von Neumann objects.
+
+Of the header's four mismatches, **one was misstated** — the inductive's
+`filter` and `corner` constructors carry no von Neumann binder at all, only
+`comp` does, on the middle algebra — and **a second was glossed backwards**:
+the two filter predicates are incomparable, not one stronger than the other.
+Row `170I|IsPureMap` goes `open` → `repaired`.
+
+### 3. 164XII.1 — an arbitrary Hilbert tensor product *is* an `ExtTensor`
+
+New `HilbExtTensor` section in `SelfDual.lean`: :8390 `extTensorHilb` shows any
+`IsHilbertTensorProduct γ` is an `ExtTensor (fun a b : ℂ => a * b)
+vnTensor_mul_complex H K`, and :8490 `extTensorHilbTensor` instantiates it at
+`Theses.A.Proc.hilbTensor`.  The row stays `weaker` for the `Type 0` universe
+restriction and nothing else.
+
+One mechanical trap worth recording: `cstarInnerProductSpace` **must** be
+`@[reducible]`.  Left semireducible, the `NormedSpace`/`Module` it carries is
+only definitionally the one `ExtTensor.univ` supplies, and every later `rw` and
+instance match across that diamond fails.
+
+The two prior costings of these rows contained **five** errors between them.
+
+### 4. 55III parts 1 and 3, and the ground for leaving part 2
+
+`Projections.lean`:246 `projection_examples_1` (the projections of `ℂ` are `0`
+and `1`) and :273 `projection_examples_3` (every projection in `B(H)` is
+`E E*` for a closed subspace, and conversely).
+
+Part 3 is **not** Mathlib's `isStarProjection_iff_eq_starProjection_range`
+under another name, which is what the old row implied.  The thesis's operator
+is `E E*` and Mathlib's is `Submodule.starProjection`, bridged by
+`adjoint_subtypeL`; and Mathlib's converse yields only a
+`HasOrthogonalProjection` witness, not a *closed* subspace, so closedness of
+the range is proved here by hand as `ker (1 - p)`.
+
+The recorded ground for leaving part 2 was **wrong, and the same wrong ground
+was recorded for 56XII**.  It said the blocker is that 51IX `Linfty_vn` is
+weaker than the source (QUESTIONS A9, ℂ-homogeneity of the quotient map).  A9
+is real and still open, but it has nothing to do with enumerating projections
+or with computing ceilings and floors, which are order-theoretic.  The actual
+blocker is that **`L^∞(X)` has no carrier in the tree**: `Linfty_vn` delivers
+it only as an existentially quantified algebra with a quotient map, so both
+points could only be stated in presentation form — a statement-design decision,
+and so the author's.
+
+### 5. Six agents OOM-killed: one `lean` is 7.2 GB
+
+Six agents running concurrently, each shelling out to `lean`, were all killed.
+I first read this as the author killing them; it was the OOM killer.  Measured
+afterwards: **one `lean` on `Theses/A/VN/Division.lean` peaks at 7.2 GB RSS**,
+on a box with 14 GB and no swap.  Six is ~43 GB against 12 GB available — and
+**two do not fit either**, so "run fewer agents" is not the fix.
+
+Five of the six had written nothing and lost everything, including one with 283
+turns that had already reported both directions of its result compiling.  The
+brief said "do not `git add` at all", which is right, but never said *write to
+disk as you go*, so the protocol had exactly one durability point per agent.
+
+`scripts/lean1.sh` now holds an exclusive `flock` for the duration of a
+compile; agents run in parallel, compiles queue.  Self-tested: two simultaneous
+callers finished 44 s apart with never more than one `lean` alive.
+
+### 6. The checkers were crying wolf — 31 dangling pointers were 2
+
+`questions_check.py` reported 31 live pointers to deleted `QUESTIONS.md`
+questions.  Its own docstring says the defect is "telling the next reader that
+a decision is pending when it has been taken", and **29 of the 31 said the
+opposite** — they named a deleted question precisely to record that it was
+answered ("B6 is no longer an open question: Bas answered it on 2026-08-15",
+"deleted from QUESTIONS.md the same day at 43e270f", "(QUESTIONS D6, now
+closed)").  The exemption's window also had to span neighbouring *lines*: an
+audit row is one long line, but a Lean doc comment is hard-wrapped, and there
+the sentence recording the answer sits three or four lines below the key.
+
+Two genuine pointers were repaired rather than exempted, by recovering the
+deleted text from git: `ERRATA.md`'s bare "(see QUESTIONS **A7**)" — A7 asked
+what `p ∧ q` means, and the ruling took the meet in the commutative
+C*-subalgebra, which is why `cstar.tex` 26II gained a fifth part — and its
+"(QUESTIONS.md **B5**)", whose closure recorded exactly the claim cited.  Two
+more in `SelfDual.lean`: a paragraph saying B5 "asks" in the present tense six
+weeks after it was answered, and a bare "see QUESTIONS **D6**".
+
+Because a widened heuristic that stops catching anything never fails loudly,
+`questions_check.py --self-test` plants a bare "(see QUESTIONS **B5**)",
+asserts it is still reported and restores the file; `check_all.py` runs it as
+an exact check.
+
+`xref_check.py` then reported the new `DECISIONS.md` §4.2 reference as
+dangling.  The section is there — DECISIONS §4 writes its subsections as bold
+run-in items with no `#` at all — so the checker was wrong about the document,
+and its tally counted dangling references among the resolved ones.
+
+### 7. What the four wrong reasons have in common
+
+104III.5's route, `Pure.lean`'s four mismatches, the two 164XII.1 costings, and
+the 55III/56XII ground: **four independent recorded reasons, all wrong, all
+found by re-deriving from the thesis source instead of reading the note.**
+Three of the four had been re-read and re-affirmed by later sessions without
+being re-derived, which is how §4.2 survived three of them.
+
+The costing is not the cheap part of the work.  A note that says *why* a point
+is hard is a claim about the mathematics, and it decays exactly like any other
+claim in the tree — except that nothing compiles it.
