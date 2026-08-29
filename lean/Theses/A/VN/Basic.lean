@@ -6247,8 +6247,12 @@ elements of `X →ₘ[μ] ℂ`, and then proves 51IX by feeding integration to
 **51VII** `vna_of_faithful_countably_normal_1/2` — which is exactly the
 thesis's own proof (vn.tex:1638 is a corollary of vn.tex:1581).
 
-Everything here is `private`, and the four algebraic instances on
-`X →ₘ[μ] ℂ` are `local`, so nothing leaks out of this section. -/
+Everything here is `private`, and the algebraic instances on `X →ₘ[μ] ℂ`
+are `local`, so no instance on Mathlib's `AEEqFun` leaks out of this section.
+What *is* exported, at the end of the section and by name, is the result:
+`Linfty μ` — the type `L^∞(X, μ)` itself, with its von Neumann algebra
+structure, the quotient map `Linfty.mk` and integration — so that **54XI**'s
+`f ↦ f°` has an object to land in (`cvn_faithful_6`). -/
 
 section LinftyConstruction
 
@@ -6935,7 +6939,160 @@ private theorem tau_qmap {f : X → ℂ} (hf : IsBoundedMeasurable X f) :
     tauFun (qmap μ f) = ∫ x, f x ∂μ :=
   tauFun_congr (rep_qmap (memLp_of_isBoundedMeasurable hf))
 
+
+omit [IsFiniteMeasure μ] in
+private theorem bm_smul (z : ℂ) {f : X → ℂ} (hf : IsBoundedMeasurable X f) :
+    IsBoundedMeasurable X (z • f) := by
+  obtain ⟨hfm, C, hC⟩ := hf
+  refine ⟨hfm.const_smul z, ‖z‖ * max C 0, fun x => ?_⟩
+  have hx : ‖(z • f) x‖ = ‖z‖ * ‖f x‖ := by simp
+  rw [hx]
+  exact mul_le_mul_of_nonneg_left ((hC x).trans (le_max_left _ _)) (norm_nonneg z)
+
+omit [IsFiniteMeasure μ] in
+private theorem qmap_smul (z : ℂ) {f : X → ℂ} (hf : IsBoundedMeasurable X f) :
+    qmap μ (z • f) = z • qmap μ f := by
+  refine rep_injective ?_
+  filter_upwards [rep_qmap (memLp_of_isBoundedMeasurable (bm_smul z hf)),
+    rep_smul z (qmap μ f), rep_qmap (memLp_of_isBoundedMeasurable hf)] with x h1 h2 h3
+  rw [h1, h2]
+  simp [h3]
+
+omit [IsFiniteMeasure μ] in
+private theorem qmap_congr {f g : X → ℂ} (hf : IsBoundedMeasurable X f)
+    (hg : IsBoundedMeasurable X g) (h : f =ᵐ[μ] g) : qmap μ f = qmap μ g :=
+  (qmap_eq_iff (memLp_of_isBoundedMeasurable hf)).mpr
+    (h.trans (rep_qmap (memLp_of_isBoundedMeasurable hg)).symm)
+
 end LinftyConstruction
+
+/-! ### `L^∞(X, μ)` as a carrier: the public interface
+
+Everything above is `private`, and the algebraic instances on `X →ₘ[μ] ℂ`
+are `local`, so the ring structure Mathlib declines to put on `AEEqFun` does
+not leave this section.  What follows exports the *result* — the type
+`L^∞(X, μ)` itself, with its commutative von Neumann algebra structure, the
+quotient map `f ↦ [f]` and integration — under public names, so that
+**54XI**'s `f ↦ f°` has an object to land in (`cvn_faithful_6` below, which
+until this interface existed could only be rendered in presentation form).
+
+It is a small named interface and nothing more.  `Linfty μ` is a *reducible*
+abbreviation for `↥(LinftySub μ)`, declared here, inside the section, so the
+`local` instances are baked into it once and for all: no instance on
+`X →ₘ[μ] ℂ` is published, and typeclass search downstream never has to look
+for one — it unfolds `Linfty μ` and finds the closed instances on
+`↥(LinftySub μ)` proved above.  The rest of the block stays private. -/
+
+section LinftyCarrier
+
+variable {X : Type u} [MeasurableSpace X] {μ : Measure X}
+
+attribute [local instance] LinftyConstruction.aeCommRing LinftyConstruction.aeAlgebra
+  LinftyConstruction.aeStarRing LinftyConstruction.aeStarModule
+  LinftyConstruction.fact_one_le_top
+
+variable (μ) in
+/-- `L^∞(X, μ)`, the carrier: the essentially bounded elements of
+`X →ₘ[μ] ℂ`, that is, the bounded measurable functions `X → ℂ` modulo
+equality `μ`-almost everywhere.  It is a commutative C*-algebra, and a von
+Neumann algebra as soon as `μ` is finite (`Linfty.instVonNeumannAlgebra`),
+which is **51IX** `Linfty_vn` with the existential unpacked. -/
+abbrev Linfty : Type u := ↥(LinftyConstruction.LinftySub μ)
+
+namespace Linfty
+
+variable (μ) in
+/-- The quotient map `𝓛^∞(X, μ) → L^∞(X, μ)`, `f ↦ [f]`: the thesis's
+`f ↦ f°` before its domain is cut down to the continuous functions. -/
+noncomputable def mk (f : X → ℂ) : Linfty μ := LinftyConstruction.qmap μ f
+
+theorem mk_add {f g : X → ℂ} (hf : IsBoundedMeasurable X f)
+    (hg : IsBoundedMeasurable X g) : mk μ (f + g) = mk μ f + mk μ g :=
+  LinftyConstruction.qmap_add hf hg
+
+theorem mk_smul (z : ℂ) {f : X → ℂ} (hf : IsBoundedMeasurable X f) :
+    mk μ (z • f) = z • mk μ f :=
+  LinftyConstruction.qmap_smul z hf
+
+theorem mk_mul {f g : X → ℂ} (hf : IsBoundedMeasurable X f)
+    (hg : IsBoundedMeasurable X g) : mk μ (f * g) = mk μ f * mk μ g :=
+  LinftyConstruction.qmap_mul hf hg
+
+theorem mk_star {f : X → ℂ} (hf : IsBoundedMeasurable X f) :
+    mk μ (star f) = star (mk μ f) :=
+  LinftyConstruction.qmap_star hf
+
+theorem mk_one : mk μ (1 : X → ℂ) = 1 :=
+  LinftyConstruction.qmap_one
+
+/-- The kernel of `f ↦ [f]` is exactly the `μ`-a.e.-zero functions. -/
+theorem mk_eq_zero_iff {f : X → ℂ} (hf : IsBoundedMeasurable X f) :
+    mk μ f = 0 ↔ f =ᵐ[μ] 0 :=
+  LinftyConstruction.qmap_eq_zero_iff hf
+
+/-- `f ↦ [f]` identifies exactly the functions that agree `μ`-almost
+everywhere: this is the injectivity half of **51IX**'s quotient. -/
+theorem mk_eq_iff {f g : X → ℂ} (hf : IsBoundedMeasurable X f)
+    (hg : IsBoundedMeasurable X g) : mk μ f = mk μ g ↔ f =ᵐ[μ] g := by
+  rw [show mk μ f = LinftyConstruction.qmap μ f from rfl,
+    show mk μ g = LinftyConstruction.qmap μ g from rfl,
+    LinftyConstruction.qmap_eq_iff (LinftyConstruction.memLp_of_isBoundedMeasurable hf)]
+  constructor
+  · exact fun h => h.trans
+      (LinftyConstruction.rep_qmap (LinftyConstruction.memLp_of_isBoundedMeasurable hg))
+  · exact fun h => h.trans
+      (LinftyConstruction.rep_qmap (LinftyConstruction.memLp_of_isBoundedMeasurable hg)).symm
+
+theorem mk_congr {f g : X → ℂ} (hf : IsBoundedMeasurable X f)
+    (hg : IsBoundedMeasurable X g) (h : f =ᵐ[μ] g) : mk μ f = mk μ g :=
+  LinftyConstruction.qmap_congr hf hg h
+
+/-- `f ↦ [f]` is onto: every element of `L^∞(X, μ)` is the class of a
+genuinely bounded measurable function. -/
+theorem mk_surjective (y : Linfty μ) :
+    ∃ f, IsBoundedMeasurable X f ∧ mk μ f = y :=
+  LinftyConstruction.qmap_surjective y
+
+section Finite
+
+variable [IsFiniteMeasure μ]
+
+/-- Integration `a ↦ ∫ a dμ` on `L^∞(X, μ)`. -/
+noncomputable def integral (a : Linfty μ) : ℂ := LinftyConstruction.tauFun a
+
+omit [IsFiniteMeasure μ] in
+theorem integral_mk {f : X → ℂ} (hf : IsBoundedMeasurable X f) :
+    integral (mk μ f) = ∫ x, f x ∂μ :=
+  LinftyConstruction.tau_qmap hf
+
+theorem integral_faithful (a : Linfty μ) (ha : 0 ≤ a) (h : integral a = 0) :
+    a = 0 :=
+  LinftyConstruction.tau_faithful a ha h
+
+/-- **51IX** (`Linfty-vn`, vn.tex:1638) for the carrier: `L^∞(X, μ)` is a von
+Neumann algebra.  This is the `hvn` of `Linfty_vn`'s proof, lifted out. -/
+instance instVonNeumannAlgebra : VonNeumannAlgebra (Linfty μ) := by
+  have hfaith : ∀ a : Linfty μ, 0 ≤ a → LinftyConstruction.tauMap a = 0 → a = 0 :=
+    LinftyConstruction.tau_faithful
+  exact vna_of_faithful_countably_normal_1 LinftyConstruction.tauMap hfaith
+    LinftyConstruction.exists_isLUB_seq
+
+/-- **51IX**: integration is a (faithful, by `integral_faithful`)
+np-functional on `L^∞(X, μ)`. -/
+noncomputable def integralNP : NPFunctional (Linfty μ) := by
+  have hfaith : ∀ a : Linfty μ, 0 ≤ a → LinftyConstruction.tauMap a = 0 → a = 0 :=
+    LinftyConstruction.tau_faithful
+  exact ⟨LinftyConstruction.tauMap,
+    vna_of_faithful_countably_normal_2 LinftyConstruction.tauMap hfaith
+      LinftyConstruction.exists_isLUB_seq⟩
+
+theorem coe_integralNP : ⇑(integralNP (μ := μ)) = integral (μ := μ) := rfl
+
+end Finite
+
+end Linfty
+
+end LinftyCarrier
 
 end LinftyConstruction
 
@@ -6945,7 +7102,9 @@ modulo equality almost everywhere — is a commutative von Neumann algebra on
 which integration is a faithful normal positive functional.  (Since Mathlib
 has no C*-algebra of classes of bounded measurable functions, `L^∞(X)` is
 rendered as an existentially quantified commutative von Neumann algebra `𝒜`
-with a quotient map `q` from `𝓛^∞(X)`.) -/
+with a quotient map `q` from `𝓛^∞(X)`.  The witness is not anonymous: it is
+`Linfty μ` with `Linfty.mk`, exported above, and `Linfty.instVonNeumannAlgebra`
+is this statement's `VonNeumannAlgebra 𝒜` clause on the nose.) -/
 theorem Linfty_vn (X : Type u) [MeasurableSpace X] (μ : Measure X)
     [IsFiniteMeasure μ] (hμ : μ.IsComplete) :
     ∃ (𝒜 : Type u) (_ : CommCStarAlgebra 𝒜) (_ : PartialOrder 𝒜)
@@ -8302,8 +8461,8 @@ construction below is the classical one, from the clopen representatives
 through `clRep`, that makes it work; uniqueness of the continuous
 representative is Baire (`eq_of_isMeagre_ne`).
 
-Everything in this section is `private`; `cvn_faithful_4` below is what it is
-for. -/
+Everything in this section is `private`; `cvn_faithful_4` and
+`cvn_faithful_6` below are what it is for. -/
 
 section ContRep
 
@@ -8650,6 +8809,93 @@ private theorem exists_presentation
     intro f
     exact hqspec _ f (by simpa using (IsMeagre.empty : IsMeagre (∅ : Set X)))
 
+/-- On the spectrum, where the measurable sets are the almost clopen ones, a
+continuous function is bounded measurable. -/
+private theorem bm_coe (hms : ∀ s : Set X, MeasurableSet s ↔ AlmostClopen s)
+    (g : C(X, ℂ)) : IsBoundedMeasurable X (g : X → ℂ) := by
+  have hopenac : ∀ U : Set X, IsOpen U → AlmostClopen U :=
+    open_almost_clopen.mp inferInstance
+  refine ⟨measurable_of_isOpen fun U hU => ?_, ‖g‖, fun x => g.norm_coe_le_norm x⟩
+  exact (hms _).mpr (hopenac _ (hU.preimage g.continuous))
+
+/-- **54XI**'s isomorphism clause with a *carrier* on the right: `f ↦ f°`,
+the map sending a continuous function to its class modulo `μ`-a.e. equality,
+is a ∗-isomorphism `C(X, ℂ) ≃⋆ₐ[ℂ] L^∞(X, μ)`.
+
+Injectivity is Baire — a continuous function vanishing off a meagre set
+vanishes — and surjectivity is `exists_contRep`, that every bounded
+measurable function agrees off a meagre set with a continuous one.  The
+algebraic clauses are `Linfty.mk`'s, applied to continuous functions through
+`bm_coe`. -/
+private theorem exists_linftyEquiv
+    (hms : ∀ s : Set X, MeasurableSet s ↔ AlmostClopen s)
+    (μ : Measure X)
+    (hμ : ∀ s : Set X, AlmostClopen s → (μ s = 0 ↔ IsMeagre s)) :
+    ∃ e : C(X, ℂ) ≃⋆ₐ[ℂ] Linfty μ,
+      ∀ g : C(X, ℂ), e g = Linfty.mk μ (g : X → ℂ) := by
+  classical
+  have hopenac : ∀ U : Set X, IsOpen U → AlmostClopen U :=
+    open_almost_clopen.mp inferInstance
+  have hbm : ∀ g : C(X, ℂ), IsBoundedMeasurable X (g : X → ℂ) := bm_coe hms
+  -- meagre sets are null
+  have hnull : ∀ s : Set X, IsMeagre s → μ s = 0 := by
+    intro s hs
+    refine (hμ s ⟨∅, isClopen_empty, ?_⟩).mpr hs
+    show IsMeagre (symmDiff s (∅ : Set X))
+    simpa [Set.symmDiff_def] using hs
+  -- a continuous function that is null-supported vanishes
+  have hzero : ∀ g : C(X, ℂ), μ {x | (g : X → ℂ) x ≠ 0} = 0 → g = 0 := by
+    intro g hg
+    have hop : IsOpen {x | (g : X → ℂ) x ≠ 0} :=
+      g.continuous.isOpen_preimage _ isClosed_singleton.isOpen_compl
+    have hm : IsMeagre {x | (g : X → ℂ) x ≠ 0} :=
+      (hμ _ (hopenac _ hop)).mp hg
+    have h0 := baire_category_theorem _ hm
+    rw [hop.interior_eq] at h0
+    ext x
+    by_contra hne
+    exact absurd (Set.eq_empty_iff_forall_notMem.mp h0 x) (by simpa using hne)
+  have hmk0 : Linfty.mk μ ((0 : C(X, ℂ)) : X → ℂ) = 0 := by
+    refine (Linfty.mk_eq_zero_iff (hbm 0)).mpr ?_
+    rw [Filter.EventuallyEq, MeasureTheory.ae_iff]
+    simp
+  have hcomm : ∀ r : ℂ,
+      Linfty.mk μ ((algebraMap ℂ C(X, ℂ) r : C(X, ℂ)) : X → ℂ)
+        = algebraMap ℂ (Linfty μ) r := by
+    intro r
+    have h1 : ((algebraMap ℂ C(X, ℂ) r : C(X, ℂ)) : X → ℂ) = r • (1 : X → ℂ) := by
+      ext x; simp
+    rw [h1, Linfty.mk_smul r LinftyConstruction.bm_one, Linfty.mk_one,
+      Algebra.algebraMap_eq_smul_one]
+  have hinj : Function.Injective (fun g : C(X, ℂ) => Linfty.mk μ (g : X → ℂ)) := by
+    intro g₁ g₂ hg
+    have hae : (g₁ : X → ℂ) =ᵐ[μ] (g₂ : X → ℂ) :=
+      (Linfty.mk_eq_iff (hbm g₁) (hbm g₂)).mp hg
+    rw [Filter.EventuallyEq, MeasureTheory.ae_iff] at hae
+    refine sub_eq_zero.mp (hzero (g₁ - g₂) ?_)
+    refine Eq.trans ?_ hae
+    congr 1
+    ext x
+    simp [sub_eq_zero]
+  have hsurj : Function.Surjective (fun g : C(X, ℂ) => Linfty.mk μ (g : X → ℂ)) := by
+    intro y
+    obtain ⟨f, hf, hfy⟩ := Linfty.mk_surjective y
+    obtain ⟨g, hg⟩ := exists_contRep hms f hf
+    refine ⟨g, ?_⟩
+    have hae : f =ᵐ[μ] (g : X → ℂ) := by
+      rw [Filter.EventuallyEq, MeasureTheory.ae_iff]
+      exact hnull _ hg
+    exact (Linfty.mk_congr hf (hbm g) hae).symm.trans hfy
+  exact ⟨StarAlgEquiv.ofBijective
+    ({ toFun := fun g => Linfty.mk μ (g : X → ℂ)
+       map_one' := Linfty.mk_one
+       map_mul' := fun g h => Linfty.mk_mul (hbm g) (hbm h)
+       map_zero' := hmk0
+       map_add' := fun g h => Linfty.mk_add (hbm g) (hbm h)
+       commutes' := hcomm
+       map_star' := fun g => Linfty.mk_star (hbm g) } : C(X, ℂ) →⋆ₐ[ℂ] Linfty μ)
+    ⟨hinj, hsurj⟩, fun g => rfl⟩
+
 end ContRep
 
 end ContRep
@@ -8661,15 +8907,16 @@ end ContRep
 `f ↦ f° : C(spec 𝒜) → L^∞(spec 𝒜)` is an nmiu-isomorphism in *presentation*
 form — a map `q` from the bounded measurable functions onto `𝒜` that is
 additive, ℂ-homogeneous, multiplicative, ∗-preserving and unital with kernel
-exactly the `μ`-a.e.-zero functions — because the tree has no `L^∞` carrier
-for an `≃⋆ₐ` to land in (the same convention as 51IX `Linfty_vn` and
-`A/Proc/Duplicators`' `IsLinftyOf`).  That form delivers "miu-isomorphism"
-but *not* the leading "n".
+exactly the `μ`-a.e.-zero functions — which is the convention 51IX
+`Linfty_vn` and `A/Proc/Duplicators`' `IsLinftyOf` also follow.  That form
+delivers "miu-isomorphism" but *not* the leading "n".
 
-Normality of an actual `≃⋆ₐ` is `starAlgEquiv_preservesDirSups`, and it is
-unavailable here for exactly the reason the presentation form exists: there
-is no `≃⋆ₐ` to apply it to.  What follows supplies the clause directly, and
-in the strongest form: **every** such presentation is automatically normal.
+Normality of an actual `≃⋆ₐ` is `starAlgEquiv_preservesDirSups`, and it does
+apply to `cvn_faithful_6`, which lands in the exported carrier `Linfty μ`.
+It does not apply to a bare presentation, which has no `≃⋆ₐ` in it.  What
+follows supplies the clause for presentations directly, and in the strongest
+form: **every** such presentation is automatically normal — which is more
+than `cvn_faithful_6` gives, and is what `cvn_faithful_5` reports.
 The route is the one `starAlgHom_le_iff` (**48VI**.2) takes for an injective
 ∗-homomorphism, transported across `q`'s kernel clause rather than across
 injectivity:
@@ -9099,11 +9346,10 @@ theorem cvn_faithful_3 (ω : NPFunctional A)
 /-- **54XI** (`cvn-faithful`, vn.tex:2014, Theorem), part 3, the other half:
 `f ↦ f°` is an nmiu-**isomorphism** `C(spec A) → L^∞(spec A)`.
 
-`L^∞` has no carrier of its own in the tree — 51IX `Linfty_vn` renders
-`L^∞(X)` existentially, and the `LinftySub μ` used to prove it is local to
-that section — so the isomorphism is delivered in *presentation* form,
-exactly as `Linfty_vn` delivers `L^∞(X)` itself and as `IsLinftyOf` does in
-`A/Proc/Duplicators`: a map `q : 𝓛^∞(spec A) → A` which is surjective,
+This is the *presentation* form, the one `Linfty_vn` and
+`A/Proc/Duplicators`' `IsLinftyOf` use, and the one the consumers downstream
+are stated against.  (For 54XI's clause with a carrier on the right — an
+honest `≃⋆ₐ[ℂ]` onto `Linfty μ` — see `cvn_faithful_6`.)  It is: a map `q : 𝓛^∞(spec A) → A` which is surjective,
 additive, `ℂ`-homogeneous, multiplicative, `∗`-preserving and unital, and
 whose kernel is *exactly* the `μ`-a.e.-zero functions — so that `q` descends
 to a miu-isomorphism `L^∞(spec A) ≅ A` — together with the commuting
@@ -9112,7 +9358,8 @@ backwards through that descent: the induced map `C(spec A) → L^∞(spec A)` is
 `f ↦ f°`, and it is a bijective miu-map.  Its normality is automatic, a
 `∗`-isomorphism of von Neumann algebras being normal
 (`starAlgEquiv_preservesDirSups`), which is also how 53II
-(`gelfandNP`) already uses `γ_A`.
+(`gelfandNP`) already uses `γ_A`; `cvn_faithful_6` takes exactly that route,
+and `cvn_faithful_5` takes a stronger one that works for presentations.
 
 The `ℂ`-homogeneity clause `q (z • f) = z • q f` is stated: without it `q`
 would be a `∗`-*ring* map only and the statement would not say "miu" — the
@@ -9168,11 +9415,12 @@ available.  Directedness of `D` is not needed (see
 `linftyPresentation_isLUB`), so the clause is stronger than
 `PreservesDirSups` would ask.
 
-Normality is *not* automatic from `starAlgEquiv_preservesDirSups` here: that
-lemma is about an actual `≃⋆ₐ`, and the `L^∞` carrier such an equivalence
-would need is exactly what the tree does not have — which is why the
-isomorphism is in presentation form to begin with.  It is, however, automatic
-from the other eight clauses, by `linftyPresentation_isLUB`. -/
+Normality is *not* available from `starAlgEquiv_preservesDirSups` here: that
+lemma is about an actual `≃⋆ₐ`, and a presentation is not one.  (Where there
+is an `≃⋆ₐ` — `cvn_faithful_6`, into the carrier `Linfty μ` — that is
+precisely the route taken.)  It is, however, automatic from the other eight
+clauses, by `linftyPresentation_isLUB`, and in a form no `≃⋆ₐ` argument
+gives: without directedness. -/
 theorem cvn_faithful_5 [MeasurableSpace (characterSpace ℂ A)]
     (hms : ∀ s : Set (characterSpace ℂ A), MeasurableSet s ↔ AlmostClopen s)
     (μ : Measure (characterSpace ℂ A))
@@ -9212,6 +9460,45 @@ theorem cvn_faithful_5 [MeasurableSpace (characterSpace ℂ A)]
 full classification (70III, `Theses/A/VN/Projections.lean`) — nothing to
 formalize. -/
 
+
+/-- **54XI** (`cvn-faithful`, vn.tex:2035, Theorem), the isomorphism clause
+**with a carrier**: `f ↦ f°` is an nmiu-isomorphism
+`C(spec A) → L^∞(spec A)` — stated as the thesis states it, a ∗-isomorphism
+onto the object `L^∞(spec A, μ)`, rather than in the presentation form of
+`cvn_faithful_4`.
+
+The carrier is `Linfty μ`, exported from the `L^∞` construction that proves
+**51IX** (`Linfty_vn`); it is a commutative von Neumann algebra
+(`Linfty.instVonNeumannAlgebra`), and 54XI's `f ↦ f°` is
+`f ↦ Linfty.mk μ ⇑f`, the class of `f` modulo `μ`-a.e. equality.  The leading
+"n" is `starAlgEquiv_preservesDirSups`: a ∗-isomorphism of C*-algebras is
+automatically normal, which is the reading the doc of `cvn_faithful_4`
+records as unavailable in presentation form.  The last clause is the `∫`
+edge of 54XI's commuting triangle, with integration as an np-functional
+(`Linfty.integralNP`, **51IX**); composed with `cvn_faithful_3` it gives
+`∫ f° = ω (γ_A⁻¹ f)`, which is the triangle itself.
+
+`cvn_faithful_4` and `cvn_faithful_5` are the same clause in presentation
+form and are kept: they are what the `IsLinftyOf` consumers in
+`A/Proc/Duplicators` are stated against, and `cvn_faithful_5`'s normality
+clause is in fact stronger than `PreservesDirSups`, needing no
+directedness. -/
+theorem cvn_faithful_6 [MeasurableSpace (characterSpace ℂ A)]
+    (hms : ∀ s : Set (characterSpace ℂ A), MeasurableSet s ↔ AlmostClopen s)
+    (μ : Measure (characterSpace ℂ A)) [IsFiniteMeasure μ]
+    (hμ : ∀ s : Set (characterSpace ℂ A), AlmostClopen s →
+      (μ s = 0 ↔ IsMeagre s)) :
+    ∃ e : C(characterSpace ℂ A, ℂ) ≃⋆ₐ[ℂ] Linfty μ,
+      (∀ f : C(characterSpace ℂ A, ℂ),
+        e f = Linfty.mk μ (f : characterSpace ℂ A → ℂ)) ∧
+      PreservesDirSups ⇑e ∧
+      (∀ f : C(characterSpace ℂ A, ℂ),
+        Linfty.integralNP (e f) = ∫ x, f x ∂μ) := by
+  have := vn_spectrum_extremally_disconnected A
+  obtain ⟨e, he⟩ := ContRep.exists_linftyEquiv hms μ hμ
+  refine ⟨e, he, starAlgEquiv_preservesDirSups e, fun f => ?_⟩
+  rw [he f, Linfty.coe_integralNP]
+  exact Linfty.integral_mk (ContRep.bm_coe hms f)
 end CVNFaithful
 
 end Topologies

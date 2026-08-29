@@ -3163,11 +3163,15 @@ with a faithful np-functional *is* an `L^∞`.  54XI.1 (`cvn_faithful_1`,
 `A/VN/Basic.lean`) supplies the measure — finite and complete, on the
 σ-algebra of almost clopen subsets of `spec 𝒞`, with the null sets exactly
 the meagre ones — but not the quotient map `q`, because 54XI's own statement
-of it (`f ↦ f°` is an nmiu-isomorphism `C(spec 𝒞) → L^∞(spec 𝒞)`) is not
-rendered: `L^∞` has no Mathlib carrier, and **51IX** `Linfty_vn` — which is
-proved, and whose integral state `exists_integralNP` above transports onto
-any presentation — likewise delivers `L^∞(X)` only as an existentially
-quantified algebra with a quotient map.  This section builds `q`.
+of it (`f ↦ f°` is an nmiu-isomorphism `C(spec 𝒞) → L^∞(spec 𝒞)`) is
+rendered in `A/VN/Basic.lean` rather than here: `cvn_faithful_4` and
+`cvn_faithful_5` give it in presentation form, and `cvn_faithful_6` gives it
+as an `≃⋆ₐ[ℂ]` onto the carrier `Linfty μ` exported from the `L^∞`
+construction there.  None of the three hands this section its `q`, because
+`IsLinftyOf` presents the algebra *at hand* — an arbitrary `𝒞` with
+`𝒞 ≃⋆ₐ[ℂ] C(X, ℂ)` — the way **51IX** `Linfty_vn`, whose integral state
+`exists_integralNP` above transports onto any presentation, delivers
+`L^∞(X)` existentially.  This section builds `q`.
 
 The one piece of mathematics needed is that **every bounded measurable
 function on `spec 𝒞` agrees almost everywhere with a *continuous* one**.
@@ -3376,7 +3380,11 @@ space `X`, and `μ` is a measure on `X` whose null sets are exactly the meagre
 almost clopen sets, then `𝒞` *is* `L^∞(X, μ)`: every bounded measurable
 function agrees `μ`-almost everywhere with a unique continuous one
 (`exists_contRep`), and `q` is "take that continuous representative, then apply
-`γ⁻¹`". -/
+`γ⁻¹`".
+
+54XI's own reading of the same fact — `f ↦ f°` as an nmiu-isomorphism onto
+the `L^∞` carrier itself — is `cvn_faithful_6` in `A/VN/Basic.lean`; this is
+the presentation form, which is what `IsLinftyOf`'s consumers below take. -/
 private theorem exists_isLinftyOf_of_starAlgEquiv
     (μ : Measure X)
     (hμ : ∀ s : Set X, AlmostClopen s → (μ s = 0 ↔ IsMeagre s))
