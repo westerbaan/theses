@@ -1,15 +1,26 @@
 # `Theses/A/Proc/` — full survey of the remaining `sorry`s (worker 71, 2026-08-16; revised workers 72–90, sessions 47–90)
 
-**Headline count: A/Proc has 3 unproved declarations** after session 96, which
+**Headline count: A/Proc has 2 unproved declarations** after 2026-08-29, when
+`centrally_similar_basic_5` (104III.5) was proved — see the note below the
+next paragraph.  Before that it was 3 after session 96, which
 closed the **last seven of `QuantumLambda.lean`** — 121II
 `intersection_tensor` and 125IV `equaliser_lemma` (the commutation theorem
 having landed), then 125VI `tensor_equalisers`, 125VIIb `tensor_preimage`,
 125VIII `tensor_closed`, 125eIIa `tensor_map_factorisation` and 125eIII
 `tensorBsurjectivity`.  **`QuantumLambda.lean` is `sorry`-free.**  What is
 left is not reachable: `Tensor`'s 1 is a recorded non-target (116III.4,
-refuted in-tree) and `Measurement`'s 2 are gated on the open author question.
+refuted in-tree) and `Measurement`'s 1 is `sequential_product_counterexample_3`,
+a clause ERRATA records as false.
 Per file: `Tensor` **1**, `QuantumLambda` **0 — the file is finished**,
-`Measurement` **2**, `Duplicators` **0 — the file is finished**.
+`Measurement` **1**, `Duplicators` **0 — the file is finished**.
+
+*(Revised 2026-08-29.  `Measurement` was 2, and the sentence above said both
+were "gated on the open author question".  That was wrong for one of them:
+104III was ruled on 2026-08-19 and `centrally_similar_basic_5` was waiting on
+mathematics, not on an author — as `docs/DECISIONS.md` §4.2 already said.  It
+is now proved, by six private auxiliaries at `Measurement.lean:6696`–7027, and
+the route `DECISIONS.md` §4.2 predicted it would take is not the route it took;
+part 4 of 104III is never invoked.  Tree-wide the count is **10**, not 11.)*
 
 *(Corrected 2026-08-26.  The session-96 revision of this headline said "12
 code `sorry`s", counting raw `grep` hits — which include the prose of this
@@ -17,7 +28,9 @@ very survey, the stale-claim notes inside `Measurement.lean`, and
 `Measurement.lean:30`'s own sentence "The file has exactly two `sorry`s".
 The rule stated three lines below — count the compiler's `declaration uses
 `sorry`` warnings — is the right one, and gives 1 + 2.  `docs/status.txt`
-agrees: 11 unproved declarations tree-wide, 3 of them in A/Proc.)*
+agreed at the time: 11 unproved declarations tree-wide, 3 of them in A/Proc.
+Both numbers have since dropped by one; `status.txt` has not been regenerated
+since and its 104III.5 row still reads `red`.)*
 (`QuantumLambda` compiler-verified in session 96, 0 errors and 0 `sorry`
 warnings; the other three in session 88/90.)
 **No statement in the project is `sorry`-tainted.**  (`grep -c sorry`

@@ -10,12 +10,17 @@ Nothing else is needed; we will make the source edits and the Lean edits and
 record the ruling.  Where an item is really an erratum acceptance we say so, and
 "accept" is a complete answer.
 
-**Where things stand.**  8931 declarations are checked; **11 are unproved**, and
-**none of the other 8920 depends on a `sorry`**.  Ten of the eleven are
-waiting on §1 below.  The eleventh, `centrally_similar_basic_5` (104III.5),
-needs no ruling at all — it was ruled on 2026-08-19 and what is left is
-mathematics.  Beyond the `sorry`s there are 85 open rows in `ERRATA.md` (those
-are corrections, not decisions, and are not repeated here) and eight audit rows
+**Where things stand.**  **10 declarations are unproved**, and **nothing else
+in the tree depends on a `sorry`**.  All ten are waiting on §1 below.  (The
+declaration total was 8931 at the last full build; it has grown since and is
+not re-counted here, but the `sorry` count is checked on every commit.)
+
+The eleventh, `centrally_similar_basic_5` (104III.5), is **gone from this
+list: it was proved on 2026-08-29** — see §4.2, which used to explain why it
+was waiting on mathematics rather than on you.
+
+Beyond the `sorry`s there are 100 open rows in `ERRATA.md` (those are
+corrections, not decisions, and are not repeated here) and eight audit rows
 in `docs/audit/` marked `left-ruling` — five of them are §2, one (34V.3) is
 §3.3, and the other two (139XI, 179III.2) hold up a `sorry` and are in §1.
 
@@ -958,14 +963,25 @@ dilations minimal, (b) `dim 𝒦' < ∞`, or (c) conclude only with a unitary
 disjunction of three hypotheses, and `berr.tex` records it.  The live residue is
 §1.4, which is a different question.
 
-**4.2 — "104III.5 is waiting on a ruling".**  It is not.  104III was ruled on
+**4.2 — "104III.5 is waiting on a ruling".**  It is not, and as of 2026-08-29
+it is not waiting on anything: **`centrally_similar_basic_5` is proved**, and
+the statement is byte-identical to the one that was ruled.  104III was ruled on
 2026-08-19 (erratum `parsec-1040.30`, faithfulness `⌈p⌉ = ⌈q⌉ = 1`, with `p ∧ q`
-given a meaning by the new 26II item); `QUESTIONS.md` A7 was deleted, and 2a, 3
-and 4 are proved.  `centrally_similar_basic_5`'s remaining `sorry` is
-**mathematics**: the route runs `(p∧q)eₙ = (peₙ) ∧ (qeₙ)` and then wants part
-4's third `iff` for `eₙp, eₙq`, whose carriers are `eₙ` rather than `1` — a form
-of part 4 relative to a projection unit, which is what is missing.  Nothing is
-asked of you.
+given a meaning by the new 26II item); `QUESTIONS.md` A7 was deleted, and 2a, 3,
+4 and now 5 are proved.
+
+This entry previously described what the remaining mathematics was, and that
+description was wrong, which is worth recording because it was believed for
+three sessions.  It said the route "wants part 4's third `iff` for `eₙp, eₙq`,
+whose carriers are `eₙ` rather than `1` — a form of part 4 relative to a
+projection unit".  **Part 4 is never invoked at all**, in any form, relative or
+otherwise.  What the corner step wants is a single right-multiplication of the
+central similarity `u(eₙp) = v(eₙq)` by `(eₙp)^∼¹`, giving `u eₙ = v W` with
+`W := (eₙq)(eₙp)^∼¹`; `v` then kills the commutator of `W` with any `eₙaeₙ`,
+`eₙ = ⌈eₙq⌉ ≤ ⌈v⌉` cancels it, and commutation carries from `W` to
+`eₙ ∧ W = c eₙ`.  Six private auxiliaries at `Measurement.lean:6696`–7027 carry
+it, and `Z(e𝒜e) = Z(𝒜)e` — the fact ERRATA row 104VIII says the printed proof
+needs and neither thesis has — is not used.  Nothing is asked of you.
 
 **4.3 — B13's "Correction (session 84)" paragraph.**  It says the uniqueness
 lemma the eight examples need "is a new lemma, not a stronger 180V", with "a

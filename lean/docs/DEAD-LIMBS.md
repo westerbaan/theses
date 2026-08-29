@@ -357,7 +357,7 @@ comment says so in as many words:
 > "its place is taken by the projection argument of **163II**
 > (`selfdual_compl_defining_dense`)"
 
-and a **third** time inside `paschke_tprod_dense` (`SelfDual.lean:9609`), whose
+and a **third** time inside `paschke_tprod_dense` (`SelfDual.lean:9863`), whose
 doc says "This is the Paschke-module analogue of `selfdual_compl_defining_dense`
 (**163II**) and of `ext_tensor_dense` (**164II**.1), and it is the easiest of
 the three". A fourth site, the `section TensorDense` header at `:6245`, says
@@ -395,7 +395,7 @@ this section's premise was wrong**
 > it**.  It belongs in §6 (genuinely terminal), not here.
 >
 > Two further corrections.  The row's staleness is smaller than claimed below:
-> `nmiu_image` calls 69IVa `nmiu_factors` **once** (`Projections.lean:6942`);
+> `nmiu_image` calls 69IVa `nmiu_factors` **once** (`Projections.lean:7013`);
 > the "three times" counted the whole file, two of them inside
 > `nmiu_factors_maps`.  And the universe obstacle binds **wider** than
 > recorded: `isVNSubalgebra_range` and the three auxiliaries its proof calls
@@ -573,7 +573,7 @@ time under a different name.
 > estimate behind it, `|ω((⋁D−d)a)| ≤ ω(⋁D−d)^½ ω(a*(⋁D−d)a)^½`, whose second
 > factor is *eventually* bounded because `a*(⋁D−d)a` decreases."
 
-**166II** `ultranorm_continuity_ext_tensor` (`B/Dils/SelfDual.lean:9283`):
+**166II** `ultranorm_continuity_ext_tensor` (`B/Dils/SelfDual.lean:9537`):
 
 > "**166III** is the proof; transcribed below, with its appeal to **44III**
 > `vanishing_effects` replaced by the order estimate `Ω(⟨d,d⟩ ⊗ ⟨yα,yα⟩) ≤ M² ·
@@ -603,7 +603,7 @@ the same point, which is the 123I shape.
 |---|---|---|---|---|
 | 118II | `cceil_tensor` | `A/Proc/Tensor.lean:9748` | 134 | 1/2 |
 | 81IX | `div_usc_ball` | `A/VN/Division.lean:2975` | 114 | 4/5 |
-| 106I | `uniqueness_sequential_product_exists` | `A/Proc/Measurement.lean:8611` | 79 | 1/3 |
+| 106I | `uniqueness_sequential_product_exists` | `A/Proc/Measurement.lean:8928` | 79 | 1/3 |
 | 4XIII | `positive_2x2matrix_2` | `A/CStar/Basic.lean:284` | 67 | 1/2 |
 | 82I | `polar_decomposition_2` | `A/VN/Division.lean:3446` | 55 | 3/4 |
 | 156II | `paschke_injective` | `B/Dils/Paschke.lean:3498` | 48 | 2/3 |
@@ -1001,7 +1001,7 @@ deleted:
 | `IsCorner.isStarProjection` | `CornerTensor.lean:106`, `h.isStarProjection.isIdempotentElem` — **suffix and prefix at once** |
 | `isUnitaryCLM_one` | `CommutationAmplify.lean:374`, `isUnitaryCLM_one.opTensor …` |
 | `le_iff_matForm` | `Basic.lean:5252`, `le_iff_matForm.mpr` (and 2 more) |
-| `suppProj_eq_zero_iff` | `Projections.lean:2922`, `suppProj_eq_zero_iff.mp` |
+| `suppProj_eq_zero_iff` | `Projections.lean:2993`, `suppProj_eq_zero_iff.mp` |
 | `IsPowBase.denseRange_mul_self` | `ModularGroup.lean:380`, `h.denseRange_mul_self.induction_on` |
 
 and three more in `A/` (`CentrePositiveSeparating.centralProj`,
@@ -1413,7 +1413,7 @@ limb.
 | `perp_sharp_is_orth` | 213III | `49a49f0` | `B/Eff/Comparisons.lean:600` |
 | `ultranormcontstruct_smul` | 148III.3 | `027dc77` | `ext_tensor_dense` (164II.1), `B/Dils/SelfDual.lean:7948` |
 | `dagger_of_iso_adjoint` | 216IX.1 | `0f036ad` | `B/Eff/Dagger.lean:528` |
-| `paschke_pure` | 171VII | `7aa3dc0` | `pure_iff_stinespring_surjective`, `B/Dils/Pure.lean:4229` |
+| `paschke_pure` | 171VII | `7aa3dc0` | `pure_iff_stinespring_surjective`, `B/Dils/Pure.lean:4553` |
 
 Three of these overturn a claim recorded in this file or in the brief for this
 sweep, and each overturning is the point of the check:
