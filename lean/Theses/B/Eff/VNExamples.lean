@@ -3731,6 +3731,56 @@ theorem su_hasImages : HasImages (WStarCPSU.{u}ᵒᵖ) where
     obtain ⟨q, hq⟩ := su_pred_exists (X := Y) hproj.nonneg hproj.le_one
     exact ⟨q, su_isImage_carrier f q hq⟩
 
+
+/-- **202IV at `vNᵒᵖ`**, first half of the second sentence: a map of
+`vN_cpsuᵒᵖ` is **faithful** (`im f = 1`, 202I.2) exactly when its carrier
+`⌈f⌉` is `1`.  Immediate from `su_isImage_carrier`, which already says the
+image is the carrier: one direction reads it at `q = 1` (`1` *is* `truth Y`,
+`predEffectAlgebra`), the other feeds the minimality of `im f = 1` the
+predicate naming `⌈f⌉`. -/
+private theorem su_faithfulMap_iff_carrier {X Y : WStarCPSU.{u}ᵒᵖ} (f : X ⟶ Y) :
+    FaithfulMap f ↔ suCarrier f = 1 := by
+  obtain ⟨hproj, -, -⟩ := su_carrier_spec f
+  constructor
+  · intro him
+    obtain ⟨q, hq⟩ := su_pred_exists (X := Y) hproj.nonneg hproj.le_one
+    have hle : (1 : Y ⟶ effObj (WStarCPSU.{u}ᵒᵖ)) ≼ q :=
+      him.2 q (su_isImage_carrier f q hq).1
+    have h1 := (su_pred_le_iff _ _).mp hle
+    rw [hq, show suPredVal (1 : Y ⟶ effObj (WStarCPSU.{u}ᵒᵖ))
+      = (1 : Y.unop.base.carrier) from suPredVal_truth Y] at h1
+    exact le_antisymm hproj.le_one h1
+  · intro h
+    refine su_isImage_carrier f (truth Y) ?_
+    rw [suPredVal_truth Y, h]
+
+/-- **202IV at `vNᵒᵖ`** (eff.tex:4116, Examples), SECOND sentence: *"the map
+`f` is faithful if and only if `f(a*a) = 0` implies `a*a = 0` for all
+`a ∈ 𝒜`."*  Here `f : X ⟶ Y` of `vN_cpsuᵒᵖ` is the ncpsu-map
+`f.unop : 𝒜 → ℬ` with `𝒜 = Y.unop` — so `a` ranges over `Y.unop`, which is
+where `im f = ⌈f⌉` lives.  eff.tex states this without proof.
+
+Via `su_faithfulMap_iff_carrier` this is **63II.3** `carrier_basic_3`
+(vn.tex:3054), which says `⌈f⌉ = 1` iff `f` kills no nonzero *positive*
+element; `{a*a : a ∈ 𝒜}` is exactly the positive cone, and the direction
+that needs the harder inclusion — a positive `b` is some `a*a` — is the one
+that does not need it, because `b = 1 − ⌈f⌉` is a projection and hence
+already of the form `a*a`. -/
+theorem su_faithfulMap_iff {X Y : WStarCPSU.{u}ᵒᵖ} (f : X ⟶ Y) :
+    FaithfulMap f ↔ ∀ a : Y.unop.base.carrier,
+      f.unop.toNCPMap (star a * a) = 0 → star a * a = 0 := by
+  rw [su_faithfulMap_iff_carrier f]
+  constructor
+  · intro h a hfa
+    exact (Theses.A.VN.carrier_basic_3 _ _).mp h _ (star_mul_self_nonneg a) hfa
+  · intro h
+    obtain ⟨hproj, hzero, -⟩ := su_carrier_spec f
+    have hs : star ((1 : Y.unop.base.carrier) - suCarrier f)
+        * (1 - suCarrier f) = 1 - suCarrier f :=
+      (Theses.A.VN.isStarProjection_iff_star_mul_self _).mp hproj.one_sub
+    have hz := h (1 - suCarrier f)
+    rw [hs] at hz
+    exact (sub_eq_zero.mp (hz hzero)).symm
 /-- The floor of a projection is itself. -/
 private theorem su_floor_of_isStarProjection {A : Type u} [CStarAlgebra A]
     [PartialOrder A] [StarOrderedRing A] [Theses.VonNeumannAlgebra A] {z : A}
