@@ -159,6 +159,36 @@ VERDICTS = (
 )
 
 
+# A verdict word sitting inside a negation.  `verdict_of` scans for a needle and
+# takes the first it finds, with no idea whether the sentence is asserting it or
+# denying it -- so a status reading "180-260 lines; NOT REPAIRED" reports
+# `repaired`, the exact opposite of what it says.  Seven rows did that on
+# 2026-08-29, every one of them a live divergence counted as closed.
+#
+# This is a third class, distinct from the two already reported: those fields say
+# more than one thing, or say it in a spelling the table misreads.  These say the
+# right thing once, clearly, and are read backwards.
+NEGATED = re.compile(
+    r"\b(?:not|never|no longer|nor|isn't|wasn't|cannot|can't)\s+"
+    r"(?:yet\s+|been\s+|be\s+)*"
+    r"(repaired|reclassified|strengthened|closed|settled|left-[\w-]+)\b",
+    re.IGNORECASE)
+
+
+def verdict_negated(field, chosen):
+    """The verdict word this field reports, but inside a negation.
+
+    Only reported when the negated word is the one actually driving the verdict:
+    a row may perfectly well say "not repaired" while being verdicted
+    `left-cost`, and that is correct prose, not a defect.
+    """
+    for m in NEGATED.finditer(field):
+        w = m.group(1).lower()
+        if (w == "repaired" and chosen == "repaired") or (w.startswith("left-") and chosen == w):
+            return " ".join(m.group(0).split())
+    return None
+
+
 def verdict_conflicts(field):
     """Every DISTINCT verdict the needles in `VERDICTS` find in one status field.
 
@@ -563,6 +593,20 @@ def report_conflicts():
     for rel, i, disp, chosen, others in bad:
         print(f"AMBIG    {rel}:{i}  {disp} reads back as {chosen!r}, "
               f"also matches {others}")
+    negated = []
+    for f in sorted(glob.glob(DOCS + "audit/*.csv")):
+        for i, line in enumerate(_pl.Path(f).read_text().splitlines(), 1):
+            parts = line.split("|")
+            if len(parts) < 7:
+                continue
+            chosen = verdict_of(parts[6])
+            phrase = verdict_negated(parts[6], chosen)
+            if phrase:
+                negated.append((f, i, parts[0], chosen, phrase))
+    for f, i, disp, chosen, phrase in negated:
+        print(f"NEGATED  {f}:{i}  {disp} reads back as {chosen!r}, but the field says "
+              f"{phrase!r} -- a live divergence counted as closed")
+
     for f, i, disp, n, pas, chosen in under:
         print(f"NUMBERED {f}:{i}  {disp} grounds itself as reason {n} of the {pas} "
               f"pass; reads back as {chosen!r} because the hyphenated spelling "
@@ -570,8 +614,9 @@ def report_conflicts():
     print(f"\n{rows} rows carry a status field; {len(bad)} match more than one "
           f"verdict, so what they report depends on VERDICTS' order rather than on "
           f"the row; {len(under)} more name a NUMBERED ground whose meaning differs "
-          f"between the two passes and are all read as `left-cost` regardless")
-    return 1 if (bad or under) else 0
+          f"between the two passes and are all read as `left-cost` regardless; "
+          f"{len(negated)} report a verdict their own sentence denies")
+    return 1 if (bad or under or negated) else 0
 
 
 if __name__ == "__main__":
