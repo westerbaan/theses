@@ -1064,7 +1064,7 @@ theorem ultraweakly_bounded_implies_bounded {ι : Type*} (x : ι → A)
       _ ≤ C 0 + C 1 + C 2 + C 3 := by
           have h0 := hbd 0; have h1 := hbd 1; have h2 := hbd 2; have h3 := hbd 3
           linarith
-  -- the principle of uniform boundedness (**11II**), on the complete `𝒜_*`
+  -- the principle of uniform boundedness (**35II** `pub`), on the complete `𝒜_*`
   obtain ⟨C, hC⟩ := banach_steinhaus (g := Φ) hpt
   refine ⟨C, ?_⟩
   rintro _ ⟨i, rfl⟩

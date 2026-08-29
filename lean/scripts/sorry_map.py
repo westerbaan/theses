@@ -565,6 +565,23 @@ document.querySelectorAll('.b[data-a="'+c.dataset.acat+'"]').forEach(b=>b.classL
 </script>'''
 
 
+#: nine of the eighteen audit CSVs open with a column-name line; the other nine
+#: start straight in on data.  The header has seven fields, so every loop below
+#: counted it as a row and `verdict_of` read its seventh field -- the word
+#: "status" -- as the category `status`.  That was nine of the 44 NOVERDICT rows
+#: on 2026-08-29, none of them a row and none of them fixable in the data: the
+#: schema *is* `DISP|lean_name|module|stmt|proof|note|status`.  `audit_rows`
+#: already skips line 1 of every file; this is the same skip, keyed off the
+#: column names rather than off the line number, because the nine headerless
+#: files carry a real row there.
+_HEADER = ["DISP", "lean_name", "module", "stmt", "proof", "note", "status"]
+
+
+def _is_header(parts):
+    """True for a CSV column-name line, which is not a row of the audit."""
+    return parts[:7] == _HEADER
+
+
 def report_conflicts():
     """List status fields that match more than one verdict.
 
@@ -581,7 +598,7 @@ def report_conflicts():
     for f in sorted(glob.glob(DOCS + "audit/*.csv")):
         for i, line in enumerate(_pl.Path(f).read_text().splitlines(), 1):
             parts = line.split("|")
-            if len(parts) < 7:
+            if len(parts) < 7 or _is_header(parts):
                 continue
             rows += 1
             found = verdict_conflicts(parts[6])
@@ -610,7 +627,7 @@ def report_conflicts():
     for f in sorted(glob.glob(DOCS + "audit/*.csv")):
         for i, line in enumerate(_pl.Path(f).read_text().splitlines(), 1):
             parts = line.split("|")
-            if len(parts) < 7:
+            if len(parts) < 7 or _is_header(parts):
                 continue
             m = re.search(r'under-reason-(\d)', parts[6], re.I)
             if m:
@@ -640,7 +657,7 @@ def report_conflicts():
     for f in sorted(glob.glob(DOCS + "audit/*.csv")):
         for i, line in enumerate(_pl.Path(f).read_text().splitlines(), 1):
             parts = line.split("|")
-            if len(parts) < 7 or not parts[6].strip():
+            if len(parts) < 7 or _is_header(parts) or not parts[6].strip():
                 continue
             k = verdict_of(parts[6])
             if k not in KNOWN:
@@ -654,7 +671,7 @@ def report_conflicts():
     for f in sorted(glob.glob(DOCS + "audit/*.csv")):
         for i, line in enumerate(_pl.Path(f).read_text().splitlines(), 1):
             parts = line.split("|")
-            if len(parts) < 7:
+            if len(parts) < 7 or _is_header(parts):
                 continue
             chosen = verdict_of(parts[6])
             phrase = verdict_negated(parts[6], chosen)
