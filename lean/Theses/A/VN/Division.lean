@@ -9,6 +9,7 @@ arXiv:1804.02203), chapter 2: Von Neumann Algebras — vn.tex, lines
     Polar Decomposition           (parsecs 820–830: polar decomposition,
                                    the Murray–von Neumann preorder,
                                    finite-dimensional C*-algebras)
+    No Equalisers in CStar_pu     (parsec 841)
     Hereditarily Atomic Von Neumann Algebras  (parsec 842)
 
 See `Theses/A/VN/Basic.lean` for the topologies and
@@ -4422,13 +4423,461 @@ theorem fdcstar (A : Type u) [CStarAlgebra A] [FiniteDimensional ℂ A] :
 
 end FDCStar
 
-/-! **84aI** (`cstar-no-pu-equalisers-example`, vn.tex:6035, Example): the
-pu-maps `f, g : ℂ⁴ → ℂ`, `f(a,b,c,d) = ½(a+b)`, `g(a,b,c,d) = ½(c+d)` have
-no equaliser in the category `CStar_pu`.
--- FIXME(typecheck): not converted — the category `CStar_pu` is not
-formalized (cf. 47II), and the statement is an existence-negation over all
-C*-algebras with pu-maps, whose faithful rendering would require the
-categorical framework. -/
+/-! ## Parsec 841: `CStar_pu` has no equaliser for `f, g : ℂ⁴ → ℂ` -/
+
+section NoPUEqualisers
+
+/-- **84aI** (`cstar-no-pu-equalisers-example`, vn.tex:6034, Example): the
+map `f : ℂ⁴ → ℂ`, `f(a,b,c,d) = ½(a+b)`.  Pu-maps are rendered as everywhere
+else in the tree (cf. **20aI** `cstar_product_2_pu`): a linear map together
+with `IsPositiveMap` and `IsUnitalMap` — see `puEqualiserF_isPositiveMap`
+and `puEqualiserF_isUnitalMap`. -/
+noncomputable def puEqualiserF : (Fin 4 → ℂ) →ₗ[ℂ] ℂ where
+  toFun v := (v 0 + v 1) / 2
+  map_add' u v := by simp only [Pi.add_apply]; ring
+  map_smul' c v := by simp only [Pi.smul_apply, smul_eq_mul, RingHom.id_apply]; ring
+
+/-- **84aI** (`cstar-no-pu-equalisers-example`, vn.tex:6034, Example): the
+map `g : ℂ⁴ → ℂ`, `g(a,b,c,d) = ½(c+d)`. -/
+noncomputable def puEqualiserG : (Fin 4 → ℂ) →ₗ[ℂ] ℂ where
+  toFun v := (v 2 + v 3) / 2
+  map_add' u v := by simp only [Pi.add_apply]; ring
+  map_smul' c v := by simp only [Pi.smul_apply, smul_eq_mul, RingHom.id_apply]; ring
+
+/-- **84aI**: `f` is positive, so that it is a pu-map. -/
+theorem puEqualiserF_isPositiveMap : IsPositiveMap puEqualiserF := by
+  intro v hv
+  show (0 : ℂ) ≤ (v 0 + v 1) / 2
+  exact div_nonneg (add_nonneg (hv 0) (hv 1)) (by norm_num)
+
+/-- **84aI**: `g` is positive, so that it is a pu-map. -/
+theorem puEqualiserG_isPositiveMap : IsPositiveMap puEqualiserG := by
+  intro v hv
+  show (0 : ℂ) ≤ (v 2 + v 3) / 2
+  exact div_nonneg (add_nonneg (hv 2) (hv 3)) (by norm_num)
+
+/-- **84aI**: `f` is unital, so that it is a pu-map. -/
+theorem puEqualiserF_isUnitalMap : IsUnitalMap puEqualiserF := by
+  show ((1 : Fin 4 → ℂ) 0 + (1 : Fin 4 → ℂ) 1) / 2 = 1
+  norm_num
+
+/-- **84aI**: `g` is unital, so that it is a pu-map. -/
+theorem puEqualiserG_isUnitalMap : IsUnitalMap puEqualiserG := by
+  show ((1 : Fin 4 → ℂ) 2 + (1 : Fin 4 → ℂ) 3) / 2 = 1
+  norm_num
+
+/-- Auxiliary for **84aI**, not a transcription: the pu-map `ℂ² → 𝒟`
+determined by an effect `a ∈ [0,1]_𝒟`, namely `(z,w) ↦ z a + w a^⊥`.  This
+is the correspondence "pu-maps `ℂ² → 𝒟` = effects of `𝒟`" that the Example's
+proof uses twice: once to see that the range of a would-be equaliser is the
+whole set-theoretic equaliser, and once to see that a would-be equaliser is
+injective on effects (the thesis says "equalisers are mono"). -/
+private def effectPUMap {D : Type} [CStarAlgebra D] (a : D) : (Fin 2 → ℂ) →ₗ[ℂ] D where
+  toFun z := z 0 • a + z 1 • (1 - a)
+  map_add' x y := by simp only [Pi.add_apply, add_smul]; abel
+  map_smul' c x := by
+    simp only [Pi.smul_apply, smul_eq_mul, RingHom.id_apply, mul_smul, smul_add]
+
+/-- Auxiliary for **84aI**. -/
+private theorem effectPUMap_apply {D : Type} [CStarAlgebra D] (a : D) (z : Fin 2 → ℂ) :
+    effectPUMap a z = z 0 • a + z 1 • (1 - a) := rfl
+
+/-- Auxiliary for **84aI**: `p_a(1,1) = a + a^⊥ = 1`. -/
+private theorem effectPUMap_isUnitalMap {D : Type} [CStarAlgebra D] (a : D) :
+    IsUnitalMap (effectPUMap a) := by
+  show (1 : Fin 2 → ℂ) 0 • a + (1 : Fin 2 → ℂ) 1 • (1 - a) = 1
+  simp
+
+/-- Auxiliary for **84aI**: a positive complex multiple of a positive
+element is positive (**9X**.1 `cstar_positive_1` for a complex scalar that
+happens to be positive, hence real). -/
+private theorem nonneg_smul_nonneg {D : Type} [CStarAlgebra D] [PartialOrder D] [StarOrderedRing D]
+    {z : ℂ} (hz : 0 ≤ z) {a : D} (ha : 0 ≤ a) : 0 ≤ z • a := by
+  have h := Complex.le_def.mp hz
+  have hz' : z = ((z.re : ℝ) : ℂ) := Complex.ext rfl (by simp [← h.2])
+  rw [hz']
+  exact cstar_positive_1 a ha z.re (by simpa using h.1)
+
+/-- Auxiliary for **84aI**: `p_a` is positive, `a` and `a^⊥` being. -/
+private theorem effectPUMap_isPositiveMap {D : Type} [CStarAlgebra D] [PartialOrder D]
+    [StarOrderedRing D] {a : D} (ha0 : 0 ≤ a) (ha1 : a ≤ 1) :
+    IsPositiveMap (effectPUMap a) := by
+  intro z hz
+  show 0 ≤ z 0 • a + z 1 • (1 - a)
+  exact add_nonneg (nonneg_smul_nonneg (hz 0) ha0)
+    (nonneg_smul_nonneg (hz 1) (sub_nonneg.mpr ha1))
+
+/-- **84aI** (`cstar-no-pu-equalisers-example`, vn.tex:6034, Example): the
+pu-maps `f, g : ℂ⁴ → ℂ` of `puEqualiserF`, `puEqualiserG` have **no
+equaliser in `CStar_pu`** — which is the claim made at the very start of
+thesis A, **20aIII** (`cstar-no-pu-equalisers`, cstar.tex:3073).
+
+`CStar_pu` is not bundled as a category (cf. **47II**), so — exactly as for
+**84bV** `ha_equalisers` — the universal property is spelt out: an equaliser
+would be a C*-algebra `ℰ` with a pu-map `e : ℰ → ℂ⁴` equalising `f` and `g`
+through which every pu-map `h : 𝒟 → ℂ⁴` equalising `f` and `g` factors
+uniquely by a pu-map.  The Example says there is no such `ℰ, e`.  The
+universe is `Type`, where `ℂ⁴` and the `ℂ²` used in the proof live; nothing
+in the argument depends on that choice.
+
+*Class 2 — different route.*  The thesis argues by counting extreme points:
+`e(ℰ)` is the set-theoretic equaliser `𝒮`, `e` is a bipositive linear
+isomorphism onto it, so `ℰ` is 3-dimensional, hence miu-isomorphic to `ℂ³`
+by **84II** `fdcstar`, and then `[0,1]_ℰ` is a cube (8 extreme points) while
+`𝒮 ∩ [0,1]` is an octahedron (6).  Formalized here is the same
+contradiction, reached without the classification and without extreme
+points: keeping the thesis's first two steps in the form they are needed —
+every effect of `𝒮` is `e P` for an effect `P` of `ℰ`, and `e` is injective
+on the effects, both by the universal property applied to `ℂ²` (injectivity
+everywhere then follows by shifting and scaling a self-adjoint element into
+`[0,1]`) — take `P, Q ∈ ℰ` over the two octahedron vertices
+`r₁ = (1,0,1,0)` and `r₂ = (1,0,0,1)`.  Both are
+projections, because `R - R²` is positive for an effect `R` and `e` sends it
+into `𝒮` below both `e R` and `1 - e R`, which for `e R = r₁, r₂` leaves
+only `0`.  Injectivity of `e` then puts `PQ` in the span of `1, P, Q` — this
+is what replaces the dimension count, since `𝒮` is spanned by `1, r₁, r₂` —
+say `PQ = α + βP + γQ`; and reading off the second and fourth coordinates of
+`0 ≤ PQP ≤ P` gives `γ = 0`, the second and third of `0 ≤ QPQ ≤ Q` give
+`β = 0`, and then `α = 0`.  So `PQ = QP = 0`, `1 - P - Q` is a projection
+and hence positive, while `e(1 - P - Q) = (-1,1,0,0)` is not. -/
+theorem cstar_no_pu_equalisers_example :
+    ¬ ∃ (E : Type) (_ : CStarAlgebra E) (_ : PartialOrder E) (_ : StarOrderedRing E)
+        (e : E →ₗ[ℂ] (Fin 4 → ℂ)),
+      IsPositiveMap e ∧ IsUnitalMap e ∧
+      (∀ x : E, puEqualiserF (e x) = puEqualiserG (e x)) ∧
+      (∀ (D : Type) (_ : CStarAlgebra D) (_ : PartialOrder D) (_ : StarOrderedRing D)
+          (h : D →ₗ[ℂ] (Fin 4 → ℂ)), IsPositiveMap h → IsUnitalMap h →
+          (∀ d : D, puEqualiserF (h d) = puEqualiserG (h d)) →
+          ∃! m : D →ₗ[ℂ] E, IsPositiveMap m ∧ IsUnitalMap m ∧ ∀ d : D, e (m d) = h d) := by
+  rintro ⟨E, _, _, _, e, hep, heu, heq, huniv⟩
+  -- `e` is monotone
+  have hmono : ∀ x y : E, x ≤ y → e x ≤ e y := by
+    intro x y hxy
+    have h := hep _ (sub_nonneg.mpr hxy)
+    rw [map_sub] at h
+    exact sub_nonneg.mp h
+  -- the range of `e` lies in the set-theoretic equaliser `𝒮`
+  have hS : ∀ x : E, e x 0 + e x 1 = e x 2 + e x 3 := by
+    intro x
+    have h := heq x
+    simp only [puEqualiserF, puEqualiserG, LinearMap.coe_mk, AddHom.coe_mk] at h
+    linear_combination 2 * h
+  -- every effect of `𝒮` is `e P` for an effect `P` of `E`
+  have hsurj : ∀ v : Fin 4 → ℂ, 0 ≤ v → v ≤ 1 → v 0 + v 1 = v 2 + v 3 →
+      ∃ P : E, 0 ≤ P ∧ P ≤ 1 ∧ e P = v := by
+    intro v hv0 hv1 hvS
+    have hpe : ∀ d : Fin 2 → ℂ,
+        puEqualiserF (effectPUMap v d) = puEqualiserG (effectPUMap v d) := by
+      intro d
+      show ((effectPUMap v d) 0 + (effectPUMap v d) 1) / 2
+          = ((effectPUMap v d) 2 + (effectPUMap v d) 3) / 2
+      simp only [effectPUMap_apply, Pi.add_apply, Pi.smul_apply, Pi.sub_apply, Pi.one_apply,
+        smul_eq_mul]
+      linear_combination (d 0 - d 1) / 2 * hvS
+    obtain ⟨m, ⟨hmp, hmu, hme⟩, -⟩ :=
+      huniv (Fin 2 → ℂ) inferInstance inferInstance inferInstance (effectPUMap v)
+        (effectPUMap_isPositiveMap hv0 hv1) (effectPUMap_isUnitalMap v) hpe
+    refine ⟨m ![1, 0], hmp _ (by intro i; fin_cases i <;> simp), ?_, ?_⟩
+    · have hone : (1 : Fin 2 → ℂ) - ![1, 0] = ![0, 1] := by
+        ext i; fin_cases i <;> simp
+      have h0 : (0 : E) ≤ m ![0, 1] := hmp _ (by intro i; fin_cases i <;> simp)
+      rw [← hone, map_sub, hmu] at h0
+      exact sub_nonneg.mp h0
+    · rw [hme ![1, 0], effectPUMap_apply]
+      simp
+  -- `e` is injective on the effects
+  have hinj01 : ∀ a b : E, 0 ≤ a → a ≤ 1 → 0 ≤ b → b ≤ 1 → e a = e b → a = b := by
+    intro a b ha0 ha1 hb0 hb1 hab
+    have hpa : IsPositiveMap (e.comp (effectPUMap a)) := fun z hz =>
+      hep _ (effectPUMap_isPositiveMap ha0 ha1 z hz)
+    have hua : IsUnitalMap (e.comp (effectPUMap a)) := by
+      show e (effectPUMap a 1) = 1
+      rw [effectPUMap_isUnitalMap a]
+      exact heu
+    obtain ⟨m, -, hmuniq⟩ := huniv (Fin 2 → ℂ) inferInstance inferInstance inferInstance
+      (e.comp (effectPUMap a)) hpa hua (fun d => heq _)
+    have h1 : effectPUMap a = m :=
+      hmuniq _ ⟨effectPUMap_isPositiveMap ha0 ha1, effectPUMap_isUnitalMap a, fun d => rfl⟩
+    have h2 : effectPUMap b = m := by
+      refine hmuniq _ ⟨effectPUMap_isPositiveMap hb0 hb1, effectPUMap_isUnitalMap b, fun d => ?_⟩
+      show e (d 0 • b + d 1 • (1 - b)) = e (d 0 • a + d 1 • (1 - a))
+      rw [map_add, map_add, map_smul, map_smul, map_smul, map_smul, map_sub, map_sub, hab]
+    have h3 := h1.trans h2.symm
+    have h4 := congrArg (fun φ : (Fin 2 → ℂ) →ₗ[ℂ] E => φ ![1, 0]) h3
+    simpa [effectPUMap_apply] using h4
+  -- `e` is injective on the self-adjoint elements
+  have hinjsa : ∀ x : E, star x = x → e x = 0 → x = 0 := by
+    intro x hx hex
+    rcases eq_or_lt_of_le (norm_nonneg x) with ht | ht
+    · exact norm_eq_zero.mp ht.symm
+    obtain ⟨hone, hlo, hhi⟩ := cstar_positive_2 x hx
+    have hlo' : (0 : E) ≤ x + ((‖x‖ : ℝ) : ℂ) • 1 := by
+      have h := sub_nonneg.mpr hlo
+      rwa [sub_neg_eq_add, Algebra.algebraMap_eq_smul_one] at h
+    have hhi' : (0 : E) ≤ ((‖x‖ : ℝ) : ℂ) • 1 - x := by
+      have h := sub_nonneg.mpr hhi
+      rwa [Algebra.algebraMap_eq_smul_one] at h
+    have hcpos : (0 : ℝ) < 1 / (2 * ‖x‖) := by positivity
+    have hc2 : ((1 / (2 * ‖x‖) : ℝ) : ℂ) * ((‖x‖ : ℝ) : ℂ) = ((1 / 2 : ℝ) : ℂ) := by
+      push_cast
+      field_simp
+    have ha0 : (0 : E) ≤ ((1 / (2 * ‖x‖) : ℝ) : ℂ) • x + ((1 / 2 : ℝ) : ℂ) • (1 : E) := by
+      have h := cstar_positive_1 _ hlo' (1 / (2 * ‖x‖)) hcpos.le
+      rwa [smul_add, smul_smul, hc2] at h
+    have ha1 : ((1 / (2 * ‖x‖) : ℝ) : ℂ) • x + ((1 / 2 : ℝ) : ℂ) • (1 : E) ≤ 1 := by
+      have h := cstar_positive_1 _ hhi' (1 / (2 * ‖x‖)) hcpos.le
+      rw [smul_sub, smul_smul, hc2] at h
+      rw [← sub_nonneg]
+      have hrw : (1 : E) - (((1 / (2 * ‖x‖) : ℝ) : ℂ) • x + ((1 / 2 : ℝ) : ℂ) • (1 : E))
+          = ((1 / 2 : ℝ) : ℂ) • (1 : E) - ((1 / (2 * ‖x‖) : ℝ) : ℂ) • x := by
+        push_cast
+        module
+      rw [hrw]
+      exact h
+    have hb0 : (0 : E) ≤ ((1 / 2 : ℝ) : ℂ) • (1 : E) :=
+      cstar_positive_1 _ hone (1 / 2) (by norm_num)
+    have hb1 : ((1 / 2 : ℝ) : ℂ) • (1 : E) ≤ 1 := by
+      rw [← sub_nonneg]
+      have hrw : (1 : E) - ((1 / 2 : ℝ) : ℂ) • (1 : E) = ((1 / 2 : ℝ) : ℂ) • (1 : E) := by
+        push_cast; module
+      rw [hrw]
+      exact hb0
+    have hee : e (((1 / (2 * ‖x‖) : ℝ) : ℂ) • x + ((1 / 2 : ℝ) : ℂ) • (1 : E))
+        = e (((1 / 2 : ℝ) : ℂ) • (1 : E)) := by
+      rw [map_add, map_smul, hex, smul_zero, zero_add]
+    have hfin := hinj01 _ _ ha0 ha1 hb0 hb1 hee
+    have hzero : ((1 / (2 * ‖x‖) : ℝ) : ℂ) • x = 0 := by
+      have := sub_eq_zero.mpr hfin
+      simpa using this
+    rcases smul_eq_zero.mp hzero with h | h
+    · exact absurd h (by exact_mod_cast ne_of_gt hcpos)
+    · exact h
+  -- `e` is injective
+  have hstar : ∀ x : E, e (star x) = star (e x) := cstar_p_implies_i e hep
+  have hinjf : ∀ x y : E, e x = e y → x = y := by
+    intro x y hxy
+    have hex : e (x - y) = 0 := by rw [map_sub, hxy, sub_self]
+    set z := x - y with hz
+    have hu : star ((2 : ℂ)⁻¹ • (z + star z)) = (2 : ℂ)⁻¹ • (z + star z) := by
+      rw [star_smul, star_add, star_star]
+      simp [add_comm]
+    have hv : star ((Complex.I / 2) • (star z - z)) = (Complex.I / 2) • (star z - z) := by
+      rw [star_smul, star_sub, star_star]
+      simp [sub_eq_add_neg]
+      module
+    have heu' : e ((2 : ℂ)⁻¹ • (z + star z)) = 0 := by
+      rw [map_smul, map_add, hstar, hex, star_zero, add_zero, smul_zero]
+    have hev' : e ((Complex.I / 2) • (star z - z)) = 0 := by
+      rw [map_smul, map_sub, hstar, hex, star_zero, sub_zero, smul_zero]
+    have h1 := hinjsa _ hu heu'
+    have h2 := hinjsa _ hv hev'
+    have hzz : z = (2 : ℂ)⁻¹ • (z + star z) + Complex.I • ((Complex.I / 2) • (star z - z)) := by
+      rw [smul_smul, show Complex.I * (Complex.I / 2) = -(2 : ℂ)⁻¹ by
+        rw [mul_div_assoc', Complex.I_mul_I]; ring]
+      module
+    rw [h1, h2, smul_zero, add_zero] at hzz
+    exact sub_eq_zero.mp hzz
+  -- coordinates of `1`, `r₁ = (1,0,1,0)` and `r₂ = (1,0,0,1)`
+  have hfin4 : ∀ i : Fin 4, i = 0 ∨ i = 1 ∨ i = 2 ∨ i = 3 := by decide
+  have hr10 : (![1, 0, 1, 0] : Fin 4 → ℂ) 0 = 1 := by simp
+  have hr11 : (![1, 0, 1, 0] : Fin 4 → ℂ) 1 = 0 := by simp
+  have hr12 : (![1, 0, 1, 0] : Fin 4 → ℂ) 2 = 1 := by simp
+  have hr13 : (![1, 0, 1, 0] : Fin 4 → ℂ) 3 = 0 := by simp
+  have hr20 : (![1, 0, 0, 1] : Fin 4 → ℂ) 0 = 1 := by simp
+  have hr21 : (![1, 0, 0, 1] : Fin 4 → ℂ) 1 = 0 := by simp
+  have hr22 : (![1, 0, 0, 1] : Fin 4 → ℂ) 2 = 0 := by simp
+  have hr23 : (![1, 0, 0, 1] : Fin 4 → ℂ) 3 = 1 := by simp
+  have hval : ∀ (a b c : ℂ) (i : Fin 4),
+      (a • (1 : Fin 4 → ℂ) + b • (![1, 0, 1, 0] : Fin 4 → ℂ)
+        + c • (![1, 0, 0, 1] : Fin 4 → ℂ)) i
+        = a + b * (![1, 0, 1, 0] : Fin 4 → ℂ) i + c * (![1, 0, 0, 1] : Fin 4 → ℂ) i := by
+    intro a b c i
+    simp only [Pi.add_apply, Pi.smul_apply, Pi.one_apply, smul_eq_mul, mul_one]
+  -- the decomposition of an element of `𝒮` along `1`, `r₁` and `r₂`
+  have hdecomp : ∀ v : Fin 4 → ℂ, v 0 + v 1 = v 2 + v 3 →
+      v = v 1 • (1 : Fin 4 → ℂ) + (v 2 - v 1) • (![1, 0, 1, 0] : Fin 4 → ℂ)
+        + (v 3 - v 1) • (![1, 0, 0, 1] : Fin 4 → ℂ) := by
+    intro v hv
+    funext i
+    rw [hval]
+    rcases hfin4 i with rfl | rfl | rfl | rfl
+    · rw [hr10, hr20]; linear_combination hv
+    · rw [hr11, hr21]; ring
+    · rw [hr12, hr22]; ring
+    · rw [hr13, hr23]; ring
+  have hcomb1 : ∀ a b c : ℂ,
+      (a • (1 : Fin 4 → ℂ) + b • (![1, 0, 1, 0] : Fin 4 → ℂ)
+        + c • (![1, 0, 0, 1] : Fin 4 → ℂ)) 1 = a := by
+    intro a b c; rw [hval, hr11, hr21]; ring
+  have hcomb2 : ∀ a b c : ℂ,
+      (a • (1 : Fin 4 → ℂ) + b • (![1, 0, 1, 0] : Fin 4 → ℂ)
+        + c • (![1, 0, 0, 1] : Fin 4 → ℂ)) 2 = a + b := by
+    intro a b c; rw [hval, hr12, hr22]; ring
+  have hcomb3 : ∀ a b c : ℂ,
+      (a • (1 : Fin 4 → ℂ) + b • (![1, 0, 1, 0] : Fin 4 → ℂ)
+        + c • (![1, 0, 0, 1] : Fin 4 → ℂ)) 3 = a + c := by
+    intro a b c; rw [hval, hr13, hr23]; ring
+  -- effects square to below themselves
+  have hsq : ∀ R : E, 0 ≤ R → R ≤ 1 → 0 ≤ R - R * R := by
+    intro R h0 h1
+    obtain ⟨s, hsa, rfl⟩ : ∃ s : E, star s = s ∧ R = s * s :=
+      ⟨CFC.sqrt R, (IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg R)).star_eq,
+        (CFC.sqrt_mul_sqrt_self R h0).symm⟩
+    have h := star_left_conjugate_nonneg (sub_nonneg.mpr h1) s
+    rw [hsa] at h
+    have hrw : s * (1 - s * s) * s = s * s - s * s * (s * s) := by noncomm_ring
+    rwa [hrw] at h
+  -- an effect whose image is sharp in every coordinate is a projection
+  have hidem : ∀ R : E, 0 ≤ R → R ≤ 1 → (∀ i, e R i = 0 ∨ e R i = 1) → R * R = R := by
+    intro R h0 h1 hv
+    have hRsa : star R = R := (IsSelfAdjoint.of_nonneg h0).star_eq
+    have hb0 : (0 : E) ≤ R - R * R := hsq R h0 h1
+    have hRR : (0 : E) ≤ R * R := by
+      have h := star_mul_self_nonneg R
+      rwa [hRsa] at h
+    have hb1 : R - R * R ≤ R := sub_le_self R hRR
+    have hb2 : R - R * R ≤ 1 - R := by
+      have h : (0 : E) ≤ (1 - R) * (1 - R) := by
+        have h' := star_mul_self_nonneg (1 - R)
+        rwa [star_sub, star_one, hRsa] at h'
+      have hrw : (1 - R) - (R - R * R) = (1 - R) * (1 - R) := by noncomm_ring
+      exact sub_nonneg.mp (hrw ▸ h)
+    have he0 := hep _ hb0
+    have he1 := hmono _ _ hb1
+    have he2 := hmono _ _ hb2
+    have heR : e (1 - R) = 1 - e R := by rw [map_sub, heu]
+    rw [heR] at he2
+    have hzero : e (R - R * R) = 0 := by
+      funext i
+      have hl := he0 i
+      simp only [Pi.zero_apply] at hl
+      rcases hv i with hvi | hvi
+      · have hr := he1 i
+        rw [hvi] at hr
+        exact le_antisymm hr hl
+      · have hr := he2 i
+        simp only [Pi.sub_apply, Pi.one_apply, hvi, sub_self] at hr
+        exact le_antisymm hr hl
+    have hb := hinjf _ 0 (by rw [hzero, map_zero])
+    exact (sub_eq_zero.mp hb).symm
+  -- the two effects `P`, `Q` of `E` over `r₁` and `r₂`
+  obtain ⟨P, hP0, hP1, hPe⟩ := hsurj ![1, 0, 1, 0] (by intro i; fin_cases i <;> simp)
+    (by intro i; fin_cases i <;> simp) (by simp)
+  obtain ⟨Q, hQ0, hQ1, hQe⟩ := hsurj ![1, 0, 0, 1] (by intro i; fin_cases i <;> simp)
+    (by intro i; fin_cases i <;> simp) (by simp)
+  have hPe1 : e P 1 = 0 := by rw [hPe]; simp
+  have hPe3 : e P 3 = 0 := by rw [hPe]; simp
+  have hQe1 : e Q 1 = 0 := by rw [hQe]; simp
+  have hQe2 : e Q 2 = 0 := by rw [hQe]; simp
+  have hPP : P * P = P := hidem P hP0 hP1 (by intro i; rw [hPe]; fin_cases i <;> simp)
+  have hQQ : Q * Q = Q := hidem Q hQ0 hQ1 (by intro i; rw [hQe]; fin_cases i <;> simp)
+  have hPsa : star P = P := (IsSelfAdjoint.of_nonneg hP0).star_eq
+  have hQsa : star Q = Q := (IsSelfAdjoint.of_nonneg hQ0).star_eq
+  -- `PQ` is a linear combination of `1`, `P`, `Q`
+  obtain ⟨α, β, γ, hPQ⟩ : ∃ α β γ : ℂ, P * Q = α • (1 : E) + β • P + γ • Q := by
+    refine ⟨e (P * Q) 1, e (P * Q) 2 - e (P * Q) 1, e (P * Q) 3 - e (P * Q) 1, hinjf _ _ ?_⟩
+    rw [map_add, map_add, map_smul, map_smul, map_smul, heu, hPe, hQe]
+    exact hdecomp (e (P * Q)) (hS (P * Q))
+  have hQP : Q * P = star α • (1 : E) + star β • P + star γ • Q := by
+    have h := congrArg star hPQ
+    rw [star_mul, hPsa, hQsa] at h
+    rw [h]
+    simp [star_add, star_smul, hPsa, hQsa]
+  -- `PQP` is positive and below `P`, which forces `γ = 0`
+  have hPQP : P * Q * P
+      = (star γ * α) • (1 : E) + (star α + star β + star γ * β) • P + (star γ * γ) • Q := by
+    calc P * Q * P = P * (Q * P) := mul_assoc _ _ _
+      _ = P * (star α • (1 : E) + star β • P + star γ • Q) := by rw [hQP]
+      _ = star α • P + star β • (P * P) + star γ • (P * Q) := by
+            rw [mul_add, mul_add, mul_smul_comm, mul_smul_comm, mul_smul_comm, mul_one]
+      _ = star α • P + star β • P + star γ • (α • (1 : E) + β • P + γ • Q) := by
+            rw [hPP, hPQ]
+      _ = _ := by module
+  have hPQPnn : (0 : E) ≤ P * Q * P := by
+    have h := star_left_conjugate_nonneg hQ0 P
+    rwa [hPsa] at h
+  have hPQPle : P * Q * P ≤ P := by
+    have h := star_left_conjugate_le_conjugate hQ1 P
+    rwa [hPsa, mul_one, hPP] at h
+  have hePQP : e (P * Q * P)
+      = (star γ * α) • (1 : Fin 4 → ℂ) + (star α + star β + star γ * β) • ![1, 0, 1, 0]
+        + (star γ * γ) • ![1, 0, 0, 1] := by
+    rw [hPQP, map_add, map_add, map_smul, map_smul, map_smul, heu, hPe, hQe]
+  have hga : star γ * α = 0 := by
+    have hlo := (hep _ hPQPnn) 1
+    have hhi := (hmono _ _ hPQPle) 1
+    simp only [Pi.zero_apply] at hlo
+    rw [hePQP, hcomb1] at hlo hhi
+    rw [hPe1] at hhi
+    exact le_antisymm hhi hlo
+  have hgam : γ = 0 := by
+    have hhi := (hmono _ _ hPQPle) 3
+    rw [hePQP, hcomb3, hPe3, hga, zero_add] at hhi
+    exact astara_non_negative γ hhi
+  -- `QPQ` is positive and below `Q`, which forces `β = 0`
+  have hQPQ : Q * P * Q
+      = (star β * α) • (1 : E) + (star β * β) • P + (star α + star β * γ + star γ) • Q := by
+    calc Q * P * Q = (star α • (1 : E) + star β • P + star γ • Q) * Q := by rw [hQP]
+      _ = star α • Q + star β • (P * Q) + star γ • (Q * Q) := by
+            rw [add_mul, add_mul, smul_mul_assoc, smul_mul_assoc, smul_mul_assoc, one_mul]
+      _ = star α • Q + star β • (α • (1 : E) + β • P + γ • Q) + star γ • Q := by
+            rw [hPQ, hQQ]
+      _ = _ := by module
+  have hQPQnn : (0 : E) ≤ Q * P * Q := by
+    have h := star_left_conjugate_nonneg hP0 Q
+    rwa [hQsa] at h
+  have hQPQle : Q * P * Q ≤ Q := by
+    have h := star_left_conjugate_le_conjugate hP1 Q
+    rwa [hQsa, mul_one, hQQ] at h
+  have heQPQ : e (Q * P * Q)
+      = (star β * α) • (1 : Fin 4 → ℂ) + (star β * β) • ![1, 0, 1, 0]
+        + (star α + star β * γ + star γ) • ![1, 0, 0, 1] := by
+    rw [hQPQ, map_add, map_add, map_smul, map_smul, map_smul, heu, hPe, hQe]
+  have hba : star β * α = 0 := by
+    have hlo := (hep _ hQPQnn) 1
+    have hhi := (hmono _ _ hQPQle) 1
+    simp only [Pi.zero_apply] at hlo
+    rw [heQPQ, hcomb1] at hlo hhi
+    rw [hQe1] at hhi
+    exact le_antisymm hhi hlo
+  have hbet : β = 0 := by
+    have hhi := (hmono _ _ hQPQle) 2
+    rw [heQPQ, hcomb2, hQe2, hba, zero_add] at hhi
+    exact astara_non_negative β hhi
+  -- hence `PQ` is a scalar, and in fact `PQ = 0`
+  rw [hbet, hgam, zero_smul, zero_smul, add_zero, add_zero] at hPQ
+  have halp : α = 0 := by
+    have h : P * (P * Q) = P * Q := by rw [← mul_assoc, hPP]
+    rw [hPQ, mul_smul_comm, mul_one] at h
+    have h2 := congrArg e h
+    rw [map_smul, map_smul, heu] at h2
+    have h3 := congrFun h2 1
+    simp only [Pi.smul_apply, Pi.one_apply, smul_eq_mul, mul_one] at h3
+    rw [hPe1, mul_zero] at h3
+    exact h3.symm
+  rw [halp, zero_smul] at hPQ
+  have hQP0 : Q * P = 0 := by
+    have h := congrArg star hPQ
+    rwa [star_mul, hPsa, hQsa, star_zero] at h
+  -- so `P + Q` is a projection, whence `P + Q ≤ 1` -- which `e` refutes
+  have hnsa : star (1 - P - Q) = 1 - P - Q := by
+    rw [star_sub, star_sub, star_one, hPsa, hQsa]
+  have hnn : (0 : E) ≤ 1 - P - Q := by
+    have h := star_mul_self_nonneg (1 - P - Q)
+    rw [hnsa] at h
+    have hrw : (1 - P - Q) * (1 - P - Q) = 1 - P - Q := by
+      have hexp : (1 - P - Q) * (1 - P - Q)
+          = 1 - P - P - Q - Q + P * P + Q * Q + P * Q + Q * P := by noncomm_ring
+      rw [hexp, hPP, hQQ, hPQ, hQP0]
+      abel
+    rwa [hrw] at h
+  have hfin := (hep _ hnn) 0
+  rw [map_sub, map_sub, heu, hPe, hQe] at hfin
+  simp only [Pi.zero_apply, Pi.sub_apply, Pi.one_apply] at hfin
+  rw [hr10, hr20] at hfin
+  norm_num at hfin
+
+end NoPUEqualisers
 
 /-! ## Parsec 842: hereditarily atomic von Neumann algebras
 
