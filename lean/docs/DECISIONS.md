@@ -623,9 +623,9 @@ unstated.
 diagonal operator on `lp (fun ω => ω.GNS) 2`, built because Mathlib has the
 single-`ω` GNS representation and the Hilbert direct sum but not the diagonal
 operator.  The closing claim is on the shelf as `injective_miu_iso_on_image`.
-Nothing downstream is affected: no declaration in `Theses/` uses
-`proto_gelfand_naimark_2` — the three existing uses in `A/VN` are all of
-`proto_gelfand_naimark_`**`1`**.
+Downstream: `proto_gelfand_naimark_2` has one user, `gelfand_naimark` (30XIV,
+`Theses/A/CStar/Representation.lean`), which the strengthened form still gives
+at once; the `A/VN` uses are all of `proto_gelfand_naimark_`**`1`**.
 
 ### 2.5 — 28II.4 `functional-calculus`: may the unique element be identified with `f(a)`?
 

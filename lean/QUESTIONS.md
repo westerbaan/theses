@@ -6,15 +6,14 @@ about how faithfully our statement should track the thesis.
 
 Findings that need **no** decision live elsewhere: thesis defects to be
 corrected are in [ERRATA.md](ERRATA.md), and our own mis-transcriptions in
-[PROVING-LOG.md](PROVING-LOG.md).
+[PROVING-LOG.md](PROVING-LOG.md).  Every question below is also restated, with
+our recommendation and what it blocks, in the `docs/DECISIONS.md` section named
+at the end of its entry.
 
 **Everything in this file is open.**  Once a question is answered *and* the
-answer is implemented, its section is **deleted** rather than marked resolved —
-on 2026-08-16 that removed B2, B4, B5, B6, B7, D2, D3, B9 and the whole
-"Resolved" section (821 → 345 lines), and on 2026-08-21 A4.  The rulings
-themselves are preserved in the commit messages that implemented them and in
-PROVING-LOG.md, so nothing is lost; git history has the full text.  Do not
-re-add a resolved item.
+answer is implemented, its section is **deleted** rather than marked resolved;
+the ruling survives in the commit message that implemented it and in
+PROVING-LOG.md.  Do not re-add a resolved item.
 
 **Keys a reader may still meet in a commit message or a dated log**, each
 removed by a commit whose message carries the ruling — that is where to read
@@ -35,35 +34,15 @@ pointer to a key that is in neither):
 Note that `ffd073b`'s subject names A5 while its diff removes A6 and B11; read
 the diff, not the subject.  Keep this table in step when a question is deleted.
 
-**Deleted or narrowed on 2026-08-26**, from the audit in `docs/DECISIONS.md`
-§4.  One line each, saying what answered it and when:
-
-* **A3** ("statements the theses only cite, never prove") — *deleted.*  Four
-  of its six bullets were proved independently of the citations (178III.2/.4
-  and `finite_effectMonoid_boolean` 2026-08-17/18, 192V.4
-  `cancellative_iso_convex` 2026-08-18, `extensive_effectus` 2026-08-14); the
-  fifth, 179III.2, is **B14** below; the sixth was a dangling "see B4 above"
-  pointing at a section deleted on 2026-08-16 about an errata row that was
-  itself withdrawn when `eff.tex` changed.  Its two *informational* remarks
-  (the third axiom of `extensive_effectus`, and what "adapt the proof of
-  `emod-effectus`" comes to for 180V) are now `OPEN (informational)` rows in
-  [ERRATA.md](ERRATA.md), which is the class that file already uses.
-* **B12** — *narrowed.*  The three-option list ((a) minimal, (b) `dim 𝒦' < ∞`,
-  (c) unitary `𝒲' → 𝒱'`) was answered on 2026-08-18; `dils.tex:998` now
-  carries the disjunction.  The live residue is a different question.
-* **B13** — *trimmed.*  Its "Correction (session 84)" paragraph described the
-  uniqueness lemma as unbuilt; it is `vn_effObj_iso`, proved and axiom-clean
-  in session 85.
-* **A11** — *trimmed.*  Its cost estimate said the monoidal coherences are
-  "none of which the tree has"; repair wave 3 proved all nine, plus the four
-  naturality lemmas, and `exists_braiding`.
-* **A13** — *narrowed.*  Its convention half was ruled in session 2
-  (Mathlib's, with the swap `⟪x,y⟫_Mathlib = ⟨y,x⟩_thesis`); only the
-  mirrored-cp-condition half is live.
-* **A8** — *unchanged, but no longer a blocker*: it was filed because `ϱ_Ω`
-  did not exist in Lean, and `dsumRep` now does.
-* **D7** — a **DISP label** was corrected: `iso` is proc.tex **99IX**, not
-  100IX.
+Deleted earlier and not in the table: **B2**, **B4**, **B5**, **B6**, **B7**,
+**B9**, **D2**, **D3** (2026-08-16), **A4** (2026-08-21) and **A3**
+(2026-08-26).  A3 asked whether it is right to leave a cited-only result
+unproved; four of its six bullets are now proved independently of the citation,
+the fifth is **B14** below, the sixth pointed at an errata row that was
+withdrawn when `eff.tex` changed, and its two *informational* remarks (the
+third axiom of `extensive_effectus`, and what "adapt the proof of
+`emod-effectus`" comes to for 180V) are `OPEN (informational)` rows in
+[ERRATA.md](ERRATA.md).
 
 Conventions: **DISP** is the display number (e.g. `192V.3`); erratum keys are
 the `parsec-N.M` keys of the errata block at the top of `../asols.tex`.
@@ -79,9 +58,9 @@ Thesis A was ruled on 2026-08-13; none of thesis B has been.
 ### B10. 158II `kaplansky-hilbmod` — **now proved, by a different route**; the printed proof (158III–158V) must be replaced
 `dils.tex` parsec 1580.  The thesis proves 158II via **158V**, and 158V is
 **false** (counterexample in `PROVING-LOG`/`ERRATA`; `B(ℓ²)`, `y = |e₂⟩⟨e₁|`,
-`yₙ = |e₂⟩⟨e₁+eₙ|`).  **158II itself is true**: it is now proved in Lean
-(`Theses/B/Dils/Kaplansky.lean`, 2026-08-16) through the **linking algebra**,
-with no strengthening of its hypotheses.
+`yₙ = |e₂⟩⟨e₁+eₙ|`).  **158II itself is true**: it is proved in Lean
+(`Theses/B/Dils/Kaplansky.lean`) through the **linking algebra**, with no
+strengthening of its hypotheses.
 
 **The proof.**  Let `Lk = X ⊕ ℬ` (a Hilbert ℬ-module) and work in the von
 Neumann algebra `ℬᵃ(Lk)` (**152X** `ba_vonNeumannAlgebra`, which needs `Lk`
@@ -101,8 +80,7 @@ net in `S` bounded by `‖cor x‖ = ‖x‖`, and compressing at the vector `0 
 lands in `cl(D)`; a norm approximation plus a rescaling `d ↦ t·d` puts it back
 in `D` inside the ball (`kaplansky_hilbmod_of_closure`).
 
-Three points worth recording, because they answer questions the earlier
-analysis left open.
+Three points, because they rule out the obvious alternatives.
 
 1. **`𝒜` need not be ultrastrongly dense in `ℬ`** (the hypothesis Lin's
    Theorem 4.4 needs and 158II lacks).  74IV is applied to a *single element*
@@ -117,25 +95,19 @@ analysis left open.
    (parsec 1500, before 1580, so the thesis's own order is respected), used to
    pass from `X` to a self-dual `X̄`; ultranorm density is transitive, and both
    the norm bound and the seminorms are computed from the inner product, which
-   the embedding preserves.  (This paragraph used to end "`150II` is still
-   `sorry` in Lean, so `#print axioms kaplansky_hilbmod` shows `sorryAx`" —
-   stale since session 61: `dils_completion` is proved, and both
-   `kaplansky_hilbmod` and the **self-dual case**
-   `kaplansky_hilbmod_of_selfDual` are unconditional and axiom-clean.  The
-   only `sorry`s in `Kaplansky.lean` are three of the four
-   `kaplansky_hilbmod_A*`, which record that 158V is false and which
-   `kaplansky_hilbmod` does not use.  **Corrected 2026-08-29**: it used to say
-   four.  The fourth, `A₂`, is *true* and is now proved — the counterexample
-   gives it the value `0` at `ω₀`, which was read as one functional failing to
-   see it, and it is not that.  What separates `A₂` from `A₂'` is which
-   resolvent moves with `α`; see the file's own ⚠ block.  158V itself is still
-   false and the request below is unchanged.)
+   the embedding preserves.  `dils_completion` is proved, so `kaplansky_hilbmod`
+   and the self-dual case `kaplansky_hilbmod_of_selfDual` are unconditional and
+   axiom-clean.  The only `sorry`s in `Kaplansky.lean` are `kaplansky_hilbmod_A₁`,
+   `A₁'` and `A₂'`, which record that 158V is false and which `kaplansky_hilbmod`
+   does not use.  (The fourth estimate, `A₂`, is *true* and is proved; what
+   separates it from `A₂'` is which resolvent moves with `α` — see the file's
+   own ⚠ block.  158V itself is false and the request below is unchanged.)
 
 *Decision needed*: how to repair the thesis.  Concretely, 158III–158V should
 be deleted or demoted, and the proof of `kaplansky-hilbmod` replaced by the
 linking-algebra argument above (which the thesis has all the material for:
 152X at parsec 1520, 150II at 1500, `kaplansky` at 74IV).  The erratum row for
-158V in `ERRATA.md` carries the same request.
+158V in `ERRATA.md` carries the same request.  See `docs/DECISIONS.md` §1.3.
 
 *Superseded material, kept because it rules routes out.*  The renormalizer
 approach is dead for **every** renormalizer, not just the thesis's:
@@ -163,38 +135,30 @@ The scheme asks one continuous function to be *sensitive* to the escaping mass
 (to contract into the unit ball) and *insensitive* to it (to be ultranorm
 continuous) at once; restricting `h`'s continuity to points `g(x)` or to nets
 from `D` does not help, since the counterexample already lies inside that
-restriction.  Also recorded: iterated trimming fails because the accumulated
-coefficient `1 − q_{k-1}⋯q₀` is an ordered product of noncommuting positive
-contractions and can exceed the unit ball (`‖·‖ ≈ 1.155` for two ideal
-trimmers) — there is no two-sided trimming on a one-sided module.  H. Lin,
-*Double duals and Hilbert modules*, arXiv:2311.15462 §4 proves an analogue
-under two hypotheses 158II lacks (`𝒜` SOT-dense in `M`; the target in the
-norm-closed `M`-module generated by `D`); the linking-algebra proof needs
-neither.  `kaplansky_hilbmod_of_weak` (158II from *weak* bounded
-approximation) and `kaplansky_hilbmod_of_commutative` remain in the file as
-independent partial results.
+restriction.  Iterated trimming fails too: the accumulated coefficient
+`1 − q_{k-1}⋯q₀` is an ordered product of noncommuting positive contractions
+and can exceed the unit ball (`‖·‖ ≈ 1.155` for two ideal trimmers) — there is
+no two-sided trimming on a one-sided module.  H. Lin, *Double duals and Hilbert
+modules*, arXiv:2311.15462 §4 proves an analogue under two hypotheses 158II
+lacks (`𝒜` SOT-dense in `M`; the target in the norm-closed `M`-module generated
+by `D`); the linking-algebra proof needs neither.  `kaplansky_hilbmod_of_weak`
+(158II from *weak* bounded approximation) and `kaplansky_hilbmod_of_commutative`
+remain in the file as independent partial results.
 
 ### B12. 139XI `ess-uniq-pur` — case (ii) of the **repaired** exercise is still false: the complements are taken in the wrong space
 `dils.tex:998`, solution `bsols.tex:209`.  The exercise asks to show: if
 `V, W : 𝒦 → ℋ ⊗ 𝒦'` satisfy `V*(a⊗1)V = φ(a) = W*(a⊗1)W` for all `a ∈ B(ℋ)`,
-then `V = (1 ⊗ U)W` for a **unitary** `U` on `𝒦'`.
+then `V = (1 ⊗ U)W` for a **unitary** `U` on `𝒦'` — under one of three
+hypotheses, **(i)** both dilations minimal (`𝒱 = ℋ ⊗ 𝒦' = 𝒲`), **(ii)**
+`dim 𝒱^⊥ = dim 𝒲^⊥`, **(iii)** `ℋ` and `𝒦` finite dimensional.  Only (ii) is
+in question here.
 
-**Already answered — do not answer it again.**  This entry used to ask "which
-of three repairs: (a) both dilations minimal, (b) `dim 𝒦' < ∞`, or (c) conclude
-only with a unitary `𝒲' → 𝒱'`?"  You answered on **2026-08-18**, and the
-current `dils.tex:998` carries a disjunction of three hypotheses — **(i)** both
-dilations minimal (`𝒱 = ℋ ⊗ 𝒦' = 𝒲`), **(ii)** `dim 𝒱^⊥ = dim 𝒲^⊥`,
-**(iii)** `ℋ` and `𝒦` finite dimensional — with the row recorded in `berr.tex`.
-The three-option list was deleted from this entry on 2026-08-26; what follows
-is the residue, which is a different question.  See `docs/DECISIONS.md` §1.4.
-
-**Background — why a hypothesis is needed at all** (this much is settled).
-**Counterexample** (see ERRATA for the full row): `𝒦' = ℓ²`, `𝒦 = ℋ ⊗ ℓ²`,
-`W = 1`, `V = 1 ⊗ S` with `S` the unilateral shift.  Both dilate
-`φ(a) = a ⊗ 1`; the only `U` with `V = (1⊗U)W` is `S`, which is an isometry
-but not unitary.  Weakening "unitary" to "isometry" does not save it either:
-exchanging `V` and `W` in the same example requires a `U` mapping `𝒦'` onto
-`𝒦'` isometrically *from* a proper subspace, which is impossible.
+**Why a hypothesis is needed at all** (settled; full row in `ERRATA.md`).
+Without one the claim is false: `𝒦' = ℓ²`, `𝒦 = ℋ ⊗ ℓ²`, `W = 1`, `V = 1 ⊗ S`
+with `S` the unilateral shift.  Both dilate `φ(a) = a ⊗ 1`; the only `U` with
+`V = (1⊗U)W` is `S`, an isometry but not unitary.  Weakening "unitary" to
+"isometry" does not save it: exchanging `V` and `W` in the same example
+requires a `U` mapping `𝒦'` onto `𝒦'` isometrically *from* a proper subspace.
 
 The solution is correct up to its last paragraph, which reads "As `𝒱` and `𝒲`
 are isomorphic, they have the same dimension and so do `𝒱^⊥` and `𝒲`" (the
@@ -202,10 +166,10 @@ last `𝒲` is a typo for `𝒲^⊥`).  Equal dimension does not imply equal
 codimension in infinite dimensions, and that is exactly what the extension of
 `U₁ : 𝒲' → 𝒱'` to a unitary of `𝒦'` needs.
 
-**The live defect: case (ii) is false as printed.**  The complements are taken
-in `ℋ ⊗ 𝒦'`, where the argument needs them in `𝒦'`.  Counterexample (paper,
-not machine-checked): `ℋ = 𝒦' = ℓ²`, `𝒦 = ℋ ⊗ 𝒦'`, `S₁` the unilateral
-shift and `S₂` the shift by two, `W = 1 ⊗ S₁`, `V = 1 ⊗ S₂`.  Both dilate
+**The defect: case (ii) is false as printed.**  The complements are taken in
+`ℋ ⊗ 𝒦'`, where the argument needs them in `𝒦'`.  Counterexample (paper, not
+machine-checked): `ℋ = 𝒦' = ℓ²`, `𝒦 = ℋ ⊗ 𝒦'`, `S₁` the unilateral shift and
+`S₂` the shift by two, `W = 1 ⊗ S₁`, `V = 1 ⊗ S₂`.  Both dilate
 `φ(a) = a ⊗ 1`.  `𝒲` and `𝒱` are invariant under `B(ℋ)⊗1`, so
 `𝒲 = ℋ ⊗ ran S₁` and `𝒱 = ℋ ⊗ ran S₂`, whence
 `dim 𝒱^⊥ = ℵ₀ = dim 𝒲^⊥` and **(ii) holds**; but `V = (1⊗U)W` forces
@@ -216,12 +180,13 @@ shift and `S₂` the shift by two, `W = 1 ⊗ S₁`, `V = 1 ⊗ S₂`.  Both dil
 `𝒦'`**, writing `𝒱 = ℋ ⊗ ℒ_V` and `𝒲 = ℋ ⊗ ℒ_W` (valid because `P_𝒱`
 lies in the commutant `1 ⊗ B(𝒦')`) — which is what `berr.tex`'s own prose
 "the ancillar spaces of the same dimension" means; **(b)** keep (ii) and add
-`dim ℋ < ∞`; or **(c)** delete (ii).  We recommend (a); see
-`docs/DECISIONS.md` §1.4 for the full argument.  We have left `ess_uniq_pur`
-`sorry`ed and unchanged — note that *realigning* it to the current
-`dils.tex:998` needs no ruling at all (our statement transcribes the first
-printing and drops all three hypotheses, which is why the audit records it as
-"false as ours"); it is the choice of (ii) that we are waiting on.
+`dim ℋ < ∞`; or **(c)** delete (ii).  We recommend (a).
+
+*What waits on it*: `ess_uniq_pur` (`Theses/B/Dils/Stinespring.lean`) is
+`sorry`ed and unchanged.  *Realigning* it to the current `dils.tex:998` needs
+no ruling — our statement transcribes the first printing and drops all three
+hypotheses, which is why the audit records it as "false as ours"; it is the
+choice of (ii) that we are waiting on.  See `docs/DECISIONS.md` §1.4.
 
 ### D7. 170IV `surjective-nmiu`, converse half — false as printed; corners need subunital mediating maps, exactly as filters did (B11)
 `dils.tex:6223` (Exercise), solution `bsols.tex:1365`, `Pure.lean`
@@ -241,16 +206,14 @@ projection (take `φ = λ·h_z`), so nothing is special about `z = 1`.
 `ϑ₂ : 𝒞 → z𝒜` from the two universal properties, shows `ϑ₁ϑ₂ = id` and
 `ϑ₂ϑ₁ = id`, and then says "`ϑ₁` is an ncp-isomorphism and consequently an
 nmiu-isomorphism by `iso`".  But proc.tex **99IX** `iso` (proc.tex:878, parsec
-990 point 90 — this entry said **100IX** until 2026-08-26; `Pure.lean`'s own
-doc comment has the right number) is stated for **ncpsu**-isomorphisms, and
-its proof opens with `f⁻¹(1) ≤ 1`, hence
-`1 = f(f⁻¹(1)) ≤ f(1) ≤ 1` — precisely the step that fails for `λ·id`.  The
-universal properties as printed deliver only an *ncp*-isomorphism.
+990 point 90) is stated for **ncpsu**-isomorphisms, and its proof opens with
+`f⁻¹(1) ≤ 1`, hence `1 = f(f⁻¹(1)) ≤ f(1) ≤ 1` — precisely the step that fails
+for `λ·id`.  The universal properties as printed deliver only an *ncp*-isomorphism.
 
 **This is the same defect as B11**, one point earlier in the same
 development: there the mediating map of `IsFilterFor` (**169VIII**) had to be
 made subunital, and the author ruled on 2026-08-16 that it should be.  The
-identical edit does **not** suffice here, though.  For filters the hypothesis
+identical edit does **not** suffice here.  For filters the hypothesis
 `f(1) ≤ b ≤ 1` already forces the quantified `f` to be subunital, so only
 `f'` needed changing; for corners the hypothesis is `f(a) = f(1)`, which
 constrains nothing.  Requiring only `f'` subunital while `f` ranges over all
@@ -260,62 +223,49 @@ property (`f = 2·h_z` gives `f'(1) = 2·1 ≰ 1`).
 *Decision needed*: restrict **both** the quantified `f` and the mediating
 `f'` in 169II to ncpsu-maps — i.e. read the universal property in `W*_cpsu`,
 which is where `iso` lives and where corners are quotients — or state the
-converse of 170IV only for corners that are additionally unital.  We have
-left `surjective_nmiu_2` `sorry`ed and the definition unchanged.  Note that
-the first half, `surjective_nmiu_1`, is **true and proved** as it stands, and
-that changing `IsCornerFor` will require its existence clause to be
-re-checked (its uniqueness clause only gets easier).
+converse of 170IV only for corners that are additionally unital.
+
+*What waits on it*: `surjective_nmiu_2` is `sorry`ed and `IsCornerFor`
+unchanged.  The first half, `surjective_nmiu_1`, is **true and proved** as it
+stands; changing `IsCornerFor` will require its existence clause to be
+re-checked (its uniqueness clause only gets easier).  See
+`docs/DECISIONS.md` §1.1.
 
 ### B13. Minor: our `effectus_vn_partial` does not record that `I = ℂ`
-
 **180V** (`eff.tex:832`) says the partial maps of `vNᵒᵖ` "correspond to the
-ncp-maps `f` with `f(1) ≤ 1`", and our doc comment says "its effect object
+ncp-maps `f` with `f(1) ≤ 1`", and our doc comment reads "its effect object
 being `ℂ`" — but the statement we render,
 `Nonempty (EffectusPartialStructure WStarCPSU.{u}ᵒᵖ)`, asserts only that
-*some* effectus structure exists and says nothing about `I`.  As it stands it
-is weaker than the text and than its own doc comment, and it is weaker than the
-neighbouring `cho_thm_1`, which does pin its effect object
-(`∃ s, s.effectus.I = Par.of (⊤_ C)`).
+*some* effectus structure exists and says nothing about `I`.  It is therefore
+weaker than the text, and weaker than the neighbouring `cho_thm_1`, which does
+pin its effect object (`∃ s, s.effectus.I = Par.of (⊤_ C)`).
 
-The proof given (2026-08-17) *does* build `I = ℂᵤ` (`suEffectusPartialForm`),
-so strengthening the statement to
+The proof we give *does* build `I = ℂᵤ` (`suEffectusPartialForm`), so
+strengthening the statement to
 `∃ s : EffectusPartialStructure WStarCPSU.{u}ᵒᵖ, s.effectus.I = suI`
-would cost a line.  **Ruling wanted**: strengthen it (statements are not
-changed without one).
+costs a line.  **Ruling wanted**: strengthen it (statements are not changed
+without one).
 
-**This ruling has no downstream consequence** — decide it on faithfulness to
-the text alone.  The eight examples of `VNExamples.lean` do need
-`s.effectus.I ≅ ℂᵤ`, but **not one of the eight mentions
-`effectus_vn_partial`**: each takes its own arbitrary
-`s : EffectusPartialStructure WStarCPSU.{u}ᵒᵖ` as a hypothesis.  What they
-need is the *uniqueness* statement "the effect object of any
+**Nothing downstream turns on it** — decide it on faithfulness to the text
+alone.  The eight examples of `VNExamples.lean` do need `s.effectus.I ≅ ℂᵤ`,
+but none of the eight mentions `effectus_vn_partial`: each takes its own
+arbitrary `s : EffectusPartialStructure WStarCPSU.{u}ᵒᵖ` as a hypothesis.
+What they need is the *uniqueness* statement "the effect object of any
 `EffectusPartialStructure` on `vN_cpsuᵒᵖ` is isomorphic to `ℂᵤ`", which is a
 different lemma from a stronger 180V — and it is `vn_effObj_iso`
-(`VNExamples.lean:5820`), **proved and axiom-clean** since session 85.
-(`I` is the only free datum in an `EffectusPartialStructure`: the coproducts
-and the finPAC axioms are `Prop`s, `homPCM` is unique by
-`effectusPartialStructure_homPCM_unique`, `orth` is pinned by `orth_unique`,
-and `one X` is the `≼`-greatest predicate.)  *(Trimmed 2026-08-26: this
-paragraph used to describe the uniqueness lemma as unbuilt, with "a route
-recorded in `docs/BEff-survey.md`", and to claim our doc comment asserted
-`I = ℂ`.  Both were overtaken — the lemma is proved, and the doc comment at
-`VNExamples.lean`'s `effectus_vn_partial` now records both clauses as
-unasserted rather than claiming them.  See
-`docs/DECISIONS.md` §4.3, and §2.7 for this item restated.)*
+(`VNExamples.lean`), proved and axiom-clean.  (`I` is the only free datum in
+an `EffectusPartialStructure`: the coproducts and the finPAC axioms are
+`Prop`s, `homPCM` is unique by `effectusPartialStructure_homPCM_unique`,
+`orth` is pinned by `orth_unique`, and `one X` is the `≼`-greatest predicate.)
+See `docs/DECISIONS.md` §2.7.
 
 ### B14. 179III.2 `effectModule_unitInterval_representation` — **our** statement is weaker than the cited Gudder–Pulmannová theorem, and weaker than its own sibling
-
-*(Split out of A3, session 84, where it had been a one-line footnote.  The
-parking question — "is it right to leave a cited-only result unproved?" —
-stays in A3; this entry is about the separate defect that the statement we
-parked is not the statement that was cited.)*
-
 **What the source claims** (`eff.tex:737`, Examples 179III.2): "If `V` is an
 **ordered real vector space with order unit** `u`, then `[0,u]` is an effect
 module over `[0,1]`.  In fact, every effect module over `[0,1]` is of this
 form \[gudder1998representation\]."
 
-**What we state** (`EffectAlgebras.lean:3338`): for every effect module `E`
+**What we state** (`EffectAlgebras.lean`): for every effect module `E`
 over `[0,1]` there are `V` with `[AddCommGroup V] [Module ℝ V]
 [PartialOrder V] [IsOrderedAddMonoid V]`, a `u : V` with `0 ≤ u`, and a
 bijection `f : E → Set.Icc 0 u` preserving `⋁` and `•`.
@@ -326,10 +276,10 @@ bijection `f : E → Set.Icc 0 u` preserving `⋁` and `•`.
    monotone; an **ordered real vector space** also has its positive cone
    closed under nonnegative scalars.  This is not pedantry: the *converse*
    half of the very same Examples point, `orderIntervalEffectModule`, could
-   not be proved until `[PosSMulMono ℝ V] [SMulPosMono ℝ V]` were added to it
-   (HANDOFF, "Open decisions", item 1, resolved).  So the two halves of one
-   Examples point currently use two different meanings of "ordered real
-   vector space", and only one of them is the source's.
+   not be proved until `[PosSMulMono ℝ V] [SMulPosMono ℝ V]` were added to it,
+   and it carries them today.  So the two halves of one Examples point use two
+   different meanings of "ordered real vector space", and only one is the
+   source's.
 2. *`0 ≤ u` is not "order unit".*  The source requires `u` to be an order
    unit — every `v : V` satisfies `v ≤ n • u` for some `n : ℕ` — which is what
    makes `[0,u]` generate `V` and is the whole content of a *representation*
@@ -338,21 +288,20 @@ bijection `f : E → Set.Icc 0 u` preserving `⋁` and `•`.
 **Consequence**: as written, 179III.2 could be discharged without proving
 Gudder–Pulmannová, because the `V` it is allowed to produce need not be an
 ordered vector space in the source's sense and `u` need not be an order unit.
-A closed `sorry` here would therefore be worth nothing, which is why it must
-not be attacked before the ruling.
+A closed `sorry` here would be worth nothing, which is why it must not be
+attacked before the ruling.
 
 **Ruling wanted**: strengthen the statement (add the two `SMul` monotonicity
 hypotheses to the produced `V`, and replace `0 ≤ u` by an order-unit
 condition — no `OrderUnit` predicate exists in the file yet, so this is a real
 addition), or drop 179III.2 as out of scope.  Statements are not changed
-without a ruling.
+without a ruling.  `effectModule_unitInterval_representation`
+(`Theses/B/Eff/EffectAlgebras.lean`) waits on it; see `docs/DECISIONS.md` §1.5.
 
 ### B15. 206II.4 / 211IV — is the ⋄-self-adjoint square root of a ⋄-positive map required to be **pure**?  (eff.tex vs proc.tex 103I)
 `eff.tex` parsec 2060 point 40 (`diamond-basics`), and parsec 2110 point 40
-(`vn-is-andthen-eff`).
-
-The two theses define ⋄-positivity differently, and 211IV's proof depends on
-the difference.
+(`vn-is-andthen-eff`).  The two theses define ⋄-positivity differently, and
+211IV's proof depends on the difference.
 
 * **proc.tex 103I** (parsec 1030): `f` is **⋄-self-adjoint** if it is *pure*
   and contraposed to itself; `f` is **⋄-positive** if `f = gg` for a
@@ -390,8 +339,14 @@ neither thesis gives one.
    `vNᵒᵖ`, a ⋄-self-adjoint `g` whose square `gg` is pure has a **pure**
    ⋄-self-adjoint square root with the same square.  Is there a proof?
 
-**Formalization status** (session 92): everything else in 211IV is proved and
-axiom-clean in `Theses/B/Eff/VNExamples.lean`.  Axiom 2 of 211II is
+**What the tree implements is reading (2)**, verbatim: in
+`Theses/B/Eff/DiamondAmp.lean`, `DiamondSelfAdjoint f := diaPull f = diaPush f`
+(**no** purity on `f`) and
+`DiamondPositive f := IsPure f ∧ ∃ g, DiamondSelfAdjoint g ∧ f = g ≫ g`
+(purity on **`f`**, none on the square root `g`).
+
+*What waits on it*: everything else in 211IV is proved and axiom-clean in
+`Theses/B/Eff/VNExamples.lean`.  Axiom 2 of 211II is
 `su_quot_after_compr_pure` (via 100III `pure-fundamental`, exactly as
 eff.tex:4862 says); axiom 1's existence half is `su_exists_asrt`; its
 uniqueness half is `su_asrt_unique_of_pure_sqrt`, which is 105V reached
@@ -399,25 +354,12 @@ through the two dictionary lemmas `su_procPure_of_isPure` (effectus purity ⟹
 100I purity) and `su_contraposed_of_diamondSelfAdjoint` (effectus
 ⋄-self-adjointness ⟹ 101VI contraposition).  `vn_is_andthen_eff` is
 `su_andThenEffectus_of_pure_sqrt` applied to the one hypothesis above, and
-that hypothesis is the file's only `sorry`.  Under ruling (1) the `sorry`
-disappears immediately.
-
-⚠️ **Audit update (2026-08-20): what the tree actually implements is now
-established, and it is reading (2).**  The statement/proof audit compared both
-definitions in `Theses/B/Eff/DiamondAmp.lean` clause by clause with eff.tex,
-and they take its **printed form verbatim**:
-
-* `DiamondSelfAdjoint f := diaPull f = diaPush f` — **no purity on `f`**;
-* `DiamondPositive f := IsPure f ∧ ∃ g, DiamondSelfAdjoint g ∧ f = g ≫ g` —
-  purity sits on **`f`**, and **none is required of the square root `g`**.
-
-So under reading (2) the missing step is exactly the single `sorry` in
-`VNExamples.lean`: *a ⋄-self-adjoint `g` whose square is pure has a **pure**
-⋄-self-adjoint square root with the same square.*  Under reading (1) — that
-206II.2 silently means "pure" — both definitions gain an `IsPure` conjunct and
-**that `sorry` closes with no further mathematics**.  Nothing else in the tree
-depends on which way this goes; `Effectus.lean`'s partial-form machinery was
-checked field by field against 180VII and is faithful either way.
+that hypothesis is the file's only `sorry`.  Under ruling (1) both definitions
+gain an `IsPure` conjunct and the `sorry` closes with no further mathematics;
+under (2) it is exactly the missing step.  Nothing else in the tree depends on
+which way this goes — `Effectus.lean`'s partial-form machinery was checked
+field by field against 180VII and is faithful either way.  See
+`docs/DECISIONS.md` §1.2.
 
 ### B16. 191II's "equivalent to a subcategory of `EMod_M^op`" does not follow from faithfulness of `Pred` — a gap in the printed argument
 `eff.tex` parsec 1910, point 20 (`emod-effectus`, the Theorem) and point 70
@@ -437,13 +379,12 @@ separating predicates, `C` is equivalent to the subcategory `Pred C` of
 **That inference is invalid.**  A faithful functor does not exhibit its domain
 as equivalent to a subcategory of its codomain.  Take `C` the discrete
 two-object category and `D = 1` the terminal category: the unique functor
-`C → D` is faithful (each hom-set of `C` is a singleton or empty, so no two
-arrows are identified), the only subcategories of `1` are `∅` and `1` itself,
-and `C` — which has two isomorphism classes — is equivalent to neither.  Nor
-is it enough to add that `Pred` is *full onto its image*: in that same example
-the functor onto the image subcategory is full **and** surjective on objects,
-and the equivalence still fails.  What faithfulness does not control is
-object identification, and that is exactly what breaks.
+`C → D` is faithful (each hom-set of `C` is a singleton or empty), the only
+subcategories of `1` are `∅` and `1`, and `C` — with two isomorphism classes —
+is equivalent to neither.  Adding that `Pred` is *full onto its image* does not
+help: in that same example the functor onto the image subcategory is full **and**
+surjective on objects, and the equivalence still fails.  What faithfulness does
+not control is object identification, and that is what breaks.
 
 **What would repair it**, in decreasing strength:
 
@@ -463,9 +404,8 @@ object identification, and that is exactly what breaks.
 
 **What we have.**  `emod_effectus_representation` is reading 3, and is
 **proved**: it produces `F : Tot C ⥤ (EMod_{Scal C})^op` with object part
-`Pred X`, morphism part pinned to `p ↦ p ∘ f` (the pinning was the B6 defect,
-repaired in session 94), and `F.Faithful`.  The subcategory clause is stated
-nowhere in the tree.
+`Pred X`, morphism part pinned to `p ↦ p ∘ f`, and `F.Faithful`.  The
+subcategory clause is stated nowhere in the tree.
 
 *Decision needed*: how "equivalent to a subcategory" is to be read.  Under 3
 there is nothing to do in Lean and the repair is one sentence of `eff.tex`.
@@ -473,7 +413,8 @@ Under 1 or 2 the printed proof needs a genuinely new step (fullness, resp.
 injectivity on objects), and only then could the clause be added to
 `emod_effectus_representation` — the Lean cost is then the cost of that new
 step, not of the packaging.  No `sorry` turns on this; what turns on it is
-whether the Theorem's second sentence is provable as printed.
+whether the Theorem's second sentence is provable as printed.  See
+`docs/DECISIONS.md` §2.3.
 
 (Unrelated, and *not* a question for the authors: the Theorem's **headline**
 — "with scalars `M` and separating predicates" — is also unasserted by our
@@ -481,8 +422,10 @@ whether the Theorem's second sentence is provable as printed.
 of `Par C`, recorded on the declaration itself, not a defect in the source.)
 
 ### B8. Minor: `bsols.tex`'s `onb1` solution over-assumes
-Its solution assumes self-duality, which neither the exercise nor our statement
-requires.  Harmless; noted for tidiness.
+**161IV** (`onb1`, `dils.tex:4681`, Exercise).  The solution assumes
+self-duality, which neither the exercise nor our `onb1`
+(`Theses/B/Dils/SelfDual.lean`) requires.  Harmless; noted for tidiness.
+Answering "leave it" closes the item.  See `docs/DECISIONS.md` §3.6.
 
 ---
 
@@ -490,17 +433,19 @@ requires.  Harmless; noted for tidiness.
 
 ### A1. 98VI's hint points the wrong way
 `proc.tex:631`.  The hint says to show `⌈τ⌉ ≤ ⌈π(⌈τ∘π⌉^⊥)⌉^⊥`.  That is a
-restatement of `τ(π(r^⊥)) = 0` and is the direction one does **not** need; the
-proof requires the **converse**, `⌈τ⌉^⊥ ≤ ⌈π(⌈τ∘π⌉^⊥)⌉`.  In the concrete model
-both hold (the two sides are equal), so nothing downstream is wrong — but only
-the converse is usable.
+restatement of `τ(π(r^⊥)) = 0` and is the direction one does **not** need; a
+proof along the hint requires the **converse**, `⌈τ⌉^⊥ ≤ ⌈π(⌈τ∘π⌉^⊥)⌉`.  In
+the concrete model both hold (the two sides are equal), so nothing downstream
+is wrong — but only the converse is usable.
 
-⚠️ **Update (session 48): 98VI is now proved, and it needs neither the hint nor
-its converse**, so this is a question about the *hint* only.  The exercise is
-short if one takes the corner's effect to be `s := β'(r)` rather than the
-carrier `⌈τ∘π⌉` — see the 98VI row of ERRATA.md for the four-line argument.
-The decision left is whether to replace the hint by that route or to keep the
-carrier route with the inequality turned round.
+This is a question about the *hint* only: 98VI is proved
+(`corners_composition`, `Theses/A/Proc/Measurement.lean`, axiom-clean), and it
+needs neither the hint nor its converse.  The exercise is short if one takes
+the corner's effect to be `s := β'(r)` rather than the carrier `⌈τ∘π⌉` — the
+four-line argument is in the 98VI row of `ERRATA.md`.
+
+*Decision needed*: replace the hint by that route, or keep the carrier route
+with the inequality turned round.  See `docs/DECISIONS.md` §3.4.
 
 ### A8. 30X `proto-gelfand-naimark` — **our** statement of clause (1) drops `ϱ_Ω`, and with it half of the equivalence
 `cstar.tex` parsec 300, point 100.  The thesis states a three-way equivalence
@@ -524,8 +469,8 @@ which mentions neither `Ω` nor `ϱ_Ω`.  Two consequences, both real:
    is 30XIV four points later.  So 30X.2 is not a *step towards* 30XIV in our
    formalization; it *is* 30XIV.
 
-**Both are now proved** (2026-08-17), and `ϱ_Ω` *does* now exist in Lean:
-`dsumRep` in `Theses/A/CStar/Representation.lean` is the thesis's
+Both halves are proved, and `ϱ_Ω` exists in Lean: `dsumRep` in
+`Theses/A/CStar/Representation.lean` is the thesis's
 `ϱ_Ω : 𝒜 → B(⊕_{ω∈Ω} ℋ_ω)`, the diagonal operator on `lp (fun ω => ω.GNS) 2`,
 built there because Mathlib has the single-`ω` GNS representation and the
 Hilbert direct sum but not the diagonal operator.  So the obstacle to stating
@@ -535,17 +480,14 @@ Hilbert direct sum but not the diagonal operator.  So the obstacle to stating
 equivalence, with clause (1) reading `Function.Injective (dsumRep …)`, and to
 add the closing claim that `ϱ_Ω` restricts to an miu-isomorphism onto its image
 (the proved `injective_miu_iso_on_image` supplies it immediately).  We have not
-done this because it changes a statement.  Nothing downstream is affected: no
-declaration in `Theses/` uses `proto_gelfand_naimark_2` (the three existing
-uses in `A/VN` are all of `proto_gelfand_naimark_`**`1`**).
+done this because it changes a statement.
 
-*(This entry is `docs/DECISIONS.md` §2.4.  Note it is no longer a blocker of
-anything: A8 was originally filed because `ϱ_Ω` did not exist in Lean, and
-`dsumRep` now does — all that is left is the statement question above.
-Cross-reference added 2026-08-26; see `docs/DECISIONS.md` §4.4.)*
+*What waits on it*: `proto_gelfand_naimark_2` has one user in the tree,
+`gelfand_naimark` (30XIV) in the same file, and the strengthened form still
+gives it immediately; the three uses in `A/VN` are all of
+`proto_gelfand_naimark_`**`1`**.  See `docs/DECISIONS.md` §2.4.
 
 ### A10. 28II.4 `functional-calculus` — **our** statement drops the identification of the unique element with `f(a)`
-
 **28II**.4 (`functional-calculus`, cstar.tex:4299 — the exercise's part 4),
 rendered as `functional_calculus_4` in `Theses/A/CStar/Representation.lean`.
 
@@ -576,40 +518,20 @@ space of `C*(a)`, not a characterisation of the functional calculus.
 (or, minimally, may the conjunct `(∀ φ, φ (cfc f a) = f (φ a))` be added)?
 Strengthening a statement needs a ruling.
 
-**Cost of the repair: near zero, and the missing half is already checked.**
-`functional_calculus_4` is now **proved** as it stands (2026-08-18, session 92),
-by the thesis's own route: the unique element is exhibited as
-`(gelfandStarTransform (C*(a))).symm (f ∘ j)`, where `j : φ ↦ φ(a)` is part 3's
-map `spec(C*(a)) → spec(a)` (Mathlib's `elemental.characterSpaceToSpectrum`).
-Mathlib's `cfc f a` is *defined* by that same formula: `continuousFunctionalCalculus a`
-is `((characterSpaceHomeo a).compStarAlgEquiv' ℂ ℂ).trans (gelfandStarTransform _).symm`,
-with `f ∘ j` written as the restriction of `f` transported along the
-homeomorphism `characterSpaceHomeo a : spec(C*(a)) ≃ₜ spec(a)`.  So the missing
-clause needs no new mathematics.  It has been **compiled in the scratchpad** (14
-lines, no `sorry`, not committed because it changes a statement):
+**The repair costs nothing but the ruling.**  `functional_calculus_4` is
+proved as it stands, by the thesis's own route: the unique element is exhibited
+as `(gelfandStarTransform (C*(a))).symm (f ∘ j)`, where `j : φ ↦ φ(a)` is part
+3's map `spec(C*(a)) → spec(a)` (Mathlib's
+`elemental.characterSpaceToSpectrum`).  Mathlib's `cfc f a` is *defined* by
+that same formula — `continuousFunctionalCalculus a` is
+`((characterSpaceHomeo a).compStarAlgEquiv' ℂ ℂ).trans (gelfandStarTransform _).symm`
+— so the missing clause needs no new mathematics; the 14-line proof of
+`φ (cfc f a) = f (φ a)` has been compiled with no `sorry` and not committed,
+because it changes a statement.  With it the iff form is immediate from the
+uniqueness half already proved.
 
-    example (a : 𝒜) [ha : IsStarNormal a] (f : ℂ → ℂ)
-        (hf : ContinuousOn f (spectrum ℂ a))
-        (φ : characterSpace ℂ (StarAlgebra.elemental ℂ a)) :
-        φ ⟨cfc f a, cfc_mem_elemental f a⟩ = f (φ ⟨a, StarAlgebra.elemental.self_mem ℂ a⟩) := by
-      have heq : (⟨cfc f a, cfc_mem_elemental f a⟩ : StarAlgebra.elemental ℂ a)
-          = continuousFunctionalCalculus a ⟨_, hf.domRestrict⟩ := by
-        refine Subtype.ext ?_
-        show cfc f a = ((continuousFunctionalCalculus a ⟨_, hf.domRestrict⟩ :
-          StarAlgebra.elemental ℂ a) : 𝒜)
-        rw [cfc_apply f a ha hf, cfcHom_eq_of_isStarNormal]; rfl
-      rw [heq]
-      show gelfandStarTransform (StarAlgebra.elemental ℂ a)
-          (continuousFunctionalCalculus a ⟨_, hf.domRestrict⟩) φ = _
-      rw [continuousFunctionalCalculus, StarAlgEquiv.trans_apply,
-        StarAlgEquiv.apply_symm_apply]
-      rfl
-
-With this in hand the iff form is immediate from the uniqueness half already
-proved.  So the ruling is the whole cost.
-
-Nothing downstream is affected: no declaration in `Theses/` uses
-`functional_calculus_4`.
+*What waits on it*: nothing else — no declaration in `Theses/` uses
+`functional_calculus_4`.  See `docs/DECISIONS.md` §2.5.
 
 ### A11. 132III.4 cannot be stated as an **equality** of categories at all — and `W*_miu` is still not a `MonoidalCategory` in the tree
 `proc.tex` parsec 1320, point 30 (`prop:dup-vna-is-monoid`, Exercise), item 4;
@@ -640,22 +562,17 @@ equalities `Mon(W*_miu) = Mon(W*_cpsu)`: the two categories have different
 ambient hom-sets (nmiu-maps vs ncpsu-maps), so what item 3 gives is again an
 isomorphism-onto-the-image, not an equality.
 
-**2. The infrastructure — much smaller than it was, but not gone.**  Forming
-`Mon(-)` and `CMon(-)` needs `MonoidalCategory` (and `BraidedCategory`)
-instances on `W*_miu` and `W*_cpsu`.  **The mathematics for the `W*_miu` one
-now exists**: repair wave 3 stated 119V `vn-smc` concretely and in full in
-`Theses/A/Proc/Tensor.lean` — `vn_smc_pentagon`, `vn_smc_triangle`,
-`vn_smc_unitors_agree`, `vn_smc_hexagon`, `vn_smc_symmetry` and the four
-naturality lemmas, all proved, with `exists_braiding` (119IVc) no longer
-`sorry`.  What is missing is the *packaging*: a tensor bifunctor on the
-category `WMIU` (`Theses/A/Proc/QuantumLambda.lean`), associators and unitors
-as natural isomorphisms of that category, and the coherences restated in
-Mathlib's bundled form.  That is plumbing over proved equations, not new
-mathematics.  *(Trimmed 2026-08-26: this entry's cost estimate used to say the
-coherences were "none of which the tree has" and carried a ⚠ that
-`dup_vna_is_monoid_4`'s doc comment said so too.  Wave 3 overtook the first,
-and the doc comment was brought into line with it; both are now accurate.
-See `docs/DECISIONS.md` §4.6, and §3.2 for this item restated.)*
+**2. The infrastructure — packaging only.**  Forming `Mon(-)` and `CMon(-)`
+needs `MonoidalCategory` (and `BraidedCategory`) instances on `W*_miu` and
+`W*_cpsu`.  The mathematics for the `W*_miu` one exists: 119V `vn-smc` is
+stated concretely and in full in `Theses/A/Proc/Tensor.lean` —
+`vn_smc_pentagon`, `vn_smc_triangle`, `vn_smc_unitors_agree`, `vn_smc_hexagon`,
+`vn_smc_symmetry` and the four naturality lemmas, all proved, with
+`exists_braiding` (119IVc) no longer `sorry`.  What is missing is a tensor
+bifunctor on the category `WMIU` (`Theses/A/Proc/QuantumLambda.lean`),
+associators and unitors as natural isomorphisms of that category, and the
+coherences restated in Mathlib's bundled form: plumbing over proved equations,
+not new mathematics.
 
 For `W*_cpsu` there is a further, purely organisational obstacle: `A/Proc`
 has no category of von Neumann algebras and ncpsu-maps.  The one that exists,
@@ -675,7 +592,7 @@ clauses ever acquire statements.  Besides 132III.4 itself, **132III.5's first
 half** `Mon(W*_miu) ≅ dW*_miu` is blocked on exactly the same
 `MonoidalCategory` instance; its second half `dW*_miu ≃ Set^op` is proved
 (`dupEquivSetOp`).  If the ruling is "leave it", both should be recorded as
-deliberately unstated rather than as open work.
+deliberately unstated rather than as open work.  See `docs/DECISIONS.md` §3.2.
 
 ### A12. 101VII.1's middle clause is under-hypothesised as printed — the second map need not exist
 `proc.tex` parsec 1010, point 70 (`equivalent-examples`, Examples), part 1,
@@ -716,25 +633,13 @@ missing.
 restate `equivalent_examples_1_corners` with the two maps **constructed**
 from 94III and its mirror rather than assumed, which is strictly closer to
 the text and costs only plumbing — the proof is untouched, since both sides
-of the contraposition already reduce to `x a t = 0`.
+of the contraposition already reduce to `x a t = 0`.  See
+`docs/DECISIONS.md` §3.1.
 
 ### A13. 34V.3 in the module setting — is the **mirrored** cp condition wanted?
 `cstar.tex` parsec 340, point 50 (`ad-cp`, Exercise), part 3; rendered — in
 the Hilbert-*space* case only — as `ad_cp_3` in
 `Theses/A/CStar/Matrices.lean`.
-
-**Half of this entry is already ruled — do not answer it again.**  *Which*
-`𝒜`-valued convention the module statements are phrased in was settled in
-**session 2**: Mathlib's, approved, with the swap
-`⟪x,y⟫_Mathlib = ⟨y,x⟩_thesis` recorded in the affected doc comments and two
-statements corrected against it (`chilb_cs` 32VI and
-`cstar_matrix_gram_nonneg` 33II.2 — both were *false* as first transcribed;
-see PROVING-LOG session 2).  Option **(b)** below — introduce the thesis's
-convention alongside Mathlib's — is therefore **not live**, and is kept only
-so the trade-off it names is on the record.  What remains is the narrower
-question in obstruction 2: whether to add the mirrored companion to
-`IsCompletelyPositiveMap`.  See `docs/DECISIONS.md` §4.5 and §3.3.
-*(Narrowed 2026-08-26.)*
 
 **What the point says.**  For every element `x` of a Hilbert `𝒜`-module `X`,
 the vector functional `T ↦ ⟨x, Tx⟩ : ℬᵃ(X) → 𝒜` is completely positive.
@@ -742,69 +647,69 @@ the vector functional `T ↦ ⟨x, Tx⟩ : ℬᵃ(X) → 𝒜` is completely pos
 `S : Y → X`.)
 
 **What we state.**  `ad_cp_3` is the case `𝒜 = ℂ`, `X = ℋ`: the vector
-functional `B(ℋ) → ℂ`.  Likewise `ad_cp_2`/`conjOperator` state only the
-Hilbert-space case of part 2.  All three doc comments say so, and the audit
-flagged all three rows as weaker.
+functional `B(ℋ) → ℂ`, and the doc comment says so.  Part 2 is *not* in this
+position: `conjModule` and `ad_cp_2_module` state and prove 34V.2 for Hilbert
+`𝒜`-modules, and 32IV is likewise proved at module level
+(`paschke_inclusion_no_adjoint`).  So 34V.3 is the only part of 34V still
+confined to Hilbert spaces, and this question is the only thing holding it.
 
-**Two obstructions; only the second needs a ruling.**
+**Which convention is already ruled — do not answer that again.**  Session 2
+approved **Mathlib's** `CStarModule`, and two statements were corrected against
+it (`chilb_cs` 32VI and `cstar_matrix_gram_nonneg` 33II.2 — both *false* as
+first transcribed; see PROVING-LOG session 2).  Note the relation precisely:
+**32I** `chilb-basic` (parsec 320, point 10) makes `X` a **right** `𝒜`-module
+with `⟨x, y·a⟩ = ⟨x,y⟩·a` (on `𝒜` over itself, `⟨x,y⟩ = x*·y`), while Mathlib's
+`CStarModule` is a **left** module with `⟪x, a • y⟫ = a * ⟪x, y⟫` (on `𝒜` over
+itself, `⟪x,y⟫ = y·x*`).  The two therefore differ by the **opposite algebra**,
+not by a swap of arguments; the shorthand `⟪x,y⟫ = ⟨y,x⟩_thesis` is what one
+gets after composing the mirror with a `star`, and agrees with the mirror only
+on a `⟨y,y⟩` or a commutative `𝒜`.
 
-1. *Infrastructure* (no ruling needed).  `ℬᵃ(X)` exists in the tree only as
-   the private `Bax 𝒜 X`, a subalgebra of `X →L[ℂ] X`, with **no cross-module
-   hom-sets**: `S*TS` for `S : Y → X` needs adjoints of maps between
-   *different* modules and a `star` that swaps hom-sets, neither of which is
-   there.
-2. *Convention* — the author's call.  **32I** `chilb-basic` (parsec 320,
-   point 10) defines an `𝒜`-valued inner product so that `⟨x, ·⟩` is a
-   **module map**: `X` is a right `𝒜`-module and the scalar acts on the right
-   of the second argument, `⟨x, y·a⟩ = ⟨x,y⟩·a`.  Mathlib's `CStarModule`
-   axiom is the mirror image, `⟪x, a • y⟫ = a * ⟪x, y⟫` — concretely, on `𝒜`
-   viewed over itself Mathlib takes `⟪x,y⟫ = y·x*` where 32I gives `x*·y`.
-   Under Mathlib's convention the `ℂ`-linear vector functional
-   `T ↦ inner 𝒜 x (T x)` **fails** our `IsCompletelyPositiveMap`
-   (`Theses/A/CStar/Basic.lean`), which asks
-   `0 ≤ ∑ᵢⱼ bᵢ* f(aᵢ*aⱼ) bⱼ`: writing `yᵢ := Tᵢ x`, the expression the module
-   makes positive is
-   `⟪∑ᵢ bᵢ•yᵢ, ∑ⱼ bⱼ•yⱼ⟫ = ∑ᵢⱼ bⱼ·⟪yᵢ,yⱼ⟫·bᵢ*` — the `b`'s on the *other*
-   sides from the ones the cp condition wants.  The form that does satisfy
-   the cp condition is `T ↦ ⟪Tx, x⟫` (then
-   `∑ᵢⱼ bᵢ*·⟪yⱼ,yᵢ⟫·bⱼ = ⟪∑ⱼ bⱼ*•yⱼ, ∑ᵢ bᵢ*•yᵢ⟫ ≥ 0`), and *that* map is
-   **conjugate-linear in `T`**, hence not a `𝒜 →ₗ[ℂ] ℬ` and not eligible for
-   `IsCompletelyPositiveMap` at all.
+**What is live.**  Under Mathlib's convention the ℂ-linear vector functional
+`T ↦ inner 𝒜 x (T x)` **fails** our `IsCompletelyPositiveMap`
+(`Theses/A/CStar/Basic.lean`), which asks `0 ≤ ∑ᵢⱼ bᵢ* f(aᵢ*aⱼ) bⱼ`: writing
+`yᵢ := Tᵢ x`, the expression the module makes positive is
+`⟪∑ᵢ bᵢ•yᵢ, ∑ⱼ bⱼ•yⱼ⟫ = ∑ᵢⱼ bⱼ·⟪yᵢ,yⱼ⟫·bᵢ*` — the `b`'s on the *other* sides
+from the ones the cp condition wants.  The form that does satisfy the cp
+condition is `T ↦ ⟪Tx, x⟫` (then
+`∑ᵢⱼ bᵢ*·⟪yⱼ,yᵢ⟫·bⱼ = ⟪∑ⱼ bⱼ*•yⱼ, ∑ᵢ bᵢ*•yᵢ⟫ ≥ 0`), and *that* map is
+**conjugate-linear in `T`**, hence not a `𝒜 →ₗ[ℂ] ℬ` and not eligible for
+`IsCompletelyPositiveMap` at all.
 
 *Decision needed*: whether the mirrored `𝒜`-valued cp condition is wanted.
-(The convention itself is settled — Mathlib's; see the note at the head of
-this entry.)
 
-* **(a) Keep Mathlib's, and add the mirrored companion.**  Every Hilbert-module file already rests on
-  `CStarModule` — `B/Dils/{HilbertModules, SelfDual, SelfDualCompletion,
-  Paschke, Kaplansky}` and `A/CStar/{Matrices, TowardsVN}`, some 800 lines
-  mentioning it — so this is the cheap option.  The cost is that 34V.3 will
-  not read like the printed formula (the thesis's `⟨x, Tx⟩` becomes
-  Mathlib's `⟪Tx, x⟫`), and that the `𝒜`-valued cp condition wants a mirrored
-  companion to `IsCompletelyPositiveMap` (`∑ᵢⱼ bᵢ·f(aᵢaⱼ*)·bⱼ*`), which is a
-  new definition and so needs the ruling on its own account.
+* **(a) Keep Mathlib's, and add the mirrored companion**
+  `∑ᵢⱼ bᵢ·f(aᵢaⱼ*)·bⱼ*` to `IsCompletelyPositiveMap`, and state the module
+  version in it.  Every Hilbert-module file already rests on `CStarModule` —
+  `B/Dils/{HilbertModules, SelfDual, SelfDualCompletion, Paschke, Kaplansky}`
+  and `A/CStar/{Matrices, TowardsVN}`, some 900 lines mentioning it — so this
+  is the cheap option.  The cost is that 34V.3 will not read like the printed
+  formula (the thesis's `⟨x, Tx⟩` becomes Mathlib's `⟪Tx, x⟫`), and that the
+  companion is a new definition, which needs the ruling on its own account.
 * ~~**(b) Introduce the thesis's convention** alongside Mathlib's, so that
-  34V.3 is transcribed verbatim.~~  **Ruled out in session 2** (see above).
-  It forfeits Mathlib's Hilbert-module API (Cauchy–Schwarz, the induced norm,
-  the constructions) for anything stated in it, and would put two inner
-  products on the same objects.
-* **(c) Status quo**: leave 34V.2/.3 in the Hilbert-space case, with the doc
-  comments recording the divergence, and mark the module versions as
+  34V.3 is transcribed verbatim.~~  **Ruled out in session 2**, and kept only
+  so the trade-off it names is on the record.  It forfeits Mathlib's
+  Hilbert-module API (Cauchy–Schwarz, the induced norm, the constructions) for
+  anything stated in it, and would put two inner products on the same objects.
+* **(c) Status quo**: leave 34V.3 in the Hilbert-space case, with the doc
+  comment recording the divergence, and mark the module version as
   deliberately unstated.
 
 *What the ruling buys*: no `sorry` closes either way, and nothing in the tree
-is currently wrong — the Hilbert-space cases we state are correct and proved.
-What it settles is the shape of 34V.2/.3 in the module setting and of every
-future `𝒜`-valued statement; the neighbouring module rows (32IV.2
-`paschke_inclusion_no_adjoint`, and 161II in `B/Dils`) are waiting on the
-sub-Hilbert-module infrastructure and would be written in whichever
-convention is chosen.
+is currently wrong — the Hilbert-space case we state is correct and proved.
+What it settles is the shape of 34V.3 in the module setting and of every
+future `𝒜`-valued statement, 161II in `B/Dils` included, together with the
+three statements that already carry the mirror (32II's `𝒜^N`, 33I's
+`matrixBaxEquiv`, 141III's `rightMulEquiv`, all with an `ᵐᵒᵖ`).  See
+`docs/DECISIONS.md` §3.3.
 
 ### A2. `parsec-340.60` (34VI.1) is an empty `\TODO{}`
 The solution slot exists but is empty, and it is the *last* entry in
 `asols.tex` — which is why solution coverage appears to stop at parsec 340.
 Our `cstar_product_4` is proved, but from Mathlib rather than the author's
-argument, so it is **not cross-checked**.
+argument, so it is **not cross-checked**.  Nothing is blocked; the question is
+whether you want the solution written, in which case we will check ours
+against it.  See `docs/DECISIONS.md` §3.5.
 
 ---
 
@@ -820,13 +725,13 @@ Recorded here only so they are not re-diagnosed.
   Worked around with `letI` throughout; worth filing upstream.
 * **`MeasureTheory.AEEqFun` (`α →ₘ[μ] γ`) has no ring structure.**  It
   carries `AddCommGroup`, `CommMonoid`, `Module 𝕜`, `Star` and a partial
-  order, but distributivity is never proved, so even
-  `Semiring (X →ₘ[μ] ℂ)` fails to synthesise — and consequently there is no
-  `Algebra`, no `StarRing`, and nothing downstream on `Lp E ∞ μ`.  Supplied
-  locally in `A/VN/Basic.lean`'s `LinftyConstruction` block (four instances,
-  ~70 lines, each axiom three lines via `AEEqFun.induction_on`); worth
-  filing upstream, since it is the only thing standing between Mathlib and a
-  C*-algebra `L^∞(X)`.
+  order, but distributivity is never proved, so even `Semiring (X →ₘ[μ] ℂ)`
+  fails to synthesise — and consequently there is no `Algebra`, no `StarRing`,
+  and nothing downstream on `Lp E ∞ μ`.  Supplied locally in
+  `A/VN/Basic.lean`'s `LinftyConstruction` block (four instances, ~70 lines,
+  each axiom three lines via `AEEqFun.induction_on`); worth filing upstream,
+  since it is the only thing standing between Mathlib and a C*-algebra
+  `L^∞(X)`.
 * Mathlib has **no double commutant theorem** (an explicit TODO in its own
   header), **no von Neumann tensor product**, no spatial tensor product, and no
   normal GNS.  Its `VonNeumannAlgebra` is the *concrete* (double-commutant)

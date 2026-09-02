@@ -1163,9 +1163,11 @@ private theorem bSpan_op_smul (V : Set X) : ∀ a : ℬ, ∀ y ∈ bSpan ℬ V,
     rw [op_smul_comm_complex, op_mul_smul]
 
 
-/-- The **projection theorem** for an ultranorm-closed submodule of the form
-`U^⊥`: every `x ∈ X` splits as `p + (x − p)` with `p ∈ U^⊥` and `x − p`
-orthogonal to all of `U^⊥`.  This is the substance of **160IV**.3. -/
+/-- The **projection theorem** for an ultranorm-closed submodule `W` (given
+by its closure properties, not as an `U^⊥`; consumers pass both
+`unClosure (bSpan V)` and a generic `W`): every `x ∈ X` splits as
+`p + (x − p)` with `p ∈ W` and `x − p` orthogonal to all of `W`.  This is
+the substance of **160IV**.3. -/
 private theorem exists_orthogonal_decomp [VonNeumannAlgebra ℬ] [CompleteSpace X]
     (hX : SelfDual ℬ X) (W : Set X) (hW0 : (0 : X) ∈ W)
     (hWadd : ∀ y ∈ W, ∀ z ∈ W, y + z ∈ W)
@@ -1327,10 +1329,12 @@ private theorem exists_orthogonal_decomp [VonNeumannAlgebra ℬ] [CompleteSpace 
 /-- **160IV** (`hilbmod-projthm`, dils.tex:4496, Proposition), part 2:
 `V^⊥⊥` is the ultranorm closure of the ℬ-linear span of `V`.
 
-**Divergence, class 2.**  The thesis proves 2 and 3 together, in the order
-3-then-2: it takes an orthonormal basis `(eᵢ)` of `W` (the ultranorm closure
-of the span), *extends it to a basis of `X`*, and reads off
-`V^⊥⊥ ⊆ W` from the expansion of an `x ∈ V^⊥⊥` along that extended basis.
+**Divergence, class 2.**  The thesis proves 2 and 3 off a single extended
+basis, part 2 first (**160VII**, dils.tex:4543) and part 3 after it
+(**160VIII**, dils.tex:4556, which *uses* part 2): it takes an orthonormal
+basis `(eᵢ)` of `W` (the ultranorm closure of the span), *extends it to a
+basis of `X`*, and reads off `V^⊥⊥ ⊆ W` from the expansion of an
+`x ∈ V^⊥⊥` along that extended basis.
 Here the inclusion comes from the same relativized decomposition that
 proves part 3: `x = p + (x−p)` with `p ∈ W` and `x − p ⊥ W`, so
 `x − p ∈ V^⊥` (as `V ⊆ W`) and `x − p ∈ V^⊥⊥` (as `x, p ∈ V^⊥⊥`), whence
@@ -2103,11 +2107,12 @@ coordinate map `x ↦ (⟨eᵢ,x⟩)ᵢ`: the coordinate map is injective, addit
 lands bijectively on `ℓ²((⟨eᵢ,eᵢ⟩)ᵢ)` and identifies the inner
 products.
 
-**Divergence (class 2/3).**  The author's solution builds `ℓ²((pᵢ))` as a
-module, proves it self-dual, and only then transports the structure along
-the coordinate map.  Nothing of that is needed for the statement above: all
-three clauses come straight out of the two convergence clauses of
-`IsONBasis`.
+**Divergence (local).**  The route is the solution's own `ϑ`
+(bsols.tex:1092–1113), which is defined directly and proved an isomorphism
+in four steps — it transports nothing along the coordinate map.  Two steps
+differ locally: the solution never checks that `ϑ` *lands* in `ℓ²`, and it
+reads the inner product off the expansion of `y` alone, where the clauses
+below come straight out of the two convergence clauses of `IsONBasis`.
 
 * the coordinates are ℓ²-summable by Bessel (`mod_bessel`) and absorbed by
   the projections `⟨eᵢ,eᵢ⟩` (`onbasis_coef_absorb`), which by
@@ -6435,8 +6440,11 @@ device that replaces the thesis's passage to the norm completions
 resolvent `(B + ε)^{-½}` that the proof of **144V**
 `blinear_inprod_inequality` needs does *not* lie in `𝒜 ⊙ ℬ` — but it does lie
 in its norm closure (the spatial tensor product, which is exactly what
-dils.tex passes to), and `cfc_mem` puts it there.  Everything else is the
-proof of 144V, verbatim. -/
+dils.tex passes to), and `cfc_mem` puts it there.  The hypothesis, though,
+is assumed only on `S`, so a sequence `dₙ ∈ S` converging to that resolvent
+(`mem_closure_iff_seq_limit`, `le_of_tendsto_of_tendsto'`) is what carries
+the bound across — that transfer is what replaces the thesis's `T̄`.
+Everything else is the proof of 144V, verbatim. -/
 private theorem le_smul_of_conj_norm_le (S : StarSubalgebra ℂ 𝒞)
     {C : ℝ} (hC : 0 ≤ C) {P B : 𝒞} (hP : 0 ≤ P) (hB : 0 ≤ B) (hBS : B ∈ S)
     (h : ∀ d ∈ S, ‖d * P * star d‖ ≤ C * ‖d * B * star d‖) :
@@ -8578,9 +8586,11 @@ first and `u` afterwards — the same order-of-choice device that removed
 computation is avoided altogether.  (Testing against product functionals
 would still be needed for the thesis's route: it needs to know that
 `∑ᵢⱼ aᵢ*aᵢ ⊗ bⱼ*bⱼ` converges ultraweakly to `⟨v,v⟩ ⊗ ⟨w,w⟩`, which is
-`tensor-3`.  Here the only use of `IsVNTensor` beyond bilinearity is the
-non-degeneracy `⟨eᵢ,eᵢ⟩ ⊗ ⟨dⱼ,dⱼ⟩ ≠ 0`, for which the product functionals
-*are* used.) -/
+`tensor-3`.  Here `IsVNTensor` is used for the star-projection clause
+(`ht.mul`, `ht.star`), for the non-degeneracy `⟨eᵢ,eᵢ⟩ ⊗ ⟨dⱼ,dⱼ⟩ ≠ 0`, for
+which the product functionals *are* used, and — through the 166III
+estimates that carry the last step — for leg normality; what is *not*
+needed is the ultraweak double-sum identity.) -/
 theorem ext_tensor_basis [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
     [VonNeumannAlgebra 𝒞] [CompleteSpace X] [CompleteSpace Y]
     (hX : SelfDual 𝒜 X) (hY : SelfDual ℬ Y) (E : ExtTensor t ht X Y)
@@ -9850,29 +9860,34 @@ private theorem unSeminorm_tprod_right (φ : NCPMap 𝒜 ℬ) (M : PaschkeModule
         rw [Real.sqrt_mul (norm_nonneg _)]
     _ = Real.sqrt ‖φ (a * star a)‖ * unSeminorm ω (mulInner ℬ) e := rfl
 
+-- the right ℬ-action on `𝒜 ⊙ ℬ` of parsec 1540, needed to read the
+-- `ptensBInner` of the model below (`Paschke.lean` declares it `local`)
+attribute [local instance] ptensSMul
+
 /-- **The elementary tensors of `𝒜 ⊗_φ ℬ` are ultranorm dense.**  This is
 the Paschke-module analogue of `selfdual_compl_defining_dense` (**163II**),
-and it is the easier of the two: the set `D` of finite sums `∑ᵢ aᵢ ⊗ bᵢ` is
-*already* a ℬ-submodule
-(`PhiCompatible.smul_action`, `c·(a ⊗ b) = a ⊗ (cb)`), so `bSpan D = D` and
-**160IV**.2 identifies `D^⊥⊥` with the ultranorm closure of `D` outright.
-The projection onto `D^⊥⊥` fixes every elementary tensor, hence equals `id`
-by the uniqueness half of the universal property of `𝒜 ⊗_φ ℬ`
-(**154III**.1), so `D^⊥⊥` is everything.
+and it is proved by **163III**'s own route: *transport along the comparison
+isomorphism with a model for which the density is free*.
 
-The projection argument is ours, but **not** for the reason this comment
-used to give.  It said the thesis states the density "only implicitly, in
-the 'by construction' of **151V**/**164VII**, so there is no printed proof
-here to be faithful to".  That was false twice.  There is no point 151V --
-`151V` occurs nowhere in `dils.tex` -- and the thesis *does* state the dense
-range of `η` for this very module, at dils.tex:3641 inside 154III.1's own
-proof, with the general form printed as 163II's moreover-clause and proved
-at 163III.  What actually blocks the printed route is that `PaschkeModule`
-is axiomatised by its universal property with no `dense` field, so 163III's
-transport would need a uniqueness-up-to-iso for it that the tree does not
-have.  (**164II**.1 `ext_tensor_dense` used to be a third copy of it;
-since 2026-08-27 it runs the thesis's own argument instead, which is
-available there and is not available at either of these two points.) -/
+The model is `paschkeModuleOf φ E` for a **150II** self-dual completion `E`
+of `(𝒜 ⊙ ℬ, ⟨·,·⟩_φ)` — the term `existence_paschke` is built from — whose
+`dense` field says exactly that the image of `η` is ultranorm dense, and
+whose elementary tensors are `η(a ⊗ₜ b)` on the nose.  The two universal
+properties give `U` from the model to `M` and `W` back, and the uniqueness
+half of `M`'s own property (applied to `M.tprod` itself) forces `U ∘ W = id`,
+so `U` is onto; `U` carries `η(𝒜 ⊙ ℬ)` into the finite sums of elementary
+tensors of `M` by `TensorProduct.induction_on`, and being a bounded module
+map it moves the ultranorm seminorms by at most `|C|` (**144V**
+`unSeminorm_boundedModuleMap_le`).  That is 163III with `η₁` the model's
+embedding.
+
+Note the printed route is available *here* and not at
+`selfdual_compl_defining_dense`, where it is blocked by universes:
+`PaschkeModule.X` and `PaschkeModule.univ` both live in `Type u`, so the
+comparison maps can be formed in both directions.
+
+Before 2026-09-03 this ran a projection argument on `D^⊥⊥` instead — the
+thesis's at neither point — which is why the row was classed `route`. -/
 theorem paschke_tprod_dense (φ : NCPMap 𝒜 ℬ) (M : PaschkeModule φ) :
     UnDense (inner ℬ)
       {z : M.X | ∃ (n : ℕ) (a : Fin n → 𝒜) (b : Fin n → ℬ),
@@ -9886,41 +9901,81 @@ theorem paschke_tprod_dense (φ : NCPMap 𝒜 ℬ) (M : PaschkeModule φ) :
     refine ⟨n + m, Fin.append a a', Fin.append b b', ?_⟩
     rw [Fin.sum_univ_add]
     simp only [Fin.append_left, Fin.append_right]
-  have hDb : ∀ c : ℬ, ∀ z ∈ D, c • z ∈ D := by
-    rintro c _ ⟨n, a, b, rfl⟩
-    refine ⟨n, a, fun i => c * b i, ?_⟩
-    rw [op_smul_sum]
-    exact Finset.sum_congr rfl fun i _ => M.compat.smul_action (a i) (b i) c
-  have hDc : ∀ c : ℂ, ∀ z ∈ D, c • z ∈ D := by
-    rintro c _ ⟨n, a, b, rfl⟩
-    refine ⟨n, fun i => c • a i, b, ?_⟩
-    rw [Finset.smul_sum]
-    exact Finset.sum_congr rfl fun i _ => (M.compat.smul_complex c (a i) (b i)).symm
-  have hspan : bSpan ℬ D = D := by
-    refine Set.eq_of_subset_of_subset ?_ (subset_bSpan _)
-    rintro _ ⟨n, c, b, v, hv, rfl⟩
-    exact Finset.sum_induction _ (fun w => w ∈ D)
-      (fun w w' hw hw' => hDadd w hw w' hw') hD0
-      fun i _ => hDc (c i) _ (hDb (b i) _ (hv i))
-  obtain ⟨hW0, hWadd, hWb, hWc, hWcl⟩ := hilbmod_projthm_1 M.selfDual (orthoCompl ℬ D)
-  obtain ⟨P, hPbdd, hPW, hPfix⟩ :=
-    exists_orthoProj M.selfDual (orthoCompl ℬ (orthoCompl ℬ D)) hW0 hWadd hWb hWc hWcl
-  obtain ⟨T', -, hT'uniq⟩ := M.univ M.X inferInstance inferInstance inferInstance
-    inferInstance inferInstance M.selfDual M.tprod M.compat
-  have hPid : P = id := by
-    have h1 : P = T' := hT'uniq P ⟨⟨1, hPbdd⟩, fun a b =>
-      hPfix (M.tprod a b) (subset_biorthoCompl _
-        ⟨1, fun _ => a, fun _ => b, by simp⟩)⟩
-    have h2 : id = T' := hT'uniq id
-      ⟨⟨1, ⟨fun x y => rfl, fun c x => rfl, fun b x => rfl,
-        fun x => le_of_eq (one_mul _).symm⟩⟩, fun a b => rfl⟩
-    exact h1.trans h2.symm
+  -- the model of **150II**, whose `dense` field is the density we transport
+  obtain ⟨E⟩ := dils_completion (𝒷 := ℬ) (V := 𝒜 ⊗[ℂ] ℬ) (ptensBInner φ)
+  -- `η` and its two laws, read at the model's own carrier (they are the
+  -- same type, but the elaborator has to be told once)
+  set e : 𝒜 ⊗[ℂ] ℬ → (paschkeModuleOf φ E).X := E.η with hedef
+  have heη : ∀ v : 𝒜 ⊗[ℂ] ℬ, e v = E.η v := fun _ => by rw [hedef]
+  have headd : ∀ v w : 𝒜 ⊗[ℂ] ℬ, e (v + w) = e v + e w := E.η_add
+  have he0 : e 0 = 0 := by
+    have h := headd 0 0
+    rw [add_zero] at h
+    have h2 : e 0 + e 0 - e 0 = e 0 - e 0 := by rw [← h]
+    simpa using h2
+  have hedense : UnDense (inner ℬ) (Set.range e) := E.dense
+  have hetmul : ∀ (a : 𝒜) (b : ℬ),
+      e (a ⊗ₜ[ℂ] b) = (paschkeModuleOf φ E).tprod a b := fun _ _ => rfl
+  -- the two comparison maps, from the two universal properties
+  obtain ⟨U, ⟨⟨CU, hCU⟩, hUt⟩, -⟩ := (paschkeModuleOf φ E).univ M.X
+    inferInstance inferInstance inferInstance inferInstance inferInstance
+    M.selfDual M.tprod M.compat
+  obtain ⟨W, ⟨⟨CW, hCW⟩, hWt⟩, -⟩ := M.univ (paschkeModuleOf φ E).X
+    inferInstance inferInstance inferInstance inferInstance inferInstance
+    (paschkeModuleOf φ E).selfDual (paschkeModuleOf φ E).tprod
+    (paschkeModuleOf φ E).compat
+  obtain ⟨T', -, hT'uniq⟩ := M.univ M.X inferInstance inferInstance
+    inferInstance inferInstance inferInstance M.selfDual M.tprod M.compat
+  -- `U ∘ W = id` by the uniqueness half of `M`'s universal property
+  have hWU : ∀ z : M.X, U (W z) = z := by
+    have h1 : (fun z => U (W z)) = T' :=
+      hT'uniq _ ⟨⟨|CU| * |CW|, isBoundedModuleMap_comp (𝒞 := ℬ) hCW hCU⟩,
+        fun a b => by
+          show U (W (M.tprod a b)) = M.tprod a b
+          rw [hWt, hUt]⟩
+    have h2 : (id : M.X → M.X) = T' :=
+      hT'uniq _ ⟨⟨1, isBoundedModuleMap_id (𝒞 := ℬ)⟩, fun _ _ => rfl⟩
+    intro z
+    exact congrFun (h1.trans h2.symm) z
+  -- `U` carries `η(𝒜 ⊙ ℬ)` into `D`
+  have hU0 : U (0 : (paschkeModuleOf φ E).X) = 0 := by
+    simpa using hCU.smul_complex (0 : ℂ) 0
+  have hηD : ∀ v : 𝒜 ⊗[ℂ] ℬ, U (e v) ∈ D := by
+    intro v
+    induction v using TensorProduct.induction_on with
+    | zero => rw [he0, hU0]; exact hD0
+    | tmul a b =>
+        rw [hetmul, hUt]
+        exact ⟨1, fun _ => a, fun _ => b, by simp⟩
+    | add v w hv hw => rw [headd, hCU.add]; exact hDadd _ hv _ hw
+  -- the transport itself (**144V** moves the seminorms by at most `|CU|`)
   intro z n ωs ε hε
-  have hzW : z ∈ orthoCompl ℬ (orthoCompl ℬ D) := by
-    have h := hPW z
-    rwa [hPid] at h
-  rw [hilbmod_projthm_2 M.selfDual D, hspan] at hzW
-  exact hzW n ωs ε hε
+  have hC0 : (0 : ℝ) ≤ |CU| := abs_nonneg _
+  have hpos : (0 : ℝ) < |CU| + 1 := by linarith
+  have hUb : IsBoundedModuleMap (cstarBInner ℬ (paschkeModuleOf φ E).X)
+      (cstarBInner ℬ M.X) |CU| U :=
+    ⟨hCU.add, hCU.smul_complex, hCU.smul, fun x =>
+      (hCU.bound x).trans (mul_le_mul_of_nonneg_right (le_abs_self CU)
+        (Real.sqrt_nonneg _))⟩
+  obtain ⟨d₀, ⟨v, hv⟩, hd₀⟩ :=
+    hedense (W z) n ωs (ε / (|CU| + 1)) (div_pos hε hpos)
+  refine ⟨U d₀, ?_, fun i => ?_⟩
+  · rw [← hv]; exact hηD v
+  · have hsub : z - U d₀ = U (W z - d₀) := by
+      rw [show W z - d₀ = W z + (-1 : ℂ) • d₀ by rw [neg_one_smul]; abel,
+        hCU.add, hCU.smul_complex, neg_one_smul, hWU]
+      abel
+    rw [hsub]
+    have hbdd : unSeminorm (ωs i) (inner ℬ) (U (W z - d₀))
+        ≤ |CU| * unSeminorm (ωs i) (inner ℬ) (W z - d₀) :=
+      unSeminorm_boundedModuleMap_le _ _ |CU| hC0 U hUb (ωs i) _
+    have hstep : |CU| * unSeminorm (ωs i) (inner ℬ) (W z - d₀)
+        ≤ |CU| * (ε / (|CU| + 1)) :=
+      mul_le_mul_of_nonneg_left (hd₀ i) hC0
+    have hfin : |CU| * (ε / (|CU| + 1)) ≤ ε := by
+      rw [mul_div_assoc', div_le_iff₀ hpos]
+      nlinarith [hε.le, hC0]
+    linarith
 
 end DilationSpaceDense
 
@@ -11215,7 +11270,7 @@ below), then shows in **167VI** that the tensor product of the *standard*
 dilations `(𝒷ᵃ(𝒜ᵢ ⊗_{φᵢ} ℬᵢ)ᵐᵒᵖ, ϱᵢ, hᵢ)` of `existence_paschke` is a
 dilation of `φ₁ ⊗ φ₂`.  The passage from those to the **arbitrary**
 dilations the Theorem quantifies over is missing from the printed proof —
-it survives only as a LaTeX comment, dils.tex:5950-5961 (ERRATA **167II**).
+it survives only as a LaTeX comment, dils.tex:5958-5969 (ERRATA **167II**).
 The route below is the commented argument, with its two gaps filled:
 
 1. `Θ(S,T) = S ⊗ T` on `𝒷ᵃ(X₁) × 𝒷ᵃ(X₂)` is a tensor product (**165VI**
