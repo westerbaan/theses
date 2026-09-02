@@ -755,7 +755,7 @@ here:
   the one place the theses cite it — 194I.4 `AConvMCat.coprod_inl_injective` —
   is itself left under a costed machinery reason. Cannot be closed until that is.
 * **`paschke_pure` (171VII)** is **no longer dead** — see §9.
-* **`injective_nmiu_iso_on_image_2'` (48VI part 2)**, `A/VN/Basic.lean:4902`,
+* **`injective_nmiu_iso_on_image_2'` (48VI part 2)**, `A/VN/Basic.lean:5093`,
   74 lines.  **Moved here from §5.2, 2026-08-27**, where it had been nominated
   as a fingerprint on a premise that does not survive reading `vn.tex:1119`.
   It is that Lemma's *second* conclusion — an injective nmiu-map restricts to
@@ -1017,7 +1017,7 @@ deleted:
 | `Corner.isClosed_cornerSet` | `Measurement.lean:597`, `isClosed_cornerSet.isComplete` |
 | `IsCorner.isStarProjection` | `CornerTensor.lean:106`, `h.isStarProjection.isIdempotentElem` — **suffix and prefix at once** |
 | `isUnitaryCLM_one` | `CommutationAmplify.lean:374`, `isUnitaryCLM_one.opTensor …` |
-| `le_iff_matForm` | `Basic.lean:5349`, `le_iff_matForm.mpr` (and 2 more) |
+| `le_iff_matForm` | `Basic.lean:5530`, `le_iff_matForm.mpr` (and 2 more) |
 | `suppProj_eq_zero_iff` | `Projections.lean:2993`, `suppProj_eq_zero_iff.mp` |
 | `IsPowBase.denseRange_mul_self` | `ModularGroup.lean:380`, `h.denseRange_mul_self.induction_on` |
 
