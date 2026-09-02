@@ -489,30 +489,35 @@ theorem pred_sea_s1_s2_s3 [AndThenEffectus C] [DaggerPrimeEffectus C]
     intro p
     exact ((asrt_absorp_rule p (isSharp_one (effObj C)) (isSharp_one X)).2).mp
       (pred_le_truth _)
-  · -- (S3): the thesis (eff.tex:7398) applies the dagger to
-    -- `asrt_q ∘ asrt_p = 0 = asrt_0`.  We avoid `pureDagger`
-    -- and argue instead with the `asrt_sq` axiom of a †-effectus together
-    -- with the uniqueness of square roots; see the errata note.
+  · -- (S3), the thesis's argument (eff.tex:7398): from `p & q = 0` we get
+    -- `asrt_q ∘ asrt_p = 0 = asrt_0`; applying the dagger and using
+    -- `asrt_p† = asrt_p` gives `asrt_p ∘ asrt_q = 0`, whence `q & p = 0`.
     intro p q h
-    -- `asrt p ≫ asrt q = 0`, since `1 ∘ asrt_q = q`.
+    -- `asrt_q ∘ asrt_p = 0`, since `1 ∘ asrt_q = q`.
     have hpq : asrt p ≫ asrt q = (0 : X ⟶ X) := by
       refine EffectusPartialForm.eq_zero_of_one_zero ?_
       show (asrt p ≫ asrt q) ≫ truth X = 0
       rw [Category.assoc, (asrt_spec q).2]
       exact h
-    -- Hence `asrt_{q&p} ∘ asrt_{q&p} = asrt_q ∘ asrt_p ∘ asrt_p ∘ asrt_q = 0`.
-    have hsq : asrt (andThen q p) ≫ asrt (andThen q p) = (0 : X ⟶ X) := by
-      rw [DaggerPrimeEffectus.asrt_sq q p, hpq, FinPAC.comp_zero,
-        FinPAC.comp_zero]
-    -- So `(q&p) & (q&p) = 0 = 0 & 0`, and square roots of `0` are unique.
-    have hr : andThen (andThen q p) (andThen q p) = (0 : Pred X) := by
-      have e : andThen (andThen q p) (andThen q p)
-          = (asrt (andThen q p) ≫ asrt (andThen q p)) ≫ truth X := by
-        show asrt (andThen q p) ≫ andThen q p = _
-        rw [Category.assoc, (asrt_spec (andThen q p)).2]
-      rw [e, hsq, FinPAC.zero_comp]
-    have hz : andThen (0 : Pred X) 0 = (0 : Pred X) := FinPAC.comp_zero _
-    exact (DaggerPrimeEffectus.sqrt_existsUnique (0 : Pred X)).unique hr hz
+    -- The `0 = asrt_0` of the thesis: `asrt_0` is total on `0`, hence zero.
+    have hasrt0 : asrt (0 : Pred X) = 0 :=
+      EffectusPartialForm.eq_zero_of_one_zero (asrt_spec (0 : Pred X)).2
+    have e0 : asrt (0 : Pred X) ≫ asrt (0 : Pred X) = (0 : X ⟶ X) := by
+      rw [hasrt0, FinPAC.zero_comp]
+    -- so `0† = (asrt_0 ∘ asrt_0)† = asrt_0 ∘ asrt_0 = 0`, by the
+    -- functoriality 219XI of the dagger on assert maps.
+    have hd0 : pureDagger (0 : X ⟶ X) isPure_zero = 0 :=
+      (pureDagger_congr (upm_closed_pure (asrt_spec (0 : Pred X)).1.1
+            (asrt_spec (0 : Pred X)).1.1) isPure_zero e0).symm.trans
+        ((pureDagger_asrt_comp (0 : Pred X) 0).trans e0)
+    -- `(asrt_q ∘ asrt_p)† = asrt_p ∘ asrt_q` by that same 219XI, and the
+    -- map being daggered is `0`.
+    have hqp : asrt q ≫ asrt p = (0 : X ⟶ X) :=
+      (pureDagger_asrt_comp p q).symm.trans
+        ((pureDagger_congr _ isPure_zero hpq).trans hd0)
+    -- Thus `q & p = 1 ∘ asrt_p ∘ asrt_q = 0`.
+    show asrt q ≫ p = 0
+    rw [← (asrt_spec p).2, ← Category.assoc, hqp, FinPAC.zero_comp]
 
 /-! ## Homological categories (parsecs 226–228) -/
 
