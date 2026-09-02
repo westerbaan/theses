@@ -26,8 +26,9 @@ Beyond the `sorry`s there are 100 open rows in `ERRATA.md` (those are
 corrections, not decisions, and are not repeated here) and **eleven** audit
 rows in `docs/audit/` marked `left-ruling`, re-counted 2026-08-29 after a
 pass that re-derived every verdict in the audit (twelve then; 51IX §2.6 was
-closed on 2026-09-02): four are §2 (191II §2.3,
-30X and 69IX §2.4, 28II §2.5), two are §3 (132III §3.2, 34V
+closed on 2026-09-02, and 69IX's three rows left §2.4 on 2026-09-03 when the
+printed 69X route was taken without restating 30X): four are §2 (191II §2.3,
+30X §2.4, 28II §2.5), two are §3 (132III §3.2, 34V
 §3.3), and four are §1 (199V §1.1, 215II §1.2, and 139XI §1.4 and 179III.2
 §1.5, which are the two that hold up a `sorry`).
 

@@ -7193,6 +7193,31 @@ private theorem conj_proj_nonneg {e : A} (he : IsStarProjection e) (a : A) :
   rw [h]
   exact star_mul_self_nonneg _
 
+/-- The GNS identity behind **69V**, **69VII** and **30X**: for a vector `ξ`
+implementing `ω` in a ∗-representation `ρ`, and a *self-adjoint* `e`, the
+vector `ρ(e)ρ(a)ξ` vanishes exactly when `ω(a* e² a)` does, because its
+squared norm *is* `ω(a* e² a)`. -/
+private theorem gns_zero_iff_sa {H : Type*} [NormedAddCommGroup H]
+    [InnerProductSpace ℂ H] [CompleteSpace H] (ω : NPFunctional A)
+    (ρ : MIUMap A (H →L[ℂ] H)) (ξ : H) (hξ : ∀ a : A, ω a = ⟪ξ, ρ a ξ⟫)
+    {e : A} (he : star e = e) (a : A) :
+    ρ e (ρ a ξ) = 0 ↔ (ω (star a * (e * e) * a) : ℂ) = 0 := by
+  have hinner : ∀ b : A, ⟪ρ a ξ, ρ b (ρ a ξ)⟫ = (ω (star a * b * a) : ℂ) := by
+    intro b
+    rw [hξ (star a * b * a), map_mul, map_mul, map_star]
+    rw [← ContinuousLinearMap.adjoint_inner_right (ρ a) ξ (ρ b (ρ a ξ))]
+    simp [ContinuousLinearMap.star_eq_adjoint]
+  have hself : ⟪ρ e (ρ a ξ), ρ e (ρ a ξ)⟫ = (ω (star a * (e * e) * a) : ℂ) := by
+    rw [← hinner (e * e),
+      ← ContinuousLinearMap.adjoint_inner_right (ρ e) (ρ a ξ) (ρ e (ρ a ξ))]
+    have hst : ContinuousLinearMap.adjoint (ρ e) = ρ e := by
+      rw [← ContinuousLinearMap.star_eq_adjoint, ← map_star, he]
+    rw [hst]
+    have hee : (ρ e) (ρ e (ρ a ξ)) = ρ (e * e) (ρ a ξ) := by rw [map_mul]; rfl
+    rw [hee]
+  rw [← hself]
+  exact (inner_self_eq_zero (𝕜 := ℂ) (x := ρ e (ρ a ξ))).symm
+
 /-- The GNS identity behind **69V** and **69VII**: for a vector `ξ` implementing
 `ω` in a ∗-representation `ρ`, and a projection `e`, the vector
 `ρ(e)ρ(a)ξ` vanishes exactly when `ω(a* e a)` does, because its squared norm
@@ -7202,20 +7227,7 @@ private theorem gns_zero_iff {H : Type*} [NormedAddCommGroup H]
     (ρ : MIUMap A (H →L[ℂ] H)) (ξ : H) (hξ : ∀ a : A, ω a = ⟪ξ, ρ a ξ⟫)
     {e : A} (he : IsStarProjection e) (a : A) :
     ρ e (ρ a ξ) = 0 ↔ (ω (star a * e * a) : ℂ) = 0 := by
-  have hinner : ∀ b : A, ⟪ρ a ξ, ρ b (ρ a ξ)⟫ = (ω (star a * b * a) : ℂ) := by
-    intro b
-    rw [hξ (star a * b * a), map_mul, map_mul, map_star]
-    rw [← ContinuousLinearMap.adjoint_inner_right (ρ a) ξ (ρ b (ρ a ξ))]
-    simp [ContinuousLinearMap.star_eq_adjoint]
-  have hself : ⟪ρ e (ρ a ξ), ρ e (ρ a ξ)⟫ = (ω (star a * e * a) : ℂ) := by
-    rw [← hinner e, ← ContinuousLinearMap.adjoint_inner_right (ρ e) (ρ a ξ) (ρ e (ρ a ξ))]
-    have hst : ContinuousLinearMap.adjoint (ρ e) = ρ e := by
-      rw [← ContinuousLinearMap.star_eq_adjoint, ← map_star, he.isSelfAdjoint.star_eq]
-    rw [hst]
-    have hee : (ρ e) (ρ e (ρ a ξ)) = ρ (e * e) (ρ a ξ) := by rw [map_mul]; rfl
-    rw [hee, he.isIdempotentElem.eq]
-  rw [← hself]
-  exact (inner_self_eq_zero (𝕜 := ℂ) (x := ρ e (ρ a ξ))).symm
+  rw [gns_zero_iff_sa ω ρ ξ hξ he.isSelfAdjoint.star_eq a, he.isIdempotentElem.eq]
 
 /-- Half of **69V**: `ω(a* ⌈⌈⌈ω⌉⌉⌉^⊥ a) = 0`.  (`⌈⌈⌈ω⌉⌉⌉^⊥` is central and
 killed by `ω`, and `⌈a* q a⌉ ≤ q` for central `q`.) -/
@@ -7443,90 +7455,6 @@ theorem CentrePositiveSeparating.centralProj {Ω : Set (NPFunctional A)}
     (h : CentrePositiveSeparating A Ω) : CentreSeparatingCentralProj A Ω :=
   fun z hz hzc hzero => h z hzc hz.nonneg hzero
 
-/-- **69IX**, the implication (2) ⇒ (1) — the one its consumers actually
-need: 69IX item **2** ("a central *projection* killed by all of `Ω` is
-zero") gives cstar.tex **21II**.4, thesis item **1**.
-
-Proof: `⌈⌈a⌉⌉ = ⋃_b ⌈b* ⌊a⌉ b⌉` by **68I**, every `ω ∈ Ω` kills `b* ⌊a⌉ b`
-(because it kills `b* a b`, hence `b* a a* b`, hence `b* ⌈aa*⌉ b` by **60I**),
-so every `ω` kills `⌈b* ⌊a⌉ b⌉` — again by **60I** — hence kills their
-supremum, which is the central projection `⌈⌈a⌉⌉`.  (This is a shortcut: the
-thesis derives (2) ⇒ (1) through (3) and `gns_ceil`.) -/
-theorem eq_zero_of_centreSeparating_conj (Ω : Set (NPFunctional A))
-    (hΩ : CentreSeparatingCentralProj A Ω) {a : A} (ha : 0 ≤ a)
-    (h : ∀ ω ∈ Ω, ∀ b : A, ω (star b * a * b) = 0) : a = 0 := by
-  have hasa : IsSelfAdjoint a := IsSelfAdjoint.of_nonneg ha
-  obtain ⟨herproj, hera⟩ := (ceill_basic_2 a).1
-  set e : A := rangeProj a with hedef
-  have hstar : a * star a = a * a := by rw [hasa.star_eq]
-  have hea : ∀ ω ∈ Ω, ∀ b : A, ω (star b * e * b) = 0 := by
-    intro ω hω b
-    have h1 : conjNP b ω a = 0 := by rw [conjNP_apply]; exact h ω hω b
-    have h2 : conjNP b ω (a * star a) = 0 := by
-      have hle : a * a ≤ (‖a‖ : ℝ) • a := mul_self_le_norm_smul ha
-      have hmono : conjNP b ω (a * a) ≤ conjNP b ω ((‖a‖ : ℝ) • a) :=
-        (conjNP b ω).monotone hle
-      have hrhs : conjNP b ω ((‖a‖ : ℝ) • a) = 0 := by
-        have hcx : ((‖a‖ : ℝ) • a : A) = (((‖a‖ : ℝ) : ℂ)) • a := by
-          rw [← algebraMap_smul ℂ (‖a‖ : ℝ) a]; simp
-        rw [hcx]
-        show (conjNP b ω).toPositiveLinearMap _ = 0
-        rw [map_smul (conjNP b ω).toPositiveLinearMap]
-        show (((‖a‖ : ℝ) : ℂ)) • (conjNP b ω) a = 0
-        rw [h1, smul_zero]
-      have hnn : (0 : ℂ) ≤ conjNP b ω (a * a) :=
-        npFunctional_nonneg _ (by rw [← hstar]; exact mul_star_self_nonneg a)
-      rw [hstar]
-      rw [hrhs] at hmono
-      exact le_antisymm hmono hnn
-    have h3 : conjNP b ω (ceil (a * star a)) = 0 :=
-      (ceil_functionals_lemma (a * star a) (mul_star_self_nonneg a) (conjNP b ω)).mp h2
-    rw [conjNP_apply] at h3
-    exact h3
-  set P : Set A := {x : A | ∃ b : A, x = ceil (star b * e * b)} with hPdef
-  have hPproj : ∀ p ∈ P, IsStarProjection p := by
-    rintro p ⟨b, rfl⟩
-    exact (ceil_spec (star_left_conjugate_nonneg herproj.nonneg b)).1
-  have hcc : cceil a = projSup P := by
-    rw [(cceil_eq_cceil_supp a).2.1, ← hedef, (cceil_fundamental e herproj).2]
-  have hzero : ∀ ω ∈ Ω, ω (cceil a) = 0 := by
-    intro ω hω
-    set r : A := npCarrier ω with hrdef
-    obtain ⟨hrproj, hr0, -⟩ := carrier_spec ω.toPositiveLinearMap ω.preservesDirSups'
-    have hle : projSup P ≤ 1 - r := by
-      refine (projSup_spec hPproj).2.2 _ hrproj.one_sub ?_
-      rintro p ⟨b, rfl⟩
-      have hnn : (0 : A) ≤ star b * e * b := star_left_conjugate_nonneg herproj.nonneg b
-      have hp0 : ω (ceil (star b * e * b)) = 0 :=
-        (ceil_functionals_lemma _ hnn ω).mp (hea ω hω b)
-      have hcp : IsStarProjection (ceil (star b * e * b)) := (ceil_spec hnn).1
-      have hcar := (carrier_spec ω.toPositiveLinearMap ω.preservesDirSups').2.2
-        (1 - ceil (star b * e * b)) hcp.one_sub (by rw [sub_sub_cancel]; exact hp0)
-      exact le_sub_comm.mp hcar
-    have hmono : ω (cceil a) ≤ ω (1 - r) := by
-      rw [hcc]; exact (ω.monotone hle : ω (projSup P) ≤ ω (1 - r))
-    have hr0' : ω (1 - r) = 0 := hr0
-    rw [hr0'] at hmono
-    refine le_antisymm hmono ?_
-    exact npFunctional_nonneg ω (by rw [hcc]; exact (projSup_spec hPproj).1.nonneg)
-  obtain ⟨⟨hzproj, hzcentral, hza⟩, -⟩ := cceil_isLeast a
-  have hz0 : cceil a = 0 := hΩ (cceil a) hzproj hzcentral hzero
-  rw [← hza, hz0, zero_mul]
-
-/-- **69IX**, (2) ⇒ (1) packaged: `eq_zero_of_centreSeparating_conj` read as
-cstar.tex **21II**.4 for the family `Ω`. -/
-theorem CentreSeparatingCentralProj.conj {Ω : Set (NPFunctional A)}
-    (hΩ : CentreSeparatingCentralProj A Ω) : CentreSeparatingConj A Ω := by
-  intro x hx
-  refine ⟨fun hx0 ω b => by rw [hx0]; simp, fun H => ?_⟩
-  exact eq_zero_of_centreSeparating_conj Ω hΩ hx fun ω hω b => H ⟨ω, hω⟩ b
-
-/-- The auxiliary central-positive notion implies the thesis's, through
-**69IX** item 2. -/
-theorem CentrePositiveSeparating.conj {Ω : Set (NPFunctional A)}
-    (hΩ : CentrePositiveSeparating A Ω) : CentreSeparatingConj A Ω :=
-  hΩ.centralProj.conj
-
 /-- The `Ω`-version of **44XI**'s `nonneg_of_conjNP`: for a centre separating
 collection `Ω` (cstar.tex **21II**.4), positivity of all `ω(c* a c)`
 (`ω ∈ Ω`, `c ∈ A`) already gives `0 ≤ a`.  This is `CentreSeparatingConj` fed
@@ -7658,7 +7586,125 @@ theorem gnsRepFam_injective_iff :
   rw [← gns_ceil_gnsRepFam Ω]
   exact carrier_basic_4 _ _ (fun a b => map_mul (gnsRepFam (famOfSet Ω)) a b)
 
+/-- **69X** (the proof of **69IX**), the printed implication (2) ⇒ (3),
+verbatim: `⌈ϱ_Ω⌉^⊥ = (⋃_{ω∈Ω}⌈⌈ω⌉⌉)^⊥` is a *central* projection
+(`projSup_isCentral`) with `⌈ϱ_Ω⌉^⊥ ≤ ⌈⌈ω⌉⌉^⊥ ≤ ⌈ω⌉^⊥`, so
+`ω(⌈ϱ_Ω⌉^⊥) ≤ ω(⌈ω⌉^⊥) = 0` for every `ω ∈ Ω`, and item 2 forces
+`⌈ϱ_Ω⌉^⊥ = 0`. -/
+private theorem projSup_cceil_eq_one (hΩ : CentreSeparatingCentralProj A Ω) :
+    projSup {p : A | ∃ ω ∈ Ω, p = cceil (npCarrier ω)} = 1 := by
+  have hSproj : ∀ p ∈ {p : A | ∃ ω ∈ Ω, p = cceil (npCarrier ω)},
+      IsStarProjection p := by
+    rintro _ ⟨ν, -, rfl⟩
+    exact (cceil_isLeast _).1.1
+  have hScen : ∀ p ∈ {p : A | ∃ ω ∈ Ω, p = cceil (npCarrier ω)},
+      IsCentral A p := by
+    rintro _ ⟨ν, -, rfl⟩
+    exact (cceil_isLeast _).1.2.1
+  obtain ⟨huproj, hub, -⟩ := projSup_spec hSproj
+  have hucen : IsCentral A (projSup {p : A | ∃ ω ∈ Ω, p = cceil (npCarrier ω)}) :=
+    projSup_isCentral hSproj hScen
+  set u : A := projSup {p : A | ∃ ω ∈ Ω, p = cceil (npCarrier ω)} with hudef
+  have hz0 : ∀ ω ∈ Ω, ((ω : NPFunctional A) ((1 : A) - u) : ℂ) = 0 := by
+    intro ω hω
+    have hle : (1 : A) - u ≤ 1 - cceil (npCarrier ω) :=
+      sub_le_sub_left (hub _ ⟨ω, hω, rfl⟩) 1
+    have h2 : (ω ((1 : A) - u) : ℂ) ≤ ω (1 - cceil (npCarrier ω)) :=
+      npFunctional_mono _ hle
+    have h3 : (ω ((1 : A) - cceil (npCarrier ω)) : ℂ) = 0 := by
+      simpa using omega_conj_cceil_compl ω 1
+    rw [h3] at h2
+    exact le_antisymm h2 (npFunctional_nonneg _ huproj.one_sub.nonneg)
+  have hz := hΩ (1 - u) huproj.one_sub (isCentral_one_sub hucen) hz0
+  exact (sub_eq_zero.mp hz).symm
+
+/-- **30X** (`proto-gelfand-naimark`, cstar.tex:4977, Proposition), the
+implication (1) ⇒ (2) at the thesis's own `ϱ_Ω`, which is what the printed
+**69X** proof cites when it says "we've seen in `proto-gelfand-naimark` that
+(1) ⟺ (3)": if `ϱ_Ω` is injective, then `Ω` is centre separating.
+
+It is supplied here rather than imported because our rendering of 30X
+(`proto_gelfand_naimark_2`) states clause (1) *existentially* — "there is a
+Hilbert space and an injective ∗-homomorphism" — and so says nothing about
+`ϱ_Ω` itself.  The argument is the GNS computation of cstar.tex 30X in the
+short form that lands directly on centre separation, without the detour
+through order separation: for `0 ≤ a` with `ω(b* a b) = 0` for all `ω ∈ Ω`
+and `b ∈ 𝒜`, put `r = √a`; then `‖ϱ_Ω(r)ϱ_Ω(b)η_ω(1)‖² = ω(b* r² b) = 0`
+by `gns_zero_iff_sa`, so `ϱ_Ω(r)` kills the dense set of `gnsCycVec_dense`
+and is `0`; injectivity gives `r = 0` and hence `a = r² = 0`. -/
+private theorem centreSeparatingConj_of_injective
+    (hinj : Function.Injective ⇑(gnsRepFam (famOfSet Ω))) :
+    CentreSeparatingConj A Ω := by
+  -- a continuous map killing every `ϱ_Ω(b)η_ω(1)` is zero
+  have hdense_zero : ∀ T : gnsHilbFam (famOfSet Ω) →L[ℂ] gnsHilbFam (famOfSet Ω),
+      (∀ (ν : Ω) (b : A),
+        T (gnsRepFam (famOfSet Ω) b (gnsCycVec Ω ν)) = 0) → T = 0 := by
+    intro T hT
+    have hsub : (Set.range fun q : Ω × A =>
+        gnsRepFam (famOfSet Ω) q.2 (gnsCycVec Ω q.1))
+          ⊆ (T : gnsHilbFam (famOfSet Ω) →ₗ[ℂ] gnsHilbFam (famOfSet Ω)).ker := by
+      rintro _ ⟨q, rfl⟩
+      exact hT q.1 q.2
+    have hspan : (Submodule.span ℂ (Set.range fun q : Ω × A =>
+        gnsRepFam (famOfSet Ω) q.2 (gnsCycVec Ω q.1)) :
+          Set (gnsHilbFam (famOfSet Ω)))
+        ⊆ (((T : gnsHilbFam (famOfSet Ω) →ₗ[ℂ] gnsHilbFam (famOfSet Ω)).ker) :
+          Set (gnsHilbFam (famOfSet Ω))) := by
+      simpa using (Submodule.span_le.mpr hsub)
+    have hclosed : IsClosed
+        (((T : gnsHilbFam (famOfSet Ω) →ₗ[ℂ] gnsHilbFam (famOfSet Ω)).ker) :
+          Set (gnsHilbFam (famOfSet Ω))) := T.isClosed_ker
+    have huniv : (Set.univ : Set (gnsHilbFam (famOfSet Ω)))
+        ⊆ (((T : gnsHilbFam (famOfSet Ω) →ₗ[ℂ] gnsHilbFam (famOfSet Ω)).ker) :
+          Set (gnsHilbFam (famOfSet Ω))) := by
+      rw [← (gnsCycVec_dense Ω).closure_eq]
+      exact hclosed.closure_subset_iff.mpr hspan
+    exact ContinuousLinearMap.ext fun y => huniv (Set.mem_univ y)
+  rw [centreSeparatingConj_iff]
+  intro a ha
+  refine ⟨fun h ω hω b => by rw [h]; simp, fun H => ?_⟩
+  set r : A := CFC.sqrt a with hrdef
+  have hrr : r * r = a := CFC.sqrt_mul_sqrt_self a ha
+  have hrsa : star r = r := (IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg a)).star_eq
+  have hkill : ∀ (ν : Ω) (b : A),
+      gnsRepFam (famOfSet Ω) r (gnsRepFam (famOfSet Ω) b (gnsCycVec Ω ν)) = 0 := by
+    intro ν b
+    refine (gns_zero_iff_sa (ν : NPFunctional A) (gnsRepFam (famOfSet Ω))
+      (gnsCycVec Ω ν) (gnsCycVec_implements Ω ν) hrsa b).mpr ?_
+    rw [hrr]
+    exact H (ν : NPFunctional A) ν.2 b
+  have hr0 : gnsRepFam (famOfSet Ω) r = 0 := hdense_zero _ hkill
+  have hreq : r = 0 := hinj (by rw [hr0, map_zero])
+  rw [← hrr, hreq]
+  simp
+
 end GNSOmega
+
+/-- **69IX**, (2) ⇒ (1): 69IX item **2** ("a central *projection* killed by
+all of `Ω` is zero") gives cstar.tex **21II**.4, thesis item **1**.
+
+This is the printed route of **69X**: (2) ⇒ (3) is `projSup_cceil_eq_one`
+(the printed `gns-ceil` step), (3) is turned into the injectivity of `ϱ_Ω`
+by `gnsRepFam_injective_iff` (**69VII** at `ϱ_Ω`, then **63II**.4), and
+(3) ⇒ (1) is the **30X** implication the printed proof cites, supplied
+locally as `centreSeparatingConj_of_injective`. -/
+theorem CentreSeparatingCentralProj.conj {Ω : Set (NPFunctional A)}
+    (hΩ : CentreSeparatingCentralProj A Ω) : CentreSeparatingConj A Ω :=
+  centreSeparatingConj_of_injective Ω
+    ((gnsRepFam_injective_iff Ω).mp (projSup_cceil_eq_one Ω hΩ))
+
+/-- **69IX**, the implication (2) ⇒ (1) unfolded — the one its consumers
+actually need: a positive `a` killed by all `ω(b* · b)` is zero. -/
+theorem eq_zero_of_centreSeparating_conj (Ω : Set (NPFunctional A))
+    (hΩ : CentreSeparatingCentralProj A Ω) {a : A} (ha : 0 ≤ a)
+    (h : ∀ ω ∈ Ω, ∀ b : A, ω (star b * a * b) = 0) : a = 0 :=
+  ((centreSeparatingConj_iff Ω).mp hΩ.conj a ha).mpr h
+
+/-- The auxiliary central-positive notion implies the thesis's, through
+**69IX** item 2. -/
+theorem CentrePositiveSeparating.conj {Ω : Set (NPFunctional A)}
+    (hΩ : CentrePositiveSeparating A Ω) : CentreSeparatingConj A Ω :=
+  hΩ.centralProj.conj
 
 /-- **69IX** (`vn-center-separating`, vn.tex:3693, Corollary): for a
 collection `Ω` of np-functionals on a von Neumann algebra the following are
@@ -7675,61 +7721,59 @@ implications below are proved against.  Entries 3 and 4 are joined by
 `gnsRepFam_injective_iff`, i.e. by **69VII** (`gns_ceil`) instantiated at
 `ϱ_Ω` followed by **63II**.4.
 
-Our route differs from the thesis's.  The thesis gets (1) ⟺ (3) from **30X**
-and proves (2) ⇒ (3); we prove (1) ⇒ (3) ⇒ (2) ⇒ (1), where (2) ⇒ (1) is
-`eq_zero_of_centreSeparating_conj` (**68I** plus **60I**, a shortcut round
-`gns_ceil`) and (3) ⇒ (2) is the leastness of `⌈⌈·⌉⌉`.  The thesis's
-(2) ⇒ (3) step — `⌈ϱ_Ω⌉^⊥ ≤ ⌈⌈ω⌉⌉^⊥ ≤ ⌈ω⌉^⊥`, so `ω(⌈ϱ_Ω⌉^⊥) = 0` — is our
-(1) ⇒ (3) with the conjugating `b` carried along. -/
+The route is the printed one: (1) ⇒ (2) is trivial (`b* z b ≤ ‖b* b‖·z` for
+a central projection `z`), (2) ⇒ (3) is the printed `gns-ceil` step
+(`projSup_cceil_eq_one`: `⌈ϱ_Ω⌉^⊥ ≤ ⌈⌈ω⌉⌉^⊥ ≤ ⌈ω⌉^⊥`, so `ω(⌈ϱ_Ω⌉^⊥) = 0`),
+and (3) ⇒ (1) is the **30X** implication the thesis cites, supplied locally
+by `centreSeparatingConj_of_injective` because our rendering of 30X states
+its clause (1) existentially and so never names `ϱ_Ω`. -/
 theorem vn_center_separating (Ω : Set (NPFunctional A)) :
     List.TFAE
       [CentreSeparatingConj A Ω,
        CentreSeparatingCentralProj A Ω,
        projSup {p : A | ∃ ω ∈ Ω, p = cceil (npCarrier ω)} = 1,
        Function.Injective ⇑(gnsRepFam (famOfSet Ω))] := by
-  have hSproj : ∀ p ∈ {p : A | ∃ ω ∈ Ω, p = cceil (npCarrier ω)}, IsStarProjection p := by
-    rintro _ ⟨ν, -, rfl⟩
-    exact (cceil_isLeast _).1.1
-  have hSmem : ∀ ω ∈ Ω, cceil (npCarrier ω)
-      ∈ {p : A | ∃ ω ∈ Ω, p = cceil (npCarrier ω)} := fun ω hω => ⟨ω, hω, rfl⟩
-  obtain ⟨huproj, hub, hleast⟩ := projSup_spec hSproj
-  set u : A := projSup {p : A | ∃ ω ∈ Ω, p = cceil (npCarrier ω)} with hudef
-  tfae_have 1 → 3 := by
-    intro h
-    -- `z := (⋃_ω ⌈⌈ω⌉⌉)^⊥` is a central projection, and `ω(b* z b) = 0`
-    -- because `z ≤ ⌈⌈ω⌉⌉^⊥` and `ω(b* ⌈⌈ω⌉⌉^⊥ b) = 0` (half of **69V**).
-    have hzproj : IsStarProjection (1 - u) := huproj.one_sub
-    have hz0 : (1 : A) - u = 0 := by
-      refine (h (1 - u) hzproj.nonneg).mpr fun ω b => ?_
-      have hle : (1 : A) - u ≤ 1 - cceil (npCarrier (ω : NPFunctional A)) :=
-        sub_le_sub_left (hub _ (hSmem _ ω.2)) 1
-      have h2 : ((ω : NPFunctional A) (star b * (1 - u) * b) : ℂ)
-          ≤ (ω : NPFunctional A)
-            (star b * (1 - cceil (npCarrier (ω : NPFunctional A))) * b) :=
-        npFunctional_mono _ (star_left_conjugate_le_conjugate hle b)
-      rw [omega_conj_cceil_compl (ω : NPFunctional A) b] at h2
-      exact le_antisymm h2 (npFunctional_nonneg _ (conj_proj_nonneg hzproj b))
-    exact (sub_eq_zero.mp hz0).symm
-  tfae_have 3 → 2 := by
-    intro hu z hzproj hzc hzero
-    -- `1 - z` is a central projection above every `⌈ω⌉`, hence above every
-    -- `⌈⌈ω⌉⌉`, hence above their supremum `1`.
-    have hle : u ≤ 1 - z := by
-      refine hleast _ hzproj.one_sub ?_
-      rintro _ ⟨ν, hν, rfl⟩
-      obtain ⟨hcproj, -, hcleast⟩ := carrier_spec ν.toPositiveLinearMap ν.preservesDirSups'
-      refine (cceil_fundamental (npCarrier ν) hcproj).1.2
-        ⟨hzproj.one_sub, isCentral_one_sub hzc, ?_⟩
-      exact hcleast (1 - z) hzproj.one_sub (by rw [sub_sub_cancel]; exact hzero ν hν)
-    rw [hu] at hle
-    have hz : z ≤ 0 := by
-      have h0 : (0 : A) ≤ -z := by
-        have h1 := sub_nonneg.mpr hle
-        rwa [sub_sub_cancel_left] at h1
-      exact neg_nonneg.mp h0
-    exact le_antisymm hz hzproj.nonneg
-  tfae_have 2 → 1 := fun h => h.conj
-  tfae_have 3 ↔ 4 := gnsRepFam_injective_iff Ω
+  -- the printed order of **69X**: (1) ⇒ (2) is trivial, (2) ⇒ (3) is the
+  -- `gns-ceil` step, and (3) ⇒ (1) is **30X**; entries 3 and 4 are the two
+  -- forms of "`ϱ_Ω` is injective", joined by **69VII** at `ϱ_Ω`.
+  tfae_have 1 → 2 := by
+    intro h z hzproj hzc hzero
+    rw [centreSeparatingConj_iff] at h
+    refine (h z hzproj.nonneg).mpr fun ω hω b => ?_
+    -- `b* z b = z* (b* b) z ≤ ‖b* b‖·z`, and `ω(z) = 0`
+    have e1 : star z * (star b * b) * z = star b * z * b := by
+      rw [hzproj.isSelfAdjoint.star_eq]
+      calc z * (star b * b) * z = star b * b * z * z := by rw [hzc (star b * b)]
+        _ = star b * b * (z * z) := by rw [mul_assoc]
+        _ = star b * b * z := by rw [hzproj.isIdempotentElem.eq]
+        _ = star b * (b * z) := by rw [mul_assoc]
+        _ = star b * (z * b) := by rw [hzc b]
+        _ = star b * z * b := by rw [mul_assoc]
+    have e2 : star z * ((‖star b * b‖ : ℝ) • (1 : A)) * z
+        = (‖star b * b‖ : ℝ) • z := by
+      rw [hzproj.isSelfAdjoint.star_eq, mul_smul_comm, smul_mul_assoc, mul_one,
+        hzproj.isIdempotentElem.eq]
+    have hkey : star b * z * b ≤ (‖star b * b‖ : ℝ) • z := by
+      have h1 := star_left_conjugate_le_conjugate
+        (le_norm_smul_one (star_mul_self_nonneg b)) z
+      rwa [e1, e2] at h1
+    have hnn : (0 : ℂ) ≤ ω (star b * z * b) :=
+      npFunctional_nonneg _ (conj_proj_nonneg hzproj b)
+    have hle : (ω (star b * z * b) : ℂ) ≤ ω ((‖star b * b‖ : ℝ) • z) :=
+      npFunctional_mono _ hkey
+    have hz0 : (ω ((‖star b * b‖ : ℝ) • z) : ℂ) = 0 := by
+      have hcx : (((‖star b * b‖ : ℝ) • z : A)) = ((‖star b * b‖ : ℝ) : ℂ) • z := by
+        rw [← algebraMap_smul ℂ (‖star b * b‖ : ℝ) z]; simp
+      rw [hcx]
+      show (ω.toPositiveLinearMap _ : ℂ) = 0
+      rw [map_smul ω.toPositiveLinearMap]
+      show ((‖star b * b‖ : ℝ) : ℂ) • (ω z : ℂ) = 0
+      rw [hzero ω hω, smul_zero]
+    rw [hz0] at hle
+    exact le_antisymm hle hnn
+  tfae_have 2 → 3 := projSup_cceil_eq_one Ω
+  tfae_have 3 → 4 := (gnsRepFam_injective_iff Ω).mp
+  tfae_have 4 → 1 := centreSeparatingConj_of_injective Ω
   tfae_finish
 
 /-! ## Parsec 700: the classification of commutative von Neumann algebras
