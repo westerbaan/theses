@@ -686,6 +686,75 @@ private theorem norm_sub_smul_sq (x e : H) (he : ‖e‖ = 1) (c : ℂ) :
   rw [← hsplit] at hp
   rw [← hp, norm_smul, he, mul_one]
 
+/-- Auxiliary for **5III**: every element of `c₀₀` — the span of the
+coordinate vectors `lp.single 2 n z` — vanishes from some index on.  This is
+the "since `y` is in `c₀₀`, there's `N` such that `yₙ = 0` for all `n > N`"
+of solution `parsec-50.30`. -/
+private theorem c00_eventually_zero {f : lp (fun _ : ℕ => ℂ) 2}
+    (hf : f ∈ Submodule.span ℂ
+      {g : lp (fun _ : ℕ => ℂ) 2 | ∃ n z, g = lp.single 2 n z}) :
+    ∃ N : ℕ, ∀ n : ℕ, N < n → f n = 0 :=
+  by
+    induction hf using Submodule.span_induction with
+    | mem g hg =>
+        obtain ⟨m, z, rfl⟩ := hg
+        refine ⟨m, fun n hn => ?_⟩
+        have hne : n ≠ m := by omega
+        simp [hne]
+    | zero => exact ⟨0, fun n _ => by simp⟩
+    | add g h _ _ ihg ihh =>
+        obtain ⟨N₁, hN₁⟩ := ihg
+        obtain ⟨N₂, hN₂⟩ := ihh
+        refine ⟨max N₁ N₂, fun n hn => ?_⟩
+        have h₁ := hN₁ n (lt_of_le_of_lt (le_max_left N₁ N₂) hn)
+        have h₂ := hN₂ n (lt_of_le_of_lt (le_max_right N₁ N₂) hn)
+        simp [h₁, h₂]
+    | smul c g _ ih =>
+        obtain ⟨N, hN⟩ := ih
+        exact ⟨N, fun n hn => by simp [hN n hn]⟩
+
+/-- Auxiliary for **5III**: the truncation of `x` at `N` — the element `y'`
+of `c₀₀` that solution `parsec-50.30` compares `y` with — agrees with `x` up
+to `N`. -/
+private theorem c00_trunc_apply_le (x : lp (fun _ : ℕ => ℂ) 2) {N n : ℕ} (h : n ≤ N) :
+    (∑ k ∈ Finset.range (N + 1), lp.single 2 k (x k) : lp (fun _ : ℕ => ℂ) 2) n = x n :=
+  by
+    rw [lp.coeFn_sum, Finset.sum_apply]
+    simp only [lp.coeFn_single]
+    rw [Finset.sum_pi_single, ite_eq_left (by simp only [Finset.mem_range]; omega)]
+
+/-- Auxiliary for **5III**: the truncation of `x` at `N` vanishes after `N`. -/
+private theorem c00_trunc_apply_gt (x : lp (fun _ : ℕ => ℂ) 2) {N n : ℕ} (h : ¬ n ≤ N) :
+    (∑ k ∈ Finset.range (N + 1), lp.single 2 k (x k) : lp (fun _ : ℕ => ℂ) 2) n = 0 :=
+  by
+    rw [lp.coeFn_sum, Finset.sum_apply]
+    simp only [lp.coeFn_single]
+    rw [Finset.sum_pi_single, ite_eq_right (by simp only [Finset.mem_range]; omega)]
+
+/-- Auxiliary for **5III**: the truncation of `x` at `N` lies in `c₀₀`. -/
+private theorem c00_trunc_mem (x : lp (fun _ : ℕ => ℂ) 2) (N : ℕ) :
+    (∑ k ∈ Finset.range (N + 1), lp.single 2 k (x k) : lp (fun _ : ℕ => ℂ) 2)
+      ∈ Submodule.span ℂ {g : lp (fun _ : ℕ => ℂ) 2 | ∃ n z, g = lp.single 2 n z} :=
+  sum_mem fun k _ => Submodule.subset_span ⟨k, _, rfl⟩
+
+/-- Auxiliary for **5III**: in `ℓ²` a vector dominated coordinatewise by
+another, and strictly smaller in one coordinate, has strictly smaller norm.
+This is the comparison of two `ℓ²` sums that solution `parsec-50.30` makes by
+splitting off a finite prefix. -/
+private theorem lp_two_norm_lt {f g : lp (fun _ : ℕ => ℂ) 2} (m : ℕ)
+    (h : ∀ n : ℕ, ‖f n‖ ≤ ‖g n‖) (hm : ‖f m‖ < ‖g m‖) : ‖f‖ < ‖g‖ :=
+  by
+    have hp : (0 : ℝ) < (2 : ENNReal).toReal := by norm_num
+    have hf := lp.hasSum_norm hp f
+    have hg := lp.hasSum_norm hp g
+    have hlt : ‖f‖ ^ (2 : ENNReal).toReal < ‖g‖ ^ (2 : ENNReal).toReal := by
+      rw [← hf.tsum_eq, ← hg.tsum_eq]
+      exact Summable.tsum_lt_tsum_of_nonneg (i := m)
+        (fun n => Real.rpow_nonneg (norm_nonneg _) _)
+        (fun n => Real.rpow_le_rpow (norm_nonneg _) (h n) hp.le)
+        (Real.rpow_lt_rpow (norm_nonneg _) hm hp) hg.summable
+    exact (Real.rpow_lt_rpow_iff (norm_nonneg _) (norm_nonneg _) hp).mp hlt
+
 /-- **5III** (cstar.tex:713, Exercise): in `ℓ²` the only vectors having a
 projection on the (non-closed) subspace `c₀₀` of finitely supported
 sequences are the vectors of `c₀₀` themselves.  (Here `c₀₀` is the span of
@@ -699,45 +768,73 @@ theorem projection_on_c00 (x : lp (fun _ : ℕ => ℂ) 2) :
   by
     constructor
     · rintro ⟨y, hy⟩
-      have hmem : ∀ n : ℕ, (lp.single 2 n (1 : ℂ)) ∈
-          Submodule.span ℂ {f : lp (fun _ : ℕ => ℂ) 2 | ∃ n z, f = lp.single 2 n z} :=
-        fun n => Submodule.subset_span ⟨n, 1, rfl⟩
-      -- for each coordinate `n`, the competitor `y + ((x-y) n) · eₙ` does
-      -- strictly better unless `(x - y) n = 0`
-      have hcoord : ∀ n : ℕ, (x - y) n = 0 := by
-        intro n
-        set v : lp (fun _ : ℕ => ℂ) 2 := x - y with hv
-        set c : ℂ := v n with hc
-        set e : lp (fun _ : ℕ => ℂ) 2 := lp.single 2 n (1 : ℂ) with he
-        have hen : ‖e‖ = 1 := by rw [he, lp.norm_single (by norm_num), norm_one]
-        have hev : (⟪e, v⟫ : ℂ) = c := by
-          rw [he, lp.inner_single_left]
-          simp [hc]
-        have hve : (⟪v, e⟫ : ℂ) = (starRingEnd ℂ) c := by
-          rw [← hev, inner_conj_symm]
-        have hee : (⟪e, e⟫ : ℂ) = 1 := by
-          rw [inner_self_eq_norm_sq_to_K, hen]
-          norm_num
-        have horth : (⟪v - c • e, c • e⟫ : ℂ) = 0 := by
-          rw [inner_sub_left, inner_smul_right, inner_smul_left, inner_smul_right, hve, hee]
-          ring
-        -- Pythagoras (**4XV**.2): `‖v - c e‖² + ‖c‖² = ‖v‖²`
-        have hpy := norm_add_sq_of_inner_eq_zero (v - c • e) (c • e) horth
-        rw [sub_add_cancel] at hpy
-        have hce : ‖c • e‖ = ‖c‖ := by rw [norm_smul, hen, mul_one]
-        have hmin : ‖x - y‖ ≤ ‖x - (y + c • e)‖ :=
-          hy.2 _ (Submodule.add_mem _ hy.1 (Submodule.smul_mem _ c (hmem n)))
-        have hrw : x - (y + c • e) = v - c • e := by rw [hv]; abel
-        rw [hrw, ← hv] at hmin
-        have hc0 : ‖c‖ ^ 2 ≤ 0 := by
-          rw [hce] at hpy
-          nlinarith [norm_nonneg (v - c • e), norm_nonneg v]
-        have hcz : ‖c‖ = 0 := by nlinarith [norm_nonneg c]
-        exact norm_eq_zero.mp hcz
-      have hxy : x - y = 0 := lp.ext (funext fun n => by simpa using hcoord n)
-      rw [sub_eq_zero] at hxy
-      rw [hxy]
-      exact hy.1
+      -- Solution `parsec-50.30`, by contradiction: let `x ∈ ℓ² \ c₀₀`, so that
+      -- `xₙ ≠ 0` for infinitely many `n`, and let `y ∈ c₀₀` be closest to `x`.
+      by_contra hx
+      -- "Since `y` is in `c₀₀`, there's `N` such that `yₙ = 0` for all `n > N`."
+      obtain ⟨N, hN⟩ := c00_eventually_zero hy.1
+      -- `x` is not eventually zero, or it would be its own truncation, in `c₀₀`.
+      have hinf : ∀ M : ℕ, ∃ m : ℕ, M < m ∧ x m ≠ 0 := by
+        intro M
+        by_contra hcon
+        have hzero : ∀ m : ℕ, M < m → x m = 0 := by
+          intro m hm
+          by_contra hne
+          exact hcon ⟨m, hm, hne⟩
+        refine hx ?_
+        have hxe : x = ∑ k ∈ Finset.range (M + 1), lp.single 2 k (x k) := by
+          refine lp.ext (funext fun n => ?_)
+          by_cases hn : n ≤ M
+          · rw [c00_trunc_apply_le x hn]
+          · rw [c00_trunc_apply_gt x hn]
+            exact hzero n (by omega)
+        rw [hxe]
+        exact c00_trunc_mem x M
+      -- "We claim that `xₙ = yₙ` for all `n ≤ N`": otherwise the truncation
+      -- `y'` of `x` at `N` — which agrees with `x` up to `N` and vanishes
+      -- after it, so that `‖x - y'‖² = ∑_{n>N} |xₙ|²` — is strictly closer to
+      -- `x` than `y` is, contradicting minimality.
+      have hagree : ∀ n : ℕ, n ≤ N → x n = y n := by
+        intro n hn
+        by_contra hne
+        have hlt : ‖x - ∑ k ∈ Finset.range (N + 1), lp.single 2 k (x k)‖ < ‖x - y‖ := by
+          refine lp_two_norm_lt n (fun m => ?_) ?_
+          · simp only [lp.coeFn_sub, Pi.sub_apply]
+            by_cases hm : m ≤ N
+            · rw [c00_trunc_apply_le x hm, sub_self, norm_zero]
+              exact norm_nonneg _
+            · exact le_of_eq (by rw [c00_trunc_apply_gt x hm, hN m (by omega)])
+          · simp only [lp.coeFn_sub, Pi.sub_apply]
+            rw [c00_trunc_apply_le x hn, sub_self, norm_zero]
+            exact norm_pos_iff.mpr (sub_ne_zero.mpr hne)
+        exact absurd (hy.2 _ (c00_trunc_mem x N)) (not_le.mpr hlt)
+      -- "In particular, `y = y'`."
+      have hyeq : y = ∑ k ∈ Finset.range (N + 1), lp.single 2 k (x k) := by
+        refine lp.ext (funext fun n => ?_)
+        by_cases hn : n ≤ N
+        · rw [c00_trunc_apply_le x hn]
+          exact (hagree n hn).symm
+        · rw [c00_trunc_apply_gt x hn]
+          exact hN n (by omega)
+      -- "It's now easy to find a better approximation of `x` in `c₀₀` than `y`":
+      -- an `M > N` with `x M ≠ 0` makes the truncation `y''` of `x` at `M`
+      -- satisfy `‖x - y''‖² = ∑_{n>M} |xₙ|² < ∑_{n>N} |xₙ|² = ‖x - y'‖²`,
+      -- the term `|x_M|²` being dropped.
+      obtain ⟨M, hMN, hxM⟩ := hinf N
+      have hlt : ‖x - ∑ k ∈ Finset.range (M + 1), lp.single 2 k (x k)‖ < ‖x - y‖ := by
+        rw [hyeq]
+        refine lp_two_norm_lt M (fun m => ?_) ?_
+        · simp only [lp.coeFn_sub, Pi.sub_apply]
+          by_cases hm : m ≤ M
+          · rw [c00_trunc_apply_le x hm, sub_self, norm_zero]
+            exact norm_nonneg _
+          · have hm' : ¬ m ≤ N := by omega
+            exact le_of_eq (by rw [c00_trunc_apply_gt x hm, c00_trunc_apply_gt x hm'])
+        · simp only [lp.coeFn_sub, Pi.sub_apply]
+          rw [c00_trunc_apply_le x (le_refl M), sub_self, norm_zero,
+            c00_trunc_apply_gt x (by omega : ¬ M ≤ N), sub_zero]
+          exact norm_pos_iff.mpr hxM
+      exact absurd (hy.2 _ (c00_trunc_mem x M)) (not_le.mpr hlt)
     · intro hx
       exact ⟨x, hx, fun y' _ => by simpa using norm_nonneg (x - y')⟩
 
