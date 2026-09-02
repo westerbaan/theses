@@ -598,21 +598,33 @@ theorem adjointable_cstar_identity_1 (T : X →ₗ[ℂ] Y) (B : ℝ) (hB : 0 < B
 
 /-- **143III** (dils.tex:1567), the step *"`‖⟨x,T*y⟩‖ = ‖⟨y,Tx⟩‖ ≤
 ‖T‖‖y‖‖x‖` for all `x, y`, and so by the previous `‖T*‖ ≤ ‖T‖`"* — "the
-previous" being part 1, `adjointable_cstar_identity_1`.  Stated with the
-bound `‖T‖ + ε` because part 1 asks for a *strictly* positive bound; the
-limit `ε → 0` is taken at the end. -/
+previous" being part 1, `adjointable_cstar_identity_1`, applied at the bound
+`B = ‖T‖`.  Part 1 asks for a *strictly* positive bound, so the degenerate
+case `‖T‖ = 0` — where `T = 0` and hence `⟨Sy,Sy⟩ = ⟨T(Sy),y⟩ = 0`, so
+`S = 0` — is taken separately; the thesis passes over it. -/
 private theorem norm_adjoint_le (T : X →L[ℂ] Y) (S : Y →L[ℂ] X)
     (h : ModuleAdjointTo 𝒷 ⇑T ⇑S) : ‖S‖ ≤ ‖T‖ := by
-  refine le_of_forall_pos_le_add fun ε hε => ?_
-  refine S.opNorm_le_bound (by positivity) ?_
-  refine (adjointable_cstar_identity_1 (𝒷 := 𝒷) (S : Y →ₗ[ℂ] X) (‖T‖ + ε)
-    (by positivity)).mpr fun y x => ?_
-  show ‖inner 𝒷 x (S y)‖ ≤ (‖T‖ + ε) * ‖x‖ * ‖y‖
-  rw [← h x y]
-  calc ‖inner 𝒷 (T x) y‖ ≤ ‖T x‖ * ‖y‖ := CStarModule.norm_inner_le Y
-    _ ≤ (‖T‖ + ε) * ‖x‖ * ‖y‖ := by
-        gcongr
-        exact (T.le_opNorm x).trans (by nlinarith [norm_nonneg x, hε.le])
+  rcases (norm_nonneg T).eq_or_lt with hT | hT
+  · -- `‖T‖ = 0`, so `T = 0` and `⟨Sy, Sy⟩ = ⟨T (S y), y⟩ = 0`
+    have hT0 : T = 0 := norm_eq_zero.mp hT.symm
+    refine (S.opNorm_le_bound le_rfl fun y => ?_).trans_eq hT
+    have hy : inner 𝒷 (S y) (S y) = (0 : 𝒷) := by
+      rw [← h (S y) y, hT0]
+      simp
+    have h2 : ‖S y‖ ^ 2 = 0 := by
+      rw [CStarModule.norm_sq_eq (A := 𝒷) (x := S y), hy, norm_zero]
+    have := pow_eq_zero_iff (n := 2) (by norm_num) |>.mp h2
+    simp [this]
+  · -- the printed step, with `B = ‖T‖` in part 1
+    refine S.opNorm_le_bound (norm_nonneg T) ?_
+    refine (adjointable_cstar_identity_1 (𝒷 := 𝒷) (S : Y →ₗ[ℂ] X) ‖T‖ hT).mpr
+      fun y x => ?_
+    show ‖inner 𝒷 x (S y)‖ ≤ ‖T‖ * ‖x‖ * ‖y‖
+    rw [← h x y]
+    calc ‖inner 𝒷 (T x) y‖ ≤ ‖T x‖ * ‖y‖ := CStarModule.norm_inner_le Y
+      _ ≤ ‖T‖ * ‖x‖ * ‖y‖ := by
+          gcongr
+          exact T.le_opNorm x
 
 /-- **143II** (`adjointable-cstar-identity`, dils.tex:1540, Lemma), part 2:
 for bounded adjointable `T` (with adjoint `S`): `‖T*‖ = ‖T‖` and
@@ -1711,17 +1723,34 @@ theorem dils_uniform_spaces_basics_4 (f : X → Y) (hf : Continuous f)
 
 /-- **147II** (`dils-uniform-spaces-basics`, dils.tex:1990, Exercise), part
 5: uniformly continuous maps send Cauchy filters to Cauchy filters and
-preserve equivalence (Mathlib: `Cauchy.map`). -/
+preserve equivalence.
+
+The printed solution's order (`bsols.tex:621`): it proves first that `f`
+preserves the relation *"for each entourage `ε` there are `α₀, β₀` with
+`x_α ε y_β`"* between two nets — by uniform continuity, pick `δ` with
+`x δ y ⟹ f(x) ε f(y)` and push the witnesses through — and then remarks
+*"from the previous it follows that `f` preserves Cauchy nets (by setting
+`x_α = y_α`) and that it preserves equivalence between Cauchy nets"*.  That
+relation is `FilterEquiv`, and `Cauchy F` is `FilterEquiv F F` with `F` non
+trivial (part 1's reflexivity), so both halves come out of the one
+argument. -/
 theorem dils_uniform_spaces_basics_5 (f : X → Y) (hf : UniformContinuous f) :
     (∀ F : Filter X, Cauchy F → Cauchy (F.map f)) ∧
     (∀ F G : Filter X, Cauchy F → Cauchy G → FilterEquiv F G →
       FilterEquiv (F.map f) (G.map f)) := by
-  refine ⟨fun F hF => hF.map hf, fun F G _ _ h V hV => ?_⟩
-  -- `(f × f)⁻¹ V` is an entourage of `X`, and images of witnesses work
-  obtain ⟨s, hs, t, ht, hst⟩ := h _ (hf hV)
-  refine ⟨f '' s, Filter.image_mem_map hs, f '' t, Filter.image_mem_map ht, ?_⟩
-  rintro ⟨a, b⟩ ⟨⟨a', ha', rfl⟩, ⟨b', hb', rfl⟩⟩
-  exact hst (Set.mk_mem_prod ha' hb')
+  -- the solution's single argument: `(f × f)⁻¹ V` is an entourage of `X`,
+  -- and the images of the witnesses work
+  have key : ∀ F G : Filter X, FilterEquiv F G → FilterEquiv (F.map f) (G.map f) := by
+    intro F G h V hV
+    obtain ⟨s, hs, t, ht, hst⟩ := h _ (hf hV)
+    refine ⟨f '' s, Filter.image_mem_map hs, f '' t, Filter.image_mem_map ht, ?_⟩
+    rintro ⟨a, b⟩ ⟨⟨a', ha', rfl⟩, ⟨b', hb', rfl⟩⟩
+    exact hst (Set.mk_mem_prod ha' hb')
+  refine ⟨fun F hF => ⟨hF.1.map f, fun V hV => ?_⟩, fun F G _ _ h => key F G h⟩
+  -- "by setting `x_α = y_α`": `F` is equivalent to itself by part 1
+  obtain ⟨s, hs, t, ht, hst⟩ :=
+    key F F ((dils_uniform_spaces_basics_1 (X := X)).1 F hF) V hV
+  exact Filter.mem_prod_iff.mpr ⟨s, hs, t, ht, hst⟩
 
 /-- **147II** (`dils-uniform-spaces-basics`, dils.tex:1990, Exercise), part
 6: for a dense `D ⊆ X`, every point is the limit of a Cauchy filter living
@@ -1800,10 +1829,15 @@ three claims**.
    uniformity: they satisfy the three subbase axioms that **146IV**
    `exc_subbase` takes as its hypotheses, and the product uniformity
    (Mathlib: `Pi.uniformSpace`) *is* the filter they generate.
-2. The projections are uniformly continuous.
+2. The projections are uniformly continuous — the solution's *"define
+   `δ ≡ ε̂`"*, which here is the observation that `ε̂` is a subbase element
+   and so an entourage.
 3. `Π Xᵢ` is the categorical product in uniform spaces: a map into it is
-   uniformly continuous iff all its components are (Mathlib:
-   `uniformContinuous_pi`). -/
+   uniformly continuous iff all its components are.  The solution's own
+   argument: an entourage of `Π Xᵢ` contains a finite intersection
+   `⋂ⱼ ε̂ⱼ`, one picks `δⱼ` for each `fᵢⱼ` and takes `δ = ⋂ⱼ δⱼ`; through
+   `le_generate_iff` the finite intersection is handled by the filter, so
+   only the single-`ε̂` step is left to do. -/
 theorem dils_product_uniformity {ι : Type w} {Z : ι → Type v}
     [∀ i, UniformSpace (Z i)] (f : X → ∀ i, Z i) :
     ((∀ V ∈ piSubbase Z, ∀ x : ∀ i, Z i, (x, x) ∈ V) ∧
@@ -1812,8 +1846,29 @@ theorem dils_product_uniformity {ι : Type w} {Z : ι → Type v}
         𝓤 (∀ i, Z i) = Filter.generate (piSubbase Z)) ∧
       (∀ i, UniformContinuous fun z : ∀ i, Z i => z i) ∧
       (UniformContinuous f ↔ ∀ i, UniformContinuous fun x => f x i) := by
-  refine ⟨⟨?_, ?_, ?_, ?_⟩, fun i => Pi.uniformContinuous_proj Z i,
-    uniformContinuous_pi⟩
+  -- the generated filter: `𝓤 (Π Xᵢ) = ⨅ᵢ comap πᵢ (𝓤 Xᵢ)`, and the
+  -- infimum of comaps is generated by the preimages.  (The solution does
+  -- not need this: it *defines* the product uniformity by the subbase,
+  -- where we must match Mathlib's `Pi.uniformSpace`.)
+  have hgen : 𝓤 (∀ i, Z i) = Filter.generate (piSubbase Z) := by
+    refine le_antisymm ?_ ?_
+    · rw [le_generate_iff]
+      rintro V ⟨i, ε, hε, rfl⟩
+      rw [Pi.uniformity]
+      exact Filter.mem_iInf_of_mem i (Filter.preimage_mem_comap hε)
+    · rw [Pi.uniformity]
+      refine le_iInf fun i => fun t ht => ?_
+      obtain ⟨u, hu, hut⟩ := Filter.mem_comap.mp ht
+      exact Filter.mem_of_superset
+        (Filter.mem_generate_of_mem (⟨i, u, hu, rfl⟩ : _ ∈ piSubbase Z)) hut
+  -- clause 2, the solution's `δ ≡ ε̂`
+  have hproj : ∀ i, UniformContinuous fun z : ∀ i, Z i => z i := by
+    intro i
+    rw [uniformContinuous_def]
+    intro ε hε
+    rw [hgen]
+    exact Filter.mem_generate_of_mem (⟨i, ε, hε, rfl⟩ : _ ∈ piSubbase Z)
+  refine ⟨⟨?_, ?_, ?_, hgen⟩, hproj, ⟨fun h i => (hproj i).comp h, fun h => ?_⟩⟩
   · -- axiom 2: `x ε̂ x`, because `x_i ε x_i`
     rintro _ ⟨i, ε, hε, rfl⟩ x
     exact (refl_mem_uniformity hε : (x i, x i) ∈ ε)
@@ -1826,18 +1881,14 @@ theorem dils_product_uniformity {ι : Type w} {Z : ι → Type v}
   · -- axiom 4: the reverse of `ε̂` is the hat of the reverse of `ε`
     rintro _ ⟨i, ε, hε, rfl⟩
     exact ⟨_, ⟨i, Prod.swap ⁻¹' ε, symm_le_uniformity hε, rfl⟩, fun _ h => h⟩
-  · -- the generated filter: `𝓤 (Π Xᵢ) = ⨅ᵢ comap πᵢ (𝓤 Xᵢ)`, and the
-    -- infimum of comaps is generated by the preimages
-    refine le_antisymm ?_ ?_
-    · rw [le_generate_iff]
+  · -- clause 3, "⟸": it is enough to hit every `ε̂`, the filter taking care
+    -- of the solution's `δ = ⋂ⱼ δⱼ`
+    have hle : Filter.map (fun x : X × X => (f x.1, f x.2)) (𝓤 X)
+        ≤ 𝓤 (∀ i, Z i) := by
+      rw [hgen, le_generate_iff]
       rintro V ⟨i, ε, hε, rfl⟩
-      rw [Pi.uniformity]
-      exact Filter.mem_iInf_of_mem i (Filter.preimage_mem_comap hε)
-    · rw [Pi.uniformity]
-      refine le_iInf fun i => fun t ht => ?_
-      obtain ⟨u, hu, hut⟩ := Filter.mem_comap.mp ht
-      exact Filter.mem_of_superset
-        (Filter.mem_generate_of_mem (⟨i, u, hu, rfl⟩ : _ ∈ piSubbase Z)) hut
+      exact Filter.mem_map.mpr (uniformContinuous_def.mp (h i) ε hε)
+    exact hle
 
 end UniformBasics
 
