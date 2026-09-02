@@ -845,8 +845,7 @@ set_option linter.unusedVariables false in
 **Corrected statement**, erratum `parsec-790.60` (author's ruling of
 2026-08-17).  The *printed* conclusion `c^{∼1} ≤ b^{∼1}` is false — see
 `pseudoinverse_basic_2'_4_is_false` just above — and the repair **compresses
-the conclusion** rather than strengthening the hypotheses (ERRATA had proposed
-adding `⌈b⌉ = ⌈c⌉`, which is the special case of this).  The printed
+the conclusion** rather than strengthening the hypotheses.  The printed
 parenthetical therefore stands: `hcomm` is used **nowhere** in the proof, and
 is kept only to match the printed statement.
 
@@ -1817,8 +1816,7 @@ theorem ldiv_eq {a b c : A} (h1 : a = b * c) (h2 : suppProj b * c = c) :
 element `c` of `b𝒜`", which cannot be meant: `c/b` is defined (**81I**) only
 for `c ∈ 𝒜b`, and the conclusion `c/b ∈ ⌊c⌉𝒜⌊b⌉` is about that quotient.  Our
 hypothesis `∃ d, c = d * b` is the correct `𝒜b`, so this statement silently
-carries the repair.  (An earlier version of this doc comment had the two
-sides the wrong way round.) -/
+carries the repair. -/
 theorem division_basic_1 (b c : A) (h : ∃ d : A, c = d * b) :
     rangeProj c * div c b = div c b ∧ div c b * rangeProj b = div c b := by
   -- `⌊c⌉ = ⌊(c/b)b⌉ = ⌊(c/b)⌊b⌉⌉ = ⌊c/b⌉` by **60VII**.2, and `⌊d⌉d = d`
@@ -2818,8 +2816,8 @@ that case there is a *unique* positive `c` with `a = √b c √b` and
 series `∑_{m,n} tₘ a tₙ` converges ultraweakly to this `c`.
 
 The two claims are stated **separately**, as the thesis makes them.  Folding
-the convergence into the `∃!` (as an earlier version of this statement did)
-makes the uniqueness *vacuous* — an ultraweak limit is unique anyway (the
+the convergence into the `∃!` would make the uniqueness *vacuous* — an
+ultraweak limit is unique anyway (the
 ultraweak topology is Hausdorff), so the `∃!` would say nothing about the
 three properties, which is precisely what the point asserts.
 
@@ -2969,7 +2967,7 @@ ultrastrongly continuous on `(A)₁b`.  This is the thesis's own argument
 all that is needed), and each partial sum is `a ↦ a·(∑_{n<N} tₙ)`, which is
 ultrastrongly continuous because `‖yd‖_ω = ‖y‖_{d*ωd}` (**44VIII**).
 
-This is the *first* clause of 81IX as corrected on 2026-08-17; the clause's
+This is the *first* clause of 81IX as corrected; the clause's
 companion, ultraweak continuity of the same map, is the first conjunct of
 `div_uwc` below.  The printed *second* half — ultrastrong continuity of
 `a ↦ c∖a/b` on `c(A)₁b` — is **false**; see the note below. -/
@@ -3028,10 +3026,10 @@ The printed **81IX** (`div-usc`, vn.tex:5533) claimed that *both*
 `a ↦ a/b : (A)₁b → A` and `a ↦ c∖a/b : c(A)₁b → A` are ultrastrongly
 continuous.  The first conjunct is true and is `div_usc_ball` above; the
 second is **false**, so the printed statement is not transcribed.  The
-author's ruling of 2026-08-17 weakens the second map to ultraweak
-continuity — that is `div_uwc` below — and leaves the first map with both
-continuities; vn.tex now carries the counterexample itself, as the new
-sub-point **81XII** (not yet formalized).  (**81XI**, Remark: continuity
+author's ruling of 2026-08-17 (see HANDOFF.md) weakens the second map to
+ultraweak continuity — that is `div_uwc` below — and leaves the first map
+with both continuities; vn.tex carries the counterexample itself, as
+sub-point **81XII** (not converted).  (**81XI**, Remark: continuity
 also fails on the larger domain `Ab` — not converted.)
 
 Counterexample to the printed second conjunct, with
@@ -3058,8 +3056,7 @@ touch its ultraweak analogue (there `‖dₙ‖_ω = 1` for a *fixed* vector sta
 while `ω(dₙ) = ⟨0|ρ|n⟩ → 0` for every trace-class `ρ`), and in fact the
 ultraweak statement is **true** for both maps — see `div_uwc`.
 
-This is the thesis's own repaired proof (vn.tex:5546, as corrected on
-2026-08-17), in both halves.
+This is the thesis's own repaired proof (vn.tex:5546), in both halves.
 
 *First map.*  `div_uwc_ball` runs vn.tex:5547 verbatim in the ultraweak
 topology: by **81V**.2 (`proto_douglas_2`) the partial sums `a ↦ ∑_{n<N} a tₙ`
@@ -3078,17 +3075,7 @@ ultraweakly continuous, the adjoint being so (`continuous_ultraweak_star`,
 the positive half of **43II**.4, whose negative half
 `vn_counterexamples_4_star` is exactly why the printed *ultrastrong* claim
 cannot be repaired this way); and `(·)/b` maps `c(A)₁b` into `c(A)₁`, so
-the composite `c∖·/b` is ultraweakly continuous too.
-
-An earlier proof of `div_uwc_corner` avoided **81II**.5 by identifying the
-value through its characterisation (`ldiv_div_corner`, `ldiv_div_ball`) and
-appealing to ultraweak **compactness** of the unit ball (**77III**
-`vn_ball_compact`).  It is sound, but it is not the printed argument and it
-left **81II**.5 without a consumer anywhere in the tree.  Note the contrast
-it turned on: everything in it except compactness holds ultrastrongly too,
-and it is exactly compactness that fails — **43II**.5
-(`vn_counterexamples_5`) records that the unit ball of `B(ℓ²)` is *not*
-ultrastrongly compact, by the sequence `(|0⟩⟨n|)ₙ`. -/
+the composite `c∖·/b` is ultraweakly continuous too. -/
 
 omit [VonNeumannAlgebra A] in
 /-- The adjoint is **ultraweakly** continuous: `ω(a*) = conj ω(a)` for every
@@ -3213,8 +3200,7 @@ theorem div_uwc_ball_of_norm_le (b : A) (l : ℝ) (hl : 0 ≤ l) :
 /-- **81IX** (`div-usc`, vn.tex:5533, Lemma), **first map, ultraweakly**:
 `a ↦ a/b` is ultraweakly continuous on `(A)₁b`.  The `λ = 1` case of
 `div_uwc_ball_of_norm_le`; together with `div_usc_ball` this is 81IX's first
-clause as corrected on 2026-08-17 ("both ultrastrongly and ultraweakly
-continuous"). -/
+clause as corrected ("both ultrastrongly and ultraweakly continuous"). -/
 theorem div_uwc_ball (b : A) :
     @ContinuousOn A A (ultraweak A) (ultraweak A) (fun a => div a b)
       {a : A | ∃ d : A, ‖d‖ ≤ 1 ∧ a = d * b} :=
@@ -3294,13 +3280,13 @@ theorem div_uwc_corner (b c : A) :
 throughout by "ultraweakly": **both** maps `a ↦ a/b : (A)₁b → A` and
 `a ↦ c∖a/b : c(A)₁b → A` are ultraweakly continuous.
 
-**This is 81IX as corrected** by the author's ruling of 2026-08-17 (see
-HANDOFF.md): the second map is weakened to ultraweak continuity, while the
-first keeps its ultrastrong continuity (`div_usc_ball`) *and* gains this
-ultraweak one.  It is also what the one consumer needs — **96V**
-`canonical-filter` uses 81IX only for *normality* of `g = d*∖f(·)/d`, whose
-proof in vn.tex now runs ultraweakly throughout.  The printed second
-conjunct is false and is no longer transcribed; see the section note above.
+**This is 81IX as corrected** by the author's ruling: the second map is
+weakened to ultraweak continuity, while the first keeps its ultrastrong
+continuity (`div_usc_ball`) *and* gains this ultraweak one.  It is also what
+the one consumer needs — **96V** `canonical-filter` uses 81IX only for
+*normality* of `g = d*∖f(·)/d`, whose proof in vn.tex runs ultraweakly
+throughout.  The printed second conjunct is false and is not transcribed; see
+the section note above.
 
 Both conjuncts are the thesis's repaired proof: the first is `div_uwc_ball`
 (the partial sums of **81V**.2, uniformly on `(A)₁b`), and the second is
@@ -3515,7 +3501,7 @@ theorem vmleq (e' e : A) (he' : IsStarProjection e')
        ∃ a : A, e' = suppProj a ∧ rangeProj a ≤ e,
        MvNLE A e' e] := by
   -- `he'` is redundant: each of the three conditions already forces `e'` to
-  -- be a projection (see PROVING-LOG).
+  -- be a projection.
   have _ := he'
   have hemul : ∀ x : A, rangeProj x ≤ e → e * x = x := by
     intro x hx
@@ -3761,7 +3747,7 @@ end Pseudoinverse
 
 /-! ### Ingredients for 84II
 
-The proof below **diverges from the thesis's** (see PROVING-LOG): instead of
+The proof below **diverges from the thesis's**: instead of
 showing that a finite-dimensional C*-algebra is a von Neumann algebra and
 building a system of matrix units by hand (vn.tex:5798–6027), it takes the
 *algebra* decomposition from Mathlib's Wedderburn–Artin theorem
@@ -4901,13 +4887,12 @@ comparison theory of parsecs 600–830 available: results such as **83V**
 thesis applies them inside `ϱ(𝒜)^□`, which here is a subalgebra-as-a-set
 (see `cceil_sum_relative` below, which **89IX** needs).
 
-⚠️ This block is a verbatim copy of the one in `A/Proc/Tensor.lean`
-(session 45), which is *downstream* of this file and so cannot be imported
-from here (it lived in `NormalFunctionals.lean` until session 79, when
-**84bV** `ha_equalisers` needed it here, one file earlier); the copy there should be deleted by whoever next touches that
-file — a name in the current namespace takes precedence over one reached
-through `open`, so `Theses.A.Proc.VNSub` still wins inside `A/Proc` (the
-same manoeuvre as for `CU`, session 47). -/
+⚠️ `A/Proc/Tensor.lean` carries a verbatim copy of this block.  It is
+*downstream* of this file and can import the definition from here, so its
+copy should be deleted by whoever next touches that file; until then a name
+in the current namespace takes precedence over one reached through `open`, so
+`Theses.A.Proc.VNSub` wins inside `A/Proc` (the same manoeuvre as for
+`CU`). -/
 
 noncomputable section VNSubalgebra
 

@@ -12,10 +12,9 @@ The thesis's statement quantifies over the *type* `𝓑^a(X)`: `bah_vn` at the
 foot of this file is `VonNeumannAlgebra (Bax 𝒜 X)`, where `Bax 𝒜 X`
 (`Theses/A/CStar/Matrices.lean`) is the subalgebra of adjointable operators
 carrying the C*-structure whose involution is the adjoint, together with its
-spectral order.  `Bax` was file-`private` until 2026-08-27, which is why the
-substance below is stated first about bare operators `X →L[ℂ] X` under an
-adjointability hypothesis, and only then transported.  The transport is kept
-because it is where the mathematics lives: by **32XV**
+spectral order.  The substance below is stated first about bare operators
+`X →L[ℂ] X` under an adjointability hypothesis, and only then transported;
+the transport is where the mathematics lives: by **32XV**
 (`chilb_vector_states_2`, and its order form `bax_le_iff`) the order of
 `𝓑^a(X)` is the vector-functional order
 
@@ -416,9 +415,8 @@ Everything above is stated about operators `X →L[ℂ] X` carrying an
 adjointability hypothesis, because that is all one can say without naming the
 *type* `𝓑^a(X)`.  `Bax 𝒜 X` (`Theses/A/CStar/Matrices.lean`) is that type —
 the subalgebra of adjointable operators, with the C*-structure whose
-involution is the adjoint and the spectral order that goes with it — and since
-2026-08-27 it is exported rather than file-private, so 49II can be stated as
-the thesis states it:
+involution is the adjoint and the spectral order that goes with it — so 49II
+can be stated as the thesis states it:
 
     VonNeumannAlgebra (Bax 𝒜 X)   for `X` a self-dual Hilbert `𝒜`-module.
 

@@ -33,10 +33,9 @@ variable {A B : Type u} [CStarAlgebra A] [PartialOrder A] [StarOrderedRing A]
 /-! ## Von Neumann subalgebras as bundled algebras
 
 `VNSub A S hS` (a von Neumann subalgebra `S ⊆ A` bundled as a von Neumann
-algebra in its own right) was **moved upstream to `A/VN/Division.lean`** in
-session 79, where **84bV** `ha_equalisers` needs it; it is unchanged, and
-still lives in the `Theses.A.VN` namespace, so every use below and
-downstream is unaffected. -/
+algebra in its own right) lives upstream, in `A/VN/Division.lean`, where
+**84bV** `ha_equalisers` needs it; it is in the `Theses.A.VN` namespace, so
+uses below and downstream need no qualification. -/
 
 
 
@@ -1013,12 +1012,7 @@ predual with `‖(·)(b_α)‖ = ‖b_α‖` (**87VI** `norm_predual`); the pred
 complete (**87III** `predual_complete`), so the principle of uniform
 boundedness applies as soon as `sup_α |f(b_α)| < ∞` for each `f ∈ 𝒜_*`, and
 that is ultraweak boundedness itself once `f = ∑_{k<4} i^k ω_k` is split
-into np-functionals by **72XI** `luws`.
-
-*(Until 2026-08-21 this ran instead through a faithful normal
-representation and two applications of Banach–Steinhaus on `H`, on the
-stated ground that 87III and 87VI were "both still `sorry`".  They are
-proved, above, in this file.)* -/
+into np-functionals by **72XI** `luws`. -/
 theorem ultraweakly_bounded_implies_bounded {ι : Type*} (x : ι → A)
     (h : ∀ ω : NPFunctional A, BddAbove (Set.range fun i => ‖ω (x i)‖)) :
     BddAbove (Set.range fun i => ‖x i‖) := by
@@ -3746,7 +3740,8 @@ theorem vn_center_separating_fundamental_1' (Ω : Set (NPFunctional A))
 
 The two self-adjointness hypotheses are **not needed** — the primed
 statement, which is the Proposition's, quantifies over arbitrary elements —
-and are kept only because the call site above passes them positionally. -/
+and are kept only because `char_bounded`'s call site passes them
+positionally. -/
 theorem vn_center_separating_fundamental_1 (Ω : Set (NPFunctional A))
     (hΩ : CentreSeparatingConj A Ω) (S : Set A)
     (hS : @Dense A (ultrastrong A) S) (a b : A) (_ha : IsSelfAdjoint a)
@@ -3765,7 +3760,7 @@ theorem vn_center_separating_fundamental_1 (Ω : Set (NPFunctional A))
 /-! ### The direct-sum GNS representation `ϱ_Ω` over a *set* of functionals
 
 **90II**.2 runs through `ϱ_Ω : 𝒜 → 𝔅(ℋ_Ω)`, `ℋ_Ω = ⊕_{ω∈Ω} ℋ_ω`, for the
-given collection `Ω`.  `A/VN/Basic.lean`'s `GNSSum` section now builds this
+given collection `Ω`.  `A/VN/Basic.lean`'s `GNSSum` section builds this
 for an arbitrary family `F : ι → NPFunctional A` (`gnsHilbFam`, `gnsRepFam`),
 so the definitions below are its instance at `F = Subtype.val`; the
 `gnsHilb`/`gnsRep` of **48VIII** are its instance at `F = id`.
@@ -3776,10 +3771,7 @@ the step 900.40 opens with, and the thesis takes it from **30X**
 is stated *existentially* in the Hilbert space and so cannot speak about this
 particular `ϱ_Ω`; **69IX** (`vn_center_separating`) can, since its fourth
 entry is literally `Function.Injective ϱ_Ω`, and its equivalence with entry 1
-*is* 30X's in the von Neumann setting.  That is the one line below.  (Until
-2026-08-21 30X's own argument — `ϱ_Ω(a) = 0` gives
-`ω(b* a* a b) = ‖ϱ_Ω(a) η_ω(b)‖² = 0` for all `ω ∈ Ω` and `b`, hence
-`a* a = 0` — was re-run here by hand, because 69IX had no fourth entry.) -/
+*is* 30X's in the von Neumann setting.  That is the one line below. -/
 
 section GNSSumOn
 
@@ -4113,10 +4105,9 @@ statement about elements of `A`.  The scalars therefore have to be lifted.
 Mathlib carries the ring, norm, algebra and completeness of `ULift ℂ` but
 neither its ∗-structure nor its order; those are supplied here.
 
-This block is a copy of the one in `Theses/B/Dils/Pure.lean` (session 45),
-lifted here so that `A/Proc` — a sibling of `B/Dils` over `A/VN`, hence
-unable to import it — can use it too; the copy in `B/Dils` should be dropped
-in favour of this one. -/
+This block duplicates the one in `Theses/B/Dils/Pure.lean`, so that `A/Proc`
+— a sibling of `B/Dils` over `A/VN`, hence unable to import it — can use it
+too; the copy in `B/Dils` should be dropped in favour of this one. -/
 
 section Scalars
 
