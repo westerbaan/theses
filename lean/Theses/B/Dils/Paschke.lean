@@ -3319,18 +3319,26 @@ variable {𝒜 ℬ : Type u}
   [CStarAlgebra 𝒜] [PartialOrder 𝒜] [StarOrderedRing 𝒜]
   [CStarAlgebra ℬ] [PartialOrder ℬ] [StarOrderedRing ℬ]
 
+-- The right ℬ-action on `𝒜 ⊙ ℬ` (`ptensSMul`, parsec 1540 above) is declared
+-- `local`; the proof below descends to the *concrete* module `𝒜 ⊗_φ ℬ`, where
+-- `hilmod-fixed-on-V` lives, so it has to be switched on again here.
+attribute [local instance] ptensSMul
+
 /-- **156II** (`paschke-injective`, dils.tex:3883, Theorem), carrier form:
 for an ncp-map `φ : 𝒜 → ℬ` with Paschke dilation `(𝒫, ϱ, h)` we have
 `⌈ϱ⌉ = ⌈⌈φ⌉⌉` (the carrier of `ϱ` is the central carrier of `φ`); stated
 via the characterization used in the proof: for every projection
 `p ∈ 𝒜`, `ϱ(p) = 0` iff `φ(a* p a) = 0` for all `a ∈ 𝒜`.
 
-The `⇒` half needs nothing but `φ = h ∘ ϱ`.  The `⇐` half is the thesis's
-argument: transport to the constructed dilation by
-`exists_paschke_iso_paschkeModule`, where `ϱ(p)(a ⊗ b) = (ap) ⊗ b` has
-`⟨(ap) ⊗ b, (ap) ⊗ b⟩ = b φ(a p a*) b*`, so the hypothesis (at `a*`) kills
-every elementary tensor and `paschkeModule_ba_ext` finishes.  This replaces
-the thesis's appeal to `hilmod-fixed-on-V`.
+The proof is the thesis's (dils.tex:3893–3919).  By `paschke-unique-up-to-iso`
+(here `exists_paschke_iso_paschkeModule`) it is enough to prove the
+equivalence for the dilation constructed in **154III** — so the transport is
+done first, onto the *concrete* `paschkeModuleOf φ E`, where
+`ϱ(p)(a ⊗ b) = (ap) ⊗ b` and `⟨(ap) ⊗ b, (ap) ⊗ b⟩ = b φ(a p a*) b*`.  Read
+at `b = 1` and `a := a*` that gives `⇒`; conversely the hypothesis kills
+every elementary tensor, hence (by `exists_fin_tmul` and linearity of `η`)
+every `η v`, and **152IX** `hilmod_fixed_on_V_eq` — the thesis's own last
+step — concludes `ϱ(p) = 0`.
 
 The `[VonNeumannAlgebra ℬ]` binder here and on `paschke_injective` below is
 the source's own, not a strengthening: dils.tex 156II is stated for an
@@ -3342,36 +3350,72 @@ theorem paschke_injective_carrier [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra �
     (hD : IsPaschkeDilationOf D ⇑φ) (p : 𝒜) (hp : IsStarProjection p) :
     D.ρ p = 0 ↔ ∀ a : 𝒜, φ (star a * p * a) = 0 := by
   letI := D.vn
-  have hρmul : ∀ x y : 𝒜, (D.ρ (x * y) : D.P) = D.ρ x * D.ρ y := fun x y =>
-    map_mul D.ρ.toStarAlgHom x y
-  have hρ0 : (D.ρ (0 : 𝒜) : D.P) = 0 := map_zero D.ρ.toStarAlgHom
-  have hh0 : (D.h (0 : D.P) : ℬ) = 0 :=
-    map_zero D.h.toCompletelyPositiveMap.toLinearMap
+  -- dils.tex:3893: by `paschke-unique-up-to-iso` it suffices to prove the
+  -- equivalence for the dilation constructed in **154III**
+  obtain ⟨E⟩ := dils_completion (𝒷 := ℬ) (V := 𝒜 ⊗[ℂ] ℬ) (ptensBInner φ)
+  obtain ⟨ϑ, ⟨hbij, hϑρ, -⟩, -⟩ :=
+    exists_paschke_iso_paschkeModule φ (paschkeModuleOf φ E) D hD
+  have hϑ0 : (ϑ (0 : D.P) : (Ba ℬ (paschkeModuleOf φ E).X)ᵐᵒᵖ) = 0 :=
+    map_zero ϑ.toStarAlgHom
+  -- `(a p)(a p)* = a p a*`, since `p` is a projection
+  have hpp : ∀ a : 𝒜, (a * p) * star (a * p) = a * p * star a := fun a => by
+    rw [star_mul, hp.isSelfAdjoint.star_eq, ← mul_assoc, mul_assoc a p p,
+      hp.isIdempotentElem.eq]
   constructor
-  · intro h a
-    have hz : (D.ρ (star a * p * a) : D.P) = 0 := by
-      rw [hρmul, hρmul, h, mul_zero, zero_mul]
-    rw [← hD.1 (star a * p * a), hz, hh0]
+  · -- `ϱ(p) = 0`, so `ϱ(p) a ⊗ b = (ap) ⊗ b = 0`, so `b φ(a p a*) b* = 0`
+    intro h
+    have hM : ((paschkeModuleOf φ E).ρ p :
+        (Ba ℬ (paschkeModuleOf φ E).X)ᵐᵒᵖ) = 0 := by
+      rw [← hϑρ p, h, hϑ0]
+    intro a
+    have hz : (paschkeModuleOf φ E).tprod (star a * p) 1 = 0 :=
+      ((paschkeModuleOf φ E).ρ_tprod p (star a) 1).symm.trans
+        (congrArg (fun T : (Ba ℬ (paschkeModuleOf φ E).X)ᵐᵒᵖ =>
+          (T.unop).1 ((paschkeModuleOf φ E).tprod (star a) 1)) hM)
+    have h2 : (inner ℬ ((paschkeModuleOf φ E).tprod (star a * p) 1)
+        ((paschkeModuleOf φ E).tprod (star a * p) 1) : ℬ) = 0 := by
+      rw [hz, CStarModule.inner_zero_left]
+    rw [(paschkeModuleOf φ E).inner_tprod, hpp (star a), star_star, one_mul,
+      star_one, mul_one] at h2
+    exact h2
   · intro h
-    obtain ⟨M⟩ := existence_paschke φ
-    obtain ⟨ϑ, ⟨hbij, hϑρ, -⟩, -⟩ := exists_paschke_iso_paschkeModule φ M D hD
-    have hM : (M.ρ p : (Ba ℬ M.X)ᵐᵒᵖ) = 0 := by
+    have hφa : ∀ a : 𝒜, φ (a * p * star a) = 0 := fun a => by
+      have := h (star a)
+      rwa [star_star] at this
+    have hM : ((paschkeModuleOf φ E).ρ p :
+        (Ba ℬ (paschkeModuleOf φ E).X)ᵐᵒᵖ) = 0 := by
+      -- `T` is `ϱ(p)` read on `E.X` itself, which is what `hilmod-fixed-on-V`
+      -- speaks about (`(paschkeModuleOf φ E).X` is `E.X`, but only by unfolding)
+      obtain ⟨T, hTadj, hTt⟩ : ∃ (T : E.X →L[ℂ] E.X) (_ : ModuleAdjointable ℬ ⇑T),
+          ∀ x, T x = (((paschkeModuleOf φ E).ρ p).unop).1 x :=
+        ⟨(((paschkeModuleOf φ E).ρ p).unop).1,
+          (((paschkeModuleOf φ E).ρ p).unop).2, fun _ => rfl⟩
+      -- `ϱ(p) a ⊗ b = (ap) ⊗ b` has `⟨(ap) ⊗ b, (ap) ⊗ b⟩ = b φ(a p a*) b* = 0`
+      have htp : ∀ (a : 𝒜) (b : ℬ), T (ptprod φ E a b) = 0 := by
+        intro a b
+        rw [hTt]
+        show (((paschkeModuleOf φ E).ρ p).unop).1
+          ((paschkeModuleOf φ E).tprod a b) = 0
+        rw [(paschkeModuleOf φ E).ρ_tprod]
+        have hzero : (inner ℬ ((paschkeModuleOf φ E).tprod (a * p) b)
+            ((paschkeModuleOf φ E).tprod (a * p) b) : ℬ) = 0 := by
+          rw [(paschkeModuleOf φ E).inner_tprod, hpp a, hφa a, mul_zero, zero_mul]
+        exact CStarModule.inner_self.mp hzero
+      have hTη : ∀ v : 𝒜 ⊗[ℂ] ℬ, T (E.η v) = 0 := by
+        intro v
+        obtain ⟨n, a, b, rfl⟩ := exists_fin_tmul v
+        rw [eta_sum φ E a b, map_sum]
+        exact Finset.sum_eq_zero fun i _ => htp (a i) (b i)
+      -- **152IX** `hilmod-fixed-on-V`: the vector states of the ultranorm
+      -- dense image of `η` already decide equality, so `ϱ(p) = 0`
+      have hT0 : T = (0 : Ba ℬ E.X).1 :=
+        hilmod_fixed_on_V_eq (ptensBInner φ) E T (0 : Ba ℬ E.X).1 hTadj
+          (0 : Ba ℬ E.X).2 fun v => by
+            rw [show T (E.η v) = ((0 : Ba ℬ E.X).1) (E.η v) from hTη v]
       refine MulOpposite.unop_injective
-        (paschkeModule_ba_ext φ M (S := (M.ρ p).unop) (R := 0) fun a b => ?_)
-      have hpp : (a * p) * star (a * p) = a * p * star a := by
-        rw [star_mul, hp.isSelfAdjoint.star_eq, ← mul_assoc, mul_assoc a p p,
-          hp.isIdempotentElem.eq]
-      have hφ : φ (a * p * star a) = 0 := by
-        have := h (star a)
-        rwa [star_star] at this
-      have hzero : (inner ℬ (M.tprod (a * p) b) (M.tprod (a * p) b) : ℬ) = 0 := by
-        rw [M.inner_tprod, hpp, hφ, mul_zero, zero_mul]
-      have := CStarModule.inner_self.mp hzero
-      rw [M.ρ_tprod, this]
-      rfl
-    have hϑ0 : (ϑ (0 : D.P) : (Ba ℬ M.X)ᵐᵒᵖ) = 0 := map_zero ϑ.toStarAlgHom
-    have hϑ : (ϑ (D.ρ p) : (Ba ℬ M.X)ᵐᵒᵖ) = ϑ 0 := by rw [hϑρ p, hM, hϑ0]
-    exact hbij.1 hϑ
+        (Subtype.ext (ContinuousLinearMap.ext fun x => ?_))
+      exact (hTt x).symm.trans (congrArg (fun f : E.X →L[ℂ] E.X => f x) hT0)
+    exact hbij.1 ((hϑρ p).trans (hM.trans hϑ0.symm))
 
 /-- Auxiliary for **156II**: a *central* projection `z` killed by `φ` is
 killed at every conjugate, `φ(a*za) = 0` — because `a*za = z(a*a)z ≤ ‖a*a‖z`
