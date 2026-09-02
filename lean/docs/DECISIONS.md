@@ -958,111 +958,30 @@ to move upstream (~20 lines) for `dils_filters_injective` to instantiate at `CU`
 
 ---
 
-## 4. Stale — do not answer these
+## 4. Overtaken items, for the record
 
-Cross-checked against the current `.tex` sources for this document.  Each of the
-following is still printed in `QUESTIONS.md` or in `docs/why-open.csv` but has
-been overtaken.  Listed so that nobody spends an evening on a dead question, and
-so that the follow-ups in §5 have a reason.
+Each of these was once printed as open in `QUESTIONS.md` or `docs/why-open.csv`
+and has been overtaken; the text that printed them has since been rewritten,
+so nothing here needs an answer.  One line each so a reader who meets the old
+wording in a log knows where it went.
 
-**4.1 — B12 as `QUESTIONS.md` prints it.**  It asks "which repair — (a) both
-dilations minimal, (b) `dim 𝒦' < ∞`, or (c) conclude only with a unitary
-`𝒲' → 𝒱'`?"  You answered on 2026-08-18: the current `dils.tex:998` carries a
-disjunction of three hypotheses, and `berr.tex` records it.  The live residue is
-§1.4, which is a different question.
-
-**4.2 — "104III.5 is waiting on a ruling".**  It is not, and as of 2026-08-29
-it is not waiting on anything: **`centrally_similar_basic_5` is proved**, and
-the statement is byte-identical to the one that was ruled.  104III was ruled on
-2026-08-19 (erratum `parsec-1040.30`, faithfulness `⌈p⌉ = ⌈q⌉ = 1`, with `p ∧ q`
-given a meaning by the new 26II item); `QUESTIONS.md` A7 was deleted, and 2a, 3,
-4 and now 5 are proved.
-
-This entry previously described what the remaining mathematics was, and that
-description was wrong, which is worth recording because it was believed for
-three sessions.  It said the route "wants part 4's third `iff` for `eₙp, eₙq`,
-whose carriers are `eₙ` rather than `1` — a form of part 4 relative to a
-projection unit".  **Part 4 is never invoked at all**, in any form, relative or
-otherwise.  What the corner step wants is a single right-multiplication of the
-central similarity `u(eₙp) = v(eₙq)` by `(eₙp)^∼¹`, giving `u eₙ = v W` with
-`W := (eₙq)(eₙp)^∼¹`; `v` then kills the commutator of `W` with any `eₙaeₙ`,
-`eₙ = ⌈eₙq⌉ ≤ ⌈v⌉` cancels it, and commutation carries from `W` to
-`eₙ ∧ W = c eₙ`.  Six private auxiliaries at `Measurement.lean:6696`–7027 carry
-it, and `Z(e𝒜e) = Z(𝒜)e` — the fact ERRATA row 104VIII says the printed proof
-needs and neither thesis has — is not used.  Nothing is asked of you.
-
-**4.3 — B13's "Correction (session 84)" paragraph.**  It says the uniqueness
-lemma the eight examples need "is a new lemma, not a stronger 180V", with "a
-route recorded in `docs/BEff-survey.md`".  The lemma is `vn_effObj_iso` and it
-is **proved and axiom-clean**.  The paragraph's premise about our doc comment
-claiming `I = ℂ` is also overtaken: the doc at `VNExamples.lean:2089` now
-records both clauses as unasserted instead of claiming them.
-
-**4.4 — A8's stated obstruction.**  A8 was filed because `ϱ_Ω` did not exist in
-Lean.  `dsumRep` exists.  The question that remains is only whether to change
-the statement, which is why A8 appears above as §2.4 rather than as a blocker.
-
-**4.5 — A13's convention half.**  "Which `𝒜`-valued convention are the module
-statements phrased in?" was answered in session 2: Mathlib's, approved, with the
-mirror recorded in the affected doc comments and
-two statements corrected (`chilb_cs`, `cstar_matrix_gram_nonneg`).  Option (b)
-of A13 — introduce the thesis's convention alongside — is not live.  Only §3.3
-remains.
-
-**4.6 — A11's cost estimate.**  A11 says the `MonoidalCategory` coherences are
-"none of which the tree has", and `dup_vna_is_monoid_4`'s doc comment says the
-same.  Repair wave 3 overtook both: all nine coherence statements and the four
-naturality lemmas are proved, and `exists_braiding` is no longer `sorry`.  What
-is left is packaging (§3.2).
-
-**4.7 — A3, "statements the theses only cite".**  Of its six bullets, four are
-gone: 178III.2/.4 and `finite_effectMonoid_boolean` are proved (independently of
-`basmsc`), 192V.4 `cancellative_iso_convex` is proved (independently of
-`statesofconvexsets`), and `extensive_effectus` is proved from Mathlib's
-`FinitaryExtensive`.  The fifth is 179III.2, which is §1.5.  The sixth line,
-"**177Ia** — see B4 above", points at a section that was **deleted**, about an
-errata row that was **withdrawn** after `eff.tex` changed underneath it
-(177Ia now asserts the infimum and the modular law only *when* `a ∨ b` exists).
-A3 should be deleted.
-
-  Two informational remarks from A3 are worth keeping and are not questions:
-  the third axiom of `extensive_effectus` — joint monicity of
-  `[κ₁,κ₂,κ₂], [κ₂,κ₁,κ₂] : 1+1+1 → 1+1` — is proved nowhere in `eff.tex` or
-  `bsols.tex` and Mathlib has nothing on it, though it is true in any finitary
-  extensive category with a final object and is now formalized; and `effintro`
-  remains the only citation, which we did not consult, so our proof is an
-  independent check either way.  Likewise for 180V `effectus_vn`, where the
-  thesis says only "adapt the proof of `emod-effectus`": the two 180I pullbacks
-  come out as "a ncpu-map out of `𝒜 ⊕ ℬ` is exactly a compatible pair out of
-  `𝒜 ⊕ ℂ` and `ℂ ⊕ ℬ`, glued by `γ(a,b) = β(a,0) + α(0,b)`" and "a ncpu-map out
-  of `𝒜` is exactly one out of `𝒜 ⊕ ℬ` killing `0 ⊕ ℬ`", the only non-formal
-  ingredient being that a positive map killing `(0,1)` kills `0 ⊕ ℬ` because
-  `b ≤ ‖b‖·1`.
-
-**4.8 — `docs/why-open.csv` as a whole.  Fixed 2026-08-26.**  It listed 65
-unproved declarations, of which only eleven were still unproved; the other 54
-were done — `exists_braiding`, `exists_tmapM`, all five `vn_smc_*`, all seven
-`FreeExp`/`HaFreeExp` fields, `linf_tensor`, `mn_vna_3`, `ngelfand_vna`,
-`ngelfand_normal`, the whole 270 Riesz-ideal chain, `gelfand_naimark`,
-`dup_vna_is_monoid_4`, and the rest — and five of its eight `awaiting-ruling`
-rows pointed at rulings that had already landed: the four 104III rows (§4.2)
-and `div_usc`, which was ruled on 81IX (and which, incidentally, names no
-declaration in the tree at all — the ultraweak form is `div_uwc`).  The file
-now carries exactly the rows that `docs/status.txt` marks red — **nine**
-since `kaplansky_hilbmod_A₂` was proved on 2026-08-29, eleven when this
-paragraph was written — each naming the item of §1 that would clear it.
-That "exactly" was prose until 2026-08-29 and had already gone false once,
-the file still listing `A₂` after the proof landed; `audit_check.py` now
-enforces it in both directions.  Still ours to fix, not yours to read.
+| item | what was printed | what is true |
+|---|---|---|
+| 4.1 | B12's three-option repair list | answered 2026-08-18; `dils.tex:998` carries the disjunction; the live residue is §1.4 |
+| 4.2 | "104III.5 waits on a ruling" | ruled 2026-08-19 (`parsec-1040.30`); `centrally_similar_basic_5` proved 2026-08-29 by right-multiplying the central similarity by `(eₙp)^∼¹`, six private auxiliaries in `Measurement.lean`; part 4 is never invoked |
+| 4.3 | B13's "uniqueness lemma is unbuilt" | it is `vn_effObj_iso`, proved and axiom-clean |
+| 4.4 | A8's obstruction "`ϱ_Ω` does not exist" | `dsumRep` exists; A8 is a pure statement question, §2.4 |
+| 4.5 | A13's convention half | ruled in session 2 (Mathlib's, with the swap `⟪x,y⟫ = ⟨y,x⟩`); only the mirrored-cp half is live, §3.3 |
+| 4.6 | A11's "the coherences are none of which the tree has" | all nine coherences, four naturality lemmas and `exists_braiding` are proved; §3.2 is only about the word "=" |
+| 4.7 | A3, "statements the theses only cite" | four of six bullets proved; the fifth is B14 (§1.5); deleted 2026-08-26 |
+| 4.8 | `docs/why-open.csv` listing 65 unproved | rewritten 2026-08-26 to the rows `docs/status.txt` marks red, nine since 2026-08-29; `audit_check.py` enforces the equality both ways |
 
 ---
 
 ## 5. Suggested follow-ups (ours, not the authors')
 
-Listed because the constraints on this document forbade touching those files.
-**Items 1, 2, 3, 4, 6 and 7 were applied on 2026-08-26**; item 5 is a proving
-job and is still open.  The list is kept so the reasoning behind each edit
-stays on the record.
+Items 1, 2, 3, 4, 6 and 7 were applied on 2026-08-26 and are struck; item 5 is
+a proving job and is still open.
 
 1. ~~**Rewrite `docs/why-open.csv`.**  54 of its 65 rows describe finished
    work, and five of its eight `awaiting-ruling` rows point at rulings that

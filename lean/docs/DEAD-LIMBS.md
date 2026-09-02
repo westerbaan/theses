@@ -1,5 +1,13 @@
 # Dead limbs
 
+*A dated record.  The live parts are §5 (the six declarations whose being
+unused fingerprints a proof that went around the thesis's argument) and §11
+(the fixing order); everything else is the sweep's evidence and the rounds
+that acted on it.  `scripts/limb_check.py` re-checks every liveness claim
+below against the tree on each run of `check_all.py`, and §9 lists the limbs
+closed since.  Counts are as of their own date; the tree has nine `sorry`s,
+not the eleven this document counted.*
+
 *Sweep of **2026-08-27**, commit `9a69966`, over the **whole tree** — all 49
 files of `Theses/A` and `Theses/B`, 163,848 lines, 7,493 hand-written named
 declarations.*

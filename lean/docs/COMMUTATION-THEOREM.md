@@ -1,10 +1,13 @@
-# The commutation theorem — what it would cost
+# The commutation theorem — the costing that preceded its proof
 
-*Reconnaissance of 2026-08-25, four independent passes: Mathlib's inventory, the
-tree's inventory, what the seven blocked statements actually need, and the
-shortest correct proof in the literature. Written so that the next person to ask
-"why is `intersection_tensor` still open?" gets a costed answer instead of a
-shrug.*
+*A dated record.  Reconnaissance of 2026-08-25, four independent passes:
+Mathlib's inventory, the tree's inventory, what the seven then-blocked
+statements needed, and the shortest correct proof in the literature.  The
+theorem was then built (`Theses/A/Proc/Commutation*.lean`,
+`Theses/A/VN/Tomita*.lean`, `Modular*.lean`, `StandardSubspace.lean`) and
+every statement it blocked is proved; the current state of any declaration
+named below is in the tree, not here.  Kept because it explains why the
+development has the shape it has.*
 
 Read with `PROVING-LOG.md` session 83, which first established the equivalence
 recorded in §1.  (The `docs/why-open.csv` rows `intersection_tensor` and
