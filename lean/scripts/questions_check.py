@@ -71,7 +71,7 @@ DELETED = {
     "A5": "2026-08-17 (3b4ba57)", "D6": "2026-08-18 (abc3af3)",
     "A7": "2026-08-19 (5f19f62)",
     # 51IX Linfty_vn: the ℂ-homogeneity clause restored under the D1 ruling
-    "A9": "2026-09-02",
+    "A9": "2026-09-02 (3ae948d)",
 }
 
 
