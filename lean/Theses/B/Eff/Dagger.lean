@@ -186,10 +186,9 @@ class DaggerPrimeEffectus : Prop where
 -- halves; the other is 216XI (`dagger_thm_necessity`).
 
 -- **215VI** (`vn-is-dagger-category`, eff.tex:5338, Corollary),
--- `vn_is_dagger_category`: the &-effectus `vNᵒᵖ` is a †-effectus.  Moved to
--- `Theses/B/Eff/VNExamples.lean` (author ruling 2026-08-17): it needs
--- thesis A's von Neumann theory, and this file must keep importing only
--- `Theses.Common`.
+-- `vn_is_dagger_category`: the &-effectus `vNᵒᵖ` is a †-effectus.  Stated in
+-- `Theses/B/Eff/VNExamples.lean`, the one module of `B/Eff` that may import
+-- thesis A's von Neumann theory; this file imports only `Theses.Common`.
 
 end DaggerEffectus
 
@@ -1005,8 +1004,7 @@ theorem zetaMap_eqToHom {s t : Pred X} (hs : IsSharp s) (ht : IsSharp t)
     zetaMap s hs ≫ eqToHom (congrArg comprObj e) = zetaMap t ht := by
   subst e; simp
 
-/-- Helper: the comprehension of a predicate transports along an equality of
-predicates. -/
+/-- `zetaMap_eqToHom` in the form a longer composite needs it. -/
 theorem zetaMap_eqToHom_assoc {s t : Pred X} (hs : IsSharp s) (ht : IsSharp t)
     (e : s = t) {W : C} (f : comprObj t ⟶ W) :
     zetaMap s hs ≫ eqToHom (congrArg comprObj e) ≫ f = zetaMap t ht ≫ f := by
@@ -1326,9 +1324,12 @@ theorem asrt_pristine_reverse_5 [DaggerPrimeEffectus C] {h : X ⟶ Y}
   have h1 := pristine_asrt hp (asrt_pristine_reverse_4 hp p)
   rwa [← Category.assoc, asrt_pristine_reverse_3 hp, hb] at h1
 
-/-- **218X** (`prist-asrt-decomp`, eff.tex:5881, Proposition), first half:
-in a †'-effectus every pure map `f` decomposes uniquely as
-`f = h ∘ asrt_{1∘f}` with `h` pristine and `1 ∘ h = ⌈1 ∘ f⌉`. -/
+/-- **218X** (`prist-asrt-decomp`, eff.tex:5920, Proposition), the step
+`im h = im f` of the uniqueness half: for pristine `h` with
+`1 ∘ h = ⌈1 ∘ f⌉` and `f = h ∘ asrt_{1∘f}`, the image of `h` is that of `f`.
+(Compose the standard form `h = π_{im h} ∘ α ∘ ζ_{1∘h}` of 218VI with
+`asrt_{1∘f}`; `ζ_{⌈1∘f⌉} ∘ asrt_{1∘f}` is a quotient by 212I, hence epic, so
+the image is unchanged.) -/
 theorem imPred_of_prist_asrt [DaggerPrimeEffectus C] {f h : X ⟶ Y}
     (hh : Pristine h) (h1 : h ≫ truth Y = ceilPred (f ≫ truth Y))
     (hd : f = asrt (f ≫ truth Y) ≫ h) : imPred h = imPred f := by
@@ -3372,9 +3373,9 @@ theorem dils_abstract_basics_7 {X₁ X₂ P₁ P₂ : C}
       · rw [coprod.inr_desc, k₂]
 
 -- **221III** (eff.tex:6805, Example), `vn_has_dilations`: the effectus
--- `vNᵒᵖ` has dilations (Paschke dilations).  Moved to
--- `Theses/B/Eff/VNExamples.lean` (author ruling 2026-08-17): it needs the
--- Paschke development of `B/Dils`, and this file must keep importing only
+-- `vNᵒᵖ` has dilations (Paschke dilations).  Stated in
+-- `Theses/B/Eff/VNExamples.lean`, the one module of `B/Eff` that may import
+-- the Paschke development of `B/Dils`; this file imports only
 -- `Theses.Common`.
 
 end Dilations
@@ -3418,10 +3419,10 @@ def DilationOrderCorrespondence (f : X ⟶ Y) (ϱ : P ⟶ Y) (h : X ⟶ P) :
     ∀ g : belowSet f, g.1 = h ≫ asrt (Θ g).1 ≫ ϱ
 
 -- **223VI** (eff.tex:7095, Example), `vn_dilation_order_correspondence`:
--- every dilation in `vNᵒᵖ` has the order correspondence.  Moved to
--- `Theses/B/Eff/VNExamples.lean` (author ruling 2026-08-17): it needs the
--- Paschke correspondence of `B/Dils`, and this file must keep importing
--- only `Theses.Common`.
+-- every dilation in `vNᵒᵖ` has the order correspondence.  Stated in
+-- `Theses/B/Eff/VNExamples.lean`, the one module of `B/Eff` that may import
+-- the Paschke correspondence of `B/Dils`; this file imports only
+-- `Theses.Common`.
 
 end SideEffects
 

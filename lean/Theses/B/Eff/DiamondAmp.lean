@@ -108,9 +108,9 @@ def DiamondPositive (f : X ⟶ X) : Prop :=
 end Diamond
 
 -- **206III** (eff.tex:4460, Examples), `diamond_effectus_vn`: `vNᵒᵖ` is a
--- ⋄-effectus.  Moved to `Theses/B/Eff/VNExamples.lean` (author ruling
--- 2026-08-17): it needs thesis A's von Neumann theory, and this file must
--- keep importing only `Theses.Common`.
+-- ⋄-effectus.  Stated in `Theses/B/Eff/VNExamples.lean`, the one module of
+-- `B/Eff` that may import thesis A's von Neumann theory; this file imports
+-- only `Theses.Common`.
 
 /-! ## Basic properties of `(–)^⋄`, `(–)_⋄`, `(–)^□` (parsecs 207–208) -/
 
@@ -645,9 +645,10 @@ theorem le_iff_compr_orth_comp_eq_zero {X : C} {j : Pred X} (hj : IsSharp j)
 "partial sum" version of `le_sup`, and the step a general effect algebra
 does not have.
 
-Scaffolding of the route 208III used to take before 2026-08-22, kept as the
-record of it: with `isSharp_ovee` and `diamond_oml` both back on eff.tex's
-argument (177Ia and 177VI respectively) nothing appeals to it any more. -/
+It is the modularity-free half of an alternative route to 208III
+(`s ⋁ t ≤ s ∨ t`, since `s` and `t` both vanish on `π_{(s∨t)ᵖ}`).  Nothing
+appeals to it: `isSharp_ovee` and `diamond_oml` both follow eff.tex's own
+argument (177Ia and 177VI respectively). -/
 theorem ovee_le_of_le {X : C} {j : Pred X} (hj : IsSharp j) {s t : Pred X}
     (h : Perp s t) (hs : s ≼ j) (ht : t ≼ j) : ovee s t h ≼ j := by
   refine (le_iff_compr_orth_comp_eq_zero hj _).mpr ?_
@@ -659,27 +660,20 @@ theorem ovee_le_of_le {X : C} {j : Pred X} (hj : IsSharp j) {s t : Pred X}
 /-- Sharp predicates are closed under `⋁` (208III, "Sub-EA"): for orthogonal
 sharp `s, t` the sum `s ⋁ t` is the supremum `s ∨ t`, which is sharp.
 
-**This is now the thesis's own route.**  208III derives it from
+This is the thesis's own route.  208III derives it from
 `ea-modularity-prop` (177Ia): the join `s ∨ t = im [π_s, π_t]` exists by
 204V (`lattice_compr`), orthogonal sharp predicates have `s ∧ t = 0`
 (`isInf_zero_of_perp`), and 177Ia then gives `s ⋁ t = (s ∧ t) ⋁ (s ∨ t)
 = s ∨ t` — that last step is `msc_cor16_1`, the master's thesis's Corollary
-16.1, which `EffectAlgebras.lean` proves in the direction eff.tex now
-prints (supremum hypothesised, infimum concluded).
+16.1, in the honest form that hypothesises both the infimum (`= 0`) and the
+supremum, which is how it is applied here.
 
-Until 2026-08-21 this proof avoided modularity altogether, because 177Ia's
-*first* printing hypothesised the infimum and concluded the supremum and in
-that direction it is false (`WrightTriangle.not_ea_modularity_prop`);
-eff.tex was corrected on 2026-08-14 and `ea_modularity_prop` now states the
-corrected Proposition, so the detour is no longer needed.  (The avoided
-argument, for the record: `s ∨ t ≤ s ⋁ t` since `s ⋁ t` is an upper bound,
-and `s ⋁ t ≤ s ∨ t` since `s` and `t` both vanish on `π_{(s∨t)ᵖ}` — the
-second half is `ovee_le_of_le`, which is still in the file but is no
-longer appealed to anywhere.  The gap was recorded as **B4** in
-`QUESTIONS.md`; it was settled on 2026-08-14 by the machine-checked
-counterexample `WrightTriangle.not_ea_modularity_prop`, leaving only how to
-amend the printed Proposition, and the entry was deleted on 2026-08-16 once
-eff.tex had been corrected — commit f277d72.) -/
+The direction of 177Ia matters for 208III's citation of it: as eff.tex
+prints it the supremum is hypothesised and the infimum concluded
+(`ea_modularity_prop`), which is what makes the citation sound.  Read the
+other way round — infimum hypothesised, supremum concluded — 177Ia is false
+(`WrightTriangle.not_ea_modularity_prop`); that was its first printing, and
+eff.tex was corrected on 2026-08-14 (ERRATA, `208III`). -/
 theorem isSharp_ovee {X : C} {s t : Pred X} (hs : IsSharp s) (ht : IsSharp t)
     (h : Perp s t) : IsSharp (ovee s t h) := by
   -- 204V: the join `s ∨ t` exists among all predicates, and is sharp
@@ -1247,9 +1241,9 @@ noncomputable def andThen (p q : Pred X) : Pred X := asrt p ≫ q
 
 -- **211IV** (`vn-is-andthen-eff`, eff.tex:4859, Examples),
 -- `vn_is_andthen_eff`: `vNᵒᵖ` is an &-effectus, with `asrt_a(b) = √a b √a`.
--- Moved to `Theses/B/Eff/VNExamples.lean` (author ruling 2026-08-17): it
--- needs thesis A's von Neumann theory, and this file must keep importing
--- only `Theses.Common`.
+-- Stated in `Theses/B/Eff/VNExamples.lean`, the one module of `B/Eff` that
+-- may import thesis A's von Neumann theory; this file imports only
+-- `Theses.Common`.
 
 /-- **211V** (`sharp-prop`, eff.tex:4872, Proposition): for a predicate `p`
 in an &-effectus the following are equivalent: (1) `p` is sharp;
