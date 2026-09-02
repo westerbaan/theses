@@ -17,7 +17,7 @@ Per file: `Tensor` **1**, `QuantumLambda` **0 — the file is finished**,
 *(Revised 2026-08-29.  `Measurement` was 2, and the sentence above said both
 were "gated on the open author question".  That was wrong for one of them:
 104III was ruled on 2026-08-19 and `centrally_similar_basic_5` was waiting on
-mathematics, not on an author — as `docs/DECISIONS.md` §4.2 already said.  It
+mathematics, not on an author — as `docs/DECISIONS.md` §4 (item 4.2) already said.  It
 is now proved, by six private auxiliaries at `Measurement.lean:6696`–7027, and
 the route `DECISIONS.md` §4.2 predicted it would take is not the route it took;
 part 4 of 104III is never invoked.  Tree-wide the count is **10**, not 11.)*
