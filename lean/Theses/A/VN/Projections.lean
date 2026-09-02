@@ -706,9 +706,9 @@ private theorem sqrtIter_comm_sqrtIter {b : A} (hb : b ∈ effects A) (m n : ℕ
 
 variable [VonNeumannAlgebra A]
 
-/-! `isLUB_coe_of_isLUB` (an `IsLUB` in `sa(A)` is an `IsLUB` in `A`) now
-lives in `Theses/A/VN/Basic.lean`, next to its `IsGLB` mirror, because the
-normal Gelfand–Naimark construction of parsec 480 needs it. -/
+/-! `isLUB_coe_of_isLUB` (an `IsLUB` in `sa(A)` is an `IsLUB` in `A`) lives in
+`Theses/A/VN/Basic.lean`, next to its `IsGLB` mirror, because the normal
+Gelfand–Naimark construction of parsec 480 needs it. -/
 
 /-- Auxiliary: `√x·x·√x = x²`. -/
 private theorem conj_sqrt_self {x : A} (hx : 0 ≤ x) :
@@ -1112,10 +1112,10 @@ theorem floor_isGreatest {b : A} (hb : b ∈ effects A) :
   rintro q ⟨hq, hqb⟩
   exact h3 q hq (((projection_below_effect b q hb hq).out 0 7).mp hqb)
 
-/-- **56XIII**.1 for the floor: `⌊b⌋ = ⌈b^⊥⌉^⊥`.  Now a corollary of
-**56VI**, as in the thesis, and no longer a step towards it: `⌈b^⊥⌉^⊥` is a
-projection below `b`, hence `≤ ⌊b⌋`, while `b^⊥ ≤ ⌊b⌋^⊥` gives
-`⌈b^⊥⌉ ≤ ⌊b⌋^⊥` by leastness of the ceiling (**56I**). -/
+/-- **56XIII**.1 for the floor: `⌊b⌋ = ⌈b^⊥⌉^⊥`.  A corollary of **56VI**, as
+in the thesis: `⌈b^⊥⌉^⊥` is a projection below `b`, hence `≤ ⌊b⌋`, while
+`b^⊥ ≤ ⌊b⌋^⊥` gives `⌈b^⊥⌉ ≤ ⌊b⌋^⊥` by leastness of the ceiling
+(**56I**). -/
 theorem floor_eq_one_sub_ceil {b : A} (hb : b ∈ effects A) :
     floor b = 1 - ceil (1 - b) := by
   obtain ⟨⟨hcproj, hbc⟩, hcleast⟩ := vna_ceil (1 - b) (effect_orthosupplement b hb)
@@ -1598,8 +1598,8 @@ private theorem star_mul_self_absorb_iff (a : A) {p : A}
   · rw [← h]; noncomm_ring
   · rw [← h]; noncomm_ring
 
-/-! `isLUB_sa_of_isLUB` (the converse of `isLUB_coe_of_isLUB`) now lives in
-`Theses/A/VN/Basic.lean` for the same reason. -/
+/-! `isLUB_sa_of_isLUB` (the converse of `isLUB_coe_of_isLUB`) lives in
+`Theses/A/VN/Basic.lean`, beside `isLUB_coe_of_isLUB`. -/
 
 /-- **The** calculation rule behind **59IV** and **60VIII**: if `bc = 0`
 for positive `b`, then already `⌈b⌉c = 0`.
@@ -2890,9 +2890,9 @@ theorem ceil_functionals (a b : A) (ha : 0 ≤ a) (hb : 0 ≤ b) :
     exact (conj_ortho_eq_zero_iff
       ⟨(ceil_spec ha).1.nonneg, (ceil_spec ha).1.le_one⟩ (ceil_spec hb).1).mp hzero
 
-/-! `isSelfAdjoint_map_of_positive` and `compNP` (with `compNP_apply`) now
-live in `Theses/A/VN/Basic.lean`: the normal Gelfand–Naimark construction of
-parsec 480 needs them, and `compNP` *is* the easy half of **48II**. -/
+/-! `isSelfAdjoint_map_of_positive` and `compNP` (with `compNP_apply`) live in
+`Theses/A/VN/Basic.lean`: the normal Gelfand–Naimark construction of parsec
+480 needs them, and `compNP` *is* the easy half of **48II**. -/
 
 /-- **60V** (`ncp-ceil`, vn.tex:2893, Proposition): for an np-map
 `f : A → B` between von Neumann algebras and positive `a`:
@@ -3277,11 +3277,9 @@ nothing to formalize. -/
 /-- **61II** (`ncp-ceill`, vn.tex:2983, Proposition): for an *ncp*-map
 `f : A → B` and any `a`: `⌈f(a)⌋ ≤ ⌈f(⌈a⌋)⌉` and `⌊f(a)⌉ ≤ ⌈f(⌊a⌉)⌉`.
 
-(Erratum `parsec-610.20` — the reversal of these two inequalities — **has
-been incorporated into vn.tex**: 61II now displays them in the direction
-stated here, which is also the direction its proof, via
-`f(a)* f(a) ≤ ‖f(1)‖² f(a* a)`, establishes.  The displayed-in-reverse form
-was false, e.g. for the trace on `M₂` at `a = e₁₂`.) -/
+(The direction is the one vn.tex prints, and the one its proof — via
+`f(a)* f(a) ≤ ‖f(1)‖² f(a* a)` — establishes; the reversed inequalities are
+false, e.g. for the trace on `M₂` at `a = e₁₂`.) -/
 theorem ncp_ceill (f : NCPMap A B) (a : A) :
     suppProj (f a) ≤ ceil (f (suppProj a)) ∧
       rangeProj (f a) ≤ ceil (f (rangeProj a)) := by
@@ -4377,10 +4375,9 @@ theorem commutant_basic_1 (S T : Set A) :
     Set.subset_centralizer_centralizer,
     Set.centralizer_centralizer_centralizer S⟩
 
-/-! `continuous_ultraweak_conj` — the polarisation lemma that used to be
-proved privately here — now lives in `Theses/A/VN/Basic.lean`, where **45IV**
-`mult_uws_cont` needs it too; it is stated there in exactly this form
-(`a ↦ ω(u a v)` is ultraweakly continuous) and proved from **44II**
+/-! `continuous_ultraweak_conj` — the polarisation lemma that `a ↦ ω(u a v)`
+is ultraweakly continuous — lives in `Theses/A/VN/Basic.lean`, where **45IV**
+`mult_uws_cont` needs it too; it is proved there from **44II**
 `mult_polarization`. -/
 
 /-- **65III** (`commutant-basic`, vn.tex:3222, Exercise), part 2: `S^□` is
@@ -4715,10 +4712,9 @@ The thesis states 65IV only for a von Neumann algebra, and the relative form
 does not follow from it in our setting: 65IV places the projections in
 `{a}^□□`, and `{a}^□□ ⊆ S` is the double commutant theorem **88VI**, which is
 proved (`A/VN/NormalFunctionals`'s `double_commutant`) but only for `B(H)`,
-not for a von Neumann subalgebra of an abstract `A`.  (The earlier note that
-88VI was "still `sorry`" was stale.)  It does, however, come out of the same
-spectral Riemann sum, because a von Neumann subalgebra is closed under `cfc`
-and under `⌈·⌉` (`ceil_mem`). -/
+not for a von Neumann subalgebra of an abstract `A`.  It does, however, come
+out of the same spectral Riemann sum, because a von Neumann subalgebra is
+closed under `cfc` and under `⌈·⌉` (`ceil_mem`). -/
 theorem projections_norm_dense_subalgebra_selfAdjoint {S : StarSubalgebra ℂ A}
     (hS : IsVNSubalgebra A S) (a : A) (ha : IsSelfAdjoint a) (haS : a ∈ S) :
     a ∈ closure (Submodule.span ℂ {p : A | IsStarProjection p ∧ p ∈ S} : Set A) := by
@@ -6448,13 +6444,11 @@ private theorem cceil_ceil {a : A} (ha : 0 ≤ a) : cceil a = cceil (ceil a) := 
 `⌈⌈⋃E⌉⌉ = ⋃_{e∈E} ⌈⌈e⌉⌉` for sets of projections `E`; and
 `⌈⌈a+b⌉⌉ = ⌈⌈⌈a⌉ ∪ ⌈b⌉⌉⌉ = ⌈⌈a⌉⌉ ∪ ⌈⌈b⌉⌉` for positive `a`, `b`.
 
-(Erratum `parsec-680.40` — positivity in the first and third clauses — **has
-been incorporated into vn.tex**: 68IV.2 now reads "for any bounded directed
-subset of positive elements of `𝒜`" and "for all positive `a,b ∈ 𝒜`", which
-is what is assumed here.  Without positivity both clauses were false, central
-support being monotone on positive elements only: `D = {−1, 0}` is directed
-and bounded with `⋁D = 0`, so `⌈⌈⋁D⌉⌉ = 0` while `⌈⌈−1⌉⌉ ∪ ⌈⌈0⌉⌉ = 1`; and
-`a = 1`, `b = −1` gives `⌈⌈0⌉⌉ = 0` against `1`.) -/
+(Positivity in the first and third clauses is vn.tex's own hypothesis, and is
+essential: central support is monotone on positive elements only, so without
+it both clauses fail — `D = {−1, 0}` is directed and bounded with `⋁D = 0`,
+so `⌈⌈⋁D⌉⌉ = 0` while `⌈⌈−1⌉⌉ ∪ ⌈⌈0⌉⌉ = 1`; and `a = 1`, `b = −1` gives
+`⌈⌈0⌉⌉ = 0` against `1`.) -/
 theorem cceil_basic_2 (D : Set (selfAdjoint A)) (s : selfAdjoint A)
     (hne : D.Nonempty) (hdir : DirectedOn (· ≤ ·) D) (hs : IsLUB D s)
     (hDpos : ∀ d ∈ D, 0 ≤ (d : A))
@@ -6993,7 +6987,7 @@ theorem carrier_miu (f : NMIUMap A B) (g : A →ₚ[ℂ] B)
 `⌈f⌉ = ⌈⌈f⌉⌉` for an nmiu-map `f`.  It is immediate from the centrality that
 `carrier_miu` establishes — a central projection is its own central support,
 by the leastness of `⌈⌈·⌉⌉` in one direction and `⌈⌈p⌉⌉p = p` in the other —
-but the equation itself had no declaration. -/
+and is recorded here because `carrier_miu` itself does not state it. -/
 theorem carrier_eq_cceilMap (f : NMIUMap A B) (g : A →ₚ[ℂ] B)
     (hg : PreservesDirSups ⇑g) (heq : ∀ a, g a = f a) :
     carrier g hg = cceilMap g hg := by
@@ -7401,19 +7395,16 @@ variable (A) in
 collection `Ω` of np-functionals kills no nonzero *central positive*
 element — `a` central, `0 ≤ a` and `ω(a) = 0` for all `ω ∈ Ω` force `a = 0`.
 
-It is *neither* item of **69IX**, and is deliberately no longer named as if
-it were: it is not cstar.tex **21II**.4 (which conjugates — 69IX item 1,
-here `CentreSeparatingConj`) and not 69IX item 2 (which speaks of central
-*projections*, here `CentreSeparatingCentralProj`).  It sits strictly between
-the two — `CentrePositiveSeparating → CentreSeparatingCentralProj`
-(`CentrePositiveSeparating.centralProj`, projections are positive) — and the
-three are all equivalent once the missing lemma "`⌈a⌉` is central for central
-positive `a`" is available (see PROVING-LOG, "Divergences").
+It is *neither* item of **69IX**: not cstar.tex **21II**.4 (which conjugates
+— 69IX item 1, here `CentreSeparatingConj`) and not 69IX item 2 (which speaks
+of central *projections*, here `CentreSeparatingCentralProj`).  It sits
+strictly between the two — `CentrePositiveSeparating →
+CentreSeparatingCentralProj` (`CentrePositiveSeparating.centralProj`,
+projections are positive) — and the three are all equivalent once the missing
+lemma "`⌈a⌉` is central for central positive `a`" is available.
 
-The earlier note that it was "kept because `A/Proc/Tensor.lean` states eight
-results with it" is **stale**: `Tensor.lean` uses `CentreSeparatingConj`
-throughout, and this notion is used nowhere outside this file.  It is kept
-only as the intermediate step of the two implications below. -/
+It is used nowhere outside this file, and is kept only as the intermediate
+step of the two implications below. -/
 def CentrePositiveSeparating (Ω : Set (NPFunctional A)) : Prop :=
   ∀ a : A, IsCentral A a → 0 ≤ a → (∀ ω ∈ Ω, ω a = 0) → a = 0
 
@@ -7932,7 +7923,7 @@ a faithful np-functional.  The **third** step — identifying each summand
 with an `L^∞(Xᵢ)` by 54XI — is `cvn_linfty` at the end of this file, which is
 the theorem in full.
 
-(This statement is destructured at `A/Proc/Duplicators.lean:4038`, which is
+(This statement is destructured at `A/Proc/Duplicators.lean:3986`, which is
 why the two later steps go in beside it rather than into it.) -/
 theorem cvn {C : Type w} [CommCStarAlgebra C] [PartialOrder C]
     [StarOrderedRing C] [VonNeumannAlgebra C] :
@@ -7991,9 +7982,9 @@ admit (see `central_projections_sums_2_iso`).
 
 The theorem's last sentence — "which is therefore by `cvn-faithful`
 nmiu-isomorphic to `L^∞(Xᵢ)`" — is taken in `cvn_linfty` below, by
-`A/VN/Basic`'s `cvn_faithful_4` (the isomorphism clause of 54XI.3, which used
-to be missing there).  This declaration is kept as the intermediate step, and
-because the *corners* are what the rest of the tree consumes. -/
+`A/VN/Basic`'s `cvn_faithful_4` (the isomorphism clause of 54XI.3).  This
+declaration is kept as the intermediate step, and because the *corners* are
+what the rest of the tree consumes. -/
 theorem cvn_direct_sum {C : Type w} [CommCStarAlgebra C] [PartialOrder C]
     [StarOrderedRing C] [VonNeumannAlgebra C] :
     ∃ (ι : Type w) (ω : ι → NPFunctional C) (c : ι → CentralProj C)
@@ -8161,8 +8152,8 @@ The direct sum is Mathlib's `lp 𝒜 ∞`, as everywhere else in the tree; the
 `Nontrivial` binder on the summands is Mathlib's, not the thesis's (see
 `central_projections_sums_2_iso`), and is why the zero corners are dropped.
 
-`cvn` above is left as it stands — it is destructured at
-`A/Proc/Duplicators.lean:4038`. -/
+`cvn` above states only the first step; it is what
+`A/Proc/Duplicators.lean:3986` destructures. -/
 theorem cvn_linfty {C : Type w} [CommCStarAlgebra C] [PartialOrder C]
     [StarOrderedRing C] [VonNeumannAlgebra C] :
     ∃ (ι : Type w) (𝒜 : ι → Type w) (_ : ∀ i, CStarAlgebra (𝒜 i))
