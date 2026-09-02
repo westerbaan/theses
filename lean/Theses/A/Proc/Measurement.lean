@@ -25,12 +25,8 @@ contraposition (`f^⋄`/`f_⋄`), rigidity, ⋄-self-adjointness and
   corresponding `..._apply`/`..._spec` theorems.  **All** of those existence
   lemmas are proved — `exists_sqBracket` (98IX) and `exists_diamondDown`
   (101II) included, so no statement about the maps they define is vacuous.
-  (This note used to say that those two were still `sorry`; that was
-  obsolete, and three proof routes elsewhere in the file were justified by
-  similarly stale claims.  The file has exactly one `sorry`:
-  `sequential_product_counterexample_3` (106III.3, whose transcribed (E)
-  clause is false as printed — `ERRATA.md`).  `centrally_similar_basic_5`
-  (104III.5) was the other, and was proved on 2026-08-29.)
+  The file has exactly one `sorry`: `sequential_product_counterexample_3`
+  (106III.3, whose transcribed (E) clause is false as printed — `ERRATA.md`).
 * The universal properties are Prop-valued structures `IsCornerOf` (95I)
   and `IsFilter` (96I) quantifying over all von Neumann algebras in the
   same universe `u`.  A **corner** map simpliciter (`IsCornerMap`) is a
@@ -954,15 +950,13 @@ supremum of `D` in `e𝒜e`** — i.e. whenever `D` is the image of a set `D'`
 of self-adjoint elements of `Corner A e`, that same element, read in the
 corner, *is* the least upper bound of `D'` there.
 
-(The second clause used to be left to the `VonNeumannAlgebra (Corner A e)`
-instance at `Corner.isLUB_saMap_image` above, which does produce the
-ambient supremum as the supremum in the corner; the DISP-tagged statement
-did not say it.  It was then stated only in the conditional form "*any*
-least upper bound of `D'` in the corner equals the ambient supremum", which
-is weaker than the point: the point asserts that the ambient supremum *is*
-the supremum in `e𝒜e`, and the conditional form is silent when `D'` has no
-least upper bound in the corner at all.  The conditional form follows from
-this one by `IsLUB.unique`.) -/
+The second clause is stated in this strong form deliberately.  The
+conditional form — "*any* least upper bound of `D'` in the corner equals
+the ambient supremum" — is weaker, being silent when `D'` has no least
+upper bound in the corner at all; it follows from this one by
+`IsLUB.unique`.  (`Corner.isLUB_saMap_image` above, used by the
+`VonNeumannAlgebra (Corner A e)` instance, likewise produces the ambient
+supremum as the supremum in the corner.) -/
 theorem corner_vna_basic_6 [VonNeumannAlgebra A] (e : A)
     [Fact (IsStarProjection e)] (he : IsStarProjection e) (D : Set (selfAdjoint A))
     (hD : ∀ d ∈ D, (d : A) ∈ cornerSet A e)
@@ -1646,9 +1640,7 @@ theorem prop_corner [VonNeumannAlgebra A] (p u : A) (hp : p ∈ effects A)
     IsCornerOf p (adToCorner u (star u * u) h') := by
   -- The author's proof (proc.tex:290) verbatim; in particular the last step
   -- ("`f(a) = f(uu* a uu*)` by `cp-comprehension`") *is* `cp_comprehension`
-  -- (63IV).  (Until session 94 it went through `carrier_fundamental` (63VI)
-  -- instead, on the ground that 63IV was "still `sorry` in `A/VN`" — which
-  -- has not been true for a long time.)
+  -- (63IV).
   have hpi : ∀ b : A, ((adToCorner u (star u * u) h') b).val = star u * b * u :=
     (exists_adToCorner u (star u * u) h').choose_spec
   have hq5 : star u * u * star u = star u :=
@@ -1949,8 +1941,8 @@ ncp-map `(d⌉𝒜(d⌉ → 𝒜`; by choice `canonicalFilter`.
 
 **Note on the index.**  The thesis writes the corner as `\ceilr{d}𝒜\ceilr{d}`,
 and `\ceilr{·}` is the **range** projection `⌊d⌉ = ⌈dd*⌉` (vn.tex 59I), not
-the support projection `⌈d⌋ = ⌈d*d⌉`.  An earlier transcription used
-`suppProj d` here, which makes `canonical_filter` **false**: for
+the support projection `⌈d⌋ = ⌈d*d⌉`.  Using `suppProj d` here instead
+would make `canonical_filter` **false**: for
 `d = |0⟩⟨1|` one has `⌈d⌋ = |1⟩⟨1|` and `d* a d = 0` for every `a` in
 `⌈d⌋𝒜⌈d⌋`, so `c` is the zero map and the factorisation is not unique.
 With the range projection the map is the filter for `d*d`, as it must be to
@@ -2014,10 +2006,7 @@ the author's ruling of 2026-08-17 both 81IX and this proof in vn.tex run
 of `ℬ` into `d*(𝒜)₁d` (by (3) below, whose bound is `‖b‖ ≤ 1` there), on
 which `a ↦ d*∖a/d` is ultraweakly continuous, hence `g` is ultraweakly
 continuous on the effects and normal by **44XV** (2) ⇒ (3); the suprema
-transfer to the corner by `Corner.isLUB_of_isLUB_image_val`.  (Until this
-session the normality step instead used bipositivity of `c = d*(·)d` on the
-corner — sound, but it left the corrected 81IX with no consumer at all, and
-`div_uwc`'s own doc names this proof as the one it is for.) -/
+transfer to the corner by `Corner.isLUB_of_isLUB_image_val`. -/
 private theorem canonicalFilter_factor [VonNeumannAlgebra A]
     {B' : Type u} [CStarAlgebra B'] [PartialOrder B'] [StarOrderedRing B']
     [VonNeumannAlgebra B'] (d : A) (f : NCPMap B' A)
@@ -3468,15 +3457,11 @@ inclusion `p𝒜p → 𝒜`, and that is the shape 99XI needs.  It is an instanc
 of **96V** (`isFilter_ad` at `d = p`, using `⌊p⌉ = p`), which is proved
 1200 lines above; `isFilter_cornerIncl` below simply reads it off.
 
-(Until session 94 this section instead proved the universal property from
-scratch — an ncp-map `f` with `f(1) ≤ p` already takes its values in the
-corner, so it corestricts, uniquely because the inclusion is injective — on
-the ground that 96V was "out of reach here, its proof needing
-`sequential-douglas`, `div-approx` and `div-usc` (vn.tex 81VI, 81VII,
-81IX), all still `sorry` in `A/VN/Division.lean`".  `A/VN/Division.lean` has
-no `sorry`.  The elementary route is kept below as
-`conj_ncp_eq_of_le_proj`/`exists_ncpCorestrict`, which the corestriction
-arguments of 100III and 102VII use in their own right.) -/
+An elementary route is kept below as
+`conj_ncp_eq_of_le_proj`/`exists_ncpCorestrict`: an ncp-map `f` with
+`f(1) ≤ p` already takes its values in the corner, so it corestricts,
+uniquely because the inclusion is injective.  The corestriction arguments
+of 100III and 102VII use it in their own right. -/
 
 /-- If an ncp-map `f : ℬ → 𝒜` satisfies `f(1) ≤ p` for a projection `p`,
 then all of its values lie in the corner `p𝒜p`.  For positive `b` this is
@@ -3642,9 +3627,6 @@ theorem sharp_multiplicative [VonNeumannAlgebra A] [VonNeumannAlgebra B]
   -- carries (2) across to `h`.  So `h` is multiplicative by **99II**
   -- `gardner` — in its *unital* form, which is the point of the hint — and
   -- hence so is `f = ζ ∘ h`.
-  -- (Until session 94 this went straight to the implications of 99II at the
-  -- non-unital `f`, on the ground that **98II** `filter-basic` was "still
-  -- `sorry`"; `filter_basic_1`/`_2`/`_3` are proved 1000 lines above.)
   tfae_have 1 → 2 := isStarProjection_map_of_mul f
   tfae_have 2 → 3 := ceil_map_of_isStarProjection_map f
   tfae_have 3 → 2 := isStarProjection_map_of_ceil f
@@ -3686,9 +3668,8 @@ constructor therefore carries `[VonNeumannAlgebra B]`.  Without it the
 definition is not the thesis's, and **100III** (1)⟹(2) is not provable:
 its induction must factor the two halves of a composite through
 `filter-basic` / `corner-basic`, which need the intermediate algebra to be
-a von Neumann algebra.  (Transcription fix, session 49; the filter and
-corner constructors need no such hypothesis because the base cases of that
-induction do not.) -/
+a von Neumann algebra.  The filter and corner constructors need no such
+hypothesis, because the base cases of that induction do not. -/
 inductive IsPure :
     ∀ {A B : Type u} [CStarAlgebra A] [PartialOrder A] [StarOrderedRing A]
       [CStarAlgebra B] [PartialOrder B] [StarOrderedRing B],
@@ -5660,10 +5641,8 @@ similar — by part 2 they would have to satisfy `⌈p⌉ = ⌈q⌉`, i.e. `0 = 
 The missing hypothesis is faithfulness.  The author's repair of 2026-08-19
 (erratum `parsec-1040.30`) is already in proc.tex: part 2a now assumes
 `⌈p⌉ = ⌈q⌉ = 1` and replaces `p ≤ Bq` by `p² ≤ Bq²` — see
-`centrally_similar_basic_2a` below.  (There is therefore no 104III row in
-`ERRATA.md`; the ruling closed it.  An earlier revision of this note proposed
-`⌈p⌉ = ⌈q⌉`, or `q ≤ B'·p` alongside `p ≤ B·q`, which is *not* the repair that
-was adopted.)  `p = 0` is only the smallest witness —
+`centrally_similar_basic_2a` below.  There is therefore no 104III row in
+`ERRATA.md`: the ruling closed it.  `p = 0` is only the smallest witness —
 `p = (1,0)` and `q = (1,1)` in `ℂ²` fail the same way, and by
 `centrally_similar_one_of_isStarProjection` *every* central projection
 `≠ 1` is a witness, so this is not a degeneracy at `0`. -/
@@ -6207,13 +6186,10 @@ reading part 3 is **false with `⌈⌈p⌉⌉ = ⌈⌈q⌉⌉` in place of
 `m/p = m/q = 0` are central and `⌈⌈p⌉⌉ = ⌈⌈q⌉⌉ = 1`, yet `p ≁ q`, since
 part 2 would force `⌈p⌉ = ⌈q⌉`.
 
-(This comment used to describe a superseded state of the tree, in which our
-`p ∧ q` was the infimum of `{p, q}` in the order of `𝒜` (`IsGLB`).  Under
-*that* reading the witness below is not one — `p` and `1 − p` have no
-infimum in `B(ℂ²)` — and the only route to part 3 ran through Kadison's
-anti-lattice theorem, which this tree does not have.
-`centrally_similar_basic_3` now uses `meet`, so that route is abandoned and
-this theorem is a counterexample to the statement actually transcribed.) -/
+The witness is one only under that reading: for the infimum of `{p, q}` in
+the order of `𝒜` (`IsGLB`), `p` and `1 − p` have no infimum in `B(ℂ²)` at
+all.  `centrally_similar_basic_3` uses `meet`, so this theorem is a
+counterexample to the statement actually transcribed. -/
 theorem centrally_similar_basic_3_meet_cceil_counterexample :
     ∃ p q m : EuclideanSpace ℂ (Fin 2) →L[ℂ] EuclideanSpace ℂ (Fin 2),
       0 ≤ p ∧ 0 ≤ q ∧ p * q = q * p ∧ m = p * q ∧
@@ -6262,11 +6238,10 @@ similar.
 
 Two changes from the printed form.  The faithfulness is new — without it
 `centrally_similar_basic_3_counterexample` just above refutes it.  And
-`p ∧ q` is now `Theses.A.CStar.meet`, the meet in the commutative
-C*-subalgebra `p` and `q` generate (**26II**.5), where the earlier
-transcription read it as `IsGLB {p, q} m` — the infimum in the order of `𝒜`,
-which by Kadison's anti-lattice theorem usually does not exist, so that form
-was near-vacuous. -/
+`p ∧ q` is `Theses.A.CStar.meet`, the meet in the commutative
+C*-subalgebra `p` and `q` generate (**26II**.5), rather than `IsGLB {p, q} m`
+— the infimum in the order of `𝒜`, which by Kadison's anti-lattice theorem
+usually does not exist, so that reading would be near-vacuous. -/
 theorem centrally_similar_basic_3 [VonNeumannAlgebra A] (p q : A)
     (hp : 0 ≤ p) (hq : 0 ≤ q) (hcp : ceil p = 1) (hcq : ceil q = 1)
     (hcomm : p * q = q * p)
@@ -6520,8 +6495,8 @@ Three changes from the printed form.  The faithfulness is new —
 and `centrally_similar_basic_4_obstruction` shows that `⌈p⌉ = ⌈q⌉` alone
 cannot repair it.  Commutation is new too: without it the third `iff` cannot
 be stated at all, since `p ∧ q` is only defined for a commuting pair.  And
-`p ∧ q` is `Theses.A.CStar.meet`, not the ambient `IsGLB` the earlier
-transcription used.  The first two `iff`s are
+`p ∧ q` is `Theses.A.CStar.meet`, not the ambient `IsGLB`.  The first two
+`iff`s are
 `centrally_similar_basic_4_faithful` above. -/
 theorem centrally_similar_basic_4 [VonNeumannAlgebra A] (p q : A)
     (hp : 0 ≤ p) (hq : 0 ≤ q) (hcp : ceil p = 1) (hcq : ceil q = 1)
@@ -6986,9 +6961,9 @@ here as the first two conjuncts, with `CentrallySimilar p q` obtained from
 them by `centrally_similar_basic_3`.  The grounds clause carries the whole
 proof; it is `centrally_similar_basic_5_ground` applied twice.
 
-**Repaired by the author on 2026-08-19** (erratum `parsec-1040.30`), first
-with `⌈p⌉ = ⌈q⌉` and then, the same day, with the full faithfulness
-`⌈p⌉ = ⌈q⌉ = 1` of points 2a–4.  `⌈p⌉ = ⌈q⌉` alone excludes
+**Repaired by the author on 2026-08-19** (erratum `parsec-1040.30`) with
+the full faithfulness `⌈p⌉ = ⌈q⌉ = 1` of points 2a–4.  The weaker
+`⌈p⌉ = ⌈q⌉` alone excludes
 `centrally_similar_basic_5_counterexample` just above, but leaves the
 exercise's *stated route* — "on the grounds that both `(p∧q)/p` and
 `(p∧q)/q` are central" — unachievable: in `B(ℂ²)` at `p = diag(1,0)`,
@@ -6997,7 +6972,7 @@ exercise's *stated route* — "on the grounds that both `(p∧q)/p` and
 `(p∧q)/p = ⌈p⌉ = diag(1,0)` is not central.  Under `⌈p⌉ = ⌈q⌉ = 1` that
 witness is gone and the grounds clause is exactly the hypothesis of part 3.
 
-**Proved 2026-08-29.**  The route is the one the hint indicates —
+The route is the one the hint indicates —
 `(p∧q)eₙ = (peₙ) ∧ (qeₙ)` by `meet_mul_right`, then a corner argument, then
 `⋃ₙ eₙ = 1` — but arranged so that **no relative form of part 4 is needed**,
 and part 4 is not invoked at all.  Write `m := p ∧ q`, `c := m/p`, `E := eₙ`.
@@ -7017,9 +6992,9 @@ and part 4 is not invoked at all.  Write `m := p ∧ q`, `c := m/p`, `E := eₙ`
   `E = ⌈Eq⌉ ≤ ⌈v⌉` cancels it; `commute_meet` carries this from `W` to
   `E ∧ W = cE`.  That is `centrally_similar_basic_5_corner`.
 * Hence `eₙ(ca − ac)eₙ = (ceₙ)(eₙaeₙ) − (eₙaeₙ)(ceₙ) = 0` for every `n`, and
-  `⋃ₙ eₙ = ⌈p⌉ = 1` gives `ca = ac` (`eq_zero_of_corner_projSup`).  As
-  foretold, this step needs no `Z(e𝒜e) = Z(𝒜)e`; it is the `hvanish` of
-  session 91's 104VII with `specPair p q n` replaced by `eₙ`.
+  `⋃ₙ eₙ = ⌈p⌉ = 1` gives `ca = ac` (`eq_zero_of_corner_projSup`).  This
+  step needs no `Z(e𝒜e) = Z(𝒜)e`; it is the `hvanish` of 104VII with
+  `specPair p q n` replaced by `eₙ`.
 
 The second half of the grounds clause is `centrally_similar_basic_5_ground`
 again with `p` and `q` interchanged (`meet_comm'`), which is where `hqin` and
@@ -8141,8 +8116,7 @@ inverse); so `α^⋄ ∘ D ∘ α^⋄ = D` for `D := (√w(·)√w)^⋄`, whence
 `⌈√p ϑ(e) √p⌉ = ⌈w e w⌉` for every projection `e`.  **104VII** at `w`,
 `√p` (both faithful) now gives `ϑ = id`.
 
-This proof rests on **104VII**, and on nothing else; since session 91
-104VII is proved, so this one is axiom-clean. -/
+This proof rests on **104VII**, and on nothing else. -/
 theorem faithful_positive_map_uniqueness [VonNeumannAlgebra A]
     (f : NCPMap A A) (hf : IsDiamondPositive f)
     (hfaith : ncpCarrier f = 1) :
@@ -8704,7 +8678,7 @@ faithfulness argument of `chevron_f_basic_3` is repeated here, since
 `⟨f⟩ = √p(·)√p` by **104IX**; and `f = c_{⌈p⌉} ∘ ⟨f⟩ ∘ π_{⌈p⌉}`
 together with `√p⌈p⌉ = √p` gives `f = √p(·)√p`.
 
-Depends on **104IX**, hence on **104VII** — both proved. -/
+Depends on **104IX**, hence on **104VII**. -/
 theorem positive_map_uniqueness [VonNeumannAlgebra A] (p : A) (hp : 0 ≤ p)
     (f : NCPMap A A) (hf : IsDiamondPositive f) (h1 : f 1 = p) :
     ∀ a, f a = CFC.sqrt p * a * CFC.sqrt p := by
@@ -8829,8 +8803,8 @@ The author's proof (proc.tex:1796), transcribed: any such `g` is
 `g(1) = √p` by uniqueness of the square root; existence is `adSelf ⁴√p`,
 ⋄-positive by **103II**.2.
 
-The uniqueness half depends on **105V**, hence on **104VII** — both
-proved; the existence half is unconditional. -/
+The uniqueness half depends on **105V**, hence on **104VII**; the
+existence half is unconditional. -/
 theorem sqrt_axiom [VonNeumannAlgebra A] (p : A) (hp : 0 ≤ p) :
     (∃ g : NCPMap A A, IsDiamondPositive g ∧ g (g 1) = p ∧
       ∀ a, g a = CFC.sqrt (CFC.sqrt p) * a * CFC.sqrt (CFC.sqrt p)) ∧
@@ -9006,7 +8980,7 @@ order-theoretic `≤ e^⊥` into the ceiling-theoretic one by
 (A); **105V** makes `f∘f = √p(·)√p`, and (C) turns `p ∗ q` into
 `f(f(q))`.
 
-Depends on **105V**, hence on **104VII** — both proved. -/
+Depends on **105V**, hence on **104VII**. -/
 theorem uniqueness_sequential_product [VonNeumannAlgebra A] (op : A → A → A)
     (h : IsSequentialProduct op) :
     ∀ p ∈ effects A, ∀ q ∈ effects A,
@@ -9054,9 +9028,9 @@ theorem uniqueness_sequential_product [VonNeumannAlgebra A] (op : A → A → A)
 satisfies all axioms of 106I except (A) (which fails when `A` is
 nontrivial).  The conjuncts are (B), (C), (D), (E), `¬(A)`, each written
 out at this `∗`; the (C) conjunct is
-`p ∗ (p ∗ q) = (p ∗ p) ∗ q`, whose inner `⌈p⌉` used to be printed here as
-`⌈q⌉` — true and equivalent for effects (`⌈q⌉q⌈q⌉ = q`), but not the
-axiom. -/
+`p ∗ (p ∗ q) = (p ∗ p) ∗ q`; note the inner index is `⌈p⌉`, not `⌈q⌉`
+(the latter is true and equivalent for effects, `⌈q⌉q⌈q⌉ = q`, but is not
+the axiom). -/
 theorem sequential_product_counterexample_1 [VonNeumannAlgebra A]
     [Nontrivial A] :
     (∀ p ∈ effects A, ∃ f : NCPMap A A, IsPure f ∧

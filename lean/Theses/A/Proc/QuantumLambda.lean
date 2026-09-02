@@ -21,11 +21,10 @@ descriptions (parsecs 1251–1255).
   (`Nonempty (FreeMIU 𝒜)`), 125bII `ha_second_adjunction`
   (`Nonempty (HaFreeMIU 𝒜)`), 125dII `ha_tensor_closed`
   (`Nonempty (HaFreeExp ℬ 𝒜)`) and 125VIII `tensor_closed`
-  (`Nonempty (FreeExp ℬ 𝒜)`).  125VIII was the last to close: its blockers
-  were 121II `intersection_tensor` (now from
-  `A/Proc/CommutationTheorem.lean`'s `intersection_tensor'`) and 125IV
-  `equaliser_lemma`, and through 125VI `tensor_equalisers` and 125VIIb
-  `tensor_preimage` those are what it runs on.  Because they consume 125IV,
+  (`Nonempty (FreeExp ℬ 𝒜)`).  125VIII runs on 121II `intersection_tensor`
+  (from `A/Proc/CommutationTheorem.lean`'s `intersection_tensor'`) and 125IV
+  `equaliser_lemma`, through 125VI `tensor_equalisers` and 125VIIb
+  `tensor_preimage`.  Because they consume 125IV,
   **125VI, 125VIIb, 125VIII, 125eIIa and 125eIII are stated at the very end
   of this file**, after `equaliser_lemma`, rather than at their places in
   parsecs 1250 and 1255.
@@ -66,8 +65,7 @@ variable {I : Type*} {𝒜 : I → Type*} [∀ i, CStarAlgebra (𝒜 i)]
   [∀ i, StarOrderedRing (𝒜 i)]
 
 /-- Infrastructure: the coordinate projection `πⱼ : ⊕ᵢ 𝒜ᵢ → 𝒜ⱼ` as a
-∗-homomorphism.  (This is `Theses.A.VN.vn_products_proj_normal`'s companion;
-that file is closed for editing, so the two live here.) -/
+∗-homomorphism.  Companion to `Theses.A.VN.vn_products_proj_normal`. -/
 def lpEvalSAH (j : I) : lp 𝒜 ∞ →⋆ₐ[ℂ] 𝒜 j where
   toFun a := (a : ∀ i, 𝒜 i) j
   map_one' := by rw [lp.infty_coeFn_one]; rfl
@@ -87,12 +85,11 @@ omit [∀ i, PartialOrder (𝒜 i)] [∀ i, StarOrderedRing (𝒜 i)] in
 @[simp] theorem lpEvalSAH_apply (j : I) (a : lp 𝒜 ∞) :
     lpEvalSAH j a = (a : ∀ i, 𝒜 i) j := rfl
 
-/-! **47IV**.2 and **47IV**.3 used to be proved here, because `A/VN/Basic.lean`
-was closed for editing when they were found.  They now live where they belong,
-as `Theses.A.VN.vn_products_proj_normal` and `Theses.A.VN.vn_products_nmiu`,
-and the use sites below call those directly.
+/-! **47IV**.2 and **47IV**.3 live in `A/VN/Basic.lean`, as
+`Theses.A.VN.vn_products_proj_normal` and `Theses.A.VN.vn_products_nmiu`;
+the use sites below call those directly.
 
-One remark does not survive the move and is recorded here instead: the proof of
+One remark on them is recorded here: the proof of
 `vn_products_nmiu` uses **no** `VonNeumannAlgebra` hypothesis at all — the
 ∗-algebra part is **20aI** `cstar_product_2_miu` and normality of the mediating
 map follows from normality of the `fᵢ` because the order on `lp 𝒜 ∞` is
@@ -493,8 +490,7 @@ defined with Mathlib's category theory library when a chapter needs them".
 This is where the chapter needs `W*_miu`: **122II**'s second sentence — "and
 as a result, `X ↦ ℓ^∞(X)` extends to a functor `Set → (W*_miu)^op` that is
 left adjoint to `nsp`" — and the "whence" of **122VI**.3, that `Set` is a
-coreflective subcategory of `(W*_miu)^op`.  Neither was stated before
-2026-08-21; the audit recorded both as `weaker`.
+coreflective subcategory of `(W*_miu)^op`.
 
 Nothing here is new mathematics.  `first_adjunction` *is* the hom-set
 bijection `W*_miu(𝒜, ℓ^∞(X)) ≅ Set(X, nsp(𝒜))` (universality of `η` in the
@@ -2513,9 +2509,8 @@ instance (n : ℕ) : StarOrderedRing (MatAlg n) :=
 
 /-- `M_n(ℂ)` is a von Neumann algebra.  This is **49IV**.1
 (`Theses.A.VN.mn_vna_1`, vn.tex:1272) at `𝒜 = ℂ`, so it is *not* an
-independent obligation: the `sorry` that used to sit here has been
-repointed at its owner in `A/VN`.  (Note the `PartialOrder` above is the
-same spectral order that `mn_vna_1` is stated against, so the two agree
+independent obligation.  (Note the `PartialOrder` above is the same
+spectral order that `mn_vna_1` is stated against, so the two agree
 definitionally.) -/
 instance (n : ℕ) : VonNeumannAlgebra (MatAlg n) := Theses.A.VN.mn_vna_1 n
 
@@ -3068,7 +3063,7 @@ theorem Fha_concrete [VonNeumannAlgebra A] (hA : HereditarilyAtomic A)
 
 /-! ## The hereditarily atomic slice device
 
-Session 84's core.  For **hereditarily atomic** `𝒜 ≅ ⊕_{j∈J} M_{n_j+1}`
+For **hereditarily atomic** `𝒜 ≅ ⊕_{j∈J} M_{n_j+1}`
 (**84bII**) and *any* von Neumann algebra `𝒞`, every `x ∈ 𝒞 ⊗ 𝒜` has, in
 each block `j`, a **finite** matrix of entries `c^j_{kl} ∈ 𝒞`:
 
@@ -3077,7 +3072,7 @@ each block `j`, a **finite** matrix of entries `c^j_{kl} ∈ 𝒞`:
 This is the elementary substitute, available only in the hereditarily
 atomic case, for Tomiyama's slice-map property — which in general is
 equivalent to the commutation theorem `(M ⊗̄ N)' = M' ⊗̄ N'` and hence out
-of reach here (PROVING-LOG, session 83).
+of reach here.
 
 The entry extraction stays inside `Type u`: it never slices into `ℂ`.
 `haE j k l x := (id ⊗ κ_j)((1⊗u^j_{0k})·x·(1⊗u^j_{l0}))`, where `κ_j` is
@@ -3087,8 +3082,8 @@ which is a von Neumann subalgebra by **69IVb** `nmiu_image` and hence
 ultraweakly closed by **75VIII** `vnsac`.  Agreement on elementary tensors
 plus `tensor_linear_ext` (108II(1)) does the rest.
 
-`npScalarP`/`npScalar` fill the one API gap the survey predicted: the tree
-had no `NPFunctional → NCPMap`.  Complete positivity is **34IX**
+`npScalarP`/`npScalar` supply the `NPFunctional → NCPMap` the rest of the
+tree does not have.  Complete positivity is **34IX**
 `cp_commutative_cod`/`cp_commutative_dom` through `ℂ`, normality is
 **44XV** `p_uwcont`. -/
 
@@ -3522,7 +3517,7 @@ private theorem haSliceEq (j : J) (x : VNT C A) :
 /-! ## Parsec 1254 preliminaries: the approximation step and the ha
 slice-map property
 
-Session 85's continuation of the slice device.  `haApprox` is the
+The continuation of the slice device.  `haApprox` is the
 ultraweak approximation step (`∑_{j∈F} z_j ↑ 1`, **44VI**
 `vna_supremum_uwlimit`, with `vnsac` supplying *ultraweak* closedness of a
 von Neumann subalgebra — `IsVNSubalgebra` only carries norm closedness).
@@ -4497,7 +4492,7 @@ end TensorBSurj
 
 /-! # Parsec 1254–1255, widened: atomic type I second factors
 
-Session 86.  The `haE` device of the previous sections runs on
+The `haE` device of the previous sections runs on
 `𝒜 ≅ ⊕ⱼ M_{nⱼ+1}` (**84bII** `HereditarilyAtomic`).  Everything below is
 the same device with the summands widened from `M_{nⱼ}` to `B(𝒦ⱼ)` for
 *arbitrary* nonzero Hilbert spaces `𝒦ⱼ` — the **atomic type I** von
@@ -4514,8 +4509,8 @@ to pass to the limit in a *product*.  Ultraweak convergence `p_F → 1` does
 not survive multiplication, but for a monotone net of **projections** the
 Cauchy–Schwarz inequality **43I**.1 does the job in four lines:
 `|ω(z x z − p x p)| ≤ (‖(zx)*‖_ω + ‖x‖·ω(z)^{1/2})·ω(z − p)^{1/2} → 0`
-(`uw_compress_tendsto`).  That is the whole of the difference, and it is
-why this was worth doing: no other new mathematics is needed.
+(`uw_compress_tendsto`).  That is the whole of the difference: no other new
+mathematics is needed.
 
 Delivered: the widened slice `atE`, both halves of the slice-map property
 (`atMem`, `atE_of_mem`), and the widened `haTensorPreimage` /
@@ -5518,9 +5513,9 @@ I** tensored factor `ℬ ≅ ⊕ⱼ B(𝒦ⱼ)`: `(ρ ⊗ ℬ) ∘ s` is `(·) �
 iff `ρ` is surjective.
 
 The `→` half is `tensorBsurjectivity`'s own (it needs neither `hs` nor
-atomicity); this is the atomic type I case of the `←` half, which was the
-one open at the time and is now proved in general at the end of this file
-(`tensorBsurjectivity`), from 125VIIb `tensor_preimage`. -/
+atomicity); this is the atomic type I case of the `←` half, which is
+proved in general at the end of this file (`tensorBsurjectivity`), from
+125VIIb `tensor_preimage`. -/
 theorem atomicTypeI_tensorBsurjectivity [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     [VonNeumannAlgebra C] [VonNeumannAlgebra D] (R : AtomicTypeIRep B)
     (s : NMIUMap A (VNT C B)) (hs : TensorBSurjective s) (ρ : NMIUMap C D) :
@@ -5559,13 +5554,12 @@ variable {X : Type u} [CStarAlgebra X] [PartialOrder X] [StarOrderedRing X]
 /-- **The ha form of 125eIII** (`tensorBsurjectivity`), the easy half:
 if `(ρ ⊗ 𝒜) ∘ s` is `(·) ⊗ 𝒜`-surjective then `ρ` is surjective.
 
-Two things about this one, both found by the 2026-08-22 dead-limb sweep.
-It has **no consumer**: the 125eVII assembly needs the four algebras in four
-universes and so uses the twin `surj_of_haTensorBSurj2` below instead, which
-supersedes it.  And the proof uses **nothing** about hereditary atomicity —
-neither here nor in the twin does `Φ` appear — so the `→` half of the general
-`tensorBsurjectivity` is in fact already available in full generality; only
-the `←` half (which does need `Φ`, through `haTensorPreimage`) is missing. -/
+It has **no consumer**: the 125eVII assembly needs the four algebras in
+four universes and so uses the twin `surj_of_haTensorBSurj2` below instead,
+which supersedes it.  The proof uses **nothing** about hereditary
+atomicity — neither here nor in the twin does `Φ` appear — which is why the
+`→` half of the general `tensorBsurjectivity` at the end of this file needs
+no atomicity either. -/
 private theorem surj_of_haTensorBSurj (s : NMIUMap X (VNT C A)) (ρ : NMIUMap C D)
     (hcomp : TensorBSurjective (nmiuComp (tmapM ρ (nmiuId A)) s)) :
     Function.Surjective ⇑ρ := by
@@ -6071,11 +6065,7 @@ subalgebras of `B(ℋ ⊗ 𝒦)`; its consumers (125IV, 125VI, 125VIIb,
 * `tensorSub₂_inf_of_intersection_tensor` — the transport of a `⊓`-fact
   about `concreteTensor` (i.e. of 121II) to the corresponding `⊓`-fact
   about `tensorSub₂`.  121II is taken as an explicit hypothesis, so that
-  it is usable the moment it is proved.  (The one-sided companion
-  `tensorSub_inf_of_intersection_tensor` stood here until 2026-08-27 and
-  was deleted with the `A/` half of the `docs/DEAD-LIMBS.md` §7 pool: it
-  never acquired a consumer, 125IV `equaliser_lemma` going through the
-  two-sided form, whose intersection varies in both factors.) -/
+  it is usable the moment it is proved. -/
 
 section WstarTransport
 
@@ -6473,9 +6463,7 @@ applies the concrete statement there.
 ⚠ **125IV does not consume this form.**  It needs the *two-sided*
 `EqL.tensorSub₂_inf_of_intersectionTensorStatement` below, because the
 intersection it takes, `(𝒜̃ ⊗ B(ℋ)) ∩ (𝒜 ⊗ 𝒞)`, varies in both factors.
-Its only consumer is `tensorSub_inf` just below, which has none.  (This
-docstring said "i.e. what 125IV `equaliser_lemma` actually needs" until
-2026-08-26; see `docs/DEAD-LIMBS.md` §10d.) -/
+Its only consumer is `tensorSub_inf` just below, which has none. -/
 theorem tensorSub_inf_of_intersectionTensorStatement
     (h121 : IntersectionTensorStatement.{u})
     (S₁ S₂ : StarSubalgebra ℂ 𝒜) (hS₁ : IsVNSubalgebra 𝒜 S₁)
@@ -6554,8 +6542,7 @@ inside the chosen tensor product `𝒜 ⊗ 𝒞`.  This is
 *two-sided* `EqL.tensorSub₂_inf_of_intersectionTensorStatement` below, whose
 intersection `(𝒜̃ ⊗ B(ℋ)) ∩ (𝒜 ⊗ 𝒞)` varies in both factors; this
 one-sided form is kept on the record as the unconditional statement of the
-abstract 121II.  (This docstring claimed "it is what 125IV `equaliser_lemma`
-consumes" until 2026-08-26; see `docs/DEAD-LIMBS.md` §10d.) -/
+abstract 121II. -/
 theorem tensorSub_inf {𝒜 𝒞 : Type u}
     [CStarAlgebra 𝒜] [PartialOrder 𝒜] [StarOrderedRing 𝒜] [VonNeumannAlgebra 𝒜]
     [CStarAlgebra 𝒞] [PartialOrder 𝒞] [StarOrderedRing 𝒞] [VonNeumannAlgebra 𝒞]
@@ -6572,11 +6559,7 @@ The proof of 125IV (proc.tex:4852, Lemma (Kornell)) needs the *two-sided*
 abstract form of 121II — `tensorSub₂_inf_of_intersectionTensorStatement`
 below — and hence everything in this file down to `tensorSub₂`; that is why
 it sits here, at the end, rather than beside the other parsec-1250
-statements above.  (It used to live in a separate module,
-`A/Proc/EqualiserLemma.lean`, which had to copy some three hundred lines of
-this file's `private` auxiliaries verbatim in order to see them.  Now that
-`intersection_tensor` is proved, `equaliser_lemma` is proved here too, and
-the copies are gone.)
+statements above.
 
 Everything auxiliary is kept in the namespace `EqL`. -/
 
@@ -6761,13 +6744,7 @@ theorem rSliceL_continuous (ξ : H) :
 
 /-- Every value of `r_ξ` lies in the copy `𝒜 ⊗ 1` of `𝒜`.  The argument is
 self-contained: the set of `x` whose image does is an ultraweakly closed
-subspace containing the elementary tensors.
-
-*(This used to be cited as "the argument of `atE_mem`".  `atE_mem` is inside
-the superseded atomic-type-I block at `:4730–5542`, which nothing outside
-itself reaches — the shared argument was reproved here rather than reused, so
-the cross-reference sent the reader into dead code.  Corrected 2026-08-26; see
-`docs/DEAD-LIMBS.md` §10a.)* -/
+subspace containing the elementary tensors. -/
 theorem rSlice_mem (ξ : H) (x : VNT 𝒜 (H →L[ℂ] H)) :
     ∃ a : 𝒜, rSlice 𝒜 ξ x = a ⊗ᵥ (1 : H →L[ℂ] H) := by
   let _ : TopologicalSpace (VNT 𝒜 (H →L[ℂ] H)) := ultraweak (VNT 𝒜 (H →L[ℂ] H))

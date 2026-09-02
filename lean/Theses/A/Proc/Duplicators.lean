@@ -870,13 +870,12 @@ def AtomicSet (S : Set X) : Prop :=
 
 /-- **129II** (proc.tex:6194, Definition), part 2, **as repaired by the
 author** (ruling of Bas Westerbaan, 2026-08-16, on the item filed as **A6**
-in `QUESTIONS.md` — deleted from that file the same day once implemented, in
-commit ffd073b, whose subject line names A5): `X` is
-**discrete** if `X` can be *partitioned* into atomic measurable subsets.
+in `QUESTIONS.md`, now closed): `X` is **discrete** if `X` can be
+*partitioned* into atomic measurable subsets.
 
 ⚠️ **This is deliberately not the printed definition**, and is the one
 place in `A/Proc` where a transcribed statement was changed.
-proc.tex:6199 reads "`X` is **discrete** if `X` is covered by atomic
+proc.tex:6207 reads "`X` is **discrete** if `X` is covered by atomic
 measurable subsets", with the parenthetical "(This coincides with being
 'purely atomic' from 211K of [fremlin].)".  The parenthetical is false
 and the printed definition is strictly weaker: for `X = [0,1]` with
@@ -1175,7 +1174,7 @@ by atoms".  Under the printed definition the statement is true but
 vacuous (in the `μ = λ + δ₀` counterexample `D = X` satisfies both
 conjuncts), so this is the form that carries information.
 
-⚠️ **The printed proof (proc.tex:6283) does not survive the repair.**  It
+⚠️ **The printed proof (proc.tex:6289) does not survive the repair.**  It
 applies **129IV** `measure_zorn` to the collection of discrete measurable
 subsets, justified by "clearly the countable union of discrete measurable
 subsets of `X` is again discrete" — which is exactly what fails for the
@@ -1186,9 +1185,7 @@ atoms may be null and non-empty.  The repair used here is to run Zorn on
 *pairwise disjoint families of atoms* instead of on subsets
 (`exists_maximal_atom_family`), which yields the partition directly; note
 that this replaces the thesis's choice-free 129IV by ordinary Zorn.  This
-is the repair the **129II**.2 row of `ERRATA.md` now records; the conjecture
-that row carried earlier ("`𝒮` = countable disjoint unions of atoms") fails
-for the same non-refinement reason. -/
+is the repair the **129II**.2 row of `ERRATA.md` records. -/
 theorem measure_space_continuous_discrete [IsFiniteMeasure μ]
     (hμ : μ.IsComplete) :
     ∃ D : Set X, MeasurableSet D ∧
@@ -1326,17 +1323,12 @@ von Neumann algebra with `∫` faithful normal positive, so there is no source
 statement to transcribe here and the fields were assembled to say "`q`
 presents `𝒜` as `L^∞(X, μ)`".
 
-`smul` was added on 2026-08-16, on a ruling by Bas.  The item was filed as
-**D1** in `QUESTIONS.md` and deleted from it in the very commit that
-implemented the ruling (43e270f), whose message now carries it.  Without it the
-fields make `q` only a `∗`-*ring* map, and the intended reading of the
-consumers — "every `f` is a.e. constant, hence `L^∞ ≅ ℂ`, hence an nmiu-map"
-— does not follow: a `∗`-ring isomorphism `ℂ → 𝒜` need not be `ℂ`-linear, as
-complex conjugation shows.  **130II** `atomic_measure_space` was proved before
-the fix by routing through Gelfand–Mazur (**16VII**) instead, so it does not
-depend on `smul`; the other three consumers (**129X**, **130IV**, **130V**)
-were still `sorry` when the field was added, and so could take it for
-granted.  All three are proved now. -/
+The `smul` field is there on a ruling by Bas of 2026-08-16 (the item filed
+as **D1** in `QUESTIONS.md`, now closed).  Without it the fields make `q`
+only a `∗`-*ring* map, and the intended reading of the consumers — "every
+`f` is a.e. constant, hence `L^∞ ≅ ℂ`, hence an nmiu-map" — does not
+follow: a `∗`-ring isomorphism `ℂ → 𝒜` need not be `ℂ`-linear, as complex
+conjugation shows. -/
 structure IsLinftyOf (q : (X → ℂ) → 𝒜) : Prop where
   surj : ∀ y : 𝒜, ∃ f, IsBoundedMeasurable X f ∧ q f = y
   add : ∀ f g, IsBoundedMeasurable X f → IsBoundedMeasurable X g →
@@ -1563,9 +1555,8 @@ private theorem linfty_ae_nonneg (ν : Measure X) (𝒞 : Type*) [CStarAlgebra �
   filter_upwards [him, hSae] with x h1 h2
   exact Complex.le_def.mpr ⟨by simpa using not_lt.mp h2, by simpa using h1.symm⟩
 
-/-- Auxiliary: the converse of `linfty_mono`.  (Kept as part of the
-dictionary although its only consumer, the absolute-continuity step of the
-old **129X** proof, went away with the repair of 2026-08-21.) -/
+/-- Auxiliary: the converse of `linfty_mono`.  Kept as part of the
+`L^∞` dictionary; it has no consumer in this file. -/
 private theorem linfty_ae_le (ν : Measure X) (𝒞 : Type*) [CStarAlgebra 𝒞]
     [PartialOrder 𝒞] [StarOrderedRing 𝒞] (p : (X → ℂ) → 𝒞)
     (hp : IsLinftyOf ν 𝒞 p) {f g : X → ℂ} (hf : IsBoundedMeasurable X f)
@@ -1672,10 +1663,9 @@ is a faithful np-functional on `𝒜` with `ω(q f) = ∫f dμ`.
 
 Two notes on the transport.  `Ψ` is built as a ∗-ring isomorphism and its
 normality comes from its being an *order* isomorphism, which needs no
-linearity: `0 ≤ x` iff `x = c*c` in either algebra.  (This route dates from
-when `Linfty_vn`'s presentation `p` carried no `smul` clause; since 2026-09-02
-it does, QUESTIONS A9 now closed, deleted 2026-09-02, and the clause is simply
-not consumed here.)
+linearity: `0 ≤ x` iff `x = c*c` in either algebra.  (`Linfty_vn`'s
+presentation `p` does carry a `smul` clause — QUESTIONS **A9**, now closed
+— but it is not consumed here.)
 `ℂ`-linearity of `ω` is then recovered from the integral formula, where
 `q`'s own `smul` clause is available.  And the normalization `μ(X)⁻¹` is
 left off: nothing in 129X uses `ω 1 = 1`. -/
@@ -2016,15 +2006,9 @@ repeated halving (**129VIII**), the projections `p_w`, the descending
 whence `q = 0` because `ω ⊗ ω` is faithful (**118IV**.4,
 `carrier-tensor`) — against `δ(q) = 1 ≠ 0`.
 
-Until 2026-08-21 it was *not* the thesis's: `ω` was an arbitrary non-zero
-np-functional, with the decay of `ω(p_w)` recovered by an
-absolute-continuity argument and the closing contradiction routed through
-carriers instead of faithfulness.  The reason recorded in the file was
-that the integral state's normality needs **51IX** `Linfty-vn`, "which is
-still `sorry` in the tree" — long false; `A/VN/Basic` has no `sorry`.
-`exists_integralNP` above now transports 51IX's integral functional onto
-an arbitrary `IsLinftyOf` presentation, and the thesis's own `ω` is
-available. -/
+The integral state's normality is **51IX** `Linfty-vn`; `exists_integralNP`
+above transports 51IX's integral functional onto an arbitrary `IsLinftyOf`
+presentation, which is what makes the thesis's own `ω` available here. -/
 theorem continuous_finite_measure_space_not_duplicable
     [IsFiniteMeasure μ] (hμ : μ.IsComplete) (hc : ContinuousSpace μ)
     (𝒜 : Type u) [CStarAlgebra 𝒜] [PartialOrder 𝒜] [StarOrderedRing 𝒜]
@@ -2468,7 +2452,7 @@ theorem algebraMap_nonneg_reflect {𝒞 : Type*} [CStarAlgebra 𝒞]
 /-- **130II** (`lem:atomic-measure-space`, proc.tex:6477, Lemma): for an
 atomic measure space `A` we have `L^∞(A) ≅ ℂ`.
 
-The author's argument (proc.tex:6474) is the first half: every
+The author's argument (proc.tex:6480) is the first half: every
 `f ∈ 𝓛^∞(A)` is almost everywhere constant, i.e. `𝒜` is the image of
 `ψ : z ↦ q(const z)`.  The thesis then writes only "Hence `L^∞(X) ≅ ℂ`",
 and that is what happens here: `q` is `ℂ`-linear and unital
@@ -2476,20 +2460,13 @@ and that is what happens here: `q` is `ℂ`-linear and unital
 and the first half says exactly that `algebraMap ℂ 𝒜` is surjective —
 injective it always is.
 
-Until 2026-08-22 the second half went through Gelfand–Mazur (**16VII**)
-instead: `ψ` was known only as a unital ∗-*ring* map, every nonzero
-element of `𝒜` was shown to be invertible, and 16VII then delivered
-surjectivity of `algebraMap`.  The stated ground for that detour — that
-`IsLinftyOf` "records only that `q` is additive and multiplicative", so
-that a ∗-ring isomorphism `ℂ → 𝒜` need not be `ℂ`-linear — **expired**
-when the `smul` clause was added to `IsLinftyOf` on 2026-08-16 — the ruling
-on the item then filed as **D1** in `QUESTIONS.md`, deleted from it in the
-implementing commit 43e270f.  See the note on `IsLinftyOf`, which recorded
-130II as the one consumer proved before the fix.  Consequence, recorded
-here because this pass is looking for the reverse pattern: 130II was **16VII**'s only
-consumer in the tree, so `gelfand_mazur` now has none.  16VII is a Theorem
-of cstar.tex in its own right, not run-up machinery, so that is a fact
-about the tree rather than a defect in it.
+It is `IsLinftyOf`'s `smul` clause that makes this direct.  Without it `ψ`
+would be known only as a unital ∗-*ring* map, and surjectivity of
+`algebraMap` would have to come from Gelfand–Mazur (**16VII**) after
+showing every nonzero element of `𝒜` invertible.  That detour is not
+taken, and 16VII (`gelfand_mazur`) consequently has no consumer in the
+tree — a fact about the tree rather than a defect in it, 16VII being a
+Theorem of cstar.tex in its own right and not run-up machinery.
 
 Note `hμ : μ.IsComplete` is not used; nor is `𝒜`'s von-Neumann-ness, in
 the sense that the argument shows `𝒜` is C*-isomorphic to `ℂ` and only
@@ -2829,19 +2806,12 @@ finite measure space `X` into measurable subsets — rendered for a
 partition indexed by an arbitrary countable type `ι` and abstract copies
 `ℬᵢ` of the `L^∞(Pᵢ)`.
 
-The index set was `ℕ` until 2026-08-21, which excluded the *finite*
-partitions the Exercise also asks for: padding a finite partition out to
-`ℕ` with `∅` forces `ℬᵢ = {0}` on the padding, and the `Nontrivial ℬᵢ`
-binder forbids that.  That gap is what stopped **130V** below from being
-proved at all; with `ι` arbitrary the argument goes through, and
-`discrete_ell_x` now takes it.
-
-That route is **ours, not the thesis's**, and this comment used to say
-otherwise: it attributed to proc.tex a printed route quoted as "combine
-130IV with 130II".  There is no such sentence.  130V is
-`cor:discrete-ell-x` (proc.tex:6531), a Corollary with **no proof point at
-all**, and the word "combine" does not occur anywhere in `proc.tex` -- by
-grep of the current text and of its history, 2026-08-29.
+The index type is an arbitrary countable `ι` rather than `ℕ`, because the
+Exercise also asks for the *finite* partitions: padding a finite partition
+out to `ℕ` with `∅` forces `ℬᵢ = {0}` on the padding, which the
+`Nontrivial ℬᵢ` binder forbids.  With `ι` arbitrary the argument goes
+through, and **130V** `discrete_ell_x` below takes it — 130V is printed as a
+Corollary with no proof, so the route through this Exercise is ours.
 
 `[∀ i, Nontrivial (ℬ i)]` is **Mathlib's** binder, not ours: `lp ℬ ∞`
 carries a `Ring` (and hence a `VonNeumannAlgebra`) instance only through
@@ -3039,24 +3009,18 @@ see the counterexample recorded there.  The index set `Y` is the
 partition itself, which is why the partition form of the definition was
 chosen: no exhaustion argument is needed to produce it.
 
-**The printed proof.**  proc.tex:6525 reads "combine **130IV** with
-**130II**": partition `X` into atoms, decompose `L^∞(X) ≅ ⊕_A L^∞(A)`,
-and turn each `L^∞(A)` into `ℂ`.  That is what happens below.  130II
-enters as its key lemma `ae_const_of_atomic` — on an atom every bounded
-measurable `f` is a.e. constant — from which `cval A` (the a.e.-constant
-value on `A`) is read off and shown to present `ℂ` as `L^∞(A)`; 130IV is
-then applied to the partition `𝒬` itself, indexed by `↥𝒬`.
-
-Until 2026-08-21 this route was *not* available, for a reason of
-formalization rather than mathematics: `measure_space_partition` (130IV)
-was stated for a partition indexed by `ℕ` with each block algebra
-nontrivial, and a discrete space may have a *finite* partition into
-atoms — padding it out to `ℕ` with `∅` forces `ℬₙ = {0}` there (the
+**The Corollary is printed with no proof at all.**  The route taken here
+is the natural one: partition `X` into atoms, decompose
+`L^∞(X) ≅ ⊕_A L^∞(A)` by **130IV**, and turn each `L^∞(A)` into `ℂ` by
+**130II**.  130II enters as its key lemma `ae_const_of_atomic` — on an
+atom every bounded measurable `f` is a.e. constant — from which `cval A`
+(the a.e.-constant value on `A`) is read off and shown to present `ℂ` as
+`L^∞(A)`; 130IV is then applied to the partition `𝒬` itself, indexed by
+`↥𝒬`.  130IV's arbitrary countable index type is what makes this
+available: a discrete space may have a *finite* partition into atoms, and
+padding it out to `ℕ` with `∅` forces `ℬₙ = {0}` on the padding (the
 `kernel` field makes `qB 1 = 0`), which the `Nontrivial` hypothesis
-forbids.  130IV now takes an arbitrary countable index type, which is
-what the Exercise asks for anyway, and the printed route goes through;
-the 150 lines that re-ran 130IV's own argument specialised to `ℬ = ℂ`
-are gone.
+forbids.
 
 `hμ : μ.IsComplete` is not used here (it is passed on to 130IV, which
 does not use it either). -/
@@ -4419,18 +4383,17 @@ are `Mon(W*_miu)` objects) this is its whole content, but forming
 proved concretely in `A/Proc/Tensor.lean` — associators and unitors for
 `VNT` by choice from unique-existence lemmas, `vn_smc_associator_natural`
 and its siblings, `vn_smc_pentagon`, `vn_smc_triangle`,
-`vn_smc_unitors_agree`, `vn_smc_hexagon`, `vn_smc_symmetry`, and
-`exists_braiding` (no longer `sorry`).  What is missing is only the
-*packaging* as a `MonoidalCategory` instance, which the file's own header
-records as a deliberate choice (the conversion policy's allowance for
-concrete phrasings), and which is `QUESTIONS.md` **A11**.  A second
+`vn_smc_unitors_agree`, `vn_smc_hexagon`, `vn_smc_symmetry` and
+`exists_braiding`.  What is missing is only the *packaging* as a
+`MonoidalCategory` instance, which that file's header records as a
+deliberate choice (the conversion policy's allowance for concrete
+phrasings), and which is `QUESTIONS.md` **A11**.  A second
 obstruction is in the *shape*: Mathlib renders the two as distinct
 structure types (`CategoryTheory.CommMon C` carries an `IsCommMonObj`
 instance field that `CategoryTheory.Mon C` does not), so
 "`CMon(W*_miu) = Mon(W*_miu)`" cannot be an equality of categories there
 at all — it would have to become an isomorphism, which is a change of
-statement and so the author's call.  Repairing this row was costed and
-left. -/
+statement and so the author's call. -/
 theorem dup_vna_is_monoid_4 [VonNeumannAlgebra A] (M : MonoidInWcpsu A) :
     (∀ t : VNT A A, M.m.toNCPMap (braiding A A t) = M.m.toNCPMap t) ∧
       ∃ ρ : NMIUMap (VNT A A) A, ∀ t, ρ t = M.m.toNCPMap t := by
@@ -4562,12 +4525,12 @@ theorem dup_vna_is_monoid_4 [VonNeumannAlgebra A] (M : MonoidInWcpsu A) :
 /-! ### `ℓ^∞` is full and faithful: 132III.5, 132IV and 132VI
 
 All three items run on the same two facts about a *duplicable* `ℬ`: by
-**127III** it is `ℓ^∞(Y)` for a set `Y`, and by **122VI**.2 (`cor_linf_ff_2`,
-already proved) the nmiu-functionals on `ℓ^∞(Y)` are exactly the evaluations
-`η(y)`, so — read through the presentation — every `φ ∈ nsp(ℬ)` is
-`η(y) ∘ ψ`.  Fullness of `ℓ^∞` is **122VI**.3 (`cor_linf_ff_3`, also already
-proved), which is the hint the thesis gives for 132III.5 and the step it
-quotes in the proof of 132IV. -/
+**127III** it is `ℓ^∞(Y)` for a set `Y`, and by **122VI**.2
+(`cor_linf_ff_2`) the nmiu-functionals on `ℓ^∞(Y)` are exactly the
+evaluations `η(y)`, so — read through the presentation — every
+`φ ∈ nsp(ℬ)` is `η(y) ∘ ψ`.  Fullness of `ℓ^∞` is **122VI**.3
+(`cor_linf_ff_3`), which is the hint the thesis gives for 132III.5 and the
+step it quotes in the proof of 132IV. -/
 
 section FreeMonoid
 
@@ -4595,7 +4558,7 @@ part 4, and `QUESTIONS.md` A11.  This is the same shape as the
 standing observation on 188III/188IV.
 
 The thesis's hint is `cor:linf-ff`, i.e. **122VI**: `nsp(ℓ^∞(X)) ≅ X` (.2) and
-`ℓ^∞` full and faithful (.3), both already proved.  *Injectivity* is .2 for
+`ℓ^∞` full and faithful (.3).  *Injectivity* is .2 for
 `ℬ` alone (the evaluations separate the points of `ℓ^∞(Y)`); *surjectivity* is
 **122II** `first_adjunction` applied to `y ↦ F(η(y) ∘ ψ)`.  **Only `hB` is
 used** — the hypothesis `hA` is not needed, because `ℓ^∞` is a right adjoint
