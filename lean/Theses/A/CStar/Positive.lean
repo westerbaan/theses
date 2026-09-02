@@ -13,8 +13,7 @@ arXiv:1804.02203), chapter 1: C*-algebras — cstar.tex, lines 1714–3886.
                            positive and negative parts, a*a ≥ 0, vector
                            states, commutative C*-algebras)
 
-**All statements of this file are proved**, parsecs 130–260 included.  The last
-two, `cauchy_formula` (**15I**) and `taylor` (**15V**), closed in session 74.
+**All statements of this file are proved**, parsecs 130–260 included.
 Our `cauchy_formula` is a **route divergence**, not the repair of a gap: the
 thesis's own proof is complete as printed — the promotion of **14VIII**.4 from
 a triangle to a regular `N`-gon is its new part 5, whose hint is the partition
@@ -526,8 +525,7 @@ radius, then all its coefficients vanish.
 *Class 1 — the solution's own route* (`parsec-130.60`, asols.tex:1594): the
 constant term is `f(0) = 0`; the derivative is again a power series summing to
 `0` on the same disk (`deriv_hasSum_zero`, which is **13IV**
-`powerSeries_hasDerivAt` plus `summable_deriv`); induct.  This replaced, in the
-route pass of 2026-08-29, a shorter proof by `HasFPowerSeriesAt.eq_zero`. -/
+`powerSeries_hasDerivAt` plus `summable_deriv`); induct. -/
 theorem powerseries_uniqueness_coeffients (a : ℕ → 𝒜) (r : ℝ) (hr : 0 < r)
     (h : ∀ z : ℂ, ‖z‖ < r → HasSum (fun n : ℕ => z ^ n • a n) 0) :
     ∀ n, a n = 0 :=
@@ -1365,9 +1363,9 @@ proves the winding number of the `N`-gon as **14VIII**.5, by partitioning the
 region between a triangle `T` with `z₀ ∈ in(T)` and the `N`-gon "in the obvious
 manner into triangles `T₁,…,T_M`" and killing each by **14IV** `goursat`, the
 integrands there being holomorphic; 15II then cites `invint`(5).  That argument
-is elementary and complete as printed (author's ruling, 2026-08-22; the ERRATA
-row it once had is withdrawn).  We take a different route, which proves the
-polygon case outright and needs only *continuity* of `f` at `z₀`:
+is elementary and complete as printed (author's ruling, 2026-08-22).  We take
+a different route, which proves the polygon case outright and needs only
+*continuity* of `f` at `z₀`:
 
 * the `n`-th edge of the `N`-gon spans a supporting line of the polygon, so an
   interior point `z₀` satisfies `Re((z₀ − c)·conj(e^{iπ(2n+1)/N})) < r cos(π/N)`
@@ -1387,7 +1385,7 @@ The divergence is larger than this lemma: `cauchy_formula` below uses
 altogether; Goursat is then applied to the **fan** `(w₀, wₙ, wₙ₊₁)`, whose
 interior edges cancel immediately, so the region between a triangle and the
 `N`-gon never arises.  Two consequences worth recording: the tree uses neither
-**14VIII**.4 `invint_4` nor the thesis's new **14VIII**.5 here (both have zero
+**14VIII**.4 `invint_4` nor the thesis's **14VIII**.5 here (both have zero
 consumers), and `polygon_winding` asks less of `f` than the thesis's route
 does. -/
 
@@ -3539,11 +3537,9 @@ theorem positive_basic_2_3a (a : 𝒜) (ha : IsSelfAdjoint a) (lam : ℝ)
 complete Archimedean order unit space).
 
 The infimum runs over `λ ≥ 0`, not over all `λ ∈ ℝ`: that is **erratum
-170.60**.  With the range restricted, the set is `[‖a‖, ∞)` in *every*
-C*-algebra, the trivial one included, so — unlike the *first printing*'s
-unrestricted `λ ∈ ℝ` — this needs no `Subsingleton`/`Nontrivial` case split.
-(cstar.tex now prints the restricted range, so the erratum is incorporated
-at the source.) -/
+170.60**, incorporated in cstar.tex.  With the range restricted, the set is
+`[‖a‖, ∞)` in *every* C*-algebra, the trivial one included, so no
+`Subsingleton`/`Nontrivial` case split is needed. -/
 theorem positive_basic_2_3b (a : 𝒜) (ha : IsSelfAdjoint a) :
     ‖a‖ = sInf {lam : ℝ | 0 ≤ lam ∧
       -(algebraMap ℂ 𝒜 (lam : ℂ)) ≤ a ∧ a ≤ algebraMap ℂ 𝒜 (lam : ℂ)} :=
@@ -3761,13 +3757,12 @@ theorem weak_russo_dye_1 (f : 𝒜 →ₗ[ℂ] ℬ) (hf : IsPositiveMap f) (a : 
     have hfsa : IsSelfAdjoint (f a) := by
       -- `a = (‖a‖ + a) - ‖a‖` with both terms positive (**17VI**.3a); the
       -- positive/negative parts are only available at parsec 240.  This is
-      -- **10V**'s argument inline.  The author ruled on 2026-08-22 that
-      -- 20II.1's use of "`f a` is self-adjoint" is not a gap — 10V proves it
-      -- ten parsecs earlier — and the ERRATA row is withdrawn.  Citing
-      -- **10IV** `cstar_p_implies_i` instead would be one line, but it is
-      -- CFC-reachable through the parsec-90 order bridge, and session 95 took
-      -- 20II.1 off that bridge on purpose; the inline copy of 10V goes
-      -- through `ThesisPos` and stays off it.
+      -- **10V**'s argument inline.  20II.1's use of "`f a` is self-adjoint"
+      -- is not a gap: **10V** proves it ten parsecs earlier (author's ruling,
+      -- 2026-08-22).  Citing **10IV** `cstar_p_implies_i` instead would be one
+      -- line, but it is CFC-reachable through the parsec-90 order bridge, and
+      -- 20II.1 is deliberately kept off that bridge; the inline copy of 10V
+      -- goes through `ThesisPos` and stays off it.
       have hp1 : (0 : 𝒜) ≤ algebraMap ℂ 𝒜 ((‖a‖ : ℝ) : ℂ) + a :=
         (thesisPos_add_of_norm_le ha le_rfl).nonneg
       have hp0 : (0 : 𝒜) ≤ algebraMap ℂ 𝒜 ((‖a‖ : ℝ) : ℂ) :=
@@ -6351,8 +6346,8 @@ theorem sqrt_2 (a : 𝒜) (ha : 0 ≤ a) (b c : 𝒜) (hb : IsSelfAdjoint b)
 /-- **23VII** (`sqrt`, cstar.tex:3653, Exercise), part 3: for commuting
 self-adjoint `a, b` with `0 ≤ a ≤ b`: `a² ≤ b²`.
 
-The hypothesis `0 ≤ a` is **erratum 230.70** (which was for a while mis-keyed
-230.50): without it the statement is false already in `𝒜 = ℂ`, where
+The hypothesis `0 ≤ a` is **erratum 230.70**: without it the statement is
+false already in `𝒜 = ℂ`, where
 `a = -2 ≤ 1 = b` but `4 ≰ 1`. -/
 theorem sqrt_3 (a b : 𝒜) (ha : 0 ≤ a) (hb : IsSelfAdjoint b)
     (hab : a * b = b * a) (h : a ≤ b) : a ^ 2 ≤ b ^ 2 :=
@@ -6587,11 +6582,7 @@ addendum `parsec-240.20`): `‖a‖ = ‖a₊‖ ∨ ‖a₋‖` for self-adjoin
 `-(‖a₊‖ ∨ ‖a₋‖) ≤ -‖a₋‖ ≤ -a₋ ≤ a ≤ a₊ ≤ ‖a₊‖ ≤ ‖a₊‖ ∨ ‖a₋‖` and **17VI**.3a.
 For `≥`, `a₊² + a₋² = (a₊ - a₋)² = a²` because `a₊a₋ = 0`, so `a₊² ≤ a²`,
 whence `‖a₊‖² = ‖a₊²‖ ≤ ‖a²‖ = ‖a‖²` by **17VI**.3c and **7III**.13; likewise
-for `a₋`.
-
-The fact was reached through Mathlib
-(`IsSelfAdjoint.norm_eq_max_norm_posPart_negPart`) at
-`A/CStar/Matrices.lean` before it was stated here. -/
+for `a₋`. -/
 theorem cstar_pos_neg_part_4 (a : 𝒜) (ha : IsSelfAdjoint a) :
     ‖a‖ = max ‖a⁺‖ ‖a⁻‖ :=
   by
@@ -7387,13 +7378,11 @@ arbitrary C*-algebra is commutative — which is what makes the suprema and
 infima of part 3 available for such a pair, computed in that subalgebra.
 A C*-subalgebra is norm-closed (**3IV**), hence the `topologicalClosure`.
 
-(This was point 5 until 2026-08-22, when the exercise gained the triangle
-inequality `|a+b| ∨ |a-b| = |a|+|b|` as its point 5 and this became point 6.
-The proof is the skeleton of the solution that arrived with the renumbering:
-the least C*-subalgebra containing `a` and `b` is the norm closure of the span
-of the `aⁿbᵐ`, which is commutative, and "that which commutes with the elements
-of a sequence commutes with its limit too" — here `StarAlgebra.adjoin` and
-`StarSubalgebra.commRingTopologicalClosure` are those two steps.) -/
+The proof follows the solution's skeleton: the least C*-subalgebra containing
+`a` and `b` is the norm closure of the span of the `aⁿbᵐ`, which is
+commutative, and "that which commutes with the elements of a sequence commutes
+with its limit too" — here `StarAlgebra.adjoin` and
+`StarSubalgebra.commRingTopologicalClosure` are those two steps. -/
 theorem commutative_cstar_basic_6 {A : Type*} [CStarAlgebra A] {a b : A}
     (ha : IsSelfAdjoint a) (hb : IsSelfAdjoint b) (hab : Commute a b) :
     IsMulCommutative ((StarAlgebra.adjoin ℂ ({a, b} : Set A)).topologicalClosure) :=
@@ -7420,7 +7409,7 @@ theorem commutative_cstar_basic_6 {A : Type*} [CStarAlgebra A] {a b : A}
     exact ⟨⟨fun x y => mul_comm x y⟩⟩
 
 /-- The meet `a ∧ b := ½(a + b - |a - b|)` of two commuting self-adjoint
-elements of a C*-algebra.  **26II**.5 says they generate a commutative
+elements of a C*-algebra.  **26II**.6 says they generate a commutative
 C*-subalgebra, and **26II**.3 that this formula is their infimum in it —
 which is the sense in which `p ∧ q` is read in **104III** and **104VII**
 (proc.tex), *not* the infimum in the order of the ambient algebra, which by

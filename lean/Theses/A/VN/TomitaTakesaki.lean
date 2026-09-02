@@ -65,12 +65,15 @@ proves it, together with Corollary 4.4.
    continuous `u_ε = h (|h| + ε)⁻¹`; only `‖h u_ε − |h|‖ ≤ ε` is used, and that is the
    continuous functional calculus alone.
 
-## What is still missing
+## Where the rest of RvD §4 is
 
-Lemma 4.5 (`T J x' J T = λ(2−R) x R + λ̄ R x (2−R)`), Lemma 4.6 (the Cauchy formula on the
-strip `|Re z| ≤ 1/2`), Lemma 4.7 and Lemma 4.8.  Lemma 4.8 — even at `t = 0`, which is all
-Theorem 4.2(1) needs — genuinely requires the unitary group `Δ^{it}`: its proof is a
-Fourier inversion in `t`.
+Not in this file: Lemma 4.5 (`T J x' J T = λ(2−R) x R + λ̄ R x (2−R)`) and Lemma 4.6 (the
+Cauchy formula on the strip `|Re z| ≤ 1/2`) are in `A/VN/TomitaStrip.lean`, Lemma 4.7 in
+`A/VN/TomitaAnalytic.lean`, and Lemma 4.8 in `A/VN/TomitaFourier.lean`.  Lemma 4.8 — even
+at `t = 0`, which is all Theorem 4.2(1) needs — genuinely requires the unitary group
+`Δ^{it}`: its proof is a Fourier inversion in `t`.  With that chain in place,
+`A/VN/TomitaAnalytic.lean`'s `tomita_JMJ_unconditional` discharges the hypothesis `hadJ` of
+`tomita_JMJ` below.
 -/
 import Theses.A.VN.Tomita
 

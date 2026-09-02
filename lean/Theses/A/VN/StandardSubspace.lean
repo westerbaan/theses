@@ -41,10 +41,7 @@ For a closed *real* subspace `K` of a complex Hilbert space `H`:
 * `isModularPair_a_b` : `(a, b)` is a modular pair in the sense of
   `Theses/A/VN/Modular.lean` — the hand-off point.  `modularPair_data` is the same
   statement spelled out in elementary terms: its *statement* names nothing from that
-  file, but this one imports it (line 53), so there is no import-graph independence.
-  (This header said "with no dependency on that file" until 2026-08-28;
-  `modularPair_data`'s own docstring retracted that on 2026-08-26 and the header did
-  not follow.)
+  file, but this file imports it, so there is no import-graph independence.
 
 The definition of `J` deliberately uses only the *complex* functional calculus of `R`
 (`T` is `CFC.sqrt` of the complex-linear `R (2 - R)`); no functional calculus in the real
@@ -640,13 +637,11 @@ lemma b_injective (hsep : K ⊓ K.mulI = ⊥) : Function.Injective (b K) := by
   exact two_sub_R_injective K hsep (smul_right_injective H (by norm_num : (2⁻¹ : ℝ) ≠ 0) h)
 
 /-- The five properties of a modular pair, spelled out in elementary terms: the *statement*
-names nothing from `Theses/A/VN/Modular.lean`, though this file does import it (line 53), so
-there is no import-graph independence here.
+names nothing from `Theses/A/VN/Modular.lean`, though this file does import it, so there is no
+import-graph independence here.
 
-(This is the unbundled twin of `isModularPair_a_b` below — same proof term, same hypotheses —
-and it currently has no consumer; see `docs/DEAD-LIMBS.md` §8.  An earlier version of this
-docstring claimed "no dependency on `Theses/A/VN/Modular.lean`", which the import contradicts.
-Corrected 2026-08-26.) -/
+This is the unbundled twin of `isModularPair_a_b` below — same proof term, same hypotheses —
+and it has no consumer; see `docs/DEAD-LIMBS.md` §8. -/
 theorem modularPair_data (hsep : K ⊓ K.mulI = ⊥) (hcyc : K ⊔ K.mulI = ⊤) :
     0 ≤ a K ∧ 0 ≤ b K ∧ Commute (a K) (b K) ∧ Function.Injective (a K) ∧
       Function.Injective (b K) ∧ a K * a K + b K * b K = 1 :=

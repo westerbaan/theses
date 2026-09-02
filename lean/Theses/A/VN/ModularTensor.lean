@@ -25,20 +25,17 @@ Only the `J` half leaves this file.  `A/VN/CommutationTomita.lean` consumes
 `htmul_mem_modularSqrt_domain`) reach nothing outside themselves.
 
 The block does not stop at this file.  A term-level walk of the whole
-environment (`scripts/UsesOf.lean`, 2026-08-28) puts nine more with them —
-`modularSqrt` itself and eight of its siblings in `A/VN/Tomita.lean`'s Part IV,
-whose *only* references are these.  Fifteen declarations, entered from nowhere,
-exactly as `docs/DEAD-LIMBS.md` §13.7 found by cone.  They stay: the displayed
+environment (`scripts/UsesOf.lean`) puts nine more with them — `modularSqrt`
+itself and eight of its siblings in `A/VN/Tomita.lean`'s Part IV, whose *only*
+references are these.  Fifteen declarations, entered from nowhere, as
+`docs/DEAD-LIMBS.md` §13.7 found by cone.  They stay: the displayed
 factorisation above is the file's stated purpose, both halves of it, and the
 tree states the `Δ^{1/2}` half nowhere else.
 
-`docs/DEAD-LIMBS.md` §10e had a sharper diagnosis than "unused" — that the
-package shipped no domain-membership discharger, so a consumer of
-`modularSqrt_htmul_pkg` had to leave the package vocabulary to produce its
-hypothesis, and that "had the package been used even once, that gap would have
-closed".  It is closed now, by `htmul_mem_modularSqrt_domain`, and it turned out
-to be one lemma wide.  The block is complete and still unused; those are two
-different facts and only the first was in our hands.
+The block is complete, not merely unused: `htmul_mem_modularSqrt_domain`
+supplies the domain-membership discharger whose absence `docs/DEAD-LIMBS.md`
+§10e names, so a consumer of `modularSqrt_htmul_pkg` need not leave the
+package's vocabulary to produce its hypothesis.
 -/
 import Theses.A.VN.Tomita
 import Theses.A.Proc.Tensor
@@ -1223,10 +1220,10 @@ include hcycM hsepM hMbi hcycN hsepN hNbi in
 vocabulary.**  `a_ω ζ ⊗ a_{ω'} ζ'` is in the domain of `Δ_ξ^{1/2}`.
 
 This is `opTensor_mem_modularSqrt_domain` restated with `modularSqrt` in place of
-`(mp … hsT hcT).D`, and it is here because without it the package was unusable as
-shipped: a consumer of `modularSqrt_htmul_pkg` had to leave the package vocabulary to
-produce its `h`, which is exactly the gap `docs/DEAD-LIMBS.md` §10e names — "`Tomita.lean`'s
-package ships its own domain-membership dischargers and `ModularTensor.lean`'s ships none".
+`(mp … hsT hcT).D`, and without it the package is unusable: a consumer of
+`modularSqrt_htmul_pkg` would have to leave the package vocabulary to produce its `h`,
+which is exactly the gap `docs/DEAD-LIMBS.md` §10e names — "`Tomita.lean`'s package ships
+its own domain-membership dischargers and `ModularTensor.lean`'s ships none".
 The two operators are the same by `modularSqrt`'s definition and proof irrelevance in `mp`'s
 two `Prop` arguments, so nothing is proved twice. -/
 theorem htmul_mem_modularSqrt_domain (ζ : ℋ) (ζ' : 𝒦) :

@@ -13,8 +13,8 @@ arXiv:1804.02203), chapter 1: C*-algebras — cstar.tex, lines 3887–4958.
                                  the Gelfand–Naimark theorem)
 
 All statements of parsecs 270–300 are proved, **28II**.4
-`functional_calculus_4` included (session 92); its *statement* is nevertheless
-still awaiting an author decision, because our rendering is weaker than the
+`functional_calculus_4` included; its *statement* is nevertheless still
+awaiting an author decision, because our rendering is weaker than the
 exercise — see QUESTIONS A10 and the note on the declaration itself.  See
 CONVENTIONS.md for the numbering (**27XV** = parsec 270, point 150) and naming
 conventions.
@@ -652,10 +652,9 @@ private theorem mem_or_mem_of_mul_eq_zero {I : Submodule ℂ 𝒜}
 /-- **27XI** (`maximal-riesz-ideal-maximal-order-ideal`, cstar.tex:4036,
 Lemma): a maximal Riesz ideal is a maximal order ideal.
 
-The proof now printed at cstar.tex 270.120 is the **corrected** one of
-erratum `parsec-270.120` (`asols.tex:113–171`), incorporated 2026-08-13; the
-first printing erroneously assumed `|a| ∈ J`.  What follows transcribes the
-corrected proof, so the erratum is no longer outstanding. -/
+The proof printed at cstar.tex 270.120 is the **corrected** one of erratum
+`parsec-270.120` (`asols.tex:124–182`), which repairs an erroneous assumption
+that `|a| ∈ J`; what follows transcribes it. -/
 theorem maximal_riesz_ideal_maximal_order_ideal (I : Submodule ℂ 𝒜)
     (hI : IsMaximalRieszIdeal I) : IsMaximalOrderIdeal I := by
   refine ⟨⟨hI.1.1.1, hI.1.2⟩, fun J hJ hIJ => ?_⟩
@@ -873,12 +872,11 @@ so `λ − a` is self-adjoint and non-invertible, and **27XV** produces a
 character killing it, i.e. one with `f(a) = λ`; conversely `f(a) ∈ spec(a)`
 is **27XV**'s easy direction.
 
-Until this repair the theorem went through Mathlib's
-`WeakDual.CharacterSpace.mem_spectrum_iff_exists`, whose proof reaches the
-character space through maximal *ring* ideals — the route **16VIII**
-(cstar.tex:2663) rejects, and the very detour that `inv_mult_state`'s own
-note records as removed.  The two order instances are supplied locally by
-`CStarAlgebra.spectralOrder`, so the statement is unchanged. -/
+Mathlib's `WeakDual.CharacterSpace.mem_spectrum_iff_exists` is deliberately
+not used: its proof reaches the character space through maximal *ring*
+ideals, the route **16VIII** (cstar.tex:2678) rejects.  The two order
+instances the statement needs are supplied locally by
+`CStarAlgebra.spectralOrder`. -/
 theorem spectrum_miu (a : 𝒜) (ha : IsSelfAdjoint a) :
     spectrum ℂ a = Set.range fun φ : characterSpace ℂ 𝒜 => φ a := by
   letI : PartialOrder 𝒜 := CStarAlgebra.spectralOrder 𝒜
@@ -907,10 +905,9 @@ so `γ(a)` and `a` have the same spectral radius, and **16II**
 `norm_spectrum` turns that into `‖γ(a)‖ = ‖a‖`.  The general case is the
 C*-identity: `‖γ(a)‖² = ‖γ(a)*γ(a)‖ = ‖γ(a*a)‖ = ‖a*a‖ = ‖a‖²`.
 
-Until this repair the theorem was Mathlib's `gelfandTransform_isometry`,
-whose proof runs through `WeakDual.CharacterSpace.mem_spectrum_iff_exists`
-and so through maximal *ring* ideals — the route **16VIII** rejects and that
-`inv_mult_state` and `spectrum_miu` were taken off. -/
+Mathlib's `gelfandTransform_isometry` is deliberately not used: its proof
+runs through `WeakDual.CharacterSpace.mem_spectrum_iff_exists` and so through
+maximal *ring* ideals, the route **16VIII** rejects. -/
 theorem gelfand_representation_isometry (a : 𝒜) :
     ‖gelfandTransform ℂ 𝒜 a‖ = ‖a‖ := by
   -- the self-adjoint case, by **27XVII** and **16II**
@@ -1002,9 +999,8 @@ closed ⋆-subalgebra of `C(spec 𝒜)` by **27XVIII**.2's second clause which
 separates the points of `spec 𝒜` — two characters agreeing on every `γ(a)`
 agree on every `a` — so **27XX** `stone_weierstrass` makes it everything.
 
-Until this repair the theorem was Mathlib's `gelfandTransform_bijective`,
-which supplies its own isometry (the maximal-ring-ideal route) instead of
-**27XVIII**. -/
+Mathlib's `gelfandTransform_bijective` is deliberately not used: it supplies
+its own isometry by the maximal-ring-ideal route instead of **27XVIII**. -/
 theorem gelfand : Function.Bijective (gelfandTransform ℂ 𝒜) := by
   refine ⟨gelfand_representation_injective, ?_⟩
   obtain ⟨S, hScarrier, hSclosed, -⟩ := gelfand_representation_range (𝒜 := 𝒜)
@@ -1288,11 +1284,10 @@ Urysohn gives `p, q ≥ 0` with `pq = 0`, `p(x) = 1`, `q(y) = 1`, and
 element `d := f − f(x₀)` has `(d*d)(x) ≠ 0 ⟹ x ≠ x₀ ⟹ x ∈ Z`, so **29V**
 gives `0 = τ(d*d) = |τ(f) − f(x₀)|²`.
 
-Until this repair the proof ran backwards: it read `x` off the surjectivity
-of Mathlib's `CharacterSpace.homeoEval`, i.e. off **29VII** — which the
-thesis derives *from* this Lemma.  The finite-supremum ingredient **29V**
-needs (`commutative_cstar_basic_3_finite`, `commutative_cstar_basic_4_finite`)
-is what made the honest route available. -/
+Mathlib's `CharacterSpace.homeoEval` is deliberately not used: reading `x`
+off its surjectivity is reading it off **29VII**, which the thesis derives
+*from* this Lemma.  The finite-supremum ingredient **29V** needs is
+`commutative_cstar_basic_3_finite` with `commutative_cstar_basic_4_finite`. -/
 theorem multiplicative_state_on_cx (τ : C(X, ℂ) →⋆ₐ[ℂ] ℂ) :
     ∃ x : X, ∀ f : C(X, ℂ), τ f = f x := by
   classical
@@ -1482,10 +1477,10 @@ and `p(y) = 1` separates `δₓ` from `δ_y`.  Surjectivity is **29II**
 space to a Hausdorff space is a homeomorphism — the corrected form of
 erratum parsec-290.70.
 
-Until this repair the theorem was Mathlib's `homeoEval`, whose surjectivity
-runs through the maximal *ring* ideals of `C(X)` — the route **16VIII**
-rejects — and which is therefore the inversion of the thesis's order: the
-thesis proves **29II** first and reads this Exercise off it. -/
+Mathlib's `homeoEval` is deliberately not used: its surjectivity runs through
+the maximal *ring* ideals of `C(X)`, the route **16VIII** rejects, and it
+inverts the thesis's order, which proves **29II** first and reads this
+Exercise off it. -/
 theorem eval_homeomorphism :
     ∃ e : X ≃ₜ characterSpace ℂ C(X, ℂ),
       ∀ (x : X) (f : C(X, ℂ)), (e x : WeakDual ℂ C(X, ℂ)) f = f x := by

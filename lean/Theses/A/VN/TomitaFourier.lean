@@ -61,29 +61,28 @@ Self-contained real analysis, with no von Neumann algebra in sight.
 * `commute_R_T`, `commute_two_sub_R_T`, `commute_modPow_T` : `Δ^{it}` commutes with `T`.
   This is what lets the two `T`'s be stripped off at the end of Lemma 4.7's proof.
 
-## What Lemma 4.7 still needs, and the correction it forces
+## What Lemma 4.7 needs
 
-`docs/COMMUTATION-THEOREM.md` §4 and `A/VN/ModularGroup.lean`'s "Not here" section record
-the claim that the identity-theorem step of Lemma 4.8 is holomorphy in the **Fourier
-parameter**, not holomorphy of `Δ^{iz}`.  **Read against the paper (p. 205) that claim is
-correct** — RvD's `F(z) = ∫ e^{-zt}(e^{πt}+e^{-πt})^{-1} g(t) dt` is analytic in `z` on
-`|Re z| < π` purely by dominated convergence, and that is exactly `differentiableAt_lapl`
-above.  Nothing in Part I, II or III uses holomorphy of an operator-valued power.
+`lemma_4_7` is not in this file: `A/VN/TomitaAnalytic.lean` proves it, and with it
+`tomita_JMJ_unconditional`.  What it costs is worth recording, because the paper hides it.
 
-**But the conclusion that was drawn from it — that the conjugation half therefore needs no
-holomorphy of `R^{iz}` — is false, and the false step is one lemma earlier.**  RvD Lemma 4.7
-(p. 204) proves its integral representation by applying Lemma 4.6 to
+The identity-theorem step of Lemma 4.8 is holomorphy in the **Fourier parameter**, not
+holomorphy of `Δ^{iz}`: RvD's `F(z) = ∫ e^{-zt}(e^{πt}+e^{-πt})^{-1} g(t) dt` is analytic in
+`z` on `|Re z| < π` purely by dominated convergence, which is `differentiableAt_lapl` above.
+Nothing in Part I, II or III uses holomorphy of an operator-valued power.
+
+Lemma 4.7 does, and that is easy to miss.  RvD (p. 204) prove its integral representation by
+applying Lemma 4.6 to
 
   `f(z) = ⟪R^{-z+1/2} (2-R)^{z+1/2} x R^{z+1/2} (2-R)^{-z+1/2} ξ, η⟫`,   `|Re z| ≤ 1/2`,
 
 and the paper's justification is the single sentence "from Lemma 3.6 it follows that `f`
 satisfies the requirements of Lemma 4.6".  Those requirements are `ContinuousOn f clStrip`,
 `DifferentiableOn ℂ f opStrip` and a bound — i.e. **exactly RvD Lemma 3.6's continuity and
-analyticity clauses**, which `A/VN/ModularGroup.lean` deliberately does not prove.  So
-holomorphy of the operator powers *is* on the critical path for `J M J = M'`; it is just
-consumed by 4.7 rather than by 4.8.
+analyticity clauses**, which `A/VN/ModularGroup.lean` does not prove.  So holomorphy of the
+operator powers *is* on the critical path for `J M J = M'`; it is consumed by 4.7, not by 4.8.
 
-Two observations that should shape the cost of building it:
+Three features of that dependency, all used in `A/VN/TomitaAnalytic.lean`:
 
 1. **Inside the open strip nothing but `cfc` is needed.**  For `|Re z| < 1/2` all four
    exponents `±z + 1/2` have real part in `(0,1)`, *strictly* positive, so each factor is
@@ -91,24 +90,18 @@ Two observations that should shape the cost of building it:
    reduces to holomorphy of `w ↦ cfc (·^w) X` on `Re w > 0`.  The `LinearMap.extendOfNorm`
    device (`opPow`) is needed only on the *boundary* `Re z = ±1/2`, where one exponent
    becomes purely imaginary, and there only for **continuity**, not for differentiability.
-1a. **A convention trap for whoever builds `f`.**  Mathlib's inner product is conjugate
+2. **A convention trap for whoever reads `f`.**  Mathlib's inner product is conjugate
    linear in the *first* variable, so `z ↦ ⟪A(z) ξ, η⟫` is *anti*holomorphic when `A` is
    holomorphic.  The function fed to `lemma_4_6` must therefore be
    `f z = ⟪η, A(z) ξ⟫`, not RvD's `⟪A(z) ξ, η⟫`.  (This does not affect `h47` below, whose
    kernel is real, so the two forms are complex conjugates of one another and either may be
    used.)
-2. Boundedness is free: for `X` with spectrum in `[0,2]` and `0 ≤ Re w ≤ 1`,
+3. Boundedness is free: for `X` with spectrum in `[0,2]` and `0 ≤ Re w ≤ 1`,
    `|t^w| = t^{Re w} ≤ 2`, so `‖cpowOp X w‖ ≤ 2` and `‖f z‖ ≤ 16 ‖x‖ ‖ξ‖ ‖η‖` on the closed
    strip.
 
-So the missing piece splits into (a) `HasDerivAt (fun w => cfc (·^w) X) (cfc (fun u => u^w log u) X) w`
-for `Re w > 0` — the difference-quotient estimate `‖·‖ ≤ sup_{t ∈ [0,2]} |t^{w+h} - t^w -
-h t^w log t| ≤ 2|h|²/(Re w)²` via `norm_cfc_le` and `t^c (log t)² ≤ 4/c²` — and (b) strong
-continuity of `w ↦ X^w` on the closed half-plane `Re w ≥ 0`, which is genuinely a statement
-about the extension.  Together they are RvD Lemma 3.6.  Also missing, and cheap by
-comparison, was `Commute (modPow K t) (T K)`; that one is Part IV below, so what remains for
-Lemma 4.7 is (a), (b) and the bookkeeping identities `R^{1/2}(2-R)^{1/2} = T` and
-`X^{it+1} = X^{it} X`.
+The one ingredient of Lemma 4.7 that lives here rather than there is
+`Commute (modPow K t) (T K)`, Part IV below.
 -/
 import Theses.A.VN.TomitaStrip
 import Theses.A.VN.ModularGroup

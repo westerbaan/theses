@@ -637,9 +637,9 @@ end Tomita
 
 The three hypotheses `ω` cyclic, `ω` separating and `M'' = M` in one place.
 
-**Its `Δ^{1/2}` half is never entered from outside; its `J` half is.**  Measured
-at the term level on 2026-08-28 with `scripts/UsesOf.lean`, over the whole
-environment rather than by grep:
+**Its `Δ^{1/2}` half is never entered from outside; its `J` half is.**  At the
+term level (`scripts/UsesOf.lean`, over the whole environment rather than by
+grep):
 
 * `modularConj` has four references and one of them, `modularConj_htmul`
   (`A/VN/ModularTensor.lean`), is consumed by `A/VN/CommutationTomita.lean`.
@@ -652,13 +652,10 @@ environment rather than by grep:
   `modularSqrt_isSelfAdjoint` and `modularSqrt_inner_nonneg`.
 
 So the `Δ^{1/2}` package is one dead block of fifteen declarations across this
-file and `ModularTensor.lean`, exactly as `docs/DEAD-LIMBS.md` §13.7 found by
-cone.  It is **kept** (§10e): the tree states
-`Δ_ξ^{1/2} = closure (Δ_ω^{1/2} ⊙ Δ_{ω'}^{1/2})` nowhere else, and the file's
-displayed purpose is both halves of RvD's factorisation.  What is *not* true is
-§12b's stated reason for keeping this section — "`modularSqrt` and `modularConj`
-are not dead, `ModularTensor.lean` uses them" — since `ModularTensor` is the
-block.  `modularConj` carries that keep; `modularSqrt` does not. -/
+file and `ModularTensor.lean` (`docs/DEAD-LIMBS.md` §13.7).  It is **kept**
+(§10e): the tree states `Δ_ξ^{1/2} = closure (Δ_ω^{1/2} ⊙ Δ_{ω'}^{1/2})` nowhere
+else, and the file's displayed purpose is both halves of RvD's factorisation.
+The keep rests on `modularConj`; `modularSqrt` does not carry it. -/
 
 section Package
 

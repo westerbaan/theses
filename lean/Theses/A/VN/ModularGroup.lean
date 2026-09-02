@@ -65,26 +65,26 @@ the *real* calculus after splitting `X^w` into real and imaginary parts,
 `A/VN/TomitaFourier.lean` defines `modFlow x' t := Δ^{it}(J x' J)Δ^{-it}`
 directly and never performs the rearrangement that would have needed them.
 `jConj` also duplicates `A/VN/TomitaTakesaki.lean`'s live `adJ` verbatim.
-These three were advertised as "main results" until 2026-08-26; they are
-kept as a record of the identity, not as machinery.  The term-level cone
-pass of 2026-08-27 (`docs/DEAD-LIMBS.md` §13.4) confirmed the layer is a
+They are kept as a record of the identity, not as machinery: the layer is a
 single connected component of 26 declarations that nothing outside it
-reaches, and ruled that it stays: `J Δ^{it} J = Δ^{it}` is stated nowhere
-else in `Theses/`.  One correction it makes to the sentence above: the
-layer begins at `real_inner_J_map_map`, not at `Jisometry` (`:586`), which
-is in the cone through `commute_modPow_T` and `modPow_neg_eq_prod` in
-`A/VN/TomitaAnalytic.lean`.  See `docs/DEAD-LIMBS.md` §13.4, which
-supersedes the undecided §10b.
+reaches, and `J Δ^{it} J = Δ^{it}` is stated nowhere else in `Theses/`
+(`docs/DEAD-LIMBS.md` §13.4).  The layer begins at `real_inner_J_map_map`;
+`Jisometry`, just above it, is not part of it — it is reached from
+`commute_modPow_T` and `modPow_neg_eq_prod` in `A/VN/TomitaAnalytic.lean`.
 
 ## Not here
 
-Holomorphy of `z ↦ R^{1+iz}` on `Im z < 0` (the last clause of RvD Lemma 3.6)
-is *not* proved.  It is not a corollary of anything above: the difference
-quotient converges to `cfc (fun u => u^w * log u) X`, and both the continuity of
-that symbol at `0` and the second-order remainder estimate need uniform control
-of `t^{re w} |log t|^k` on `(0,2]` — true, elementary (`t^c |log t| ≤ 1/c`,
-`t^c (log t)² ≤ 4/c²`), but several hundred lines of case analysis.  Nothing in
-the `Δ^{it}` package below uses it.
+Holomorphy of `z ↦ R^{1+iz}` on `Im z < 0` (the last clause of RvD Lemma 3.6) is
+*not* proved here, and nothing in the `Δ^{it}` package below uses it.  It is not
+a corollary of anything above: the difference quotient converges to
+`cfc (fun u => u^w * log u) X`, and both the continuity of that symbol at `0` and
+the second-order remainder estimate need uniform control of `t^{re w} |log t|^k`
+on `(0,2]`, which is several hundred lines of case analysis.
+`A/VN/TomitaAnalytic.lean` carries it out, in the `w`-plane form
+`HasDerivAt (fun w => cfc (·^w) X) (cfc (fun u => u^w * log u) X) w` for
+`Re w > 0`, together with the strong continuity of `w ↦ X^w` on `Re w ≥ 0`; note
+that the naive bounds `t^c |log t| ≤ 1/c` and `t^c (log t)² ≤ 4/c²` hold on
+`(0,1]` only, so the remainder constant grows with `c`.
 -/
 import Theses.A.VN.StandardSubspace
 
@@ -580,9 +580,8 @@ into `J f(R) J = f(2 − R)` for every continuous real `f`.
 The two files are **siblings**, not one downstream of the other: `TomitaTakesaki` imports
 `Tomita`, which like this file imports only `StandardSubspace`.  They first meet at
 `A/VN/TomitaFourier.lean`, where both are in scope and only `adJ` is used — `jConj` and
-everything built on it below is unconsumed.  See `docs/DEAD-LIMBS.md` §13.4, whose ruling of
-2026-08-27 is to keep the layer as a record.  An earlier version of this note
-said `TomitaTakesaki` was "downstream of this file"; it is not.  Corrected 2026-08-26.) -/
+everything built on it below is unconsumed.  `docs/DEAD-LIMBS.md` §13.4 rules that the layer
+stays, as a record.) -/
 
 section Conjugation
 

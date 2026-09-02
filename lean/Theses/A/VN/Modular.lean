@@ -4,7 +4,8 @@ The bounded-operator core of the Rieffel–van Daele approach to modular theory.
 **This file has no thesis counterpart.**  It is pure machinery, built to support
 the Rieffel–van Daele route to the commutation theorem
 `(M ⊗̄ N)' = M' ⊗̄ N'` described in `docs/COMMUTATION-THEOREM.md`; nothing in
-either thesis corresponds to it, and nothing else in the tree depends on it yet.
+either thesis corresponds to it, and it reaches the tree only through
+`A/VN/StandardSubspace.lean`, its one importer.
 
 Reference: Marc A. Rieffel and Alfons van Daele, *A bounded operator approach to
 Tomita–Takesaki theory*, Pacific J. Math. **69** (1977) 187–221 (open access at
@@ -562,7 +563,7 @@ variable {c d : ℋ →L[ℂ] ℋ}
 **Unused, and it is not an oversight** (`docs/DEAD-LIMBS.md` §10f).  It has no
 term-level reference anywhere in `Theses/` — checked with
 `scripts/UsesOf.lean`, since the short name `symm` cannot be told from
-Mathlib's by grep, which is why the dead-limb sweep left this row "unresolved".
+Mathlib's by grep.
 
 The reason nothing uses it is structural.  `sqrtSumSq c d` is
 `CFC.sqrt (c * c + d * d)` and `sqrtSumSq d c` is `CFC.sqrt (d * d + c * c)`:

@@ -471,10 +471,9 @@ complete, its symmetric operator `T` would be bounded.
 
 That is `hellinger_toeplitz` (:222), *this file's* rendering of the Theorem,
 applied at `𝒜 = ℂ` with `T` as its own adjoint.  Mathlib's
-`LinearMap.IsSymmetric.continuous` closes the goal too — and did, until
-2026-08-29 — but through Mathlib rather than through the tree's 35VI, which
-made the divergence invisible to the audit row and left `c00T_isAdjointTo`
-carrying the 4VIII hypothesis for no consumer. -/
+`LinearMap.IsSymmetric.continuous` would close the goal too, but through
+Mathlib rather than through the tree's 35VI; going through 35VI is what makes
+`c00T_isAdjointTo`, with its **4VIII** hypothesis, the form consumed here. -/
 theorem c00_not_complete : ¬ CompleteSpace c00 := by
   intro h
   obtain ⟨_, _, _, _, hcont, _⟩ :=
@@ -752,12 +751,10 @@ theorem hilb_weakly_bounded_complete {ι : Type*} {l : Filter ι} [l.NeBot]
    `ContinuousLinearMapWOT.tendsto_iff_forall_inner_apply_tendsto`.
 
 2. the *strong operator topology (SOT)* on B(H) is the topology **induced by
-   the seminorms** `T ↦ ‖T x‖ = ⟪x, T* T x⟫^{1/2}`, `x ∈ H`.  Erratum
-   `parsec-370.50` is what fixes this wording — the first printing said "the
-   least topology with respect to which these seminorms are continuous",
-   "which is not always the least topology that makes all these seminorms
-   continuous" — and the current cstar.tex carries the corrected text, which
-   is the one transcribed here.  Net convergence is `‖T_α x - T x‖ → 0` for
+   the seminorms** `T ↦ ‖T x‖ = ⟪x, T* T x⟫^{1/2}`, `x ∈ H` — the wording of
+   erratum `parsec-370.50`, incorporated in cstar.tex.  "Induced by the
+   seminorms" is not the same as "the least topology making them continuous";
+   see `sot_withSeminorms`.  Net convergence is `‖T_α x - T x‖ → 0` for
    every `x`, which is `sot_tendsto_iff` below, stated on Mathlib's type copy
    `H →Lₚₜ[ℂ] H` (`PointwiseConvergenceCLM`, the topology of pointwise
    convergence — Mathlib's own docstring records that this is what is
@@ -907,9 +904,7 @@ matrix coefficient `⟪y, T_α x⟫`, so **37II** `hilb_weakly_bounded_complete`
 produces `T x` for each `x`, and `T` is linear.  For boundedness the thesis
 runs the same argument on the net of *adjoints* `(T_α*)_α` — whose diagonal
 values are the conjugates of `(T_α)`'s — to get a map `S` adjoint to `T`, and
-concludes with **35VI** `hellinger_toeplitz`.  That last step used to be
-replaced by a second appeal to **35II** `pub`, bounding `‖T_α‖` uniformly;
-Hellinger–Toeplitz was not used at all.  It is now. -/
+concludes with **35VI** `hellinger_toeplitz`. -/
 theorem bh_wot_bounded_complete {ι : Type*} {l : Filter ι} [l.NeBot]
     (T : ι → H →L[ℂ] H)
     (hcauchy : ∀ x : H, Cauchy (l.map fun α => ⟪x, T α x⟫))
@@ -1702,10 +1697,10 @@ theorem vector_functional_convergence_1 {ι : Type*} (x : ι → H) :
 part 2: for a net `(x_α)_α` in a Hilbert space `H` and `x ∈ H`, if `x_α → x`
 then `⟪x_α, (·) x_α⟫` operator-norm converges to `⟪x, (·) x⟫`.
 
-(The converse was stated in an earlier version of the thesis and is false: the
-constant net `x_α = i • x` with `x ≠ 0` induces the same vector functional as
-`x`.  Erratum `parsec-380.60` drops it, together with its hint; the direction
-below is the only one used later on.) -/
+(The converse is false — the constant net `x_α = i • x` with `x ≠ 0` induces
+the same vector functional as `x` — and erratum `parsec-380.60` drops it from
+the Exercise, together with its hint; the direction below is the only one used
+later on.) -/
 theorem vector_functional_convergence_2 {ι : Type*} {l : Filter ι} [l.NeBot]
     (x : ι → H) (x₀ : H) (hx : Tendsto x l (𝓝 x₀)) :
     Tendsto (fun α => vectorFunctionalCLM (x α)) l (𝓝 (vectorFunctionalCLM x₀)) := by
@@ -2093,11 +2088,11 @@ space `H` with orthonormal basis `E`, a normal positive functional
 
 which is the statement below.
 
-The printed Lemma **used to** display the bare double sum `∑_{e, e' ∈ E}`,
-and that reading is false: under the thesis's own convention for `∑_{i ∈ I}`
-(6II) it is the *unordered* sum over `E × E`, and already for a vector
-functional `ω = ⟪x, (·) x⟫` on `ℓ²` the family `(⟪e, A e'⟫ ω(|e⟩⟨e'|))_{e,e'}`
-need not be absolutely — hence, in `ℂ`, not unconditionally — summable: take
+⚠ The limit over the square partial sums may **not** be replaced by the bare
+double sum `∑_{e, e' ∈ E}`, which is false: under the thesis's own convention
+for `∑_{i ∈ I}` (6II) it is the *unordered* sum over `E × E`, and already for
+a vector functional `ω = ⟪x, (·) x⟫` on `ℓ²` the family
+`(⟪e, A e'⟫ ω(|e⟩⟨e'|))_{e,e'}` need not be absolutely — hence, in `ℂ`, not unconditionally — summable: take
 `A` block diagonal with `N×N` discrete-Fourier blocks (unitary, all entries of
 modulus `N^{-1/2}`) of sizes `N_k = k⁸` and `x` constant `c_k` on the `k`-th
 block with `N_k c_k² = k⁻²`, so that `∑ ‖x‖² < ∞` while
@@ -2105,13 +2100,9 @@ block with `N_k c_k² = k⁻²`, so that `∑ ‖x‖² < ∞` while
 that the squares `F × F` are *cofinal* among the finite subsets of `E × E`,
 and convergence along a cofinal subfamily is not convergence of the net.
 
-**This was erratum `parsec-390.70`, and it has been applied**: since
-2026-08-22 (`29fc8c6`) the source itself prints the limit over the square
-partial sums, so our statement is now the printed one and no divergence
-remains.  It is also exactly what the Lemma's own proof establishes, and the
-form 39IX consumes.  The row that carried this defect was deleted from
-`ERRATA.md` by that same commit, together with the fix it asked for; there is
-nothing left to look up there and nothing to restore. -/
+That is erratum `parsec-390.70`, incorporated in cstar.tex: the source prints
+the limit over the square partial sums, which is what the Lemma's own proof
+establishes and the form **39IX** consumes. -/
 theorem bh_np_lemma (E : Set H) (hE : IsOrthonormalBasis E)
     (ω : NPFunctional (H →L[ℂ] H)) (A : H →L[ℂ] H) :
     Tendsto (fun F : Finset E =>

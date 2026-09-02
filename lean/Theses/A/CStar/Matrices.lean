@@ -11,8 +11,7 @@ arXiv:1804.02203), chapter 1: C*-algebras — cstar.tex, lines 4959–5872.
                  Cauchy–Schwarz, Russo–Dye for cp-maps, Choi's lemma
     parsec 341:  unitaries, Russo–Dye, ‖f‖ = ‖f(1)‖ for positive maps
 
-**All statements of parsecs 320–341 are proved** (the last two, **34VII**
-`ccstar_pos_mat` and **34IX**.2 `cp_commutative_dom`, in session 74).
+**All statements of parsecs 320–341 are proved.**
 See CONVENTIONS.md for the numbering (**34V** = parsec 340, point 50) and
 naming conventions.
 -/
@@ -841,10 +840,10 @@ carrying a `CStarAlgebra` structure whose involution is `T ↦ T*`, together wit
 its spectral order.  It is the setting in which the proofs of **32XV**.2 and
 **32XV**.3 run.
 
-**What is exported, and why.**  `Bax` and its structure instances were
-file-`private` until 2026-08-27, which made `𝓑^a(X)` unnameable outside this
-file — and vn **49II** (`bah-vn`) says *`𝓑^a(X)` is a von Neumann algebra*,
-a statement about the type.  The export is deliberately narrow: `Bax` itself,
+**What is exported, and why.**  `Bax` and its structure instances are public
+because vn **49II** (`bah-vn`) says *`𝓑^a(X)` is a von Neumann algebra*, a
+statement about the type, which cannot be made if `𝓑^a(X)` is unnameable
+outside this file.  The export is deliberately narrow: `Bax` itself,
 the instances that `VonNeumannAlgebra (Bax 𝒜 X)` needs to elaborate, and the
 bridge lemmas a statement about `𝓑^a(X)` cannot do without: `mem_bax_iff`
 (how to place an operator in `𝓑^a(X)`), `bax_star_eq` (what its involution
@@ -1732,21 +1731,14 @@ unbundled form in which thesis B's `IsVNTensor` (dils.tex 165II) supplies
 its data: `M_N t` sends a pair of positive matrices to a positive one.
 **No `ℂ`-homogeneity of `t` is used** — only additivity in each slot,
 multiplicativity and involution preservation — which is exactly what
-`IsVNTensor` has: the positivity clause that an earlier revision proposed
-to *add* to it is derivable, so no ruling is outstanding here.  (That
-revision deferred to the **B5** item of `QUESTIONS.md`, which in the end
-asked nothing of the authors — all three of its halves were settled by
-2026-08-15, the positivity clause being derivable — and was deleted on
-2026-08-16, commit f277d72.  Nor is a ruling needed: von Neumann
-algebras are C*-algebras, mi-bilinear maps are automatically
-`ℂ`-homogeneous, and `IsVNTensor` needs the generality it has.)
+`IsVNTensor` has.  No positivity clause need be added to `IsVNTensor` for
+this: von Neumann algebras are C*-algebras, mi-bilinear maps are
+automatically `ℂ`-homogeneous, and the positivity is derivable — which is
+what this theorem shows.
 
-Lives here rather than in `A/Proc/Tensor.lean` (where it was first proved)
-because its content is about matrices over C*-algebras and it is needed by
-`B/Dils`, which imports this file but not `A/Proc`.  (The move was itself the
-**D3** item of `QUESTIONS.md` — option 2, authorised by Bas, worker 43 — and
-that entry was deleted on 2026-08-16 once it had been carried out, commit
-f277d72.) -/
+Lives here rather than in `A/Proc/Tensor.lean` because its content is about
+matrices over C*-algebras and it is needed by `B/Dils`, which imports this
+file but not `A/Proc`. -/
 theorem matBilin_nonneg_of_mi {𝒜' ℬ' 𝒞 : Type*} [CStarAlgebra 𝒜']
     [PartialOrder 𝒜'] [StarOrderedRing 𝒜'] [CStarAlgebra ℬ'] [PartialOrder ℬ']
     [StarOrderedRing ℬ'] [CStarAlgebra 𝒞] [PartialOrder 𝒞] [StarOrderedRing 𝒞]
@@ -2902,7 +2894,7 @@ or `q = 0` then `a = a* = 0`.
 two inequalities: `p = 0` kills the right-hand side of `a* a ≤ ‖p‖ q`, so
 `a* a = 0` and hence `a = 0`; `q = 0` kills that of `a a* ≤ ‖q‖ p`.  It is
 what the thesis uses to finish Choi's Lemma, and **34XVIII** `choi_2` below
-now uses it for exactly that. -/
+uses it for exactly that. -/
 theorem cstar_positive_2x2matrix_eq_zero
     [PartialOrder (CStarMatrix (Fin 2) (Fin 2) 𝒜)]
     [StarOrderedRing (CStarMatrix (Fin 2) (Fin 2) 𝒜)]
@@ -3068,15 +3060,7 @@ theorem choi_2 (f : 𝒜 →ₗ[ℂ] ℬ) (hf : IsCompletelyPositiveMap f)
 **28II**.2, so the restriction of `f` to `C*(a)` is completely positive by
 **34IX**.2 `cp_commutative_dom`, and **34XVI** `cp_russo_dye` applies to it.
 Positivity transfers to the restriction because `0 ≤ x` in `C*(a)` makes
-`x = y* y` there, hence in `𝒜`.
-
-Until this repair the proof ran the **34VII** partition-of-unity
-approximation directly on `a` — tent functions on `spec(a)` fed through the
-continuous functional calculus — because `cp_commutative_dom` was still
-`sorry` when it was written.  It has been proved since; that premise had
-expired, and the thesis's route costs 150 lines less.  (The two private
-auxiliaries `norm_sum_smul_le_aux` and `norm_sum_smul_le_of_nonneg`, which
-existed only to serve the approximation, went with it.) -/
+`x = y* y` there, hence in `𝒜`. -/
 theorem normal_russo_dye (f : 𝒜 →ₗ[ℂ] ℬ) (hf : IsPositiveMap f) (a : 𝒜)
     (ha : IsStarNormal a) : ‖f a‖ ≤ ‖f 1‖ * ‖a‖ := by
   -- `C*(a)`, commutative because `a` is normal
@@ -3314,11 +3298,10 @@ element `a` of a C*-algebra with `‖a‖ < 1 - 2/N` for some natural number
 `u₁, …, u_N`.  (Hence the convex combinations of unitaries are norm dense in
 the closed unit ball.)
 
-`N > 0` is **erratum 341.70**.  It is needed in Lean for a reason of pure
-notation — `2 / (0 : ℝ) = 0`, so at `N = 0` the hypothesis would degenerate
-to `‖a‖ < 1` and the conclusion to `a = 0`.  The erratum made the thesis's
-intent (`N ≥ 1`) explicit, and cstar.tex now prints "for some natural
-number `N > 0`", so the hypothesis here matches the source as it stands. -/
+`N > 0` is **erratum 341.70**, incorporated in cstar.tex, so the hypothesis
+here matches the source as printed.  It is needed in Lean for a reason of pure
+notation: `2 / (0 : ℝ) = 0`, so at `N = 0` the hypothesis would degenerate to
+`‖a‖ < 1` and the conclusion to `a = 0`. -/
 theorem russo_dye (a : 𝒜) (N : ℕ) (hN0 : 0 < N) (hN : ‖a‖ < 1 - 2 / N) :
     ∃ u : Fin N → 𝒜, (∀ i, u i ∈ unitary 𝒜) ∧
       a = ((N : ℂ))⁻¹ • ∑ i, u i :=
