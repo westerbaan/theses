@@ -21,10 +21,9 @@ Hilbert ℬ-modules: the mirror of a right module `(X, ·, [·,·])` is `X` with
 
   `b • x := x·b*`,  `⟨x,y⟩ := [y,x]`,  and  `c ·̄ x := c̄ x`
 
-— the ℂ-action is *conjugated* too, and that is the part that was missed
-until session 15.  (It has to be: `[·,·]` is conjugate-linear in its first
-argument and so is Mathlib's `⟨·,·⟩`, so `⟨x,y⟩ = [y,x]` can only be
-ℂ-sesquilinear for the conjugated action.)
+— the ℂ-action is *conjugated* too.  (It has to be: `[·,·]` is
+conjugate-linear in its first argument and so is Mathlib's `⟨·,·⟩`, so
+`⟨x,y⟩ = [y,x]` can only be ℂ-sesquilinear for the conjugated action.)
 
 Consequently the mirror of the thesis's `⊗ : 𝒜 × ℬ → 𝒜 ⊗_φ ℬ` carries a
 `star` in **both** arguments,
@@ -56,7 +55,7 @@ for `X = ℬ` one has `𝒷ᵃ(ℬ) = {R_t} ≅ ℬᵐᵒᵖ` with `h(R_t) = t`,
 `h : 𝒷ᵃ(ℬ) → ℬ` is `unop`, which is the transpose on `M₂` and hence
 positive but *not* completely positive, while `h : 𝒷ᵃ(ℬ)ᵐᵒᵖ → ℬ` is a
 ∗-isomorphism.  With these fields `h (ρ a) = φ a` holds on the nose
-(`paschkeModule_h_ρ`), so `IsPaschkeDilationOf` (`Stinespring.lean:2882`),
+(`paschkeModule_h_ρ`), so `IsPaschkeDilationOf` (`Stinespring.lean:2901`),
 which asks for `h (ρ a) = φ a` with no `star`, is correct as it stands
 (ruling of the author, Bas, 2026-08-15: "the definition of Paschke dilation
 should not include the star").
@@ -66,12 +65,7 @@ Two earlier renderings are recorded as machine-checked negative results:
 i.e. no `star` on the `𝒜`-argument of `tprod`, forces `φ = 0`) and
 `paschke_rho_forces_cyclic` (the inner product below together with a `ρ`
 into `𝒷ᵃ(X)` rather than `𝒷ᵃ(X)ᵐᵒᵖ` forces `φ` to be cyclic, which fails
-for `φ = id` on `M₂`).  Both left `PaschkeModule` uninhabited.  See
-`PROVING-LOG.md`, sessions 14–16.  The whole mirroring defect was filed as
-**D2** in `QUESTIONS.md`; Bas ruled on it (2026-08-15 as above, then
-2026-08-16 "Ok, fix the transcription please"), session 43 implemented the
-`ᵐᵒᵖ` rendering described here, and the entry was deleted on 2026-08-16 once
-implemented (commit f277d72).
+for `φ = id` on `M₂`).  Both leave `PaschkeModule` uninhabited.
 -/
 import Theses.B.Dils.Stinespring
 import Theses.B.Dils.SelfDualCompletion
@@ -280,8 +274,7 @@ applied to the families `(aᵢ*)` and `(bᵢ*)`.  Both `star`s must be on the
 *outside*: with them on the inside the structure is **uninhabited together
 with `PaschkeModule.inner_tprod`** — for `n = 1` the two clauses would read
 `‖b φ(aa*) b*‖ ≤ r ‖b* φ(aa*) b‖`, which fails in `M₂` for `φ = id`,
-`a = e₀₀`, `b = e₁₀` (left side `‖e₁₁‖ = 1`, right side `0`).  See
-`PROVING-LOG.md`, sessions 14 and 16. -/
+`a = e₀₀`, `b = e₁₀` (left side `‖e₁₁‖ = 1`, right side `0`). -/
 structure PhiCompatible (φ : 𝒜 → ℬ) {X : Type u} [NormedAddCommGroup X]
     [Module ℂ X] [SMul ℬ X] [CStarModule ℬ X] (T : 𝒜 → ℬ → X) :
     Prop where
@@ -477,15 +470,13 @@ attribute [instance] PaschkeModule.nacg PaschkeModule.mod PaschkeModule.smul
 /-- **154III**, part 3 on part 2: `h ∘ ϱ = φ`, the first half of
 `IsPaschkeDilationOf`.  This is the computation the mirroring had to get
 right: `h (ρ a) = ⟨1 ⊗ 1, 1a ⊗ 1⟩ = 1 · φ(a · 1*) · 1* = φ a`, with no
-`star` anywhere — see the head of the file for the **D2** ruling that fixed
-the transcription (that entry of `QUESTIONS.md` was deleted on 2026-08-16
-once implemented). -/
+`star` anywhere — see the head of the file for the author's ruling. -/
 theorem paschkeModule_h_ρ (φ : NCPMap 𝒜 ℬ) (M : PaschkeModule φ) (a : 𝒜) :
     M.h (M.ρ a) = φ a := by
   rw [M.h_def, M.ρ_tprod, M.inner_tprod]
   simp
 
-/-- **Negative result** (kept in the tree; `PROVING-LOG.md` session 15).
+/-- **Negative result** (kept in the tree).
 Rendering the thesis's `⊗` *without* the `star` on its `𝒜`-argument — i.e.
 `⟨a ⊗ b, a' ⊗ b'⟩ = b' φ(a'* a) b*` — is contradictory: that right-hand
 side is ℂ-*linear* in `a`, while Mathlib's `⟨·,·⟩` is conjugate-linear in
@@ -518,7 +509,7 @@ theorem paschke_inner_conj_forces_zero (φ : NCPMap 𝒜 ℬ) {X : Type u}
   have h4 : ((2 : ℂ) * Complex.I) ≠ 0 := by simp [Complex.I_ne_zero]
   exact (smul_eq_zero.mp h3).resolve_left h4
 
-/-- **Negative result** (kept in the tree; `PROVING-LOG.md` session 15).
+/-- **Negative result** (kept in the tree).
 With the correct `inner_tprod` `⟨a ⊗ b, a' ⊗ b'⟩ = b' φ(a' a*) b*`, asking
 `ρ` to be an nmiu-map into `𝒷ᵃ(X)` rather than into `𝒷ᵃ(X)ᵐᵒᵖ` is
 contradictory as well: `ρ_tprod` with `ρ(a₀)(a ⊗ b) = (a₀a) ⊗ b` and
@@ -656,7 +647,7 @@ theorem ptens_smul_add (b : ℬ) (x y : 𝒜 ⊗[ℂ] ℬ) :
 /-- The φ-inner product on `𝒜 ⊙ ℬ` (**154V**, mirrored):
 `⟨a ⊗ b, a' ⊗ b'⟩ = b' φ(a' a*) b*`.  (The formula is displayed in 154V,
 the first point of the *proof* of **154III**; 154IV is only that proof's
-header point — the doc comment used to cite it.) -/
+header point.) -/
 noncomputable def ptensBInner (φ : NCPMap 𝒜 ℬ) : BInner ℬ (𝒜 ⊗[ℂ] ℬ) where
   inner x y := ptensPair (φ.toCompletelyPositiveMap.toLinearMap) (star x) y
   inner_add_right x y z := map_add _ _ _
@@ -1870,8 +1861,8 @@ theorem existence_paschke_5 [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
         @vonNeumannAlgebra_mulOpposite (Ba ℬ M.X) _ _ _
           (ba_vonNeumannAlgebra M.selfDual),
         M.ρ, M.h⟩ ⇑φ := by
-  -- `h ∘ ϱ = φ` is `paschkeModule_h_ρ`; it is the half that was *false*
-  -- before the `ᵐᵒᵖ` repair.  The universal property is **154IV**–**154X**.
+  -- `h ∘ ϱ = φ` is `paschkeModule_h_ρ`; the universal property is
+  -- **154IV**–**154X**.
   refine ⟨paschkeModule_h_ρ φ M, fun D' hD' => ?_⟩
   let _ := D'.vn
   -- **154VIII**: uniqueness of the mediating map
@@ -1974,8 +1965,8 @@ dilation constructed in `existence-paschke`" step with which the thesis
 opens its proofs of **156II** `paschke-injective` (dils.tex:3886) and of
 **157IV**.2/.3 `paschke-correspondence` (dils.tex:4042) — the two places
 where a computation inside `𝒜 ⊗_φ ℬ` has to be exported to an abstract
-`PaschkeTriple`.  It is exactly what those items were waiting for, and it
-is available only now: it consumes `existence_paschke_5`. -/
+`PaschkeTriple`.  It is stated here because it consumes
+`existence_paschke_5`. -/
 theorem exists_paschke_iso_paschkeModule [VonNeumannAlgebra 𝒜]
     [VonNeumannAlgebra ℬ] (φ : NCPMap 𝒜 ℬ) (M : PaschkeModule φ)
     (D : PaschkeTriple 𝒜 ℬ) (hD : IsPaschkeDilationOf D ⇑φ) :
@@ -1993,10 +1984,10 @@ end Existence
 
 /-! ### Non-vacuity of `PaschkeModule`
 
-`ℬ` itself is `ℬ ⊗_id ℬ`.  This is the check that would have caught both
-defects that made the bundle uninhabited (`PhiCompatible.bound`, session 14;
-`inner_tprod`/`ρ`, sessions 15–16); `vnTensor_mul_complex` in
-`SelfDual.lean` is the model.  It also exhibits the `ᵐᵒᵖ` concretely: the
+`ℬ` itself is `ℬ ⊗_id ℬ`.  This is the check that catches a mirroring
+defect in `PhiCompatible.bound`, `inner_tprod` or `ρ` — any of which leaves
+the bundle uninhabited; `vnTensor_mul_complex` in `SelfDual.lean` is the
+model.  It also exhibits the `ᵐᵒᵖ` concretely: the
 adjointable operators on `ℬ` (in Mathlib's left-action convention) are the
 **right** multiplications, so `t ↦ R_t` is a ∗-isomorphism `ℬ ≅ 𝒷ᵃ(ℬ)ᵐᵒᵖ`
 and the vector state `T ↦ ⟨1, T 1⟩` is its inverse — completely positive on
@@ -2145,10 +2136,9 @@ set_option maxHeartbeats 800000 in
 `φ = id`.  So `PaschkeModule φ` is inhabited for a non-zero `φ` and the
 statements below that quantify over it are not vacuous.
 
-Kept in the tree deliberately: two separate mirroring defects left
-`PaschkeModule` *uninhabited* and nine theorems of this file vacuous
-(`PROVING-LOG.md`, sessions 14–16), and only a concrete example caught
-them. -/
+Kept in the tree deliberately: a mirroring defect leaves `PaschkeModule`
+*uninhabited* and the theorems of this file vacuous, and only a concrete
+example catches that. -/
 noncomputable def paschkeModuleId : PaschkeModule (ncpMapId (ℬ := ℬ)) where
   X := ℬ
   selfDual := selfDual_self ℬ
@@ -3342,12 +3332,11 @@ argument: transport to the constructed dilation by
 every elementary tensor and `paschkeModule_ba_ext` finishes.  This replaces
 the thesis's appeal to `hilmod-fixed-on-V`.
 
-⚠ **`[VonNeumannAlgebra ℬ]` was missing from the first transcription** of
-this point and of `paschke_injective` below — a slip on our side, not a
-weakening in the source: dils.tex 156II is stated for an ncp-map, and
-ncp-maps go between von Neumann algebras (every sibling in this file —
-`existence_paschke`, **157IV** — carries both binders).  Without it there is
-no `PaschkeModule φ` to transport to.  See PROVING-LOG, session 66. -/
+The `[VonNeumannAlgebra ℬ]` binder here and on `paschke_injective` below is
+the source's own, not a strengthening: dils.tex 156II is stated for an
+ncp-map, and ncp-maps go between von Neumann algebras (every sibling in this
+file — `existence_paschke`, **157IV** — carries both binders).  Without it
+there is no `PaschkeModule φ` to transport to. -/
 theorem paschke_injective_carrier [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
     (φ : NCPMap 𝒜 ℬ) (D : PaschkeTriple 𝒜 ℬ)
     (hD : IsPaschkeDilationOf D ⇑φ) (p : 𝒜) (hp : IsStarProjection p) :
@@ -3494,7 +3483,7 @@ central effects annihilating `φ` (**69I** `cceilMap_least`): if `φ(z) = 0`
 for a central projection `z` then `⌈⌈φ⌉⌉ ≤ z^⊥`, and conversely `z = ⌈⌈φ⌉⌉^⊥`
 is itself a central projection with `φ(z) = 0`.
 
-See the warning on `paschke_injective_carrier` about `[VonNeumannAlgebra ℬ]`. -/
+See the note on `paschke_injective_carrier` about `[VonNeumannAlgebra ℬ]`. -/
 theorem paschke_injective [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
     (φ : NCPMap 𝒜 ℬ) (D : PaschkeTriple 𝒜 ℬ) (hD : IsPaschkeDilationOf D ⇑φ) :
     Function.Injective ⇑D.ρ ↔
@@ -3567,7 +3556,7 @@ noncomputable def phiT (D : PaschkeTriple 𝒜 ℬ) (t : D.P) : 𝒜 → ℬ :=
 
 `Theses/B/Dils/Stinespring.lean` and `Theses/B/Dils/Pure.lean` carry the same
 two constructions, both as `private` declarations, so they are repeated here
-rather than exported (a merge is noted in those files' headers). -/
+rather than exported (a merge is noted in `Pure.lean`'s header). -/
 
 /-- An ncp-map, as a positive linear map. -/
 private noncomputable def corrPos {P Q : Type u} [CStarAlgebra P] [PartialOrder P]
@@ -3622,7 +3611,7 @@ half of 157VIII both read off the *vector states of the dense image of `η`*
 `E` is a self-dual completion and `η` is at hand — and carried to an
 arbitrary dilation by **157IX**, exactly as the thesis carries the whole of
 157IV.  That is `paschkeModuleOf_phiT_reflects_nonneg` and
-`phiT_reflects_nonneg` below, and it is what parts 2 and 3 of **157IV** now
+`phiT_reflects_nonneg` below, and it is what parts 2 and 3 of **157IV**
 use.
 
 Two things do *not* need the density argument and are proved without it:
@@ -3753,7 +3742,7 @@ theorem starAlgHom_nonneg_reflect {P Q : Type u} [CStarAlgebra P]
 ∗-homomorphism `𝒫 → 𝒷ᵃ(𝒜 ⊗_φ ℬ)ᵐᵒᵖ` compatible with `ϱ` and `h`, which is
 all parts 2 and 3 of **157IV** consume.
 
-**Not a rendering of 140VIII** — the doc comment used to claim it was.
+**Not a rendering of 140VIII.**
 140VIII in full (the nmiu-isomorphism, and its uniqueness) is
 `B/Dils/Stinespring.paschke_unique_up_to_iso`, which this is a corollary
 of, via `exists_paschke_iso_paschkeModule`. -/
@@ -3904,8 +3893,8 @@ into `𝒜 ⊗_ψ ℬ` because `⟨x,x⟩_ψ ≤ ⟨x,x⟩_φ`, the universal pr
 turns it into a bounded module map `W`, self-duality of `𝒜 ⊗_ψ ℬ` gives `W*`
 (**152VIII** `hilbmod_adjoint_exists`), and `T = W*W`, whence `0 ≤ T`.
 
-The bound `T ≤ 1` is 157VIII's too, and used to be dropped here and
-recovered at the use site.  Local deviation in its proof: the thesis reads
+The bound `T ≤ 1` is 157VIII's too.  Local deviation in its proof: the
+thesis reads
 `⟨x, Tx⟩_φ = ⟨x,x⟩_ψ ≤ ⟨x,x⟩_φ` off the elementary tensors and concludes by
 `hilmod-fixed-on-V`; here `φ_{1−T} = φ − ψ = δ` is ncp by hypothesis, so
 `0 ≤ 1 − T` by **157VII** `phiT_reflects_nonneg` — which is itself proved by

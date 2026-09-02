@@ -717,7 +717,7 @@ intertwining relation `W ∘ (a ⊗ 1) = ϱ(a) ∘ W`, immediate from
 `a·|x⟩⟨e₀| = |a x⟩⟨e₀|`, replaces the ultrastrongly convergent expansion of
 `|a eᵢ⟩⟨e_{i₀}|` in 138V.  A basis of `ℋ` is still needed, but only for the
 surjectivity of `W`, which is where the thesis's `∑ᵢⱼ |rᵢⱼ⟩⟨rᵢⱼ| = 1` and the
-normality of `ϱ` are used.  See PROVING-LOG.md. -/
+normality of `ϱ` are used. -/
 
 section KetbraAux
 
@@ -1156,7 +1156,7 @@ that the Kraus operators of `φ(a) = V*(a ⊗ 1)V` are `Vᵢ = Q_{eᵢ}* V` and 
 partial sums `∑_{i∈F} Vᵢ* a Vᵢ` are `V* (a ⊗ P_F) V`.  What the convergence
 needs is that `a ⊗ P_F ↑ a ⊗ 1`, which is proved here from `(1 ⊗ P_F)ξ → ξ`
 (density plus the uniform bound `‖1 ⊗ P_F‖ ≤ 1`) and **44VI**
-`vna_supremum_uwlimit`.  See PROVING-LOG.md. -/
+`vna_supremum_uwlimit`. -/
 
 section KrausAux
 
@@ -2055,8 +2055,8 @@ theorem kraus_decomposition (φ : NCPMap (H →L[ℂ] H) (K →L[ℂ] K)) :
 dimensional case: for finite-dimensional `ℋ` and `𝒦` the number of Kraus
 operators can be chosen `≤ dim ℋ · dim 𝒦`.
 
-**Divergence from the author's solution** (bsols.tex, `kraus-exercise`),
-logged in PROVING-LOG.  The author bounds the *dilation space*: the standard
+**Divergence from the author's solution** (bsols.tex, `kraus-exercise`).
+The author bounds the *dilation space*: the standard
 Stinespring space `𝒦''` is a quotient of `B(ℋ) ⊙ 𝒦`, hence
 `dim 𝒦'' ≤ (dim ℋ)²·dim 𝒦`, and `𝒦'' ≅ ℋ ⊗ 𝒦'` by **138II**, so
 `dim 𝒦' ≤ dim ℋ · dim 𝒦`.  That route needs a dimension bound *inside* the
@@ -2831,25 +2831,22 @@ three extra hypotheses — **(i)** both dilations minimal (`𝒱 = ℋ ⊗ 𝒦'
 and the statement below carries none of them, so it corresponds to no case
 of the corrected exercise.
 
-*Re-derived 2026-08-29, with one thing this comment used to get wrong.*
 The witness against the statement below is the unilateral shift: `𝒦' = ℓ²`,
 `𝒦 = ℋ ⊗ ℓ²` for any `ℋ ≠ 0`, `W = 1` and `V = 1 ⊗ S`.  Since `conjOperator`
 is `T ↦ S*TS`, both hypotheses read `a ⊗ 1` (using `S*S = 1`), while
-`V = (1 ⊗ U)W` forces `U = S`, which is not unitary (`SS* ≠ 1`).  Note that
-this refutes *our* statement and **not** the exercise as printed today: the
+`V = (1 ⊗ U)W` forces `U = S`, which is not unitary (`SS* ≠ 1`).  This
+refutes *our* statement and **not** the exercise as printed today: the
 shift witness satisfies none of (i), (ii), (iii).
 
-The correction: realigning this statement with the current `dils.tex` needs
-no author ruling (`docs/DECISIONS.md` §1.4 says so in as many words) — but it
+Realigning this statement with the current `dils.tex` needs no author ruling
+(`docs/DECISIONS.md` §1.4 says so in as many words) — but it
 would **not** close the `sorry` either, because the printed disjunction is
 itself false.  Case (ii) takes the complements in `ℋ ⊗ 𝒦'` where the argument
 needs them in `𝒦'`, and the double shift (`W = 1 ⊗ S₁`, `V = 1 ⊗ S₂`) satisfies
 (ii) while failing the conclusion.  What this declaration waits on is therefore
 the §1.4 ruling — (a) complements in `𝒦'`, (b) keep (ii) and add `dim ℋ < ∞`,
 (c) delete (ii) — after which the proof is real work.  See `ERRATA.md` 139XI,
-`QUESTIONS.md` B12 (whose printed three-option question was answered on
-2026-08-18; only the residue is live) and `docs/DECISIONS.md` §1.4.  The
-`ERRATA.md` row was brought onto the same residue on 2026-09-03. -/
+`QUESTIONS.md` B12 and `docs/DECISIONS.md` §1.4. -/
 theorem ess_uniq_pur (φ : NCPMap (H →L[ℂ] H) (K →L[ℂ] K))
     (V W : K →L[ℂ] hilbTensor H K')
     (hV : ∀ a : H →L[ℂ] H, φ a = conjOperator V (tensorCLM a 1))

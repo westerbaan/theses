@@ -15,7 +15,7 @@ conventions (Mathlib's left-action mirror of the thesis's right modules;
 the ultranorm uniformity encoded through `UnTendsto`/`UnCauchy`/`UnDense`).
 
 The type `Ba 𝒷 X` of adjointable bounded operators on a Hilbert 𝒷-module,
-together with its C*-algebra structure (**143IV**) and canonical order, now
+together with its C*-algebra structure (**143IV**) and canonical order,
 lives in `HilbertModules.lean` (right after 143IV), where the positive and
 negative parts that 144I needs are available.  Those instances are **proved**,
 not asserted: they are built from `baSubalgebra` (32III), `moduleAdjointTo_unique`,
@@ -77,7 +77,7 @@ attribute [instance] SelfDualCompletion.nacg SelfDualCompletion.mod
 /-! **150II** `dils_completion` — the existence theorem itself — is **proved
 below**, at the end of parsec 1500, after the construction it needs (the
 ultranorm uniformity, `V̄`, the σ-closure and the maximal compatible
-extension).  Only the *proof* moved; the statement is unchanged. -/
+extension). -/
 
 /-! ## Parsec 1510: the universal property of the completion
 
@@ -571,9 +571,9 @@ end Completion
 The construction behind **150II** `dils_completion`, which is proved at the
 end of this parsec.  The thesis builds the ultranorm uniformity and its
 completion by hand (**150IV**–**150X**); we diverge and use Mathlib's
-`UniformSpace.Completion` — see the note on `UnUnif` below and PROVING-LOG
-session 59.  The σ-closure of `V₀ = η(V)` inside `V̄` and the 𝒷-valued inner
-product on it (**150XI**–**150XV**) follow, and then the carrier itself.
+`UniformSpace.Completion` — see the note on `UnUnif` below.  The σ-closure
+of `V₀ = η(V)` inside `V̄` and the 𝒷-valued inner product on it
+(**150XI**–**150XV**) follow, and then the carrier itself.
 -/
 
 section UnUniformity
@@ -1949,8 +1949,7 @@ theorem semBddBy_val (x : E.Car) : SemBddBy B ‖x‖ (val x) :=
   E.isCompat.semBddBy_of_mem (val_mem x)
 
 /-- **146IX** in the present setting: `‖x‖_ω ≤ ‖x‖ · ω(1)^½` — the
-quantitative half of the Beware, as in `unSeminorm_le_norm_mul`.  (Earlier
-revisions of this file labelled it 148V, which is `innerprod_ultraweak`.) -/
+quantitative half of the Beware, as in `unSeminorm_le_norm_mul`. -/
 theorem unSeminorm_le (ω : NPFunctional 𝒷) (x : E.Car) :
     unSeminorm ω (inner 𝒷 : E.Car → E.Car → 𝒷) x ≤ ‖x‖ * Real.sqrt ((ω 1).re) := by
   rw [unSeminorm_eq_semC]; exact semBddBy_val x ω
@@ -2565,18 +2564,15 @@ by order instead — `⟨x, d₀x⟩ ≤ B(x,x) ≤ ⟨x, ub x⟩` — which nee
 `x ↦ tx`, `y ↦ t⁻¹y` (which leaves `B(x,y)` fixed) with
 `t = (‖y‖/‖x‖)^{1/2}`.  This avoids `usconv`.
 
-*(Stale-prose correction.  An earlier revision justified that second
-deviation by "**44XI**.3 `vn_positive_basic_3` is still `sorry`"; it is
-not — it has been proved in `A/VN/Basic` for some time, and 73VIII
-`ultraclosed` supplies the ultraweak form.  The deviation stands on the
-first one, and on cost rather than on availability: under the
-ERRATA-corrected hypothesis there is no norm bound `r` in the *statement*,
-though the erratum's own repair does recover one (replace `D` by its cofinal
-tail above some `d₀`, which is norm-bounded because `0 ≤ d − d₀ ≤ u − d₀`),
-after which `usconv` — `A/VN/Basic`, proved and imported — would give
-`‖B(x,y)‖ ≤ r‖x‖‖y‖` as printed.  That route costs the cofinal-tail
-reduction plus the Cauchy–Schwarz estimate, some forty lines, for a bound the
-rescaling argument gets in six; it is left, deliberately, as class 2.)* -/
+The second deviation is one of cost, not of availability: `usconv` is
+proved in `A/VN/Basic` and imported here.  Under the ERRATA-corrected
+hypothesis the *statement* carries no norm bound `r`, though the erratum's
+own repair recovers one (replace `D` by its cofinal tail above some `d₀`,
+which is norm-bounded because `0 ≤ d − d₀ ≤ u − d₀`), after which `usconv`
+would give `‖B(x,y)‖ ≤ r‖x‖‖y‖` as printed.  That route costs the
+cofinal-tail reduction plus the Cauchy–Schwarz estimate, some forty lines,
+for a bound the rescaling argument gets in six; it is left, deliberately,
+as class 2. -/
 
 /-- `0 ≤ Z` in `𝒷ᵃ(X)` iff every vector form `⟨x, Zx⟩` is positive: the
 two halves of **144I** `hilbmod_ordersep`, transported to `Ba 𝒷 X`. -/
@@ -2656,13 +2652,10 @@ theorem ba_isBSesquilinear (Z : Ba 𝒷 X) :
 (`CStarModule.norm_inner_le`) followed by `‖Ty‖ ≤ ‖T‖‖y‖`, so `r = ‖T‖`
 works.
 
-Stated for a **pre-Hilbert** module, as the Example is.  It carried
-`[CompleteSpace X]` until 2026-08-29, recorded on its audit row as the one
-respect in which it was weaker; the binder was never needed — `Ba 𝒷 X` is
-defined at `HilbertModules.lean:811` without it, the `[CompleteSpace X]` there
-being a section variable introduced *after* it for 143IV's C\*-structure, and
-neither this proof nor `ba_isBSesquilinear`'s uses completeness.  Dropping it
-from both was the whole repair. -/
+Stated for a **pre-Hilbert** module, as the Example is: `Ba 𝒷 X` is defined
+without `[CompleteSpace X]` (the binder there is a section variable
+introduced *after* it, for 143IV's C\*-structure), and neither this proof
+nor `ba_isBSesquilinear`'s uses completeness. -/
 theorem ba_isBoundedBSesq (Z : Ba 𝒷 X) :
     ∃ r : ℝ, 0 ≤ r ∧
       IsBoundedBSesq r (fun x y : X => (inner 𝒷 x (Z.1 y) : 𝒷)) := by
@@ -3132,13 +3125,7 @@ normal by **152XIII** (`baVecNP`) — it is enough that
 `S ↦ ω⟨x, ad_T(S) x⟩` is normal for every `x ∈ X` and every np-functional
 `ω` of `𝒷`; and `⟨x, ad_T(S) x⟩ = ⟨Tx, S(Tx)⟩`, so that map *is* the vector
 state of `𝒷ᵃ(Y)` at `Tx`.  Both self-duality hypotheses are used, `hX` to
-make `𝒷ᵃ(X)` a von Neumann algebra and `hY` for `𝒷ᵃ(Y)`.
-
-*(Until session 94 this ran instead through **152XII** `ba_isLUB` twice,
-computing both suprema by vector forms and using only `hY`, on the stated
-ground that "**153III** (the author's proof) is not available to us".  That
-was stale: 48II is in `A/VN/Basic` and 152XIII `baVecNP` sits a page and a
-half above in this file.)* -/
+make `𝒷ᵃ(X)` a von Neumann algebra and `hY` for `𝒷ᵃ(Y)`. -/
 theorem hilbmod_ad_ncp [VonNeumannAlgebra 𝒷] [CompleteSpace X]
     [CompleteSpace Y] (hX : SelfDual 𝒷 X) (hY : SelfDual 𝒷 Y)
     (T : X →L[ℂ] Y) (T' : Y →L[ℂ] X) (hT : ModuleAdjointTo 𝒷 ⇑T ⇑T') :
@@ -3280,9 +3267,7 @@ The author's solution routes through **153I** `hilbmod_ad_ncp` (`φ = ad_T`
 for the row vector `T : 𝒜ⁿ → 𝒜`, `(bᵢ)ᵢ ↦ ∑ᵢ aᵢbᵢ` — the solution prints
 `∑ᵢ bᵢaᵢ`, which is not `𝒜`-linear and whose stated adjoint is not its
 adjoint; its own next display uses the order given here.  `ERRATA.md`,
-**153IV**, second row).  An earlier revision
-said 153I "is still open here — it waits on **152X**"; that is stale, both
-are proved above in this file.  What is missing for the author's route is
+**153IV**, second row).  What is missing for that route is
 the two identifications `𝒷ᵃ(𝒜ⁿ) ≅ Mₙ𝒜` and `𝒷ᵃ(𝒜) ≅ 𝒜ᵒᵖ`: the first is
 nowhere in the tree, and the second exists only *downstream*, as
 `rightMulEquiv` in `Paschke.lean`, which imports this file.  (The third

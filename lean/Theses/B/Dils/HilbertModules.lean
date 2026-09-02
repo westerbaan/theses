@@ -303,8 +303,8 @@ product"*.  Bundled as Mathlib's `PreInnerProductSpace.Core ℂ X`, which is
 exactly the possibly-indefinite complex inner product of cstar.tex **4XV**
 (`inner-product-basic`): conjugate symmetric, positive, additive and
 conjugate-homogeneous in the first argument — hence, by conjugate symmetry,
-additive and ℂ-linear in the second, the two clauses the audit found
-unstated. -/
+additive and ℂ-linear in the second, the two clauses the printed
+definition leaves unstated. -/
 @[instance_reducible]
 noncomputable def innerFCore (f : 𝒷 →ₗ[ℂ] ℂ) (hf : IsPositiveMap f)
     (B : BInner 𝒷 X) : PreInnerProductSpace.Core ℂ X where
@@ -2093,20 +2093,20 @@ bound for `b ↦ x₀·b` (mirrored `b ↦ b • x₀`), the map for which no bo
 axioms.  Limit preservation, the weaker form, follows and is recorded
 afterwards as `ultranormcontstruct_*_unTendsto`.
 
-**Dead limb, recorded 2026-08-26.**  All six declarations of this
-sub-section have *no consumer anywhere in* `Theses/`.  The reason is
-structural and already deliberate: 148III's consumer in dils.tex is
-**150IX**, which extends the operations to `V̄`, and 150IX–150V are
-deliberately not transcribed (`B/Dils/SelfDualCompletion` takes `V̄` to be
-Mathlib's `UniformSpace.Completion`, whose functorial extension supplies
-that step).  The thesis's other citations of `ultranormcontstruct`
+The three uniform-continuity statements are cited from `B/Dils/SelfDual`;
+the three `_unTendsto` net forms have no consumer in `Theses/`.  That is
+structural: 148III's consumer in dils.tex is **150IX**, which extends the
+operations to `V̄`, and 150IX–150V are deliberately not transcribed
+(`B/Dils/SelfDualCompletion` takes `V̄` to be Mathlib's
+`UniformSpace.Completion`, whose functorial extension supplies that step).
+The thesis's other citations of `ultranormcontstruct`
 (dils.tex:2440, 2469, 2487, 4520, 4528, 5165, 5358) all land on proofs
 whose Lean forms phrase ultranorm closure through the entourage predicate
 `unClosure` rather than through nets, and so use the underlying estimates —
-`unSeminorm_add_le` (**142II**, 27 call sites), `unSeminorm_inner_le`,
-`unSeminorm_boundedModuleMap_le` — directly.  Restoring the citations would
-mean re-phrasing those proofs in terms of nets, which is a change of
-formulation, not of argument, so this is recorded and not repaired. -/
+`unSeminorm_add_le` (**142II**), `unSeminorm_inner_le`,
+`unSeminorm_boundedModuleMap_le` — directly.  Re-phrasing those proofs in
+terms of nets would be a change of formulation, not of argument, so the net
+forms are kept unused. -/
 
 /-- The estimate behind **148III** part 2, by Cauchy–Schwarz (**142III**):
 `‖[x₀,d]‖_ω ≤ ‖[x₀,x₀]‖^½ ‖d‖_ω`, the mirrored ultrastrong seminorm on the
@@ -2213,11 +2213,9 @@ theorem ultranormcontstruct_smul [VonNeumannAlgebra 𝒷] (B : BInner 𝒷 X)
 variable {ι : Type w} {l : Filter ι}
 
 /-- **148III**, part 1, in the weaker net form: addition preserves
-ultranorm limits.  (A corollary of `ultranormcontstruct_add`.  The claim
-that used to stand here — "kept because it is the form the net arguments of
-parsec 1490 use" — is **false**: parsec 1490's Lean proofs go through
-`unSeminorm_add_le` and `unSeminorm_inner_le` directly, and this form has no
-consumer.  See the sub-section note above.) -/
+ultranorm limits.  (A corollary of `ultranormcontstruct_add`.  It has no
+consumer: parsec 1490's Lean proofs go through `unSeminorm_add_le` and
+`unSeminorm_inner_le` directly.  See the sub-section note above.) -/
 theorem ultranormcontstruct_add_unTendsto (B : BInner 𝒷 X) (x y : ι → X)
     (x₀ y₀ : X) (hx : UnTendsto B.inner x l x₀) (hy : UnTendsto B.inner y l y₀) :
     UnTendsto B.inner (fun i => x i + y i) l (x₀ + y₀) := by
@@ -2867,11 +2865,9 @@ private theorem omegaNorm_inner_le (ω : NPFunctional 𝒷) (d y : X) :
 /-- **146IX** (dils.tex:1915, Beware), the quantitative half: *"the
 ultranorm uniformity is weaker than the norm uniformity — norm convergence
 implies ultranorm convergence"*, as the estimate `‖x‖_ω ≤ ‖x‖ ω(1)^½`, in
-the form that **149VII** uses.  (Earlier revisions of this file labelled it
-146VIII, whose two identifications are `unSeminorm_complex` and
-`unSeminorm_mulInner_eq_omegaNorm` above.  The converse half of 146IX —
-"but not necessarily the other way around" — is `unTendsto_not_norm_tendsto`
-above, with the counterexample `|n⟩⟨0|` on `ℓ²`.) -/
+the form that **149VII** uses.  (The converse half of 146IX — "but not
+necessarily the other way around" — is `unTendsto_not_norm_tendsto` above,
+with the counterexample `|n⟩⟨0|` on `ℓ²`.) -/
 theorem unSeminorm_le_norm_mul (ω : NPFunctional 𝒷) (x : X) :
     unSeminorm ω (inner 𝒷 : X → X → 𝒷) x ≤ ‖x‖ * Real.sqrt (ω 1).re := by
   have hle : (inner 𝒷 x x : 𝒷) ≤ (‖(inner 𝒷 x x : 𝒷)‖ : ℝ) • (1 : 𝒷) :=
