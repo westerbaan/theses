@@ -8280,11 +8280,9 @@ theorem tensor_characterization [VonNeumannAlgebra A] [VonNeumannAlgebra B]
   -- along the nmiu-isomorphism of **114II**; the "if" half is the theorem's
   -- content: `char_bounded` and `char_normal` make `γ_⊙` bounded and normal,
   -- **112XI** + **114I** turn that into an nmiu-map `γ_⊗ : 𝒜 ⊗ ℬ → 𝒯` out of
-  -- the *chosen* tensor product, and `γ_⊗` is then shown bijective.
-  -- *Divergence.*  For injectivity the thesis computes the carrier `⌈γ_⊗⌉`
-  -- and uses **69IV** `carrier_miu`; we use the centre separating collection
-  -- of 116IV.2 directly on `γ_⊗(x)* γ_⊗(x) = γ_⊗(x* x)`, which is the same
-  -- argument with the carrier bookkeeping removed.
+  -- the *chosen* tensor product, and `γ_⊗` is then shown bijective —
+  -- injectivity through the carrier `⌈γ_⊗⌉` and **69IV** `carrier_miu`, as
+  -- printed.
   classical
   set γv : A →ₗ[ℂ] B →ₗ[ℂ] VNT A B := (vnTensor A B).map with hγvdef
   have hγv : IsTensorProduct γv := (vnTensor A B).isTensorProduct
@@ -8359,45 +8357,59 @@ theorem tensor_characterization [VonNeumannAlgebra A] [VonNeumannAlgebra B]
       ((p_uwcont (starAlgHomP Φ)).out 0 2).mp hΦc
     set Φn : NMIUMap (VNT A B) T :=
       { toStarAlgHom := Φ, preservesDirSups' := hΦnormal } with hΦndef
-    -- **injectivity**: `γ_⊗(x)* γ_⊗(x) = γ_⊗(x* x)` is killed by the centre
-    -- separating collection of 116IV.2.
+    -- **injectivity** (proc.tex:3706), the printed route: it suffices that
+    -- `⌈γ_⊗⌉ = 1`, because **69IV** `carrier_miu` makes `⌈γ_⊗⌉` central with
+    -- `γ_⊗(a) = 0` iff `⌈γ_⊗⌉·a = 0`; and `⌈γ_⊗⌉^⊥` is killed by the centre
+    -- separating collection of 116IV.2, since
+    -- `γ(σ,τ)(γ_⊗(c* ⌈γ_⊗⌉^⊥ c)) = 0` by the defining property of the
+    -- carrier.  (The thesis drops the conjugator `c` first, using that
+    -- `⌈γ_⊗⌉^⊥` is central; keeping it costs nothing.)
     have hinj : Function.Injective ⇑Φ := by
+      obtain ⟨heproj, hezero, -⟩ := carrier_spec (starAlgHomP Φ) hΦnormal
+      have hΦe : (Φ (1 - carrier (starAlgHomP Φ) hΦnormal) : T) = 0 := hezero
+      have hperp : (1 : VNT A B) - carrier (starAlgHomP Φ) hΦnormal = 0 := by
+        have hpos : (0 : VNT A B) ≤ 1 - carrier (starAlgHomP Φ) hΦnormal :=
+          heproj.one_sub.nonneg
+        refine ((centreSeparatingConj_iff _).mp
+          (tensor_generation_2 Sg Γ hSg hΓ) _ hpos).mpr ?_
+        rintro χ ⟨ω, hω, θ, hθ, hval⟩ c
+        obtain ⟨h, hh⟩ := hprod ω hω θ hθ
+        have hcont : @Continuous (VNT A B) ℂ (ultraweak (VNT A B)) _
+            ⇑((npLin h).comp g) := by
+          letI : TopologicalSpace (VNT A B) := ultraweak (VNT A B)
+          letI : TopologicalSpace T := ultraweak T
+          exact (continuous_ultraweak_npFunctional h).comp hgc
+        have huniq := prod_functional_unique γv hγv (npLin ω) (npLin θ)
+          (npLin (prodNP hγv ω θ)) ((npLin h).comp g)
+          (continuous_ultraweak_npFunctional _) hcont
+          (prodNP_apply hγv ω θ) (fun a b => by
+            show (h (g (γv a b)) : ℂ) = _
+            rw [hge a b]; exact hh a b)
+        have hgz : (Φ (star c * (1 - carrier (starAlgHomP Φ) hΦnormal) * c) : T)
+            = 0 := by
+          rw [map_mul, map_mul, hΦe, mul_zero, zero_mul]
+        have hval' : (χ (star c * (1 - carrier (starAlgHomP Φ) hΦnormal) * c) : ℂ)
+            = prodNP hγv ω θ
+                (star c * (1 - carrier (starAlgHomP Φ) hΦnormal) * c) :=
+          eq_prodNP hγv ω θ χ hval _
+        rw [hval']
+        have := congrArg (fun f : (VNT A B) →ₗ[ℂ] ℂ =>
+          f (star c * (1 - carrier (starAlgHomP Φ) hΦnormal) * c)) huniq
+        simp only [LinearMap.comp_apply] at this
+        rw [show (npLin (prodNP hγv ω θ))
+                (star c * (1 - carrier (starAlgHomP Φ) hΦnormal) * c)
+            = (prodNP hγv ω θ
+                (star c * (1 - carrier (starAlgHomP Φ) hΦnormal) * c) : ℂ) from
+            rfl] at this
+        rw [this, ← hΦapp, hgz]
+        simp
+      have he1 : carrier (starAlgHomP Φ) hΦnormal = 1 :=
+        (sub_eq_zero.mp hperp).symm
       have hker : ∀ x : VNT A B, (Φ x : T) = 0 → x = 0 := by
         intro x hx
-        have hpos : (0 : VNT A B) ≤ star x * x := star_mul_self_nonneg x
-        have hzero : star x * x = 0 := by
-          refine ((centreSeparatingConj_iff _).mp
-            (tensor_generation_2 Sg Γ hSg hΓ) _ hpos).mpr ?_
-          rintro χ ⟨ω, hω, θ, hθ, hval⟩ c
-          obtain ⟨h, hh⟩ := hprod ω hω θ hθ
-          have hcont : @Continuous (VNT A B) ℂ (ultraweak (VNT A B)) _
-              ⇑((npLin h).comp g) := by
-            letI : TopologicalSpace (VNT A B) := ultraweak (VNT A B)
-            letI : TopologicalSpace T := ultraweak T
-            exact (continuous_ultraweak_npFunctional h).comp hgc
-          have huniq := prod_functional_unique γv hγv (npLin ω) (npLin θ)
-            (npLin (prodNP hγv ω θ)) ((npLin h).comp g)
-            (continuous_ultraweak_npFunctional _) hcont
-            (prodNP_apply hγv ω θ) (fun a b => by
-              show (h (g (γv a b)) : ℂ) = _
-              rw [hge a b]; exact hh a b)
-          have hgz : (Φ (star c * (star x * x) * c) : T) = 0 := by
-            simp [map_mul, map_star, hx]
-          have hval' : (χ (star c * (star x * x) * c) : ℂ)
-              = prodNP hγv ω θ (star c * (star x * x) * c) :=
-            eq_prodNP hγv ω θ χ hval _
-          rw [hval']
-          have := congrArg (fun f : (VNT A B) →ₗ[ℂ] ℂ =>
-            f (star c * (star x * x) * c)) huniq
-          simp only [LinearMap.comp_apply] at this
-          rw [show (npLin (prodNP hγv ω θ)) (star c * (star x * x) * c)
-              = (prodNP hγv ω θ (star c * (star x * x) * c) : ℂ) from rfl] at this
-          rw [this, ← hΦapp, hgz]
-          simp
-        have hnn : ‖x‖ * ‖x‖ = 0 := by
-          rw [← CStarRing.norm_star_mul_self, hzero, norm_zero]
-        have hx0 : ‖x‖ = 0 := by nlinarith [norm_nonneg x]
-        exact norm_eq_zero.mp hx0
+        have hkm := (carrier_miu Φn (starAlgHomP Φ) hΦnormal (fun _ => rfl)).2 x
+        have h0 : carrier (starAlgHomP Φ) hΦnormal * x = 0 := hkm.mp hx
+        rwa [he1, one_mul] at h0
       intro x y hxy
       have hd : (Φ (x - y) : T) = 0 := by rw [map_sub, hxy, sub_self]
       exact sub_eq_zero.mp (hker _ hd)
