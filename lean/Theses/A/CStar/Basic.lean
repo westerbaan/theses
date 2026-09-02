@@ -579,9 +579,9 @@ parsec 40 alone: if `Tₙ → T` with each `Tₙ` adjointable, then the adjoints
 `Tₙ*` are Cauchy because `‖Tₙ* - Tₘ*‖ = ‖(Tₙ - Tₘ)*‖ = ‖Tₙ - Tₘ‖`
 (**4XVI**.2), so they converge to some `S` by completeness of `B(H)`
 (**4V**), and `⟪T x, y⟫ = lim ⟪Tₙ x, y⟫ = lim ⟪x, Tₙ* y⟫ = ⟪x, S y⟫` by
-continuity of the inner product.  (Earlier this was proved by observing,
-with **5XI**, that *every* bounded operator on a Hilbert space is
-adjointable — a result of the next parsec, which 4XVIII precedes.) -/
+continuity of the inner product.  It does not go through **5XI**, that
+*every* bounded operator on a Hilbert space is adjointable, which belongs
+to the next parsec. -/
 theorem adjointable_isClosed [CompleteSpace H] :
     IsClosed {T : H →L[ℂ] H | Adjointable (⇑T)} ∧
       ∃ M : Submodule ℂ (H →L[ℂ] H),
@@ -1422,13 +1422,12 @@ theorem cx_positive (f : C(X, ℂ)) (hf : IsSelfAdjoint f) :
 `f ∈ C(X,ℂ)` is invertible precisely when it is nowhere zero, the inverse
 being given pointwise by `x ↦ f x⁻¹`.
 
-Mathlib has this as `ContinuousMap.isUnit_iff_forall_ne_zero`, and that is
-what this proof used until 2026-08-29.  Mathlib reaches it by a different
-route from the solution's -- `ContinuousMap.unitsLift` together with
-`NormedRing.inverse_continuousAt`, the continuity of inversion in a Banach
-algebra, four declarations and some forty lines -- whereas the solution says
-only "with inverse given by `f⁻¹(x) = f(x)⁻¹`", which over `ℂ` is
-`Continuous.inv₀`.  So the solution's own argument is the one below. -/
+Mathlib has this as `ContinuousMap.isUnit_iff_forall_ne_zero`, but reaches
+it by a different route from the solution's — `ContinuousMap.unitsLift`
+together with `NormedRing.inverse_continuousAt`, the continuity of inversion
+in a Banach algebra, four declarations and some forty lines — whereas the
+solution says only "with inverse given by `f⁻¹(x) = f(x)⁻¹`", which over `ℂ`
+is `Continuous.inv₀`.  The proof below is the solution's own. -/
 theorem cx_isUnit_iff_forall_ne_zero (f : C(X, ℂ)) : IsUnit f ↔ ∀ x, f x ≠ 0 := by
   constructor
   · rintro ⟨u, rfl⟩ x hx
@@ -1497,7 +1496,7 @@ theorem algebraMap_ofReal_mono {s t : ℝ} (h : s ≤ t) :
 **This is the parsec-90 order bridge, and it is the one place in parsecs
 20–220 where the development enters Mathlib's continuous functional
 calculus.**  Everything in the `Positive` section below — 9IV, 9VII, 9X.1,
-9X.2, 9X.4, 9X.5d, 9X.5e — and 10IV with it now funnels through this lemma
+9X.2, 9X.4, 9X.5d, 9X.5e — and 10IV with it funnels through this lemma
 alone; 9X.5b (`OrderClosedTopology`) and 9X.3 (the order on `B(ℂ²)`, forced by
 its statement) are the only other entries.
 
@@ -1576,8 +1575,7 @@ This is the solution's own argument (asols.tex, `parsec-90.100`(1)), read
 through the bridge **9IV** `cstar_positive_def`: pick `t ∈ ℝ` with
 `‖a - t‖ ≤ t`; then `r a` is self-adjoint and
 `‖r a - r t‖ = r ‖a - t‖ ≤ r t`, so `r a` is positive.  (`cstar_positive_1`
-below is the same clause under its thesis name; this auxiliary is the form
-the rest of the tree applies.) -/
+below states the same clause under its thesis name.) -/
 theorem ofReal_smul_nonneg {a : 𝒜} (ha : 0 ≤ a) {r : ℝ} (hr : 0 ≤ r) :
     0 ≤ (r : ℂ) • a := by
   have hasa : IsSelfAdjoint a := .of_nonneg ha
@@ -1963,9 +1961,9 @@ theorem cstar_positive_5c (a : 𝒜) (ha : IsSelfAdjoint a)
     -- The hypothesis says `0 ≤ a + 1/(n+1)`, and `a + 1/(n+1) → a`; so this is
     -- **9X**.5b — the closedness of the positive cone — which is what the thesis
     -- delivers for the whole of **9X**.5 when it returns to it at **17VI**.2.
-    -- (Mathlib's `StarOrderedRing.nonneg_iff_spectrum_nonneg`, used here before,
-    -- is its CFC-backed form of **25I**, and a second, independent entry into
-    -- that machinery for a fact the section already has.)
+    -- (Mathlib's `StarOrderedRing.nonneg_iff_spectrum_nonneg` would also do
+    -- it, but it is the CFC-backed form of **25I**, a second and independent
+    -- entry into that machinery for a fact the section already has.)
     have hstep : ∀ n : ℕ, (0 : 𝒜) ≤ a + algebraMap ℂ 𝒜 ((n : ℂ) + 1)⁻¹ := by
       intro n
       have hn := sub_nonneg.mpr (h n)
@@ -2140,10 +2138,8 @@ theorem spectrum_bounded_1 (a : 𝒜) (z : ℂ) (h : ‖a‖ < ‖z‖) :
 
 /-- **11VI** (`spectrum-bounded`, cstar.tex:1451, Exercise), part 2:
 `a - b` is invertible when `b` is invertible and `a` is small compared
-to `b`.  (The first printing stated the hypothesis as `‖a‖ < ‖b‖`; cstar.tex
-now prints the standard — and provable — bound `‖a‖ < ‖b⁻¹‖⁻¹`, incorporated
-2026-08-13, and that is what is used here.  No ERRATA row: the fix is in the
-source.) -/
+to `b`.  The hypothesis is the errata-corrected bound `‖a‖ < ‖b⁻¹‖⁻¹`
+(erratum `parsec-110.60`), which is what cstar.tex prints. -/
 theorem spectrum_bounded_2 (a : 𝒜) (b : 𝒜ˣ)
     (h : ‖a‖ < ‖((b⁻¹ : 𝒜ˣ) : 𝒜)‖⁻¹) :
     IsUnit (a - (b : 𝒜)) :=
@@ -2235,9 +2231,8 @@ self-adjoint `a`.
 The proof is the thesis's own trick: write `a - i = (a + ni) - (n+1)i` for
 `n` large, and apply **11VI**.2, the bound being
 `‖a+ni‖² = ‖(a+ni)*(a+ni)‖ = ‖a²+n²‖ ≤ ‖a‖²+n² < (n+1)²`.  The `n` is chosen
-for `‖a‖² < 2n+1`, which is what the strict step needs and what cstar.tex now
-prints (erratum `parsec-110.140`, incorporated 2026-08-22; the first printing
-asked for `‖a‖ < 2n+1`). -/
+for `‖a‖² < 2n+1`, which is what the strict step needs and what cstar.tex
+prints (erratum `parsec-110.140`). -/
 theorem selfAdjoint_sub_I_isUnit (a : 𝒜) (ha : IsSelfAdjoint a) :
     IsUnit (a - algebraMap ℂ 𝒜 Complex.I) := by
   rcases subsingleton_or_nontrivial 𝒜 with hs | hs
