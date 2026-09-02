@@ -16,5 +16,5 @@ cd "$(dirname "$0")/.."
 export PATH="$HOME/.elan/bin:$PATH"
 LP=".lake/build/lib/lean"
 for d in .lake/packages/*/.lake/build/lib/lean; do LP="$LP:$d"; done
-exec flock -w 5400 /tmp/lean-compile.lock \
+exec flock -w 14400 /tmp/lean-compile.lock \
   env LEAN_PATH="$LP" lean -DrelaxedAutoImplicit=false -DmaxSynthPendingDepth=3 "$@"
