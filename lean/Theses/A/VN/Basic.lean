@@ -1039,6 +1039,35 @@ instance vonNeumannAlgebra_lp_infty [∀ i, VonNeumannAlgebra (𝒜 i)] :
 
 end DirectSum
 
+/-! ### 42V.3 over the nontrivial summands only
+
+The binder `[∀ i, Nontrivial (𝒜 i)]` of `section DirectSum` is Mathlib's, not
+42V's (see the note at the head of that section).  Restated over
+`J = {i // Nontrivial (𝒜 i)}` it is *discharged* rather than assumed
+(`fun j => j.2`), and `⊕_{j : J} 𝒜ⱼ` is the printed `⊕ᵢ𝒜ᵢ` up to the
+isometric star-isomorphism `lpInftyNontrivialEquiv` (`A/CStar/Positive.lean`).
+
+The discharge is a `local instance` rather than a `haveI` in each proof: the
+*statements* below already mention structures on `lp` that Mathlib gates on the
+binder, so the instance has to be available while the type is elaborated. -/
+
+private theorem nontrivial_of_nontrivialIndex {ι : Type*} {𝒜 : ι → Type*}
+    (j : {i // Nontrivial (𝒜 i)}) : Nontrivial (𝒜 j) := j.2
+
+section DirectSumNontrivial
+
+attribute [local instance] nontrivial_of_nontrivialIndex
+
+/-- **42V**.3 without the Mathlib binder: over the nontrivial indices, which is
+the whole sum up to `lpInftyNontrivialEquiv` (`A/CStar/Positive.lean`). -/
+theorem vonNeumannAlgebra_lp_infty' {I : Type*} {𝒜 : I → Type u}
+    [∀ i, CStarAlgebra (𝒜 i)] [∀ i, PartialOrder (𝒜 i)] [∀ i, StarOrderedRing (𝒜 i)]
+    [∀ i, VonNeumannAlgebra (𝒜 i)] :
+    VonNeumannAlgebra (lp (fun j : {i // Nontrivial (𝒜 i)} => 𝒜 j) ∞) :=
+  vonNeumannAlgebra_lp_infty (𝒜 := fun j : {i // Nontrivial (𝒜 i)} => 𝒜 j)
+
+end DirectSumNontrivial
+
 variable (A) in
 /-- **42V** (`von-neumann-examples`, vn.tex:262, Examples), part 4: a
 C*-subalgebra `S` of a von Neumann algebra `A` is a **von Neumann
@@ -3862,6 +3891,59 @@ theorem vn_products_ncpsu {B : Type*} [CStarAlgebra B] [PartialOrder B]
   exact (hgval j b).symm
 
 end Products
+
+/-! ### 47IV over the nontrivial summands only
+
+As for 42V.3 above: the `[∀ i, Nontrivial (𝒜 i)]` of `section Products` is
+Mathlib's, and over `J = {i // Nontrivial (𝒜 i)}` it is discharged by
+`fun j => j.2`, so the primed corollaries below are 47IV as printed — the
+identification of `⊕_{j : J} 𝒜ⱼ` with `⊕ᵢ𝒜ᵢ` being `lpInftyNontrivialEquiv`
+(`A/CStar/Positive.lean`).  The binders are written out on each statement
+rather than taken from a `variable` block, so that no `Nontrivial` binder can
+be picked up automatically. -/
+
+section ProductsNontrivial
+
+attribute [local instance] nontrivial_of_nontrivialIndex
+
+/-- **47IV**.2 without the Mathlib binder: over the nontrivial indices, which is
+the whole sum up to `lpInftyNontrivialEquiv` (`A/CStar/Positive.lean`). -/
+theorem vn_products_proj_normal' {I : Type*} {𝒜 : I → Type u}
+    [∀ i, CStarAlgebra (𝒜 i)] [∀ i, PartialOrder (𝒜 i)] [∀ i, StarOrderedRing (𝒜 i)]
+    [∀ i, VonNeumannAlgebra (𝒜 i)] (j : {i // Nontrivial (𝒜 i)}) :
+    PreservesDirSups fun a : lp (fun j : {i // Nontrivial (𝒜 i)} => 𝒜 j) ∞ =>
+      (a : ∀ j : {i // Nontrivial (𝒜 i)}, 𝒜 j) j :=
+  vn_products_proj_normal (fun j : {i // Nontrivial (𝒜 i)} => 𝒜 j) j
+
+/-- **47IV**.3 (`W*_miu`) without the Mathlib binder: over the nontrivial
+indices, which is the whole sum up to `lpInftyNontrivialEquiv`
+(`A/CStar/Positive.lean`). -/
+theorem vn_products_nmiu' {I : Type*} {𝒜 : I → Type u}
+    [∀ i, CStarAlgebra (𝒜 i)] [∀ i, PartialOrder (𝒜 i)] [∀ i, StarOrderedRing (𝒜 i)]
+    [∀ i, VonNeumannAlgebra (𝒜 i)] {B : Type*} [CStarAlgebra B] [PartialOrder B]
+    [StarOrderedRing B] [VonNeumannAlgebra B]
+    (f : ∀ j : {i // Nontrivial (𝒜 i)}, NMIUMap B (𝒜 j)) :
+    ∃! g : NMIUMap B (lp (fun j : {i // Nontrivial (𝒜 i)} => 𝒜 j) ∞),
+      ∀ (j : {i // Nontrivial (𝒜 i)}) (b : B),
+        ((g b : lp (fun j : {i // Nontrivial (𝒜 i)} => 𝒜 j) ∞) :
+            ∀ j : {i // Nontrivial (𝒜 i)}, 𝒜 j) j = f j b :=
+  vn_products_nmiu (fun j : {i // Nontrivial (𝒜 i)} => 𝒜 j) f
+
+/-- **47IV**.3 (`W*_cpsu`) without the Mathlib binder: over the nontrivial
+indices, which is the whole sum up to `lpInftyNontrivialEquiv`
+(`A/CStar/Positive.lean`). -/
+theorem vn_products_ncpsu' {I : Type*} {𝒜 : I → Type u}
+    [∀ i, CStarAlgebra (𝒜 i)] [∀ i, PartialOrder (𝒜 i)] [∀ i, StarOrderedRing (𝒜 i)]
+    [∀ i, VonNeumannAlgebra (𝒜 i)] {B : Type*} [CStarAlgebra B] [PartialOrder B]
+    [StarOrderedRing B] [VonNeumannAlgebra B]
+    (f : ∀ j : {i // Nontrivial (𝒜 i)}, NCPSUMap B (𝒜 j)) :
+    ∃! g : NCPSUMap B (lp (fun j : {i // Nontrivial (𝒜 i)} => 𝒜 j) ∞),
+      ∀ (j : {i // Nontrivial (𝒜 i)}) (b : B),
+        ((g.toNCPMap b : lp (fun j : {i // Nontrivial (𝒜 i)} => 𝒜 j) ∞) :
+            ∀ j : {i // Nontrivial (𝒜 i)}, 𝒜 j) j = (f j).toNCPMap b :=
+  vn_products_ncpsu (fun j : {i // Nontrivial (𝒜 i)} => 𝒜 j) f
+
+end ProductsNontrivial
 
 section Elementary
 
@@ -7111,11 +7193,14 @@ theorem Linfty_vn (X : Type u) [MeasurableSpace X] (μ : Measure X)
       (_ : StarOrderedRing 𝒜) (q : (X → ℂ) → 𝒜) (τ : 𝒜 → ℂ),
       VonNeumannAlgebra 𝒜 ∧
       -- `q` is a surjective miu-map on `𝓛^∞(X)` with kernel the a.e.-null
-      -- functions:
+      -- functions.  (ℂ-homogeneity is part of "miu": it was omitted until
+      -- 2026-09-02, QUESTIONS A9, now closed, and is restored under the D1 ruling that
+      -- added the same clause to `IsLinftyOf`.)
       (∀ y : 𝒜, ∃ f, IsBoundedMeasurable X f ∧ q f = y) ∧
       (∀ f g, IsBoundedMeasurable X f → IsBoundedMeasurable X g →
         q (f + g) = q f + q g ∧ q (f * g) = q f * q g ∧
           q (star f) = star (q f)) ∧
+      (∀ (z : ℂ) f, IsBoundedMeasurable X f → q (z • f) = z • q f) ∧
       q 1 = 1 ∧
       (∀ f, IsBoundedMeasurable X f → (q f = 0 ↔ f =ᵐ[μ] 0)) ∧
       -- integration descends to a faithful normal positive functional:
@@ -7131,7 +7216,8 @@ theorem Linfty_vn (X : Type u) [MeasurableSpace X] (μ : Measure X)
   have hvn : VonNeumannAlgebra ↥(LinftySub μ) :=
     vna_of_faithful_countably_normal_1 tauMap hfaith hsup
   refine ⟨↥(LinftySub μ), inferInstance, inferInstance, inferInstance, qmap μ, tauFun,
-    hvn, qmap_surjective, ?_, qmap_one, fun f hf => qmap_eq_zero_iff hf,
+    hvn, qmap_surjective, ?_, fun z f hf => qmap_smul z hf, qmap_one,
+    fun f hf => qmap_eq_zero_iff hf,
     ⟨⟨tauMap, vna_of_faithful_countably_normal_2 tauMap hfaith hsup⟩, rfl⟩,
     hfaith, fun f hf => tau_qmap hf⟩
   exact fun f g hf hg => ⟨qmap_add hf hg, qmap_mul hf hg, qmap_star hf⟩
@@ -9363,10 +9449,10 @@ and `cvn_faithful_5` takes a stronger one that works for presentations.
 
 The `ℂ`-homogeneity clause `q (z • f) = z • q f` is stated: without it `q`
 would be a `∗`-*ring* map only and the statement would not say "miu" — the
-defect QUESTIONS **A9** raises against 51IX's own rendering, and the one
+defect QUESTIONS **A9** raised against 51IX's own rendering, and the one
 ruled in for `IsLinftyOf` on 2026-08-16 (that item was filed as **D1** in
 `QUESTIONS.md` and deleted from it in the implementing commit 43e270f).
-(A9 is about `Linfty_vn`'s clause list, which is untouched here.)
+(A9 is now closed, deleted 2026-09-02, the clause restored in `Linfty_vn` too.)
 
 Neither `ω` nor its faithfulness occurs: all the isomorphism needs of the
 measure is that its null sets are the meagre almost clopen sets, which is

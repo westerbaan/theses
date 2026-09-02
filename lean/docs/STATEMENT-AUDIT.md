@@ -796,8 +796,9 @@ printed form verbatim, so under ruling (1) the single `sorry` in `VNExamples`
 closes with no further mathematics.  **A6**'s knock-on is larger than
 recorded (under the printed `DiscreteSpace`, 130V is false, 129VI vacuous,
 127III gapped — and the repair orphans the thesis's own 129IV).  **A8**'s
-recorded obstruction is gone (`dsumRep` exists).  **A9**, **A10**, **B13**,
-**B14**, **D7** all confirmed as described; B13's weakness is in
+recorded obstruction is gone (`dsumRep` exists).  **A9** (closed 2026-09-02: the clause was
+added under the D1 ruling), **A10**, **B13**, **B14**, **D7** all confirmed as
+described; B13's weakness is in
 `effectus_vn_partial`, *not* in `Effectus.lean`'s definitions, which are
 faithful field by field.
 

@@ -23,7 +23,7 @@ So:
      printed, or wrong object, or does not typecheck).  Changing our statement
      to match a falsehood is wrong, and changing it any other way is the
      author's call;
-  2. an **open question governs it** — `QUESTIONS.md` A6, A9, A10, B12, B13,
+  2. an **open question governs it** — `QUESTIONS.md` A6, A10, B12, B13,
      B14, B15, D7.  Read the current `QUESTIONS.md`; some have been ruled on
      and deleted;
   3. the row is `stronger` and the note calls it a **benign generalisation**

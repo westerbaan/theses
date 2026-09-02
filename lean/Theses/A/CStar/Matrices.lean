@@ -2394,6 +2394,63 @@ theorem cstar_product_4_proj {ι : Type*} {𝒜f : ι → Type*}
     rw [lp.infty_coeFn_one]; rfl
   exact ⟨π, fun _ => rfl, hm, hi, hu, cp_of_mi π hm hi, le_of_eq hu⟩
 
+/-! ### 34VI.1 over the nontrivial summands only
+
+The `[∀ i, Nontrivial (𝒜f i)]` of the two statements above is Mathlib's, not
+34VI's: it is what Mathlib's unital structure on `lp 𝒜f ∞` demands.  Over
+`J = {i // Nontrivial (𝒜f i)}` it is *discharged* (`fun j => j.2`) instead of
+assumed, and `⊕_{j : J} 𝒜ⱼ` is the printed `⊕ᵢ𝒜ᵢ` up to the isometric
+star-isomorphism `lpInftyNontrivialEquiv` of `A/CStar/Positive.lean` — so the
+primed corollaries below are 34VI.1 as printed.
+
+The discharge is a `local instance` and not a `haveI` inside each proof: the
+*statements* themselves mention `lp` structures that Mathlib gates on the
+binder (`1`, `≤`), so it must be in scope while the type is elaborated. -/
+
+section NontrivialSummands
+
+private theorem nontrivial_of_nontrivialIndex {ι : Type*} {𝒜f : ι → Type*}
+    (j : {i // Nontrivial (𝒜f i)}) : Nontrivial (𝒜f j) := j.2
+
+attribute [local instance] nontrivial_of_nontrivialIndex
+
+/-- **34VI**.1 `cstar_product_4` without the Mathlib binder: over the nontrivial
+indices, which is the whole sum up to `lpInftyNontrivialEquiv`
+(`A/CStar/Positive.lean`). -/
+theorem cstar_product_4' {ι : Type*} {𝒜f : ι → Type*}
+    [∀ i, CStarAlgebra (𝒜f i)] [∀ i, PartialOrder (𝒜f i)] [∀ i, StarOrderedRing (𝒜f i)]
+    [PartialOrder (lp (fun j : {i // Nontrivial (𝒜f i)} => 𝒜f j) ∞)]
+    [StarOrderedRing (lp (fun j : {i // Nontrivial (𝒜f i)} => 𝒜f j) ∞)]
+    {ℬ : Type*} [CStarAlgebra ℬ] [PartialOrder ℬ] [StarOrderedRing ℬ]
+    (f : ∀ j : {i // Nontrivial (𝒜f i)}, ℬ →ₗ[ℂ] 𝒜f j)
+    (hcp : ∀ j, IsCompletelyPositiveMap (f j))
+    (hsu : ∀ j, Subunital ⇑(f j)) :
+    ∃! g : ℬ →ₗ[ℂ] lp (fun j : {i // Nontrivial (𝒜f i)} => 𝒜f j) ∞,
+      (∀ (n : ℕ) (a : Fin n → ℬ)
+          (c : Fin n → lp (fun j : {i // Nontrivial (𝒜f i)} => 𝒜f j) ∞),
+        0 ≤ ∑ k, ∑ l, star (c k) * g (star (a k) * a l) * c l) ∧
+      g 1 ≤ 1 ∧
+      ∀ (j : {i // Nontrivial (𝒜f i)}) (b : ℬ),
+        (g b : ∀ j : {i // Nontrivial (𝒜f i)}, 𝒜f j) j = f j b :=
+  cstar_product_4 f hcp hsu
+
+/-- **34VI**.1 `cstar_product_4_proj` without the Mathlib binder: over the
+nontrivial indices, which is the whole sum up to `lpInftyNontrivialEquiv`
+(`A/CStar/Positive.lean`). -/
+theorem cstar_product_4_proj' {ι : Type*} {𝒜f : ι → Type*}
+    [∀ i, CStarAlgebra (𝒜f i)] [∀ i, PartialOrder (𝒜f i)] [∀ i, StarOrderedRing (𝒜f i)]
+    [PartialOrder (lp (fun j : {i // Nontrivial (𝒜f i)} => 𝒜f j) ∞)]
+    [StarOrderedRing (lp (fun j : {i // Nontrivial (𝒜f i)} => 𝒜f j) ∞)]
+    (j : {i // Nontrivial (𝒜f i)}) :
+    ∃ π : lp (fun j : {i // Nontrivial (𝒜f i)} => 𝒜f j) ∞ →ₗ[ℂ] 𝒜f j,
+      (∀ x : lp (fun j : {i // Nontrivial (𝒜f i)} => 𝒜f j) ∞,
+          π x = (x : ∀ k : {i // Nontrivial (𝒜f i)}, 𝒜f k) j) ∧
+      IsMultiplicativeMap π ∧ IsInvolutionPreserving π ∧ π 1 = 1 ∧
+      IsCompletelyPositiveMap π ∧ Subunital ⇑π :=
+  cstar_product_4_proj j
+
+end NontrivialSummands
+
 /-- An element of a commutative C*-algebra is positive as soon as every character
 maps it to a nonnegative complex number: by Gelfand duality it is `star g * g`
 for the continuous function `g = √(φ ↦ φ x)`. -/

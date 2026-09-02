@@ -4049,6 +4049,85 @@ case, but not this one. -/
 noncomputable instance lpInftyCStarAlgebra {ι : Type*} {𝒜 : ι → Type*}
     [∀ i, Nontrivial (𝒜 i)] [∀ i, CStarAlgebra (𝒜 i)] : CStarAlgebra (lp 𝒜 ∞) where
 
+/-- Auxiliary for `lpInftyNontrivialEquiv`: extend a family indexed by the
+nontrivial summands `J = {i // Nontrivial (𝒜 i)}` by `0` on the trivial ones.
+(Classical `dite`: `Nontrivial` is not decidable.) -/
+noncomputable def lpInftyExtend {ι : Type*} {𝒜 : ι → Type*} [∀ i, CStarAlgebra (𝒜 i)]
+    (y : ∀ j : {i // Nontrivial (𝒜 i)}, 𝒜 j) (i : ι) : 𝒜 i :=
+  @dite (𝒜 i) (Nontrivial (𝒜 i)) (Classical.propDecidable _) (fun h => y ⟨i, h⟩) fun _ => 0
+
+@[simp]
+theorem lpInftyExtend_coe {ι : Type*} {𝒜 : ι → Type*} [∀ i, CStarAlgebra (𝒜 i)]
+    (y : ∀ j : {i // Nontrivial (𝒜 i)}, 𝒜 j) (j : {i // Nontrivial (𝒜 i)}) :
+    lpInftyExtend y j = y j :=
+  dite_eq_left j.2
+
+theorem lpInftyExtend_of_not_nontrivial {ι : Type*} {𝒜 : ι → Type*} [∀ i, CStarAlgebra (𝒜 i)]
+    (y : ∀ j : {i // Nontrivial (𝒜 i)}, 𝒜 j) {i : ι} (h : ¬ Nontrivial (𝒜 i)) :
+    lpInftyExtend y i = 0 :=
+  dite_eq_right h
+
+/-- Zero summands contribute nothing to an `ℓ^∞`-direct sum: restriction to the
+nontrivial indices `J := {i // Nontrivial (𝒜 i)}` is an isomorphism of
+non-unital star algebras (isometric: `norm_lpInftyNontrivialEquiv`).  This is
+why the `[∀ i, Nontrivial (𝒜 i)]` binder that Mathlib's unital structure on
+`lp 𝒜 ∞` demands costs no content: over `J` the binder holds by `fun j => j.2`,
+so every gated statement about `⊕ᵢ𝒜ᵢ` in this tree covers the printed one
+after this identification.
+
+(Mathlib has no separate *non-unital* star-algebra equivalence: `StarAlgEquiv`,
+`≃⋆ₐ[ℂ]`, *is* the non-unital notion — it asks for addition, multiplication,
+scalar multiplication and `star`, and never for `1`.  It is therefore the right
+target here, where the left-hand side need not be unital.) -/
+noncomputable def lpInftyNontrivialEquiv {ι : Type*} (𝒜 : ι → Type*)
+    [∀ i, CStarAlgebra (𝒜 i)] :
+    lp 𝒜 ∞ ≃⋆ₐ[ℂ] lp (fun j : {i // Nontrivial (𝒜 i)} => 𝒜 j) ∞ where
+  toFun x :=
+    ⟨fun j => (x : ∀ i, 𝒜 i) j, memℓp_infty ⟨‖x‖, by
+      rintro _ ⟨j, rfl⟩
+      exact lp.norm_apply_le_norm ENNReal.top_ne_zero x j⟩⟩
+  invFun y :=
+    ⟨lpInftyExtend (⇑y), memℓp_infty ⟨‖y‖, by
+      rintro _ ⟨i, rfl⟩
+      show ‖lpInftyExtend (⇑y) i‖ ≤ ‖y‖
+      by_cases h : Nontrivial (𝒜 i)
+      · rw [show lpInftyExtend (⇑y) i = y ⟨i, h⟩ from dite_eq_left h]
+        exact lp.norm_apply_le_norm ENNReal.top_ne_zero y ⟨i, h⟩
+      · rw [lpInftyExtend_of_not_nontrivial _ h, norm_zero]
+        exact norm_nonneg y⟩⟩
+  left_inv x := by
+    refine lp.ext (funext fun i => ?_)
+    by_cases h : Nontrivial (𝒜 i)
+    · exact dite_eq_left h
+    · have := not_nontrivial_iff_subsingleton.mp h
+      exact (dite_eq_right h).trans (Subsingleton.elim _ _)
+  right_inv y := lp.ext (funext fun j => lpInftyExtend_coe (⇑y) j)
+  map_add' _ _ := rfl
+  map_mul' _ _ := rfl
+  map_star' _ := rfl
+  map_smul' _ _ := rfl
+
+theorem lpInftyNontrivialEquiv_apply {ι : Type*} (𝒜 : ι → Type*) [∀ i, CStarAlgebra (𝒜 i)]
+    (x : lp 𝒜 ∞) (j : {i // Nontrivial (𝒜 i)}) :
+    (lpInftyNontrivialEquiv 𝒜 x : ∀ j : {i // Nontrivial (𝒜 i)}, 𝒜 j) j = (x : ∀ i, 𝒜 i) j :=
+  rfl
+
+/-- `lpInftyNontrivialEquiv` is isometric: both norms are the supremum of the
+coordinate norms, and the coordinates it forgets are `0`. -/
+theorem norm_lpInftyNontrivialEquiv {ι : Type*} (𝒜 : ι → Type*) [∀ i, CStarAlgebra (𝒜 i)]
+    (x : lp 𝒜 ∞) : ‖lpInftyNontrivialEquiv 𝒜 x‖ = ‖x‖ := by
+  refine le_antisymm (lp.norm_le_of_forall_le (norm_nonneg x) fun j => ?_)
+    (lp.norm_le_of_forall_le (norm_nonneg _) fun i => ?_)
+  · rw [lpInftyNontrivialEquiv_apply]
+    exact lp.norm_apply_le_norm ENNReal.top_ne_zero x j
+  · by_cases h : Nontrivial (𝒜 i)
+    · have hle := lp.norm_apply_le_norm ENNReal.top_ne_zero
+        (lpInftyNontrivialEquiv 𝒜 x) ⟨i, h⟩
+      rwa [lpInftyNontrivialEquiv_apply] at hle
+    · have := not_nontrivial_iff_subsingleton.mp h
+      rw [show (x : ∀ i, 𝒜 i) i = 0 from Subsingleton.elim _ _, norm_zero]
+      exact norm_nonneg _
+
 /-- **20aI** (`cstar-product-2`, cstar.tex:3030, Exercise), the Exercise's
 hint for the `pu` half: an element of `⊕ᵢ 𝒜ᵢ` is positive iff all of its
 components are.  The `pu` universal property it is a hint *for* is
@@ -4188,6 +4267,71 @@ theorem cstar_product_2_pu {ι : Type*} {𝒜 : ι → Type*}
     · rintro g' ⟨-, -, hg'⟩
       ext b i
       exact hg' i b
+
+/-! ### 20aI over the nontrivial summands only
+
+The four statements above carry Mathlib's `[∀ i, Nontrivial (𝒜 i)]`, which the
+Exercise does not.  Restated over `J = {i // Nontrivial (𝒜 i)}` the binder is
+*discharged* rather than assumed (`fun j => j.2`), and by
+`lpInftyNontrivialEquiv` above `⊕_{j : J} 𝒜ⱼ` is the printed `⊕ᵢ𝒜ᵢ` — so the
+primed corollaries below are the Exercise's statements as printed.
+
+The discharge has to be a `local instance`, not a `haveI` inside each proof:
+the *statements* already mention `lp` structures that Mathlib gates on the
+binder (`→⋆ₐ[ℂ]`, `1`, `≤`), so the instance must be available while the type
+is elaborated. -/
+
+section NontrivialSummands
+
+private theorem nontrivial_of_nontrivialIndex {ι : Type*} {𝒜 : ι → Type*}
+    (j : {i // Nontrivial (𝒜 i)}) : Nontrivial (𝒜 j) := j.2
+
+attribute [local instance] nontrivial_of_nontrivialIndex
+
+/-- **20aI** `cstar_product_2_miu` without the Mathlib binder: over the
+nontrivial indices, which is the whole sum up to `lpInftyNontrivialEquiv`. -/
+theorem cstar_product_2_miu' {ι : Type*} {𝒜 : ι → Type*}
+    [∀ i, CStarAlgebra (𝒜 i)] {ℬ : Type*} [CStarAlgebra ℬ]
+    (f : ∀ j : {i // Nontrivial (𝒜 i)}, ℬ →⋆ₐ[ℂ] 𝒜 j) :
+    ∃! g : ℬ →⋆ₐ[ℂ] lp (fun j : {i // Nontrivial (𝒜 i)} => 𝒜 j) ∞,
+      ∀ (j : {i // Nontrivial (𝒜 i)}) (b : ℬ),
+        (g b : ∀ j : {i // Nontrivial (𝒜 i)}, 𝒜 j) j = f j b :=
+  cstar_product_2_miu f
+
+/-- **20aI** `cstar_product_2_positive` without the Mathlib binder: over the
+nontrivial indices, which is the whole sum up to `lpInftyNontrivialEquiv`. -/
+theorem cstar_product_2_positive' {ι : Type*} {𝒜 : ι → Type*}
+    [∀ i, CStarAlgebra (𝒜 i)] [∀ i, PartialOrder (𝒜 i)] [∀ i, StarOrderedRing (𝒜 i)]
+    [PartialOrder (lp (fun j : {i // Nontrivial (𝒜 i)} => 𝒜 j) ∞)]
+    [StarOrderedRing (lp (fun j : {i // Nontrivial (𝒜 i)} => 𝒜 j) ∞)]
+    (a : lp (fun j : {i // Nontrivial (𝒜 i)} => 𝒜 j) ∞) :
+    0 ≤ a ↔ ∀ j : {i // Nontrivial (𝒜 i)},
+      0 ≤ (a : ∀ j : {i // Nontrivial (𝒜 i)}, 𝒜 j) j :=
+  cstar_product_2_positive a
+
+/-- **20aI** `cstar_product_2_comm` without the Mathlib binder: over the
+nontrivial indices, which is the whole sum up to `lpInftyNontrivialEquiv`. -/
+theorem cstar_product_2_comm' {ι : Type*} {𝒜 : ι → Type*} [∀ i, CStarAlgebra (𝒜 i)]
+    (hcomm : ∀ (i : ι) (x y : 𝒜 i), x * y = y * x)
+    (a b : lp (fun j : {i // Nontrivial (𝒜 i)} => 𝒜 j) ∞) : a * b = b * a :=
+  cstar_product_2_comm (𝒜 := fun j : {i // Nontrivial (𝒜 i)} => 𝒜 j) (fun j => hcomm j) a b
+
+/-- **20aI** `cstar_product_2_pu` without the Mathlib binder: over the
+nontrivial indices, which is the whole sum up to `lpInftyNontrivialEquiv`. -/
+theorem cstar_product_2_pu' {ι : Type*} {𝒜 : ι → Type*}
+    [∀ i, CStarAlgebra (𝒜 i)] [∀ i, PartialOrder (𝒜 i)] [∀ i, StarOrderedRing (𝒜 i)]
+    [PartialOrder (lp (fun j : {i // Nontrivial (𝒜 i)} => 𝒜 j) ∞)]
+    [StarOrderedRing (lp (fun j : {i // Nontrivial (𝒜 i)} => 𝒜 j) ∞)]
+    {ℬ : Type*} [CStarAlgebra ℬ] [PartialOrder ℬ] [StarOrderedRing ℬ]
+    (f : ∀ j : {i // Nontrivial (𝒜 i)}, ℬ →ₗ[ℂ] 𝒜 j) (hp : ∀ j, IsPositiveMap (f j))
+    (hu : ∀ j, IsUnitalMap (f j)) :
+    ∃! g : ℬ →ₗ[ℂ] lp (fun j : {i // Nontrivial (𝒜 i)} => 𝒜 j) ∞,
+      IsPositiveMap g ∧ IsUnitalMap g ∧
+        ∀ (j : {i // Nontrivial (𝒜 i)}) (b : ℬ),
+          (g b : ∀ j : {i // Nontrivial (𝒜 i)}, 𝒜 j) j = f j b :=
+  cstar_product_2_pu f hp hu
+
+end NontrivialSummands
 
 /-- **20aII** (`cstar-equaliser-1`, cstar.tex:3059, Exercise): for miu-maps
 `f, g : 𝒜 → ℬ` the set `ℰ = {a : f(a) = g(a)}` is a (closed) C*-subalgebra

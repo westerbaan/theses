@@ -554,65 +554,6 @@ anything: A8 was originally filed because `ϱ_Ω` did not exist in Lean, and
 `dsumRep` now does — all that is left is the statement question above.
 Cross-reference added 2026-08-26; see `docs/DECISIONS.md` §4.4.)*
 
-### A9. 51IX `Linfty-vn` — our rendering of "`q` is a miu-map" omits `ℂ`-homogeneity, exactly as `IsLinftyOf` did before D1
-
-**DISP** 51IX (`Linfty-vn`, vn.tex:1620), rendered as `Linfty_vn` in
-`Theses/A/VN/Basic.lean`.
-
-Our statement asks for `q : 𝓛^∞(X) → 𝒜` with
-
-* `q (f + g) = q f + q g`, `q (f · g) = q f · q g`, `q (star f) = star (q f)`,
-* `q 1 = 1`, `q f = 0 ↔ f =ᵐ[μ] 0`, and `q` surjective,
-
-and the surrounding comment calls this "`q` is a surjective miu-map on
-`𝓛^∞(X)`".  It is not: a miu-map is `ℂ`-**linear**, and the listed clauses
-make `q` only a ∗-*ring* homomorphism.  Complex conjugation `ℂ → ℂ` satisfies
-every one of them and is not `ℂ`-linear.
-
-This is the same defect that was found in `A/Proc/Duplicators.lean`'s
-`IsLinftyOf` and repaired on 2026-08-16 under **QUESTIONS D1** (ruled by Bas)
-by adding the field `smul : q (z • f) = z • q f`.  `IsLinftyOf` is otherwise
-field-for-field our 51IX, so the two renderings should agree.
-
-**Question.** May the clause `∀ (z : ℂ) f, IsBoundedMeasurable X f →
-q (z • f) = z • q f` be added to `Linfty_vn`?  It strengthens a statement,
-which needs a ruling.
-
-**Update (2026-08-17, session 80).**  51IX is now **proved**, with the
-statement exactly as it stands, and the omission **did not obstruct the
-proof**: the `q` that is constructed is `f ↦ (MemLp.toLp f)`, which is
-`ℂ`-linear, so the clause above is true of it and would cost one further
-`rep_injective` + `filter_upwards` line.  Adding it therefore requires no
-reproving at all — only the ruling.
-
-
-**Update (2026-08-21, repair wave 3): confirmed free a second time, and the
-omission has since started to cost something.**  The `A/VN` repair pass
-re-checked the point independently and reports exactly the session-80 finding
-— the constructed `q = (f ↦ MemLp.toLp f)` *is* `ℂ`-linear, so the clause is
-one line and no reproving — and left the row unrepaired only for want of this
-ruling.  (It also observed, incidentally, that the completeness hypothesis
-`hμ` is never used by the proof.)
-
-What is new is a **downstream** consequence, which A9 previously had none of.
-When 129X `continuous_finite_measure_space_not_duplicable` was put back on the
-thesis's own integral state, the state had to be transported from
-`Linfty_vn`'s presentation `p : 𝓛^∞(X) → 𝒞` onto an arbitrary `IsLinftyOf`
-presentation `q : 𝓛^∞(X) → 𝒜` along the comparison map `Ψ : q f ↦ p f`
-(`exists_integralNP`, `Theses/A/Proc/Duplicators.lean`).  Because `Linfty_vn`
-carries no `smul` clause while `IsLinftyOf` does, `Ψ` could only be built as a
-bijective ∗-**ring** map, and its **normality had to come from its being an
-order isomorphism** (`0 ≤ x` iff `x = c*c`, which needs no linearity), with
-`ℂ`-linearity of the resulting `ω` recovered afterwards from the integral
-formula.  Granting the clause would make `Ψ` a ∗-algebra isomorphism outright
-and let that detour go.
-
-For the record: the sibling defect **D1** is absent from this file because it
-was ruled and implemented — `IsLinftyOf` has carried
-`smul : q (z • f) = z • q f` since 2026-08-16 — so A9 is the **only**
-surviving instance of the gap, and it is in `Linfty_vn`, not in the
-presentation `Prop`.
-
 ### A10. 28II.4 `functional-calculus` — **our** statement drops the identification of the unique element with `f(a)`
 
 **28II**.4 (`functional-calculus`, cstar.tex:4299 — the exercise's part 4),

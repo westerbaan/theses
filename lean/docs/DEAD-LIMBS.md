@@ -609,7 +609,7 @@ the same point, which is the 123I shape.
 | 156II | `paschke_injective` | `B/Dils/Paschke.lean:3498` | 48 | 2/3 |
 | 160IV | `hilbmod_projthm_3` | `B/Dils/SelfDual.lean:1387` | 45 | 2/3 |
 | 96III | `ncp_uwlim_2` | `A/Proc/Measurement.lean:1797` | 39 | 2/3 |
-| 23II | `sqrt_lemma_monotone` | `A/CStar/Positive.lean:5994` | 35 | 3/6 |
+| 23II | `sqrt_lemma_monotone` | `A/CStar/Positive.lean:6138` | 35 | 3/6 |
 | 154III | `existence_paschke_2` | `B/Dils/Paschke.lean:1373` | 32 | 13/14 |
 
 `existence_paschke_2` was read and is **not** a fingerprint: it is 154III part
@@ -738,7 +738,7 @@ here:
   the one place the theses cite it — 194I.4 `AConvMCat.coprod_inl_injective` —
   is itself left under a costed machinery reason. Cannot be closed until that is.
 * **`paschke_pure` (171VII)** is **no longer dead** — see §9.
-* **`injective_nmiu_iso_on_image_2'` (48VI part 2)**, `A/VN/Basic.lean:4814`,
+* **`injective_nmiu_iso_on_image_2'` (48VI part 2)**, `A/VN/Basic.lean:4902`,
   74 lines.  **Moved here from §5.2, 2026-08-27**, where it had been nominated
   as a fingerprint on a premise that does not survive reading `vn.tex:1119`.
   It is that Lemma's *second* conclusion — an injective nmiu-map restricts to
@@ -1000,7 +1000,7 @@ deleted:
 | `Corner.isClosed_cornerSet` | `Measurement.lean:597`, `isClosed_cornerSet.isComplete` |
 | `IsCorner.isStarProjection` | `CornerTensor.lean:106`, `h.isStarProjection.isIdempotentElem` — **suffix and prefix at once** |
 | `isUnitaryCLM_one` | `CommutationAmplify.lean:374`, `isUnitaryCLM_one.opTensor …` |
-| `le_iff_matForm` | `Basic.lean:5252`, `le_iff_matForm.mpr` (and 2 more) |
+| `le_iff_matForm` | `Basic.lean:5349`, `le_iff_matForm.mpr` (and 2 more) |
 | `suppProj_eq_zero_iff` | `Projections.lean:2993`, `suppProj_eq_zero_iff.mp` |
 | `IsPowBase.denseRange_mul_self` | `ModularGroup.lean:380`, `h.denseRange_mul_self.induction_on` |
 

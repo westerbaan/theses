@@ -1670,12 +1670,12 @@ isomorphic over `𝓛^∞(X)` — both are surjective with kernel the a.e.-null
 functions — so `Ψ : 𝒜 → 𝒞`, `q f ↦ p f`, is a bijection, and `ω := τ ∘ Ψ`
 is a faithful np-functional on `𝒜` with `ω(q f) = ∫f dμ`.
 
-Two notes on the transport.  `Linfty_vn`'s presentation `p` is stated as a
-∗-*ring* map (it carries no `smul` clause, unlike our `IsLinftyOf` — cf. the
-`IsLinftyOf` docstring, which records the ruling of 2026-08-16 on the item
-then filed as **D1** in `QUESTIONS.md`), so `Ψ` is built as a ∗-ring
-isomorphism and its normality comes from its being an *order* isomorphism,
-which needs no linearity: `0 ≤ x` iff `x = c*c` in either algebra.
+Two notes on the transport.  `Ψ` is built as a ∗-ring isomorphism and its
+normality comes from its being an *order* isomorphism, which needs no
+linearity: `0 ≤ x` iff `x = c*c` in either algebra.  (This route dates from
+when `Linfty_vn`'s presentation `p` carried no `smul` clause; since 2026-09-02
+it does, QUESTIONS A9 now closed, deleted 2026-09-02, and the clause is simply
+not consumed here.)
 `ℂ`-linearity of `ω` is then recovered from the integral formula, where
 `q`'s own `smul` clause is available.  And the normalization `μ(X)⁻¹` is
 left off: nothing in 129X uses `ω 1 = 1`. -/
@@ -1686,7 +1686,7 @@ private theorem exists_integralNP [IsFiniteMeasure μ] (hμ : μ.IsComplete)
       (∀ f : X → ℂ, IsBoundedMeasurable X f → (ω (q f) : ℂ) = ∫ x, f x ∂μ) ∧
       (∀ a : 𝒜, 0 ≤ a → (ω a : ℂ) = 0 → a = 0) := by
   classical
-  obtain ⟨𝒞, iC, iP, iS, p, τ, hvn, hpsurj, hpmiu, hpone, hpker, ⟨τ', hτ'⟩,
+  obtain ⟨𝒞, iC, iP, iS, p, τ, hvn, hpsurj, hpmiu, -, hpone, hpker, ⟨τ', hτ'⟩,
     hτfaith, hτint⟩ := Linfty_vn X μ hμ
   letI := iC
   letI := iP

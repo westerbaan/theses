@@ -30795,3 +30795,63 @@ regenerated.  `Kaplansky.lean` recompiles clean.  Every exact check passes:
 `lean_line_check` (178 named references, 0 adrift after the five that my own
 edit moved were repaired), `vn_setting_check`, `cite_check`, and
 `kaplansky_witness.py` at 9 of 9.
+
+## Session 102 — two "unbounded" costings closed by changing the question, and one two-week-old ruling applied to its twin (workers on `Theses/A/CStar/{Positive,Matrices}.lean`, `Theses/A/VN/Basic.lean`, `Theses/B/Dils/HilbertModules.lean`; orchestrator on `Theses/A/Proc/Duplicators.lean`, `docs/`, `QUESTIONS.md`)
+
+### 1. The `[∀ i, Nontrivial (𝒜 i)]` binder: ten rows, one equivalence
+
+Ten audit rows across four files (20aI ×4, 34VI ×2, 42V, 47IV ×3) were
+`left-cost` for the same single binder, which is Mathlib's `NormOneClass` gate
+on the unital structure of `lp 𝒜 ∞`.  Every costing attacked it the same way —
+a competing ungated instance tower, 200-320 lines — and the 2026-08-29 attempt
+showed that route breaks three A/Proc modules through
+`linf X := lp (fun _ : X => ℂ) ∞`, leaving the figure "unbounded".
+
+The binder costs no content, and the way to say so needs no instance on
+`lp 𝒜 ∞` at all: zero summands contribute nothing, so restriction to
+`J := {i // Nontrivial (𝒜 i)}` is an isometric star-algebra isomorphism
+`lp 𝒜 ∞ ≃⋆ₐ[ℂ] lp (𝒜 ∘ Subtype.val) ∞` between the ungated non-unital
+C*-structures both sides already carry.  That is `lpInftyNontrivialEquiv`
+(`A/CStar/Positive.lean:4082`, ~70 lines, `norm_lpInftyNontrivialEquiv` for the
+isometry).  Each of the ten statements then gets a primed corollary over `J`
+whose proof is the gated theorem applied to the restricted family, the binder
+discharged by a section-local instance `fun j => j.2` (it has to be an instance
+and not a `haveI`, because the *types* mention the gated structure).  All three
+files compile clean; the ten rows are `repaired` with the earlier record
+summarised, and ten rows were added for the corollaries.  130IV's residue is
+the same binder and is re-costed at about ten lines, not done.
+
+### 2. 146IX clause (i): the "design decision" was the encoding's own answer
+
+The row said clause (i) — the ultranorm uniformity is "in general not given by
+a single norm" — needed a definition of "not normable" before any mathematics,
+and was "well above clause (iii), not started".  The tree encodes the uniformity
+as the family of seminorms `‖·‖_ω` over all np-functionals and has no
+`UniformSpace` to compare a norm against; in that encoding a generating norm
+would make finitely many seminorms dominate all of them, so the faithful
+statement is that no finite family does.  `unSeminorm_not_finitely_dominated`
+(`B/Dils/HilbertModules.lean:1522`) proves it on `B(ℓ²)` with `mulInner`: for
+any finite set of np-functionals, `pₙ = |n⟩⟨n|`, `aₙ = ∑ ω(pₙ)` is summable
+(partial sums of the `pₙ` are projections below `1`, so positivity alone bounds
+them — no normality needed), a summable `cₙ` with `cₙ/aₙ → ∞` comes from the
+tails, `ω₀` is the vector state at `(√cₙ)`, and `xₙ = (aₙ+2⁻ⁿ)^{-½}|n⟩⟨0|`.
+215 lines, first compile.  The `unSeminorm_le_norm_mul` row moves to `ok`.
+
+### 3. QUESTIONS A9 closed under the D1 ruling
+
+A9 asked whether `Linfty_vn` (51IX) may carry `q (z • f) = z • q f`; D1 ruled
+that exact defect for `IsLinftyOf` on 2026-08-16, and the omission is ours (the
+word "miu" includes ℂ-linearity).  The clause is added and proved by the
+existing `qmap_smul`; the one consumer, `exists_integralNP` in
+`A/Proc/Duplicators`, destructures and ignores it.  `A/VN/Basic.lean`
+recompiles clean.  A9 is deleted from `QUESTIONS.md`, its pointers repaired,
+DECISIONS §2.6 marked done.  If reading D1 that broadly is wrong, revert the
+clause and reopen.  A8, A10 and B13 are the same shape and are **not** touched:
+they have no sibling ruling, only the unanswered §2.1.
+
+### 4. Where the tree stands
+
+Nine `sorry`s, unchanged, all author-side.  `left-cost` 24 → 13, `repaired`
+28 → 38, `left-ruling` 11 → 10.  Every exact check clean; `sorry-map.html`
+regenerated.  Oleans of the four edited modules and their closure are being
+rebuilt after the commit.

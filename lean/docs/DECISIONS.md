@@ -23,10 +23,11 @@ list: it was proved on 2026-08-29** — see §4.2, which used to explain why it
 was waiting on mathematics rather than on you.
 
 Beyond the `sorry`s there are 100 open rows in `ERRATA.md` (those are
-corrections, not decisions, and are not repeated here) and **twelve** audit
+corrections, not decisions, and are not repeated here) and **eleven** audit
 rows in `docs/audit/` marked `left-ruling`, re-counted 2026-08-29 after a
-pass that re-derived every verdict in the audit: five are §2 (191II §2.3,
-30X and 69IX §2.4, 28II §2.5, 51IX §2.6), two are §3 (132III §3.2, 34V
+pass that re-derived every verdict in the audit (twelve then; 51IX §2.6 was
+closed on 2026-09-02): four are §2 (191II §2.3,
+30X and 69IX §2.4, 28II §2.5), two are §3 (132III §3.2, 34V
 §3.3), and four are §1 (199V §1.1, 215II §1.2, and 139XI §1.4 and 179III.2
 §1.5, which are the two that hold up a `sorry`).
 
@@ -54,7 +55,7 @@ in §4 rather than in front of you.
 | 2.3 | 191II | what does "equivalent to a subcategory" mean? | 1 audit row | (c) weaken to faithful |
 | 2.4 | 30X | may clause (1) name `ϱ_Ω`? | 1 audit row | (a) yes |
 | 2.5 | 28II.4 | may the unique element be identified with `f(a)`? | 1 audit row | (a) yes |
-| 2.6 | 51IX | may `q` be asked to be ℂ-linear? | 1 audit row | (a) yes |
+| 2.6 | 51IX | may `q` be asked to be ℂ-linear? — done 2026-09-02 under D1 | 0 audit rows | (a) yes |
 | 2.7 | 180V | should the effect object be pinned? | 1 audit row | (a) yes |
 | 3.1 | 101VII.1 | does the middle clause gain `aqa* ≤ p`? | nothing | (a) yes — erratum |
 | 3.2 | 132III.4/.5, 123II.2 | may "=" be an equivalence of categories? | nothing | (b) reword |
@@ -466,13 +467,16 @@ of exactly one shape: *our statement says less than the printed one; may we make
 it match?*
 
 The audit found **174 such rows** (`weaker`) out of 2248 when it ran on
-2026-08-20.  **Re-counted 2026-08-29 it is 54 of 2504** — the intervening
+2026-08-20.  **Re-counted 2026-08-29 it is 54 of 2504** (twelve of those closed
+on 2026-09-02: §2.6, and the ten `lp 𝒜 ∞` binder rows of 20aI, 34VI, 42V and
+47IV, which a 70-line reindexing equivalence settled) — the intervening
 sessions repaired most of them as ordinary work, which is what option (a)
 below anticipates.  So the scope of this ruling is now a third of what the
 paragraph was written for.  (The other two columns moved the other way:
 `stronger` 49 → 55, `differs` 30 → 37, for 146 rows not `ok` against the
-recorded 253.)  A8, A9, A10 and B13 below are four of them that happen to
-have been noticed by hand before the audit ran.
+recorded 253.)  A8, A10 and B13 below are three of them that happen to
+have been noticed by hand before the audit ran (A9 was a fourth, closed on
+2026-09-02 under the D1 ruling, §2.6).
 
 **Options.**
 
@@ -650,38 +654,16 @@ committed because it changes a statement); with it, the iff form follows from
 the uniqueness half already proved.  Nothing downstream uses
 `functional_calculus_4`.
 
-### 2.6 — 51IX `Linfty-vn`: may `q` be asked to be ℂ-linear?
+### 2.6 — 51IX `Linfty-vn`: may `q` be asked to be ℂ-linear? — **done 2026-09-02**
 
-*(`QUESTIONS.md` A9.  Audit row `avn-basic.csv:111`, `left-ruling`.  Lean:
-`Linfty_vn`.)*
-
-**What is being asked.**  Our statement asks for `q : 𝓛^∞(X) → 𝒜` additive,
-multiplicative, star-preserving, unital, with kernel the a.e.-null functions,
-and surjective — and the surrounding comment calls this "a surjective miu-map".
-It is not: a miu-map is ℂ-**linear**, and those clauses make `q` only a
-∗-*ring* homomorphism.  Complex conjugation `ℂ → ℂ` satisfies every one of them
-and is not ℂ-linear.  May the clause `q (z • f) = z • q f` be added?
-
-**This is the same defect that was ruled and fixed once already.**
-`A/Proc/Duplicators`' `IsLinftyOf` had exactly this gap; it was ruled by Bas on
-2026-08-16 and has carried `smul : q (z • f) = z • q f` since.  `IsLinftyOf` is
-otherwise field-for-field our 51IX, so the two renderings should agree.  A9 is
-the **only** surviving instance.
-
-**Options.**  **(a)** Add the clause.  **(b)** Leave it.
-
-**Recommendation: (a).**  Confirmed free twice, most recently by the `A/VN`
-repair pass: the `q` actually constructed is `f ↦ MemLp.toLp f`, which *is*
-ℂ-linear, so the clause costs one `rep_injective` + `filter_upwards` line and no
-reproving.  And it has since started to **cost** something: when 129X was put
-back on the thesis's own integral state, the state had to be transported from
-`Linfty_vn`'s presentation onto an arbitrary `IsLinftyOf` presentation along a
-comparison map `Ψ`; because `Linfty_vn` carries no `smul` clause while
-`IsLinftyOf` does, `Ψ` could only be built as a bijective ∗-*ring* map, and its
-normality had to come from its being an order isomorphism, with ℂ-linearity
-recovered afterwards from the integral formula.  Granting the clause makes `Ψ` a
-∗-algebra isomorphism outright and lets that detour go.  *(Noted in passing: the
-completeness hypothesis `hμ` is never used by the proof.)*
+*(Was `QUESTIONS.md` A9, now deleted.  Audit row `avn-basic.csv` `Linfty_vn`,
+`repaired`.)*  The clause `q (z • f) = z • q f` was added to `Linfty_vn` and
+proved by the existing `qmap_smul`, on the ground that the D1 ruling of
+2026-08-16 (add `smul` to `IsLinftyOf`) is a ruling on this exact defect — the
+word "miu" includes ℂ-linearity, so the omission was ours — and needs no
+second asking.  Nothing was reproved; the one consumer in `A/Proc/Duplicators`
+ignores the new conjunct.  If this reading of D1 is too broad, revert
+`Linfty_vn`'s clause and reopen the item.
 
 ### 2.7 — 180V: should `effectus_vn_partial` pin the effect object?
 

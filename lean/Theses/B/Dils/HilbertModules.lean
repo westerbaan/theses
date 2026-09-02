@@ -1216,8 +1216,9 @@ quantitative half is `unSeminorm_le_norm_mul` and its converse ("but not
 necessarily the other way around") is `unTendsto_not_norm_tendsto` below,
 whose counterexample is `|n⟩⟨0|` on `ℓ²`.  146IX's remaining clause — that
 the ultranorm uniformity is "in general not given by a single norm" — is
-stated nowhere in this tree.  **146X** (Remarks) has nothing to
-formalize. -/
+`unSeminorm_not_finitely_dominated` below: on `B(ℓ²)` no finite family of
+the `‖·‖_ω` dominates all of them, which is what a generating single norm
+would force.  **146X** (Remarks) has nothing to formalize. -/
 noncomputable def unSeminorm {X : Type v} [AddCommGroup X]
     (ω : NPFunctional 𝒷) (B : X → X → 𝒷) (x : X) : ℝ :=
   Real.sqrt (ω (B x x)).re
@@ -1344,6 +1345,263 @@ theorem unTendsto_not_norm_tendsto :
     refine squeeze_zero (fun n => omegaNorm_nonneg _ _) (fun n => ?_) hbd
     have h := omegaNorm_mul_le ω (ketbraNat n 0 - T) 1
     rwa [mul_one] at h
+
+/-! #### 146IX's first clause: the ultranorm uniformity is not normable
+
+`unSeminorm_not_finitely_dominated` below, on the same `𝒷 = X = B(ℓ²)` with
+`mulInner`.  Throughout `pₙ = |n⟩⟨n|` is `ketbraNat n n`, and the elements
+tested are the multiples `t • |n⟩⟨0|`, for which
+`‖t • |n⟩⟨0|‖_ω = |t| ω(pₙ)^½` (`nsn_unSeminorm_smul_ketbraNat`). -/
+
+/-- An np-functional sends positive elements to nonnegative reals. -/
+private theorem nsn_np_re_nonneg {A : Type*} [CStarAlgebra A] [PartialOrder A]
+    [StarOrderedRing A] (ω : NPFunctional A) {a : A} (ha : 0 ≤ a) :
+    0 ≤ (ω a).re := by
+  have h0 : (ω (0 : A) : ℂ) = 0 := map_zero ω.toPositiveLinearMap
+  have h1 : (ω (0 : A) : ℂ) ≤ ω a := ω.monotone ha
+  rw [h0] at h1
+  simpa using (Complex.le_def.mp h1).1
+
+/-- An np-functional is monotone, in particular on real parts. -/
+private theorem nsn_np_re_mono {A : Type*} [CStarAlgebra A] [PartialOrder A]
+    [StarOrderedRing A] (ω : NPFunctional A) {a b : A} (hab : a ≤ b) :
+    (ω a).re ≤ (ω b).re := by
+  have h1 : (ω a : ℂ) ≤ ω b := ω.monotone hab
+  exact (Complex.le_def.mp h1).1
+
+/-- `pₙ = (|0⟩⟨n|)* |0⟩⟨n|`. -/
+private theorem nsn_star_mul_self_ketbraNat (n : ℕ) :
+    star (ketbraNat 0 n) * ketbraNat 0 n = ketbraNat n n := by
+  rw [(vn_counterexamples_1 0 0 n 0).1, (vn_counterexamples_1 n 0 0 n).2, ite_eq_left rfl]
+
+/-- `pₙ ≥ 0`. -/
+private theorem nsn_ketbraNat_diag_nonneg (n : ℕ) :
+    (0 : ℓ² →L[ℂ] ℓ²) ≤ ketbraNat n n :=
+  (nsn_star_mul_self_ketbraNat n) ▸ star_mul_self_nonneg (ketbraNat 0 n)
+
+/-- `‖t • |n⟩⟨0|‖_ω = |t| ω(pₙ)^½`, because
+`(t |n⟩⟨0|) (t |n⟩⟨0|)* = t² |n⟩⟨0|0⟩⟨n| = t² pₙ`. -/
+private theorem nsn_unSeminorm_smul_ketbraNat (ω : NPFunctional (ℓ² →L[ℂ] ℓ²))
+    (t : ℝ) (n : ℕ) :
+    unSeminorm ω (mulInner (ℓ² →L[ℂ] ℓ²)) ((t : ℂ) • ketbraNat n 0)
+      = |t| * Real.sqrt (ω (ketbraNat n n)).re := by
+  have hct : star ((t : ℂ)) = (t : ℂ) := Complex.conj_ofReal t
+  have hstar : star ((t : ℂ) • ketbraNat n 0) = (t : ℂ) • ketbraNat 0 n := by
+    rw [star_smul, hct, (vn_counterexamples_1 0 0 0 n).1]
+  have hon : omegaNorm (ℓ² →L[ℂ] ℓ²) ω (ketbraNat 0 n)
+      = Real.sqrt (ω (ketbraNat n n)).re := by
+    rw [omegaNorm, nsn_star_mul_self_ketbraNat n]
+  rw [unSeminorm_mulInner_eq_omegaNorm, hstar, omegaNorm_smul, hon,
+    Complex.norm_real, Real.norm_eq_abs]
+
+/-- `∑_{n<N} pₙ ≤ 1`: the partial sum `q` is a self-adjoint idempotent, so
+`1 − q = (1 − q)* (1 − q) ≥ 0`. -/
+private theorem nsn_sum_ketbraNat_le_one (N : ℕ) :
+    (∑ n ∈ Finset.range N, ketbraNat n n) ≤ (1 : ℓ² →L[ℂ] ℓ²) := by
+  obtain ⟨q, hq⟩ : ∃ q : ℓ² →L[ℂ] ℓ², q = ∑ n ∈ Finset.range N, ketbraNat n n :=
+    ⟨_, rfl⟩
+  rw [← hq]
+  have hstar : star q = q := by
+    rw [hq, star_sum]
+    exact Finset.sum_congr rfl fun n _ => (vn_counterexamples_1 0 0 n n).1
+  have hidem : q * q = q := by
+    rw [hq, Finset.sum_mul]
+    refine Finset.sum_congr rfl fun n hn => ?_
+    have hsingle : ∑ m ∈ Finset.range N, ketbraNat n n * ketbraNat m m
+        = ketbraNat n n * ketbraNat n n :=
+      Finset.sum_eq_single n
+        (fun m _ hmn => by rw [(vn_counterexamples_1 m m n n).2, ite_eq_right (Ne.symm hmn)])
+        (fun h => absurd hn h)
+    rw [Finset.mul_sum, hsingle, (vn_counterexamples_1 n n n n).2, ite_eq_left rfl]
+  have hpos : (0 : ℓ² →L[ℂ] ℓ²) ≤ 1 - q := by
+    have hexp : (1 - q) * (1 - q) = 1 - q - q + q * q := by
+      simp only [sub_mul, mul_sub, one_mul, mul_one]
+      abel
+    have h : star (1 - q) * (1 - q) = 1 - q := by
+      rw [star_sub, star_one, hstar, hexp, hidem]
+      abel
+    exact h ▸ star_mul_self_nonneg (1 - q)
+  exact sub_nonneg.mp hpos
+
+/-- The partial sums `∑_{n<N} ω(pₙ)` are bounded by `ω(1)`. -/
+private theorem nsn_sum_re_le (ω : NPFunctional (ℓ² →L[ℂ] ℓ²)) (N : ℕ) :
+    ∑ n ∈ Finset.range N, (ω (ketbraNat n n)).re ≤ (ω 1).re := by
+  have hsum : ω (∑ n ∈ Finset.range N, ketbraNat n n)
+      = ∑ n ∈ Finset.range N, ω (ketbraNat n n) :=
+    map_sum ω.toPositiveLinearMap _ _
+  calc ∑ n ∈ Finset.range N, (ω (ketbraNat n n)).re
+      = (ω (∑ n ∈ Finset.range N, ketbraNat n n)).re := by rw [hsum, Complex.re_sum]
+    _ ≤ (ω 1).re := nsn_np_re_mono ω (nsn_sum_ketbraNat_le_one N)
+
+/-- The one piece of real analysis behind the theorem: for a *positive
+summable* sequence `b` there is a positive summable `c` with `cₙ / bₙ → ∞`.
+Take the tails `rₙ = ∑_{m ≥ n} bₘ` and `cₙ = √rₙ − √r_{n+1} > 0`: then
+`cₙ (√rₙ + √r_{n+1}) = bₙ`, so `cₙ / bₙ ≥ 1 / (2√rₙ) → ∞`, while
+`∑_{n<N} cₙ = √r₀ − √r_N ≤ √r₀`. -/
+private theorem nsn_exists_summable_div_atTop {b : ℕ → ℝ} (hbpos : ∀ n, 0 < b n)
+    (hb : Summable b) :
+    ∃ c : ℕ → ℝ, (∀ n, 0 < c n) ∧ Summable c ∧
+      Tendsto (fun n => c n / b n) atTop atTop := by
+  have hbs : ∀ n : ℕ, Summable fun m => b (m + n) := fun n =>
+    (summable_nat_add_iff n).2 hb
+  obtain ⟨r, hr⟩ : ∃ r : ℕ → ℝ, ∀ n, r n = ∑' m, b (m + n) := ⟨_, fun _ => rfl⟩
+  have hrnonneg : ∀ n, 0 ≤ r n := by
+    intro n
+    rw [hr]
+    exact tsum_nonneg fun m => (hbpos _).le
+  have hrec : ∀ n, r n = b n + r (n + 1) := by
+    intro n
+    have key : ∑' m, b (m + n) = b (0 + n) + ∑' m, b (m + 1 + n) :=
+      (hbs n).tsum_eq_zero_add
+    have h2 : ∑' m, b (m + 1 + n) = ∑' m, b (m + (n + 1)) :=
+      tsum_congr fun m => by rw [show m + 1 + n = m + (n + 1) from by omega]
+    rw [hr n, hr (n + 1), key, h2, zero_add]
+  have hrpos : ∀ n, 0 < r n := by
+    intro n
+    rw [hrec n]
+    exact add_pos_of_pos_of_nonneg (hbpos n) (hrnonneg (n + 1))
+  have hrlt : ∀ n, r (n + 1) < r n := by
+    intro n
+    have h := hrec n
+    linarith [hbpos n]
+  have hrtend : Tendsto r atTop (𝓝 0) :=
+    (tendsto_sum_nat_add b).congr fun n => (hr n).symm
+  have hcpos : ∀ n, 0 < Real.sqrt (r n) - Real.sqrt (r (n + 1)) := fun n =>
+    sub_pos.mpr (Real.sqrt_lt_sqrt (hrnonneg (n + 1)) (hrlt n))
+  refine ⟨fun n => Real.sqrt (r n) - Real.sqrt (r (n + 1)), hcpos, ?_, ?_⟩
+  · refine summable_of_sum_range_le (c := Real.sqrt (r 0))
+      (fun n => (hcpos n).le) fun N => ?_
+    show (∑ i ∈ Finset.range N, (Real.sqrt (r i) - Real.sqrt (r (i + 1))))
+      ≤ Real.sqrt (r 0)
+    rw [Finset.sum_range_sub' (fun n => Real.sqrt (r n)) N]
+    have h : 0 ≤ Real.sqrt (r N) := Real.sqrt_nonneg _
+    linarith
+  · -- `cₙ / bₙ ≥ 1 / (2√rₙ) → ∞`
+    have hsqrt : Tendsto (fun n => Real.sqrt (r n)) atTop (𝓝 0) := by
+      have h := (Real.continuous_sqrt.tendsto (0 : ℝ)).comp hrtend
+      simpa [Function.comp_def] using h
+    have hg : Tendsto (fun n => 2 * Real.sqrt (r n)) atTop (𝓝[>] 0) := by
+      refine tendsto_nhdsWithin_of_tendsto_nhds_of_eventually_within _ ?_ ?_
+      · simpa using hsqrt.const_mul 2
+      · filter_upwards with n
+        exact mul_pos (by norm_num) (Real.sqrt_pos.mpr (hrpos n))
+    have hginv : Tendsto (fun n => (2 * Real.sqrt (r n))⁻¹) atTop atTop :=
+      hg.inv_tendsto_nhdsGT_zero
+    refine tendsto_atTop_mono (fun n => ?_) hginv
+    have hu : 0 < Real.sqrt (r n) := Real.sqrt_pos.mpr (hrpos n)
+    have hv : 0 ≤ Real.sqrt (r (n + 1)) := Real.sqrt_nonneg _
+    have hvu : Real.sqrt (r (n + 1)) < Real.sqrt (r n) :=
+      Real.sqrt_lt_sqrt (hrnonneg (n + 1)) (hrlt n)
+    have h1 : Real.sqrt (r n) ^ 2 = r n := Real.sq_sqrt (hrnonneg n)
+    have h2 : Real.sqrt (r (n + 1)) ^ 2 = r (n + 1) := Real.sq_sqrt (hrnonneg (n + 1))
+    have hprod : (Real.sqrt (r n) - Real.sqrt (r (n + 1))) *
+        (Real.sqrt (r n) + Real.sqrt (r (n + 1))) = b n := by
+      have h3 := hrec n
+      nlinarith [h1, h2, h3]
+    have hden : (0 : ℝ) < 2 * Real.sqrt (r n) := by linarith
+    show (2 * Real.sqrt (r n))⁻¹
+      ≤ (Real.sqrt (r n) - Real.sqrt (r (n + 1))) / b n
+    rw [le_div_iff₀ (hbpos n), inv_mul_le_iff₀ hden]
+    nlinarith [hprod, sq_nonneg (Real.sqrt (r n) - Real.sqrt (r (n + 1)))]
+
+/-- **146IX** (`dils-ultranorm`, dils.tex:1915, Beware), first clause: the
+ultranorm uniformity is *"in general not given by a single norm"*.  The
+uniformity is encoded here as the family of seminorms `‖·‖_ω` over all
+np-functionals, so a single norm generating it would make finitely many
+`‖·‖_ω` dominate all of them; on `𝒷 = X = B(ℓ²)` with `mulInner` that fails:
+for every finite family `ω₁, …, ωₘ` there is an np-functional `ω₀` and a
+sequence bounded by `1` in every `‖·‖_{ωₖ}` whose `‖·‖_{ω₀}` tends to
+infinity.
+
+The witness.  With `pₙ = |n⟩⟨n|` put `aₙ = ∑_{ω ∈ s} ω(pₙ)`, which is
+summable because `∑_{n<N} pₙ ≤ 1` (`nsn_sum_ketbraNat_le_one`), and
+`bₙ = aₙ + 2⁻ⁿ > 0`.  Pick, by `nsn_exists_summable_div_atTop`, a positive
+summable `c` with `cₙ/bₙ → ∞`; let `ξ ∈ ℓ²` have coordinates `√cₙ` and
+`ω₀ = ⟪ξ, (·) ξ⟫`, so that `ω₀(pₙ) = cₙ`.  Then `xₙ = bₙ^{-½} |n⟩⟨0|` has
+`‖xₙ‖_ω = √(ω(pₙ)/bₙ) ≤ 1` for `ω ∈ s`, while `‖xₙ‖_{ω₀} = √(cₙ/bₙ) → ∞`. -/
+theorem unSeminorm_not_finitely_dominated (s : Finset (NPFunctional (ℓ² →L[ℂ] ℓ²))) :
+    ∃ (ω₀ : NPFunctional (ℓ² →L[ℂ] ℓ²)) (x : ℕ → ℓ² →L[ℂ] ℓ²),
+      (∀ ω ∈ s, ∀ n, unSeminorm ω (mulInner (ℓ² →L[ℂ] ℓ²)) (x n) ≤ 1) ∧
+      Tendsto (fun n => unSeminorm ω₀ (mulInner (ℓ² →L[ℂ] ℓ²)) (x n)) atTop atTop := by
+  -- `aₙ = ∑_{ω ∈ s} ω(pₙ)` is nonnegative and summable
+  obtain ⟨a, ha⟩ : ∃ a : ℕ → ℝ, ∀ n, a n = ∑ ω ∈ s, (ω (ketbraNat n n)).re :=
+    ⟨_, fun _ => rfl⟩
+  have hanonneg : ∀ n, 0 ≤ a n := by
+    intro n
+    rw [ha]
+    exact Finset.sum_nonneg fun ω _ => nsn_np_re_nonneg ω (nsn_ketbraNat_diag_nonneg n)
+  have hasummable : Summable a := by
+    refine summable_of_sum_range_le (c := ∑ ω ∈ s, (ω 1).re) hanonneg fun N => ?_
+    simp only [ha]
+    rw [Finset.sum_comm]
+    exact Finset.sum_le_sum fun ω _ => nsn_sum_re_le ω N
+  -- `bₙ = aₙ + 2⁻ⁿ` is positive and summable
+  obtain ⟨b, hb⟩ : ∃ b : ℕ → ℝ, ∀ n, b n = a n + (1 / 2 : ℝ) ^ n := ⟨_, fun _ => rfl⟩
+  have hbpos : ∀ n, 0 < b n := by
+    intro n
+    have h2 : (0 : ℝ) < (1 / 2 : ℝ) ^ n := by positivity
+    rw [hb]
+    linarith [hanonneg n]
+  have hbsummable : Summable b :=
+    (hasummable.add summable_geometric_two).congr fun n => (hb n).symm
+  obtain ⟨c, hcpos, hcsummable, hctend⟩ := nsn_exists_summable_div_atTop hbpos hbsummable
+  -- the vector `ξ ∈ ℓ²` with coordinates `√cₙ`, and `ω₀ = ⟪ξ, (·) ξ⟫`
+  have hmem : Memℓp (fun n : ℕ => ((Real.sqrt (c n) : ℝ) : ℂ)) 2 := by
+    have hpow : ∀ n : ℕ,
+        ‖((Real.sqrt (c n) : ℝ) : ℂ)‖ ^ (2 : ENNReal).toReal = c n := by
+      intro n
+      have h1 : ‖((Real.sqrt (c n) : ℝ) : ℂ)‖ = Real.sqrt (c n) := by
+        rw [Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (Real.sqrt_nonneg _)]
+      rw [h1, show (2 : ENNReal).toReal = ((2 : ℕ) : ℝ) by norm_num, Real.rpow_natCast,
+        Real.sq_sqrt (hcpos n).le]
+    exact memℓp_gen (hcsummable.congr fun n => (hpow n).symm)
+  obtain ⟨ξ, hxi⟩ : ∃ ξ : ℓ², ∀ n : ℕ, (ξ : ℕ → ℂ) n = ((Real.sqrt (c n) : ℝ) : ℂ) :=
+    ⟨⟨fun n => ((Real.sqrt (c n) : ℝ) : ℂ), hmem⟩, fun _ => rfl⟩
+  have hket : ∀ n : ℕ, ketbraNat n n ξ
+      = (⟪(lp.single 2 n (1 : ℂ) : ℓ²), ξ⟫ : ℂ) • (lp.single 2 n (1 : ℂ) : ℓ²) :=
+    fun _ => rfl
+  have hval : ∀ n : ℕ, ((vectorNP ξ) (ketbraNat n n) : ℂ) = ((c n : ℝ) : ℂ) := by
+    intro n
+    have e1 : (⟪(lp.single 2 n (1 : ℂ) : ℓ²), ξ⟫ : ℂ) = ((Real.sqrt (c n) : ℝ) : ℂ) := by
+      rw [lp.inner_single_left]
+      simp [hxi n]
+    have e2 : (⟪ξ, (lp.single 2 n (1 : ℂ) : ℓ²)⟫ : ℂ) = ((Real.sqrt (c n) : ℝ) : ℂ) := by
+      rw [lp.inner_single_right]
+      simp [hxi n]
+    rw [vectorNP_apply, hket n, inner_smul_right, e1, e2, ← Complex.ofReal_mul,
+      Real.mul_self_sqrt (hcpos n).le]
+  have hre : ∀ n : ℕ, ((vectorNP ξ) (ketbraNat n n)).re = c n := by
+    intro n
+    rw [hval n, Complex.ofReal_re]
+  refine ⟨vectorNP ξ, fun n => (((1 : ℝ) / Real.sqrt (b n) : ℝ) : ℂ) • ketbraNat n 0,
+    ?_, ?_⟩
+  · -- the family `s` sees the sequence as bounded by `1`
+    intro ω hω n
+    have hbs : 0 < Real.sqrt (b n) := Real.sqrt_pos.mpr (hbpos n)
+    have h1 : (ω (ketbraNat n n)).re ≤ a n := by
+      rw [ha]
+      exact Finset.single_le_sum
+        (f := fun ω : NPFunctional (ℓ² →L[ℂ] ℓ²) => (ω (ketbraNat n n)).re)
+        (fun ω' _ => nsn_np_re_nonneg ω' (nsn_ketbraNat_diag_nonneg n)) hω
+    have hle : (ω (ketbraNat n n)).re ≤ b n := by
+      have h2 : (0 : ℝ) < (1 / 2 : ℝ) ^ n := by positivity
+      rw [hb]
+      linarith
+    show unSeminorm ω (mulInner (ℓ² →L[ℂ] ℓ²))
+      ((((1 : ℝ) / Real.sqrt (b n) : ℝ) : ℂ) • ketbraNat n 0) ≤ 1
+    rw [nsn_unSeminorm_smul_ketbraNat, abs_of_pos (one_div_pos.mpr hbs),
+      div_mul_eq_mul_div, one_mul, div_le_one hbs]
+    exact Real.sqrt_le_sqrt hle
+  · -- but `ω₀` does not
+    have hform : ∀ n : ℕ, unSeminorm (vectorNP ξ) (mulInner (ℓ² →L[ℂ] ℓ²))
+        ((((1 : ℝ) / Real.sqrt (b n) : ℝ) : ℂ) • ketbraNat n 0)
+        = Real.sqrt (c n / b n) := by
+      intro n
+      have hbs : 0 < Real.sqrt (b n) := Real.sqrt_pos.mpr (hbpos n)
+      rw [nsn_unSeminorm_smul_ketbraNat, hre n, abs_of_pos (one_div_pos.mpr hbs),
+        Real.sqrt_div (hcpos n).le, div_mul_eq_mul_div, one_mul]
+    simp only [hform]
+    simpa [Function.comp_def] using Real.tendsto_sqrt_atTop.comp hctend
 
 end Converse
 
