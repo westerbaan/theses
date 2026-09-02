@@ -2158,7 +2158,7 @@ part 1: if `(𝒫, ϱ, h)` is a Paschke dilation of `φ : A → B` and
 `c ∘ φ`.
 
 The author's solution (`bsols.tex`, `dils-filter-basics-exercise`.1) is
-transcribed, with **two divergences**, both recorded in PROVING-LOG.
+transcribed, with **one divergence**, recorded in PROVING-LOG.
 
 *(i)* The solution first assumes `φ(1) ≤ 1`, so that the mediating
 `h' : 𝒫' → 𝒞` of a competing triple satisfies `h'(1) = c(φ(1)) ≤ c(1) ≤ b`
@@ -2168,9 +2168,9 @@ rescaling is done to `h'` alone — `λ := (‖φ(1)‖+1)⁻¹` makes `λ h'(1)
 and the factorisation `h''` of `λ h'` is scaled back by `λ⁻¹` — which needs
 no case split and no appeal to 140X.4.
 
-*(ii)* Where the solution derives `φ = h'' ∘ ϱ'` and the uniqueness of `σ`
-from *uniqueness* in `c`'s universal property, we use the injectivity of `c`
-(**169XII**) directly; it is proved above and is the same fact.
+*(Corrected 2026-09-03: a second divergence recorded here was false.  The
+solution too invokes `dils-filters-injective` for `φ = h'' ∘ ϱ'` and for
+`h ∘ σ' = h''`, and takes uniqueness of `σ` from `𝒫`'s own property.)*
 
 **No `[VonNeumannAlgebra]` binders** on `A`, `B`, `C`, where the exercise
 says "between von Neumann algebras".  As for `dils_filters_injective`, this
