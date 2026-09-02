@@ -5,17 +5,16 @@ lines 4082–4279.
 
   parsec 1580:  the Kaplansky density theorem for Hilbert C*-modules
 
-**158Ia** and **158II** are proved (158II through the linking algebra, at the
-end of the file; it uses **150II** `dils_completion`, which is now itself
-proved, so 158II is unconditional); **three** of the four **158V** estimates are
-`sorry` (they are *false*, see below), and the fourth — `A₂`,
-`kaplansky_hilbmod_A₂` — is **proved**: it is the one the counterexample
-never touched, and the thesis's own Cauchy–Schwarz argument does close it.
-The thesis's route to 158II is therefore dead; the proof here runs the
-**linking algebra** `ℬᵃ(X ⊕ ℬ)` and thesis A's **74IV** `kaplansky`
-instead — see the section comment before `kaplansky_hilbmod_of_selfDual`,
-which is the self-dual case and is axiom-clean.  Two earlier partial results
-are kept, both still of interest:
+**158Ia** and **158II** are proved (158II unconditionally, through the linking
+algebra, at the end of the file; it uses **150II** `dils_completion`);
+**three** of the four **158V** estimates are `sorry` (they are *false*, see
+below), and the fourth — `A₂`, `kaplansky_hilbmod_A₂` — is **proved**: it is
+the one the counterexample never touched, and the thesis's own Cauchy–Schwarz
+argument does close it.  The thesis's route to 158II is therefore dead; the
+proof here runs the **linking algebra** `ℬᵃ(X ⊕ ℬ)` and thesis A's **74IV**
+`kaplansky` instead — see the section comment before
+`kaplansky_hilbmod_of_selfDual`, which is the self-dual case and is
+axiom-clean.  Two partial results are kept, both of independent interest:
 `kaplansky_hilbmod_of_weak` (158II reduces, by a Mazur-style variational
 argument, to *weak* bounded approximation) and
 `kaplansky_hilbmod_of_commutative` (the commutative case, proved through the
@@ -121,7 +120,7 @@ and each of the four terms is shown to converge ultraweakly to `0`; that
 gives `h y_α → h y` ultranorm.  The four estimates are the four theorems
 below.  (`A₁`, `A₁'` are dual to each other under swapping `y` and `y_α`,
 and so, *formally*, are `A₂`, `A₂'`; the thesis states — and uses — all four.
-That formal duality is what misled: swapping `y` and `y_α` also swaps which
+That formal duality is deceptive: swapping `y` and `y_α` also swaps which
 resolvent is the constant one, and the estimate is true on one side of the
 swap and false on the other.  See the ⚠ block.)
 
@@ -143,9 +142,9 @@ vector functional `ω₀ = ⟨e₁, · e₁⟩` gives, *independently of `n`*,
   `ω₀(⟨h y₀ - h yₙ, h y₀ - h yₙ⟩) = 1/9`
 
 so none of *those* tends to `0`.  The fourth value is `ω₀(A₂) = 0`, and that
-is **not** this one functional failing to see `A₂`, which is what this block
-said until 2026-08-29: `A₂` really does converge, for every `ω`, and
-`kaplansky_hilbmod_A₂` below proves it.  The asymmetry is which resolvent
+is **not** this one functional failing to see `A₂`: `A₂` really does
+converge, for every `ω`, and `kaplansky_hilbmod_A₂` below proves it.  The
+asymmetry is which resolvent
 moves with `α` — in `A₂` the varying one multiplies the *bounded* vector `y_α`
 and the constant one the *small* vector `y_α - y`, in `A₂'` the other way
 round — so the thesis's "the proofs for `A₂, A₂' → 0` are very similar"
@@ -160,27 +159,21 @@ the same display has `ω₀`-value `0`.
 (The left-hand half *is* fine: `⟨y_α-y, y_α(1+⟨y_α,y_α⟩)⁻¹⟩` is Cauchy–Schwarz
 against a vector of norm `≤ 1`, and the resolvent bounds below are exactly
 what that argument needs — and it is exactly the argument that closes `A₂`.)
-The three `sorry`s that remain are therefore *not* closable; see
-`PROVING-LOG.md` and `ERRATA.md`.
+The three `sorry`s that remain are therefore *not* closable; the defect is
+filed in `ERRATA.md` under **158V**.
 
-**The whole computation was re-checked in exact rational arithmetic on
-2026-08-28** and all nine recorded values reproduce: `scripts/kaplansky_witness.py`,
-which is a 3×3 matrix calculation over `ℚ` because everything above lives in the
-span of `e₁, e₂, eₙ`.  It is *not* a Lean proof — `docs/DECISIONS.md` §1.3 still
-records the falsity as disproved-on-paper — but it is reproducible, and it
-caught the two convention slips flagged in this block: read on the side the
-prose writes them, two of the six values come out `0`.
+All nine values above are checked in exact rational arithmetic by
+`scripts/kaplansky_witness.py`, a 3×3 matrix calculation over `ℚ` because
+everything here lives in the span of `e₁, e₂, eₙ`.  It is *not* a Lean proof —
+`docs/DECISIONS.md` §1.3 records the falsity as disproved-on-paper — but it is
+reproducible.
 
-Two further defects fell out of the same computation.  (i) `kaplansky-splitting`
-is off by a factor `4`: with `h y = 2(1+⟨y,y⟩)⁻¹·y` — the scalar on the **left**,
-which is the side this file's mirrored `⟨a,b⟩ = b a*` forces; on the right the
-value is `0`, not `1/9` — the left-hand side carries the square of that `2`, and
+The same computation exhibits a further defect: `kaplansky-splitting` is off by
+a factor `4`.  With `h y = 2(1+⟨y,y⟩)⁻¹·y` — the scalar on the **left**, which
+is the side this file's mirrored `⟨a,b⟩ = b a*` forces; on the right the value
+is `0`, not `1/9` — the left-hand side carries the square of that `2`, and
 indeed `⟨h y - h yₙ, h y - h yₙ⟩ = 4(A₁+A₁'+A₂+A₂')`
-(`1/9 = 4·(-1/12 - 1/18 + 0 + 1/6)`).  (ii) *Ours*, repaired in session 94:
-`kaplansky_hilbmod_A₂` and `kaplansky_hilbmod_A₂'` below had been transcribed
-with the arguments of their inner products in the thesis's order rather than
-the mirrored one, which made them neither the thesis's terms nor the stars of
-those terms.
+(`1/9 = 4·(-1/12 - 1/18 + 0 + 1/6)`).
 
 All four terms are transcribed here as `star ∘ mirror`: the *full* mirror of a
 thesis product `ABC` of inner-product expressions is the reversed product
@@ -188,7 +181,7 @@ thesis product `ABC` of inner-product expressions is the reversed product
 thesis's factor order back again, with each inner product's two arguments
 swapped relative to a bare mirror.  That is what `A₁` and `A₁'` do (there
 every inner product is a self-adjoint `⟨y,y⟩` or `⟨y_α,y_α⟩`, so only the
-factor order is visible), and `A₂`, `A₂'` now do it too: the thesis's
+factor order is visible), and `A₂`, `A₂'` do it too: the thesis's
 `⟨y_α − y, y_α⟩` is `inner ℬ (y i) (y i - y₀)` and its `⟨y − y_α, y⟩` is
 `inner ℬ y₀ (y₀ - y i)`.  Since `star` is ultraweakly continuous and the
 claim is convergence to `0`, `star ∘ mirror` transcribes the thesis's claim
@@ -897,7 +890,7 @@ end WeakToStrong
 **158II** is provable outright, by a one-shot renormalization that is *not*
 the thesis's route (158V, which is false in general, is not used; nor is it
 true that this specializes the thesis's argument — the printed proof is dead
-even here).  The obstruction analyzed in `PROVING-LOG.md` — the *mirrored
+even here).  The obstruction to a direct argument — the *mirrored
 compression* `ω(c* · c)` with `c` not known in advance — vanishes when `ℬ`
 is commutative: `ω(r z r) = ω(r² z) ≤ ω(z)` for contractions `r`, because
 positive commuting elements have positive products.  Concretely: given `x`
@@ -914,8 +907,8 @@ Then `⟪d,d⟫ = cfc (t ↦ f_N(t)²t) b₀` has norm `≤ N²`, so `‖d‖ �
 
 whose first term is `≤ ‖w‖_ω δ` by Cauchy–Schwarz, and whose second is
 `≤ ‖w‖_ω ‖q•d₀‖_ω` with `‖q•d₀‖_ω² = ω(q b₀ q)`.  The one identity doing the
-real work is the *single-variable* factorization (avoiding the two-variable
-functional calculus `(√s−√t)² ≤ |s−t|` of the original sketch):
+real work is a *single-variable* factorization, which needs no two-variable
+functional calculus:
 
   `(1−f_N(t))² t = m_N(t)·(t − N²)`,   `m_N(t) := (√(max t N²) − N)/(√(max t N²) + N) ∈ [0,1]`,
 
@@ -927,8 +920,10 @@ the inner product at no cost.  Hence `ω(q b₀ q) ≤ δ² + 2‖x‖_ω δ`, a
 chosen from `η`, `‖w‖_ω`, `‖x‖_ω` alone closes the weak statement; the full
 (finitely-many-seminorms) statement follows by `kaplansky_hilbmod_of_weak`.
 
-This isolates exactly what the open general case is missing: a substitute
-for the commutation `ω(q z q) = ω(q² z)` on a one-sided module. -/
+This isolates exactly what stops the argument in general: it has no
+substitute for the commutation `ω(q z q) = ω(q² z)` on a one-sided module.
+(The general case is proved all the same, by the linking-algebra route of
+`kaplansky_hilbmod`.) -/
 
 section Commutative
 
@@ -1259,16 +1254,15 @@ restricted): the Kaplansky density theorem for Hilbert C*-modules over a
 *Class 2 — different proof*: the thesis's route (158V) is false even in
 general and unnecessary here; instead the weak bounded approximation is
 established one-shot by `kaplansky_weak_of_commutative` (where the mirror
-obstruction of `PROVING-LOG.md` vanishes) and upgraded by
+obstruction described in the section comment vanishes) and upgraded by
 `kaplansky_hilbmod_of_weak`.  The statement keeps 158II's exact hypotheses
 (`[VonNeumannAlgebra ℬ]` and `[CompleteSpace X]` are in fact not needed by
 this proof).
 
 The commutativity hypothesis is *not* 158II's: 158II is unconditional, and it
-is proved unconditionally below as `kaplansky_hilbmod` (session 56, and
-unconditional since session 61) by the linking-algebra route.  This
-declaration is kept as an independent second route to the commutative case,
-not because the general case is open. -/
+is proved unconditionally below as `kaplansky_hilbmod` by the linking-algebra
+route.  This declaration is kept as an independent second route to the
+commutative case, not because the general case is open. -/
 theorem kaplansky_hilbmod_of_commutative [VonNeumannAlgebra ℬ] [CompleteSpace X]
     (hcomm : ∀ a b : ℬ, a * b = b * a)
     (A : StarSubalgebra ℂ ℬ) (hA : IsClosed (A : Set ℬ))
@@ -1475,8 +1469,6 @@ private theorem norm_cor_le (z : X) : ‖cor (ℬ := ℬ) z‖ ≤ ‖z‖ := by
         rw [norm_lkX]
         exact mul_le_mul_of_nonneg_right norm_lkB_one_le (norm_nonneg _)
     _ = ‖z‖ := one_mul _
-
--- PART 2 (appended to Link.lean before `end Linking`)
 
 /-- `X` sits in the linking module ℂ-linearly. -/
 private noncomputable def lkXLM : X →ₗ[ℂ] Lk ℬ X where
@@ -2056,8 +2048,8 @@ which is **false** (see the section comment above and ERRATA.md); this proof
 instead runs the **linking algebra** `ℬᵃ(X ⊕ ℬ)` and thesis A's **74IV**
 `kaplansky`, as described before `kaplansky_hilbmod_of_selfDual`.  The
 general case is reduced to the self-dual one by the self-dual completion
-**150II** `dils_completion` (proved since session 61, so this theorem is
-now unconditional — `#print axioms` is clean): `D` is
+**150II** `dils_completion`, which is itself proved, so this theorem is
+unconditional (`#print axioms` is clean): `D` is
 ultranorm dense in `X`, `X` is ultranorm dense in its completion `X̄`, so `D`
 is ultranorm dense in `X̄` (`unDense_trans`), and both the norm bound and the
 ultranorm seminorms are computed from the inner product, which `η` preserves.

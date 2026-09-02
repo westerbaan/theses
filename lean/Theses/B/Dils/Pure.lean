@@ -14,16 +14,14 @@ All von Neumann algebras live in one universe `u`.  The corner algebras
 von Neumann structure — proc.tex **94II**, with unit `p` — is *proved*
 below rather than asserted.  Corners and filters (proc.tex parsecs 950–980
 of thesis A) are defined here from scratch following **169II** and
-**169VIII**; `Theses/A/Proc/Measurement.lean` has since acquired a parallel
+**169VIII**; `Theses/A/Proc/Measurement.lean` carries a parallel
 development, which should be merged with this one.
 
 `Theses.A.Proc.Measurement` *is* on this file's import path
 (`Theses.B.Dils.SelfDual → Theses.A.Proc.Tensor → Theses.A.Proc.Measurement`),
-so its declarations are already reachable — the earlier claim that it is
-"off this import path", repeated in several doc comments below, was wrong.
-The predicates nevertheless differ, in four ways.  All four are still true
-of the definitions as they stand; **two of them do not obstruct**, and the
-bridge is built out of them in `section ProcPure` at parsec 1700
+so its declarations are reachable here.  The predicates nevertheless differ,
+in four ways; **two of them do not obstruct**, and the bridge is built out of
+them in `section ProcPure` at parsec 1700
 (`isPureMap_of_procIsPure`, `procIsPure_of_factorisation`).
 
 * *Test objects.*  `IsCornerFor`/`IsFilterFor` here quantify over
@@ -50,17 +48,19 @@ bridge is built out of them in `section ProcPure` at parsec 1700
 * *`[VonNeumannAlgebra]` on the intermediate algebra.*  This is the one that
   bites.  `Theses.A.Proc.IsPure` is the inductive "filters, corners and
   their composites" of **170I**, and its `comp` constructor carries a
-  `[VonNeumannAlgebra]` binder on the algebra in the middle — its `filter`
-  and `corner` constructors carry none, so "on every intermediate algebra"
-  is right only for composites — where `IsPureMap` here is the normal form
-  with a bare C\*-algebra in the middle.  `procIsPure_of_factorisation` has
-  to take that binder as a hypothesis; dropping it would mean changing one
-  of the two definitions.
+  `[VonNeumannAlgebra]` binder on the algebra in the middle (its `filter`
+  and `corner` constructors carry none, so the binder bites for composites
+  only), where `IsPureMap` here is the normal form with a bare C\*-algebra in
+  the middle.  `procIsPure_of_factorisation` has to take that binder as a
+  hypothesis, but only because it is handed a *given* factorisation: for the
+  bare implication `IsPureMap φ → IsPure φ` the middle algebra can be
+  replaced by a von Neumann one, which is `su_procIsPure_of_isPureMap` in
+  `Theses/B/Eff/VNExamples.lean`.
 
-So proc.tex **100III** `Theses.A.Proc.pure_fundamental` *does* bridge
+So proc.tex **100III** `Theses.A.Proc.pure_fundamental` bridges
 `Theses.A.Proc.IsPure` to `IsPureMap`, in the direction 170I ⟹ 168IV, at von
-Neumann objects; the earlier claim that bridging "is a merge of the two
-developments, not a lemma" was wrong.  See `section ProcPure` at parsec 1700.
+Neumann objects — a lemma, not a merge of the two developments.  See
+`section ProcPure` at parsec 1700.
 -/
 import Theses.B.Dils.SelfDual
 
@@ -1297,20 +1297,16 @@ end StandardPaschkeCorner
 `(𝒫, ϱ, h)` is a Paschke dilation of a *unital* ncp-map, then `h` is a
 corner.
 
-⚠️ **The two `[VonNeumannAlgebra]` binders are new** (session 70).  They are
-the chapter's standing hypothesis — dils.tex **140II** opens "let
-`φ : 𝒜 → ℬ` be any ncp-map **between von Neumann algebras**", and every
-sibling statement about a `PaschkeTriple` carries them (**171VII**
-`paschke_pure`, **172X** `pure_ncp_extreme`) — but they were dropped in the
-first transcription of this point, which therefore claimed the lemma for
-arbitrary C\*-algebras `A`, `B`.  That is strictly stronger and out of
-reach: the proof below (and the thesis's) reduces to the *standard* dilation
-of **154III**, whose construction `existence_paschke` needs both algebras to
-be von Neumann.  This is the same repair the author ruled on for **170IV** —
-the item filed as **D5** in `QUESTIONS.md`, ruled "fix transcription"
-(i.e. restore the hypothesis) and implemented on 2026-08-16 in commit
-3aa13e7, which is also where that entry was deleted under the file's house
-rule; see PROVING-LOG session 70.
+The two `[VonNeumannAlgebra]` binders are the chapter's standing hypothesis:
+dils.tex **140II** opens "let `φ : 𝒜 → ℬ` be any ncp-map **between von
+Neumann algebras**", and every sibling statement about a `PaschkeTriple`
+carries them (**171VII** `paschke_pure`, **172X** `pure_ncp_extreme`).
+Without them the lemma would be claimed for arbitrary C\*-algebras `A`, `B`,
+which is strictly stronger and out of reach: the proof below (and the
+thesis's) reduces to the *standard* dilation of **154III**, whose
+construction `existence_paschke` needs both algebras to be von Neumann.  The
+author ruled the same point for **170IV** on 2026-08-16 ("fix
+transcription", i.e. restore the hypothesis).
 
 **169VI** is the proof, transcribed: it is enough to prove it for the
 standard dilation `(𝒷ᵃ(𝒜 ⊗_φ ℬ)ᵐᵒᵖ, ϱ, h)` of **154III**, because
@@ -1353,15 +1349,12 @@ theorem h_is_corner_for_unital_map [VonNeumannAlgebra A] [VonNeumannAlgebra B]
 every ncp-map `f : C → B` with `f(1) ≤ b` factors uniquely through `c` (as
 `f = c ∘ f'`) **by a subunital `f'`**.
 
-⚠️ **Repaired, by a ruling of the author** (Bas, 2026-08-16).  The item was
-filed as **B11** in `QUESTIONS.md` and deleted from it the same day once
-implemented; the ruling survives in PROVING-LOG session 63 and in commit
-ffd073b, whose subject line names A5 rather than B11.  See also ERRATA.
-As printed, dils.tex asks only for an *ncp* mediating
-map `f'`, and under that reading **169XI**.2a `dils_filter_basics_2a` is
-false: for `A = B = C' = ℂ`, `φ = id` and `c' = ½·id` the factorisation
-`f' = 2·id` is ncp, so `c'` is a filter for `φ(1) = 1`, yet no *unital* `φ'`
-has `c' ∘ φ' = φ`.
+⚠️ **The subunitality of `f'` is a repair, ruled by the author on
+2026-08-16** (`ERRATA.md`, **169VIII**).  As printed, dils.tex asks only for
+an *ncp* mediating map `f'`, and under that reading **169XI**.2a
+`dils_filter_basics_2a` is false: for `A = B = C' = ℂ`, `φ = id` and
+`c' = ½·id` the factorisation `f' = 2·id` is ncp, so `c'` is a filter for
+`φ(1) = 1`, yet no *unital* `φ'` has `c' ∘ φ' = φ`.
 
 The defect is in the mediating map only, and `c 1 ≤ b` is **kept** (it is
 not the problem).  eff.tex **197II** `dfn-quotient` — of which 169IX's own
@@ -1374,8 +1367,8 @@ change: when `b` is an effect, `f(1) ≤ b ≤ 1` already forces `f` subunital,
 so only `f'` escapes.  With the repair, `f' = 2·id` is excluded and 169XI.2a
 is provable (below).
 
-`IsFilter` below, "a filter for *some* `b`", was insensitive to the
-difference already. -/
+`IsFilter` below, "a filter for *some* `b`", is insensitive to the
+difference. -/
 def IsFilterFor (c : NCPMap A B) (b : B) : Prop :=
   0 ≤ b ∧ c 1 ≤ b ∧
   ∀ (C : Type u) (_ : CStarAlgebra C) (_ : PartialOrder C)
@@ -1569,8 +1562,7 @@ private theorem sfilter_ceil_eq [VonNeumannAlgebra B] (b : B) (hb : 0 ≤ b) :
 `f(1) ≤ d*d` factors as `f = d* g(·) d` through an ncp-map
 `g : D → ⌊d⌉B⌊d⌉`, namely `g(x) = d*∖f(x)/d`.
 
-The author's argument (proc.tex:426), with the same divergence as
-`Theses.A.Proc.canonicalFilter_factor`: *existence* of the value is
+The author's argument (proc.tex:426): *existence* of the value is
 `sequential-douglas` (**81VI**.1) applied to `0 ≤ f(x) ≤ ‖x‖f(1) ≤ ‖x‖d*d`,
 extended off the positive cone by linearity; *positivity* is **81VI**.2;
 *complete positivity* is `ncp-uwlim` (**96III**.1) applied to the completely
@@ -1579,35 +1571,25 @@ pointwise to `g` by `div-approx` (**81VII**); *normality* is taken from
 normality of `f` together with the bipositivity of `d*(·)d` on the corner,
 rather than from `div-usc` (**81IX**).
 
-*(Corrected session 95.  This used to read "**81IX**, whose relevant half is
-false — see `Theses.A.VN.div_usc`", and both halves have expired.  There is
-no `Theses.A.VN.div_usc`: what is false is the *printed*, ultra**strong**
-form, recorded in the section note above `div_uwc` in `A/VN/Division`.  On
-the author's ruling of **2026-08-17** both 81IX and its vn.tex proof run
-*ultraweakly*, which is sound and proved as `Theses.A.VN.div_uwc`.)*
-
-*(Re-derived 2026-08-29, and the sentence that closed the paragraph above —
-"the thesis's route is therefore valid again, and this proof is one of two —
-kept, not forced" — is **withdrawn**, together with its claim that the
-sibling `Theses.A.Proc.canonicalFilter_factor` made the same choice.  Both
-are false.  The sibling made the **opposite** choice: it now runs the
-thesis's route, calling `(div_uwc d (star d)).2` together with
-`preservesDirSups_of_continuousOn_effects`.  It can, and this cannot,
-because* **the domain `D` here is a bare C\*-algebra** *(see the binders at
-the top of this section).  Its only call site discharges the universal
-property of our 169VIII `IsFilterFor`, which quantifies its test object over
-C\*-algebras, where proc.tex 96I and dils.tex 169VIII both quantify over von
-Neumann algebras; A/Proc's `IsFilter` follows the source and so
-`canonicalFilter_factor` carries `[VonNeumannAlgebra]` on its domain.  The
-thesis's normality step needs `f` ultraweakly continuous on the unit ball of
-its* **domain** *(96V: "as is `f` by `p-uwcont`"), and `p_uwcont` and
-`preservesDirSups_of_continuousOn_effects` both require
-`[VonNeumannAlgebra]` there — on a bare C\*-algebra there is no ultraweak
-topology at all.  So the bipositivity route is* **forced**, *by our own
-strengthening of 169VIII, and undoing it is a statement change.  `div_uwc`
-lives on the codomain side, where `B` is a von Neumann algebra, so a route
-pushing the directed net through it on the `B` side may exist; that is not
-the thesis's argument and has not been built.)* -/
+**That last divergence is forced**, by our own strengthening of 169VIII, and
+undoing it is a statement change.  The domain `D` here is a bare
+C\*-algebra (see the binders at the top of this section), because the only
+call site discharges the universal property of our 169VIII `IsFilterFor`,
+which quantifies its test object over C\*-algebras where proc.tex 96I and
+dils.tex 169VIII both quantify over von Neumann algebras.  The thesis's
+normality step needs `f` ultraweakly continuous on the unit ball of its
+**domain** (96V: "as is `f` by `p-uwcont`"), and both `p_uwcont` and
+`preservesDirSups_of_continuousOn_effects` require `[VonNeumannAlgebra]`
+there — on a bare C\*-algebra there is no ultraweak topology at all.  The
+sibling `Theses.A.Proc.canonicalFilter_factor` follows the source, so it
+carries that binder on its domain and does run the thesis's route, calling
+`(div_uwc d (star d)).2` together with
+`preservesDirSups_of_continuousOn_effects`.  (81IX is sound read
+ultraweakly — the printed ultra**strong** form is false; see the section
+note above `Theses.A.VN.div_uwc` in `A/VN/Division` and the author's ruling
+of 2026-08-17.  `div_uwc` lives on the codomain side, where `B` *is* a von
+Neumann algebra, so a route pushing the directed net through it on the `B`
+side may exist; that is not the thesis's argument and has not been built.) -/
 private theorem sfilter_factor [VonNeumannAlgebra B] (d : B) (q : B)
     [Fact (IsStarProjection q)] (hqr : q = rangeProj d)
     (f : NCPMap D B) (hf1 : (f 1 : B) ≤ star d * d) :
@@ -2158,19 +2140,16 @@ part 1: if `(𝒫, ϱ, h)` is a Paschke dilation of `φ : A → B` and
 `c ∘ φ`.
 
 The author's solution (`bsols.tex`, `dils-filter-basics-exercise`.1) is
-transcribed, with **one divergence**, recorded in PROVING-LOG.
-
-*(i)* The solution first assumes `φ(1) ≤ 1`, so that the mediating
-`h' : 𝒫' → 𝒞` of a competing triple satisfies `h'(1) = c(φ(1)) ≤ c(1) ≤ b`
-and `c`'s universal property applies; the general case is then reduced to it
-by rescaling the *whole dilation* through **140X**.4 twice.  Here the
-rescaling is done to `h'` alone — `λ := (‖φ(1)‖+1)⁻¹` makes `λ h'(1) ≤ b`,
-and the factorisation `h''` of `λ h'` is scaled back by `λ⁻¹` — which needs
-no case split and no appeal to 140X.4.
-
-*(Corrected 2026-09-03: a second divergence recorded here was false.  The
-solution too invokes `dils-filters-injective` for `φ = h'' ∘ ϱ'` and for
-`h ∘ σ' = h''`, and takes uniqueness of `σ` from `𝒫`'s own property.)*
+transcribed, with **one divergence**: the solution first assumes `φ(1) ≤ 1`,
+so that the mediating `h' : 𝒫' → 𝒞` of a competing triple satisfies
+`h'(1) = c(φ(1)) ≤ c(1) ≤ b` and `c`'s universal property applies; the
+general case is then reduced to it by rescaling the *whole dilation* through
+**140X**.4 twice.  Here the rescaling is done to `h'` alone —
+`λ := (‖φ(1)‖+1)⁻¹` makes `λ h'(1) ≤ b`, and the factorisation `h''` of
+`λ h'` is scaled back by `λ⁻¹` — which needs no case split and no appeal to
+140X.4.  Everything else is the solution's, including its appeals to
+`dils-filters-injective` for `φ = h'' ∘ ϱ'` and for `h ∘ σ' = h''`, and its
+taking uniqueness of `σ` from `𝒫`'s own property.
 
 **No `[VonNeumannAlgebra]` binders** on `A`, `B`, `C`, where the exercise
 says "between von Neumann algebras".  As for `dils_filters_injective`, this
@@ -2252,15 +2231,13 @@ theorem dils_filter_basics_1 {C : Type u} [CStarAlgebra C] [PartialOrder C]
 part 2, first half: for a filter `c' : C' → B` of `φ(1)` there is a unique
 unital ncp-map `φ'` with `φ = c' ∘ φ'`.
 
-This was `sorry` for six sessions as **false under the printed reading of
-`IsFilterFor`** — the defect filed as **B11** in `QUESTIONS.md` and deleted
-from it on 2026-08-16 once the ruling below was implemented (PROVING-LOG
-session 63, commit ffd073b).  With a merely *ncp* mediating map,
-`A = B = C' = ℂ`, `φ = id`, `c' = ½·id` makes `c'` a filter for `φ(1) = 1`
-(factor `f` as `f' = 2f`), yet the unital `φ'` demanded here would need
-`c'(1) = φ(1)`, i.e. `½ = 1`.  The author ruled on 2026-08-16 that the
-mediating map is **subunital**; `IsFilterFor` now says so, and the argument
-below is the thesis's own two-liner.
+This is **false under the printed reading of `IsFilterFor`** (`ERRATA.md`,
+**169VIII**): with a merely *ncp* mediating map, `A = B = C' = ℂ`, `φ = id`,
+`c' = ½·id` makes `c'` a filter for `φ(1) = 1` (factor `f` as `f' = 2f`),
+yet the unital `φ'` demanded here would need `c'(1) = φ(1)`, i.e. `½ = 1`.
+The author ruled on 2026-08-16 that the mediating map is **subunital**;
+`IsFilterFor` says so, and the argument below is the thesis's own
+two-liner.
 
 Note it does **not** need faithfulness or bipositivity of `c'`, only
 monotonicity: subunitality of the mediating `ψ` gives
@@ -2269,9 +2246,8 @@ monotonicity: subunitality of the mediating `ψ` gives
 `dils_filters_injective`) yields `ψ(1) = 1`.
 
 The three `[VonNeumannAlgebra]` binders are the exercise's own standing
-setting ("between von Neumann algebras"); they were missing from the first
-transcription, and are restored here because every call site (in this file
-and in `Theses/B/Eff/VNExamples.lean`) already has them.  Contrast
+setting ("between von Neumann algebras"), and they cost nothing: every call
+site (in this file and in `Theses/B/Eff/VNExamples.lean`) has them.  Contrast
 `dils_filters_injective` and `dils_filter_basics_1` above, which must stay
 binder-free: `paschke_pure` and `pure_ncp_extreme` apply them at the
 intermediate algebra of an `IsPureMap`, which is only a C\*-algebra. -/
@@ -2313,8 +2289,8 @@ the defect of part 2's first half, which is the only place `c(1) = b` is
 needed.)
 
 The three `[VonNeumannAlgebra]` binders are the exercise's own standing
-setting, restored together with those of part 2's first half; the appeal to
-part 1 below goes through because part 1 is proved *without* them. -/
+setting, as in part 2's first half; the appeal to part 1 below goes through
+because part 1 is proved *without* them. -/
 theorem dils_filter_basics_2b [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     {C' : Type u} [CStarAlgebra C'] [PartialOrder C'] [StarOrderedRing C']
     [VonNeumannAlgebra C'] (φ : NCPMap A B)
@@ -2345,8 +2321,8 @@ corner, which is the form used here.
 
 **This is 168IV's normal form, not 170I's inductive definition.**  The
 equivalence is proved below, in `section ProcPure`, against
-`Theses.A.Proc.IsPure` — 170I as printed — and it is a lemma, not the merge
-of the two developments that this doc comment used to claim:
+`Theses.A.Proc.IsPure` — 170I as printed — and it is a lemma, not a merge of
+the two developments:
 
 * `isPureMap_of_procIsPure`: at von Neumann objects, every 170I-pure map is
   an `IsPureMap`.  This is proc.tex 100III `Theses.A.Proc.pure_fundamental`
@@ -2354,15 +2330,16 @@ of the two developments that this doc comment used to claim:
   strengthen proc.tex's von-Neumann-tested universal properties to this
   chapter's C\*-tested ones by transporting them across the isomorphism to
   the standard corner (**169IV**) and standard filter (**169X**).
-* `procIsPure_of_factorisation`: the converse, and it needs the intermediate
-  algebra `C` to be a von Neumann algebra — 170I's `comp` constructor
-  demands that, and `IsPureMap` does not.  That hypothesis is the one real
-  residue of the two developments' disagreement.
+* `procIsPure_of_factorisation`: the converse for a *given* factorisation,
+  which needs the intermediate algebra `C` to be a von Neumann algebra —
+  170I's `comp` constructor demands that, and `IsPureMap` does not.  For the
+  bare implication the hypothesis falls away (`su_procIsPure_of_isPureMap`,
+  `Theses/B/Eff/VNExamples.lean`).
 
 Both base cases of 170I are available here directly —
-`isPureMap_of_isCorner` and `isPureMap_of_isFilter` below — and the closure
-under *composition* is now available too, as `isPureMap_ncpComp`, though
-only with von Neumann algebras throughout.  **171VII** `paschke_pure` still
+`isPureMap_of_isCorner` and `isPureMap_of_isFilter` below — and so is the
+closure under *composition*, as `isPureMap_ncpComp`, though only with von
+Neumann algebras throughout.  **171VII** `paschke_pure`
 composes two corners by hand (`isCornerFor_comp`), because it is stated
 without that binder on the middle algebra. -/
 def IsPureMap (φ : NCPMap A B) : Prop :=
@@ -2417,8 +2394,8 @@ them apart, and **two of the four turn out not to obstruct at all**.
   `Theses.A.Proc.IsFilter` asks for an ncp mediating map and reads
   `f 1 ≤ c 1`.  Neither predicate is a restriction of the other — B's
   *existence* clause is the stronger and its *uniqueness* clause the weaker,
-  being quantified over a smaller class — so the header's "ours are strictly
-  stronger" is right for corners and wrong for filters.  Both gaps close:
+  being quantified over a smaller class — so, unlike for corners, ours is
+  not simply the stronger notion.  Both gaps close:
   ncp-uniqueness comes from **169XII** `dils_filters_injective`, and
   subunitality of the mediating map is read off the isomorphism to the
   standard filter, whose own mediating maps are subunital by **169X**.
@@ -2432,15 +2409,17 @@ them apart, and **two of the four turn out not to obstruct at all**.
 * *`[VonNeumannAlgebra]` on the intermediate algebra.*  This is the one that
   bites, and only in the converse.  `Theses.A.Proc.IsPure`'s `comp`
   constructor carries `[VonNeumannAlgebra B]` on the algebra in the middle
-  (its `filter` and `corner` constructors carry no such binder — so the
-  header's "on every intermediate algebra" is right only for composites),
-  where `IsPureMap`'s intermediate algebra `C` is a bare C\*-algebra.
+  (its `filter` and `corner` constructors carry no such binder, so the
+  binder bites for composites only), where `IsPureMap`'s intermediate
+  algebra `C` is a bare C\*-algebra.
   `procIsPure_of_factorisation` therefore carries `[VonNeumannAlgebra C]` as
-  a hypothesis; it cannot be dropped without changing 170I's own definition.
+  a hypothesis.  It is dispensable when the factorisation is only assumed to
+  exist: the middle algebra can then be traded for the corner of a standard
+  filter (`su_procIsPure_of_isPureMap`, `Theses/B/Eff/VNExamples.lean`).
 
 So the forward direction — everything 170I calls pure is an `IsPureMap` — is
-a theorem outright (`isPureMap_of_procIsPure`), and the converse is a theorem
-once the intermediate algebra is von Neumann. -/
+a theorem outright (`isPureMap_of_procIsPure`), and so is the converse, with
+`[VonNeumannAlgebra C]` needed only where the factorisation is given. -/
 
 section ProcPure
 
@@ -2603,10 +2582,12 @@ map in the normal form "a filter after a *unital* corner" with a von Neumann
 algebra in the middle; the two lemmas above then say that its two halves are
 a corner and a filter in *this* chapter's stronger, C\*-tested sense.
 
-This is the half of the equivalence that the file header called a merge
-rather than a lemma.  It is a lemma; the converse
-(`procIsPure_of_factorisation`) needs the intermediate algebra to be a von
-Neumann algebra, which `IsPureMap` does not require. -/
+This half needs nothing beyond the von Neumann objects already in the
+statement.  The converse for a given factorisation
+(`procIsPure_of_factorisation`) needs in addition that the intermediate
+algebra be a von Neumann algebra, which `IsPureMap` does not require; the
+bare implication needs no such hypothesis
+(`su_procIsPure_of_isPureMap`, `Theses/B/Eff/VNExamples.lean`). -/
 theorem isPureMap_of_procIsPure [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     {φ : NCPMap A B} (hφ : Theses.A.Proc.IsPure φ) : IsPureMap φ := by
   obtain ⟨Z, _, _, _, _, π, c, hπ, hc, hfac⟩ :=
@@ -2623,10 +2604,14 @@ proc.tex 100II — and the filter half is `procIsFilter_of_isFilterFor`
 followed by `Theses.A.Proc.IsPure.filter`, which carries no von Neumann
 binder at all.
 
-`[VonNeumannAlgebra C]` is the irreducible hypothesis: 170I's `comp`
+`[VonNeumannAlgebra C]` is needed for a *given* factorisation: 170I's `comp`
 constructor demands it of the algebra in the middle, and `IsPureMap` asks
-only for a C\*-algebra there.  Stating this as `IsPureMap φ → IsPure φ`
-would therefore require changing one of the two definitions. -/
+only for a C\*-algebra there.  It is dispensable once the factorisation is
+merely *assumed to exist* — the middle algebra can be replaced by the corner
+`⌈b⌉B⌈b⌉` of the standard filter, which is von Neumann — so
+`IsPureMap φ → IsPure φ` does hold at von Neumann objects, and is proved as
+`su_procIsPure_of_isPureMap` in `Theses/B/Eff/VNExamples.lean` (stated
+there because that file is the leaf where the effectus side of it lives). -/
 theorem procIsPure_of_factorisation [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     {C : Type u} [CStarAlgebra C] [PartialOrder C] [StarOrderedRing C]
     [VonNeumannAlgebra C] {φ : NCPMap A B} {h : NCPMap A C} {c : NCPMap C B}
@@ -2725,17 +2710,13 @@ private theorem isCorner_comp_nmiuBij {P Q R : Type u} [CStarAlgebra P]
 /-- **170II** (`dils-examples-pure`, dils.tex:6203, Examples), part 2: the
 right-hand side `h` of any Paschke dilation is pure.
 
-⚠️ **The two `[VonNeumannAlgebra]` binders are new.**  They are the
-chapter's standing hypothesis (dils.tex **140II** opens "let `φ : 𝒜 → ℬ` be
-any ncp-map **between von Neumann algebras**") and every sibling statement
-about a `PaschkeTriple` carries them; they were dropped in the first
-transcription of this point.  This is the same repair the author ruled on
-for **169V** and for **170IV** — the item filed as **D5** in `QUESTIONS.md`,
-ruled "fix transcription" (i.e. restore the hypothesis) and implemented on
-2026-08-16, which is when that entry was deleted (commit 3aa13e7): the proof
-reduces to the *standard* dilation of **154III**,
-whose construction `existence_paschke` needs both algebras to be von
-Neumann.
+The two `[VonNeumannAlgebra]` binders are the chapter's standing hypothesis
+(dils.tex **140II** opens "let `φ : 𝒜 → ℬ` be any ncp-map **between von
+Neumann algebras**"), and every sibling statement about a `PaschkeTriple`
+carries them.  They are not optional here — as for **169V** and **170IV**,
+on which the author ruled the same way on 2026-08-16 — because the proof
+reduces to the *standard* dilation of **154III**, whose construction
+`existence_paschke` needs both algebras to be von Neumann.
 
 **Proof**, transcribed from dils.tex:6205.  `c'` is the standard filter of
 `φ(1)` (**169X** `dils_stand_filter`), `φ'` the unique unital ncp-map with
@@ -2792,13 +2773,10 @@ theorem dils_examples_pure_2 [VonNeumannAlgebra A] [VonNeumannAlgebra B]
 every surjective nmiu-map **between von Neumann algebras** is a corner of a
 central projection (hence pure).
 
-The two `[VonNeumannAlgebra]` binders are the exercise's own hypothesis; they
-were missing from the first transcription of this point, which therefore
-claimed the result for arbitrary C\*-algebras — the defect filed as **D5** in
-`QUESTIONS.md`, ruled on by Bas ("fix transcription": restore the hypothesis)
-and implemented on 2026-08-16, when that entry was deleted (commit 3aa13e7).
-They are not decoration — the central
-projection is produced by **69IV** `carrier_miu`, which needs them.
+The two `[VonNeumannAlgebra]` binders are the exercise's own hypothesis, and
+the author ruled on 2026-08-16 that a transcription must keep them.  They
+are not decoration: the central projection is produced by **69IV**
+`carrier_miu`, which needs them.
 
 The exercise's trailing **"hence pure"** is `surjective_nmiu_1_pure`
 immediately below, *not* a fourth conjunct here: this statement is
@@ -3056,10 +3034,9 @@ The witness is as small as it gets: `𝒜 = ℬ = ℂ`, `z = 1`, `φ = λ·id` f
 claim at every central projection `z` (take `φ = λ·h_z`), so nothing is
 special about `z = 1`.
 
-This is the *same* defect as the one already ruled on for **filters** in
-**169VIII** (the `IsFilterFor` item, filed as **B11** in `QUESTIONS.md` and
-deleted from it on 2026-08-16 once that ruling was implemented; PROVING-LOG
-session 63, commit ffd073b): the mediating map of a
+This is the *same* defect as the one ruled on for **filters** in **169VIII**
+(`ERRATA.md`; the ruling of 2026-08-16 that made `IsFilterFor`'s mediating
+map subunital): the mediating map of a
 universal property among ncp-maps has to be subunital.  It is not repaired by
 the same edit, though — for filters the hypothesis `f(1) ≤ b ≤ 1` makes the
 quantified `f` subunital by itself, whereas `f a = f 1` constrains nothing,
@@ -4309,7 +4286,7 @@ and `h'_p` the restriction of `h_p` to `⌈⌈p⌉⌉A`.
 The hypothesis `IsStarProjection p` of the thesis is carried as an instance
 `[Fact (IsStarProjection p)]`, which is what the corner `pAp` needs to be an
 algebra at all (see `cornerSet.instCStarAlgebra`).  That `⌈⌈p⌉⌉` is a
-projection too is **68III**, now proved in `Theses.A.VN.Projections`, so it
+projection too is **68III**, proved in `Theses.A.VN.Projections`, so it
 is supplied by `fact_isStarProjection_cceil` rather than assumed.
 
 **Proof.**  The thesis (dils.tex:6237) argues in three steps: `𝒜p` is a
@@ -4324,8 +4301,7 @@ transports as `(uᵢ ⊗ 1)ᵢ` (`pcorner_isONBasis_tprod`), and
 (`pcorner_forall_mul_eq_zero_iff`).  So the corestriction
 `σ : ⌈⌈p⌉⌉𝒜 → 𝒷ᵃ(𝒜 ⊗_{h_p} p𝒜p)ᵐᵒᵖ` is a *bijective* nmiu-map with
 `σ ∘ h_{⌈⌈p⌉⌉} = ϱ` and `h ∘ σ = h'_p`, and `pcorner_transport` carries the
-Paschke dilation of **154III**.5 across it.  See PROVING-LOG sessions 67–68;
-the divergence (steps 1 and 2 can be dropped) is recorded there. -/
+Paschke dilation of **154III**.5 across it. -/
 theorem paschke_corner [VonNeumannAlgebra A] (p : A)
     [Fact (IsStarProjection p)]
     (hp' : NCPMap A (cornerSet A p))
@@ -4537,7 +4513,7 @@ Hilbert space (from `φ(1) = 0` one gets `V*V = 0`, so `V = 0`, so the span
 of `ϱ(B(ℋ))V𝒦` is `{0}`), where `ϱ` is again surjective.
 
 This is a **different route** from proc.tex's polar-decomposition
-factorisation `π_{⌈a⌉}` then `c_{a*a}`; see PROVING-LOG session 92. -/
+factorisation `π_{⌈a⌉}` then `c_{a*a}`. -/
 
 private theorem pure_conjOperator_comp {X Y Z : Type u}
     [NormedAddCommGroup X] [InnerProductSpace ℂ X] [CompleteSpace X]

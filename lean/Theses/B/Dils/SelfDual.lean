@@ -28,7 +28,7 @@ A's `Theses.A.Proc.IsTensorProduct`, field for field, once `generates`
 (`W*(ran t) = ⊤`) is read as ultraweak density of the span
 (`wstar_eq_top_of_dense_span`).
 
-`Theses.A.Proc.Tensor` **is** imported, since session 91: **165VI**
+`Theses.A.Proc.Tensor` **is** imported: **165VI**
 `ba_ext_tensor_pres` cannot be proved without **116VII**
 `tensor_characterization`, which is what upgrades the product functionals of
 the *vector* states — the only ones 165IX constructs — to the product
@@ -1002,7 +1002,7 @@ pointing back into the proof of 149VIII.
 
 The one thing 149VIII's proof does not hand over as stated is that the
 isometric part of the polar decomposition of `y` stays inside a closed
-submodule containing `y`; `polar_decomposition` (`HilbertModules.lean`) now
+submodule containing `y`; `polar_decomposition` (`HilbertModules.lean`)
 records it, as the third conjunct of its conclusion. -/
 
 omit [StarOrderedRing ℬ] in
@@ -1843,10 +1843,10 @@ variable (ℬ) in
 mirror, so the entries are starred relative to the thesis — which is why
 `L2Summable` (`HilbertModules.lean`) renders `∑ᵢ bᵢ*bᵢ` as `∑ᵢ bᵢbᵢ*` and
 the inner product `∑ᵢ bᵢ*cᵢ` as `∑ᵢ cᵢbᵢ*`.  The support condition has to
-be starred with them: `⌈bᵢbᵢ*⌉ ≤ pᵢ` becomes `⌈bᵢ*bᵢ⌉ ≤ pᵢ`.  (It read
-`⌈bᵢbᵢ*⌉ ≤ pᵢ` until 2026-08-16, which made **161II**.2 false: for
-`ℬ = X = M₂` with orthonormal basis `(e₀₀, e₁₁)` the coordinates of
-`x = e₁₀` are `bᵢ = x eᵢᵢ`, and `⌈b₀b₀*⌉ = e₁₁ ≰ e₀₀`.) -/
+be starred with them: `⌈bᵢbᵢ*⌉ ≤ pᵢ` becomes `⌈bᵢ*bᵢ⌉ ≤ pᵢ`.  The starring
+is not cosmetic: with the unstarred condition **161II**.2 is false, for
+`ℬ = X = M₂` with orthonormal basis `(e₀₀, e₁₁)`, where the coordinates of
+`x = e₁₀` are `bᵢ = x eᵢᵢ` and `⌈b₀b₀*⌉ = e₁₁ ≰ e₀₀`. -/
 def L2Set [VonNeumannAlgebra ℬ] {ι : Type v} (p : ι → ℬ) : Set (ι → ℬ) :=
   {b | L2Summable ℬ b ∧ ∀ i, ceil (star (b i) * b i) ≤ p i}
 
@@ -5240,12 +5240,10 @@ into a self-dual Hilbert ℬ-module has the universal property (every
 bounded module map `V → Y` into a self-dual `Y` factors uniquely through
 `η`), then the image of `η` is ultranorm dense.
 
-**Divergence, class 2 — and forced, by universes.**  Corrected on
-2026-08-27, when the claim below that this *is* the thesis's argument was
-checked
-against the source and is not: **163III** (dils.tex:4959-4990) runs no
-projection argument at all.  It takes the completion `η₁ : V → X₁` of
-**150II**, whose image is ultranorm dense by construction; obtains from the
+**Divergence, class 2 — and forced, by universes.**  **163III**
+(dils.tex:4959-4990) runs no projection argument at all: it takes the
+completion `η₁ : V → X₁` of **150II**, whose image is ultranorm dense by
+construction; obtains from the
 two universal properties the mutually inverse `U : X₁ → X` and
 `W : X → X₁`; and concludes that `η(V) = U(η₁(V))` is ultranorm dense
 because `U` is ultranorm continuous and surjective.
@@ -5399,9 +5397,9 @@ private theorem npf_one_ofReal (ω : NPFunctional ℂ) :
 `ℂ ⊗ ℂ`, so the structure is inhabited and everything derived from it below
 (ℂ-homogeneity in the second slot, normality of the legs, **165III**,
 **166II**) says something.  Kept in the tree deliberately: a mirroring defect
-that left `PaschkeModule` *uninhabited* once made nine theorems of
-`Paschke.lean` vacuous (PROVING-LOG session 14), and only a concrete example
-caught it. -/
+in a definition like this one leaves the structure *uninhabited* and every
+theorem hypothesising it vacuous, and only a concrete example catches
+that. -/
 theorem vnTensor_mul_complex : IsVNTensor (fun a b : ℂ => a * b) where
   add_left a a' b := add_mul a a' b
   add_right a b b' := mul_add a b b'
@@ -5467,12 +5465,10 @@ theorem vnTensor_smul_complex_right {t : 𝒜 → ℬ → 𝒞} (ht : IsVNTensor
 
 /-! ### The legs of a von Neumann tensor product
 
-`QUESTIONS.md` B5 asked whether `IsVNTensor` should carry a *normality*
-clause for its legs `a ↦ a ⊗ 1`, `b ↦ 1 ⊗ b` (dils.tex 166III leaves the
-justification as a commented-out `\TODO`).  It should not: normality is a
-consequence of the faithfulness of the product functionals, as follows —
-which is why B5 was deleted 2026-08-16 as answered, and no clause was
-added. -/
+`IsVNTensor` carries no *normality* clause for its legs `a ↦ a ⊗ 1`,
+`b ↦ 1 ⊗ b`, and needs none — dils.tex 166III leaves the justification as a
+commented-out `\TODO`, but normality is a consequence of the faithfulness of
+the product functionals, as follows. -/
 
 omit [StarOrderedRing 𝒜] [StarOrderedRing ℬ] in
 /-- The flip `(b,a) ↦ a ⊗ b` of a von Neumann tensor product is again one
@@ -6256,10 +6252,9 @@ variable {t : 𝒜 → ℬ → 𝒞} {ht : IsVNTensor t}
 
 /-! ### Auxiliary for **164II** and **164II**.1: ultranorm density of `𝒜 ⊙ ℬ`
 
-This block sat below `ext_tensor_uniqueness` until session 79, when the
-*existence* proof of **164II** turned out to need it too (`unDense_tSpan` is
-the input to the `𝒜 ⊙ ℬ → 𝒜 ⊗ ℬ` coefficient upgrade there); it was moved up
-unchanged, so that `univprop_ext_tensor` could stay where it is.
+This block sits above `univprop_ext_tensor` because the *existence* proof of
+**164II** needs it as well as `ext_tensor_uniqueness` does: `unDense_tSpan`
+is the input to the `𝒜 ⊙ ℬ → 𝒜 ⊗ ℬ` coefficient upgrade there.
 
 The thesis's **164VII** (`ultranorm-dense-tensor-base`) reads the density off
 its own construction of `X ⊗ Y` as `ℓ²((pᵢⱼ))`.  Our model is not that one
@@ -6406,8 +6401,8 @@ end TensorDense
 /-! ### The construction behind **164II** (existence)
 
 The thesis builds `X ⊗ Y` as `ℓ²((pᵢⱼ))` for orthonormal bases of `X` and
-`Y` (164III–164VIII).  The route here is the one the survey names as the
-shortcut, now that **150II** `dils_completion` and **151Ia**
+`Y` (164III–164VIII).  The route here is the shortcut the survey names,
+available because **150II** `dils_completion` and **151Ia**
 `selfdual_completion_univ` are both proved: `X ⊗ Y` is the *self-dual
 completion* of `V = (X ⊙ Y) ⊙ 𝒞` — an honest `𝒞`-module, which `X ⊙ Y`
 alone is not — with the `𝒞`-valued inner product
@@ -7623,8 +7618,8 @@ module map commutes with the action.
 Kept in the tree deliberately: without it every theorem hypothesising
 `E : ExtTensor t ht X Y` (**164II**.1/.2a/.2b, **165III**, **165VI**,
 **166IV**, **166VI**, **167I**) would be conditional on a structure not
-known to be inhabited; PROVING-LOG session 14 records a mirroring defect
-that left `PaschkeModule` uninhabited and nine theorems vacuous. -/
+known to be inhabited, which a mirroring defect in the inner product is
+enough to make it. -/
 noncomputable def extTensorSelf [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
     (t : 𝒜 → ℬ → 𝒞) (ht : IsVNTensor t) :
     ExtTensor t ht 𝒜 ℬ where
@@ -7949,12 +7944,7 @@ completion of `(X ⊙ Y) ⊙ 𝒞`, for which what is free is the density of the
 image of the *completion* map, i.e. of the `𝒞`-span of the elementary
 tensors.  Closing that gap is 164VII's own argument, and is
 `extTensor_bSpan_unClosure`.  The choice of model is **164II**-existence's
-divergence (`univprop_ext_tensor`), recorded there.
-
-Before 2026-08-27 this was proved instead by transcribing the projection
-argument of **163II** onto `D^⊥⊥`; that argument is the thesis's at neither
-point (see `selfdual_compl_defining_dense`), and it is no longer used
-here. -/
+divergence (`univprop_ext_tensor`), recorded there. -/
 theorem ext_tensor_dense [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
     [VonNeumannAlgebra 𝒞] [CompleteSpace X] [CompleteSpace Y]
     (hX : SelfDual 𝒜 X) (hY : SelfDual ℬ Y) (E : ExtTensor t ht X Y) :
@@ -8577,11 +8567,10 @@ closure of the `𝒞`-span of `E₂`.
 to `eᵢ₀ ⊗ dⱼ₀ ∈ E₂^⊥⊥` for the distinguished basis and then verify the
 Parseval identity of **160IX**.2 by testing against product np-functionals.
 Our `E` is an arbitrary `ExtTensor`, so there is no distinguished basis to
-reduce to; instead **164II**.1 `ext_tensor_dense` (now proved) reduces the
+reduce to; instead **164II**.1 `ext_tensor_dense` reduces the
 claim to the elementary tensors, and `η v w` is approximated directly by
 `η vₛ wᵤ = ∑_{i∈s} ∑_{j∈u} (⟨eᵢ,v⟩ ⊗ ⟨dⱼ,w⟩)·(eᵢ ⊗ dⱼ)`, with `s` chosen
-first and `u` afterwards — the same order-of-choice device that removed
-**158II** from **166IV** — so that only the **166III** estimates
+first and `u` afterwards — so that only the **166III** estimates
 `unSeminorm_eta_le_left/_right` are needed and the product-functional
 computation is avoided altogether.  (Testing against product functionals
 would still be needed for the thesis's route: it needs to know that
@@ -8794,18 +8783,16 @@ asserted isomorphism.  Item 3 is `extPlainTensor` and
 `extTensor_ultranorm_completion`, and item 4 is a forward reference,
 discharged at **167I** by `paschke_tensor_module`.
 
-📌 *Author ruling, 2026-08-18 (QUESTIONS **D6**, now closed).*  This
-declaration replaces an earlier transcription, `ext_tensor_ketbra_dense`,
-which demanded an approximating **net indexed by `Finset (ι × κ)` along
-`atTop`** — the shape of **159IV** `ketbra_ultraweakly_dense`, where the
-thesis's own proof does produce such a net.  Here that strengthening is
-**false**: take `ι = κ = PUnit`, `X = 𝒜`, `Y = ℬ`, `E = extTensorSelf`;
-then `Finset (ι × κ)` has a greatest element, `atTop` is the principal
-filter there, and — the ultraweak topology being Hausdorff — the net's
-value at that element would have to *equal* `T`, forcing
-`𝒜 ⊗ ℬ = 𝒜 ⊙ ℬ`, which fails for `B(ℓ²)`.  The thesis claims only
-density, so the entourage form below is the faithful reading and the net
-form has been deleted.
+⚠️ **The entourage form is the only faithful one here.**  Strengthening it
+to an approximating **net indexed by `Finset (ι × κ)` along `atTop`** — the
+shape of **159IV** `ketbra_ultraweakly_dense`, where the thesis's own proof
+does produce such a net — gives a **false** statement: take
+`ι = κ = PUnit`, `X = 𝒜`, `Y = ℬ`, `E = extTensorSelf`; then
+`Finset (ι × κ)` has a greatest element, `atTop` is the principal filter
+there, and — the ultraweak topology being Hausdorff — the net's value at
+that element would have to *equal* `T`, forcing `𝒜 ⊗ ℬ = 𝒜 ⊙ ℬ`, which
+fails for `B(ℓ²)`.  The thesis claims only density, and the author ruled on
+2026-08-18 that this is what is to be transcribed.
 
 The proof is the thesis's **164XI**: **159IV** `ketbra_ultraweakly_dense`,
 applied to the basis `E₂` supplied by **164II**.2a, gives the operators
@@ -9162,13 +9149,9 @@ theorem hilbmod_tensor_ketbra [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
     (∀ x y, (star R).1 (E.η x y) = E.η ((star S).1 x) ((star T).1 y)) := by
   -- `bsols.tex`, solution `hilbmod-tensor-ketbra`.  Of the two routes the
   -- author offers ("either by appealing to the defining universal property
-  -- of `X ⊗ Y` or by … ultranorm density") we take the first.  (An earlier
-  -- revision gave as its reason that the density statement **164II**.1
-  -- `ext_tensor_dense` was "still `sorry`".  That is stale: it is proved
-  -- above in this file and used by `ext_tensor_basis` (**164II**.2a) and by
-  -- `exttensor_dense_subsets` (**166IV**).  Both of the author's routes are
-  -- open; the first is kept because its uniqueness half is available here as
-  -- `extTensor_map_ext`, so nothing has to be set up for it.)
+  -- of `X ⊗ Y` or by … ultranorm density") we take the first.  Both are
+  -- available — **164II**.1 `ext_tensor_dense` is proved above — but the
+  -- first needs no setup: its uniqueness half is `extTensor_map_ext`.
   -- Every `R ∈ 𝒞ᵃ(X ⊗ Y)` is a bounded module map.
   have hbdd : ∀ R₀ : Ba 𝒞 E.Z, ∃ C : ℝ,
       IsBoundedModuleMap (cstarBInner 𝒞 E.Z) (cstarBInner 𝒞 E.Z) C ⇑R₀.1 := by
@@ -9231,9 +9214,8 @@ Two general facts, used only in `ba_ext_tensor_pres`. -/
 /-- Membership of the *ultraweak* closure from approximation against finitely
 many np-functionals at a time — the ultraweak counterpart of
 `mem_usClosure_iff`.  Needed because **164XI** `ext_tensor_ketbra_uwDense`
-delivers its density in that entourage form (its net form **is false** — the
-thesis's own statement is the true one and is proved; this was `QUESTIONS.md`
-**D6**, deleted 2026-08-18 in abc3af3 once that was settled), while
+delivers its density in that entourage form (its net form is **false**, and
+the thesis claims only density — see there), while
 **116VII** and `wstar_eq_top_of_dense_span` want
 `Dense` for the topology `ultraweak`.  The net that witnesses the closure
 membership is indexed by `Finset (NPFunctional A) × ℕ` — finitely many
@@ -9319,8 +9301,8 @@ is `ba_ext_tensor_iso` below, which runs 165VII's appeal to **114II**
 `tensor_uniqueness`; it cannot be stated here because the `IsVNTensor` →
 `IsTensorProduct` bridge it needs is developed only in
 `PaschkeTensorInfra`.  The route is the thesis's own: verify the three
-conditions of **116VII** `tensor_characterization` (thesis A, proc.tex:3584,
-now proved) for the centre separating collections `Ω_X`, `Ω_Y` of *vector*
+conditions of **116VII** `tensor_characterization` (thesis A, proc.tex:3584)
+for the centre separating collections `Ω_X`, `Ω_Y` of *vector*
 np-functionals, and read `IsVNTensor` off the resulting `IsTensorProduct`.
 It is only for this that `Theses.A.Proc.Tensor` is imported: **116VII** is
 what upgrades the product functionals of the *vector* states — the only ones
@@ -9330,7 +9312,7 @@ that `IsVNTensor.exists_productFunctional` asks for.
 **Divergences.**  (1, class 2) **165VIII** reads generation off the
 ultraweak density of the `|(eᵢa) ⊗ (dⱼb)⟩⟨e_k ⊗ d_l|`; we use
 `ext_tensor_ketbra_uwDense`, the *entourage* form of that density (the net
-form is false and was deleted — QUESTIONS **D6**, ruled 2026-08-18), which needs the
+form is false — see there), which needs the
 bridge `mem_uwClosure_of_npApprox` above.  (2, class 1) **165X** argues with
 `√A`; the transcription uses `hilbmod_ordersep`'s own factorisation
 `A = R'∘R` instead, which is the same argument with the continuous functional
@@ -9884,10 +9866,7 @@ embedding.
 Note the printed route is available *here* and not at
 `selfdual_compl_defining_dense`, where it is blocked by universes:
 `PaschkeModule.X` and `PaschkeModule.univ` both live in `Type u`, so the
-comparison maps can be formed in both directions.
-
-Before 2026-09-03 this ran a projection argument on `D^⊥⊥` instead — the
-thesis's at neither point — which is why the row was classed `route`. -/
+comparison maps can be formed in both directions. -/
 theorem paschke_tprod_dense (φ : NCPMap 𝒜 ℬ) (M : PaschkeModule φ) :
     UnDense (inner ℬ)
       {z : M.X | ∃ (n : ℕ) (a : Fin n → 𝒜) (b : Fin n → ℬ),
@@ -10060,9 +10039,7 @@ theorem dilationspace_dense_subset {𝒜 ℬ : Type u}
 
 /-! ## Infrastructure for the main claim of **167I**
 
-Five things **167I** needs that parsecs 1640-1660 do not provide, none of
-them recorded before session 92 (see the session-91 entry of
-`PROVING-LOG.md`):
+Five things **167I** needs that parsecs 1640-1660 do not provide:
 
 1. transport of `IsPaschkeDilationOf` along a bijective nmiu-map.  This
    exists as `pcorner_transport`, but it is `private` in `B/Dils/Pure.lean`,
@@ -10820,7 +10797,7 @@ elementary tensors in one go.  The two densities are the thesis's own
 the two Paschke modules (`paschke_tprod_dense`).  The inner-product
 computation of 167IV is `ptmEtaA_inner`.
 
-**Why 167V is not run literally** (route pass 2026-08-26).  Its two steps
+**Why 167V is not run literally.**  Its two steps
 are not symmetric in this tree.  The *second* step — the universal property
 of the exterior tensor product — is present, as `ExtTensor.univ`; but it
 *consumes* a bilinear `T : X₁ → X₂ → W` defined on all of `X₁ × X₂`, which
@@ -11254,15 +11231,12 @@ theorem paschke_tensor_module
 `IsVNTensor` interface, and the tensor products of maps through their
 characterizing values on elementary tensors.)
 
-**Repair, session 92** (our mis-transcription; recorded in
-`PROVING-LOG.md`, not in `ERRATA.md`, per that file's scope rule).  The
-statement as first written omitted the `[VonNeumannAlgebra 𝒜ᵢ]` and
-`[VonNeumannAlgebra ℬᵢ]` hypotheses, although the Theorem's own hypothesis
-is "an ncp-map between *von Neumann algebras*" and every neighbouring
-statement of parsecs 1640-1670 (`ba_ext_tensor_pres`,
-`paschke_tensor_module`, `dilationspace_dense_subset`) carries them.  They
-are restored here; without them `existence_paschke` does not even apply, so
-nothing was provable.
+The `[VonNeumannAlgebra 𝒜ᵢ]` and `[VonNeumannAlgebra ℬᵢ]` binders are the
+Theorem's own hypothesis ("an ncp-map between *von Neumann algebras*"), as
+they are for every neighbouring statement of parsecs 1640-1670
+(`ba_ext_tensor_pres`, `paschke_tensor_module`,
+`dilationspace_dense_subset`), and they are not optional: without them
+`existence_paschke` does not even apply.
 
 **The proof (167II-167VI), with the last step supplied.**  The thesis proves
 the "furthermore" isomorphism `U` first (that is `paschke_tensor_module`
