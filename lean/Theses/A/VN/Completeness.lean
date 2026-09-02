@@ -40,9 +40,8 @@ variable {A B : Type u} [CStarAlgebra A] [PartialOrder A] [StarOrderedRing A]
 /-! ### The np-functional cone and the `‖·‖_ω` estimates
 
 `omegaNorm_mul_le`, `zeroNP`, `addNP`, `omegaNorm_le_addNP(')` and
-`abs_omegaNorm_sub_omegaNorm_le` used to be file-private here; they are now
-public in `Theses/A/VN/Basic.lean`, since **72V**, **72XI**, **73VIII** and
-**87VIII** all need them. -/
+`abs_omegaNorm_sub_omegaNorm_le` are public in `Theses/A/VN/Basic.lean`, since
+**72V**, **72XI**, **73VIII** and **87VIII** all need them. -/
 
 /-- A net whose pairwise distances vanish along `l ×ˢ l` has a Cauchy image
 filter.  (Used to turn the thesis's "`‖(T_α − T_β)x‖` vanishes for large
@@ -80,16 +79,12 @@ theorem bstaromega_np (b : A) (ω : NPFunctional A) :
 /-- **72III** (`bstaromega-basic`, vn.tex:3850, Exercise), part 1b:
 `|ω(a* b c)| ≤ ‖a‖_ω ‖b‖ ‖c‖_ω`.
 
-**Erratum (author), already absorbed.**  The first printing wrote this bound
-with a leading `‖ω‖` (= `ω(1)`); erratum `parsec-720.30` in `asols.tex` removes
-that factor from both this inequality and the one in part 1c, and the current
-vn.tex already reads without it — so our statement matches the running text and
-there is nothing outstanding here.  Why the factor must go: `‖a‖_ω = ω(a*a)^½`
-is unnormalised, so replacing `ω` by `tω` scales the left side by `t` and the
-right by `t²`.  Counterexample `𝒜 = ℂ`, `ω = t·id` with `0 < t < 1`,
-`a = b = c = 1`: the left side is `t`, the right `t²`.  Cauchy–Schwarz gives
-the factor-free bound directly (cf. `norm_apply_star_mul_le`).  Same defect as
-**30IV**.2. -/
+Transcribed from the running text, which erratum `parsec-720.30` (`asols.tex`)
+has stripped of a leading `‖ω‖` (= `ω(1)`), here and in part 1c.  That factor
+breaks homogeneity in `ω`: `‖a‖_ω = ω(a*a)^½` is unnormalised, so replacing `ω`
+by `tω` scales the left side by `t` and the right by `t²` — take `𝒜 = ℂ`,
+`ω = t·id` with `0 < t < 1` and `a = b = c = 1`.  Cauchy–Schwarz gives the
+factor-free bound directly (cf. `norm_apply_star_mul_le`). -/
 theorem bstaromega_bound (ω : NPFunctional A) (a b c : A) :
     ‖ω (star a * b * c)‖ ≤
       omegaNorm A ω a * ‖b‖ * omegaNorm A ω c := by
@@ -102,10 +97,8 @@ theorem bstaromega_bound (ω : NPFunctional A) (a b c : A) :
 /-- **72III** (`bstaromega-basic`, vn.tex:3850, Exercise), part 1c:
 `‖b*ω - b'*ω‖ ≤ ‖b-b'‖_ω (‖b‖_ω + ‖b'‖_ω)` — rendered pointwise.
 
-**Erratum (author), already absorbed.**  As in part 1b: the leading `‖ω‖` of
-the first printing breaks homogeneity in `ω` for the same reason, erratum
-`parsec-720.30` removes it here too, and the current vn.tex carries the
-corrected inequality that is transcribed here. -/
+Erratum `parsec-720.30` covers this inequality too; see the note on part
+1b. -/
 theorem bstaromega_lipschitz (ω : NPFunctional A) (b b' : A) (a : A) :
     ‖bStarOmega A b ω a - bStarOmega A b' ω a‖ ≤
       omegaNorm A ω (b - b') *
@@ -742,12 +735,9 @@ theorem normal_functionals_decomposition (ω : NPFunctional A) (f : A →ₗ[ℂ
 
 /-! ### The counterexample to **72V**.(4)
 
-See `ERRATA.md` (**72V**.4) and the erratum note on `normal_functionals_lemma`.
-On `B(H)` with `dim H ≥ 2`,
-the vector functional `ω = ⟪ξ, (·) ξ⟫` and the functional
-`f = ⟪η, (·) ξ⟫` (for orthonormal `ξ, η`) satisfy `|f(a)| ≤ ‖a‖_ω` — so all
-three conditions of `normal_functionals_lemma` hold — while `f` admits no
-decomposition into np-maps dominated by any multiple of `ω`. -/
+The witness for `ERRATA.md` (**72V**.4), on `B(H)` with `dim H ≥ 2`.  It is
+spelled out on `normal_functionals_lemma_four_counterexample` below; the defect
+it exhibits is described on `normal_functionals_lemma`. -/
 
 section Counterexample
 
@@ -764,9 +754,8 @@ omit [CompleteSpace H] in
 @[simp] theorem vectorPairFunctional_apply (ξ η : H) (a : H →L[ℂ] H) :
     vectorPairFunctional ξ η a = ⟪η, a ξ⟫ := rfl
 
-/-! `omegaNorm_vectorNP` (`‖a‖_ω = ‖aξ‖` for `ω = ⟪ξ,(·)ξ⟫`) used to be
-restated here; it now lives in `Theses/A/VN/Basic.lean`, beside `vectorNP`
-itself, and is imported. -/
+/-! `omegaNorm_vectorNP` (`‖a‖_ω = ‖aξ‖` for `ω = ⟪ξ,(·)ξ⟫`), used below, lives
+in `Theses/A/VN/Basic.lean` beside `vectorNP` itself. -/
 
 /-- **Counterexample to 72V.(4)** (ours).  For orthonormal `ξ, η` in a
 Hilbert space `H`, the functional `f = ⟪η, (·) ξ⟫` on `B(H)` satisfies
@@ -2256,9 +2245,9 @@ with `0 ∨ (·) ∧ ‖b‖` instead, and the effect case is the positive case
 together with `‖b‖ ≤ 1`.
 
 The general (non-self-adjoint) case needs the `2×2`-matrix trick and hence
-**49IV**.1 `mn_vna_1` and **49IV**.2' `mn_vna_2'` (`Basic.lean`); both are
-now proved, and the trick is carried out in the `MatrixTrick` block below,
-after the self-adjoint case it consumes. -/
+**49IV**.1 `mn_vna_1` and **49IV**.2' `mn_vna_2'` (`Basic.lean`); the trick is
+carried out in the `MatrixTrick` block below, after the self-adjoint case it
+consumes. -/
 
 omit [VonNeumannAlgebra A] in
 /-- Membership of the ultrastrong closure, in terms of the seminorms. -/

@@ -849,15 +849,11 @@ here, and left. -/
 variable {I : Type*} (𝒜 : I → Type u) [∀ i, CStarAlgebra (𝒜 i)]
   [∀ i, Nontrivial (𝒜 i)]
 
--- The unital `CStarAlgebra (lp 𝒜 ∞)` instance is NOT declared here.  It was,
--- anonymously, until 2026-08-29, and it shadowed `lpInftyCStarAlgebra`
--- (`A/CStar/Positive.lean:3768`), which this file already imports through
--- `A/CStar/Representation`.  The two were definitionally equal and the shadow
--- won synthesis downstream, so it was redundant rather than dangerous -- but it
--- was also strictly less general (`Type u` with `𝒜` explicit, against `Type*`
--- with `𝒜` implicit).  Both doc comments were right that *Mathlib* registers
--- only the non-unital and commutative cases; neither mentioned that we had
--- already supplied this one.
+-- The unital `CStarAlgebra (lp 𝒜 ∞)` instance is not declared here: it is
+-- `lpInftyCStarAlgebra` (`A/CStar/Positive.lean:4046`), which this file imports
+-- through `A/CStar/Representation`, and which is stated more generally (`Type*`
+-- with `𝒜` implicit).  Mathlib itself registers only the non-unital and the
+-- commutative cases.
 
 /-- The canonical (spectral) order on the direct sum `lp 𝒜 ∞`, mirroring
 `CStarMatrix.instPartialOrder`. -/
@@ -3957,12 +3953,11 @@ algebras with normal cpsu-maps) and `W*_miu` (with nmiu-maps).  The
 morphisms are formalized as `Theses.NCPSUMap` and `Theses.NMIUMap`; the
 categorical structure itself is not bundled *here* — the product (47IV) and
 equaliser (47V) below are stated through their universal properties, which
-is what the thesis uses.  It **is** bundled downstream, and this sentence
-should not be read as "nowhere": `W*_miu` is `WMIU` with its `Category`
-instance in `A/Proc/QuantumLambda.lean`, and `W*_cpsu` is `WStarCPSU` with
-its `Category` instance in `B/Eff/WStarCat.lean` (whose `WStarNCPU` is the
-thesis's `vN`).  What really is unbundled is `CStar_pu` (needed for 84aI)
-and the full subcategories `haW*_miu`, `haW*_cpsu`.
+is what the thesis uses.  It **is** bundled downstream: `W*_miu` is `WMIU`
+with its `Category` instance in `A/Proc/QuantumLambda.lean`, and `W*_cpsu` is
+`WStarCPSU` with its `Category` instance in `B/Eff/WStarCat.lean` (whose
+`WStarNCPU` is the thesis's `vN`).  What is bundled nowhere is `CStar_pu`
+(needed for 84aI) and the full subcategories `haW*_miu`, `haW*_cpsu`.
 
 **47VI** (`vn-effectus`, vn.tex:1017): the sketch that `(W*_cpsu)^op` is an
 effectus refers forward to the precise treatment in thesis B (eff.tex);
@@ -5377,24 +5372,14 @@ the C*-algebra `B^a(X)` of bounded adjointable module maps on a self-dual
 Hilbert `𝒜`-module `X` is a von Neumann algebra, and `⟨x,(·)x⟩` is normal
 for every `x ∈ X`.
 
-**Proved, in `Theses/A/VN/BaX.lean`** (2026-08-27) — but not under that
-name, and the reason is worth keeping.  cstar **32XIII** `bax_cstar` is
-proved in `Theses/A/CStar/Matrices.lean`, and the `Bax` section there
-carries the whole `CStarAlgebra` structure (involution the adjoint,
-C*-identity from **32XII**, completeness from `bax_cstar`) together with its
-spectral order, on `Bax 𝒜 X`.  `Bax` was `private` to that file until
-2026-08-27, so `VonNeumannAlgebra (Bax 𝒜 X)` could not be *written* outside
-it at all — which is why `A/VN/BaX` first stated both clauses of **42I**
-through the vector-functional order, which by **32XV**
-`chilb_vector_states_2` *is* the order of `B^a(X)`: `bah_vn_sup` and
-`bah_vn_np_faithful`.
-
-`Bax` and the eight instances its elaboration needs are now exported, and
-49II is stated as the thesis states it, `bah_vn : VonNeumannAlgebra
-(Bax 𝒜 X)`, with its second clause `vecFunctional_normal` as a statement of
-its own.  It is the same shape as the tree's B-side twin
-`ba_vonNeumannAlgebra` (**152X**), so the theorem both theses prove now has
-one rendering.
+It is proved in `Theses/A/VN/BaX.lean`, as the thesis states it:
+`bah_vn : VonNeumannAlgebra (Bax 𝒜 X)`, with its second clause
+`vecFunctional_normal` as a statement of its own.  The carrier is the `Bax` of
+`Theses/A/CStar/Matrices.lean`, whose section there supplies the whole
+`CStarAlgebra` structure (involution the adjoint, C*-identity from **32XII**,
+completeness from **32XIII** `bax_cstar`) together with the spectral order.
+This is the same shape as the tree's B-side twin `ba_vonNeumannAlgebra`
+(**152X**), so the theorem both theses prove has one rendering.
 
 The other half of the thesis's route to `M_N(𝒜)` is `matrixBaxEquiv` — but
 **not** as printed: the thesis's `𝒜^N` is a *right* module, Mathlib's
@@ -5413,7 +5398,7 @@ The thesis prints no proof of 49IV at all: vn.tex 490.40 `mn-vna` is an
 Exercise, and `asols.tex` has no solution for it — that file's solutions stop
 at parsec 340.  What it does print is 490.10's announcement that 49II
 (`bah-vn`) is proved "to this end", i.e. that `M_N(𝒜)` is to be realised as
-`B^a(𝒜^N)`.  Both halves of that realisation now exist — `bah_vn` and
+`B^a(𝒜^N)`.  Both halves of that realisation exist — `bah_vn` and
 `matrixBaxEquiv`, the latter with `M_N(𝒜)ᵐᵒᵖ` for the reason given in the
 note above — but **neither may be cited here**.  `bah_vn` lives in
 `Theses/A/VN/BaX.lean`, which imports `A.VN.Completeness`, which imports
@@ -7246,13 +7231,10 @@ end LinftyConstruction
 
 /-! ### `L^∞(X, μ)` as a carrier: the public interface
 
-Everything above is `private`, and the algebraic instances on `X →ₘ[μ] ℂ`
-are `local`, so the ring structure Mathlib declines to put on `AEEqFun` does
-not leave this section.  What follows exports the *result* — the type
+What follows exports the *result* of the construction above — the type
 `L^∞(X, μ)` itself, with its commutative von Neumann algebra structure, the
 quotient map `f ↦ [f]` and integration — under public names, so that
-**54XI**'s `f ↦ f°` has an object to land in (`cvn_faithful_6` below, which
-until this interface existed could only be rendered in presentation form).
+**54XI**'s `f ↦ f°` has an object to land in (`cvn_faithful_6` below).
 
 It is a small named interface and nothing more.  `Linfty μ` is a *reducible*
 abbreviation for `↥(LinftySub μ)`, declared here, inside the section, so the
@@ -7389,9 +7371,8 @@ theorem Linfty_vn (X : Type u) [MeasurableSpace X] (μ : Measure X)
       (_ : StarOrderedRing 𝒜) (q : (X → ℂ) → 𝒜) (τ : 𝒜 → ℂ),
       VonNeumannAlgebra 𝒜 ∧
       -- `q` is a surjective miu-map on `𝓛^∞(X)` with kernel the a.e.-null
-      -- functions.  (ℂ-homogeneity is part of "miu": it was omitted until
-      -- 2026-09-02, QUESTIONS A9, now closed, and is restored under the D1 ruling that
-      -- added the same clause to `IsLinftyOf`.)
+      -- functions.  (ℂ-homogeneity is part of "miu"; `A/Proc/Duplicators`'
+      -- `IsLinftyOf` carries the same clause.)
       (∀ y : 𝒜, ∃ f, IsBoundedMeasurable X f ∧ q f = y) ∧
       (∀ f g, IsBoundedMeasurable X f → IsBoundedMeasurable X g →
         q (f + g) = q f + q g ∧ q (f * g) = q f * q g ∧
@@ -9668,11 +9649,8 @@ backwards through that descent: the induced map `C(spec A) → L^∞(spec A)` is
 and `cvn_faithful_5` takes a stronger one that works for presentations.
 
 The `ℂ`-homogeneity clause `q (z • f) = z • q f` is stated: without it `q`
-would be a `∗`-*ring* map only and the statement would not say "miu" — the
-defect QUESTIONS **A9** raised against 51IX's own rendering, and the one
-ruled in for `IsLinftyOf` on 2026-08-16 (that item was filed as **D1** in
-`QUESTIONS.md` and deleted from it in the implementing commit 43e270f).
-(A9 is now closed, deleted 2026-09-02, the clause restored in `Linfty_vn` too.)
+would be a `∗`-*ring* map only and the statement would not say "miu".  51IX
+`Linfty_vn` and `A/Proc/Duplicators`' `IsLinftyOf` carry the same clause.
 
 Neither `ω` nor its faithfulness occurs: all the isomorphism needs of the
 measure is that its null sets are the meagre almost clopen sets, which is
@@ -9721,12 +9699,10 @@ available.  Directedness of `D` is not needed (see
 `linftyPresentation_isLUB`), so the clause is stronger than
 `PreservesDirSups` would ask.
 
-Normality is *not* available from `starAlgEquiv_preservesDirSups` here: that
-lemma is about an actual `≃⋆ₐ`, and a presentation is not one.  (Where there
-is an `≃⋆ₐ` — `cvn_faithful_6`, into the carrier `Linfty μ` — that is
-precisely the route taken.)  It is, however, automatic from the other eight
-clauses, by `linftyPresentation_isLUB`, and in a form no `≃⋆ₐ` argument
-gives: without directedness. -/
+`starAlgEquiv_preservesDirSups` cannot supply the "n" here — a presentation is
+no `≃⋆ₐ` — but `linftyPresentation_isLUB` does, from the other eight clauses
+alone.  Where there *is* an `≃⋆ₐ`, namely `cvn_faithful_6` into the carrier
+`Linfty μ`, that is the route taken instead. -/
 theorem cvn_faithful_5 [MeasurableSpace (characterSpace ℂ A)]
     (hms : ∀ s : Set (characterSpace ℂ A), MeasurableSet s ↔ AlmostClopen s)
     (μ : Measure (characterSpace ℂ A))
