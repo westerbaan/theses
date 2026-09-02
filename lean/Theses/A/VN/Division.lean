@@ -3660,45 +3660,41 @@ theorem cceil_sum (e : A) (he : IsStarProjection e) :
   have hple : p ≤ cceil e := by
     rw [hpdef, sub_le_self_iff]
     exact hqproj.nonneg
-  -- some `e a p` is non-zero
+  -- `p = p⌈⌈e⌉⌉p = ⋃ₐ ⌈p⌈a*ea⌉p⌉ = ⋃ₐ ⌈(eap)*eap⌉`, so some `e a p` is non-zero
+  have hps : star p = p := hpproj.isSelfAdjoint.star_eq
+  have himgproj : ∀ x ∈ ((fun q => ceil (star p * q * p)) ''
+      {x : A | ∃ a : A, x = ceil (star a * e * a)}), IsStarProjection x := by
+    rintro _ ⟨q, hq, rfl⟩
+    exact (ceil_spec (star_left_conjugate_nonneg (hsetproj q hq).nonneg p)).1
+  -- `⌈p⌈a*ea⌉p⌉ = ⌈pa*eap⌉ = ⌈(eap)*eap⌉`, by **60VII**.1
+  have hconj : ∀ a : A, ceil (star p * ceil (star a * e * a) * p)
+      = ceil (star (e * a * p) * (e * a * p)) := by
+    intro a
+    rw [← ceil_fundamental_1 p (star a * e * a) (hnn a)]
+    congr 1
+    calc star p * (star a * e * a) * p
+        = p * (star a * (e * e) * a) * p := by rw [hps, he.isIdempotentElem.eq]
+      _ = star (e * a * p) * (e * a * p) := by
+          rw [star_mul, star_mul, he.isSelfAdjoint.star_eq, hps]
+          noncomm_ring
+  -- `p = ⌈p⌈⌈e⌉⌉p⌉ = ⋃ₐ ⌈p⌈a*ea⌉p⌉`, by **60IX**.2
+  have hpeq : p = projSup ((fun q => ceil (star p * q * p)) ''
+      {x : A | ∃ a : A, x = ceil (star a * e * a)}) := by
+    have hpc : p * cceil e = p :=
+      ((projection_below_effect (cceil e) p ⟨hcproj.nonneg, hcproj.le_one⟩
+        hpproj).out 0 7).mp hple
+    rw [← ceil_conj_projSup p _ hsetproj, ← (cceil_fundamental e he).2, hps]
+    calc p = ceil p := (ceil_of_isStarProjection hpproj).symm
+      _ = ceil (p * cceil e * p) := by rw [hpc, hpproj.isIdempotentElem.eq]
   have hex : ∃ a : A, e * a * p ≠ 0 := by
     by_contra hcon
-    have hall : ∀ a : A, e * a * p = 0 := fun a => by
-      by_contra h; exact hcon ⟨a, h⟩
-    have hkey : ∀ a : A, ceil (star a * e * a) * p = 0 := by
-      intro a
-      have hconj : star (e * a * p) * (e * a * p) = p * (star a * e * a) * p := by
-        calc star (e * a * p) * (e * a * p)
-            = p * (star a * (e * e) * a) * p := by
-              rw [star_mul, star_mul, he.isSelfAdjoint.star_eq,
-                hpproj.isSelfAdjoint.star_eq]
-              noncomm_ring
-          _ = p * (star a * e * a) * p := by rw [he.isIdempotentElem.eq]
-      have h0 : p * (star a * e * a) * p = 0 := by
-        rw [← hconj, hall a, star_zero, zero_mul]
-      have hsqrtsa : star (CFC.sqrt (star a * e * a)) = CFC.sqrt (star a * e * a) :=
-        (IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg _)).star_eq
-      have hs : CFC.sqrt (star a * e * a) * p = 0 := by
-        refine (CStarRing.star_mul_self_eq_zero_iff _).mp ?_
-        rw [star_mul, hsqrtsa, hpproj.isSelfAdjoint.star_eq]
-        calc p * CFC.sqrt (star a * e * a) *
-              (CFC.sqrt (star a * e * a) * p)
-            = p * (CFC.sqrt (star a * e * a) * CFC.sqrt (star a * e * a)) * p := by
-              noncomm_ring
-          _ = p * (star a * e * a) * p := by
-              rw [CFC.sqrt_mul_sqrt_self _ (hnn a)]
-          _ = 0 := h0
-      exact ceil_mul_eq_zero (hnn a) ((sqrt_mul_eq_zero_iff (hnn a) p).mp hs)
-    have hle1 : cceil e ≤ 1 - p := by
-      rw [(cceil_fundamental e he).2]
-      refine (projSup_spec hsetproj).2.2 (1 - p) hpproj.one_sub ?_
-      rintro _ ⟨a, rfl⟩
-      exact ((orthogonal_tuple_of_projections_1 (ceil (star a * e * a)) p
-        (hceilproj a) hpproj).out 0 4).mp (hkey a)
-    have hpp : p * p = 0 :=
-      ((orthogonal_tuple_of_projections_1 p p hpproj hpproj).out 4 0).mp
-        (hple.trans hle1)
-    exact hpne (by rw [← hpproj.isIdempotentElem.eq, hpp])
+    refine hpne (hpeq.trans (projSup_eq himgproj (IsStarProjection.zero A)
+      ?_ fun q hq _ => hq.nonneg))
+    rintro _ ⟨_, ⟨a, rfl⟩, rfl⟩
+    have hall : e * a * p = 0 := by by_contra h; exact hcon ⟨a, h⟩
+    refine le_of_eq ?_
+    show ceil (star p * ceil (star a * e * a) * p) = 0
+    rw [hconj a, hall, star_zero, zero_mul, ceil_zero]
   obtain ⟨a, hax⟩ := hex
   obtain ⟨hpi, hstar, hrange⟩ := polar_decomposition_1 (e * a * p)
   set f : A := star (polar (e * a * p)) * polar (e * a * p) with hfdef

@@ -1099,25 +1099,20 @@ theorem commutant_ceil (S : Set A) (hmul : ∀ a ∈ S, ∀ b ∈ S, a * b ∈ S
     (he : IsStarProjection e) :
     IsLeast {p : A | IsStarProjection p ∧ p ∈ commutant A S ∧ e ≤ p}
       (commutantCeil A S e) := by
-  -- The author's argument, in the form used for **68I** (`isLeast_centralAbove`):
-  -- `⌈pb⌋ = ⌈b* p b⌉ = ⋃_{a∈S} ⌈b* ⌈a* e a⌉ b⌉ = ⋃_{a∈S} ⌈(ab)* e (ab)⌉ ≤ p`
+  -- The author's argument (880.30):
+  -- `b* p b ≤ ⌈b* p b⌉ = ⋃_{a∈S} ⌈b* ⌈a* e a⌉ b⌉ = ⋃_{a∈S} ⌈(ab)* e (ab)⌉ ≤ p`
   -- (by **60IX**.2 and **60VII**.1, using that `S` is closed under
-  -- multiplication), whence `pbp = pb`; `bp = pbp` follows by applying this to
-  -- `b*` and taking adjoints.  Minimality: `e ≤ q ∈ S□` gives
+  -- multiplication); applying `p⊥(·)p⊥` gives `p⊥ b* p b p⊥ ≤ p⊥ p p⊥ = 0`,
+  -- that is `(p b p⊥)* (p b p⊥) = 0`, so `p b p⊥ = 0` and `pbp = pb`;
+  -- `bp = pbp` follows by applying this to `b*` and taking adjoints.
+  -- Minimality: `e ≤ q ∈ S□` gives
   -- `(a* e a)q = a* e (qa) = a* (eq) a = a* e a`, so `⌈a* e a⌉ ≤ q`.
   classical
   rw [commutantCeil]
-  -- two elementary facts about projections, spelled out here
+  -- an elementary fact about projections, spelled out here
   have hprojmul : ∀ {x y : A}, IsStarProjection x → IsStarProjection y → x ≤ y →
       x * y = x := fun hx hy h =>
     ((projection_below_effect _ _ ⟨hy.nonneg, hy.le_one⟩ hx).out 0 7).mp h
-  have hsupp : ∀ {x q : A}, IsStarProjection q → suppProj x ≤ q → x * q = x := by
-    intro x q hq h
-    obtain ⟨h1, h2⟩ := (ceill_basic_1 x).1
-    calc x * q = x * suppProj x * q := by rw [h2]
-      _ = x * (suppProj x * q) := by noncomm_ring
-      _ = x * suppProj x := by rw [hprojmul h1 hq h]
-      _ = x := h2
   set T : Set A := {x : A | ∃ a ∈ S, x = ceil (star a * e * a)} with hTdef
   have hTnn : ∀ a : A, (0 : A) ≤ star a * e * a := fun a =>
     star_left_conjugate_nonneg he.nonneg a
@@ -1128,10 +1123,6 @@ theorem commutant_ceil (S : Set A) (hmul : ∀ a ∈ S, ∀ b ∈ S, a * b ∈ S
   set p : A := projSup T with hpdef
   have hkey : ∀ b ∈ S, p * b * p = p * b := by
     intro b hb
-    have e1 : star (p * b) * (p * b) = star b * p * b := by
-      rw [star_mul, hpproj.isSelfAdjoint.star_eq]
-      calc star b * p * (p * b) = star b * (p * p) * b := by noncomm_ring
-        _ = star b * p * b := by rw [hpproj.isIdempotentElem.eq]
     have himgproj : ∀ x ∈ ((fun q => ceil (star b * q * b)) '' T),
         IsStarProjection x := by
       rintro _ ⟨q, hq, rfl⟩
@@ -1144,12 +1135,26 @@ theorem commutant_ceil (S : Set A) (hmul : ∀ a ∈ S, ∀ b ∈ S, a * b ∈ S
       rw [← ceil_fundamental_1 b (star a * e * a) (hTnn a), star_mul]
       congr 1
       noncomm_ring
-    have h3 : suppProj (p * b) ≤ p := by
-      rw [suppProj, e1]
-      refine le_of_eq_of_le (?_ : ceil (star b * p * b) = _)
+    have hceil : ceil (star b * p * b) ≤ p :=
+      le_of_eq_of_le (ceil_conj_projSup b T hTproj)
         ((projSup_spec himgproj).2.2 p hpproj fun x hx => hpub x (himgT x hx))
-      exact ceil_conj_projSup b T hTproj
-    exact hsupp hpproj h3
+    -- `p⊥ (b* p b) p⊥ ≤ p⊥ p p⊥ = 0`, that is `(p b p⊥)* (p b p⊥) = 0`
+    have hnnb : (0 : A) ≤ star b * p * b :=
+      star_left_conjugate_nonneg hpproj.nonneg b
+    have habs : star b * p * b * (1 - p) = 0 := by
+      rw [mul_sub, mul_one, (ceil_le_iff hnnb hpproj).mp hceil, sub_self]
+    have hz : p * b * (1 - p) = 0 := by
+      refine (CStarRing.star_mul_self_eq_zero_iff _).mp ?_
+      calc star (p * b * (1 - p)) * (p * b * (1 - p))
+          = (1 - p) * (star b * (p * p) * b * (1 - p)) := by
+            rw [star_mul, star_mul, star_sub, star_one,
+              hpproj.isSelfAdjoint.star_eq]
+            noncomm_ring
+        _ = (1 - p) * (star b * p * b * (1 - p)) := by
+            rw [hpproj.isIdempotentElem.eq]
+        _ = 0 := by rw [habs, mul_zero]
+    rw [mul_sub, mul_one, sub_eq_zero] at hz
+    exact hz.symm
   have hcomm : p ∈ commutant A S := by
     intro b hb
     have h4 : p * b * p = b * p := by
