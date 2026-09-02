@@ -105,10 +105,6 @@ theorem isSumOf_prod {M N : Type u} [EffectAlgebra M] [EffectAlgebra N]
         cases h₂ with
         | cons hl₂ hp₂ => exact PCM.IsSumOf.cons (ih hl₁ hl₂) ⟨hp₁, hp₂⟩
 
-/- (`emon_mul_ovee` — one-sided distributivity of `⊙` over `⋁` — used to be
-duplicated here; it now lives in `EffectAlgebras.lean` next to
-`exc_emonzero`, with the same statement.) -/
-
 /-- Helper: `0 ≼ a` in any PCM. -/
 theorem pcm_zero_le {M : Type u} [PCM M] (a : M) : (0 : M) ≼ a :=
   ⟨a, PCM.zero_perp a, PCM.zero_ovee a⟩
@@ -323,10 +319,6 @@ theorem isSumOf_mul_left {M : Type u} [EffectMonoid M] (x : M) {l : List M}
       rw [List.map_cons, he]
       exact PCM.IsSumOf.cons ih h'
 
-/- Helper: `emon_ovee_mul` (multiplication distributes over a partial sum in
-its *left* argument) used to live here; it is now in `EffectAlgebras.lean`,
-next to `emon_mul_ovee`, since the proof of 178III.2 needs it there. -/
-
 /-- Helper: multiplication in an effect monoid distributes over a finite
 partial sum in its left argument. -/
 theorem isSumOf_mul_right {M : Type u} [EffectMonoid M] (x : M) {l : List M}
@@ -528,12 +520,10 @@ is an effectus whose effect monoid of scalars is isomorphic to `[0,1]`.
 The isomorphism is rendered as a mutually inverse pair of effect-monoid
 morphisms, which is what "isomorphic as an effect monoid" means: a merely
 *bijective* morphism of effect algebras need not have a morphism inverse,
-because the inverse has to **reflect** `⊥` and no axiom gives that.  (An
-earlier reading asked only for a bijective `φ`, and was therefore weaker
-than the point; repaired in session 94, together with its two consumers in
-`B/Eff/VNExamples` — `su_real_separating` and `effectus_vn_real_separating`
-— where the reflection is available: the scalar `k` satisfies
-`k(1) = s(k)·1`, so `k ⊥ l` is *equivalent* to `s k + s l ≤ 1`.) -/
+because the inverse has to **reflect** `⊥` and no axiom gives that.  Its two
+consumers in `B/Eff/VNExamples` — `su_real_separating` and
+`effectus_vn_real_separating` — supply the reflection: there the scalar `k`
+satisfies `k(1) = s(k)·1`, so `k ⊥ l` is *equivalent* to `s k + s l ≤ 1`. -/
 def IsRealEffectus (C : Type u) [Category.{v} C] [HasFiniteCoproducts C]
     [∀ X Y : C, PCM (X ⟶ Y)] [FinPAC C] [EffectusPartialForm C] : Prop :=
   ∃ (φ : EffectMonoidHom (Scal C) I) (ψ : EffectMonoidHom I (Scal C)),
@@ -594,12 +584,8 @@ noncomputable def predMapHom {X Y : C} (f : X ⟶ Y) (hf : IsTotal f) :
 Given directly rather than existentially, so that both halves are pinned:
 the object part is *literally* `Pred X` and the action on maps is
 *literally* `p ↦ p ∘ f` (`predFunctor_obj`, `predFunctor_map`, both `rfl`).
-Compare the warning in the doc of `192V.3`, and the defect that the same
-ruling repaired for 192III.1/.2.  It was filed as **B6** in `QUESTIONS.md`,
-answered by Bas on 2026-08-15 ("yes, please fix the statements"),
-implemented in session 39, and the entry then deleted on 2026-08-16 under
-that file's house rule that an answered item is removed rather than marked
-(commit f277d72); the ruling survives there and in PROVING-LOG. -/
+Compare the warning in the doc of `192V.3`.  Pinning both halves rather than
+leaving the statement existential is the author's ruling of 2026-08-15. -/
 noncomputable def predFunctor : Tot C ⥤ (EModCat.{v, v} (Scal C))ᵒᵖ where
   obj X := Opposite.op (EModCat.of (Scal C) (Pred X.base))
   map {_ _} f := Quiver.Hom.op (predMapHom f.1 f.2)
@@ -620,12 +606,9 @@ map `Pred f` is an effect module homomorphism, and `Pred` is in fact a
 functor `Tot C → EMod_M^op` (the substitution functor).
 
 Both halves of the functor are pinned: the object part is `Pred X`, and the
-action on maps is `p ↦ p ∘ f`.  (Until the audit repair this asserted only
-`(F.obj X).unop.carrier = Pred X`, which any functor transported along a
-family of bijections satisfies — the defect that the **B6** ruling had
-already repaired for 192III.1 and 192III.2.  That item was filed in
-`QUESTIONS.md`, answered by Bas on 2026-08-15, implemented in session 39 and
-deleted on 2026-08-16 once implemented, commit f277d72.) -/
+action on maps is `p ↦ p ∘ f`.  Asserting only
+`(F.obj X).unop.carrier = Pred X` would constrain nothing about `F.map`, as
+any functor transported along a family of bijections satisfies it. -/
 theorem predMap_functor :
     ∃ F : Tot C ⥤ (EModCat.{v, v} (Scal C))ᵒᵖ,
       (∀ X : Tot C, (F.obj X).unop.carrier = Pred X.base) ∧
@@ -658,8 +641,8 @@ def SeparatingStates (C : Type u) [Category.{v} C] [HasFiniteCoproducts C]
 end Internal
 
 -- **190III** (eff.tex:2136, Examples), `effectus_vn_real_separating`:
--- `vNᵒᵖ` is a real effectus with separating states and predicates.  Moved
--- to `Theses/B/Eff/VNExamples.lean` (author ruling 2026-08-17): it needs
+-- `vNᵒᵖ` is a real effectus with separating states and predicates.  Lives
+-- in `Theses/B/Eff/VNExamples.lean` (author ruling 2026-08-17): it needs
 -- thesis A's von Neumann theory, and this file must keep importing only
 -- `Theses.Common`.
 
@@ -1557,7 +1540,7 @@ proof (`emodPres`) rather than as instances.  The mathematics is short —
 a module map `E × M → E'` is determined by `e ↦ f(e,0)` because
 `f(0,1) = f(1,0)^⊥` — but the transport through `⊤_ C ≅ emodPres.T` and
 `⊤ ⨿ ⊤ ≅ emodPres.P T T` is not.  The same gap blocks 191VIII.1 and
-192III.3.  See the report of session 94. -/
+192III.3. -/
 theorem emod_effectus (M : Type u) [EffectMonoid M] :
     Nonempty (EffectusTotalStructure (EModCat.{u, u} M)ᵒᵖ) := emod_effectus_aux
 
@@ -1567,22 +1550,19 @@ embeds into `EMod_M^op` — the substitution functor `Pred` on the total maps,
 with object part `Pred X` and action `p ↦ p ∘ f`, is faithful.  (Stated for
 an effectus in partial form with scalars `M = Scal C`.)
 
-The morphism action is now pinned (audit row 191II, repaired in session 94):
-asserting only `(F.obj X).unop.carrier = Pred X` constrains nothing about
-`F.map`, the defect that the **B6** ruling had repaired for 192III.1/.2
-(filed in `QUESTIONS.md`, answered by Bas on 2026-08-15 and deleted there on
-2026-08-16 once implemented, commit f277d72).
+The morphism action is pinned: asserting only
+`(F.obj X).unop.carrier = Pred X` would constrain nothing about `F.map`.
 
-⚠ Still weaker than the Theorem in one respect: the source concludes "`C` is
+⚠ Weaker than the Theorem in one respect: the source concludes "`C` is
 **equivalent to the subcategory** `Pred C` of `EMod_M^op`", and that does not
 follow from faithfulness alone.  Faithfulness does *not* imply equivalence
 with a subcategory: the discrete two-object category maps faithfully to the
 terminal category, whose only subcategories are `∅` and `1`, and it is
 equivalent to neither.  What the image subcategory needs in addition is that
 `Pred` be full onto its image, which 191VII does not prove.  So the missing
-clause is not a transcription slip but a gap in the printed argument — an
-author ruling on how "subcategory" is to be read.  See the report of session
-94. -/
+clause is not a transcription slip but a gap in the printed argument, needing
+an author ruling on how "subcategory" is to be read: `QUESTIONS.md` **B16**,
+which is open. -/
 theorem emod_effectus_representation {C : Type u} [Category.{v} C]
     [HasFiniteCoproducts C] [∀ X Y : C, PCM (X ⟶ Y)] [FinPAC C]
     [EffectusPartialForm C] (hsep : SeparatingPredicates C) :
@@ -3717,19 +3697,17 @@ end MConvexComb
 
 /-! ### Helpers on `𝒟_M`
 
-These six lemmas were originally stated further down, next to their uses for
-`AConv_M` (parsecs 193–194).  They are stated here because **192III.3**
-(`exc_dm_effectus_kleisli`, below) needs them earlier; nothing about them
-changed in the move. -/
+These six lemmas stand here, rather than next to their other uses for
+`AConv_M` (parsecs 193–194), because **192III.3**
+(`exc_dm_effectus_kleisli`, below) needs them first. -/
 
 /-- `𝒟_M` of a one-element set is a one-element set: every formal
 `M`-convex combination over `PUnit` is the Dirac one.  (This holds also for
-the trivial effect monoid `1 = 0`, where both sides are the zero function — the
-case that **B7** of `QUESTIONS.md` was about.  Bas answered it on 2026-08-15:
-effect monoids stay possibly trivial and 194I makes the case split, so no Lean
-change was needed; berr.tex's erratum `aconvalmosteffectus` carries it, and it
-is recorded at `aconvalmosteffectus_coproducts` below.  The entry was deleted
-on 2026-08-16 once implemented, commit f277d72.) -/
+the trivial effect monoid `1 = 0`, where both sides are the zero function.
+Effect monoids are allowed to be trivial — the author's ruling of 2026-08-15
+— and it is 194I that makes the case split; berr.tex's erratum
+`aconvalmosteffectus` carries that, and it is recorded at
+`aconvalmosteffectus_coproducts` below.) -/
 theorem MConvexComb.eq_eta_punit {M : Type u} [EffectMonoid M]
     (p : MConvexComb M PUnit.{v + 1}) : p = MConvexComb.eta PUnit.unit := by
   classical
@@ -4114,14 +4092,10 @@ functor `Set → Set`, with `(𝒟_M f)(p)(y) = ⋁_{x; f x = y} p(x)`, i.e. wit
 
 The structure is given directly rather than existentially: the object part is
 *literally* `MConvexComb M` and the action on maps is *literally*
-`MConvexComb.map` (`exc_dm_effectus_functor_obj`, `_map`, both `rfl`).  Until
-session 10 this read `∃ F : Type u ⥤ Type u, ∀ X, F.obj X = MConvexComb M X`,
-which constrains only the object part and is satisfied by any functor
-transported along a bijection.  That was the defect filed as **B6** in
-`QUESTIONS.md`, answered by Bas on 2026-08-15 ("yes, please fix the
-statements") and implemented here in session 39; the entry was deleted on
-2026-08-16 under that file's house rule (commit f277d72), so PROVING-LOG and
-that commit are now where the ruling lives. -/
+`MConvexComb.map` (`exc_dm_effectus_functor_obj`, `_map`, both `rfl`).
+`∃ F : Type u ⥤ Type u, ∀ X, F.obj X = MConvexComb M X` would constrain only
+the object part and is satisfied by any functor transported along a
+bijection. -/
 noncomputable def exc_dm_effectus_functor : Type u ⥤ Type u where
   obj X := MConvexComb M X
   map {_ _} f := TypeCat.ofHom fun p => p.map (TypeCat.Hom.hom f)
@@ -4491,19 +4465,17 @@ variable (M : Type u) [EffectMonoid M]
 /-- **192III.3** (`exc-dm-effectus`, eff.tex:2410, Exercise\*): the Kleisli
 category of `𝒟_M` is an effectus (in total form) with scalars `M`.
 
-Now stated about `exc_dm_effectus_monad` itself.  Until session 10 it was
-stated for an *arbitrary* monad `T` agreeing with `𝒟_M` on objects, which is
-**false**: transporting any monad along a bijection `T.obj X ≃ 𝒟_M X`
-satisfies that hypothesis while `Kl T` need not be an effectus (QUESTIONS.md
-B6).
+Stated about `exc_dm_effectus_monad` itself.  For an *arbitrary* monad `T`
+agreeing with `𝒟_M` on objects the claim would be **false**: transporting any
+monad along a bijection `T.obj X ≃ 𝒟_M X` satisfies that hypothesis while
+`Kl T` need not be an effectus.
 
 ⚠ **Weaker than the Exercise** in one respect (audit row 192III.3, left
 unrepaired): the Exercise says `Kl(𝒟_M)` is an effectus in total form **with
 `M` as scalars**, and the scalars clause is not asserted.  As for
 `emod_effectus`, the scalars are those of `Par (Kl(𝒟_M))`, and the tree has
 no tool that computes `Scal` — nor the PCM structure `ParPerp` / `parOvee` —
-of `Par C` for a concrete total-form effectus `C`.  See the report of session
-94.
+of `Par C` for a concrete total-form effectus `C`.
 
 The proof is the author's (`bsols.tex:1991-2170`): the coproducts of `Kl T`
 are those of `Set` with coprojections `η ∘ κᵢ` (the Kleisli inclusion is a
@@ -4708,10 +4680,10 @@ theorem two_eta_injective {X : Type v} :
   exact absurd hval (by decide)
 
 /-- **Erratum to 192V.3** (`eff-aconv-exa`, eff.tex:2577, Examples):
-the thesis used to claim "semilattices are exactly the abstract `2`-convex
-sets"; that claim is **false** and has been deleted (berr.tex's erratum
-`eff-aconv-exa`: "It's claimed abstract 2-convex sets are exactly
-semilattices.  This is false").  What is true is that the
+"semilattices are exactly the abstract `2`-convex sets" is **false**;
+berr.tex's erratum `eff-aconv-exa` records it ("It's claimed abstract
+2-convex sets are exactly semilattices.  This is false") and the claim is
+gone from eff.tex.  What is true is that the
 abstract `2`-convex sets are just *sets*: **every** type carries an abstract
 `2`-convex structure — no semilattice (indeed no structure at all) is
 needed.  Together with `two_convex_unique` this says `AConv₂ ≅ Set`. -/
@@ -5317,11 +5289,10 @@ of a real vector space — *with its canonical convex structure*
 `MConvex.ofConvex`.  (Cited by the thesis to
 \[statesofconvexsets, thm. 8\]; not proved there.)
 
-The target structure must be pinned down.  Until session 9 this was stated
-with the structure `st'` on `s` *also* existentially quantified, which says
-only that `X` is in bijection with some convex subset (a statement about
-cardinalities), not that it is affinely isomorphic to one.  See PROVING-LOG,
-session 9. -/
+The target structure must be pinned down: quantifying the structure on `s`
+existentially as well would say only that `X` is in bijection with some
+convex subset — a statement about cardinalities — not that it is affinely
+isomorphic to one. -/
 theorem cancellative_iso_convex {X : Type u} (st : MConvex I X)
     (hc : st.Cancellative) :
     ∃ (V : Type u) (_ : AddCommGroup V) (_ : Module ℝ V) (s : Set V)
@@ -5786,10 +5757,7 @@ is affine for total `f`, and `Stat : Tot C → AConv_{Mᵒᵖ}` is a functor.
 
 Both halves of the functor are pinned: the object part is `Stat X` and the
 action on maps is `ω ↦ f ∘ ω` (`statMap`).  Asserting only
-`(F.obj X).carrier = Stat X` constrains no more than the object part — the
-defect that the **B6** ruling had repaired for 192III.1 and 192III.2 (filed
-in `QUESTIONS.md`, answered by Bas on 2026-08-15 and deleted there on
-2026-08-16 once implemented, commit f277d72). -/
+`(F.obj X).carrier = Stat X` would constrain no more than the object part. -/
 theorem stat_functor :
     ∃ F : Tot C ⥤ AConvMCat.{v, v} (Scal C)ᵐᵒᵖ,
       (∀ X : Tot C, (F.obj X).carrier = Stat X.base) ∧
@@ -5938,16 +5906,15 @@ proof below is divergence class 2 — intersecting all congruences containing
 `R`, which is not the Exercise's argument — and 193IX, 194I.4 and 196II all
 had to be re-proved by other routes.
 
-Cost, measured in session 94 against `bsols.tex:2303`: the calculus needs a
-notion of *presentation* of a `𝒟_M X` by a list of `(coefficient, point)`
-pairs (the tree has `MConvexComb` as a support function, not as a list), the
-step relation and its reflexive-transitive closure, part 1 (short), part 2
-(the `μ(λ₀|ψ⟩ ⋁ ⋁ⱼ λⱼ|χⱼ⟩)` computation, done twice — once per kind of step),
+Cost, against `bsols.tex:2303`: the calculus needs a notion of *presentation*
+of a `𝒟_M X` by a list of `(coefficient, point)` pairs (the tree has
+`MConvexComb` as a support function, not as a list), the step relation and
+its reflexive-transitive closure, part 1 (short), part 2 (the
+`μ(λ₀|ψ⟩ ⋁ ⋁ⱼ λⱼ|χⱼ⟩)` computation, done twice — once per kind of step),
 and part 3 (choice of `∼`-representatives `r_x`, then `φ ≈ 𝒟_M(rep)(φ)` by
 induction along the support list, using part 2 once per point).  Estimated at
 800–1200 lines of `PCM.IsSumOf` manipulation; this is the largest single
-audit row in the module and was not attempted.  See the report of session
-94. -/
+audit row in the module. -/
 theorem least_conv_cong (st : MConvex M X) (R : X → X → Prop) :
     ∃ r : Setoid X, st.IsCongruence r ∧ (∀ x y, R x y → r.r x y) ∧
       ∀ r' : Setoid X, st.IsCongruence r' → (∀ x y, R x y → r'.r x y) →
@@ -6004,8 +5971,8 @@ least congruence on the free algebra `(𝒟_M(X+Y), μ)` containing the relation
 coproducts.
 
 The carrier, the congruence and the two coprojections are all **pinned**:
-`HasBinaryCoproducts` alone (the second conjunct, and all that used to be
-asserted) says nothing about *which* object the coproduct is, so 193IX's
+`HasBinaryCoproducts` alone (the second conjunct) says nothing about *which*
+object the coproduct is, so 193IX's
 "by our construction, every element of `X + Y` is `h` of a combination of
 coprojected elements" could not be read off it.
 
@@ -6013,7 +5980,7 @@ coprojected elements" could not be read off it.
 underlying type is `X + Y → M`, so it lands in `Type (max u v)` and **not** in
 `Type v`.  The statement is therefore about `AConvMCat.{u, max u v}`; at
 `AConvMCat.{u, v}` with `v < u` it is *false* (already `1 + 1 ≅ 𝒟_M {1,2}`
-has as many elements as `M`).  See PROVING-LOG. -/
+has as many elements as `M`). -/
 theorem aconv_coprod (M : Type u) [EffectMonoid M] :
     (∀ X Y : AConvMCat.{u, max u v} M,
       ∃ (r : Setoid (MConvexComb M (X.carrier ⊕ Y.carrier)))
@@ -6592,18 +6559,16 @@ variable (M : Type u) [EffectMonoid M]
 `AConv_M` has finite coproducts (binary ones by 193V; the empty set is the
 initial object).
 
-⚠ Two caveats, both recorded in PROVING-LOG.  (i) The universe level is
+⚠ Two caveats.  (i) The universe level is
 `max u v`, for the reason given at `aconv_coprod`.  (ii) "the empty set is the
 initial object" fails for the **trivial** effect monoid `M` (`1 = 0`): there
 `𝒟_M ∅` is a *singleton*, so `∅` carries no `h : 𝒟_M ∅ → ∅` and is not an
 object of `AConv_M` at all.  `AConv_M` is then equivalent to the one-object,
 one-arrow category and `1` is initial, so the proposition itself survives —
-the proof below splits on `1 = 0`.  The thesis now makes that same case split
-(erratum on `aconvalmosteffectus`), which settled the item recorded as **B7**
-in `QUESTIONS.md`: Bas answered it on 2026-08-15 — effect monoids are *not*
-required to satisfy `1 ≠ 0`, and 194I performs the split instead, so no Lean
-change was needed.  That entry was deleted on 2026-08-16 once implemented
-(commit f277d72). -/
+the proof below splits on `1 = 0`.  The thesis makes that same case split
+(erratum on `aconvalmosteffectus`): effect monoids are *not* required to
+satisfy `1 ≠ 0` (the author's ruling of 2026-08-15), and 194I performs the
+split instead. -/
 theorem aconvalmosteffectus_coproducts :
     HasFiniteCoproducts (AConvMCat.{u, max u v} M) := by
   classical
@@ -6660,7 +6625,7 @@ cotuples `[κ₁,κ₂,κ₂], [κ₂,κ₁,κ₂] : 1+1+1 → 1+1` are jointly 
 `AConvMCat.{u, max u v}` — its coproducts are quotients of function spaces
 into `M`, so at `AConvMCat.{u, v}` with `v < u` the `HasFiniteCoproducts`
 hypothesis is not instantiable and the hypothesised coproducts need not be
-the ones the thesis computes with.  See PROVING-LOG.
+the ones the thesis computes with.
 
 The proof is the thesis's: identify `1+1+1` with `𝒟_M{1,2,3}` and `1+1` with
 `𝒟_M{1,2}` (193X), under which the two cotuples become
@@ -6737,7 +6702,7 @@ right pullback squares of the effectus axioms (`(κ₁; !)`-squares) hold in
 `AConv_M`; only the left squares remain open (settled in 196II when `M` is
 an effect divisoid).
 
-⚠ Universe level: `max u v`, as for parts 1 and 3; see PROVING-LOG.
+⚠ Universe level: `max u v`, as for parts 1 and 3.
 
 The thesis's argument is followed for the *existence* of the mediating map
 (if `(!+!) ∘ α = κ₁ ∘ !` then each `α(z)` has zero `Y`-mass, hence is
@@ -7805,12 +7770,11 @@ theorem basic_divisoid_equiv (X : Type u) [TopologicalSpace X]
 /-- **195VII** (`eff-divisoid-add`, eff.tex:3333, Proposition): if `a ⊥ b`
 and `a ⋁ b ≼ c` in an effect divisoid, then `(a ⋁ b)/c = a/c ⋁ b/c`.
 
-The thesis's proof used to open with the false lemma "if `c⊙a ⊥ c⊙b` then
-`(c/c)⊙a ⊥ (c/c)⊙b`" (it fails in `[0,1]` at `c = ½`, `a = b = 1`).  That
-step has been deleted upstream (erratum on `eff-divisoid-add`) and the proof
-now runs exactly as below: first `c = a ⋁ b`, where `(a⋁b)/(a⋁b) ⊖ a/(a⋁b)`
-satisfies the defining property of `b/(a⋁b)`, then multiply on the left by
-`(a⋁b)/c`. -/
+The printed proof runs exactly as below: first `c = a ⋁ b`, where
+`(a⋁b)/(a⋁b) ⊖ a/(a⋁b)` satisfies the defining property of `b/(a⋁b)`, then
+multiply on the left by `(a⋁b)/c`.  (The erratum on `eff-divisoid-add`
+deleted an opening step "if `c⊙a ⊥ c⊙b` then `(c/c)⊙a ⊥ (c/c)⊙b`", which is
+false in `[0,1]` at `c = ½`, `a = b = 1`.) -/
 theorem divisoid_div_ovee {M : Type u} [EffectMonoid M] [EffectDivisoid M]
     {a b c : M} (hab : Perp a b) (hc : ovee a b hab ≼ c) :
     ∃ h' : Perp (div a c) (div b c),
@@ -7875,9 +7839,9 @@ variable {M : Type u} [EffectMonoid M]
 
 open Classical in
 open Classical in
--- (`map_spec_of_list`, `map_bin`, `mu_spec_of_subset` and `mu_bin` were
--- stated here originally; they are now next to `bin_eq_zero`, above, because
--- 192V.4 (`cancellative_iso_convex`) already needs them.)
+-- (`map_spec_of_list`, `map_bin`, `mu_spec_of_subset` and `mu_bin` are
+-- likewise stated next to `bin_eq_zero`, above, because 192V.4
+-- (`cancellative_iso_convex`) already needs them there.)
 /-- A formal combination over `A + B` that vanishes on `A` is `𝒟_M κ₂` of a
 formal combination over `B` (the mirror image of `exists_map_inl`). -/
 theorem exists_map_inr {A B : Type v} (p : MConvexComb M (A ⊕ B))
@@ -8677,7 +8641,6 @@ effect divisoid, then `AConv_M` is an effectus (in total form).
 ⚠ Universe level `max u v`, as for 193V and 194I: an `EffectusTotalStructure`
 carries `HasFiniteCoproducts`, and the coproducts of `AConv_M` are quotients
 of function spaces into `M`, so they exist only at `AConvMCat.{u, max u v}`.
-See PROVING-LOG.
 
 The four other ingredients are 194I.1–.4 (`aconvalmosteffectus_coproducts`,
 `_terminal`, `_jointlyMonic`, `_kappaPullback`); the left pullback square is

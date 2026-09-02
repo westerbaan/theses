@@ -420,8 +420,7 @@ private theorem pcm_middle_four {M : Type*} [PCM M] {a b c d : M}
 
 /-- `▷₁ ∘ (k + l) = [k, 0]`: the first partial projection absorbs a
 coproduct of maps.  A helper for `cotupl_pcm_key` (181IV) and for
-`coprod_prod_converse` (181VII); until the audit repair this declaration
-carried the **181VII** doc comment, which belongs on `coprod_prod` below. -/
+`coprod_prod_converse` (181VII). -/
 private theorem map_pproj₁ {X Y X' Y' : C} (k : X ⟶ X') (l : Y ⟶ Y') :
     coprod.map k l ≫ pproj₁ X' Y' = coprod.desc k 0 := by
   refine coprod.hom_ext ?_ ?_
@@ -2237,8 +2236,6 @@ theorem par_eq_zero_of_perp_one {X : Par C} {p : X ⟶ Par.of (⊤_ C)}
   rw [← hd₁, hd0, par_zero_comp]
 
 
-/-! ### local copies of the two `private` helpers of `section TotalToPartial` -/
-
 /-! ### 187VII: the last two axioms -/
 
 /-- **187VII**: if `1 ∘ f ⊥ 1 ∘ g` then `f ⊥ g`. -/
@@ -2448,11 +2445,8 @@ The thesis asserts an **isomorphism of categories**, not merely an
 equivalence: `P` is the *identity on objects* and has a genuine two-sided
 inverse `P' f = ⟨f, (1 ∘ f)ᵖ⟩`.  That is the first conjunct — two functors,
 both identity-on-objects (`parTotFunctor` and `parTotInv`), whose composites
-are equal to the identity functors *on the nose*.  (Until the audit repair
-only the second conjunct, `Nonempty (Par (Tot D) ≌ D)`, was stated; the
-weakening propagated into `cho_thm_3_par_tot`.  This is the same repair as
-179III.1 `ea_equiv_emod_two` in `B/Eff/EffectAlgebras`.)  The equivalence is
-kept as the second conjunct. -/
+are equal to the identity functors *on the nose*.  The weaker
+`Nonempty (Par (Tot D) ≌ D)` is the second conjunct. -/
 theorem par_tot_equiv :
     (∃ (P : Par (Tot D) ⥤ D) (P' : D ⥤ Par (Tot D)),
         (∀ X : Par (Tot D), P.obj X = X.base.base) ∧
@@ -2559,9 +2553,8 @@ theorem totParInv_comp_functor :
 As in 188III the thesis asserts an **isomorphism of categories**: `Q g = ĝ`
 is the identity on objects and is inverted by `pardp`.  That is the first
 conjunct — `totParFunctor` and `totParInv`, both identity-on-objects, with
-composites equal to the identity functors *on the nose*.  (Until the audit
-repair only the second conjunct was stated, and the weakening propagated into
-`cho_thm_3_tot_par`.)  The equivalence is kept as the second conjunct. -/
+composites equal to the identity functors *on the nose*.  The weaker
+equivalence is the second conjunct. -/
 theorem tot_par_equiv :
     (∃ (Q : C ⥤ Tot (Par C)) (Q' : Tot (Par C) ⥤ C),
         (∀ Z : C, Q.obj Z = Tot.of (Par.of Z)) ∧
@@ -2601,14 +2594,14 @@ structure of an effectus in partial form on `Par C` constructed in `cho_thm_1`.
 
 "Nothing is lost" is an **isomorphism of categories**, and that is the first
 conjunct: two identity-on-objects functors whose composites are the identity
-functors on the nose (see `tot_par_equiv`).  Until the audit repair only the
-equivalence, now the second conjunct, was asserted.
+functors on the nose (see `tot_par_equiv`).  The weaker equivalence is the
+second conjunct.
 
-(An earlier formulation quantified over *every* structure of an effectus in
-partial form on `Par C`.  That is strictly stronger than 188IV: the notion of
-*total* map depends on the effect object `I` and the truth predicate `1` of the
-structure, and we could not show — nor does the thesis claim — that it is
-independent of them.  See PROVING-LOG, session 12.) -/
+The statement is about the structure `cho_thm_1` constructs, not about every
+structure of an effectus in partial form on `Par C`: the latter is strictly
+stronger than 188IV, since the notion of *total* map depends on the effect
+object `I` and the truth predicate `1` of the structure, and independence of
+those is neither shown here nor claimed by the thesis. -/
 theorem cho_thm_3_tot_par :
     letI := parHasFiniteCoproducts (C := C)
     (∃ (Q : C ⥤ Tot (Par C)) (Q' : Tot (Par C) ⥤ C),
@@ -2715,7 +2708,7 @@ theorem distinction_part_tot_eff_2 {C : Type u} [Category.{v} C]
 -- **180V** (`effectus-vn`, eff.tex:827) and **189aI**
 -- (`effexamplesintro`, eff.tex:2020, Examples), `effectus_vn` and
 -- `effectus_vn_partial`: `vNᵒᵖ` is an effectus in total resp. partial
--- form.  Moved to `Theses/B/Eff/VNExamples.lean` (author ruling
+-- form.  Live in `Theses/B/Eff/VNExamples.lean` (author ruling
 -- 2026-08-17): they need thesis A's von Neumann theory, and this file must
 -- keep importing only `Theses.Common` (and `Theses.B.Eff.WStarCat`).
 

@@ -691,16 +691,14 @@ theorem compr_basics_3 (f : W ⟶ X) [IsIso f] :
 /-- **199VII.4** (`compr-basics`, eff.tex:3979, Exercise): the zero map out
 of the zero object is a comprehension for `0`.
 
-*The running text is still wrong here.*  As printed the part reads "Zero
-maps are comprehensions (for `0`)", and that is **false** for any non-initial
-domain: the universal property applied to `g = 0 : Z ⟶ W` forces the
-factorisation through `π : W ⟶ X` to be unique, so `W ⟶ W` is a singleton
-for every `W`, and (with `id` and `0` both in it) `W ≅ 0`.  `berr.tex`'s
-erratum `compr-basics` says exactly this — "Not every zero map is a
-comprehension; only those from `0`" — but, unlike its twin for 197V.4
-(`quotient-basics`, whose correction *has* been absorbed: the running text
-now reads "Maps into `0` are quotients (for 1)"), it has **not** been carried
-into eff.tex.  The corrected form is what is stated here. -/
+⚠ **False as printed.**  The part reads "Zero maps are comprehensions (for
+`0`)", which fails for any non-initial domain: the universal property applied
+to `g = 0 : Z ⟶ W` forces the factorisation through `π : W ⟶ X` to be
+unique, so `W ⟶ W` is a singleton for every `W`, and (with `id` and `0` both
+in it) `W ≅ 0`.  `berr.tex`'s erratum `compr-basics` says exactly this — "Not
+every zero map is a comprehension; only those from `0`" — but the correction
+is not in eff.tex's running text (`ERRATA.md` row **199VII**.4, open).  The
+corrected form is what is stated here. -/
 theorem compr_basics_4 (X : C) :
     IsComprehension (0 : Pred X) (0 : (⊥_ C) ⟶ X) := by
   refine ⟨?_, ?_⟩
@@ -776,9 +774,7 @@ class HasAllKernels (C : Type u) [Category.{v} C] [HasFiniteCoproducts C]
 
 /-- **200III** (`effectus-kernels`, eff.tex:4005, Proposition), the
 Proposition's *first* sentence: **an effectus with comprehension has all
-kernels**.  (Until the audit repair only the second sentence,
-`effectus_kernels`, was stated, and it did not even take
-`[HasComprehension C]`.)
+kernels**.
 
 The thesis's proof is exactly this: *the* kernel of `f` "is given by a
 comprehension `π_{(1 ∘ f)ᵖ}`", so the existence half is the chosen
@@ -1440,9 +1436,8 @@ class HasAllCokernels (C : Type u) [Category.{v} C] [HasFiniteCoproducts C]
 
 /-- **205II** (`effectus-cokernels`, eff.tex:4369, Proposition), the
 Proposition's *first* sentence: **an effectus with quotients and images has
-all cokernels**.  (Until the audit repair only the second sentence,
-`effectus_cokernels`, was stated, and it assumed only `[HasImages C]`, so
-the existence half — which is what needs `[HasQuotients C]` — was nowhere.)
+all cokernels**.  (The existence half is what needs `[HasQuotients C]`;
+`effectus_cokernels` itself assumes only `[HasImages C]`.)
 
 The thesis's proof is exactly this: "a cokernel of a map `f` is given by a
 quotient `ξ_{IM f}` of `IM f`", so the existence half is the chosen quotient

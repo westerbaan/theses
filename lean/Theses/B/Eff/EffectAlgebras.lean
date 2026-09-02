@@ -380,12 +380,10 @@ group `G` with a distinguished element `u ≥ 0`, the order interval
 `[0,u]_G` is an effect algebra with `x ⊥ y` iff `x + y ≤ u`, `x ⋁ y = x + y`
 and `xᵖ = u - x`.
 
-⚠ The hypothesis `0 ≤ u` is **not** in the source, and is a silent repair of
-a defect in it (`ERRATA.md` row **175II**.2, OPEN): without it
-`[0,u]` is empty and carries no effect algebra, so the point as printed is
-false.  Changing our statement to match the printed one is not an option and
-choosing the repair is the author's call — this is an `ERRATA` matter, not a
-mis-transcription.  (`G` is also specialised to *abelian* groups, where the
+⚠ The hypothesis `0 ≤ u` is **not** in the source, and repairs a defect in it
+(`ERRATA.md` row **175II**.2, open): without it `[0,u]` is empty and carries
+no effect algebra, so the point as printed is false.  (`G` is also
+specialised to *abelian* groups, where the
 point says "ordered group"; that is harmless, the only operation used is
 `+`.) -/
 noncomputable def orderIntervalEffectAlgebra (G : Type u) [AddCommGroup G]
@@ -649,9 +647,8 @@ the componentwise structure **is** the categorical product of `E` and `F` in
 
 The product is **pinned**: the first conjunct says that the cone with vertex
 the componentwise `E × F` and legs the two set-theoretic projections is a
-limit of `pair E F`.  (Until the audit repair only the second conjunct,
-`HasBinaryProducts EA`, was asserted, which pins neither the carrier nor the
-projections.) -/
+limit of `pair E F`; `HasBinaryProducts EA`, the second conjunct, pins
+neither the carrier nor the projections. -/
 theorem ea_product_categorical :
     (∀ X Y : EACat.{u}, ∃ (π₁ : EACat.of (X.carrier × Y.carrier) ⟶ X)
         (π₂ : EACat.of (X.carrier × Y.carrier) ⟶ Y),
@@ -1216,9 +1213,7 @@ and infima taken inside `↓aᵖ` (resp. `↓a`) agree with those taken in `E`. 
 is true for the halves recorded below, but **false** for the remaining two: an
 upper bound of a set contained in `↓a` need not itself lie below `a`, so a
 supremum computed inside `↓a` need not be a supremum in `E`.  The
-counterexample is `WrightTriangle` below; it is also what refuted the
-*first printing* of 177Ia (infimum ⟹ supremum).  eff.tex now prints the
-sound converse (see `ea_modularity_prop`).  (Master's thesis Proposition
+counterexample is `WrightTriangle` below.  (Master's thesis Proposition
 13.2, about the dual operation
 `a ⊛ b = (aᵖ ⋁ bᵖ)ᵖ`, is omitted: that operation is not part of this
 development.) -/
@@ -1335,9 +1330,8 @@ theorem msc_cor14_2_inf {a b c j u v m : E}
 `a ⊖ b` and `a ⊖ c` **among the elements below `a`**.  It need *not* be their
 least upper bound in `E`: the master's thesis's claim that it is is refuted by
 `WrightTriangle.no_sup_a1_a2` below (take `a = a₁ ⋁ a₂`, `b = a₁`, `c = a₂`,
-`m = 0`).  This is exactly the gap in the **first printing** of 177Ia's
-proof; the proof eff.tex now carries (`modularity-lemma-proof`) hypothesises
-the supremum instead and is sound — `dual_modularity_lemma` below. -/
+`m = 0`).  eff.tex's `modularity-lemma-proof` hypothesises the supremum
+instead and is sound — `dual_modularity_lemma` below. -/
 theorem msc_cor14_2_sup_below {a b c m u v j : E}
     (hu : IsDiff a b u) (hv : IsDiff a c v) (hm : PCM.IsInf b c m) (hj : IsDiff a m j) :
     u ≼ j ∧ v ≼ j ∧ ∀ d, d ≼ a → u ≼ d → v ≼ d → j ≼ d := by
@@ -1368,9 +1362,7 @@ theorem msc_prop15' {a b j : E} (hab : Perp a b) (hj : PCM.IsSup a b j) :
 `(a ∨ b) ⋁ (a ∧ b) = a ⋁ b`.  This is the identity half of 177Ia, with the
 infimum *given*.  What 177Ia adds — that the infimum exists as soon as the
 supremum does — is true and is `msc_prop15'_of_dual` below; the two together
-are `ea_modularity_prop`, the Proposition as eff.tex now prints it.  (The
-first printing swapped the two existence hypotheses, and in *that* direction
-it is false: `WrightTriangle.not_ea_modularity_prop`.) -/
+are `ea_modularity_prop`, the Proposition as eff.tex prints it. -/
 theorem msc_cor16_2 {a b j m : E} (hab : Perp a b) (hm : PCM.IsInf a b m)
     (hj : PCM.IsSup a b j) : ∃ hmj : Perp m j, ovee m j hmj = ovee a b hab := by
   obtain ⟨m', hdiff, hm'⟩ := msc_prop15' hab hj
@@ -1417,13 +1409,12 @@ theorem isInf_orth_of_isSup {a b m : E} (h : PCM.IsSup a b m) :
   rwa [eabasics_orth_orth] at this
 
 /-- **The lemma of `modularity-lemma-proof`** (eff.tex, the proof of 177Ia,
-point 20), in the direction eff.tex now prints: for `c, d ≼ x`, if
+point 20), in the direction eff.tex prints: for `c, d ≼ x`, if
 `(x ⊖ c) ∨ (x ⊖ d)` exists then `c ∧ d` exists as well and
-`(x ⊖ c) ∨ (x ⊖ d) = x ⊖ (c ∧ d)`.  The *first* printing had the two
-swapped — hypothesise the infimum of the differences, conclude the supremum
-of `c, d` — and in that direction it is false, even with `c ⊥ d` added
-(`WrightTriangle.not_modularity_lemma`); the honest remnant of it is
-`msc_cor14_2_sup_below`.
+`(x ⊖ c) ∨ (x ⊖ d) = x ⊖ (c ∧ d)`.  Swapping the two — hypothesise the
+infimum of the differences, conclude the supremum of `c, d` — gives a false
+statement, even with `c ⊥ d` added (`WrightTriangle.not_modularity_lemma`);
+the honest remnant of that direction is `msc_cor14_2_sup_below`.
 
 Why this direction survives.  The printed proof's final step takes a bound
 `s` of
@@ -1497,12 +1488,10 @@ axiom is checked by `decide`.
 
 Since `a₁ ⊥ a₂` while `c₃ = a₃ᵖ = a₂ ⋁ a₅ = a₆ ⋁ a₁` and `c₄ = a₄ᵖ = a₁ ⋁ a₂`
 are *two incomparable* upper bounds of `{a₁, a₂}`, the pair `a₁, a₂` has an
-infimum (namely `0`) but **no** supremum.  That refutes 177Ia and the lemma
-its proof rests on **as they were first printed**; both were corrected in
-eff.tex on 2026-08-14 (commit `280fa5b`), and the corrected forms are true —
-`msc_prop15'_of_dual` and `dual_modularity_lemma`.  The counterexample is
-kept because it is what shows the correction was needed, and because it is
-what refutes master's-thesis Corollary 14's two remaining halves. -/
+infimum (namely `0`) but **no** supremum.  That refutes the form 177Ia and
+its lemma had before eff.tex's correction of 2026-08-14 (the corrected forms
+are true: `msc_prop15'_of_dual` and `dual_modularity_lemma`), and it refutes
+master's-thesis Corollary 14's two remaining halves. -/
 
 namespace WrightTriangle
 
@@ -1601,9 +1590,8 @@ exists, yet `a₁ ∨ a₂` does not.
 (Every orthoalgebra has `a ∧ b = 0` for `a ⊥ b`, so the Proposition would make
 every orthoalgebra an orthomodular poset.)
 
-The statement refuted here is the **old** one — infimum hypothesised,
-supremum concluded.  It is not a claim about the text as it now stands: the
-Proposition eff.tex prints today runs the other way and is proved as
+Refuted here is the direction with the infimum hypothesised and the supremum
+concluded; the Proposition eff.tex prints runs the other way and is
 `ea_modularity_prop`. -/
 theorem not_ea_modularity_prop :
     ¬ ∀ (E : Type) [EffectAlgebra E] (a b m : E) (hab : Perp a b),
@@ -1613,13 +1601,11 @@ theorem not_ea_modularity_prop :
   obtain ⟨j, _, hj, _⟩ := H W a1 a2 0 perp_a1_a2 isInf_a1_a2
   exact no_sup_a1_a2 ⟨j, hj⟩
 
-/-- **The lemma of `modularity-lemma-proof` (eff.tex:512) was false too in
-its first printing**, even when strengthened by `c ⊥ d`: with `x = a₁ ⋁ a₂`,
-`c = a₁`, `d = a₂` one has
-`x ⊖ c = a₂`, `x ⊖ d = a₁`, whose infimum is `0`, while `c ∨ d` does not
-exist.  Again this refutes the **old** direction only; the lemma eff.tex now
-prints hypothesises the supremum of the differences and is
-`dual_modularity_lemma`. -/
+/-- **The swapped form of the lemma of `modularity-lemma-proof` (eff.tex:512)
+is false too**, even when strengthened by `c ⊥ d`: with `x = a₁ ⋁ a₂`,
+`c = a₁`, `d = a₂` one has `x ⊖ c = a₂`, `x ⊖ d = a₁`, whose infimum is `0`,
+while `c ∨ d` does not exist.  The lemma eff.tex prints hypothesises the
+supremum of the differences and is `dual_modularity_lemma`. -/
 theorem not_modularity_lemma :
     ¬ ∀ (E : Type) [EffectAlgebra E] (x c d u v m : E), Perp c d →
         IsDiff x c u → IsDiff x d v → PCM.IsInf u v m → ∃ j, PCM.IsSup c d j := by
@@ -1646,18 +1632,9 @@ hypothesis that the infimum is *given*, the identity alone is the master's
 thesis's Corollary 16.2, `msc_cor16_2`; `msc_cor16_1` is the `a ∧ b = 0`
 special case, the `⋁`-versus-`∨` bridge.)
 
-**History.**  The *first printing* of this Proposition had the two
-hypotheses swapped — for `a ⊥ b`, the existence of `a ∧ b` was claimed to
-give `a ∨ b` — and in that direction it is **false**:
-`WrightTriangle.not_ea_modularity_prop` refutes it, and
-`WrightTriangle.not_modularity_lemma` refutes the correspondingly swapped
-lemma of `modularity-lemma-proof` even when strengthened by `c ⊥ d`.  Both
-refutations are statements about the *old* form and remain true; they are
-kept as the record of why the correction was needed.  eff.tex has carried
-the corrected statement and proof since 2026-08-14 (commit `280fa5b`,
-"Second attempt at correcting 177Ia"), berr.tex's erratum
-`ea-modularity-prop` announces the reversal, and this declaration now states
-the corrected Proposition in full — it is no longer a weaker remnant. -/
+The Proposition with the two hypotheses swapped — for `a ⊥ b`, the existence
+of `a ∧ b` giving `a ∨ b` — is **false**:
+`WrightTriangle.not_ea_modularity_prop`. -/
 theorem ea_modularity_prop {E : Type u} [EffectAlgebra E] {a b j : E}
     (hab : Perp a b) (hj : PCM.IsSup a b j) :
     ∃ m, PCM.IsInf a b m ∧ ∃ hmj : Perp m j, ovee a b hab = ovee m j hmj := by
@@ -1695,7 +1672,7 @@ theorem Ortholattice.compl_top {L : Type u} [Ortholattice L] : (⊤ : L)ᶜ = �
 
 -- **177V** (eff.tex:559, Example), `projections_orthomodularLattice`: the
 -- lattice of projections of a von Neumann algebra is an orthomodular
--- lattice.  Moved to `Theses/B/Eff/VNExamples.lean` (author ruling
+-- lattice.  Lives in `Theses/B/Eff/VNExamples.lean` (author ruling
 -- 2026-08-17): it needs thesis A's projection theory, and this file must
 -- keep importing only `Theses.Common`.
 
@@ -2430,9 +2407,7 @@ theorem exists_noncommutative_effectMonoid :
   ⟨Set.Icc (0 : LexNC.V) LexNC.u, LexNC.effectMonoid, LexNC.not_commutative⟩
 
 /-- **178IIIa** (`exc-emonzero`, eff.tex:661, Exercise): `a ⊙ 0 = 0 = 0 ⊙ a`
-in any effect monoid.  (The exercise used to read "`a ⊙ 0 = a = 0 ⊙ a`",
-which is false in `[0,1]`; corrected upstream, with an erratum on
-`exc-emonzero`.) -/
+in any effect monoid. -/
 theorem exc_emonzero {M : Type u} [EffectMonoid M] (a : M) :
     a * 0 = 0 ∧ (0 : M) * a = 0 := by
   -- `(x ⋁ 0) ⊙ (0 ⋁ 0) = x ⊙ 0` expands to `(x⊙0) ⋁ (0⊙0) ⋁ (x⊙0) ⋁ (0⊙0)`;
@@ -2480,9 +2455,9 @@ theorem exc_emonzero {M : Type u} [EffectMonoid M] (a : M) :
 `a ⊙ c ⊥ a ⊙ d` and `(a ⊙ c) ⋁ (a ⊙ d) = a ⊙ (c ⋁ d)`.  This is *not* an
 axiom — 178II only gives the four-fold law — but it follows from it once
 `0 ⊙ x = 0` is known (178IIIa), by instantiating at `(a ⋁ 0) ⊙ (c ⋁ d)`.
-(The `exc-emonzero` solution in `bsols.tex` used to *prove* `a ⊙ 0 = 0` from
-one-sided distributivity, which is circular; it has since been rewritten to
-argue from the four-fold law, as `exc_emonzero` does.  See PROVING-LOG.) -/
+Note the dependency runs this way round: `exc_emonzero` must be argued from
+the four-fold law, since deriving it from one-sided distributivity would be
+circular. -/
 theorem emon_mul_ovee {M : Type u} [EffectMonoid M] (a : M) {c d : M}
     (hcd : Perp c d) :
     ∃ h : Perp (a * c) (a * d), a * ovee c d hcd = ovee (a * c) (a * d) h := by
@@ -2681,9 +2656,7 @@ section FiniteEffectMonoid
 variable {M : Type u} [EffectMonoid M]
 
 /-- Helper: multiplication in an effect monoid distributes over a partial sum
-in its *left* argument (the mirror image of `emon_mul_ovee`).  Migrated here
-from `StatesPredicates.lean`, where it used to live, because 178III.2 needs
-it. -/
+in its *left* argument (the mirror image of `emon_mul_ovee`). -/
 theorem emon_ovee_mul {M : Type u} [EffectMonoid M] (x : M) {p q : M}
     (hpq : Perp p q) :
     ∃ h' : Perp (p * x) (q * x),
@@ -2896,8 +2869,7 @@ every finite effect monoid is commutative.
 finite effect monoid comes from a Boolean algebra"
 (`finite_effectMonoid_boolean`), which it cites to \[basmsc, prop. 40];
 there is no argument in either thesis to transcribe.  That theorem is
-**proved**, below in section `FiniteBoolean` — an earlier revision of this
-note said it was "still `sorry`", which is stale — but the thesis's
+**proved**, below in section `FiniteBoolean`, but the thesis's
 dependency cannot be inverted here, because our proof of it *consumes this
 corollary*: `emon_finite_orth_mul`, `emon_finite_orth_ovee` and
 `emon_finite_perp_mul_orth` each rewrite by `finite_effectMonoid_commutative`,
@@ -3388,16 +3360,15 @@ def eModTwoToEA : EModCat.{0, u} Bool ⥤ EACat.{u} where
 effect algebras is **isomorphic** (not merely equivalent) to that of effect
 modules over `2`.
 
-The source says `\cong`, and that is what is asserted here: two functors,
-both the identity on carriers, whose composites are equal to the identity
-functors *on the nose*.  (Until the audit repair only
-`Nonempty (EACat ≌ EModCat Bool)` was stated — the recurring "isomorphism
-rendered as equivalence" shape of 188III/188IV.)  The equivalence is kept as
-the second conjunct.
+The source says `\cong`, and that is what the first conjunct asserts: two
+functors, both the identity on carriers, whose composites are equal to the
+identity functors *on the nose*.  The weaker
+`Nonempty (EACat ≌ EModCat Bool)` — the "isomorphism rendered as
+equivalence" shape of 188III/188IV — is the second conjunct.
 
-The extra ingredient over the old proof is `effectModule_bool_unique`: the
-`2`-action on an effect algebra is literally unique, so `EMod₂ ⥤ EA ⥤ EMod₂`
-is the identity, not just naturally isomorphic to it. -/
+What buys the isomorphism is `effectModule_bool_unique`: the `2`-action on
+an effect algebra is literally unique, so `EMod₂ ⥤ EA ⥤ EMod₂` is the
+identity, not just naturally isomorphic to it. -/
 theorem ea_equiv_emod_two :
     (∃ (F : EACat.{u} ⥤ EModCat.{0, u} Bool) (G : EModCat.{0, u} Bool ⥤ EACat.{u}),
         (∀ E : EACat.{u}, (F.obj E).carrier = E.carrier) ∧
