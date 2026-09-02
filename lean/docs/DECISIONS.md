@@ -23,16 +23,15 @@ list: it was proved on 2026-08-29** — see §4.2, which used to explain why it
 was waiting on mathematics rather than on you.
 
 Beyond the `sorry`s there are 100 open rows in `ERRATA.md` (those are
-corrections, not decisions, and are not repeated here) and **eleven** audit
-rows in `docs/audit/` marked `left-ruling`, re-counted 2026-08-29 after a
-pass that re-derived every verdict in the audit (twelve then; 51IX §2.6 was
-closed on 2026-09-02, and 69IX's three rows left §2.4 on 2026-09-03 when the
-printed 69X route was taken without restating 30X): four are §2 (191II §2.3,
-30X §2.4, 28II §2.5), two are §3 (132III §3.2, 34V
-§3.3), and four are §1 (199V §1.1, 215II §1.2, and 139XI §1.4 and 179III.2
-§1.5, which are the two that hold up a `sorry`).
+corrections, not decisions, and are not repeated here) and **ten** audit
+rows in `docs/audit/` marked `left-ruling`, re-counted 2026-09-03 (twelve on
+2026-08-29; 51IX §2.6 was closed on 2026-09-02, and 69IX's rows left §2.4 on
+2026-09-03 when the printed 69X route was taken without restating 30X): three
+are §2 (191II §2.3, 30X §2.4, 28II §2.5), two are §3 (132III §3.2, 34V §3.3),
+and four are §1 (199V §1.1, 215II §1.2, and 139XI §1.4 and 179III.2 §1.5,
+which are the two that hold up a `sorry`).
 
-The twelfth, **180V** `effectus_vn_partial`, names no item of this file at
+The tenth, **180V** `effectus_vn_partial`, names no item of this file at
 all — it points only at `QUESTIONS.md` B13.  So a reader working through
 §1–§3 will not meet it, which is why it is named here.
 
