@@ -1587,24 +1587,46 @@ private def toPLM (ω : 𝒜 →ₗ[ℂ] ℂ) (hω : IsPositiveMap ω) : 𝒜 �
 private theorem toPLM_apply (ω : 𝒜 →ₗ[ℂ] ℂ) (hω : IsPositiveMap ω) (a : 𝒜) :
     toPLM ω hω a = ω a := rfl
 
+/-- The inner product `[a, b]_ω = ω(a* b)` of **30II** as a
+`PreInnerProductSpace.Core ℂ 𝒜` — possibly degenerate, which is the setting
+of **4XV** (`A/CStar/Basic`).  It is what **30IV**.1 applies Cauchy–Schwarz
+to, as the Exercise instructs. -/
+@[instance_reducible] private noncomputable def omegaCore (ω : 𝒜 →ₗ[ℂ] ℂ)
+    (hω : IsPositiveMap ω) :
+    PreInnerProductSpace.Core ℂ 𝒜 where
+  inner a b := ω (star a * b)
+  conj_inner_symm a b := by
+    simpa [Complex.star_def] using (state_inner_product ω hω b a).2
+  re_inner_nonneg a := (Complex.le_def.mp (hω _ (star_mul_self_nonneg a))).1
+  add_left a b c := by
+    show ω (star (a + b) * c) = ω (star a * c) + ω (star b * c)
+    rw [star_add, add_mul, map_add]
+  smul_left a b r := by
+    show ω (star (r • a) * b) = (starRingEnd ℂ) r * ω (star a * b)
+    rw [star_smul, smul_mul_assoc, map_smul, smul_eq_mul, starRingEnd_apply]
+
 /-- **30IV** (`omega-norm-basic`, cstar.tex:4787, Exercise), part 1
-(Kadison's inequality): `|ω(a* b)|² ≤ ω(a* a) ω(b* b)` for a p-map `ω`. -/
+(Kadison's inequality): `|ω(a* b)|² ≤ ω(a* a) ω(b* b)` for a p-map `ω`.
+
+*Class 1 — faithful.*  The Exercise says "use Cauchy–Schwarz
+(`inner-product-basic`)", and that is what this does: **4XV**.1
+`inner_product_basic_1` for the inner product `[·,·]_ω` of **30II**, packaged
+as `omegaCore` above.  `ω(a* a)` and `ω(b* b)` are real because `ω` is
+positive, which turns the real inequality into the stated one over `ℂ`. -/
 theorem omega_norm_basic_1 (ω : 𝒜 →ₗ[ℂ] ℂ) (hω : IsPositiveMap ω)
     (a b : 𝒜) :
     ((‖ω (star a * b)‖ : ℂ)) ^ 2 ≤ ω (star a * a) * ω (star b * b) := by
-  set f := toPLM ω hω with hf
-  have hA : ((‖(f.toPreGNS a : f.PreGNS)‖ : ℂ)) ^ 2 = ω (star a * a) :=
-    f.preGNS_norm_sq (f.toPreGNS a)
-  have hB : ((‖(f.toPreGNS b : f.PreGNS)‖ : ℂ)) ^ 2 = ω (star b * b) :=
-    f.preGNS_norm_sq (f.toPreGNS b)
-  have hi : ⟪(f.toPreGNS a : f.PreGNS), (f.toPreGNS b : f.PreGNS)⟫ = ω (star a * b) := rfl
-  have hcs := norm_inner_le_norm (𝕜 := ℂ) (f.toPreGNS a : f.PreGNS) (f.toPreGNS b : f.PreGNS)
-  rw [hi] at hcs
-  have hsq : ‖ω (star a * b)‖ ^ 2 ≤
-      (‖(f.toPreGNS a : f.PreGNS)‖ * ‖(f.toPreGNS b : f.PreGNS)‖) ^ 2 :=
-    pow_le_pow_left₀ (norm_nonneg _) hcs 2
-  rw [← hA, ← hB, ← mul_pow]
-  exact_mod_cast RCLike.ofReal_le_ofReal (K := ℂ) |>.mpr hsq
+  have hcs : ‖ω (star a * b)‖ ^ 2
+      ≤ RCLike.re (ω (star a * a)) * RCLike.re (ω (star b * b)) :=
+    inner_product_basic_1 (V := 𝒜) (c := omegaCore ω hω) a b
+  have hre : ∀ x : 𝒜, ω (star x * x) = ((RCLike.re (ω (star x * x)) : ℝ) : ℂ) := by
+    intro x
+    have h := hω _ (star_mul_self_nonneg x)
+    refine Complex.ext rfl ?_
+    rw [Complex.ofReal_im]
+    exact ((Complex.le_def.mp h).2).symm
+  rw [hre a, hre b]
+  exact_mod_cast RCLike.ofReal_le_ofReal (K := ℂ) |>.mpr hcs
 
 /-- **30IV** (`omega-norm-basic`, cstar.tex:4787, Exercise), part 2, the
 inequality (in the corrected form of erratum `parsec-300.40`, without the
@@ -1905,32 +1927,30 @@ noncomputable def conjMap (b : 𝒜) : 𝒜 →ₗ[ℂ] 𝒜 :=
 /-- **29IX** (`injective-miu-iso-on-image`) in the form **30X**'s proof uses
 it: an injective miu-map *reflects* positivity.  The thesis puts it as "`ϱ_Ω`
 restricts to an miu-isomorphism from `𝒜` to `ϱ_Ω(𝒜)`, so in order to prove
-that `a ≥ 0` it suffices to show that `ϱ_Ω(a) ≥ 0`" (cstar.tex:5024).  The
-argument is **17V**'s norm criterion for positivity: `0 ≤ ρ x` gives
-`‖ρ x − t‖ ≤ t` at `t = ‖ρ x‖/2`, and both norms are unchanged by `ρ`
-(**29VIII** `injective_miu_isometry`), so `‖x − t‖ ≤ t` at `t = ‖x‖/2`.
-(`A/CStar/Positive.lean` has the same auxiliary for **20aII**, but private.) -/
+that `a ≥ 0` it suffices to show that `ϱ_Ω(a) ≥ 0`" (cstar.tex:5024).
+
+*Class 1 — faithful.*  That is the route taken: `injective_miu_iso_on_image_isomorphism`
+(**29IX**) gives the C*-subalgebra `S = ρ(𝒜)` of `ℬ` and the miu-isomorphism
+`e : 𝒜 ≅ S` with `↑(e x) = ρ x`, so `spec(x) = spec(e x)` (an algebra
+isomorphism preserves the spectrum) `= spec(ρ x)` (spectral permanence for
+the *closed* ⋆-subalgebra `S`, which is what the "C*-subalgebra" half of
+**29IX** is for), and positivity of a self-adjoint element is a property of
+its spectrum, **17V**.3.  (`A/CStar/Positive.lean` has an auxiliary of the
+same statement for **20aII**, but private.) -/
 private theorem nonneg_of_injective_miu {ℬ : Type*} [CStarAlgebra ℬ]
     [PartialOrder ℬ] [StarOrderedRing ℬ] (ρ : 𝒜 →⋆ₐ[ℂ] ℬ)
     (hρ : Function.Injective ρ) (x : 𝒜) (h : 0 ≤ ρ x) : 0 ≤ x := by
-  have hiso : ∀ y : 𝒜, ‖ρ y‖ = ‖y‖ := injective_miu_isometry ρ hρ
   have hisa : IsSelfAdjoint (ρ x) := IsSelfAdjoint.of_nonneg h
   have hsa : IsSelfAdjoint x := hρ (by rw [map_star, hisa.star_eq])
-  have ht' : ‖ρ x‖ / 2 ≤ ‖x‖ / 2 := by rw [hiso]
-  have hfwd : (0 : ℬ) ≤ ρ x ↔
-      ∀ t : ℝ, ‖ρ x‖ / 2 ≤ t → ‖ρ x - algebraMap ℂ ℬ (t : ℂ)‖ ≤ t :=
-    (cstar_positive_tfae (ρ x) hisa).out 3 1
-  have h2 : ‖ρ x - algebraMap ℂ ℬ ((‖x‖ / 2 : ℝ) : ℂ)‖ ≤ ‖x‖ / 2 :=
-    hfwd.mp h (‖x‖ / 2) ht'
-  have h3 : ρ (x - algebraMap ℂ 𝒜 ((‖x‖ / 2 : ℝ) : ℂ))
-      = ρ x - algebraMap ℂ ℬ ((‖x‖ / 2 : ℝ) : ℂ) := by
-    rw [map_sub]
-    congr 1
-    exact AlgHomClass.commutes ρ _
-  rw [← h3, hiso] at h2
-  have hbwd : (∃ t : ℝ, ‖x‖ / 2 ≤ t ∧ ‖x - algebraMap ℂ 𝒜 (t : ℂ)‖ ≤ t) ↔ (0 : 𝒜) ≤ x :=
-    (cstar_positive_tfae x hsa).out 0 3
-  exact hbwd.mp ⟨‖x‖ / 2, le_rfl, h2⟩
+  obtain ⟨S, -, hSclosed, e, he⟩ := injective_miu_iso_on_image_isomorphism ρ hρ
+  have : IsClosed (S : Set ℬ) := hSclosed
+  have hspec : spectrum ℂ (ρ x) = spectrum ℂ x := by
+    rw [← he x]
+    exact (StarSubalgebra.spectrum_eq S (a := e x)).symm.trans
+      (AlgEquiv.spectrum_eq e.toAlgEquiv x)
+  have h3 := ((cstar_positive_tfae (ρ x) hisa).out 3 2).mp h
+  rw [hspec] at h3
+  exact ((cstar_positive_tfae x hsa).out 2 3).mp h3
 
 /-- `0 ≤ T` in `B(H)` gives `0 ≤ ⟨y, T y⟩` for *every* `y` — **25III**'s easy
 half, without the normalisation `‖y‖ = 1` that `OrderSeparating` carries. -/

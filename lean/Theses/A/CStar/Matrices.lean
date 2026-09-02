@@ -2968,42 +2968,33 @@ theorem norm_unitalBoundCLM (f : 𝒜 →ₗ[ℂ] ℬ)
 /-- **34XVI** (`cp-russo-dye`, cstar.tex:5767, Corollary), the substantial
 half: `‖f(a)‖ ≤ ‖f(1)‖ ‖a‖` for every cp-map `f : 𝒜 → ℬ` between C*-algebras.
 The Corollary's equality `‖f‖ = ‖f(1)‖` itself is `cp_russo_dye_norm` below,
-which adds the reverse bound. -/
+which adds the reverse bound.
+
+*Class 1 — faithful.*  The Corollary's own computation
+`‖f(a)‖² = ‖f(a)*f(a)‖ = ‖f(a*1)f(1*a)‖ ≤ ‖f(1*1)‖‖f(a*a)‖ ≤ ‖f(1)‖²‖a‖²`:
+the middle inequality is **34XVII** `cp_cs` at `(a, 1)`, and the last one is
+**20II**.1 `weak_russo_dye_1` at the self-adjoint `a* a`, which is the step
+the printed proof cites `weak-russo-dye` for. -/
 theorem cp_russo_dye (f : 𝒜 →ₗ[ℂ] ℬ) (hf : IsCompletelyPositiveMap f)
     (a : 𝒜) : ‖f a‖ ≤ ‖f 1‖ * ‖a‖ := by
   have hp : IsPositiveMap f := astara_pos_basic_2_cp f hf
-  -- a positive map is norm-bounded by `‖f 1‖` on positive elements
-  have hpos : ∀ x : 𝒜, 0 ≤ x → ‖f x‖ ≤ ‖f 1‖ * ‖x‖ := by
-    intro x hx
-    have h1 : x ≤ algebraMap ℂ 𝒜 ((‖x‖ : ℝ) : ℂ) := by
-      have h := IsSelfAdjoint.le_algebraMap_norm_self (.of_nonneg hx)
-      rwa [algebraMap_real_eq] at h
-    have h2 : f x ≤ ((‖x‖ : ℝ) : ℂ) • f 1 := by
-      have hd : 0 ≤ f (algebraMap ℂ 𝒜 ((‖x‖ : ℝ) : ℂ) - x) :=
-        hp _ (sub_nonneg.mpr h1)
-      rw [map_sub, Algebra.algebraMap_eq_smul_one, map_smul] at hd
-      exact sub_nonneg.mp hd
-    calc ‖f x‖ ≤ ‖((‖x‖ : ℝ) : ℂ) • f 1‖ :=
-          CStarAlgebra.norm_le_norm_of_nonneg_of_le (hp x hx) h2
-      _ = ‖f 1‖ * ‖x‖ := by rw [norm_smul]; simp [mul_comm]
-  -- the cp Cauchy–Schwarz inequality with `(1, a)`
-  have hcs := cp_cs f hp (hf 2) 1 a
-  simp only [star_one, one_mul, mul_one] at hcs
-  have hnn : 0 ≤ f a * f (star a) := by
-    rw [cstar_p_implies_i f hp a]
-    exact mul_star_self_nonneg _
-  have hn1 : ‖f a * f (star a)‖ ≤ ‖‖f (star a * a)‖ • f 1‖ :=
-    CStarAlgebra.norm_le_norm_of_nonneg_of_le hnn hcs
-  rw [cstar_p_implies_i f hp a, CStarRing.norm_self_mul_star, norm_smul,
-    norm_norm] at hn1
+  -- `‖f(a* a)‖ ≤ ‖f(1)‖ ‖a* a‖` by **20II**.1, `a* a` being self-adjoint
   have hn2 : ‖f (star a * a)‖ ≤ ‖f 1‖ * (‖a‖ * ‖a‖) := by
-    have h := hpos (star a * a) (star_mul_self_nonneg a)
+    have h := weak_russo_dye_1 f hp (star a * a) (IsSelfAdjoint.star_mul_self a)
     rwa [CStarRing.norm_star_mul_self] at h
+  -- the cp Cauchy–Schwarz inequality at `(a, 1)`:
+  -- `f(a* 1) f(1* a) ≤ ‖f(1* 1)‖ f(a* a)`
+  have hcs := cp_cs f hp (hf 2) a 1
+  simp only [star_one, one_mul, mul_one, cstar_p_implies_i f hp a] at hcs
+  have hnn : 0 ≤ star (f a) * f a := star_mul_self_nonneg _
+  have hn1 : ‖star (f a) * f a‖ ≤ ‖‖f 1‖ • f (star a * a)‖ :=
+    CStarAlgebra.norm_le_norm_of_nonneg_of_le hnn hcs
+  rw [CStarRing.norm_star_mul_self, norm_smul, norm_norm] at hn1
   have hsq : ‖f a‖ ^ 2 ≤ (‖f 1‖ * ‖a‖) ^ 2 := by
     calc ‖f a‖ ^ 2 = ‖f a‖ * ‖f a‖ := pow_two _
-      _ ≤ ‖f (star a * a)‖ * ‖f 1‖ := hn1
-      _ ≤ (‖f 1‖ * (‖a‖ * ‖a‖)) * ‖f 1‖ :=
-          mul_le_mul_of_nonneg_right hn2 (norm_nonneg _)
+      _ ≤ ‖f 1‖ * ‖f (star a * a)‖ := hn1
+      _ ≤ ‖f 1‖ * (‖f 1‖ * (‖a‖ * ‖a‖)) :=
+          mul_le_mul_of_nonneg_left hn2 (norm_nonneg _)
       _ = (‖f 1‖ * ‖a‖) ^ 2 := by ring
   exact (pow_le_pow_iff_left₀ (norm_nonneg (f a)) (by positivity) two_ne_zero).mp hsq
 
