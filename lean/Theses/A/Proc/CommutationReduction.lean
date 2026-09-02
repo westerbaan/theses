@@ -35,17 +35,15 @@ of the form "`n` vectors are jointly cyclic".  Concretely: the family
 So **no** increasing net of cuts can reach the cyclic-and-separating case
 — for either orientation of the cut, and for any choice of the Zorn
 family.  What survives finite joins is exactly *finite joint cyclicity*,
-and that is what is proved here.  Closing the remaining step
-"finitely cyclic ⟹ cyclic and separating" is the genuine **amplification**
-`ℋ ⇝ ℋ ⊗ ℂⁿ`: if `ξ_1, …, ξ_n` are jointly cyclic for `X ⊆ B(ℋ)` then
-`ξ = ∑ ξ_i ⊗ δ_i` is a *cyclic* vector for
-`X ⊗̄ B(ℂⁿ) = (X^□ ⊗ 1)^□` (the amplification theorem, which the tree
-*does* have), hence a **separating** vector for the amplification
-`X^□ ⊗ 1`, and `cyclic_and_separating_of_separating` cuts that down to a
-cyclic *and* separating one.  What is missing is only the transport of
-`CT` across that move: the associativity unitary
-`(ℋ⊗L) ⊗ (𝒦⊗L') ≅ (ℋ⊗𝒦) ⊗ (L⊗L')` together with
-`B(L) ⊗̄ B(L') = B(L⊗L')`, neither of which is in the tree.  See
+and that is what is proved here.  The step that follows is the genuine
+**amplification** `ℋ ⇝ ℋ ⊗ ℂⁿ` of `A/Proc/CommutationAmplify.lean`: if
+`ξ_1, …, ξ_n` are jointly cyclic for `X ⊆ B(ℋ)` then `ξ = ∑ ξ_i ⊗ δ_i` is
+a *cyclic* vector for `X ⊗̄ B(ℂⁿ)`, and `CT` descends along the
+amplification, so finite joint cyclicity reduces to a single **cyclic**
+vector.  It does *not* reach cyclic-and-separating — see that file's
+header for why no amplification and no net of cuts can — which is instead
+reached by one cut *inside* the algebra
+(`A/Proc/Compression.lean`, `A/Proc/CommutationCyclic.lean`).  See
 `docs/COMMUTATION-THEOREM.md` §4.
 
 ## One caveat inherited from `relCT_of_CT`
@@ -56,13 +54,11 @@ over von Neumann ones.  That is forced by `relCT_of_CT`, whose hypothesis
 is `CT` for the compressed algebras `𝒜_e = cmpr '' 𝒜` — and `𝒜_e` is not
 known here to be ultraweakly closed: for a cut `e ∈ 𝒜^□` that is exactly
 the normality of `x ↦ e x e`, deliberately avoided in
-`A/Proc/CornerTensor.lean` (see its header).  `hasFinCyclic_mono` says at
-least that the hypothesis stays available after enlarging `X` to its
-bicommutant; what is *not* available is `CT X Y ↔ CT X^□□ Y^□□`, which
-would need the right-handed amplification theorem
-`{1 ⊗ b : b ∈ Y}^□ = B(ℋ) ⊗̄ Y^□` — the tree has only the left-handed
-`amplification_commutant`, the flip unitary being one of the missing
-pieces.
+`A/Proc/CornerTensor.lean` (see its header).  The quantifier costs
+nothing: `hasFinCyclic_mono` says the hypothesis stays available after
+enlarging `X` to its bicommutant, and `CT_iff_bicommutant`
+(`A/Proc/CommutationAmplify.lean`) says `CT X Y` and `CT X^□□ Y^□□` are
+the same statement.
 -/
 import Theses.A.Proc.CornerTensor
 
@@ -344,8 +340,8 @@ projection) → `isLUB_range_finsetSum` (finite sums increase to `1`) →
 → `relCT_of_CT` and `CT_of_relCT` (cutting), packaged as
 `CT_of_CT_corner`.
 
-See the file header for why the hypothesis cannot be weakened to
-"cyclic and separating" without an amplification. -/
+See the file header for why the hypothesis is finite joint cyclicity and
+not "cyclic and separating". -/
 theorem CT_of_CT_finCyclic
     (hyp : ∀ {E F : Type u} [NormedAddCommGroup E] [InnerProductSpace ℂ E]
         [CompleteSpace E] [NormedAddCommGroup F] [InnerProductSpace ℂ F]

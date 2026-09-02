@@ -6,7 +6,7 @@ the case where cyclic and separating vectors are available.
 
 Nothing here is modular theory.  The file collects the *elementary* von
 Neumann algebra theory that every route to the commutation theorem
-consumes, and which the tree did not have:
+consumes:
 
 * `vnComm`, the commutant of a von Neumann subalgebra of `B(ℋ)` as a
   bundled `StarSubalgebra`, with `vnComm_vnComm` (88VI in bundled form);
@@ -26,12 +26,15 @@ consumes, and which the tree did not have:
   is *separating* for the corner `e M e`; and the Zorn argument that
   produces an orthogonal family of such `e` with supremum `1`.
 
-See `docs/COMMUTATION-THEOREM.md` §4 for what this is a part of, and for
-what is still missing (the corner Hilbert space `eℋ` together with the
-identification `(e ⊗ f)(ℋ ⊗ 𝒦) ≅ eℋ ⊗ f𝒦`, without which the cutting
-step cannot be *stated* for the tensor product; the passage from
-σ-finiteness to a cyclic and separating vector after amplification by
-`ℓ²(ℕ)`; and the flip/associativity unitaries).
+See `docs/COMMUTATION-THEOREM.md` §4 for the route this file is a part
+of.  The corner Hilbert space `eℋ` and the identification
+`(e ⊗ f)(ℋ ⊗ 𝒦) ≅ eℋ ⊗ f𝒦`, without which the cutting step cannot be
+*stated* for the tensor product, are `A/Proc/CornerTensor.lean`; the
+reduction is run over a net of cuts in `A/Proc/CommutationReduction.lean`
+and carried to the cyclic-and-separating case by
+`CommutationAmplify.lean`, `Compression.lean` and
+`CommutationCyclic.lean`; the unconditional theorem is
+`A/Proc/CommutationTheorem.lean`.
 -/
 import Theses.A.Proc.Tensor
 
@@ -248,11 +251,8 @@ theorem CT_vnComm {SA : StarSubalgebra ℂ (H →L[ℂ] H)}
 
 *On the record only.*  Neither this nor its feeder `CT_vnComm` has a consumer
 anywhere in `Theses/`: the reduction runs on `CT_comm` and
-`CT_iff_bicommutant`.  `docs/COMMUTATION-THEOREM.md` once described
-"dualising via `CT_iff_vnComm`" — that was a prose argument, never a
-dependency — and now that `commutation_theorem` is unconditional both sides
-of this iff are theorems.  It was advertised in this file's header as a main
-result until 2026-08-26; see `docs/DEAD-LIMBS.md` §7. -/
+`CT_iff_bicommutant`, and since `commutation_theorem` is unconditional both
+sides of this iff are theorems.  See `docs/DEAD-LIMBS.md` §7. -/
 theorem CT_iff_vnComm {SA : StarSubalgebra ℂ (H →L[ℂ] H)}
     {SB : StarSubalgebra ℂ (K →L[ℂ] K)}
     (hA : IsVNSubalgebra (H →L[ℂ] H) SA) (hB : IsVNSubalgebra (K →L[ℂ] K) SB) :
@@ -283,8 +283,7 @@ continuous — but for a monotone net of *projections* Cauchy–Schwarz
 
 Both ingredients — `uwTendsto_of_isLUB` (a repackaging of **44VI**
 `vna_supremum_uwlimit`) and `uw_compress_tendsto` itself — live in
-`A/Proc/QuantumLambda.lean`, where they were `private` until 2026-08-26;
-they are used from here directly rather than copied. -/
+`A/Proc/Tensor.lean` and are used from here directly rather than copied. -/
 
 section Compression
 
@@ -863,13 +862,12 @@ end OpTensorNets
 
 /-! ## Step 1: cutting
 
-Everything of the cutting step **except** the identification of
-`(M ⊗̄ N)_{e ⊗ f}` with `M_e ⊗̄ N_f` — which needs the corner Hilbert space
-`eℋ` and is what is still missing (see the file header).  What is proved
-here is that once the compressions `(e ⊗ f)·(M ⊗̄ N)^□·(e ⊗ f)` are known
-to land in `M^□ ⊗̄ N^□`, the commutation theorem follows: compress first in
-the `𝒦` variable and then in the `ℋ` variable, each time by
-`mem_of_compress_mem`. -/
+Once the compressions `(e ⊗ f)·(M ⊗̄ N)^□·(e ⊗ f)` are known to land in
+`M^□ ⊗̄ N^□`, the commutation theorem follows: compress first in the `𝒦`
+variable and then in the `ℋ` variable, each time by
+`mem_of_compress_mem`.  That hypothesis — `RelCT` at each cut — is
+supplied by `A/Proc/CornerTensor.lean`, which gets it from the corner
+Hilbert space `eℋ` without proving `(M ⊗̄ N)_{e ⊗ f} = M_e ⊗̄ N_f`. -/
 
 section Cutting
 
@@ -945,8 +943,8 @@ commutant of the reduced algebra `(𝒜 ⊗̄ ℬ)_p` inside the corner
 
 For `p = e ⊗ f` with `e ∈ 𝒜^□`, `f ∈ ℬ^□` this is *exactly* what the
 identification `(𝒜 ⊗̄ ℬ)_{e ⊗ f} = 𝒜_e ⊗̄ ℬ_f` plus `CT(𝒜_e, ℬ_f)` would
-deliver — and it is the only thing the reduction still lacks; see
-`CT_of_relCT`. -/
+deliver; `A/Proc/CornerTensor.lean` delivers it without that
+identification, and `CT_of_relCT` consumes it. -/
 def RelCT (SA : StarSubalgebra ℂ (H →L[ℂ] H)) (SB : StarSubalgebra ℂ (K →L[ℂ] K))
     (p : HT H K →L[ℂ] HT H K) : Prop :=
   ∀ z : HT H K →L[ℂ] HT H K, p * z * p = z →

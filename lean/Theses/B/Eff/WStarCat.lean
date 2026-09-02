@@ -255,17 +255,16 @@ private theorem NCPUMap.assoc' {D : Type u} [CStarAlgebra D] [PartialOrder D]
 
 end MapClosure
 
-/-- The category `W*_ncpsu` of von Neumann algebras with normal completely
-positive subunital maps — the morphisms at the heart of both theses
-(objects wrapped, so that `WStarNCPU` can share the object type `WStar`). -/
+/-- The objects of the category `W*_ncpsu` of von Neumann algebras with
+normal completely positive subunital maps — the morphisms at the heart of
+both theses.  The object type is wrapped, so that `WStarNCPU` can share
+`WStar`. -/
 structure WStarCPSU : Type (u + 1) where
   of ::
   base : WStar.{u}
 
-/-- The category `W*_ncpsu` of von Neumann algebras with normal completely
-positive subunital maps — the category at the heart of both theses.  (The
-category laws are proved above, via `NCPSUMap.ext'` and the defining
-equations of `NCPSUMap.id`/`comp`.) -/
+/-- The category structure on `W*_ncpsu` (category laws proved above, via
+`NCPSUMap.ext'` and the defining equations of `NCPSUMap.id`/`comp`). -/
 noncomputable instance : Category.{u} WStarCPSU.{u} where
   Hom A B := Theses.NCPSUMap A.base B.base
   id A := NCPSUMap.id A.base
@@ -274,8 +273,8 @@ noncomputable instance : Category.{u} WStarCPSU.{u} where
   comp_id f := NCPSUMap.comp_id' f
   assoc f g h := NCPSUMap.assoc' f g h
 
-/-- The category `W*_ncpu` (thesis: `vN`) of von Neumann algebras with
-normal completely positive unital maps. -/
+/-- The objects of the category `W*_ncpu` (thesis: `vN`) of von Neumann
+algebras with normal completely positive unital maps. -/
 structure WStarNCPU : Type (u + 1) where
   of ::
   base : WStar.{u}

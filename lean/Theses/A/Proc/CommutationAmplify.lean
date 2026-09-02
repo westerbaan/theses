@@ -37,23 +37,20 @@ von Neumann subalgebras `𝒜 ⊆ B(ℋ)`, `ℬ ⊆ B(𝒦)`.*
    cyclic for `𝒜 ⊆ B(ℋ)` then `∑ᵢ ξᵢ ⊗ δᵢ` is cyclic for `𝒜 ⊗̄ B(ℂⁿ)`:
    `(x ⊗ |δ_j⟩⟨δ_i|)(∑ₖ ξₖ ⊗ δₖ) = x ξ_i ⊗ δ_j`.
 
-A by-product, and it removes a caveat: **`CT_iff_bicommutant`**,
-`CT 𝒜 ℬ ↔ CT 𝒜^□□ ℬ^□□`.  It is immediate from ingredient 1
-(`𝒜 ⊗̄ ℬ = 𝒜^□□ ⊗̄ ℬ^□□`, `concreteTensor_vnComm_vnComm`) and is exactly
-what the header of `A/Proc/CommutationReduction.lean` records as missing
-— it is why the hypothesis of `CT_of_CT_finCyclic` has to quantify over
-arbitrary ∗-subalgebras, and it is now available.  (The brief for this
-round expected it to need the right-handed amplification
-`{1 ⊗ b}^□ = B(ℋ) ⊗̄ ℬ^□`; it does not.)
+A by-product: **`CT_iff_bicommutant`**, `CT 𝒜 ℬ ↔ CT 𝒜^□□ ℬ^□□`,
+immediate from ingredient 1 (`𝒜 ⊗̄ ℬ = 𝒜^□□ ⊗̄ ℬ^□□`,
+`concreteTensor_vnComm_vnComm`).  It is what makes the hypothesis of
+`CT_of_CT_finCyclic` (`A/Proc/CommutationReduction.lean`) quantifying
+over arbitrary ∗-subalgebras cost nothing.  The right-handed
+amplification `{1 ⊗ b}^□ = B(ℋ) ⊗̄ ℬ^□` is not needed for it.
 
-## The target is `cyclic`, not `cyclic and separating` — and that is not
-## a shortfall of this file
+## The target is `cyclic`, not `cyclic and separating`
 
-The plan this round was written to execute said: amplify by `ℂⁿ`, get a
-vector cyclic for `𝒜 ⊗̄ B(ℂⁿ)`, hence separating for `𝒜^□ ⊗ 1`, and let
-`cyclic_and_separating_of_separating` finish — the only missing piece
-being the tensor transport.  **That is wrong, and the amplification
-cannot reach the cyclic-and-separating case.**  Two independent reasons:
+One might hope to amplify by `ℂⁿ`, get a vector cyclic for `𝒜 ⊗̄ B(ℂⁿ)`,
+hence separating for `𝒜^□ ⊗ 1`, and let
+`cyclic_and_separating_of_separating` finish.  **That does not work: the
+amplification cannot reach the cyclic-and-separating case.**  Two
+independent reasons:
 
 * *Amplification never manufactures a separating vector.*  For
   `𝒜 = B(ℋ)` with `dim ℋ = ∞`, every nonzero vector is cyclic (so
@@ -79,19 +76,16 @@ and one cut suffices *in principle*.  But transporting `CT` across a cut
 inside the algebra needs the relative commutant of the **compressed**
 algebra, `(f 𝒯 f)^□ = 𝒯^□ f`, i.e. that `𝒯^□ f` is ultraweakly closed —
 the *hard* half of the reduction theorem, equivalently the normality of
-`w ↦ P w P^*`, which `A/Proc/CornerTensor.lean` deliberately avoids and
-the tree does not have.  (`mem_vnComm_cornerAlg` is the *easy* half: it
-computes the commutant of the **reduced** algebra, which is the case
-`e ∈ 𝒜^□`.)
+`w ↦ P w P^*`, which `A/Proc/CornerTensor.lean` deliberately avoids.
+(`mem_vnComm_cornerAlg` is the *easy* half: it computes the commutant of
+the **reduced** algebra, which is the case `e ∈ 𝒜^□`.)
 
-So the remaining gap between this file and the input RvD's theorem wants
-is exactly: **"the compression of a von Neumann algebra is a von Neumann
-algebra"** — `(f𝒯f)^□ = 𝒯^□f` for `f ∈ 𝒯`.  With it, one further cut at
-the amplified level closes the reduction; without it, `CT_of_CT_cyclic`
-is where the cutting-and-amplifying architecture stops.  It is a
-self-contained piece (the classical proof extends `y ∈ (f𝒯f)^□` to
-`ŷ(x f ζ) := x ỹ f ζ` on the dense `𝒯 f ℋ`), and it is the honest next
-brief.
+So `CT_of_CT_cyclic` is where the cutting-and-amplifying architecture on
+its own stops, and the step past it is exactly `(f𝒯f)^□ = 𝒯^□f` for
+`f ∈ 𝒯` — `A/Proc/Compression.lean`, whose classical proof extends
+`y ∈ (f𝒯f)^□` to `ŷ(x f ζ) := x ỹ f ζ` on the dense `𝒯 f ℋ`.  With it,
+one further cut at the amplified level closes the reduction:
+`A/Proc/CommutationCyclic.lean`.
 -/
 import Theses.A.Proc.CommutationReduction
 import Theses.A.Proc.TensorTransport
@@ -127,9 +121,9 @@ end Basic
 
 /-! ## Slices, and the normality of `a ↦ a ⊗ 1`
 
-The one tool the amplification transport needs and the tree lacks: the
-set `{a | a ⊗ 1 ∈ 𝒲}` is, for a von Neumann subalgebra `𝒲` of
-`B(ℋ ⊗ 𝒦)`, again a von Neumann subalgebra of `B(ℋ)`.  No ultraweak
+The one tool the amplification transport needs: the set
+`{a | a ⊗ 1 ∈ 𝒲}` is, for a von Neumann subalgebra `𝒲` of `B(ℋ ⊗ 𝒦)`,
+again a von Neumann subalgebra of `B(ℋ)`.  No ultraweak
 continuity argument is used: by the double commutant theorem the set is
 `{a | ∀ u ∈ 𝒲^□, (a ⊗ 1) u = u (a ⊗ 1)}`, and `a ⊗ 1` commutes with `u`
 exactly when `a` commutes with every **slice** `Q_y^* u Q_{y'}` of `u`.
@@ -689,9 +683,11 @@ end Amplify
 
 /-! ## `CT` only depends on the bicommutants
 
-A corollary of the generation lemma that removes the caveat recorded in
-the header of `A/Proc/CommutationReduction.lean`: `𝒜 ⊗̄ ℬ` is unchanged
-when `𝒜` and `ℬ` are replaced by their bicommutants, so `CT` is too. -/
+A corollary of the generation lemma: `𝒜 ⊗̄ ℬ` is unchanged when `𝒜` and
+`ℬ` are replaced by their bicommutants, so `CT` is too.  This is what
+makes the hypothesis of `CT_of_CT_finCyclic`
+(`A/Proc/CommutationReduction.lean`) quantifying over arbitrary
+∗-subalgebras harmless. -/
 
 section Bicommutant
 

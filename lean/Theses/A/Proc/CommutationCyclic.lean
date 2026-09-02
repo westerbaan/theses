@@ -42,13 +42,10 @@ that:
 
 So the *cyclic* and the *separating* halves both reduce to `e ξ = ξ`, and the
 only real content — separation — is already in `exists_separating_corner`.
-
-**One correction to the brief.**  It said the separating half "uses
-`vnComm_cornerAlgVN` from `Compression.lean`".  It does not: separation is a
-statement about the compressed algebra itself, not about its commutant, and
-`compressedSet e 𝒜 = cmpr sub '' 𝒜` transported along `cext` is all that is
-needed.  `vnComm_cornerAlgVN` is consumed *inside* `CT_of_CT_compression`,
-where it belongs, and never appears here.
+Separation is a statement about the compressed algebra itself, not about its
+commutant, so `compressedSet e 𝒜 = cmpr sub '' 𝒜` transported along `cext` is
+all it needs; `Compression.lean`'s `vnComm_cornerAlgVN` is consumed inside
+`CT_of_CT_compression` and does not appear here.
 -/
 import Theses.A.Proc.Compression
 import Theses.A.Proc.CommutationAmplify

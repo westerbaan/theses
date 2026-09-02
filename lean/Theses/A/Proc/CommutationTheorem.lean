@@ -2,8 +2,8 @@
 # The commutation theorem, unconditionally — Takesaki I, Theorem IV.5.9
 
 `(𝒜 ⊗̄ ℬ)□ = 𝒜□ ⊗̄ ℬ□` for **arbitrary** von Neumann subalgebras `𝒜 ⊆ B(ℋ)`,
-`ℬ ⊆ B(𝒦)`, and its corollary **121II** (`intersection_tensor`,
-`proc.tex:4450`, Takesaki I, Cor. IV.5.10),
+`ℬ ⊆ B(𝒦)`, and its corollary **121II** (`intersection-tensor`,
+`proc.tex:4456`, Takesaki I, Cor. IV.5.10),
 
   `(𝒜₁ ⊗̄ ℬ₁) ∩ (𝒜₂ ⊗̄ ℬ₂) = (𝒜₁ ∩ 𝒜₂) ⊗̄ (ℬ₁ ∩ ℬ₂)`.
 
@@ -33,14 +33,9 @@ commutant theorem (88VI), and one application of IV.5.9 to the pair
 `(W*(𝒜₁'∪𝒜₂'), W*(ℬ₁'∪ℬ₂'))` finishes.
 
 `intersection_tensor'` is *literally* the statement of
-`Theses.A.Proc.intersection_tensor`.  It used to be all this file could offer,
-because `A/Proc/Commutation.lean` imported `QuantumLambda.lean` and so the whole
-commutation development sat *above* it.  That cycle is gone: `concreteTensor`,
-`uwTendsto_of_isLUB` and `uw_compress_tendsto` now live in `A/Proc/Tensor.lean`,
-`Commutation.lean` imports `Tensor.lean`, and `QuantumLambda.lean` imports *this*
-file and discharges 121II with `intersection_tensor'`.  The abstract forms
-`intersectionTensorStatement` and `tensorSub_inf`, which used to be stated here,
-have moved to `QuantumLambda.lean` alongside `IntersectionTensorStatement`.
+`Theses.A.Proc.intersection_tensor`: `QuantumLambda.lean` imports this file and
+discharges 121II with it.  The abstract forms `IntersectionTensorStatement`,
+`intersectionTensorStatement` and `tensorSub_inf` are stated there, next to it.
 -/
 import Theses.A.Proc.CommutationCyclic
 import Theses.A.VN.CommutationTomita
@@ -117,16 +112,16 @@ For *arbitrary* von Neumann subalgebras `𝒜 ⊆ B(ℋ)` and `ℬ ⊆ B(𝒦)`,
 
   `(𝒜 ⊗̄ ℬ)□ = 𝒜□ ⊗̄ ℬ□`
 
-for the concrete tensor product `⊗̄ = concreteTensor` of `QuantumLambda.lean`
+for the concrete tensor product `⊗̄ = concreteTensor` of `A/Proc/Tensor.lean`
 and the bundled commutant `□ = vnComm` of `A/Proc/Commutation.lean`.  No
 cyclic vector, no separating vector, no σ-finiteness, no type restriction.
 
-This is the theorem `proc.tex:4473` cites to Takesaki — *"Proof. See Corollary
+This is the theorem `proc.tex:4480` cites to Takesaki — *"Proof. See Corollary
 IV.5.10 of [Takesaki1]"* — and hence the single result behind `a.tex:274`'s
 "I tailored a thorough treatise of everything that's needed, **including
 proofs (except `intersection-tensor-proof`)**": the one point in the whole of
-thesis A whose proof is not given.  It is now given, in Lean, from Rieffel–van
-Daele's bounded-operator proof of Tomita's theorem
+thesis A whose proof is not given there.  It is given here, in Lean, from
+Rieffel–van Daele's bounded-operator proof of Tomita's theorem
 (`A/VN/TomitaAnalytic.lean`) together with the amplify-and-cut reduction
 (`A/Proc/CommutationReduction.lean` → `CommutationAmplify.lean` →
 `Compression.lean` → `CommutationCyclic.lean`).

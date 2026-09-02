@@ -11,42 +11,33 @@ Paschke dilations of **B/Dils**.
 
 ## Why this file exists (author ruling, 2026-08-17)
 
-The other seven files of `Theses/B/Eff/` import **only** `Theses.Common`,
+The other eight files of `Theses/B/Eff/` import **only** `Theses.Common`,
 which keeps the whole effectus development independent of the
 `A/CStar → A/VN → {A/Proc, B/Dils}` chain: they build fast and cannot be
 broken by work upstream.  Rather than give that up by importing thesis A
 into `Effectus.lean`, `Dagger.lean`, … the author ruled that the
-A-dependent statements move here, to a single leaf module.  Only this file
+A-dependent statements live here, in a single leaf module.  Only this file
 sees thesis A, and only this file is exposed to churn in it.
 
 `Theses.B.Dils.Pure` transitively supplies all of `A/CStar`, all of `A/VN`
-and all of `B/Dils`.  **`Theses.A.Proc.Measurement` is imported too**, as of
-session 88: `vn_has_dilations` (221III) needs *sharp + total ⟹ nmiu*, which
-eff.tex:4779 proves by citing `sharp-multiplicative` = **99XII**
-(proc.tex:905), and that is proved there.  The import is cheap and safe —
-`Measurement.lean` imports only `Theses.A.VN.NormalFunctionals`, which
-`B/Dils` already supplies, so it adds one file and a few seconds; and it is
-added **here only**, so the other eight files of `Theses/B/Eff/` still import
-`Theses.Common` alone and the author ruling above is untouched.
+and all of `B/Dils`.  **`Theses.A.Proc.Measurement` is imported too**:
+`vn_has_dilations` (221III) needs *sharp + total ⟹ nmiu*, which eff.tex:4779
+proves by citing `sharp-multiplicative` = **99XII** (proc.tex:905), and that
+is proved there.  The import is cheap and safe — `Measurement.lean` imports
+only `Theses.A.VN.NormalFunctionals`, which `B/Dils` already supplies, so it
+adds one file and a few seconds; and it is made **here only**, so the other
+eight files of `Theses/B/Eff/` still import `Theses.Common` alone.
 (`Measurement.lean` carries `sorry`s of its own, but the three results used
 from it — `sharp_multiplicative`, `gardner`, `pure_fundamental` — are
 `#print axioms`-clean.)
 
 `vn_is_andthen_eff` (211IV) is proved in eff.tex:4859 from **105V**
 `positive-map-uniqueness` and **100III** `pure-fundamental`, both in
-`Theses/A/Proc/Measurement.lean`.  As of session 91 **both are proved and
-axiom-clean** there — 104VII `positive_quotients_centrally_similar`, which
-105V rested on, closed in session 91 — so 211IV is no longer blocked by
-anything in `A/Proc`.  What it now waits on is **QUESTIONS B15**, a
-definitional mismatch between the two theses over whether the ⋄-self-adjoint
-square root of a ⋄-positive map is required to be pure; see the doc comment
-on `vn_is_andthen_eff` itself.
-(An earlier version of this header claimed nothing here needs `A/Proc`; that
-was wrong.)
-
-**Nothing was changed in the move**: each statement below is verbatim the
-one that stood in the file named after it, same name, same binders, same
-doc comment.
+`Theses/A/Proc/Measurement.lean` and both proved and axiom-clean there.  So
+211IV is not blocked by anything in `A/Proc`; what it waits on is
+**QUESTIONS B15**, a definitional mismatch between the two theses over
+whether the ⋄-self-adjoint square root of a ⋄-positive map is required to be
+pure.  See the doc comment on `vn_is_andthen_eff` itself.
 -/
 import Theses.B.Eff.Comparisons
 import Theses.B.Dils.Pure
@@ -64,19 +55,16 @@ universe u v
 
 `effectus_vn` needs `HasFiniteCoproducts vNᵒᵖ`, hence an *initial* object of
 `vNᵒᵖ`, i.e. a **terminal** object of `vN` — the trivial algebra `{0}`,
-which 8II of thesis A explicitly admits.  This was recorded (PROVING-LOG,
-session 69) as the next gate, on the ground that "`CStarAlgebra PUnit` does
-not synthesize".  It does not, but only because the four instances below are
-missing from Mathlib; **`CStarAlgebra` extends `NormedRing`, not
-`NormOneClass`**, so nothing about the trivial algebra is actually excluded.
-(Mathlib does already have one trivial C\*-algebra by accident:
+which 8II of thesis A explicitly admits.  `CStarAlgebra PUnit` does not
+synthesize, but only because the four instances below are missing from
+Mathlib; **`CStarAlgebra` extends `NormedRing`, not `NormOneClass`**, so
+nothing about the trivial algebra is actually excluded.  (Mathlib does
+already have one trivial C\*-algebra by accident:
 `CStarAlgebra (Π _ : Empty, ℂ)` synthesises from the finite-`Pi` instance.)
 
 With these, `WStar.trivial` is a bona fide object of `WStarNCPU`/`WStarCPSU`.
 That it is final in `vN` (hence initial in `vNᵒᵖ`) is `vnTrivIsTerminal`
-below, and `suTrivIsTerminal` for the ncpsu-maps.  (`WStar.trivial` was
-originally stated one universe too high — `WStar.{u+1}`, which can never be an
-object of `WStarNCPU.{u}` — and is corrected here.) -/
+below, and `suTrivIsTerminal` for the ncpsu-maps. -/
 
 section TrivialAlgebra
 
@@ -113,7 +101,7 @@ end TrivialAlgebra
 
 /-! ## Projections of a von Neumann algebra (parsec 177)
 
-Moved from `EffectAlgebras.lean`. -/
+The A-dependent statements of `EffectAlgebras.lean`. -/
 
 section ProjLattice
 
@@ -1631,7 +1619,7 @@ end VNEffectus
 
 /-! ## `vNᵒᵖ` is an effectus (parsec 180)
 
-Moved from `Effectus.lean`. -/
+The A-dependent statements of `Effectus.lean`. -/
 
 /-- **180V** (`effectus-vn`, eff.tex:827) and **189aI**
 (`effexamplesintro`, eff.tex:2020, Examples): the main example — the
@@ -2234,7 +2222,7 @@ Two clauses of it are **not** in the statement below:
   *uniqueness* statement `vn_effObj_iso`, which is proved.
 * **the comparison with `Par(vNᵒᵖ)` itself.**  Nothing here relates
   `W*_ncpsuᵒᵖ` to the category of partial maps of the *total*-form effectus
-  `effectus_vn`.  This is the blocker wave 1 named for four
+  `effectus_vn`.  This is the blocker for four
   `StatesPredicates` rows: `Par C` needs `HasFiniteCoproducts C` and
   `HasTerminal C` as **instances**, and for `WStarNCPU.{u}ᵒᵖ` those live
   inside the proof of `effectus_vn` as a `CoprodPres` record (`vnPres`), so
@@ -2284,12 +2272,11 @@ functional `A → ℂᵤ`), the steps are:
    yields `su_isTotal_iff`: **the total maps of any such `s` are exactly the
    ncpu-maps**.
 
-The route recorded in PROVING-LOG session 84 (cut the circle "`I` terminal in
-`Tot`" by the `I`-free characterisation *total ⟺ `≼`-maximal*) is **not** the
-route taken: that characterisation is false in `vN_cpsuᵒᵖ` — the unique map
-`X ⟶ 0` into the initial object is `≼`-maximal but not total unless `X` is a
-zero object.  What replaces it is step 4, which uses `one_m_is_id` at the
-effect object itself and never mentions `Tot`. -/
+Step 4 is what avoids the circle "`I` terminal in `Tot`".  The tempting
+`I`-free way round it — the characterisation *total ⟺ `≼`-maximal* — is
+**false** in `vN_cpsuᵒᵖ`: the unique map `X ⟶ 0` into the initial object is
+`≼`-maximal but not total unless `X` is a zero object.  Step 4 instead uses
+`one_m_is_id` at the effect object itself and never mentions `Tot`. -/
 
 section StateExists
 
@@ -2497,8 +2484,7 @@ form of the conclusion:
 Testing the hypothesis against the *rank-one* effects `|ξ⟩⟨ξ|` gives
 `⟪sξ,sξ⟫ · p(sξ) = ⟪sξ,p(sξ)⟫ · sξ`, whence `p(sξ) ∈ {0, sξ}` for every
 `ξ`; and a vector space is not the union of two proper subspaces.  This
-route needs neither the pseudoinverse of `√ξ(1)` nor factoriality as such
-(see `PROVING-LOG.md`, session 90). -/
+route needs neither the pseudoinverse of `√ξ(1)` nor factoriality as such. -/
 
 section RankOne
 
@@ -2963,7 +2949,7 @@ All three claims are read off the isomorphism `θ : I ≅ ℂᵤ` of
   *isomorphism* of effect monoids, taking `⋁` to `+` and composition to
   multiplication.
 
-**On the reality conjunct** (audit row 190II.3, repaired in session 94).
+**On the reality conjunct** (audit row 190II.3).
 `IsRealEffectus` (`StatesPredicates.lean`) asks — as **190II.3**
 (`dfn-mandso`, eff.tex:2097) does — for an *isomorphism* of effect monoids
 `Scal C ≅ [0,1]`, i.e. a mutually inverse pair of morphisms, and not merely
@@ -3283,10 +3269,9 @@ these as bare `Examples` with no proof:
 | 4777 | sharp maps | nmiu-maps |
 
 ⚠️ Note the pairing: **quotients are filters and comprehensions are
-corners**, not the other way round.  (eff.tex:3686 and eff.tex:3935; the
+corners**, not the other way round (eff.tex:3686 and eff.tex:3935; the
 Remarks at dils.tex:6072 and dils.tex:6140 say the same, each calling the
-effectus-side notion "the direction-reversed counterpart".  The record in
-`docs/BEff-survey.md` and `PROVING-LOG.md` had the two swapped.)
+effectus-side notion "the direction-reversed counterpart").
 
 The first step is the dictionary itself.  A predicate `p : X ⟶ I` is an
 ncpsu-map `I.unop → X.unop`, and `I.unop ≅ ℂ` by `su_effObj_iso`, so `p` is
@@ -3528,18 +3513,16 @@ ones of `Theses/B/Dils/Pure.lean`, read in the opposite category:
   `X.unop` bounded by `pᗮ` — that is exactly `IsFilterFor c (1 − a)`
   (dils.tex 169VIII, in the form the author ruled on 2026-08-16: the
   mediating map is *subunital*, precisely what a morphism of this category
-  is.  This was QUESTIONS **B11**, deleted 2026-08-16 in `ffd073b` once the
-  ruling was implemented; the ruling itself is in `IsFilterFor`
-  (`B/Dils/Pure.lean`), and the erratum it settles is the **169VIII** row of
-  `ERRATA.md`).
+  is.  The ruling is implemented in `IsFilterFor` (`B/Dils/Pure.lean`), and
+  the erratum it settles is the **169VIII** row of `ERRATA.md`).
 
 Both are `Prop`-valued classes with existential fields, so no canonical
 choice of corner or filter has to be made. -/
 
-/-- **199V at `vNᵒᵖ`** (eff.tex:3933, Examples): `vN_cpsuᵒᵖ` **has
-comprehension**, and a comprehension for the effect `a` is the standard
-corner `h_a : 𝒜 → ⌊a⌋𝒜⌊a⌋`, `b ↦ ⌊a⌋b⌊a⌋` (dils.tex 169IV
-`standard_corner_dils`). -/
+/-- The standard corner `h_a : 𝒜 → ⌊a⌋𝒜⌊a⌋`, `b ↦ ⌊a⌋b⌊a⌋` (dils.tex 169IV
+`standard_corner_dils`), as a comprehension, together with the two further
+facts the rest of the file needs of it: its carrier is `⌊a⌋`, and its
+ncpsu-map is surjective.  `su_hasComprehension` below is the bare 199V. -/
 private theorem su_exists_corner {X : WStarCPSU.{u}ᵒᵖ}
     (p : X ⟶ effObj (WStarCPSU.{u}ᵒᵖ)) :
     ∃ (W : WStarCPSU.{u}ᵒᵖ) (π : W ⟶ X), IsComprehension p π ∧
@@ -3853,9 +3836,7 @@ eff.tex:4778 reads, in full: *"In `vNᵒᵖ` the sharp maps are exactly the
 mni-maps (i.e. the normal ∗-homomorphisms).  See `sharp-multiplicative`."*
 **mni**, not nmiu: the ∗-homomorphism is **not** assumed unital, and in the
 partial-form category this file works in the non-unital case is the general
-one — a sharp map of `vN_cpsuᵒᵖ` need not be total.  (An earlier doc comment
-here misquoted the source as "the sharp maps are exactly the nmiu-maps";
-that quotation was wrong, and only the *total* half was proved.)
+one — a sharp map of `vN_cpsuᵒᵖ` need not be total.
 
 The identification, in both directions and without unitality, is
 `su_sharpMap_iff_mni`.  It is the Example's own route:
@@ -3996,11 +3977,10 @@ an *arbitrary* filter is a quotient, and an arbitrary *unital* corner is a
 comprehension.  Both are the definitions of `IsFilterFor`/`IsCornerFor`
 (dils.tex 169VIII, 169II) transported through `suPredVal`, and the two
 mismatches are the ones the section header above records: `IsFilterFor`'s
-mediating map is subunital (the author's ruling of 2026-08-16; this was
-QUESTIONS **B11**, deleted 2026-08-16 in `ffd073b` once the ruling was
-implemented, and the erratum is the **169VIII** row of `ERRATA.md`), which
-is exactly a morphism, and `IsCornerFor`'s is merely ncp, which is a
-morphism only because the corner is unital.
+mediating map is subunital (the author's ruling of 2026-08-16, the
+**169VIII** row of `ERRATA.md`), which is exactly a morphism, and
+`IsCornerFor`'s is merely ncp, which is a morphism only because the corner
+is unital.
 
 **Unitality of the corner is a real hypothesis, not a convenience.**  Under
 169II as printed, `λ·h_a` is again a corner for `a` when `0 < λ < 1`
@@ -4557,8 +4537,10 @@ variable [DiamondEffectus (WStarCPSU.{u}ᵒᵖ)]
 without any &-effectus hypothesis: `ad_{√a}` is ⋄-positive and takes the
 value `a` at the truth predicate.  (`su_isPure_ad_sqrt` gives purity, and
 `ad_{√a} = ad_{⁴√a} ∘ ad_{⁴√a}` with `su_diamondSelfAdjoint_ad` gives the
-square.)  **211IV** `vn_is_andthen_eff` is therefore blocked on *uniqueness*
-alone, i.e. on **105V** `positive-map-uniqueness` in `A/Proc`. -/
+square.)  What is left of **211IV** `vn_is_andthen_eff` is therefore
+*uniqueness* alone; that is `su_asrt_unique_of_pure_sqrt`, which reaches
+**105V** `positive-map-uniqueness` in `A/Proc` under the hypothesis of
+**QUESTIONS B15**. -/
 theorem su_exists_asrt {X : WStarCPSU.{u}ᵒᵖ}
     (p : X ⟶ effObj (WStarCPSU.{u}ᵒᵖ)) :
     ∃ k : X ⟶ X, DiamondPositive k ∧ k ≫ truth X = p ∧
@@ -4898,14 +4880,10 @@ effectus-purity to the purity of `B/Dils`.  The first sentence of 201III
 (`su_procPure_of_isPure`, `su_isPure_of_procPure`, above) carries
 effectus-purity as far as `Theses.A.Proc.IsPure`; the remaining leg is
 `Theses.B.Dils.isPureMap_of_procIsPure` and its converse
-`su_procIsPure_of_isPureMap` below.
-
-(An audit note of 2026-08-28 costed this at "the order of 145 lines" on the
-ground that the leg cannot be walked at all — that the two purity predicates
-are "a merge of the two developments, not a lemma".  Both halves of that are
-retracted: `B/Dils`' `section ProcPure` proved the merge on 2026-08-29, and
-the `[VonNeumannAlgebra C]` residue it leaves is not needed here, or
-anywhere, once the factorisation is merely *assumed to exist*.) -/
+`su_procIsPure_of_isPureMap` below.  The merge of the two purity predicates
+is `B/Dils`' `section ProcPure`; the `[VonNeumannAlgebra C]` residue it
+leaves is not needed here once the factorisation is merely *assumed to
+exist*. -/
 
 omit [EffectusPartialForm (WStarCPSU.{u}ᵒᵖ)] [DiamondEffectus (WStarCPSU.{u}ᵒᵖ)] in
 /-- **168IV ⟹ 170I at von Neumann objects, with no hypothesis on the
@@ -5740,7 +5718,7 @@ unitary, so `σ = 2p_𝒮 − 1`, and both `p_𝒮` and `p_𝒜 = 1 − p_𝒮` 
 The argument below is the author's, run with an arbitrary such `p` in
 `B(ℋ)` — the smallest instance being `ℋ = ℂ²` with `p` a rank-one
 projection, which is what `su_exc_purec_equal` uses.  Three divergences from
-the printed solution, all recorded in `PROVING-LOG.md`:
+the printed solution:
 
 * the final contradiction uses `ad_{p}` and `ad_{1−p}` — which are pure,
   land in the two corners and are fixed by `ad_σ` — in place of
@@ -6087,7 +6065,7 @@ theorem su_exc_purec_equal : ¬ HasCoequalizers (PureCat (WStarCPSU.{u}ᵒᵖ)) 
 representation (using `paschke-pure` and the factoriality of `⌈⌈p⌉⌉𝒜` for a
 minimal projection `p`), identifies `𝒜` with `M₂`, and then contradicts the
 universal property with the two coordinate maps of `ℂ²`.  The route below is
-shorter and needs none of that machinery — see `PROVING-LOG.md`, session 90:
+shorter and needs none of that machinery:
 
 Write `π₁, π₂ : 𝒜 → ℂ` for the two coprojections of a hypothetical
 coproduct, `a₀ = ĝ₀(1)` for the value of the mediating map of `(id, id)`
@@ -6234,7 +6212,7 @@ end Wrapper
 
 /-! ## `vNᵒᵖ` is real, with separating states and predicates (parsec 190)
 
-Moved from `StatesPredicates.lean`. -/
+The A-dependent statements of `StatesPredicates.lean`. -/
 
 /-- **190III** (eff.tex:2136, Examples): the effectus `vNᵒᵖ` (in partial
 form: `(W*_ncpsu)ᵒᵖ`, cf. `effectus_vn_partial`) is a real effectus with
@@ -6262,7 +6240,7 @@ theorem effectus_vn_real_separating
 
 /-! ## `vNᵒᵖ` is a ⋄-effectus and an &-effectus (parsecs 206, 211)
 
-Moved from `DiamondAmp.lean`. -/
+The A-dependent statements of `DiamondAmp.lean`. -/
 
 /-- **206III** (eff.tex:4460, Examples): `vNᵒᵖ` is a ⋄-effectus (as are
 `CvNᵒᵖ`, `EJAᵒᵖ` and `Set`, not formalized here). -/
@@ -6283,7 +6261,7 @@ theorem diamond_effectus_vn (s : EffectusPartialStructure WStarCPSU.{u}ᵒᵖ) :
 &-effectus, with `asrt_a(b) = √a b √a` (as are `CvNᵒᵖ` and `EJAᵒᵖ`, not
 formalized here; these are the only known examples).
 
-**Reduced, in session 92, to a single missing step** — see
+**Reduced to a single missing step** — see
 `su_andThenEffectus_of_pure_sqrt` and the section header above it.  Both
 axioms of **211II** are proved for `vNᵒᵖ`:
 
@@ -6325,7 +6303,7 @@ theorem vn_is_andthen_eff (s : EffectusPartialStructure WStarCPSU.{u}ᵒᵖ) :
 
 /-! ## `vNᵒᵖ` is a †-effectus, and has dilations (parsecs 215, 221, 223)
 
-Moved from `Dagger.lean`. -/
+The A-dependent statements of `Dagger.lean`. -/
 
 /-- **215VI** (`vn-is-dagger-category`, eff.tex:5338, Corollary): the
 &-effectus `vNᵒᵖ` is a †-effectus. -/
@@ -6385,7 +6363,7 @@ theorem vn_dilation_order_correspondence
 
 /-! ## `Pure (vNᵒᵖ)`, and the effects of a von Neumann algebra (parsecs 224, 225)
 
-Moved from `Comparisons.lean`. -/
+The A-dependent statements of `Comparisons.lean`. -/
 
 /-- **224VI** (`exc-purec-no-biproduct`, eff.tex:7189, Exercise\*):
 `Pure (vNᵒᵖ)` does not have finite (bi)products — in particular it has no

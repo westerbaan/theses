@@ -402,7 +402,7 @@ end PureDaggerKernel
 -- **224VI** (`exc-purec-no-biproduct`, eff.tex:7189, Exercise\*) and
 -- **224VII** (`exc-purec-equal`, eff.tex:7218, Exercise\*),
 -- `exc_purec_no_biproduct` and `exc_purec_equal`: `Pure (vNᵒᵖ)` has neither
--- binary coproducts nor all coequalizers.  Moved to
+-- binary coproducts nor all coequalizers.  They are stated in
 -- `Theses/B/Eff/VNExamples.lean` (author ruling 2026-08-17): they need
 -- thesis A's von Neumann theory, and this file must keep importing only
 -- `Theses.Common`.
@@ -436,7 +436,7 @@ class SequentialEffectAlgebra (E : Type u) [EffectAlgebra E] where
 
 -- **225V** (eff.tex:7381, Examples), `effects_sea`: the effect algebra
 -- `[0,1]_𝒜` of a von Neumann algebra is a sequential effect algebra with
--- `a & b = √a b √a`.  Moved to `Theses/B/Eff/VNExamples.lean` (author
+-- `a & b = √a b √a`.  It is stated in `Theses/B/Eff/VNExamples.lean` (author
 -- ruling 2026-08-17): it needs thesis A's von Neumann theory, and this file
 -- must keep importing only `Theses.Common`.
 
@@ -1460,7 +1460,7 @@ theorem snake_lemma {A B C₃ A' B' C₃' : C}
         quotMap (imPred c)
       ExactAt fbar gbar ∧ ExactAt gbar d ∧ ExactAt d hbar ∧
         ExactAt hbar kbar := by
-  -- The route (see PROVING-LOG, session 11): only the *left* face of the cube
+  -- The route: only the *left* face of the cube
   -- of 228III is built — the comprehension `m = π_{g^□(c^□(0))}`, the sharp
   -- quotient `g' = m ∘ g ∘ c_π†`, the lift `b'` of `b` along `m` and `h`, and
   -- `d` as the lift of `b' ∘ a_ζ` along `g'`.  The four exactness statements
@@ -1870,9 +1870,9 @@ belongs, would invalidate the whole `B/Eff` olean chain.  **Move it to
 
 The point.  Nine of the eleven von-Neumann examples are stated for an
 *arbitrary* `s : EffectusPartialStructure vNᵒᵖ` and must produce their
-structure for that `s`, so they were recorded as waiting on a uniqueness
-lemma for `EffectusPartialStructure`.  Here is that lemma for the part that
-matters: **the PCM-enrichment of a finPAC is not extra data at all** — it is
+structure for that `s`, so they need a uniqueness lemma for
+`EffectusPartialStructure`.  Here is that lemma for the part that matters:
+**the PCM-enrichment of a finPAC is not extra data at all** — it is
 determined by the category together with its finite coproducts.  Three
 steps, each using only the finPAC axioms:
 
