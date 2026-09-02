@@ -609,7 +609,7 @@ the same point, which is the 123I shape.
 | 156II | `paschke_injective` | `B/Dils/Paschke.lean:3498` | 48 | 2/3 |
 | 160IV | `hilbmod_projthm_3` | `B/Dils/SelfDual.lean:1387` | 45 | 2/3 |
 | 96III | `ncp_uwlim_2` | `A/Proc/Measurement.lean:1797` | 39 | 2/3 |
-| 23II | `sqrt_lemma_monotone` | `A/CStar/Positive.lean:6138` | 35 | 3/6 |
+| 23II | `sqrt_lemma_monotone` | `A/CStar/Positive.lean:6254` | 35 | 3/6 |
 | 154III | `existence_paschke_2` | `B/Dils/Paschke.lean:1373` | 32 | 13/14 |
 
 `existence_paschke_2` was read and is **not** a fingerprint: it is 154III part
@@ -822,7 +822,7 @@ the pool, but the earlier reading stands.
 **Two more dead declarations are class 3 by their own doc comment but carry a
 DISP tag, so they stay:**
 
-* `atomicTypeI_tensorBsurjectivity` (**125eIII**), `A/Proc/QuantumLambda.lean:5544`.
+* `atomicTypeI_tensorBsurjectivity` (**125eIII**), `A/Proc/QuantumLambda.lean:5524`.
   Its doc now reads: the `←` half "was the one open at the time and **is now
   proved in general at the end of this file** (`tensorBsurjectivity`), from
   125VIIb `tensor_preimage`." Superseded by its own general form, exactly as the
