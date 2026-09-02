@@ -26,9 +26,8 @@ on `W*_miu`, `W*_cp`, `W*_cpu`, and `W*_cpsu` (119V).
   proved (as for `Corner` in `Measurement.lean`).
 * Maps out of the tensor (`tmap f g` for ncp-maps, `tmapM ρ σ` for
   nmiu-maps, product functionals on the predual, associators, unitors,
-  braidings) are obtained by choice from unique-existence lemmas — all of
-  them now proved; their defining equations on pure tensors are `_apply`
-  lemmas.
+  braidings) are obtained by choice from unique-existence lemmas; their
+  defining equations on pure tensors are `_apply` lemmas.
 * The monoidal structure (119V) is stated concretely (naturality,
   pentagon, triangle, hexagon, symmetry — as equations between the chosen
   structure maps), not through Mathlib's `MonoidalCategory`, per the
@@ -935,10 +934,10 @@ The proof is the Lemma's own (proc.tex:2380).  **33II**
 for Gram matrices) reduces positivity to `∑_{n,m} z̄ₙ aₙₘ bₙₘ zₘ ≥ 0`;
 writing `a = C*C` and `b = D*D` gives `aₙₘ = ∑ₖ c̄ₖₙcₖₘ` and
 `bₙₘ = ∑_ℓ d̄_ℓₙd_ℓₘ`, and regrouping turns the double sum into
-`∑_{k,ℓ} |∑ₙ z̄ₙ cₖₙ d_ℓₙ|²`.  (Mathlib's `Matrix.PosSemidef.hadamard`,
-which closed this before, proves it a different way — through Kronecker
-products and a restriction to the support of `z` — so the author's
-sum-of-squares argument was not on record.) -/
+`∑_{k,ℓ} |∑ₙ z̄ₙ cₖₙ d_ℓₙ|²`.  (Mathlib's `Matrix.PosSemidef.hadamard` proves
+the same fact a different way — through Kronecker products and a restriction
+to the support of `z` — so the author's sum-of-squares argument is not
+otherwise on record.) -/
 theorem schur (N : ℕ) (a b : Matrix (Fin N) (Fin N) ℂ)
     (ha : a.PosSemidef) (hb : b.PosSemidef) :
     (Matrix.hadamard a b).PosSemidef := by
@@ -1277,7 +1276,7 @@ theorem (`amplification`, in the `Spatial` section below) is proved with:
 `Q_e Q_f^* = 1 ⊗ |e⟩⟨f|` are all that is needed of them.
 
 An equivalent API exists for the *other* Hilbert space tensor product of
-the tree, `Theses.B.Dils.hilbTensor` (`B/Dils/Stinespring.lean:1203`).  It
+the tree, `Theses.B.Dils.hilbTensor` (`B/Dils/Stinespring.lean:1206`).  It
 is rebuilt here rather than transported along `hilb_tensor_unique`, because
 `A/Proc` may not import `B/Dils` and because the rebuild — six short
 lemmas on top of `htmul_inner` and `ext_htmul` — is shorter than the
@@ -2053,10 +2052,8 @@ thesis only ever uses the *commutation theorem* **121II**
 (`intersection-tensor`, `proc.tex:4473`, which it takes from Takesaki I,
 Cor. IV.5.10, and which is the one point of thesis A it does not prove).
 The amplification theorem is the one unqualifiedly elementary case of that
-theorem: it is step (E) of the route recorded in `PROVING-LOG.md` session
-83 and in `docs/COMMUTATION-THEOREM.md` §5, item 1 (that document numbers its
-items inside §5 and has no §5.1), and every route to the general statement
-consumes it.
+theorem (`docs/COMMUTATION-THEOREM.md` §5, item 1), and every route to the
+general statement consumes it.
 
 The proof is `eq_opTensor_one_of_comm` (an operator commuting with
 `1 ⊗ B(𝒦)` is an `a ⊗ 1`) plus the Double Commutant Theorem **88VI**
@@ -2445,9 +2442,8 @@ theorem nmiuSymm_apply_apply' [VonNeumannAlgebra X] [VonNeumannAlgebra Y]
   (StarAlgEquiv.ofBijective φ.toStarAlgHom hφ).apply_symm_apply b
 
 variable (X) in
-/-- The identity nmiu-map (infrastructure for 119IVb/119IVc/119V).  Moved
-here from the 119V block so that the universe-lifting device of
-`exists_vnt_transfer` can use it as the identity transport. -/
+/-- The identity nmiu-map: infrastructure for 119IVb/119IVc/119V, and the
+identity transport of the universe-lifting device `exists_vnt_transfer`. -/
 noncomputable def nmiuId [VonNeumannAlgebra X] : NMIUMap X X :=
   { toStarAlgHom := StarAlgHom.id ℂ X
     preservesDirSups' := preservesDirSups_id }
@@ -3670,8 +3666,7 @@ along `γ_⊙` of a **unique** member of `Ω`.
 Uniqueness is condition (1) of **108II** again: two np-functionals on `𝒯`
 agreeing on `γ_⊙(𝒜 ⊙ ℬ)` agree on its ultraweakly dense linear span, and
 np-functionals are ultraweakly continuous — the argument of
-`prod_functional_unique`, which is what the doc comment on
-`exists_conjProdNP_of_isBasicFunctional` promised.  Note that the proof
+`prod_functional_unique`.  Note that the proof
 delivers more than the statement claims: the member of `Ω` is unique among
 *all* np-functionals on `𝒯` restricting to `ω`, not merely among those of
 `Ω`. -/
@@ -4592,8 +4587,8 @@ positive.
 
 The thesis says "between von Neumann algebras"; the binders here are
 `CStarAlgebra` (`:209`), and the two domain orders are `omit`ted outright, so
-what is proved is the C*-algebra statement — `stronger`, and rowed as such
-since 2026-08-28.  The proof needs no more: multiplicativity and
+what is proved is the C*-algebra statement — `stronger`, and rowed as such.
+The proof needs no more: multiplicativity and
 involution-preservation are all it uses.  The tree's other rendering of 113II,
 `Theses.A.CStar.matBilin_nonneg_of_mi`, makes the same generalisation and drops
 ℂ-homogeneity as well. -/
@@ -4968,7 +4963,7 @@ theorem cp_bilinear_2' (β : A →ₗ[ℂ] B →ₗ[ℂ] C) :
 
 The thesis says "cp-maps between von Neumann algebras"; the binders here and
 on the rest of the 113IV family are `CStarAlgebra`, so the C*-algebra statement
-is what is proved.  Rowed `stronger` since 2026-08-28, with the other three. -/
+is what is proved.  Rowed `stronger`, with the other three. -/
 theorem cp_bilinear_comp {A' B' C' : Type u} [CStarAlgebra A']
     [PartialOrder A'] [StarOrderedRing A'] [CStarAlgebra B']
     [PartialOrder B'] [StarOrderedRing B'] [CStarAlgebra C']
@@ -5006,9 +5001,7 @@ thesis B's `IsVNTensor` (dils.tex 165II) supplies its data (`M_N t` sends a
 pair of positive matrices to a positive one), is stated and proved as
 `Theses.A.CStar.matBilin_nonneg_of_mi` in `A/CStar/Matrices.lean`: its
 content is about matrices over C*-algebras, and `B/Dils` needs it but does
-not import `A/Proc`.  The relocation was the **D3** item of `QUESTIONS.md`
-(option 2, authorised by Bas; worker 43), and that entry was deleted on
-2026-08-16 once it had been carried out — commit f277d72. -/
+not import `A/Proc`. -/
 
 /-! ## Parsec 1140: extra universal properties and uniqueness -/
 
@@ -8467,9 +8460,8 @@ theorem tensor_characterization [VonNeumannAlgebra A] [VonNeumannAlgebra B]
 /-! ## The coprojections `κᵢ : 𝒜ᵢ → ⊕ⱼ 𝒜ⱼ`
 
 Infrastructure for **117II** below and for **122IV**
-(`nmiu-functional-product`) in `QuantumLambda.lean`, where these lemmas were
-first proved; 117II.1 needs them, so they were lifted here (that file imports
-this one). -/
+(`nmiu-functional-product`) in `QuantumLambda.lean`, which imports this
+file. -/
 
 section Coprojections
 
@@ -11650,10 +11642,10 @@ end Concrete
 
 /-! ## Ultraweak limits of monotone nets, and two-sided compression
 
-Both statements below are elementary von Neumann algebra theory that
-`QuantumLambda.lean` proved on its way to the type I slice device; they
-live here because the commutation-theorem chain, which sits below
-`QuantumLambda.lean`, consumes them too. -/
+Both statements below are elementary von Neumann algebra theory, consumed
+by `QuantumLambda.lean`'s type I slice device and by the commutation-theorem
+chain, which sits below `QuantumLambda.lean`; they live here so that both
+can reach them. -/
 
 section UWLimits
 

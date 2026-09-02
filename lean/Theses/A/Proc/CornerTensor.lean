@@ -4,9 +4,10 @@ Thesis A, chapter "Assorted Structure in W*_cpsu" (proc.tex): the
 identification `e B(ℋ) e ≅ B(eℋ)`, the **corner tensor identification**
 `(e ⊗ f)(ℋ ⊗ 𝒦) ≅ eℋ ⊗ f𝒦`, and the pay-off: the commutation theorem
 for the corners implies the relative commutation theorem `RelCT` at the
-cut `e ⊗ f`, which by `CT_of_relCT` (`A/Proc/Commutation.lean`) completes
-the reduction of the commutation theorem to the cyclic-and-separating
-case.
+cut `e ⊗ f`, which by `CT_of_relCT` (`A/Proc/Commutation.lean`) reduces
+the commutation theorem to its corners.  `A/Proc/CommutationReduction.lean`
+runs that reduction over a net of cuts; the class it reaches is
+"finite jointly cyclic family", not "cyclic and separating".
 
 ## Encoding
 
@@ -633,8 +634,8 @@ end TensorCorner2
 to its relative form `RelCT 𝒜 ℬ (e ⊗ f)` at each cut of an increasing
 net.  `relCT_of_CT` supplies exactly that, from the commutation theorem
 for the *corner* algebras `𝒜_e ⊆ B(eℋ)` and `ℬ_f ⊆ B(f𝒦)` — which is
-where cyclic and separating vectors are available.  Together they
-complete the reduction.
+where cyclic vectors are available.  Together they reduce `CT` to its
+corners.
 
 The two halves of the argument are:
 
@@ -744,10 +745,13 @@ theorem relCT_of_CT {SA : StarSubalgebra ℂ (H →L[ℂ] H)}
 theorem for `(𝒜, ℬ)` follows from the commutation theorem for the
 corner algebras `𝒜_{e_i} ⊆ B(e_iℋ)` and `ℬ_{f_j} ⊆ B(f_j𝒦)`.
 
-Combined with `exists_orthogonal_separating_family` and
-`isLUB_range_finsetSum` (which produce such nets, with `ξ` separating for
-each corner) this is the reduction of the commutation theorem to the
-cyclic-and-separating case. -/
+`A/Proc/CommutationReduction.lean` produces such nets
+(`exists_orthogonal_separating_family`, `isLUB_range_finsetSum`) and
+assembles this into `CT_of_CT_finCyclic`, the reduction of the commutation
+theorem to the case of a **finite jointly cyclic** family.  It reaches no
+further: the finite joins that make the net directed lose the separating
+vector of each single corner, so no increasing net of cuts reaches the
+cyclic-and-separating case (that file's header). -/
 theorem CT_of_CT_corner {ι κ : Type*} [Nonempty ι] [Preorder ι] [IsDirected ι (· ≤ ·)]
     [Nonempty κ] [Preorder κ] [IsDirected κ (· ≤ ·)]
     {SA : StarSubalgebra ℂ (H →L[ℂ] H)} {SB : StarSubalgebra ℂ (K →L[ℂ] K)}

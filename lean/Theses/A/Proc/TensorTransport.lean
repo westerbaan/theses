@@ -188,9 +188,8 @@ theorem mem_uconj {S : StarSubalgebra ℂ (H →L[ℂ] H)} {y : H' →L[ℂ] H'}
 theorem cext_mem_uconj {S : StarSubalgebra ℂ (H →L[ℂ] H)} {x : H →L[ℂ] H}
     (hx : x ∈ S) : cext U x ∈ uconj hU S := ⟨x, hx, rfl⟩
 
-/-- (No consumer since 2026-08-28: its only one was `uconj_cornerAlg`, deleted
-with the `cornerTransfer` block in the fourth pool round, `docs/DEAD-LIMBS.md`
-§12d.  Kept as the `rfl` that names what `uconj` *is* as a set.) -/
+/-- `uconj hU S` as a set: the image of `S` under `x ↦ U x U^*`.  Nothing in
+the tree consumes it; it is kept as the `rfl` that names what `uconj` *is*. -/
 theorem coe_uconj (S : StarSubalgebra ℂ (H →L[ℂ] H)) :
     (uconj hU S : Set (H' →L[ℂ] H')) = cext U '' (S : Set (H →L[ℂ] H)) := rfl
 
@@ -544,15 +543,8 @@ theorem uconj_concreteTensor (hU : IsUnitaryCLM U) (hV : IsUnitaryCLM V)
 /-- **The commutation theorem is invariant under conjugation by
 unitaries.**  This is the statement that lets any realisation of a corner
 (or of any other Hilbert space defined up to unitary equivalence) be used
-where a chosen one was named.
-
-That customer is gone: `CT_of_CT_corner_any`, the one declaration that used
-this to drop the *chosen* corner from `CT_of_CT_corner`, was deleted on
-2026-08-27 (`docs/DEAD-LIMBS.md` §12c), and the `cornerTransfer` block that
-supported it followed on 2026-08-28 (§12d).  This lemma and
-`uconj_concreteTensor`, its only user, are what is left: the statement the
-module header advertises as the transport of `CT` along a unitary, with
-nothing downstream of it. -/
+where a chosen one was named; it is the transport of `CT` along a unitary
+that the module header advertises.  Nothing in the tree consumes it. -/
 theorem CT_uconj_iff (hU : IsUnitaryCLM U) (hV : IsUnitaryCLM V)
     (SA : StarSubalgebra ℂ (H →L[ℂ] H)) (SB : StarSubalgebra ℂ (K →L[ℂ] K)) :
     CT (uconj hU SA) (uconj hV SB) ↔ CT SA SB := by

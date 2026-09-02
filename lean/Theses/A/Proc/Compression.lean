@@ -4,7 +4,7 @@ compression of a von Neumann algebra**, `(f 𝒯 f)^□ = 𝒯^□ f` for a proj
 `f ∈ 𝒯` — the commutant taken in `B(fℋ)`.  This is the half of the reduction
 theorem that `A/Proc/CornerTensor.lean` deliberately avoids
 (`mem_vnComm_cornerAlg` is the other, elementary, half), and the last step the
-reduction of the commutation theorem was missing.
+reduction of the commutation theorem needs.
 
 ## What is actually missing, and it is not what the name suggests
 
@@ -81,8 +81,8 @@ ultraweak cutting principle `CT_of_compress` is not used at all.
 What is *not* here: the passage from "`𝒜` has a cyclic vector" to the data
 this file consumes — that `e := [𝒜^□ξ]` lies in `𝒜`, that `𝒜 e ℋ` is total,
 and that the compression `e𝒜e` has a cyclic and separating vector.  That is
-the next brief, and with it `CT_of_CT_cyclic` composes to the reduction of the
-commutation theorem to the cyclic-and-separating case.
+`A/Proc/CommutationCyclic.lean`, where it composes with `CT_of_CT_cyclic` into
+the reduction of the commutation theorem to the cyclic-and-separating case.
 -/
 import Theses.A.Proc.CornerTensor
 
