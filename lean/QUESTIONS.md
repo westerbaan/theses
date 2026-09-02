@@ -16,19 +16,10 @@ themselves are preserved in the commit messages that implemented them and in
 PROVING-LOG.md, so nothing is lost; git history has the full text.  Do not
 re-add a resolved item.
 
-**The list above was incomplete, and nine more keys were cited across the tree
-with no record here.**  `scripts/questions_check.py` found 56 live pointers
-naming a question that is not here; for nine of the keys this file said nothing
-at all, so a reader following one could not even learn that it had been
-answered.  Each was removed by a commit whose message carries the ruling — that
-is where to read it:
-
-*(Closed 2026-08-29.  All nine keys are in the table below and in the script's
-`DELETED` list, and the checker now reports **0** live pointers naming a
-question that is not here: 29 of the 56 were rows recording an answer rather
-than asking for one, and the rest were repaired by naming where the answer
-went.  The nine are listed because a reader may still meet one of these keys in
-a commit message or a dated log.)*
+**Keys a reader may still meet in a commit message or a dated log**, each
+removed by a commit whose message carries the ruling — that is where to read
+it (`scripts/questions_check.py` carries the same list and reports any live
+pointer to a key that is in neither):
 
 | key | removed | commit |
 |---|---|---|
@@ -39,11 +30,10 @@ a commit message or a dated log.)*
 | **A5** | 2026-08-17 | `3b4ba57` — "81IX div-usc ruled: c\a/b is only ultraweakly continuous" |
 | **D6** | 2026-08-18 | `abc3af3` — "D6 ruled: delete the false net form of 164II.2b" |
 | **A7** | 2026-08-19 | `5f19f62` — "26II.5 and 104III: p ∧ q is defined, and 2a and 3 are proved" |
+| **A9** | 2026-09-02 | `3ae948d` — 51IX's ℂ-homogeneity clause restored under the D1 ruling |
 
 Note that `ffd073b`'s subject names A5 while its diff removes A6 and B11; read
-the diff, not the subject.  Keep this table in step when a question is deleted —
-`scripts/questions_check.py` carries the same list and will say "the preamble
-does not record it" for anything missing from both.
+the diff, not the subject.  Keep this table in step when a question is deleted.
 
 **Deleted or narrowed on 2026-08-26**, from the audit in `docs/DECISIONS.md`
 §4.  One line each, saying what answered it and when:
