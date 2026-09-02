@@ -1,83 +1,28 @@
-# Auditor brief — read this first
+# Worker brief — bring proofs onto the thesis's own argument
 
-You are auditing the Lean formalization of Bram Westerbaan's and Abraham
-Westerbaan's PhD theses in `/home/claude/scm/theses` (Lean root
-`/home/claude/scm/theses/lean`, LaTeX sources one level up: `cstar.tex`,
-`vn.tex`, `proc.tex`, `dils.tex`, `eff.tex`, `bsols.tex`, `asols.tex`).
+*The current pass (from 2026-09-03).  The briefs of the earlier passes — auditor, proof-route, repair, re-verification — are in git history before this file; their findings are in `docs/STATEMENT-AUDIT.md` and the CSV rows.*
 
-Read `lean/docs/STATEMENT-AUDIT.md` before starting — it holds the schema,
-the verdict vocabulary, and the rule for locating a statement in the LaTeX by
-point number.  Your assignment message names your modules and your output
-file.
+Project: Lean 4 + Mathlib at `lean/` (Lean root). Theses: `../cstar.tex ../vn.tex ../proc.tex` (A, solutions `../asols.tex`), `../dils.tex ../eff.tex` (B, solutions `../bsols.tex`).
 
-## Your job, for every statement in your modules
+## Hard rules
+- Compile ONLY via `scripts/lean1.sh <file.lean>` (one `lean` fits in memory; the script serialises through a lock, so you may wait for other workers — that is normal). Never `lake build`, never a language server, never bare `lean`. A compile takes 5-15 min.
+- `lean1.sh` compiles one file against prebuilt oleans and writes none: nothing you add in file A is visible from file B this session, and `private` declarations of other files are invisible. Work file by file.
+- NEVER change a theorem statement. NEVER add a `sorry`. Do not `git add` or commit; leave work in the tree.
+- CSV fields are `|`-separated: NEVER write a literal `|` inside a field. Edit only the rows named in your assignment.
+- Scratch files: put them in the session scratchpad with your own prefix (`<yourprefix>-*`); other workers share it.
+- `export PATH="$HOME/.elan/bin:$PATH"`; Mathlib source under `.lake/packages/mathlib/`.
 
-For each Lean `theorem` whose doc comment carries a **DISP** number:
+## The job
+Your assignment names one audit CSV in `docs/audit/` and the Lean files it covers. Schema: `DISP|lean_name|module|stmt|proof|note|status`. Take every row with `proof` = `route` or `mild` whose declaration is in your files.
 
-1. **Locate the statement in the thesis** by point number (the doc comment's
-   `file.tex:NNNN` line reference has drifted and is a hint, not an address).
-2. **Compare it, clause by clause, with our Lean statement.**  Hypotheses,
-   conclusion, quantifier order and scope, direction of implications,
-   variance, which objects are existentially bound, instance binders that
-   carry real mathematical content (`[VonNeumannAlgebra …]`, `[CompleteSpace
-   …]`, `[Fact …]`).  Ask the question that has found every defect so far:
-   *does our rendering say what the source proves?*
-3. **Then compare the proofs.**  Read the thesis's proof (normally the next
-   point) and the Lean proof.  Does ours follow it, or does it reach the same
-   conclusion another way?
-4. **Write one row** to your CSV, in the schema of `STATEMENT-AUDIT.md`.
+For each row, in this order:
+1. **Re-derive from source, never from the note.** Read the thesis point (the DISP code decodes to a point; the doc comment gives the `.tex` line) and its printed proof or solution. Read our proof. Decide for yourself whether ours follows the printed argument. Recorded reasons in the status field have been wrong more often than right; do not brief yourself off them.
+2. If ours already follows the printed argument, or the thesis prints no argument for that step: set `proof` to `faithful` (or `none`) and write a short dated status sentence saying what you checked.
+3. If ours diverges and the printed route can be followed in **≤ 150 new lines** with tools already in the tree or in Mathlib: rewrite the proof onto the printed route, keeping the statement byte-identical. Compile until exit 0 with no new warnings. Set `proof` to `faithful` (or `mild` if a local shortcut remains, saying which), status `repaired <date>: <one sentence on what the printed route needed>`.
+4. If it cannot be done under that bound: do not start it. Write a precise re-costing in the status field, opening with the existing verdict word (`left-cost` / `left-forced` / `left-mathlib` / `left-unavailable` / `left-encoding` / `left-by-choice` / `left-reasoned`), naming the missing lemma(s) by content and where you looked. Replace stale text rather than appending to it; keep it short.
+5. Update the doc comment of a declaration only where it says something now false about its own proof.
 
-## Rules
+Prefer many small faithful conversions over one heroic one. Stop and report when your rows are done or when you have spent about 3 hours.
 
-* **Change nothing.**  Do not edit any `.lean` file, `ERRATA.md`,
-  `QUESTIONS.md`, `PROVING-LOG.md`, `why-open.csv`, or any survey.  Your only
-  write is your own CSV under `lean/docs/audit/`.  This pass *records*; the
-  repairs come later and separately.
-* **Do not run `git add`, `git commit`, `git stash`, or any other
-  state-changing git command.**  Read-only git is fine.
-* **`unsure` is a real verdict and it is respected.**  A wrong `ok` is worse
-  than no row: it launders an unchecked statement as checked, and this project
-  has been bitten repeatedly by exactly that.  If you cannot settle something
-  in reasonable time, write `unsure` and say in the note what is in the way.
-* **Do not audit by name.**  A Lean name that reads like the thesis's phrase
-  is not evidence; read both texts.
-* Statements that are `sorry` still get a statement verdict — the *statement*
-  is auditable even when the proof is absent.  Use `proof` = `sorry`.
-* Some points are Definitions, Examples, or bare citations with no proof.  Use
-  `proof` = `none`, and still check the statement.
-* Work in DISP order and **append rows as you go**, so partial work survives.
-* Prior findings are context, not gospel.  `PROVING-LOG.md` records the
-  divergence class claimed for many proofs when they were written; check it
-  rather than copying it.  Several such records have turned out wrong.
-
-## Useful
-
-* Lean is not on `PATH` and you should not need to compile.  If you want to
-  inspect an elaborated statement, use the `lean-lsp` MCP tools
-  (`lean_hover_info`, `lean_declaration_file`, `lean_goal`), or:
-
-  ```bash
-  export PATH="$HOME/.elan/bin:$PATH"
-  LP=".lake/build/lib/lean"; for d in .lake/packages/*/.lake/build/lib/lean; do LP="$LP:$d"; done
-  cp <file> "$SCRATCH"/probe.lean && echo '#check @Some.Name' >> "$SCRATCH"/probe.lean
-  env LEAN_PATH="$LP" lean -DrelaxedAutoImplicit=false -DmaxSynthPendingDepth=3 "$SCRATCH"/probe.lean
-  ```
-
-  Scratchpad: `/tmp/claude-1016/-home-claude-scm-theses-lean/3f45b388-372a-4e46-8b71-1dc777b2ea63/scratchpad`.
-  Never run `lake build`, and never `lake env lean` (it blocks on another
-  agent's build).
-* The theses' own errata are in `berr.tex` and the `parsec-N.M` block at the
-  top of `asols.tex`; a statement corrected there should be audited against
-  the *corrected* form.
-* `lean/ERRATA.md` already records ~30 known thesis defects and
-  `lean/QUESTIONS.md` the open author questions.  If your statement is
-  covered by one of those, say so in the note and give the row a verdict
-  anyway.
-
-## Final report
-
-Lead with: **how many statements audited, how many `stmt` verdicts were not
-`ok`, and how many `proof` verdicts were not `faithful`/`none`.**  Then list
-the most serious findings — any `weaker`, `stronger` or `differs` — one line
-each, most consequential first, naming the DISP and what differs.  Then say
-what you left `unsure` and why.  Report plainly; do not round anything up.
+## Report back (terse)
+Per row: DISP, lean_name, old→new proof class, lines added, compile exit code. Then anything you changed outside the assignment and why. The orchestrator commits.

@@ -2848,7 +2848,8 @@ needs them in `𝒦'`, and the double shift (`W = 1 ⊗ S₁`, `V = 1 ⊗ S₂`)
 the §1.4 ruling — (a) complements in `𝒦'`, (b) keep (ii) and add `dim ℋ < ∞`,
 (c) delete (ii) — after which the proof is real work.  See `ERRATA.md` 139XI,
 `QUESTIONS.md` B12 (whose printed three-option question was answered on
-2026-08-18; only the residue is live) and `docs/DECISIONS.md` §1.4. -/
+2026-08-18; only the residue is live) and `docs/DECISIONS.md` §1.4.  The
+`ERRATA.md` row was brought onto the same residue on 2026-09-03. -/
 theorem ess_uniq_pur (φ : NCPMap (H →L[ℂ] H) (K →L[ℂ] K))
     (V W : K →L[ℂ] hilbTensor H K')
     (hV : ∀ a : H →L[ℂ] H, φ a = conjOperator V (tensorCLM a 1))

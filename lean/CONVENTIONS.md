@@ -1,7 +1,7 @@
 # Conventions for the Lean formalization of the theses
 
-This directory contains a Lean 4 + Mathlib formalization of the *statements* of
-the two theses in this repository:
+This directory contains a Lean 4 + Mathlib formalization of the two theses in
+this repository:
 
 * **Thesis A** — Abraham Westerbaan, *The Category of Von Neumann Algebras*
   (arXiv:1804.02203): chapters `cstar.tex`, `vn.tex`, `proc.tex`.
@@ -9,8 +9,10 @@ the two theses in this repository:
   Neumann Algebras* (arXiv:1803.01911): chapters `bintr.tex`, `dils.tex`,
   `eff.tex`.
 
-At this stage every lemma/proposition/theorem/corollary/exercise is stated
-with a `sorry` proof; proofs are to be filled in later.
+Every lemma/proposition/theorem/corollary/exercise is stated, and all but nine
+are proved (`README.md` says where the nine are recorded).  Proofs follow the
+thesis's own argument where it prints one; where ours does not, the audit row
+in `docs/audit/*.csv` says so and why.
 
 ## Source referencing
 
@@ -51,16 +53,11 @@ starts); a reference to a *proof* sub-point of the cited result is legitimate
 and will not match (e.g. `86II … vn.tex:6300–6318` cites the computation
 inside 86II's proof, while the point itself is at 6264).
 
-Status as of 2026-08-13, checked mechanically rather than by recollection:
-
-* **`Theses/A/CStar/TowardsVN.lean`** — all 28 refs were stale and have been
-  re-derived (worker 21).
-* **`Theses/A/VN/*.lean`** — **not stale.**  All 287 label-carrying and all
-  70 bare `vn.tex:LINE` references resolve to within ±1 of their point, with
-  the single deliberate exception of the two 86II proof references above.  So
-  the drift is *not* uniform across the repo either: do not assume a file
-  needs the sweep, measure it.
-* The other chapters have not been measured.
+`scripts/cite_check.py` measures this for the whole tree (every label-carrying
+citation must land inside the extent of its label; `--disp` checks that a DISP
+tag decodes to the point it names), and `scripts/cite_repair.py` re-derives a
+drifted line from the `.tex` history rather than by guess.  Run
+`scripts/check_all.py` rather than measuring by hand.
 
 ### Finding an exercise's published solution
 
@@ -162,17 +159,17 @@ text).
   abstract von Neumann algebra, corners, filters, Paschke dilations, effect
   algebras, effectuses, &-effectuses, ⋄-effectuses, †-effectuses), formalize
   the thesis's definition faithfully as a new `class`/`structure`/`def`.
-* A *definition* point is formalized by an actual definition (no `sorry`), or
-  by a note that it coincides with an existing Mathlib notion.  A point that
-  both defines something and claims its well-definedness gets a definition
-  plus `sorry`-ed lemmas for the claims.
+* A *definition* point is formalized by an actual definition, or by a note
+  that it coincides with an existing Mathlib notion.  A point that both
+  defines something and claims its well-definedness gets a definition plus
+  lemmas for the claims.
 * Points tagged **Exercise**/**Exercise\*** are statements too — convert them
   exactly like lemmas.
 * Multi-part statements (enumerate) become one declaration per part, suffixed
   `_1`, `_2`, … or with descriptive suffixes.
 * Points that are proof-steps of a preceding theorem (tags like “1 ⇒ 2”,
-  “Induction step”, “Ad 3”) are *not* converted separately; they belong to the
-  proof, which is out of scope for now.
+  “Induction step”, “Ad 3”) are *not* converted separately; they are followed
+  inside the proof of the theorem they belong to.
 
 ## Key global choices
 

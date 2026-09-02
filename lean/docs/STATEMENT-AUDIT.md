@@ -27,8 +27,13 @@ One row per thesis statement, pipe-separated, in
 `docs/audit/<module-slug>.csv`:
 
 ```
-DISP|lean_name|module|stmt|proof|note
+DISP|lean_name|module|stmt|proof|note|status
 ```
+
+(`status` — the verdict on what should happen about the row, in the vocabulary
+of *Who each mismatch is waiting on* below — was added on 2026-08-21, when the
+re-verification pass began writing dated verdicts; rows graded `ok`/`faithful`
+may omit it.  Never write a literal `|` inside a field.)
 
 * **`stmt`** — **is the thesis's point stated in the tree?**  Not "does this
   one declaration say all of it" — see *What `stmt` is a verdict about*
@@ -846,7 +851,7 @@ mislabelled DISPs (`31IV` for `30IV`; five one-point drifts in `VNExamples`;
 
 ## What happens to a finding
 
-Nothing, immediately.  When the audit is complete the rows are triaged:
+The row is the record; the repair is a separate commit.  Rows are triaged:
 
 * a defect in the **thesis** → `ERRATA.md`;
 * a question for the **authors** → `QUESTIONS.md`;
