@@ -643,6 +643,15 @@ cycle.  **Action taken:** the docstring now says so.  This is the one case where
 being dead is what makes the tree correct, so the limb must not be "repaired"
 and must not be deleted either.
 
+**Superseded 2026-09-03.**  The trap is gone: `sqrt_lemma_monotone` is now
+proved the thesis's own way, from a private cone `SqrtCone a` — the values at
+`a` of the real polynomials with nonnegative coefficients and zero constant
+term — closed under products by the exponent identity `aᵐ⁺¹·aⁿ⁺¹ = aᵐ⁺ⁿ⁺²`
+alone.  It no longer touches `mul_nonneg_of_commute`, so there is no cycle to
+close, and the "must not be repaired" warning above and the docstring it
+refers to are both void.  The declaration is still consumerless; that part of
+the row stands.
+
 **`ncp_uwlim_2` (96III) — the row's own count was wrong, and the block is
 closed.**  The table says 2 of 3 siblings live.  In fact `ncp_uwlim_1` is dead
 too, and `ncp_uwlim`'s single consumer is `ncp_uwlim_2` — so all three

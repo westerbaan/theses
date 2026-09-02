@@ -3305,7 +3305,9 @@ notion of positivity, transcribing the thesis's argument: `a*a` is positive.
 The thesis takes `b := a ((a*a)_-)^{1/2}`; here the negative part is reached
 directly as `u := |h| - h` (with `h := a*a` and `|h|` the square root of `h²`
 from **23VII**), and `b := a u` already does the job, `u` being positive
-because `u³ = 2|h|u²` is a product of commuting positives (**11XV**.3). -/
+because `u³ = 2|h|u²` is a product of commuting positives (**23VII**.1, here
+`thesisPos_mul_of_commute`) and **11XV**.3 reads positivity back off that odd
+power (`thesisPos_of_pow_odd`). -/
 private theorem thesisPos_star_mul_self (a : 𝒜) : ThesisPos (star a * a) := by
   set h : 𝒜 := star a * a with hdef
   have hsa : IsSelfAdjoint h := isSelfAdjoint_star_mul_self' a
@@ -5726,18 +5728,16 @@ Everything in this block follows the thesis's own proof of **23II**
 functional calculus is deliberately *not* used, since **23II** is precisely
 what the thesis builds in order to avoid it.
 
-Two small departures from the letter of the thesis, both order-preserving:
-
-* the thesis bounds `‖bₙ - b_N‖` by `qₙ(1) - q_N(1)` using that the
-  polynomials `qₙ` have nonnegative coefficients; we instead bound the
-  successive differences `‖b_{n+1} - bₙ‖` by `r_{n+1} - rₙ` for the real
-  iteration `r₀ = 0`, `r_{n+1} = ½(1 + rₙ²)` by a direct induction.  This
-  needs no polynomial algebra and no positivity of coefficients.
-* consequently the monotonicity of `b₀ ≤ b₁ ≤ ⋯` (part 2 of **23II**) is
-  *not* needed for the existence of the limit, and we derive it after
-  `mul_nonneg_of_commute` (the thesis's `square-commuting-monotone`,
-  cstar.tex:3573) rather than before.  No circularity is introduced:
-  `mul_nonneg_of_commute` rests only on the existence half of the lemma. -/
+One small departure from the letter of the thesis, order-preserving: the
+thesis bounds `‖bₙ - b_N‖` by `qₙ(1) - q_N(1)` using that the polynomials
+`qₙ` have nonnegative coefficients; we instead bound the successive
+differences `‖b_{n+1} - bₙ‖` by `r_{n+1} - rₙ` for the real iteration
+`r₀ = 0`, `r_{n+1} = ½(1 + rₙ²)` by a direct induction.  This needs no
+polynomial algebra, so the existence of the limit does not wait on the
+monotonicity of `b₀ ≤ b₁ ≤ ⋯` (part 2 of **23II**), which is stated below at
+`sqrt_lemma_monotone`.  Part 2 is nevertheless proved the thesis's way, from
+the nonnegativity of the coefficients of `qₙ₊₁ - qₙ` and *not* from the
+positivity of commuting products; see the `SqrtCone` block below. -/
 
 section SqrtAux
 
@@ -6117,57 +6117,145 @@ theorem sqrt_lemma_existsUnique (a : 𝒜) (h0 : 0 ≤ a) (h1 : a ≤ 1) :
     rintro b' ⟨hb'0, hb'1, hb'a, hb'sq⟩
     exact (sqrt_lemma_unique a h0 h1 b hlim hb0 hbsq b' hb'0 hb'1 hb'a hb'sq).symm
 
+/-! ### The thesis's cone, for **23II**.2
+
+The thesis proves `b₀ ≤ b₁ ≤ ⋯` (cstar.tex:3520-3546) without the positivity
+of commuting products, and says why in as many words at cstar.tex:3543: "we
+have carefully avoided using the fact here that the product of positive
+commuting elements is positive, which is not available to us until
+`ineq-square-root`".  Its argument runs on the polynomials `q₀ = 0`,
+`qₙ₊₁ = ½(x + qₙ²)` with `bₙ ≡ qₙ(a)`: every `qₙ`, and every difference
+`qₙ₊₁ − qₙ`, has nonnegative coefficients and zero constant term, and
+`a, a², a³, …` are positive by **17VI**.4d, so `bₙ` and `bₙ₊₁ − bₙ` are
+positive.
+
+`SqrtCone a` is the set of values `p(a)` of exactly those polynomials: the
+nonnegative-real span of `a, a², a³, ….`  It is closed under products for the
+thesis's reason and no other — `aᵐ⁺¹ · aⁿ⁺¹ = aᵐ⁺ⁿ⁺²`, an identity of
+exponents — so nothing below appeals to the positivity of commuting products,
+and the induction step is the thesis's own
+`qₙ₊₂ − qₙ₊₁ = ½(qₙ₊₁ + qₙ)(qₙ₊₁ − qₙ)` (cstar.tex:3532). -/
+
+/-- The nonnegative-real span of `a, a², a³, …`: the values at `a` of the real
+polynomials with nonnegative coefficients and zero constant term, which is
+what the thesis's "the coefficients of `qₙ` are positive" (cstar.tex:3520)
+says about `qₙ(a)`. -/
+private inductive SqrtCone (a : 𝒜) : 𝒜 → Prop
+  | smul_pow (r : ℝ) (hr : 0 ≤ r) (n : ℕ) : SqrtCone a ((r : ℂ) • a ^ (n + 1))
+  | add {x y : 𝒜} : SqrtCone a x → SqrtCone a y → SqrtCone a (x + y)
+
+omit [PartialOrder 𝒜] [StarOrderedRing 𝒜] in
+private theorem SqrtCone.zero (a : 𝒜) : SqrtCone a 0 := by
+  simpa using SqrtCone.smul_pow (a := a) 0 le_rfl 0
+
+omit [PartialOrder 𝒜] [StarOrderedRing 𝒜] in
+private theorem SqrtCone.self (a : 𝒜) : SqrtCone a a := by
+  simpa using SqrtCone.smul_pow (a := a) 1 zero_le_one 0
+
+omit [PartialOrder 𝒜] [StarOrderedRing 𝒜] in
+private theorem SqrtCone.smul {a x : 𝒜} (h : SqrtCone a x) {r : ℝ} (hr : 0 ≤ r) :
+    SqrtCone a ((r : ℂ) • x) := by
+  induction h with
+  | smul_pow s hs n =>
+    rw [smul_smul, ← Complex.ofReal_mul]
+    exact SqrtCone.smul_pow _ (mul_nonneg hr hs) n
+  | add _ _ ih₁ ih₂ =>
+    rw [smul_add]
+    exact ih₁.add ih₂
+
+omit [PartialOrder 𝒜] [StarOrderedRing 𝒜] in
+private theorem SqrtCone.half {a x : 𝒜} (h : SqrtCone a x) :
+    SqrtCone a ((2 : ℂ)⁻¹ • x) := by
+  have he : (2 : ℂ)⁻¹ = (((1 / 2 : ℝ)) : ℂ) := by norm_num
+  rw [he]
+  exact h.smul (by norm_num)
+
+omit [PartialOrder 𝒜] [StarOrderedRing 𝒜] in
+/-- The cone is closed under products, by `aᵐ⁺¹ · aⁿ⁺¹ = aᵐ⁺ⁿ⁺²` alone. -/
+private theorem SqrtCone.mul {a x y : 𝒜} (hx : SqrtCone a x) (hy : SqrtCone a y) :
+    SqrtCone a (x * y) := by
+  induction hx with
+  | smul_pow r hr m =>
+    induction hy with
+    | smul_pow s hs n =>
+      have hexp : m + 1 + (n + 1) = m + n + 1 + 1 := by omega
+      have he : ((r : ℂ) • a ^ (m + 1)) * ((s : ℂ) • a ^ (n + 1))
+          = ((r * s : ℝ) : ℂ) • a ^ (m + n + 1 + 1) := by
+        rw [smul_mul_smul_comm, ← pow_add, hexp, Complex.ofReal_mul]
+      rw [he]
+      exact SqrtCone.smul_pow _ (mul_nonneg hr hs) _
+    | add _ _ ih₁ ih₂ =>
+      rw [mul_add]
+      exact ih₁.add ih₂
+  | add _ _ ih₁ ih₂ =>
+    rw [add_mul]
+    exact ih₁.add ih₂
+
+/-- Every element of the cone is positive: **17VI**.4d for `aⁿ⁺¹`, **9X**.1
+for the nonnegative scalars, and `add_nonneg` for the sums. -/
+private theorem SqrtCone.nonneg {a x : 𝒜} (h0 : 0 ≤ a) (h : SqrtCone a x) : 0 ≤ x := by
+  induction h with
+  | smul_pow r hr n => exact ofReal_smul_nonneg (positive_basic_2_4d a h0 (n + 1)) hr
+  | add _ _ ih₁ ih₂ => exact add_nonneg ih₁ ih₂
+
+omit [PartialOrder 𝒜] [StarOrderedRing 𝒜] in
+/-- `bₙ ≡ qₙ(a)` lies in the cone: `q₀ = 0` and `qₙ₊₁ = ½(x + qₙ²)`. -/
+private theorem sqrtApproxSeq_mem_cone (a : 𝒜) (n : ℕ) :
+    SqrtCone a (sqrtApproxSeq a n) := by
+  induction n with
+  | zero =>
+    rw [sqrtApproxSeq_zero]
+    exact SqrtCone.zero a
+  | succ n ih =>
+    rw [sqrtApproxSeq_succ]
+    refine SqrtCone.half ((SqrtCone.self a).add ?_)
+    rw [pow_two]
+    exact ih.mul ih
+
+omit [PartialOrder 𝒜] [StarOrderedRing 𝒜] in
+/-- The thesis's third display line at cstar.tex:3532, as an identity in two
+commuting elements: `½(a + x²) − ½(a + y²) = ½(x + y)(x − y)`. -/
+private theorem half_sq_diff {x y : 𝒜} (hxy : x * y = y * x) (a : 𝒜) :
+    (2 : ℂ)⁻¹ • (a + x ^ 2) - (2 : ℂ)⁻¹ • (a + y ^ 2)
+      = (2 : ℂ)⁻¹ • ((x + y) * (x - y)) := by
+  rw [← smul_sub]
+  congr 1
+  rw [mul_sub, add_mul, add_mul, hxy]
+  noncomm_ring
+
+omit [PartialOrder 𝒜] [StarOrderedRing 𝒜] in
+/-- `qₙ₊₁ − qₙ` has nonnegative coefficients, by the thesis's induction: the
+base case is `q₁ − q₀ = ½x`, and the step is
+`qₙ₊₂ − qₙ₊₁ = ½(qₙ₊₁ + qₙ)(qₙ₊₁ − qₙ)`, a product of two elements of the
+cone. -/
+private theorem sqrtApproxSeq_diff_mem_cone (a : 𝒜) (n : ℕ) :
+    SqrtCone a (sqrtApproxSeq a (n + 1) - sqrtApproxSeq a n) := by
+  induction n with
+  | zero =>
+    have he : sqrtApproxSeq a (0 + 1) - sqrtApproxSeq a 0 = (2 : ℂ)⁻¹ • a := by
+      rw [sqrtApproxSeq_succ, sqrtApproxSeq_zero]
+      simp
+    rw [he]
+    exact (SqrtCone.self a).half
+  | succ n ih =>
+    have key := half_sq_diff (sqrtApproxSeq_self_commute a (n + 1) n) a
+    rw [← sqrtApproxSeq_succ a (n + 1), ← sqrtApproxSeq_succ a n] at key
+    rw [key]
+    exact SqrtCone.half (SqrtCone.mul
+      ((sqrtApproxSeq_mem_cone a (n + 1)).add (sqrtApproxSeq_mem_cone a n)) ih)
+
 /-- **23II** (cstar.tex:3501, Lemma), part 2: the sequence
 `b₀ ≤ b₁ ≤ ⋯` given by `b₀ = 0`, `b_{n+1} = ½(a + bₙ²)` is monotone.
 
-**Do not use this in the construction of the square root.**  The proof below
-goes through `mul_nonneg_of_commute` — the product of commuting positives is
-positive — and that lemma is proved from `sqrt_exists_core`, hence from
-`sqrt_unit_exists`, hence from `sqrt_lemma_exists`, which is the existence
-half of this very Lemma.  The thesis rules the route out in as many words at
-cstar.tex:3543: "we have carefully avoided using the fact here that the product
-of positive commuting elements is positive, which is not available to us until
-`ineq-square-root`", and proves monotonicity instead from the positivity of the
-coefficients of `qₙ₊₁ − qₙ` as *polynomials*.
-
-Nothing breaks today, because this declaration has no consumer and the
-existence half does not need monotonicity: convergence is obtained the way the
-thesis obtains it, from the Cauchy estimate `‖bₙ − b_N‖ ≤ qₙ(1) − q_N(1)`
-(`sqrtApproxSeq_cauchy`).  Wiring this lemma into that chain would close a
-cycle.  Read 2026-08-28; `docs/DEAD-LIMBS.md` §5.7. -/
+Proved the thesis's way (cstar.tex:3520-3546), through the cone above: the
+positivity of commuting products is *not* used, which is the point the thesis
+makes at cstar.tex:3543, so this lemma is independent of `sqrt_lemma_exists`
+and of everything downstream of it. -/
 theorem sqrt_lemma_monotone (a : 𝒜) (h0 : 0 ≤ a) (h1 : a ≤ 1) :
     Monotone (sqrtApproxSeq a) :=
   by
     refine monotone_nat_of_le_succ fun n => ?_
-    induction n with
-    | zero =>
-      rw [sqrtApproxSeq_zero, sqrtApproxSeq_succ, sqrtApproxSeq_zero]
-      have hz : (a + (0 : 𝒜) ^ 2) = a := by norm_num
-      rw [hz]
-      exact half_smul_nonneg h0
-    | succ n ih =>
-      have hb1 := sqrtApproxSeq_nonneg a h0 (n + 1)
-      have hbn := sqrtApproxSeq_nonneg a h0 n
-      have hd : 0 ≤ sqrtApproxSeq a (n + 1) - sqrtApproxSeq a n := sub_nonneg.mpr ih
-      have hcomm : sqrtApproxSeq a (n + 1) * sqrtApproxSeq a n
-          = sqrtApproxSeq a n * sqrtApproxSeq a (n + 1) :=
-        sqrtApproxSeq_self_commute a (n + 1) n
-      have h1' : 0 ≤ sqrtApproxSeq a (n + 1) *
-          (sqrtApproxSeq a (n + 1) - sqrtApproxSeq a n) :=
-        mul_nonneg_of_commute hb1 hd (by rw [mul_sub, sub_mul, hcomm])
-      have h2' : 0 ≤ (sqrtApproxSeq a (n + 1) - sqrtApproxSeq a n) *
-          sqrtApproxSeq a n :=
-        mul_nonneg_of_commute hd hbn (by rw [sub_mul, mul_sub, hcomm])
-      have hkey : sqrtApproxSeq a (n + 2) - sqrtApproxSeq a (n + 1)
-          = (2 : ℂ)⁻¹ • (sqrtApproxSeq a (n + 1) *
-              (sqrtApproxSeq a (n + 1) - sqrtApproxSeq a n)
-            + (sqrtApproxSeq a (n + 1) - sqrtApproxSeq a n) * sqrtApproxSeq a n) := by
-        rw [sqrtApproxSeq_succ a (n + 1), sqrtApproxSeq_succ a n, ← smul_sub]
-        congr 1
-        noncomm_ring
-      have h3 := half_smul_nonneg (add_nonneg h1' h2')
-      rw [← hkey, sub_nonneg] at h3
-      exact h3
+    exact sub_nonneg.mp ((sqrtApproxSeq_diff_mem_cone a n).nonneg h0)
 
 /-- **23II** (cstar.tex:3501, Lemma), part 3: the `b` of
 `sqrt_lemma_existsUnique` is the norm limit of the sequence `(bₙ)ₙ`. -/
