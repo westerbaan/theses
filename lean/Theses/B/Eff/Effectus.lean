@@ -683,9 +683,16 @@ theorem eff_prod_rules_1 {W : C} (f : Z ⟶ X) (g : Z ⟶ Y)
     ∃ hp : Perp (f ≫ a) (g ≫ b),
       effPair f g h ≫ coprod.desc a b = ovee (f ≫ a) (g ≫ b) hp := by
   obtain ⟨hk, he⟩ := effPair_eq_ovee f g h
+  -- bsols.tex:1667: `1 ∘ a ∘ f ≤ 1 ∘ f ⊥ 1 ∘ g ≥ 1 ∘ b ∘ g`, hence
+  -- `1 ∘ a ∘ f ⊥ 1 ∘ b ∘ g` and so `a ∘ f ⊥ b ∘ g`.
   have hp : Perp (f ≫ a) (g ≫ b) := by
-    have hq := perp_comp_right hk (coprod.desc a b)
-    rwa [Category.assoc, coprod.inl_desc, Category.assoc, coprod.inr_desc] at hq
+    have hle₁ : ((f ≫ a) ≫ truth W) ≼ (f ≫ truth X) := by
+      rw [Category.assoc]; exact le_comp_left (le_truth (a ≫ truth W)) f
+    have hle₂ : ((g ≫ b) ≫ truth W) ≼ (g ≫ truth Y) := by
+      rw [Category.assoc]; exact le_comp_left (le_truth (b ≫ truth W)) g
+    obtain ⟨h₁, -⟩ := eabasics_le_perp_compat hle₁ h
+    obtain ⟨h₂, -⟩ := eabasics_le_perp_compat hle₂ (PCM.perp_comm h₁)
+    exact EffectusPartialForm.perp_of_one_perp (PCM.perp_comm h₂)
   refine ⟨hp, ?_⟩
   rw [he, ovee_comp_right hk _ (perp_comp_right hk _)]
   exact PCM.ovee_congr (by rw [Category.assoc, coprod.inl_desc])
@@ -696,11 +703,10 @@ theorem eff_prod_rules_1 {W : C} (f : Z ⟶ X) (g : Z ⟶ Y)
 theorem eff_prod_rules_2 (f : Z ⟶ X) (g : Z ⟶ Y)
     (h : Perp (f ≫ truth X) (g ≫ truth Y)) :
     effPair f g h ≫ truth (X ⨿ Y) = ovee (f ≫ truth X) (g ≫ truth Y) h := by
-  obtain ⟨hk, he⟩ := effPair_eq_ovee f g h
-  have t₁ : (coprod.inl : X ⟶ X ⨿ Y) ≫ truth (X ⨿ Y) = truth X := coproj_total_inl X Y
-  have t₂ : (coprod.inr : Y ⟶ X ⨿ Y) ≫ truth (X ⨿ Y) = truth Y := coproj_total_inr X Y
-  rw [he, ovee_comp_right hk _ (perp_comp_right hk _)]
-  exact PCM.ovee_congr (by rw [Category.assoc, t₁]) (by rw [Category.assoc, t₂]) _ h
+  -- bsols.tex:1675: by the previous clause and `[1,1] = 1` (181IV,
+  -- `cotupl_pcm_one`), `1 ∘ ⟨f,g⟩ = [1,1] ∘ ⟨f,g⟩ = (1 ∘ f) ⋁ (1 ∘ g)`.
+  obtain ⟨hp, he⟩ := eff_prod_rules_1 f g h (truth X) (truth Y)
+  rw [← cotupl_pcm_one X Y, he]
 
 /-- **181IX.3** (`eff-prod-rules`, eff.tex:1137, Exercise):
 `(k + l) ∘ ⟨f,g⟩ = ⟨k ∘ f, l ∘ g⟩`. -/
