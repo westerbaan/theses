@@ -3704,14 +3704,18 @@ Both are `Prop`-valued classes with existential fields, so no canonical
 choice of corner or filter has to be made. -/
 
 /-- The standard corner `h_a : 𝒜 → ⌊a⌋𝒜⌊a⌋`, `b ↦ ⌊a⌋b⌊a⌋` (dils.tex 169IV
-`standard_corner_dils`), as a comprehension, together with the two further
-facts the rest of the file needs of it: its carrier is `⌊a⌋`, and its
-ncpsu-map is surjective.  `su_hasComprehension` below is the bare 199V. -/
+`standard_corner_dils`), as a comprehension, together with the three further
+facts the rest of the file needs of it: its carrier is `⌊a⌋`, its ncpsu-map
+is surjective, and — for the commutative subcategory `CvNᵒᵖ` of 206III — the
+corner `⌊a⌋𝒜⌊a⌋` is commutative whenever `𝒜` is, because its multiplication
+is that of `𝒜`.  `su_hasComprehension` below is the bare 199V. -/
 private theorem su_exists_corner {X : WStarCPSU.{u}ᵒᵖ}
     (p : X ⟶ effObj (WStarCPSU.{u}ᵒᵖ)) :
     ∃ (W : WStarCPSU.{u}ᵒᵖ) (π : W ⟶ X), IsComprehension p π ∧
       suCarrier π = Theses.A.VN.floor (suPredVal p) ∧
-      Function.Surjective π.unop.toNCPMap := by
+      Function.Surjective π.unop.toNCPMap ∧
+      ((∀ x y : X.unop.base.carrier, x * y = y * x) →
+        ∀ x y : W.unop.base.carrier, x * y = y * x) := by
     obtain ⟨h, hval, -, hcorner, huniv⟩ := Theses.B.Dils.standard_corner_dils
       (A := X.unop.base.carrier) (suPredVal p)
       ⟨suPredVal_nonneg p, suPredVal_le_one p⟩
@@ -3732,7 +3736,7 @@ private theorem su_exists_corner {X : WStarCPSU.{u}ᵒᵖ}
       ⟨Quiver.Hom.op ⟨h, le_of_eq hunital⟩, fun _ => rfl⟩
     have hproj : IsStarProjection (Theses.A.VN.floor (suPredVal p)) :=
       Theses.B.Dils.cornerSet.proj (Theses.A.VN.floor (suPredVal p))
-    refine ⟨_, π, ⟨?_, ?_⟩, ?_, ?_⟩
+    refine ⟨_, π, ⟨?_, ?_⟩, ?_, ?_, ?_⟩
     · -- `π ∘ p = π ∘ 1`
       refine su_pred_ext (Eq.trans (suPredVal_comp π p)
         (Eq.trans ?_ (suPredVal_comp π (truth X)).symm))
@@ -3811,6 +3815,10 @@ private theorem su_exists_corner {X : WStarCPSU.{u}ᵒᵖ}
       refine Theses.B.Dils.cornerSet.val_injective ?_
       rw [hval]
       exact y.2
+    · -- `⌊a⌋𝒜⌊a⌋` is commutative when `𝒜` is: its product is that of `𝒜`
+      intro hX x y
+      refine Theses.B.Dils.cornerSet.val_injective ?_
+      exact hX _ _
 
 /-- **199V at `vNᵒᵖ`** (eff.tex:3933, Examples): `vN_cpsuᵒᵖ` **has
 comprehension**, and a comprehension for the effect `a` is the standard
@@ -3818,15 +3826,20 @@ corner `h_a : 𝒜 → ⌊a⌋𝒜⌊a⌋`, `b ↦ ⌊a⌋b⌊a⌋` (dils.tex 16
 `standard_corner_dils`). -/
 theorem su_hasComprehension : HasComprehension (WStarCPSU.{u}ᵒᵖ) :=
   ⟨fun p => by
-    obtain ⟨W, π, hπ, -, -⟩ := su_exists_corner p
+    obtain ⟨W, π, hπ, -, -, -⟩ := su_exists_corner p
     exact ⟨W, π, hπ⟩⟩
 
-/-- **197IV at `vNᵒᵖ`** (eff.tex:3683, Examples): `vN_cpsuᵒᵖ` **has
-quotients**, and a quotient for the effect `a` is the standard filter
-`c_{aᗮ} : ⌈aᗮ⌉𝒜⌈aᗮ⌉ → 𝒜`, `b ↦ √(aᗮ) b √(aᗮ)` (dils.tex 169X
-`dils_stand_filter`). -/
-theorem su_hasQuotients : HasQuotients (WStarCPSU.{u}ᵒᵖ) where
-  quot {X} p := by
+/-- The standard filter `c_{aᗮ} : ⌈aᗮ⌉𝒜⌈aᗮ⌉ → 𝒜`, `b ↦ √(aᗮ) b √(aᗮ)`
+(dils.tex 169X `dils_stand_filter`), as a quotient, together with the one
+further fact the commutative subcategory `CvNᵒᵖ` of 206III needs of it: the
+corner `⌈aᗮ⌉𝒜⌈aᗮ⌉` is commutative whenever `𝒜` is, because its
+multiplication is that of `𝒜`.  `su_hasQuotients` below is the bare
+197IV. -/
+private theorem su_exists_filter {X : WStarCPSU.{u}ᵒᵖ}
+    (p : X ⟶ effObj (WStarCPSU.{u}ᵒᵖ)) :
+    ∃ (Q : WStarCPSU.{u}ᵒᵖ) (ξ : X ⟶ Q), IsQuotient p ξ ∧
+      ((∀ x y : X.unop.base.carrier, x * y = y * x) →
+        ∀ x y : Q.unop.base.carrier, x * y = y * x) := by
     have hb0 : (0 : X.unop.base.carrier) ≤ suPredVal (EffectusPartialForm.orth p) :=
       suPredVal_nonneg _
     obtain ⟨c, hcval, -, hc1, huniv⟩ := Theses.B.Dils.dils_stand_filter
@@ -3840,7 +3853,7 @@ theorem su_hasQuotients : HasQuotients (WStarCPSU.{u}ᵒᵖ) where
             (Theses.A.VN.ceil (suPredVal (EffectusPartialForm.orth p)))))),
         ∀ x, ξ.unop.toNCPMap x = c x :=
       ⟨Quiver.Hom.op ⟨c, le_trans hc1 (suPredVal_le_one _)⟩, fun _ => rfl⟩
-    refine ⟨_, ξ, ?_, ?_⟩
+    refine ⟨_, ξ, ⟨?_, ?_⟩, ?_⟩
     · -- `1 ∘ ξ ≼ pᗮ`
       refine (su_pred_le_iff _ _).mpr ?_
       rw [suPredVal_comp, hξ, suPredVal_truth]
@@ -3870,6 +3883,19 @@ theorem su_hasQuotients : HasQuotients (WStarCPSU.{u}ᵒᵖ) where
         exact suop_hom_ext fun y =>
           (congrArg (fun m : Theses.NCPSUMap Y.unop.base.carrier _ =>
             m.toNCPMap y) hkf).trans (hg y).symm
+    · -- `⌈aᗮ⌉𝒜⌈aᗮ⌉` is commutative when `𝒜` is: its product is that of `𝒜`
+      intro hX x y
+      refine Theses.B.Dils.cornerSet.val_injective ?_
+      exact hX _ _
+
+/-- **197IV at `vNᵒᵖ`** (eff.tex:3683, Examples): `vN_cpsuᵒᵖ` **has
+quotients**, and a quotient for the effect `a` is the standard filter
+`c_{aᗮ} : ⌈aᗮ⌉𝒜⌈aᗮ⌉ → 𝒜`, `b ↦ √(aᗮ) b √(aᗮ)` (dils.tex 169X
+`dils_stand_filter`). -/
+theorem su_hasQuotients : HasQuotients (WStarCPSU.{u}ᵒᵖ) where
+  quot {X} p := by
+    obtain ⟨Q, ξ, hξ, -⟩ := su_exists_filter p
+    exact ⟨Q, ξ, hξ⟩
 
 /-- **202IV at `vNᵒᵖ`** (eff.tex:4116, Examples): a predicate is *the*
 image of `f` exactly when it names the carrier `⌈f⌉`. -/
@@ -3975,7 +4001,7 @@ theorem su_isSharp_iff {X : WStarCPSU.{u}ᵒᵖ}
     rw [le_antisymm h1 h2, hq]
     exact hproj
   · intro hpr
-    obtain ⟨W, π, -, hcar, -⟩ := su_exists_corner p
+    obtain ⟨W, π, -, hcar, -, -⟩ := su_exists_corner p
     exact ⟨W, π, su_isImage_carrier π p
       (by rw [hcar, su_floor_of_isStarProjection hpr])⟩
 
@@ -5965,7 +5991,7 @@ surjective onto `⌊q⌋𝒜⌊q⌋`. -/
 theorem su_compr_surjective {W X : WStarCPSU.{u}ᵒᵖ}
     {q : X ⟶ effObj (WStarCPSU.{u}ᵒᵖ)} {π : W ⟶ X} (hπ : IsComprehension q π) :
     Function.Surjective π.unop.toNCPMap := by
-  obtain ⟨W₀, π₀, hπ₀, -, hsurj₀⟩ := su_exists_corner q
+  obtain ⟨W₀, π₀, hπ₀, -, hsurj₀, -⟩ := su_exists_corner q
   obtain ⟨θ, hiso, hθ, -⟩ := compr_basics_2 hπ hπ₀
   haveI := hiso
   intro y
@@ -6373,6 +6399,471 @@ end PureCoequalizer
 
 end IUnique
 
+/-! ## `CvNᵒᵖ` in partial form, and the `CvNᵒᵖ` clause of 206III
+
+**206III** (eff.tex:4460, Examples) asserts that `vNᵒᵖ`, `CvNᵒᵖ`, `EJAᵒᵖ`
+and `SET` are all ⋄-effectuses.  `effectus_cvn` above did the *total*-form
+restriction to the commutative algebras (189aI, second sentence); a
+⋄-effectus, however, lives in the **partial** form, so the whole of 180VII
+has to be restricted as well.  That is what this section does, ending in
+`su_diamondEffectus_cvn`.
+
+No von Neumann algebra theory is redone.  The inclusion
+`CvNᵒᵖ ⥤ vNᵒᵖ` is a bijection on each hom-set — `cmap`/`cmk` below, mutually
+inverse by `rfl` — so:
+
+* the hom-PCM, the six finPAC axioms and the effect structure of 180VII are
+  **pulled back** along it.  The effect object `ℂᵤ`, the trivial algebra
+  and a product of commutative algebras are commutative, so the effect
+  object, the initial object and the binary coproducts of `vN_cpsuᵒᵖ` all
+  stay inside the subcategory.  (Only `compatible_sum` needs a moment's
+  care: the *chosen* coproduct `Y + Y` of the subcategory is merely
+  isomorphic to the product algebra, so the ambient axiom is read at the
+  transported cofan, `perp_comp_comp`.)
+* the universal properties of a quotient, of a comprehension and of an
+  image quantify over *objects of the ambient category*; restricting them
+  to the subcategory only makes them weaker.  So an ambient
+  quotient/comprehension whose new object happens to be commutative is at
+  once one of the subcategory, and the whole mathematical content is:
+  **the objects the ⋄-structure of `vN_cpsuᵒᵖ` adds are corners `p𝒜p`, and
+  a corner of a commutative algebra is commutative**, its multiplication
+  being that of `𝒜`.  That is the last conjunct of `su_exists_corner` and
+  of `su_exists_filter`.  Images add no object at all.
+* sharpness is the one notion that does *not* restrict for free, being an
+  existential over objects of the subcategory.  `cvnsu_isSharp_cpred` pushes
+  a sharp predicate of `CvNᵒᵖ` forward to a sharp predicate of `vNᵒᵖ`
+  (images are unique), `su_orth_sharp` complements it there, and the
+  *commutative* standard corner of `su_exists_corner` brings it back — using
+  **203XII** `img_of_compr`, `im π_s = s` for sharp `s`, to see that a
+  comprehension for a sharp predicate has that predicate as its image. -/
+
+section CvNPartial
+
+open Theses.A.CStar
+open scoped ComplexOrder ComplexStarModule
+
+attribute [local instance] suHasFiniteCoproducts suPCM suFinPAC
+  suEffectusPartialForm su_hasQuotients su_hasComprehension su_hasImages
+
+/-- The compatible-sum axiom of a finPAC read through an arbitrary map into
+the coproduct: if `d₁ = φ ∘ ▷₁` and `d₂ = φ ∘ ▷₂` then `b ∘ d₁ ⊥ b ∘ d₂`.
+(Used for `CvNᵒᵖ`, whose *chosen* coproduct is only isomorphic to the
+product algebra.) -/
+theorem perp_comp_comp {C : Type u} [Category.{v} C] [HasFiniteCoproducts C]
+    [∀ X Y : C, PCM (X ⟶ Y)] [FinPAC C] {Y W Z : C} (φ : W ⟶ Y ⨿ Y)
+    {d₁ d₂ : W ⟶ Y} (h₁ : d₁ = φ ≫ pproj₁ Y Y) (h₂ : d₂ = φ ≫ pproj₂ Y Y)
+    (b : Z ⟶ W) : Perp (b ≫ d₁) (b ≫ d₂) := by
+  subst h₁
+  subst h₂
+  have h := FinPAC.compatible_sum (b ≫ φ)
+  rwa [Category.assoc, Category.assoc] at h
+
+/-- The concrete binary coproduct of `vN_cpsuᵒᵖ` is jointly epic: the two
+coprojections of `suHP`, in the shape `rw` can use. -/
+theorem suP_hom_ext {X Y Z : WStarCPSU.{u}ᵒᵖ} {f g : suP X Y ⟶ Z}
+    (h₁ : suPinl X Y ≫ f = suPinl X Y ≫ g)
+    (h₂ : suPinr X Y ≫ f = suPinr X Y ≫ g) : f = g :=
+  BinaryCofan.IsColimit.hom_ext (suHP X Y) h₁ h₂
+
+/-! ### The category `CvN_cpsu` and the hom-bijection -/
+
+/-- Commutativity of the carrier, as a property of the objects of
+`vN_cpsu`: the ncpsu-map counterpart of `IsCommWStar`. -/
+def IsCommWStarCPSU : ObjectProperty WStarCPSU.{u} :=
+  fun A => ∀ x y : A.base.carrier, x * y = y * x
+
+/-- **`CvN_cpsu`**: the full subcategory of `vN_cpsu` spanned by the
+commutative von Neumann algebras (the morphisms are still all ncpsu-maps),
+so that `CWStarCPSU.{u}ᵒᵖ` is the `CvNᵒᵖ` of 206III in partial form. -/
+abbrev CWStarCPSU : Type (u + 1) := IsCommWStarCPSU.{u}.FullSubcategory
+
+theorem cvn_mul_comm (X : CWStarCPSU.{u}) (x y : X.obj.base.carrier) :
+    x * y = y * x := X.property x y
+
+/-- The object of `vN_cpsuᵒᵖ` underlying an object of `CvNᵒᵖ`. -/
+abbrev cin (X : CWStarCPSU.{u}ᵒᵖ) : WStarCPSU.{u}ᵒᵖ := Opposite.op X.unop.obj
+
+/-- The morphism of `vN_cpsuᵒᵖ` underlying a morphism of `CvNᵒᵖ`: the action
+of the (fully faithful) inclusion on hom-sets. -/
+noncomputable def cmap {X Y : CWStarCPSU.{u}ᵒᵖ} (f : X ⟶ Y) : cin X ⟶ cin Y :=
+  Quiver.Hom.op f.unop.hom
+
+/-- The inverse of `cmap`: every morphism of `vN_cpsuᵒᵖ` between commutative
+algebras is a morphism of `CvNᵒᵖ` (the subcategory is *full*). -/
+noncomputable def cmk {X Y : CWStarCPSU.{u}ᵒᵖ} (g : cin X ⟶ cin Y) : X ⟶ Y :=
+  Quiver.Hom.op (InducedCategory.homMk g.unop)
+
+@[simp] theorem cmap_cmk {X Y : CWStarCPSU.{u}ᵒᵖ} (g : cin X ⟶ cin Y) :
+    cmap (cmk g) = g := rfl
+
+@[simp] theorem cmk_cmap {X Y : CWStarCPSU.{u}ᵒᵖ} (f : X ⟶ Y) :
+    cmk (cmap f) = f := rfl
+
+theorem cmap_injective {X Y : CWStarCPSU.{u}ᵒᵖ} {f g : X ⟶ Y}
+    (h : cmap f = cmap g) : f = g := by
+  rw [← cmk_cmap f, ← cmk_cmap g, h]
+
+@[simp] theorem cmap_comp {X Y Z : CWStarCPSU.{u}ᵒᵖ} (f : X ⟶ Y) (g : Y ⟶ Z) :
+    cmap (f ≫ g) = cmap f ≫ cmap g := rfl
+
+@[simp] theorem cmap_id (X : CWStarCPSU.{u}ᵒᵖ) : cmap (𝟙 X) = 𝟙 (cin X) := rfl
+
+/-! ### The hom-PCM -/
+
+/-- **The hom-PCM of `CvNᵒᵖ`** (180VII.1): pulled back from `vN_cpsuᵒᵖ`
+along the bijection `cmap`, so that — exactly as in `suPCM` — `f ⊥ g` iff
+`f(1) + g(1) ≤ 1` and `f ⋁ g = f + g`. -/
+noncomputable def cvnsuPCM (X Y : CWStarCPSU.{u}ᵒᵖ) : PCM (X ⟶ Y) where
+  zero := cmk 0
+  Perp f g := Perp (cmap f) (cmap g)
+  ovee f g h := cmk (ovee (cmap f) (cmap g) h)
+  perp_comm h := PCM.perp_comm h
+  ovee_comm h := congrArg cmk (PCM.ovee_comm h)
+  perp_of_ovee_perp hab h := PCM.perp_of_ovee_perp hab h
+  perp_ovee_of_ovee_perp hab h := PCM.perp_ovee_of_ovee_perp hab h
+  ovee_assoc hab h := congrArg cmk (PCM.ovee_assoc hab h)
+  zero_perp a := PCM.zero_perp (cmap a)
+  zero_ovee a := congrArg cmk (PCM.zero_ovee (cmap a))
+
+attribute [local instance] cvnsuPCM
+
+@[simp] theorem cmap_zero {X Y : CWStarCPSU.{u}ᵒᵖ} :
+    cmap (0 : X ⟶ Y) = 0 := rfl
+
+@[simp] theorem cmap_ovee {X Y : CWStarCPSU.{u}ᵒᵖ} (f g : X ⟶ Y)
+    (h : Perp f g) : cmap (ovee f g h) = ovee (cmap f) (cmap g) h := rfl
+
+/-- The algebraic order `≼` of the hom-PCM of `CvNᵒᵖ` is the ambient one. -/
+theorem cvnsu_le_iff {X Y : CWStarCPSU.{u}ᵒᵖ} (f g : X ⟶ Y) :
+    f ≼ g ↔ cmap f ≼ cmap g := by
+  constructor
+  · rintro ⟨c, hc, rfl⟩
+    exact ⟨cmap c, hc, rfl⟩
+  · rintro ⟨c, hc, hcg⟩
+    exact ⟨cmk c, hc, cmap_injective hcg⟩
+
+/-! ### Finite coproducts -/
+
+/-- The trivial algebra as an object of `CvN_cpsu`: it is commutative. -/
+noncomputable abbrev cvnsuTriv : CWStarCPSU.{u} :=
+  ⟨WStarCPSU.of (WStar.of PUnit.{u + 1}),
+    fun _ _ => Subsingleton.elim (α := PUnit.{u + 1}) _ _⟩
+
+/-- The trivial algebra is final in `CvN_cpsu`, hence initial in
+`CvNᵒᵖ` (uniqueness in the subcategory is uniqueness in `vN_cpsu`). -/
+noncomputable def cvnsuTrivIsTerminal : IsTerminal (cvnsuTriv.{u}) :=
+  IsTerminal.ofUniqueHom
+    (fun X => InducedCategory.homMk (wTrivSU X.obj.base.carrier))
+    (fun _ _ => InducedCategory.hom_ext
+      (ncpsu_ext fun _ => Subsingleton.elim (α := PUnit.{u + 1}) _ _))
+
+/-- The product algebra as an object of `CvNᵒᵖ`: the binary coproduct. -/
+noncomputable abbrev cvnsuP (X Y : CWStarCPSU.{u}ᵒᵖ) : CWStarCPSU.{u}ᵒᵖ :=
+  Opposite.op ⟨WStarCPSU.of (WStar.of
+      (X.unop.obj.base.carrier × Y.unop.obj.base.carrier)),
+    fun x y => Prod.ext (cvn_mul_comm X.unop x.1 y.1)
+      (cvn_mul_comm Y.unop x.2 y.2)⟩
+
+/-- The first coprojection of `CvNᵒᵖ`. -/
+noncomputable def cvnsuPinl (X Y : CWStarCPSU.{u}ᵒᵖ) : X ⟶ cvnsuP X Y :=
+  cmk (suPinl (cin X) (cin Y))
+
+/-- The second coprojection of `CvNᵒᵖ`. -/
+noncomputable def cvnsuPinr (X Y : CWStarCPSU.{u}ᵒᵖ) : Y ⟶ cvnsuP X Y :=
+  cmk (suPinr (cin X) (cin Y))
+
+@[simp] theorem cmap_cvnsuPinl (X Y : CWStarCPSU.{u}ᵒᵖ) :
+    cmap (cvnsuPinl X Y) = suPinl (cin X) (cin Y) := rfl
+
+@[simp] theorem cmap_cvnsuPinr (X Y : CWStarCPSU.{u}ᵒᵖ) :
+    cmap (cvnsuPinr X Y) = suPinr (cin X) (cin Y) := rfl
+
+/-- The product algebra is the binary coproduct of `CvNᵒᵖ`: `cmap` is a
+bijection on hom-sets, so `suHP` transports. -/
+noncomputable def cvnsuHP (X Y : CWStarCPSU.{u}ᵒᵖ) :
+    IsColimit (BinaryCofan.mk (cvnsuPinl X Y) (cvnsuPinr X Y)) :=
+  BinaryCofan.IsColimit.mk _
+    (fun {_} u v => cmk (suPdesc (cmap u) (cmap v)))
+    (fun {_} u v => cmap_injective (suPinl_desc (cmap u) (cmap v)))
+    (fun {_} u v => cmap_injective (suPinr_desc (cmap u) (cmap v)))
+    (fun {_} u v m h₁ h₂ => by
+      refine cmap_injective ?_
+      refine suP_hom_ext (X := cin X) (Y := cin Y) ?_ ?_
+      · show suPinl (cin X) (cin Y) ≫ cmap m
+            = suPinl (cin X) (cin Y) ≫ suPdesc (cmap u) (cmap v)
+        rw [suPinl_desc]
+        exact congrArg cmap h₁
+      · show suPinr (cin X) (cin Y) ≫ cmap m
+            = suPinr (cin X) (cin Y) ≫ suPdesc (cmap u) (cmap v)
+        rw [suPinr_desc]
+        exact congrArg cmap h₂)
+
+/-- Finite coproducts of `CvNᵒᵖ`. -/
+theorem cvnsuHasFiniteCoproducts : HasFiniteCoproducts (CWStarCPSU.{u}ᵒᵖ) :=
+  letI : HasInitial (CWStarCPSU.{u}ᵒᵖ) :=
+    (IsTerminal.op (CWStarCPSU.{u}) cvnsuTrivIsTerminal).hasInitial
+  letI : ∀ X Y : CWStarCPSU.{u}ᵒᵖ, HasColimit (pair X Y) := fun X Y =>
+    HasColimit.mk ⟨_, cvnsuHP X Y⟩
+  letI : HasBinaryCoproducts (CWStarCPSU.{u}ᵒᵖ) :=
+    hasBinaryCoproducts_of_hasColimit_pair _
+  hasFiniteCoproducts_of_has_binary_and_initial
+
+attribute [local instance] cvnsuHasFiniteCoproducts
+
+/-! ### The finPAC axioms -/
+
+/-- **`CvNᵒᵖ` is a finPAC** (180VII.1).  Five of the six axioms are the
+axioms of `suFinPAC` read along the hom-bijection.  `compatible_sum` is the
+sixth: the chosen coproduct `Y + Y` of `CvNᵒᵖ` is only *isomorphic* to the
+product algebra, so the two partial projectors are first transported to the
+product algebra (`h₁`, `h₂`) and the ambient axiom is then read through the
+mediating map `[κ₁, κ₂]` by `perp_comp_comp`. -/
+theorem cvnsuFinPAC : FinPAC (CWStarCPSU.{u}ᵒᵖ) where
+  comp_ovee := fun h k => by
+    obtain ⟨h', hk⟩ := FinPAC.comp_ovee (C := WStarCPSU.{u}ᵒᵖ) h (cmap k)
+    exact ⟨h', cmap_injective hk⟩
+  ovee_comp := fun h k => by
+    obtain ⟨h', hk⟩ := FinPAC.ovee_comp (C := WStarCPSU.{u}ᵒᵖ) h (cmap k)
+    exact ⟨h', cmap_injective hk⟩
+  comp_zero := fun f => cmap_injective (FinPAC.comp_zero (cmap f))
+  zero_comp := fun f => cmap_injective (FinPAC.zero_comp (cmap f))
+  compatible_sum := fun {_ Y} b => by
+    let e : (Y ⨿ Y) ≅ cvnsuP Y Y :=
+      (coprodIsCoprod Y Y).coconePointUniqueUpToIso (cvnsuHP Y Y)
+    have hl : (coprod.inl : Y ⟶ Y ⨿ Y) ≫ e.hom = cvnsuPinl Y Y :=
+      (coprodIsCoprod Y Y).comp_coconePointUniqueUpToIso_hom (cvnsuHP Y Y)
+        ⟨WalkingPair.left⟩
+    have hr : (coprod.inr : Y ⟶ Y ⨿ Y) ≫ e.hom = cvnsuPinr Y Y :=
+      (coprodIsCoprod Y Y).comp_coconePointUniqueUpToIso_hom (cvnsuHP Y Y)
+        ⟨WalkingPair.right⟩
+    have h₁ : pproj₁ Y Y
+        = e.hom ≫ cmk (suPdesc (𝟙 (cin Y)) (0 : cin Y ⟶ cin Y)) := by
+      refine coprod.hom_ext ?_ ?_
+      · rw [show (pproj₁ Y Y) = coprod.desc (𝟙 Y) 0 from rfl, coprod.inl_desc,
+          ← Category.assoc, hl]
+        refine (cmap_injective ?_).symm
+        exact suPinl_desc (𝟙 (cin Y)) (0 : cin Y ⟶ cin Y)
+      · rw [show (pproj₁ Y Y) = coprod.desc (𝟙 Y) 0 from rfl, coprod.inr_desc,
+          ← Category.assoc, hr]
+        refine (cmap_injective ?_).symm
+        exact suPinr_desc (𝟙 (cin Y)) (0 : cin Y ⟶ cin Y)
+    have h₂ : pproj₂ Y Y
+        = e.hom ≫ cmk (suPdesc (0 : cin Y ⟶ cin Y) (𝟙 (cin Y))) := by
+      refine coprod.hom_ext ?_ ?_
+      · rw [show (pproj₂ Y Y) = coprod.desc 0 (𝟙 Y) from rfl, coprod.inl_desc,
+          ← Category.assoc, hl]
+        refine (cmap_injective ?_).symm
+        exact suPinl_desc (0 : cin Y ⟶ cin Y) (𝟙 (cin Y))
+      · rw [show (pproj₂ Y Y) = coprod.desc 0 (𝟙 Y) from rfl, coprod.inr_desc,
+          ← Category.assoc, hr]
+        refine (cmap_injective ?_).symm
+        exact suPinr_desc (0 : cin Y ⟶ cin Y) (𝟙 (cin Y))
+    have hφ₁ : suPdesc (coprod.inl : cin Y ⟶ cin Y ⨿ cin Y)
+          (coprod.inr : cin Y ⟶ cin Y ⨿ cin Y) ≫ pproj₁ (cin Y) (cin Y)
+        = suPdesc (𝟙 (cin Y)) (0 : cin Y ⟶ cin Y) := by
+      refine suP_hom_ext (X := cin Y) (Y := cin Y) ?_ ?_
+      · rw [← Category.assoc, suPinl_desc, suPinl_desc,
+          show (pproj₁ (cin Y) (cin Y)) = coprod.desc (𝟙 (cin Y)) 0 from rfl,
+          coprod.inl_desc]
+      · rw [← Category.assoc, suPinr_desc, suPinr_desc,
+          show (pproj₁ (cin Y) (cin Y)) = coprod.desc (𝟙 (cin Y)) 0 from rfl,
+          coprod.inr_desc]
+    have hφ₂ : suPdesc (coprod.inl : cin Y ⟶ cin Y ⨿ cin Y)
+          (coprod.inr : cin Y ⟶ cin Y ⨿ cin Y) ≫ pproj₂ (cin Y) (cin Y)
+        = suPdesc (0 : cin Y ⟶ cin Y) (𝟙 (cin Y)) := by
+      refine suP_hom_ext (X := cin Y) (Y := cin Y) ?_ ?_
+      · rw [← Category.assoc, suPinl_desc, suPinl_desc,
+          show (pproj₂ (cin Y) (cin Y)) = coprod.desc 0 (𝟙 (cin Y)) from rfl,
+          coprod.inl_desc]
+      · rw [← Category.assoc, suPinr_desc, suPinr_desc,
+          show (pproj₂ (cin Y) (cin Y)) = coprod.desc 0 (𝟙 (cin Y)) from rfl,
+          coprod.inr_desc]
+    have key : Perp (cmap (b ≫ e.hom) ≫ suPdesc (𝟙 (cin Y)) (0 : cin Y ⟶ cin Y))
+        (cmap (b ≫ e.hom) ≫ suPdesc (0 : cin Y ⟶ cin Y) (𝟙 (cin Y))) :=
+      perp_comp_comp _ hφ₁.symm hφ₂.symm _
+    have hE₁ : cmap (b ≫ pproj₁ Y Y)
+        = cmap (b ≫ e.hom) ≫ suPdesc (𝟙 (cin Y)) (0 : cin Y ⟶ cin Y) := by
+      rw [h₁, ← Category.assoc, cmap_comp, cmap_cmk]
+    have hE₂ : cmap (b ≫ pproj₂ Y Y)
+        = cmap (b ≫ e.hom) ≫ suPdesc (0 : cin Y ⟶ cin Y) (𝟙 (cin Y)) := by
+      rw [h₂, ← Category.assoc, cmap_comp, cmap_cmk]
+    show Perp (cmap (b ≫ pproj₁ Y Y)) (cmap (b ≫ pproj₂ Y Y))
+    rw [hE₁, hE₂]
+    exact key
+  untying := fun {_ Y f g} h => by
+    have h' : Perp ((cmap f) ≫ (coprod.inl : cin Y ⟶ cin Y ⨿ cin Y))
+        ((cmap g) ≫ (coprod.inr : cin Y ⟶ cin Y ⨿ cin Y)) :=
+      FinPAC.untying (C := WStarCPSU.{u}ᵒᵖ) h
+    obtain ⟨h'', -⟩ := FinPAC.comp_ovee h'
+      (coprod.desc (cmap (coprod.inl : Y ⟶ Y ⨿ Y))
+        (cmap (coprod.inr : Y ⟶ Y ⨿ Y)))
+    rw [Category.assoc, Category.assoc, coprod.inl_desc, coprod.inr_desc] at h''
+    exact h''
+
+attribute [local instance] cvnsuFinPAC
+
+/-! ### The effects -/
+
+/-- The scalars `ℂᵤ` as an object of `CvN_cpsu`: the effect object of
+`CvNᵒᵖ`, and commutative. -/
+noncomputable abbrev cvnsuI : CWStarCPSU.{u}ᵒᵖ :=
+  Opposite.op ⟨WStarCPSU.of (WStar.of (ULift.{u} ℂ)),
+    fun x y => Theses.A.VN.CU.down_injective (mul_comm x.down y.down)⟩
+
+/-- **The effect structure of `CvNᵒᵖ`** (180VII.2): the effect object is
+the (commutative) algebra of scalars, and truth, orthocomplement and the
+five axioms are read off `suEffectusPartialForm` along `cmap`. -/
+noncomputable def cvnsuEffectusPartialForm :
+    EffectusPartialForm (CWStarCPSU.{u}ᵒᵖ) where
+  I := cvnsuI
+  one X := cmk (suOne (cin X))
+  orth p := cmk (EffectusPartialForm.orth (C := WStarCPSU.{u}ᵒᵖ) (cmap p))
+  perp_orth := fun p =>
+    EffectusPartialForm.perp_orth (C := WStarCPSU.{u}ᵒᵖ) (cmap p)
+  ovee_orth := fun p =>
+    congrArg cmk (EffectusPartialForm.ovee_orth (C := WStarCPSU.{u}ᵒᵖ) (cmap p))
+  orth_unique := fun h heq =>
+    cmap_injective (EffectusPartialForm.orth_unique (C := WStarCPSU.{u}ᵒᵖ) h
+      (congrArg cmap heq))
+  eq_zero_of_perp_one := fun h =>
+    cmap_injective
+      (EffectusPartialForm.eq_zero_of_perp_one (C := WStarCPSU.{u}ᵒᵖ) h)
+  perp_of_one_perp := fun h =>
+    EffectusPartialForm.perp_of_one_perp (C := WStarCPSU.{u}ᵒᵖ) h
+  eq_zero_of_one_zero := fun h =>
+    cmap_injective (EffectusPartialForm.eq_zero_of_one_zero
+      (C := WStarCPSU.{u}ᵒᵖ) (congrArg cmap h))
+
+attribute [local instance] cvnsuEffectusPartialForm
+
+/-- A predicate of `CvNᵒᵖ`, read as a predicate of `vN_cpsuᵒᵖ`: the same
+morphism, because the effect object of `CvNᵒᵖ` *is* the effect object `ℂᵤ`
+of `vN_cpsuᵒᵖ`. -/
+noncomputable def cpred {X : CWStarCPSU.{u}ᵒᵖ} (p : X ⟶ effObj (CWStarCPSU.{u}ᵒᵖ)) :
+    cin X ⟶ effObj (WStarCPSU.{u}ᵒᵖ) := cmap p
+
+theorem cpred_injective {X : CWStarCPSU.{u}ᵒᵖ}
+    {p q : X ⟶ effObj (CWStarCPSU.{u}ᵒᵖ)} (h : cpred p = cpred q) : p = q :=
+  cmap_injective h
+
+theorem cpred_le_iff {X : CWStarCPSU.{u}ᵒᵖ}
+    (p q : X ⟶ effObj (CWStarCPSU.{u}ᵒᵖ)) : p ≼ q ↔ cpred p ≼ cpred q :=
+  cvnsu_le_iff p q
+
+/-! ### Quotients, comprehension, images and sharpness -/
+
+/-- **202IV at `CvNᵒᵖ`**: `CvNᵒᵖ` has images.  An image adds no object, and
+the universal property of `im f` in the subcategory quantifies over fewer
+predicates than in `vN_cpsuᵒᵖ`, so the ambient image *is* the image. -/
+theorem cvnsuHasImages : HasImages (CWStarCPSU.{u}ᵒᵖ) where
+  im {_ Y} f := by
+    obtain ⟨q, hq⟩ := HasImages.im (C := WStarCPSU.{u}ᵒᵖ) (cmap f)
+    refine ⟨cmk q, cpred_injective hq.1, ?_⟩
+    intro r hr
+    exact (cpred_le_iff _ _).mpr (hq.2 (cpred r) (congrArg cpred hr))
+
+/-- **197IV at `CvNᵒᵖ`**: `CvNᵒᵖ` has quotients.  The quotient of a
+commutative `𝒜` by an effect `a` is the standard filter onto the corner
+`⌈aᗮ⌉𝒜⌈aᗮ⌉`, which is commutative (`su_exists_filter`); its universal
+property restricts to the subcategory. -/
+theorem cvnsuHasQuotients : HasQuotients (CWStarCPSU.{u}ᵒᵖ) where
+  quot {X} p := by
+    obtain ⟨Q, ξ, hξ, hQ⟩ := su_exists_filter (cpred p)
+    refine ⟨Opposite.op ⟨Q.unop, hQ (cvn_mul_comm X.unop)⟩, cmk ξ,
+      (cpred_le_iff _ _).mpr hξ.1, ?_⟩
+    intro Y f hf
+    obtain ⟨f', hf', huniq⟩ := hξ.2 (cmap f) ((cpred_le_iff _ _).mp hf)
+    exact ⟨cmk f', cmap_injective hf',
+      fun k hk => cmap_injective (huniq (cmap k) (congrArg cmap hk))⟩
+
+/-- **199V at `CvNᵒᵖ`**: `CvNᵒᵖ` has comprehension.  A comprehension for an
+effect `a` of a commutative `𝒜` is the standard corner `⌊a⌋𝒜⌊a⌋`, which is
+commutative (`su_exists_corner`); its universal property restricts to the
+subcategory. -/
+theorem cvnsuHasComprehension : HasComprehension (CWStarCPSU.{u}ᵒᵖ) where
+  compr {X} p := by
+    obtain ⟨W, π, hπ, -, -, hW⟩ := su_exists_corner (cpred p)
+    refine ⟨Opposite.op ⟨W.unop, hW (cvn_mul_comm X.unop)⟩, cmk π,
+      cpred_injective hπ.1, ?_⟩
+    intro Z g hg
+    obtain ⟨g', hg', huniq⟩ := hπ.2 (cmap g) (congrArg cpred hg)
+    exact ⟨cmk g', cmap_injective hg',
+      fun k hk => cmap_injective (huniq (cmap k) (congrArg cmap hk))⟩
+
+/-- A sharp predicate of `CvNᵒᵖ` is sharp in `vN_cpsuᵒᵖ`: the witness `f` has
+an ambient image, the two minimality clauses squeeze it against `s`, and
+images are unique. -/
+theorem cvnsu_isSharp_cpred {X : CWStarCPSU.{u}ᵒᵖ}
+    {s : X ⟶ effObj (CWStarCPSU.{u}ᵒᵖ)} (hs : IsSharp s) :
+    IsSharp (cpred s) := by
+  obtain ⟨Y, f, hf⟩ := hs
+  obtain ⟨q, hq⟩ := HasImages.im (C := WStarCPSU.{u}ᵒᵖ) (cmap f)
+  have h1 : q ≼ cpred s := hq.2 (cpred s) (congrArg cpred hf.1)
+  have h2 : cpred s ≼ q :=
+    (cpred_le_iff _ _).mp (hf.2 (cmk q) (cpred_injective hq.1))
+  have hsq : cpred s = q := eabasics_le_antisymm h2 h1
+  exact ⟨cin Y, cmap f, by rw [hsq]; exact hq⟩
+
+/-- **206II at `CvNᵒᵖ`**: the orthocomplement of a sharp predicate is sharp.
+Sharpness is an existential over objects *of the subcategory*, so it does
+not restrict for free: `cvnsu_isSharp_cpred` pushes `s` forward,
+`su_orth_sharp` complements it in `vN_cpsuᵒᵖ`, and the standard corner of
+`su_exists_corner` — commutative, hence an object of `CvNᵒᵖ` — brings the
+witness back, being an image of `sᗮ` by **203XII** `img_of_compr`. -/
+theorem cvnsu_orth_sharp {X : CWStarCPSU.{u}ᵒᵖ}
+    {s : X ⟶ effObj (CWStarCPSU.{u}ᵒᵖ)} (hs : IsSharp s) :
+    IsSharp (EffectAlgebra.orth s) := by
+  let t : cin X ⟶ effObj (WStarCPSU.{u}ᵒᵖ) := EffectAlgebra.orth (cpred s)
+  have h1 : IsSharp t := su_orth_sharp (cvnsu_isSharp_cpred hs)
+  obtain ⟨W, π, hπ, -, -, hW⟩ := su_exists_corner t
+  have him : IsImage π t := by
+    refine ⟨hπ.1, ?_⟩
+    intro r hr
+    have hkey : imPred (comprMap t) = t := (img_of_compr t).2 t h1
+    obtain ⟨α, hα, -⟩ := hπ.2 (comprMap t) (isComprehension_comprMap t).1
+    have h2 : comprMap t ≫ r = comprMap t ≫ truth (cin X) := by
+      rw [← hα, Category.assoc, hr, ← Category.assoc]
+    have h3 := (isImage_imPred (comprMap t)).2 r h2
+    rwa [hkey] at h3
+  refine ⟨Opposite.op ⟨W.unop, hW (cvn_mul_comm X.unop)⟩, cmk π,
+    cpred_injective him.1, ?_⟩
+  intro r hr
+  exact (cpred_le_iff _ _).mpr (him.2 (cpred r) (congrArg cpred hr))
+
+/-- **206III at `CvNᵒᵖ`** (eff.tex:4460, Examples): the full subcategory
+`CvNᵒᵖ` of `vNᵒᵖ` on the commutative von Neumann algebras is a
+⋄-effectus. -/
+theorem su_diamondEffectus_cvn : DiamondEffectus (CWStarCPSU.{u}ᵒᵖ) :=
+  { cvnsuHasQuotients, cvnsuHasComprehension, cvnsuHasImages with
+    orth_sharp := fun hs => cvnsu_orth_sharp hs }
+
+/-- The partial-form effectus structure of `CvNᵒᵖ`, bundled. -/
+noncomputable def cvnPartialStructure :
+    EffectusPartialStructure (CWStarCPSU.{u}ᵒᵖ) :=
+  { hasFiniteCoproducts := cvnsuHasFiniteCoproducts
+    homPCM := cvnsuPCM
+    finPAC := cvnsuFinPAC
+    effectus := cvnsuEffectusPartialForm }
+
+end CvNPartial
+
+/-- **180V at `CvNᵒᵖ`** (`effectus-vn`, eff.tex:827) and **189aI**, second
+sentence (`effexamplesintro`, eff.tex:2020): the full subcategory `CvNᵒᵖ` of
+the commutative von Neumann algebras is an effectus **in partial form** as
+well.  (`effectus_cvn` is the total-form statement; this is the form a
+⋄-effectus is built on, and what `diamond_effectus_cvn` uses.)
+
+Neither point gives a proof.  Ours restricts `vnPartialStructure` along the
+inclusion `CvNᵒᵖ ⥤ vNᵒᵖ`, which is a bijection on hom-sets: `ℂᵤ`, the
+trivial algebra and a product of commutative algebras are commutative, so
+the effect object, the initial object and the binary coproducts stay inside
+the subcategory, and the hom-PCM, the finPAC axioms and the effect algebra
+of 180VII are pulled back.  See the section header above. -/
+theorem effectus_cvn_partial :
+    Nonempty (EffectusPartialStructure (CWStarCPSU.{u}ᵒᵖ)) :=
+  ⟨cvnPartialStructure⟩
+
+
 
 section Wrapper
 
@@ -6426,8 +6917,9 @@ theorem effectus_vn_real_separating
 
 The A-dependent statements of `DiamondAmp.lean`. -/
 
-/-- **206III** (eff.tex:4460, Examples): `vNᵒᵖ` is a ⋄-effectus (as are
-`CvNᵒᵖ`, `EJAᵒᵖ` and `Set`, not formalized here). -/
+/-- **206III** (eff.tex:4460, Examples): `vNᵒᵖ` is a ⋄-effectus.  The
+`CvNᵒᵖ` clause of the same Examples is `diamond_effectus_cvn` below;
+`EJAᵒᵖ` and `Set` are not formalized here. -/
 theorem diamond_effectus_vn (s : EffectusPartialStructure WStarCPSU.{u}ᵒᵖ) :
     letI := s.hasFiniteCoproducts
     letI := s.homPCM
@@ -6440,6 +6932,30 @@ theorem diamond_effectus_vn (s : EffectusPartialStructure WStarCPSU.{u}ᵒᵖ) :
   obtain ⟨hfc, pcm, hfin, E⟩ := s
   subst hpcm
   exact @su_diamondEffectus E
+
+/-- **206III** (eff.tex:4460, Examples), the `CvNᵒᵖ` clause: the full
+subcategory `CvNᵒᵖ` of `vNᵒᵖ` on the **commutative** von Neumann algebras
+is a ⋄-effectus too.
+
+The point gives no proof.  Ours restricts the partial-form effectus of
+`vNᵒᵖ` along the inclusion `CvNᵒᵖ ⥤ vNᵒᵖ`, which is a bijection on
+hom-sets; the only von Neumann fact used is that a corner `p𝒜p` of a
+commutative `𝒜` is commutative, which is what makes the quotients (standard
+filters) and comprehensions (standard corners) of `vNᵒᵖ` stay inside the
+subcategory.  See the section header of `CvNPartial` for the full argument
+and `su_diamondEffectus_cvn` for the proof.
+
+Unlike `diamond_effectus_vn` this is stated at the *concrete* partial-form
+structure `cvnPartialStructure` rather than at an arbitrary one: the
+uniqueness result `vn_effObj_iso` that lets `diamond_effectus_vn` quantify
+over all structures has no `CvNᵒᵖ` counterpart in the tree. -/
+theorem diamond_effectus_cvn :
+    letI := cvnsuHasFiniteCoproducts
+    letI := cvnsuPCM
+    letI := cvnsuFinPAC
+    letI := cvnsuEffectusPartialForm
+    DiamondEffectus CWStarCPSU.{u}ᵒᵖ :=
+  su_diamondEffectus_cvn
 
 /-- **211IV** (`vn-is-andthen-eff`, eff.tex:4859, Examples): `vNᵒᵖ` is an
 &-effectus, with `asrt_a(b) = √a b √a` (as are `CvNᵒᵖ` and `EJAᵒᵖ`, not

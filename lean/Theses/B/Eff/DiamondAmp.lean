@@ -20,8 +20,10 @@ Design:
   of orthomodular lattices and Galois pairs defined below; its data is
   207VI + 207III, as the Corollary says.
 * Not separately formalized: the examples 206III/210III/211IV beyond
-  `vNᵒᵖ` (`CvNᵒᵖ`, `EJAᵒᵖ`, `Set`; sharp maps = nmiu-maps) and the remarks
-  211III/211IIIa on `assert` and polar decomposition.
+  `vNᵒᵖ` (`EJAᵒᵖ`, `Set`; sharp maps = nmiu-maps) and the remarks
+  211III/211IIIa on `assert` and polar decomposition.  The `CvNᵒᵖ` clause of
+  **206III** is the exception: it is formalized, in
+  `Theses/B/Eff/VNExamples.lean`, as `diamond_effectus_cvn`.
 -/
 import Theses.B.Eff.Quotients
 

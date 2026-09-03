@@ -3042,8 +3042,9 @@ All three of the point's sub-items are formalized below — **(a) `Set`** as
 and **(c) `CH`** as `extensive_effectus_compHaus`.
 
 The neighbouring examples 189aII.1 (`OUSᵒᵖ`), 189aII.2 (`OUGᵒᵖ`) and 189aIII
-(`EJAᵒᵖ`) are separate points, each citing `[effintro]`/`[eja]`, and none of
-those three categories exists in the tree. -/
+(`EJAᵒᵖ`) are separate points, each citing `[effintro]`/`[eja]`.  The first
+two are formalized since 2026-09-03, in `Theses/B/Eff/OrderUnit.lean`, as
+`effectus_ous` and `effectus_oug`; `EJAᵒᵖ` does not exist in the tree. -/
 theorem extensive_effectus (C : Type u) [Category.{v} C]
     [HasFiniteCoproducts C] [HasTerminal C] [FinitaryExtensive C] :
     EffectusTotalForm C := ext_effectusTotalForm

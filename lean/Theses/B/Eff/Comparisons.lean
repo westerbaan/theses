@@ -14,14 +14,15 @@ Design:
   an explicit `DaggerEffectus` structure where the dagger itself occurs.
 * The homological notions (kernel order, exact maps, exactness of a
   composable pair) are defined directly in the effectus with its
-  PCM-enrichment zero maps; Grandis' `Nsb A` and the transfer maps
-  `f_*, f^*` are *not* formalized separately — following 227III, sharp
-  predicates and `f_⋄, f^□` are used in their stead, exactly as the
-  thesis itself does in the Snake Lemma 228II.
+  PCM-enrichment zero maps.  Grandis' bounded lattice `Nsb A` of kernels
+  modulo `≈` and the transfer maps `f_*, f^*` (227II.2–4) are built in the
+  last section, and 227III.2–4 identify them with `SPred A`, `f_⋄` and
+  `f^□`; everything in between — in particular the Snake Lemma 228II —
+  is stated in the `SPred`/`f_⋄`/`f^□` form, exactly as the thesis's own
+  proofs work.
 * Not separately formalized: the introductory comparisons 224I/225I–III
   (Gudder–Latrémolière axioms), the summarizing remarks 224VIII/224VIIIa
-  (Tull's phased biproducts) and 228IX, and the `Nsb`-side of
-  227II–227IV.
+  (Tull's phased biproducts) and 228IX, and the notation 227IV.
 -/
 import Theses.B.Eff.Dagger
 
@@ -1859,6 +1860,626 @@ theorem snake_lemma {A B C₃ A' B' C₃' : C}
       (congrArg Subtype.val hbz)).symm
 
 end Snake
+
+/-! ## Grandis' lattice `Nsb A` of kernels (227II.2–4, 227III.2–4) -/
+
+section NsbLattice
+
+variable [AndThenEffectus C] [DaggerPrimeEffectus C]
+
+omit [HasFiniteCoproducts C] [∀ X Y : C, PCM (X ⟶ Y)] [FinPAC C]
+  [EffectusPartialForm C] [AndThenEffectus C] [DaggerPrimeEffectus C] in
+/-- Helper for `Kern.setoid`: the kernel order `≤` of 226IV.1 is reflexive
+(`𝟙 ∘ n = n`). -/
+theorem kernelLE_refl {W X : C} (n : W ⟶ X) : KernelLE n n :=
+  ⟨𝟙 W, Category.id_comp n⟩
+
+omit [HasFiniteCoproducts C] [∀ X Y : C, PCM (X ⟶ Y)] [FinPAC C]
+  [EffectusPartialForm C] [AndThenEffectus C] [DaggerPrimeEffectus C] in
+/-- Helper for `Kern.setoid`: the kernel order `≤` of 226IV.1 is transitive
+(compose the two factorizations). -/
+theorem kernelLE_trans {W W' W'' X : C} {n : W ⟶ X} {m : W' ⟶ X} {l : W'' ⟶ X}
+    (h₁ : KernelLE n m) (h₂ : KernelLE m l) : KernelLE n l := by
+  obtain ⟨u, hu⟩ := h₁
+  obtain ⟨v, hv⟩ := h₂
+  exact ⟨u ≫ v, by rw [Category.assoc, hv, hu]⟩
+
+/-- **227II.2** (eff.tex:7583, Definition): a **kernel on `A`** — a map into
+`A` which is a kernel of some map out of `A`, bundled with its domain.  This
+is the carrier of Grandis' poset: `Nsb A` below is the type of these modulo
+the equivalence `≈` of `KernelLE` (226IV.1) in both directions. -/
+structure Kern (A : C) where
+  /-- the domain of the kernel map -/
+  dom : C
+  /-- the kernel map itself -/
+  map : dom ⟶ A
+  /-- it is a kernel of some map out of `A` -/
+  isKernel : ∃ (Y : C) (g : A ⟶ Y), IsKernel g map
+
+/-- **227II.2** (eff.tex:7583, Definition): Grandis' `≈` on kernels — each
+factors through the other (226IV.1).  It is an equivalence relation:
+reflexivity and transitivity are `kernelLE_refl` and `kernelLE_trans`, and
+symmetry is swapping the two halves. -/
+instance Kern.setoid (A : C) : Setoid (Kern A) where
+  r k k' := KernelLE k.map k'.map ∧ KernelLE k'.map k.map
+  iseqv :=
+    { refl := fun _ => ⟨kernelLE_refl _, kernelLE_refl _⟩
+      symm := fun h => ⟨h.2, h.1⟩
+      trans := fun h₁ h₂ =>
+        ⟨kernelLE_trans h₁.1 h₂.1, kernelLE_trans h₂.2 h₁.2⟩ }
+
+/-- **227II.2** (eff.tex:7583, Definition): the poset `Nsb A` of kernels on
+`A` modulo `≈`. -/
+def Nsb (A : C) : Type (max u v) := Quotient (Kern.setoid A)
+
+/-- **227II.2**: the class `⟦k⟧ ∈ Nsb A` of a kernel `k`. -/
+def Nsb.mk {A : C} (k : Kern A) : Nsb A := Quotient.mk (Kern.setoid A) k
+
+omit [HasFiniteCoproducts C] [FinPAC C] [EffectusPartialForm C]
+  [AndThenEffectus C] [DaggerPrimeEffectus C] in
+/-- Induction on `Nsb A`: every element is the class of a kernel.  This is
+`Quotient.ind`, restated for the wrapper `Nsb`. -/
+theorem Nsb.ind {A : C} {motive : Nsb A → Prop}
+    (h : ∀ k : Kern A, motive (Nsb.mk k)) (x : Nsb A) : motive x :=
+  Quotient.ind h x
+
+/-! ### The isomorphism `Nsb A ≅ SPred A` (227III.2) -/
+
+/-- **227III.2** (eff.tex:7614, Example): the image `IM k` of a kernel, as an
+element of `SPred A` — images are sharp in a †-effectus
+(`isSharp_imPred`). -/
+noncomputable def Kern.IM {A : C} (k : Kern A) : SPred A :=
+  ⟨imPred k.map, isSharp_imPred C k.map⟩
+
+/-- A kernel is a comprehension for its own image: by 226V.1 it is a
+comprehension for *some* predicate, hence one for its image by
+`isComprehension_imPred`. -/
+theorem Kern.isComprehension_IM {A : C} (k : Kern A) :
+    IsComprehension k.IM.1 k.map := by
+  obtain ⟨p, hp⟩ := (homological_kernels k.map).mp k.isKernel
+  exact isComprehension_imPred hp
+
+/-- The kernel order is exactly the order of the images: `⇒` is 202V
+(`im_ineq`), `⇐` is the universal property of the comprehension `k'`, whose
+side condition `k ∘ (im k') = k ∘ 1` follows from `im k ≤ im k'`. -/
+theorem Kern.kernelLE_iff_IM_le {A : C} (k k' : Kern A) :
+    KernelLE k.map k'.map ↔ k.IM.1 ≼ k'.IM.1 := by
+  constructor
+  · rintro ⟨u, hu⟩
+    have h := (im_ineq k'.map u).1
+    rwa [hu] at h
+  · intro h
+    have hk : k.map ≫ k'.IM.1 = k.map ≫ truth A := by
+      refine eabasics_le_antisymm (comp_le_comp _ (pred_le_truth _)) ?_
+      rw [← (isImage_imPred k.map).1]
+      exact comp_le_comp _ h
+    obtain ⟨g, hg, -⟩ := k'.isComprehension_IM.2 k.map hk
+    exact ⟨g, hg⟩
+
+/-- `≈`-equivalent kernels have the same image (antisymmetry applied to
+`Kern.kernelLE_iff_IM_le` in both directions). -/
+theorem Kern.IM_eq_of_equiv {A : C} {k k' : Kern A} (h : k ≈ k') :
+    k.IM = k'.IM :=
+  Subtype.ext (eabasics_le_antisymm
+    ((Kern.kernelLE_iff_IM_le k k').mp h.1) ((Kern.kernelLE_iff_IM_le k' k).mp h.2))
+
+/-- **227III.2** (eff.tex:7614, Example): the map `Nsb A → SPred A`,
+`⟦k⟧ ↦ IM k`, well defined by `Kern.IM_eq_of_equiv`. -/
+noncomputable def Nsb.IM {A : C} (x : Nsb A) : SPred A :=
+  Quotient.liftOn x Kern.IM (fun _ _ h => Kern.IM_eq_of_equiv h)
+
+/-- `IM` on a class is `IM` of a representative (the computation rule of
+`Quotient.liftOn`). -/
+@[simp] theorem Nsb.IM_mk {A : C} (k : Kern A) : Nsb.IM (Nsb.mk k) = k.IM := rfl
+
+/-- **227II.2**: the standard kernel attached to a sharp predicate — the
+chosen comprehension `π_s`, which is a kernel of `sᵖ` by 200V. -/
+noncomputable def Kern.ofSPred {A : C} (s : SPred A) : Kern A where
+  dom := comprObj s.1
+  map := comprMap s.1
+  isKernel :=
+    ⟨effObj C, orth s.1, (compr_is_kernel s.1 _).mp (isComprehension_comprMap s.1)⟩
+
+omit [DaggerPrimeEffectus C] in
+/-- `im π_s = s` for sharp `s` (203XII, `img_of_compr`). -/
+theorem Kern.IM_ofSPred {A : C} (s : SPred A) : (Kern.ofSPred s).IM = s :=
+  Subtype.ext ((img_of_compr s.1).2 s.1 s.2)
+
+/-- **227III.2**: the inverse of `IM`, sending a sharp predicate to the class
+of its comprehension. -/
+noncomputable def Nsb.ofSPred {A : C} (s : SPred A) : Nsb A :=
+  Nsb.mk (Kern.ofSPred s)
+
+/-- `IM` is a left inverse of `Nsb.ofSPred` — `Kern.IM_ofSPred` on classes;
+this is the surjectivity half of 227III.2. -/
+@[simp] theorem Nsb.IM_ofSPred {A : C} (s : SPred A) :
+    Nsb.IM (Nsb.ofSPred s) = s := Kern.IM_ofSPred s
+
+/-- `IM` is injective: two kernels with the same image are comprehensions for
+that image (`Kern.isComprehension_IM`), hence factor through each other by
+`Kern.kernelLE_iff_IM_le`, so their classes agree. -/
+theorem Nsb.eq_of_IM_eq {A : C} (x y : Nsb A) (h : Nsb.IM x = Nsb.IM y) :
+    x = y := by
+  revert h
+  refine Nsb.ind (motive := fun x => Nsb.IM x = Nsb.IM y → x = y) ?_ x
+  intro k
+  refine Nsb.ind (motive := fun y => Nsb.IM (Nsb.mk k) = Nsb.IM y → Nsb.mk k = y) ?_ y
+  intro k' h
+  have h1 : k.IM.1 = k'.IM.1 := congrArg Subtype.val h
+  exact Quotient.sound
+    ⟨(Kern.kernelLE_iff_IM_le k k').mpr (by rw [h1]; exact pcm_preorder_refl _),
+      (Kern.kernelLE_iff_IM_le k' k).mpr (by rw [h1]; exact pcm_preorder_refl _)⟩
+
+/-- `Nsb.ofSPred` is a left inverse of `IM`, by injectivity of `IM`. -/
+theorem Nsb.ofSPred_IM {A : C} (x : Nsb A) : Nsb.ofSPred (Nsb.IM x) = x :=
+  Nsb.eq_of_IM_eq _ _ (Nsb.IM_ofSPred _)
+
+/-! ### The lattice structure (227II.2) -/
+
+/-- The join of two sharp predicates, `s ∨ t = im [π_s, π_t]` (204V), which
+is sharp by the same Corollary. -/
+noncomputable def spredJoin {X : C} (s t : SPred X) : SPred X :=
+  ⟨imPred (coprod.desc (comprMap s.1) (comprMap t.1)), (lattice_compr s.2 t.2).2⟩
+
+omit [DaggerPrimeEffectus C] in
+/-- `spredJoin` is the supremum in `SPred X`: 204V gives it as a supremum
+among *all* predicates, so a fortiori among the sharp ones. -/
+theorem spred_isSup_join {X : C} (s t : SPred X) :
+    SPred.IsSup s t (spredJoin s t) :=
+  ⟨(lattice_compr s.2 t.2).1.1, (lattice_compr s.2 t.2).1.2.1,
+    fun r h₁ h₂ => (lattice_compr s.2 t.2).1.2.2 r.1 h₁ h₂⟩
+
+/-- The meet of two sharp predicates, `s ∧ t = (sᵖ ∨ tᵖ)ᵖ` (208III). -/
+noncomputable def spredMeet {X : C} (s t : SPred X) : SPred X :=
+  (spredJoin s.orth t.orth).orth
+
+omit [DaggerPrimeEffectus C] in
+/-- `spredMeet` is the infimum in `SPred X`, because `(·)ᵖ` is an order
+anti-automorphism (`spred_isSup_orth`). -/
+theorem spred_isInf_meet {X : C} (s t : SPred X) :
+    SPred.IsInf s t (spredMeet s t) := by
+  have h := spred_isSup_orth (spred_isSup_join s.orth t.orth)
+  rwa [spred_orth_orth, spred_orth_orth] at h
+
+/-- The join in `Nsb A`, transported along the isomorphism `IM` of
+227III.2. -/
+noncomputable def Nsb.sup {A : C} (x y : Nsb A) : Nsb A :=
+  Nsb.ofSPred (spredJoin (Nsb.IM x) (Nsb.IM y))
+
+/-- The meet in `Nsb A`, transported along the isomorphism `IM` of
+227III.2. -/
+noncomputable def Nsb.inf {A : C} (x y : Nsb A) : Nsb A :=
+  Nsb.ofSPred (spredMeet (Nsb.IM x) (Nsb.IM y))
+
+/-- **227II.2** (eff.tex:7583, Definition): the lattice structure on
+`Nsb A`.  The order is `KernelLE` on representatives — equivalently, by
+`Kern.kernelLE_iff_IM_le`, the order of the images — and the join and meet
+are `Nsb.sup` and `Nsb.inf`; the lattice laws are read off from
+`spred_isSup_join` and `spred_isInf_meet`, and antisymmetry from injectivity
+of `IM`.  The content of the Definition's second item is spelled out in
+`nsb_bounded_lattice`. -/
+noncomputable instance Nsb.instLattice (A : C) : Lattice (Nsb A) where
+  le x y := (Nsb.IM x).1 ≼ (Nsb.IM y).1
+  le_refl _ := pcm_preorder_refl _
+  le_trans _ _ _ h₁ h₂ := pcm_preorder_trans h₁ h₂
+  le_antisymm x y h₁ h₂ := Nsb.eq_of_IM_eq x y (Subtype.ext (eabasics_le_antisymm h₁ h₂))
+  sup := Nsb.sup
+  inf := Nsb.inf
+  le_sup_left x y := by
+    show (Nsb.IM x).1 ≼ (Nsb.IM (Nsb.sup x y)).1
+    rw [Nsb.sup, Nsb.IM_ofSPred]
+    exact (spred_isSup_join _ _).1
+  le_sup_right x y := by
+    show (Nsb.IM y).1 ≼ (Nsb.IM (Nsb.sup x y)).1
+    rw [Nsb.sup, Nsb.IM_ofSPred]
+    exact (spred_isSup_join _ _).2.1
+  sup_le x y z h₁ h₂ := by
+    show (Nsb.IM (Nsb.sup x y)).1 ≼ (Nsb.IM z).1
+    rw [Nsb.sup, Nsb.IM_ofSPred]
+    exact (spred_isSup_join _ _).2.2 _ h₁ h₂
+  inf_le_left x y := by
+    show (Nsb.IM (Nsb.inf x y)).1 ≼ (Nsb.IM x).1
+    rw [Nsb.inf, Nsb.IM_ofSPred]
+    exact (spred_isInf_meet _ _).1
+  inf_le_right x y := by
+    show (Nsb.IM (Nsb.inf x y)).1 ≼ (Nsb.IM y).1
+    rw [Nsb.inf, Nsb.IM_ofSPred]
+    exact (spred_isInf_meet _ _).2.1
+  le_inf x y z h₁ h₂ := by
+    show (Nsb.IM x).1 ≼ (Nsb.IM (Nsb.inf y z)).1
+    rw [Nsb.inf, Nsb.IM_ofSPred]
+    exact (spred_isInf_meet _ _).2.2 _ h₁ h₂
+
+/-- The order of `Nsb A` unfolds to the order of the images. -/
+theorem Nsb.le_def {A : C} (x y : Nsb A) :
+    x ≤ y ↔ (Nsb.IM x).1 ≼ (Nsb.IM y).1 := Iff.rfl
+
+/-- `⊔` of `Nsb.instLattice` is `Nsb.sup`. -/
+@[simp] theorem Nsb.sup_eq {A : C} (x y : Nsb A) : x ⊔ y = Nsb.sup x y := rfl
+
+/-- `⊓` of `Nsb.instLattice` is `Nsb.inf`. -/
+@[simp] theorem Nsb.inf_eq {A : C} (x y : Nsb A) : x ⊓ y = Nsb.inf x y := rfl
+
+/-- `IM` turns `⊔` into the join of `SPred` (half of the lattice
+isomorphism 227III.2). -/
+@[simp] theorem Nsb.IM_sup {A : C} (x y : Nsb A) :
+    Nsb.IM (x ⊔ y) = spredJoin (Nsb.IM x) (Nsb.IM y) := Nsb.IM_ofSPred _
+
+/-- `IM` turns `⊓` into the meet of `SPred`. -/
+@[simp] theorem Nsb.IM_inf {A : C} (x y : Nsb A) :
+    Nsb.IM (x ⊓ y) = spredMeet (Nsb.IM x) (Nsb.IM y) := Nsb.IM_ofSPred _
+
+/-- **227II.2**: the minimum of `Nsb A` — the zero kernel, realized as the
+comprehension `π_0`, whose map is `0` (`comprMap_zero`, see
+`Kern.zero_map`). -/
+noncomputable def Kern.zero (A : C) : Kern A := Kern.ofSPred (sZero A)
+
+omit [DaggerPrimeEffectus C] in
+/-- `π_0` *is* the zero map, so `Kern.zero` really is the thesis's `0`. -/
+theorem Kern.zero_map (A : C) : (Kern.zero A).map = (0 : comprObj (0 : Pred A) ⟶ A) :=
+  comprMap_zero A
+
+omit [DaggerPrimeEffectus C] in
+/-- The image of the zero kernel is the sharp predicate `0`. -/
+theorem Kern.IM_zero (A : C) : (Kern.zero A).IM = sZero A := Kern.IM_ofSPred _
+
+/-- **227II.2**: the maximum of `Nsb A` — `1 ≡ id`, a kernel of `1ᵖ`, since
+isomorphisms are comprehensions for `1` (199VII.3) and comprehensions for `p`
+are kernels of `pᵖ` (200V). -/
+def Kern.one (A : C) : Kern A where
+  dom := A
+  map := 𝟙 A
+  isKernel :=
+    ⟨effObj C, orth (1 : Pred A),
+      (compr_is_kernel (1 : Pred A) (𝟙 A)).mp (compr_basics_3 (𝟙 A))⟩
+
+omit [DaggerPrimeEffectus C] in
+/-- The image of `𝟙 A` is `1`: it satisfies `IsImage` on the nose. -/
+theorem Kern.IM_one (A : C) : (Kern.one A).IM = sOne A := by
+  refine Subtype.ext (imPred_eq (𝟙 A) ⟨rfl, ?_⟩)
+  intro p hp
+  rw [Category.id_comp, Category.id_comp] at hp
+  rw [hp]
+  exact pred_le_truth _
+
+/-- **227II.2** (eff.tex:7583, Definition): `Nsb A` is bounded, with `⊥` the
+class of the zero kernel and `⊤` the class of `𝟙 A`; the two bounds are the
+bounds of `SPred A` read through `IM`. -/
+noncomputable instance Nsb.instBoundedOrder (A : C) : BoundedOrder (Nsb A) where
+  top := Nsb.mk (Kern.one A)
+  bot := Nsb.mk (Kern.zero A)
+  le_top x := by
+    show (Nsb.IM x).1 ≼ (Nsb.IM (Nsb.mk (Kern.one A))).1
+    rw [Nsb.IM_mk, Kern.IM_one]
+    exact pred_le_truth _
+  bot_le x := by
+    show (Nsb.IM (Nsb.mk (Kern.zero A))).1 ≼ (Nsb.IM x).1
+    rw [Nsb.IM_mk, Kern.IM_zero]
+    exact zero_le_hom _
+
+/-- `IM ⊥ = 0`. -/
+@[simp] theorem Nsb.IM_bot (A : C) : Nsb.IM (⊥ : Nsb A) = sZero A := Kern.IM_zero A
+
+/-- `IM ⊤ = 1`. -/
+@[simp] theorem Nsb.IM_top (A : C) : Nsb.IM (⊤ : Nsb A) = sOne A := Kern.IM_one A
+
+/-- **227II.2** (eff.tex:7583, Definition): **the poset `Nsb A` of kernels
+modulo `≈` is a bounded lattice with minimum `0` and maximum `1 ≡ id`.**
+
+Everything is pinned: `≤` is `KernelLE` on representatives, `⊔`/`⊓` are the
+join/meet of the images in `SPred A` (204V and 208III), `⊥` is the class of
+the comprehension `π_0`, whose map *is* the zero map, and `⊤` is the class of
+`𝟙 A`.  The thesis cites [grandis, §1.5] for the general pointed semiexact
+case and prints no proof of its own; what is proved here is the †-effectus
+case, by transporting the lattice `SPred A` of 208III (`diamond_oml`) along
+the isomorphism 227III.2 (`nsb_iso_spred`). -/
+theorem nsb_bounded_lattice (A : C) :
+    (∀ k k' : Kern A, (Nsb.mk k ≤ Nsb.mk k') ↔ KernelLE k.map k'.map) ∧
+    (∀ x y : Nsb A, SPred.IsSup (Nsb.IM x) (Nsb.IM y) (Nsb.IM (x ⊔ y))) ∧
+    (∀ x y : Nsb A, SPred.IsInf (Nsb.IM x) (Nsb.IM y) (Nsb.IM (x ⊓ y))) ∧
+    ((⊥ : Nsb A) = Nsb.mk (Kern.zero A) ∧
+      (Kern.zero A).map = (0 : comprObj (0 : Pred A) ⟶ A)) ∧
+    ((⊤ : Nsb A) = Nsb.mk (Kern.one A) ∧ (Kern.one A).map = 𝟙 A) := by
+  refine ⟨fun k k' => ((Kern.kernelLE_iff_IM_le k k').symm), fun x y => ?_,
+    fun x y => ?_, ⟨rfl, Kern.zero_map A⟩, ⟨rfl, rfl⟩⟩
+  · rw [Nsb.IM_sup]; exact spred_isSup_join _ _
+  · rw [Nsb.IM_inf]; exact spred_isInf_meet _ _
+
+/-- **227III.2** (eff.tex:7614, Example): **in a †-effectus the lattice
+`Nsb A` is isomorphic to the lattice `SPred A` via `k ↦ IM k`.**
+
+`IM` is a bijection — injective because a kernel is a comprehension for its
+own image (226V.1) and comprehensions for one predicate are isomorphic
+(199VII.2), surjective because `π_s` is a kernel for sharp `s` (200V, 203XII)
+— and an order isomorphism onto `SPred A` with the order `≼` inherited from
+`Pred A`, which by 208III (`diamond_oml`) is the lattice order there.  The
+last four clauses spell out that it is therefore an isomorphism of *bounded*
+lattices: it carries `⊔`, `⊓`, `⊥`, `⊤` of `Nsb A` to the join, the meet, `0`
+and `1` of `SPred A`. -/
+theorem nsb_iso_spred (A : C) :
+    Function.Bijective (Nsb.IM : Nsb A → SPred A) ∧
+      (∀ x y : Nsb A, x ≤ y ↔ (Nsb.IM x).1 ≼ (Nsb.IM y).1) ∧
+      (∀ k k' : Kern A, KernelLE k.map k'.map ↔ (Kern.IM k).1 ≼ (Kern.IM k').1) ∧
+      (∀ s : SPred A, Nsb.IM (Nsb.ofSPred s) = s) ∧
+      (∀ x : Nsb A, Nsb.ofSPred (Nsb.IM x) = x) ∧
+      (∀ x y : Nsb A, SPred.IsSup (Nsb.IM x) (Nsb.IM y) (Nsb.IM (x ⊔ y))) ∧
+      (∀ x y : Nsb A, SPred.IsInf (Nsb.IM x) (Nsb.IM y) (Nsb.IM (x ⊓ y))) ∧
+      Nsb.IM (⊥ : Nsb A) = sZero A ∧ Nsb.IM (⊤ : Nsb A) = sOne A := by
+  refine ⟨⟨fun x y h => Nsb.eq_of_IM_eq x y h,
+      fun s => ⟨Nsb.ofSPred s, Nsb.IM_ofSPred s⟩⟩,
+    fun x y => Nsb.le_def x y, Kern.kernelLE_iff_IM_le,
+    Nsb.IM_ofSPred, Nsb.ofSPred_IM, fun x y => ?_, fun x y => ?_,
+    Nsb.IM_bot A, Nsb.IM_top A⟩
+  · rw [Nsb.IM_sup]; exact spred_isSup_join _ _
+  · rw [Nsb.IM_inf]; exact spred_isInf_meet _ _
+
+/-! ### The transfer maps `f_*` and `f^*` (227II.3, 227III.3) -/
+
+/-- The standard kernel of a map: the chosen comprehension `π_{(1∘u)ᵖ}`,
+which is a kernel of `u` by 200III. -/
+noncomputable def Kern.ker {B Q : C} (u : B ⟶ Q) : Kern B where
+  dom := comprObj (orth (u ≫ truth Q))
+  map := comprMap (orth (u ≫ truth Q))
+  isKernel := ⟨Q, u, effectus_kernels u (isComprehension_comprMap _)⟩
+
+/-- **227II.3** (eff.tex:7587, Definition): `k'` is *a* value of `f_*` at
+`k` — a kernel of *some* cokernel of `f ∘ k`. -/
+def IsKerPush {A B : C} (f : A ⟶ B) (k : Kern A) (k' : Kern B) : Prop :=
+  ∃ (Q : C) (c : B ⟶ Q), IsCokernel (k.map ≫ f) c ∧ IsKernel c k'.map
+
+/-- **227II.3** (eff.tex:7587, Definition): `k'` is *a* value of `f^*` at
+`k` — a kernel of `(cok k) ∘ f` for *some* cokernel `cok k` of `k`. -/
+def IsKerPull {A B : C} (f : A ⟶ B) (k : Kern B) (k' : Kern A) : Prop :=
+  ∃ (Q : C) (c : B ⟶ Q), IsCokernel k.map c ∧ IsKernel (f ≫ c) k'.map
+
+/-- **227II.3** (eff.tex:7587, Definition): `f_*(k) = ker cok (f ∘ k)`,
+built from the chosen cokernel `ξ_{im (f ∘ k)}` (205II) and the chosen kernel
+`π_{(1∘ξ)ᵖ}` (200III). -/
+noncomputable def Kern.push {A B : C} (f : A ⟶ B) (k : Kern A) : Kern B :=
+  Kern.ker (quotMap (imPred (k.map ≫ f)))
+
+omit [DaggerPrimeEffectus C] in
+/-- `Kern.push` realizes the recipe of 227II.3: `ξ_{im (f ∘ k)}` is a
+cokernel of `f ∘ k` and `π_{(1∘ξ)ᵖ}` a kernel of it. -/
+theorem Kern.isKerPush_push {A B : C} (f : A ⟶ B) (k : Kern A) :
+    IsKerPush f k (Kern.push f k) :=
+  ⟨_, _, effectus_cokernels _ (isQuotient_quotMap _),
+    effectus_kernels _ (isComprehension_comprMap _)⟩
+
+/-- **227II.3** (eff.tex:7587, Definition): `f^*(k) = ker ((cok k) ∘ f)`,
+with the same chosen cokernel and kernel. -/
+noncomputable def Kern.pull {A B : C} (f : A ⟶ B) (k : Kern B) : Kern A :=
+  Kern.ker (f ≫ quotMap (imPred k.map))
+
+omit [DaggerPrimeEffectus C] in
+/-- `Kern.pull` realizes the recipe of 227II.3. -/
+theorem Kern.isKerPull_pull {A B : C} (f : A ⟶ B) (k : Kern B) :
+    IsKerPull f k (Kern.pull f k) :=
+  ⟨_, _, effectus_cokernels _ (isQuotient_quotMap _),
+    effectus_kernels _ (isComprehension_comprMap _)⟩
+
+/-- **227III.3** (eff.tex:7617, Example), first half, on representatives:
+`IM f_*(k) = f_⋄(IM k)` for *any* choice of cokernel and kernel.
+
+A cokernel of `u = f ∘ k` is a quotient for `im u` (205II with
+`isCokernel_unique`), so `1 ∘ c = (im u)ᵖ`; a kernel of `c` is then a
+comprehension for `(1∘c)ᵖ = im u`, whence `IM f_*(k) = im (f ∘ k)`.  On the
+other side `f_⋄(IM k) = im (f ∘ π_{IM k})` by definition, and `k` and
+`π_{IM k}` are comprehensions for the same predicate, hence differ by an
+isomorphism (199VII.2), which does not change the image (202V). -/
+theorem Kern.IM_of_isKerPush {A B : C} {f : A ⟶ B} {k : Kern A} {k' : Kern B}
+    (h : IsKerPush f k k') : k'.IM = diaPush f k.IM := by
+  obtain ⟨Q, c, hc, hk⟩ := h
+  -- the cokernel `c` is a quotient for `im (k ≫ f)`, so `1 ∘ c = (im (k≫f))ᵖ`
+  obtain ⟨θ, hθ, hcomm⟩ :=
+    isCokernel_unique (effectus_cokernels (k.map ≫ f)
+      (isQuotient_quotMap (imPred (k.map ≫ f)))) hc
+  have := hθ
+  have hcq : IsQuotient (imPred (k.map ≫ f)) c := by
+    rw [← hcomm]; exact quotient_basics_1 (isQuotient_quotMap _) θ
+  have hct : c ≫ truth Q = orth (imPred (k.map ≫ f)) := quotient_basics_5 hcq
+  -- the kernel `k'` of `c` is a comprehension for `(1 ∘ c)ᵖ = im (k ≫ f)`
+  obtain ⟨θ₁, hθ₁, hcomm₁⟩ :=
+    isKernel_unique hk (effectus_kernels c (isComprehension_comprMap _))
+  have := hθ₁
+  have h1 : k'.IM.1 = imPred (k.map ≫ f) := by
+    show imPred k'.map = _
+    rw [← hcomm₁, (im_ineq (comprMap (orth (c ≫ truth Q))) θ₁).2 θ₁ inferInstance]
+    show floorPred (orth (c ≫ truth Q)) = _
+    rw [hct, eabasics_orth_orth]
+    exact (img_of_compr (imPred (k.map ≫ f))).1.mp (isSharp_imPred C _)
+  -- `k` and `π_{IM k}` are comprehensions for the same predicate
+  obtain ⟨θ₂, hθ₂, hcomm₂, -⟩ :=
+    compr_basics_2 k.isComprehension_IM (isComprehension_comprMap k.IM.1)
+  have := hθ₂
+  refine Subtype.ext ?_
+  show k'.IM.1 = imPred (comprMap k.IM.1 ≫ f)
+  rw [h1, ← hcomm₂, Category.assoc,
+    (im_ineq (comprMap k.IM.1 ≫ f) θ₂).2 θ₂ inferInstance]
+
+omit [DaggerPrimeEffectus C] in
+/-- **227III.3** (eff.tex:7617, Example), second half, on representatives:
+`IM f^*(k) = f^□(IM k)` for *any* choice of cokernel and kernel.
+
+A cokernel `c` of `k` is a quotient for `im k = IM k`, so `1 ∘ c = (IM k)ᵖ`;
+a kernel of `c ∘ f` is a comprehension for `(1 ∘ c ∘ f)ᵖ = ((IM k)ᵖ ∘ f)ᵖ`,
+whose image is `⌈(IM k)ᵖ ∘ f⌉ᵖ = f^□(IM k)` (`imPred_comprMap_orth`). -/
+theorem Kern.IM_of_isKerPull {A B : C} {f : A ⟶ B} {k : Kern B} {k' : Kern A}
+    (h : IsKerPull f k k') : k'.IM = boxPull f k.IM := by
+  obtain ⟨Q, c, hc, hk⟩ := h
+  obtain ⟨θ, hθ, hcomm⟩ :=
+    isCokernel_unique (effectus_cokernels k.map (isQuotient_quotMap (imPred k.map))) hc
+  have := hθ
+  have hcq : IsQuotient (imPred k.map) c := by
+    rw [← hcomm]; exact quotient_basics_1 (isQuotient_quotMap _) θ
+  have hct : c ≫ truth Q = orth k.IM.1 := quotient_basics_5 hcq
+  obtain ⟨θ₁, hθ₁, hcomm₁⟩ :=
+    isKernel_unique hk (effectus_kernels (f ≫ c) (isComprehension_comprMap _))
+  have := hθ₁
+  refine Subtype.ext ?_
+  show imPred k'.map = orth (ceilPred (f ≫ orth k.IM.1))
+  rw [← hcomm₁,
+    (im_ineq (comprMap (orth ((f ≫ c) ≫ truth Q))) θ₁).2 θ₁ inferInstance,
+    show (f ≫ c) ≫ truth Q = f ≫ orth k.IM.1 by rw [Category.assoc, hct],
+    imPred_comprMap_orth]
+
+/-- **227II.3** (eff.tex:7587, Definition): `f_* : Nsb A → Nsb B`, well
+defined because `≈`-equivalent kernels have the same image
+(`Kern.IM_eq_of_equiv`) and `IM f_*(k)` depends only on `IM k`
+(227III.3). -/
+noncomputable def kerPush {A B : C} (f : A ⟶ B) (x : Nsb A) : Nsb B :=
+  Quotient.liftOn x (fun k => Nsb.mk (Kern.push f k)) (by
+    intro k k' h
+    refine Nsb.eq_of_IM_eq _ _ ?_
+    rw [Nsb.IM_mk, Nsb.IM_mk, Kern.IM_of_isKerPush (Kern.isKerPush_push f k),
+      Kern.IM_of_isKerPush (Kern.isKerPush_push f k'), Kern.IM_eq_of_equiv h])
+
+/-- **227II.3** (eff.tex:7587, Definition): `f^* : Nsb B → Nsb A`, well
+defined for the same reason. -/
+noncomputable def kerPull {A B : C} (f : A ⟶ B) (x : Nsb B) : Nsb A :=
+  Quotient.liftOn x (fun k => Nsb.mk (Kern.pull f k)) (by
+    intro k k' h
+    refine Nsb.eq_of_IM_eq _ _ ?_
+    rw [Nsb.IM_mk, Nsb.IM_mk, Kern.IM_of_isKerPull (Kern.isKerPull_pull f k),
+      Kern.IM_of_isKerPull (Kern.isKerPull_pull f k'), Kern.IM_eq_of_equiv h])
+
+/-- `f_*` on a class is `Kern.push` on a representative. -/
+@[simp] theorem kerPush_mk {A B : C} (f : A ⟶ B) (k : Kern A) :
+    kerPush f (Nsb.mk k) = Nsb.mk (Kern.push f k) := rfl
+
+/-- `f^*` on a class is `Kern.pull` on a representative. -/
+@[simp] theorem kerPull_mk {A B : C} (f : A ⟶ B) (k : Kern B) :
+    kerPull f (Nsb.mk k) = Nsb.mk (Kern.pull f k) := rfl
+
+/-- **227III.3** (eff.tex:7617, Example): **`IM (f_*(k)) = f_⋄(IM k)`** —
+`Kern.IM_of_isKerPush` on a representative. -/
+@[simp] theorem nsb_IM_kerPush {A B : C} (f : A ⟶ B) (x : Nsb A) :
+    Nsb.IM (kerPush f x) = diaPush f (Nsb.IM x) := by
+  refine Nsb.ind (motive := fun x => Nsb.IM (kerPush f x) = diaPush f (Nsb.IM x)) ?_ x
+  intro k
+  exact Kern.IM_of_isKerPush (Kern.isKerPush_push f k)
+
+/-- **227III.3** (eff.tex:7617, Example): **`IM (f^*(k)) = f^□(IM k)`** —
+`Kern.IM_of_isKerPull` on a representative. -/
+@[simp] theorem nsb_IM_kerPull {A B : C} (f : A ⟶ B) (x : Nsb B) :
+    Nsb.IM (kerPull f x) = boxPull f (Nsb.IM x) := by
+  refine Nsb.ind (motive := fun x => Nsb.IM (kerPull f x) = boxPull f (Nsb.IM x)) ?_ x
+  intro k
+  exact Kern.IM_of_isKerPull (Kern.isKerPull_pull f k)
+
+/-- **227II.3** (eff.tex:7587, Definition): **for any `f : A ⟶ B` there are
+maps `f_* : Nsb A ⇄ Nsb B : f^*` with `f_*(k) = ker cok (f ∘ k)` and
+`f^*(k) = ker ((cok k) ∘ f)`.**
+
+The four clauses say that `kerPush`/`kerPull` realize the thesis's recipe and
+that the recipe does not depend on the choice of cokernel and kernel: *any*
+`k'` that is a kernel of *any* cokernel of `f ∘ k` has `f_*(⟦k⟧) = ⟦k'⟧`, and
+likewise for `f^*`.  Both independence clauses are 227III.3 plus injectivity
+of `IM`. -/
+theorem nsb_transfer_maps {A B : C} (f : A ⟶ B) :
+    (∀ k : Kern A, IsKerPush f k (Kern.push f k)) ∧
+    (∀ k : Kern B, IsKerPull f k (Kern.pull f k)) ∧
+    (∀ (k : Kern A) (k' : Kern B), IsKerPush f k k' →
+      kerPush f (Nsb.mk k) = Nsb.mk k') ∧
+    (∀ (k : Kern B) (k' : Kern A), IsKerPull f k k' →
+      kerPull f (Nsb.mk k) = Nsb.mk k') := by
+  refine ⟨Kern.isKerPush_push f, Kern.isKerPull_pull f, ?_, ?_⟩
+  · intro k k' h
+    refine Nsb.eq_of_IM_eq _ _ ?_
+    rw [kerPush_mk, Nsb.IM_mk, Nsb.IM_mk,
+      Kern.IM_of_isKerPush (Kern.isKerPush_push f k), Kern.IM_of_isKerPush h]
+  · intro k k' h
+    refine Nsb.eq_of_IM_eq _ _ ?_
+    rw [kerPull_mk, Nsb.IM_mk, Nsb.IM_mk,
+      Kern.IM_of_isKerPull (Kern.isKerPull_pull f k), Kern.IM_of_isKerPull h]
+
+/-! ### Modularity (227II.4, 227III.4) -/
+
+/-- **227II.4** (eff.tex:7593, Definition): `f` is **left-modular at** `k`
+when `f^*(f_*(k)) = k ∨ f^*(0)`. -/
+def LeftModularAt {A B : C} (f : A ⟶ B) (k : Nsb A) : Prop :=
+  kerPull f (kerPush f k) = k ⊔ kerPull f (⊥ : Nsb B)
+
+/-- **227II.4** (eff.tex:7593, Definition): `f` is **right-modular at** `k`
+when `f_*(f^*(k)) = k ∧ f_*(1)`. -/
+def RightModularAt {A B : C} (f : A ⟶ B) (k : Nsb B) : Prop :=
+  kerPush f (kerPull f k) = k ⊓ kerPush f (⊤ : Nsb A)
+
+/-- **227II.4** (eff.tex:7593, Definition): `f` is **left-modular** when it
+is left-modular at every `k`. -/
+def LeftModular {A B : C} (f : A ⟶ B) : Prop := ∀ k : Nsb A, LeftModularAt f k
+
+/-- **227II.4** (eff.tex:7593, Definition): `f` is **right-modular** when it
+is right-modular at every `k`. -/
+def RightModular {A B : C} (f : A ⟶ B) : Prop := ∀ k : Nsb B, RightModularAt f k
+
+/-- **227II.4** (eff.tex:7593, Definition): `f` is **modular** when it is
+both left- and right-modular. -/
+def Modular {A B : C} (f : A ⟶ B) : Prop := LeftModular f ∧ RightModular f
+
+/-- `IM (f^*(0)) = ⌈1 ∘ f⌉ᵖ`: by 227III.3 it is `f^□(0)`, whose value is
+`⌈1 ∘ f⌉ᵖ` (`boxPull_zero_val`). -/
+theorem nsb_IM_kerPull_bot {A B : C} (f : A ⟶ B) :
+    Nsb.IM (kerPull f (⊥ : Nsb B)) =
+      SPred.orth ⟨ceilPred (f ≫ truth B), isSharp_ceil _⟩ := by
+  rw [nsb_IM_kerPull, Nsb.IM_bot]
+  exact Subtype.ext (boxPull_zero_val f)
+
+/-- `IM (f_*(1)) = IM f`: by 227III.3 it is `f_⋄(1) = im f`
+(`diaPush_one_val`). -/
+theorem nsb_IM_kerPush_top {A B : C} (f : A ⟶ B) :
+    Nsb.IM (kerPush f (⊤ : Nsb A)) = ⟨imPred f, isSharp_imPred C f⟩ := by
+  rw [nsb_IM_kerPush, Nsb.IM_top]
+  exact Subtype.ext (diaPush_one_val f)
+
+/-- **227III.4** (eff.tex:7621, Example), first half: **`f` is left-modular
+at `k` iff `f^□(f_⋄(IM k)) = (IM k) ∨ ⌈1 ∘ f⌉ᵖ`.**
+
+⚠ Stated in the **corrected** form.  As printed the right-hand side is
+`(IM k) ∨ ⌈1 ∘ f⌉`, without the orthocomplement, and is false: every value of
+`f^□` is `≥ f^□(0) = ⌈1 ∘ f⌉ᵖ`, which the printed right-hand side need not
+be, and at `f = id` the printed equation reads `IM k = (IM k) ∨ 1 = 1`, while
+`id` is left-modular at every `k`.  `ERRATA.md` row **227III**.4
+(`eff-dagger-conc-ex`) carries the correction, and 228II's own condition (1)
+prints it right.  (Compare the sibling slip in item 1, handled in the doc
+comment of `exactAt_iff`.)
+
+The proof is 227III.2 and 227III.3: `IM` is injective, and it carries `f_*`,
+`f^*`, `∨` and `⊥` to `f_⋄`, `f^□`, the join of `SPred A` and `0`, with
+`f^□(0) = ⌈1 ∘ f⌉ᵖ` (`nsb_IM_kerPull_bot`). -/
+theorem leftModularAt_iff {A B : C} (f : A ⟶ B) (x : Nsb A) :
+    LeftModularAt f x ↔
+      boxPull f (diaPush f (Nsb.IM x)) =
+        spredJoin (Nsb.IM x) (SPred.orth ⟨ceilPred (f ≫ truth B), isSharp_ceil _⟩) := by
+  constructor
+  · intro h
+    have h2 := congrArg Nsb.IM h
+    rwa [nsb_IM_kerPull, nsb_IM_kerPush, Nsb.IM_sup, nsb_IM_kerPull_bot] at h2
+  · intro h
+    refine Nsb.eq_of_IM_eq _ _ ?_
+    rw [nsb_IM_kerPull, nsb_IM_kerPush, Nsb.IM_sup, nsb_IM_kerPull_bot]
+    exact h
+
+/-- **227III.4** (eff.tex:7621, Example), second half: **`f` is right-modular
+at `k` iff `f_⋄(f^□(IM k)) = (IM k) ∧ IM f`.**  This half is correct as
+printed — dually, every value of `f_⋄` is `≤ f_⋄(1) = IM f`.  Same proof:
+`IM` is injective and carries `f_*`, `f^*`, `∧` and `⊤` to `f_⋄`, `f^□`, the
+meet of `SPred B` and `1`, with `f_⋄(1) = IM f`
+(`nsb_IM_kerPush_top`). -/
+theorem rightModularAt_iff {A B : C} (f : A ⟶ B) (x : Nsb B) :
+    RightModularAt f x ↔
+      diaPush f (boxPull f (Nsb.IM x)) =
+        spredMeet (Nsb.IM x) ⟨imPred f, isSharp_imPred C f⟩ := by
+  constructor
+  · intro h
+    have h2 := congrArg Nsb.IM h
+    rwa [nsb_IM_kerPush, nsb_IM_kerPull, Nsb.IM_inf, nsb_IM_kerPush_top] at h2
+  · intro h
+    refine Nsb.eq_of_IM_eq _ _ ?_
+    rw [nsb_IM_kerPush, nsb_IM_kerPull, Nsb.IM_inf, nsb_IM_kerPush_top]
+    exact h
+
+end NsbLattice
 
 /-! ## The hom-PCM of a finPAC is unique (infrastructure, not a thesis point)
 

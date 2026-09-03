@@ -50,3 +50,5 @@ import Theses.B.Eff.DiamondAmp
 import Theses.B.Eff.Dagger
 import Theses.B.Eff.Comparisons
 import Theses.B.Eff.VNExamples
+import Theses.B.Eff.OrderUnit
+import Theses.B.Eff.ExtensiveExamples

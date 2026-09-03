@@ -28,8 +28,11 @@ Design:
   193IX's description of when two elements of `X + Y` are equal
   (`AConvMCat.coprodQuot_eq_iff`), on which 194I.4 then runs the thesis's
   induction.
-* Not separately formalized: the example lists 190IV/190V and 192V.2
-  (`OUS`, `OUG`, `CRng`, `CH`, `EJA`, and the non-cancellative triangle), and
+* Not separately formalized: 190IV.1, 190IV.2, 190V and the example list
+  192V.2 (`OUS`, `OUG`, `EJA`, and the non-cancellative triangle) — but
+  190IV.3 and its `SET`, `CRngᵒᵖ` and `bCH` sub-items are, since
+  2026-09-03, in `Theses/B/Eff/ExtensiveExamples.lean`, and the categories
+  `OUSᵒᵖ` and `OUGᵒᵖ` themselves in `Theses/B/Eff/OrderUnit.lean` — and
   195V.5 (the unit interval of `L^∞[0,1]` is an effect divisoid — the tree has
   no `L^∞`).
 -/
