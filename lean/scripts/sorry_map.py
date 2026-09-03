@@ -243,6 +243,10 @@ def verdict_conflicts(field):
     it and the row gets reworded.
     """
     t = field.strip().lower()
+    # A field that opens with a verdict word says that verdict (see
+    # `verdict_of`); mentions further in are its history, not a conflict.
+    if any(t.startswith(needle) for needle, canon in VERDICTS if canon):
+        return [verdict_of(field)]
     found = []
     for needle, canon in VERDICTS:
         if not canon or canon in found:
@@ -278,6 +282,15 @@ def verdict_of(field):
     fall back to the first token when none is found.
     """
     t = field.strip().lower()
+    # A field that OPENS with a verdict word means that verdict: the passes
+    # since 2026-08-29 all write the operative verdict first and the history
+    # after it, so table order must not let a later mention of a former
+    # verdict win.  (Added 2026-09-04, when seventeen such rows read back as
+    # their history.)
+    opening = [(needle, canon) for needle, canon in VERDICTS
+               if t.startswith(needle)]
+    if opening:
+        return max(opening, key=lambda nc: len(nc[0]))[1]
     for needle, canon in VERDICTS:
         for mm in re.finditer(re.escape(needle), t):
             if _superseded_at(t, mm):
