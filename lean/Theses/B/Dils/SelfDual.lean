@@ -1163,11 +1163,175 @@ private theorem bSpan_op_smul (V : Set X) : ∀ a : ℬ, ∀ y ∈ bSpan ℬ V,
     rw [op_smul_comm_complex, op_mul_smul]
 
 
+/-- The orthocomplement of any set is closed under ultranorm limits. -/
+private theorem mem_orthoCompl_of_unTendsto [VonNeumannAlgebra ℬ] {κ : Type*}
+    {l : Filter κ} [l.NeBot] (V : Set X) (v : κ → X)
+    (hv : ∀ k, v k ∈ orthoCompl ℬ V) {y : X}
+    (h : UnTendsto (inner ℬ : X → X → ℬ) v l y) : y ∈ orthoCompl ℬ V := by
+  intro w hw
+  refine np_separating _ fun ω => ?_
+  have hbound : ∀ k, ‖ω (inner ℬ y w : ℬ)‖
+      ≤ unSeminorm ω (inner ℬ : X → X → ℬ) (v k - y)
+        * unSeminorm ω (inner ℬ : X → X → ℬ) w := by
+    intro k
+    have hsplit : (inner ℬ y w : ℬ) = inner ℬ (y - v k) w := by
+      rw [CStarModule.inner_sub_left, hv k w hw, sub_zero]
+    have hneg := unSeminorm_neg_inner (X := X) ω (v k - y)
+    rw [neg_sub] at hneg
+    have hb2 : ‖ω (inner ℬ y w : ℬ)‖
+        ≤ unSeminorm ω (inner ℬ : X → X → ℬ) (y - v k)
+          * unSeminorm ω (inner ℬ : X → X → ℬ) w := by
+      rw [hsplit]; exact unSeminorm_inner_le ω (cstarBInner ℬ X) _ _
+    rwa [hneg] at hb2
+  have hlim : Tendsto (fun k => unSeminorm ω (inner ℬ : X → X → ℬ) (v k - y)
+      * unSeminorm ω (inner ℬ : X → X → ℬ) w) l (𝓝 0) := by
+    have := (h ω).mul_const (unSeminorm ω (inner ℬ : X → X → ℬ) w)
+    rwa [zero_mul] at this
+  have hle : ‖ω (inner ℬ y w : ℬ)‖ ≤ 0 :=
+    ge_of_tendsto hlim (Filter.Eventually.of_forall hbound)
+  simpa using le_antisymm hle (norm_nonneg _)
+
+/-- **149VIII**'s orthonormalization, relativized to a subset `W` and in the
+*extension* form that the printed proof of **160IV** needs (**160VI**,
+dils.tex:4526: *"going back to the construction of `(eᵢ)`, we see that we can
+extend it to a maximal orthonormal subset of `X`"*): if `W` is closed under
+the isometric part of the polar decomposition of its own members, then every
+orthonormal `E₀ ⊆ W` extends to a *maximal* orthonormal `E ⊆ W`, maximality
+saying exactly that an element of `W` orthogonal to all of `E` is `0`.
+Applied twice in `exists_orthogonal_decomp` — once at `W`, to get `(eᵢ)`, and
+once at `X`, to extend it to `{eᵢ} ∪ {dⱼ}` — and once more, at an
+orthocomplement, in `exists_max_orthonormal_orthoCompl` below. -/
+private theorem exists_max_orthonormal_ext [VonNeumannAlgebra ℬ]
+    [CompleteSpace X] (hX : SelfDual ℬ X) (W : Set X)
+    (hWpol : ∀ z ∈ W, ∀ (c : ℕ → ℬ) (u : X),
+      UnTendsto (inner ℬ : X → X → ℬ) (fun N => c N • z) atTop u → u ∈ W)
+    (E₀ : Set X) (hE₀W : E₀ ⊆ W)
+    (hE₀o : ∀ y ∈ E₀, ∀ z ∈ E₀, y ≠ z → (inner ℬ y z : ℬ) = 0)
+    (hE₀p : ∀ y ∈ E₀, IsStarProjection (inner ℬ y y : ℬ) ∧ (inner ℬ y y : ℬ) ≠ 0) :
+    ∃ E : Set X, E₀ ⊆ E ∧ E ⊆ W ∧
+      (∀ y ∈ E, ∀ z ∈ E, y ≠ z → (inner ℬ y z : ℬ) = 0) ∧
+      (∀ y ∈ E, IsStarProjection (inner ℬ y y : ℬ) ∧ (inner ℬ y y : ℬ) ≠ 0) ∧
+      (∀ z ∈ W, (∀ y ∈ E, (inner ℬ y z : ℬ) = 0) → z = 0) := by
+  classical
+  have hbdd : BddUnComplete ℬ X := bddUnComplete_of_selfDual hX
+  obtain ⟨E, hE₀E, hEmax⟩ := zorn_subset_nonempty
+    {E : Set X | E₀ ⊆ E ∧ E ⊆ W ∧
+      (∀ y ∈ E, ∀ z ∈ E, y ≠ z → (inner ℬ y z : ℬ) = 0)
+      ∧ ∀ y ∈ E, IsStarProjection (inner ℬ y y : ℬ) ∧ (inner ℬ y y : ℬ) ≠ 0}
+    (fun c hc hchain hcne => by
+      refine ⟨⋃₀ c, ⟨?_, ?_, ?_, ?_⟩, fun s hs => Set.subset_sUnion_of_mem hs⟩
+      · obtain ⟨s, hs⟩ := hcne
+        exact fun y hy => ⟨s, hs, (hc hs).1 hy⟩
+      · rintro y ⟨s, hs, hys⟩
+        exact (hc hs).2.1 hys
+      · rintro y ⟨s₁, hs₁, hys₁⟩ z ⟨s₂, hs₂, hzs₂⟩ hyz
+        rcases hchain.total hs₁ hs₂ with h12 | h21
+        · exact (hc hs₂).2.2.1 y (h12 hys₁) z hzs₂ hyz
+        · exact (hc hs₁).2.2.1 y hys₁ z (h21 hzs₂) hyz
+      · rintro y ⟨s₁, hs₁, hys₁⟩
+        exact (hc hs₁).2.2.2 y hys₁)
+    E₀ ⟨subset_rfl, hE₀W, hE₀o, hE₀p⟩
+  obtain ⟨-, hEW, hEorth, hEproj⟩ := hEmax.1
+  refine ⟨E, hE₀E, hEW, hEorth, hEproj, ?_⟩
+  intro z hzW hzo
+  by_contra hne
+  obtain ⟨u, huu, hbu, cc, hcc⟩ := polar_decomposition hbdd z
+  have huW : u ∈ W := hWpol z hzW cc u hcc
+  have hzz : (inner ℬ z z : ℬ) ≠ 0 := fun h0 =>
+    hne ((CStarModule.inner_self (A := ℬ)).mp h0)
+  have hbne : CFC.sqrt (inner ℬ z z : ℬ) ≠ 0 := by
+    intro h0
+    refine hzz ?_
+    rw [← CFC.sqrt_mul_sqrt_self (inner ℬ z z : ℬ)
+      CStarModule.inner_self_nonneg, h0, mul_zero]
+  have hqproj : IsStarProjection (inner ℬ u u : ℬ) := by
+    rw [huu]; exact (ceill_basic_1 _).1.1
+  have hqne : (inner ℬ u u : ℬ) ≠ 0 := by
+    rw [huu]
+    intro h0
+    have h1 := (ceill_basic_1 (CFC.sqrt (inner ℬ z z : ℬ))).1.2
+    rw [h0, mul_zero] at h1
+    exact hbne h1.symm
+  have horthu : ∀ y ∈ E, (inner ℬ y u : ℬ) = 0 := fun y hy =>
+    inner_eq_zero_of_polar huu hbu (hzo y hy)
+  have huE : u ∉ E := fun h => hqne (horthu u h)
+  have hEu : (insert u E) ∈ {E' : Set X | E₀ ⊆ E' ∧ E' ⊆ W ∧
+      (∀ y ∈ E', ∀ z ∈ E', y ≠ z → (inner ℬ y z : ℬ) = 0)
+      ∧ ∀ y ∈ E', IsStarProjection (inner ℬ y y : ℬ)
+        ∧ (inner ℬ y y : ℬ) ≠ 0} := by
+    refine ⟨hE₀E.trans (Set.subset_insert u E), ?_, ?_, ?_⟩
+    · rintro y (rfl | hy)
+      · exact huW
+      · exact hEW hy
+    · rintro y (rfl | hy) z (rfl | hz) hne'
+      · exact absurd rfl hne'
+      · have h5 := congrArg star (horthu z hz)
+        rwa [CStarModule.star_inner, star_zero] at h5
+      · exact horthu y hy
+      · exact hEorth y hy z hz hne'
+    · rintro y (rfl | hy)
+      · exact ⟨hqproj, hqne⟩
+      · exact hEproj y hy
+  exact huE (hEmax.2 hEu (Set.subset_insert u E) (Set.mem_insert u E))
+
+/-- Bessel's inequality plus norm-bounded ultranorm completeness: for an
+orthonormal family `(eᵢ)` and a coefficient family `(bᵢ)` each of whose
+members is either `⟨eᵢ,x⟩` or `0`, the partial sums of `∑ᵢ bᵢ • eᵢ` converge
+ultranorm, and wherever `bⱼ = ⟨eⱼ,x⟩` the remainder is orthogonal to `eⱼ`.
+At `b = ⟨e·,x⟩` this is the expansion of `x` along `(eᵢ)`; at a `b` supported
+on a subfamily it is the partial expansion that the proof of **160VIII**
+splits off. -/
+private theorem exists_unTendsto_coef [VonNeumannAlgebra ℬ] [CompleteSpace X]
+    (hX : SelfDual ℬ X) {κ : Type*} {e : κ → X} (he : OrthonormalFam ℬ e)
+    (x : X) (b : κ → ℬ) (hb : ∀ i, b i = (inner ℬ (e i) x : ℬ) ∨ b i = 0) :
+    ∃ p : X, UnTendsto (inner ℬ : X → X → ℬ)
+        (fun s : Finset κ => ∑ i ∈ s, b i • e i) atTop p ∧
+      ∀ j : κ, b j = (inner ℬ (e j) x : ℬ) →
+        (inner ℬ (e j) (x - p) : ℬ) = 0 := by
+  have hbdd : BddUnComplete ℬ X := bddUnComplete_of_selfDual hX
+  have hterm : ∀ i, b i * star (b i)
+      ≤ (inner ℬ (e i) x : ℬ) * (inner ℬ x (e i) : ℬ) := by
+    intro i
+    have hst : (inner ℬ (e i) x : ℬ) * (inner ℬ x (e i) : ℬ)
+        = (inner ℬ (e i) x : ℬ) * star (inner ℬ (e i) x : ℬ) := by
+      rw [CStarModule.star_inner]
+    rcases hb i with h | h
+    · rw [h, hst]
+    · rw [h, star_zero, mul_zero, hst]
+      exact mul_star_self_nonneg _
+  have hL2 : L2Summable ℬ b := by
+    refine ⟨‖(inner ℬ x x : ℬ)‖, fun s => ?_⟩
+    have h0 : (0 : ℬ) ≤ ∑ i ∈ s, b i * star (b i) :=
+      Finset.sum_nonneg fun i _ => mul_star_self_nonneg _
+    have hle : ∑ i ∈ s, b i * star (b i) ≤ (inner ℬ x x : ℬ) :=
+      le_trans (Finset.sum_le_sum fun i _ => hterm i) (mod_bessel he x s)
+    exact CStarAlgebra.norm_le_norm_of_nonneg_of_le h0 hle
+  have habs : ∀ i, b i * (inner ℬ (e i) (e i) : ℬ) = b i := by
+    intro i
+    rcases hb i with h | h
+    · rw [h]; exact onbasis_coef_absorb he x i
+    · rw [h, zero_mul]
+  obtain ⟨p, hp⟩ := exists_unTendsto_of_l2Summable hbdd he b hL2
+  refine ⟨p, hp, fun j hj => ?_⟩
+  rw [CStarModule.inner_sub_right,
+    inner_of_unTendsto_sum_smul he b habs hp j, hj, sub_self]
+
 /-- The **projection theorem** for an ultranorm-closed submodule `W` (given
 by its closure properties, not as an `U^⊥`; consumers pass both
 `unClosure (bSpan V)` and a generic `W`): every `x ∈ X` splits as
 `p + (x − p)` with `p ∈ W` and `x − p` orthogonal to all of `W`.  This is
-the substance of **160IV**.3. -/
+the substance of **160IV**.3.
+
+The proof is the thesis's, **160V**–**160VIII** (dils.tex:4512).  Take a
+maximal orthonormal subset `E = (eᵢ)` of `W`; maximality makes it a *basis*
+of `W`, every `w ∈ W` being the ultranorm limit of `∑ᵢ eᵢ⟨eᵢ,w⟩`.  *Extend*
+it to a maximal orthonormal subset `F` of the whole of `X`, which for the
+same reason is a basis of `X`; the members `d` of `F ∖ E` then lie in `W^⊥`,
+"by construction", because they are orthogonal to every `eᵢ` and hence to
+every `E`-limit.  Finally split the expansion `x = ∑_{f ∈ F} f⟨f,x⟩`
+coefficientwise into its `E`-part, which converges inside `W` to the `p`
+sought, and its `F ∖ E`-part, which is `x − p` in the limit and lies in the
+ultranorm-closed `W^⊥`. -/
 private theorem exists_orthogonal_decomp [VonNeumannAlgebra ℬ] [CompleteSpace X]
     (hX : SelfDual ℬ X) (W : Set X) (hW0 : (0 : X) ∈ W)
     (hWadd : ∀ y ∈ W, ∀ z ∈ W, y + z ∈ W)
@@ -1177,169 +1341,146 @@ private theorem exists_orthogonal_decomp [VonNeumannAlgebra ℬ] [CompleteSpace 
   classical
   have hWsub : ∀ y ∈ W, ∀ z ∈ W, y - z ∈ W := fun y hy z hz => by
     rw [sub_eq_add_neg]; exact hWadd y hy (-z) (hWneg z hz)
-  have hbdd : BddUnComplete ℬ X := bddUnComplete_of_selfDual hX
-  -- a maximal orthonormal subset **of `W`**
-  obtain ⟨E, hEmax⟩ := zorn_subset
-    {E : Set X | E ⊆ W ∧ (∀ y ∈ E, ∀ z ∈ E, y ≠ z → (inner ℬ y z : ℬ) = 0)
-      ∧ ∀ y ∈ E, IsStarProjection (inner ℬ y y : ℬ) ∧ (inner ℬ y y : ℬ) ≠ 0}
-    (fun c hc hchain => by
-      refine ⟨⋃₀ c, ⟨?_, ?_, ?_⟩, fun s hs => Set.subset_sUnion_of_mem hs⟩
-      · rintro y ⟨s, hs, hys⟩
-        exact (hc hs).1 hys
-      · rintro y ⟨s₁, hs₁, hys₁⟩ z ⟨s₂, hs₂, hzs₂⟩ hyz
-        rcases hchain.total hs₁ hs₂ with h12 | h21
-        · exact (hc hs₂).2.1 y (h12 hys₁) z hzs₂ hyz
-        · exact (hc hs₁).2.1 y hys₁ z (h21 hzs₂) hyz
-      · rintro y ⟨s₁, hs₁, hys₁⟩
-        exact (hc hs₁).2.2 y hys₁)
-  have hE := hEmax.1
-  have hEW : E ⊆ W := hE.1
-  have horth : OrthonormalFam ℬ (fun i : E => (i : X)) :=
-    ⟨fun i j hij => hE.2.1 (i : X) i.2 (j : X) j.2 fun hh => hij (Subtype.ext hh),
-      fun i => hE.2.2 (i : X) i.2⟩
-  -- finite ℬ-combinations of members of `E` lie in `W`
-  have hWsum : ∀ (b : ↥E → ℬ) (s : Finset ↥E),
-      (∑ i ∈ s, b i • (i : X)) ∈ W := by
-    intro b s
-    refine Finset.induction_on s (by simpa using hW0) ?_
-    intro i s hi ih
-    rw [Finset.sum_insert hi]
-    exact hWadd _ (hWb (b i) (i : X) (hEW i.2)) _ ih
-  -- every `y ∈ X` has an expansion along `E` inside `W`
-  have hexp : ∀ y : X, ∃ p : X, p ∈ W ∧
-      UnTendsto (inner ℬ : X → X → ℬ)
-        (fun s : Finset ↥E => ∑ i ∈ s, (inner ℬ ((i : X)) y : ℬ) • (i : X))
+  have hWpol : ∀ z ∈ W, ∀ (c : ℕ → ℬ) (u : X),
+      UnTendsto (inner ℬ : X → X → ℬ) (fun N => c N • z) atTop u → u ∈ W :=
+    fun z hz c u hu =>
+      hWcl ▸ mem_unClosure_of_unTendsto W _ (fun N => hWb (c N) z hz) u hu
+  -- **160VI**: an orthonormal basis `(eᵢ)` of `W`, as a maximal orthonormal
+  -- subset `E` of `W` …
+  obtain ⟨E, -, hEW, hEorth, hEproj, hEmax0⟩ :=
+    exists_max_orthonormal_ext hX W hWpol ∅ (Set.empty_subset _)
+      (fun y hy => absurd hy (Set.notMem_empty y))
+      (fun y hy => absurd hy (Set.notMem_empty y))
+  -- … extended to a maximal orthonormal subset `F = {eᵢ} ∪ {dⱼ}` of `X`
+  obtain ⟨F, hEF, -, hForth, hFproj, hFmax0⟩ :=
+    exists_max_orthonormal_ext hX Set.univ (fun _ _ _ u _ => Set.mem_univ u) E
+      (fun y _ => Set.mem_univ y) hEorth hEproj
+  have hFon : OrthonormalFam ℬ (Subtype.val : ↥F → X) :=
+    ⟨fun i j hij => hForth (i : X) i.2 (j : X) j.2 fun hh => hij (Subtype.ext hh),
+      fun i => hFproj (i : X) i.2⟩
+  have hEcoef : ∀ (y : X) (i : ↥F),
+      (if (i : X) ∈ E then (inner ℬ ((i : X)) y : ℬ) else 0)
+          = (inner ℬ ((i : X)) y : ℬ) ∨
+        (if (i : X) ∈ E then (inner ℬ ((i : X)) y : ℬ) else 0) = 0 := by
+    intro y i
+    by_cases h : (i : X) ∈ E
+    · exact Or.inl (ite_eq_left h)
+    · exact Or.inr (ite_eq_right h)
+  have hEsum : ∀ (y : X) (s : Finset ↥F),
+      (∑ i ∈ s,
+        (if (i : X) ∈ E then (inner ℬ ((i : X)) y : ℬ) else 0) • (i : X)) ∈ W := by
+    intro y s
+    refine Finset.sum_induction _ (fun z => z ∈ W)
+      (fun z z' hz hz' => hWadd z hz z' hz') hW0 (fun i _ => ?_)
+    by_cases h : (i : X) ∈ E
+    · rw [ite_eq_left h]; exact hWb _ _ (hEW h)
+    · rw [ite_eq_right h, op_zero_smul]; exact hW0
+  -- the `E`-part of the expansion of any `y`, and its limit, inside `W`
+  have hexpE : ∀ y : X, ∃ p ∈ W, UnTendsto (inner ℬ : X → X → ℬ)
+      (fun s : Finset ↥F => ∑ i ∈ s,
+        (if (i : X) ∈ E then (inner ℬ ((i : X)) y : ℬ) else 0) • (i : X))
         atTop p ∧
-      ∀ j : ↥E, (inner ℬ ((j : X)) (y - p) : ℬ) = 0 := by
+      ∀ j : ↥F, (j : X) ∈ E → (inner ℬ ((j : X)) (y - p) : ℬ) = 0 := by
     intro y
-    have hL2 : L2Summable ℬ (fun i : ↥E => (inner ℬ ((i : X)) y : ℬ)) := by
-      refine ⟨‖(inner ℬ y y : ℬ)‖, fun s => ?_⟩
-      have h1 : ∑ i ∈ s,
-            (inner ℬ ((i : X)) y : ℬ) * star (inner ℬ ((i : X)) y : ℬ)
-          = ∑ i ∈ s, (inner ℬ ((i : X)) y : ℬ) * (inner ℬ y ((i : X)) : ℬ) :=
-        Finset.sum_congr rfl fun i _ => by rw [CStarModule.star_inner]
-      rw [h1]
-      have h3 : (0 : ℬ) ≤ ∑ i ∈ s,
-          (inner ℬ ((i : X)) y : ℬ) * (inner ℬ y ((i : X)) : ℬ) := by
-        rw [← h1]
-        exact Finset.sum_nonneg fun i _ => mul_star_self_nonneg _
-      exact CStarAlgebra.norm_le_norm_of_nonneg_of_le h3 (mod_bessel horth y s)
-    obtain ⟨p, hp⟩ := exists_unTendsto_of_l2Summable hbdd horth _ hL2
-    refine ⟨p, hWcl ▸ mem_unClosure_of_unTendsto W _ (fun s => hWsum _ s) p hp,
-      hp, fun j => ?_⟩
-    rw [CStarModule.inner_sub_right, inner_of_unTendsto_sum_smul horth _
-      (fun i => onbasis_coef_absorb horth y i) hp j, sub_self]
-  -- maximality: an element of `W` orthogonal to `E` is `0`
-  have hmax0 : ∀ z ∈ W, (∀ j : ↥E, (inner ℬ ((j : X)) z : ℬ) = 0) → z = 0 := by
-    intro z hzW hzo
-    by_contra hne
-    obtain ⟨u, huu, hbu, cc, hcc⟩ := polar_decomposition hbdd z
-    have huW : u ∈ W := hWcl ▸ mem_unClosure_of_unTendsto W (fun N => cc N • z)
-      (fun N => hWb (cc N) z hzW) u hcc
-    have hzz : (inner ℬ z z : ℬ) ≠ 0 := fun h0 =>
-      hne ((CStarModule.inner_self (A := ℬ)).mp h0)
-    have hbne : CFC.sqrt (inner ℬ z z : ℬ) ≠ 0 := by
-      intro h0
-      refine hzz ?_
-      rw [← CFC.sqrt_mul_sqrt_self (inner ℬ z z : ℬ)
-        CStarModule.inner_self_nonneg, h0, mul_zero]
-    have hqproj : IsStarProjection (inner ℬ u u : ℬ) := by
-      rw [huu]; exact (ceill_basic_1 _).1.1
-    have hqne : (inner ℬ u u : ℬ) ≠ 0 := by
-      rw [huu]
-      intro h0
-      have h1 := (ceill_basic_1 (CFC.sqrt (inner ℬ z z : ℬ))).1.2
-      rw [h0, mul_zero] at h1
-      exact hbne h1.symm
-    have horthu : ∀ j : ↥E, (inner ℬ ((j : X)) u : ℬ) = 0 := fun j =>
-      inner_eq_zero_of_polar huu hbu (hzo j)
-    have huE : u ∉ E := fun h => hqne (horthu ⟨u, h⟩)
-    have hEu : (insert u E) ∈ {E' : Set X | E' ⊆ W ∧
-        (∀ y ∈ E', ∀ z ∈ E', y ≠ z → (inner ℬ y z : ℬ) = 0)
-        ∧ ∀ y ∈ E', IsStarProjection (inner ℬ y y : ℬ)
-          ∧ (inner ℬ y y : ℬ) ≠ 0} := by
-      refine ⟨?_, ?_, ?_⟩
-      · rintro y (rfl | hy)
-        · exact huW
-        · exact hEW hy
-      · rintro y (rfl | hy) z (rfl | hz) hne'
-        · exact absurd rfl hne'
-        · have h5 := congrArg star (horthu ⟨z, hz⟩)
-          rwa [CStarModule.star_inner, star_zero] at h5
-        · exact horthu ⟨y, hy⟩
-        · exact hE.2.1 y hy z hz hne'
-      · rintro y (rfl | hy)
-        · exact ⟨hqproj, hqne⟩
-        · exact hE.2.2 y hy
-    exact huE (hEmax.2 hEu (Set.subset_insert u E) (Set.mem_insert u E))
-  -- the decomposition
-  obtain ⟨p, hpW, -, hpo⟩ := hexp x
-  refine ⟨p, hpW, fun w hw => ?_⟩
-  obtain ⟨q, hqW, hq, hqo⟩ := hexp w
-  have hwq : q = w := by
-    have h0 := hmax0 (w - q) (hWsub w hw q hqW) hqo
+    obtain ⟨p, hp, hpo⟩ := exists_unTendsto_coef hX hFon y
+      (fun i => if (i : X) ∈ E then (inner ℬ ((i : X)) y : ℬ) else 0) (hEcoef y)
+    exact ⟨p, hWcl ▸ mem_unClosure_of_unTendsto W _ (fun s => hEsum y s) p hp,
+      hp, fun j hj => hpo j (ite_eq_left hj)⟩
+  -- **160VI**: `(eᵢ)` is a basis of `W` — here maximality of `E` inside `W`
+  have hWbasis : ∀ w ∈ W, UnTendsto (inner ℬ : X → X → ℬ)
+      (fun s : Finset ↥F => ∑ i ∈ s,
+        (if (i : X) ∈ E then (inner ℬ ((i : X)) w : ℬ) else 0) • (i : X))
+        atTop w := by
+    intro w hw
+    obtain ⟨q, hqW, hq, hqo⟩ := hexpE w
+    have h0 : w - q = 0 :=
+      hEmax0 (w - q) (hWsub w hw q hqW) fun y hy => hqo ⟨y, hEF hy⟩ hy
+    have hwq : q = w := by rw [sub_eq_zero] at h0; exact h0.symm
+    rw [hwq] at hq
+    exact hq
+  -- **160VII**: "by construction `dⱼ ∈ W^⊥`"
+  have hDW : ∀ i : ↥F, (i : X) ∉ E → ∀ w ∈ W, (inner ℬ ((i : X)) w : ℬ) = 0 := by
+    intro i hi w hw
+    have hmem : w ∈ orthoCompl ℬ ({(i : X)} : Set X) := by
+      refine mem_orthoCompl_of_unTendsto ({(i : X)} : Set X) _ (fun s => ?_)
+        (hWbasis w hw)
+      rintro v rfl
+      rw [CStarModule.inner_sum_left]
+      refine Finset.sum_eq_zero fun j _ => ?_
+      by_cases hj : (j : X) ∈ E
+      · have hne : j ≠ i := fun h => hi (h ▸ hj)
+        have hz : (inner ℬ ((j : X)) ((i : X)) : ℬ) = 0 := hFon.1 j i hne
+        rw [CStarModule.inner_op_smul_left, hz, zero_mul]
+      · rw [ite_eq_right hj, op_zero_smul, CStarModule.inner_zero_left]
+    have h := hmem ((i : X)) rfl
+    have h2 := congrArg star h
+    rwa [CStarModule.star_inner, star_zero] at h2
+  -- **160VIII**: expand `x` along `F` and split the expansion in two
+  obtain ⟨p, hpW, hpE, -⟩ := hexpE x
+  refine ⟨p, hpW, ?_⟩
+  obtain ⟨x', hx', hx'o⟩ := exists_unTendsto_coef hX hFon x
+    (fun i => (inner ℬ ((i : X)) x : ℬ)) (fun _ => Or.inl rfl)
+  have hxx' : x' = x := by
+    have h0 : x - x' = 0 :=
+      hFmax0 (x - x') (Set.mem_univ _) fun y hy => hx'o ⟨y, hy⟩ rfl
     rw [sub_eq_zero] at h0
     exact h0.symm
-  rw [hwq] at hq
-  -- `x − p` kills every partial sum of `w`'s expansion …
-  have hzero : ∀ s : Finset ↥E,
-      (inner ℬ (x - p)
-        (∑ i ∈ s, (inner ℬ ((i : X)) w : ℬ) • (i : X)) : ℬ) = 0 := by
+  rw [hxx'] at hx'
+  have hsplit : ∀ s : Finset ↥F,
+      (∑ i ∈ s, (if (i : X) ∈ E then (0 : ℬ)
+          else (inner ℬ ((i : X)) x : ℬ)) • (i : X)) - (x - p)
+        = ((∑ i ∈ s, (inner ℬ ((i : X)) x : ℬ) • (i : X)) - x)
+          + -((∑ i ∈ s, (if (i : X) ∈ E then (inner ℬ ((i : X)) x : ℬ)
+                else 0) • (i : X)) - p) := by
     intro s
-    rw [CStarModule.inner_sum_right]
-    refine Finset.sum_eq_zero fun i _ => ?_
-    rw [CStarModule.inner_op_smul_right]
-    have h1 : (inner ℬ (x - p) ((i : X)) : ℬ) = 0 := by
-      have h2 := congrArg star (hpo i)
-      rwa [CStarModule.star_inner, star_zero] at h2
-    rw [h1, mul_zero]
-  -- … so `ω⟨x−p,w⟩ = ω⟨x−p, w − ∑…⟩ → 0` for every np-functional `ω`
-  refine np_separating _ fun ω => ?_
-  set C : ℝ := unSeminorm ω (cstarBInner ℬ X).inner (x - p) with hCdef
-  have hbound : ∀ s : Finset ↥E, ‖ω (inner ℬ (x - p) w : ℬ)‖
-      ≤ C * unSeminorm ω (cstarBInner ℬ X).inner
-          ((∑ i ∈ s, (inner ℬ ((i : X)) w : ℬ) • (i : X)) - w) := by
-    intro s
-    have hsplit : (inner ℬ (x - p) w : ℬ)
-        = inner ℬ (x - p) (w - ∑ i ∈ s, (inner ℬ ((i : X)) w : ℬ) • (i : X)) := by
-      rw [CStarModule.inner_sub_right, hzero s, sub_zero]
-    have hneg := unSeminorm_neg_inner (X := X) ω
-      ((∑ i ∈ s, (inner ℬ ((i : X)) w : ℬ) • (i : X)) - w)
-    rw [neg_sub] at hneg
-    calc ‖ω (inner ℬ (x - p) w : ℬ)‖
-        = ‖ω ((cstarBInner ℬ X).inner (x - p)
-            (w - ∑ i ∈ s, (inner ℬ ((i : X)) w : ℬ) • (i : X)))‖ := by
-          rw [hsplit]; rfl
-      _ ≤ C * unSeminorm ω (cstarBInner ℬ X).inner
-            (w - ∑ i ∈ s, (inner ℬ ((i : X)) w : ℬ) • (i : X)) :=
-          unSeminorm_inner_le ω (cstarBInner ℬ X) _ _
-      _ = C * unSeminorm ω (cstarBInner ℬ X).inner
-            ((∑ i ∈ s, (inner ℬ ((i : X)) w : ℬ) • (i : X)) - w) :=
-          congrArg (fun t => C * t) hneg
-  have hlim : Tendsto (fun s : Finset ↥E => C * unSeminorm ω
-      (cstarBInner ℬ X).inner
-        ((∑ i ∈ s, (inner ℬ ((i : X)) w : ℬ) • (i : X)) - w)) atTop (𝓝 0) := by
-    have h := (hq ω).const_mul C
-    rw [mul_zero] at h
-    exact h
-  have hle : ‖ω (inner ℬ (x - p) w : ℬ)‖ ≤ 0 :=
-    ge_of_tendsto hlim (Filter.Eventually.of_forall hbound)
-  simpa using le_antisymm hle (norm_nonneg _)
+    have hs : (∑ i ∈ s,
+          (if (i : X) ∈ E then (inner ℬ ((i : X)) x : ℬ) else 0) • (i : X))
+        + (∑ i ∈ s, (if (i : X) ∈ E then (0 : ℬ)
+            else (inner ℬ ((i : X)) x : ℬ)) • (i : X))
+        = ∑ i ∈ s, (inner ℬ ((i : X)) x : ℬ) • (i : X) := by
+      rw [← Finset.sum_add_distrib]
+      refine Finset.sum_congr rfl fun i _ => ?_
+      by_cases h : (i : X) ∈ E
+      · rw [ite_eq_left h, ite_eq_left h, op_zero_smul, add_zero]
+      · rw [ite_eq_right h, ite_eq_right h, op_zero_smul, zero_add]
+    rw [← hs]; abel
+  have hD : UnTendsto (inner ℬ : X → X → ℬ)
+      (fun s : Finset ↥F => ∑ i ∈ s, (if (i : X) ∈ E then (0 : ℬ)
+        else (inner ℬ ((i : X)) x : ℬ)) • (i : X)) atTop (x - p) := by
+    intro ω
+    have hg : Tendsto (fun s : Finset ↥F =>
+        unSeminorm ω (inner ℬ : X → X → ℬ)
+            ((∑ i ∈ s, (inner ℬ ((i : X)) x : ℬ) • (i : X)) - x)
+          + unSeminorm ω (inner ℬ : X → X → ℬ)
+            ((∑ i ∈ s, (if (i : X) ∈ E then (inner ℬ ((i : X)) x : ℬ)
+              else 0) • (i : X)) - p)) atTop (𝓝 0) := by
+      simpa using (hx' ω).add (hpE ω)
+    refine squeeze_zero (fun s => Real.sqrt_nonneg _) (fun s => ?_) hg
+    rw [hsplit s, ← unSeminorm_neg_inner ω
+      ((∑ i ∈ s, (if (i : X) ∈ E then (inner ℬ ((i : X)) x : ℬ)
+        else 0) • (i : X)) - p)]
+    exact unSeminorm_add_le ω (cstarBInner ℬ X) _ _
+  refine mem_orthoCompl_of_unTendsto W _ (fun s => ?_) hD
+  intro w hw
+  rw [CStarModule.inner_sum_left]
+  refine Finset.sum_eq_zero fun i _ => ?_
+  by_cases hi : (i : X) ∈ E
+  · rw [ite_eq_left hi, op_zero_smul, CStarModule.inner_zero_left]
+  · rw [ite_eq_right hi, CStarModule.inner_op_smul_left, hDW i hi w hw, zero_mul]
 
 /-- **160IV** (`hilbmod-projthm`, dils.tex:4496, Proposition), part 2:
 `V^⊥⊥` is the ultranorm closure of the ℬ-linear span of `V`.
 
-**Divergence, class 2.**  The thesis proves 2 and 3 off a single extended
-basis, part 2 first (**160VII**, dils.tex:4543) and part 3 after it
-(**160VIII**, dils.tex:4556, which *uses* part 2): it takes an orthonormal
-basis `(eᵢ)` of `W` (the ultranorm closure of the span), *extends it to a
-basis of `X`*, and reads off `V^⊥⊥ ⊆ W` from the expansion of an
-`x ∈ V^⊥⊥` along that extended basis.
-Here the inclusion comes from the same relativized decomposition that
-proves part 3: `x = p + (x−p)` with `p ∈ W` and `x − p ⊥ W`, so
-`x − p ∈ V^⊥` (as `V ⊆ W`) and `x − p ∈ V^⊥⊥` (as `x, p ∈ V^⊥⊥`), whence
-`x − p = 0`.  The other inclusion is the thesis's own "`W ⊆ V^⊥⊥`":
-`V^⊥⊥` is an ultranorm-closed submodule containing `V` (part 1). -/
+**160VII** (dils.tex:4543) is the proof.  It takes an orthonormal basis
+`(eᵢ)` of `W` (the ultranorm closure of the ℬ-linear span of `V`), extends
+it to a basis `{eᵢ} ∪ {dⱼ}` of `X`, and reads off `V^⊥⊥ ⊆ W` from the
+expansion of an `x ∈ V^⊥⊥` along that extended basis, `⟨x,dⱼ⟩` vanishing.
+That expansion is `exists_orthogonal_decomp` above, which builds and splits
+exactly this extended basis; here it is applied at `W`, and the vanishing of
+the `dⱼ`-part is taken in the equivalent form `x − p ∈ V^⊥ ∩ V^⊥⊥ = {0}`
+(`x − p ∈ V^⊥` as `V ⊆ W`, and `∈ V^⊥⊥` as `x, p ∈ V^⊥⊥`).  The other
+inclusion is the thesis's own "`W ⊆ V^⊥⊥`": `V^⊥⊥` is an ultranorm-closed
+submodule containing `V` (part 1). -/
 theorem hilbmod_projthm_2 [VonNeumannAlgebra ℬ] [CompleteSpace X]
     (hX : SelfDual ℬ X) (V : Set X) :
     orthoCompl ℬ (orthoCompl ℬ V) = unClosure ℬ (inner ℬ) (bSpan ℬ V) := by
@@ -1382,12 +1523,15 @@ theorem hilbmod_projthm_2 [VonNeumannAlgebra ℬ] [CompleteSpace X]
 `V^⊥⊥ ⊕ V^⊥ ≅ X` via `(x,y) ↦ x + y`: every element of `X` decomposes
 uniquely as a sum of an element of `V^⊥⊥` and one of `V^⊥`.
 
-**160V**–**160VIII** are the proof.  Existence is
-`exists_orthogonal_decomp` above (see its doc comment for the divergence:
-the orthonormalization is run inside `V^⊥⊥` rather than extended to a basis
-of `X`, which needs neither 160IV.2 nor a basis of `X`).  Uniqueness is the
-thesis's "`ϑ` is inner product preserving and thus injective", in the
-sharper form `V^⊥⊥ ∩ V^⊥ = {0}`: a `z` in both has `⟨z,z⟩ = 0`. -/
+**160V**–**160VIII** are the proof.  Surjectivity of `ϑ` is
+`exists_orthogonal_decomp` above, which is 160V–160VIII themselves: a
+maximal orthonormal `(eᵢ)` in `W = V^⊥⊥`, extended to a maximal orthonormal
+`{eᵢ} ∪ {dⱼ}` of `X`, and `x = ∑ᵢ eᵢ⟨eᵢ,x⟩ + ∑ⱼ dⱼ⟨dⱼ,x⟩` with the second
+sum in `W^⊥`.  Injectivity is the thesis's "`ϑ` is inner product preserving
+and thus injective", in the sharper form `V^⊥⊥ ∩ V^⊥ = {0}`: a `z` in both
+has `⟨z,z⟩ = 0`.  Only the remaining clauses of "isomorphic as Hilbert
+C*-modules" — that `ϑ` is bounded, ℬ-linear and inner-product preserving —
+are left unstated. -/
 theorem hilbmod_projthm_3 [VonNeumannAlgebra ℬ] [CompleteSpace X]
     (hX : SelfDual ℬ X) (V : Set X) (x : X) :
     ∃! p : X × X, p.1 ∈ orthoCompl ℬ (orthoCompl ℬ V) ∧
@@ -4264,106 +4408,27 @@ theorem isONBasis_of_orthoCompl_eq_zero [VonNeumannAlgebra ℬ] [CompleteSpace X
   rw [hy0]
   exact CStarModule.inner_zero_right
 
-/-- The orthocomplement of any set is closed under ultranorm limits. -/
-private theorem mem_orthoCompl_of_unTendsto [VonNeumannAlgebra ℬ] {κ : Type*}
-    {l : Filter κ} [l.NeBot] (V : Set X) (v : κ → X)
-    (hv : ∀ k, v k ∈ orthoCompl ℬ V) {y : X}
-    (h : UnTendsto (inner ℬ : X → X → ℬ) v l y) : y ∈ orthoCompl ℬ V := by
-  intro w hw
-  refine np_separating _ fun ω => ?_
-  have hbound : ∀ k, ‖ω (inner ℬ y w : ℬ)‖
-      ≤ unSeminorm ω (inner ℬ : X → X → ℬ) (v k - y)
-        * unSeminorm ω (inner ℬ : X → X → ℬ) w := by
-    intro k
-    have hsplit : (inner ℬ y w : ℬ) = inner ℬ (y - v k) w := by
-      rw [CStarModule.inner_sub_left, hv k w hw, sub_zero]
-    have hneg := unSeminorm_neg_inner (X := X) ω (v k - y)
-    rw [neg_sub] at hneg
-    have hb2 : ‖ω (inner ℬ y w : ℬ)‖
-        ≤ unSeminorm ω (inner ℬ : X → X → ℬ) (y - v k)
-          * unSeminorm ω (inner ℬ : X → X → ℬ) w := by
-      rw [hsplit]; exact unSeminorm_inner_le ω (cstarBInner ℬ X) _ _
-    rwa [hneg] at hb2
-  have hlim : Tendsto (fun k => unSeminorm ω (inner ℬ : X → X → ℬ) (v k - y)
-      * unSeminorm ω (inner ℬ : X → X → ℬ) w) l (𝓝 0) := by
-    have := (h ω).mul_const (unSeminorm ω (inner ℬ : X → X → ℬ) w)
-    rwa [zero_mul] at this
-  have hle : ‖ω (inner ℬ y w : ℬ)‖ ≤ 0 :=
-    ge_of_tendsto hlim (Filter.Eventually.of_forall hbound)
-  simpa using le_antisymm hle (norm_nonneg _)
-
-/-- **149VIII** relativized to the orthocomplement `W = V^⊥` (the Zorn
-argument inside `exists_orthogonal_decomp`, extracted): `W` carries a
+/-- **149VIII** relativized to the orthocomplement `W = V^⊥`: `W` carries a
 maximal orthonormal subset `E`, and maximality says exactly that an element
-of `W` orthogonal to all of `E` is `0`. -/
+of `W` orthogonal to all of `E` is `0`.  A special case of
+`exists_max_orthonormal_ext` (the Zorn argument of **160VI**), at `E₀ = ∅`;
+the polar-decomposition hypothesis holds because `V^⊥` is closed under
+`b • ·` and under ultranorm limits.  -/
 private theorem exists_max_orthonormal_orthoCompl [VonNeumannAlgebra ℬ]
     [CompleteSpace X] (hX : SelfDual ℬ X) (V : Set X) :
     ∃ E : Set X, E ⊆ orthoCompl ℬ V ∧
       (∀ y ∈ E, ∀ z ∈ E, y ≠ z → (inner ℬ y z : ℬ) = 0) ∧
       (∀ y ∈ E, IsStarProjection (inner ℬ y y : ℬ) ∧ (inner ℬ y y : ℬ) ≠ 0) ∧
       (∀ z ∈ orthoCompl ℬ V, (∀ y ∈ E, (inner ℬ y z : ℬ) = 0) → z = 0) := by
-  classical
-  set W : Set X := orthoCompl ℬ V with hWdef
-  have hbdd : BddUnComplete ℬ X := bddUnComplete_of_selfDual hX
-  obtain ⟨E, hEmax⟩ := zorn_subset
-    {E : Set X | E ⊆ W ∧ (∀ y ∈ E, ∀ z ∈ E, y ≠ z → (inner ℬ y z : ℬ) = 0)
-      ∧ ∀ y ∈ E, IsStarProjection (inner ℬ y y : ℬ) ∧ (inner ℬ y y : ℬ) ≠ 0}
-    (fun c hc hchain => by
-      refine ⟨⋃₀ c, ⟨?_, ?_, ?_⟩, fun s hs => Set.subset_sUnion_of_mem hs⟩
-      · rintro y ⟨s, hs, hys⟩
-        exact (hc hs).1 hys
-      · rintro y ⟨s₁, hs₁, hys₁⟩ z ⟨s₂, hs₂, hzs₂⟩ hyz
-        rcases hchain.total hs₁ hs₂ with h12 | h21
-        · exact (hc hs₂).2.1 y (h12 hys₁) z hzs₂ hyz
-        · exact (hc hs₁).2.1 y hys₁ z (h21 hzs₂) hyz
-      · rintro y ⟨s₁, hs₁, hys₁⟩
-        exact (hc hs₁).2.2 y hys₁)
-  obtain ⟨hEW, hEorth, hEproj⟩ := hEmax.1
-  refine ⟨E, hEW, hEorth, hEproj, ?_⟩
-  intro z hzW hzo
-  by_contra hne
-  obtain ⟨u, huu, hbu, cc, hcc⟩ := polar_decomposition hbdd z
-  have huW : u ∈ W := by
-    refine mem_orthoCompl_of_unTendsto (l := atTop) V (fun N => cc N • z)
-      (fun N => ?_) hcc
-    intro w hw
-    rw [CStarModule.inner_op_smul_left, hzW w hw, zero_mul]
-  have hzz : (inner ℬ z z : ℬ) ≠ 0 := fun h0 =>
-    hne ((CStarModule.inner_self (A := ℬ)).mp h0)
-  have hbne : CFC.sqrt (inner ℬ z z : ℬ) ≠ 0 := by
-    intro h0
-    refine hzz ?_
-    rw [← CFC.sqrt_mul_sqrt_self (inner ℬ z z : ℬ)
-      CStarModule.inner_self_nonneg, h0, mul_zero]
-  have hqproj : IsStarProjection (inner ℬ u u : ℬ) := by
-    rw [huu]; exact (ceill_basic_1 _).1.1
-  have hqne : (inner ℬ u u : ℬ) ≠ 0 := by
-    rw [huu]
-    intro h0
-    have h1 := (ceill_basic_1 (CFC.sqrt (inner ℬ z z : ℬ))).1.2
-    rw [h0, mul_zero] at h1
-    exact hbne h1.symm
-  have horthu : ∀ y ∈ E, (inner ℬ y u : ℬ) = 0 := fun y hy =>
-    inner_eq_zero_of_polar huu hbu (hzo y hy)
-  have huE : u ∉ E := fun h => hqne (horthu u h)
-  have hEu : (insert u E) ∈ {E' : Set X | E' ⊆ W ∧
-      (∀ y ∈ E', ∀ z ∈ E', y ≠ z → (inner ℬ y z : ℬ) = 0)
-      ∧ ∀ y ∈ E', IsStarProjection (inner ℬ y y : ℬ)
-        ∧ (inner ℬ y y : ℬ) ≠ 0} := by
-    refine ⟨?_, ?_, ?_⟩
-    · rintro y (rfl | hy)
-      · exact huW
-      · exact hEW hy
-    · rintro y (rfl | hy) z (rfl | hz) hne'
-      · exact absurd rfl hne'
-      · have h5 := congrArg star (horthu z hz)
-        rwa [CStarModule.star_inner, star_zero] at h5
-      · exact horthu y hy
-      · exact hEorth y hy z hz hne'
-    · rintro y (rfl | hy)
-      · exact ⟨hqproj, hqne⟩
-      · exact hEproj y hy
-  exact huE (hEmax.2 hEu (Set.subset_insert u E) (Set.mem_insert u E))
+  obtain ⟨E, -, hEW, hEorth, hEproj, hEmax⟩ :=
+    exists_max_orthonormal_ext hX (orthoCompl ℬ V)
+      (fun z hz c u hu =>
+        mem_orthoCompl_of_unTendsto (l := atTop) V (fun N => c N • z)
+          (fun N w hw => by
+            rw [CStarModule.inner_op_smul_left, hz w hw, zero_mul]) hu)
+      ∅ (Set.empty_subset _) (fun y hy => absurd hy (Set.notMem_empty y))
+      (fun y hy => absurd hy (Set.notMem_empty y))
+  exact ⟨E, hEW, hEorth, hEproj, hEmax⟩
 
 /-! ### Projection arithmetic for **162V** -/
 

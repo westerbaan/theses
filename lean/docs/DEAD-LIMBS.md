@@ -359,13 +359,13 @@ Zero consumers.
 The argument it contains — the orthogonal projection `P` onto `D^⊥⊥` fixes the
 image, so `P` and `id` both factor `η` through itself, so the uniqueness half
 of the universal property gives `P = id` — is written out a **second** time
-inside `ext_tensor_dense` (**164II**.1, `SelfDual.lean:7948`), whose own doc
+inside `ext_tensor_dense` (**164II**.1, `SelfDual.lean:8013`), whose own doc
 comment says so in as many words:
 
 > "its place is taken by the projection argument of **163II**
 > (`selfdual_compl_defining_dense`)"
 
-and a **third** time inside `paschke_tprod_dense` (`SelfDual.lean:9863`), whose
+and a **third** time inside `paschke_tprod_dense` (`SelfDual.lean:9935`), whose
 doc says "This is the Paschke-module analogue of `selfdual_compl_defining_dense`
 (**163II**) and of `ext_tensor_dense` (**164II**.1), and it is the easiest of
 the three". A fourth site, the `section TensorDense` header at `:6245`, says
@@ -581,7 +581,7 @@ time under a different name.
 > estimate behind it, `|ω((⋁D−d)a)| ≤ ω(⋁D−d)^½ ω(a*(⋁D−d)a)^½`, whose second
 > factor is *eventually* bounded because `a*(⋁D−d)a` decreases."
 
-**166II** `ultranorm_continuity_ext_tensor` (`B/Dils/SelfDual.lean:9537`):
+**166II** `ultranorm_continuity_ext_tensor` (`B/Dils/SelfDual.lean:9598`):
 
 > "**166III** is the proof; transcribed below, with its appeal to **44III**
 > `vanishing_effects` replaced by the order estimate `Ω(⟨d,d⟩ ⊗ ⟨yα,yα⟩) ≤ M² ·
@@ -615,7 +615,7 @@ the same point, which is the 123I shape.
 | 4XIII | `positive_2x2matrix_2` | `A/CStar/Basic.lean:284` | 67 | 1/2 |
 | 82I | `polar_decomposition_2` | `A/VN/Division.lean:3446` | 55 | 3/4 |
 | 156II | `paschke_injective` | `B/Dils/Paschke.lean:3531` | 48 | 2/3 |
-| 160IV | `hilbmod_projthm_3` | `B/Dils/SelfDual.lean:1387` | 45 | 2/3 |
+| 160IV | `hilbmod_projthm_3` | `B/Dils/SelfDual.lean:1535` | 45 | 2/3 |
 | 96III | `ncp_uwlim_2` | `A/Proc/Measurement.lean:1797` | 39 | 2/3 |
 | 23II | `sqrt_lemma_monotone` | `A/CStar/Positive.lean:6254` | 35 | 3/6 |
 | 154III | `existence_paschke_2` | `B/Dils/Paschke.lean:1373` | 32 | 13/14 |
@@ -1334,7 +1334,7 @@ the filters, all unrowed by `lean_name`):
   corner — a sanity anchor for the definitions", i.e. class 2, a non-vacuity
   check), `isPureMap_of_isFilter` (`Pure.lean:2388` names it beside
   `isPureMap_of_isCorner`, and it is the filter half of **170I**'s "filters and
-  corners are pure"), `vn_effObj_iso` (`VNExamples.lean:6216`, "what the eight
+  corners are pure"), `vn_effObj_iso` (`VNExamples.lean:6383`, "what the eight
   examples downstream actually use is … the *uniqueness* statement
   `vn_effObj_iso`, which is proved" — and again at `:2127`), and
   `modularPair_data` (`StandardSubspace.lean:650`).
@@ -1433,7 +1433,7 @@ limb.
 | `hilb_tensor_basic_2` | 109IV.2 | `49a49f0` | 110III's proof, `A/Proc/Tensor.lean:679` |
 | `triple_tensor` | 119II | `49a49f0` | 119IV `isTensorProduct_assoc`, `Tensor.lean:10681` |
 | `perp_sharp_is_orth` | 213III | `49a49f0` | `B/Eff/Comparisons.lean:600` |
-| `ultranormcontstruct_smul` | 148III.3 | `027dc77` | `ext_tensor_dense` (164II.1), `B/Dils/SelfDual.lean:7948` |
+| `ultranormcontstruct_smul` | 148III.3 | `027dc77` | `ext_tensor_dense` (164II.1), `B/Dils/SelfDual.lean:8013` |
 | `dagger_of_iso_adjoint` | 216IX.1 | `0f036ad` | `B/Eff/Dagger.lean:528` |
 | `paschke_pure` | 171VII | `7aa3dc0` | `pure_iff_stinespring_surjective`, `B/Dils/Pure.lean:4553` |
 
