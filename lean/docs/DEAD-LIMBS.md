@@ -403,7 +403,7 @@ this section's premise was wrong**
 > it**.  It belongs in §6 (genuinely terminal), not here.
 >
 > Two further corrections.  The row's staleness is smaller than claimed below:
-> `nmiu_image` calls 69IVa `nmiu_factors` **once** (`Projections.lean:7013`);
+> `nmiu_image` calls 69IVa `nmiu_factors` **once** (`Projections.lean:7044`);
 > the "three times" counted the whole file, two of them inside
 > `nmiu_factors_maps`.  And the universe obstacle binds **wider** than
 > recorded: `isVNSubalgebra_range` and the three auxiliaries its proof calls
@@ -609,7 +609,7 @@ the same point, which is the 123I shape.
 
 | point | declaration | file:line | lines | live siblings |
 |---|---|---|---|---|
-| 118II | `cceil_tensor` | `A/Proc/Tensor.lean:9748` | 134 | 1/2 |
+| 118II | `cceil_tensor` | `A/Proc/Tensor.lean:10008` | 134 | 1/2 |
 | 81IX | `div_usc_ball` | `A/VN/Division.lean:2975` | 114 | 4/5 |
 | 106I | `uniqueness_sequential_product_exists` | `A/Proc/Measurement.lean:8928` | 79 | 1/3 |
 | 4XIII | `positive_2x2matrix_2` | `A/CStar/Basic.lean:284` | 67 | 1/2 |
@@ -830,7 +830,7 @@ the pool, but the earlier reading stands.
 **Two more dead declarations are class 3 by their own doc comment but carry a
 DISP tag, so they stay:**
 
-* `atomicTypeI_tensorBsurjectivity` (**125eIII**), `A/Proc/QuantumLambda.lean:5536`.
+* `atomicTypeI_tensorBsurjectivity` (**125eIII**), `A/Proc/QuantumLambda.lean:7590`.
   Its doc now reads: the `←` half "was the one open at the time and **is now
   proved in general at the end of this file** (`tensorBsurjectivity`), from
   125VIIb `tensor_preimage`." Superseded by its own general form, exactly as the
@@ -1012,8 +1012,8 @@ deleted:
 |---|---|
 | `mem_vnComm_top` | `TensorTransport.lean:735`, `mem_vnComm_top.mp hb` |
 | `le_vnComm_comm` | `Commutation.lean:189`, `le_vnComm_comm.mpr …` (and 2 more) |
-| `summable_diagTerm` | `Tensor.lean:7194`, `summable_diagTerm.hasSum` |
-| `continuous_diagChi` | `Tensor.lean:7208`, `continuous_diagChi.comp hcont` |
+| `summable_diagTerm` | `Tensor.lean:7433`, `summable_diagTerm.hasSum` |
+| `continuous_diagChi` | `Tensor.lean:7453`, `continuous_diagChi.comp hcont` |
 | `Corner.isClosed_cornerSet` | `Measurement.lean:597`, `isClosed_cornerSet.isComplete` |
 | `IsCorner.isStarProjection` | `CornerTensor.lean:106`, `h.isStarProjection.isIdempotentElem` — **suffix and prefix at once** |
 | `isUnitaryCLM_one` | `CommutationAmplify.lean:374`, `isUnitaryCLM_one.opTensor …` |
@@ -1431,7 +1431,7 @@ limb.
 | limb | point | closed by | consumer |
 |---|---|---|---|
 | `hilb_tensor_basic_2` | 109IV.2 | `49a49f0` | 110III's proof, `A/Proc/Tensor.lean:679` |
-| `triple_tensor` | 119II | `49a49f0` | 119IV `isTensorProduct_assoc`, `Tensor.lean:10681` |
+| `triple_tensor` | 119II | `49a49f0` | 119IV `isTensorProduct_assoc`, `Tensor.lean:10937` |
 | `perp_sharp_is_orth` | 213III | `49a49f0` | `B/Eff/Comparisons.lean:600` |
 | `ultranormcontstruct_smul` | 148III.3 | `027dc77` | `ext_tensor_dense` (164II.1), `B/Dils/SelfDual.lean:8013` |
 | `dagger_of_iso_adjoint` | 216IX.1 | `0f036ad` | `B/Eff/Dagger.lean:528` |

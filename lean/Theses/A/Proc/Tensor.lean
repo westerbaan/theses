@@ -5673,16 +5673,363 @@ variable [VonNeumannAlgebra A] [VonNeumannAlgebra B] [VonNeumannAlgebra C]
 proc.tex:3210 bounds `β_⊙` for `β(a,b) = f(a) ⊗ g(b)` through the inequality
 `β_⊙(s)* β_⊙(s) ≤ ‖f‖‖g‖ β_⊙(s* s)`, which it derives from **34XIV**
 `cp-cs` applied to the amplification `M_n f` and the row matrix
-`A = (a₁ … a_n; 0)`.  We take the same inequality but avoid amplifying `f`:
-`cp_cs_sum` is `cp-cs` for a *vector* of arguments (proved by applying
-`cstar_positive_2x2matrix` to the 2×2 compression of the positive matrix
-`(f(vᵢ* vⱼ))` along `v = (a₁,…,a_n,1)`), and `tmap_cs` then splits
+`A = (a₁ … a_n; 0)`.  That is the route taken here: `cp_cs_matrix` below is
+the printed inequality `(M_nf)(A)* (M_nf)(A) ≤ ‖(M_nf)(1)‖ (M_nf)(A* A)`
+read off entrywise, and `tmap_cs` feeds it, and its twin for `g`, to the
+printed entrywise tensor `M_n ⊗` and `h(C) = ∑_{ij} C_{ij}`: it splits
 `‖f(1)‖‖g(1)‖ Q ⊗ Q' − P ⊗ P'` into `P⊗R' + R⊗P' + R⊗R'` with
 `R = ‖f(1)‖Q − P ≥ 0`, each summand positive by
 `Theses.A.CStar.matBilin_nonneg_of_mi` (**113II**+**113IV** for the
-miu-bilinear `⊗`).  This replaces the thesis's `M_n ⊗` bookkeeping. -/
+miu-bilinear `⊗`) — the `M_n ⊗` bookkeeping in the shape the sum
+formulation of matrix positivity takes.  `cp_cs_sum`, `cp-cs` for a
+*vector* of arguments, is that same matrix inequality tested on one
+vector. -/
+
+/-! ### The printed route: the amplification `M_n f`
+
+proc.tex:3230–3277 derives the inequality `β_⊙(s)* β_⊙(s) ≤ ‖f‖‖g‖ β_⊙(s* s)`
+above from **34XIV** `cp-cs` applied to the *amplification* `M_n f` and the
+row matrix `A = (a₁ … a_n; 0)`: "we make these arrangements so that we may
+apply the inequality `(M_nf)(A)* (M_nf)(A) ≤ ‖(M_nf)(1)‖ (M_nf)(A* A)`,
+easily derived from `cp-cs`", "noting also `‖(M_nf)(1)‖ = ‖f(1)‖ = ‖f‖`".
+The declarations here are that derivation.  `M_n f` itself is **33III**
+(Mathlib's `CStarMatrix.mapₗ`, recorded as `mnf_linear`/`mnf_inherits` in
+`A/CStar/Matrices.lean`); what has to be built is its complete positivity —
+which the sum form of `IsCompletelyPositiveMap` (**34II**.1) makes a
+hands-on `M_K(M_N ·) ≅ M_{KN}(·)` reindexing — the bound on `‖(M_nf)(1)‖`,
+and the row matrix with its Gram matrix `A* A = (aᵢ* aⱼ)`.
+
+The result is `cp_cs_matrix`, the printed inequality read off entrywise.
+`tmap_cs` below feeds it, and its twin for `g`, to the printed `M_n ⊗`
+and `h(C) = ∑_{ij} C_{ij}`. -/
+
+section Amplification
+
+variable {A₆ B₆ : Type*} [CStarAlgebra A₆] [PartialOrder A₆] [StarOrderedRing A₆]
+  [CStarAlgebra B₆] [PartialOrder B₆] [StarOrderedRing B₆]
+
+open Theses.A.CStar
+
+/-! Finite-sum reorderings used by `ampl_cp`. -/
+
+private theorem sum3_swap {M₆ : Type*} [AddCommMonoid M₆]
+    {ι₁ ι₂ κ : Type*} [Fintype ι₁] [Fintype ι₂] [Fintype κ]
+    (X : ι₁ → ι₂ → κ → M₆) :
+    ∑ p, ∑ q, ∑ r, X p q r = ∑ r, ∑ p, ∑ q, X p q r := by
+  have h1 : ∀ p, ∑ q, ∑ r, X p q r = ∑ r, ∑ q, X p q r := fun _ => Finset.sum_comm
+  simp only [h1]
+  exact Finset.sum_comm
+
+private theorem sum4_swap {M₆ : Type*} [AddCommMonoid M₆]
+    {ι₁ ι₂ κ₁ κ₂ : Type*} [Fintype ι₁] [Fintype ι₂]
+    [Fintype κ₁] [Fintype κ₂] (F : ι₁ → ι₂ → κ₁ → κ₂ → M₆) :
+    ∑ p, ∑ q, ∑ r, ∑ s, F p q r s = ∑ r, ∑ s, ∑ p, ∑ q, F p q r s := by
+  rw [sum3_swap (fun p q r => ∑ s, F p q r s)]
+  exact Finset.sum_congr rfl fun r _ => sum3_swap (fun p q s => F p q r s)
+
+private theorem sum5_last_out {M₆ : Type*} [AddCommMonoid M₆]
+    {ι₁ ι₂ ι₃ ι₄ κ : Type*} [Fintype ι₁] [Fintype ι₂]
+    [Fintype ι₃] [Fintype ι₄] [Fintype κ] (G : ι₁ → ι₂ → ι₃ → ι₄ → κ → M₆) :
+    ∑ a, ∑ b, ∑ c, ∑ d, ∑ t, G a b c d t
+      = ∑ t, ∑ a, ∑ b, ∑ c, ∑ d, G a b c d t := by
+  have e1 : ∀ a b c, ∑ d, ∑ t, G a b c d t = ∑ t, ∑ d, G a b c d t :=
+    fun _ _ _ => Finset.sum_comm
+  simp only [e1]
+  have e2 : ∀ a b, ∑ c, ∑ t, ∑ d, G a b c d t = ∑ t, ∑ c, ∑ d, G a b c d t :=
+    fun _ _ => Finset.sum_comm
+  simp only [e2]
+  have e3 : ∀ a, ∑ b, ∑ t, ∑ c, ∑ d, G a b c d t = ∑ t, ∑ b, ∑ c, ∑ d, G a b c d t :=
+    fun _ => Finset.sum_comm
+  simp only [e3]
+  exact Finset.sum_comm
+
+/-- `M_N f`, the amplification of **33III**, as a linear map. -/
+private noncomputable def ampl (f : A₆ →ₗ[ℂ] B₆) (N : ℕ) :
+    CStarMatrix (Fin N) (Fin N) A₆ →ₗ[ℂ] CStarMatrix (Fin N) (Fin N) B₆ :=
+  CStarMatrix.mapₗ (R := ℂ) (S := ℂ) f
+
+omit [PartialOrder A₆] [StarOrderedRing A₆] [PartialOrder B₆] [StarOrderedRing B₆] in
+@[simp] private theorem ampl_apply (f : A₆ →ₗ[ℂ] B₆) (N : ℕ)
+    (M : CStarMatrix (Fin N) (Fin N) A₆) (i j : Fin N) :
+    ampl f N M i j = f (M i j) := rfl
+
+/-- `M_N f` is positive when `f` is completely positive (condition 1 of
+**34II** for `f`). -/
+private theorem ampl_pos (f : A₆ →ₗ[ℂ] B₆) (hf : IsCompletelyPositiveMap f) (N : ℕ) :
+    IsPositiveMap (ampl f N) := by
+  have h : ∀ (M : ℕ) (X : CStarMatrix (Fin M) (Fin M) A₆), 0 ≤ X → 0 ≤ X.map ⇑f :=
+    ((cp_iff f).out 0 1).mp hf
+  intro X hX
+  exact h N X hX
+
+/-- Evaluation at an entry, as an additive map: `Matrix.sum_apply` does not
+fire on the `CStarMatrix` synonym. -/
+private def evalAddHom {N : ℕ} (p q : Fin N) :
+    CStarMatrix (Fin N) (Fin N) B₆ →+ B₆ where
+  toFun M := M p q
+  map_zero' := rfl
+  map_add' _ _ := rfl
+
+omit [PartialOrder B₆] [StarOrderedRing B₆] in
+private theorem matrix_sum_apply {N : ℕ} {ι : Type*} [Fintype ι]
+    (F : ι → CStarMatrix (Fin N) (Fin N) B₆) (p q : Fin N) :
+    (∑ i, F i) p q = ∑ i, F i p q :=
+  map_sum (evalAddHom p q) F Finset.univ
+
+omit [PartialOrder B₆] [StarOrderedRing B₆] in
+/-- `∑_{pq} c_p* (B₁* Y B₂)_{pq} c_q = ∑_{rs} (B₁c)_r* Y_{rs} (B₂c)_s`: the
+two `b`-factors of the defining sum absorbed into the test vector. -/
+private theorem sandwich_entry {N : ℕ} (B₁ B₂ Y : CStarMatrix (Fin N) (Fin N) B₆)
+    (c : Fin N → B₆) :
+    ∑ p, ∑ q, star (c p) * (star B₁ * Y * B₂) p q * c q
+      = ∑ r, ∑ s, star (∑ p, B₁ r p * c p) * Y r s * (∑ q, B₂ s q * c q) := by
+  have hexp : ∀ p q : Fin N, (star B₁ * Y * B₂) p q
+      = ∑ r, ∑ s, star (B₁ r p) * Y r s * B₂ s q := by
+    intro p q
+    rw [CStarMatrix.mul_apply]
+    have h : ∀ s : Fin N, (star B₁ * Y) p s = ∑ r, star (B₁ r p) * Y r s := fun s => by
+      rw [CStarMatrix.mul_apply]; rfl
+    simp only [h, Finset.sum_mul]
+    exact Finset.sum_comm
+  have hL : ∑ p, ∑ q, star (c p) * (star B₁ * Y * B₂) p q * c q
+      = ∑ p, ∑ q, ∑ r, ∑ s,
+          star (c p) * (star (B₁ r p) * Y r s * B₂ s q) * c q := by
+    refine Finset.sum_congr rfl fun p _ => Finset.sum_congr rfl fun q _ => ?_
+    rw [hexp p q, Finset.mul_sum, Finset.sum_mul]
+    refine Finset.sum_congr rfl fun r _ => ?_
+    rw [Finset.mul_sum, Finset.sum_mul]
+  rw [hL, sum4_swap]
+  refine Finset.sum_congr rfl fun r _ => Finset.sum_congr rfl fun s _ => ?_
+  rw [star_sum]
+  simp only [star_mul]
+  rw [Finset.sum_mul, Finset.sum_mul]
+  refine Finset.sum_congr rfl fun p _ => ?_
+  rw [Finset.mul_sum]
+  refine Finset.sum_congr rfl fun q _ => ?_
+  noncomm_ring
+
+/-- **`M_N f` is completely positive when `f` is** — the fact the printed
+proof needs before it may cite `cp-cs` at `M_n f`.  Positivity of
+`∑_{ij} B_i* (M_N f)(A_i* A_j) B_j` in `M_K(B₆)` is tested on a vector
+`c ∈ B₆^N` by **33II**.1; the two `B`-factors are absorbed into the test
+vector (`sandwich_entry`), and the resulting sum over `Fin K × Fin N` is the
+defining sum for `f` at `Fin (K*N)`, transported along `finProdFinEquiv`. -/
+private theorem ampl_cp (f : A₆ →ₗ[ℂ] B₆) (hf : IsCompletelyPositiveMap f) (N : ℕ) :
+    IsCompletelyPositiveMap (ampl f N) := by
+  classical
+  intro K a b
+  rw [cstar_matrix_positive_iff]
+  intro c
+  obtain ⟨d, hd⟩ : ∃ d : Fin K → Fin N → B₆, ∀ i r, d i r = ∑ p, (b i) r p * c p :=
+    ⟨fun i r => ∑ p, (b i) r p * c p, fun _ _ => rfl⟩
+  have hentry : ∀ p q : Fin N,
+      star (c p) *
+          (∑ i, ∑ j, star (b i) * (ampl f N) (star (a i) * a j) * b j) p q * c q
+        = ∑ i, ∑ j, star (c p) *
+            (star (b i) * (ampl f N) (star (a i) * a j) * b j) p q * c q := by
+    intro p q
+    have hsum : (∑ i, ∑ j, star (b i) * (ampl f N) (star (a i) * a j) * b j) p q
+        = ∑ i, ∑ j, (star (b i) * (ampl f N) (star (a i) * a j) * b j) p q := by
+      rw [matrix_sum_apply]
+      exact Finset.sum_congr rfl fun i _ => matrix_sum_apply _ p q
+    rw [hsum, Finset.mul_sum, Finset.sum_mul]
+    refine Finset.sum_congr rfl fun i _ => ?_
+    rw [Finset.mul_sum, Finset.sum_mul]
+  rw [Finset.sum_congr rfl fun p _ => Finset.sum_congr rfl fun q _ => hentry p q,
+    sum4_swap]
+  have hsand : ∀ i j : Fin K,
+      ∑ p, ∑ q, star (c p) *
+          (star (b i) * (ampl f N) (star (a i) * a j) * b j) p q * c q
+        = ∑ r, ∑ s, star (d i r) * f ((star (a i) * a j) r s) * d j s := by
+    intro i j
+    rw [sandwich_entry (b i) (b j) _ c]
+    simp only [hd]
+    rfl
+  rw [Finset.sum_congr rfl fun i _ => Finset.sum_congr rfl fun j _ => hsand i j]
+  rw [Finset.sum_congr rfl fun i (_ : i ∈ Finset.univ) => Finset.sum_comm
+    (f := fun j r => ∑ s, star (d i r) * f ((star (a i) * a j) r s) * d j s)]
+  have hprod : ∀ (i j : Fin K) (r s : Fin N),
+      star (d i r) * f ((star (a i) * a j) r s) * d j s
+        = ∑ t, star (d i r) * f (star ((a i) t r) * (a j) t s) * d j s := by
+    intro i j r s
+    have h : (star (a i) * a j) r s = ∑ t, star ((a i) t r) * (a j) t s := by
+      rw [CStarMatrix.mul_apply]; rfl
+    rw [h, map_sum, Finset.mul_sum, Finset.sum_mul]
+  simp only [hprod]
+  rw [sum5_last_out]
+  refine Finset.sum_nonneg fun t _ => ?_
+  set e : Fin K × Fin N ≃ Fin (K * N) := finProdFinEquiv with he
+  set G : (Fin K × Fin N) → (Fin K × Fin N) → B₆ := fun z w =>
+    star (d z.1 z.2) * f (star ((a z.1) t z.2) * (a w.1) t w.2) * d w.1 w.2 with hG
+  have hb := hf (K * N) (fun x => (a (e.symm x).1) t (e.symm x).2)
+    (fun x => d (e.symm x).1 (e.symm x).2)
+  have hbG : ∑ x : Fin (K * N), ∑ y : Fin (K * N), G (e.symm x) (e.symm y)
+      = ∑ i, ∑ r, ∑ j, ∑ s, G (i, r) (j, s) := by
+    have step1 : ∀ z : Fin K × Fin N,
+        ∑ y : Fin (K * N), G z (e.symm y) = ∑ w : Fin K × Fin N, G z w :=
+      fun z => Equiv.sum_comp e.symm (G z)
+    rw [Finset.sum_congr rfl fun x (_ : x ∈ Finset.univ) => step1 (e.symm x)]
+    rw [Equiv.sum_comp e.symm (fun z => ∑ w : Fin K × Fin N, G z w)]
+    rw [Fintype.sum_prod_type (f := fun z => ∑ w : Fin K × Fin N, G z w)]
+    exact Finset.sum_congr rfl fun i _ => Finset.sum_congr rfl fun r _ =>
+      Fintype.sum_prod_type (f := fun w => G (i, r) w)
+  rw [← hbG]
+  exact hb
+
+/-- `le_norm_smul_one` with the scalar read in `ℂ`. -/
+private theorem le_norm_smul_one_c {A₇ : Type*} [CStarAlgebra A₇] [PartialOrder A₇]
+    [StarOrderedRing A₇] {a : A₇} (ha : 0 ≤ a) : a ≤ ((‖a‖ : ℝ) : ℂ) • (1 : A₇) := by
+  have h := Theses.A.VN.le_norm_smul_one ha
+  rwa [← IsScalarTower.algebraMap_smul ℂ (‖a‖ : ℝ) (1 : A₇), Complex.coe_algebraMap] at h
+
+/-- `0 ≤ z ≤ r·1` bounds `‖z‖` by `r`.  (`CStarMatrix` carries no
+`NormOneClass` instance, so `‖1‖ ≤ 1` is argued from `‖1‖ = ‖1‖²`.) -/
+private theorem norm_le_of_le_smul_one {A₇ : Type*} [CStarAlgebra A₇] [PartialOrder A₇]
+    [StarOrderedRing A₇] {z : A₇} {r : ℝ} (hr : 0 ≤ r) (hz : 0 ≤ z)
+    (h : z ≤ (r : ℂ) • (1 : A₇)) : ‖z‖ ≤ r := by
+  have h1 : ‖z‖ ≤ ‖((r : ℂ)) • (1 : A₇)‖ :=
+    CStarAlgebra.norm_le_norm_of_nonneg_of_le hz h
+  have h2 : ‖((r : ℂ)) • (1 : A₇)‖ = r * ‖(1 : A₇)‖ := by
+    rw [norm_smul, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg hr]
+  have h3 : ‖(1 : A₇)‖ ≤ 1 := by
+    have h : ‖(1 : A₇)‖ * ‖(1 : A₇)‖ = ‖(1 : A₇)‖ := by
+      have := CStarRing.norm_star_mul_self (x := (1 : A₇))
+      simpa using this.symm
+    nlinarith [norm_nonneg (1 : A₇)]
+  nlinarith [norm_nonneg z, h1, h2.le, h2.ge]
+
+/-- The printed `‖(M_N f)(1)‖ = ‖f(1)‖`, in the direction the argument uses:
+`(M_N f)(1)` is the diagonal matrix `diag(f(1),…,f(1))`, and `0 ≤ f(1) ≤
+‖f(1)‖·1` makes it lie between `0` and `‖f(1)‖·1` in `M_N(B₆)`. -/
+private theorem ampl_one_norm_le (f : A₆ →ₗ[ℂ] B₆) (hf : IsCompletelyPositiveMap f)
+    (N : ℕ) : ‖(ampl f N) 1‖ ≤ ‖f 1‖ := by
+  have hy : (0 : B₆) ≤ f 1 := by
+    have h := hf 1 (fun _ => (1 : A₆)) (fun _ => (1 : B₆))
+    simpa using h
+  refine norm_le_of_le_smul_one (norm_nonneg _)
+    (ampl_pos f hf N 1 zero_le_one) ?_
+  rw [← sub_nonneg]
+  have hdiff : ((‖f 1‖ : ℝ) : ℂ) • (1 : CStarMatrix (Fin N) (Fin N) B₆)
+        - (ampl f N) 1
+      = CStarMatrix.ofMatrix (Matrix.of fun i j =>
+          if i = j then ((‖f 1‖ : ℝ) : ℂ) • (1 : B₆) - f 1 else 0) := by
+    ext i j
+    show ((‖f 1‖ : ℝ) : ℂ) • ((1 : CStarMatrix (Fin N) (Fin N) B₆) i j)
+        - f ((1 : CStarMatrix (Fin N) (Fin N) A₆) i j) = _
+    rw [CStarMatrix.one_apply, CStarMatrix.one_apply]
+    show _ = if i = j then ((‖f 1‖ : ℝ) : ℂ) • (1 : B₆) - f 1 else 0
+    split_ifs <;> simp
+  rw [hdiff, cstar_matrix_positive_iff]
+  intro c
+  have hz : (0 : B₆) ≤ ((‖f 1‖ : ℝ) : ℂ) • (1 : B₆) - f 1 :=
+    sub_nonneg.mpr (le_norm_smul_one_c hy)
+  refine Finset.sum_nonneg fun i _ => ?_
+  have h : ∀ j : Fin N, star (c i) *
+      (CStarMatrix.ofMatrix (Matrix.of fun i j =>
+        if i = j then ((‖f 1‖ : ℝ) : ℂ) • (1 : B₆) - f 1 else 0)) i j * c j
+      = if i = j then star (c i) * (((‖f 1‖ : ℝ) : ℂ) • (1 : B₆) - f 1) * c i
+        else 0 := by
+    intro j
+    show star (c i) * (if i = j then ((‖f 1‖ : ℝ) : ℂ) • (1 : B₆) - f 1 else 0) * c j = _
+    by_cases hij : i = j
+    · subst hij; simp
+    · simp [hij]
+  rw [Finset.sum_congr rfl fun j _ => h j, Finset.sum_ite_eq Finset.univ i]
+  simp only [Finset.mem_univ, ite_true]
+  exact star_left_conjugate_nonneg hz (c i)
+
+/-- The inequality proc.tex:3266–3268 says is "easily derived from `cp-cs`":
+`(M_N f)(X)* (M_N f)(X) ≤ ‖(M_N f)(1)‖ (M_N f)(X* X)`, which is **34XIV**
+for the completely positive map `M_N f` at `a := X`, `b := 1`. -/
+private theorem ampl_cs {N : ℕ} (f : A₆ →ₗ[ℂ] B₆) (hf : IsCompletelyPositiveMap f)
+    (X : CStarMatrix (Fin N) (Fin N) A₆) :
+    star ((ampl f N) X) * (ampl f N) X
+      ≤ ‖(ampl f N) 1‖ • (ampl f N) (star X * X) := by
+  have hi : ∀ x : A₆, f (star x) = star (f x) :=
+    cstar_p_implies_i f (astara_pos_basic_2_cp f hf)
+  have key := cp_cs (ampl f N) (ampl_pos f hf N)
+    (fun x y => ampl_cp f hf N 2 x y) X 1
+  rw [star_one, one_mul, mul_one, one_mul] at key
+  have hstar : (ampl f N) (star X) = star ((ampl f N) X) :=
+    (mnf_inherits (N := N) f).2.2 hi X
+  rwa [hstar] at key
+
+/-- Monotonicity of `r • Y` in the real scalar `r`, for positive `Y`. -/
+private theorem smul_le_smul_norm {A₇ : Type*} [CStarAlgebra A₇] [PartialOrder A₇]
+    [StarOrderedRing A₇] {r s : ℝ} (h : r ≤ s) {Y : A₇} (hY : 0 ≤ Y) :
+    r • Y ≤ s • Y := by
+  rw [← sub_nonneg, ← sub_smul]
+  exact smul_nonneg (by linarith) hY
+
+/-- The printed row matrix `A = (a₁ … a_N; 0)`. -/
+private noncomputable def rowMat {N : ℕ} [NeZero N] (a : Fin N → A₆) :
+    CStarMatrix (Fin N) (Fin N) A₆ :=
+  CStarMatrix.ofMatrix (Matrix.of fun i j => if i = (0 : Fin N) then a j else 0)
+
+omit [PartialOrder A₆] [StarOrderedRing A₆] [PartialOrder B₆] [StarOrderedRing B₆] in
+private theorem rowMat_apply {N : ℕ} [NeZero N] (a : Fin N → A₆) (i j : Fin N) :
+    rowMat a i j = if i = (0 : Fin N) then a j else 0 := rfl
+
+omit [PartialOrder A₆] [StarOrderedRing A₆] [PartialOrder B₆] [StarOrderedRing B₆] in
+private theorem ampl_rowMat {N : ℕ} [NeZero N] (f : A₆ →ₗ[ℂ] B₆) (a : Fin N → A₆) :
+    (ampl f N) (rowMat a) = rowMat (fun i => f (a i)) := by
+  ext i j
+  show f (rowMat a i j) = _
+  rw [rowMat_apply, rowMat_apply]
+  split_ifs <;> simp
+
+omit [PartialOrder A₆] [StarOrderedRing A₆] [PartialOrder B₆] [StarOrderedRing B₆] in
+/-- The Gram matrix of the row matrix: `(A* A)_{ij} = aᵢ* aⱼ`. -/
+private theorem rowMat_gram {N : ℕ} [NeZero N] (a : Fin N → A₆) (i j : Fin N) :
+    (star (rowMat a) * rowMat a) i j = star (a i) * a j := by
+  rw [CStarMatrix.mul_apply]
+  have h : ∀ t : Fin N, (star (rowMat a)) i t * (rowMat a) t j
+      = if t = (0 : Fin N) then star (a i) * a j else 0 := by
+    intro t
+    show star ((rowMat a) t i) * (rowMat a) t j = _
+    rw [rowMat_apply, rowMat_apply]
+    split_ifs <;> simp
+  rw [Finset.sum_congr rfl fun t _ => h t, Finset.sum_ite_eq' Finset.univ (0 : Fin N)]
+  simp
+
+/-- **The cp-Cauchy–Schwarz step of 115II as printed** (proc.tex:3262–3271):
+`cp-cs` at the amplification `M_N f` and the row matrix `A = (a₁ … a_N; 0)`,
+read off entrywise through `(A* A)_{ij} = aᵢ* aⱼ` and `‖(M_Nf)(1)‖ ≤ ‖f(1)‖`.
+(For `N = 0` there is no row matrix and both sides are the empty matrix.) -/
+private theorem cp_cs_matrix {N : ℕ} (f : A₆ →ₗ[ℂ] B₆)
+    (hf : IsCompletelyPositiveMap f) (a : Fin N → A₆) :
+    CStarMatrix.ofMatrix (Matrix.of fun i j => star (f (a i)) * f (a j))
+      ≤ (‖f 1‖ : ℝ) •
+        CStarMatrix.ofMatrix (Matrix.of fun i j => f (star (a i) * a j)) := by
+  rcases Nat.eq_zero_or_pos N with rfl | hN
+  · rw [← sub_nonneg, cstar_matrix_positive_iff]
+    intro c
+    simp
+  · have : NeZero N := ⟨hN.ne'⟩
+    have key := ampl_cs f hf (rowMat a)
+    have hL : star ((ampl f N) (rowMat a)) * (ampl f N) (rowMat a)
+        = CStarMatrix.ofMatrix (Matrix.of fun i j => star (f (a i)) * f (a j)) := by
+      rw [ampl_rowMat]
+      ext i j
+      exact rowMat_gram (fun i => f (a i)) i j
+    have hR : (ampl f N) (star (rowMat a) * rowMat a)
+        = CStarMatrix.ofMatrix (Matrix.of fun i j => f (star (a i) * a j)) := by
+      ext i j
+      show f ((star (rowMat a) * rowMat a) i j) = _
+      rw [rowMat_gram]
+      rfl
+    rw [hL, hR] at key
+    refine key.trans ?_
+    have hcp2 : ∀ (M : ℕ) (x : Fin M → A₆),
+        0 ≤ CStarMatrix.ofMatrix (Matrix.of fun i j => f (star (x i) * x j)) :=
+      ((cp_iff f).out 0 2).mp hf
+    exact smul_le_smul_norm (ampl_one_norm_le f hf N) (hcp2 N a)
+
+end Amplification
 
 open Theses.A.CStar in
+/-- **34XIV** `cp-cs` for a *vector* of arguments: the printed matrix
+inequality `cp_cs_matrix` tested on `c ∈ B₅ⁿ` by **33II**.1. -/
 theorem cp_cs_sum {A₅ B₅ : Type u} [CStarAlgebra A₅] [PartialOrder A₅]
     [StarOrderedRing A₅] [CStarAlgebra B₅] [PartialOrder B₅]
     [StarOrderedRing B₅] (f : A₅ →ₗ[ℂ] B₅)
@@ -5691,93 +6038,44 @@ theorem cp_cs_sum {A₅ B₅ : Type u} [CStarAlgebra A₅] [PartialOrder A₅]
     star (∑ i, f (a i) * c i) * (∑ i, f (a i) * c i)
       ≤ ((‖f 1‖ : ℝ) : ℂ) • ∑ i, ∑ j, star (c i) * f (star (a i) * a j) * c j := by
   classical
-  set z : B₅ := ∑ i, f (a i) * c i with hz
-  set Q : B₅ := ∑ i, ∑ j, star (c i) * f (star (a i) * a j) * c j with hQ
-  set v : Fin (n + 1) → A₅ := Fin.snoc a 1 with hv
-  have hfstar : ∀ x : A₅, f (star x) = star (f x) :=
-    cstar_p_implies_i f (astara_pos_basic_2_cp f hf)
-  have hcp2 : ∀ (N : ℕ) (x : Fin N → A₅),
-      (0 : CStarMatrix (Fin N) (Fin N) B₅) ≤
-        CStarMatrix.ofMatrix (Matrix.of fun i j => f (star (x i) * x j)) :=
-    ((cp_iff f).out 0 2).mp hf
-  have hG := hcp2 (n+1) v
-  have hq : ∀ w : Fin (n+1) → B₅,
-      0 ≤ ∑ i, ∑ j, star (w i) * f (star (v i) * v j) * w j := by
-    intro w
-    have h := (cstar_matrix_positive_iff _).mp hG w
-    simpa using h
-  have hstarz : star z = ∑ i, star (c i) * f (star (a i)) := by
-    rw [hz, star_sum]
-    exact Finset.sum_congr rfl fun i _ => by rw [star_mul, hfstar]
-  have hexp : ∀ x y : B₅,
-      ∑ i, ∑ j, star ((Fin.snoc (fun i => c i * x) y : Fin (n+1) → B₅) i) *
-          f (star (v i) * v j) * ((Fin.snoc (fun i => c i * x) y : Fin (n+1) → B₅) j)
-        = star x * Q * x + star x * star z * y
-          + (star y * z * x + star y * f 1 * y) := by
-    intro x y
-    set w : Fin (n+1) → B₅ := Fin.snoc (fun i => c i * x) y with hw
-    have hwc : ∀ i : Fin n, w i.castSucc = c i * x := fun i => by
-      rw [hw]; exact Fin.snoc_castSucc _ _ _
-    have hwl : w (Fin.last n) = y := by rw [hw]; exact Fin.snoc_last _ _
-    have hvc : ∀ i : Fin n, v i.castSucc = a i := fun i => by
-      rw [hv]; exact Fin.snoc_castSucc _ _ _
-    have hvl : v (Fin.last n) = 1 := by rw [hv]; exact Fin.snoc_last _ _
-    have hinner : ∀ i : Fin (n+1),
-        ∑ j, star (w i) * f (star (v i) * v j) * w j
-          = (∑ j : Fin n, star (w i) * f (star (v i) * a j) * (c j * x))
-            + star (w i) * f (star (v i)) * y := by
-      intro i
-      rw [Fin.sum_univ_castSucc]
-      congr 1
-      · exact Finset.sum_congr rfl fun j _ => by rw [hvc, hwc]
-      · rw [hwl, hvl, mul_one]
-    rw [Finset.sum_congr rfl fun i (_ : i ∈ Finset.univ) => hinner i,
-      Finset.sum_add_distrib, Fin.sum_univ_castSucc, Fin.sum_univ_castSucc]
-    have e1 : ∑ i : Fin n, ∑ j : Fin n,
-        star (w i.castSucc) * f (star (v i.castSucc) * a j) * (c j * x)
-          = star x * Q * x := by
-      rw [hQ, Finset.mul_sum, Finset.sum_mul]
+  have hsc : ∀ x : B₅, ((‖f 1‖ : ℝ) : ℂ) • x = (‖f 1‖ : ℝ) • x := fun x => by
+    rw [← IsScalarTower.algebraMap_smul ℂ (‖f 1‖ : ℝ) x, Complex.coe_algebraMap]
+  have hcs := cp_cs_matrix f hf a
+  rw [← sub_nonneg] at hcs
+  have h := (cstar_matrix_positive_iff _).mp hcs c
+  have hentry : ∀ i j : Fin n,
+      star (c i) *
+          ((‖f 1‖ : ℝ) • CStarMatrix.ofMatrix
+              (Matrix.of fun i j => f (star (a i) * a j))
+            - CStarMatrix.ofMatrix
+              (Matrix.of fun i j => star (f (a i)) * f (a j))) i j * c j
+        = ((‖f 1‖ : ℝ) : ℂ) • (star (c i) * f (star (a i) * a j) * c j)
+          - star (c i) * (star (f (a i)) * f (a j)) * c j := by
+    intro i j
+    rw [CStarMatrix.sub_apply, CStarMatrix.smul_apply]
+    show star (c i) * ((‖f 1‖ : ℝ) • f (star (a i) * a j)
+        - star (f (a i)) * f (a j)) * c j = _
+    rw [hsc, mul_sub, sub_mul, mul_smul_comm, smul_mul_assoc]
+  rw [Finset.sum_congr rfl fun i (_ : i ∈ Finset.univ) =>
+    Finset.sum_congr rfl fun j (_ : j ∈ Finset.univ) => hentry i j] at h
+  have hsum : ∑ i, ∑ j, (((‖f 1‖ : ℝ) : ℂ) • (star (c i) * f (star (a i) * a j) * c j)
+        - star (c i) * (star (f (a i)) * f (a j)) * c j)
+      = (((‖f 1‖ : ℝ) : ℂ) • ∑ i, ∑ j, star (c i) * f (star (a i) * a j) * c j)
+        - star (∑ i, f (a i) * c i) * (∑ i, f (a i) * c i) := by
+    rw [Finset.smul_sum]
+    have hL : star (∑ i, f (a i) * c i) * (∑ i, f (a i) * c i)
+        = ∑ i, ∑ j, star (c i) * (star (f (a i)) * f (a j)) * c j := by
+      rw [star_sum, Finset.sum_mul]
       refine Finset.sum_congr rfl fun i _ => ?_
-      rw [Finset.mul_sum, Finset.sum_mul]
+      rw [Finset.mul_sum]
       refine Finset.sum_congr rfl fun j _ => ?_
-      rw [hwc, hvc, star_mul]
+      rw [star_mul]
       noncomm_ring
-    have e2 : ∑ j : Fin n, star (w (Fin.last n)) * f (star (v (Fin.last n)) * a j)
-        * (c j * x) = star y * z * x := by
-      rw [hz, Finset.mul_sum, Finset.sum_mul]
-      refine Finset.sum_congr rfl fun j _ => ?_
-      rw [hwl, hvl, star_one, one_mul]
-      noncomm_ring
-    have e3 : ∑ i : Fin n, star (w i.castSucc) * f (star (v i.castSucc)) * y
-        = star x * star z * y := by
-      rw [hstarz, Finset.mul_sum, Finset.sum_mul]
-      refine Finset.sum_congr rfl fun i _ => ?_
-      rw [hwc, hvc, star_mul]
-      noncomm_ring
-    have e4 : star (w (Fin.last n)) * f (star (v (Fin.last n))) * y
-        = star y * f 1 * y := by
-      rw [hwl, hvl, star_one]
-    rw [e1, e2, e3, e4]
-    abel
-  set M : CStarMatrix (Fin 2) (Fin 2) B₅ :=
-    CStarMatrix.ofMatrix (Matrix.of ![![Q, star z], ![z, f 1]]) with hM
-  have hM00 : M 0 0 = Q := rfl
-  have hM01 : M 0 1 = star z := rfl
-  have hM11 : M 1 1 = f 1 := rfl
-  have hMpos : (0 : CStarMatrix (Fin 2) (Fin 2) B₅) ≤ M := by
-    rw [cstar_matrix_positive_iff]
-    intro e
-    have h := hq ((Fin.snoc (fun i => c i * (e 0)) (e 1) : Fin (n+1) → B₅))
-    rw [hexp (e 0) (e 1)] at h
-    rw [Fin.sum_univ_two, Fin.sum_univ_two, Fin.sum_univ_two]
-    show 0 ≤ star (e 0) * M 0 0 * e 0 + star (e 0) * M 0 1 * e 1
-      + (star (e 1) * M 1 0 * e 0 + star (e 1) * M 1 1 * e 1)
-    rw [hM00, hM01, hM11, show M 1 0 = z from rfl]
-    exact h
-  obtain ⟨-, h2⟩ := cstar_positive_2x2matrix M hMpos
-  rw [hM00, hM01, hM11, star_star] at h2
-  rwa [show (((‖f 1‖ : ℝ) : ℂ)) • Q = (‖f 1‖ : ℝ) • Q from by
-    rw [← IsScalarTower.algebraMap_smul ℂ (‖f 1‖ : ℝ) Q, Complex.coe_algebraMap]]
+    rw [hL, ← Finset.sum_sub_distrib]
+    refine Finset.sum_congr rfl fun i _ => ?_
+    rw [Finset.smul_sum, ← Finset.sum_sub_distrib]
+  rw [hsum] at h
+  exact sub_nonneg.mp h
 
 open Theses.A.CStar in
 /-- The cp-Cauchy–Schwarz step of **115II**. -/
@@ -5822,78 +6120,32 @@ theorem tmap_cs (F : A →ₗ[ℂ] C) (G : B →ₗ[ℂ] D)
       CStarMatrix.ofMatrix (Matrix.of p) := cstar_matrix_star_mul_nonneg _
   have hP'pos : (0 : CStarMatrix (Fin n) (Fin n) D) ≤
       CStarMatrix.ofMatrix (Matrix.of p') := cstar_matrix_star_mul_nonneg _
+  have hsc : ∀ (t : ℝ) (x : C), ((t : ℝ) : ℂ) • x = t • x := fun t x => by
+    rw [← IsScalarTower.algebraMap_smul ℂ t x, Complex.coe_algebraMap]
+  have hsc' : ∀ (t : ℝ) (x : D), ((t : ℝ) : ℂ) • x = t • x := fun t x => by
+    rw [← IsScalarTower.algebraMap_smul ℂ t x, Complex.coe_algebraMap]
+  -- `R = ‖f(1)‖Q − P ≥ 0` is the printed inequality
+  -- `(M_nf)(A)* (M_nf)(A) ≤ ‖(M_nf)(1)‖ (M_nf)(A* A)` at the row matrix.
   have hRpos : (0 : CStarMatrix (Fin n) (Fin n) C) ≤
       CStarMatrix.ofMatrix (Matrix.of r) := by
-    rw [cstar_matrix_positive_iff]
-    intro c
-    have hcs := cp_cs_sum F hF a c
-    have hlhs : star (∑ i, F (a i) * c i) * (∑ i, F (a i) * c i)
-        = ∑ i, ∑ j, star (c i) * p i j * c j := by
-      rw [star_sum, Finset.sum_mul]
-      refine Finset.sum_congr rfl fun i _ => ?_
-      rw [Finset.mul_sum]
-      refine Finset.sum_congr rfl fun j _ => ?_
-      rw [star_mul]
-      show _ = star (c i) * (star (F (a i)) * F (a j)) * c j
-      noncomm_ring
-    have hrhs : K₁ • (∑ i, ∑ j, star (c i) * F (star (a i) * a j) * c j)
-        = ∑ i, ∑ j, star (c i) * q i j * c j := by
-      rw [Finset.smul_sum]
-      refine Finset.sum_congr rfl fun i _ => ?_
-      rw [Finset.smul_sum]
-      refine Finset.sum_congr rfl fun j _ => ?_
-      show K₁ • (star (c i) * F (star (a i) * a j) * c j)
-        = star (c i) * (K₁ • F (star (a i) * a j)) * c j
-      rw [mul_smul_comm, smul_mul_assoc]
-    rw [hlhs, hrhs] at hcs
-    have hsub : ∑ i, ∑ j, star (c i) *
-        (CStarMatrix.ofMatrix (Matrix.of r) : CStarMatrix (Fin n) (Fin n) C) i j * c j
-        = (∑ i, ∑ j, star (c i) * q i j * c j)
-          - ∑ i, ∑ j, star (c i) * p i j * c j := by
-      rw [← Finset.sum_sub_distrib]
-      refine Finset.sum_congr rfl fun i _ => ?_
-      rw [← Finset.sum_sub_distrib]
-      refine Finset.sum_congr rfl fun j _ => ?_
-      show star (c i) * (q i j - p i j) * c j = _
-      noncomm_ring
-    rw [hsub, sub_nonneg]
-    exact hcs
+    have hcs := cp_cs_matrix F hF a
+    rw [← sub_nonneg] at hcs
+    refine le_of_le_of_eq hcs ?_
+    ext i j
+    rw [CStarMatrix.sub_apply, CStarMatrix.smul_apply]
+    show (‖F 1‖ : ℝ) • F (star (a i) * a j) - star (F (a i)) * F (a j)
+        = K₁ • F (star (a i) * a j) - star (F (a i)) * F (a j)
+    rw [hK₁, hsc]
   have hR'pos : (0 : CStarMatrix (Fin n) (Fin n) D) ≤
       CStarMatrix.ofMatrix (Matrix.of r') := by
-    rw [cstar_matrix_positive_iff]
-    intro c
-    have hcs := cp_cs_sum G hG b c
-    have hlhs : star (∑ i, G (b i) * c i) * (∑ i, G (b i) * c i)
-        = ∑ i, ∑ j, star (c i) * p' i j * c j := by
-      rw [star_sum, Finset.sum_mul]
-      refine Finset.sum_congr rfl fun i _ => ?_
-      rw [Finset.mul_sum]
-      refine Finset.sum_congr rfl fun j _ => ?_
-      rw [star_mul]
-      show _ = star (c i) * (star (G (b i)) * G (b j)) * c j
-      noncomm_ring
-    have hrhs : K₂ • (∑ i, ∑ j, star (c i) * G (star (b i) * b j) * c j)
-        = ∑ i, ∑ j, star (c i) * q' i j * c j := by
-      rw [Finset.smul_sum]
-      refine Finset.sum_congr rfl fun i _ => ?_
-      rw [Finset.smul_sum]
-      refine Finset.sum_congr rfl fun j _ => ?_
-      show K₂ • (star (c i) * G (star (b i) * b j) * c j)
-        = star (c i) * (K₂ • G (star (b i) * b j)) * c j
-      rw [mul_smul_comm, smul_mul_assoc]
-    rw [hlhs, hrhs] at hcs
-    have hsub : ∑ i, ∑ j, star (c i) *
-        (CStarMatrix.ofMatrix (Matrix.of r') : CStarMatrix (Fin n) (Fin n) D) i j * c j
-        = (∑ i, ∑ j, star (c i) * q' i j * c j)
-          - ∑ i, ∑ j, star (c i) * p' i j * c j := by
-      rw [← Finset.sum_sub_distrib]
-      refine Finset.sum_congr rfl fun i _ => ?_
-      rw [← Finset.sum_sub_distrib]
-      refine Finset.sum_congr rfl fun j _ => ?_
-      show star (c i) * (q' i j - p' i j) * c j = _
-      noncomm_ring
-    rw [hsub, sub_nonneg]
-    exact hcs
+    have hcs := cp_cs_matrix G hG b
+    rw [← sub_nonneg] at hcs
+    refine le_of_le_of_eq hcs ?_
+    ext i j
+    rw [CStarMatrix.sub_apply, CStarMatrix.smul_apply]
+    show (‖G 1‖ : ℝ) • G (star (b i) * b j) - star (G (b i)) * G (b j)
+        = K₂ • G (star (b i) * b j) - star (G (b i)) * G (b j)
+    rw [hK₂, hsc']
   have hcross : ∀ (M : Fin n → Fin n → C) (M' : Fin n → Fin n → D),
       (0 : CStarMatrix (Fin n) (Fin n) C) ≤ CStarMatrix.ofMatrix (Matrix.of M) →
       (0 : CStarMatrix (Fin n) (Fin n) D) ≤ CStarMatrix.ofMatrix (Matrix.of M') →
