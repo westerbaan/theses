@@ -30855,3 +30855,77 @@ Nine `sorry`s, unchanged, all author-side.  `left-cost` 24 → 13, `repaired`
 28 → 38, `left-ruling` 11 → 10.  Every exact check clean; `sorry-map.html`
 regenerated.  Oleans of the four edited modules and their closure are being
 rebuilt after the commit.
+
+## Session 103 — every proof-route row re-derived from the source, every doc comment brought to the present tense, and the entry points rewritten (nineteen proof-route workers, one per audit file; twelve doc-comment workers; one on `QUESTIONS.md`; orchestrator on `README.md`, `CONVENTIONS.md`, `docs/`, `ERRATA.md`, `scripts/`)
+
+### 1. The proof-route pass
+
+All 233 rows with `proof` in {`route`, `mild`} were re-derived from the printed
+text and the Lean, not from their notes, under `docs/audit/BRIEF.md`: convert
+onto the printed argument when it fits in 150 lines, otherwise re-cost.
+
+| column | before | after |
+|---|---|---|
+| `faithful` | 1,010 | 1,085 |
+| `mild` | 158 | 95 |
+| `route` | 75 | 57 |
+| `none` | 1,175 | 1,184 |
+
+Thirty-odd proofs were rewritten onto the printed route (among them 5III,
+23II, 28II, 29IX, 30IV, 34XVI, 44VII, 44XIV, 45IV, 53III, 69IX ×3, 74I, 74IV,
+83V, 88II, 116VII, 143III, 147II, 147III, 156II, 163II, 181IX, 219VII, 219IX,
+219X, 225VI), each with the statement byte-identical and the file compiled
+through the lock.  A larger number of rows moved to `faithful` with no code
+change, because the recorded deviation was not one: the printed proof had been
+followed and the note said otherwise.  Rows that stayed carry a fresh dated
+costing that names the missing lemma by content.
+
+Recorded reasons found false this pass, beyond the "not a deviation" class:
+the 69IX rows waited on ruling §2.4 (the printed route needs no restatement of
+30X); five 54XI rows blamed ERRATA 54XII for a divergence that is ours; 143V
+was `left-mathlib` with no Mathlib lemma involved; three 181VII rows named a
+remedy that is impossible (`HasColimit` is a `Prop`); 35IX said ζ(2) was out of
+reach (`import Mathlib`); two Tensor rows said the unital renormalisation Ω₁ is
+unavailable (a positive functional vanishing at 1 is zero); `norm_sum_mul_star_le`
+called the printed route unsound (it is sound; our statement is stronger).  Line
+references into the edited files had drifted by 19–44 lines in most rows and
+were re-anchored by `lean_line_check --write`.
+
+### 2. The doc-comment pass
+
+Under `docs/audit/DOC-BRIEF.md`, every doc comment and module header in every
+Lean file was rewritten to state the current fact, with history left to this
+log and to git; comment-only diffs, verified by stripping comments and comparing.
+Caveats dropped as false, each verified against the tree: "the general case is
+open" on Kaplansky's commutative section; "no consumer anywhere" on six
+ultranorm declarations, three of which `SelfDual.lean` cites; four copies of
+"would require changing a definition" in `Pure.lean` (`su_procIsPure_of_isPureMap`
+is that statement, proved); `CornerTensor`'s claimed reduction to the
+cyclic-and-separating case (its neighbour proves no net of cuts reaches it);
+seven "still missing" items in the commutation headers that the tree has; the
+"what is still missing" section of `TomitaTakesaki.lean` listing four lemmas
+the tree proves, and a difference-quotient bound quoted in two files that is
+false on `(1,2]`; 211IV "waits on 105V" (proved; the gap is B15); 130V's
+"printed proof" that does not exist; a quoted 30IV.2 defect the source no
+longer has.
+
+### 3. Entry points and author-facing documents
+
+`README.md` and `CONVENTIONS.md` said every proof was `sorry`.  Both now
+describe the tree as it is.  The four task briefs of finished passes are
+replaced by the two current ones.  `QUESTIONS.md` is rewritten question by
+question to its current state (836 → 741 lines; three claims corrected against
+the tree).  `DECISIONS.md` §4 is a table; §2.4's "nothing downstream uses it"
+had one user.  `ERRATA.md` 139XI is on the residue that is actually open
+(case (ii) of the corrected exercise); 148IV's star direction and 83V's "gap
+the thesis does not state" (it is 60VII.1) are corrected.  `DEAD-LIMBS.md` and
+`COMMUTATION-THEOREM.md` say they are dated records.  The sorry-map legend no
+longer dates itself.
+
+### 4. Where the tree stands
+
+Nine `sorry`s, all author-side, unchanged.  All 52 oleans rebuilt after the
+day's edits (46 were stale); `AxiomCheck` re-run against them.  `lean1.sh`
+now waits four hours for the lock, because ten workers queued behind one
+compile.  Every exact check clean; `docs/status.txt` and `docs/binders.txt`
+regenerated.
