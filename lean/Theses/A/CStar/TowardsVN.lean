@@ -413,9 +413,7 @@ theorem norm_c00T_xN (N : ℕ) : ‖c00T (xN N)‖ = Real.sqrt N := by
   rw [← h2, Real.sqrt_sq (norm_nonneg _)]
 
 /-- **35IX**: the `x_N` are norm-bounded — `‖x_N‖² = ∑_{k=1}^N 1/k²` is at most
-`∑' k, 1/k²`.  (The thesis names the bound `π/√6`, i.e. the Basel sum; the
-value is irrelevant to the argument, and `∑ 1/n² = π²/6` lives in
-`Mathlib.NumberTheory.ZetaValues`, far from this file's imports.) -/
+`∑' k, 1/k²`.  The next lemma evaluates that bound as the thesis's `π/√6`. -/
 theorem norm_xN_le (N : ℕ) :
     ‖xN N‖ ≤ Real.sqrt (∑' k : ℕ, 1 / (k : ℝ) ^ 2) := by
   have hsummable : Summable (fun k : ℕ => 1 / (k : ℝ) ^ 2) :=
@@ -438,13 +436,25 @@ theorem norm_xN_le (N : ℕ) :
   have h := Real.sqrt_le_sqrt hle
   rwa [Real.sqrt_sq (norm_nonneg _)] at h
 
+/-- **35IX**: the thesis's bound, `‖x_N‖ ≤ π/√6`.  The Basel sum
+`∑_{k≥1} 1/k² = π²/6` is Mathlib's `hasSum_zeta_two`. -/
+theorem norm_xN_le_pi_div_sqrt_six (N : ℕ) :
+    ‖xN N‖ ≤ Real.pi / Real.sqrt 6 := by
+  have hz : (∑' k : ℕ, 1 / (k : ℝ) ^ 2) = Real.pi ^ 2 / 6 :=
+    hasSum_zeta_two.tsum_eq
+  have hval : Real.sqrt (∑' k : ℕ, 1 / (k : ℝ) ^ 2) = Real.pi / Real.sqrt 6 := by
+    rw [hz, show Real.pi ^ 2 / 6 = (Real.pi / Real.sqrt 6) ^ 2 by
+      rw [div_pow, Real.sq_sqrt (by norm_num : (0 : ℝ) ≤ 6)]]
+    exact Real.sqrt_sq (by positivity)
+  exact hval ▸ norm_xN_le N
+
 /-- **35IX**, second half: `T` is not bounded.  This is the thesis's argument:
-`T` maps `x_N = (1, 1/2, …, 1/N, 0, …)`, whose 2-norms are bounded, to
+`T` maps `x_N = (1, 1/2, …, 1/N, 0, …)`, of 2-norm below `π/√6`, to
 `(1, …, 1, 0, …)`, of 2-norm `√N`. -/
 theorem c00T_not_bounded : ¬ ∃ C : ℝ, ∀ x : c00, ‖c00T x‖ ≤ C * ‖x‖ := by
   rintro ⟨C, hC⟩
-  set B := Real.sqrt (∑' k : ℕ, 1 / (k : ℝ) ^ 2) with hB
-  have hB0 : 0 ≤ B := Real.sqrt_nonneg _
+  set B := Real.pi / Real.sqrt 6 with hB
+  have hB0 : 0 ≤ B := by rw [hB]; positivity
   have hC0 : 0 ≤ C := by
     by_contra hneg
     rw [not_le] at hneg
@@ -452,7 +462,8 @@ theorem c00T_not_bounded : ¬ ∃ C : ℝ, ∀ x : c00, ‖c00T x‖ ≤ C * ‖
     rw [norm_c00T_xN, Nat.cast_one, Real.sqrt_one] at h1
     nlinarith [norm_nonneg (xN 1)]
   have key : ∀ N : ℕ, Real.sqrt N ≤ C * B := fun N =>
-    (norm_c00T_xN N ▸ hC (xN N)).trans (mul_le_mul_of_nonneg_left (norm_xN_le N) hC0)
+    (norm_c00T_xN N ▸ hC (xN N)).trans
+      (mul_le_mul_of_nonneg_left (norm_xN_le_pi_div_sqrt_six N) hC0)
   obtain ⟨N, hN⟩ := exists_nat_gt ((C * B) ^ 2)
   have h3 : C * B < Real.sqrt N := (Real.lt_sqrt (mul_nonneg hC0 hB0)).2 hN
   linarith [key N]

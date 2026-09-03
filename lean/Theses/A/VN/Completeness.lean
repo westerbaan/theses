@@ -1739,11 +1739,11 @@ The plan is the thesis's, in this order: `S` contains the identity and the
 constants and is closed under `+`, real scalars, precomposition with an
 affine map, multiplication by a *bounded* member, and uniform limits;
 `e(t) = t/(1+t²)` lies in `S` by the thesis's identity
-`e(b) − e(a) = s(b)(b−a)s(a) − e(b)(b−a)e(a)`, and hence so does
-`s(t) = 1/(1+t²) = 1 − t·e(t)`; the translates `s(t−c)` separate the points
-of `ℝ ∪ {∞}`, so Stone–Weierstraß puts every continuous `f` vanishing at
-infinity in `S`; and `f = f·s + (f·s·t)·t` reduces the general `f = O(t)` to
-that case.
+`e(b) − e(a) = s(b)(b−a)s(a) − e(b)(b−a)e(a)`, where `s(t) = 1/(1+t²)`; the
+thesis's affine transforms `e_{r,c}(t) = e(rt+c)` then lie in `S` too and
+separate the points of `ℝ ∪ {∞}`, so Stone–Weierstraß puts every continuous
+`f` vanishing at infinity in `S`; and `f = f·s + (f·s·t)·t` reduces the
+general `f = O(t)` to that case.
 -/
 
 variable (A) in
@@ -2022,123 +2022,13 @@ omit [StarOrderedRing A] [VonNeumannAlgebra A] in
 private theorem usCont_congr {g h : ℝ → ℝ} (hg : USCont A g) (e : ∀ t, g t = h t) :
     USCont A h := (funext e : g = h) ▸ hg
 
-/-- `s(t) = 1/(1+t²) = 1 − t·e(t)` is in `S`. -/
-private theorem usCont_sfun : USCont A sfun := by
-  refine usCont_congr (usCont_add (usCont_const (A := A) 1)
-    (usCont_smul (usCont_mul usCont_efun usCont_id (C := 1) abs_efun_le) (-1))) fun t => ?_
-  rw [sfun, efun]
-  field_simp
-  ring
-
-/-- The generating family `u_c(t) = 1/(1+(t−c)²)` is in `S`. -/
-private theorem usCont_sfun_sub (c : ℝ) : USCont A (fun t : ℝ => sfun (t - c)) := by
-  refine usCont_congr (usCont_comp_affine (usCont_sfun (A := A)) 1 (-c)) fun t => ?_
-  ring_nf
+/-- The thesis's family `e_{r,c}(t) = e(rt+c)` is in `S`, being an affine
+transformation followed by `e`. -/
+private theorem usCont_efun_affine (r c : ℝ) :
+    USCont A (fun t : ℝ => efun (r * t + c)) :=
+  usCont_comp_affine (usCont_efun (A := A)) r c
 
 /-! ### Stone–Weierstraß on `ℝ ∪ {∞}` -/
-
-private theorem tendsto_sfun_sub (c : ℝ) :
-    Tendsto (fun t : ℝ => sfun (t - c)) (cocompact ℝ) (𝓝 0) := by
-  have hmaj : Tendsto (fun t : ℝ => ‖t‖ + -|c|) (cocompact ℝ) atTop :=
-    tendsto_norm_cocompact_atTop.atTop_add (tendsto_const_nhds (x := -|c|))
-  have h0 : Tendsto (fun t : ℝ => 1 + (t - c) ^ 2) (cocompact ℝ) atTop := by
-    refine tendsto_atTop_mono (fun t => ?_) hmaj
-    have h1 : |t| - |c| ≤ |t - c| := abs_sub_abs_le_abs_sub t c
-    have h2 : |t - c| ≤ 1 + (t - c) ^ 2 := by
-      nlinarith [sq_nonneg (|t - c| - 1), abs_nonneg (t - c), sq_abs (t - c)]
-    rw [Real.norm_eq_abs]
-    linarith
-  simpa [sfun, Pi.inv_def, one_div] using h0.inv_tendsto_atTop
-
-/-- The generator `u_c`, extended to the one-point compactification. -/
-private noncomputable def kapGen (c : ℝ) : C(OnePoint ℝ, ℝ) :=
-  OnePoint.continuousMapMk ⟨fun t : ℝ => sfun (t - c), sfun_continuous.comp (by fun_prop)⟩ 0
-    (by rw [coclosedCompact_eq_cocompact]; exact tendsto_sfun_sub c)
-
-private theorem kapGen_coe (c t : ℝ) : kapGen c (t : OnePoint ℝ) = sfun (t - c) := rfl
-
-private theorem kapGen_infty (c : ℝ) : kapGen c (OnePoint.infty : OnePoint ℝ) = 0 := rfl
-
-private theorem usCont_of_mem_adjoin {F : C(OnePoint ℝ, ℝ)}
-    (hF : F ∈ Algebra.adjoin ℝ (Set.range (kapGen))) :
-    USCont A (fun t : ℝ => F (t : OnePoint ℝ)) := by
-  induction hF using Algebra.adjoin_induction with
-  | mem x hx =>
-      obtain ⟨c, rfl⟩ := hx
-      exact usCont_congr (usCont_sfun_sub (A := A) c) fun t => (kapGen_coe c t).symm
-  | algebraMap r => exact usCont_congr (usCont_const (A := A) r) fun t => rfl
-  | add x y _ _ ihx ihy => exact usCont_congr (usCont_add ihx ihy) fun t => rfl
-  | mul x y _ _ ihx ihy =>
-      exact usCont_congr (usCont_mul ihx ihy (C := ‖x‖)
-        fun t => by simpa using ContinuousMap.norm_coe_le_norm x (t : OnePoint ℝ)) fun t => rfl
-
-private theorem kapAlg_separatesPoints :
-    (Algebra.adjoin ℝ (Set.range (kapGen))).SeparatesPoints := by
-  have hmem : ∀ c : ℝ, kapGen c ∈ Algebra.adjoin ℝ (Set.range (kapGen)) := fun c =>
-    Algebra.subset_adjoin ⟨c, rfl⟩
-  have hne : ∀ u v : ℝ, u ^ 2 ≠ v ^ 2 → sfun u ≠ sfun v := by
-    intro u v h he
-    apply h
-    rw [sfun, sfun] at he
-    have hu : (0:ℝ) < 1 + u ^ 2 := by positivity
-    have hv : (0:ℝ) < 1 + v ^ 2 := by positivity
-    field_simp at he
-    linarith
-  rintro (_ | x) (_ | y) hxy
-  · exact absurd rfl hxy
-  · refine ⟨_, ⟨kapGen y, hmem y, rfl⟩, ?_⟩
-    change kapGen y (OnePoint.infty : OnePoint ℝ) ≠ kapGen y ((y : ℝ) : OnePoint ℝ)
-    rw [kapGen_infty, kapGen_coe, sub_self]
-    simp [sfun]
-  · refine ⟨_, ⟨kapGen x, hmem x, rfl⟩, ?_⟩
-    change kapGen x ((x : ℝ) : OnePoint ℝ) ≠ kapGen x (OnePoint.infty : OnePoint ℝ)
-    rw [kapGen_infty, kapGen_coe, sub_self]
-    simp [sfun]
-  · have hxy' : x ≠ y := by
-      intro h; exact hxy (by rw [h])
-    refine ⟨_, ⟨kapGen ((x + y) / 2 + 1), hmem _, rfl⟩, ?_⟩
-    change kapGen ((x + y) / 2 + 1) ((x : ℝ) : OnePoint ℝ)
-      ≠ kapGen ((x + y) / 2 + 1) ((y : ℝ) : OnePoint ℝ)
-    rw [kapGen_coe, kapGen_coe]
-    refine hne _ _ ?_
-    intro h
-    apply hxy'
-    have : (x - ((x + y) / 2 + 1)) ^ 2 - (y - ((x + y) / 2 + 1)) ^ 2 = 0 := by rw [h]; ring
-    have h2 : (x - y) * 2 = 0 := by nlinarith [this]
-    linarith
-
-/-- Every continuous `g : ℝ → ℝ` vanishing at infinity is in `S`. -/
-private theorem usCont_of_tendsto_zero {g : ℝ → ℝ} (hgc : Continuous g)
-    (hg0 : Tendsto g (cocompact ℝ) (𝓝 0)) : USCont A g := by
-  set G : C(OnePoint ℝ, ℝ) := OnePoint.continuousMapMk ⟨g, hgc⟩ 0
-    (by rw [coclosedCompact_eq_cocompact]; exact hg0) with hG
-  have hGcoe : ∀ t : ℝ, G (t : OnePoint ℝ) = g t := fun _ => rfl
-  have htop : (Algebra.adjoin ℝ (Set.range (kapGen))).topologicalClosure = ⊤ :=
-    ContinuousMap.subalgebra_topologicalClosure_eq_top_of_separatesPoints _ kapAlg_separatesPoints
-  have hGmem : G ∈ closure ((Algebra.adjoin ℝ (Set.range (kapGen))) : Set C(OnePoint ℝ, ℝ)) := by
-    have : G ∈ (Algebra.adjoin ℝ (Set.range (kapGen))).topologicalClosure := by
-      rw [htop]; trivial
-    exact this
-  refine usCont_of_approx hgc fun η hη => ?_
-  obtain ⟨F, hFmem, hFd⟩ := Metric.mem_closure_iff.mp hGmem η hη
-  refine ⟨fun t : ℝ => F (t : OnePoint ℝ), usCont_of_mem_adjoin hFmem, fun t => ?_⟩
-  have := ContinuousMap.dist_apply_le_dist (f := G) (g := F) (t : OnePoint ℝ)
-  rw [Real.dist_eq, hGcoe] at this
-  linarith
-
-/-! ### Reduction of a general `f = O(t)` to a function vanishing at infinity -/
-
-private theorem bounded_of_bigO {g : ℝ → ℝ} (hgc : Continuous g) {n : ℕ} {C : ℝ}
-    (h : ∀ t : ℝ, (n : ℝ) ≤ |t| → |g t| ≤ C) : ∃ C' : ℝ, ∀ t, |g t| ≤ C' := by
-  obtain ⟨C₀, hC₀⟩ := (isCompact_Icc (a := -(n : ℝ)) (b := (n : ℝ))).exists_bound_of_continuousOn
-    hgc.continuousOn
-  refine ⟨max C C₀, fun t => ?_⟩
-  rcases le_or_gt (n : ℝ) |t| with ht | ht
-  · exact le_trans (h t ht) (le_max_left _ _)
-  · refine le_trans ?_ (le_max_right C C₀)
-    have := hC₀ t ⟨by cases abs_le.mp ht.le with | intro h1 h2 => linarith,
-      by cases abs_le.mp ht.le with | intro h1 h2 => linarith⟩
-    rwa [Real.norm_eq_abs] at this
 
 private theorem tendsto_mul_sfun {f : ℝ → ℝ} {n : ℕ} {b : ℝ}
     (hb : ∀ t : ℝ, (n : ℝ) ≤ |t| → |f t| ≤ b * |t|) (hb0 : 0 ≤ b) :
@@ -2167,20 +2057,156 @@ private theorem tendsto_mul_sfun {f : ℝ → ℝ} {n : ℕ} {b : ℝ}
   rw [e1, e2, div_le_div_iff₀ hden htpos]
   nlinarith [hb0, habs]
 
+/-- `e` vanishes at infinity: it is `t·s(t)`, and `|t| ≤ 1·|t|`. -/
+private theorem tendsto_efun : Tendsto efun (cocompact ℝ) (𝓝 0) :=
+  Tendsto.congr (fun t => (efun_eq_mul t).symm)
+    (tendsto_mul_sfun (f := fun t : ℝ => t) (n := 0) (b := 1)
+      (fun t _ => le_of_eq (one_mul (abs t)).symm) zero_le_one)
+
+/-- Hence so does each `e_{r,c}` with `r ≠ 0`. -/
+private theorem tendsto_efun_affine {r : ℝ} (hr : r ≠ 0) (c : ℝ) :
+    Tendsto (fun t : ℝ => efun (r * t + c)) (cocompact ℝ) (𝓝 0) := by
+  have hr0 : (0 : ℝ) < |r| := abs_pos.mpr hr
+  have h1 : Tendsto (fun t : ℝ => |r| * |t| + -|c|) (cocompact ℝ) atTop :=
+    tendsto_atTop_add_const_right _ (-|c|)
+      (tendsto_norm_cocompact_atTop.const_mul_atTop hr0)
+  have hcomp : Tendsto (fun t : ℝ => r * t + c) (cocompact ℝ) (cocompact ℝ) := by
+    refine tendsto_cocompact_of_tendsto_dist_comp_atTop (0 : ℝ) ?_
+    refine tendsto_atTop_mono (fun t => ?_) h1
+    have h2 := abs_sub_abs_le_abs_sub (r * t) (-c)
+    rw [abs_neg, sub_neg_eq_add, abs_mul] at h2
+    rw [Real.dist_eq, sub_zero]
+    linarith
+  exact tendsto_efun.comp hcomp
+
+/-- The thesis's generator `e_{r,c}`, extended to the one-point
+compactification by `e_{r,c}(∞) = 0`. -/
+private noncomputable def kapGen {r : ℝ} (hr : r ≠ 0) (c : ℝ) : C(OnePoint ℝ, ℝ) :=
+  OnePoint.continuousMapMk
+    ⟨fun t : ℝ => efun (r * t + c), efun_continuous.comp (by fun_prop)⟩ 0
+    (by rw [coclosedCompact_eq_cocompact]; exact tendsto_efun_affine hr c)
+
+/-- The set the thesis adjoins: all `e_{r,c}` with `r ≠ 0`.  (Its `r = 0`
+members are constants, which the adjoined algebra contains anyway.) -/
+private def kapGens : Set C(OnePoint ℝ, ℝ) :=
+  {F | ∃ (r c : ℝ) (hr : r ≠ 0), F = kapGen hr c}
+
+private theorem mem_kapGens {F : C(OnePoint ℝ, ℝ)} :
+    F ∈ kapGens ↔ ∃ (r c : ℝ) (hr : r ≠ 0), F = kapGen hr c := Iff.rfl
+
+private theorem kapGen_coe {r : ℝ} (hr : r ≠ 0) (c t : ℝ) :
+    kapGen hr c (t : OnePoint ℝ) = efun (r * t + c) := rfl
+
+private theorem kapGen_infty {r : ℝ} (hr : r ≠ 0) (c : ℝ) :
+    kapGen hr c (OnePoint.infty : OnePoint ℝ) = 0 := rfl
+
+private theorem usCont_of_mem_adjoin {F : C(OnePoint ℝ, ℝ)}
+    (hF : F ∈ Algebra.adjoin ℝ kapGens) :
+    USCont A (fun t : ℝ => F (t : OnePoint ℝ)) := by
+  induction hF using Algebra.adjoin_induction with
+  | mem x hx =>
+      obtain ⟨r, c, hr, rfl⟩ := mem_kapGens.mp hx
+      exact usCont_congr (usCont_efun_affine (A := A) r c) fun t => (kapGen_coe hr c t).symm
+  | algebraMap r => exact usCont_congr (usCont_const (A := A) r) fun t => rfl
+  | add x y _ _ ihx ihy => exact usCont_congr (usCont_add ihx ihy) fun t => rfl
+  | mul x y _ _ ihx ihy =>
+      exact usCont_congr (usCont_mul ihx ihy (C := ‖x‖)
+        fun t => by simpa using ContinuousMap.norm_coe_le_norm x (t : OnePoint ℝ)) fun t => rfl
+
+private theorem kapAlg_separatesPoints :
+    (Algebra.adjoin ℝ kapGens).SeparatesPoints := by
+  have hone0 : (1 : ℝ) ≠ 0 := one_ne_zero
+  have hmem : ∀ (c : ℝ), kapGen hone0 c ∈ Algebra.adjoin ℝ kapGens :=
+    fun c => Algebra.subset_adjoin (mem_kapGens.mpr ⟨1, c, hone0, rfl⟩)
+  -- `e(u) = e(v)` forces `u = v` or `uv = 1`, so `e` is injective on `[2,∞)`
+  have hne : ∀ u v : ℝ, 2 ≤ u → 2 ≤ v → u ≠ v → efun u ≠ efun v := by
+    intro u v hu hv huv he
+    have hu0 : (0 : ℝ) < 1 + u ^ 2 := by positivity
+    have hv0 : (0 : ℝ) < 1 + v ^ 2 := by positivity
+    rw [efun, efun, div_eq_div_iff hu0.ne' hv0.ne'] at he
+    have h0 : (u - v) * (1 - u * v) = 0 := by linear_combination he
+    rcases mul_eq_zero.mp h0 with h | h
+    · exact huv (by linarith)
+    · nlinarith [mul_nonneg (by linarith : (0:ℝ) ≤ u - 2) (by linarith : (0:ℝ) ≤ v - 2)]
+  have hzero : ∀ (c t : ℝ), kapGen hone0 c (t : OnePoint ℝ) = efun (t + c) := by
+    intro c t
+    rw [kapGen_coe, one_mul]
+  have hone : efun 1 ≠ 0 := by rw [efun]; norm_num
+  rintro (_ | x) (_ | y) hxy
+  · exact absurd rfl hxy
+  · refine ⟨_, ⟨kapGen hone0 (1 - y), hmem _, rfl⟩, ?_⟩
+    change kapGen hone0 (1 - y) (OnePoint.infty : OnePoint ℝ)
+      ≠ kapGen hone0 (1 - y) ((y : ℝ) : OnePoint ℝ)
+    rw [kapGen_infty, hzero, show y + (1 - y) = (1 : ℝ) by ring]
+    exact fun h => hone h.symm
+  · refine ⟨_, ⟨kapGen hone0 (1 - x), hmem _, rfl⟩, ?_⟩
+    change kapGen hone0 (1 - x) ((x : ℝ) : OnePoint ℝ)
+      ≠ kapGen hone0 (1 - x) (OnePoint.infty : OnePoint ℝ)
+    rw [kapGen_infty, hzero, show x + (1 - x) = (1 : ℝ) by ring]
+    exact hone
+  · have hxy' : x ≠ y := by
+      intro h; exact hxy (by rw [h])
+    refine ⟨_, ⟨kapGen hone0 (|x| + |y| + 2), hmem _, rfl⟩, ?_⟩
+    change kapGen hone0 (|x| + |y| + 2) ((x : ℝ) : OnePoint ℝ)
+      ≠ kapGen hone0 (|x| + |y| + 2) ((y : ℝ) : OnePoint ℝ)
+    rw [hzero, hzero]
+    refine hne _ _ ?_ ?_ (fun h => hxy' (by linarith))
+    · have h1 := neg_abs_le x
+      have h2 := abs_nonneg y
+      linarith
+    · have h1 := neg_abs_le y
+      have h2 := abs_nonneg x
+      linarith
+
+/-- Every continuous `g : ℝ → ℝ` vanishing at infinity is in `S`. -/
+private theorem usCont_of_tendsto_zero {g : ℝ → ℝ} (hgc : Continuous g)
+    (hg0 : Tendsto g (cocompact ℝ) (𝓝 0)) : USCont A g := by
+  set G : C(OnePoint ℝ, ℝ) := OnePoint.continuousMapMk ⟨g, hgc⟩ 0
+    (by rw [coclosedCompact_eq_cocompact]; exact hg0) with hG
+  have hGcoe : ∀ t : ℝ, G (t : OnePoint ℝ) = g t := fun _ => rfl
+  have htop : (Algebra.adjoin ℝ kapGens).topologicalClosure = ⊤ :=
+    ContinuousMap.subalgebra_topologicalClosure_eq_top_of_separatesPoints _ kapAlg_separatesPoints
+  have hGmem : G ∈ closure ((Algebra.adjoin ℝ kapGens) : Set C(OnePoint ℝ, ℝ)) := by
+    have : G ∈ (Algebra.adjoin ℝ kapGens).topologicalClosure := by
+      rw [htop]; trivial
+    exact this
+  refine usCont_of_approx hgc fun η hη => ?_
+  obtain ⟨F, hFmem, hFd⟩ := Metric.mem_closure_iff.mp hGmem η hη
+  refine ⟨fun t : ℝ => F (t : OnePoint ℝ), usCont_of_mem_adjoin hFmem, fun t => ?_⟩
+  have := ContinuousMap.dist_apply_le_dist (f := G) (g := F) (t : OnePoint ℝ)
+  rw [Real.dist_eq, hGcoe] at this
+  linarith
+
+/-! ### Reduction of a general `f = O(t)` to a function vanishing at infinity -/
+
+private theorem bounded_of_bigO {g : ℝ → ℝ} (hgc : Continuous g) {n : ℕ} {C : ℝ}
+    (h : ∀ t : ℝ, (n : ℝ) ≤ |t| → |g t| ≤ C) : ∃ C' : ℝ, ∀ t, |g t| ≤ C' := by
+  obtain ⟨C₀, hC₀⟩ := (isCompact_Icc (a := -(n : ℝ)) (b := (n : ℝ))).exists_bound_of_continuousOn
+    hgc.continuousOn
+  refine ⟨max C C₀, fun t => ?_⟩
+  rcases le_or_gt (n : ℝ) |t| with ht | ht
+  · exact le_trans (h t ht) (le_max_left _ _)
+  · refine le_trans ?_ (le_max_right C C₀)
+    have := hC₀ t ⟨by cases abs_le.mp ht.le with | intro h1 h2 => linarith,
+      by cases abs_le.mp ht.le with | intro h1 h2 => linarith⟩
+    rwa [Real.norm_eq_abs] at this
+
 /-- **74I** (`proto-kaplansky`, vn.tex:4224, Proposition): for a continuous
 `f : ℝ → ℝ` with `f(t) = O(t)`, the map `a ↦ f(a)` (continuous functional
 calculus) is ultrastrongly continuous on the self-adjoint part of a von
 Neumann algebra.
 
-*Class 1 — faithful*, apart from one simplification.  See the block above
-for the plan, which is the thesis's.  The one departure: where the thesis
-adjoins all the `e_{a,b}(t) = e(at+b)` and appeals to Stone–Weierstraß for
-the algebra they generate, we adjoin only the translates `s(t−c)` of
-`s(t) = 1/(1+t²)`.  These already separate the points of `ℝ ∪ {∞}`
-(`s(x−c) = s(y−c)` forces `c = (x+y)/2`, and `s(·−c) > 0` on `ℝ` while it
-vanishes at `∞`), and being positive they make the "take real parts if
-necessary" step of the thesis unnecessary: `C(ℝ ∪ {∞}, ℝ)` is a real
-Banach algebra and Mathlib's real Stone–Weierstraß applies directly. -/
+*Class 1 — faithful*.  See the block above for the plan, which is the
+thesis's, down to the generating family: the `e_{r,c}(t) = e(r t + c)` of
+`kapGens`, with `e(t) = t/(1+t²)`, are the thesis's own, and the algebra
+they generate is dense in `C(ℝ ∪ {∞})` by Stone–Weierstraß.  Two remarks on
+the rendering.  The thesis's `r = 0` members are the constants `e(c)`, which
+do not vanish at `∞` and so have no continuous extension by `0`; they are
+omitted from `kapGens`, and the adjoined algebra contains all constants
+anyway.  And the thesis's "(by taking real parts if necessary)" is not
+needed here because we run Stone–Weierstraß in the *real* algebra
+`C(ℝ ∪ {∞}, ℝ)`, where every function in play already lives, rather than in
+the complex `C(ℝ ∪ {∞})`. -/
 theorem proto_kaplansky (f : ℝ → ℝ) (hf : Continuous f)
     (hO : ∃ (n : ℕ) (b : ℝ), ∀ t : ℝ, (n : ℝ) ≤ |t| → |f t| ≤ b * |t|) :
     @ContinuousOn A A (ultrastrong A) (ultrastrong A) (fun a => cfc f a)
@@ -2646,35 +2672,43 @@ theorem kaplansky_sa (S : StarSubalgebra ℂ A) (hS : IsClosed (S : Set A))
 /-- **74IV** (`kaplansky`, vn.tex:4336, Kaplansky's Density Theorem),
 part 2: if moreover `b` is positive, the `a_α` can be chosen positive.
 
-*Class 3 — mild divergence*: the thesis first clamps to `[-‖b‖,‖b‖]` and then
-takes positive parts; we clamp once, with `0 ∨ (·) ∧ ‖b‖`, which is the
-composite of the two. -/
+*Class 1 — faithful*: the thesis's two steps, in its order.  Part 1 supplies
+the clamped self-adjoint net `a''_α` with `‖a''_α‖ ≤ ‖b‖`; its positive parts
+`a'''_α = (a''_α)_+` converge ultrastrongly to `b_+ = b` because `(·)_+` is
+ultrastrongly continuous by **74I**, and `‖(a''_α)_+‖ ≤ ‖a''_α‖ ≤ ‖b‖`. -/
 theorem kaplansky_pos (S : StarSubalgebra ℂ A) (hS : IsClosed (S : Set A))
     (b : A) (hb : b ∈ @closure A (ultrastrong A) S) (hpos : 0 ≤ b) :
     ∃ (ι : Type u) (l : Filter ι), l.NeBot ∧ ∃ a : ι → A,
       (∀ i, a i ∈ S ∧ ‖a i‖ ≤ ‖b‖ ∧ 0 ≤ a i) ∧ USTendsto a l b := by
   have hsa : IsSelfAdjoint b := hpos.isSelfAdjoint
   have hM0 : (0 : ℝ) ≤ ‖b‖ := norm_nonneg b
-  set f : ℝ → ℝ := fun t => max 0 (min t ‖b‖) with hfdef
+  -- the thesis's first step: part 1, the net `a''_α` in `[-‖b‖, ‖b‖]_𝒮`
+  obtain ⟨ι, l, hl, a, ha, hlim⟩ := kaplansky_sa S hS b hb hsa
+  -- the thesis's second step: `a'''_α := (a''_α)_+`
+  set f : ℝ → ℝ := fun t => max 0 t with hfdef
   have hfc : Continuous f := by
     simp only [hfdef]; fun_prop
+  have hfabs : ∀ t : ℝ, |f t| ≤ |t| := fun t => by
+    simp only [hfdef]
+    rw [abs_of_nonneg (le_max_left 0 t)]
+    exact max_le (abs_nonneg t) (le_abs_self t)
   have hcfc := proto_kaplansky (A := A) f hfc
-    ⟨0, 1, fun t _ => by rw [one_mul]; exact abs_posClamp_le_abs hM0 t⟩
-  obtain ⟨l, hl, hlim⟩ :=
-    exists_net_of_mem_usClosure _ b (mem_usClosure_selfAdjointPart S b hb hsa)
+    ⟨0, 1, fun t _ => by rw [one_mul]; exact hfabs t⟩
   have hcfcb : cfc f b = b := by
     nth_rewrite 2 [← cfc_id ℝ b]
     refine cfc_congr fun t ht => ?_
-    have h2 := (abs_le.mp (spectrum_abs_le hsa ht)).2
     have h1 : 0 ≤ t := spectrum_nonneg_of_nonneg hpos ht
     simp only [hfdef, id]
-    rw [min_eq_left h2, max_eq_right h1]
+    rw [max_eq_right h1]
   have hSc : IsClosed ((S : StarSubalgebra ℂ A) : Set A) := hS
-  refine ⟨_, l, hl, fun i => cfc f (i : A), fun i => ⟨cfc_mem (𝕜 := ℝ) (𝕜' := ℂ) f i.2.1,
-    norm_cfc_le hM0 fun t _ => by rw [Real.norm_eq_abs]; exact abs_posClamp_le hM0 t,
-    cfc_nonneg fun t _ => le_max_left _ _⟩, ?_⟩
-  have := usTendsto_cfc hcfc (fun i : {x : A | x ∈ S ∧ IsSelfAdjoint x} => i.2.2) hsa hlim
-  rwa [hcfcb] at this
+  refine ⟨ι, l, hl, fun i => cfc f (a i), fun i =>
+    ⟨cfc_mem (𝕜 := ℝ) (𝕜' := ℂ) f (ha i).1, ?_,
+      cfc_nonneg fun t _ => le_max_left _ _⟩, ?_⟩
+  · refine norm_cfc_le hM0 fun t ht => ?_
+    rw [Real.norm_eq_abs]
+    exact (hfabs t).trans ((spectrum_abs_le (ha i).2.2 ht).trans (ha i).2.1)
+  · have := usTendsto_cfc hcfc (fun i => (ha i).2.2) hsa hlim
+    rwa [hcfcb] at this
 
 /-- **74IV** (`kaplansky`, vn.tex:4336, Kaplansky's Density Theorem),
 part 3: if moreover `b` is an effect, the `a_α` can be chosen to be
@@ -3694,7 +3728,10 @@ end UsClosureSubalgebra
 /-- **75VIII** (`vnsac`, vn.tex:4587, Theorem): a von Neumann subalgebra of
 a von Neumann algebra is ultrastrongly and ultraweakly closed.
 
-*Class 2 — different route in two places, and shorter than the thesis's.*
+*Class 3 — the thesis's argument, shortened in two places.*  The proof is
+the printed display of 75VIII.90, with Kadison's lemma (**75VI**) closing the
+sandwich; both departures are the repair `ERRATA.md` **75IX** prescribes, and
+neither changes the shape of the argument.
 The thesis's argument runs `p = ⋁_{ω₁} ⌈ω₁⌉_𝒮 = ⋀_{ω₀} ⌈ω₀⌉_𝒮^⊥` and uses
 (i) the *unstated* dual of **66IV**.3, `p = ⋀_ω ⌈ω⌉^⊥`, and (ii) the
 relativised carriers `⌈ω⌉_𝒮`, which presuppose the von Neumann structure of
