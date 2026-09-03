@@ -52,3 +52,4 @@ import Theses.B.Eff.Comparisons
 import Theses.B.Eff.VNExamples
 import Theses.B.Eff.OrderUnit
 import Theses.B.Eff.ExtensiveExamples
+import Theses.B.Eff.JordanAlgebras
