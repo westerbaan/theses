@@ -709,15 +709,19 @@ end HilbTensor
 The thesis proves **138II** (dils.tex 138III–138V) by building an orthonormal
 basis `rᵢⱼ = ϱ(uᵢ*) dⱼ` of `𝒦` out of an orthonormal basis `(eᵢ)` of `ℋ`, an
 orthonormal basis `(dⱼ)` of `𝒦' = ϱ(p_{i₀})𝒦` and the partial isometries
-`uᵢ = |e_{i₀}⟩⟨eᵢ|`, and reading the unitary `U` off it.  What follows is the
-same construction in coordinate-free form: the map `W(x ⊗ d) = ϱ(|x⟩⟨e₀|) d`,
-for one unit vector `e₀` (the thesis's `e_{i₀}`), satisfies `W(eᵢ ⊗ dⱼ) = rᵢⱼ`.
-That `W` is isometric *is* the thesis's orthonormality computation, and the
-intertwining relation `W ∘ (a ⊗ 1) = ϱ(a) ∘ W`, immediate from
-`a·|x⟩⟨e₀| = |a x⟩⟨e₀|`, replaces the ultrastrongly convergent expansion of
-`|a eᵢ⟩⟨e_{i₀}|` in 138V.  A basis of `ℋ` is still needed, but only for the
-surjectivity of `W`, which is where the thesis's `∑ᵢⱼ |rᵢⱼ⟩⟨rᵢⱼ| = 1` and the
-normality of `ϱ` are used. -/
+`uᵢ = |e_{i₀}⟩⟨eᵢ|`, and reading the unitary `U` off it: `U` is the one fixed
+by `U rᵢⱼ = eᵢ ⊗ dⱼ`.  That is the route taken here.  `nmiu_forall_mem`
+(**138IV**) supplies the density of the `rᵢⱼ`; their orthonormality is the
+thesis's own computation, out of `|e₀⟩⟨x| · |y⟩⟨e₀| = ⟪x,y⟫ p₀` and
+`ϱ(p₀)dⱼ = dⱼ`; so `(rᵢⱼ)` is a Hilbert basis of `𝒦`, and `hilbTensorBasis`
+gives the matching Hilbert basis `(eᵢ ⊗ dⱼ)` of `ℋ ⊗ 𝒦'`.  The closing
+computation of `ϱ(a) rᵢⱼ` is that of 138V: the ultrastrongly convergent
+`|a eᵢ⟩⟨e_{i₀}| = ∑ₖ ⟪eₖ, a eᵢ⟫ |eₖ⟩⟨e_{i₀}|`, pushed through `ϱ` and
+evaluated at `dⱼ`, against `U*((a eᵢ) ⊗ dⱼ) = ∑ₖ ⟪eₖ, a eᵢ⟫ rₖⱼ`.  The one
+instance of ultrastrong continuity of `ϱ` that this needs is proved on the
+spot — `x ↦ ϱ(|x⟩⟨e₀|)dⱼ` is an isometry `ℋ → 𝒦`, which is that same
+orthonormality computation once more — rather than from the general **44XV**
+`p_uwcont` the thesis cites. -/
 
 section KetbraAux
 
@@ -881,6 +885,167 @@ theorem exists_hilbTensor_isometry (w : TensorProduct ℂ H K →ₗ[ℂ] Z)
   refine hilbTensor_denseRange_coe.induction_on (p := fun v => ‖W v‖ = ‖v‖) v hclosed ?_
   intro z
   rw [key z, UniformSpace.Completion.norm_coe, hnormw]
+
+/-- `hilbTensorMk` is additive in its first argument. -/
+theorem hilbTensorMk_add_left (x x' : H) (y : K) :
+    hilbTensorMk (x + x') y = hilbTensorMk x y + hilbTensorMk (K := K) x' y := by
+  unfold hilbTensorMk
+  rw [TensorProduct.add_tmul, UniformSpace.Completion.coe_add]
+
+theorem hilbTensorMk_add_right (x : H) (y y' : K) :
+    hilbTensorMk x (y + y') = hilbTensorMk x y + hilbTensorMk (K := K) x y' := by
+  unfold hilbTensorMk
+  rw [TensorProduct.tmul_add, UniformSpace.Completion.coe_add]
+
+theorem hilbTensorMk_sub_right (x : H) (y y' : K) :
+    hilbTensorMk x (y - y') = hilbTensorMk x y - hilbTensorMk (K := K) x y' := by
+  unfold hilbTensorMk
+  rw [TensorProduct.tmul_sub, UniformSpace.Completion.coe_sub]
+
+theorem hilbTensorMk_smul_left (c : ℂ) (x : H) (y : K) :
+    hilbTensorMk (c • x) y = c • hilbTensorMk (K := K) x y := by
+  unfold hilbTensorMk
+  rw [← TensorProduct.smul_tmul']
+  exact (UniformSpace.Completion.coe_smul c _)
+
+theorem hilbTensorMk_smul_right (c : ℂ) (x : H) (y : K) :
+    hilbTensorMk x (c • y) = c • hilbTensorMk (K := K) x y := by
+  unfold hilbTensorMk
+  rw [TensorProduct.tmul_smul]
+  exact (UniformSpace.Completion.coe_smul c _)
+
+private theorem norm_inner_self' {E : Type*} [NormedAddCommGroup E]
+    [InnerProductSpace ℂ E] (z : E) : ‖(⟪z, z⟫ : ℂ)‖ = ‖z‖ ^ 2 := by
+  rw [inner_self_eq_norm_sq_to_K, norm_pow, RCLike.norm_ofReal, abs_norm]
+
+theorem norm_hilbTensorMk (x : H) (y : K) : ‖hilbTensorMk x y‖ = ‖x‖ * ‖y‖ := by
+  have h := congrArg (fun z : ℂ => ‖z‖) (hilbTensor_inner_mk x x y y)
+  simp only [norm_mul, norm_inner_self'] at h
+  have h3 : ‖hilbTensorMk x y‖ ^ 2 = (‖x‖ * ‖y‖) ^ 2 := by rw [h, mul_pow]
+  have := congrArg Real.sqrt h3
+  rwa [Real.sqrt_sq (norm_nonneg _),
+    Real.sqrt_sq (mul_nonneg (norm_nonneg _) (norm_nonneg _))] at this
+
+/-- The "ket" operator `|·⟩ ⊗ e : H → H ⊗ K`, `x ↦ x ⊗ e`. -/
+noncomputable def hilbTensorKet (e : K) : H →L[ℂ] hilbTensor H K :=
+  LinearMap.mkContinuous
+    { toFun := fun x => hilbTensorMk x e
+      map_add' := fun x x' => hilbTensorMk_add_left x x' e
+      map_smul' := fun c x => hilbTensorMk_smul_left c x e } ‖e‖
+    (fun x => by
+      show ‖hilbTensorMk x e‖ ≤ ‖e‖ * ‖x‖
+      rw [norm_hilbTensorMk]; exact le_of_eq (mul_comm _ _))
+
+@[simp] theorem hilbTensorKet_apply (e : K) (x : H) :
+    hilbTensorKet e x = hilbTensorMk x e := rfl
+
+/-- The adjoint of the ket operator is the slice map `x ⊗ y ↦ ⟪e,y⟫ x`. -/
+theorem hilbTensorKet_adjoint_mk (e : K) (x : H) (y : K) :
+    ContinuousLinearMap.adjoint (hilbTensorKet (H := H) e) (hilbTensorMk x y) = ⟪e, y⟫ • x := by
+  refine ext_inner_right ℂ fun v => ?_
+  rw [ContinuousLinearMap.adjoint_inner_left, hilbTensorKet_apply, hilbTensor_inner_mk,
+    inner_smul_left, inner_conj_symm]
+  ring
+
+/-- The "co-ket" operator `x ⊗ · : K → H ⊗ K`, `y ↦ x ⊗ y`. -/
+noncomputable def hilbTensorKet' (x : H) : K →L[ℂ] hilbTensor H K :=
+  LinearMap.mkContinuous
+    { toFun := fun y => hilbTensorMk x y
+      map_add' := fun y y' => hilbTensorMk_add_right x y y'
+      map_smul' := fun c y => hilbTensorMk_smul_right c x y } ‖x‖
+    (fun y => by
+      show ‖hilbTensorMk x y‖ ≤ ‖x‖ * ‖y‖
+      rw [norm_hilbTensorMk])
+
+@[simp] theorem hilbTensorKet'_apply (x : H) (y : K) :
+    hilbTensorKet' x y = hilbTensorMk x y := rfl
+
+/-- The elementary tensors `eᵢ ⊗ dⱼ` of two orthonormal families form an
+orthonormal family of `H ⊗ K`. -/
+theorem hilbTensorMk_orthonormal {ι κ : Type*} (b : HilbertBasis ι ℂ H)
+    (c : HilbertBasis κ ℂ K) :
+    Orthonormal ℂ (fun p : ι × κ => hilbTensorMk (b p.1) (c p.2)) := by
+  refine ⟨fun p => ?_, fun p q hpq => ?_⟩
+  · rw [norm_hilbTensorMk, b.orthonormal.1, c.orthonormal.1, mul_one]
+  · obtain ⟨i, j⟩ := p
+    obtain ⟨i', j'⟩ := q
+    show ⟪hilbTensorMk (b i) (c j), hilbTensorMk (b i') (c j')⟫ = 0
+    rw [hilbTensor_inner_mk]
+    by_cases h1 : i = i'
+    · subst h1
+      have h2 : j ≠ j' := fun h => hpq (by rw [h])
+      rw [c.orthonormal.2 h2, mul_zero]
+    · rw [b.orthonormal.2 h1, zero_mul]
+
+/-- The span of the elementary tensors `eᵢ ⊗ dⱼ` of two Hilbert bases is dense
+in `H ⊗ K`: expand `x` over `(eᵢ)` and `y` over `(dⱼ)`, and use that the
+algebraic tensor product is dense in the completion. -/
+theorem hilbTensorMk_dense_span {ι κ : Type*} (b : HilbertBasis ι ℂ H)
+    (c : HilbertBasis κ ℂ K) :
+    ⊤ ≤ (Submodule.span ℂ
+      (Set.range (fun p : ι × κ => hilbTensorMk (b p.1) (c p.2)))).topologicalClosure := by
+  classical
+  have hNclosed : IsClosed (((Submodule.span ℂ
+      (Set.range (fun p : ι × κ => hilbTensorMk (b p.1) (c p.2)))).topologicalClosure :
+        Submodule ℂ (hilbTensor H K)) : Set (hilbTensor H K)) :=
+    Submodule.isClosed_topologicalClosure _
+  -- `x ⊗ dⱼ` is in the closed span, by expanding `x` over `(eᵢ)`
+  have hcol : ∀ (x : H) (j : κ), hilbTensorMk x (c j) ∈ (Submodule.span ℂ
+      (Set.range (fun p : ι × κ => hilbTensorMk (b p.1) (c p.2)))).topologicalClosure := by
+    intro x j
+    have h0 := (b.hasSum_repr x).mapL (hilbTensorKet (H := H) (c j))
+    have hfun : (fun i : ι => hilbTensorKet (H := H) (c j) (b.repr x i • b i))
+        = fun i : ι => b.repr x i • hilbTensorMk (b i) (c j) := by
+      funext i; rw [map_smul, hilbTensorKet_apply]
+    rw [hfun, hilbTensorKet_apply] at h0
+    rw [← SetLike.mem_coe, Submodule.topologicalClosure_coe]
+    refine mem_closure_of_tendsto h0 (Filter.Eventually.of_forall fun F => ?_)
+    simp only [SetLike.mem_coe]
+    exact Submodule.sum_mem _ fun i _ =>
+      Submodule.smul_mem _ _ (Submodule.subset_span ⟨(i, j), rfl⟩)
+  -- hence so is every `x ⊗ y`, by expanding `y` over `(dⱼ)`
+  have hmk : ∀ (x : H) (y : K), hilbTensorMk x y ∈ (Submodule.span ℂ
+      (Set.range (fun p : ι × κ => hilbTensorMk (b p.1) (c p.2)))).topologicalClosure := by
+    intro x y
+    have h0 := (c.hasSum_repr y).mapL (hilbTensorKet' (K := K) x)
+    have hfun : (fun j : κ => hilbTensorKet' (K := K) x (c.repr y j • c j))
+        = fun j : κ => c.repr y j • hilbTensorMk x (c j) := by
+      funext j; rw [map_smul, hilbTensorKet'_apply]
+    rw [hfun, hilbTensorKet'_apply] at h0
+    rw [← SetLike.mem_coe]
+    refine hNclosed.mem_of_tendsto h0 (Filter.Eventually.of_forall fun G => ?_)
+    simp only [SetLike.mem_coe]
+    exact Submodule.sum_mem _ fun j _ => Submodule.smul_mem _ _ (hcol x j)
+  -- and the algebraic tensor product is dense
+  have hall : ∀ z : TensorProduct ℂ H K, ((z : hilbTensor H K)) ∈ (Submodule.span ℂ
+      (Set.range (fun p : ι × κ => hilbTensorMk (b p.1) (c p.2)))).topologicalClosure := by
+    intro z
+    induction z using TensorProduct.induction_on with
+    | zero =>
+        rw [show ((0 : TensorProduct ℂ H K) : hilbTensor H K) = 0 from
+          UniformSpace.Completion.coe_zero]
+        exact Submodule.zero_mem _
+    | tmul x y => exact hmk x y
+    | add z z' hz hz' =>
+        rw [UniformSpace.Completion.coe_add]
+        exact Submodule.add_mem _ hz hz'
+  intro ξ _
+  rw [← SetLike.mem_coe]
+  refine hNclosed.closure_subset_iff.mpr ?_ (hilbTensor_denseRange_coe ξ)
+  rintro _ ⟨z, rfl⟩
+  exact SetLike.mem_coe.mpr (hall z)
+
+/-- **109IV**-style: the tensor product of a Hilbert basis `(eᵢ)` of `H` and a
+Hilbert basis `(dⱼ)` of `K` is a Hilbert basis `(eᵢ ⊗ dⱼ)` of `H ⊗ K`. -/
+noncomputable def hilbTensorBasis {ι κ : Type*} (b : HilbertBasis ι ℂ H)
+    (c : HilbertBasis κ ℂ K) : HilbertBasis (ι × κ) ℂ (hilbTensor H K) :=
+  HilbertBasis.mk (hilbTensorMk_orthonormal b c) (hilbTensorMk_dense_span b c)
+
+@[simp] theorem hilbTensorBasis_apply {ι κ : Type*} (b : HilbertBasis ι ℂ H)
+    (c : HilbertBasis κ ℂ K) (p : ι × κ) :
+    hilbTensorBasis b c p = hilbTensorMk (b p.1) (c p.2) :=
+  congrFun (HilbertBasis.coe_mk (hilbTensorMk_orthonormal b c)
+    (hilbTensorMk_dense_span b c)) p
 
 end HilbTensorAPI
 
@@ -1252,23 +1417,6 @@ theorem nmiu_between_type_I_aux (ϱ : NMIUMap (H →L[ℂ] H) (K →L[ℂ] K))
       ∀ a : H →L[ℂ] H, ϱ a = conjOperator U (tensorCLM a 1) := by
   classical
   have hcoe : ⇑ϱ = ⇑ϱ.toStarAlgHom := rfl
-  have he₀e₀ : ⟪e₀, e₀⟫ = (1 : ℂ) := by
-    rw [inner_self_eq_norm_sq_to_K, he₀]; norm_num
-  set p₀ : H →L[ℂ] H := ketbra e₀ e₀ with hp₀
-  have hp₀idem : p₀ * p₀ = p₀ := by
-    rw [hp₀, ketbra_mul, he₀e₀, one_smul]
-  -- the subspace `K' = ϱ(p₀) K`, as the fixed points of `ϱ(p₀)`
-  set S : Submodule ℂ K := LinearMap.ker (((1 : K →L[ℂ] K) - ϱ p₀) : K →ₗ[ℂ] K) with hSdef
-  have hSmem : ∀ d : K, d ∈ S ↔ ϱ p₀ d = d := by
-    intro d
-    rw [hSdef, LinearMap.mem_ker]
-    show ((1 : K →L[ℂ] K) - ϱ p₀) d = 0 ↔ _
-    rw [ContinuousLinearMap.sub_apply, ContinuousLinearMap.one_apply, sub_eq_zero]
-    exact eq_comm
-  have hSclosed : IsClosed (S : Set K) :=
-    ContinuousLinearMap.isClosed_ker ((1 : K →L[ℂ] K) - ϱ p₀)
-  haveI : CompleteSpace ↥S := hSclosed.completeSpace_coe
-  -- the bilinear map `(x, d) ↦ ϱ(|x⟩⟨e₀|) d`
   have hmapadd : ∀ b b' : H →L[ℂ] H, ϱ (b + b') = ϱ b + ϱ b' := fun b b' => by
     simpa [hcoe] using map_add ϱ.toStarAlgHom b b'
   have hmapsmul : ∀ (c : ℂ) (b : H →L[ℂ] H), ϱ (c • b) = c • ϱ b := fun c b => by
@@ -1277,102 +1425,192 @@ theorem nmiu_between_type_I_aux (ϱ : NMIUMap (H →L[ℂ] H) (K →L[ℂ] K))
     simpa [hcoe] using map_mul ϱ.toStarAlgHom b b'
   have hmapstar : ∀ b : H →L[ℂ] H, ϱ (star b) = star (ϱ b) := fun b => by
     simpa [hcoe] using map_star ϱ.toStarAlgHom b
-  have hmapone : ϱ (1 : H →L[ℂ] H) = 1 := by simpa [hcoe] using map_one ϱ.toStarAlgHom
-  set B : H →ₗ[ℂ] ↥S →ₗ[ℂ] K :=
-    LinearMap.mk₂ ℂ (fun (x : H) (d : ↥S) => ϱ (ketbra x e₀) (d : K))
-      (fun x x' d => by rw [ketbra_add_left, hmapadd]; rfl)
-      (fun c x d => by rw [ketbra_smul_left, hmapsmul]; rfl)
-      (fun x d d' => by rw [Submodule.coe_add, map_add])
-      (fun c x d => by rw [Submodule.coe_smul, map_smul]) with hBdef
-  set w : TensorProduct ℂ H ↥S →ₗ[ℂ] K := TensorProduct.lift B with hwdef
-  have hwmk : ∀ (x : H) (d : ↥S), w (x ⊗ₜ[ℂ] d) = ϱ (ketbra x e₀) (d : K) := fun x d => rfl
-  have hadj : ∀ b : H →L[ℂ] H, ContinuousLinearMap.adjoint (ϱ b) = ϱ (star b) := by
-    intro b
-    rw [← ContinuousLinearMap.star_eq_adjoint, hmapstar]
-  have hw : ∀ z z' : TensorProduct ℂ H ↥S, ⟪w z, w z'⟫ = ⟪z, z'⟫ := by
-    have base : ∀ (x : H) (d : ↥S) (z' : TensorProduct ℂ H ↥S),
-        ⟪w (x ⊗ₜ[ℂ] d), w z'⟫ = ⟪x ⊗ₜ[ℂ] d, z'⟫ := by
-      intro x d z'
-      induction z' using TensorProduct.induction_on with
-      | zero =>
-          rw [map_zero, inner_zero_right (𝕜 := ℂ) (w (x ⊗ₜ[ℂ] d))]
-          exact (inner_zero_right (𝕜 := ℂ) (x ⊗ₜ[ℂ] d)).symm
-      | tmul x' d' =>
-          rw [hwmk, hwmk, TensorProduct.inner_tmul,
-            ← ContinuousLinearMap.adjoint_inner_right, hadj]
-          have hcomp : ϱ (star (ketbra x e₀)) (ϱ (ketbra x' e₀) (d' : K))
-              = ϱ (star (ketbra x e₀) * ketbra x' e₀) (d' : K) := by
-            rw [hmapmul]; rfl
-          rw [hcomp, ketbra_star, ketbra_mul, ← hp₀, hmapsmul,
-            ContinuousLinearMap.smul_apply, inner_smul_right, (hSmem _).mp d'.2]
-          rfl
-      | add u v hu hv =>
-          rw [map_add, inner_add_right (𝕜 := ℂ) (w (x ⊗ₜ[ℂ] d)) (w u) (w v), hu, hv]
-          exact (inner_add_right (𝕜 := ℂ) (x ⊗ₜ[ℂ] d) u v).symm
-    intro z
-    induction z using TensorProduct.induction_on with
-    | zero =>
-        intro z'
-        rw [map_zero, inner_zero_left (𝕜 := ℂ) (w z')]
-        exact (inner_zero_left (𝕜 := ℂ) z').symm
-    | tmul x d => exact base x d
-    | add u v hu hv =>
-        intro z'
-        rw [map_add, inner_add_left (𝕜 := ℂ) (w u) (w v) (w z'), hu z', hv z']
-        exact (inner_add_left (𝕜 := ℂ) u v z').symm
-  obtain ⟨W, hWcoe, hWnorm⟩ := exists_hilbTensor_isometry w hw
-  have hWmk : ∀ (x : H) (d : ↥S), W (hilbTensorMk x (d : ↥S)) = ϱ (ketbra x e₀) (d : K) :=
-    fun x d => hWcoe (x ⊗ₜ[ℂ] d)
   have hmulapp : ∀ (b b' : H →L[ℂ] H) (y : K), ϱ b (ϱ b' y) = ϱ (b * b') y := by
     intro b b' y; rw [hmapmul]; rfl
-  -- the (closed) range `M` of `W`
-  set M : Submodule ℂ K := LinearMap.range (W : hilbTensor H ↥S →ₗ[ℂ] K) with hMdef
-  have hMrange : (M : Set K) = Set.range ⇑W := LinearMap.coe_range _
-  have hWiso : Isometry ⇑W := AddMonoidHomClass.isometry_of_norm W hWnorm
-  have hMcomplete : IsComplete (M : Set K) := by
-    rw [hMrange]; exact hWiso.isUniformInducing.isComplete_range
-  haveI : CompleteSpace ↥M := hMcomplete.completeSpace_coe
-  have hMtop : ∀ y : K, y ∈ M :=
-    nmiu_forall_mem ϱ e₀ he₀ M (by
-      intro x η hη
-      exact ⟨hilbTensorMk x (⟨η, (hSmem η).mpr hη⟩ : ↥S), hWmk x ⟨η, (hSmem η).mpr hη⟩⟩)
-  have hWsurj : Function.Surjective ⇑W := fun y => hMtop y
-  -- `W` is a unitary
-  have hWadjW : (ContinuousLinearMap.adjoint W).comp W = 1 := by
-    refine ContinuousLinearMap.ext fun v => ?_
+  have hadj : ∀ b : H →L[ℂ] H, ContinuousLinearMap.adjoint (ϱ b) = ϱ (star b) := by
+    intro b; rw [← ContinuousLinearMap.star_eq_adjoint, hmapstar]
+  -- `𝒦' = ϱ(p₀)𝒦` (dils.tex:640), as the fixed points of the projection `ϱ(p₀)`
+  set S : Submodule ℂ K :=
+    LinearMap.ker (((1 : K →L[ℂ] K) - ϱ (ketbra e₀ e₀)) : K →ₗ[ℂ] K) with hSdef
+  have hSmem : ∀ d : K, d ∈ S ↔ ϱ (ketbra e₀ e₀) d = d := by
+    intro d
+    rw [hSdef, LinearMap.mem_ker]
+    show ((1 : K →L[ℂ] K) - ϱ (ketbra e₀ e₀)) d = 0 ↔ _
+    rw [_root_.sub_apply, _root_.one_apply_eq_self, sub_eq_zero]
+    exact eq_comm
+  have hSclosed : IsClosed (S : Set K) :=
+    ContinuousLinearMap.isClosed_ker ((1 : K →L[ℂ] K) - ϱ (ketbra e₀ e₀))
+  haveI : CompleteSpace ↥S := hSclosed.completeSpace_coe
+  -- the thesis's orthonormality computation: `⟪ϱ(|x⟩⟨e₀|)d, ϱ(|y⟩⟨e₀|)d'⟫ = ⟪x,y⟫⟪d,d'⟫`
+  -- for `d, d' ∈ 𝒦'`, from `|e₀⟩⟨x| · |y⟩⟨e₀| = ⟪x,y⟫ p₀` and `ϱ(p₀)d' = d'`
+  have hinnerT : ∀ (x y : H) (d d' : ↥S),
+      ⟪ϱ (ketbra x e₀) (d : K), ϱ (ketbra y e₀) (d' : K)⟫
+        = ⟪x, y⟫ * ⟪(d : K), (d' : K)⟫ := by
+    intro x y d d'
+    rw [← ContinuousLinearMap.adjoint_inner_right, hadj, ketbra_star, hmulapp, ketbra_mul,
+      hmapsmul, _root_.smul_apply, inner_smul_right, (hSmem _).mp d'.2]
+  have hnormT : ∀ (x : H) (d : ↥S), ‖ϱ (ketbra x e₀) (d : K)‖ = ‖x‖ * ‖(d : K)‖ := by
+    intro x d
+    have h2 : ‖ϱ (ketbra x e₀) (d : K)‖ ^ 2 = (‖x‖ * ‖(d : K)‖) ^ 2 := by
+      have h := congrArg (fun z : ℂ => ‖z‖) (hinnerT x x d d)
+      simp only [norm_mul, norm_inner_self'] at h
+      rw [h, mul_pow]
+    have h3 := congrArg Real.sqrt h2
+    rwa [Real.sqrt_sq (norm_nonneg _),
+      Real.sqrt_sq (mul_nonneg (norm_nonneg _) (norm_nonneg _))] at h3
+  -- `x ↦ ϱ(|x⟩⟨e₀|)d` is an isometry `ℋ → 𝒦` for each unit `d ∈ 𝒦'`; this is the
+  -- instance of the ultrastrong continuity of `ϱ` that 138V needs
+  obtain ⟨Tk, hTk⟩ : ∃ Tk : ↥S → (H →L[ℂ] K),
+      ∀ (d : ↥S) (x : H), Tk d x = ϱ (ketbra x e₀) (d : K) :=
+    ⟨fun d => LinearMap.mkContinuous
+      { toFun := fun x => ϱ (ketbra x e₀) (d : K)
+        map_add' := fun x x' => by rw [ketbra_add_left, hmapadd]; rfl
+        map_smul' := fun c x => by rw [ketbra_smul_left, hmapsmul]; rfl }
+      ‖(d : K)‖ (fun x => le_of_eq ((hnormT x d).trans (mul_comm _ _))),
+     fun _ _ => rfl⟩
+  -- an orthonormal basis `(eᵢ)` of `ℋ` with `e_{i₀} = e₀` (dils.tex:637)
+  have hsingleton : Orthonormal ℂ ((↑) : ({e₀} : Set H) → H) := by
+    refine ⟨fun i => ?_, fun i j hij => ?_⟩
+    · rw [show ((i : H)) = e₀ from i.2]; exact he₀
+    · exact absurd (Subtype.ext ((i.2 : (i : H) = e₀).trans (j.2 : (j : H) = e₀).symm)) hij
+  obtain ⟨w, bb, hsub, hbbcoe⟩ := hsingleton.exists_hilbertBasis_extension
+  have hi₀ : e₀ ∈ w := hsub rfl
+  -- an orthonormal basis `(dⱼ)` of `𝒦'` (dils.tex:643)
+  obtain ⟨sD, bd, hbdcoe⟩ := exists_hilbertBasis ℂ ↥S
+  have hdorth : Orthonormal ℂ (fun j : ↥sD => ((bd j : ↥S) : K)) := by
+    refine ⟨fun j => by simpa using bd.orthonormal.1 j,
+      fun j j' hjj' => by simpa using bd.orthonormal.2 hjj'⟩
+  -- the thesis's `rᵢⱼ = ϱ(uᵢ*)dⱼ` with `uᵢ = |e₀⟩⟨eᵢ|` (dils.tex:648)
+  obtain ⟨r, hr⟩ : ∃ r : ↥w × ↥sD → K,
+      ∀ (i : ↥w) (j : ↥sD), r (i, j) = ϱ (ketbra (bb i) e₀) ((bd j : ↥S) : K) :=
+    ⟨fun p => ϱ (ketbra (bb p.1) e₀) ((bd p.2 : ↥S) : K), fun _ _ => rfl⟩
+  have hrinner : ∀ (i i' : ↥w) (j j' : ↥sD),
+      ⟪r (i, j), r (i', j')⟫
+        = ⟪bb i, bb i'⟫ * ⟪((bd j : ↥S) : K), ((bd j' : ↥S) : K)⟫ := by
+    intro i i' j j'
+    rw [hr, hr]
+    exact hinnerT _ _ _ _
+  -- the `rᵢⱼ` are unit vectors and mutually orthogonal (dils.tex:653–666)
+  have hrorth : Orthonormal ℂ r := by
+    refine ⟨fun p => ?_, fun p q hpq => ?_⟩
+    · obtain ⟨i, j⟩ := p
+      rw [hr, hnormT, bb.orthonormal.1, hdorth.1, one_mul]
+    · obtain ⟨i, j⟩ := p
+      obtain ⟨i', j'⟩ := q
+      show ⟪r (i, j), r (i', j')⟫ = 0
+      rw [hrinner]
+      by_cases h1 : i = i'
+      · subst h1
+        have h2 : j ≠ j' := fun h => hpq (by rw [h])
+        rw [hdorth.2 h2, mul_zero]
+      · rw [bb.orthonormal.2 h1, zero_mul]
+  -- `(rᵢⱼ)` spans `𝒦` densely: this is **138IV**, `nmiu_forall_mem`
+  have hNclosed : IsClosed (((Submodule.span ℂ (Set.range r)).topologicalClosure :
+      Submodule ℂ K) : Set K) := Submodule.isClosed_topologicalClosure _
+  have hcolr : ∀ (x : H) (j : ↥sD),
+      ϱ (ketbra x e₀) ((bd j : ↥S) : K)
+        ∈ (Submodule.span ℂ (Set.range r)).topologicalClosure := by
+    intro x j
+    have h0 := (bb.hasSum_repr x).mapL (Tk (bd j))
+    have hfun : (fun i : ↥w => Tk (bd j) (bb.repr x i • bb i))
+        = fun i : ↥w => bb.repr x i • r (i, j) := by
+      funext i; rw [map_smul, hTk, hr]
+    rw [hfun, hTk] at h0
+    rw [← SetLike.mem_coe, Submodule.topologicalClosure_coe]
+    refine mem_closure_of_tendsto h0 (Filter.Eventually.of_forall fun F => ?_)
+    simp only [SetLike.mem_coe]
+    exact Submodule.sum_mem _ fun i _ =>
+      Submodule.smul_mem _ _ (Submodule.subset_span ⟨(i, j), rfl⟩)
+  have hMabs : ∀ (x : H) (η : K), ϱ (ketbra e₀ e₀) η = η →
+      ϱ (ketbra x e₀) η ∈ (Submodule.span ℂ (Set.range r)).topologicalClosure := by
+    intro x η hη
+    have hdS : η ∈ S := (hSmem η).mpr hη
+    have h0 := (bd.hasSum_repr (⟨η, hdS⟩ : ↥S)).mapL
+      ((ϱ (ketbra x e₀)).comp S.subtypeL)
+    have hfun : (fun j : ↥sD => ((ϱ (ketbra x e₀)).comp S.subtypeL)
+          (bd.repr (⟨η, hdS⟩ : ↥S) j • bd j))
+        = fun j : ↥sD =>
+            bd.repr (⟨η, hdS⟩ : ↥S) j • ϱ (ketbra x e₀) ((bd j : ↥S) : K) := by
+      funext j; rw [map_smul]; rfl
+    have hlim : ((ϱ (ketbra x e₀)).comp S.subtypeL) (⟨η, hdS⟩ : ↥S)
+        = ϱ (ketbra x e₀) η := rfl
+    rw [hfun, hlim] at h0
+    rw [← SetLike.mem_coe]
+    refine hNclosed.mem_of_tendsto h0 (Filter.Eventually.of_forall fun G => ?_)
+    simp only [SetLike.mem_coe]
+    exact Submodule.sum_mem _ fun j _ => Submodule.smul_mem _ _ (hcolr x j)
+  have hrtotal : ⊤ ≤ (Submodule.span ℂ (Set.range r)).topologicalClosure := fun y _ =>
+    nmiu_forall_mem ϱ e₀ he₀ _ hMabs y
+  -- so `(rᵢⱼ)` is an orthonormal basis of `𝒦` (dils.tex:650)
+  obtain ⟨rb, hrb⟩ : ∃ rb : HilbertBasis (↥w × ↥sD) ℂ K, ⇑rb = r :=
+    ⟨HilbertBasis.mk hrorth hrtotal, HilbertBasis.coe_mk _ _⟩
+  -- and `(eᵢ ⊗ dⱼ)` is one of `ℋ ⊗ 𝒦'`
+  obtain ⟨tb, htb⟩ : ∃ tb : HilbertBasis (↥w × ↥sD) ℂ (hilbTensor H ↥S),
+      ∀ (i : ↥w) (j : ↥sD), tb (i, j) = hilbTensorMk (bb i) (bd j) :=
+    ⟨hilbTensorBasis bb bd, fun i j => hilbTensorBasis_apply bb bd (i, j)⟩
+  -- `U` is the unitary fixed by `U rᵢⱼ = eᵢ ⊗ dⱼ` (dils.tex:687)
+  obtain ⟨Ue, hUe⟩ : ∃ Ue : K ≃ₗᵢ[ℂ] hilbTensor H ↥S, ∀ p, Ue (rb p) = tb p :=
+    ⟨rb.repr.trans tb.repr.symm, fun p => by
+      rw [LinearIsometryEquiv.trans_apply, HilbertBasis.repr_self,
+        HilbertBasis.repr_symm_single]⟩
+  obtain ⟨U, hU⟩ : ∃ U : K →L[ℂ] hilbTensor H ↥S, ∀ y, U y = Ue y :=
+    ⟨Ue.toLinearIsometry.toContinuousLinearMap, fun _ => rfl⟩
+  have hUadjapply : ∀ z, ContinuousLinearMap.adjoint U z = Ue.symm z := by
+    intro z
     refine ext_inner_left ℂ fun y => ?_
-    show ⟪y, ContinuousLinearMap.adjoint W (W v)⟫ = ⟪y, (1 : hilbTensor H ↥S →L[ℂ] _) v⟫
-    rw [ContinuousLinearMap.adjoint_inner_right, ContinuousLinearMap.one_apply]
-    exact ((⟨W.toLinearMap, hWnorm⟩ : hilbTensor H ↥S →ₗᵢ[ℂ] K)).inner_map_map y v
-  have hWadjW' : ∀ v, ContinuousLinearMap.adjoint W (W v) = v := fun v => by
-    have := congrArg (fun T : hilbTensor H ↥S →L[ℂ] hilbTensor H ↥S => T v) hWadjW
-    simpa using this
-  have hWWadj : W.comp (ContinuousLinearMap.adjoint W) = 1 := by
-    refine ContinuousLinearMap.ext fun y => ?_
-    obtain ⟨v, rfl⟩ := hWsurj y
-    show W (ContinuousLinearMap.adjoint W (W v)) = _
-    rw [hWadjW']
-    rfl
-  refine ⟨↥S, inferInstance, inferInstance, inferInstance,
-    ContinuousLinearMap.adjoint W, ?_, ?_, ?_⟩
-  · rw [ContinuousLinearMap.adjoint_adjoint]; exact hWWadj
-  · rw [ContinuousLinearMap.adjoint_adjoint]; exact hWadjW
-  · intro a
-    have hintertwine : W.comp (tensorCLM a 1) = (ϱ a).comp W := by
-      refine hilbTensor_ext ?_
-      intro x d
-      show W (tensorCLM a 1 (hilbTensorMk x d)) = ϱ a (W (hilbTensorMk x d))
-      rw [tensorCLM_mk, hWmk, hWmk, hmulapp, mul_ketbra]
-      rfl
-    have hconj : conjOperator (ContinuousLinearMap.adjoint W) (tensorCLM a 1)
-        = W.comp ((tensorCLM a 1).comp (ContinuousLinearMap.adjoint W)) := by
-      show (ContinuousLinearMap.adjoint (ContinuousLinearMap.adjoint W)).comp
-        ((tensorCLM a 1).comp (ContinuousLinearMap.adjoint W)) = _
-      rw [ContinuousLinearMap.adjoint_adjoint]
-    rw [hconj, ← ContinuousLinearMap.comp_assoc, hintertwine,
-      ContinuousLinearMap.comp_assoc, hWWadj]
-    exact (mul_one (ϱ a)).symm
-
+    rw [ContinuousLinearMap.adjoint_inner_right, hU,
+      ← Ue.inner_map_map y (Ue.symm z), Ue.apply_symm_apply]
+  refine ⟨↥S, inferInstance, inferInstance, inferInstance, U, ?_, ?_, ?_⟩
+  · refine ContinuousLinearMap.ext fun y => ?_
+    rw [ContinuousLinearMap.comp_apply, hUadjapply, hU,
+      LinearIsometryEquiv.symm_apply_apply, _root_.one_apply_eq_self]
+  · refine ContinuousLinearMap.ext fun z => ?_
+    rw [ContinuousLinearMap.comp_apply, hUadjapply, hU,
+      LinearIsometryEquiv.apply_symm_apply, _root_.one_apply_eq_self]
+  · -- the computation of dils.tex:689–711, on the basis `(rᵢⱼ)`
+    intro a
+    have hdense : Dense ((Submodule.span ℂ (Set.range r) : Submodule ℂ K) : Set K) :=
+      Submodule.dense_iff_topologicalClosure_eq_top.mpr (top_le_iff.mp hrtotal)
+    have hconj : conjOperator U (tensorCLM a 1)
+        = (ContinuousLinearMap.adjoint U).comp ((tensorCLM a 1).comp U) := rfl
+    refine ContinuousLinearMap.ext_on hdense ?_
+    rintro _ ⟨p, rfl⟩
+    obtain ⟨i, j⟩ := p
+    -- the ultrastrong expansion `|a eᵢ⟩⟨e₀| = ∑ₖ ⟪eₖ, a eᵢ⟫ |eₖ⟩⟨e₀|`, transported
+    -- through `ϱ` and applied to `dⱼ`
+    have hci : HasSum (fun k : ↥w => bb.repr (a (bb i)) k • r (k, j)) (ϱ a (r (i, j))) := by
+      have h0 := (bb.hasSum_repr (a (bb i))).mapL (Tk (bd j))
+      have hfun : (fun k : ↥w => Tk (bd j) (bb.repr (a (bb i)) k • bb k))
+          = fun k : ↥w => bb.repr (a (bb i)) k • r (k, j) := by
+        funext k; rw [map_smul, hTk, hr]
+      have hlim : Tk (bd j) (a (bb i)) = ϱ a (r (i, j)) := by
+        rw [hTk, hr, hmulapp, mul_ketbra]
+      rw [hfun, hlim] at h0
+      exact h0
+    -- and the same sum is `U*((a eᵢ) ⊗ dⱼ)`, by `U* (eₖ ⊗ dⱼ) = rₖⱼ`
+    have hcj : HasSum (fun k : ↥w => bb.repr (a (bb i)) k • r (k, j))
+        (ContinuousLinearMap.adjoint U (hilbTensorMk (a (bb i)) (bd j))) := by
+      have h0 := (bb.hasSum_repr (a (bb i))).mapL
+        ((ContinuousLinearMap.adjoint U).comp (hilbTensorKet (H := H) (bd j)))
+      have hfun : (fun k : ↥w => ((ContinuousLinearMap.adjoint U).comp
+            (hilbTensorKet (H := H) (bd j))) (bb.repr (a (bb i)) k • bb k))
+          = fun k : ↥w => bb.repr (a (bb i)) k • r (k, j) := by
+        funext k
+        rw [map_smul]
+        congr 1
+        show ContinuousLinearMap.adjoint U (hilbTensorMk (bb k) (bd j)) = r (k, j)
+        rw [← htb, ← hUe (k, j), hUadjapply, LinearIsometryEquiv.symm_apply_apply, hrb]
+      have hlim : ((ContinuousLinearMap.adjoint U).comp
+          (hilbTensorKet (H := H) (bd j))) (a (bb i))
+            = ContinuousLinearMap.adjoint U (hilbTensorMk (a (bb i)) (bd j)) := rfl
+      rw [hfun, hlim] at h0
+      exact h0
+    have hUr : U (r (i, j)) = hilbTensorMk (bb i) (bd j) := by
+      rw [← hrb, hU, hUe, htb]
+    show ϱ a (r (i, j)) = conjOperator U (tensorCLM a 1) (r (i, j))
+    rw [hconj, ContinuousLinearMap.comp_apply, ContinuousLinearMap.comp_apply, hUr,
+      tensorCLM_mk, _root_.one_apply_eq_self]
+    exact hci.unique hcj
 
 end TypeIAuxMain
 end TypeIAux
@@ -1392,67 +1630,6 @@ section KrausAux
 
 variable {H K Z : Type u} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
   [NormedAddCommGroup K] [InnerProductSpace ℂ K] [CompleteSpace K]
-
-/-- `hilbTensorMk` is additive in its first argument. -/
-theorem hilbTensorMk_add_left (x x' : H) (y : K) :
-    hilbTensorMk (x + x') y = hilbTensorMk x y + hilbTensorMk (K := K) x' y := by
-  unfold hilbTensorMk
-  rw [TensorProduct.add_tmul, UniformSpace.Completion.coe_add]
-
-theorem hilbTensorMk_add_right (x : H) (y y' : K) :
-    hilbTensorMk x (y + y') = hilbTensorMk x y + hilbTensorMk (K := K) x y' := by
-  unfold hilbTensorMk
-  rw [TensorProduct.tmul_add, UniformSpace.Completion.coe_add]
-
-theorem hilbTensorMk_sub_right (x : H) (y y' : K) :
-    hilbTensorMk x (y - y') = hilbTensorMk x y - hilbTensorMk (K := K) x y' := by
-  unfold hilbTensorMk
-  rw [TensorProduct.tmul_sub, UniformSpace.Completion.coe_sub]
-
-theorem hilbTensorMk_smul_left (c : ℂ) (x : H) (y : K) :
-    hilbTensorMk (c • x) y = c • hilbTensorMk (K := K) x y := by
-  unfold hilbTensorMk
-  rw [← TensorProduct.smul_tmul']
-  exact (UniformSpace.Completion.coe_smul c _)
-
-theorem hilbTensorMk_smul_right (c : ℂ) (x : H) (y : K) :
-    hilbTensorMk x (c • y) = c • hilbTensorMk (K := K) x y := by
-  unfold hilbTensorMk
-  rw [TensorProduct.tmul_smul]
-  exact (UniformSpace.Completion.coe_smul c _)
-
-private theorem norm_inner_self' {E : Type*} [NormedAddCommGroup E]
-    [InnerProductSpace ℂ E] (z : E) : ‖(⟪z, z⟫ : ℂ)‖ = ‖z‖ ^ 2 := by
-  rw [inner_self_eq_norm_sq_to_K, norm_pow, RCLike.norm_ofReal, abs_norm]
-
-theorem norm_hilbTensorMk (x : H) (y : K) : ‖hilbTensorMk x y‖ = ‖x‖ * ‖y‖ := by
-  have h := congrArg (fun z : ℂ => ‖z‖) (hilbTensor_inner_mk x x y y)
-  simp only [norm_mul, norm_inner_self'] at h
-  have h3 : ‖hilbTensorMk x y‖ ^ 2 = (‖x‖ * ‖y‖) ^ 2 := by rw [h, mul_pow]
-  have := congrArg Real.sqrt h3
-  rwa [Real.sqrt_sq (norm_nonneg _),
-    Real.sqrt_sq (mul_nonneg (norm_nonneg _) (norm_nonneg _))] at this
-
-/-- The "ket" operator `|·⟩ ⊗ e : H → H ⊗ K`, `x ↦ x ⊗ e`. -/
-noncomputable def hilbTensorKet (e : K) : H →L[ℂ] hilbTensor H K :=
-  LinearMap.mkContinuous
-    { toFun := fun x => hilbTensorMk x e
-      map_add' := fun x x' => hilbTensorMk_add_left x x' e
-      map_smul' := fun c x => hilbTensorMk_smul_left c x e } ‖e‖
-    (fun x => by
-      show ‖hilbTensorMk x e‖ ≤ ‖e‖ * ‖x‖
-      rw [norm_hilbTensorMk]; exact le_of_eq (mul_comm _ _))
-
-@[simp] theorem hilbTensorKet_apply (e : K) (x : H) :
-    hilbTensorKet e x = hilbTensorMk x e := rfl
-
-/-- The adjoint of the ket operator is the slice map `x ⊗ y ↦ ⟪e,y⟫ x`. -/
-theorem hilbTensorKet_adjoint_mk (e : K) (x : H) (y : K) :
-    ContinuousLinearMap.adjoint (hilbTensorKet (H := H) e) (hilbTensorMk x y) = ⟪e, y⟫ • x := by
-  refine ext_inner_right ℂ fun v => ?_
-  rw [ContinuousLinearMap.adjoint_inner_left, hilbTensorKet_apply, hilbTensor_inner_mk,
-    inner_smul_left, inner_conj_symm]
-  ring
 
 /-- `hilbTensor_ext` for a target in an arbitrary universe (needed for `Z = ℂ`). -/
 theorem hilbTensor_ext' {Z : Type*} [NormedAddCommGroup Z] [NormedSpace ℂ Z]
@@ -1584,19 +1761,6 @@ theorem tensorCLM_nonneg {a : H →L[ℂ] H} {b : K →L[ℂ] K} (ha : 0 ≤ a) 
     rw [tensorCLM_star, hsa, hsb, tensorCLM_mul, hca, hcb]
   rw [h]
   exact star_mul_self_nonneg (tensorCLM (CFC.sqrt a) (CFC.sqrt b))
-
-/-- The "co-ket" operator `x ⊗ · : K → H ⊗ K`, `y ↦ x ⊗ y`. -/
-noncomputable def hilbTensorKet' (x : H) : K →L[ℂ] hilbTensor H K :=
-  LinearMap.mkContinuous
-    { toFun := fun y => hilbTensorMk x y
-      map_add' := fun y y' => hilbTensorMk_add_right x y y'
-      map_smul' := fun c y => hilbTensorMk_smul_right c x y } ‖x‖
-    (fun y => by
-      show ‖hilbTensorMk x y‖ ≤ ‖x‖ * ‖y‖
-      rw [norm_hilbTensorMk])
-
-@[simp] theorem hilbTensorKet'_apply (x : H) (y : K) :
-    hilbTensorKet' x y = hilbTensorMk x y := rfl
 
 theorem tensorCLM_mono {a : H →L[ℂ] H} {b b' : K →L[ℂ] K} (ha : 0 ≤ a) (h : b ≤ b') :
     tensorCLM a b ≤ tensorCLM a b' := by
@@ -1809,7 +1973,9 @@ end UWAux
 /-! ## Parsec 1380: consequences of Stinespring
 
 **138I** (dils.tex:597): introduction — nothing to formalize.
-**138III**–**138V** are the proof of **138II** — not converted. -/
+**138III**–**138V** are the proof of **138II**: **138IV** is `nmiu_forall_mem`
+above, and **138III** and **138V** run inside `nmiu_between_type_I` and
+`nmiu_between_type_I_aux`. -/
 
 section TypeI
 
