@@ -359,13 +359,13 @@ Zero consumers.
 The argument it contains — the orthogonal projection `P` onto `D^⊥⊥` fixes the
 image, so `P` and `id` both factor `η` through itself, so the uniqueness half
 of the universal property gives `P = id` — is written out a **second** time
-inside `ext_tensor_dense` (**164II**.1, `SelfDual.lean:8013`), whose own doc
+inside `ext_tensor_dense` (**164II**.1, `SelfDual.lean:8214`), whose own doc
 comment says so in as many words:
 
 > "its place is taken by the projection argument of **163II**
 > (`selfdual_compl_defining_dense`)"
 
-and a **third** time inside `paschke_tprod_dense` (`SelfDual.lean:9935`), whose
+and a **third** time inside `paschke_tprod_dense` (`SelfDual.lean:10624`), whose
 doc says "This is the Paschke-module analogue of `selfdual_compl_defining_dense`
 (**163II**) and of `ext_tensor_dense` (**164II**.1), and it is the easiest of
 the three". A fourth site, the `section TensorDense` header at `:6245`, says
@@ -581,7 +581,7 @@ time under a different name.
 > estimate behind it, `|ω((⋁D−d)a)| ≤ ω(⋁D−d)^½ ω(a*(⋁D−d)a)^½`, whose second
 > factor is *eventually* bounded because `a*(⋁D−d)a` decreases."
 
-**166II** `ultranorm_continuity_ext_tensor` (`B/Dils/SelfDual.lean:9598`):
+**166II** `ultranorm_continuity_ext_tensor` (`B/Dils/SelfDual.lean:10287`):
 
 > "**166III** is the proof; transcribed below, with its appeal to **44III**
 > `vanishing_effects` replaced by the order estimate `Ω(⟨d,d⟩ ⊗ ⟨yα,yα⟩) ≤ M² ·
@@ -617,7 +617,7 @@ the same point, which is the 123I shape.
 | 156II | `paschke_injective` | `B/Dils/Paschke.lean:3531` | 48 | 2/3 |
 | 160IV | `hilbmod_projthm_3` | `B/Dils/SelfDual.lean:1535` | 45 | 2/3 |
 | 96III | `ncp_uwlim_2` | `A/Proc/Measurement.lean:1797` | 39 | 2/3 |
-| 23II | `sqrt_lemma_monotone` | `A/CStar/Positive.lean:6617` | 35 | 3/6 |
+| 23II | `sqrt_lemma_monotone` | `A/CStar/Positive.lean:6856` | 35 | 3/6 |
 | 154III | `existence_paschke_2` | `B/Dils/Paschke.lean:1373` | 32 | 13/14 |
 
 `existence_paschke_2` was read and is **not** a fingerprint: it is 154III part
@@ -830,14 +830,22 @@ the pool, but the earlier reading stands.
 **Two more dead declarations are class 3 by their own doc comment but carry a
 DISP tag, so they stay:**
 
-* `atomicTypeI_tensorBsurjectivity` (**125eIII**), `A/Proc/QuantumLambda.lean:7590`.
-  Its doc now reads: the `←` half "was the one open at the time and **is now
-  proved in general at the end of this file** (`tensorBsurjectivity`), from
-  125VIIb `tensor_preimage`." Superseded by its own general form, exactly as the
-  brief for this sweep reported. Both it and `atomicTypeI_tensor_preimage`
-  (**125VIIb**) remain the tree's only record of the atomic-type-I case *as a
-  case*. DISP-tagged, so not noise: **leave and report**, and retiring them
-  stays a statement-level decision for the author (§10a).
+* `atomicTypeI_tensorBsurjectivity` (**125eIII**), `A/Proc/QuantumLambda.lean:7836`.
+  Superseded by its own general form, exactly as the brief for that sweep
+  reported — and since 2026-09-03 it *is* that general form: the file was
+  reordered so that 125VIIb and 125eIII precede parsecs 1254–1255, and both
+  this and `atomicTypeI_tensor_preimage` (**125VIIb**) are now one-line
+  corollaries of `tensorBsurjectivity` / `tensor_preimage` with their extra
+  `AtomicTypeIRep` hypothesis unused.  They remain the tree's only record of
+  the atomic-type-I case *as a case*.  DISP-tagged, so not noise: **leave and
+  report**, and retiring them stays a statement-level decision for the author
+  (§10a).  ⚠️ What that conversion left behind is a much larger limb, not yet
+  weighed here: the atomic type I slice island that used to prove them —
+  `atTensorPreimage`, `atTensorBSurj`, `atE`/`atMem`/`atE_of_mem` and the
+  `GenSum` layer under them, roughly 700 lines — now has no consumer at all,
+  as do the hereditarily atomic `haTensorPreimage`, `haMem` and `haE_of_mem`.
+  They are an independent, 121II-free elementary proof of the slice-map
+  property for atomic type I and for hereditarily atomic second factors.
 * `ultranormcontstruct_add_unTendsto` (**148III** part 1, net form),
   `B/Dils/HilbertModules.lean:1842`. Its doc comment already withdraws its own
   justification: "The claim that used to stand here — 'kept because it is the
@@ -1334,7 +1342,7 @@ the filters, all unrowed by `lean_name`):
   corner — a sanity anchor for the definitions", i.e. class 2, a non-vacuity
   check), `isPureMap_of_isFilter` (`Pure.lean:2388` names it beside
   `isPureMap_of_isCorner`, and it is the filter half of **170I**'s "filters and
-  corners are pure"), `vn_effObj_iso` (`VNExamples.lean:6383`, "what the eight
+  corners are pure"), `vn_effObj_iso` (`VNExamples.lean:6878`, "what the eight
   examples downstream actually use is … the *uniqueness* statement
   `vn_effObj_iso`, which is proved" — and again at `:2127`), and
   `modularPair_data` (`StandardSubspace.lean:650`).
@@ -1433,7 +1441,7 @@ limb.
 | `hilb_tensor_basic_2` | 109IV.2 | `49a49f0` | 110III's proof, `A/Proc/Tensor.lean:679` |
 | `triple_tensor` | 119II | `49a49f0` | 119IV `isTensorProduct_assoc`, `Tensor.lean:10937` |
 | `perp_sharp_is_orth` | 213III | `49a49f0` | `B/Eff/Comparisons.lean:600` |
-| `ultranormcontstruct_smul` | 148III.3 | `027dc77` | `ext_tensor_dense` (164II.1), `B/Dils/SelfDual.lean:8013` |
+| `ultranormcontstruct_smul` | 148III.3 | `027dc77` | `ext_tensor_dense` (164II.1), `B/Dils/SelfDual.lean:8214` |
 | `dagger_of_iso_adjoint` | 216IX.1 | `0f036ad` | `B/Eff/Dagger.lean:528` |
 | `paschke_pure` | 171VII | `7aa3dc0` | `pure_iff_stinespring_surjective`, `B/Dils/Pure.lean:4553` |
 

@@ -4489,6 +4489,227 @@ private theorem effectPUMap_isPositiveMap {D : Type} [CStarAlgebra D] [PartialOr
   exact add_nonneg (nonneg_smul_nonneg (hz 0) ha0)
     (nonneg_smul_nonneg (hz 1) (sub_nonneg.mpr ha1))
 
+/-- Auxiliary for **84aI**: a projection is an effect. -/
+private theorem proj_effect {D : Type*} [CStarAlgebra D] [PartialOrder D] [StarOrderedRing D]
+    {p : D} (hp : p * p = p) (hsa : star p = p) : 0 ≤ p ∧ p ≤ 1 := by
+  constructor
+  · have h := star_mul_self_nonneg p
+    rwa [hsa, hp] at h
+  · have h := star_mul_self_nonneg (1 - p)
+    rw [star_sub, star_one, hsa] at h
+    have hrw : (1 - p) * (1 - p) = 1 - p := by
+      have h' : (1 - p) * (1 - p) = 1 - p - p + p * p := by noncomm_ring
+      rw [h', hp]; abel
+    rw [hrw] at h
+    exact sub_nonneg.mp h
+
+/-- Auxiliary for **84aI**: if two positive elements sum to twice a projection `p`,
+each is absorbed by `p`.  Conjugating `x + y = p + p` by `p^⊥` kills the right-hand
+side, so `p^⊥ x p^⊥ = 0` (a sum of two positives), whence `√x p^⊥ = 0` by the
+C*-identity and `x p^⊥ = 0`. -/
+private theorem proj_absorb {D : Type*} [CStarAlgebra D] [PartialOrder D] [StarOrderedRing D]
+    {p x y : D} (hp : p * p = p) (hsa : star p = p) (hx : 0 ≤ x) (hy : 0 ≤ y)
+    (h : x + y = p + p) : x * (1 - p) = 0 := by
+  set c : D := 1 - p with hc
+  have hcsa : star c = c := by rw [hc, star_sub, star_one, hsa]
+  have hcp : c * p = 0 := by
+    rw [hc, sub_mul, one_mul, hp, sub_self]
+  have hkey : c * x * c + c * y * c = 0 := by
+    have : c * x * c + c * y * c = c * (x + y) * c := by noncomm_ring
+    rw [this, h]
+    have h2 : c * (p + p) * c = c * p * c + c * p * c := by noncomm_ring
+    rw [h2, hcp, zero_mul, add_zero]
+  have hxc : (0 : D) ≤ c * x * c := by
+    have := star_left_conjugate_nonneg hx c
+    rwa [hcsa] at this
+  have hyc : (0 : D) ≤ c * y * c := by
+    have := star_left_conjugate_nonneg hy c
+    rwa [hcsa] at this
+  have hzero : c * x * c = 0 := by
+    refine le_antisymm ?_ hxc
+    have := eq_neg_of_add_eq_zero_left hkey
+    rw [this]
+    exact neg_nonpos.mpr hyc
+  -- `c x c = 0` gives `√x c = 0`, hence `x c = 0`
+  set s : D := CFC.sqrt x with hs
+  have hssa : star s = s := (IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg x)).star_eq
+  have hss : s * s = x := CFC.sqrt_mul_sqrt_self x hx
+  have h1 : star (s * c) * (s * c) = 0 := by
+    rw [star_mul, hssa, hcsa]
+    have : c * s * (s * c) = c * (s * s) * c := by noncomm_ring
+    rw [this, hss, hzero]
+  have h2 : s * c = 0 := (CStarRing.star_mul_self_eq_zero_iff _).mp h1
+  calc x * c = s * (s * c) := by rw [← mul_assoc, hss]
+    _ = 0 := by rw [h2, mul_zero]
+
+/-- Auxiliary for **84aI**: a projection is an extreme point of the effects — if
+`x + y = p + p` with `x`, `y` effects then `x = p`.  Extremality is used in its
+*midpoint* form throughout, which for a convex set is the thesis's notion: `x = p`
+follows from `x p = x` (`proj_absorb` at `p`) and `x p = p` (`proj_absorb` at
+`p^⊥`, applied to the effects `1 - x`, `1 - y`). -/
+private theorem proj_midExtreme {D : Type*} [CStarAlgebra D] [PartialOrder D]
+    [StarOrderedRing D] {p x y : D} (hp : p * p = p) (hsa : star p = p)
+    (hx0 : 0 ≤ x) (hx1 : x ≤ 1) (hy0 : 0 ≤ y) (hy1 : y ≤ 1)
+    (h : x + y = p + p) : x = p := by
+  have hxp : x * p = x := by
+    have h0 := proj_absorb hp hsa hx0 hy0 h
+    rw [mul_sub, mul_one, sub_eq_zero] at h0
+    exact h0.symm
+  have hp' : (1 - p) * (1 - p) = 1 - p := by
+    have h' : (1 - p) * (1 - p) = 1 - p - p + p * p := by noncomm_ring
+    rw [h', hp]; abel
+  have hsa' : star (1 - p) = 1 - p := by rw [star_sub, star_one, hsa]
+  have h' : (1 - x) + (1 - y) = (1 - p) + (1 - p) := by
+    have : (1 - x) + (1 - y) = (1 + 1) - (x + y) := by abel
+    rw [this, h]; abel
+  have h0 := proj_absorb hp' hsa' (sub_nonneg.mpr hx1) (sub_nonneg.mpr hy1) h'
+  have hrw : (1 : D) - (1 - p) = p := by abel
+  rw [hrw, sub_mul, one_mul, sub_eq_zero] at h0
+  rw [← hxp, ← h0]
+
+/-- Auxiliary for **84aI**: the extreme points of the octahedron
+`𝒮 ∩ [0,1] = {x ∈ [0,1]⁴ : x₀ + x₁ = x₂ + x₃}` are `0/1` points.  Extremality enters
+as "no nonzero direction `d` keeps `x ± d` inside".  Were some coordinate strictly
+inside `(0,1)`, a second one would be too — three sharp coordinates make the fourth
+sharp by the defining equation — and then `x ± ε(e_i ± e_j)`, with the sign chosen so
+that the direction satisfies the equation, stays inside. -/
+private theorem octahedron_vertex {x : Fin 4 → ℝ}
+    (h0 : ∀ k, 0 ≤ x k) (h1 : ∀ k, x k ≤ 1) (hrel : x 0 + x 1 = x 2 + x 3)
+    (hext : ∀ d : Fin 4 → ℝ, (∀ k, 0 ≤ x k + d k) → (∀ k, x k + d k ≤ 1) →
+        (∀ k, 0 ≤ x k - d k) → (∀ k, x k - d k ≤ 1) →
+        d 0 + d 1 = d 2 + d 3 → d = 0) (k : Fin 4) :
+    x k = 0 ∨ x k = 1 := by
+  classical
+  have hfin4 : ∀ i : Fin 4, i = 0 ∨ i = 1 ∨ i = 2 ∨ i = 3 := by decide
+  -- the signs of the defining equation of the octahedron
+  set χ : Fin 4 → ℝ := ![1, 1, -1, -1] with hχdef
+  have hχsq : ∀ i, χ i * χ i = 1 := by
+    intro i; rcases hfin4 i with rfl | rfl | rfl | rfl <;>
+      norm_num [hχdef, Matrix.cons_val_two, Matrix.cons_val_three, Matrix.head_cons,
+        Matrix.tail_cons]
+  have hχrel : ∀ f : Fin 4 → ℝ, (f 0 + f 1 = f 2 + f 3) ↔ ∑ i, χ i * f i = 0 := by
+    intro f
+    rw [Fin.sum_univ_four]
+    simp only [hχdef, Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.head_cons,
+      Matrix.cons_val_two, Matrix.tail_cons, Matrix.cons_val_three]
+    constructor <;> intro h <;> linarith
+  by_contra hcon
+  rw [not_or] at hcon
+  obtain ⟨hk0, hk1⟩ := hcon
+  have hkl : 0 < x k := lt_of_le_of_ne (h0 k) (Ne.symm hk0)
+  have hku : x k < 1 := lt_of_le_of_ne (h1 k) hk1
+  -- a second interior coordinate: were the other three sharp, the defining equation
+  -- would make `x k` sharp too
+  obtain ⟨j, hjk, hj0, hj1⟩ : ∃ j, j ≠ k ∧ 0 < x j ∧ x j < 1 := by
+    by_contra hno
+    have hsharp : ∀ i, i ≠ k → x i = 0 ∨ x i = 1 := by
+      intro i hi
+      by_contra hc
+      rw [not_or] at hc
+      exact hno ⟨i, hi, lt_of_le_of_ne (h0 i) (Ne.symm hc.1),
+        lt_of_le_of_ne (h1 i) hc.2⟩
+    rcases hfin4 k with rfl | rfl | rfl | rfl
+    · rcases hsharp 1 (by decide) with h | h <;> rcases hsharp 2 (by decide) with h' | h' <;>
+        rcases hsharp 3 (by decide) with h'' | h'' <;> rw [h, h', h''] at hrel <;> linarith
+    · rcases hsharp 0 (by decide) with h | h <;> rcases hsharp 2 (by decide) with h' | h' <;>
+        rcases hsharp 3 (by decide) with h'' | h'' <;> rw [h, h', h''] at hrel <;> linarith
+    · rcases hsharp 0 (by decide) with h | h <;> rcases hsharp 1 (by decide) with h' | h' <;>
+        rcases hsharp 3 (by decide) with h'' | h'' <;> rw [h, h', h''] at hrel <;> linarith
+    · rcases hsharp 0 (by decide) with h | h <;> rcases hsharp 1 (by decide) with h' | h' <;>
+        rcases hsharp 2 (by decide) with h'' | h'' <;> rw [h, h', h''] at hrel <;> linarith
+  -- the perturbation `d`, supported on `k` and `j`
+  set ε : ℝ := min (min (x k) (1 - x k)) (min (x j) (1 - x j)) with hεdef
+  have hε : 0 < ε := by
+    rw [hεdef]
+    exact lt_min (lt_min hkl (by linarith)) (lt_min hj0 (by linarith))
+  have hεk : ε ≤ x k := le_trans (min_le_left _ _) (min_le_left _ _)
+  have hεk' : ε ≤ 1 - x k := le_trans (min_le_left _ _) (min_le_right _ _)
+  have hεj : ε ≤ x j := le_trans (min_le_right _ _) (min_le_left _ _)
+  have hεj' : ε ≤ 1 - x j := le_trans (min_le_right _ _) (min_le_right _ _)
+  set σ : ℝ := -(χ k * χ j) with hσdef
+  set d : Fin 4 → ℝ :=
+    fun i => ε * (if i = k then 1 else 0) + σ * ε * (if i = k then 0 else if i = j then 1 else 0)
+    with hddef
+  have hdk : d k = ε := by simp [hddef]
+  have hdj : d j = σ * ε := by simp [hddef, hjk]
+  have hdo : ∀ i, i ≠ k → i ≠ j → d i = 0 := by
+    intro i hik hij; simp [hddef, hik, hij]
+  have hσ : σ = 1 ∨ σ = -1 := by
+    have hχ1 : ∀ i, χ i = 1 ∨ χ i = -1 := by
+      intro i; rcases hfin4 i with rfl | rfl | rfl | rfl <;>
+        norm_num [hχdef, Matrix.cons_val_two, Matrix.cons_val_three, Matrix.head_cons,
+          Matrix.tail_cons]
+    rcases hχ1 k with hk | hk <;> rcases hχ1 j with hj | hj <;>
+      rw [hσdef, hk, hj] <;> norm_num
+  have hdj' : d j = ε ∨ d j = -ε := by
+    rcases hσ with h | h <;> rw [hdj, h] <;> [left; right] <;> ring
+  -- `d` lies in the direction space of the octahedron
+  have hdrel : d 0 + d 1 = d 2 + d 3 := by
+    rw [hχrel]
+    have hval : ∑ i, χ i * d i = ε * χ k + σ * ε * χ j := by
+      simp only [hddef, mul_add, Finset.sum_add_distrib]
+      congr 1
+      · rw [Finset.sum_congr rfl (fun i _ => by
+          rw [show χ i * (ε * (if i = k then 1 else 0)) = if i = k then ε * χ i else 0 by
+            split <;> ring])]
+        rw [Finset.sum_ite_eq' Finset.univ k (fun i => ε * χ i)]
+        simp
+      · rw [Finset.sum_congr rfl (fun i _ => by
+          rw [show χ i * (σ * ε * (if i = k then 0 else if i = j then 1 else 0))
+              = if i = j then σ * ε * χ i else 0 by
+            rcases eq_or_ne i k with rfl | hik
+            · rw [ite_eq_left rfl, ite_eq_right (Ne.symm hjk)]; ring
+            · rw [ite_eq_right hik]; split <;> ring])]
+        rw [Finset.sum_ite_eq' Finset.univ j (fun i => σ * ε * χ i)]
+        simp
+    rw [hval, hσdef]
+    linear_combination (-(ε * χ k)) * hχsq j
+  -- `x ± d` stays in the octahedron, so `d = 0` -- but `d k = ε > 0`
+  have hb1 : ∀ i, 0 ≤ x i + d i := by
+    intro i
+    by_cases hik : i = k
+    · rw [hik, hdk]; linarith
+    by_cases hij : i = j
+    · rw [hij]; rcases hdj' with h | h <;> rw [h] <;> linarith
+    · rw [hdo i hik hij, add_zero]; exact h0 i
+  have hb2 : ∀ i, x i + d i ≤ 1 := by
+    intro i
+    by_cases hik : i = k
+    · rw [hik, hdk]; linarith
+    by_cases hij : i = j
+    · rw [hij]; rcases hdj' with h | h <;> rw [h] <;> linarith
+    · rw [hdo i hik hij, add_zero]; exact h1 i
+  have hb3 : ∀ i, 0 ≤ x i - d i := by
+    intro i
+    by_cases hik : i = k
+    · rw [hik, hdk]; linarith
+    by_cases hij : i = j
+    · rw [hij]; rcases hdj' with h | h <;> rw [h] <;> linarith
+    · rw [hdo i hik hij, sub_zero]; exact h0 i
+  have hb4 : ∀ i, x i - d i ≤ 1 := by
+    intro i
+    by_cases hik : i = k
+    · rw [hik, hdk]; linarith
+    by_cases hij : i = j
+    · rw [hij]; rcases hdj' with h | h <;> rw [h] <;> linarith
+    · rw [hdo i hik hij, sub_zero]; exact h1 i
+  have hd0 := congrFun (hext d hb1 hb2 hb3 hb4 hdrel) k
+  rw [hdk] at hd0
+  simp only [Pi.zero_apply] at hd0
+  exact absurd hd0 (ne_of_gt hε)
+
+/-- Auxiliary for **84aI**: the `0/1` points of the set-theoretic equaliser `𝒮`, as
+Boolean vectors. -/
+private def IsSharpEqualiser (b : Fin 4 → Bool) : Prop :=
+  (cond (b 0) 1 0 + cond (b 1) 1 0 : ℕ) = cond (b 2) 1 0 + cond (b 3) 1 0
+
+private instance : DecidablePred IsSharpEqualiser :=
+  fun b => by unfold IsSharpEqualiser; infer_instance
+
+/-- Auxiliary for **84aI**: the octahedron `𝒮 ∩ [0,1]` has six `0/1` points. -/
+private theorem card_isSharpEqualiser :
+    Fintype.card {b : Fin 4 → Bool // IsSharpEqualiser b} = 6 := by decide
+
 /-- **84aI** (`cstar-no-pu-equalisers-example`, vn.tex:6034, Example): the
 pu-maps `f, g : ℂ⁴ → ℂ` of `puEqualiserF`, `puEqualiserG` have **no
 equaliser in `CStar_pu`** — which is the claim made at the very start of
@@ -4502,26 +4723,44 @@ uniquely by a pu-map.  The Example says there is no such `ℰ, e`.  The
 universe is `Type`, where `ℂ⁴` and the `ℂ²` used in the proof live; nothing
 in the argument depends on that choice.
 
-*Class 2 — different route.*  The thesis argues by counting extreme points:
-`e(ℰ)` is the set-theoretic equaliser `𝒮`, `e` is a bipositive linear
-isomorphism onto it, so `ℰ` is 3-dimensional, hence miu-isomorphic to `ℂ³`
-by **84II** `fdcstar`, and then `[0,1]_ℰ` is a cube (8 extreme points) while
-`𝒮 ∩ [0,1]` is an octahedron (6).  Formalized here is the same
-contradiction, reached without the classification and without extreme
-points: keeping the thesis's first two steps in the form they are needed —
-every effect of `𝒮` is `e P` for an effect `P` of `ℰ`, and `e` is injective
-on the effects, both by the universal property applied to `ℂ²` (injectivity
-everywhere then follows by shifting and scaling a self-adjoint element into
-`[0,1]`) — take `P, Q ∈ ℰ` over the two octahedron vertices
-`r₁ = (1,0,1,0)` and `r₂ = (1,0,0,1)`.  Both are
-projections, because `R - R²` is positive for an effect `R` and `e` sends it
-into `𝒮` below both `e R` and `1 - e R`, which for `e R = r₁, r₂` leaves
-only `0`.  Injectivity of `e` then puts `PQ` in the span of `1, P, Q` — this
-is what replaces the dimension count, since `𝒮` is spanned by `1, r₁, r₂` —
-say `PQ = α + βP + γQ`; and reading off the second and fourth coordinates of
-`0 ≤ PQP ≤ P` gives `γ = 0`, the second and third of `0 ≤ QPQ ≤ Q` give
-`β = 0`, and then `α = 0`.  So `PQ = QP = 0`, `1 - P - Q` is a projection
-and hence positive, while `e(1 - P - Q) = (-1,1,0,0)` is not. -/
+This is the thesis's own proof (vn.tex:6034–6115), step for step.
+
+* The range of `e` is the set-theoretic equaliser
+  `𝒮 = {v : v₀ + v₁ = v₂ + v₃}`.  One inclusion is that `e` equalises; for
+  the other, every *effect* of `𝒮` is `e P` for an effect `P` of `ℰ`, by the
+  universal property applied to the pu-map `ℂ² → ℂ⁴` that an effect of `ℂ⁴`
+  determines (`effectPUMap` — the thesis's `p` with `p(1,0) = v`), and the
+  two effects `r₁ = (1,0,1,0)`, `r₂ = (1,0,0,1)` together with `1` already
+  span `𝒮`.
+* `e` is injective.  On the effects this is the thesis's "equalisers are
+  mono" (`effectPUMap` again: `p = q`, so `a = b`); a self-adjoint element is
+  shifted and scaled into `[0,1]`, and a general one is split into its real
+  and imaginary parts.
+* So `e` is a linear isomorphism of `ℰ` onto `𝒮 = ker(f - g)`, and `ℰ` is
+  three-dimensional.
+* By the classification **84II** `fdcstar`, `ℰ` is miu-isomorphic to a sum
+  `⊕ₘ M_{Nₘ}` of matrix algebras with `∑ₘ Nₘ² = 3`; every block is therefore
+  `0×0` or `1×1`, and exactly three are `1×1`.  That is the thesis's "`ℰ` is
+  miu-isomorphic to `ℂ³`", and it gives the eight vertices of the cube
+  `[0,1]_ℰ`: the projections `p s` obtained by choosing, for each of the
+  three blocks, either `0` or `1`.
+* A projection is an extreme point of `[0,1]` (`proj_midExtreme`), and `e`
+  carries extreme points of `[0,1]_ℰ` to extreme points of `𝒮 ∩ [0,1]`,
+  since every effect of `𝒮` is `e` of an effect (the first step) and `e` is
+  injective and linear.  This is the thesis's transport of the convex
+  structure along the bipositive `e`.
+* The octahedron `𝒮 ∩ [0,1]` has only `0/1` points among its extreme points
+  (`octahedron_vertex`), and `𝒮` contains just six of those
+  (`card_isSharpEqualiser`).  Eight distinct extreme points landing among six
+  is the thesis's contradiction.
+
+Two notes on the rendering.  Extremality is used in its *midpoint* form
+(`y + z = x + x` forces `y = x`), which on a convex set is the thesis's
+notion.  And the two counts are used in the only directions the contradiction
+needs: at least eight extreme points of the cube, at most six of the
+octahedron — so the eight projections are not shown to exhaust the extreme
+points of `[0,1]_ℰ`, and no miu-isomorphism `ℰ → ℂ³` is built, the block
+sizes from `fdcstar` being enough to exhibit the eight. -/
 theorem cstar_no_pu_equalisers_example :
     ¬ ∃ (E : Type) (_ : CStarAlgebra E) (_ : PartialOrder E) (_ : StarOrderedRing E)
         (e : E →ₗ[ℂ] (Fin 4 → ℂ)),
@@ -4687,177 +4926,200 @@ theorem cstar_no_pu_equalisers_example :
     · rw [hr11, hr21]; ring
     · rw [hr12, hr22]; ring
     · rw [hr13, hr23]; ring
-  have hcomb1 : ∀ a b c : ℂ,
-      (a • (1 : Fin 4 → ℂ) + b • (![1, 0, 1, 0] : Fin 4 → ℂ)
-        + c • (![1, 0, 0, 1] : Fin 4 → ℂ)) 1 = a := by
-    intro a b c; rw [hval, hr11, hr21]; ring
-  have hcomb2 : ∀ a b c : ℂ,
-      (a • (1 : Fin 4 → ℂ) + b • (![1, 0, 1, 0] : Fin 4 → ℂ)
-        + c • (![1, 0, 0, 1] : Fin 4 → ℂ)) 2 = a + b := by
-    intro a b c; rw [hval, hr12, hr22]; ring
-  have hcomb3 : ∀ a b c : ℂ,
-      (a • (1 : Fin 4 → ℂ) + b • (![1, 0, 1, 0] : Fin 4 → ℂ)
-        + c • (![1, 0, 0, 1] : Fin 4 → ℂ)) 3 = a + c := by
-    intro a b c; rw [hval, hr13, hr23]; ring
-  -- effects square to below themselves
-  have hsq : ∀ R : E, 0 ≤ R → R ≤ 1 → 0 ≤ R - R * R := by
-    intro R h0 h1
-    obtain ⟨s, hsa, rfl⟩ : ∃ s : E, star s = s ∧ R = s * s :=
-      ⟨CFC.sqrt R, (IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg R)).star_eq,
-        (CFC.sqrt_mul_sqrt_self R h0).symm⟩
-    have h := star_left_conjugate_nonneg (sub_nonneg.mpr h1) s
-    rw [hsa] at h
-    have hrw : s * (1 - s * s) * s = s * s - s * s * (s * s) := by noncomm_ring
-    rwa [hrw] at h
-  -- an effect whose image is sharp in every coordinate is a projection
-  have hidem : ∀ R : E, 0 ≤ R → R ≤ 1 → (∀ i, e R i = 0 ∨ e R i = 1) → R * R = R := by
-    intro R h0 h1 hv
-    have hRsa : star R = R := (IsSelfAdjoint.of_nonneg h0).star_eq
-    have hb0 : (0 : E) ≤ R - R * R := hsq R h0 h1
-    have hRR : (0 : E) ≤ R * R := by
-      have h := star_mul_self_nonneg R
-      rwa [hRsa] at h
-    have hb1 : R - R * R ≤ R := sub_le_self R hRR
-    have hb2 : R - R * R ≤ 1 - R := by
-      have h : (0 : E) ≤ (1 - R) * (1 - R) := by
-        have h' := star_mul_self_nonneg (1 - R)
-        rwa [star_sub, star_one, hRsa] at h'
-      have hrw : (1 - R) - (R - R * R) = (1 - R) * (1 - R) := by noncomm_ring
-      exact sub_nonneg.mp (hrw ▸ h)
-    have he0 := hep _ hb0
-    have he1 := hmono _ _ hb1
-    have he2 := hmono _ _ hb2
-    have heR : e (1 - R) = 1 - e R := by rw [map_sub, heu]
-    rw [heR] at he2
-    have hzero : e (R - R * R) = 0 := by
-      funext i
-      have hl := he0 i
-      simp only [Pi.zero_apply] at hl
-      rcases hv i with hvi | hvi
-      · have hr := he1 i
-        rw [hvi] at hr
-        exact le_antisymm hr hl
-      · have hr := he2 i
-        simp only [Pi.sub_apply, Pi.one_apply, hvi, sub_self] at hr
-        exact le_antisymm hr hl
-    have hb := hinjf _ 0 (by rw [hzero, map_zero])
-    exact (sub_eq_zero.mp hb).symm
-  -- the two effects `P`, `Q` of `E` over `r₁` and `r₂`
+  -- the two effects `P`, `Q` of `ℰ` over the octahedron vertices `r₁`, `r₂`
   obtain ⟨P, hP0, hP1, hPe⟩ := hsurj ![1, 0, 1, 0] (by intro i; fin_cases i <;> simp)
     (by intro i; fin_cases i <;> simp) (by simp)
   obtain ⟨Q, hQ0, hQ1, hQe⟩ := hsurj ![1, 0, 0, 1] (by intro i; fin_cases i <;> simp)
     (by intro i; fin_cases i <;> simp) (by simp)
-  have hPe1 : e P 1 = 0 := by rw [hPe]; simp
-  have hPe3 : e P 3 = 0 := by rw [hPe]; simp
-  have hQe1 : e Q 1 = 0 := by rw [hQe]; simp
-  have hQe2 : e Q 2 = 0 := by rw [hQe]; simp
-  have hPP : P * P = P := hidem P hP0 hP1 (by intro i; rw [hPe]; fin_cases i <;> simp)
-  have hQQ : Q * Q = Q := hidem Q hQ0 hQ1 (by intro i; rw [hQe]; fin_cases i <;> simp)
-  have hPsa : star P = P := (IsSelfAdjoint.of_nonneg hP0).star_eq
-  have hQsa : star Q = Q := (IsSelfAdjoint.of_nonneg hQ0).star_eq
-  -- `PQ` is a linear combination of `1`, `P`, `Q`
-  obtain ⟨α, β, γ, hPQ⟩ : ∃ α β γ : ℂ, P * Q = α • (1 : E) + β • P + γ • Q := by
-    refine ⟨e (P * Q) 1, e (P * Q) 2 - e (P * Q) 1, e (P * Q) 3 - e (P * Q) 1, hinjf _ _ ?_⟩
+  -- `e` carries `1, P, Q` to the spanning set `1, r₁, r₂` of `𝒮`, so `ℰ` is
+  -- three-dimensional
+  have hcoe : ∀ a b c : ℂ, e (a • (1 : E) + b • P + c • Q)
+      = a • (1 : Fin 4 → ℂ) + b • (![1, 0, 1, 0] : Fin 4 → ℂ)
+        + c • (![1, 0, 0, 1] : Fin 4 → ℂ) := by
+    intro a b c
     rw [map_add, map_add, map_smul, map_smul, map_smul, heu, hPe, hQe]
-    exact hdecomp (e (P * Q)) (hS (P * Q))
-  have hQP : Q * P = star α • (1 : E) + star β • P + star γ • Q := by
-    have h := congrArg star hPQ
-    rw [star_mul, hPsa, hQsa] at h
-    rw [h]
-    simp [star_add, star_smul, hPsa, hQsa]
-  -- `PQP` is positive and below `P`, which forces `γ = 0`
-  have hPQP : P * Q * P
-      = (star γ * α) • (1 : E) + (star α + star β + star γ * β) • P + (star γ * γ) • Q := by
-    calc P * Q * P = P * (Q * P) := mul_assoc _ _ _
-      _ = P * (star α • (1 : E) + star β • P + star γ • Q) := by rw [hQP]
-      _ = star α • P + star β • (P * P) + star γ • (P * Q) := by
-            rw [mul_add, mul_add, mul_smul_comm, mul_smul_comm, mul_smul_comm, mul_one]
-      _ = star α • P + star β • P + star γ • (α • (1 : E) + β • P + γ • Q) := by
-            rw [hPP, hPQ]
-      _ = _ := by module
-  have hPQPnn : (0 : E) ≤ P * Q * P := by
-    have h := star_left_conjugate_nonneg hQ0 P
-    rwa [hPsa] at h
-  have hPQPle : P * Q * P ≤ P := by
-    have h := star_left_conjugate_le_conjugate hQ1 P
-    rwa [hPsa, mul_one, hPP] at h
-  have hePQP : e (P * Q * P)
-      = (star γ * α) • (1 : Fin 4 → ℂ) + (star α + star β + star γ * β) • ![1, 0, 1, 0]
-        + (star γ * γ) • ![1, 0, 0, 1] := by
-    rw [hPQP, map_add, map_add, map_smul, map_smul, map_smul, heu, hPe, hQe]
-  have hga : star γ * α = 0 := by
-    have hlo := (hep _ hPQPnn) 1
-    have hhi := (hmono _ _ hPQPle) 1
-    simp only [Pi.zero_apply] at hlo
-    rw [hePQP, hcomb1] at hlo hhi
-    rw [hPe1] at hhi
-    exact le_antisymm hhi hlo
-  have hgam : γ = 0 := by
-    have hhi := (hmono _ _ hPQPle) 3
-    rw [hePQP, hcomb3, hPe3, hga, zero_add] at hhi
-    exact astara_non_negative γ hhi
-  -- `QPQ` is positive and below `Q`, which forces `β = 0`
-  have hQPQ : Q * P * Q
-      = (star β * α) • (1 : E) + (star β * β) • P + (star α + star β * γ + star γ) • Q := by
-    calc Q * P * Q = (star α • (1 : E) + star β • P + star γ • Q) * Q := by rw [hQP]
-      _ = star α • Q + star β • (P * Q) + star γ • (Q * Q) := by
-            rw [add_mul, add_mul, smul_mul_assoc, smul_mul_assoc, smul_mul_assoc, one_mul]
-      _ = star α • Q + star β • (α • (1 : E) + β • P + γ • Q) + star γ • Q := by
-            rw [hPQ, hQQ]
-      _ = _ := by module
-  have hQPQnn : (0 : E) ≤ Q * P * Q := by
-    have h := star_left_conjugate_nonneg hP0 Q
-    rwa [hQsa] at h
-  have hQPQle : Q * P * Q ≤ Q := by
-    have h := star_left_conjugate_le_conjugate hP1 Q
-    rwa [hQsa, mul_one, hQQ] at h
-  have heQPQ : e (Q * P * Q)
-      = (star β * α) • (1 : Fin 4 → ℂ) + (star β * β) • ![1, 0, 1, 0]
-        + (star α + star β * γ + star γ) • ![1, 0, 0, 1] := by
-    rw [hQPQ, map_add, map_add, map_smul, map_smul, map_smul, heu, hPe, hQe]
-  have hba : star β * α = 0 := by
-    have hlo := (hep _ hQPQnn) 1
-    have hhi := (hmono _ _ hQPQle) 1
-    simp only [Pi.zero_apply] at hlo
-    rw [heQPQ, hcomb1] at hlo hhi
-    rw [hQe1] at hhi
-    exact le_antisymm hhi hlo
-  have hbet : β = 0 := by
-    have hhi := (hmono _ _ hQPQle) 2
-    rw [heQPQ, hcomb2, hQe2, hba, zero_add] at hhi
-    exact astara_non_negative β hhi
-  -- hence `PQ` is a scalar, and in fact `PQ = 0`
-  rw [hbet, hgam, zero_smul, zero_smul, add_zero, add_zero] at hPQ
-  have halp : α = 0 := by
-    have h : P * (P * Q) = P * Q := by rw [← mul_assoc, hPP]
-    rw [hPQ, mul_smul_comm, mul_one] at h
-    have h2 := congrArg e h
-    rw [map_smul, map_smul, heu] at h2
-    have h3 := congrFun h2 1
-    simp only [Pi.smul_apply, Pi.one_apply, smul_eq_mul, mul_one] at h3
-    rw [hPe1, mul_zero] at h3
-    exact h3.symm
-  rw [halp, zero_smul] at hPQ
-  have hQP0 : Q * P = 0 := by
-    have h := congrArg star hPQ
-    rwa [star_mul, hPsa, hQsa, star_zero] at h
-  -- so `P + Q` is a projection, whence `P + Q ≤ 1` -- which `e` refutes
-  have hnsa : star (1 - P - Q) = 1 - P - Q := by
-    rw [star_sub, star_sub, star_one, hPsa, hQsa]
-  have hnn : (0 : E) ≤ 1 - P - Q := by
-    have h := star_mul_self_nonneg (1 - P - Q)
-    rw [hnsa] at h
-    have hrw : (1 - P - Q) * (1 - P - Q) = 1 - P - Q := by
-      have hexp : (1 - P - Q) * (1 - P - Q)
-          = 1 - P - P - Q - Q + P * P + Q * Q + P * Q + Q * P := by noncomm_ring
-      rw [hexp, hPP, hQQ, hPQ, hQP0]
-      abel
-    rwa [hrw] at h
-  have hfin := (hep _ hnn) 0
-  rw [map_sub, map_sub, heu, hPe, hQe] at hfin
-  simp only [Pi.zero_apply, Pi.sub_apply, Pi.one_apply] at hfin
-  rw [hr10, hr20] at hfin
-  norm_num at hfin
+  have hinje : Function.Injective (e : E → (Fin 4 → ℂ)) := fun x y h => hinjf x y h
+  have : FiniteDimensional ℂ E := FiniteDimensional.of_injective e hinje
+  have hrange : LinearMap.range e = LinearMap.ker (puEqualiserF - puEqualiserG) := by
+    refine le_antisymm ?_ ?_
+    · rintro _ ⟨x, rfl⟩
+      simp only [LinearMap.mem_ker, LinearMap.sub_apply, sub_eq_zero]
+      exact heq x
+    · intro v hv
+      simp only [LinearMap.mem_ker, LinearMap.sub_apply, sub_eq_zero, puEqualiserF, puEqualiserG,
+        LinearMap.coe_mk, AddHom.coe_mk] at hv
+      have hvS : v 0 + v 1 = v 2 + v 3 := by linear_combination 2 * hv
+      exact ⟨v 1 • (1 : E) + (v 2 - v 1) • P + (v 3 - v 1) • Q,
+        by rw [hcoe]; exact (hdecomp v hvS).symm⟩
+  have hker : Module.finrank ℂ (LinearMap.ker (puEqualiserF - puEqualiserG)) = 3 := by
+    have hsurjψ : Function.Surjective (puEqualiserF - puEqualiserG) := by
+      intro z
+      refine ⟨![2 * z, 0, 0, 0], ?_⟩
+      simp only [LinearMap.sub_apply, puEqualiserF, puEqualiserG, LinearMap.coe_mk,
+        AddHom.coe_mk]
+      simp
+    have h1 := LinearMap.finrank_range_add_finrank_ker (puEqualiserF - puEqualiserG)
+    rw [LinearMap.range_eq_top.mpr hsurjψ, finrank_top, Module.finrank_self,
+      Module.finrank_pi] at h1
+    simp only [Fintype.card_fin] at h1
+    omega
+  have hdim : Module.finrank ℂ E = 3 := by
+    rw [← hker, ← hrange]
+    exact LinearEquiv.finrank_eq (LinearEquiv.ofInjective e hinje)
+  -- **84II** `fdcstar`: `ℰ` is a finite product of matrix algebras, and dimension `3`
+  -- leaves exactly three blocks, each of size one
+  obtain ⟨M, N, ⟨φ⟩⟩ := fdcstar E
+  have hdim2 : Module.finrank ℂ (∀ m : Fin M, Matrix (Fin (N m)) (Fin (N m)) ℂ) = 3 :=
+    (LinearEquiv.finrank_eq φ.toAlgEquiv.toLinearEquiv).symm.trans hdim
+  have hsum : ∑ m : Fin M, N m * N m = 3 := by
+    rw [← hdim2, Module.finrank_pi_fintype]
+    exact Finset.sum_congr rfl fun m _ => by simp [Module.finrank_matrix]
+  have hNle : ∀ m, N m ≤ 1 := by
+    intro m
+    have hle : N m * N m ≤ ∑ m' : Fin M, N m' * N m' :=
+      Finset.single_le_sum (f := fun m' => N m' * N m') (fun _ _ => Nat.zero_le _)
+        (Finset.mem_univ m)
+    rw [hsum] at hle
+    nlinarith
+  have hcard : (Finset.univ.filter fun m : Fin M => N m = 1).card = 3 := by
+    rw [Finset.card_filter, ← hsum]
+    refine Finset.sum_congr rfl fun m _ => ?_
+    rcases Nat.le_one_iff_eq_zero_or_eq_one.mp (hNle m) with h | h <;> simp [h]
+  have hcardT : Fintype.card {m : Fin M // N m = 1} = 3 := by
+    rw [Fintype.card_subtype]; exact hcard
+  -- the eight projections of `ℰ`: one for each choice of blocks
+  set q : ({m : Fin M // N m = 1} → Bool) → (∀ m : Fin M, Matrix (Fin (N m)) (Fin (N m)) ℂ) :=
+    fun s m => if h : N m = 1 then (if s ⟨m, h⟩ then 1 else 0) else 0 with hqdef
+  have hqmul : ∀ s, q s * q s = q s := by
+    intro s
+    funext m
+    show q s m * q s m = q s m
+    simp only [hqdef]
+    by_cases h : N m = 1
+    · simp only [dite_eq_left h]
+      split <;> simp
+    · simp only [dite_eq_right h, mul_zero]
+  have hqstar : ∀ s, star (q s) = q s := by
+    intro s
+    funext m
+    show star (q s m) = q s m
+    simp only [hqdef]
+    by_cases h : N m = 1
+    · simp only [dite_eq_left h]
+      split <;> simp
+    · simp only [dite_eq_right h, star_zero]
+  have hqinj : Function.Injective q := by
+    intro s t hst
+    funext m
+    obtain ⟨m', hm'⟩ := m
+    have hcomp := congrFun hst m'
+    simp only [hqdef, dite_eq_left hm'] at hcomp
+    have htr := congrArg Matrix.trace hcomp
+    have hcard1 : Fintype.card (Fin (N m')) = 1 := by rw [hm']; simp
+    cases hs : s ⟨m', hm'⟩ <;> cases ht : t ⟨m', hm'⟩ <;>
+      rw [hs, ht] at htr <;> revert htr <;>
+      simp [Matrix.trace_one, hcard1]
+  set p : ({m : Fin M // N m = 1} → Bool) → E := fun s => φ.symm (q s) with hpdef
+  have hpmul : ∀ s, p s * p s = p s := by
+    intro s; simp only [hpdef]; rw [← map_mul, hqmul]
+  have hpstar : ∀ s, star (p s) = p s := by
+    intro s; simp only [hpdef]; rw [← map_star, hqstar]
+  have hpinj : Function.Injective p := fun s t h => hqinj (φ.symm.injective h)
+  have hpeff : ∀ s, 0 ≤ p s ∧ p s ≤ 1 := fun s => proj_effect (hpmul s) (hpstar s)
+  -- each `e (p s)` is an extreme point of `𝒮 ∩ [0,1]`, hence a vertex of the octahedron
+  have hsharp : ∀ s k, e (p s) k = 0 ∨ e (p s) k = 1 := by
+    intro s
+    have hw0 : (0 : Fin 4 → ℂ) ≤ e (p s) := hep _ (hpeff s).1
+    have hw1 : e (p s) ≤ 1 := by
+      have h := hmono _ _ (hpeff s).2
+      rwa [heu] at h
+    have hre : ∀ k, e (p s) k = (((e (p s) k).re : ℝ) : ℂ) := by
+      intro k
+      have h := hw0 k
+      simp only [Pi.zero_apply] at h
+      have him : (e (p s) k).im = 0 := ((Complex.le_def.mp h).2).symm
+      refine (Complex.ext ?_ ?_).symm
+      · simp
+      · simp [him]
+    set x : Fin 4 → ℝ := fun k => (e (p s) k).re with hxdef
+    have hx0 : ∀ k, 0 ≤ x k := by
+      intro k
+      have h := hw0 k
+      simp only [Pi.zero_apply] at h
+      exact (Complex.le_def.mp h).1
+    have hx1 : ∀ k, x k ≤ 1 := by
+      intro k
+      have h := hw1 k
+      simp only [Pi.one_apply] at h
+      simpa using (Complex.le_def.mp h).1
+    have hxrel : x 0 + x 1 = x 2 + x 3 := by
+      have h := congrArg Complex.re (hS (p s))
+      simpa [hxdef] using h
+    have hext : ∀ d : Fin 4 → ℝ, (∀ k, 0 ≤ x k + d k) → (∀ k, x k + d k ≤ 1) →
+        (∀ k, 0 ≤ x k - d k) → (∀ k, x k - d k ≤ 1) →
+        d 0 + d 1 = d 2 + d 3 → d = 0 := by
+      intro d hb1 hb2 hb3 hb4 hdrel
+      obtain ⟨Y, hY0, hY1, hYe⟩ := hsurj (fun k => ((x k + d k : ℝ) : ℂ))
+        (fun k => by simpa using Complex.zero_le_real.mpr (hb1 k))
+        (fun k => by simpa using Complex.real_le_real.mpr (hb2 k))
+        (by exact_mod_cast (by linarith : (x 0 + d 0) + (x 1 + d 1) = (x 2 + d 2) + (x 3 + d 3)))
+      obtain ⟨Z, hZ0, hZ1, hZe⟩ := hsurj (fun k => ((x k - d k : ℝ) : ℂ))
+        (fun k => by simpa using Complex.zero_le_real.mpr (hb3 k))
+        (fun k => by simpa using Complex.real_le_real.mpr (hb4 k))
+        (by exact_mod_cast (by linarith : (x 0 - d 0) + (x 1 - d 1) = (x 2 - d 2) + (x 3 - d 3)))
+      have hYZ : Y + Z = p s + p s := by
+        refine hinjf _ _ ?_
+        rw [map_add, map_add, hYe, hZe]
+        funext k
+        simp only [Pi.add_apply]
+        rw [hre k]
+        push_cast
+        ring
+      have hYp : Y = p s := proj_midExtreme (hpmul s) (hpstar s) hY0 hY1 hZ0 hZ1 hYZ
+      funext k
+      have hk := congrFun (hYe.symm.trans (by rw [hYp]) :
+        (fun k => ((x k + d k : ℝ) : ℂ)) = e (p s)) k
+      rw [hre k] at hk
+      have hk' : x k + d k = x k := by exact_mod_cast hk
+      simp only [Pi.zero_apply]
+      linarith
+    intro k
+    rcases octahedron_vertex hx0 hx1 hxrel hext k with h | h
+    · left
+      rw [hre k, show (e (p s) k).re = 0 from h]
+      norm_num
+    · right
+      rw [hre k, show (e (p s) k).re = 1 from h]
+      norm_num
+  -- eight distinct vertices among the six of `𝒮 ∩ [0,1]`
+  classical
+  set g : ({m : Fin M // N m = 1} → Bool) → (Fin 4 → Bool) :=
+    fun s k => if e (p s) k = 1 then true else false with hgdef
+  have hgval : ∀ s k, e (p s) k = (if g s k then (1 : ℂ) else 0) := by
+    intro s k
+    rcases hsharp s k with h | h
+    · simp [hgdef, h]
+    · simp [hgdef, h]
+  have hmaps : ∀ s, IsSharpEqualiser (g s) := by
+    intro s
+    have h := hS (p s)
+    rw [hgval s 0, hgval s 1, hgval s 2, hgval s 3] at h
+    unfold IsSharpEqualiser
+    cases h0' : g s 0 <;> cases h1' : g s 1 <;> cases h2' : g s 2 <;> cases h3' : g s 3 <;>
+      rw [h0', h1', h2', h3'] at h <;> revert h <;> norm_num
+  have hginj : Function.Injective g := by
+    intro s t hst
+    refine hpinj (hinjf _ _ ?_)
+    funext k
+    rw [hgval s k, hgval t k, congrFun hst k]
+  have hcard8 : Fintype.card ({m : Fin M // N m = 1} → Bool) = 8 := by
+    rw [Fintype.card_fun, hcardT]
+    norm_num
+  have hle := Fintype.card_le_of_injective
+    (fun s => (⟨g s, hmaps s⟩ : {b : Fin 4 → Bool // IsSharpEqualiser b}))
+    (fun s t h => hginj (congrArg Subtype.val h))
+  rw [hcard8, card_isSharpEqualiser] at hle
+  norm_num at hle
 
 end NoPUEqualisers
 

@@ -5082,10 +5082,47 @@ algebra is **central** when it commutes with every element (i.e.
 `a ∈ Z(A)`). -/
 def IsCentral (a : A) : Prop := ∀ b : A, a * b = b * a
 
-/-- **67II** (`central-examples`, vn.tex:3370, Examples), part 3: in `B(H)`
-only the scalars are central.  (Parts 1–2 — commutative algebras and direct
-sums — are immediate from the definitions and not converted.  **67III**,
-Remark: such von Neumann algebras are called *factors*.)
+/-- **67II** (`central-examples`, vn.tex:3372, Examples), part 1: in a
+commutative von Neumann algebra every element is central.  A commutative von
+Neumann algebra is rendered as elsewhere in the tree (cf. **51IX**
+`Linfty_vn`, **53II** `ngelfand_vna`): `[CommCStarAlgebra A]` together with
+`[VonNeumannAlgebra A]`.  The thesis prints no proof — it is the definition
+of `IsCentral` against commutativity. -/
+theorem central_examples_1 {A : Type u} [CommCStarAlgebra A] [PartialOrder A]
+    [StarOrderedRing A] [VonNeumannAlgebra A] (a : A) : IsCentral A a :=
+  fun b => mul_comm a b
+
+/-- **67II** (`central-examples`, vn.tex:3375, Examples), part 2: an element
+`a` of a direct sum `⊕ᵢ 𝒜ᵢ` of von Neumann algebras is central iff each
+component `aᵢ` is.  The direct sum is the tree's `lp 𝒜 ∞` of **42V**.3
+(`vonNeumannAlgebra_lp_infty`, `A/VN/Basic.lean`), whose Mathlib binder
+`[∀ i, Nontrivial (𝒜 i)]` is carried here for the same reason it is carried
+there (see the note at the head of that section: it comes from Mathlib's
+unital normed-ring instance on `lp 𝒜 ∞`, not from the mathematics).
+
+The thesis prints no proof.  Multiplication in `lp 𝒜 ∞` is pointwise
+(`lp.infty_coeFn_mul`), so "if" is the componentwise reading of `ab = ba`,
+and "only if" is that same reading against `b = lp.single ∞ i b`, which puts
+an arbitrary `b ∈ 𝒜ᵢ` in the `i`-th slot and nothing anywhere else. -/
+theorem central_examples_2 {I : Type*} {𝒜 : I → Type u} [∀ i, CStarAlgebra (𝒜 i)]
+    [∀ i, Nontrivial (𝒜 i)] [∀ i, PartialOrder (𝒜 i)] [∀ i, StarOrderedRing (𝒜 i)]
+    [∀ i, VonNeumannAlgebra (𝒜 i)] (a : lp 𝒜 ∞) :
+    IsCentral (lp 𝒜 ∞) a ↔ ∀ i, IsCentral (𝒜 i) (a i) := by
+  classical
+  constructor
+  · intro h i b
+    have h' := congrArg (fun x : lp 𝒜 ∞ => (x : ∀ j, 𝒜 j) i) (h (lp.single ∞ i b))
+    simpa [lp.infty_coeFn_mul, lp.single_apply_self] using h'
+  · intro h b
+    refine lp.ext ?_
+    rw [lp.infty_coeFn_mul, lp.infty_coeFn_mul]
+    funext i
+    exact h i (b i)
+
+/-- **67II** (`central-examples`, vn.tex:3379, Examples), part 3: in `B(H)`
+only the scalars are central.  (Parts 1–2 are `central_examples_1` and
+`central_examples_2` above.  **67III**, Remark: such von Neumann algebras are
+called *factors*.)
 
 This is the thesis's own computation (vn.tex:3383–3392).  Write `|x⟩⟨y|`
 for the rank-one operator `z ↦ ⟪y,z⟫·x`.  If `T` is central then
