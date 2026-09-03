@@ -3238,7 +3238,7 @@ the declarations below assemble.
 
 Everything here is `private` **and primed**, because three of the pieces
 already exist *downstream*: `selfAdjointUnop`, `mopLinear`, `mopLinear_cp`,
-`mopLinear_normal` and `rightMulEquiv` are `Paschke.lean:90–247, 2004–2082`,
+`mopLinear_normal` and `rightMulEquiv` are the `mopLinear` and `rightMulEquiv` blocks of `Paschke.lean`,
 and `Paschke.lean` imports this file, so they cannot be used here.  (The
 fourth, `matrixBaxEquiv`, is `A/CStar/Matrices.lean:1631` and *is* on the
 import path, but it is stated over `Bax 𝒜 X`, whose C\*- and order instances
