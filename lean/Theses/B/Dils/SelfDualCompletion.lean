@@ -3225,6 +3225,327 @@ theorem hilmod_fixed_on_V_ncp [VonNeumannAlgebra 𝒷] (B : BInner 𝒷 V)
 
 end FixedOnVNCP
 
+section AdjVectorRoute
+
+set_option linter.unusedSectionVars false
+
+/-! ## The route of **153IV**'s solution: `M_n(𝒜) ≅ 𝒷ᵃ(𝒜ⁿ)ᵐᵒᵖ` and `𝒜 ≅ 𝒷ᵃ(𝒜)ᵐᵒᵖ`
+
+`bsols.tex:819` proves **153IV** by exhibiting `φ` as `ad_T` for the row
+vector `T : 𝒜ⁿ → 𝒜` and applying **153I** `hilbmod_ad_ncp`.  Read through the
+two identifications `𝒷ᵃ(𝒜) ≅ 𝒜ᵐᵒᵖ` and `𝒷ᵃ(𝒜ⁿ) ≅ M_n(𝒜)ᵐᵒᵖ` this is what
+the declarations below assemble.
+
+Everything here is `private` **and primed**, because three of the pieces
+already exist *downstream*: `selfAdjointUnop`, `mopLinear`, `mopLinear_cp`,
+`mopLinear_normal` and `rightMulEquiv` are `Paschke.lean:90–247, 2004–2082`,
+and `Paschke.lean` imports this file, so they cannot be used here.  (The
+fourth, `matrixBaxEquiv`, is `A/CStar/Matrices.lean:1631` and *is* on the
+import path, but it is stated over `Bax 𝒜 X`, whose C\*- and order instances
+are built by a different route than `Ba 𝒜 X`'s; rebuilding the equivalence
+for `Ba` out of the same public inputs — **33I**.1–3, `cstar_matrices_1/2/3`
+— is shorter than matching the two instance chains.)  Nothing below is a
+statement of the thesis; each is machinery for the one theorem that
+follows. -/
+
+/-! ### mop transport -/
+
+variable {A : Type*} [CStarAlgebra A] [PartialOrder A] [StarOrderedRing A]
+  {B : Type*} [CStarAlgebra B] [PartialOrder B] [StarOrderedRing B]
+
+private def selfAdjointUnop' : selfAdjoint Aᵐᵒᵖ ≃o selfAdjoint A where
+  toFun x := ⟨MulOpposite.unop x.1, by
+    have h := x.2
+    rw [selfAdjoint.mem_iff] at h ⊢
+    exact congrArg MulOpposite.unop h⟩
+  invFun x := ⟨MulOpposite.op x.1, by
+    have h := x.2
+    rw [selfAdjoint.mem_iff] at h ⊢
+    exact congrArg MulOpposite.op h⟩
+  left_inv _ := rfl
+  right_inv _ := rfl
+  map_rel_iff' := Iff.rfl
+
+private noncomputable def mopLinear' (f : A →ₗ[ℂ] B) : Aᵐᵒᵖ →ₗ[ℂ] Bᵐᵒᵖ :=
+  (MulOpposite.opLinearEquiv ℂ).toLinearMap.comp
+    (f.comp ((MulOpposite.opLinearEquiv ℂ).symm.toLinearMap))
+
+private theorem mopLinear_apply' (f : A →ₗ[ℂ] B) (x : Aᵐᵒᵖ) :
+    mopLinear' f x = MulOpposite.op (f (MulOpposite.unop x)) := rfl
+
+private theorem mop_nonneg_iff' (x : Aᵐᵒᵖ) : (0 : Aᵐᵒᵖ) ≤ x ↔ 0 ≤ MulOpposite.unop x :=
+  Iff.rfl
+
+private theorem isLUB_mop' {S : Set B} {t : B} (h : IsLUB S t) :
+    IsLUB (MulOpposite.op '' S) (MulOpposite.op t) := by
+  constructor
+  · rintro _ ⟨x, hx, rfl⟩
+    exact h.1 hx
+  · intro u hu
+    exact h.2 fun x hx => hu ⟨x, hx, rfl⟩
+
+private theorem mopLinear_cp' (f : A →ₗ[ℂ] B) (hf : IsCompletelyPositiveMap f) :
+    IsCompletelyPositiveMap (mopLinear' f) := by
+  intro n a b
+  rw [mop_nonneg_iff']
+  have h := hf n (fun i => star (MulOpposite.unop (a i)))
+    (fun i => star (MulOpposite.unop (b i)))
+  simp only [star_star] at h
+  rw [show MulOpposite.unop
+      (∑ i, ∑ j, star (b i) * mopLinear' f (star (a i) * a j) * b j)
+      = ∑ i, ∑ j, MulOpposite.unop (b j) *
+          f (MulOpposite.unop (a j) * star (MulOpposite.unop (a i))) *
+          star (MulOpposite.unop (b i)) from ?_]
+  · rw [Finset.sum_comm]
+    exact h
+  · simp only [Finset.unop_sum, MulOpposite.unop_mul, MulOpposite.unop_star,
+      mopLinear_apply', MulOpposite.unop_op, mul_assoc]
+
+private theorem mopLinear_normal' (f : A →ₗ[ℂ] B) (hf : PreservesDirSups ⇑f) :
+    PreservesDirSups ⇑(mopLinear' f) := by
+  intro D s hne hdir hlub
+  have hlub' : IsLUB (selfAdjointUnop' '' D) (selfAdjointUnop' s) :=
+    selfAdjointUnop'.isLUB_image'.mpr hlub
+  have h := hf (selfAdjointUnop' '' D) (selfAdjointUnop' s) (hne.image _)
+    (by
+      rintro _ ⟨x, hx, rfl⟩ _ ⟨y, hy, rfl⟩
+      obtain ⟨z, hz, hxz, hyz⟩ := hdir x hx y hy
+      exact ⟨selfAdjointUnop' z, ⟨z, hz, rfl⟩, hxz, hyz⟩) hlub'
+  rw [Set.image_image] at h
+  have h2 := isLUB_mop' h
+  rw [Set.image_image] at h2
+  exact h2
+
+/-! ### transporting complete positivity along a ∗-isomorphism
+
+`cp_comp` is not used: it routes through `cp_iff`, i.e. through matrices over
+`𝒷ᵃ(X)ᵐᵒᵖ`, whose order instances Lean cannot synthesize here.  Both
+transfers below are the Gram sum on the nose. -/
+
+section CPTransfer
+
+variable {A₁ A₂ A₃ : Type u} [CStarAlgebra A₁] [PartialOrder A₁] [StarOrderedRing A₁]
+  [CStarAlgebra A₂] [PartialOrder A₂] [StarOrderedRing A₂]
+  [CStarAlgebra A₃] [PartialOrder A₃] [StarOrderedRing A₃]
+
+private theorem cp_pre_equiv (Φ : A₁ ≃⋆ₐ[ℂ] A₂) (f : A₂ →ₗ[ℂ] A₃)
+    (hf : IsCompletelyPositiveMap f) (g : A₁ →ₗ[ℂ] A₃) (hg : ∀ x, g x = f (Φ x)) :
+    IsCompletelyPositiveMap g := by
+  intro n a b
+  have he : ∀ i j : Fin n, star (b i) * g (star (a i) * a j) * b j
+      = star (b i) * f (star (Φ (a i)) * Φ (a j)) * b j := by
+    intro i j
+    rw [hg, map_mul, map_star]
+  rw [Finset.sum_congr rfl fun i _ => Finset.sum_congr rfl fun j _ => he i j]
+  exact hf n (fun i => Φ (a i)) b
+
+private theorem cp_post_equiv (Φ : A₂ ≃⋆ₐ[ℂ] A₃) (f : A₁ →ₗ[ℂ] A₂)
+    (hf : IsCompletelyPositiveMap f) (g : A₁ →ₗ[ℂ] A₃) (hg : ∀ x, g x = Φ (f x)) :
+    IsCompletelyPositiveMap g := by
+  intro n a b
+  have h : (0 : A₃) ≤
+      Φ (∑ i, ∑ j, star (Φ.symm (b i)) * f (star (a i) * a j) * Φ.symm (b j)) :=
+    starAlgHom_nonneg Φ.toStarAlgHom (hf n a (fun i => Φ.symm (b i)))
+  have he : Φ (∑ i, ∑ j, star (Φ.symm (b i)) * f (star (a i) * a j) * Φ.symm (b j))
+      = ∑ i, ∑ j, star (b i) * g (star (a i) * a j) * b j := by
+    rw [map_sum]
+    refine Finset.sum_congr rfl fun i _ => ?_
+    rw [map_sum]
+    refine Finset.sum_congr rfl fun j _ => ?_
+    rw [map_mul, map_mul, map_star, Φ.apply_symm_apply, Φ.apply_symm_apply, hg]
+  rwa [he] at h
+
+end CPTransfer
+
+/-! ### `𝒜 ≅ 𝒷ᵃ(𝒜)ᵐᵒᵖ` -/
+
+variable {𝒜 : Type u} [CStarAlgebra 𝒜] [PartialOrder 𝒜] [StarOrderedRing 𝒜]
+
+private noncomputable def rightMul' (t : 𝒜) : Ba 𝒜 𝒜 :=
+  ⟨(ContinuousLinearMap.mul ℂ 𝒜).flip t,
+    ⟨(ContinuousLinearMap.mul ℂ 𝒜).flip (star t), by
+      intro x y
+      show (y * star (x * t) : 𝒜) = (y * star t) * star x
+      rw [star_mul, mul_assoc]⟩⟩
+
+private theorem rightMul_apply' (t x : 𝒜) : (rightMul' t).1 x = x * t := rfl
+
+private theorem rightMul_mul' (s t : 𝒜) : rightMul' s * rightMul' t = rightMul' (t * s) := by
+  refine Subtype.ext (ContinuousLinearMap.ext fun x => ?_)
+  show (rightMul' s).1 ((rightMul' t).1 x) = x * (t * s)
+  rw [rightMul_apply', rightMul_apply', mul_assoc]
+
+private theorem rightMul_star' (t : 𝒜) : star (rightMul' t) = rightMul' (star t) := by
+  refine Subtype.ext (ContinuousLinearMap.ext fun x => ?_)
+  have h1 : ModuleAdjointTo 𝒜 ⇑(rightMul' t).1 ⇑((star (rightMul' t) : Ba 𝒜 𝒜)).1 :=
+    baSubalgebra_star_spec _
+  have h2 : ModuleAdjointTo 𝒜 ⇑(rightMul' t).1 ⇑(rightMul' (star t)).1 := by
+    intro x y
+    show (y * star (x * t) : 𝒜) = (y * star t) * star x
+    rw [star_mul, mul_assoc]
+  exact congrFun (moduleAdjointTo_unique (𝒜 := 𝒜) _ _ _ h1 h2) x
+
+private noncomputable def rightMulEquiv' : 𝒜 ≃⋆ₐ[ℂ] (Ba 𝒜 𝒜)ᵐᵒᵖ where
+  toFun t := MulOpposite.op (rightMul' t)
+  invFun S := S.unop.1 1
+  left_inv t := by simp [rightMul_apply']
+  right_inv S := by
+    refine MulOpposite.unop_injective (Subtype.ext (ContinuousLinearMap.ext fun x => ?_))
+    show x * (S.unop.1 1) = S.unop.1 x
+    have h := (moduleAdjointable_linear (𝒜 := 𝒜) ⇑S.unop.1 S.unop.2).2.2 x 1
+    rw [show (x • (1 : 𝒜)) = x from by rw [smul_eq_mul, mul_one]] at h
+    rw [h, smul_eq_mul]
+  map_mul' s t := by
+    show MulOpposite.op (rightMul' (s * t)) = _
+    rw [← MulOpposite.op_mul]
+    congr 1
+    show rightMul' (s * t) = rightMul' t * rightMul' s
+    rw [rightMul_mul']
+  map_add' s t := by
+    show MulOpposite.op (rightMul' (s + t)) = _
+    rw [← MulOpposite.op_add]
+    congr 1
+    refine Subtype.ext (ContinuousLinearMap.ext fun x => ?_)
+    show x * (s + t) = x * s + x * t
+    rw [mul_add]
+  map_smul' c t := by
+    show MulOpposite.op (rightMul' (c • t)) = _
+    rw [← MulOpposite.op_smul]
+    congr 1
+    refine Subtype.ext (ContinuousLinearMap.ext fun x => ?_)
+    show x * (c • t) = c • (x * t)
+    rw [mul_smul_comm]
+  map_star' t := by
+    show MulOpposite.op (rightMul' (star t)) = star (MulOpposite.op (rightMul' t))
+    rw [← MulOpposite.op_star]
+    congr 1
+    rw [rightMul_star']
+
+/-! ### `M_n(𝒜) ≅ 𝒷ᵃ(𝒜ⁿ)ᵐᵒᵖ` -/
+
+variable {n : ℕ}
+
+private theorem ba_star_eq' {X : Type u} [NormedAddCommGroup X] [NormedSpace ℂ X] [SMul 𝒜 X]
+    [CStarModule 𝒜 X] [CompleteSpace X] {T S : Ba 𝒜 X}
+    (h : ModuleAdjointTo 𝒜 ⇑T.1 ⇑S.1) : star T = S := by
+  have h1 : ModuleAdjointTo 𝒜 ⇑T.1 ⇑((star T : Ba 𝒜 X)).1 := baSubalgebra_star_spec T
+  exact Subtype.ext (DFunLike.coe_injective
+    (moduleAdjointTo_unique (𝒜 := 𝒜) _ _ _ h1 h))
+
+private noncomputable def toCLMBa' (M : CStarMatrix (Fin n) (Fin n) 𝒜) :
+    Ba 𝒜 C⋆ᵐᵒᵈ(𝒜, Fin n → 𝒜) :=
+  ⟨CStarMatrix.toCLM M, ⟨_, cstar_matrices_1 M⟩⟩
+
+private theorem toCLMBa_injective' :
+    Function.Injective (toCLMBa' (𝒜 := 𝒜) (n := n)) :=
+  fun _ _ h => (cstar_matrices_2 (𝒜 := 𝒜) (M := n) (N := n)).2.1 (congrArg Subtype.val h)
+
+private theorem toCLMBa_surjective' :
+    Function.Surjective (toCLMBa' (𝒜 := 𝒜) (n := n)) := by
+  intro T
+  obtain ⟨M, hM⟩ := (cstar_matrices_2 (𝒜 := 𝒜) (M := n) (N := n)).2.2 _
+    (fun a x => (moduleAdjointable_linear (𝒜 := 𝒜) _ T.2).2.2 a x) T.2
+  exact ⟨M, Subtype.ext hM⟩
+
+private noncomputable def matrixBaEquiv' :
+    CStarMatrix (Fin n) (Fin n) 𝒜 ≃⋆ₐ[ℂ] (Ba 𝒜 C⋆ᵐᵒᵈ(𝒜, Fin n → 𝒜))ᵐᵒᵖ where
+  toFun M := MulOpposite.op (toCLMBa' M)
+  invFun T := Function.surjInv toCLMBa_surjective' T.unop
+  left_inv M := toCLMBa_injective' (Function.surjInv_eq toCLMBa_surjective' _)
+  right_inv T := MulOpposite.unop_injective
+    (Function.surjInv_eq toCLMBa_surjective' T.unop)
+  map_mul' M N := by
+    show MulOpposite.op (toCLMBa' (M * N)) = _
+    rw [← MulOpposite.op_mul]
+    congr 1
+    exact Subtype.ext (cstar_matrices_3 M N)
+  map_add' M N := by
+    show MulOpposite.op (toCLMBa' (M + N)) = _
+    rw [← MulOpposite.op_add]
+    congr 1
+    exact Subtype.ext (map_add CStarMatrix.toCLM M N)
+  map_smul' c M := by
+    show MulOpposite.op (toCLMBa' (c • M)) = _
+    rw [← MulOpposite.op_smul]
+    congr 1
+    exact Subtype.ext (map_smul CStarMatrix.toCLM c M)
+  map_star' M := by
+    show MulOpposite.op (toCLMBa' (star M)) = star (MulOpposite.op (toCLMBa' M))
+    rw [← MulOpposite.op_star]
+    congr 1
+    exact (ba_star_eq' (cstar_matrices_1 M)).symm
+
+/-! ### the row vector -/
+
+private theorem selfDualPi' : SelfDual 𝒜 C⋆ᵐᵒᵈ(𝒜, Fin n → 𝒜) := by
+  intro τ hmod hbdd
+  obtain ⟨C, hC⟩ := hbdd
+  exact selfDual_pi 𝒜 n τ ⟨hmod, (LinearMap.mkContinuous τ C hC).continuous⟩
+
+private noncomputable def rowT (a : Fin n → 𝒜) :
+    C⋆ᵐᵒᵈ(𝒜, Fin n → 𝒜) →L[ℂ] 𝒜 :=
+  LinearMap.mkContinuous
+    { toFun := fun v => ∑ i, v i * star (a i)
+      map_add' := fun v w => by
+        simp only [WithCStarModule.add_apply, add_mul]
+        exact Finset.sum_add_distrib
+      map_smul' := fun c v => by
+        simp only [WithCStarModule.smul_apply, RingHom.id_apply, smul_mul_assoc,
+          Finset.smul_sum] }
+    (∑ i, ‖a i‖)
+    (fun v => by
+      calc ‖∑ i, v i * star (a i)‖ ≤ ∑ i, ‖v i * star (a i)‖ := norm_sum_le _ _
+        _ ≤ ∑ i, ‖v‖ * ‖a i‖ := by
+            refine Finset.sum_le_sum fun i _ => ?_
+            calc ‖v i * star (a i)‖ ≤ ‖v i‖ * ‖star (a i)‖ := norm_mul_le _ _
+              _ = ‖v i‖ * ‖a i‖ := by rw [norm_star]
+              _ ≤ ‖v‖ * ‖a i‖ :=
+                  mul_le_mul_of_nonneg_right (WithCStarModule.norm_apply_le_norm v i)
+                    (norm_nonneg _)
+        _ = (∑ i, ‖a i‖) * ‖v‖ := by rw [← Finset.mul_sum, mul_comm])
+
+private theorem rowT_apply (a : Fin n → 𝒜) (v : C⋆ᵐᵒᵈ(𝒜, Fin n → 𝒜)) :
+    rowT a v = ∑ i, v i * star (a i) := rfl
+
+private noncomputable def rowTadj (a : Fin n → 𝒜) :
+    𝒜 →L[ℂ] C⋆ᵐᵒᵈ(𝒜, Fin n → 𝒜) :=
+  LinearMap.mkContinuous
+    { toFun := fun y => (WithCStarModule.equiv 𝒜 (Fin n → 𝒜)).symm fun i => y * a i
+      map_add' := fun y z => by
+        ext i
+        simp [WithCStarModule.equiv_symm_pi_apply, add_mul]
+      map_smul' := fun c y => by
+        ext i
+        simp [WithCStarModule.equiv_symm_pi_apply] }
+    (∑ i, ‖a i‖)
+    (fun y => by
+      refine (WithCStarModule.pi_norm_le_sum_norm _).trans ?_
+      calc ∑ i, ‖((WithCStarModule.equiv 𝒜 (Fin n → 𝒜)).symm fun i => y * a i) i‖
+          = ∑ i, ‖y * a i‖ := by
+            refine Finset.sum_congr rfl fun i _ => ?_
+            rw [WithCStarModule.equiv_symm_pi_apply]
+        _ ≤ ∑ i, ‖y‖ * ‖a i‖ := Finset.sum_le_sum fun i _ => norm_mul_le _ _
+        _ = (∑ i, ‖a i‖) * ‖y‖ := by rw [← Finset.mul_sum, mul_comm])
+
+private theorem rowTadj_apply (a : Fin n → 𝒜) (y : 𝒜) (i : Fin n) :
+    (rowTadj a y) i = y * a i := by
+  show ((WithCStarModule.equiv 𝒜 (Fin n → 𝒜)).symm fun i => y * a i) i = y * a i
+  rw [WithCStarModule.equiv_symm_pi_apply]
+
+private theorem rowT_adjointTo (a : Fin n → 𝒜) :
+    ModuleAdjointTo 𝒜 ⇑(rowT a) ⇑(rowTadj a) := by
+  intro v y
+  show (y * star (∑ i, v i * star (a i)) : 𝒜) = _
+  rw [WithCStarModule.pi_inner]
+  have hL : (y * star (∑ i, v i * star (a i)) : 𝒜) = ∑ i, y * a i * star (v i) := by
+    rw [star_sum, Finset.mul_sum]
+    exact Finset.sum_congr rfl fun i _ => by rw [star_mul, star_star, ← mul_assoc]
+  rw [hL]
+  refine Finset.sum_congr rfl fun i _ => ?_
+  rw [WithCStarModule.inner_def, rowTadj_apply]
+
+end AdjVectorRoute
+
 section AdjVector
 
 variable {𝒜 : Type u} [CStarAlgebra 𝒜] [PartialOrder 𝒜] [StarOrderedRing 𝒜]
@@ -3232,55 +3553,45 @@ variable {𝒜 : Type u} [CStarAlgebra 𝒜] [PartialOrder 𝒜] [StarOrderedRin
 
 set_option linter.unusedSectionVars false
 
-/-- The functional `P ↦ ∑ᵢⱼ cᵢ* Pᵢⱼ cⱼ` whose positivity for all `c`
-characterises positivity of a matrix (**33II**.1
-`cstar_matrix_positive_iff`); packaged as an additive map so that it can be
-pushed through finite sums of matrices. -/
-private def conjFun (c : Fin n → 𝒜) : CStarMatrix (Fin n) (Fin n) 𝒜 →+ 𝒜 where
-  toFun P := ∑ i, ∑ j, star (c i) * P i j * c j
-  map_zero' := by simp
-  map_add' P Q := by
-    simp only [CStarMatrix.add_apply, mul_add, add_mul, Finset.sum_add_distrib]
-
-private theorem conjFun_apply (c : Fin n → 𝒜) (P : CStarMatrix (Fin n) (Fin n) 𝒜) :
-    conjFun c P = ∑ i, ∑ j, star (c i) * P i j * c j := rfl
-
-/-- `∑ᵢⱼ Gᵢ* d Hⱼ = (∑ᵢ Gᵢ)* d (∑ⱼ Hⱼ)`. -/
-private theorem sum_star_mul_mul_sum {ι κ : Type*} [Fintype ι] [Fintype κ]
-    (G : ι → 𝒜) (H : κ → 𝒜) (d : 𝒜) :
-    ∑ i, ∑ j, star (G i) * d * H j = star (∑ i, G i) * d * ∑ j, H j := by
-  rw [star_sum, Finset.sum_mul, Finset.sum_mul]
-  exact Finset.sum_congr rfl fun i _ => (Finset.mul_sum _ _ _).symm
-
-/-- `∑ₖₗ zₖ* zₗ = (∑ₖ zₖ)* (∑ₗ zₗ)`, hence positive. -/
-private theorem sum_star_mul_sum' {ι : Type*} [Fintype ι] (z : ι → 𝒜) :
-    ∑ k, ∑ l, star (z k) * z l = star (∑ k, z k) * ∑ l, z l := by
-  rw [star_sum, Finset.sum_mul]
-  exact Finset.sum_congr rfl fun k _ => (Finset.mul_sum _ _ _).symm
-
+-- the route runs through `𝒷ᵃ(𝒜ⁿ)ᵐᵒᵖ`; instance search there is slow
+set_option maxHeartbeats 2000000 in
 /-- **153IV** (`hilbmod-adj-vector-ncp`, dils.tex:3525, Exercise): for a
 C*-algebra `𝒜` (here: von Neumann algebra, so that normality makes sense)
 and `a₁, …, aₙ ∈ 𝒜`, the map `φ : 𝒜 → Mₙ𝒜`, `φ(d) = (aᵢ* d aⱼ)ᵢⱼ`, is an
 ncp-map.
 
-The author's solution routes through **153I** `hilbmod_ad_ncp` (`φ = ad_T`
-for the row vector `T : 𝒜ⁿ → 𝒜`, `(bᵢ)ᵢ ↦ ∑ᵢ aᵢbᵢ` — the solution prints
-`∑ᵢ bᵢaᵢ`, which is not `𝒜`-linear and whose stated adjoint is not its
-adjoint; its own next display uses the order given here.  `ERRATA.md`,
-**153IV**, second row).  What is missing for that route is
-the two identifications `𝒷ᵃ(𝒜ⁿ) ≅ Mₙ𝒜` and `𝒷ᵃ(𝒜) ≅ 𝒜ᵒᵖ`: the first is
-nowhere in the tree, and the second exists only *downstream*, as
-`rightMulEquiv` in `Paschke.lean`, which imports this file.  (The third
-ingredient, that `𝒜ⁿ` is a **self-dual** Hilbert `𝒜`-module, *is* available
-— cstar **36III** `Theses.A.CStar.selfDual_pi`, on the import path — modulo
-a short transfer between `A/CStar`'s `SelfDual`, whose boundedness clause is
-`Continuous`, and **141IIa**'s, whose clause is `∃ C, ‖τ x‖ ≤ C‖x‖`.)  Two
-missing theorems against the self-contained computation below, so this is a
-direct argument instead: by
-**33II**.1 both claims reduce to the scalar identity
-`∑ᵢⱼ cᵢ* φ(d)ᵢⱼ cⱼ = v* d v` with `v = ∑ᵢ aᵢcᵢ`, after which complete
-positivity is the observation that the corresponding double sum is a square
-`w* w`, and normality is **44VIII** `ad_normal` for `v`. -/
+**The proof is the author's own route, through 153I as the exercise says.**
+`bsols.tex:819` takes the row vector `T : 𝒜ⁿ → 𝒜`, notes that `ad_T` is `φ`
+under `𝒷ᵃ(𝒜) ≅ 𝒜` and `𝒷ᵃ(𝒜ⁿ) ≅ Mₙ𝒜`, and applies **153I**
+`hilbmod_ad_ncp`.  Here:
+
+* `T = rowT a`, `T v = ∑ᵢ vᵢ aᵢ*`, with adjoint `T* y = (y aᵢ)ᵢ`
+  (`rowT_adjointTo`).  **Under our conventions the row vector is `(aᵢ*)ᵢ`,
+  not `(aᵢ)ᵢ`**: Mathlib's inner product on `𝒜` over itself is
+  `⟪x,y⟫ = y x*` and its `𝒜ⁿ` is a *left* module with `toCLM M v = (∑ᵢ vᵢ Mᵢⱼ)ⱼ`.
+  (The solution's own `T((bᵢ)ᵢ) = ∑ᵢ bᵢaᵢ` is not `𝒜`-linear and its stated
+  adjoint is not its adjoint; `ERRATA.md`, **153IV**, second row.)
+* the hypotheses of 153I: `𝒜ⁿ` is self-dual by **36III**
+  `Theses.A.CStar.selfDual_pi` (`selfDualPi'` transfers its `Continuous`
+  boundedness clause to **141IIa**'s `∃ C, ‖τ x‖ ≤ C‖x‖`), and `𝒜` is
+  self-dual over itself by **141III** `selfDual_self`.
+* the two identifications, as ∗-isomorphisms onto the `ᵐᵒᵖ`s that Mathlib's
+  left-module convention forces (see `A/CStar/Matrices`' "Why the `ᵐᵒᵖ`"):
+  `rightMulEquiv' : 𝒜 ≅ 𝒷ᵃ(𝒜)ᵐᵒᵖ` and
+  `matrixBaEquiv' : Mₙ𝒜 ≅ 𝒷ᵃ(𝒜ⁿ)ᵐᵒᵖ` (**33I**.1–3).
+* `hkey`: `ad_T(R_d)` *is* the operator of the matrix `φ(d)`, entrywise
+  `(∑ᵢ vᵢaᵢ*) d aⱼ`.
+* the transport: `ad_T` is ncp by 153I, hence so is its `ᵐᵒᵖ`
+  (`mopLinear_cp'`, `mopLinear_normal'` — `op` itself is the transpose on
+  `M₂` and is *not* cp, but transporting on both sides is), and composing
+  with the two ∗-isomorphisms preserves complete positivity
+  (`cp_pre_equiv`, `cp_post_equiv`) and normality
+  (`starAlgEquiv_preservesDirSups`, `preservesDirSups_pmap_comp`).
+
+The statement is `weaker` in one binder: `[VonNeumannAlgebra 𝒜]` where the
+exercise says "let `𝒜` be a C*-algebra" while asking for an *ncp*-map, whose
+normality is undefined over a C*-algebra.  That defect is the author's, and
+is `ERRATA.md` row **153IV**. -/
 theorem hilbmod_adj_vector_ncp {𝒜 : Type u} [CStarAlgebra 𝒜]
     [PartialOrder 𝒜] [StarOrderedRing 𝒜] [VonNeumannAlgebra 𝒜] {n : ℕ}
     [PartialOrder (CStarMatrix (Fin n) (Fin n) 𝒜)]
@@ -3301,89 +3612,68 @@ theorem hilbmod_adj_vector_ncp {𝒜 : Type u} [CStarAlgebra 𝒜]
         show star (a i) * (r • x) * a j = r • (star (a i) * x * a j)
         rw [mul_smul_comm, smul_mul_assoc] } with hφdef
   have hentry : ∀ (d : 𝒜) (i j : Fin n), φ d i j = star (a i) * d * a j := fun _ _ _ => rfl
-  -- `φ(d)` conjugated by two matrices collapses to a single `ad`-expression
-  have hgen : ∀ (M N : CStarMatrix (Fin n) (Fin n) 𝒜) (c : Fin n → 𝒜) (d : 𝒜),
-      conjFun c (star M * φ d * N)
-        = star (∑ i, ∑ s, a s * (M s i * c i)) * d * ∑ j, ∑ t, a t * (N t j * c j) := by
-    intro M N c d
-    have hij : ∀ i j : Fin n, star (c i) * (star M * φ d * N) i j * c j
-        = star (∑ s, a s * (M s i * c i)) * d * ∑ t, a t * (N t j * c j) := by
-      intro i j
-      have hA : star (c i) * (star M * φ d * N) i j * c j
-          = ∑ s, ∑ t, star (a s * (M s i * c i)) * d * (a t * (N t j * c j)) := by
-        rw [mul_assoc (star M) (φ d) N, CStarMatrix.mul_apply, Finset.mul_sum, Finset.sum_mul]
-        refine Finset.sum_congr rfl fun s _ => ?_
-        rw [CStarMatrix.star_apply, CStarMatrix.mul_apply, Finset.mul_sum, Finset.mul_sum,
-          Finset.sum_mul]
-        refine Finset.sum_congr rfl fun t _ => ?_
-        rw [hentry]
-        simp only [star_mul]
-        noncomm_ring
-      rw [hA]
-      exact sum_star_mul_mul_sum _ _ d
-    rw [conjFun_apply]
-    simp only [hij]
-    exact sum_star_mul_mul_sum _ _ d
-  -- the special case `M = N = 1`: `∑ᵢⱼ cᵢ* φ(d)ᵢⱼ cⱼ = v* d v` with `v = ∑ᵢ aᵢcᵢ`
-  have hcollapse : ∀ (c : Fin n → 𝒜) (d : 𝒜),
-      conjFun c (φ d) = star (∑ i, a i * c i) * d * ∑ j, a j * c j := by
-    intro c d
-    have hij : ∀ i j : Fin n, star (c i) * φ d i j * c j
-        = star (a i * c i) * d * (a j * c j) := by
-      intro i j; rw [hentry]; simp only [star_mul]; noncomm_ring
-    rw [conjFun_apply]
-    simp only [hij]
-    exact sum_star_mul_mul_sum _ _ d
+  -- **153I** for the row vector `T`
+  obtain ⟨ad, had⟩ := hilbmod_ad_ncp (𝒷 := 𝒜) (X := C⋆ᵐᵒᵈ(𝒜, Fin n → 𝒜)) (Y := 𝒜)
+    selfDualPi' (selfDual_self 𝒜) (rowT a) (rowTadj a) (rowT_adjointTo a)
+  -- `ad_T(R_d)` is the operator of the matrix `φ(d)`
+  have hkey : ∀ d : 𝒜, toCLMBa' (φ d) = ad (rightMul' d) := by
+    intro d
+    refine Subtype.ext ?_
+    have hAd : (ad (rightMul' d)).1
+        = (rowTadj a).comp (((rightMul' d).1).comp (rowT a)) := had _
+    rw [hAd]
+    show CStarMatrix.toCLM (φ d) = _
+    ext v j
+    have hL : (CStarMatrix.toCLM (φ d)) v j = ∑ i, v i * (φ d) i j := by
+      rw [CStarMatrix.toCLM_apply_eq_sum, WithCStarModule.equiv_symm_pi_apply]
+    rw [hL]
+    show ∑ i, v i * (φ d) i j = ((rowTadj a) ((rightMul' d).1 ((rowT a) v))) j
+    rw [rowTadj_apply, rightMul_apply', rowT_apply, Finset.sum_mul, Finset.sum_mul]
+    exact Finset.sum_congr rfl fun i _ => by rw [hentry]; noncomm_ring
+  set adlin : Ba 𝒜 𝒜 →ₗ[ℂ] Ba 𝒜 C⋆ᵐᵒᵈ(𝒜, Fin n → 𝒜) :=
+    ad.toCompletelyPositiveMap.toLinearMap with hadlin
+  have hadcp : IsCompletelyPositiveMap adlin :=
+    (cp_iff adlin).out 1 0 |>.mp
+      (fun N M hM => ad.toCompletelyPositiveMap.map_cstarMatrix_nonneg' N M hM)
+  have hadmono : ∀ x y : Ba 𝒜 𝒜, x ≤ y → adlin x ≤ adlin y :=
+    fun _ _ h => OrderHomClass.mono ad.toCompletelyPositiveMap h
+  set lin1 : 𝒜 →ₗ[ℂ] (Ba 𝒜 𝒜)ᵐᵒᵖ :=
+    (rightMulEquiv' (𝒜 := 𝒜)).toStarAlgHom.toAlgHom.toLinearMap with hlin1
+  set lin3 : (Ba 𝒜 C⋆ᵐᵒᵈ(𝒜, Fin n → 𝒜))ᵐᵒᵖ →ₗ[ℂ] CStarMatrix (Fin n) (Fin n) 𝒜 :=
+    (matrixBaEquiv' (𝒜 := 𝒜) (n := n)).symm.toStarAlgHom.toAlgHom.toLinearMap with hlin3
+  have hval : ∀ d : 𝒜, lin3 ((mopLinear' adlin) (lin1 d)) = φ d := by
+    intro d
+    show matrixBaEquiv'.symm (MulOpposite.op (ad (rightMul' d))) = φ d
+    rw [← hkey d]
+    exact matrixBaEquiv'.symm_apply_apply (φ d)
   refine ⟨φ, hentry, ?_, ?_⟩
   · -- complete positivity
-    intro m x B
-    refine (cstar_matrix_positive_iff _).mpr fun c => ?_
-    set V : Fin m → 𝒜 := fun k => ∑ i, ∑ s, a s * ((B k) s i * c i) with hV
-    have hpush : ∑ i, ∑ j,
-        star (c i) * (∑ k, ∑ l, star (B k) * φ (star (x k) * x l) * B l) i j * c j
-        = ∑ k, ∑ l, star (x k * V k) * (x l * V l) := by
-      rw [← conjFun_apply, map_sum]
-      refine Finset.sum_congr rfl fun k _ => ?_
-      rw [map_sum]
-      refine Finset.sum_congr rfl fun l _ => ?_
-      rw [hgen (B k) (B l) c (star (x k) * x l)]
-      simp only [star_mul]
-      noncomm_ring
-    rw [hpush, sum_star_mul_sum']
-    exact star_mul_self_nonneg _
+    have h1 : IsCompletelyPositiveMap ((mopLinear' adlin).comp lin1) :=
+      cp_pre_equiv rightMulEquiv' (mopLinear' adlin) (mopLinear_cp' adlin hadcp) _
+        (fun x => rfl)
+    exact cp_post_equiv matrixBaEquiv'.symm ((mopLinear' adlin).comp lin1) h1 φ
+      (fun x => (hval x).symm)
   · -- normality
-    intro D s hne hdir hlub
-    have hbdd : BddAbove D := ⟨s, hlub.1⟩
-    have hDh : D.Nonempty ∧ DirectedOn (· ≤ ·) D ∧ BddAbove D := ⟨hne, hdir, hbdd⟩
-    have hs : s = dirSup D hDh := hlub.unique (isLUB_dirSup D hDh)
-    -- `φ` is positive, hence monotone
-    have hpos : ∀ e : 𝒜, 0 ≤ e → 0 ≤ φ e := by
-      intro e he
-      refine (cstar_matrix_positive_iff _).mpr fun c => ?_
-      rw [← conjFun_apply, hcollapse]
-      exact star_left_conjugate_nonneg he _
-    have hmono : ∀ e e' : 𝒜, e ≤ e' → φ e ≤ φ e' := by
-      intro e e' h
-      rw [← sub_nonneg] at h ⊢
-      rw [← map_sub]
-      exact hpos _ h
-    refine ⟨?_, ?_⟩
-    · rintro _ ⟨d, hd, rfl⟩
-      exact hmono _ _ (Subtype.coe_le_coe.mpr (hlub.1 hd))
-    · intro Mub hMub
-      rw [← sub_nonneg]
-      refine (cstar_matrix_positive_iff _).mpr fun c => ?_
-      set v : 𝒜 := ∑ i, a i * c i with hv
-      have hub : star v * ↑(dirSup D hDh) * v ≤ conjFun c Mub := by
-        refine (ad_normal v D hDh).2 ?_
-        rintro _ ⟨d, hd, rfl⟩
-        have h0 : (0 : CStarMatrix (Fin n) (Fin n) 𝒜) ≤ Mub - φ ↑d :=
-          sub_nonneg.mpr (hMub ⟨d, hd, rfl⟩)
-        have h1 := (cstar_matrix_positive_iff _).mp h0 c
-        rw [← conjFun_apply, map_sub, hcollapse] at h1
-        exact sub_nonneg.mp h1
-      rw [← conjFun_apply, map_sub, hcollapse, ← hv, ← hs] at *
-      exact sub_nonneg.mpr hub
+    let p1 : 𝒜 →ₚ[ℂ] (Ba 𝒜 𝒜)ᵐᵒᵖ := starAlgHomP (rightMulEquiv' (𝒜 := 𝒜)).toStarAlgHom
+    let p2 : (Ba 𝒜 𝒜)ᵐᵒᵖ →ₚ[ℂ] (Ba 𝒜 C⋆ᵐᵒᵈ(𝒜, Fin n → 𝒜))ᵐᵒᵖ :=
+      { __ := mopLinear' adlin
+        monotone' := fun x y h => hadmono _ _ h }
+    let p3 : (Ba 𝒜 C⋆ᵐᵒᵈ(𝒜, Fin n → 𝒜))ᵐᵒᵖ →ₚ[ℂ] CStarMatrix (Fin n) (Fin n) 𝒜 :=
+      starAlgHomP (matrixBaEquiv' (𝒜 := 𝒜) (n := n)).symm.toStarAlgHom
+    let p23 : (Ba 𝒜 𝒜)ᵐᵒᵖ →ₚ[ℂ] CStarMatrix (Fin n) (Fin n) 𝒜 :=
+      { toFun := fun x => p3 (p2 x)
+        map_add' := fun x y => by simp only [map_add]
+        map_smul' := fun c x => by simp only [map_smul, RingHom.id_apply]
+        monotone' := fun x y h => p3.monotone (p2.monotone h) }
+    have h23 : PreservesDirSups ⇑p23 :=
+      preservesDirSups_pmap_comp p2 (mopLinear_normal' adlin ad.preservesDirSups') p3
+        (starAlgEquiv_preservesDirSups (matrixBaEquiv' (𝒜 := 𝒜) (n := n)).symm)
+    have h123 : PreservesDirSups (fun d : 𝒜 => p23 (p1 d)) :=
+      preservesDirSups_pmap_comp p1
+        (starAlgEquiv_preservesDirSups (rightMulEquiv' (𝒜 := 𝒜))) p23 h23
+    have hfun : (fun d : 𝒜 => p23 (p1 d)) = ⇑φ := funext fun d => hval d
+    rw [hfun] at h123
+    exact h123
 
 end AdjVector
 
