@@ -36,17 +36,138 @@ section UniformBoundedness
 variable {𝒳 𝒴 : Type*} [NormedAddCommGroup 𝒳] [NormedSpace ℂ 𝒳]
   [NormedAddCommGroup 𝒴] [NormedSpace ℂ 𝒴]
 
+/-- **35IV** (`sokal-lemma`, cstar.tex:6029, the ball lemma inside the proof of
+`pub`): for a bounded map `T`, a radius `r > 0` and *any* centre `x`,
+`r‖T‖ ≤ sup_{ξ ∈ B_r(x)} ‖T ξ‖` — the supremum over the ball around an
+arbitrary point is no smaller than the one around `0`, which is `r‖T‖` by
+definition of the operator norm.  Stated here in the bounded form the proof
+uses: any `M` dominating `‖T ξ‖` on `B_r(x)` dominates `r‖T‖`.
+
+The thesis's argument: for `ξ ∈ B_r(0)` either `‖Tξ‖ ≤ ‖T(x+ξ)‖` or
+`‖Tξ‖ ≤ ‖T(x-ξ)‖`, since otherwise
+`2‖Tξ‖ = ‖T(x+ξ) - T(x-ξ)‖ ≤ ‖T(x+ξ)‖ + ‖T(x-ξ)‖ < 2‖Tξ‖`; and both `x ± ξ`
+lie in `B_r(x)`. -/
+theorem sokal_lemma (T : 𝒳 →L[ℂ] 𝒴) {r : ℝ} (hr : 0 < r) (x : 𝒳) {M : ℝ}
+    (hM : ∀ ξ : 𝒳, ‖ξ - x‖ ≤ r → ‖T ξ‖ ≤ M) : r * ‖T‖ ≤ M := by
+  have hM0 : 0 ≤ M := (norm_nonneg _).trans (hM x (by simp [hr.le]))
+  -- the ball around `0`, via the two-point argument
+  have h0 : ∀ ξ : 𝒳, ‖ξ‖ ≤ r → ‖T ξ‖ ≤ M := by
+    intro ξ hξ
+    have h1 : ‖T (x + ξ)‖ ≤ M := hM _ (by simpa using hξ)
+    have h2 : ‖T (x - ξ)‖ ≤ M := hM _ (by simpa using hξ)
+    have e : T (x + ξ) - T (x - ξ) = (2 : ℂ) • T ξ := by
+      rw [map_add, map_sub]; module
+    have h3 : 2 * ‖T ξ‖ ≤ ‖T (x + ξ)‖ + ‖T (x - ξ)‖ := by
+      calc 2 * ‖T ξ‖ = ‖(2 : ℂ) • T ξ‖ := by rw [norm_smul]; norm_num
+        _ = ‖T (x + ξ) - T (x - ξ)‖ := by rw [e]
+        _ ≤ _ := norm_sub_le _ _
+    linarith
+  -- `sup_{‖ξ‖ ≤ r} ‖T ξ‖ = r‖T‖`, by homogeneity
+  have hop : ‖T‖ ≤ M / r := by
+    refine T.opNorm_le_bound (by positivity) fun ξ => ?_
+    rcases eq_or_ne ξ 0 with rfl | hξ
+    · simp
+    · have hn : 0 < ‖ξ‖ := norm_pos_iff.2 hξ
+      have hne : ‖ξ‖ ≠ 0 := hn.ne'
+      have hcpos : (0 : ℝ) < r / ‖ξ‖ := by positivity
+      have hsm : ‖((r / ‖ξ‖ : ℝ) : ℂ) • ξ‖ ≤ r := by
+        rw [norm_smul, Complex.norm_real, Real.norm_of_nonneg hcpos.le,
+          div_mul_cancel₀ _ hne]
+      have hle := h0 _ hsm
+      rw [map_smul, norm_smul, Complex.norm_real, Real.norm_of_nonneg hcpos.le] at hle
+      have key : r * ‖T ξ‖ ≤ M * ‖ξ‖ := by
+        have h' := mul_le_mul_of_nonneg_right hle (norm_nonneg ξ)
+        have e' : r / ‖ξ‖ * ‖T ξ‖ * ‖ξ‖ = r * ‖T ξ‖ := by field_simp
+        linarith [e' ▸ h']
+      rw [div_mul_eq_mul_div, le_div_iff₀ hr]
+      linarith
+  calc r * ‖T‖ ≤ r * (M / r) := mul_le_mul_of_nonneg_left hop hr.le
+    _ = M := by field_simp
+
 /-- **35II** (`pub`, cstar.tex:6015, Theorem (Uniform Boundedness)): a family
 `F` of bounded linear maps from a complete normed vector space `𝒳` to a normed
 vector space `𝒴` is bounded, `sup_T ‖T‖ < ∞`, provided that `sup_T ‖T x‖ < ∞`
-for every `x ∈ 𝒳`.  Mathlib: `banach_steinhaus`. -/
+for every `x ∈ 𝒳`.
+
+Proved by the thesis's own argument (35III–35V, after Sokal), not by Mathlib's
+`banach_steinhaus`, whose route is the Baire/barrelled one: assuming
+`sup_T ‖T‖ = ∞`, pick `T n` with `‖T n‖ > (n+1)·3^(n+1)`, and use the ball
+lemma `sokal_lemma` to walk a sequence `x n` with `‖x (n+1) - x n‖ ≤ 3^-(n+1)`
+and `‖T n (x n)‖ ≥ ⅔·3^-n·‖T n‖`.  It is Cauchy, so converges to some `a` with
+`‖x n - a‖ ≤ ½·3^-n` (as `∑ 3^-k = 3/2`), whence
+`‖T n a‖ ≥ ⅔·3^-n‖T n‖ - ½·3^-n‖T n‖ = ⅙·3^-n‖T n‖ > (n+1)/2`, contradicting
+`sup_T ‖T a‖ < ∞`. -/
 theorem pub [CompleteSpace 𝒳] {ι : Type*} (F : ι → 𝒳 →L[ℂ] 𝒴)
     (h : ∀ x : 𝒳, BddAbove (Set.range fun i => ‖F i x‖)) :
     BddAbove (Set.range fun i => ‖F i‖) := by
-  obtain ⟨C, hC⟩ := banach_steinhaus (g := F) (fun x => by
-    obtain ⟨C, hC⟩ := h x
-    exact ⟨C, fun i => hC (Set.mem_range_self i)⟩)
-  exact ⟨C, by rintro _ ⟨i, rfl⟩; exact hC i⟩
+  by_contra hF
+  -- **35V**: the maps `F (T n)` with `‖F (T n)‖ > (n+1)·3^(n+1)`
+  have hpick : ∀ n : ℕ, ∃ i : ι, ((n : ℝ) + 1) * 3 ^ (n + 1) < ‖F i‖ := by
+    intro n
+    by_contra hn
+    push Not at hn
+    exact hF ⟨((n : ℝ) + 1) * 3 ^ (n + 1), by rintro _ ⟨i, rfl⟩; exact hn i⟩
+  choose T hT using hpick
+  have hTpos : ∀ n, 0 < ‖F (T n)‖ := fun n => lt_of_le_of_lt (by positivity) (hT n)
+  -- the ball lemma gives, around any centre `y`, a point of `B_{3^-n}(y)` on
+  -- which `F (T n)` is at least `⅔·3^-n·‖F (T n)‖`
+  have hkey : ∀ (n : ℕ) (y : 𝒳), ∃ z : 𝒳,
+      ‖z - y‖ ≤ (1 / 3 : ℝ) ^ n ∧
+        2 / 3 * ((1 / 3 : ℝ) ^ n * ‖F (T n)‖) ≤ ‖F (T n) z‖ := by
+    intro n y
+    by_contra hz
+    push Not at hz
+    have hpos : 0 < (1 / 3 : ℝ) ^ n * ‖F (T n)‖ := by have := hTpos n; positivity
+    have := sokal_lemma (F (T n)) (r := (1 / 3 : ℝ) ^ n) (by positivity) y
+      (M := 2 / 3 * ((1 / 3 : ℝ) ^ n * ‖F (T n)‖)) fun ξ hξ => (hz ξ hξ).le
+    linarith
+  choose g hg1 hg2 using hkey
+  obtain ⟨x, hx0, hxs⟩ : ∃ x : ℕ → 𝒳, x 0 = g 0 0 ∧ ∀ n, x (n + 1) = g (n + 1) (x n) :=
+    ⟨fun n => Nat.rec (g 0 0) (fun k y => g (k + 1) y) n, rfl, fun _ => rfl⟩
+  have hxg : ∀ n, 2 / 3 * ((1 / 3 : ℝ) ^ n * ‖F (T n)‖) ≤ ‖F (T n) (x n)‖ := by
+    intro n
+    cases n with
+    | zero => rw [hx0]; exact hg2 0 0
+    | succ k => rw [hxs k]; exact hg2 (k + 1) (x k)
+  have hstep : ∀ n, dist (x n) (x (n + 1)) ≤ 1 / 3 * (1 / 3 : ℝ) ^ n := by
+    intro n
+    rw [dist_eq_norm', hxs n]
+    calc ‖g (n + 1) (x n) - x n‖ ≤ (1 / 3 : ℝ) ^ (n + 1) := hg1 (n + 1) (x n)
+      _ = 1 / 3 * (1 / 3 : ℝ) ^ n := by ring
+  -- `(x n)` is Cauchy, hence convergent; and `‖x n - a‖ ≤ ½·3^-n`
+  have hc : CauchySeq x := cauchySeq_of_le_geometric (1 / 3) (1 / 3) (by norm_num) hstep
+  obtain ⟨a, ha⟩ := cauchySeq_tendsto_of_complete hc
+  have hda : ∀ n, ‖x n - a‖ ≤ 1 / 2 * (1 / 3 : ℝ) ^ n := by
+    intro n
+    have h1 := dist_le_of_le_geometric_of_tendsto (1 / 3) (1 / 3) (by norm_num) hstep ha n
+    rw [dist_eq_norm] at h1
+    calc ‖x n - a‖ ≤ 1 / 3 * (1 / 3 : ℝ) ^ n / (1 - 1 / 3) := h1
+      _ = 1 / 2 * (1 / 3 : ℝ) ^ n := by ring
+  have hpow : ∀ n : ℕ, (1 / 3 : ℝ) ^ n * 3 ^ (n + 1) = 3 := by
+    intro n; rw [pow_succ, ← mul_assoc, ← mul_pow]; norm_num
+  -- so `‖F (T n) a‖ ≥ ⅙·3^-n‖F (T n)‖ > (n+1)/2`
+  have hbig : ∀ n : ℕ, ((n : ℝ) + 1) / 2 < ‖F (T n) a‖ := by
+    intro n
+    have hd : ‖F (T n) (x n) - F (T n) a‖ ≤ ‖F (T n)‖ * (1 / 2 * (1 / 3 : ℝ) ^ n) := by
+      rw [← map_sub]
+      exact ((F (T n)).le_opNorm _).trans
+        (mul_le_mul_of_nonneg_left (hda n) (norm_nonneg _))
+    have h1 : ‖F (T n) (x n)‖ - ‖F (T n) (x n) - F (T n) a‖ ≤ ‖F (T n) a‖ := by
+      have := norm_sub_norm_le (F (T n) (x n)) (F (T n) a)
+      linarith
+    have hprod : 3 * ((n : ℝ) + 1) < (1 / 3 : ℝ) ^ n * ‖F (T n)‖ := by
+      have h2 : (1 / 3 : ℝ) ^ n * (((n : ℝ) + 1) * 3 ^ (n + 1)) = 3 * ((n : ℝ) + 1) := by
+        linear_combination ((n : ℝ) + 1) * hpow n
+      calc 3 * ((n : ℝ) + 1) = (1 / 3 : ℝ) ^ n * (((n : ℝ) + 1) * 3 ^ (n + 1)) := h2.symm
+        _ < (1 / 3 : ℝ) ^ n * ‖F (T n)‖ := mul_lt_mul_of_pos_left (hT n) (by positivity)
+    have := hxg n
+    linarith
+  -- which contradicts `sup_T ‖T a‖ < ∞`
+  obtain ⟨C, hC⟩ := h a
+  obtain ⟨N, hN⟩ := exists_nat_gt (2 * C)
+  have h1 := hbig N
+  have h2 : ‖F (T N) a‖ ≤ C := hC (Set.mem_range_self _)
+  linarith
 
 end UniformBoundedness
 

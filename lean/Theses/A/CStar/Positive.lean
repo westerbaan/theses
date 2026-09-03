@@ -14,13 +14,15 @@ arXiv:1804.02203), chapter 1: C*-algebras — cstar.tex, lines 1714–3886.
                            states, commutative C*-algebras)
 
 **All statements of this file are proved**, parsecs 130–260 included.
-Our `cauchy_formula` is a **route divergence**, not the repair of a gap: the
-thesis's own proof is complete as printed — the promotion of **14VIII**.4 from
-a triangle to a regular `N`-gon is its new part 5, whose hint is the partition
-15IV calls "the obvious manner", and that partition is elementary because each
-filling triangle carries a *holomorphic* integrand and dies by **14IV**
-`goursat`.  Ours restructures the whole proof instead; see the divergence note
-above `polygon_winding` below.
+`cauchy_formula` runs on the thesis's own argument (15II–15IV): 15III's
+`δ`-estimate on the difference quotient, and the partition of the region between
+the `N`-gon and a small closed curve around `z₀` "in the obvious manner" into
+triangles, each of which carries a *holomorphic* integrand and dies by **14IV**
+`goursat`.  One local choice is ours: that small curve is a homothetic copy of
+the `N`-gon, `vₙ = z₀ + s(wₙ − z₀)`, not the thesis's triangle `T` — see the note
+above `polygon_shrink`.  `polygon_winding` remains a route divergence (it proves
+the polygon case outright instead of promoting **14VIII**.4 to it); see the note
+above it.
 
 Parsecs 120-150 are load-bearing: **16II** `norm_spectrum` is proved the
 thesis's way, from **15VII** `rigid_expansion`, which in turn is proved from
@@ -1750,15 +1752,12 @@ a different route, which proves the polygon case outright and needs only
   `S` takes values in `2πℤ` and is therefore constant on that segment;
 * at the centre every `ζₙ` is `e^{2πi/N}`, so `S(c) = N·(2π/N) = 2π`.
 
-The divergence is larger than this lemma: `cauchy_formula` below uses
-`dslope f z₀`, differentiable on all of `U`, which removes **15III**'s
-`δ`/`‖f'(z₀)‖+37` estimate and with it the small triangle `T` around `z₀`
-altogether; Goursat is then applied to the **fan** `(w₀, wₙ, wₙ₊₁)`, whose
-interior edges cancel immediately, so the region between a triangle and the
-`N`-gon never arises.  Two consequences worth recording: the tree uses neither
-**14VIII**.4 `invint_4` nor the thesis's **14VIII**.5 here (both have zero
-consumers), and `polygon_winding` asks less of `f` than the thesis's route
-does. -/
+The divergence stops at this lemma: `cauchy_formula` below does follow the
+printed 15III–15IV (see `polygon_shrink`), and it cites this lemma exactly
+where 15II cites `invint`(5).  Two consequences worth recording: the tree uses
+neither **14VIII**.4 `invint_4` nor the thesis's **14VIII**.5 here (both have
+zero consumers; `polygon_fan` and `polygon_integral_eq_zero` were deleted on 2026-09-04), and
+`polygon_winding` asks less of `f` than the thesis's route does. -/
 
 private theorem cos_step (N : ℕ) (hN : 0 < N) (t : ℤ) (h1 : 1 ≤ t) (h2 : t ≤ N) :
     Real.cos (Real.pi * t / N) ≤ Real.cos (Real.pi / N) := by
@@ -2226,34 +2225,6 @@ private theorem polygon_notMem_edge {N : ℕ} (hN : 3 ≤ N) (c : ℂ) (r : ℝ)
   rw [h1, h2, hcalc] at hpos
   simp at hpos
 
-/-- Fan triangulation from a point `v`: the closed polygon integral is the sum of
-the integrals over the triangles `(v, wₙ, wₙ₊₁)`. -/
-private theorem polygon_fan (g : ℂ → 𝒜) (N : ℕ) (w : ℕ → ℂ) (v : ℂ) (hwN : w N = w 0) :
-    ∑ n ∈ Finset.range N, triIntegral g v (w n) (w (n + 1))
-      = ∑ n ∈ Finset.range N, segIntegral g (w n) (w (n + 1)) := by
-  have hkey : ∀ n : ℕ, triIntegral g v (w n) (w (n + 1))
-      = segIntegral g (w n) (w (n + 1))
-        + (segIntegral g v (w n) - segIntegral g v (w (n + 1))) := by
-    intro n
-    rw [triIntegral, segIntegral_symm g v (w (n + 1))]
-    abel
-  rw [Finset.sum_congr rfl (fun n _ => hkey n), Finset.sum_add_distrib,
-    Finset.sum_range_sub' (fun n => segIntegral g v (w n)) N, hwN, sub_self, add_zero]
-
-/-- The integral of a holomorphic function around the closed polygon vanishes:
-Goursat on each triangle of the fan from `w₀`. -/
-private theorem polygon_integral_eq_zero {U : Set ℂ} (hU : IsOpen U) (g : ℂ → 𝒜)
-    (hg : DifferentiableOn ℂ g U) (N : ℕ) (w : ℕ → ℂ)
-    (hUw : convexHull ℝ (Set.range w) ⊆ U) (hwN : w N = w 0) :
-    ∑ n ∈ Finset.range N, segIntegral g (w n) (w (n + 1)) = 0 := by
-  rw [← polygon_fan g N w (w 0) hwN]
-  refine Finset.sum_eq_zero (fun n _ => goursat hU g hg _ _ _ (subset_trans ?_ hUw))
-  refine convexHull_mono ?_
-  intro x hx
-  simp only [Set.mem_insert_iff, Set.mem_singleton_iff] at hx
-  rcases hx with rfl | rfl | rfl
-  exacts [⟨0, rfl⟩, ⟨n, rfl⟩, ⟨n + 1, rfl⟩]
-
 /-- **The polygon integral of `(z − z₀)⁻¹` is `2πi`** when `z₀` is interior: the
 angles sum to `2π` by `polygon_winding` and the logarithms telescope. -/
 private theorem polygon_inv_integral {N : ℕ} (hN : 3 ≤ N) (c : ℂ) (r : ℝ) (hr : 0 < r)
@@ -2385,6 +2356,239 @@ private theorem edge_taylor (f : ℂ → 𝒜) (W W' : ℂ)
   rw [heq, segIntegral_endpoints]
   exact hmain.const_smul (W' - W)
 
+/-- A separating linear functional for two ℝ-independent vectors. -/
+private theorem sep_functional (a b : ℂ) (hD : 0 < ((starRingEnd ℂ) a * b).im) :
+    ∃ q : ℂ, (q * a).re = 1 ∧ (q * b).re = 1 := by
+  simp only [Complex.mul_im, Complex.conj_re, Complex.conj_im] at hD
+  have hne : a.re * b.im - a.im * b.re ≠ 0 := by intro hz; rw [sub_eq_zero] at hz; linarith
+  refine ⟨⟨(b.im - a.im) / (a.re * b.im - a.im * b.re),
+    (b.re - a.re) / (a.re * b.im - a.im * b.re)⟩, ?_, ?_⟩
+  · simp only [Complex.mul_re, div_mul_eq_mul_div, div_sub_div_same]
+    rw [show (b.im - a.im) * a.re - (b.re - a.re) * a.im
+      = a.re * b.im - a.im * b.re from by ring]
+    exact div_self hne
+  · simp only [Complex.mul_re, div_mul_eq_mul_div, div_sub_div_same]
+    rw [show (b.im - a.im) * b.re - (b.re - a.re) * b.im
+      = a.re * b.im - a.im * b.re from by ring]
+    exact div_self hne
+
+/-- A point cut off from three others by a linear functional is off their hull. -/
+private theorem notMem_hull_of_sep {z₀ p₁ p₂ p₃ q : ℂ} {t : ℝ} (ht : 0 < t)
+    (h₁ : t ≤ (q * (p₁ - z₀)).re) (h₂ : t ≤ (q * (p₂ - z₀)).re)
+    (h₃ : t ≤ (q * (p₃ - z₀)).re) :
+    z₀ ∉ convexHull ℝ ({p₁, p₂, p₃} : Set ℂ) := by
+  have hlin : IsLinearMap ℝ (fun z : ℂ => (q * z).re) := by
+    constructor
+    · intro x y; simp [mul_add]
+    · intro s x; simp [Complex.real_smul, Complex.mul_re]; ring
+  have hconv : Convex ℝ {z : ℂ | (q * z₀).re + t ≤ (q * z).re} :=
+    convex_halfSpace_ge hlin _
+  have hsub : ({p₁, p₂, p₃} : Set ℂ) ⊆ {z : ℂ | (q * z₀).re + t ≤ (q * z).re} := by
+    have key : ∀ p : ℂ, t ≤ (q * (p - z₀)).re → (q * z₀).re + t ≤ (q * p).re := by
+      intro p hp
+      have : (q * (p - z₀)).re = (q * p).re - (q * z₀).re := by
+        rw [mul_sub, Complex.sub_re]
+      linarith [this ▸ hp]
+    intro x hx
+    simp only [Set.mem_insert_iff, Set.mem_singleton_iff] at hx
+    rcases hx with rfl | rfl | rfl
+    exacts [key _ h₁, key _ h₂, key _ h₃]
+  intro hz
+  have := convexHull_min hsub hconv hz
+  simp only [Set.mem_ofPred_eq] at this
+  linarith
+
+/-- `‖∫_w^{w'} g‖ ≤ |w' − w| · sup‖g‖`. -/
+private theorem norm_segIntegral_le (g : ℂ → 𝒜) (p p' : ℂ) (M : ℝ)
+    (hM : ∀ t ∈ Set.Icc (0:ℝ) 1, ‖g (p + (t:ℂ) * (p' - p))‖ ≤ M) :
+    ‖segIntegral g p p'‖ ≤ ‖p' - p‖ * M := by
+  rw [segIntegral_endpoints, norm_smul]
+  exact mul_le_mul_of_nonneg_left (integral_norm_le _ M hM) (norm_nonneg _)
+
+/-- **15IV**'s partition (cstar.tex:2450): the region between the `N`-gon and a
+small closed curve around `z₀`, cut "in the obvious manner into triangles" that
+carry a holomorphic integrand and so die by **14IV** `goursat`; what is left
+after the interior edges cancel and the spokes telescope is the `N`-gon integral
+minus the small one.
+
+⚠ **The one local divergence in `cauchy_formula`.**  The thesis's small curve is
+a *triangle* `T` with `z₀ ∈ in(T)`, `wn_T(z₀) = −1` and `length(T) ≤ ε`; ours is
+the homothetic copy `vₙ = z₀ + s(wₙ − z₀)` of the `N`-gon itself.  That is what
+makes the partition uniform: both filling triangles of the `n`-th slab are cut
+off from `z₀` by a *single* linear functional, the sum of the coordinates in the
+basis `(wₙ − z₀, wₙ₊₁ − z₀)` of `ℂ` over `ℝ` — a basis because
+`Im(conj(wₙ − z₀)·(wₙ₊₁ − z₀)) > 0` (`polygon_im_pos`) — on which the four
+vertices score `1, 1, s, s` and `z₀` scores `0`.  With a triangle one needs
+instead a pairing of the `N` vertices with the three of `T` and a separating line
+for each of the `2N` filling triangles.  Nothing else of 15IV changes: the curve
+is still inside the `N`-gon, still shrinks to `z₀`, and its length still tends
+to `0`. -/
+private theorem polygon_shrink {U : Set ℂ} (hU : IsOpen U) (g : ℂ → 𝒜) (z₀ : ℂ)
+    (hg : DifferentiableOn ℂ g (U \ {z₀})) (N : ℕ) (w : ℕ → ℂ)
+    (hUw : convexHull ℝ (Set.range w) ⊆ U) (hwN : w N = w 0)
+    (hz₀ : z₀ ∈ convexHull ℝ (Set.range w))
+    (him : ∀ n, 0 < ((starRingEnd ℂ) (w n - z₀) * (w (n + 1) - z₀)).im)
+    (s : ℝ) (hs : 0 < s) (hs1 : s ≤ 1) :
+    ∑ n ∈ Finset.range N, segIntegral g (w n) (w (n + 1))
+      = ∑ n ∈ Finset.range N,
+          segIntegral g (z₀ + (s:ℂ) * (w n - z₀)) (z₀ + (s:ℂ) * (w (n + 1) - z₀)) := by
+  set v : ℕ → ℂ := fun n => z₀ + (s:ℂ) * (w n - z₀) with hv
+  set h : ℕ → 𝒜 := fun n => segIntegral g (w n) (v n) with hh
+  have hP : Convex ℝ (convexHull ℝ (Set.range w)) := convex_convexHull ℝ _
+  have hwmem : ∀ m, w m ∈ convexHull ℝ (Set.range w) := fun m => subset_convexHull ℝ _ ⟨m, rfl⟩
+  have hvmem : ∀ m, v m ∈ convexHull ℝ (Set.range w) := by
+    intro m
+    have hc := hP hz₀ (hwmem m) (by linarith : (0:ℝ) ≤ 1 - s) hs.le (by ring)
+    have he : (1 - s) • z₀ + s • w m = v m := by
+      simp only [hv, Complex.real_smul]
+      push_cast
+      ring
+    exact he ▸ hc
+  -- each of the two filling triangles of the `n`-th slab dies by Goursat
+  have hkey : ∀ n, triIntegral g (w n) (w (n + 1)) (v (n + 1)) = 0
+      ∧ triIntegral g (w n) (v (n + 1)) (v n) = 0 := by
+    intro n
+    obtain ⟨q, hq1, hq2⟩ := sep_functional (w n - z₀) (w (n + 1) - z₀) (him n)
+    have hqv : ∀ m : ℕ, (q * (v m - z₀)).re = s * (q * (w m - z₀)).re := by
+      intro m
+      have he : v m - z₀ = (s:ℂ) * (w m - z₀) := by simp [hv]
+      rw [he, ← mul_assoc, mul_comm q (s:ℂ), mul_assoc, Complex.re_ofReal_mul]
+    have hgour : ∀ p₁ p₂ p₃ : ℂ, p₁ ∈ convexHull ℝ (Set.range w) →
+        p₂ ∈ convexHull ℝ (Set.range w) → p₃ ∈ convexHull ℝ (Set.range w) →
+        z₀ ∉ convexHull ℝ ({p₁, p₂, p₃} : Set ℂ) → triIntegral g p₁ p₂ p₃ = 0 := by
+      intro p₁ p₂ p₃ hp₁ hp₂ hp₃ hz
+      refine goursat (hU.sdiff isClosed_singleton) g hg _ _ _ ?_
+      refine Set.subset_sdiff.mpr ⟨?_, Set.disjoint_singleton_right.mpr hz⟩
+      refine subset_trans (convexHull_min ?_ hP) hUw
+      intro x hx
+      simp only [Set.mem_insert_iff, Set.mem_singleton_iff] at hx
+      rcases hx with rfl | rfl | rfl
+      exacts [hp₁, hp₂, hp₃]
+    constructor
+    · refine hgour _ _ _ (hwmem n) (hwmem (n + 1)) (hvmem (n + 1)) ?_
+      exact notMem_hull_of_sep hs (by rw [hq1]; exact hs1) (by rw [hq2]; exact hs1)
+        (by rw [hqv (n + 1), hq2, mul_one])
+    · refine hgour _ _ _ (hwmem n) (hvmem (n + 1)) (hvmem n) ?_
+      exact notMem_hull_of_sep hs (by rw [hq1]; exact hs1)
+        (by rw [hqv (n + 1), hq2, mul_one]) (by rw [hqv n, hq1, mul_one])
+  -- the interior edges cancel, and the spokes telescope
+  have hstep : ∀ n, segIntegral g (w n) (w (n + 1))
+      = segIntegral g (v n) (v (n + 1)) + (h n - h (n + 1)) := by
+    intro n
+    obtain ⟨t1, t2⟩ := hkey n
+    have hsum0 : triIntegral g (w n) (w (n + 1)) (v (n + 1))
+        + triIntegral g (w n) (v (n + 1)) (v n) = 0 := by rw [t1, t2, add_zero]
+    rw [triIntegral, triIntegral, segIntegral_symm g (w n) (v (n + 1)),
+      segIntegral_symm g (v n) (v (n + 1)), segIntegral_symm g (w n) (v n)] at hsum0
+    refine eq_of_sub_eq_zero ?_
+    rw [← hsum0, hh]
+    abel
+  have hvN : v N = v 0 := by simp only [hv, hwN]
+  have hhN : h N = h 0 := by simp only [hh, hwN, hvN]
+  rw [Finset.sum_congr rfl (fun n _ => hstep n), Finset.sum_add_distrib,
+    Finset.sum_range_sub' h N, hhN, sub_self, add_zero]
+
+/-- **15III**–**15IV**: the difference quotient is bounded near `z₀`, and the
+polygon integral of it equals the integral over an arbitrarily small homothetic
+copy of the polygon, whose length tends to `0`. -/
+private theorem polygon_slope_integral_zero {U : Set ℂ} (hU : IsOpen U) (f : ℂ → 𝒜)
+    (hf : DifferentiableOn ℂ f U) (N : ℕ) (hN : 3 ≤ N) (w : ℕ → ℂ)
+    (hUw : convexHull ℝ (Set.range w) ⊆ U) (hwN : w N = w 0) (z₀ : ℂ) (hz₀U : z₀ ∈ U)
+    (hz₀ : z₀ ∈ convexHull ℝ (Set.range w))
+    (him : ∀ n, 0 < ((starRingEnd ℂ) (w n - z₀) * (w (n + 1) - z₀)).im)
+    (R L : ℝ) (hR : 0 < R) (hwR : ∀ m, ‖w m - z₀‖ ≤ R) (hL : 0 < L)
+    (hlen : ∀ m, ‖w (m + 1) - w m‖ ≤ L) :
+    ∑ n ∈ Finset.range N, segIntegral (slope f z₀) (w n) (w (n + 1)) = 0 := by
+  -- **15III**: `‖(f z − f z₀)/(z − z₀)‖ ≤ ‖f'(z₀)‖ + 37` on a ball around `z₀`
+  have hfz₀ : DifferentiableAt ℂ f z₀ := hf.differentiableAt (hU.mem_nhds hz₀U)
+  have hsl := hasDerivAt_iff_tendsto_slope.mp hfz₀.hasDerivAt
+  obtain ⟨δ, hδ0, hδ⟩ := Metric.tendsto_nhdsWithin_nhds.mp hsl 37 (by norm_num)
+  set M : ℝ := ‖deriv f z₀‖ + 37 with hMdef
+  have hM0 : 0 < M := by have := norm_nonneg (deriv f z₀); rw [hMdef]; linarith
+  have hbound : ∀ z : ℂ, ‖z - z₀‖ < δ → ‖slope f z₀ z‖ ≤ M := by
+    intro z hz
+    rcases eq_or_ne z z₀ with rfl | hne
+    · rw [slope_def_module, sub_self, sub_self, smul_zero, norm_zero]
+      exact hM0.le
+    · have h1 := hδ (Set.mem_compl_singleton_iff.mpr hne) (by rwa [dist_eq_norm])
+      rw [dist_eq_norm] at h1
+      have h2 := norm_sub_norm_le (slope f z₀ z) (deriv f z₀)
+      rw [hMdef]; linarith
+  -- the integrand is holomorphic off `z₀`
+  have hgdiff : DifferentiableOn ℂ (slope f z₀) (U \ {z₀}) := by
+    have he : slope f z₀ = fun z => (z - z₀)⁻¹ • (f z - f z₀) :=
+      funext fun z => slope_def_module f z₀ z
+    rw [he]
+    have h1 : DifferentiableOn ℂ (fun z : ℂ => (z - z₀)⁻¹) (U \ {z₀}) := by
+      refine DifferentiableOn.inv ((differentiable_id.sub_const z₀).differentiableOn) ?_
+      intro z hz
+      simp only [Set.mem_sdiff, Set.mem_singleton_iff] at hz
+      exact sub_ne_zero.mpr hz.2
+    exact h1.smul ((hf.mono Set.sdiff_subset).sub_const _)
+  set X : 𝒜 := ∑ n ∈ Finset.range N, segIntegral (slope f z₀) (w n) (w (n + 1)) with hXdef
+  set C : ℝ := N * (L * M) with hCdef
+  have hNR : (0:ℝ) < N := by exact_mod_cast (by omega : 0 < N)
+  have hC0 : 0 < C := by rw [hCdef]; positivity
+  -- **15IV**: the length-times-sup bound on the small polygon
+  have hmain : ∀ s : ℝ, 0 < s → s ≤ 1 → s * R < δ → ‖X‖ ≤ C * s := by
+    intro s hs hs1 hsR
+    rw [hXdef, polygon_shrink hU (slope f z₀) z₀ hgdiff N w hUw hwN hz₀ him s hs hs1]
+    refine le_trans (norm_sum_le _ _) ?_
+    have hterm : ∀ n ∈ Finset.range N,
+        ‖segIntegral (slope f z₀) (z₀ + (s:ℂ) * (w n - z₀))
+          (z₀ + (s:ℂ) * (w (n + 1) - z₀))‖ ≤ L * M * s := by
+      intro n _
+      have hnorm : ‖(z₀ + (s:ℂ) * (w (n + 1) - z₀)) - (z₀ + (s:ℂ) * (w n - z₀))‖ ≤ s * L := by
+        rw [show (z₀ + (s:ℂ) * (w (n + 1) - z₀)) - (z₀ + (s:ℂ) * (w n - z₀))
+            = (s:ℂ) * (w (n + 1) - w n) from by ring,
+          norm_mul, Complex.norm_real, Real.norm_of_nonneg hs.le]
+        exact mul_le_mul_of_nonneg_left (hlen n) hs.le
+      have hpt : ∀ t ∈ Set.Icc (0:ℝ) 1,
+          ‖slope f z₀ ((z₀ + (s:ℂ) * (w n - z₀)) + (t:ℂ) *
+            ((z₀ + (s:ℂ) * (w (n + 1) - z₀)) - (z₀ + (s:ℂ) * (w n - z₀))))‖ ≤ M := by
+        intro t ht
+        refine hbound _ ?_
+        rw [show (z₀ + (s:ℂ) * (w n - z₀)) + (t:ℂ) *
+              ((z₀ + (s:ℂ) * (w (n + 1) - z₀)) - (z₀ + (s:ℂ) * (w n - z₀))) - z₀
+            = (s:ℂ) * ((1 - (t:ℂ)) * (w n - z₀) + (t:ℂ) * (w (n + 1) - z₀)) from by ring,
+          norm_mul, Complex.norm_real, Real.norm_of_nonneg hs.le]
+        have h1 : ‖(1 - (t:ℂ)) * (w n - z₀) + (t:ℂ) * (w (n + 1) - z₀)‖ ≤ R := by
+          refine le_trans (norm_add_le _ _) ?_
+          rw [norm_mul, norm_mul,
+            show (1 - (t:ℂ)) = ((1 - t : ℝ) : ℂ) from by push_cast; ring,
+            Complex.norm_real, Complex.norm_real, Real.norm_of_nonneg (by linarith [ht.2]),
+            Real.norm_of_nonneg ht.1]
+          nlinarith [hwR n, hwR (n + 1), norm_nonneg (w n - z₀), norm_nonneg (w (n + 1) - z₀),
+            ht.1, ht.2]
+        calc s * ‖(1 - (t:ℂ)) * (w n - z₀) + (t:ℂ) * (w (n + 1) - z₀)‖
+            ≤ s * R := mul_le_mul_of_nonneg_left h1 hs.le
+          _ < δ := hsR
+      exact le_trans (norm_segIntegral_le _ _ _ M hpt)
+        (by nlinarith [norm_nonneg ((z₀ + (s:ℂ) * (w (n + 1) - z₀))
+          - (z₀ + (s:ℂ) * (w n - z₀)))])
+    calc ∑ n ∈ Finset.range N, ‖segIntegral (slope f z₀) (z₀ + (s:ℂ) * (w n - z₀))
+            (z₀ + (s:ℂ) * (w (n + 1) - z₀))‖
+        ≤ ∑ _n ∈ Finset.range N, L * M * s := Finset.sum_le_sum hterm
+      _ = N * (L * M * s) := by rw [Finset.sum_const, Finset.card_range, nsmul_eq_mul]
+      _ = C * s := by rw [hCdef]; ring
+  -- and `ε → 0`
+  by_contra hne
+  have hXpos : 0 < ‖X‖ := norm_pos_iff.mpr hne
+  set s : ℝ := min 1 (min (δ / (2 * R)) (‖X‖ / (2 * C))) with hsdef
+  have hs0 : 0 < s := lt_min one_pos (lt_min (by positivity) (by positivity))
+  have hs1 : s ≤ 1 := min_le_left _ _
+  have hsd : s ≤ δ / (2 * R) := le_trans (min_le_right _ _) (min_le_left _ _)
+  have hsX : s ≤ ‖X‖ / (2 * C) := le_trans (min_le_right _ _) (min_le_right _ _)
+  have hsR : s * R < δ := by
+    calc s * R ≤ δ / (2 * R) * R := mul_le_mul_of_nonneg_right hsd hR.le
+      _ = δ / 2 := by field_simp
+      _ < δ := by linarith
+  have h1 := hmain s hs0 hs1 hsR
+  have h2 : C * s ≤ ‖X‖ / 2 := by
+    calc C * s ≤ C * (‖X‖ / (2 * C)) := mul_le_mul_of_nonneg_left hsX hC0.le
+      _ = ‖X‖ / 2 := by field_simp
+  linarith
+
 /-- **15I** (`cauchy-formula`, cstar.tex:2411, Theorem (Cauchy's Integral
 Formula)): for a holomorphic 𝒜-valued function `f` defined on (an open set
 containing) the closed regular `N`-gon with centre `c`, circumradius `r` and
@@ -2400,23 +2604,47 @@ theorem cauchy_formula {U : Set ℂ} (hU : IsOpen U) (f : ℂ → 𝒜)
       ∑ n ∈ Finset.range N,
         segIntegral (fun z => (z - z₀)⁻¹ • f z) (w n) (w (n + 1)) :=
   by
-    -- A route divergence from the thesis, not a gap repair: `dslope` removes
-    -- the small triangle of 15III, Goursat runs on the fan from `w₀`, and
-    -- `polygon_winding` proves the polygon case outright rather than promoting
-    -- **14VIII**.4 to it (see the divergence note above).
+    -- The thesis's own route: 15II reduces to `∑ₙ ∫ (f z − f z₀)/(z − z₀) = 0`,
+    -- which is 15III's `δ`-estimate on the difference quotient together with
+    -- 15IV's partition of the region between the `N`-gon and a small closed
+    -- curve around `z₀`.  Only the shape of that curve is ours: a homothetic
+    -- copy of the `N`-gon rather than the thesis's triangle `T`, which makes
+    -- the partition uniform (see the note above `polygon_shrink`).
     have hw' : ∀ n, w n = c + (r : ℂ) * cisR (2 * Real.pi * n / N) :=
       polygon_vertex hN c r w hw
     have hwN : w N = w 0 := polygon_closed hN c r w hw'
     have hnotmem := polygon_notMem_edge hN c r hr w hw' z₀ hz₀
     have hz₀U : z₀ ∈ U := hUw (interior_subset hz₀)
-    -- (1) the removable singularity: `dslope f z₀` is holomorphic on all of `U`
-    have hds : DifferentiableOn ℂ (dslope f z₀) U :=
-      (Complex.differentiableOn_dslope (hU.mem_nhds hz₀U)).mpr hf
-    -- (2) its polygon integral vanishes, by Goursat on the fan from `w₀`
-    have hzero : ∑ n ∈ Finset.range N, segIntegral (dslope f z₀) (w n) (w (n + 1)) = 0 :=
-      polygon_integral_eq_zero hU _ hds N w hUw hwN
-    -- (3) split the integrand `dslope f z₀ z = (z-z₀)⁻¹ • f z - (z-z₀)⁻¹ • f z₀`
-    have hsplit : ∀ n : ℕ, segIntegral (dslope f z₀) (w n) (w (n + 1))
+    -- (1) the geometry: `z₀` sees each edge under a positive angle, the
+    -- vertices lie within `r + ‖c − z₀‖` of `z₀`, and the edges are short
+    have him : ∀ n, 0 < ((starRingEnd ℂ) (w n - z₀) * (w (n + 1) - z₀)).im := fun n =>
+      polygon_im_pos hN c r hr w hw' n z₀
+        (polygon_halfplane_strict hN c r hr w hw' n z₀ hz₀)
+    have hcis : ∀ θ : ℝ, ‖cisR θ‖ = 1 := by
+      intro θ
+      rw [cisR, Complex.norm_exp]
+      simp
+    have hwc : ∀ m : ℕ, ‖w m - c‖ = r := by
+      intro m
+      rw [show w m - c = (r : ℂ) * cisR (2 * Real.pi * m / N) from by rw [hw' m]; ring,
+        norm_mul, Complex.norm_real, Real.norm_of_nonneg hr.le, hcis, mul_one]
+    have hwR : ∀ m : ℕ, ‖w m - z₀‖ ≤ r + ‖c - z₀‖ := by
+      intro m
+      calc ‖w m - z₀‖ = ‖(w m - c) + (c - z₀)‖ := by congr 1; ring
+        _ ≤ ‖w m - c‖ + ‖c - z₀‖ := norm_add_le _ _
+        _ = r + ‖c - z₀‖ := by rw [hwc m]
+    have hlen : ∀ m : ℕ, ‖w (m + 1) - w m‖ ≤ 2 * r := by
+      intro m
+      calc ‖w (m + 1) - w m‖ = ‖(w (m + 1) - c) - (w m - c)‖ := by congr 1; ring
+        _ ≤ ‖w (m + 1) - c‖ + ‖w m - c‖ := norm_sub_le _ _
+        _ = 2 * r := by rw [hwc, hwc]; ring
+    -- (2) **15III**–**15IV**: the polygon integral of the difference quotient
+    -- `slope f z₀ z = (f z − f z₀)/(z − z₀)` vanishes
+    have hzero : ∑ n ∈ Finset.range N, segIntegral (slope f z₀) (w n) (w (n + 1)) = 0 :=
+      polygon_slope_integral_zero hU f hf N hN w hUw hwN z₀ hz₀U (interior_subset hz₀) him
+        (r + ‖c - z₀‖) (2 * r) (by linarith [norm_nonneg (c - z₀)]) hwR (by linarith) hlen
+    -- (3) split the integrand `slope f z₀ z = (z-z₀)⁻¹ • f z - (z-z₀)⁻¹ • f z₀`
+    have hsplit : ∀ n : ℕ, segIntegral (slope f z₀) (w n) (w (n + 1))
         = segIntegral (fun z => (z - z₀)⁻¹ • f z) (w n) (w (n + 1))
           - (segIntegral (fun z => (z - z₀)⁻¹) (w n) (w (n + 1))) • f z₀ := by
       intro n
@@ -2447,19 +2675,14 @@ theorem cauchy_formula {U : Set ℂ} (hU : IsOpen U) (f : ℂ → 𝒜)
         apply ContinuousOn.intervalIntegrable
         rw [Set.uIcc_of_le (by norm_num : (0:ℝ) ≤ 1)]
         exact segIntegrand_continuousOn _ (w n) (w (n + 1)) hBc
-      have hid : Set.EqOn (fun t : ℝ => dslope f z₀ (w n + (t:ℂ) * (w (n + 1) - w n)))
+      have hid : Set.EqOn (fun t : ℝ => slope f z₀ (w n + (t:ℂ) * (w (n + 1) - w n)))
           (fun t : ℝ => (w n + (t:ℂ) * (w (n + 1) - w n) - z₀)⁻¹
               • f (w n + (t:ℂ) * (w (n + 1) - w n))
             - (w n + (t:ℂ) * (w (n + 1) - w n) - z₀)⁻¹ • f z₀) (Set.uIcc 0 1) := by
-        intro t ht
-        rw [Set.uIcc_of_le (by norm_num : (0:ℝ) ≤ 1)] at ht
-        have hmem : w n + (t:ℂ) * (w (n + 1) - w n) ∈ segment ℝ (w n) (w (n + 1)) := by
-          rw [segment_eq_image' ℝ]
-          exact ⟨t, ht, by simp [Complex.real_smul]⟩
-        have hne' : w n + (t:ℂ) * (w (n + 1) - w n) ≠ z₀ := fun h => hnotmem n (h ▸ hmem)
+        intro t _
         simp only
-        rw [dslope_of_ne _ hne', slope_def_module, smul_sub]
-      rw [segIntegral_endpoints (dslope f z₀), intervalIntegral.integral_congr hid,
+        rw [slope_def_module, smul_sub]
+      rw [segIntegral_endpoints (slope f z₀), intervalIntegral.integral_congr hid,
         intervalIntegral.integral_sub hA hB, smul_sub]
       congr 1
       rw [intervalIntegral.integral_smul_const, smul_smul, segIntegral_endpoints,
@@ -4916,10 +5139,20 @@ theorem Faithful.centreSeparating (ω : ∀ i, 𝒜 →ₗ[ℂ] ℬf i) (h : Fai
       refine (h a ha).mpr fun i => ?_
       simpa using hb i 1
 
-/-! **21III**–**21IV** (cstar.tex:3198, Examples): the states, the
-multiplicative states (on a commutative C*-algebra), and the vector
-functionals (on B(H)) are order separating — stated at 22VIII, 27–, and 25III
-respectively; the four levels of separation differ — not converted. -/
+/-! **21III** (cstar.tex:3198, Examples): the states, the multiplicative states
+(on a commutative C*-algebra), and the vector functionals (on B(H)) are order
+separating — stated at **22VIII** `states_order_separating_2`, **27XVIII**
+`gelfand_representation_isometry` and **25III**
+`hilb_vector_states_order_separating` respectively.
+
+**21IV** (cstar.tex:3194, Examples): the four levels of separation do not
+coincide.  The point's three examples are all about B(H), so they are proved
+with the vector functionals at the end of parsec 250:
+`vector_functional_centreSeparating` and `vector_functional_not_faithful`,
+`orthonormal_vector_functionals_faithful` and
+`orthonormal_vector_functionals_not_separating`,
+`product_vector_functionals_separating` and
+`product_vector_functionals_not_orderSeparating`. -/
 
 /-- **21V** (`separating-self-adjoint`, cstar.tex:3232, Exercise): given a
 separating collection `Ω` of involution preserving maps on `𝒜`, an element
@@ -7382,6 +7615,318 @@ theorem hilb_positive_operators_3 (T : H →L[ℂ] H) (hT : IsSelfAdjoint T) :
     exact h.mp (hilb_vector_states_order_separating (H := H)) T hT
 
 end VectorStates
+
+/-! ### **21IV** (cstar.tex:3194, Examples): the four levels of separation
+differ
+
+The point states three examples "we'll just mention here, but can't verify
+yet"; all three are about the vector functionals of B(H), so they are proved
+here rather than at parsec 210.  Together they separate the four levels of
+**21II**: item 1 is centre separating but not faithful, item 2 faithful but
+not separating, item 3 separating but not order separating. -/
+
+section SeparationExamples
+
+variable {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
+
+/-- **21IV** (cstar.tex:3194, Examples), item 1, first half: a single non-zero
+vector `x` of a Hilbert space `H` makes the one-element collection
+`{⟪x, (·) x⟫}` of vector functionals on B(H) *centre separating*.
+
+Every `y ∈ H` is `b x` for some `b ∈ B(H)` (take `b = ⟪x, ·⟫ ⟪x,x⟫⁻¹ y`), so
+`ω(b* a b) = ⟪b x, a (b x)⟫` runs over the whole quadratic form of `a`, which
+determines `a` over `ℂ`. -/
+theorem vector_functional_centreSeparating (x : H) (hx : x ≠ 0) :
+    CentreSeparating fun _ : Unit => vectorFunctional x := by
+  intro a _
+  constructor
+  · rintro rfl i b
+    simp
+  · intro hb
+    have hquad : ∀ y : H, ⟪y, a y⟫ = 0 := by
+      intro y
+      set b : H →L[ℂ] H := (innerSL ℂ x).smulRight ((⟪x, x⟫ : ℂ)⁻¹ • y) with hbdef
+      have hbx : b x = y := by
+        show (⟪x, x⟫ : ℂ) • ((⟪x, x⟫ : ℂ)⁻¹ • y) = y
+        rw [smul_smul, mul_inv_cancel₀ (inner_self_ne_zero.mpr hx), one_smul]
+      have h := hb () b
+      simp only [vectorFunctional_apply] at h
+      have happ : (star b * a * b) x = ContinuousLinearMap.adjoint b (a (b x)) := by
+        rw [ContinuousLinearMap.star_eq_adjoint]
+        rfl
+      rw [happ, ContinuousLinearMap.adjoint_inner_right, hbx] at h
+      exact h
+    have hquad' : ∀ y : H, ⟪a y, y⟫ = 0 := by
+      intro y
+      rw [← inner_conj_symm, hquad y, map_zero]
+    have h0 := (inner_map_self_eq_zero (a : H →ₗ[ℂ] H)).mp hquad'
+    exact ContinuousLinearMap.coe_injective (by rw [h0]; rfl)
+
+/-- **21IV** (cstar.tex:3194, Examples), item 1, second half: that same
+collection is *not faithful* once `dim H ≥ 2` — a unit vector `u` orthogonal to
+`x` gives the projection `a = ⟪u, ·⟫ u ≥ 0`, which is non-zero while
+`⟪x, a x⟫ = ⟪u, x⟫⟪x, u⟫ = 0`.
+
+(The printed example takes `x ≠ 0`; the failure of faithfulness needs only
+`1 < dim H`, so that hypothesis is not assumed here.) -/
+theorem vector_functional_not_faithful (x : H) (hdim : 1 < Module.rank ℂ H) :
+    ¬ Faithful fun _ : Unit => vectorFunctional x := by
+  obtain ⟨y, hymem, hy0⟩ : ∃ y ∈ (ℂ ∙ x)ᗮ, y ≠ 0 := by
+    refine Submodule.ne_bot_iff _ |>.mp ?_
+    intro h
+    rw [Submodule.orthogonal_eq_bot_iff] at h
+    have hle : Module.rank ℂ H ≤ 1 := by
+      refine rank_le_one_iff.mpr ⟨x, fun v => ?_⟩
+      have hv : v ∈ (ℂ ∙ x) := h ▸ Submodule.mem_top
+      obtain ⟨r, hr⟩ := Submodule.mem_span_singleton.mp hv
+      exact ⟨r, hr⟩
+    exact absurd hdim (not_lt.mpr hle)
+  have hxy : ⟪x, y⟫ = 0 :=
+    (Submodule.mem_orthogonal _ _).mp hymem x (Submodule.mem_span_singleton_self x)
+  -- rescale to a unit vector orthogonal to `x`
+  have hyn : (0:ℝ) < ‖y‖ := norm_pos_iff.mpr hy0
+  set u : H := ((‖y‖ : ℂ))⁻¹ • y with hudef
+  have huu : (⟪u, u⟫ : ℂ) = 1 := by
+    rw [inner_self_eq_norm_sq_to_K, hudef, norm_smul]
+    simp [inv_mul_cancel₀ (ne_of_gt hyn)]
+  have hxu : (⟪x, u⟫ : ℂ) = 0 := by
+    rw [hudef, inner_smul_right, hxy, mul_zero]
+  have hu0 : u ≠ 0 := by
+    intro h
+    rw [h, inner_zero_left] at huu
+    exact zero_ne_one huu
+  intro hF
+  set a : H →L[ℂ] H := (innerSL ℂ u).smulRight u with hadef
+  have hsa : star a = a := by
+    rw [ContinuousLinearMap.star_eq_adjoint]
+    refine ((ContinuousLinearMap.eq_adjoint_iff a a).mpr fun p q => ?_).symm
+    show (⟪(⟪u, p⟫ : ℂ) • u, q⟫ : ℂ) = ⟪p, (⟪u, q⟫ : ℂ) • u⟫
+    rw [inner_smul_left, inner_smul_right, ← inner_conj_symm p u]
+    ring
+  have haa : a * a = a := by
+    refine ContinuousLinearMap.ext fun p => ?_
+    show (⟪u, (⟪u, p⟫ : ℂ) • u⟫ : ℂ) • u = (⟪u, p⟫ : ℂ) • u
+    rw [inner_smul_right, huu, mul_one]
+  have hapos : 0 ≤ a := by
+    have h := star_mul_self_nonneg a
+    rwa [hsa, haa] at h
+  have hane : a ≠ 0 := by
+    intro h
+    have hay : a u = 0 := by rw [h]; rfl
+    rw [show a u = (⟪u, u⟫ : ℂ) • u from rfl, huu, one_smul] at hay
+    exact hu0 hay
+  refine hane ((hF a hapos).mpr fun _ => ?_)
+  show (⟪x, (⟪u, x⟫ : ℂ) • u⟫ : ℂ) = 0
+  rw [inner_smul_right, hxu, mul_zero]
+
+/-- **21IV** (cstar.tex:3194, Examples), item 2, first half: the vector
+functionals `⟪e, (·) e⟫` of an orthonormal basis `E` of `H` are *faithful* —
+for `a ≥ 0`, writing `S = √a` (**23VII**), `⟪e, a e⟫ = ‖S e‖²`, so `S`
+annihilates the basis, hence `S = 0` and `a = S² = 0`. -/
+theorem orthonormal_vector_functionals_faithful {ι : Type*} (b : HilbertBasis ι ℂ H) :
+    Faithful fun i => vectorFunctional (b i) := by
+  intro a ha
+  constructor
+  · rintro rfl i
+    simp
+  · intro hzero
+    set S : H →L[ℂ] H := CFC.sqrt a with hS
+    have hSS : S * S = a := CFC.sqrt_mul_sqrt_self a ha
+    have hSsa : IsSelfAdjoint S := (CFC.sqrt_nonneg a).isSelfAdjoint
+    have hSb : ∀ i, S (b i) = 0 := by
+      intro i
+      have h := hzero i
+      simp only [vectorFunctional_apply] at h
+      have h1 : (⟪b i, a (b i)⟫ : ℂ) = ⟪S (b i), S (b i)⟫ := by
+        have hTy : a (b i) = S (S (b i)) := by rw [← hSS]; rfl
+        have hadj : ContinuousLinearMap.adjoint S = S := hSsa
+        rw [hTy, ← ContinuousLinearMap.adjoint_inner_left S (S (b i)) (b i), hadj]
+      rw [h1] at h
+      exact inner_self_eq_zero.mp h
+    have hS0 : S = 0 := by
+      refine ContinuousLinearMap.ext fun v => ?_
+      have h1 := S.hasSum (b.hasSum_repr v)
+      have h2 : (fun i => S (b.repr v i • b i)) = fun _ : ι => (0 : H) := by
+        funext i
+        rw [map_smul, hSb i, smul_zero]
+      rw [h2] at h1
+      simpa using h1.unique hasSum_zero
+    rw [← hSS, hS0, mul_zero]
+
+/-- **21IV** (cstar.tex:3194, Examples), item 2, second half: they are *not
+separating* once the basis has two distinct elements `e_i ≠ e_j` — the
+partial isometry `a = ⟪e_j, ·⟫ e_i` is non-zero, while
+`⟪e_k, a e_k⟫ = ⟪e_j, e_k⟫⟪e_k, e_i⟫ = 0` for every basis vector `e_k`. -/
+theorem orthonormal_vector_functionals_not_separating {ι : Type*} (b : HilbertBasis ι ℂ H) (i j : ι) (hij : i ≠ j) :
+    ¬ Separating fun k => vectorFunctional (b k) := by
+  intro hS
+  set a : H →L[ℂ] H := (innerSL ℂ (b j)).smulRight (b i) with hadef
+  have hzero : ∀ k, (vectorFunctional (b k)) a = 0 := by
+    intro k
+    show (⟪b k, (⟪b j, b k⟫ : ℂ) • b i⟫ : ℂ) = 0
+    rw [inner_smul_right]
+    rcases eq_or_ne k j with rfl | hkj
+    · exact mul_eq_zero_of_right _ (b.orthonormal.2 (Ne.symm hij))
+    · exact mul_eq_zero_of_left (b.orthonormal.2 (Ne.symm hkj)) _
+  have ha0 : a = 0 := (hS a).mpr hzero
+  have hay : a (b j) = b i := by
+    show (⟪b j, b j⟫ : ℂ) • b i = b i
+    rw [inner_self_eq_norm_sq_to_K, b.orthonormal.1 j]
+    norm_num
+  rw [ha0] at hay
+  have hn : ‖b i‖ = 1 := b.orthonormal.1 i
+  rw [← hay] at hn
+  simp at hn
+
+end SeparationExamples
+
+section SeparationExamplesTensor
+
+open scoped TensorProduct
+
+variable {H K : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [FiniteDimensional ℂ H]
+  [NormedAddCommGroup K] [InnerProductSpace ℂ K] [FiniteDimensional ℂ K]
+
+/-- Complex polarization: a sesquilinear form on a `ℂ`-module vanishing on the
+diagonal vanishes.  Taking `B (u + c•v) (u + c•v) = 0` at `c = 1` and `c = i`
+already forces `B u v = B v u = 0`. -/
+private theorem sesq_eq_zero_of_diag {V : Type*} [AddCommGroup V] [Module ℂ V] (B : V → V → ℂ)
+    (h1 : ∀ u u' v, B (u + u') v = B u v + B u' v)
+    (h2 : ∀ (c : ℂ) u v, B (c • u) v = (starRingEnd ℂ) c * B u v)
+    (h3 : ∀ u v v', B u (v + v') = B u v + B u v')
+    (h4 : ∀ (c : ℂ) u v, B u (c • v) = c * B u v)
+    (hd : ∀ u, B u u = 0) (u v : V) : B u v = 0 := by
+  have e : ∀ c : ℂ, c * B u v + (starRingEnd ℂ) c * B v u = 0 := by
+    intro c
+    have hz := hd (u + c • v)
+    simp only [h1, h2, h3, h4, hd, mul_zero, add_zero, zero_add] at hz
+    linear_combination hz
+  have eq1 := e 1
+  have eq2 := e Complex.I
+  rw [map_one] at eq1
+  rw [Complex.conj_I] at eq2
+  have h5 : (2 * Complex.I) * B v u = 0 := by linear_combination Complex.I * eq1 - eq2
+  have h6 : B v u = 0 := by
+    rcases mul_eq_zero.mp h5 with hz | hz
+    · exact absurd hz (by simp [Complex.I_ne_zero])
+    · exact hz
+  linear_combination eq1 - h6
+
+/-- **21IV** (cstar.tex:3194, Examples), item 3, first half: the vector
+functionals of the *product* vectors `x ⊗ y` are *separating* on B(H ⊗ K).
+Polarizing the vanishing quadratic form in each factor in turn (twice
+`sesq_eq_zero_of_diag`) gives `⟪x ⊗ y, a (x' ⊗ y')⟫ = 0` for all four
+vectors, and the simple tensors generate `H ⊗ K`, so `a = 0`.
+
+Stated for finite-dimensional `H` and `K`, where the algebraic tensor product
+is already a Hilbert space; the printed example is for arbitrary `H` and `K`,
+whose `B(H ⊗ K)` needs the completed tensor product. -/
+theorem product_vector_functionals_separating : Separating fun p : H × K => vectorFunctional (p.1 ⊗ₜ[ℂ] p.2 : H ⊗[ℂ] K) := by
+  intro a
+  constructor
+  · rintro rfl p
+    simp
+  · intro hz
+    have hdiag : ∀ (x : H) (y : K), (⟪x ⊗ₜ[ℂ] y, a (x ⊗ₜ[ℂ] y)⟫ : ℂ) = 0 := fun x y => hz (x, y)
+    have step1 : ∀ (x x' : H) (y : K), (⟪x ⊗ₜ[ℂ] y, a (x' ⊗ₜ[ℂ] y)⟫ : ℂ) = 0 := by
+      intro x x' y
+      refine sesq_eq_zero_of_diag (fun p q : H => ⟪p ⊗ₜ[ℂ] y, a (q ⊗ₜ[ℂ] y)⟫)
+        (fun p q s => ?_) (fun c p q => ?_) (fun p q s => ?_) (fun c p q => ?_)
+        (fun p => hdiag p y) x x'
+      · rw [TensorProduct.add_tmul, inner_add_left]
+      · rw [← TensorProduct.smul_tmul', inner_smul_left]
+      · rw [TensorProduct.add_tmul, map_add, inner_add_right]
+      · rw [← TensorProduct.smul_tmul', map_smul, inner_smul_right]
+    have step2 : ∀ (x x' : H) (y y' : K), (⟪x ⊗ₜ[ℂ] y, a (x' ⊗ₜ[ℂ] y')⟫ : ℂ) = 0 := by
+      intro x x' y y'
+      refine sesq_eq_zero_of_diag (fun p q : K => ⟪x ⊗ₜ[ℂ] p, a (x' ⊗ₜ[ℂ] q)⟫)
+        (fun p q s => ?_) (fun c p q => ?_) (fun p q s => ?_) (fun c p q => ?_)
+        (fun p => step1 x x' p) y y'
+      · rw [TensorProduct.tmul_add, inner_add_left]
+      · rw [TensorProduct.tmul_smul, inner_smul_left]
+      · rw [TensorProduct.tmul_add, map_add, inner_add_right]
+      · rw [TensorProduct.tmul_smul, map_smul, inner_smul_right]
+    have hall : ∀ (w : H ⊗[ℂ] K) (x' : H) (y' : K), (⟪w, a (x' ⊗ₜ[ℂ] y')⟫ : ℂ) = 0 := by
+      intro w x' y'
+      induction w using TensorProduct.induction_on with
+      | zero => rw [inner_zero_left]
+      | tmul p q => exact step2 p x' q y'
+      | add p q hp hq => rw [inner_add_left, hp, hq, add_zero]
+    have htmul : ∀ (x' : H) (y' : K), a (x' ⊗ₜ[ℂ] y') = 0 := fun x' y' =>
+      inner_self_eq_zero.mp (hall _ x' y')
+    refine ContinuousLinearMap.ext fun w => ?_
+    induction w using TensorProduct.induction_on with
+    | zero => simp
+    | tmul p q => simpa using htmul p q
+    | add p q hp hq => simp only [map_add, hp, hq, add_zero, zero_apply]
+
+/-- **21IV** (cstar.tex:3194, Examples), item 3, second half: those product
+vector functionals are *not order separating* once both factors have dimension
+`≥ 2`.  The witness is the swap of the four-dimensional corner spanned by
+`e_i ⊗ f_j`, `a = ∑_{i,j<2} ⟪e_i ⊗ f_j, ·⟫ (e_j ⊗ f_i)`: on a product vector
+`⟪x ⊗ y, a (x ⊗ y)⟫ = w·conj w ≥ 0` with `w = ∑_i ⟪e_i, x⟫⟪y, f_i⟫`, while
+`a` is not positive, since the antisymmetric vector
+`e_0 ⊗ f_1 − e_1 ⊗ f_0` gives `⟪u, a u⟫ = −2`. -/
+theorem product_vector_functionals_not_orderSeparating (hH : 2 ≤ Module.finrank ℂ H) (hK : 2 ≤ Module.finrank ℂ K) :
+    ¬ OrderSeparating fun p : H × K => vectorFunctional (p.1 ⊗ₜ[ℂ] p.2 : H ⊗[ℂ] K) := by
+  classical
+  have hinj : ∀ {n : ℕ} (h : 2 ≤ n),
+      Function.Injective fun i : Fin 2 => (⟨(i : ℕ), lt_of_lt_of_le i.isLt h⟩ : Fin n) := by
+    intro n h i j hij
+    exact Fin.ext (by simpa using congrArg Fin.val hij)
+  set eH : Fin 2 → H :=
+    fun i => stdOrthonormalBasis ℂ H ⟨(i : ℕ), lt_of_lt_of_le i.isLt hH⟩ with heH
+  set eK : Fin 2 → K :=
+    fun j => stdOrthonormalBasis ℂ K ⟨(j : ℕ), lt_of_lt_of_le j.isLt hK⟩ with heK
+  have hoH : Orthonormal ℂ eH := (stdOrthonormalBasis ℂ H).orthonormal.comp _ (hinj hH)
+  have hoK : Orthonormal ℂ eK := (stdOrthonormalBasis ℂ K).orthonormal.comp _ (hinj hK)
+  set v : Fin 2 → Fin 2 → (H ⊗[ℂ] K) := fun i j => eH i ⊗ₜ[ℂ] eK j with hv
+  have hvv : ∀ i j k l : Fin 2,
+      (⟪v i j, v k l⟫ : ℂ) = (if i = k then 1 else 0) * (if j = l then 1 else 0) := by
+    intro i j k l
+    show (⟪eH i ⊗ₜ[ℂ] eK j, eH k ⊗ₜ[ℂ] eK l⟫ : ℂ) = _
+    rw [TensorProduct.inner_tmul, orthonormal_iff_ite.mp hoH, orthonormal_iff_ite.mp hoK]
+  set a : (H ⊗[ℂ] K) →L[ℂ] (H ⊗[ℂ] K) :=
+    ∑ i : Fin 2, ∑ j : Fin 2, (innerSL ℂ (v i j)).smulRight (v j i) with ha
+  have hquad : ∀ z : H ⊗[ℂ] K, (⟪z, a z⟫ : ℂ)
+      = ∑ i : Fin 2, ∑ j : Fin 2, (⟪v i j, z⟫ : ℂ) * ⟪z, v j i⟫ := by
+    intro z
+    have haz : a z = ∑ i : Fin 2, ∑ j : Fin 2, (⟪v i j, z⟫ : ℂ) • v j i := by
+      rw [ha]
+      simp only [FunLike.coe_sum, Finset.sum_apply,
+        ContinuousLinearMap.smulRight_apply, innerSL_apply_apply]
+    rw [haz, inner_sum]
+    refine Finset.sum_congr rfl fun i _ => ?_
+    rw [inner_sum]
+    exact Finset.sum_congr rfl fun j _ => inner_smul_right _ _ _
+  intro hOS
+  have hpos : ∀ p : H × K, (0 : ℂ) ≤ vectorFunctional (p.1 ⊗ₜ[ℂ] p.2 : H ⊗[ℂ] K) a := by
+    rintro ⟨x, y⟩
+    show (0 : ℂ) ≤ ⟪x ⊗ₜ[ℂ] y, a (x ⊗ₜ[ℂ] y)⟫
+    rw [hquad]
+    set w : ℂ := ∑ i : Fin 2, (⟪eH i, x⟫ : ℂ) * ⟪y, eK i⟫ with hw
+    have hconj : (∑ j : Fin 2, (⟪x, eH j⟫ : ℂ) * ⟪eK j, y⟫) = (starRingEnd ℂ) w := by
+      rw [hw, map_sum]
+      refine Finset.sum_congr rfl fun j _ => ?_
+      rw [map_mul, inner_conj_symm, inner_conj_symm]
+    have hexp : (∑ i : Fin 2, ∑ j : Fin 2, (⟪v i j, x ⊗ₜ[ℂ] y⟫ : ℂ) * ⟪x ⊗ₜ[ℂ] y, v j i⟫)
+        = w * ∑ j : Fin 2, (⟪x, eH j⟫ : ℂ) * ⟪eK j, y⟫ := by
+      simp only [hv, hw, TensorProduct.inner_tmul, Fin.sum_univ_two]
+      ring
+    rw [hexp, hconj, Complex.mul_conj]
+    exact Complex.zero_le_real.mpr (Complex.normSq_nonneg w)
+  have hle : (0 : (H ⊗[ℂ] K) →L[ℂ] (H ⊗[ℂ] K)) ≤ a := (hOS a).mpr hpos
+  have hneg : (⟪v 0 1 - v 1 0, a (v 0 1 - v 1 0)⟫ : ℂ) = -2 := by
+    rw [hquad]
+    simp only [inner_sub_left, inner_sub_right, hvv, Fin.sum_univ_two]
+    norm_num
+  rw [ContinuousLinearMap.nonneg_iff_isPositive] at hle
+  have hcon := hle.inner_nonneg_right (v 0 1 - v 1 0)
+  rw [hneg] at hcon
+  rw [Complex.le_def] at hcon
+  norm_num at hcon
+
+end SeparationExamplesTensor
 
 /-! ## Parsec 260: commutative C*-algebras are Riesz spaces -/
 
