@@ -2470,120 +2470,6 @@ theorem onb1 [VonNeumannAlgebra ℬ] [CompleteSpace X] {ι : Type v}
 def MvNEquiv (p q : ℬ) : Prop :=
   ∃ u : ℬ, star u * u = p ∧ u * star u = q
 
-/-- **161IV** (`onb1`, dils.tex:4681, Exercise), part 2:
-`ℓ²((pᵢ)ᵢ) ≅ ℓ²((qᵢ)ᵢ)` for pointwise Murray–von Neumann equivalent
-families of projections: there is a bijection between the tuple sets that
-identifies the (ultraweakly converging) inner products.
-
-The isomorphism is one of Hilbert ℬ-modules, so `Φ` is additive and
-ℬ-linear for the coordinatewise operations of `ℓ²`; both are stated.
-
-**Divergence (class 2).**  The author's solution routes this through the
-*module* `ℓ²((pᵢ))`: the `δᵢ` are an orthonormal basis (**161II**), so
-`(δᵢuᵢ)ᵢ` is another one by part 1 of this exercise, and the second half of
-**161II** then produces the isomorphism with `ℓ²((⟨δᵢuᵢ, δᵢuᵢ⟩)ᵢ) =
-ℓ²((qᵢ))`.  The bijection is written down directly instead: `Φ(b)ᵢ = bᵢuᵢ*` (mirrored from the thesis's
-`bᵢ ↦ uᵢ*bᵢ`), with inverse `bᵢ ↦ bᵢuᵢ`.  Absorption `bᵢpᵢ = bᵢ` makes
-`Φ(c)ᵢ Φ(b)ᵢ* = cᵢ pᵢ bᵢ* = cᵢbᵢ*` termwise, so the two nets of partial sums
-are *equal*, which is why the inner-product clause is an equality of
-functions rather than a limit argument. -/
-theorem onb1_el2 [VonNeumannAlgebra ℬ] {ι : Type v} (p q : ι → ℬ)
-    (hp : ∀ i, IsStarProjection (p i)) (hq : ∀ i, IsStarProjection (q i))
-    (hpq : ∀ i, MvNEquiv (p i) (q i)) :
-    ∃ Φ : (ι → ℬ) → (ι → ℬ),
-      Set.BijOn Φ (L2Set ℬ p) (L2Set ℬ q) ∧
-      (∀ b c : ι → ℬ, Φ (b + c) = Φ b + Φ c) ∧
-      (∀ (a : ℬ) (b : ι → ℬ), Φ (fun i => a * b i) = fun i => a * Φ b i) ∧
-      ∀ b ∈ L2Set ℬ p, ∀ c ∈ L2Set ℬ p, ∀ s : ℬ,
-        UWTendsto (fun t : Finset ι => ∑ i ∈ t, c i * star (b i)) atTop s ↔
-        UWTendsto (fun t : Finset ι => ∑ i ∈ t, Φ c i * star (Φ b i))
-          atTop s := by
-  classical
-  choose u hu1 hu2 using hpq
-  -- `Φ b = (bᵢuᵢ*)ᵢ` with inverse `Ψ b = (bᵢuᵢ)ᵢ` (mirrored from the
-  -- author's `δᵢ ↦ δᵢuᵢ`)
-  have hΦinner : ∀ (b c : ι → ℬ), (∀ i, c i * p i = c i) → ∀ i,
-      (c i * star (u i)) * star (b i * star (u i)) = c i * star (b i) := by
-    intro b c hc i
-    rw [star_mul, star_star]
-    calc c i * star (u i) * (u i * star (b i))
-        = c i * (star (u i) * u i) * star (b i) := by noncomm_ring
-      _ = c i * p i * star (b i) := by rw [hu1 i]
-      _ = c i * star (b i) := by rw [hc i]
-  have hΨinner : ∀ (b c : ι → ℬ), (∀ i, c i * q i = c i) → ∀ i,
-      (c i * u i) * star (b i * u i) = c i * star (b i) := by
-    intro b c hc i
-    rw [star_mul]
-    calc c i * u i * (star (u i) * star (b i))
-        = c i * (u i * star (u i)) * star (b i) := by noncomm_ring
-      _ = c i * q i * star (b i) := by rw [hu2 i]
-      _ = c i * star (b i) := by rw [hc i]
-  have hΦabs : ∀ b : ι → ℬ, (∀ i, b i * p i = b i) → ∀ i,
-      (b i * star (u i)) * q i = b i * star (u i) := by
-    intro b hb i
-    calc b i * star (u i) * q i
-        = b i * star (u i) * (u i * star (u i)) := by rw [hu2 i]
-      _ = b i * (star (u i) * u i) * star (u i) := by noncomm_ring
-      _ = b i * p i * star (u i) := by rw [hu1 i]
-      _ = b i * star (u i) := by rw [hb i]
-  have hΨabs : ∀ b : ι → ℬ, (∀ i, b i * q i = b i) → ∀ i,
-      (b i * u i) * p i = b i * u i := by
-    intro b hb i
-    calc b i * u i * p i
-        = b i * u i * (star (u i) * u i) := by rw [hu1 i]
-      _ = b i * (u i * star (u i)) * u i := by noncomm_ring
-      _ = b i * q i * u i := by rw [hu2 i]
-      _ = b i * u i := by rw [hb i]
-  have hΦsum : ∀ b : ι → ℬ, (∀ i, b i * p i = b i) → L2Summable ℬ b →
-      L2Summable ℬ fun i => b i * star (u i) := by
-    intro b hb hL
-    obtain ⟨M, hM⟩ := hL
-    refine ⟨M, fun t => ?_⟩
-    have hter := hΦinner b b hb
-    simp only [hter]
-    exact hM t
-  have hΨsum : ∀ b : ι → ℬ, (∀ i, b i * q i = b i) → L2Summable ℬ b →
-      L2Summable ℬ fun i => b i * u i := by
-    intro b hb hL
-    obtain ⟨M, hM⟩ := hL
-    refine ⟨M, fun t => ?_⟩
-    have hter := hΨinner b b hb
-    simp only [hter]
-    exact hM t
-  refine ⟨fun b i => b i * star (u i), ⟨?_, ?_, ?_⟩,
-    fun b c => funext fun i => add_mul _ _ _,
-    fun a b => funext fun i => mul_assoc a (b i) (star (u i)), ?_⟩
-  · intro b hb
-    rw [mem_l2Set_iff hp] at hb
-    rw [mem_l2Set_iff hq]
-    exact ⟨hΦsum b hb.2 hb.1, hΦabs b hb.2⟩
-  · intro b hb c hc hbc
-    rw [mem_l2Set_iff hp] at hb hc
-    have hround : ∀ d : ι → ℬ, (∀ i, d i * p i = d i) →
-        (fun i => (d i * star (u i)) * u i) = d := by
-      intro d hd
-      funext i
-      rw [mul_assoc, hu1 i, hd i]
-    have h := congrArg (fun (f : ι → ℬ) i => f i * u i) hbc
-    rw [← hround b hb.2, ← hround c hc.2]
-    exact h
-  · intro b hb
-    rw [mem_l2Set_iff hq] at hb
-    refine ⟨fun i => b i * u i, ?_, ?_⟩
-    · rw [mem_l2Set_iff hp]
-      exact ⟨hΨsum b hb.2 hb.1, hΨabs b hb.2⟩
-    · funext i
-      show (b i * u i) * star (u i) = b i
-      rw [mul_assoc, hu2 i, hb.2 i]
-  · intro b hb c hc s
-    have hc' := ((mem_l2Set_iff hp c).mp hc).2
-    have hEq : (fun t : Finset ι => ∑ i ∈ t, c i * star (b i))
-        = fun t : Finset ι =>
-          ∑ i ∈ t, (c i * star (u i)) * star (b i * star (u i)) := by
-      funext t
-      exact Finset.sum_congr rfl fun i _ => (hΦinner b c hc' i).symm
-    rw [hEq]
-
 /-- **161V** (`onb2`, dils.tex:4704, Exercise): if `(eᵢ)` is an orthonormal
 basis of `X` with distinguished indices `i₁ ≠ i₂` and
 `⟨e_{i₁},e_{i₁}⟩ + ⟨e_{i₂},e_{i₂}⟩ ≤ 1`, then removing `e_{i₁}, e_{i₂}`
@@ -3597,6 +3483,321 @@ theorem hilbmod_el2_iso [CompleteSpace X]
     exact uwTendsto_unique₂ (L2.uwTendsto_inner _ _) (hnet x y)
 
 end L2Iso
+
+section Onb1El2
+
+-- `onb1_el2` is stated in the `variable` environment of `section L2`
+-- (`{ℬ : Type u}` with the three C*-algebra instances); the section
+-- re-declares it so that the statement elaborates unchanged after the move.
+variable {ℬ : Type u}
+  [CStarAlgebra ℬ] [PartialOrder ℬ] [StarOrderedRing ℬ]
+
+omit [StarOrderedRing ℬ] in
+/-- Reindexing an orthonormal basis along a bijection of index types.  The
+index of `IsONBasis` is universe-polymorphic, so this is what carries a
+basis across universes: `ℓ²((pᵢ)ᵢ)` lives in `Type (max u v)`, while the
+basis `(δᵢ)` of **161II** is indexed in `Type v`, and **161IV** below has to
+apply `onb1` to the *lifted* index.  Both convergence clauses reindex
+because `s ↦ s.image η` is cofinal in `Finset` (`Finset.image_mono` plus
+surjectivity of `η`). -/
+theorem isONBasis_comp_equiv {Y : Type*} [NormedAddCommGroup Y] [Module ℂ Y]
+    [SMul ℬ Y] [CStarModule ℬ Y] {κ : Type*} {κ' : Type*} (η : κ ≃ κ')
+    {e : κ' → Y} (he : IsONBasis ℬ e) : IsONBasis ℬ fun k => e (η k) := by
+  classical
+  obtain ⟨⟨horth, hproj⟩, hexp, hl2⟩ := he
+  have hmap : Tendsto (Finset.image η : Finset κ → Finset κ') atTop atTop :=
+    tendsto_finset_image_atTop_atTop (i := η.symm) (j := η)
+      fun x => η.apply_symm_apply x
+  have hreindex : ∀ (g : κ' → Y) (s : Finset κ),
+      ∑ i ∈ s.image η, g i = ∑ k ∈ s, g (η k) :=
+    fun g s => Finset.sum_image fun a _ b _ h => η.injective h
+  refine ⟨⟨fun k l hkl => horth (η k) (η l) fun h => hkl (η.injective h),
+    fun k => hproj (η k)⟩, fun x ω => ?_, fun b hb => ?_⟩
+  · have h := (hexp x ω).comp hmap
+    refine h.congr fun s => ?_
+    simp only [Function.comp_apply]
+    rw [hreindex (fun i => (inner ℬ (e i) x : ℬ) • e i) s]
+  · -- transport the coefficients along `η⁻¹` and reindex the partial sums
+    have hb' : L2Summable ℬ fun i => b (η.symm i) := by
+      obtain ⟨M, hM⟩ := hb
+      refine ⟨M, fun t => ?_⟩
+      rw [show ∑ i ∈ t, b (η.symm i) * star (b (η.symm i))
+          = ∑ k ∈ t.image η.symm, b k * star (b k) from
+        (Finset.sum_image (f := fun k => b k * star (b k))
+          fun a _ c _ h => η.symm.injective h).symm]
+      exact hM _
+    obtain ⟨x, hx⟩ := hl2 _ hb'
+    refine ⟨x, fun ω => ?_⟩
+    have h := (hx ω).comp hmap
+    refine h.congr fun s => ?_
+    simp only [Function.comp_apply]
+    rw [hreindex (fun i => b (η.symm i) • e i) s]
+    simp only [Equiv.symm_apply_apply]
+
+omit [PartialOrder ℬ] [StarOrderedRing ℬ] in
+/-- `ℓ²`-summability restricted along an injection of index types. -/
+private theorem l2Summable_comp_injective {κ : Type*} {κ' : Type*}
+    {σ : κ → κ'} (hσ : Function.Injective σ) {c : κ' → ℬ}
+    (hc : L2Summable ℬ c) : L2Summable ℬ fun k => c (σ k) := by
+  classical
+  obtain ⟨M, hM⟩ := hc
+  refine ⟨M, fun t => ?_⟩
+  rw [show ∑ k ∈ t, c (σ k) * star (c (σ k))
+      = ∑ i ∈ t.image σ, c i * star (c i) from
+    (Finset.sum_image (f := fun i => c i * star (c i))
+      fun a _ b _ h => hσ h).symm]
+  exact hM _
+
+/-- A family supported in the range of an injection sums the same over a
+finite set of indices and over its `Finset.preimage`. -/
+private theorem sum_preimage_of_support {κ : Type*} {κ' : Type*}
+    [DecidableEq κ'] {σ : κ → κ'} (hσ : Function.Injective σ) {M : Type*}
+    [AddCommMonoid M] (f : κ' → M) (hsupp : ∀ i, (∀ k, σ k ≠ i) → f i = 0)
+    (t : Finset κ') : ∑ k ∈ t.preimage σ hσ.injOn, f (σ k) = ∑ i ∈ t, f i := by
+  classical
+  rw [show ∑ k ∈ t.preimage σ hσ.injOn, f (σ k)
+      = ∑ i ∈ (t.preimage σ hσ.injOn).image σ, f i from
+    (Finset.sum_image fun a _ b _ h => hσ h).symm]
+  refine Finset.sum_subset (fun i hi => ?_) (fun i hi hni => ?_)
+  · obtain ⟨k, hk, rfl⟩ := Finset.mem_image.mp hi
+    exact Finset.mem_preimage.mp hk
+  · refine hsupp i fun k hk => hni ?_
+    exact Finset.mem_image.mpr ⟨k, Finset.mem_preimage.mpr (hk ▸ hi), hk⟩
+
+omit [StarOrderedRing ℬ] in
+/-- A family supported in the range of an injection converges ultraweakly
+over `Finset κ'` as soon as its restriction converges over `Finset κ`:
+`Finset.preimage` is cofinal and the partial sums agree. -/
+private theorem uwTendsto_sum_of_comp_injective {κ : Type*} {κ' : Type*}
+    {σ : κ → κ'} (hσ : Function.Injective σ) (f : κ' → ℬ)
+    (hsupp : ∀ i, (∀ k, σ k ≠ i) → f i = 0) {s : ℬ}
+    (h : UWTendsto (fun t : Finset κ => ∑ k ∈ t, f (σ k)) atTop s) :
+    UWTendsto (fun t : Finset κ' => ∑ i ∈ t, f i) atTop s := by
+  classical
+  have hpre : Tendsto (fun t : Finset κ' => t.preimage σ hσ.injOn) atTop atTop :=
+    tendsto_finset_preimage_atTop_atTop hσ
+  exact (h.comp hpre).congr fun t => sum_preimage_of_support hσ f hsupp t
+
+/-- **161IV** (`onb1`, dils.tex:4681, Exercise), part 2:
+`ℓ²((pᵢ)ᵢ) ≅ ℓ²((qᵢ)ᵢ)` for pointwise Murray–von Neumann equivalent
+families of projections: there is a bijection between the tuple sets that
+identifies the (ultraweakly converging) inner products.
+
+The isomorphism is one of Hilbert ℬ-modules, so `Φ` is additive and
+ℬ-linear for the coordinatewise operations of `ℓ²`; both are stated.
+
+The route is the solution's own (bsols.tex:1138–1157), through the *module*
+`ℓ²((pᵢ))`: the `δᵢ` are an orthonormal basis of it (**161II**,
+`L2.delta_isONBasis`), and the family `(uᵢ*)ᵢ` consists of partial
+isometries with `uᵢ*(uᵢ*)* = uᵢ*uᵢ = pᵢ = ⟨δᵢ,δᵢ⟩`, so `(δᵢuᵢ)ᵢ`
+(mirrored: `uᵢ • δᵢ`) is another orthonormal basis by part 1 of this
+exercise (`onb1`), with
+`⟨δᵢuᵢ, δᵢuᵢ⟩ = uᵢ*pᵢuᵢ = qᵢ`.  The second half of **161II**
+(`hilbmod_el2_iso`) at *that* basis is the isomorphism, and in coordinates
+it is exactly `Φ(b)ᵢ = bᵢuᵢ*` (mirrored from the thesis's `bᵢ ↦ uᵢ*bᵢ`) —
+`hilbmod_el2_iso` ends in `ϑ(x)ᵢ = ⟨eᵢ,x⟩`, and
+`⟨uᵢ • δᵢ, x⟩ = ⟨δᵢ,x⟩uᵢ* = xᵢuᵢ*`.  Membership in `ℓ²((qᵢ))`, injectivity
+and surjectivity are then read off the module isomorphism, and the
+inner-product clause off its inner-product preservation, both nets having
+the ultraweak limit `⟨x,y⟩`.
+
+Two things the solution passes over.  Its basis `(δᵢ)` is indexed by the
+coordinates with `pᵢ ≠ 0` (as in `onb2_2`: `⟨δᵢ,δᵢ⟩ = pᵢ` has to be
+non-zero for **149I**), so the module **161II** produces sits over that
+subindex and must be spread back over `ι`; that is what `pᵢ = 0 ↔ qᵢ = 0`
+(both say `uᵢ = 0`) and the cofinality of `Finset.preimage`
+(`uwTendsto_sum_of_comp_injective`) are for.  And that subindex lives in
+`Type v` while `ℓ²((pᵢ))` lives in `Type (max u v)`, where `onb1` and
+`hilbmod_el2_iso` want the two equal — hence the `ULift` and
+`isONBasis_comp_equiv`.
+
+Additivity and ℬ-linearity are asked of *all* tuples where the route
+supplies them on the module only, so `Φ` is given by the global formula
+`b ↦ (bᵢuᵢ*)` and the two clauses are the ring identities `add_mul` and
+`mul_assoc`. -/
+theorem onb1_el2 [VonNeumannAlgebra ℬ] {ι : Type v} (p q : ι → ℬ)
+    (hp : ∀ i, IsStarProjection (p i)) (hq : ∀ i, IsStarProjection (q i))
+    (hpq : ∀ i, MvNEquiv (p i) (q i)) :
+    ∃ Φ : (ι → ℬ) → (ι → ℬ),
+      Set.BijOn Φ (L2Set ℬ p) (L2Set ℬ q) ∧
+      (∀ b c : ι → ℬ, Φ (b + c) = Φ b + Φ c) ∧
+      (∀ (a : ℬ) (b : ι → ℬ), Φ (fun i => a * b i) = fun i => a * Φ b i) ∧
+      ∀ b ∈ L2Set ℬ p, ∀ c ∈ L2Set ℬ p, ∀ s : ℬ,
+        UWTendsto (fun t : Finset ι => ∑ i ∈ t, c i * star (b i)) atTop s ↔
+        UWTendsto (fun t : Finset ι => ∑ i ∈ t, Φ c i * star (Φ b i))
+          atTop s := by
+  classical
+  choose u hu1 hu2 using hpq
+  -- `pᵢ = 0` iff `qᵢ = 0`: both say `uᵢ = 0`
+  have hu0 : ∀ i, p i = 0 → u i = 0 := by
+    intro i h
+    have hn : ‖u i‖ * ‖u i‖ = 0 := by
+      rw [← CStarRing.norm_star_mul_self, hu1 i, h, norm_zero]
+    exact norm_eq_zero.mp (mul_self_eq_zero.mp hn)
+  have hpq0 : ∀ i, p i = 0 → q i = 0 := by
+    intro i h; rw [← hu2 i, hu0 i h]; simp
+  -- **161II**: `(δᵢ)` is an orthonormal basis of `ℓ²((pᵢ))`
+  have hONBδ : IsONBasis ℬ fun k : ↥(L2.NZ p) => L2.delta hp k.1 :=
+    L2.delta_isONBasis hp
+  have hX : SelfDual ℬ (L2 ℬ p) := hilbmod_el2_selfDual hp
+  have hcomp : CompleteSpace (L2 ℬ p) :=
+    completeSpace_of_unComplete (unComplete_of_isONBasis hONBδ)
+  -- the index of that basis, lifted to the universe of `ℓ²((pᵢ))`
+  set ν : ULift.{u} ↥(L2.NZ p) ≃ ↥(L2.NZ p) := Equiv.ulift with hνdef
+  set σ : ULift.{u} ↥(L2.NZ p) → ι := fun k => ((ν k : ↥(L2.NZ p)) : ι) with hσdef
+  have hσinj : Function.Injective σ := fun a b h => ν.injective (Subtype.ext h)
+  have hσsurj : ∀ i, p i ≠ 0 → ∃ k, σ k = i := by
+    intro i hi
+    exact ⟨ν.symm ⟨i, hi⟩, by simp [hσdef]⟩
+  have hONBδ' : IsONBasis ℬ fun k => L2.delta hp (σ k) :=
+    isONBasis_comp_equiv ν hONBδ
+  -- `uᵢ*` is a family of partial isometries with `uᵢ*uᵢ = pᵢ = ⟨δᵢ,δᵢ⟩`
+  have hδδ : ∀ k, (inner ℬ (L2.delta hp (σ k)) (L2.delta hp (σ k)) : ℬ)
+      = p (σ k) := by
+    intro k
+    rw [L2.inner_eq, L2.inner'_delta hp]
+    simp
+  have hstarproj : ∀ k,
+      IsStarProjection (star (star (u (σ k))) * star (u (σ k))) := by
+    intro k; rw [star_star, hu2]; exact hq (σ k)
+  have hpartial : ∀ k, star (u (σ k)) * star (star (u (σ k)))
+      = (inner ℬ (L2.delta hp (σ k)) (L2.delta hp (σ k)) : ℬ) := by
+    intro k; rw [star_star, hu1, hδδ]
+  -- part 1 of the exercise: `(δᵢuᵢ)` is another orthonormal basis
+  have hONBf : IsONBasis ℬ fun k => u (σ k) • L2.delta hp (σ k) := by
+    have h := onb1 (fun k => L2.delta hp (σ k)) hONBδ' (fun k => star (u (σ k)))
+      hstarproj hpartial
+    simpa only [star_star] using h
+  -- `⟨δᵢuᵢ, δᵢuᵢ⟩ = uᵢ*pᵢuᵢ = qᵢ`
+  have hff : ∀ k, (inner ℬ (u (σ k) • L2.delta hp (σ k))
+      (u (σ k) • L2.delta hp (σ k)) : ℬ) = q (σ k) := by
+    intro k
+    rw [CStarModule.inner_op_smul_right, CStarModule.inner_op_smul_left,
+      hδδ k]
+    calc u (σ k) * (p (σ k) * star (u (σ k)))
+        = (u (σ k) * star (u (σ k))) * (u (σ k) * star (u (σ k))) := by
+          rw [← hu1 (σ k)]; noncomm_ring
+      _ = q (σ k) * q (σ k) := by rw [hu2]
+      _ = q (σ k) := (hq (σ k)).isIdempotentElem.eq
+  -- the second half of **161II**, at that basis
+  have hiso := hilbmod_el2_iso hX (fun k => u (σ k) • L2.delta hp (σ k)) hONBf
+  rw [show (fun k => (inner ℬ (u (σ k) • L2.delta hp (σ k))
+      (u (σ k) • L2.delta hp (σ k)) : ℬ)) = fun k => q (σ k) from funext hff]
+    at hiso
+  obtain ⟨Φ₀, hbij, -, -, -, hinner0, hval0⟩ := hiso
+  -- in coordinates that isomorphism *is* `b ↦ (bᵢuᵢ*)`
+  have hcoord : ∀ (x : L2 ℬ p) (k), L2.val (Φ₀ x) k
+      = L2.val x (σ k) * star (u (σ k)) := by
+    intro x k
+    rw [hval0 x k, CStarModule.inner_op_smul_left, L2.inner_eq,
+      L2.inner'_delta_left hp]
+  refine ⟨fun b i => b i * star (u i), ⟨?_, ?_, ?_⟩,
+    fun b c => funext fun i => add_mul _ _ _,
+    fun a b => funext fun i => mul_assoc a (b i) (star (u i)), ?_⟩
+  · -- `Φ` maps `ℓ²((pᵢ))` into `ℓ²((qᵢ))`
+    intro b hb
+    obtain ⟨hbl2, hbabs⟩ := (mem_l2Set_iff hp b).mp hb
+    obtain ⟨x, hxval⟩ : ∃ x : L2 ℬ p, L2.val x = b := ⟨⟨b, hbl2, hbabs⟩, rfl⟩
+    have hbzero : ∀ i, p i = 0 → b i = 0 := by
+      intro i h; rw [← hbabs i, h, mul_zero]
+    have hoff : ∀ i, (∀ k, σ k ≠ i) → b i * star (u i) = 0 := by
+      intro i hi
+      have hpi : p i = 0 := by
+        by_contra hne
+        obtain ⟨k, hk⟩ := hσsurj i hne
+        exact hi k hk
+      rw [hbzero i hpi, zero_mul]
+    have hrestr : ∀ k, L2.val (Φ₀ x) k = b (σ k) * star (u (σ k)) := by
+      intro k; rw [hcoord x k, hxval]
+    show (fun i => b i * star (u i)) ∈ L2Set ℬ q
+    rw [mem_l2Set_iff hq]
+    refine ⟨?_, fun i => ?_⟩
+    · -- ℓ²-summability, read off the module `ℓ²((q_{σk}))`
+      have hsum := L2.l2Summable (Φ₀ x)
+      rw [show (L2.val (Φ₀ x)) = fun k => b (σ k) * star (u (σ k)) from
+        funext hrestr] at hsum
+      obtain ⟨M, hM⟩ := hsum
+      refine ⟨M, fun t => ?_⟩
+      rw [← sum_preimage_of_support hσinj
+        (fun i => (b i * star (u i)) * star (b i * star (u i)))
+        (fun i hi => by rw [hoff i hi]; simp) t]
+      exact hM _
+    · -- absorption, likewise
+      by_cases hpi : p i = 0
+      · rw [hbzero i hpi, zero_mul, zero_mul]
+      · obtain ⟨k, hk⟩ := hσsurj i hpi
+        subst hk
+        have habs := L2.absorb (Φ₀ x) k
+        rw [hrestr k] at habs
+        exact habs
+  · -- injectivity, from the injectivity of the module isomorphism
+    intro b hb c hc hbc
+    obtain ⟨hbl2, hbabs⟩ := (mem_l2Set_iff hp b).mp hb
+    obtain ⟨hcl2, hcabs⟩ := (mem_l2Set_iff hp c).mp hc
+    obtain ⟨x, hxval⟩ : ∃ x : L2 ℬ p, L2.val x = b := ⟨⟨b, hbl2, hbabs⟩, rfl⟩
+    obtain ⟨y, hyval⟩ : ∃ y : L2 ℬ p, L2.val y = c := ⟨⟨c, hcl2, hcabs⟩, rfl⟩
+    have hxy : Φ₀ x = Φ₀ y := by
+      refine L2.val_injective (funext fun k => ?_)
+      rw [hcoord x k, hcoord y k, hxval, hyval]
+      exact congrFun hbc (σ k)
+    rw [← hxval, ← hyval]
+    exact congrArg L2.val (hbij.1 hxy)
+  · -- surjectivity, from the surjectivity of the module isomorphism
+    intro c hc
+    obtain ⟨hcl2, hcabs⟩ := (mem_l2Set_iff hq c).mp hc
+    have hclift : (fun k => c (σ k)) ∈ L2Sub ℬ fun k => q (σ k) :=
+      ⟨l2Summable_comp_injective hσinj hcl2, fun k => hcabs (σ k)⟩
+    obtain ⟨x, hx⟩ := hbij.2 (⟨fun k => c (σ k), hclift⟩ : L2 ℬ fun k => q (σ k))
+    refine ⟨L2.val x, (mem_l2Set_iff hp _).mpr
+      ⟨L2.l2Summable x, L2.absorb x⟩, funext fun i => ?_⟩
+    show L2.val x i * star (u i) = c i
+    by_cases hpi : p i = 0
+    · have hxi : L2.val x i = 0 := by rw [← L2.absorb x i, hpi, mul_zero]
+      have hci : c i = 0 := by rw [← hcabs i, hpq0 i hpi, mul_zero]
+      rw [hxi, hci, zero_mul]
+    · obtain ⟨k, hk⟩ := hσsurj i hpi
+      subst hk
+      have h1 := congrFun (congrArg L2.val hx) k
+      rw [hcoord x k] at h1
+      exact h1
+  · -- the inner products: both nets have the ultraweak limit `⟨x,y⟩`
+    intro b hb c hc s
+    obtain ⟨hbl2, hbabs⟩ := (mem_l2Set_iff hp b).mp hb
+    obtain ⟨hcl2, hcabs⟩ := (mem_l2Set_iff hp c).mp hc
+    obtain ⟨x, hxval⟩ : ∃ x : L2 ℬ p, L2.val x = b := ⟨⟨b, hbl2, hbabs⟩, rfl⟩
+    obtain ⟨y, hyval⟩ : ∃ y : L2 ℬ p, L2.val y = c := ⟨⟨c, hcl2, hcabs⟩, rfl⟩
+    have hL : UWTendsto (fun t : Finset ι => ∑ i ∈ t, c i * star (b i)) atTop
+        (L2.inner' x y) := by
+      have h := L2.uwTendsto_inner x y
+      rwa [hxval, hyval] at h
+    have hR : UWTendsto (fun t : Finset ι =>
+        ∑ i ∈ t, (c i * star (u i)) * star (b i * star (u i))) atTop
+        (L2.inner' x y) := by
+      have h0 := L2.uwTendsto_inner (Φ₀ x) (Φ₀ y)
+      have hii : L2.inner' (Φ₀ x) (Φ₀ y) = L2.inner' x y := by
+        have h := hinner0 x y
+        rwa [L2.inner_eq, L2.inner_eq] at h
+      rw [hii] at h0
+      refine uwTendsto_sum_of_comp_injective hσinj
+        (fun i => (c i * star (u i)) * star (b i * star (u i))) ?_ ?_
+      · intro i hi
+        have hpi : p i = 0 := by
+          by_contra hne
+          obtain ⟨k, hk⟩ := hσsurj i hne
+          exact hi k hk
+        have hci : c i = 0 := by rw [← hcabs i, hpi, mul_zero]
+        rw [hci, zero_mul, zero_mul]
+      · refine h0.congr fun t => Finset.sum_congr rfl fun k _ => ?_
+        rw [hcoord x k, hcoord y k, hxval, hyval]
+    constructor
+    · intro hs
+      rw [uwTendsto_unique₂ hs hL]
+      exact hR
+    · intro hs
+      rw [uwTendsto_unique₂ hs hR]
+      exact hL
+
+end Onb1El2
 
 section Onb2Two
 
@@ -6465,46 +6666,58 @@ end TensorDense
 
 /-! ### The construction behind **164II** (existence)
 
-The thesis builds `X ⊗ Y` as `ℓ²((pᵢⱼ))` for orthonormal bases of `X` and
-`Y` (164III–164VIII).  The route here is the shortcut the survey names,
-available because **150II** `dils_completion` and **151Ia**
-`selfdual_completion_univ` are both proved: `X ⊗ Y` is the *self-dual
-completion* of `V = (X ⊙ Y) ⊙ 𝒞` — an honest `𝒞`-module, which `X ⊙ Y`
-alone is not — with the `𝒞`-valued inner product
+`X ⊗ Y` is built as the thesis builds it, **164III**–**164VII**: pick
+orthonormal bases `(eᵢ)` of `X` and `(dⱼ)` of `Y` (**149V**), put
+`pᵢⱼ = ⟨eᵢ,eᵢ⟩ ⊗ ⟨dⱼ,dⱼ⟩` (`extL2P`) and take `X ⊗ Y = ℓ²((pᵢⱼ))`
+(**161II**, `L2`), with `η` given in coordinates by
+`η(x ⊗ y) = (⟨eᵢ,x⟩ ⊗ ⟨dⱼ,y⟩)ᵢⱼ` (`extL2Eta`).  What is packaged, in
+`extL2Compl`, is that `ℓ²` as a **150II** *self-dual completion* of
+`V = (X ⊙ Y) ⊙ 𝒞` — an honest `𝒞`-module, which `X ⊙ Y` alone is not —
+with the `𝒞`-valued inner product
 `[(x ⊗ y) ⊗ c, (x' ⊗ y') ⊗ c'] = c' (⟨x,x'⟩ ⊗ ⟨y,y'⟩) c*`.
 
 ⚠️ **This is not the same three-step shape as `existence_paschke`.**  The
-thesis itself flags the difference (dils.tex:5166, **164VIII**): "If `X ⊙ Y`
+thesis flags the difference at **164VIII** (dils.tex:5166): "If `X ⊙ Y`
 were an `𝒜 ⊗ ℬ`-module *and* both `η` and `T` were `𝒜 ⊗ ℬ`-linear, we could
 simply apply `selfdual-completion-univ`… Instead, we will retrace the steps
-of its proof."  The `univ` field of `ExtTensor` bounds `T` over families of
-*elementary* tensors only, i.e. with coefficients in `𝒜 ⊙ ℬ`, whereas the
-lift to `V` has coefficients in all of `𝒜 ⊗ ℬ`.  Bridging that gap — instead
-of retracing the ~360 lines of 151Ia — is `tensor_gram_le` below, and it
-takes the three steps documented at `tensor_bound_tSpan`,
-`le_smul_of_conj_norm_le` and `nonneg_of_unDense`.
+of its proof."  Carrying `X ⊙ Y` as `V` supplies exactly the `𝒜 ⊗ ℬ`-module
+structure the thesis lacks there, so **151Ia** *is* applied and 164VIII is
+not retraced.  What the encoding costs instead: the `univ` field of
+`ExtTensor` bounds `T` over families of *elementary* tensors only, i.e. with
+coefficients in `𝒜 ⊙ ℬ`, whereas the lift to `V` has coefficients in all of
+`𝒜 ⊗ ℬ`.  Bridging that gap — instead of retracing the ~360 lines of
+151Ia — is `tensor_gram_le` below, and it takes the three steps documented
+at `tensor_bound_tSpan`, `le_smul_of_conj_norm_le` and `nonneg_of_unDense`.
 
 Positivity of the inner product on `V` is **113II**/**113IV**
 (`matBilin_nonneg_of_mi`) applied to the two Gram matrices, with the
 `𝒞`-coefficients that lemma already allows.
 
-Two hypotheses of the theorem are **not used**: self-duality (and
-completeness) of `X` and of `Y`.  The thesis needs them for its orthonormal
-bases; the completion route does not. -/
+The abstract completion **150II** `dils_completion` is still used, but only
+in `exists_extTensor_dense`, for **164II**.1 `ext_tensor_dense`, where any
+model with dense `η` serves as the comparison object of 164IX. -/
+
 
 section UnivPropExistence
 
-/-- **The order form of a norm bound, over a dense subalgebra.**  This is the
-device that replaces the thesis's passage to the norm completions
-(dils.tex:5190): `T` is bounded only over `𝒜 ⊙ ℬ`-coefficients, and the
-resolvent `(B + ε)^{-½}` that the proof of **144V**
-`blinear_inprod_inequality` needs does *not* lie in `𝒜 ⊙ ℬ` — but it does lie
-in its norm closure (the spatial tensor product, which is exactly what
-dils.tex passes to), and `cfc_mem` puts it there.  The hypothesis, though,
-is assumed only on `S`, so a sequence `dₙ ∈ S` converging to that resolvent
-(`mem_closure_iff_seq_limit`, `le_of_tendsto_of_tendsto'`) is what carries
-the bound across — that transfer is what replaces the thesis's `T̄`.
-Everything else is the proof of 144V, verbatim. -/
+/-- **The order form of a norm bound, over a dense subalgebra.**  This *is*
+the thesis's passage to the norm completions (dils.tex:5190–5212), carried
+out on the inequality instead of on the map.  The proof of **144V**
+`blinear_inprod_inequality` needs the resolvent `(B + ε)^{-½}`, which does
+not lie in `𝒜 ⊙ ℬ`; so the thesis passes to the norm closure of `𝒜 ⊙ ℬ`
+("clearly a C*-algebra" — the spatial tensor product) and to the norm
+closure of `X ⊙ Y` over it, extends `T` there to `T̄` by uniform continuity
+with `‖T̄‖ = ‖T‖`, and applies the proof of 144V to `T̄`.  Step for step:
+the closed algebra is `S.topologicalClosure`, and `cfc_mem` puts the
+resolvent in it; and what `T̄` is used for is exactly the hypothesis
+`‖d P d*‖ ≤ C‖d B d*‖` for `d` in that closure — which is
+`‖T̄(t·d)‖² ≤ ‖T̄‖²‖t·d‖²` written out — so, both sides being norm
+continuous in `d`, it is obtained here from the hypothesis on `S` directly
+(`mem_closure_iff_seq_limit`, `le_of_tendsto_of_tendsto'`), with no module
+completion to build: neither `T` nor `X ⊙ Y` occurs in the statement.
+Everything after that is the proof of 144V verbatim: `s = B + ε`,
+`g = s^{-½}`, `k = s^{½}`, `g s g = 1`, `g B g ≤ 1` so `‖g P g‖ ≤ C`, hence
+`g P g ≤ C·1` by `le_algebraMap_norm_self`, conjugation by `k`, `ε → 0`. -/
 private theorem le_smul_of_conj_norm_le (S : StarSubalgebra ℂ 𝒞)
     {C : ℝ} (hC : 0 ≤ C) {P B : 𝒞} (hP : 0 ≤ P) (hB : 0 ≤ B) (hBS : B ∈ S)
     (h : ∀ d ∈ S, ‖d * P * star d‖ ≤ C * ‖d * B * star d‖) :
@@ -6604,6 +6817,7 @@ private theorem le_smul_of_conj_norm_le (S : StarSubalgebra ℂ 𝒞)
     exact h0.mono_left nhdsWithin_le_nhds
   refine ge_of_tendsto hlim ?_
   filter_upwards [self_mem_nhdsWithin] with ε hε using key ε hε
+
 
 
 /-- **From `𝒜 ⊙ ℬ`- to `𝒜 ⊗ ℬ`-coefficients.**  A self-adjoint matrix `Q`
@@ -7627,8 +7841,10 @@ private theorem extTensorOfCompl_dense [VonNeumannAlgebra 𝒜]
 
 /-- A model with the density of **164II**.1 already in hand: the
 `ExtTensor` carried by the **150II** completion of `(X ⊙ Y) ⊙ 𝒞`.  This is
-what `ext_tensor_dense` compares an arbitrary `ExtTensor` against, and what
-`univprop_ext_tensor` returns. -/
+what `ext_tensor_dense` compares an arbitrary `ExtTensor` against.  It is
+*not* what `univprop_ext_tensor` returns — that is the thesis's own `ℓ²`
+model, `extL2Compl` — but for 164IX any model with dense `η` serves. -/
+
 private theorem exists_extTensor_dense [VonNeumannAlgebra 𝒜]
     [VonNeumannAlgebra ℬ] [VonNeumannAlgebra 𝒞] [CompleteSpace X]
     [CompleteSpace Y] (ht : IsVNTensor t) (hX : SelfDual 𝒜 X)
@@ -7639,27 +7855,482 @@ private theorem exists_extTensor_dense [VonNeumannAlgebra 𝒜]
   obtain ⟨E⟩ := dils_completion (𝒷 := 𝒞) (extBInner (X := X) (Y := Y) t ht)
   exact ⟨extTensorOfCompl ht hX hY E, extTensorOfCompl_dense ht hX hY E⟩
 
+/-! ### finite bilinearity of `t` -/
+
+omit [StarOrderedRing 𝒜] [StarOrderedRing ℬ] [StarOrderedRing 𝒞] in
+theorem vnTensor_zero_left (ht : IsVNTensor t) (b : ℬ) : t 0 b = 0 := by
+  have := ht.smul_complex 0 0 b
+  simpa using this
+
+omit [StarOrderedRing 𝒜] [StarOrderedRing ℬ] in
+theorem vnTensor_zero_right (ht : IsVNTensor t) (a : 𝒜) : t a 0 = 0 := by
+  have := vnTensor_zero_left (vnTensor_flip ht) a
+  exact this
+
+omit [StarOrderedRing 𝒜] [StarOrderedRing ℬ] [StarOrderedRing 𝒞] in
+theorem vnTensor_sum_left {ν : Type*} (ht : IsVNTensor t) (s : Finset ν)
+    (a : ν → 𝒜) (b : ℬ) : t (∑ i ∈ s, a i) b = ∑ i ∈ s, t (a i) b := by
+  classical
+  induction s using Finset.cons_induction with
+  | empty => simpa using vnTensor_zero_left ht b
+  | cons i s hi ih => rw [Finset.sum_cons, Finset.sum_cons, ht.add_left, ih]
+
+omit [StarOrderedRing 𝒜] [StarOrderedRing ℬ] in
+theorem vnTensor_sum_right {ν : Type*} (ht : IsVNTensor t) (s : Finset ν)
+    (a : 𝒜) (b : ν → ℬ) : t a (∑ j ∈ s, b j) = ∑ j ∈ s, t a (b j) := by
+  classical
+  induction s using Finset.cons_induction with
+  | empty => simpa using vnTensor_zero_right ht a
+  | cons j s hj ih => rw [Finset.sum_cons, Finset.sum_cons, ht.add_right, ih]
+
+omit [StarOrderedRing 𝒜] [StarOrderedRing ℬ] in
+theorem vnTensor_sum_prod {ν μ : Type*} [DecidableEq ν] [DecidableEq μ]
+    (ht : IsVNTensor t) (s : Finset ν) (r : Finset μ) (a : ν → 𝒜) (b : μ → ℬ) :
+    ∑ q ∈ s ×ˢ r, t (a q.1) (b q.2) = t (∑ i ∈ s, a i) (∑ j ∈ r, b j) := by
+  rw [Finset.sum_product, vnTensor_sum_left ht]
+  exact Finset.sum_congr rfl fun i _ => (vnTensor_sum_right ht r (a i) b).symm
+
+/-! ### ultraweak continuity of the legs -/
+
+theorem uwContinuous_legLeft [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra 𝒞]
+    (ht : IsVNTensor t) :
+    @Continuous 𝒜 𝒞 (ultraweak 𝒜) (ultraweak 𝒞) fun a => t a 1 :=
+  ((p_uwcont (vnTensorLegLeft ht)).out 2 0).mp (vnTensor_legLeft_normal ht)
+
+theorem uwContinuous_legRight [VonNeumannAlgebra ℬ] [VonNeumannAlgebra 𝒞]
+    (ht : IsVNTensor t) :
+    @Continuous ℬ 𝒞 (ultraweak ℬ) (ultraweak 𝒞) fun b => t 1 b :=
+  ((p_uwcont (vnTensorLegRight ht)).out 2 0).mp (vnTensor_legRight_normal ht)
+
+omit [StarOrderedRing 𝒜] [StarOrderedRing ℬ] [StarOrderedRing 𝒞] in
+theorem vnTensor_eq_legs (ht : IsVNTensor t) (a : 𝒜) (b : ℬ) :
+    t a b = t a 1 * t 1 b := by
+  rw [ht.mul]; simp
+
+/-! ### the iterated-limit lemma -/
+
+private theorem tendsto_iterated {α β : Type*} [SemilatticeSup α] [Nonempty α]
+    [SemilatticeSup β] [Nonempty β] {F : α → β → ℂ} {G : β → ℂ} {L : ℂ}
+    (hF : Tendsto (fun q : α × β => F q.1 q.2) atTop (𝓝 L))
+    (hG : ∀ r, Tendsto (fun s => F s r) atTop (𝓝 (G r))) :
+    Tendsto G atTop (𝓝 L) := by
+  refine Metric.tendsto_atTop.mpr fun ε hε => ?_
+  have hF' : Tendsto (fun q : α × β => F q.1 q.2) (atTop ×ˢ atTop) (𝓝 L) := by
+    rwa [prod_atTop_atTop_eq]
+  have hev : ∀ᶠ q : α × β in atTop ×ˢ atTop, dist (F q.1 q.2) L < ε / 2 :=
+    hF' (Metric.ball_mem_nhds L (by positivity))
+  rw [Filter.eventually_prod_iff] at hev
+  obtain ⟨p1, hp1, p2, hp2, hpp⟩ := hev
+  obtain ⟨s0, hs0⟩ := Filter.eventually_atTop.mp hp1
+  obtain ⟨r0, hr0⟩ := Filter.eventually_atTop.mp hp2
+  refine ⟨r0, fun r hr => ?_⟩
+  have hle : dist (G r) L ≤ ε / 2 := by
+    refine le_of_tendsto ((hG r).dist tendsto_const_nhds) ?_
+    filter_upwards [eventually_ge_atTop s0] with s hs
+    exact (hpp (hs0 s hs) (hr0 r hr)).le
+  linarith
+
+/-! ### the double-sum identity -/
+
+theorem uw_double_sum [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
+    [VonNeumannAlgebra 𝒞] {ι κ : Type*} [DecidableEq ι] [DecidableEq κ]
+    (ht : IsVNTensor t) {a : ι → 𝒜} {b : κ → ℬ} {A : 𝒜} {B : ℬ} {Z : 𝒞}
+    (ha : UWTendsto (fun s : Finset ι => ∑ i ∈ s, a i) atTop A)
+    (hb : UWTendsto (fun r : Finset κ => ∑ j ∈ r, b j) atTop B)
+    (hZ : UWTendsto
+      (fun s : Finset (ι × κ) => ∑ q ∈ s, t (a q.1) (b q.2)) atTop Z) :
+    Z = t A B := by
+  classical
+  -- the rectangles are cofinal
+  have hcof : Tendsto (fun q : Finset ι × Finset κ => q.1 ×ˢ q.2)
+      (atTop : Filter (Finset ι × Finset κ)) atTop := by
+    refine tendsto_atTop.mpr fun u => ?_
+    filter_upwards [eventually_ge_atTop (u.image Prod.fst, u.image Prod.snd)]
+      with q hq
+    refine le_trans ?_ (Finset.product_subset_product hq.1 hq.2)
+    intro x hx
+    simp only [Finset.mem_product, Finset.mem_image]
+    exact ⟨⟨x, hx, rfl⟩, ⟨x, hx, rfl⟩⟩
+  have hrect : UWTendsto
+      (fun q : Finset ι × Finset κ => t (∑ i ∈ q.1, a i) (∑ j ∈ q.2, b j))
+      atTop Z := by
+    have h := hZ.comp hcof
+    have heq : ∀ q : Finset ι × Finset κ,
+        ((fun s : Finset (ι × κ) => ∑ x ∈ s, t (a x.1) (b x.2)) ∘
+          fun q : Finset ι × Finset κ => q.1 ×ˢ q.2) q
+          = t (∑ i ∈ q.1, a i) (∑ j ∈ q.2, b j) :=
+      fun q => vnTensor_sum_prod ht q.1 q.2 a b
+    exact Filter.Tendsto.congr heq h
+  refine eq_of_forall_npFunctional fun ω => ?_
+  -- inner limits, for a fixed right-hand finset
+  have hinner : ∀ r : Finset κ,
+      Tendsto (fun s : Finset ι => ω (t (∑ i ∈ s, a i) (∑ j ∈ r, b j)))
+        atTop (𝓝 (ω (t A (∑ j ∈ r, b j)))) := by
+    intro r
+    have hL : UWTendsto (fun s : Finset ι => t (∑ i ∈ s, a i) 1) atTop (t A 1) :=
+      (@Continuous.tendsto 𝒜 𝒞 (ultraweak 𝒜) (ultraweak 𝒞) _
+        (uwContinuous_legLeft ht) A).comp ha
+    have h2 := uwTendsto_mul_left_right (A := 𝒞) 1 (t 1 (∑ j ∈ r, b j)) hL
+    simp only [one_mul] at h2
+    have h3 : UWTendsto (fun s : Finset ι => t (∑ i ∈ s, a i) (∑ j ∈ r, b j))
+        atTop (t A (∑ j ∈ r, b j)) := by
+      simpa only [← vnTensor_eq_legs ht] using h2
+    exact (uwTendsto_iff _ _ _).mp h3 ω
+  have houter : Tendsto (fun r : Finset κ => ω (t A (∑ j ∈ r, b j))) atTop
+      (𝓝 (ω (t A B))) := by
+    have hR : UWTendsto (fun r : Finset κ => t 1 (∑ j ∈ r, b j)) atTop (t 1 B) :=
+      (@Continuous.tendsto ℬ 𝒞 (ultraweak ℬ) (ultraweak 𝒞) _
+        (uwContinuous_legRight ht) B).comp hb
+    have h2 := uwTendsto_mul_left_right (A := 𝒞) (t A 1) 1 hR
+    simp only [mul_one] at h2
+    have h3 : UWTendsto (fun r : Finset κ => t A (∑ j ∈ r, b j)) atTop (t A B) := by
+      simpa only [← vnTensor_eq_legs ht] using h2
+    exact (uwTendsto_iff _ _ _).mp h3 ω
+  have hjoint : Tendsto
+      (fun q : Finset ι × Finset κ => ω (t (∑ i ∈ q.1, a i) (∑ j ∈ q.2, b j)))
+      atTop (𝓝 (ω Z)) := (uwTendsto_iff _ _ _).mp hrect ω
+  exact tendsto_nhds_unique (tendsto_iterated hjoint hinner) houter
+
+
+
+/-! ### polarised Parseval -/
+
+section Parseval
+
+variable {𝒷 : Type u} [CStarAlgebra 𝒷] [PartialOrder 𝒷] [StarOrderedRing 𝒷]
+  {W : Type*} [NormedAddCommGroup W] [NormedSpace ℂ W] [SMul 𝒷 W]
+  [CStarModule 𝒷 W] {ν : Type*}
+
+/-- **149IV** polarised: `⟨x,x'⟩ = ∑ᵢ ⟨eᵢ,x'⟩⟨x,eᵢ⟩` for an orthonormal
+basis, the sum converging ultraweakly.  (`mod_parseval` is the case
+`x' = x`; the proof is the same, with `innerprod_ultraweak` applied to the
+two expansions.) -/
+theorem mod_parseval_pol [VonNeumannAlgebra 𝒷] (e : ν → W) (he : IsONBasis 𝒷 e)
+    (x x' : W) :
+    UWTendsto (fun s : Finset ν =>
+        ∑ i ∈ s, (inner 𝒷 (e i) x' : 𝒷) * star (inner 𝒷 (e i) x))
+      atTop (inner 𝒷 x x') := by
+  classical
+  have hkey : ∀ s : Finset ν,
+      (inner 𝒷 (∑ i ∈ s, (inner 𝒷 (e i) x : 𝒷) • e i)
+          (∑ i ∈ s, (inner 𝒷 (e i) x' : 𝒷) • e i) : 𝒷)
+        = ∑ i ∈ s, (inner 𝒷 (e i) x' : 𝒷) * star (inner 𝒷 (e i) x) := by
+    intro s
+    rw [CStarModule.inner_sum_left]
+    refine Finset.sum_congr rfl fun i hi => ?_
+    rw [CStarModule.inner_sum_right, Finset.sum_eq_single_of_mem i hi]
+    · rw [CStarModule.inner_op_smul_left, CStarModule.inner_op_smul_right,
+        onbasis_coef_absorb he.1 x' i]
+    · intro j _ hji
+      rw [CStarModule.inner_op_smul_left, CStarModule.inner_op_smul_right,
+        he.1.1 i j (Ne.symm hji), mul_zero, zero_mul]
+  have h := innerprod_ultraweak (cstarBInner 𝒷 W)
+    (fun s : Finset ν => ∑ i ∈ s, (inner 𝒷 (e i) x : 𝒷) • e i)
+    (fun s : Finset ν => ∑ i ∈ s, (inner 𝒷 (e i) x' : 𝒷) • e i) x x'
+    (he.2.1 x) (he.2.1 x')
+  simpa only [show (cstarBInner 𝒷 W).inner = (inner 𝒷 : W → W → 𝒷) from rfl,
+    hkey] using h
+
+/-- Bessel, mirrored and starred: `∑_{i∈s} ⟨eᵢ,x⟩⟨eᵢ,x⟩* ≤ ⟨x,x⟩`. -/
+theorem mod_bessel_star {e : ν → W} [VonNeumannAlgebra 𝒷]
+    (he : OrthonormalFam 𝒷 e) (x : W) (s : Finset ν) :
+    ∑ i ∈ s, (inner 𝒷 (e i) x : 𝒷) * star (inner 𝒷 (e i) x) ≤ inner 𝒷 x x := by
+  have h := mod_bessel he x s
+  have hstar : ∀ i : ν, (inner 𝒷 x (e i) : 𝒷) = star (inner 𝒷 (e i) x) := by
+    intro i; rw [CStarModule.star_inner]
+  simpa only [hstar] using h
+
+end Parseval
+
+/-! ### the ℓ² model of **164III**–**164VII** -/
+
+section Model
+
+variable {ι κ : Type u} {e : ι → X} {d : κ → Y}
+
+variable (t e d) in
+/-- **164III** (dils.tex:5083): the family of projections
+`pᵢⱼ = ⟨eᵢ,eᵢ⟩ ⊗ ⟨dⱼ,dⱼ⟩` whose `ℓ²` the thesis takes for `X ⊗ Y`. -/
+private def extL2P : ι × κ → 𝒞 :=
+  fun q => t (inner 𝒜 (e q.1) (e q.1)) (inner ℬ (d q.2) (d q.2))
+
+omit [StarOrderedRing 𝒜] [StarOrderedRing ℬ] [CStarAlgebra 𝒞] [PartialOrder 𝒞]
+  [StarOrderedRing 𝒞] in
+@[simp] private theorem extL2P_apply (q : ι × κ) :
+    extL2P t e d q = t (inner 𝒜 (e q.1) (e q.1)) (inner ℬ (d q.2) (d q.2)) := rfl
+
+omit [StarOrderedRing 𝒜] [StarOrderedRing ℬ] [StarOrderedRing 𝒞] in
+private theorem extL2P_isStarProjection (ht : IsVNTensor t) (he : OrthonormalFam 𝒜 e)
+    (hd : OrthonormalFam ℬ d) (q : ι × κ) : IsStarProjection (extL2P t e d q) := by
+  rw [extL2P_apply, isStarProjection_iff']
+  refine ⟨?_, ?_⟩
+  · rw [ht.mul, (he.2 q.1).1.isIdempotentElem, (hd.2 q.2).1.isIdempotentElem]
+  · rw [ht.star, (he.2 q.1).1.isSelfAdjoint, (hd.2 q.2).1.isSelfAdjoint]
+
+omit [StarOrderedRing 𝒜] [StarOrderedRing ℬ] [StarOrderedRing 𝒞] in
+/-- `t a b * (t a' b')* = t (a a'*) (b b'*)`. -/
+theorem vnTensor_mul_star (ht : IsVNTensor t) (a a' : 𝒜) (b b' : ℬ) :
+    t a b * star (t a' b') = t (a * star a') (b * star b') := by
+  rw [ht.star, ht.mul]
+
+private theorem extL2Eta_l2Summable [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
+    [VonNeumannAlgebra 𝒞] (ht : IsVNTensor t) (he : OrthonormalFam 𝒜 e)
+    (hd : OrthonormalFam ℬ d) (x : X) (y : Y) :
+    L2Summable 𝒞
+      (fun q : ι × κ => t (inner 𝒜 (e q.1) x) (inner ℬ (d q.2) y)) := by
+  classical
+  set a : ι → 𝒜 := fun i => (inner 𝒜 (e i) x : 𝒜) * star (inner 𝒜 (e i) x) with ha
+  set b : κ → ℬ := fun j => (inner ℬ (d j) y : ℬ) * star (inner ℬ (d j) y) with hb
+  have hann : ∀ i, (0 : 𝒜) ≤ a i := fun i => mul_star_self_nonneg _
+  have hbnn : ∀ j, (0 : ℬ) ≤ b j := fun j => mul_star_self_nonneg _
+  have hterm : ∀ q : ι × κ,
+      t (inner 𝒜 (e q.1) x) (inner ℬ (d q.2) y)
+          * star (t (inner 𝒜 (e q.1) x) (inner ℬ (d q.2) y))
+        = t (a q.1) (b q.2) := fun q => vnTensor_mul_star ht _ _ _ _
+  refine ⟨‖t (inner 𝒜 x x) (inner ℬ y y)‖, fun s => ?_⟩
+  simp only [hterm]
+  set s₁ : Finset ι := s.image Prod.fst with hs₁
+  set s₂ : Finset κ := s.image Prod.snd with hs₂
+  have hsub : s ⊆ s₁ ×ˢ s₂ := by
+    intro q hq
+    simp only [hs₁, hs₂, Finset.mem_product, Finset.mem_image]
+    exact ⟨⟨q, hq, rfl⟩, ⟨q, hq, rfl⟩⟩
+  have h1 : ∑ q ∈ s, t (a q.1) (b q.2) ≤ ∑ q ∈ s₁ ×ˢ s₂, t (a q.1) (b q.2) :=
+    Finset.sum_le_sum_of_subset_of_nonneg hsub
+      fun q _ _ => vnTensor_nonneg ht (hann q.1) (hbnn q.2)
+  have h2 : ∑ q ∈ s₁ ×ˢ s₂, t (a q.1) (b q.2)
+      = t (∑ i ∈ s₁, a i) (∑ j ∈ s₂, b j) := vnTensor_sum_prod ht s₁ s₂ a b
+  have hA : ∑ i ∈ s₁, a i ≤ (inner 𝒜 x x : 𝒜) := mod_bessel_star he x s₁
+  have hB : ∑ j ∈ s₂, b j ≤ (inner ℬ y y : ℬ) := mod_bessel_star hd y s₂
+  have hAnn : (0 : 𝒜) ≤ ∑ i ∈ s₁, a i := Finset.sum_nonneg fun i _ => hann i
+  have hBnn : (0 : ℬ) ≤ ∑ j ∈ s₂, b j := Finset.sum_nonneg fun j _ => hbnn j
+  have h3 : t (∑ i ∈ s₁, a i) (∑ j ∈ s₂, b j)
+      ≤ t (inner 𝒜 x x) (inner ℬ y y) :=
+    le_trans (vnTensor_mono_right ht hAnn hB)
+      (vnTensor_mono_left ht (le_trans hBnn hB) hA)
+  have hnn : (0 : 𝒞) ≤ ∑ q ∈ s, t (a q.1) (b q.2) :=
+    Finset.sum_nonneg fun q _ => vnTensor_nonneg ht (hann q.1) (hbnn q.2)
+  exact CStarAlgebra.norm_le_norm_of_nonneg_of_le hnn
+    (le_trans h1 (le_trans (le_of_eq h2) h3))
+
+variable (t e d) in
+/-- **164IV** (dils.tex:5093): `η(x ⊗ y) = (⟨eᵢ,x⟩ ⊗ ⟨dⱼ,y⟩)ᵢⱼ`. -/
+private def extL2Eta [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ] [VonNeumannAlgebra 𝒞]
+    (ht : IsVNTensor t) (he : OrthonormalFam 𝒜 e) (hd : OrthonormalFam ℬ d)
+    (x : X) (y : Y) : L2 𝒞 (extL2P t e d) :=
+  ⟨fun q => t (inner 𝒜 (e q.1) x) (inner ℬ (d q.2) y),
+    extL2Eta_l2Summable ht he hd x y,
+    fun q => by
+      rw [extL2P_apply, ht.mul, onbasis_coef_absorb he x q.1,
+        onbasis_coef_absorb hd y q.2]⟩
+
+@[simp] private theorem extL2Eta_val [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
+    [VonNeumannAlgebra 𝒞] (ht : IsVNTensor t) (he : OrthonormalFam 𝒜 e)
+    (hd : OrthonormalFam ℬ d) (x : X) (y : Y) :
+    L2.val (extL2Eta t e d ht he hd x y)
+      = fun q : ι × κ => t (inner 𝒜 (e q.1) x) (inner ℬ (d q.2) y) := rfl
+
+/-- **164V** (dils.tex:5108): `η` preserves the inner product.  This is the
+ultraweak double-sum identity `uw_double_sum` applied to the two polarised
+Parseval expansions. -/
+private theorem extL2Eta_inner [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
+    [VonNeumannAlgebra 𝒞] (ht : IsVNTensor t) (he : IsONBasis 𝒜 e)
+    (hd : IsONBasis ℬ d) (x x' : X) (y y' : Y) :
+    (inner 𝒞 (extL2Eta t e d ht he.1 hd.1 x y)
+        (extL2Eta t e d ht he.1 hd.1 x' y') : 𝒞)
+      = t (inner 𝒜 x x') (inner ℬ y y') := by
+  classical
+  set a : ι → 𝒜 := fun i => (inner 𝒜 (e i) x' : 𝒜) * star (inner 𝒜 (e i) x) with ha
+  set b : κ → ℬ := fun j => (inner ℬ (d j) y' : ℬ) * star (inner ℬ (d j) y) with hb
+  refine uw_double_sum ht (mod_parseval_pol e he x x') (mod_parseval_pol d hd y y')
+    ?_
+  have h := L2.uwTendsto_inner (extL2Eta t e d ht he.1 hd.1 x y)
+    (extL2Eta t e d ht he.1 hd.1 x' y')
+  refine Filter.Tendsto.congr (fun s => ?_) h
+  refine Finset.sum_congr rfl fun q _ => ?_
+  exact vnTensor_mul_star ht _ _ _ _
+
+
+/-- **164IV** (dils.tex:5093): `η` is bilinear and `𝒜 ⊙ ℬ`-linear. -/
+private theorem extL2Eta_isExtBilin [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
+    [VonNeumannAlgebra 𝒞] (ht : IsVNTensor t) (he : OrthonormalFam 𝒜 e)
+    (hd : OrthonormalFam ℬ d) : IsExtBilin t (extL2Eta t e d ht he hd) where
+  add_left x x' y := L2.val_injective (funext fun q => by
+    show t (inner 𝒜 (e q.1) (x + x')) (inner ℬ (d q.2) y)
+        = t (inner 𝒜 (e q.1) x) (inner ℬ (d q.2) y)
+          + t (inner 𝒜 (e q.1) x') (inner ℬ (d q.2) y)
+    rw [CStarModule.inner_add_right, ht.add_left])
+  add_right x y y' := L2.val_injective (funext fun q => by
+    show t (inner 𝒜 (e q.1) x) (inner ℬ (d q.2) (y + y'))
+        = t (inner 𝒜 (e q.1) x) (inner ℬ (d q.2) y)
+          + t (inner 𝒜 (e q.1) x) (inner ℬ (d q.2) y')
+    rw [CStarModule.inner_add_right, ht.add_right])
+  smul a b x y := L2.val_injective (funext fun q => by
+    show t (inner 𝒜 (e q.1) (a • x)) (inner ℬ (d q.2) (b • y))
+        = t a b * t (inner 𝒜 (e q.1) x) (inner ℬ (d q.2) y)
+    rw [CStarModule.inner_op_smul_right, CStarModule.inner_op_smul_right, ht.mul])
+
+/-- `η(eᵢ, dⱼ) = δᵢⱼ`: the elementary tensors of the two bases are the
+standard basis vectors of `ℓ²((pᵢⱼ))`. -/
+private theorem extL2Eta_delta [DecidableEq ι] [DecidableEq κ] [VonNeumannAlgebra 𝒜]
+    [VonNeumannAlgebra ℬ] [VonNeumannAlgebra 𝒞] (ht : IsVNTensor t)
+    (he : OrthonormalFam 𝒜 e) (hd : OrthonormalFam ℬ d)
+    (hp : ∀ q, IsStarProjection (extL2P t e d q)) (i : ι) (j : κ) :
+    extL2Eta t e d ht he hd (e i) (d j) = L2.delta hp (i, j) := by
+  refine L2.val_injective (funext fun q => ?_)
+  show t (inner 𝒜 (e q.1) (e i)) (inner ℬ (d q.2) (d j))
+      = if q = (i, j) then extL2P t e d (i, j) else 0
+  by_cases h1 : q.1 = i
+  · by_cases h2 : q.2 = j
+    · have hq : q = (i, j) := Prod.ext h1 h2
+      simp [hq]
+    · have hne : q ≠ (i, j) := fun hc => h2 (by rw [hc])
+      rw [hd.1 q.2 j h2, vnTensor_zero_right ht]
+      simp [hne]
+  · have hne : q ≠ (i, j) := fun hc => h1 (by rw [hc])
+    rw [he.1 q.1 i h1, vnTensor_zero_left ht]
+    simp [hne]
+
+/-- The lift of `η` to `(X ⊙ Y) ⊙ 𝒞` preserves the inner product. -/
+private theorem extL2Lift_inner [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
+    [VonNeumannAlgebra 𝒞] (ht : IsVNTensor t) (he : IsONBasis 𝒜 e)
+    (hd : IsONBasis ℬ d) (v w : (X ⊗[ℂ] Y) ⊗[ℂ] 𝒞) :
+    (inner 𝒞 (extLift t ht (extL2Eta_isExtBilin ht he.1 hd.1) v)
+        (extLift t ht (extL2Eta_isExtBilin ht he.1 hd.1) w) : 𝒞)
+      = extPair t ht v w := by
+  classical
+  set hbil := extL2Eta_isExtBilin ht he.1 hd.1 with hbdef
+  have hz : ∀ z z' : X ⊗[ℂ] Y,
+      (inner 𝒞 (extLift0 t ht hbil z) (extLift0 t ht hbil z') : 𝒞)
+        = extPairAux t ht z z' := by
+    intro z z'
+    induction z using TensorProduct.induction_on with
+    | zero =>
+        rw [map_zero, CStarModule.inner_zero_left, map_zero, LinearMap.zero_apply]
+    | tmul x y =>
+        induction z' using TensorProduct.induction_on with
+        | zero => rw [map_zero, CStarModule.inner_zero_right, map_zero]
+        | tmul x' y' =>
+            rw [extLift0_tmul, extLift0_tmul, extPairAux_tmul]
+            exact extL2Eta_inner ht he hd x x' y y'
+        | add z₁ z₂ h₁ h₂ =>
+            rw [map_add, CStarModule.inner_add_right, h₁, h₂, map_add]
+    | add z₁ z₂ h₁ h₂ =>
+        rw [map_add, CStarModule.inner_add_left, h₁, h₂, map_add,
+          LinearMap.add_apply]
+  induction v using TensorProduct.induction_on with
+  | zero =>
+      rw [map_zero, CStarModule.inner_zero_left, map_zero, LinearMap.zero_apply]
+  | tmul z c =>
+      induction w using TensorProduct.induction_on with
+      | zero => rw [map_zero, CStarModule.inner_zero_right, map_zero]
+      | tmul z' c' =>
+          rw [extLift_tmul, extLift_tmul, extPair_tmul,
+            CStarModule.inner_op_smul_left, CStarModule.inner_op_smul_right, hz]
+      | add w₁ w₂ h₁ h₂ =>
+          rw [map_add, CStarModule.inner_add_right, h₁, h₂, map_add]
+  | add v₁ v₂ h₁ h₂ =>
+      rw [map_add, CStarModule.inner_add_left, h₁, h₂, map_add,
+        LinearMap.add_apply]
+
+/-- **164VII** (dils.tex:5157): the image of `η` is ultranorm dense in
+`ℓ²((pᵢⱼ))`.  Here it is the restriction net of **161II**: every `z` is the
+ultranorm limit of its restrictions to finite sets of coordinates, and a
+restriction is a finite `𝒞`-combination of the `δᵢⱼ = η(eᵢ,dⱼ)`. -/
+private theorem extL2Lift_dense [DecidableEq ι] [DecidableEq κ] [VonNeumannAlgebra 𝒜]
+    [VonNeumannAlgebra ℬ] [VonNeumannAlgebra 𝒞] (ht : IsVNTensor t)
+    (he : IsONBasis 𝒜 e) (hd : IsONBasis ℬ d) :
+    UnDense (inner 𝒞)
+      (Set.range (extLift t ht (extL2Eta_isExtBilin ht he.1 hd.1))) := by
+  classical
+  set hbil := extL2Eta_isExtBilin ht he.1 hd.1 with hbdef
+  have hp : ∀ q, IsStarProjection (extL2P t e d q) :=
+    extL2P_isStarProjection ht he.1 hd.1
+  intro z n ωs ε hε
+  have hall : ∀ᶠ s : Finset (ι × κ) in atTop, ∀ k : Fin n,
+      unSeminorm (ωs k) (inner 𝒞 : L2 𝒞 (extL2P t e d) → L2 𝒞 (extL2P t e d) → 𝒞)
+        (L2.restrict z s - z) ≤ ε := by
+    rw [eventually_all]
+    intro k
+    exact (L2.unTendsto_restrict z (ωs k)).eventually_le_const hε
+  obtain ⟨s, hs⟩ := hall.exists
+  refine ⟨L2.restrict z s,
+    ⟨∑ q ∈ s, ((e q.1 ⊗ₜ[ℂ] d q.2) ⊗ₜ[ℂ] L2.val z q), ?_⟩, fun k => ?_⟩
+  · have hterm : ∀ q : ι × κ,
+        extLift t ht hbil ((e q.1 ⊗ₜ[ℂ] d q.2) ⊗ₜ[ℂ] L2.val z q)
+          = L2.val z q • L2.delta hp q := by
+      intro q
+      rw [extLift_tmul, extLift0_tmul]
+      congr 1
+      exact extL2Eta_delta ht he.1 hd.1 hp q.1 q.2
+    rw [map_sum, Finset.sum_congr rfl fun q _ => hterm q]
+    refine L2.val_injective (funext fun j => ?_)
+    rw [L2.val_sum_smul_delta hp s (L2.val z) j]
+    show _ = (if j ∈ s then L2.val z j else 0)
+    rw [L2.absorb z j]
+  · have hneg : ∀ v : L2 𝒞 (extL2P t e d),
+        unSeminorm (ωs k) (inner 𝒞 : L2 𝒞 (extL2P t e d) → L2 𝒞 (extL2P t e d) → 𝒞)
+            (-v)
+          = unSeminorm (ωs k) (inner 𝒞) v := by
+      intro v; simp [unSeminorm]
+    have hzz : z - L2.restrict z s = -(L2.restrict z s - z) := by abel
+    rw [hzz, hneg]
+    exact hs k
+
+variable (t e d) in
+/-- **164III**–**164VII** (dils.tex:5083–5165): the thesis's own model
+`X ⊗ Y = ℓ²((pᵢⱼ))`, packaged as a **150II** self-dual completion of
+`(X ⊙ Y) ⊙ 𝒞`. -/
+private noncomputable def extL2Compl [DecidableEq ι] [DecidableEq κ]
+    [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ] [VonNeumannAlgebra 𝒞]
+    (ht : IsVNTensor t) (he : IsONBasis 𝒜 e) (hd : IsONBasis ℬ d) :
+    SelfDualCompletion.{u, u, u} (extBInner (X := X) (Y := Y) t ht) :=
+  { X := L2 𝒞 (extL2P t e d)
+    complete := completeSpace_of_unComplete
+      (unComplete_of_isONBasis
+        (L2.delta_isONBasis (extL2P_isStarProjection ht he.1 hd.1)))
+    selfDual := hilbmod_el2_selfDual (extL2P_isStarProjection ht he.1 hd.1)
+    η := extLift t ht (extL2Eta_isExtBilin ht he.1 hd.1)
+    η_add := fun v w => map_add _ v w
+    η_smul_complex := fun c v => map_smul _ c v
+    η_smul := fun b v => extLift_op_smul ht (extL2Eta_isExtBilin ht he.1 hd.1) b v
+    η_inner := fun v w => extL2Lift_inner ht he hd v w
+    dense := extL2Lift_dense ht he hd }
+
+end Model
+
+
 /-- **164II** (`univprop-ext-tensor`, dils.tex:5032, Theorem), existence:
 for self-dual `X`, `Y` over von Neumann algebras the self-dual exterior
 tensor product exists.
 
-**Divergence, class 2.**  The thesis constructs `X ⊗ Y` as `ℓ²((pᵢⱼ))` for
-a chosen pair of orthonormal bases (**164III**–**164VII**); that
-construction is *not* run here.  Instead `X ⊗ Y` is the self-dual completion
-(**150II**) of the module `(X ⊗_ℂ Y) ⊗_ℂ 𝒞` carrying `extBInner`, and the
-universal property comes from **151Ia** (`selfdual_completion_univ`).  So
-**164IV** (`η`) and **164V** (`η` preserves the inner product) are replaced
-by `extEta` and `extEta_inner`, and **164VII** (density) is replaced by
-**164II**.1 `ext_tensor_dense`, proved for an arbitrary `ExtTensor` from the
-universal property.  **164VI** (injectivity of `η`) *is* run, as
-`extTensor_eta_injective`, since it is what discharges the `η_injective`
-field. -/
+This is the thesis's own construction, **164III**–**164VII**: orthonormal
+bases `(eᵢ)` of `X` and `(dⱼ)` of `Y` (**149V**
+`exists_isONBasis_of_bddUnComplete`, which is where the self-duality of `X`
+and of `Y` is used), the projections `pᵢⱼ = ⟨eᵢ,eᵢ⟩ ⊗ ⟨dⱼ,dⱼ⟩`, and
+`X ⊗ Y = ℓ²((pᵢⱼ))`, with `η` in coordinates (164IV), inner-product
+preserving (164V), injective (164VI, `extTensor_eta_injective`) and with
+ultranorm dense image (164VII) — assembled as `extL2Compl`.
+
+**The one divergence (class 2) is 164VIII**, the universal property, and it
+is the divergence the thesis itself names: "If `X ⊙ Y` were an
+`𝒜 ⊗ ℬ`-module *and* both `η` and `T` were `𝒜 ⊗ ℬ`-linear, we could simply
+apply `selfdual-completion-univ`.  Instead, we will retrace the steps of its
+proof" (dils.tex:5166).  Here `X ⊙ Y` is carried as `(X ⊙ Y) ⊙ 𝒞`, which
+*is* an `𝒜 ⊗ ℬ`-module, so **151Ia** does apply, and it is applied
+(`extTensorOfCompl`); the price of the encoding is `tensor_gram_le`, the
+passage from `𝒜 ⊙ ℬ`- to `𝒜 ⊗ ℬ`-coefficients. -/
 theorem univprop_ext_tensor [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
     [VonNeumannAlgebra 𝒞] [CompleteSpace X] [CompleteSpace Y]
     (hX : SelfDual 𝒜 X) (hY : SelfDual ℬ Y) :
     Nonempty (ExtTensor t ht X Y) := by
-  obtain ⟨E, -⟩ := exists_extTensor_dense ht hX hY
-  exact ⟨E⟩
+  classical
+  obtain ⟨ι, e, he⟩ :=
+    exists_isONBasis_of_bddUnComplete (bddUnComplete_of_selfDual hX)
+  obtain ⟨κ, d, hd⟩ :=
+    exists_isONBasis_of_bddUnComplete (bddUnComplete_of_selfDual hY)
+  exact ⟨extTensorOfCompl ht hX hY (extL2Compl t e d ht he hd)⟩
+
 end UnivPropExistence
 
 /-- **Non-vacuity check** for `ExtTensor` — the analogue of
@@ -8339,21 +9010,16 @@ arbitrary Hilbert space tensor product `γ` (**109II**
 `Theses.A.Proc.IsHilbertTensorProduct`), and specialised to thesis A's chosen
 one in `extTensorHilbTensor`.
 
-**Divergence, class 3 (weaker): `H` and `K` are restricted to `Type 0`.**
-`ExtTensor.{u}` wants its three algebras in `Type u` alongside `X` and `Y`,
-and the only tensor available here is `vnTensor_mul_complex`, which is
-`IsVNTensor.{0}` because `ℂ : Type 0`.  So
+**The `Type 0` restriction, and its removal.**  `ExtTensor.{u}` wants its
+three algebras in `Type u` alongside `X` and `Y`, and the only tensor
+available here is `vnTensor_mul_complex`, which is `IsVNTensor.{0}` because
+`ℂ : Type 0`.  So
 `ExtTensor (fun a b : ℂ => a * b) vnTensor_mul_complex H K` forms for
 `H K : Type` and does *not* form for `H K : Type u` with `u > 0`: the
-elaborator rejects `IsVNTensor.{0}` against `IsVNTensor.{u}`.  Lifting the
-statement to a general universe means running parsec 1640 over `ULift ℂ`
-instead: an `IsVNTensor` for multiplication there (transportable from
-`vnTensor_mul_complex`, but its `NPFunctional`s, its `wstar` and its product
-functionals must all be moved), and a `CStarModule (ULift ℂ) H`, which
-Mathlib does not have and which would be a second module structure on `H`
-beside the `CStarModule ℂ H` it does supply.  Neither is done here; the
-thesis's Example is stated for all Hilbert spaces, and this is the `Type 0`
-case of it.
+elaborator rejects `IsVNTensor.{0}` against `IsVNTensor.{u}`.  What follows
+is therefore the `Type 0` case.  The Example as the thesis states it, for
+all Hilbert spaces, is `extTensorHilbULift` and `extTensorHilbTensorULift`
+in the next section, which run the same construction over `ULift.{v} ℂ`.
 
 Two obstacles inside the proof, both about `ℂ` being met from two sides.
 (i) `ExtTensor.univ` quantifies over a target `W` given as a `CStarModule ℂ`,
@@ -8558,6 +9224,498 @@ noncomputable def extTensorHilbTensor (H K : Type) [NormedAddCommGroup H]
     (Theses.A.Proc.hilbTensor H K).isTensor
 
 end HilbExtTensor
+
+
+section HilbExtTensorULift
+
+/-! ### **164XII**.1 without the universe restriction
+
+`extTensorHilb` above is the `Type 0` case of the Example, and the reason is
+`ExtTensor.{u}`: it wants its three algebras in `Type u` alongside its two
+modules, and the only tensor at hand there is `vnTensor_mul_complex`, which
+is `IsVNTensor.{0}` because `ℂ : Type 0`.  This block removes the
+restriction, in the one way that does not touch `ExtTensor` itself: it runs
+the same construction over `ULift.{v} ℂ`, the copy of `ℂ` in `Type v`.
+`ℂ ⊗ ℂ = ℂ`, so `ULift ℂ` is a tensor product of `ULift ℂ` with itself under
+multiplication, and a Hilbert space in `Type v` is a self-dual Hilbert
+`ULift ℂ`-module; `extTensorHilbULift` is then `extTensorHilb` with
+`H K : Type v`, and `extTensorHilbTensorULift` is `extTensorHilbTensor`
+with them.  Together they are the second sentence of **164XII**.1 as the
+thesis states it, "for Hilbert spaces `H` and `K`", with no restriction.
+
+Nothing below is transported along the isomorphism `ULift ℂ ≅ ℂ`: neither
+`IsVNTensor` nor `VonNeumannAlgebra` has a transport lemma in the tree, so
+the four pieces are built directly.
+
+1. The C*-algebra structure of `ULift ℂ`.  Mathlib supplies `NormedRing`,
+   `NormedAlgebra ℂ`, `CompleteSpace` and (from `Order.ULift`) `PartialOrder`
+   for a `ULift`, but no `Star`; `StarOrderedRing` comes from
+   `x ≤ y ↔ ∃ s, y = x + s* s` with `s = √(y − x)`.
+2. `VonNeumannAlgebra (ULift ℂ)`.  Both clauses of **42I** come from
+   `VonNeumannAlgebra ℂ` across `uliftComplexSA`, the order isomorphism of
+   the self-adjoint parts; the faithful np-functional is
+   `uliftComplexDownNP`, `a ↦ a.down`.
+3. `vnTensor_mul_uliftComplex`, `vnTensor_mul_complex` one universe up.  Its
+   product functionals are the nonnegative real multiples of
+   `uliftComplexDownNP`, and by `uliftComplexNP_apply` those are *all* the
+   np-functionals on `ULift ℂ`, which is what gives both
+   `exists_productFunctional` and `separating`.
+4. `instCStarModuleULiftComplex`, a Hilbert space as a Hilbert
+   `ULift ℂ`-module.  This is a second Hilbert module structure on `H`
+   beside the `CStarModule ℂ H` Mathlib supplies, but over a different
+   algebra, so it is an ordinary instance and no diamond arises; the action
+   is Mathlib's `ULift.smulLeft`, `a • w = a.down • w`.
+
+The proof of `extTensorHilbULift` is `extTensorHilb`'s, with the two
+`ℂ`-from-two-sides obstacles of the section note above met the same way:
+the bridge into **110III** is `cstarInnerProductSpaceULift`, the exact
+analogue of `cstarInnerProductSpace` and like it a `reducible` `def` and
+never an instance, and the `SMul (ULift ℂ) W` that `CStarModule` carries is
+identified with the `ℂ`-vector space action by `eq_of_inner_right_eq`. -/
+
+section ULiftComplex
+
+/-- `star` on `ULift ℂ`, taken over from `ℂ`. -/
+instance instStarULiftComplex : Star (ULift.{v} ℂ) where
+  star a := ULift.up (star a.down)
+
+/-- `star` on `ULift ℂ` is `star` on `ℂ` under the wrapper. -/
+@[simp] theorem uliftComplex_star_down (a : ULift.{v} ℂ) :
+    (star a).down = star a.down := rfl
+
+/-- `(c : ℂ) • a = ULift.up c * a` on `ULift ℂ`: the `ℂ`-vector space action
+and multiplication by the lifted scalar agree. -/
+@[simp] theorem uliftComplex_smul_eq (c : ℂ) (a : ULift.{v} ℂ) :
+    c • a = ULift.up c * a := ULift.ext _ _ (by simp)
+
+/-- `ULift.down` is additive, hence commutes with finite sums. -/
+theorem uliftComplex_down_sum {ι : Type*} (s : Finset ι) (f : ι → ULift.{v} ℂ) :
+    (∑ i ∈ s, f i).down = ∑ i ∈ s, (f i).down :=
+  map_sum (ULift.ringEquiv : ULift.{v} ℂ ≃+* ℂ) f s
+
+/-- `ULift ℂ` is a ∗-ring. -/
+instance instStarRingULiftComplex : StarRing (ULift.{v} ℂ) where
+  star_involutive a := ULift.ext _ _ (star_star a.down)
+  star_mul a b := ULift.ext _ _ (star_mul a.down b.down)
+  star_add a b := ULift.ext _ _ (star_add a.down b.down)
+
+/-- `star` on `ULift ℂ` is conjugate-linear over `ℂ`. -/
+instance instStarModuleULiftComplex : StarModule ℂ (ULift.{v} ℂ) where
+  star_smul c a := ULift.ext _ _ (star_smul c a.down)
+
+/-- The C*-identity on `ULift ℂ`: its norm is `ℂ`'s. -/
+instance instCStarRingULiftComplex : CStarRing (ULift.{v} ℂ) where
+  norm_mul_self_le a := CStarRing.norm_mul_self_le (E := ℂ) a.down
+
+/-- `ULift.{v} ℂ` is a C*-algebra in `Type v`.  Every field is Mathlib's for
+`ULift` except the two ∗-structures above. -/
+noncomputable instance instCStarAlgebraULiftComplex : CStarAlgebra (ULift.{v} ℂ) where
+
+/-- The C*-order of `ULift ℂ` is `ℂ`'s: `x ≤ y` exactly when
+`y = x + s* s` for `s = √(y − x)`. -/
+instance instStarOrderedRingULiftComplex : StarOrderedRing (ULift.{v} ℂ) :=
+  StarOrderedRing.of_le_iff fun x y => by
+    constructor
+    · intro h
+      have h' : x.down ≤ y.down := h
+      rw [Complex.le_def] at h'
+      have hd : (0 : ℝ) ≤ y.down.re - x.down.re := sub_nonneg.mpr h'.1
+      refine ⟨ULift.up ((Real.sqrt (y.down.re - x.down.re) : ℝ) : ℂ),
+        ULift.ext _ _ ?_⟩
+      have hsq : star (((Real.sqrt (y.down.re - x.down.re) : ℝ) : ℂ))
+          * ((Real.sqrt (y.down.re - x.down.re) : ℝ) : ℂ)
+          = ((y.down.re - x.down.re : ℝ) : ℂ) := by
+        rw [Complex.star_def, Complex.conj_ofReal, ← Complex.ofReal_mul,
+          Real.mul_self_sqrt hd]
+      show y.down = x.down + star (((Real.sqrt (y.down.re - x.down.re) : ℝ) : ℂ))
+        * ((Real.sqrt (y.down.re - x.down.re) : ℝ) : ℂ)
+      rw [hsq]
+      refine Complex.ext ?_ ?_
+      · simp
+      · simp [h'.2]
+    · rintro ⟨s, rfl⟩
+      show x.down ≤ x.down + star s.down * s.down
+      exact le_add_of_nonneg_right (star_mul_self_nonneg _)
+
+/-- `sa(ULift ℂ) ≅ sa(ℂ)`, by `ULift.down` on representatives. -/
+def uliftComplexSA : selfAdjoint (ULift.{v} ℂ) ≃o selfAdjoint ℂ where
+  toFun d := ⟨(d : ULift.{v} ℂ).down, congrArg ULift.down d.2⟩
+  invFun c := ⟨ULift.up (c : ℂ), ULift.ext _ _ c.2⟩
+  left_inv _ := Subtype.ext (ULift.ext _ _ rfl)
+  right_inv _ := Subtype.ext rfl
+  map_rel_iff' := Iff.rfl
+
+/-- The np-functional `a ↦ a.down` on `ULift ℂ`; it is faithful, and it is a
+product functional for multiplication. -/
+noncomputable def uliftComplexDownNP : NPFunctional (ULift.{v} ℂ) where
+  toPositiveLinearMap :=
+    { toLinearMap :=
+        { toFun := fun a => a.down
+          map_add' := fun _ _ => rfl
+          map_smul' := fun _ _ => rfl }
+      monotone' := fun _ _ h => h }
+  preservesDirSups' := by
+    intro D s hne _ hlub
+    obtain ⟨d₀, hd₀⟩ := hne
+    refine ⟨?_, fun w hw => ?_⟩
+    · rintro w ⟨d, hd, rfl⟩
+      exact Subtype.coe_le_coe.mpr (hlub.1 hd)
+    · have hd₀sa : star ((d₀ : ULift.{v} ℂ).down) = (d₀ : ULift.{v} ℂ).down :=
+        congrArg ULift.down d₀.2
+      have hwim : w.im = 0 := by
+        have h := hw ⟨d₀, hd₀, rfl⟩
+        rw [Complex.le_def] at h
+        rw [← h.2, Complex.im_eq_zero_iff_isSelfAdjoint]
+        exact hd₀sa
+      have hwsa : IsSelfAdjoint w := (Complex.im_eq_zero_iff_isSelfAdjoint w).mp hwim
+      have hupsa : IsSelfAdjoint (ULift.up w : ULift.{v} ℂ) := ULift.ext _ _ hwsa
+      have hub : (⟨ULift.up w, hupsa⟩ : selfAdjoint (ULift.{v} ℂ)) ∈ upperBounds D :=
+        fun d hd => Subtype.coe_le_coe.mp (hw ⟨d, hd, rfl⟩)
+      exact Subtype.coe_le_coe.mpr (hlub.2 hub)
+
+/-- `uliftComplexDownNP` is `ULift.down`. -/
+@[simp] theorem uliftComplexDownNP_apply (a : ULift.{v} ℂ) :
+    uliftComplexDownNP a = a.down := rfl
+
+/-- Every np-functional on `ULift ℂ` is `a ↦ a.down · ω 1`. -/
+theorem uliftComplexNP_apply (ω : NPFunctional (ULift.{v} ℂ)) (a : ULift.{v} ℂ) :
+    ω a = a.down * ω 1 := by
+  have ha : a.down • (1 : ULift.{v} ℂ) = a := ULift.ext _ _ (by simp)
+  have h : ω (a.down • (1 : ULift.{v} ℂ)) = a.down • ω 1 :=
+    map_smul ω.toPositiveLinearMap a.down 1
+  rw [ha, smul_eq_mul] at h
+  exact h
+
+/-- **42V**.1 in an arbitrary universe: `ULift.{v} ℂ` is a von Neumann
+algebra.  Bounded directed suprema of self-adjoint elements are `ℂ`'s across
+`uliftComplexSA`, and `uliftComplexDownNP` alone is faithful. -/
+noncomputable instance instVonNeumannAlgebraULiftComplex :
+    VonNeumannAlgebra (ULift.{v} ℂ) where
+  isLUB_of_bddAbove_directed := by
+    intro D hne hdir hbdd
+    obtain ⟨b, hb⟩ := hbdd
+    obtain ⟨s', hs'⟩ := VonNeumannAlgebra.isLUB_of_bddAbove_directed
+      (uliftComplexSA.{v} '' D) (hne.image _)
+      (by
+        rintro _ ⟨p, hp, rfl⟩ _ ⟨q, hq, rfl⟩
+        obtain ⟨r, hr, hpr, hqr⟩ := hdir p hp q hq
+        exact ⟨uliftComplexSA r, ⟨r, hr, rfl⟩,
+          uliftComplexSA.le_iff_le.mpr hpr, uliftComplexSA.le_iff_le.mpr hqr⟩)
+      ⟨uliftComplexSA b, by
+        rintro _ ⟨d, hd, rfl⟩
+        exact uliftComplexSA.le_iff_le.mpr (hb hd)⟩
+    refine ⟨uliftComplexSA.symm s', ?_, ?_⟩
+    · intro d hd
+      have h := hs'.1 ⟨d, hd, rfl⟩
+      have h2 := uliftComplexSA.symm.le_iff_le.mpr h
+      rwa [uliftComplexSA.symm_apply_apply] at h2
+    · intro c hc
+      have h : s' ≤ uliftComplexSA c := by
+        refine hs'.2 ?_
+        rintro _ ⟨d, hd, rfl⟩
+        exact uliftComplexSA.le_iff_le.mpr (hc hd)
+      have h2 := uliftComplexSA.symm.le_iff_le.mpr h
+      rwa [uliftComplexSA.symm_apply_apply] at h2
+  np_faithful := fun a _ h => ULift.ext _ _ (h uliftComplexDownNP)
+
+/-- **Non-vacuity, in an arbitrary universe**: multiplication exhibits
+`ULift.{v} ℂ` as `ULift.{v} ℂ ⊗ ULift.{v} ℂ`.  This is
+`vnTensor_mul_complex` at `ULift ℂ`; it is what lets parsec 1640 run with its
+three algebras in `Type v`. -/
+theorem vnTensor_mul_uliftComplex :
+    IsVNTensor (fun a b : ULift.{v} ℂ => a * b) where
+  add_left a a' b := add_mul a a' b
+  add_right a b b' := mul_add a b b'
+  smul_complex c a b := smul_mul_assoc c a b
+  mul a a' b b' := by ring
+  one := one_mul 1
+  star a b := by rw [star_mul, mul_comm]
+  generates := by
+    refine eq_top_iff.mpr (le_sInf ?_)
+    rintro T ⟨-, hST⟩ z -
+    exact hST ⟨(z, 1), by simp⟩
+  exists_productFunctional ω ξ := by
+    have hω : (0 : ℂ) ≤ ω 1 := npFunctional_nonneg ω zero_le_one
+    have hξ : (0 : ℂ) ≤ ξ 1 := npFunctional_nonneg ξ zero_le_one
+    rw [Complex.le_def] at hω hξ
+    have hω0 : (0 : ℝ) ≤ (ω 1).re := by simpa using hω.1
+    have hξ0 : (0 : ℝ) ≤ (ξ 1).re := by simpa using hξ.1
+    have hω1 : (((ω 1).re : ℝ) : ℂ) = ω 1 :=
+      Complex.ext (by simp) (by simpa using hω.2)
+    have hξ1 : (((ξ 1).re : ℝ) : ℂ) = ξ 1 :=
+      Complex.ext (by simp) (by simpa using hξ.2)
+    refine ⟨smulNP (mul_nonneg hω0 hξ0) uliftComplexDownNP, fun a b => ?_⟩
+    rw [smulNP_apply, uliftComplexDownNP_apply,
+      uliftComplexNP_apply ω a, uliftComplexNP_apply ξ b, ← hω1, ← hξ1]
+    show ((((ω 1).re * (ξ 1).re : ℝ)) : ℂ) * (a.down * b.down) = _
+    push_cast
+    ring
+  separating z _ h :=
+    ULift.ext _ _ (h uliftComplexDownNP ⟨uliftComplexDownNP, uliftComplexDownNP,
+      fun _ _ => rfl⟩)
+
+end ULiftComplex
+
+section ULiftHilbert
+
+/-- Every Hilbert space is a Hilbert `ULift ℂ`-module, the inner product
+being the lift of its own.  The `SMul (ULift ℂ) W` this uses is Mathlib's
+`ULift.smulLeft`, `a • w = a.down • w`. -/
+noncomputable instance instCStarModuleULiftComplex (W : Type*)
+    [NormedAddCommGroup W] [InnerProductSpace ℂ W] :
+    CStarModule (ULift.{v} ℂ) W where
+  inner x y := ULift.up (inner ℂ x y)
+  inner_add_right := ULift.ext _ _ (by simp)
+  inner_self_nonneg {x} := by
+    show (0 : ℂ) ≤ (inner ℂ x x : ℂ)
+    rw [← inner_self_ofReal_re, RCLike.ofReal_nonneg]
+    exact inner_self_nonneg
+  inner_self {x} := by
+    constructor
+    · intro h
+      have h' : (inner ℂ x x : ℂ) = 0 := congrArg ULift.down h
+      simpa using h'
+    · rintro rfl
+      exact ULift.ext _ _ (by simp)
+  inner_op_smul_right {a x y} := ULift.ext _ _ (by
+    show (inner ℂ x (a.down • y) : ℂ) = a.down * inner ℂ x y
+    rw [inner_smul_right])
+  inner_smul_right_complex {z x y} := ULift.ext _ _ (by
+    show (inner ℂ x (z • y) : ℂ) = z • (inner ℂ x y : ℂ)
+    rw [inner_smul_right]
+    simp)
+  star_inner x y := ULift.ext _ _ (by simp)
+  norm_eq_sqrt_norm_inner_self x := by
+    show ‖x‖ = √‖(inner ℂ x x : ℂ)‖
+    simpa only [← inner_self_re_eq_norm] using norm_eq_sqrt_re_inner (𝕜 := ℂ) x
+
+set_option linter.overlappingInstances false in
+/-- Auxiliary for **164XII**.1 in an arbitrary universe: a Hilbert
+C*-module over `ULift ℂ` is an inner product space.  This is
+`cstarInnerProductSpace` one universe up, and like it a `def`, never an
+`instance`, and `reducible`. -/
+@[reducible] private noncomputable def cstarInnerProductSpaceULift (W : Type*)
+    [NormedAddCommGroup W] [NormedSpace ℂ W] [SMul (ULift.{v} ℂ) W]
+    [CStarModule (ULift.{v} ℂ) W] : InnerProductSpace ℂ W :=
+  { (inferInstance : NormedSpace ℂ W) with
+    inner := fun x y => (inner (ULift.{v} ℂ) x y : ULift.{v} ℂ).down
+    norm_sq_eq_re_inner := fun x => by
+      have h0 : (0 : ℂ) ≤ (inner (ULift.{v} ℂ) x x : ULift.{v} ℂ).down :=
+        CStarModule.inner_self_nonneg (A := ULift.{v} ℂ) (x := x)
+      rw [Complex.le_def] at h0
+      have him : (inner (ULift.{v} ℂ) x x : ULift.{v} ℂ).down
+          = ((((inner (ULift.{v} ℂ) x x : ULift.{v} ℂ).down.re : ℝ)) : ℂ) :=
+        Complex.ext rfl (by simpa using h0.2.symm)
+      have hre : ‖(inner (ULift.{v} ℂ) x x : ULift.{v} ℂ).down‖
+          = (inner (ULift.{v} ℂ) x x : ULift.{v} ℂ).down.re := by
+        rw [him, Complex.norm_real, Real.norm_eq_abs,
+          abs_of_nonneg (by simpa using h0.1)]
+        simp
+      rw [CStarModule.norm_sq_eq (A := ULift.{v} ℂ)]
+      show ‖(inner (ULift.{v} ℂ) x x : ULift.{v} ℂ).down‖ = _
+      rw [hre]
+      rfl
+    conj_inner_symm := fun x y =>
+      congrArg ULift.down (CStarModule.star_inner (A := ULift.{v} ℂ) y x)
+    add_left := fun x y z =>
+      congrArg ULift.down (CStarModule.inner_add_left (A := ULift.{v} ℂ))
+    smul_left := fun x y r => by
+      show (inner (ULift.{v} ℂ) (r • x) y : ULift.{v} ℂ).down = _
+      rw [CStarModule.inner_smul_left_complex]
+      simp }
+
+variable {H K Z : Type v}
+  [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
+  [NormedAddCommGroup K] [InnerProductSpace ℂ K] [CompleteSpace K]
+  [NormedAddCommGroup Z] [InnerProductSpace ℂ Z] [CompleteSpace Z]
+
+/-- **164XII**.1 (dils.tex:5367, Examples), first sentence, without a
+universe restriction: a Hilbert space is a self-dual Hilbert
+`ULift ℂ`-module.  Same Riesz representation as
+`selfDual_complex_hilbert`, composed with `ULift.down`. -/
+theorem selfDual_uliftComplex_hilbert (W : Type*) [NormedAddCommGroup W]
+    [InnerProductSpace ℂ W] [CompleteSpace W] : SelfDual (ULift.{v} ℂ) W := by
+  intro τ _ ⟨C, hC⟩
+  set τ' : W →ₗ[ℂ] ℂ :=
+    { toFun := fun w => (τ w).down
+      map_add' := fun a b => congrArg ULift.down (map_add τ a b)
+      map_smul' := fun c a => congrArg ULift.down (map_smul τ c a) } with hτ'
+  have hC' : ∀ w, ‖τ' w‖ ≤ C * ‖w‖ := fun w => hC w
+  have hcont : Continuous ⇑τ' := (τ'.mkContinuous C hC').continuous
+  refine ⟨(InnerProductSpace.toDual ℂ W).symm ⟨τ', hcont⟩, fun w => ?_⟩
+  refine ULift.ext _ _ ?_
+  exact (InnerProductSpace.toDual_symm_apply (x := w)
+    (y := (⟨τ', hcont⟩ : W →L[ℂ] ℂ))).symm
+
+omit [CompleteSpace H] [CompleteSpace K] in
+/-- Auxiliary for **164XII**.1 in an arbitrary universe: the `ULift ℂ`-valued
+Gram sum is the lift of the `ℂ`-valued one. -/
+theorem uliftComplex_gram_lift (n : ℕ) (x : Fin n → H) (y : Fin n → K) :
+    (∑ i, ∑ j, (inner (ULift.{v} ℂ) (x i) (x j) : ULift.{v} ℂ)
+        * inner (ULift.{v} ℂ) (y i) (y j))
+      = ULift.up (∑ i, ∑ j, (inner ℂ (x i) (x j) : ℂ) * inner ℂ (y i) (y j)) := by
+  refine ULift.ext _ _ ?_
+  rw [uliftComplex_down_sum]
+  refine Finset.sum_congr rfl fun i _ => ?_
+  rw [uliftComplex_down_sum]
+  rfl
+
+omit [CompleteSpace H] [CompleteSpace K] in
+/-- Auxiliary for **164XII**.1 in an arbitrary universe: `hilbTensor_gram_norm`
+with `H`, `K` and `Z` in `Type v`.  The Gram sum
+`∑ᵢⱼ ⟨xᵢ,xⱼ⟩⟨yᵢ,yⱼ⟩` is `⟨∑ᵢ γ(xᵢ,yᵢ), ∑ᵢ γ(xᵢ,yᵢ)⟩`, so its norm is its
+real part; this is what turns `ExtTensor.univ`'s boundedness hypothesis into
+**110I** `L2Bounded`. -/
+theorem hilbTensor_gram_norm_ulift (γ : H →ₗ[ℂ] K →ₗ[ℂ] Z)
+    (hγ : Theses.A.Proc.IsHilbertTensorProduct γ) (n : ℕ)
+    (x : Fin n → H) (y : Fin n → K) :
+    ‖∑ i, ∑ j, (inner ℂ (x i) (x j) : ℂ) * inner ℂ (y i) (y j)‖
+      = (∑ i, ∑ j, (inner ℂ (x i) (x j) : ℂ) * inner ℂ (y i) (y j)).re := by
+  have key : (∑ i, ∑ j, (inner ℂ (x i) (x j) : ℂ) * inner ℂ (y i) (y j))
+      = inner ℂ (∑ i, γ (x i) (y i)) (∑ i, γ (x i) (y i)) := by
+    rw [sum_inner]
+    refine Finset.sum_congr rfl fun i _ => ?_
+    rw [inner_sum]
+    exact Finset.sum_congr rfl fun j _ =>
+      (hγ.inner_mul (x i) (x j) (y i) (y j)).symm
+  rw [key, inner_self_eq_norm_sq_to_K]
+  simp [← Complex.ofReal_pow]
+
+/-- **164XII**.1 (dils.tex:5367, Examples), second sentence, for Hilbert
+spaces `H` and `K` in an arbitrary universe — the Example as the thesis
+states it: `H ⊗_Hilb K` **is** a self-dual exterior tensor product of `H`
+and `K` over `ULift ℂ = ULift ℂ ⊗ ULift ℂ`, so by **164IX**
+`ext_tensor_uniqueness` it is isomorphic to `H ⊗_ext K`.  Stated for an
+arbitrary Hilbert space tensor product `γ` (**109II**); see
+`extTensorHilbTensorULift` for thesis A's chosen one.
+
+This is `extTensorHilb` with `ℂ` replaced by `ULift.{v} ℂ` throughout, and
+the argument is the same one: `η = γ`; every field but the last two is
+bilinearity of `γ` and its defining
+`⟨γ(x,y), γ(x',y')⟩ = ⟨x,x'⟩⟨y,y'⟩`, lifted; injectivity is **164VI**
+`extTensor_eta_injective`; and the universal property is **110III**, whose
+`L2Bounded` hypothesis at `√(max C 0)` is `ExtTensor.univ`'s norm bound
+through `uliftComplex_gram_lift` (the `ULift ℂ`-valued Gram sum is the lift
+of the `ℂ`-valued one, and `ULift` preserves norms) and
+`hilbTensor_gram_norm_ulift`. -/
+noncomputable def extTensorHilbULift (γ : H →ₗ[ℂ] K →ₗ[ℂ] Z)
+    (hγ : Theses.A.Proc.IsHilbertTensorProduct γ) :
+    ExtTensor (fun a b : ULift.{v} ℂ => a * b) vnTensor_mul_uliftComplex H K := by
+  have hadd_l : ∀ (x x' : H) (y : K), γ (x + x') y = γ x y + γ x' y :=
+    fun x x' y => by rw [map_add]; rfl
+  have hadd_r : ∀ (x : H) (y y' : K), γ x (y + y') = γ x y + γ x y' :=
+    fun x y y' => by rw [map_add]
+  have hsm : ∀ (a b : ULift.{v} ℂ) (x : H) (y : K),
+      γ (a • x) (b • y) = (a * b) • γ x y := fun a b x y => by
+    show γ (a.down • x) (b.down • y) = (a.down * b.down) • γ x y
+    rw [map_smul γ a.down x, LinearMap.smul_apply, map_smul, smul_smul]
+  have hin : ∀ (x x' : H) (y y' : K),
+      (inner (ULift.{v} ℂ) (γ x y) (γ x' y') : ULift.{v} ℂ)
+        = inner (ULift.{v} ℂ) x x' * inner (ULift.{v} ℂ) y y' :=
+    fun x x' y y' => ULift.ext _ _ (hγ.inner_mul x x' y y')
+  exact
+  { Z := Z
+    selfDual := selfDual_uliftComplex_hilbert Z
+    η := fun x y => γ x y
+    η_add_left := hadd_l
+    η_add_right := hadd_r
+    η_smul_complex := fun c x y => by rw [map_smul]; rfl
+    η_smul := hsm
+    η_inner := hin
+    η_injective := fun n x y h =>
+      extTensor_eta_injective vnTensor_mul_uliftComplex
+        (selfDual_uliftComplex_hilbert H) (selfDual_uliftComplex_hilbert K)
+        (fun x y => γ x y) hadd_l hadd_r hsm hin x y h
+    univ := by
+      intro W iW₁ iW₂ iW₃ iW₄ iW₅ _ T hadd_l hadd_r hsmul hbnd
+      let := iW₁; let := iW₂; let := iW₃; let := iW₄; let := iW₅
+      let : InnerProductSpace ℂ W := cstarInnerProductSpaceULift.{v} W
+      have hkey : ∀ w w' : W,
+          (∀ z : W, (inner (ULift.{v} ℂ) z w : ULift.{v} ℂ)
+            = inner (ULift.{v} ℂ) z w') → w = w' :=
+        fun w w' h => eq_of_inner_right_eq (𝒜 := ULift.{v} ℂ) h
+      -- `T` is ℂ-bilinear for the *vector space* action on `W`
+      obtain ⟨β, hβapp⟩ : ∃ β : H →ₗ[ℂ] K →ₗ[ℂ] W, ∀ x y, β x y = T x y := by
+        refine ⟨LinearMap.mk₂ ℂ T hadd_l ?_ hadd_r ?_, fun _ _ => rfl⟩
+        · intro c x y
+          have h1 := hsmul (ULift.up c) 1 x y
+          rw [one_smul, mul_one] at h1
+          rw [show (c • x : H) = (ULift.up c : ULift.{v} ℂ) • x from rfl, h1]
+          refine hkey _ _ fun z => ?_
+          rw [CStarModule.inner_op_smul_right,
+            CStarModule.inner_smul_right_complex, uliftComplex_smul_eq]
+        · intro c x y
+          have h1 := hsmul 1 (ULift.up c) x y
+          rw [one_smul, one_mul] at h1
+          rw [show (c • y : K) = (ULift.up c : ULift.{v} ℂ) • y from rfl, h1]
+          refine hkey _ _ fun z => ?_
+          rw [CStarModule.inner_op_smul_right,
+            CStarModule.inner_smul_right_complex, uliftComplex_smul_eq]
+      -- ℓ²-boundedness of `β`, from `univ`'s hypothesis
+      obtain ⟨C, hC⟩ := hbnd
+      set B : ℝ := Real.sqrt (max C 0)
+      have hB0 : (0 : ℝ) ≤ B := Real.sqrt_nonneg _
+      have hBsq : B ^ 2 = max C 0 := Real.sq_sqrt (le_max_right C 0)
+      have hL2 : Theses.A.Proc.L2Bounded β B := by
+        refine ⟨hB0, fun n x y => ?_⟩
+        have hgn := hilbTensor_gram_norm_ulift γ hγ n x y
+        have hre : (0 : ℝ) ≤ (∑ i, ∑ j, (inner ℂ (x i) (x j) : ℂ)
+            * inner ℂ (y i) (y j)).re := by
+          rw [← hgn]; exact norm_nonneg _
+        have hCbound := hC n x y
+        rw [uliftComplex_gram_lift n x y] at hCbound
+        rw [show ‖(ULift.up (∑ i, ∑ j, (inner ℂ (x i) (x j) : ℂ)
+            * inner ℂ (y i) (y j)) : ULift.{v} ℂ)‖
+              = ‖∑ i, ∑ j, (inner ℂ (x i) (x j) : ℂ) * inner ℂ (y i) (y j)‖
+            from rfl, hgn] at hCbound
+        have hEq : (∑ i, (β (x i)) (y i)) = ∑ i, T (x i) (y i) :=
+          Finset.sum_congr rfl fun i _ => hβapp (x i) (y i)
+        rw [hBsq, hEq]
+        exact hCbound.trans (mul_le_mul_of_nonneg_right (le_max_left C 0) hre)
+      -- **110III**
+      obtain ⟨-, huniv⟩ :=
+        Theses.A.Proc.hilb_tensor_universal_property (L := W) γ hγ
+      obtain ⟨f, hf, -, hfu⟩ := huniv β B hL2
+      refine ⟨⇑f, ⟨⟨‖f‖, ?_, ?_, ?_, ?_⟩,
+        fun x y => (hf x y).trans (hβapp x y)⟩, ?_⟩
+      · exact fun z z' => map_add f z z'
+      · intro c z
+        exact f.map_smul c z
+      · intro b z
+        show f (b.down • z) = b • f z
+        rw [f.map_smul]
+        refine hkey _ _ fun w => ?_
+        rw [CStarModule.inner_smul_right_complex,
+          CStarModule.inner_op_smul_right, uliftComplex_smul_eq, ULift.up_down]
+      · intro z
+        rw [cstarBInner_norm, cstarBInner_norm]
+        exact f.le_opNorm z
+      · rintro T'' ⟨⟨C'', hadd, hsc, -, hbd⟩, hT''⟩
+        have hbd' : ∀ z : Z, ‖T'' z‖ ≤ C'' * ‖z‖ := by
+          intro z
+          have := hbd z
+          rwa [cstarBInner_norm, cstarBInner_norm] at this
+        set g : Z →L[ℂ] W :=
+          LinearMap.mkContinuous ⟨⟨T'', hadd⟩, hsc⟩ C'' hbd'
+        have hgf : g = f := hfu g fun x y => (hT'' x y).trans (hβapp x y).symm
+        funext z
+        exact congrArg (fun (h : Z →L[ℂ] W) => h z) hgf }
+
+/-- **164XII**.1 (dils.tex:5367, Examples), second sentence, at thesis A's
+*chosen* Hilbert space tensor product (**110VI**,
+`Theses.A.Proc.hilbTensor`) and for `H` and `K` in an arbitrary universe:
+`H ⊗ K` is a self-dual exterior tensor product of `H` and `K` over
+`ULift ℂ`.  `extTensorHilbTensor` without its `Type 0` restriction. -/
+noncomputable def extTensorHilbTensorULift (H K : Type v) [NormedAddCommGroup H]
+    [InnerProductSpace ℂ H] [CompleteSpace H] [NormedAddCommGroup K]
+    [InnerProductSpace ℂ K] [CompleteSpace K] :
+    ExtTensor (fun a b : ULift.{v} ℂ => a * b) vnTensor_mul_uliftComplex H K :=
+  extTensorHilbULift (Theses.A.Proc.hilbTensor H K).map
+    (Theses.A.Proc.hilbTensor H K).isTensor
+
+end ULiftHilbert
+
+end HilbExtTensorULift
 
 
 section EtaEstimates
@@ -8838,8 +9996,9 @@ np-functionals and an `ε > 0`, some element of the span is within `ε` of
 Examples (dils.tex:5367) are converted.  Item 1's first sentence is
 **36II** `selfDual_hilbert`, redone as `selfDual_complex_hilbert` for
 `B/Dils`'s own `SelfDual`, and its second, `H ⊗_Hilb K ≅ H ⊗_ext K`, is
-`extTensorHilb` with `extTensorHilbTensor` — but for `H` and `K` in
-`Type 0` only, a universe restriction the section note there records.
+`extTensorHilb` with `extTensorHilbTensor` for `H` and `K` in `Type 0`, and
+`extTensorHilbULift` with `extTensorHilbTensorULift` for them in any
+universe.
 Item 2 is `selfDual_self` (`B/Dils/HilbertModules.lean`) for its first
 sentence and `extTensorSelf` below for its second, that declaration
 exhibiting `𝒜 ⊗ ℬ` over itself as an `ExtTensor t ht 𝒜 ℬ` — which, every
@@ -10842,40 +12001,48 @@ infrastructure block above). -/
 /-! ### The isomorphism of dilation spaces (**167III**–**167V**)
 
 The "furthermore" half of **167I** is what the thesis proves *first*, and it
-needs neither **165VI** nor the main claim: both `X₁ ⊗ X₂` and
-`(𝒜₁ ⊗ 𝒜₂) ⊗_Φ (ℬ₁ ⊗ ℬ₂)` are self-dual completions of one and the same
-`ℬ₁₂`-module with `ℬ₁₂`-valued inner product, namely
-`V = (𝒜₁ ⊙ 𝒜₂) ⊙ ℬ₁₂`, so **163II** `selfdual_compl_defining_unique`
-produces the isomorphism outright.
+needs neither **165VI** nor the main claim.  What follows is 167II's own
+plan, in its order.
 
-**Divergence, class 2.**  The thesis (167V) extends its `U₀` in two steps —
-first along the ultranorm-dense `𝒜ᵢ ⊙ ℬᵢ ⊆ 𝒜ᵢ ⊗_{φᵢ} ℬᵢ`, then by the
-universal property of the exterior tensor product — and reads
-inner-product preservation off **148V** and surjectivity off the density.
-Recognising the two modules as completions of one `V` replaces all of that:
-`selfdual_compl_defining_unique` (i.e. **151Ia** run four times) delivers
-boundedness, bijectivity, inner-product preservation and the value on
-elementary tensors in one go.  The two densities are the thesis's own
-**167III**: `η₁`'s from **166VI** `dilationspace_dense_subset` at
-`𝒜' = 𝒜₁ ⊙ 𝒜₂` (ultrastrongly dense by `unDense_tSpan`) and `ℬ' = ℬ₁₂`,
-`η₂`'s from **166IV** `exttensor_dense_subsets` at the elementary tensors of
-the two Paschke modules (`paschke_tprod_dense`).  The inner-product
-computation of 167IV is `ptmEtaA_inner`.
+* **167III**, the two densities.  `η₂`'s (167III.1) is **166IV**
+  `exttensor_dense_subsets` at the elementary tensors of the two Paschke
+  modules (`paschke_tprod_dense`); `η₁`'s (167III.2) is **166VI**
+  `dilationspace_dense_subset` at `𝒜' = 𝒜₁ ⊙ 𝒜₂` (ultrastrongly dense by
+  `unDense_tSpan`) and `ℬ' = ℬ₁₂`.
+* **167IV**, `U₀` preserves the inner product: `ptmEtaA_inner`, with
+  `ptmEta_inner_eq` for the two embeddings of `V = (𝒜₁ ⊙ 𝒜₂) ⊙ ℬ₁₂` and
+  `ptmEta2_eta_tprod` identifying `η₂` on `(a₁ ⊗ a₂) ⊗ tB b₁ b₂` with
+  `(a₁ ⊗ b₁) ⊗ (a₂ ⊗ b₂)`.
+* **167V**, first step, `U₁`.  `U₀` is ultranorm continuous, so — "with the
+  usual reasoning" — it extends over the pre-module `X₁ ⊙ X₂`:
+  `ptmPreCompl` is a self-dual completion of that pre-module (**150II**),
+  `V` is ultranorm dense in it by 167III.1 (`ptmPreCompl_dense`), and
+  **151Ia** `selfdual_completion_univ` extends `U₀` over it.  `U₁ x y` is
+  that extension read off at `(x ⊗ y) ⊗ 1`.
+* **167V**, second step, `U`.  `U₁` is bilinear, `ℬ₁ ⊙ ℬ₂`-equivariant and
+  Gram-bounded, so **164II** `ExtTensor.univ`, the universal property of the
+  self-dual exterior tensor product, produces `U` with `U(x ⊗ y) = U₁ x y`.
 
-**Why 167V is not run literally.**  Its two steps
-are not symmetric in this tree.  The *second* step — the universal property
-of the exterior tensor product — is present, as `ExtTensor.univ`; but it
-*consumes* a bilinear `T : X₁ → X₂ → W` defined on all of `X₁ × X₂`, which
-is exactly 167V's intermediate `U₁`.  And `U₁` is a bounded `ℬ₁ ⊙ ℬ₂`-linear
-map on the **incomplete** pre-module `X₁ ⊙ X₂`, which no extension lemma
-here produces: **151Ia** `selfdual_completion_univ` (and hence **163II**)
-extends a bounded module map from a pre-module only *into a self-dual,
-complete* target, so from the pair core `(𝒜₁ ⊙ ℬ₁) ⊙ (𝒜₂ ⊙ ℬ₂)` it lands in
-`X₁ ⊗ X₂` — never in `X₁ ⊙ X₂`.  Producing `U₁` on its own would take a new
-extension theorem into a non-complete pre-module, plus its `IsExtBilin` and
-`ExtTensor.univ` bound checks, plus the density arguments for
-inner-product preservation (**148V**) and surjectivity that **163II** here
-supplies — and it would produce the same `U`. -/
+**Two local deviations.**
+
+(i) `X₁ ⊙ X₂` is *not* a `ℬ₁₂`-module: only the ultraweakly dense
+`*`-subalgebra spanned by the `tB b₁ b₂` acts on it, which is exactly why
+the thesis calls `U₁` "`ℬ₁ ⊙ ℬ₂`-linear".  So it carries no `BInner ℬ₁₂`,
+and **151Ia** — which extends a bounded `𝒷`-module map on a `𝒷`-module —
+does not apply to it as it stands.  The pre-module used here is therefore
+`(X₁ ⊙ X₂) ⊙ ℬ₁₂`, with `ℬ₁₂` coefficients adjoined, whose `ℬ₁₂`-valued
+inner product is the exterior one (`ptmPreBInner`, pulled back along
+`ν : (x ⊗ y) ⊗ c ↦ c·(x ⊗ y)`); at `(x ⊗ y) ⊗ 1` it is 167V's own `U₁`.
+Note that `ptmPreCompl` is *not* identified with `X₁ ⊗ X₂` anywhere: `U₁`
+is built before `U`, as in 167V, and `ExtTensor.univ` is what crosses over.
+
+(ii) 167V reads inner-product preservation off **148V** and surjectivity
+off 167III.  Both are taken here from **152IX**.2 `hilmod_fixed_on_V_eq` —
+adjointable operators agreeing on the vector states of an ultranorm-dense
+image are equal — applied to the two completions `ptmCompl2` (which is
+167III.1 with 167IV) and `ptmCompl1` (167III.2): `S U = 1` gives the inner
+products and injectivity, `U S = 1` gives surjectivity.  So both still rest
+on exactly 167III's two densities. -/
 
 section PaschkeTensorModuleAux
 
@@ -11254,6 +12421,300 @@ private noncomputable def ptmCompl2 (E : ExtTensor tB htB M₁.X M₂.X)
 
 end PTMain2
 
+/-! ### **167V**: the extension of `U₀`, and the universal property
+
+167V extends `U₀` in two steps: first to a bounded `ℬ₁ ⊙ ℬ₂`-linear
+`U₁ : X₁ ⊙ X₂ → 𝒜₁₂ ⊗_Φ ℬ₁₂`, then to `U` by the universal property of the
+exterior tensor product.  `X₁ ⊙ X₂` carries only the action of the
+ultraweakly dense `*`-subalgebra `tB(ℬ₁ ⊙ ℬ₂) ⊆ ℬ₁₂` — which is exactly why
+the thesis calls `U₁` "`ℬ₁ ⊙ ℬ₂`-linear" — so it is not a `ℬ₁₂`-module and
+carries no `BInner ℬ₁₂`.  Adjoining `ℬ₁₂` coefficients repairs that:
+`ptmPre = (X₁ ⊙ X₂) ⊙ ℬ₁₂` *is* a `ℬ₁₂`-module, its `ℬ₁₂`-valued inner
+product is the one of the exterior tensor product (`ptmPreBInner`, pulled
+back along `ν : (x ⊗ y) ⊗ c ↦ c·(x ⊗ y)`), and **150II** gives it a
+self-dual completion.  167III.1 says that `V = (𝒜₁ ⊙ 𝒜₂) ⊙ ℬ₁₂` is
+ultranorm dense in it, so **151Ia** extends `U₀` over that completion, and
+`U₁` is the extension read off at `(x ⊗ y) ⊗ 1`. -/
+
+section PTMain3
+
+variable {tA : 𝒜₁ → 𝒜₂ → 𝒜₁₂} {htA : IsVNTensor tA}
+  {tB : ℬ₁ → ℬ₂ → ℬ₁₂} {htB : IsVNTensor tB}
+  {φ₁ : NCPMap 𝒜₁ ℬ₁} {φ₂ : NCPMap 𝒜₂ ℬ₂} {Φ : NCPMap 𝒜₁₂ ℬ₁₂}
+
+/-- The right `ℬ₁₂`-action on 167V's pre-module `(X₁ ⊙ X₂) ⊙ ℬ₁₂`.  Its
+instance head mentions `M₁.X`, so it does not overlap `ptmSMul`. -/
+private noncomputable instance ptmPreSMul (M₁ : PaschkeModule φ₁)
+    (M₂ : PaschkeModule φ₂) :
+    SMul ℬ₁₂ ((M₁.X ⊗[ℂ] M₂.X) ⊗[ℂ] ℬ₁₂) where
+  smul b := LinearMap.lTensor (M₁.X ⊗[ℂ] M₂.X) (LinearMap.mulLeft ℂ b)
+
+omit [PartialOrder ℬ₁₂] [VonNeumannAlgebra 𝒜₁] [VonNeumannAlgebra 𝒜₂] [VonNeumannAlgebra ℬ₁] [VonNeumannAlgebra ℬ₂] in
+private theorem ptmPre_smul_tmul (M₁ : PaschkeModule φ₁) (M₂ : PaschkeModule φ₂)
+    (b : ℬ₁₂) (w : M₁.X ⊗[ℂ] M₂.X) (c : ℬ₁₂) :
+    (b • (w ⊗ₜ[ℂ] c : (M₁.X ⊗[ℂ] M₂.X) ⊗[ℂ] ℬ₁₂))
+      = (w ⊗ₜ[ℂ] (b * c) : (M₁.X ⊗[ℂ] M₂.X) ⊗[ℂ] ℬ₁₂) := rfl
+
+omit [PartialOrder ℬ₁₂] [VonNeumannAlgebra 𝒜₁] [VonNeumannAlgebra 𝒜₂] [VonNeumannAlgebra ℬ₁] [VonNeumannAlgebra ℬ₂] in
+private theorem ptmPre_smul_add (M₁ : PaschkeModule φ₁) (M₂ : PaschkeModule φ₂)
+    (b : ℬ₁₂) (v w : (M₁.X ⊗[ℂ] M₂.X) ⊗[ℂ] ℬ₁₂) :
+    b • (v + w) = b • v + b • w :=
+  map_add (LinearMap.lTensor (M₁.X ⊗[ℂ] M₂.X) (LinearMap.mulLeft ℂ b)) v w
+
+omit [PartialOrder ℬ₁₂] [VonNeumannAlgebra 𝒜₁] [VonNeumannAlgebra 𝒜₂] [VonNeumannAlgebra ℬ₁] [VonNeumannAlgebra ℬ₂] in
+private theorem ptmPre_smul_zero (M₁ : PaschkeModule φ₁) (M₂ : PaschkeModule φ₂)
+    (b : ℬ₁₂) : b • (0 : ((M₁.X ⊗[ℂ] M₂.X) ⊗[ℂ] ℬ₁₂)) = 0 :=
+  map_zero (LinearMap.lTensor (M₁.X ⊗[ℂ] M₂.X) (LinearMap.mulLeft ℂ b))
+
+/-- `η` as a linear map on `X₁ ⊙ X₂`. -/
+private noncomputable def ptmPairLin (M₁ : PaschkeModule φ₁) (M₂ : PaschkeModule φ₂)
+    (E : ExtTensor tB htB M₁.X M₂.X) : (M₁.X ⊗[ℂ] M₂.X) →ₗ[ℂ] E.Z :=
+  TensorProduct.lift <| LinearMap.mk₂ ℂ E.η E.η_add_left E.η_smul_complex
+    E.η_add_right (fun c x y => extTensor_eta_smul_complex_right E c x y)
+
+omit [VonNeumannAlgebra 𝒜₁] [VonNeumannAlgebra 𝒜₂] in
+@[simp] private theorem ptmPairLin_tmul (M₁ : PaschkeModule φ₁)
+    (M₂ : PaschkeModule φ₂) (E : ExtTensor tB htB M₁.X M₂.X) (x : M₁.X) (y : M₂.X) :
+    ptmPairLin M₁ M₂ E (x ⊗ₜ[ℂ] y) = E.η x y := rfl
+
+/-- `ν : (X₁ ⊙ X₂) ⊙ ℬ₁₂ → X₁ ⊗ X₂`, `(x ⊗ y) ⊗ c ↦ c·(x ⊗ y)`. -/
+private noncomputable def ptmNuLin (M₁ : PaschkeModule φ₁) (M₂ : PaschkeModule φ₂)
+    (E : ExtTensor tB htB M₁.X M₂.X) :
+    ((M₁.X ⊗[ℂ] M₂.X) ⊗[ℂ] ℬ₁₂) →ₗ[ℂ] E.Z :=
+  TensorProduct.lift <| LinearMap.mk₂ ℂ (fun w c => c • ptmPairLin M₁ M₂ E w)
+    (fun w w' c => by rw [map_add, op_smul_add])
+    (fun c w b => by rw [map_smul, op_smul_smul_complex])
+    (fun w b b' => by rw [op_add_smul])
+    (fun c w b => by rw [op_smul_complex_smul])
+
+private noncomputable def ptmNu (M₁ : PaschkeModule φ₁) (M₂ : PaschkeModule φ₂)
+    (E : ExtTensor tB htB M₁.X M₂.X) :
+    ((M₁.X ⊗[ℂ] M₂.X) ⊗[ℂ] ℬ₁₂) → E.Z := ptmNuLin M₁ M₂ E
+
+omit [VonNeumannAlgebra 𝒜₁] [VonNeumannAlgebra 𝒜₂] in
+@[simp] private theorem ptmNu_tmul (M₁ : PaschkeModule φ₁) (M₂ : PaschkeModule φ₂)
+    (E : ExtTensor tB htB M₁.X M₂.X) (w : M₁.X ⊗[ℂ] M₂.X) (c : ℬ₁₂) :
+    ptmNu M₁ M₂ E (w ⊗ₜ[ℂ] c) = c • ptmPairLin M₁ M₂ E w := rfl
+
+omit [VonNeumannAlgebra 𝒜₁] [VonNeumannAlgebra 𝒜₂] in
+private theorem ptmNu_zero (M₁ : PaschkeModule φ₁) (M₂ : PaschkeModule φ₂)
+    (E : ExtTensor tB htB M₁.X M₂.X) :
+    ptmNu M₁ M₂ E 0 = 0 := map_zero (ptmNuLin M₁ M₂ E)
+
+omit [VonNeumannAlgebra 𝒜₁] [VonNeumannAlgebra 𝒜₂] in
+private theorem ptmNu_add (M₁ : PaschkeModule φ₁) (M₂ : PaschkeModule φ₂)
+    (E : ExtTensor tB htB M₁.X M₂.X) (v w : ((M₁.X ⊗[ℂ] M₂.X) ⊗[ℂ] ℬ₁₂)) :
+    ptmNu M₁ M₂ E (v + w) = ptmNu M₁ M₂ E v + ptmNu M₁ M₂ E w :=
+  map_add (ptmNuLin M₁ M₂ E) v w
+
+omit [VonNeumannAlgebra 𝒜₁] [VonNeumannAlgebra 𝒜₂] in
+private theorem ptmNu_smul_complex (M₁ : PaschkeModule φ₁) (M₂ : PaschkeModule φ₂)
+    (E : ExtTensor tB htB M₁.X M₂.X) (c : ℂ) (v : ((M₁.X ⊗[ℂ] M₂.X) ⊗[ℂ] ℬ₁₂)) :
+    ptmNu M₁ M₂ E (c • v) = c • ptmNu M₁ M₂ E v :=
+  map_smul (ptmNuLin M₁ M₂ E) c v
+
+omit [VonNeumannAlgebra 𝒜₁] [VonNeumannAlgebra 𝒜₂] in
+private theorem ptmNu_sub (M₁ : PaschkeModule φ₁) (M₂ : PaschkeModule φ₂)
+    (E : ExtTensor tB htB M₁.X M₂.X) (v w : ((M₁.X ⊗[ℂ] M₂.X) ⊗[ℂ] ℬ₁₂)) :
+    ptmNu M₁ M₂ E (v - w) = ptmNu M₁ M₂ E v - ptmNu M₁ M₂ E w :=
+  map_sub (ptmNuLin M₁ M₂ E) v w
+
+omit [VonNeumannAlgebra 𝒜₁] [VonNeumannAlgebra 𝒜₂] in
+private theorem ptmNu_op_smul (M₁ : PaschkeModule φ₁) (M₂ : PaschkeModule φ₂)
+    (E : ExtTensor tB htB M₁.X M₂.X) (b : ℬ₁₂) (v : ((M₁.X ⊗[ℂ] M₂.X) ⊗[ℂ] ℬ₁₂)) :
+    ptmNu M₁ M₂ E (b • v) = b • ptmNu M₁ M₂ E v := by
+  induction v using TensorProduct.induction_on with
+  | zero => rw [ptmPre_smul_zero, ptmNu_zero, op_smul_zero]
+  | tmul w c => rw [ptmPre_smul_tmul, ptmNu_tmul, ptmNu_tmul, op_mul_smul]
+  | add v₁ v₂ h₁ h₂ =>
+      rw [ptmPre_smul_add, ptmNu_add, ptmNu_add, h₁, h₂, op_smul_add]
+
+/-- The `ℬ₁₂`-valued inner product of `X₁ ⊗ X₂`, restricted to the
+pre-module `(X₁ ⊙ X₂) ⊙ ℬ₁₂`. -/
+private noncomputable def ptmPreBInner (M₁ : PaschkeModule φ₁)
+    (M₂ : PaschkeModule φ₂) (E : ExtTensor tB htB M₁.X M₂.X) :
+    BInner ℬ₁₂ (((M₁.X ⊗[ℂ] M₂.X) ⊗[ℂ] ℬ₁₂)) where
+  inner v w := inner ℬ₁₂ (ptmNu M₁ M₂ E v) (ptmNu M₁ M₂ E w)
+  inner_add_right v w z := by rw [ptmNu_add, CStarModule.inner_add_right]
+  inner_op_smul_right b v w := by
+    rw [ptmNu_op_smul, CStarModule.inner_op_smul_right]
+  inner_smul_right_complex c v w := by
+    rw [ptmNu_smul_complex, CStarModule.inner_smul_right_complex]
+  star_inner v w := CStarModule.star_inner _ _
+  inner_self_nonneg v := CStarModule.inner_self_nonneg
+
+/-- A self-dual completion of the pre-module, by **150II**.  It is *not*
+identified with `X₁ ⊗ X₂`: `U₁` is built before `U`, as in 167V. -/
+private noncomputable def ptmPreCompl (M₁ : PaschkeModule φ₁)
+    (M₂ : PaschkeModule φ₂) (E : ExtTensor tB htB M₁.X M₂.X) :
+    SelfDualCompletion.{u, u, u} (ptmPreBInner M₁ M₂ E) :=
+  (dils_completion (ptmPreBInner M₁ M₂ E)).some
+
+/-- `a ↦ a ⊗ 1`, as a linear map `𝒜₁ → X₁`. -/
+private noncomputable def ptmTprodOne (M₁ : PaschkeModule φ₁) : 𝒜₁ →ₗ[ℂ] M₁.X where
+  toFun a := M₁.tprod a 1
+  map_add' a a' := M₁.compat.add_left a a' 1
+  map_smul' c a := M₁.compat.smul_complex c a 1
+
+/-- The inclusion `V = (𝒜₁ ⊙ 𝒜₂) ⊙ ℬ₁₂ → (X₁ ⊙ X₂) ⊙ ℬ₁₂`. -/
+private noncomputable def ptmJLin (M₁ : PaschkeModule φ₁) (M₂ : PaschkeModule φ₂) :
+    ((𝒜₁ ⊗[ℂ] 𝒜₂) ⊗[ℂ] ℬ₁₂) →ₗ[ℂ] ((M₁.X ⊗[ℂ] M₂.X) ⊗[ℂ] ℬ₁₂) :=
+  LinearMap.rTensor ℬ₁₂ (TensorProduct.map (ptmTprodOne M₁) (ptmTprodOne M₂))
+
+private noncomputable def ptmJ (M₁ : PaschkeModule φ₁) (M₂ : PaschkeModule φ₂) :
+    ((𝒜₁ ⊗[ℂ] 𝒜₂) ⊗[ℂ] ℬ₁₂) → ((M₁.X ⊗[ℂ] M₂.X) ⊗[ℂ] ℬ₁₂) := ptmJLin M₁ M₂
+
+omit [PartialOrder ℬ₁₂] [VonNeumannAlgebra 𝒜₁] [VonNeumannAlgebra 𝒜₂] [VonNeumannAlgebra ℬ₁] [VonNeumannAlgebra ℬ₂] in
+private theorem ptmJ_tmul (M₁ : PaschkeModule φ₁) (M₂ : PaschkeModule φ₂)
+    (a₁ : 𝒜₁) (a₂ : 𝒜₂) (b : ℬ₁₂) :
+    ptmJ M₁ M₂ ((a₁ ⊗ₜ[ℂ] a₂) ⊗ₜ[ℂ] b)
+      = ((M₁.tprod a₁ 1 ⊗ₜ[ℂ] M₂.tprod a₂ 1) ⊗ₜ[ℂ] b :
+          (M₁.X ⊗[ℂ] M₂.X) ⊗[ℂ] ℬ₁₂) := rfl
+
+omit [PartialOrder ℬ₁₂] [VonNeumannAlgebra 𝒜₁] [VonNeumannAlgebra 𝒜₂] [VonNeumannAlgebra ℬ₁] [VonNeumannAlgebra ℬ₂] in
+private theorem ptmJ_zero (M₁ : PaschkeModule φ₁) (M₂ : PaschkeModule φ₂) :
+    ptmJ M₁ M₂ (0 : (𝒜₁ ⊗[ℂ] 𝒜₂) ⊗[ℂ] ℬ₁₂) = 0 := map_zero (ptmJLin M₁ M₂)
+
+omit [PartialOrder ℬ₁₂] [VonNeumannAlgebra 𝒜₁] [VonNeumannAlgebra 𝒜₂] [VonNeumannAlgebra ℬ₁] [VonNeumannAlgebra ℬ₂] in
+private theorem ptmJ_add (M₁ : PaschkeModule φ₁) (M₂ : PaschkeModule φ₂)
+    (v w : (𝒜₁ ⊗[ℂ] 𝒜₂) ⊗[ℂ] ℬ₁₂) :
+    ptmJ M₁ M₂ (v + w) = ptmJ M₁ M₂ v + ptmJ M₁ M₂ w :=
+  map_add (ptmJLin M₁ M₂) v w
+
+omit [PartialOrder ℬ₁₂] [VonNeumannAlgebra 𝒜₁] [VonNeumannAlgebra 𝒜₂] [VonNeumannAlgebra ℬ₁] [VonNeumannAlgebra ℬ₂] in
+private theorem ptmJ_smul_complex (M₁ : PaschkeModule φ₁) (M₂ : PaschkeModule φ₂)
+    (c : ℂ) (v : (𝒜₁ ⊗[ℂ] 𝒜₂) ⊗[ℂ] ℬ₁₂) :
+    ptmJ M₁ M₂ (c • v) = c • ptmJ M₁ M₂ v :=
+  map_smul (ptmJLin M₁ M₂) c v
+
+omit [VonNeumannAlgebra ℬ₁] [VonNeumannAlgebra ℬ₂] in
+private theorem ptmJ_op_smul (M₁ : PaschkeModule φ₁) (M₂ : PaschkeModule φ₂)
+    (b : ℬ₁₂) (v : (𝒜₁ ⊗[ℂ] 𝒜₂) ⊗[ℂ] ℬ₁₂) :
+    ptmJ M₁ M₂ (b • v) = b • ptmJ M₁ M₂ v := by
+  induction v using TensorProduct.induction_on with
+  | zero => rw [ptm_smul_zero, ptmJ_zero, ptmPre_smul_zero]
+  | tmul w c =>
+      induction w using TensorProduct.induction_on with
+      | zero =>
+          rw [TensorProduct.zero_tmul, ptm_smul_zero, ptmJ_zero,
+            ptmPre_smul_zero]
+      | tmul a₁ a₂ => rw [ptm_smul_tmul, ptmJ_tmul, ptmJ_tmul, ptmPre_smul_tmul]
+      | add w₁ w₂ h₁ h₂ =>
+          rw [TensorProduct.add_tmul, ptm_smul_add, ptmJ_add, ptmJ_add, h₁, h₂,
+            ptmPre_smul_add]
+  | add v₁ v₂ h₁ h₂ =>
+      rw [ptm_smul_add, ptmJ_add, ptmJ_add, h₁, h₂, ptmPre_smul_add]
+
+/-- `ν ∘ j = η₂`: the pre-module contains `V`, compatibly. -/
+private theorem ptmNu_ptmJ (M₁ : PaschkeModule φ₁) (M₂ : PaschkeModule φ₂)
+    (E : ExtTensor tB htB M₁.X M₂.X) (v : (𝒜₁ ⊗[ℂ] 𝒜₂) ⊗[ℂ] ℬ₁₂) :
+    ptmNu M₁ M₂ E (ptmJ M₁ M₂ v) = ptmEta2 M₁ M₂ E v := by
+  induction v using TensorProduct.induction_on with
+  | zero => rw [ptmJ_zero, ptmNu_zero, map_zero]
+  | tmul w c =>
+      induction w using TensorProduct.induction_on with
+      | zero =>
+          rw [TensorProduct.zero_tmul, ptmJ_zero, ptmNu_zero, map_zero]
+      | tmul a₁ a₂ =>
+          rw [ptmJ_tmul, ptmNu_tmul, ptmEta2_tmul, ptmPairLin_tmul, ptmEtaA_tmul]
+      | add w₁ w₂ h₁ h₂ =>
+          rw [TensorProduct.add_tmul, ptmJ_add, ptmNu_add, h₁, h₂, map_add]
+  | add v₁ v₂ h₁ h₂ => rw [ptmJ_add, ptmNu_add, h₁, h₂, map_add]
+
+omit [VonNeumannAlgebra 𝒜₁] [VonNeumannAlgebra 𝒜₂] in
+private theorem ptmPreBInner_inner (M₁ : PaschkeModule φ₁) (M₂ : PaschkeModule φ₂)
+    (E : ExtTensor tB htB M₁.X M₂.X) (v w : ((M₁.X ⊗[ℂ] M₂.X) ⊗[ℂ] ℬ₁₂)) :
+    (ptmPreBInner M₁ M₂ E).inner v w
+      = inner ℬ₁₂ (ptmNu M₁ M₂ E v) (ptmNu M₁ M₂ E w) := rfl
+
+omit [VonNeumannAlgebra 𝒜₁] [VonNeumannAlgebra 𝒜₂] in
+private theorem ptmPreCompl_eta_sub (M₁ : PaschkeModule φ₁) (M₂ : PaschkeModule φ₂)
+    (E : ExtTensor tB htB M₁.X M₂.X) (d d' : ((M₁.X ⊗[ℂ] M₂.X) ⊗[ℂ] ℬ₁₂)) :
+    (ptmPreCompl M₁ M₂ E).η d - (ptmPreCompl M₁ M₂ E).η d'
+      = (ptmPreCompl M₁ M₂ E).η (d - d') := by
+  have h := (ptmPreCompl M₁ M₂ E).η_add (d - d') d'
+  rw [sub_add_cancel] at h
+  rw [h]; abel
+
+omit [VonNeumannAlgebra 𝒜₁] [VonNeumannAlgebra 𝒜₂] in
+/-- The embedding into the completion only sees `ν`: two elements of the
+pre-module with the same image in `X₁ ⊗ X₂` have the same image in the
+completion. -/
+private theorem ptmPreCompl_eta_congr (M₁ : PaschkeModule φ₁)
+    (M₂ : PaschkeModule φ₂) (E : ExtTensor tB htB M₁.X M₂.X)
+    {d d' : ((M₁.X ⊗[ℂ] M₂.X) ⊗[ℂ] ℬ₁₂)} (h : ptmNu M₁ M₂ E d = ptmNu M₁ M₂ E d') :
+    (ptmPreCompl M₁ M₂ E).η d = (ptmPreCompl M₁ M₂ E).η d' := by
+  refine sub_eq_zero.mp ?_
+  refine (CStarModule.inner_self (A := ℬ₁₂)).mp ?_
+  rw [ptmPreCompl_eta_sub, (ptmPreCompl M₁ M₂ E).η_inner, ptmPreBInner_inner,
+    ptmNu_sub, h, sub_self]
+  exact CStarModule.inner_zero_right
+
+/-- **167III**.1 for the completion of 167V's pre-module: `V` is ultranorm
+dense in it.  `ptmEta2_denseRange` is 166IV applied to the elementary
+tensors of the two Paschke modules. -/
+private theorem ptmPreCompl_dense (M₁ : PaschkeModule φ₁) (M₂ : PaschkeModule φ₂)
+    (E : ExtTensor tB htB M₁.X M₂.X) :
+    UnDense (inner ℬ₁₂)
+      (Set.range (fun v : (𝒜₁ ⊗[ℂ] 𝒜₂) ⊗[ℂ] ℬ₁₂ =>
+        (ptmPreCompl M₁ M₂ E).η (ptmJ M₁ M₂ v))) := by
+  intro z n ωs ε hε
+  obtain ⟨-, ⟨n₀, rfl⟩, hd₀⟩ :=
+    (ptmPreCompl M₁ M₂ E).dense z n ωs (ε / 2) (by positivity)
+  obtain ⟨-, ⟨v, rfl⟩, hd₁⟩ :=
+    ptmEta2_denseRange M₁ M₂ E (ptmNu M₁ M₂ E n₀) n ωs (ε / 2) (by positivity)
+  refine ⟨_, ⟨v, rfl⟩, fun i => ?_⟩
+  have hmid : unSeminorm (ωs i)
+      (inner ℬ₁₂ : (ptmPreCompl M₁ M₂ E).X → (ptmPreCompl M₁ M₂ E).X → ℬ₁₂)
+      ((ptmPreCompl M₁ M₂ E).η n₀ - (ptmPreCompl M₁ M₂ E).η (ptmJ M₁ M₂ v))
+        ≤ ε / 2 := by
+    have hν : ptmNu M₁ M₂ E (n₀ - ptmJ M₁ M₂ v)
+        = ptmNu M₁ M₂ E n₀ - ptmEta2 M₁ M₂ E v := by
+      rw [ptmNu_sub, ptmNu_ptmJ]
+    have h2 := hd₁ i
+    rw [unSeminorm] at h2
+    rw [ptmPreCompl_eta_sub, unSeminorm, (ptmPreCompl M₁ M₂ E).η_inner,
+      ptmPreBInner_inner, hν]
+    exact h2
+  have htri := unSeminorm_add_le (ωs i)
+    (cstarBInner ℬ₁₂ (ptmPreCompl M₁ M₂ E).X)
+    (z - (ptmPreCompl M₁ M₂ E).η n₀)
+    ((ptmPreCompl M₁ M₂ E).η n₀ - (ptmPreCompl M₁ M₂ E).η (ptmJ M₁ M₂ v))
+  rw [sub_add_sub_cancel] at htri
+  have h0 := hd₀ i
+  calc unSeminorm (ωs i) (inner ℬ₁₂)
+        (z - (ptmPreCompl M₁ M₂ E).η (ptmJ M₁ M₂ v)) ≤ _ := htri
+    _ ≤ ε / 2 + ε / 2 := add_le_add h0 hmid
+    _ = ε := by ring
+
+/-- `V`, with its completion realised inside the completion of 167V's
+pre-module.  This is what **151Ia** extends `U₀` along. -/
+private noncomputable def ptmComplV (htA : IsVNTensor tA) (M₁ : PaschkeModule φ₁)
+    (M₂ : PaschkeModule φ₂) (M₁₂ : PaschkeModule Φ)
+    (E : ExtTensor tB htB M₁.X M₂.X)
+    (hΦ : ∀ (a₁ : 𝒜₁) (a₂ : 𝒜₂), Φ (tA a₁ a₂) = tB (φ₁ a₁) (φ₂ a₂)) :
+    SelfDualCompletion.{u, u, u} (ptmBInner htA M₁₂) where
+  X := (ptmPreCompl M₁ M₂ E).X
+  selfDual := (ptmPreCompl M₁ M₂ E).selfDual
+  η v := (ptmPreCompl M₁ M₂ E).η (ptmJ M₁ M₂ v)
+  η_add v w := by rw [ptmJ_add, (ptmPreCompl M₁ M₂ E).η_add]
+  η_smul_complex c v := by
+    rw [ptmJ_smul_complex, (ptmPreCompl M₁ M₂ E).η_smul_complex]
+  η_smul b v := by rw [ptmJ_op_smul, (ptmPreCompl M₁ M₂ E).η_smul]
+  η_inner v w := by
+    rw [(ptmPreCompl M₁ M₂ E).η_inner, ptmPreBInner_inner, ptmNu_ptmJ, ptmNu_ptmJ]
+    exact ptmEta_inner_eq M₁ M₂ M₁₂ E hΦ v w
+  dense := ptmPreCompl_dense M₁ M₂ E
+
+/-- An additive map commutes with finite sums. -/
+private theorem ptmMapSum {A B : Type u} [AddCommGroup A] [AddCommGroup B]
+    (f : A → B) (hf0 : f 0 = 0) (hadd : ∀ a a' : A, f (a + a') = f a + f a')
+    {n : ℕ} (g : Fin n → A) : f (∑ i, g i) = ∑ i, f (g i) :=
+  map_sum ({ toFun := f, map_zero' := hf0, map_add' := hadd } : A →+ B) g
+    Finset.univ
+
+end PTMain3
+
 end PaschkeTensorModuleAux
 
 /-- **167I** (`paschke-tensor`, dils.tex:5754, Theorem), furthermore-claim
@@ -11279,15 +12740,202 @@ theorem paschke_tensor_module
       ∀ (a₁ : 𝒜₁) (b₁ : ℬ₁) (a₂ : 𝒜₂) (b₂ : ℬ₂),
         U (E.η (M₁.tprod a₁ b₁) (M₂.tprod a₂ b₂)) =
           M₁₂.tprod (tA a₁ a₂) (tB b₁ b₂) := by
-  have hdense : UnDense (inner ℬ₁₂) (Set.range (ptmEta1 htA M₁₂)) :=
+  classical
+  -- **167III**.2: `(𝒜₁ ⊙ 𝒜₂) ⊙ ℬ₁₂` is ultranorm dense in `𝒜₁₂ ⊗_Φ ℬ₁₂`
+  have hdense1 : UnDense (inner ℬ₁₂) (Set.range (ptmEta1 htA M₁₂)) :=
     ptmEta1_denseRange htA M₁₂ (tSpanSubalg htA) (unDense_tSpan htA)
       (fun _ hc => hc)
-  obtain ⟨U, ⟨hUb, hUbij, hUip, hUη⟩, -⟩ :=
-    selfdual_compl_defining_unique (ptmBInner htA M₁₂)
-      (ptmCompl2 M₁ M₂ M₁₂ E hΦ) (ptmCompl1 htA M₁₂ hdense)
-  refine ⟨U, hUb, hUbij, hUip, fun a₁ b₁ a₂ b₂ => ?_⟩
-  rw [ptmEta2_eta_tprod M₁ M₂ E a₁ b₁ a₂ b₂]
-  exact hUη ((a₁ ⊗ₜ[ℂ] a₂) ⊗ₜ[ℂ] tB b₁ b₂)
+  -- 167IV: `U₀` preserves the inner product, so it is a bounded module map
+  have hb1 : IsBoundedModuleMap (ptmBInner htA M₁₂)
+      (cstarBInner ℬ₁₂ M₁₂.X) 1 (ptmEta1 htA M₁₂) :=
+    ⟨fun v w => map_add _ v w, fun c v => map_smul _ c v,
+      fun b v => ptmEta1_op_smul htA M₁₂ b v, fun v => by
+        have h : (cstarBInner ℬ₁₂ M₁₂.X).norm (ptmEta1 htA M₁₂ v)
+            = (ptmBInner htA M₁₂).norm v := rfl
+        rw [h, one_mul]⟩
+  -- **167V**, first step: `U₀` extends over the completion of the
+  -- pre-module `(X₁ ⊙ X₂) ⊙ ℬ₁₂` (**151Ia**), and `U₁` is that extension
+  -- read off at `(x ⊗ y) ⊗ 1`
+  obtain ⟨Û, ⟨⟨CÛ, hÛb⟩, hÛη⟩, -⟩ :=
+    selfdual_completion_univ (ptmBInner htA M₁₂) (ptmComplV htA M₁ M₂ M₁₂ E hΦ)
+      M₁₂.selfDual 1 (ptmEta1 htA M₁₂) hb1
+  -- read `Û` at the carrier of the pre-module's completion
+  set Ũ : (ptmPreCompl M₁ M₂ E).X → M₁₂.X := Û with hŨdef
+  have hŨb : IsBoundedModuleMap (cstarBInner ℬ₁₂ (ptmPreCompl M₁ M₂ E).X)
+      (cstarBInner ℬ₁₂ M₁₂.X) CÛ Ũ := hÛb
+  have hŨη : ∀ v : (𝒜₁ ⊗[ℂ] 𝒜₂) ⊗[ℂ] ℬ₁₂,
+      Ũ ((ptmPreCompl M₁ M₂ E).η (ptmJ M₁ M₂ v)) = ptmEta1 htA M₁₂ v := hÛη
+  set U₁ : M₁.X → M₂.X → M₁₂.X := fun x y =>
+    Ũ ((ptmPreCompl M₁ M₂ E).η ((x ⊗ₜ[ℂ] y) ⊗ₜ[ℂ] (1 : ℬ₁₂))) with hU₁def
+  have hU₁addl : ∀ (x x' : M₁.X) (y : M₂.X), U₁ (x + x') y = U₁ x y + U₁ x' y := by
+    intro x x' y
+    simp only [hU₁def]
+    rw [TensorProduct.add_tmul, TensorProduct.add_tmul,
+      (ptmPreCompl M₁ M₂ E).η_add, hŨb.add]
+  have hU₁addr : ∀ (x : M₁.X) (y y' : M₂.X), U₁ x (y + y') = U₁ x y + U₁ x y' := by
+    intro x y y'
+    simp only [hU₁def]
+    rw [TensorProduct.tmul_add, TensorProduct.add_tmul,
+      (ptmPreCompl M₁ M₂ E).η_add, hŨb.add]
+  have hU₁smul : ∀ (b₁ : ℬ₁) (b₂ : ℬ₂) (x : M₁.X) (y : M₂.X),
+      U₁ (b₁ • x) (b₂ • y) = tB b₁ b₂ • U₁ x y := by
+    intro b₁ b₂ x y
+    simp only [hU₁def]
+    have hcongr : (ptmPreCompl M₁ M₂ E).η
+          (((b₁ • x) ⊗ₜ[ℂ] (b₂ • y)) ⊗ₜ[ℂ] (1 : ℬ₁₂) : ((M₁.X ⊗[ℂ] M₂.X) ⊗[ℂ] ℬ₁₂))
+        = (ptmPreCompl M₁ M₂ E).η
+          ((x ⊗ₜ[ℂ] y) ⊗ₜ[ℂ] (tB b₁ b₂) : ((M₁.X ⊗[ℂ] M₂.X) ⊗[ℂ] ℬ₁₂)) := by
+      refine ptmPreCompl_eta_congr M₁ M₂ E ?_
+      rw [ptmNu_tmul, ptmNu_tmul, ptmPairLin_tmul, ptmPairLin_tmul, op_one_smul,
+        E.η_smul]
+    have hsm : ((x ⊗ₜ[ℂ] y) ⊗ₜ[ℂ] (tB b₁ b₂) : ((M₁.X ⊗[ℂ] M₂.X) ⊗[ℂ] ℬ₁₂))
+        = tB b₁ b₂ •
+          ((x ⊗ₜ[ℂ] y) ⊗ₜ[ℂ] (1 : ℬ₁₂) : (M₁.X ⊗[ℂ] M₂.X) ⊗[ℂ] ℬ₁₂) := by
+      rw [ptmPre_smul_tmul, mul_one]
+    rw [hcongr, hsm, (ptmPreCompl M₁ M₂ E).η_smul, hŨb.smul]
+  -- the values of `U₁` on elementary tensors are 167IV's
+  have hU₁tprod : ∀ (a₁ : 𝒜₁) (b₁ : ℬ₁) (a₂ : 𝒜₂) (b₂ : ℬ₂),
+      U₁ (M₁.tprod a₁ b₁) (M₂.tprod a₂ b₂) = M₁₂.tprod (tA a₁ a₂) (tB b₁ b₂) := by
+    intro a₁ b₁ a₂ b₂
+    simp only [hU₁def]
+    have hcongr : (ptmPreCompl M₁ M₂ E).η
+          ((M₁.tprod a₁ b₁ ⊗ₜ[ℂ] M₂.tprod a₂ b₂) ⊗ₜ[ℂ] (1 : ℬ₁₂) :
+            ((M₁.X ⊗[ℂ] M₂.X) ⊗[ℂ] ℬ₁₂))
+        = (ptmPreCompl M₁ M₂ E).η
+            (ptmJ M₁ M₂ ((a₁ ⊗ₜ[ℂ] a₂) ⊗ₜ[ℂ] tB b₁ b₂)) := by
+      refine ptmPreCompl_eta_congr M₁ M₂ E ?_
+      rw [ptmNu_ptmJ, ptmNu_tmul, ptmPairLin_tmul, op_one_smul,
+        ptmEta2_eta_tprod M₁ M₂ E a₁ b₁ a₂ b₂]
+    rw [hcongr]
+    exact hŨη ((a₁ ⊗ₜ[ℂ] a₂) ⊗ₜ[ℂ] tB b₁ b₂)
+  -- the Gram bound of `ExtTensor.univ`: `U₁` is bounded by `‖Û‖`
+  set C₀ : ℝ := max CÛ 0 with hC₀def
+  have hC₀0 : (0 : ℝ) ≤ C₀ := le_max_right _ _
+  have hŨnorm : ∀ w : (ptmPreCompl M₁ M₂ E).X, ‖Ũ w‖ ≤ C₀ * ‖w‖ := by
+    intro w
+    have h := hŨb.bound w
+    rw [cstarBInner_norm, cstarBInner_norm] at h
+    exact h.trans (mul_le_mul_of_nonneg_right (le_max_left _ _) (norm_nonneg w))
+  have hŨ0 :
+      Ũ ((ptmPreCompl M₁ M₂ E).η (0 : (M₁.X ⊗[ℂ] M₂.X) ⊗[ℂ] ℬ₁₂)) = 0 := by
+    have h1 :
+        (ptmPreCompl M₁ M₂ E).η (0 : (M₁.X ⊗[ℂ] M₂.X) ⊗[ℂ] ℬ₁₂) = 0 := by
+      simpa using (ptmPreCompl M₁ M₂ E).η_smul_complex 0 0
+    rw [h1]
+    simpa using hŨb.smul_complex 0 0
+  have hŨadd : ∀ a a' : ((M₁.X ⊗[ℂ] M₂.X) ⊗[ℂ] ℬ₁₂),
+      Ũ ((ptmPreCompl M₁ M₂ E).η (a + a'))
+        = Ũ ((ptmPreCompl M₁ M₂ E).η a) + Ũ ((ptmPreCompl M₁ M₂ E).η a') := by
+    intro a a'
+    rw [(ptmPreCompl M₁ M₂ E).η_add, hŨb.add]
+  have hgram : ∀ (n : ℕ) (x : Fin n → M₁.X) (y : Fin n → M₂.X),
+      ‖∑ i, U₁ (x i) (y i)‖ ^ 2 ≤ C₀ ^ 2 *
+        ‖∑ i, ∑ j, tB (inner ℬ₁ (x i) (x j)) (inner ℬ₂ (y i) (y j))‖ := by
+    intro n x y
+    set w : ((M₁.X ⊗[ℂ] M₂.X) ⊗[ℂ] ℬ₁₂) :=
+      ∑ i, ((x i ⊗ₜ[ℂ] y i) ⊗ₜ[ℂ] (1 : ℬ₁₂) :
+        (M₁.X ⊗[ℂ] M₂.X) ⊗[ℂ] ℬ₁₂) with hwdef
+    have hsum : ∑ i, U₁ (x i) (y i) = Ũ ((ptmPreCompl M₁ M₂ E).η w) := by
+      rw [hwdef, ptmMapSum (fun a : ((M₁.X ⊗[ℂ] M₂.X) ⊗[ℂ] ℬ₁₂) =>
+        Ũ ((ptmPreCompl M₁ M₂ E).η a)) hŨ0 hŨadd]
+    have hnu : ptmNu M₁ M₂ E w = ∑ i, E.η (x i) (y i) := by
+      rw [hwdef, ptmMapSum (ptmNu M₁ M₂ E) (ptmNu_zero M₁ M₂ E)
+        (ptmNu_add M₁ M₂ E)]
+      exact Finset.sum_congr rfl fun i _ => by
+        rw [ptmNu_tmul, ptmPairLin_tmul, op_one_smul]
+    have hinner : (inner ℬ₁₂ ((ptmPreCompl M₁ M₂ E).η w)
+          ((ptmPreCompl M₁ M₂ E).η w) : ℬ₁₂)
+        = ∑ i, ∑ j, tB (inner ℬ₁ (x i) (x j)) (inner ℬ₂ (y i) (y j)) := by
+      rw [(ptmPreCompl M₁ M₂ E).η_inner, ptmPreBInner_inner, hnu]
+      rw [ptmMapSum (fun z : E.Z => (inner ℬ₁₂ z (∑ j, E.η (x j) (y j)) : ℬ₁₂))
+        CStarModule.inner_zero_left (fun a a' => CStarModule.inner_add_left)]
+      refine Finset.sum_congr rfl fun i _ => ?_
+      rw [ptmMapSum (fun z : E.Z => (inner ℬ₁₂ (E.η (x i) (y i)) z : ℬ₁₂))
+        CStarModule.inner_zero_right (fun a a' => CStarModule.inner_add_right)]
+      exact Finset.sum_congr rfl fun j _ => E.η_inner _ _ _ _
+    have hnormw : ‖(ptmPreCompl M₁ M₂ E).η w‖ ^ 2
+        = ‖∑ i, ∑ j, tB (inner ℬ₁ (x i) (x j)) (inner ℬ₂ (y i) (y j))‖ := by
+      rw [CStarModule.norm_eq_sqrt_norm_inner_self (A := ℬ₁₂),
+        Real.sq_sqrt (norm_nonneg _), hinner]
+    calc ‖∑ i, U₁ (x i) (y i)‖ ^ 2
+        = ‖Ũ ((ptmPreCompl M₁ M₂ E).η w)‖ ^ 2 := by rw [hsum]
+      _ ≤ (C₀ * ‖(ptmPreCompl M₁ M₂ E).η w‖) ^ 2 :=
+          pow_le_pow_left₀ (norm_nonneg _) (hŨnorm _) 2
+      _ = C₀ ^ 2 * ‖(ptmPreCompl M₁ M₂ E).η w‖ ^ 2 := by ring
+      _ = _ := by rw [hnormw]
+  -- **167V**, second step: the universal property of `X₁ ⊗ X₂` (**164II**)
+  obtain ⟨U, ⟨⟨CU, hUb⟩, hUη⟩, -⟩ :=
+    E.univ M₁₂.X inferInstance inferInstance inferInstance inferInstance
+      inferInstance M₁₂.selfDual U₁ hU₁addl hU₁addr hU₁smul ⟨C₀ ^ 2, hgram⟩
+  -- `U ∘ η₂ = η₁`: `U` extends `U₀` along 167III.1's dense `V`
+  have hUeta2 : ∀ v, U (ptmEta2 M₁ M₂ E v) = ptmEta1 htA M₁₂ v := by
+    intro v
+    induction v using TensorProduct.induction_on with
+    | zero => rw [map_zero, map_zero]; simpa using hUb.smul_complex 0 0
+    | tmul w b =>
+        induction w using TensorProduct.induction_on with
+        | zero =>
+            rw [TensorProduct.zero_tmul, map_zero, map_zero]
+            simpa using hUb.smul_complex 0 0
+        | tmul a₁ a₂ =>
+            rw [ptmEta2_tmul, ptmEtaA_tmul, hUb.smul, hUη, hU₁tprod, htB.one,
+              ptmEta1_tmul, tALin_tmul, M₁₂.compat.smul_action, mul_one]
+        | add w₁ w₂ h₁ h₂ =>
+            rw [TensorProduct.add_tmul, map_add, map_add, hUb.add, h₁, h₂]
+    | add v₁ v₂ h₁ h₂ => rw [map_add, map_add, hUb.add, h₁, h₂]
+  -- 167III and **152IX**.2 give inner-product preservation and bijectivity
+  have hUnorm : ∀ z : E.Z, ‖U z‖ ≤ max CU 0 * ‖z‖ := by
+    intro z
+    have h := hUb.bound z
+    rw [cstarBInner_norm, cstarBInner_norm] at h
+    exact h.trans (mul_le_mul_of_nonneg_right (le_max_left _ _) (norm_nonneg z))
+  let Ul : E.Z →ₗ[ℂ] M₁₂.X :=
+    { toFun := U, map_add' := hUb.add,
+      map_smul' := fun c z => hUb.smul_complex c z }
+  let Ucl : E.Z →L[ℂ] M₁₂.X := Ul.mkContinuous (max CU 0) hUnorm
+  obtain ⟨S, hS⟩ := hilbmod_adjoint_exists E.selfDual Ucl (fun b z => hUb.smul b z)
+  have hSU : ∀ (z : E.Z) (m : M₁₂.X),
+      (inner ℬ₁₂ (U z) m : ℬ₁₂) = inner ℬ₁₂ z (S m) := hS
+  have hadjSU : ModuleAdjointable ℬ₁₂ (⇑(S.comp Ucl) : E.Z → E.Z) := by
+    refine ⟨⇑(S.comp Ucl), fun z z' => ?_⟩
+    show (inner ℬ₁₂ (S (U z)) z' : ℬ₁₂) = inner ℬ₁₂ z (S (U z'))
+    rw [← hSU z (U z'), ← CStarModule.star_inner (A := ℬ₁₂) z' (S (U z)),
+      ← hSU z' (U z), CStarModule.star_inner]
+  have hadjIdZ : ModuleAdjointable ℬ₁₂
+      (⇑(ContinuousLinearMap.id ℂ E.Z) : E.Z → E.Z) := ⟨id, fun _ _ => rfl⟩
+  have hadjIdX : ModuleAdjointable ℬ₁₂
+      (⇑(ContinuousLinearMap.id ℂ M₁₂.X) : M₁₂.X → M₁₂.X) := ⟨id, fun _ _ => rfl⟩
+  have hfix : S.comp Ucl = ContinuousLinearMap.id ℂ E.Z := by
+    refine hilmod_fixed_on_V_eq (ptmBInner htA M₁₂) (ptmCompl2 M₁ M₂ M₁₂ E hΦ)
+      _ _ hadjSU hadjIdZ fun v => ?_
+    show (inner ℬ₁₂ (ptmEta2 M₁ M₂ E v) (S (U (ptmEta2 M₁ M₂ E v))) : ℬ₁₂)
+      = inner ℬ₁₂ (ptmEta2 M₁ M₂ E v) (ptmEta2 M₁ M₂ E v)
+    rw [← hSU (ptmEta2 M₁ M₂ E v) (U (ptmEta2 M₁ M₂ E v)), hUeta2]
+    exact (ptmEta_inner_eq M₁ M₂ M₁₂ E hΦ v v).symm
+  have hSUid : ∀ z : E.Z, S (U z) = z := fun z =>
+    congrArg (fun F : E.Z →L[ℂ] E.Z => F z) hfix
+  have hip : ∀ z z' : E.Z, (inner ℬ₁₂ (U z) (U z') : ℬ₁₂) = inner ℬ₁₂ z z' := by
+    intro z z'
+    rw [hSU z (U z'), hSUid z']
+  have hadjUS : ModuleAdjointable ℬ₁₂ (⇑(Ucl.comp S) : M₁₂.X → M₁₂.X) := by
+    refine ⟨⇑(Ucl.comp S), fun m m' => ?_⟩
+    show (inner ℬ₁₂ (U (S m)) m' : ℬ₁₂) = inner ℬ₁₂ m (U (S m'))
+    rw [hSU (S m) m', ← CStarModule.star_inner (A := ℬ₁₂) (S m') (S m),
+      ← hSU (S m') m, CStarModule.star_inner]
+  have hfix2 : Ucl.comp S = ContinuousLinearMap.id ℂ M₁₂.X := by
+    refine hilmod_fixed_on_V_eq (ptmBInner htA M₁₂) (ptmCompl1 htA M₁₂ hdense1)
+      _ _ hadjUS hadjIdX fun v => ?_
+    have hSη : S (ptmEta1 htA M₁₂ v) = ptmEta2 M₁ M₂ E v := by
+      have hz := hSUid (ptmEta2 M₁ M₂ E v)
+      rwa [hUeta2] at hz
+    show (inner ℬ₁₂ (ptmEta1 htA M₁₂ v) (U (S (ptmEta1 htA M₁₂ v))) : ℬ₁₂)
+      = inner ℬ₁₂ (ptmEta1 htA M₁₂ v) (ptmEta1 htA M₁₂ v)
+    rw [hSη, hUeta2]
+  have hbij : Function.Bijective U := by
+    refine ⟨fun z z' h => ?_, fun m => ⟨S m, ?_⟩⟩
+    · rw [← hSUid z, ← hSUid z', h]
+    · exact congrArg (fun F : M₁₂.X →L[ℂ] M₁₂.X => F m) hfix2
+  exact ⟨U, ⟨CU, hUb⟩, hbij, hip, fun a₁ b₁ a₂ b₂ => by rw [hUη, hU₁tprod]⟩
 
 /-- **167I** (`paschke-tensor`, dils.tex:5754, Theorem), main claim: if
 `(𝒫ᵢ, ϱᵢ, hᵢ)` is a Paschke dilation of the ncp-map `φᵢ : 𝒜ᵢ → ℬᵢ`
