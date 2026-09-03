@@ -1366,12 +1366,14 @@ end GenerationBound
 
 /-! ### **125II** `vn-gns-bound`, stated ahead of its parsec
 
-The bounded faithful representation of parsec **1250** is used by the *tensor*
-solution set of 125VIII (`TSolIdx`, at the end of this file), which does still
-relabel the representing Hilbert space rather than the algebra's elements, and
-by `tensor_preimage`.  It is stated here rather than in its own parsec because
-`exists_smallRealization`, which consumes it, sits in this block beside its
-element-relabelling counterpart `exists_vnOnSet`. -/
+The bounded faithful representation of parsec **1250** is used by 125IV
+`equaliser_lemma`, by `tensor_preimage`, by `exists_minimal_tensorSub` and by
+`nmiu_ext_of_tensorBSurjective`, all at the end of this file: each of them
+argues on a *concrete* Hilbert space carrying the tensored factor.  It is
+stated here rather than in its own parsec because the cardinality
+infrastructure its bound needs sits in this block, beside 124I.  Neither
+solution set uses it: both relabel the algebra's **elements**
+(`exists_vnOnSet` below), as proc.tex:4769 does. -/
 
 variable (A) in
 /-- **125II** (`vn-gns-bound`, proc.tex:4820, Lemma), bundled: a faithful
@@ -1777,88 +1779,13 @@ private theorem vnsub_wstar_eq_top [VonNeumannAlgebra A] {G : Set A}
   obtain ⟨t, ht, hte⟩ := hle x.property
   exact (VNSub.val_injective hte : t = x) ▸ ht
 
-/-! #### Relabelling: `ℓ²` along a bijection of index sets
+/-! #### Relabelling: the elements
 
-This is the ingredient that replaces proc.tex's "von Neumann algebra on a
-subset of `κ`".  A bijection of index sets induces a unitary of the
-`ℓ²`-spaces, hence (`conjStarAlgEquiv`) an nmiu-isomorphism of the algebras
-of operators, along which von Neumann subalgebras transport
-(`isVNSubalgebra_map`). -/
-
-private theorem two_toReal_pos : (0:ℝ) < (2 : ℝ≥0∞).toReal := by norm_num
-
-private def lpReindexFun {ι ι' : Type u} (e : ι ≃ ι')
-    (f : lp (fun _ : ι => ℂ) 2) : lp (fun _ : ι' => ℂ) 2 :=
-  ⟨fun j => (f : ∀ _ : ι, ℂ) (e.symm j), by
-    show Memℓp (fun j => (f : ∀ _ : ι, ℂ) (e.symm j)) 2
-    rw [memℓp_gen_iff two_toReal_pos]
-    exact (Equiv.summable_iff e.symm).mpr
-      ((memℓp_gen_iff (E := fun _ : ι => ℂ) (p := 2) two_toReal_pos).mp f.2)⟩
-
-/-- Reindexing `ℓ²` along a bijection of index sets is a unitary. -/
-private def lpReindex {ι ι' : Type u} (e : ι ≃ ι') :
-    lp (fun _ : ι => ℂ) 2 ≃ₗᵢ[ℂ] lp (fun _ : ι' => ℂ) 2 where
-  toFun := lpReindexFun e
-  invFun := lpReindexFun e.symm
-  map_add' _ _ := rfl
-  map_smul' _ _ := rfl
-  left_inv f := by
-    refine lp.ext (funext fun i => ?_)
-    show (f : ∀ _ : ι, ℂ) (e.symm (e i)) = _
-    rw [e.symm_apply_apply]
-  right_inv f := by
-    refine lp.ext (funext fun j => ?_)
-    show (f : ∀ _ : ι', ℂ) (e (e.symm j)) = _
-    rw [e.apply_symm_apply]
-  norm_map' f := by
-    rw [lp.norm_eq_tsum_rpow two_toReal_pos, lp.norm_eq_tsum_rpow two_toReal_pos]
-    congr 1
-    exact Equiv.tsum_eq e.symm (fun i => ‖(f : ∀ _ : ι, ℂ) i‖ ^ (2 : ℝ≥0∞).toReal)
-
-/-- `ℓ²(T)` for a subset `T` of the index type `K`. -/
-@[reducible] private def ell2 {K : Type u} (T : Set K) := lp (fun _ : T => ℂ) 2
-
-/-- `B(ℓ²(T))`: the algebras out of which the solution set is built. -/
-@[reducible] private def opAlg {K : Type u} (T : Set K) := ell2 T →L[ℂ] ell2 T
-
-/-- **The relabelling step of the 125VIII tensor solution set**: a von Neumann
-algebra small enough that `2^{#𝒳} ≤ #K` is nmiu-isomorphic to a von Neumann
-subalgebra of `B(ℓ²(T))` for some `T ⊆ K`.  By **125II** it acts faithfully and
-normally on a Hilbert space of cardinality at most `2^{#𝒳}`, whose orthonormal
-basis therefore injects into `K`; `lpReindex` and `conjStarAlgEquiv` move the
-representation onto `ℓ²(T)`.  (124III relabels the *elements* instead, as
-proc.tex:4769 does — `exists_vnOnSet` below.) -/
-private theorem exists_smallRealization {K : Type u} (𝒳 : Type u) [CStarAlgebra 𝒳]
-    [PartialOrder 𝒳] [StarOrderedRing 𝒳] [VonNeumannAlgebra 𝒳]
-    (hK : (2 : Cardinal.{u}) ^ (#𝒳) ≤ #K) :
-    ∃ (T : Set K) (S : StarSubalgebra ℂ (opAlg T))
-      (hS : IsVNSubalgebra (opAlg T) S)
-      (ε : NMIUMap 𝒳 (VNSub (opAlg T) S hS)), Function.Bijective ⇑ε := by
-  obtain ⟨r, hcard⟩ := vn_gns_bound 𝒳
-  obtain ⟨w, bas, -⟩ := exists_hilbertBasis ℂ r.space
-  have hw : #(w : Set r.space) ≤ #K :=
-    le_trans (Cardinal.mk_set_le w) (le_trans hcard hK)
-  obtain ⟨j⟩ := (Cardinal.le_def _ _).mp hw
-  set T : Set K := Set.range j with hT
-  set e : (w : Set r.space) ≃ (T : Set K) := Equiv.ofInjective j j.injective with he
-  set U : r.space ≃ₗᵢ[ℂ] ell2 T := bas.repr.trans (lpReindex e) with hU
-  set Φ : (r.space →L[ℂ] r.space) ≃⋆ₐ[ℂ] opAlg T := U.conjStarAlgEquiv with hΦ
-  set g : 𝒳 →⋆ₐ[ℂ] opAlg T := Φ.toStarAlgHom.comp r.rep.toStarAlgHom with hg
-  have hginj : Function.Injective ⇑g := fun x y hxy => r.injective (Φ.injective hxy)
-  have hgn : PreservesDirSups ⇑g :=
-    preservesDirSups_pmap_comp (starAlgHomP r.rep.toStarAlgHom) r.rep.preservesDirSups'
-      (starAlgHomP Φ.toStarAlgHom) (starAlgEquiv_preservesDirSups Φ)
-  refine ⟨T, g.range, isVNSubalgebra_range g hginj hgn,
-    nmiuCorestrict ⟨g, hgn⟩ _ (isVNSubalgebra_range g hginj hgn) (fun a => ⟨a, rfl⟩),
-    nmiuCorestrict_bijective _ _ _ _ hginj ?_⟩
-  rintro _ ⟨a, rfl⟩
-  exact ⟨a, rfl⟩
-
-/-! #### Relabelling: the elements themselves
-
-This is what proc.tex:4769 actually does: the solution set is indexed by von
-Neumann algebras *carried on a subset of `κ`*, so the relabelling is of the
-**elements** of the algebra.  Mathlib has no `Equiv.cstarAlgebra`, so the
+This is what proc.tex:4769 does, and it is what *both* solution sets of this
+file — 124III's `SolIdx` and 125VIII's `TSolIdx` — are built on: the index
+datum is a von Neumann algebra *carried on a subset of `κ`*, so the
+relabelling is of the **elements** of the algebra.  Mathlib has no
+`Equiv.cstarAlgebra`, so the
 C*-structure is carried along the relabelling bijection by hand
 (`cstarTransport`, on top of `Equiv.normedRing`, `Equiv.algebra`,
 `Equiv.starRing` and `Equiv.starModule`); the order needs no transport at
@@ -2129,8 +2056,9 @@ theorem second_adjunction [VonNeumannAlgebra A] : Nonempty (FreeMIU A) := by
 /-! ## Parsec 1250: the free exponential
 
 (**125II** `vn-gns-bound` and its `ConcreteRep` are stated above, ahead of
-this parsec, beside `exists_smallRealization`, which consumes them for the
-125VIII tensor solution set at the end of this file.) -/
+this parsec, beside the cardinality infrastructure their bound needs; their
+consumers are 125IV `equaliser_lemma` and the `tensorSub` lemmas at the end
+of this file.) -/
 
 /- **125IV** (`equaliser-lemma`, proc.tex:4852, Lemma (Kornell)) is
 `equaliser_lemma`, at the very end of this file: its proof needs the
@@ -2234,8 +2162,8 @@ them simplifications.
   atomic algebra *is* a `⊕ⱼ M_{Nⱼ+1}` — that is **84bII**, the definition
   used here — so the only relabelling needed is of the *index set of the
   summands*, which is `exists_lp_reindex` (written for 125cIII, moved up to
-  here), and not of a Hilbert space.  In particular **125II**
-  `vn_gns_bound` and `exists_smallRealization` are *not* used.  The index
+  here), and not of the elements.  In particular **125II**
+  `vn_gns_bound` and `exists_vnOnSet` are *not* used.  The index
   type `K` is `#K = 2^(2^(𝔠+#𝒜))`, the same `κ` as 124III's.
 * **The product over the solution set is formed flat.**  proc.tex:5257
   needs "a direct sum of hereditarily atomic algebras is hereditarily
@@ -7925,15 +7853,16 @@ with the same three ingredients as 124III `second_adjunction`: a solution
 set, the product over it, and a von Neumann subalgebra of that product cut
 out so that the unit generates.
 
-* The **solution set** is `TSolIdx`, built like 124III's but on a Hilbert
-  space: a von Neumann subalgebra of `B(ℓ²(T))` for a subset `T` of a fixed
-  index type `K` (where 124III relabels the elements), together with an
-  nmiu-map `ℬ → 𝒟 ⊗ 𝒜` into its tensor.  The solution set *condition* is
-  125IV `equaliser_lemma`: it factors `h : ℬ → 𝒞 ⊗ 𝒜` through `𝒞̃ ⊗ 𝒜` with
-  `𝒞̃` generated by at most `#ℬ · 2^{#𝒜}` elements, whence
-  `#𝒞̃ ≤ 2^{2^{𝔠 + #ℬ·2^{#𝒜}}}` by 124I `vn_generation_bound` and `𝒞̃` sits
-  on `ℓ²(T)` by `exists_smallRealization`.  (proc.tex's `κ` is the same
-  cardinal, written as an ordinal.)
+* The **solution set** is `TSolIdx`, proc.tex:5081's on the nose and built
+  exactly like 124III's `SolIdx`: a von Neumann algebra *carried on a subset
+  `T` of `κ`* (`VNOnSet K` with `#K = κ`), together with an nmiu-map
+  `ℬ → 𝒟 ⊗ 𝒜` into its tensor.  The solution set *condition* is 125IV
+  `equaliser_lemma`: it factors `h : ℬ → 𝒞 ⊗ 𝒜` through `𝒞̃ ⊗ 𝒜` with `𝒞̃`
+  generated by at most `#ℬ · 2^{#𝒜}` elements, whence
+  `#𝒞̃ ≤ 2^{2^{𝔠 + #ℬ·2^{#𝒜}}} = #K` by 124I `vn_generation_bound`, and
+  `exists_vnOnSet` then relabels its elements by a subset of `K`.
+  (proc.tex:5085 writes `κ = 2^{2^{𝔠·#ℬ·2^{#𝒜}}}`, the same cardinal: the
+  exponent is a sum of infinite cardinals here and a product there.)
 * `(·) ⊗ 𝒜` turns the **product** `P = ⊕ᵢ 𝒟ᵢ` into the product of the
   `𝒟ᵢ ⊗ 𝒜` — 117III `tensor_distributes_over_sums` through 119IVc
   `exists_braiding`, packaged as `exists_sumTensorIso` — so the solution-set
@@ -7993,45 +7922,44 @@ private theorem exists_sumTensorIso {Aa : Type u} [CStarAlgebra Aa]
   rw [hΞa, e2, hse, tmapM_apply, nmiuId_apply]
   rfl
 
-/-- The index of the solution set of **125VIII**: a von Neumann subalgebra
-of `B(ℓ²(T))` for a subset `T` of the fixed index type `K`, together with an
-nmiu-map from `ℬ` into its tensor with `𝒜`.  As in 124III's `SolIdx`, this
-lives in `Type u`, which is the whole point of the solution set condition. -/
+/-- The index of the solution set of **125VIII**, proc.tex:5070 on the nose:
+a von Neumann algebra carried on a subset `T` of the fixed index type `K`,
+together with an nmiu-map from `ℬ` into its tensor with `𝒜`.  Exactly
+124III's `SolIdx` over the same `VNOnSet`, with an nmiu-map into the tensor
+where 124III has an ncpsu-map; it lives in `Type u`, which is the whole
+point of the solution set condition. -/
 private structure TSolIdx (Bb Aa : Type u) [CStarAlgebra Bb] [PartialOrder Bb]
     [StarOrderedRing Bb] [VonNeumannAlgebra Bb] [CStarAlgebra Aa] [PartialOrder Aa]
-    [StarOrderedRing Aa] [VonNeumannAlgebra Aa] (K : Type u) : Type u where
-  T : Set K
-  S : StarSubalgebra ℂ (opAlg T)
-  hS : IsVNSubalgebra (opAlg T) S
-  hnt : Nontrivial (VNSub (opAlg T) S hS)
-  γ : NMIUMap Bb (VNT (VNSub (opAlg T) S hS) Aa)
+    [StarOrderedRing Aa] [VonNeumannAlgebra Aa] (K : Type u) extends VNOnSet K where
+  hnt : Nontrivial ↥T
+  γ : NMIUMap Bb (VNT ↥T Aa)
 
 private instance tsolNontrivial {Bb Aa : Type u} [CStarAlgebra Bb] [PartialOrder Bb]
     [StarOrderedRing Bb] [VonNeumannAlgebra Bb] [CStarAlgebra Aa] [PartialOrder Aa]
     [StarOrderedRing Aa] [VonNeumannAlgebra Aa] {K : Type u} (i : TSolIdx Bb Aa K) :
-    Nontrivial (VNSub (opAlg i.T) i.S i.hS) := i.hnt
+    Nontrivial ↥i.T := i.hnt
 
 /-- The product `∏ᵢ 𝒟ᵢ` over the solution set (**47IV**). -/
 @[reducible] private def tsolProd (Bb Aa : Type u) [CStarAlgebra Bb] [PartialOrder Bb]
     [StarOrderedRing Bb] [VonNeumannAlgebra Bb] [CStarAlgebra Aa] [PartialOrder Aa]
     [StarOrderedRing Aa] [VonNeumannAlgebra Aa] (K : Type u) : Type u :=
-  lp (fun i : TSolIdx Bb Aa K => VNSub (opAlg i.T) i.S i.hS) ∞
+  lp (fun i : TSolIdx Bb Aa K => ↥i.T) ∞
 
 set_option maxHeartbeats 1000000 in
 /-- **The solution set condition** for 125VIII (proc.tex:5070): every
 nmiu-map `ℬ → 𝒞 ⊗ 𝒜` into a *nontrivial* `𝒞` factors as `(t ⊗ 𝒜) ∘ γᵢ` for
 one of the solution-set entries `γᵢ`.  This is 125IV `equaliser_lemma`
-followed by 124I `vn_generation_bound` and `exists_smallRealization`, in the
+followed by 124I `vn_generation_bound` and `exists_vnOnSet`, in the
 shape of 124III's `solution_set`. -/
 private theorem tensor_solution_set (Bb Aa : Type u) [CStarAlgebra Bb]
     [PartialOrder Bb] [StarOrderedRing Bb] [VonNeumannAlgebra Bb]
     [CStarAlgebra Aa] [PartialOrder Aa] [StarOrderedRing Aa] [VonNeumannAlgebra Aa]
     {K : Type u}
-    (hK : #K = 2 ^ ((2 : Cardinal.{u}) ^ (2 : Cardinal.{u}) ^
-      (Cardinal.continuum + #Bb * (2 : Cardinal.{u}) ^ #Aa)))
+    (hK : #K = (2 : Cardinal.{u}) ^ (2 : Cardinal.{u}) ^
+      (Cardinal.continuum + #Bb * (2 : Cardinal.{u}) ^ #Aa))
     {C' : Type u} [CStarAlgebra C'] [PartialOrder C'] [StarOrderedRing C']
     [VonNeumannAlgebra C'] [Nontrivial C'] (h : NMIUMap Bb (VNT C' Aa)) :
-    ∃ (i : TSolIdx Bb Aa K) (t : NMIUMap (VNSub (opAlg i.T) i.S i.hS) C'),
+    ∃ (i : TSolIdx Bb Aa K) (t : NMIUMap ↥i.T C'),
       ∀ b : Bb, h b = tmapM t (nmiuId Aa) (i.γ b) := by
   classical
   have h2 : (2 : Cardinal.{u}) ≠ 0 := by norm_num
@@ -8055,14 +7983,18 @@ private theorem tensor_solution_set (Bb Aa : Type u) [CStarAlgebra Bb]
     refine le_trans (vn_generation_bound _ hgen) ?_
     exact Cardinal.power_le_power_left h2 (Cardinal.power_le_power_left h2
       (add_le_add le_rfl hcardG'))
-  obtain ⟨T, S, hS, ε, hεbij⟩ :=
-    exists_smallRealization (K := K) (VNSub C' (wstar C' G) hS₀)
-      (by rw [hK]; exact Cardinal.power_le_power_left h2 hcard)
+  obtain ⟨V, ⟨Φ⟩⟩ :=
+    exists_vnOnSet (K := K) (VNSub C' (wstar C' G) hS₀) (by rw [hK]; exact hcard)
   have hntC : Nontrivial (VNSub C' (wstar C' G) hS₀) :=
     ⟨⟨1, 0, fun hq => one_ne_zero (congrArg VNSub.val hq)⟩⟩
-  have hntS : Nontrivial (VNSub (opAlg T) S hS) :=
+  -- as in `solution_set`: `ε` is introduced by `obtain`, not by `let`, or
+  -- `nmiuSymm_apply_apply` will not rewrite through the let-bound value.
+  obtain ⟨ε, hεbij⟩ : ∃ ε : NMIUMap (VNSub C' (wstar C' G) hS₀) ↥V.T,
+      Function.Bijective ⇑ε :=
+    ⟨⟨Φ.toStarAlgHom, starAlgEquiv_preservesDirSups' Φ⟩, Φ.bijective⟩
+  have hntS : Nontrivial ↥V.T :=
     ⟨⟨ε 1, ε 0, fun hq => one_ne_zero (hεbij.1 hq)⟩⟩
-  refine ⟨⟨T, S, hS, hntS, nmiuComp (tmapM ε (nmiuId Aa)) ht⟩,
+  refine ⟨⟨V, hntS, nmiuComp (tmapM ε (nmiuId Aa)) ht⟩,
     nmiuComp ι (nmiuSymm ε hεbij), fun b => ?_⟩
   show h b = tmapM (nmiuComp ι (nmiuSymm ε hεbij)) (nmiuId Aa)
     (tmapM ε (nmiuId Aa) (ht b))
@@ -8081,37 +8013,37 @@ rendered: every `ℬ` has a universal arrow `ℬ → ℬ^{*𝒜} ⊗ 𝒜`. -/
 theorem tensor_closed [VonNeumannAlgebra A] [VonNeumannAlgebra B] :
     Nonempty (FreeExp B A) := by
   classical
-  obtain ⟨K, hK⟩ : ∃ K : Type u, #K = (2 : Cardinal.{u}) ^ ((2 : Cardinal.{u}) ^
-      (2 : Cardinal.{u}) ^ (Cardinal.continuum + #B * (2 : Cardinal.{u}) ^ #A)) :=
+  obtain ⟨K, hK⟩ : ∃ K : Type u, #K = (2 : Cardinal.{u}) ^
+      (2 : Cardinal.{u}) ^ (Cardinal.continuum + #B * (2 : Cardinal.{u}) ^ #A) :=
     ⟨_, Cardinal.mk_out _⟩
   -- **weak initiality**: the mediating map `η : ℬ → P ⊗ 𝒜`, whose `i`-th
   -- coordinate is the solution-set entry `i` itself
   obtain ⟨η, hη⟩ : ∃ η : NMIUMap B (VNT (tsolProd B A K) A),
       ∀ (i : TSolIdx B A K) (b : B),
         tmapM (lpEvalNMIU
-          (fun q : TSolIdx B A K => VNSub (opAlg q.T) q.S q.hS) i) (nmiuId A) (η b)
+          (fun q : TSolIdx B A K => (↥q.T : Type u)) i) (nmiuId A) (η b)
           = i.γ b := by
     rcases subsingleton_or_nontrivial A with hss | hnt
     · haveI := hss
       haveI : Subsingleton (VNT (tsolProd B A K) A) := vnt_subsingleton
       haveI : ∀ i : TSolIdx B A K,
-          Subsingleton (VNT (VNSub (opAlg i.T) i.S i.hS) A) :=
+          Subsingleton (VNT ↥i.T A) :=
         fun _ => vnt_subsingleton
       exact ⟨nmiuOfSubsingleton B (VNT (tsolProd B A K) A),
         fun i b => Subsingleton.elim _ _⟩
     · haveI := hnt
       haveI hntv : ∀ i : TSolIdx B A K,
-          Nontrivial (VNT (VNSub (opAlg i.T) i.S i.hS) A) :=
+          Nontrivial (VNT ↥i.T A) :=
         fun _ => vnt_nontrivial
       obtain ⟨θ, hθbij, hθa⟩ := exists_sumTensorIso (Aa := A)
-        (fun i : TSolIdx B A K => VNSub (opAlg i.T) i.S i.hS)
+        (fun i : TSolIdx B A K => (↥i.T : Type u))
       obtain ⟨pr, hpr, -⟩ := vn_products_nmiu (B := B)
-        (fun i : TSolIdx B A K => VNT (VNSub (opAlg i.T) i.S i.hS) A) (fun i => i.γ)
+        (fun i : TSolIdx B A K => VNT ↥i.T A) (fun i => i.γ)
       refine ⟨nmiuComp (nmiuSymm θ hθbij) pr, fun i b => ?_⟩
       have h1 := hθa (nmiuSymm θ hθbij (pr b)) i
       rw [nmiuSymm_apply_apply'] at h1
       show tmapM (lpEvalNMIU
-        (fun q : TSolIdx B A K => VNSub (opAlg q.T) q.S q.hS) i) (nmiuId A)
+        (fun q : TSolIdx B A K => (↥q.T : Type u)) i) (nmiuId A)
           (nmiuSymm θ hθbij (pr b)) = i.γ b
       rw [← h1]
       exact hpr i b
@@ -8135,7 +8067,7 @@ theorem tensor_closed [VonNeumannAlgebra A] [VonNeumannAlgebra B] :
     obtain ⟨i, t, hti⟩ := tensor_solution_set B A hK h
     have hmain : ∀ b : B, h b = tmapM
         (nmiuComp (nmiuComp t (lpEvalNMIU
-            (fun q : TSolIdx B A K => VNSub (opAlg q.T) q.S q.hS) i))
+            (fun q : TSolIdx B A K => (↥q.T : Type u)) i))
           (VNSub.valNMIU (A := tsolProd B A K) (S := S₁) (hS := hS₁)))
         (nmiuId A) (un b) := by
       intro b
