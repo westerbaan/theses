@@ -2816,10 +2816,12 @@ Corollary with no proof, so the route through this Exercise is ours.
 `[∀ i, Nontrivial (ℬ i)]` is **Mathlib's** binder, not ours: `lp ℬ ∞`
 carries a `Ring` (and hence a `VonNeumannAlgebra`) instance only through
 `lp.inftyRing`, which asks `[∀ i, NormOneClass (ℬ i)]`, and for a unital
-C*-algebra that is `Nontrivial`.  It does exclude one case the Exercise
+C*-algebra that is `Nontrivial`.  It excludes one case the Exercise
 allows — a block of measure zero, whose `L^∞` is `{0}` — and that block
-would contribute nothing to the direct sum; there is no way to say so
-until Mathlib's `ℓ^∞` admits trivial summands. -/
+contributes nothing to the direct sum: `measure_space_partition'` just
+below is the Exercise for an arbitrary countable measurable partition,
+summing over the nontrivial blocks only, which is the printed sum up to
+`lpInftyNontrivialEquiv`. -/
 theorem measure_space_partition [IsFiniteMeasure μ] (hμ : μ.IsComplete)
     {ι : Type*} [Countable ι]
     (P : ι → Set X) (hmeas : ∀ i, MeasurableSet (P i))
@@ -2998,6 +3000,151 @@ theorem measure_space_partition [IsFiniteMeasure μ] (hμ : μ.IsComplete)
            preservesDirSups' :=
              starAlgEquiv_preservesDirSups' (StarAlgEquiv.ofBijective Ψ hΨbij) },
     hΨbij⟩
+
+private theorem nontrivial_of_nontrivialIndex {ι : Type*} {𝒞 : ι → Type*}
+    (j : {i // Nontrivial (𝒞 i)}) : Nontrivial (𝒞 j) := j.2
+
+section PartitionNontrivial
+
+attribute [local instance] nontrivial_of_nontrivialIndex
+
+/-- **130IV** without the Mathlib binder: for an *arbitrary* countable
+measurable partition — blocks of measure zero allowed — `L^∞(X)` is the
+direct sum over the **nontrivial** blocks, which is the printed
+`⊕_{A ∈ 𝒜} L^∞(A)` up to `lpInftyNontrivialEquiv` (`A/CStar/Positive.lean`),
+the summands it leaves out being exactly the `{0}`'s.  This is the pattern
+of 42V `vonNeumannAlgebra_lp_infty'` (`A/VN/Basic.lean`).
+
+No second argument is run: a block `A` with `L^∞(A) = {0}` is null (there
+`q_A 1 = 1 = 0`, so `1 =ᵐ 0`), so the union `N` of the trivial blocks is
+null, and throwing `N` into one nontrivial block leaves every restricted
+measure unchanged (`Measure.restrict_congr_set`) while turning the
+nontrivial blocks into a partition of `X` — to which
+`measure_space_partition` applies.  If there is no nontrivial block at all
+then `μ` is the zero measure and both sides are `{0}`. -/
+theorem measure_space_partition' [IsFiniteMeasure μ] (hμ : μ.IsComplete)
+    {ι : Type*} [Countable ι]
+    (P : ι → Set X) (hmeas : ∀ i, MeasurableSet (P i))
+    (hdisj : Pairwise (Function.onFun Disjoint P))
+    (hcover : Set.univ ⊆ ⋃ i, P i) (𝒜 : Type u) [CStarAlgebra 𝒜]
+    [PartialOrder 𝒜] [StarOrderedRing 𝒜] [VonNeumannAlgebra 𝒜]
+    (q : (X → ℂ) → 𝒜) (hq : IsLinftyOf μ 𝒜 q) (ℬ : ι → Type*)
+    [∀ i, CStarAlgebra (ℬ i)]
+    [∀ i, PartialOrder (ℬ i)] [∀ i, StarOrderedRing (ℬ i)]
+    [∀ i, VonNeumannAlgebra (ℬ i)] (qB : ∀ i, (X → ℂ) → ℬ i)
+    (hqB : ∀ i, IsLinftyOf (μ.restrict (P i)) (ℬ i) (qB i)) :
+    ∃ φ : NMIUMap 𝒜 (lp (fun j : {i // Nontrivial (ℬ i)} => ℬ j) ∞),
+      Function.Bijective ⇑φ := by
+  classical
+  -- a block whose `L^∞` is trivial is null: there `q_A 1 = 1 = 0`
+  have hnull : ∀ i, ¬ Nontrivial (ℬ i) → μ (P i) = 0 := by
+    intro i hi
+    have : Subsingleton (ℬ i) := not_nontrivial_iff_subsingleton.mp hi
+    have h1 : ∀ᵐ x ∂(μ.restrict (P i)), (1 : X → ℂ) x = (0 : X → ℂ) x :=
+      ((hqB i).kernel 1 bm_one).mp ((hqB i).one.trans (Subsingleton.elim _ _))
+    have h2 : {x : X | ¬ (1 : X → ℂ) x = (0 : X → ℂ) x} = Set.univ := by
+      ext x; simp
+    have h3 := ae_iff.mp h1
+    rw [h2, Measure.restrict_apply_univ] at h3
+    exact h3
+  have hNmeas : MeasurableSet (⋃ i : {i : ι // ¬ Nontrivial (ℬ i)}, P i) :=
+    MeasurableSet.iUnion fun i => hmeas i
+  have hNnull : μ (⋃ i : {i : ι // ¬ Nontrivial (ℬ i)}, P i) = 0 :=
+    measure_iUnion_null fun i => hnull i.1 i.2
+  set N : Set X := ⋃ i : {i : ι // ¬ Nontrivial (ℬ i)}, P i with hNdef
+  rcases isEmpty_or_nonempty {i // Nontrivial (ℬ i)} with hJ | hJ
+  · -- no nontrivial block: `μ = 0`, and both sides are `{0}`
+    have hall : ∀ i, ¬ Nontrivial (ℬ i) := fun i hi => hJ.false ⟨i, hi⟩
+    have hμ0 : μ Set.univ = 0 :=
+      measure_mono_null hcover (measure_iUnion_null fun i => hnull i (hall i))
+    have hae : ∀ p : X → Prop, ∀ᵐ x ∂μ, p x := fun p =>
+      ae_iff.mpr (measure_mono_null (Set.subset_univ _) hμ0)
+    have : Subsingleton 𝒜 := by
+      refine ⟨fun a b => ?_⟩
+      obtain ⟨f, hf, rfl⟩ := hq.surj a
+      obtain ⟨g, hg, rfl⟩ := hq.surj b
+      exact linfty_congr μ 𝒜 q hq hf hg (hae _)
+    have : Subsingleton (lp (fun j : {i // Nontrivial (ℬ i)} => ℬ j) ∞) :=
+      ⟨fun _ _ => lp.ext (funext fun j => (hJ.false j).elim)⟩
+    obtain ⟨Ψ, hΨbij⟩ :
+        ∃ Ψ : 𝒜 →⋆ₐ[ℂ] lp (fun j : {i // Nontrivial (ℬ i)} => ℬ j) ∞,
+          Function.Bijective ⇑Ψ :=
+      ⟨{ toFun := fun _ => 0
+         map_one' := Subsingleton.elim _ _
+         map_mul' := fun _ _ => Subsingleton.elim _ _
+         map_zero' := rfl
+         map_add' := fun _ _ => Subsingleton.elim _ _
+         commutes' := fun _ => Subsingleton.elim _ _
+         map_star' := fun _ => Subsingleton.elim _ _ },
+        ⟨fun a b _ => Subsingleton.elim a b, fun _ => ⟨0, Subsingleton.elim _ _⟩⟩⟩
+    exact ⟨{ toStarAlgHom := Ψ
+             preservesDirSups' :=
+               starAlgEquiv_preservesDirSups' (StarAlgEquiv.ofBijective Ψ hΨbij) },
+      hΨbij⟩
+  · -- otherwise: absorb the null part `N` into one nontrivial block
+    obtain ⟨j₀⟩ := hJ
+    obtain ⟨P', hP'⟩ : ∃ P' : {i // Nontrivial (ℬ i)} → Set X,
+        ∀ j, P' j = if j = j₀ then P j.1 ∪ N else P j.1 :=
+      ⟨_, fun _ => rfl⟩
+    have hNdisj : ∀ k : {i // Nontrivial (ℬ i)}, Disjoint N (P k.1) := by
+      intro k
+      refine Set.disjoint_left.mpr ?_
+      rintro x hxN hxk
+      rw [hNdef] at hxN
+      obtain ⟨i, hi⟩ := Set.mem_iUnion.mp hxN
+      by_cases hik : (i : ι) = k.1
+      · exact i.2 (by rw [hik]; exact k.2)
+      · exact Set.disjoint_left.mp (hdisj hik) hi hxk
+    have hmeas' : ∀ j, MeasurableSet (P' j) := by
+      intro j
+      rw [hP']
+      split
+      · exact (hmeas j.1).union hNmeas
+      · exact hmeas j.1
+    have hdisj' : Pairwise (Function.onFun Disjoint P') := by
+      intro j k hjk
+      have hval : j.1 ≠ k.1 := fun h => hjk (Subtype.ext h)
+      show Disjoint (P' j) (P' k)
+      rw [hP', hP']
+      by_cases hj : j = j₀ <;> by_cases hk : k = j₀
+      · exact absurd (hj.trans hk.symm) hjk
+      · rw [ite_eq_left hj, ite_eq_right hk]
+        exact Set.disjoint_union_left.mpr ⟨hdisj hval, hNdisj k⟩
+      · rw [ite_eq_right hj, ite_eq_left hk]
+        exact Set.disjoint_union_right.mpr ⟨hdisj hval, (hNdisj j).symm⟩
+      · rw [ite_eq_right hj, ite_eq_right hk]
+        exact hdisj hval
+    have hcover' : Set.univ ⊆ ⋃ j : {i // Nontrivial (ℬ i)}, P' j := by
+      rintro x -
+      obtain ⟨i, hi⟩ := Set.mem_iUnion.mp (hcover (Set.mem_univ x))
+      by_cases h : Nontrivial (ℬ i)
+      · refine Set.mem_iUnion.mpr ⟨⟨i, h⟩, ?_⟩
+        rw [hP']
+        split
+        · exact Set.mem_union_left _ hi
+        · exact hi
+      · refine Set.mem_iUnion.mpr ⟨j₀, ?_⟩
+        rw [hP', ite_eq_left rfl]
+        refine Set.mem_union_right _ ?_
+        rw [hNdef]
+        exact Set.mem_iUnion.mpr ⟨⟨i, h⟩, hi⟩
+    have hrestrict : μ.restrict (P j₀.1 ∪ N) = μ.restrict (P j₀.1) :=
+      Measure.restrict_congr_set
+        (union_ae_eq_left_of_ae_eq_empty (ae_eq_empty.mpr hNnull))
+    have hqB' : ∀ j : {i // Nontrivial (ℬ i)},
+        IsLinftyOf (μ.restrict (P' j)) (ℬ j.1) (qB j.1) := by
+      intro j
+      rw [hP']
+      by_cases h : j = j₀
+      · subst h
+        rw [ite_eq_left rfl, hrestrict]
+        exact hqB j.1
+      · rw [ite_eq_right h]
+        exact hqB j.1
+    exact measure_space_partition μ hμ P' hmeas' hdisj' hcover' 𝒜 q hq
+      (fun j : {i // Nontrivial (ℬ i)} => ℬ j.1) (fun j => qB j.1) hqB'
+
+end PartitionNontrivial
 
 /-- **130V** (`cor:discrete-ell-x`, proc.tex:6531, Corollary): for a
 discrete measure space `X` with `μ(X) < ∞` there is a set `Y` with
