@@ -1366,11 +1366,12 @@ end GenerationBound
 
 /-! ### **125II** `vn-gns-bound`, stated ahead of its parsec
 
-The bounded faithful representation of parsec **1250** is used by the proof
-of **124III** just below — not by the thesis's proof, which relabels the
-algebra rather than its representing Hilbert space, but by the divergence
-described in the next block.  It is therefore stated here; the rest of parsec
-1250 follows 124III as printed. -/
+The bounded faithful representation of parsec **1250** is used by the *tensor*
+solution set of 125VIII (`TSolIdx`, at the end of this file), which does still
+relabel the representing Hilbert space rather than the algebra's elements, and
+by `tensor_preimage`.  It is stated here rather than in its own parsec because
+`exists_smallRealization`, which consumes it, sits in this block beside its
+element-relabelling counterpart `exists_vnOnSet`. -/
 
 variable (A) in
 /-- **125II** (`vn-gns-bound`, proc.tex:4820, Lemma), bundled: a faithful
@@ -1579,7 +1580,7 @@ has products (**47IV**) and equalisers (**47V**), hence all limits, the
 inclusion `U : W*_miu → W*_cpsu` preserves them, and the *solution set
 condition* is checked by hand.
 
-Two divergences from the printed proof, both forced.
+One divergence from the printed proof, and it is forced.
 
 * **Freyd's theorem itself is not invoked.**  Mathlib's general adjoint
   functor theorem (`CategoryTheory.isRightAdjoint_of_preservesLimits_of_`
@@ -1595,16 +1596,11 @@ Two divergences from the printed proof, both forced.
   the product; uniqueness is **47V** — two nmiu-maps out of `F(𝒜)` agreeing
   on `η(𝒜)` agree on the von Neumann subalgebra it generates, which is all
   of `F(𝒜)`.  Freyd's equaliser-of-all-endomorphisms step is not needed.
-* **The solution set is indexed differently.**  proc.tex takes "von Neumann
-  algebras carried on a subset of `κ`", which would need the whole
-  C*-algebra structure transported along a relabelling bijection.  Here the
-  index is a *von Neumann subalgebra of `B(ℓ²(T))` for a subset `T ⊆ K`* of a
-  fixed `K` with `#K = 2^{2^{2^{𝔠+#𝒜}}}`, so that the only transport needed
-  is of the **Hilbert space**: `lpReindex` moves `ℓ²(ι)` to `ℓ²(T)` along a
-  bijection `ι ≃ T`, and `LinearIsometryEquiv.conjStarAlgEquiv` carries the
-  algebra with it.  The cardinal bookkeeping is **124I** (for `#𝒜` after
-  generation) followed by **125II** (for the dimension of the representing
-  Hilbert space), so both of this file's earlier lemmas are used. -/
+
+The solution set is the printed one: proc.tex's "von Neumann algebras carried
+on a subset of `κ`" with `κ = 2^{2^{𝔠+#𝒜}}`, rendered by `SolIdx` on top of
+`VNOnSet`, with `exists_vnOnSet` supplying the relabelling.  The cardinal
+bookkeeping is **124I** and nothing else; **125II** is not used here. -/
 
 section SecondAdjunction
 
@@ -1825,12 +1821,13 @@ private def lpReindex {ι ι' : Type u} (e : ι ≃ ι') :
 /-- `B(ℓ²(T))`: the algebras out of which the solution set is built. -/
 @[reducible] private def opAlg {K : Type u} (T : Set K) := ell2 T →L[ℂ] ell2 T
 
-/-- **The relabelling step of 124III**: a von Neumann algebra small enough
-that `2^{#𝒳} ≤ #K` is nmiu-isomorphic to a von Neumann subalgebra of
-`B(ℓ²(T))` for some `T ⊆ K`.  By **125II** it acts faithfully and normally on
-a Hilbert space of cardinality at most `2^{#𝒳}`, whose orthonormal basis
-therefore injects into `K`; `lpReindex` and `conjStarAlgEquiv` move the
-representation onto `ℓ²(T)`. -/
+/-- **The relabelling step of the 125VIII tensor solution set**: a von Neumann
+algebra small enough that `2^{#𝒳} ≤ #K` is nmiu-isomorphic to a von Neumann
+subalgebra of `B(ℓ²(T))` for some `T ⊆ K`.  By **125II** it acts faithfully and
+normally on a Hilbert space of cardinality at most `2^{#𝒳}`, whose orthonormal
+basis therefore injects into `K`; `lpReindex` and `conjStarAlgEquiv` move the
+representation onto `ℓ²(T)`.  (124III relabels the *elements* instead, as
+proc.tex:4769 does — `exists_vnOnSet` below.) -/
 private theorem exists_smallRealization {K : Type u} (𝒳 : Type u) [CStarAlgebra 𝒳]
     [PartialOrder 𝒳] [StarOrderedRing 𝒳] [VonNeumannAlgebra 𝒳]
     (hK : (2 : Cardinal.{u}) ^ (#𝒳) ≤ #K) :
@@ -1857,6 +1854,96 @@ private theorem exists_smallRealization {K : Type u} (𝒳 : Type u) [CStarAlgeb
   rintro _ ⟨a, rfl⟩
   exact ⟨a, rfl⟩
 
+/-! #### Relabelling: the elements themselves
+
+This is what proc.tex:4769 actually does: the solution set is indexed by von
+Neumann algebras *carried on a subset of `κ`*, so the relabelling is of the
+**elements** of the algebra.  Mathlib has no `Equiv.cstarAlgebra`, so the
+C*-structure is carried along the relabelling bijection by hand
+(`cstarTransport`, on top of `Equiv.normedRing`, `Equiv.algebra`,
+`Equiv.starRing` and `Equiv.starModule`); the order needs no transport at
+all, being the spectral order of the transported C*-structure, exactly as
+for `lp _ ∞` (`A/VN/Basic.lean:860`); and Kadison's `VonNeumannAlgebra`
+predicate transports by `vonNeumannAlgebra_of_starAlgEquiv`. -/
+
+set_option warn.classDefReducibility false in
+/-- A `CStarAlgebra` structure carried along an `Equiv`.  The two clauses
+Mathlib's transfer instances do not cover are `CompleteSpace` — the
+transported metric is `dist x y = dist (e x) (e y)` by definition, so `e` is
+an isometry — and the C*-identity, immediate from
+`e (star x * x) = star (e x) * e x`.  `NormedAlgebra` has to be given its
+`Algebra` field explicitly: synthesising it produces a second, non-defeq
+`Algebra ℂ α` and the `StarModule` clause then fails to typecheck. -/
+@[reducible] private def cstarTransport {α β : Type u} [CStarAlgebra β]
+    (e : α ≃ β) : CStarAlgebra α := by
+  letI nr : NormedRing α := e.normedRing
+  letI sr : StarRing α := e.starRing
+  letI alg : Algebra ℂ α := e.algebra ℂ
+  have hmul : ∀ x y : α, e (x * y) = e x * e y := fun _ _ => e.apply_symm_apply _
+  have hstar : ∀ x : α, e (star x) = star (e x) := fun _ => e.apply_symm_apply _
+  have hnorm : ∀ x : α, ‖x‖ = ‖e x‖ := fun _ => rfl
+  have hsmul : ∀ (c : ℂ) (x : α), e (c • x) = c • e x :=
+    fun _ _ => e.apply_symm_apply _
+  haveI hc : CompleteSpace α :=
+    (IsometryEquiv.mk e (Isometry.of_dist_eq fun _ _ => rfl)).completeSpace
+  haveI hcs : CStarRing α := ⟨fun x => by
+    rw [hnorm x, hnorm (star x * x), hmul, hstar, CStarRing.norm_star_mul_self]⟩
+  letI hna : NormedAlgebra ℂ α :=
+    { toAlgebra := alg
+      norm_smul_le := fun c x => by
+        rw [hnorm (c • x), hsmul, hnorm x]; exact norm_smul_le c (e x) }
+  letI sm : StarModule ℂ α := e.starModule ℂ
+  exact { }
+
+/-- A von Neumann algebra **carried on a subset of `K`**: proc.tex:4752's
+index datum.  The C*-structure and the order are data on `↥T`, Kadison's
+condition (**42I**) is a field, and the whole thing lives in `Type u` — which
+is what makes the solution set a set. -/
+private structure VNOnSet (K : Type u) : Type u where
+  T : Set K
+  [cstar : CStarAlgebra ↥T]
+  [po : PartialOrder ↥T]
+  [sor : StarOrderedRing ↥T]
+  vna : VonNeumannAlgebra ↥T
+
+attribute [instance] VNOnSet.cstar VNOnSet.po VNOnSet.sor VNOnSet.vna
+
+/-- **The relabelling step of 124III** (proc.tex:4769): a von Neumann algebra
+with at most `#K` elements is ∗-isomorphic to one carried on a subset of `K`.
+Inject `𝒳` into `K`, take the range, and carry the structure across
+`Equiv.ofInjective`. -/
+private theorem exists_vnOnSet (𝒳 : Type u) [CStarAlgebra 𝒳] [PartialOrder 𝒳]
+    [StarOrderedRing 𝒳] [VonNeumannAlgebra 𝒳] {K : Type u} (h : #𝒳 ≤ #K) :
+    ∃ V : VNOnSet K, Nonempty (𝒳 ≃⋆ₐ[ℂ] ↥V.T) := by
+  obtain ⟨ι⟩ := (Cardinal.le_def 𝒳 K).mp h
+  let e : ↥(Set.range ι) ≃ 𝒳 := (Equiv.ofInjective ι ι.injective).symm
+  let ca : CStarAlgebra ↥(Set.range ι) := cstarTransport e
+  let po : PartialOrder ↥(Set.range ι) := CStarAlgebra.spectralOrder _
+  let sor : StarOrderedRing ↥(Set.range ι) := CStarAlgebra.spectralOrderedRing _
+  have hadd : ∀ x y : ↥(Set.range ι), e (x + y) = e x + e y :=
+    fun _ _ => e.apply_symm_apply _
+  have hmul : ∀ x y : ↥(Set.range ι), e (x * y) = e x * e y :=
+    fun _ _ => e.apply_symm_apply _
+  have hstar : ∀ x : ↥(Set.range ι), e (star x) = star (e x) :=
+    fun _ => e.apply_symm_apply _
+  have hsmul : ∀ (c : ℂ) (x : ↥(Set.range ι)), e (c • x) = c • e x :=
+    fun _ _ => e.apply_symm_apply _
+  let Φ : 𝒳 ≃⋆ₐ[ℂ] ↥(Set.range ι) :=
+    { toFun := e.symm
+      invFun := e
+      left_inv := e.apply_symm_apply
+      right_inv := e.symm_apply_apply
+      map_add' := fun x y => e.injective (by
+        rw [hadd, e.apply_symm_apply, e.apply_symm_apply, e.apply_symm_apply])
+      map_mul' := fun x y => e.injective (by
+        rw [hmul, e.apply_symm_apply, e.apply_symm_apply, e.apply_symm_apply])
+      map_smul' := fun c x => e.injective (by
+        rw [hsmul, e.apply_symm_apply, e.apply_symm_apply])
+      map_star' := fun x => e.injective (by
+        rw [hstar, e.apply_symm_apply, e.apply_symm_apply]) }
+  have hvna : VonNeumannAlgebra ↥(Set.range ι) := vonNeumannAlgebra_of_starAlgEquiv Φ
+  exact ⟨{ T := Set.range ι, vna := hvna }, ⟨Φ⟩⟩
+
 /-! #### The solution set -/
 
 /-- Composition of an ncpsu-map with an nmiu-map. -/
@@ -1873,33 +1960,30 @@ private theorem ncpsuCompNmiu_apply (g : NMIUMap B C) (f : NCPSUMap A B) (x : A)
     (ncpsuCompNmiu g f).toNCPMap x = g (f.toNCPMap x) :=
   ncpComp_apply (nmiuNCP g) f.toNCPMap x
 
-/-- The index of the solution set of **124III**: a von Neumann subalgebra of
-`B(ℓ²(T))` for a subset `T` of the fixed index type `K`, together with an
-ncpsu-map into it from `𝒜`.  Because `VonNeumannAlgebra` is a `Prop` class
-and `StarSubalgebra ℂ (opAlg T)` is a *set* of operators, this lives in
-`Type u` — which is the whole point of the solution set condition. -/
+/-- The index of the solution set of **124III**, proc.tex:4752 on the nose: a
+von Neumann algebra carried on a subset `T` of the fixed index type `K`,
+together with an ncpsu-map into it from `𝒜`.  It lives in `Type u` — which is
+the whole point of the solution set condition. -/
 private structure SolIdx (A : Type u) [CStarAlgebra A] [PartialOrder A]
-    [StarOrderedRing A] (K : Type u) : Type u where
-  T : Set K
-  S : StarSubalgebra ℂ (opAlg T)
-  hS : IsVNSubalgebra (opAlg T) S
-  hnt : Nontrivial (VNSub (opAlg T) S hS)
-  γ : NCPSUMap A (VNSub (opAlg T) S hS)
+    [StarOrderedRing A] (K : Type u) extends VNOnSet K where
+  hnt : Nontrivial ↥T
+  γ : NCPSUMap A ↥T
 
 /-- **The solution set condition** (proc.tex:4718): every ncpsu-map from `𝒜`
 into a *nontrivial* von Neumann algebra factors as an nmiu-map after one of
-the `γᵢ`.  The algebra `ℬ' = W*(f(𝒜))` has at most `2^{2^{𝔠+#𝒜}}` elements by
-**124I** — applicable because `vnsub_wstar_eq_top` says `ℬ'`, as an algebra,
-is generated by `f(𝒜)` — and `exists_smallRealization` then puts it on
-`ℓ²(T)`.  (The trivial target is handled separately, in 124III itself: the
-product of **47IV** needs every factor nontrivial.) -/
+the `γᵢ`.  The algebra `ℬ' = W*(f(𝒜))` has at most `2^{2^{𝔠+#𝒜}} = #K`
+elements by **124I** — applicable because `vnsub_wstar_eq_top` says `ℬ'`, as
+an algebra, is generated by `f(𝒜)` — and `exists_vnOnSet` then relabels its
+elements by a subset of `K`, which is proc.tex:4769.  (The trivial target is
+handled separately, in 124III itself: the product of **47IV** needs every
+factor nontrivial.) -/
 private theorem solution_set (A : Type u) [CStarAlgebra A] [PartialOrder A]
     [StarOrderedRing A] [VonNeumannAlgebra A] {K : Type u}
-    (hK : #K = 2 ^ ((2 : Cardinal.{u}) ^ (2 : Cardinal.{u}) ^
-      (Cardinal.continuum + #A)))
+    (hK : #K = (2 : Cardinal.{u}) ^ (2 : Cardinal.{u}) ^
+      (Cardinal.continuum + #A))
     {B : Type u} [CStarAlgebra B] [PartialOrder B] [StarOrderedRing B]
     [VonNeumannAlgebra B] [Nontrivial B] (f : NCPSUMap A B) :
-    ∃ (i : SolIdx A K) (h : NMIUMap (VNSub (opAlg i.T) i.S i.hS) B),
+    ∃ (i : SolIdx A K) (h : NMIUMap ↥i.T B),
       ∀ a : A, h ((i.γ).toNCPMap a) = f.toNCPMap a := by
   classical
   have h2 : (2 : Cardinal.{u}) ≠ 0 := by norm_num
@@ -1923,14 +2007,19 @@ private theorem solution_set (A : Type u) [CStarAlgebra A] [PartialOrder A]
     refine le_trans (vn_generation_bound _ hgen) ?_
     exact Cardinal.power_le_power_left h2 (Cardinal.power_le_power_left h2
       (add_le_add le_rfl hcardG))
-  obtain ⟨T, S, hS, ε, hεbij⟩ :=
-    exists_smallRealization (K := K) (VNSub B (wstar B G) hw.1)
-      (by rw [hK]; exact Cardinal.power_le_power_left h2 hcard)
+  obtain ⟨V, ⟨Φ⟩⟩ :=
+    exists_vnOnSet (K := K) (VNSub B (wstar B G) hw.1) (by rw [hK]; exact hcard)
   have hntB' : Nontrivial (VNSub B (wstar B G) hw.1) :=
     ⟨⟨1, 0, fun h => one_ne_zero (congrArg VNSub.val h)⟩⟩
-  have hntS : Nontrivial (VNSub (opAlg T) S hS) :=
+  -- `ε` is introduced by `obtain`, not by `let`: `nmiuSymm_apply_apply` will
+  -- not rewrite through a let-bound nmiu-map whose bijectivity is recorded
+  -- against the underlying `≃⋆ₐ` instead of against `ε` itself.
+  obtain ⟨ε, hεbij⟩ : ∃ ε : NMIUMap (VNSub B (wstar B G) hw.1) ↥V.T,
+      Function.Bijective ⇑ε :=
+    ⟨⟨Φ.toStarAlgHom, starAlgEquiv_preservesDirSups' Φ⟩, Φ.bijective⟩
+  have hntS : Nontrivial ↥V.T :=
     ⟨⟨ε 1, ε 0, fun h => one_ne_zero (hεbij.1 h)⟩⟩
-  refine ⟨⟨T, S, hS, hntS, ncpsuCompNmiu ε f'⟩,
+  refine ⟨⟨V, hntS, ncpsuCompNmiu ε f'⟩,
     nmiuComp VNSub.valNMIU (nmiuSymm ε hεbij), fun a => ?_⟩
   show VNSub.valNMIU (nmiuSymm ε hεbij
     ((ncpsuCompNmiu ε f').toNCPMap a)) = f.toNCPMap a
@@ -1939,12 +2028,12 @@ private theorem solution_set (A : Type u) [CStarAlgebra A] [PartialOrder A]
 
 private instance solNontrivial {A : Type u} [CStarAlgebra A] [PartialOrder A]
     [StarOrderedRing A] {K : Type u} (i : SolIdx A K) :
-    Nontrivial (VNSub (opAlg i.T) i.S i.hS) := i.hnt
+    Nontrivial ↥i.T := i.hnt
 
 /-- The product `∏ᵢ 𝒞ᵢ` over the solution set (**47IV**). -/
 @[reducible] private def solProd (A : Type u) [CStarAlgebra A]
     [PartialOrder A] [StarOrderedRing A] (K : Type u) : Type u :=
-  lp (fun i : SolIdx A K => VNSub (opAlg i.T) i.S i.hS) ∞
+  lp (fun i : SolIdx A K => ↥i.T) ∞
 
 end SecondAdjunction
 
@@ -1976,10 +2065,10 @@ inclusion `W*_miu → W*_cpsu` has a left adjoint `F` — rendered: every von
 Neumann algebra has a universal arrow to the inclusion. -/
 theorem second_adjunction [VonNeumannAlgebra A] : Nonempty (FreeMIU A) := by
   classical
-  obtain ⟨K, hK⟩ : ∃ K : Type u, #K = (2 : Cardinal.{u}) ^ ((2 : Cardinal.{u}) ^
-      (2 : Cardinal.{u}) ^ (Cardinal.continuum + #A)) := ⟨_, Cardinal.mk_out _⟩
+  obtain ⟨K, hK⟩ : ∃ K : Type u, #K = (2 : Cardinal.{u}) ^
+      (2 : Cardinal.{u}) ^ (Cardinal.continuum + #A) := ⟨_, Cardinal.mk_out _⟩
   obtain ⟨η, hη, -⟩ := vn_products_ncpsu
-    (fun i : SolIdx A K => VNSub (opAlg i.T) i.S i.hS) (fun i => i.γ)
+    (fun i : SolIdx A K => (↥i.T : Type u)) (fun i => i.γ)
   have hw := isVNSubalgebra_wstar (A := solProd A K)
     (Set.range (fun a : A => η.toNCPMap a))
   obtain ⟨η', hη'⟩ :=
@@ -2011,7 +2100,7 @@ theorem second_adjunction [VonNeumannAlgebra A] : Nonempty (FreeMIU A) := by
         ∀ x, g x = h (lpEvalSAH i x.val) :=
       ⟨nmiuComp (nmiuComp h ⟨lpEvalSAH i,
         vn_products_proj_normal
-          (fun j : SolIdx A K => VNSub (opAlg j.T) j.S j.hS) i⟩)
+          (fun j : SolIdx A K => (↥j.T : Type u)) i⟩)
         VNSub.valNMIU, fun _ => rfl⟩
     have hgval : ∀ a : A, f.toNCPMap a = g (η'.toNCPMap a) := by
       intro a
@@ -2040,7 +2129,8 @@ theorem second_adjunction [VonNeumannAlgebra A] : Nonempty (FreeMIU A) := by
 /-! ## Parsec 1250: the free exponential
 
 (**125II** `vn-gns-bound` and its `ConcreteRep` are stated above, ahead of
-this parsec, because **124III**'s proof uses them.) -/
+this parsec, beside `exists_smallRealization`, which consumes them for the
+125VIII tensor solution set at the end of this file.) -/
 
 /- **125IV** (`equaliser-lemma`, proc.tex:4852, Lemma (Kornell)) is
 `equaliser_lemma`, at the very end of this file: its proof needs the
@@ -2145,9 +2235,8 @@ them simplifications.
   used here — so the only relabelling needed is of the *index set of the
   summands*, which is `exists_lp_reindex` (written for 125cIII, moved up to
   here), and not of a Hilbert space.  In particular **125II**
-  `vn_gns_bound` and `exists_smallRealization` are *not* used, and the
-  index type `K` needs only `#K = 2^(2^(𝔠+#𝒜))` — one exponential less than
-  124III.
+  `vn_gns_bound` and `exists_smallRealization` are *not* used.  The index
+  type `K` is `#K = 2^(2^(𝔠+#𝒜))`, the same `κ` as 124III's.
 * **The product over the solution set is formed flat.**  proc.tex:5257
   needs "a direct sum of hereditarily atomic algebras is hereditarily
   atomic"; here the product is taken over the `Σ`-type of pairs
@@ -2278,7 +2367,7 @@ private abbrev HaMat (n : ℕ) : Type :=
 /-- The index of the solution set of **125bII**: a hereditarily atomic von
 Neumann algebra *presented* as `⊕_{j ∈ J} M_{N j+1}` with `J` a subset of a
 fixed index type `K`, together with an ncpsu-map into it from `𝒜`.  (124III
-instead carries a von Neumann subalgebra of `B(ℓ²(T))`; the presentation is
+carries an abstract algebra on a subset of `K` instead; the presentation is
 what makes the flat product below manifestly hereditarily atomic.) -/
 private structure HaSolIdx (A : Type u) [CStarAlgebra A] [PartialOrder A]
     [StarOrderedRing A] (K : Type u) : Type u where
@@ -2329,8 +2418,8 @@ private theorem exists_haBlockProj (A : Type u) [CStarAlgebra A]
   exact ⟨g, fun x j => hg j x⟩
 
 /-- A hereditarily atomic von Neumann algebra no larger than `K` is
-`⊕_{j ∈ J} M_{N j+1}` for a *subset* `J ⊆ K`.  This is the relabelling step
-of 124III, one exponential cheaper: the summand index type `I₀` injects into
+`⊕_{j ∈ J} M_{N j+1}` for a *subset* `J ⊆ K`.  This is the hereditarily atomic
+form of 124III's `exists_vnOnSet`: the summand index type `I₀` injects into
 the algebra by `i ↦ κᵢ(1)`, so it injects into `K`, and `exists_lp_reindex`
 moves the direct sum along that injection. -/
 private theorem exists_haPresentation {K : Type u} (W : Type u)
@@ -7836,8 +7925,9 @@ with the same three ingredients as 124III `second_adjunction`: a solution
 set, the product over it, and a von Neumann subalgebra of that product cut
 out so that the unit generates.
 
-* The **solution set** is 124III's, `TSolIdx`: a von Neumann subalgebra of
-  `B(ℓ²(T))` for a subset `T` of a fixed index type `K`, together with an
+* The **solution set** is `TSolIdx`, built like 124III's but on a Hilbert
+  space: a von Neumann subalgebra of `B(ℓ²(T))` for a subset `T` of a fixed
+  index type `K` (where 124III relabels the elements), together with an
   nmiu-map `ℬ → 𝒟 ⊗ 𝒜` into its tensor.  The solution set *condition* is
   125IV `equaliser_lemma`: it factors `h : ℬ → 𝒞 ⊗ 𝒜` through `𝒞̃ ⊗ 𝒜` with
   `𝒞̃` generated by at most `#ℬ · 2^{#𝒜}` elements, whence

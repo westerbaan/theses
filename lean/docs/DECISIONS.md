@@ -850,7 +850,7 @@ the ruling this item asks for.
   exactly when `𝒜` is commutative.  Nothing downstream is wrong; every `𝒜^N`
   computation in `A/CStar/Matrices.lean` and `A/CStar/TowardsVN.lean` is
   consistent with *ours*.
-* **33I** `matrixBaxEquiv` (`A/CStar/Matrices.lean:1527`, `differs`).  Because
+* **33I** `matrixBaxEquiv` (`A/CStar/Matrices.lean:1634`, `differs`).  Because
   Mathlib's module is a **left** module, the adjointables on `𝒜^N` are the right
   multiplications and compose backwards, so what is true is
   `M_N(𝒜)ᵐᵒᵖ ≅ ℬᵃ(𝒜^N)`; `M_N(𝒜) ≅ ℬᵃ(𝒜^N)` as 33I.4 prints it is **false**

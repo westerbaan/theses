@@ -169,7 +169,7 @@ in three shapes:
   and "`M_N(𝒜) ≅ B^a(𝒜^N)` has a declaration nowhere".  `Bax` has been public
   since 2026-08-27 (`A/CStar/Matrices.lean:866`), 49II is `bah_vn`
   (`A/VN/BaX.lean:569`, green, with all thirteen declarations of that module
-  green), and the isomorphism is `matrixBaxEquiv` (`A/CStar/Matrices.lean:1527`,
+  green), and the isomorphism is `matrixBaxEquiv` (`A/CStar/Matrices.lean:1634`,
   green, at `M_N(𝒜)ᵐᵒᵖ`).  All three items of the rows' own costing are done, and
   `A/VN/Basic.lean:5086-5125` says outright that the direct route "is kept, being
   independent of them" — a choice of ours, `left-by-choice`, not an author
@@ -268,7 +268,7 @@ Two consequences, one of them a live defect:
 
 * **`audit_check.py`'s unrowed check could not see those declarations.**  With
   the regex widened it found one across the whole tree:
-  **`atomicTypeI_tensor_preimage`** (`A/Proc/QuantumLambda.lean:5504`) has
+  **`atomicTypeI_tensor_preimage`** (`A/Proc/QuantumLambda.lean:5588`) has
   carried the tag `**125VIIb**` since it was written and no audit row named it.
   A row is now in place, and its sibling `atomicTypeI_tensorBsurjectivity` was
   rowed all along, which is what made the gap invisible to a reader.
