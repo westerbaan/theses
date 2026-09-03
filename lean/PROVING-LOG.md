@@ -31118,3 +31118,56 @@ Nine `sorry`s, unchanged.  All 54 oleans current after the day's edits (22
 rebuilt, the two new modules among them); `AxiomCheck`: 9 are themselves
 `sorry`, 0 depend on one.  Dumps and map regenerated; every exact check
 clean.
+
+## Session 107 — the last rows that were ours (four proof-route workers; orchestrator on `ERRATA.md`, `scripts/audit_check.py`, the rows)
+
+### 1. What was built
+
+`EJAᵒᵖ` is an effectus: `Theses/B/Eff/JordanAlgebras.lean` (1,082 lines)
+defines Euclidean Jordan algebras as formally real finite-dimensional real
+Jordan algebras with unit (eff.tex prints no definition), proves the unit is
+an order unit by finite-dimensional separation — the recorded blocker, the
+spectral theorem and Jordan frames, is not needed for the total form — and
+restricts `OUSᵒᵖ`'s effectus structure to the full subcategory.  `Set` is a
+⋄-effectus (662 lines in `ExtensiveExamples.lean`).  `OUSᵒᵖ` and `OUGᵒᵖ`
+carry their predicates, states and scalars with the separation claims
+(2,447 lines in `OrderUnit.lean`).  The unit interval of `L^∞[0,1]` is an
+effect divisoid (577 lines, in `VNExamples.lean` because thesis B may import
+thesis A only there).  164II.2a is on the printed 164X (the ℓ² model turned
+out unnecessary; 164II.1's density serves).  The first 620 lines of 224VI's
+printed route are in `A/VN/Projections.lean`: minimal projections, the
+central carrier of a minimal projection is a factor, the spectral scale
+relative to a projection, and a public `IsCentral` API; the remaining
+1,700–2,400 lines, the Paschke-equals-GNS transport the largest item, are
+costed precisely in the row and wait on the rebuilt olean.
+
+| column | session 106 close | now |
+|---|---|---|
+| proof `route` | 34 | 34 |
+| proof `faithful` | 1,103 | 1,107 |
+| statement `weaker` | 55 | 54 |
+| rows | 2,597 | 2,621 |
+
+### 2. Two thesis defects
+
+eff.tex 190IV.2's separating-predicates clause for `OUGᵒᵖ` is false as
+printed and refuted in Lean (`oug_no_separating_predicates`): `ℤ²` with the
+cone `{0} ∪ {(a,b) : a ≥ 1, b ≥ 0}` and unit `(1,1)` is an order unit group
+by 189aII.2's definition whose only effects are `0` and `1`.  The clause
+needs `[0,1]` to generate the group.  With 190IV.3 (session 106), that is
+two errata on one page.
+
+### 3. What is left that is ours
+
+224VI's remaining stages; the archimedean parenthetical of 190IV.1 (~430
+lines); 190V's `EJAᵒᵖ` predicates and states (the separating-states half
+wants the cone of sums of squares to be the cone of squares, which is the
+spectral theorem); 206III's `EJAᵒᵖ` ⋄-structure, which rests on the same
+spectral theorem and power-associativity that Mathlib does not have; 55III
+item 2 (`left-ruling`).  Everything else waits on the author.
+
+### 4. Where the tree stands
+
+Nine `sorry`s, unchanged.  All 55 oleans current (7 rebuilt, the Jordan
+module among them); `AxiomCheck`: 9 are themselves `sorry`, 0 depend on one.
+Dumps and map regenerated; every exact check clean.
