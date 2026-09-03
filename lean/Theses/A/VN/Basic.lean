@@ -8109,38 +8109,6 @@ theorem isLUB_nu {𝒞 : Set (Set X)} (hcl : ∀ C ∈ 𝒞, IsClopen C) (hne : 
     rfl
   rwa [hset] at h3
 
-/-- Countable additivity of `ν` on clopen sets: for a pairwise disjoint
-sequence of clopen sets, `ν(closure(⋃ Cₙ)) = ∑ ν(Cₙ)`. -/
-theorem hasSum_nu {C : ℕ → Set X} (hcl : ∀ n, IsClopen (C n))
-    (hdisj : ∀ i j, i ≠ j → Disjoint (C i) (C j)) :
-    HasSum (fun n => nu τ (C n)) (nu τ (closure (⋃ n, C n))) := by
-  classical
-  set 𝒞 : Set (Set X) := Set.range (fun F : Finset ℕ => ⋃ i ∈ F, C i) with h𝒞
-  have hcl' : ∀ D ∈ 𝒞, IsClopen D := by
-    rintro _ ⟨F, rfl⟩; exact isClopen_biUnion_finset fun i _ => hcl i
-  have hne : 𝒞.Nonempty := ⟨_, ⟨∅, rfl⟩⟩
-  have hdir : DirectedOn (· ⊆ ·) 𝒞 := by
-    rintro _ ⟨F, rfl⟩ _ ⟨G, rfl⟩
-    refine ⟨_, ⟨F ∪ G, rfl⟩, ?_, ?_⟩ <;>
-      exact Set.biUnion_subset_biUnion_left (by simp)
-  have hunion : ⋃₀ 𝒞 = ⋃ n, C n := by
-    apply Set.Subset.antisymm
-    · rintro x ⟨_, ⟨F, rfl⟩, hx⟩
-      obtain ⟨i, _, hi⟩ := Set.mem_iUnion₂.mp hx
-      exact Set.mem_iUnion.mpr ⟨i, hi⟩
-    · rintro x hx
-      obtain ⟨i, hi⟩ := Set.mem_iUnion.mp hx
-      exact ⟨_, ⟨({i} : Finset ℕ), rfl⟩, Set.mem_iUnion₂.mpr ⟨i, by simp, hi⟩⟩
-  have h := isLUB_nu τ hcl' hne hdir
-  rw [hunion] at h
-  have himg : nu τ '' 𝒞 = Set.range (fun F : Finset ℕ => ∑ i ∈ F, nu τ (C i)) := by
-    rw [h𝒞, ← Set.range_comp]
-    congr 1
-    funext F
-    exact nu_finset_biUnion τ F hcl hdisj
-  rw [himg] at h
-  exact hasSum_of_isLUB_of_nonneg _ (fun n => nu_nonneg τ (C n)) h
-
 /-! ### The clopen representative of an almost clopen set -/
 
 open Classical in
@@ -8189,6 +8157,22 @@ theorem isMeagre_iff_clRep_eq_empty {s : Set X} (hs : AlmostClopen s) :
     rw [MeagreEquiv, h] at h2
     simpa [Set.symmDiff_def] using h2
 
+/-- The clopen representative is monotone — the step "pick clopen subsets
+`C₁, C₂, …` with `Aₙ ≈ Cₙ`" of **54XI** (vn.tex:2084) needs the `Cₙ` to
+inherit `A₁ ⊇ A₂ ⊇ ⋯`.  Kept `private` because `A/Proc/Duplicators.lean`
+carries a copy of its own under the same name. -/
+private theorem clRep_mono {s t : Set X} (hs : AlmostClopen s) (ht : AlmostClopen t)
+    (hst : s ⊆ t) : clRep s ⊆ clRep t := by
+  have hmeagre : IsMeagre (clRep s \ clRep t) := by
+    refine IsMeagre.mono ?_ ((clRep_equiv hs).union (clRep_equiv ht))
+    rintro x ⟨hxs, hxt⟩
+    rw [Set.mem_union, Set.mem_symmDiff, Set.mem_symmDiff]
+    by_cases hx : x ∈ s
+    · exact Or.inr (Or.inl ⟨hst hx, hxt⟩)
+    · exact Or.inl (Or.inr ⟨hxs, hx⟩)
+  exact Set.sdiff_eq_empty.mp (eq_empty_of_isClopen_of_isMeagre
+    ((clRep_isClopen s).diff (clRep_isClopen t)) hmeagre)
+
 theorem clRep_disjoint {s t : Set X} (hs : AlmostClopen s) (ht : AlmostClopen t)
     (h : Disjoint s t) : Disjoint (clRep s) (clRep t) := by
   rw [Set.disjoint_iff_inter_eq_empty]
@@ -8199,6 +8183,28 @@ theorem clRep_disjoint {s t : Set X} (hs : AlmostClopen s) (ht : AlmostClopen t)
   by_cases hx : x ∈ s
   · exact Or.inr (Or.inr ⟨hxt, Set.disjoint_left.mp h hx⟩)
   · exact Or.inl (Or.inr ⟨hxs, hx⟩)
+
+/-- The clopen representative of a union is the union of the clopen
+representatives; with `clRep_disjoint` this is the finite additivity of `μ`
+that **54XI** calls easily seen (vn.tex:2069). -/
+private theorem clRep_union {s t : Set X} (hs : AlmostClopen s) (ht : AlmostClopen t) :
+    clRep (s ∪ t) = clRep s ∪ clRep t := by
+  refine clRep_eq ((clRep_isClopen s).union (clRep_isClopen t)) ?_
+  refine IsMeagre.mono ?_ ((clRep_equiv hs).union (clRep_equiv ht))
+  intro x hx
+  simp only [Set.mem_symmDiff, Set.mem_union] at hx ⊢
+  tauto
+
+omit [CompactSpace X] [T2Space X] in
+/-- A countable union of almost clopen sets is almost clopen (**53V**, in the
+form the tails of a disjoint sequence need below). -/
+private theorem almostClopen_iUnion {f : ℕ → Set X} (hf : ∀ n, AlmostClopen (f n)) :
+    AlmostClopen (⋃ n, f n) := by
+  choose C hC hfC using hf
+  have hopen : IsOpen (⋃ n, C n) := isOpen_iUnion fun n => (hC n).2
+  exact ⟨closure (⋃ n, C n),
+    ⟨isClosed_closure, ExtremallyDisconnected.open_closure _ hopen⟩,
+    (meagre_basic_4 _ _ hfC).trans (meagre_basic_3 _ hopen).symm⟩
 
 /-! ### The measure -/
 
@@ -8212,20 +8218,174 @@ theorem mac_of_isClopen {C : Set X} (hC : IsClopen C) :
     mac τ C = ENNReal.ofReal (nu τ C) := by
   rw [mac, clRep_of_isClopen hC]
 
+/-- Finite additivity of `mac`, in `ν`-form. -/
+private theorem nu_clRep_union {s t : Set X} (hs : AlmostClopen s) (ht : AlmostClopen t)
+    (h : Disjoint s t) :
+    nu τ (clRep (s ∪ t)) = nu τ (clRep s) + nu τ (clRep t) := by
+  rw [clRep_union hs ht,
+    nu_union τ (clRep_isClopen s) (clRep_isClopen t) (clRep_disjoint hs ht h)]
+
+/-- **54XI**, vn.tex:2069: "It is easily seen that `μ` is finitely
+additive." -/
+theorem mac_union {s t : Set X} (hs : AlmostClopen s) (ht : AlmostClopen t)
+    (h : Disjoint s t) : mac τ (s ∪ t) = mac τ s + mac τ t := by
+  simp only [mac]
+  rw [nu_clRep_union τ hs ht h, ENNReal.ofReal_add (nu_nonneg τ _) (nu_nonneg τ _)]
+
+/-- Continuity from above, the σ-additivity step of **54XI**
+(vn.tex:2077-2103) verbatim: "it suffices to prove that `⋀ₙ μ(Aₙ) = 0` given
+`A₁ ⊇ A₂ ⊇ ⋯` with `⋂ₙ Aₙ = ∅`".
+
+The printed argument.  Pick clopen `Cₙ ≈ Aₙ` — these decrease, by
+`clRep_mono` — so that `⋀ₙ μ(Aₙ) = ⋀ₙ μ(Cₙ) = τ(⋀ₙ 1_{Cₙ})` by normality of
+`τ`; and `⋀ₙ 1_{Cₙ} = 0` because a lower bound `f` of the `1_{Cₙ}` satisfies
+`f ≤ 0` on `X \ ⋂ₙ Cₙ`, which is *dense*: `⋂ₙ Cₙ ≈ ⋂ₙ Aₙ = ∅` is meagre and
+so has empty interior by Baire (**54II**).
+
+In Lean the last two steps are run in the one direction `isLUB_nu` — the
+file's only appeal to normality — offers, namely upwards, on the increasing
+clopen complements `X \ Cₙ` whose union is that dense set: their `ν`-supremum
+is `ν(X)`, while `ν(X \ Cₙ) = ν(X) - ν(Cₙ)` by finite additivity, so the
+`ν(Cₙ)` get below every `ε > 0`. -/
+theorem exists_nu_clRep_lt {A : ℕ → Set X} (hA : ∀ n, AlmostClopen (A n))
+    (hanti : ∀ n, A (n + 1) ⊆ A n) (hempty : ⋂ n, A n = ∅) {ε : ℝ} (hε : 0 < ε) :
+    ∃ n, nu τ (clRep (A n)) < ε := by
+  classical
+  have hCcl : ∀ n, IsClopen (clRep (A n)) := fun n => clRep_isClopen _
+  have hCanti : Antitone (fun n => clRep (A n)) :=
+    antitone_nat_of_succ_le fun n => clRep_mono (hA (n + 1)) (hA n) (hanti n)
+  -- `⋂ₙ Cₙ` is meagre, being `≈ ⋂ₙ Aₙ = ∅`
+  have hKm : IsMeagre (⋂ n, clRep (A n)) := by
+    refine IsMeagre.mono ?_ (meagre_basic_1 (fun n => A n ∆ clRep (A n))
+      fun n => clRep_equiv (hA n))
+    intro x hx
+    have hxA : ∃ n, x ∉ A n := by
+      by_contra hcon
+      refine Set.eq_empty_iff_forall_notMem.mp hempty x (Set.mem_iInter.mpr fun n => ?_)
+      by_contra hn
+      exact hcon ⟨n, hn⟩
+    obtain ⟨n, hn⟩ := hxA
+    exact Set.mem_iUnion.mpr ⟨n, by
+      rw [Set.mem_symmDiff]
+      exact Or.inr ⟨Set.mem_iInter.mp hx n, hn⟩⟩
+  -- Baire: its complement is dense, i.e. its closure is all of `X`
+  have hdense : Dense (⋂ n, clRep (A n))ᶜ :=
+    interior_eq_empty_iff_dense_compl.mp (baire_category_theorem _ hKm)
+  have hDcl : ∀ n, IsClopen ((clRep (A n))ᶜ) := fun n => (hCcl n).compl
+  have hDmono : ∀ i j : ℕ, i ≤ j → (clRep (A i))ᶜ ⊆ (clRep (A j))ᶜ := by
+    intro i j hij
+    simp only [Set.compl_subset_compl]
+    exact hCanti hij
+  have hclos : closure (⋃₀ Set.range (fun n => (clRep (A n))ᶜ)) = Set.univ := by
+    rw [Set.sUnion_range, ← Set.compl_iInter]
+    exact hdense.closure_eq
+  -- normality of `τ`, upwards along the increasing complements
+  have hlub := isLUB_nu τ (𝒞 := Set.range (fun n => (clRep (A n))ᶜ))
+    (by rintro _ ⟨n, rfl⟩; exact hDcl n) ⟨_, Set.mem_range_self 0⟩
+    (by
+      rintro _ ⟨i, rfl⟩ _ ⟨j, rfl⟩
+      exact ⟨_, Set.mem_range_self (max i j), hDmono i _ (le_max_left i j),
+        hDmono j _ (le_max_right i j)⟩)
+  rw [hclos] at hlub
+  have hsplit : ∀ n, nu τ ((clRep (A n))ᶜ) = nu τ Set.univ - nu τ (clRep (A n)) := by
+    intro n
+    have h := nu_union τ (hCcl n) (hDcl n) disjoint_compl_right
+    rw [Set.union_compl_self] at h
+    linarith
+  obtain ⟨v, hv, hlt⟩ := (lt_isLUB_iff hlub).mp
+    (show nu τ Set.univ - ε < nu τ Set.univ by linarith)
+  obtain ⟨_, ⟨n, rfl⟩, rfl⟩ := hv
+  refine ⟨n, ?_⟩
+  rw [hsplit n] at hlt
+  linarith
+
+/-- Countable additivity of `mac`, **54XI** vn.tex:2077-2107.  The thesis
+reduces it to continuity from above (`exists_nu_clRep_lt`), and the
+reduction is finite additivity (`nu_clRep_union`) applied to the tails
+`Tₙ = ⋃_{k ≥ n} fₖ` of the disjoint sequence, which are almost clopen,
+decrease, and have empty intersection: `μ(⋃ₖ fₖ) = ∑_{k < n} μ(fₖ) + μ(Tₙ)`
+for every `n`, so the partial sums have `μ(⋃ₖ fₖ)` as their supremum. -/
 theorem mac_iUnion {f : ℕ → Set X} (hf : ∀ n, AlmostClopen (f n))
     (hdisj : ∀ i j, i ≠ j → Disjoint (f i) (f j)) :
     mac τ (⋃ n, f n) = ∑' n, mac τ (f n) := by
-  have hcl : ∀ n, IsClopen (clRep (f n)) := fun n => clRep_isClopen _
-  have hd : ∀ i j, i ≠ j → Disjoint (clRep (f i)) (clRep (f j)) := fun i j hij =>
-    clRep_disjoint (hf i) (hf j) (hdisj i j hij)
-  have hsum := hasSum_nu τ hcl hd
-  have hopen : IsOpen (⋃ n, clRep (f n)) := isOpen_iUnion fun n => (hcl n).2
-  have hrep : clRep (⋃ n, f n) = closure (⋃ n, clRep (f n)) := by
-    refine clRep_eq ⟨isClosed_closure, ExtremallyDisconnected.open_closure _ hopen⟩ ?_
-    exact (meagre_basic_4 f (fun n => clRep (f n)) fun n => clRep_equiv (hf n)).trans
-      (meagre_basic_3 _ hopen).symm
+  classical
+  -- the tails `Tₙ = ⋃_{k ≥ n} fₖ`
+  have hT : ∀ n : ℕ, AlmostClopen (⋃ k, f (n + k)) := fun n =>
+    almostClopen_iUnion fun k => hf (n + k)
+  have hT0 : (⋃ k, f (0 + k)) = ⋃ n, f n := by simp
+  have hTsucc : ∀ n : ℕ, (⋃ k, f (n + k)) = f n ∪ ⋃ k, f (n + 1 + k) := by
+    intro n
+    ext x
+    simp only [Set.mem_iUnion, Set.mem_union]
+    constructor
+    · rintro ⟨k, hk⟩
+      match k, hk with
+      | 0, hk => exact Or.inl (by simpa using hk)
+      | (k + 1), hk =>
+        refine Or.inr ⟨k, ?_⟩
+        have h : n + 1 + k = n + (k + 1) := by omega
+        rw [h]; exact hk
+    · rintro (h | ⟨k, hk⟩)
+      · exact ⟨0, by simpa using h⟩
+      · refine ⟨k + 1, ?_⟩
+        have h : n + (k + 1) = n + 1 + k := by omega
+        rw [h]; exact hk
+  have hTdisj : ∀ n : ℕ, Disjoint (f n) (⋃ k, f (n + 1 + k)) := by
+    intro n
+    rw [Set.disjoint_iUnion_right]
+    exact fun k => hdisj n (n + 1 + k) (by omega)
+  have hTanti : ∀ n : ℕ, (⋃ k, f (n + 1 + k)) ⊆ ⋃ k, f (n + k) := by
+    intro n
+    rw [hTsucc n]
+    exact Set.subset_union_right
+  have hTempty : (⋂ n, ⋃ k, f (n + k)) = ∅ := by
+    rw [Set.eq_empty_iff_forall_notMem]
+    intro x hx
+    obtain ⟨m, hm⟩ : ∃ m, x ∈ f m := by
+      have h0 := Set.mem_iInter.mp hx 0
+      rw [hT0] at h0
+      exact Set.mem_iUnion.mp h0
+    obtain ⟨k, hk⟩ := Set.mem_iUnion.mp (Set.mem_iInter.mp hx (m + 1))
+    exact Set.disjoint_left.mp (hdisj m (m + 1 + k) (by omega)) hm hk
+  have hnn : ∀ k, 0 ≤ nu τ (clRep (f k)) := fun k => nu_nonneg τ _
+  -- finite additivity, `n` terms plus the `n`-th tail
+  have key : ∀ n : ℕ, nu τ (clRep (⋃ m, f m))
+      = (∑ k ∈ Finset.range n, nu τ (clRep (f k)))
+        + nu τ (clRep (⋃ k, f (n + k))) := by
+    intro n
+    induction n with
+    | zero => rw [← hT0]; simp
+    | succ n ih =>
+      rw [ih, Finset.sum_range_succ]
+      have h := nu_clRep_union τ (hf n) (hT (n + 1)) (hTdisj n)
+      rw [← hTsucc n] at h
+      rw [h]
+      ring
+  have hlub : IsLUB (Set.range fun F : Finset ℕ => ∑ k ∈ F, nu τ (clRep (f k)))
+      (nu τ (clRep (⋃ m, f m))) := by
+    constructor
+    · rintro _ ⟨F, rfl⟩
+      have hsub : F ⊆ Finset.range (F.sup id + 1) := fun i hi =>
+        Finset.mem_range.mpr (Nat.lt_succ_of_le (Finset.le_sup (f := id) hi))
+      have hstep : ∑ k ∈ F, nu τ (clRep (f k))
+          ≤ ∑ k ∈ Finset.range (F.sup id + 1), nu τ (clRep (f k)) :=
+        Finset.sum_le_sum_of_subset_of_nonneg hsub (fun i _ _ => hnn i)
+      have h := key (F.sup id + 1)
+      have h2 := nu_nonneg τ (clRep (⋃ k, f (F.sup id + 1 + k)))
+      linarith
+    · intro b hb
+      refine le_of_forall_pos_lt_add fun ε hε => ?_
+      obtain ⟨n, hn⟩ := exists_nu_clRep_lt τ (A := fun n => ⋃ k, f (n + k))
+        hT hTanti hTempty hε
+      have hn' : nu τ (clRep (⋃ k, f (n + k))) < ε := hn
+      have h1 : ∑ k ∈ Finset.range n, nu τ (clRep (f k)) ≤ b :=
+        hb ⟨Finset.range n, rfl⟩
+      have h2 := key n
+      linarith
+  have hsum : HasSum (fun k => nu τ (clRep (f k))) (nu τ (clRep (⋃ m, f m))) :=
+    hasSum_of_isLUB_of_nonneg _ hnn hlub
   simp only [mac]
-  rw [hrep, ← hsum.tsum_eq,
+  rw [← hsum.tsum_eq,
     ENNReal.ofReal_tsum_of_nonneg (fun n => nu_nonneg τ _) hsum.summable]
 
 /-- The measure of **54XI**. -/
@@ -8867,8 +9027,9 @@ private theorem mk_coe_algebraMap (μ : Measure X) (r : ℂ) :
 /-- The thesis's `ϱ : f ↦ f°` of **54XI**, the map `C(X, ℂ) → L^∞(X, μ)`
 sending a continuous function to its class modulo `μ`-a.e. equality, as a
 ∗-homomorphism.  (That it is one is `Linfty.mk`'s algebra, applied to
-continuous functions through `bm_coe`.) -/
-private noncomputable def rho (hms : ∀ s : Set X, MeasurableSet s ↔ AlmostClopen s)
+continuous functions through `bm_coe`.)  Public: `A/Proc/Duplicators.lean`'s
+**54XI** `exists_isLinftyOf_of_starAlgEquiv` cites this route. -/
+noncomputable def rho (hms : ∀ s : Set X, MeasurableSet s ↔ AlmostClopen s)
     (μ : Measure X) : C(X, ℂ) →⋆ₐ[ℂ] Linfty μ where
   toFun := fun g => Linfty.mk μ (g : X → ℂ)
   map_one' := Linfty.mk_one
@@ -8878,12 +9039,15 @@ private noncomputable def rho (hms : ∀ s : Set X, MeasurableSet s ↔ AlmostCl
   commutes' := mk_coe_algebraMap μ
   map_star' := fun g => Linfty.mk_star (bm_coe hms g)
 
-private theorem rho_apply (hms : ∀ s : Set X, MeasurableSet s ↔ AlmostClopen s)
+/-- `ϱ f = f°`, definitionally.  Public: `A/Proc/Duplicators.lean`'s
+**54XI** `exists_isLinftyOf_of_starAlgEquiv` cites this route. -/
+theorem rho_apply (hms : ∀ s : Set X, MeasurableSet s ↔ AlmostClopen s)
     (μ : Measure X) (g : C(X, ℂ)) :
     rho hms μ g = Linfty.mk μ (g : X → ℂ) := rfl
 
-/-- `ϱ` is injective — vn.tex:2131 of **54XI**. -/
-private theorem rho_injective (hms : ∀ s : Set X, MeasurableSet s ↔ AlmostClopen s)
+/-- `ϱ` is injective — vn.tex:2131 of **54XI**.  Public: `A/Proc/Duplicators.lean`'s
+**54XI** `exists_isLinftyOf_of_starAlgEquiv` cites this route. -/
+theorem rho_injective (hms : ∀ s : Set X, MeasurableSet s ↔ AlmostClopen s)
     (μ : Measure X)
     (hμ : ∀ s : Set X, AlmostClopen s → (μ s = 0 ↔ IsMeagre s)) :
     Function.Injective (rho hms μ) := by
@@ -8901,8 +9065,9 @@ private theorem rho_injective (hms : ∀ s : Set X, MeasurableSet s ↔ AlmostCl
 **54XI**: "because given an almost clopen `A ⊆ spec 𝒜` and a clopen `C` with
 `A ≈ C` we have `1_A° = 1_C°` and `1_C ∈ C(spec 𝒜)`".  Stated in the form the
 density argument needs: a measurable function with finitely many values
-agrees off a meagre set with the continuous function `Σ λ · 1_{clRep {f = λ}}`. -/
-private theorem exists_contRep_of_finite_range
+agrees off a meagre set with the continuous function `Σ λ · 1_{clRep {f = λ}}`.  Public: `A/Proc/Duplicators.lean`'s
+**54XI** `exists_isLinftyOf_of_starAlgEquiv` cites this route. -/
+theorem exists_contRep_of_finite_range
     (hms : ∀ s : Set X, MeasurableSet s ↔ AlmostClopen s) (f : X → ℂ)
     (hfm : Measurable f) (hfin : (Set.range f).Finite) :
     ∃ g : C(X, ℂ), IsMeagre {x | f x ≠ (g : X → ℂ) x} := by
@@ -8950,8 +9115,9 @@ measurable representative `f` takes its values in a compact disc; a finite
 `ε`-net of that disc is extracted from a dense sequence by compactness, and
 rounding each `f x` to the nearest net point
 (`MeasureTheory.SimpleFunc.nearestPt`) gives a measurable `h` with finitely
-many values and `‖f x - h x‖ ≤ ε` everywhere. -/
-private theorem rho_denseRange (hms : ∀ s : Set X, MeasurableSet s ↔ AlmostClopen s)
+many values and `‖f x - h x‖ ≤ ε` everywhere.  Public: `A/Proc/Duplicators.lean`'s
+**54XI** `exists_isLinftyOf_of_starAlgEquiv` cites this route. -/
+theorem rho_denseRange (hms : ∀ s : Set X, MeasurableSet s ↔ AlmostClopen s)
     (μ : Measure X)
     (hμ : ∀ s : Set X, AlmostClopen s → (μ s = 0 ↔ IsMeagre s)) :
     DenseRange (rho hms μ) := by
@@ -9012,8 +9178,9 @@ private theorem rho_denseRange (hms : ∀ s : Set X, MeasurableSet s ↔ AlmostC
 injective miu-map `ϱ` is norm closed, in order to show that `ϱ` is surjective
 it suffices to show that the image of `ϱ` is norm dense in `L^∞(X)`" — the
 closedness being that an injective ∗-homomorphism of C\*-algebras is
-isometric (`NonUnitalStarAlgHom.isometry`), the density `rho_denseRange`. -/
-private theorem rho_surjective (hms : ∀ s : Set X, MeasurableSet s ↔ AlmostClopen s)
+isometric (`NonUnitalStarAlgHom.isometry`), the density `rho_denseRange`.  Public: `A/Proc/Duplicators.lean`'s
+**54XI** `exists_isLinftyOf_of_starAlgEquiv` cites this route. -/
+theorem rho_surjective (hms : ∀ s : Set X, MeasurableSet s ↔ AlmostClopen s)
     (μ : Measure X)
     (hμ : ∀ s : Set X, AlmostClopen s → (μ s = 0 ↔ IsMeagre s)) :
     Function.Surjective (rho hms μ) := by
@@ -9029,8 +9196,9 @@ private theorem rho_surjective (hms : ∀ s : Set X, MeasurableSet s ↔ AlmostC
 thesis reads off surjectivity of `ϱ` ("for the converse, it suffices to show
 that `ϱ` is surjective"), and so do we: the class of `f` is `g°` for some
 continuous `g`, so `f = g` off a null set, which — being measurable, hence
-almost clopen — is meagre. -/
-private theorem exists_contRep
+almost clopen — is meagre.  Public: `A/Proc/Duplicators.lean`'s
+**54XI** `exists_isLinftyOf_of_starAlgEquiv` cites this route. -/
+theorem exists_contRep
     (hms : ∀ s : Set X, MeasurableSet s ↔ AlmostClopen s)
     (μ : Measure X)
     (hμ : ∀ s : Set X, AlmostClopen s → (μ s = 0 ↔ IsMeagre s))
