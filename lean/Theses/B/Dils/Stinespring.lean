@@ -925,12 +925,105 @@ theorem isStarProjection_le_starProjection {M : Submodule ℂ K} [M.HasOrthogona
   rw [ContinuousLinearMap.le_def]
   exact (ContinuousLinearMap.nonneg_iff_isPositive _).mp hnn
 
+/-- The compression of `isLUB_hilbertBasis_partialSums` to a closed subspace:
+for a Hilbert basis `(dⱼ)` of `S ⊆ 𝒦` the partial sums `∑_{j∈G} |dⱼ⟩⟨dⱼ|`,
+taken in `B(𝒦)`, have supremum the projection onto `S`.  This is the thesis's
+`ϱ(p_{i₀}) = ∑ⱼ qⱼ` (dils.tex:648), where `(dⱼ)` is an orthonormal basis of
+`𝒦' = ϱ(p_{i₀})𝒦` and the sum is read as a supremum of partial sums. -/
+theorem isLUB_hilbertBasis_partialSums_submodule {ι : Type*} {S : Submodule ℂ K}
+    [S.HasOrthogonalProjection] (b : HilbertBasis ι ℂ ↥S)
+    (hsa : ∀ G : Finset ι, IsSelfAdjoint (∑ j ∈ G, ketbra ((b j : ↥S) : K) ((b j : ↥S) : K))) :
+    IsLUB (Set.range fun G : Finset ι =>
+      (⟨∑ j ∈ G, ketbra ((b j : ↥S) : K) ((b j : ↥S) : K), hsa G⟩ :
+        selfAdjoint (K →L[ℂ] K)))
+      ⟨S.starProjection, isSelfAdjoint_starProjection S⟩ := by
+  classical
+  have horth : Orthonormal ℂ (fun j => ((b j : ↥S) : K)) := by
+    refine ⟨fun j => ?_, fun j j' hjj' => ?_⟩
+    · simpa using b.orthonormal.1 j
+    · simpa using b.orthonormal.2 hjj'
+  have hmem : ∀ (j : ι) (ξ : K), ketbra ((b j : ↥S) : K) ((b j : ↥S) : K) ξ ∈ S := by
+    intro j ξ
+    show ⟪((b j : ↥S) : K), ξ⟫ • ((b j : ↥S) : K) ∈ S
+    exact S.smul_mem _ (b j).2
+  have hproj : ∀ G : Finset ι,
+      IsStarProjection (∑ j ∈ G, ketbra ((b j : ↥S) : K) ((b j : ↥S) : K)) := fun G =>
+    isStarProjection_sum G _ (fun j => isStarProjection_ketbra (horth.1 j))
+      (fun j _ j' _ hjj' => ketbra_orth horth hjj')
+  constructor
+  · rintro _ ⟨G, rfl⟩
+    show (∑ j ∈ G, ketbra ((b j : ↥S) : K) ((b j : ↥S) : K)) ≤ S.starProjection
+    refine isStarProjection_le_starProjection (hproj G) fun ξ => ?_
+    rw [_root_.sum_apply]
+    exact Submodule.sum_mem _ fun j _ => hmem j ξ
+  · rintro t ht
+    show (S.starProjection : K →L[ℂ] K) ≤ (t : K →L[ℂ] K)
+    rw [ContinuousLinearMap.le_def, ContinuousLinearMap.isPositive_iff']
+    refine ⟨t.2.sub (isSelfAdjoint_starProjection S), fun ξ => ?_⟩
+    have hζmem : S.starProjection ξ ∈ S := S.starProjection_apply_mem ξ
+    have hle : ∀ G : Finset ι, (0 : ℂ) ≤
+        ⟪((t : K →L[ℂ] K) - ∑ j ∈ G, ketbra ((b j : ↥S) : K) ((b j : ↥S) : K)) ξ, ξ⟫ := by
+      intro G
+      have h2 : (∑ j ∈ G, ketbra ((b j : ↥S) : K) ((b j : ↥S) : K)) ≤ (t : K →L[ℂ] K) :=
+        ht ⟨G, rfl⟩
+      rw [ContinuousLinearMap.le_def, ContinuousLinearMap.isPositive_iff'] at h2
+      exact h2.2 ξ
+    have h0 : ∀ j : ι,
+        ⟪ξ, ((b j : ↥S) : K)⟫ = ⟪S.starProjection ξ, ((b j : ↥S) : K)⟫ := by
+      intro j
+      have h := S.starProjection_inner_eq_zero ξ ((b j : ↥S) : K) (b j).2
+      rwa [inner_sub_left, sub_eq_zero] at h
+    have h1 : ∀ j : ι,
+        ⟪((b j : ↥S) : K), ξ⟫ = ⟪((b j : ↥S) : K), S.starProjection ξ⟫ := by
+      intro j
+      have h := congrArg (starRingEnd ℂ) (h0 j)
+      rwa [inner_conj_symm, inner_conj_symm] at h
+    have hval : ⟪(⟨S.starProjection ξ, hζmem⟩ : ↥S), (⟨S.starProjection ξ, hζmem⟩ : ↥S)⟫
+        = ⟪S.starProjection ξ, ξ⟫ := by
+      have h := S.starProjection_inner_eq_zero ξ (S.starProjection ξ) hζmem
+      rw [inner_sub_left, sub_eq_zero] at h
+      have h2 := congrArg (starRingEnd ℂ) h
+      rw [inner_conj_symm, inner_conj_symm] at h2
+      exact h2.symm
+    have hterm : (fun j : ι => ⟪(⟨S.starProjection ξ, hζmem⟩ : ↥S), b j⟫ *
+          ⟪b j, (⟨S.starProjection ξ, hζmem⟩ : ↥S)⟫)
+        = fun j : ι => ⟪ξ, ((b j : ↥S) : K)⟫ * ⟪((b j : ↥S) : K), ξ⟫ := by
+      funext j
+      rw [h0 j, h1 j]
+      rfl
+    have hsum : HasSum (fun j : ι => ⟪ξ, ((b j : ↥S) : K)⟫ * ⟪((b j : ↥S) : K), ξ⟫)
+        ⟪S.starProjection ξ, ξ⟫ := by
+      rw [← hterm, ← hval]
+      exact b.hasSum_inner_mul_inner _ _
+    have hpartial : ∀ G : Finset ι,
+        ∑ j ∈ G, ⟪ξ, ((b j : ↥S) : K)⟫ * ⟪((b j : ↥S) : K), ξ⟫
+          ≤ ⟪(t : K →L[ℂ] K) ξ, ξ⟫ := by
+      intro G
+      have h := hle G
+      rw [_root_.sub_apply, inner_sub_left] at h
+      have hcomp : ⟪(∑ j ∈ G, ketbra ((b j : ↥S) : K) ((b j : ↥S) : K)) ξ, ξ⟫
+          = ∑ j ∈ G, ⟪ξ, ((b j : ↥S) : K)⟫ * ⟪((b j : ↥S) : K), ξ⟫ := by
+        rw [_root_.sum_apply, sum_inner]
+        refine Finset.sum_congr rfl fun j _ => ?_
+        rw [ketbra_apply', inner_smul_left, inner_conj_symm]
+      rw [hcomp] at h
+      exact sub_nonneg.mp h
+    have hfin := le_of_tendsto hsum (Filter.Eventually.of_forall hpartial)
+    rw [_root_.sub_apply, inner_sub_left]
+    exact sub_nonneg.mpr hfin
+
 /-- **138IV** (dils.tex:637): the heart of the thesis's proof of **138II** —
 if a closed subspace `M ⊆ 𝒦` absorbs every `ϱ(|x⟩⟨e₀|)η` with `η` fixed by
-`ϱ(|e₀⟩⟨e₀|)`, then `M = 𝒦`.  This is the thesis's computation
-`1 = ϱ(1) = ∑ᵢ ϱ(pᵢ) = ∑ᵢⱼ |rᵢⱼ⟩⟨rᵢⱼ|`, read as: the projection onto `M`
-dominates every partial sum `ϱ(∑_{i∈F} pᵢ)` — because
-`pᵢ = |eᵢ⟩⟨e₀| · |e₀⟩⟨e₀| · |e₀⟩⟨eᵢ|` — while `1` is the *least* upper bound of those partial sums, by normality of `ϱ`. -/
+`ϱ(|e₀⟩⟨e₀|)`, then `M = 𝒦`.  The proof is the thesis's computation
+`1 = ϱ(1) = ∑ᵢ ϱ(pᵢ) = ∑ᵢ ϱ(uᵢ)*(∑ⱼ qⱼ)ϱ(uᵢ) = ∑ᵢⱼ |rᵢⱼ⟩⟨rᵢⱼ|`, with all
+sums read as suprema of partial sums, as the thesis itself asks: for an
+orthonormal basis `(eᵢ)` of `ℋ`, `uᵢ = |e₀⟩⟨eᵢ|`, an orthonormal basis `(dⱼ)`
+of `𝒦' = ϱ(p₀)𝒦` and `rᵢⱼ = ϱ(uᵢ*)dⱼ`, `ad_normal` (**44VIII**) carries
+`ϱ(p₀) = ∑ⱼ qⱼ` to `ϱ(pᵢ) = ∑ⱼ |rᵢⱼ⟩⟨rᵢⱼ|`, whose partial sums lie below the
+projection onto `M` because the `rᵢⱼ` are unit vectors of `M`; and `1` is the
+*least* upper bound of the `ϱ(∑_{i∈F} pᵢ)` by normality of `ϱ`.  Only the
+final rewriting of `∑ᵢ ∑ⱼ` as a single sum over `I × J` is skipped: the
+partial sums over `J` are dominated one `i` at a time. -/
 theorem nmiu_forall_mem (ϱ : NMIUMap (H →L[ℂ] H) (K →L[ℂ] K)) (e₀ : H) (he₀ : ‖e₀‖ = 1)
     (M : Submodule ℂ K) [M.HasOrthogonalProjection]
     (hM : ∀ (x : H) (η : K), ϱ (ketbra e₀ e₀) η = η → ϱ (ketbra x e₀) η ∈ M) :
@@ -941,24 +1034,162 @@ theorem nmiu_forall_mem (ϱ : NMIUMap (H →L[ℂ] H) (K →L[ℂ] K)) (e₀ : H
     rw [inner_self_eq_norm_sq_to_K, he₀]; norm_num
   have hmapmul : ∀ b b' : H →L[ℂ] H, ϱ (b * b') = ϱ b * ϱ b' := fun b b' => by
     simpa [hcoe] using map_mul ϱ.toStarAlgHom b b'
+  have hmapstar : ∀ b : H →L[ℂ] H, ϱ (star b) = star (ϱ b) := fun b => by
+    simpa [hcoe] using map_star ϱ.toStarAlgHom b
   have hmulapp : ∀ (b b' : H →L[ℂ] H) (y : K), ϱ b (ϱ b' y) = ϱ (b * b') y := by
     intro b b' y; rw [hmapmul]; rfl
-  have hp₀idem : ketbra e₀ e₀ * ketbra e₀ e₀ = ketbra e₀ e₀ := by
-    rw [ketbra_mul, he₀e₀, one_smul]
-  -- every `ϱ(|x⟩⟨x|)` has its range inside `M`
-  have hrangeM : ∀ (x : H) (ξ : K), ϱ (ketbra x x) ξ ∈ M := by
-    intro x ξ
-    have hfact : ketbra x x = ketbra x e₀ * (ketbra e₀ e₀ * ketbra e₀ x) := by
-      rw [ketbra_mul, he₀e₀, one_smul, ketbra_mul, he₀e₀, one_smul]
-    have hη : ϱ (ketbra e₀ e₀) (ϱ (ketbra e₀ e₀) (ϱ (ketbra e₀ x) ξ))
-        = ϱ (ketbra e₀ e₀) (ϱ (ketbra e₀ x) ξ) := by
-      rw [hmulapp, hp₀idem]
-    have hval : ϱ (ketbra x x) ξ
-        = ϱ (ketbra x e₀) (ϱ (ketbra e₀ e₀) (ϱ (ketbra e₀ x) ξ)) := by
-      rw [hfact, ← hmulapp, ← hmulapp]
-    rw [hval]
-    exact hM x _ hη
+  have hadjϱ : ∀ b : H →L[ℂ] H, ContinuousLinearMap.adjoint (ϱ b) = ϱ (star b) := by
+    intro b
+    rw [← ContinuousLinearMap.star_eq_adjoint, hmapstar]
+  have hp₀ : IsStarProjection (ketbra e₀ e₀ : H →L[ℂ] H) := isStarProjection_ketbra he₀
+  have hϱp₀ : IsStarProjection (ϱ (ketbra e₀ e₀)) := IsStarProjection.map hp₀ ϱ.toStarAlgHom
+  -- `𝒦' = ϱ(p₀)𝒦`, as the fixed points of `ϱ(p₀)`
+  set S : Submodule ℂ K :=
+    LinearMap.ker (((1 : K →L[ℂ] K) - ϱ (ketbra e₀ e₀)) : K →ₗ[ℂ] K) with hSdef
+  have hSmem : ∀ d : K, d ∈ S ↔ ϱ (ketbra e₀ e₀) d = d := by
+    intro d
+    rw [hSdef, LinearMap.mem_ker]
+    show ((1 : K →L[ℂ] K) - ϱ (ketbra e₀ e₀)) d = 0 ↔ _
+    rw [_root_.sub_apply, _root_.one_apply_eq_self, sub_eq_zero]
+    exact eq_comm
+  have hSclosed : IsClosed (S : Set K) :=
+    ContinuousLinearMap.isClosed_ker ((1 : K →L[ℂ] K) - ϱ (ketbra e₀ e₀))
+  have : CompleteSpace ↥S := hSclosed.completeSpace_coe
+  -- `ϱ(p₀)` is the orthogonal projection onto `𝒦'`
+  have hp₀P : ϱ (ketbra e₀ e₀) = S.starProjection := by
+    have hadjp : ContinuousLinearMap.adjoint (ϱ (ketbra e₀ e₀)) = ϱ (ketbra e₀ e₀) := by
+      rw [← ContinuousLinearMap.star_eq_adjoint]; exact hϱp₀.isSelfAdjoint.star_eq
+    refine ContinuousLinearMap.ext fun ξ => ?_
+    refine (S.eq_starProjection_of_mem_of_inner_eq_zero ?_ ?_).symm
+    · exact (hSmem _).mpr (by rw [hmulapp, hp₀.isIdempotentElem.eq])
+    · intro w hw
+      have hsw : ⟪ϱ (ketbra e₀ e₀) ξ, w⟫ = ⟪ξ, ϱ (ketbra e₀ e₀) w⟫ := by
+        conv_lhs => rw [← hadjp]
+        rw [ContinuousLinearMap.adjoint_inner_left]
+      rw [inner_sub_left, hsw, (hSmem w).mp hw, sub_self]
+  -- an orthonormal basis `(dⱼ)` of `𝒦'` and its rank-one projections `qⱼ`
+  obtain ⟨sD, bd, hbd⟩ := exists_hilbertBasis ℂ ↥S
+  have hdorth : Orthonormal ℂ (fun j => ((bd j : ↥S) : K)) := by
+    refine ⟨fun j => ?_, fun j j' hjj' => ?_⟩
+    · simpa using bd.orthonormal.1 j
+    · simpa using bd.orthonormal.2 hjj'
+  have hqproj : ∀ G : Finset ↥sD,
+      IsStarProjection (∑ j ∈ G, ketbra ((bd j : ↥S) : K) ((bd j : ↥S) : K)) := fun G =>
+    isStarProjection_sum G _ (fun j => isStarProjection_ketbra (hdorth.1 j))
+      (fun j _ j' _ hjj' => ketbra_orth hdorth hjj')
+  have hqsa : ∀ G : Finset ↥sD,
+      IsSelfAdjoint (∑ j ∈ G, ketbra ((bd j : ↥S) : K) ((bd j : ↥S) : K)) := fun G =>
+    (hqproj G).isSelfAdjoint
+  have hqmono : ∀ G G' : Finset ↥sD, G ⊆ G' →
+      (∑ j ∈ G, ketbra ((bd j : ↥S) : K) ((bd j : ↥S) : K))
+        ≤ ∑ j ∈ G', ketbra ((bd j : ↥S) : K) ((bd j : ↥S) : K) := by
+    intro G G' hGG'
+    have hsplit :=
+      Finset.sum_sdiff (f := fun j => ketbra ((bd j : ↥S) : K) ((bd j : ↥S) : K)) hGG'
+    have hdiff : (∑ j ∈ G', ketbra ((bd j : ↥S) : K) ((bd j : ↥S) : K))
+        - ∑ j ∈ G, ketbra ((bd j : ↥S) : K) ((bd j : ↥S) : K)
+        = ∑ j ∈ G' \ G, ketbra ((bd j : ↥S) : K) ((bd j : ↥S) : K) := by
+      rw [← hsplit]; abel
+    rw [ContinuousLinearMap.le_def, hdiff]
+    exact (ContinuousLinearMap.nonneg_iff_isPositive _).mp (hqproj _).nonneg
+  set DQ : Set (selfAdjoint (K →L[ℂ] K)) :=
+    Set.range (fun G : Finset ↥sD =>
+      (⟨∑ j ∈ G, ketbra ((bd j : ↥S) : K) ((bd j : ↥S) : K), hqsa G⟩ :
+        selfAdjoint (K →L[ℂ] K))) with hDQdef
+  have hlubDQ : IsLUB DQ ⟨S.starProjection, isSelfAdjoint_starProjection S⟩ :=
+    isLUB_hilbertBasis_partialSums_submodule bd hqsa
+  have hDQh : DQ.Nonempty ∧ DirectedOn (· ≤ ·) DQ ∧ BddAbove DQ := by
+    refine ⟨⟨_, ⟨∅, rfl⟩⟩, ?_, ⟨_, hlubDQ.1⟩⟩
+    rintro _ ⟨G, rfl⟩ _ ⟨G', rfl⟩
+    exact ⟨_, ⟨G ∪ G', rfl⟩, hqmono G (G ∪ G') Finset.subset_union_left,
+      hqmono G' (G ∪ G') Finset.subset_union_right⟩
+  have hdirSupDQ : ((dirSup DQ hDQh : selfAdjoint (K →L[ℂ] K)) : K →L[ℂ] K)
+      = ϱ (ketbra e₀ e₀) := by
+    rw [hp₀P]
+    simpa using congrArg (fun s : selfAdjoint (K →L[ℂ] K) => (s : K →L[ℂ] K))
+      ((isLUB_dirSup DQ hDQh).unique hlubDQ)
+  -- an orthonormal basis `(eᵢ)` of `ℋ`, the `uᵢ = |e₀⟩⟨eᵢ|` and the `rᵢⱼ = ϱ(uᵢ*)dⱼ`
   obtain ⟨sB, bb, hbb⟩ := exists_hilbertBasis ℂ H
+  have hbbnorm : ∀ i : ↥sB, ⟪bb i, bb i⟫ = (1 : ℂ) := by
+    intro i
+    rw [inner_self_eq_norm_sq_to_K, bb.orthonormal.1 i]; norm_num
+  have huustar : ∀ i : ↥sB,
+      (ketbra e₀ (bb i) : H →L[ℂ] H) * ketbra (bb i) e₀ = ketbra e₀ e₀ := by
+    intro i
+    rw [ketbra_mul, hbbnorm, one_smul]
+  have hupu : ∀ i : ↥sB,
+      (ketbra (bb i) e₀ : H →L[ℂ] H) * ketbra e₀ e₀ * ketbra e₀ (bb i)
+        = ketbra (bb i) (bb i) := by
+    intro i
+    rw [ketbra_mul, he₀e₀, one_smul, ketbra_mul, he₀e₀, one_smul]
+  set r : ↥sB → ↥sD → K := fun i j => ϱ (ketbra (bb i) e₀) ((bd j : ↥S) : K) with hrdef
+  have hrmem : ∀ (i : ↥sB) (j : ↥sD), r i j ∈ M := fun i j =>
+    hM (bb i) _ ((hSmem _).mp (bd j).2)
+  have hrinner : ∀ (i : ↥sB) (j j' : ↥sD),
+      ⟪r i j, r i j'⟫ = ⟪((bd j : ↥S) : K), ((bd j' : ↥S) : K)⟫ := by
+    intro i j j'
+    show ⟪ϱ (ketbra (bb i) e₀) ((bd j : ↥S) : K),
+      ϱ (ketbra (bb i) e₀) ((bd j' : ↥S) : K)⟫ = _
+    rw [← ContinuousLinearMap.adjoint_inner_right, hadjϱ, ketbra_star, hmulapp, huustar,
+      (hSmem _).mp (bd j').2]
+  have hrnorm : ∀ (i : ↥sB) (j : ↥sD), ‖r i j‖ = 1 := by
+    intro i j
+    have h2 : ‖r i j‖ ^ 2 = ‖((bd j : ↥S) : K)‖ ^ 2 := by
+      rw [← inner_self_eq_norm_sq (𝕜 := ℂ), ← inner_self_eq_norm_sq (𝕜 := ℂ), hrinner]
+    have h3 := congrArg Real.sqrt h2
+    rw [Real.sqrt_sq (norm_nonneg _), Real.sqrt_sq (norm_nonneg _)] at h3
+    rw [h3]
+    exact hdorth.1 j
+  -- `ϱ(pᵢ) = ∑ⱼ |rᵢⱼ⟩⟨rᵢⱼ|` by **44VIII**, and every partial sum is below `P_M`
+  have hpiM : ∀ i : ↥sB, ϱ (ketbra (bb i) (bb i)) ≤ M.starProjection := by
+    intro i
+    have hadN := ad_normal (A := K →L[ℂ] K) (ϱ (ketbra e₀ (bb i))) DQ hDQh
+    have htop : star (ϱ (ketbra e₀ (bb i))) *
+        ((dirSup DQ hDQh : selfAdjoint (K →L[ℂ] K)) : K →L[ℂ] K) * ϱ (ketbra e₀ (bb i))
+          = ϱ (ketbra (bb i) (bb i)) := by
+      rw [hdirSupDQ, ← hmapstar, ketbra_star, ← hmapmul, ← hmapmul, hupu]
+    rw [← htop]
+    refine hadN.2 ?_
+    rintro _ ⟨_, ⟨G, rfl⟩, rfl⟩
+    show star (ϱ (ketbra e₀ (bb i))) *
+        (∑ j ∈ G, ketbra ((bd j : ↥S) : K) ((bd j : ↥S) : K)) * ϱ (ketbra e₀ (bb i))
+          ≤ M.starProjection
+    have hexp : star (ϱ (ketbra e₀ (bb i))) *
+        (∑ j ∈ G, ketbra ((bd j : ↥S) : K) ((bd j : ↥S) : K)) * ϱ (ketbra e₀ (bb i))
+          = ∑ j ∈ G, ketbra (r i j) (r i j) := by
+      rw [Finset.mul_sum, Finset.sum_mul]
+      refine Finset.sum_congr rfl fun j _ => ?_
+      rw [ContinuousLinearMap.star_eq_adjoint, hadjϱ, ketbra_star, mul_ketbra,
+        ketbra_mul_op, hadjϱ, ketbra_star]
+    rw [hexp]
+    refine isStarProjection_le_starProjection ?_ ?_
+    · exact isStarProjection_sum G _ (fun j => isStarProjection_ketbra (hrnorm i j))
+        (fun j _ j' _ hjj' => by
+          rw [ketbra_mul, hrinner i j j', hdorth.2 hjj', zero_smul])
+    · intro ξ
+      rw [_root_.sum_apply]
+      refine Submodule.sum_mem _ fun j _ => ?_
+      show ⟪r i j, ξ⟫ • r i j ∈ M
+      exact M.smul_mem _ (hrmem i j)
+  -- so the range of every `ϱ(pᵢ)` lies in `M`
+  have hPMproj : IsStarProjection (M.starProjection : K →L[ℂ] K) :=
+    isStarProjection_starProjection
+  have hrangeM : ∀ (i : ↥sB) (ξ : K), ϱ (ketbra (bb i) (bb i)) ξ ∈ M := by
+    intro i ξ
+    have hproj : IsStarProjection (ϱ (ketbra (bb i) (bb i))) :=
+      IsStarProjection.map (isStarProjection_ketbra (bb.orthonormal.1 i)) ϱ.toStarAlgHom
+    have hle : ϱ (ketbra (bb i) (bb i)) ≤ 1 - (1 - (M.starProjection : K →L[ℂ] K)) := by
+      rw [sub_sub_cancel]; exact hpiM i
+    have h0 : ϱ (ketbra (bb i) (bb i)) * (1 - (M.starProjection : K →L[ℂ] K)) = 0 :=
+      ((orthogonal_tuple_of_projections_1 _ _ hproj hPMproj.one_sub).out 4 0).mp hle
+    rw [mul_sub, mul_one, sub_eq_zero] at h0
+    have h2 : (M.starProjection : K →L[ℂ] K) * ϱ (ketbra (bb i) (bb i))
+        = ϱ (ketbra (bb i) (bb i)) := by
+      have h := congrArg star h0.symm
+      rwa [star_mul, hPMproj.isSelfAdjoint.star_eq, hproj.isSelfAdjoint.star_eq] at h
+    refine Submodule.starProjection_eq_self_iff.mp ?_
+    simpa using congrArg (fun T : K →L[ℂ] K => T ξ) h2
+  -- the thesis's `1 = ϱ(1) = ∑ᵢ ϱ(pᵢ)`, as a supremum of partial sums
   have hprojF : ∀ F : Finset ↥sB, IsStarProjection (∑ i ∈ F, ketbra (bb i) (bb i)) := fun F =>
     isStarProjection_sum F _ (fun i => isStarProjection_ketbra (bb.orthonormal.1 i))
       (fun i _ j _ hij => ketbra_orth bb.orthonormal hij)
@@ -971,10 +1202,9 @@ theorem nmiu_forall_mem (ϱ : NMIUMap (H →L[ℂ] H) (K →L[ℂ] K)) (e₀ : H
     intro ξ
     have hsum : ϱ (∑ i ∈ F, ketbra (bb i) (bb i)) ξ = ∑ i ∈ F, ϱ (ketbra (bb i) (bb i)) ξ := by
       rw [show ϱ (∑ i ∈ F, ketbra (bb i) (bb i)) = ∑ i ∈ F, ϱ (ketbra (bb i) (bb i)) from
-        map_sum ϱ.toStarAlgHom _ F, ContinuousLinearMap.sum_apply]
+        map_sum ϱ.toStarAlgHom _ F, _root_.sum_apply]
     rw [hsum]
-    exact Submodule.sum_mem _ fun i _ => hrangeM (bb i) ξ
-  -- `1` is the supremum of the partial sums; normality transports it to `ϱ`
+    exact Submodule.sum_mem _ fun i _ => hrangeM i ξ
   set D : Set (selfAdjoint (H →L[ℂ] H)) :=
     Set.range (fun F : Finset ↥sB =>
       (⟨∑ i ∈ F, ketbra (bb i) (bb i), hsa F⟩ : selfAdjoint (H →L[ℂ] H))) with hDdef

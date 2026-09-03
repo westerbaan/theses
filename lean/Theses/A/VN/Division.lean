@@ -5248,12 +5248,14 @@ end VNSubalgebra
 
 /-! ### Machinery for **84bIII**
 
-The corner `dⱼℬ` is never constructed as a type.  Instead the *range* of
-`πⱼ ∘ e` is used: it is a closed `StarSubalgebra` of a finite-dimensional
-C*-algebra, hence a finite-dimensional C*-algebra itself, so **84II**
-`fdcstar` applies to it directly, and all the projection algebra stays
-inside `ℬ`, where `carrier` (**63I**) and **69IV** `carrier_miu` are
-available. -/
+The corners `dⱼℬ` and `cⱼℬ` of 842.40 are built as types, by
+`CentralProj.sub` (**67IV**.1).  What the machinery below adds is the
+*block* decomposition of an nmiu-map out of `ℬ` into a finite-dimensional
+von Neumann algebra — used for the compression `ℬ → cⱼℬ`: the *range* of
+such a map is a closed `StarSubalgebra` of a finite-dimensional C*-algebra,
+hence a finite-dimensional C*-algebra itself, so **84II** `fdcstar` applies
+to it directly, and the projection algebra stays inside `ℬ`, where `carrier`
+(**63I**) and **69IV** `carrier_miu` are available. -/
 
 section HABlocks
 
@@ -5686,10 +5688,131 @@ theorem hereditarilyAtomic_subalgebra [VonNeumannAlgebra A]
     refine Φ.injective ?_
     rw [map_zero]
     exact Subtype.ext (funext fun i => hb i)
-  -- the block decomposition of each `g i`
-  choose k n Q ρ hQc hQker hρsurj hρ1 hgz using fun i : I => exists_blocks (g i)
+  -- **842.40**: the carriers `dᵢ = ⌈πᵢ∘e⌉`, central projections by **69IV**
+  -- `carrier-miu`, whose join is `1` — recorded in the equivalent separating
+  -- form, `dᵢb = 0` for every `i` forcing `b = 0`.
+  set d : I → B := fun i => carrier (nmiuP (g i)) (g i).preservesDirSups' with hddef
+  have hdproj : ∀ i, IsStarProjection (d i) := fun i =>
+    (carrier_spec (nmiuP (g i)) (g i).preservesDirSups').1
+  have hdmiu : ∀ i, IsCentral B (d i) ∧ ∀ b : B, g i b = 0 ↔ d i * b = 0 := fun i =>
+    carrier_miu (g i) (nmiuP (g i)) (g i).preservesDirSups' (fun _ => rfl)
+  have hdsep : ∀ b : B, (∀ i, d i * b = 0) → b = 0 := fun b hb =>
+    hgsep b fun i => ((hdmiu i).2 b).mpr (hb i)
+  -- **842.40**, last step: the corner `cB` of a central projection `c` below
+  -- some `dᵢ` is finite-dimensional, `gᵢ` being injective on it.
+  have hfd : ∀ (i : I) (c : CentralProj B), c.val * d i = c.val →
+      FiniteDimensional ℂ c.sub := by
+    intro i c hc
+    have hinj : Function.Injective (fun x : c.sub => g i (x : B)) := by
+      intro x y hxy
+      have hx2 : c.val * (x : B) = (x : B) := x.2
+      have hy2 : c.val * (y : B) = (y : B) := y.2
+      refine Subtype.ext (sub_eq_zero.mp ?_)
+      have h0 : g i ((x : B) - (y : B)) = 0 := by
+        show (g i).toStarAlgHom ((x : B) - (y : B)) = 0
+        rw [map_sub]
+        exact sub_eq_zero.mpr hxy
+      have h1 : d i * ((x : B) - (y : B)) = 0 := ((hdmiu i).2 _).mp h0
+      calc (x : B) - (y : B) = c.val * ((x : B) - (y : B)) := by rw [mul_sub, hx2, hy2]
+        _ = c.val * d i * ((x : B) - (y : B)) := by rw [hc]
+        _ = c.val * (d i * ((x : B) - (y : B))) := by rw [mul_assoc]
+        _ = 0 := by rw [h1, mul_zero]
+    exact FiniteDimensional.of_injective
+      ({ toFun := fun x : c.sub => g i (x : B)
+         map_add' := fun x y => map_add (g i).toStarAlgHom (x : B) (y : B)
+         map_smul' := fun r x => map_smul (g i).toStarAlgHom r (x : B) } :
+        c.sub →ₗ[ℂ] 𝒜 i) hinj
+  -- **842.40**: a maximal orthogonal family `(cⱼ)` of non-zero central
+  -- projections of `B`, each below some `dₖ` (Zorn).
+  set T : Set (Set B) :=
+    {S | (∀ x ∈ S, IsStarProjection x ∧ IsCentral B x ∧ x ≠ 0 ∧ ∃ i, x * d i = x) ∧
+      ∀ x ∈ S, ∀ y ∈ S, x ≠ y → x * y = 0} with hTdef
+  obtain ⟨C, hCmax⟩ : ∃ C, Maximal (· ∈ T) C := by
+    refine zorn_subset T fun c hc hchain =>
+      ⟨⋃₀ c, ⟨?_, ?_⟩, fun s hs => Set.subset_sUnion_of_mem hs⟩
+    · rintro x ⟨s, hs, hxs⟩
+      exact (hc hs).1 x hxs
+    · rintro x ⟨s, hs, hxs⟩ y ⟨s', hs', hys'⟩ hxy
+      rcases hchain.total hs hs' with hsub | hsub
+      · exact (hc hs').2 x (hsub hxs) y hys' hxy
+      · exact (hc hs).2 x hxs y (hsub hys') hxy
+  -- maximality forces `∑ⱼ cⱼ = 1`, here in separating form: were some `b`
+  -- killed by every `cⱼ`, its central support `⌈⌈b⌉⌉` would meet some `dᵢ`
+  -- in a non-zero central projection that could be added to the family.
+  have hCsep : ∀ b : B, (∀ x ∈ C, x * b = 0) → b = 0 := by
+    intro b hb
+    by_contra hb0
+    obtain ⟨⟨hzproj, hzcen, hzb⟩, hzleast⟩ := cceil_isLeast b
+    have hznz : cceil b ≠ 0 := fun h => hb0 (by rw [← hzb, h, zero_mul])
+    have hzx : ∀ x ∈ C, cceil b * x = 0 := by
+      intro x hx
+      have hxp := (hCmax.1.1 x hx).1
+      have hxc := (hCmax.1.1 x hx).2.1
+      have h1 : (1 - x) * b = b := by rw [sub_mul, one_mul, hb x hx, sub_zero]
+      have hcen1 : IsCentral B (1 - x) := fun y => by
+        rw [sub_mul, mul_sub, one_mul, mul_one, hxc y]
+      exact ((orthogonal_tuple_of_projections_1 (cceil b) x hzproj hxp).out 4 0).mp
+        (hzleast ⟨hxp.one_sub, hcen1, h1⟩)
+    obtain ⟨i, hdz⟩ : ∃ i, d i * cceil b ≠ 0 := by
+      by_contra hcon
+      exact hznz (hdsep _ fun i => not_not.mp fun h => hcon ⟨i, h⟩)
+    have hcproj : IsStarProjection (d i * cceil b) := by
+      refine isStarProjection_iff'.mpr ⟨?_, ?_⟩
+      · calc d i * cceil b * (d i * cceil b)
+            = d i * (cceil b * d i) * cceil b := by noncomm_ring
+          _ = d i * (d i * cceil b) * cceil b := by rw [hzcen (d i)]
+          _ = (d i * d i) * (cceil b * cceil b) := by noncomm_ring
+          _ = d i * cceil b := by
+              rw [(hdproj i).isIdempotentElem.eq, hzproj.isIdempotentElem.eq]
+      · rw [star_mul, hzproj.isSelfAdjoint.star_eq, (hdproj i).isSelfAdjoint.star_eq,
+          hzcen (d i)]
+    have hccen : IsCentral B (d i * cceil b) := by
+      intro y
+      calc d i * cceil b * y = d i * (cceil b * y) := by rw [mul_assoc]
+        _ = d i * (y * cceil b) := by rw [hzcen y]
+        _ = d i * y * cceil b := by rw [mul_assoc]
+        _ = y * d i * cceil b := by rw [(hdmiu i).1 y]
+        _ = y * (d i * cceil b) := by rw [mul_assoc]
+    have hcd : d i * cceil b * d i = d i * cceil b := by
+      calc d i * cceil b * d i = d i * (cceil b * d i) := by rw [mul_assoc]
+        _ = d i * (d i * cceil b) := by rw [hzcen (d i)]
+        _ = d i * d i * cceil b := by rw [mul_assoc]
+        _ = d i * cceil b := by rw [(hdproj i).isIdempotentElem.eq]
+    have hcx : ∀ x ∈ C, d i * cceil b * x = 0 := by
+      intro x hx
+      rw [mul_assoc, hzx x hx, mul_zero]
+    have hins : insert (d i * cceil b) C ∈ T := by
+      refine ⟨?_, ?_⟩
+      · rintro y (rfl | hy)
+        · exact ⟨hcproj, hccen, hdz, i, hcd⟩
+        · exact hCmax.1.1 y hy
+      · rintro y (rfl | hy) w (rfl | hw) hyw
+        · exact absurd rfl hyw
+        · exact hcx w hw
+        · exact (hccen y).symm.trans (hcx y hy)
+        · exact hCmax.1.2 y hy w hw hyw
+    have hmem : d i * cceil b ∈ C :=
+      hCmax.2 hins (Set.subset_insert _ _) (Set.mem_insert _ _)
+    have hself := hcx _ hmem
+    rw [hcproj.isIdempotentElem.eq] at hself
+    exact hdz hself
+  -- each `cⱼB` is finite-dimensional, `cⱼ` lying below some `dₖ`
+  have hCfd : ∀ x : ↥C, FiniteDimensional ℂ
+      (CentralProj.sub ⟨(x : B), (hCmax.1.1 (x : B) x.2).1, (hCmax.1.1 (x : B) x.2).2.1⟩) := by
+    intro x
+    obtain ⟨i, hi⟩ := (hCmax.1.1 (x : B) x.2).2.2.2
+    exact hfd i ⟨(x : B), (hCmax.1.1 (x : B) x.2).1, (hCmax.1.1 (x : B) x.2).2.1⟩ hi
+  -- the block decomposition of each compression `B → cⱼB`
+  choose k n Q ρ hQc hQker hρsurj hρ1 hgz using fun x : ↥C =>
+    haveI := hCfd x
+    exists_blocks (CentralProj.compress
+      ⟨(x : B), (hCmax.1.1 (x : B) x.2).1, (hCmax.1.1 (x : B) x.2).2.1⟩)
+  have hQsep : ∀ b : B, (∀ (x : ↥C) (m : Fin (k x)), Q x m * b = 0) → b = 0 := by
+    intro b hbb
+    refine hCsep b fun x hx => ?_
+    exact Subtype.ext_iff.mp ((hgz ⟨x, hx⟩ b).mpr (hbb ⟨x, hx⟩))
   -- the set of non-zero block projections: minimal central projections of `B`
-  set S : Set B := {x | x ≠ 0 ∧ ∃ (i : I) (m : Fin (k i)), Q i m = x} with hSdef
+  set S : Set B := {x | x ≠ 0 ∧ ∃ (j : ↥C) (m : Fin (k j)), Q j m = x} with hSdef
   have hSproj : ∀ x ∈ S, IsStarProjection x := by
     rintro _ ⟨-, i, m, rfl⟩; exact (hQc i m).1
   have hScen : ∀ x ∈ S, IsCentral B x := by
@@ -5739,12 +5862,12 @@ theorem hereditarilyAtomic_subalgebra [VonNeumannAlgebra A]
       have := ((orthogonal_tuple_of_projections_1 x (1 - r) (hSproj x hx) hrp.one_sub).out 4 0).mp
         (by rwa [sub_sub_cancel])
       exact this
-    have hQq : ∀ (i : I) (m : Fin (k i)), Q i m * (1 - r) = 0 := by
-      intro i m
-      rcases eq_or_ne (Q i m) 0 with h | h
+    have hQq : ∀ (j : ↥C) (m : Fin (k j)), Q j m * (1 - r) = 0 := by
+      intro j m
+      rcases eq_or_ne (Q j m) 0 with h | h
       · rw [h, zero_mul]
-      · exact hq _ ⟨h, i, m, rfl⟩
-    have hz : (1 : B) - r = 0 := hgsep _ fun i => (hgz i (1 - r)).mpr (hQq i)
+      · exact hq _ ⟨h, j, m, rfl⟩
+    have hz : (1 : B) - r = 0 := hQsep _ hQq
     rw [sub_eq_zero] at hz
     exact hz.symm
   -- for each `p ∈ S` a surjective ∗-homomorphism onto a full matrix algebra
