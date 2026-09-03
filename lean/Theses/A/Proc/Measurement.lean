@@ -9972,10 +9972,13 @@ theorem sequential_product_counterexample_3 [VonNeumannAlgebra A]
 
 /-- **106III** (proc.tex:1864, Exercise), part 4, first claim: there is a
 Borel function `g : [0,1] → S¹` with `g(½) ≠ 1` and `g(λ²) = g(λ)²`.
-FIXME(borel-calculus): the second claim — that
-`p ∗ q := √p g(p)* q g(p) √p` satisfies all axioms of 106I except (E) —
-requires the Borel functional calculus `p ↦ g(p)`, which Mathlib's `cfc`
-(continuous only) does not provide; it is not formalized. -/
+
+The second claim — that `p ∗ q := √p g(p)* q g(p) √p` satisfies all axioms
+of 106I except (E) — is `sequential_product_counterexample_4_ax5_is_false`
+just below, stated in `B(ℂ²)` for a family that is `g(·)` on the effects
+`diag(1,t)`, `0 < t ≤ 1`, and `⌈·⌉` elsewhere: `p ↦ g(p)` at *every* effect
+of *every* von Neumann algebra is the Borel functional calculus, which
+Mathlib's `cfc` (continuous only) does not provide. -/
 theorem sequential_product_counterexample_4 :
     ∃ g : ℝ → ℂ, Measurable g ∧ (∀ l : ℝ, l ∈ Set.Icc (0:ℝ) 1 → ‖g l‖ = 1) ∧
       g (1/2) ≠ 1 ∧ ∀ l : ℝ, l ∈ Set.Icc (0:ℝ) 1 → g (l ^ 2) = g l ^ 2 := by
@@ -10000,6 +10003,694 @@ theorem sequential_product_counterexample_4 :
         = ((2 : ℕ) : ℂ) * ((Real.pi / Real.log 2 * Real.log l : ℝ) : ℂ) by
       rw [Real.log_pow]; push_cast; ring]
     rw [mul_assoc, Complex.exp_nat_mul]
+
+/-! ### Infrastructure for the 106III.4 counterexample
+
+Part 4 of the Exercise has two claims.  The first — a Borel
+`g : [0,1] → S¹` with `g(½) ≠ 1` and `g(λ²) = g(λ)²` — is
+`sequential_product_counterexample_4` just above.  The second is that the
+operation `p ∗ q = √p g(p)* q g(p) √p` it builds satisfies every axiom of
+**106I** *except* (E); that is `sequential_product_counterexample_4_ax5_is_false`
+below, and it is what makes part 4 do its job in the Exercise's programme
+(`None of the axioms may be omitted`, proc.tex:1864): (E) is not implied by
+(A)-(D).
+
+`p ↦ g(p)` for a merely Borel `g` is the Borel functional calculus, which
+Mathlib has not got — its `cfc` is continuous-only — so the printed family
+cannot be written down for an arbitrary von Neumann algebra.  What can be
+written down is `g(·)` where it is elementwise explicit: in `𝒜 = B(ℂ²)`, on
+the effects `x_t = diag(1,t)` with `0 < t ≤ 1`, whose spectral projections
+are the fixed `f₁ = diag(1,0)`, `f₂ = diag(0,1)`, so that
+`g(x_t) = g(1)f₁ + g(t)f₂ = diag(1, g(t))`.  The family below takes that
+value there and `u_x = ⌈x⌉` off that set — and the three properties the
+whole argument uses survive: each `u_x` is a unitary of `⌈x⌉𝒜⌈x⌉`,
+`u_{x²} = u_x²` (the set `{x_t}` is closed under squares *and* under square
+roots, which is exactly what makes the two branches consistent), and
+`u_x √x = √x u_x`.  Hence (A), (B), (C), (D) by part 3's argument
+(`spc4_twisted_axioms`), while (E) fails at `p = x_{1/4}`: there
+`g(p)√p = diag(1, -i/2)` is normal but has a *skew* zero pattern —
+`e₁ g(p)√p e₂ = 0 ≠ e₂ g(p)√p e₁` at the rank-one projections onto `(1,1)`
+and `(i,2)` — and (E) at `p` says exactly that those two vanish together. -/
+
+/-! #### General facts used by the counterexample -/
+
+/-- `√a ⌈a⌉ = √a` and `⌈a⌉ √a = √a`. -/
+private theorem spc4_sqrt_mul_ceil [VonNeumannAlgebra A] {a : A} (ha : 0 ≤ a) :
+    CFC.sqrt a * ceil a = CFC.sqrt a ∧ ceil a * CFC.sqrt a = CFC.sqrt a := by
+  have hcp : IsStarProjection (ceil a) := (ceil_spec ha).1
+  have hz : CFC.sqrt a * (1 - ceil a) = 0 := by
+    refine (sqrt_mul_eq_zero_iff ha _).mpr ?_
+    rw [mul_sub, mul_one, (ceil_spec ha).2.1, sub_self]
+  have h1 : CFC.sqrt a * ceil a = CFC.sqrt a := by
+    rw [mul_sub, mul_one, sub_eq_zero] at hz
+    exact hz.symm
+  refine ⟨h1, ?_⟩
+  have h2 := congrArg star h1
+  rwa [star_mul, hcp.isSelfAdjoint.star_eq,
+    (IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg a)).star_eq] at h2
+
+/-- `⌈a²⌉ = ⌈a⌉` for positive `a`. -/
+private theorem spc4_ceil_mul_self [VonNeumannAlgebra A] {a : A} (ha : 0 ≤ a) :
+    ceil (a * a) = ceil a := by
+  have hsa : star a = a := (IsSelfAdjoint.of_nonneg ha).star_eq
+  have haa : (0 : A) ≤ a * a := by
+    have h := star_mul_self_nonneg a
+    rwa [hsa] at h
+  refine le_antisymm ((ceil_spec haa).2.2 (ceil a) (ceil_spec ha).1 ?_)
+    ((ceil_spec ha).2.2 (ceil (a * a)) (ceil_spec haa).1 ?_)
+  · rw [mul_assoc, (ceil_spec ha).2.1]
+  · have hc : IsStarProjection (ceil (a * a)) := (ceil_spec haa).1
+    have hz : a * a * (1 - ceil (a * a)) = 0 := by
+      rw [mul_sub, mul_one, (ceil_spec haa).2.1, sub_self]
+    have h0 : star (a * (1 - ceil (a * a))) * (a * (1 - ceil (a * a))) = 0 := by
+      rw [star_mul, hsa, hc.one_sub.isSelfAdjoint.star_eq]
+      calc (1 - ceil (a * a)) * a * (a * (1 - ceil (a * a)))
+          = (1 - ceil (a * a)) * (a * a * (1 - ceil (a * a))) := by noncomm_ring
+        _ = 0 := by rw [hz, mul_zero]
+    have h1 := (CStarRing.star_mul_self_eq_zero_iff _).mp h0
+    rw [mul_sub, mul_one, sub_eq_zero] at h1
+    exact h1.symm
+
+/-- For an effect `x` and a projection `e`, `x ≤ e^⊥ ↔ e x e = 0`. -/
+private theorem spc4_le_perp_iff [VonNeumannAlgebra A] {x : A} (hx : 0 ≤ x) (hx1 : x ≤ 1)
+    {e : A} (he : IsStarProjection e) : x ≤ 1 - e ↔ e * x * e = 0 := by
+  constructor
+  · intro h
+    have h1 : e * x * e ≤ e * (1 - e) * e := by
+      have h2 := star_left_conjugate_le_conjugate h e
+      rwa [he.isSelfAdjoint.star_eq] at h2
+    have h2 : e * (1 - e) * e = 0 := by
+      rw [mul_sub, mul_one, he.isIdempotentElem.eq, sub_self, zero_mul]
+    have h3 : (0 : A) ≤ e * x * e := by
+      have h4 := star_left_conjugate_nonneg hx e
+      rwa [he.isSelfAdjoint.star_eq] at h4
+    exact le_antisymm (h2 ▸ h1) h3
+  · intro h
+    have hle : ceil x ≤ 1 - e := (ceil_le_perp_iff hx he).mpr h
+    have hxe : x * (1 - e) = x := (ceil_le_iff hx he.one_sub).mp hle
+    have hex : (1 - e) * x = x :=
+      ((ceil_basic_1 x (1 - e) hx he.one_sub).out 2 0).mp hle
+    calc x = (1 - e) * x * (1 - e) := by rw [hex, hxe]
+      _ ≤ (1 - e) * 1 * (1 - e) := by
+          have h5 := star_left_conjugate_le_conjugate hx1 (1 - e)
+          rwa [he.one_sub.isSelfAdjoint.star_eq] at h5
+      _ = 1 - e := by
+          rw [mul_one, sub_mul, one_mul, mul_sub, mul_one, he.isIdempotentElem.eq]
+          abel
+
+omit [PartialOrder A] [StarOrderedRing A] in
+/-- `y (a* x a) y = (x a y)* (x a y)` for projections `x`, `y`. -/
+private theorem spc4_sandwich (a : A) {x y : A} (hx : IsStarProjection x)
+    (hy : IsStarProjection y) :
+    y * (star a * x * a) * y = star (x * a * y) * (x * a * y) := by
+  have hstar : star (x * a * y) = y * star a * x := by
+    rw [star_mul, star_mul, hy.isSelfAdjoint.star_eq, hx.isSelfAdjoint.star_eq, mul_assoc]
+  rw [hstar]
+  calc y * (star a * x * a) * y = y * star a * (x * x) * a * y := by
+        rw [hx.isIdempotentElem.eq]; noncomm_ring
+    _ = y * star a * x * (x * a * y) := by noncomm_ring
+
+/-- `a* e a` is an effect when `a* a ≤ 1` and `e` is a projection. -/
+private theorem spc4_conj_effect {a : A} (ha : star a * a ≤ 1) {e : A}
+    (he : IsStarProjection e) : 0 ≤ star a * e * a ∧ star a * e * a ≤ 1 := by
+  refine ⟨star_left_conjugate_nonneg he.nonneg _, ?_⟩
+  calc star a * e * a ≤ star a * 1 * a := star_left_conjugate_le_conjugate he.le_one _
+    _ = star a * a := by rw [mul_one]
+    _ ≤ 1 := ha
+
+/-- Part 3's true half, which part 4 needs: if every `u_p` is an isometry
+of `⌈p⌉𝒜⌈p⌉` that commutes with `√p` and satisfies `u_p² = u_{p²}`, then
+`p ∗ q = √p u_p* q u_p √p` satisfies (A), (B), (C) and (D) of **106I**.
+
+(A) is `√p u_p* u_p √p = √p⌈p⌉√p = p`; (B) is `Ad` at `u_p√p`
+(`isPure_adSelf`); (C) holds because `p ∗ p = p²` and both sides are `Ad` at
+`(u_p√p)² = u_p²p = u_{p²}√(p²)`; and (D) is `p = √p ∗ √p`.  None of it uses
+`u_p* = u_p`, the hypothesis part 3 attaches to (E) — which is false as
+printed (`sequential_product_counterexample_3_ax5_is_false`). -/
+private theorem spc4_twisted_axioms [VonNeumannAlgebra A] (u : A → A) (op : A → A → A)
+    (hop : ∀ p q, op p q = CFC.sqrt p * star (u p) * q * u p * CFC.sqrt p)
+    (h1 : ∀ p ∈ effects A, star (u p) * u p = ceil p)
+    (h2 : ∀ p ∈ effects A, u p * u p = u (p * p))
+    (h3 : ∀ p ∈ effects A, CFC.sqrt p * u p = u p * CFC.sqrt p) :
+    (∀ p ∈ effects A, op p 1 = p) ∧
+    (∀ p ∈ effects A, ∃ f : NCPMap A A, IsPure f ∧
+      ∀ q ∈ effects A, op p q = f q) ∧
+    (∀ p ∈ effects A, ∀ q ∈ effects A, op p (op p q) = op (op p p) q) ∧
+    (∀ p ∈ effects A, ∃ q ∈ effects A, p = op q q) := by
+  have hopa : ∀ p q : A, 0 ≤ p →
+      op p q = star (u p * CFC.sqrt p) * q * (u p * CFC.sqrt p) := by
+    intro p q hp
+    rw [hop, star_mul, (IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg p)).star_eq]
+    noncomm_ring
+  -- `star (u p)` commutes with `p`
+  have hcomm : ∀ p ∈ effects A, star (u p) * p = p * star (u p) := by
+    intro p hp
+    have hss : CFC.sqrt p * CFC.sqrt p = p := CFC.sqrt_mul_sqrt_self p hp.1
+    have hc := h3 p hp
+    have hpu : p * u p = u p * p := by
+      calc p * u p = CFC.sqrt p * CFC.sqrt p * u p := by rw [hss]
+        _ = CFC.sqrt p * (CFC.sqrt p * u p) := by rw [mul_assoc]
+        _ = CFC.sqrt p * (u p * CFC.sqrt p) := by rw [hc]
+        _ = CFC.sqrt p * u p * CFC.sqrt p := by rw [mul_assoc]
+        _ = u p * CFC.sqrt p * CFC.sqrt p := by rw [hc]
+        _ = u p * (CFC.sqrt p * CFC.sqrt p) := by rw [mul_assoc]
+        _ = u p * p := by rw [hss]
+    have h := congrArg star hpu
+    rw [star_mul, star_mul, (IsSelfAdjoint.of_nonneg hp.1).star_eq] at h
+    exact h
+  -- `p ∗ p = p²`
+  have hopp : ∀ p ∈ effects A, op p p = p * p := by
+    intro p hp
+    have hp0 : (0 : A) ≤ p := hp.1
+    have hss : CFC.sqrt p * CFC.sqrt p = p := CFC.sqrt_mul_sqrt_self p hp0
+    have hup := hcomm p hp
+    rw [hopa p p hp0, star_mul, (IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg p)).star_eq]
+    calc CFC.sqrt p * star (u p) * p * (u p * CFC.sqrt p)
+        = CFC.sqrt p * (star (u p) * p) * u p * CFC.sqrt p := by noncomm_ring
+      _ = CFC.sqrt p * (p * star (u p)) * u p * CFC.sqrt p := by rw [hup]
+      _ = CFC.sqrt p * p * (star (u p) * u p) * CFC.sqrt p := by noncomm_ring
+      _ = CFC.sqrt p * p * ceil p * CFC.sqrt p := by rw [h1 p hp]
+      _ = CFC.sqrt p * p * (ceil p * CFC.sqrt p) := by rw [mul_assoc]
+      _ = CFC.sqrt p * p * CFC.sqrt p := by rw [(spc4_sqrt_mul_ceil hp0).2]
+      _ = CFC.sqrt p * (CFC.sqrt p * CFC.sqrt p) * CFC.sqrt p := by rw [hss]
+      _ = CFC.sqrt p * CFC.sqrt p * (CFC.sqrt p * CFC.sqrt p) := by noncomm_ring
+      _ = p * p := by rw [hss]
+  refine ⟨?_, ?_, ?_, ?_⟩
+  · -- (A)
+    intro p hp
+    have hss : CFC.sqrt p * CFC.sqrt p = p := CFC.sqrt_mul_sqrt_self p hp.1
+    rw [hopa p 1 hp.1, star_mul, (IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg p)).star_eq]
+    calc CFC.sqrt p * star (u p) * 1 * (u p * CFC.sqrt p)
+        = CFC.sqrt p * (star (u p) * u p) * CFC.sqrt p := by noncomm_ring
+      _ = CFC.sqrt p * ceil p * CFC.sqrt p := by rw [h1 p hp]
+      _ = CFC.sqrt p * (ceil p * CFC.sqrt p) := by rw [mul_assoc]
+      _ = CFC.sqrt p * CFC.sqrt p := by rw [(spc4_sqrt_mul_ceil hp.1).2]
+      _ = p := hss
+  · -- (B)
+    intro p hp
+    exact ⟨adSelf (u p * CFC.sqrt p), isPure_adSelf _,
+      fun q _ => by rw [adSelf_apply, hopa p q hp.1]⟩
+  · -- (C)
+    intro p hp q hq
+    have hp0 : (0 : A) ≤ p := hp.1
+    have hpp0 : (0 : A) ≤ p * p := by
+      have h := star_mul_self_nonneg p
+      rwa [(IsSelfAdjoint.of_nonneg hp0).star_eq] at h
+    have hss : CFC.sqrt p * CFC.sqrt p = p := CFC.sqrt_mul_sqrt_self p hp0
+    have hc := h3 p hp
+    have haa : u p * CFC.sqrt p * (u p * CFC.sqrt p)
+        = u (p * p) * CFC.sqrt (p * p) := by
+      rw [CFC.sqrt_mul_self p hp0, ← h2 p hp]
+      calc u p * CFC.sqrt p * (u p * CFC.sqrt p)
+          = u p * (CFC.sqrt p * u p) * CFC.sqrt p := by noncomm_ring
+        _ = u p * (u p * CFC.sqrt p) * CFC.sqrt p := by rw [hc]
+        _ = u p * u p * (CFC.sqrt p * CFC.sqrt p) := by noncomm_ring
+        _ = u p * u p * p := by rw [hss]
+    have hgen : ∀ b : A, star b * (star b * q * b) * b = star (b * b) * q * (b * b) := by
+      intro b
+      rw [star_mul]
+      simp only [mul_assoc]
+    rw [hopp p hp, hopa p (op p q) hp0, hopa p q hp0, hopa (p * p) q hpp0, ← haa]
+    exact hgen (u p * CFC.sqrt p)
+  · -- (D)
+    intro p hp
+    have hp0 : (0 : A) ≤ p := hp.1
+    have hs0 : (0 : A) ≤ CFC.sqrt p := CFC.sqrt_nonneg p
+    have hss : CFC.sqrt p * CFC.sqrt p = p := CFC.sqrt_mul_sqrt_self p hp0
+    have hs1 : CFC.sqrt p ≤ 1 := by
+      have h := CFC.sqrt_le_sqrt p 1 hp.2
+      rwa [CFC.sqrt_one] at h
+    exact ⟨CFC.sqrt p, ⟨hs0, hs1⟩, by rw [hopp _ ⟨hs0, hs1⟩, hss]⟩
+
+/-! #### The witness in `B(ℂ²)`
+
+Transported from matrices along `Matrix.toEuclideanCLM`, as for the 106III.2
+and 106III.3 counterexamples above.  Everything in sight is diagonal, so
+`spc4D z w = diag(z,w)` and its multiplication and star rules carry all the
+computations. -/
+
+section SPC4
+
+private abbrev spc4B := EuclideanSpace ℂ (Fin 2) →L[ℂ] EuclideanSpace ℂ (Fin 2)
+
+private abbrev spc4T (M : Matrix (Fin 2) (Fin 2) ℂ) : spc4B :=
+  Matrix.toEuclideanCLM (𝕜 := ℂ) M
+
+private theorem spc4_mul (M N : Matrix (Fin 2) (Fin 2) ℂ) :
+    spc4T M * spc4T N = spc4T (M * N) := (map_mul _ _ _).symm
+
+private theorem spc4_star (M : Matrix (Fin 2) (Fin 2) ℂ) :
+    star (spc4T M) = spc4T (star M) := (map_star _ _).symm
+
+private theorem spc4_one : spc4T 1 = 1 := map_one _
+
+private theorem spc4_zero : spc4T 0 = 0 := map_zero _
+
+private theorem spc4_add (M N : Matrix (Fin 2) (Fin 2) ℂ) :
+    spc4T M + spc4T N = spc4T (M + N) := (map_add _ _ _).symm
+
+private theorem spc4_smul (z : ℂ) (M : Matrix (Fin 2) (Fin 2) ℂ) :
+    z • spc4T M = spc4T (z • M) := (map_smul _ _ _).symm
+
+private theorem spc4_sub (M N : Matrix (Fin 2) (Fin 2) ℂ) :
+    spc4T M - spc4T N = spc4T (M - N) := (map_sub _ _ _).symm
+
+private theorem spc4_inj {M N : Matrix (Fin 2) (Fin 2) ℂ} (h : spc4T M = spc4T N) :
+    M = N := Matrix.toEuclideanCLM.injective h
+
+/-- The diagonal matrix `diag(z, w)`. -/
+private def spc4D (z w : ℂ) : Matrix (Fin 2) (Fin 2) ℂ := !![z, 0; 0, w]
+
+private theorem spc4D_mul (z w z' w' : ℂ) :
+    spc4D z w * spc4D z' w' = spc4D (z * z') (w * w') := by
+  ext i j; fin_cases i <;> fin_cases j <;>
+    simp [spc4D, Matrix.mul_apply, Fin.sum_univ_two]
+
+private theorem spc4D_star (z w : ℂ) :
+    star (spc4D z w) = spc4D (starRingEnd ℂ z) (starRingEnd ℂ w) := by
+  ext i j; fin_cases i <;> fin_cases j <;> simp [spc4D, Matrix.star_apply]
+
+private theorem spc4D_one : spc4D 1 1 = 1 := by
+  ext i j; fin_cases i <;> fin_cases j <;> simp [spc4D]
+
+private theorem spc4D_zero : spc4D 0 0 = 0 := by
+  ext i j; fin_cases i <;> fin_cases j <;> simp [spc4D]
+
+private theorem spc4D_sub (z w z' w' : ℂ) :
+    spc4D z w - spc4D z' w' = spc4D (z - z') (w - w') := by
+  ext i j; fin_cases i <;> fin_cases j <;> simp [spc4D]
+
+private theorem spc4D_add (z w z' w' : ℂ) :
+    spc4D z w + spc4D z' w' = spc4D (z + z') (w + w') := by
+  ext i j; fin_cases i <;> fin_cases j <;> simp [spc4D]
+
+private theorem spc4D_smul (c z w : ℂ) : c • spc4D z w = spc4D (c * z) (c * w) := by
+  ext i j; fin_cases i <;> fin_cases j <;> simp [spc4D]
+
+private theorem spc4D_congr {z w z' w' : ℂ} (hz : z = z') (hw : w = w') :
+    spc4T (spc4D z w) = spc4T (spc4D z' w') := by rw [hz, hw]
+
+private theorem spc4D_inj {z w z' w' : ℂ} (h : spc4D z w = spc4D z' w') :
+    z = z' ∧ w = w' := by
+  constructor
+  · have h0 := congrFun (congrFun h 0) 0; simpa [spc4D] using h0
+  · have h1 := congrFun (congrFun h 1) 1; simpa [spc4D] using h1
+
+/-- `diag(z, w)` is positive when `z` and `w` have real square roots. -/
+private theorem spc4D_nonneg {z w : ℂ} {a b : ℝ} (hz : (a : ℂ) * (a : ℂ) = z)
+    (hw : (b : ℂ) * (b : ℂ) = w) : (0 : spc4B) ≤ spc4T (spc4D z w) := by
+  have h := star_mul_self_nonneg (spc4T (spc4D (a : ℂ) (b : ℂ)))
+  rwa [spc4_star, spc4_mul, spc4D_star, spc4D_mul, Complex.conj_ofReal,
+    Complex.conj_ofReal, hz, hw] at h
+
+/-- The effect `x_t := diag(1, t)` of `B(ℂ²)`. -/
+private def spc4X (t : ℝ) : spc4B := spc4T (spc4D 1 (t : ℂ))
+
+private theorem spc4X_mul (t t' : ℝ) : spc4X t * spc4X t' = spc4X (t * t') := by
+  rw [spc4X, spc4X, spc4X, spc4_mul, spc4D_mul, one_mul, Complex.ofReal_mul]
+
+private theorem spc4X_nonneg {t : ℝ} (ht : 0 ≤ t) : (0 : spc4B) ≤ spc4X t := by
+  refine spc4D_nonneg (a := 1) (b := Real.sqrt t) (by norm_num) ?_
+  rw [← Complex.ofReal_mul, Real.mul_self_sqrt ht]
+
+private theorem spc4X_le_one {t : ℝ} (ht : t ≤ 1) : spc4X t ≤ 1 := by
+  refine sub_nonneg.mp ?_
+  have hsub : (1 : spc4B) - spc4X t = spc4T (spc4D (1 - 1) (1 - (t : ℂ))) := by
+    rw [spc4X, show (1 : spc4B) = spc4T (spc4D 1 1) by rw [spc4D_one, spc4_one],
+      spc4_sub, spc4D_sub]
+  rw [hsub]
+  refine spc4D_nonneg (a := 0) (b := Real.sqrt (1 - t)) (by norm_num) ?_
+  rw [← Complex.ofReal_mul, Real.mul_self_sqrt (by linarith)]
+  push_cast
+  ring
+
+private theorem spc4X_mem {t : ℝ} (ht : 0 ≤ t) (ht1 : t ≤ 1) :
+    spc4X t ∈ effects spc4B := ⟨spc4X_nonneg ht, spc4X_le_one ht1⟩
+
+private theorem spc4X_sqrt {t : ℝ} (ht : 0 ≤ t) :
+    CFC.sqrt (spc4X t) = spc4X (Real.sqrt t) := by
+  refine CFC.sqrt_unique ?_ (spc4X_nonneg (Real.sqrt_nonneg t))
+  rw [spc4X_mul, Real.mul_self_sqrt ht]
+
+private theorem spc4X_ceil {t : ℝ} (ht : 0 < t) : ceil (spc4X t) = 1 := by
+  have htne : (t : ℂ) ≠ 0 := by
+    simpa using ne_of_gt ht
+  have hinv : spc4T (spc4D 1 ((t : ℂ))⁻¹) * spc4X t = 1 := by
+    rw [spc4X, spc4_mul, spc4D_mul, one_mul, inv_mul_cancel₀ htne, spc4D_one, spc4_one]
+  have h1 : spc4X t * ceil (spc4X t) = spc4X t :=
+    (ceil_spec (spc4X_nonneg ht.le)).2.1
+  calc ceil (spc4X t) = 1 * ceil (spc4X t) := (one_mul _).symm
+    _ = spc4T (spc4D 1 ((t : ℂ))⁻¹) * (spc4X t * ceil (spc4X t)) := by
+        rw [← hinv, mul_assoc]
+    _ = spc4T (spc4D 1 ((t : ℂ))⁻¹) * spc4X t := by rw [h1]
+    _ = 1 := hinv
+
+/-! #### The Borel function `g` -/
+
+/-- `g(λ) = λ^{iπ/(4 log 2)}`. -/
+private def spc4g (l : ℝ) : ℂ :=
+  Complex.exp (((Real.pi / (4 * Real.log 2) * Real.log l : ℝ) : ℂ) * Complex.I)
+
+private theorem spc4g_measurable : Measurable spc4g := by
+  unfold spc4g; fun_prop
+
+private theorem spc4g_norm (l : ℝ) : ‖spc4g l‖ = 1 :=
+  Complex.norm_exp_ofReal_mul_I _
+
+private theorem spc4g_sq (l : ℝ) : spc4g (l ^ 2) = spc4g l ^ 2 := by
+  unfold spc4g
+  rw [show ((Real.pi / (4 * Real.log 2) * Real.log (l ^ 2) : ℝ) : ℂ)
+      = ((2 : ℕ) : ℂ) * ((Real.pi / (4 * Real.log 2) * Real.log l : ℝ) : ℂ) by
+    rw [Real.log_pow]; push_cast; ring]
+  rw [mul_assoc, Complex.exp_nat_mul]
+
+private theorem spc4g_mul_self (l : ℝ) : spc4g (l * l) = spc4g l * spc4g l := by
+  have h := spc4g_sq l
+  rw [pow_two, pow_two] at h
+  exact h
+
+private theorem spc4g_conj_mul (l : ℝ) : (starRingEnd ℂ) (spc4g l) * spc4g l = 1 := by
+  rw [← Complex.normSq_eq_conj_mul_self, Complex.normSq_eq_norm_sq, spc4g_norm]
+  norm_num
+
+private theorem spc4g_quarter : spc4g (1 / 4) = -Complex.I := by
+  have h2 : Real.log 2 ≠ 0 := by positivity
+  have hlog : Real.pi / (4 * Real.log 2) * Real.log (1 / 4) = -(Real.pi / 2) := by
+    rw [show (1 / 4 : ℝ) = ((2 : ℝ) ^ (2 : ℕ))⁻¹ by norm_num, Real.log_inv, Real.log_pow]
+    field_simp
+    ring
+  unfold spc4g
+  rw [hlog, Complex.exp_mul_I, ← Complex.ofReal_cos, ← Complex.ofReal_sin,
+    Real.cos_neg, Real.sin_neg, Real.cos_pi_div_two, Real.sin_pi_div_two]
+  push_cast
+  ring
+
+private theorem spc4g_half : spc4g (1 / 2) ≠ 1 := by
+  have h2 : Real.log 2 ≠ 0 := by positivity
+  have hlog : Real.pi / (4 * Real.log 2) * Real.log (1 / 2) = -(Real.pi / 4) := by
+    rw [one_div, Real.log_inv]
+    field_simp
+  unfold spc4g
+  rw [hlog, Complex.exp_mul_I, ← Complex.ofReal_cos, ← Complex.ofReal_sin]
+  intro h
+  have him := congrArg Complex.im h
+  simp only [Complex.add_im, Complex.ofReal_im, Complex.mul_im, Complex.ofReal_re,
+    Complex.I_im, Complex.I_re, Complex.one_im, mul_one, mul_zero, zero_add,
+    add_zero] at him
+  rw [Real.sin_neg, Real.sin_pi_div_four] at him
+  have hs : (0 : ℝ) < Real.sqrt 2 := Real.sqrt_pos.mpr (by norm_num)
+  linarith
+
+/-! #### The family `u` -/
+
+private def spc4Umat (t : ℝ) : spc4B := spc4T (spc4D 1 (spc4g t))
+
+/-- The parameter `t` read off `diag(1,t)`. -/
+private def spc4tOf (x : spc4B) : ℝ :=
+  ((Matrix.toEuclideanCLM (𝕜 := ℂ)).symm x 1 1).re
+
+private theorem spc4tOf_X (t : ℝ) : spc4tOf (spc4X t) = t := by
+  simp [spc4tOf, spc4X, spc4D]
+
+private theorem spc4X_inj {t t' : ℝ} (h : spc4X t = spc4X t') : t = t' := by
+  rw [← spc4tOf_X t, ← spc4tOf_X t', h]
+
+/-- The effects `diag(1,t)`, `0 < t ≤ 1`, on which `u` is `g(·)`. -/
+private def spc4Fam (x : spc4B) : Prop :=
+  0 < spc4tOf x ∧ spc4tOf x ≤ 1 ∧ x = spc4X (spc4tOf x)
+
+private theorem spc4Fam_iff {x : spc4B} :
+    spc4Fam x ↔ ∃ t : ℝ, (0 < t ∧ t ≤ 1) ∧ x = spc4X t := by
+  constructor
+  · intro h
+    exact ⟨spc4tOf x, ⟨h.1, h.2.1⟩, h.2.2⟩
+  · rintro ⟨t, ⟨ht, ht1⟩, rfl⟩
+    refine ⟨?_, ?_, ?_⟩ <;> rw [spc4tOf_X]
+    exacts [ht, ht1]
+
+open scoped Classical in
+/-- The unitary family: `u_x = g(x)` for `x = diag(1,t)` with `0 < t ≤ 1`,
+and `u_x = ⌈x⌉` elsewhere. -/
+private def spc4U (x : spc4B) : spc4B :=
+  if spc4Fam x then spc4Umat (spc4tOf x) else ceil x
+
+private theorem spc4U_fam {t : ℝ} (ht : 0 < t) (ht1 : t ≤ 1) :
+    spc4U (spc4X t) = spc4Umat t := by
+  classical
+  have hf : spc4Fam (spc4X t) := spc4Fam_iff.mpr ⟨t, ⟨ht, ht1⟩, rfl⟩
+  unfold spc4U
+  split_ifs
+  rw [spc4tOf_X]
+
+private theorem spc4U_off {x : spc4B} (h : ¬ spc4Fam x) : spc4U x = ceil x := by
+  classical
+  unfold spc4U
+  split_ifs
+  rfl
+
+/-- Off the family, squaring stays off the family. -/
+private theorem spc4_off_sq {x : spc4B} (hx : (0 : spc4B) ≤ x) (h : ¬ spc4Fam x) :
+    ¬ spc4Fam (x * x) := by
+  intro hsq
+  obtain ⟨t, ⟨ht, ht1⟩, hxx⟩ := spc4Fam_iff.mp hsq
+  refine h (spc4Fam_iff.mpr ⟨Real.sqrt t, ⟨Real.sqrt_pos.mpr ht, ?_⟩, ?_⟩)
+  · rw [show (1 : ℝ) = Real.sqrt 1 by simp]
+    exact Real.sqrt_le_sqrt ht1
+  · have h1 : CFC.sqrt (x * x) = x := CFC.sqrt_mul_self x hx
+    rw [hxx, spc4X_sqrt ht.le] at h1
+    exact h1.symm
+
+private theorem spc4Umat_unitary (t : ℝ) :
+    star (spc4Umat t) * spc4Umat t = 1 ∧ spc4Umat t * star (spc4Umat t) = 1 := by
+  have hc := spc4g_conj_mul t
+  have hc' : spc4g t * (starRingEnd ℂ) (spc4g t) = 1 := by rw [mul_comm]; exact hc
+  constructor
+  · rw [spc4Umat, spc4_star, spc4_mul, spc4D_star, spc4D_mul, hc, map_one, one_mul,
+      spc4D_one, spc4_one]
+  · rw [spc4Umat, spc4_star, spc4_mul, spc4D_star, spc4D_mul, hc', map_one, one_mul,
+      spc4D_one, spc4_one]
+
+/-- The hypotheses of `spc4_twisted_axioms` for the family. -/
+private theorem spc4U_facts :
+    (∀ p ∈ effects spc4B, spc4U p ∈ cornerSet spc4B (ceil p) ∧
+        star (spc4U p) * spc4U p = ceil p ∧ spc4U p * star (spc4U p) = ceil p) ∧
+      (∀ p ∈ effects spc4B, spc4U p * spc4U p = spc4U (p * p)) ∧
+      (∀ p ∈ effects spc4B, CFC.sqrt p * spc4U p = spc4U p * CFC.sqrt p) := by
+  classical
+  refine ⟨?_, ?_, ?_⟩
+  · intro p hp
+    by_cases h : spc4Fam p
+    · obtain ⟨t, ⟨ht, ht1⟩, rfl⟩ := spc4Fam_iff.mp h
+      rw [spc4U_fam ht ht1, spc4X_ceil ht]
+      obtain ⟨hu1, hu2⟩ := spc4Umat_unitary t
+      exact ⟨show (1 : spc4B) * spc4Umat t * 1 = spc4Umat t by rw [one_mul, mul_one],
+        hu1, hu2⟩
+    · rw [spc4U_off h]
+      have hc : IsStarProjection (ceil p) := (ceil_spec hp.1).1
+      exact ⟨show ceil p * ceil p * ceil p = ceil p by
+          rw [hc.isIdempotentElem.eq, hc.isIdempotentElem.eq],
+        by rw [hc.isSelfAdjoint.star_eq, hc.isIdempotentElem.eq],
+        by rw [hc.isSelfAdjoint.star_eq, hc.isIdempotentElem.eq]⟩
+  · intro p hp
+    by_cases h : spc4Fam p
+    · obtain ⟨t, ⟨ht, ht1⟩, rfl⟩ := spc4Fam_iff.mp h
+      have htt : 0 < t * t := mul_pos ht ht
+      have htt1 : t * t ≤ 1 := by nlinarith
+      rw [spc4U_fam ht ht1, spc4X_mul, spc4U_fam htt htt1, spc4Umat, spc4Umat,
+        spc4_mul, spc4D_mul, one_mul, spc4g_mul_self]
+    · rw [spc4U_off h, spc4U_off (spc4_off_sq hp.1 h), spc4_ceil_mul_self hp.1]
+      exact ((ceil_spec hp.1).1).isIdempotentElem.eq
+  · intro p hp
+    by_cases h : spc4Fam p
+    · obtain ⟨t, ⟨ht, ht1⟩, rfl⟩ := spc4Fam_iff.mp h
+      rw [spc4U_fam ht ht1, spc4X_sqrt ht.le, spc4Umat, spc4X, spc4_mul, spc4_mul,
+        spc4D_mul, spc4D_mul, one_mul,
+        mul_comm ((Real.sqrt t : ℝ) : ℂ) (spc4g t)]
+    · rw [spc4U_off h, (spc4_sqrt_mul_ceil hp.1).1, (spc4_sqrt_mul_ceil hp.1).2]
+
+/-! #### The two projections refuting (E) -/
+
+private theorem spc4_quarter_calc :
+    (starRingEnd ℂ) (-Complex.I / 2) * (-Complex.I / 2) = ((1 / 4 : ℝ) : ℂ) := by
+  have h1 : (starRingEnd ℂ) (-Complex.I / 2) = Complex.I / 2 := by
+    simp [map_div₀, map_ofNat]
+  rw [h1, div_mul_div_comm,
+    show Complex.I * -Complex.I = 1 by rw [mul_neg, Complex.I_mul_I]; ring]
+  push_cast
+  norm_num
+
+private def spc4M1 : Matrix (Fin 2) (Fin 2) ℂ := !![1/2, 1/2; 1/2, 1/2]
+
+private def spc4M2 : Matrix (Fin 2) (Fin 2) ℂ :=
+  !![1/5, 2 * Complex.I/5; -(2 * Complex.I)/5, 4/5]
+
+private theorem spc4M1_idem : spc4M1 * spc4M1 = spc4M1 := by
+  ext i j; fin_cases i <;> fin_cases j <;>
+    norm_num [spc4M1, Matrix.mul_apply, Fin.sum_univ_two]
+
+private theorem spc4M1_star : star spc4M1 = spc4M1 := by
+  ext i j; fin_cases i <;> fin_cases j <;>
+    norm_num [spc4M1, Matrix.star_apply, Complex.ext_iff]
+
+private theorem spc4M2_idem : spc4M2 * spc4M2 = spc4M2 := by
+  ext i j; fin_cases i <;> fin_cases j <;>
+    norm_num [spc4M2, Matrix.mul_apply, Fin.sum_univ_two, Complex.ext_iff]
+
+private theorem spc4M2_star : star spc4M2 = spc4M2 := by
+  ext i j; fin_cases i <;> fin_cases j <;>
+    norm_num [spc4M2, Matrix.star_apply, Complex.ext_iff]
+
+private theorem spc4_zeroprod :
+    spc4M1 * spc4D 1 (-Complex.I/2) * spc4M2 = 0 := by
+  ext i j; fin_cases i <;> fin_cases j <;>
+    norm_num [spc4M1, spc4M2, spc4D, Matrix.mul_apply, Fin.sum_univ_two,
+      Complex.ext_iff]
+
+private theorem spc4_nonzeroprod :
+    spc4M2 * spc4D 1 (-Complex.I/2) * spc4M1 ≠ 0 := by
+  intro h
+  have h00 := congrFun (congrFun h 0) 0
+  norm_num [spc4M1, spc4M2, spc4D, Matrix.mul_apply, Fin.sum_univ_two,
+    Complex.ext_iff] at h00
+
+/-! #### The counterexample -/
+
+/-- **106III** (proc.tex:1864, Exercise), part 4, **second claim**: the
+operation `p ∗ q = √p g(p)* q g(p) √p` built from part 4's Borel `g`
+satisfies every axiom of **106I** except (E).  So (E) may not be omitted
+from **106I** — the point of part 4.
+
+Stated in `𝒜 = B(ℂ²)`, for a family `u` that *is* `g(·)` wherever the Borel
+calculus of the printed text is elementwise explicit: `u` comes with two
+complementary rank-one projections `f₁, f₂` for which
+`u (f₁ + t·f₂) = f₁ + g(t)·f₂`, i.e. `u(p) = g(1)f₁ + g(t)f₂ = g(p)` at
+every effect `p = f₁ + t·f₂` with `t ∈ (0,1]`.  Off those effects `u_x` is
+`⌈x⌉` — the one gap against the printed text, which takes `u_x = g(x)` at
+*every* effect of *every* von Neumann algebra and so needs the Borel
+functional calculus `p ↦ g(p)` that Mathlib lacks.  The substitute family
+meets the same three hypotheses (`spc4_twisted_axioms`), so the Exercise's
+conclusion is untouched: (A), (B), (C) and (D) hold, and (E) fails at
+`p = f₁ + ¼·f₂`, where `g(p)√p = diag(1, -i/2)`.
+
+The `g` produced here is `g(λ) = λ^{iπ/(4 log 2)}`, a sharper witness for
+part 4's first claim than the one in `sequential_product_counterexample_4`
+above (`g(¼) = -i`, so that `g(p)√p` is not self-adjoint; the earlier
+`λ^{iπ/log 2}` is `±1` at every power of 2). -/
+theorem sequential_product_counterexample_4_ax5_is_false :
+    ∃ g : ℝ → ℂ, Measurable g ∧ (∀ l : ℝ, l ∈ Set.Icc (0:ℝ) 1 → ‖g l‖ = 1) ∧
+      g (1/2) ≠ 1 ∧ (∀ l : ℝ, l ∈ Set.Icc (0:ℝ) 1 → g (l ^ 2) = g l ^ 2) ∧
+      ∃ u : spc4B → spc4B, ∃ op : spc4B → spc4B → spc4B,
+        (∀ p q : spc4B, op p q = CFC.sqrt p * star (u p) * q * u p * CFC.sqrt p) ∧
+        (∀ p ∈ effects spc4B, u p ∈ cornerSet spc4B (ceil p) ∧
+          star (u p) * u p = ceil p ∧ u p * star (u p) = ceil p) ∧
+        (∃ f₁ f₂ : spc4B, IsStarProjection f₁ ∧ IsStarProjection f₂ ∧
+          f₁ * f₂ = 0 ∧ f₁ + f₂ = 1 ∧ f₁ ≠ 0 ∧ f₂ ≠ 0 ∧
+          ∀ t : ℝ, 0 < t → t ≤ 1 →
+            f₁ + (t : ℂ) • f₂ ∈ effects spc4B ∧
+            u (f₁ + (t : ℂ) • f₂) = f₁ + g t • f₂) ∧
+        (∀ p ∈ effects spc4B, op p 1 = p) ∧
+        (∀ p ∈ effects spc4B, ∃ f : NCPMap spc4B spc4B, IsPure f ∧
+          ∀ q ∈ effects spc4B, op p q = f q) ∧
+        (∀ p ∈ effects spc4B, ∀ q ∈ effects spc4B,
+          op p (op p q) = op (op p p) q) ∧
+        (∀ p ∈ effects spc4B, ∃ q ∈ effects spc4B, p = op q q) ∧
+        ¬ (∀ p ∈ effects spc4B, ∀ e₁ e₂ : spc4B, IsStarProjection e₁ →
+            IsStarProjection e₂ →
+            (op p e₁ ≤ 1 - e₂ ↔ op p e₂ ≤ 1 - e₁)) := by
+  classical
+  obtain ⟨hcorner, h2, h3⟩ := spc4U_facts
+  have h1 : ∀ p ∈ effects spc4B, star (spc4U p) * spc4U p = ceil p :=
+    fun p hp => (hcorner p hp).2.1
+  obtain ⟨hA, hB, hC, hD⟩ := spc4_twisted_axioms spc4U
+    (fun p q => CFC.sqrt p * star (spc4U p) * q * spc4U p * CFC.sqrt p)
+    (fun p q => rfl) h1 h2 h3
+  refine ⟨spc4g, spc4g_measurable, fun l _ => spc4g_norm l, spc4g_half,
+    fun l _ => spc4g_sq l, spc4U,
+    fun p q => CFC.sqrt p * star (spc4U p) * q * spc4U p * CFC.sqrt p,
+    fun p q => rfl, hcorner, ?_, hA, hB, hC, hD, ?_⟩
+  · -- `u` is `g(·)` on the effects `diag(1,t)`
+    have hsplit : ∀ z : ℂ, spc4T (spc4D 1 0) + z • spc4T (spc4D 0 1)
+        = spc4T (spc4D 1 z) := by
+      intro z
+      rw [spc4_smul, spc4D_smul, spc4_add, spc4D_add, mul_zero, add_zero, mul_one,
+        zero_add]
+    refine ⟨spc4T (spc4D 1 0), spc4T (spc4D 0 1), ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
+    · exact ⟨show _ = _ by rw [spc4_mul, spc4D_mul, one_mul, mul_zero],
+        show _ = _ by rw [spc4_star, spc4D_star, map_one, map_zero]⟩
+    · exact ⟨show _ = _ by rw [spc4_mul, spc4D_mul, zero_mul, one_mul],
+        show _ = _ by rw [spc4_star, spc4D_star, map_one, map_zero]⟩
+    · rw [spc4_mul, spc4D_mul, one_mul, zero_mul, spc4D_zero, spc4_zero]
+    · rw [spc4_add, spc4D_add, add_zero, zero_add, spc4D_one, spc4_one]
+    · intro hz
+      have h := spc4_inj (M := spc4D 1 0) (N := 0) (by rw [hz, spc4_zero])
+      have h0 := congrFun (congrFun h 0) 0
+      norm_num [spc4D] at h0
+    · intro hz
+      have h := spc4_inj (M := spc4D 0 1) (N := 0) (by rw [hz, spc4_zero])
+      have h0 := congrFun (congrFun h 1) 1
+      norm_num [spc4D] at h0
+    · intro t ht ht1
+      rw [hsplit, hsplit, ← spc4X]
+      exact ⟨spc4X_mem ht.le ht1, by rw [spc4U_fam ht ht1, spc4Umat]⟩
+  · -- (E) fails
+    intro hE
+    have hq0 : (0:ℝ) < 1/4 := by norm_num
+    have hq1 : (1/4:ℝ) ≤ 1 := by norm_num
+    have hs4 : Real.sqrt (1/4 : ℝ) = 1/2 := by
+      rw [show (1/4:ℝ) = (1/2)^2 by norm_num, Real.sqrt_sq (by norm_num)]
+    have hsqrt : CFC.sqrt (spc4X (1/4)) = spc4X (1/2) := by
+      rw [spc4X_sqrt hq0.le, hs4]
+    have hu : spc4U (spc4X (1/4)) = spc4T (spc4D 1 (-Complex.I)) := by
+      rw [spc4U_fam hq0 hq1, spc4Umat, spc4g_quarter]
+    have ha : spc4U (spc4X (1/4)) * CFC.sqrt (spc4X (1/4))
+        = spc4T (spc4D 1 (-Complex.I/2)) := by
+      rw [hu, hsqrt, spc4X, spc4_mul, spc4D_mul]
+      exact spc4D_congr (one_mul 1) (by push_cast; ring)
+    have hsa : star (CFC.sqrt (spc4X (1/4))) = CFC.sqrt (spc4X (1/4)) :=
+      (IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg _)).star_eq
+    have hastar : CFC.sqrt (spc4X (1/4)) * star (spc4U (spc4X (1/4)))
+        = star (spc4T (spc4D 1 (-Complex.I/2))) := by
+      rw [← ha, star_mul, hsa]
+    set a : spc4B := spc4T (spc4D 1 (-Complex.I/2)) with ha_def
+    set d₁ : spc4B := spc4T spc4M1 with hd1_def
+    set d₂ : spc4B := spc4T spc4M2 with hd2_def
+    have hd₁ : IsStarProjection d₁ :=
+      ⟨show d₁ * d₁ = d₁ by rw [hd1_def, spc4_mul, spc4M1_idem],
+        show star d₁ = d₁ by rw [hd1_def, spc4_star, spc4M1_star]⟩
+    have hd₂ : IsStarProjection d₂ :=
+      ⟨show d₂ * d₂ = d₂ by rw [hd2_def, spc4_mul, spc4M2_idem],
+        show star d₂ = d₂ by rw [hd2_def, spc4_star, spc4M2_star]⟩
+    have haa : star a * a = spc4X (1/4) := by
+      rw [ha_def, spc4_star, spc4_mul, spc4D_star, spc4D_mul, spc4X]
+      exact spc4D_congr (by norm_num) spc4_quarter_calc
+    have haa1 : star a * a ≤ 1 := by
+      rw [haa]; exact spc4X_le_one hq1
+    have hshape : ∀ e : spc4B, CFC.sqrt (spc4X (1/4)) * star (spc4U (spc4X (1/4)))
+        * e * spc4U (spc4X (1/4)) * CFC.sqrt (spc4X (1/4)) = star a * e * a := by
+      intro e
+      calc CFC.sqrt (spc4X (1/4)) * star (spc4U (spc4X (1/4))) * e
+            * spc4U (spc4X (1/4)) * CFC.sqrt (spc4X (1/4))
+          = (CFC.sqrt (spc4X (1/4)) * star (spc4U (spc4X (1/4)))) * e
+            * (spc4U (spc4X (1/4)) * CFC.sqrt (spc4X (1/4))) := by
+              simp only [mul_assoc]
+        _ = star a * e * a := by rw [hastar, ha]
+    have hEp := hE (spc4X (1/4)) (spc4X_mem hq0.le hq1) d₁ d₂ hd₁ hd₂
+    simp only [hshape] at hEp
+    have hfwd : star a * d₁ * a ≤ 1 - d₂ := by
+      refine (spc4_le_perp_iff (spc4_conj_effect haa1 hd₁).1
+        (spc4_conj_effect haa1 hd₁).2 hd₂).mpr ?_
+      rw [spc4_sandwich a hd₁ hd₂]
+      have hzero : d₁ * a * d₂ = 0 := by
+        rw [hd1_def, ha_def, hd2_def, spc4_mul, spc4_mul, spc4_zeroprod, spc4_zero]
+      rw [hzero, star_zero, mul_zero]
+    have hbad := (spc4_le_perp_iff (spc4_conj_effect haa1 hd₂).1
+      (spc4_conj_effect haa1 hd₂).2 hd₁).mp (hEp.mp hfwd)
+    rw [spc4_sandwich a hd₂ hd₁] at hbad
+    have hz := (CStarRing.star_mul_self_eq_zero_iff _).mp hbad
+    rw [hd2_def, ha_def, hd1_def, spc4_mul, spc4_mul] at hz
+    exact spc4_nonzeroprod (spc4_inj (by rw [spc4_zero]; exact hz))
+
+end SPC4
 
 /- **106IV** (`fourth-axiom`, proc.tex:1907, Problem): open problem (is
 axiom (D) redundant?) — not formalizable as a theorem; skipped.
