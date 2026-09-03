@@ -180,6 +180,9 @@ def tree_declarations():
             m = DECL.match(ln)
             if m:
                 n = m.group(1)
+                if n.startswith('_root_.'):
+                    names.add(n[7:])      # declared at the root from inside a namespace
+                    continue
                 names.add(n)
                 for i in range(len(stack)):
                     names.add('.'.join(stack[i:] + [n]))

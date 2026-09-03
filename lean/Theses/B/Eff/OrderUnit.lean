@@ -36,16 +36,36 @@ Design:
   element is a difference of two positive elements
   (`ou_eq_sub_of_nonneg`, `oug_eq_sub_of_nonneg`), and `c ≤ n • 1` for
   `c ≥ 0`, which is the order-unit axiom itself.
+* The predicates, states and scalars of `OUSᵒᵖ` and `OUGᵒᵖ` (190IV.1 and
+  190IV.2, eff.tex:2148-2166) are computed in the last third of the file,
+  in the partial form `Par OUS.{u}ᵒᵖ` / `Par OUG.{u}ᵒᵖ` where `Pred`,
+  `Stat`, `Scal`, `SeparatingPredicates` and `SeparatingStates` live
+  (190II).  The effectus structure of the two categories is therefore
+  promoted from the `have`s inside `effectus_ous` / `effectus_oug` to
+  named instances (`effectusTotalForm_ous`, `effectusTotalForm_oug` and
+  the `HasTerminal` / `HasFiniteCoproducts` they rest on); the two
+  bundled theorems keep their statements and are three lines each.
+* ⚠ **190IV.2 is false as printed**: `OUGᵒᵖ` does *not* have separating
+  predicates.  `oug_no_separating_predicates` refutes it with the order
+  unit group `ℤ²` whose positive cone is `{0} ∪ {(a,b) : a ≥ 1, b ≥ 0}`
+  and whose order unit is `(1,1)`: its only effects are `0` and `1`, so
+  the predicates see only the diagonal, on which the two distinct
+  positive unital maps `(x,n) ↦ x₁` and `(x,n) ↦ x₂` into `ℤ` agree.
+  Separating predicates would need the effects `[0,1]` to generate the
+  group, which "ordered abelian group with order unit" does not give.
 * Not separately formalized: the remaining items of 189aII (extensive
   categories with a final object, and the examples `Set`, `CRngᵒᵖ`, `CH`
-  of 189aII.3), and the descriptions of the predicates, states and
-  scalars of `OUSᵒᵖ` and `OUGᵒᵖ` in 190IV.
+  of 189aII.3); and the parenthetical of 190IV.1 (eff.tex:2151), that the
+  states on a single order unit space are separating iff it is
+  archimedean — only the two halves the point itself asserts about the
+  category are carried.
 -/
 import Theses.B.Eff.StatesPredicates
 
 set_option warn.classDefReducibility false
 
 open CategoryTheory CategoryTheory.Limits
+open scoped unitInterval
 
 namespace Theses.B.Eff
 
@@ -846,29 +866,28 @@ theorem ous_jointlyMonic_aux {Z : OUS.{u}}
 
 /-! ### `OUSᵒᵖ` is an effectus -/
 
-/-- **189aII.1** (`effexamplesintro`, eff.tex:2032, Examples): the
-category `OUSᵒᵖ` of order unit spaces with positive unit-preserving linear
-maps in the opposite direction is an effectus in total form.
+instance ousOpHasTerminal : HasTerminal (OUS.{u}ᵒᵖ) := ousPres.hT.hasTerminal
 
-The point gives no proof.  Ours is the `vNᵒᵖ` argument of `effectus_vn`
-with the C\*-algebra replaced by an ordered real vector space: `ℝ` is
-initial in `OUS` and the products are the coproducts of `OUSᵒᵖ`
-(`ousPres`), the two squares of 180I are the pushouts `ous_isPushout1`
-and `ous_isPushout2`, and the two cotuples are jointly monic by
-`ous_jointlyMonic_aux`. -/
-theorem effectus_ous : Nonempty (EffectusTotalStructure OUS.{u}ᵒᵖ) := by
-  have : HasTerminal (OUS.{u}ᵒᵖ) := ousPres.hT.hasTerminal
-  have : HasInitial (OUS.{u}ᵒᵖ) :=
-    (IsTerminal.op (OUS.{u}) ousTrivIsTerminal).hasInitial
-  have : ∀ X Y : OUS.{u}ᵒᵖ, HasColimit (pair X Y) := fun X Y =>
-    HasColimit.mk ⟨_, ousPres.hP X Y⟩
-  have : HasBinaryCoproducts (OUS.{u}ᵒᵖ) :=
-    hasBinaryCoproducts_of_hasColimit_pair _
-  have : HasFiniteCoproducts (OUS.{u}ᵒᵖ) :=
-    hasFiniteCoproducts_of_has_binary_and_initial
-  refine ⟨{ hasFiniteCoproducts := inferInstance
-            hasTerminal := inferInstance
-            effectus := effectusTotalForm_of_pres ousPres ?_ ?_ ?_ }⟩
+/-- The zero space is the initial object of `OUSᵒᵖ`. -/
+instance ousOpHasInitial : HasInitial (OUS.{u}ᵒᵖ) :=
+  (IsTerminal.op (OUS.{u}) ousTrivIsTerminal).hasInitial
+
+/-- Binary coproducts of `OUSᵒᵖ` are the products of `OUS`. -/
+instance ousOpHasColimitPair (X Y : OUS.{u}ᵒᵖ) : HasColimit (pair X Y) :=
+  HasColimit.mk ⟨_, ousPres.hP X Y⟩
+
+/-- `OUSᵒᵖ` has binary coproducts. -/
+instance ousOpHasBinaryCoproducts : HasBinaryCoproducts (OUS.{u}ᵒᵖ) :=
+  hasBinaryCoproducts_of_hasColimit_pair _
+
+/-- `OUSᵒᵖ` has finite coproducts. -/
+instance ousOpHasFiniteCoproducts : HasFiniteCoproducts (OUS.{u}ᵒᵖ) :=
+  hasFiniteCoproducts_of_has_binary_and_initial
+
+/-- **189aII.1** (`effexamplesintro`, eff.tex:2032, Examples): the three
+axioms of 180I for `OUSᵒᵖ`, as an instance; `effectus_ous` bundles it. -/
+instance effectusTotalForm_ous : EffectusTotalForm OUS.{u}ᵒᵖ := by
+  refine effectusTotalForm_of_pres ousPres ?_ ?_ ?_
   · intro X Y
     have e₁ : ousPres.pmap (𝟙 X) (ousPres.hT.from Y)
         = Quiver.Hom.op (ousSq1i X.unop Y.unop) := by
@@ -908,6 +927,23 @@ theorem effectus_ous : Nonempty (EffectusTotalStructure OUS.{u}ᵒᵖ) := by
     refine ous_jointlyMonic_aux a.unop b.unop (fun x => ?_) (fun x => ?_)
     · exact ousop_comp_congr hf x
     · exact ousop_comp_congr hg x
+
+/-- **189aII.1** (`effexamplesintro`, eff.tex:2032, Examples): the
+category `OUSᵒᵖ` of order unit spaces with positive unit-preserving linear
+maps in the opposite direction is an effectus in total form.
+
+The point gives no proof.  Ours is the `vNᵒᵖ` argument of `effectus_vn`
+with the C\*-algebra replaced by an ordered real vector space: `ℝ` is
+initial in `OUS` and the products are the coproducts of `OUSᵒᵖ`
+(`ousPres`), the two squares of 180I are the pushouts `ous_isPushout1`
+and `ous_isPushout2`, and the two cotuples are jointly monic by
+`ous_jointlyMonic_aux`.  That argument is the instance
+`effectusTotalForm_ous` above (it is needed as an instance by the `Pred`,
+`Stat` and `Scal` of 190IV.1); this theorem only bundles it. -/
+theorem effectus_ous : Nonempty (EffectusTotalStructure OUS.{u}ᵒᵖ) :=
+  ⟨{ hasFiniteCoproducts := inferInstance
+     hasTerminal := inferInstance
+     effectus := inferInstance }⟩
 
 /-! ## Order unit groups (189aII.2) -/
 
@@ -1637,30 +1673,28 @@ theorem oug_jointlyMonic_aux {K : OUG.{u}}
 
 /-! ### `OUGᵒᵖ` is an effectus -/
 
-/-- **189aII.2** (`effexamplesintro`, eff.tex:2037, Examples): the
-category `OUGᵒᵖ` of order unit groups with positive unit-preserving
-homomorphisms in the opposite direction is an effectus in total form.
+instance ougOpHasTerminal : HasTerminal (OUG.{u}ᵒᵖ) := ougPres.hT.hasTerminal
 
-The point gives no proof.  Ours is the argument of `effectus_ous` with the
-ordered real vector space replaced by a partially ordered abelian group:
-`ℤ` is initial in `OUG`, the products are the coproducts of `OUGᵒᵖ`
-(`ougPres`), and the three axioms of 180I are `oug_isPushout1`,
-`oug_isPushout2` and `oug_jointlyMonic_aux`.  No scalar action is used
-anywhere; the order-unit axiom does the work the norm did for von Neumann
-algebras. -/
-theorem effectus_oug : Nonempty (EffectusTotalStructure OUG.{u}ᵒᵖ) := by
-  have : HasTerminal (OUG.{u}ᵒᵖ) := ougPres.hT.hasTerminal
-  have : HasInitial (OUG.{u}ᵒᵖ) :=
-    (IsTerminal.op (OUG.{u}) ougTrivIsTerminal).hasInitial
-  have : ∀ G H : OUG.{u}ᵒᵖ, HasColimit (pair G H) := fun G H =>
-    HasColimit.mk ⟨_, ougPres.hP G H⟩
-  have : HasBinaryCoproducts (OUG.{u}ᵒᵖ) :=
-    hasBinaryCoproducts_of_hasColimit_pair _
-  have : HasFiniteCoproducts (OUG.{u}ᵒᵖ) :=
-    hasFiniteCoproducts_of_has_binary_and_initial
-  refine ⟨{ hasFiniteCoproducts := inferInstance
-            hasTerminal := inferInstance
-            effectus := effectusTotalForm_of_pres ougPres ?_ ?_ ?_ }⟩
+/-- The zero group is the initial object of `OUGᵒᵖ`. -/
+instance ougOpHasInitial : HasInitial (OUG.{u}ᵒᵖ) :=
+  (IsTerminal.op (OUG.{u}) ougTrivIsTerminal).hasInitial
+
+/-- Binary coproducts of `OUGᵒᵖ` are the products of `OUG`. -/
+instance ougOpHasColimitPair (G H : OUG.{u}ᵒᵖ) : HasColimit (pair G H) :=
+  HasColimit.mk ⟨_, ougPres.hP G H⟩
+
+/-- `OUGᵒᵖ` has binary coproducts. -/
+instance ougOpHasBinaryCoproducts : HasBinaryCoproducts (OUG.{u}ᵒᵖ) :=
+  hasBinaryCoproducts_of_hasColimit_pair _
+
+/-- `OUGᵒᵖ` has finite coproducts. -/
+instance ougOpHasFiniteCoproducts : HasFiniteCoproducts (OUG.{u}ᵒᵖ) :=
+  hasFiniteCoproducts_of_has_binary_and_initial
+
+/-- **189aII.2** (`effexamplesintro`, eff.tex:2037, Examples): the three
+axioms of 180I for `OUGᵒᵖ`, as an instance; `effectus_oug` bundles it. -/
+instance effectusTotalForm_oug : EffectusTotalForm OUG.{u}ᵒᵖ := by
+  refine effectusTotalForm_of_pres ougPres ?_ ?_ ?_
   · intro G H
     have e₁ : ougPres.pmap (𝟙 G) (ougPres.hT.from H)
         = Quiver.Hom.op (ougSq1i G.unop H.unop) := by
@@ -1700,6 +1734,2372 @@ theorem effectus_oug : Nonempty (EffectusTotalStructure OUG.{u}ᵒᵖ) := by
     refine oug_jointlyMonic_aux a.unop b.unop (fun x => ?_) (fun x => ?_)
     · exact ougop_comp_congr hf x
     · exact ougop_comp_congr hg x
+
+/-- **189aII.2** (`effexamplesintro`, eff.tex:2037, Examples): the
+category `OUGᵒᵖ` of order unit groups with positive unit-preserving
+homomorphisms in the opposite direction is an effectus in total form.
+
+The point gives no proof.  Ours is the argument of `effectus_ous` with the
+ordered real vector space replaced by a partially ordered abelian group:
+`ℤ` is initial in `OUG`, the products are the coproducts of `OUGᵒᵖ`
+(`ougPres`), and the three axioms of 180I are `oug_isPushout1`,
+`oug_isPushout2` and `oug_jointlyMonic_aux`.  No scalar action is used
+anywhere; the order-unit axiom does the work the norm did for von Neumann
+algebras.  That argument is the instance `effectusTotalForm_oug` above (it
+is needed as an instance by the `Pred`, `Stat` and `Scal` of 190IV.2); this
+theorem only bundles it. -/
+theorem effectus_oug : Nonempty (EffectusTotalStructure OUG.{u}ᵒᵖ) :=
+  ⟨{ hasFiniteCoproducts := inferInstance
+     hasTerminal := inferInstance
+     effectus := inferInstance }⟩
+
+/-! ## Predicates, states and scalars (190IV.1 and 190IV.2) -/
+
+open Opposite
+
+/-! ## Predicates of `Par C` from a two-point presentation of `⊤ + ⊤` -/
+
+section OUParPred
+
+variable {C : Type u} [Category.{v} C] [HasFiniteCoproducts C] [HasTerminal C]
+variable {S : C} {i₁ i₂ : (⊤_ C) ⟶ S}
+
+/-- The comparison isomorphism `⊤ + ⊤ ≅ S`. -/
+def ouGamma (hS : IsColimit (BinaryCofan.mk i₁ i₂)) : ((⊤_ C) ⨿ (⊤_ C)) ≅ S :=
+  IsColimit.coconePointUniqueUpToIso (coprodIsCoprod (⊤_ C) (⊤_ C)) hS
+
+/-- The first coprojection of `⊤ + ⊤`, transported to `S`. -/
+theorem ouGamma_inl (hS : IsColimit (BinaryCofan.mk i₁ i₂)) :
+    (coprod.inl : (⊤_ C) ⟶ _) ≫ (ouGamma hS).hom = i₁ :=
+  IsColimit.comp_coconePointUniqueUpToIso_hom (coprodIsCoprod (⊤_ C) (⊤_ C)) hS
+    (Discrete.mk WalkingPair.left)
+
+/-- The second coprojection of `⊤ + ⊤`, transported to `S`. -/
+theorem ouGamma_inr (hS : IsColimit (BinaryCofan.mk i₁ i₂)) :
+    (coprod.inr : (⊤_ C) ⟶ _) ≫ (ouGamma hS).hom = i₂ :=
+  IsColimit.comp_coconePointUniqueUpToIso_hom (coprodIsCoprod (⊤_ C) (⊤_ C)) hS
+    (Discrete.mk WalkingPair.right)
+
+variable [EffectusTotalForm C]
+
+/-- The orthosupplement `[κ₂,κ₁]` of `Par C`, transported to `S`. -/
+theorem ouSwapTop_ouGamma (hS : IsColimit (BinaryCofan.mk i₁ i₂)) (sw : S ⟶ S)
+    (h₁ : i₁ ≫ sw = i₂) (h₂ : i₂ ≫ sw = i₁) :
+    (parSwapTop : (⊤_ C) ⨿ (⊤_ C) ⟶ _) ≫ (ouGamma hS).hom
+      = (ouGamma hS).hom ≫ sw := by
+  refine coprod.hom_ext ?_ ?_
+  · rw [parSwapTop_eq, ← Category.assoc, coprod.inl_desc, ouGamma_inr,
+      ← Category.assoc, ouGamma_inl, h₁]
+  · rw [parSwapTop_eq, ← Category.assoc, coprod.inr_desc, ouGamma_inl,
+      ← Category.assoc, ouGamma_inr, h₂]
+
+variable [HasFiniteCoproducts (Par C)]
+
+/-- `Pred (Par.of X) = C(X, ⊤ + ⊤) ≃ C(X, S)`. -/
+def ouPredEquiv (hS : IsColimit (BinaryCofan.mk i₁ i₂)) (X : C) :
+    Pred (Par.of X) ≃ (X ⟶ S) where
+  toFun p := pval p ≫ (ouGamma hS).hom
+  invFun q := show Pred (Par.of X) from
+    (q ≫ (ouGamma hS).inv : X ⟶ (⊤_ C) ⨿ (⊤_ C))
+  left_inv p := by
+    refine pval_inj ?_
+    show (pval p ≫ (ouGamma hS).hom) ≫ (ouGamma hS).inv = pval p
+    rw [Category.assoc, Iso.hom_inv_id, Category.comp_id]
+  right_inv q := by
+    show (q ≫ (ouGamma hS).inv) ≫ (ouGamma hS).hom = q
+    rw [Category.assoc, Iso.inv_hom_id, Category.comp_id]
+
+/-- Under `ouPredEquiv` the truth predicate `1` is the constant `i₁`. -/
+theorem ouPredEquiv_truth (hS : IsColimit (BinaryCofan.mk i₁ i₂)) (X : C) :
+    ouPredEquiv hS X (truth (Par.of X)) = terminal.from X ≫ i₁ := by
+  show (terminal.from X ≫ coprod.inl) ≫ (ouGamma hS).hom = _
+  rw [Category.assoc, ouGamma_inl]
+
+/-- Under `ouPredEquiv` the zero predicate `0` is the constant `i₂`. -/
+theorem ouPredEquiv_zero (hS : IsColimit (BinaryCofan.mk i₁ i₂)) (X : C) :
+    ouPredEquiv hS X (0 : Pred (Par.of X)) = terminal.from X ≫ i₂ := by
+  have h : pval (0 : Pred (Par.of X)) = terminal.from X ≫ coprod.inr := by
+    rw [par_zero_eq' (Par.of X) (Par.of (⊤_ C)), pval_zero]
+    rfl
+  show pval (0 : Pred (Par.of X)) ≫ (ouGamma hS).hom = _
+  rw [h, Category.assoc, ouGamma_inr]
+
+/-- Under `ouPredEquiv` the orthosupplement `p^⊥` is `sw ∘ p`, for the
+involution `sw` of `S` swapping the two points. -/
+theorem ouPredEquiv_orth (hS : IsColimit (BinaryCofan.mk i₁ i₂)) (sw : S ⟶ S)
+    (h₁ : i₁ ≫ sw = i₂) (h₂ : i₂ ≫ sw = i₁) (X : C) (p : Pred (Par.of X)) :
+    ouPredEquiv hS X (orth p) = ouPredEquiv hS X p ≫ sw := by
+  show pval (parOrth p) ≫ (ouGamma hS).hom = (pval p ≫ (ouGamma hS).hom) ≫ sw
+  rw [pval_parOrth, Category.assoc, ouSwapTop_ouGamma hS sw h₁ h₂,
+    ← Category.assoc]
+
+end OUParPred
+
+/-! ## The concrete two-point presentation of `⊤ + ⊤` in `OUSᵒᵖ` -/
+
+section OUSExample
+
+local instance instHasFiniteCoproductsParOUS :
+    HasFiniteCoproducts (Par OUS.{u}ᵒᵖ) := parHasFiniteCoproducts
+
+/-- The final object of `OUSᵒᵖ`, read as an order unit space. -/
+abbrev ousTopO : OUS.{u} := (⊤_ OUS.{u}ᵒᵖ).unop
+
+/-- The unique map out of `ousTopO` (it is initial in `OUS`). -/
+def ousTopTo (X : OUS.{u}) : ousTopO.{u} ⟶ X := (terminal.from (op X)).unop
+
+/-- `ousTopO` is initial in `OUS`: there is at most one map out of it. -/
+theorem ousTopO_hom_unique {X : OUS.{u}} (f g : ousTopO.{u} ⟶ X) : f = g :=
+  Quiver.Hom.op_inj (terminalIsTerminal.hom_ext (C := OUS.{u}ᵒᵖ) f.op g.op)
+
+/-- The unique map `ℝᵤ ⟶ ousTopO`. -/
+def ousUnitTop : ousScal.{u} ⟶ ousTopO.{u} := ousUnitMap ousTopO.{u}
+
+/-- `ℝᵤ ⟶ ousTopO ⟶ ℝᵤ` is the identity. -/
+theorem ousTop_inv₁ : ousUnitTop.{u} ≫ ousTopTo ousScal.{u} = 𝟙 ousScal.{u} :=
+  (ousUnitMap_unique _).trans (ousUnitMap_unique _).symm
+
+/-- `ousTopO ⟶ ℝᵤ ⟶ ousTopO` is the identity. -/
+theorem ousTop_inv₂ : ousTopTo ousScal.{u} ≫ ousUnitTop.{u} = 𝟙 ousTopO.{u} :=
+  ousTopO_hom_unique _ _
+
+/-- The first component of a pairing. -/
+theorem ousPair_fst {Z X Y : OUS.{u}} (f : Z ⟶ X) (g : Z ⟶ Y) :
+    ousPair f g ≫ ousFst X Y = f := ous_hom_ext fun _ => rfl
+
+/-- The second component of a pairing. -/
+theorem ousPair_snd {Z X Y : OUS.{u}} (f : Z ⟶ X) (g : Z ⟶ Y) :
+    ousPair f g ≫ ousSnd X Y = g := ous_hom_ext fun _ => rfl
+
+/-- A map into a product is the pairing of its two components. -/
+theorem ousPair_eta {Z X Y : OUS.{u}} (m : Z ⟶ X.prod Y) :
+    ousPair (m ≫ ousFst X Y) (m ≫ ousSnd X Y) = m :=
+  ous_hom_ext fun _ => rfl
+
+/-- `ℝ² = ℝᵤ × ℝᵤ`: the apex of the two-point presentation of `⊤ + ⊤`. -/
+abbrev ousS : OUS.{u}ᵒᵖ := op (ousScal.{u}.prod ousScal.{u})
+
+/-- The first point of `⊤ + ⊤`, i.e. the first projection `ℝ² ⟶ ℝ`. -/
+def ousI₁ : (⊤_ OUS.{u}ᵒᵖ) ⟶ ousS.{u} :=
+  Quiver.Hom.op (ousFst ousScal.{u} ousScal.{u} ≫ ousUnitTop.{u})
+
+/-- The second point of `⊤ + ⊤`, i.e. the second projection `ℝ² ⟶ ℝ`. -/
+def ousI₂ : (⊤_ OUS.{u}ᵒᵖ) ⟶ ousS.{u} :=
+  Quiver.Hom.op (ousSnd ousScal.{u} ousScal.{u} ≫ ousUnitTop.{u})
+
+/-- The swap of `ℝ²`, which will be the orthosupplement. -/
+def ousSwap : ousS.{u} ⟶ ousS.{u} :=
+  Quiver.Hom.op (ousPair (ousSnd ousScal.{u} ousScal.{u})
+    (ousFst ousScal.{u} ousScal.{u}))
+
+/-- `⊤ + ⊤` in `OUSᵒᵖ` is `ℝ²`. -/
+def ousTopCofan : IsColimit (BinaryCofan.mk ousI₁.{u} ousI₂.{u}) :=
+  BinaryCofan.IsColimit.mk _
+    (fun {_} u v => Quiver.Hom.op
+      (ousPair (u.unop ≫ ousTopTo ousScal.{u}) (v.unop ≫ ousTopTo ousScal.{u})))
+    (fun {_} u v => by
+      refine Quiver.Hom.unop_inj ?_
+      show ousPair (u.unop ≫ ousTopTo ousScal.{u}) (v.unop ≫ ousTopTo ousScal.{u})
+          ≫ (ousFst _ _ ≫ ousUnitTop.{u}) = u.unop
+      rw [← Category.assoc, ousPair_fst, Category.assoc, ousTop_inv₂,
+        Category.comp_id])
+    (fun {_} u v => by
+      refine Quiver.Hom.unop_inj ?_
+      show ousPair (u.unop ≫ ousTopTo ousScal.{u}) (v.unop ≫ ousTopTo ousScal.{u})
+          ≫ (ousSnd _ _ ≫ ousUnitTop.{u}) = v.unop
+      rw [← Category.assoc, ousPair_snd, Category.assoc, ousTop_inv₂,
+        Category.comp_id])
+    (fun {W} u v m h₁ h₂ => by
+      obtain ⟨m, rfl⟩ : ∃ m' : ousS.{u} ⟶ W, m' = m := ⟨m, rfl⟩
+      refine Quiver.Hom.unop_inj ?_
+      have k₁ : m.unop ≫ (ousFst ousScal.{u} ousScal.{u} ≫ ousUnitTop.{u})
+          = u.unop := congrArg Quiver.Hom.unop h₁
+      have k₂ : m.unop ≫ (ousSnd ousScal.{u} ousScal.{u} ≫ ousUnitTop.{u})
+          = v.unop := congrArg Quiver.Hom.unop h₂
+      have e₁ : m.unop ≫ ousFst ousScal.{u} ousScal.{u}
+          = u.unop ≫ ousTopTo ousScal.{u} := by
+        rw [← k₁, Category.assoc, Category.assoc, ousTop_inv₁, Category.comp_id]
+      have e₂ : m.unop ≫ ousSnd ousScal.{u} ousScal.{u}
+          = v.unop ≫ ousTopTo ousScal.{u} := by
+        rw [← k₂, Category.assoc, Category.assoc, ousTop_inv₁, Category.comp_id]
+      rw [← e₁, ← e₂, ousPair_eta]
+      rfl)
+
+/-- The swap of `ℝ²` exchanges the two points of `⊤ + ⊤`. -/
+theorem ousI₁_swap : ousI₁.{u} ≫ ousSwap.{u} = ousI₂.{u} := by
+  refine Quiver.Hom.unop_inj ?_
+  show ousPair (ousSnd ousScal.{u} ousScal.{u}) (ousFst ousScal.{u} ousScal.{u})
+      ≫ (ousFst _ _ ≫ ousUnitTop.{u}) = ousSnd _ _ ≫ ousUnitTop.{u}
+  rw [← Category.assoc, ousPair_fst]
+
+/-- The swap of `ℝ²` exchanges the two points of `⊤ + ⊤`. -/
+theorem ousI₂_swap : ousI₂.{u} ≫ ousSwap.{u} = ousI₁.{u} := by
+  refine Quiver.Hom.unop_inj ?_
+  show ousPair (ousSnd ousScal.{u} ousScal.{u}) (ousFst ousScal.{u} ousScal.{u})
+      ≫ (ousSnd _ _ ≫ ousUnitTop.{u}) = ousFst _ _ ≫ ousUnitTop.{u}
+  rw [← Category.assoc, ousPair_snd]
+
+/-! ## Positive unital maps out of `ℝ²` are the effects -/
+
+theorem ous_one_zero_nonneg :
+    (0 : ULift.{u} ℝ × ULift.{u} ℝ) ≤ ((1 : ULift.{u} ℝ), (0 : ULift.{u} ℝ)) :=
+  Prod.le_def.mpr ⟨show (0:ℝ) ≤ 1 from zero_le_one, le_refl _⟩
+
+/-- `(0,1)` is a positive element of `ℝ²`. -/
+theorem ous_zero_one_nonneg :
+    (0 : ULift.{u} ℝ × ULift.{u} ℝ) ≤ ((0 : ULift.{u} ℝ), (1 : ULift.{u} ℝ)) :=
+  Prod.le_def.mpr ⟨le_refl _, show (0:ℝ) ≤ 1 from zero_le_one⟩
+
+/-- Positive unital maps `ℝ² ⟶ X` of `OUS` are the effects `0 ≤ x ≤ 1`
+of `X`, by `φ ↦ φ(1,0)`. -/
+def ousHomEffectEquiv (X : OUS.{u}) :
+    (ousScal.{u}.prod ousScal.{u} ⟶ X) ≃ {x : X.carrier // 0 ≤ x ∧ x ≤ X.unit} where
+  toFun φ := ⟨φ.toLinearMap ((1 : ULift.{u} ℝ), (0 : ULift.{u} ℝ)), by
+    refine ⟨φ.map_nonneg' _ ous_one_zero_nonneg.{u}, ?_⟩
+    have h : ((1 : ULift.{u} ℝ), (0 : ULift.{u} ℝ))
+        ≤ (ousScal.{u}.prod ousScal.{u}).unit :=
+      Prod.le_def.mpr ⟨le_refl _, show (0:ℝ) ≤ 1 from zero_le_one⟩
+    exact (φ.mono h).trans (le_of_eq φ.map_unit')⟩
+  invFun x :=
+    { toLinearMap :=
+        { toFun := fun p => p.1.down • x.1 + p.2.down • (X.unit - x.1)
+          map_add' := fun a b => by
+            show (a.1.down + b.1.down) • x.1 + (a.2.down + b.2.down) • (X.unit - x.1)
+              = (a.1.down • x.1 + a.2.down • (X.unit - x.1))
+                + (b.1.down • x.1 + b.2.down • (X.unit - x.1))
+            rw [add_smul, add_smul]
+            abel
+          map_smul' := fun r a => by
+            show (r * a.1.down) • x.1 + (r * a.2.down) • (X.unit - x.1)
+              = r • (a.1.down • x.1 + a.2.down • (X.unit - x.1))
+            rw [mul_smul, mul_smul, smul_add] }
+      map_nonneg' := fun p hp => by
+        obtain ⟨hp1, hp2⟩ := Prod.le_def.mp hp
+        have h1 : (0:ℝ) ≤ p.1.down := hp1
+        have h2 : (0:ℝ) ≤ p.2.down := hp2
+        show (0 : X.carrier) ≤ p.1.down • x.1 + p.2.down • (X.unit - x.1)
+        have e1 : (0 : X.carrier) ≤ p.1.down • x.1 := ou_smul_nonneg h1 x.2.1
+        have e2 : (0 : X.carrier) ≤ p.2.down • (X.unit - x.1) :=
+          ou_smul_nonneg h2 (sub_nonneg.mpr x.2.2)
+        simpa using add_le_add e1 e2
+      map_unit' := by
+        show (1:ℝ) • x.1 + (1:ℝ) • (X.unit - x.1) = X.unit
+        rw [one_smul, one_smul]
+        abel }
+  left_inv φ := by
+    refine ous_hom_ext fun p => ?_
+    have hsum : φ.toLinearMap ((0 : ULift.{u} ℝ), (1 : ULift.{u} ℝ))
+        = X.unit - φ.toLinearMap ((1 : ULift.{u} ℝ), (0 : ULift.{u} ℝ)) := by
+      have h : ((1 : ULift.{u} ℝ), (0 : ULift.{u} ℝ)) + ((0 : ULift.{u} ℝ), (1 : ULift.{u} ℝ))
+          = (ousScal.{u}.prod ousScal.{u}).unit := by
+        refine Prod.ext ?_ ?_ <;> apply ULift.down_injective <;> simp
+      have h2 : φ.toLinearMap ((1 : ULift.{u} ℝ), (0 : ULift.{u} ℝ))
+          + φ.toLinearMap ((0 : ULift.{u} ℝ), (1 : ULift.{u} ℝ)) = X.unit := by
+        rw [← map_add, h, φ.map_unit']
+      rw [← h2]; abel
+    have hdec : p = p.1.down • ((1 : ULift.{u} ℝ), (0 : ULift.{u} ℝ))
+        + p.2.down • ((0 : ULift.{u} ℝ), (1 : ULift.{u} ℝ)) := by
+      refine Prod.ext ?_ ?_ <;> apply ULift.down_injective <;> simp
+    show p.1.down • φ.toLinearMap ((1 : ULift.{u} ℝ), (0 : ULift.{u} ℝ))
+      + p.2.down • (X.unit - φ.toLinearMap ((1 : ULift.{u} ℝ), (0 : ULift.{u} ℝ)))
+      = φ.toLinearMap p
+    rw [← hsum]
+    conv_rhs => rw [hdec]
+    rw [map_add, map_smul, map_smul]
+  right_inv x := by
+    refine Subtype.ext ?_
+    show (1:ℝ) • x.1 + (0:ℝ) • (X.unit - x.1) = x.1
+    rw [one_smul, zero_smul, add_zero]
+
+/-- A positive unital map out of `ℝ²` sends `(0,1)` to `1 - φ(1,0)`. -/
+theorem ous_hom_compl (X : OUS.{u}) (φ : ousScal.{u}.prod ousScal.{u} ⟶ X) :
+    φ.toLinearMap ((0 : ULift.{u} ℝ), (1 : ULift.{u} ℝ))
+      = X.unit - φ.toLinearMap ((1 : ULift.{u} ℝ), (0 : ULift.{u} ℝ)) := by
+  have h : ((1 : ULift.{u} ℝ), (0 : ULift.{u} ℝ)) + ((0 : ULift.{u} ℝ), (1 : ULift.{u} ℝ))
+      = (ousScal.{u}.prod ousScal.{u}).unit := by
+    refine Prod.ext ?_ ?_ <;> apply ULift.down_injective <;> simp
+  have h2 : φ.toLinearMap ((1 : ULift.{u} ℝ), (0 : ULift.{u} ℝ))
+      + φ.toLinearMap ((0 : ULift.{u} ℝ), (1 : ULift.{u} ℝ)) = X.unit := by
+    rw [← map_add, h, φ.map_unit']
+  rw [← h2]; abel
+
+/-- Passing to the opposite category. -/
+def ousOpEquiv (X : OUS.{u}) :
+    ((op X : OUS.{u}ᵒᵖ) ⟶ ousS.{u}) ≃ (ousScal.{u}.prod ousScal.{u} ⟶ X) where
+  toFun f := f.unop
+  invFun g := Quiver.Hom.op g
+  left_inv _ := rfl
+  right_inv _ := rfl
+
+/-- **190IV.1** (eff.tex:2153, Examples): the **predicates on an order unit
+space `X` correspond to the points `x ∈ X` with `0 ≤ x ≤ 1`**, where `1` is
+the distinguished order unit.
+
+The correspondence is pinned by the three lemmas below: `1` is the order
+unit, `0` is `0`, and `p^⊥` is `1 - p`. -/
+def ous_pred_effect (X : OUS.{u}) :
+    Pred (Par.of (op X)) ≃ {x : X.carrier // 0 ≤ x ∧ x ≤ X.unit} :=
+  ((ouPredEquiv ousTopCofan.{u} (op X)).trans (ousOpEquiv X)).trans
+    (ousHomEffectEquiv X)
+
+/-- The effect attached to a predicate is the image of `(1,0)`. -/
+theorem ous_pred_effect_val (X : OUS.{u}) (p : Pred (Par.of (op X))) :
+    ((ous_pred_effect X p).1 : X.carrier)
+      = (ouPredEquiv ousTopCofan.{u} (op X) p).unop.toLinearMap
+          ((1 : ULift.{u} ℝ), (0 : ULift.{u} ℝ)) := rfl
+
+/-- The composite `ℝ² ⟶ ⊤ ⟶ X` through the first point is `r ↦ r · 1`
+precomposed with the first projection. -/
+theorem ous_from_i₁ (X : OUS.{u}) :
+    terminal.from (op X) ≫ ousI₁.{u}
+      = Quiver.Hom.op (ousFst ousScal.{u} ousScal.{u} ≫ ousUnitMap X) := by
+  refine Quiver.Hom.unop_inj ?_
+  show (ousFst ousScal.{u} ousScal.{u} ≫ ousUnitTop.{u}) ≫ ousTopTo X
+      = ousFst ousScal.{u} ousScal.{u} ≫ ousUnitMap X
+  rw [Category.assoc]
+  exact congrArg (fun m => ousFst ousScal.{u} ousScal.{u} ≫ m)
+    (ousUnitMap_unique (ousUnitTop.{u} ≫ ousTopTo X))
+
+/-- The composite `ℝ² ⟶ ⊤ ⟶ X` through the second point is `r ↦ r · 1`
+precomposed with the second projection. -/
+theorem ous_from_i₂ (X : OUS.{u}) :
+    terminal.from (op X) ≫ ousI₂.{u}
+      = Quiver.Hom.op (ousSnd ousScal.{u} ousScal.{u} ≫ ousUnitMap X) := by
+  refine Quiver.Hom.unop_inj ?_
+  show (ousSnd ousScal.{u} ousScal.{u} ≫ ousUnitTop.{u}) ≫ ousTopTo X
+      = ousSnd ousScal.{u} ousScal.{u} ≫ ousUnitMap X
+  rw [Category.assoc]
+  exact congrArg (fun m => ousSnd ousScal.{u} ousScal.{u} ≫ m)
+    (ousUnitMap_unique (ousUnitTop.{u} ≫ ousTopTo X))
+
+/-- **190IV.1** (eff.tex:2154, Examples): the truth predicate is the order
+unit. -/
+theorem ous_pred_effect_truth (X : OUS.{u}) :
+    ((ous_pred_effect X (truth (Par.of (op X)))).1 : X.carrier) = X.unit := by
+  rw [ous_pred_effect_val, ouPredEquiv_truth, ous_from_i₁]
+  show (ousUnitMap X).toLinearMap (1 : ULift.{u} ℝ) = X.unit
+  rw [ousUnitMap_apply]
+  exact one_smul _ _
+
+/-- **190IV.1** (eff.tex:2154, Examples): the zero predicate is `0`. -/
+theorem ous_pred_effect_zero (X : OUS.{u}) :
+    ((ous_pred_effect X (0 : Pred (Par.of (op X)))).1 : X.carrier) = 0 := by
+  rw [ous_pred_effect_val, ouPredEquiv_zero, ous_from_i₂]
+  show (ousUnitMap X).toLinearMap (0 : ULift.{u} ℝ) = 0
+  rw [ousUnitMap_apply]
+  exact zero_smul _ _
+
+/-- **190IV.1** (eff.tex:2154, Examples): the orthosupplement is `1 - x`. -/
+theorem ous_pred_effect_orth (X : OUS.{u}) (p : Pred (Par.of (op X))) :
+    ((ous_pred_effect X (orth p)).1 : X.carrier)
+      = X.unit - ((ous_pred_effect X p).1 : X.carrier) := by
+  rw [ous_pred_effect_val, ous_pred_effect_val,
+    ouPredEquiv_orth ousTopCofan.{u} ousSwap.{u} ousI₁_swap.{u} ousI₂_swap.{u}
+      (op X) p]
+  rw [← ous_hom_compl X (ouPredEquiv ousTopCofan.{u} (op X) p).unop]
+  rfl
+
+/-! ## The states of an order unit space -/
+
+/-- Maps `X ⟶ ℝᵤ` of `OUS` are the positive unital linear functionals. -/
+def ousHomStateEquiv (X : OUS.{u}) :
+    (X ⟶ ousScal.{u})
+      ≃ {f : X.carrier →ₗ[ℝ] ℝ // (∀ x, 0 ≤ x → 0 ≤ f x) ∧ f X.unit = 1} where
+  toFun φ :=
+    ⟨{ toFun := fun x => (φ.toLinearMap x).down
+       map_add' := fun x y => congrArg ULift.down (map_add φ.toLinearMap x y)
+       map_smul' := fun r x => congrArg ULift.down (map_smul φ.toLinearMap r x) },
+     fun x hx => φ.map_nonneg' x hx, congrArg ULift.down φ.map_unit'⟩
+  invFun f :=
+    { toLinearMap :=
+        { toFun := fun x => ULift.up (f.1 x)
+          map_add' := fun x y => congrArg ULift.up (map_add f.1 x y)
+          map_smul' := fun r x => congrArg ULift.up (map_smul f.1 r x) }
+      map_nonneg' := fun x hx => f.2.1 x hx
+      map_unit' := ULift.down_injective f.2.2 }
+  left_inv _ := ous_hom_ext fun _ => rfl
+  right_inv _ := Subtype.ext (LinearMap.ext fun _ => rfl)
+
+/-- `ousTopO ≅ ℝᵤ`, as a bijection on maps into it. -/
+def ousHomTopEquiv (X : OUS.{u}) : (X ⟶ ousTopO.{u}) ≃ (X ⟶ ousScal.{u}) where
+  toFun f := f ≫ ousTopTo ousScal.{u}
+  invFun g := g ≫ ousUnitTop.{u}
+  left_inv f := by
+    show (f ≫ ousTopTo ousScal.{u}) ≫ ousUnitTop.{u} = f
+    rw [Category.assoc, ousTop_inv₂, Category.comp_id]
+  right_inv g := by
+    show (g ≫ ousUnitTop.{u}) ≫ ousTopTo ousScal.{u} = g
+    rw [Category.assoc, ousTop_inv₁, Category.comp_id]
+
+/-- **190IV.1** (eff.tex:2156, Examples): the **states of an order unit space
+`X` are exactly what are called states for order unit spaces in the
+literature**: the positive unit-preserving linear functionals `X → ℝ`. -/
+def ous_stat_state (X : OUS.{u}) :
+    Stat (Par.of (op X))
+      ≃ {f : X.carrier →ₗ[ℝ] ℝ // (∀ x, 0 ≤ x → 0 ≤ f x) ∧ f X.unit = 1} :=
+  ((parStatEquiv (op X)).trans
+    { toFun := fun f => f.unop
+      invFun := fun g => Quiver.Hom.op g
+      left_inv := fun _ => rfl
+      right_inv := fun _ => rfl }).trans
+    ((ousHomTopEquiv X).trans (ousHomStateEquiv X))
+
+/-! ## `OUSᵒᵖ` has separating predicates -/
+
+/-- The first coprojection `X ⟶ X + 1` of `OUSᵒᵖ`, concretely. -/
+def ousKap₁ (X : OUS.{u}ᵒᵖ) : X ⟶ op (X.unop.prod ousScal.{u}) :=
+  Quiver.Hom.op (ousFst X.unop ousScal.{u})
+
+/-- The second coprojection `1 ⟶ X + 1` of `OUSᵒᵖ`, concretely. -/
+def ousKap₂ (X : OUS.{u}ᵒᵖ) : (⊤_ OUS.{u}ᵒᵖ) ⟶ op (X.unop.prod ousScal.{u}) :=
+  Quiver.Hom.op (ousSnd X.unop ousScal.{u} ≫ ousUnitTop.{u})
+
+/-- `X + 1` in `OUSᵒᵖ` is `X × ℝ`. -/
+def ousPlusCofan (X : OUS.{u}ᵒᵖ) :
+    IsColimit (BinaryCofan.mk (ousKap₁ X) (ousKap₂ X)) :=
+  BinaryCofan.IsColimit.mk _
+    (fun {_} u v => Quiver.Hom.op
+      (ousPair u.unop (v.unop ≫ ousTopTo ousScal.{u})))
+    (fun {_} _ _ => Quiver.Hom.unop_inj (ousPair_fst _ _))
+    (fun {_} u v => by
+      refine Quiver.Hom.unop_inj ?_
+      show ousPair u.unop (v.unop ≫ ousTopTo ousScal.{u})
+          ≫ (ousSnd X.unop ousScal.{u} ≫ ousUnitTop.{u}) = v.unop
+      rw [← Category.assoc, ousPair_snd, Category.assoc, ousTop_inv₂,
+        Category.comp_id])
+    (fun {W} u v m h₁ h₂ => by
+      obtain ⟨m, rfl⟩ :
+          ∃ m' : (op (X.unop.prod ousScal.{u}) : OUS.{u}ᵒᵖ) ⟶ W, m' = m := ⟨m, rfl⟩
+      refine Quiver.Hom.unop_inj ?_
+      have k₁ : m.unop ≫ ousFst X.unop ousScal.{u} = u.unop :=
+        congrArg Quiver.Hom.unop h₁
+      have k₂ : m.unop ≫ (ousSnd X.unop ousScal.{u} ≫ ousUnitTop.{u}) = v.unop :=
+        congrArg Quiver.Hom.unop h₂
+      have e₂ : m.unop ≫ ousSnd X.unop ousScal.{u}
+          = v.unop ≫ ousTopTo ousScal.{u} := by
+        rw [← k₂, Category.assoc, Category.assoc, ousTop_inv₁, Category.comp_id]
+      rw [← k₁, ← e₂, ousPair_eta]
+      rfl)
+
+/-- The comparison isomorphism `X + 1 ≅ X × ℝ` of `OUSᵒᵖ`. -/
+def ousEps (X : OUS.{u}ᵒᵖ) :
+    (X ⨿ (⊤_ OUS.{u}ᵒᵖ)) ≅ op (X.unop.prod ousScal.{u}) :=
+  IsColimit.coconePointUniqueUpToIso (coprodIsCoprod X (⊤_ OUS.{u}ᵒᵖ))
+    (ousPlusCofan X)
+
+/-- The first coprojection under the comparison isomorphism `X + 1 ≅ X × ℝ`. -/
+theorem ousEps_inl (X : OUS.{u}ᵒᵖ) :
+    (coprod.inl : X ⟶ X ⨿ (⊤_ OUS.{u}ᵒᵖ)) ≫ (ousEps X).hom = ousKap₁ X :=
+  IsColimit.comp_coconePointUniqueUpToIso_hom (coprodIsCoprod X (⊤_ OUS.{u}ᵒᵖ))
+    (ousPlusCofan X) (Discrete.mk WalkingPair.left)
+
+/-- The second coprojection under the comparison isomorphism `X + 1 ≅ X × ℝ`. -/
+theorem ousEps_inr (X : OUS.{u}ᵒᵖ) :
+    (coprod.inr : (⊤_ OUS.{u}ᵒᵖ) ⟶ X ⨿ (⊤_ OUS.{u}ᵒᵖ)) ≫ (ousEps X).hom
+      = ousKap₂ X :=
+  IsColimit.comp_coconePointUniqueUpToIso_hom (coprodIsCoprod X (⊤_ OUS.{u}ᵒᵖ))
+    (ousPlusCofan X) (Discrete.mk WalkingPair.right)
+
+/-- **190IV.1** (eff.tex:2149, Examples): `OUSᵒᵖ` has **separating
+predicates**.
+
+A map `Par.of Y ⟶ Par.of X` of `Par OUSᵒᵖ` is a positive unital linear map
+`F : X × ℝ ⟶ Y`, and composing with the predicate `x` is precomposition with
+`(a,b) ↦ (a·x + b·(1-x), b)`.  Since every element of `X` is a real multiple
+of an effect (`ou_eq_sub_of_nonneg` and `ou_exists_le_smul_unit`, then divide
+by `n+1`), and the last coordinate is pinned by unitality, the effects
+determine `F`. -/
+theorem ous_separating_predicates : SeparatingPredicates (Par OUS.{u}ᵒᵖ) := by
+  intro Y X f g h
+  refine pval_inj ?_
+  refine (cancel_mono (ousEps X.base).hom).mp ?_
+  refine ousop_hom_ext fun w => ?_
+  -- the two concrete positive unital maps `X × ℝ ⟶ Y`
+  have key : ∀ (x : X.base.unop.carrier) (hx : 0 ≤ x ∧ x ≤ X.base.unop.unit)
+      (a b : ULift.{u} ℝ),
+      (pval f ≫ (ousEps X.base).hom).unop.toLinearMap
+          (a.down • x + b.down • (X.base.unop.unit - x), b)
+        = (pval g ≫ (ousEps X.base).hom).unop.toLinearMap
+          (a.down • x + b.down • (X.base.unop.unit - x), b) := by
+    intro x hx a b
+    set q : X.base ⟶ ousS.{u} :=
+      Quiver.Hom.op ((ousHomEffectEquiv X.base.unop).symm ⟨x, hx⟩) with hqdef
+    set p : Pred X := (ouPredEquiv ousTopCofan.{u} X.base).symm q with hpdef
+    have hq : ouPredEquiv ousTopCofan.{u} X.base p = q :=
+      (ouPredEquiv ousTopCofan.{u} X.base).apply_symm_apply q
+    set Ψ : (op (X.base.unop.prod ousScal.{u}) : OUS.{u}ᵒᵖ) ⟶ ousS.{u} :=
+      Quiver.Hom.op (ousPair q.unop (ousSnd ousScal.{u} ousScal.{u})) with hΨdef
+    have hk₁ : ousKap₁ X.base ≫ Ψ = q := Quiver.Hom.unop_inj (ousPair_fst _ _)
+    have hk₂ : ousKap₂ X.base ≫ Ψ = ousI₂.{u} := by
+      refine Quiver.Hom.unop_inj ?_
+      show ousPair q.unop (ousSnd ousScal.{u} ousScal.{u})
+          ≫ (ousSnd X.base.unop ousScal.{u} ≫ ousUnitTop.{u})
+        = ousSnd ousScal.{u} ousScal.{u} ≫ ousUnitTop.{u}
+      rw [← Category.assoc, ousPair_snd]
+    have hdesc : coprod.desc (pval p)
+          (coprod.inr : (⊤_ OUS.{u}ᵒᵖ) ⟶ (⊤_ OUS.{u}ᵒᵖ) ⨿ (⊤_ OUS.{u}ᵒᵖ))
+          ≫ (ouGamma ousTopCofan.{u}).hom
+        = (ousEps X.base).hom ≫ Ψ := by
+      refine coprod.hom_ext ?_ ?_
+      · rw [← Category.assoc, coprod.inl_desc, ← Category.assoc, ousEps_inl, hk₁]
+        exact hq
+      · rw [← Category.assoc, coprod.inr_desc, ouGamma_inr, ← Category.assoc,
+          ousEps_inr, hk₂]
+    have hp' : pval f ≫ coprod.desc (pval p)
+          (coprod.inr : (⊤_ OUS.{u}ᵒᵖ) ⟶ (⊤_ OUS.{u}ᵒᵖ) ⨿ (⊤_ OUS.{u}ᵒᵖ))
+        = pval g ≫ coprod.desc (pval p) coprod.inr := congrArg pval (h p)
+    have hfg : (pval f ≫ (ousEps X.base).hom) ≫ Ψ
+        = (pval g ≫ (ousEps X.base).hom) ≫ Ψ := by
+      rw [Category.assoc, Category.assoc, ← hdesc, ← Category.assoc,
+        ← Category.assoc, hp']
+      rfl
+    have happ := ousop_congr hfg ((a : ULift.{u} ℝ), (b : ULift.{u} ℝ))
+    rw [ousop_comp_apply, ousop_comp_apply] at happ
+    exact happ
+  -- every element of `X` is a real multiple of a difference of two effects
+  have stepA : ∀ (x : X.base.unop.carrier), 0 ≤ x ∧ x ≤ X.base.unop.unit →
+      ∀ a : ℝ,
+      (pval f ≫ (ousEps X.base).hom).unop.toLinearMap
+          ((a • x : X.base.unop.carrier), (0 : ULift.{u} ℝ))
+        = (pval g ≫ (ousEps X.base).hom).unop.toLinearMap
+          ((a • x : X.base.unop.carrier), (0 : ULift.{u} ℝ)) := by
+    intro x hx a
+    have h0 := key x hx (ULift.up a) (0 : ULift.{u} ℝ)
+    have hz : (0 : ULift.{u} ℝ).down • (X.base.unop.unit - x) = 0 := zero_smul _ _
+    rw [hz, add_zero] at h0
+    exact h0
+  have stepB : ∀ z : X.base.unop.carrier, 0 ≤ z →
+      (pval f ≫ (ousEps X.base).hom).unop.toLinearMap (z, (0 : ULift.{u} ℝ))
+        = (pval g ≫ (ousEps X.base).hom).unop.toLinearMap
+            (z, (0 : ULift.{u} ℝ)) := by
+    intro z hz
+    obtain ⟨n, hn⟩ := ou_exists_le_smul_unit z
+    have hm : (0 : ℝ) < (n : ℝ) + 1 := by positivity
+    have hmne : ((n : ℝ) + 1) ≠ 0 := ne_of_gt hm
+    have hinv : (0 : ℝ) ≤ ((n : ℝ) + 1)⁻¹ := le_of_lt (inv_pos.mpr hm)
+    have hle : z ≤ ((n : ℝ) + 1) • X.base.unop.unit :=
+      hn.trans (ou_smul_unit_mono (by linarith))
+    have hx0 : (0 : X.base.unop.carrier) ≤ ((n : ℝ) + 1)⁻¹ • z :=
+      ou_smul_nonneg hinv hz
+    have hx1 : ((n : ℝ) + 1)⁻¹ • z ≤ X.base.unop.unit := by
+      have h1 := ou_smul_le_smul hinv hle
+      rwa [smul_smul, inv_mul_cancel₀ hmne, one_smul] at h1
+    have hback : ((n : ℝ) + 1) • (((n : ℝ) + 1)⁻¹ • z) = z := by
+      rw [smul_smul, mul_inv_cancel₀ hmne, one_smul]
+    have := stepA (((n : ℝ) + 1)⁻¹ • z) ⟨hx0, hx1⟩ ((n : ℝ) + 1)
+    rwa [hback] at this
+  have stepC : ∀ z : X.base.unop.carrier,
+      (pval f ≫ (ousEps X.base).hom).unop.toLinearMap (z, (0 : ULift.{u} ℝ))
+        = (pval g ≫ (ousEps X.base).hom).unop.toLinearMap
+            (z, (0 : ULift.{u} ℝ)) := by
+    intro z
+    obtain ⟨a, b, ha, hb, hz⟩ := ou_eq_sub_of_nonneg z
+    have hsub : ((z : X.base.unop.carrier), (0 : ULift.{u} ℝ))
+        = (a, (0 : ULift.{u} ℝ)) - (b, (0 : ULift.{u} ℝ)) := by
+      refine Prod.ext ?_ ?_
+      · exact hz
+      · exact (sub_zero (0 : ULift.{u} ℝ)).symm
+    rw [hsub, map_sub, map_sub, stepB a ha, stepB b hb]
+  -- and the last coordinate is pinned by unitality
+  obtain ⟨z, c⟩ := w
+  have hdec : ((z : X.base.unop.carrier), (c : ULift.{u} ℝ))
+      = ((z - c.down • X.base.unop.unit : X.base.unop.carrier), (0 : ULift.{u} ℝ))
+        + c.down • (X.base.unop.prod ousScal.{u}).unit := by
+    refine Prod.ext ?_ ?_
+    · show z = (z - c.down • X.base.unop.unit) + c.down • X.base.unop.unit
+      abel
+    · apply ULift.down_injective
+      show c.down = 0 + c.down * 1
+      rw [mul_one, zero_add]
+  rw [hdec, map_add, map_add, map_smul, map_smul, stepC,
+    (pval f ≫ (ousEps X.base).hom).unop.map_unit',
+    (pval g ≫ (ousEps X.base).hom).unop.map_unit']
+
+/-! ## The lexicographic plane: `OUSᵒᵖ` has no separating states -/
+
+/-- The **lexicographic plane**: `ℝ²` with the positive cone
+`{(a,b) : 0 < a} ∪ {(0,b) : 0 ≤ b}` and order unit `(1,0)`.  A plain `def`,
+not an `abbrev`, so that instance search does not reach `ULift`'s own
+(coordinatewise) order. -/
+def ousLex : Type u := ULift.{u} (ℝ × ℝ)
+
+instance : AddCommGroup ousLex.{u} :=
+  inferInstanceAs (AddCommGroup (ULift.{u} (ℝ × ℝ)))
+
+instance : Module ℝ ousLex.{u} :=
+  inferInstanceAs (Module ℝ (ULift.{u} (ℝ × ℝ)))
+
+/-- A point of the lexicographic plane. -/
+def ousLexPt (a b : ℝ) : ousLex.{u} := ULift.up (a, b)
+
+/-- The coordinates of a point of the lexicographic plane. -/
+def ousLexDown (x : ousLex.{u}) : ℝ × ℝ := ULift.down x
+
+@[simp] theorem ousLexDown_pt (a b : ℝ) : ousLexDown (ousLexPt.{u} a b) = (a, b) := rfl
+
+/-- Points of the lexicographic plane are determined by their coordinates. -/
+theorem ousLexDown_injective {x y : ousLex.{u}} (h : ousLexDown x = ousLexDown y) :
+    x = y := ULift.down_injective h
+
+/-- Addition in the lexicographic plane is coordinatewise. -/
+theorem ousLexDown_add (x y : ousLex.{u}) :
+    ousLexDown (x + y) = ousLexDown x + ousLexDown y := rfl
+
+/-- Scalar multiplication in the lexicographic plane is coordinatewise. -/
+theorem ousLexDown_smul (r : ℝ) (x : ousLex.{u}) :
+    ousLexDown (r • x) = r • ousLexDown x := rfl
+
+/-- The zero of the lexicographic plane. -/
+theorem ousLexDown_zero : ousLexDown (0 : ousLex.{u}) = (0, 0) := rfl
+
+/-- The lexicographic order on `ℝ²`. -/
+instance ousLexPartialOrder : PartialOrder ousLex.{u} where
+  le x y := (ousLexDown x).1 < (ousLexDown y).1 ∨
+    ((ousLexDown x).1 = (ousLexDown y).1 ∧ (ousLexDown x).2 ≤ (ousLexDown y).2)
+  le_refl _ := Or.inr ⟨rfl, le_refl _⟩
+  le_trans x y z hxy hyz := by
+    rcases hxy with h1 | ⟨h1, h1'⟩
+    · rcases hyz with h2 | ⟨h2, _⟩
+      · exact Or.inl (lt_trans h1 h2)
+      · exact Or.inl (h2 ▸ h1)
+    · rcases hyz with h2 | ⟨h2, h2'⟩
+      · exact Or.inl (h1 ▸ h2)
+      · exact Or.inr ⟨h1.trans h2, h1'.trans h2'⟩
+  le_antisymm x y hxy hyx := by
+    refine ousLexDown_injective (Prod.ext ?_ ?_)
+    · rcases hxy with h1 | ⟨h1, _⟩
+      · rcases hyx with h2 | ⟨h2, _⟩
+        · exact absurd (lt_trans h1 h2) (lt_irrefl _)
+        · exact absurd h1 (by rw [h2]; exact lt_irrefl _)
+      · exact h1
+    · rcases hxy with h1 | ⟨h1, h1'⟩
+      · rcases hyx with h2 | ⟨h2, _⟩
+        · exact absurd (lt_trans h1 h2) (lt_irrefl _)
+        · exact absurd h1 (by rw [h2]; exact lt_irrefl _)
+      · rcases hyx with h2 | ⟨_, h2'⟩
+        · exact absurd h2 (by rw [h1]; exact lt_irrefl _)
+        · exact le_antisymm h1' h2'
+
+/-- The lexicographic order, unfolded. -/
+theorem ousLex_le_iff (x y : ousLex.{u}) :
+    x ≤ y ↔ (ousLexDown x).1 < (ousLexDown y).1 ∨
+      ((ousLexDown x).1 = (ousLexDown y).1 ∧ (ousLexDown x).2 ≤ (ousLexDown y).2) :=
+  Iff.rfl
+
+/-- The lexicographic plane is an order unit space: the cone is closed under
+non-negative scalars, and `(a,b) ≤ n • (1,0)` for any `n > a`.  It is **not**
+archimedean: `(0,1) ≤ ε • (1,0)` for every `ε > 0`, yet `(0,1) ≰ 0`. -/
+instance ousLexOrderUnitSpace : OrderUnitSpace ousLex.{u} where
+  add_le_add_left x y h z := by
+    rcases h with h1 | ⟨h1, h1'⟩
+    · refine Or.inl ?_
+      show (ousLexDown x).1 + (ousLexDown z).1 < (ousLexDown y).1 + (ousLexDown z).1
+      linarith
+    · refine Or.inr ⟨?_, ?_⟩
+      · show (ousLexDown x).1 + (ousLexDown z).1 = (ousLexDown y).1 + (ousLexDown z).1
+        rw [h1]
+      · show (ousLexDown x).2 + (ousLexDown z).2 ≤ (ousLexDown y).2 + (ousLexDown z).2
+        linarith
+  smul_nonneg {r} {x} hr hx := by
+    rcases eq_or_lt_of_le hr with hr0 | hr0
+    · refine Or.inr ⟨?_, ?_⟩
+      · show (0 : ℝ) = r * (ousLexDown x).1
+        rw [← hr0, zero_mul]
+      · show (0 : ℝ) ≤ r * (ousLexDown x).2
+        rw [← hr0, zero_mul]
+    · rcases hx with h1 | ⟨h1, h1'⟩
+      · refine Or.inl ?_
+        show (0 : ℝ) < r * (ousLexDown x).1
+        have h2 : (0 : ℝ) < (ousLexDown x).1 := h1
+        exact mul_pos hr0 h2
+      · refine Or.inr ⟨?_, ?_⟩
+        · show (0 : ℝ) = r * (ousLexDown x).1
+          have h2 : (0 : ℝ) = (ousLexDown x).1 := h1
+          rw [← h2, mul_zero]
+        · show (0 : ℝ) ≤ r * (ousLexDown x).2
+          have h2 : (0 : ℝ) ≤ (ousLexDown x).2 := h1'
+          exact mul_nonneg (le_of_lt hr0) h2
+  unit := ousLexPt 1 0
+  exists_le_smul_unit x := by
+    refine ⟨⌈(ousLexDown x).1⌉₊ + 1, Or.inl ?_⟩
+    show (ousLexDown x).1 < ((⌈(ousLexDown x).1⌉₊ + 1 : ℕ) : ℝ) * 1
+    have h := Nat.le_ceil (ousLexDown x).1
+    push_cast
+    linarith
+
+/-- The order unit of the lexicographic plane is `(1,0)`. -/
+theorem ousLex_unit : ouUnit ousLex.{u} = ousLexPt 1 0 := rfl
+
+/-- The lexicographic plane, as an object of `OUS`. -/
+abbrev ousLexObj : OUS.{u} := OUS.of ousLex.{u}
+
+/-- `(0,1)` is an effect of the lexicographic plane. -/
+theorem ousLex_e_nonneg : (0 : ousLex.{u}) ≤ ousLexPt 0 1 :=
+  Or.inr ⟨rfl, by show (0 : ℝ) ≤ 1; norm_num⟩
+
+/-- `(0,1)` is below the order unit `(1,0)` of the lexicographic plane. -/
+theorem ousLex_e_le_unit : (ousLexPt 0 1 : ousLex.{u}) ≤ ouUnit ousLex.{u} :=
+  Or.inl (by show (0 : ℝ) < 1; norm_num)
+
+/-- `(0,1)` is not `0` in the lexicographic plane. -/
+theorem ousLex_e_ne_zero : (ousLexPt 0 1 : ousLex.{u}) ≠ 0 := by
+  intro hh
+  have h2 : ((0 : ℝ), (1 : ℝ)) = (0, 0) := congrArg ousLexDown hh
+  exact one_ne_zero (congrArg Prod.snd h2)
+
+/-- **190IV.1** (eff.tex:2150, Examples): every state of the lexicographic
+plane kills `(0,1)`.
+Positivity of `(0,1)` gives `0 ≤ ψ(0,1)`, and positivity of `ε • (1,0) - (0,1)`
+for every `ε > 0` gives `ψ(0,1) ≤ ε`. -/
+theorem ousLex_state_apply (ψ : ousLexObj.{u} ⟶ ousScal.{u}) :
+    ψ.toLinearMap (ousLexPt 0 1) = 0 := by
+  set t : ℝ := (ψ.toLinearMap (ousLexPt.{u} 0 1)).down with ht
+  have h0 : (0 : ℝ) ≤ t := ψ.map_nonneg' _ ousLex_e_nonneg.{u}
+  have hup : ∀ ε : ℝ, 0 < ε → t ≤ ε := by
+    intro ε hε
+    have hpos : (0 : ousLex.{u}) ≤ ε • ousLexObj.{u}.unit - ousLexPt 0 1 := by
+      refine Or.inl ?_
+      show (0 : ℝ) < ε * 1 - 0
+      linarith
+    have h1 := ψ.map_nonneg' _ hpos
+    rw [map_sub, map_smul, ψ.map_unit'] at h1
+    have h2 : (0 : ℝ) ≤ ε * 1 - t := h1
+    linarith
+  have hle : t ≤ 0 := by
+    by_contra hc
+    have hc' : (0 : ℝ) < t := not_le.mp hc
+    have h3 := hup (t / 2) (by linarith)
+    linarith
+  exact ULift.down_injective (le_antisymm hle h0)
+
+/-- Two maps into `ousTopO` agreeing after the isomorphism `ousTopO ≅ ℝᵤ`
+are equal. -/
+theorem ous_hom_to_top_ext {Z : OUS.{u}} {a b : Z ⟶ ousTopO.{u}}
+    (hab : a ≫ ousTopTo ousScal.{u} = b ≫ ousTopTo ousScal.{u}) : a = b := by
+  calc a = a ≫ (ousTopTo ousScal.{u} ≫ ousUnitTop.{u}) := by
+        rw [ousTop_inv₂, Category.comp_id]
+    _ = (a ≫ ousTopTo ousScal.{u}) ≫ ousUnitTop.{u} := by rw [Category.assoc]
+    _ = (b ≫ ousTopTo ousScal.{u}) ≫ ousUnitTop.{u} := by rw [hab]
+    _ = b ≫ (ousTopTo ousScal.{u} ≫ ousUnitTop.{u}) := by rw [Category.assoc]
+    _ = b := by rw [ousTop_inv₂, Category.comp_id]
+
+/-- **190IV.1** (eff.tex:2150, Examples): `OUSᵒᵖ` does **not** have separating
+states.  On the
+lexicographic plane the effect `(0,1)` and the effect `0` are distinct
+predicates, yet every state of the plane sends both to the scalar `0`. -/
+theorem ous_no_separating_states : ¬ SeparatingStates (Par OUS.{u}ᵒᵖ) := by
+  intro hsep
+  set q : (op ousLexObj.{u} : OUS.{u}ᵒᵖ) ⟶ ousS.{u} :=
+    Quiver.Hom.op ((ousHomEffectEquiv ousLexObj.{u}).symm
+      ⟨ousLexPt 0 1, ousLex_e_nonneg.{u}, ousLex_e_le_unit.{u}⟩) with hqdef
+  set p : Pred (Par.of (op ousLexObj.{u})) :=
+    (ouPredEquiv ousTopCofan.{u} (op ousLexObj.{u})).symm q with hpdef
+  have hq : ouPredEquiv ousTopCofan.{u} (op ousLexObj.{u}) p = q :=
+    (ouPredEquiv ousTopCofan.{u} (op ousLexObj.{u})).apply_symm_apply q
+  have hq' : pval p ≫ (ouGamma ousTopCofan.{u}).hom = q := hq
+  have hstates : ∀ ω : Stat (Par.of (op ousLexObj.{u})),
+      ω.1 ≫ p = ω.1 ≫ (0 : Pred (Par.of (op ousLexObj.{u}))) := by
+    intro ω
+    obtain ⟨w, hw⟩ := (par_isTotal_iff_hat ω.1).mp ω.2
+    rw [hw]
+    refine pval_inj ?_
+    rw [par_hat_comp, par_hat_comp]
+    have hzero : pval (0 : Pred (Par.of (op ousLexObj.{u})))
+        = terminal.from (op ousLexObj.{u})
+          ≫ (coprod.inr : (⊤_ OUS.{u}ᵒᵖ) ⟶ (⊤_ OUS.{u}ᵒᵖ) ⨿ (⊤_ OUS.{u}ᵒᵖ)) := by
+      rw [par_zero_eq' (Par.of (op ousLexObj.{u})) (Par.of (⊤_ OUS.{u}ᵒᵖ)), pval_zero]
+    have hterm : w ≫ terminal.from (op ousLexObj.{u}) = 𝟙 (⊤_ OUS.{u}ᵒᵖ) :=
+      terminalIsTerminal.hom_ext _ _
+    rw [hzero, ← Category.assoc, hterm, Category.id_comp]
+    refine (cancel_mono (ouGamma ousTopCofan.{u}).hom).mp ?_
+    rw [Category.assoc, ouGamma_inr, hq']
+    refine Quiver.Hom.unop_inj ?_
+    show q.unop ≫ w.unop = ousSnd ousScal.{u} ousScal.{u} ≫ ousUnitTop.{u}
+    refine ous_hom_to_top_ext ?_
+    rw [Category.assoc, Category.assoc, ousTop_inv₁, Category.comp_id]
+    refine ous_hom_ext fun ab => ?_
+    show (w.unop ≫ ousTopTo ousScal.{u}).toLinearMap
+        (ab.1.down • (ousLexPt 0 1 : ousLex.{u})
+          + ab.2.down • (ousLexObj.{u}.unit - ousLexPt 0 1)) = ab.2
+    set ψ : ousLexObj.{u} ⟶ ousScal.{u} := w.unop ≫ ousTopTo ousScal.{u} with hψ
+    have he : ψ.toLinearMap (ousLexPt.{u} 0 1) = 0 := ousLex_state_apply ψ
+    rw [map_add, map_smul, map_smul, map_sub, he, ψ.map_unit']
+    show ab.1.down • (0 : ULift.{u} ℝ) + ab.2.down • ((1 : ULift.{u} ℝ) - 0) = ab.2
+    rw [sub_zero, smul_zero, zero_add]
+    apply ULift.down_injective
+    show ab.2.down * 1 = ab.2.down
+    rw [mul_one]
+  have hpz : p = (0 : Pred (Par.of (op ousLexObj.{u}))) := hsep p 0 hstates
+  have h1 := congrArg (fun r => ((ous_pred_effect ousLexObj.{u} r).1 : ousLex.{u})) hpz
+  rw [ous_pred_effect_zero] at h1
+  have h2 : ((ous_pred_effect ousLexObj.{u} p).1 : ousLex.{u}) = ousLexPt 0 1 := by
+    rw [ous_pred_effect_val, hq]
+    exact congrArg Subtype.val
+      ((ousHomEffectEquiv ousLexObj.{u}).apply_symm_apply
+        ⟨ousLexPt 0 1, ousLex_e_nonneg.{u}, ousLex_e_le_unit.{u}⟩)
+  rw [h2] at h1
+  exact ousLex_e_ne_zero.{u} h1
+
+/-! ## The three-point presentation of `⊤ + ⊤ + ⊤`, and `⊥`, `⋁` on predicates -/
+
+/-- `ℝ³`: the apex of the three-point presentation of `⊤ + ⊤ + ⊤`. -/
+abbrev ousR : OUS.{u}ᵒᵖ := op ((ousScal.{u}.prod ousScal.{u}).prod ousScal.{u})
+
+/-- `⊤ + ⊤ + ⊤ ≅ ℝ³`. -/
+def ousDelta :
+    ((((⊤_ OUS.{u}ᵒᵖ) ⨿ (⊤_ OUS.{u}ᵒᵖ)) ⨿ (⊤_ OUS.{u}ᵒᵖ))) ≅ ousR.{u} :=
+  (coprod.mapIso (ouGamma ousTopCofan.{u}) (Iso.refl (⊤_ OUS.{u}ᵒᵖ))).trans
+    (ousEps ousS.{u})
+
+/-- The first coprojection under the comparison isomorphism `⊤+⊤+⊤ ≅ ℝ³`. -/
+theorem ousDelta_inl :
+    (coprod.inl : ((⊤_ OUS.{u}ᵒᵖ) ⨿ (⊤_ OUS.{u}ᵒᵖ)) ⟶ _) ≫ ousDelta.{u}.hom
+      = (ouGamma ousTopCofan.{u}).hom ≫ ousKap₁ ousS.{u} := by
+  show coprod.inl ≫ (coprod.map (ouGamma ousTopCofan.{u}).hom
+      (Iso.refl (⊤_ OUS.{u}ᵒᵖ)).hom ≫ (ousEps ousS.{u}).hom) = _
+  rw [← Category.assoc, coprod.inl_map, Category.assoc, ousEps_inl]
+
+/-- The last coprojection under the comparison isomorphism `⊤+⊤+⊤ ≅ ℝ³`. -/
+theorem ousDelta_inr :
+    (coprod.inr : (⊤_ OUS.{u}ᵒᵖ) ⟶ _) ≫ ousDelta.{u}.hom = ousKap₂ ousS.{u} := by
+  show coprod.inr ≫ (coprod.map (ouGamma ousTopCofan.{u}).hom
+      (Iso.refl (⊤_ OUS.{u}ᵒᵖ)).hom ≫ (ousEps ousS.{u}).hom) = _
+  rw [← Category.assoc, coprod.inr_map, Iso.refl_hom, Category.id_comp]
+  exact ousEps_inr ousS.{u}
+
+/-- `(a,b) ↦ ((a,b),b)`: the cotuple `[κ₁,κ₂,κ₂]` of 180I, on `ℝ³`. -/
+def ousDl : ousR.{u} ⟶ ousS.{u} :=
+  Quiver.Hom.op (ousPair (𝟙 (ousScal.{u}.prod ousScal.{u}))
+    (ousSnd ousScal.{u} ousScal.{u}))
+
+/-- `(a,b) ↦ ((b,a),b)`: the cotuple `[κ₂,κ₁,κ₂]` of 180I, on `ℝ³`. -/
+def ousDr : ousR.{u} ⟶ ousS.{u} :=
+  Quiver.Hom.op (ousPair (ousPair (ousSnd ousScal.{u} ousScal.{u})
+    (ousFst ousScal.{u} ousScal.{u})) (ousSnd ousScal.{u} ousScal.{u}))
+
+/-- `(a,b) ↦ ((a,a),b)`: the cotuple `[κ₁,κ₁,κ₂]`, which computes `⋁`. -/
+def ousDv : ousR.{u} ⟶ ousS.{u} :=
+  Quiver.Hom.op (ousPair (ousPair (ousFst ousScal.{u} ousScal.{u})
+    (ousFst ousScal.{u} ousScal.{u})) (ousSnd ousScal.{u} ousScal.{u}))
+
+private theorem ous_kap₂_D (D : (ousScal.{u}.prod ousScal.{u})
+      ⟶ (ousScal.{u}.prod ousScal.{u}).prod ousScal.{u})
+    (hD : D ≫ ousSnd (ousScal.{u}.prod ousScal.{u}) ousScal.{u}
+      = ousSnd ousScal.{u} ousScal.{u}) :
+    ousKap₂ ousS.{u} ≫ Quiver.Hom.op D = ousI₂.{u} := by
+  refine Quiver.Hom.unop_inj ?_
+  show D ≫ (ousSnd (ousScal.{u}.prod ousScal.{u}) ousScal.{u} ≫ ousUnitTop.{u})
+    = ousSnd ousScal.{u} ousScal.{u} ≫ ousUnitTop.{u}
+  rw [← Category.assoc, hD]
+
+/-- The cotuple `[κ₁,κ₂,κ₂]` of 180I, transported to `ℝ³ ⟶ ℝ²`. -/
+theorem ous_Dl_eq :
+    (coprod.desc (𝟙 ((⊤_ OUS.{u}ᵒᵖ) ⨿ (⊤_ OUS.{u}ᵒᵖ)))
+        (coprod.inr : (⊤_ OUS.{u}ᵒᵖ) ⟶ _))
+        ≫ (ouGamma ousTopCofan.{u}).hom
+      = ousDelta.{u}.hom ≫ ousDl.{u} := by
+  refine coprod.hom_ext ?_ ?_
+  · rw [← Category.assoc, coprod.inl_desc, Category.id_comp, ← Category.assoc,
+      ousDelta_inl, Category.assoc]
+    have h : ousKap₁ ousS.{u} ≫ ousDl.{u} = 𝟙 ousS.{u} :=
+      Quiver.Hom.unop_inj (ousPair_fst _ _)
+    rw [h, Category.comp_id]
+  · rw [← Category.assoc, coprod.inr_desc, ouGamma_inr, ← Category.assoc,
+      ousDelta_inr]
+    exact (ous_kap₂_D _ (ousPair_snd _ _)).symm
+
+/-- The cotuple `[κ₂,κ₁,κ₂]` of 180I, transported to `ℝ³ ⟶ ℝ²`. -/
+theorem ous_Dr_eq :
+    (coprod.desc (parSwapTop : (⊤_ OUS.{u}ᵒᵖ) ⨿ (⊤_ OUS.{u}ᵒᵖ) ⟶ _)
+        (coprod.inr : (⊤_ OUS.{u}ᵒᵖ) ⟶ _))
+        ≫ (ouGamma ousTopCofan.{u}).hom
+      = ousDelta.{u}.hom ≫ ousDr.{u} := by
+  refine coprod.hom_ext ?_ ?_
+  · rw [← Category.assoc, coprod.inl_desc,
+      ouSwapTop_ouGamma ousTopCofan.{u} ousSwap.{u} ousI₁_swap.{u} ousI₂_swap.{u},
+      ← Category.assoc, ousDelta_inl, Category.assoc]
+    have h : ousKap₁ ousS.{u} ≫ ousDr.{u} = ousSwap.{u} :=
+      Quiver.Hom.unop_inj (ousPair_fst _ _)
+    rw [h]
+  · rw [← Category.assoc, coprod.inr_desc, ouGamma_inr, ← Category.assoc,
+      ousDelta_inr]
+    exact (ous_kap₂_D _ (ousPair_snd _ _)).symm
+
+/-- The codiagonal `∇ : ⊤ + ⊤ ⇸ ⊤` of `Par`, transported to `ℝ²`. -/
+def ousV : ousS.{u} ⟶ ousS.{u} :=
+  Quiver.Hom.op (ousPair (ousFst ousScal.{u} ousScal.{u})
+    (ousFst ousScal.{u} ousScal.{u}))
+
+/-- The codiagonal sends the first point of `⊤ + ⊤` to the first point. -/
+theorem ousI₁_V : ousI₁.{u} ≫ ousV.{u} = ousI₁.{u} := by
+  refine Quiver.Hom.unop_inj ?_
+  show ousPair (ousFst ousScal.{u} ousScal.{u}) (ousFst ousScal.{u} ousScal.{u})
+      ≫ (ousFst ousScal.{u} ousScal.{u} ≫ ousUnitTop.{u})
+    = ousFst ousScal.{u} ousScal.{u} ≫ ousUnitTop.{u}
+  rw [← Category.assoc, ousPair_fst]
+
+/-- The codiagonal sends the second point of `⊤ + ⊤` to the first point. -/
+theorem ousI₂_V : ousI₂.{u} ≫ ousV.{u} = ousI₁.{u} := by
+  refine Quiver.Hom.unop_inj ?_
+  show ousPair (ousFst ousScal.{u} ousScal.{u}) (ousFst ousScal.{u} ousScal.{u})
+      ≫ (ousSnd ousScal.{u} ousScal.{u} ≫ ousUnitTop.{u})
+    = ousFst ousScal.{u} ousScal.{u} ≫ ousUnitTop.{u}
+  rw [← Category.assoc, ousPair_snd]
+
+/-- The codiagonal `∇` of `Par`, transported along `⊤ + ⊤ ≅ ℝ²`. -/
+theorem ous_nabla_gamma :
+    pval (parNabla (⊤_ OUS.{u}ᵒᵖ)) ≫ (ouGamma ousTopCofan.{u}).hom
+      = (ouGamma ousTopCofan.{u}).hom ≫ ousV.{u} := by
+  have hn : pval (parNabla (⊤_ OUS.{u}ᵒᵖ))
+      = coprod.desc (𝟙 (⊤_ OUS.{u}ᵒᵖ)) (𝟙 (⊤_ OUS.{u}ᵒᵖ))
+        ≫ (coprod.inl : (⊤_ OUS.{u}ᵒᵖ) ⟶ _) := rfl
+  have hnl : (coprod.inl : (⊤_ OUS.{u}ᵒᵖ) ⟶ _) ≫ pval (parNabla (⊤_ OUS.{u}ᵒᵖ))
+      = coprod.inl := by
+    rw [hn, ← Category.assoc, coprod.inl_desc, Category.id_comp]
+  have hnr : (coprod.inr : (⊤_ OUS.{u}ᵒᵖ) ⟶ _) ≫ pval (parNabla (⊤_ OUS.{u}ᵒᵖ))
+      = coprod.inl := by
+    rw [hn, ← Category.assoc, coprod.inr_desc, Category.id_comp]
+  refine coprod.hom_ext ?_ ?_
+  · simp only [← Category.assoc]
+    rw [hnl, ouGamma_inl, ousI₁_V]
+  · simp only [← Category.assoc]
+    rw [hnr, ouGamma_inl, ouGamma_inr, ousI₂_V]
+
+/-- The cotuple `[κ₁,κ₁,κ₂]` computing `⋁`, transported to `ℝ³ ⟶ ℝ²`. -/
+theorem ous_Dv_eq :
+    (coprod.desc (pval (parNabla (⊤_ OUS.{u}ᵒᵖ)))
+        (coprod.inr : (⊤_ OUS.{u}ᵒᵖ) ⟶ _))
+        ≫ (ouGamma ousTopCofan.{u}).hom
+      = ousDelta.{u}.hom ≫ ousDv.{u} := by
+  refine coprod.hom_ext ?_ ?_
+  · rw [← Category.assoc, coprod.inl_desc, ous_nabla_gamma, ← Category.assoc,
+      ousDelta_inl, Category.assoc]
+    have h : ousKap₁ ousS.{u} ≫ ousDv.{u} = ousV.{u} :=
+      Quiver.Hom.unop_inj (ousPair_fst _ _)
+    rw [h]
+  · rw [← Category.assoc, coprod.inr_desc, ouGamma_inr, ← Category.assoc,
+      ousDelta_inr]
+    exact (ous_kap₂_D _ (ousPair_snd _ _)).symm
+
+/-- The `ParBound` conditions of 187III, transported to `ℝ³`. -/
+theorem ous_bound_iff {X : OUS.{u}ᵒᵖ} (p q : Pred (Par.of X))
+    (b : Par.of X ⟶ Par.of ((⊤_ OUS.{u}ᵒᵖ) ⨿ (⊤_ OUS.{u}ᵒᵖ))) :
+    ParBound p q b ↔
+      ((pval b ≫ ousDelta.{u}.hom) ≫ ousDl.{u}
+          = pval p ≫ (ouGamma ousTopCofan.{u}).hom ∧
+        (pval b ≫ ousDelta.{u}.hom) ≫ ousDr.{u}
+          = pval q ≫ (ouGamma ousTopCofan.{u}).hom) := by
+  have e₁ : pval (b ≫ Par.pproj₁ (⊤_ OUS.{u}ᵒᵖ) (⊤_ OUS.{u}ᵒᵖ))
+      = pval b ≫ coprod.desc (𝟙 ((⊤_ OUS.{u}ᵒᵖ) ⨿ (⊤_ OUS.{u}ᵒᵖ)))
+          (coprod.inr : (⊤_ OUS.{u}ᵒᵖ) ⟶ _) := by
+    rw [pval_comp]
+    congr 1
+    refine coprod.hom_ext ?_ ?_
+    · rw [coprod.inl_desc, coprod.inl_desc]
+      show (coprod.desc coprod.inl (Par.zero (⊤_ OUS.{u}ᵒᵖ) (⊤_ OUS.{u}ᵒᵖ)) :
+        (⊤_ OUS.{u}ᵒᵖ) ⨿ (⊤_ OUS.{u}ᵒᵖ) ⟶ _) = _
+      refine coprod.hom_ext ?_ ?_
+      · rw [coprod.inl_desc, Category.comp_id]
+      · rw [coprod.inr_desc, Category.comp_id]
+        show terminal.from (⊤_ OUS.{u}ᵒᵖ) ≫ coprod.inr = _
+        rw [par_terminal_self, Category.id_comp]
+    · rw [coprod.inr_desc, coprod.inr_desc]
+  have e₂ : pval (b ≫ Par.pproj₂ (⊤_ OUS.{u}ᵒᵖ) (⊤_ OUS.{u}ᵒᵖ))
+      = pval b ≫ coprod.desc (parSwapTop : (⊤_ OUS.{u}ᵒᵖ) ⨿ (⊤_ OUS.{u}ᵒᵖ) ⟶ _)
+          (coprod.inr : (⊤_ OUS.{u}ᵒᵖ) ⟶ _) := by
+    rw [pval_comp]
+    congr 1
+    refine coprod.hom_ext ?_ ?_
+    · rw [coprod.inl_desc, coprod.inl_desc]
+      show (coprod.desc (Par.zero (⊤_ OUS.{u}ᵒᵖ) (⊤_ OUS.{u}ᵒᵖ)) coprod.inl :
+        (⊤_ OUS.{u}ᵒᵖ) ⨿ (⊤_ OUS.{u}ᵒᵖ) ⟶ _) = _
+      rw [parSwapTop_eq]
+      refine coprod.hom_ext ?_ ?_
+      · rw [coprod.inl_desc, coprod.inl_desc]
+        show terminal.from (⊤_ OUS.{u}ᵒᵖ) ≫ coprod.inr = _
+        rw [par_terminal_self, Category.id_comp]
+      · rw [coprod.inr_desc, coprod.inr_desc]
+    · rw [coprod.inr_desc, coprod.inr_desc]
+  constructor
+  · rintro ⟨hb₁, hb₂⟩
+    have hb₁' : b ≫ Par.pproj₁ (⊤_ OUS.{u}ᵒᵖ) (⊤_ OUS.{u}ᵒᵖ) = p := hb₁
+    have hb₂' : b ≫ Par.pproj₂ (⊤_ OUS.{u}ᵒᵖ) (⊤_ OUS.{u}ᵒᵖ) = q := hb₂
+    refine ⟨?_, ?_⟩
+    · rw [Category.assoc, ← ous_Dl_eq, ← Category.assoc, ← e₁, hb₁']
+    · rw [Category.assoc, ← ous_Dr_eq, ← Category.assoc, ← e₂, hb₂']
+  · rintro ⟨hb₁, hb₂⟩
+    refine ⟨?_, ?_⟩
+    · show b ≫ Par.pproj₁ (⊤_ OUS.{u}ᵒᵖ) (⊤_ OUS.{u}ᵒᵖ) = p
+      refine pval_inj ?_
+      refine (cancel_mono (ouGamma ousTopCofan.{u}).hom).mp ?_
+      rw [e₁, Category.assoc, ous_Dl_eq, ← Category.assoc]
+      exact hb₁
+    · show b ≫ Par.pproj₂ (⊤_ OUS.{u}ᵒᵖ) (⊤_ OUS.{u}ᵒᵖ) = q
+      refine pval_inj ?_
+      refine (cancel_mono (ouGamma ousTopCofan.{u}).hom).mp ?_
+      rw [e₂, Category.assoc, ous_Dr_eq, ← Category.assoc]
+      exact hb₂
+
+/-- **⊥ for predicates of `OUSᵒᵖ`**, concretely: `p ⊥ q` exactly when the
+pair is the image of a positive unital map out of `ℝ³`. -/
+theorem ous_perp_iff {X : OUS.{u}ᵒᵖ} (p q : Pred (Par.of X)) :
+    Perp p q ↔ ∃ β : X ⟶ ousR.{u},
+      β ≫ ousDl.{u} = pval p ≫ (ouGamma ousTopCofan.{u}).hom ∧
+      β ≫ ousDr.{u} = pval q ≫ (ouGamma ousTopCofan.{u}).hom := by
+  constructor
+  · rintro ⟨b, hb⟩
+    exact ⟨pval b ≫ ousDelta.{u}.hom, (ous_bound_iff p q b).mp hb⟩
+  · rintro ⟨β, hβ₁, hβ₂⟩
+    obtain ⟨b, hbv⟩ : ∃ b : Par.of X ⟶ Par.of ((⊤_ OUS.{u}ᵒᵖ) ⨿ (⊤_ OUS.{u}ᵒᵖ)),
+        pval b = β ≫ ousDelta.{u}.inv := ⟨(β ≫ ousDelta.{u}.inv : X ⟶ _), rfl⟩
+    refine ⟨b, (ous_bound_iff p q b).mpr ?_⟩
+    rw [hbv]
+    simp only [Category.assoc, Iso.inv_hom_id_assoc]
+    exact ⟨hβ₁, hβ₂⟩
+
+/-- **⋁ for predicates of `OUSᵒᵖ`**, concretely. -/
+theorem ous_ovee_eq {X : OUS.{u}ᵒᵖ} {p q : Pred (Par.of X)} (h : Perp p q)
+    {β : X ⟶ ousR.{u}}
+    (hβ₁ : β ≫ ousDl.{u} = pval p ≫ (ouGamma ousTopCofan.{u}).hom)
+    (hβ₂ : β ≫ ousDr.{u} = pval q ≫ (ouGamma ousTopCofan.{u}).hom) :
+    pval (ovee p q h) ≫ (ouGamma ousTopCofan.{u}).hom = β ≫ ousDv.{u} := by
+  obtain ⟨b, hbv⟩ : ∃ b : Par.of X ⟶ Par.of ((⊤_ OUS.{u}ᵒᵖ) ⨿ (⊤_ OUS.{u}ᵒᵖ)),
+      pval b = β ≫ ousDelta.{u}.inv := ⟨(β ≫ ousDelta.{u}.inv : X ⟶ _), rfl⟩
+  have hb : ParBound p q b := by
+    refine (ous_bound_iff p q b).mpr ?_
+    rw [hbv]
+    simp only [Category.assoc, Iso.inv_hom_id_assoc]
+    exact ⟨hβ₁, hβ₂⟩
+  have hov : ovee p q h = b ≫ parNabla (⊤_ OUS.{u}ᵒᵖ) := parOvee_eq h hb
+  rw [hov]
+  have hpv2 : pval (b ≫ parNabla (⊤_ OUS.{u}ᵒᵖ))
+      = pval b ≫ coprod.desc (pval (parNabla (⊤_ OUS.{u}ᵒᵖ)))
+            (coprod.inr : (⊤_ OUS.{u}ᵒᵖ) ⟶ _) := pval_comp _ _
+  rw [hpv2, hbv, Category.assoc, ous_Dv_eq]
+  simp only [Category.assoc, Iso.inv_hom_id_assoc]
+
+/-! ## The scalars of `OUSᵒᵖ` are `[0,1]` -/
+
+theorem ousHom_apply (X : OUS.{u}) (φ : ousScal.{u}.prod ousScal.{u} ⟶ X)
+    (ab : ULift.{u} ℝ × ULift.{u} ℝ) :
+    φ.toLinearMap ab
+      = ab.1.down • φ.toLinearMap ((1 : ULift.{u} ℝ), (0 : ULift.{u} ℝ))
+        + ab.2.down • (X.unit
+          - φ.toLinearMap ((1 : ULift.{u} ℝ), (0 : ULift.{u} ℝ))) := by
+  have hdec : ab = ab.1.down • ((1 : ULift.{u} ℝ), (0 : ULift.{u} ℝ))
+      + ab.2.down • ((0 : ULift.{u} ℝ), (1 : ULift.{u} ℝ)) := by
+    refine Prod.ext ?_ ?_ <;> apply ULift.down_injective <;> simp
+  conv_lhs => rw [hdec]
+  rw [map_add, map_smul, map_smul, ous_hom_compl X φ]
+
+/-- The scalars of `OUSᵒᵖ` are the positive unital maps `ℝ² ⟶ ℝ`. -/
+def ousScalMapEquiv :
+    Scal (Par OUS.{u}ᵒᵖ) ≃ (ousScal.{u}.prod ousScal.{u} ⟶ ousScal.{u}) :=
+  ((ouPredEquiv ousTopCofan.{u} (⊤_ OUS.{u}ᵒᵖ)).trans
+    { toFun := fun f => f.unop
+      invFun := fun g => Quiver.Hom.op g
+      left_inv := fun _ => rfl
+      right_inv := fun _ => rfl }).trans
+    (ousHomTopEquiv (ousScal.{u}.prod ousScal.{u}))
+
+/-- **190IV.1** (eff.tex:2149, Examples): the scalars of `OUSᵒᵖ` are `[0,1]`,
+as a bijection. -/
+def ousScalEquivI : Scal (Par OUS.{u}ᵒᵖ) ≃ I :=
+  (ousScalMapEquiv.{u}.trans (ousHomEffectEquiv ousScal.{u})).trans
+    { toFun := fun y => ⟨y.1.down, y.2.1, y.2.2⟩
+      invFun := fun r => ⟨ULift.up r.1, r.2.1, r.2.2⟩
+      left_inv := fun _ => rfl
+      right_inv := fun _ => rfl }
+
+/-- The real number attached to a scalar. -/
+def ousScalV (k : Scal (Par OUS.{u}ᵒᵖ)) : ℝ := (ousScalEquivI.{u} k : ℝ)
+
+/-- The real number attached to a scalar is the image of `(1,0)`. -/
+theorem ousScalV_def (k : Scal (Par OUS.{u}ᵒᵖ)) :
+    ousScalV k = ((ousScalMapEquiv.{u} k).toLinearMap
+      ((1 : ULift.{u} ℝ), (0 : ULift.{u} ℝ))).down := rfl
+
+/-- A scalar is determined by its real number. -/
+theorem ousScalV_injective {k l : Scal (Par OUS.{u}ᵒᵖ)} (h : ousScalV k = ousScalV l) :
+    k = l := ousScalEquivI.{u}.injective (Subtype.ext h)
+
+/-- A scalar acts on `ℝ²` by `(s,t) ↦ λs + (1-λ)t`. -/
+theorem ousScalMap_down (k : Scal (Par OUS.{u}ᵒᵖ))
+    (ab : ULift.{u} ℝ × ULift.{u} ℝ) :
+    ((ousScalMapEquiv.{u} k).toLinearMap ab).down
+      = ab.1.down * ousScalV k + ab.2.down * (1 - ousScalV k) := by
+  rw [ousHom_apply ousScal.{u} (ousScalMapEquiv.{u} k) ab]
+  rfl
+
+/-- The scalar `1` is the first projection `ℝ² ⟶ ℝ`. -/
+theorem ousScalMapEquiv_one :
+    ousScalMapEquiv.{u} (1 : Scal (Par OUS.{u}ᵒᵖ)) = ousFst ousScal.{u} ousScal.{u} := by
+  show (ouPredEquiv ousTopCofan.{u} (⊤_ OUS.{u}ᵒᵖ)
+      (truth (Par.of (⊤_ OUS.{u}ᵒᵖ)))).unop ≫ ousTopTo ousScal.{u} = _
+  rw [ouPredEquiv_truth, par_terminal_self, Category.id_comp]
+  show (ousFst ousScal.{u} ousScal.{u} ≫ ousUnitTop.{u}) ≫ ousTopTo ousScal.{u} = _
+  rw [Category.assoc, ousTop_inv₁, Category.comp_id]
+
+/-- The scalar `0` is the second projection `ℝ² ⟶ ℝ`. -/
+theorem ousScalMapEquiv_zero :
+    ousScalMapEquiv.{u} (0 : Scal (Par OUS.{u}ᵒᵖ)) = ousSnd ousScal.{u} ousScal.{u} := by
+  show (ouPredEquiv ousTopCofan.{u} (⊤_ OUS.{u}ᵒᵖ)
+      (0 : Pred (Par.of (⊤_ OUS.{u}ᵒᵖ)))).unop ≫ ousTopTo ousScal.{u} = _
+  rw [ouPredEquiv_zero, par_terminal_self, Category.id_comp]
+  show (ousSnd ousScal.{u} ousScal.{u} ≫ ousUnitTop.{u}) ≫ ousTopTo ousScal.{u} = _
+  rw [Category.assoc, ousTop_inv₁, Category.comp_id]
+
+/-- The scalar `1` has value `1`. -/
+theorem ousScalV_one : ousScalV (1 : Scal (Par OUS.{u}ᵒᵖ)) = 1 := by
+  rw [ousScalV_def, ousScalMapEquiv_one]
+  rfl
+
+/-- The scalar `0` has value `0`. -/
+theorem ousScalV_zero : ousScalV (0 : Scal (Par OUS.{u}ᵒᵖ)) = 0 := by
+  rw [ousScalV_def, ousScalMapEquiv_zero]
+  rfl
+
+/-- The value of a scalar is non-negative. -/
+theorem ousScalV_nonneg (k : Scal (Par OUS.{u}ᵒᵖ)) : 0 ≤ ousScalV k :=
+  (ousScalEquivI.{u} k).2.1
+
+/-- The value of a scalar is at most `1`. -/
+theorem ousScalV_le_one (k : Scal (Par OUS.{u}ᵒᵖ)) : ousScalV k ≤ 1 :=
+  (ousScalEquivI.{u} k).2.2
+
+/-- A witness `β : ⊤ ⟶ ℝ³`, read as a positive unital map `ℝ³ ⟶ ℝ`. -/
+def ousBmap (β : (⊤_ OUS.{u}ᵒᵖ) ⟶ ousR.{u}) :
+    ((ousScal.{u}.prod ousScal.{u}).prod ousScal.{u}) ⟶ ousScal.{u} :=
+  β.unop ≫ ousTopTo ousScal.{u}
+
+/-- A witness for `⊥`, read on `ℝ³`, computes the scalar it bounds. -/
+theorem ous_beta_comp {β : (⊤_ OUS.{u}ᵒᵖ) ⟶ ousR.{u}} {D : ousR.{u} ⟶ ousS.{u}}
+    {k : Scal (Par OUS.{u}ᵒᵖ)}
+    (h : β ≫ D = pval k ≫ (ouGamma ousTopCofan.{u}).hom) :
+    D.unop ≫ ousBmap β = ousScalMapEquiv.{u} k := by
+  have h1 : (β ≫ D).unop = (pval k ≫ (ouGamma ousTopCofan.{u}).hom).unop :=
+    congrArg Quiver.Hom.unop h
+  show D.unop ≫ (β.unop ≫ ousTopTo ousScal.{u}) = _
+  rw [← Category.assoc]
+  show (β ≫ D).unop ≫ ousTopTo ousScal.{u} = _
+  rw [h1]
+  rfl
+
+/-- Converse of `ous_beta_comp`. -/
+theorem ous_beta_comp' {β : (⊤_ OUS.{u}ᵒᵖ) ⟶ ousR.{u}} {D : ousR.{u} ⟶ ousS.{u}}
+    {k : Scal (Par OUS.{u}ᵒᵖ)}
+    (h : D.unop ≫ ousBmap β = ousScalMapEquiv.{u} k) :
+    β ≫ D = pval k ≫ (ouGamma ousTopCofan.{u}).hom := by
+  refine Quiver.Hom.unop_inj ?_
+  refine ous_hom_to_top_ext ?_
+  show (D.unop ≫ β.unop) ≫ ousTopTo ousScal.{u} = _
+  rw [Category.assoc]
+  exact h
+
+/-- `[κ₁,κ₂,κ₂]` sends `(1,0)` to `((1,0),0)`. -/
+theorem ousDl_one_zero :
+    (ousDl.{u}).unop.toLinearMap ((1 : ULift.{u} ℝ), (0 : ULift.{u} ℝ))
+      = (((1 : ULift.{u} ℝ), (0 : ULift.{u} ℝ)), (0 : ULift.{u} ℝ)) := rfl
+
+/-- `[κ₂,κ₁,κ₂]` sends `(1,0)` to `((0,1),0)`. -/
+theorem ousDr_one_zero :
+    (ousDr.{u}).unop.toLinearMap ((1 : ULift.{u} ℝ), (0 : ULift.{u} ℝ))
+      = (((0 : ULift.{u} ℝ), (1 : ULift.{u} ℝ)), (0 : ULift.{u} ℝ)) := rfl
+
+/-- `[κ₁,κ₁,κ₂]` sends `(1,0)` to `((1,1),0)`. -/
+theorem ousDv_one_zero :
+    (ousDv.{u}).unop.toLinearMap ((1 : ULift.{u} ℝ), (0 : ULift.{u} ℝ))
+      = (((1 : ULift.{u} ℝ), (1 : ULift.{u} ℝ)), (0 : ULift.{u} ℝ)) := rfl
+
+/-- `((1,0),0) + ((0,1),0) = ((1,1),0)` in `ℝ³`. -/
+theorem ous_sum_pt :
+    ((((1 : ULift.{u} ℝ), (0 : ULift.{u} ℝ)), (0 : ULift.{u} ℝ))
+        + (((0 : ULift.{u} ℝ), (1 : ULift.{u} ℝ)), (0 : ULift.{u} ℝ)) :
+      (ULift.{u} ℝ × ULift.{u} ℝ) × ULift.{u} ℝ)
+      = (((1 : ULift.{u} ℝ), (1 : ULift.{u} ℝ)), (0 : ULift.{u} ℝ)) := by
+  refine Prod.ext (Prod.ext ?_ ?_) ?_ <;> apply ULift.down_injective <;> simp
+
+/-- `((1,1),0)` is below the order unit of `ℝ³`. -/
+theorem ous_sum_le_unit :
+    ((((1 : ULift.{u} ℝ), (1 : ULift.{u} ℝ)), (0 : ULift.{u} ℝ)) :
+      (ULift.{u} ℝ × ULift.{u} ℝ) × ULift.{u} ℝ)
+      ≤ ((ousScal.{u}.prod ousScal.{u}).prod ousScal.{u}).unit :=
+  Prod.le_def.mpr ⟨le_refl _, show (0 : ℝ) ≤ 1 from zero_le_one⟩
+
+/-- Half of **190IV.1** (eff.tex:2149): orthogonal scalars have
+`λ + μ ≤ 1`. -/
+theorem ousScalV_perp {k l : Scal (Par OUS.{u}ᵒᵖ)} (h : Perp k l) :
+    ousScalV k + ousScalV l ≤ 1 := by
+  obtain ⟨β, hβ₁, hβ₂⟩ := (ous_perp_iff k l).mp h
+  have e₁ : ((ousBmap β).toLinearMap
+      (((1 : ULift.{u} ℝ), (0 : ULift.{u} ℝ)), (0 : ULift.{u} ℝ))).down
+      = ousScalV k := by
+    rw [← ousDl_one_zero, ← ous_comp_apply, ous_beta_comp hβ₁, ousScalV_def]
+  have e₂ : ((ousBmap β).toLinearMap
+      (((0 : ULift.{u} ℝ), (1 : ULift.{u} ℝ)), (0 : ULift.{u} ℝ))).down
+      = ousScalV l := by
+    rw [← ousDr_one_zero, ← ous_comp_apply, ous_beta_comp hβ₂, ousScalV_def]
+  have hsum : (ousBmap β).toLinearMap
+      (((1 : ULift.{u} ℝ), (1 : ULift.{u} ℝ)), (0 : ULift.{u} ℝ))
+      = (ousBmap β).toLinearMap
+          (((1 : ULift.{u} ℝ), (0 : ULift.{u} ℝ)), (0 : ULift.{u} ℝ))
+        + (ousBmap β).toLinearMap
+          (((0 : ULift.{u} ℝ), (1 : ULift.{u} ℝ)), (0 : ULift.{u} ℝ)) := by
+    rw [← map_add, ous_sum_pt]
+  have hmono := (ousBmap β).mono ous_sum_le_unit.{u}
+  rw [(ousBmap β).map_unit', hsum] at hmono
+  have hd : ousScalV k + ousScalV l ≤ (1 : ℝ) := by
+    have := hmono
+    rw [← e₁, ← e₂]
+    exact this
+  exact hd
+
+/-- The positive unital map `ℝ³ ⟶ ℝ` mixing three non-negative weights. -/
+def ousMixMap (a b c : ℝ) (ha : 0 ≤ a) (hb : 0 ≤ b) (hc : 0 ≤ c)
+    (hs : a + b + c = 1) :
+    ((ousScal.{u}.prod ousScal.{u}).prod ousScal.{u}) ⟶ ousScal.{u} where
+  toLinearMap :=
+    { toFun := fun p =>
+        ULift.up (a * p.1.1.down + b * p.1.2.down + c * p.2.down)
+      map_add' := fun p q => congrArg ULift.up (by
+        show a * (p.1.1.down + q.1.1.down) + b * (p.1.2.down + q.1.2.down)
+            + c * (p.2.down + q.2.down)
+          = (a * p.1.1.down + b * p.1.2.down + c * p.2.down)
+            + (a * q.1.1.down + b * q.1.2.down + c * q.2.down)
+        ring)
+      map_smul' := fun r p => congrArg ULift.up (by
+        show a * (r * p.1.1.down) + b * (r * p.1.2.down) + c * (r * p.2.down)
+          = r * (a * p.1.1.down + b * p.1.2.down + c * p.2.down)
+        ring) }
+  map_nonneg' := fun p hp => by
+    obtain ⟨hp1, hp2⟩ := Prod.le_def.mp hp
+    obtain ⟨hp11, hp12⟩ := Prod.le_def.mp hp1
+    show (0 : ℝ) ≤ a * p.1.1.down + b * p.1.2.down + c * p.2.down
+    have h1 : (0 : ℝ) ≤ p.1.1.down := hp11
+    have h2 : (0 : ℝ) ≤ p.1.2.down := hp12
+    have h3 : (0 : ℝ) ≤ p.2.down := hp2
+    have := mul_nonneg ha h1
+    have := mul_nonneg hb h2
+    have := mul_nonneg hc h3
+    linarith
+  map_unit' := by
+    apply ULift.down_injective
+    show a * 1 + b * 1 + c * 1 = 1
+    linarith
+
+/-- The defining equation of `ousMixMap`. -/
+theorem ousMixMap_apply (a b c : ℝ) (ha hb hc hs) (p) :
+    ((ousMixMap.{u} a b c ha hb hc hs).toLinearMap p).down
+      = a * p.1.1.down + b * p.1.2.down + c * p.2.down := rfl
+
+/-- The mixing map attached to two scalars with `λ + μ ≤ 1`. -/
+def ousMixOf (k l : Scal (Par OUS.{u}ᵒᵖ)) (h : ousScalV k + ousScalV l ≤ 1) :
+    ((ousScal.{u}.prod ousScal.{u}).prod ousScal.{u}) ⟶ ousScal.{u} :=
+  ousMixMap (ousScalV k) (ousScalV l) (1 - ousScalV k - ousScalV l)
+    (ousScalV_nonneg k) (ousScalV_nonneg l)
+    (by have := ousScalV_nonneg.{u} k; linarith) (by ring)
+
+/-- The defining equation of `ousMixOf`. -/
+theorem ousMixOf_down (k l : Scal (Par OUS.{u}ᵒᵖ)) (h : ousScalV k + ousScalV l ≤ 1)
+    (p : (ULift.{u} ℝ × ULift.{u} ℝ) × ULift.{u} ℝ) :
+    ((ousMixOf k l h).toLinearMap p).down
+      = ousScalV k * p.1.1.down + ousScalV l * p.1.2.down
+        + (1 - ousScalV k - ousScalV l) * p.2.down := rfl
+
+/-- Reading a positive unital map `ℝ³ ⟶ ℝ` as a point of `ℝ³` and back. -/
+theorem ousBmap_op (B : ((ousScal.{u}.prod ousScal.{u}).prod ousScal.{u})
+      ⟶ ousScal.{u}) :
+    ousBmap (Quiver.Hom.op (B ≫ ousUnitTop.{u})) = B := by
+  show (B ≫ ousUnitTop.{u}) ≫ ousTopTo ousScal.{u} = B
+  rw [Category.assoc, ousTop_inv₁, Category.comp_id]
+
+/-- Half of **190IV.1** (eff.tex:2149): scalars with `λ + μ ≤ 1` are
+orthogonal. -/
+theorem ousScalV_perp' {k l : Scal (Par OUS.{u}ᵒᵖ)}
+    (h : ousScalV k + ousScalV l ≤ 1) : Perp k l := by
+  refine (ous_perp_iff k l).mpr
+    ⟨Quiver.Hom.op (ousMixOf k l h ≫ ousUnitTop.{u}), ?_, ?_⟩
+  · refine ous_beta_comp' ?_
+    rw [ousBmap_op]
+    refine ous_hom_ext fun ab => ?_
+    apply ULift.down_injective
+    rw [ous_comp_apply, ousMixOf_down, ousScalMap_down]
+    show ousScalV k * ab.1.down + ousScalV l * ab.2.down
+        + (1 - ousScalV k - ousScalV l) * ab.2.down
+      = ab.1.down * ousScalV k + ab.2.down * (1 - ousScalV k)
+    ring
+  · refine ous_beta_comp' ?_
+    rw [ousBmap_op]
+    refine ous_hom_ext fun ab => ?_
+    apply ULift.down_injective
+    rw [ous_comp_apply, ousMixOf_down, ousScalMap_down]
+    show ousScalV k * ab.2.down + ousScalV l * ab.1.down
+        + (1 - ousScalV k - ousScalV l) * ab.2.down
+      = ab.1.down * ousScalV l + ab.2.down * (1 - ousScalV l)
+    ring
+
+/-- **190IV.1** (eff.tex:2149): `⋁` of scalars is addition in `[0,1]`. -/
+theorem ousScalV_ovee {k l : Scal (Par OUS.{u}ᵒᵖ)} (h : Perp k l) :
+    ousScalV (ovee k l h) = ousScalV k + ousScalV l := by
+  obtain ⟨β, hβ₁, hβ₂⟩ := (ous_perp_iff k l).mp h
+  have e₁ : ((ousBmap β).toLinearMap
+      (((1 : ULift.{u} ℝ), (0 : ULift.{u} ℝ)), (0 : ULift.{u} ℝ))).down
+      = ousScalV k := by
+    rw [← ousDl_one_zero, ← ous_comp_apply, ous_beta_comp hβ₁, ousScalV_def]
+  have e₂ : ((ousBmap β).toLinearMap
+      (((0 : ULift.{u} ℝ), (1 : ULift.{u} ℝ)), (0 : ULift.{u} ℝ))).down
+      = ousScalV l := by
+    rw [← ousDr_one_zero, ← ous_comp_apply, ous_beta_comp hβ₂, ousScalV_def]
+  have ev : ((ousBmap β).toLinearMap
+      (((1 : ULift.{u} ℝ), (1 : ULift.{u} ℝ)), (0 : ULift.{u} ℝ))).down
+      = ousScalV (ovee k l h) := by
+    rw [← ousDv_one_zero, ← ous_comp_apply,
+      ous_beta_comp (ous_ovee_eq h hβ₁ hβ₂).symm, ousScalV_def]
+  rw [← ev, ← e₁, ← e₂, ← ous_sum_pt, map_add]
+  rfl
+
+/-- The round trip `ousTopO ⟶ ℝᵤ ⟶ ousTopO`. -/
+theorem ous_top_round {Z : OUS.{u}} (a : Z ⟶ ousTopO.{u}) :
+    (a ≫ ousTopTo ousScal.{u}) ≫ ousUnitTop.{u} = a := by
+  rw [Category.assoc, ousTop_inv₂, Category.comp_id]
+
+/-- The scalar `k` read as an endomorphism of `ℝ²`. -/
+def ousMk (k : Scal (Par OUS.{u}ᵒᵖ)) : ousS.{u} ⟶ ousS.{u} :=
+  Quiver.Hom.op (ousPair (ousScalMapEquiv.{u} k) (ousSnd ousScal.{u} ousScal.{u}))
+
+/-- `ousMk k` sends the first point of `⊤ + ⊤` to `k`. -/
+theorem ousI₁_Mk (k : Scal (Par OUS.{u}ᵒᵖ)) :
+    ousI₁.{u} ≫ ousMk k = pval k ≫ (ouGamma ousTopCofan.{u}).hom := by
+  refine Quiver.Hom.unop_inj ?_
+  show ousPair (ousScalMapEquiv.{u} k) (ousSnd ousScal.{u} ousScal.{u})
+      ≫ (ousFst ousScal.{u} ousScal.{u} ≫ ousUnitTop.{u})
+    = (pval k ≫ (ouGamma ousTopCofan.{u}).hom).unop
+  rw [← Category.assoc, ousPair_fst]
+  exact ous_top_round ((pval k ≫ (ouGamma ousTopCofan.{u}).hom).unop)
+
+/-- `ousMk k` fixes the second point of `⊤ + ⊤`. -/
+theorem ousI₂_Mk (k : Scal (Par OUS.{u}ᵒᵖ)) : ousI₂.{u} ≫ ousMk k = ousI₂.{u} := by
+  refine Quiver.Hom.unop_inj ?_
+  show ousPair (ousScalMapEquiv.{u} k) (ousSnd ousScal.{u} ousScal.{u})
+      ≫ (ousSnd ousScal.{u} ousScal.{u} ≫ ousUnitTop.{u})
+    = ousSnd ousScal.{u} ousScal.{u} ≫ ousUnitTop.{u}
+  rw [← Category.assoc, ousPair_snd]
+
+/-- Postcomposition with the scalar `k`, transported to `ℝ²`. -/
+theorem ous_desc_Mk (k : Scal (Par OUS.{u}ᵒᵖ)) :
+    coprod.desc (pval k) (coprod.inr : (⊤_ OUS.{u}ᵒᵖ) ⟶ _)
+        ≫ (ouGamma ousTopCofan.{u}).hom
+      = (ouGamma ousTopCofan.{u}).hom ≫ ousMk k := by
+  refine coprod.hom_ext ?_ ?_
+  · simp only [← Category.assoc]
+    rw [coprod.inl_desc, ouGamma_inl, ousI₁_Mk]
+  · simp only [← Category.assoc]
+    rw [coprod.inr_desc, ouGamma_inr, ouGamma_inr, ousI₂_Mk]
+
+/-- **190IV.1** (eff.tex:2149): composition of scalars is multiplication in
+`[0,1]`. -/
+theorem ousScalV_mul (k l : Scal (Par OUS.{u}ᵒᵖ)) :
+    ousScalV (k * l) = ousScalV k * ousScalV l := by
+  have hkl : (k * l : Scal (Par OUS.{u}ᵒᵖ)) = l ≫ k := rfl
+  have hpv : pval (l ≫ k) ≫ (ouGamma ousTopCofan.{u}).hom
+      = (pval l ≫ (ouGamma ousTopCofan.{u}).hom) ≫ ousMk k := by
+    rw [pval_comp, Category.assoc, ous_desc_Mk, ← Category.assoc]
+  have hmap : ousScalMapEquiv.{u} (l ≫ k)
+      = (ousMk k).unop ≫ ousScalMapEquiv.{u} l := by
+    show (pval (l ≫ k) ≫ (ouGamma ousTopCofan.{u}).hom).unop ≫ ousTopTo ousScal.{u}
+      = (ousMk k).unop ≫ ((pval l ≫ (ouGamma ousTopCofan.{u}).hom).unop
+        ≫ ousTopTo ousScal.{u})
+    rw [hpv, ← Category.assoc]
+    rfl
+  rw [hkl, ousScalV_def, hmap, ous_comp_apply]
+  have hpt : (ousMk k).unop.toLinearMap ((1 : ULift.{u} ℝ), (0 : ULift.{u} ℝ))
+      = ((ousScalMapEquiv.{u} k).toLinearMap
+          ((1 : ULift.{u} ℝ), (0 : ULift.{u} ℝ)), (0 : ULift.{u} ℝ)) := rfl
+  rw [hpt, ousScalMap_down]
+  show ousScalV k * ousScalV l + 0 * (1 - ousScalV l) = ousScalV k * ousScalV l
+  ring
+
+/-! ### `Par OUSᵒᵖ` is a real effectus -/
+
+private theorem ousI_perp_iff (x y : I) : Perp x y ↔ (x : ℝ) + (y : ℝ) ≤ 1 := Iff.rfl
+
+/-- **190IV.1** (eff.tex:2149, Examples): `OUSᵒᵖ` is a **real effectus** —
+its effect monoid of scalars is `[0,1]`.  A scalar is a positive unital map
+`ℝ² ⟶ ℝ`, i.e. `(s,t) ↦ λs + (1-λ)t` for a unique `λ ∈ [0,1]`; orthogonality
+is `λ + μ ≤ 1`, `⋁` is addition, and composition is multiplication. -/
+theorem ous_real_effectus : IsRealEffectus (Par OUS.{u}ᵒᵖ) := by
+  have hφperp : ∀ {a b : Scal (Par OUS.{u}ᵒᵖ)}, Perp a b →
+      Perp (ousScalEquivI.{u} a) (ousScalEquivI.{u} b) := fun hab => ousScalV_perp hab
+  have hφovee : ∀ {a b : Scal (Par OUS.{u}ᵒᵖ)} (hab : Perp a b),
+      ousScalEquivI.{u} (ovee a b hab)
+        = ovee (ousScalEquivI.{u} a) (ousScalEquivI.{u} b) (hφperp hab) := by
+    intro a b hab
+    exact Subtype.ext (ousScalV_ovee hab)
+  have hφone : ousScalEquivI.{u} 1 = 1 := Subtype.ext ousScalV_one
+  have hφmul : ∀ a b : Scal (Par OUS.{u}ᵒᵖ),
+      ousScalEquivI.{u} (a * b) = ousScalEquivI.{u} a * ousScalEquivI.{u} b :=
+    fun a b => Subtype.ext (ousScalV_mul a b)
+  have hV : ∀ r : I, ousScalV (ousScalEquivI.{u}.symm r) = (r : ℝ) :=
+    fun r => congrArg Subtype.val (ousScalEquivI.{u}.apply_symm_apply r)
+  have hψperp : ∀ {x y : I}, Perp x y →
+      Perp (ousScalEquivI.{u}.symm x) (ousScalEquivI.{u}.symm y) := by
+    intro x y hxy
+    refine ousScalV_perp' ?_
+    rw [hV, hV]
+    exact hxy
+  have hψovee : ∀ {x y : I} (hxy : Perp x y),
+      ousScalEquivI.{u}.symm (ovee x y hxy)
+        = ovee (ousScalEquivI.{u}.symm x) (ousScalEquivI.{u}.symm y) (hψperp hxy) := by
+    intro x y hxy
+    refine ousScalV_injective ?_
+    rw [ousScalV_ovee (hψperp hxy), hV, hV, hV]
+    rfl
+  have hψone : ousScalEquivI.{u}.symm 1 = 1 := by
+    refine ousScalV_injective ?_
+    rw [hV, ousScalV_one]
+    rfl
+  have hψmul : ∀ x y : I,
+      ousScalEquivI.{u}.symm (x * y)
+        = ousScalEquivI.{u}.symm x * ousScalEquivI.{u}.symm y := by
+    intro x y
+    refine ousScalV_injective ?_
+    rw [ousScalV_mul, hV, hV, hV]
+    rfl
+  exact ⟨⟨⟨⟨ousScalEquivI.{u}, hφperp, hφovee⟩, hφone⟩, hφmul⟩,
+    ⟨⟨⟨ousScalEquivI.{u}.symm, hψperp, hψovee⟩, hψone⟩, hψmul⟩,
+    fun k => ousScalEquivI.{u}.symm_apply_apply k,
+    fun r => ousScalEquivI.{u}.apply_symm_apply r⟩
+
+end OUSExample
+
+/-! # 190IV.2: the effectus `OUGᵒᵖ` -/
+
+section OUGExample
+
+local instance instHasFiniteCoproductsParOUG :
+    HasFiniteCoproducts (Par OUG.{u}ᵒᵖ) := parHasFiniteCoproducts
+
+/-- The final object of `OUGᵒᵖ`, read as an order unit group. -/
+abbrev ougTopO : OUG.{u} := (⊤_ OUG.{u}ᵒᵖ).unop
+
+/-- The unique map out of `ougTopO` (it is initial in `OUG`). -/
+def ougTopTo (G : OUG.{u}) : ougTopO.{u} ⟶ G := (terminal.from (op G)).unop
+
+/-- `ougTopO` is initial in `OUG`: there is at most one map out of it. -/
+theorem ougTopO_hom_unique {G : OUG.{u}} (f g : ougTopO.{u} ⟶ G) : f = g :=
+  Quiver.Hom.op_inj (terminalIsTerminal.hom_ext (C := OUG.{u}ᵒᵖ) f.op g.op)
+
+/-- The unique map `ℤᵤ ⟶ ougTopO`. -/
+def ougUnitTop : ougScal.{u} ⟶ ougTopO.{u} := ougUnitMap ougTopO.{u}
+
+/-- `ℤᵤ ⟶ ougTopO ⟶ ℤᵤ` is the identity. -/
+theorem ougTop_inv₁ : ougUnitTop.{u} ≫ ougTopTo ougScal.{u} = 𝟙 ougScal.{u} :=
+  (ougUnitMap_unique _).trans (ougUnitMap_unique _).symm
+
+/-- `ougTopO ⟶ ℤᵤ ⟶ ougTopO` is the identity. -/
+theorem ougTop_inv₂ : ougTopTo ougScal.{u} ≫ ougUnitTop.{u} = 𝟙 ougTopO.{u} :=
+  ougTopO_hom_unique _ _
+
+/-- The round trip `ougTopO ⟶ ℤᵤ ⟶ ougTopO`. -/
+theorem oug_top_round {K : OUG.{u}} (a : K ⟶ ougTopO.{u}) :
+    (a ≫ ougTopTo ougScal.{u}) ≫ ougUnitTop.{u} = a := by
+  rw [Category.assoc, ougTop_inv₂, Category.comp_id]
+
+/-- Two maps into `ougTopO` agreeing after the isomorphism `ougTopO ≅ ℤᵤ`
+are equal. -/
+theorem oug_hom_to_top_ext {K : OUG.{u}} {a b : K ⟶ ougTopO.{u}}
+    (hab : a ≫ ougTopTo ougScal.{u} = b ≫ ougTopTo ougScal.{u}) : a = b := by
+  rw [← oug_top_round a, hab, oug_top_round b]
+
+/-- The first component of a pairing. -/
+theorem ougPair_fst {K G H : OUG.{u}} (f : K ⟶ G) (g : K ⟶ H) :
+    ougPair f g ≫ ougFst G H = f := oug_hom_ext fun _ => rfl
+
+/-- The second component of a pairing. -/
+theorem ougPair_snd {K G H : OUG.{u}} (f : K ⟶ G) (g : K ⟶ H) :
+    ougPair f g ≫ ougSnd G H = g := oug_hom_ext fun _ => rfl
+
+/-- A map into a product is the pairing of its two components. -/
+theorem ougPair_eta {K G H : OUG.{u}} (m : K ⟶ G.prod H) :
+    ougPair (m ≫ ougFst G H) (m ≫ ougSnd G H) = m :=
+  oug_hom_ext fun _ => rfl
+
+/-- `ℤ² = ℤᵤ × ℤᵤ`: the apex of the two-point presentation of `⊤ + ⊤`. -/
+abbrev ougS : OUG.{u}ᵒᵖ := op (ougScal.{u}.prod ougScal.{u})
+
+/-- The first point of `⊤ + ⊤` in `OUGᵒᵖ`. -/
+def ougI₁ : (⊤_ OUG.{u}ᵒᵖ) ⟶ ougS.{u} :=
+  Quiver.Hom.op (ougFst ougScal.{u} ougScal.{u} ≫ ougUnitTop.{u})
+
+/-- The second point of `⊤ + ⊤` in `OUGᵒᵖ`. -/
+def ougI₂ : (⊤_ OUG.{u}ᵒᵖ) ⟶ ougS.{u} :=
+  Quiver.Hom.op (ougSnd ougScal.{u} ougScal.{u} ≫ ougUnitTop.{u})
+
+/-- The swap of `ℤ²`, which will be the orthosupplement. -/
+def ougSwap : ougS.{u} ⟶ ougS.{u} :=
+  Quiver.Hom.op (ougPair (ougSnd ougScal.{u} ougScal.{u})
+    (ougFst ougScal.{u} ougScal.{u}))
+
+/-- `⊤ + ⊤` in `OUGᵒᵖ` is `ℤ²`. -/
+def ougTopCofan : IsColimit (BinaryCofan.mk ougI₁.{u} ougI₂.{u}) :=
+  BinaryCofan.IsColimit.mk _
+    (fun {_} u v => Quiver.Hom.op
+      (ougPair (u.unop ≫ ougTopTo ougScal.{u}) (v.unop ≫ ougTopTo ougScal.{u})))
+    (fun {_} u v => by
+      refine Quiver.Hom.unop_inj ?_
+      show ougPair (u.unop ≫ ougTopTo ougScal.{u}) (v.unop ≫ ougTopTo ougScal.{u})
+          ≫ (ougFst _ _ ≫ ougUnitTop.{u}) = u.unop
+      rw [← Category.assoc, ougPair_fst, Category.assoc, ougTop_inv₂,
+        Category.comp_id])
+    (fun {_} u v => by
+      refine Quiver.Hom.unop_inj ?_
+      show ougPair (u.unop ≫ ougTopTo ougScal.{u}) (v.unop ≫ ougTopTo ougScal.{u})
+          ≫ (ougSnd _ _ ≫ ougUnitTop.{u}) = v.unop
+      rw [← Category.assoc, ougPair_snd, Category.assoc, ougTop_inv₂,
+        Category.comp_id])
+    (fun {W} u v m h₁ h₂ => by
+      obtain ⟨m, rfl⟩ : ∃ m' : ougS.{u} ⟶ W, m' = m := ⟨m, rfl⟩
+      refine Quiver.Hom.unop_inj ?_
+      have k₁ : m.unop ≫ (ougFst ougScal.{u} ougScal.{u} ≫ ougUnitTop.{u})
+          = u.unop := congrArg Quiver.Hom.unop h₁
+      have k₂ : m.unop ≫ (ougSnd ougScal.{u} ougScal.{u} ≫ ougUnitTop.{u})
+          = v.unop := congrArg Quiver.Hom.unop h₂
+      have e₁ : m.unop ≫ ougFst ougScal.{u} ougScal.{u}
+          = u.unop ≫ ougTopTo ougScal.{u} := by
+        rw [← k₁, Category.assoc, Category.assoc, ougTop_inv₁, Category.comp_id]
+      have e₂ : m.unop ≫ ougSnd ougScal.{u} ougScal.{u}
+          = v.unop ≫ ougTopTo ougScal.{u} := by
+        rw [← k₂, Category.assoc, Category.assoc, ougTop_inv₁, Category.comp_id]
+      rw [← e₁, ← e₂, ougPair_eta]
+      rfl)
+
+/-- The swap of `ℤ²` exchanges the two points of `⊤ + ⊤`. -/
+theorem ougI₁_swap : ougI₁.{u} ≫ ougSwap.{u} = ougI₂.{u} := by
+  refine Quiver.Hom.unop_inj ?_
+  show ougPair (ougSnd ougScal.{u} ougScal.{u}) (ougFst ougScal.{u} ougScal.{u})
+      ≫ (ougFst _ _ ≫ ougUnitTop.{u}) = ougSnd _ _ ≫ ougUnitTop.{u}
+  rw [← Category.assoc, ougPair_fst]
+
+/-- The swap of `ℤ²` exchanges the two points of `⊤ + ⊤`. -/
+theorem ougI₂_swap : ougI₂.{u} ≫ ougSwap.{u} = ougI₁.{u} := by
+  refine Quiver.Hom.unop_inj ?_
+  show ougPair (ougSnd ougScal.{u} ougScal.{u}) (ougFst ougScal.{u} ougScal.{u})
+      ≫ (ougSnd _ _ ≫ ougUnitTop.{u}) = ougFst _ _ ≫ ougUnitTop.{u}
+  rw [← Category.assoc, ougPair_snd]
+
+/-- A positive unital homomorphism out of `ℤ²` sends `(0,1)` to `1 - φ(1,0)`. -/
+theorem oug_hom_compl (G : OUG.{u}) (φ : ougScal.{u}.prod ougScal.{u} ⟶ G) :
+    φ.toAddHom ((0 : ULift.{u} ℤ), (1 : ULift.{u} ℤ))
+      = G.unit - φ.toAddHom ((1 : ULift.{u} ℤ), (0 : ULift.{u} ℤ)) := by
+  have h : ((1 : ULift.{u} ℤ), (0 : ULift.{u} ℤ))
+      + ((0 : ULift.{u} ℤ), (1 : ULift.{u} ℤ))
+      = (ougScal.{u}.prod ougScal.{u}).unit := by
+    refine Prod.ext ?_ ?_ <;> apply ULift.down_injective <;> simp
+  have h2 : φ.toAddHom ((1 : ULift.{u} ℤ), (0 : ULift.{u} ℤ))
+      + φ.toAddHom ((0 : ULift.{u} ℤ), (1 : ULift.{u} ℤ)) = G.unit := by
+    rw [← map_add, h, φ.map_unit']
+  rw [← h2]; abel
+
+/-- A positive unital homomorphism out of `ℤ²` is `(a,b) ↦ a·x + b·(1-x)`
+for `x = φ(1,0)`. -/
+theorem ougHom_apply (G : OUG.{u}) (φ : ougScal.{u}.prod ougScal.{u} ⟶ G)
+    (ab : ULift.{u} ℤ × ULift.{u} ℤ) :
+    φ.toAddHom ab
+      = ab.1.down • φ.toAddHom ((1 : ULift.{u} ℤ), (0 : ULift.{u} ℤ))
+        + ab.2.down • (G.unit
+          - φ.toAddHom ((1 : ULift.{u} ℤ), (0 : ULift.{u} ℤ))) := by
+  have hdec : ab = ab.1.down • ((1 : ULift.{u} ℤ), (0 : ULift.{u} ℤ))
+      + ab.2.down • ((0 : ULift.{u} ℤ), (1 : ULift.{u} ℤ)) := by
+    refine Prod.ext ?_ ?_ <;> apply ULift.down_injective <;> simp
+  conv_lhs => rw [hdec]
+  rw [map_add, AddMonoidHom.map_zsmul, AddMonoidHom.map_zsmul, oug_hom_compl G φ]
+
+/-- `(1,0)` is a positive element of `ℤ²`. -/
+theorem oug_one_zero_nonneg :
+    (0 : ULift.{u} ℤ × ULift.{u} ℤ) ≤ ((1 : ULift.{u} ℤ), (0 : ULift.{u} ℤ)) :=
+  Prod.le_def.mpr ⟨show (0:ℤ) ≤ 1 from zero_le_one, le_refl _⟩
+
+/-- **190IV.2** (eff.tex:2162, Examples): positive unital homomorphisms
+`ℤ² ⟶ G` of `OUG` are the
+elements `0 ≤ x ≤ 1` of `G`, by `φ ↦ φ(1,0)`. -/
+def ougHomEffectEquiv (G : OUG.{u}) :
+    (ougScal.{u}.prod ougScal.{u} ⟶ G)
+      ≃ {x : G.carrier // 0 ≤ x ∧ x ≤ G.unit} where
+  toFun φ := ⟨φ.toAddHom ((1 : ULift.{u} ℤ), (0 : ULift.{u} ℤ)), by
+    refine ⟨φ.map_nonneg' _ oug_one_zero_nonneg.{u}, ?_⟩
+    have h : ((1 : ULift.{u} ℤ), (0 : ULift.{u} ℤ))
+        ≤ (ougScal.{u}.prod ougScal.{u}).unit :=
+      Prod.le_def.mpr ⟨le_refl _, show (0:ℤ) ≤ 1 from zero_le_one⟩
+    exact (φ.mono h).trans (le_of_eq φ.map_unit')⟩
+  invFun x :=
+    { toAddHom := AddMonoidHom.mk'
+        (fun p => p.1.down • x.1 + p.2.down • (G.unit - x.1))
+        (fun a b => by
+          show (a.1.down + b.1.down) • x.1
+              + (a.2.down + b.2.down) • (G.unit - x.1)
+            = (a.1.down • x.1 + a.2.down • (G.unit - x.1))
+              + (b.1.down • x.1 + b.2.down • (G.unit - x.1))
+          rw [add_zsmul, add_zsmul]
+          abel)
+      map_nonneg' := fun p hp => by
+        obtain ⟨hp1, hp2⟩ := Prod.le_def.mp hp
+        have h1 : (0:ℤ) ≤ p.1.down := hp1
+        have h2 : (0:ℤ) ≤ p.2.down := hp2
+        show (0 : G.carrier) ≤ p.1.down • x.1 + p.2.down • (G.unit - x.1)
+        have e1 : (0 : G.carrier) ≤ p.1.down • x.1 :=
+          oug_zsmul_nonneg x.2.1 h1
+        have e2 : (0 : G.carrier) ≤ p.2.down • (G.unit - x.1) :=
+          oug_zsmul_nonneg (sub_nonneg.mpr x.2.2) h2
+        simpa using add_le_add e1 e2
+      map_unit' := by
+        show (1:ℤ) • x.1 + (1:ℤ) • (G.unit - x.1) = G.unit
+        rw [one_zsmul, one_zsmul]
+        abel }
+  left_inv φ := oug_hom_ext fun p => (ougHom_apply G φ p).symm
+  right_inv x := by
+    refine Subtype.ext ?_
+    show (1:ℤ) • x.1 + (0:ℤ) • (G.unit - x.1) = x.1
+    rw [one_zsmul, zero_zsmul, add_zero]
+
+/-- Passing to the opposite category. -/
+def ougOpEquiv (G : OUG.{u}) :
+    ((op G : OUG.{u}ᵒᵖ) ⟶ ougS.{u}) ≃ (ougScal.{u}.prod ougScal.{u} ⟶ G) where
+  toFun f := f.unop
+  invFun g := Quiver.Hom.op g
+  left_inv _ := rfl
+  right_inv _ := rfl
+
+/-- **190IV.2** (eff.tex:2162, Examples): the predicates on an order unit
+group `G` are the elements `0 ≤ x ≤ 1`. -/
+def oug_pred_effect (G : OUG.{u}) :
+    Pred (Par.of (op G)) ≃ {x : G.carrier // 0 ≤ x ∧ x ≤ G.unit} :=
+  ((ouPredEquiv ougTopCofan.{u} (op G)).trans (ougOpEquiv G)).trans
+    (ougHomEffectEquiv G)
+
+/-- The effect attached to a predicate is the image of `(1,0)`. -/
+theorem oug_pred_effect_val (G : OUG.{u}) (p : Pred (Par.of (op G))) :
+    ((oug_pred_effect G p).1 : G.carrier)
+      = (ouPredEquiv ougTopCofan.{u} (op G) p).unop.toAddHom
+          ((1 : ULift.{u} ℤ), (0 : ULift.{u} ℤ)) := rfl
+
+/-- The composite `ℤ² ⟶ ⊤ ⟶ G` through the first point is `n ↦ n · 1`
+precomposed with the first projection. -/
+theorem oug_from_i₁ (G : OUG.{u}) :
+    terminal.from (op G) ≫ ougI₁.{u}
+      = Quiver.Hom.op (ougFst ougScal.{u} ougScal.{u} ≫ ougUnitMap G) := by
+  refine Quiver.Hom.unop_inj ?_
+  show (ougFst ougScal.{u} ougScal.{u} ≫ ougUnitTop.{u}) ≫ ougTopTo G
+      = ougFst ougScal.{u} ougScal.{u} ≫ ougUnitMap G
+  rw [Category.assoc]
+  exact congrArg (fun m => ougFst ougScal.{u} ougScal.{u} ≫ m)
+    (ougUnitMap_unique (ougUnitTop.{u} ≫ ougTopTo G))
+
+/-- The composite `ℤ² ⟶ ⊤ ⟶ G` through the second point is `n ↦ n · 1`
+precomposed with the second projection. -/
+theorem oug_from_i₂ (G : OUG.{u}) :
+    terminal.from (op G) ≫ ougI₂.{u}
+      = Quiver.Hom.op (ougSnd ougScal.{u} ougScal.{u} ≫ ougUnitMap G) := by
+  refine Quiver.Hom.unop_inj ?_
+  show (ougSnd ougScal.{u} ougScal.{u} ≫ ougUnitTop.{u}) ≫ ougTopTo G
+      = ougSnd ougScal.{u} ougScal.{u} ≫ ougUnitMap G
+  rw [Category.assoc]
+  exact congrArg (fun m => ougSnd ougScal.{u} ougScal.{u} ≫ m)
+    (ougUnitMap_unique (ougUnitTop.{u} ≫ ougTopTo G))
+
+/-- **190IV.2** (eff.tex:2163, Examples): the truth predicate is the order
+unit. -/
+theorem oug_pred_effect_truth (G : OUG.{u}) :
+    ((oug_pred_effect G (truth (Par.of (op G)))).1 : G.carrier) = G.unit := by
+  rw [oug_pred_effect_val, ouPredEquiv_truth, oug_from_i₁]
+  show (ougUnitMap G).toAddHom (1 : ULift.{u} ℤ) = G.unit
+  rw [ougUnitMap_apply]
+  exact one_zsmul _
+
+/-- **190IV.2** (eff.tex:2163, Examples): the zero predicate is `0`. -/
+theorem oug_pred_effect_zero (G : OUG.{u}) :
+    ((oug_pred_effect G (0 : Pred (Par.of (op G)))).1 : G.carrier) = 0 := by
+  rw [oug_pred_effect_val, ouPredEquiv_zero, oug_from_i₂]
+  show (ougUnitMap G).toAddHom (0 : ULift.{u} ℤ) = 0
+  rw [ougUnitMap_apply]
+  exact zero_zsmul _
+
+/-- **190IV.2** (eff.tex:2163, Examples): the orthosupplement is `1 - x`. -/
+theorem oug_pred_effect_orth (G : OUG.{u}) (p : Pred (Par.of (op G))) :
+    ((oug_pred_effect G (orth p)).1 : G.carrier)
+      = G.unit - ((oug_pred_effect G p).1 : G.carrier) := by
+  rw [oug_pred_effect_val, oug_pred_effect_val,
+    ouPredEquiv_orth ougTopCofan.{u} ougSwap.{u} ougI₁_swap.{u} ougI₂_swap.{u}
+      (op G) p]
+  rw [← oug_hom_compl G (ouPredEquiv ougTopCofan.{u} (op G) p).unop]
+  rfl
+
+/-! ### The states of an order unit group -/
+
+/-- Maps `G ⟶ ℤᵤ` of `OUG` are the unit-preserving positive homomorphisms
+`G → ℤ`. -/
+def ougHomStateEquiv (G : OUG.{u}) :
+    (G ⟶ ougScal.{u})
+      ≃ {f : G.carrier →+ ℤ // (∀ x, 0 ≤ x → 0 ≤ f x) ∧ f G.unit = 1} where
+  toFun φ :=
+    ⟨AddMonoidHom.mk' (fun x => (φ.toAddHom x).down)
+       (fun x y => congrArg ULift.down (map_add φ.toAddHom x y)),
+     fun x hx => φ.map_nonneg' x hx, congrArg ULift.down φ.map_unit'⟩
+  invFun f :=
+    { toAddHom := AddMonoidHom.mk' (fun x => ULift.up (f.1 x))
+        (fun x y => congrArg ULift.up (map_add f.1 x y))
+      map_nonneg' := fun x hx => f.2.1 x hx
+      map_unit' := ULift.down_injective f.2.2 }
+  left_inv _ := oug_hom_ext fun _ => rfl
+  right_inv _ := Subtype.ext (AddMonoidHom.ext fun _ => rfl)
+
+/-- `ougTopO ≅ ℤᵤ`, as a bijection on maps into it. -/
+def ougHomTopEquiv (G : OUG.{u}) : (G ⟶ ougTopO.{u}) ≃ (G ⟶ ougScal.{u}) where
+  toFun f := f ≫ ougTopTo ougScal.{u}
+  invFun g := g ≫ ougUnitTop.{u}
+  left_inv f := by
+    show (f ≫ ougTopTo ougScal.{u}) ≫ ougUnitTop.{u} = f
+    rw [Category.assoc, ougTop_inv₂, Category.comp_id]
+  right_inv g := by
+    show (g ≫ ougUnitTop.{u}) ≫ ougTopTo ougScal.{u} = g
+    rw [Category.assoc, ougTop_inv₁, Category.comp_id]
+
+/-- **190IV.2** (eff.tex:2165, Examples): the states on an order unit group
+`G` are the unit-preserving positive homomorphisms `G → ℤ`. -/
+def oug_stat_hom (G : OUG.{u}) :
+    Stat (Par.of (op G))
+      ≃ {f : G.carrier →+ ℤ // (∀ x, 0 ≤ x → 0 ≤ f x) ∧ f G.unit = 1} :=
+  ((parStatEquiv (op G)).trans
+    { toFun := fun f => f.unop
+      invFun := fun g => Quiver.Hom.op g
+      left_inv := fun _ => rfl
+      right_inv := fun _ => rfl }).trans
+    ((ougHomTopEquiv G).trans (ougHomStateEquiv G))
+
+/-! ### The scalars of `OUGᵒᵖ` are the two-element effect monoid `2` -/
+
+/-- Copy of `ExtensiveExamples.lean`'s `scalarsAreTwo_of_forall`, with the
+conclusion written out inline: the two modules are siblings, so neither can
+import the other's abbreviation `ScalarsAreTwo`. -/
+theorem ouScalarsTwo_of_forall {D : Type u} [Category.{v} D]
+    [HasFiniteCoproducts D] [∀ X Y : D, PCM (X ⟶ Y)] [FinPAC D]
+    [EffectusPartialForm D]
+    (hex : ∀ k : Scal D, k = 0 ∨ k = 1) (hne : (0 : Scal D) ≠ 1) :
+    ∃ (φ : EffectMonoidHom (Scal D) Bool) (ψ : EffectMonoidHom Bool (Scal D)),
+      (∀ k, ψ.toFun (φ.toFun k) = k) ∧ ∀ b, φ.toFun (ψ.toFun b) = b := by
+  classical
+  obtain ⟨φf, hφ0, hφ1⟩ : ∃ f : Scal D → Bool, f 0 = false ∧ f 1 = true := by
+    refine ⟨fun k => if k = 1 then true else false, ?_, ?_⟩
+    · simp [hne]
+    · simp
+  obtain ⟨ψf, hψ0, hψ1⟩ : ∃ g : Bool → Scal D, g false = 0 ∧ g true = 1 :=
+    ⟨fun b => cond b 1 0, rfl, rfl⟩
+  have hbne : ¬ ((true : Bool) = 0) := fun hh => Bool.noConfusion hh
+  have hbcases : ∀ b : Bool, b = false ∨ b = true := by
+    intro b; cases b
+    · exact Or.inl rfl
+    · exact Or.inr rfl
+  have hnp : ¬ Perp (1 : Scal D) (1 : Scal D) := fun hh =>
+    hne (EffectAlgebra.eq_zero_of_perp_one hh).symm
+  have hnpb : ¬ Perp (true : Bool) (true : Bool) := fun hh =>
+    hbne (EffectAlgebra.eq_zero_of_perp_one hh)
+  have hzm : ∀ a : Scal D, (0 : Scal D) * a = 0 := fun a =>
+    show a ≫ (0 : Scal D) = 0 from FinPAC.comp_zero a
+  have hmz : ∀ a : Scal D, a * (0 : Scal D) = 0 := fun a =>
+    show (0 : Scal D) ≫ a = 0 from FinPAC.zero_comp a
+  have hbzm : ∀ b : Bool, (false : Bool) * b = false := by
+    intro b; cases b <;> rfl
+  have hbmz : ∀ b : Bool, b * (false : Bool) = false := by
+    intro b; cases b <;> rfl
+  have hbtt : (true : Bool) * true = true := rfl
+  have hpfl : ∀ x : Bool, Perp (false : Bool) x := fun x => PCM.zero_perp x
+  have hpfr : ∀ x : Bool, Perp x (false : Bool) := fun x => PCM.perp_zero x
+  have hzol : ∀ x : Bool, ovee (false : Bool) x (hpfl x) = x := fun x =>
+    PCM.zero_ovee x
+  have hzor : ∀ x : Bool, ovee x (false : Bool) (hpfr x) = x := fun x =>
+    PCM.ovee_zero x (hpfr x)
+  have φperp : ∀ {a b : Scal D}, Perp a b → Perp (φf a) (φf b) := by
+    intro a b hab
+    rcases hex a with rfl | rfl
+    · rw [hφ0]; exact hpfl _
+    · rcases hex b with rfl | rfl
+      · rw [hφ0]; exact hpfr _
+      · exact absurd hab hnp
+  have φovee : ∀ {a b : Scal D} (h : Perp a b),
+      φf (ovee a b h) = ovee (φf a) (φf b) (φperp h) := by
+    intro a b hab
+    rcases hex a with rfl | rfl
+    · rw [congrArg φf (PCM.zero_ovee (M := Scal D) b)]
+      symm
+      exact (PCM.ovee_congr hφ0 rfl (φperp hab) (hpfl (φf b))).trans (hzol (φf b))
+    · rcases hex b with rfl | rfl
+      · rw [congrArg φf (PCM.ovee_zero (1 : Scal D) hab)]
+        symm
+        exact (PCM.ovee_congr rfl hφ0 (φperp hab) (hpfr (φf 1))).trans
+          (hzor (φf 1))
+      · exact absurd hab hnp
+  have φmul : ∀ a b : Scal D, φf (a * b) = φf a * φf b := by
+    intro a b
+    rcases hex a with rfl | rfl
+    · rw [hzm, hφ0, hbzm]
+    · rcases hex b with rfl | rfl
+      · rw [hmz, hφ0, hφ1, hbmz]
+      · rw [EffectMonoid.one_mul, hφ1, hbtt]
+  have ψperp : ∀ {a b : Bool}, Perp a b → Perp (ψf a) (ψf b) := by
+    intro a b hab
+    rcases hbcases a with rfl | rfl
+    · rw [hψ0]; exact PCM.zero_perp _
+    · rcases hbcases b with rfl | rfl
+      · rw [hψ0]; exact PCM.perp_zero _
+      · exact absurd hab hnpb
+  have ψovee : ∀ {a b : Bool} (h : Perp a b),
+      ψf (ovee a b h) = ovee (ψf a) (ψf b) (ψperp h) := by
+    intro a b hab
+    rcases hbcases a with rfl | rfl
+    · rw [congrArg ψf (hzol b)]
+      symm
+      exact (PCM.ovee_congr hψ0 rfl (ψperp hab) (PCM.zero_perp (ψf b))).trans
+        (PCM.zero_ovee (ψf b))
+    · rcases hbcases b with rfl | rfl
+      · rw [congrArg ψf (hzor true)]
+        symm
+        exact (PCM.ovee_congr rfl hψ0 (ψperp hab) (PCM.perp_zero (ψf true))).trans
+          (PCM.ovee_zero (ψf true) (PCM.perp_zero (ψf true)))
+      · exact absurd hab hnpb
+  have ψmul : ∀ a b : Bool, ψf (a * b) = ψf a * ψf b := by
+    intro a b
+    rcases hbcases a with rfl | rfl
+    · rw [hbzm, hψ0, hzm]
+    · rcases hbcases b with rfl | rfl
+      · rw [hbmz, hψ0, hψ1, hmz]
+      · rw [hbtt, hψ1, EffectMonoid.one_mul]
+  refine ⟨⟨⟨⟨φf, φperp, φovee⟩, hφ1⟩, φmul⟩, ⟨⟨⟨ψf, ψperp, ψovee⟩, hψ1⟩, ψmul⟩,
+    ?_, ?_⟩
+  · intro k
+    rcases hex k with rfl | rfl
+    · show ψf (φf 0) = 0
+      rw [hφ0, hψ0]
+    · show ψf (φf 1) = 1
+      rw [hφ1, hψ1]
+  · intro b
+    rcases hbcases b with rfl | rfl
+    · show φf (ψf false) = false
+      rw [hψ0, hφ0]
+    · show φf (ψf true) = true
+      rw [hψ1, hφ1]
+
+/-- The scalars of `OUGᵒᵖ` are the positive unital homomorphisms `ℤ² ⟶ ℤ`. -/
+def ougScalMapEquiv :
+    Scal (Par OUG.{u}ᵒᵖ) ≃ (ougScal.{u}.prod ougScal.{u} ⟶ ougScal.{u}) :=
+  ((ouPredEquiv ougTopCofan.{u} (⊤_ OUG.{u}ᵒᵖ)).trans
+    { toFun := fun f => f.unop
+      invFun := fun g => Quiver.Hom.op g
+      left_inv := fun _ => rfl
+      right_inv := fun _ => rfl }).trans
+    (ougHomTopEquiv (ougScal.{u}.prod ougScal.{u}))
+
+/-- The scalars of `OUGᵒᵖ` are `{0, 1} ⊆ ℤ`, as a bijection. -/
+def ougScalEquivZ : Scal (Par OUG.{u}ᵒᵖ) ≃ {n : ℤ // 0 ≤ n ∧ n ≤ 1} :=
+  (ougScalMapEquiv.{u}.trans (ougHomEffectEquiv ougScal.{u})).trans
+    { toFun := fun y => ⟨y.1.down, y.2.1, y.2.2⟩
+      invFun := fun r => ⟨ULift.up r.1, r.2.1, r.2.2⟩
+      left_inv := fun _ => rfl
+      right_inv := fun _ => rfl }
+
+/-- The integer attached to a scalar of `OUGᵒᵖ`. -/
+def ougScalV (k : Scal (Par OUG.{u}ᵒᵖ)) : ℤ := (ougScalEquivZ.{u} k).1
+
+/-- A scalar of `OUGᵒᵖ` is determined by its integer. -/
+theorem ougScalV_injective {k l : Scal (Par OUG.{u}ᵒᵖ)}
+    (h : ougScalV k = ougScalV l) : k = l :=
+  ougScalEquivZ.{u}.injective (Subtype.ext h)
+
+/-- The integer of a scalar of `OUGᵒᵖ` lies in `{0, 1}`. -/
+theorem ougScalV_bounds (k : Scal (Par OUG.{u}ᵒᵖ)) :
+    0 ≤ ougScalV k ∧ ougScalV k ≤ 1 := (ougScalEquivZ.{u} k).2
+
+/-- The scalar `1` is the first projection `ℤ² ⟶ ℤ`. -/
+theorem ougScalMapEquiv_one :
+    ougScalMapEquiv.{u} (1 : Scal (Par OUG.{u}ᵒᵖ))
+      = ougFst ougScal.{u} ougScal.{u} := by
+  show (ouPredEquiv ougTopCofan.{u} (⊤_ OUG.{u}ᵒᵖ)
+      (truth (Par.of (⊤_ OUG.{u}ᵒᵖ)))).unop ≫ ougTopTo ougScal.{u} = _
+  rw [ouPredEquiv_truth, par_terminal_self, Category.id_comp]
+  show (ougFst ougScal.{u} ougScal.{u} ≫ ougUnitTop.{u}) ≫ ougTopTo ougScal.{u} = _
+  rw [Category.assoc, ougTop_inv₁, Category.comp_id]
+
+/-- The scalar `0` is the second projection `ℤ² ⟶ ℤ`. -/
+theorem ougScalMapEquiv_zero :
+    ougScalMapEquiv.{u} (0 : Scal (Par OUG.{u}ᵒᵖ))
+      = ougSnd ougScal.{u} ougScal.{u} := by
+  show (ouPredEquiv ougTopCofan.{u} (⊤_ OUG.{u}ᵒᵖ)
+      (0 : Pred (Par.of (⊤_ OUG.{u}ᵒᵖ)))).unop ≫ ougTopTo ougScal.{u} = _
+  rw [ouPredEquiv_zero, par_terminal_self, Category.id_comp]
+  show (ougSnd ougScal.{u} ougScal.{u} ≫ ougUnitTop.{u}) ≫ ougTopTo ougScal.{u} = _
+  rw [Category.assoc, ougTop_inv₁, Category.comp_id]
+
+/-- The scalar `1` has integer `1`. -/
+theorem ougScalV_one : ougScalV (1 : Scal (Par OUG.{u}ᵒᵖ)) = 1 := by
+  show ((ougScalMapEquiv.{u} 1).toAddHom
+    ((1 : ULift.{u} ℤ), (0 : ULift.{u} ℤ))).down = 1
+  rw [ougScalMapEquiv_one]
+  rfl
+
+/-- The scalar `0` has integer `0`. -/
+theorem ougScalV_zero : ougScalV (0 : Scal (Par OUG.{u}ᵒᵖ)) = 0 := by
+  show ((ougScalMapEquiv.{u} 0).toAddHom
+    ((1 : ULift.{u} ℤ), (0 : ULift.{u} ℤ))).down = 0
+  rw [ougScalMapEquiv_zero]
+  rfl
+
+/-- **190IV.2** (eff.tex:2160, Examples): `OUGᵒᵖ` **has the two-element
+effect monoid `2` as scalars**.  A scalar is a positive unital homomorphism
+`ℤ² ⟶ ℤ`, determined by the image `n` of `(1,0)`, which must satisfy
+`0 ≤ n ≤ 1`; so there are exactly the two scalars `0` and `1`.
+
+The statement is `ExtensiveExamples.lean`'s `ScalarsAreTwo (Par OUG.{u}ᵒᵖ)`
+written out inline: that file is a sibling leaf module of this one, so the
+abbreviation cannot be shared. -/
+theorem oug_scalars_two :
+    ∃ (φ : EffectMonoidHom (Scal (Par OUG.{u}ᵒᵖ)) Bool)
+      (ψ : EffectMonoidHom Bool (Scal (Par OUG.{u}ᵒᵖ))),
+      (∀ k, ψ.toFun (φ.toFun k) = k) ∧ ∀ b, φ.toFun (ψ.toFun b) = b := by
+  refine ouScalarsTwo_of_forall ?_ ?_
+  · intro k
+    obtain ⟨h0, h1⟩ := ougScalV_bounds.{u} k
+    have hk : ougScalV k = 0 ∨ ougScalV k = 1 := by omega
+    rcases hk with hk | hk
+    · exact Or.inl (ougScalV_injective (hk.trans ougScalV_zero.symm))
+    · exact Or.inr (ougScalV_injective (hk.trans ougScalV_one.symm))
+  · intro hz
+    have h := congrArg ougScalV hz
+    rw [ougScalV_zero, ougScalV_one] at h
+    exact absurd h (by norm_num)
+
+/-! ### `ℤ` with order unit `2`: `OUGᵒᵖ` has no separating states -/
+
+/-- `ℤ` with the usual order but with the order unit `2`.  A plain `def`,
+so that instance search does not reach the `OrderUnitGroup` instance of
+`ULift ℤ` (whose order unit is `1`). -/
+def ougTwo : Type u := ULift.{u} ℤ
+
+instance : AddCommGroup ougTwo.{u} := inferInstanceAs (AddCommGroup (ULift.{u} ℤ))
+
+instance : PartialOrder ougTwo.{u} := inferInstanceAs (PartialOrder (ULift.{u} ℤ))
+
+/-- An element of `ougTwo`. -/
+def ougTwoPt (n : ℤ) : ougTwo.{u} := ULift.up n
+
+/-- The integer underlying an element of `ougTwo`. -/
+def ougTwoDown (x : ougTwo.{u}) : ℤ := ULift.down x
+
+/-- Natural multiples in `ougTwo`, on the underlying integer. -/
+theorem ougTwoDown_nsmul (n : ℕ) (x : ougTwo.{u}) :
+    ougTwoDown (n • x) = (n : ℤ) * ougTwoDown x := by
+  induction n with
+  | zero =>
+      show ougTwoDown (0 • x) = _
+      rw [zero_nsmul]
+      show (0 : ℤ) = _
+      push_cast
+      ring
+  | succ k ih =>
+      rw [succ_nsmul]
+      show ougTwoDown (k • x) + ougTwoDown x = _
+      rw [ih]
+      push_cast
+      ring
+
+/-- `ℤ` with order unit `2` is an order unit group: `2 ≥ 0`, and every `g`
+satisfies `g ≤ n • 2`. -/
+instance ougTwoOrderUnitGroup : OrderUnitGroup ougTwo.{u} where
+  add_le_add_left x y h z := by
+    have h' : ougTwoDown x ≤ ougTwoDown y := h
+    show ougTwoDown x + ougTwoDown z ≤ ougTwoDown y + ougTwoDown z
+    omega
+  unit := ougTwoPt 2
+  unit_nonneg := by
+    show (0 : ℤ) ≤ 2
+    norm_num
+  exists_le_nsmul_unit g := by
+    refine ⟨(ougTwoDown g).toNat, ?_⟩
+    show ougTwoDown g ≤ ougTwoDown ((ougTwoDown g).toNat • ougTwoPt.{u} 2)
+    rw [ougTwoDown_nsmul]
+    show ougTwoDown g ≤ ((ougTwoDown g).toNat : ℤ) * 2
+    omega
+
+/-- `ℤ` with order unit `2`, as an object of `OUG`. -/
+abbrev ougTwoObj : OUG.{u} := OUG.of ougTwo.{u}
+
+/-- The order unit of `ougTwo` is `2`. -/
+theorem ougTwoObj_unit : ougTwoObj.{u}.unit = ougTwoPt 2 := rfl
+
+/-- **190IV.2** (eff.tex:2165, Examples): `ℤ` with order unit `2` has **no**
+states: a unit-preserving
+positive homomorphism to `ℤ` would send `2` to `1`, but `h(2) = 2·h(1)` is
+even. -/
+theorem oug_two_no_states :
+    IsEmpty {f : ougTwo.{u} →+ ℤ //
+      (∀ x, 0 ≤ x → 0 ≤ f x) ∧ f ougTwoObj.{u}.unit = 1} := by
+  refine ⟨fun f => ?_⟩
+  have hsplit : (ougTwoPt.{u} 2) = ougTwoPt.{u} 1 + ougTwoPt.{u} 1 := by
+    apply ULift.down_injective
+    show (2 : ℤ) = 1 + 1
+    norm_num
+  have h2 : f.1 (ougTwoPt.{u} 2) = 1 := f.2.2
+  rw [hsplit, map_add] at h2
+  omega
+
+/-- **190IV.2** (eff.tex:2165, Examples): `OUGᵒᵖ` does **not** have separating
+states.  On `ℤ` with order unit `2` there are no states at all, while `1 ≠ 0`
+as predicates on it. -/
+theorem oug_no_separating_states : ¬ SeparatingStates (Par OUG.{u}ᵒᵖ) := by
+  intro hsep
+  have hE := oug_two_no_states.{u}
+  have hemp : IsEmpty (Stat (Par.of (op ougTwoObj.{u}))) :=
+    @Function.isEmpty _ _ hE (oug_stat_hom ougTwoObj.{u})
+  have h : truth (Par.of (op ougTwoObj.{u}))
+      = (0 : Pred (Par.of (op ougTwoObj.{u}))) :=
+    hsep (truth (Par.of (op ougTwoObj.{u}))) 0 (fun ω => isEmptyElim ω)
+  have h1 := congrArg
+    (fun q => ((oug_pred_effect ougTwoObj.{u} q).1 : ougTwo.{u})) h
+  rw [oug_pred_effect_truth, oug_pred_effect_zero] at h1
+  have h2 : (2 : ℤ) = 0 := congrArg ULift.down h1
+  exact absurd h2 (by norm_num)
+
+/-! ### `OUGᵒᵖ` does **not** have separating predicates -/
+
+/-- The first coprojection `G ⟶ G + 1` of `OUGᵒᵖ`, concretely. -/
+def ougKap₁ (G : OUG.{u}ᵒᵖ) : G ⟶ op (G.unop.prod ougScal.{u}) :=
+  Quiver.Hom.op (ougFst G.unop ougScal.{u})
+
+/-- The second coprojection `1 ⟶ G + 1` of `OUGᵒᵖ`, concretely. -/
+def ougKap₂ (G : OUG.{u}ᵒᵖ) : (⊤_ OUG.{u}ᵒᵖ) ⟶ op (G.unop.prod ougScal.{u}) :=
+  Quiver.Hom.op (ougSnd G.unop ougScal.{u} ≫ ougUnitTop.{u})
+
+/-- `G + 1` in `OUGᵒᵖ` is `G × ℤ`. -/
+def ougPlusCofan (G : OUG.{u}ᵒᵖ) :
+    IsColimit (BinaryCofan.mk (ougKap₁ G) (ougKap₂ G)) :=
+  BinaryCofan.IsColimit.mk _
+    (fun {_} u v => Quiver.Hom.op
+      (ougPair u.unop (v.unop ≫ ougTopTo ougScal.{u})))
+    (fun {_} _ _ => Quiver.Hom.unop_inj (ougPair_fst _ _))
+    (fun {_} u v => by
+      refine Quiver.Hom.unop_inj ?_
+      show ougPair u.unop (v.unop ≫ ougTopTo ougScal.{u})
+          ≫ (ougSnd G.unop ougScal.{u} ≫ ougUnitTop.{u}) = v.unop
+      rw [← Category.assoc, ougPair_snd, Category.assoc, ougTop_inv₂,
+        Category.comp_id])
+    (fun {W} u v m h₁ h₂ => by
+      obtain ⟨m, rfl⟩ :
+          ∃ m' : (op (G.unop.prod ougScal.{u}) : OUG.{u}ᵒᵖ) ⟶ W, m' = m := ⟨m, rfl⟩
+      refine Quiver.Hom.unop_inj ?_
+      have k₁ : m.unop ≫ ougFst G.unop ougScal.{u} = u.unop :=
+        congrArg Quiver.Hom.unop h₁
+      have k₂ : m.unop ≫ (ougSnd G.unop ougScal.{u} ≫ ougUnitTop.{u}) = v.unop :=
+        congrArg Quiver.Hom.unop h₂
+      have e₂ : m.unop ≫ ougSnd G.unop ougScal.{u}
+          = v.unop ≫ ougTopTo ougScal.{u} := by
+        rw [← k₂, Category.assoc, Category.assoc, ougTop_inv₁, Category.comp_id]
+      rw [← k₁, ← e₂, ougPair_eta]
+      rfl)
+
+/-- The comparison isomorphism `G + 1 ≅ G × ℤ` of `OUGᵒᵖ`. -/
+def ougEps (G : OUG.{u}ᵒᵖ) :
+    (G ⨿ (⊤_ OUG.{u}ᵒᵖ)) ≅ op (G.unop.prod ougScal.{u}) :=
+  IsColimit.coconePointUniqueUpToIso (coprodIsCoprod G (⊤_ OUG.{u}ᵒᵖ))
+    (ougPlusCofan G)
+
+/-- The first coprojection under the comparison isomorphism `G + 1 ≅ G × ℤ`. -/
+theorem ougEps_inl (G : OUG.{u}ᵒᵖ) :
+    (coprod.inl : G ⟶ G ⨿ (⊤_ OUG.{u}ᵒᵖ)) ≫ (ougEps G).hom = ougKap₁ G :=
+  IsColimit.comp_coconePointUniqueUpToIso_hom (coprodIsCoprod G (⊤_ OUG.{u}ᵒᵖ))
+    (ougPlusCofan G) (Discrete.mk WalkingPair.left)
+
+/-- The second coprojection under the comparison isomorphism `G + 1 ≅ G × ℤ`. -/
+theorem ougEps_inr (G : OUG.{u}ᵒᵖ) :
+    (coprod.inr : (⊤_ OUG.{u}ᵒᵖ) ⟶ G ⨿ (⊤_ OUG.{u}ᵒᵖ)) ≫ (ougEps G).hom
+      = ougKap₂ G :=
+  IsColimit.comp_coconePointUniqueUpToIso_hom (coprodIsCoprod G (⊤_ OUG.{u}ᵒᵖ))
+    (ougPlusCofan G) (Discrete.mk WalkingPair.right)
+
+/-- The order unit group `ℤ²` whose positive cone is
+`{(0,0)} ∪ {(a,b) : a ≥ 1, b ≥ 0}`, with order unit `(1,1)`.  Its only
+effects are `0` and `(1,1)`. -/
+def ougCex : Type u := ULift.{u} (ℤ × ℤ)
+
+instance : AddCommGroup ougCex.{u} :=
+  inferInstanceAs (AddCommGroup (ULift.{u} (ℤ × ℤ)))
+
+/-- A point of `ougCex`. -/
+def ougCexPt (a b : ℤ) : ougCex.{u} := ULift.up (a, b)
+
+/-- The coordinates of a point of `ougCex`. -/
+def ougCexDown (x : ougCex.{u}) : ℤ × ℤ := ULift.down x
+
+@[simp] theorem ougCexDown_pt (a b : ℤ) :
+    ougCexDown (ougCexPt.{u} a b) = (a, b) := rfl
+
+/-- Points of `ougCex` are determined by their coordinates. -/
+theorem ougCexDown_injective {x y : ougCex.{u}} (h : ougCexDown x = ougCexDown y) :
+    x = y := ULift.down_injective h
+
+/-- The zero of `ougCex`. -/
+theorem ougCexDown_zero : ougCexDown (0 : ougCex.{u}) = (0, 0) := rfl
+
+/-- Addition in `ougCex` is coordinatewise. -/
+theorem ougCexDown_add (x y : ougCex.{u}) :
+    ougCexDown (x + y) = ougCexDown x + ougCexDown y := rfl
+
+/-- The order of `ougCex`, with positive cone
+`{(0,0)} ∪ {(a,b) : a ≥ 1, b ≥ 0}`. -/
+instance ougCexPartialOrder : PartialOrder ougCex.{u} where
+  le x y := ((ougCexDown y).1 = (ougCexDown x).1
+      ∧ (ougCexDown y).2 = (ougCexDown x).2)
+    ∨ ((ougCexDown x).1 + 1 ≤ (ougCexDown y).1
+      ∧ (ougCexDown x).2 ≤ (ougCexDown y).2)
+  le_refl _ := Or.inl ⟨rfl, rfl⟩
+  le_trans x y z hxy hyz := by
+    rcases hxy with ⟨h1, h2⟩ | ⟨h1, h2⟩ <;> rcases hyz with ⟨h3, h4⟩ | ⟨h3, h4⟩
+    · exact Or.inl ⟨by omega, by omega⟩
+    · exact Or.inr ⟨by omega, by omega⟩
+    · exact Or.inr ⟨by omega, by omega⟩
+    · exact Or.inr ⟨by omega, by omega⟩
+  le_antisymm x y hxy hyx := by
+    refine ougCexDown_injective (Prod.ext ?_ ?_) <;>
+      rcases hxy with ⟨h1, h2⟩ | ⟨h1, h2⟩ <;> rcases hyx with ⟨h3, h4⟩ | ⟨h3, h4⟩ <;>
+        omega
+
+/-- The order of `ougCex`, unfolded. -/
+theorem ougCex_le_iff (x y : ougCex.{u}) :
+    x ≤ y ↔ ((ougCexDown y).1 = (ougCexDown x).1
+        ∧ (ougCexDown y).2 = (ougCexDown x).2)
+      ∨ ((ougCexDown x).1 + 1 ≤ (ougCexDown y).1
+        ∧ (ougCexDown x).2 ≤ (ougCexDown y).2) := Iff.rfl
+
+/-- Natural multiples in `ougCex`, on the underlying coordinates. -/
+theorem ougCexDown_nsmul (n : ℕ) (x : ougCex.{u}) :
+    ougCexDown (n • x)
+      = ((n : ℤ) * (ougCexDown x).1, (n : ℤ) * (ougCexDown x).2) := by
+  induction n with
+  | zero =>
+      rw [zero_nsmul]
+      refine Prod.ext ?_ ?_ <;> · show (0 : ℤ) = _; push_cast; ring
+  | succ k ih =>
+      rw [succ_nsmul, ougCexDown_add, ih]
+      refine Prod.ext ?_ ?_
+      · show (k : ℤ) * (ougCexDown x).1 + (ougCexDown x).1
+          = ((k + 1 : ℕ) : ℤ) * (ougCexDown x).1
+        push_cast
+        ring
+      · show (k : ℤ) * (ougCexDown x).2 + (ougCexDown x).2
+          = ((k + 1 : ℕ) : ℤ) * (ougCexDown x).2
+        push_cast
+        ring
+
+/-- `ougCex` is an order unit group: the cone is closed under addition and
+`(a,b) ≤ n • (1,1)` for `n` large. -/
+instance ougCexOrderUnitGroup : OrderUnitGroup ougCex.{u} where
+  add_le_add_left x y h z := by
+    rcases h with ⟨h1, h2⟩ | ⟨h1, h2⟩
+    · exact Or.inl ⟨by
+        show (ougCexDown y).1 + (ougCexDown z).1
+          = (ougCexDown x).1 + (ougCexDown z).1
+        omega, by
+        show (ougCexDown y).2 + (ougCexDown z).2
+          = (ougCexDown x).2 + (ougCexDown z).2
+        omega⟩
+    · exact Or.inr ⟨by
+        show (ougCexDown x).1 + (ougCexDown z).1 + 1
+          ≤ (ougCexDown y).1 + (ougCexDown z).1
+        omega, by
+        show (ougCexDown x).2 + (ougCexDown z).2
+          ≤ (ougCexDown y).2 + (ougCexDown z).2
+        omega⟩
+  unit := ougCexPt 1 1
+  unit_nonneg := Or.inr ⟨by show (0 : ℤ) + 1 ≤ 1; omega, by show (0 : ℤ) ≤ 1; omega⟩
+  exists_le_nsmul_unit g := by
+    refine ⟨(max (ougCexDown g).1 (ougCexDown g).2).toNat + 1, Or.inr ⟨?_, ?_⟩⟩
+    · show (ougCexDown g).1 + 1
+        ≤ (ougCexDown ((((max (ougCexDown g).1 (ougCexDown g).2).toNat + 1 : ℕ))
+            • ougCexPt.{u} 1 1)).1
+      rw [ougCexDown_nsmul]
+      show (ougCexDown g).1 + 1
+        ≤ (((max (ougCexDown g).1 (ougCexDown g).2).toNat + 1 : ℕ) : ℤ) * 1
+      push_cast
+      omega
+    · show (ougCexDown g).2
+        ≤ (ougCexDown ((((max (ougCexDown g).1 (ougCexDown g).2).toNat + 1 : ℕ))
+            • ougCexPt.{u} 1 1)).2
+      rw [ougCexDown_nsmul]
+      show (ougCexDown g).2
+        ≤ (((max (ougCexDown g).1 (ougCexDown g).2).toNat + 1 : ℕ) : ℤ) * 1
+      push_cast
+      omega
+
+/-- The counterexample group, as an object of `OUG`. -/
+abbrev ougCexObj : OUG.{u} := OUG.of ougCex.{u}
+
+/-- The order unit of `ougCex` is `(1,1)`. -/
+theorem ougCexObj_unit : ougCexObj.{u}.unit = ougCexPt 1 1 := rfl
+
+/-- **The only effects of `ougCex` are `0` and `1`** (`0 ≤ (a,b)` forces
+`a ≥ 1` unless `(a,b) = 0`, and then `(1,1) - (a,b) ≥ 0` forces `a = b = 1`). -/
+theorem ougCex_effect_cases (x : ougCex.{u}) (h0 : 0 ≤ x)
+    (h1 : x ≤ ougCexObj.{u}.unit) : x = 0 ∨ x = ougCexObj.{u}.unit := by
+  rcases h0 with ⟨e1, e2⟩ | ⟨e1, e2⟩
+  · left
+    exact (ougCexDown_injective (Prod.ext e1 e2)).symm ▸ rfl
+  · right
+    refine ougCexDown_injective (Prod.ext ?_ ?_) <;>
+      rcases h1 with ⟨f1, f2⟩ | ⟨f1, f2⟩ <;>
+        · simp only [ougCexDown_zero, ougCexObj_unit, ougCexDown_pt] at *
+          omega
+
+/-- The first coordinate: a positive unital homomorphism `ougCex × ℤ ⟶ ℤ`. -/
+def ougCexF : ougCexObj.{u}.prod ougScal.{u} ⟶ ougScal.{u} where
+  toAddHom := AddMonoidHom.mk' (fun p => ULift.up (ougCexDown p.1).1)
+    (fun p q => congrArg ULift.up rfl)
+  map_nonneg' p hp := by
+    obtain ⟨hp1, _⟩ := Prod.le_def.mp hp
+    have hp1' : (0 : ougCex.{u}) ≤ p.1 := hp1
+    show (0 : ℤ) ≤ (ougCexDown p.1).1
+    rcases hp1' with ⟨e1, e2⟩ | ⟨e1, e2⟩ <;>
+      · rw [ougCexDown_zero] at e1 e2
+        omega
+  map_unit' := rfl
+
+/-- The second coordinate: another positive unital homomorphism. -/
+def ougCexG : ougCexObj.{u}.prod ougScal.{u} ⟶ ougScal.{u} where
+  toAddHom := AddMonoidHom.mk' (fun p => ULift.up (ougCexDown p.1).2)
+    (fun p q => congrArg ULift.up rfl)
+  map_nonneg' p hp := by
+    obtain ⟨hp1, _⟩ := Prod.le_def.mp hp
+    have hp1' : (0 : ougCex.{u}) ≤ p.1 := hp1
+    show (0 : ℤ) ≤ (ougCexDown p.1).2
+    rcases hp1' with ⟨e1, e2⟩ | ⟨e1, e2⟩ <;>
+      · rw [ougCexDown_zero] at e1 e2
+        omega
+  map_unit' := rfl
+
+/-- Integer multiples of a point of `ougCex`. -/
+theorem ougCex_zsmul_pt (n a b : ℤ) :
+    n • (ougCexPt.{u} a b) = ougCexPt (n * a) (n * b) := by
+  refine ougCexDown_injective (Prod.ext ?_ ?_)
+  · show n • a = n * a
+    simp
+  · show n • b = n * b
+    simp
+
+/-- The two coordinate maps of `ougCex × ℤ` are distinct: they differ at
+`((1,0), 0)`. -/
+theorem ougCexF_ne_G : ougCexF.{u} ≠ ougCexG.{u} := by
+  intro hh
+  have h : (1 : ℤ) = 0 := congrArg
+    (fun m : ougCexObj.{u}.prod ougScal.{u} ⟶ ougScal.{u} =>
+      (m.toAddHom (ougCexPt.{u} 1 0, (0 : ULift.{u} ℤ))).down) hh
+  exact absurd h (by norm_num)
+
+/-- The two maps agree on every point with equal coordinates. -/
+theorem ougCexFG_eq_on_diag (c : ℤ) (b : ULift.{u} ℤ) :
+    ougCexF.{u}.toAddHom (ougCexPt.{u} c c, b)
+      = ougCexG.{u}.toAddHom (ougCexPt.{u} c c, b) := rfl
+
+/-- **190IV.2** (eff.tex:2161, Examples) **is false as printed**: `OUGᵒᵖ` does
+**not** have separating
+predicates.  On the order unit group `ℤ²` with positive cone
+`{0} ∪ {(a,b) : a ≥ 1, b ≥ 0}` and order unit `(1,1)` the only effects are
+`0` and `1`, so the predicates only see the diagonal, on which the two
+distinct positive unital maps `(x, n) ↦ x₁` and `(x, n) ↦ x₂` into `ℤ`
+agree. -/
+theorem oug_no_separating_predicates : ¬ SeparatingPredicates (Par OUG.{u}ᵒᵖ) := by
+  intro hsep
+  refine ougCexF_ne_G.{u} ?_
+  set X : Par OUG.{u}ᵒᵖ := Par.of (op ougCexObj.{u}) with hX
+  set Y : Par OUG.{u}ᵒᵖ := Par.of (op ougScal.{u}) with hY
+  obtain ⟨f, hf⟩ : ∃ f : Y ⟶ X,
+      pval f = Quiver.Hom.op ougCexF.{u} ≫ (ougEps X.base).inv :=
+    ⟨(Quiver.Hom.op ougCexF.{u} ≫ (ougEps (op ougCexObj.{u})).inv :
+      (op ougScal.{u} : OUG.{u}ᵒᵖ) ⟶ _), rfl⟩
+  obtain ⟨g, hg⟩ : ∃ g : Y ⟶ X,
+      pval g = Quiver.Hom.op ougCexG.{u} ≫ (ougEps X.base).inv :=
+    ⟨(Quiver.Hom.op ougCexG.{u} ≫ (ougEps (op ougCexObj.{u})).inv :
+      (op ougScal.{u} : OUG.{u}ᵒᵖ) ⟶ _), rfl⟩
+  have hfg : f = g := by
+    refine hsep f g ?_
+    intro p
+    set q : X.base ⟶ ougS.{u} := ouPredEquiv ougTopCofan.{u} X.base p with hqdef
+    set Ψ : (op (ougCexObj.{u}.prod ougScal.{u}) : OUG.{u}ᵒᵖ) ⟶ ougS.{u} :=
+      Quiver.Hom.op (ougPair q.unop (ougSnd ougScal.{u} ougScal.{u})) with hΨdef
+    have hk₁ : ougKap₁ X.base ≫ Ψ = q := Quiver.Hom.unop_inj (ougPair_fst _ _)
+    have hk₂ : ougKap₂ X.base ≫ Ψ = ougI₂.{u} := by
+      refine Quiver.Hom.unop_inj ?_
+      show ougPair q.unop (ougSnd ougScal.{u} ougScal.{u})
+          ≫ (ougSnd ougCexObj.{u} ougScal.{u} ≫ ougUnitTop.{u})
+        = ougSnd ougScal.{u} ougScal.{u} ≫ ougUnitTop.{u}
+      rw [← Category.assoc, ougPair_snd]
+    have hdesc : coprod.desc (pval p)
+          (coprod.inr : (⊤_ OUG.{u}ᵒᵖ) ⟶ (⊤_ OUG.{u}ᵒᵖ) ⨿ (⊤_ OUG.{u}ᵒᵖ))
+          ≫ (ouGamma ougTopCofan.{u}).hom
+        = (ougEps X.base).hom ≫ Ψ := by
+      refine coprod.hom_ext ?_ ?_
+      · rw [← Category.assoc, coprod.inl_desc, ← Category.assoc, ougEps_inl, hk₁]
+        rfl
+      · rw [← Category.assoc, coprod.inr_desc, ouGamma_inr, ← Category.assoc,
+          ougEps_inr, hk₂]
+    -- the predicate `p` only sees the diagonal
+    have hx : ((oug_pred_effect ougCexObj.{u} p).1 : ougCex.{u}) = 0
+        ∨ ((oug_pred_effect ougCexObj.{u} p).1 : ougCex.{u}) = ougCexObj.{u}.unit :=
+      ougCex_effect_cases _ (oug_pred_effect ougCexObj.{u} p).2.1
+        (oug_pred_effect ougCexObj.{u} p).2.2
+    have hdiag : ∀ ab : ULift.{u} ℤ × ULift.{u} ℤ, ∃ c : ℤ,
+        Ψ.unop.toAddHom ab = (ougCexPt.{u} c c, ab.2) := by
+      intro ab
+      have hq : q.unop.toAddHom ab
+          = ab.1.down • ((oug_pred_effect ougCexObj.{u} p).1 : ougCex.{u})
+            + ab.2.down • (ougCexObj.{u}.unit
+              - ((oug_pred_effect ougCexObj.{u} p).1 : ougCex.{u})) :=
+        ougHom_apply ougCexObj.{u} q.unop ab
+      rcases hx with hx0 | hx1
+      · refine ⟨ab.2.down, ?_⟩
+        refine Prod.ext ?_ rfl
+        show q.unop.toAddHom ab = ougCexPt.{u} ab.2.down ab.2.down
+        rw [hq, hx0, smul_zero, sub_zero, zero_add, ougCexObj_unit,
+          ougCex_zsmul_pt, mul_one]
+      · refine ⟨ab.1.down, ?_⟩
+        refine Prod.ext ?_ rfl
+        show q.unop.toAddHom ab = ougCexPt.{u} ab.1.down ab.1.down
+        rw [hq, hx1, sub_self, smul_zero, add_zero, ougCexObj_unit,
+          ougCex_zsmul_pt, mul_one]
+    have hFG : Ψ.unop ≫ ougCexF.{u} = Ψ.unop ≫ ougCexG.{u} := by
+      refine oug_hom_ext fun ab => ?_
+      obtain ⟨c, hc⟩ := hdiag ab
+      show ougCexF.{u}.toAddHom (Ψ.unop.toAddHom ab)
+        = ougCexG.{u}.toAddHom (Ψ.unop.toAddHom ab)
+      rw [hc]
+      exact ougCexFG_eq_on_diag c ab.2
+    have hcong : pval f ≫ ((ougEps X.base).hom ≫ Ψ)
+        = pval g ≫ ((ougEps X.base).hom ≫ Ψ) := by
+      rw [hf, hg]
+      simp only [Category.assoc, Iso.inv_hom_id_assoc]
+      exact Quiver.Hom.unop_inj hFG
+    have e1 := congrArg (fun m => pval f ≫ m) hdesc
+    have e2 := congrArg (fun m => pval g ≫ m) hdesc
+    refine pval_inj ?_
+    refine (cancel_mono (ouGamma ougTopCofan.{u}).hom).mp ?_
+    show (pval f ≫ coprod.desc (pval p) coprod.inr)
+        ≫ (ouGamma ougTopCofan.{u}).hom
+      = (pval g ≫ coprod.desc (pval p) coprod.inr)
+        ≫ (ouGamma ougTopCofan.{u}).hom
+    rw [Category.assoc, Category.assoc]
+    exact e1.trans (hcong.trans e2.symm)
+  have h2 : Quiver.Hom.op ougCexF.{u} ≫ (ougEps X.base).inv
+      = Quiver.Hom.op ougCexG.{u} ≫ (ougEps X.base).inv := by
+    rw [← hf, ← hg, hfg]
+  have h3 := congrArg (fun m => m ≫ (ougEps X.base).hom) h2
+  simp only [Category.assoc, Iso.inv_hom_id, Category.comp_id] at h3
+  exact Quiver.Hom.op_inj h3
+
+end OUGExample
 
 end
 

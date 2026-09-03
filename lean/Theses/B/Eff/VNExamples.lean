@@ -31,6 +31,13 @@ eight files of `Theses/B/Eff/` still import `Theses.Common` alone.
 from it — `sharp_multiplicative`, `gardner`, `pure_fundamental` — are
 `#print axioms`-clean.)
 
+It also carries **195V.5**'s `L^∞` half (eff.tex:3275): the effect monoid on
+the unit interval of `L^∞[0,1]` *is* an effect divisoid.  That clause needs
+`L^∞`, which exists in the tree only as thesis A's `Linfty μ`, so it cannot
+sit next to its `C[0,1]` twin (`cIcc_unitInterval_not_divisoid`, 195V.5's
+first half) in `B/Eff/StatesPredicates.lean`.  See the section at the end of
+this file.
+
 `vn_is_andthen_eff` (211IV) is proved in eff.tex:4859 from **105V**
 `positive-map-uniqueness` and **100III** `pure-fundamental`, both in
 `Theses/A/Proc/Measurement.lean` and both proved and axiom-clean there.  So
@@ -7334,5 +7341,575 @@ theorem effects_sea (A : Type u) [CStarAlgebra A] [PartialOrder A]
       ∀ a b : Theses.effects A,
         (S.seq a b : A) = CFC.sqrt (a : A) * (b : A) * CFC.sqrt (a : A) :=
   ⟨effectsSEA, fun _ _ => rfl⟩
+
+/-! ## 195V.5: the unit interval of `L^∞[0,1]` is an effect divisoid
+
+195V is an *Examples* point that prints no argument for this clause (its
+parenthetical `basic-divisoid-equiv` is 195VI, the criterion for `C(X)`,
+which would reach `L^∞` only through a hyperstonean spectrum and Gelfand
+duality).  So the proof class here is `none` and what follows is a direct
+construction: the effect monoid on `[0,1]_𝒜` for a *commutative* von Neumann
+algebra `𝒜`, the order bridge identifying `L^∞(X, μ)` with bounded
+measurable functions modulo null sets *as an ordered* algebra, and then the
+pointwise division `f/g = min (f/g) 1` off the null set `{g = 0}`.
+
+The other half of the clause — that the unit interval of `C[0,1]` is *not*
+an effect divisoid — is `cIcc_unitInterval_not_divisoid` in
+`B/Eff/StatesPredicates.lean`.  This half must live here because `L^∞`
+exists in the tree only as thesis A's `Linfty μ`, and (author ruling,
+2026-08-17) thesis B may import thesis A only through this file. -/
+
+section LinftyDivisoid
+
+open scoped ComplexOrder
+open Filter MeasureTheory Theses.A.VN
+
+variable {X : Type u} [MeasurableSpace X] {μ : Measure X}
+
+/-! ### Bounded measurable functions: closure properties
+
+`Theses.A.VN.IsBoundedMeasurable X f` is `Measurable f ∧ ∃ C, ∀ x, ‖f x‖ ≤ C`;
+thesis A's own closure lemmas for it are `private`, so they are redone here. -/
+
+/-- `𝓛^∞(X)` is closed under `star`. -/
+theorem isBoundedMeasurable_star {g : X → ℂ} (hg : IsBoundedMeasurable X g) :
+    IsBoundedMeasurable X (star g) := by
+  obtain ⟨hm, C, hC⟩ := hg
+  have hs : Measurable fun x => star (g x) :=
+    Complex.continuous_conj.measurable.comp hm
+  exact ⟨hs, C, fun x => by simpa using hC x⟩
+
+/-- `𝓛^∞(X)` is closed under multiplication. -/
+theorem isBoundedMeasurable_mul {f g : X → ℂ} (hf : IsBoundedMeasurable X f)
+    (hg : IsBoundedMeasurable X g) : IsBoundedMeasurable X (f * g) := by
+  obtain ⟨hfm, Cf, hCf⟩ := hf
+  obtain ⟨hgm, Cg, hCg⟩ := hg
+  refine ⟨hfm.mul hgm, max Cf 0 * max Cg 0, fun x => ?_⟩
+  have h1 : ‖f x‖ ≤ max Cf 0 := (hCf x).trans (le_max_left _ _)
+  have h2 : ‖g x‖ ≤ max Cg 0 := (hCg x).trans (le_max_left _ _)
+  calc ‖(f * g) x‖ = ‖f x‖ * ‖g x‖ := by simp
+    _ ≤ max Cf 0 * max Cg 0 := mul_le_mul h1 h2 (norm_nonneg _) (le_max_right _ _)
+
+/-- `𝓛^∞(X)` is closed under scalars. -/
+theorem isBoundedMeasurable_smul (z : ℂ) {f : X → ℂ} (hf : IsBoundedMeasurable X f) :
+    IsBoundedMeasurable X (z • f) := by
+  obtain ⟨hm, C, hC⟩ := hf
+  refine ⟨hm.const_smul z, ‖z‖ * max C 0, fun x => ?_⟩
+  have hx : ‖(z • f) x‖ = ‖z‖ * ‖f x‖ := by simp
+  rw [hx]
+  exact mul_le_mul_of_nonneg_left ((hC x).trans (le_max_left _ _)) (norm_nonneg z)
+
+/-- `𝓛^∞(X)` is closed under addition. -/
+theorem isBoundedMeasurable_add {f g : X → ℂ} (hf : IsBoundedMeasurable X f)
+    (hg : IsBoundedMeasurable X g) : IsBoundedMeasurable X (f + g) := by
+  obtain ⟨hfm, Cf, hCf⟩ := hf
+  obtain ⟨hgm, Cg, hCg⟩ := hg
+  refine ⟨hfm.add hgm, Cf + Cg, fun x => ?_⟩
+  calc ‖(f + g) x‖ ≤ ‖f x‖ + ‖g x‖ := norm_add_le _ _
+    _ ≤ Cf + Cg := add_le_add (hCf x) (hCg x)
+
+/-- `𝓛^∞(X)` is closed under subtraction. -/
+theorem isBoundedMeasurable_sub {f g : X → ℂ} (hf : IsBoundedMeasurable X f)
+    (hg : IsBoundedMeasurable X g) : IsBoundedMeasurable X (f - g) := by
+  have he : f - g = f + (-1 : ℂ) • g := by funext x; simp [sub_eq_add_neg]
+  rw [he]
+  exact isBoundedMeasurable_add hf (isBoundedMeasurable_smul _ hg)
+
+/-! ### Bounded measurable *real* functions -/
+
+/-- A bounded measurable *real* function on `X` — the shape in which the
+elements of `[0,1]_{L^∞}` will be handled. -/
+def IsBoundedMeasurableReal (X : Type u) [MeasurableSpace X] (r : X → ℝ) : Prop :=
+  Measurable r ∧ ∃ C, ∀ x, |r x| ≤ C
+
+/-- A bounded measurable real function is a bounded measurable function. -/
+theorem IsBoundedMeasurableReal.toComplex {r : X → ℝ}
+    (hr : IsBoundedMeasurableReal X r) : IsBoundedMeasurable X fun x => (r x : ℂ) := by
+  obtain ⟨hm, C, hC⟩ := hr
+  exact ⟨Complex.measurable_ofReal.comp hm, C, fun x => by
+    simpa [Real.norm_eq_abs] using hC x⟩
+
+/-- A `[0,1]`-valued measurable function is bounded measurable. -/
+theorem isBoundedMeasurableReal_of_Icc {r : X → ℝ} (hm : Measurable r)
+    (h0 : ∀ x, 0 ≤ r x) (h1 : ∀ x, r x ≤ 1) : IsBoundedMeasurableReal X r :=
+  ⟨hm, 1, fun x => abs_le.mpr ⟨by linarith [h0 x], h1 x⟩⟩
+
+/-- Bounded measurable real functions are closed under multiplication. -/
+theorem IsBoundedMeasurableReal.mul {f g : X → ℝ} (hf : IsBoundedMeasurableReal X f)
+    (hg : IsBoundedMeasurableReal X g) : IsBoundedMeasurableReal X (f * g) := by
+  obtain ⟨hfm, Cf, hCf⟩ := hf
+  obtain ⟨hgm, Cg, hCg⟩ := hg
+  refine ⟨hfm.mul hgm, max Cf 0 * max Cg 0, fun x => ?_⟩
+  rw [Pi.mul_apply, abs_mul]
+  exact mul_le_mul ((hCf x).trans (le_max_left _ _)) ((hCg x).trans (le_max_left _ _))
+    (abs_nonneg _) (le_max_right _ _)
+
+/-! ### The order bridge for `L^∞(X, μ)`
+
+Thesis A's `linfty_le_iff` is `private`, so the two directions are proved
+here from the public interface alone: `0 ≤ [f]` in `L^∞(X, μ)` iff `f` is
+almost everywhere a nonnegative real. -/
+
+/-- The positive cone of `L^∞(X, μ)`, pointwise: `0 ≤ [f]` exactly when `f`
+is `μ`-almost everywhere a nonnegative real number.
+
+`(⇐)` is `[f] = star [√f] ⊙ [√f]`; `(⇒)` takes a bounded measurable
+representative `g` of `√[f]` (which is self-adjoint), so that
+`f =ᵐ star g ⋅ g` pointwise. -/
+theorem linfty_mk_nonneg_iff {f : X → ℂ} (hf : IsBoundedMeasurable X f) :
+    0 ≤ Linfty.mk μ f ↔ ∀ᵐ x ∂μ, (0 : ℂ) ≤ f x := by
+  constructor
+  · intro h
+    obtain ⟨g, hg, hgm⟩ := Linfty.mk_surjective (CFC.sqrt (Linfty.mk μ f))
+    have hsa : IsSelfAdjoint (CFC.sqrt (Linfty.mk μ f)) :=
+      (CFC.sqrt_nonneg (Linfty.mk μ f)).isSelfAdjoint
+    have hsq : CFC.sqrt (Linfty.mk μ f) * CFC.sqrt (Linfty.mk μ f) = Linfty.mk μ f :=
+      CFC.sqrt_mul_sqrt_self _ h
+    have key : Linfty.mk μ f = Linfty.mk μ (star g * g) := by
+      rw [Linfty.mk_mul (isBoundedMeasurable_star hg) hg, Linfty.mk_star hg, hgm,
+        hsa.star_eq, hsq]
+    have hae := (Linfty.mk_eq_iff hf
+      (isBoundedMeasurable_mul (isBoundedMeasurable_star hg) hg)).mp key
+    filter_upwards [hae] with x hx
+    rw [hx]
+    exact star_mul_self_nonneg (g x)
+  · intro h
+    set r : X → ℝ := fun x => Real.sqrt (f x).re with hrdef
+    obtain ⟨hfm, C, hC⟩ := hf
+    have hrm : Measurable r :=
+      Real.continuous_sqrt.measurable.comp (Complex.measurable_re.comp hfm)
+    have hrr : IsBoundedMeasurableReal X r := by
+      refine ⟨hrm, Real.sqrt (max C 0), fun x => ?_⟩
+      have h1 : (f x).re ≤ max C 0 :=
+        ((le_abs_self _).trans
+          ((Complex.abs_re_le_norm (f x)).trans (hC x))).trans (le_max_left _ _)
+      rw [abs_of_nonneg (Real.sqrt_nonneg _)]
+      exact Real.sqrt_le_sqrt h1
+    have hrb : IsBoundedMeasurable X fun x => (r x : ℂ) := hrr.toComplex
+    have hstar : star (fun x => (r x : ℂ)) = fun x => (r x : ℂ) := by funext x; simp
+    have hys : star (Linfty.mk μ fun x => (r x : ℂ)) = Linfty.mk μ fun x => (r x : ℂ) := by
+      rw [← Linfty.mk_star hrb, hstar]
+    have hfe : f =ᵐ[μ] (fun x => (r x : ℂ)) * (fun x => (r x : ℂ)) := by
+      filter_upwards [h] with x hx
+      obtain ⟨h1, h2⟩ := Complex.le_def.mp hx
+      simp only [Complex.zero_re, Complex.zero_im] at h1 h2
+      show f x = (r x : ℂ) * (r x : ℂ)
+      rw [hrdef]
+      simp only
+      rw [← Complex.ofReal_mul, Real.mul_self_sqrt h1]
+      exact Complex.ext rfl (by simp [← h2])
+    rw [Linfty.mk_congr (⟨hfm, C, hC⟩ : IsBoundedMeasurable X f)
+      (isBoundedMeasurable_mul hrb hrb) hfe, Linfty.mk_mul hrb hrb]
+    calc (0 : Linfty μ)
+        ≤ star (Linfty.mk μ fun x => (r x : ℂ)) * Linfty.mk μ fun x => (r x : ℂ) :=
+          star_mul_self_nonneg _
+      _ = (Linfty.mk μ fun x => (r x : ℂ)) * Linfty.mk μ fun x => (r x : ℂ) := by rw [hys]
+
+/-- `f ↦ [f]` turns subtraction into subtraction (thesis A exports only
+`Linfty.mk_add` and `Linfty.mk_smul`). -/
+theorem linfty_mk_sub {f g : X → ℂ} (hf : IsBoundedMeasurable X f)
+    (hg : IsBoundedMeasurable X g) :
+    Linfty.mk μ (f - g) = Linfty.mk μ f - Linfty.mk μ g := by
+  have he : f - g = f + (-1 : ℂ) • g := by funext x; simp [sub_eq_add_neg]
+  rw [he, Linfty.mk_add hf (isBoundedMeasurable_smul _ hg), Linfty.mk_smul _ hg]
+  simp [sub_eq_add_neg]
+
+/-- The order of `L^∞(X, μ)` is the almost-everywhere pointwise order. -/
+theorem linfty_mk_le_iff {f g : X → ℂ} (hf : IsBoundedMeasurable X f)
+    (hg : IsBoundedMeasurable X g) :
+    Linfty.mk μ f ≤ Linfty.mk μ g ↔ ∀ᵐ x ∂μ, f x ≤ g x := by
+  rw [← sub_nonneg, ← linfty_mk_sub hg hf,
+    linfty_mk_nonneg_iff (isBoundedMeasurable_sub hg hf)]
+  constructor <;> intro h <;> filter_upwards [h] with x hx
+  · exact sub_nonneg.mp hx
+  · exact sub_nonneg.mpr hx
+
+variable (μ) in
+/-- The class in `L^∞(X, μ)` of a real-valued function. -/
+noncomputable def linftyMkR (r : X → ℝ) : Linfty μ := Linfty.mk μ fun x => (r x : ℂ)
+
+/-- Two real functions have the same class iff they agree almost everywhere. -/
+theorem linftyMkR_eq_iff {f g : X → ℝ} (hf : IsBoundedMeasurableReal X f)
+    (hg : IsBoundedMeasurableReal X g) : linftyMkR μ f = linftyMkR μ g ↔ f =ᵐ[μ] g := by
+  rw [linftyMkR, linftyMkR, Linfty.mk_eq_iff hf.toComplex hg.toComplex]
+  constructor <;> intro h <;> filter_upwards [h] with x hx
+  · exact Complex.ofReal_injective hx
+  · exact congrArg _ hx
+
+/-- The order of `L^∞(X, μ)` on classes of real functions. -/
+theorem linftyMkR_le_iff {f g : X → ℝ} (hf : IsBoundedMeasurableReal X f)
+    (hg : IsBoundedMeasurableReal X g) :
+    linftyMkR μ f ≤ linftyMkR μ g ↔ ∀ᵐ x ∂μ, f x ≤ g x := by
+  rw [linftyMkR, linftyMkR, linfty_mk_le_iff hf.toComplex hg.toComplex]
+  constructor <;> intro h <;> filter_upwards [h] with x hx
+  · exact Complex.real_le_real.mp hx
+  · exact Complex.real_le_real.mpr hx
+
+/-- The positive cone of `L^∞(X, μ)` on classes of real functions. -/
+theorem linftyMkR_nonneg_iff {f : X → ℝ} (hf : IsBoundedMeasurableReal X f) :
+    0 ≤ linftyMkR μ f ↔ ∀ᵐ x ∂μ, 0 ≤ f x := by
+  rw [linftyMkR, linfty_mk_nonneg_iff hf.toComplex]
+  constructor <;> intro h <;> filter_upwards [h] with x hx
+  · exact Complex.zero_le_real.mp hx
+  · exact Complex.zero_le_real.mpr hx
+
+/-- `f ↦ [f]` is multiplicative on real functions. -/
+theorem linftyMkR_mul {f g : X → ℝ} (hf : IsBoundedMeasurableReal X f)
+    (hg : IsBoundedMeasurableReal X g) :
+    linftyMkR μ (f * g) = linftyMkR μ f * linftyMkR μ g := by
+  have he : (fun x => (((f * g) x : ℝ) : ℂ))
+      = (fun x => (f x : ℂ)) * (fun x => (g x : ℂ)) := by funext x; simp
+  rw [linftyMkR, he, Linfty.mk_mul hf.toComplex hg.toComplex]
+  rfl
+
+/-- `f ↦ [f]` is unital. -/
+theorem linftyMkR_one : linftyMkR μ (1 : X → ℝ) = 1 := by
+  have he : (fun x => (((1 : X → ℝ) x : ℝ) : ℂ)) = (1 : X → ℂ) := by funext x; simp
+  rw [linftyMkR, he, Linfty.mk_one]
+
+/-- The constant `1` is a bounded measurable real function. -/
+theorem isBoundedMeasurableReal_one : IsBoundedMeasurableReal X (1 : X → ℝ) :=
+  isBoundedMeasurableReal_of_Icc measurable_const (fun _ => zero_le_one) (fun _ => le_refl 1)
+
+/-- A `[0,1]`-valued measurable function has its class in `[0,1]_{L^∞}`. -/
+theorem linftyMkR_mem_effects {r : X → ℝ} (hm : Measurable r) (h0 : ∀ x, 0 ≤ r x)
+    (h1 : ∀ x, r x ≤ 1) : linftyMkR μ r ∈ Theses.effects (Linfty μ) := by
+  have hb : IsBoundedMeasurableReal X r := isBoundedMeasurableReal_of_Icc hm h0 h1
+  refine ⟨(linftyMkR_nonneg_iff hb).mpr (Filter.Eventually.of_forall h0), ?_⟩
+  rw [← linftyMkR_one (μ := μ)]
+  exact (linftyMkR_le_iff hb isBoundedMeasurableReal_one).mpr
+    (Filter.Eventually.of_forall h1)
+
+/-- Every effect of `L^∞(X, μ)` is the class of a `[0,1]`-valued measurable
+function: truncate any representative to `x ↦ min (max (f x).re 0) 1`, which
+is almost everywhere equal to it by the order bridge. -/
+theorem linfty_exists_unit_rep (a : Theses.effects (Linfty μ)) :
+    ∃ r : X → ℝ, Measurable r ∧ (∀ x, 0 ≤ r x) ∧ (∀ x, r x ≤ 1) ∧
+      linftyMkR μ r = (a : Linfty μ) := by
+  obtain ⟨f, hf, hfa⟩ := Linfty.mk_surjective (a : Linfty μ)
+  have h0 : ∀ᵐ x ∂μ, (0 : ℂ) ≤ f x := by
+    refine (linfty_mk_nonneg_iff hf).mp ?_
+    rw [hfa]; exact a.2.1
+  have h1 : ∀ᵐ x ∂μ, f x ≤ 1 := by
+    have hle : Linfty.mk μ f ≤ Linfty.mk μ (1 : X → ℂ) := by
+      rw [hfa, Linfty.mk_one]; exact a.2.2
+    exact (linfty_mk_le_iff hf ⟨measurable_const, 1, fun _ => by simp⟩).mp hle
+  have hmeas : Measurable fun x => min (max (f x).re 0) 1 :=
+    ((Complex.measurable_re.comp hf.1).max measurable_const).min measurable_const
+  refine ⟨fun x => min (max (f x).re 0) 1, hmeas,
+    fun x => le_min (le_max_right _ _) zero_le_one, fun _ => min_le_right _ _, ?_⟩
+  rw [linftyMkR, ← hfa]
+  refine Linfty.mk_congr (IsBoundedMeasurableReal.toComplex
+    (isBoundedMeasurableReal_of_Icc hmeas
+      (fun x => le_min (le_max_right _ _) zero_le_one)
+      (fun _ => min_le_right _ _))) hf ?_
+  filter_upwards [h0, h1] with x hx0 hx1
+  obtain ⟨hr0, hi0⟩ := Complex.le_def.mp hx0
+  obtain ⟨hr1, -⟩ := Complex.le_def.mp hx1
+  simp only [Complex.zero_re, Complex.zero_im, Complex.one_re] at hr0 hi0 hr1
+  show ((min (max (f x).re 0) 1 : ℝ) : ℂ) = f x
+  rw [max_eq_left hr0, min_eq_left hr1]
+  exact Complex.ext rfl (by simp [← hi0])
+
+/-! ### (a) The effect monoid on the effects of a commutative von Neumann algebra -/
+
+section CommEffects
+
+variable {A : Type u} [CommCStarAlgebra A] [PartialOrder A] [StarOrderedRing A]
+
+/-- For commuting effects `a ⊙ b ≤ 1`: `a ⋅ (1 - b) ≥ 0` gives `a ⋅ b ≤ a ≤ 1`. -/
+theorem effects_mul_le_one {a b : A} (ha0 : 0 ≤ a) (ha1 : a ≤ 1) (hb1 : b ≤ 1) :
+    a * b ≤ 1 := by
+  have h : 0 ≤ a * (1 - b) :=
+    Commute.mul_nonneg ha0 (sub_nonneg.mpr hb1) (Commute.all a (1 - b))
+  rw [mul_sub, mul_one, sub_nonneg] at h
+  exact h.trans ha1
+
+/-- `[0,1]_𝒜` is closed under multiplication when `𝒜` is commutative
+(`Commute.mul_nonneg` for `0 ≤ a ⋅ b`, `effects_mul_le_one` for `a ⋅ b ≤ 1`). -/
+theorem effects_mul_mem (a b : Theses.effects A) :
+    (a : A) * (b : A) ∈ Theses.effects A :=
+  ⟨Commute.mul_nonneg a.2.1 b.2.1 (Commute.all _ _),
+    effects_mul_le_one a.2.1 a.2.2 b.2.2⟩
+
+variable [Theses.VonNeumannAlgebra A]
+
+/-- **195V.5** (eff.tex:3275, Examples): the effect algebra `[0,1]_𝒜` of a
+*commutative* von Neumann algebra is an effect monoid, with `⊙` the algebra's
+own multiplication.  (A `def`, not an `instance` — exactly as
+`continuousUnitIntervalEffectMonoid` is for `C(X)` — since a von Neumann
+algebra's effects also carry the non-commutative sequential product of 225V.)
+
+Everything but the multiplication is `effectsEffectAlgebra` (175II.3); the
+`distrib` axiom is ring distributivity, and the three orthogonality side
+conditions are `effects_mul_le_one` applied to `(a ⋁ b) ⊙ c`, `(a ⋁ b) ⊙ d`
+and `(a ⋁ b) ⊙ (c ⋁ d)`. -/
+noncomputable def commEffectsEffectMonoid (A : Type u) [CommCStarAlgebra A]
+    [PartialOrder A] [StarOrderedRing A] [Theses.VonNeumannAlgebra A] :
+    EffectMonoid (Theses.effects A) :=
+  { effectsEffectAlgebra A with
+    mul := fun a b => ⟨(a : A) * (b : A), effects_mul_mem a b⟩
+    one_mul := fun a => Subtype.ext (one_mul (a : A))
+    mul_one := fun a => Subtype.ext (mul_one (a : A))
+    mul_assoc := fun a b c => Subtype.ext (mul_assoc (a : A) (b : A) (c : A))
+    distrib := by
+      intro a b c d hab hcd
+      have hab' : (a : A) + (b : A) ≤ 1 := hab
+      have hcd' : (c : A) + (d : A) ≤ 1 := hcd
+      have hs0 : (0 : A) ≤ (a : A) + (b : A) := add_nonneg a.2.1 b.2.1
+      have h1 : (a : A) * (c : A) + (b : A) * (c : A) ≤ 1 := by
+        rw [← add_mul]
+        exact effects_mul_le_one hs0 hab' c.2.2
+      have h2 : (a : A) * (d : A) + (b : A) * (d : A) ≤ 1 := by
+        rw [← add_mul]
+        exact effects_mul_le_one hs0 hab' d.2.2
+      have hexp : (a : A) * (c : A) + (b : A) * (c : A)
+          + ((a : A) * (d : A) + (b : A) * (d : A))
+          = ((a : A) + (b : A)) * ((c : A) + (d : A)) := by ring
+      have h3 : (a : A) * (c : A) + (b : A) * (c : A)
+          + ((a : A) * (d : A) + (b : A) * (d : A)) ≤ 1 := by
+        rw [hexp]
+        exact effects_mul_le_one hs0 hab' hcd'
+      exact isSumOf_four _ _ _ _ _ h1 h2 h3 (Subtype.ext hexp) }
+
+end CommEffects
+
+/-- The algebraic order `≼` of the effect algebra `[0,1]_𝒜` is the order of
+`𝒜` (the witness of `a ≼ b` being `b - a`), mirroring `unitInterval_le_iff`. -/
+theorem effects_pcm_le_iff {A : Type u} [CStarAlgebra A] [PartialOrder A]
+    [StarOrderedRing A] [Theses.VonNeumannAlgebra A] (a b : Theses.effects A) :
+    a ≼ b ↔ (a : A) ≤ (b : A) := by
+  constructor
+  · rintro ⟨c, hc, rfl⟩
+    show (a : A) ≤ (a : A) + (c : A)
+    exact le_add_of_nonneg_right c.2.1
+  · intro h
+    have hcancel : (a : A) + ((b : A) - (a : A)) = (b : A) := by abel
+    refine ⟨⟨(b : A) - (a : A), sub_nonneg.mpr h, (sub_le_self _ a.2.1).trans b.2.2⟩,
+      ?_, ?_⟩
+    · show (a : A) + ((b : A) - (a : A)) ≤ 1
+      rw [hcancel]; exact b.2.2
+    · exact Subtype.ext hcancel
+
+/-! ### (c) The division on `[0,1]_{L^∞(X, μ)}` -/
+
+section LinftyDiv
+
+/-- A chosen `[0,1]`-valued measurable representative of an effect of
+`L^∞(X, μ)`. -/
+noncomputable def linftyRep (a : Theses.effects (Linfty μ)) : X → ℝ :=
+  Classical.choose (linfty_exists_unit_rep a)
+
+/-- `linftyRep a` is measurable. -/
+theorem linftyRep_measurable (a : Theses.effects (Linfty μ)) :
+    Measurable (linftyRep a) := (Classical.choose_spec (linfty_exists_unit_rep a)).1
+
+/-- `linftyRep a` is nonnegative, everywhere. -/
+theorem linftyRep_nonneg (a : Theses.effects (Linfty μ)) (x : X) : 0 ≤ linftyRep a x :=
+  (Classical.choose_spec (linfty_exists_unit_rep a)).2.1 x
+
+/-- `linftyRep a` is at most `1`, everywhere. -/
+theorem linftyRep_le_one (a : Theses.effects (Linfty μ)) (x : X) : linftyRep a x ≤ 1 :=
+  (Classical.choose_spec (linfty_exists_unit_rep a)).2.2.1 x
+
+/-- `linftyRep a` represents `a`. -/
+theorem linftyMkR_rep (a : Theses.effects (Linfty μ)) :
+    linftyMkR μ (linftyRep a) = (a : Linfty μ) :=
+  (Classical.choose_spec (linfty_exists_unit_rep a)).2.2.2
+
+/-- `linftyRep a` is bounded measurable. -/
+theorem linftyRep_bddMeas (a : Theses.effects (Linfty μ)) :
+    IsBoundedMeasurableReal X (linftyRep a) :=
+  isBoundedMeasurableReal_of_Icc (linftyRep_measurable a) (linftyRep_nonneg a)
+    (linftyRep_le_one a)
+
+/-- Any other representative of `a` agrees with `linftyRep a` almost everywhere. -/
+theorem linftyRep_ae {a : Theses.effects (Linfty μ)} {r : X → ℝ}
+    (hr : IsBoundedMeasurableReal X r) (h : linftyMkR μ r = (a : Linfty μ)) :
+    linftyRep a =ᵐ[μ] r :=
+  (linftyMkR_eq_iff (linftyRep_bddMeas a) hr).mp ((linftyMkR_rep a).trans h.symm)
+
+/-- The pointwise division of representatives.  This is the thesis's
+`x ↦ if g x = 0 then 0 else min (f x / g x) 1`: in Lean `t / 0 = 0`, so the
+case split is already built into `min (f x / g x) 1`. -/
+noncomputable def linftyDivFun (a b : Theses.effects (Linfty μ)) : X → ℝ :=
+  fun x => min (linftyRep a x / linftyRep b x) 1
+
+/-- `linftyDivFun` is nonnegative. -/
+theorem linftyDivFun_nonneg (a b : Theses.effects (Linfty μ)) (x : X) :
+    0 ≤ linftyDivFun a b x :=
+  le_min (div_nonneg (linftyRep_nonneg a x) (linftyRep_nonneg b x)) zero_le_one
+
+/-- `linftyDivFun` is at most `1`. -/
+theorem linftyDivFun_le_one (a b : Theses.effects (Linfty μ)) (x : X) :
+    linftyDivFun a b x ≤ 1 := min_le_right _ _
+
+/-- `linftyDivFun` is measurable. -/
+theorem linftyDivFun_measurable (a b : Theses.effects (Linfty μ)) :
+    Measurable (linftyDivFun a b) :=
+  ((linftyRep_measurable a).div (linftyRep_measurable b)).min measurable_const
+
+/-- `linftyDivFun` is bounded measurable. -/
+theorem linftyDivFun_bddMeas (a b : Theses.effects (Linfty μ)) :
+    IsBoundedMeasurableReal X (linftyDivFun a b) :=
+  isBoundedMeasurableReal_of_Icc (linftyDivFun_measurable a b) (linftyDivFun_nonneg a b)
+    (linftyDivFun_le_one a b)
+
+/-- **195V.5** (eff.tex:3275, Examples): the partial division of
+`[0,1]_{L^∞(X, μ)}`, as a total operation — the class of
+`x ↦ min (a(x)/b(x)) 1`. -/
+noncomputable def linftyDiv (a b : Theses.effects (Linfty μ)) :
+    Theses.effects (Linfty μ) :=
+  ⟨linftyMkR μ (linftyDivFun a b),
+    linftyMkR_mem_effects (linftyDivFun_measurable a b) (linftyDivFun_nonneg a b)
+      (linftyDivFun_le_one a b)⟩
+
+/-- The chosen representative of `a/b` is `linftyDivFun a b` almost everywhere. -/
+theorem linftyRep_div (a b : Theses.effects (Linfty μ)) :
+    linftyRep (linftyDiv a b) =ᵐ[μ] linftyDivFun a b :=
+  linftyRep_ae (linftyDivFun_bddMeas a b) rfl
+
+variable [IsFiniteMeasure μ]
+
+/-- The algebraic order of `[0,1]_{L^∞(X, μ)}` is the almost-everywhere
+pointwise order of the representatives. -/
+theorem linfty_pcm_le_ae {a b : Theses.effects (Linfty μ)} :
+    a ≼ b ↔ ∀ᵐ x ∂μ, linftyRep a x ≤ linftyRep b x := by
+  rw [effects_pcm_le_iff a b, ← linftyMkR_rep a, ← linftyMkR_rep b]
+  exact linftyMkR_le_iff (linftyRep_bddMeas a) (linftyRep_bddMeas b)
+
+attribute [local instance] commEffectsEffectMonoid
+
+/-- **195V.5** (eff.tex:3275, Examples): the effect divisoid structure on
+`[0,1]_{L^∞(X, μ)}`, with `a/b` the class of `x ↦ min (a(x)/b(x)) 1`.
+
+All five axioms are almost-everywhere pointwise facts about `[0,1]`-valued
+measurable representatives; `b/b` is the indicator of `{b ≠ 0}` (the support
+projection), which is where the honest support of a measurable function
+replaces the *closure* of the support that 195VI needs for `C(X)`.  The only
+axiom with content is `div_unique`: from `c ≼ b/b` and `b ⊙ c = a` almost
+everywhere, `c = 0 = a/b` off `{b ≠ 0}`, and `c = a/b ≤ 1` on it. -/
+noncomputable def linftyEffectDivisoid (μ : Measure X) [IsFiniteMeasure μ] :
+    EffectDivisoid (Theses.effects (Linfty μ)) where
+  div := linftyDiv
+  div_le := by
+    intro a b _
+    refine linfty_pcm_le_ae.mpr ?_
+    filter_upwards [linftyRep_div a b, linftyRep_div b b] with x h1 h2
+    rw [h1, h2]
+    show min (linftyRep a x / linftyRep b x) 1 ≤ min (linftyRep b x / linftyRep b x) 1
+    by_cases hb : linftyRep b x = 0
+    · simp [hb]
+    · rw [div_self hb, min_self]
+      exact min_le_right _ _
+  mul_div := by
+    intro a b hab
+    have hle := linfty_pcm_le_ae.mp hab
+    refine Subtype.ext ?_
+    show (b : Linfty μ) * linftyMkR μ (linftyDivFun a b) = (a : Linfty μ)
+    rw [← linftyMkR_rep a, ← linftyMkR_rep b,
+      ← linftyMkR_mul (linftyRep_bddMeas b) (linftyDivFun_bddMeas a b)]
+    refine (linftyMkR_eq_iff ((linftyRep_bddMeas b).mul (linftyDivFun_bddMeas a b))
+      (linftyRep_bddMeas a)).mpr ?_
+    filter_upwards [hle] with x hx
+    show linftyRep b x * min (linftyRep a x / linftyRep b x) 1 = linftyRep a x
+    by_cases hb : linftyRep b x = 0
+    · have ha : linftyRep a x = 0 := le_antisymm (hb ▸ hx) (linftyRep_nonneg a x)
+      rw [hb, ha]; simp
+    · have hbpos : 0 < linftyRep b x :=
+        lt_of_le_of_ne (linftyRep_nonneg b x) (Ne.symm hb)
+      rw [min_eq_left ((div_le_one hbpos).mpr hx)]
+      field_simp
+  div_unique := by
+    intro a b c hab hc hmul
+    have hcle := linfty_pcm_le_ae.mp hc
+    have hbc : (b : Linfty μ) * (c : Linfty μ) = (a : Linfty μ) :=
+      congrArg Subtype.val hmul
+    rw [← linftyMkR_rep a, ← linftyMkR_rep b, ← linftyMkR_rep c,
+      ← linftyMkR_mul (linftyRep_bddMeas b) (linftyRep_bddMeas c)] at hbc
+    have hbc' : ∀ᵐ x ∂μ, linftyRep b x * linftyRep c x = linftyRep a x :=
+      (linftyMkR_eq_iff ((linftyRep_bddMeas b).mul (linftyRep_bddMeas c))
+        (linftyRep_bddMeas a)).mp hbc
+    refine Subtype.ext ?_
+    show (c : Linfty μ) = linftyMkR μ (linftyDivFun a b)
+    rw [← linftyMkR_rep c]
+    refine (linftyMkR_eq_iff (linftyRep_bddMeas c) (linftyDivFun_bddMeas a b)).mpr ?_
+    filter_upwards [hcle, hbc', linftyRep_div b b] with x h2 h3 h4
+    rw [h4] at h2
+    show linftyRep c x = min (linftyRep a x / linftyRep b x) 1
+    by_cases hb : linftyRep b x = 0
+    · have h5 : linftyDivFun b b x = 0 := by
+        show min (linftyRep b x / linftyRep b x) 1 = 0
+        simp [hb]
+      have hc0 : linftyRep c x = 0 := le_antisymm (h5 ▸ h2) (linftyRep_nonneg c x)
+      rw [hc0, hb]
+      simp
+    · have hone : linftyDivFun b b x = 1 := by
+        show min (linftyRep b x / linftyRep b x) 1 = 1
+        rw [div_self hb, min_self]
+      rw [hone] at h2
+      have hq : linftyRep a x / linftyRep b x = linftyRep c x := by
+        rw [← h3]; field_simp
+      rw [hq, min_eq_left h2]
+  le_div_self := by
+    intro a
+    refine linfty_pcm_le_ae.mpr ?_
+    filter_upwards [linftyRep_div a a] with x h1
+    rw [h1]
+    show linftyRep a x ≤ min (linftyRep a x / linftyRep a x) 1
+    by_cases ha : linftyRep a x = 0
+    · simp [ha]
+    · rw [div_self ha, min_self]
+      exact linftyRep_le_one a x
+  div_div_self := by
+    intro a
+    refine Subtype.ext ?_
+    show linftyMkR μ (linftyDivFun (linftyDiv a a) (linftyDiv a a))
+        = linftyMkR μ (linftyDivFun a a)
+    refine (linftyMkR_eq_iff (linftyDivFun_bddMeas _ _)
+      (linftyDivFun_bddMeas a a)).mpr ?_
+    filter_upwards [linftyRep_div a a] with x h1
+    show min (linftyRep (linftyDiv a a) x / linftyRep (linftyDiv a a) x) 1
+        = min (linftyRep a x / linftyRep a x) 1
+    rw [h1]
+    by_cases ha : linftyRep a x = 0
+    · simp [linftyDivFun, ha]
+    · have h2 : linftyDivFun a a x = 1 := by
+        show min (linftyRep a x / linftyRep a x) 1 = 1
+        rw [div_self ha, min_self]
+      rw [h2, div_self ha]
+      norm_num
+
+end LinftyDiv
+
+/-- **195V.5** (eff.tex:3275, Examples), second half: the effect monoid on
+the unit interval of `L^∞(X, μ)` — for any finite measure space — **is** an
+effect divisoid.
+
+195V prints no argument (the parenthetical `basic-divisoid-equiv` is 195VI,
+the `C(X)` criterion, which would reach `L^∞` only through a hyperstonean
+spectrum), so this is a direct construction: `commEffectsEffectMonoid` for
+the multiplication, and `linftyEffectDivisoid` for the division
+`a/b = [x ↦ min (a(x)/b(x)) 1]`. -/
+theorem linfty_unitInterval_divisoid {X : Type u} [MeasurableSpace X]
+    (μ : Measure X) [IsFiniteMeasure μ] :
+    letI := commEffectsEffectMonoid (Linfty μ)
+    Nonempty (EffectDivisoid (Theses.effects (Linfty μ))) :=
+  ⟨linftyEffectDivisoid μ⟩
+
+/-- **195V.5** (eff.tex:3275, Examples), the named instance: the effect
+monoid on the unit interval of `L^∞[0,1]` is an effect divisoid.
+
+`L^∞[0,1]` is `Linfty (volume.restrict (Set.Icc 0 1))` on `ℝ`: the measure
+is finite (`Restrict.isFiniteMeasure`), and functions off `[0,1]` are almost
+everywhere irrelevant to it, so that measure algebra *is* the one of
+`[0,1]`. -/
+theorem linfty_Icc_unitInterval_divisoid :
+    letI := commEffectsEffectMonoid (Linfty (volume.restrict (Set.Icc (0 : ℝ) 1)))
+    Nonempty (EffectDivisoid
+      (Theses.effects (Linfty (volume.restrict (Set.Icc (0 : ℝ) 1))))) :=
+  linfty_unitInterval_divisoid _
+
+end LinftyDivisoid
 
 end Theses.B.Eff

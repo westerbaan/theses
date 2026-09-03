@@ -5,7 +5,10 @@ Statements of eff.tex (thesis B, "Diamond, andthen, dagger"), lines
 2143–2187: the point 190IV.3 and its three sub-items — the predicates,
 states and scalars of the three *extensive* examples of an effectus,
 `SET`, `CRngᵒᵖ` and `bCH`, whose effectus structure is 189aII.3
-(`extensive_effectus_set`, `_commRing`, `_compHaus` in `B/Eff/Effectus`).
+(`extensive_effectus_set`, `_commRing`, `_compHaus` in `B/Eff/Effectus`) —
+and, at eff.tex:4460, the `SET` clause of **206III**: `SET` is a
+⋄-effectus (`diamond_effectus_set`).  That is why this module imports
+`B/Eff/DiamondAmp` rather than only `B/Eff/StatesPredicates`.
 
 Design:
 * Everything is stated in the **partial** form `Par C` of the total-form
@@ -25,6 +28,13 @@ Design:
 * "The scalars are `2`" is `ScalarsAreTwo`, a mutually inverse pair of
   effect-monoid morphisms `Scal C ⇄ Bool`, exactly the shape used by
   `IsRealEffectus` (190II.3) for "the scalars are `[0,1]`".
+* **206III** for `SET` (an Examples point, no printed proof, so the
+  argument is ours) is built on a second concrete handle, `parSetHom`: a
+  partial map `X ⇸ Y` of `SET` read as a function `X → Option Y`, with
+  transport lemmas for `⊙`, `id`, `1`, `0` and `(–)^⊥`.  Quotients are
+  partial identities onto complements, comprehensions are total inclusions,
+  images are set-theoretic images, and *every* predicate is sharp
+  (`set_isSharp_all`), which makes the fourth axiom free.
 * ⚠ 190IV.3 is stated **for the three named categories, not in general**:
   as printed ("any extensive category with final object has as scalars the
   two-element effect monoid `2`") it is false.  `Scal (Par C)` is
@@ -42,9 +52,12 @@ Not separately formalized:
 * the orthosupplement of a `bCH` predicate (`1`, `0` are pinned; 190IV.3(c)
   itself only claims the correspondence with clopens);
 * 190III, the point this one hangs off, which is
-  `effectus_vn_real_separating` in `B/Eff/VNExamples`.
+  `effectus_vn_real_separating` in `B/Eff/VNExamples`;
+* the `EJAᵒᵖ` clause of 206III, which has no category in the tree; its
+  `vNᵒᵖ` and `CvNᵒᵖ` clauses are `diamond_effectus_vn` and
+  `diamond_effectus_cvn` in `B/Eff/VNExamples`.
 -/
-import Theses.B.Eff.StatesPredicates
+import Theses.B.Eff.DiamondAmp
 
 set_option warn.classDefReducibility false
 
@@ -559,6 +572,654 @@ theorem set_separating_states : SeparatingStates (Par (Type u)) := by
     rw [← par_hat_comp, ← par_hat_comp]
     exact congrArg pval h2
   exact congrArg (fun m => m (default : ⊤_ (Type u))) h3
+
+/-! ### 206III: the partial maps of `SET` as `X → Option Y` -/
+
+/-- The comparison isomorphism `A + B ≅ A ⊕ B` of `SET`: Mathlib's
+`Types.binaryCoproductIso`, under the name used below. -/
+private noncomputable abbrev setGam (A B : Type u) : (A ⨿ B : Type u) ≅ (A ⊕ B) :=
+  Types.binaryCoproductIso A B
+
+/-- `γ ∘ κ₁ = inl`. -/
+private theorem setGam_inl {A B : Type u} (a : A) :
+    (setGam A B).hom ((coprod.inl : A ⟶ A ⨿ B) a) = Sum.inl a :=
+  congrArg (fun m : A ⟶ (A ⊕ B) => m a) (Types.binaryCoproductIso_inl_comp_hom A B)
+
+/-- `γ ∘ κ₂ = inr`. -/
+private theorem setGam_inr {A B : Type u} (b : B) :
+    (setGam A B).hom ((coprod.inr : B ⟶ A ⨿ B) b) = Sum.inr b :=
+  congrArg (fun m : B ⟶ (A ⊕ B) => m b) (Types.binaryCoproductIso_inr_comp_hom A B)
+
+/-- Every element of a binary coproduct of `SET` lies in one of the two
+summands (the elementwise form of `Types.binaryCoproductIso`). -/
+private theorem set_coprod_cases {A B : Type u} (v : (A ⨿ B : Type u)) :
+    (∃ a, v = (coprod.inl : A ⟶ A ⨿ B) a) ∨ (∃ b, v = (coprod.inr : B ⟶ A ⨿ B) b) := by
+  have e : ∀ z : (A ⨿ B : Type u), (setGam A B).inv ((setGam A B).hom z) = z := fun z =>
+    congrArg (fun m : (A ⨿ B : Type u) ⟶ (A ⨿ B : Type u) => m z) (setGam A B).hom_inv_id
+  have hinj : ∀ {v w : (A ⨿ B : Type u)},
+      (setGam A B).hom v = (setGam A B).hom w → v = w := by
+    intro v w h
+    rw [← e v, ← e w, h]
+  rcases hv : (setGam A B).hom v with a | b
+  · exact Or.inl ⟨a, hinj (by rw [hv, setGam_inl])⟩
+  · exact Or.inr ⟨b, hinj (by rw [hv, setGam_inr])⟩
+
+/-- `Y + 1` of `SET`, read as `Option Y`: `κ₁ y ↦ some y`, `κ₂ ⋆ ↦ none`. -/
+private noncomputable def setOpt {Y : Type u} (v : (Y ⨿ (⊤_ (Type u)) : Type u)) : Option Y :=
+  Sum.elim some (fun _ => none) ((setGam Y (⊤_ (Type u))).hom v)
+
+/-- `κ₁ y` is `some y`. -/
+private theorem setOpt_inl {Y : Type u} (y : Y) :
+    setOpt ((coprod.inl : Y ⟶ Y ⨿ (⊤_ (Type u))) y) = some y := by
+  show Sum.elim some (fun _ => none) ((setGam Y (⊤_ (Type u))).hom _) = _
+  rw [setGam_inl]
+  rfl
+
+/-- `κ₂ ⋆` is `none`. -/
+private theorem setOpt_inr {Y : Type u} (t : (⊤_ (Type u))) :
+    setOpt ((coprod.inr : (⊤_ (Type u)) ⟶ Y ⨿ (⊤_ (Type u))) t) = none := by
+  show Sum.elim some (fun _ => none) ((setGam Y (⊤_ (Type u))).hom _) = _
+  rw [setGam_inr]
+  rfl
+
+/-- The inverse of `setOpt`: `Option Y → Y + 1`. -/
+private noncomputable def setInj {Y : Type u} (o : Option Y) :
+    (Y ⨿ (⊤_ (Type u)) : Type u) :=
+  o.elim ((coprod.inr : (⊤_ (Type u)) ⟶ Y ⨿ (⊤_ (Type u))) default)
+    (fun y => (coprod.inl : Y ⟶ Y ⨿ (⊤_ (Type u))) y)
+
+/-- `setOpt` undoes `setInj`. -/
+private theorem setOpt_setInj {Y : Type u} (o : Option Y) : setOpt (setInj o) = o := by
+  cases o with
+  | none => exact setOpt_inr _
+  | some y => exact setOpt_inl y
+
+/-- `setInj` undoes `setOpt`. -/
+private theorem setInj_setOpt {Y : Type u} (v : (Y ⨿ (⊤_ (Type u)) : Type u)) :
+    setInj (setOpt v) = v := by
+  rcases set_coprod_cases v with ⟨y, rfl⟩ | ⟨t, rfl⟩
+  · rw [setOpt_inl]; rfl
+  · rw [setOpt_inr]
+    exact congrArg (fun s => (coprod.inr : (⊤_ (Type u)) ⟶ Y ⨿ (⊤_ (Type u))) s)
+      (Subsingleton.elim _ _)
+
+/-- **206III** (eff.tex:4460, Examples), the concrete handle for `SET`: a
+partial map `f : X ⇸ Y` of `SET` — that is, a map `X ⟶ Y + 1` — read as the
+partial function `X → Option Y` it is.
+
+The abstract coproduct `Y + 1` is the only obstacle to computing with
+`Par (Type u)` by hand; `parSetHom` and the transport lemmas below
+(`parSetHom_comp`, `_id`, `_hat`, `_zero`, `parSetHom_truth_isSome`,
+`parSetHom_orth_isSome`) remove it once and for all, and everything the
+⋄-effectus axioms need is then ordinary reasoning about `Option`. -/
+noncomputable def parSetHom {X Y : Par (Type u)} (f : X ⟶ Y) : X.base → Option Y.base :=
+  fun x => setOpt (pval f x)
+
+/-- **206III** (eff.tex:4460, Examples): `parSetHom` is a bijection —
+the partial maps `X ⇸ Y` of `SET` *are* the functions `X → Option Y`. -/
+noncomputable def parSetHomEquiv (X Y : Par (Type u)) :
+    (X ⟶ Y) ≃ (X.base → Option Y.base) where
+  toFun := parSetHom
+  invFun g := show X ⟶ Y from
+    (↾(fun x => setInj (g x)) : X.base ⟶ Y.base ⨿ (⊤_ (Type u)))
+  left_inv f := by
+    refine pval_inj ?_
+    refine ConcreteCategory.hom_ext _ _ (fun x => ?_)
+    exact setInj_setOpt (pval f x)
+  right_inv g := funext fun x => setOpt_setInj (g x)
+
+/-- The partial map named by a function `X → Option Y` has that function as
+its `parSetHom`. -/
+theorem parSetHom_symm_apply (X Y : Par (Type u)) (g : X.base → Option Y.base)
+    (x : X.base) : parSetHom ((parSetHomEquiv X Y).symm g) x = g x :=
+  setOpt_setInj (g x)
+
+/-- A partial map of `SET` is determined by its values. -/
+theorem parSetHom_injective {X Y : Par (Type u)} {f g : X ⟶ Y}
+    (h : ∀ x, parSetHom f x = parSetHom g x) : f = g :=
+  (parSetHomEquiv X Y).injective (funext h)
+
+/-- Composition in `Par SET` is Kleisli composition of partial
+functions. -/
+theorem parSetHom_comp {X Y Z : Par (Type u)} (f : X ⟶ Y) (g : Y ⟶ Z) (x : X.base) :
+    parSetHom (f ≫ g : X ⟶ Z) x = (parSetHom f x).bind (parSetHom g) := by
+  have hv : parSetHom (f ≫ g : X ⟶ Z) x
+      = setOpt ((coprod.desc (pval g)
+          (coprod.inr : (⊤_ (Type u)) ⟶ Z.base ⨿ (⊤_ (Type u)))) (pval f x)) := rfl
+  have hf : parSetHom f x = setOpt (pval f x) := rfl
+  rw [hv, hf]
+  rcases set_coprod_cases (pval f x) with ⟨y, hy⟩ | ⟨t, ht⟩
+  · rw [hy, setOpt_inl]
+    have h2 : setOpt ((coprod.desc (pval g)
+        (coprod.inr : (⊤_ (Type u)) ⟶ Z.base ⨿ (⊤_ (Type u))))
+          ((coprod.inl : Y.base ⟶ Y.base ⨿ (⊤_ (Type u))) y))
+        = setOpt (((coprod.inl : Y.base ⟶ Y.base ⨿ (⊤_ (Type u))) ≫ coprod.desc (pval g)
+          (coprod.inr : (⊤_ (Type u)) ⟶ Z.base ⨿ (⊤_ (Type u)))) y) := rfl
+    rw [h2, coprod.inl_desc]
+    rfl
+  · rw [ht, setOpt_inr]
+    have h2 : setOpt ((coprod.desc (pval g)
+        (coprod.inr : (⊤_ (Type u)) ⟶ Z.base ⨿ (⊤_ (Type u))))
+          ((coprod.inr : (⊤_ (Type u)) ⟶ Y.base ⨿ (⊤_ (Type u))) t))
+        = setOpt (((coprod.inr : (⊤_ (Type u)) ⟶ Y.base ⨿ (⊤_ (Type u))) ≫ coprod.desc (pval g)
+          (coprod.inr : (⊤_ (Type u)) ⟶ Z.base ⨿ (⊤_ (Type u)))) t) := rfl
+    rw [h2, coprod.inr_desc]
+    exact setOpt_inr t
+
+/-- Composition, in the form used below: where `f` is defined at `x`, with
+value `y`, the composite `g ⊙ f` takes the value of `g` at `y`. -/
+theorem parSetHom_comp_of_some {X Y Z : Par (Type u)} (f : X ⟶ Y) (g : Y ⟶ Z) (x : X.base)
+    (y : Y.base) (h : parSetHom f x = some y) :
+    parSetHom (f ≫ g : X ⟶ Z) x = parSetHom g y := by
+  rw [parSetHom_comp f g x, h]
+  rfl
+
+/-- Composition, in the form used below: where `f` is undefined, so is
+`g ⊙ f`. -/
+theorem parSetHom_comp_of_none {X Y Z : Par (Type u)} (f : X ⟶ Y) (g : Y ⟶ Z) (x : X.base)
+    (h : parSetHom f x = none) : parSetHom (f ≫ g : X ⟶ Z) x = none := by
+  rw [parSetHom_comp f g x, h]
+  rfl
+
+/-- The Kleisli embedding `f̂` of a total map is the everywhere-defined
+partial function. -/
+theorem parSetHom_hat {A B : Type u} (w : A ⟶ B) (a : A) :
+    parSetHom (Par.hat w : Par.of A ⟶ Par.of B) a = some (w a) :=
+  setOpt_inl (w a)
+
+/-- The identity of `Par SET` is the everywhere-defined identity. -/
+theorem parSetHom_id {X : Par (Type u)} (x : X.base) :
+    parSetHom (𝟙 X) x = some x := setOpt_inl x
+
+/-- The zero map of `Par SET` is the nowhere-defined partial function. -/
+theorem parSetHom_zero {X Y : Par (Type u)} (x : X.base) :
+    parSetHom (0 : X ⟶ Y) x = none := setOpt_inr _
+
+/-- The truth predicate is everywhere defined. -/
+theorem parSetHom_truth_isSome {X : Par (Type u)} (x : X.base) :
+    (parSetHom (truth X) x).isSome = true := by
+  have h : parSetHom (truth X) x
+      = setOpt ((coprod.inl : (⊤_ (Type u)) ⟶ ((⊤_ (Type u)) ⨿ (⊤_ (Type u)) : Type u))
+        (terminal.from X.base x)) := rfl
+  rw [h, setOpt_inl]
+  rfl
+
+/-- `1 ∘ f` is defined exactly where `f` is: it is the *domain* of `f`, read
+as a predicate. -/
+theorem parSetHom_comp_truth_isSome {X Y : Par (Type u)} (f : X ⟶ Y) (x : X.base) :
+    (parSetHom (f ≫ truth Y : X ⟶ effObj (Par (Type u))) x).isSome
+      = (parSetHom f x).isSome := by
+  cases hf : parSetHom f x with
+  | none => rw [parSetHom_comp_of_none f (truth Y) x hf]; rfl
+  | some y => rw [parSetHom_comp_of_some f (truth Y) x y hf, parSetHom_truth_isSome]; rfl
+
+/-- The orthosupplement's `[κ₂,κ₁] : 1 + 1 ⟶ 1 + 1` swaps `κ₁` to `κ₂`. -/
+private theorem set_swapTop_inl (t : (⊤_ (Type u))) :
+    (parSwapTop : ((⊤_ (Type u)) ⨿ (⊤_ (Type u)) : Type u) ⟶
+        ((⊤_ (Type u)) ⨿ (⊤_ (Type u)) : Type u))
+        ((coprod.inl : (⊤_ (Type u)) ⟶ ((⊤_ (Type u)) ⨿ (⊤_ (Type u)) : Type u)) t)
+      = (coprod.inr : (⊤_ (Type u)) ⟶ ((⊤_ (Type u)) ⨿ (⊤_ (Type u)) : Type u)) t := by
+  have h : (coprod.inl : (⊤_ (Type u)) ⟶ ((⊤_ (Type u)) ⨿ (⊤_ (Type u)) : Type u)) ≫
+      (parSwapTop : ((⊤_ (Type u)) ⨿ (⊤_ (Type u)) : Type u) ⟶
+        ((⊤_ (Type u)) ⨿ (⊤_ (Type u)) : Type u)) = coprod.inr := by
+    rw [parSwapTop_eq, coprod.inl_desc]
+  exact congrArg
+    (fun m : (⊤_ (Type u)) ⟶ ((⊤_ (Type u)) ⨿ (⊤_ (Type u)) : Type u) => m t) h
+
+/-- The orthosupplement's `[κ₂,κ₁] : 1 + 1 ⟶ 1 + 1` swaps `κ₂` to `κ₁`. -/
+private theorem set_swapTop_inr (t : (⊤_ (Type u))) :
+    (parSwapTop : ((⊤_ (Type u)) ⨿ (⊤_ (Type u)) : Type u) ⟶
+        ((⊤_ (Type u)) ⨿ (⊤_ (Type u)) : Type u))
+        ((coprod.inr : (⊤_ (Type u)) ⟶ ((⊤_ (Type u)) ⨿ (⊤_ (Type u)) : Type u)) t)
+      = (coprod.inl : (⊤_ (Type u)) ⟶ ((⊤_ (Type u)) ⨿ (⊤_ (Type u)) : Type u)) t := by
+  have h : (coprod.inr : (⊤_ (Type u)) ⟶ ((⊤_ (Type u)) ⨿ (⊤_ (Type u)) : Type u)) ≫
+      (parSwapTop : ((⊤_ (Type u)) ⨿ (⊤_ (Type u)) : Type u) ⟶
+        ((⊤_ (Type u)) ⨿ (⊤_ (Type u)) : Type u)) = coprod.inl := by
+    rw [parSwapTop_eq, coprod.inr_desc]
+  exact congrArg
+    (fun m : (⊤_ (Type u)) ⟶ ((⊤_ (Type u)) ⨿ (⊤_ (Type u)) : Type u) => m t) h
+
+/-- **190IV.3(a)**, in the `Option` form: `p^⊥` is defined exactly where `p`
+is not — the complement of `set_pred_subset_orth`, stated on domains. -/
+theorem parSetHom_orth_isSome {X : Par (Type u)} (p : Pred X) (x : X.base) :
+    (parSetHom (orth p) x).isSome = !(parSetHom p x).isSome := by
+  have key : ∀ v : ((⊤_ (Type u)) ⨿ (⊤_ (Type u)) : Type u),
+      (setOpt ((parSwapTop : ((⊤_ (Type u)) ⨿ (⊤_ (Type u)) : Type u) ⟶
+          ((⊤_ (Type u)) ⨿ (⊤_ (Type u)) : Type u)) v)).isSome = !(setOpt v).isSome := by
+    intro v
+    rcases set_coprod_cases v with ⟨t, rfl⟩ | ⟨t, rfl⟩
+    · rw [set_swapTop_inl, setOpt_inr, setOpt_inl]
+      rfl
+    · rw [set_swapTop_inr, setOpt_inl, setOpt_inr]
+      rfl
+  exact key (pval p x)
+
+/-- The effect object of `Par SET` is the final set, so it has at most one
+element. -/
+private theorem set_effObj_elim (a b : (effObj (Par (Type u))).base) : a = b :=
+  Subsingleton.elim (α := (⊤_ (Type u))) a b
+
+/-- Two predicates of `SET` with the same domain are equal: a predicate
+takes values in the final set, so only its domain carries information.  This
+is the extensionality principle every argument below ends with. -/
+theorem set_pred_ext {X : Par (Type u)} {p q : Pred X}
+    (h : ∀ x, (parSetHom p x).isSome = (parSetHom q x).isSome) : p = q := by
+  refine parSetHom_injective (fun x => ?_)
+  have hx := h x
+  cases hp : parSetHom p x with
+  | none =>
+      cases hq : parSetHom q x with
+      | none => rfl
+      | some b => rw [hp, hq] at hx; simp at hx
+  | some a =>
+      cases hq : parSetHom q x with
+      | none => rw [hp, hq] at hx; simp at hx
+      | some b => exact congrArg some (set_effObj_elim a b)
+
+/-! ### 206III: the algebraic order on the predicates of `SET` -/
+
+/-- The codiagonal `∇ = [id, id]` is everywhere defined. -/
+private theorem parSetHom_nabla {A : Type u} (v : (A ⨿ A : Type u)) :
+    (parSetHom (parNabla A) v).isSome = true := by
+  have h : parSetHom (parNabla A) v
+      = parSetHom (Par.hat (coprod.desc (𝟙 A) (𝟙 A)) : Par.of (A ⨿ A) ⟶ Par.of A) v := rfl
+  rw [h, parSetHom_hat]
+  rfl
+
+/-- The partial projector `▷₁ = [id, 0]` is defined on the left summand. -/
+private theorem parSetHom_pproj₁_inl {A B : Type u} (a : A) :
+    parSetHom (Par.pproj₁ A B) ((coprod.inl : A ⟶ A ⨿ B) a) = some a := by
+  have h : parSetHom (Par.pproj₁ A B) ((coprod.inl : A ⟶ A ⨿ B) a)
+      = setOpt (((coprod.inl : A ⟶ A ⨿ B) ≫ coprod.desc
+          (coprod.inl : A ⟶ A ⨿ (⊤_ (Type u)))
+          (terminal.from B ≫ (coprod.inr : (⊤_ (Type u)) ⟶ A ⨿ (⊤_ (Type u))))) a) := rfl
+  rw [h, coprod.inl_desc]
+  exact setOpt_inl a
+
+/-- The partial projector `▷₁ = [id, 0]` is undefined on the right
+summand. -/
+private theorem parSetHom_pproj₁_inr {A B : Type u} (b : B) :
+    parSetHom (Par.pproj₁ A B) ((coprod.inr : B ⟶ A ⨿ B) b) = none := by
+  have h : parSetHom (Par.pproj₁ A B) ((coprod.inr : B ⟶ A ⨿ B) b)
+      = setOpt (((coprod.inr : B ⟶ A ⨿ B) ≫ coprod.desc
+          (coprod.inl : A ⟶ A ⨿ (⊤_ (Type u)))
+          (terminal.from B ≫ (coprod.inr : (⊤_ (Type u)) ⟶ A ⨿ (⊤_ (Type u))))) b) := rfl
+  rw [h, coprod.inr_desc]
+  exact setOpt_inr _
+
+/-- **206III** for `SET`, first half of the order: if `p ≤ q` in the
+algebraic order of the hom-PCM, then `q` is defined wherever `p` is.
+
+The bound `b` witnessing `p ⊥ c` has `p = ▷₁ ⊙ b`, so `b` is defined
+wherever `p` is; and `q = p ⋁ c = ∇ ⊙ b`, which is defined wherever `b`
+is. -/
+theorem set_le_isSome {X Y : Par (Type u)} {p q : X ⟶ Y} (h : p ≼ q) {x : X.base}
+    (hx : (parSetHom p x).isSome = true) : (parSetHom q x).isSome = true := by
+  obtain ⟨c, hperp, hovee⟩ := h
+  obtain ⟨b, hb₁, hb₂⟩ := id hperp
+  have hq : q = b ≫ parNabla Y.base := by
+    rw [← hovee]; exact parOvee_eq hperp ⟨hb₁, hb₂⟩
+  have hbx : ∃ v, parSetHom b x = some v := by
+    cases hbv : parSetHom b x with
+    | none =>
+        rw [← hb₁, parSetHom_comp_of_none b (Par.pproj₁ Y.base Y.base) x hbv] at hx
+        simp at hx
+    | some v => exact ⟨v, rfl⟩
+  obtain ⟨v, hv⟩ := hbx
+  rw [hq, parSetHom_comp_of_some b (parNabla Y.base) x v hv]
+  exact parSetHom_nabla v
+
+/-- The bound witnessing `p ⊥ (q − p)` for predicates `p ≤ q` of `SET`: it
+sends `x` into the left summand on the domain of `p`, into the right summand
+on the rest of the domain of `q`, and is undefined elsewhere. -/
+private noncomputable def setBound {X : Par (Type u)} (p q : Pred X) (x : X.base) :
+    Option (((⊤_ (Type u)) ⨿ (⊤_ (Type u))) : Type u) :=
+  cond (parSetHom p x).isSome
+    (some ((coprod.inl : (⊤_ (Type u)) ⟶ ((⊤_ (Type u)) ⨿ (⊤_ (Type u)) : Type u)) default))
+    (cond (parSetHom q x).isSome
+      (some ((coprod.inr : (⊤_ (Type u)) ⟶ ((⊤_ (Type u)) ⨿ (⊤_ (Type u)) : Type u)) default))
+      none)
+
+/-- `setBound` on the domain of `p`. -/
+private theorem setBound_pos {X : Par (Type u)} (p q : Pred X) {x : X.base}
+    (hp : (parSetHom p x).isSome = true) :
+    setBound p q x
+      = some ((coprod.inl : (⊤_ (Type u)) ⟶ ((⊤_ (Type u)) ⨿ (⊤_ (Type u)) : Type u))
+        default) := by
+  have e : setBound p q x = cond (parSetHom p x).isSome
+      (some ((coprod.inl : (⊤_ (Type u)) ⟶ ((⊤_ (Type u)) ⨿ (⊤_ (Type u)) : Type u)) default))
+      (cond (parSetHom q x).isSome
+        (some ((coprod.inr : (⊤_ (Type u)) ⟶ ((⊤_ (Type u)) ⨿ (⊤_ (Type u)) : Type u)) default))
+        none) := rfl
+  rw [e, hp]
+  rfl
+
+/-- `setBound` on the domain of `q` minus that of `p`. -/
+private theorem setBound_mid {X : Par (Type u)} (p q : Pred X) {x : X.base}
+    (hp : (parSetHom p x).isSome = false) (hq : (parSetHom q x).isSome = true) :
+    setBound p q x
+      = some ((coprod.inr : (⊤_ (Type u)) ⟶ ((⊤_ (Type u)) ⨿ (⊤_ (Type u)) : Type u))
+        default) := by
+  have e : setBound p q x = cond (parSetHom p x).isSome
+      (some ((coprod.inl : (⊤_ (Type u)) ⟶ ((⊤_ (Type u)) ⨿ (⊤_ (Type u)) : Type u)) default))
+      (cond (parSetHom q x).isSome
+        (some ((coprod.inr : (⊤_ (Type u)) ⟶ ((⊤_ (Type u)) ⨿ (⊤_ (Type u)) : Type u)) default))
+        none) := rfl
+  rw [e, hp, hq]
+  rfl
+
+/-- `setBound` off the domain of `q`. -/
+private theorem setBound_neg {X : Par (Type u)} (p q : Pred X) {x : X.base}
+    (hp : (parSetHom p x).isSome = false) (hq : (parSetHom q x).isSome = false) :
+    setBound p q x = none := by
+  have e : setBound p q x = cond (parSetHom p x).isSome
+      (some ((coprod.inl : (⊤_ (Type u)) ⟶ ((⊤_ (Type u)) ⨿ (⊤_ (Type u)) : Type u)) default))
+      (cond (parSetHom q x).isSome
+        (some ((coprod.inr : (⊤_ (Type u)) ⟶ ((⊤_ (Type u)) ⨿ (⊤_ (Type u)) : Type u)) default))
+        none) := rfl
+  rw [e, hp, hq]
+  rfl
+
+/-- **206III** for `SET`, second half of the order: a predicate `p` is below
+`q` as soon as `q` is defined wherever `p` is.  Together with
+`set_le_isSome` this says that the algebraic order on `Pred (Par.of X)` is
+inclusion of subsets, as 190IV.3(a) would have it. -/
+theorem set_le_of_isSome {X : Par (Type u)} {p q : Pred X}
+    (h : ∀ x, (parSetHom p x).isSome = true → (parSetHom q x).isSome = true) : p ≼ q := by
+  obtain ⟨b, hb⟩ : ∃ b : X ⟶ Par.of (((⊤_ (Type u)) ⨿ (⊤_ (Type u))) : Type u),
+      ∀ x, parSetHom b x = setBound p q x :=
+    ⟨(parSetHomEquiv _ _).symm _, fun x => parSetHom_symm_apply _ _ _ x⟩
+  have hb₁ : b ≫ Par.pproj₁ (⊤_ (Type u)) (⊤_ (Type u)) = p := by
+    refine set_pred_ext (fun x => ?_)
+    cases hp : (parSetHom p x).isSome with
+    | true =>
+        rw [parSetHom_comp_of_some b (Par.pproj₁ (⊤_ (Type u)) (⊤_ (Type u))) x _
+          ((hb x).trans (setBound_pos p q hp)), parSetHom_pproj₁_inl]
+        rfl
+    | false =>
+        cases hq : (parSetHom q x).isSome with
+        | true =>
+            rw [parSetHom_comp_of_some b (Par.pproj₁ (⊤_ (Type u)) (⊤_ (Type u))) x _
+              ((hb x).trans (setBound_mid p q hp hq)), parSetHom_pproj₁_inr]
+            rfl
+        | false =>
+            rw [parSetHom_comp_of_none b (Par.pproj₁ (⊤_ (Type u)) (⊤_ (Type u))) x
+              ((hb x).trans (setBound_neg p q hp hq))]
+            rfl
+  refine ⟨b ≫ Par.pproj₂ (⊤_ (Type u)) (⊤_ (Type u)), ⟨b, hb₁, rfl⟩, ?_⟩
+  have hov : ovee p (b ≫ Par.pproj₂ (⊤_ (Type u)) (⊤_ (Type u)))
+      (⟨b, hb₁, rfl⟩ : Perp p (b ≫ Par.pproj₂ (⊤_ (Type u)) (⊤_ (Type u))))
+      = b ≫ parNabla (⊤_ (Type u)) := parOvee_eq _ ⟨hb₁, rfl⟩
+  rw [hov]
+  refine set_pred_ext (fun x => ?_)
+  cases hp : (parSetHom p x).isSome with
+  | true =>
+      rw [parSetHom_comp_of_some b (parNabla (⊤_ (Type u))) x _
+        ((hb x).trans (setBound_pos p q hp)), h x hp]
+      exact parSetHom_nabla _
+  | false =>
+      cases hq : (parSetHom q x).isSome with
+      | true =>
+          rw [parSetHom_comp_of_some b (parNabla (⊤_ (Type u))) x _
+            ((hb x).trans (setBound_mid p q hp hq))]
+          exact parSetHom_nabla _
+      | false =>
+          rw [parSetHom_comp_of_none b (parNabla (⊤_ (Type u))) x
+            ((hb x).trans (setBound_neg p q hp hq))]
+          rfl
+
+/-! ### 206III: quotients, comprehension, images and sharpness in `SET` -/
+
+/-- The partial identity `X ⇸ {x | S x = false}`, defined exactly off
+`S` — the quotient map of a predicate. -/
+private def setRestrict {A : Type u} (S : A → Bool) (a : A) :
+    Option {x : A // S x = false} :=
+  if h : S a = false then some ⟨a, h⟩ else none
+
+/-- `setRestrict` off `S`. -/
+private theorem setRestrict_pos {A : Type u} (S : A → Bool) {a : A} (h : S a = false) :
+    setRestrict S a = some ⟨a, h⟩ := by
+  unfold setRestrict
+  split
+  · rfl
+  · next h' => exact absurd h h'
+
+/-- `setRestrict` on `S`. -/
+private theorem setRestrict_neg {A : Type u} (S : A → Bool) {a : A} (h : S a = true) :
+    setRestrict S a = none := by
+  unfold setRestrict
+  split
+  · next h' => rw [h] at h'; simp at h'
+  · rfl
+
+/-- The partial identity `X ⇸ {x | S x = true}`, defined exactly on `S`
+(used to corestrict a map that already lands in `S`). -/
+private def setCorestrict {A : Type u} (S : A → Bool) (a : A) :
+    Option {x : A // S x = true} :=
+  if h : S a = true then some ⟨a, h⟩ else none
+
+/-- `setCorestrict` on `S`. -/
+private theorem setCorestrict_pos {A : Type u} (S : A → Bool) {a : A} (h : S a = true) :
+    setCorestrict S a = some ⟨a, h⟩ := by
+  unfold setCorestrict
+  split
+  · rfl
+  · next h' => exact absurd h h'
+
+/-- A `Bool` that is not `false` is `true`. -/
+private theorem set_isSome_eq_true {b : Bool} (h : ¬ b = false) : b = true := by
+  cases hb : b with
+  | false => exact absurd hb h
+  | true => rfl
+
+/-- **206III** (eff.tex:4460, Examples) for `SET`: `SET` **has quotients**.
+
+The point prints no proof, so this is our own.  For a predicate `p` with
+domain `U ⊆ X` the quotient is the partial identity `ξ_p : X ⇸ Uᶜ` defined
+exactly off `U`.  Then `1 ∘ ξ_p` is the predicate `Uᶜ = p^⊥` on the nose, so
+the inequality `1 ∘ ξ_p ≤ p^⊥` of 197II holds reflexively; and a partial map
+`f : X ⇸ Y` with `1 ∘ f ≤ p^⊥` is undefined on `U`, hence factors through
+`ξ_p` by the unique `f'` with `f'(x) = f(x)`. -/
+theorem set_hasQuotients : HasQuotients (Par (Type u)) where
+  quot {X} p := by
+    obtain ⟨ξ, hξ⟩ : ∃ ξ : X ⟶ Par.of {x : X.base // (parSetHom p x).isSome = false},
+        ∀ x, parSetHom ξ x = setRestrict (fun x => (parSetHom p x).isSome) x :=
+      ⟨(parSetHomEquiv _ _).symm _, fun x => parSetHom_symm_apply _ _ _ x⟩
+    refine ⟨Par.of {x : X.base // (parSetHom p x).isSome = false}, ξ, ?_, ?_⟩
+    · have he : (ξ ≫ truth (Par.of {x : X.base // (parSetHom p x).isSome = false}) :
+          X ⟶ effObj (Par (Type u))) = orth p := by
+        refine set_pred_ext (fun x => ?_)
+        rw [parSetHom_comp_truth_isSome ξ x, hξ x, parSetHom_orth_isSome]
+        by_cases hp : (parSetHom p x).isSome = false
+        · rw [setRestrict_pos (fun x => (parSetHom p x).isSome) hp]
+          show (true : Bool) = !(parSetHom p x).isSome
+          rw [hp]
+          rfl
+        · rw [setRestrict_neg (fun x => (parSetHom p x).isSome) (set_isSome_eq_true hp)]
+          show (false : Bool) = !(parSetHom p x).isSome
+          rw [set_isSome_eq_true hp]
+          rfl
+      rw [he]
+      exact pcm_preorder_refl _
+    · intro Y f hf
+      have hdom : ∀ x, (parSetHom f x).isSome = true → (parSetHom p x).isSome = false := by
+        intro x hx
+        have h1 : (parSetHom (f ≫ truth Y : X ⟶ effObj (Par (Type u))) x).isSome = true := by
+          rw [parSetHom_comp_truth_isSome f x]; exact hx
+        have h2 := set_le_isSome hf h1
+        rw [parSetHom_orth_isSome] at h2
+        cases hc : (parSetHom p x).isSome with
+        | false => rfl
+        | true => rw [hc] at h2; simp at h2
+      obtain ⟨f', hf'⟩ : ∃ f' : Par.of {x : X.base // (parSetHom p x).isSome = false} ⟶ Y,
+          ∀ w, parSetHom f' w = parSetHom f w.1 :=
+        ⟨(parSetHomEquiv _ _).symm _, fun w => parSetHom_symm_apply _ _ _ w⟩
+      refine ⟨f', ?_, ?_⟩
+      · refine parSetHom_injective (fun x => ?_)
+        by_cases hp : (parSetHom p x).isSome = false
+        · rw [parSetHom_comp_of_some ξ f' x ⟨x, hp⟩
+            ((hξ x).trans (setRestrict_pos (fun x => (parSetHom p x).isSome) hp)), hf']
+        · rw [parSetHom_comp_of_none ξ f' x ((hξ x).trans
+            (setRestrict_neg (fun x => (parSetHom p x).isSome) (set_isSome_eq_true hp)))]
+          cases hfx : parSetHom f x with
+          | none => rfl
+          | some y =>
+              have hcon := hdom x (by rw [hfx]; rfl)
+              exact absurd hcon hp
+      · intro g hg
+        refine parSetHom_injective (fun w => ?_)
+        rw [hf' w]
+        have h1 : parSetHom (ξ ≫ g : X ⟶ Y) w.1 = parSetHom f w.1 := by rw [hg]
+        rw [parSetHom_comp_of_some ξ g w.1 w
+          ((hξ w.1).trans (setRestrict_pos (fun x => (parSetHom p x).isSome) w.2))] at h1
+        exact h1
+
+/-- **206III** (eff.tex:4460, Examples) for `SET`: `SET` **has
+comprehension**.
+
+Again our own proof.  For a predicate `p` with domain `U ⊆ X` the
+comprehension is the total inclusion `π_p : U ⇸ X`; `p ∘ π_p = 1 ∘ π_p`
+because `p` is defined everywhere on `U`.  A map `g : Z ⇸ X` with
+`p ∘ g = 1 ∘ g` lands in `U` wherever it is defined, so it corestricts to
+`U`, uniquely because `π_p` is injective. -/
+theorem set_hasComprehension : HasComprehension (Par (Type u)) where
+  compr {X} p := by
+    obtain ⟨π, hπ⟩ : ∃ π : Par.of {x : X.base // (parSetHom p x).isSome = true} ⟶ X,
+        ∀ w, parSetHom π w = some w.1 :=
+      ⟨Par.hat (↾(Subtype.val)), fun w => parSetHom_hat _ w⟩
+    refine ⟨Par.of {x : X.base // (parSetHom p x).isSome = true}, π, ?_, ?_⟩
+    · refine set_pred_ext (fun w => ?_)
+      rw [parSetHom_comp_of_some π p w w.1 (hπ w), parSetHom_comp_truth_isSome π w, hπ w]
+      exact w.2
+    · intro Z g hg
+      have hdom : ∀ (z : Z.base) (y : X.base), parSetHom g z = some y →
+          (parSetHom p y).isSome = true := by
+        intro z y hz
+        have h1 : (parSetHom (g ≫ p : Z ⟶ effObj (Par (Type u))) z).isSome
+            = (parSetHom (g ≫ truth X : Z ⟶ effObj (Par (Type u))) z).isSome := by rw [hg]
+        rw [parSetHom_comp_of_some g p z y hz, parSetHom_comp_truth_isSome g z, hz] at h1
+        exact h1
+      obtain ⟨g', hg'⟩ : ∃ g' : Z ⟶ Par.of {x : X.base // (parSetHom p x).isSome = true},
+          ∀ z, parSetHom g' z
+            = (parSetHom g z).bind (setCorestrict (fun x => (parSetHom p x).isSome)) :=
+        ⟨(parSetHomEquiv _ _).symm _, fun z => parSetHom_symm_apply _ _ _ z⟩
+      refine ⟨g', ?_, ?_⟩
+      · refine parSetHom_injective (fun z => ?_)
+        cases hz : parSetHom g z with
+        | none =>
+            rw [parSetHom_comp_of_none g' π z (by rw [hg' z, hz]; rfl)]
+        | some y =>
+            rw [parSetHom_comp_of_some g' π z ⟨y, hdom z y hz⟩
+              (by rw [hg' z, hz]
+                  exact setCorestrict_pos (fun x => (parSetHom p x).isSome) (hdom z y hz)),
+              hπ]
+      · intro k hk
+        refine parSetHom_injective (fun z => ?_)
+        rw [hg' z]
+        have h1 : parSetHom (k ≫ π : Z ⟶ X) z = parSetHom g z := by rw [hk]
+        cases hkz : parSetHom k z with
+        | none =>
+            rw [parSetHom_comp_of_none k π z hkz] at h1
+            rw [← h1]
+            rfl
+        | some w =>
+            rw [parSetHom_comp_of_some k π z w hkz, hπ w] at h1
+            rw [← h1]
+            exact (setCorestrict_pos (fun x => (parSetHom p x).isSome) w.2).symm
+
+/-- The predicate of `SET` whose domain is a given (not necessarily
+decidable) subset. -/
+private noncomputable def setPredOf {Y : Par (Type u)} (S : Y.base → Prop) : Pred Y :=
+  (parSetHomEquiv Y (Par.of (⊤_ (Type u)))).symm
+    (fun y => @ite (Option (⊤_ (Type u))) (S y) (Classical.propDecidable (S y))
+      (some default) none)
+
+/-- `setPredOf S` has domain `S`. -/
+private theorem setPredOf_isSome {Y : Par (Type u)} (S : Y.base → Prop) (y : Y.base) :
+    (parSetHom (setPredOf S) y).isSome = true ↔ S y := by
+  have h : parSetHom (setPredOf S) y
+      = @ite (Option (⊤_ (Type u))) (S y) (Classical.propDecidable (S y))
+        (some default) none :=
+    parSetHom_symm_apply Y (Par.of (⊤_ (Type u))) _ y
+  rw [h]
+  by_cases hs : S y <;> simp [hs]
+
+/-- **206III** (eff.tex:4460, Examples) for `SET`: `SET` **has images**.
+
+Our own proof: the image of `f : X ⇸ Y` is the set-theoretic image
+`{y | ∃ x, f(x) = y}` of the domain of definition of `f`.  It satisfies
+`im ∘ f = 1 ∘ f` by construction, and it is the least such predicate because
+any `q` with `q ∘ f = 1 ∘ f` is defined at every `f(x)`. -/
+theorem set_hasImages : HasImages (Par (Type u)) where
+  im {X Y} f := by
+    refine ⟨setPredOf (fun y => ∃ x, parSetHom f x = some y), ?_, ?_⟩
+    · refine set_pred_ext (fun x => ?_)
+      cases hf : parSetHom f x with
+      | none =>
+          rw [parSetHom_comp_of_none f (setPredOf _) x hf,
+            parSetHom_comp_truth_isSome f x, hf]
+          rfl
+      | some y =>
+          rw [parSetHom_comp_of_some f (setPredOf _) x y hf,
+            parSetHom_comp_truth_isSome f x, hf,
+            (setPredOf_isSome (fun y => ∃ x, parSetHom f x = some y) y).mpr ⟨x, hf⟩]
+          rfl
+    · intro q hq
+      refine set_le_of_isSome (fun y hy => ?_)
+      obtain ⟨x, hx⟩ := (setPredOf_isSome _ y).mp hy
+      have h1 : (parSetHom (f ≫ q : X ⟶ effObj (Par (Type u))) x).isSome
+          = (parSetHom (f ≫ truth Y : X ⟶ effObj (Par (Type u))) x).isSome := by rw [hq]
+      rw [parSetHom_comp_of_some f q x y hx, parSetHom_comp_truth_isSome f x, hx] at h1
+      exact h1
+
+/-- **206III** (eff.tex:4460, Examples) for `SET`: **every** predicate of
+`SET` is sharp.
+
+A predicate with domain `U ⊆ X` is the image of the total inclusion
+`U ⇸ X`: that inclusion is everywhere defined on `U`, and any predicate `q`
+with `q ∘ ι = 1 ∘ ι` is defined on all of `U`.  In particular the last axiom
+of a ⋄-effectus, "`s^⊥` is sharp for sharp `s`", is free here. -/
+theorem set_isSharp_all {X : Par (Type u)} (p : Pred X) : IsSharp p := by
+  obtain ⟨π, hπ⟩ : ∃ π : Par.of {x : X.base // (parSetHom p x).isSome = true} ⟶ X,
+      ∀ w, parSetHom π w = some w.1 :=
+    ⟨Par.hat (↾(Subtype.val)), fun w => parSetHom_hat _ w⟩
+  refine ⟨Par.of {x : X.base // (parSetHom p x).isSome = true}, π, ?_, ?_⟩
+  · refine set_pred_ext (fun w => ?_)
+    rw [parSetHom_comp_of_some π p w w.1 (hπ w), parSetHom_comp_truth_isSome π w, hπ w]
+    exact w.2
+  · intro q hq
+    refine set_le_of_isSome (fun x hx => ?_)
+    have h1 : (parSetHom (π ≫ q :
+          Par.of {x : X.base // (parSetHom p x).isSome = true} ⟶ effObj (Par (Type u)))
+          ⟨x, hx⟩).isSome
+        = (parSetHom (π ≫ truth X :
+          Par.of {x : X.base // (parSetHom p x).isSome = true} ⟶ effObj (Par (Type u)))
+          ⟨x, hx⟩).isSome := by rw [hq]
+    rw [parSetHom_comp_of_some π q ⟨x, hx⟩ x (hπ ⟨x, hx⟩),
+      parSetHom_comp_truth_isSome π ⟨x, hx⟩, hπ ⟨x, hx⟩] at h1
+    exact h1
+
+/-- **206III** (eff.tex:4460, Examples), the `SET` clause: **`SET` is a
+⋄-effectus**.
+
+The point states it without proof, so the argument is ours; it is assembled
+from `set_hasQuotients`, `set_hasComprehension` and `set_hasImages`, with
+the fourth axiom supplied by `set_isSharp_all` — in `SET` every predicate is
+sharp, so orthocomplements of sharp predicates trivially are.
+
+The three quotient/comprehension/image constructions are the expected ones
+for partial functions: for a predicate with domain `U ⊆ X` the quotient is
+the partial identity onto `Uᶜ`, the comprehension is the total inclusion of
+`U`, and the image of `f` is the set-theoretic image of its domain of
+definition.  All of it is carried out through `parSetHom`, which presents a
+partial map `X ⇸ Y` of `SET` as a function `X → Option Y`.
+
+The sibling clauses `vNᵒᵖ` and `CvNᵒᵖ` of the same Examples are
+`diamond_effectus_vn` and `diamond_effectus_cvn` in
+`Theses/B/Eff/VNExamples.lean`; `EJAᵒᵖ` has no category in the tree. -/
+theorem diamond_effectus_set : DiamondEffectus (Par (Type u)) :=
+  { set_hasQuotients, set_hasComprehension, set_hasImages with
+    orth_sharp := fun _ => set_isSharp_all _ }
 
 end SetCase
 
