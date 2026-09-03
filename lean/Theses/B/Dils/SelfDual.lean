@@ -1322,7 +1322,7 @@ by its closure properties, not as an `U^⊥`; consumers pass both
 `p + (x − p)` with `p ∈ W` and `x − p` orthogonal to all of `W`.  This is
 the substance of **160IV**.3.
 
-The proof is the thesis's, **160V**–**160VIII** (dils.tex:4512).  Take a
+The proof is the thesis's, **160V** (dils.tex:4512) to **160VIII** (dils.tex:4556).  Take a
 maximal orthonormal subset `E = (eᵢ)` of `W`; maximality makes it a *basis*
 of `W`, every `w ∈ W` being the ultranorm limit of `∑ᵢ eᵢ⟨eᵢ,w⟩`.  *Extend*
 it to a maximal orthonormal subset `F` of the whole of `X`, which for the
