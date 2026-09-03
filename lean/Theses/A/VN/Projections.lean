@@ -8278,4 +8278,624 @@ theorem cvn_linfty_normal {C : Type w} [CommCStarAlgebra C] [PartialOrder C]
     fun i => ⟨q i, hq i⟩, Φ, hbij⟩
 end Classification
 
+/-! ## Minimal projections, factoriality, and the spectral scale
+
+This closing section is **not** a transcription of a numbered point of
+vn.tex.  It is the projection-lattice vocabulary that thesis B's **224VI**
+(`exc-purec-no-biproduct`, eff.tex:7189) needs and that vn.tex leaves
+implicit: bsols.tex:3366-3370 argues that a corner `h : 𝒜 → ℂ` of `p` makes
+`p𝒜p ≅ ℂ`, hence `p` a *minimal* projection, hence `⌈⌈p⌉⌉𝒜` a **factor** in
+the sense of **67III** (vn.tex:3397, Remark) — "a von Neumann algebra in
+which only the scalars are central".  Neither `IsMinimalProjection` nor that
+implication existed anywhere in the tree or in Mathlib.
+
+The section is placed here, after the classification, because it is built on
+parsec 670's `CentralProj` (the corner `c𝒜` as a von Neumann algebra in its
+own right) and parsec 680's central support `cceil`, and because it belongs
+to no parsec of its own.  Three layers:
+
+1. `smul_nonneg_of_nonneg` … `smul_le_of_forall_lt`: real multiples of a
+   positive element, and the two limit steps that the norm-closedness of the
+   positive cone provides.  A small public API for `IsCentral`, which had
+   none (`isCentral_one_sub` above is `private`).
+2. `eq_smul_of_spectral_trivial`, **the spectral scale**: a self-adjoint `x`
+   of a corner `e𝒜e` whose spectral projections `⌈(x − r·e)⁺⌉` are all `0`
+   or `e` is `r₀·e` for `r₀ = inf {r : x ≤ r·e}`.  The dichotomy is
+   **59IV**.1 `ceil_pos_part_1` (`⌈y₊⌉⌈y₋⌉ = 0`): if `⌈y₊⌉ = e` then
+   `⌈y₋⌉ = 0`, i.e. `0 ≤ y`.  Two corollaries: with `e = 1` and centrality
+   carried along (`⌈·⌉` and `(·)⁺` of a central element are central), a von
+   Neumann algebra with only trivial *central* projections is a factor
+   (`eq_algebraMap_of_central_proj_trivial`); with `e = p` minimal, the
+   corner `p𝒜p` is `ℂp` (`IsMinimalProjection.corner_eq_smul`), which is the
+   printed step's `p𝒜p ≅ ℂ` in element form, together with its converse.
+3. `IsMinimalProjection.central_proj_below_cceil` and
+   `IsMinimalProjection.isFactor_cceil`: for minimal `p`, a central
+   projection `q ≤ ⌈⌈p⌉⌉` makes `qp` a projection below `p`, hence `0` or
+   `p`; in the first case `q^⊥` is a central projection above `p`, so
+   `⌈⌈p⌉⌉ ≤ q^⊥` and `q = 0`, in the second `⌈⌈p⌉⌉ ≤ q`.  With layer 2 this
+   is exactly "`⌈⌈p⌉⌉𝒜` is a factor", stated as
+   `Theses.B.Dils.IsFactor` unfolded — that definition lives in
+   `B/Dils/SelfDual.lean`, downstream of this file, and is *definitionally*
+   the conclusion given here. -/
+
+section ScalarHelpers
+
+/-! ### Real multiples of the unit, and the norm-closedness of the cone -/
+
+/-- A non-negative real multiple of a positive element is positive. -/
+theorem smul_nonneg_of_nonneg {r : ℝ} (hr : 0 ≤ r) {a : A} (ha : 0 ≤ a) :
+    (0 : A) ≤ (r : ℂ) • a := by
+  set s : A := (Real.sqrt r : ℂ) • CFC.sqrt a with hsdef
+  have hsqa : star (CFC.sqrt a) = CFC.sqrt a :=
+    (IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg a)).star_eq
+  have hs : star s = s := by
+    rw [hsdef, star_smul, hsqa, Complex.star_def, Complex.conj_ofReal]
+  have h : star s * s = (r : ℂ) • a := by
+    rw [hs, hsdef, smul_mul_smul_comm, CFC.sqrt_mul_sqrt_self a ha,
+      ← Complex.ofReal_mul, Real.mul_self_sqrt hr]
+  rw [← h]
+  exact star_mul_self_nonneg s
+
+/-- Real multiples of a positive element are monotone in the scalar. -/
+theorem smul_mono_of_nonneg {r s : ℝ} (h : r ≤ s) {a : A} (ha : 0 ≤ a) :
+    ((r : ℂ) • a) ≤ (s : ℂ) • a := by
+  have h0 : (0 : A) ≤ ((s - r : ℝ) : ℂ) • a := smul_nonneg_of_nonneg (by linarith) ha
+  have he : ((s - r : ℝ) : ℂ) • a = (s : ℂ) • a - (r : ℂ) • a := by
+    rw [Complex.ofReal_sub, sub_smul]
+  rw [he, sub_nonneg] at h0
+  exact h0
+
+/-- For a non-zero positive `a`, a real multiple `r·a` is positive only for a
+non-negative scalar. -/
+theorem smul_nonneg_iff_of_ne_zero {a : A} (ha : 0 ≤ a) (ha0 : a ≠ 0) {r : ℝ} :
+    (0 : A) ≤ (r : ℂ) • a ↔ 0 ≤ r := by
+  refine ⟨fun h => ?_, fun hr => smul_nonneg_of_nonneg hr ha⟩
+  by_contra hr
+  rw [not_le] at hr
+  have h2 : (r : ℂ) • a ≤ 0 := by
+    have := smul_nonneg_of_nonneg (A := A) (r := -r) (by linarith) ha
+    rw [Complex.ofReal_neg, neg_smul, ← sub_nonneg] at this
+    simpa using this
+  have h3 : (r : ℂ) • a = 0 := le_antisymm h2 h
+  rcases smul_eq_zero.mp h3 with h4 | h4
+  · exact absurd (Complex.ofReal_eq_zero.mp h4) (by linarith)
+  · exact ha0 h4
+
+/-- A non-negative real multiple of `1` is positive. -/
+theorem smul_one_nonneg {r : ℝ} (hr : 0 ≤ r) : (0 : A) ≤ (r : ℂ) • (1 : A) :=
+  smul_nonneg_of_nonneg hr zero_le_one
+
+/-- Real multiples of `1` are monotone in the scalar. -/
+theorem smul_one_mono {r s : ℝ} (h : r ≤ s) :
+    ((r : ℂ) • (1 : A)) ≤ (s : ℂ) • (1 : A) :=
+  smul_mono_of_nonneg h zero_le_one
+
+/-- In a non-trivial algebra a real multiple of `1` is positive only for a
+non-negative scalar. -/
+theorem smul_one_nonneg_iff [Nontrivial A] {r : ℝ} :
+    (0 : A) ≤ (r : ℂ) • (1 : A) ↔ 0 ≤ r :=
+  smul_nonneg_iff_of_ne_zero zero_le_one one_ne_zero
+
+section
+omit [PartialOrder A] [StarOrderedRing A]
+
+/-- Real multiples of `1` are self-adjoint. -/
+theorem isSelfAdjoint_smul_one (r : ℝ) : IsSelfAdjoint ((r : ℂ) • (1 : A)) := by
+  rw [IsSelfAdjoint, star_smul, star_one, Complex.star_def, Complex.conj_ofReal]
+
+/-- Auxiliary: `x - r·1` is self-adjoint for self-adjoint `x`. -/
+theorem isSelfAdjoint_sub_smul_one {x : A} (hx : IsSelfAdjoint x) (r : ℝ) :
+    IsSelfAdjoint (x - (r : ℂ) • (1 : A)) :=
+  hx.sub (isSelfAdjoint_smul_one r)
+
+end
+
+/-- If `x ≤ r·1` for every `r > r₀`, then `x ≤ r₀·1`: the positive cone is
+norm-closed. -/
+theorem le_smul_of_forall_gt {x a : A} {r₀ : ℝ}
+    (h : ∀ r : ℝ, r₀ < r → x ≤ (r : ℂ) • a) : x ≤ (r₀ : ℂ) • a := by
+  have hcl : IsClosed {y : A | 0 ≤ y} := CStarAlgebra.isClosed_nonneg
+  have hcont : Continuous fun r : ℝ => ((r : ℂ) • a - x) :=
+    (Complex.continuous_ofReal.smul continuous_const).sub continuous_const
+  have htend : Filter.Tendsto
+      (fun n : ℕ => ((r₀ + 1 / (n + 1 : ℝ) : ℝ) : ℂ) • a - x)
+      Filter.atTop (nhds ((r₀ : ℂ) • a - x)) := by
+    have h1 : Filter.Tendsto (fun n : ℕ => (r₀ + 1 / (n + 1 : ℝ) : ℝ))
+        Filter.atTop (nhds r₀) := by
+      have h0 : Filter.Tendsto (fun n : ℕ => (1 / (n + 1 : ℝ))) Filter.atTop (nhds 0) :=
+        tendsto_one_div_add_atTop_nhds_zero_nat
+      simpa using (tendsto_const_nhds (x := r₀) (f := Filter.atTop (α := ℕ))).add h0
+    exact (hcont.tendsto r₀).comp h1
+  refine sub_nonneg.mp (hcl.mem_of_tendsto htend (Filter.Eventually.of_forall fun n => ?_))
+  have hpos : (0:ℝ) < 1 / (n + 1 : ℝ) := by positivity
+  exact sub_nonneg.mpr (h _ (by linarith))
+
+/-- If `r·1 ≤ x` for every `r < r₀`, then `r₀·1 ≤ x`. -/
+theorem smul_le_of_forall_lt {x a : A} {r₀ : ℝ}
+    (h : ∀ r : ℝ, r < r₀ → ((r : ℂ) • a) ≤ x) : ((r₀ : ℂ) • a) ≤ x := by
+  have hcl : IsClosed {y : A | 0 ≤ y} := CStarAlgebra.isClosed_nonneg
+  have hcont : Continuous fun r : ℝ => (x - (r : ℂ) • a) :=
+    continuous_const.sub (Complex.continuous_ofReal.smul continuous_const)
+  have htend : Filter.Tendsto
+      (fun n : ℕ => x - ((r₀ - 1 / (n + 1 : ℝ) : ℝ) : ℂ) • a)
+      Filter.atTop (nhds (x - (r₀ : ℂ) • a)) := by
+    have h1 : Filter.Tendsto (fun n : ℕ => (r₀ - 1 / (n + 1 : ℝ) : ℝ))
+        Filter.atTop (nhds r₀) := by
+      have h0 : Filter.Tendsto (fun n : ℕ => (1 / (n + 1 : ℝ))) Filter.atTop (nhds 0) :=
+        tendsto_one_div_add_atTop_nhds_zero_nat
+      simpa using (tendsto_const_nhds (x := r₀) (f := Filter.atTop (α := ℕ))).sub h0
+    exact (hcont.tendsto r₀).comp h1
+  refine sub_nonneg.mp (hcl.mem_of_tendsto htend (Filter.Eventually.of_forall fun n => ?_))
+  have hpos : (0:ℝ) < 1 / (n + 1 : ℝ) := by positivity
+  exact sub_nonneg.mpr (h _ (by linarith))
+
+end ScalarHelpers
+
+section Central
+
+omit [PartialOrder A] [StarOrderedRing A]
+
+/-! ### A small API for `IsCentral` -/
+
+theorem isCentral_zero : IsCentral A 0 := fun b => by rw [zero_mul, mul_zero]
+
+theorem isCentral_one : IsCentral A 1 := fun b => by rw [one_mul, mul_one]
+
+theorem IsCentral.add {a b : A} (ha : IsCentral A a) (hb : IsCentral A b) :
+    IsCentral A (a + b) := fun c => by rw [add_mul, mul_add, ha c, hb c]
+
+theorem IsCentral.neg {a : A} (ha : IsCentral A a) : IsCentral A (-a) :=
+  fun c => by rw [neg_mul, mul_neg, ha c]
+
+theorem IsCentral.sub {a b : A} (ha : IsCentral A a) (hb : IsCentral A b) :
+    IsCentral A (a - b) := by
+  simpa [sub_eq_add_neg] using ha.add hb.neg
+
+theorem IsCentral.smul {R : Type*} [SMul R A] [IsScalarTower R A A] [SMulCommClass R A A]
+    {a : A} (ha : IsCentral A a) (r : R) : IsCentral A (r • a) :=
+  fun c => by rw [smul_mul_assoc, mul_smul_comm, ha c]
+
+theorem IsCentral.one_sub' {a : A} (ha : IsCentral A a) : IsCentral A (1 - a) :=
+  isCentral_one.sub ha
+
+theorem isCentral_star {a : A} (ha : IsCentral A a) : IsCentral A (star a) := by
+  intro b
+  have h := congrArg (star : A → A) (ha (star b))
+  simp only [star_mul, star_star] at h
+  exact h.symm
+
+theorem isCentral_smul_one (r : ℂ) : IsCentral A (r • (1 : A)) :=
+  isCentral_one.smul r
+
+end Central
+
+section Spectral
+
+variable [VonNeumannAlgebra A]
+
+section
+omit [VonNeumannAlgebra A]
+
+/-- Auxiliary: whatever commutes with a self-adjoint `x` commutes with `x⁺`. -/
+theorem posPart_comm {x b : A} (hx : IsSelfAdjoint x) (h : b * x = x * b) :
+    b * x⁺ = x⁺ * b := by
+  have habs : CFC.abs x = CFC.sqrt (star x * x) := rfl
+  have hxx : (0 : A) ≤ star x * x := star_mul_self_nonneg x
+  have hcomm : b * (star x * x) = (star x * x) * b := by
+    rw [hx.star_eq]
+    calc b * (x * x) = (b * x) * x := by noncomm_ring
+      _ = (x * b) * x := by rw [h]
+      _ = x * (b * x) := by noncomm_ring
+      _ = x * (x * b) := by rw [h]
+      _ = x * x * b := by noncomm_ring
+  have hsq := (Theses.A.CStar.sqrt_commute (star x * x) hxx b hcomm).1
+  have hhalf : x⁺ = (2 : ℂ)⁻¹ • (CFC.abs x + x) := by
+    rw [CFC.abs_add_self x hx, two_nsmul, ← two_smul ℂ, smul_smul]
+    norm_num
+  rw [hhalf, mul_smul_comm, smul_mul_assoc, mul_add, add_mul, habs, hsq, h]
+
+/-- The positive part of a central self-adjoint element is central. -/
+theorem IsCentral.posPart {x : A} (hx : IsSelfAdjoint x) (hc : IsCentral A x) :
+    IsCentral A (x⁺) := fun b => (posPart_comm hx (hc b).symm).symm
+
+end
+
+/-- The ceiling of a central positive element is central. -/
+theorem IsCentral.ceil {x : A} (hx : 0 ≤ x) (hc : IsCentral A x) :
+    IsCentral A (ceil x) := fun b => (ceil_basic_2 x b hx (hc b).symm).symm
+
+section
+omit [VonNeumannAlgebra A]
+
+/-- Auxiliary: `x ≤ r·1` iff `(x − r·1)⁺ = 0`, for self-adjoint `x`. -/
+theorem le_smul_one_iff_posPart_eq_zero {x : A} (hx : IsSelfAdjoint x) (r : ℝ) :
+    x ≤ (r : ℂ) • (1 : A) ↔ (x - (r : ℂ) • (1 : A))⁺ = 0 := by
+  rw [CFC.posPart_eq_zero_iff _ (isSelfAdjoint_sub_smul_one hx r), sub_nonpos]
+
+/-- Auxiliary: `r·1 ≤ x` iff `(x − r·1)⁻ = 0`, for self-adjoint `x`. -/
+theorem smul_one_le_iff_negPart_eq_zero {x : A} (hx : IsSelfAdjoint x) (r : ℝ) :
+    (r : ℂ) • (1 : A) ≤ x ↔ (x - (r : ℂ) • (1 : A))⁻ = 0 := by
+  rw [CFC.negPart_eq_zero_iff _ (isSelfAdjoint_sub_smul_one hx r), sub_nonneg]
+
+end
+
+/-- Auxiliary: for a self-adjoint `y` of the corner `e𝒜e`, both `⌈y⁺⌉` and
+`⌈y⁻⌉` lie below `e`. -/
+theorem ceil_posPart_le_of_corner {e y : A} (he : IsStarProjection e)
+    (hy : IsSelfAdjoint y) (hye : y * e = y) :
+    ceil (y⁺) ≤ e ∧ ceil (y⁻) ≤ e := by
+  have hyy : (0 : A) ≤ star y * y := star_mul_self_nonneg y
+  have h1 : (star y * y) * (1 - e) = 0 := by
+    rw [hy.star_eq, mul_assoc, mul_sub, mul_one, hye, sub_self, mul_zero]
+  have h2 : CFC.sqrt (star y * y) * (1 - e) = 0 := (sqrt_mul_eq_zero_iff hyy _).mpr h1
+  have habs : CFC.abs y * e = CFC.abs y := by
+    have hdef : CFC.abs y = CFC.sqrt (star y * y) := rfl
+    rw [mul_sub, mul_one, sub_eq_zero] at h2
+    rw [hdef]
+    exact h2.symm
+  have hpos : y⁺ = (2 : ℂ)⁻¹ • (CFC.abs y + y) := by
+    rw [CFC.abs_add_self y hy, two_nsmul, ← two_smul ℂ, smul_smul]; norm_num
+  have hneg : y⁻ = (2 : ℂ)⁻¹ • (CFC.abs y - y) := by
+    rw [CFC.abs_sub_self y hy, two_nsmul, ← two_smul ℂ, smul_smul]; norm_num
+  refine ⟨((ceil_basic_1 _ e (CFC.posPart_nonneg _) he).out 1 2).mp ?_,
+    ((ceil_basic_1 _ e (CFC.negPart_nonneg _) he).out 1 2).mp ?_⟩
+  · rw [hpos, smul_mul_assoc, add_mul, habs, hye]
+  · rw [hneg, smul_mul_assoc, sub_mul, habs, hye]
+
+/-- **The spectral scale, relative to a projection `e`.**  A self-adjoint `x`
+of the corner `e𝒜e` all of whose spectral projections `⌈(x − r·e)⁺⌉` are `0`
+or `e` is a real multiple of `e`. -/
+theorem eq_smul_of_spectral_trivial {e x : A} (he : IsStarProjection e) (he0 : e ≠ 0)
+    (hx : IsSelfAdjoint x) (hxe : e * x * e = x)
+    (h : ∀ r : ℝ, ceil ((x - (r : ℂ) • e)⁺) = 0 ∨
+      ceil ((x - (r : ℂ) • e)⁺) = e) :
+    ∃ r : ℝ, x = (r : ℂ) • e := by
+  have hex : e * x = x := by
+    conv_lhs => rw [← hxe]
+    rw [← mul_assoc, ← mul_assoc, he.isIdempotentElem.eq, hxe]
+  have hxe' : x * e = x := by
+    conv_lhs => rw [← hxe]
+    rw [mul_assoc, he.isIdempotentElem.eq, hxe]
+  have hcornerL : ∀ r : ℝ, e * (x - (r : ℂ) • e) = x - (r : ℂ) • e := by
+    intro r; rw [mul_sub, hex, mul_smul_comm, he.isIdempotentElem.eq]
+  have hcornerR : ∀ r : ℝ, (x - (r : ℂ) • e) * e = x - (r : ℂ) • e := by
+    intro r; rw [sub_mul, hxe', smul_mul_assoc, he.isIdempotentElem.eq]
+  have hsa : ∀ r : ℝ, IsSelfAdjoint (x - (r : ℂ) • e) := by
+    intro r
+    refine hx.sub ?_
+    rw [IsSelfAdjoint, star_smul, he.isSelfAdjoint.star_eq, Complex.star_def,
+      Complex.conj_ofReal]
+  -- for each real `r`, either `x ≤ r·e` or `r·e ≤ x`
+  have hdich : ∀ r : ℝ, x ≤ (r : ℂ) • e ∨ ((r : ℂ) • e) ≤ x := by
+    intro r
+    by_cases hle : x ≤ (r : ℂ) • e
+    · exact Or.inl hle
+    refine Or.inr ?_
+    have hpne : (x - (r : ℂ) • e)⁺ ≠ 0 := fun hp =>
+      hle (sub_nonpos.mp ((CFC.posPart_eq_zero_iff _ (hsa r)).mp hp))
+    have hcne : ceil ((x - (r : ℂ) • e)⁺) ≠ 0 := fun hc =>
+      hpne ((ceil_basic_3 _ (CFC.posPart_nonneg _)).mpr hc)
+    have hce : ceil ((x - (r : ℂ) • e)⁺) = e := (h r).resolve_left hcne
+    have hzero := ceil_pos_part_1 (x - (r : ℂ) • e) (hsa r)
+    rw [hce] at hzero
+    have hlee : ceil ((x - (r : ℂ) • e)⁻) ≤ e :=
+      (ceil_posPart_le_of_corner he (hsa r) (hcornerR r)).2
+    have habs : e * ceil ((x - (r : ℂ) • e)⁻)
+        = ceil ((x - (r : ℂ) • e)⁻) :=
+      (IsStarProjection.le_iff_mul_eq_right (ceil_spec (CFC.negPart_nonneg _)).1 he).mp hlee
+    have hnz : ceil ((x - (r : ℂ) • e)⁻) = 0 := by rw [← habs, hzero]
+    exact sub_nonneg.mp ((CFC.negPart_eq_zero_iff _ (hsa r)).mp
+      ((ceil_basic_3 _ (CFC.negPart_nonneg _)).mpr hnz))
+  -- the norm bounds, conjugated into the corner
+  have hsmulconj : ∀ t : ℝ, e * ((t : ℂ) • (1 : A)) * e = (t : ℂ) • e := by
+    intro t; rw [mul_smul_comm, smul_mul_assoc, mul_one, he.isIdempotentElem.eq]
+  have hxnorm : x ≤ ((‖x‖ : ℝ) : ℂ) • e := by
+    have h1 := hx.le_algebraMap_norm_self (A := A)
+    rw [Algebra.algebraMap_eq_smul_one, ← Complex.coe_smul] at h1
+    have h2 := star_left_conjugate_le_conjugate h1 e
+    rw [he.isSelfAdjoint.star_eq, hxe, hsmulconj] at h2
+    exact h2
+  have hxnorm' : ((-‖x‖ : ℝ) : ℂ) • e ≤ x := by
+    have h1 := hx.neg.le_algebraMap_norm_self (A := A)
+    rw [Algebra.algebraMap_eq_smul_one, ← Complex.coe_smul, norm_neg] at h1
+    have h2 := star_left_conjugate_le_conjugate h1 e
+    rw [he.isSelfAdjoint.star_eq, hsmulconj] at h2
+    have h3 : e * (-x) * e = -x := by rw [mul_neg, neg_mul, hxe]
+    rw [h3] at h2
+    rw [Complex.ofReal_neg, neg_smul, neg_le]
+    exact h2
+  set S : Set ℝ := {r : ℝ | x ≤ (r : ℂ) • e} with hSdef
+  have hSne : S.Nonempty := ⟨‖x‖, hxnorm⟩
+  have hSbdd : BddBelow S := by
+    refine ⟨-‖x‖, fun r hr => ?_⟩
+    have h2 : ((-‖x‖ : ℝ) : ℂ) • e ≤ (r : ℂ) • e := hxnorm'.trans hr
+    have h3 : (0 : A) ≤ ((r - -‖x‖ : ℝ) : ℂ) • e := by
+      rw [Complex.ofReal_sub, sub_smul, sub_nonneg]; exact h2
+    linarith [(smul_nonneg_iff_of_ne_zero he.nonneg he0).mp h3]
+  refine ⟨sInf S, le_antisymm ?_ ?_⟩
+  · refine le_smul_of_forall_gt fun r hr => ?_
+    obtain ⟨s, hsS, hsr⟩ := exists_lt_of_csInf_lt hSne hr
+    exact hsS.trans (smul_mono_of_nonneg hsr.le he.nonneg)
+  · refine smul_le_of_forall_lt fun r hr => ?_
+    have hrS : r ∉ S := fun hmem => absurd (csInf_le hSbdd hmem) (by linarith)
+    exact (hdich r).resolve_left hrS
+
+/-- **The spectral scale.**  A self-adjoint `x` all of whose spectral
+projections `⌈(x − r·1)⁺⌉` are trivial is a real multiple of `1`. -/
+theorem eq_smul_one_of_ceil_posPart_trivial {x : A} (hx : IsSelfAdjoint x)
+    (h : ∀ r : ℝ, ceil ((x - (r : ℂ) • (1 : A))⁺) = 0 ∨
+      ceil ((x - (r : ℂ) • (1 : A))⁺) = 1) :
+    ∃ r : ℝ, x = (r : ℂ) • (1 : A) := by
+  by_cases hnt : Nontrivial A
+  · exact eq_smul_of_spectral_trivial (IsStarProjection.one A) one_ne_zero hx
+      (by rw [one_mul, mul_one]) h
+  · rw [not_nontrivial_iff_subsingleton] at hnt
+    exact ⟨0, Subsingleton.elim _ _⟩
+
+
+/-- **A von Neumann algebra whose central projections are trivial is a
+factor**: every central element is a scalar.  (This is the predicate
+`Theses.B.Dils.IsFactor` unfolded; that definition lives downstream of this
+file.) -/
+theorem eq_algebraMap_of_central_proj_trivial
+    (htriv : ∀ q : A, IsStarProjection q → IsCentral A q → q = 0 ∨ q = 1)
+    {z : A} (hz : IsCentral A z) : ∃ c : ℂ, z = algebraMap ℂ A c := by
+  -- a central self-adjoint element is a real multiple of `1`
+  have hkey : ∀ w : A, IsSelfAdjoint w → IsCentral A w → ∃ r : ℝ, w = (r : ℂ) • (1 : A) := by
+    intro w hw hwc
+    refine eq_smul_one_of_ceil_posPart_trivial hw fun r => ?_
+    have hsa := isSelfAdjoint_sub_smul_one hw r
+    have hcsub : IsCentral A (w - (r : ℂ) • (1 : A)) := hwc.sub (isCentral_smul_one r)
+    have hcp : IsCentral A ((w - (r : ℂ) • (1 : A))⁺) := IsCentral.posPart hsa hcsub
+    exact htriv _ (ceil_spec (CFC.posPart_nonneg _)).1
+      (IsCentral.ceil (CFC.posPart_nonneg _) hcp)
+  -- split `z` into its real and imaginary parts
+  have hrc : IsCentral A ((realPart z : A)) := by
+    rw [realPart_apply_coe]
+    exact (hz.add (isCentral_star hz)).smul _
+  have hic : IsCentral A ((imaginaryPart z : A)) := by
+    rw [imaginaryPart_apply_coe]
+    exact ((hz.sub (isCentral_star hz)).smul ((2 : ℝ)⁻¹)).smul (-Complex.I)
+  obtain ⟨a, ha⟩ := hkey _ (selfAdjoint.mem_iff.mp (realPart z).prop) hrc
+  obtain ⟨b, hb⟩ := hkey _ (selfAdjoint.mem_iff.mp (imaginaryPart z).prop) hic
+  refine ⟨(a : ℂ) + Complex.I * (b : ℂ), ?_⟩
+  conv_lhs => rw [← realPart_add_I_smul_imaginaryPart z]
+  rw [ha, hb, Algebra.algebraMap_eq_smul_one, add_smul, smul_smul, mul_smul]
+
+end Spectral
+
+section Minimal
+
+/-! ### Minimal projections -/
+
+section
+omit [StarOrderedRing A]
+
+/-- A projection `p` is **minimal** when it is non-zero and the only
+projections below it are `0` and `p` itself. -/
+def IsMinimalProjection (p : A) : Prop :=
+  IsStarProjection p ∧ p ≠ 0 ∧ ∀ q : A, IsStarProjection q → q ≤ p → q = 0 ∨ q = p
+
+theorem IsMinimalProjection.isStarProjection {p : A} (hp : IsMinimalProjection p) :
+    IsStarProjection p := hp.1
+
+theorem IsMinimalProjection.ne_zero {p : A} (hp : IsMinimalProjection p) : p ≠ 0 := hp.2.1
+
+theorem IsMinimalProjection.eq_zero_or_eq {p : A} (hp : IsMinimalProjection p)
+    {q : A} (hq : IsStarProjection q) (hle : q ≤ p) : q = 0 ∨ q = p := hp.2.2 q hq hle
+
+end
+
+section
+omit [PartialOrder A] [StarOrderedRing A]
+
+/-- The product of a projection with a commuting projection is a projection. -/
+theorem isStarProjection_mul_of_comm {p q : A} (hp : IsStarProjection p)
+    (hq : IsStarProjection q) (hc : p * q = q * p) : IsStarProjection (p * q) := by
+  constructor
+  · show p * q * (p * q) = p * q
+    calc p * q * (p * q) = p * (q * p) * q := by noncomm_ring
+      _ = p * (p * q) * q := by rw [hc]
+      _ = (p * p) * (q * q) := by noncomm_ring
+      _ = p * q := by rw [hp.isIdempotentElem.eq, hq.isIdempotentElem.eq]
+  · show star (p * q) = p * q
+    rw [star_mul, hq.isSelfAdjoint.star_eq, hp.isSelfAdjoint.star_eq, ← hc]
+
+end
+
+variable [VonNeumannAlgebra A]
+
+/-- The central support `⌈⌈p⌉⌉` of an element, bundled as a `CentralProj`. -/
+noncomputable def cceilProj (a : A) : CentralProj A :=
+  ⟨cceil a, (cceil_isLeast a).1.1, (cceil_isLeast a).1.2.1⟩
+
+@[simp] theorem cceilProj_val (a : A) : (cceilProj a).val = cceil a := rfl
+
+/-- **The central projections below `⌈⌈p⌉⌉` are trivial, for minimal `p`.**
+If `q` is a central projection with `q ≤ ⌈⌈p⌉⌉` then `qp` is a projection
+below `p`, hence `0` or `p`; in the first case `q^⊥` is a central projection
+above `p`, so `⌈⌈p⌉⌉ ≤ q^⊥` and `q = 0`; in the second `p ≤ q`, so
+`⌈⌈p⌉⌉ ≤ q`. -/
+theorem IsMinimalProjection.central_proj_below_cceil {p : A}
+    (hp : IsMinimalProjection p) {q : A} (hq : IsStarProjection q)
+    (hqc : IsCentral A q) (hle : q ≤ cceil p) : q = 0 ∨ q = cceil p := by
+  have hcomm : q * p = p * q := hqc p
+  have hqp : IsStarProjection (q * p) := isStarProjection_mul_of_comm hq hp.1 hcomm
+  have hqple : q * p ≤ p :=
+    IsStarProjection.le_of_mul_eq_left hqp hp.1
+      (by calc q * p * p = q * (p * p) := by noncomm_ring
+            _ = q * p := by rw [hp.1.isIdempotentElem.eq])
+  rcases hp.eq_zero_or_eq hqp hqple with h | h
+  · -- `qp = 0`: then `p ≤ q^⊥`, so `⌈⌈p⌉⌉ ≤ q^⊥`, and `q ≤ q^⊥` forces `q = 0`
+    left
+    have hple : p ≤ 1 - q :=
+      IsStarProjection.le_of_mul_eq_left hp.1 hq.one_sub
+        (by rw [mul_sub, mul_one, ← hcomm, h, sub_zero])
+    have hc : cceil p ≤ 1 - q :=
+      (cceil_fundamental p hp.1).1.2 ⟨hq.one_sub, isCentral_one.sub hqc, hple⟩
+    have hqq : q * (1 - (1 - q)) = 0 :=
+      (proj_le_iff ⟨hq.one_sub.nonneg, hq.one_sub.le_one⟩ hq).mp (hle.trans hc)
+    have : q * q = 0 := by rw [sub_sub_cancel] at hqq; exact hqq
+    rw [hq.isIdempotentElem.eq] at this
+    exact this
+  · -- `qp = p`: then `p ≤ q`, so `⌈⌈p⌉⌉ ≤ q`
+    right
+    refine le_antisymm hle ?_
+    exact (cceil_fundamental p hp.1).1.2
+      ⟨hq, hqc, IsStarProjection.le_of_mul_eq_right hp.1 hq h⟩
+
+/-! ### The corner `⌈⌈p⌉⌉𝒜` of a minimal projection is a factor -/
+
+namespace CentralProj
+
+variable (c : CentralProj A)
+
+@[simp] theorem coe_mul (x y : c.sub) : ((x * y : c.sub) : A) = (x : A) * (y : A) := rfl
+
+@[simp] theorem coe_star (x : c.sub) : ((star x : c.sub) : A) = star (x : A) := rfl
+
+theorem coe_mul_left (x : c.sub) : c.val * (x : A) = (x : A) := x.2
+
+/-- A central element of the corner `c𝒜` is central in `𝒜`. -/
+theorem isCentral_coe {z : c.sub} (hz : IsCentral c.sub z) : IsCentral A (z : A) := by
+  intro b
+  have hb : c.val * (c.val * b) = c.val * b := by rw [← mul_assoc, c.mul_self]
+  have h := congrArg (Subtype.val : c.sub → A) (hz ⟨c.val * b, hb⟩)
+  rw [coe_mul, coe_mul] at h
+  have hzc : (z : A) * c.val = (z : A) := by
+    rw [← c.isCentral (z : A)]; exact c.coe_mul_left z
+  calc (z : A) * b = (z : A) * c.val * b := by rw [hzc]
+    _ = (z : A) * (c.val * b) := by noncomm_ring
+    _ = (c.val * b) * (z : A) := h
+    _ = b * (c.val * (z : A)) := by rw [c.isCentral b]; noncomm_ring
+    _ = b * (z : A) := by rw [c.coe_mul_left z]
+
+/-- A projection of the corner `c𝒜` is a projection of `𝒜`. -/
+theorem isStarProjection_coe {q : c.sub} (hq : IsStarProjection q) :
+    IsStarProjection (q : A) := by
+  refine ⟨?_, ?_⟩
+  · show (q : A) * (q : A) = (q : A)
+    rw [← coe_mul, hq.isIdempotentElem.eq]
+  · show star (q : A) = (q : A)
+    rw [← coe_star, hq.isSelfAdjoint.star_eq]
+
+end CentralProj
+
+/-- **The central projections of the corner `⌈⌈p⌉⌉𝒜` are trivial**, for a
+minimal projection `p`: they come from the central projections of `𝒜` below
+`⌈⌈p⌉⌉`, which are trivial by
+`IsMinimalProjection.central_proj_below_cceil`. -/
+theorem IsMinimalProjection.cceilCorner_central_proj {p : A}
+    (hp : IsMinimalProjection p) (q : (cceilProj p).sub) (hq : IsStarProjection q)
+    (hqc : IsCentral (cceilProj p).sub q) : q = 0 ∨ q = 1 := by
+  have hqA : IsStarProjection (q : A) := (cceilProj p).isStarProjection_coe hq
+  have hqcA : IsCentral A (q : A) := (cceilProj p).isCentral_coe hqc
+  have hqle : (q : A) ≤ cceil p :=
+    IsStarProjection.le_of_mul_eq_right hqA (cceil_isLeast p).1.1
+      ((cceilProj p).coe_mul_left q)
+  rcases hp.central_proj_below_cceil hqA hqcA hqle with h | h
+  · left; exact Subtype.ext h
+  · right; exact Subtype.ext h
+
+/-- **The corner `⌈⌈p⌉⌉𝒜` of a minimal projection `p` is a factor.**  Its
+central projections are trivial by
+`IsMinimalProjection.cceilCorner_central_proj`, and the spectral scale then
+makes every central element a scalar.  (The conclusion is
+`Theses.B.Dils.IsFactor (cceilProj p).sub` unfolded — that definition lives
+downstream of this file.) -/
+theorem IsMinimalProjection.isFactor_cceil {p : A} (hp : IsMinimalProjection p)
+    (z : (cceilProj p).sub) (hz : IsCentral (cceilProj p).sub z) :
+    ∃ r : ℂ, z = algebraMap ℂ (cceilProj p).sub r :=
+  eq_algebraMap_of_central_proj_trivial hp.cceilCorner_central_proj hz
+
+/-- `p` lies in its own central corner. -/
+theorem cceil_mem_sub {p : A} : (cceilProj p).val * p = p := (cceil_isLeast p).1.2.2
+
+/-- **A minimal projection of `𝒜` is a minimal projection of the corner
+`⌈⌈p⌉⌉𝒜`.**  Together with `IsMinimalProjection.isFactor_cceil` this puts
+`p` inside a factor, which is what bsols.tex:3369 asks for. -/
+theorem IsMinimalProjection.toCceilCorner {p : A} (hp : IsMinimalProjection p) :
+    IsMinimalProjection (⟨p, cceil_mem_sub⟩ : (cceilProj p).sub) := by
+  refine ⟨⟨?_, ?_⟩, ?_, fun q hq hle => ?_⟩
+  · show (⟨p, cceil_mem_sub⟩ : (cceilProj p).sub) * ⟨p, cceil_mem_sub⟩
+      = ⟨p, cceil_mem_sub⟩
+    exact Subtype.ext hp.1.isIdempotentElem.eq
+  · show star (⟨p, cceil_mem_sub⟩ : (cceilProj p).sub) = ⟨p, cceil_mem_sub⟩
+    exact Subtype.ext hp.1.isSelfAdjoint.star_eq
+  · intro h
+    exact hp.2.1 (congrArg (Subtype.val : (cceilProj p).sub → A) h)
+  · have hqA : IsStarProjection (q : A) := (cceilProj p).isStarProjection_coe hq
+    rcases hp.eq_zero_or_eq hqA hle with h | h
+    · left; exact Subtype.ext h
+    · right; exact Subtype.ext h
+
+end Minimal
+
+section MinimalCorner
+
+variable [VonNeumannAlgebra A]
+
+/-- **The spectral scale for a projection with no proper subprojections.**
+If the only projections below `e` are `0` and `e`, every self-adjoint `x` of
+the corner `e𝒜e` is a real multiple of `e`. -/
+theorem eq_smul_of_proj_trivial {e x : A} (he : IsStarProjection e) (he0 : e ≠ 0)
+    (hx : IsSelfAdjoint x) (hxe : e * x * e = x)
+    (htriv : ∀ q : A, IsStarProjection q → q ≤ e → q = 0 ∨ q = e) :
+    ∃ r : ℝ, x = (r : ℂ) • e := by
+  have hxe' : x * e = x := by
+    conv_lhs => rw [← hxe]
+    rw [mul_assoc, he.isIdempotentElem.eq, hxe]
+  refine eq_smul_of_spectral_trivial he he0 hx hxe fun r => ?_
+  have hsa : IsSelfAdjoint (x - (r : ℂ) • e) := by
+    refine hx.sub ?_
+    rw [IsSelfAdjoint, star_smul, he.isSelfAdjoint.star_eq, Complex.star_def,
+      Complex.conj_ofReal]
+  have hR : (x - (r : ℂ) • e) * e = x - (r : ℂ) • e := by
+    rw [sub_mul, hxe', smul_mul_assoc, he.isIdempotentElem.eq]
+  exact htriv _ (ceil_spec (CFC.posPart_nonneg _)).1
+    (ceil_posPart_le_of_corner he hsa hR).1
+
+/-- **`p𝒜p = ℂp` for a minimal projection `p`**, in element form: every
+self-adjoint element of the corner `p𝒜p` is a real multiple of `p`.  (This
+is the half of "`p𝒜p ≅ ℂ`" that bsols.tex:3366 uses.) -/
+theorem IsMinimalProjection.corner_eq_smul {p x : A} (hp : IsMinimalProjection p)
+    (hx : IsSelfAdjoint x) (hxp : p * x * p = x) : ∃ r : ℝ, x = (r : ℂ) • p :=
+  eq_smul_of_proj_trivial hp.1 hp.2.1 hx hxp hp.2.2
+
+section
+omit [VonNeumannAlgebra A]
+
+/-- **The converse**: a non-zero projection whose corner consists of real
+multiples of `p` is minimal.  (`p𝒜p ≅ ℂ` and `p ≠ 0` give `p` minimal, the
+step at bsols.tex:3366.) -/
+theorem isMinimalProjection_of_corner_scalar {p : A} (hp : IsStarProjection p)
+    (hp0 : p ≠ 0)
+    (h : ∀ x : A, IsSelfAdjoint x → p * x * p = x → ∃ r : ℝ, x = (r : ℂ) • p) :
+    IsMinimalProjection p := by
+  refine ⟨hp, hp0, fun q hq hle => ?_⟩
+  have hpq : p * q = q := (IsStarProjection.le_iff_mul_eq_right hq hp).mp hle
+  have hqp : q * p = q := (IsStarProjection.le_iff_mul_eq_left hq hp).mp hle
+  obtain ⟨r, hr⟩ := h q hq.isSelfAdjoint (by rw [hpq, hqp])
+  have hsq : ((r * r : ℝ) : ℂ) • p = (r : ℂ) • p := by
+    have h1 : q * q = q := hq.isIdempotentElem.eq
+    rw [hr, smul_mul_smul_comm, hp.isIdempotentElem.eq, ← Complex.ofReal_mul] at h1
+    exact h1
+  have hzero : ((r * r - r : ℝ) : ℂ) • p = 0 := by
+    rw [Complex.ofReal_sub, sub_smul, hsq, sub_self]
+  have hr01 : r = 0 ∨ r = 1 := by
+    rcases smul_eq_zero.mp hzero with h1 | h1
+    · have h2 : r * r - r = 0 := Complex.ofReal_eq_zero.mp h1
+      have h3 : r * (r - 1) = 0 := by ring_nf; linarith [h2]
+      rcases mul_eq_zero.mp h3 with h4 | h4
+      · exact Or.inl h4
+      · exact Or.inr (by linarith)
+    · exact absurd h1 hp0
+  rcases hr01 with rfl | rfl
+  · left; rw [hr]; simp
+  · right; rw [hr]; simp
+
+end
+
+end MinimalCorner
+
 end Theses.A.VN
