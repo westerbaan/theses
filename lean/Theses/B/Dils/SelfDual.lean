@@ -6677,7 +6677,7 @@ with the `𝒞`-valued inner product
 `[(x ⊗ y) ⊗ c, (x' ⊗ y') ⊗ c'] = c' (⟨x,x'⟩ ⊗ ⟨y,y'⟩) c*`.
 
 ⚠️ **This is not the same three-step shape as `existence_paschke`.**  The
-thesis flags the difference at **164VIII** (dils.tex:5166): "If `X ⊙ Y`
+thesis flags the difference at **164VIII** (dils.tex:5174): "If `X ⊙ Y`
 were an `𝒜 ⊗ ℬ`-module *and* both `η` and `T` were `𝒜 ⊗ ℬ`-linear, we could
 simply apply `selfdual-completion-univ`… Instead, we will retrace the steps
 of its proof."  Carrying `X ⊙ Y` as `V` supplies exactly the `𝒜 ⊗ ℬ`-module
@@ -8233,7 +8233,7 @@ private theorem extL2Lift_inner [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
       rw [map_add, CStarModule.inner_add_left, h₁, h₂, map_add,
         LinearMap.add_apply]
 
-/-- **164VII** (dils.tex:5157): the image of `η` is ultranorm dense in
+/-- **164VII** (dils.tex:5159): the image of `η` is ultranorm dense in
 `ℓ²((pᵢⱼ))`.  Here it is the restriction net of **161II**: every `z` is the
 ultranorm limit of its restrictions to finite sets of coordinates, and a
 restriction is a finite `𝒞`-combination of the `δᵢⱼ = η(eᵢ,dⱼ)`. -/

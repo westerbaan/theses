@@ -31049,3 +31049,72 @@ thesis's argument was followed.  `sorry_map.py --conflicts` reports nothing.
 Nine `sorry`s, unchanged.  All 52 oleans current after the day's edits;
 `AxiomCheck`: 9 are themselves `sorry`, 0 depend on one.  Dumps regenerated;
 every exact check clean.
+
+## Session 106 — the whole `left-cost` backlog worked with no line bound (eleven proof-route workers, several with sub-workers; orchestrator on `ERRATA.md`, `docs/`, the rows)
+
+### 1. What was built
+
+Every row that was `left-cost` at the start of the day was attempted, with
+the bound removed and a stop only at about 1,500 lines or a genuine block.
+Landed, on the printed argument in each case: 15I (the annulus of 15III–15IV),
+21IV (the three separation examples, stated), 35II (the thesis's Sokal
+argument, 35III–35V), 84aI (the equaliser example: `finrank 3`, block sizes,
+eight and six vertices), 67II items 1–2, 106III.4's second claim (the twisted
+product satisfies (A)–(D) and fails (E), 688 lines), 115II (the `M_n f`
+amplification), the six 125 rows (125VIIb on the printed pullback hint,
+125bII as printed, the atomic-type-I and hereditarily-atomic statements as
+one-line corollaries once the file was reordered the cheap way), 138II's
+second half (138V line for line), 142VIII for every module-linear map,
+149IIb's Beware witnessed, 146V's uniformities as `UniformSpace`s, 153IV
+through 153I, 161IV with an `IsONBasis` transport across universes, 164XII.1
+over `ULift ℂ`, 164II on 164III–164VII, 167I literal after adjoining `ℬ₁₂`
+coefficients, 171II on its three printed steps, 193IV's derivation calculus
+with 193IX and 194I.4 on top, 195V clause 4 and half of clause 5, 206III's
+`CvNᵒᵖ` as a ⋄-effectus, 227II–227III's `Nsb` lattice with the transfer maps,
+190IV's extensive-category examples (new `ExtensiveExamples.lean`), and
+189aI's `OUSᵒᵖ` and `OUGᵒᵖ` (new `OrderUnit.lean`).  The tree grew by about
+10,300 lines net; no `sorry` was added.
+
+| column | session 105 close | now |
+|---|---|---|
+| proof `route` | 46 | 34 |
+| proof `mild` | 93 | 95 |
+| proof `faithful` | 1,065 | 1,103 |
+| statement `weaker` | 58 | 55 |
+| rows | 2,517 | 2,597 |
+
+### 2. Costings that were wrong, again in both directions
+
+144V cost zero, not 300–450 (the hypothesis already ranges over the closed
+algebra); 167I's blocker was that `X₁ ⊙ X₂` has no `ℬ₁₂`-inner product, not
+that nothing extends onto an incomplete domain; 171II's ten-item bill
+collapsed because `p𝒜` as a `Submodule` gives norm and completeness free;
+193IV's 700–1100 was twice too high; 106III's 1,500–3,000 was the price of a
+Borel calculus the conclusion does not need; 125dII/125eIII's 1,300 was the
+price of moving a block the wrong way.  The other way: 206III's 60–120 was
+wrong in kind (the ⋄-structure lives in the partial form, so the commutative
+full subcategory had to be built, 533 lines), 15I's 25 became 263, and 224VI
+re-costs from 400–700 to 1,900–2,500 and is the one row left `left-cost` for
+size.  Still open with a named block: `EJAᵒᵖ` (206III, 189aI), `Set` as a
+⋄-effectus, 190IV.1–2, 190V, the `L^∞` half of 195V.5, 164II.2a.
+
+### 3. A thesis defect
+
+eff.tex 190IV.3, "any extensive category with final object has as scalars the
+two-element effect monoid 2", is false as printed: the scalars are
+`C(1, 1+1)`, and `Set × Set` has four.  The missing hypothesis is a connected
+final object, which the three named cases satisfy; `ERRATA.md` has the row,
+and the tree proves the three cases from that hypothesis.
+
+### 4. Operations
+
+An API outage killed all eleven workers in flight; every one was resumed from
+its own transcript with the on-disk state described, and the two that died a
+second time silently were resumed once more.  The lock's four-hour wait held.
+
+### 5. Where the tree stands
+
+Nine `sorry`s, unchanged.  All 54 oleans current after the day's edits (22
+rebuilt, the two new modules among them); `AxiomCheck`: 9 are themselves
+`sorry`, 0 depend on one.  Dumps and map regenerated; every exact check
+clean.
