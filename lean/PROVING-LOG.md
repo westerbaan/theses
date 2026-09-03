@@ -30999,3 +30999,53 @@ Nine `sorry`s, unchanged.  All 52 oleans rebuilt after the day's edits (14
 were stale); `AxiomCheck`: 9 are themselves `sorry`, 0 depend on one.
 `docs/status.txt` and `docs/binders.txt` regenerated; every exact check
 clean.
+
+## Session 105 — the multi-clause pass, the last in-bound `left-cost` rows, and the CSV vocabulary made uniform (two clause workers; five proof-route workers; one CSV worker; orchestrator on `ERRATA.md`, `docs/`)
+
+### 1. The multi-clause pass
+
+The random sample's two statement defects were both multi-clause Examples
+with a clause stated nowhere.  `docs/audit/CLAUSES-2026-09-04.md` lists the
+58 points that print two or more items, have every row `ok`, and have fewer
+rowed declarations than items.  Result: 50 fully stated (the item count on a
+nested point absorbs its children's, so several leads were artefacts); 8 with
+items stated nowhere, now `weaker` and costed — 55III item 2 (`left-ruling`,
+which `L^∞` presentation to state), 67II items 1–2, 146V clauses 2 and 4 (no
+`UniformSpace` on a von Neumann algebra), 195V clauses 4–5, 189aI's `OUSᵒᵖ`
+and `OUGᵒᵖ`, 190III's six items, 227II, 227III.  Two omissions documented in
+the source but rowed nowhere got rows (21IV, 149IIb).  One erratum: eff.tex
+180VII prints `h ∘ (f ⋎ g) = (h ∘ f) ⋎ (h ⋎ g)`, which does not typecheck.
+
+### 2. Proof-route conversions
+
+34XVIII through `choi_1` at `M₂f` as printed, with `M_K f` completely
+positive by reindexing on vectors (no `M_k(M_n 𝒜)` object); 34VII on the
+printed cover and order sandwich, its shortcut lemma deleted; `cvn_faithful_1`
+on the printed downward Baire argument; the 125VIII tensor solution set on the
+same element relabelling as 124III, retiring `exists_smallRealization` and the
+ℓ² reindexing block (−68 lines); and 54XI's presentation in Duplicators now
+cites the printed surjectivity route in `A/VN/Basic`, made public for it,
+deleting the sublevel-set construction (−180 lines).
+
+| column | session 104 close | now |
+|---|---|---|
+| proof `route` | 47 | 46 |
+| proof `mild` | 96 | 93 |
+| statement `weaker` | 51 | 58 |
+
+(The proof columns move little because two conversions landed on rows already
+graded `faithful`-adjacent and the regrades of the day went into `none`;
+`weaker` rises by the clause findings and the two new rows, which are grades
+corrected, not statements weakened.)
+
+### 3. Bookkeeping
+
+38 status fields that opened with a proof-class word or a date now open with
+their verdict; the 39 notes of rows regraded `none` no longer claim the
+thesis's argument was followed.  `sorry_map.py --conflicts` reports nothing.
+
+### 4. Where the tree stands
+
+Nine `sorry`s, unchanged.  All 52 oleans current after the day's edits;
+`AxiomCheck`: 9 are themselves `sorry`, 0 depend on one.  Dumps regenerated;
+every exact check clean.
