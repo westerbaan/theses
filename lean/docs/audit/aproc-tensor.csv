@@ -6,7 +6,7 @@
 108I|MIUBilinear|A/Proc/Tensor|ok|none|
 108II|IsTensorProduct|A/Proc/Tensor|ok|none|
 108II|prod_functional_unique|A/Proc/Tensor|stronger|none|The thesis quantifies over f in A_* and g in B_* (normal functionals); ours over arbitrary linear functionals f, g. Harmless generalisation: normality of f and g is never used, only ultraweak continuity of the two candidate extensions. The thesis states this embedded uniqueness claim without proof.|left-benign: `stronger` — normality of `f`, `g` is never used (only ultraweak continuity of the two extensions), and the thesis's `𝒶_*`, `ℬ_*` supply it. Not a defect.
-109II|IsHilbertTensorProduct|A/Proc/Tensor|ok|none|
+109II|IsHilbertTensorProduct|A/Proc/Tensor|ok|none|Definition, both printed conditions in the one structure: item 1 (the linear span of the range of gamma is dense in T) is the field `dense`, item 2 (<gamma(x,y),gamma(x',y')> = <x,x'><y,y'>) is the field `inner_mul`. Bilinearity is carried by the type H ->L K ->L T. Checked 2026-09-04 by the multi-clause pass against proc.tex:2107-2121.
 109III|l2Gamma|A/Proc/Tensor|ok|none|Definition only: the map gamma(f,g) = (f(x)g(y)) of part 1.
 109III|l2_tensor|A/Proc/Tensor|ok|none|
 109III|orthonormal_basis_iff_l2_iso|A/Proc/Tensor|ok|none|Part 2. 'Orthonormal basis' is rendered as orthonormal + dense span, whereas cstar.tex (the Definition preceding `orthonormal`) defines it as a MAXIMAL orthonormal set. The two are equivalent and the thesis itself uses the equivalence (109V: 'to see that G is maximal it suffices to show that the span of G is dense'), but the equivalence is not proved in this module.
