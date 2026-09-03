@@ -1234,13 +1234,313 @@ theorem functional_calculus_7b (a : 𝒜) (ha : 0 ≤ a) (α β : ℝ) (hα : 0 
     CFC.rpow (CFC.rpow a α) β = CFC.rpow a (α * β) :=
   CFC.rpow_rpow_of_exponent_nonneg a α β hα.le hβ.le ha
 
+/-! ### **28IV** (cstar.tex:4425, Proof): Pedersen's argument for **28III**
+
+Mathlib's `CFC.rpow_le_rpow` is *not* this argument: it reads operator
+monotonicity off the integral representation of `a^p` (Carlen, Lemma 2.8).
+The printed proof, transcribed here, writes `E` for the set of `α` for which
+`(·)^α` is monotone on the positive *invertible* elements: `(a + 1/n)^α →
+a^α` in norm (point 41, cstar.tex:4455) reduces the Theorem to invertible
+`a`, `b`; `E` is closed (point 50, cstar.tex:4495) because `α ↦ b^α` is norm
+continuous; `E` is midpoint-closed (point 60, cstar.tex:4510) by the
+spectral-radius computation `‖b^{-γ/2} a^γ b^{-γ/2}‖ =
+ρ(b^{-β/2} a^{β/2} · a^{α/2} b^{-α/2}) ≤ 1` for `γ = (α+β)/2`; and `0, 1 ∈ E`,
+so midpoints give the dyadic rationals of `[0,1]` and closedness the rest.
+Three local steps take a shorter road than the printed one, which is why
+**28III** is graded *mild*: the two continuity facts (`rpow_eq_exp_smul_log`,
+`sqrt_monotone`) and the spectral-radius step (`norm_le_norm_conjugate`). -/
+
+section Pedersen
+
+variable [Nontrivial 𝒜]
+
+variable (𝒜) in
+/-- The set `E` of **28IV** (cstar.tex:4443): the exponents `α` for which
+`(·)^α` is monotone on the positive *invertible* elements. -/
+private def monoExp : Set ℝ :=
+  {α : ℝ | ∀ a b : 𝒜, IsStrictlyPositive a → a ≤ b → a ^ α ≤ b ^ α}
+
+omit [Nontrivial 𝒜] in
+/-- `b^α = exp(α log b)` for a positive invertible `b` — our road to the norm
+continuity of `α ↦ b^α`. -/
+private lemma rpow_eq_exp_smul_log {b : 𝒜} (hb : IsStrictlyPositive b) (α : ℝ) :
+    b ^ α = NormedSpace.exp (α • CFC.log b) := by
+  have hspec : ∀ x ∈ spectrum ℝ b, 0 < x := fun x hx => hb.spectrum_pos hx
+  have hlogcont : ContinuousOn Real.log (spectrum ℝ b) :=
+    Real.continuousOn_log.mono fun x hx => (hspec x hx).ne'
+  have hlog : α • CFC.log b = cfc (fun x : ℝ => α * Real.log x) b := by
+    rw [CFC.log, ← cfc_smul α Real.log b hlogcont]
+    simp [smul_eq_mul]
+  rw [CFC.rpow_eq_cfc_real hb.nonneg, hlog, ← CFC.real_exp_eq_normedSpace_exp,
+    ← cfc_comp' Real.exp (fun x : ℝ => α * Real.log x) b (by fun_prop)]
+  refine cfc_congr fun x hx => ?_
+  rw [Real.rpow_def_of_pos (hspec x hx), mul_comm]
+
+omit [Nontrivial 𝒜] in
+/-- **28IV** point 50's ingredient: `α ↦ b^α` is norm continuous.  The thesis
+factors it through `C(spec b)`; we read it off the exponential. -/
+private lemma continuous_rpow_exponent {b : 𝒜} (hb : IsStrictlyPositive b) :
+    Continuous fun α : ℝ => b ^ α := by
+  have hexp : Continuous (NormedSpace.exp : 𝒜 → 𝒜) :=
+    continuous_iff_continuousAt.2 fun x => (NormedSpace.exp_analytic (𝕂 := ℝ) x).continuousAt
+  simp only [rpow_eq_exp_smul_log hb]
+  exact hexp.comp (continuous_id.smul continuous_const)
+
+omit [Nontrivial 𝒜] in
+/-- **28IV** point 50 (cstar.tex:4495): `E` is closed. -/
+private lemma isClosed_monoExp : IsClosed (monoExp 𝒜) := by
+  have h : monoExp 𝒜 = ⋂ (a : 𝒜) (b : 𝒜) (_ : IsStrictlyPositive a) (_ : a ≤ b),
+      {α : ℝ | a ^ α ≤ b ^ α} := by
+    ext α; simp [monoExp]
+  rw [h]
+  refine isClosed_iInter fun a => isClosed_iInter fun b => isClosed_iInter fun ha =>
+    isClosed_iInter fun hab => ?_
+  exact isClosed_le (continuous_rpow_exponent ha) (continuous_rpow_exponent (ha.of_le hab))
+
+omit [Nontrivial 𝒜] in
+/-- `0 ∈ E` (cstar.tex:4449): `a^0 = 1 = b^0` for *invertible* `a`, `b`. -/
+private lemma zero_mem_monoExp : (0 : ℝ) ∈ monoExp 𝒜 := by
+  intro a b ha hab
+  rw [CFC.rpow_zero a ha.nonneg, CFC.rpow_zero b (ha.of_le hab).nonneg]
+
+omit [Nontrivial 𝒜] in
+/-- `1 ∈ E`: `a^1 = a ≤ b = b^1`. -/
+private lemma one_mem_monoExp : (1 : ℝ) ∈ monoExp 𝒜 := by
+  intro a b ha hab
+  rwa [CFC.rpow_one a ha.nonneg, CFC.rpow_one b (ha.of_le hab).nonneg]
+
+/-- The reduction of **28IV** point 60 to a norm (cstar.tex:4516): `a^α ≤ b^α`
+iff `‖a^{α/2} b^{-α/2}‖ ≤ 1`, the thesis conjugating by `b^{α/2}` (positive
+by **25II** `astara-pos-basic-consequences`) and reading `c ≤ 1` as
+`‖c‖ ≤ 1`. -/
+private lemma rpow_le_rpow_iff_norm_le_one {a b : 𝒜} (ha : IsStrictlyPositive a)
+    (hb : IsStrictlyPositive b) (α : ℝ) :
+    a ^ α ≤ b ^ α ↔ ‖a ^ (α / 2) * b ^ (-(α / 2))‖ ≤ 1 := by
+  rcases eq_or_ne α 0 with rfl | hα
+  · rw [show (0 : ℝ) / 2 = 0 by norm_num, neg_zero, CFC.rpow_zero a ha.nonneg,
+      CFC.rpow_zero b hb.nonneg]
+    simp
+  · rw [le_iff_norm_sqrt_mul_rpow (a ^ α) (b ^ α) CFC.rpow_nonneg
+      (IsStrictlyPositive.rpow b α hb), CFC.sqrt_rpow ha.isUnit hα,
+      CFC.rpow_rpow b α (-(1 / 2)) hα hb, show α * -(1 / 2 : ℝ) = -(α / 2) by ring]
+
+omit [PartialOrder 𝒜] [StarOrderedRing 𝒜] in
+/-- Conjugating a self-adjoint element by a unit does not decrease its norm:
+`‖c‖ = ρ(c) = ρ(v c w) ≤ ‖v c w‖`, `ρ` the spectral radius.  *Mild*: **28IV**
+point 60 (cstar.tex:4532) moves the factor around by `ρ(cd) = ρ(dc)`, **19Ia**
+`prod_spec`; we use that conjugation by a unit preserves the spectrum. -/
+private lemma norm_le_norm_conjugate {c v w : 𝒜} (hc : IsSelfAdjoint c)
+    (hvw : v * w = 1) (hwv : w * v = 1) : ‖c‖ ≤ ‖v * c * w‖ := by
+  let u : 𝒜ˣ := ⟨v, w, hvw, hwv⟩
+  have hspec : spectrum ℝ (v * c * w) = spectrum ℝ c := by
+    have h : v * c * w = (u : 𝒜) * c * (↑u⁻¹ : 𝒜) := rfl
+    rw [h, spectrum.units_conjugate]
+  have h1 : spectralRadius ℝ c ≤ (‖v * c * w‖₊ : ℝ≥0∞) := by
+    have h0 : spectralRadius ℝ c = spectralRadius ℝ (v * c * w) := by
+      simp only [spectralRadius, hspec]
+    rw [h0]
+    exact spectrum.spectralRadius_le_nnnorm (𝕜 := ℝ) _
+  calc ‖c‖ = (spectralRadius ℝ c).toReal := hc.toReal_spectralRadius_eq_norm.symm
+    _ ≤ ((‖v * c * w‖₊ : ℝ≥0∞)).toReal := ENNReal.toReal_mono (by simp) h1
+    _ = ‖v * c * w‖ := by simp
+
+/-- **28IV** point 60 (cstar.tex:4510): `E` is closed under midpoints.  With
+`γ = (α+β)/2`, the printed computation `‖a^{γ/2} b^{-γ/2}‖² =
+‖b^{-γ/2} a^γ b^{-γ/2}‖ = ρ(b^{-β/2} a^γ b^{-α/2})` — conjugate by
+`b^{(α-β)/4}` — and that factors as `≤ 1 · 1`. -/
+private lemma monoExp_midpoint {α β : ℝ} (hα : α ∈ monoExp 𝒜) (hβ : β ∈ monoExp 𝒜) :
+    (α + β) / 2 ∈ monoExp 𝒜 := by
+  intro a b ha hab
+  have hb : IsStrictlyPositive b := ha.of_le hab
+  have hA : ‖a ^ (α / 2) * b ^ (-(α / 2))‖ ≤ 1 :=
+    (rpow_le_rpow_iff_norm_le_one ha hb α).1 (hα a b ha hab)
+  have hB : ‖a ^ (β / 2) * b ^ (-(β / 2))‖ ≤ 1 :=
+    (rpow_le_rpow_iff_norm_le_one ha hb β).1 (hβ a b ha hab)
+  rw [rpow_le_rpow_iff_norm_le_one ha hb]
+  have hsq : a ^ ((α + β) / 2 / 2) * a ^ ((α + β) / 2 / 2) = a ^ ((α + β) / 2) := by
+    rw [← CFC.rpow_add ha.isUnit]
+    congr 1
+    ring
+  have hkey : star (a ^ ((α + β) / 2 / 2) * b ^ (-((α + β) / 2 / 2))) *
+      (a ^ ((α + β) / 2 / 2) * b ^ (-((α + β) / 2 / 2))) =
+      b ^ (-((α + β) / 2 / 2)) * a ^ ((α + β) / 2) * b ^ (-((α + β) / 2 / 2)) := by
+    calc star (a ^ ((α + β) / 2 / 2) * b ^ (-((α + β) / 2 / 2))) *
+          (a ^ ((α + β) / 2 / 2) * b ^ (-((α + β) / 2 / 2)))
+        = b ^ (-((α + β) / 2 / 2)) * (a ^ ((α + β) / 2 / 2) * a ^ ((α + β) / 2 / 2)) *
+            b ^ (-((α + β) / 2 / 2)) := by
+          have hsa1 : star (a ^ ((α + β) / 2 / 2)) = a ^ ((α + β) / 2 / 2) :=
+            IsSelfAdjoint.of_nonneg CFC.rpow_nonneg
+          have hsa2 : star (b ^ (-((α + β) / 2 / 2))) = b ^ (-((α + β) / 2 / 2)) :=
+            IsSelfAdjoint.of_nonneg CFC.rpow_nonneg
+          simp only [star_mul, hsa1, hsa2, mul_assoc]
+      _ = b ^ (-((α + β) / 2 / 2)) * a ^ ((α + β) / 2) * b ^ (-((α + β) / 2 / 2)) := by
+          rw [hsq]
+  have hcsa : IsSelfAdjoint (b ^ (-((α + β) / 2 / 2)) * a ^ ((α + β) / 2) *
+      b ^ (-((α + β) / 2 / 2))) := by
+    rw [← hkey]
+    exact IsSelfAdjoint.star_mul_self _
+  have hvw : b ^ ((α - β) / 4) * b ^ (-((α - β) / 4)) = 1 := CFC.rpow_mul_rpow_neg _ hb
+  have hwv : b ^ (-((α - β) / 4)) * b ^ ((α - β) / 4) = 1 := CFC.rpow_neg_mul_rpow _ hb
+  have e1 : b ^ ((α - β) / 4) * b ^ (-((α + β) / 2 / 2)) = b ^ (-(β / 2)) := by
+    rw [← CFC.rpow_add hb.isUnit]; congr 1; ring
+  have e2 : b ^ (-((α + β) / 2 / 2)) * b ^ (-((α - β) / 4)) = b ^ (-(α / 2)) := by
+    rw [← CFC.rpow_add hb.isUnit]; congr 1; ring
+  have e3 : a ^ ((α + β) / 2) = a ^ (β / 2) * a ^ (α / 2) := by
+    rw [← CFC.rpow_add ha.isUnit]; congr 1; ring
+  have hconj : b ^ ((α - β) / 4) * (b ^ (-((α + β) / 2 / 2)) * a ^ ((α + β) / 2) *
+      b ^ (-((α + β) / 2 / 2))) * b ^ (-((α - β) / 4)) =
+      (b ^ (-(β / 2)) * a ^ (β / 2)) * (a ^ (α / 2) * b ^ (-(α / 2))) := by
+    calc b ^ ((α - β) / 4) * (b ^ (-((α + β) / 2 / 2)) * a ^ ((α + β) / 2) *
+          b ^ (-((α + β) / 2 / 2))) * b ^ (-((α - β) / 4))
+        = (b ^ ((α - β) / 4) * b ^ (-((α + β) / 2 / 2))) * a ^ ((α + β) / 2) *
+            (b ^ (-((α + β) / 2 / 2)) * b ^ (-((α - β) / 4))) := by
+          simp only [mul_assoc]
+      _ = b ^ (-(β / 2)) * (a ^ (β / 2) * a ^ (α / 2)) * b ^ (-(α / 2)) := by
+          rw [e1, e2, e3]
+      _ = (b ^ (-(β / 2)) * a ^ (β / 2)) * (a ^ (α / 2) * b ^ (-(α / 2))) := by
+          simp only [mul_assoc]
+  have hB' : ‖b ^ (-(β / 2)) * a ^ (β / 2)‖ ≤ 1 := by
+    have hsa1 : star (a ^ (β / 2)) = a ^ (β / 2) := IsSelfAdjoint.of_nonneg CFC.rpow_nonneg
+    have hsa2 : star (b ^ (-(β / 2))) = b ^ (-(β / 2)) := IsSelfAdjoint.of_nonneg CFC.rpow_nonneg
+    rw [← norm_star, star_mul, hsa1, hsa2]
+    exact hB
+  have hnorm : ‖a ^ ((α + β) / 2 / 2) * b ^ (-((α + β) / 2 / 2))‖ *
+      ‖a ^ ((α + β) / 2 / 2) * b ^ (-((α + β) / 2 / 2))‖ ≤ 1 := by
+    rw [← CStarRing.norm_star_mul_self, hkey]
+    refine (norm_le_norm_conjugate hcsa hvw hwv).trans ?_
+    rw [hconj]
+    refine (norm_mul_le _ _).trans ?_
+    calc ‖b ^ (-(β / 2)) * a ^ (β / 2)‖ * ‖a ^ (α / 2) * b ^ (-(α / 2))‖
+        ≤ 1 * 1 := mul_le_mul hB' hA (norm_nonneg _) zero_le_one
+      _ = 1 := by norm_num
+  nlinarith [norm_nonneg (a ^ ((α + β) / 2 / 2) * b ^ (-((α + β) / 2 / 2)))]
+
+/-- Every dyadic rational of `[0,1]` lies in `E`, by induction. -/
+private lemma dyadic_mem_monoExp (n : ℕ) : ∀ k : ℕ, k ≤ 2 ^ n →
+    ((k : ℝ) / 2 ^ n) ∈ monoExp 𝒜 := by
+  induction n with
+  | zero =>
+      intro k hk
+      simp only [pow_zero] at hk
+      interval_cases k
+      · simpa using zero_mem_monoExp (𝒜 := 𝒜)
+      · simpa using one_mem_monoExp (𝒜 := 𝒜)
+  | succ n ih =>
+      intro k hk
+      have hpow : (2 : ℕ) ^ (n + 1) = 2 * 2 ^ n := by ring
+      rcases Nat.even_or_odd k with ⟨m, hm⟩ | ⟨m, hm⟩
+      · subst hm
+        have e : ((m + m : ℕ) : ℝ) / 2 ^ (n + 1) = (m : ℝ) / 2 ^ n := by
+          push_cast [pow_succ]
+          ring
+        rw [e]
+        exact ih m (by omega)
+      · subst hm
+        have e : ((2 * m + 1 : ℕ) : ℝ) / 2 ^ (n + 1) =
+            ((m : ℝ) / 2 ^ n + ((m + 1 : ℕ) : ℝ) / 2 ^ n) / 2 := by
+          push_cast [pow_succ]
+          ring
+        rw [e]
+        exact monoExp_midpoint (ih m (by omega)) (ih (m + 1) (by omega))
+
+/-- `E ⊇ [0,1]` (cstar.tex:4447): the dyadics are dense and `E` is closed. -/
+private lemma Icc_subset_monoExp : Set.Icc (0 : ℝ) 1 ⊆ monoExp 𝒜 := by
+  intro x hx
+  have hx0 : 0 ≤ x := hx.1
+  have hx1 : x ≤ 1 := hx.2
+  have hpow : ∀ n : ℕ, (0 : ℝ) < 2 ^ n := fun n => by positivity
+  have hle1 : ∀ n : ℕ, x - ((2 : ℝ) ^ n)⁻¹ ≤ (⌊x * 2 ^ n⌋₊ : ℝ) / 2 ^ n := by
+    intro n
+    have hinv : ((2 : ℝ) ^ n)⁻¹ * 2 ^ n = 1 := inv_mul_cancel₀ (hpow n).ne'
+    have hexp : (x - ((2 : ℝ) ^ n)⁻¹) * 2 ^ n = x * 2 ^ n - 1 := by
+      rw [sub_mul, hinv]
+    rw [le_div_iff₀ (hpow n), hexp]
+    linarith [Nat.lt_floor_add_one (x * (2 : ℝ) ^ n)]
+  have hle2 : ∀ n : ℕ, ((⌊x * 2 ^ n⌋₊ : ℝ) / 2 ^ n) ≤ x := by
+    intro n
+    rw [div_le_iff₀ (hpow n)]
+    exact Nat.floor_le (by positivity)
+  refine (isClosed_monoExp (𝒜 := 𝒜)).mem_of_tendsto
+    (b := atTop) (f := fun n : ℕ => (⌊x * 2 ^ n⌋₊ : ℝ) / 2 ^ n) ?_ ?_
+  · have hinv : Tendsto (fun n : ℕ => ((2 : ℝ) ^ n)⁻¹) atTop (𝓝 0) := by
+      simpa [inv_pow] using
+        tendsto_pow_atTop_nhds_zero_of_lt_one (by norm_num : (0 : ℝ) ≤ 2⁻¹)
+          (by norm_num : (2 : ℝ)⁻¹ < 1)
+    have hlow : Tendsto (fun n : ℕ => x - ((2 : ℝ) ^ n)⁻¹) atTop (𝓝 x) := by
+      simpa using tendsto_const_nhds.sub hinv
+    exact tendsto_of_tendsto_of_tendsto_of_le_of_le hlow tendsto_const_nhds hle1 hle2
+  · filter_upwards with n
+    refine dyadic_mem_monoExp n _ ?_
+    have hcast : x * (2 : ℝ) ^ n ≤ ((2 ^ n : ℕ) : ℝ) := by
+      push_cast
+      nlinarith [hpow n]
+    calc ⌊x * (2 : ℝ) ^ n⌋₊ ≤ ⌊((2 ^ n : ℕ) : ℝ)⌋₊ := Nat.floor_mono hcast
+      _ = 2 ^ n := Nat.floor_natCast _
+
+end Pedersen
+
 /-- **28III** (`sqrt-monotone`, cstar.tex:4420, Theorem): `0 ≤ a ≤ b`
 implies `a^α ≤ b^α` for `α ∈ (0, 1]`; in particular the square root is
-monotone on the positive elements. -/
+monotone on the positive elements.
+
+*Class 2 — mild.*  The Theorem's own proof **28IV**, after Pedersen, is the
+section above; what is left here is its first movement, the reduction to
+invertible elements: `a + 1/n ≤ b + 1/n` are positive and invertible, so
+`(a + 1/n)^α ≤ (b + 1/n)^α`, and `(a + 1/n)^α → a^α` in norm.  That
+convergence, point 41 (`fc-uniformly-continuous`, cstar.tex:4455), is the
+third *mild* step: we take it from `Filter.Tendsto.cfc` and closedness of
+the positive cone, not from uniform continuity through Gelfand. -/
 theorem sqrt_monotone (a b : 𝒜) (ha : 0 ≤ a) (hab : a ≤ b) (α : ℝ)
     (h0 : 0 < α) (h1 : α ≤ 1) :
-    CFC.rpow a α ≤ CFC.rpow b α :=
-  CFC.rpow_le_rpow ⟨h0.le, h1⟩ hab
+    CFC.rpow a α ≤ CFC.rpow b α := by
+  rcases subsingleton_or_nontrivial 𝒜 with _hs | _hnt
+  · exact le_of_eq (Subsingleton.elim _ _)
+  have hE : α ∈ monoExp 𝒜 := Icc_subset_monoExp ⟨h0.le, h1⟩
+  have hb : 0 ≤ b := ha.trans hab
+  have hcont : Continuous fun t : ℝ => t ^ α :=
+    continuous_iff_continuousAt.2 fun t => Real.continuousAt_rpow_const t α (Or.inr h0.le)
+  have hspec : ∀ c : 𝒜, ‖c‖ ≤ max ‖a‖ ‖b‖ + 1 →
+      spectrum ℝ c ⊆ Set.Icc (-(max ‖a‖ ‖b‖ + 1)) (max ‖a‖ ‖b‖ + 1) := by
+    intro c hc k hk
+    have h := spectrum.norm_le_norm_of_mem hk
+    rw [Real.norm_eq_abs] at h
+    exact Set.mem_Icc.2 (abs_le.1 (h.trans hc))
+  have hepos : ∀ n : ℕ, IsStrictlyPositive (algebraMap ℝ 𝒜 ((n : ℝ) + 1)⁻¹) := by
+    intro n
+    exact ⟨algebraMap_nonneg 𝒜 (by positivity),
+      (isUnit_iff_ne_zero.2 (by positivity)).map (algebraMap ℝ 𝒜)⟩
+  have henorm : ∀ n : ℕ, ‖algebraMap ℝ 𝒜 ((n : ℝ) + 1)⁻¹‖ ≤ 1 := by
+    intro n
+    rw [norm_algebraMap', Real.norm_eq_abs, abs_of_nonneg (by positivity)]
+    rw [inv_le_one_iff₀]
+    right
+    linarith [Nat.cast_nonneg (α := ℝ) n]
+  have hte : Tendsto (fun n : ℕ => algebraMap ℝ 𝒜 ((n : ℝ) + 1)⁻¹) atTop (𝓝 (0 : 𝒜)) := by
+    have h0' : Tendsto (fun n : ℕ => ((n : ℝ) + 1)⁻¹) atTop (𝓝 0) := by
+      simpa [one_div] using tendsto_one_div_add_atTop_nhds_zero_nat (𝕜 := ℝ)
+    simpa [Function.comp_def] using ((continuous_algebraMap ℝ 𝒜).tendsto (0 : ℝ)).comp h0'
+  have hcfc : ∀ c : 𝒜, 0 ≤ c → cfc (fun t : ℝ => t ^ α) c = c ^ α :=
+    fun c hc => (CFC.rpow_eq_cfc_real hc).symm
+  have key : ∀ c : 𝒜, 0 ≤ c → ‖c‖ ≤ max ‖a‖ ‖b‖ →
+      Tendsto (fun n : ℕ => (c + algebraMap ℝ 𝒜 ((n : ℝ) + 1)⁻¹) ^ α) atTop (𝓝 (c ^ α)) := by
+    intro c hc hcM
+    have hnn : ∀ n : ℕ, (0 : 𝒜) ≤ c + algebraMap ℝ 𝒜 ((n : ℝ) + 1)⁻¹ :=
+      fun n => (IsStrictlyPositive.nonneg_add hc (hepos n)).nonneg
+    have hcc : Tendsto (fun n : ℕ => c + algebraMap ℝ 𝒜 ((n : ℝ) + 1)⁻¹) atTop (𝓝 c) := by
+      simpa using tendsto_const_nhds.add hte
+    have h := hcc.cfc isCompact_Icc (fun t : ℝ => t ^ α)
+      (Filter.Eventually.of_forall fun n => hspec _ (by
+        refine (norm_add_le _ _).trans ?_
+        have := henorm n
+        linarith))
+      (Filter.Eventually.of_forall fun n => IsSelfAdjoint.of_nonneg (hnn n))
+      (hspec c (by linarith)) (IsSelfAdjoint.of_nonneg hc) hcont.continuousOn
+    rw [hcfc c hc] at h
+    exact h.congr fun n => hcfc _ (hnn n)
+  have hmono : ∀ n : ℕ, (a + algebraMap ℝ 𝒜 ((n : ℝ) + 1)⁻¹) ^ α ≤
+      (b + algebraMap ℝ 𝒜 ((n : ℝ) + 1)⁻¹) ^ α := fun n =>
+    hE _ _ (IsStrictlyPositive.nonneg_add ha (hepos n)) (add_le_add hab le_rfl)
+  exact le_of_tendsto_of_tendsto' (key a ha (le_max_left _ _)) (key b hb (le_max_right _ _)) hmono
 
 end Ordered2
 
@@ -1513,9 +1813,15 @@ theorem eval_homeomorphism :
 variable {𝒜 ℬ : Type*} [CStarAlgebra 𝒜] [CStarAlgebra ℬ]
 
 /-- **29VIII** (`injective-miu-isometry`, cstar.tex:4680, Exercise): every
-injective miu-map between C*-algebras is an isometry.  (The intermediate
-categorical steps — mono = injective and epi = surjective in `CH` — are part
-of the proof and not converted separately.) -/
+injective miu-map between C*-algebras is an isometry.
+
+*Class 3 — mathlib.*  `NonUnitalStarAlgHom.norm_map`: pass to the
+unitization, reduce by the C*-identity to `star a * a`, then equate the norms
+through the real spectrum and the spectral radius.  The Exercise's own route
+— mono = injective and epi = surjective in `CH`, so that the restriction
+`σ : C*(a) → C*(ρ a)`, being epi and mono, is an isomorphism — is not
+transcribed: the categories of **29I** are out of scope here, and Mathlib has
+no category of C*-algebras either. -/
 theorem injective_miu_isometry (ρ : 𝒜 →⋆ₐ[ℂ] ℬ)
     (hρ : Function.Injective ρ) (a : 𝒜) : ‖ρ a‖ = ‖a‖ :=
   NonUnitalStarAlgHom.norm_map ρ hρ a

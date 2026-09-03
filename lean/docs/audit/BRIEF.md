@@ -5,7 +5,7 @@
 Project: Lean 4 + Mathlib at `lean/` (Lean root). Theses: `../cstar.tex ../vn.tex ../proc.tex` (A, solutions `../asols.tex`), `../dils.tex ../eff.tex` (B, solutions `../bsols.tex`).
 
 ## Hard rules
-- Compile ONLY via `scripts/lean1.sh <file.lean>` (one `lean` fits in memory; the script serialises through a lock, so you may wait for other workers — that is normal). Never `lake build`, never a language server, never bare `lean`. A compile takes 5-15 min.
+- Compile ONLY via `scripts/lean1.sh <file.lean>`. Iterating on a scratch `.lean` file (outside `Theses/`, importing the module below yours) through the same script is allowed and much faster; the assigned file must still compile in full once at the end (one `lean` fits in memory; the script serialises through a lock, so you may wait for other workers — that is normal). Never `lake build`, never a language server, never bare `lean`. A compile takes 5-15 min.
 - `lean1.sh` compiles one file against prebuilt oleans and writes none: nothing you add in file A is visible from file B this session, and `private` declarations of other files are invisible. Work file by file.
 - NEVER change a theorem statement. NEVER add a `sorry`. Do not `git add` or commit; leave work in the tree.
 - CSV fields are `|`-separated: NEVER write a literal `|` inside a field. Edit only the rows named in your assignment.

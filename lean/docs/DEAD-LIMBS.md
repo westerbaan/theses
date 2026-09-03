@@ -830,7 +830,7 @@ the pool, but the earlier reading stands.
 **Two more dead declarations are class 3 by their own doc comment but carry a
 DISP tag, so they stay:**
 
-* `atomicTypeI_tensorBsurjectivity` (**125eIII**), `A/Proc/QuantumLambda.lean:5519`.
+* `atomicTypeI_tensorBsurjectivity` (**125eIII**), `A/Proc/QuantumLambda.lean:5608`.
   Its doc now reads: the `←` half "was the one open at the time and **is now
   proved in general at the end of this file** (`tensorBsurjectivity`), from
   125VIIb `tensor_preimage`." Superseded by its own general form, exactly as the

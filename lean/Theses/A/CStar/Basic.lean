@@ -2397,6 +2397,135 @@ theorem spectrum_self_adjoint_real_2 (a : 𝒜) (ha : IsSelfAdjoint a)
     · -- `λ ∉ ℝ`: part 1, applied to the self-adjoint element `aⁿ`
       exact spectrum_self_adjoint_real_1 (a ^ n) (ha.pow n) z him
 
+/-- Auxiliary for **11XV**.3: the solution's factorisation of `Xⁿ + 1` over `ℂ`
+(asols.tex, `parsec-110.150`(3), whose hint's sign the erratum
+`parsec-110.150` corrects).  With `α = e^{πi/n}` the `n` roots of `Xⁿ + 1`
+are the `α^{2k+1}` for `0 ≤ k < n`; the one at `2k+1 = n` is `α^n = -1`,
+contributing the factor `X + 1`, and every other one is non-real. -/
+private theorem X_pow_add_one_eq_mul_prod (n : ℕ) (hn : Odd n) :
+    ∃ (s : Finset ℕ) (w : ℕ → ℂ), (∀ i ∈ s, (w i).im ≠ 0) ∧
+      (Polynomial.X : Polynomial ℂ) ^ n + 1
+        = (Polynomial.X + 1) * ∏ i ∈ s, (Polynomial.X - Polynomial.C (w i)) := by
+  classical
+  obtain ⟨m, hm⟩ := hn
+  have hn0 : 0 < n := by omega
+  have hnc : (n : ℂ) ≠ 0 := Nat.cast_ne_zero.mpr hn0.ne'
+  have hnR : ((n : ℕ) : ℝ) ≠ 0 := Nat.cast_ne_zero.mpr hn0.ne'
+  set α : ℂ := Complex.exp ((Real.pi : ℂ) * Complex.I / (n : ℂ)) with hαdef
+  -- `α ^ j = e^{jπi/n}`, so its imaginary part is `sin (jπ/n)`
+  have hpow : ∀ j : ℕ,
+      α ^ j = Complex.exp ((((j : ℝ) * Real.pi / (n : ℝ) : ℝ) : ℂ) * Complex.I) := by
+    intro j
+    rw [hαdef, ← Complex.exp_nat_mul]
+    congr 1
+    push_cast
+    ring
+  have hαn : α ^ n = -1 := by
+    rw [hαdef, ← Complex.exp_nat_mul,
+      show (n : ℂ) * ((Real.pi : ℂ) * Complex.I / (n : ℂ)) = (Real.pi : ℂ) * Complex.I by
+        field_simp]
+    exact Complex.exp_pi_mul_I
+  -- `α²` is a primitive `n`-th root of unity, and `α ^ n = -1`, so
+  -- `Xⁿ + 1 = ∏_{i<n} (X - (α²)ⁱ α)` — and `(α²)ⁱ α = α^{2i+1}`
+  have hprim : IsPrimitiveRoot (α ^ 2) n := by
+    have hsq : α ^ 2 = Complex.exp (2 * (Real.pi : ℂ) * Complex.I / (n : ℂ)) := by
+      rw [hαdef, sq, ← Complex.exp_add]
+      congr 1
+      ring
+    rw [hsq]
+    exact Complex.isPrimitiveRoot_exp n hn0.ne'
+  have hfac := X_pow_sub_C_eq_prod hprim hn0 hαn
+  have hC : (Polynomial.C (-1 : ℂ)) = -1 := by simp
+  rw [hC, sub_neg_eq_add] at hfac
+  have hidx : ∀ i : ℕ, (α ^ 2) ^ i * α = α ^ (2 * i + 1) := by
+    intro i
+    rw [← pow_mul, ← pow_succ]
+  simp only [hidx] at hfac
+  have hmem : m ∈ Finset.range n := Finset.mem_range.mpr (by omega)
+  -- every root but `α ^ n` is non-real: `Im α^{2i+1} = sin((2i+1)π/n)`, which
+  -- vanishes only if `n ∣ 2i+1`, and `0 < 2i+1 < 2n` then forces `2i+1 = n`
+  have hw : ∀ i ∈ (Finset.range n).erase m, (α ^ (2 * i + 1)).im ≠ 0 := by
+    intro i hi
+    obtain ⟨hine, hir⟩ := Finset.mem_erase.mp hi
+    have hilt : i < n := Finset.mem_range.mp hir
+    rw [hpow (2 * i + 1), Complex.exp_ofReal_mul_I_im]
+    intro h0
+    obtain ⟨k, hk⟩ := Real.sin_eq_zero_iff.mp h0
+    have hpi : Real.pi ≠ 0 := Real.pi_ne_zero
+    have h3 : ((k : ℝ) * Real.pi) * (n : ℝ) = ((2 * i + 1 : ℕ) : ℝ) * Real.pi := by
+      rw [hk]; field_simp
+    have hkn : (k : ℝ) * (n : ℝ) = ((2 * i + 1 : ℕ) : ℝ) := by
+      apply mul_right_cancel₀ hpi
+      rw [← h3]; ring
+    have hkz : k * (n : ℤ) = 2 * (i : ℤ) + 1 := by exact_mod_cast hkn
+    have hnz : (0 : ℤ) < (n : ℤ) := by exact_mod_cast hn0
+    have hiz : (i : ℤ) < (n : ℤ) := by exact_mod_cast hilt
+    have hi0 : (0 : ℤ) ≤ (i : ℤ) := Int.natCast_nonneg i
+    have hk1 : k = 1 := by
+      rcases lt_trichotomy k 1 with hlt | heq | hgt
+      · exfalso
+        have hle : k * (n : ℤ) ≤ 0 * (n : ℤ) :=
+          mul_le_mul_of_nonneg_right (by linarith) (le_of_lt hnz)
+        rw [zero_mul] at hle
+        linarith
+      · exact heq
+      · exfalso
+        have hle : (2 : ℤ) * (n : ℤ) ≤ k * (n : ℤ) :=
+          mul_le_mul_of_nonneg_right (by linarith) (le_of_lt hnz)
+        linarith
+    rw [hk1, one_mul] at hkz
+    have hmz : (n : ℤ) = 2 * (m : ℤ) + 1 := by exact_mod_cast hm
+    exact hine (by omega)
+  have hprod : (Polynomial.X : Polynomial ℂ) ^ n + 1
+      = (Polynomial.X + 1) * ∏ i ∈ (Finset.range n).erase m,
+          (Polynomial.X - Polynomial.C (α ^ (2 * i + 1))) := by
+    rw [hfac, ← Finset.mul_prod_erase _ _ hmem]
+    congr 1
+    show Polynomial.X - Polynomial.C (α ^ (2 * m + 1)) = Polynomial.X + 1
+    rw [show 2 * m + 1 = n from hm.symm, hαn]
+    simp
+  exact ⟨(Finset.range n).erase m, fun i => α ^ (2 * i + 1), hw, hprod⟩
+
+/-- Auxiliary for **11XV**.3: a product of factors `b - λ` with every `λ`
+non-real is invertible, by part 1. -/
+private theorem isUnit_aeval_prod {b : 𝒜} (hb : IsSelfAdjoint b) (w : ℕ → ℂ)
+    (s : Finset ℕ) (hw : ∀ i ∈ s, (w i).im ≠ 0) :
+    IsUnit (Polynomial.aeval b (∏ i ∈ s, (Polynomial.X - Polynomial.C (w i)))) := by
+  classical
+  revert hw
+  induction s using Finset.induction_on with
+  | empty => intro _; simp
+  | insert j t hj ih =>
+      intro hw
+      rw [Finset.prod_insert hj, map_mul]
+      refine IsUnit.mul ?_ (ih fun i hi => hw i (Finset.mem_insert_of_mem hi))
+      have h1 : Polynomial.aeval b (Polynomial.X - Polynomial.C (w j))
+          = b - algebraMap ℂ 𝒜 (w j) := by simp
+      rw [h1]
+      exact spectrum_self_adjoint_real_1 b hb (w j) (hw j (Finset.mem_insert_self j t))
+
+/-- Auxiliary for **11XV**.3, the heart of the solution's argument: for
+self-adjoint `b` and odd `n`, `b + 1` is invertible iff `bⁿ + 1` is.  Indeed
+`bⁿ + 1 = (b + 1) · ∏_{2k+1 ≠ n} (b - α^{2k+1})` with `α = e^{πi/n}`, and
+every factor of that product is invertible by part 1. -/
+private theorem isUnit_add_one_iff_pow_add_one {b : 𝒜} (hb : IsSelfAdjoint b) (n : ℕ)
+    (hn : Odd n) : IsUnit (b + 1) ↔ IsUnit (b ^ n + 1) := by
+  obtain ⟨s, w, hw, hfac⟩ := X_pow_add_one_eq_mul_prod n hn
+  obtain ⟨u, hu⟩ := isUnit_aeval_prod hb w s hw
+  have hmul : b ^ n + 1 = (b + 1) * (u : 𝒜) := by
+    have h := congrArg (Polynomial.aeval b) hfac
+    simp only [map_add, map_mul, map_pow, Polynomial.aeval_X, map_one] at h
+    rw [h, hu]
+  constructor
+  · intro h
+    rw [hmul]
+    exact h.mul u.isUnit
+  · intro h
+    have hcancel : (b ^ n + 1) * ((u⁻¹ : 𝒜ˣ) : 𝒜) = b + 1 := by
+      rw [hmul, mul_assoc, u.mul_inv, mul_one]
+    rw [← hcancel]
+    exact h.mul u⁻¹.isUnit
+
 /-- **11XV** (`spectrum-self-adjoint-real`, cstar.tex:1570, Exercise),
 part 3: for self-adjoint `a` and *odd* `n`: `aⁿ - λ` is invertible for all
 `λ ∈ ℂ \ [0,∞)` iff `a - λ` is invertible for all `λ ∈ ℂ \ [0,∞)`. -/
@@ -2405,39 +2534,95 @@ theorem spectrum_self_adjoint_real_3 (a : 𝒜) (ha : IsSelfAdjoint a)
     (∀ z : ℂ, (∀ r : ℝ, 0 ≤ r → z ≠ r) → IsUnit (a ^ n - algebraMap ℂ 𝒜 z)) ↔
       (∀ z : ℂ, (∀ r : ℝ, 0 ≤ r → z ≠ r) → IsUnit (a - algebraMap ℂ 𝒜 z)) :=
   by
+    -- the solution's own argument: for `λ ∉ ℝ` both sides hold by part 1, so
+    -- only `λ = -t` with `t > 0` is at issue; there `a + t = t·(b+1)` and
+    -- `aⁿ + tⁿ = tⁿ·(bⁿ+1)` for `b := a/t`, and `b + 1` is invertible iff
+    -- `bⁿ + 1` is, by the factorisation `bⁿ + 1 = ∏ₖ (b - ζ^{2k+1})`.
     have hn0 : 0 < n := hn.pos
-    have hunit : ∀ (b : 𝒜) (z : ℂ), IsUnit (b - algebraMap ℂ 𝒜 z) ↔ z ∉ spectrum ℂ b := by
-      intro b z
-      rw [spectrum.mem_iff, not_not]
-      constructor
-      · intro h; rw [← neg_sub]; exact h.neg
-      · intro h; rw [← neg_sub] at h; simpa using h.neg
-    simp only [hunit]
+    have hcancel : ∀ (c : ℂ) (x : 𝒜), c ≠ 0 →
+        (IsUnit (algebraMap ℂ 𝒜 c * x) ↔ IsUnit x) := by
+      intro c x hc
+      obtain ⟨v, hv⟩ := (Ne.isUnit hc).map (algebraMap ℂ 𝒜)
+      rw [← hv]
+      exact Units.isUnit_units_mul v x
+    -- a real `λ ∉ [0,∞)` is `-t` with `t > 0`
+    have hreal : ∀ z : ℂ, z.im = 0 → (∀ r : ℝ, 0 ≤ r → z ≠ r) →
+        ∃ t : ℝ, 0 < t ∧ z = -((t : ℝ) : ℂ) := by
+      intro z him hz
+      have hzr : z = ((z.re : ℝ) : ℂ) := Complex.ext rfl (by simp [him])
+      have hneg : z.re < 0 := by
+        by_contra hcon
+        push_neg at hcon
+        exact hz z.re hcon hzr
+      refine ⟨-z.re, by linarith, ?_⟩
+      conv_lhs => rw [hzr]
+      push_cast
+      ring
+    -- the solution's scaling step: for `t > 0`, `a + t` is invertible iff
+    -- `aⁿ + tⁿ` is, since both are `t^·` times `b + 1` resp. `bⁿ + 1`
+    have key : ∀ t : ℝ, 0 < t →
+        (IsUnit (a + algebraMap ℂ 𝒜 ((t : ℝ) : ℂ)) ↔
+          IsUnit (a ^ n + algebraMap ℂ 𝒜 (((t ^ n : ℝ)) : ℂ))) := by
+      intro t ht
+      have htc : ((t : ℝ) : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr ht.ne'
+      have hcast : (((t ^ n : ℝ)) : ℂ) = ((t : ℝ) : ℂ) ^ n := by push_cast; ring
+      have htnc : (((t ^ n : ℝ)) : ℂ) ≠ 0 := by rw [hcast]; exact pow_ne_zero n htc
+      have hinvsa : IsSelfAdjoint (algebraMap ℂ 𝒜 (((t : ℝ) : ℂ))⁻¹) := by
+        show star _ = _
+        rw [← algebraMap_star_comm]
+        simp
+      set b : 𝒜 := algebraMap ℂ 𝒜 (((t : ℝ) : ℂ))⁻¹ * a with hbdef
+      have hbsa : IsSelfAdjoint b := by
+        rw [hbdef]
+        show star _ = _
+        rw [star_mul, ha.star_eq, hinvsa.star_eq, Algebra.commutes]
+      have hab : algebraMap ℂ 𝒜 ((t : ℝ) : ℂ) * b = a := by
+        rw [hbdef, ← mul_assoc, ← map_mul, mul_inv_cancel₀ htc, map_one, one_mul]
+      have hcomm : Commute (algebraMap ℂ 𝒜 ((t : ℝ) : ℂ)) b :=
+        Algebra.commute_algebraMap_left _ _
+      have h1 : a + algebraMap ℂ 𝒜 ((t : ℝ) : ℂ)
+          = algebraMap ℂ 𝒜 ((t : ℝ) : ℂ) * (b + 1) := by
+        rw [mul_add, mul_one, hab]
+      have h2 : a ^ n + algebraMap ℂ 𝒜 (((t ^ n : ℝ)) : ℂ)
+          = algebraMap ℂ 𝒜 (((t ^ n : ℝ)) : ℂ) * (b ^ n + 1) := by
+        rw [mul_add, mul_one, hcast, map_pow, ← hcomm.mul_pow, hab]
+      rw [h1, h2, hcancel _ (b + 1) htc, hcancel _ (b ^ n + 1) htnc]
+      exact isUnit_add_one_iff_pow_add_one hbsa n hn
     constructor
-    · -- `spec aⁿ ⊆ ℝ≥0` forces `spec a ⊆ ℝ≥0`, using that `n` is odd
-      intro h z hz hmem
-      have hzr : z = (z.re : ℂ) := mem_spectrum_eq_re_of_isSelfAdjoint ha hmem
-      have hpow : z ^ n ∈ spectrum ℂ (a ^ n) := spectrum.pow_mem_pow a n hmem
-      by_cases hnn : ∀ r : ℝ, 0 ≤ r → z ^ n ≠ (r : ℂ)
-      · exact h _ hnn hpow
-      · push_neg at hnn
-        obtain ⟨r, hr0, hrz⟩ := hnn
-        -- `z` is real and `z ^ n = r ≥ 0`, so `z.re ≥ 0` since `n` is odd
-        have hre : (z.re : ℂ) ^ n = (r : ℂ) := by rw [← hzr]; exact hrz
-        have hre' : z.re ^ n = r := by exact_mod_cast hre
-        have : 0 ≤ z.re := by
-          have : 0 ≤ z.re ^ n := hre' ▸ hr0
-          exact (hn.pow_nonneg_iff).mp this
-        exact absurd hzr (hz z.re this)
-    · -- `spec a ⊆ ℝ≥0` forces `spec aⁿ ⊆ ℝ≥0`
-      intro h z hz hmem
-      rw [spectrum.map_pow_of_pos a hn0] at hmem
-      obtain ⟨lam, hlam, rfl⟩ := hmem
-      by_cases hnn : ∀ r : ℝ, 0 ≤ r → lam ≠ (r : ℂ)
-      · exact h _ hnn hlam
-      · push_neg at hnn
-        obtain ⟨r, hr0, rfl⟩ := hnn
-        exact hz (r ^ n) (by positivity) (by push_cast; ring)
+    · -- `aⁿ - λ` invertible for all `λ ∉ [0,∞)` gives the same for `a - λ`
+      intro h z hz
+      by_cases him : z.im = 0
+      · obtain ⟨t, ht, rfl⟩ := hreal z him hz
+        have hsub : a - algebraMap ℂ 𝒜 (-((t : ℝ) : ℂ))
+            = a + algebraMap ℂ 𝒜 ((t : ℝ) : ℂ) := by
+          rw [map_neg, sub_neg_eq_add]
+        rw [hsub, key t ht]
+        have hz' : ∀ r : ℝ, 0 ≤ r → (-(((t ^ n : ℝ)) : ℂ)) ≠ (r : ℂ) := by
+          intro r hr hcon
+          have hr' : -(t ^ n) = r := by exact_mod_cast hcon
+          have : (0 : ℝ) < t ^ n := pow_pos ht n
+          linarith
+        have hfin := h (-(((t ^ n : ℝ)) : ℂ)) hz'
+        rwa [map_neg, sub_neg_eq_add] at hfin
+      · exact spectrum_self_adjoint_real_1 a ha z him
+    · -- and conversely; here `t > 0` is written as `sⁿ` with `s > 0`
+      intro h z hz
+      by_cases him : z.im = 0
+      · obtain ⟨t, ht, rfl⟩ := hreal z him hz
+        obtain ⟨s, hs, rfl⟩ : ∃ s : ℝ, 0 < s ∧ t = s ^ n :=
+          ⟨t ^ ((n : ℝ))⁻¹, Real.rpow_pos_of_pos ht _,
+            (Real.rpow_inv_natCast_pow ht.le hn0.ne').symm⟩
+        have hsub : a ^ n - algebraMap ℂ 𝒜 (-(((s ^ n : ℝ)) : ℂ))
+            = a ^ n + algebraMap ℂ 𝒜 (((s ^ n : ℝ)) : ℂ) := by
+          rw [map_neg, sub_neg_eq_add]
+        rw [hsub, ← key s hs]
+        have hz' : ∀ r : ℝ, 0 ≤ r → (-((s : ℝ) : ℂ)) ≠ (r : ℂ) := by
+          intro r hr hcon
+          have hr' : -s = r := by exact_mod_cast hcon
+          linarith
+        have hfin := h (-((s : ℝ) : ℂ)) hz'
+        rwa [map_neg, sub_neg_eq_add] at hfin
+      · exact spectrum_self_adjoint_real_1 (a ^ n) (ha.pow n) z him
 
 variable {ℬ : Type*} [CStarAlgebra ℬ]
 

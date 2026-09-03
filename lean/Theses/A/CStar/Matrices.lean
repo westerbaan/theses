@@ -1382,13 +1382,118 @@ composed with transposition of the index types, and it is why the composition
 order is reversed in part 3.  We state all three parts over the two index sets
 `Fin M`, `Fin N` in Mathlib's convention. -/
 
+/-! ### The pieces of solution `parsec-330.10`(1)
+
+The solution makes `A̲` adjointable by writing it as the combination
+`A̲ = ∑ₘ ∑ₙ κₘ A̲ₘₙ πₙ` of adjointable bounded module maps, where `πₙ` is the
+`n`-th projection, `A̲ₘₙ` the multiplication by the entry `Aₘₙ`, and `κₘ` the
+`m`-th coprojection.  Composition is **32III** `moduleAdjointTo_comp`; the
+binary sum is **32III** `moduleAdjointTo_add_smul`, of which
+`moduleAdjointTo_sum` is the finite-sum form. -/
+
+/-- The `j`-th coprojection `κⱼ : 𝒜 → 𝒜^P`. -/
+private def piCoproj {𝒟 : Type*} [Zero 𝒟] {P : ℕ} (j : Fin P) (a : 𝒟) :
+    C⋆ᵐᵒᵈ(𝒟, Fin P → 𝒟) :=
+  (WithCStarModule.equiv 𝒟 (Fin P → 𝒟)).symm (Pi.single j a)
+
+private theorem piCoproj_apply {𝒟 : Type*} [Zero 𝒟] {P : ℕ} (j : Fin P) (a : 𝒟) (l : Fin P) :
+    piCoproj j a l = if l = j then a else 0 := by
+  simp [piCoproj, Pi.single_apply]
+
+/-- The projection `πⱼ : 𝒜^P → 𝒜` is adjoint to the coprojection `κⱼ`. -/
+private theorem moduleAdjointTo_piProj {P : ℕ} (j : Fin P) :
+    ModuleAdjointTo 𝒜 (fun v : C⋆ᵐᵒᵈ(𝒜, Fin P → 𝒜) => v j) (piCoproj (𝒟 := 𝒜) j) := by
+  intro v a
+  have hR : (inner 𝒜 v (piCoproj (𝒟 := 𝒜) j a) : 𝒜)
+      = ∑ l : Fin P, (if l = j then a else 0) * star (v l) := by
+    rw [WithCStarModule.pi_inner]
+    exact Finset.sum_congr rfl fun l _ => by
+      rw [WithCStarModule.inner_def, piCoproj_apply]
+  have hL : (inner 𝒜 (v j) a : 𝒜) = a * star (v j) := WithCStarModule.inner_def _ _
+  rw [hL, hR]
+  simp
+
+/-- The multiplication `A̲ₘₙ : a ↦ a Aₘₙ` is adjoint to `a ↦ a Aₘₙ*`. -/
+private theorem moduleAdjointTo_mulRight (c : 𝒜) :
+    ModuleAdjointTo 𝒜 (fun a : 𝒜 => a * c) (fun a : 𝒜 => a * star c) := by
+  intro a b
+  simp only [WithCStarModule.inner_def, star_mul, ← mul_assoc]
+
+omit [StarOrderedRing 𝒜] in
+/-- **32III**, part 2 in its finite-sum form: `ModuleAdjointTo` is closed
+under finite sums. -/
+private theorem moduleAdjointTo_sum {X Y : Type*}
+    [NormedAddCommGroup X] [Module ℂ X] [SMul 𝒜 X] [CStarModule 𝒜 X]
+    [NormedAddCommGroup Y] [Module ℂ Y] [SMul 𝒜 Y] [CStarModule 𝒜 Y]
+    {ι : Type*} (T : ι → X → Y) (S : ι → Y → X)
+    (h : ∀ i, ModuleAdjointTo 𝒜 (T i) (S i)) (s : Finset ι) :
+    ModuleAdjointTo 𝒜 (fun x => ∑ i ∈ s, T i x) (fun y => ∑ i ∈ s, S i y) := by
+  classical
+  induction s using Finset.induction with
+  | empty => intro x y; simp
+  | insert a s ha ih =>
+      intro x y
+      simp only [Finset.sum_insert ha]
+      rw [CStarModule.inner_add_left, CStarModule.inner_add_right, h a x y, ih x y]
+
 /-- **33I** (`cstar-matrices`, cstar.tex:5417, Exercise), part 1: an
 `M×N`-matrix `A` over `𝒜` gives a bounded module map between `𝒜^M` and `𝒜^N`
 (Mathlib: `CStarMatrix.toCLM`, a `→L[ℂ]`, so boundedness is part of the
 object), adjoint to the one of its conjugate transpose `Ā`. -/
 theorem cstar_matrices_1 {M : ℕ} (A : CStarMatrix (Fin M) (Fin N) 𝒜) :
-    ModuleAdjointTo 𝒜 ⇑(CStarMatrix.toCLM A) ⇑(CStarMatrix.toCLM (Matrix.conjTranspose A)) :=
-  fun _ _ => (CStarMatrix.inner_toCLM_conjTranspose_right (M := A)).symm
+    ModuleAdjointTo 𝒜 ⇑(CStarMatrix.toCLM A) ⇑(CStarMatrix.toCLM (Matrix.conjTranspose A)) := by
+  classical
+  -- each `κₙ A̲ₘₙ πₘ` is adjointable, by **32III**'s composition clause
+  have hpiece : ∀ (i : Fin M) (j : Fin N), ModuleAdjointTo 𝒜
+      (fun v : C⋆ᵐᵒᵈ(𝒜, Fin M → 𝒜) => piCoproj j (v i * A i j))
+      (fun w : C⋆ᵐᵒᵈ(𝒜, Fin N → 𝒜) => piCoproj i (w j * star (A i j))) := by
+    intro i j
+    have h₁ : ModuleAdjointTo 𝒜
+        (fun v : C⋆ᵐᵒᵈ(𝒜, Fin M → 𝒜) => v i * A i j)
+        (fun a : 𝒜 => piCoproj i (a * star (A i j))) :=
+      moduleAdjointTo_comp _ _ _ _ (moduleAdjointTo_piProj i)
+        (moduleAdjointTo_mulRight (A i j))
+    exact moduleAdjointTo_comp _ _ _ _ h₁
+      (moduleAdjointTo_symm _ _ (moduleAdjointTo_piProj j))
+  -- and so is their sum, whose adjoint is read off the decomposition
+  have hsum : ModuleAdjointTo 𝒜
+      (fun v : C⋆ᵐᵒᵈ(𝒜, Fin M → 𝒜) =>
+        ∑ i : Fin M, ∑ j : Fin N, piCoproj j (v i * A i j))
+      (fun w : C⋆ᵐᵒᵈ(𝒜, Fin N → 𝒜) =>
+        ∑ i : Fin M, ∑ j : Fin N, piCoproj i (w j * star (A i j))) :=
+    moduleAdjointTo_sum _ _
+      (fun i => moduleAdjointTo_sum _ _ (fun j => hpiece i j) Finset.univ) Finset.univ
+  have happM : ∀ (g : Fin M → C⋆ᵐᵒᵈ(𝒜, Fin N → 𝒜)) (l : Fin N), (∑ i, g i) l = ∑ i, g i l :=
+    fun g l => Finset.sum_apply l Finset.univ g
+  have happN : ∀ (g : Fin N → C⋆ᵐᵒᵈ(𝒜, Fin N → 𝒜)) (l : Fin N), (∑ j, g j) l = ∑ j, g j l :=
+    fun g l => Finset.sum_apply l Finset.univ g
+  have happM' : ∀ (g : Fin M → C⋆ᵐᵒᵈ(𝒜, Fin M → 𝒜)) (l : Fin M), (∑ i, g i) l = ∑ i, g i l :=
+    fun g l => Finset.sum_apply l Finset.univ g
+  have happN' : ∀ (g : Fin N → C⋆ᵐᵒᵈ(𝒜, Fin M → 𝒜)) (l : Fin M), (∑ j, g j) l = ∑ j, g j l :=
+    fun g l => Finset.sum_apply l Finset.univ g
+  have hA : (fun v : C⋆ᵐᵒᵈ(𝒜, Fin M → 𝒜) =>
+      ∑ i : Fin M, ∑ j : Fin N, piCoproj j (v i * A i j)) = ⇑(CStarMatrix.toCLM A) := by
+    funext v
+    ext l
+    rw [CStarMatrix.toCLM_apply_eq_sum, WithCStarModule.equiv_symm_pi_apply, happM]
+    refine Finset.sum_congr rfl fun i _ => ?_
+    rw [happN]
+    simp [piCoproj_apply]
+  have hRval : ∀ (B : CStarMatrix (Fin N) (Fin M) 𝒜) (u : C⋆ᵐᵒᵈ(𝒜, Fin N → 𝒜)) (k : Fin M),
+      (CStarMatrix.toCLM B) u k = ∑ j : Fin N, u j * B j k := fun B u k => by
+    rw [CStarMatrix.toCLM_apply_eq_sum, WithCStarModule.equiv_symm_pi_apply]
+  have hAH : (fun w : C⋆ᵐᵒᵈ(𝒜, Fin N → 𝒜) =>
+      ∑ i : Fin M, ∑ j : Fin N, piCoproj i (w j * star (A i j)))
+      = ⇑(CStarMatrix.toCLM (Matrix.conjTranspose A)) := by
+    funext w
+    ext l
+    refine Eq.trans ?_ (hRval (Matrix.conjTranspose A) w l).symm
+    rw [happM']
+    simp only [happN', piCoproj_apply]
+    rw [Finset.sum_comm]
+    simp [Matrix.conjTranspose, Matrix.transpose]
+  rw [← hA, ← hAH]
+  exact hsum
 
 omit [PartialOrder ℬ] [StarOrderedRing ℬ] in
 /-- **33I** (`cstar-matrices`, cstar.tex:5417, Exercise), part 2:
@@ -2584,6 +2689,68 @@ private theorem norm_le_of_forall_character {x : 𝒞} {C : ℝ} (hC : 0 ≤ C)
   rw [← hiso, ContinuousMap.norm_le _ hC]
   exact h
 
+/-- **34VIII**'s own construction of the partition of unity: by complete
+regularity of `X` a tent function `f_y` at each point `y`, with `f_y(y) > 0`
+and `supp f_y ⊆ U_k` for some member `U_k` of the cover; by compactness
+finitely many `f_{y₁}, …, f_{y_L}` whose supports already cover `X`, so that
+`∑_ℓ f_{y_ℓ} > 0`; grouping them, `g_k := ∑ {f_{y_ℓ} : k_ℓ = k}` where
+`supp f_{y_ℓ} ⊆ U_{k_ℓ}`; and replacing `g_k` by `(∑_ℓ g_ℓ)⁻¹ g_k` so that
+`∑_k g_k = 1`. -/
+private theorem exists_partition_of_cover {X : Type*} [TopologicalSpace X]
+    [CompactSpace X] [T2Space X] {K : ℕ} (U : Fin K → Set X)
+    (hUopen : ∀ k, IsOpen (U k)) (hcover : ∀ y : X, ∃ k, y ∈ U k) :
+    ∃ g : Fin K → C(X, ℝ), (∀ k y, 0 ≤ g k y) ∧ (∀ y, ∑ k, g k y = 1) ∧
+      ∀ k y, g k y ≠ 0 → y ∈ U k := by
+  -- "by complete regularity of `X`, a function `f_y ∈ C(X)₊` with `f_y(y) > 0`
+  -- and `supp(f_y) ⊆ U_{x_k}`"
+  have htent : ∀ y : X, ∃ (k : Fin K) (f : C(X, ℝ)),
+      (∀ z, 0 ≤ f z) ∧ f y = 1 ∧ ∀ z, f z ≠ 0 → z ∈ U k := by
+    intro y
+    obtain ⟨k, hk⟩ := hcover y
+    obtain ⟨f, hf0, hf1, hf01⟩ := exists_continuous_zero_one_of_isClosed
+      (X := X) (s := (U k)ᶜ) (t := {y}) (hUopen k).isClosed_compl isClosed_singleton
+      (by rw [Set.disjoint_singleton_right]; simpa using hk)
+    refine ⟨k, f, fun z => (hf01 z).1, by simpa using hf1 rfl, fun z hz => ?_⟩
+    by_contra hzU
+    exact hz (by simpa using hf0 hzU)
+  choose kk ff hff0 hff1 hffU using htent
+  -- "since the open subsets `supp(f_y)` cover `X` there are, by compactness,
+  -- finitely many `y₁, …, y_L` with `X = supp(f_{y₁}) ∪ ⋯ ∪ supp(f_{y_L})`"
+  have hopen : ∀ y : X, IsOpen (Function.support (ff y : X → ℝ)) := fun y =>
+    (ff y).continuous.isOpen_support
+  obtain ⟨t, ht⟩ := isCompact_univ.elim_finite_subcover
+    (fun y : X => Function.support (ff y : X → ℝ)) hopen
+    (fun z _ => Set.mem_iUnion.mpr ⟨z, by simp [Function.mem_support, hff1 z]⟩)
+  -- "and so `∑_ℓ f_{y_ℓ} > 0`"
+  have hGpos : ∀ z : X, 0 < ∑ y ∈ t, ff y z := by
+    intro z
+    obtain ⟨y, hyt, hyz⟩ := Set.mem_iUnion₂.mp (ht (Set.mem_univ z))
+    exact Finset.sum_pos' (fun y _ => hff0 y z)
+      ⟨y, hyt, lt_of_le_of_ne (hff0 y z) (Ne.symm (Function.mem_support.mp hyz))⟩
+  have hGcont : Continuous fun z : X => ∑ y ∈ t, ff y z :=
+    continuous_finsetSum _ fun y _ => (ff y).continuous
+  -- "let us group together the `f_{y_ℓ}`s"
+  have hgcont : ∀ k : Fin K,
+      Continuous fun z : X => ∑ y ∈ t.filter fun y => kk y = k, ff y z :=
+    fun k => continuous_finsetSum _ fun y _ => (ff y).continuous
+  have hgnonneg : ∀ (k : Fin K) (z : X),
+      0 ≤ ∑ y ∈ t.filter fun y => kk y = k, ff y z :=
+    fun k z => Finset.sum_nonneg fun y _ => hff0 y z
+  -- "upon replacing `g_k` with `(∑_ℓ g_ℓ)⁻¹ g_k`, we see that `∑_k g_k = 1`"
+  refine ⟨fun k => ⟨fun z => (∑ y ∈ t.filter fun y => kk y = k, ff y z) /
+      (∑ y ∈ t, ff y z), (hgcont k).div hGcont fun z => (hGpos z).ne'⟩, ?_, ?_, ?_⟩
+  · intro k z
+    simp only [ContinuousMap.coe_mk]
+    exact div_nonneg (hgnonneg k z) (hGpos z).le
+  · intro z
+    simp only [ContinuousMap.coe_mk]
+    rw [← Finset.sum_div, Finset.sum_fiberwise t kk fun y => ff y z, div_self (hGpos z).ne']
+  · intro k z hz
+    simp only [ContinuousMap.coe_mk] at hz
+    have hz' : (∑ y ∈ t.filter fun y => kk y = k, ff y z) ≠ 0 := fun h => hz (by rw [h]; simp)
+    obtain ⟨y, hy, hy0⟩ := Finset.exists_ne_zero_of_sum_ne_zero hz'
+    exact (Finset.mem_filter.mp hy).2 ▸ hffU y z hy0
+
 variable {n : ℕ} [PartialOrder (CStarMatrix (Fin n) (Fin n) 𝒞)]
   [StarOrderedRing (CStarMatrix (Fin n) (Fin n) 𝒞)]
 
@@ -2609,34 +2776,30 @@ private theorem exists_approx (A : CStarMatrix (Fin n) (Fin n) 𝒞) (hA : 0 ≤
     exact fun _ _ => hδ0
   obtain ⟨t, ht⟩ := isCompact_univ.elim_finite_subcover U hUopen
     (fun x _ => Set.mem_iUnion.mpr ⟨x, hUmem x⟩)
-  -- a partition of unity subordinate to the finite subcover
-  obtain ⟨pu, hpu⟩ := PartitionOfUnity.exists_isSubordinate (ι := {x // x ∈ t})
-    (isClosed_univ (X := X)) (fun k => U k.1) (fun k => hUopen k.1) (by
-      intro x _
-      obtain ⟨y, hyt, hxU⟩ := Set.mem_iUnion₂.mp (ht (Set.mem_univ x))
-      exact Set.mem_iUnion.mpr ⟨⟨y, hyt⟩, hxU⟩)
   obtain ⟨K, ⟨e⟩⟩ : ∃ K : ℕ, Nonempty (Fin K ≃ {x // x ∈ t}) :=
     ⟨_, ⟨(Fintype.equivFin _).symm⟩⟩
+  -- the partition of unity of **34VIII**, subordinate to the finite subcover
+  obtain ⟨pu, hpu0, hpu1, hpuU⟩ := exists_partition_of_cover (fun k : Fin K => U (e k).1)
+    (fun k => hUopen (e k).1) (fun x => by
+      obtain ⟨y, hyt, hxU⟩ := Set.mem_iUnion₂.mp (ht (Set.mem_univ x))
+      exact ⟨e.symm ⟨y, hyt⟩, by simpa using hxU⟩)
   set cf : Fin K → C(X, ℂ) := fun k =>
-    ⟨fun φ => ((pu (e k) φ : ℝ) : ℂ),
-      Complex.continuous_ofReal.comp (pu (e k)).continuous⟩ with hcf
+    ⟨fun φ => ((pu k φ : ℝ) : ℂ),
+      Complex.continuous_ofReal.comp (pu k).continuous⟩ with hcf
   set g : Fin K → 𝒞 := fun k => (gelfandStarTransform 𝒞).symm (cf k) with hg
   set Bm : Fin K → CStarMatrix (Fin n) (Fin n) ℂ := fun k =>
     CStarMatrix.ofMatrix (Matrix.of fun i j => F i j (e k).1) with hBm
-  have hgφ : ∀ (k : Fin K) (φ : X), φ (g k) = ((pu (e k) φ : ℝ) : ℂ) := by
+  have hgφ : ∀ (k : Fin K) (φ : X), φ (g k) = ((pu k φ : ℝ) : ℂ) := by
     intro k φ
     have h := StarAlgEquiv.apply_symm_apply (gelfandStarTransform 𝒞) (cf k)
     exact congrFun (congrArg (fun (G : C(X, ℂ)) => G.toFun) h) φ
   have hBmij : ∀ (k : Fin K) (i j : Fin n), Bm k i j = (e k).1 (A i j) := fun _ _ _ => rfl
-  have hsum1 : ∀ φ : X, ∑ k : Fin K, pu (e k) φ = 1 := by
-    intro φ
-    rw [Equiv.sum_comp e (fun i => pu i φ), ← finsum_eq_sum_of_fintype]
-    exact pu.sum_eq_one (Set.mem_univ φ)
+  have hsum1 : ∀ φ : X, ∑ k : Fin K, pu k φ = 1 := hpu1
   refine ⟨K, g, Bm, ?_, ?_, ?_⟩
   · intro k
     refine nonneg_of_forall_character fun φ => ?_
     rw [hgφ k φ]
-    simpa using pu.nonneg (e k) φ
+    simpa using hpu0 k φ
   · intro k
     rw [cstar_matrix_positive_iff]
     intro v
@@ -2654,29 +2817,29 @@ private theorem exists_approx (A : CStarMatrix (Fin n) (Fin n) 𝒞) (hA : 0 ≤
         rfl
       rw [hij, map_sub, map_sum]
       have hterm : ∀ k : Fin K,
-          φ (Bm k i j • g k) = ((pu (e k) φ : ℝ) : ℂ) * (F i j (e k).1) := by
+          φ (Bm k i j • g k) = ((pu k φ : ℝ) : ℂ) * (F i j (e k).1) := by
         intro k
         rw [map_smul, hgφ k φ, smul_eq_mul, hBmij k i j, mul_comm]
         rfl
       simp only [hterm]
       have hAij : φ (A i j) = F i j φ := rfl
-      have hkey : φ (A i j) - ∑ k : Fin K, ((pu (e k) φ : ℝ) : ℂ) * (F i j (e k).1)
-          = ∑ k : Fin K, ((pu (e k) φ : ℝ) : ℂ) * (F i j φ - F i j (e k).1) := by
-        have h1 : (∑ k : Fin K, ((pu (e k) φ : ℝ) : ℂ)) = 1 := by
+      have hkey : φ (A i j) - ∑ k : Fin K, ((pu k φ : ℝ) : ℂ) * (F i j (e k).1)
+          = ∑ k : Fin K, ((pu k φ : ℝ) : ℂ) * (F i j φ - F i j (e k).1) := by
+        have h1 : (∑ k : Fin K, ((pu k φ : ℝ) : ℂ)) = 1 := by
           rw [← Complex.ofReal_sum, hsum1 φ, Complex.ofReal_one]
         simp only [mul_sub, Finset.sum_sub_distrib, ← Finset.sum_mul, h1, one_mul, hAij]
       rw [hkey]
-      calc ‖∑ k : Fin K, ((pu (e k) φ : ℝ) : ℂ) * (F i j φ - F i j (e k).1)‖
-          ≤ ∑ k : Fin K, ‖((pu (e k) φ : ℝ) : ℂ) * (F i j φ - F i j (e k).1)‖ :=
+      calc ‖∑ k : Fin K, ((pu k φ : ℝ) : ℂ) * (F i j φ - F i j (e k).1)‖
+          ≤ ∑ k : Fin K, ‖((pu k φ : ℝ) : ℂ) * (F i j φ - F i j (e k).1)‖ :=
             norm_sum_le _ _
-        _ ≤ ∑ k : Fin K, pu (e k) φ * δ := by
+        _ ≤ ∑ k : Fin K, pu k φ * δ := by
             refine Finset.sum_le_sum fun k _ => ?_
             rw [norm_mul, Complex.norm_real, Real.norm_eq_abs,
-              abs_of_nonneg (pu.nonneg (e k) φ)]
-            rcases eq_or_ne (pu (e k) φ) 0 with h0 | h0
+              abs_of_nonneg (hpu0 k φ)]
+            rcases eq_or_ne (pu k φ) 0 with h0 | h0
             · rw [h0]; simp
-            · refine mul_le_mul_of_nonneg_left ?_ (pu.nonneg (e k) φ)
-              have hmem : φ ∈ U (e k).1 := hpu (e k) (subset_tsupport _ (show φ ∈ Function.support (pu (e k)) from h0))
+            · refine mul_le_mul_of_nonneg_left ?_ (hpu0 k φ)
+              have hmem : φ ∈ U (e k).1 := hpuU k φ h0
               exact le_of_lt (Set.mem_iInter.mp (Set.mem_iInter.mp hmem i) j)
         _ = δ := by rw [← Finset.sum_mul, hsum1 φ, one_mul]
     calc ‖A - ∑ k : Fin K, CStarMatrix.ofMatrix (Matrix.of fun i j => Bm k i j • g k)‖
