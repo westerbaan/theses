@@ -268,7 +268,7 @@ Two consequences, one of them a live defect:
 
 * **`audit_check.py`'s unrowed check could not see those declarations.**  With
   the regex widened it found one across the whole tree:
-  **`atomicTypeI_tensor_preimage`** (`A/Proc/QuantumLambda.lean:5516`) has
+  **`atomicTypeI_tensor_preimage`** (`A/Proc/QuantumLambda.lean:7820`) has
   carried the tag `**125VIIb**` since it was written and no audit row named it.
   A row is now in place, and its sibling `atomicTypeI_tensorBsurjectivity` was
   rowed all along, which is what made the gap invisible to a reader.
@@ -525,7 +525,7 @@ on the type by the sibling `bah_vn`).)*
   so `exists_rho` (39IX) and `bh_bounded_uw_complete` (76III) went straight to
   Mathlib's Riesz instead of instantiating 36V at `𝒜 = ℂ`, leaving **36V**
   proved in full and used by nothing.  *Closed 2026-08-27*: 36II is
-  `selfDual_hilbert` (`TowardsVN.lean:516`), with four consumers, and 36V
+  `selfDual_hilbert` (`TowardsVN.lean:655`), with four consumers, and 36V
   `chilb_form_representation` now has five — `exists_rho` takes the thesis's
   own route through 36II and 36V (`TowardsVN.lean:2257`).  The observation is
   kept because the mechanism is general and the tree took months to notice

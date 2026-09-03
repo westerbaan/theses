@@ -4467,7 +4467,6 @@ Theses.A.Proc.QuantumLambda|Theses.A.Proc.card_starAdjoin_le|green
 Theses.A.Proc.QuantumLambda|Theses.A.Proc.conj_mul_re|green
 Theses.A.Proc.QuantumLambda|Theses.A.Proc.continuous_uw_mulmul|green
 Theses.A.Proc.QuantumLambda|Theses.A.Proc.exists_haBlockProj|green
-Theses.A.Proc.QuantumLambda|Theses.A.Proc.exists_haPresentation|green
 Theses.A.Proc.QuantumLambda|Theses.A.Proc.exists_lp_congr|green
 Theses.A.Proc.QuantumLambda|Theses.A.Proc.exists_lp_factor|green
 Theses.A.Proc.QuantumLambda|Theses.A.Proc.exists_lp_reindex|green
