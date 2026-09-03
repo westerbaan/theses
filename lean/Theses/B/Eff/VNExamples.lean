@@ -1682,6 +1682,190 @@ theorem effectus_vn : Nonempty (EffectusTotalStructure WStarNCPU.{u}ᵒᵖ) := b
     · exact vnop_comp_congr hf x
     · exact vnop_comp_congr hg x
 
+/-! ### `CvNᵒᵖ`, the commutative full subcategory (189aI, second sentence)
+
+The second sentence of 189aI — "its full subcategory `CvNᵒᵖ` of commutative
+von Neumann algebras is an effectus as well".  Nothing has to be re-proved
+about von Neumann algebras: `ℂᵤ` and a product of commutative algebras are
+commutative, so the concrete presentation `vnPres` of `vNᵒᵖ` restricts to
+`CvNᵒᵖ`, and the three axioms of 180I are pulled back from `vNᵒᵖ` along the
+inclusion, which is fully faithful and therefore reflects pullbacks. -/
+
+/-- Commutativity of the carrier, as a property of the objects of `vN`. -/
+def IsCommWStar : ObjectProperty WStarNCPU.{u} :=
+  fun A => ∀ x y : A.base.carrier, x * y = y * x
+
+/-- **`CvN`**: the full subcategory of `vN` spanned by the commutative von
+Neumann algebras (the morphisms are still all ncpu-maps). -/
+abbrev CWStarNCPU : Type (u + 1) := IsCommWStar.{u}.FullSubcategory
+
+/-- The scalars `ℂᵤ` as an object of `CvN`. -/
+noncomputable def cvnScal : CWStarNCPU.{u} :=
+  ⟨OB (ULift.{u} ℂ), fun x y => Theses.A.VN.CU.down_injective (mul_comm x.down y.down)⟩
+
+/-- The product of two commutative von Neumann algebras, as an object of
+`CvN` (the effectus coproduct of `CvNᵒᵖ`). -/
+noncomputable def cvnProd (X Y : CWStarNCPU.{u}) : CWStarNCPU.{u} :=
+  ⟨OB (X.obj.base.carrier × Y.obj.base.carrier),
+    fun x y => Prod.ext (X.property x.1 y.1) (Y.property x.2 y.2)⟩
+
+/-- The trivial algebra as an object of `CvN`. -/
+noncomputable def cvnTriv : CWStarNCPU.{u} :=
+  ⟨OB PUnit.{u + 1}, fun _ _ => Subsingleton.elim (α := PUnit.{u + 1}) _ _⟩
+
+theorem cvn_hom_ext {X Y : CWStarNCPU.{u}} {f g : X ⟶ Y}
+    (h : ∀ a, f.hom.toNCPMap a = g.hom.toNCPMap a) : f = g :=
+  InducedCategory.hom_ext (vn_hom_ext h)
+
+theorem cvnop_hom_ext {X Y : CWStarNCPU.{u}ᵒᵖ} {f g : X ⟶ Y}
+    (h : ∀ a, f.unop.hom.toNCPMap a = g.unop.hom.toNCPMap a) : f = g :=
+  Quiver.Hom.unop_inj (cvn_hom_ext h)
+
+theorem cvnop_comp_apply {X Y Z : CWStarNCPU.{u}ᵒᵖ} (f : X ⟶ Y) (g : Y ⟶ Z)
+    (a : Z.unop.obj.base) :
+    (f ≫ g).unop.hom.toNCPMap a = f.unop.hom.toNCPMap (g.unop.hom.toNCPMap a) :=
+  vn_comp_apply g.unop.hom f.unop.hom a
+
+theorem cvnop_congr {X Y : CWStarNCPU.{u}ᵒᵖ} {f g : X ⟶ Y} (h : f = g)
+    (a : Y.unop.obj.base) : f.unop.hom.toNCPMap a = g.unop.hom.toNCPMap a := by
+  rw [h]
+
+theorem cvn_id_apply {X : CWStarNCPU.{u}} (a : X.obj.base) :
+    (𝟙 X : X ⟶ X).hom.toNCPMap a = a := vn_id_apply a
+
+/-- Postcomposition with a fixed map, pointwise. -/
+theorem cvnop_comp_congr {Z P X : CWStarNCPU.{u}ᵒᵖ} {F : P ⟶ X} {a b : Z ⟶ P}
+    (h : a ≫ F = b ≫ F) (x : X.unop.obj.base) :
+    a.unop.hom.toNCPMap (F.unop.hom.toNCPMap x)
+      = b.unop.hom.toNCPMap (F.unop.hom.toNCPMap x) :=
+  ((cvnop_comp_apply a F x).symm.trans (cvnop_congr h x)).trans
+    (cvnop_comp_apply b F x)
+
+/-- `ℂᵤ` is initial in `CvN`, hence final in `CvNᵒᵖ`. -/
+noncomputable def cvnScalIsInitial : IsInitial (cvnScal.{u}) :=
+  IsInitial.ofUniqueHom
+    (fun X => InducedCategory.homMk (wUnit X.obj.base.carrier))
+    (fun _ f => InducedCategory.hom_ext (wUnit_unique f.hom))
+
+/-- The trivial algebra is final in `CvN`, hence initial in `CvNᵒᵖ`. -/
+noncomputable def cvnTrivIsTerminal : IsTerminal (cvnTriv.{u}) :=
+  IsTerminal.ofUniqueHom (fun X => InducedCategory.homMk (wTriv X.obj.base.carrier))
+    (fun _ _ => InducedCategory.hom_ext
+      (ncpu_ext fun _ => Subsingleton.elim (α := PUnit.{u + 1}) _ _))
+
+/-- The concrete presentation of `CvNᵒᵖ`, the restriction of `vnPres`: the
+final object is `ℂᵤ`, the binary coproducts are the products. -/
+noncomputable def cvnPres : CoprodPres (CWStarNCPU.{u}ᵒᵖ) where
+  T := Opposite.op cvnScal
+  hT := IsInitial.op (CWStarNCPU.{u}) cvnScalIsInitial
+  P X Y := Opposite.op (cvnProd X.unop Y.unop)
+  pinl X Y := Quiver.Hom.op
+    (InducedCategory.homMk (wFst X.unop.obj.base.carrier Y.unop.obj.base.carrier))
+  pinr X Y := Quiver.Hom.op
+    (InducedCategory.homMk (wSnd X.unop.obj.base.carrier Y.unop.obj.base.carrier))
+  hP X Y := BinaryCofan.IsColimit.mk _
+    (fun {_} u v => Quiver.Hom.op
+      (InducedCategory.homMk (wPair u.unop.hom v.unop.hom)))
+    (fun {_} _ _ => cvnop_hom_ext fun a => cvnop_comp_apply _ _ a)
+    (fun {_} _ _ => cvnop_hom_ext fun a => cvnop_comp_apply _ _ a)
+    (fun {_} _ _ m h₁ h₂ => cvnop_hom_ext fun a => by
+      refine Prod.ext ?_ ?_
+      · exact (cvnop_comp_apply _ m a).symm.trans (cvnop_congr h₁ a)
+      · exact (cvnop_comp_apply _ m a).symm.trans (cvnop_congr h₂ a))
+
+theorem cvnPres_from_apply (Y : CWStarNCPU.{u}ᵒᵖ) (z : ULift.{u} ℂ) :
+    (cvnPres.hT.from Y).unop.hom.toNCPMap z
+      = z.down • (1 : Y.unop.obj.base.carrier) := by
+  have h : cvnPres.hT.from Y
+      = Quiver.Hom.op (InducedCategory.homMk (wUnit Y.unop.obj.base.carrier)) :=
+    cvnPres.hT.hom_ext _ _
+  rw [h]
+  rfl
+
+theorem cvnPres_pmap_apply {X X' Y Y' : CWStarNCPU.{u}ᵒᵖ} (f : X ⟶ X') (g : Y ⟶ Y')
+    (x : (cvnPres.P X' Y').unop.obj.base.carrier) :
+    (cvnPres.pmap f g).unop.hom.toNCPMap x
+      = (f.unop.hom.toNCPMap x.1, g.unop.hom.toNCPMap x.2) := by
+  refine Prod.ext ?_ ?_
+  · exact cvnop_comp_apply f _ x
+  · exact cvnop_comp_apply g _ x
+
+/-- **189aI** (`effexamplesintro`, eff.tex:2020, Examples), second sentence:
+the full subcategory `CvNᵒᵖ` of `vNᵒᵖ` on the commutative von Neumann
+algebras is an effectus in total form as well.
+
+The point gives no proof.  Ours restricts the presentation `vnPres` to
+`CvNᵒᵖ` — `ℂᵤ` is commutative and so is a product of commutative algebras,
+so the final object and the binary coproducts of `vNᵒᵖ` stay inside the
+subcategory — and then pulls the three axioms of 180I back along the
+inclusion `CvNᵒᵖ ⥤ vNᵒᵖ`, which is fully faithful and therefore reflects
+pullbacks (`IsPullback.of_map_of_faithful`).  So `vn_isPushout1`,
+`vn_isPushout2` and `vn_jointlyMonic_aux` are reused verbatim; no von
+Neumann algebra theory is redone. -/
+theorem effectus_cvn : Nonempty (EffectusTotalStructure CWStarNCPU.{u}ᵒᵖ) := by
+  have : HasTerminal (CWStarNCPU.{u}ᵒᵖ) := cvnPres.hT.hasTerminal
+  have : HasInitial (CWStarNCPU.{u}ᵒᵖ) :=
+    (IsTerminal.op (CWStarNCPU.{u}) cvnTrivIsTerminal).hasInitial
+  have : ∀ X Y : CWStarNCPU.{u}ᵒᵖ, HasColimit (pair X Y) := fun X Y =>
+    HasColimit.mk ⟨_, cvnPres.hP X Y⟩
+  have : HasBinaryCoproducts (CWStarNCPU.{u}ᵒᵖ) :=
+    hasBinaryCoproducts_of_hasColimit_pair _
+  have : HasFiniteCoproducts (CWStarNCPU.{u}ᵒᵖ) :=
+    hasFiniteCoproducts_of_has_binary_and_initial
+  refine ⟨{ hasFiniteCoproducts := inferInstance
+            hasTerminal := inferInstance
+            effectus := effectusTotalForm_of_pres cvnPres ?_ ?_ ?_ }⟩
+  · intro X Y
+    refine IsPullback.of_map_of_faithful (IsCommWStar.{u}.ι.op) ?_
+    have e₁ : (IsCommWStar.{u}.ι.op).map (cvnPres.pmap (𝟙 X) (cvnPres.hT.from Y))
+        = Quiver.Hom.op (sq1i X.unop.obj.base.carrier Y.unop.obj.base.carrier) := by
+      refine vnop_hom_ext fun x => (cvnPres_pmap_apply _ _ x).trans ?_
+      refine Prod.ext ?_ ?_
+      · exact cvn_id_apply x.1
+      · exact cvnPres_from_apply Y x.2
+    have e₂ : (IsCommWStar.{u}.ι.op).map (cvnPres.pmap (cvnPres.hT.from X) (𝟙 Y))
+        = Quiver.Hom.op (sq1h X.unop.obj.base.carrier Y.unop.obj.base.carrier) := by
+      refine vnop_hom_ext fun x => (cvnPres_pmap_apply _ _ x).trans ?_
+      refine Prod.ext ?_ ?_
+      · exact cvnPres_from_apply X x.1
+      · exact cvn_id_apply x.2
+    have e₃ : (IsCommWStar.{u}.ι.op).map
+          (cvnPres.pmap (cvnPres.hT.from X) (𝟙 cvnPres.T))
+        = Quiver.Hom.op (sq1g X.unop.obj.base.carrier) := by
+      refine vnop_hom_ext fun x => (cvnPres_pmap_apply _ _ x).trans ?_
+      refine Prod.ext ?_ ?_
+      · exact cvnPres_from_apply X x.1
+      · exact cvn_id_apply x.2
+    have e₄ : (IsCommWStar.{u}.ι.op).map
+          (cvnPres.pmap (𝟙 cvnPres.T) (cvnPres.hT.from Y))
+        = Quiver.Hom.op (sq1f Y.unop.obj.base.carrier) := by
+      refine vnop_hom_ext fun x => (cvnPres_pmap_apply _ _ x).trans ?_
+      refine Prod.ext ?_ ?_
+      · exact cvn_id_apply x.1
+      · exact cvnPres_from_apply Y x.2
+    rw [e₁, e₂, e₃, e₄]
+    exact (vn_isPushout1 X.unop.obj.base.carrier Y.unop.obj.base.carrier).op
+  · intro X Y
+    refine IsPullback.of_map_of_faithful (IsCommWStar.{u}.ι.op) ?_
+    have f₁ : (IsCommWStar.{u}.ι.op).map (cvnPres.hT.from X)
+        = Quiver.Hom.op (sq2i X.unop.obj.base.carrier) :=
+      vnop_hom_ext fun z => cvnPres_from_apply X z
+    have f₄ : (IsCommWStar.{u}.ι.op).map
+          (cvnPres.pmap (cvnPres.hT.from X) (cvnPres.hT.from Y))
+        = Quiver.Hom.op (sq2f X.unop.obj.base.carrier Y.unop.obj.base.carrier) := by
+      refine vnop_hom_ext fun x => (cvnPres_pmap_apply _ _ x).trans ?_
+      refine Prod.ext ?_ ?_
+      · exact cvnPres_from_apply X x.1
+      · exact cvnPres_from_apply Y x.2
+    rw [f₄, f₁]
+    exact (vn_isPushout2 X.unop.obj.base.carrier Y.unop.obj.base.carrier).op
+  · intro Z a b hf hg
+    apply Quiver.Hom.unop_inj
+    apply InducedCategory.hom_ext
+    refine vn_jointlyMonic_aux a.unop.hom b.unop.hom (fun x => ?_) (fun x => ?_)
+    · exact cvnop_comp_congr hf x
+    · exact cvnop_comp_congr hg x
+
 /-! ## Infrastructure for the partial form (180V)
 
 The ncpsu-map counterpart of the block above: the category `vN_cpsu`, its

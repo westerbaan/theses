@@ -32,7 +32,8 @@ Design:
   quantum-gate discussion 222I–222IV, the
   commutant computation 223III (`Inv ϱ = [0,1]_{ϱ(𝒜)□}`, which needs the
   commutant apparatus of thesis A), and 221IIIa (`CvNᵒᵖ` has no dilations;
-  `CvNᵒᵖ` is not formalized).
+  `CvNᵒᵖ` is `CWStarNCPU` in `VNExamples.lean`, but its dilation structure
+  is not formalized).
 -/
 import Theses.B.Eff.DiamondAmp
 

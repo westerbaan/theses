@@ -25,6 +25,8 @@ import Theses.B.Eff.EffectAlgebras
 import Theses.B.Eff.WStarCat
 -- for 189aII.3(c): Mathlib's `FinitaryExtensive (CompHausLike P)`
 import Mathlib.Topology.Category.CompHaus.Limits
+-- for 189aII.3(b): `FinitaryExtensive Scheme` and `Spec`'s exactness properties
+import Mathlib.AlgebraicGeometry.Limits
 
 set_option warn.classDefReducibility false
 -- several proofs below do not need all of the ambient effectus structure
@@ -3035,20 +3037,9 @@ end ExtensiveEffectus
 (finitary) extensive category with a final object is an effectus in total
 form.
 
-Two of the point's three sub-items are formalized below —
-**(a) `Set`** as `extensive_effectus_set` and **(c) `CH`** as
-`extensive_effectus_compHaus`.  **(b) `CRngᵒᵖ`** is *not*, and this is a
-costing rather than an oversight: Mathlib has no `FinitaryExtensive` instance
-for `CommRingCatᵒᵖ`, and the only handle in reach is
-`FinitaryExtensive Scheme` (`Mathlib.AlgebraicGeometry.Limits`) transported
-along `AffineScheme ≌ CommRingCatᵒᵖ`, which additionally needs
-`AffineScheme.forgetToScheme` to preserve *and reflect* finite coproducts and
-pullbacks of coprojections — a development of its own, on top of an
-`AlgebraicGeometry` import nothing else in this tree uses.  Proving
-extensivity by hand is the same content: a coproduct in `CRngᵒᵖ` is the
-product ring `R × S`, and the van Kampen property is the statement that an
-`R × S`-algebra splits uniquely along the central idempotents `(1,0)` and
-`(0,1)`.
+All three of the point's sub-items are formalized below — **(a) `Set`** as
+`extensive_effectus_set`, **(b) `CRngᵒᵖ`** as `extensive_effectus_commRing`
+and **(c) `CH`** as `extensive_effectus_compHaus`.
 
 The neighbouring examples 189aII.1 (`OUSᵒᵖ`), 189aII.2 (`OUGᵒᵖ`) and 189aIII
 (`EJAᵒᵖ`) are separate points, each citing `[effintro]`/`[eja]`, and none of
@@ -3063,6 +3054,25 @@ effectus in total form.  Extensivity is Mathlib's `types.finitaryExtensive`;
 the rest is `extensive_effectus`. -/
 theorem extensive_effectus_set : EffectusTotalForm (Type u) :=
   extensive_effectus (Type u)
+
+/-- **189aII.3(b)** (`effexamplesintro`, eff.tex:2053, Examples): `CRngᵒᵖ`,
+the opposite of the category of commutative rings, is extensive with a final
+object — hence an effectus in total form.
+
+Extensivity is transported from `FinitaryExtensive Scheme` along
+`Spec : CRngᵒᵖ ⥤ Scheme` by Mathlib's reflection lemma
+`finitaryExtensive_of_preserves_and_reflects_isomorphism`, whose hypotheses
+are all already instances: `Spec` preserves pullbacks (it is a right
+adjoint), it preserves binary coproducts (`AlgebraicGeometry.Limits`:
+`Spec (R × S) = Spec R ∐ Spec S`), it is fully faithful and so reflects
+isomorphisms, and `CRngᵒᵖ` has finite coproducts and pullbacks because
+`CRng` has finite products and pushouts.  The final object of `CRngᵒᵖ`
+is `ℤ`. -/
+theorem extensive_effectus_commRing : EffectusTotalForm CommRingCat.{u}ᵒᵖ := by
+  have : FinitaryExtensive CommRingCat.{u}ᵒᵖ :=
+    finitaryExtensive_of_preserves_and_reflects_isomorphism
+      AlgebraicGeometry.Scheme.Spec.{u}
+  exact extensive_effectus CommRingCat.{u}ᵒᵖ
 
 /-- **189aII.3(c)** (`effexamplesintro`, eff.tex:2056, Examples): `CH`, the
 category of compact Hausdorff spaces and continuous maps, is extensive with a
