@@ -3199,29 +3199,291 @@ private theorem pcorner_exists_inclNcp (hc : IsCentral A z) :
 
 end CentralCorner
 
+
+/-! ### **171II**, step 1: `𝒜p` as a self-dual Hilbert `p𝒜p`-module
+
+dils.tex:6264–6281.  Mirrored (see the head of `Paschke.lean`), the thesis's
+`𝒜p` is the norm-closed *left* ideal `p𝒜 = {x : px = x}`, with the module
+action `b · x = bx` of `b ∈ p𝒜p` and the inner product `⟨x,y⟩ = yx*` — the
+mirror image of `(αp)·(pap) = αpap` and `⟨αp, ap⟩ = pα*ap`.
+
+The three steps of the thesis's paragraph are `cornerLeft.instCStarModule`
+(pre-Hilbert module, the C*-identity giving that the module norm is the norm
+of `𝒜`), `cornerLeft.instCompleteSpace` (`p𝒜` is norm closed in `𝒜`, which is
+complete) and `cornerLeft_selfDual`: the ultranorm seminorms of `p𝒜` are
+those of `𝒜` restricted (`cornerLeft_unSeminorm_eq`, and back along the
+standard corner, `cornerLeft_unSeminorm_eq'`), so `p𝒜` inherits ultranorm
+completeness from `𝒜` — which is self dual over itself by **141III**
+`selfDual_self` — and is self dual by **149V** `dils_selfdual`. -/
+
+section CornerLeft
+
+set_option linter.unusedSectionVars false
+
+variable {A : Type u} [CStarAlgebra A] [PartialOrder A] [StarOrderedRing A]
+
+/-- **171II**, step 1: the thesis's `𝒜p`, mirrored — the norm-closed left
+ideal `p𝒜 = {x ∈ 𝒜 : px = x}`, as a ℂ-subspace of `𝒜`. -/
+def cornerLeft (p : A) : Submodule ℂ A where
+  carrier := {x : A | p * x = x}
+  add_mem' := fun {a b} ha hb => show p * (a + b) = a + b by
+    rw [mul_add, show p * a = a from ha, show p * b = b from hb]
+  zero_mem' := show p * (0 : A) = 0 by rw [mul_zero]
+  smul_mem' := fun c x hx => show p * (c • x) = c • x by
+    rw [mul_smul_comm, show p * x = x from hx]
+
+variable {p : A}
+
+theorem cornerLeft_mem_iff {x : A} : x ∈ cornerLeft p ↔ p * x = x := Iff.rfl
+
+theorem cornerLeft_mul (x : cornerLeft p) : p * (x : A) = (x : A) := x.2
+
+variable [Fact (IsStarProjection p)]
+
+theorem cornerLeft_star_mul (x : cornerLeft p) : star (x : A) * p = star (x : A) := by
+  have h := congrArg star (cornerLeft_mul x)
+  rwa [star_mul, (cornerSet.proj p).isSelfAdjoint.star_eq] at h
+
+noncomputable instance cornerLeft.instSMul :
+    SMul (cornerSet A p) (cornerLeft p) :=
+  ⟨fun b x => ⟨b.1 * (x : A), show p * (b.1 * (x : A)) = b.1 * (x : A) by
+    rw [← mul_assoc, cornerSet.mul_left]⟩⟩
+
+@[simp] theorem cornerLeft_smul_coe (b : cornerSet A p) (x : cornerLeft p) :
+    ((b • x : cornerLeft p) : A) = b.1 * (x : A) := rfl
+
+/-- The `p𝒜p`-valued inner product `⟨x,y⟩ = yx*` of `p𝒜`. -/
+def cornerLeftInner (x y : cornerLeft p) : cornerSet A p :=
+  ⟨(y : A) * star (x : A), by
+    have hy : p * (y : A) = (y : A) := y.2
+    have hx : star (x : A) * p = star (x : A) := cornerLeft_star_mul x
+    calc p * ((y : A) * star (x : A)) * p = (p * (y : A)) * (star (x : A) * p) := by
+          noncomm_ring
+      _ = (y : A) * star (x : A) := by rw [hy, hx]⟩
+
+@[simp] theorem cornerLeftInner_coe (x y : cornerLeft p) :
+    (cornerLeftInner x y).1 = (y : A) * star (x : A) := rfl
+
+noncomputable instance cornerLeft.instCStarModule :
+    CStarModule (cornerSet A p) (cornerLeft p) where
+  inner := cornerLeftInner
+  inner_add_right := by
+    intro x y z
+    refine Subtype.ext ?_
+    show ((y : A) + (z : A)) * star (x : A)
+      = (y : A) * star (x : A) + (z : A) * star (x : A)
+    rw [add_mul]
+  inner_self_nonneg := by
+    intro x
+    show (0 : A) ≤ (x : A) * star (x : A)
+    exact mul_star_self_nonneg _
+  inner_self := by
+    intro x
+    constructor
+    · intro h
+      have h1 : (x : A) * star (x : A) = 0 := congrArg Subtype.val h
+      exact Subtype.ext ((CStarRing.mul_star_self_eq_zero_iff _).mp h1)
+    · intro h
+      subst h
+      refine Subtype.ext ?_
+      show ((0 : cornerLeft p) : A) * star ((0 : cornerLeft p) : A) = 0
+      simp
+  inner_op_smul_right := by
+    intro a x y
+    refine Subtype.ext ?_
+    show (a.1 * (y : A)) * star (x : A) = a.1 * ((y : A) * star (x : A))
+    rw [mul_assoc]
+  inner_smul_right_complex := by
+    intro c x y
+    refine Subtype.ext ?_
+    show (c • (y : A)) * star (x : A) = c • ((y : A) * star (x : A))
+    rw [smul_mul_assoc]
+  star_inner := by
+    intro x y
+    refine Subtype.ext ?_
+    show star ((y : A) * star (x : A)) = (x : A) * star (y : A)
+    rw [star_mul, star_star]
+  norm_eq_sqrt_norm_inner_self := by
+    intro x
+    show ‖(x : A)‖ = Real.sqrt ‖(x : A) * star (x : A)‖
+    rw [CStarRing.norm_self_mul_star, Real.sqrt_mul_self (norm_nonneg _)]
+
+@[simp] theorem cornerLeft_inner_coe (x y : cornerLeft p) :
+    (inner (cornerSet A p) x y : cornerSet A p).1 = (y : A) * star (x : A) := rfl
+
+theorem cornerLeft_norm_coe (x : cornerLeft p) : ‖x‖ = ‖(x : A)‖ := rfl
+
+/-- `p𝒜` is norm closed in `𝒜`, hence complete: the thesis's *"`𝒜p` is norm
+closed in `𝒜` and `𝒜` is norm complete"* (dils.tex:6270). -/
+instance cornerLeft.instCompleteSpace : CompleteSpace (cornerLeft p) := by
+  have hcont : Continuous fun a : A => p * a - a := by fun_prop
+  have hset : ((cornerLeft p : Submodule ℂ A) : Set A)
+      = (fun a : A => p * a - a) ⁻¹' {0} := by
+    ext a
+    show p * a = a ↔ _
+    simp [sub_eq_zero]
+  have hcl : IsClosed ((cornerLeft p : Submodule ℂ A) : Set A) := by
+    rw [hset]
+    exact isClosed_singleton.preimage hcont
+  exact hcl.completeSpace_coe
+
+/-! #### The ultranorm uniformity of `p𝒜` is the one induced from `𝒜` -/
+
+/-- Left multiplication by a fixed element only changes the np-functional:
+`‖bv‖_ω = ‖v‖_{ω(b·b*)}` (mirrored). -/
+theorem unSeminorm_mulInner_left_mul [VonNeumannAlgebra A] (ω : NPFunctional A)
+    (b v : A) :
+    unSeminorm ω (mulInner A) (b * v)
+      = unSeminorm (conjNP (star b) ω) (mulInner A) v := by
+  rw [unSeminorm, unSeminorm]
+  congr 2
+  show ω ((b * v) * star (b * v)) = conjNP (star b) ω (v * star v)
+  rw [conjNP_apply, star_star, star_mul]
+  congr 1
+  noncomm_ring
+
+theorem unSeminorm_mulInner_neg (ω : NPFunctional A) (v : A) :
+    unSeminorm ω (mulInner A) (-v) = unSeminorm ω (mulInner A) v := by
+  rw [unSeminorm, unSeminorm]
+  congr 2
+  show ω ((-v) * star (-v)) = ω (v * star v)
+  simp
+
+variable [VonNeumannAlgebra A]
+
+/-- An `𝒜`-np-functional restricted to `p𝒜p` computes the same ultranorm
+seminorm on `p𝒜` as it does on `𝒜`. -/
+theorem cornerLeft_unSeminorm_eq (ω : NPFunctional A) (d : cornerLeft p) :
+    unSeminorm (cornerSet.restrictNP p ω)
+        (inner (cornerSet A p) : cornerLeft p → cornerLeft p → cornerSet A p) d
+      = unSeminorm ω (mulInner A) (d : A) := rfl
+
+/-- Every np-functional of the corner `p𝒜p` extends to one of `𝒜` along the
+standard corner `h_p`. -/
+noncomputable def cornerLeftNP (ν : NPFunctional (cornerSet A p)) : NPFunctional A :=
+  compNP (ncpPos (cornerNcp p)) (cornerNcp p).preservesDirSups' ν
+
+theorem cornerLeftNP_apply (ν : NPFunctional (cornerSet A p)) (a : A) :
+    cornerLeftNP ν a = ν (cornerNcp p a) := rfl
+
+theorem cornerLeft_unSeminorm_eq' (ν : NPFunctional (cornerSet A p))
+    (d : cornerLeft p) :
+    unSeminorm ν
+        (inner (cornerSet A p) : cornerLeft p → cornerLeft p → cornerSet A p) d
+      = unSeminorm (cornerLeftNP ν) (mulInner A) (d : A) := by
+  have hcorner : cornerNcp p ((d : A) * star (d : A)) = cornerLeftInner d d := by
+    refine Subtype.ext ?_
+    rw [cornerNcp_val]
+    show p * ((d : A) * star (d : A)) * p = (d : A) * star (d : A)
+    have hd : p * (d : A) = (d : A) := d.2
+    have hd' : star (d : A) * p = star (d : A) := cornerLeft_star_mul d
+    calc p * ((d : A) * star (d : A)) * p = (p * (d : A)) * (star (d : A) * p) := by
+          noncomm_ring
+      _ = (d : A) * star (d : A) := by rw [hd, hd']
+  rw [unSeminorm, unSeminorm]
+  congr 2
+  show ν (cornerLeftInner d d) = cornerLeftNP ν ((d : A) * star (d : A))
+  rw [cornerLeftNP_apply, hcorner]
+
+/-- `𝒜` is ultranorm complete over itself: **141III** `selfDual_self` through
+**149V** `dils_selfdual`. -/
+theorem unComplete_mulInner_self : UnComplete (mulInner A) :=
+  ((dils_selfdual (𝒷 := A) (X := A)).out 0 1).mp (selfDual_self A)
+
+variable [VonNeumannAlgebra (cornerSet A p)]
+
+/-- *"The module `𝒜p` is ultranorm closed in `𝒜` … As self-duality is
+equivalent to ultranorm completeness, we see `𝒜p` is self dual as well"*
+(dils.tex:6275–6281), mirrored: an ultranorm-Cauchy filter on `p𝒜` pushes to
+one on `𝒜`, whose limit `y₀` again satisfies `py₀ = y₀`. -/
+theorem cornerLeft_unComplete :
+    UnComplete
+      (inner (cornerSet A p) : cornerLeft p → cornerLeft p → cornerSet A p) := by
+  intro F hF hCauchy
+  set val : cornerLeft p → A := fun x => (x : A) with hvaldef
+  have hGne : (F.map val).NeBot := hF.map _
+  have hGc : UnCauchy (mulInner A) (F.map val) := by
+    intro ω ε hε
+    obtain ⟨s, hs, hsle⟩ := hCauchy (cornerSet.restrictNP p ω) ε hε
+    refine ⟨val '' s, Filter.image_mem_map hs, ?_⟩
+    rintro _ ⟨x, hx, rfl⟩ _ ⟨y, hy, rfl⟩
+    have h := hsle x hx y hy
+    rw [cornerLeft_unSeminorm_eq ω (x - y)] at h
+    exact h
+  obtain ⟨y₀, hy₀⟩ := unComplete_mulInner_self (F.map val) hGne hGc
+  have hrange : {z : A | p * z = z} ∈ F.map val :=
+    Filter.mem_map.mpr (Filter.univ_mem' fun x => x.2)
+  have hmem : p * y₀ = y₀ := by
+    have hkey : ∀ ω : NPFunctional A, unSeminorm ω (mulInner A) (p * y₀ - y₀) = 0 := by
+      intro ω
+      have hid : ∀ z : A, p * z = z → p * y₀ - y₀ = -((p - 1) * (z - y₀)) := by
+        intro z hz
+        have h1 : (p - 1) * (z - y₀) = p * z - p * y₀ - z + y₀ := by noncomm_ring
+        rw [h1, hz]
+        abel
+      have hev : ∀ᶠ z in F.map val,
+          unSeminorm ω (mulInner A) (p * y₀ - y₀)
+            = unSeminorm (conjNP (star (p - 1)) ω) (mulInner A) (id z - y₀) := by
+        filter_upwards [hrange] with z hz
+        rw [hid z hz, unSeminorm_mulInner_neg, unSeminorm_mulInner_left_mul]
+        rfl
+      have h0 := (hy₀ (conjNP (star (p - 1)) ω)).congr' (hev.mono fun z hz => hz.symm)
+      exact tendsto_nhds_unique tendsto_const_nhds h0
+    set w : A := p * y₀ - y₀ with hwdef
+    have hww : w * star w = 0 := by
+      refine VonNeumannAlgebra.np_faithful _ (mul_star_self_nonneg w) fun ω => ?_
+      have h := hkey ω
+      rw [unSeminorm] at h
+      have hnn : (0 : ℂ) ≤ ω (w * star w) :=
+        npFunctional_nonneg ω (mul_star_self_nonneg w)
+      have hre : 0 ≤ (ω (w * star w)).re := (Complex.le_def.mp hnn).1
+      have him : (ω (w * star w)).im = 0 := ((Complex.le_def.mp hnn).2).symm
+      have hre0 : (ω (w * star w)).re = 0 := by
+        have := (Real.sqrt_eq_zero hre).mp h
+        exact this
+      exact Complex.ext hre0 him
+    have := (CStarRing.mul_star_self_eq_zero_iff w).mp hww
+    rw [hwdef] at this
+    exact sub_eq_zero.mp this
+  set x₀ : cornerLeft p := ⟨y₀, cornerLeft_mem_iff.mpr hmem⟩ with hx₀def
+  refine ⟨x₀, ?_⟩
+  intro ν
+  have h := hy₀ (cornerLeftNP ν)
+  rw [Filter.tendsto_map'_iff] at h
+  refine h.congr fun x => ?_
+  show unSeminorm (cornerLeftNP ν) (mulInner A) ((x : A) - y₀)
+    = unSeminorm ν (inner (cornerSet A p)) (x - x₀)
+  rw [cornerLeft_unSeminorm_eq' ν (x - x₀)]
+  rfl
+
+/-- **171II**, step 1 (dils.tex:6281): `p𝒜` is a self-dual Hilbert
+`p𝒜p`-module. -/
+theorem cornerLeft_selfDual : SelfDual (cornerSet A p) (cornerLeft p) :=
+  ((dils_selfdual (𝒷 := cornerSet A p) (X := cornerLeft p)).out 1 0).mp
+    cornerLeft_unComplete
+
+end CornerLeft
+
 /-! ### Infrastructure for **171II**: the module `𝒜 ⊗_{h_p} p𝒜p`
 
 The thesis proves `paschke-corner` in three steps: `𝒜p` is a self-dual
-Hilbert `p𝒜p`-module, `𝒜 ⊗_{h_p} p𝒜p ≅ 𝒜p`, and `𝒷ᵃ(𝒜p) ≅ ⌈⌈p⌉⌉𝒜`.  The
-development below **replaces the first two steps**: `𝒜p` is never
-constructed.  Everything is done inside the abstract `PaschkeModule` of
-**154III**, using three observations:
+Hilbert `p𝒜p`-module, `𝒜 ⊗_{h_p} p𝒜p ≅ 𝒜p`, and `𝒷ᵃ(𝒜p) ≅ ⌈⌈p⌉⌉𝒜`.  All
+three are run: step 1 is `cornerLeft_selfDual` just above, step 2 is
+`cornerU` and `pcorner_tprod_surjective`, step 3 is
+`pcorner_rho_surjective`.  What this section supplies for them is:
 
 * every elementary tensor is of the form `a ⊗ 1` (`pcorner_tprod_eq_one`),
   because `a ⊗ pbp = (pbp·a) ⊗ 1`; so the elementary tensors form a
   `p𝒜p`-submodule, ultranorm dense by **160IV**.2 together with
-  `paschkeModule_inner_tprod_separating` (`pcorner_unDense_tprod`);
+  `paschkeModule_inner_tprod_separating` (`pcorner_unDense_tprod`) — this is
+  what extends the inner-product preservation of `U` off the elementary
+  tensors, in step 2;
 * the thesis's orthonormal basis transports to `(uᵢ ⊗ 1)ᵢ`, for the partial
   isometries of **83V** `cceil_sum` (`pcorner_onb_data`,
   `pcorner_isONBasis_tprod`) — the only analytic step, and it is the
   thesis's own: `⟨uᵢ ⊗ 1, a ⊗ 1⟩ • (uᵢ ⊗ 1) = p a qᵢ ⊗ 1` and `∑ᵢ qᵢ ↑ ⌈⌈p⌉⌉`
   ultrastrongly, which is `npFunctional_tendsto_of_isLUB` for the
-  np-functional `x ↦ ω(φ(p a x a* p))`;
-* `|a ⊗ 1⟩⟨b ⊗ 1| = ϱ(b* p a)` (`pcorner_mketbra_tprod`), an identity
-  checked on elementary tensors — this is what makes `ϱ` surjective, since
-  by **159IV** `ketbra_ultraweakly_dense` the ketbras of a basis span an
-  ultraweakly dense subspace and the basis above consists of elementary
-  tensors.
+  np-functional `x ↦ ω(φ(p a x a* p))`.
 
 `pcorner_rho_eq_zero_iff` and `pcorner_forall_mul_eq_zero_iff` compute the
 kernel: `ϱ(a) = 0` iff `pxa = 0` for all `x` iff `⌈⌈p⌉⌉a = 0`, the second
@@ -3233,35 +3495,6 @@ private theorem pcorner_eq_zero_of_star_mul_self {C : Type*} [CStarAlgebra C] (x
   have h1 : ‖x‖ * ‖x‖ = 0 := by
     rw [← CStarRing.norm_star_mul_self, h, norm_zero]
   exact norm_eq_zero.mp (by nlinarith [norm_nonneg x])
-
-/-- np-functionals transfer back from the opposite algebra (the converse of
-`npFunctionalOp`). -/
-private noncomputable def pcorner_npUnop {C : Type u} [CStarAlgebra C] [PartialOrder C]
-    [StarOrderedRing C] (ν : NPFunctional Cᵐᵒᵖ) : NPFunctional C where
-  toPositiveLinearMap :=
-    PositiveLinearMap.mk₀
-      ((ν.toPositiveLinearMap : Cᵐᵒᵖ →ₗ[ℂ] ℂ).comp
-        ((MulOpposite.opLinearEquiv ℂ).toLinearMap : C →ₗ[ℂ] Cᵐᵒᵖ))
-      (fun x hx => npFunctional_nonneg ν ((mop_nonneg_iff _).mpr hx))
-  preservesDirSups' := by
-    intro D s hne hdir hlub
-    have hlub' : IsLUB (selfAdjointUnop.symm '' D) (selfAdjointUnop.symm s) :=
-      selfAdjointUnop.symm.isLUB_image'.mpr hlub
-    have h := ν.preservesDirSups' (selfAdjointUnop.symm '' D) (selfAdjointUnop.symm s)
-      (hne.image _) (by
-        rintro _ ⟨x, hx, rfl⟩ _ ⟨y, hy, rfl⟩
-        obtain ⟨w, hw, hxw, hyw⟩ := hdir x hx y hy
-        exact ⟨selfAdjointUnop.symm w, ⟨w, hw, rfl⟩, hxw, hyw⟩) hlub'
-    rw [Set.image_image] at h
-    exact h
-
-private theorem pcorner_uwTendsto_op {C : Type u} [CStarAlgebra C] [PartialOrder C]
-    [StarOrderedRing C] {κ : Type*} {l : Filter κ} (f : κ → C) (c : C)
-    (h : UWTendsto f l c) :
-    UWTendsto (fun i => MulOpposite.op (f i)) l (MulOpposite.op c) := by
-  rw [uwTendsto_iff]
-  intro ν
-  exact (uwTendsto_iff f l c).mp h (pcorner_npUnop ν)
 
 /-! ### Auxiliary: transporting a Paschke dilation along a bijective nmiu-map
 
@@ -3399,25 +3632,6 @@ private theorem pcorner_tprod_p_left (a : A) : M.tprod a 1 = M.tprod (p * a) 1 :
     abel
   have := (CStarModule.inner_self (A := cornerSet A p)).mp h
   exact sub_eq_zero.mp this
-
-/-- The ketbra of two elementary tensors is in the image of `ϱ`. -/
-private theorem pcorner_mketbra_tprod (x y : A) :
-    mketbraBa (M.tprod x 1) (M.tprod y 1) = (M.ρ (star y * p * x)).unop := by
-  refine paschkeModule_ba_ext φ M fun a b => ?_
-  have hbr : b.1 * p = b.1 := cornerSet.mul_right b
-  show (inner (cornerSet A p) (M.tprod y 1) (M.tprod a b) : cornerSet A p)
-      • M.tprod x 1 = _
-  rw [M.inner_tprod, M.ρ_tprod, star_one, mul_one]
-  rw [M.compat.smul_action, mul_one,
-    pcorner_tprod_eq_one hval M x (b * φ (a * star y)),
-    pcorner_tprod_eq_one hval M (a * (star y * p * x)) b]
-  congr 1
-  show (b * φ (a * star y)).1 * x = b.1 * (a * (star y * p * x))
-  rw [cornerSet.val_mul, hval]
-  calc b.1 * (p * (a * star y) * p) * x = (b.1 * p) * (a * star y) * (p * x) := by
-        noncomm_ring
-    _ = b.1 * (a * (star y * p * x)) := by rw [hbr]; noncomm_ring
-
 
 /-- Sums pull out of the first argument of `⊗`. -/
 private theorem pcorner_tprod_sum {κ : Type*} (s : Finset κ) (f : κ → A) (b : cornerSet A p) :
@@ -3977,11 +4191,11 @@ private theorem pcorner_forall_mul_eq_zero_iff (a : A) :
 
 /-! ### `ϱ` is surjective, with kernel `⌈⌈p⌉⌉^⊥𝒜`
 
-`|a ⊗ 1⟩⟨b ⊗ 1| = ϱ(b* p a)`, the basis of **159IV** consists of elementary
-tensors, and the range of `ϱ` is ultraweakly closed (**48VI**.1 applied to
-the injective corestriction `σ : ⌈⌈p⌉⌉𝒜 → 𝒷ᵃ(𝒜 ⊗_{h_p} p𝒜p)ᵐᵒᵖ`, plus
-**73IX** `vnsac`).  This is the thesis's "`ϱ₀` is surjective and
-`⌈ϱ₀⌉ = ⌈⌈p⌉⌉`", without `𝒜p`. -/
+The corestriction `σ : ⌈⌈p⌉⌉𝒜 → 𝒷ᵃ(𝒜 ⊗_{h_p} p𝒜p)ᵐᵒᵖ` of `ϱ` is injective
+(`pcorner_sigma_injective`): that is the thesis's `⌈ϱ₀⌉ = ⌈⌈p⌉⌉`, computed
+through `pcorner_forall_mul_eq_zero_iff`.  That `σ` is *surjective* is step 3
+of **171II**, which needs the isomorphism of step 2 and is proved in
+`section PaschkeCornerStep3` below. -/
 
 /-- The corestriction of `ϱ` to `⌈⌈p⌉⌉𝒜`: an **injective** nmiu-map with the
 same range. -/
@@ -4089,79 +4303,701 @@ private theorem pcorner_sigma_centralCorner (a : A) :
       = M.ρ a :=
   pcorner_rho_cceil hval M a
 
-/-- **171II**, step 3: `ϱ` is surjective. -/
+end PaschkeCornerAux
+
+/-! ### **171II**, step 2: `𝒜 ⊗_{h_p} p𝒜p ≅ 𝒜p`
+
+dils.tex:6283–6305, mirrored.  `B(a, b) = ba : 𝒜 × p𝒜p → p𝒜` is
+`h_p`-compatible (`cornerB_phiCompatible`; the bound of **154II** holds with
+`r = 1`, both sides being `‖∑ᵢⱼ bᵢaᵢaⱼ*bⱼ*‖`), so by the universal property
+of **154III** it lifts to a bounded module map `U` with `U(a ⊗ b) = ba`.
+`U` is surjective because `U(a ⊗ 1) = pa` exhausts `p𝒜`, and injective
+because it preserves the inner product — checked on elementary tensors and
+extended by the ultranorm density of those (`pcorner_unDense_tprod`) with
+**148I**.  The upshot used below is `pcorner_tprod_surjective`: *every*
+element of `𝒜 ⊗_{h_p} p𝒜p` is an elementary tensor `a ⊗ 1`. -/
+
+section PaschkeCornerIso
+
+set_option linter.unusedSectionVars false
+
+variable {A : Type u} [CStarAlgebra A] [PartialOrder A] [StarOrderedRing A]
+  [VonNeumannAlgebra A] {p : A} [Fact (IsStarProjection p)]
+
+/-- The thesis's `B(α, pap) = α pap`, mirrored: `B(a,b) = ba`. -/
+def cornerB (a : A) (b : cornerSet A p) : cornerLeft p :=
+  ⟨b.1 * a, show p * (b.1 * a) = b.1 * a by rw [← mul_assoc, cornerSet.mul_left]⟩
+
+@[simp] theorem cornerB_coe (a : A) (b : cornerSet A p) :
+    ((cornerB a b : cornerLeft p) : A) = b.1 * a := rfl
+
+variable {φ : NCPMap A (cornerSet A p)} (hval : ∀ a : A, (φ a).1 = p * a * p)
+
+include hval
+
+private theorem cornerSet_val_star_mul (c : cornerSet A p) : p * star c.1 = star c.1 := by
+  have h := congrArg star (cornerSet.mul_right c)
+  rwa [star_mul, (cornerSet.proj p).isSelfAdjoint.star_eq] at h
+
+private theorem cornerB_phiCompatible : PhiCompatible ⇑φ (cornerB (A := A) (p := p)) := by
+  have hp1 : ∀ c : cornerSet A p, c.1 * p = c.1 := fun c => cornerSet.mul_right c
+  have hp2 : ∀ c : cornerSet A p, p * star c.1 = star c.1 :=
+    fun c => cornerSet_val_star_mul hval c
+  refine { add_left := ?_, add_right := ?_, smul_complex := ?_, smul_action := ?_,
+           bound := ⟨1, one_pos, ?_⟩ }
+  · intro a a' b
+    refine Subtype.ext ?_
+    show b.1 * (a + a') = b.1 * a + b.1 * a'
+    rw [mul_add]
+  · intro a b b'
+    refine Subtype.ext ?_
+    show (b.1 + b'.1) * a = b.1 * a + b'.1 * a
+    rw [add_mul]
+  · intro c a b
+    refine Subtype.ext ?_
+    show b.1 * (c • a) = c • (b.1 * a)
+    rw [mul_smul_comm]
+  · intro a b c
+    refine Subtype.ext ?_
+    show c.1 * (b.1 * a) = (c * b).1 * a
+    rw [cornerSet.val_mul, mul_assoc]
+  · intro n a b
+    classical
+    have hcoe : ∀ f : Fin n → cornerLeft p,
+        ((∑ i, f i : cornerLeft p) : A) = ∑ i, ((f i : cornerLeft p) : A) := by
+      intro f
+      exact map_sum (Submodule.subtype (cornerLeft p)) f Finset.univ
+    have hcoe2 : ∀ f : Fin n → cornerSet A p, ((∑ i, f i : cornerSet A p)).1 = ∑ i, (f i).1 := by
+      intro f
+      exact map_sum (cornerSet.valAddHom (p := p)) f Finset.univ
+    set w : A := ∑ i, (b i).1 * a i with hwdef
+    have hLHS : ‖∑ i, cornerB (a i) (b i)‖ = ‖w‖ := by
+      show ‖((∑ i, cornerB (a i) (b i) : cornerLeft p) : A)‖ = ‖w‖
+      rw [hcoe]
+      rfl
+    have hprod : w * star w
+        = ∑ i, ∑ j, (b i).1 * (a i * star (a j)) * star ((b j).1) := by
+      rw [hwdef, star_sum, Finset.sum_mul_sum]
+      refine Finset.sum_congr rfl fun i _ => Finset.sum_congr rfl fun j _ => ?_
+      rw [star_mul]
+      noncomm_ring
+    have hterm : ∀ i j, ((b i * φ (a i * star (a j)) * star (b j) : cornerSet A p)).1
+        = (b i).1 * (a i * star (a j)) * star ((b j).1) := by
+      intro i j
+      rw [cornerSet.val_mul, cornerSet.val_mul, cornerSet.val_star, hval]
+      calc (b i).1 * (p * (a i * star (a j)) * p) * star ((b j).1)
+          = ((b i).1 * p) * (a i * star (a j)) * (p * star ((b j).1)) := by noncomm_ring
+        _ = (b i).1 * (a i * star (a j)) * star ((b j).1) := by rw [hp1, hp2]
+    have hRHS : ‖(∑ i, ∑ j, b i * φ (a i * star (a j)) * star (b j) : cornerSet A p)‖
+        = ‖w * star w‖ := by
+      rw [cornerSet.norm_def, hcoe2, hprod]
+      congr 1
+      refine Finset.sum_congr rfl fun i _ => ?_
+      rw [hcoe2]
+      exact Finset.sum_congr rfl fun j _ => hterm i j
+    rw [hLHS, hRHS, one_mul, CStarRing.norm_self_mul_star]
+    exact le_of_eq (sq _)
+
+variable [VonNeumannAlgebra (cornerSet A p)] (M : PaschkeModule φ)
+
+private theorem cornerU_exists :
+    ∃! U : M.X → cornerLeft p,
+      (∃ C : ℝ, IsBoundedModuleMap (cstarBInner (cornerSet A p) M.X)
+        (cstarBInner (cornerSet A p) (cornerLeft p)) C U) ∧
+      ∀ a b, U (M.tprod a b) = cornerB a b :=
+  M.univ (cornerLeft p) inferInstance inferInstance inferInstance inferInstance
+    inferInstance cornerLeft_selfDual cornerB (cornerB_phiCompatible hval)
+
+/-- **171II**, step 2: the unique bounded module map `U` with
+`U(a ⊗ b) = ba` (the thesis's `U(α ⊗ pap) = α pap`). -/
+private noncomputable def cornerU : M.X → cornerLeft p := (cornerU_exists hval M).choose
+
+private theorem cornerU_bounded : ∃ C : ℝ,
+    IsBoundedModuleMap (cstarBInner (cornerSet A p) M.X)
+      (cstarBInner (cornerSet A p) (cornerLeft p)) C (cornerU hval M) :=
+  (cornerU_exists hval M).choose_spec.1.1
+
+private theorem cornerU_tprod (a : A) (b : cornerSet A p) :
+    cornerU hval M (M.tprod a b) = cornerB a b :=
+  (cornerU_exists hval M).choose_spec.1.2 a b
+
+private theorem cornerU_sub (x y : M.X) :
+    cornerU hval M (x - y) = cornerU hval M x - cornerU hval M y := by
+  obtain ⟨C, hC⟩ := cornerU_bounded hval M
+  have h := hC.add (x - y) y
+  rw [sub_add_cancel] at h
+  rw [h]
+  abel
+
+/-- `U` preserves the inner product on elementary tensors. -/
+private theorem cornerU_inner_tprod (x y : A) (b c : cornerSet A p) :
+    (inner (cornerSet A p) (cornerU hval M (M.tprod x b))
+        (cornerU hval M (M.tprod y c)) : cornerSet A p)
+      = inner (cornerSet A p) (M.tprod x b) (M.tprod y c) := by
+  rw [cornerU_tprod, cornerU_tprod, M.inner_tprod]
+  refine Subtype.ext ?_
+  show (c.1 * y) * star (b.1 * x) = ((c * φ (y * star x) * star b : cornerSet A p)).1
+  rw [cornerSet.val_mul, cornerSet.val_mul, cornerSet.val_star, hval, star_mul]
+  calc c.1 * y * (star x * star b.1)
+      = c.1 * (y * star x) * star b.1 := by noncomm_ring
+    _ = (c.1 * p) * (y * star x) * (p * star b.1) := by
+        rw [cornerSet.mul_right c, cornerSet_val_star_mul hval b]
+    _ = c.1 * (p * (y * star x) * p) * star b.1 := by noncomm_ring
+
+/-- `U` preserves the inner product when the first argument is an elementary
+tensor: the elementary tensors are ultranorm dense (**160IV**.2, as
+`pcorner_unDense_tprod`) and `U` is ultranorm continuous (**148I**), so the
+computation on elementary tensors extends. -/
+private theorem cornerU_inner_left (x : A) (b : cornerSet A p) (z : M.X) :
+    (inner (cornerSet A p) (cornerU hval M (M.tprod x b)) (cornerU hval M z)
+      : cornerSet A p) = inner (cornerSet A p) (M.tprod x b) z := by
+  classical
+  obtain ⟨C, hC⟩ := cornerU_bounded hval M
+  set C' : ℝ := |C| + 1 with hC'def
+  have hC'0 : (0 : ℝ) ≤ C' := by positivity
+  have hC' : IsBoundedModuleMap (cstarBInner (cornerSet A p) M.X)
+      (cstarBInner (cornerSet A p) (cornerLeft p)) C' (cornerU hval M) :=
+    { add := hC.add
+      smul_complex := hC.smul_complex
+      smul := hC.smul
+      bound := fun z => (hC.bound z).trans (by
+        refine mul_le_mul_of_nonneg_right ?_ ?_
+        · have : C ≤ |C| := le_abs_self C
+          linarith
+        · exact Real.sqrt_nonneg _) }
+  set u : M.X := M.tprod x b with hudef
+  set Uu : cornerLeft p := cornerU hval M u with hUudef
+  refine eq_of_forall_npFunctional fun ν => ?_
+  set K : ℝ :=
+    unSeminorm ν (inner (cornerSet A p) : cornerLeft p → cornerLeft p → cornerSet A p) Uu * C'
+      + unSeminorm ν (inner (cornerSet A p) : M.X → M.X → cornerSet A p) u + 1 with hKdef
+  have hK0 : (0 : ℝ) < K := by
+    have h1 : (0:ℝ) ≤ unSeminorm ν
+        (inner (cornerSet A p) : cornerLeft p → cornerLeft p → cornerSet A p) Uu :=
+      unSeminorm_nonneg _ _ _
+    have h2 : (0:ℝ) ≤ unSeminorm ν
+        (inner (cornerSet A p) : M.X → M.X → cornerSet A p) u := unSeminorm_nonneg _ _ _
+    have := mul_nonneg h1 hC'0
+    rw [hKdef]; linarith
+  have hsmall : ∀ ε : ℝ, 0 < ε →
+      ‖ν (inner (cornerSet A p) Uu (cornerU hval M z))
+        - ν (inner (cornerSet A p) u z)‖ ≤ ε := by
+    intro ε hε
+    set δ : ℝ := ε / K with hδdef
+    have hδ0 : 0 < δ := div_pos hε hK0
+    obtain ⟨a, ha⟩ := pcorner_unDense_tprod hval M z 1 (fun _ => ν) δ hδ0
+    set v : M.X := M.tprod a 1 with hvdef
+    have hzv : unSeminorm ν (inner (cornerSet A p) : M.X → M.X → cornerSet A p) (z - v) ≤ δ :=
+      ha 0
+    have hmid : (inner (cornerSet A p) Uu (cornerU hval M v) : cornerSet A p)
+        = inner (cornerSet A p) u v := by
+      rw [hUudef, hudef, hvdef]
+      exact cornerU_inner_tprod hval M x a b 1
+    have hsplit : (inner (cornerSet A p) Uu (cornerU hval M z) : cornerSet A p)
+          - inner (cornerSet A p) u z
+        = inner (cornerSet A p) Uu (cornerU hval M (z - v))
+          + (inner (cornerSet A p) u v - inner (cornerSet A p) u z) := by
+      rw [cornerU_sub, CStarModule.inner_sub_right, hmid]
+      abel
+    have hb1 : ‖ν (inner (cornerSet A p) Uu (cornerU hval M (z - v)))‖
+        ≤ unSeminorm ν
+            (inner (cornerSet A p) : cornerLeft p → cornerLeft p → cornerSet A p) Uu
+          * (C' * δ) := by
+      refine (unSeminorm_inner_le ν (cstarBInner (cornerSet A p) (cornerLeft p)) _ _).trans ?_
+      refine mul_le_mul_of_nonneg_left ?_ (unSeminorm_nonneg _ _ _)
+      refine (unSeminorm_boundedModuleMap_le _ _ C' hC'0 _ hC' ν (z - v)).trans ?_
+      exact mul_le_mul_of_nonneg_left hzv hC'0
+    have hb2 : ‖ν ((inner (cornerSet A p) u v : cornerSet A p) - inner (cornerSet A p) u z)‖
+        ≤ unSeminorm ν (inner (cornerSet A p) : M.X → M.X → cornerSet A p) u * δ := by
+      rw [← CStarModule.inner_sub_right]
+      refine (unSeminorm_inner_le ν (cstarBInner (cornerSet A p) M.X) _ _).trans ?_
+      refine mul_le_mul_of_nonneg_left ?_ (unSeminorm_nonneg _ _ _)
+      have hneg : ∀ w : M.X,
+          unSeminorm ν (cstarBInner (cornerSet A p) M.X).inner (-w)
+            = unSeminorm ν (cstarBInner (cornerSet A p) M.X).inner w := by
+        intro w
+        show Real.sqrt (ν (inner (cornerSet A p) (-w) (-w))).re
+          = Real.sqrt (ν (inner (cornerSet A p) w w)).re
+        rw [CStarModule.inner_neg_left, CStarModule.inner_neg_right, neg_neg]
+      have h1 : v - z = -(z - v) := by abel
+      rw [h1, hneg]
+      exact hzv
+    have hfin : ‖ν (inner (cornerSet A p) Uu (cornerU hval M z))
+        - ν (inner (cornerSet A p) u z)‖ ≤ K * δ := by
+      rw [← npFunctional_sub, hsplit, npFunctional_add]
+      refine (norm_add_le _ _).trans ?_
+      have := add_le_add hb1 hb2
+      rw [hKdef]
+      nlinarith [unSeminorm_nonneg ν
+        (inner (cornerSet A p) : cornerLeft p → cornerLeft p → cornerSet A p) Uu,
+        unSeminorm_nonneg ν (inner (cornerSet A p) : M.X → M.X → cornerSet A p) u,
+        hδ0.le, this]
+    rw [hδdef] at hfin
+    calc ‖ν (inner (cornerSet A p) Uu (cornerU hval M z))
+            - ν (inner (cornerSet A p) u z)‖ ≤ K * (ε / K) := hfin
+      _ = ε := by field_simp
+  have hzero : ν (inner (cornerSet A p) Uu (cornerU hval M z))
+      - ν (inner (cornerSet A p) u z) = 0 := by
+    by_contra hne
+    have hpos : 0 < ‖ν (inner (cornerSet A p) Uu (cornerU hval M z))
+        - ν (inner (cornerSet A p) u z)‖ := norm_pos_iff.mpr hne
+    have := hsmall _ (half_pos hpos)
+    linarith
+  exact sub_eq_zero.mp hzero
+
+private theorem cornerU_injective : Function.Injective (cornerU hval M) := by
+  intro z z' hzz
+  have h0 : cornerU hval M (z - z') = 0 := by
+    rw [cornerU_sub, hzz, sub_self]
+  refine sub_eq_zero.mp (paschkeModule_inner_tprod_separating φ M fun a b => ?_)
+  rw [← cornerU_inner_left hval M a b (z - z'), h0]
+  exact CStarModule.inner_zero_right
+
+/-- **171II**, step 2 (dils.tex:6283–6305): `U` is an isomorphism.  Read off
+as the statement actually used in step 3: every element of
+`𝒜 ⊗_{h_p} p𝒜p` is an elementary tensor `a ⊗ 1` — because `U` is injective
+and `U(a ⊗ 1) = pa` already exhausts `p𝒜`. -/
+private theorem pcorner_tprod_surjective (z : M.X) : ∃ a : A, M.tprod a 1 = z := by
+  refine ⟨((cornerU hval M z : cornerLeft p) : A), cornerU_injective hval M ?_⟩
+  rw [cornerU_tprod]
+  refine Subtype.ext ?_
+  show (1 : cornerSet A p).1 * ((cornerU hval M z : cornerLeft p) : A)
+    = ((cornerU hval M z : cornerLeft p) : A)
+  exact (cornerU hval M z).2
+
+end PaschkeCornerIso
+
+
+/-! ### **171II**, step 3: `ϱ` is surjective
+
+dils.tex:6332–6338, the thesis's display
+
+  `T(ap) = ∑ᵢ T(uᵢ)uᵢ* ap = (∑ᵢ T(uᵢ)uᵢ*) ap = ϱ₀(∑ᵢ T(uᵢ)uᵢ*) ap`,
+
+mirrored to `T(pa) = (pa)·∑ᵢ uᵢ*T(uᵢ)`.  Step 2 says every element of the
+module is an elementary tensor, so `T(uᵢ ⊗ 1) = sᵢ ⊗ 1` for an `sᵢ ∈ p𝒜`,
+and the thesis's element is `c = ∑ᵢ tᵢ`, `tᵢ = vᵢ*sᵢ`.  The partial sums
+`c_σ` satisfy `ϱ(c_σ) = T ∘ P_σ` on the module (`pcorner_rho_partial`),
+which bounds them by `‖T‖` (an injective ∗-homomorphism of C*-algebras is
+isometric, and `σ` of **48VI** is injective); and since the `tᵢ` have
+pairwise orthogonal left supports `qᵢ`, `(c_σ − c_τ)*(c_σ − c_τ)` telescopes
+to a difference of the increasing bounded Gram sums `∑ᵢ sᵢ*sᵢ`, so `(c_σ)`
+is ultrastrong-Cauchy — *"the sums converge ultrastrongly in `𝒜`"* — and
+converges by ultranorm completeness of `𝒜` (**149V** over itself). -/
+
+section PaschkeCornerStep3
+
+set_option linter.unusedSectionVars false
+
+variable {A : Type u} [CStarAlgebra A] [PartialOrder A] [StarOrderedRing A]
+  [VonNeumannAlgebra A] {p : A} [Fact (IsStarProjection p)]
+  {φ : NCPMap A (cornerSet A p)} (hval : ∀ a : A, (φ a).1 = p * a * p)
+
+include hval
+
+variable [VonNeumannAlgebra (cornerSet A p)] (M : PaschkeModule φ)
+
+/-- Bessel: the partial sums of the basis expansion are norm-contractive. -/
+private theorem pcorner_bessel_norm {κ : Type u} (e : κ → M.X)
+    (hon : OrthonormalFam (cornerSet A p) e) (z : M.X) (s : Finset κ) :
+    ‖∑ i ∈ s, (inner (cornerSet A p) (e i) z : cornerSet A p) • e i‖ ≤ ‖z‖ := by
+  classical
+  set P : M.X := ∑ i ∈ s, (inner (cornerSet A p) (e i) z : cornerSet A p) • e i with hPdef
+  have h1 : (inner (cornerSet A p) P P : cornerSet A p)
+      = ∑ i ∈ s, (inner (cornerSet A p) (e i) z : cornerSet A p) * inner (cornerSet A p) z (e i) := by
+    rw [hPdef, inner_sum_smul_self hon.1 _ (fun i => onbasis_coef_absorb hon z i) s]
+    exact Finset.sum_congr rfl fun i _ => by rw [CStarModule.star_inner]
+  have hle := mod_bessel hon z s
+  rw [← h1] at hle
+  have hnn : (0 : cornerSet A p) ≤ inner (cornerSet A p) P P :=
+    CStarModule.inner_self_nonneg
+  have hnorm := CStarAlgebra.norm_le_norm_of_nonneg_of_le hnn hle
+  rw [CStarModule.norm_eq_sqrt_norm_inner_self (A := cornerSet A p) (E := M.X) (x := P),
+    CStarModule.norm_eq_sqrt_norm_inner_self (A := cornerSet A p) (E := M.X) (x := z)]
+  exact Real.sqrt_le_sqrt hnorm
+
+/-- **171II**, step 3 (dils.tex:6332): `ϱ` is surjective. -/
 private theorem pcorner_rho_surjective : Function.Surjective ⇑M.ρ := by
   classical
-  letI : VonNeumannAlgebra (cornerSet A (cceil p)) :=
-    cornerSet_vonNeumannAlgebra A (cceil p)
   letI : VonNeumannAlgebra (Ba (cornerSet A p) M.X) := ba_vonNeumannAlgebra M.selfDual
+  have hpp : p * p = p := (cornerSet.proj p).isIdempotentElem.eq
+  have hps : star p = p := (cornerSet.proj p).isSelfAdjoint.star_eq
+  have hzproj : IsStarProjection (cceil p) := (cceil_isLeast p).1.1
+  have hzc : ∀ b : A, cceil p * b = b * cceil p := (cceil_isLeast p).1.2.1
   obtain ⟨κ, v, q, hq, hpair, hvq, hpv, hz, hon⟩ := pcorner_onb_data hval M
   have hbasis := pcorner_isONBasis_tprod hval M v q hq hpair hvq hpv hz hon
   set e : κ → M.X := fun i => M.tprod (v i) 1 with hedef
-  set σ := pcorner_sigma hval M with hσdef
-  have hVN := injective_nmiu_iso_on_image_1 σ (pcorner_sigma_injective hval M)
-  have hclosed := (vnsac _ hVN).2
-  -- the range of `ϱ` and of `σ` agree
-  have hrange : ∀ a : A, M.ρ a ∈ σ.toStarAlgHom.range := fun a =>
-    ⟨pcorner_centralCorner (cceil_isLeast p).1.2.1 a,
-      pcorner_sigma_centralCorner hval M a⟩
+  have hstarv : ∀ i, star (v i) * p = star (v i) := by
+    intro i
+    have h := congrArg star (hpv i)
+    rwa [star_mul, hps] at h
+  have hqz : ∀ i, q i ≤ cceil p := by
+    intro i
+    rw [hz]
+    exact (projSup_spec (fun r hr => by obtain ⟨j, rfl⟩ := hr; exact hq j)).2.1 _ ⟨i, rfl⟩
+  have hzq : ∀ i, cceil p * q i = q i := fun i =>
+    ((hq i).le_iff_mul_eq_right hzproj).mp (hqz i)
+  -- `⟨eᵢ,eᵢ⟩ = vᵢvᵢ*`
+  have hinnere : ∀ i, ((inner (cornerSet A p) (e i) (e i) : cornerSet A p)).1
+      = v i * star (v i) := by
+    intro i
+    show ((inner (cornerSet A p) (M.tprod (v i) 1) (M.tprod (v i) 1) : cornerSet A p)).1 = _
+    rw [M.inner_tprod, star_one, mul_one, one_mul, hval]
+    calc p * (v i * star (v i)) * p = (p * v i) * (star (v i) * p) := by noncomm_ring
+      _ = v i * star (v i) := by rw [hpv, hstarv]
   intro T
-  obtain ⟨approx, hspan, htend⟩ :=
-    ketbra_ultraweakly_dense M.selfDual e hbasis T.unop
-  -- the generators of `159IV` lie in the range
-  have hgen : ∀ S : Ba (cornerSet A p) M.X,
-      (∃ (i j : κ) (b : cornerSet A p), S.1 = mketbra (cornerSet A p) (b • e i) (e j)) →
-      MulOpposite.op S ∈ σ.toStarAlgHom.range := by
-    rintro S ⟨i, j, b, hS⟩
-    have hbe : b • e i = M.tprod (b.1 * v i) 1 := by
-      rw [hedef]
-      show b • M.tprod (v i) 1 = _
-      rw [M.compat.smul_action, mul_one, pcorner_tprod_eq_one hval M (v i) b]
-    have hSeq : S = mketbraBa (M.tprod (b.1 * v i) 1) (M.tprod (v j) 1) := by
-      refine Subtype.ext ?_
-      rw [hS, hbe]
-      rfl
-    have hk := pcorner_mketbra_tprod hval M (b.1 * v i) (v j)
-    rw [hSeq, hk]
-    have := hrange (star (v j) * p * (b.1 * v i))
-    simpa using this
-  -- the preimage of the range is a submodule containing them
-  set R : Submodule ℂ (Ba (cornerSet A p) M.X) :=
-    { carrier := {S | MulOpposite.op S ∈ σ.toStarAlgHom.range}
-      zero_mem' := by
-        have h : MulOpposite.op (0 : Ba (cornerSet A p) M.X)
-            ∈ σ.toStarAlgHom.range := by
-          simpa using (σ.toStarAlgHom.range).zero_mem
-        exact h
-      add_mem' := by
-        intro x y hx hy
-        have h : MulOpposite.op (x + y) ∈ σ.toStarAlgHom.range := by
-          rw [MulOpposite.op_add]
-          exact Subalgebra.add_mem _ hx hy
-        exact h
-      smul_mem' := by
-        intro r x hx
-        have h : MulOpposite.op (r • x) ∈ σ.toStarAlgHom.range := by
-          rw [MulOpposite.op_smul]
-          exact Subalgebra.smul_mem _ hx r
-        exact h } with hRdef
-  have hle : Submodule.span ℂ
-      {S : Ba (cornerSet A p) M.X |
-        ∃ (i j : κ) (b : cornerSet A p), S.1 = mketbra (cornerSet A p) (b • e i) (e j)} ≤ R := by
-    refine Submodule.span_le.mpr ?_
-    rintro S hS
-    exact hgen S hS
-  have hmem : ∀ s : Finset κ, MulOpposite.op (approx s) ∈ σ.toStarAlgHom.range :=
-    fun s => hle (hspan s)
-  have htend' : UWTendsto (fun s : Finset κ => MulOpposite.op (approx s)) atTop T := by
-    have := pcorner_uwTendsto_op approx T.unop htend
-    simpa using this
-  letI : TopologicalSpace ((Ba (cornerSet A p) M.X)ᵐᵒᵖ) :=
-    ultraweak ((Ba (cornerSet A p) M.X)ᵐᵒᵖ)
-  have hTmem : T ∈ (σ.toStarAlgHom.range : Set ((Ba (cornerSet A p) M.X)ᵐᵒᵖ)) :=
-    hclosed.mem_of_tendsto htend' (Filter.Eventually.of_forall hmem)
-  obtain ⟨c, hc⟩ := hTmem
-  exact ⟨c.1, hc⟩
+  set R : Ba (cornerSet A p) M.X := T.unop with hRdef
+  obtain ⟨-, -, hRmod⟩ := moduleAdjointable_linear (𝒜 := cornerSet A p) ⇑R.1 R.2
+  set K : ℝ := ‖R.1‖ with hKdef
+  have hK0 : (0 : ℝ) ≤ K := norm_nonneg _
+  -- step 2: `T(uᵢ) = sᵢ ⊗ 1` with `p sᵢ = sᵢ`
+  have hsex : ∀ i, ∃ w : A, p * w = w ∧ M.tprod w 1 = R.1 (e i) := by
+    intro i
+    obtain ⟨w, hw⟩ := pcorner_tprod_surjective hval M (R.1 (e i))
+    exact ⟨p * w, by rw [← mul_assoc, hpp], by rw [← pcorner_tprod_p_left hval M, hw]⟩
+  choose s hsp hsdef using hsex
+  -- `vᵢvᵢ* sᵢ = sᵢ`, since `eᵢ = ⟨eᵢ,eᵢ⟩·eᵢ` and `T` is a module map
+  have hrs : ∀ i, (v i * star (v i)) * s i = s i := by
+    intro i
+    have h1 : (inner (cornerSet A p) (e i) (e i) : cornerSet A p) • R.1 (e i) = R.1 (e i) := by
+      rw [← hRmod, mod_projelabs (e i) (hon.2 i).1]
+    rw [← hsdef i, M.compat.smul_action, mul_one,
+      pcorner_tprod_eq_one hval M (s i) _, hinnere i] at h1
+    have h2 : p * ((v i * star (v i)) * s i - s i) = 0 := by
+      have h3 : M.tprod ((v i * star (v i)) * s i - s i) 1 = 0 := by
+        rw [pcorner_tprod_sub hval M, h1, sub_self]
+      exact (pcorner_tprod_eq_zero_iff hval M _).mp h3
+    have h4 : p * ((v i * star (v i)) * s i) = (v i * star (v i)) * s i := by
+      rw [← mul_assoc, ← mul_assoc, hpv]
+    rw [mul_sub, h4, hsp i] at h2
+    exact sub_eq_zero.mp h2
+  set t : κ → A := fun i => star (v i) * s i with htdef
+  have hqt : ∀ i, q i * t i = t i := by
+    intro i
+    rw [htdef, ← hvq i]
+    calc star (v i) * v i * (star (v i) * s i)
+        = star (v i) * ((v i * star (v i)) * s i) := by noncomm_ring
+      _ = star (v i) * s i := by rw [hrs i]
+  have hqts : ∀ i, star (t i) * q i = star (t i) := by
+    intro i
+    have h := congrArg star (hqt i)
+    rwa [star_mul, (hq i).isSelfAdjoint.star_eq] at h
+  have htt : ∀ i, star (t i) * t i = star (s i) * s i := by
+    intro i
+    rw [htdef]
+    calc star (star (v i) * s i) * (star (v i) * s i)
+        = star (s i) * ((v i * star (v i)) * s i) := by rw [star_mul, star_star]; noncomm_ring
+      _ = star (s i) * s i := by rw [hrs i]
+  have horth : ∀ i j, i ≠ j → star (t i) * t j = 0 := by
+    intro i j hij
+    calc star (t i) * t j = (star (t i) * q i) * (q j * t j) := by rw [hqts i, hqt j]
+      _ = star (t i) * (q i * q j) * t j := by noncomm_ring
+      _ = 0 := by rw [hpair hij]; simp
+  set c : Finset κ → A := fun σ => ∑ i ∈ σ, t i with hcdef
+  set d : Finset κ → A := fun σ => star (c σ) with hddef
+  set G : Finset κ → A := fun σ => ∑ i ∈ σ, star (s i) * s i with hGdef
+  have hGc : ∀ σ, star (c σ) * c σ = G σ := by
+    intro σ
+    simp only [hcdef, hGdef]
+    rw [star_sum, Finset.sum_mul_sum]
+    refine Finset.sum_congr rfl fun i hi => ?_
+    rw [Finset.sum_eq_single_of_mem i hi (fun j _ hji => horth i j (Ne.symm hji)), htt i]
+  -- `cσ` lies in the central corner `⌈⌈p⌉⌉𝒜`
+  have hcmem : ∀ σ, cceil p * c σ * cceil p = c σ := by
+    intro σ
+    have h1 : ∀ i, cceil p * t i = t i := by
+      intro i
+      rw [← hqt i, ← mul_assoc, hzq i]
+    have h2 : cceil p * c σ = c σ := by
+      simp only [hcdef, Finset.mul_sum]
+      exact Finset.sum_congr rfl fun i _ => h1 i
+    have h3 : c σ * cceil p = c σ := by rw [← hzc]; exact h2
+    calc cceil p * c σ * cceil p = (cceil p * c σ) * cceil p := by noncomm_ring
+      _ = c σ * cceil p := by rw [h2]
+      _ = c σ := h3
+  -- step 3's display, on elementary tensors
+  have hKeyA : ∀ (σ : Finset κ) (a : A),
+      M.tprod (a * c σ) 1
+        = R.1 (∑ i ∈ σ, (inner (cornerSet A p) (e i) (M.tprod a 1) : cornerSet A p) • e i) := by
+    intro σ a
+    have hR : R.1 (∑ i ∈ σ, (inner (cornerSet A p) (e i) (M.tprod a 1) : cornerSet A p) • e i)
+        = ∑ i ∈ σ, (inner (cornerSet A p) (e i) (M.tprod a 1) : cornerSet A p) • R.1 (e i) := by
+      rw [map_sum]
+      exact Finset.sum_congr rfl fun i _ => hRmod _ _
+    have hterm : ∀ i, (inner (cornerSet A p) (e i) (M.tprod a 1) : cornerSet A p) • R.1 (e i)
+        = M.tprod (a * t i) 1 := by
+      intro i
+      have hcoef : ((inner (cornerSet A p) (e i) (M.tprod a 1) : cornerSet A p)).1 * s i
+          = p * (a * t i) := by
+        show ((inner (cornerSet A p) (M.tprod (v i) 1) (M.tprod a 1) : cornerSet A p)).1 * s i = _
+        rw [M.inner_tprod, star_one, mul_one, one_mul, hval, htdef]
+        calc p * (a * star (v i)) * p * s i
+            = p * (a * star (v i)) * (p * s i) := by noncomm_ring
+          _ = p * (a * (star (v i) * s i)) := by rw [hsp i]; noncomm_ring
+      rw [← hsdef i, M.compat.smul_action, mul_one,
+        pcorner_tprod_eq_one hval M (s i) _, hcoef, ← pcorner_tprod_p_left hval M]
+    rw [hR, Finset.sum_congr rfl (fun i (_ : i ∈ σ) => hterm i), pcorner_tprod_sum hval M,
+      hcdef, Finset.mul_sum]
+  -- `‖cσ‖ ≤ ‖T‖`, because `ϱ(cσ) = T ∘ P_σ` and `ϱ` is isometric on `⌈⌈p⌉⌉𝒜`
+  have hcentral : IsCentral A (cceil p) := (cceil_isLeast p).1.2.1
+  have hnormc : ∀ σ, ‖c σ‖ ≤ K := by
+    intro σ
+    have hop : ∀ zz : M.X, ‖(M.ρ (c σ)).unop.1 zz‖ ≤ K * ‖zz‖ := by
+      intro zz
+      obtain ⟨a, ha⟩ := pcorner_tprod_surjective hval M zz
+      rw [← ha, M.ρ_tprod, hKeyA σ a]
+      calc ‖R.1 (∑ i ∈ σ, (inner (cornerSet A p) (e i) (M.tprod a 1) : cornerSet A p) • e i)‖
+          ≤ K * ‖∑ i ∈ σ, (inner (cornerSet A p) (e i) (M.tprod a 1) : cornerSet A p) • e i‖ :=
+            R.1.le_opNorm _
+        _ ≤ K * ‖M.tprod a 1‖ :=
+            mul_le_mul_of_nonneg_left
+              (pcorner_bessel_norm hval M e hon (M.tprod a 1) σ) hK0
+    have hba : ‖(M.ρ (c σ)).unop.1‖ ≤ K :=
+      ContinuousLinearMap.opNorm_le_bound _ hK0 hop
+    set cc : cornerSet A (cceil p) := pcorner_centralCorner hcentral (c σ) with hccdef
+    have hccval : cc.1 = c σ := by
+      show cceil p * c σ * cceil p = c σ
+      exact hcmem σ
+    have hiso : ‖pcorner_sigma hval M cc‖ = ‖cc‖ :=
+      NonUnitalStarAlgHom.norm_map (pcorner_sigma hval M).toStarAlgHom
+        (pcorner_sigma_injective hval M) cc
+    have h1 : ‖cc‖ = ‖c σ‖ := by rw [cornerSet.norm_def, hccval]
+    have h2 : pcorner_sigma hval M cc = M.ρ (c σ) := by
+      rw [pcorner_sigma_apply, hccval]
+    have h3 : ‖M.ρ (c σ)‖ = ‖(M.ρ (c σ)).unop.1‖ := rfl
+    rw [h2, h3, h1] at hiso
+    rw [← hiso]
+    exact hba
+  have hGnorm : ∀ σ, ‖G σ‖ ≤ K ^ 2 := by
+    intro σ
+    rw [← hGc σ, CStarRing.norm_star_mul_self]
+    have := hnormc σ
+    nlinarith [norm_nonneg (c σ)]
+  have hGsa : ∀ σ, IsSelfAdjoint (G σ) := by
+    intro σ
+    rw [← hGc σ]
+    exact IsSelfAdjoint.star_mul_self _
+  have hcast : ∀ r : ℝ, algebraMap ℝ A r = ((r : ℂ)) • (1 : A) := by
+    intro r
+    rw [IsScalarTower.algebraMap_apply ℝ ℂ A, Algebra.algebraMap_eq_smul_one]
+    norm_num
+  have hbdd : ∀ (ω : NPFunctional A) (σ : Finset κ), (ω (G σ)).re ≤ K ^ 2 * (ω 1).re := by
+    intro ω σ
+    have h1 := (hGsa σ).le_algebraMap_norm_self
+    rw [hcast] at h1
+    have h2 : ω (G σ) ≤ ω (((‖G σ‖ : ℝ) : ℂ) • (1 : A)) :=
+      ω.toPositiveLinearMap.monotone h1
+    have h3 : ω (((‖G σ‖ : ℝ) : ℂ) • (1 : A)) = ((‖G σ‖ : ℝ) : ℂ) * ω 1 :=
+      map_smul ω.toPositiveLinearMap _ _
+    rw [h3] at h2
+    have h4 := (Complex.le_def.mp h2).1
+    have h5 : (((‖G σ‖ : ℝ) : ℂ) * ω 1).re = ‖G σ‖ * (ω 1).re := by
+      simp [Complex.mul_re]
+    rw [h5] at h4
+    have h6 : (0 : ℝ) ≤ (ω 1).re :=
+      (Complex.le_def.mp (npFunctional_nonneg ω (zero_le_one (α := A)))).1
+    nlinarith [hGnorm σ]
+  have hGdiff : ∀ {σ τ : Finset κ}, σ ⊆ τ → G τ - G σ = G (τ \ σ) := by
+    intro σ τ hst
+    simp only [hGdef]
+    rw [← Finset.sum_sdiff hst]
+    abel
+  have hGmono : ∀ {σ τ : Finset κ}, σ ⊆ τ → G σ ≤ G τ := by
+    intro σ τ hst
+    rw [← sub_nonneg, hGdiff hst]
+    simp only [hGdef]
+    exact Finset.sum_nonneg fun i _ => star_mul_self_nonneg _
+  have htel : ∀ {σ τ : Finset κ}, σ ⊆ τ →
+      (d τ - d σ) * star (d τ - d σ) = G τ - G σ := by
+    intro σ τ hst
+    have h1 : d τ - d σ = star (c (τ \ σ)) := by
+      simp only [hddef]
+      rw [← star_sub]
+      congr 1
+      simp only [hcdef]
+      rw [← Finset.sum_sdiff hst]
+      abel
+    rw [h1, star_star, hGc, hGdiff hst]
+  -- the net `dσ = cσ*` is ultranorm Cauchy
+  have hcauchy : UnCauchy (mulInner A) (Filter.map d atTop) := by
+    intro ω ε hε
+    set f : Finset κ → ℝ := fun σ => (ω (G σ)).re with hfdef
+    have hfmono : ∀ {σ τ : Finset κ}, σ ⊆ τ → f σ ≤ f τ := by
+      intro σ τ hst
+      exact (Complex.le_def.mp (ω.toPositiveLinearMap.monotone (hGmono hst))).1
+    have hfbdd : BddAbove (Set.range f) := by
+      refine ⟨K ^ 2 * (ω 1).re, ?_⟩
+      rintro _ ⟨σ, rfl⟩
+      exact hbdd ω σ
+    have hne : (Set.range f).Nonempty := ⟨f ∅, ⟨∅, rfl⟩⟩
+    have hlt : sSup (Set.range f) - (ε / 2) ^ 2 < sSup (Set.range f) := by
+      have : (0:ℝ) < (ε/2)^2 := by positivity
+      linarith
+    obtain ⟨r, hrmem, hrlt⟩ := exists_lt_of_lt_csSup hne hlt
+    obtain ⟨σ₀, rfl⟩ := hrmem
+    have hkey : ∀ σ : Finset κ, σ₀ ⊆ σ →
+        unSeminorm ω (mulInner A) (d σ - d σ₀) ≤ ε / 2 := by
+      intro σ hσ
+      have hval1 : (unSeminorm ω (mulInner A) (d σ - d σ₀)) ^ 2 = f σ - f σ₀ := by
+        rw [unSeminorm, Real.sq_sqrt]
+        · show (ω ((d σ - d σ₀) * star (d σ - d σ₀))).re = f σ - f σ₀
+          rw [htel hσ, hfdef]
+          simp only [npFunctional_sub, Complex.sub_re]
+        · show (0:ℝ) ≤ (ω (mulInner A (d σ - d σ₀) (d σ - d σ₀))).re
+          have : (0:ℂ) ≤ ω ((d σ - d σ₀) * star (d σ - d σ₀)) :=
+            npFunctional_nonneg ω (mul_star_self_nonneg _)
+          exact (Complex.le_def.mp this).1
+      have hsle : f σ - f σ₀ ≤ (ε / 2) ^ 2 := by
+        have h1 : f σ ≤ sSup (Set.range f) := le_csSup hfbdd ⟨σ, rfl⟩
+        linarith
+      have h0 : (0:ℝ) ≤ unSeminorm ω (mulInner A) (d σ - d σ₀) := unSeminorm_nonneg _ _ _
+      nlinarith [hε.le]
+    refine ⟨d '' {σ : Finset κ | σ₀ ⊆ σ}, Filter.image_mem_map (Filter.Ici_mem_atTop σ₀), ?_⟩
+    rintro _ ⟨σ, hσ, rfl⟩ _ ⟨τ, hτ, rfl⟩
+    have h1 : d σ - d τ = (d σ - d σ₀) + -(d τ - d σ₀) := by abel
+    calc unSeminorm ω (mulInner A) (d σ - d τ)
+        = unSeminorm ω (mulBInner A).inner ((d σ - d σ₀) + -(d τ - d σ₀)) := by rw [h1]; rfl
+      _ ≤ unSeminorm ω (mulBInner A).inner (d σ - d σ₀)
+          + unSeminorm ω (mulBInner A).inner (-(d τ - d σ₀)) :=
+          unSeminorm_add_le ω (mulBInner A) _ _
+      _ ≤ ε / 2 + ε / 2 := by
+          refine add_le_add (hkey σ hσ) ?_
+          rw [show (mulBInner A).inner = mulInner A from rfl, unSeminorm_mulInner_neg]
+          exact hkey τ hτ
+      _ = ε := by ring
+  obtain ⟨dlim, hdlim⟩ := unComplete_mulInner_self (Filter.map d atTop)
+    (Filter.map_neBot) hcauchy
+  set c₀ : A := star dlim with hc₀def
+  have hdconv : ∀ ω : NPFunctional A,
+      Tendsto (fun σ : Finset κ => unSeminorm ω (mulInner A) (d σ - dlim)) atTop (𝓝 0) := by
+    intro ω
+    have h := hdlim ω
+    rw [Filter.tendsto_map'_iff] at h
+    exact h
+  -- `T` and `ϱ(c₀)` agree on elementary tensors
+  have hRbdd : IsBoundedModuleMap (cstarBInner (cornerSet A p) M.X)
+      (cstarBInner (cornerSet A p) M.X) (K + 1) ⇑R.1 :=
+    { add := fun x y => map_add R.1 x y
+      smul_complex := fun cc x => map_smul R.1 cc x
+      smul := hRmod
+      bound := fun x => by
+        rw [cstarBInner_norm, cstarBInner_norm]
+        have h1 := R.1.le_opNorm x
+        have h0 : (0 : ℝ) ≤ ‖x‖ := norm_nonneg x
+        nlinarith }
+  have hfinal : ∀ a : A, R.1 (M.tprod a 1) = M.tprod (a * c₀) 1 := by
+    intro a
+    set Pn : Finset κ → M.X :=
+      fun σ => ∑ i ∈ σ, (inner (cornerSet A p) (e i) (M.tprod a 1) : cornerSet A p) • e i
+      with hPndef
+    have hPtend : UnTendsto (inner (cornerSet A p) : M.X → M.X → cornerSet A p)
+        Pn atTop (M.tprod a 1) := hbasis.2.1 (M.tprod a 1)
+    have hRtend : UnTendsto (inner (cornerSet A p) : M.X → M.X → cornerSet A p)
+        (fun σ => R.1 (Pn σ)) atTop (R.1 (M.tprod a 1)) := by
+      intro ω
+      refine squeeze_zero (fun σ => unSeminorm_nonneg _ _ _)
+        (g := fun σ => (K + 1) * unSeminorm ω
+          (inner (cornerSet A p) : M.X → M.X → cornerSet A p) (Pn σ - M.tprod a 1))
+        (fun σ => ?_) ?_
+      · have hsub : R.1 (Pn σ) - R.1 (M.tprod a 1) = R.1 (Pn σ - M.tprod a 1) :=
+          (map_sub R.1 _ _).symm
+        rw [hsub]
+        exact unSeminorm_boundedModuleMap_le _ _ (K + 1) (by linarith) _ hRbdd ω _
+      · simpa using ((hPtend) ω).const_mul (K + 1)
+    have hconst : ∀ w : M.X, UnTendsto (inner (cornerSet A p) : M.X → M.X → cornerSet A p)
+        (fun _ : Finset κ => w) atTop w := by
+      intro w ω
+      simp only [sub_self]
+      have hz0 : unSeminorm ω (inner (cornerSet A p) : M.X → M.X → cornerSet A p) 0 = 0 := by
+        simp [unSeminorm]
+      simp [hz0]
+    refine sub_eq_zero.mp (paschkeModule_inner_tprod_separating φ M fun y b => ?_)
+    have hred : (inner (cornerSet A p) (M.tprod y b)
+        (R.1 (M.tprod a 1) - M.tprod (a * c₀) 1) : cornerSet A p)
+        = inner (cornerSet A p) (M.tprod (b.1 * y) 1)
+            (R.1 (M.tprod a 1) - M.tprod (a * c₀) 1) := by
+      rw [pcorner_tprod_eq_one hval M y b]
+    rw [hred]
+    set yy : A := b.1 * y with hyydef
+    have hUW1 : UWTendsto
+        (fun σ : Finset κ => (inner (cornerSet A p) (M.tprod yy 1) (R.1 (Pn σ))
+          : cornerSet A p)) atTop
+        (inner (cornerSet A p) (M.tprod yy 1) (R.1 (M.tprod a 1))) :=
+      innerprod_ultraweak (cstarBInner (cornerSet A p) M.X)
+        (fun _ => M.tprod yy 1) (fun σ => R.1 (Pn σ)) (M.tprod yy 1)
+        (R.1 (M.tprod a 1)) (hconst (M.tprod yy 1)) hRtend
+    have hnet : ∀ σ : Finset κ,
+        (inner (cornerSet A p) (M.tprod yy 1) (R.1 (Pn σ)) : cornerSet A p)
+          = φ ((a * c σ) * star yy) := by
+      intro σ
+      rw [hPndef, ← hKeyA σ a, M.inner_tprod, star_one, mul_one, one_mul]
+    have hUW2 : UWTendsto (fun σ : Finset κ => φ ((a * c σ) * star yy)) atTop
+        (φ ((a * c₀) * star yy)) := by
+      rw [uwTendsto_iff]
+      intro ν
+      have hν : ∀ u : A, ν (φ u) = cornerLeftNP ν u := by
+        intro u
+        rw [cornerLeftNP_apply]
+        congr 1
+        refine Subtype.ext ?_
+        rw [hval, cornerNcp_val]
+      simp only [hν]
+      set ω : NPFunctional A := cornerLeftNP ν with hωdef
+      rw [← tendsto_sub_nhds_zero_iff]
+      have hbnd : ∀ σ : Finset κ,
+          ‖ω ((a * c σ) * star yy) - ω ((a * c₀) * star yy)‖
+            ≤ unSeminorm (conjNP (star yy) ω) (mulInner A) (d σ - dlim)
+              * unSeminorm ω (mulInner A) a := by
+        intro σ
+        have hstar : star (yy * (d σ - dlim)) = (c σ - c₀) * star yy := by
+          simp only [hddef, hc₀def]
+          rw [star_mul, star_sub, star_star]
+        have hdiff : ω ((a * c σ) * star yy) - ω ((a * c₀) * star yy)
+            = ω ((mulBInner A).inner (yy * (d σ - dlim)) a) := by
+          rw [← npFunctional_sub]
+          congr 1
+          show (a * c σ) * star yy - (a * c₀) * star yy
+            = a * star (yy * (d σ - dlim))
+          rw [hstar]
+          noncomm_ring
+        rw [hdiff]
+        refine (unSeminorm_inner_le ω (mulBInner A) _ _).trans ?_
+        have hleft : unSeminorm ω (mulBInner A).inner (yy * (d σ - dlim))
+            = unSeminorm (conjNP (star yy) ω) (mulInner A) (d σ - dlim) := by
+          rw [show (mulBInner A).inner = mulInner A from rfl]
+          exact unSeminorm_mulInner_left_mul ω yy _
+        rw [hleft]
+        exact le_of_eq rfl
+      have hgtend : Tendsto (fun σ : Finset κ =>
+          unSeminorm (conjNP (star yy) ω) (mulInner A) (d σ - dlim)
+            * unSeminorm ω (mulInner A) a) atTop (𝓝 0) := by
+        have := (hdconv (conjNP (star yy) ω)).mul_const (unSeminorm ω (mulInner A) a)
+        simpa using this
+      exact squeeze_zero_norm hbnd hgtend
+    have hUW1' : UWTendsto (fun σ : Finset κ => φ ((a * c σ) * star yy)) atTop
+        (inner (cornerSet A p) (M.tprod yy 1) (R.1 (M.tprod a 1))) := by
+      refine hUW1.congr ?_
+      intro σ
+      exact hnet σ
+    have heq : (inner (cornerSet A p) (M.tprod yy 1) (R.1 (M.tprod a 1)) : cornerSet A p)
+        = φ ((a * c₀) * star yy) := by
+      rw [uwTendsto_iff] at hUW1' hUW2
+      exact eq_of_forall_npFunctional fun ν =>
+        tendsto_nhds_unique (hUW1' ν) (hUW2 ν)
+    have hrhs : (inner (cornerSet A p) (M.tprod yy 1) (M.tprod (a * c₀) 1) : cornerSet A p)
+        = φ ((a * c₀) * star yy) := by
+      rw [M.inner_tprod, star_one, mul_one, one_mul]
+    rw [CStarModule.inner_sub_right, heq, hrhs, sub_self]
+  refine ⟨c₀, ?_⟩
+  have hunop : (M.ρ c₀).unop = R := by
+    refine paschkeModule_ba_ext φ M fun a b => ?_
+    show (M.ρ c₀).unop.1 (M.tprod a b) = R.1 (M.tprod a b)
+    rw [M.ρ_tprod, pcorner_tprod_eq_one hval M (a * c₀) b,
+      pcorner_tprod_eq_one hval M a b, hfinal (b.1 * a)]
+    congr 1
+    noncomm_ring
+  have := congrArg MulOpposite.op hunop
+  simpa [hRdef] using this
 
 /-- `σ` is bijective: injective by `pcorner_sigma_injective`, surjective
 because it has the same range as `ϱ` (`pcorner_sigma_centralCorner`), which
@@ -4173,7 +5009,7 @@ private theorem pcorner_sigma_bijective :
   exact ⟨pcorner_centralCorner (cceil_isLeast p).1.2.1 a,
     (pcorner_sigma_centralCorner hval M a).trans ha⟩
 
-end PaschkeCornerAux
+end PaschkeCornerStep3
 
 /-! ### Infrastructure for **172X**: from an abstract corner to a standard one
 
@@ -4289,15 +5125,19 @@ algebra at all (see `cornerSet.instCStarAlgebra`).  That `⌈⌈p⌉⌉` is a
 projection too is **68III**, proved in `Theses.A.VN.Projections`, so it
 is supplied by `fact_isStarProjection_cceil` rather than assumed.
 
-**Proof.**  The thesis (dils.tex:6237) argues in three steps: `𝒜p` is a
-self-dual Hilbert `p𝒜p`-module; `𝒜 ⊗_{h_p} p𝒜p ≅ 𝒜p`; and
-`𝒷ᵃ(𝒜p) ≅ ⌈⌈p⌉⌉𝒜`.  Steps 1 and 2 exist only to transport an orthonormal
-basis and the ketbra calculus into a concrete model, and are **not needed**:
-inside the abstract `PaschkeModule` of **154III** every elementary tensor is
-already of the form `a ⊗ 1` (`pcorner_tprod_eq_one`), the thesis's own basis
-transports as `(uᵢ ⊗ 1)ᵢ` (`pcorner_isONBasis_tprod`), and
-`|a ⊗ 1⟩⟨b ⊗ 1| = ϱ(b*pa)` (`pcorner_mketbra_tprod`) — whence
-`pcorner_rho_surjective`, step 3, with `⌈ϱ⌉ = ⌈⌈p⌉⌉`
+**Proof.**  The thesis (dils.tex:6237) argues in three steps, and all three
+are run.  Step 1, `𝒜p` is a self-dual Hilbert `p𝒜p`-module: mirrored, `𝒜p` is
+`cornerLeft p = p𝒜`, whose ultranorm seminorms are those of `𝒜`
+(`cornerLeft_unSeminorm_eq`, `cornerLeft_unSeminorm_eq'`), so it inherits
+ultranorm completeness from `𝒜` and is self dual by **149V**
+(`cornerLeft_selfDual`).  Step 2, `𝒜 ⊗_{h_p} p𝒜p ≅ 𝒜p`: `B(a,b) = ba` is
+`h_p`-compatible, so **154III** gives the bounded module map `U` with
+`U(a ⊗ b) = ba` (`cornerU`), which preserves the inner product and is onto —
+an isomorphism, read off as `pcorner_tprod_surjective`: *every* element of
+`𝒜 ⊗_{h_p} p𝒜p` is an elementary tensor `a ⊗ 1`.  Step 3 is the thesis's own
+display `T(ap) = (∑ᵢ T(uᵢ)uᵢ*)ap` against its own orthonormal basis
+(`pcorner_isONBasis_tprod`), the sum converging ultrastrongly
+(`pcorner_rho_surjective`), together with `⌈ϱ⌉ = ⌈⌈p⌉⌉`
 (`pcorner_forall_mul_eq_zero_iff`).  So the corestriction
 `σ : ⌈⌈p⌉⌉𝒜 → 𝒷ᵃ(𝒜 ⊗_{h_p} p𝒜p)ᵐᵒᵖ` is a *bijective* nmiu-map with
 `σ ∘ h_{⌈⌈p⌉⌉} = ϱ` and `h ∘ σ = h'_p`, and `pcorner_transport` carries the
