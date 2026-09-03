@@ -30929,3 +30929,73 @@ day's edits (46 were stale); `AxiomCheck` re-run against them.  `lean1.sh`
 now waits four hours for the lock, because ten workers queued behind one
 compile.  Every exact check clean; `docs/status.txt` and `docs/binders.txt`
 regenerated.
+
+## Session 104 — a random sample of the `ok` grade (9 wrong in 198), and the `left-cost` backlog worked at a 300-line bound (five read-only sample workers; seven proof-route workers; one regrading worker; one on 124III; orchestrator on `scripts/`, `docs/`)
+
+### 1. The sample
+
+198 rows graded `ok` with proof `faithful`/`none`/`mathlib`, eleven per audit
+file, drawn at random (seed in `docs/audit/SAMPLE-2026-09-04.md`) and
+re-derived from the source by workers who could not edit the tree.  Nine
+wrong grades: seven are `faithful` where the thesis prints no argument (bare
+Corollary, Definition, Example, unsolved Exercise) — a proof-column vocabulary
+slip, not a mathematical one — and two are statement grades on B-side
+multi-clause Examples (142VIII, 206III, both now `weaker`, both costed).  No
+sampled row was wrong about the mathematics of a fully stated `ok` statement.
+Decision: no full re-audit; the residual rate after removing the mechanical
+shape is 2 in 198, on multi-clause Examples, which is where a targeted pass
+should go.
+
+The mechanical shape is now `scripts/faithful_check.py`: a `faithful` row
+whose point has no nested proof point, no `\qed`, no argument words and no
+solution.  It listed 77; 48 were regraded `none` (30 by the worker, 18 by the
+orchestrator from a deferred list), 29 stand on a printed hint or directive.
+
+### 2. The second proof-route pass
+
+The 34 `left-cost` rows whose last costing named the missing lemma, with the
+bound raised from 150 to 300 lines.  Built: 11XV (the product lemma Mathlib
+indexes as the thesis writes it), 14VIII.3 (the solution's own case analysis,
+485 lines — accepted over the bound), 33I, 28III via the whole of 28IV
+(Pedersen), 34VII's hand-built partition of unity, 54XI's surjectivity of ϱ
+on the printed route with the essential-sup simple-function density Mathlib
+withholds, 84bIII on 842.40, 138II's first half line for line, 130IV for
+arbitrary countable partitions (the "ten lines" costing had lost the cover),
+160IV on 160V–160VIII by a Zorn lemma extending a prescribed orthonormal set,
+189aII.3's `CRngᵒᵖ` clause in 14 lines (Mathlib has every hypothesis for
+`Spec`), 189aI's `CvNᵒᵖ` half by pullback along the inclusion, and 124III's
+solution set as printed, relabelling the algebra's elements along an
+`Equiv`-transported C*-structure, so that κ is the printed one.
+
+| column | before | after |
+|---|---|---|
+| `faithful` | 1,085 | 1,060 |
+| `none` | 1,184 | 1,228 |
+| `mild` | 95 | 96 |
+| `route` | 57 | 47 |
+| statement `ok` | 2,375 | 2,385 |
+
+(`faithful` falls because 48 rows moved to `none`; the 25 conversions are
+inside the `route` and `mild` drops.)  Costings found wrong in this pass
+alone: 11XV's bookkeeping did not exist; 34XVIII needs no `M_k(M_n 𝒜)`
+object; 54XI's "neither ingredient is in the tree" (29IX is one); 124III's
+"cannot be done in type theory"; 130IV's ten lines; 138II's two of three
+items; 189aII.3's 150–350 against 14; 115II's estimate against a measured
+306.  Rows still over the bound carry a fresh costing with the missing
+piece named.
+
+### 3. Bookkeeping
+
+`sorry_map.py` now reads a status field's opening verdict word as its
+verdict, and `verdict_conflicts` no longer reports the history after it —
+seventeen rows had read back as their history.  `docs/audit/BRIEF.md` allows
+iterating on a scratch file through the lock.  One item for the next session:
+54XI's printed route in `A/VN/Basic` is `private`, so the Duplicators row
+that could cite it waits on un-privating that block and rebuilding the olean.
+
+### 4. Where the tree stands
+
+Nine `sorry`s, unchanged.  All 52 oleans rebuilt after the day's edits (14
+were stale); `AxiomCheck`: 9 are themselves `sorry`, 0 depend on one.
+`docs/status.txt` and `docs/binders.txt` regenerated; every exact check
+clean.
