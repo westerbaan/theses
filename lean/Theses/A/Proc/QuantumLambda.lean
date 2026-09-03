@@ -7853,7 +7853,7 @@ with the same three ingredients as 124III `second_adjunction`: a solution
 set, the product over it, and a von Neumann subalgebra of that product cut
 out so that the unit generates.
 
-* The **solution set** is `TSolIdx`, proc.tex:5081's on the nose and built
+* The **solution set** is `TSolIdx`, the one `tensor-closed-proof` (proc.tex:5081) prints, on the nose and built
   exactly like 124III's `SolIdx`: a von Neumann algebra *carried on a subset
   `T` of `κ`* (`VNOnSet K` with `#K = κ`), together with an nmiu-map
   `ℬ → 𝒟 ⊗ 𝒜` into its tensor.  The solution set *condition* is 125IV
