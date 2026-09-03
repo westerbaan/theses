@@ -8040,6 +8040,52 @@ theorem mod_bessel_star {e : ν → W} [VonNeumannAlgebra 𝒷]
     intro i; rw [CStarModule.star_inner]
   simpa only [hstar] using h
 
+/-- Parseval for an orthonormal **family**: the sum `∑ᵢ ⟨eᵢ,x⟩⟨x,eᵢ⟩` of
+**149IV** converges ultraweakly whatever `x` is, its limit being the Gram
+value `⟨y,y⟩` of the limit `y` of the expansion `∑ᵢ ⟨eᵢ,x⟩ • eᵢ`.  Only when
+`(eᵢ)` is a *basis* is `y = x`, which is `mod_parseval`; but the convergence
+itself needs no basis, because Bessel makes the coefficients ℓ²-summable and
+`exists_unTendsto_of_l2Summable` (clause (b) of **149I** for every
+orthonormal family in a norm-bounded ultranorm complete module) then supplies
+`y`.  The proof of the limit is `mod_parseval`'s: `innerprod_ultraweak`
+applied to the expansion twice, the Gram value of a partial sum being the
+Parseval partial sum by orthonormality.
+
+This is what turns **160IX**.2 into a *criterion*: to place `x` in `E^⊥⊥` it
+is enough to identify `⟨y,y⟩` with `⟨x,x⟩`, which is how **164X** places an
+elementary tensor in `E₂^⊥⊥` (`ext_tensor_basis`). -/
+private theorem exists_parseval_of_orthn [VonNeumannAlgebra 𝒷]
+    (h : BddUnComplete 𝒷 W) {e : ν → W} (he : OrthonormalFam 𝒷 e) (x : W) :
+    ∃ y : W, UWTendsto
+      (fun s : Finset ν => ∑ i ∈ s, (inner 𝒷 (e i) x : 𝒷) * inner 𝒷 x (e i))
+      atTop (inner 𝒷 y y) := by
+  classical
+  have hL2 : L2Summable 𝒷 (fun i => (inner 𝒷 (e i) x : 𝒷)) :=
+    ⟨‖(inner 𝒷 x x : 𝒷)‖, fun s =>
+      CStarAlgebra.norm_le_norm_of_nonneg_of_le
+        (Finset.sum_nonneg fun i _ => mul_star_self_nonneg _)
+        (mod_bessel_star he x s)⟩
+  obtain ⟨y, hy⟩ := exists_unTendsto_of_l2Summable h he _ hL2
+  refine ⟨y, ?_⟩
+  have hkey : ∀ s : Finset ν,
+      (inner 𝒷 (∑ i ∈ s, (inner 𝒷 (e i) x : 𝒷) • e i)
+          (∑ i ∈ s, (inner 𝒷 (e i) x : 𝒷) • e i) : 𝒷)
+        = ∑ i ∈ s, (inner 𝒷 (e i) x : 𝒷) * inner 𝒷 x (e i) := by
+    intro s
+    rw [CStarModule.inner_sum_left]
+    refine Finset.sum_congr rfl fun i hi => ?_
+    rw [CStarModule.inner_sum_right, Finset.sum_eq_single_of_mem i hi]
+    · rw [CStarModule.inner_op_smul_left, CStarModule.inner_op_smul_right,
+        onbasis_coef_absorb he x i, CStarModule.star_inner]
+    · intro j _ hji
+      rw [CStarModule.inner_op_smul_left, CStarModule.inner_op_smul_right,
+        he.1 i j (Ne.symm hji), mul_zero, zero_mul]
+  have h2 := innerprod_ultraweak (cstarBInner 𝒷 W)
+    (fun s : Finset ν => ∑ i ∈ s, (inner 𝒷 (e i) x : 𝒷) • e i)
+    (fun s : Finset ν => ∑ i ∈ s, (inner 𝒷 (e i) x : 𝒷) • e i) y y hy hy
+  simpa only [show (cstarBInner 𝒷 W).inner = (inner 𝒷 : W → W → 𝒷) from rfl,
+    hkey] using h2
+
 end Parseval
 
 /-! ### the ℓ² model of **164III**–**164VII** -/
@@ -9780,29 +9826,34 @@ end EtaEstimates
 for orthonormal bases `(eᵢ)` of `X` and `(dⱼ)` of `Y`, the family
 `(eᵢ ⊗ dⱼ)` is an orthonormal basis of `X ⊗ Y`.
 
-The thesis's proof is **164X**, and the skeleton is transcribed: `E₂` is
-clearly orthonormal, and by **160IX** + **160IV** it is enough that every
-point of `X ⊗ Y` lies in `E₂^⊥⊥`, which by **160IV**.2 is the ultranorm
-closure of the `𝒞`-span of `E₂`.
+The thesis's proof is **164X**, and it is transcribed.  `E₂` is clearly
+orthonormal (`ht.mul` and `ht.star` for the projection clause, product
+np-functionals for `⟨eᵢ,eᵢ⟩ ⊗ ⟨dⱼ,dⱼ⟩ ≠ 0`), and by **160IX** + **160IV**
+it is enough that every point of `X ⊗ Y` lies in `E₂^⊥⊥`, which by
+**160IV**.2 is the ultranorm closure of the `𝒞`-span of `E₂`.  By
+**164II**.1 `ext_tensor_dense` — the thesis's own "Property 1 follows
+immediately", printed one paragraph earlier — it is enough to place the
+*elementary* tensors there.  And an elementary `η v w` is placed exactly as
+**164X** places `eᵢ₀ ⊗ dⱼ₀`: with `aᵢ = ⟨eᵢ,v⟩` and `bⱼ = ⟨dⱼ,w⟩`,
+**160IX**.2 asks for
+`∑ᵢⱼ ⟨eᵢ ⊗ dⱼ, v ⊗ w⟩⟨v ⊗ w, eᵢ ⊗ dⱼ⟩ = ⟨v ⊗ w, v ⊗ w⟩`, which by `η_inner`
+and `ht.mul` is the printed identity
+`∑ᵢⱼ aᵢ*aᵢ ⊗ bⱼ*bⱼ = (∑ᵢ aᵢ*aᵢ) ⊗ (∑ⱼ bⱼ*bⱼ)`; the two leg sums converge
+by **149IV** `mod_parseval`, and the double sum is then evaluated by
+`uw_double_sum`, which is the thesis's "product np-functionals are
+separating, see `tensor`".
 
-**Divergence (class 2) in the last step.**  Because the thesis has `X ⊗ Y`
-*defined* as `ℓ²((pᵢⱼ))` for one distinguished pair of bases, it can reduce
-to `eᵢ₀ ⊗ dⱼ₀ ∈ E₂^⊥⊥` for the distinguished basis and then verify the
-Parseval identity of **160IX**.2 by testing against product np-functionals.
-Our `E` is an arbitrary `ExtTensor`, so there is no distinguished basis to
-reduce to; instead **164II**.1 `ext_tensor_dense` reduces the
-claim to the elementary tensors, and `η v w` is approximated directly by
-`η vₛ wᵤ = ∑_{i∈s} ∑_{j∈u} (⟨eᵢ,v⟩ ⊗ ⟨dⱼ,w⟩)·(eᵢ ⊗ dⱼ)`, with `s` chosen
-first and `u` afterwards — so that only the **166III** estimates
-`unSeminorm_eta_le_left/_right` are needed and the product-functional
-computation is avoided altogether.  (Testing against product functionals
-would still be needed for the thesis's route: it needs to know that
-`∑ᵢⱼ aᵢ*aᵢ ⊗ bⱼ*bⱼ` converges ultraweakly to `⟨v,v⟩ ⊗ ⟨w,w⟩`, which is
-`tensor-3`.  Here `IsVNTensor` is used for the star-projection clause
-(`ht.mul`, `ht.star`), for the non-degeneracy `⟨eᵢ,eᵢ⟩ ⊗ ⟨dⱼ,dⱼ⟩ ≠ 0`, for
-which the product functionals *are* used, and — through the 166III
-estimates that carry the last step — for leg normality; what is *not*
-needed is the ultraweak double-sum identity.) -/
+Two points where the transcription is not literal, neither of them a
+change of route.  (i) **164X** reduces to the *distinguished* pair of bases,
+for which `X ⊗ Y` **is** `ℓ²((pᵢⱼ))`, so that the vectors it must place in
+`E₂^⊥⊥` span densely by construction; our `E` is an arbitrary `ExtTensor`,
+so the same reduction is made instead through **164II**.1, which holds for
+every model and is what the thesis proves at that point.  The identity that
+follows is then run for an arbitrary `v ⊗ w`, of which `eᵢ₀ ⊗ dⱼ₀` is a
+case.  (ii) The convergence of the double sum is not assumed: the
+coefficients are ℓ²-summable by Bessel, so `exists_parseval_of_orthn`
+supplies a limit `⟨y,y⟩` for it, and `uw_double_sum` identifies that limit
+with `⟨v,v⟩ ⊗ ⟨w,w⟩ = ⟨v ⊗ w, v ⊗ w⟩`. -/
 theorem ext_tensor_basis [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
     [VonNeumannAlgebra 𝒞] [CompleteSpace X] [CompleteSpace Y]
     (hX : SelfDual 𝒜 X) (hY : SelfDual ℬ Y) (E : ExtTensor t ht X Y)
@@ -9810,8 +9861,8 @@ theorem ext_tensor_basis [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
     (he : IsONBasis 𝒜 e) (hd : IsONBasis ℬ d) :
     IsONBasis 𝒞 fun p : ι × κ => E.η (e p.1) (d p.2) := by
   classical
-  obtain ⟨heo, heexp, -⟩ := he
-  obtain ⟨hdo, hdexp, -⟩ := hd
+  have heo : OrthonormalFam 𝒜 e := he.1
+  have hdo : OrthonormalFam ℬ d := hd.1
   set f : ι × κ → E.Z := fun p => E.η (e p.1) (d p.2) with hfdef
   -- `t` and `η` kill zeros
   have ht0l : ∀ b : ℬ, t (0 : 𝒜) b = 0 := fun b => by
@@ -9822,26 +9873,6 @@ theorem ext_tensor_basis [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
     have h := ht.add_right a 0 0
     rw [add_zero] at h
     exact (add_left_cancel (a := t a 0) (by rw [add_zero]; exact h)).symm
-  have hη0l : ∀ w : Y, E.η (0 : X) w = 0 := fun w => by
-    have h := E.η_add_left 0 0 w
-    rw [add_zero] at h
-    exact (add_left_cancel (a := E.η 0 w) (by rw [add_zero]; exact h)).symm
-  have hη0r : ∀ v : X, E.η v (0 : Y) = 0 := fun v => by
-    have h := E.η_add_right v 0 0
-    rw [add_zero] at h
-    exact (add_left_cancel (a := E.η v 0) (by rw [add_zero]; exact h)).symm
-  have hηsuml : ∀ (s : Finset ι) (g : ι → X) (w : Y),
-      E.η (∑ i ∈ s, g i) w = ∑ i ∈ s, E.η (g i) w := by
-    intro s g w
-    refine Finset.induction_on s (by rw [Finset.sum_empty, Finset.sum_empty,
-      hη0l]) fun i s hi ih => ?_
-    rw [Finset.sum_insert hi, E.η_add_left, ih, Finset.sum_insert hi]
-  have hηsumr : ∀ (v : X) (s : Finset κ) (g : κ → Y),
-      E.η v (∑ j ∈ s, g j) = ∑ j ∈ s, E.η v (g j) := by
-    intro v s g
-    refine Finset.induction_on s (by rw [Finset.sum_empty, Finset.sum_empty,
-      hη0r]) fun j s hj ih => ?_
-    rw [Finset.sum_insert hj, E.η_add_right, ih, Finset.sum_insert hj]
   have hfinner : ∀ p q : ι × κ, (inner 𝒞 (f p) (f q) : 𝒞)
       = t (inner 𝒜 (e p.1) (e q.1)) (inner ℬ (d p.2) (d q.2)) :=
     fun p q => E.η_inner _ _ _ _
@@ -9878,105 +9909,35 @@ theorem ext_tensor_basis [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
   -- (2) clause (a): by **160IX**.1 it suffices that `z ∈ E₂^⊥⊥`
   refine (selfdual_orthn_basis E.selfDual f horth z).1 ?_
   rw [hilbmod_projthm_2 E.selfDual (Set.range f)]
-  -- every *elementary* tensor lies in the ultranorm closure of the span
+  -- every *elementary* tensor lies in `E₂^⊥⊥`, by **164X**'s own identity
   have helem : ∀ (v : X) (w : Y),
       E.η v w ∈ unClosure 𝒞 (inner 𝒞) (bSpan 𝒞 (Set.range f)) := by
-    intro v w n Ωs ε hε
-    have hw1 : (0 : ℝ) < ‖w‖ + 1 := by positivity
-    have hδ₁ : 0 < ε / (2 * (‖w‖ + 1)) := by positivity
-    obtain ⟨s, hs⟩ : ∃ s : Finset ι, ∀ k : Fin n,
-        unSeminorm (vnTensorLegLeftNP ht (Ωs k)) (inner 𝒜)
-            ((∑ i ∈ s, (inner 𝒜 (e i) v : 𝒜) • e i) - v)
-          ≤ ε / (2 * (‖w‖ + 1)) := by
-      have hall : ∀ᶠ s in (atTop : Filter (Finset ι)), ∀ k : Fin n,
-          unSeminorm (vnTensorLegLeftNP ht (Ωs k)) (inner 𝒜)
-              ((∑ i ∈ s, (inner 𝒜 (e i) v : 𝒜) • e i) - v)
-            ≤ ε / (2 * (‖w‖ + 1)) := by
-        rw [Filter.eventually_all]
-        exact fun k => ((heexp v (vnTensorLegLeftNP ht (Ωs k))).eventually_lt_const
-          hδ₁).mono fun _ h => h.le
-      exact hall.exists
-    have hv1 : (0 : ℝ) < ‖∑ i ∈ s, (inner 𝒜 (e i) v : 𝒜) • e i‖ + 1 := by positivity
-    have hδ₂ : 0 < ε / (2 * (‖∑ i ∈ s, (inner 𝒜 (e i) v : 𝒜) • e i‖ + 1)) := by
-      positivity
-    obtain ⟨u, hu⟩ : ∃ u : Finset κ, ∀ k : Fin n,
-        unSeminorm (vnTensorLegRightNP ht (Ωs k)) (inner ℬ)
-            ((∑ j ∈ u, (inner ℬ (d j) w : ℬ) • d j) - w)
-          ≤ ε / (2 * (‖∑ i ∈ s, (inner 𝒜 (e i) v : 𝒜) • e i‖ + 1)) := by
-      have hall : ∀ᶠ u in (atTop : Filter (Finset κ)), ∀ k : Fin n,
-          unSeminorm (vnTensorLegRightNP ht (Ωs k)) (inner ℬ)
-              ((∑ j ∈ u, (inner ℬ (d j) w : ℬ) • d j) - w)
-            ≤ ε / (2 * (‖∑ i ∈ s, (inner 𝒜 (e i) v : 𝒜) • e i‖ + 1)) := by
-        rw [Filter.eventually_all]
-        exact fun k => ((hdexp w (vnTensorLegRightNP ht (Ωs k))).eventually_lt_const
-          hδ₂).mono fun _ h => h.le
-      exact hall.exists
-    refine ⟨E.η (∑ i ∈ s, (inner 𝒜 (e i) v : 𝒜) • e i)
-      (∑ j ∈ u, (inner ℬ (d j) w : ℬ) • d j), ?_, fun k => ?_⟩
-    · -- the approximant is a `𝒞`-combination of the `eᵢ ⊗ dⱼ`
-      have hexpand : E.η (∑ i ∈ s, (inner 𝒜 (e i) v : 𝒜) • e i)
-            (∑ j ∈ u, (inner ℬ (d j) w : ℬ) • d j)
-          = ∑ i ∈ s, ∑ j ∈ u,
-              t (inner 𝒜 (e i) v) (inner ℬ (d j) w) • f (i, j) := by
-        rw [hηsuml s (fun i => (inner 𝒜 (e i) v : 𝒜) • e i)]
-        refine Finset.sum_congr rfl fun i _ => ?_
-        rw [hηsumr _ u (fun j => (inner ℬ (d j) w : ℬ) • d j)]
-        exact Finset.sum_congr rfl fun j _ => E.η_smul _ _ _ _
-      rw [hexpand]
-      refine Finset.sum_induction _ _ (fun a b ha hb => bSpan_add _ a ha b hb)
-        (zero_mem_bSpan _) fun i _ => ?_
-      refine Finset.sum_induction _ _ (fun a b ha hb => bSpan_add _ a ha b hb)
-        (zero_mem_bSpan _) fun j _ => ?_
-      exact bSpan_op_smul _ _ _ (subset_bSpan _ (Set.mem_range_self (i, j)))
-    · -- the estimate: split, then **166III** twice
-      have hsplit : E.η v w - E.η (∑ i ∈ s, (inner 𝒜 (e i) v : 𝒜) • e i)
-            (∑ j ∈ u, (inner ℬ (d j) w : ℬ) • d j)
-          = E.η (v - ∑ i ∈ s, (inner 𝒜 (e i) v : 𝒜) • e i) w
-            + E.η (∑ i ∈ s, (inner 𝒜 (e i) v : 𝒜) • e i)
-                (w - ∑ j ∈ u, (inner ℬ (d j) w : ℬ) • d j) := by
-        have h1 : E.η (v - ∑ i ∈ s, (inner 𝒜 (e i) v : 𝒜) • e i) w
-            + E.η (∑ i ∈ s, (inner 𝒜 (e i) v : 𝒜) • e i) w = E.η v w := by
-          rw [← E.η_add_left]; congr 1; abel
-        have h2 : E.η (∑ i ∈ s, (inner 𝒜 (e i) v : 𝒜) • e i)
-              (w - ∑ j ∈ u, (inner ℬ (d j) w : ℬ) • d j)
-            + E.η (∑ i ∈ s, (inner 𝒜 (e i) v : 𝒜) • e i)
-                (∑ j ∈ u, (inner ℬ (d j) w : ℬ) • d j)
-            = E.η (∑ i ∈ s, (inner 𝒜 (e i) v : 𝒜) • e i) w := by
-          rw [← E.η_add_right]; congr 1; abel
-        rw [← h1, ← h2]; abel
-      have hneg1 : unSeminorm (vnTensorLegLeftNP ht (Ωs k)) (inner 𝒜)
-            (v - ∑ i ∈ s, (inner 𝒜 (e i) v : 𝒜) • e i)
-          = unSeminorm (vnTensorLegLeftNP ht (Ωs k)) (inner 𝒜)
-            ((∑ i ∈ s, (inner 𝒜 (e i) v : 𝒜) • e i) - v) := by
-        rw [← unSeminorm_neg_inner (X := X), neg_sub]
-      have hneg2 : unSeminorm (vnTensorLegRightNP ht (Ωs k)) (inner ℬ)
-            (w - ∑ j ∈ u, (inner ℬ (d j) w : ℬ) • d j)
-          = unSeminorm (vnTensorLegRightNP ht (Ωs k)) (inner ℬ)
-            ((∑ j ∈ u, (inner ℬ (d j) w : ℬ) • d j) - w) := by
-        rw [← unSeminorm_neg_inner (X := Y), neg_sub]
-      rw [hsplit]
-      refine le_trans (unSeminorm_add_le _ (cstarBInner 𝒞 E.Z) _ _) ?_
-      refine le_trans (add_le_add (unSeminorm_eta_le_left E _ _ _)
-        (unSeminorm_eta_le_right E _ _ _)) ?_
-      rw [hneg1, hneg2]
-      have hq1 : ε / (2 * (‖w‖ + 1)) * (2 * (‖w‖ + 1)) = ε :=
-        div_mul_cancel₀ _ (by positivity)
-      have hq2 : ε / (2 * (‖∑ i ∈ s, (inner 𝒜 (e i) v : 𝒜) • e i‖ + 1))
-          * (2 * (‖∑ i ∈ s, (inner 𝒜 (e i) v : 𝒜) • e i‖ + 1)) = ε :=
-        div_mul_cancel₀ _ (by positivity)
-      have hb1 : ‖w‖ * unSeminorm (vnTensorLegLeftNP ht (Ωs k)) (inner 𝒜)
-          ((∑ i ∈ s, (inner 𝒜 (e i) v : 𝒜) • e i) - v) ≤ ε / 2 := by
-        refine le_trans (mul_le_mul_of_nonneg_left (hs k) (norm_nonneg w)) ?_
-        have hD0 : (0 : ℝ) ≤ ε / (2 * (‖w‖ + 1)) := le_of_lt hδ₁
-        nlinarith [hD0, norm_nonneg w, hq1]
-      have hb2 : ‖∑ i ∈ s, (inner 𝒜 (e i) v : 𝒜) • e i‖
-          * unSeminorm (vnTensorLegRightNP ht (Ωs k)) (inner ℬ)
-            ((∑ j ∈ u, (inner ℬ (d j) w : ℬ) • d j) - w) ≤ ε / 2 := by
-        refine le_trans (mul_le_mul_of_nonneg_left (hu k) (norm_nonneg _)) ?_
-        have hD0 : (0 : ℝ) ≤ ε
-            / (2 * (‖∑ i ∈ s, (inner 𝒜 (e i) v : 𝒜) • e i‖ + 1)) := le_of_lt hδ₂
-        nlinarith [hD0, norm_nonneg (∑ i ∈ s, (inner 𝒜 (e i) v : 𝒜) • e i), hq2]
-      linarith
+    intro v w
+    rw [← hilbmod_projthm_2 E.selfDual (Set.range f)]
+    -- the Parseval sum of `v ⊗ w` against `E₂` converges, to `⟨y,y⟩`
+    obtain ⟨y, hy⟩ := exists_parseval_of_orthn
+      (bddUnComplete_of_selfDual E.selfDual) horth (E.η v w)
+    -- and its terms are the printed `aᵢ*aᵢ ⊗ bⱼ*bⱼ`
+    have hterm : ∀ q : ι × κ,
+        (inner 𝒞 (f q) (E.η v w) : 𝒞) * inner 𝒞 (E.η v w) (f q)
+          = t ((inner 𝒜 (e q.1) v : 𝒜) * inner 𝒜 v (e q.1))
+              ((inner ℬ (d q.2) w : ℬ) * inner ℬ w (d q.2)) := by
+      intro q
+      simp only [hfdef]
+      rw [E.η_inner, E.η_inner, ht.mul]
+    have hZ : UWTendsto (fun s : Finset (ι × κ) =>
+        ∑ q ∈ s, t ((inner 𝒜 (e q.1) v : 𝒜) * inner 𝒜 v (e q.1))
+          ((inner ℬ (d q.2) w : ℬ) * inner ℬ w (d q.2)))
+        atTop (inner 𝒞 y y) := by
+      simpa only [hterm] using hy
+    -- `(∑ᵢ aᵢ*aᵢ) ⊗ (∑ⱼ bⱼ*bⱼ) = ⟨v ⊗ w, v ⊗ w⟩`: **149IV** in each leg,
+    -- then the double-sum identity
+    have hyy : (inner 𝒞 y y : 𝒞) = inner 𝒞 (E.η v w) (E.η v w) := by
+      rw [uw_double_sum ht (mod_parseval e he v) (mod_parseval d hd w) hZ,
+        E.η_inner]
+    refine (selfdual_orthn_basis E.selfDual f horth (E.η v w)).2.mpr ?_
+    rw [← hyy]
+    exact hy
   -- **164II**.1: the elementary tensors span an ultranorm-dense set
   have hD : {w : E.Z | ∃ (m : ℕ) (x : Fin m → X) (y : Fin m → Y),
         w = ∑ i, E.η (x i) (y i)}
@@ -10732,7 +10693,8 @@ theorem ba_ext_tensor_pres [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
 are proofs — not converted.
 
 The two estimates of **166III** (`unSeminorm_eta_le_left/_right`) live in
-`section EtaEstimates` above, since **164II**.2a already needs them. -/
+`section EtaEstimates` above, where they were put when **164II**.2a still
+needed them; **166II** below is now their only consumer. -/
 
 -- `hX`, `hY` are not used: `E : ExtTensor t ht X Y` already carries
 -- self-duality of `X ⊗ Y` and `η_inner`, which is all the proof needs; they
@@ -10763,10 +10725,6 @@ theorem ultranorm_continuity_ext_tensor [VonNeumannAlgebra 𝒜]
     (hx : UnTendsto (inner 𝒜) x l x₀) (hy : UnTendsto (inner ℬ) y l y₀) :
     UnTendsto (inner 𝒞) (fun i => E.η (x i) (y i)) l (E.η x₀ y₀) := by
   intro Ω
-  obtain ⟨ω, hωa⟩ : ∃ ω : NPFunctional 𝒜, ∀ a : 𝒜, ω a = Ω (t a 1) :=
-    ⟨vnTensorLegLeftNP ht Ω, fun _ => rfl⟩
-  obtain ⟨ξ, hξb⟩ : ∃ ξ : NPFunctional ℬ, ∀ b : ℬ, ξ b = Ω (t 1 b) :=
-    ⟨vnTensorLegRightNP ht Ω, fun _ => rfl⟩
   obtain ⟨M₀, hM₀⟩ := hyb
   obtain ⟨M, hM0, hMy⟩ : ∃ M : ℝ, 0 ≤ M ∧ ∀ i, ‖y i‖ ≤ M :=
     ⟨max M₀ 0, le_max_right _ _, fun i => (hM₀ i).trans (le_max_left _ _)⟩
@@ -10779,64 +10737,19 @@ theorem ultranorm_continuity_ext_tensor [VonNeumannAlgebra 𝒜]
     have h2 : E.η x₀ (y i - y₀) + E.η x₀ y₀ = E.η x₀ (y i) := by
       rw [← E.η_add_right]; congr 1; abel
     rw [← h1, ← h2]; abel
-  -- `‖(xα − x) ⊗ yα‖_Ω ≤ M ‖xα − x‖_{Ω(· ⊗ 1)}`
-  have hterm1 : ∀ i, unSeminorm Ω (inner 𝒞) (E.η (x i - x₀) (y i))
-      ≤ M * unSeminorm ω (inner 𝒜) (x i - x₀) := by
-    intro i
-    have hy2 : ‖(inner ℬ (y i) (y i) : ℬ)‖ ≤ M ^ 2 := by
-      have hn : ‖(inner ℬ (y i) (y i) : ℬ)‖ = ‖y i‖ ^ 2 := by
-        rw [CStarModule.norm_eq_sqrt_norm_inner_self (A := ℬ) (y i),
-          Real.sq_sqrt (norm_nonneg _)]
-      have h1 := hMy i
-      have h2 := norm_nonneg (y i)
-      rw [hn]; nlinarith
-    have hmono : t (inner 𝒜 (x i - x₀) (x i - x₀)) (inner ℬ (y i) (y i))
-        ≤ t (inner 𝒜 (x i - x₀) (x i - x₀)) (((M ^ 2 : ℝ) : ℂ) • (1 : ℬ)) :=
-      vnTensor_mono_right ht CStarModule.inner_self_nonneg
-        (le_ofReal_smul_one CStarModule.inner_self_nonneg hy2)
-    have hre : (Ω (inner 𝒞 (E.η (x i - x₀) (y i)) (E.η (x i - x₀) (y i)))).re
-        ≤ M ^ 2 * (ω (inner 𝒜 (x i - x₀) (x i - x₀))).re := by
-      rw [E.η_inner, hωa]
-      have h2 := npFunctional_mono Ω hmono
-      rw [vnTensor_smul_complex_right ht, npf_csmul] at h2
-      simpa [Complex.mul_re, ← Complex.ofReal_pow] using
-        (Complex.le_def.mp h2).1
-    calc unSeminorm Ω (inner 𝒞) (E.η (x i - x₀) (y i))
-        ≤ Real.sqrt (M ^ 2 * (ω (inner 𝒜 (x i - x₀) (x i - x₀))).re) :=
-          Real.sqrt_le_sqrt hre
-      _ = M * unSeminorm ω (inner 𝒜) (x i - x₀) := by
-          rw [Real.sqrt_mul (by positivity), Real.sqrt_sq hM0]; rfl
-  -- `‖x ⊗ (yα − y)‖_Ω ≤ ‖x‖ ‖yα − y‖_{Ω(1 ⊗ ·)}`
-  have hterm2 : ∀ i, unSeminorm Ω (inner 𝒞) (E.η x₀ (y i - y₀))
-      ≤ ‖x₀‖ * unSeminorm ξ (inner ℬ) (y i - y₀) := by
-    intro i
-    have hx2 : ‖(inner 𝒜 x₀ x₀ : 𝒜)‖ ≤ ‖x₀‖ ^ 2 := by
-      rw [CStarModule.norm_eq_sqrt_norm_inner_self (A := 𝒜) x₀,
-        Real.sq_sqrt (norm_nonneg _)]
-    have hmono : t (inner 𝒜 x₀ x₀) (inner ℬ (y i - y₀) (y i - y₀))
-        ≤ t (((‖x₀‖ ^ 2 : ℝ) : ℂ) • (1 : 𝒜)) (inner ℬ (y i - y₀) (y i - y₀)) :=
-      vnTensor_mono_left ht CStarModule.inner_self_nonneg
-        (le_ofReal_smul_one CStarModule.inner_self_nonneg hx2)
-    have hre : (Ω (inner 𝒞 (E.η x₀ (y i - y₀)) (E.η x₀ (y i - y₀)))).re
-        ≤ ‖x₀‖ ^ 2 * (ξ (inner ℬ (y i - y₀) (y i - y₀))).re := by
-      rw [E.η_inner, hξb]
-      have h2 := npFunctional_mono Ω hmono
-      rw [ht.smul_complex, npf_csmul] at h2
-      simpa [Complex.mul_re, ← Complex.ofReal_pow] using
-        (Complex.le_def.mp h2).1
-    calc unSeminorm Ω (inner 𝒞) (E.η x₀ (y i - y₀))
-        ≤ Real.sqrt (‖x₀‖ ^ 2 * (ξ (inner ℬ (y i - y₀) (y i - y₀))).re) :=
-          Real.sqrt_le_sqrt hre
-      _ = ‖x₀‖ * unSeminorm ξ (inner ℬ) (y i - y₀) := by
-          rw [Real.sqrt_mul (by positivity), Real.sqrt_sq (norm_nonneg _)]; rfl
+  -- the two estimates of **166III**, `unSeminorm_eta_le_left/_right`
   refine squeeze_zero (fun i => unSeminorm_nonneg _ _ _) (g := fun i =>
-      M * unSeminorm ω (inner 𝒜) (x i - x₀)
-        + ‖x₀‖ * unSeminorm ξ (inner ℬ) (y i - y₀)) (fun i => ?_) ?_
+      M * unSeminorm (vnTensorLegLeftNP ht Ω) (inner 𝒜) (x i - x₀)
+        + ‖x₀‖ * unSeminorm (vnTensorLegRightNP ht Ω) (inner ℬ) (y i - y₀))
+    (fun i => ?_) ?_
   · change unSeminorm Ω (inner 𝒞) (E.η (x i) (y i) - E.η x₀ y₀) ≤ _
     rw [hsplit i]
-    exact (unSeminorm_add_le Ω (cstarBInner 𝒞 E.Z) _ _).trans
-      (add_le_add (hterm1 i) (hterm2 i))
-  · simpa using ((hx ω).const_mul M).add ((hy ξ).const_mul ‖x₀‖)
+    refine (unSeminorm_add_le Ω (cstarBInner 𝒞 E.Z) _ _).trans (add_le_add ?_ ?_)
+    · exact (unSeminorm_eta_le_left E Ω (x i - x₀) (y i)).trans
+        (mul_le_mul_of_nonneg_right (hMy i) (unSeminorm_nonneg _ _ _))
+    · exact unSeminorm_eta_le_right E Ω x₀ (y i - y₀)
+  · simpa using ((hx (vnTensorLegLeftNP ht Ω)).const_mul M).add
+      ((hy (vnTensorLegRightNP ht Ω)).const_mul ‖x₀‖)
 
 /-! ### The net form of ultranorm approximation
 
