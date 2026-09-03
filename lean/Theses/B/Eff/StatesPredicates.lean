@@ -22,11 +22,16 @@ Design:
 * An abstract `M`-convex set is a *structure* `MConvex M X` (the pair
   `(X, h)` of the thesis), so that statements can quantify over convex
   structures; `AConvMCat M` is the bundled category.
+* The derivation calculus of 193IV — the relation `≈`, the characterisation
+  `x ∼ y ↔ η x ≈ η y` of the least congruence, and parts 1–3 of the Exercise
+  — is formalized (`MConvex.Deriv` and the lemmas around it), and with it
+  193IX's description of when two elements of `X + Y` are equal
+  (`AConvMCat.coprodQuot_eq_iff`), on which 194I.4 then runs the thesis's
+  induction.
 * Not separately formalized: the example lists 190IV/190V and 192V.2
-  (`OUS`, `OUG`, `CRng`, `CH`, `EJA`, and the non-cancellative triangle),
-  the derivation-based description of the least congruence in 193IV and of
-  coproduct elements in 193IX (only the resulting existence statements are
-  stated), and 195V.4 (division effect monoids of Cho–Westerbaan).
+  (`OUS`, `OUG`, `CRng`, `CH`, `EJA`, and the non-cancellative triangle), and
+  195V.5 (the unit interval of `L^∞[0,1]` is an effect divisoid — the tree has
+  no `L^∞`).
 -/
 import Theses.B.Eff.Effectus
 
@@ -5766,6 +5771,82 @@ theorem stat_functor :
 
 end StatConvex
 
+/-! ### Helpers for `𝒟_M`, for the derivation calculus of 193IV
+
+Four facts about `map` and `mu` that the derivation calculus below needs and
+that the specification lemmas `map_spec`, `mu_spec` give immediately. -/
+
+namespace MConvexComb
+
+variable {M : Type u} [EffectMonoid M]
+
+/-- Helper: `𝒟_M f (p)` depends on `f` only through its values on the support
+of `p` (both sides are the same sum over the same fibre list). -/
+theorem map_congr {X : Type v} {Y : Type w} (p : MConvexComb M X) {f g : X → Y}
+    (h : ∀ x, p.toFun x ≠ 0 → f x = g x) : p.map f = p.map g := by
+  classical
+  refine MConvexComb.ext (funext fun y => ?_)
+  obtain ⟨l, hnd, hmem, -⟩ := p.sum_one
+  have hmf : ∀ x, x ∈ l.filter (fun x => decide (f x = y)) ↔
+      (p.toFun x ≠ 0 ∧ f x = y) := by
+    intro x
+    rw [List.mem_filter, hmem x]
+    simp
+  have hmg : ∀ x, x ∈ l.filter (fun x => decide (f x = y)) ↔
+      (p.toFun x ≠ 0 ∧ g x = y) := by
+    intro x
+    rw [hmf x]
+    exact ⟨fun hx => ⟨hx.1, (h x hx.1) ▸ hx.2⟩, fun hx => ⟨hx.1, (h x hx.1).symm ▸ hx.2⟩⟩
+  exact isSumOf_unique (map_spec p f y _ (List.Nodup.filter _ hnd) hmf)
+    (map_spec p g y _ (List.Nodup.filter _ hnd) hmg)
+
+/-- Helper: if `𝒟_M f (p)` is non-zero at `y`, some point of the support of
+`p` lies in the fibre of `y` (the contrapositive of
+`eq_zero_of_map_eq_zero`). -/
+theorem exists_of_map_ne_zero {X : Type v} {Y : Type w} (p : MConvexComb M X)
+    (f : X → Y) {y : Y} (h : (p.map f).toFun y ≠ 0) :
+    ∃ x, p.toFun x ≠ 0 ∧ f x = y := by
+  classical
+  by_contra hc
+  have hc' : ∀ x, p.toFun x ≠ 0 → f x ≠ y := fun x hx hfx => hc ⟨x, hx, hfx⟩
+  have hm : ∀ x, x ∈ ([] : List X) ↔ (p.toFun x ≠ 0 ∧ f x = y) := by
+    intro x
+    simp only [List.not_mem_nil, false_iff, not_and]
+    exact fun hx => hc' x hx
+  have hsp := map_spec p f y [] List.nodup_nil hm
+  rw [List.map_nil, PCM.isSumOf_nil_iff] at hsp
+  exact h hsp
+
+open Classical in
+/-- Helper: `η(w)` vanishes away from `w`. -/
+theorem eq_of_eta_ne_zero {X : Type v} {w z : X}
+    (h : (eta w : MConvexComb M X).toFun z ≠ 0) : z = w := by
+  by_contra hc
+  have hval : (eta w : MConvexComb M X).toFun z = if z = w then (1 : M) else 0 := rfl
+  rw [hval, ite_eq_right hc] at h
+  exact h rfl
+
+/-- Helper: if `μ(Φ)` is non-zero at `x`, some `φ` in the support of `Φ` is
+non-zero at `x` (the support of `μ(Φ)` lies in the union of the supports). -/
+theorem exists_of_mu_ne_zero {X : Type v} (Φ : MConvexComb M (MConvexComb M X))
+    {x : X} (h : (mu Φ).toFun x ≠ 0) :
+    ∃ φ : MConvexComb M X, Φ.toFun φ ≠ 0 ∧ φ.toFun x ≠ 0 := by
+  classical
+  obtain ⟨l, hnd, hmem, -⟩ := Φ.sum_one
+  by_contra hc
+  have hc' : ∀ φ : MConvexComb M X, Φ.toFun φ ≠ 0 → φ.toFun x = 0 := by
+    intro φ hφ
+    by_contra h0
+    exact hc ⟨φ, hφ, h0⟩
+  refine h (isSumOf_eq_zero ?_ (mu_spec Φ x l hnd hmem))
+  intro a ha
+  obtain ⟨φ, hφ, rfl⟩ := List.mem_map.mp ha
+  by_cases h0 : Φ.toFun φ = 0
+  · rw [h0, (exc_emonzero (φ.toFun x)).2]
+  · rw [hc' φ h0, (exc_emonzero (Φ.toFun φ)).1]
+
+end MConvexComb
+
 /-! ## Congruences and coproducts of abstract `M`-convex sets (parsec 193) -/
 
 section Congruence
@@ -5890,58 +5971,354 @@ theorem affine_kernel_cong {Y : Type v} (st : MConvex M X)
   change f (st.h φ) = f (st.h ψ)
   rw [hf φ, hf ψ, key φ, key ψ, hq]
 
+/-! ### The derivation calculus of 193IV
+
+`least-conv-cong` (eff.tex:2729) asks for more than the existence of a least
+congruence: it introduces the relation `≈` of eff.tex:2737 given by
+*derivations*, proves the three points of the Exercise about it, and concludes
+that `x ∼ y :⟺ η x ≈ η y` **is** the least congruence containing `R`.  That
+development is what follows; `least_conv_cong` is then read off it, and 193IX
+and 194I.4 are proved from it the way the thesis proves them. -/
+
+/-- **193IV** (`least-conv-cong`, eff.tex:2739, Exercise): one step of a
+derivation — for `φ, ψ ∈ 𝒟_M X`, *either*
+
+1. `h(φ) = h(ψ)` (the Exercise's second condition), *or*
+2. `φ` and `ψ` have matching coefficients and `R*`-related points:
+   `φ ≡ ⋁ⱼ λⱼ|xⱼ⟩` and `ψ ≡ ⋁ⱼ λⱼ|yⱼ⟩` with `xⱼ R* yⱼ` (the first).
+
+`𝒟_M X` is modelled here by a support function, not by a list of
+`(coefficient, point)` pairs, so condition 2 is stated with a *single* formal
+combination `Θ` over `X × X` whose support consists of `R*`-related pairs:
+`Θ` carries the common coefficients, and `φ = 𝒟_M(π₁)(Θ)`, `ψ = 𝒟_M(π₂)(Θ)`
+are its two coordinate images.  The two readings agree — a presentation gives
+such a `Θ` by merging repeated pairs `(xⱼ, yⱼ)`, and the support list of `Θ`
+is such a presentation.  `R*` is `Relation.EqvGen R`, the least equivalence
+relation containing `R`. -/
+def MConvex.DerivStep (st : MConvex M X) (R : X → X → Prop)
+    (φ ψ : MConvexComb M X) : Prop :=
+  st.h φ = st.h ψ ∨
+    ∃ Θ : MConvexComb M (X × X),
+      (∀ z : X × X, Θ.toFun z ≠ 0 → Relation.EqvGen R z.1 z.2) ∧
+        φ = Θ.map Prod.fst ∧ ψ = Θ.map Prod.snd
+
+/-- **193IV** (`least-conv-cong`, eff.tex:2737, Exercise): the derivation
+relation `φ ≈ ψ` — there is a tuple `Φ₁, …, Φₙ ∈ 𝒟_M X` with `Φ₁ = φ`,
+`Φₙ = ψ` and `DerivStep Φᵢ Φᵢ₊₁` for each `i`; i.e. the reflexive-transitive
+closure of `DerivStep`.  It is symmetric as well (`deriv_symm`), each step
+being so. -/
+def MConvex.Deriv (st : MConvex M X) (R : X → X → Prop)
+    (φ ψ : MConvexComb M X) : Prop :=
+  Relation.ReflTransGen (st.DerivStep R) φ ψ
+
+/-- Every `φ` satisfies the *second* clause of `DerivStep` against itself
+(take `Θ = 𝒟_M(x ↦ (x,x))(φ)` and reflexivity of `R*`); needed because
+`deriv_mu_step` splits a mixed family of steps into one all-of-kind-1 step
+followed by one all-of-kind-2 step. -/
+theorem MConvex.derivRel_self (R : X → X → Prop) (φ : MConvexComb M X) :
+    ∃ Θ : MConvexComb M (X × X),
+      (∀ z : X × X, Θ.toFun z ≠ 0 → Relation.EqvGen R z.1 z.2) ∧
+        φ = Θ.map Prod.fst ∧ φ = Θ.map Prod.snd := by
+  refine ⟨φ.map (fun x => (x, x)), ?_, ?_, ?_⟩
+  · intro z hz
+    obtain ⟨x, -, rfl⟩ := MConvexComb.exists_of_map_ne_zero φ _ hz
+    exact Relation.EqvGen.refl x
+  · rw [MConvexComb.map_comp]; exact (MConvexComb.map_id φ).symm
+  · rw [MConvexComb.map_comp]; exact (MConvexComb.map_id φ).symm
+
+/-- A derivation step is symmetric: clause 1 is an equation, and clause 2
+survives `𝒟_M` of the flip `(x,y) ↦ (y,x)` since `R*` is symmetric. -/
+theorem MConvex.derivStep_symm (st : MConvex M X) (R : X → X → Prop)
+    {φ ψ : MConvexComb M X} (h : st.DerivStep R φ ψ) : st.DerivStep R ψ φ := by
+  rcases h with h1 | ⟨Θ, hΘ, hφ, hψ⟩
+  · exact Or.inl h1.symm
+  · refine Or.inr ⟨Θ.map (fun z => (z.2, z.1)), ?_, ?_, ?_⟩
+    · intro z hz
+      obtain ⟨w, hw, rfl⟩ := MConvexComb.exists_of_map_ne_zero Θ _ hz
+      exact Relation.EqvGen.symm _ _ (hΘ w hw)
+    · rw [MConvexComb.map_comp]; exact hψ
+    · rw [MConvexComb.map_comp]; exact hφ
+
+/-- Hence `≈` is symmetric. -/
+theorem MConvex.deriv_symm (st : MConvex M X) (R : X → X → Prop)
+    {φ ψ : MConvexComb M X} (h : st.Deriv R φ ψ) : st.Deriv R ψ φ := by
+  induction h with
+  | refl => exact Relation.ReflTransGen.refl
+  | tail _ hbc ih =>
+      exact (Relation.ReflTransGen.single (st.derivStep_symm R hbc)).trans ih
+
+/-- **193IV.2**, the one-step case, done for a whole family at once: if
+`F a` and `G a` differ by a single derivation step for every index `a`, then
+`μ(𝒟_M F (Ξ)) ≈ μ(𝒟_M G (Ξ))` for any `Ξ ∈ 𝒟_M A`.
+
+This is the computation of `bsols.tex:2312–2355`, both base cases at once.
+The family is first replaced by `H`, which takes the value `G a` where the
+step at `a` was of kind 1 and `F a` where it was of kind 2, so that
+`F ⟶ H` is uniformly of kind 1 and `H ⟶ G` uniformly of kind 2 (using
+`derivRel_self` at the indices where nothing moves).  Kind 1 is then the
+solution's `h ∘ μ = h ∘ 𝒟_M h` computation, and kind 2 glues the witnesses
+`Θ a` into the single witness `μ(𝒟_M Θ (Ξ))` by naturality of `μ`. -/
+theorem MConvex.deriv_mu_step {A : Type w} (st : MConvex M X) (R : X → X → Prop)
+    (Ξ : MConvexComb M A) (F G : A → MConvexComb M X)
+    (h : ∀ a, st.DerivStep R (F a) (G a)) :
+    st.Deriv R (MConvexComb.mu (Ξ.map F)) (MConvexComb.mu (Ξ.map G)) := by
+  have hpt : ∀ a, ∃ b : MConvexComb M X, st.h (F a) = st.h b ∧
+      ∃ Θ : MConvexComb M (X × X),
+        (∀ z : X × X, Θ.toFun z ≠ 0 → Relation.EqvGen R z.1 z.2) ∧
+          b = Θ.map Prod.fst ∧ G a = Θ.map Prod.snd := by
+    intro a
+    rcases h a with h1 | h2
+    · exact ⟨G a, h1, MConvex.derivRel_self R (G a)⟩
+    · exact ⟨F a, rfl, h2⟩
+  choose H hH1 Θ hΘ hΘ1 hΘ2 using hpt
+  have s1 : st.DerivStep R (MConvexComb.mu (Ξ.map F)) (MConvexComb.mu (Ξ.map H)) := by
+    refine Or.inl ?_
+    rw [st.h_mu, st.h_mu, MConvexComb.map_comp, MConvexComb.map_comp,
+      show (st.h ∘ F) = (st.h ∘ H) from funext hH1]
+  have s2 : st.DerivStep R (MConvexComb.mu (Ξ.map H)) (MConvexComb.mu (Ξ.map G)) := by
+    refine Or.inr ⟨MConvexComb.mu (Ξ.map Θ), ?_, ?_, ?_⟩
+    · intro z hz
+      obtain ⟨θ, hθ, hz'⟩ := MConvexComb.exists_of_mu_ne_zero _ hz
+      obtain ⟨a, -, rfl⟩ := MConvexComb.exists_of_map_ne_zero Ξ Θ hθ
+      exact hΘ a z hz'
+    · rw [MConvexComb.mu_map, MConvexComb.map_comp]
+      exact congrArg MConvexComb.mu (congrArg (fun k => Ξ.map k) (funext hΘ1))
+    · rw [MConvexComb.mu_map, MConvexComb.map_comp]
+      exact congrArg MConvexComb.mu (congrArg (fun k => Ξ.map k) (funext hΘ2))
+  exact (Relation.ReflTransGen.single s1).trans (Relation.ReflTransGen.single s2)
+
+/-- **193IV.2** as the Exercise prints it: replacing *one* point `ψ` of a
+formal combination `μ(λ₀|ψ⟩ ⋁ ⋁ⱼ λⱼ|χⱼ⟩)` by a `≈`-related `φ` gives a
+`≈`-related combination.  Here the combination is presented as `Ξ ∈ 𝒟_M A`
+with points `F : A → 𝒟_M X`, and the point replaced is the one at the index
+`a₀`.  Proved by induction along the chain `F a₀ ≈ ψ`, one `deriv_mu_step`
+per link. -/
+theorem MConvex.deriv_mu_update {A : Type w} [DecidableEq A] (st : MConvex M X)
+    (R : X → X → Prop) (Ξ : MConvexComb M A) (F : A → MConvexComb M X) (a₀ : A)
+    (ψ : MConvexComb M X) (hd : st.Deriv R (F a₀) ψ) :
+    st.Deriv R (MConvexComb.mu (Ξ.map F))
+      (MConvexComb.mu (Ξ.map (Function.update F a₀ ψ))) := by
+  induction hd with
+  | refl =>
+      rw [Function.update_eq_self]
+      exact Relation.ReflTransGen.refl
+  | tail _ hbc ih =>
+      refine ih.trans (MConvex.deriv_mu_step st R Ξ _ _ ?_)
+      intro a
+      by_cases ha : a = a₀
+      · subst ha
+        rw [Function.update_self, Function.update_self]
+        exact hbc
+      · rw [Function.update_of_ne ha, Function.update_of_ne ha]
+        exact Or.inl rfl
+
+/-- **193IV.2**, iterated: replacing *all* the points of a formal combination
+by `≈`-related ones gives a `≈`-related combination.  This is the form part 3
+uses; it follows by replacing the points one at a time along a repetition-free
+list enumerating the support of `Ξ`, and `map_congr` for the points outside
+the support. -/
+theorem MConvex.deriv_mu_congr {A : Type w} (st : MConvex M X) (R : X → X → Prop)
+    (Ξ : MConvexComb M A) (F G : A → MConvexComb M X)
+    (h : ∀ a, st.Deriv R (F a) (G a)) :
+    st.Deriv R (MConvexComb.mu (Ξ.map F)) (MConvexComb.mu (Ξ.map G)) := by
+  classical
+  have key : ∀ (l : List A) (F' : A → MConvexComb M X),
+      (∀ a, st.Deriv R (F' a) (G a)) →
+      ∃ F'' : A → MConvexComb M X,
+        (∀ a ∈ l, F'' a = G a) ∧ (∀ a, a ∉ l → F'' a = F' a) ∧
+          st.Deriv R (MConvexComb.mu (Ξ.map F')) (MConvexComb.mu (Ξ.map F'')) := by
+    intro l
+    induction l with
+    | nil =>
+        intro F' _
+        exact ⟨F', fun a ha => absurd ha (by simp), fun _ _ => rfl,
+          Relation.ReflTransGen.refl⟩
+    | cons a₀ l ih =>
+        intro F' hF'
+        have hupd := MConvex.deriv_mu_update st R Ξ F' a₀ (G a₀) (hF' a₀)
+        have h2 : ∀ a, st.Deriv R (Function.update F' a₀ (G a₀) a) (G a) := by
+          intro a
+          by_cases ha : a = a₀
+          · subst ha
+            rw [Function.update_self]
+            exact Relation.ReflTransGen.refl
+          · rw [Function.update_of_ne ha]
+            exact hF' a
+        obtain ⟨F'', hF1, hF2, hD⟩ := ih (Function.update F' a₀ (G a₀)) h2
+        refine ⟨F'', ?_, ?_, hupd.trans hD⟩
+        · intro a ha
+          rcases List.mem_cons.mp ha with hh | hh
+          · by_cases hl : a ∈ l
+            · exact hF1 a hl
+            · rw [hF2 a hl, hh, Function.update_self]
+          · exact hF1 a hh
+        · intro a ha
+          have hl : a ∉ l := fun hh => ha (List.mem_cons.mpr (Or.inr hh))
+          have hne : a ≠ a₀ := fun hh => ha (List.mem_cons.mpr (Or.inl hh))
+          rw [hF2 a hl, Function.update_of_ne hne]
+  obtain ⟨l, -, hmem, -⟩ := Ξ.sum_one
+  obtain ⟨F'', hF1, -, hD⟩ := key l F h
+  have heq : Ξ.map F'' = Ξ.map G :=
+    MConvexComb.map_congr Ξ (fun a ha => hF1 a ((hmem a).mpr ha))
+  rwa [heq] at hD
+
+/-- **193IV** (`least-conv-cong`, eff.tex:2752, Exercise): the relation `∼`
+of the Exercise — `x ∼ y` iff `η x ≈ η y`.  It is an equivalence relation
+because `≈` is reflexive, symmetric (`deriv_symm`) and transitive; that it is
+the least congruence containing `R` is `least_conv_cong` below. -/
+noncomputable def MConvex.derivSetoid (st : MConvex M X) (R : X → X → Prop) :
+    Setoid X where
+  r x y := st.Deriv R (MConvexComb.eta x) (MConvexComb.eta y)
+  iseqv := ⟨fun _ => Relation.ReflTransGen.refl, fun h => st.deriv_symm R h,
+    fun h₁ h₂ => h₁.trans h₂⟩
+
+/-- **193IV.1** (`least-conv-cong`, eff.tex:2755, Exercise): `η(h(ψ)) ≈ ψ`,
+by a single step of the second kind, `h(η(h(ψ))) = h(ψ)`. -/
+theorem MConvex.deriv_eta_h (st : MConvex M X) (R : X → X → Prop)
+    (ψ : MConvexComb M X) : st.Deriv R (MConvexComb.eta (st.h ψ)) ψ :=
+  Relation.ReflTransGen.single (Or.inl (st.h_eta (st.h ψ)))
+
+/-- **193IV.1** (`least-conv-cong`, eff.tex:2756, Exercise): `φ ≈ ψ` implies
+`h(φ) ∼ h(ψ)`, since `η(h(φ)) ≈ φ ≈ ψ ≈ η(h(ψ))`. -/
+theorem MConvex.deriv_h (st : MConvex M X) (R : X → X → Prop)
+    {φ ψ : MConvexComb M X} (h : st.Deriv R φ ψ) :
+    (st.derivSetoid R).r (st.h φ) (st.h ψ) :=
+  ((st.deriv_eta_h R φ).trans h).trans (st.deriv_symm R (st.deriv_eta_h R ψ))
+
+/-- **193IV.3** (`least-conv-cong`, bsols.tex:2360, Exercise), first half:
+every `φ` is `≈` to `𝒟_M(rep)(φ)`, where `rep` picks the `∼`-representative
+`r_x` of each `x` (here `Quotient.out` of the class).  The solution's
+`n`-step computation along the support list is `deriv_mu_congr` applied to
+`φ = μ(𝒟_M η (φ))` with the two families `η` and `η ∘ rep`. -/
+theorem MConvex.deriv_map_rep (st : MConvex M X) (R : X → X → Prop)
+    (φ : MConvexComb M X) :
+    st.Deriv R φ (φ.map (fun x => (Quotient.mk (st.derivSetoid R) x).out)) := by
+  have h1 : MConvexComb.mu (φ.map MConvexComb.eta) = φ := MConvexComb.mu_map_eta φ
+  have h2 : MConvexComb.mu
+      (φ.map (fun x => MConvexComb.eta ((Quotient.mk (st.derivSetoid R) x).out)))
+      = φ.map (fun x => (Quotient.mk (st.derivSetoid R) x).out) := by
+    have hx := MConvexComb.mu_map_eta
+      (φ.map (fun x => (Quotient.mk (st.derivSetoid R) x).out))
+    rw [MConvexComb.map_comp] at hx
+    exact hx
+  have hstep : ∀ x : X, st.Deriv R (MConvexComb.eta x)
+      (MConvexComb.eta ((Quotient.mk (st.derivSetoid R) x).out)) := by
+    intro x
+    exact st.deriv_symm R
+      (Quotient.exact (Quotient.out_eq (Quotient.mk (st.derivSetoid R) x)))
+  have h5 := MConvex.deriv_mu_congr st R φ MConvexComb.eta
+    (fun x => MConvexComb.eta ((Quotient.mk (st.derivSetoid R) x).out)) hstep
+  rwa [h1, h2] at h5
+
+/-- **193IV.3** (`least-conv-cong`, bsols.tex:2374, Exercise), second half:
+`φ ∼ ψ` — that is, `𝒟_M(q)(φ) = 𝒟_M(q)(ψ)` — implies `φ ≈ ψ`.  Both sides
+are `≈` to their normal forms `𝒟_M(rep)(φ)` and `𝒟_M(rep)(ψ)`, and those are
+equal because `rep` factors through `q`. -/
+theorem MConvex.deriv_of_quot_eq (st : MConvex M X) (R : X → X → Prop)
+    {φ ψ : MConvexComb M X}
+    (h : φ.map (Quotient.mk (st.derivSetoid R))
+      = ψ.map (Quotient.mk (st.derivSetoid R))) :
+    st.Deriv R φ ψ := by
+  have key : φ.map (fun x => (Quotient.mk (st.derivSetoid R) x).out)
+      = ψ.map (fun x => (Quotient.mk (st.derivSetoid R) x).out) := by
+    have e1 : φ.map (fun x => (Quotient.mk (st.derivSetoid R) x).out)
+        = (φ.map (Quotient.mk (st.derivSetoid R))).map Quotient.out :=
+      (MConvexComb.map_comp φ _ Quotient.out).symm
+    have e2 : ψ.map (fun x => (Quotient.mk (st.derivSetoid R) x).out)
+        = (ψ.map (Quotient.mk (st.derivSetoid R))).map Quotient.out :=
+      (MConvexComb.map_comp ψ _ Quotient.out).symm
+    rw [e1, e2, h]
+  refine (st.deriv_map_rep R φ).trans ?_
+  rw [key]
+  exact st.deriv_symm R (st.deriv_map_rep R ψ)
+
+/-- **193IV.3** (`least-conv-cong`, bsols.tex:2390, Exercise), the minimality
+computation: for any congruence `S` containing `R`, `φ ≈ ψ` implies
+`h(φ) S h(ψ)`.  By induction over the derivation: a step of the first kind
+gives `h(φ) = h(ψ)`, and one of the second kind makes `𝒟_M(q_S)(φ)` and
+`𝒟_M(q_S)(ψ)` equal (the points of `Θ` are `R*`- hence `S`-related), so the
+congruence property applies. -/
+theorem MConvex.deriv_le_of_congruence (st : MConvex M X) (R : X → X → Prop)
+    {S : Setoid X} (hS : st.IsCongruence S) (hRS : ∀ x y, R x y → S.r x y)
+    {φ ψ : MConvexComb M X} (h : st.Deriv R φ ψ) :
+    Quotient.mk S (st.h φ) = Quotient.mk S (st.h ψ) := by
+  have hEq : ∀ x y, Relation.EqvGen R x y → S.r x y := by
+    intro x y hxy
+    induction hxy with
+    | rel x y hr => exact hRS x y hr
+    | refl x => exact S.refl x
+    | symm x y _ ih => exact S.symm ih
+    | trans x y z _ _ ih₁ ih₂ => exact S.trans ih₁ ih₂
+  induction h with
+  | refl => rfl
+  | tail _ hbc ih =>
+      refine ih.trans ?_
+      rcases hbc with h1 | ⟨Θ, hΘ, hb, hc⟩
+      · rw [h1]
+      · rw [hb, hc]
+        refine hS _ _ ?_
+        rw [MConvexComb.map_comp, MConvexComb.map_comp]
+        exact MConvexComb.map_congr Θ
+          (fun z hz => Quotient.sound (hEq _ _ (hΘ z hz)))
+
+/-- **193IV** (`least-conv-cong`, bsols.tex:2380): `∼` is a congruence — if
+`𝒟_M(q)(φ) = 𝒟_M(q)(ψ)` then `φ ≈ ψ` by part 3 and so `h(φ) ∼ h(ψ)` by
+part 1. -/
+theorem MConvex.derivSetoid_isCongruence (st : MConvex M X) (R : X → X → Prop) :
+    st.IsCongruence (st.derivSetoid R) := fun _ _ hq =>
+  Quotient.sound (st.deriv_h R (st.deriv_of_quot_eq R hq))
+
+/-- **193IV** (`least-conv-cong`, bsols.tex:2384): `R ⊆ ∼` — if `x R y` then
+`(η x, η y)` is a one-step derivation, by the second clause with
+`Θ = η((x,y))`. -/
+theorem MConvex.rel_le_derivSetoid (st : MConvex M X) (R : X → X → Prop)
+    {x y : X} (h : R x y) : (st.derivSetoid R).r x y := by
+  refine Relation.ReflTransGen.single (Or.inr ⟨MConvexComb.eta (x, y), ?_, ?_, ?_⟩)
+  · intro z hz
+    rw [MConvexComb.eq_of_eta_ne_zero hz]
+    exact Relation.EqvGen.rel _ _ h
+  · exact (MConvexComb.map_eta (x, y) Prod.fst).symm
+  · exact (MConvexComb.map_eta (x, y) Prod.snd).symm
+
+/-- **193IV** (`least-conv-cong`, bsols.tex:2386): `∼` is contained in every
+congruence `S` containing `R` — apply the minimality computation to `η x ≈ η y`
+and use `h(η x) = x`. -/
+theorem MConvex.derivSetoid_least (st : MConvex M X) (R : X → X → Prop)
+    {S : Setoid X} (hS : st.IsCongruence S) (hRS : ∀ x y, R x y → S.r x y)
+    {x y : X} (h : (st.derivSetoid R).r x y) : S.r x y := by
+  have hkey := st.deriv_le_of_congruence R hS hRS h
+  rw [st.h_eta, st.h_eta] at hkey
+  exact Quotient.exact hkey
+
 /-- **193IV** (`least-conv-cong`, eff.tex:2729, Exercise): every relation
-`R ⊆ X²` on an abstract `M`-convex set is contained in a least congruence.
-
-⚠ **Only the half the Exercise calls easy is stated** (audit row 193IV, left
-unrepaired).  The point introduces existence with "It is easy to see there is
-a least congruence containing `R`.  *We need to know a bit more than mere
-existence.*"  What is then asked for, and is not formalized here, is the
-*derivation calculus*: the relation `φ ≈ ψ` given by a chain
-`φ = Φ₁, …, Φₙ = ψ` in `𝒟_M X` each of whose steps either (a) rewrites the
-points of a presentation componentwise along `R*` keeping the coefficients,
-or (b) keeps `h` fixed; the characterisation `x ∼ y ↔ η x ≈ η y` of the least
-congruence; and parts 1–3 of the Exercise.  In consequence the existence
-proof below is divergence class 2 — intersecting all congruences containing
-`R`, which is not the Exercise's argument — and 193IX, 194I.4 and 196II all
-had to be re-proved by other routes.
-
-Cost, against `bsols.tex:2303`: the calculus needs a notion of *presentation*
-of a `𝒟_M X` by a list of `(coefficient, point)` pairs (the tree has
-`MConvexComb` as a support function, not as a list), the step relation and
-its reflexive-transitive closure, part 1 (short), part 2 (the
-`μ(λ₀|ψ⟩ ⋁ ⋁ⱼ λⱼ|χⱼ⟩)` computation, done twice — once per kind of step),
-and part 3 (choice of `∼`-representatives `r_x`, then `φ ≈ 𝒟_M(rep)(φ)` by
-induction along the support list, using part 2 once per point).  Estimated at
-800–1200 lines of `PCM.IsSumOf` manipulation; this is the largest single
-audit row in the module. -/
+`R ⊆ X²` on an abstract `M`-convex set is contained in a least congruence —
+namely `∼`, the relation `x ∼ y :⟺ η x ≈ η y` of the derivation calculus
+above (`derivSetoid`), which is what the Exercise asks the reader to prove.
+The three conjuncts are `derivSetoid_isCongruence`, `rel_le_derivSetoid` and
+`derivSetoid_least`; `least_cong_iff_deriv` records that a least congruence is
+*characterised* by `≈`, which is the "bit more than mere existence"
+(eff.tex:2733) the rest of parsec 193 and 194I.4 need. -/
 theorem least_conv_cong (st : MConvex M X) (R : X → X → Prop) :
     ∃ r : Setoid X, st.IsCongruence r ∧ (∀ x y, R x y → r.r x y) ∧
       ∀ r' : Setoid X, st.IsCongruence r' → (∀ x y, R x y → r'.r x y) →
         ∀ x y, r.r x y → r'.r x y := by
-  classical
-  -- The intersection of all congruences containing `R` (the family is
-  -- non-empty: the total relation is one).  Congruences are closed under
-  -- arbitrary intersections because a smaller congruence `r` makes `𝒟_M(q_r)`
-  -- refine `𝒟_M(q_{r'})` for every larger `r'`.
-  set P : Setoid X → Prop :=
-    fun r' => st.IsCongruence r' ∧ ∀ x y, R x y → r'.r x y with hP
-  let r : Setoid X :=
-    { r := fun x y => ∀ r' : Setoid X, P r' → r'.r x y
-      iseqv :=
-        ⟨fun x r' _ => r'.refl x, fun h r' hr' => r'.symm (h r' hr'),
-          fun h₁ h₂ r' hr' => r'.trans (h₁ r' hr') (h₂ r' hr')⟩ }
-  have hmono : ∀ (r' : Setoid X), P r' → ∀ x y, r.r x y → r'.r x y :=
-    fun r' hr' _ _ h => h r' hr'
-  refine ⟨r, ?_, fun x y hxy r' hr' => hr'.2 x y hxy, fun r' h₁ h₂ => hmono r' ⟨h₁, h₂⟩⟩
-  intro φ ψ hq
-  refine Quotient.sound (fun r' hr' => ?_)
-  -- the canonical map `k : X/r → X/r'`
-  let k : Quotient r → Quotient r' :=
-    Quotient.lift (Quotient.mk r') fun a b hab => Quotient.sound (hmono r' hr' a b hab)
-  have hk : ∀ p : MConvexComb M X, p.map (Quotient.mk r') = (p.map (Quotient.mk r)).map k :=
-    fun p => by rw [MConvexComb.map_comp]; rfl
-  exact Quotient.exact (hr'.1 φ ψ (by rw [hk φ, hk ψ, hq]))
+  exact ⟨st.derivSetoid R, st.derivSetoid_isCongruence R,
+    fun _ _ h => st.rel_le_derivSetoid R h,
+    fun _ h₁ h₂ _ _ h => st.derivSetoid_least R h₁ h₂ h⟩
+
+/-- **193IV** (`least-conv-cong`, eff.tex:2752, Exercise), the characterisation
+the Exercise is really after: *any* least congruence containing `R` — and by
+`least_conv_cong` there is one — relates `x` and `y` exactly when
+`η x ≈ η y`, i.e. when there is a derivation from `η x` to `η y`.  ("We need
+to know a bit more than mere existence", eff.tex:2733.) -/
+theorem least_cong_iff_deriv (st : MConvex M X) (R : X → X → Prop)
+    (r : Setoid X) (hc : st.IsCongruence r) (hR : ∀ x y, R x y → r.r x y)
+    (hleast : ∀ r' : Setoid X, st.IsCongruence r' → (∀ x y, R x y → r'.r x y) →
+      ∀ x y, r.r x y → r'.r x y) (x y : X) :
+    r.r x y ↔ st.Deriv R (MConvexComb.eta x) (MConvexComb.eta y) :=
+  ⟨fun h => hleast (st.derivSetoid R) (st.derivSetoid_isCongruence R)
+      (fun _ _ h' => st.rel_le_derivSetoid R h') x y h,
+    fun h => st.derivSetoid_least R hc hR h⟩
 
 end Congruence
 
@@ -6389,10 +6766,12 @@ theorem MConvexComb.map_const {M : Type u} [EffectMonoid M] {X : Type v}
 form `h(⋁ᵢ λᵢ|κ₁xᵢ⟩ ⋁ ⋁ⱼ σⱼ|κ₂yⱼ⟩)`, i.e. that the canonical affine map
 `𝒟_M(X+Y) → X + Y` is **surjective**; it then gives an explicit description of
 when two such expressions are equal (by *derivations*), which is what the
-thesis uses for 194I.4.  That description is not formalized (see 193IV).  The
-surjectivity below is proved **the way the Remark gets it** — "by our
-construction": `∼` is the least congruence of 193V and `q : 𝒟_M(X+Y) ↠ C` its
-quotient map, so every element of `C` is `q(φ) = h(𝒟_M[c₁,c₂](φ))`. -/
+thesis uses for 194I.4.  Both halves are below: the surjectivity is proved
+**the way the Remark gets it** — "by our construction": `∼` is the least
+congruence of 193V and `q : 𝒟_M(X+Y) ↠ C` its quotient map, so every element
+of `C` is `q(φ) = h(𝒟_M[c₁,c₂](φ))`; and the description of equality is
+`AConvMCat.coprodQuot_eq_iff`, 193IV's derivation calculus instantiated at the
+free algebra `(𝒟_M(X+Y), μ)` and `coprodRel`. -/
 
 /-- The canonical affine map `𝒟_M(X + Y) → X ⨿ Y`, `φ ↦ h(𝒟_M[κ₁,κ₂](φ))`. -/
 noncomputable def AConvMCat.coprodQuot {M : Type u} [EffectMonoid M]
@@ -6433,14 +6812,11 @@ therefore descends to an affine `e : C ⟶ X ⨿ Y` with `e ∘ q = coprodQuot` 
 `cᵢ ≫ e = κᵢ`; hence `[c₁,c₂] ≫ e = 𝟙` and `e` is a retraction.  As `q` is
 surjective, so then is `coprodQuot`.
 
-⚠ The Remark's second half is not formalized (audit row 193IX, left
-unrepaired): the characterisation of **when two such expressions are equal**,
-by a derivation `Φ₁, …, Φ_l ∈ 𝒟²_M(X+Y)`, which is the whole reason the
-Remark exists ("we need to know more about the coproduct than Linton's
-construction provides") and which the thesis appeals to five times
-(eff.tex:3069, 3085, 3092, 3445, 3528).  It is the coproduct instance of
-193IV's derivation calculus and is blocked on it; see the cost recorded at
-`least_conv_cong`. -/
+The Remark's second half — the characterisation of **when two such
+expressions are equal**, by a derivation `Φ₁, …, Φ_l ∈ 𝒟²_M(X+Y)`, which is
+the whole reason the Remark exists ("we need to know more about the coproduct
+than Linton's construction provides") and which the thesis appeals to at
+eff.tex:3069, 3085, 3092, 3445 and 3528 — is `coprodQuot_eq_iff` below. -/
 theorem AConvMCat.coprodQuot_surjective {M : Type u} [EffectMonoid M]
     (X Y : AConvMCat.{u, max u v} M) [HasBinaryCoproduct X Y] :
     Function.Surjective (AConvMCat.coprodQuot X Y).1 := by
@@ -6522,32 +6898,240 @@ theorem AConvMCat.coprodQuot_surjective {M : Type u} [EffectMonoid M]
   rw [hΦ]
   exact congrArg (fun t : (X ⨿ Y) ⟶ (X ⨿ Y) => t.1 w) hm
 
+/-- **193IX** (`elements-coprod-conv`, eff.tex:2903, Remark), the second half:
+two elements `h(⋁ᵢ λᵢ|c₁xᵢ⟩ ⋁ ⋁ⱼ σⱼ|c₂yⱼ⟩)` and `h(⋁ᵢ λ'ᵢ|c₁x'ᵢ⟩ ⋁ ⋁ⱼ σ'ⱼ|c₂y'ⱼ⟩)`
+of `X + Y` are **equal iff there is a derivation** `Φ₁, …, Φ_l ∈ 𝒟²_M(X+Y)`
+between the two formal combinations, in the sense of 193IV for the free
+algebra `(𝒟_M(X+Y), μ)` and the relation `coprodRel` of 193V.  This is the
+half "we need to know more about the coproduct than Linton's construction
+provides" is about, and it is what 194I.4 runs its induction on.
+
+The proof is 193V's construction, rebuilt: `≈` is 193IV's derivation relation
+for `coprodRel`, `∼` its least congruence, `q` the affine quotient map and
+`cᵢ = q ∘ η ∘ κᵢ` the coprojections.  Left to right, `[c₁,c₂] ∘ coprodQuot`
+and `q` are two affine maps out of the free algebra agreeing on the Diracs, so
+they are equal (`freeStr_ext`), and `coprodQuot φ = coprodQuot ψ` therefore
+forces `q φ = q ψ`, which is `η φ ≈ η ψ`.  Right to left, the kernel of
+`coprodQuot` is a congruence (193III) containing `coprodRel`, so `≈` is carried
+into it. -/
+theorem AConvMCat.coprodQuot_eq_iff {M : Type u} [EffectMonoid M]
+    (X Y : AConvMCat.{u, max u v} M) [HasBinaryCoproduct X Y]
+    (φ ψ : MConvexComb M (X.carrier ⊕ Y.carrier)) :
+    (AConvMCat.coprodQuot X Y).1 φ = (AConvMCat.coprodQuot X Y).1 ψ ↔
+      (MConvexComb.freeStr M (X.carrier ⊕ Y.carrier)).Deriv (AConvMCat.coprodRel X Y)
+        (MConvexComb.eta φ) (MConvexComb.eta ψ) := by
+  classical
+  have hkerR : ∀ a b : MConvexComb M (X.carrier ⊕ Y.carrier),
+      AConvMCat.coprodRel X Y a b →
+        (Setoid.ker (AConvMCat.coprodQuot X Y).1).r a b := by
+    rintro a b (⟨χ, rfl, rfl⟩ | ⟨χ, rfl, rfl⟩)
+    · show (X ⨿ Y).str.h _ = _
+      rw [MConvexComb.map_comp, AConvMCat.coprodQuot_eta_inl]
+      exact ((coprod.inl : X ⟶ X ⨿ Y).2 χ).symm
+    · show (X ⨿ Y).str.h _ = _
+      rw [MConvexComb.map_comp, AConvMCat.coprodQuot_eta_inr]
+      exact ((coprod.inr : Y ⟶ X ⨿ Y).2 χ).symm
+  constructor
+  · -- the least congruence of 193V, rebuilt as `≈`, and the cotuple `[c₁,c₂]`
+    intro hq
+    have hcong := (MConvexComb.freeStr M (X.carrier ⊕ Y.carrier)).derivSetoid_isCongruence
+      (AConvMCat.coprodRel X Y)
+    obtain ⟨stC, hqaff⟩ := aconv_cong_quotient (MConvexComb.freeStr M (X.carrier ⊕ Y.carrier))
+      ((MConvexComb.freeStr M (X.carrier ⊕ Y.carrier)).derivSetoid (AConvMCat.coprodRel X Y))
+      hcong
+    have hc1 : MConvex.IsAffine X.str stC (fun x => Quotient.mk
+        ((MConvexComb.freeStr M (X.carrier ⊕ Y.carrier)).derivSetoid
+          (AConvMCat.coprodRel X Y)) (MConvexComb.eta (Sum.inl x))) := by
+      intro p
+      have h1 := Quotient.sound
+        ((MConvexComb.freeStr M (X.carrier ⊕ Y.carrier)).rel_le_derivSetoid
+          (AConvMCat.coprodRel X Y) (Or.inl ⟨p, rfl, rfl⟩))
+      have h2 := hqaff ((p.map Sum.inl).map MConvexComb.eta)
+      rw [show (MConvexComb.freeStr M (X.carrier ⊕ Y.carrier)).h
+          ((p.map Sum.inl).map MConvexComb.eta) = p.map Sum.inl from
+        MConvexComb.mu_map_eta _] at h2
+      show Quotient.mk _ (MConvexComb.eta (Sum.inl (X.str.h p))) = _
+      rw [← h1, h2, MConvexComb.map_comp, MConvexComb.map_comp]
+      rfl
+    have hc2 : MConvex.IsAffine Y.str stC (fun y => Quotient.mk
+        ((MConvexComb.freeStr M (X.carrier ⊕ Y.carrier)).derivSetoid
+          (AConvMCat.coprodRel X Y)) (MConvexComb.eta (Sum.inr y))) := by
+      intro p
+      have h1 := Quotient.sound
+        ((MConvexComb.freeStr M (X.carrier ⊕ Y.carrier)).rel_le_derivSetoid
+          (AConvMCat.coprodRel X Y) (Or.inr ⟨p, rfl, rfl⟩))
+      have h2 := hqaff ((p.map Sum.inr).map MConvexComb.eta)
+      rw [show (MConvexComb.freeStr M (X.carrier ⊕ Y.carrier)).h
+          ((p.map Sum.inr).map MConvexComb.eta) = p.map Sum.inr from
+        MConvexComb.mu_map_eta _] at h2
+      show Quotient.mk _ (MConvexComb.eta (Sum.inr (Y.str.h p))) = _
+      rw [← h1, h2, MConvexComb.map_comp, MConvexComb.map_comp]
+      rfl
+    set C : AConvMCat.{u, max u v} M :=
+      ⟨Quotient ((MConvexComb.freeStr M (X.carrier ⊕ Y.carrier)).derivSetoid
+        (AConvMCat.coprodRel X Y)), stC⟩ with hC
+    set k : X ⨿ Y ⟶ C := coprod.desc ⟨_, hc1⟩ ⟨_, hc2⟩ with hk
+    -- `[c₁,c₂] ∘ coprodQuot = q`: both are affine on the free algebra and agree
+    -- on the Diracs
+    have hcomp : ∀ p : MConvexComb M (X.carrier ⊕ Y.carrier),
+        k.1 ((AConvMCat.coprodQuot X Y).1 p) = Quotient.mk _ p := by
+      intro p
+      have haff : MConvex.IsAffine (MConvexComb.freeStr M (X.carrier ⊕ Y.carrier))
+          stC (fun q => k.1 ((AConvMCat.coprodQuot X Y).1 q)) :=
+        MConvex.IsAffine.comp (AConvMCat.coprodQuot X Y).2 k.2
+      have e1 := MConvexComb.freeStr_ext stC (fun q => k.1 ((AConvMCat.coprodQuot X Y).1 q))
+        haff p
+      have e2 := MConvexComb.freeStr_ext stC
+        (Quotient.mk ((MConvexComb.freeStr M (X.carrier ⊕ Y.carrier)).derivSetoid
+          (AConvMCat.coprodRel X Y))) hqaff p
+      rw [e1, e2]
+      refine congrArg stC.h (MConvexComb.map_congr p (fun z _ => ?_))
+      cases z with
+      | inl x =>
+          show k.1 ((AConvMCat.coprodQuot X Y).1 (MConvexComb.eta (Sum.inl x))) = _
+          rw [AConvMCat.coprodQuot_eta_inl]
+          exact congrArg (fun t : X ⟶ C => t.1 x) (coprod.inl_desc _ _)
+      | inr y =>
+          show k.1 ((AConvMCat.coprodQuot X Y).1 (MConvexComb.eta (Sum.inr y))) = _
+          rw [AConvMCat.coprodQuot_eta_inr]
+          exact congrArg (fun t : Y ⟶ C => t.1 y) (coprod.inr_desc _ _)
+    exact Quotient.exact ((hcomp φ).symm.trans ((congrArg k.1 hq).trans (hcomp ψ)))
+  · -- conversely the kernel of `coprodQuot` is a congruence containing `coprodRel`
+    intro hd
+    have h := (MConvexComb.freeStr M (X.carrier ⊕ Y.carrier)).deriv_le_of_congruence
+      (AConvMCat.coprodRel X Y)
+      (affine_kernel_cong (MConvexComb.freeStr M (X.carrier ⊕ Y.carrier)) (X ⨿ Y).str
+        (AConvMCat.coprodQuot X Y).1 (AConvMCat.coprodQuot X Y).2)
+      hkerR hd
+    rw [show (MConvexComb.freeStr M (X.carrier ⊕ Y.carrier)).h (MConvexComb.eta φ) = φ from
+        MConvexComb.mu_eta φ,
+      show (MConvexComb.freeStr M (X.carrier ⊕ Y.carrier)).h (MConvexComb.eta ψ) = ψ from
+        MConvexComb.mu_eta ψ] at h
+    exact Quotient.exact h
+
 /-- **194I.4**, first ingredient: `κ₁ : X → X + Y` is injective in `AConv_M`.
 
-⚠ Divergence from the thesis.  eff.tex:3062–3175 proves this by an induction
-over *derivations* (193IX), the longest argument of parsec 194, and one that
-needs the syntactic description of the least congruence that 193IV leaves to
-the reader.  It is unnecessary: constant maps are affine (`map_const`), so for
-non-empty `X` the cotuple `[id_X, const x₀] : X + Y → X` is a retraction of
-`κ₁`, and for empty `X` there is nothing to prove. -/
+The argument is the thesis's own, eff.tex:3062–3175, the longest of parsec
+194: from `κ₁(x₀) = κ₁(x'₀)` take a derivation `Φ₁, …, Φ_l ∈ 𝒟²_M(X+Y)` as in
+193IX (`coprodQuot_eq_iff`) and induct along it on the thesis's
+
+  `IH(i) ≡ ⋁_y μ(Φᵢ)(κ₂y) = 0  and  h_X(⋁_x μ(Φᵢ)(κ₁x)|x⟩) = x₀`,
+
+whose first half is stated here as "`μ(Φᵢ)` is `𝒟_M κ₁` of some `χ`".  `IH(1)`
+is immediate and `IH(l)` gives `x₀ = x'₀`.
+
+Two invariants carry the induction across a step of the second kind, whose
+points are `coprodRel*`-related.  The first is `𝒟_M(isRight)(φ)`, which is
+`η(false)` on the image of `𝒟_M κ₁` and `η(true)` on that of `𝒟_M κ₂`, hence
+constant along `coprodRel*`; it transports the first half of `IH` (this is the
+thesis's "the third possibility does not occur").  The second is
+`h_X(𝒟_M[id_X, x₀](φ))`, which is exactly the thesis's padded value
+`h_X(r_j|x₀⟩ ⋁ ⋁_x φ(κ₁x)|x⟩)` — its `r_j` is the mass that `[id_X, x₀]`
+collapses onto `x₀` — and is likewise constant along `coprodRel*`; combined
+with `h ∘ μ = h ∘ 𝒟_M h` it transports the second half.  The earlier proof
+here retracted `κ₁` by `[id_X, const x₀]` and split off empty `X`; that
+shortcut is gone. -/
 theorem AConvMCat.coprod_inl_injective {M : Type u} [EffectMonoid M]
     (X Y : AConvMCat.{u, max u v} M) [HasBinaryCoproduct X Y] :
     Function.Injective (coprod.inl : X ⟶ X ⨿ Y).1 := by
   classical
-  rcases isEmpty_or_nonempty X.carrier with hE | hN
-  · exact fun x => (hE.false x).elim
-  · obtain ⟨x₀⟩ := hN
-    have hconst : MConvex.IsAffine Y.str X.str (fun _ => x₀) := fun p => by
-      rw [MConvexComb.map_const p x₀, X.str.h_eta]
-    have hr := coprod.inl_desc (𝟙 X) (⟨fun _ => x₀, hconst⟩ : Y ⟶ X)
-    intro x x' hxx
-    have e1 : (coprod.desc (𝟙 X) (⟨fun _ => x₀, hconst⟩ : Y ⟶ X)).1
-        ((coprod.inl : X ⟶ X ⨿ Y).1 x) = x :=
-      congrArg (fun t : X ⟶ X => t.1 x) hr
-    have e2 : (coprod.desc (𝟙 X) (⟨fun _ => x₀, hconst⟩ : Y ⟶ X)).1
-        ((coprod.inl : X ⟶ X ⨿ Y).1 x') = x' :=
-      congrArg (fun t : X ⟶ X => t.1 x') hr
-    rw [← e1, ← e2, hxx]
+  intro x₀ x'₀ hxx
+  obtain ⟨g, hgl, hgr⟩ : ∃ g : X.carrier ⊕ Y.carrier → X.carrier,
+      (∀ x, g (Sum.inl x) = x) ∧ (∀ y, g (Sum.inr y) = x₀) :=
+    ⟨Sum.elim _root_.id (fun _ => x₀), fun _ => rfl, fun _ => rfl⟩
+  have hgi : (g ∘ (Sum.inl : X.carrier → X.carrier ⊕ Y.carrier)) = _root_.id :=
+    funext hgl
+  have hgc : (g ∘ (Sum.inr : Y.carrier → X.carrier ⊕ Y.carrier)) = fun _ => x₀ :=
+    funext hgr
+  have hbi : (Sum.isRight ∘ (Sum.inl : X.carrier → X.carrier ⊕ Y.carrier))
+      = fun _ => false := rfl
+  have hbr : (Sum.isRight ∘ (Sum.inr : Y.carrier → X.carrier ⊕ Y.carrier))
+      = fun _ => true := rfl
+  -- the two `R`-invariants: the padded value `h_X(𝒟_M[id,x₀](φ))` (the thesis's
+  -- `r_j|x₀⟩ ⋁ ⋁ₓ φ(κ₁x)|x⟩`) and the left/right mass `𝒟_M(isRight)(φ)`
+  have hA : ∀ a b : MConvexComb M (X.carrier ⊕ Y.carrier),
+      Relation.EqvGen (AConvMCat.coprodRel X Y) a b →
+        X.str.h (a.map g) = X.str.h (b.map g) := by
+    intro a b hab
+    induction hab with
+    | rel a b hr =>
+        rcases hr with ⟨χ, rfl, rfl⟩ | ⟨χ, rfl, rfl⟩
+        · rw [MConvexComb.map_comp, hgi, MConvexComb.map_id, MConvexComb.map_eta,
+            hgl, X.str.h_eta]
+        · rw [MConvexComb.map_comp, hgc, MConvexComb.map_const, MConvexComb.map_eta,
+            hgr, X.str.h_eta]
+    | refl a => rfl
+    | symm a b _ ih => exact ih.symm
+    | trans a b c _ _ ih₁ ih₂ => exact ih₁.trans ih₂
+  have hC : ∀ a b : MConvexComb M (X.carrier ⊕ Y.carrier),
+      Relation.EqvGen (AConvMCat.coprodRel X Y) a b →
+        a.map Sum.isRight = b.map Sum.isRight := by
+    intro a b hab
+    induction hab with
+    | rel a b hr =>
+        rcases hr with ⟨χ, rfl, rfl⟩ | ⟨χ, rfl, rfl⟩
+        · rw [MConvexComb.map_comp, hbi, MConvexComb.map_const, MConvexComb.map_eta]
+          rfl
+        · rw [MConvexComb.map_comp, hbr, MConvexComb.map_const, MConvexComb.map_eta]
+          rfl
+    | refl a => rfl
+    | symm a b _ ih => exact ih.symm
+    | trans a b c _ _ ih₁ ih₂ => exact ih₁.trans ih₂
+  have hB : ∀ Ψ : MConvexComb M (MConvexComb M (X.carrier ⊕ Y.carrier)),
+      X.str.h ((MConvexComb.mu Ψ).map g)
+        = X.str.h (Ψ.map (fun φ => X.str.h (φ.map g))) := by
+    intro Ψ
+    rw [MConvexComb.mu_map, X.str.h_mu, MConvexComb.map_comp]
+    rfl
+  -- the derivation of `κ₁(x₀) = κ₁(x'₀)` given by 193IX
+  have hderiv : (MConvexComb.freeStr M (X.carrier ⊕ Y.carrier)).Deriv
+      (AConvMCat.coprodRel X Y)
+      (MConvexComb.eta (MConvexComb.eta (Sum.inl x₀)))
+      (MConvexComb.eta (MConvexComb.eta (Sum.inl x'₀))) := by
+    refine (AConvMCat.coprodQuot_eq_iff X Y _ _).mp ?_
+    rw [AConvMCat.coprodQuot_eta_inl, AConvMCat.coprodQuot_eta_inl, hxx]
+  -- the induction over the derivation, with the thesis's `IH(i)`
+  have hind : ∀ Ψ : MConvexComb M (MConvexComb M (X.carrier ⊕ Y.carrier)),
+      (MConvexComb.freeStr M (X.carrier ⊕ Y.carrier)).Deriv (AConvMCat.coprodRel X Y)
+        (MConvexComb.eta (MConvexComb.eta (Sum.inl x₀))) Ψ →
+      (∃ χ : MConvexComb M X.carrier, MConvexComb.mu Ψ = χ.map Sum.inl) ∧
+        X.str.h ((MConvexComb.mu Ψ).map g) = x₀ := by
+    intro Ψ hΨ
+    induction hΨ with
+    | refl =>
+        refine ⟨⟨MConvexComb.eta x₀, ?_⟩, ?_⟩
+        · rw [MConvexComb.mu_eta, MConvexComb.map_eta]
+        · rw [MConvexComb.mu_eta, MConvexComb.map_eta, hgl, X.str.h_eta]
+    | @tail b c _ hbc ih =>
+        rcases hbc with h1 | ⟨Θ, hΘ, hb, hc⟩
+        · have hmu : MConvexComb.mu b = MConvexComb.mu c := h1
+          rw [← hmu]
+          exact ih
+        · obtain ⟨χ, hχ⟩ := ih.1
+          have hβ : (MConvexComb.mu b).map Sum.isRight
+              = (MConvexComb.mu c).map Sum.isRight := by
+            rw [MConvexComb.mu_map, MConvexComb.mu_map, hb, hc, MConvexComb.map_comp,
+              MConvexComb.map_comp]
+            exact congrArg MConvexComb.mu
+              (MConvexComb.map_congr Θ (fun z hz => hC _ _ (hΘ z hz)))
+          have hzero : ∀ y : Y.carrier,
+              (MConvexComb.mu c).toFun (Sum.inr y) = (0 : M) := by
+            intro y
+            refine MConvexComb.eq_zero_of_map_eq_zero (MConvexComb.mu c) Sum.isRight
+              (y := true) ?_ rfl
+            rw [← hβ, hχ, MConvexComb.map_comp, hbi, MConvexComb.map_const]
+            by_contra hne
+            exact Bool.noConfusion
+              (show (true : Bool) = false from MConvexComb.eq_of_eta_ne_zero hne)
+          obtain ⟨χ', hχ'⟩ := MConvexComb.exists_map_inl (MConvexComb.mu c) hzero
+          refine ⟨⟨χ', hχ'.symm⟩, ?_⟩
+          rw [← ih.2, hB b, hB c, hb, hc, MConvexComb.map_comp, MConvexComb.map_comp]
+          exact congrArg X.str.h
+            (MConvexComb.map_congr Θ (fun z hz => hA _ _ (hΘ z hz))).symm
+  have hfin := (hind _ hderiv).2
+  rw [MConvexComb.mu_eta, MConvexComb.map_eta, hgl, X.str.h_eta] at hfin
+  exact hfin.symm
+
 
 /-! ## `AConv_M` is almost an effectus (parsec 194) -/
 
@@ -6707,14 +7291,10 @@ an effect divisoid).
 The thesis's argument is followed for the *existence* of the mediating map
 (if `(!+!) ∘ α = κ₁ ∘ !` then each `α(z)` has zero `Y`-mass, hence is
 `κ₁(x_z)`, and `γ = x_(–)` is affine because `κ₁` is monic), but two
-ingredients are proved differently, both times avoiding the unformalized
-derivation calculus of 193IX/193IV:
-
-* surjectivity of `𝒟_M(X+Y) → X+Y` (193IX) is obtained from the universal
-  property, see `AConvMCat.coprodQuot_surjective`;
-* injectivity of `κ₁` is obtained from the retraction `[id, const x₀]`, see
-  `AConvMCat.coprod_inl_injective`, instead of by induction over
-  derivations. -/
+ingredients have their own entries: surjectivity of `𝒟_M(X+Y) → X+Y` (193IX)
+is `AConvMCat.coprodQuot_surjective`, and injectivity of `κ₁` is
+`AConvMCat.coprod_inl_injective`, proved as the thesis proves it, by induction
+over the derivations of 193IX. -/
 theorem aconvalmosteffectus_kappaPullback
     [HasFiniteCoproducts (AConvMCat.{u, max u v} M)]
     [HasTerminal (AConvMCat.{u, max u v} M)] (X Y : AConvMCat.{u, max u v} M) :
@@ -7057,6 +7637,123 @@ instance prodEffectDivisoid (M N : Type u) [EffectMonoid M] [EffectMonoid N]
     show (div (div p.1 p.1) (div p.1 p.1), div (div p.2 p.2) (div p.2 p.2))
         = (div p.1 p.1, div p.2 p.2)
     rw [EffectDivisoid.div_div_self, EffectDivisoid.div_div_self]
+
+/-! ### Division effect monoids (195V.4) -/
+
+/-- **195V.4** (eff.tex:3270, Examples): a **division effect monoid** in the
+sense of Cho, *Total and partial computation in categorical quantum
+foundations* (arXiv:1511.01569v1), definition 6.3, quoted: "an effect monoid
+`M` has division if for all `s, t ∈ M` with `s ≤ t` and `t ≠ 0`, there exists
+unique quotient `q ∈ M` such that `q ⊙ t = s`".  The division is on the
+*other* side from an effect divisoid's `b ⊙ (a/b) = a`, which is why it is
+`Mᵒᵖ` and not `M` that is a divisoid.  Formalized like `EffectDivisoid`: the
+quotient is part of the structure, and the axioms are guarded by `a ≼ b` and
+`b ≠ 0`. -/
+class DivisionEffectMonoid (M : Type u) [EffectMonoid M] where
+  quot : M → M → M
+  quot_mul : ∀ {a b : M}, a ≼ b → b ≠ 0 → quot a b * b = a
+  quot_unique : ∀ {a b c : M}, a ≼ b → b ≠ 0 → c * b = a → c = quot a b
+
+/-- In a division effect monoid `b/b = 1` for `b ≠ 0`, by uniqueness and
+`1 ⊙ b = b`. -/
+theorem DivisionEffectMonoid.quot_self {M : Type u} [EffectMonoid M]
+    [DivisionEffectMonoid M] {b : M} (hb : b ≠ 0) :
+    DivisionEffectMonoid.quot b b = 1 :=
+  (DivisionEffectMonoid.quot_unique (pcm_preorder_refl b) hb
+    (EffectMonoid.one_mul b)).symm
+
+section OpDivisoid
+
+variable {M : Type u} [EffectMonoid M] [DivisionEffectMonoid M]
+
+omit [DivisionEffectMonoid M] in
+/-- Helper: `Mᵒᵖ` has the effect algebra of `M`, so its zero is `M`'s. -/
+theorem op_eq_zero_iff (a : Mᵐᵒᵖ) : a = 0 ↔ a.unop = 0 :=
+  ⟨fun h => by rw [h]; rfl, fun h => by rw [← MulOpposite.op_unop a, h]; rfl⟩
+
+open Classical in
+/-- The partial division of `Mᵒᵖ` for a division effect monoid `M`: Cho's
+quotient, read in `Mᵒᵖ`, with the convention `0/0 = 0` (needed because the
+uniqueness axiom of an effect divisoid also constrains `a/b` at `b = 0`, where
+Cho's definition says nothing). -/
+noncomputable def opDiv (a b : Mᵐᵒᵖ) : Mᵐᵒᵖ :=
+  if b = 0 then 0 else MulOpposite.op (DivisionEffectMonoid.quot a.unop b.unop)
+
+open Classical in
+/-- The value of `opDiv` away from `b = 0`. -/
+theorem opDiv_of_ne {a b : Mᵐᵒᵖ} (hb : b ≠ 0) :
+    opDiv a b = MulOpposite.op (DivisionEffectMonoid.quot a.unop b.unop) :=
+  ite_eq_right hb
+
+open Classical in
+/-- `a/0 = 0` in `Mᵒᵖ`, by convention. -/
+theorem opDiv_zero (a : Mᵐᵒᵖ) : opDiv a (0 : Mᵐᵒᵖ) = 0 := ite_eq_left rfl
+
+/-- `b/b = 1` in `Mᵒᵖ` for `b ≠ 0`. -/
+theorem opDiv_self {b : Mᵐᵒᵖ} (hb : b ≠ 0) : opDiv b b = 1 := by
+  rw [opDiv_of_ne hb,
+    DivisionEffectMonoid.quot_self (fun h => hb ((op_eq_zero_iff b).mpr h))]
+  rfl
+
+/-- **195V.4** (eff.tex:3270, Examples): if `M` is a division effect monoid,
+then `Mᵒᵖ` is an effect divisoid "in the obvious way" — the divisoid axiom
+`b ⊙ (a/b) = a` read in `Mᵒᵖ` is Cho's `(a/b) ⊙ b = a`.  The side conditions
+come out as: `b/b = 1` for `b ≠ 0`, so `a/b ≼ b/b` and `a ≼ a/a` are
+`ea_le_one`; and `1/1 = 1`, so `(a/a)/(a/a) = a/a`.  At `b = 0` the hypothesis
+`a ≼ 0` forces `a = 0` and everything is `0`. -/
+noncomputable instance opEffectDivisoid : EffectDivisoid Mᵐᵒᵖ where
+  div := opDiv
+  div_le := by
+    intro a b hab
+    by_cases hb : b = 0
+    · subst hb
+      rw [opDiv_zero, opDiv_zero]
+      exact pcm_zero_le 0
+    · rw [opDiv_self hb]
+      exact ea_le_one _
+  mul_div := by
+    intro a b hab
+    by_cases hb : b = 0
+    · subst hb
+      have ha : a = 0 := eq_zero_of_le_zero hab
+      rw [opDiv_zero, ha]
+      refine (op_eq_zero_iff _).mpr ?_
+      exact (exc_emonzero (0 : M)).1
+    · rw [opDiv_of_ne hb]
+      refine MulOpposite.unop_injective ?_
+      exact DivisionEffectMonoid.quot_mul (op_le_iff.mp (by rwa [MulOpposite.op_unop,
+        MulOpposite.op_unop])) (fun h => hb ((op_eq_zero_iff b).mpr h))
+  div_unique := by
+    intro a b c hab hc hmul
+    by_cases hb : b = 0
+    · subst hb
+      rw [opDiv_zero] at hc ⊢
+      exact eq_zero_of_le_zero hc
+    · rw [opDiv_of_ne hb]
+      refine MulOpposite.op_unop c ▸ congrArg MulOpposite.op ?_
+      exact DivisionEffectMonoid.quot_unique
+        (op_le_iff.mp (by rwa [MulOpposite.op_unop, MulOpposite.op_unop]))
+        (fun h => hb ((op_eq_zero_iff b).mpr h))
+        (congrArg MulOpposite.unop hmul)
+  le_div_self := by
+    intro a
+    by_cases ha : a = 0
+    · subst ha
+      rw [opDiv_zero]
+      exact pcm_zero_le 0
+    · rw [opDiv_self ha]
+      exact ea_le_one _
+  div_div_self := by
+    intro a
+    by_cases ha : a = 0
+    · subst ha
+      rw [opDiv_zero, opDiv_zero]
+    · rw [opDiv_self ha, opDiv_self]
+      intro h1
+      exact ha ((op_eq_zero_iff a).mpr (eq_zero_of_one_eq_zero
+        ((op_eq_zero_iff (1 : Mᵐᵒᵖ)).mp h1) a.unop))
+
+end OpDivisoid
 
 /-! ### Helpers for the unit interval of `C(X, ℝ)` (195VI) -/
 
@@ -7767,6 +8464,71 @@ theorem basic_divisoid_equiv (X : Type u) [TopologicalSpace X]
         rw [hout ⟨d a a, hmem a a⟩ ⟨d a a, hmem a a⟩ x hx', hout a a x hx]
 
 
+/-- **195V.5** (eff.tex:3273, Examples), first half: the effect monoid on the
+unit interval of `C[0,1]` is **not** an effect divisoid.  By 195VI it would
+have to be that `[0,1]` is basically disconnected, and it is not: the support
+of `f(x) = max (x - ½) 0` is `(½, 1]`, whose closure `[½, 1]` is not open,
+`½` not being interior to it.
+
+(The Examples point's other half — that the unit interval of `L^∞[0,1]` *is*
+an effect divisoid — is not stated: the tree has no `L^∞`, and building its
+unit interval as an effect monoid on a.e.-equivalence classes, or identifying
+`L^∞[0,1]` with `C(X)` for a hyperstonean `X`, comes before any division
+axiom can be written down.) -/
+theorem cIcc_unitInterval_not_divisoid :
+    letI := continuousUnitIntervalEffectMonoid (Set.Icc (0 : ℝ) 1)
+    ¬ Nonempty (EffectDivisoid (Set.Icc (0 : C(Set.Icc (0 : ℝ) 1, ℝ)) 1)) := by
+  let _ := continuousUnitIntervalEffectMonoid (Set.Icc (0 : ℝ) 1)
+  have : CompactSpace (Set.Icc (0 : ℝ) 1) := isCompact_iff_compactSpace.mp isCompact_Icc
+  intro hD
+  have hbd := (basic_divisoid_equiv (Set.Icc (0 : ℝ) 1)).mp hD
+  -- `f(x) = max (x - ½) 0` has support `(½, 1]`, whose closure `[½, 1]` is not open
+  have hcont : Continuous fun x : Set.Icc (0 : ℝ) 1 => max ((x : ℝ) - 1 / 2) 0 :=
+    (continuous_subtype_val.sub continuous_const).max continuous_const
+  have hsupp : Function.support
+      ((⟨_, hcont⟩ : C(Set.Icc (0 : ℝ) 1, ℝ)) : Set.Icc (0 : ℝ) 1 → ℝ)
+      = {x : Set.Icc (0 : ℝ) 1 | 1 / 2 < (x : ℝ)} := by
+    ext x
+    simp only [Function.mem_support]
+    show max ((x : ℝ) - 1 / 2) 0 ≠ 0 ↔ 1 / 2 < (x : ℝ)
+    constructor
+    · intro h
+      by_contra hle
+      exact h (max_eq_right (by linarith [not_lt.mp hle]))
+    · intro h
+      rw [max_eq_left (by linarith : (0 : ℝ) ≤ (x : ℝ) - 1 / 2)]
+      linarith
+  have hopen := hbd ⟨_, hcont⟩
+  rw [hsupp] at hopen
+  have hcl : closure {x : Set.Icc (0 : ℝ) 1 | 1 / 2 < (x : ℝ)}
+      ⊆ {x : Set.Icc (0 : ℝ) 1 | 1 / 2 ≤ (x : ℝ)} := by
+    refine closure_minimal (fun x hx => ?_)
+      (isClosed_le continuous_const continuous_subtype_val)
+    have hx' : (1 : ℝ) / 2 < (x : ℝ) := hx
+    exact hx'.le
+  have hp : (⟨1 / 2, by constructor <;> norm_num⟩ : Set.Icc (0 : ℝ) 1)
+      ∈ closure {x : Set.Icc (0 : ℝ) 1 | 1 / 2 < (x : ℝ)} := by
+    refine Metric.mem_closure_iff.mpr (fun ε hε => ?_)
+    refine ⟨⟨min (1 / 2 + ε / 2) 1,
+      ⟨le_min (by linarith) (by norm_num), min_le_right _ _⟩⟩, ?_, ?_⟩
+    · show 1 / 2 < min (1 / 2 + ε / 2) 1
+      exact lt_min (by linarith) (by norm_num)
+    · rw [Subtype.dist_eq, Real.dist_eq]
+      have h1 : (1 : ℝ) / 2 ≤ min (1 / 2 + ε / 2) 1 := le_min (by linarith) (by norm_num)
+      have h2 : min (1 / 2 + ε / 2) 1 ≤ 1 / 2 + ε / 2 := min_le_left _ _
+      rw [abs_of_nonpos (by linarith)]
+      linarith
+  obtain ⟨ε, hε, hball⟩ := Metric.isOpen_iff.mp hopen _ hp
+  have hlt : max (1 / 2 - ε / 2) 0 < (1 : ℝ) / 2 := max_lt (by linarith) (by norm_num)
+  have hz : (⟨max (1 / 2 - ε / 2) 0,
+      ⟨le_max_right _ _, max_le (by linarith) (by norm_num)⟩⟩ : Set.Icc (0 : ℝ) 1)
+      ∈ Metric.ball (⟨1 / 2, by constructor <;> norm_num⟩ : Set.Icc (0 : ℝ) 1) ε := by
+    rw [Metric.mem_ball, Subtype.dist_eq, Real.dist_eq]
+    have h2 : (1 : ℝ) / 2 - ε / 2 ≤ max (1 / 2 - ε / 2) 0 := le_max_left _ _
+    rw [abs_of_nonpos (by linarith)]
+    linarith
+  exact absurd (hcl (hball hz)) (not_le.mpr hlt)
+
 /-- **195VII** (`eff-divisoid-add`, eff.tex:3333, Proposition): if `a ⊥ b`
 and `a ⋁ b ≼ c` in an effect divisoid, then `(a ⋁ b)/c = a/c ⋁ b/c`.
 
@@ -7824,9 +8586,10 @@ theorem divisoid_div_ovee {M : Type u} [EffectMonoid M] [EffectDivisoid M]
 /-! ### Machinery for 196II: binary mixtures `λ|κ₁x⟩ ⋁ λᵖ|κ₂y⟩`
 
 The proof of 196II below needs to compute with the elements of `X + Y`.  The
-thesis does this with the *derivations* of 193IX/193IV, which are not
-formalized; instead we show (`AConvMCat.exists_mix`) that over an effect
-divisoid **every** element of `X + Y` is already a *binary* mixture
+thesis does this with the *derivations* of 193IX/193IV (which are in the tree,
+`AConvMCat.coprodQuot_eq_iff`); instead we show (`AConvMCat.exists_mix`) that
+over an effect divisoid **every** element of `X + Y` is already a *binary*
+mixture
 `λ|κ₁x⟩ ⋁ λᵖ|κ₂y⟩`, which is what the divisoid buys and all that 196II uses.
 The lemmas below build up to that. -/
 
@@ -8647,9 +9410,10 @@ The four other ingredients are 194I.1–.4 (`aconvalmosteffectus_coproducts`,
 `AConvMCat.aconv_left_pullback` above.
 
 ⚠ Divergence from the thesis (eff.tex:3366–3657).  The thesis proves the left
-square by interleaving two *derivations* (193IX/193IV) into one, which needs
-the syntactic description of the least congruence that 193IV leaves to the
-reader.  That is avoided here: over an effect divisoid every element of
+square by interleaving two *derivations* (193IX/193IV) into one; that
+interleaving is not carried out here, although the calculus it needs now is in
+the tree (`AConvMCat.coprodQuot_eq_iff`).  Instead: over an effect divisoid
+every element of
 `X + Y` is a **binary** mixture `λ|κ₁x⟩ ⋁ λᵖ|κ₂y⟩` (`AConvMCat.exists_mix`,
 proved by dividing a general combination by its left mass `λ`, exactly the
 thesis's own normalization step), and the rest is then two applications of the

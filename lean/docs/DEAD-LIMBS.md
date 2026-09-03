@@ -763,7 +763,7 @@ here:
   that Lemma is 69IVb (`vn.tex:3637`), which asks only for the *first*
   conclusion, and which took it on 2026-08-27 (§5.2).  The second conclusion
   yields neither closedness of the range nor that its suprema are computed in
-  `ℬ`, so no proof of 69IVb can spend it.  Terminal.
+  `ℬ`, so no proof of 69IVb can spend it.  Terminal.  *(2026-09-04: 194I.4 was put on the printed induction; the padded-map form of that argument never takes the eff.tex:3127 step that cites 178V, so the limb stays terminal, now for that reason.)*
 
 ---
 
@@ -1443,7 +1443,7 @@ limb.
 | `perp_sharp_is_orth` | 213III | `49a49f0` | `B/Eff/Comparisons.lean:600` |
 | `ultranormcontstruct_smul` | 148III.3 | `027dc77` | `ext_tensor_dense` (164II.1), `B/Dils/SelfDual.lean:8214` |
 | `dagger_of_iso_adjoint` | 216IX.1 | `0f036ad` | `B/Eff/Dagger.lean:528` |
-| `paschke_pure` | 171VII | `7aa3dc0` | `pure_iff_stinespring_surjective`, `B/Dils/Pure.lean:4553` |
+| `paschke_pure` | 171VII | `7aa3dc0` | `pure_iff_stinespring_surjective`, `B/Dils/Pure.lean:5388` |
 
 Three of these overturn a claim recorded in this file or in the brief for this
 sweep, and each overturning is the point of the check:
