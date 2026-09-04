@@ -53,8 +53,8 @@ in §4 rather than in front of you.
 | 2.1 | — | may we match the printed statement without asking? — ruled (a) 2026-09-04, only in a dedicated statement-alignment pass | 54 audit rows | (a) standing authorisation |
 | 2.2 | — | does "no forward references" apply outside `A/CStar`? — ruled (a) 2026-09-04: global and retroactive, out-of-order proofs allowed insofar as the thesis does that itself | 520 audit rows | (b) forward only; label the rest |
 | 2.3 | 191II | true as printed (non-full); 191VII's image sentence is wrong — see `docs/191II-subcategory.md` | 1 audit row | (c) weaken to faithful |
-| 2.4 | 30X | may clause (1) name `ϱ_Ω`? | 1 audit row | (a) yes |
-| 2.5 | 28II.4 | may the unique element be identified with `f(a)`? | 1 audit row | (a) yes |
+| 2.4 | 30X | may clause (1) name `ϱ_Ω`? — done 2026-09-04 (§2.1) | 0 audit rows | (a) done | 1 audit row | (a) yes |
+| 2.5 | 28II.4 | identify the unique element with `f(a)`? — done 2026-09-04 (§2.1) | 0 audit rows | (a) done | 1 audit row | (a) yes |
 | 2.6 | 51IX | may `q` be asked to be ℂ-linear? — done 2026-09-02 under D1 | 0 audit rows | (a) yes |
 | 2.7 | 180V | should the effect object be pinned? — ruled (a) 2026-09-04 | 1 audit row | (a) yes |
 | 3.1 | 101VII.1 | does the middle clause gain `aqa* ≤ p`? | nothing | (a) yes — erratum |
@@ -588,7 +588,7 @@ separating predicates" — is also unasserted by our `emod_effectus`, but that i
 a missing tool for computing `Pred` and `Scal` of `Par C`, recorded on the
 declaration itself.)*
 
-### 2.4 — 30X `proto-gelfand-naimark`: may clause (1) name `ϱ_Ω`?
+### 2.4 — 30X `proto-gelfand-naimark`: may clause (1) name `ϱ_Ω`? — **done 2026-09-04 under the §2.1 ruling**
 
 *(`QUESTIONS.md` A8.  Audit row `acstar-matrices-representation.csv:138`,
 `left-ruling`.  Lean: `proto_gelfand_naimark_2`.)*
@@ -623,7 +623,7 @@ Downstream: `proto_gelfand_naimark_2` has one user, `gelfand_naimark` (30XIV,
 `Theses/A/CStar/Representation.lean`), which the strengthened form still gives
 at once; the `A/VN` uses are all of `proto_gelfand_naimark_`**`1`**.
 
-### 2.5 — 28II.4 `functional-calculus`: may the unique element be identified with `f(a)`?
+### 2.5 — 28II.4 `functional-calculus`: may the unique element be identified with `f(a)`? — **done 2026-09-04 under the §2.1 ruling**
 
 *(`QUESTIONS.md` A10.  Audit row `acstar-matrices-representation.csv:114`,
 `left-ruling`.  Lean: `functional_calculus_4`.)*
