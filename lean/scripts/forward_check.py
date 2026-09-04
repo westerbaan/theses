@@ -141,4 +141,5 @@ def main():
     print()
     for f, n in sorted(hits.items()): print(f"{n:4d}  {f}")
     print(f"{len(lines_out)} DISP-tagged proofs cite a later point the printed proof does not (rows that record an allowance are not listed)")
+    sys.exit(1 if lines_out else 0)
 if __name__ == '__main__': main()
