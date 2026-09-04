@@ -4146,21 +4146,82 @@ theorem exists_isONBasis_of_bddUnComplete [VonNeumannAlgebra 𝒷]
     rwa [← hxeq] at hy
   exact ⟨↥E, fun i => (i : X), horth, hclausea, hclauseb⟩
 
+/-- **149IV** `mod-parseval` in the real form the proof of **149IX** uses
+(dils.tex:2537): for an orthonormal basis, `‖x‖_ω² = ∑ᵢ ‖⟨x,eᵢ⟩‖_ω²`, the
+sum being a genuine `HasSum` in `ℝ`.
+
+The ultraweak convergence of `∑ᵢ ⟨eᵢ,x⟩⟨x,eᵢ⟩` to `⟨x,x⟩` is `mod_parseval`
+itself; applying the np-functional `ω` (which is what ultraweak convergence
+*means*) and taking real parts turns each term into `‖⟨x,eᵢ⟩‖_ω²` and the
+limit into `‖x‖_ω²` (`unSeminorm_sq`). -/
+private theorem hasSum_omegaNorm_sq [VonNeumannAlgebra 𝒷] {e : ι → X}
+    (he : IsONBasis 𝒷 e) (ω : NPFunctional 𝒷) (x : X) :
+    HasSum (fun i => omegaNorm 𝒷 ω (inner 𝒷 x (e i)) ^ 2)
+      (unSeminorm ω (inner 𝒷 : X → X → 𝒷) x ^ 2) := by
+  have hterm : ∀ i : ι, ((ω ((inner 𝒷 (e i) x : 𝒷) * inner 𝒷 x (e i))).re)
+      = omegaNorm 𝒷 ω (inner 𝒷 x (e i)) ^ 2 := by
+    intro i
+    rw [omegaNorm, Real.sq_sqrt (np_re_nonneg ω (star_mul_self_nonneg _)),
+      CStarModule.star_inner]
+  have huw := (uwTendsto_iff _ _ _).mp (mod_parseval e he x) ω
+  have hre : Tendsto
+      (fun S : Finset ι => (ω (∑ i ∈ S, (inner 𝒷 (e i) x : 𝒷) * inner 𝒷 x (e i))).re)
+      atTop (𝓝 ((ω (inner 𝒷 x x : 𝒷)).re)) :=
+    (Complex.continuous_re.tendsto _).comp huw
+  have hfun : (fun S : Finset ι =>
+        (ω (∑ i ∈ S, (inner 𝒷 (e i) x : 𝒷) * inner 𝒷 x (e i))).re)
+      = fun S : Finset ι => ∑ i ∈ S, omegaNorm 𝒷 ω (inner 𝒷 x (e i)) ^ 2 := by
+    funext S
+    have h1 : ω (∑ i ∈ S, (inner 𝒷 (e i) x : 𝒷) * inner 𝒷 x (e i))
+        = ∑ i ∈ S, ω ((inner 𝒷 (e i) x : 𝒷) * inner 𝒷 x (e i)) :=
+      map_sum ω.toPositiveLinearMap _ S
+    rw [h1, Complex.re_sum]
+    exact Finset.sum_congr rfl fun i _ => hterm i
+  rw [hfun] at hre
+  have hsq : unSeminorm ω (inner 𝒷 : X → X → 𝒷) x ^ 2 = (ω (inner 𝒷 x x : 𝒷)).re :=
+    unSeminorm_sq ω (cstarBInner 𝒷 X) x
+  rw [hsq]
+  exact hre
+
+/-- Parseval's identity for a *finite* sum (dils.tex:2554, the right-hand
+side of the thesis's triangle-inequality estimate): if each `dᵢ` is absorbed
+by `⟨eᵢ,eᵢ⟩` then `‖∑_{i∈S} dᵢeᵢ‖_ω² = ∑_{i∈S} ‖dᵢ*‖_ω²`.  It is
+`inner_sum_smul_self` read through `ω`. -/
+private theorem unSeminorm_sum_smul_sq {e : ι → X} (he : OrthonormalFam 𝒷 e)
+    (ω : NPFunctional 𝒷) (d : ι → 𝒷)
+    (habs : ∀ i, d i * (inner 𝒷 (e i) (e i) : 𝒷) = d i) (S : Finset ι) :
+    unSeminorm ω (inner 𝒷 : X → X → 𝒷) (∑ i ∈ S, d i • e i) ^ 2
+      = ∑ i ∈ S, omegaNorm 𝒷 ω (star (d i)) ^ 2 := by
+  have hsq : unSeminorm ω (inner 𝒷 : X → X → 𝒷) (∑ i ∈ S, d i • e i) ^ 2
+      = (ω (inner 𝒷 (∑ i ∈ S, d i • e i) (∑ i ∈ S, d i • e i) : 𝒷)).re :=
+    unSeminorm_sq ω (cstarBInner 𝒷 X) _
+  have h2 : ω (∑ i ∈ S, d i * star (d i)) = ∑ i ∈ S, ω (d i * star (d i)) :=
+    map_sum ω.toPositiveLinearMap _ S
+  rw [hsq, inner_sum_smul_self he.1 d habs S, h2, Complex.re_sum]
+  refine Finset.sum_congr rfl fun i _ => ?_
+  rw [omegaNorm, Real.sq_sqrt (np_re_nonneg ω (star_mul_self_nonneg _)), star_star]
+
 /-- **149IX** (dils.tex:2487): (4) ⇒ (2) of **149V** — a pre-Hilbert
 𝒷-module with an orthonormal basis is ultranorm complete.
 
-Divergence class 3 (mild), mirrored: every estimate is the thesis's, but
-the closing one is assembled differently — see the last paragraph.  The
-limit is `∑ₑ e bₑ` with
+The thesis's proof, mirrored.  The limit is `∑ₑ e bₑ` with
 `bₑ = uslim_α ⟨e, x_α⟩`, whose mirror image is `bₑ = (uslim_α [x_α, e])*` —
 it is the net `[x_α, e]` of *starred* coefficients that is ultrastrong
 Cauchy (by **142III**), converging by **77I**.1 `Theses.A.VN.vn_complete_1`.
 The ℓ²-summability of `(bₑ)ₑ` follows from an ultraweak bound (Bessel at
 approximants) through **87VIII**
-`Theses.A.VN.ultraweakly_bounded_implies_bounded`; where the thesis sums
-Parseval tails, we bound `x_α − ∑ₑ eb_ₑ` at a *finite* stage `S` by the four
-terms `x_α − P_S x_α`, `P_S(x_α − x_β)`, `∑_{S} e(⟨e,x_β⟩ − b_e)` and
-`∑_S eb_e − t`, with `x_β` chosen late — same estimates, no infinite sums. -/
+`Theses.A.VN.ultraweakly_bounded_implies_bounded`.
+
+The closing estimate is the thesis's own (dils.tex:2537–2571): by Parseval
+(**149IV**, in the real form `hasSum_omegaNorm_sq`)
+`‖x_α − ∑ₑ ebₑ‖_ω² = ∑ₑ ‖⟨e,x_α⟩ − bₑ‖_ω²`, whose coefficients are those of
+`x_α − t` because `⟨eᵢ,t⟩ = bᵢ` (**149VIII** `inner_of_unTendsto_sum_smul`);
+a finite `S` carries all but `(2δ)²` of that sum, and the `S`-part is
+`‖∑_{i∈S} eᵢ(⟨eᵢ,x_α⟩ − bᵢ)‖_ω²` again (finite Parseval,
+`unSeminorm_sum_smul_sq`), which the thesis's two-term estimate bounds by
+`(2δ)²`: Bessel (`unSeminorm_coeff_sum_le`) against the Cauchy property for
+`∑_{i∈S} eᵢ⟨eᵢ,x_α − x_β⟩`, and a *late* `x_β` for the finitely many
+`‖⟨eᵢ,x_β⟩ − bᵢ‖_ω`. -/
 theorem unComplete_of_isONBasis [VonNeumannAlgebra 𝒷] {e : ι → X}
     (he : IsONBasis 𝒷 e) : UnComplete (inner 𝒷 : X → X → 𝒷) := by
   classical
@@ -4280,36 +4341,83 @@ theorem unComplete_of_isONBasis [VonNeumannAlgebra 𝒷] {e : ι → X}
     obtain ⟨M, hM⟩ := ultraweakly_bounded_implies_bounded
       (fun S : Finset ι => ∑ i ∈ S, b i * star (b i)) hub
     exact ⟨M, fun S => hM ⟨S, rfl⟩⟩
-  -- (3) the candidate limit
+  -- (3) the candidate limit, whose coefficients are the `bᵢ` again (**149VIII**)
   obtain ⟨t, ht⟩ := he.2.2 b hL2
+  have habs : ∀ i : ι, b i * (inner 𝒷 (e i) (e i) : 𝒷) = b i := by
+    intro i
+    have heqf : (fun z : X => (inner 𝒷 (e i) (e i) : 𝒷) * (inner 𝒷 z (e i) : 𝒷))
+        = fun z : X => (inner 𝒷 z (e i) : 𝒷) := by
+      funext z
+      have h := congrArg star (onbasis_coef_absorb he.1 z i)
+      rw [star_mul, CStarModule.star_inner, CStarModule.star_inner] at h
+      exact h
+    have hmul : USTendsto
+        (fun z : X => (inner 𝒷 (e i) (e i) : 𝒷) * (inner 𝒷 z (e i) : 𝒷)) F
+        ((inner 𝒷 (e i) (e i) : 𝒷) * c i) := usTendsto_const_mul' _ (hc i)
+    rw [heqf] at hmul
+    have hci : c i = (inner 𝒷 (e i) (e i) : 𝒷) * c i := usTendsto_unique' (hc i) hmul
+    have h2 := congrArg star hci
+    rw [star_mul, (he.1.2 i).1.isSelfAdjoint] at h2
+    show star (c i) * (inner 𝒷 (e i) (e i) : 𝒷) = star (c i)
+    exact h2.symm
+  have htc : ∀ i : ι, (inner 𝒷 t (e i) : 𝒷) = c i := by
+    intro i
+    have h2 := congrArg star (inner_of_unTendsto_sum_smul he.1 b habs ht i)
+    rw [CStarModule.star_inner] at h2
+    show (inner 𝒷 t (e i) : 𝒷) = c i
+    rw [h2]
+    exact star_star (c i)
   refine ⟨t, fun ω => ?_⟩
   rw [Metric.tendsto_nhds]
   intro ε hε
   set δ : ℝ := ε / 8 with hδdef
   have hδpos : 0 < δ := by rw [hδdef]; linarith
   obtain ⟨s₀, hs₀F, hs₀⟩ := hcauchy ω δ hδpos
-  obtain ⟨S₀, hS₀⟩ :=
-    Filter.eventually_atTop.mp ((ht ω).eventually (gt_mem_nhds hδpos))
   -- (4) every `z ∈ s₀` is `6δ`-close to `t`
   have hclaim : ∀ z ∈ s₀,
       unSeminorm ω (inner 𝒷 : X → X → 𝒷) (z - t) ≤ 6 * δ := by
     intro z hz
-    obtain ⟨S₁', hS₁'⟩ := Filter.eventually_atTop.mp
-      (((he.2.1 z) ω).eventually (gt_mem_nhds hδpos))
-    set S : Finset ι := S₀ ∪ S₁' with hSdef
+    -- Parseval (**149IV**) for `z - t`, whose coefficients are `⟨eᵢ,z⟩ - bᵢ`
+    have hcoefw : ∀ i : ι, (inner 𝒷 (z - t) (e i) : 𝒷)
+        = (inner 𝒷 z (e i) : 𝒷) - c i := by
+      intro i
+      rw [CStarModule.inner_sub_left, htc i]
+    have hten : Tendsto (fun S : Finset ι =>
+        ∑ i ∈ S, omegaNorm 𝒷 ω (inner 𝒷 (z - t) (e i)) ^ 2) atTop
+        (𝓝 (unSeminorm ω (inner 𝒷 : X → X → 𝒷) (z - t) ^ 2)) :=
+      hasSum_omegaNorm_sq he ω (z - t)
+    -- a finite `S` carrying all but `(2δ)²` of the Parseval sum
+    obtain ⟨S, hSge⟩ := Filter.eventually_atTop.mp (hten.eventually (lt_mem_nhds
+      (show unSeminorm ω (inner 𝒷 : X → X → 𝒷) (z - t) ^ 2 - (2 * δ) ^ 2
+        < unSeminorm ω (inner 𝒷 : X → X → 𝒷) (z - t) ^ 2 by nlinarith)))
+    have htail : unSeminorm ω (inner 𝒷 : X → X → 𝒷) (z - t) ^ 2 - (2 * δ) ^ 2
+        < ∑ i ∈ S, omegaNorm 𝒷 ω (inner 𝒷 (z - t) (e i)) ^ 2 := hSge S le_rfl
     set P : X := ∑ i ∈ S, (inner 𝒷 (e i) z : 𝒷) • e i with hPdef
     set V : X := ∑ i ∈ S, b i • e i with hVdef
-    have hT1 : unSeminorm ω (inner 𝒷 : X → X → 𝒷) (P - z) < δ :=
-      hS₁' S le_sup_right
-    have hT4 : unSeminorm ω (inner 𝒷 : X → X → 𝒷) (V - t) < δ :=
-      hS₀ S le_sup_left
+    -- the `S`-part is `‖∑_{i∈S} eᵢ(⟨eᵢ,z⟩ - bᵢ)‖_ω² = ‖P - V‖_ω²` (finite Parseval)
+    have hstar : ∀ i : ι, star ((inner 𝒷 (e i) z : 𝒷) - b i)
+        = (inner 𝒷 z (e i) : 𝒷) - c i := by
+      intro i
+      show star ((inner 𝒷 (e i) z : 𝒷) - star (c i)) = _
+      rw [star_sub, CStarModule.star_inner, star_star]
+    have habsd : ∀ i : ι, ((inner 𝒷 (e i) z : 𝒷) - b i) * (inner 𝒷 (e i) (e i) : 𝒷)
+        = (inner 𝒷 (e i) z : 𝒷) - b i := by
+      intro i
+      rw [sub_mul, onbasis_coef_absorb he.1 z i, habs i]
+    have hhead : ∑ i ∈ S, omegaNorm 𝒷 ω (inner 𝒷 (z - t) (e i)) ^ 2
+        = unSeminorm ω (inner 𝒷 : X → X → 𝒷) (P - V) ^ 2 := by
+      have hd : P - V = ∑ i ∈ S, ((inner 𝒷 (e i) z : 𝒷) - b i) • e i := by
+        rw [hPdef, hVdef, ← Finset.sum_sub_distrib]
+        exact Finset.sum_congr rfl fun i _ => (sub_smul' _ _ _).symm
+      rw [hd, unSeminorm_sum_smul_sq he.1 ω _ habsd S]
+      exact Finset.sum_congr rfl fun i _ => by rw [hcoefw i, hstar i]
     -- late choice of `β`
     set δ' : ℝ := δ / (S.card + 1) with hδ'def
     have hδ'pos : 0 < δ' := by positivity
     obtain ⟨β, hβs, hβc⟩ :=
       Filter.nonempty_of_mem (Filter.inter_mem hs₀F (hcoef ω S δ' hδ'pos))
-    -- middle terms
     set Q : X := ∑ i ∈ S, (inner 𝒷 (e i) β : 𝒷) • e i with hQdef
+    -- Bessel: `‖∑_{i∈S} eᵢ⟨eᵢ,z-β⟩‖_ω ≤ ‖z-β‖_ω ≤ δ`
     have hT2 : unSeminorm ω (inner 𝒷 : X → X → 𝒷) (P - Q) ≤ δ := by
       have h1 : P - Q = ∑ i ∈ S, (inner 𝒷 (e i) (z - β) : 𝒷) • e i := by
         rw [hPdef, hQdef, ← Finset.sum_sub_distrib]
@@ -4318,6 +4426,7 @@ theorem unComplete_of_isONBasis [VonNeumannAlgebra 𝒷] {e : ι → X}
       rw [h1]
       exact le_trans (unSeminorm_coeff_sum_le he.1 ω (z - β) S)
         (hs₀ z hz β hβs)
+    -- the finitely many coefficients of `β` are `δ'`-close to the `bᵢ`
     have hT3 : unSeminorm ω (inner 𝒷 : X → X → 𝒷) (Q - V) ≤ δ := by
       have h1 : Q - V = ∑ i ∈ S, ((inner 𝒷 (e i) β : 𝒷) - b i) • e i := by
         rw [hQdef, hVdef, ← Finset.sum_sub_distrib]
@@ -4326,11 +4435,11 @@ theorem unComplete_of_isONBasis [VonNeumannAlgebra 𝒷] {e : ι → X}
           (((inner 𝒷 (e i) β : 𝒷) - b i) • e i) ≤ δ' := by
         intro i hi
         refine (unSeminorm_smul_proj_le (he.1.2 i).1 ω _).trans ?_
-        have hstar : star ((inner 𝒷 (e i) β : 𝒷) - b i)
+        have hstar' : star ((inner 𝒷 (e i) β : 𝒷) - b i)
             = (inner 𝒷 β (e i) : 𝒷) - c i := by
           rw [star_sub, CStarModule.star_inner, hbdef]
           simp
-        rw [hstar]
+        rw [hstar']
         exact (hβc i hi).le
       have hmulδ' : ((S.card : ℝ) + 1) * δ' = δ := by
         rw [hδ'def]; field_simp
@@ -4341,27 +4450,20 @@ theorem unComplete_of_isONBasis [VonNeumannAlgebra 𝒷] {e : ι → X}
       rw [h1]
       refine le_trans (unSeminorm_sum_le ω S _) (le_trans h2 ?_)
       nlinarith [hδ'pos.le]
-    -- assemble via the triangle inequality
-    have hd1 : unSeminorm ω (inner 𝒷 : X → X → 𝒷) (z - t)
-        ≤ unSeminorm ω (inner 𝒷 : X → X → 𝒷) (-(P - z) + (P - Q) + (Q - V))
-          + unSeminorm ω (inner 𝒷 : X → X → 𝒷) (V - t) := by
-      have h := unSeminorm_add_le ω (cstarBInner 𝒷 X)
-        (-(P - z) + (P - Q) + (Q - V)) (V - t)
-      rw [show -(P - z) + (P - Q) + (Q - V) + (V - t) = z - t by abel] at h
-      exact h
-    have hd2 : unSeminorm ω (inner 𝒷 : X → X → 𝒷) (-(P - z) + (P - Q) + (Q - V))
-        ≤ unSeminorm ω (inner 𝒷 : X → X → 𝒷) (-(P - z) + (P - Q))
-          + unSeminorm ω (inner 𝒷 : X → X → 𝒷) (Q - V) :=
-      unSeminorm_add_le ω (cstarBInner 𝒷 X) _ _
-    have hd3 : unSeminorm ω (inner 𝒷 : X → X → 𝒷) (-(P - z) + (P - Q))
-        ≤ unSeminorm ω (inner 𝒷 : X → X → 𝒷) (-(P - z))
-          + unSeminorm ω (inner 𝒷 : X → X → 𝒷) (P - Q) :=
-      unSeminorm_add_le ω (cstarBInner 𝒷 X) _ _
-    have hneg : unSeminorm ω (inner 𝒷 : X → X → 𝒷) (-(P - z))
-        = unSeminorm ω (inner 𝒷 : X → X → 𝒷) (P - z) :=
-      unSeminorm_neg' ω (cstarBInner 𝒷 X) _
-    rw [hneg] at hd3
-    linarith [hT1.le, hT2, hT3, hT4.le]
+    -- the thesis's two-term bound on the `S`-part
+    have hPV : unSeminorm ω (inner 𝒷 : X → X → 𝒷) (P - V) ≤ 2 * δ := by
+      have h : unSeminorm ω (inner 𝒷 : X → X → 𝒷) (P - V)
+          ≤ unSeminorm ω (inner 𝒷 : X → X → 𝒷) (P - Q)
+            + unSeminorm ω (inner 𝒷 : X → X → 𝒷) (Q - V) := by
+        have h0 := unSeminorm_add_le ω (cstarBInner 𝒷 X) (P - Q) (Q - V)
+        rw [show (P - Q) + (Q - V) = P - V by abel] at h0
+        exact h0
+      linarith
+    have hsq : unSeminorm ω (inner 𝒷 : X → X → 𝒷) (P - V) ^ 2 ≤ (2 * δ) ^ 2 := by
+      nlinarith [unSeminorm_nonneg ω (inner 𝒷 : X → X → 𝒷) (P - V), hδpos]
+    rw [hhead] at htail
+    nlinarith [unSeminorm_nonneg ω (inner 𝒷 : X → X → 𝒷) (z - t), hδpos, hsq, htail,
+      sq_nonneg (unSeminorm ω (inner 𝒷 : X → X → 𝒷) (z - t) - 6 * δ)]
   filter_upwards [hs₀F] with z hz
   rw [Real.dist_eq, sub_zero, abs_of_nonneg (unSeminorm_nonneg _ _ _)]
   calc unSeminorm ω (inner 𝒷 : X → X → 𝒷) (id z - t) ≤ 6 * δ := hclaim z hz

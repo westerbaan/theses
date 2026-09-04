@@ -55,7 +55,7 @@ for `X = ℬ` one has `𝒷ᵃ(ℬ) = {R_t} ≅ ℬᵐᵒᵖ` with `h(R_t) = t`,
 `h : 𝒷ᵃ(ℬ) → ℬ` is `unop`, which is the transpose on `M₂` and hence
 positive but *not* completely positive, while `h : 𝒷ᵃ(ℬ)ᵐᵒᵖ → ℬ` is a
 ∗-isomorphism.  With these fields `h (ρ a) = φ a` holds on the nose
-(`paschkeModule_h_ρ`), so `IsPaschkeDilationOf` (`Stinespring.lean:3297`),
+(`paschkeModule_h_ρ`), so `IsPaschkeDilationOf` (`Stinespring.lean:3367`),
 which asks for `h (ρ a) = φ a` with no `star`, is correct as it stands
 (ruling of the author, Bas, 2026-08-15: "the definition of Paschke dilation
 should not include the star").
@@ -3417,103 +3417,210 @@ theorem paschke_injective_carrier [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra �
       exact (hTt x).symm.trans (congrArg (fun f : E.X →L[ℂ] E.X => f x) hT0)
     exact hbij.1 ((hϑρ p).trans (hM.trans hϑ0.symm))
 
-/-- Auxiliary for **156II**: a *central* projection `z` killed by `φ` is
-killed at every conjugate, `φ(a*za) = 0` — because `a*za = z(a*a)z ≤ ‖a*a‖z`
-by centrality, and `φ` is positive.  This is the *central* case of the
-thesis's chain at dils.tex:3905–3912 (`a*pa ≤ ⌈φ⌉^⊥` iff `a⌈φ⌉a* ≤ p^⊥`, by
-`ad-contraposed` and `cceil-fundamental`), which is all that **156II** needs
-of it: it is applied at `p = ⌈⌈φ⌉⌉^⊥`. -/
-private theorem ncp_conj_central_eq_zero (φ : NCPMap 𝒜 ℬ) {z : 𝒜}
-    (hz : IsStarProjection z) (hzc : IsCentral 𝒜 z) (hφz : φ z = 0) (a : 𝒜) :
-    φ (star a * z * a) = 0 := by
-  have hcnn : (0 : 𝒜) ≤ star a * a := star_mul_self_nonneg a
-  have hzs : star z = z := hz.isSelfAdjoint.star_eq
-  have hconj := star_left_conjugate_le_conjugate (le_norm_smul_one hcnn) z
-  have h1 : star z * (star a * a) * z = star a * z * a := by
-    calc star z * (star a * a) * z = z * (star a * a) * z := by rw [hzs]
-      _ = star a * a * z * z := by rw [hzc (star a * a)]
-      _ = star a * a * z := by rw [mul_assoc, hz.isIdempotentElem.eq]
-      _ = star a * (a * z) := by rw [mul_assoc]
-      _ = star a * z * a := by rw [← hzc a, mul_assoc]
-  have h2 : star z * ((‖star a * a‖ : ℝ) • (1 : 𝒜)) * z
-      = (‖star a * a‖ : ℝ) • z := by
-    rw [hzs, mul_smul_comm, smul_mul_assoc, mul_one, hz.isIdempotentElem.eq]
-  rw [h1, h2] at hconj
-  have hup : (φ (star a * z * a) : ℬ) ≤ φ ((‖star a * a‖ : ℝ) • z) :=
-    OrderHomClass.mono φ.toCompletelyPositiveMap hconj
-  have hφsmul : (φ ((‖star a * a‖ : ℝ) • z) : ℬ) = 0 := by
-    have hc : ((‖star a * a‖ : ℝ) • z) = ((‖star a * a‖ : ℂ)) • z :=
-      (Complex.coe_smul _ _).symm
-    have hs : (φ (((‖star a * a‖ : ℂ)) • z) : ℬ)
-        = ((‖star a * a‖ : ℂ)) • φ z :=
-      map_smul φ.toCompletelyPositiveMap _ _
-    rw [hc, hs, hφz, smul_zero]
-  have hlow : (0 : ℬ) ≤ φ (star a * z * a) := by
-    have h0 : (0 : 𝒜) ≤ star a * z * a := by
-      rw [← h1]
-      exact star_left_conjugate_nonneg hcnn z
-    have hmono : (φ (0 : 𝒜) : ℬ) ≤ φ (star a * z * a) :=
-      OrderHomClass.mono φ.toCompletelyPositiveMap h0
-    have hφ0 : (φ (0 : 𝒜) : ℬ) = 0 :=
-      map_zero φ.toCompletelyPositiveMap.toLinearMap
-    rwa [hφ0] at hmono
-  exact le_antisymm (by rwa [hφsmul] at hup) hlow
+/-- Auxiliary for **156II**: for `‖a‖ ≤ 1` and a projection `r`, the
+conjugate `a*ra` is an effect — `a*ra ≤ a*a ≤ ‖a*a‖·1 ≤ 1`.  (The same
+estimate that **55V** `ad_contraposed` runs, and the reason it is stated for
+`‖a‖ ≤ 1`.) -/
+private theorem conj_proj_effect {a r : 𝒜} (ha : ‖a‖ ≤ 1)
+    (hr : IsStarProjection r) : star a * r * a ∈ effects 𝒜 := by
+  refine ⟨star_left_conjugate_nonneg hr.nonneg a, ?_⟩
+  have h1 : star a * r * a ≤ star a * 1 * a :=
+    star_left_conjugate_le_conjugate hr.le_one a
+  rw [mul_one] at h1
+  refine h1.trans ?_
+  have hnn : (0 : 𝒜) ≤ star a * a := star_mul_self_nonneg a
+  have hn : ‖star a * a‖ ≤ 1 := by
+    calc ‖star a * a‖ ≤ ‖star a‖ * ‖a‖ := norm_mul_le _ _
+      _ ≤ 1 := by rw [norm_star]; nlinarith [norm_nonneg a]
+  refine (le_norm_smul_one hnn).trans ?_
+  have h2 := smul_nonneg (by linarith : (0 : ℝ) ≤ 1 - ‖star a * a‖) (zero_le_one (α := 𝒜))
+  rw [sub_smul, one_smul, sub_nonneg] at h2
+  exact h2
+
+/-- Auxiliary for **156II**, the first link of the thesis's chain
+(dils.tex:3904, "in other words `a*pa ≤ ⌈φ⌉^⊥`"): for an *effect* `c`,
+`f(c) = 0` iff `c ≤ ⌈f⌉^⊥`.
+
+Forwards: `⌈f(⌈c⌉)⌉ = ⌈f(c)⌉ = 0` by **60V** `ncp_ceil`, so `f(⌈c⌉) = 0` by
+**59III**.3 `ceil_basic_3`, so `⌈f⌉ ≤ ⌈c⌉^⊥` by the leastness of the carrier
+(**63I** `carrier_spec`), and `c ≤ ⌈c⌉`.  Backwards: `0 ≤ f(c) ≤ f(⌈f⌉^⊥) = 0`
+by monotonicity. -/
+private theorem pmap_eq_zero_iff_le_carrier_ortho [VonNeumannAlgebra 𝒜]
+    [VonNeumannAlgebra ℬ] (f : 𝒜 →ₚ[ℂ] ℬ) (hf : PreservesDirSups ⇑f) {c : 𝒜}
+    (hc : c ∈ effects 𝒜) : (f c : ℬ) = 0 ↔ c ≤ 1 - carrier f hf := by
+  have hnn : ∀ x : 𝒜, 0 ≤ x → (0 : ℬ) ≤ f x := fun x hx => by
+    have h : (f (0 : 𝒜) : ℬ) ≤ f x := f.monotone hx
+    rwa [map_zero f] at h
+  constructor
+  · intro h
+    have h1 : ceil (f (ceil c)) = 0 := by
+      rw [← ncp_ceil f hf c hc.1, h, ceil_zero]
+    have h2 : (f (ceil c) : ℬ) = 0 :=
+      (ceil_basic_3 _ (hnn _ (ceil_spec hc.1).1.nonneg)).mpr h1
+    have hle : carrier f hf ≤ 1 - ceil c :=
+      (carrier_spec f hf).2.2 _ (ceil_spec hc.1).1.one_sub (by rwa [sub_sub_cancel])
+    have hcc : c ≤ ceil c :=
+      (le_proj_iff hc (ceil_spec hc.1).1).mpr (by
+        rw [mul_sub, mul_one, (ceil_spec hc.1).2.1, sub_self])
+    exact hcc.trans (le_sub_comm.mp hle)
+  · intro h
+    refine le_antisymm ?_ (hnn _ hc.1)
+    have h2 : (f c : ℬ) ≤ f (1 - carrier f hf) := f.monotone h
+    rwa [(carrier_spec f hf).2.1] at h2
+
+/-- Auxiliary for **156II**: the thesis's chain at dils.tex:3904–3912.  For a
+projection `p`: `f(a*pa) = 0` for every `a` iff `⌈⌈f⌉⌉ ≤ p^⊥`.
+
+Link by link, as printed: `f(a*pa) = 0` iff `a*pa ≤ ⌈f⌉^⊥`
+(`pmap_eq_zero_iff_le_carrier_ortho`), iff `a⌈f⌉a* ≤ p^⊥` by **55V**
+`ad_contraposed`, iff `⌈a⌈f⌉a*⌉ ≤ p^⊥` (both sides are effects, and `⌈·⌉` is
+the least projection absorbing them, **59I** `ceil_spec` with **Key lemma 1**
+`le_proj_iff`); and since `⌈⌈f⌉⌉ = ⋃_a ⌈a*⌈f⌉a⌉` (**68I** `cceil_fundamental`)
+the family of bounds is equivalent to the single bound `⌈⌈f⌉⌉ ≤ p^⊥` by the
+leastness of `⋃` (**56XVI** `projSup_spec`).
+
+`ad_contraposed` is stated for `‖a‖ ≤ 1`, which costs nothing here: replacing
+`a` by `‖a‖⁻¹a` multiplies `f(a*pa)` by a non-zero scalar and leaves
+`⌈a⌈f⌉a*⌉` alone (`⌈λa⌉ = ⌈a⌉` for `λ > 0`, **59III**.4 `ceil_smul`). -/
+private theorem pmap_conj_eq_zero_iff_cceilMap_le [VonNeumannAlgebra 𝒜]
+    [VonNeumannAlgebra ℬ] (f : 𝒜 →ₚ[ℂ] ℬ) (hf : PreservesDirSups ⇑f) {p : 𝒜}
+    (hp : IsStarProjection p) :
+    (∀ a : 𝒜, (f (star a * p * a) : ℬ) = 0) ↔ cceilMap f hf ≤ 1 - p := by
+  have hq : IsStarProjection (carrier f hf) := (carrier_spec f hf).1
+  have hnn0 : ∀ a : 𝒜, (0 : 𝒜) ≤ a * carrier f hf * star a := fun a => by
+    have h := star_left_conjugate_nonneg hq.nonneg (star a)
+    rwa [star_star] at h
+  -- the printed chain, for `‖a‖ ≤ 1`
+  have core : ∀ a : 𝒜, ‖a‖ ≤ 1 →
+      ((f (star a * p * a) : ℬ) = 0 ↔ ceil (a * carrier f hf * star a) ≤ 1 - p) := by
+    intro a ha
+    have h1 : (f (star a * p * a) : ℬ) = 0 ↔ star a * p * a ≤ 1 - carrier f hf :=
+      pmap_eq_zero_iff_le_carrier_ortho f hf (conj_proj_effect ha hp)
+    have h2 : star a * p * a ≤ 1 - carrier f hf ↔ a * carrier f hf * star a ≤ 1 - p :=
+      (ad_contraposed a p (carrier f hf) ha hp hq).out 0 2
+    have hsa : ‖star a‖ ≤ 1 := by rwa [norm_star]
+    have heff : a * carrier f hf * star a ∈ effects 𝒜 := by
+      have h := conj_proj_effect hsa hq
+      rwa [star_star] at h
+    have h3 : a * carrier f hf * star a ≤ 1 - p ↔
+        ceil (a * carrier f hf * star a) ≤ 1 - p := by
+      constructor
+      · intro h
+        refine (ceil_spec heff.1).2.2 _ hp.one_sub ?_
+        have h0 : a * carrier f hf * star a * (1 - (1 - p)) = 0 :=
+          (le_proj_iff heff hp.one_sub).mp h
+        rw [sub_sub_cancel] at h0
+        rw [mul_sub, mul_one, h0, sub_zero]
+      · intro h
+        refine le_trans ?_ h
+        refine (le_proj_iff heff (ceil_spec heff.1).1).mpr ?_
+        rw [mul_sub, mul_one, (ceil_spec heff.1).2.1, sub_self]
+    exact h1.trans (h2.trans h3)
+  -- both sides of `core` are invariant under rescaling `a`, so `‖a‖ ≤ 1` is no loss
+  have hnormalize : ∀ a : 𝒜, ∃ b : 𝒜, ‖b‖ ≤ 1 ∧
+      ((f (star b * p * b) : ℬ) = 0 ↔ (f (star a * p * a) : ℬ) = 0) ∧
+      ceil (b * carrier f hf * star b) = ceil (a * carrier f hf * star a) := by
+    intro a
+    rcases eq_or_ne a 0 with rfl | hane
+    · exact ⟨0, by simp, Iff.rfl, rfl⟩
+    have hpos : 0 < ‖a‖ := norm_pos_iff.mpr hane
+    have htpos : 0 < ‖a‖⁻¹ := inv_pos.mpr hpos
+    set t : ℝ := ‖a‖⁻¹ with htdef
+    have hst : star ((t : ℂ) • a) = (t : ℂ) • star a := by
+      simp [star_smul]
+    refine ⟨(t : ℂ) • a, ?_, ?_, ?_⟩
+    · rw [norm_smul, Complex.norm_real, Real.norm_eq_abs, abs_of_pos htpos, htdef,
+        inv_mul_cancel₀ (ne_of_gt hpos)]
+    · have hexp : star ((t : ℂ) • a) * p * ((t : ℂ) • a)
+          = ((t * t : ℝ) : ℂ) • (star a * p * a) := by
+        rw [hst]
+        simp only [smul_mul_assoc, mul_smul_comm, smul_smul]
+        norm_cast
+      rw [hexp, map_smul f]
+      have hne : (((t * t : ℝ) : ℂ)) ≠ 0 := by
+        simp only [ne_eq, Complex.ofReal_eq_zero]
+        positivity
+      refine ⟨fun h => ?_, fun h => by rw [h, smul_zero]⟩
+      have h2 := congrArg (fun z : ℬ => (((t * t : ℝ) : ℂ))⁻¹ • z) h
+      simp only [smul_smul, inv_mul_cancel₀ hne, one_smul, smul_zero] at h2
+      exact h2
+    · have hexp : ((t : ℂ) • a) * carrier f hf * star ((t : ℂ) • a)
+          = ((t * t : ℝ) : ℂ) • (a * carrier f hf * star a) := by
+        rw [hst]
+        simp only [smul_mul_assoc, mul_smul_comm, smul_smul]
+        norm_cast
+      rw [hexp, Complex.coe_smul, ceil_smul (hnn0 a) (by positivity)]
+  -- `⌈⌈f⌉⌉ = ⋃_a ⌈a*⌈f⌉a⌉` (**68I** `cceil_fundamental`), and `⋃` is least
+  have hS : ∀ x ∈ {x : 𝒜 | ∃ a : 𝒜, x = ceil (star a * carrier f hf * a)},
+      IsStarProjection x := by
+    rintro _ ⟨a, rfl⟩
+    exact (ceil_spec (star_left_conjugate_nonneg hq.nonneg a)).1
+  obtain ⟨hsproj, hsub, hsleast⟩ := projSup_spec hS
+  have hcm : cceilMap f hf
+      = projSup {x : 𝒜 | ∃ a : 𝒜, x = ceil (star a * carrier f hf * a)} :=
+    (cceil_fundamental (carrier f hf) hq).2
+  rw [hcm]
+  constructor
+  · intro h
+    refine hsleast _ hp.one_sub ?_
+    rintro _ ⟨a, rfl⟩
+    have h4 := hnormalize (star a)
+    obtain ⟨b, hb1, hb2, hb3⟩ := h4
+    have h5 := (core b hb1).mp (hb2.mpr (h (star a)))
+    rw [hb3, star_star] at h5
+    exact h5
+  · intro h a
+    obtain ⟨b, hb1, hb2, hb3⟩ := hnormalize a
+    refine hb2.mp ((core b hb1).mpr ?_)
+    rw [hb3]
+    refine le_trans ?_ h
+    have h5 := hsub _ ⟨star a, rfl⟩
+    rwa [star_star] at h5
 
 /-- **156II** (`paschke-injective`, dils.tex:3883, Theorem), the equation
 itself: `⌈ϱ⌉ = ⌈⌈φ⌉⌉` (dils.tex:3886), the carrier of the Paschke
 representation is the central carrier of `φ` (**69I** `cceilMap`, the
 `cceil` of the carrier).
 
-Both halves run through the thesis's own carrier form
-`paschke_injective_carrier` (dils.tex:3900–3903, 3917–3919):
-`⌈⌈φ⌉⌉ ≤ ⌈ϱ⌉` because `ϱ(⌈ϱ⌉^⊥) = 0` gives `φ(⌈ϱ⌉^⊥) = 0` (the carrier form
-at `a = 1`) while `⌈ϱ⌉` is *central* by **69IV** `carrier_miu`, so the
-leastness of `⌈⌈φ⌉⌉` among central effects annihilating `φ`
-(**69I** `cceilMap_least`) applies; and `⌈ϱ⌉ ≤ ⌈⌈φ⌉⌉` because `⌈⌈φ⌉⌉^⊥` is a
-central projection with `φ(⌈⌈φ⌉⌉^⊥) = 0`, hence `φ(a*⌈⌈φ⌉⌉^⊥a) = 0` for all
-`a` (`ncp_conj_central_eq_zero`, the central case of the thesis's
-dils.tex:3905–3912), hence `ϱ(⌈⌈φ⌉⌉^⊥) = 0` by the carrier form, and `⌈ϱ⌉`
-is the least projection with that property. -/
+The proof is the thesis's (dils.tex:3897–3919): for *every* projection `p`,
+`p ≤ ⌈ϱ⌉^⊥` iff `p ≤ ⌈⌈φ⌉⌉^⊥`.  That is `key` below — the thesis's first
+chain `ϱ(p) = 0 iff φ(a*pa) = 0 for all a` (`paschke_injective_carrier`)
+followed by its second, `φ(a*pa) = 0 for all a iff ⌈⌈φ⌉⌉ ≤ p^⊥`
+(`pmap_conj_eq_zero_iff_cceilMap_le`, which runs `ad-contraposed` and
+`cceil-fundamental` as printed).  Reading it at `p = ⌈ϱ⌉^⊥` gives
+`⌈⌈φ⌉⌉ ≤ ⌈ϱ⌉` and at `p = ⌈⌈φ⌉⌉^⊥` gives `⌈ϱ⌉ ≤ ⌈⌈φ⌉⌉`, by the leastness of
+the carrier. -/
 theorem paschke_carrier_eq_cceil [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
     (φ : NCPMap 𝒜 ℬ) (D : PaschkeTriple 𝒜 ℬ) (hD : IsPaschkeDilationOf D ⇑φ) :
     letI := D.vn
     carrier (nmiuP D.ρ) D.ρ.preservesDirSups'
       = cceilMap (ncpPositive φ) φ.preservesDirSups' := by
   letI := D.vn
-  set g : 𝒜 →ₚ[ℂ] D.P := nmiuP D.ρ with hgdef
-  have hgnorm : PreservesDirSups ⇑g := D.ρ.preservesDirSups'
-  set f : 𝒜 →ₚ[ℂ] ℬ := ncpPositive φ with hfdef
-  have hfnorm : PreservesDirSups ⇑f := φ.preservesDirSups'
-  have hcarr := carrier_spec g hgnorm
-  have hccen : IsCentral 𝒜 (carrier g hgnorm) :=
-    (carrier_miu D.ρ g hgnorm (fun _ => rfl)).1
-  -- `⌈⌈φ⌉⌉ ≤ ⌈ϱ⌉`, since `φ(⌈ϱ⌉^⊥) = 0` and `⌈ϱ⌉` is a central effect
-  have hφ0 : (f ((1 : 𝒜) - carrier g hgnorm) : ℬ) = 0 := by
-    have h := (paschke_injective_carrier φ D hD _ hcarr.1.one_sub).mp hcarr.2.1 1
-    rw [star_one, one_mul, mul_one] at h
-    exact h
-  have hle1 : cceilMap f hfnorm ≤ carrier g hgnorm := by
-    have hcl := cceilMap_least f hfnorm (carrier g hgnorm)
-      ⟨hcarr.1.nonneg, hcarr.1.le_one⟩ hccen
-    exact hcl.2.mp (hcl.1.mp hφ0)
-  -- `⌈ϱ⌉ ≤ ⌈⌈φ⌉⌉`: `⌈⌈φ⌉⌉^⊥` is a central projection killed by `φ`
-  have hcc : IsStarProjection (cceilMap f hfnorm) ∧ IsCentral 𝒜 (cceilMap f hfnorm) := by
-    have := (cceil_isLeast (carrier f hfnorm)).1
-    exact ⟨this.1, this.2.1⟩
-  have hccle : carrier f hfnorm ≤ cceilMap f hfnorm := by
-    have hcl := cceilMap_least f hfnorm (cceilMap f hfnorm)
-      ⟨hcc.1.nonneg, hcc.1.le_one⟩ hcc.2
-    exact hcl.2.mpr le_rfl
-  have hfz : (φ ((1 : 𝒜) - cceilMap f hfnorm) : ℬ) = 0 := by
-    have hcl := cceilMap_least f hfnorm (cceilMap f hfnorm)
-      ⟨hcc.1.nonneg, hcc.1.le_one⟩ hcc.2
-    exact hcl.1.mpr hccle
-  have hzc : IsCentral 𝒜 ((1 : 𝒜) - cceilMap f hfnorm) := fun b => by
-    rw [sub_mul, mul_sub, one_mul, mul_one, hcc.2 b]
-  have hρz : (D.ρ ((1 : 𝒜) - cceilMap f hfnorm) : D.P) = 0 :=
-    (paschke_injective_carrier φ D hD _ hcc.1.one_sub).mpr
-      (fun a => ncp_conj_central_eq_zero φ hcc.1.one_sub hzc hfz a)
-  exact le_antisymm (hcarr.2.2 _ hcc.1 hρz) hle1
+  have hcarr := carrier_spec (nmiuP D.ρ) D.ρ.preservesDirSups'
+  have hccp : IsStarProjection (cceilMap (ncpPositive φ) φ.preservesDirSups') :=
+    (cceil_isLeast (carrier (ncpPositive φ) φ.preservesDirSups')).1.1
+  -- dils.tex:3897–3919: `p ≤ ⌈ϱ⌉^⊥` iff `p ≤ ⌈⌈φ⌉⌉^⊥`, for every projection `p`
+  have key : ∀ p : 𝒜, IsStarProjection p →
+      ((nmiuP D.ρ p : D.P) = 0 ↔
+        cceilMap (ncpPositive φ) φ.preservesDirSups' ≤ 1 - p) := by
+    intro p hp
+    rw [nmiuP_apply]
+    refine (paschke_injective_carrier φ D hD p hp).trans ?_
+    have hb : (∀ a : 𝒜, φ (star a * p * a) = 0) ↔
+        ∀ a : 𝒜, (ncpPositive φ (star a * p * a) : ℬ) = 0 := by
+      simp only [ncpPositive_apply]
+    exact hb.trans (pmap_conj_eq_zero_iff_cceilMap_le (ncpPositive φ)
+      φ.preservesDirSups' hp)
+  -- at `p = ⌈ϱ⌉^⊥`: `⌈⌈φ⌉⌉ ≤ ⌈ϱ⌉`
+  have hle1 : cceilMap (ncpPositive φ) φ.preservesDirSups'
+      ≤ carrier (nmiuP D.ρ) D.ρ.preservesDirSups' := by
+    have h := (key _ hcarr.1.one_sub).mp hcarr.2.1
+    rwa [sub_sub_cancel] at h
+  -- at `p = ⌈⌈φ⌉⌉^⊥`: `⌈ϱ⌉ ≤ ⌈⌈φ⌉⌉`, by the leastness of the carrier
+  have hle2 : carrier (nmiuP D.ρ) D.ρ.preservesDirSups'
+      ≤ cceilMap (ncpPositive φ) φ.preservesDirSups' :=
+    hcarr.2.2 _ hccp ((key _ hccp.one_sub).mpr (le_of_eq (sub_sub_cancel _ _).symm))
+  exact le_antisymm hle2 hle1
 
 /-- **156II** (`paschke-injective`, dils.tex:3883, Theorem), the "thus"
 (dils.tex:3888): the Paschke representation `ϱ` is injective if and only if

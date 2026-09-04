@@ -1408,6 +1408,73 @@ section TypeIAuxMain
 variable {H K : Type u} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
   [NormedAddCommGroup K] [InnerProductSpace ℂ K] [CompleteSpace K]
 
+/-- An nmiu-map as an ncp-map, so that **45II** `cp_uscont` applies to it:
+complete positivity of a ∗-homomorphism is Mathlib's
+`NonUnitalStarAlgHomClass.instCompletelyPositiveMapClass`, and normality is
+the nmiu-map's own. -/
+private noncomputable def nmiuNCPaux {A B : Type*} [CStarAlgebra A] [PartialOrder A]
+    [StarOrderedRing A] [CStarAlgebra B] [PartialOrder B] [StarOrderedRing B]
+    (f : NMIUMap A B) : NCPMap A B where
+  toCompletelyPositiveMap :=
+    CompletelyPositiveMapClass.toCompletelyPositiveLinearMap f.toStarAlgHom
+  preservesDirSups' := f.preservesDirSups'
+
+/-- The interchange step of **138V** (dils.tex:689–703): if `x = ∑ₖ cₖ eₖ`
+then `ϱ(|x⟩⟨e₀|)d = ∑ₖ cₖ ϱ(|eₖ⟩⟨e₀|)d`.
+
+This is the thesis's own justification, in its own order.  `|·⟩⟨e₀|` is
+bounded (`ketbra_norm`), so `|x⟩⟨e₀| = ∑ₖ cₖ|eₖ⟩⟨e₀|` converges in norm,
+hence *ultrastrongly* (`Theses.A.VN.norm_le_ultrastrong`) — the mode of
+convergence the thesis states at dils.tex:691.  `ϱ` is ultrastrongly
+continuous by **45II** `cp_uscont` (the printed appeal to `p-uwcont` at
+dils.tex:703), which pulls the sum out of `ϱ`; and evaluation at `d` is
+ultrastrongly continuous (**42V**.2 `ultrastrong_continuous_apply`, whose
+`ω`-seminorm is literally `‖·d‖`), which brings the sum back to `𝒦`. -/
+private theorem nmiu_hasSum_ketbra (ϱ : NMIUMap (H →L[ℂ] H) (K →L[ℂ] K))
+    {ι : Type*} (e : ι → H) (c : ι → ℂ) {x : H}
+    (hx : HasSum (fun k => c k • e k) x) (e₀ : H) (d : K) :
+    HasSum (fun k => c k • ϱ (ketbra (e k) e₀) d) (ϱ (ketbra x e₀) d) := by
+  classical
+  obtain ⟨kb, hkb⟩ : ∃ kb : H →L[ℂ] (H →L[ℂ] H), ∀ y : H, kb y = ketbra y e₀ :=
+    ⟨LinearMap.mkContinuous
+      { toFun := fun y => ketbra y e₀
+        map_add' := fun y y' => ketbra_add_left y y' e₀
+        map_smul' := fun r y => ketbra_smul_left r y e₀ }
+      ‖e₀‖ (fun y => le_of_eq ((ketbra_norm y e₀).trans (mul_comm _ _))), fun _ => rfl⟩
+  -- `|x⟩⟨e₀| = ∑ₖ cₖ|eₖ⟩⟨e₀|` in norm
+  have hket : HasSum (fun k => c k • ketbra (e k) e₀) (ketbra x e₀) := by
+    have h0 := hx.mapL kb
+    have hfun : (fun k => kb (c k • e k)) = fun k => c k • ketbra (e k) e₀ := by
+      funext k; rw [map_smul, hkb]
+    rw [hfun, hkb] at h0
+    exact h0
+  -- hence ultrastrongly (dils.tex:691)
+  have hus : USTendsto (fun F : Finset ι => ∑ k ∈ F, c k • ketbra (e k) e₀) atTop
+      (ketbra x e₀) := hket.mono_right (nhds_mono norm_le_ultrastrong)
+  -- **45II** `cp_uscont`: `ϱ` is ultrastrongly continuous (dils.tex:703)
+  have hcont : @Continuous (H →L[ℂ] H) (K →L[ℂ] K) (ultrastrong _) (ultrastrong _) ⇑ϱ :=
+    cp_uscont (nmiuNCPaux ϱ)
+  have hϱ := (@Continuous.tendsto (H →L[ℂ] H) (K →L[ℂ] K) (ultrastrong _) (ultrastrong _)
+    ⇑ϱ hcont (ketbra x e₀)).comp hus
+  -- and ultrastrong convergence is strong convergence at `d`
+  have hev := (@Continuous.tendsto (K →L[ℂ] K) K (ultrastrong _) _
+    (fun T : K →L[ℂ] K => T d) (ultrastrong_continuous_apply d)
+    (ϱ (ketbra x e₀))).comp hϱ
+  have hfun : ((fun T : K →L[ℂ] K => T d) ∘ (⇑ϱ ∘
+        fun F : Finset ι => ∑ k ∈ F, c k • ketbra (e k) e₀))
+      = fun F : Finset ι => ∑ k ∈ F, c k • ϱ (ketbra (e k) e₀) d := by
+    funext F
+    show (ϱ (∑ k ∈ F, c k • ketbra (e k) e₀)) d = _
+    have h1 : (ϱ (∑ k ∈ F, c k • ketbra (e k) e₀) : K →L[ℂ] K)
+        = ∑ k ∈ F, c k • ϱ (ketbra (e k) e₀) := by
+      show (ϱ.toStarAlgHom (∑ k ∈ F, c k • ketbra (e k) e₀) : K →L[ℂ] K) = _
+      rw [map_sum]
+      exact Finset.sum_congr rfl fun k _ => map_smul ϱ.toStarAlgHom _ _
+    rw [h1]
+    simp
+  rw [hfun] at hev
+  exact hev
+
 theorem nmiu_between_type_I_aux (ϱ : NMIUMap (H →L[ℂ] H) (K →L[ℂ] K))
     (e₀ : H) (he₀ : ‖e₀‖ = 1) :
     ∃ (K' : Type u) (_ : NormedAddCommGroup K') (_ : InnerProductSpace ℂ K')
@@ -1458,8 +1525,8 @@ theorem nmiu_between_type_I_aux (ϱ : NMIUMap (H →L[ℂ] H) (K →L[ℂ] K))
     have h3 := congrArg Real.sqrt h2
     rwa [Real.sqrt_sq (norm_nonneg _),
       Real.sqrt_sq (mul_nonneg (norm_nonneg _) (norm_nonneg _))] at h3
-  -- `x ↦ ϱ(|x⟩⟨e₀|)d` is an isometry `ℋ → 𝒦` for each unit `d ∈ 𝒦'`; this is the
-  -- instance of the ultrastrong continuity of `ϱ` that 138V needs
+  -- `x ↦ ϱ(|x⟩⟨e₀|)d` is an isometry `ℋ → 𝒦` for each unit `d ∈ 𝒦'`, which is
+  -- what carries the basis expansions of 138IV into `𝒦`
   obtain ⟨Tk, hTk⟩ : ∃ Tk : ↥S → (H →L[ℂ] K),
       ∀ (d : ↥S) (x : H), Tk d x = ϱ (ketbra x e₀) (d : K) :=
     ⟨fun d => LinearMap.mkContinuous
@@ -1576,15 +1643,18 @@ theorem nmiu_between_type_I_aux (ϱ : NMIUMap (H →L[ℂ] H) (K →L[ℂ] K))
     refine ContinuousLinearMap.ext_on hdense ?_
     rintro _ ⟨p, rfl⟩
     obtain ⟨i, j⟩ := p
-    -- the ultrastrong expansion `|a eᵢ⟩⟨e₀| = ∑ₖ ⟪eₖ, a eᵢ⟫ |eₖ⟩⟨e₀|`, transported
-    -- through `ϱ` and applied to `dⱼ`
+    -- the ultrastrong expansion `|a eᵢ⟩⟨e₀| = ∑ₖ ⟪eₖ, a eᵢ⟫ |eₖ⟩⟨e₀|` (dils.tex:689),
+    -- pulled through `ϱ` by its ultrastrong continuity and applied to `dⱼ`
+    -- (`nmiu_hasSum_ketbra`)
     have hci : HasSum (fun k : ↥w => bb.repr (a (bb i)) k • r (k, j)) (ϱ a (r (i, j))) := by
-      have h0 := (bb.hasSum_repr (a (bb i))).mapL (Tk (bd j))
-      have hfun : (fun k : ↥w => Tk (bd j) (bb.repr (a (bb i)) k • bb k))
+      have h0 := nmiu_hasSum_ketbra ϱ ⇑bb (bb.repr (a (bb i)))
+        (bb.hasSum_repr (a (bb i))) e₀ ((bd j : ↥S) : K)
+      have hfun : (fun k : ↥w =>
+            bb.repr (a (bb i)) k • ϱ (ketbra (bb k) e₀) ((bd j : ↥S) : K))
           = fun k : ↥w => bb.repr (a (bb i)) k • r (k, j) := by
-        funext k; rw [map_smul, hTk, hr]
-      have hlim : Tk (bd j) (a (bb i)) = ϱ a (r (i, j)) := by
-        rw [hTk, hr, hmulapp, mul_ketbra]
+        funext k; rw [hr]
+      have hlim : ϱ (ketbra (a (bb i)) e₀) ((bd j : ↥S) : K) = ϱ a (r (i, j)) := by
+        rw [hr, hmulapp, mul_ketbra]
       rw [hfun, hlim] at h0
       exact h0
     -- and the same sum is `U*((a eᵢ) ⊗ dⱼ)`, by `U* (eₖ ⊗ dⱼ) = rₖⱼ`
