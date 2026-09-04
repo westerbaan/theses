@@ -1939,12 +1939,29 @@ theorem dils_uniform_spaces_basics_3 [T2Space X] {ι : Type w} (l : Filter ι)
   exact hδV ⟨x i, hi₁, hi₂⟩
 
 /-- **147II** (`dils-uniform-spaces-basics`, dils.tex:1990, Exercise), part
-4: continuous maps preserve limits of nets (Mathlib:
-`Continuous.tendsto.comp`). -/
+4: continuous maps preserve limits of nets.
+
+*Class 1 — faithful.*  The proof is the printed solution's (`bsols.tex:543`,
+item 4): given an entourage `ε` of `Y`, continuity supplies a `δ` with
+`x δ y → f x ε f y`; the net is eventually `δ`-close to `a`, so its image is
+eventually `ε`-close to `f a`. -/
 theorem dils_uniform_spaces_basics_4 (f : X → Y) (hf : Continuous f)
     {ι : Type w} (l : Filter ι) (x : ι → X) (a : X)
-    (ha : Tendsto x l (𝓝 a)) : Tendsto (f ∘ x) l (𝓝 (f a)) :=
-  (hf.tendsto a).comp ha
+    (ha : Tendsto x l (𝓝 a)) : Tendsto (f ∘ x) l (𝓝 (f a)) := by
+  -- "let `ε` be any entourage of `Y`"
+  rw [nhds_eq_comap_uniformity, Filter.tendsto_comap_iff]
+  rw [nhds_eq_comap_uniformity, Filter.tendsto_comap_iff] at ha
+  rw [Filter.tendsto_def]
+  intro ε hε
+  -- "by continuity there is a `δ` such that `x δ y` implies `f x ε f y`"
+  have hnhd : {z | (f a, z) ∈ ε} ∈ 𝓝 (f a) := by
+    rw [nhds_eq_comap_uniformity]; exact Filter.preimage_mem_comap hε
+  have hmem : {y | (f a, f y) ∈ ε} ∈ 𝓝 a := hf.continuousAt hnhd
+  rw [nhds_eq_comap_uniformity, Filter.mem_comap] at hmem
+  obtain ⟨δ, hδ, hδsub⟩ := hmem
+  -- "there is an `α₀` such that `x δ x_α`; for those `α` also `f x ε f x_α`"
+  filter_upwards [ha hδ] with i hi
+  exact hδsub hi
 
 /-- **147II** (`dils-uniform-spaces-basics`, dils.tex:1990, Exercise), part
 5: uniformly continuous maps send Cauchy filters to Cauchy filters and
