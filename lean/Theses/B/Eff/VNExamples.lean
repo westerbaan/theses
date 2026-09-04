@@ -6293,6 +6293,436 @@ so `π_i(√a₀ a₁ √a₀) = π_i(a₁)` by `su_state_sqrtConj`; while
 and `π₂` agree — both being inverse to `ĝ₀`.  Hence `1 = π₁(a₁) = π₂(a₁)
 = 0`. -/
 
+/-! #### The printed route's first task: the pure maps `𝒜 → ℂ`
+
+The exercise's opening task — "first show that for any non-zero pure map
+`f : 𝒜 → ℂ` there are a Hilbert space `ℋ`, an `x ∈ ℋ`, a von Neumann
+algebra `𝒞` and an isomorphism `φ : B(ℋ) ⊕ 𝒞 → 𝒜` with
+`f(φ(T,c)) = ⟪x, T x⟫`" — is bsols.tex:3357-3387, and it *is* formalized
+here, as `su_pure_state_iso` (algebra level) and
+`su_pure_state_classification` (at the morphisms of `vNᵒᵖ`).  Three of the
+solution's four steps are transcribed; the fourth is replaced, and the
+replacement is named at `su_pure_state_iso`.
+
+1. *(bsols.tex:3361-3368)* `f = c ∘ h` for a filter `c` and a corner `h`;
+   `c` is injective (**169XII** `dils_filters_injective`), so the
+   intermediate algebra is one-dimensional, so `h` is `f/f(1)` times the
+   standard corner of `p = ⌊a⌋` and `p𝒜p = ℂp` — `p` is a **minimal
+   projection** (`su_pure_state_minimal`, with `su_corner_iso` for
+   **169IV**).  The print asserts the intermediate algebra is `ℂ` without
+   argument; injectivity of the filter is what supplies it.
+2. *(bsols.tex:3370-3375)* the GNS representation `ϱ` of `f` is surjective
+   by **171VII** `paschke_pure` (`su_pure_state_rep`).  A GNS
+   representation of a state *is* a minimal Stinespring dilation of it read
+   as a map into `B(H₁)` for a one-dimensional `H₁`; **140III**
+   `stinespring_is_paschke` makes that a Paschke dilation, so `paschke_pure`
+   applies to it verbatim.  The one-dimensional bridge — `ℂᵤ ≅ B(H₁)` as
+   ncp-maps, hence `z ↦ z·1` is a filter — is `suScalarEmbed`,
+   `suScalarNCP` and `su_isFilterFor_suScalarEmbed`.
+3. *(bsols.tex:3376-3379)* **the one divergence.**  The print gets `ϱ`
+   *injective* from the factoriality of `⌈⌈p⌉⌉𝒜`
+   (`Theses.A.VN.IsMinimalProjection.isFactor_cceil`, built for this row).
+   Here `ϱ` is not restricted to `⌈⌈p⌉⌉𝒜` first: **69IV** `carrier_miu`
+   gives a central projection `⌈ϱ⌉` with `ϱ a = ϱ b ↔ ⌈ϱ⌉a = ⌈ϱ⌉b`, which
+   is the same conclusion — `ϱ` separates `⌈ϱ⌉𝒜` — without the detour
+   through minimality.  Step 1 is therefore not *used* by steps 2-4; it is
+   kept because the print states it and because stages (3)-(5) of the
+   solution need it (they classify `⌈π₁ ∘ φ⌉`).
+4. *(bsols.tex:3380-3387)* `𝒜 ≅ B(ℋ) ⊕ 𝒞` and `f = ⟪x, (·) x⟫` on the
+   first summand (`su_pure_state_iso`), with `𝒞 = ⌈ϱ⌉^⊥𝒜` the corner of
+   **67IV**.
+
+What the printed solution still needs after this — its stages (2)-(5) — is
+recorded in `docs/audit/beff-vnexamples.csv`. -/
+
+section PureStateClassification
+
+set_option linter.unusedSectionVars false
+
+/-- **169IV** together with the uniqueness half of **169II**: a corner `h`
+for `a` is the standard corner `h_{⌊a⌋}` followed by an ncp-isomorphism `v`.
+
+This is `Theses.B.Dils.pext_corner_iso`, which is `private` in
+`B/Dils/Pure.lean`; the proof is that one, unchanged. -/
+theorem su_corner_iso {P C : Type u} [CStarAlgebra P] [PartialOrder P]
+    [StarOrderedRing P] [Theses.VonNeumannAlgebra P] [CStarAlgebra C]
+    [PartialOrder C] [StarOrderedRing C] (h : Theses.NCPMap P C) (a : P)
+    (hc : Theses.B.Dils.IsCornerFor h a) :
+    ∃ (hp : Theses.NCPMap P (Theses.B.Dils.cornerSet P (Theses.A.VN.floor a)))
+      (v : Theses.NCPMap (Theses.B.Dils.cornerSet P (Theses.A.VN.floor a)) C)
+      (u : Theses.NCPMap C (Theses.B.Dils.cornerSet P (Theses.A.VN.floor a))),
+      (∀ b : P, (hp b).1 = Theses.A.VN.floor a * b * Theses.A.VN.floor a) ∧
+      (∀ x : P, v (hp x) = h x) ∧
+      (∀ y : C, v (u y) = y) ∧
+      ∀ z : Theses.B.Dils.cornerSet P (Theses.A.VN.floor a), u (v z) = z := by
+  obtain ⟨hp, hval, hpc⟩ := Theses.B.Dils.standard_corner_dils a hc.1
+  obtain ⟨v, hv, -⟩ :=
+    hpc.2.2 C inferInstance inferInstance inferInstance h hc.2.1
+  obtain ⟨u, hu, -⟩ :=
+    hc.2.2 (Theses.B.Dils.cornerSet P (Theses.A.VN.floor a)) inferInstance
+      inferInstance inferInstance hp hpc.2.1
+  refine ⟨hp, v, u, hval, hv, ?_, ?_⟩
+  · obtain ⟨w, hw⟩ := Theses.A.Proc.exists_ncpComp v u
+    obtain ⟨idm, hidm⟩ := Theses.A.Proc.exists_ncpId C
+    obtain ⟨w₀, -, huniq⟩ :=
+      hc.2.2 C inferInstance inferInstance inferInstance h hc.2.1
+    have h1 : w = idm := (huniq w fun x => by rw [hw, hu, hv]).trans
+      (huniq idm fun x => by rw [hidm]).symm
+    intro y
+    have h2 := DFunLike.congr_fun h1 y
+    rw [hw, hidm] at h2
+    exact h2
+  · obtain ⟨w, hw⟩ := Theses.A.Proc.exists_ncpComp u v
+    obtain ⟨idm, hidm⟩ :=
+      Theses.A.Proc.exists_ncpId (Theses.B.Dils.cornerSet P (Theses.A.VN.floor a))
+    obtain ⟨w₀, -, huniq⟩ :=
+      hpc.2.2 (Theses.B.Dils.cornerSet P (Theses.A.VN.floor a)) inferInstance
+        inferInstance inferInstance hp hpc.2.1
+    have h1 : w = idm := (huniq w fun x => by rw [hw, hv, hu]).trans
+      (huniq idm fun x => by rw [hidm]).symm
+    intro z
+    have h2 := DFunLike.congr_fun h1 z
+    rw [hw, hidm] at h2
+    exact h2
+
+/-- An ncp-map into the scalars takes real values at self-adjoint
+elements. -/
+theorem su_ncp_scalar_real {A : Type u} [CStarAlgebra A] [PartialOrder A]
+    [StarOrderedRing A] (f : Theses.NCPMap A (ULift.{u, 0} ℂ)) {x : A}
+    (hx : IsSelfAdjoint x) :
+    (((f x : ULift.{u, 0} ℂ).down.re : ℝ) : ℂ) = (f x : ULift.{u, 0} ℂ).down := by
+  have h : (f (star x) : ULift.{u, 0} ℂ) = star (f x) := Theses.A.VN.ncp_star f x
+  rw [hx.star_eq] at h
+  have h2 : star ((f x : ULift.{u, 0} ℂ).down) = (f x : ULift.{u, 0} ℂ).down := by
+    rw [← Theses.B.Dils.CU.down_star, ← h]
+  exact Complex.conj_eq_iff_re.mp (by rw [← Complex.star_def]; exact h2)
+
+/-- **bsols.tex:3361-3368**, the solution's first step: a pure map
+`f : 𝒜 → ℂ` with `f(1) ≠ 0` is `f(1)` times the standard corner of a
+**minimal** projection `p`, i.e. `f(a)·p = f(1)·pap`.
+
+`f = c ∘ h` with `c` a filter and `h` a corner; `c` is injective
+(**169XII** `dils_filters_injective`), so every element of the intermediate
+algebra is a scalar multiple of `h(1)` — the print's "`c : ℂ → ℂ` is
+`c(1)·id`", which it assumes rather than argues.  `su_corner_iso` then
+identifies the corner with the standard corner of `p = ⌊a⌋`, and the
+resulting `p𝒜p = ℂp` is `p` minimal by
+`Theses.A.VN.isMinimalProjection_of_corner_scalar`. -/
+theorem su_pure_state_minimal {A : Type u} [CStarAlgebra A] [PartialOrder A]
+    [StarOrderedRing A] [Theses.VonNeumannAlgebra A]
+    (f : Theses.NCPMap A (ULift.{u, 0} ℂ)) (hpure : Theses.B.Dils.IsPureMap f)
+    (hf1 : (f 1 : ULift.{u, 0} ℂ) ≠ 0) :
+    ∃ p : A, Theses.A.VN.IsMinimalProjection p ∧
+      ∀ a : A, (f a : ULift.{u, 0} ℂ).down • p
+        = (f 1 : ULift.{u, 0} ℂ).down • (p * a * p) := by
+  obtain ⟨C, iC, iP, iS, h, c, hcorner, hfilter, hcomp⟩ := hpure
+  let _ := iC; let _ := iP; let _ := iS
+  have hcinj : Function.Injective ⇑c := Theses.B.Dils.dils_filters_injective c hfilter
+  obtain ⟨a₀, hca₀⟩ := hcorner
+  obtain ⟨hp, v, u, hval, hvhp, hvu, huv⟩ := su_corner_iso h a₀ hca₀
+  have hproj : IsStarProjection (Theses.A.VN.floor a₀) :=
+    (inferInstance : Fact (IsStarProjection (Theses.A.VN.floor a₀))).out
+  set p : A := Theses.A.VN.floor a₀ with hpdef
+  have : Fact (IsStarProjection p) := by rw [hpdef]; infer_instance
+  set e : C := h 1 with hedef
+  have hce : (c e : ULift.{u, 0} ℂ) = f 1 := (hcomp 1).symm
+  have hf1d : (f 1 : ULift.{u, 0} ℂ).down ≠ 0 := fun hz =>
+    hf1 (Theses.B.Dils.CU.down_injective (by rw [hz]; rfl))
+  have hce0' : (c e : ULift.{u, 0} ℂ).down ≠ 0 := by rw [hce]; exact hf1d
+  -- every element of the intermediate algebra is a scalar multiple of `e`
+  have hspan : ∀ y : C,
+      y = ((c y : ULift.{u, 0} ℂ).down / (c e : ULift.{u, 0} ℂ).down) • e := by
+    intro y
+    refine hcinj ?_
+    rw [ncp_smul_apply]
+    refine (Theses.B.Dils.CU.down_injective ?_).symm
+    rw [Theses.B.Dils.CU.down_smul]
+    exact div_mul_cancel₀ _ hce0'
+  have hhp1 : (hp 1 : Theses.B.Dils.cornerSet A p).1 = p := by
+    rw [hval 1, mul_one, hproj.isIdempotentElem.eq]
+  have hue : u e = hp 1 := by rw [hedef, ← hvhp 1, huv]
+  have hmaster : ∀ x : A, (hp x : Theses.B.Dils.cornerSet A p) =
+      ((f x : ULift.{u, 0} ℂ).down / (f 1 : ULift.{u, 0} ℂ).down) • hp 1 := by
+    intro x
+    have h1 : (hp x : Theses.B.Dils.cornerSet A p) = u (h x) := by rw [← hvhp x, huv]
+    have h3 : (c (h x) : ULift.{u, 0} ℂ) = f x := (hcomp x).symm
+    rw [h1, hspan (h x), h3, hce, ncp_smul_apply, hue]
+  have hpxp : ∀ x : A, p * x * p
+      = ((f x : ULift.{u, 0} ℂ).down / (f 1 : ULift.{u, 0} ℂ).down) • p := by
+    intro x
+    have h := congrArg (Subtype.val : Theses.B.Dils.cornerSet A p → A) (hmaster x)
+    rw [hval x] at h
+    rw [h]
+    show ((f x : ULift.{u, 0} ℂ).down / (f 1 : ULift.{u, 0} ℂ).down)
+      • (hp 1 : Theses.B.Dils.cornerSet A p).1 = _
+    rw [hhp1]
+  -- `p ≠ 0`: otherwise `h(1) = v(h_p(1)) = 0` and `f(1) = c(h(1)) = 0`
+  have hp0 : p ≠ 0 := by
+    intro hz
+    refine hf1 ?_
+    have h1 : (hp 1 : Theses.B.Dils.cornerSet A p) = 0 :=
+      Subtype.ext (by rw [hhp1, hz]; rfl)
+    have h2 : e = 0 := by rw [hedef, ← hvhp 1, h1, ncp_zero_apply]
+    rw [← hce, h2, ncp_zero_apply]
+  refine ⟨p, Theses.A.VN.isMinimalProjection_of_corner_scalar hproj hp0 ?_, fun a => ?_⟩
+  · intro x hx hxp
+    refine ⟨(f x : ULift.{u, 0} ℂ).down.re / (f 1 : ULift.{u, 0} ℂ).down.re, ?_⟩
+    have hr : (((f x : ULift.{u, 0} ℂ).down.re
+          / (f 1 : ULift.{u, 0} ℂ).down.re : ℝ) : ℂ)
+        = (f x : ULift.{u, 0} ℂ).down / (f 1 : ULift.{u, 0} ℂ).down := by
+      rw [Complex.ofReal_div, su_ncp_scalar_real f hx,
+        su_ncp_scalar_real f (IsSelfAdjoint.one A)]
+    rw [hr, ← hpxp x, hxp]
+  · rw [hpxp a, smul_smul]
+    congr 1
+    field_simp
+
+/-! ##### `ℂᵤ ≅ B(H₁)`, `H₁` one-dimensional
+
+**140III** `stinespring_is_paschke` wants a map into `B(ℋ)`, and the state
+`f` maps into `ℂᵤ`.  A one-dimensional `ℋ` bridges the two: `z ↦ z·1` and
+`T ↦ ⟪e₁, T e₁⟫` are mutually inverse ncp-maps, so the first is a *filter*
+(`isFilterFor_of_ncpIso` off `isFilterFor_ncpId`), and post-composing with
+it keeps a pure map pure. -/
+
+/-- A one-dimensional Hilbert space in universe `u`. -/
+private abbrev suH1 : Type u := EuclideanSpace ℂ (ULift.{u} (Fin 1))
+
+/-- Its unit vector. -/
+private noncomputable def suE1 : suH1.{u} := EuclideanSpace.single (ULift.up 0) (1 : ℂ)
+
+private theorem su_inner_e1 (x : suH1.{u}) : (⟪suE1.{u}, x⟫ : ℂ) = x (ULift.up 0) := by
+  rw [suE1, EuclideanSpace.inner_single_left]
+  simp
+
+private theorem su_inner_e1_self : (⟪suE1.{u}, suE1.{u}⟫ : ℂ) = 1 := by
+  rw [su_inner_e1]
+  simp [suE1]
+
+private theorem suH1_eq_smul (x : suH1.{u}) : x = (⟪suE1.{u}, x⟫ : ℂ) • suE1.{u} := by
+  ext i
+  have hi : i = ULift.up (0 : Fin 1) := Subsingleton.elim _ _
+  subst hi
+  rw [su_inner_e1]
+  simp [suE1]
+
+private theorem suH1_op_eq_smul (T : suH1.{u} →L[ℂ] suH1.{u}) :
+    T = (⟪suE1.{u}, T suE1.{u}⟫ : ℂ) • 1 := by
+  refine ContinuousLinearMap.ext fun x => ?_
+  calc T x = T ((⟪suE1.{u}, x⟫ : ℂ) • suE1.{u}) := by rw [← suH1_eq_smul x]
+    _ = (⟪suE1.{u}, x⟫ : ℂ) • T suE1.{u} := by rw [map_smul]
+    _ = (⟪suE1.{u}, x⟫ : ℂ) • ((⟪suE1.{u}, T suE1.{u}⟫ : ℂ) • suE1.{u}) := by
+        conv_lhs => rw [suH1_eq_smul (T suE1.{u})]
+    _ = (⟪suE1.{u}, T suE1.{u}⟫ : ℂ) • ((⟪suE1.{u}, x⟫ : ℂ) • suE1.{u}) := by
+        rw [smul_smul, smul_smul, mul_comm]
+    _ = (⟪suE1.{u}, T suE1.{u}⟫ : ℂ) • x := by rw [← suH1_eq_smul x]
+    _ = ((⟪suE1.{u}, T suE1.{u}⟫ : ℂ) • (1 : suH1.{u} →L[ℂ] suH1.{u})) x := rfl
+
+/-- `T ↦ ⟪e₁, T e₁⟫ : B(H₁) → ℂᵤ`, the vector state at `e₁`. -/
+private noncomputable def suScalarNCP :
+    Theses.NCPMap (suH1.{u} →L[ℂ] suH1.{u}) (ULift.{u} ℂ) :=
+  npNCP (Theses.A.VN.vectorNP suE1.{u})
+
+private theorem suScalarNCP_apply (T : suH1.{u} →L[ℂ] suH1.{u}) :
+    suScalarNCP T = ULift.up (⟪suE1.{u}, T suE1.{u}⟫ : ℂ) := rfl
+
+/-- `z ↦ z·1 : ℂᵤ → B(H₁)`. -/
+private noncomputable def suScalarEmbed :
+    Theses.NCPMap (ULift.{u} ℂ) (suH1.{u} →L[ℂ] suH1.{u}) :=
+  Theses.A.VN.ncpOfNonneg (zero_le_one : (0 : suH1.{u} →L[ℂ] suH1.{u}) ≤ 1)
+
+private theorem suScalarEmbed_apply (z : ULift.{u} ℂ) :
+    suScalarEmbed z = z.down • (1 : suH1.{u} →L[ℂ] suH1.{u}) := rfl
+
+private theorem suScalarNCP_suScalarEmbed (z : ULift.{u} ℂ) :
+    suScalarNCP (suScalarEmbed.{u} z) = z := by
+  refine ULift.ext _ _ ?_
+  rw [suScalarNCP_apply, suScalarEmbed_apply]
+  show (⟪suE1.{u}, (z.down • (1 : suH1.{u} →L[ℂ] suH1.{u})) suE1.{u}⟫ : ℂ) = z.down
+  rw [show ((z.down • (1 : suH1.{u} →L[ℂ] suH1.{u})) suE1.{u}) = z.down • suE1.{u}
+      from rfl, inner_smul_right, su_inner_e1_self, mul_one]
+
+private theorem suScalarEmbed_suScalarNCP (T : suH1.{u} →L[ℂ] suH1.{u}) :
+    suScalarEmbed.{u} (suScalarNCP T) = T := by
+  rw [suScalarEmbed_apply, suScalarNCP_apply]
+  exact (suH1_op_eq_smul T).symm
+
+private theorem suScalarEmbed_one :
+    (suScalarEmbed.{u} 1 : suH1.{u} →L[ℂ] suH1.{u}) = 1 := by
+  rw [suScalarEmbed_apply]
+  show (1 : ℂ) • (1 : suH1.{u} →L[ℂ] suH1.{u}) = 1
+  rw [one_smul]
+
+/-- The scalar embedding is a **filter** for `1`: it is an ncp-isomorphism,
+and the identity is a filter for `1` (**169VIII**). -/
+private theorem su_isFilter_suScalarEmbed :
+    Theses.B.Dils.IsFilter suScalarEmbed.{u} :=
+  ⟨1, Theses.B.Dils.isFilterFor_of_ncpIso
+    (d := Theses.B.Dils.ncpId (suH1.{u} →L[ℂ] suH1.{u}))
+    Theses.B.Dils.isFilterFor_ncpId suScalarEmbed.{u} suScalarNCP.{u}
+    (fun _ => rfl) suScalarEmbed_one
+    suScalarNCP_suScalarEmbed suScalarEmbed_suScalarNCP⟩
+
+/-! ##### The classification itself -/
+
+/-- **bsols.tex:3370-3379**: a pure map `f : 𝒜 → ℂ` is the vector state of
+a **surjective** normal representation `ϱ` of `𝒜` on a Hilbert space.
+
+This is the print's "let `ϱ` be a GNS representation of `f`; `f` is pure, so
+by **171VII** `paschke-pure` `ϱ` is surjective".  A GNS representation of a
+state is a *minimal Stinespring dilation* of it, once `f` is read as a map
+into `B(H₁)` for a one-dimensional `H₁` — which keeps it pure, the scalar
+embedding being a filter (`su_isFilter_suScalarEmbed`).  **140III**
+`stinespring_is_paschke` turns that dilation into a Paschke dilation, and
+`paschke_pure` applies to it unchanged. -/
+theorem su_pure_state_rep {A : Type u} [CStarAlgebra A] [PartialOrder A]
+    [StarOrderedRing A] [Theses.VonNeumannAlgebra A]
+    (f : Theses.NCPMap A (ULift.{u, 0} ℂ)) (hf : Theses.B.Dils.IsPureMap f) :
+    ∃ (K : Type u) (_ : NormedAddCommGroup K) (_ : InnerProductSpace ℂ K)
+      (_ : CompleteSpace K) (ρ : Theses.NMIUMap A (K →L[ℂ] K)) (y : K),
+      Function.Surjective ⇑ρ ∧ ∀ a : A, (f a).down = (⟪y, ρ a y⟫ : ℂ) := by
+  obtain ⟨φ, hφ⟩ := Theses.A.Proc.exists_ncpComp suScalarEmbed.{u} f
+  have hφpure : Theses.B.Dils.IsPureMap φ :=
+    Theses.B.Dils.isPureMap_ncpComp (su_procIsPure_of_isPureMap hf)
+      (Theses.A.Proc.IsPure.filter
+        (Theses.B.Dils.procIsFilter_of_isFilterFor
+          su_isFilter_suScalarEmbed.choose_spec)) φ hφ
+  obtain ⟨D, hmin⟩ := Theses.B.Dils.exists_minimal_stinespringDilation φ
+  obtain ⟨vnK, hh, -, hpasch⟩ := Theses.B.Dils.stinespring_is_paschke φ D hmin
+  have hsurj : Function.Surjective ⇑D.ρ :=
+    (Theses.B.Dils.paschke_pure φ ⟨D.K →L[ℂ] D.K, vnK, D.ρ, hh⟩ hpasch).mp hφpure
+  refine ⟨D.K, inferInstance, inferInstance, inferInstance, D.ρ, D.V suE1.{u},
+    hsurj, fun a => ?_⟩
+  have hval : (φ a : suH1.{u} →L[ℂ] suH1.{u}) = (f a).down • 1 := by
+    rw [hφ, suScalarEmbed_apply]
+  have hD := D.eq a
+  rw [hval] at hD
+  have hcong :=
+    congrArg (fun T : suH1.{u} →L[ℂ] suH1.{u} => (⟪suE1.{u}, T suE1.{u}⟫ : ℂ)) hD
+  rw [show (((f a).down • (1 : suH1.{u} →L[ℂ] suH1.{u})) suE1.{u})
+      = (f a).down • suE1.{u} from rfl, inner_smul_right, su_inner_e1_self,
+    mul_one] at hcong
+  rw [hcong]
+  show (⟪suE1.{u},
+    (ContinuousLinearMap.adjoint D.V).comp ((D.ρ a).comp D.V) suE1.{u}⟫ : ℂ) = _
+  rw [ContinuousLinearMap.comp_apply, ContinuousLinearMap.comp_apply,
+    ContinuousLinearMap.adjoint_inner_right]
+
+/-- **bsols.tex:3380-3387**, the exercise's first task: a pure map
+`f : 𝒜 → ℂ` comes with a Hilbert space `K`, a von Neumann algebra `𝒞` and
+an nmiu-**isomorphism** `Φ : 𝒜 → B(K) ⊕ 𝒞` — the inverse of the printed
+`φ` — for which `f` is the vector state of `y ∈ K` on the first summand.
+
+The central projection is `⌈ϱ⌉` (**69IV** `carrier_miu`): `ϱ` is surjective
+with kernel `⌈ϱ⌉^⊥𝒜`, so `𝒞 = ⌈ϱ⌉^⊥𝒜` (**67IV**'s corner, a von Neumann
+algebra in its own right) and `a ↦ (ϱ a, ⌈ϱ⌉^⊥a)` is the isomorphism.
+
+*Divergence.*  The print restricts `f` to `⌈⌈p⌉⌉𝒜` first and gets the
+injectivity of `ϱ` from the factoriality of that corner
+(`Theses.A.VN.IsMinimalProjection.isFactor_cceil`).  Here nothing is
+restricted: `carrier_miu` says outright that `ϱ` separates `⌈ϱ⌉𝒜`, which is
+the same conclusion.  So `su_pure_state_minimal` — the print's step that
+produces `p` — is not used by this proof, and the print's `𝒞` (`𝒜` minus
+the central carrier of `p`) is here `⌈ϱ⌉^⊥𝒜`; the two agree, since
+`⌈ϱ⌉ = ⌈⌈p⌉⌉`. -/
+theorem su_pure_state_iso {A : Type u} [CStarAlgebra A] [PartialOrder A]
+    [StarOrderedRing A] [Theses.VonNeumannAlgebra A]
+    (f : Theses.NCPMap A (ULift.{u, 0} ℂ)) (hf : Theses.B.Dils.IsPureMap f) :
+    ∃ (K : Type u) (_ : NormedAddCommGroup K) (_ : InnerProductSpace ℂ K)
+      (_ : CompleteSpace K) (C : Type u) (_ : CStarAlgebra C) (_ : PartialOrder C)
+      (_ : StarOrderedRing C) (_ : Theses.VonNeumannAlgebra C)
+      (Φ : Theses.NMIUMap A ((K →L[ℂ] K) × C)) (y : K),
+      Function.Bijective ⇑Φ ∧ ∀ a : A, (f a).down = (⟪y, (Φ a).1 y⟫ : ℂ) := by
+  obtain ⟨K, iN, iI, iC, ρ, y, hsurj, hfval⟩ := su_pure_state_rep f hf
+  obtain ⟨z, hzproj, hzcen, hker⟩ : ∃ z : A, IsStarProjection z ∧
+      Theses.A.VN.IsCentral A z ∧
+      ∀ a b : A, (ρ a : K →L[ℂ] K) = ρ b ↔ z * a = z * b :=
+    ⟨Theses.A.VN.carrier (Theses.A.VN.nmiuP ρ) ρ.preservesDirSups',
+      (Theses.A.VN.carrier_spec _ _).1,
+      (Theses.A.VN.carrier_miu ρ (Theses.A.VN.nmiuP ρ) ρ.preservesDirSups'
+        (fun _ => rfl)).1,
+      fun a b => (Theses.A.VN.nmiu_factors ρ (Theses.A.VN.nmiuP ρ)
+        ρ.preservesDirSups' (fun _ => rfl) a b).2⟩
+  set c : Theses.A.VN.CentralProj A := ⟨z, hzproj, hzcen⟩ with hcdef
+  set d : Theses.NMIUMap A (c.compl).sub := (c.compl).compress with hddef
+  refine ⟨K, iN, iI, iC, (c.compl).sub, inferInstance, inferInstance, inferInstance,
+    inferInstance,
+    ⟨{ toFun := fun a => (ρ a, d a)
+       map_one' := Prod.ext (map_one ρ.toStarAlgHom) (map_one d.toStarAlgHom)
+       map_mul' := fun a b => Prod.ext (map_mul ρ.toStarAlgHom a b)
+         (map_mul d.toStarAlgHom a b)
+       map_zero' := Prod.ext (map_zero ρ.toStarAlgHom) (map_zero d.toStarAlgHom)
+       map_add' := fun a b => Prod.ext (map_add ρ.toStarAlgHom a b)
+         (map_add d.toStarAlgHom a b)
+       commutes' := fun r => Prod.ext (ρ.toStarAlgHom.commutes r)
+         (d.toStarAlgHom.commutes r)
+       map_star' := fun a => Prod.ext (map_star ρ.toStarAlgHom a)
+         (map_star d.toStarAlgHom a) },
+      ?_⟩, y, ⟨?_, ?_⟩, fun a => hfval a⟩
+  · intro D s hne hdir hlub
+    have h1 := ρ.preservesDirSups' D s hne hdir hlub
+    have h2 := d.preservesDirSups' D s hne hdir hlub
+    constructor
+    · rintro _ ⟨e, he, rfl⟩
+      exact ⟨h1.1 ⟨e, he, rfl⟩, h2.1 ⟨e, he, rfl⟩⟩
+    · rintro ⟨v, w⟩ hvw
+      exact ⟨h1.2 (by rintro _ ⟨e, he, rfl⟩; exact (hvw ⟨e, he, rfl⟩).1),
+        h2.2 (by rintro _ ⟨e, he, rfl⟩; exact (hvw ⟨e, he, rfl⟩).2)⟩
+  · intro a b hab
+    have h1 : (ρ a : K →L[ℂ] K) = ρ b := congrArg Prod.fst hab
+    have h2 : (1 - z) * a = (1 - z) * b :=
+      congrArg (Subtype.val : (c.compl).sub → A) (congrArg Prod.snd hab)
+    have h3 := (hker a b).mp h1
+    have e₁ : z * a + (1 - z) * a = a := by rw [sub_mul, one_mul]; abel
+    have e₂ : z * b + (1 - z) * b = b := by rw [sub_mul, one_mul]; abel
+    rw [← e₁, ← e₂, h3, h2]
+  · rintro ⟨T, w⟩
+    obtain ⟨a, ha⟩ := hsurj T
+    have hzw : z * (w : A) = 0 := by
+      have hw : (1 - z) * (w : A) = (w : A) := w.2
+      rw [← hw, ← mul_assoc, mul_sub, mul_one, hzproj.isIdempotentElem.eq, sub_self,
+        zero_mul]
+    refine ⟨z * a + (w : A), Prod.ext ?_ ?_⟩
+    · show (ρ (z * a + (w : A)) : K →L[ℂ] K) = T
+      have hadd : (ρ (z * a + (w : A)) : K →L[ℂ] K) = ρ (z * a) + ρ (w : A) :=
+        map_add ρ.toStarAlgHom _ _
+      have hw0 : (ρ (w : A) : K →L[ℂ] K) = 0 := by
+        have h : (ρ (w : A) : K →L[ℂ] K) = ρ 0 := by
+          refine (hker _ _).mpr ?_
+          rw [hzw, mul_zero]
+        rw [h]
+        exact map_zero ρ.toStarAlgHom
+      have hza : (ρ (z * a) : K →L[ℂ] K) = ρ a := by
+        refine (hker _ _).mpr ?_
+        rw [← mul_assoc, hzproj.isIdempotentElem.eq]
+      rw [hadd, hw0, hza, ha, add_zero]
+    · refine Subtype.ext ?_
+      show (1 - z) * (z * a + (w : A)) = (w : A)
+      have hw : (1 - z) * (w : A) = (w : A) := w.2
+      rw [mul_add, hw, ← mul_assoc, sub_mul, one_mul, hzproj.isIdempotentElem.eq,
+        sub_self, zero_mul, zero_add]
+
+/-- **bsols.tex:3357-3387**, the exercise's first task, at the morphisms of
+`vNᵒᵖ`: a pure map `ℂ ⟶ 𝒜` of the effectus — an ncp-map `𝒜 → ℂ` — is the
+vector state of a direct summand `B(K)` of `𝒜`. -/
+theorem su_pure_state_classification {X : WStarCPSU.{u}ᵒᵖ} (f : suI.{u} ⟶ X)
+    (hf : IsPure f) :
+    ∃ (K : Type u) (_ : NormedAddCommGroup K) (_ : InnerProductSpace ℂ K)
+      (_ : CompleteSpace K) (C : Type u) (_ : CStarAlgebra C) (_ : PartialOrder C)
+      (_ : StarOrderedRing C) (_ : Theses.VonNeumannAlgebra C)
+      (Φ : Theses.NMIUMap X.unop.base.carrier ((K →L[ℂ] K) × C)) (y : K),
+      Function.Bijective ⇑Φ ∧
+        ∀ a : X.unop.base.carrier,
+          (f.unop.toNCPMap a).down = (⟪y, (Φ a).1 y⟫ : ℂ) :=
+  su_pure_state_iso f.unop.toNCPMap
+    (Theses.B.Dils.isPureMap_of_procIsPure (su_procPure_of_isPure hf))
+
+end PureStateClassification
+
+/-! #### The short route actually taken
+
+The proof of `su_exc_purec_no_biproduct` below uses none of the above. -/
+
 /-- A substate `f : ℂ ⟶ X` of `vN_cpsuᵒᵖ`, i.e. an ncpsu-map
 `X.unop → ℂ`, as a linear functional. -/
 private noncomputable def suFun {X : WStarCPSU.{u}ᵒᵖ} (f : suI.{u} ⟶ X) :
