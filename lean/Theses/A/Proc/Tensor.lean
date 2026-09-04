@@ -6983,11 +6983,25 @@ theorem tensor_functorial (f : NCPMap A C) (g : NCPMap B D) :
     exact (vnTensor C D).isTensorProduct.miu.1
   · show hl 1 ≤ 1
     rw [hone]
-    have hf0 : (0 : C) ≤ f 1 := (ncpPositive f).map_nonneg zero_le_one
+    -- `1 - f(1) ⊗ g(1) = (1 - f(1)) ⊗ g(1) + 1 ⊗ (1 - g(1))`, both summands
+    -- positive by `vtmul_nonneg`; this is the splitting of **116III**.1, but
+    -- taken here directly on `⊗`'s positivity, which is all 115II has.
     have hg0 : (0 : D) ≤ g 1 := (ncpPositive g).map_nonneg zero_le_one
-    have h := (tensor_simple_facts_1 (f 1 : C) (g 1 : D) hf0 hg0).2 1 1 hf1 hg1
-    refine h.trans (le_of_eq ?_)
-    exact (vnTensor C D).isTensorProduct.miu.1
+    have h1 : (0 : VNT C D) ≤ (1 - (f 1 : C)) ⊗ᵥ (g 1 : D) :=
+      vtmul_nonneg _ _ (sub_nonneg.mpr hf1) hg0
+    have h2 : (0 : VNT C D) ≤ (1 : C) ⊗ᵥ (1 - (g 1 : D)) :=
+      vtmul_nonneg _ _ zero_le_one (sub_nonneg.mpr hg1)
+    have hsplit : (1 : VNT C D) - (f 1 : C) ⊗ᵥ (g 1 : D)
+        = (1 - (f 1 : C)) ⊗ᵥ (g 1 : D) + (1 : C) ⊗ᵥ (1 - (g 1 : D)) := by
+      rw [← (vnTensor C D).isTensorProduct.miu.1]
+      show (vnTensor C D).map 1 1 - (vnTensor C D).map (f 1) (g 1) =
+        (vnTensor C D).map (1 - f 1) (g 1) + (vnTensor C D).map 1 (1 - g 1)
+      rw [map_sub, map_sub]
+      simp only [LinearMap.sub_apply]
+      abel
+    have hsum := add_nonneg h1 h2
+    rw [← hsplit] at hsum
+    exact sub_nonneg.mp hsum
 
 /-- **115IV** (`tensor-functor`, proc.tex:3281, Exercise), identity law:
 the assignments `(𝒜,ℬ) ↦ 𝒜 ⊗ ℬ`, `(f,g) ↦ f ⊗ g` give a bifunctor on

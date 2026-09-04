@@ -1884,37 +1884,140 @@ def IsOrthonormalBasis (E : Set H) : Prop :=
   Orthonormal ℂ ((↑) : E → H) ∧
     ∀ E' : Set H, E ⊆ E' → Orthonormal ℂ ((↑) : E' → H) → E' = E
 
+omit [CompleteSpace H] in
+/-- Auxiliary for **39V**, the finite Pythagoras identity the printed proof of
+`orthonormal` opens both its first two parts with:
+`‖∑_{e∈F}⟪e,x⟫e‖² = ∑_{e∈F}|⟪e,x⟫|²` for a finite `F ⊆ E`. -/
+theorem orthonormal_finset_norm_sq (E : Set H) (hE : Orthonormal ℂ ((↑) : E → H))
+    (x : H) (F : Finset E) :
+    ‖∑ e ∈ F, ⟪(e : H), x⟫ • (e : H)‖ ^ 2 = ∑ e ∈ F, ‖⟪(e : H), x⟫‖ ^ 2 := by
+  have h := hE.inner_sum (fun e : E => ⟪(e : H), x⟫) (fun e : E => ⟪(e : H), x⟫) F
+  have hre : ‖∑ e ∈ F, ⟪(e : H), x⟫ • (e : H)‖ ^ 2
+      = RCLike.re (⟪∑ e ∈ F, ⟪(e : H), x⟫ • (e : H), ∑ e ∈ F, ⟪(e : H), x⟫ • (e : H)⟫ : ℂ) :=
+    (@inner_self_eq_norm_sq ℂ _ _ _ _ _).symm
+  rw [hre, h, map_sum]
+  refine Finset.sum_congr rfl fun e _ => ?_
+  rw [RCLike.conj_mul]
+  norm_cast
+
+omit [CompleteSpace H] in
+/-- Auxiliary for **39V**: the expansion the printed proof of `orthonormal`
+part 1 performs, `‖x − ∑_{e∈F}⟪e,x⟫e‖² = ‖x‖² − ∑_{e∈F}|⟪e,x⟫|²`, whose
+left-hand side is `≥ 0`. -/
+theorem orthonormal_finset_sub_norm_sq (E : Set H) (hE : Orthonormal ℂ ((↑) : E → H))
+    (x : H) (F : Finset E) :
+    ‖x - ∑ e ∈ F, ⟪(e : H), x⟫ • (e : H)‖ ^ 2
+      = ‖x‖ ^ 2 - ∑ e ∈ F, ‖⟪(e : H), x⟫‖ ^ 2 := by
+  have hcross : (RCLike.re (⟪x, ∑ e ∈ F, ⟪(e : H), x⟫ • (e : H)⟫ : ℂ))
+      = ∑ e ∈ F, ‖⟪(e : H), x⟫‖ ^ 2 := by
+    rw [inner_sum, map_sum]
+    refine Finset.sum_congr rfl fun e _ => ?_
+    rw [inner_smul_right, ← inner_conj_symm x (e : H), RCLike.mul_conj]
+    norm_cast
+  rw [norm_sub_sq (𝕜 := ℂ), hcross, orthonormal_finset_norm_sq E hE x F]
+  ring
+
 /-- **39IV** (`orthonormal`, cstar.tex:6549, Proposition), part 1 (Bessel's
 inequality): for an orthonormal subset `E` of a Hilbert space `H` and `x ∈ H`,
-`∑_{e ∈ E} |⟪e, x⟫|² ≤ ‖x‖²` (the sum in particular converges).  Mathlib:
-`Orthonormal.tsum_inner_products_le`. -/
+`∑_{e ∈ E} |⟪e, x⟫|² ≤ ‖x‖²` (the sum in particular converges).
+
+The thesis's argument (**39V**.1): for every finite `F ⊆ E`,
+`0 ≤ ‖x − ∑_{e∈F}⟪e,x⟫e‖² = ‖x‖² − ∑_{e∈F}|⟪e,x⟫|²`, so the partial sums are
+bounded by `‖x‖²`, and a sum of non-negative reals with bounded partial sums
+converges to their supremum. -/
 theorem orthonormal_1 (E : Set H) (hE : Orthonormal ℂ ((↑) : E → H)) (x : H) :
     (Summable fun e : E => ‖⟪(e : H), x⟫‖ ^ 2) ∧
-      ∑' e : E, ‖⟪(e : H), x⟫‖ ^ 2 ≤ ‖x‖ ^ 2 :=
-  ⟨hE.inner_products_summable x, hE.tsum_inner_products_le x⟩
+      ∑' e : E, ‖⟪(e : H), x⟫‖ ^ 2 ≤ ‖x‖ ^ 2 := by
+  have hbd : ∀ F : Finset E, ∑ e ∈ F, ‖⟪(e : H), x⟫‖ ^ 2 ≤ ‖x‖ ^ 2 := by
+    intro F
+    have h0 : (0 : ℝ) ≤ ‖x - ∑ e ∈ F, ⟪(e : H), x⟫ • (e : H)‖ ^ 2 := by positivity
+    rw [orthonormal_finset_sub_norm_sq E hE x F] at h0
+    linarith
+  have hnn : (0 : E → ℝ) ≤ fun e : E => ‖⟪(e : H), x⟫‖ ^ 2 := fun e => by positivity
+  exact ⟨summable_of_sum_le hnn hbd, Real.tsum_le_of_sum_le hnn hbd⟩
 
 /-- **39IV** (`orthonormal`, cstar.tex:6549, Proposition), part 2: for an
 orthonormal subset `E` and `x ∈ H`, the sum `∑_{e ∈ E} ⟪e, x⟫ e` converges in
-`H`. -/
+`H`.
+
+The thesis's argument (**39V**.2): `‖∑_{e∈F}⟪e,x⟫e‖² = ∑_{e∈F}|⟪e,x⟫|²` for
+finite `F`, and the right-hand side converges by part 1, so the net of partial
+sums is Cauchy — here in the `∀ ε > 0, ∃ s, ∀ t disjoint from s, ‖∑_t‖ < ε`
+form of the Cauchy criterion, `H` being complete. -/
 theorem orthonormal_2 (E : Set H) (hE : Orthonormal ℂ ((↑) : E → H)) (x : H) :
     ∃ y : H, HasSum (fun e : E => ⟪(e : H), x⟫ • (e : H)) y := by
-  have hmem : Memℓp (fun e : E => (⟪(e : H), x⟫ : ℂ)) 2 :=
-    memℓp_gen (by simpa using hE.inner_products_summable x)
-  have hs := hE.orthogonalFamily.summable_of_lp ⟨_, hmem⟩
-  simp only [LinearIsometry.toSpanSingleton_apply] at hs
-  exact ⟨_, hs.hasSum⟩
+  have hsq : Summable fun e : E => ‖⟪(e : H), x⟫‖ ^ 2 := (orthonormal_1 E hE x).1
+  refine ⟨_, (summable_iff_vanishing_norm.2 ?_).hasSum⟩
+  intro ε hε
+  obtain ⟨s, hs⟩ := summable_iff_vanishing_norm.1 hsq (ε ^ 2) (by positivity)
+  refine ⟨s, fun t ht => ?_⟩
+  have h1 : ‖∑ e ∈ t, ⟪(e : H), x⟫ • (e : H)‖ ^ 2 = ∑ e ∈ t, ‖⟪(e : H), x⟫‖ ^ 2 :=
+    orthonormal_finset_norm_sq E hE x t
+  have h2 : ∑ e ∈ t, ‖⟪(e : H), x⟫‖ ^ 2 < ε ^ 2 :=
+    (le_abs_self _).trans_lt (by simpa [Real.norm_eq_abs] using hs t ht)
+  nlinarith [norm_nonneg (∑ e ∈ t, ⟪(e : H), x⟫ • (e : H)), hε.le]
 
 /-- **39IV** (`orthonormal`, cstar.tex:6549, Proposition), part 3: if `E` is a
 maximal orthonormal subset (an orthonormal basis), then
-`∑_{e ∈ E} ⟪e, x⟫ e = x` for every `x ∈ H`. -/
+`∑_{e ∈ E} ⟪e, x⟫ e = x` for every `x ∈ H`.
+
+The thesis's argument (**39V**.3): write `y := ∑_{e∈E}⟪e,x⟫e` (part 2).  Then
+`⟪e, y⟫ = ⟪e, x⟫` for every `e ∈ E`, so `x − y ⊥ E`; and if `x ≠ y` then
+`e' := ‖x−y‖⁻¹(x−y)` has `⟪e', e'⟫ = 1` and `⟪e', e⟫ = 0` for all `e ∈ E`, so
+`E ∪ {e'}` is orthonormal and, by maximality, equal to `E` — whence `e' ∈ E`
+and `⟪e', e'⟫ = 0`, a contradiction. -/
 theorem orthonormal_3 (E : Set H) (hE : IsOrthonormalBasis E) (x : H) :
     HasSum (fun e : E => ⟪(e : H), x⟫ • (e : H)) x := by
-  have hsp : (Submodule.span ℂ (Set.range ((↑) : E → H)))ᗮ = ⊥ := by
-    have h := (maximal_orthonormal_iff_orthogonalComplement_eq_bot hE.1).mp
-      (fun u hu hu' => hE.2 u hu hu')
-    simpa [Subtype.range_coe] using h
-  have hb := (HilbertBasis.mkOfOrthogonalEqBot hE.1 hsp).hasSum_repr x
-  simpa [HilbertBasis.repr_apply_apply, HilbertBasis.coe_mkOfOrthogonalEqBot] using hb
+  classical
+  obtain ⟨y, hy⟩ := orthonormal_2 E hE.1 x
+  have hite := orthonormal_iff_ite.mp hE.1
+  -- `⟪e, y⟫ = ⟪e, x⟫` for every `e ∈ E`, so `x - y ⊥ E`
+  have hperp : ∀ e : E, ⟪(e : H), x - y⟫ = 0 := by
+    intro e
+    have h := hy.mapL (innerSL ℂ (e : H))
+    simp only [innerSL_apply_apply] at h
+    have hfun : (fun e' : E => (⟪(e : H), ⟪(e' : H), x⟫ • (e' : H)⟫ : ℂ))
+        = fun e' : E => if e' = e then (⟪(e : H), x⟫ : ℂ) else 0 := by
+      funext e'
+      rw [inner_smul_right, hite e e']
+      by_cases h' : e' = e
+      · subst h'; simp
+      · simp [h', Ne.symm h']
+    rw [hfun] at h
+    have h2 : ⟪(e : H), y⟫ = (⟪(e : H), x⟫ : ℂ) := h.unique (hasSum_ite_eq e _)
+    rw [inner_sub_right, h2, sub_self]
+  -- if `x ≠ y`, normalise `x - y` and adjoin it to `E`, contradicting maximality
+  have hxy : x = y := by
+    by_contra hne
+    have hd0 : x - y ≠ 0 := sub_ne_zero.mpr hne
+    set e' : H := (‖x - y‖⁻¹ : ℂ) • (x - y) with he'def
+    have hnorm : ‖e'‖ = 1 := norm_smul_inv_norm (𝕜 := ℂ) hd0
+    have hzero : ∀ a ∈ E, ⟪a, e'⟫ = (0 : ℂ) := by
+      intro a ha
+      rw [he'def, inner_smul_right, hperp ⟨a, ha⟩, mul_zero]
+    have horth : Orthonormal ℂ ((↑) : ↥(insert e' E : Set H) → H) := by
+      refine ⟨?_, ?_⟩
+      · rintro ⟨a, ha⟩
+        rcases Set.eq_or_mem_of_mem_insert ha with rfl | ha
+        · exact hnorm
+        · exact hE.1.1 ⟨a, ha⟩
+      · rintro ⟨a, ha⟩ ⟨b, hb⟩ hab
+        rcases Set.eq_or_mem_of_mem_insert ha with rfl | ha
+        · rcases Set.eq_or_mem_of_mem_insert hb with rfl | hb
+          · exact absurd rfl hab
+          · rw [inner_eq_zero_symm]; exact hzero b hb
+        · rcases Set.eq_or_mem_of_mem_insert hb with rfl | hb
+          · exact hzero a ha
+          · have hab' : a ≠ b := fun h => hab (Subtype.ext h)
+            have hne2 : (⟨a, ha⟩ : ↥E) ≠ ⟨b, hb⟩ := fun h => hab' (congrArg Subtype.val h)
+            exact hE.1.2 hne2
+    have heq : insert e' E = E := hE.2 _ (Set.subset_insert _ _) horth
+    have hmem : e' ∈ E := heq ▸ Set.mem_insert _ _
+    have hz := hzero e' hmem
+    rw [inner_self_eq_norm_sq_to_K, hnorm] at hz
+    norm_num at hz
+  subst hxy
+  exact hy
 
 /-- **39IV** (`orthonormal`, cstar.tex:6549, Proposition), part 4 (Parseval's
 identity): if `E` is an orthonormal basis, then

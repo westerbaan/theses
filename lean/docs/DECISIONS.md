@@ -56,7 +56,7 @@ in §4 rather than in front of you.
 | 2.4 | 30X | may clause (1) name `ϱ_Ω`? — done 2026-09-04 (§2.1) | 0 audit rows | (a) done | 1 audit row | (a) yes |
 | 2.5 | 28II.4 | identify the unique element with `f(a)`? — done 2026-09-04 (§2.1) | 0 audit rows | (a) done | 1 audit row | (a) yes |
 | 2.6 | 51IX | may `q` be asked to be ℂ-linear? — done 2026-09-02 under D1 | 0 audit rows | (a) yes |
-| 2.7 | 180V | should the effect object be pinned? — ruled (a) 2026-09-04 | 1 audit row | (a) yes |
+| 2.7 | 180V | should the effect object be pinned? — done 2026-09-04 (§2.7 a) | 0 audit rows | (a) done |
 | 3.1 | 101VII.1 | does the middle clause gain `aqa* ≤ p`? | nothing | (a) yes — erratum |
 | 3.2 | 132III.4/.5, 123II.2 | may "=" be an equivalence of categories? | nothing | (b) reword |
 | 3.3 | 34V.3, 32II, 33I, 141III | mirrored cp condition for modules? | nothing | (a) add the mirrored condition |

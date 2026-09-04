@@ -5164,9 +5164,10 @@ factors through `ι` by a unique nmiu-map.
 
 The mediating map is `ι⁻¹ ∘ h`, and every clause of it — multiplicativity,
 unitality, ∗-preservation, normality — is read off from the corresponding
-clause for `h` by injectivity of `ι` and its order reflection (**48VI**.2
-`injective_nmiu_iso_on_image_2`, which is why this sits here rather than
-beside `vn_equalisers`). -/
+clause for `h` by injectivity of `ι` and its order reflection — the C*-level
+`starAlgHom_le_iff`, which the thesis has at this point from **29IX**
+`injective-miu-iso-on-image`, and which is why this sits here rather than
+beside `vn_equalisers`. -/
 theorem vn_equalisers_miu [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     {E C : Type u} [CStarAlgebra E] [PartialOrder E] [StarOrderedRing E]
     [VonNeumannAlgebra E] [CStarAlgebra C] [PartialOrder C] [StarOrderedRing C]
@@ -5176,8 +5177,14 @@ theorem vn_equalisers_miu [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     (h : NMIUMap C A) (hfg : ∀ c : C, f (h c) = g (h c)) :
     ∃! m : NMIUMap C E, ∀ c : C, ι (m c) = h c := by
   classical
+  -- Order reflection of the injective inclusion.  This is the C*-level fact
+  -- `starAlgHom_le_iff` — an injective ∗-homomorphism between C*-algebras
+  -- reflects the order — which the thesis has at 47V from **29IX**
+  -- `injective-miu-iso-on-image` (cstar.tex:4707: an injective miu-map is an
+  -- isomorphism onto its image, hence an order isomorphism); it is *not* the
+  -- later von Neumann Lemma **48VI**.
   have hle : ∀ x y : E, ι x ≤ ι y ↔ x ≤ y :=
-    fun x y => injective_nmiu_iso_on_image_2 ι hι x y
+    fun x y => starAlgHom_le_iff ι.toStarAlgHom hι
   have hmem : ∀ c : C, ∃ x : E, ι x = h c := by
     intro c
     have hc : h c ∈ Set.range (ι : E → A) := by rw [hrange]; exact hfg c
@@ -5258,8 +5265,14 @@ theorem vn_equalisers_cpsu [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     (h : NCPSUMap C A) (hfg : ∀ c : C, f (h.toNCPMap c) = g (h.toNCPMap c)) :
     ∃! m : NCPSUMap C E, ∀ c : C, ι (m.toNCPMap c) = h.toNCPMap c := by
   classical
+  -- Order reflection of the injective inclusion.  This is the C*-level fact
+  -- `starAlgHom_le_iff` — an injective ∗-homomorphism between C*-algebras
+  -- reflects the order — which the thesis has at 47V from **29IX**
+  -- `injective-miu-iso-on-image` (cstar.tex:4707: an injective miu-map is an
+  -- isomorphism onto its image, hence an order isomorphism); it is *not* the
+  -- later von Neumann Lemma **48VI**.
   have hle : ∀ x y : E, ι x ≤ ι y ↔ x ≤ y :=
-    fun x y => injective_nmiu_iso_on_image_2 ι hι x y
+    fun x y => starAlgHom_le_iff ι.toStarAlgHom hι
   have hmem : ∀ c : C, ∃ x : E, ι x = h.toNCPMap c := by
     intro c
     have hc : h.toNCPMap c ∈ Set.range (ι : E → A) := by rw [hrange]; exact hfg c
@@ -7805,13 +7818,74 @@ variable {X : Type*} [TopologicalSpace X] [CompactSpace X] [T2Space X]
 
 /-- **54II** (`baire-category-theorem`, vn.tex:1909, Baire category
 theorem): a meagre subset of a compact Hausdorff space has empty
-interior. -/
+interior.
+
+The thesis's own proof (**54III**, vn.tex:1912) is transcribed: write
+`A ⊆ ⋃ₙ Bₙ` with `Bₙ` closed and `Bₙ° = ∅`, so that `Uₙ := X \ Bₙ` is open
+and dense; suppose `A°` is nonempty and put `V₁ := A°`; since `X` is regular,
+choose inductively nonempty open `Vₙ₊₁` with `closure Vₙ₊₁ ⊆ Uₙ ∩ Vₙ`; the
+`closure Vₙ` are then a decreasing sequence of nonempty closed sets in a
+compact space, so some `x` lies in all of them, hence in `V₁ = A°` and in
+every `Uₙ` — contradicting `A° ⊆ A ⊆ ⋃ₙ Bₙ`.  (Mathlib's Baire space
+instance for compact Hausdorff spaces is no longer used.) -/
 theorem baire_category_theorem (s : Set X) (h : IsMeagre s) :
     interior s = ∅ := by
-  -- a compact Hausdorff space is locally compact regular, hence Baire
-  by_contra hne
-  exact not_isMeagre_of_isOpen isOpen_interior (Set.nonempty_iff_ne_empty.mpr hne)
-    (h.mono interior_subset)
+  classical
+  -- the thesis's data: closed `B n` with empty interior and `s ⊆ ⋃ n, B n`
+  obtain ⟨S, hSnd, hScount, hsub⟩ := isMeagre_iff_countable_union_isNowhereDense.mp h
+  rcases S.eq_empty_or_nonempty with rfl | hSne
+  · have hs0 : s = ∅ := by simpa using hsub
+    simp [hs0]
+  obtain ⟨f, rfl⟩ := hScount.exists_eq_range hSne
+  set B : ℕ → Set X := fun n => closure (f n) with hB
+  have hBclosed : ∀ n, IsClosed (B n) := fun n => isClosed_closure
+  have hBint : ∀ n, interior (B n) = ∅ := fun n => hSnd (f n) ⟨n, rfl⟩
+  have hsB : s ⊆ ⋃ n, B n := by
+    refine hsub.trans ?_
+    rw [Set.sUnion_range]
+    exact Set.iUnion_mono fun n => subset_closure
+  -- `U n := X \ B n` is open and dense
+  set U : ℕ → Set X := fun n => (B n)ᶜ with hU
+  have hUopen : ∀ n, IsOpen (U n) := fun n => (hBclosed n).isOpen_compl
+  have hUdense : ∀ n, Dense (U n) := fun n => interior_eq_empty_iff_dense_compl.mp (hBint n)
+  -- regularity: inside a nonempty open `W` there is a nonempty open `W'` with
+  -- `closure W' ⊆ U n ∩ W`
+  have step : ∀ (n : ℕ) (W : {W : Set X // IsOpen W ∧ W.Nonempty}),
+      ∃ W' : {W : Set X // IsOpen W ∧ W.Nonempty},
+        closure (W' : Set X) ⊆ U n ∩ (W : Set X) := by
+    rintro n ⟨W, hWo, hWne⟩
+    obtain ⟨y, hy⟩ := (hUdense n).inter_open_nonempty W hWo hWne
+    have hmem : W ∩ U n ∈ 𝓝 y := (hWo.inter (hUopen n)).mem_nhds hy
+    obtain ⟨t, htn, htc, hts⟩ := exists_mem_nhds_isClosed_subset hmem
+    refine ⟨⟨interior t, isOpen_interior, ⟨y, mem_interior_iff_mem_nhds.mpr htn⟩⟩, ?_⟩
+    calc closure (interior t) ⊆ closure t := closure_mono interior_subset
+      _ = t := htc.closure_eq
+      _ ⊆ W ∩ U n := hts
+      _ ⊆ U n ∩ W := by rw [Set.inter_comm]
+  choose g hg using step
+  -- suppose `interior s ≠ ∅`; run the construction inside it
+  by_contra hne0
+  obtain ⟨x₀, hx₀⟩ := Set.nonempty_iff_ne_empty.mpr hne0
+  set V : ℕ → {W : Set X // IsOpen W ∧ W.Nonempty} := fun n =>
+    Nat.rec (motive := fun _ => {W : Set X // IsOpen W ∧ W.Nonempty})
+      ⟨interior s, isOpen_interior, ⟨x₀, hx₀⟩⟩ (fun k w => g k w) n with hV
+  have hVstep : ∀ n, closure ((V (n + 1) : Set X)) ⊆ U n ∩ (V n : Set X) :=
+    fun n => hg n (V n)
+  -- Cantor: the nested nonempty closed sets `closure (V n)` meet
+  set Z : ℕ → Set X := fun n => closure (V n : Set X) with hZ
+  have hZcl : ∀ n, IsClosed (Z n) := fun n => isClosed_closure
+  have hZne : ∀ n, (Z n).Nonempty := fun n => (V n).2.2.mono subset_closure
+  have hZd : ∀ n, Z (n + 1) ⊆ Z n := by
+    intro n
+    exact (hVstep n).trans ((Set.inter_subset_right).trans subset_closure)
+  obtain ⟨x, hx⟩ := IsCompact.nonempty_iInter_of_sequence_nonempty_isCompact_isClosed Z hZd hZne
+    ((hZcl 0).isCompact) hZcl
+  simp only [Set.mem_iInter] at hx
+  -- `x` lies in every `U n`, hence in no `B n`; but `x ∈ interior s ⊆ ⋃ n, B n`
+  have hxV : x ∈ interior s := ((hVstep 0) (hx 1)).2
+  have hxU : ∀ n, x ∈ U n := fun n => ((hVstep n) (hx (n + 1))).1
+  obtain ⟨_, ⟨n, rfl⟩, hxn⟩ := hsB (interior_subset hxV)
+  exact hxU n hxn
 
 /-- **54IV** (`approx-closure`, vn.tex:1949, Lemma): for open subsets `U`,
 `V` of a compact Hausdorff space:
