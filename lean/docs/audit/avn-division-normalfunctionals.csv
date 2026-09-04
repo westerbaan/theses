@@ -134,11 +134,6 @@
 42V|isLUB_saMap_image|Theses/A/VN/Division.lean|ok|none|infrastructure: 42V part 4 (suprema in a von Neumann subalgebra are computed as in the ambient algebra) transported to the bundled `VNSub`. 42V itself is audited in avn-basic
 84bV|restrictNP|Theses/A/VN/Division.lean|ok|none|infrastructure, not a transcription
 83V|cceil_sum_relative|Theses/A/VN/Division.lean|ok|none|not a fresh transcription: 830.50 applied inside a von Neumann subalgebra, which is how the thesis uses it at 890.100. Proof runs `cceil_sum` inside the bundled `VNSub`, machinery the thesis does not have and does not need|left: not a thesis statement -- 830.50 run inside the bundled VNSub, which is how 890.100 uses it. -- 2026-08-26 A/VN route pass: RECLASSIFIED route -> none, reason 1. Not a thesis statement -- 830.50 run inside the bundled VNSub, which is how vn.tex 890.100 uses it; the thesis has no relative statement and so no relative argument.
-84bIII|starAlgHom_norm_corner|Theses/A/VN/Division.lean|ok|none|auxiliary, not a transcription
-84bIII|finiteDimensional_starSubalgebra|Theses/A/VN/Division.lean|ok|none|auxiliary, not a transcription
-84bIII|cstarAlgebra_starSubalgebra|Theses/A/VN/Division.lean|ok|none|auxiliary, not a transcription
-84II|exists_surj_matprod|Theses/A/VN/Division.lean|ok|none|auxiliary, not a transcription: 840.20 applied to the range of a star-homomorphism into a finite-dimensional C*-algebra
-84bIII|central_idem_matrix|Theses/A/VN/Division.lean|ok|none|auxiliary, not a transcription
 84bIII|lpProj|Theses/A/VN/Division.lean|ok|none|auxiliary, not a transcription: the coordinate projection pi_j of 842.40
 84bIII|starAlgHom_nonneg₂|Theses/A/VN/Division.lean|ok|none|auxiliary, universe-polymorphic restatement
 84bIII|starAlgHom_mono₂|Theses/A/VN/Division.lean|ok|none|auxiliary, universe-polymorphic restatement
