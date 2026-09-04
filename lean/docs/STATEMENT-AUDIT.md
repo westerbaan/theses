@@ -614,7 +614,7 @@ on the type by the sibling `bah_vn`).)*
 * **Good news worth recording:** the partial-form machinery of `Effectus.lean`
   (`FinPAC`, `EffectusPartialForm`, `IsTotal`, `predEffectAlgebra`) was
   compared field by field with 180VII and **every clause is present**.  So
-  QUESTIONS **B13**'s weakness is in `effectus_vn_partial`'s statement in
+  QUESTIONS **B13 (now closed, deleted 2026-09-04)**'s weakness is in `effectus_vn_partial`'s statement in
   `VNExamples`, not in the definitions it rests on.
 
 * **A repair lands under a new name, and the row keeps the old verdict.**

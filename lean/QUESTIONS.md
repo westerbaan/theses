@@ -30,6 +30,7 @@ pointer to a key that is in neither):
 | **D6** | 2026-08-18 | `abc3af3` — "D6 ruled: delete the false net form of 164II.2b" |
 | **A7** | 2026-08-19 | `5f19f62` — "26II.5 and 104III: p ∧ q is defined, and 2a and 3 are proved" |
 | **A9** | 2026-09-02 | `3ae948d` — 51IX's ℂ-homogeneity clause restored under the D1 ruling |
+| **B13** | 2026-09-04 | ruled (a) by Bas: 180V's `effectus_vn_partial` pins its effect object to `ℂ` |
 | **B14** | 2026-09-04 | ruled (a) by Bas: 179III.2 restated to the cited theorem (scalar monotonicity, order unit) and its proof attempted |
 
 Note that `ffd073b`'s subject names A5 while its diff removes A6 and B11; read
@@ -231,34 +232,6 @@ unchanged.  The first half, `surjective_nmiu_1`, is **true and proved** as it
 stands; changing `IsCornerFor` will require its existence clause to be
 re-checked (its uniqueness clause only gets easier).  See
 `docs/DECISIONS.md` §1.1.
-
-### B13. Minor: our `effectus_vn_partial` does not record that `I = ℂ`
-**180V** (`eff.tex:832`) says the partial maps of `vNᵒᵖ` "correspond to the
-ncp-maps `f` with `f(1) ≤ 1`", and our doc comment reads "its effect object
-being `ℂ`" — but the statement we render,
-`Nonempty (EffectusPartialStructure WStarCPSU.{u}ᵒᵖ)`, asserts only that
-*some* effectus structure exists and says nothing about `I`.  It is therefore
-weaker than the text, and weaker than the neighbouring `cho_thm_1`, which does
-pin its effect object (`∃ s, s.effectus.I = Par.of (⊤_ C)`).
-
-The proof we give *does* build `I = ℂᵤ` (`suEffectusPartialForm`), so
-strengthening the statement to
-`∃ s : EffectusPartialStructure WStarCPSU.{u}ᵒᵖ, s.effectus.I = suI`
-costs a line.  **Ruling wanted**: strengthen it (statements are not changed
-without one).
-
-**Nothing downstream turns on it** — decide it on faithfulness to the text
-alone.  The eight examples of `VNExamples.lean` do need `s.effectus.I ≅ ℂᵤ`,
-but none of the eight mentions `effectus_vn_partial`: each takes its own
-arbitrary `s : EffectusPartialStructure WStarCPSU.{u}ᵒᵖ` as a hypothesis.
-What they need is the *uniqueness* statement "the effect object of any
-`EffectusPartialStructure` on `vN_cpsuᵒᵖ` is isomorphic to `ℂᵤ`", which is a
-different lemma from a stronger 180V — and it is `vn_effObj_iso`
-(`VNExamples.lean`), proved and axiom-clean.  (`I` is the only free datum in
-an `EffectusPartialStructure`: the coproducts and the finPAC axioms are
-`Prop`s, `homPCM` is unique by `effectusPartialStructure_homPCM_unique`,
-`orth` is pinned by `orth_unique`, and `one X` is the `≼`-greatest predicate.)
-See `docs/DECISIONS.md` §2.7.
 
 ### B15. 206II.4 / 211IV — is the ⋄-self-adjoint square root of a ⋄-positive map required to be **pure**?  (eff.tex vs proc.tex 103I)
 `eff.tex` parsec 2060 point 40 (`diamond-basics`), and parsec 2110 point 40

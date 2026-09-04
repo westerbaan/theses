@@ -32,7 +32,7 @@ and four are §1 (199V §1.1, 215II §1.2, and 139XI §1.4 and 179III.2 §1.5,
 which are the two that hold up a `sorry`).
 
 The tenth, **180V** `effectus_vn_partial`, names no item of this file at
-all — it points only at `QUESTIONS.md` B13.  So a reader working through
+all — it points only at `QUESTIONS.md` B13 (now closed, deleted 2026-09-04).  So a reader working through
 §1–§3 will not meet it, which is why it is named here.
 
 Point numbers are the primary key; the Lean name is given so we can find the
@@ -56,7 +56,7 @@ in §4 rather than in front of you.
 | 2.4 | 30X | may clause (1) name `ϱ_Ω`? | 1 audit row | (a) yes |
 | 2.5 | 28II.4 | may the unique element be identified with `f(a)`? | 1 audit row | (a) yes |
 | 2.6 | 51IX | may `q` be asked to be ℂ-linear? — done 2026-09-02 under D1 | 0 audit rows | (a) yes |
-| 2.7 | 180V | should the effect object be pinned? | 1 audit row | (a) yes |
+| 2.7 | 180V | should the effect object be pinned? — ruled (a) 2026-09-04 | 1 audit row | (a) yes |
 | 3.1 | 101VII.1 | does the middle clause gain `aqa* ≤ p`? | nothing | (a) yes — erratum |
 | 3.2 | 132III.4/.5, 123II.2 | may "=" be an equivalence of categories? | nothing | (b) reword |
 | 3.3 | 34V.3, 32II, 33I, 141III | mirrored cp condition for modules? | nothing | (a) add the mirrored condition |
@@ -666,9 +666,9 @@ second asking.  Nothing was reproved; the one consumer in `A/Proc/Duplicators`
 ignores the new conjunct.  If this reading of D1 is too broad, revert
 `Linfty_vn`'s clause and reopen the item.
 
-### 2.7 — 180V: should `effectus_vn_partial` pin the effect object?
+### 2.7 — 180V: should `effectus_vn_partial` pin the effect object? — **ruled (a), 2026-09-04**
 
-*(`QUESTIONS.md` B13, partly stale — see §4.3.  Audit row
+*(`QUESTIONS.md` B13, now closed, deleted 2026-09-04 — see §4.3.  Audit row
 `beff-vnexamples.csv:11`, `left-ruling`.  Lean: `effectus_vn_partial`.)*
 
 **What is being asked.**  180V (eff.tex:827) says the partial maps of `vNᵒᵖ`

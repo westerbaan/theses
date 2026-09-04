@@ -74,6 +74,8 @@ DELETED = {
     "A9": "2026-09-02 (3ae948d)",
     # 179III.2: ruled (a) by the author, restated to the cited theorem
     "B14": "2026-09-04",
+    # 180V: ruled (a) by the author, the effect object is pinned
+    "B13": "2026-09-04",
 }
 
 
