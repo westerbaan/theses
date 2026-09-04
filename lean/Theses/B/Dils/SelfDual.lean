@@ -348,59 +348,29 @@ theorem onbProj_uwTendsto_one {e : ι → X} (he : IsONBasis ℬ e)
       (1 : selfAdjoint (Ba ℬ X)) := onbProj_isLUB he
   exact uwTendsto_of_monotone_isLUB _ hmono _ hlub
 
-/-- For an effect `E` of a C*-algebra, `E² ≤ E`. -/
-private theorem sq_le_self_of_effect {A : Type*} [CStarAlgebra A] [PartialOrder A]
-    [StarOrderedRing A] {E : A} (h0 : 0 ≤ E) (h1 : E ≤ 1) : E * E ≤ E := by
-  obtain ⟨r, hrsa, hr⟩ : ∃ r : A, star r = r ∧ r * r = E :=
-    ⟨CFC.sqrt E, (IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg E)).star_eq,
-      CFC.sqrt_mul_sqrt_self E h0⟩
-  have h := star_left_conjugate_le_conjugate h1 r
-  rw [hrsa, mul_one, hr] at h
-  calc E * E = r * E * r := by rw [← hr]; noncomm_ring
-    _ ≤ E := h
-
 /-- **159VIII** (`err159IV`, dils.tex:4369), the first half: `‖1 − p_S‖_ω → 0` for every
 np-functional `ω` of `𝒷ᵃ(X)`.  (This is the `f(1 − p_S) → 0` of the printed
 proof, with `f` on the algebra where it belongs; see
 `onbProj_compress_uwTendsto` below, which is the point's conclusion and the
-only consumer of this lemma.) -/
+only consumer of this lemma.)
+
+The route is **159VI**'s own: `sup_S p_S = 1` (`onbProj_isLUB`) followed by
+**44VI**, i.e. `onbProj_uwTendsto_one`.  The self-duality that 44VI needs
+through **152X** is not a hypothesis of this lemma and does not have to be:
+**149XI** `selfDual_of_isONBasis` reads it off the basis `e`.  And since
+`1 − p_S` is again a projection, `‖1 − p_S‖_ω² = ω(1 − p_S)` *exactly*, so
+the printed `f(1 − p_S) → 0` is the conclusion with no estimate in between. -/
 theorem onbProj_omegaNorm_tendsto {e : ι → X}
     (he : IsONBasis ℬ e) (ω : NPFunctional (Ba ℬ X)) :
     Tendsto (fun S : Finset ι => omegaNorm (Ba ℬ X) ω (1 - onbProj (ℬ := ℬ) e S))
       atTop (𝓝 0) := by
   classical
-  set D : Set (selfAdjoint (Ba ℬ X)) :=
-    Set.range fun S : Finset ι => onbProjSA (ℬ := ℬ) e S with hD
-  have hne : D.Nonempty := ⟨_, ⟨∅, rfl⟩⟩
-  have hdir : DirectedOn (· ≤ ·) D := by
-    rintro _ ⟨S, rfl⟩ _ ⟨S', rfl⟩
-    refine ⟨onbProjSA (ℬ := ℬ) e (S ∪ S'), ⟨S ∪ S', rfl⟩, ?_, ?_⟩
-    · exact Subtype.coe_le_coe.mp (onbProj_mono e Finset.subset_union_left)
-    · exact Subtype.coe_le_coe.mp (onbProj_mono e Finset.subset_union_right)
-  have hlub := onbProj_isLUB he
-  have hnorm := ω.preservesDirSups' D 1 hne hdir hlub
-  have hreal : ∀ w ∈ (fun d : selfAdjoint (Ba ℬ X) => (ω (d : Ba ℬ X) : ℂ)) '' D,
-      w.im = 0 := by
-    rintro _ ⟨d, -, rfl⟩
-    exact npFunctional_im_eq_zero ω d.2
-  have hre : IsLUB (Complex.re '' ((fun d : selfAdjoint (Ba ℬ X) => (ω (d : Ba ℬ X) : ℂ)) '' D))
-      ((ω (1 : Ba ℬ X) : ℂ)).re := isLUB_re_of_isLUB hreal hnorm
-  have hset : Complex.re '' ((fun d : selfAdjoint (Ba ℬ X) => (ω (d : Ba ℬ X) : ℂ)) '' D)
-      = Set.range fun S : Finset ι => ((ω (onbProj (ℬ := ℬ) e S) : ℂ)).re := by
-    ext r
-    constructor
-    · rintro ⟨w, ⟨d, ⟨S, rfl⟩, rfl⟩, rfl⟩
-      exact ⟨S, rfl⟩
-    · rintro ⟨S, rfl⟩
-      exact ⟨ω (onbProj (ℬ := ℬ) e S), ⟨onbProjSA (ℬ := ℬ) e S, ⟨S, rfl⟩, rfl⟩, rfl⟩
-  rw [hset] at hre
-  have hmono : Monotone fun S : Finset ι => ((ω (onbProj (ℬ := ℬ) e S) : ℂ)).re := by
-    intro S S' hSS'
-    exact (Complex.le_def.mp
-      (ω.toPositiveLinearMap.monotone' (onbProj_mono e hSS'))).1
-  have htend := tendsto_atTop_isLUB hmono hre
-  have hsub : Tendsto
-      (fun S : Finset ι => ((ω (1 - onbProj (ℬ := ℬ) e S) : ℂ)).re) atTop (𝓝 0) := by
+  -- **159VI**: `p_S → 1` ultraweakly
+  have huw := onbProj_uwTendsto_one he (selfDual_of_isONBasis he)
+  have hω := (uwTendsto_iff _ _ _).mp huw ω
+  -- the printed `f(1 − p_S) → 0`
+  have hsub : Tendsto (fun S : Finset ι => ((ω (1 - onbProj (ℬ := ℬ) e S) : ℂ)).re)
+      atTop (𝓝 0) := by
     have h : (fun S : Finset ι => ((ω (1 - onbProj (ℬ := ℬ) e S) : ℂ)).re)
         = fun S : Finset ι =>
           ((ω (1 : Ba ℬ X) : ℂ)).re - ((ω (onbProj (ℬ := ℬ) e S) : ℂ)).re := by
@@ -408,25 +378,19 @@ theorem onbProj_omegaNorm_tendsto {e : ι → X}
       rw [npFunctional_sub]
       simp
     rw [h]
-    simpa using htend.const_sub ((ω (1 : Ba ℬ X) : ℂ)).re
-  have hsqrt : Tendsto
-      (fun S : Finset ι => Real.sqrt ((ω (1 - onbProj (ℬ := ℬ) e S) : ℂ)).re)
-      atTop (𝓝 0) := by
-    simpa [Function.comp_def] using (Real.continuous_sqrt.tendsto 0).comp hsub
-  refine squeeze_zero (fun S => omegaNorm_nonneg _ _) (fun S => ?_) hsqrt
-  set E : Ba ℬ X := 1 - onbProj (ℬ := ℬ) e S with hEdef
-  have h0 : (0 : Ba ℬ X) ≤ E := sub_nonneg.mpr (onbProj_le_one he.1 S)
-  have h1 : E ≤ 1 := by
-    rw [hEdef, sub_le_self_iff]
-    exact onbProj_nonneg e S
-  have hsa : star E = E := (IsSelfAdjoint.of_nonneg h0).star_eq
-  have hmul : star E * E = E * E := by rw [hsa]
-  have hle : ((ω (star E * E) : ℂ)).re ≤ ((ω E : ℂ)).re := by
-    rw [hmul]
-    exact (Complex.le_def.mp
-      (ω.toPositiveLinearMap.monotone' (sq_le_self_of_effect h0 h1))).1
-  rw [omegaNorm]
-  exact Real.sqrt_le_sqrt hle
+    have hre : Tendsto (fun S : Finset ι => ((ω (onbProj (ℬ := ℬ) e S) : ℂ)).re)
+        atTop (𝓝 ((ω (1 : Ba ℬ X) : ℂ)).re) :=
+      (Complex.continuous_re.tendsto _).comp hω
+    simpa using hre.const_sub ((ω (1 : Ba ℬ X) : ℂ)).re
+  -- `1 − p_S` is a projection, so `‖1 − p_S‖_ω² = ω(1 − p_S)`
+  have hproj : ∀ S : Finset ι, omegaNorm (Ba ℬ X) ω (1 - onbProj (ℬ := ℬ) e S)
+      = Real.sqrt ((ω (1 - onbProj (ℬ := ℬ) e S) : ℂ)).re := by
+    intro S
+    have hp : IsStarProjection (1 - onbProj (ℬ := ℬ) e S) :=
+      (onbProj_isStarProjection he.1 S).one_sub
+    rw [omegaNorm, hp.isSelfAdjoint.star_eq, hp.isIdempotentElem]
+  simp only [hproj]
+  simpa [Function.comp_def] using (Real.continuous_sqrt.tendsto 0).comp hsub
 
 omit [VonNeumannAlgebra ℬ] in
 /-- The compression `p_S T p_S` is a finite linear combination of the
@@ -475,9 +439,9 @@ Two notes on the printed proof.  (i) It opens "pick any np-map
 `𝒷ᵃ(X)`, which is what `ω` is here.  That is a defect in 159VIII's
 *argument* only — the conclusion stated here is correct as printed.
 (`berr.tex`'s `err159IV` corrects a different slip in the same display.)
-(ii) Self-duality of `X`, carried by 159IV, is not needed for this step —
-as for `onbProj_omegaNorm_tendsto`, the orthonormal basis is enough — so it
-is not assumed here. -/
+(ii) Self-duality of `X`, carried by 159IV, is not *assumed* for this step —
+as for `onbProj_omegaNorm_tendsto`, the orthonormal basis is enough, **149XI**
+`selfDual_of_isONBasis` supplying self-duality wherever 44VI wants it. -/
 theorem onbProj_compress_uwTendsto {e : ι → X} (he : IsONBasis ℬ e)
     (T : Ba ℬ X) :
     UWTendsto (fun S : Finset ι => onbProj (ℬ := ℬ) e S * T * onbProj (ℬ := ℬ) e S)
@@ -1331,13 +1295,19 @@ same reason is a basis of `X`; the members `d` of `F ∖ E` then lie in `W^⊥`,
 every `E`-limit.  Finally split the expansion `x = ∑_{f ∈ F} f⟨f,x⟩`
 coefficientwise into its `E`-part, which converges inside `W` to the `p`
 sought, and its `F ∖ E`-part, which is `x − p` in the limit and lies in the
-ultranorm-closed `W^⊥`. -/
+ultranorm-closed `W^⊥`.
+
+The third conclusion is **160VII**'s use of the same expansion: when in
+addition `⟨d,x⟩ = 0` for every `d ∈ W^⊥` — which is how 160VII's `x ∈ V^⊥⊥`
+enters — the `F ∖ E`-part vanishes *term by term*, so `x = p`. -/
 private theorem exists_orthogonal_decomp [VonNeumannAlgebra ℬ] [CompleteSpace X]
     (hX : SelfDual ℬ X) (W : Set X) (hW0 : (0 : X) ∈ W)
     (hWadd : ∀ y ∈ W, ∀ z ∈ W, y + z ∈ W)
     (hWb : ∀ b : ℬ, ∀ y ∈ W, b • y ∈ W) (hWneg : ∀ y ∈ W, -y ∈ W)
     (hWcl : unClosure ℬ (inner ℬ) W = W) (x : X) :
-    ∃ p ∈ W, ∀ w ∈ W, (inner ℬ (x - p) w : ℬ) = 0 := by
+    ∃ p ∈ W, (∀ w ∈ W, (inner ℬ (x - p) w : ℬ) = 0) ∧
+      ((∀ d : X, (∀ w ∈ W, (inner ℬ d w : ℬ) = 0) → (inner ℬ d x : ℬ) = 0) →
+        x = p) := by
   classical
   have hWsub : ∀ y ∈ W, ∀ z ∈ W, y - z ∈ W := fun y hy z hz => by
     rw [sub_eq_add_neg]; exact hWadd y hy (-z) (hWneg z hz)
@@ -1416,57 +1386,69 @@ private theorem exists_orthogonal_decomp [VonNeumannAlgebra ℬ] [CompleteSpace 
     have h2 := congrArg star h
     rwa [CStarModule.star_inner, star_zero] at h2
   -- **160VIII**: expand `x` along `F` and split the expansion in two
-  obtain ⟨p, hpW, hpE, -⟩ := hexpE x
-  refine ⟨p, hpW, ?_⟩
-  obtain ⟨x', hx', hx'o⟩ := exists_unTendsto_coef hX hFon x
-    (fun i => (inner ℬ ((i : X)) x : ℬ)) (fun _ => Or.inl rfl)
-  have hxx' : x' = x := by
-    have h0 : x - x' = 0 :=
-      hFmax0 (x - x') (Set.mem_univ _) fun y hy => hx'o ⟨y, hy⟩ rfl
+  obtain ⟨p, hpW, hpE, hpO⟩ := hexpE x
+  refine ⟨p, hpW, ?_, ?_⟩
+  · -- the `dⱼ`-part of the expansion of `x` lies in `W^⊥`
+    obtain ⟨x', hx', hx'o⟩ := exists_unTendsto_coef hX hFon x
+      (fun i => (inner ℬ ((i : X)) x : ℬ)) (fun _ => Or.inl rfl)
+    have hxx' : x' = x := by
+      have h0 : x - x' = 0 :=
+        hFmax0 (x - x') (Set.mem_univ _) fun y hy => hx'o ⟨y, hy⟩ rfl
+      rw [sub_eq_zero] at h0
+      exact h0.symm
+    rw [hxx'] at hx'
+    have hsplit : ∀ s : Finset ↥F,
+        (∑ i ∈ s, (if (i : X) ∈ E then (0 : ℬ)
+            else (inner ℬ ((i : X)) x : ℬ)) • (i : X)) - (x - p)
+          = ((∑ i ∈ s, (inner ℬ ((i : X)) x : ℬ) • (i : X)) - x)
+            + -((∑ i ∈ s, (if (i : X) ∈ E then (inner ℬ ((i : X)) x : ℬ)
+                  else 0) • (i : X)) - p) := by
+      intro s
+      have hs : (∑ i ∈ s,
+            (if (i : X) ∈ E then (inner ℬ ((i : X)) x : ℬ) else 0) • (i : X))
+          + (∑ i ∈ s, (if (i : X) ∈ E then (0 : ℬ)
+              else (inner ℬ ((i : X)) x : ℬ)) • (i : X))
+          = ∑ i ∈ s, (inner ℬ ((i : X)) x : ℬ) • (i : X) := by
+        rw [← Finset.sum_add_distrib]
+        refine Finset.sum_congr rfl fun i _ => ?_
+        by_cases h : (i : X) ∈ E
+        · rw [ite_eq_left h, ite_eq_left h, op_zero_smul, add_zero]
+        · rw [ite_eq_right h, ite_eq_right h, op_zero_smul, zero_add]
+      rw [← hs]; abel
+    have hD : UnTendsto (inner ℬ : X → X → ℬ)
+        (fun s : Finset ↥F => ∑ i ∈ s, (if (i : X) ∈ E then (0 : ℬ)
+          else (inner ℬ ((i : X)) x : ℬ)) • (i : X)) atTop (x - p) := by
+      intro ω
+      have hg : Tendsto (fun s : Finset ↥F =>
+          unSeminorm ω (inner ℬ : X → X → ℬ)
+              ((∑ i ∈ s, (inner ℬ ((i : X)) x : ℬ) • (i : X)) - x)
+            + unSeminorm ω (inner ℬ : X → X → ℬ)
+              ((∑ i ∈ s, (if (i : X) ∈ E then (inner ℬ ((i : X)) x : ℬ)
+                else 0) • (i : X)) - p)) atTop (𝓝 0) := by
+        simpa using (hx' ω).add (hpE ω)
+      refine squeeze_zero (fun s => Real.sqrt_nonneg _) (fun s => ?_) hg
+      rw [hsplit s, ← unSeminorm_neg_inner ω
+        ((∑ i ∈ s, (if (i : X) ∈ E then (inner ℬ ((i : X)) x : ℬ)
+          else 0) • (i : X)) - p)]
+      exact unSeminorm_add_le ω (cstarBInner ℬ X) _ _
+    refine mem_orthoCompl_of_unTendsto W _ (fun s => ?_) hD
+    intro w hw
+    rw [CStarModule.inner_sum_left]
+    refine Finset.sum_eq_zero fun i _ => ?_
+    by_cases hi : (i : X) ∈ E
+    · rw [ite_eq_left hi, op_zero_smul, CStarModule.inner_zero_left]
+    · rw [ite_eq_right hi, CStarModule.inner_op_smul_left, hDW i hi w hw, zero_mul]
+  · -- **160VII**: if in addition `⟨d,x⟩ = 0` for every `d ∈ W^⊥`, the
+    -- `dⱼ`-part of the expansion vanishes *termwise* and `x = p`
+    intro hd
+    have h0 : x - p = 0 := by
+      refine hFmax0 (x - p) (Set.mem_univ _) fun y hy => ?_
+      by_cases hyE : y ∈ E
+      · exact hpO ⟨y, hy⟩ hyE
+      · have hdy : ∀ w ∈ W, (inner ℬ y w : ℬ) = 0 := hDW ⟨y, hy⟩ hyE
+        rw [CStarModule.inner_sub_right, hd y hdy, hdy p hpW, sub_zero]
     rw [sub_eq_zero] at h0
-    exact h0.symm
-  rw [hxx'] at hx'
-  have hsplit : ∀ s : Finset ↥F,
-      (∑ i ∈ s, (if (i : X) ∈ E then (0 : ℬ)
-          else (inner ℬ ((i : X)) x : ℬ)) • (i : X)) - (x - p)
-        = ((∑ i ∈ s, (inner ℬ ((i : X)) x : ℬ) • (i : X)) - x)
-          + -((∑ i ∈ s, (if (i : X) ∈ E then (inner ℬ ((i : X)) x : ℬ)
-                else 0) • (i : X)) - p) := by
-    intro s
-    have hs : (∑ i ∈ s,
-          (if (i : X) ∈ E then (inner ℬ ((i : X)) x : ℬ) else 0) • (i : X))
-        + (∑ i ∈ s, (if (i : X) ∈ E then (0 : ℬ)
-            else (inner ℬ ((i : X)) x : ℬ)) • (i : X))
-        = ∑ i ∈ s, (inner ℬ ((i : X)) x : ℬ) • (i : X) := by
-      rw [← Finset.sum_add_distrib]
-      refine Finset.sum_congr rfl fun i _ => ?_
-      by_cases h : (i : X) ∈ E
-      · rw [ite_eq_left h, ite_eq_left h, op_zero_smul, add_zero]
-      · rw [ite_eq_right h, ite_eq_right h, op_zero_smul, zero_add]
-    rw [← hs]; abel
-  have hD : UnTendsto (inner ℬ : X → X → ℬ)
-      (fun s : Finset ↥F => ∑ i ∈ s, (if (i : X) ∈ E then (0 : ℬ)
-        else (inner ℬ ((i : X)) x : ℬ)) • (i : X)) atTop (x - p) := by
-    intro ω
-    have hg : Tendsto (fun s : Finset ↥F =>
-        unSeminorm ω (inner ℬ : X → X → ℬ)
-            ((∑ i ∈ s, (inner ℬ ((i : X)) x : ℬ) • (i : X)) - x)
-          + unSeminorm ω (inner ℬ : X → X → ℬ)
-            ((∑ i ∈ s, (if (i : X) ∈ E then (inner ℬ ((i : X)) x : ℬ)
-              else 0) • (i : X)) - p)) atTop (𝓝 0) := by
-      simpa using (hx' ω).add (hpE ω)
-    refine squeeze_zero (fun s => Real.sqrt_nonneg _) (fun s => ?_) hg
-    rw [hsplit s, ← unSeminorm_neg_inner ω
-      ((∑ i ∈ s, (if (i : X) ∈ E then (inner ℬ ((i : X)) x : ℬ)
-        else 0) • (i : X)) - p)]
-    exact unSeminorm_add_le ω (cstarBInner ℬ X) _ _
-  refine mem_orthoCompl_of_unTendsto W _ (fun s => ?_) hD
-  intro w hw
-  rw [CStarModule.inner_sum_left]
-  refine Finset.sum_eq_zero fun i _ => ?_
-  by_cases hi : (i : X) ∈ E
-  · rw [ite_eq_left hi, op_zero_smul, CStarModule.inner_zero_left]
-  · rw [ite_eq_right hi, CStarModule.inner_op_smul_left, hDW i hi w hw, zero_mul]
+    exact h0
 
 /-- **160IV** (`hilbmod-projthm`, dils.tex:4496, Proposition), part 2:
 `V^⊥⊥` is the ultranorm closure of the ℬ-linear span of `V`.
@@ -1476,11 +1458,11 @@ private theorem exists_orthogonal_decomp [VonNeumannAlgebra ℬ] [CompleteSpace 
 it to a basis `{eᵢ} ∪ {dⱼ}` of `X`, and reads off `V^⊥⊥ ⊆ W` from the
 expansion of an `x ∈ V^⊥⊥` along that extended basis, `⟨x,dⱼ⟩` vanishing.
 That expansion is `exists_orthogonal_decomp` above, which builds and splits
-exactly this extended basis; here it is applied at `W`, and the vanishing of
-the `dⱼ`-part is taken in the equivalent form `x − p ∈ V^⊥ ∩ V^⊥⊥ = {0}`
-(`x − p ∈ V^⊥` as `V ⊆ W`, and `∈ V^⊥⊥` as `x, p ∈ V^⊥⊥`).  The other
-inclusion is the thesis's own "`W ⊆ V^⊥⊥`": `V^⊥⊥` is an ultranorm-closed
-submodule containing `V` (part 1). -/
+exactly this extended basis; its third conclusion is the printed step —
+*given* `⟨x,dⱼ⟩ = 0` for every `dⱼ` of the extension, the `dⱼ`-part vanishes
+term by term and `x = p`.  Here `dⱼ ∈ W^⊥ ⊆ V^⊥` and `x ∈ V^⊥⊥` supply that
+hypothesis.  The other inclusion is the thesis's own "`W ⊆ V^⊥⊥`": `V^⊥⊥` is
+an ultranorm-closed submodule containing `V` (part 1). -/
 theorem hilbmod_projthm_2 [VonNeumannAlgebra ℬ] [CompleteSpace X]
     (hX : SelfDual ℬ X) (V : Set X) :
     orthoCompl ℬ (orthoCompl ℬ V) = unClosure ℬ (inner ℬ) (bSpan ℬ V) := by
@@ -1496,23 +1478,23 @@ theorem hilbmod_projthm_2 [VonNeumannAlgebra ℬ] [CompleteSpace X]
       (fun z z' hz hz' => hWadd z hz z' hz') hW0 (fun i _ => ?_)
     exact hWc (c i) _ (hWb (b i) _ (hVV (hv i)))
   refine Set.eq_of_subset_of_subset (fun x hx => ?_) ?_
-  · obtain ⟨p, hpW, horth⟩ := exists_orthogonal_decomp hX
+  · obtain ⟨p, hpW, -, hterm⟩ := exists_orthogonal_decomp hX
       (unClosure ℬ (inner ℬ) (bSpan ℬ V))
       (subset_unClosure _ (zero_mem_bSpan V))
       (fun y hy z hz => unClosure_add (bSpan_add V) hy hz)
       (fun a y hy => unClosure_op_smul (bSpan_op_smul V) a hy)
       (fun y hy => unClosure_neg (bSpan_neg V) hy)
       (unClosure_unClosure _) x
-    have hpV : p ∈ orthoCompl ℬ (orthoCompl ℬ V) :=
-      hWcl ▸ unClosure_mono hspan hpW
-    have h1 : x - p ∈ orthoCompl ℬ V := fun v hv =>
-      horth v (subset_unClosure _ (subset_bSpan V hv))
-    have h2 : x - p ∈ orthoCompl ℬ (orthoCompl ℬ V) := by
-      intro w hw
-      rw [CStarModule.inner_sub_left, hx w hw, hpV w hw, sub_zero]
-    have h0 : x - p = 0 := (CStarModule.inner_self (A := ℬ)).mp (h2 (x - p) h1)
-    rw [sub_eq_zero] at h0
-    rw [h0]
+    -- **160VII**: `⟨x,dⱼ⟩ = 0` for every `dⱼ ∈ W^⊥`, since `V ⊆ W` puts
+    -- `dⱼ` in `V^⊥` and `x` lies in `V^⊥⊥`
+    have hterm' : ∀ d : X,
+        (∀ w ∈ unClosure ℬ (inner ℬ) (bSpan ℬ V), (inner ℬ d w : ℬ) = 0) →
+        (inner ℬ d x : ℬ) = 0 := by
+      intro d hdW
+      have h := congrArg star
+        (hx d fun v hv => hdW v (subset_unClosure _ (subset_bSpan V hv)))
+      rwa [CStarModule.star_inner, star_zero] at h
+    rw [hterm hterm']
     exact hpW
   · calc unClosure ℬ (inner ℬ) (bSpan ℬ V)
         ⊆ unClosure ℬ (inner ℬ) (orthoCompl ℬ (orthoCompl ℬ V)) :=
@@ -1546,7 +1528,7 @@ theorem hilbmod_projthm_3 [VonNeumannAlgebra ℬ] [CompleteSpace X]
       z ∈ orthoCompl ℬ V → z = 0 := fun z hz₁ hz₂ =>
     (CStarModule.inner_self (A := ℬ)).mp (hz₁ z hz₂)
   obtain ⟨hW0, hWadd, hWb, hWc, hWcl⟩ := hilbmod_projthm_1 hX (orthoCompl ℬ V)
-  obtain ⟨p, hp, horth⟩ := exists_orthogonal_decomp hX _ hW0 hWadd hWb
+  obtain ⟨p, hp, horth, -⟩ := exists_orthogonal_decomp hX _ hW0 hWadd hWb
     (fun y hy => by
       have h := hWc (-1 : ℂ) y hy
       rwa [neg_one_smul] at h) hWcl x
@@ -1760,7 +1742,7 @@ private theorem exists_orthoProj [VonNeumannAlgebra ℬ] [CompleteSpace X]
     rwa [neg_one_smul] at h
   have hWsub : ∀ y ∈ W, ∀ z ∈ W, y - z ∈ W := fun y hy z hz => by
     rw [sub_eq_add_neg]; exact hWadd y hy (-z) (hWneg z hz)
-  choose p hp horth using
+  choose p hp horth _hterm using
     fun x => exists_orthogonal_decomp hX W hW0 hWadd hWb hWneg hWcl x
   -- uniqueness of the decomposition
   have huniq : ∀ (x q : X), q ∈ W → (∀ w ∈ W, (inner ℬ (x - q) w : ℬ) = 0) →
@@ -2251,12 +2233,11 @@ coordinate map `x ↦ (⟨eᵢ,x⟩)ᵢ`: the coordinate map is injective, addit
 lands bijectively on `ℓ²((⟨eᵢ,eᵢ⟩)ᵢ)` and identifies the inner
 products.
 
-**Divergence (local).**  The route is the solution's own `ϑ`
-(bsols.tex:1092–1113), which is defined directly and proved an isomorphism
-in four steps — it transports nothing along the coordinate map.  Two steps
-differ locally: the solution never checks that `ϑ` *lands* in `ℓ²`, and it
-reads the inner product off the expansion of `y` alone, where the clauses
-below come straight out of the two convergence clauses of `IsONBasis`.
+**Route.**  The solution's own `ϑ` (bsols.tex:1092–1113), defined directly
+and proved an isomorphism in the solution's four steps — it transports
+nothing along the coordinate map.  The one thing supplied here that the
+solution leaves tacit is well-definedness: `ϑ` is asserted to land in `ℓ²`
+by typing, and `Set.BijOn` makes that a proof obligation.
 
 * the coordinates are ℓ²-summable by Bessel (`mod_bessel`) and absorbed by
   the projections `⟨eᵢ,eᵢ⟩` (`onbasis_coef_absorb`), which by
@@ -2265,12 +2246,12 @@ below come straight out of the two convergence clauses of `IsONBasis`.
   `inner_of_unTendsto_sum_smul` (the coefficients of a convergent
   `∑ᵢ bᵢ • eᵢ` are the `bᵢ`), for which the absorption is again exactly the
   support condition;
-* injectivity and the inner-product clause are both **148V**
-  `innerprod_ultraweak` applied to the basis expansions of clause (a): for
-  injectivity the two expansions are the *same* net, so all four of
-  `⟨x,x⟩, ⟨x,y⟩, ⟨y,x⟩, ⟨y,y⟩` are its Gram limit and `⟨x−y,x−y⟩ = 0`; for
-  the inner product the cross Gram sum collapses to the Parseval sum by
-  `inner_sum_smul_orthogonal` plus absorption.
+* the inner-product clause is the solution's own
+  `⟨x,y⟩ = ⟨x, ∑ₑ e⟨e,y⟩⟩ = ∑ₑ ⟨x,e⟩⟨e,y⟩`: **148V** `innerprod_ultraweak`
+  at the *constant* net `x` and the expansion of `y` alone (clause (a)),
+  the terms read off by additivity and `inner_op_smul_right`;
+* injectivity is the solution's "which entails it is injective" — the
+  clause just proved, at `x − y`, whose Gram net is identically `0`.
 
 Consequently the hypothesis `hX : SelfDual ℬ X` is **not used** — an
 orthonormal *basis* already carries everything.  (The exercise additionally
@@ -2310,14 +2291,25 @@ theorem hilbmod_el2 [VonNeumannAlgebra ℬ] [CompleteSpace X]
       rw [← h1]
       exact Finset.sum_nonneg fun i _ => mul_star_self_nonneg _
     exact CStarAlgebra.norm_le_norm_of_nonneg_of_le h3 (mod_bessel horth x s)
-  -- the cross Gram sums of two basis expansions are the Parseval cross sums
-  have hgram : ∀ (x y : X) (s : Finset ι),
-      (inner ℬ (∑ i ∈ s, (inner ℬ (e i) x : ℬ) • e i)
-        (∑ i ∈ s, (inner ℬ (e i) y : ℬ) • e i) : ℬ)
+  -- the solution's `⟨x,y⟩ = ⟨x, ∑ₑ e⟨e,y⟩⟩ = ∑ₑ ⟨x,e⟩⟨e,y⟩`: **148V** at the
+  -- constant net `x` and the basis expansion of `y` alone
+  have hconst : ∀ x : X, UnTendsto (inner ℬ : X → X → ℬ)
+      (fun _ : Finset ι => x) atTop x := by
+    intro x ω
+    have h : (fun _ : Finset ι => unSeminorm ω (inner ℬ : X → X → ℬ) (x - x))
+        = fun _ : Finset ι => (0 : ℝ) := by
+      funext _
+      rw [sub_self, unSeminorm]
+      simp
+    rw [h]
+    exact tendsto_const_nhds
+  have hterm : ∀ (x y : X) (s : Finset ι),
+      (inner ℬ x (∑ i ∈ s, (inner ℬ (e i) y : ℬ) • e i) : ℬ)
         = ∑ i ∈ s, (inner ℬ (e i) y : ℬ) * star (inner ℬ (e i) x : ℬ) := by
     intro x y s
-    rw [inner_sum_smul_orthogonal horth.1 _ _ s]
-    exact Finset.sum_congr rfl fun i _ => by rw [habs y i]
+    rw [CStarModule.inner_sum_right]
+    refine Finset.sum_congr rfl fun i _ => ?_
+    rw [CStarModule.inner_op_smul_right, CStarModule.star_inner]
   -- the inner-product clause, by **148V**
   have hpart2 : ∀ x y : X, UWTendsto
       (fun t : Finset ι =>
@@ -2325,37 +2317,30 @@ theorem hilbmod_el2 [VonNeumannAlgebra ℬ] [CompleteSpace X]
       atTop (inner ℬ x y) := by
     intro x y
     have h := innerprod_ultraweak (cstarBInner ℬ X)
-      (fun s : Finset ι => ∑ i ∈ s, (inner ℬ (e i) x : ℬ) • e i)
+      (fun _ : Finset ι => x)
       (fun s : Finset ι => ∑ i ∈ s, (inner ℬ (e i) y : ℬ) • e i)
-      x y (hexp x) (hexp y)
-    simpa only [hB, hgram] using h
+      x y (hconst x) (hexp y)
+    simpa only [hB, hterm] using h
   refine ⟨⟨fun x _ => (mem_l2Set_iff hproj _).mpr ⟨hL2 x, fun i => habs x i⟩,
     fun x _ y _ hxy => ?_, fun b hb => ?_⟩, hpart2⟩
-  · -- injectivity: the two expansions are the same net
+  · -- injectivity: the solution's "which entails it is injective", i.e.
+    -- preservation of the inner product together with definiteness
     have hxy' : ∀ i : ι, (inner ℬ (e i) x : ℬ) = inner ℬ (e i) y :=
       fun i => congrFun hxy i
-    have hx : UnTendsto (inner ℬ : X → X → ℬ)
-        (fun s : Finset ι => ∑ i ∈ s, (inner ℬ (e i) x : ℬ) • e i) atTop x :=
-      hexp x
-    have hy : UnTendsto (inner ℬ : X → X → ℬ)
-        (fun s : Finset ι => ∑ i ∈ s, (inner ℬ (e i) x : ℬ) • e i) atTop y := by
-      have hnet : (fun s : Finset ι => ∑ i ∈ s, (inner ℬ (e i) x : ℬ) • e i)
-          = fun s : Finset ι => ∑ i ∈ s, (inner ℬ (e i) y : ℬ) • e i := by
-        funext s
-        exact Finset.sum_congr rfl fun i _ => by rw [hxy' i]
-      rw [hnet]
-      exact hexp y
-    have hxx := innerprod_ultraweak (cstarBInner ℬ X) _ _ x x hx hx
-    have hxy₂ := innerprod_ultraweak (cstarBInner ℬ X) _ _ x y hx hy
-    have hyx := innerprod_ultraweak (cstarBInner ℬ X) _ _ y x hy hx
-    have hyy := innerprod_ultraweak (cstarBInner ℬ X) _ _ y y hy hy
-    have e1 : (inner ℬ x x : ℬ) = inner ℬ x y := uwTendsto_unique₂ hxx hxy₂
-    have e2 : (inner ℬ x x : ℬ) = inner ℬ y x := uwTendsto_unique₂ hxx hyx
-    have e3 : (inner ℬ x x : ℬ) = inner ℬ y y := uwTendsto_unique₂ hxx hyy
-    have hz : (inner ℬ (x - y) (x - y) : ℬ) = 0 := by
-      rw [CStarModule.inner_sub_left, CStarModule.inner_sub_right,
-        CStarModule.inner_sub_right, ← e1, ← e2, ← e3]
-      abel
+    have hzero : ∀ t : Finset ι,
+        (∑ i ∈ t, (inner ℬ (e i) (x - y) : ℬ)
+          * star (inner ℬ (e i) (x - y) : ℬ)) = 0 := by
+      intro t
+      refine Finset.sum_eq_zero fun i _ => ?_
+      have hi : (inner ℬ (e i) (x - y) : ℬ) = 0 := by
+        rw [CStarModule.inner_sub_right, hxy' i, sub_self]
+      rw [hi, zero_mul]
+    have h0 : UWTendsto (fun _ : Finset ι => (0 : ℬ)) atTop
+        (inner ℬ (x - y) (x - y)) := (hpart2 (x - y) (x - y)).congr hzero
+    have hc : UWTendsto (fun _ : Finset ι => (0 : ℬ)) atTop 0 :=
+      (uwTendsto_iff _ _ _).mpr fun _ => tendsto_const_nhds
+    have hz : (inner ℬ (x - y) (x - y) : ℬ) = 0 :=
+      uwTendsto_unique₂ h0 hc
     exact sub_eq_zero.mp ((CStarModule.inner_self (A := ℬ)).mp hz)
   · -- surjectivity: clause (b) of `IsONBasis`, then the coefficient lemma
     obtain ⟨hbsum, hbabs⟩ := (mem_l2Set_iff hproj b).mp hb
@@ -10687,35 +10672,139 @@ theorem ba_ext_tensor_pres [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
         hTP.faithful z hz fun σ τ h hh => hall h ⟨σ, τ, hh⟩ }
 
 
+/-! ### Auxiliary: **44III** `vanishing_effects` with arbitrary bounds
+
+**166III** closes by factoring `⟨xα⊗yα, xα⊗yα⟩` as
+`(⟨xα−x,xα−x⟩⊗1)·(1⊗⟨yα,yα⟩)` and invoking **44III** `vanishing_effects`,
+whose vanishing net must consist of *effects* and whose second net must have
+norm `≤ 1`.  Neither factor is normalised here, so the five lemmas below
+rescale: `vanishing_effects_bounded` is 44III with the two bounds arbitrary,
+and `npTendsto_zero_of_unSeminorm` turns the ultranorm hypothesis `xα → x`
+into the ultraweak `⟨xα−x, xα−x⟩ → 0` that 44III consumes. -/
+
+section VanishingBounded
+
+variable {𝒟 : Type u} [CStarAlgebra 𝒟] [PartialOrder 𝒟] [StarOrderedRing 𝒟]
+
+/-- Multiplication by a non-negative real is monotone. -/
+private theorem ofReal_smul_le_ofReal_smul {r : ℝ} (hr : 0 ≤ r) {a b : 𝒟}
+    (h : a ≤ b) : ((r : ℝ) : ℂ) • a ≤ ((r : ℝ) : ℂ) • b := by
+  rw [← sub_nonneg, ← smul_sub, ← Complex.coe_algebraMap,
+    IsScalarTower.algebraMap_smul ℂ r (b - a)]
+  exact smul_nonneg hr (sub_nonneg.mpr h)
+
+/-- `0 ≤ z ≤ r·1` bounds `‖z‖` by `r`; the converse of
+`le_ofReal_smul_one`. -/
+private theorem norm_le_of_le_ofReal_smul_one {z : 𝒟} {r : ℝ} (hr : 0 ≤ r)
+    (hz : 0 ≤ z) (h : z ≤ ((r : ℝ) : ℂ) • (1 : 𝒟)) : ‖z‖ ≤ r := by
+  have h1 : ‖z‖ ≤ ‖((r : ℝ) : ℂ) • (1 : 𝒟)‖ :=
+    CStarAlgebra.norm_le_norm_of_nonneg_of_le hz h
+  have h2 : ‖((r : ℝ) : ℂ) • (1 : 𝒟)‖ = r * ‖(1 : 𝒟)‖ := by
+    rw [norm_smul, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg hr]
+  have h3 : ‖(1 : 𝒟)‖ ≤ 1 := by
+    have h : ‖(1 : 𝒟)‖ * ‖(1 : 𝒟)‖ = ‖(1 : 𝒟)‖ := by
+      have := CStarRing.norm_star_mul_self (x := (1 : 𝒟))
+      simpa using this.symm
+    nlinarith [norm_nonneg (1 : 𝒟)]
+  nlinarith [norm_nonneg z, h1, h2.le, h2.ge]
+
+omit [StarOrderedRing 𝒟] in
+/-- Scaling an ultraweakly vanishing net. -/
+private theorem smul_uwTendsto_zero [VonNeumannAlgebra 𝒟] {κ : Type*}
+    {l : Filter κ} (c : ℂ) {A : κ → 𝒟} (h : UWTendsto A l 0) :
+    UWTendsto (fun i => c • A i) l 0 := by
+  rw [uwTendsto_iff] at h ⊢
+  intro ω
+  have h1 := (h ω).const_mul c
+  simp only [npFunctional_zero, mul_zero] at h1 ⊢
+  exact h1.congr fun i => (npf_csmul ω c (A i)).symm
+
+/-- `‖·‖_σ → 0` on a net of positive elements is `σ(·) → 0`: the passage
+from the ultranorm hypothesis of **166II** to the ultraweak hypothesis of
+**44III**. -/
+private theorem npTendsto_zero_of_unSeminorm (σ : NPFunctional 𝒟) {κ : Type*}
+    {l : Filter κ} (a : κ → 𝒟) (hpos : ∀ i, 0 ≤ a i)
+    (h : Tendsto (fun i => Real.sqrt ((σ (a i) : ℂ)).re) l (𝓝 0)) :
+    Tendsto (fun i => (σ (a i) : ℂ)) l (𝓝 0) := by
+  have hre : Tendsto (fun i => ((σ (a i) : ℂ)).re) l (𝓝 0) := by
+    have h2 := h.pow 2
+    rw [zero_pow two_ne_zero] at h2
+    refine h2.congr fun i => ?_
+    refine Real.sq_sqrt ?_
+    have hm := npFunctional_mono σ (hpos i)
+    rw [npFunctional_zero] at hm
+    simpa using (Complex.le_def.mp hm).1
+  have hc := hre.ofReal
+  rw [Complex.ofReal_zero] at hc
+  refine hc.congr fun i => ?_
+  refine (Complex.ext (by simp) ?_).symm
+  simp [npFunctional_im_eq_zero σ (IsSelfAdjoint.of_nonneg (hpos i))]
+
+/-- **44III** `vanishing_effects` with the two nets bounded by arbitrary
+positive constants instead of by `1`. -/
+private theorem vanishing_effects_bounded [VonNeumannAlgebra 𝒟] {κ : Type*}
+    {l : Filter κ} (A B : κ → 𝒟) {K M : ℝ} (hK : 0 < K) (hM : 0 < M)
+    (hA0 : ∀ i, 0 ≤ A i) (hAK : ∀ i, A i ≤ ((K : ℝ) : ℂ) • (1 : 𝒟))
+    (hB0 : ∀ i, 0 ≤ B i) (hBM : ∀ i, B i ≤ ((M : ℝ) : ℂ) • (1 : 𝒟))
+    (hA : UWTendsto A l 0) : UWTendsto (fun i => A i * B i) l 0 := by
+  have hA'eff : ∀ i, ((K⁻¹ : ℝ) : ℂ) • A i ∈ effects 𝒟 := by
+    intro i
+    refine ⟨?_, ?_⟩
+    · simpa using ofReal_smul_le_ofReal_smul (r := K⁻¹) (by positivity) (hA0 i)
+    · refine (ofReal_smul_le_ofReal_smul (r := K⁻¹) (by positivity)
+        (hAK i)).trans (le_of_eq ?_)
+      rw [smul_smul, ← Complex.ofReal_mul, inv_mul_cancel₀ (ne_of_gt hK)]
+      simp
+  have hB'norm : ∀ i, ‖((M⁻¹ : ℝ) : ℂ) • B i‖ ≤ 1 := by
+    intro i
+    refine norm_le_of_le_ofReal_smul_one zero_le_one ?_ ?_
+    · simpa using ofReal_smul_le_ofReal_smul (r := M⁻¹) (by positivity) (hB0 i)
+    · exact (ofReal_smul_le_ofReal_smul (r := M⁻¹) (by positivity) (hBM i)).trans
+        (le_of_eq (by
+          rw [smul_smul, ← Complex.ofReal_mul, inv_mul_cancel₀ (ne_of_gt hM)]))
+  have hA'0 : UWTendsto (fun i => ((K⁻¹ : ℝ) : ℂ) • A i) l 0 :=
+    smul_uwTendsto_zero _ hA
+  have hmul := vanishing_effects _ _ hA'eff hB'norm hA'0
+  refine (smul_uwTendsto_zero (𝒟 := 𝒟) ((K * M : ℝ) : ℂ) hmul).congr fun i => ?_
+  rw [smul_mul_assoc, mul_smul_comm, smul_smul, smul_smul, ← Complex.ofReal_mul,
+    ← Complex.ofReal_mul, show K * M * K⁻¹ * M⁻¹ = 1 by field_simp]
+  simp
+
+end VanishingBounded
+
 /-! ## Parsec 1660: ultranorm continuity of the exterior tensor product
 
 **166I** (dils.tex:5633): introduction; **166III**, **166V**, **166VII**
 are proofs — not converted.
 
-The two estimates of **166III** (`unSeminorm_eta_le_left/_right`) live in
-`section EtaEstimates` above, where they were put when **164II**.2a still
-needed them; **166II** below is now their only consumer. -/
+`section EtaEstimates` above holds two order estimates
+(`unSeminorm_eta_le_left/_right`) that were put there when **164II**.2a
+needed them and were then used by **166II**.  Since **166II** was brought
+onto 166III's own **44III** route (2026-09-04) neither has a consumer left;
+they are kept because each carries an audit row of its own, and the
+`vanishing_effects_bounded` block above is what **166II** uses instead. -/
 
 -- `hX`, `hY` are not used: `E : ExtTensor t ht X Y` already carries
 -- self-duality of `X ⊗ Y` and `η_inner`, which is all the proof needs; they
 -- are kept for uniformity with the neighbouring statements of parsecs
--- 1640-1670.  **`hxb` is not used either**: the splitting
--- `xα ⊗ yα − x ⊗ y = (xα − x) ⊗ yα + x ⊗ (yα − y)` needs a norm bound on
--- the `y`-net only.  (The thesis needs both because it routes the estimate
--- through **44III** `vanishing-effects`, whose vanishing net must consist of
--- *effects*; the estimate below never leaves the order of `𝒞`.  Splitting
--- the other way, `xα ⊗ (yα − y) + (xα − x) ⊗ y`, would use `hxb` and not
--- `hyb`, so the lemma is true with either one of the two bounds.)
+-- 1640-1670.  Both `hxb` and `hyb` *are* used, as in 166III: `hxb` bounds
+-- `⟨xα−x,xα−x⟩⊗1` so that it is an effect after rescaling, `hyb` bounds
+-- `1⊗⟨yα,yα⟩`.  (The lemma is in fact true with either one of the two alone
+-- — an order estimate `⟨d,d⟩⊗⟨yα,yα⟩ ≤ M²·(⟨d,d⟩⊗1)` replaces 44III and
+-- then only `hyb` is wanted; that is the observation behind the OPEN nit in
+-- `ERRATA.md` on 166II's statement.  The proof below does not take it,
+-- because 166III does not.)
 set_option linter.unusedVariables false in
 /-- **166II** (`ultranorm-continuity-ext-tensor`, dils.tex:5638, Lemma): if
 `x_α → x` and `y_α → y` ultranorm for norm-bounded nets, then
 `x_α ⊗ y_α → x ⊗ y` ultranorm.
 
-**166III** is the proof; transcribed below, with its appeal to **44III**
-`vanishing_effects` replaced by the order estimate
-`Ω(⟨d,d⟩ ⊗ ⟨yα,yα⟩) ≤ M² · Ω(⟨d,d⟩ ⊗ 1)` — which is available because the
-legs are normal (`vnTensor_legLeft_normal`), so `Ω(· ⊗ 1)` is again an
-np-functional. -/
+**166III** is the proof, and is transcribed: the splitting
+`xα ⊗ yα − x ⊗ y = (xα − x) ⊗ yα + x ⊗ (yα − y)`, then, for each summand,
+the factorisation `⟨u⊗w, u⊗w⟩ = (⟨u,u⟩⊗1)·(1⊗⟨w,w⟩)` and **44III**
+`vanishing_effects` — through `vanishing_effects_bounded`, which is 44III
+with the two normalisations `0 ≤ · ≤ 1` and `‖·‖ ≤ 1` replaced by the
+constants the nets actually carry. -/
 theorem ultranorm_continuity_ext_tensor [VonNeumannAlgebra 𝒜]
     [VonNeumannAlgebra ℬ] [VonNeumannAlgebra 𝒞] [CompleteSpace X]
     [CompleteSpace Y] (hX : SelfDual 𝒜 X) (hY : SelfDual ℬ Y)
@@ -10725,9 +10814,17 @@ theorem ultranorm_continuity_ext_tensor [VonNeumannAlgebra 𝒜]
     (hx : UnTendsto (inner 𝒜) x l x₀) (hy : UnTendsto (inner ℬ) y l y₀) :
     UnTendsto (inner 𝒞) (fun i => E.η (x i) (y i)) l (E.η x₀ y₀) := by
   intro Ω
-  obtain ⟨M₀, hM₀⟩ := hyb
-  obtain ⟨M, hM0, hMy⟩ : ∃ M : ℝ, 0 ≤ M ∧ ∀ i, ‖y i‖ ≤ M :=
-    ⟨max M₀ 0, le_max_right _ _, fun i => (hM₀ i).trans (le_max_left _ _)⟩
+  obtain ⟨Mx, hMx⟩ := hxb
+  obtain ⟨My, hMy⟩ := hyb
+  have hMx' : ∀ i, ‖x i‖ ≤ |Mx| := fun i => (hMx i).trans (le_abs_self Mx)
+  have hMy' : ∀ i, ‖y i‖ ≤ |My| := fun i => (hMy i).trans (le_abs_self My)
+  -- the bounds `B` of 166III, made positive so that they can be divided out
+  have hKx : ∀ i, ‖x i - x₀‖ ≤ |Mx| + ‖x₀‖ + 1 := fun i =>
+    (norm_sub_le _ _).trans (by linarith [hMx' i])
+  have hLy : ∀ i, ‖y i - y₀‖ ≤ |My| + ‖y₀‖ + 1 := fun i =>
+    (norm_sub_le _ _).trans (by linarith [hMy' i])
+  have hMy'' : ∀ i, ‖y i‖ ≤ |My| + 1 := fun i => by linarith [hMy' i]
+  have hPx : ‖x₀‖ ≤ ‖x₀‖ + 1 := by linarith
   -- `xα ⊗ yα − x ⊗ y = (xα − x) ⊗ yα + x ⊗ (yα − y)`
   have hsplit : ∀ i, E.η (x i) (y i) - E.η x₀ y₀
       = E.η (x i - x₀) (y i) + E.η x₀ (y i - y₀) := by
@@ -10737,19 +10834,130 @@ theorem ultranorm_continuity_ext_tensor [VonNeumannAlgebra 𝒜]
     have h2 : E.η x₀ (y i - y₀) + E.η x₀ y₀ = E.η x₀ (y i) := by
       rw [← E.η_add_right]; congr 1; abel
     rw [← h1, ← h2]; abel
-  -- the two estimates of **166III**, `unSeminorm_eta_le_left/_right`
+  -- **first summand**: `⟨(xα−x)⊗yα, (xα−x)⊗yα⟩
+  --   = ⟨xα−x,xα−x⟩ ⊗ ⟨yα,yα⟩ = (⟨xα−x,xα−x⟩⊗1)·(1⊗⟨yα,yα⟩)`,
+  -- the left factor a bounded positive net vanishing ultraweakly, the right
+  -- one a bounded positive net; **44III** applies
+  have hT1 : Tendsto (fun i => unSeminorm Ω (inner 𝒞) (E.η (x i - x₀) (y i)))
+      l (𝓝 0) := by
+    have hAuw : UWTendsto
+        (fun i => t (inner 𝒜 (x i - x₀) (x i - x₀)) (1 : ℬ)) l 0 := by
+      rw [uwTendsto_iff]
+      intro ν
+      simp only [npFunctional_zero]
+      exact npTendsto_zero_of_unSeminorm (vnTensorLegLeftNP ht ν) _
+        (fun i => CStarModule.inner_self_nonneg) (hx (vnTensorLegLeftNP ht ν))
+    have hprod := vanishing_effects_bounded
+      (fun i => t (inner 𝒜 (x i - x₀) (x i - x₀)) (1 : ℬ))
+      (fun i => t (1 : 𝒜) (inner ℬ (y i) (y i)))
+      (K := (|Mx| + ‖x₀‖ + 1) ^ 2) (M := (|My| + 1) ^ 2)
+      (by positivity) (by positivity)
+      (fun i => vnTensor_nonneg ht CStarModule.inner_self_nonneg zero_le_one)
+      (fun i => by
+        have hn : ‖(inner 𝒜 (x i - x₀) (x i - x₀) : 𝒜)‖ ≤ (|Mx| + ‖x₀‖ + 1) ^ 2 := by
+          have heq : ‖(inner 𝒜 (x i - x₀) (x i - x₀) : 𝒜)‖ = ‖x i - x₀‖ ^ 2 := by
+            rw [CStarModule.norm_eq_sqrt_norm_inner_self (A := 𝒜) (x i - x₀),
+              Real.sq_sqrt (norm_nonneg _)]
+          rw [heq]
+          nlinarith [hKx i, norm_nonneg (x i - x₀)]
+        have hle := vnTensor_mono_left ht zero_le_one
+          (le_ofReal_smul_one CStarModule.inner_self_nonneg hn)
+        rw [ht.smul_complex, ht.one] at hle
+        exact hle)
+      (fun i => vnTensor_nonneg ht zero_le_one CStarModule.inner_self_nonneg)
+      (fun i => by
+        have hn : ‖(inner ℬ (y i) (y i) : ℬ)‖ ≤ (|My| + 1) ^ 2 := by
+          have heq : ‖(inner ℬ (y i) (y i) : ℬ)‖ = ‖y i‖ ^ 2 := by
+            rw [CStarModule.norm_eq_sqrt_norm_inner_self (A := ℬ) (y i),
+              Real.sq_sqrt (norm_nonneg _)]
+          rw [heq]
+          nlinarith [hMy'' i, norm_nonneg (y i)]
+        have hle := vnTensor_mono_right ht zero_le_one
+          (le_ofReal_smul_one CStarModule.inner_self_nonneg hn)
+        rw [vnTensor_smul_complex_right ht, ht.one] at hle
+        exact hle)
+      hAuw
+    have hinner : ∀ i, (inner 𝒞 (E.η (x i - x₀) (y i)) (E.η (x i - x₀) (y i)) : 𝒞)
+        = t (inner 𝒜 (x i - x₀) (x i - x₀)) (1 : ℬ)
+          * t (1 : 𝒜) (inner ℬ (y i) (y i)) := by
+      intro i
+      rw [E.η_inner, ht.mul, mul_one, one_mul]
+    have h1 := (uwTendsto_iff _ _ _).mp hprod Ω
+    simp only [npFunctional_zero] at h1
+    have h2 : Tendsto
+        (fun i => (Ω (inner 𝒞 (E.η (x i - x₀) (y i)) (E.η (x i - x₀) (y i))) : ℂ).re)
+        l (𝓝 0) := by
+      have h3 : Tendsto (fun i => (Ω (t (inner 𝒜 (x i - x₀) (x i - x₀)) (1 : ℬ)
+          * t (1 : 𝒜) (inner ℬ (y i) (y i))) : ℂ).re) l (𝓝 0) := by
+        simpa [Function.comp_def] using
+          (Complex.continuous_re.tendsto (0 : ℂ)).comp h1
+      exact h3.congr fun i => by rw [hinner i]
+    simpa [unSeminorm, Function.comp_def] using
+      (Real.continuous_sqrt.tendsto 0).comp h2
+  -- **second summand**, "with a similar argument", the legs exchanged
+  have hT2 : Tendsto (fun i => unSeminorm Ω (inner 𝒞) (E.η x₀ (y i - y₀)))
+      l (𝓝 0) := by
+    have hAuw : UWTendsto
+        (fun i => t (1 : 𝒜) (inner ℬ (y i - y₀) (y i - y₀))) l 0 := by
+      rw [uwTendsto_iff]
+      intro ν
+      simp only [npFunctional_zero]
+      exact npTendsto_zero_of_unSeminorm (vnTensorLegRightNP ht ν) _
+        (fun i => CStarModule.inner_self_nonneg) (hy (vnTensorLegRightNP ht ν))
+    have hprod := vanishing_effects_bounded
+      (fun i => t (1 : 𝒜) (inner ℬ (y i - y₀) (y i - y₀)))
+      (fun _ : ι => t (inner 𝒜 x₀ x₀) (1 : ℬ))
+      (K := (|My| + ‖y₀‖ + 1) ^ 2) (M := (‖x₀‖ + 1) ^ 2)
+      (by positivity) (by positivity)
+      (fun i => vnTensor_nonneg ht zero_le_one CStarModule.inner_self_nonneg)
+      (fun i => by
+        have hn : ‖(inner ℬ (y i - y₀) (y i - y₀) : ℬ)‖ ≤ (|My| + ‖y₀‖ + 1) ^ 2 := by
+          have heq : ‖(inner ℬ (y i - y₀) (y i - y₀) : ℬ)‖ = ‖y i - y₀‖ ^ 2 := by
+            rw [CStarModule.norm_eq_sqrt_norm_inner_self (A := ℬ) (y i - y₀),
+              Real.sq_sqrt (norm_nonneg _)]
+          rw [heq]
+          nlinarith [hLy i, norm_nonneg (y i - y₀)]
+        have hle := vnTensor_mono_right ht zero_le_one
+          (le_ofReal_smul_one CStarModule.inner_self_nonneg hn)
+        rw [vnTensor_smul_complex_right ht, ht.one] at hle
+        exact hle)
+      (fun _ => vnTensor_nonneg ht CStarModule.inner_self_nonneg zero_le_one)
+      (fun _ => by
+        have hn : ‖(inner 𝒜 x₀ x₀ : 𝒜)‖ ≤ (‖x₀‖ + 1) ^ 2 := by
+          have heq : ‖(inner 𝒜 x₀ x₀ : 𝒜)‖ = ‖x₀‖ ^ 2 := by
+            rw [CStarModule.norm_eq_sqrt_norm_inner_self (A := 𝒜) x₀,
+              Real.sq_sqrt (norm_nonneg _)]
+          rw [heq]
+          nlinarith [norm_nonneg x₀]
+        have hle := vnTensor_mono_left ht zero_le_one
+          (le_ofReal_smul_one CStarModule.inner_self_nonneg hn)
+        rw [ht.smul_complex, ht.one] at hle
+        exact hle)
+      hAuw
+    have hinner : ∀ i, (inner 𝒞 (E.η x₀ (y i - y₀)) (E.η x₀ (y i - y₀)) : 𝒞)
+        = t (1 : 𝒜) (inner ℬ (y i - y₀) (y i - y₀))
+          * t (inner 𝒜 x₀ x₀) (1 : ℬ) := by
+      intro i
+      rw [E.η_inner, ht.mul, mul_one, one_mul]
+    have h1 := (uwTendsto_iff _ _ _).mp hprod Ω
+    simp only [npFunctional_zero] at h1
+    have h2 : Tendsto
+        (fun i => (Ω (inner 𝒞 (E.η x₀ (y i - y₀)) (E.η x₀ (y i - y₀))) : ℂ).re)
+        l (𝓝 0) := by
+      have h3 : Tendsto (fun i => (Ω (t (1 : 𝒜) (inner ℬ (y i - y₀) (y i - y₀))
+          * t (inner 𝒜 x₀ x₀) (1 : ℬ)) : ℂ).re) l (𝓝 0) := by
+        simpa [Function.comp_def] using
+          (Complex.continuous_re.tendsto (0 : ℂ)).comp h1
+      exact h3.congr fun i => by rw [hinner i]
+    simpa [unSeminorm, Function.comp_def] using
+      (Real.continuous_sqrt.tendsto 0).comp h2
   refine squeeze_zero (fun i => unSeminorm_nonneg _ _ _) (g := fun i =>
-      M * unSeminorm (vnTensorLegLeftNP ht Ω) (inner 𝒜) (x i - x₀)
-        + ‖x₀‖ * unSeminorm (vnTensorLegRightNP ht Ω) (inner ℬ) (y i - y₀))
-    (fun i => ?_) ?_
+      unSeminorm Ω (inner 𝒞) (E.η (x i - x₀) (y i))
+        + unSeminorm Ω (inner 𝒞) (E.η x₀ (y i - y₀))) (fun i => ?_) ?_
   · change unSeminorm Ω (inner 𝒞) (E.η (x i) (y i) - E.η x₀ y₀) ≤ _
     rw [hsplit i]
-    refine (unSeminorm_add_le Ω (cstarBInner 𝒞 E.Z) _ _).trans (add_le_add ?_ ?_)
-    · exact (unSeminorm_eta_le_left E Ω (x i - x₀) (y i)).trans
-        (mul_le_mul_of_nonneg_right (hMy i) (unSeminorm_nonneg _ _ _))
-    · exact unSeminorm_eta_le_right E Ω x₀ (y i - y₀)
-  · simpa using ((hx (vnTensorLegLeftNP ht Ω)).const_mul M).add
-      ((hy (vnTensorLegRightNP ht Ω)).const_mul ‖x₀‖)
+    exact unSeminorm_add_le Ω (cstarBInner 𝒞 E.Z) _ _
+  · simpa using hT1.add hT2
 
 /-! ### The net form of ultranorm approximation
 
@@ -10979,6 +11187,82 @@ private theorem unSeminorm_tprod_right (φ : NCPMap 𝒜 ℬ) (M : PaschkeModule
         rw [Real.sqrt_mul (norm_nonneg _)]
     _ = Real.sqrt ‖φ (a * star a)‖ * unSeminorm ω (mulInner ℬ) e := rfl
 
+/-- **74VI** `dense_subalgebra` in the finitary, mirrored form that the
+ultranorm conventions of these files use: an ultranorm-dense ∗-subalgebra
+admits, in every entourage, an approximant of `a` of norm at most `2‖a‖`.
+This is the *norm-bounded net* **166VII** takes from 74VI, read one
+entourage at a time.  (`kaplansky_bounded_approx`, `Kaplansky.lean`, is the
+same statement over **74IV**, and is not available here because 74IV wants a
+norm-*closed* subalgebra while 166VI's `𝒜'` is a bare ∗-subalgebra.)  -/
+private theorem unDense_bounded_approx (A' : StarSubalgebra ℂ 𝒜)
+    (hA : UnDense (mulInner 𝒜) (A' : Set 𝒜)) (a : 𝒜)
+    (n : ℕ) (νs : Fin n → NPFunctional 𝒜) (ε : ℝ) (hε : 0 < ε) :
+    ∃ a' ∈ A', ‖a'‖ ≤ 2 * ‖a‖ ∧
+      ∀ i, unSeminorm (νs i) (mulInner 𝒜) (a - a') ≤ ε := by
+  -- ultranorm density of `𝒜'` is ultrastrong density of `(𝒜')*= 𝒜'`, and
+  -- 74VI asks for the (weaker) ultraweak one
+  have huw : @Dense 𝒜 (ultraweak 𝒜) (A' : Set 𝒜) := by
+    intro z
+    refine usClosure_subset_uwClosure _ ?_
+    let _ : TopologicalSpace 𝒜 := ultrastrong 𝒜
+    rw [mem_closure_iff]
+    intro o ho hmem
+    obtain ⟨ω, δ, hδ, hsub⟩ := exists_ultrastrong_ball_of_isOpen ho _ hmem
+    obtain ⟨d, hd, hdε⟩ := hA (star z) 1 (fun _ => ω) (δ / 2) (by positivity)
+    have h0 := hdε 0
+    rw [unSeminorm_mulInner_eq, star_sub, star_star] at h0
+    have h1 : omegaNorm 𝒜 ω (star d - z) < δ := by
+      rw [← omegaNorm_neg, neg_sub]; linarith
+    exact ⟨star d, hsub h1, star_mem hd⟩
+  obtain ⟨κ, l, hl, s, hs, hlim⟩ := dense_subalgebra A' huw 1 one_pos (star a)
+  have _hl := hl
+  have hev : ∀ᶠ j in l, ∀ i, omegaNorm 𝒜 (νs i) (s j - star a) ≤ ε := by
+    refine Filter.eventually_all.mpr fun i => ?_
+    have hi := (usTendsto_iff s l (star a)).mp hlim (νs i)
+    filter_upwards [Metric.tendsto_nhds.mp hi ε hε] with j hj
+    rw [Real.dist_eq, sub_zero, abs_of_nonneg (omegaNorm_nonneg _ _)] at hj
+    exact hj.le
+  obtain ⟨j, hj⟩ := hev.exists
+  refine ⟨star (s j), star_mem (hs j).1, ?_, fun i => ?_⟩
+  · have h := (hs j).2
+    rw [norm_star] at h
+    rw [norm_star]
+    linarith
+  · rw [unSeminorm_mulInner_eq, star_sub, star_star, ← omegaNorm_neg, neg_sub]
+    exact hj i
+
+omit [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ] in
+/-- `‖φ(a a*)‖^½ ≤ ‖φ(1)‖^½ ‖a‖`: the constant of `unSeminorm_tprod_right`
+is dominated by `B‖φ‖^½` on the ball of radius `B`.  This is what makes
+**166VII**'s `B²‖φ‖` a bound fixed *before* either approximant is chosen. -/
+private theorem sqrt_norm_ncp_conj_le (φ : NCPMap 𝒜 ℬ) (a : 𝒜) :
+    Real.sqrt ‖φ (a * star a)‖ ≤ Real.sqrt ‖φ (1 : 𝒜)‖ * ‖a‖ := by
+  have hnn : (0 : ℬ) ≤ φ (a * star a) := by
+    have hz : (φ 0 : ℬ) = 0 := map_zero φ.toCompletelyPositiveMap
+    have h : (φ 0 : ℬ) ≤ φ (a * star a) :=
+      (ncpPositive φ).monotone (mul_star_self_nonneg a)
+    rwa [hz] at h
+  have hn : ‖(a * star a : 𝒜)‖ ≤ ‖a‖ ^ 2 := by
+    rw [CStarRing.norm_self_mul_star]; nlinarith [norm_nonneg a]
+  have hle : (a * star a : 𝒜) ≤ ((‖a‖ ^ 2 : ℝ) : ℂ) • (1 : 𝒜) :=
+    le_ofReal_smul_one (mul_star_self_nonneg a) hn
+  have h2 : (φ (a * star a) : ℬ) ≤ ((‖a‖ ^ 2 : ℝ) : ℂ) • (φ (1 : 𝒜) : ℬ) := by
+    have h : (φ (a * star a) : ℬ) ≤ (φ ((((‖a‖ ^ 2 : ℝ) : ℂ)) • (1 : 𝒜)) : ℬ) :=
+      (ncpPositive φ).monotone hle
+    have heq : (φ ((((‖a‖ ^ 2 : ℝ) : ℂ)) • (1 : 𝒜)) : ℬ)
+        = ((‖a‖ ^ 2 : ℝ) : ℂ) • (φ (1 : 𝒜) : ℬ) :=
+      map_smul φ.toCompletelyPositiveMap _ _
+    rwa [heq] at h
+  have h3 : ‖(φ (a * star a) : ℬ)‖ ≤ ‖a‖ ^ 2 * ‖(φ (1 : 𝒜) : ℬ)‖ := by
+    have h := CStarAlgebra.norm_le_norm_of_nonneg_of_le hnn h2
+    rwa [norm_smul, Complex.norm_real, Real.norm_eq_abs,
+      abs_of_nonneg (by positivity : (0:ℝ) ≤ ‖a‖ ^ 2)] at h
+  calc Real.sqrt ‖(φ (a * star a) : ℬ)‖
+      ≤ Real.sqrt (‖a‖ ^ 2 * ‖(φ (1 : 𝒜) : ℬ)‖) := Real.sqrt_le_sqrt h3
+    _ = ‖a‖ * Real.sqrt ‖(φ (1 : 𝒜) : ℬ)‖ := by
+        rw [Real.sqrt_mul (by positivity), Real.sqrt_sq (norm_nonneg _)]
+    _ = Real.sqrt ‖(φ (1 : 𝒜) : ℬ)‖ * ‖a‖ := by ring
+
 -- the right ℬ-action on `𝒜 ⊙ ℬ` of parsec 1540, needed to read the
 -- `ptensBInner` of the model below (`Paschke.lean` declares it `local`)
 attribute [local instance] ptensSMul
@@ -11098,7 +11382,20 @@ end DilationSpaceDense
 /-- **166VI** (`dilationspace-dense-subset`, dils.tex:5703, Lemma): for an
 ncp-map `φ : 𝒜 → ℬ` between von Neumann algebras with ultrastrongly dense
 ∗-subalgebras `𝒜' ⊆ 𝒜`, `ℬ' ⊆ ℬ`, the linear span of
-`{a ⊗ b : a ∈ 𝒜', b ∈ ℬ'}` is ultranorm dense in `𝒜 ⊗_φ ℬ`. -/
+`{a ⊗ b : a ∈ 𝒜', b ∈ ℬ'}` is ultranorm dense in `𝒜 ⊗_φ ℬ`.
+
+**166VII** is the proof and is transcribed.  Its reduction to a single
+elementary tensor is `paschke_tprod_dense`; its approximants come from
+**74VI** `dense_subalgebra`, whose *norm-bounded* nets are what fix the
+constant `B` before either approximant is chosen (`unDense_bounded_approx`
+reads that net one entourage at a time, `sqrt_norm_ncp_conj_le` turns
+`‖a'‖ ≤ B` into the printed `B²‖φ‖`); the split is the printed
+`a' ⊗ (b − b') + (a − a') ⊗ b`, and the two estimates are the printed ones,
+`unSeminorm_tprod_left` (normality of `b*φ(·)b`) and
+`unSeminorm_tprod_right` (the `B²‖φ‖` bound).  The hypotheses `UnDense` of
+the mirrored inner product are, by **146VIII**
+(`unSeminorm_mulInner_eq_omegaNorm`), the ultrastrong density the thesis
+assumes. -/
 theorem dilationspace_dense_subset {𝒜 ℬ : Type u}
     [CStarAlgebra 𝒜] [PartialOrder 𝒜] [StarOrderedRing 𝒜]
     [CStarAlgebra ℬ] [PartialOrder ℬ] [StarOrderedRing ℬ]
@@ -11129,10 +11426,15 @@ theorem dilationspace_dense_subset {𝒜 ℬ : Type u}
   have helem : ∀ (a : 𝒜) (b : ℬ), M.tprod a b ∈ unClosure ℬ (inner ℬ) T := by
     intro a b n ωs ε hε
     choose ν hν using fun i : Fin n => exists_conj_comp_np φ (ωs i) b
-    obtain ⟨a', ha'A, ha'⟩ := hA a n ν (ε / 2) (by positivity)
-    set K : ℝ := Real.sqrt ‖φ (a' * star a')‖ with hKdef
-    have hK0 : 0 ≤ K := Real.sqrt_nonneg _
+    -- 166VII's `B` and its constant `B‖φ‖^½`, both fixed before either
+    -- approximant is chosen
+    set B : ℝ := 2 * ‖a‖ with hBdef
+    set K : ℝ := Real.sqrt ‖φ (1 : 𝒜)‖ * B with hKdef
+    have hB0 : 0 ≤ B := by positivity
+    have hK0 : 0 ≤ K := by positivity
     obtain ⟨b', hb'B, hb'⟩ := hB b n ωs (ε / (2 * (K + 1))) (by positivity)
+    obtain ⟨a', ha'A, ha'norm, ha'⟩ :=
+      unDense_bounded_approx A' hA a n ν (ε / 2) (by positivity)
     refine ⟨M.tprod a' b',
       ⟨1, fun _ => a', fun _ => b', fun _ => ha'A, fun _ => hb'B, by simp⟩,
       fun i => ?_⟩
@@ -11158,7 +11460,11 @@ theorem dilationspace_dense_subset {𝒜 ℬ : Type u}
             + K * unSeminorm (ωs i) (mulInner ℬ) (b - b') :=
           add_le_add
             (le_of_eq (unSeminorm_tprod_left φ M (ωs i) (ν i) b (hν i) (a - a')))
-            (unSeminorm_tprod_right φ M (ωs i) a' (b - b'))
+            ((unSeminorm_tprod_right φ M (ωs i) a' (b - b')).trans
+              (mul_le_mul_of_nonneg_right
+                ((sqrt_norm_ncp_conj_le φ a').trans
+                  (mul_le_mul_of_nonneg_left ha'norm (Real.sqrt_nonneg _)))
+                (unSeminorm_nonneg _ _ _)))
       _ ≤ ε / 2 + ε / 2 := add_le_add (ha' i) hb2
       _ = ε := by ring
   -- and hence so is every finite sum of elementary tensors, which are dense
