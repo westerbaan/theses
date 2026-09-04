@@ -194,6 +194,13 @@ both and bridges them with `su_procPure_of_isPure` (`VNExamples.lean`).  So
 own definitions**, and the one `sorry` is not a flaw in it: it marks the point
 where eff.tex 206II.4 leaves implicit that its (weaker) ⋄-positivity coincides,
 in `vN`, with the pure-root version its proof cites (105V, in the proc class).
+*And the two notions of ⋄-self-adjoint do **not** match a posteriori*
+(`docs/B15-dsa-match.md`, 2026-09-04): `diaPull f = diaPush f` is exactly
+"contraposed to itself" (both directions are in the tree), which does not force
+purity — `ad_{B₁} + ad_{B₂}` with independent self-adjoint `B₁, B₂` is
+eff-⋄-self-adjoint and impure.  proc.tex's notion is strictly stronger.  So
+reading (1) genuinely *changes* ⋄-self-adjointness (it excludes such witnesses),
+though not ⋄-positivity, whose pure-square roots are automatically pure.
 That coincidence is now known to be a theorem (`docs/B15-pure-sqrt.md`), so the
 `sorry` is a documented cross-thesis definitional gap, not a defect and not our
 mis-transcription.  The remaining choice is only whether to (1) align the
