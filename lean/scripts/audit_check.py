@@ -86,7 +86,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DECL = re.compile(
     r'^\s*(?:@\[[^\]]*\]\s*)?'
     r'(?:private\s+|protected\s+|noncomputable\s+|nonrec\s+|partial\s+|'
-    r'unsafe\s+|scoped\s+)*'
+    r'unsafe\s+|scoped\s+|local\s+)*'
     r'(?:theorem|lemma|def|abbrev|instance|structure|class|inductive|opaque)\s+'
     r'([^\s(){}\[\]:,]+)')
 
