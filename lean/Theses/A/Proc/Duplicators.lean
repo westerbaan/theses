@@ -2322,81 +2322,127 @@ theorem atomic_dichotomy [IsFiniteMeasure μ] (hX : AtomicSet μ Set.univ)
 /-- Auxiliary for **130II**: a bounded measurable *real* function on an
 atomic measure space is almost everywhere constant.
 
-This is the author's argument (proc.tex:6489) with `f°` read back into
-the measure space: he takes the two closed sets `L = {t | t ≤ f°}` and
-`U = {t | f° ≤ t}`, notes that `atomic_dichotomy` makes them cover `ℝ`
-and that connectedness of `ℝ` therefore puts a point in `L ∩ U`.  Here
-`L` is realised concretely as `{t | μ{g < t} = 0}` and the point is its
-supremum; the connectedness step becomes the (equivalent, and shorter in
-Lean) observation that `μ{g < r} = μ{g > r} = 0` for `r = sup L`. -/
+The author's argument (proc.tex:6480-6521) step for step, with `f°` read
+back into the measure space: `t ≤ f°` says `μ{g < t} = 0` and `f° ≤ t`
+says `μ{t < g} = 0`, so the author's two sets are `L = {t | μ{g < t} = 0}`
+and `U = {t | μ{t < g} = 0}`.  `atomic_dichotomy` makes them cover `ℝ`;
+each is closed (if `μ{g < t} ≠ 0` then already `μ{g < t - 1/(n+1)} ≠ 0`
+for some `n`, by continuity from below, and the ray above `t - 1/(n+1)`
+then misses `L`; symmetrically for `U`); `-C-1 ∈ L` and `C+2 ∉ L`.  Were
+`L` and `U` disjoint they would split `ℝ` into two non-empty clopen
+pieces, so they meet, and for `r ∈ L ∩ U` we have `r ≤ f° ≤ r`. -/
 theorem ae_const_real_of_atomic [IsFiniteMeasure μ]
     (hX : AtomicSet μ Set.univ) (g : X → ℝ) (hg : Measurable g) (C : ℝ)
     (hC : ∀ x, |g x| ≤ C) : ∃ r : ℝ, g =ᵐ[μ] fun _ => r := by
-  set L : Set ℝ := {t : ℝ | μ {x | g x < t} = 0} with hL
-  have hdown : ∀ t t' : ℝ, t' ≤ t → t ∈ L → t' ∈ L := fun t t' hle ht =>
-    measure_mono_null (fun x hx => lt_of_lt_of_le hx hle) ht
-  have hne : (-C - 1) ∈ L := by
+  -- `t ≤ f°` and `f° ≤ t` read back into the measure space
+  set L : Set ℝ := {t : ℝ | μ {x | g x < t} = 0} with hLdef
+  set U : Set ℝ := {t : ℝ | μ {x | t < g x} = 0} with hUdef
+  -- `L` and `U` cover `ℝ`, by the atomic dichotomy
+  have hcover : L ∪ U = Set.univ := by
+    ext t
+    simp only [Set.mem_union, Set.mem_univ, iff_true]
+    rcases atomic_dichotomy μ hX {x | g x < t}
+      (measurableSet_lt hg measurable_const) with h | h
+    · exact Or.inl h
+    · refine Or.inr (measure_mono_null (fun x hx => ?_) h)
+      simp only [Set.mem_compl_iff, Set.mem_ofPred_eq, not_lt]
+      exact le_of_lt hx
+  -- `L` is closed
+  have hLclosed : IsClosed L := by
+    rw [← isOpen_compl_iff, isOpen_iff_forall_mem_open]
+    intro t ht
+    have hcov : {x | g x < t} = ⋃ n : ℕ, {x | g x < t - 1 / (n + 1)} := by
+      ext x
+      simp only [Set.mem_ofPred_eq, Set.mem_iUnion]
+      constructor
+      · intro hx
+        obtain ⟨n, hn⟩ := exists_nat_one_div_lt (show (0:ℝ) < t - g x by linarith)
+        exact ⟨n, by linarith [hn]⟩
+      · rintro ⟨n, hn⟩
+        have : (0:ℝ) < 1 / ((n : ℝ) + 1) := by positivity
+        linarith
+    have hex : ∃ n : ℕ, μ {x | g x < t - 1 / (n + 1)} ≠ 0 := by
+      by_contra hcon
+      refine ht ?_
+      show μ {x | g x < t} = 0
+      rw [hcov]
+      exact measure_iUnion_null fun n => not_not.mp fun h => hcon ⟨n, h⟩
+    obtain ⟨n, hn⟩ := hex
+    refine ⟨Set.Ioi (t - 1 / (n + 1)), ?_, isOpen_Ioi, ?_⟩
+    · intro t' ht' hmem
+      have hmem' : μ {x | g x < t'} = 0 := hmem
+      refine hn (measure_mono_null (fun x hx => ?_) hmem')
+      exact lt_trans hx (Set.mem_Ioi.mp ht')
+    · have : (0:ℝ) < 1 / ((n : ℝ) + 1) := by positivity
+      simp only [Set.mem_Ioi]
+      linarith
+  -- `U` is closed
+  have hUclosed : IsClosed U := by
+    rw [← isOpen_compl_iff, isOpen_iff_forall_mem_open]
+    intro t ht
+    have hcov : {x | t < g x} = ⋃ n : ℕ, {x | t + 1 / (n + 1) < g x} := by
+      ext x
+      simp only [Set.mem_ofPred_eq, Set.mem_iUnion]
+      constructor
+      · intro hx
+        obtain ⟨n, hn⟩ := exists_nat_one_div_lt (show (0:ℝ) < g x - t by linarith)
+        exact ⟨n, by linarith [hn]⟩
+      · rintro ⟨n, hn⟩
+        have : (0:ℝ) < 1 / ((n : ℝ) + 1) := by positivity
+        linarith
+    have hex : ∃ n : ℕ, μ {x | t + 1 / (n + 1) < g x} ≠ 0 := by
+      by_contra hcon
+      refine ht ?_
+      show μ {x | t < g x} = 0
+      rw [hcov]
+      exact measure_iUnion_null fun n => not_not.mp fun h => hcon ⟨n, h⟩
+    obtain ⟨n, hn⟩ := hex
+    refine ⟨Set.Iio (t + 1 / (n + 1)), ?_, isOpen_Iio, ?_⟩
+    · intro t' ht' hmem
+      have hmem' : μ {x | t' < g x} = 0 := hmem
+      refine hn (measure_mono_null (fun x hx => ?_) hmem')
+      exact lt_trans (Set.mem_Iio.mp ht') hx
+    · have : (0:ℝ) < 1 / ((n : ℝ) + 1) := by positivity
+      simp only [Set.mem_Iio]
+      linarith
+  -- `-C-1 ∈ L` and `C+1 ∈ U`, and `C+2 ∉ L`
+  have hLne : (-C - 1) ∈ L := by
     have he : {x | g x < -C - 1} = ∅ := by
       ext x
       simp only [Set.mem_ofPred_eq, Set.mem_empty_iff_false, iff_false, not_lt]
       have := abs_le.mp (hC x); linarith [this.1]
-    rw [hL]; simp [he]
-  have hbdd : ∀ t ∈ L, t ≤ C + 1 := by
-    intro t ht
-    by_contra hcon
-    push_neg at hcon
-    have huniv : {x | g x < t} = Set.univ := by
+    show μ {x | g x < -C - 1} = 0
+    rw [he]; simp
+  have hLnu : (C + 2) ∉ L := by
+    intro hmem
+    have huniv : {x | g x < C + 2} = Set.univ := by
       ext x
       simp only [Set.mem_ofPred_eq, Set.mem_univ, iff_true]
       have := abs_le.mp (hC x); linarith [this.2]
-    rw [hL, Set.mem_ofPred_eq, huniv] at ht
-    exact absurd ht hX.2.1.ne'
-  set r := sSup L with hr
-  have hLne : L.Nonempty := ⟨_, hne⟩
-  have hLbdd : BddAbove L := ⟨C + 1, hbdd⟩
-  have hlow : ∀ t < r, t ∈ L := by
-    intro t ht
-    obtain ⟨t', ht'L, ht'⟩ := exists_lt_of_lt_csSup hLne ht
-    exact hdown t' t ht'.le ht'L
-  have hbelow : μ {x | g x < r} = 0 := by
-    have hcover : {x | g x < r} = ⋃ n : ℕ, {x | g x < r - 1 / (n + 1)} := by
-      ext x
-      simp only [Set.mem_ofPred_eq, Set.mem_iUnion]
+    have : μ Set.univ = 0 := by rw [← huniv]; exact hmem
+    exact absurd this hX.2.1.ne'
+  -- `L` and `U` cannot be disjoint: they would partition `ℝ` into two
+  -- non-empty clopen pieces
+  have hmeet : (L ∩ U).Nonempty := by
+    by_contra hcon
+    rw [Set.not_nonempty_iff_eq_empty] at hcon
+    have hcompl : Lᶜ = U := by
+      ext t
       constructor
-      · intro hx
-        obtain ⟨n, hn⟩ := exists_nat_one_div_lt (show (0:ℝ) < r - g x by linarith)
-        exact ⟨n, by linarith [hn]⟩
-      · rintro ⟨n, hn⟩
-        have : (0:ℝ) < 1 / (n + 1) := by positivity
-        linarith
-    rw [hcover]
-    refine measure_iUnion_null fun n => hlow _ ?_
-    have : (0:ℝ) < 1 / (n + 1) := by positivity
-    linarith
-  have habove : μ {x | r < g x} = 0 := by
-    have hup : ∀ t, r < t → μ {x | t ≤ g x} = 0 := by
-      intro t ht
-      have htn : t ∉ L := fun h => absurd (le_csSup hLbdd h) (not_le.mpr ht)
-      rcases atomic_dichotomy μ hX {x | g x < t}
-        (measurableSet_lt hg measurable_const) with h | h
-      · exact absurd h htn
-      · exact measure_mono_null (fun x hx => by
-          simp only [Set.mem_compl_iff, Set.mem_ofPred_eq, not_lt]; exact hx) h
-    have hcover : {x | r < g x} = ⋃ n : ℕ, {x | r + 1 / (n + 1) ≤ g x} := by
-      ext x
-      simp only [Set.mem_ofPred_eq, Set.mem_iUnion]
-      constructor
-      · intro hx
-        obtain ⟨n, hn⟩ := exists_nat_one_div_lt (show (0:ℝ) < g x - r by linarith)
-        exact ⟨n, by linarith⟩
-      · rintro ⟨n, hn⟩
-        have : (0:ℝ) < 1 / (n + 1) := by positivity
-        linarith
-    rw [hcover]
-    refine measure_iUnion_null fun n => hup _ ?_
-    have : (0:ℝ) < 1 / (n + 1) := by positivity
-    linarith
-  refine ⟨r, measure_mono_null (fun x hx => ?_) (measure_union_null hbelow habove)⟩
+      · intro htc
+        rcases (Set.ext_iff.mp hcover t).mpr (Set.mem_univ t) with h | h
+        · exact absurd h htc
+        · exact h
+      · intro htU htL
+        exact absurd (Set.mem_inter htL htU) (by rw [hcon]; exact Set.notMem_empty t)
+    have hclopen : IsClopen L :=
+      ⟨hLclosed, by rw [← isClosed_compl_iff, hcompl]; exact hUclosed⟩
+    rcases isClopen_iff.mp hclopen with h | h
+    · rw [h] at hLne; exact absurd hLne (Set.notMem_empty _)
+    · exact hLnu (by rw [h]; exact Set.mem_univ _)
+  -- for `r ∈ L ∩ U` we have `r ≤ f° ≤ r`
+  obtain ⟨r, hrL, hrU⟩ := hmeet
+  refine ⟨r, measure_mono_null (fun x hx => ?_) (measure_union_null hrL hrU)⟩
   rcases lt_trichotomy (g x) r with h | h | h
   · exact Or.inl h
   · exact absurd h hx
@@ -3916,93 +3962,100 @@ private theorem exists_ell_of_faithful (𝒞 : Type u) [CommCStarAlgebra 𝒞]
 
 /-! ### The reassembly `𝒜 ≅ ⊕ᵢ zᵢ𝒜 ≅ ℓ^∞(Σᵢ Yᵢ)` -/
 
-/-- The compression `a ↦ z·a·z` onto the corner of a **central** projection,
-as a unital ∗-homomorphism.  Multiplicativity is where centrality is used:
-`(zaz)(zbz) = z²(ab)z = z(ab)z`. -/
-private def centralCompression [VonNeumannAlgebra A] (z : A)
-    [Fact (IsStarProjection z)] (hz : IsCentral A z) : A →⋆ₐ[ℂ] Corner A z where
-  toFun a := ⟨z * a * z, by
-    have h : z * z = z := (Corner.proj z).isIdempotentElem.eq
-    calc z * (z * a * z) * z = (z * z) * a * (z * z) := by noncomm_ring
-      _ = z * a * z := by rw [h]⟩
-  map_one' := Corner.val_injective (by
-    show z * 1 * z = z
-    rw [mul_one, (Corner.proj z).isIdempotentElem.eq])
-  map_mul' a b := Corner.val_injective (by
-    have h : z * z = z := (Corner.proj z).isIdempotentElem.eq
-    show z * (a * b) * z = (z * a * z) * (z * b * z)
-    calc z * (a * b) * z = (z * z) * (a * b) * z := by rw [h]
-      _ = z * (z * a) * b * z := by noncomm_ring
-      _ = z * (a * z) * b * z := by rw [hz a]
-      _ = z * a * (z * z) * b * z := by rw [h]; noncomm_ring
-      _ = (z * a * z) * (z * b * z) := by noncomm_ring)
-  map_zero' := Corner.val_injective (by show z * 0 * z = 0; simp)
-  map_add' a b := Corner.val_injective (by
-    show z * (a + b) * z = z * a * z + z * b * z
-    rw [mul_add, add_mul])
-  commutes' r := Corner.val_injective (by
-    show z * (algebraMap ℂ A r) * z = (algebraMap ℂ (Corner A z) r).val
-    rw [Algebra.algebraMap_eq_smul_one, Algebra.algebraMap_eq_smul_one]
-    show z * (r • (1 : A)) * z = (r • (1 : Corner A z)).val
-    rw [Corner.val_smul, Corner.val_one, mul_smul_comm, smul_mul_assoc, mul_one,
-      (Corner.proj z).isIdempotentElem.eq])
-  map_star' a := Corner.val_injective (by
-    show z * star a * z = star (z * a * z)
-    rw [star_mul, star_mul, (Corner.proj z).isSelfAdjoint.star_eq, mul_assoc])
+/-- Duplicability transfers along an nmiu-isomorphism `φ : 𝒜 ≅ ℬ`: the
+duplicator of `𝒜` is `φ⁻¹ ∘ δ_ℬ ∘ (φ ⊗ φ)`.  (Same shape as
+`duplicable_corner`; **115II** `tmap` supplies `φ ⊗ φ` and **128XI** turns
+the composite back into a duplicator.) -/
+private theorem duplicable_of_nmiu_bijective [VonNeumannAlgebra A] [VonNeumannAlgebra B]
+    (φ : NMIUMap A B) (hφ : Function.Bijective ⇑φ) (hd : Duplicable B) :
+    Duplicable A := by
+  obtain ⟨δ, hδnorm, hδmul⟩ := (duplicability_multiplication (A := B)).1.mp hd
+  obtain ⟨E, hE⟩ : ∃ E : A ≃⋆ₐ[ℂ] B, ∀ a : A, E a = φ a :=
+    ⟨StarAlgEquiv.ofBijective φ.toStarAlgHom hφ, fun _ => rfl⟩
+  obtain ⟨Pinv, hPinv⟩ : ∃ P : B →ₚ[ℂ] A, ∀ y : B, P y = E.symm y :=
+    ⟨{ toLinearMap :=
+        { toFun := fun y => E.symm y
+          map_add' := fun x y => map_add E.symm.toStarAlgHom x y
+          map_smul' := fun c x => map_smul E.symm.toStarAlgHom c x }
+       monotone' := fun x y hxy => starAlgHom_mono' E.symm.toStarAlgHom hxy },
+      fun _ => rfl⟩
+  have hPinvnorm : PreservesDirSups (fun y : B => Pinv y) := by
+    rw [show (fun y : B => Pinv y) = ⇑E.symm from funext hPinv]
+    exact starAlgEquiv_preservesDirSups' E.symm
+  obtain ⟨Pφ, hPφc, hPφ⟩ : ∃ P : VNT A A →ₚ[ℂ] VNT B B,
+      (⇑P = ⇑(tmap (nmiuNCP φ) (nmiuNCP φ)).toCompletelyPositiveMap) ∧
+        ∀ a b : A, P (a ⊗ᵥ b) = (φ a) ⊗ᵥ (φ b) :=
+    ⟨PositiveLinearMap.ofClass (tmap (nmiuNCP φ) (nmiuNCP φ)).toCompletelyPositiveMap,
+      rfl, fun a b => tmap_apply (nmiuNCP φ) (nmiuNCP φ) a b⟩
+  have hPφnorm : PreservesDirSups ⇑Pφ := by
+    rw [hPφc]; exact (tmap (nmiuNCP φ) (nmiuNCP φ)).preservesDirSups'
+  refine (duplicability_multiplication (A := A)).1.mpr
+    ⟨Pinv.comp (δ.comp Pφ), ?_, ?_⟩
+  · have h1 : PreservesDirSups (fun t : VNT A A => δ (Pφ t)) :=
+      preservesDirSups_comp (fun _ hx => isSelfAdjoint_map_of_pos Pφ hx)
+        (fun _ _ hxy => Pφ.monotone' hxy) hPφnorm hδnorm
+    exact preservesDirSups_comp (f := fun t : VNT A A => δ (Pφ t)) (g := fun y : B => Pinv y)
+      (fun _ hx => isSelfAdjoint_map_of_pos (δ.comp Pφ) hx)
+      (fun _ _ hxy => (δ.comp Pφ).monotone' hxy) h1 hPinvnorm
+  · intro a b
+    show Pinv (δ (Pφ (a ⊗ᵥ b))) = a * b
+    rw [hPφ, hδmul, hPinv, ← hE a, ← hE b, ← map_mul E]
+    exact E.symm_apply_apply (a * b)
 
-private theorem centralCompression_val [VonNeumannAlgebra A] (z : A)
-    [Fact (IsStarProjection z)] (hz : IsCentral A z) (a : A) :
-    (centralCompression z hz a).val = z * a * z := rfl
+/-- The inverse of an nmiu-isomorphism, as an nmiu-map: the ∗-algebra
+structure is that of the inverse equivalence, and normality transfers along
+it (`starAlgEquiv_preservesDirSups'`).  It is what carries duplicability
+across **67IV**.2's isomorphism `𝒜 ≅ ⊕ᵢ zᵢ𝒜`, which points the wrong way
+for `duplicable_of_nmiu_bijective`. -/
+private noncomputable def nmiuInv [VonNeumannAlgebra A] [VonNeumannAlgebra B]
+    (φ : NMIUMap A B) (hφ : Function.Bijective ⇑φ) : NMIUMap B A where
+  toStarAlgHom := (StarAlgEquiv.ofBijective φ.toStarAlgHom hφ).symm
+  preservesDirSups' :=
+    starAlgEquiv_preservesDirSups'
+      (StarAlgEquiv.ofBijective φ.toStarAlgHom hφ).symm
 
 /-- **127III**, the forward direction: a duplicable von Neumann algebra is
 `ℓ^∞(X)`.
 
-**128VIII** makes `𝒜` commutative, so **70III** `cvn` splits it into corners
-`zᵢ𝒜` on which the np-functionals `ωᵢ` are faithful.  Each corner is
-duplicable (`duplicable_corner`) and commutative, hence `ℓ^∞(Yᵢ)` by
-`exists_ell_of_faithful`, and the corners reassemble into `ℓ^∞(Σᵢ Yᵢ)` by
-**67IV**.2 `central_projections_sums_2`. -/
+**128VIII** makes `𝒜` commutative, so **70III** `cvn` splits it into the
+direct sum `⊕ᵢ zᵢ𝒜` of the corners of an orthogonal family of central
+projections, on which the np-functionals `ωᵢ` are faithful — that is
+`cvn_direct_sum`, which packages 70III's decomposition together with
+**67IV**.2's isomorphism `𝒜 ≅ ⊕ᵢ zᵢ𝒜`.  Each summand is then duplicable by
+**128XIII** `cor:duplicable-product`, as the thesis says (proc.tex:5915),
+and commutative, hence `ℓ^∞(Yᵢ)` by `exists_ell_of_faithful`; the summands
+reassemble into `ℓ^∞(Σᵢ Yᵢ)` by **67IV**.2 `central_projections_sums_2`. -/
 private theorem duplicable_forward [VonNeumannAlgebra A] (hd : Duplicable A) :
     ∃ (X : Type u) (φ : NMIUMap A (linf X)), Function.Bijective ⇑φ := by
   classical
   obtain ⟨d⟩ := hd
   have hcomm : ∀ a b : A, a * b = b * a := (uniqueness_duplicator d).1
   letI : CommCStarAlgebra A := { ‹CStarAlgebra A› with mul_comm := hcomm }
-  obtain ⟨ι, ω, hpair, hsum, hfaith⟩ := cvn (C := A)
-  obtain ⟨c, hcdef⟩ : ∃ c : ι → A, c = fun i => cceil (npCarrier (ω i)) := ⟨_, rfl⟩
-  have hcpt : ∀ i, c i = cceil (npCarrier (ω i)) := fun i => by rw [hcdef]
-  have hcproj : ∀ i, IsStarProjection (c i) := by
-    intro i; rw [hcpt]; exact (cceil_isLeast _).1.1
-  have hccen : ∀ i, IsCentral A (c i) := by
-    intro i; rw [hcpt]; exact (cceil_isLeast _).1.2.1
-  haveI hFa : ∀ i, Fact (IsStarProjection (c i)) := fun i => ⟨hcproj i⟩
-  have horth : Pairwise fun i j => c i * c j = 0 := by
-    intro i j hij; rw [hcpt, hcpt]; exact hpair hij
-  have hsum' : projSup (Set.range c) = 1 := by rw [hcdef]; exact hsum
-  have hcx : ∀ (i : ι) (x : A), c i * x * c i = c i * x := by
-    intro i x
-    calc c i * x * c i = c i * (c i * x) := by rw [mul_assoc, ← hccen i x]
-      _ = (c i * c i) * x := by rw [mul_assoc]
-      _ = c i * x := by rw [(hcproj i).isIdempotentElem.eq]
-  -- each corner is a commutative duplicable algebra with a faithful functional
-  have hcorner : ∀ i, ∃ (Y : Type u) (φ : NMIUMap (Corner A (c i)) (linf Y)),
+  obtain ⟨ι, ω, cp, hntriv, -, horth, hsum, hcommsub, hfaith, Φ, hΦbij, -⟩ :=
+    cvn_direct_sum (C := A)
+  have hnt : ∀ i, Nontrivial ((cp i).sub) := hntriv
+  have hcproj : ∀ i, IsStarProjection (cp i).val := fun i => (cp i).isProj
+  have hccen : ∀ i, IsCentral A (cp i).val := fun i => (cp i).isCentral
+  -- **128XIII** `cor:duplicable-product`: the summands of a duplicable direct
+  -- sum are duplicable
+  have hdsub : ∀ i, Duplicable ((cp i).sub) := by
+    have hdlp : Duplicable (lp (fun i => (cp i).sub) ∞) :=
+      duplicable_of_nmiu_bijective (nmiuInv Φ hΦbij)
+        (StarAlgEquiv.ofBijective Φ.toStarAlgHom hΦbij).symm.bijective ⟨d⟩
+    exact fun i => duplicable_product (fun i => ((cp i).sub : Type u)) hdlp i
+  -- each summand is a commutative duplicable algebra with a faithful functional
+  have hcorner : ∀ i, ∃ (Y : Type u) (φ : NMIUMap ((cp i).sub) (linf Y)),
       Function.Bijective ⇑φ := by
     intro i
-    letI : CommCStarAlgebra (Corner A (c i)) :=
-      { (inferInstance : CStarAlgebra (Corner A (c i))) with
-        mul_comm := fun x y => Corner.val_injective (hcomm x.val y.val) }
-    refine exists_ell_of_faithful (Corner A (c i)) (Corner.restrictNP (c i) (ω i)) ?_
-      (duplicable_corner (c i) ⟨d⟩)
-    intro a ha h0
-    refine Corner.val_injective ?_
-    refine hfaith i a.val (show (0 : A) ≤ a.val from ha) ?_ h0
-    rw [← hcpt i]
-    exact Corner.mul_left a
+    letI : CommCStarAlgebra ((cp i).sub) :=
+      { (inferInstance : CStarAlgebra ((cp i).sub)) with mul_comm := hcommsub i }
+    exact exists_ell_of_faithful ((cp i).sub) ((cp i).restrictNP (ω i))
+      (hfaith i) (hdsub i)
   choose Y φ hφ using hcorner
   -- the compressed maps `ψᵢ = φᵢ ∘ (a ↦ zᵢa) : 𝒜 → ℓ^∞(Yᵢ)`
   obtain ⟨ψ, hψ⟩ : ∃ ψ : ∀ i, A →⋆ₐ[ℂ] linf (Y i),
-      ∀ (i : ι) (a : A), ψ i a = φ i (centralCompression (c i) (hccen i) a) :=
-    ⟨fun i => (φ i).toStarAlgHom.comp (centralCompression (c i) (hccen i)),
+      ∀ (i : ι) (a : A), ψ i a = φ i ((cp i).compress a) :=
+    ⟨fun i => (φ i).toStarAlgHom.comp ((cp i).compress).toStarAlgHom,
       fun _ _ => rfl⟩
   -- pointwise dictionary for `ℓ^∞`
   have hlone : ∀ (Z : Type u) (z : Z), (1 : linf Z) z = 1 := by
@@ -4072,10 +4125,10 @@ private theorem duplicable_forward [VonNeumannAlgebra A] (hd : Duplicable A) :
        commutes' := halg
        map_star' := hstar }, rfl⟩
   -- injectivity
-  have hker0 : ∀ x : A, (∀ i, c i * x = 0) → x = 0 := by
+  have hker0 : ∀ x : A, (∀ i, (cp i).val * x = 0) → x = 0 := by
     intro x hx
-    obtain ⟨y, -, huniq⟩ := central_projections_sums_2 c
-      (fun i => ⟨hcproj i, hccen i⟩) horth hsum' (fun _ => 0)
+    obtain ⟨y, -, huniq⟩ := central_projections_sums_2 (fun i => (cp i).val)
+      (fun i => ⟨hcproj i, hccen i⟩) horth hsum (fun _ => 0)
       (fun i => by rw [mul_zero]) ⟨0, by rintro _ ⟨i, rfl⟩; simp⟩
     rw [huniq x hx, ← huniq 0 (fun i => by rw [mul_zero])]
   have hker : ∀ x : A, Ψ x = 0 → x = 0 := by
@@ -4087,12 +4140,13 @@ private theorem duplicable_forward [VonNeumannAlgebra A] (hd : Duplicable A) :
       rw [hlzero]
       have h2 : Ψf x ⟨i, y⟩ = 0 := by rw [← hΨ, hx, hlzero]
       exact (hF x ⟨i, y⟩).symm.trans ((hΨf x ⟨i, y⟩).symm.trans h2)
-    have h3 : φ i (centralCompression (c i) (hccen i) x) = 0 := by rw [← hψ]; exact h1
-    have h4 : centralCompression (c i) (hccen i) x = 0 :=
-      (hφ i).1 (show φ i (centralCompression (c i) (hccen i) x) = φ i 0 by
+    have h3 : φ i ((cp i).compress x) = 0 := by rw [← hψ]; exact h1
+    have h4 : (cp i).compress x = 0 :=
+      (hφ i).1 (show φ i ((cp i).compress x) = φ i 0 by
         rw [h3]; exact (map_zero (φ i).toStarAlgHom).symm)
-    have h5 : c i * x * c i = 0 := congrArg Corner.val h4
-    rw [← hcx i x]; exact h5
+    have h5 : (((cp i).compress x : (cp i).sub) : A) = ((0 : (cp i).sub) : A) :=
+      congrArg Subtype.val h4
+    exact h5
   have hinj : Function.Injective ⇑Ψ := by
     intro a b hab
     exact sub_eq_zero.mp (hker (a - b) (by rw [map_sub, hab, sub_self]))
@@ -4111,27 +4165,29 @@ private theorem duplicable_forward [VonNeumannAlgebra A] (hd : Duplicable A) :
       exact lp.norm_apply_le_norm ENNReal.top_ne_zero g ⟨i, y⟩
     obtain ⟨gi, hgi⟩ : ∃ gi : ∀ i, linf (Y i), ∀ (i : ι) (y : Y i), gi i y = G i y :=
       ⟨fun i => ⟨G i, hGmem i⟩, fun _ _ => rfl⟩
-    have hpre : ∀ i, ∃ x : Corner A (c i), φ i x = gi i := fun i => (hφ i).2 (gi i)
+    have hpre : ∀ i, ∃ x : (cp i).sub, φ i x = gi i := fun i => (hφ i).2 (gi i)
     choose xc hxc using hpre
-    have hnorm : ∀ i, ‖(xc i).val‖ ≤ ‖g‖ := by
+    have hnorm : ∀ i, ‖((xc i : (cp i).sub) : A)‖ ≤ ‖g‖ := by
       intro i
       have hiso : ‖(StarAlgEquiv.ofBijective (φ i).toStarAlgHom (hφ i)) (xc i)‖
           = ‖xc i‖ := StarAlgEquiv.norm_map _ _
       have heq : (StarAlgEquiv.ofBijective (φ i).toStarAlgHom (hφ i)) (xc i) = gi i :=
         hxc i
       rw [heq] at hiso
-      rw [← Corner.norm_def, ← hiso]
+      show ‖(xc i : (cp i).sub)‖ ≤ ‖g‖
+      rw [← hiso]
       refine lp.norm_le_of_forall_le (norm_nonneg g) fun y => ?_
       rw [hgi, hG]
       exact lp.norm_apply_le_norm ENNReal.top_ne_zero g ⟨i, y⟩
-    obtain ⟨a, ha, -⟩ := central_projections_sums_2 c (fun i => ⟨hcproj i, hccen i⟩)
-      horth hsum' (fun i => (xc i).val) (fun i => Corner.mul_left (xc i))
+    obtain ⟨a, ha, -⟩ := central_projections_sums_2 (fun i => (cp i).val)
+      (fun i => ⟨hcproj i, hccen i⟩) horth hsum
+      (fun i => ((xc i : (cp i).sub) : A)) (fun i => (xc i).2)
       ⟨‖g‖, by rintro _ ⟨i, rfl⟩; exact hnorm i⟩
     refine ⟨a, ?_⟩
-    have hcompr : ∀ i, centralCompression (c i) (hccen i) a = xc i := by
+    have hcompr : ∀ i, (cp i).compress a = xc i := by
       intro i
-      refine Corner.val_injective ?_
-      rw [centralCompression_val, hcx i a]
+      refine Subtype.ext ?_
+      show (cp i).val * a = ((xc i : (cp i).sub) : A)
       exact ha i
     refine lp.ext (funext fun p => ?_)
     show Ψ a p = g p
@@ -4141,46 +4197,6 @@ private theorem duplicable_forward [VonNeumannAlgebra A] (hd : Duplicable A) :
       preservesDirSups' :=
         starAlgEquiv_preservesDirSups' (StarAlgEquiv.ofBijective Ψ ⟨hinj, hsurj⟩) },
     hinj, hsurj⟩
-
-/-- Duplicability transfers along an nmiu-isomorphism `φ : 𝒜 ≅ ℬ`: the
-duplicator of `𝒜` is `φ⁻¹ ∘ δ_ℬ ∘ (φ ⊗ φ)`.  (Same shape as
-`duplicable_corner`; **115II** `tmap` supplies `φ ⊗ φ` and **128XI** turns
-the composite back into a duplicator.) -/
-private theorem duplicable_of_nmiu_bijective [VonNeumannAlgebra A] [VonNeumannAlgebra B]
-    (φ : NMIUMap A B) (hφ : Function.Bijective ⇑φ) (hd : Duplicable B) :
-    Duplicable A := by
-  obtain ⟨δ, hδnorm, hδmul⟩ := (duplicability_multiplication (A := B)).1.mp hd
-  obtain ⟨E, hE⟩ : ∃ E : A ≃⋆ₐ[ℂ] B, ∀ a : A, E a = φ a :=
-    ⟨StarAlgEquiv.ofBijective φ.toStarAlgHom hφ, fun _ => rfl⟩
-  obtain ⟨Pinv, hPinv⟩ : ∃ P : B →ₚ[ℂ] A, ∀ y : B, P y = E.symm y :=
-    ⟨{ toLinearMap :=
-        { toFun := fun y => E.symm y
-          map_add' := fun x y => map_add E.symm.toStarAlgHom x y
-          map_smul' := fun c x => map_smul E.symm.toStarAlgHom c x }
-       monotone' := fun x y hxy => starAlgHom_mono' E.symm.toStarAlgHom hxy },
-      fun _ => rfl⟩
-  have hPinvnorm : PreservesDirSups (fun y : B => Pinv y) := by
-    rw [show (fun y : B => Pinv y) = ⇑E.symm from funext hPinv]
-    exact starAlgEquiv_preservesDirSups' E.symm
-  obtain ⟨Pφ, hPφc, hPφ⟩ : ∃ P : VNT A A →ₚ[ℂ] VNT B B,
-      (⇑P = ⇑(tmap (nmiuNCP φ) (nmiuNCP φ)).toCompletelyPositiveMap) ∧
-        ∀ a b : A, P (a ⊗ᵥ b) = (φ a) ⊗ᵥ (φ b) :=
-    ⟨PositiveLinearMap.ofClass (tmap (nmiuNCP φ) (nmiuNCP φ)).toCompletelyPositiveMap,
-      rfl, fun a b => tmap_apply (nmiuNCP φ) (nmiuNCP φ) a b⟩
-  have hPφnorm : PreservesDirSups ⇑Pφ := by
-    rw [hPφc]; exact (tmap (nmiuNCP φ) (nmiuNCP φ)).preservesDirSups'
-  refine (duplicability_multiplication (A := A)).1.mpr
-    ⟨Pinv.comp (δ.comp Pφ), ?_, ?_⟩
-  · have h1 : PreservesDirSups (fun t : VNT A A => δ (Pφ t)) :=
-      preservesDirSups_comp (fun _ hx => isSelfAdjoint_map_of_pos Pφ hx)
-        (fun _ _ hxy => Pφ.monotone' hxy) hPφnorm hδnorm
-    exact preservesDirSups_comp (f := fun t : VNT A A => δ (Pφ t)) (g := fun y : B => Pinv y)
-      (fun _ hx => isSelfAdjoint_map_of_pos (δ.comp Pφ) hx)
-      (fun _ _ hxy => (δ.comp Pφ).monotone' hxy) h1 hPinvnorm
-  · intro a b
-    show Pinv (δ (Pφ (a ⊗ᵥ b))) = a * b
-    rw [hPφ, hδmul, hPinv, ← hE a, ← hE b, ← map_mul E]
-    exact E.symm_apply_apply (a * b)
 
 /-- **127III** (`duplicable`, proc.tex:5887, Theorem), main equivalence: a
 von Neumann algebra `𝒜` is duplicable iff it is nmiu-isomorphic to

@@ -138,7 +138,6 @@
 84bIII|finiteDimensional_starSubalgebra|Theses/A/VN/Division.lean|ok|none|auxiliary, not a transcription
 84bIII|cstarAlgebra_starSubalgebra|Theses/A/VN/Division.lean|ok|none|auxiliary, not a transcription
 84II|exists_surj_matprod|Theses/A/VN/Division.lean|ok|none|auxiliary, not a transcription: 840.20 applied to the range of a star-homomorphism into a finite-dimensional C*-algebra
-84bIII|exists_blocks|Theses/A/VN/Division.lean|ok|none|auxiliary, not a transcription: the block decomposition replacing the thesis's corner d_j B
 84bIII|central_idem_matrix|Theses/A/VN/Division.lean|ok|none|auxiliary, not a transcription
 84bIII|lpProj|Theses/A/VN/Division.lean|ok|none|auxiliary, not a transcription: the coordinate projection pi_j of 842.40
 84bIII|starAlgHom_nonneg₂|Theses/A/VN/Division.lean|ok|none|auxiliary, universe-polymorphic restatement

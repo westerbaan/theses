@@ -152,6 +152,21 @@ theorem lpSumSA_isLUB :
     exact h
 
 open Classical in
+/-- Infrastructure for **122IV**: the partial sums `∑_{j ∈ F} eⱼ` grow with `F`.
+Used for the directedness of `{∑_{j ∈ F} eⱼ}` in `exists_kappa_one` and of
+`{∑_{j ∈ F, j ≠ i} eⱼ}` in `lp_nmiu_compl_eq_zero`. -/
+theorem lpSumSA_mono {F G : Finset I} (h : F ⊆ G) :
+    lpSumSA (𝒜 := 𝒜) F ≤ lpSumSA G := by
+  rw [← Subtype.coe_le_coe, lp_infty_le_iff]
+  intro i
+  rw [lpSumSA_apply, lpSumSA_apply]
+  split <;> split
+  · exact le_rfl
+  · exact absurd (h ‹_›) ‹_›
+  · exact zero_le_one
+  · exact le_rfl
+
+open Classical in
 theorem exists_kappa_one (φ : NMIUMap (lp 𝒜 ∞) ℂ) :
     ∃ i, φ (lpKappa i (1 : 𝒜 i)) = 1 := by
   have hψ : ∀ x : lp 𝒜 ∞, φ x = φ.toStarAlgHom x := fun _ => rfl
@@ -168,20 +183,10 @@ theorem exists_kappa_one (φ : NMIUMap (lp 𝒜 ∞) ℂ) :
     · exact h
     · exact absurd (by linear_combination h) (hcon j)
   have hne : (Set.range (lpSumSA (𝒜 := 𝒜))).Nonempty := ⟨_, ⟨∅, rfl⟩⟩
-  have hmono : ∀ {F G : Finset I}, F ⊆ G → lpSumSA (𝒜 := 𝒜) F ≤ lpSumSA G := by
-    intro F G hFG
-    rw [← Subtype.coe_le_coe, lp_infty_le_iff]
-    intro i
-    rw [lpSumSA_apply, lpSumSA_apply]
-    split <;> split
-    · exact le_rfl
-    · exact absurd (hFG ‹_›) ‹_›
-    · exact zero_le_one
-    · exact le_rfl
   have hdir : DirectedOn (· ≤ ·) (Set.range (lpSumSA (𝒜 := 𝒜))) := by
     rintro _ ⟨F, rfl⟩ _ ⟨G, rfl⟩
-    exact ⟨lpSumSA (F ∪ G), ⟨F ∪ G, rfl⟩, hmono Finset.subset_union_left,
-      hmono Finset.subset_union_right⟩
+    exact ⟨lpSumSA (F ∪ G), ⟨F ∪ G, rfl⟩, lpSumSA_mono Finset.subset_union_left,
+      lpSumSA_mono Finset.subset_union_right⟩
   have hlub := φ.preservesDirSups' _ _ hne hdir lpSumSA_isLUB
   have himg : ((fun d : selfAdjoint (lp 𝒜 ∞) => φ.toStarAlgHom (d : lp 𝒜 ∞)) ''
       Set.range (lpSumSA (𝒜 := 𝒜))) = {0} := by
@@ -203,21 +208,139 @@ theorem exists_kappa_one (φ : NMIUMap (lp 𝒜 ∞) ℂ) :
   have hle : (1 : ℂ) ≤ 0 := hlub.2 (fun z hz => le_of_eq hz)
   exact absurd hle (by simp [Complex.le_def])
 
+omit [∀ i, Nontrivial (𝒜 i)] [∀ i, PartialOrder (𝒜 i)]
+  [∀ i, StarOrderedRing (𝒜 i)] in
+/-- proc.tex:4593, the first line of the proof of **122IV**: `eᵢ eⱼ = 0`
+for `i ≠ j`. -/
+theorem lpKappa_one_mul_one {i j : I} (h : i ≠ j) :
+    lpKappa i (1 : 𝒜 i) * lpKappa j (1 : 𝒜 j) = 0 := by
+  rw [lpKappa_mul_left, lpKappa_apply_ne j (1 : 𝒜 j) h, lpKappa_zero]
+
+open Classical in
+/-- proc.tex:4593–4600, the middle of the proof of **122IV**: `φ(eᵢ^⊥) = 0`
+whenever `φ(eᵢ) = 1`.
+
+The printed argument, transcribed.  From `eⱼeₖ = 0` (`lpKappa_one_mul_one`)
+and multiplicativity, `φ(eⱼ)φ(eₖ) = 0` for `j ≠ k`, so there is *at most one*
+`j` with `φ(eⱼ) ≠ 0`; as `φ(eᵢ) = 1 ≠ 0`, every `j ≠ i` has `φ(eⱼ) = 0`.  The
+printed sum `eᵢ^⊥ = ∑_{j ≠ i} eⱼ` is, for an infinite index set, the directed
+supremum of the finite partial sums `∑_{j ∈ F} eⱼ` over the `F : Finset I` with
+`i ∉ F` — which is where the printed step needs `φ` to be *normal*: `φ` carries
+that supremum to the supremum of `{∑_{j ∈ F} φ(eⱼ)} = {0}`, i.e.
+`φ(eᵢ^⊥) = ∑_{j ≠ i} φ(eⱼ) = 0`. -/
+theorem lp_nmiu_compl_eq_zero (φ : NMIUMap (lp 𝒜 ∞) ℂ) {i : I}
+    (hi : φ (lpKappa i (1 : 𝒜 i)) = 1) :
+    φ (1 - lpKappa i (1 : 𝒜 i)) = 0 := by
+  classical
+  have hψ : ∀ x : lp 𝒜 ∞, φ x = φ.toStarAlgHom x := fun _ => rfl
+  -- at most one `j` has `φ(eⱼ) ≠ 0`
+  have horth : ∀ {j k : I}, j ≠ k →
+      φ (lpKappa j (1 : 𝒜 j)) = 0 ∨ φ (lpKappa k (1 : 𝒜 k)) = 0 := by
+    intro j k hjk
+    refine mul_eq_zero.mp ?_
+    rw [hψ, hψ, ← map_mul, lpKappa_one_mul_one hjk, map_zero]
+  -- so, `φ(eᵢ)` being `1`, every other `φ(eⱼ)` vanishes
+  have hzero : ∀ j, j ≠ i → φ (lpKappa j (1 : 𝒜 j)) = 0 := by
+    intro j hj
+    rcases horth hj with h | h
+    · exact h
+    · rw [hi] at h; exact absurd h one_ne_zero
+  set e : lp 𝒜 ∞ := lpKappa i (1 : 𝒜 i) with he
+  have hesa : IsSelfAdjoint (1 - e) := (IsSelfAdjoint.one _).sub (lpKappa_sa i)
+  have hcoord : ∀ k : I, ((1 - e : lp 𝒜 ∞) : ∀ m, 𝒜 m) k
+      = if k = i then 0 else 1 := by
+    intro k
+    rw [lp.coeFn_sub]
+    simp only [Pi.sub_apply]
+    rw [lp.infty_coeFn_one]
+    by_cases hk : k = i
+    · subst hk; rw [he, lpKappa_apply_self]; simp
+    · rw [he, lpKappa_apply_ne _ _ hk]; simp [hk]
+  -- `eᵢ^⊥ = ∑_{j ≠ i} eⱼ`, as a directed supremum of finite partial sums
+  set P : Set (selfAdjoint (lp 𝒜 ∞)) :=
+    {d | ∃ F : Finset I, i ∉ F ∧ d = lpSumSA F} with hP
+  have hlubP : IsLUB P (⟨1 - e, hesa⟩ : selfAdjoint (lp 𝒜 ∞)) := by
+    constructor
+    · rintro d ⟨F, hFi, rfl⟩
+      rw [← Subtype.coe_le_coe, lp_infty_le_iff]
+      intro k
+      rw [lpSumSA_apply]
+      show _ ≤ ((1 - e : lp 𝒜 ∞) : ∀ m, 𝒜 m) k
+      rw [hcoord]
+      split_ifs with h1 h2 h3
+      · exact absurd (h2 ▸ h1) hFi
+      · exact le_rfl
+      · exact le_rfl
+      · exact zero_le_one
+    · intro u hu
+      rw [← Subtype.coe_le_coe, lp_infty_le_iff]
+      intro k
+      show ((1 - e : lp 𝒜 ∞) : ∀ m, 𝒜 m) k ≤ _
+      rw [hcoord]
+      by_cases hk : k = i
+      · subst hk
+        have h := (lp_infty_le_iff _ _).mp
+          (Subtype.coe_le_coe.mpr (hu ⟨(∅ : Finset I), by simp, rfl⟩)) k
+        rw [lpSumSA_apply] at h
+        simpa using h
+      · have h := (lp_infty_le_iff _ _).mp
+          (Subtype.coe_le_coe.mpr (hu ⟨({k} : Finset I), by simp [Ne.symm hk], rfl⟩)) k
+        rw [lpSumSA_apply] at h
+        simpa [hk] using h
+  have hne : P.Nonempty := ⟨lpSumSA ∅, ⟨∅, by simp, rfl⟩⟩
+  have hdir : DirectedOn (· ≤ ·) P := by
+    rintro _ ⟨F, hF, rfl⟩ _ ⟨G, hG, rfl⟩
+    exact ⟨lpSumSA (F ∪ G), ⟨F ∪ G, by simp [hF, hG], rfl⟩,
+      lpSumSA_mono Finset.subset_union_left, lpSumSA_mono Finset.subset_union_right⟩
+  -- normality: `φ` sends that supremum to the supremum of `{0}`
+  have hlub := φ.preservesDirSups' P _ hne hdir hlubP
+  have himg : ((fun d : selfAdjoint (lp 𝒜 ∞) => φ.toStarAlgHom (d : lp 𝒜 ∞)) '' P)
+      = {0} := by
+    ext z
+    simp only [Set.mem_image, Set.mem_singleton_iff]
+    constructor
+    · rintro ⟨_, ⟨F, hF, rfl⟩, rfl⟩
+      show φ.toStarAlgHom (∑ j ∈ F, lpKappa j (1 : 𝒜 j)) = 0
+      rw [map_sum φ.toStarAlgHom]
+      refine Finset.sum_eq_zero fun j hj => ?_
+      exact (hψ _) ▸ hzero j (fun h => hF (h ▸ hj))
+    · rintro rfl
+      refine ⟨lpSumSA ∅, ⟨∅, by simp, rfl⟩, ?_⟩
+      show φ.toStarAlgHom (∑ j ∈ (∅ : Finset I), lpKappa j (1 : 𝒜 j)) = 0
+      simp
+  rw [himg] at hlub
+  exact le_antisymm (hlub.2 (fun z hz => le_of_eq hz)) (hlub.1 rfl)
+
+/-- proc.tex:4600, the conclusion of the printed step: `φ(a) = φ(eᵢ a)` for all
+`a`, from `a = eᵢa + eᵢ^⊥a`, multiplicativity and `lp_nmiu_compl_eq_zero`. -/
+theorem lp_nmiu_apply_eq_kappa_mul (φ : NMIUMap (lp 𝒜 ∞) ℂ) {i : I}
+    (hi : φ (lpKappa i (1 : 𝒜 i)) = 1) (x : lp 𝒜 ∞) :
+    φ x = φ (lpKappa i (1 : 𝒜 i) * x) := by
+  have hψ : ∀ y : lp 𝒜 ∞, φ y = φ.toStarAlgHom y := fun _ => rfl
+  have hperp := lp_nmiu_compl_eq_zero φ hi
+  have hsplit : x = lpKappa i (1 : 𝒜 i) * x + (1 - lpKappa i (1 : 𝒜 i)) * x := by
+    rw [sub_mul, one_mul]
+    abel
+  have hmul : φ ((1 - lpKappa i (1 : 𝒜 i)) * x) = 0 := by
+    rw [hψ, map_mul, ← hψ, hperp, zero_mul]
+  rw [hsplit, hψ, map_add, ← hψ, ← hψ, hmul, add_zero, ← hsplit]
+
 /-- **122IV** (`nmiu-functional-product`, proc.tex:4591, Lemma), in its
 universe-polymorphic form: an nmiu-functional on a direct sum `⊕ᵢ 𝒜ᵢ`
 factors as `φ' ∘ πᵢ`.  (The statement `nmiu_functional_product` below is
 this one; it is restated there because the section it belongs to fixes
 `𝒜 : I → Type u`, which excludes `ℓ^∞(X) = ⊕_{x ∈ X} ℂ`.)
 
-Following proc.tex:4595, except that the thesis's step `φ(eᵢ^⊥) = 0` is
-replaced by the observation that `φ(x) = φ(eᵢ)φ(x)` is immediate from
-multiplicativity once `φ(eᵢ) = 1`; and the existence of an `i` with
-`φ(eᵢ) = 1` — which the thesis leaves implicit — is where normality is
-used: `1 = ⋁_F ∑_{j ∈ F} eⱼ` is a directed supremum. -/
+Following proc.tex:4595.  The printed chain — at most one `i` has
+`φ(eᵢ) ≠ 0`, for that `i` one has `eᵢ^⊥ = ∑_{j ≠ i} eⱼ` and hence
+`φ(eᵢ^⊥) = ∑_{j ≠ i} φ(eⱼ) = 0`, so `φ(a) = φ(eᵢ a)` for all `a` — is
+`lp_nmiu_compl_eq_zero` and `lp_nmiu_apply_eq_kappa_mul` above.  The one thing
+the thesis leaves implicit is the existence of an `i` with `φ(eᵢ) ≠ 0`, which
+is `exists_kappa_one`; like the printed sum `∑_{j ≠ i} eⱼ`, it is where
+normality is used (`1 = ⋁_F ∑_{j ∈ F} eⱼ` is a directed supremum). -/
 theorem lp_nmiu_functional_factors (φ : NMIUMap (lp 𝒜 ∞) ℂ) :
     ∃ (i : I) (φ' : NMIUMap (𝒜 i) ℂ),
       ∀ x : lp 𝒜 ∞, φ x = φ' ((x : ∀ j, 𝒜 j) i) := by
-  classical
   classical
   obtain ⟨i, hi⟩ := exists_kappa_one φ
   have hψ : ∀ x : lp 𝒜 ∞, φ x = φ.toStarAlgHom x := fun _ => rfl
@@ -284,8 +407,8 @@ theorem lp_nmiu_functional_factors (φ : NMIUMap (lp 𝒜 ∞) ℂ) :
       exact ⟨κ z, ⟨z, hz, rfl⟩, hκmono hxz, hκmono hyz⟩
   · intro x
     show φ x = φ (lpKappa i ((x : ∀ j, 𝒜 j) i))
-    rw [← lpKappa_mul_left, hψ, hψ, map_mul,
-      show φ.toStarAlgHom (lpKappa i (1 : 𝒜 i)) = 1 from hi, one_mul]
+    rw [← lpKappa_mul_left]
+    exact lp_nmiu_apply_eq_kappa_mul φ hi x
 
 end DirectSums
 
@@ -3584,20 +3707,6 @@ stated for arbitrary second factors; the general versions stand below, after
 the 125IV apparatus, and go through the commutation theorem.  Since that
 apparatus now precedes parsec 1255, `haTensorPreimage` has no consumer left:
 `haTensorBSurj` cites the general 125eIII. -/
-
-/-- Monotonicity of the finite partial sums `∑_{j∈F} κⱼ(1)`. -/
-private theorem lpSumSA_mono {I : Type*} {𝒜 : I → Type*} [∀ i, CStarAlgebra (𝒜 i)]
-    [∀ i, Nontrivial (𝒜 i)] [∀ i, PartialOrder (𝒜 i)] [∀ i, StarOrderedRing (𝒜 i)]
-    {F G : Finset I} (hFG : F ⊆ G) : lpSumSA (𝒜 := 𝒜) F ≤ lpSumSA G := by
-  classical
-  rw [← Subtype.coe_le_coe, lp_infty_le_iff]
-  intro i
-  rw [lpSumSA_apply, lpSumSA_apply]
-  split <;> split
-  · exact le_rfl
-  · exact absurd (hFG ‹_›) ‹_›
-  · exact zero_le_one
-  · exact le_rfl
 
 /-- A supremum of a nonempty set of self-adjoint elements taken in the
 self-adjoint part is a supremum in the algebra. -/
