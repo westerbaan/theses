@@ -5508,16 +5508,25 @@ theorem cceil_sum_relative (S : StarSubalgebra ℂ A) (hS : IsVNSubalgebra A S)
 
 end VNSubalgebra
 
-/-! ### Machinery for **84bIII**
+/-! ### Block decompositions
 
 The corners `dⱼℬ` and `cⱼℬ` of 842.40 are built as types, by
 `CentralProj.sub` (**67IV**.1).  What the machinery below adds is the
 *block* decomposition of an nmiu-map out of `ℬ` into a finite-dimensional
-von Neumann algebra — used for the compression `ℬ → cⱼℬ`: the *range* of
-such a map is a closed `StarSubalgebra` of a finite-dimensional C*-algebra,
-hence a finite-dimensional C*-algebra itself, so **84II** `fdcstar` applies
-to it directly, and the projection algebra stays inside `ℬ`, where `carrier`
-(**63I**) and **69IV** `carrier_miu` are available. -/
+von Neumann algebra: the *range* of such a map is a closed `StarSubalgebra`
+of a finite-dimensional C*-algebra, hence a finite-dimensional C*-algebra
+itself, so **84II** `fdcstar` applies to it directly, and the projection
+algebra stays inside `ℬ`, where `carrier` (**63I**) and **69IV**
+`carrier_miu` are available.
+
+⚠️ **84bIII** no longer consumes any of it: its assembly used to refine the
+family `(cⱼ)` into the minimal central projections of each `cⱼℬ`, and now
+follows the printed text instead — `ℬ ≅ ⊕ⱼ cⱼℬ` by **67IV**.2
+`central_projections_sums_2_iso`, each summand hereditarily atomic by
+**84II**.  Nothing else in the tree uses these declarations (they are
+private), so the whole section may be deleted by whoever next touches this
+file; it is kept for now because it is the tree's only construction of the
+minimal central projections of a finite-dimensional von Neumann algebra. -/
 
 section HABlocks
 
@@ -5920,6 +5929,131 @@ private def cstarMatrixCongr {a b : ℕ} (h : a = b) :
     CStarMatrix (Fin a) (Fin a) ℂ ≃⋆ₐ[ℂ] CStarMatrix (Fin b) (Fin b) ℂ := by
   subst h; exact StarAlgEquiv.refl (R := ℂ) (A := CStarMatrix (Fin a) (Fin a) ℂ)
 
+/-- **842.40** needs finite-dimensionality only through this: a
+finite-dimensional von Neumann algebra is **hereditarily atomic**, by the
+classification **84II** `fdcstar` of finite-dimensional C*-algebras as finite
+products of full matrix algebras.  The blocks of dimension `0` are dropped —
+the summands of `HereditarilyAtomic` are `M_{N+1}`, Mathlib's `lp _ ∞`
+needing them nontrivial (see 84bII). -/
+private theorem hereditarilyAtomic_finiteDimensional (M : Type u) [CStarAlgebra M]
+    [PartialOrder M] [StarOrderedRing M] [FiniteDimensional ℂ M] :
+    HereditarilyAtomic M := by
+  classical
+  obtain ⟨k, n, ⟨ψ⟩⟩ := fdcstar M
+  have hN : ∀ m : ULift.{u} {m : Fin k // n m ≠ 0}, n m.down.1 - 1 + 1 = n m.down.1 :=
+    fun m => Nat.succ_pred_eq_of_pos (Nat.pos_of_ne_zero m.down.2)
+  set θ : ∀ m : ULift.{u} {m : Fin k // n m ≠ 0},
+      M →⋆ₐ[ℂ] CStarMatrix (Fin (n m.down.1 - 1 + 1)) (Fin (n m.down.1 - 1 + 1)) ℂ :=
+    fun m => (cstarMatrixCongr (hN m)).symm.toStarAlgHom.comp
+      (CStarMatrix.ofMatrixStarAlgEquiv.toStarAlgHom.comp
+        ((Pi.evalStarAlgHom ℂ (fun m : Fin k => Matrix (Fin (n m)) (Fin (n m)) ℂ)
+          m.down.1).comp ψ.toStarAlgHom)) with hθ
+  have hθapply : ∀ (m : ULift.{u} {m : Fin k // n m ≠ 0}) (a : M),
+      θ m a = (cstarMatrixCongr (hN m)).symm
+        (CStarMatrix.ofMatrixStarAlgEquiv (ψ a m.down.1)) := fun _ _ => rfl
+  obtain ⟨Θ, hΘ, -⟩ := cstar_product_2_miu θ
+  refine ⟨ULift.{u} {m : Fin k // n m ≠ 0}, fun m => n m.down.1 - 1,
+    ⟨StarAlgEquiv.ofBijective Θ ⟨?_, ?_⟩⟩⟩
+  · -- injectivity: the dropped blocks are the zero algebra
+    intro a b hab
+    refine ψ.injective (funext fun m => ?_)
+    by_cases h : n m = 0
+    · have hemp : IsEmpty (Fin (n m)) := by rw [h]; infer_instance
+      exact funext fun i => (hemp.false i).elim
+    · have h1 : θ ⟨⟨m, h⟩⟩ a = θ ⟨⟨m, h⟩⟩ b := by
+        rw [← hΘ, ← hΘ, hab]
+      rw [hθapply, hθapply] at h1
+      have h2 := congrArg (cstarMatrixCongr (hN ⟨⟨m, h⟩⟩)) h1
+      rw [StarAlgEquiv.apply_symm_apply, StarAlgEquiv.apply_symm_apply] at h2
+      have h3 := congrArg CStarMatrix.ofMatrixStarAlgEquiv.symm h2
+      rw [StarAlgEquiv.symm_apply_apply, StarAlgEquiv.symm_apply_apply] at h3
+      exact h3
+  · -- surjectivity: extend by `0` on the dropped blocks
+    intro z
+    refine ⟨ψ.symm (fun m => if h : n m = 0 then 0 else
+      CStarMatrix.ofMatrixStarAlgEquiv.symm ((cstarMatrixCongr (hN ⟨⟨m, h⟩⟩))
+        ((z : ∀ m : ULift.{u} {m : Fin k // n m ≠ 0},
+          CStarMatrix (Fin (n m.down.1 - 1 + 1)) (Fin (n m.down.1 - 1 + 1)) ℂ) ⟨⟨m, h⟩⟩))), ?_⟩
+    refine lp.ext (funext fun m => ?_)
+    rw [hΘ, hθapply]
+    have hy : ψ (ψ.symm (fun m => if h : n m = 0 then 0 else
+        CStarMatrix.ofMatrixStarAlgEquiv.symm ((cstarMatrixCongr (hN ⟨⟨m, h⟩⟩))
+          ((z : ∀ m : ULift.{u} {m : Fin k // n m ≠ 0},
+            CStarMatrix (Fin (n m.down.1 - 1 + 1)) (Fin (n m.down.1 - 1 + 1)) ℂ)
+              ⟨⟨m, h⟩⟩)))) = _ := ψ.apply_symm_apply _
+    rw [hy]
+    simp only [dite_eq_right m.down.2, StarAlgEquiv.apply_symm_apply,
+      StarAlgEquiv.symm_apply_apply]
+
+/-- **842.40**'s "and so will be `ℬ ≅ ⊕ⱼ cⱼℬ`": an `ℓ^∞`-sum of hereditarily
+atomic von Neumann algebras is hereditarily atomic.  The flattening
+isomorphism `⊕ᵢ(⊕_{j ∈ Jᵢ} M_{Nᵢⱼ+1}) ≅ ⊕_{(i,j)} M_{Nᵢⱼ+1}` has as index the
+`Σ`-type of pairs (summand of the sum, summand of that summand); both
+directions are **20aI** `cstar_product_2_miu` — `Θ` has coordinates
+`x ↦ Ψᵢ(xᵢ)ⱼ` and `Λ` has coordinates `z ↦ Ψᵢ⁻¹(j ↦ z₍ᵢ,ⱼ₎)`, the inner
+family of the latter being a second application of 20aI — and the two
+composites are the identity coordinatewise.
+
+(`A/Proc/QuantumLambda.lean`'s `hereditarilyAtomic_lp`, which proc.tex:5262
+needs, is this statement again for nmiu-maps; it is *downstream* of this file
+and could import this one.) -/
+private theorem hereditarilyAtomic_lpSum {I : Type u} (𝒞 : I → Type u)
+    [∀ i, CStarAlgebra (𝒞 i)] [∀ i, Nontrivial (𝒞 i)] [∀ i, PartialOrder (𝒞 i)]
+    [∀ i, StarOrderedRing (𝒞 i)] (h : ∀ i, HereditarilyAtomic (𝒞 i)) :
+    HereditarilyAtomic (lp 𝒞 ∞) := by
+  classical
+  choose J N hΨ using h
+  have Ψ : ∀ i, 𝒞 i ≃⋆ₐ[ℂ]
+      lp (fun j : J i => CStarMatrix (Fin (N i j + 1)) (Fin (N i j + 1)) ℂ) ∞ :=
+    fun i => (hΨ i).some
+  obtain ⟨Θ, hΘ, -⟩ := cstar_product_2_miu
+    (𝒜 := fun p : Σ i : I, J i =>
+      CStarMatrix (Fin (N p.1 p.2 + 1)) (Fin (N p.1 p.2 + 1)) ℂ)
+    (ℬ := lp 𝒞 ∞)
+    (fun p => (lpProj (fun j : J p.1 =>
+        CStarMatrix (Fin (N p.1 j + 1)) (Fin (N p.1 j + 1)) ℂ) p.2).comp
+      ((Ψ p.1).toStarAlgHom.comp (lpProj 𝒞 p.1)))
+  have hGi : ∀ i : I, ∃ g : lp (fun p : Σ i : I, J i =>
+        CStarMatrix (Fin (N p.1 p.2 + 1)) (Fin (N p.1 p.2 + 1)) ℂ) ∞ →⋆ₐ[ℂ]
+        lp (fun j : J i => CStarMatrix (Fin (N i j + 1)) (Fin (N i j + 1)) ℂ) ∞,
+      ∀ (j : J i) (z : lp (fun p : Σ i : I, J i =>
+          CStarMatrix (Fin (N p.1 p.2 + 1)) (Fin (N p.1 p.2 + 1)) ℂ) ∞),
+        (g z : ∀ j : J i, CStarMatrix (Fin (N i j + 1)) (Fin (N i j + 1)) ℂ) j
+          = (z : ∀ p : Σ i : I, J i,
+              CStarMatrix (Fin (N p.1 p.2 + 1)) (Fin (N p.1 p.2 + 1)) ℂ) ⟨i, j⟩ := by
+    intro i
+    obtain ⟨g, hg, -⟩ := cstar_product_2_miu
+      (𝒜 := fun j : J i => CStarMatrix (Fin (N i j + 1)) (Fin (N i j + 1)) ℂ)
+      (fun j => lpProj (fun p : Σ i : I, J i =>
+        CStarMatrix (Fin (N p.1 p.2 + 1)) (Fin (N p.1 p.2 + 1)) ℂ) ⟨i, j⟩)
+    exact ⟨g, fun j z => hg j z⟩
+  choose G hG using hGi
+  obtain ⟨Λ, hΛ, -⟩ := cstar_product_2_miu (𝒜 := 𝒞)
+    (fun i => (Ψ i).symm.toStarAlgHom.comp (G i))
+  have hΘΛ : ∀ z, Θ (Λ z) = z := by
+    intro z
+    refine lp.ext (funext ?_)
+    rintro ⟨i, j⟩
+    rw [hΘ]
+    show (Ψ i ((Λ z : ∀ i, 𝒞 i) i) : ∀ j : J i, _) j = _
+    rw [hΛ]
+    show (Ψ i ((Ψ i).symm (G i z)) : ∀ j : J i, _) j = _
+    rw [StarAlgEquiv.apply_symm_apply, hG]
+  have hΛΘ : ∀ x, Λ (Θ x) = x := by
+    intro x
+    refine lp.ext (funext fun i => ?_)
+    rw [hΛ]
+    show (Ψ i).symm (G i (Θ x)) = _
+    have hcoord : G i (Θ x) = Ψ i ((x : ∀ i, 𝒞 i) i) := by
+      refine lp.ext (funext fun j => ?_)
+      rw [hG, hΘ]
+      rfl
+    rw [hcoord, StarAlgEquiv.symm_apply_apply]
+  exact ⟨Σ i : I, J i, fun p => N p.1 p.2,
+    ⟨StarAlgEquiv.ofBijective Θ
+      ⟨fun x y hxy => by rw [← hΛΘ x, ← hΛΘ y]; exact congrArg _ hxy,
+        fun z => ⟨Λ z, hΘΛ z⟩⟩⟩⟩
+
 /-- **84bIII** (vn.tex:6185, Proposition): a von Neumann subalgebra of a
 hereditarily atomic von Neumann algebra is hereditarily atomic — rendered:
 if `B` embeds into hereditarily atomic `A` by an injective nmiu-map, then
@@ -6058,154 +6192,49 @@ theorem hereditarilyAtomic_subalgebra [VonNeumannAlgebra A]
     have hself := hcx _ hmem
     rw [hcproj.isIdempotentElem.eq] at hself
     exact hdz hself
+  -- **842.40**: the `cⱼ` bundled as central projections of `B`
+  set c : ↥C → CentralProj B := fun x =>
+    ⟨(x : B), (hCmax.1.1 (x : B) x.2).1, (hCmax.1.1 (x : B) x.2).2.1⟩ with hcdef
   -- each `cⱼB` is finite-dimensional, `cⱼ` lying below some `dₖ`
-  have hCfd : ∀ x : ↥C, FiniteDimensional ℂ
-      (CentralProj.sub ⟨(x : B), (hCmax.1.1 (x : B) x.2).1, (hCmax.1.1 (x : B) x.2).2.1⟩) := by
+  have hCfd : ∀ x : ↥C, FiniteDimensional ℂ (c x).sub := by
     intro x
     obtain ⟨i, hi⟩ := (hCmax.1.1 (x : B) x.2).2.2.2
-    exact hfd i ⟨(x : B), (hCmax.1.1 (x : B) x.2).1, (hCmax.1.1 (x : B) x.2).2.1⟩ hi
-  -- the block decomposition of each compression `B → cⱼB`
-  choose k n Q ρ hQc hQker hρsurj hρ1 hgz using fun x : ↥C =>
-    haveI := hCfd x
-    exists_blocks (CentralProj.compress
-      ⟨(x : B), (hCmax.1.1 (x : B) x.2).1, (hCmax.1.1 (x : B) x.2).2.1⟩)
-  have hQsep : ∀ b : B, (∀ (x : ↥C) (m : Fin (k x)), Q x m * b = 0) → b = 0 := by
-    intro b hbb
-    refine hCsep b fun x hx => ?_
-    exact Subtype.ext_iff.mp ((hgz ⟨x, hx⟩ b).mpr (hbb ⟨x, hx⟩))
-  -- the set of non-zero block projections: minimal central projections of `B`
-  set S : Set B := {x | x ≠ 0 ∧ ∃ (j : ↥C) (m : Fin (k j)), Q j m = x} with hSdef
-  have hSproj : ∀ x ∈ S, IsStarProjection x := by
-    rintro _ ⟨-, i, m, rfl⟩; exact (hQc i m).1
-  have hScen : ∀ x ∈ S, IsCentral B x := by
-    rintro _ ⟨-, i, m, rfl⟩; exact (hQc i m).2
-  -- minimality
-  have hSmin : ∀ x ∈ S, ∀ c : B, IsStarProjection c → IsCentral B c → c * x = c →
-      c ≠ 0 → c = x := by
-    rintro _ ⟨-, i, m, rfl⟩ c hcp hcc hcx hc0
-    exact block_minimal (ρ i m) (hρsurj i m) (hQc i m).1 (hQker i m) (hρ1 i m) hcp hcc hcx hc0
-  -- distinct minimal central projections are orthogonal
-  have hSorth : ∀ x ∈ S, ∀ y ∈ S, x ≠ y → x * y = 0 := by
-    intro x hx y hy hxy
-    by_contra h0
-    have hxp := hSproj x hx
-    have hyp := hSproj y hy
-    have hxc := hScen x hx
-    have hyc := hScen y hy
-    have hprod : IsStarProjection (x * y) := by
-      refine isStarProjection_iff'.mpr ⟨?_, ?_⟩
-      · calc x * y * (x * y) = x * (y * x) * y := by noncomm_ring
-          _ = x * (x * y) * y := by rw [hyc x]
-          _ = (x * x) * (y * y) := by noncomm_ring
-          _ = x * y := by rw [hxp.isIdempotentElem.eq, hyp.isIdempotentElem.eq]
-      · rw [star_mul, hxp.isSelfAdjoint.star_eq, hyp.isSelfAdjoint.star_eq, hyc x]
-    have hprodc : IsCentral B (x * y) := by
-      intro b
-      calc x * y * b = x * (y * b) := by rw [mul_assoc]
-        _ = x * (b * y) := by rw [hyc b]
-        _ = (x * b) * y := by rw [mul_assoc]
-        _ = (b * x) * y := by rw [hxc b]
-        _ = b * (x * y) := by rw [mul_assoc]
-    have h1 : x * y * x = x * y := by
-      calc x * y * x = x * (y * x) := by rw [mul_assoc]
-        _ = x * (x * y) := by rw [hyc x]
-        _ = (x * x) * y := by rw [← mul_assoc]
-        _ = x * y := by rw [hxp.isIdempotentElem.eq]
-    have h2 : x * y * y = x * y := by
-      rw [mul_assoc, hyp.isIdempotentElem.eq]
-    exact hxy ((hSmin x hx _ hprod hprodc h1 h0).symm.trans (hSmin y hy _ hprod hprodc h2 h0))
-  -- the supremum of `S` is `1`
-  have hSsum : projSup S = 1 := by
-    set r : B := projSup S with hr
-    have hrp : IsStarProjection r := (projSup_spec hSproj).1
-    have hq : ∀ x ∈ S, x * (1 - r) = 0 := by
-      intro x hx
-      have hle : x ≤ r := (projSup_spec hSproj).2.1 x hx
-      have := ((orthogonal_tuple_of_projections_1 x (1 - r) (hSproj x hx) hrp.one_sub).out 4 0).mp
-        (by rwa [sub_sub_cancel])
-      exact this
-    have hQq : ∀ (j : ↥C) (m : Fin (k j)), Q j m * (1 - r) = 0 := by
-      intro j m
-      rcases eq_or_ne (Q j m) 0 with h | h
-      · rw [h, zero_mul]
-      · exact hq _ ⟨h, j, m, rfl⟩
-    have hz : (1 : B) - r = 0 := hQsep _ hQq
+    exact hfd i (c x) hi
+  -- the `cⱼ` are non-zero, orthogonal, and join to `1` — the last by
+  -- maximality, `hCsep` being that statement in separating form
+  have hntriv : ∀ x : ↥C, Nontrivial ((c x).sub) := by
+    intro x
+    refine ⟨⟨0, 1, ?_⟩⟩
+    intro h
+    exact (hCmax.1.1 (x : B) x.2).2.2.1
+      (congrArg (fun z : (c x).sub => (z : B)) h).symm
+  have horth : Pairwise fun x y : ↥C => (c x).val * (c y).val = 0 := fun x y hxy =>
+    hCmax.1.2 (x : B) x.2 (y : B) y.2 fun h => hxy (Subtype.ext h)
+  have hCproj : ∀ p ∈ Set.range fun x : ↥C => (c x).val, IsStarProjection p := by
+    rintro _ ⟨x, rfl⟩
+    exact (hCmax.1.1 (x : B) x.2).1
+  have hjoin : projSup (Set.range fun x : ↥C => (c x).val) = 1 := by
+    set r : B := projSup (Set.range fun x : ↥C => (c x).val) with hr
+    have hrp : IsStarProjection r := (projSup_spec hCproj).1
+    have hz : (1 : B) - r = 0 := by
+      refine hCsep _ fun x hx => ?_
+      have hle : x ≤ r := (projSup_spec hCproj).2.1 x ⟨⟨x, hx⟩, rfl⟩
+      exact ((orthogonal_tuple_of_projections_1 x (1 - r) (hCmax.1.1 x hx).1
+        hrp.one_sub).out 4 0).mp (by rwa [sub_sub_cancel])
     rw [sub_eq_zero] at hz
     exact hz.symm
-  -- for each `p ∈ S` a surjective ∗-homomorphism onto a full matrix algebra
-  have hpack : ∀ p : S, ∃ (m : ℕ) (θ : B →⋆ₐ[ℂ] CStarMatrix (Fin (m + 1)) (Fin (m + 1)) ℂ),
-      Function.Surjective θ ∧ (∀ b : B, θ b = 0 ↔ (p : B) * b = 0) ∧ θ (p : B) = 1 := by
-    rintro ⟨x, hx0, i, m, rfl⟩
-    have hne : n i m ≠ 0 := by
-      intro h
-      refine hx0 ?_
-      have hemp : IsEmpty (Fin (n i m)) := by rw [h]; infer_instance
-      have hsub : Subsingleton (CStarMatrix (Fin (n i m)) (Fin (n i m)) ℂ) :=
-        ⟨fun a b => funext fun j => (hemp.false j).elim⟩
-      have h1 : ρ i m (Q i m) = 0 := by
-        rw [hρ1 i m]; exact Subsingleton.elim _ _
-      have h2 : Q i m * Q i m = 0 := (hQker i m _).mp h1
-      rw [(hQc i m).1.isIdempotentElem.eq] at h2
-      exact h2
-    obtain ⟨j, hj⟩ : ∃ j, n i m = j + 1 := ⟨n i m - 1, (Nat.succ_pred_eq_of_pos
-      (Nat.pos_of_ne_zero hne)).symm⟩
-    refine ⟨j, (cstarMatrixCongr hj).toStarAlgHom.comp (ρ i m), ?_, ?_, ?_⟩
-    · exact (cstarMatrixCongr hj).surjective.comp (hρsurj i m)
-    · intro b
-      show (cstarMatrixCongr hj) (ρ i m b) = 0 ↔ _
-      rw [← hQker i m b]
-      constructor
-      · intro h
-        have := congrArg (cstarMatrixCongr hj).symm h
-        simpa using this
-      · intro h; rw [h, map_zero]
-    · show (cstarMatrixCongr hj) (ρ i m (Q i m)) = 1
-      rw [hρ1 i m, map_one]
-  choose NN θ hθsurj hθker hθ1 using hpack
-  -- assembling the isomorphism
-  have hcen' : ∀ p : S, IsStarProjection ((p : B)) ∧ IsCentral B ((p : B)) :=
-    fun p => ⟨hSproj _ p.2, hScen _ p.2⟩
-  have hrange : Set.range (fun p : S => (p : B)) = S := Subtype.range_coe
-  have hsum' : projSup (Set.range (fun p : S => (p : B))) = 1 := by rw [hrange]; exact hSsum
-  have horth' : Pairwise fun p q : S => (p : B) * (q : B) = 0 := by
-    intro p q hpq
-    exact hSorth _ p.2 _ q.2 (fun h => hpq (Subtype.ext h))
-  obtain ⟨Ψ, hΨ, -⟩ := cstar_product_2_miu
-    (𝒜 := fun p : S => CStarMatrix (Fin (NN p + 1)) (Fin (NN p + 1)) ℂ) θ
-  refine ⟨S, NN, ⟨StarAlgEquiv.ofBijective Ψ ⟨?_, ?_⟩⟩⟩
-  · -- injectivity
-    intro b b' hbb
-    refine sub_eq_zero.mp (central_family_separating (fun p : S => (p : B))
-      (fun p => hSproj _ p.2) hsum' (a := b - b') fun p => ?_)
-    refine (hθker p _).mp ?_
-    rw [map_sub]
-    have h1 : θ p b = (Ψ b : ∀ p : S, CStarMatrix (Fin (NN p + 1)) (Fin (NN p + 1)) ℂ) p :=
-      (hΨ p b).symm
-    have h2 : θ p b' = (Ψ b' : ∀ p : S, CStarMatrix (Fin (NN p + 1)) (Fin (NN p + 1)) ℂ) p :=
-      (hΨ p b').symm
-    rw [h1, h2, hbb, sub_self]
-  · -- surjectivity
+  -- **842.40**, the conclusion: `B ≅ ⊕ⱼ cⱼB` by **67IV**.2
+  -- `central_projections_sums_2_iso`; each `cⱼB` is hereditarily atomic
+  -- because it is finite-dimensional (**84II** `fdcstar`), and hence so is
+  -- their direct sum.
+  obtain ⟨Φ, hΦ, -⟩ := central_projections_sums_2_iso c horth hjoin
+  have hha : ∀ x : ↥C, HereditarilyAtomic ((c x).sub) := by
     intro x
-    have hpre : ∀ p : S, ∃ y : B, (p : B) * y = y ∧ θ p y =
-        (x : ∀ p : S, CStarMatrix (Fin (NN p + 1)) (Fin (NN p + 1)) ℂ) p ∧
-        ‖y‖ ≤ ‖x‖ := by
-      intro p
-      obtain ⟨y, hy⟩ := hθsurj p ((x : ∀ p : S, _) p)
-      refine ⟨(p : B) * y, ?_, ?_, ?_⟩
-      · rw [← mul_assoc, (hSproj _ p.2).isIdempotentElem.eq]
-      · rw [map_mul, hθ1 p, one_mul, hy]
-      · have hiso := (starAlgHom_norm_corner (θ p) (hSproj _ p.2) (hScen _ p.2)
-          (hθker p)).2 ((p : B) * y) (by rw [← mul_assoc, (hSproj _ p.2).isIdempotentElem.eq])
-        rw [← hiso, map_mul, hθ1 p, one_mul, hy]
-        exact lp.norm_apply_le_norm (by simp) x p
-    choose y hy1 hy2 hy3 using hpre
-    obtain ⟨a, ha, -⟩ := central_projections_sums_2 (fun p : S => (p : B)) hcen' horth' hsum'
-      y hy1 ⟨‖x‖, by rintro _ ⟨p, rfl⟩; exact hy3 p⟩
-    refine ⟨a, ?_⟩
-    refine Subtype.ext (funext fun p => ?_)
-    rw [hΨ p a]
-    have h1 : θ p a = θ p ((p : B) * a) := by rw [map_mul, hθ1 p, one_mul]
-    rw [h1, ha p, hy2 p]
+    have := hCfd x
+    exact hereditarilyAtomic_finiteDimensional ((c x).sub)
+  obtain ⟨K, N', ⟨Ξ⟩⟩ := hereditarilyAtomic_lpSum (fun x : ↥C => ↥(c x).sub) hha
+  exact ⟨K, N', ⟨(StarAlgEquiv.ofBijective Φ.toStarAlgHom
+    ⟨fun a b h => hΦ.1 h, fun z => hΦ.2 z⟩).trans Ξ⟩⟩
 
 end HAMain
 

@@ -589,6 +589,63 @@ theorem preservesDirSups_of_continuousOn_effects_functional (g : A →ₚ[ℂ] �
     PreservesDirSups ⇑g :=
   preservesDirSups_of_continuousOn_effects g (by rwa [ultraweak_complex])
 
+/-- The normality that 86IX's carrier step needs, supplied where the thesis
+leaves it implicit: if `f` is ultraweakly continuous on `(𝒜)₁` and `T` is an
+ultraweakly continuous, norm-contractive linear map with `f ∘ T` positive,
+then `f ∘ T` is an np-functional.
+
+This is the argument of 860.130 (the proof of **86XII** `uwcont-on-ball`):
+`f ∘ T` is ultraweakly continuous on the effects because `T` maps `[0,1]_𝒜`
+into `(𝒜)₁`, and a positive functional ultraweakly continuous on the effects
+is normal by **44XV** `p-uwcont`.  Nothing here uses 86IX — 860.130 uses it
+only to *produce* a partial isometry, and at the point of use below the
+partial isometry is already in hand — so the citation is not circular. -/
+private theorem npFunctional_of_ball_comp (f : A →ₗ[ℂ] ℂ)
+    (hf : @ContinuousOn A ℂ (ultraweak A) _ ⇑f (Metric.closedBall 0 1))
+    (T : A →ₗ[ℂ] A) (hT : @Continuous A A (ultraweak A) (ultraweak A) ⇑T)
+    (hTn : ∀ a : A, ‖T a‖ ≤ ‖a‖)
+    (hpos : ∀ a : A, 0 ≤ a → (0 : ℂ) ≤ f (T a)) :
+    ∃ ω : NPFunctional A, ∀ a : A, (ω a : ℂ) = f (T a) := by
+  let g : A →ₚ[ℂ] ℂ :=
+    { toFun := fun a => f (T a)
+      map_add' := fun x y => by simp only [map_add]
+      map_smul' := fun r x => by simp only [RingHom.id_apply, map_smul, smul_eq_mul]
+      monotone' := fun a b hab => by
+        have h0 : (0 : ℂ) ≤ f (T (b - a)) := hpos _ (sub_nonneg.mpr hab)
+        rw [map_sub, map_sub, sub_nonneg] at h0
+        exact h0 }
+  have hcont : @ContinuousOn A ℂ (ultraweak A) _ ⇑g (effects A) := by
+    let _i : TopologicalSpace A := ultraweak A
+    have hmaps : Set.MapsTo ⇑T (effects A) (Metric.closedBall 0 1) := by
+      intro a ha
+      rw [mem_closedBall_zero_iff]
+      exact (hTn a).trans ((CStarAlgebra.norm_le_one_iff_of_nonneg a ha.1).mpr ha.2)
+    exact hf.comp hT.continuousOn hmaps
+  exact ⟨⟨g, preservesDirSups_of_continuousOn_effects_functional g hcont⟩, fun _ => rfl⟩
+
+/-- **63VI** (`carrier-fundamental`) in the form 86IX uses it: from
+`⌈ω⌉ ≤ p` for a projection `p` one gets `ω(bp) = ω(b)` and `ω(pb) = ω(b)`
+for every `b`, since `p⌈ω⌉ = ⌈ω⌉ = ⌈ω⌉p`. -/
+private theorem npFunctional_mul_proj (ω : NPFunctional A) {p : A}
+    (hp : IsStarProjection p) (hle : npCarrier ω ≤ p) (b : A) :
+    (ω (b * p) : ℂ) = ω b ∧ (ω (p * b) : ℂ) = ω b := by
+  have hc : IsStarProjection (npCarrier ω) := (carrier_spec _ _).1
+  have hr : p * npCarrier ω = npCarrier ω :=
+    (IsStarProjection.le_iff_mul_eq_right hc hp).mp hle
+  have hl : npCarrier ω * p = npCarrier ω :=
+    (IsStarProjection.le_iff_mul_eq_left hc hp).mp hle
+  refine ⟨?_, ?_⟩
+  · have h1 := (carrier_fundamental ω.toPositiveLinearMap ω.preservesDirSups' (b * p)).2.1
+    have h2 := (carrier_fundamental ω.toPositiveLinearMap ω.preservesDirSups' b).2.1
+    change (ω (b * p) : ℂ) = ω (b * p * npCarrier ω) at h1
+    change (ω b : ℂ) = ω (b * npCarrier ω) at h2
+    rw [h1, h2, mul_assoc, hr]
+  · have h1 := (carrier_fundamental ω.toPositiveLinearMap ω.preservesDirSups' (p * b)).1
+    have h2 := (carrier_fundamental ω.toPositiveLinearMap ω.preservesDirSups' b).1
+    change (ω (p * b) : ℂ) = ω (npCarrier ω * (p * b)) at h1
+    change (ω b : ℂ) = ω (npCarrier ω * b) at h2
+    rw [h1, h2, ← mul_assoc, hl]
+
 
 /-- **86IX** (`polar-decomposition-of-functional`, vn.tex:6401, Theorem
 (Polar decomposition of functionals)): every linear functional `f` on a von
@@ -653,29 +710,50 @@ theorem polar_decomposition_of_functional (f : A →ₗ[ℂ] ℂ)
     have h1 : g' 1 = (M : ℂ) := by rw [hg'app, one_mul, hfu]
     rw [h1]
     exact ⟨Complex.ofReal_im M, by simpa using hg'norm⟩
-  -- `g` kills `(u*u)^⊥`
-  have hcompl : IsStarProjection (1 - star u * u) := hproj.one_sub
-  have hg0 : g (1 - star u * u) = 0 := by
-    rw [hgapp, mul_sub, mul_one, ← mul_assoc, huu, sub_self, map_zero]
-  have hgz := posFunctional_mul_eq_zero g hgpos _ hcompl hg0
-  have hcomple : IsStarProjection (1 - u * star u) := hproje.one_sub
-  have hg'0 : g' (1 - u * star u) = 0 := by
-    rw [hg'app, sub_mul, one_mul, huu, sub_self, map_zero]
-  have hg'z := posFunctional_mul_eq_zero g' hg'pos _ hcomple hg'0
-  -- `f(u b (u*u)) = f(u b)`
+  -- `g = f(u(·))` and `g' = f((·)u)` are np-functionals, so they have
+  -- carriers: the normality the thesis's carrier step needs, supplied here
+  -- by 860.130's own argument (see `npFunctional_of_ball_comp`).
+  obtain ⟨ω, hω⟩ := npFunctional_of_ball_comp f hf (LinearMap.mulLeft ℂ u)
+    (mult_uws_cont u).1
+    (fun a => by
+      calc ‖u * a‖ ≤ ‖u‖ * ‖a‖ := norm_mul_le _ _
+        _ ≤ 1 * ‖a‖ := by gcongr
+        _ = ‖a‖ := one_mul _)
+    hgpos
+  obtain ⟨ω', hω'⟩ := npFunctional_of_ball_comp f hf (LinearMap.mulRight ℂ u)
+    (mult_uws_cont u).2.1
+    (fun a => by
+      calc ‖a * u‖ ≤ ‖a‖ * ‖u‖ := norm_mul_le _ _
+        _ ≤ ‖a‖ * 1 := by gcongr
+        _ = ‖a‖ := mul_one _)
+    hg'pos
+  -- `u(u*u)^⊥ = 0`, so `⌈f(u(·))⌉ ≤ u*u`; dually `⌈f((·)u)⌉ ≤ uu*`
+  have hω0 : ω.toPositiveLinearMap ((1 : A) - star u * u) = 0 := by
+    show (ω ((1 : A) - star u * u) : ℂ) = 0
+    rw [hω]
+    simp only [LinearMap.mulLeft_apply]
+    rw [mul_sub, mul_one, ← mul_assoc, huu, sub_self, map_zero]
+  have hle : npCarrier ω ≤ star u * u :=
+    (carrier_spec ω.toPositiveLinearMap ω.preservesDirSups').2.2 _ hproj hω0
+  have hω'0 : ω'.toPositiveLinearMap ((1 : A) - u * star u) = 0 := by
+    show (ω' ((1 : A) - u * star u) : ℂ) = 0
+    rw [hω']
+    simp only [LinearMap.mulRight_apply]
+    rw [sub_mul, one_mul, huu, sub_self, map_zero]
+  have hle' : npCarrier ω' ≤ u * star u :=
+    (carrier_spec ω'.toPositiveLinearMap ω'.preservesDirSups').2.2 _ hproje hω'0
+  -- **63VI** `carrier-fundamental`: `f(u b (u*u)) = f(u b)`
   have hR : ∀ b : A, f (u * b * (star u * u)) = f (u * b) := by
     intro b
-    have h := hgz.2 b
-    rw [hgapp, show u * (b * (1 - star u * u)) = u * b - u * b * (star u * u) by
-      noncomm_ring, map_sub, sub_eq_zero] at h
-    exact h.symm
-  -- `f((1-uu*) b u) = 0`, i.e. `f(b u) = f(uu* b u)`
+    have h := (npFunctional_mul_proj ω hproj hle b).1
+    rw [hω, hω] at h
+    simpa only [LinearMap.mulLeft_apply, ← mul_assoc] using h
+  -- and dually `f(uu* b u) = f(b u)`
   have hL : ∀ b : A, f (u * star u * b * u) = f (b * u) := by
     intro b
-    have h := hg'z.1 b
-    rw [hg'app, show (1 - u * star u) * b * u = b * u - u * star u * b * u by
-      noncomm_ring, map_sub, sub_eq_zero] at h
-    exact h.symm
+    have h := (npFunctional_mul_proj ω' hproje hle' b).2
+    rw [hω', hω'] at h
+    simpa only [LinearMap.mulRight_apply] using h
   have hexpand : ∀ a : A, f a - f (u * star u * a) - f (a * (star u * u))
       + f (u * star u * a * (star u * u)) = 0 := by
     intro a
@@ -1801,7 +1879,7 @@ theorem centre_commutant (R : StarSubalgebra ℂ (H →L[ℂ] H))
   rw [h, Set.inter_comm]
 
 /-- Auxiliary: the product of two *commuting* projections is a projection. -/
-private theorem isStarProjection_mul_of_comm {M : Type*} [CStarAlgebra M]
+private theorem isStarProjection_mul_of_comm_aux {M : Type*} [CStarAlgebra M]
     {p q : M} (hp : IsStarProjection p) (hq : IsStarProjection q)
     (h : p * q = q * p) : IsStarProjection (p * q) := by
   constructor
@@ -1856,7 +1934,7 @@ theorem commutant_cceil [VonNeumannAlgebra B]
       have h2 : (1 - q) * ((1 : H →L[ℂ] H) - p) = 1 - q - p + q * p := by noncomm_ring
       rw [h1, h2, hpq]; abel
     set s : H →L[ℂ] H := (1 - p) * (1 - q) with hsdef
-    have hsproj : IsStarProjection s := isStarProjection_mul_of_comm hp' hq' hpq'
+    have hsproj : IsStarProjection s := isStarProjection_mul_of_comm_aux hp' hq' hpq'
     set r : H →L[ℂ] H := 1 - s with hrdef
     have hrproj : IsStarProjection r := hsproj.one_sub
     have hreq : r = p + q - p * q := by
@@ -1864,7 +1942,7 @@ theorem commutant_cceil [VonNeumannAlgebra B]
     have hpr : p ≤ r := by
       have hd : r - p = (1 - p) * q := by rw [hreq]; noncomm_ring
       have hdproj : IsStarProjection ((1 - p) * q) := by
-        refine isStarProjection_mul_of_comm hp' hqproj ?_
+        refine isStarProjection_mul_of_comm_aux hp' hqproj ?_
         have h1 : (1 - p) * q = q - p * q := by noncomm_ring
         have h2 : q * ((1 : H →L[ℂ] H) - p) = q - q * p := by noncomm_ring
         rw [h1, h2, hpq]
@@ -1873,7 +1951,7 @@ theorem commutant_cceil [VonNeumannAlgebra B]
     have hqr : q ≤ r := by
       have hd : r - q = p * (1 - q) := by rw [hreq]; noncomm_ring
       have hdproj : IsStarProjection (p * (1 - q)) := by
-        refine isStarProjection_mul_of_comm hpproj hq' ?_
+        refine isStarProjection_mul_of_comm_aux hpproj hq' ?_
         have h1 : p * ((1 : H →L[ℂ] H) - q) = p - p * q := by noncomm_ring
         have h2 : (1 - q) * p = p - q * p := by noncomm_ring
         rw [h1, h2, hpq]
@@ -1892,7 +1970,7 @@ theorem commutant_cceil [VonNeumannAlgebra B]
         _ = (p + q - p * q) * b := by noncomm_ring
     · have hle : r ≤ p + q := by
         have hpqnn : (0 : H →L[ℂ] H) ≤ p * q :=
-          (isStarProjection_mul_of_comm hpproj hqproj hpq).nonneg
+          (isStarProjection_mul_of_comm_aux hpproj hqproj hpq).nonneg
         rw [hreq]
         have h := sub_le_sub_left hpqnn (p + q)
         rwa [sub_zero] at h

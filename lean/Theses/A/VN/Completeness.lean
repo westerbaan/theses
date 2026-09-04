@@ -2779,23 +2779,32 @@ theorem kaplansky (S : StarSubalgebra ℂ A) (hS : IsClosed (S : Set A))
 /-- **74VI** (`dense-subalgebra`, vn.tex:4421, Corollary): given `ε > 0`
 and an ultraweakly dense ∗-subalgebra `S` of a von Neumann algebra, every
 element `a` is the ultrastrong limit of a net `(s_α)_α` from `S` with
-`‖s_α‖ ≤ ‖a‖(1 + ε)`. -/
+`‖s_α‖ ≤ ‖a‖(1 + ε)`.
+
+The proof is 74VII's: **74IV** `kaplansky` inside the norm closure of `𝒮`,
+then a norm approximation from `𝒮`, and the product net over `D × ℕ`.  The
+one departure is the one `ERRATA.md` **74VII** forces: the printed last step
+gets `‖s_{αn}‖ ≤ (1+ε)‖a‖` from `lim_n ‖s_{αn}‖ = ‖c_α‖`, which fails when
+`‖a‖ = 0`, so `a = 0` is split off and handled by the constant net. -/
 theorem dense_subalgebra (S : StarSubalgebra ℂ A)
     (hS : @Dense A (ultraweak A) (S : Set A)) (ε : ℝ) (hε : 0 < ε) (a : A) :
     ∃ (ι : Type u) (l : Filter ι), l.NeBot ∧ ∃ s : ι → A,
       (∀ i, s i ∈ S ∧ ‖s i‖ ≤ ‖a‖ * (1 + ε)) ∧ USTendsto s l a := by
   classical
-  set K : Set A := {s : A | s ∈ S ∧ ‖s‖ ≤ ‖a‖ * (1 + ε)} with hK
-  -- it suffices that `a` lies in the ultrastrong closure of `K`
-  suffices h : a ∈ @closure A (ultrastrong A) K by
-    obtain ⟨l, hl, hlim⟩ := exists_net_of_mem_usClosure K a h
-    exact ⟨K, l, hl, fun i => (i : A), fun i => i.2, hlim⟩
+  -- The printed route (74VII): Kaplansky gives a net `(c_α)_{α ∈ D}` in the
+  -- norm closure `𝒞` of `𝒮` with `‖c_α‖ ≤ ‖a‖`; each `c_α` is a norm limit
+  -- of a sequence from `𝒮`; and the `s_{αn}` converge ultrastrongly along
+  -- `D × ℕ`.  The subsequence the thesis takes at the end to get
+  -- `‖s_{αn}‖ ≤ (1+ε)‖a‖` for *all* `n` is taken here at the point of
+  -- choice, by asking for `‖s_{αn} − c_α‖ < ε‖a‖` as well as `< 2^{-n}`.
   rcases eq_or_lt_of_le (norm_nonneg a) with ha0 | ha0
-  · -- `a = 0`: the constant net `0` will do
+  · -- `a = 0`, which the printed last step does not cover: `lim_n‖s_{αn}‖ = 0`
+    -- does not make `‖s_{αn}‖ ≤ 0` (`ERRATA.md` **74VII**)
     have haz : a = 0 := norm_eq_zero.mp ha0.symm
-    refine @subset_closure A (ultrastrong A) K a ⟨?_, ?_⟩
-    · rw [haz]; exact zero_mem S
-    · rw [← ha0]; positivity
+    refine ⟨PUnit.{u + 1}, ⊤, ⟨by simp⟩, fun _ => 0, fun _ => ⟨zero_mem S, ?_⟩, ?_⟩
+    · rw [← ha0]; simp
+    · rw [haz]
+      exact @tendsto_const_nhds A (ultrastrong A) _ _ _
   -- the norm closure `C` of `S` is a C*-subalgebra containing `a`
   -- in its ultrastrong closure
   set C : StarSubalgebra ℂ A := S.topologicalClosure with hC
@@ -2805,41 +2814,49 @@ theorem dense_subalgebra (S : StarSubalgebra ℂ A)
     have hsub : (S : Set A) ⊆ (C : Set A) := subset_closure
     have hmono := @closure_mono A (ultraweak A) (S : Set A) (C : Set A) hsub
     exact hmono (hS a)
-  obtain ⟨ι, l, hl, c, hc, hlimc⟩ := kaplansky C hCcl a haC
-  rw [mem_usClosure_iff]
-  intro ω δ hδ
-  -- pick `c α` ultrastrongly close to `a`, then `s ∈ S` in norm close to `c α`
-  have _ : l.NeBot := hl
-  have hev := (usTendsto_iff c l a).mp hlimc ω
-  have hhalf : (0 : ℝ) < δ / 2 := by positivity
-  obtain ⟨i, hi⟩ := (hev.eventually (gt_mem_nhds hhalf)).exists
-  set M : ℝ := omegaNorm A ω 1 with hM
-  have hM0 : 0 ≤ M := omegaNorm_nonneg _ _
-  set η : ℝ := min (ε * ‖a‖) (δ / (2 * (M + 1))) with hη
-  have hMp : (0 : ℝ) < 2 * (M + 1) := by linarith
-  have hη0 : 0 < η := lt_min (mul_pos hε ha0) (div_pos hδ hMp)
-  obtain ⟨s, hsS, hsc⟩ : ∃ s ∈ (S : Set A), ‖s - c i‖ < η := by
-    obtain ⟨s, hsS, hsc⟩ := Metric.mem_closure_iff.mp ((hc i).1) η hη0
-    exact ⟨s, hsS, by rw [← dist_eq_norm, dist_comm]; exact hsc⟩
-  refine ⟨s, ⟨hsS, ?_⟩, ?_⟩
-  · have h1 : ‖s‖ ≤ ‖s - c i‖ + ‖c i‖ := by
-      have := norm_add_le (s - c i) (c i)
-      simpa using this
-    have h2 : ‖s - c i‖ ≤ ε * ‖a‖ := hsc.le.trans (min_le_left _ _)
-    have h3 : ‖c i‖ ≤ ‖a‖ := (hc i).2
+  obtain ⟨ι₀, l₀, hl₀, c, hc, hlimc⟩ := kaplansky C hCcl a haC
+  have : l₀.NeBot := hl₀
+  -- each `c α` is a norm limit of a sequence from `S`
+  have hpick : ∀ (i : ι₀) (n : ℕ), ∃ z, z ∈ (S : Set A) ∧
+      ‖z - c i‖ < min ((1 / 2 : ℝ) ^ n) (ε * ‖a‖) := by
+    intro i n
+    have hη : (0 : ℝ) < min ((1 / 2 : ℝ) ^ n) (ε * ‖a‖) :=
+      lt_min (by positivity) (mul_pos hε ha0)
+    obtain ⟨z, hzS, hzc⟩ := Metric.mem_closure_iff.mp ((hc i).1) _ hη
+    exact ⟨z, hzS, by rw [← dist_eq_norm, dist_comm]; exact hzc⟩
+  choose s hsS hsc using hpick
+  refine ⟨ι₀ × ℕ, l₀ ×ˢ atTop, inferInstance, fun p => s p.1 p.2,
+    fun p => ⟨hsS p.1 p.2, ?_⟩, ?_⟩
+  · have h1 : ‖s p.1 p.2‖ ≤ ‖s p.1 p.2 - c p.1‖ + ‖c p.1‖ := by
+      simpa using norm_add_le (s p.1 p.2 - c p.1) (c p.1)
+    have h2 : ‖s p.1 p.2 - c p.1‖ ≤ ε * ‖a‖ := (hsc p.1 p.2).le.trans (min_le_right _ _)
+    have h3 : ‖c p.1‖ ≤ ‖a‖ := (hc p.1).2
     nlinarith [h1, h2, h3]
-  · have hsplit : omegaNorm A ω (s - a)
-        ≤ omegaNorm A ω (s - c i) + omegaNorm A ω (c i - a) :=
-      omegaNorm_sub_le ω s (c i) a
-    have hnorm : omegaNorm A ω (s - c i) ≤ ‖s - c i‖ * M := by
-      have := omegaNorm_mul_le ω (s - c i) 1
-      rwa [mul_one] at this
-    have hlt : ‖s - c i‖ * M < δ / 2 := by
-      have h' : ‖s - c i‖ < δ / (2 * (M + 1)) := lt_of_lt_of_le hsc (min_le_right _ _)
-      have h'' : ‖s - c i‖ * (2 * (M + 1)) < δ := (lt_div_iff₀ hMp).mp h'
-      nlinarith [norm_nonneg (s - c i), hM0]
-    have hci : omegaNorm A ω (c i - a) < δ / 2 := hi
-    linarith [hsplit, hnorm, hlt, hci]
+  · refine (usTendsto_iff _ _ _).mpr fun ω => ?_
+    set M : ℝ := omegaNorm A ω 1 with hM
+    have hM0 : 0 ≤ M := omegaNorm_nonneg _ _
+    have hbound : ∀ p : ι₀ × ℕ, omegaNorm A ω (s p.1 p.2 - a)
+        ≤ (1 / 2 : ℝ) ^ p.2 * M + omegaNorm A ω (c p.1 - a) := by
+      rintro ⟨i, n⟩
+      have hsplit := omegaNorm_sub_le ω (s i n) (c i) a
+      have hnorm : omegaNorm A ω (s i n - c i) ≤ ‖s i n - c i‖ * M := by
+        have := omegaNorm_mul_le ω (s i n - c i) 1
+        rwa [mul_one] at this
+      have hle : ‖s i n - c i‖ ≤ (1 / 2 : ℝ) ^ n :=
+        (hsc i n).le.trans (min_le_left _ _)
+      have : ‖s i n - c i‖ * M ≤ (1 / 2 : ℝ) ^ n * M := by nlinarith
+      linarith
+    refine squeeze_zero' (Eventually.of_forall fun p => omegaNorm_nonneg _ _)
+      (Eventually.of_forall hbound) ?_
+    have h1 : Tendsto (fun n : ℕ => (1 / 2 : ℝ) ^ n * M) atTop (𝓝 0) := by
+      have := tendsto_pow_atTop_nhds_zero_of_lt_one (r := (1 / 2 : ℝ)) (by norm_num)
+        (by norm_num)
+      simpa using this.mul_const M
+    have h2 : Tendsto (fun i => omegaNorm A ω (c i - a)) l₀ (𝓝 0) :=
+      (usTendsto_iff c l₀ a).mp hlimc ω
+    have h3 := (h1.comp (tendsto_snd (f := l₀) (g := (atTop : Filter ℕ)))).add
+      (h2.comp (tendsto_fst (f := l₀) (g := (atTop : Filter ℕ))))
+    simpa using h3
 
 /-! ## Parsec 750: closedness of subalgebras
 
@@ -3532,24 +3549,49 @@ theorem relCoceil_compl_le (hS : IsVNSubalgebra A S) {p : A}
     le_relCoceil ω₁ hq.one_sub (sub_mem (one_mem S) hqS) hω₁q
   exact le_trans (sub_le_comm.mp h2) h1
 
+/-- De Morgan for the poset of projections: `⋀ {p^⊥ : p ∈ P} = (⋁P)^⊥`.
+This is what turns **66IV**.3 into the *dual* the printed display of
+75VIII.90 uses and the thesis never states (`ERRATA.md` **75IX**(b)). -/
+theorem projInf_image_compl {P : Set A} (hP : ∀ p ∈ P, IsStarProjection p) :
+    projInf ((fun x : A => 1 - x) '' P) = 1 - projSup P := by
+  obtain ⟨hsp, hub, hleast⟩ := projSup_spec hP
+  refine projInf_eq ?_ hsp.one_sub ?_ ?_
+  · rintro _ ⟨q, hq, rfl⟩; exact (hP q hq).one_sub
+  · rintro _ ⟨q, hq, rfl⟩; exact sub_le_sub_left (hub q hq) 1
+  · intro q hq hlb
+    refine le_sub_comm.mp (hleast (1 - q) hq.one_sub fun r hr => ?_)
+    exact le_sub_comm.mp (hlb _ ⟨r, hr, rfl⟩)
+
 /-- **75VIII**, main step: a projection of `A` lying in the ultrastrong
-closure of a von Neumann subalgebra `𝒮` already lies in `𝒮`. -/
+closure of a von Neumann subalgebra `𝒮` already lies in `𝒮`.  This is the
+printed display of 75VIII.90,
+`⋁_{ω₁} ⌈ω₁⌉_𝒮 ≥ ⋁_{ω₁} ⌈ω₁⌉ = p = ⋀_{ω₀} ⌈ω₀⌉^⊥ ≥ ⋀_{ω₀} ⌈ω₀⌉_𝒮^⊥`,
+run link for link, with Kadison's lemma (**75VI**, `relCoceil_compl_le`)
+closing the sandwich. -/
 theorem projection_mem_of_mem_usClosure (hS : IsVNSubalgebra A S) {p : A}
     (hp : IsStarProjection p) (hcl : p ∈ @closure A (ultrastrong A) S) : p ∈ S := by
   classical
   have hcarrier : ∀ ω : NPFunctional A, IsStarProjection (npCarrier ω) :=
     fun ω => (carrier_spec ω.toPositiveLinearMap ω.preservesDirSups').1
+  -- `Q = {⌈ω₁⌉_𝒮 : ω₁(p^⊥) = 0}`, `R = {⌈ω₀⌉_𝒮^⊥ : ω₀(p) = 0}`
   set Q : Set A := {q : A | ∃ ω : NPFunctional A, ω (1 - p) = 0 ∧
     q = 1 - relCoceil S ω} with hQdef
+  set R : Set A := {r : A | ∃ ω : NPFunctional A, ω p = 0 ∧
+    r = relCoceil S ω} with hRdef
   have hQproj : ∀ q ∈ Q, IsStarProjection q := by
     rintro _ ⟨ω, -, rfl⟩
     exact (relCoceil_isStarProjection ω).one_sub
+  have hRproj : ∀ r ∈ R, IsStarProjection r := by
+    rintro _ ⟨ω, -, rfl⟩
+    exact relCoceil_isStarProjection ω
   have hQS : ∀ q ∈ Q, q ∈ S := by
     rintro _ ⟨ω, -, rfl⟩
     exact sub_mem (one_mem S) (relCoceil_mem hS ω)
   obtain ⟨hUproj, hUub, hUleast⟩ := projSup_spec hQproj
+  obtain ⟨hVproj, hVlb, hVgreat⟩ := projInf_spec hRproj
   set U : A := projSup Q with hUdef
-  -- `p ≤ ⋁_{ω₁} ⌈ω₁⌉_𝒮 = U`, by **66IV**.3
+  set V : A := projInf R with hVdef
+  -- `⋁_{ω₁} ⌈ω₁⌉_𝒮 ≥ ⋁_{ω₁} ⌈ω₁⌉ = p`, by **66IV**.3
   have hpU : p ≤ U := by
     rw [ultracyclic_basic_3 p hp]
     refine (projSup_spec (fun q hq => by obtain ⟨ω, -, rfl⟩ := hq; exact hcarrier ω)).2.2
@@ -3557,20 +3599,30 @@ theorem projection_mem_of_mem_usClosure (hS : IsVNSubalgebra A S) {p : A}
     rintro _ ⟨ω, hω, rfl⟩
     exact le_trans (le_sub_comm.mp (relCoceil_le_npCarrier_compl hS ω))
       (hUub _ ⟨ω, hω, rfl⟩)
-  -- `U ≤ ⋀_{ω₀} ⌈ω₀⌉_𝒮^⊥ ≤ ⋀_{ω₀} ⌈ω₀⌉^⊥ = p`, by **66IV**.3 at `p^⊥`
-  have hUp : U ≤ p := by
-    have hstep : (1 : A) - p ≤ 1 - U := by
-      rw [ultracyclic_basic_3 (1 - p) hp.one_sub]
-      refine (projSup_spec (fun q hq => by obtain ⟨ω, -, rfl⟩ := hq; exact hcarrier ω)).2.2
-        (1 - U) hUproj.one_sub ?_
-      rintro _ ⟨ω₀, hω₀, rfl⟩
-      rw [sub_sub_cancel] at hω₀
-      refine le_sub_comm.mp (hUleast _ (hcarrier ω₀).one_sub ?_)
-      rintro _ ⟨ω₁, hω₁, rfl⟩
-      exact le_trans (relCoceil_compl_le hS hp hcl ω₀ ω₁ hω₀ hω₁)
-        (relCoceil_le_npCarrier_compl hS ω₀)
-    exact (sub_le_sub_iff_left (1 : A)).mp hstep
-  rw [le_antisymm hpU hUp, hUdef]
+  -- `⋁_{ω₁} ⌈ω₁⌉_𝒮 ≤ ⋀_{ω₀} ⌈ω₀⌉_𝒮^⊥`, by Kadison's lemma (**75VI**)
+  have hUV : U ≤ V := by
+    refine hUleast V hVproj ?_
+    rintro _ ⟨ω₁, hω₁, rfl⟩
+    refine hVgreat _ (relCoceil_isStarProjection ω₁).one_sub ?_
+    rintro _ ⟨ω₀, hω₀, rfl⟩
+    exact relCoceil_compl_le hS hp hcl ω₀ ω₁ hω₀ hω₁
+  -- `⋀_{ω₀} ⌈ω₀⌉_𝒮^⊥ ≤ ⋀_{ω₀} ⌈ω₀⌉^⊥ = p`, the display's right half:
+  -- **66IV**.3 at `p^⊥` complemented by `projInf_image_compl`
+  have hVp : V ≤ p := by
+    set Cs : Set A := {c : A | ∃ ω : NPFunctional A, ω (1 - (1 - p)) = 0 ∧
+      c = npCarrier ω} with hCsdef
+    have hCproj : ∀ c ∈ Cs, IsStarProjection c := by
+      rintro _ ⟨ω, -, rfl⟩
+      exact hcarrier ω
+    have hDM := projInf_image_compl hCproj
+    rw [← ultracyclic_basic_3 (1 - p) hp.one_sub, sub_sub_cancel] at hDM
+    rw [← hDM]
+    refine (projInf_spec (fun c hc => by
+      obtain ⟨d, ⟨ω, -, rfl⟩, rfl⟩ := hc; exact (hcarrier ω).one_sub)).2.2 V hVproj ?_
+    rintro _ ⟨_, ⟨ω₀, hω₀, rfl⟩, rfl⟩
+    have hω₀p : ω₀ p = 0 := by rwa [sub_sub_cancel] at hω₀
+    exact le_trans (hVlb _ ⟨ω₀, hω₀p, rfl⟩) (relCoceil_le_npCarrier_compl hS ω₀)
+  rw [le_antisymm hpU (hUV.trans hVp), hUdef]
   exact (projSup_mem_of_np hS Q hQproj hQS zeroNP (fun q _ => rfl)).1
 
 
@@ -3728,19 +3780,20 @@ end UsClosureSubalgebra
 /-- **75VIII** (`vnsac`, vn.tex:4587, Theorem): a von Neumann subalgebra of
 a von Neumann algebra is ultrastrongly and ultraweakly closed.
 
-*Class 3 — the thesis's argument, shortened in two places.*  The proof is
-the printed display of 75VIII.90, with Kadison's lemma (**75VI**) closing the
-sandwich; both departures are the repair `ERRATA.md` **75IX** prescribes, and
-neither changes the shape of the argument.
-The thesis's argument runs `p = ⋁_{ω₁} ⌈ω₁⌉_𝒮 = ⋀_{ω₀} ⌈ω₀⌉_𝒮^⊥` and uses
-(i) the *unstated* dual of **66IV**.3, `p = ⋀_ω ⌈ω⌉^⊥`, and (ii) the
-relativised carriers `⌈ω⌉_𝒮`, which presuppose the von Neumann structure of
-`𝒮`.  Neither is needed: complementing the second half of the display turns
-it into **66IV**.3 applied to `p^⊥`, so only `⋁` and only `ultracyclic_basic_3`
-occur; and `⌈ω⌉_𝒮^⊥` may be *defined* outright as the `projSup` of the
-projections of `𝒮` annihilated by `ω` (`relCoceil`), whose two defining
-properties come from `projSup_mem_of_np` — no von Neumann structure on `𝒮`
-is transported.  The remaining unstated ingredient, "the ultrastrong closure
+*Class 3 — the thesis's argument, with one rendering of our own.*  The proof
+is the printed display of 75VIII.90,
+`⋁_{ω₁} ⌈ω₁⌉_𝒮 ≥ ⋁_{ω₁} ⌈ω₁⌉ = p = ⋀_{ω₀} ⌈ω₀⌉^⊥ ≥ ⋀_{ω₀} ⌈ω₀⌉_𝒮^⊥`, run
+link for link in `projection_mem_of_mem_usClosure`, with Kadison's lemma
+(**75VI**) closing the sandwich.  Its right-hand equality is the *dual* of
+**66IV**.3, `p = ⋀_ω ⌈ω⌉^⊥`, which the thesis states nowhere (`ERRATA.md`
+**75IX**(b)); it is supplied here as **66IV**.3 applied to `p^⊥` together
+with De Morgan for the projection lattice (`projInf_image_compl`), so the
+display itself is transcribed rather than complemented away.
+The one rendering that is ours is `⌈ω⌉_𝒮^⊥`, *defined* outright as the
+`projSup` of the projections of `𝒮` annihilated by `ω` (`relCoceil`) rather
+than as the complement of the carrier of `ω` restricted to `𝒮`; the two
+agree, and this avoids transporting the von Neumann structure of `𝒮` onto a
+type.  The remaining unstated ingredient, "the ultrastrong closure
 of `𝒮` is a von Neumann subalgebra", is `usClosureSubalgebra` /
 `isVNSubalgebra_usClosureSubalgebra` above. -/
 theorem vnsac (S : StarSubalgebra ℂ A) (hS : IsVNSubalgebra A S) :
@@ -3811,7 +3864,16 @@ theorem hasSum_normSq_of_np {x : ℕ → H} {ω : NPFunctional (H →L[ℂ] H)}
 
 /-- **76I** (`bh-us-complete`, vn.tex:4641, Proposition): `B(H)` is
 ultrastrongly complete: every ultrastrongly Cauchy net converges
-ultrastrongly. -/
+ultrastrongly.
+
+The proof is 76II's throughout.  Its closing estimate splits
+`∑_n ‖(T−T_α)x_n‖²` into a head of `N−1` terms and a tail, each below
+`½ε²`, and bounds the head by the triangle inequality against a `T_β` with
+`β` large.  That head bound is what is run below — as `∑_{n∈G}‖(T−T_α)x_n‖²
+= lim_β ∑_{n∈G}‖(T_β−T_α)x_n‖² ≤ ‖T_β−T_α‖²_ω` for a *finite* `G` — and it
+already holds for every finite partial sum, so the choice of `N` and the
+tail estimate are not needed: the whole sum is the supremum of its finite
+partial sums.  Nothing else of the printed argument is dropped. -/
 theorem bh_us_complete {ι : Type*} (l : Filter ι) [l.NeBot]
     (T : ι → H →L[ℂ] H)
     (hcauchy : ∀ ω : NPFunctional (H →L[ℂ] H),
@@ -4131,8 +4193,10 @@ variable [VonNeumannAlgebra A] [VonNeumannAlgebra B]
 algebra is ultrastrongly complete.
 
 The proof is the thesis's — transport along `ϱ_Ω`, complete inside
-`𝔅(ℋ_Ω)` by **76I**, land back in `ϱ_Ω(𝒜)` by **75VIII** — with one step
-replaced (`ERRATA.md`, 77II).  The thesis justifies "the ultrastrong
+`𝔅(ℋ_Ω)` by **76I**, land back in `ϱ_Ω(𝒜)` by **75VIII** — including the
+step for which the thesis offers only a forward citation (`ERRATA.md`,
+77II), whose *claim* is proved here rather than replaced.  The thesis
+justifies "the ultrastrong
 topology of `𝔅(ℋ_Ω)` coincides on `ℛ` with that of `ℛ`" by "any
 np-functional `ω : ℛ → ℂ` is of the form `⟨x,(·)x⟩`", which is a *forward*
 reference to **89IX** `normal-functional` twelve parsecs later — and
@@ -4205,51 +4269,68 @@ theorem vn_complete_2 {ι : Type*} (l : Filter ι) [l.NeBot] (x : ι → A)
 von Neumann algebra is ultraweakly compact. -/
 theorem vn_ball_compact :
     @IsCompact A (ultraweak A) (Metric.closedBall (0 : A) 1) := by
-  -- The thesis embeds `(A)₁` into `ℂ^Ω` and combines Tychonoff with
-  -- **77I**.2.  We run the same argument in its ultrafilter form: an
-  -- ultrafilter on `(A)₁` pushes to a *convergent* ultrafilter along each
-  -- np-functional (Heine–Borel in `ℂ` replaces Tychonoff), so **77I**.2
-  -- supplies its ultraweak limit, which lies in `(A)₁` because the ball is
-  -- ultraweakly closed (**44XI**.3 plus **73VIII** `ultraclosed`).
+  -- The thesis's own route: embed `𝒜` into `ℂ^Ω` by `κ(a) = (ω(a))_ω`, note
+  -- that `κ` is a homeomorphism onto its image, that `κ((𝒜)₁)` is complete
+  -- by **77I**.2 and hence closed, and that it sits inside a Tychonoff cube
+  -- of closed discs.  (Our `Ω` is all np-functionals where the thesis's is
+  -- the npu-maps; this is what makes the first step an identity of
+  -- definitions, the ultraweak topology being the initial topology of the
+  -- np-functionals and the product topology the initial topology of the
+  -- projections.)
   let _ : TopologicalSpace A := ultraweak A
   have hballclosed : IsClosed (Metric.closedBall (0 : A) 1) :=
     ultraclosed _ (convex_closedBall (0 : A) 1) vn_positive_basic_3
-  rw [isCompact_iff_ultrafilter_le_nhds]
-  intro F hF
-  have hrange : Set.range (Subtype.val : ↥(Metric.closedBall (0 : A) 1) → A) ∈
-      (F : Filter A) := by
-    rw [Subtype.range_coe_subtype, Set.ofPred_mem_eq]
-    exact le_principal_iff.mp hF
-  set U : Ultrafilter ↥(Metric.closedBall (0 : A) 1) :=
-    Ultrafilter.comap (m := Subtype.val) F Subtype.val_injective hrange with hU
-  have hmap : Filter.map Subtype.val (U : Filter ↥(Metric.closedBall (0 : A) 1))
-      = (F : Filter A) := by
-    rw [hU, Ultrafilter.coe_comap]
-    exact Filter.map_comap_of_mem hrange
-  have hcau : ∀ ω : NPFunctional A,
-      Cauchy ((U : Filter ↥(Metric.closedBall (0 : A) 1)).map
-        fun i : ↥(Metric.closedBall (0 : A) 1) => ω (i : A)) := by
+  set κ : A → NPFunctional A → ℂ := fun a ω => ω a with hκ
+  -- `κ` is inducing
+  have hind : Topology.IsInducing κ := by
+    refine ⟨?_⟩
+    show ultraweak A = TopologicalSpace.induced κ Pi.topologicalSpace
+    rw [Pi.topologicalSpace, induced_iInf]
+    simp only [induced_compose]
+    rfl
+  choose C hC using fun ω : NPFunctional A =>
+    PositiveLinearMap.exists_norm_apply_le ω.toPositiveLinearMap
+  -- `κ((𝒜)₁)` is complete, by **77I**.2
+  have hcompl : IsComplete (κ '' Metric.closedBall (0 : A) 1) := by
+    rintro f hf hfle
+    have himg : κ '' Metric.closedBall (0 : A) 1
+        = Set.range fun i : ↥(Metric.closedBall (0 : A) 1) => κ (i : A) :=
+      Set.image_eq_range _ _
+    have hrange : (Set.range fun i : ↥(Metric.closedBall (0 : A) 1) => κ (i : A)) ∈ f := by
+      rw [← himg]; exact le_principal_iff.mp hfle
+    have hne : (Filter.comap
+        (fun i : ↥(Metric.closedBall (0 : A) 1) => κ (i : A)) f).NeBot :=
+      hf.1.comap_of_range_mem hrange
+    set g := Filter.comap (fun i : ↥(Metric.closedBall (0 : A) 1) => κ (i : A)) f with hg
+    have hmapg : Filter.map (fun i : ↥(Metric.closedBall (0 : A) 1) => κ (i : A)) g = f :=
+      Filter.map_comap_of_mem hrange
+    have hcau : ∀ ω : NPFunctional A,
+        Cauchy (g.map fun i : ↥(Metric.closedBall (0 : A) 1) => (ω (i : A) : ℂ)) := by
+      intro ω
+      have h1 : Cauchy (f.map fun x : NPFunctional A → ℂ => x ω) :=
+        hf.map (Pi.uniformContinuous_proj _ ω)
+      rw [← hmapg, Filter.map_map] at h1
+      exact h1
+    obtain ⟨a, ha⟩ := vn_complete_2 g (fun i : ↥(Metric.closedBall (0 : A) 1) => (i : A))
+      ⟨1, fun i => mem_closedBall_zero_iff.mp i.2⟩ hcau
+    have hmem : a ∈ Metric.closedBall (0 : A) 1 :=
+      hballclosed.mem_of_tendsto ha (Eventually.of_forall fun i => i.2)
+    refine ⟨κ a, ⟨a, hmem, rfl⟩, ?_⟩
+    rw [← hmapg]
+    exact tendsto_pi_nhds.mpr fun ω => (uwTendsto_iff _ _ _).mp ha ω
+  -- hence closed, and it sits in the Tychonoff cube `∏_ω (ℂ)_{C ω}`
+  have hsub : κ '' Metric.closedBall (0 : A) 1
+      ⊆ Set.univ.pi fun ω : NPFunctional A => Metric.closedBall (0 : ℂ) (C ω) := by
+    rintro _ ⟨a, ha, rfl⟩
+    rw [Set.mem_univ_pi]
     intro ω
-    obtain ⟨C, hC⟩ := PositiveLinearMap.exists_norm_apply_le ω.toPositiveLinearMap
-    refine cauchy_map_iff_exists_tendsto.mpr ?_
-    have hin : (Metric.closedBall (0 : ℂ) C) ∈
-        (U.map (fun i : ↥(Metric.closedBall (0 : A) 1) => ω (i : A)) :
-          Filter ℂ) := by
-      rw [Ultrafilter.coe_map, Filter.mem_map]
-      refine Filter.Eventually.of_forall
-        fun i : ↥(Metric.closedBall (0 : A) 1) => mem_closedBall_zero_iff.mpr ?_
-      refine (hC _).trans ?_
-      simpa using mul_le_of_le_one_right (by positivity)
-        (mem_closedBall_zero_iff.mp i.2)
-    obtain ⟨z, -, hz⟩ := (isCompact_closedBall (0 : ℂ) C).ultrafilter_le_nhds
-      (U.map fun i : ↥(Metric.closedBall (0 : A) 1) => ω (i : A))
-      (le_principal_iff.mpr hin)
-    exact ⟨z, hz⟩
-  obtain ⟨a, ha⟩ := vn_complete_2 (U : Filter ↥(Metric.closedBall (0 : A) 1))
-    (fun i => (i : A)) ⟨1, fun i => mem_closedBall_zero_iff.mp i.2⟩ hcau
-  have hmem : a ∈ Metric.closedBall (0 : A) 1 :=
-    hballclosed.mem_of_tendsto ha (Filter.Eventually.of_forall fun i => i.2)
-  exact ⟨a, hmem, hmap ▸ ha⟩
+    rw [mem_closedBall_zero_iff]
+    refine (hC ω a).trans ?_
+    simpa using mul_le_of_le_one_right (by positivity) (mem_closedBall_zero_iff.mp ha)
+  have hcube : IsCompact
+      (Set.univ.pi fun ω : NPFunctional A => Metric.closedBall (0 : ℂ) (C ω)) :=
+    isCompact_univ_pi fun ω => isCompact_closedBall _ _
+  exact hind.isCompact_iff.mpr (hcube.of_isClosed_subset hcompl.isClosed hsub)
 
 /-! ### Tools for **77V**
 
