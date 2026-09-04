@@ -9754,57 +9754,6 @@ section EtaEstimates
 variable [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ] [VonNeumannAlgebra 𝒞]
   [CompleteSpace X] [CompleteSpace Y]
 
-/-- `‖u ⊗ w‖_Ω ≤ ‖w‖ · ‖u‖_{Ω(·⊗1)}`: the one estimate behind **166II** and
-**166IV**, from `⟨u,u⟩ ⊗ ⟨w,w⟩ ≤ ‖⟨w,w⟩‖ · (⟨u,u⟩ ⊗ 1)` and the normality of
-the left leg (`vnTensorLegLeftNP`). -/
-private theorem unSeminorm_eta_le_left (E : ExtTensor t ht X Y)
-    (Ω : NPFunctional 𝒞) (u : X) (w : Y) :
-    unSeminorm Ω (inner 𝒞) (E.η u w)
-      ≤ ‖w‖ * unSeminorm (vnTensorLegLeftNP ht Ω) (inner 𝒜) u := by
-  have hw2 : ‖(inner ℬ w w : ℬ)‖ ≤ ‖w‖ ^ 2 := by
-    rw [CStarModule.norm_eq_sqrt_norm_inner_self (A := ℬ) w,
-      Real.sq_sqrt (norm_nonneg _)]
-  have hmono : t (inner 𝒜 u u) (inner ℬ w w)
-      ≤ t (inner 𝒜 u u) (((‖w‖ ^ 2 : ℝ) : ℂ) • (1 : ℬ)) :=
-    vnTensor_mono_right ht CStarModule.inner_self_nonneg
-      (le_ofReal_smul_one CStarModule.inner_self_nonneg hw2)
-  have hre : (Ω (inner 𝒞 (E.η u w) (E.η u w))).re
-      ≤ ‖w‖ ^ 2 * (vnTensorLegLeftNP ht Ω (inner 𝒜 u u)).re := by
-    rw [E.η_inner, vnTensorLegLeftNP_apply]
-    have h2 := npFunctional_mono Ω hmono
-    rw [vnTensor_smul_complex_right ht, npf_csmul] at h2
-    simpa [Complex.mul_re, ← Complex.ofReal_pow] using (Complex.le_def.mp h2).1
-  calc unSeminorm Ω (inner 𝒞) (E.η u w)
-      ≤ Real.sqrt (‖w‖ ^ 2 * (vnTensorLegLeftNP ht Ω (inner 𝒜 u u)).re) :=
-        Real.sqrt_le_sqrt hre
-    _ = ‖w‖ * unSeminorm (vnTensorLegLeftNP ht Ω) (inner 𝒜) u := by
-        rw [Real.sqrt_mul (by positivity), Real.sqrt_sq (norm_nonneg _)]; rfl
-
-/-- `‖u ⊗ w‖_Ω ≤ ‖u‖ · ‖w‖_{Ω(1⊗·)}`: the mirror of
-`unSeminorm_eta_le_left`. -/
-private theorem unSeminorm_eta_le_right (E : ExtTensor t ht X Y)
-    (Ω : NPFunctional 𝒞) (u : X) (w : Y) :
-    unSeminorm Ω (inner 𝒞) (E.η u w)
-      ≤ ‖u‖ * unSeminorm (vnTensorLegRightNP ht Ω) (inner ℬ) w := by
-  have hu2 : ‖(inner 𝒜 u u : 𝒜)‖ ≤ ‖u‖ ^ 2 := by
-    rw [CStarModule.norm_eq_sqrt_norm_inner_self (A := 𝒜) u,
-      Real.sq_sqrt (norm_nonneg _)]
-  have hmono : t (inner 𝒜 u u) (inner ℬ w w)
-      ≤ t (((‖u‖ ^ 2 : ℝ) : ℂ) • (1 : 𝒜)) (inner ℬ w w) :=
-    vnTensor_mono_left ht CStarModule.inner_self_nonneg
-      (le_ofReal_smul_one CStarModule.inner_self_nonneg hu2)
-  have hre : (Ω (inner 𝒞 (E.η u w) (E.η u w))).re
-      ≤ ‖u‖ ^ 2 * (vnTensorLegRightNP ht Ω (inner ℬ w w)).re := by
-    rw [E.η_inner, vnTensorLegRightNP_apply]
-    have h2 := npFunctional_mono Ω hmono
-    rw [ht.smul_complex, npf_csmul] at h2
-    simpa [Complex.mul_re, ← Complex.ofReal_pow] using (Complex.le_def.mp h2).1
-  calc unSeminorm Ω (inner 𝒞) (E.η u w)
-      ≤ Real.sqrt (‖u‖ ^ 2 * (vnTensorLegRightNP ht Ω (inner ℬ w w)).re) :=
-        Real.sqrt_le_sqrt hre
-    _ = ‖u‖ * unSeminorm (vnTensorLegRightNP ht Ω) (inner ℬ) w := by
-        rw [Real.sqrt_mul (by positivity), Real.sqrt_sq (norm_nonneg _)]; rfl
-
 end EtaEstimates
 
 /-- **164II** (`univprop-ext-tensor`, dils.tex:5032, Theorem), property 2a:
@@ -10777,12 +10726,11 @@ end VanishingBounded
 **166I** (dils.tex:5633): introduction; **166III**, **166V**, **166VII**
 are proofs — not converted.
 
-`section EtaEstimates` above holds two order estimates
-(`unSeminorm_eta_le_left/_right`) that were put there when **164II**.2a
-needed them and were then used by **166II**.  Since **166II** was brought
-onto 166III's own **44III** route (2026-09-04) neither has a consumer left;
-they are kept because each carries an audit row of its own, and the
-`vanishing_effects_bounded` block above is what **166II** uses instead. -/
+`section EtaEstimates` used to hold two order estimates
+(`unSeminorm_eta_le_left/_right`) put there when **164II**.2a needed them
+and then used by **166II**; both consumers are on their printed routes since
+2026-09-04 and the two estimates were deleted the same day.
+-/
 
 -- `hX`, `hY` are not used: `E : ExtTensor t ht X Y` already carries
 -- self-duality of `X ⊗ Y` and `η_inner`, which is all the proof needs; they
