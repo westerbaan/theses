@@ -997,10 +997,92 @@ theorem stone_weierstrass {X : Type*} [TopologicalSpace X] [CompactSpace X]
 
 /-- **27XXV** (`spectrum-calg-compact-hausdorff`, cstar.tex:4253, Lemma): the
 spectrum `spec(𝒜)` of a commutative C*-algebra is a compact Hausdorff space.
-(Mathlib instances on `characterSpace ℂ 𝒜`.) -/
+
+*Class 1 — faithful.*  The printed proof **27XXVI** (cstar.tex:4256),
+transcribed.  Each `f ∈ spec(𝒜)` satisfies `|f(a)| ≤ ‖a‖` by **20V**
+`norm_mi_map_contractive`, so `spec(𝒜)` sits inside the product
+`∏_{a ∈ 𝒜} {z : |z| ≤ ‖a‖}`, which is compact by Tychonoff
+(`isCompact_univ_pi`) and Hausdorff; the topology of pointwise convergence on
+`spec(𝒜)` is exactly the one induced by that inclusion
+(`WeakBilin.isEmbedding`), so it remains to see that `spec(𝒜)` is *closed* in
+the product — that a pointwise limit of miu-maps is an miu-map.  That is the
+printed computation `f(ab) = lim f_i(ab) = lim f_i(a)f_i(b) = f(a)f(b)` and
+its analogues: each of additivity, homogeneity, multiplicativity, unitality
+and the norm bound is a closed condition, being an equality (or an
+inequality) between two continuous functions of the point of the product.
+Hausdorffness is the printed "subspace of the Hausdorff product". -/
 theorem spectrum_calg_compact_hausdorff :
-    CompactSpace (characterSpace ℂ 𝒜) ∧ T2Space (characterSpace ℂ 𝒜) :=
-  ⟨inferInstance, inferInstance⟩
+    CompactSpace (characterSpace ℂ 𝒜) ∧ T2Space (characterSpace ℂ 𝒜) := by
+  let _ : PartialOrder 𝒜 := CStarAlgebra.spectralOrder 𝒜
+  have _ : StarOrderedRing 𝒜 := CStarAlgebra.spectralOrderedRing 𝒜
+  -- the topology of pointwise convergence is induced from the product `𝒜 → ℂ`
+  have hemb : Topology.IsEmbedding
+      (fun φ : characterSpace ℂ 𝒜 => fun a : 𝒜 => (φ : WeakDual ℂ 𝒜) a) :=
+    (WeakBilin.isEmbedding ContinuousLinearMap.coe_injective).comp
+      (Topology.IsEmbedding.subtypeVal (p := fun x : WeakDual ℂ 𝒜 => x ∈ characterSpace ℂ 𝒜))
+  -- `spec(𝒜)` is, inside that product, the set of contractive miu-maps
+  have hrange : (Set.range fun φ : characterSpace ℂ 𝒜 => fun a : 𝒜 => (φ : WeakDual ℂ 𝒜) a)
+      = {g : 𝒜 → ℂ | ∀ x y : 𝒜, g (x + y) = g x + g y} ∩
+        ({g : 𝒜 → ℂ | ∀ (c : ℂ) (x : 𝒜), g (c • x) = c * g x} ∩
+          ({g : 𝒜 → ℂ | ∀ x y : 𝒜, g (x * y) = g x * g y} ∩
+            ({g : 𝒜 → ℂ | g 1 = 1} ∩ {g : 𝒜 → ℂ | ∀ x : 𝒜, ‖g x‖ ≤ ‖x‖}))) := by
+    ext g
+    constructor
+    · rintro ⟨φ, rfl⟩
+      refine ⟨fun x y => map_add φ x y, fun c x => ?_, fun x y => map_mul φ x y,
+        map_one φ, fun x => ?_⟩
+      · show (φ : WeakDual ℂ 𝒜) (c • x) = c * (φ : WeakDual ℂ 𝒜) x
+        rw [map_smul, smul_eq_mul]
+      · exact norm_mi_map_contractive
+          ({ WeakDual.CharacterSpace.equivAlgHom φ with map_star' := fun y => map_star φ y } :
+            𝒜 →⋆ₐ[ℂ] ℂ) x
+    · rintro ⟨hadd, hsmul, hmul, hone, hbnd⟩
+      refine ⟨⟨StrongDual.toWeakDual (LinearMap.mkContinuous
+        { toFun := g, map_add' := hadd,
+          map_smul' := fun c x => by simpa using hsmul c x } 1
+        (fun x => by simpa using hbnd x)), ?_, hmul⟩, rfl⟩
+      intro h
+      have h1 : g 1 = 0 := congrArg (fun ψ : WeakDual ℂ 𝒜 => ψ 1) h
+      rw [hone] at h1
+      exact one_ne_zero h1
+  -- each of those five conditions is closed in the product
+  have hclosed : IsClosed
+      (Set.range fun φ : characterSpace ℂ 𝒜 => fun a : 𝒜 => (φ : WeakDual ℂ 𝒜) a) := by
+    rw [hrange]
+    refine IsClosed.inter ?_ (IsClosed.inter ?_ (IsClosed.inter ?_ (IsClosed.inter ?_ ?_)))
+    · simpa only [Set.ofPred_forall] using
+        isClosed_iInter fun x : 𝒜 => isClosed_iInter fun y : 𝒜 =>
+          isClosed_eq (continuous_apply (x + y))
+            (show Continuous fun g : 𝒜 → ℂ => g x + g y from
+              (continuous_apply x).add (continuous_apply y))
+    · simpa only [Set.ofPred_forall] using
+        isClosed_iInter fun c : ℂ => isClosed_iInter fun x : 𝒜 =>
+          isClosed_eq (continuous_apply (c • x))
+            (show Continuous fun g : 𝒜 → ℂ => c * g x from
+              continuous_const.mul (continuous_apply x))
+    · simpa only [Set.ofPred_forall] using
+        isClosed_iInter fun x : 𝒜 => isClosed_iInter fun y : 𝒜 =>
+          isClosed_eq (continuous_apply (x * y))
+            (show Continuous fun g : 𝒜 → ℂ => g x * g y from
+              (continuous_apply x).mul (continuous_apply y))
+    · exact isClosed_eq (continuous_apply 1) continuous_const
+    · simpa only [Set.ofPred_forall] using
+        isClosed_iInter fun x : 𝒜 =>
+          isClosed_le (show Continuous fun g : 𝒜 → ℂ => ‖g x‖ from (continuous_apply x).norm)
+            continuous_const
+  -- Tychonoff: the product of the closed balls is compact
+  have hpi : IsCompact (Set.univ.pi fun a : 𝒜 => Metric.closedBall (0 : ℂ) ‖a‖) :=
+    isCompact_univ_pi fun a => isCompact_closedBall 0 ‖a‖
+  have hsub : (Set.range fun φ : characterSpace ℂ 𝒜 => fun a : 𝒜 => (φ : WeakDual ℂ 𝒜) a)
+      ⊆ Set.univ.pi fun a : 𝒜 => Metric.closedBall (0 : ℂ) ‖a‖ := by
+    rw [hrange]
+    rintro g ⟨-, -, -, -, hbnd⟩ a -
+    simpa [Metric.mem_closedBall, dist_eq_norm] using hbnd a
+  refine ⟨?_, hemb.t2Space⟩
+  have huniv : IsCompact (Set.univ : Set (characterSpace ℂ 𝒜)) := by
+    rw [hemb.isCompact_iff, Set.image_univ]
+    exact hpi.of_isClosed_subset hclosed hsub
+  exact isCompact_univ_iff.mp huniv
 
 /-- **27XXVII** (`gelfand`, cstar.tex:4288, Gelfand's Representation
 Theorem): for a commutative C*-algebra `𝒜` the Gelfand representation
@@ -1033,6 +1115,20 @@ theorem gelfand : Function.Bijective (gelfandTransform ℂ 𝒜) := by
     rw [SetLike.mem_coe, htop]
     exact StarSubalgebra.mem_top
   rwa [hScarrier] at hg
+
+/-- **27XVII** `spectrum_miu` in the form the solution to **28II** uses it
+(asols.tex, `parsec-280.20`, points 5 and 6 cite `parsec-270.170` for
+elements that need not be self-adjoint): in a *commutative* C*-algebra
+`spec(b) = { φ(b) : φ ∈ spec(𝒮) }` for every `b`.  This is the printed
+statement of **27XVII** with the self-adjointness dropped, which Gelfand's
+representation theorem **27XXVII** — available at parsec 280 — supplies:
+`γ` is an isomorphism, so `spec(b) = spec(γ(b))`, and the spectrum of a
+continuous function on a compact space is its range. -/
+private theorem spectrum_eq_range_char {𝒮 : Type*} [CommCStarAlgebra 𝒮] (b : 𝒮) :
+    spectrum ℂ b = Set.range fun φ : characterSpace ℂ 𝒮 => φ b := by
+  have h := AlgEquiv.spectrum_eq (AlgEquiv.ofBijective (gelfandTransform ℂ 𝒮) gelfand) b
+  rw [← h, ContinuousMap.spectrum_eq_range]
+  rfl
 
 end GelfandRepresentation
 
@@ -1143,18 +1239,24 @@ section Ordered
 variable [PartialOrder 𝒜] [StarOrderedRing 𝒜]
 
 /-- **28II** (`functional-calculus`, cstar.tex:4325, Exercise), part 3
-(sample property): `a^α a^β = a^{α+β}` for `a ≥ 0` and `α, β ∈ (0,∞)`. -/
+(sample property): `a^α a^β = a^{α+β}` for `a ≥ 0` and `α, β ∈ (0,∞)`.
+
+*Class 3 — mild.*  The solution's own two-line derivation (asols.tex,
+`parsec-280.20`, point 3), transcribed: `a^α = Φ((·)^α)` by definition, the
+pointwise identity `x^{α+β} = x^α x^β` holds on `[0,∞)` (`NNReal.rpow_add_of_nonneg`,
+the exponents being non-negative), and `Φ` is an miu-map, hence multiplicative
+(`cfc_mul`) — which is exactly the property the exercise instructs one to use.
+The local shortcut: `CFC.rpow` is Mathlib's `ℝ≥0`-valued calculus, whose `Φ`
+is identified with the thesis's `ℂ`-valued `Φ` of **28II**.4 only through
+Mathlib's spectrum-restriction lemmas, not through **28II**.4 itself. -/
 theorem functional_calculus_3 (a : 𝒜) (ha : 0 ≤ a) (α β : ℝ) (hα : 0 < α)
     (hβ : 0 < β) :
     CFC.rpow a α * CFC.rpow a β = CFC.rpow a (α + β) := by
-  lift α to NNReal using hα.le with α' hα'
-  lift β to NNReal using hβ.le with β' hβ'
-  have hα0 : (0 : NNReal) < α' := by exact_mod_cast hα
-  have hβ0 : (0 : NNReal) < β' := by exact_mod_cast hβ
-  have e : ∀ x : NNReal, 0 < x → CFC.rpow a (x : ℝ) = CFC.nnrpow a x :=
-    fun x hx => (CFC.nnrpow_eq_rpow hx).symm
-  rw [← NNReal.coe_add, e _ hα0, e _ hβ0, e _ (add_pos hα0 hβ0)]
-  exact (CFC.nnrpow_add hα0 hβ0).symm
+  have hcont : ∀ γ : ℝ, 0 ≤ γ → ∀ S : Set ℝ≥0, ContinuousOn (fun x : ℝ≥0 => x ^ γ) S :=
+    fun γ hγ _ _ _ => (NNReal.continuousAt_rpow_const (Or.inr hγ)).continuousWithinAt
+  simp only [CFC.rpow_eq_pow, CFC.rpow_def]
+  rw [← cfc_mul _ _ a (hcont α hα.le _) (hcont β hβ.le _)]
+  exact (cfc_congr fun z _ => NNReal.rpow_add_of_nonneg z hα.le hβ.le).symm
 
 end Ordered
 
@@ -1220,42 +1322,191 @@ theorem functional_calculus_4 (a : 𝒜) [IsStarNormal a] (f : ℂ → ℂ)
     exact DFunLike.congr_fun
       ((gelfandStarTransform (StarAlgebra.elemental ℂ a)).apply_symm_apply g) φ
 
+/-- Pre-composition of a character with an miu-map, computed pointwise: the
+solution to **28II** restricts a character `φ ∈ spec(C*(ϱ(a)))` (point 6) or
+`φ ∈ spec(C*(a))` (point 7) along an miu-map and uses that `b ↦ φ(ϱ(b))` is
+again a character.  Mathlib bundles that as
+`WeakDual.CharacterSpace.compContinuousMap`; this is its defining value. -/
+private theorem char_comp_apply {A B : Type*} [NormedRing A] [NormedAlgebra ℂ A]
+    [CompleteSpace A] [StarRing A] [NormedRing B] [NormedAlgebra ℂ B] [CompleteSpace B]
+    [StarRing B] (ψ : A →⋆ₐ[ℂ] B) (φ : characterSpace ℂ B) (x : A) :
+    (WeakDual.CharacterSpace.compContinuousMap ψ φ) x = φ (ψ x) := by
+  show ((WeakDual.CharacterSpace.equivAlgHom.symm
+      ((WeakDual.CharacterSpace.equivAlgHom φ).comp (ψ : A →ₐ[ℂ] B)) : characterSpace ℂ A) :
+      A → ℂ) x = φ (ψ x)
+  rw [WeakDual.CharacterSpace.equivAlgHom_symm_coe, AlgHom.comp_apply,
+    WeakDual.CharacterSpace.equivAlgHom_coe]
+  rfl
+
+/-- `f(a) = Φ(f)` lies in `C*(a)`, as the exercise's `Φ : C(spec a) → C*(a) ⊆ 𝒜`
+says it does: `cfc f a` is by construction the image of `f` under
+`continuousFunctionalCalculus a : C(spec a, ℂ) ≃⋆ₐ[ℂ] C*(a)`. -/
+private theorem cfc_mem_elemental (a : 𝒜) [IsStarNormal a] (f : ℂ → ℂ)
+    (hf : ContinuousOn f (spectrum ℂ a)) : cfc f a ∈ StarAlgebra.elemental ℂ a := by
+  rw [cfc_apply f a, cfcHom_eq_of_isStarNormal a]
+  exact SetLike.coe_mem _
+
+/-- **27XVII**, as the solution to **28II** cites it (`parsec-270.170`), for an
+element of the commutative C*-algebra `C*(a)`: `spec(b) = { φ(b) : φ ∈
+spec(C*(a)) }`, the spectrum taken in `𝒜` — the same set, by spectral
+permanence for the closed ⋆-subalgebra `C*(a)`, which the exercise's
+identification of `spec(a)` with the spectrum of `a` in `C*(a)` presupposes. -/
+private theorem spectrum_eq_range_elemental (a : 𝒜) [IsStarNormal a]
+    (b : StarAlgebra.elemental ℂ a) :
+    spectrum ℂ (b : 𝒜)
+      = Set.range fun φ : characterSpace ℂ (StarAlgebra.elemental ℂ a) => φ b := by
+  rw [← StarSubalgebra.spectrum_eq (hS := StarAlgebra.elemental.isClosed ℂ a) (a := b)]
+  exact spectrum_eq_range_char b
+
 /-- **28II** (`functional-calculus`, cstar.tex:4325, Exercise), part 5
 (Spectral mapping theorem): `spec(f(a)) = f(spec(a))` for normal `a` and
-`f ∈ C(spec a)`.  (Mathlib: `cfc_map_spectrum`.) -/
+`f ∈ C(spec a)`.
+
+*Class 1 — faithful.*  The solution's own three-line chain (asols.tex,
+`parsec-280.20`, point 5), transcribed:
+`f(spec a) = { f(φ(a)) : φ ∈ spec(C*(a)) }` by **27XVII**, `= { φ(f(a)) : φ }`
+by part 4 (`functional_calculus_4`, which since 2026-09-04 states exactly that
+`f(a)` is the element of `C*(a)` with `φ(f(a)) = f(φ(a))`), and `= spec(f(a))`
+by **27XVII** again, `f(a)` being an element of `C*(a)`. -/
 theorem functional_calculus_5 (a : 𝒜) [IsStarNormal a] (f : ℂ → ℂ)
     (hf : ContinuousOn f (spectrum ℂ a)) :
-    spectrum ℂ (cfc f a) = f '' spectrum ℂ a :=
-  cfc_map_spectrum f a
+    spectrum ℂ (cfc f a) = f '' spectrum ℂ a := by
+  obtain ⟨b, hb⟩ : ∃ b : StarAlgebra.elemental ℂ a, (b : 𝒜) = cfc f a :=
+    ⟨⟨cfc f a, cfc_mem_elemental a f hf⟩, rfl⟩
+  -- part 4: `φ(f(a)) = f(φ(a))` for every character `φ` of `C*(a)`
+  have hchar := (functional_calculus_4 a f hf b).mpr hb
+  -- **27XVII** for `a` and for `f(a)`, both elements of `C*(a)`
+  have h2 : spectrum ℂ a
+      = Set.range fun φ : characterSpace ℂ (StarAlgebra.elemental ℂ a) =>
+          φ (⟨a, StarAlgebra.elemental.self_mem ℂ a⟩ : StarAlgebra.elemental ℂ a) :=
+    spectrum_eq_range_elemental a ⟨a, StarAlgebra.elemental.self_mem ℂ a⟩
+  rw [← hb, spectrum_eq_range_elemental a b, h2]
+  ext z
+  simp only [Set.mem_range, Set.mem_image, hchar]
+  constructor
+  · rintro ⟨φ, rfl⟩
+    exact ⟨_, ⟨φ, rfl⟩, rfl⟩
+  · rintro ⟨w, ⟨φ, rfl⟩, rfl⟩
+    exact ⟨φ, rfl⟩
 
 /-- **28II** (`functional-calculus`, cstar.tex:4325, Exercise), part 6:
 `spec(ρ(a)) ⊆ spec(a)` and `ρ(f(a)) = f(ρ(a))` for every miu-map
-`ρ : 𝒜 → ℬ`. -/
+`ρ : 𝒜 → ℬ`.
+
+*Class 1 — faithful.*  Both clauses are the solution's own (asols.tex,
+`parsec-280.20`, point 6).  The first is the printed contrapositive: if
+`a − λ` were invertible then so would be `ρ(a − λ) = ρ(a) − λ`, which it is
+not.  For the second, the solution says it suffices by point 4 to check that
+`ρ(f(a))` lies in `C*(ρ(a))` and that `φ(ρ(f(a))) = f(φ(ρ(a)))` for every
+`φ ∈ spec(C*(ρ(a)))`.  The first is the printed observation
+`ρ(C*(a)) ⊆ C*(ρ(a))` — here: `C*(ρ(a))` pulled back along the (bounded, by
+**20V**) map `ρ` is a closed ⋆-subalgebra containing `a`, so it contains
+`C*(a)`, which is the printed "`b` is a limit of polynomials in `a, a*`, and
+`ρ` is continuous".  The second is the printed "`b ↦ φ(ρ(b))` is an miu-map
+`C*(a) → ℂ`", to which point 4 for `a` applies. -/
 theorem functional_calculus_6 {ℬ : Type*} [CStarAlgebra ℬ]
     (ρ : 𝒜 →⋆ₐ[ℂ] ℬ) (a : 𝒜) [IsStarNormal a] (f : ℂ → ℂ)
     (hf : ContinuousOn f (spectrum ℂ a)) :
-    spectrum ℂ (ρ a) ⊆ spectrum ℂ a ∧ ρ (cfc f a) = cfc f (ρ a) :=
-  ⟨AlgHom.spectrum_apply_subset ρ a, ρ.map_cfc f a hf
-    (AddMonoidHomClass.continuous_of_bound ρ 1 fun x => by
-      simpa using NonUnitalStarAlgHom.norm_apply_le ρ x)⟩
+    spectrum ℂ (ρ a) ⊆ spectrum ℂ a ∧ ρ (cfc f a) = cfc f (ρ a) := by
+  -- first clause: if `λ − a` were invertible, so would be `λ − ρ(a)`
+  have hsub : spectrum ℂ (ρ a) ⊆ spectrum ℂ a := by
+    intro z hz
+    rw [spectrum.mem_iff] at hz ⊢
+    intro hu
+    refine hz ?_
+    have h := hu.map ρ
+    rwa [map_sub, AlgHomClass.commutes] at h
+  refine ⟨hsub, ?_⟩
+  -- `ρ(C*(a)) ⊆ C*(ρ(a))`: the preimage of `C*(ρ(a))` is closed and holds `a`
+  have hρcont : Continuous ρ :=
+    AddMonoidHomClass.continuous_of_bound ρ 1 fun x => by
+      simpa using NonUnitalStarAlgHom.norm_apply_le ρ x
+  have hclosed : IsClosed
+      (((StarAlgebra.elemental ℂ (ρ a)).comap ρ : StarSubalgebra ℂ 𝒜) : Set 𝒜) := by
+    rw [StarSubalgebra.coe_comap]
+    exact (StarAlgebra.elemental.isClosed ℂ (ρ a)).preimage hρcont
+  have hle : StarAlgebra.elemental ℂ a ≤ (StarAlgebra.elemental ℂ (ρ a)).comap ρ :=
+    StarAlgebra.elemental.le_of_mem hclosed (StarAlgebra.elemental.self_mem ℂ (ρ a))
+  set ρ' : StarAlgebra.elemental ℂ a →⋆ₐ[ℂ] StarAlgebra.elemental ℂ (ρ a) :=
+    StarAlgHom.codRestrict (ρ.comp (StarAlgebra.elemental ℂ a).subtype)
+      (StarAlgebra.elemental ℂ (ρ a)) (fun x => hle x.2) with hρ'
+  have hρ'coe : ∀ x : StarAlgebra.elemental ℂ a,
+      ((ρ' x : StarAlgebra.elemental ℂ (ρ a)) : ℬ) = ρ (x : 𝒜) := fun _ => rfl
+  obtain ⟨b, hb⟩ : ∃ b : StarAlgebra.elemental ℂ a, (b : 𝒜) = cfc f a :=
+    ⟨⟨cfc f a, cfc_mem_elemental a f hf⟩, rfl⟩
+  have hchar := (functional_calculus_4 a f hf b).mpr hb
+  have hf' : ContinuousOn f (spectrum ℂ (ρ a)) := hf.mono hsub
+  -- point 4 for `ρ(a)`, applied to `ρ(f(a)) ∈ C*(ρ(a))`
+  have key := (functional_calculus_4 (ρ a) f hf' (ρ' b)).mp ?_
+  · rw [← hb, ← hρ'coe b, key]
+  · intro ψ
+    have h2 : ρ' (⟨a, StarAlgebra.elemental.self_mem ℂ a⟩ : StarAlgebra.elemental ℂ a)
+        = (⟨ρ a, StarAlgebra.elemental.self_mem ℂ (ρ a)⟩ :
+            StarAlgebra.elemental ℂ (ρ a)) := Subtype.ext rfl
+    rw [← char_comp_apply ρ' ψ b, ← h2, ← char_comp_apply ρ' ψ]
+    exact hchar _
 
 /-- **28II** (`functional-calculus`, cstar.tex:4325, Exercise), part 7:
-`g(f(a)) = (g ∘ f)(a)` for normal `a`.  (Mathlib: `cfc_comp`.) -/
+`g(f(a)) = (g ∘ f)(a)` for normal `a`.
+
+*Class 1 — faithful.*  The solution's own argument (asols.tex,
+`parsec-280.20`, point 7): by point 4 it suffices that `g(f(a)) ∈ C*(a)` and
+`φ(g(f(a))) = g(f(φ(a)))` for every `φ ∈ spec(C*(a))`.  The first is the
+printed `C*(f(a)) ⊆ C*(a)`, because `f(a) ∈ C*(a)`.  For the second the
+solution restricts `φ` to `C*(f(a)) ⊆ C*(a)` and applies point 4 twice:
+`φ(g(f(a))) = g(φ(f(a)))` and `φ(f(a)) = f(φ(a))`. -/
 theorem functional_calculus_7 (a : 𝒜) [IsStarNormal a] (f g : ℂ → ℂ)
     (hf : ContinuousOn f (spectrum ℂ a))
     (hg : ContinuousOn g (f '' spectrum ℂ a)) :
-    cfc g (cfc f a) = cfc (g ∘ f) a :=
-  (cfc_comp g f a).symm
+    cfc g (cfc f a) = cfc (g ∘ f) a := by
+  have hn : IsStarNormal (cfc f a) := cfc_predicate f a
+  have hspec : spectrum ℂ (cfc f a) = f '' spectrum ℂ a := functional_calculus_5 a f hf
+  have hg' : ContinuousOn g (spectrum ℂ (cfc f a)) := by rw [hspec]; exact hg
+  have hgf : ContinuousOn (g ∘ f) (spectrum ℂ a) := hg.comp hf (Set.mapsTo_image f _)
+  have hfa : cfc f a ∈ StarAlgebra.elemental ℂ a := cfc_mem_elemental a f hf
+  -- `C*(f(a)) ⊆ C*(a)`, since `f(a) ∈ C*(a)`
+  have hle : StarAlgebra.elemental ℂ (cfc f a) ≤ StarAlgebra.elemental ℂ a :=
+    StarAlgebra.elemental.le_of_mem (StarAlgebra.elemental.isClosed ℂ a) hfa
+  have hga : cfc g (cfc f a) ∈ StarAlgebra.elemental ℂ (cfc f a) :=
+    cfc_mem_elemental (cfc f a) g hg'
+  have hg4 := (functional_calculus_4 (cfc f a) g hg' ⟨cfc g (cfc f a), hga⟩).mpr rfl
+  have hf4 := (functional_calculus_4 a f hf ⟨cfc f a, hfa⟩).mpr rfl
+  refine (functional_calculus_4 a (g ∘ f) hgf ⟨cfc g (cfc f a), hle hga⟩).mp fun φ => ?_
+  -- `φ` restricted to `C*(f(a))` is a character there
+  have hres := hg4 (WeakDual.CharacterSpace.compContinuousMap (StarSubalgebra.inclusion hle) φ)
+  rw [char_comp_apply, char_comp_apply] at hres
+  have e1 : StarSubalgebra.inclusion hle
+      (⟨cfc g (cfc f a), hga⟩ : StarAlgebra.elemental ℂ (cfc f a))
+      = (⟨cfc g (cfc f a), hle hga⟩ : StarAlgebra.elemental ℂ a) := Subtype.ext rfl
+  have e2 : StarSubalgebra.inclusion hle
+      (⟨cfc f a, StarAlgebra.elemental.self_mem ℂ (cfc f a)⟩ :
+        StarAlgebra.elemental ℂ (cfc f a))
+      = (⟨cfc f a, hfa⟩ : StarAlgebra.elemental ℂ a) := Subtype.ext rfl
+  rw [e1, e2] at hres
+  rw [hres, hf4 φ]
+  rfl
 
 section Ordered2
 variable [PartialOrder 𝒜] [StarOrderedRing 𝒜]
 
 /-- **28II** (`functional-calculus`, cstar.tex:4325, Exercise), part 7b:
-`(a^α)^β = a^{αβ}` for `a ≥ 0` and `α, β ∈ (0,∞)`. -/
+`(a^α)^β = a^{αβ}` for `a ≥ 0` and `α, β ∈ (0,∞)`.
+
+*Class 3 — mild.*  The solution calls this "a trivial corollary" of point 7,
+"as `x ↦ x^α` gives a continuous map `[0,∞) → [0,∞)`"; that is exactly what is
+transcribed here — composition of the calculus (`cfc_comp`, point 7's own
+statement) together with the pointwise identity `x^{αβ} = (x^α)^β`.  The local
+shortcut is the one of `functional_calculus_3`: `CFC.rpow` is Mathlib's
+`ℝ≥0`-valued calculus, so the composition law used is `cfc_comp` there rather
+than `functional_calculus_7` above. -/
 theorem functional_calculus_7b (a : 𝒜) (ha : 0 ≤ a) (α β : ℝ) (hα : 0 < α)
     (hβ : 0 < β) :
-    CFC.rpow (CFC.rpow a α) β = CFC.rpow a (α * β) :=
-  CFC.rpow_rpow_of_exponent_nonneg a α β hα.le hβ.le ha
+    CFC.rpow (CFC.rpow a α) β = CFC.rpow a (α * β) := by
+  have hcont : ∀ γ : ℝ, 0 ≤ γ → ∀ S : Set ℝ≥0, ContinuousOn (fun x : ℝ≥0 => x ^ γ) S :=
+    fun γ hγ _ _ _ => (NNReal.continuousAt_rpow_const (Or.inr hγ)).continuousWithinAt
+  simp only [CFC.rpow_eq_pow, CFC.rpow_def]
+  rw [← cfc_comp _ _ a ha (hcont β hβ.le _) (hcont α hα.le _)]
+  exact cfc_congr fun z _ => (NNReal.rpow_mul z α β).symm
 
 /-! ### **28IV** (cstar.tex:4425, Proof): Pedersen's argument for **28III**
 
