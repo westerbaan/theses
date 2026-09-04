@@ -141,7 +141,7 @@ unaffected.  Under (b): add "unital" to 170IV's second half and prove it there.
 
 ### 1.2 — 206II.2/.4: must the ⋄-self-adjoint square root of a ⋄-positive map be **pure**?
 
-*Update 2026-09-04 (`docs/B15-pure-sqrt.md`): the mathematics is settled — reading (2)'s missing step is a **theorem** (a ⋄-self-adjoint `g` with `gg` pure is itself pure), so both readings hold and 211II.1's uniqueness is safe.  What remains is the author's choice of which to formalize: (1) adds `IsPure` and closes the `sorry` with `h = g` and no new mathematics; (2) is faithful to the printed 206II.4 but its Lean proof needs Kadison's order-isomorphism theorem, absent from Mathlib.*
+*Update 2026-09-04: **purity itself is defined a priori differently** across the two theses (proc.tex 100I vs eff.tex's comprehension-based purity, as `dils-pure-discussion`/201IV flags), and the tree bridges them with `su_procPure_of_isPure` rather than conflating them — so `vn_is_andthen_eff` is a faithful transcription of eff.tex and its `sorry` is a documented cross-thesis definitional gap, not a defect.  The mathematics behind the gap is settled — reading (2)'s missing step is a **theorem** (a ⋄-self-adjoint `g` with `gg` pure is itself pure), so both readings hold and 211II.1's uniqueness is safe.  What remains is the author's choice of which to formalize: (1) adds `IsPure` and closes the `sorry` with `h = g` and no new mathematics; (2) is faithful to the printed 206II.4 but its Lean proof needs Kadison's order-isomorphism theorem, absent from Mathlib.*
 
 *(`QUESTIONS.md` B15.  Blocks `vn_is_andthen_eff` in
 `Theses/B/Eff/VNExamples.lean` — **211IV** `vn-is-andthen-eff`.)*

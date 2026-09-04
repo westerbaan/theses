@@ -184,6 +184,21 @@ lies in the commutant `1 ⊗ B(𝒦')`) — which is what `berr.tex`'s own prose
 "the ancillar spaces of the same dimension" means; **(b)** keep (ii) and add
 `dim ℋ < ∞`; or **(c)** delete (ii).  We recommend (a).
 
+*Framing (2026-09-04, the author's).*  Note also that **purity itself is
+defined a priori differently** in the two theses — proc.tex 100I (factor
+through a corner) versus eff.tex's abstract effectus purity via comprehensions
+— exactly as `dils.tex` `dils-pure-discussion` (referred back to by 201IV)
+flags for purity of *maps*.  The tree does not pretend they coincide: it carries
+both and bridges them with `su_procPure_of_isPure` (`VNExamples.lean`).  So
+`vn_is_andthen_eff` is a **faithful transcription of eff.tex against eff.tex's
+own definitions**, and the one `sorry` is not a flaw in it: it marks the point
+where eff.tex 206II.4 leaves implicit that its (weaker) ⋄-positivity coincides,
+in `vN`, with the pure-root version its proof cites (105V, in the proc class).
+That coincidence is now known to be a theorem (`docs/B15-pure-sqrt.md`), so the
+`sorry` is a documented cross-thesis definitional gap, not a defect and not our
+mis-transcription.  The remaining choice is only whether to (1) align the
+definition and close it with `h = g`, or leave it thus documented.
+
 *What waits on it*: `ess_uniq_pur` (`Theses/B/Dils/Stinespring.lean`) is
 `sorry`ed and unchanged.  *Realigning* it to the current `dils.tex:998` needs
 no ruling — our statement transcribes the first printing and drops all three
