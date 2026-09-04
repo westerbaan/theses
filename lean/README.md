@@ -10,7 +10,7 @@ A Lean 4 + Mathlib formalization of the two PhD theses in this repository:
   `dils.tex`, `eff.tex`, solutions in `bsols.tex`, errata in `berr.tex`.
 
 Essentially every lemma, proposition, theorem, corollary and exercise of both
-theses is stated, and all but nine are proved.  The nine are unproved because
+theses is stated, and all but eight are proved.  The eight are unproved because
 the printed statement is false or waits on an author ruling; each has a row in
 `docs/why-open.csv`, and `Theses/AxiomCheck.lean` verifies that nothing else
 depends on them.  Every statement has been audited against its source

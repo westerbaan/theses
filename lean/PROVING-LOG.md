@@ -31252,3 +31252,69 @@ source had not changed.  Renamed.  Two dead sections deleted with their rows
 Nine `sorry`s, unchanged.  All 55 oleans rebuilt after the day's edits;
 `AxiomCheck`: 9 are themselves `sorry`, 0 depend on one.  Dumps and map
 regenerated; every exact check clean.
+
+## Session 109 — 2026-09-04, the author's DECISIONS pass
+
+The author went through `docs/DECISIONS.md` and ruled; each ruling was
+recorded and worked the same day.
+
+### 1. Rulings and what they produced
+
+* **§1.5 (179III.2), (a).**  `effectModule_unitInterval_representation`
+  restated with `[PosSMulMono ℝ V] [SMulPosMono ℝ V]` and an `IsOrderUnit u`
+  clause, then **proved** (~1,128 lines, `namespace GP`: the cone of formal
+  `ℝ≥0`-multiples with the total addition that uses convexity, its group of
+  differences, left-cancellation and divisibility `a ≼ l·1 ⟹ a = l·e`).
+  Axiom-clean.  **Nine sorries became eight.**  QUESTIONS B14 deleted.
+* **§2.1, (a) with a condition** — "only when explicitly performing this
+  task; we don't want an agent to 'cheat' in an unrelated task."  Written as
+  `docs/audit/STATEMENT-BRIEF.md`; every other brief keeps statements
+  byte-identical; README's rule updated.  First alignment pass: 20 rows in
+  two groups; nine repaired (28II.4 identifies the element with `cfc f a`,
+  30X names `ϱ_Ω` and states the converse, 67IV.2's ungated sibling, 219II's
+  uniqueness, 180V's effect object, 149IIb's positive half, 199V and 49II
+  and 191II's representation were `ok` all along), eleven left with the
+  reason re-derived.  **§2.4, §2.5 and §2.7 closed as a consequence.**
+* **§2.2, (a), "out-of-order proofs insofar the thesis does that itself."**
+  New `scripts/forward_check.py` (unique long names, the printed proof's
+  extent runs to the parsec's next statement, private helpers are provenance,
+  Mathlib field names skipped): 387 → 70 → 44 → 33 leads.  Six §2.2 groups
+  over the 87 `mathlib` rows and the leads: ~40 rows transcribed onto the
+  author's own arguments (operator-norm completeness, projection and Riesz
+  theorems, ℓ²-sum completeness, Bessel/Cauchy, Baire, inverse continuity,
+  Gelfand basics, GNS at 135II, the pullback lemmas, 147II's entourages);
+  ~14 were unsolved Exercises or definitions (`none`, not `mathlib`); the
+  rest kept `mathlib` with re-costed `left-` words.  Of ~60 forward leads
+  all but three were the printed proof's own sub-points, definitions,
+  explicit `\sref`s or filing artifacts; 115II, 47V and 227II.3 were
+  rewritten onto what the thesis has at that point; 215VIa.1's is genuine
+  and `left-cost`; 152IX's is the thesis's own (ERRATA).
+* **§2.3 (191II)** — the author asked for a counterexample search; there is
+  none.  Every effectus with separating predicates is *isomorphic* to a
+  non-full subcategory of `EMod_M^op` by re-tagging objects, so the Theorem
+  is true as printed and (b) = (c).  The defect is 191VII's closing sentence
+  naming the image `Pred C`, which in `vN_cpuᵒᵖ` is not a subcategory
+  (`Pred(M₂⊕M₂) = Pred(M₂⊕M₂ᵒᵖ)`).  Fullness is false.  `docs/191II-subcategory.md`,
+  ERRATA 191VII.
+* **§2.7 (180V), (a).**  Done in the alignment pass; QUESTIONS B13 deleted.
+* **B15** — the author asked for a proof of reading (2).  Found: a
+  ⋄-self-adjoint `g` with `gg` pure is itself pure (Kadison, all types),
+  `docs/B15-pure-sqrt.md`.  The author's framing: purity is defined a priori
+  differently across the theses (as 201IV / `dils-pure-discussion` flags),
+  the tree bridges the two with `su_procPure_of_isPure`, so 211IV is a
+  faithful transcription and its `sorry` a documented cross-thesis gap.  Then:
+  do the two ⋄-self-adjoint notions match a posteriori?  **No** —
+  `diaPull = diaPush` is exactly contraposed-to-itself, and
+  `ad_{B₁}+ad_{B₂}` is an impure witness (`docs/B15-dsa-match.md`).  The
+  choice between (1) and leaving it documented is the author's.
+
+### 2. Errata this session
+
+152IX ("ncp" asserted before normality is proved), 191VII (the image
+sentence), 7III.6 (a sign in asols).  112 rows.
+
+### 3. A note on the orchestrator
+
+Commits `746f405`–`f59d92b` (13) were orchestrated by Claude Opus 4.8: the
+harness switched the session's model mid-run (apparently a usage fallback)
+and back to Fable at `1b0f867`.  The trailers record it faithfully.
