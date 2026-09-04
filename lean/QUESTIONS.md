@@ -298,16 +298,18 @@ neither thesis gives one.
    the wording of 206II;
 2. *206II.4 is as printed*, and 211IV needs an extra step, namely: in
    `vNᵒᵖ`, a ⋄-self-adjoint `g` whose square `gg` is pure has a **pure**
-   ⋄-self-adjoint square root with the same square.  **Status (corrected
-   2026-09-05, `docs/B15-elementary.md`):** proved in finite dimensions, and
-   in general under one sub-claim **(S)** — that `g` maps the support corner
-   of `g(1)` *onto* itself (equivalently `g(1)` invertible there).  Under (S)
-   the proof is elementary: proc's own 99IX (an ncpu-bijection with ncpu
-   inverse is nmiu) makes `g` pure, and 105V finishes.  The earlier Kadison
-   route (`docs/B15-pure-sqrt.md`) has the *same* hole at its Step 2 (a filter
-   `√q(·)√q` is onto its corner only for invertible `q`), so it proved
-   nothing more.  Without (S) the question is open; no counterexample is
-   known.  Reading (1) closes the `sorry` with no new mathematics.
+   ⋄-self-adjoint square root with the same square.  **This is a theorem of
+   `vN`, elementary, certified after adversarial review (2026-09-05,
+   `docs/B15-S.md`, `docs/B15-S-review.md`):** any ncp `g` with
+   `⌈g⌉ = ⌈g(1)⌉` and `g∘g` pure is itself pure (a Schur-complement argument
+   with the 2-positive `M₂(g)`, then Gardner's 99II and `pure-fundamental`);
+   self-contraposition supplies the support condition and then gives
+   `f = g∘g = √q(·)√q`.  Two earlier proofs (Kadison; and one needing a
+   sub-claim (S), which is false) are superseded.  So reading (2) — 206II.4 and
+   211IV as printed — is sound, and the `sorry` closes with `h := g` and **no
+   statement change**; the Lean cost is ~700–1,000 lines, in progress.
+   Reading (1) would close it for free but *changes* ⋄-self-adjointness
+   (`docs/B15-dsa-match.md`).
 
 **What the tree implements is reading (2)**, verbatim: in
 `Theses/B/Eff/DiamondAmp.lean`, `DiamondSelfAdjoint f := diaPull f = diaPush f`

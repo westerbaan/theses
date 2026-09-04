@@ -31339,3 +31339,12 @@ is onto its corner, which needs the support element invertible
 case under sub-claim (S), by an elementary route through 99IX and 105V that
 needs no Kadison.  The records in `QUESTIONS.md` B15 and `DECISIONS.md` §1.2
 are corrected; the author was told.
+
+### 6. B15(2) settled (2026-09-05)
+
+Third proof, adversarially reviewed and certified with two repairs
+(`docs/B15-S.md`, `docs/B15-S-review.md`): an ncp `g` with `⌈g⌉ = ⌈g(1)⌉`
+and `g∘g` pure is pure; with self-contraposition `f = √q(·)√q`.  Sub-claim
+(S) of the second proof was false (`g = c_p`), and was routed around.  Reading
+(2) is therefore a theorem of `vN`; the `sorry` in `vn_is_andthen_eff` is
+pure proof work (no statement change) and is launched.
