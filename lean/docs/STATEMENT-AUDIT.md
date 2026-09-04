@@ -268,7 +268,7 @@ Two consequences, one of them a live defect:
 
 * **`audit_check.py`'s unrowed check could not see those declarations.**  With
   the regex widened it found one across the whole tree:
-  **`atomicTypeI_tensor_preimage`** (`A/Proc/QuantumLambda.lean:7820`) has
+  **`atomicTypeI_tensor_preimage`** (`A/Proc/QuantumLambda.lean:7929`) has
   carried the tag `**125VIIb**` since it was written and no audit row named it.
   A row is now in place, and its sibling `atomicTypeI_tensorBsurjectivity` was
   rowed all along, which is what made the gap invisible to a reader.
