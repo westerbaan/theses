@@ -3733,7 +3733,7 @@ claims): for a tensor product `γ` the np-functionals of the form
 np-functional on `𝒯` is an operator-norm limit of finite sums of such.
 
 Order separation is stated here in the two-element comparison form that
-this file's consumers (`tensor_basic_2`, `char_bounded`) use, and derived
+this file's consumer `tmapBilin_bounded` uses, and derived
 from `tensor_basic_1_orderSeparating`, which is the point's own claim
 (cstar.tex **21II**.1, for an arbitrary element).  The part's third claim,
 that `ω ↦ ω ∘ γ_⊙` is a bijection of `Ω` onto the basic functionals, is
@@ -3801,19 +3801,143 @@ theorem tensor_basic_1 (γ : A →ₗ[ℂ] B →ₗ[ℂ] T) (hγ : IsTensorProdu
     simp only [hu]
     simpa only [hστ] using hbound t
 
+/-! ### The renormalisation of `Ω` to its unital members `Ω₁`
+
+**112X**.2 and the first step of **116VII** both restrict an order
+separating collection of np-functionals to its *unital* members and then
+quote **21VII** `order_separating_norm` to read the norm off as a
+supremum.  The three lemmas below are what that restriction needs: an
+np-functional vanishing at `1` vanishes outright, so the degenerate members
+may be discarded; conjugating by a real multiple `r·b` scales `ω(b*(·)b)`
+by `r²`, so the collections of both points are closed under multiplication
+by positive scalars and every non-degenerate member has a unital
+representative; and a unital positive functional is bounded by the norm at
+positive elements, which bounds the supremum. -/
+
+omit [VonNeumannAlgebra A] [VonNeumannAlgebra B] [VonNeumannAlgebra C] in
+/-- `‖z‖ = z.re` for `0 ≤ z` in `ℂ` (with `ComplexOrder`). -/
+private theorem norm_eq_re_of_nonneg {z : ℂ} (h : 0 ≤ z) : ‖z‖ = z.re := by
+  obtain ⟨hr, hi⟩ := Complex.le_def.mp h
+  simp only [Complex.zero_re, Complex.zero_im] at hr hi
+  rw [Complex.norm_def, Complex.normSq_apply, ← hi]
+  simp only [mul_zero, add_zero]
+  exact Real.sqrt_mul_self hr
+
+omit [VonNeumannAlgebra T] in
+/-- An np-functional with `χ(1) = 0` is zero: Cauchy–Schwarz (**43I**.1,
+`norm_apply_le_omegaNorm`) gives `|χ(x)| ≤ ‖x‖_χ·χ(1)^½`.  This is what
+makes the passage to the unital members `Ω₁` harmless at the degenerate
+members of `Ω`. -/
+private theorem npFunctional_eq_zero_of_one_eq_zero {χ : NPFunctional T}
+    (h : (χ 1 : ℂ) = 0) (x : T) : (χ x : ℂ) = 0 := by
+  have hb := norm_apply_le_omegaNorm χ x
+  rw [h] at hb
+  simp only [Complex.zero_re, Real.sqrt_zero, mul_zero] at hb
+  exact norm_le_zero_iff.mp hb
+
+/-- Conjugating by a real multiple `r·b` scales `ω(b*(·)b)` by `r²`. -/
+private theorem conjNP_smul_real (b : T) (ω : NPFunctional T) (r : ℝ) (x : T) :
+    (conjNP (((r : ℝ) : ℂ) • b) ω x : ℂ) = ((r * r : ℝ) : ℂ) * conjNP b ω x := by
+  have hb : star (((r : ℝ) : ℂ) • b) * x * (((r : ℝ) : ℂ) • b)
+      = ((r * r : ℝ) : ℂ) • (star b * x * b) := by
+    rw [star_smul, Complex.star_def, Complex.conj_ofReal, smul_mul_assoc,
+      smul_mul_assoc, mul_smul_comm, smul_smul, ← Complex.ofReal_mul]
+  rw [conjNP_apply, conjNP_apply, hb]
+  show (npLin ω) (((r * r : ℝ) : ℂ) • (star b * x * b)) = _
+  rw [map_smul]
+  rfl
+
+omit [VonNeumannAlgebra T] in
+/-- A unital positive functional does not exceed the norm at a positive
+element: `χ(x) ≤ ‖x‖·χ(1) = ‖x‖`. -/
+private theorem npFunctional_le_norm_of_unital {χ : NPFunctional T}
+    (h1 : (χ 1 : ℂ) = 1) {x : T} (hx : 0 ≤ x) : ‖(χ x : ℂ)‖ ≤ ‖x‖ := by
+  have hb : x ≤ ((‖x‖ : ℝ) : ℂ) • (1 : T) := by
+    have h := Theses.A.VN.le_norm_smul_one hx
+    rwa [← IsScalarTower.algebraMap_smul ℂ (‖x‖ : ℝ) (1 : T),
+      Complex.coe_algebraMap] at h
+  have hmono := npFunctional_mono χ hb
+  have hval : (χ (((‖x‖ : ℝ) : ℂ) • (1 : T)) : ℂ) = ((‖x‖ : ℝ) : ℂ) := by
+    show (npLin χ) (((‖x‖ : ℝ) : ℂ) • (1 : T)) = _
+    rw [map_smul]
+    show ((‖x‖ : ℝ) : ℂ) * (χ 1 : ℂ) = _
+    rw [h1, mul_one]
+  rw [hval] at hmono
+  rw [norm_eq_re_of_nonneg (npFunctional_nonneg χ hx)]
+  simpa using (Complex.le_def.mp hmono).1
+
+omit [VonNeumannAlgebra T] in
+/-- **21VII** (`order-separating-norm`, cstar.tex:3247) as **112X**.2 and
+**116VII** apply it: an order separating collection `χ` of np-functionals
+that is closed under multiplication by positive scalars may be restricted
+to its unital members, which are order separating again, and those
+determine the norm — `‖a‖ = sup_ω ω(a)` for positive `a`.
+
+The restriction is the thesis's own step ("the subset `Ω₁` of `Ω` of unital
+maps is order separating"): a member `χ_i` with `χ_i(1) > 0` is a positive
+multiple of a unital one, and a member with `χ_i(1) = 0` is zero
+(`npFunctional_eq_zero_of_one_eq_zero`), so imposes nothing. -/
+private theorem orderSeparating_unital_norm {ι : Type*} (χ : ι → NPFunctional T)
+    (hos : Theses.A.CStar.OrderSeparating fun i => npLin (χ i))
+    (hsc : ∀ (i : ι) (r : ℝ), 0 < r → ∃ j : ι, ∀ x : T,
+      (χ j x : ℂ) = (r : ℂ) * χ i x)
+    {a : T} (ha : 0 ≤ a) :
+    ‖a‖ = ⨆ i : {i : ι // (χ i 1 : ℂ) = 1}, ‖(χ i.1 a : ℂ)‖ := by
+  have hpos : ∀ i : {i : ι // (χ i 1 : ℂ) = 1}, ∀ x : T, 0 ≤ x →
+      0 ≤ npLin (χ i.1) x := fun i x hx => npFunctional_nonneg (χ i.1) hx
+  have hu : ∀ i : {i : ι // (χ i 1 : ℂ) = 1}, npLin (χ i.1) 1 = 1 := fun i => i.2
+  have hos1 : Theses.A.CStar.OrderSeparating
+      (fun i : {i : ι // (χ i 1 : ℂ) = 1} => npLin (χ i.1)) := by
+    intro x
+    refine ⟨fun hx i => npFunctional_nonneg (χ i.1) hx, fun H => ?_⟩
+    refine (hos x).mpr fun i => ?_
+    have h1 : (0 : ℂ) ≤ χ i 1 := npFunctional_nonneg (χ i) zero_le_one
+    obtain ⟨hre, him⟩ := Complex.le_def.mp h1
+    simp only [Complex.zero_re, Complex.zero_im] at hre him
+    rcases hre.eq_or_lt with hc | hc
+    · have hz : (χ i 1 : ℂ) = 0 := by
+        apply Complex.ext <;> simp [← hc, ← him]
+      show (0 : ℂ) ≤ χ i x
+      rw [npFunctional_eq_zero_of_one_eq_zero hz x]
+    · obtain ⟨j, hj⟩ := hsc i ((χ i 1 : ℂ).re)⁻¹ (inv_pos.mpr hc)
+      have hj1 : (χ j 1 : ℂ) = 1 := by
+        rw [hj 1]
+        apply Complex.ext <;>
+          simp [Complex.mul_re, Complex.mul_im, ← him,
+            inv_mul_cancel₀ (ne_of_gt hc)]
+      have hx := H ⟨j, hj1⟩
+      have hx' : (0 : ℂ) ≤ χ j x := hx
+      rw [hj x] at hx'
+      show (0 : ℂ) ≤ χ i x
+      have hcnn : (0 : ℂ) ≤ (((χ i 1 : ℂ).re : ℝ) : ℂ) :=
+        Complex.le_def.mpr ⟨by simpa using hc.le, by simp⟩
+      have hmul := mul_nonneg hcnn hx'
+      rw [← mul_assoc, ← Complex.ofReal_mul,
+        mul_inv_cancel₀ (ne_of_gt hc), Complex.ofReal_one, one_mul] at hmul
+      exact hmul
+  have htfae := Theses.A.CStar.order_separating_norm
+    (ℬf := fun _ : {i : ι // (χ i 1 : ℂ) = 1} => ℂ)
+    (fun i => npLin (χ i.1)) hpos hu
+  have h13 : Theses.A.CStar.OrderSeparating
+      (fun i : {i : ι // (χ i 1 : ℂ) = 1} => npLin (χ i.1)) ↔
+      ∀ x : T, 0 ≤ x →
+        ‖x‖ = ⨆ i : {i : ι // (χ i 1 : ℂ) = 1}, ‖(χ i.1 x : ℂ)‖ := htfae.out 0 2
+  exact h13.mp hos1 a ha
+
 /-- **112X** (`tensor-basic`, proc.tex:2874, Exercise), part 2 (headline
 claim): `γ_⊙ : 𝒜 ⊙ ℬ → 𝒯` is an isometry for the tensor product
 norm. -/
 theorem tensor_basic_2 (γ : A →ₗ[ℂ] B →ₗ[ℂ] T) (hγ : IsTensorProduct γ)
     (s : A ⊗[ℂ] B) : ‖TensorProduct.lift γ s‖ = tensorNorm A B s := by
-  -- Both halves are read off the identity `γ_⊙(s)*γ_⊙(s) = γ_⊙(s* s)` and the
-  -- bijection `Ω ↔ basic functionals` of 112X.1.
-  have hsmul : ∀ (χ : NPFunctional T) (r : ℝ) (x : T),
-      χ (((r : ℝ) : ℂ) • x) = ((r : ℝ) : ℂ) * χ x := by
-    intro χ r x
-    show npLin χ (((r : ℝ) : ℂ) • x) = _
-    rw [map_smul]
-    rfl
+  -- proc.tex:2911-2927.  The exercise passes to the subset `Ω₁` of `Ω` of
+  -- *unital* members, which is again order separating, and reads
+  -- `‖γ_⊙(s)‖² = ‖γ_⊙(s)*γ_⊙(s)‖ = sup_{ω ∈ Ω₁} ω(γ_⊙(s)*γ_⊙(s))` off
+  -- **21VII** `order-separating-norm`; the two sides of the resulting
+  -- inequality are then the two halves of
+  -- `sup_{ω ∈ Ω₁} ‖s‖_{ω ∘ γ_⊙} = ‖s‖`, i.e. of the identity between the
+  -- supremum over the *unital* basic functionals and the supremum over the
+  -- *subunital* ones that defines the tensor product norm (**112II**).
+  classical
   set y : T := TensorProduct.lift γ s with hydef
   have hstarmul : star y * y = TensorProduct.lift γ (star s * s) := by
     rw [hydef, lift_mul γ hγ.miu.2.1, lift_star γ hγ.miu.2.2]
@@ -3821,75 +3945,113 @@ theorem tensor_basic_2 (γ : A →ₗ[ℂ] B →ₗ[ℂ] T) (hγ : IsTensorProdu
   have hnx : ‖star y * y‖ = ‖y‖ ^ 2 := by
     rw [CStarRing.norm_star_mul_self]; ring
   have hone : TensorProduct.lift γ (1 : A ⊗[ℂ] B) = 1 := lift_one γ hγ.miu.1
+  -- the collection `Ω` of 112X.1 …
+  set Ω : NPFunctional A × NPFunctional B × (A ⊗[ℂ] B) → NPFunctional T :=
+    fun p => conjProdNP hγ p.1 p.2.1 p.2.2 with hΩ
+  -- … is closed under multiplication by positive scalars, because scaling
+  -- the conjugating vector `s` by `r` scales `γ(σ,τ)(γ_⊙(s)*(·)γ_⊙(s))`
+  -- by `r²`.  This is what makes `Ω₁` available.
+  have hsc : ∀ (p : NPFunctional A × NPFunctional B × (A ⊗[ℂ] B)) (r : ℝ),
+      0 < r → ∃ q, ∀ x : T, (Ω q x : ℂ) = (r : ℂ) * Ω p x := by
+    rintro ⟨σ, τ, v⟩ r hr
+    refine ⟨(σ, τ, ((Real.sqrt r : ℝ) : ℂ) • v), fun x => ?_⟩
+    show (conjNP (TensorProduct.lift γ (((Real.sqrt r : ℝ) : ℂ) • v))
+        (prodNP hγ σ τ) x : ℂ) = _
+    rw [map_smul, conjNP_smul_real, Real.mul_self_sqrt hr.le]
+    rfl
+  -- `‖γ_⊙(s)*γ_⊙(s)‖ = sup_{ω ∈ Ω₁} ω(γ_⊙(s)*γ_⊙(s))`, by 21VII
+  have hsup := orderSeparating_unital_norm Ω
+    (tensor_basic_1_orderSeparating γ hγ) hsc hxnn
+  -- each member of `Ω₁` restricts along `γ_⊙` to a *unital* basic functional
+  have hu1 : ∀ i : {p : NPFunctional A × NPFunctional B × (A ⊗[ℂ] B) //
+        (Ω p 1 : ℂ) = 1},
+      ((((npLin (Ω i.1)).comp (TensorProduct.lift γ))) 1).re ≤ 1 := by
+    intro i
+    show (Ω i.1 (TensorProduct.lift γ 1) : ℂ).re ≤ 1
+    rw [hone, i.2]
+    simp
+  have hval : ∀ i : {p : NPFunctional A × NPFunctional B × (A ⊗[ℂ] B) //
+        (Ω p 1 : ℂ) = 1},
+      (((npLin (Ω i.1)).comp (TensorProduct.lift γ)) (star s * s) : ℂ)
+        = Ω i.1 (star y * y) := by
+    intro i
+    show (Ω i.1 (TensorProduct.lift γ (star s * s)) : ℂ) = _
+    rw [hstarmul]
   refine le_antisymm ?_ ?_
-  · -- `‖γ_⊙ s‖ ≤ ‖s‖`.  The thesis obtains this from `order-separating-norm`
-    -- (**21VII**) applied to the *unital* members `Ω₁`; we apply the order
-    -- separating property of 112X.1 directly at `γ_⊙(s)*γ_⊙(s) ≤ ‖s‖²·1`,
-    -- which is 21VII's own argument without the renormalisation of `Ω` to
-    -- `Ω₁` (see the log).
-    have hN : (0 : ℝ) ≤ tensorNorm A B s := tensorNorm_nonneg s
-    have hsa1 : IsSelfAdjoint (((tensorNorm A B s ^ 2 : ℝ) : ℂ) • (1 : T)) := by
-      show star _ = _
-      simp
-    have hle : star y * y ≤ ((tensorNorm A B s ^ 2 : ℝ) : ℂ) • (1 : T) := by
-      refine (tensor_basic_1 γ hγ).1 _ _ (IsSelfAdjoint.star_mul_self y) hsa1 ?_
-      intro σ τ v
-      have hbasic := isBasicFunctional_comp_lift hγ σ τ v
-      set ω' : A ⊗[ℂ] B →ₗ[ℂ] ℂ :=
-        (npLin (conjProdNP hγ σ τ v)).comp (TensorProduct.lift γ) with hω'def
-      have hL : prodNP hγ σ τ (star (TensorProduct.lift γ v) * (star y * y) *
-          TensorProduct.lift γ v) = ω' (star s * s) := by
-        rw [hstarmul]
-        rfl
-      have hR : prodNP hγ σ τ (star (TensorProduct.lift γ v) *
-            (((tensorNorm A B s ^ 2 : ℝ) : ℂ) • (1 : T)) *
-            TensorProduct.lift γ v)
-          = ((tensorNorm A B s ^ 2 : ℝ) : ℂ) * ω' 1 := by
-        have he : star (TensorProduct.lift γ v) *
-              (((tensorNorm A B s ^ 2 : ℝ) : ℂ) • (1 : T)) *
-              TensorProduct.lift γ v
-            = ((tensorNorm A B s ^ 2 : ℝ) : ℂ) •
-              (star (TensorProduct.lift γ v) * 1 * TensorProduct.lift γ v) := by
-          rw [mul_smul_comm, smul_mul_assoc]
-        rw [he, hsmul]
-        congr 1
-        show _ = conjProdNP hγ σ τ v (TensorProduct.lift γ 1)
-        rw [conjProdNP_apply, hone]
-      rw [hL, hR, Complex.re_ofReal_mul]
-      exact basic_star_self_le hbasic s
-    have hnorm : ‖star y * y‖ ≤ tensorNorm A B s ^ 2 := by
-      refine (Theses.A.CStar.norm_le_iff_neg_algebraMap_le
-        (IsSelfAdjoint.star_mul_self y) (by positivity)).mpr ⟨?_, ?_⟩
-      · refine le_trans (neg_nonpos.mpr ?_) hxnn
-        exact Theses.A.CStar.algebraMap_ofReal_nonneg (by positivity)
-      · rwa [Algebra.algebraMap_eq_smul_one]
-    rw [hnx] at hnorm
-    nlinarith [norm_nonneg y, hN]
-  · -- `‖s‖ ≤ ‖γ_⊙ s‖`: every basic functional is `χ ∘ γ_⊙` for a member `χ`
-    -- of `Ω`, and `χ(γ_⊙(s)*γ_⊙(s)) ≤ ‖γ_⊙ s‖² χ(1)` by positivity of `χ`.
+  · -- `sup_{ω ∈ Ω₁} ‖s‖_{ω ∘ γ_⊙} ≤ ‖s‖`: each `ω ∈ Ω₁` restricts to a
+    -- basic functional with `(ω ∘ γ_⊙)(1) = 1 ≤ 1`, so its seminorm is one
+    -- of the numbers the tensor product norm is the supremum of.
+    have hterm : ∀ i : {p : NPFunctional A × NPFunctional B × (A ⊗[ℂ] B) //
+        (Ω p 1 : ℂ) = 1}, ‖(Ω i.1 (star y * y) : ℂ)‖ ≤ tensorNorm A B s ^ 2 := by
+      rintro ⟨⟨σ, τ, v⟩, hi⟩
+      have hbi : IsBasicFunctional
+          ((npLin (Ω (σ, τ, v))).comp (TensorProduct.lift γ)) :=
+        isBasicFunctional_comp_lift hγ σ τ v
+      have hnn : (0 : ℂ) ≤ ((npLin (Ω (σ, τ, v))).comp (TensorProduct.lift γ))
+          (star s * s) :=
+        (basic_state_inner_product _ hbi).2 s
+      have hnrm : ‖(Ω (σ, τ, v) (star y * y) : ℂ)‖
+          = (((npLin (Ω (σ, τ, v))).comp
+              (TensorProduct.lift γ)) (star s * s)).re := by
+        rw [← hval ⟨(σ, τ, v), hi⟩]
+        exact norm_eq_re_of_nonneg hnn
+      rw [hnrm]
+      have hmem : Real.sqrt ((((npLin (Ω (σ, τ, v))).comp
+          (TensorProduct.lift γ)) (star s * s)).re) ≤ tensorNorm A B s :=
+        le_csSup (tnSet_bddAbove s) ⟨_, hbi, hu1 ⟨(σ, τ, v), hi⟩, rfl⟩
+      have hnn' : (0 : ℝ) ≤ (((npLin (Ω (σ, τ, v))).comp
+          (TensorProduct.lift γ)) (star s * s)).re := by
+        simpa using (Complex.le_def.mp hnn).1
+      nlinarith [Real.sq_sqrt hnn', Real.sqrt_nonneg ((((npLin (Ω (σ, τ, v))).comp
+        (TensorProduct.lift γ)) (star s * s)).re),
+        tensorNorm_nonneg (A := A) (B := B) s]
+    have hle : ‖star y * y‖ ≤ tensorNorm A B s ^ 2 := by
+      rw [hsup]
+      exact Real.iSup_le hterm (by positivity)
+    rw [hnx] at hle
+    nlinarith [norm_nonneg y, tensorNorm_nonneg (A := A) (B := B) s]
+  · -- `‖s‖ ≤ sup_{ω ∈ Ω₁} ‖s‖_{ω ∘ γ_⊙}`: a *subunital* basic functional is
+    -- `χ ∘ γ_⊙` for a member `χ` of `Ω` (112X.1), and `χ` is either zero or
+    -- `χ(1)` times a unital member, with `χ(1) ≤ 1`.
     refine Real.sSup_le (fun r hr => ?_) (norm_nonneg y)
     obtain ⟨ω, hω, h1, rfl⟩ := hr
     obtain ⟨σ, τ, u, hrep⟩ := exists_conjProdNP_of_isBasicFunctional hγ ω hω
-    have hval : ω (star s * s) = conjProdNP hγ σ τ u (star y * y) := by
+    have hωval : ω (star s * s) = Ω (σ, τ, u) (star y * y) := by
       rw [hrep, hstarmul]
-    have hone' : ω 1 = conjProdNP hγ σ τ u 1 := by rw [hrep, hone]
-    have hb : star y * y ≤ ((‖star y * y‖ : ℝ) : ℂ) • (1 : T) := by
-      rw [Complex.coe_smul]
-      exact le_norm_smul_one hxnn
-    have hmono := npFunctional_mono (conjProdNP hγ σ τ u) hb
-    rw [hsmul] at hmono
-    have hre : (ω (star s * s)).re ≤ ‖y‖ ^ 2 * (ω 1).re := by
-      rw [hval, hone']
-      have := (Complex.le_def.mp hmono).1
-      rwa [Complex.re_ofReal_mul, hnx] at this
-    have h1nn : (0 : ℝ) ≤ (ω 1).re := by
-      simpa using (Complex.le_def.mp (basic_one_nonneg hω)).1
-    have hfin : (ω (star s * s)).re ≤ ‖y‖ ^ 2 := by
-      refine hre.trans ?_
-      nlinarith [sq_nonneg ‖y‖]
-    calc Real.sqrt (ω (star s * s)).re ≤ Real.sqrt (‖y‖ ^ 2) :=
-          Real.sqrt_le_sqrt hfin
-      _ = ‖y‖ := Real.sqrt_sq (norm_nonneg y)
+    have hω1 : ω 1 = Ω (σ, τ, u) 1 := by rw [hrep, hone]
+    have hc0 : (0 : ℂ) ≤ Ω (σ, τ, u) 1 := npFunctional_nonneg _ zero_le_one
+    obtain ⟨hcre, hcim⟩ := Complex.le_def.mp hc0
+    simp only [Complex.zero_re, Complex.zero_im] at hcre hcim
+    rcases hcre.eq_or_lt with hc | hc
+    · -- the degenerate members of `Ω` are zero
+      have hz : (Ω (σ, τ, u) 1 : ℂ) = 0 := by
+        apply Complex.ext <;> simp [← hc, ← hcim]
+      rw [hωval, npFunctional_eq_zero_of_one_eq_zero hz]
+      simp
+    · obtain ⟨q, hq⟩ := hsc (σ, τ, u) ((Ω (σ, τ, u) 1 : ℂ).re)⁻¹ (inv_pos.mpr hc)
+      have hq1 : (Ω q 1 : ℂ) = 1 := by
+        rw [hq 1]
+        apply Complex.ext <;>
+          simp [Complex.mul_re, Complex.mul_im, ← hcim,
+            inv_mul_cancel₀ (ne_of_gt hc)]
+      have hle1 : ((Ω q (star y * y) : ℂ)).re ≤ ‖y‖ ^ 2 := by
+        rw [← hnx, ← norm_eq_re_of_nonneg (npFunctional_nonneg (Ω q) hxnn)]
+        exact npFunctional_le_norm_of_unital hq1 hxnn
+      have hqval : ((Ω (σ, τ, u) (star y * y) : ℂ)).re
+          = (Ω (σ, τ, u) 1 : ℂ).re * ((Ω q (star y * y) : ℂ)).re := by
+        rw [hq (star y * y)]
+        simp only [Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im, zero_mul,
+          sub_zero]
+        field_simp
+      have hcle1 : (Ω (σ, τ, u) 1 : ℂ).re ≤ 1 := by rw [← hω1]; exact h1
+      have hfin : (ω (star s * s)).re ≤ ‖y‖ ^ 2 := by
+        rw [hωval, hqval]
+        have hqnn : (0 : ℝ) ≤ ((Ω q (star y * y) : ℂ)).re := by
+          simpa using (Complex.le_def.mp (npFunctional_nonneg (Ω q) hxnn)).1
+        nlinarith [sq_nonneg ‖y‖]
+      calc Real.sqrt (ω (star s * s)).re ≤ Real.sqrt (‖y‖ ^ 2) :=
+            Real.sqrt_le_sqrt hfin
+        _ = ‖y‖ := Real.sqrt_sq (norm_nonneg y)
 
 /-- **112X** (`tensor-basic`, proc.tex:2874, Exercise), part 3, first
 claim: `‖f ∘ γ_⊙‖ ≤ ‖f‖` for every `f ∈ 𝒯_*` — in bound form, since the
@@ -8354,9 +8516,12 @@ private theorem usDense_range_lift (γ : A →ₗ[ℂ] B →ₗ[ℂ] T)
 
 /-- **116VII**, first step (proc.tex:3608): under the hypotheses of the
 characterisation `γ_⊙` is bounded for the tensor product norm, with constant
-`1`.  The thesis renormalises the order separating collection to its unital
-members and quotes **21VII**; we run the estimate directly, exactly as
-`tensor_basic_2` does, with **90II**.1 supplying order separation. -/
+`1`.  This is the printed estimate: the np-functionals
+`γ(σ,τ)(γ_⊙(s)*(·)γ_⊙(s))` are order separating by **90II**.1 *also with the
+restriction that* `γ(σ,τ)(γ_⊙(s* s)) = 1`, so by **21VII**
+`order-separating-norm` they determine `‖γ_⊙(t* t)‖`, and each of them is
+`(σ ⊙ τ)(s* t* t s) = ‖t‖²_{(σ⊙τ)(s*(·)s)} ≤ ‖t‖²` by the definition of the
+tensor product norm. -/
 private theorem char_bounded (γ : A →ₗ[ℂ] B →ₗ[ℂ] T) (hmiu : MIUBilinear γ)
     (Ω : Set (NPFunctional T)) (hΩ : CentreSeparatingConj T Ω)
     (hΩval : ∀ h ∈ Ω, ∃ (σ : NPFunctional A) (τ : NPFunctional B),
@@ -8365,11 +8530,6 @@ private theorem char_bounded (γ : A →ₗ[ℂ] B →ₗ[ℂ] T) (hmiu : MIUBil
       (Submodule.span ℂ {t : T | ∃ a b, t = γ a b} : Set T))
     (t : A ⊗[ℂ] B) : ‖TensorProduct.lift γ t‖ ≤ tensorNorm A B t := by
   classical
-  have hsmulω : ∀ (χ : NPFunctional T) (r : ℝ) (x : T),
-      (χ (((r : ℝ) : ℂ) • x) : ℂ) = ((r : ℝ) : ℂ) * χ x := by
-    intro χ r x
-    show npLin χ (((r : ℝ) : ℂ) • x) = _
-    rw [map_smul]; rfl
   set y : T := TensorProduct.lift γ t with hydef
   have hstarmul : star y * y = TensorProduct.lift γ (star t * t) := by
     rw [hydef, lift_mul γ hmiu.2.1, lift_star γ hmiu.2.2]
@@ -8377,53 +8537,64 @@ private theorem char_bounded (γ : A →ₗ[ℂ] B →ₗ[ℂ] T) (hmiu : MIUBil
   have hnx : ‖star y * y‖ = ‖y‖ ^ 2 := by
     rw [CStarRing.norm_star_mul_self]; ring
   have hone : TensorProduct.lift γ (1 : A ⊗[ℂ] B) = 1 := lift_one γ hmiu.1
-  set N : ℝ := tensorNorm A B t ^ 2 with hNdef
-  have hN0 : (0 : ℝ) ≤ N := by rw [hNdef]; positivity
-  have hsa1 : IsSelfAdjoint (((N : ℝ) : ℂ) • (1 : T)) := by
-    show star _ = _
-    simp
-  have hle : star y * y ≤ ((N : ℝ) : ℂ) • (1 : T) := by
-    refine vn_center_separating_fundamental_1 Ω hΩ
-      (Set.range ⇑(TensorProduct.lift γ)) (usDense_range_lift γ hmiu hdense)
-      _ _ (IsSelfAdjoint.star_mul_self y) hsa1 ?_
-    rintro ω hω _ ⟨v, rfl⟩
+  -- the collection (tensor-characterization-1) of the printed proof
+  set Ω' : Ω × (A ⊗[ℂ] B) → NPFunctional T :=
+    fun p => conjNP (TensorProduct.lift γ p.2) p.1 with hΩ'
+  have hos : Theses.A.CStar.OrderSeparating fun p => npLin (Ω' p) := by
+    intro a
+    refine ⟨fun ha p => npFunctional_nonneg _ ha, fun H => ?_⟩
+    refine (vn_center_separating_fundamental_1' Ω hΩ
+      (Set.range ⇑(TensorProduct.lift γ))
+      (usDense_range_lift γ hmiu hdense) a).mpr ?_
+    rintro ⟨⟨ω, hω⟩, ⟨x, hx⟩⟩
+    obtain ⟨v, rfl⟩ : ∃ v, TensorProduct.lift γ v = x := hx
+    have h' : (0 : ℂ) ≤ ω (star (TensorProduct.lift γ v) * a *
+        TensorProduct.lift γ v) := H (⟨ω, hω⟩, v)
+    show (0 : ℂ) ≤ ω (star (TensorProduct.lift γ v) *
+      (a * TensorProduct.lift γ v))
+    rw [← mul_assoc]
+    exact h'
+  -- the restriction to the members with `γ(σ,τ)(γ_⊙(s* s)) = 1` is available,
+  -- because scaling the conjugating vector scales the functional
+  have hsc : ∀ (p : Ω × (A ⊗[ℂ] B)) (r : ℝ), 0 < r →
+      ∃ q, ∀ x : T, (Ω' q x : ℂ) = (r : ℂ) * Ω' p x := by
+    rintro ⟨ω, v⟩ r hr
+    refine ⟨(ω, ((Real.sqrt r : ℝ) : ℂ) • v), fun x => ?_⟩
+    show (conjNP (TensorProduct.lift γ (((Real.sqrt r : ℝ) : ℂ) • v))
+        (ω : NPFunctional T) x : ℂ) = _
+    rw [map_smul, conjNP_smul_real, Real.mul_self_sqrt hr.le]
+  have hsup := orderSeparating_unital_norm Ω' hos hsc hxnn
+  have hterm : ∀ i : {p : Ω × (A ⊗[ℂ] B) // (Ω' p 1 : ℂ) = 1},
+      ‖(Ω' i.1 (star y * y) : ℂ)‖ ≤ tensorNorm A B t ^ 2 := by
+    rintro ⟨⟨⟨ω, hω⟩, v⟩, hi⟩
     obtain ⟨σ, τ, hστ⟩ := hΩval ω hω
     set ω' : A ⊗[ℂ] B →ₗ[ℂ] ℂ :=
       (npLin (conjNP (TensorProduct.lift γ v) ω)).comp (TensorProduct.lift γ)
-      with hω'def
-    have hbasic : IsBasicFunctional ω' := conjLike_basic γ hmiu hστ v
-    have hL : (ω (star (TensorProduct.lift γ v) * (star y * y) *
-        TensorProduct.lift γ v) : ℂ) = ω' (star t * t) := by
-      rw [hstarmul]; rfl
-    have hR : (ω (star (TensorProduct.lift γ v) * (((N : ℝ) : ℂ) • (1 : T)) *
-        TensorProduct.lift γ v) : ℂ) = ((N : ℝ) : ℂ) * ω' 1 := by
-      have he : star (TensorProduct.lift γ v) * (((N : ℝ) : ℂ) • (1 : T)) *
-            TensorProduct.lift γ v
-          = ((N : ℝ) : ℂ) • (star (TensorProduct.lift γ v) *
-              TensorProduct.lift γ (1 : A ⊗[ℂ] B) * TensorProduct.lift γ v) := by
-        rw [hone, mul_smul_comm, smul_mul_assoc]
-      rw [he, hsmulω]
-      rfl
-    rw [hL, hR]
-    have hbs := basic_star_self_le hbasic t
-    have hpos1 : (0 : ℂ) ≤ ω' 1 := basic_one_nonneg hbasic
-    have hposX : (0 : ℂ) ≤ ω' (star t * t) :=
-      (basic_state_inner_product ω' hbasic).2 t
-    rw [Complex.le_def]
-    refine ⟨?_, ?_⟩
-    · rw [Complex.re_ofReal_mul]; exact hbs
-    · have h1 : (ω' (star t * t)).im = 0 := by
-        simpa using ((Complex.le_def.mp hposX).2).symm
-      have h2 : (ω' 1).im = 0 := by
-        simpa using ((Complex.le_def.mp hpos1).2).symm
-      simp [Complex.mul_im, h1, h2]
-  have hnorm : ‖star y * y‖ ≤ N := by
-    refine (Theses.A.CStar.norm_le_iff_neg_algebraMap_le
-      (IsSelfAdjoint.star_mul_self y) hN0).mpr ⟨?_, ?_⟩
-    · refine le_trans (neg_nonpos.mpr ?_) hxnn
-      exact Theses.A.CStar.algebraMap_ofReal_nonneg hN0
-    · rwa [Algebra.algebraMap_eq_smul_one]
-  rw [hnx, hNdef] at hnorm
+      with hω'
+    have hbi : IsBasicFunctional ω' := conjLike_basic γ hmiu hστ v
+    have hnn : (0 : ℂ) ≤ ω' (star t * t) := (basic_state_inner_product _ hbi).2 t
+    have hvaleq : (ω' (star t * t) : ℂ) = Ω' (⟨ω, hω⟩, v) (star y * y) := by
+      show (conjNP (TensorProduct.lift γ v) ω
+        (TensorProduct.lift γ (star t * t)) : ℂ) = _
+      rw [hstarmul]
+    have hu1 : (ω' 1).re ≤ 1 := by
+      show (conjNP (TensorProduct.lift γ v) ω
+        (TensorProduct.lift γ 1) : ℂ).re ≤ 1
+      rw [hone]
+      show ((Ω' (⟨ω, hω⟩, v) 1 : ℂ)).re ≤ 1
+      rw [hi]
+      simp
+    rw [← hvaleq, norm_eq_re_of_nonneg hnn]
+    have hmem : Real.sqrt (ω' (star t * t)).re ≤ tensorNorm A B t :=
+      le_csSup (tnSet_bddAbove t) ⟨ω', hbi, hu1, rfl⟩
+    have hnn' : (0 : ℝ) ≤ (ω' (star t * t)).re := by
+      simpa using (Complex.le_def.mp hnn).1
+    nlinarith [Real.sq_sqrt hnn', Real.sqrt_nonneg ((ω' (star t * t)).re),
+      tensorNorm_nonneg (A := A) (B := B) t]
+  have hle : ‖star y * y‖ ≤ tensorNorm A B t ^ 2 := by
+    rw [hsup]
+    exact Real.iSup_le hterm (by positivity)
+  rw [hnx] at hle
   nlinarith [norm_nonneg y, tensorNorm_nonneg (A := A) (B := B) t]
 
 /-- **116VII**, second step (proc.tex:3630): `γ_⊙` is continuous from the
@@ -10376,27 +10547,108 @@ private theorem ncpCarrier_spec (h : NCPMap A C) :
       ∀ q : A, IsStarProjection q → (h (1 - q) : C) = 0 → ncpCarrier h ≤ q :=
   (exists_ncpCarrier h).choose_spec.1
 
+/-- **101VIII** (`diamond-composition`, proc.tex:1134) in the shape the
+printed proof of **118IV**.5 uses it: for an np-functional `ν` on `𝒞`,
+`⌈ν ∘ h⌉ = h_⋄(⌈ν⌉)`.
+
+(The thesis composes the diamonds of `h` and of `ν` read as an ncp-map into
+the tensor unit; in this tree an np-functional on `𝒞 : Type u` is not an
+`NCPMap 𝒞 ℂ`, so the identity is proved from the two defining leastness
+properties instead — they agree because, for positive `y`, `ν(y) = 0` iff
+`⌈ν⌉ y ⌈ν⌉ = 0`.) -/
+private theorem carrier_compNP (h : NCPMap A C) (ν : NPFunctional C) :
+    npCarrier (compNP (ncpPositive h) h.preservesDirSups' ν)
+      = diamondDown h (npCarrier ν) := by
+  have he : IsStarProjection (npCarrier ν) := (carrier_spec _ _).1
+  have hkey : ∀ y : C, 0 ≤ y →
+      ((ν y : ℂ) = 0 ↔ npCarrier ν * y * npCarrier ν = 0) := by
+    intro y hy
+    rw [← ceil_le_perp_iff hy he]
+    constructor
+    · intro h0
+      have h1 : (ν (ceil y) : ℂ) = 0 := (ceil_functionals_lemma y hy ν).mp h0
+      have h2 : npCarrier ν ≤ 1 - ceil y := by
+        refine (carrier_spec _ _).2.2 _ (ceil_spec hy).1.one_sub ?_
+        rw [sub_sub_cancel]
+        exact h1
+      exact perp_symm.mp h2
+    · intro h0
+      refine (ceil_functionals_lemma y hy ν).mpr ?_
+      have hz := npFunctional_ortho_eq_zero ν (ceil_spec hy).1.one_sub
+        (perp_symm.mp h0)
+      rwa [sub_sub_cancel] at hz
+  refine le_antisymm ?_ ?_
+  · refine (carrier_spec _ _).2.2 _ (diamondDown_spec h he).1 ?_
+    show (ν (h (1 - diamondDown h (npCarrier ν))) : ℂ) = 0
+    exact (hkey _ (ncpMap_nonneg h
+      (sub_nonneg.mpr (diamondDown_spec h he).1.le_one))).mpr
+      (diamondDown_carrier h _ he).1.2
+  · have hp : IsStarProjection
+        (npCarrier (compNP (ncpPositive h) h.preservesDirSups' ν)) :=
+      (carrier_spec _ _).1
+    refine (diamondDown_carrier h _ he).2 ⟨hp, ?_⟩
+    refine (hkey _ (ncpMap_nonneg h (sub_nonneg.mpr hp.le_one))).mp ?_
+    have hz : (compNP (ncpPositive h) h.preservesDirSups' ν)
+        (1 - npCarrier (compNP (ncpPositive h) h.preservesDirSups' ν)) = 0 :=
+      (carrier_spec _ _).2.1
+    exact hz
+
+/-- **101IV** (`diamond-suprema`, proc.tex:1071) in the `f_⋄` form the
+printed proof of **118IV**.5 uses: `f_⋄(⋃E) = ⋃_{e ∈ E} f_⋄(e)`.  The
+exercise states part 2 only for `f^⋄`; the `f_⋄` form follows from part 1
+(`diamond_suprema_1`) by the same argument, both maps being one half of the
+same polarity. -/
+private theorem diamondDown_projSup (f : NCPMap A C) (E : Set C)
+    (hE : ∀ e ∈ E, IsStarProjection e) :
+    diamondDown f (projSup E) = projSup (diamondDown f '' E) := by
+  have hEim : ∀ p ∈ diamondDown f '' E, IsStarProjection p := by
+    rintro _ ⟨e, he, rfl⟩
+    exact (diamondDown_spec f (hE e he)).1
+  have hPS : IsStarProjection (projSup E) := (projSup_spec hE).1
+  refine starProj_eq_of_perp_iff (fun t ht => ?_) (diamondDown_spec f hPS).1
+    (projSup_spec hEim).1
+  rw [← diamond_suprema_1 f t (projSup E) ht hPS]
+  constructor
+  · intro hup
+    refine (projSup_spec hEim).2.2 _ ht.one_sub ?_
+    rintro _ ⟨e, he, rfl⟩
+    rw [← diamond_suprema_1 f t e ht (hE e he)]
+    exact le_trans hup (sub_le_sub_left ((projSup_spec hE).2.1 e he) 1)
+  · intro hsup
+    refine perp_symm.mp ((projSup_spec hE).2.2 _
+      (isStarProjection_diamondUp f t).one_sub ?_)
+    intro e he
+    refine perp_symm.mp ?_
+    rw [diamond_suprema_1 f t e ht (hE e he)]
+    exact le_trans ((projSup_spec hEim).2.1 _ ⟨e, he, rfl⟩) hsup
+
 /-- **118IV**.5, first step: the carrier of an ncp-map is the supremum of
-the carriers of the np-functionals `ν ∘ h`. -/
+the carriers of the np-functionals `ν ∘ h`.  This is the printed chain
+`⌈h⌉ = h_⋄(1) = h_⋄(⋁_ν ⌈ν⌉) = ⋁_ν h_⋄(⌈ν⌉) = ⋁_ν ⌈ν ∘ h⌉` — **66IV**.3
+`ultracyclic-basic`, then `diamond-suprema` and `diamond-composition` in
+the two forms above. -/
 private theorem ncpCarrier_eq_projSup (h : NCPMap A C) :
     ncpCarrier h = projSup (Set.range fun ν : NPFunctional C =>
       npCarrier (compNP (ncpPositive h) h.preservesDirSups' ν)) := by
   classical
-  have hP : ∀ p ∈ (Set.range fun ν : NPFunctional C =>
-      npCarrier (compNP (ncpPositive h) h.preservesDirSups' ν)), IsStarProjection p := by
-    rintro _ ⟨ν, rfl⟩
+  have hPproj : ∀ q ∈ {q : C | ∃ ω : NPFunctional C,
+      ω (1 - 1) = 0 ∧ q = npCarrier ω}, IsStarProjection q := by
+    rintro _ ⟨ω, -, rfl⟩
     exact (carrier_spec _ _).1
-  obtain ⟨hcp, hcz, hcl⟩ := ncpCarrier_spec h
-  refine (projSup_eq hP (isStarProjection_ncpCarrier h) ?_ ?_).symm
-  · rintro _ ⟨ν, rfl⟩
-    refine (carrier_spec _ _).2.2 _ (isStarProjection_ncpCarrier h) ?_
-    show (ν (h (1 - ncpCarrier h)) : ℂ) = 0
-    rw [hcz, npFunctional_zero]
-  · intro q hq hub
-    refine hcl q hq ?_
-    refine VonNeumannAlgebra.np_faithful _ (ncpMap_nonneg h (sub_nonneg.mpr hq.le_one)) ?_
-    intro ν
-    exact npFunctional_ortho_eq_zero _ hq (hub _ ⟨ν, rfl⟩)
+  have hset : (Set.range fun ν : NPFunctional C =>
+        npCarrier (compNP (ncpPositive h) h.preservesDirSups' ν))
+      = diamondDown h '' {q : C | ∃ ω : NPFunctional C,
+        ω (1 - 1) = 0 ∧ q = npCarrier ω} := by
+    ext p
+    constructor
+    · rintro ⟨ν, rfl⟩
+      exact ⟨npCarrier ν, ⟨ν, by rw [sub_self, npFunctional_zero], rfl⟩,
+        (carrier_compNP h ν).symm⟩
+    · rintro ⟨_, ⟨ω, -, rfl⟩, rfl⟩
+      exact ⟨ω, carrier_compNP h ω⟩
+  rw [hset, ← diamondDown_projSup h _ hPproj,
+    ← ultracyclic_basic_3 (1 : C) (IsStarProjection.one (R := C)),
+    diamondDown_one]
 
 /-- **118IV**.5, second step: `⊗` turns suprema of projections into suprema
 (the argument of **118II**.2, `cceil_tensor`). -/
@@ -10437,30 +10689,123 @@ private theorem tensor_projSup_le {P : Set A} {Q : Set B}
   rintro _ ⟨p, hp, rfl⟩
   exact hstep2 p hp
 
+/-- **118IV**.5, second step, as an equality: `(⋃P) ⊗ (⋃Q) = ⋃_{p,q} p ⊗ q`.
+The `≤` half is `tensor_projSup_le`; the `≥` half is monotonicity of `⊗`. -/
+private theorem tensor_projSup_eq {P : Set A} {Q : Set B}
+    (hP : ∀ p ∈ P, IsStarProjection p) (hQ : ∀ q ∈ Q, IsStarProjection q) :
+    projSup P ⊗ᵥ projSup Q
+      = projSup {z : VNT A B | ∃ p ∈ P, ∃ q ∈ Q, z = p ⊗ᵥ q} := by
+  have hZ : ∀ z ∈ {z : VNT A B | ∃ p ∈ P, ∃ q ∈ Q, z = p ⊗ᵥ q},
+      IsStarProjection z := by
+    rintro _ ⟨p, hp, q, hq, rfl⟩
+    exact vtmul_isStarProjection (hP p hp) (hQ q hq)
+  refine le_antisymm (tensor_projSup_le hP hQ (projSup_spec hZ).1
+    (fun p hp q hq => (projSup_spec hZ).2.1 _ ⟨p, hp, q, hq, rfl⟩)) ?_
+  refine (projSup_spec hZ).2.2 _
+    (vtmul_isStarProjection (projSup_spec hP).1 (projSup_spec hQ).1) ?_
+  rintro _ ⟨p, hp, q, hq, rfl⟩
+  have hmono1 : p ⊗ᵥ q ≤ projSup P ⊗ᵥ q := by
+    have h0 : (0 : VNT A B) ≤ (projSup P - p) ⊗ᵥ q :=
+      vtmul_nonneg _ _ (sub_nonneg.mpr ((projSup_spec hP).2.1 p hp))
+        (hQ q hq).nonneg
+    have he : (projSup P - p) ⊗ᵥ q = projSup P ⊗ᵥ q - p ⊗ᵥ q := by
+      show (vnTensor A B).map (projSup P - p) q = _
+      rw [map_sub, LinearMap.sub_apply]
+      rfl
+    rw [he] at h0
+    exact sub_nonneg.mp h0
+  have hmono2 : projSup P ⊗ᵥ q ≤ projSup P ⊗ᵥ projSup Q := by
+    have h0 : (0 : VNT A B) ≤ projSup P ⊗ᵥ (projSup Q - q) :=
+      vtmul_nonneg _ _ (projSup_spec hP).1.nonneg
+        (sub_nonneg.mpr ((projSup_spec hQ).2.1 q hq))
+    have he : projSup P ⊗ᵥ (projSup Q - q)
+        = projSup P ⊗ᵥ projSup Q - projSup P ⊗ᵥ q :=
+      map_sub ((vnTensor A B).map (projSup P)) _ _
+    rw [he] at h0
+    exact sub_nonneg.mp h0
+  exact le_trans hmono1 hmono2
+
 /-- **118IV** (`carrier-tensor`, proc.tex:3886, Exercise), part 5:
 `⌈f ⊗ g⌉ = ⌈f⌉ ⊗ ⌈g⌉` for np-maps `f`, `g`. -/
 theorem carrier_tensor_5 (f : NCPMap A C) (g : NCPMap B D) :
     ncpCarrier (tmap f g) = ncpCarrier f ⊗ᵥ ncpCarrier g := by
+  -- proc.tex:3943-3962, in the printed order: `1 = ⋁_σ ⌈σ⌉` on each factor
+  -- (**66IV**.3), hence `1 ⊗ 1 = ⋁_{σ,τ} ⌈σ ⊗ τ⌉` by clause 4 and the
+  -- passage of suprema through `⊗`; then `⌈f ⊗ g⌉ = (f ⊗ g)_⋄(1 ⊗ 1)` is
+  -- distributed by `diamond-suprema` and each `(f ⊗ g)_⋄⌈σ ⊗ τ⌉` read as
+  -- `⌈(σ ⊗ τ) ∘ (f ⊗ g)⌉ = ⌈σ ∘ f⌉ ⊗ ⌈τ ∘ g⌉` by `diamond-composition`
+  -- and clause 4 again; recombining gives `⌈f⌉ ⊗ ⌈g⌉`.
   classical
-  refine le_antisymm (carrier_tensor_1 f g) ?_
-  rw [ncpCarrier_eq_projSup f, ncpCarrier_eq_projSup g]
-  refine tensor_projSup_le ?_ ?_ (isStarProjection_ncpCarrier (tmap f g)) ?_
-  · rintro _ ⟨ν, rfl⟩; exact (carrier_spec _ _).1
-  · rintro _ ⟨υ, rfl⟩; exact (carrier_spec _ _).1
-  rintro _ ⟨ν, rfl⟩ _ ⟨υ, rfl⟩
-  set χ₀ := prodNP (vnTensor C D).isTensorProduct ν υ with hχ₀
-  set ψ := compNP (ncpPositive (tmap f g)) (tmap f g).preservesDirSups' χ₀ with hψ
-  have hψprod : ∀ (a : A) (b : B), ψ (a ⊗ᵥ b) = (ν (f a)) * (υ (g b)) := by
-    intro a b
-    show χ₀ (tmap f g (a ⊗ᵥ b)) = _
+  have h4 : ∀ (σ : NPFunctional C) (τ : NPFunctional D),
+      npCarrier (prodNP (vnTensor C D).isTensorProduct σ τ)
+        = npCarrier σ ⊗ᵥ npCarrier τ := fun σ τ =>
+    carrier_tensor_4 σ τ _
+      (fun a b => prodNP_apply (vnTensor C D).isTensorProduct σ τ a b)
+  set PC : Set C :=
+    {q : C | ∃ ω : NPFunctional C, ω (1 - 1) = 0 ∧ q = npCarrier ω} with hPCdef
+  set PD : Set D :=
+    {q : D | ∃ ω : NPFunctional D, ω (1 - 1) = 0 ∧ q = npCarrier ω} with hPDdef
+  set QA : Set A := Set.range (fun ν : NPFunctional C =>
+    npCarrier (compNP (ncpPositive f) f.preservesDirSups' ν)) with hQAdef
+  set QB : Set B := Set.range (fun υ : NPFunctional D =>
+    npCarrier (compNP (ncpPositive g) g.preservesDirSups' υ)) with hQBdef
+  have hPCproj : ∀ q ∈ PC, IsStarProjection q := by
+    rintro _ ⟨ω, -, rfl⟩; exact (carrier_spec _ _).1
+  have hPDproj : ∀ q ∈ PD, IsStarProjection q := by
+    rintro _ ⟨ω, -, rfl⟩; exact (carrier_spec _ _).1
+  have hQAproj : ∀ p ∈ QA, IsStarProjection p := by
+    rintro _ ⟨ν, rfl⟩; exact (carrier_spec _ _).1
+  have hQBproj : ∀ q ∈ QB, IsStarProjection q := by
+    rintro _ ⟨υ, rfl⟩; exact (carrier_spec _ _).1
+  have hEproj : ∀ z ∈ {z : VNT C D | ∃ p ∈ PC, ∃ q ∈ PD, z = p ⊗ᵥ q},
+      IsStarProjection z := by
+    rintro _ ⟨p, hp, q, hq, rfl⟩
+    exact vtmul_isStarProjection (hPCproj p hp) (hPDproj q hq)
+  -- `1 ⊗ 1 = ⋁_{σ,τ} ⌈σ ⊗ τ⌉`
+  have h1C : projSup PC = (1 : C) :=
+    (ultracyclic_basic_3 (1 : C) (IsStarProjection.one (R := C))).symm
+  have h1D : projSup PD = (1 : D) :=
+    (ultracyclic_basic_3 (1 : D) (IsStarProjection.one (R := D))).symm
+  have h11 : projSup {z : VNT C D | ∃ p ∈ PC, ∃ q ∈ PD, z = p ⊗ᵥ q}
+      = (1 : VNT C D) := by
+    rw [← tensor_projSup_eq hPCproj hPDproj, h1C, h1D]
+    exact (vnTensor C D).isTensorProduct.miu.1
+  -- `(f ⊗ g)_⋄(⌈σ⌉ ⊗ ⌈τ⌉) = ⌈σ ∘ f⌉ ⊗ ⌈τ ∘ g⌉`
+  have hdd : ∀ (σ : NPFunctional C) (τ : NPFunctional D),
+      diamondDown (tmap f g) (npCarrier σ ⊗ᵥ npCarrier τ)
+        = npCarrier (compNP (ncpPositive f) f.preservesDirSups' σ)
+          ⊗ᵥ npCarrier (compNP (ncpPositive g) g.preservesDirSups' τ) := by
+    intro σ τ
+    rw [← h4 σ τ, ← carrier_compNP (tmap f g)
+      (prodNP (vnTensor C D).isTensorProduct σ τ)]
+    refine carrier_tensor_4 _ _ _ (fun a b => ?_)
+    show (prodNP (vnTensor C D).isTensorProduct σ τ
+      (tmap f g (a ⊗ᵥ b)) : ℂ) = _
     rw [tmap_apply]
-    exact prodNP_apply (vnTensor C D).isTensorProduct ν υ (f a) (g b)
-  have h4 := carrier_tensor_4 (compNP (ncpPositive f) f.preservesDirSups' ν)
-    (compNP (ncpPositive g) g.preservesDirSups' υ) ψ hψprod
-  rw [← h4]
-  refine (carrier_spec _ _).2.2 _ (isStarProjection_ncpCarrier (tmap f g)) ?_
-  show χ₀ (tmap f g (1 - ncpCarrier (tmap f g))) = 0
-  rw [(ncpCarrier_spec (tmap f g)).2.1, npFunctional_zero]
+    exact prodNP_apply (vnTensor C D).isTensorProduct σ τ (f a) (g b)
+  have himg : diamondDown (tmap f g) ''
+        {z : VNT C D | ∃ p ∈ PC, ∃ q ∈ PD, z = p ⊗ᵥ q}
+      = {z : VNT A B | ∃ p ∈ QA, ∃ q ∈ QB, z = p ⊗ᵥ q} := by
+    ext z
+    constructor
+    · rintro ⟨_, ⟨_, ⟨σ, -, rfl⟩, _, ⟨τ, -, rfl⟩, rfl⟩, rfl⟩
+      exact ⟨_, ⟨σ, rfl⟩, _, ⟨τ, rfl⟩, hdd σ τ⟩
+    · rintro ⟨_, ⟨σ, rfl⟩, _, ⟨τ, rfl⟩, rfl⟩
+      exact ⟨npCarrier σ ⊗ᵥ npCarrier τ,
+        ⟨npCarrier σ, ⟨σ, by rw [sub_self, npFunctional_zero], rfl⟩,
+          npCarrier τ, ⟨τ, by rw [sub_self, npFunctional_zero], rfl⟩, rfl⟩,
+        hdd σ τ⟩
+  calc ncpCarrier (tmap f g)
+      = diamondDown (tmap f g) 1 := (diamondDown_one _).symm
+    _ = diamondDown (tmap f g)
+        (projSup {z : VNT C D | ∃ p ∈ PC, ∃ q ∈ PD, z = p ⊗ᵥ q}) := by rw [h11]
+    _ = projSup (diamondDown (tmap f g) ''
+        {z : VNT C D | ∃ p ∈ PC, ∃ q ∈ PD, z = p ⊗ᵥ q}) :=
+          diamondDown_projSup _ _ hEproj
+    _ = projSup {z : VNT A B | ∃ p ∈ QA, ∃ q ∈ QB, z = p ⊗ᵥ q} := by rw [himg]
+    _ = projSup QA ⊗ᵥ projSup QB := (tensor_projSup_eq hQAproj hQBproj).symm
+    _ = ncpCarrier f ⊗ᵥ ncpCarrier g := by
+        rw [← ncpCarrier_eq_projSup f, ← ncpCarrier_eq_projSup g]
 
 /-- `f_⋄(e)` is the carrier of the ncp-map `e f(·) e` (the formula of
 **101II**, `diamondDown_carrier`, read as a carrier). -/
