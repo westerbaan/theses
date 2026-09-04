@@ -95,7 +95,7 @@ def recorded_allowances():
     for f in glob.glob(os.path.join(ROOT, 'docs', 'audit', '*.csv')):
         for line in open(f, encoding='utf-8'):
             q = line.rstrip('\n').split('|')
-            if len(q) >= 7 and re.search(r'forward|allowed|sub-point|later point|filing artifact|provenance', q[6], re.I):
+            if len(q) >= 6 and re.search(r'forward|allowed|sub-point|later point|filing artifact|provenance', ' '.join(q[5:7]), re.I):
                 for name in q[1].split(','):
                     out.add(name.strip().split('.')[-1])
     return out
