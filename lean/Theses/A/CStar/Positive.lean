@@ -3604,15 +3604,36 @@ may fail (e.g. `[[0,1],[0,0]]`); the general formula
 `sup |spec(a)| = limsup ‖aⁿ‖^{1/n}` is not needed here.  Not converted. -/
 
 /-- **16V** (`spectrum-non-empty`, cstar.tex:2661, Exercise): the spectrum of
-a self-adjoint element of a C*-algebra `𝒜 ≠ {0}` is non-empty.  (Mathlib
-proves this for arbitrary elements: `spectrum.nonempty`.)
+a self-adjoint element of a C*-algebra `𝒜 ≠ {0}` is non-empty.
+
+*Class 1 — faithful.*  The solution's own argument (asols parsec-160.50): if
+`spec(a) = ∅` then `‖a‖ = sup ∅ = 0` by **16II**, so `a = 0`; but then
+`0 ∈ spec(a)`, since `0` is not invertible (`𝒜 ≠ {0}`), contradicting
+emptiness.  (Mathlib's `spectrum.nonempty` proves it for arbitrary elements by
+the Banach-algebra route; here the printed self-adjoint argument is
+transcribed, and the hypothesis `ha` is now used.)
 
 The hypothesis `𝒜 ≠ {0}` — here `[Nontrivial 𝒜]` — is **erratum 160.50**;
 without it the statement is false for the trivial C*-algebra, where every
 element is invertible and so `spec(a) = ∅`. -/
 theorem spectrum_nonempty [Nontrivial 𝒜] (a : 𝒜) (ha : IsSelfAdjoint a) :
-    (spectrum ℂ a).Nonempty :=
-  spectrum.nonempty a
+    (spectrum ℂ a).Nonempty := by
+  by_contra hempty
+  rw [Set.not_nonempty_iff_eq_empty] at hempty
+  -- `‖a‖ = sup ∅ = 0` by **16II** (for self-adjoint `a` the norm is the
+  -- spectral radius, `⨆ z ∈ spec a, ‖z‖₊`, here an empty supremum)
+  have hr : spectralRadius ℂ a = 0 := by simp [spectralRadius, hempty]
+  have ha0 : a = 0 := by
+    have h := ha.spectralRadius_eq_nnnorm
+    rw [hr] at h
+    have hz : ‖a‖₊ = 0 := by exact_mod_cast h.symm
+    rwa [nnnorm_eq_zero] at hz
+  -- but then `0 ∈ spec(a)`, since `0` is not invertible (`𝒜 ≠ {0}`)
+  have hmem : (0 : ℂ) ∈ spectrum ℂ a := by
+    rw [ha0, spectrum.zero_mem_iff]
+    exact not_isUnit_zero
+  rw [hempty] at hmem
+  exact (Set.mem_empty_iff_false 0).mp hmem
 
 /-- **16VI** (cstar.tex:2665, Exercise): for self-adjoint `a` and `λ ∈ ℝ`:
 `spec(a) ⊆ {λ}` iff `a = λ`.
@@ -5208,9 +5229,25 @@ theorem norm_mi_map_positive (ρ : 𝒜 →⋆ₐ[ℂ] ℬ) (a : 𝒜) (ha : 0 �
     exact AlgHom.spectrum_apply_subset (ρ : 𝒜 →ₐ[ℂ] ℬ) a hz
 
 /-- **20V** (`norm-mi-map`, cstar.tex:2919, Lemma), part 2: every miu-map
-between C*-algebras is bounded with `‖ρ‖ ≤ 1`, i.e. `‖ρ(a)‖ ≤ ‖a‖`. -/
-theorem norm_mi_map_contractive (ρ : 𝒜 →⋆ₐ[ℂ] ℬ) (a : 𝒜) : ‖ρ a‖ ≤ ‖a‖ :=
-  NonUnitalStarAlgHom.norm_apply_le ρ a
+between C*-algebras is bounded with `‖ρ‖ ≤ 1`, i.e. `‖ρ(a)‖ ≤ ‖a‖`.
+
+*Class 1 — faithful.*  The thesis's C*-identity argument: for the self-adjoint
+`star a * a`, `spec(ρ(a* a)) ⊆ spec(a* a)` (a miu-map carries invertibles to
+invertibles), so by **16II** `‖ρ(a* a)‖ ≤ ‖a* a‖`; then the C*-identity gives
+`‖ρ a‖² = ‖ρ(a)* ρ(a)‖ = ‖ρ(a* a)‖ ≤ ‖a* a‖ = ‖a‖²`. -/
+theorem norm_mi_map_contractive (ρ : 𝒜 →⋆ₐ[ℂ] ℬ) (a : 𝒜) : ‖ρ a‖ ≤ ‖a‖ := by
+  have hb : IsSelfAdjoint (star a * a) := by rw [IsSelfAdjoint, star_mul, star_star]
+  have hρb : IsSelfAdjoint (ρ (star a * a)) := by rw [IsSelfAdjoint, ← map_star, hb.star_eq]
+  have hle : ‖ρ (star a * a)‖ ≤ ‖star a * a‖ := by
+    rw [norm_le_iff_spectrum_norm_le _ hρb _ (norm_nonneg _)]
+    intro z hz
+    have hz' : z ∈ spectrum ℂ (star a * a) :=
+      AlgHom.spectrum_apply_subset (ρ : 𝒜 →ₐ[ℂ] ℬ) (star a * a) hz
+    exact (norm_le_iff_spectrum_norm_le _ hb _ (norm_nonneg _)).mp le_rfl z hz'
+  have key : ‖ρ a‖ * ‖ρ a‖ ≤ ‖a‖ * ‖a‖ := by
+    rw [← CStarRing.norm_star_mul_self, ← CStarRing.norm_star_mul_self, ← map_star, ← map_mul]
+    exact hle
+  nlinarith [norm_nonneg (ρ a), norm_nonneg a]
 
 /-! Auxiliary facts about pu-maps, shared by **20VI** and **21VII**. -/
 
@@ -8039,10 +8076,23 @@ theorem cstar_positive_final (a : 𝒜) (ha : IsSelfAdjoint a) :
     tfae_finish
 
 /-- **25II** (`astara-pos-basic-consequences`, cstar.tex:3790, Exercise),
-part 1: `b ≤ c` implies `a* b a ≤ a* c a`. -/
+part 1: `b ≤ c` implies `a* b a ≤ a* c a`.
+
+*Class 1 — faithful.*  The solution's own argument (asols parsec-250.20(1)):
+`d := c - b` is positive, so by **25I** (`parsec-250.10`, carried here by the
+tree's own `cstar_positive_final`, clause (4)) `d = e* e` for some `e`, whence
+`a*(c-b)a = a* e* e a = (e a)*(e a) ≥ 0`. -/
 theorem astara_pos_basic_1 (a b c : 𝒜) (h : b ≤ c) :
-    star a * b * a ≤ star a * c * a :=
-  star_left_conjugate_le_conjugate h a
+    star a * b * a ≤ star a * c * a := by
+  rw [← sub_nonneg]
+  have hd : (0 : 𝒜) ≤ c - b := sub_nonneg.mpr h
+  obtain ⟨e, he⟩ :=
+    ((cstar_positive_final (c - b) (IsSelfAdjoint.of_nonneg hd)).out 0 3).mp hd
+  have hkey : star a * c * a - star a * b * a = star (e * a) * (e * a) := by
+    have h1 : star a * c * a - star a * b * a = star a * (c - b) * a := by noncomm_ring
+    rw [h1, he, star_mul]; noncomm_ring
+  rw [hkey]
+  exact star_mul_self_nonneg _
 
 /-- **25II** (`astara-pos-basic-consequences`, cstar.tex:3790, Exercise),
 part 2 (mi-maps): every mi-map between C*-algebras is positive. -/
