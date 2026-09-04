@@ -2554,25 +2554,21 @@ continuous (**45IV** `mult_uws_cont`) and bounded; **152V**
 `T ∈ 𝒷ᵃ(X)`, and `T` is the supremum.  The vector states are separating by
 **144I** and normal by the same computation, which is **152XIII**.
 
-Two deviations from the text, both in the *bound* on `B`.  The thesis picks
-`r` with `‖T_α‖ ≤ r` for all `α`; a bounded directed set need not be
-norm-bounded (its elements are only bounded *above*), so we bound `B(x,x)`
-by order instead — `⟨x, d₀x⟩ ≤ B(x,x) ≤ ⟨x, ub x⟩` — which needs no such
-`r`.  And where the thesis derives `‖B(x,y)‖ ≤ r‖x‖‖y‖ ` from
-`usconv` and the module Cauchy–Schwarz inequality, we get
-`‖B(x,y)‖ ≤ r₀(‖x‖+‖y‖)²` from polarization and then rescale
-`x ↦ tx`, `y ↦ t⁻¹y` (which leaves `B(x,y)` fixed) with
-`t = (‖y‖/‖x‖)^{1/2}`.  This avoids `usconv`.
-
-The second deviation is one of cost, not of availability: `usconv` is
-proved in `A/VN/Basic` and imported here.  Under the ERRATA-corrected
-hypothesis the *statement* carries no norm bound `r`, though the erratum's
-own repair recovers one (replace `D` by its cofinal tail above some `d₀`,
-which is norm-bounded because `0 ≤ d − d₀ ≤ u − d₀`), after which `usconv`
-would give `‖B(x,y)‖ ≤ r‖x‖‖y‖` as printed.  That route costs the
-cofinal-tail reduction plus the Cauchy–Schwarz estimate, some forty lines,
-for a bound the rescaling argument gets in six; it is left, deliberately,
-as class 2. -/
+One deviation from the text, and it is in the *hypothesis*, not in the
+argument.  The thesis picks `r` with `‖T_α‖ ≤ r`, which its own (norm-bounded
+net) hypothesis supplies; ours takes a nonempty directed set bounded *above*,
+which is what **42I**.1 actually asks for and which need not be norm bounded
+(ERRATA row 152XII).  The erratum's own repair supplies `r` all the same:
+the cofinal tail above any `d₀ ∈ D` is norm bounded, because
+`0 ≤ d − d₀ ≤ ub − d₀` gives `‖d‖ ≤ ‖ub − d₀‖ + ‖d₀‖ =: r₀`, and `atTop`
+sees only that tail.  With `r₀` in hand the printed estimate is run as
+printed, in `ba_uslim_norm_le` below: **142III** `module_CS` and **144V**
+`blinear_inprod_inequality` give
+`⟨T_α y, x⟩⟨x, T_α y⟩ ≤ r₀²‖y‖²⟨x,x⟩`, **46II** `usconv` turns the
+ultrastrong limit into `B(x,y)*B(x,y) = uwlim_α ⟨T_α y,x⟩⟨x,T_α y⟩`, the
+positive cone is ultraweakly closed (**44XI**.2, the text's "ultraweak limits
+respect the order"), and so
+`‖B(x,y)‖² = ‖B(x,y)*B(x,y)‖ ≤ r₀²‖x‖²‖y‖²`. -/
 
 /-- `0 ≤ Z` in `𝒷ᵃ(X)` iff every vector form `⟨x, Zx⟩` is positive: the
 two halves of **144I** `hilbmod_ordersep`, transported to `Ba 𝒷 X`. -/
@@ -2728,6 +2724,87 @@ private theorem usTendsto_unique' [VonNeumannAlgebra 𝒷] {ι : Type*}
   @tendsto_nhds_unique 𝒷 ι (ultrastrong 𝒷) (vn_positive_basic_1 (A := 𝒷)).2
     f l a b _ ha hb
 
+/-- Ultraweak limits respect the order: **44XI**.2 `vn_positive_basic_2` says
+the positive cone is ultraweakly closed, so a net that is eventually `≤ c`
+has its ultraweak limit `≤ c`.  (The step the thesis calls "ultraweak limits
+respect the order" in **152XII**.) -/
+private theorem uwTendsto_le' [VonNeumannAlgebra 𝒷] {ι : Type*} {l : Filter ι}
+    [l.NeBot] {f : ι → 𝒷} {a c : 𝒷} (hf : UWTendsto f l a)
+    (hle : ∀ᶠ i in l, f i ≤ c) : a ≤ c := by
+  have hg : UWTendsto (fun i => c - f i) l (c - a) := by
+    rw [uwTendsto_iff] at hf ⊢
+    intro ω
+    have h := hf ω
+    have h2 := (tendsto_const_nhds (x := (ω c : ℂ)) (f := l)).sub h
+    simpa only [npFunctional_sub] using h2
+  have hclosed : @IsClosed 𝒷 (ultraweak 𝒷) {b : 𝒷 | 0 ≤ b} :=
+    (vn_positive_basic_2 (A := 𝒷)).1
+  have hmem : ∀ᶠ i in l, (fun i => c - f i) i ∈ {b : 𝒷 | 0 ≤ b} := by
+    filter_upwards [hle] with i hi
+    exact sub_nonneg.mpr hi
+  exact sub_nonneg.mp (@IsClosed.mem_of_tendsto 𝒷 (ultraweak 𝒷) ι (c - a)
+    {b : 𝒷 | 0 ≤ b} (fun i => c - f i) l _ hclosed hg hmem)
+
+/-- The bound on `B` that **152XII** prints (dils.tex:3444–3455): if the
+operators `Z i` are bounded by `r` and `⟨x, (Z i) y⟩` converges ultrastrongly
+to `b`, then `‖b‖ ≤ r‖x‖‖y‖`.
+
+The printed derivation, step for step: by **142III** `module_CS` and **144V**
+`blinear_inprod_inequality`, `⟨(Z i)y, x⟩⟨x, (Z i)y⟩ ≤ r²‖y‖²⟨x,x⟩` for each
+`i`; by **46II** `usconv` the ultrastrong limit `b` satisfies
+`b*b = uwlim ⟨(Z i)y,x⟩⟨x,(Z i)y⟩`, which is `≤ r²‖y‖²⟨x,x⟩` because the
+positive cone is ultraweakly closed; so
+`‖b‖² = ‖b*b‖ ≤ r²‖y‖²‖x‖²`. -/
+private theorem ba_uslim_norm_le [VonNeumannAlgebra 𝒷] [CompleteSpace X]
+    {ι : Type*} {l : Filter ι} [l.NeBot] (Z : ι → Ba 𝒷 X) (r : ℝ) (hr : 0 ≤ r)
+    (hZ : ∀ᶠ i in l, ∀ p : X, ‖((Z i).1 : X → X) p‖ ≤ r * ‖p‖) (x y : X) {b : 𝒷}
+    (hb : USTendsto (fun i => (inner 𝒷 x ((Z i).1 y) : 𝒷)) l b) :
+    ‖b‖ ≤ r * ‖x‖ * ‖y‖ := by
+  let _ : NormedSpace ℂ X := NormedSpace.ofCore (CStarModule.normedSpaceCore 𝒷)
+  have huw := ((usconv (fun i => (inner 𝒷 x ((Z i).1 y) : 𝒷)) l b).mp hb).1
+  have hxx : ‖(inner 𝒷 x x : 𝒷)‖ = ‖x‖ ^ 2 := (CStarModule.norm_sq_eq (A := 𝒷)).symm
+  have hyy : ‖(inner 𝒷 y y : 𝒷)‖ = ‖y‖ ^ 2 := (CStarModule.norm_sq_eq (A := 𝒷)).symm
+  set c : 𝒷 := (r ^ 2 * ‖y‖ ^ 2) • (inner 𝒷 x x : 𝒷) with hc
+  have hkey : ∀ᶠ i in l,
+      star (inner 𝒷 x ((Z i).1 y) : 𝒷) * (inner 𝒷 x ((Z i).1 y) : 𝒷) ≤ c := by
+    filter_upwards [hZ] with i hi
+    have hbdd : IsBoundedModuleMap (cstarBInner 𝒷 X) (cstarBInner 𝒷 X) r ⇑((Z i).1) :=
+      { add := fun p q => map_add (Z i).1 p q
+        smul_complex := fun d p => map_smul (Z i).1 d p
+        smul := (moduleAdjointable_linear (𝒜 := 𝒷) ⇑((Z i).1) (Z i).2).2.2
+        bound := fun p => by
+          rw [cstarBInner_norm, cstarBInner_norm]
+          exact hi p }
+    have hbl := blinear_inprod_inequality (cstarBInner 𝒷 X) (cstarBInner 𝒷 X) r hr
+      _ hbdd y
+    have hbl' : (inner 𝒷 ((Z i).1 y) ((Z i).1 y) : 𝒷) ≤ (r ^ 2) • (inner 𝒷 y y : 𝒷) := hbl
+    have hnn : (0 : 𝒷) ≤ inner 𝒷 ((Z i).1 y) ((Z i).1 y) := CStarModule.inner_self_nonneg
+    have hnorm : ‖(inner 𝒷 ((Z i).1 y) ((Z i).1 y) : 𝒷)‖ ≤ r ^ 2 * ‖y‖ ^ 2 := by
+      refine (CStarAlgebra.norm_le_norm_of_nonneg_of_le hnn hbl').trans (le_of_eq ?_)
+      rw [norm_smul, Real.norm_eq_abs, abs_of_nonneg (sq_nonneg r), hyy]
+    have hCS : (inner 𝒷 ((Z i).1 y) x : 𝒷) * (inner 𝒷 x ((Z i).1 y) : 𝒷)
+        ≤ ‖(inner 𝒷 ((Z i).1 y) ((Z i).1 y) : 𝒷)‖ • (inner 𝒷 x x : 𝒷) :=
+      module_CS (cstarBInner 𝒷 X) x ((Z i).1 y)
+    have hmono : ‖(inner 𝒷 ((Z i).1 y) ((Z i).1 y) : 𝒷)‖ • (inner 𝒷 x x : 𝒷) ≤ c := by
+      rw [hc, ← sub_nonneg, ← sub_smul]
+      exact smul_nonneg (by linarith) CStarModule.inner_self_nonneg
+    rw [CStarModule.star_inner]
+    exact hCS.trans hmono
+  have hle : star b * b ≤ c := uwTendsto_le' huw hkey
+  have hnb : ‖star b * b‖ ≤ ‖c‖ :=
+    CStarAlgebra.norm_le_norm_of_nonneg_of_le (star_mul_self_nonneg b) hle
+  rw [CStarRing.norm_star_mul_self] at hnb
+  have hcn : ‖c‖ = r ^ 2 * ‖y‖ ^ 2 * ‖x‖ ^ 2 := by
+    rw [hc, norm_smul, Real.norm_eq_abs,
+      abs_of_nonneg (by positivity : (0 : ℝ) ≤ r ^ 2 * ‖y‖ ^ 2), hxx]
+  rw [hcn] at hnb
+  have h0 : (0 : ℝ) ≤ r * ‖x‖ * ‖y‖ := by positivity
+  by_contra hcon
+  rw [not_le] at hcon
+  have hsq : (r * ‖x‖ * ‖y‖) * (r * ‖x‖ * ‖y‖) < ‖b‖ * ‖b‖ :=
+    mul_lt_mul' hcon.le hcon h0 (lt_of_le_of_lt h0 hcon)
+  nlinarith [hsq, hnb]
+
 set_option maxHeartbeats 1000000 in
 -- the six stages of the proof in one declaration; see the note above
 /-- **152XII** (dils.tex:3425, "bounded order completeness"): a nonempty
@@ -2820,122 +2897,31 @@ theorem ba_isLUB [VonNeumannAlgebra 𝒷] [CompleteSpace X] (hX : SelfDual 𝒷 
       have h := hBlim x (c • y)
       simp only [hrw] at h
       exact usTendsto_unique' h (usTendsto_smul' _ (hBlim x y))
-  -- (5) `Bf` is bounded
-  have hCS : ∀ (x : X) (Z : Ba 𝒷 X),
-      ‖(inner 𝒷 x (Z.1 x) : 𝒷)‖ ≤ ‖Z.1‖ * ‖x‖ * ‖x‖ := by
-    intro x Z
-    calc ‖(inner 𝒷 x (Z.1 x) : 𝒷)‖ ≤ ‖x‖ * ‖Z.1 x‖ := CStarModule.norm_inner_le X
-      _ ≤ ‖x‖ * (‖Z.1‖ * ‖x‖) := by
-          gcongr
-          exact Z.1.le_opNorm x
-      _ = ‖Z.1‖ * ‖x‖ * ‖x‖ := by ring
-  set r₀ : ℝ := ‖((ub : Ba 𝒷 X) - (d₀ : Ba 𝒷 X)).1‖ + ‖(d₀ : Ba 𝒷 X).1‖ with hr₀def
+  -- (5) `Bf` is bounded, by the printed estimate (dils.tex:3444-3455).
+  -- The text picks `r` with `‖T_α‖ ≤ r`; a directed set bounded *above* need
+  -- not be norm bounded, but its cofinal tail above `d₀` is, since
+  -- `0 ≤ d − d₀ ≤ ub − d₀`, and `atTop` sees only that tail (ERRATA 152XII).
+  set r₀ : ℝ := ‖(ub : Ba 𝒷 X) - (d₀ : Ba 𝒷 X)‖ + ‖(d₀ : Ba 𝒷 X)‖ with hr₀def
   have hr₀0 : (0 : ℝ) ≤ r₀ := by positivity
-  have hqbound : ∀ x : X, ‖(q x : 𝒷)‖ ≤ r₀ * (‖x‖ * ‖x‖) := by
-    intro x
-    have h1 : (inner 𝒷 x ((d₀ : Ba 𝒷 X).1 x) : 𝒷) ≤ (q x : 𝒷) :=
-      Subtype.coe_le_coe.mpr ((hqlub x).1 ⟨d₀, hd₀, rfl⟩)
-    have h2 : (q x : 𝒷) ≤ inner 𝒷 x ((ub : Ba 𝒷 X).1 x) :=
-      Subtype.coe_le_coe.mpr
-        ((hqlub x).2 (by rintro _ ⟨a, ha, rfl⟩; exact baVec_mono x (hub ha)))
-    have hdiff : (inner 𝒷 x ((ub : Ba 𝒷 X).1 x) : 𝒷) - inner 𝒷 x ((d₀ : Ba 𝒷 X).1 x)
-        = inner 𝒷 x (((ub : Ba 𝒷 X) - (d₀ : Ba 𝒷 X)).1 x) := by
-      change _ = inner 𝒷 x ((ub : Ba 𝒷 X).1 x - (d₀ : Ba 𝒷 X).1 x)
-      rw [CStarModule.inner_sub_right]
-    have hn : (0 : 𝒷) ≤ (q x : 𝒷) - inner 𝒷 x ((d₀ : Ba 𝒷 X).1 x) := sub_nonneg.mpr h1
-    have hle : (q x : 𝒷) - inner 𝒷 x ((d₀ : Ba 𝒷 X).1 x)
-        ≤ inner 𝒷 x (((ub : Ba 𝒷 X) - (d₀ : Ba 𝒷 X)).1 x) := by
-      rw [← hdiff]
-      exact sub_le_sub_right h2 _
-    have hnorm1 := CStarAlgebra.norm_le_norm_of_nonneg_of_le hn hle
-    have hnorm2 := hCS x ((ub : Ba 𝒷 X) - (d₀ : Ba 𝒷 X))
-    have hnorm3 := hCS x (d₀ : Ba 𝒷 X)
-    have htri : ‖(q x : 𝒷)‖
-        ≤ ‖(q x : 𝒷) - inner 𝒷 x ((d₀ : Ba 𝒷 X).1 x)‖
-            + ‖(inner 𝒷 x ((d₀ : Ba 𝒷 X).1 x) : 𝒷)‖ := by
-      simpa using norm_add_le ((q x : 𝒷) - inner 𝒷 x ((d₀ : Ba 𝒷 X).1 x))
-        (inner 𝒷 x ((d₀ : Ba 𝒷 X).1 x))
-    rw [hr₀def]
-    nlinarith [htri, hnorm1, hnorm2, hnorm3]
-  have hBbound0 : ∀ x y : X, ‖Bf x y‖ ≤ r₀ * ((‖x‖ + ‖y‖) * (‖x‖ + ‖y‖)) := by
-    intro x y
-    have hnorm : ∀ k : ℕ,
-        ‖Complex.I ^ k • (q (Complex.I ^ k • x + y) : 𝒷)‖
-          ≤ r₀ * ((‖x‖ + ‖y‖) * (‖x‖ + ‖y‖)) := by
-      intro k
-      rw [norm_smul, norm_pow, Complex.norm_I, one_pow, one_mul]
-      refine (hqbound _).trans ?_
-      have hle : ‖Complex.I ^ k • x + y‖ ≤ ‖x‖ + ‖y‖ := by
-        refine (norm_add_le _ _).trans ?_
-        rw [norm_smul, norm_pow, Complex.norm_I, one_pow, one_mul]
-      have h0 : (0 : ℝ) ≤ ‖Complex.I ^ k • x + y‖ := norm_nonneg _
-      have hmul := mul_le_mul hle hle h0 (by positivity : (0 : ℝ) ≤ ‖x‖ + ‖y‖)
-      exact mul_le_mul_of_nonneg_left hmul hr₀0
-    have hsum : ‖∑ k ∈ Finset.range 4, Complex.I ^ k • (q (Complex.I ^ k • x + y) : 𝒷)‖
-        ≤ 4 * (r₀ * ((‖x‖ + ‖y‖) * (‖x‖ + ‖y‖))) := by
-      refine (norm_sum_le _ _).trans ?_
-      calc ∑ k ∈ Finset.range 4, ‖Complex.I ^ k • (q (Complex.I ^ k • x + y) : 𝒷)‖
-          ≤ ∑ _k ∈ Finset.range 4, r₀ * ((‖x‖ + ‖y‖) * (‖x‖ + ‖y‖)) :=
-            Finset.sum_le_sum fun k _ => hnorm k
-        _ = 4 * (r₀ * ((‖x‖ + ‖y‖) * (‖x‖ + ‖y‖))) := by
-            simp [Finset.sum_const]
-    have hBeq : Bf x y = (4 : ℂ)⁻¹ • ∑ k ∈ Finset.range 4,
-        Complex.I ^ k • (q (Complex.I ^ k • x + y) : 𝒷) := rfl
-    rw [hBeq, norm_smul]
-    have h4 : ‖(4 : ℂ)⁻¹‖ = 1 / 4 := by norm_num
-    rw [h4]
-    nlinarith [hsum]
-  have hzero_left : ∀ y : X, Bf 0 y = 0 := by
-    intro y
-    have h := hsesq.add_left 0 0 y
-    rw [add_zero] at h
-    have h2 := congrArg (fun z : 𝒷 => z - Bf 0 y) h
-    simpa using h2.symm
-  have hzero_right : ∀ x : X, Bf x 0 = 0 := by
-    intro x
-    have h := hsesq.add_right x 0 0
-    rw [add_zero] at h
-    have h2 := congrArg (fun z : 𝒷 => z - Bf x 0) h
-    simpa using h2.symm
-  have hBbound : ∀ x y : X, ‖Bf x y‖ ≤ (4 * r₀) * ‖x‖ * ‖y‖ := by
-    intro x y
-    rcases eq_or_ne x 0 with rfl | hx
-    · simp [hzero_left]
-    rcases eq_or_ne y 0 with rfl | hy
-    · simp [hzero_right]
-    have hx0 : (0 : ℝ) < ‖x‖ := norm_pos_iff.mpr hx
-    have hy0 : (0 : ℝ) < ‖y‖ := norm_pos_iff.mpr hy
-    set sx : ℝ := Real.sqrt ‖x‖ with hsx
-    set sy : ℝ := Real.sqrt ‖y‖ with hsy
-    have hsx0 : 0 < sx := Real.sqrt_pos.mpr hx0
-    have hsy0 : 0 < sy := Real.sqrt_pos.mpr hy0
-    have hsx2 : sx * sx = ‖x‖ := Real.mul_self_sqrt hx0.le
-    have hsy2 : sy * sy = ‖y‖ := Real.mul_self_sqrt hy0.le
-    set t : ℝ := sy / sx with ht
-    have ht0 : 0 < t := div_pos hsy0 hsx0
-    have hhom : Bf ((t : ℂ) • x) (((t : ℂ))⁻¹ • y) = Bf x y := by
-      rw [hsesq.smul_left_complex, hsesq.smul_right_complex, smul_smul,
-        Complex.conj_ofReal]
-      have htne : (t : ℂ) ≠ 0 := by exact_mod_cast ht0.ne'
-      rw [mul_inv_cancel₀ htne, one_smul]
-    have hnx : ‖(t : ℂ) • x‖ = t * ‖x‖ := by
-      rw [norm_smul, Complex.norm_real, Real.norm_eq_abs, abs_of_pos ht0]
-    have hny : ‖((t : ℂ))⁻¹ • y‖ = t⁻¹ * ‖y‖ := by
-      rw [norm_smul, ← Complex.ofReal_inv, Complex.norm_real, Real.norm_eq_abs,
-        abs_of_pos (inv_pos.mpr ht0)]
-    have hkey := hBbound0 ((t : ℂ) • x) (((t : ℂ))⁻¹ • y)
-    rw [hhom, hnx, hny] at hkey
-    have hcalc : t * ‖x‖ + t⁻¹ * ‖y‖ = 2 * (sx * sy) := by
-      rw [ht, ← hsx2, ← hsy2]
-      field_simp
-      ring
-    rw [hcalc] at hkey
-    refine hkey.trans (le_of_eq ?_)
-    rw [← hsx2, ← hsy2]
-    ring
+  have htail : ∀ᶠ d : D in atTop,
+      ∀ p : X, ‖((d.1 : Ba 𝒷 X).1 : X → X) p‖ ≤ r₀ * ‖p‖ := by
+    filter_upwards [Filter.mem_atTop (⟨d₀, hd₀⟩ : D)] with d hd p
+    have hd' : (d₀ : Ba 𝒷 X) ≤ (d.1 : Ba 𝒷 X) := Subtype.coe_le_coe.mpr hd
+    have hdub : (d.1 : Ba 𝒷 X) ≤ (ub : Ba 𝒷 X) := Subtype.coe_le_coe.mpr (hub d.2)
+    have hn : ‖(d.1 : Ba 𝒷 X) - (d₀ : Ba 𝒷 X)‖ ≤ ‖(ub : Ba 𝒷 X) - (d₀ : Ba 𝒷 X)‖ :=
+      CStarAlgebra.norm_le_norm_of_nonneg_of_le (sub_nonneg.mpr hd')
+        (sub_le_sub_right hdub _)
+    have htri : ‖(d.1 : Ba 𝒷 X)‖
+        ≤ ‖(d.1 : Ba 𝒷 X) - (d₀ : Ba 𝒷 X)‖ + ‖(d₀ : Ba 𝒷 X)‖ := by
+      simpa using norm_add_le ((d.1 : Ba 𝒷 X) - (d₀ : Ba 𝒷 X)) (d₀ : Ba 𝒷 X)
+    have hop : ‖(d.1 : Ba 𝒷 X)‖ ≤ r₀ := by rw [hr₀def]; linarith
+    exact ((d.1 : Ba 𝒷 X).1.le_opNorm p).trans
+      (mul_le_mul_of_nonneg_right hop (norm_nonneg p))
+  have hBbound : ∀ x y : X, ‖Bf x y‖ ≤ r₀ * ‖x‖ * ‖y‖ := fun x y =>
+    ba_uslim_norm_le (fun d : D => (d.1 : Ba 𝒷 X)) r₀ hr₀0 htail x y (hBlim x y)
   -- (6) **152V**: the representing operator, and it is the supremum
   obtain ⟨T, ⟨hTadj, hTrep⟩, -⟩ :=
-    hilbmod_sesquilinear_forms hX (4 * r₀) Bf ⟨hsesq, hBbound⟩
+    hilbmod_sesquilinear_forms hX r₀ Bf ⟨hsesq, hBbound⟩
   set s : Ba 𝒷 X := ⟨T, hTadj⟩ with hsdef
   have hsvec : ∀ x : X, (inner 𝒷 x (s.1 x) : 𝒷) = (q x : 𝒷) := by
     intro x

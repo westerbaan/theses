@@ -4149,7 +4149,9 @@ theorem exists_isONBasis_of_bddUnComplete [VonNeumannAlgebra 𝒷]
 /-- **149IX** (dils.tex:2487): (4) ⇒ (2) of **149V** — a pre-Hilbert
 𝒷-module with an orthonormal basis is ultranorm complete.
 
-Divergence class 1 (faithful), mirrored.  The limit is `∑ₑ e bₑ` with
+Divergence class 3 (mild), mirrored: every estimate is the thesis's, but
+the closing one is assembled differently — see the last paragraph.  The
+limit is `∑ₑ e bₑ` with
 `bₑ = uslim_α ⟨e, x_α⟩`, whose mirror image is `bₑ = (uslim_α [x_α, e])*` —
 it is the net `[x_α, e]` of *starred* coefficients that is ultrastrong
 Cauchy (by **142III**), converging by **77I**.1 `Theses.A.VN.vn_complete_1`.
