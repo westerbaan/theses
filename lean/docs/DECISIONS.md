@@ -51,7 +51,7 @@ in §4 rather than in front of you.
 | 1.5 | 179III.2 | strengthen our statement, or drop the point? — ruled (a) 2026-09-04 | `effectModule_unitInterval_representation` | (a) strengthen, else (b) drop |
 | 1.6 | 106III.3, 116III.4 | two errata to accept | 2 red rows | accept |
 | 2.1 | — | may we match the printed statement without asking? — ruled (a) 2026-09-04, only in a dedicated statement-alignment pass | 54 audit rows | (a) standing authorisation |
-| 2.2 | — | does "no forward references" apply outside `A/CStar`? | 520 audit rows | (b) forward only; label the rest |
+| 2.2 | — | does "no forward references" apply outside `A/CStar`? — ruled (a) 2026-09-04: global and retroactive, out-of-order proofs allowed insofar as the thesis does that itself | 520 audit rows | (b) forward only; label the rest |
 | 2.3 | 191II | what does "equivalent to a subcategory" mean? | 1 audit row | (c) weaken to faithful |
 | 2.4 | 30X | may clause (1) name `ϱ_Ω`? | 1 audit row | (a) yes |
 | 2.5 | 28II.4 | may the unique element be identified with `f(a)`? | 1 audit row | (a) yes |
@@ -499,7 +499,7 @@ be: places where the *thesis* is unclear or wrong.
 
 **What we do.**  Ruled (a) on 2026-09-04 with one condition, in the author's words: "only when explicitly performing this task. We don't want an agent to 'cheat' in an unrelated task."  So a statement is brought up to the print only inside a pass whose assignment is exactly that (`docs/audit/STATEMENT-BRIEF.md`); in every other job statements stay byte-identical.  The first such pass runs the same day over the `weaker`/`differs` rows whose verdict is ours.
 
-### 2.2 — Does the "no forward references" rule apply outside `A/CStar`?
+### 2.2 — Does the "no forward references" rule apply outside `A/CStar`? — **ruled (a), 2026-09-04, with the thesis's own forward references allowed**
 
 *(`HANDOFF.md`, "Still open", item 0.  Not in `QUESTIONS.md`.  Governs the
 audit's 520 proof-divergence rows.)*
@@ -528,6 +528,8 @@ own dependency order (11XIII from 11XV.1, which the thesis proves from 11XIII).
   and simply *labelled* — the audit CSVs already carry the class.
 * **(c)** The rule applies to `A/CStar` only, because that is where the
   bootstrapping claim is being made.
+
+**Ruled (a) on 2026-09-04**, in the author's words: "we go with (a), but with the caveat that we can use out-of-order proofs insofar the thesis does that itself."  So the rule is global and retroactive: `mathlib` rows are rewritten along the author's routes chapter by chapter, and a proof at parsec `P` may cite a later point only where the printed proof of that point does so.  `scripts/forward_check.py` finds the order-inverting proofs against the printed `\sref`s; the `mathlib` rows are worked file by file under `docs/audit/BRIEF.md`.
 
 **Recommendation: (b).**  Under (a) the largest single item is not even in the
 list above: closing parsecs **120–150** (Banach-space-valued contour integration

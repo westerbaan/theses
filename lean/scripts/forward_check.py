@@ -1,0 +1,86 @@
+#!/usr/bin/env python3
+"""Find proofs that cite a later point of the thesis than the one they prove.
+
+The author's ruling of 2026-09-04 on docs/DECISIONS.md §2.2: a proof of a
+statement at point P may use only what the thesis has at or before P, except
+where the printed proof of P itself cites a later point (`\\sref{label}` to a
+label whose point comes later).  This lists, per DISP-tagged declaration, the
+DISP-tagged declarations of a LATER point that its proof body names, minus the
+forward references the printed point makes itself.  A lead list, not a defect
+list: a name can be mentioned in a comment, or be a definition rather than a
+result.
+"""
+import glob, os, re, sys, collections
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.join(ROOT, 'scripts'))
+import faithful_check as fc
+SRC = os.path.dirname(ROOT)
+TAG = re.compile(r'/--\s*\*\*(\d+[a-z]?[IVXL]+[a-z]?)(?:\.\d+)?\*\*')
+DECL = re.compile(r'^\s*(?:@\[[^\]]*\]\s*)?(?:private\s+|protected\s+|noncomputable\s+|nonrec\s+|local\s+|scoped\s+)*(?:theorem|lemma|def|abbrev|instance|structure|class)\s+([A-Za-z_][\w\'.₀-₉]*)')
+def thesis_of(path):
+    return 'A' if '/A/' in path else 'B'
+def load():
+    points = {}
+    for th, fs in fc.FILES.items():
+        for f in fs:
+            for k, v in fc.parse(os.path.join(SRC, f)).items():
+                points[(th,) + k] = v      # (label, body, nchildren)
+    label_to_key = {}
+    for k, (lab, body, n) in points.items():
+        if lab: label_to_key[(k[0], lab)] = k[1:]
+    return points, label_to_key
+def declarations():
+    """-> list of (path, name, disp, key, proof_text) for DISP-tagged declarations."""
+    out = []
+    for path in sorted(glob.glob(os.path.join(ROOT, 'Theses', '**', '*.lean'), recursive=True)):
+        th = thesis_of(path)
+        lines = open(path, encoding='utf-8').read().split('\n')
+        i = 0
+        while i < len(lines):
+            m = TAG.match(lines[i])
+            if m:
+                disp = m.group(1); key = fc.decode(disp)
+                j = i
+                while j < len(lines) and not DECL.match(lines[j]): j += 1
+                if j < len(lines) and key:
+                    name = DECL.match(lines[j]).group(1)
+                    # body: until the next blank-line-separated top-level declaration or doc comment
+                    k = j + 1; body = []
+                    while k < len(lines) and not lines[k].startswith('/--') and not lines[k].startswith('/-!') and not DECL.match(lines[k]) and not lines[k].startswith('end ') and not lines[k].startswith('section'):
+                        body.append(lines[k]); k += 1
+                    out.append((path, name, disp, (th,) + key, '\n'.join(body)))
+                    i = k; continue
+            i += 1
+    return out
+def main():
+    points, l2k = load()
+    decls = declarations()
+    by_name = {}
+    for path, name, disp, key, body in decls:
+        by_name.setdefault(name.split('.')[-1], []).append(key)
+    hits = collections.Counter(); lines_out = []
+    for path, name, disp, key, body in decls:
+        th, p, q = key
+        pt = points.get(key)
+        allowed = set()
+        if pt:
+            for lab in re.findall(r'\\sref\{([^}]*)\}', pt[1]):
+                k2 = l2k.get((th, lab))
+                if k2 and k2 > (p, q): allowed.add(k2)
+        # strip comments
+        text = re.sub(r'--[^\n]*', '', body); text = re.sub(r'/-.*?-/', '', text, flags=re.S)
+        idents = set(re.findall(r"[A-Za-z_][\w'₀-₉]*", text))
+        later = set()
+        for ident in idents:
+            for k2 in by_name.get(ident, []):
+                if k2[0] == th and k2[1:] > (p, q) and k2[1:] not in allowed and k2 != key:
+                    later.add((ident, k2[1:]))
+        if later:
+            hits[os.path.relpath(path, ROOT)] += 1
+            cites = ', '.join(sorted(f"{i}({pp}.{qq})" for i, (pp, qq) in later))[:200]
+            lines_out.append(f"FORWARD  {os.path.relpath(path, ROOT)}  {disp} {name} -> {cites}")
+    for l in lines_out: print(l)
+    print()
+    for f, n in sorted(hits.items()): print(f"{n:4d}  {f}")
+    print(f"{len(lines_out)} DISP-tagged proofs cite a later point the printed proof does not")
+if __name__ == '__main__': main()
