@@ -10,8 +10,9 @@ Nothing else is needed; we will make the source edits and the Lean edits and
 record the ruling.  Where an item is really an erratum acceptance we say so, and
 "accept" is a complete answer.
 
-**Where things stand.**  **9 declarations are unproved**, and **nothing else
-in the tree depends on a `sorry`**.  All nine are waiting on §1 below.  (It
+**Where things stand.**  **8 declarations are unproved**, and **nothing else
+in the tree depends on a `sorry`**.  All eight are waiting on §1 below.
+(179III.2 Gudder–Pulmannová was ruled (a) and **proved** on 2026-09-04, §1.5.)  (It
 was ten until 2026-08-29, when `kaplansky_hilbmod_A₂` turned out to be
 **true** — the witness reports `ω₀(A₂) = 0`, which had been read as the
 functional not seeing it.)  (The
@@ -48,7 +49,7 @@ in §4 rather than in front of you.
 | 1.2 | 206II.2/.4 / 211IV | must the ⋄-self-adjoint square root be pure? | `vn_is_andthen_eff` | (a) yes, it is meant to be |
 | 1.3 | 158III–158V | printed proof is false — replace it how? | 3 × `kaplansky_hilbmod_A*` | (a) delete, use the linking algebra |
 | 1.4 | 139XI | case (ii) takes the complement in the wrong space | `ess_uniq_pur` | (a) complements in `𝒦'` |
-| 1.5 | 179III.2 | strengthen our statement, or drop the point? — ruled (a) 2026-09-04 | `effectModule_unitInterval_representation` | (a) strengthen, else (b) drop |
+| 1.5 | 179III.2 | strengthen or drop? — ruled (a) and **proved** 2026-09-04 | 0 audit rows | (a) done | `effectModule_unitInterval_representation` | (a) strengthen, else (b) drop |
 | 1.6 | 106III.3, 116III.4 | two errata to accept | 2 red rows | accept |
 | 2.1 | — | may we match the printed statement without asking? — ruled (a) 2026-09-04, only in a dedicated statement-alignment pass | 54 audit rows | (a) standing authorisation |
 | 2.2 | — | does "no forward references" apply outside `A/CStar`? — ruled (a) 2026-09-04: global and retroactive, out-of-order proofs allowed insofar as the thesis does that itself | 520 audit rows | (b) forward only; label the rest |
@@ -371,7 +372,7 @@ all three hypotheses; the proof is `sorry`, so nothing false is derived).  We
 will restate it with whichever form of (ii) you choose and then attempt the
 proof — which is real work, not a free close.
 
-### 1.5 — 179III.2 `gudder1998representation`: strengthen our statement, or drop the point? — **ruled (a), 2026-09-04**
+### 1.5 — 179III.2 `gudder1998representation`: strengthen our statement, or drop the point? — **done 2026-09-04: ruled (a) and proved**
 
 *(`QUESTIONS.md` B14, now closed, deleted 2026-09-04.  Blocks `effectModule_unitInterval_representation` in
 `Theses/B/Eff/EffectAlgebras.lean`.  Audit row
