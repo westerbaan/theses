@@ -3204,7 +3204,7 @@ Theses.B.Eff.Effectus|Theses.B.Eff.eff_prod_rules_3|green
 Theses.B.Eff.Effectus|Theses.B.Eff.eff_prod_rules_4|green
 Theses.B.Eff.EffectAlgebras|Theses.B.Eff.effectModule_bool_smul|green
 Theses.B.Eff.EffectAlgebras|Theses.B.Eff.effectModule_bool_unique|green
-Theses.B.Eff.EffectAlgebras|Theses.B.Eff.effectModule_unitInterval_representation|red
+Theses.B.Eff.EffectAlgebras|Theses.B.Eff.effectModule_unitInterval_representation|green
 Theses.B.Eff.VNExamples|Theses.B.Eff.effects_mul_le_one|green
 Theses.B.Eff.VNExamples|Theses.B.Eff.effects_mul_mem|green
 Theses.B.Eff.VNExamples|Theses.B.Eff.effects_pcm_le_iff|green

@@ -3478,32 +3478,1152 @@ noncomputable def orderIntervalEffectModule (V : Type v) [AddCommGroup V]
       intro a
       exact Subtype.ext (one_smul ℝ (a : V)) }
 
-/-- **179III.2** (eff.tex:731, Examples): *representation theorem* (Gudder–
-Pulmannová): every effect module over `[0,1]` is isomorphic to the order
-interval `[0,u]` of an ordered real vector space `V` with order unit `u`,
-by a bijection preserving partial sum and scalar multiplication.
+/-- `u` is an **order unit** of `V`: every element of `V` is dominated by
+some natural multiple of `u`.
 
-**PARKED — this is not a result of the thesis.**  eff.tex:739 asserts it by
-*citation only* ("In fact, every effect module over `[0,1]` is of this form
-`\cite{gudder1998representation}`"); there is no proof in the text to
-transcribe, and nothing in this development uses it.  Proving it is an
-independent project (Gudder's representation theorem), not part of validating
-the thesis.
+This is the order-unit axiom of `OrderUnitSpace` in `B/Eff/OrderUnit.lean`
+(`exists_le_smul_unit`), repeated here because that file sits *downstream* of
+this one — `OrderUnit.lean` imports `StatesPredicates.lean` imports
+`Effectus.lean` imports this file — so importing it would be a cycle.  The
+multiple is taken with `ℕ`-scalars rather than `OrderUnitSpace`'s `(n : ℝ) •`,
+so that the predicate needs only an `AddCommMonoid`; on a real vector space
+the two agree (`Nat.cast_smul_eq_nsmul`). -/
+def IsOrderUnit {V : Type v} [AddCommMonoid V] [PartialOrder V] (u : V) : Prop :=
+  ∀ v : V, ∃ n : ℕ, v ≤ n • u
 
-Note also that the statement below is **weaker than the cited result**: it
-produces only `[PartialOrder V] [IsOrderedAddMonoid V]` and `0 ≤ u`, whereas
-"ordered real vector space with order unit" additionally requires the positive
-cone to be closed under nonnegative scalars (`PosSMulMono`/`SMulPosMono`, as in
-`orderIntervalEffectModule` above) and `u` to be an order unit.  If this is ever
-revived, strengthen it first — as written it would be provable without being the
-theorem.  That gap is `QUESTIONS.md` **B14**, which is open. -/
+/-! ### The Gudder-Pulmannova representation theorem (179III.2)
+
+`GP` builds, for an arbitrary effect module `E` over `[0,1]`, an ordered real
+vector space `V` with order unit `u` together with an isomorphism `E ≅ [0,u]`.
+It is used only for `effectModule_unitInterval_representation`, at the end of
+this section, and the route is the classical one carried out concretely.
+
+* `GP.Cone E` is the set of formal multiples `r · a` (`r : ℝ≥0`, `a : E`), two
+  of which are identified when they agree after being scaled back into `E`:
+  `(r,a) ≈ (s,b)` iff `(r/N) • a = (s/N) • b` for some — equivalently any —
+  common bound `N`.  Addition is
+  `r·a + s·b = (r+s)·((r/(r+s)) • a ⋁ (s/(r+s)) • b)`, which is *total*
+  because `r/(r+s) + s/(r+s) ≤ 1`; this is where convexity is used.  The cone
+  is a cancellative commutative monoid (`GP.Cone.add_right_cancel`) and
+  salient (`GP.Cone.eq_zero_of_add_eq_zero`).
+* `GP.Vec E` is its group of formal differences `p - q`, with the real scalar
+  action `t • x = t⁺ • x - t⁻ • x` assembled from the `ℝ≥0`-action of the
+  cone, and with `x ≤ y` iff `y - x` lies in the cone.
+* `GP.gmap a` is the class of `1 · a`, and `GP.gunit` is `GP.gmap 1`.
+
+Two lemmas about effect modules over `[0,1]` carry the weight.  Both are
+proved from the four module axioms alone, by the same trick: pick `n : ℕ` and
+`c` with `l * c = 1/n`, and induct on `k/n` for `k ≤ n`.
+
+* `GP.smul_left_cancel`: `l • a = l • b` with `l ≠ 0` implies `a = b`.
+  Without it the relation on formal multiples is not even transitive, and
+  `gmap` need not be injective.
+* `GP.exists_smul_eq` (*divisibility*): if `a ≼ l • 1` with `l ≠ 0`, then
+  `a = l • e` for some `e`.  This is what makes `[0,u]` exactly the image of
+  `E` rather than merely containing it: an `x` with `0 ≤ x ≤ u` is `r · a` for
+  some `r` and `a`, and the lemma rewrites it as `1 · e`.
+-/
+
+namespace GP
+
+open scoped NNReal
+
+/-! ### Scalars -/
+
+/-- The clamped scalar `⟨x⟩ : [0,1]`, a *total* function `ℝ → [0,1]`. -/
+noncomputable def Iv (x : ℝ) : I :=
+  ⟨max 0 (min 1 x), le_max_left _ _, max_le zero_le_one (min_le_left _ _)⟩
+
+theorem Iv_coe {x : ℝ} (h0 : 0 ≤ x) (h1 : x ≤ 1) : ((Iv x : I) : ℝ) = x := by
+  rw [Iv]
+  show max 0 (min 1 x) = x
+  rw [min_eq_right h1, max_eq_right h0]
+
+theorem Iv_self (l : I) : Iv (l : ℝ) = l := Subtype.ext (Iv_coe l.2.1 l.2.2)
+
+theorem Iv_zero : Iv 0 = (0 : I) := Subtype.ext (by rw [Iv_coe le_rfl zero_le_one]; rfl)
+
+theorem Iv_one : Iv 1 = (1 : I) := Subtype.ext (by rw [Iv_coe zero_le_one le_rfl]; rfl)
+
+theorem Iv_congr {x y : ℝ} (h : x = y) : Iv x = Iv y := by rw [h]
+
+theorem I_coe_mul (x y : I) : ((x * y : I) : ℝ) = (x : ℝ) * (y : ℝ) := rfl
+
+theorem I_perp_iff {x y : I} : Perp x y ↔ (x : ℝ) + (y : ℝ) ≤ 1 := Iff.rfl
+
+theorem I_coe_ovee {x y : I} (h : Perp x y) : ((ovee x y h : I) : ℝ) = (x : ℝ) + (y : ℝ) := rfl
+
+theorem I_coe_zero : ((0 : I) : ℝ) = 0 := rfl
+
+theorem I_coe_one : ((1 : I) : ℝ) = 1 := rfl
+
+theorem Iv_mul {x y : ℝ} (hx0 : 0 ≤ x) (hx1 : x ≤ 1) (hy0 : 0 ≤ y) (hy1 : y ≤ 1) :
+    Iv x * Iv y = Iv (x * y) :=
+  Subtype.ext (by
+    rw [I_coe_mul, Iv_coe hx0 hx1, Iv_coe hy0 hy1,
+      Iv_coe (mul_nonneg hx0 hy0) (by nlinarith)])
+
+theorem Iv_perp {x y : ℝ} (hx0 : 0 ≤ x) (hy0 : 0 ≤ y) (h : x + y ≤ 1) :
+    Perp (Iv x) (Iv y) := by
+  rw [I_perp_iff, Iv_coe hx0 (by linarith), Iv_coe hy0 (by linarith)]
+  exact h
+
+theorem Iv_ovee {x y : ℝ} (hx0 : 0 ≤ x) (hy0 : 0 ≤ y) (h : x + y ≤ 1)
+    (h' : Perp (Iv x) (Iv y)) : ovee (Iv x) (Iv y) h' = Iv (x + y) :=
+  Subtype.ext (by
+    rw [I_coe_ovee, Iv_coe hx0 (by linarith), Iv_coe hy0 (by linarith),
+      Iv_coe (by linarith) h])
+
+/-! ### Basic facts about effect modules over `[0,1]` -/
+
+section EABasics'
+
+variable {E : Type u} [EffectAlgebra E]
+
+theorem ea_le_one (a : E) : a ≼ 1 :=
+  ⟨orth a, EffectAlgebra.perp_orth a, EffectAlgebra.ovee_orth a⟩
+
+theorem ea_zero_le (a : E) : (0 : E) ≼ a := ⟨a, PCM.zero_perp a, PCM.zero_ovee a⟩
+
+/-- Orthogonality is inherited downwards. -/
+theorem perp_of_le' {a a' b b' : E} (ha : a ≼ a') (hb : b ≼ b') (h : Perp a' b') :
+    Perp a b := by
+  rw [eabasics_perp_iff_le_orth] at h ⊢
+  exact pcm_preorder_trans ha
+    (pcm_preorder_trans h (eabasics_le_iff_orth_le.mp hb))
+
+/-- Sums are monotone. -/
+theorem ovee_le_ovee' {a a' b b' : E} (ha : a ≼ a') (hb : b ≼ b') (h' : Perp a' b') :
+    ∃ h : Perp a b, ovee a b h ≼ ovee a' b' h' := by
+  have hpa'b : Perp a' b := perp_of_le' (pcm_preorder_refl a') hb h'
+  obtain ⟨h1, le1⟩ := eabasics_le_perp_compat ha hpa'b
+  have hb'a' : Perp b' a' := PCM.perp_comm h'
+  obtain ⟨h2, le2⟩ := eabasics_le_perp_compat hb hb'a'
+  refine ⟨h1, pcm_preorder_trans le1 ?_⟩
+  have e1 : ovee a' b hpa'b = ovee b a' (PCM.perp_comm hpa'b) := PCM.ovee_comm hpa'b
+  have e2 : ovee b' a' hb'a' = ovee a' b' h' := (PCM.ovee_comm h').symm
+  rw [e1, PCM.ovee_congr (a := b) (b := a') rfl rfl (PCM.perp_comm hpa'b) h2, ← e2]
+  exact le2
+
+end EABasics'
+
+section Basics
+
+variable {E : Type u} [EffectAlgebra E] [EffectModule I E]
+
+/-- `l • 0 = 0`. -/
+theorem smul_zero' (l : I) : l • (0 : E) = 0 := by
+  obtain ⟨h', e⟩ := EffectModule.smul_perp (M := I) (E := E) l (PCM.zero_perp (0 : E))
+  rw [PCM.zero_ovee] at e
+  exact eabasics_cancellation h' (PCM.zero_perp (l • (0 : E)))
+    (by rw [e, PCM.zero_ovee])
+
+/-- `0 • a = 0`. -/
+theorem zero_smul' (a : E) : (0 : I) • a = 0 := by
+  obtain ⟨h', e⟩ := EffectModule.perp_smul (M := I) (E := E) (PCM.zero_perp (1 : I)) a
+  have hone : (1 : I) • a = a := EffectModule.one_smul a
+  have h2 : Perp ((0 : I) • a) a := by
+    have hx := h'
+    rwa [hone] at hx
+  have e2 : ovee ((0 : I) • a) a h2 = a := by
+    rw [PCM.ovee_congr rfl hone.symm h2 h', e, PCM.zero_ovee]
+    exact hone
+  exact eabasics_cancellation h2 (PCM.zero_perp a) (by rw [e2, PCM.zero_ovee])
+
+/-- Scalar multiplication is monotone in the element. -/
+theorem smul_mono' {a b : E} (h : a ≼ b) (l : I) : l • a ≼ l • b := by
+  obtain ⟨c, hac, rfl⟩ := h
+  obtain ⟨h', e⟩ := EffectModule.smul_perp l hac
+  exact ⟨l • c, h', e⟩
+
+/-- Two scaled elements with `l + m ≤ 1` are orthogonal. -/
+theorem smul_perp_smul' {l m : I} (hlm : Perp l m) (a b : E) : Perp (l • a) (m • b) := by
+  obtain ⟨h', _⟩ := EffectModule.perp_smul (E := E) hlm 1
+  exact perp_of_le' (smul_mono' (ea_le_one a) l) (smul_mono' (ea_le_one b) m) h'
+
+/-- A scalar `l ≠ 0` divides some `1/n`: there are `n : ℕ` and `c : [0,1]` with
+`l * c = 1/n`. -/
+theorem exists_nat_scale {l : I} (hl : l ≠ 0) :
+    ∃ (n : ℕ) (c : I), (1 : ℝ) ≤ (n : ℝ) ∧ l * c = Iv (1 / (n : ℝ)) := by
+  have hl0 : (0 : ℝ) < (l : ℝ) :=
+    lt_of_le_of_ne l.2.1 (fun hc => hl (Subtype.ext hc.symm))
+  obtain ⟨n, hn⟩ := exists_nat_ge (1 / (l : ℝ))
+  have hnl : (1 : ℝ) ≤ (n : ℝ) * (l : ℝ) := by
+    rw [div_le_iff₀ hl0] at hn; linarith
+  have hn1 : (1 : ℝ) ≤ (n : ℝ) := by nlinarith [l.2.2]
+  have hn0 : (0 : ℝ) < (n : ℝ) := by linarith
+  refine ⟨n, Iv (1 / ((n : ℝ) * (l : ℝ))), hn1, Subtype.ext ?_⟩
+  have hc0 : (0 : ℝ) ≤ 1 / ((n : ℝ) * (l : ℝ)) := by positivity
+  have hc1 : 1 / ((n : ℝ) * (l : ℝ)) ≤ 1 := by
+    rw [div_le_one (by linarith)]; exact hnl
+  rw [I_coe_mul, Iv_coe hc0 hc1, Iv_coe (by positivity) (by rw [div_le_one hn0]; exact hn1)]
+  field_simp
+
+/-- **Cancellation.**  A nonzero scalar acts injectively on a `[0,1]`-effect
+module: if `l • a = l • b` with `l ≠ 0` then `a = b`. -/
+theorem smul_left_cancel {l : I} (hl : l ≠ 0) {a b : E} (h : l • a = l • b) : a = b := by
+  obtain ⟨n, c, hn1, hcl⟩ := exists_nat_scale hl
+  have hn0 : (0 : ℝ) < (n : ℝ) := by linarith
+  have key0 : Iv (1 / (n : ℝ)) • a = Iv (1 / (n : ℝ)) • b := by
+    rw [← hcl, mul_comm l c, EffectModule.mul_smul, EffectModule.mul_smul, h]
+  have h1n0 : (0 : ℝ) ≤ 1 / (n : ℝ) := by positivity
+  have key : ∀ k : ℕ, (k : ℝ) ≤ (n : ℝ) →
+      Iv ((k : ℝ) / (n : ℝ)) • a = Iv ((k : ℝ) / (n : ℝ)) • b := by
+    intro k
+    induction k with
+    | zero =>
+      intro _
+      rw [Nat.cast_zero, zero_div, Iv_zero, zero_smul' a, zero_smul' b]
+    | succ k ih =>
+      intro hk
+      rw [Nat.cast_succ] at hk
+      have hk' : (k : ℝ) ≤ (n : ℝ) := by linarith
+      have hkn0 : (0 : ℝ) ≤ (k : ℝ) / (n : ℝ) := by positivity
+      have hsum : (k : ℝ) / (n : ℝ) + 1 / (n : ℝ) ≤ 1 := by
+        rw [← add_div, div_le_one hn0]; linarith
+      have hp := Iv_perp hkn0 h1n0 hsum
+      obtain ⟨ha', ea⟩ := EffectModule.perp_smul hp a
+      obtain ⟨hb', eb⟩ := EffectModule.perp_smul hp b
+      rw [Iv_ovee hkn0 h1n0 hsum hp] at ea eb
+      rw [Nat.cast_succ, show ((k : ℝ) + 1) / (n : ℝ)
+        = (k : ℝ) / (n : ℝ) + 1 / (n : ℝ) by ring, ← ea, ← eb]
+      exact PCM.ovee_congr (ih hk') key0 ha' hb'
+  have hfin := key n le_rfl
+  rwa [div_self (ne_of_gt hn0), Iv_one, EffectModule.one_smul,
+    EffectModule.one_smul] at hfin
+
+/-- **Divisibility.**  If `a ≼ l • 1` for a nonzero scalar `l`, then `a` is
+divisible by `l`: there is `e` with `l • e = a`.  (This is what makes the
+image of `E` in the representing vector space the *whole* order interval.) -/
+theorem exists_smul_eq {l : I} (hl : l ≠ 0) {a : E} (ha : a ≼ l • (1 : E)) :
+    ∃ e : E, l • e = a := by
+  obtain ⟨n, c, hn1, hcl⟩ := exists_nat_scale hl
+  have hn0 : (0 : ℝ) < (n : ℝ) := by linarith
+  have h1n0 : (0 : ℝ) ≤ 1 / (n : ℝ) := by positivity
+  have hca : c • a ≼ Iv (1 / (n : ℝ)) • (1 : E) := by
+    have hx := smul_mono' ha c
+    rwa [← EffectModule.mul_smul, mul_comm c l, hcl] at hx
+  have step : ∀ k : ℕ, (k : ℝ) ≤ (n : ℝ) →
+      ∃ s : E, s ≼ Iv ((k : ℝ) / (n : ℝ)) • (1 : E)
+        ∧ l • s = Iv ((k : ℝ) / (n : ℝ)) • a := by
+    intro k
+    induction k with
+    | zero =>
+      intro _
+      refine ⟨0, ea_zero_le _, ?_⟩
+      rw [Nat.cast_zero, zero_div, Iv_zero, zero_smul' a, smul_zero' l]
+    | succ k ih =>
+      intro hk
+      rw [Nat.cast_succ] at hk
+      have hk' : (k : ℝ) ≤ (n : ℝ) := by linarith
+      obtain ⟨s, hsle, hseq⟩ := ih hk'
+      have hkn0 : (0 : ℝ) ≤ (k : ℝ) / (n : ℝ) := by positivity
+      have hsum : (k : ℝ) / (n : ℝ) + 1 / (n : ℝ) ≤ 1 := by
+        rw [← add_div, div_le_one hn0]; linarith
+      have hp := Iv_perp hkn0 h1n0 hsum
+      have hpp : Perp (Iv ((k : ℝ) / (n : ℝ)) • (1 : E)) (Iv (1 / (n : ℝ)) • (1 : E)) :=
+        smul_perp_smul' hp 1 1
+      obtain ⟨hs', hle'⟩ := ovee_le_ovee' hsle hca hpp
+      obtain ⟨_, eq1⟩ := EffectModule.perp_smul hp (1 : E)
+      obtain ⟨hy, ey⟩ := EffectModule.perp_smul hp a
+      rw [Iv_ovee hkn0 h1n0 hsum hp] at eq1 ey
+      rw [Nat.cast_succ, show ((k : ℝ) + 1) / (n : ℝ)
+        = (k : ℝ) / (n : ℝ) + 1 / (n : ℝ) by ring]
+      refine ⟨ovee s (c • a) hs', ?_, ?_⟩
+      · rw [← eq1]; exact hle'
+      · obtain ⟨hz, ez⟩ := EffectModule.smul_perp l hs'
+        rw [← ez]
+        have e1 : l • (c • a) = Iv (1 / (n : ℝ)) • a := by
+          rw [← EffectModule.mul_smul, hcl]
+        rw [PCM.ovee_congr hseq e1 hz hy, ey]
+  obtain ⟨s, _, hs⟩ := step n le_rfl
+  refine ⟨s, ?_⟩
+  rwa [div_self (ne_of_gt hn0), Iv_one, EffectModule.one_smul] at hs
+
+end Basics
+
+/-! ### Fractions -/
+
+/-- The scalar `r/N ∈ [0,1]` (clamped; `r/0 = 0`). -/
+noncomputable def frac (r N : ℝ≥0) : I := Iv ((r : ℝ) / (N : ℝ))
+
+theorem frac_coe {r N : ℝ≥0} (h : r ≤ N) : ((frac r N : I) : ℝ) = (r : ℝ) / (N : ℝ) := by
+  have h0 : (0 : ℝ) ≤ (r : ℝ) / (N : ℝ) := by positivity
+  refine Iv_coe h0 ?_
+  rcases eq_or_ne N 0 with hN | hN
+  · subst hN; simp
+  · have hN' : (0 : ℝ) < (N : ℝ) := by
+      exact_mod_cast lt_of_le_of_ne (zero_le : (0:ℝ≥0) ≤ N) (Ne.symm hN)
+    rw [div_le_one hN']
+    exact_mod_cast h
+
+theorem frac_zero (N : ℝ≥0) : frac 0 N = (0 : I) := by
+  rw [frac]; push_cast; rw [zero_div, Iv_zero]
+
+theorem frac_self {r : ℝ≥0} (h : r ≠ 0) : frac r r = (1 : I) := by
+  have hr : (r : ℝ) ≠ 0 := by
+    exact_mod_cast h
+  rw [frac, div_self hr, Iv_one]
+
+theorem frac_ne_zero {N K : ℝ≥0} (hN : N ≠ 0) (h : N ≤ K) : frac N K ≠ (0 : I) := by
+  intro hc
+  have hK : (0 : ℝ) < (K : ℝ) := by
+    refine lt_of_lt_of_le ?_ (by exact_mod_cast h)
+    exact_mod_cast lt_of_le_of_ne (zero_le : (0:ℝ≥0) ≤ N) (Ne.symm hN)
+  have := frac_coe h
+  rw [hc] at this
+  rw [I_coe_zero] at this
+  have hN' : (0 : ℝ) < (N : ℝ) := by
+    exact_mod_cast lt_of_le_of_ne (zero_le : (0:ℝ≥0) ≤ N) (Ne.symm hN)
+  rw [eq_comm, div_eq_zero_iff] at this
+  rcases this with h1 | h1 <;> linarith
+
+theorem frac_mul {r q N : ℝ≥0} (h1 : r ≤ q) (h2 : q ≤ N) :
+    frac q N * frac r q = frac r N := by
+  refine Subtype.ext ?_
+  rw [I_coe_mul, frac_coe h2, frac_coe h1, frac_coe (h1.trans h2)]
+  rcases eq_or_ne q 0 with hq | hq
+  · subst hq
+    have hr : r = 0 := le_antisymm h1 zero_le
+    subst hr; simp
+  · have hq' : (q : ℝ) ≠ 0 := by exact_mod_cast hq
+    field_simp
+
+theorem frac_one (r : ℝ≥0) : frac r 1 = Iv (r : ℝ) := by
+  rw [frac]; norm_num
+
+theorem frac_perp {r s N : ℝ≥0} (h : r + s ≤ N) : Perp (frac r N) (frac s N) := by
+  have hr : r ≤ N := le_trans (by simp) h
+  have hs : s ≤ N := le_trans (by simp) h
+  rw [I_perp_iff, frac_coe hr, frac_coe hs, ← add_div]
+  rcases eq_or_ne N 0 with hN | hN
+  · subst hN; simp
+  · have hN' : (0 : ℝ) < (N : ℝ) := by
+      exact_mod_cast lt_of_le_of_ne (zero_le : (0:ℝ≥0) ≤ N) (Ne.symm hN)
+    rw [div_le_one hN']
+    exact_mod_cast h
+
+theorem frac_ovee {r s N : ℝ≥0} (h : r + s ≤ N) (h' : Perp (frac r N) (frac s N)) :
+    ovee (frac r N) (frac s N) h' = frac (r + s) N := by
+  have hr : r ≤ N := le_trans (by simp) h
+  have hs : s ≤ N := le_trans (by simp) h
+  refine Subtype.ext ?_
+  rw [I_coe_ovee, frac_coe hr, frac_coe hs, frac_coe h, ← add_div]
+  push_cast
+  ring
+
+/-! ### The cone of an effect module -/
+
+section Cone
+
+variable {E : Type u} [EffectAlgebra E] [EffectModule I E]
+
+theorem frac_smul_frac {r q N : ℝ≥0} (h1 : r ≤ q) (h2 : q ≤ N) (a : E) :
+    frac q N • (frac r q • a) = frac r N • a := by
+  rw [← EffectModule.mul_smul, frac_mul h1 h2]
+
+/-- `(r, a) ≈ (s, b)` says that `r · a` and `s · b` agree, checked at a common
+scale `N`. -/
+def coneRel (x y : ℝ≥0 × E) : Prop :=
+  ∃ N : ℝ≥0, x.1 ≤ N ∧ y.1 ≤ N ∧ frac x.1 N • x.2 = frac y.1 N • y.2
+
+/-- The scale at which `coneRel` is checked does not matter. -/
+theorem coneRel_at {x y : ℝ≥0 × E} (h : coneRel x y) {N : ℝ≥0}
+    (hx : x.1 ≤ N) (hy : y.1 ≤ N) : frac x.1 N • x.2 = frac y.1 N • y.2 := by
+  obtain ⟨M, hxM, hyM, hM⟩ := h
+  have hMK : M ≤ max M N := le_max_left _ _
+  have hNK : N ≤ max M N := le_max_right _ _
+  have e1 : frac x.1 (max M N) • x.2 = frac y.1 (max M N) • y.2 := by
+    rw [← frac_smul_frac hxM hMK, ← frac_smul_frac hyM hMK, hM]
+  rcases eq_or_ne N 0 with hN0 | hN0
+  · subst hN0
+    have hx0 : x.1 = 0 := le_antisymm hx zero_le
+    have hy0 : y.1 = 0 := le_antisymm hy zero_le
+    rw [hx0, hy0, frac_zero, zero_smul', zero_smul']
+  · refine smul_left_cancel (frac_ne_zero hN0 hNK) ?_
+    rw [frac_smul_frac hx hNK, frac_smul_frac hy hNK]
+    exact e1
+
+theorem coneRel_refl (x : ℝ≥0 × E) : coneRel x x := ⟨x.1, le_rfl, le_rfl, rfl⟩
+
+theorem coneRel_symm {x y : ℝ≥0 × E} (h : coneRel x y) : coneRel y x := by
+  obtain ⟨N, hx, hy, e⟩ := h
+  exact ⟨N, hy, hx, e.symm⟩
+
+theorem coneRel_trans {x y z : ℝ≥0 × E} (h1 : coneRel x y) (h2 : coneRel y z) :
+    coneRel x z := by
+  refine ⟨max (max x.1 y.1) z.1, ?_, ?_, ?_⟩
+  · exact le_trans (le_max_left _ _) (le_max_left _ _)
+  · exact le_max_right _ _
+  · refine (coneRel_at h1 ?_ ?_).trans (coneRel_at h2 ?_ ?_)
+    · exact le_trans (le_max_left _ _) (le_max_left _ _)
+    · exact le_trans (le_max_right _ _) (le_max_left _ _)
+    · exact le_trans (le_max_right _ _) (le_max_left _ _)
+    · exact le_max_right _ _
+
+variable (E) in
+/-- The setoid on formal scalar multiples `r · a`. -/
+def coneSetoid : Setoid (ℝ≥0 × E) :=
+  ⟨coneRel, coneRel_refl, fun h => coneRel_symm h, fun h1 h2 => coneRel_trans h1 h2⟩
+
+variable (E) in
+/-- The **cone** of a `[0,1]`-effect module: formal nonnegative multiples
+`r · a` of its elements, which by convexity are closed under addition. -/
+def Cone : Type u := Quotient (coneSetoid E)
+
+/-- The class of `r · a` in the cone. -/
+def Cone.mk (r : ℝ≥0) (a : E) : Cone E := Quotient.mk (coneSetoid E) (r, a)
+
+theorem Cone.mk_eq_mk {r s : ℝ≥0} {a b : E} :
+    Cone.mk r a = Cone.mk s b ↔ coneRel (r, a) (s, b) :=
+  Quotient.eq (r := coneSetoid E)
+
+theorem Cone.ind {motive : Cone E → Prop} (h : ∀ (r : ℝ≥0) (a : E), motive (Cone.mk r a))
+    (x : Cone E) : motive x :=
+  Quotient.ind (fun p => h p.1 p.2) x
+
+/-! ### The cone is an ordered commutative monoid -/
+
+/-- Addition of formal multiples: `r·a + s·b = (r+s)·(r/(r+s) • a ⋁ s/(r+s) • b)`,
+which is defined because `r/(r+s) + s/(r+s) ≤ 1`. -/
+noncomputable def coneAddRaw (x y : ℝ≥0 × E) : ℝ≥0 × E :=
+  (x.1 + y.1,
+    ovee (frac x.1 (x.1 + y.1) • x.2) (frac y.1 (x.1 + y.1) • y.2)
+      (smul_perp_smul' (frac_perp (le_refl (x.1 + y.1))) x.2 y.2))
+
+theorem coneAddRaw_smul {r s N : ℝ≥0} (h : r + s ≤ N) (a b : E) :
+    frac (coneAddRaw (r, a) (s, b)).1 N • (coneAddRaw (r, a) (s, b)).2
+      = ovee (frac r N • a) (frac s N • b)
+          (smul_perp_smul' (frac_perp h) a b) := by
+  obtain ⟨h', e⟩ := EffectModule.smul_perp (frac (r + s) N)
+    (smul_perp_smul' (frac_perp (le_refl (r + s))) a b)
+  refine e.symm.trans (PCM.ovee_congr ?_ ?_ h' _)
+  · exact frac_smul_frac (by simp) h a
+  · exact frac_smul_frac (by simp) h b
+
+theorem coneAddRaw_rel₂ {x x' y y' : ℝ≥0 × E} (hx : coneRel x x') (hy : coneRel y y') :
+    coneRel (coneAddRaw x y) (coneAddRaw x' y') := by
+  obtain ⟨r, a⟩ := x; obtain ⟨r', a'⟩ := x'
+  obtain ⟨s, b⟩ := y; obtain ⟨s', b'⟩ := y'
+  refine ⟨max r r' + max s s', ?_, ?_, ?_⟩
+  · exact add_le_add (le_max_left _ _) (le_max_left _ _)
+  · exact add_le_add (le_max_right _ _) (le_max_right _ _)
+  · rw [coneAddRaw_smul (add_le_add (le_max_left _ _) (le_max_left _ _)),
+      coneAddRaw_smul (add_le_add (le_max_right _ _) (le_max_right _ _))]
+    exact PCM.ovee_congr
+      (coneRel_at hx (le_trans (le_max_left r r') le_self_add)
+        (le_trans (le_max_right r r') le_self_add))
+      (coneRel_at hy (le_trans (le_max_left s s') le_add_self)
+        (le_trans (le_max_right s s') le_add_self)) _ _
+
+
+theorem smul_le_frac_one {r N : ℝ≥0} (a : E) : frac r N • a ≼ frac r N • (1 : E) :=
+  smul_mono' (ea_le_one a) _
+
+theorem ovee_frac_one {r s N : ℝ≥0} (h : r + s ≤ N)
+    (hp : Perp (frac r N • (1 : E)) (frac s N • (1 : E))) :
+    ovee (frac r N • (1 : E)) (frac s N • (1 : E)) hp = frac (r + s) N • (1 : E) := by
+  obtain ⟨hp', e⟩ := EffectModule.perp_smul (E := E) (frac_perp h) 1
+  rw [frac_ovee h] at e
+  exact e
+
+theorem ovee_smul_le {r s N : ℝ≥0} (h : r + s ≤ N) {a b : E}
+    (hab : Perp (frac r N • a) (frac s N • b)) :
+    ovee (frac r N • a) (frac s N • b) hab ≼ frac (r + s) N • (1 : E) := by
+  have hp1 : Perp (frac r N • (1 : E)) (frac s N • (1 : E)) :=
+    smul_perp_smul' (frac_perp h) 1 1
+  obtain ⟨_, hle⟩ := ovee_le_ovee' (smul_le_frac_one a) (smul_le_frac_one b) hp1
+  rw [ovee_frac_one h hp1] at hle
+  exact hle
+
+theorem perp_ovee_frac {r s q N : ℝ≥0} (h : r + s + q ≤ N) {a b c : E}
+    (hab : Perp (frac r N • a) (frac s N • b)) :
+    Perp (ovee (frac r N • a) (frac s N • b) hab) (frac q N • c) :=
+  perp_of_le' (ovee_smul_le (le_trans le_self_add h) hab) (smul_le_frac_one c)
+    (smul_perp_smul' (frac_perp h) 1 1)
+
+theorem perp_frac_ovee {r s q N : ℝ≥0} (h : r + (s + q) ≤ N) {a b c : E}
+    (hbc : Perp (frac s N • b) (frac q N • c)) :
+    Perp (frac r N • a) (ovee (frac s N • b) (frac q N • c) hbc) :=
+  perp_of_le' (smul_le_frac_one a)
+    (ovee_smul_le (le_trans le_add_self h) hbc)
+    (smul_perp_smul' (frac_perp h) 1 1)
+
+noncomputable instance : Add (Cone E) where
+  add := Quotient.lift₂
+    (fun p q => (Quotient.mk (coneSetoid E) (coneAddRaw p q) : Cone E))
+    (fun _ _ _ _ h1 h2 => Quotient.sound (coneAddRaw_rel₂ h1 h2))
+
+theorem Cone.mk_add (r s : ℝ≥0) (a b : E) :
+    Cone.mk r a + Cone.mk s b
+      = Quotient.mk (coneSetoid E) (coneAddRaw (r, a) (s, b)) := rfl
+
+/-- Comparing two formal multiples at a common scale. -/
+theorem Cone.eq_iff {r s N : ℝ≥0} {a b : E} (hr : r ≤ N) (hs : s ≤ N) :
+    Cone.mk r a = Cone.mk s b ↔ frac r N • a = frac s N • b := by
+  rw [Cone.mk_eq_mk]
+  exact ⟨fun h => coneRel_at h hr hs, fun h => ⟨N, hr, hs, h⟩⟩
+
+/-- Rescaling: `r·a = N·((r/N) • a)` for `r ≤ N`. -/
+theorem Cone.mk_rescale {r N : ℝ≥0} (h : r ≤ N) (a : E) :
+    Cone.mk r a = Cone.mk N (frac r N • a) := by
+  rw [Cone.eq_iff h (le_refl N)]
+  rcases eq_or_ne N 0 with hN | hN
+  · subst hN
+    have hr : r = 0 := le_antisymm h zero_le
+    subst hr
+    rw [frac_zero, zero_smul', zero_smul']
+  · rw [frac_self hN, EffectModule.one_smul]
+
+/-- At a fixed scale, `Cone.mk N` is injective. -/
+theorem Cone.mk_inj {N : ℝ≥0} (hN : N ≠ 0) {a b : E} :
+    Cone.mk N a = Cone.mk N b ↔ a = b := by
+  rw [Cone.eq_iff (le_refl N) (le_refl N), frac_self hN, EffectModule.one_smul,
+    EffectModule.one_smul]
+
+/-- **The key rule**: at a common scale, addition in the cone is the partial
+sum of the effect algebra. -/
+theorem Cone.add_same {N : ℝ≥0} {a b : E} (h : Perp a b) :
+    Cone.mk N a + Cone.mk N b = Cone.mk N (ovee a b h) := by
+  rw [Cone.mk_add, Cone.mk_rescale (show N ≤ N + N by simp) (ovee a b h)]
+  show Quotient.mk (coneSetoid E) (coneAddRaw (N, a) (N, b)) = _
+  obtain ⟨h', e⟩ := EffectModule.smul_perp (frac N (N + N)) h
+  refine congrArg (Quotient.mk (coneSetoid E)) (Prod.ext rfl ?_)
+  show ovee (frac N (N + N) • a) (frac N (N + N) • b) _
+      = frac N (N + N) • ovee a b h
+  exact e
+
+/-- Addition at a common scale, in terms of the original data. -/
+theorem Cone.add_eq {r s N : ℝ≥0} {a b : E} (h : r + s ≤ N)
+    (hp : Perp (frac r N • a) (frac s N • b)) :
+    Cone.mk r a + Cone.mk s b = Cone.mk N (ovee (frac r N • a) (frac s N • b) hp) := by
+  rw [Cone.mk_rescale (le_trans (by simp) h) a, Cone.mk_rescale (le_trans (by simp) h) b,
+    Cone.add_same hp]
+
+noncomputable instance : Zero (Cone E) := ⟨Cone.mk 0 0⟩
+
+theorem Cone.zero_def : (0 : Cone E) = Cone.mk 0 0 := rfl
+
+theorem Cone.mk_zero_scale (a : E) : Cone.mk 0 a = 0 := by
+  rw [Cone.zero_def, Cone.eq_iff (le_refl (0 : ℝ≥0)) (le_refl (0 : ℝ≥0)),
+    frac_zero, zero_smul', zero_smul']
+
+theorem Cone.mk_eq_of_scale_zero {N : ℝ≥0} (hN : N = 0) (a b : E) :
+    Cone.mk N a = Cone.mk N b := by
+  subst hN; rw [Cone.mk_zero_scale, Cone.mk_zero_scale]
+
+theorem Cone.mk_zero (N : ℝ≥0) : Cone.mk N (0 : E) = 0 := by
+  rw [Cone.zero_def, Cone.eq_iff (le_refl N) (zero_le), frac_zero, smul_zero',
+    zero_smul']
+
+noncomputable instance : AddCommMonoid (Cone E) where
+  nsmul := nsmulRec
+  nsmul_zero := fun _ => rfl
+  nsmul_succ := fun _ _ => rfl
+  add_assoc := by
+    refine Cone.ind (fun r a => Cone.ind (fun s b => Cone.ind (fun q c => ?_)))
+    have hr : r ≤ r + s + q := le_trans le_self_add le_self_add
+    have hs : s ≤ r + s + q := le_trans le_add_self le_self_add
+    have hq : q ≤ r + s + q := le_add_self
+    have hrs : r + s ≤ r + s + q := le_self_add
+    have hsq : s + q ≤ r + s + q := by
+      rw [show r + s + q = r + (s + q) by ring]; exact le_add_self
+    have hA : Perp (frac r (r + s + q) • a) (frac s (r + s + q) • b) :=
+      smul_perp_smul' (frac_perp hrs) a b
+    have hBC : Perp (frac s (r + s + q) • b) (frac q (r + s + q) • c) :=
+      smul_perp_smul' (frac_perp hsq) b c
+    have hAB_C := perp_ovee_frac (le_refl (r + s + q)) hA (c := c)
+    have hA_BC := perp_frac_ovee (by rw [show r + s + q = r + (s + q) by ring]) hBC (a := a)
+    rw [Cone.mk_rescale hr a, Cone.mk_rescale hs b, Cone.mk_rescale hq c,
+      Cone.add_same hA, Cone.add_same hAB_C, Cone.add_same hBC, Cone.add_same hA_BC]
+    exact congrArg (Cone.mk (r + s + q)) (PCM.ovee_assoc hA hAB_C)
+  zero_add := by
+    refine Cone.ind (fun s b => ?_)
+    rw [Cone.zero_def, Cone.mk_rescale (zero_le : (0 : ℝ≥0) ≤ s) (0 : E), frac_zero,
+      zero_smul', Cone.add_same (PCM.zero_perp b), PCM.zero_ovee]
+  add_zero := by
+    refine Cone.ind (fun s b => ?_)
+    rw [Cone.zero_def, Cone.mk_rescale (zero_le : (0 : ℝ≥0) ≤ s) (0 : E), frac_zero,
+      zero_smul', Cone.add_same (PCM.perp_zero b), PCM.ovee_zero]
+  add_comm := by
+    refine Cone.ind (fun r a => Cone.ind (fun s b => ?_))
+    have hr : r ≤ r + s := le_self_add
+    have hs : s ≤ r + s := le_add_self
+    rw [Cone.mk_rescale hr a, Cone.mk_rescale hs b,
+      Cone.add_same (smul_perp_smul' (frac_perp (le_refl (r + s))) a b),
+      Cone.add_same (smul_perp_smul' (frac_perp (le_of_eq (add_comm s r))) b a)]
+    exact congrArg (Cone.mk (r + s)) (PCM.ovee_comm _)
+
+/-- The cone is cancellative. -/
+theorem Cone.add_right_cancel {x y z : Cone E} (h : x + z = y + z) : x = y := by
+  revert h
+  induction x using Cone.ind with
+  | _ r a =>
+  induction y using Cone.ind with
+  | _ s b =>
+  induction z using Cone.ind with
+  | _ q c =>
+    intro h
+    have hr : r ≤ r + s + q := le_trans le_self_add le_self_add
+    have hs : s ≤ r + s + q := le_trans le_add_self le_self_add
+    have hq : q ≤ r + s + q := le_add_self
+    have hrq : r + q ≤ r + s + q := by
+      rw [show r + s + q = r + q + s by ring]; exact le_self_add
+    have hsq : s + q ≤ r + s + q := by
+      rw [show r + s + q = r + (s + q) by ring]; exact le_add_self
+    rw [Cone.mk_rescale hr a, Cone.mk_rescale hs b, Cone.mk_rescale hq c] at h
+    rw [Cone.mk_rescale hr a, Cone.mk_rescale hs b]
+    rcases eq_or_ne (r + s + q) 0 with hN0 | hN0
+    · rw [hN0, Cone.mk_zero_scale, Cone.mk_zero_scale]
+    · rw [Cone.add_same (smul_perp_smul' (frac_perp hrq) a c),
+        Cone.add_same (smul_perp_smul' (frac_perp hsq) b c),
+        Cone.mk_inj hN0] at h
+      rw [Cone.mk_inj hN0]
+      exact eabasics_cancellation _ _ h
+
+/-- Positivity: the cone is salient. -/
+theorem Cone.eq_zero_of_add_eq_zero {p q : Cone E} (h : p + q = 0) : p = 0 := by
+  revert h
+  induction p using Cone.ind with
+  | _ r a =>
+  induction q using Cone.ind with
+  | _ s b =>
+    intro h
+    have hr : r ≤ r + s := le_self_add
+    have hs : s ≤ r + s := le_add_self
+    rw [Cone.add_eq (le_refl (r + s)) (smul_perp_smul' (frac_perp (le_refl (r + s))) a b),
+      Cone.zero_def, Cone.eq_iff (le_refl (r + s)) zero_le, frac_zero, zero_smul'] at h
+    rcases eq_or_ne (r + s) 0 with hN0 | hN0
+    · have hr0 : r = 0 := le_antisymm (by rw [← hN0]; exact hr) zero_le
+      rw [hr0, Cone.mk_zero_scale]
+    · rw [frac_self hN0, EffectModule.one_smul] at h
+      have h0 := (eabasics_positivity _ h).1
+      rw [Cone.zero_def, Cone.eq_iff hr zero_le, frac_zero, zero_smul', h0]
+
+/-! ### Nonnegative scalars act on the cone -/
+
+theorem frac_mul_left {t r N : ℝ≥0} (ht : t ≠ 0) : frac (t * r) (t * N) = frac r N := by
+  refine Iv_congr ?_
+  have ht' : (t : ℝ) ≠ 0 := by exact_mod_cast ht
+  push_cast
+  exact mul_div_mul_left _ _ ht'
+
+/-- The scalar action `t · (r · a) = (t r) · a`. -/
+noncomputable def coneSmulRaw (t : ℝ≥0) (x : ℝ≥0 × E) : ℝ≥0 × E := (t * x.1, x.2)
+
+theorem coneSmulRaw_rel (t : ℝ≥0) {x y : ℝ≥0 × E} (h : coneRel x y) :
+    coneRel (coneSmulRaw t x) (coneSmulRaw t y) := by
+  obtain ⟨N, hx, hy, e⟩ := h
+  refine ⟨t * N, mul_le_mul_of_nonneg_left hx zero_le,
+    mul_le_mul_of_nonneg_left hy zero_le, ?_⟩
+  rcases eq_or_ne t 0 with ht | ht
+  · subst ht
+    show frac (0 * _) (0 * N) • _ = frac (0 * _) (0 * N) • _
+    rw [zero_mul, zero_mul, zero_mul, frac_zero, zero_smul', zero_smul']
+  · show frac (t * _) (t * N) • _ = frac (t * _) (t * N) • _
+    rw [frac_mul_left ht, frac_mul_left ht]
+    exact e
+
+noncomputable instance : SMul ℝ≥0 (Cone E) where
+  smul t := Quotient.lift
+    (fun x => (Quotient.mk (coneSetoid E) (coneSmulRaw t x) : Cone E))
+    (fun _ _ h => Quotient.sound (coneSmulRaw_rel t h))
+
+theorem Cone.smul_mk (t r : ℝ≥0) (a : E) : t • Cone.mk r a = Cone.mk (t * r) a := rfl
+
+theorem Cone.one_smul (x : Cone E) : (1 : ℝ≥0) • x = x := by
+  induction x using Cone.ind with
+  | _ r a => rw [Cone.smul_mk, one_mul]
+
+theorem Cone.zero_smul (x : Cone E) : (0 : ℝ≥0) • x = 0 := by
+  induction x using Cone.ind with
+  | _ r a => rw [Cone.smul_mk, zero_mul, Cone.mk_zero_scale]
+
+theorem Cone.smul_zero (t : ℝ≥0) : t • (0 : Cone E) = 0 := by
+  rw [Cone.zero_def, Cone.smul_mk, mul_zero, Cone.mk_zero_scale]
+
+theorem Cone.mul_smul (t t' : ℝ≥0) (x : Cone E) : (t * t') • x = t • t' • x := by
+  induction x using Cone.ind with
+  | _ r a => rw [Cone.smul_mk, Cone.smul_mk, Cone.smul_mk, mul_assoc]
+
+theorem Cone.smul_add (t : ℝ≥0) (x y : Cone E) : t • (x + y) = t • x + t • y := by
+  induction x using Cone.ind with
+  | _ r a =>
+  induction y using Cone.ind with
+  | _ s b =>
+    have hp : Perp (frac r (r + s) • a) (frac s (r + s) • b) :=
+      smul_perp_smul' (frac_perp (le_refl (r + s))) a b
+    rw [Cone.add_eq (le_refl (r + s)) hp, Cone.smul_mk, Cone.smul_mk, Cone.smul_mk]
+    rcases eq_or_ne t 0 with ht | ht
+    · subst ht
+      rw [zero_mul, zero_mul, zero_mul, Cone.mk_zero_scale, Cone.mk_zero_scale,
+        Cone.mk_zero_scale, add_zero]
+    · have hle : t * r + t * s ≤ t * (r + s) := le_of_eq (by ring)
+      have hp' : Perp (frac (t * r) (t * (r + s)) • a) (frac (t * s) (t * (r + s)) • b) :=
+        smul_perp_smul' (frac_perp hle) a b
+      rw [Cone.add_eq hle hp']
+      exact congrArg (Cone.mk (t * (r + s)))
+        (PCM.ovee_congr (by rw [frac_mul_left ht]) (by rw [frac_mul_left ht]) hp hp')
+
+theorem Cone.add_smul (t t' : ℝ≥0) (x : Cone E) : (t + t') • x = t • x + t' • x := by
+  induction x using Cone.ind with
+  | _ r a =>
+    rw [Cone.smul_mk, Cone.smul_mk, Cone.smul_mk]
+    have hle : t * r + t' * r ≤ (t + t') * r := le_of_eq (by ring)
+    have hp : Perp (frac (t * r) ((t + t') * r) • a) (frac (t' * r) ((t + t') * r) • a) :=
+      smul_perp_smul' (frac_perp hle) a a
+    rw [Cone.add_eq hle hp]
+    rcases eq_or_ne ((t + t') * r) 0 with hN | hN
+    · exact Cone.mk_eq_of_scale_zero hN _ _
+    · have hfp : Perp (frac (t * r) ((t + t') * r)) (frac (t' * r) ((t + t') * r)) :=
+        frac_perp hle
+      obtain ⟨hp2, e2⟩ := EffectModule.perp_smul hfp a
+      rw [frac_ovee hle] at e2
+      rw [show t * r + t' * r = (t + t') * r by ring, frac_self hN,
+        EffectModule.one_smul] at e2
+      exact congrArg (Cone.mk ((t + t') * r)) e2.symm
+
+end Cone
+
+/-! ### The vector space of formal differences -/
+
+section Vec
+
+variable {E : Type u} [EffectAlgebra E] [EffectModule I E]
+
+/-- `(p, q)` stands for `p - q`. -/
+def vRel (x y : Cone E × Cone E) : Prop := x.1 + y.2 = y.1 + x.2
+
+theorem vRel_trans {x y z : Cone E × Cone E} (h1 : vRel x y) (h2 : vRel y z) :
+    vRel x z := by
+  refine Cone.add_right_cancel (z := y.1 + y.2) ?_
+  calc x.1 + z.2 + (y.1 + y.2) = (x.1 + y.2) + (y.1 + z.2) := by abel
+    _ = (y.1 + x.2) + (z.1 + y.2) := by rw [h1, h2]
+    _ = z.1 + x.2 + (y.1 + y.2) := by abel
+
+variable (E) in
+/-- The setoid of formal differences. -/
+def vSetoid : Setoid (Cone E × Cone E) :=
+  ⟨vRel, fun _ => rfl, fun h => h.symm, fun h1 h2 => vRel_trans h1 h2⟩
+
+variable (E) in
+/-- The **representing vector space**: formal differences of cone elements. -/
+def Vec : Type u := Quotient (vSetoid E)
+
+/-- The class of `p - q`. -/
+def Vec.mk (p q : Cone E) : Vec E := Quotient.mk (vSetoid E) (p, q)
+
+theorem Vec.mk_eq {p q p' q' : Cone E} :
+    Vec.mk p q = Vec.mk p' q' ↔ p + q' = p' + q :=
+  Quotient.eq (r := vSetoid E)
+
+theorem Vec.ind {motive : Vec E → Prop} (h : ∀ p q : Cone E, motive (Vec.mk p q))
+    (x : Vec E) : motive x :=
+  Quotient.ind (fun p => h p.1 p.2) x
+
+noncomputable instance : Add (Vec E) where
+  add := Quotient.lift₂ (fun x y => Vec.mk (x.1 + y.1) (x.2 + y.2))
+    (by
+      rintro ⟨p, q⟩ ⟨p', q'⟩ ⟨r, t⟩ ⟨r', t'⟩ h1 h2
+      refine Quotient.sound ?_
+      show p + p' + (t + t') = r + r' + (q + q')
+      calc p + p' + (t + t') = (p + t) + (p' + t') := by abel
+        _ = (r + q) + (r' + q') := by rw [show p + t = r + q from h1,
+              show p' + t' = r' + q' from h2]
+        _ = r + r' + (q + q') := by abel)
+
+theorem Vec.mk_add (p q p' q' : Cone E) :
+    Vec.mk p q + Vec.mk p' q' = Vec.mk (p + p') (q + q') := rfl
+
+noncomputable instance : Neg (Vec E) where
+  neg := Quotient.lift (fun x => Vec.mk x.2 x.1)
+    (by
+      rintro ⟨p, q⟩ ⟨p', q'⟩ h
+      refine Quotient.sound ?_
+      show q + p' = q' + p
+      have : p + q' = p' + q := h
+      rw [add_comm q p', ← this, add_comm])
+
+theorem Vec.mk_neg (p q : Cone E) : -Vec.mk p q = Vec.mk q p := rfl
+
+noncomputable instance : Zero (Vec E) := ⟨Vec.mk 0 0⟩
+
+theorem Vec.zero_def : (0 : Vec E) = Vec.mk 0 0 := rfl
+
+noncomputable instance : AddCommGroup (Vec E) where
+  add_assoc := by
+    refine Vec.ind (fun p q => Vec.ind (fun p' q' => Vec.ind (fun p'' q'' => ?_)))
+    rw [Vec.mk_add, Vec.mk_add, Vec.mk_add, Vec.mk_add, add_assoc, add_assoc]
+  zero_add := by
+    refine Vec.ind (fun p q => ?_)
+    rw [Vec.zero_def, Vec.mk_add, zero_add, zero_add]
+  add_zero := by
+    refine Vec.ind (fun p q => ?_)
+    rw [Vec.zero_def, Vec.mk_add, add_zero, add_zero]
+  add_comm := by
+    refine Vec.ind (fun p q => Vec.ind (fun p' q' => ?_))
+    rw [Vec.mk_add, Vec.mk_add, add_comm p p', add_comm q q']
+  neg_add_cancel := by
+    refine Vec.ind (fun p q => ?_)
+    rw [Vec.mk_neg, Vec.mk_add, Vec.zero_def, Vec.mk_eq]
+    abel
+  nsmul := nsmulRec
+  nsmul_zero := fun _ => rfl
+  nsmul_succ := fun _ _ => rfl
+  zsmul := zsmulRec
+  zsmul_zero' := fun _ => rfl
+  zsmul_succ' := fun _ _ => rfl
+  zsmul_neg' := fun _ _ => rfl
+
+/-! ### `Vec E` is a real vector space -/
+
+noncomputable instance : SMul ℝ≥0 (Vec E) where
+  smul t := Quotient.lift (fun x : Cone E × Cone E => Vec.mk (t • x.1) (t • x.2))
+    (by
+      rintro ⟨p, q⟩ ⟨p', q'⟩ h
+      refine Quotient.sound ?_
+      show t • p + t • q' = t • p' + t • q
+      rw [← Cone.smul_add, ← Cone.smul_add, show p + q' = p' + q from h])
+
+theorem Vec.nnsmul_mk (t : ℝ≥0) (p q : Cone E) :
+    t • Vec.mk p q = Vec.mk (t • p) (t • q) := rfl
+
+theorem Vec.nnsmul_add (t : ℝ≥0) (x y : Vec E) : t • (x + y) = t • x + t • y := by
+  induction x using Vec.ind with
+  | _ p q =>
+  induction y using Vec.ind with
+  | _ p' q' =>
+    rw [Vec.mk_add, Vec.nnsmul_mk, Vec.nnsmul_mk, Vec.nnsmul_mk, Vec.mk_add,
+      Cone.smul_add, Cone.smul_add]
+
+theorem Vec.add_nnsmul (t t' : ℝ≥0) (x : Vec E) : (t + t') • x = t • x + t' • x := by
+  induction x using Vec.ind with
+  | _ p q =>
+    rw [Vec.nnsmul_mk, Vec.nnsmul_mk, Vec.nnsmul_mk, Vec.mk_add, Cone.add_smul,
+      Cone.add_smul]
+
+theorem Vec.nnsmul_nnsmul (t t' : ℝ≥0) (x : Vec E) : (t * t') • x = t • t' • x := by
+  induction x using Vec.ind with
+  | _ p q =>
+    rw [Vec.nnsmul_mk, Vec.nnsmul_mk, Vec.nnsmul_mk, Cone.mul_smul, Cone.mul_smul]
+
+theorem Vec.one_nnsmul (x : Vec E) : (1 : ℝ≥0) • x = x := by
+  induction x using Vec.ind with
+  | _ p q => rw [Vec.nnsmul_mk, Cone.one_smul, Cone.one_smul]
+
+theorem Vec.zero_nnsmul (x : Vec E) : (0 : ℝ≥0) • x = 0 := by
+  induction x using Vec.ind with
+  | _ p q => rw [Vec.nnsmul_mk, Cone.zero_smul, Cone.zero_smul, Vec.zero_def]
+
+theorem Vec.nnsmul_zero (t : ℝ≥0) : t • (0 : Vec E) = 0 := by
+  rw [Vec.zero_def, Vec.nnsmul_mk, Cone.smul_zero]
+
+theorem Vec.nnsmul_neg (t : ℝ≥0) (x : Vec E) : t • (-x) = -(t • x) := by
+  induction x using Vec.ind with
+  | _ p q => rw [Vec.mk_neg, Vec.nnsmul_mk, Vec.nnsmul_mk, Vec.mk_neg]
+
+theorem Vec.nnsmul_sub (t : ℝ≥0) (x y : Vec E) : t • (x - y) = t • x - t • y := by
+  rw [sub_eq_add_neg, sub_eq_add_neg, Vec.nnsmul_add, Vec.nnsmul_neg]
+
+/-- The positive and negative parts of a real, as nonnegative scalars. -/
+theorem toNNReal_key_add (t s : ℝ) :
+    Real.toNNReal (t + s) + Real.toNNReal (-t) + Real.toNNReal (-s)
+      = Real.toNNReal (-(t + s)) + Real.toNNReal t + Real.toNNReal s := by
+  have hmax : ∀ x : ℝ, max x 0 = (x + |x|) / 2 := by
+    intro x
+    rcases le_total 0 x with hx | hx
+    · rw [max_eq_left hx, abs_of_nonneg hx]; ring
+    · rw [max_eq_right hx, abs_of_nonpos hx]; ring
+  refine NNReal.coe_injective ?_
+  push_cast
+  simp only [Real.coe_toNNReal', hmax, abs_neg]
+  ring
+
+theorem toNNReal_key_mul (t s : ℝ) :
+    Real.toNNReal (t * s) + Real.toNNReal t * Real.toNNReal (-s)
+        + Real.toNNReal (-t) * Real.toNNReal s
+      = Real.toNNReal (-(t * s)) + Real.toNNReal t * Real.toNNReal s
+        + Real.toNNReal (-t) * Real.toNNReal (-s) := by
+  have hmax : ∀ x : ℝ, max x 0 = (x + |x|) / 2 := by
+    intro x
+    rcases le_total 0 x with hx | hx
+    · rw [max_eq_left hx, abs_of_nonneg hx]; ring
+    · rw [max_eq_right hx, abs_of_nonpos hx]; ring
+  refine NNReal.coe_injective ?_
+  push_cast
+  simp only [Real.coe_toNNReal', hmax, abs_neg, abs_mul]
+  ring
+
+noncomputable instance : SMul ℝ (Vec E) where
+  smul t x := Real.toNNReal t • x - Real.toNNReal (-t) • x
+
+theorem Vec.rsmul_def (t : ℝ) (x : Vec E) :
+    t • x = Real.toNNReal t • x - Real.toNNReal (-t) • x := rfl
+
+theorem Vec.rsmul_nonneg {t : ℝ} (ht : 0 ≤ t) (x : Vec E) :
+    t • x = Real.toNNReal t • x := by
+  have h : Real.toNNReal (-t) = 0 := Real.toNNReal_of_nonpos (by linarith)
+  rw [Vec.rsmul_def, h, Vec.zero_nnsmul, sub_zero]
+
+noncomputable instance : Module ℝ (Vec E) where
+  one_smul x := by
+    rw [Vec.rsmul_nonneg zero_le_one, Real.toNNReal_one, Vec.one_nnsmul]
+  mul_smul t s x := by
+    have key : (Real.toNNReal (t * s) + Real.toNNReal t * Real.toNNReal (-s)
+          + Real.toNNReal (-t) * Real.toNNReal s) • x
+        = (Real.toNNReal (-(t * s)) + Real.toNNReal t * Real.toNNReal s
+          + Real.toNNReal (-t) * Real.toNNReal (-s)) • x :=
+      congrArg (fun c : ℝ≥0 => c • x) (toNNReal_key_mul t s)
+    rw [Vec.add_nnsmul, Vec.add_nnsmul, Vec.add_nnsmul, Vec.add_nnsmul,
+      Vec.nnsmul_nnsmul, Vec.nnsmul_nnsmul, Vec.nnsmul_nnsmul, Vec.nnsmul_nnsmul] at key
+    show Real.toNNReal (t * s) • x - Real.toNNReal (-(t * s)) • x
+      = Real.toNNReal t • (Real.toNNReal s • x - Real.toNNReal (-s) • x)
+        - Real.toNNReal (-t) • (Real.toNNReal s • x - Real.toNNReal (-s) • x)
+    rw [Vec.nnsmul_sub, Vec.nnsmul_sub]
+    refine eq_of_sub_eq_zero ?_
+    rw [show Real.toNNReal (t * s) • x - Real.toNNReal (-(t * s)) • x
+        - (Real.toNNReal t • Real.toNNReal s • x - Real.toNNReal t • Real.toNNReal (-s) • x
+          - (Real.toNNReal (-t) • Real.toNNReal s • x
+            - Real.toNNReal (-t) • Real.toNNReal (-s) • x))
+      = (Real.toNNReal (t * s) • x + Real.toNNReal t • Real.toNNReal (-s) • x
+          + Real.toNNReal (-t) • Real.toNNReal s • x)
+        - (Real.toNNReal (-(t * s)) • x + Real.toNNReal t • Real.toNNReal s • x
+          + Real.toNNReal (-t) • Real.toNNReal (-s) • x) from by abel, key, sub_self]
+  smul_zero t := by
+    rw [Vec.rsmul_def, Vec.nnsmul_zero, Vec.nnsmul_zero, sub_zero]
+  smul_add t x y := by
+    rw [Vec.rsmul_def, Vec.rsmul_def, Vec.rsmul_def, Vec.nnsmul_add, Vec.nnsmul_add]
+    abel
+  add_smul t s x := by
+    have key : (Real.toNNReal (t + s) + Real.toNNReal (-t) + Real.toNNReal (-s)) • x
+        = (Real.toNNReal (-(t + s)) + Real.toNNReal t + Real.toNNReal s) • x :=
+      congrArg (fun c : ℝ≥0 => c • x) (toNNReal_key_add t s)
+    rw [Vec.add_nnsmul, Vec.add_nnsmul, Vec.add_nnsmul, Vec.add_nnsmul] at key
+    show Real.toNNReal (t + s) • x - Real.toNNReal (-(t + s)) • x
+      = (Real.toNNReal t • x - Real.toNNReal (-t) • x)
+        + (Real.toNNReal s • x - Real.toNNReal (-s) • x)
+    refine eq_of_sub_eq_zero ?_
+    rw [show Real.toNNReal (t + s) • x - Real.toNNReal (-(t + s)) • x
+        - ((Real.toNNReal t • x - Real.toNNReal (-t) • x)
+          + (Real.toNNReal s • x - Real.toNNReal (-s) • x))
+      = (Real.toNNReal (t + s) • x + Real.toNNReal (-t) • x + Real.toNNReal (-s) • x)
+        - (Real.toNNReal (-(t + s)) • x + Real.toNNReal t • x + Real.toNNReal s • x)
+      from by abel, key, sub_self]
+  zero_smul x := by
+    rw [Vec.rsmul_nonneg le_rfl, Real.toNNReal_zero, Vec.zero_nnsmul]
+
+/-! ### The order -/
+
+/-- The image of the cone in `Vec E`. -/
+noncomputable def Vec.pos (p : Cone E) : Vec E := Vec.mk p 0
+
+theorem Vec.pos_add (p q : Cone E) : Vec.pos (p + q) = Vec.pos p + Vec.pos q := by
+  rw [Vec.pos, Vec.pos, Vec.pos, Vec.mk_add, add_zero]
+
+theorem Vec.pos_zero : Vec.pos (0 : Cone E) = 0 := rfl
+
+theorem Vec.pos_inj {p q : Cone E} : Vec.pos p = Vec.pos q ↔ p = q := by
+  rw [Vec.pos, Vec.pos, Vec.mk_eq, add_zero, add_zero]
+
+theorem Vec.pos_nnsmul (t : ℝ≥0) (p : Cone E) : t • Vec.pos p = Vec.pos (t • p) := by
+  rw [Vec.pos, Vec.pos, Vec.nnsmul_mk, Cone.smul_zero]
+
+theorem Vec.pos_rsmul {t : ℝ} (ht : 0 ≤ t) (p : Cone E) :
+    t • Vec.pos p = Vec.pos (Real.toNNReal t • p) := by
+  rw [Vec.rsmul_nonneg ht, Vec.pos_nnsmul]
+
+theorem Vec.mk_eq_sub (p q : Cone E) : Vec.mk p q = Vec.pos p - Vec.pos q := by
+  rw [sub_eq_add_neg, Vec.pos, Vec.pos, Vec.mk_neg, Vec.mk_add, zero_add, add_zero]
+
+noncomputable instance : PartialOrder (Vec E) where
+  le x y := ∃ p : Cone E, y = x + Vec.pos p
+  le_refl x := ⟨0, by rw [Vec.pos_zero, add_zero]⟩
+  le_trans x y z := by
+    rintro ⟨p, rfl⟩ ⟨q, rfl⟩
+    exact ⟨p + q, by rw [Vec.pos_add, add_assoc]⟩
+  le_antisymm x y := by
+    rintro ⟨p, rfl⟩ ⟨q, hq⟩
+    rw [add_assoc, ← Vec.pos_add] at hq
+    have h0 : Vec.pos (p + q) = 0 :=
+      add_left_cancel (a := x) (by rw [add_zero]; exact hq.symm)
+    rw [← Vec.pos_zero, Vec.pos_inj] at h0
+    rw [Cone.eq_zero_of_add_eq_zero h0, Vec.pos_zero, add_zero]
+
+theorem Vec.le_def {x y : Vec E} : x ≤ y ↔ ∃ p : Cone E, y = x + Vec.pos p := Iff.rfl
+
+theorem Vec.zero_le_pos (p : Cone E) : 0 ≤ Vec.pos p := ⟨p, by rw [zero_add]⟩
+
+theorem Vec.exists_of_zero_le {x : Vec E} (h : 0 ≤ x) : ∃ p : Cone E, x = Vec.pos p := by
+  obtain ⟨p, hp⟩ := h
+  exact ⟨p, by rw [hp, zero_add]⟩
+
+noncomputable instance : IsOrderedAddMonoid (Vec E) where
+  add_le_add_left := by
+    rintro x y ⟨p, rfl⟩ z
+    exact ⟨p, by abel⟩
+  add_le_add_right := by
+    rintro x y ⟨p, rfl⟩ z
+    exact ⟨p, by abel⟩
+
+noncomputable instance : PosSMulMono ℝ (Vec E) where
+  smul_le_smul_of_nonneg_left := by
+    rintro c hc x y ⟨p, rfl⟩
+    refine ⟨Real.toNNReal c • p, ?_⟩
+    rw [smul_add, Vec.pos_rsmul hc]
+
+noncomputable instance : SMulPosMono ℝ (Vec E) where
+  smul_le_smul_of_nonneg_right := by
+    rintro x hx c d hcd
+    obtain ⟨p, rfl⟩ := Vec.exists_of_zero_le hx
+    refine ⟨Real.toNNReal (d - c) • p, ?_⟩
+    rw [← Vec.pos_rsmul (show (0:ℝ) ≤ d - c by linarith) p, ← add_smul,
+      show c + (d - c) = d by ring]
+
+end Vec
+
+/-! ### The representation -/
+
+section Repr
+
+variable {E : Type u} [EffectAlgebra E] [EffectModule I E]
+
+theorem Cone.exists_mk (p : Cone E) : ∃ (r : ℝ≥0) (a : E), p = Cone.mk r a := by
+  induction p using Cone.ind with
+  | _ r a => exact ⟨r, a, rfl⟩
+
+/-- The embedding of `E` into its representing vector space, `a ↦ 1 · a`. -/
+noncomputable def gmap (a : E) : Vec E := Vec.pos (Cone.mk 1 a)
+
+/-- The order unit of the representing vector space. -/
+noncomputable def gunit : Vec E := gmap (1 : E)
+
+theorem gmap_ovee {a b : E} (h : Perp a b) : gmap (ovee a b h) = gmap a + gmap b := by
+  rw [gmap, gmap, gmap, ← Vec.pos_add, Cone.add_same h]
+
+theorem gmap_zero : gmap (0 : E) = 0 := by rw [gmap, Cone.mk_zero, Vec.pos_zero]
+
+theorem gmap_injective : Function.Injective (gmap : E → Vec E) := by
+  intro a b h
+  rwa [gmap, gmap, Vec.pos_inj, Cone.mk_inj one_ne_zero] at h
+
+theorem gmap_smul (l : I) (a : E) : gmap (l • a) = (l : ℝ) • gmap a := by
+  have hl0 : (0 : ℝ) ≤ (l : ℝ) := l.2.1
+  have hle : Real.toNNReal (l : ℝ) ≤ 1 := by
+    rw [← NNReal.coe_le_coe, Real.coe_toNNReal _ hl0, NNReal.coe_one]
+    exact l.2.2
+  rw [gmap, gmap, Vec.pos_rsmul hl0, Cone.smul_mk, mul_one]
+  refine congrArg Vec.pos ?_
+  rw [Cone.eq_iff (le_refl (1 : ℝ≥0)) hle, frac_self one_ne_zero, EffectModule.one_smul,
+    frac_one, Iv_congr (Real.coe_toNNReal _ hl0), Iv_self]
+
+theorem gmap_nonneg (a : E) : 0 ≤ gmap a := Vec.zero_le_pos _
+
+theorem gmap_le_gunit (a : E) : gmap a ≤ (gunit : Vec E) := by
+  refine ⟨Cone.mk 1 (orth a), ?_⟩
+  rw [gunit, ← EffectAlgebra.ovee_orth a, gmap_ovee (EffectAlgebra.perp_orth a)]
+  rfl
+
+theorem cone_mk_add_orth (r : ℝ≥0) (a : E) :
+    Cone.mk r a + Cone.mk r (orth a) = Cone.mk r (1 : E) := by
+  rw [Cone.add_same (EffectAlgebra.perp_orth a), EffectAlgebra.ovee_orth]
+
+theorem cone_mk_one_add (r s : ℝ≥0) :
+    Cone.mk r (1 : E) + Cone.mk s 1 = Cone.mk (r + s) 1 := by
+  have hp : Perp (frac r (r + s) • (1 : E)) (frac s (r + s) • (1 : E)) :=
+    smul_perp_smul' (frac_perp (le_refl _)) 1 1
+  rw [Cone.add_eq (le_refl (r + s)) hp, ovee_frac_one (le_refl (r + s)) hp]
+  rcases eq_or_ne (r + s) 0 with hN | hN
+  · exact Cone.mk_eq_of_scale_zero hN _ _
+  · rw [frac_self hN, EffectModule.one_smul]
+
+theorem nsmul_gunit (n : ℕ) :
+    n • (gunit : Vec E) = Vec.pos (Cone.mk (n : ℝ≥0) 1) := by
+  induction n with
+  | zero => rw [zero_smul, Nat.cast_zero, Cone.mk_zero_scale, Vec.pos_zero]
+  | succ n ih =>
+    rw [succ_nsmul, ih, gunit, gmap, ← Vec.pos_add, cone_mk_one_add,
+      show ((n : ℝ≥0) + 1) = ((n + 1 : ℕ) : ℝ≥0) by push_cast; ring]
+
+theorem isOrderUnit_gunit : IsOrderUnit (gunit : Vec E) := by
+  intro x
+  induction x using Vec.ind with
+  | _ p q =>
+    obtain ⟨r, a, rfl⟩ := Cone.exists_mk p
+    obtain ⟨n, hn⟩ := exists_nat_ge (r : ℝ)
+    have hrn : r ≤ (n : ℝ≥0) := by
+      rw [← NNReal.coe_le_coe]
+      simpa using hn
+    refine ⟨n, ?_⟩
+    rw [nsmul_gunit]
+    refine le_trans (b := Vec.pos (Cone.mk r a)) ⟨q, ?_⟩ ⟨Cone.mk r (orth a)
+      + Cone.mk ((n : ℝ≥0) - r) 1, ?_⟩
+    · rw [Vec.pos, Vec.pos, Vec.mk_add, Vec.mk_eq, add_zero, add_zero]
+    · rw [← Vec.pos_add, ← add_assoc, cone_mk_add_orth, cone_mk_one_add,
+        add_tsub_cancel_of_le hrn]
+
+theorem gmap_surjective_Icc {x : Vec E} (hx : x ∈ Set.Icc (0 : Vec E) gunit) :
+    ∃ a : E, gmap a = x := by
+  obtain ⟨hx0, hxu⟩ := hx
+  obtain ⟨p, rfl⟩ := Vec.exists_of_zero_le hx0
+  obtain ⟨q, hq⟩ := hxu
+  rw [← Vec.pos_add] at hq
+  have hpq : Cone.mk (1 : ℝ≥0) (1 : E) = p + q := Vec.pos_inj.mp hq
+  obtain ⟨r, a, rfl⟩ := Cone.exists_mk p
+  obtain ⟨s, b, rfl⟩ := Cone.exists_mk q
+  have hrs : r + s ≤ max (r + s) 1 := le_max_left _ _
+  have h1N : (1 : ℝ≥0) ≤ max (r + s) 1 := le_max_right _ _
+  have hN0 : max (r + s) 1 ≠ 0 := fun hc => by
+    rw [hc] at h1N; exact one_ne_zero (le_antisymm h1N zero_le)
+  have hp : Perp (frac r (max (r + s) 1) • a) (frac s (max (r + s) 1) • b) :=
+    smul_perp_smul' (frac_perp hrs) a b
+  rw [Cone.add_eq hrs hp, Cone.mk_rescale h1N (1 : E), Cone.mk_inj hN0] at hpq
+  obtain ⟨e, he⟩ := exists_smul_eq (frac_ne_zero one_ne_zero h1N)
+    (⟨frac s (max (r + s) 1) • b, hp, hpq.symm⟩ :
+      frac r (max (r + s) 1) • a ≼ frac 1 (max (r + s) 1) • (1 : E))
+  refine ⟨e, ?_⟩
+  rw [gmap]
+  refine congrArg Vec.pos ?_
+  rw [Cone.eq_iff h1N (le_trans le_self_add hrs)]
+  exact he
+
+end Repr
+
+end GP
+
+/-- **179III.2** (eff.tex:731, Examples): *representation theorem*
+(Gudder-Pulmannova): every effect module over `[0,1]` — equivalently, every
+*convex effect algebra* — is isomorphic to the order interval `[0,u]` of an
+ordered real vector space `V` with order unit `u`, by a bijection preserving
+the partial sum and the scalar multiplication.
+
+eff.tex:739 asserts this by *citation only* ("In fact, every effect module
+over `[0,1]` is of this form `\cite{gudder1998representation}`"): there is no
+printed argument to transcribe, so **the proof below is ours** — the explicit
+cone-and-differences construction of the `GP` section above.
+
+The statement is the one the author ruled on **2026-09-04**, option (a) of
+`docs/DECISIONS.md` §1.5.  Against the version that stood until then it gains
+exactly what the ruling asks for: the produced `V` carries `[PosSMulMono ℝ V]`
+and `[SMulPosMono ℝ V]` — the scalar half of "ordered real vector space", the
+same two assumptions the converse half `orderIntervalEffectModule` above
+makes — and `u` is an `IsOrderUnit`, not merely positive.  (`0 ≤ u` is kept
+beside it: it follows from the order-unit condition in a real vector space, but
+stating it costs nothing and keeps the statement visibly stronger than the old
+one.) -/
 theorem effectModule_unitInterval_representation (E : Type u) [EffectAlgebra E]
     [EffectModule I E] :
     ∃ (V : Type u) (_ : AddCommGroup V) (_ : Module ℝ V) (_ : PartialOrder V)
-      (_ : IsOrderedAddMonoid V) (u : V) (_ : 0 ≤ u)
-      (f : E → Set.Icc (0 : V) u),
+      (_ : IsOrderedAddMonoid V) (_ : PosSMulMono ℝ V) (_ : SMulPosMono ℝ V)
+      (u : V) (_ : IsOrderUnit u) (_ : 0 ≤ u) (f : E → Set.Icc (0 : V) u),
         Function.Bijective f ∧
         (∀ (a b : E) (h : Perp a b), (f (ovee a b h) : V) = (f a : V) + (f b : V)) ∧
-        (∀ (r : I) (a : E), (f (r • a) : V) = (r : ℝ) • (f a : V)) := sorry
+        (∀ (r : I) (a : E), (f (r • a) : V) = (r : ℝ) • (f a : V)) :=
+  ⟨GP.Vec E, inferInstance, inferInstance, inferInstance, inferInstance, inferInstance,
+    inferInstance, GP.gunit, GP.isOrderUnit_gunit, GP.gmap_nonneg 1,
+    fun a => ⟨GP.gmap a, GP.gmap_nonneg a, GP.gmap_le_gunit a⟩,
+    ⟨fun _ _ h => GP.gmap_injective (congrArg Subtype.val h),
+      fun y => (GP.gmap_surjective_Icc y.2).imp (fun _ h => Subtype.ext h)⟩,
+    fun _ _ h => GP.gmap_ovee h,
+    fun r a => GP.gmap_smul r a⟩
 
 end Theses.B.Eff
