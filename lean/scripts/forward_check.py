@@ -74,6 +74,7 @@ def declarations():
             if m:
                 disp = m.group(1); key = fc.decode(disp)
                 j = i
+                while j < len(lines) and '-/' not in lines[j]: j += 1   # skip the doc comment itself
                 while j < len(lines) and not DECL.match(lines[j]): j += 1
                 if j < len(lines) and key:
                     name = DECL.match(lines[j]).group(1)
