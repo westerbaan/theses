@@ -54,18 +54,31 @@ variable {𝒜 : Type*} [CommCStarAlgebra 𝒜]
 
 /-- **27IV** (`gelfand-representation-basic`, cstar.tex:3945, Exercise),
 part 1: the evaluation map `f ↦ f(a)` on `spec(𝒜)` is continuous for every
-`a ∈ 𝒜`. -/
+`a ∈ 𝒜`.
+
+*Class 1 — faithful.*  The solution says continuity is "a direct result of
+putting the topology of pointwise convergence on `spec(𝒜)`": here that is
+`WeakDual.eval_continuous a` (evaluation is continuous for the weak-∗
+topology), composed with the inclusion of the character space carrying the
+induced topology. -/
 theorem gelfand_representation_basic_1 (a : 𝒜) :
     Continuous fun φ : characterSpace ℂ 𝒜 => φ a :=
-  (gelfandTransform ℂ 𝒜 a).continuous
+  (WeakDual.eval_continuous a).comp continuous_induced_dom
 
 /-- **27IV** (`gelfand-representation-basic`, cstar.tex:3945, Exercise),
 part 2: the Gelfand representation is an miu-map; multiplicativity and
 unitality are part of the bundled `gelfandTransform`, so involution
-preservation remains. -/
+preservation remains.
+
+*Class 1 — faithful.*  The solution's reason is that `γ` preserves each
+operation "essentially because each `f ∈ spec(𝒜)` preserves" it; the
+involution clause is exactly that, evaluated character by character:
+`γ(a*)(φ) = φ(a*) = φ(a)* = γ(a)*(φ)` for every `φ`, i.e. `map_star φ a`. -/
 theorem gelfand_representation_basic_2 (a : 𝒜) :
-    gelfandTransform ℂ 𝒜 (star a) = star (gelfandTransform ℂ 𝒜 a) :=
-  gelfandTransform_map_star a
+    gelfandTransform ℂ 𝒜 (star a) = star (gelfandTransform ℂ 𝒜 a) := by
+  ext φ
+  simp only [ContinuousMap.star_apply]
+  exact map_star φ a
 
 section Order
 
@@ -1910,10 +1923,19 @@ theorem injective_miu_isometry (ρ : 𝒜 →⋆ₐ[ℂ] ℬ)
   NonUnitalStarAlgHom.norm_map ρ hρ a
 
 /-- **29IX** (`injective-miu-iso-on-image`, cstar.tex:4707, Exercise), first
-clause: the range of an injective miu-map `ρ : 𝒜 → ℬ` is closed. -/
+clause: the range of an injective miu-map `ρ : 𝒜 → ℬ` is closed.
+
+*Class 1 — faithful.*  The solution's route: `ρ` is an isometry by **29VIII**
+(`injective_miu_isometry`), so a convergent sequence in `ρ(𝒜)` pulls back to a
+Cauchy sequence in `𝒜`, which converges by completeness, and its image is the
+limit — i.e. an isometric image of a complete space is closed.  Closedness is
+grounded here on **29VIII** exactly as printed, rather than on Mathlib's own
+`NonUnitalStarAlgHom.isometry`. -/
 theorem injective_miu_iso_on_image (ρ : 𝒜 →⋆ₐ[ℂ] ℬ)
-    (hρ : Function.Injective ρ) : IsClosed (Set.range ρ) :=
-  (NonUnitalStarAlgHom.isometry ρ hρ).isClosedEmbedding.isClosed_range
+    (hρ : Function.Injective ρ) : IsClosed (Set.range ρ) := by
+  have hiso : Isometry ρ :=
+    AddMonoidHomClass.isometry_of_norm ρ (injective_miu_isometry ρ hρ)
+  exact hiso.isClosedEmbedding.isClosed_range
 
 /-- **29IX** (`injective-miu-iso-on-image`, cstar.tex:4707, Exercise), the
 conclusion the Exercise asks one to draw: `ρ(𝒜)` is a *C*-subalgebra* of `ℬ`
@@ -2016,19 +2038,44 @@ theorem omega_norm_basic_1 (ω : 𝒜 →ₗ[ℂ] ℂ) (hω : IsPositiveMap ω)
 inequality (in the corrected form of erratum `parsec-300.40`, without the
 `‖ω‖` factor): `‖ab‖_ω ≤ ‖a‖ ‖b‖_ω`, using `a* a ≤ ‖a‖²`.  The four
 counterexamples the exercise also asks for are
-`omega_norm_basic_2_counterexamples` below. -/
+`omega_norm_basic_2_counterexamples` below.
+
+*Class 1 — faithful.*  This is the solution's own estimate: `‖ab‖_ω² =
+ω(b*(a*a)b) ≤ ‖a‖² ω(b*b) = ‖a‖² ‖b‖_ω²`, where `a*a ≤ ‖a‖²·1` (self-adjoint
+`≤ ‖·‖` by the parsec-90 order and the C*-identity) and `b*(·)b` is order
+preserving (**25II**, `star_left_conjugate_le_conjugate`), and `ω` is monotone
+because positive; taking square roots gives the claim. -/
 theorem omega_norm_basic_2 (ω : 𝒜 →ₗ[ℂ] ℂ) (hω : IsPositiveMap ω)
     (a b : 𝒜) :
     omegaSeminorm ω (a * b) ≤ ‖a‖ * omegaSeminorm ω b := by
-  set f := toPLM ω hω with hf
-  have hn : ∀ x : 𝒜, omegaSeminorm ω x = ‖(f.toPreGNS x : f.PreGNS)‖ := fun _ => rfl
-  rw [hn, hn]
-  have heq : (f.toPreGNS (a * b) : f.PreGNS) = f.leftMulMapPreGNS a (f.toPreGNS b) := rfl
-  rw [heq]
-  refine (ContinuousLinearMap.le_opNorm _ _).trans ?_
-  have h2 : ‖f.leftMulMapPreGNS a‖ ≤ ‖a‖ :=
-    LinearMap.mkContinuous_norm_le _ (norm_nonneg a) _
-  exact mul_le_mul_of_nonneg_right h2 (norm_nonneg _)
+  have hmono : ∀ {x y : 𝒜}, x ≤ y → ω x ≤ ω y := by
+    intro x y h
+    have := hω (y - x) (sub_nonneg.mpr h)
+    rw [map_sub] at this
+    exact sub_nonneg.mp this
+  -- `a*a ≤ ‖a‖·‖a‖ • 1` (self-adjoint `≤ ‖·‖` and the C*-identity)
+  have h1 : star a * a ≤ (‖a‖ * ‖a‖) • (1 : 𝒜) := by
+    have h := (IsSelfAdjoint.of_nonneg (star_mul_self_nonneg a)).le_algebraMap_norm_self
+    rwa [CStarRing.norm_star_mul_self, Algebra.algebraMap_eq_smul_one] at h
+  -- conjugate by `b` (25II: `b*(·)b` order preserving)
+  have h2 : star b * (star a * a) * b ≤ (‖a‖ * ‖a‖) • (star b * b) := by
+    have := star_left_conjugate_le_conjugate h1 b
+    rwa [show star b * ((‖a‖ * ‖a‖) • (1 : 𝒜)) * b = (‖a‖ * ‖a‖) • (star b * b) by
+      rw [mul_smul_comm, smul_mul_assoc, mul_one]] at this
+  have hcomm : star (a * b) * (a * b) = star b * (star a * a) * b := by
+    rw [star_mul]; noncomm_ring
+  -- push through the positive `ω` and take real parts
+  have hle : ω (star (a * b) * (a * b)) ≤ (‖a‖ * ‖a‖) • ω (star b * b) := by
+    rw [hcomm]
+    refine (hmono h2).trans_eq ?_
+    rw [LinearMap.map_smul_of_tower]
+  have hre : (ω (star (a * b) * (a * b))).re ≤ (‖a‖ * ‖a‖) * (ω (star b * b)).re := by
+    have := (Complex.le_def.mp hle).1
+    rwa [Complex.smul_re, smul_eq_mul] at this
+  unfold omegaSeminorm
+  rw [show ‖a‖ = Real.sqrt (‖a‖ * ‖a‖) by rw [Real.sqrt_mul_self (norm_nonneg a)],
+    ← Real.sqrt_mul (by positivity)]
+  exact Real.sqrt_le_sqrt hre
 
 /-! The four counterexamples of **30IV**.2, all in `𝒜 = M₂(ℂ)` with the
 p-map `ω : M ↦ M₀₀`, which are the thesis's own witnesses. -/
