@@ -403,7 +403,7 @@ this section's premise was wrong**
 > it**.  It belongs in §6 (genuinely terminal), not here.
 >
 > Two further corrections.  The row's staleness is smaller than claimed below:
-> `nmiu_image` calls 69IVa `nmiu_factors` **once** (`Projections.lean:7044`);
+> `nmiu_image` calls 69IVa `nmiu_factors` **once** (`Projections.lean:7152`);
 > the "three times" counted the whole file, two of them inside
 > `nmiu_factors_maps`.  And the universe obstacle binds **wider** than
 > recorded: `isVNSubalgebra_range` and the three auxiliaries its proof calls
@@ -612,7 +612,7 @@ the same point, which is the 123I shape.
 | 118II | `cceil_tensor` | `A/Proc/Tensor.lean:10177` | 134 | 1/2 |
 | 81IX | `div_usc_ball` | `A/VN/Division.lean:2975` | 114 | 4/5 |
 | 106I | `uniqueness_sequential_product_exists` | `A/Proc/Measurement.lean:9182` | 79 | 1/3 |
-| 4XIII | `positive_2x2matrix_2` | `A/CStar/Basic.lean:284` | 67 | 1/2 |
+| 4XIII | `positive_2x2matrix_2` | `A/CStar/Basic.lean:319` | 67 | 1/2 |
 | 82I | `polar_decomposition_2` | `A/VN/Division.lean:3446` | 55 | 3/4 |
 | 156II | `paschke_injective` | `B/Dils/Paschke.lean:3638` | 48 | 2/3 |
 | 160IV | `hilbmod_projthm_3` | `B/Dils/SelfDual.lean:1499` | 45 | 2/3 |
@@ -1342,7 +1342,7 @@ the filters, all unrowed by `lean_name`):
   corner — a sanity anchor for the definitions", i.e. class 2, a non-vacuity
   check), `isPureMap_of_isFilter` (`Pure.lean:2388` names it beside
   `isPureMap_of_isCorner`, and it is the filter half of **170I**'s "filters and
-  corners are pure"), `vn_effObj_iso` (`VNExamples.lean:9228`, "what the eight
+  corners are pure"), `vn_effObj_iso` (`VNExamples.lean:9264`, "what the eight
   examples downstream actually use is … the *uniqueness* statement
   `vn_effObj_iso`, which is proved" — and again at `:2127`), and
   `modularPair_data` (`StandardSubspace.lean:650`).

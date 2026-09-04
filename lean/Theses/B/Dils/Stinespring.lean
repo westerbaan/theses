@@ -63,15 +63,22 @@ variable {H : Type u} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [Complete
 /-- **135II** (`dils-gns`, dils.tex:15, Theorem (GNS')): for each pu-map
 `ω : 𝒜 → ℂ` from a C*-algebra `𝒜` there is a Hilbert space `ℋ`, an miu-map
 `ϱ : 𝒜 → B(ℋ)` and a vector `x ∈ ℋ` such that `ω = h ∘ ϱ` where
-`h(T) = ⟪x, Tx⟫`. -/
+`h(T) = ⟪x, Tx⟫`.
+
+The thesis prints no proof here: 135I refers the construction to
+`\sref{gns}` in `\cite{bram}`, i.e. to thesis A, cstar.tex **30VI**, and
+**137VIII** notes that GNS is used *inside* the proof of Stinespring rather
+than derived from it.  That is the construction taken below: `ℋ = ℋ_ω`, the
+completion of `𝒜` under `[a,b]_ω = ω(a*b)` (**30V**), `ϱ = ϱ_ω`, and
+`x = η_ω(1)`; the two steps are **30VII** `gns_starAlgHom_apply`
+(`ϱ_ω(a) η_ω(b) = η_ω(ab)`) and the defining inner product of **30VI**
+(`⟪η_ω(1), η_ω(a)⟫ = [1,a]_ω = ω(a)`). -/
 theorem dils_gns (ω : 𝒜 →ₗ[ℂ] ℂ) (hp : IsPositiveMap ω) (hu : ω 1 = 1) :
     ∃ (ℋ : Type u) (_ : NormedAddCommGroup ℋ) (_ : InnerProductSpace ℂ ℋ)
       (_ : CompleteSpace ℋ) (ϱ : MIUMap 𝒜 (ℋ →L[ℂ] ℋ)) (x : ℋ),
       ∀ a : 𝒜, ω a = ⟪x, ϱ a x⟫ := by
-  -- The thesis defers the proof of GNS' to the proof of Stinespring's theorem
-  -- (dils.tex:35, dils.tex:586); the construction for `ℋ = ℂ` is Mathlib's
-  -- `PositiveLinearMap.gnsStarAlgHom`, i.e. the completion of `𝒜` under
-  -- `[a,b] = ω(a* b)`, with cyclic vector the image of `1`.
+  -- `ℋ_ω`, `η_ω` and `ϱ_ω` of **30VI** are Mathlib's `f.GNS`, `f.toPreGNS`
+  -- and `f.gnsStarAlgHom`, as `A/CStar/Representation` reads them.
   set f : 𝒜 →ₚ[ℂ] ℂ :=
     { toLinearMap := ω
       monotone' := fun x y hxy => by
@@ -82,8 +89,12 @@ theorem dils_gns (ω : 𝒜 →ₗ[ℂ] ℂ) (hp : IsPositiveMap ω) (hu : ω 1 
     ((f.toPreGNS 1 : f.PreGNS) : f.GNS), fun a => ?_⟩
   show (ω a : ℂ) = ⟪((f.toPreGNS 1 : f.PreGNS) : f.GNS),
     f.gnsStarAlgHom a ((f.toPreGNS 1 : f.PreGNS) : f.GNS)⟫
-  simp [PositiveLinearMap.gnsStarAlgHom, PositiveLinearMap.gnsNonUnitalStarAlgHom_apply,
-    UniformSpace.Completion.inner_coe, PositiveLinearMap.preGNS_inner_def]
+  -- **30VII**: `ϱ_ω(a) η_ω(b) = η_ω(ab)`, at `b = 1`
+  rw [gns_starAlgHom_apply f a 1, mul_one]
+  -- **30VI**: `⟪η_ω(1), η_ω(a)⟫ = [1,a]_ω = ω(1* a) = ω(a)`
+  rw [UniformSpace.Completion.inner_coe, PositiveLinearMap.preGNS_inner_def]
+  show (ω a : ℂ) = f (star (1 : 𝒜) * a)
+  rw [star_one, one_mul]
   rfl
 
 /-! **135IV** (`stinespring-theorem`, dils.tex:37) — Stinespring's theorem
