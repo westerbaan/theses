@@ -4146,7 +4146,7 @@ theorem exists_isONBasis_of_bddUnComplete [VonNeumannAlgebra 𝒷]
     rwa [← hxeq] at hy
   exact ⟨↥E, fun i => (i : X), horth, hclausea, hclauseb⟩
 
-/-- **149IV** `mod-parseval` in the real form the proof of **149IX** uses
+/-- **149IV** `mod-parseval` (dils.tex:2233) in the real form the proof of **149IX** (dils.tex:2537) uses
 (dils.tex:2537): for an orthonormal basis, `‖x‖_ω² = ∑ᵢ ‖⟨x,eᵢ⟩‖_ω²`, the
 sum being a genuine `HasSum` in `ℝ`.
 

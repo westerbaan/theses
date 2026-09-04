@@ -5588,7 +5588,7 @@ private def cstarMatrixCongr {a b : ℕ} (h : a = b) :
   subst h; exact StarAlgEquiv.refl (R := ℂ) (A := CStarMatrix (Fin a) (Fin a) ℂ)
 
 /-- **842.40** needs finite-dimensionality only through this: a
-finite-dimensional von Neumann algebra is **hereditarily atomic**, by the
+finite-dimensional C*-algebra is **hereditarily atomic**, by the
 classification **84II** `fdcstar` of finite-dimensional C*-algebras as finite
 products of full matrix algebras.  The blocks of dimension `0` are dropped —
 the summands of `HereditarilyAtomic` are `M_{N+1}`, Mathlib's `lp _ ∞`

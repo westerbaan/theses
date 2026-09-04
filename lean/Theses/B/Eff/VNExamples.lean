@@ -8940,7 +8940,7 @@ theorem cvn_corner_mul {A : Type*} [Ring A] (hcomm : ∀ x y : A, x * y = y * x)
 of the ambient `vN_cpsuᵒᵖ` on `cin X` is `cpred s` for a sharp predicate
 `s` of `CvNᵒᵖ` on `X`.
 
-This is the second half of `cvnsu_orth_sharp` (VNExamples.lean:7770), read
+This is the second half of `cvnsu_orth_sharp` (VNExamples.lean:8863), read
 for an arbitrary sharp `t` instead of `sᗮ`: sharpness is an existential
 over objects *of the subcategory*, so it does not restrict for free.  The
 standard corner of `su_exists_corner t` is commutative, hence an object of

@@ -2333,7 +2333,7 @@ def ejaOpEquiv (X : EJAObj.{u}) :
   left_inv _ := rfl
   right_inv _ := rfl
 
-/-- **190V** (`effexamples`, eff.tex:2191, Examples): the **predicates on a
+/-- **190V** (eff.tex:2191, Examples): the **predicates on a
 Euclidean Jordan algebra `E` correspond to its effects**, the elements
 `0 ≤ a ≤ 1`.
 
@@ -2410,7 +2410,7 @@ def ejaHomTopEquiv (X : EJAObj.{u}) : (X ⟶ ejaTopO.{u}) ≃ (X ⟶ ejaScal.{u}
     show (g ≫ ejaUnitTop.{u}) ≫ ejaTopTo ejaScal.{u} = g
     rw [Category.assoc, ejaTop_inv₁, Category.comp_id]
 
-/-- **190V** (`effexamples`, eff.tex:2194, Examples): the **states of a
+/-- **190V** (eff.tex:2194, Examples): the **states of a
 Euclidean Jordan algebra are exactly what are usually considered states for
 EJAs**: the positive unit-preserving linear functionals. -/
 def eja_stat_state (X : EJAObj.{u}) :
