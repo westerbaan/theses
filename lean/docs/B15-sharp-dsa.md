@@ -43,7 +43,7 @@ the category. What the lemmas give is, for `f = π_i ∘ ϑ ∘ ζ_s`,
 
 by **216VII** `dagger-of-zeta` (`ζ_s^† = π_s`), its dual (`π_s^† = ζ_s`) and
 **216IX** `dagger-of-iso` (`ϑ^† = ϑ⁻¹`) — in the tree `dagger_of_zeta`,
-`dagger_of_compr` and `dagger_of_iso` (`Theses/B/Eff/Dagger.lean:305, 384, 400`).
+`dagger_of_compr` and `dagger_of_iso` (`Theses/B/Eff/Dagger.lean:400, 384, 400`).
 This step of the claim is sound once restated for `†`.
 
 But `f` is ⋄-adjoint to `f^†`, i.e. `f^⋄ = (f^†)_⋄`, so
