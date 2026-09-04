@@ -31171,3 +31171,84 @@ item 2 (`left-ruling`).  Everything else waits on the author.
 Nine `sorry`s, unchanged.  All 55 oleans current (7 rebuilt, the Jordan
 module among them); `AxiomCheck`: 9 are themselves `sorry`, 0 depend on one.
 Dumps and map regenerated; every exact check clean.
+
+## Session 108 — the `mild` column's first dedicated pass, and the last rows that were ours (eight mild workers plus one follow-up; five workers on the Jordan, order-unit and vN-example files; orchestrator on `ERRATA.md`, `scripts/`, the rows)
+
+### 1. The mild pass
+
+All 94 rows with `proof = mild` re-derived under an 800-line bound: put the
+one named shortcut back onto the printed step, or re-cost it with the right
+`left-…` word.  Forty-nine went to `faithful`.  Among the conversions: 56I.40's
+two `ad-normal` suprema, 30X's (1)⇒(3)⇒(2) so that the three 69IX rows are
+faithful, 152XII on the printed `module_CS`/`usconv` chain with the erratum's
+tail bound, 77III's κ into ℂ^Ω with Tychonoff, 84bIII through 67IV.2, 86IX's
+carrier step, 100III through the Example `ad-pure` (the AdPure block moved
+up), 102VII's closing limit with both ERRATA 102VIII corrections, 112X/116VII
+with the printed renormalisation to Ω₁, 118IV in the printed order, 130II's
+connectedness step, 122IV's directed sum, 169VI's transport of the standard
+corner, 169XI.1 on bsols's two cases, 187VI's square as an instance of the
+κ-pullback after all, Goursat's affine-approximation endgame, the square-root
+iteration's polynomials `qₙ`, 15IV's own triangle, 159VIII on 159VI, 166II on
+44III, 156II by the projection-wise equivalence, 149IX's Parseval split.
+Recorded reasons overturned again: "cannot use `onbProj_uwTendsto_one`",
+"the tree has no ultrastrong topology", "the printed sum is unsound for
+infinite I", "no lemma extends onto an incomplete domain", "a standing author
+ruling" that was the errata-filing standard.  The 45 rows that stay `mild`
+each carry `left-encoding` (Mathlib's `0 ≤`, Prop-valued limits), `left-forced`
+(our stronger statement) or `left-thesis` (the thesis's own errata).
+
+| column | session 107 close | now |
+|---|---|---|
+| proof `mild` | 94 | 45 |
+| proof `route` | 34 | 33 |
+| proof `faithful` | 1,107 | 1,185 |
+| rows | 2,621 | 2,676 |
+
+### 2. The last rows that were ours
+
+224VI is on the printed solution end to end: the pure states classified (the
+GNS stage cost 84 lines, not 500–800, because a GNS representation is a
+minimal Stinespring dilation and 140III with 171VII apply), the dagger of
+`vNᵒᵖ` made concrete (215II, 215VIa: `θ† = θ⁻¹`, the dagger of a quotient,
+of a standard filter, of the rank-one filter as the vector state), then stages
+(2)–(5) at 1,023 lines.  221IIIa, `CvNᵒᵖ` has no dilations, 303 lines, with
+the print's unargued step supplied ("a total pure map is an iso after a
+comprehension").  The Jordan file grew from 1,082 to 5,010 lines: the spectral
+theorem for one element (power-associativity from the linearised identity, a
+minimal polynomial split by formal reality, the trace form built and shown
+positive definite), so sums of squares are squares; 190V complete (`EJAᵒᵖ` has
+separating predicates and states and is a real effectus); the Peirce
+compression positive, the cone self-dual, `EJA_psu` with its partial-form
+effectus structure, and three of the four ⋄-obligations.  190IV.1's
+archimedean parenthetical built (857 lines).
+
+What remains ours, all named by content: the quotient obligation for `EJAᵒᵖ`
+(one inequality, `U_b` positive for `b ≥ 0`, ~500 lines); 55III item 2
+(`left-ruling`); the two 215VIa remainders (the general pure map's dagger
+formula, the Hilbert–Schmidt remark).
+
+### 3. Thesis defects found this session
+
+eff.tex 190IV.1's parenthetical (states separate points iff archimedean) is
+false in one direction and refuted in Lean: separation is *almost*
+archimedeanness; archimedean iff the states determine the order is the
+reading under which it holds.  cstar.tex 15IV requires `wn_T(z₀) = −1` where
+the argument needs `+1`.  dils.tex 164V justifies a step by "separating"
+where its definition supplies "faithful".  bsols.tex 224VI's `𝒞 = 0` step is
+vacuous as printed, and its "corner" is only known to be pure (221IIIa).
+With 190IV.2 and 190IV.3, that is seven errata from these two days.
+
+### 4. Operations and bookkeeping
+
+`NormalFunctionals.lean` had not compiled since a public lemma of the same
+name as one of its private ones landed in `Projections.lean`; its stale olean
+hid it, and the closing refresh of that day did not rebuild it because its
+source had not changed.  Renamed.  Two dead sections deleted with their rows
+(`HABlocks`, 342 lines; the 166III estimates; two Measurement helpers).
+`audit_check` now reads `_root_.` and `local instance` declarations.
+
+### 5. Where the tree stands
+
+Nine `sorry`s, unchanged.  All 55 oleans rebuilt after the day's edits;
+`AxiomCheck`: 9 are themselves `sorry`, 0 depend on one.  Dumps and map
+regenerated; every exact check clean.
