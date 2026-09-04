@@ -52,7 +52,7 @@ in §4 rather than in front of you.
 | 1.6 | 106III.3, 116III.4 | two errata to accept | 2 red rows | accept |
 | 2.1 | — | may we match the printed statement without asking? — ruled (a) 2026-09-04, only in a dedicated statement-alignment pass | 54 audit rows | (a) standing authorisation |
 | 2.2 | — | does "no forward references" apply outside `A/CStar`? — ruled (a) 2026-09-04: global and retroactive, out-of-order proofs allowed insofar as the thesis does that itself | 520 audit rows | (b) forward only; label the rest |
-| 2.3 | 191II | what does "equivalent to a subcategory" mean? | 1 audit row | (c) weaken to faithful |
+| 2.3 | 191II | true as printed (non-full); 191VII's image sentence is wrong — see `docs/191II-subcategory.md` | 1 audit row | (c) weaken to faithful |
 | 2.4 | 30X | may clause (1) name `ϱ_Ω`? | 1 audit row | (a) yes |
 | 2.5 | 28II.4 | may the unique element be identified with `f(a)`? | 1 audit row | (a) yes |
 | 2.6 | 51IX | may `q` be asked to be ℂ-linear? — done 2026-09-02 under D1 | 0 audit rows | (a) yes |
@@ -540,7 +540,7 @@ sweeping the other four chapters for provenance is weeks of rework for no new
 mathematics, and the audit already records exactly which proofs are affected, so
 (b) loses nothing that (a) would find.
 
-### 2.3 — 191II: what does "equivalent to a subcategory of `EMod_M^op`" mean?
+### 2.3 — 191II: what does "equivalent to a subcategory of `EMod_M^op`" mean? — **settled 2026-09-04: the Theorem is true as printed; 191VII's last sentence is the defect**
 
 *(`QUESTIONS.md` B16.  Audit row
 `bdils-pure-beff-states-effectalgebras.csv:86`, `left-ruling`.  Lean:
@@ -577,12 +577,7 @@ not control is object identification.
 * **(c)** Conclude only that `Pred` is faithful, i.e. that `C` is concrete over
   `EMod_M^op`, and weaken the Theorem's second sentence to say so.
 
-**Recommendation: (c)**, unless you have fullness in mind.  (c) is exactly what
-the printed proof delivers, and it is what we have: `emod_effectus_representation`
-produces `F : Tot C ⥤ (EMod_{Scal C})^op` with object part `Pred X`, morphism
-part pinned to `p ↦ p ∘ f`, and `F.Faithful` — proved and axiom-clean (verified
-2026-08-26).  Under (a) or (b) the printed proof needs a genuinely new step, and
-the Lean cost is the cost of that step, not of the packaging.
+**Settled on 2026-09-04** (`docs/191II-subcategory.md`): options (b) and (c) are the same statement, and it is **true as printed** under the standard (indefinite/non-full) reading — every effectus with separating predicates and scalars `M` is *isomorphic* to a non-full subcategory of `EMod_M^op`, by tagging each `Pred X`'s carrier by `|Pred X| × {X}` and conjugating `Pred f`.  So there is no gap in 191II; `emod_effectus_representation` (a faithful functor with object part `Pred X`) IS the Theorem, and its audit row becomes `ok`.  What is defective is **191VII's closing sentence**, which identifies `C` with *the image* `Pred C`: the image of a faithful functor need not be a subcategory, and in `vN_cpuᵒᵖ` it is not (`Pred(M₂⊕M₂) = Pred(M₂⊕M₂ᵒᵖ)` as effect modules, so a composite of two image morphisms lands outside the image — Choi matrix `−½`).  Filed as `ERRATA.md` 191VII.  Fullness (option (a)) is not merely unproved but **false** (`Pred : Set → EA^op` is not full: `EA`-homs `P(ℕ) → 2` are ultrafilters, only the principal ones in the image), so it is not a route to strengthening.
 
 **What we do.**  Under (c): one sentence of `eff.tex`, nothing in Lean.  Under
 (a) or (b): the new step first, then the subcategory clause is added to
