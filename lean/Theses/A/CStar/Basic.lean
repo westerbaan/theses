@@ -116,19 +116,51 @@ definite, absolutely homogeneous, and satisfies the triangle inequality.
 instance; we spell them out, as the exercise asks.) -/
 theorem boundedOperators_basic_1 (T T' : 𝒳 →L[ℂ] 𝒴) (c : ℂ) :
     0 ≤ ‖T‖ ∧ (‖T‖ = 0 ↔ T = 0) ∧ ‖c • T‖ = ‖c‖ * ‖T‖ ∧
-      ‖T + T'‖ ≤ ‖T‖ + ‖T'‖ :=
-  ⟨norm_nonneg T, norm_eq_zero, norm_smul c T, norm_add_le T T'⟩
+      ‖T + T'‖ ≤ ‖T‖ + ‖T'‖ := by
+  -- the solution's three observations, each run through "‖·‖ is the *least* bound"
+  have hsmul : ∀ (d : ℂ) (S : 𝒳 →L[ℂ] 𝒴), ‖d • S‖ ≤ ‖d‖ * ‖S‖ := by
+    intro d S
+    refine (d • S).opNorm_le_bound (by positivity) fun x => ?_
+    show ‖d • S x‖ ≤ ‖d‖ * ‖S‖ * ‖x‖
+    rw [norm_smul, mul_assoc]
+    exact mul_le_mul_of_nonneg_left (S.le_opNorm x) (norm_nonneg d)
+  refine ⟨norm_nonneg T, ⟨fun h => ?_, fun h => ?_⟩, ?_, ?_⟩
+  · -- `‖T‖ = 0` makes `0` a bound, so `‖T x‖ ≤ 0`, so `T x = 0` for every `x`
+    ext x
+    have hx : ‖T x‖ ≤ ‖T‖ * ‖x‖ := T.le_opNorm x
+    rw [h, zero_mul] at hx
+    simpa using le_antisymm hx (norm_nonneg _)
+  · subst h
+    refine le_antisymm ((0 : 𝒳 →L[ℂ] 𝒴).opNorm_le_bound le_rfl fun x => by simp) (norm_nonneg _)
+  · -- `r ↦ |c| r` carries bounds of `T` to bounds of `c • T`, and `r ↦ |c|⁻¹ r` back
+    refine le_antisymm (hsmul c T) ?_
+    rcases eq_or_ne c 0 with rfl | hc
+    · simp
+    · have h := hsmul c⁻¹ (c • T)
+      rw [smul_smul, inv_mul_cancel₀ hc, one_smul, norm_inv] at h
+      have h2 := mul_le_mul_of_nonneg_left h (norm_nonneg c)
+      rwa [← mul_assoc, mul_inv_cancel₀ (norm_ne_zero_iff.mpr hc), one_mul] at h2
+  · -- `‖T‖ + ‖T'‖` is a bound for `T + T'`, and `‖T + T'‖` is the least one
+    refine (T + T').opNorm_le_bound (by positivity) fun x => ?_
+    calc ‖(T + T') x‖ ≤ ‖T x‖ + ‖T' x‖ := norm_add_le _ _
+      _ ≤ ‖T‖ * ‖x‖ + ‖T'‖ * ‖x‖ := add_le_add (T.le_opNorm x) (T'.le_opNorm x)
+      _ = (‖T‖ + ‖T'‖) * ‖x‖ := by ring
 
 /-- **4III** (`bounded-operators-basic`, cstar.tex:326, Exercise), part 2:
 `‖S ∘ T‖ ≤ ‖S‖ ‖T‖` for bounded operators `T : 𝒳 → 𝒴`, `S : 𝒴 → 𝒵`. -/
 theorem boundedOperators_basic_2 (S : 𝒴 →L[ℂ] 𝒵) (T : 𝒳 →L[ℂ] 𝒴) :
-    ‖S.comp T‖ ≤ ‖S‖ * ‖T‖ :=
-  ContinuousLinearMap.opNorm_comp_le S T
+    ‖S.comp T‖ ≤ ‖S‖ * ‖T‖ := by
+  -- the solution's estimate: `‖STx‖ ≤ ‖S‖ ‖Tx‖ ≤ ‖S‖ ‖T‖ ‖x‖`, so `‖S‖ ‖T‖` is a bound
+  refine (S.comp T).opNorm_le_bound (by positivity) fun x => ?_
+  calc ‖(S.comp T) x‖ ≤ ‖S‖ * ‖T x‖ := S.le_opNorm (T x)
+    _ ≤ ‖S‖ * (‖T‖ * ‖x‖) := mul_le_mul_of_nonneg_left (T.le_opNorm x) (norm_nonneg S)
+    _ = ‖S‖ * ‖T‖ * ‖x‖ := by ring
 
 /-- **4III** (`bounded-operators-basic`, cstar.tex:326, Exercise), part 3:
 the identity operator is bounded by 1. -/
 theorem boundedOperators_basic_3 : ‖(ContinuousLinearMap.id ℂ 𝒳)‖ ≤ 1 :=
-  ContinuousLinearMap.norm_id_le
+  -- the solution's line: `‖id x‖ ≡ ‖x‖ ≤ 1·‖x‖`, so `1` is a bound
+  (ContinuousLinearMap.id ℂ 𝒳).opNorm_le_bound zero_le_one fun x => by simp
 
 /-- **4IV** (`operator-norm-ball`, cstar.tex:343, Exercise):
 `r ‖T‖ = sup { ‖T x‖ : ‖x‖ ≤ r }` for a bounded operator `T` and
@@ -176,10 +208,94 @@ theorem operatorNorm_ball (T : 𝒳 →L[ℂ] 𝒴) (r : ℝ) (hr : 0 ≤ r) :
       _ = ⨆ x : {x : 𝒳 // ‖x‖ ≤ r}, ‖T x‖ := by field_simp
 
 /-- **4V** (`operator-norm-complete`, cstar.tex:359, Lemma): the operator
-norm on `B(𝒳,𝒴)` is complete when `𝒴` is complete.  (Mathlib instance:
-`ContinuousLinearMap.completeSpace`.) -/
-theorem operatorNorm_complete [CompleteSpace 𝒴] : CompleteSpace (𝒳 →L[ℂ] 𝒴) :=
-  inferInstance
+norm on `B(𝒳,𝒴)` is complete when `𝒴` is complete.  (Mathlib has this as the
+`ContinuousLinearMap.completeSpace` instance; the proof below is the Lemma's
+own Cauchy-sequence argument, point **4VI**.) -/
+theorem operatorNorm_complete [CompleteSpace 𝒴] : CompleteSpace (𝒳 →L[ℂ] 𝒴) := by
+  -- the Lemma's own proof (point 4VI): a Cauchy sequence is pointwise Cauchy,
+  -- the pointwise limit is linear, and the ε/2-estimate makes it bounded and
+  -- the limit in the operator norm
+  refine Metric.complete_of_cauchySeq_tendsto fun T hT => ?_
+  -- `‖Tₙx - Tₘx‖ ≤ ‖Tₙ - Tₘ‖ ‖x‖`, so `(Tₙx)ₙ` is Cauchy, hence convergent
+  have hpt : ∀ x : 𝒳, CauchySeq fun n => T n x := by
+    intro x
+    rw [Metric.cauchySeq_iff]
+    intro ε hε
+    rcases eq_or_lt_of_le (norm_nonneg x) with hx | hx
+    · refine ⟨0, fun m _ n _ => ?_⟩
+      have hx0 : x = 0 := by rw [← norm_eq_zero]; exact hx.symm
+      simp [hx0, hε]
+    · obtain ⟨N, hN⟩ := Metric.cauchySeq_iff.mp hT (ε / ‖x‖) (by positivity)
+      refine ⟨N, fun m hm n hn => ?_⟩
+      have h := hN m hm n hn
+      rw [dist_eq_norm] at h ⊢
+      calc ‖T m x - T n x‖ = ‖(T m - T n) x‖ := rfl
+        _ ≤ ‖T m - T n‖ * ‖x‖ := (T m - T n).le_opNorm x
+        _ < ε / ‖x‖ * ‖x‖ := by exact mul_lt_mul_of_pos_right h hx
+        _ = ε := by field_simp
+  choose S hS using fun x => cauchySeq_tendsto_of_complete (hpt x)
+  -- the pointwise limit is linear, by continuity of addition and scalar multiplication
+  have hadd : ∀ x z : 𝒳, S (x + z) = S x + S z := by
+    intro x z
+    exact tendsto_nhds_unique (hS (x + z))
+      (Filter.Tendsto.congr (fun n => (map_add (T n) x z).symm) ((hS x).add (hS z)))
+  have hsmul : ∀ (c : ℂ) (x : 𝒳), S (c • x) = c • S x := by
+    intro c x
+    exact tendsto_nhds_unique (hS (c • x))
+      (Filter.Tendsto.congr (fun n => ((T n).map_smul c x).symm) ((hS x).const_smul c))
+  set L : 𝒳 →ₗ[ℂ] 𝒴 :=
+    { toFun := S, map_add' := hadd, map_smul' := fun c x => hsmul c x } with hL
+  -- the ε/2-estimate: for `n ≥ N`, `‖(S - Tₙ)x‖ ≤ ε‖x‖` for every `x`
+  have hkey : ∀ ε : ℝ, 0 < ε → ∃ N, ∀ n ≥ N, ∀ x : 𝒳, ‖S x - T n x‖ ≤ ε * ‖x‖ := by
+    intro ε hε
+    obtain ⟨N, hN⟩ := Metric.cauchySeq_iff.mp hT (ε / 2) (by positivity)
+    refine ⟨N, fun n hn x => ?_⟩
+    -- for each `x` pick `m ≥ N` with `‖Sx - Tₘx‖ ≤ (ε/2)‖x‖`
+    have hgoal : ∀ δ : ℝ, 0 < δ → ‖S x - T n x‖ ≤ ε * ‖x‖ + δ := by
+      intro δ hδ
+      obtain ⟨M, hM⟩ := Metric.tendsto_atTop.mp (hS x) δ hδ
+      obtain ⟨m, hmN, hmM⟩ : ∃ m, N ≤ m ∧ M ≤ m := ⟨max N M, le_max_left _ _, le_max_right _ _⟩
+      have h1 : ‖S x - T m x‖ < δ := by
+        have := hM m hmM
+        rwa [dist_eq_norm'] at this
+      have h2 : ‖T m x - T n x‖ ≤ ε / 2 * ‖x‖ := by
+        calc ‖T m x - T n x‖ = ‖(T m - T n) x‖ := rfl
+          _ ≤ ‖T m - T n‖ * ‖x‖ := (T m - T n).le_opNorm x
+          _ ≤ ε / 2 * ‖x‖ := by
+              refine mul_le_mul_of_nonneg_right ?_ (norm_nonneg x)
+              have := hN m hmN n hn
+              rw [dist_eq_norm] at this
+              exact this.le
+      calc ‖S x - T n x‖ ≤ ‖S x - T m x‖ + ‖T m x - T n x‖ := by
+            simpa using norm_sub_le_norm_sub_add_norm_sub (S x) (T m x) (T n x)
+        _ ≤ δ + ε / 2 * ‖x‖ := add_le_add h1.le h2
+        _ ≤ ε * ‖x‖ + δ := by nlinarith [norm_nonneg x, hε.le]
+    exact le_of_forall_pos_le_add fun δ hδ => hgoal δ hδ
+  -- `S` is bounded, so it is a continuous linear map
+  obtain ⟨N₀, hN₀⟩ := hkey 1 one_pos
+  have hbound : ∀ x : 𝒳, ‖L x‖ ≤ (1 + ‖T N₀‖) * ‖x‖ := by
+    intro x
+    have h1 := hN₀ N₀ le_rfl x
+    have h2 : ‖T N₀ x‖ ≤ ‖T N₀‖ * ‖x‖ := (T N₀).le_opNorm x
+    calc ‖L x‖ = ‖S x‖ := rfl
+      _ ≤ ‖S x - T N₀ x‖ + ‖T N₀ x‖ := by simpa using norm_le_norm_sub_add _ _
+      _ ≤ 1 * ‖x‖ + ‖T N₀‖ * ‖x‖ := add_le_add h1 h2
+      _ = (1 + ‖T N₀‖) * ‖x‖ := by ring
+  refine ⟨L.mkContinuous (1 + ‖T N₀‖) hbound, ?_⟩
+  rw [Metric.tendsto_atTop]
+  intro ε hε
+  obtain ⟨N, hN⟩ := hkey (ε / 2) (by positivity)
+  refine ⟨N, fun n hn => ?_⟩
+  rw [dist_eq_norm]
+  have hle : ‖T n - L.mkContinuous (1 + ‖T N₀‖) hbound‖ ≤ ε / 2 := by
+    refine ContinuousLinearMap.opNorm_le_bound _ (by positivity) fun x => ?_
+    have h := hN n hn x
+    calc ‖(T n - L.mkContinuous (1 + ‖T N₀‖) hbound) x‖ = ‖S x - T n x‖ := by
+          rw [← norm_neg]
+          congr 1
+          simp [L]
+      _ ≤ ε / 2 * ‖x‖ := h
+  linarith
 
 /-! **4VII** (`bounded-operators-banach-algebra`, cstar.tex:401): `B(𝒳)` on a
 complete normed vector space `𝒳` satisfies all requirements of a C*-algebra
@@ -221,8 +337,11 @@ def Adjointable (T : H → K) : Prop :=
 /-- **4X** (`uniqueness-adjoint`, cstar.tex:496, Exercise), part 1: vectors
 of a pre-Hilbert space with `⟪y, x⟫ = ⟪y, x'⟫` for all `y` are equal. -/
 theorem uniqueness_adjoint_1 (x x' : H) (h : ∀ y : H, ⟪y, x⟫ = ⟪y, x'⟫) :
-    x = x' :=
-  ext_inner_left ℂ h
+    x = x' := by
+  -- the solution's `y := x - x'`: `‖y‖² = ⟪y,y⟫ = ⟪y,x⟫ - ⟪y,x'⟫ = 0`
+  have hy : (⟪x - x', x - x'⟫ : ℂ) = 0 := by
+    rw [inner_sub_right, h (x - x'), sub_self]
+  exact sub_eq_zero.mp (inner_self_eq_zero.mp hy)
 
 /-- **4X** (`uniqueness-adjoint`, cstar.tex:496, Exercise), part 2: every
 operator between pre-Hilbert spaces has at most one adjoint. -/
@@ -369,8 +488,39 @@ theorem innerNorm_sq_coe (x : V) : ((innerNorm x : ℂ)) ^ 2 = ⟪x, x⟫ := by
 Cauchy–Schwarz inequality `|⟪x,y⟫|² ≤ ⟪x,x⟫ ⟪y,y⟫`. -/
 theorem inner_product_basic_1 (x y : V) :
     ‖(⟪x, y⟫ : ℂ)‖ ^ 2 ≤ RCLike.re (⟪x, x⟫ : ℂ) * RCLike.re (⟪y, y⟫ : ℂ) := by
-  have h := InnerProductSpace.Core.inner_mul_inner_self_le (𝕜 := ℂ) x y
-  rwa [InnerProductSpace.Core.norm_inner_symm (𝕜 := ℂ) y x, ← sq] at h
+  -- the exercise's hint: apply **4XIII** to the positive matrix `[[⟪x,x⟫, ⟪x,y⟫], [⟪y,x⟫, ⟪y,y⟫]]`
+  have hpos : ∀ u v : ℂ,
+      0 ≤ (starRingEnd ℂ) u * ((⟪x, x⟫ : ℂ) * u + (starRingEnd ℂ) (⟪y, x⟫ : ℂ) * v)
+        + (starRingEnd ℂ) v * ((⟪y, x⟫ : ℂ) * u + (⟪y, y⟫ : ℂ) * v) := by
+    intro u v
+    have hexp : (starRingEnd ℂ) u * ((⟪x, x⟫ : ℂ) * u + (starRingEnd ℂ) (⟪y, x⟫ : ℂ) * v)
+        + (starRingEnd ℂ) v * ((⟪y, x⟫ : ℂ) * u + (⟪y, y⟫ : ℂ) * v)
+        = (⟪u • x + v • y, u • x + v • y⟫ : ℂ) := by
+      rw [InnerProductSpace.Core.inner_add_add_self (𝕜 := ℂ)]
+      rw [InnerProductSpace.Core.inner_smul_left (𝕜 := ℂ),
+        InnerProductSpace.Core.inner_smul_right (𝕜 := ℂ),
+        InnerProductSpace.Core.inner_smul_left (𝕜 := ℂ),
+        InnerProductSpace.Core.inner_smul_right (𝕜 := ℂ),
+        InnerProductSpace.Core.inner_smul_left (𝕜 := ℂ),
+        InnerProductSpace.Core.inner_smul_right (𝕜 := ℂ),
+        InnerProductSpace.Core.inner_smul_left (𝕜 := ℂ),
+        InnerProductSpace.Core.inner_smul_right (𝕜 := ℂ),
+        InnerProductSpace.Core.inner_conj_symm (𝕜 := ℂ) x y]
+      ring
+    have hre : (0 : ℝ) ≤ RCLike.re (⟪u • x + v • y, u • x + v • y⟫ : ℂ) :=
+      InnerProductSpace.Core.inner_self_nonneg
+    have heq := InnerProductSpace.Core.inner_self_ofReal_re (𝕜 := ℂ) (u • x + v • y)
+    rw [hexp, ← heq]
+    exact Complex.zero_le_real.mpr hre
+  have hmain := positive_2x2matrix_2 (⟪x, x⟫ : ℂ) (⟪y, y⟫ : ℂ) (⟪y, x⟫ : ℂ) hpos
+  have hp : ((RCLike.re (⟪x, x⟫ : ℂ) : ℝ) : ℂ) = (⟪x, x⟫ : ℂ) :=
+    InnerProductSpace.Core.inner_self_ofReal_re (𝕜 := ℂ) x
+  have hq : ((RCLike.re (⟪y, y⟫ : ℂ) : ℝ) : ℂ) = (⟪y, y⟫ : ℂ) :=
+    InnerProductSpace.Core.inner_self_ofReal_re (𝕜 := ℂ) y
+  have hc : ‖(⟪y, x⟫ : ℂ)‖ = ‖(⟪x, y⟫ : ℂ)‖ :=
+    InnerProductSpace.Core.norm_inner_symm (𝕜 := ℂ) y x
+  rw [hc, ← hp, ← hq, ← Complex.ofReal_pow, ← Complex.ofReal_mul] at hmain
+  exact_mod_cast hmain
 
 /-- **4XV** (`inner-product-basic`, cstar.tex:590, Exercise), main clause:
 `‖x‖ = √⟪x,x⟫` is a seminorm — nonnegative, absolutely homogeneous, and
@@ -477,6 +627,14 @@ private theorem norm_add_sq_of_inner_eq_zero (x y : H) (h : ⟪x, y⟫ = 0) :
     ‖x‖ ^ 2 + ‖y‖ ^ 2 = ‖x + y‖ ^ 2 := by
   rw [norm_add_sq (𝕜 := ℂ) x y, h]
   simp
+
+/-- Auxiliary: the parallelogram law (**4XV**.3) in the definite, normed
+case, where `‖·‖` is the norm of the pre-Hilbert space `H` itself.  As in the
+solution, it is the average of the two expansions of `‖x ± y‖²`. -/
+private theorem norm_add_sq_add_norm_sub_sq (x y : H) :
+    ‖x + y‖ ^ 2 + ‖x - y‖ ^ 2 = 2 * (‖x‖ ^ 2 + ‖y‖ ^ 2) := by
+  rw [norm_add_sq (𝕜 := ℂ) x y, norm_sub_sq (𝕜 := ℂ) x y]
+  ring
 
 /-- Auxiliary: if `A` is adjoint to `B` (as bounded operators on a pre-Hilbert
 space) then `‖A‖ ≤ ‖B‖`.  Used for both parts of **4XVI**. -/
@@ -646,9 +804,25 @@ noncomputable def ketbra (x y : H) : H →L[ℂ] H :=
 
 /-- **4XIX** (`ketbra`, cstar.tex:671, Exercise), part 1: `|x⟩⟨y|` maps `z`
 to `⟪y, z⟫ x` and has operator norm `‖x‖ ‖y‖`. -/
-theorem ketbra_norm (x y : H) : ‖ketbra x y‖ = ‖x‖ * ‖y‖ :=
-  by
-    rw [ketbra, ContinuousLinearMap.norm_smulRight_apply, innerSL_apply_norm, mul_comm]
+theorem ketbra_norm (x y : H) : ‖ketbra x y‖ = ‖x‖ * ‖y‖ := by
+  -- the solution's two-sided estimate
+  have happ : ∀ z : H, ketbra x y z = (⟪y, z⟫ : ℂ) • x := fun z => rfl
+  refine le_antisymm ?_ ?_
+  · -- `‖ |x⟩⟨y| z ‖ = |⟪y,z⟫| ‖x‖ ≤ ‖y‖ ‖z‖ ‖x‖`, so `‖x‖ ‖y‖` is a bound
+    refine (ketbra x y).opNorm_le_bound (by positivity) fun z => ?_
+    rw [happ z, norm_smul]
+    calc ‖(⟪y, z⟫ : ℂ)‖ * ‖x‖ ≤ (‖y‖ * ‖z‖) * ‖x‖ :=
+          mul_le_mul_of_nonneg_right (norm_inner_le_norm y z) (norm_nonneg x)
+      _ = ‖x‖ * ‖y‖ * ‖z‖ := by ring
+  · -- and `‖ |x⟩⟨y| ‖ ‖y‖ ≥ ‖ |x⟩⟨y| y ‖ = ‖y‖² ‖x‖`, even when `‖y‖ = 0`
+    have hle : ‖ketbra x y y‖ ≤ ‖ketbra x y‖ * ‖y‖ := (ketbra x y).le_opNorm y
+    have hyy : ‖(⟪y, y⟫ : ℂ)‖ = ‖y‖ ^ 2 := by
+      simp [inner_self_eq_norm_sq_to_K, norm_pow]
+    rw [happ y, norm_smul, hyy] at hle
+    rcases eq_or_lt_of_le (norm_nonneg y) with hy | hy
+    · rw [← hy]
+      simp
+    · nlinarith [norm_nonneg x, norm_nonneg (ketbra x y)]
 
 /-- **4XIX** (`ketbra`, cstar.tex:671, Exercise), part 2: `|x⟩⟨y|` is
 adjointable, with `(|x⟩⟨y|)* = |y⟩⟨x|`. -/
@@ -962,21 +1136,94 @@ theorem hilb_projection_basic_4 (C : Submodule ℂ H) (x y : H)
 
 /-- **5VII** (`projection-theorem`, cstar.tex:766, Projection Theorem): every
 vector `x` of a Hilbert space has a unique projection `y` on a closed linear
-subspace `C`.  (Mathlib: `Submodule.orthogonalProjection`.) -/
+subspace `C`.  (Mathlib packages the projection as
+`Submodule.orthogonalProjection`; the proof below is the Theorem's own.) -/
 theorem projection_theorem [CompleteSpace H] (C : Submodule ℂ H)
     (hC : IsClosed (C : Set H)) (x : H) :
-    ∃! y, IsProjectionOn C x y :=
-  by
-    obtain ⟨v, hvC, hv⟩ := Submodule.exists_norm_eq_iInf_of_complete_subspace C hC.isComplete x
-    have hbdd : BddBelow (Set.range fun w : C => ‖x - (w : H)‖) := by
-      refine ⟨0, ?_⟩
-      rintro r ⟨w, rfl⟩
-      exact norm_nonneg _
-    have hproj : IsProjectionOn C x v := by
-      refine ⟨hvC, fun y' hy' => ?_⟩
-      rw [hv]
-      exact ciInf_le hbdd (⟨y', hy'⟩ : C)
-    exact ⟨v, hproj, fun z hz => (hilb_projection_basic_2 C x v z hproj hz).1⟩
+    ∃! y, IsProjectionOn C x y := by
+  -- the Theorem's own proof: a minimising sequence is Cauchy by the
+  -- parallelogram law (**4XV**.3), its limit lies in the closed `C`, and
+  -- uniqueness comes from **5VI**.2
+  have hne : Nonempty C := ⟨⟨0, C.zero_mem⟩⟩
+  have hbdd : BddBelow (Set.range fun y' : C => ‖x - (y' : H)‖) := by
+    refine ⟨0, ?_⟩
+    rintro _ ⟨w, rfl⟩
+    exact norm_nonneg _
+  set r : ℝ := ⨅ y' : C, ‖x - (y' : H)‖ with hrdef
+  have hrle : ∀ y' : C, r ≤ ‖x - (y' : H)‖ := fun y' => ciInf_le hbdd y'
+  have hr0 : 0 ≤ r := le_ciInf fun y' => norm_nonneg _
+  -- a minimising sequence `y₁, y₂, … ∈ C` with `‖x - yₙ‖ → r`
+  have hpick : ∀ n : ℕ, ∃ w : C, ‖x - (w : H)‖ < r + 1 / (n + 1 : ℝ) := by
+    intro n
+    have hpos : (0 : ℝ) < 1 / (n + 1 : ℝ) := by positivity
+    exact exists_lt_of_ciInf_lt (by rw [← hrdef]; linarith)
+  choose y hy using hpick
+  -- the parallelogram law bounds `‖yₙ - yₘ‖²`
+  have hpar : ∀ n m : ℕ, ‖((y n : H)) - ((y m : H))‖ ^ 2
+      ≤ 2 * ‖x - (y n : H)‖ ^ 2 + 2 * ‖x - (y m : H)‖ ^ 2 - 4 * r ^ 2 := by
+    intro n m
+    set u : H := x - (y n : H) with hu
+    set v : H := x - (y m : H) with hv
+    have huv : u - v = (y m : H) - (y n : H) := by rw [hu, hv]; abel
+    have hmidmem : ((2 : ℂ)⁻¹ : ℂ) • ((y n : H) + (y m : H)) ∈ C :=
+      C.smul_mem _ (C.add_mem (y n).2 (y m).2)
+    have hsum : u + v = (2 : ℂ) • (x - ((2 : ℂ)⁻¹ : ℂ) • ((y n : H) + (y m : H))) := by
+      rw [hu, hv, smul_sub, smul_smul, mul_inv_cancel₀ (two_ne_zero), one_smul]
+      module
+    have hge : 2 * r ≤ ‖u + v‖ := by
+      rw [hsum, norm_smul]
+      have h2 : ‖(2 : ℂ)‖ = 2 := by norm_num
+      rw [h2]
+      exact mul_le_mul_of_nonneg_left (hrle ⟨_, hmidmem⟩) (by norm_num)
+    have hp := norm_add_sq_add_norm_sub_sq u v
+    have hnuv : ‖u - v‖ = ‖(y n : H) - (y m : H)‖ := by
+      rw [huv, ← norm_neg]
+      congr 1
+      abel
+    rw [hnuv] at hp
+    nlinarith [hge, hr0, norm_nonneg (u + v)]
+  -- hence the sequence is Cauchy
+  have hcauchy : CauchySeq fun n => ((y n : H)) := by
+    rw [Metric.cauchySeq_iff]
+    intro ε hε
+    have hlim : Filter.Tendsto
+        (fun N : ℕ => 4 * (2 * r * (1 / (N + 1 : ℝ)) + (1 / (N + 1 : ℝ)) ^ 2))
+        Filter.atTop (nhds 0) := by
+      have h1 : Filter.Tendsto (fun N : ℕ => (1 / (N + 1 : ℝ))) Filter.atTop (nhds 0) :=
+        tendsto_one_div_add_atTop_nhds_zero_nat
+      have h2 := ((h1.const_mul (2 * r)).add (h1.mul h1)).const_mul 4
+      simpa [sq] using h2
+    obtain ⟨N, hN⟩ := Metric.tendsto_atTop.mp hlim (ε ^ 2) (by positivity)
+    refine ⟨N, fun m hm n hn => ?_⟩
+    have hdm : 1 / (m + 1 : ℝ) ≤ 1 / (N + 1 : ℝ) := by
+      apply one_div_le_one_div_of_le <;> [positivity; exact_mod_cast Nat.succ_le_succ hm]
+    have hdn : 1 / (n + 1 : ℝ) ≤ 1 / (N + 1 : ℝ) := by
+      apply one_div_le_one_div_of_le <;> [positivity; exact_mod_cast Nat.succ_le_succ hn]
+    have hbm := hy m
+    have hbn := hy n
+    have hd0 : (0 : ℝ) < 1 / (N + 1 : ℝ) := by positivity
+    have hNb := hN N le_rfl
+    rw [Real.dist_eq, sub_zero, abs_of_nonneg (by positivity)] at hNb
+    have hmain := hpar m n
+    rw [dist_eq_norm]
+    nlinarith [hmain, hbm, hbn, hdm, hdn, hr0, hd0, hNb, norm_nonneg ((y m : H) - (y n : H)),
+      hrle (y m), hrle (y n), hε]
+  -- its limit is in `C`, and realises the infimum
+  obtain ⟨z, hz⟩ := cauchySeq_tendsto_of_complete hcauchy
+  have hzC : z ∈ C := hC.mem_of_tendsto hz (Filter.Eventually.of_forall fun n => (y n).2)
+  have hnormtend : Filter.Tendsto (fun n => ‖x - (y n : H)‖) Filter.atTop (nhds ‖x - z‖) :=
+    (continuous_norm.tendsto _).comp ((tendsto_const_nhds).sub hz)
+  have hrz : ‖x - z‖ = r := by
+    refine le_antisymm ?_ (hrle ⟨z, hzC⟩)
+    refine le_of_tendsto_of_tendsto hnormtend ?_
+      (Filter.Eventually.of_forall fun n => (hy n).le)
+    simpa using (tendsto_const_nhds (x := r)).add
+      (tendsto_one_div_add_atTop_nhds_zero_nat (𝕜 := ℝ))
+  have hproj : IsProjectionOn C x z := by
+    refine ⟨hzC, fun y' hy' => ?_⟩
+    rw [hrz]
+    exact hrle ⟨y', hy'⟩
+  exact ⟨z, hproj, fun w hw => (hilb_projection_basic_2 C x z w hproj hw).1⟩
 
 /-- **5VII** (`projection-theorem`, cstar.tex:766, Projection Theorem),
 second part: the projection `y` of `x` on `C` satisfies `⟪y', y⟫ = ⟪y', x⟫`
@@ -992,15 +1239,51 @@ theorem projection_theorem_inner [CompleteSpace H] (C : Submodule ℂ H)
 
 /-- **5IX** (`riesz-representation-theorem`, cstar.tex:811, Riesz'
 Representation Theorem): for every bounded linear map `f : H → ℂ` on a
-Hilbert space there is a unique `x ∈ H` with `⟪x, ·⟫ = f`.  (Mathlib:
-`InnerProductSpace.toDual`.) -/
+Hilbert space there is a unique `x ∈ H` with `⟪x, ·⟫ = f`.  (Mathlib has
+this as `InnerProductSpace.toDual`; the proof below is the Theorem's own
+construction, via the projection on `ker f`.) -/
 theorem riesz_representation_theorem [CompleteSpace H] (f : H →L[ℂ] ℂ) :
-    ∃! x : H, ∀ z : H, ⟪x, z⟫ = f z :=
-  by
-    refine ⟨(InnerProductSpace.toDual ℂ H).symm f, fun z => ?_, fun x hx => ?_⟩
-    · exact InnerProductSpace.toDual_symm_apply
-    · refine ext_inner_right ℂ fun z => ?_
-      rw [hx z, InnerProductSpace.toDual_symm_apply]
+    ∃! x : H, ∀ z : H, ⟪x, z⟫ = f z := by
+  -- the Theorem's own construction, via the projection on `ker f`
+  refine existsUnique_of_exists_of_unique ?_ ?_
+  · rcases eq_or_ne f 0 with rfl | hf
+    · exact ⟨0, fun z => by simp⟩
+    · -- pick `x'` with `f x' = 1`
+      obtain ⟨w, hw⟩ : ∃ w : H, f w ≠ 0 := by
+        by_contra hcon
+        simp only [not_exists, not_not] at hcon
+        exact hf (by ext w; simpa using hcon w)
+      obtain ⟨x', hx'⟩ : ∃ x' : H, f x' = 1 :=
+        ⟨(f w)⁻¹ • w, by simp [inv_mul_cancel₀ hw]⟩
+      -- `ker f` is closed because `f` is bounded, so `x'` has a projection `y` on it
+      set C : Submodule ℂ H := LinearMap.ker (f : H →ₗ[ℂ] ℂ) with hC
+      have hCclosed : IsClosed (C : Set H) := f.isClosed_ker
+      obtain ⟨y, hy, -⟩ := projection_theorem C hCclosed x'
+      set x'' : H := x' - y with hx''
+      have hyker : f y = 0 := hy.1
+      have hfx'' : f x'' = 1 := by rw [hx'', map_sub, hx', hyker, sub_zero]
+      have horth : ∀ y' ∈ C, (⟪x'', y'⟫ : ℂ) = 0 := by
+        intro y' hy'
+        rw [← inner_conj_symm, hilb_projection_basic_4 C x' y hy y' hy', map_zero]
+      have hx''ne : x'' ≠ 0 := by
+        intro h0
+        rw [h0, map_zero] at hfx''
+        exact zero_ne_one hfx''
+      have hnorm : ‖x''‖ ^ 2 ≠ 0 := by positivity
+      refine ⟨((‖x''‖ ^ 2 : ℝ)⁻¹ : ℂ) • x'', fun z => ?_⟩
+      -- `z - f z · x''` lies in `ker f`, so `0 = ⟪x'', z⟫ - f z ‖x''‖²`
+      have hmem : z - f z • x'' ∈ C := by
+        simp [hC, LinearMap.mem_ker, map_sub, map_smul, hfx'']
+      have hself : (⟪x'', x''⟫ : ℂ) = ((‖x''‖ ^ 2 : ℝ) : ℂ) := by
+        rw [inner_self_eq_norm_sq_to_K]; norm_num
+      have h0 := horth _ hmem
+      rw [inner_sub_right, inner_smul_right, hself, sub_eq_zero] at h0
+      rw [inner_smul_left, h0]
+      simp only [map_inv₀, Complex.conj_ofReal]
+      field_simp
+  · intro x1 x2 h1 h2
+    refine uniqueness_adjoint_1 x1 x2 fun z => ?_
+    rw [← inner_conj_symm z x1, ← inner_conj_symm z x2, h1 z, h2 z]
 
 /-- **5XI** (`bounded-operator-adjoinable`, cstar.tex:842, Exercise): every
 bounded operator on a Hilbert space is adjointable.
@@ -1036,20 +1319,147 @@ section HilbSum
 variable {ι : Type*} {Hi : ι → Type*} [∀ i, NormedAddCommGroup (Hi i)]
   [∀ i, InnerProductSpace ℂ (Hi i)] [∀ i, CompleteSpace (Hi i)]
 
+set_option linter.unusedSectionVars false in
 /-- **6II** (`hilb-sum`, cstar.tex:873, Proposition), part 1: for members
 `x, y` of the direct sum `⊕ᵢ Hᵢ = {x ∈ Π Hᵢ | ∑ᵢ ‖xᵢ‖² < ∞}` (Mathlib:
 `lp Hi 2`) the sum `∑ᵢ ⟪xᵢ, yᵢ⟫` defining the inner product converges. -/
 theorem hilb_sum_summable (x y : lp Hi 2) :
-    Summable fun i => ⟪(x : ∀ i, Hi i) i, (y : ∀ i, Hi i) i⟫ :=
-  by
-    exact lp.summable_inner x y
+    Summable fun i => ⟪(x : ∀ i, Hi i) i, (y : ∀ i, Hi i) i⟫ := by
+  -- the Proposition's own argument: the Cauchy tail criterion, closed by
+  -- Cauchy--Schwarz on each finite subset
+  classical
+  have hsq : ∀ z : lp Hi 2, Summable fun i => ‖(z : ∀ i, Hi i) i‖ ^ 2 := by
+    intro z
+    have h := (lp.memℓp z).summable (p := 2) (by norm_num)
+    simpa using h
+  rw [summable_iff_vanishing_norm]
+  intro ε hε
+  obtain ⟨s₁, hs₁⟩ := summable_iff_vanishing_norm.mp (hsq x) (ε / 2) (by positivity)
+  obtain ⟨s₂, hs₂⟩ := summable_iff_vanishing_norm.mp (hsq y) (ε / 2) (by positivity)
+  refine ⟨s₁ ∪ s₂, fun t ht => ?_⟩
+  have hA : ∑ i ∈ t, ‖(x : ∀ i, Hi i) i‖ ^ 2 ≤ ε / 2 := by
+    have h := hs₁ t (ht.mono_right Finset.subset_union_left)
+    rw [Real.norm_eq_abs, abs_of_nonneg (by positivity)] at h
+    exact h.le
+  have hB : ∑ i ∈ t, ‖(y : ∀ i, Hi i) i‖ ^ 2 ≤ ε / 2 := by
+    have h := hs₂ t (ht.mono_right Finset.subset_union_right)
+    rw [Real.norm_eq_abs, abs_of_nonneg (by positivity)] at h
+    exact h.le
+  have hcs := Finset.sum_mul_sq_le_sq_mul_sq t (fun i => ‖(x : ∀ i, Hi i) i‖)
+    (fun i => ‖(y : ∀ i, Hi i) i‖)
+  have hbound : ‖∑ i ∈ t, (⟪(x : ∀ i, Hi i) i, (y : ∀ i, Hi i) i⟫ : ℂ)‖
+      ≤ ∑ i ∈ t, ‖(x : ∀ i, Hi i) i‖ * ‖(y : ∀ i, Hi i) i‖ :=
+    le_trans (norm_sum_le _ _) (Finset.sum_le_sum fun i _ => norm_inner_le_norm _ _)
+  have hS0 : (0 : ℝ) ≤ ∑ i ∈ t, ‖(x : ∀ i, Hi i) i‖ * ‖(y : ∀ i, Hi i) i‖ := by positivity
+  have hA0 : (0 : ℝ) ≤ ∑ i ∈ t, ‖(x : ∀ i, Hi i) i‖ ^ 2 := by positivity
+  have hB0 : (0 : ℝ) ≤ ∑ i ∈ t, ‖(y : ∀ i, Hi i) i‖ ^ 2 := by positivity
+  nlinarith [hcs, hbound, hS0, hA0, hB0, hA, hB, hε]
 
+set_option linter.unusedSectionVars false in
 /-- **6II** (`hilb-sum`, cstar.tex:873, Proposition), part 2: `⊕ᵢ Hᵢ` with
 the inner product `⟪x, y⟫ = ∑ᵢ ⟪xᵢ, yᵢ⟫` is a Hilbert space (i.e. the
-resulting norm is complete).  (Mathlib: `lp.completeSpace` and the
-`InnerProductSpace` instance on `lp Hi 2`.) -/
-theorem hilb_sum_complete : CompleteSpace (lp Hi 2) :=
-  inferInstance
+resulting norm is complete).  (Mathlib has this as `lp.completeSpace`, and
+the inner product itself as the `InnerProductSpace` instance on `lp Hi 2`;
+the proof below is the Proposition's own coordinatewise-limit argument.) -/
+theorem hilb_sum_complete : CompleteSpace (lp Hi 2) := by
+  -- the Proposition's own proof: a Cauchy sequence converges coordinatewise,
+  -- the coordinatewise limit lies in `⊕ᵢ Hᵢ` because its finite partial sums
+  -- are bounded, and the convergence is in norm because each finite partial
+  -- sum of `∑ᵢ ‖x∞ᵢ - xₙᵢ‖²` is reached through a large `m`
+  have hp2 : (0 : ℝ) < (2 : ENNReal).toReal := by norm_num
+  have he : ((2 : ENNReal).toReal) = (2 : ℝ) := by norm_num
+  have hrw : ∀ y : ℝ, 0 ≤ y → y ^ ((2 : ENNReal).toReal) = y ^ 2 := by
+    intro y hy
+    rw [he, show ((2 : ℝ)) = ((2 : ℕ) : ℝ) by norm_num, Real.rpow_natCast]
+  refine Metric.complete_of_cauchySeq_tendsto fun x hx => ?_
+  -- coordinatewise Cauchy, hence coordinatewise convergent
+  have hcoord : ∀ i, CauchySeq fun n => (x n : ∀ i, Hi i) i := by
+    intro i
+    rw [Metric.cauchySeq_iff]
+    intro ε hε
+    obtain ⟨N, hN⟩ := Metric.cauchySeq_iff.mp hx ε hε
+    refine ⟨N, fun m hm n hn => ?_⟩
+    have h := hN m hm n hn
+    rw [dist_eq_norm] at h ⊢
+    calc ‖(x m : ∀ i, Hi i) i - (x n : ∀ i, Hi i) i‖
+        = ‖((x m - x n : lp Hi 2) : ∀ i, Hi i) i‖ := by rw [lp.coeFn_sub]; rfl
+      _ ≤ ‖x m - x n‖ := lp.norm_apply_le_norm (by norm_num) _ i
+      _ < ε := h
+  choose g hg using fun i => cauchySeq_tendsto_of_complete (hcoord i)
+  -- the sequence is bounded, so the finite partial sums of `∑ ‖x∞ᵢ‖²` are
+  obtain ⟨R, hR0, hR⟩ := cauchySeq_bdd hx
+  set C : ℝ := ‖x 0‖ + R with hC
+  have hCn : ∀ n, ‖x n‖ ≤ C := by
+    intro n
+    have h := hR n 0
+    rw [dist_eq_norm] at h
+    have : ‖x n‖ - ‖x 0‖ ≤ ‖x n - x 0‖ := norm_sub_norm_le _ _
+    linarith
+  have hsq : ∀ (n : ℕ) (s : Finset ι), ∑ i ∈ s, ‖(x n : ∀ i, Hi i) i‖ ^ 2 ≤ C ^ 2 := by
+    intro n s
+    have h := lp.sum_rpow_le_norm_rpow hp2 (x n) s
+    rw [Finset.sum_congr rfl (fun i _ => hrw _ (norm_nonneg _)), hrw _ (norm_nonneg _)] at h
+    have h2 : ‖x n‖ ^ 2 ≤ C ^ 2 := by
+      have := hCn n
+      nlinarith [norm_nonneg (x n)]
+    linarith
+  have hmem : Memℓp g 2 := by
+    refine memℓp_gen' (C := C ^ 2) fun s => ?_
+    rw [Finset.sum_congr rfl (fun i _ => hrw _ (norm_nonneg _))]
+    have htend : Filter.Tendsto
+        (fun n => ∑ i ∈ s, ‖(x n : ∀ i, Hi i) i‖ ^ 2) Filter.atTop
+        (nhds (∑ i ∈ s, ‖g i‖ ^ 2)) := by
+      refine tendsto_finsetSum _ fun i _ => ?_
+      exact (((hg i).norm).pow 2)
+    exact le_of_tendsto htend (Filter.Eventually.of_forall fun n => hsq n s)
+  refine ⟨⟨g, hmem⟩, ?_⟩
+  rw [Metric.tendsto_atTop]
+  intro ε hε
+  obtain ⟨N, hN⟩ := Metric.cauchySeq_iff.mp hx (ε / 2) (by positivity)
+  refine ⟨N, fun n hn => ?_⟩
+  rw [dist_eq_norm]
+  set y : lp Hi 2 := ⟨g, hmem⟩ with hy
+  have hdiff : ∀ i, ((x n - y : lp Hi 2) : ∀ i, Hi i) i = (x n : ∀ i, Hi i) i - g i := by
+    intro i
+    rw [lp.coeFn_sub]
+    rfl
+  have hpartial : ∀ s : Finset ι,
+      ∑ i ∈ s, ‖(x n : ∀ i, Hi i) i - g i‖ ^ 2 ≤ (ε / 2) ^ 2 := by
+    intro s
+    have htend : Filter.Tendsto
+        (fun m => ∑ i ∈ s, ‖(x n : ∀ i, Hi i) i - (x m : ∀ i, Hi i) i‖ ^ 2)
+        Filter.atTop (nhds (∑ i ∈ s, ‖(x n : ∀ i, Hi i) i - g i‖ ^ 2)) := by
+      refine tendsto_finsetSum _ fun i _ => ?_
+      exact ((tendsto_const_nhds.sub (hg i)).norm.pow 2)
+    refine le_of_tendsto htend (Filter.eventually_atTop.2 ⟨N, fun m hm => ?_⟩)
+    have hnm : ‖x n - x m‖ < ε / 2 := by
+      have := hN n hn m hm
+      rwa [dist_eq_norm] at this
+    have h1 : ∑ i ∈ s, ‖(x n : ∀ i, Hi i) i - (x m : ∀ i, Hi i) i‖ ^ 2 ≤ ‖x n - x m‖ ^ 2 := by
+      have h := lp.sum_rpow_le_norm_rpow hp2 (x n - x m) s
+      rw [Finset.sum_congr rfl (fun i _ => hrw _ (norm_nonneg _)), hrw _ (norm_nonneg _)] at h
+      refine le_trans (le_of_eq ?_) h
+      refine Finset.sum_congr rfl fun i _ => ?_
+      rw [lp.coeFn_sub]
+      rfl
+    nlinarith [norm_nonneg (x n - x m), hε]
+  have hsummable : Summable fun i => ‖((x n - y : lp Hi 2) : ∀ i, Hi i) i‖ ^ 2 := by
+    have h := (lp.memℓp (x n - y)).summable hp2
+    refine h.congr fun i => ?_
+    exact hrw _ (norm_nonneg _)
+  have hle : ‖x n - y‖ ^ 2 ≤ (ε / 2) ^ 2 := by
+    have hnorm : ‖x n - y‖ ^ 2 = ∑' i, ‖((x n - y : lp Hi 2) : ∀ i, Hi i) i‖ ^ 2 := by
+      have h := lp.norm_rpow_eq_tsum hp2 (x n - y)
+      rw [hrw _ (norm_nonneg _)] at h
+      rw [h]
+      exact tsum_congr fun i => hrw _ (norm_nonneg _)
+    rw [hnorm]
+    refine hsummable.tsum_le_of_sum_le fun s => ?_
+    refine le_trans (le_of_eq ?_) (hpartial s)
+    exact Finset.sum_congr rfl fun i _ => by rw [hdiff i]
+  have : ‖x n - y‖ ≤ ε / 2 := by nlinarith [norm_nonneg (x n - y), hε]
+  linarith
+
 
 end HilbSum
 
@@ -1069,19 +1479,31 @@ variable {𝒜 : Type*} [CStarAlgebra 𝒜]
 `ℜa` and `ℑa` are self-adjoint (automatic here from their type) and
 `a = ℜa + i·ℑa`. -/
 theorem cstar_involution_basic_1 (a : 𝒜) :
-    a = (ℜ a : 𝒜) + Complex.I • (ℑ a : 𝒜) :=
-  (realPart_add_I_smul_imaginaryPart a).symm
+    a = (ℜ a : 𝒜) + Complex.I • (ℑ a : 𝒜) := by
+  -- the solution's computation: `2(ℜa + i·ℑa) = (a + a*) + (a - a*) = 2a`
+  rw [realPart_apply_coe, imaginaryPart_apply_coe, smul_smul]
+  rw [show Complex.I * -Complex.I = 1 by simp, one_smul, ← smul_add,
+    show a + star a + (a - star a) = (2 : ℝ) • a by rw [two_smul]; abel,
+    smul_smul, inv_mul_cancel₀ (two_ne_zero), one_smul]
 
 /-- **7III** (`cstar-involution-basic`, cstar.tex:1007, Exercise), part 2:
 if `a = b + i·c` with `b, c` self-adjoint then `b = ℜa` and `c = ℑa`. -/
 theorem cstar_involution_basic_2 (a b c : 𝒜) (hb : IsSelfAdjoint b)
     (hc : IsSelfAdjoint c) (h : a = b + Complex.I • c) :
-    b = (ℜ a : 𝒜) ∧ c = (ℑ a : 𝒜) :=
-  by
-    subst h
-    constructor
-    · simp [map_add, hc.imaginaryPart, hb.coe_realPart]
-    · simp [map_add, hb.imaginaryPart, hc.coe_realPart]
+    b = (ℜ a : 𝒜) ∧ c = (ℑ a : 𝒜) := by
+  -- the solution: `a* = b - ic`, so `2ℜa = a + a* = 2b` and `2iℑa = a - a* = 2ic`
+  have hstar : star a = b - Complex.I • c := by
+    rw [h, star_add, star_smul, hb.star_eq, hc.star_eq]
+    simp [sub_eq_add_neg]
+  constructor
+  · rw [realPart_apply_coe, hstar, h,
+      show b + Complex.I • c + (b - Complex.I • c) = (2 : ℝ) • b by rw [two_smul]; abel,
+      smul_smul, inv_mul_cancel₀ (two_ne_zero), one_smul]
+  · rw [imaginaryPart_apply_coe, hstar, h,
+      show b + Complex.I • c - (b - Complex.I • c) = (2 : ℝ) • (Complex.I • c) by
+        rw [two_smul]; abel,
+      smul_smul, inv_mul_cancel₀ (two_ne_zero), one_smul, smul_smul,
+      show -Complex.I * Complex.I = 1 by simp, one_smul]
 
 /-- **7III** (`cstar-involution-basic`, cstar.tex:1007, Exercise), part 3:
 `ℜ(a*) = ℜa` and `ℑ(a*) = -ℑa`. -/
@@ -1100,32 +1522,76 @@ theorem cstar_involution_basic_3 (a : 𝒜) :
 /-- **7III** (`cstar-involution-basic`, cstar.tex:1007, Exercise), part 4:
 `a` is self-adjoint iff `ℜa = a` iff `ℑa = 0`. -/
 theorem cstar_involution_basic_4 (a : 𝒜) :
-    (IsSelfAdjoint a ↔ (ℜ a : 𝒜) = a) ∧ (IsSelfAdjoint a ↔ (ℑ a : 𝒜) = 0) :=
-  by
-    refine ⟨⟨fun ha => ha.coe_realPart, fun ha => ha ▸ (ℜ a).property⟩, ⟨fun ha => ?_, fun ha => ?_⟩⟩
-    · rw [ha.imaginaryPart]
-      rfl
-    · exact imaginaryPart_eq_zero_iff.mp (ZeroMemClass.coe_eq_zero.mp ha)
+    (IsSelfAdjoint a ↔ (ℜ a : 𝒜) = a) ∧ (IsSelfAdjoint a ↔ (ℑ a : 𝒜) = 0) := by
+  -- the solution's chain: `a = a*` iff `a + a* = 2a` iff `ℜa = a`; and
+  -- `a = a*` iff `a - a* = 0` iff `ℑa = 0`
+  have hsum : (ℜ a : 𝒜) = a ↔ a + star a = (2 : ℝ) • a := by
+    rw [realPart_apply_coe]
+    constructor
+    · intro h
+      have h2 := congrArg (fun z : 𝒜 => (2 : ℝ) • z) h
+      simpa [smul_smul] using h2
+    · intro h
+      rw [h, smul_smul, inv_mul_cancel₀ (two_ne_zero), one_smul]
+  have hdif : (ℑ a : 𝒜) = 0 ↔ a - star a = 0 := by
+    rw [imaginaryPart_apply_coe]
+    constructor
+    · intro h
+      have h2 : ((2 : ℝ)⁻¹ • (a - star a)) = 0 := by
+        have := congrArg (fun z : 𝒜 => Complex.I • z) h
+        simpa [smul_smul] using this
+      have := congrArg (fun z : 𝒜 => (2 : ℝ) • z) h2
+      simpa [smul_smul] using this
+    · intro h
+      rw [h]
+      simp
+  refine ⟨⟨fun ha => ?_, fun ha => ?_⟩, ⟨fun ha => ?_, fun ha => ?_⟩⟩
+  · refine hsum.mpr ?_
+    rw [ha.star_eq, two_smul]
+  · have h := hsum.mp ha
+    rw [two_smul] at h
+    exact add_left_cancel h
+  · refine hdif.mpr ?_
+    rw [ha.star_eq, sub_self]
+  · have h := hdif.mp ha
+    exact (sub_eq_zero.mp h).symm
 
 /-- **7III** (`cstar-involution-basic`, cstar.tex:1007, Exercise), part 5:
 `a ↦ ℜa` and `a ↦ ℑa` are ℝ-linear maps `𝒜 → 𝒜`, i.e. additive and
-ℝ-homogeneous.  (In Mathlib they are bundled as `𝒜 →ₗ[ℝ] selfAdjoint 𝒜`,
-from which both clauses are read off.) -/
+ℝ-homogeneous.  (In Mathlib they are bundled as `𝒜 →ₗ[ℝ] selfAdjoint 𝒜`;
+the proof below is the solution's own reason instead — `(·)*` is ℝ-linear,
+so the defining formulas `ℜa = ½(a + a*)`, `ℑa = -i·½(a - a*)` are.) -/
 theorem cstar_involution_basic_5 (a b : 𝒜) (r : ℝ) :
     (ℜ (a + b) : 𝒜) = (ℜ a : 𝒜) + (ℜ b : 𝒜) ∧
       (ℑ (a + b) : 𝒜) = (ℑ a : 𝒜) + (ℑ b : 𝒜) ∧
       (ℜ (r • a) : 𝒜) = r • (ℜ a : 𝒜) ∧
-      (ℑ (r • a) : 𝒜) = r • (ℑ a : 𝒜) :=
-  by
-    exact ⟨by simp, by simp, by simp, by simp⟩
+      (ℑ (r • a) : 𝒜) = r • (ℑ a : 𝒜) := by
+  -- the solution's reason: `(·)*` is ℝ-linear, so the formulas
+  -- `ℜa = ½(a + a*)` and `ℑa = -i·½(a - a*)` are ℝ-linear in `a`
+  refine ⟨?_, ?_, ?_, ?_⟩
+  · rw [realPart_apply_coe, realPart_apply_coe, realPart_apply_coe, star_add]
+    module
+  · rw [imaginaryPart_apply_coe, imaginaryPart_apply_coe, imaginaryPart_apply_coe,
+      star_add]
+    module
+  · rw [realPart_apply_coe, realPart_apply_coe, star_smul, star_trivial]
+    module
+  · rw [imaginaryPart_apply_coe, imaginaryPart_apply_coe, star_smul, star_trivial]
+    module
 
 /-- **7III** (`cstar-involution-basic`, cstar.tex:1007, Exercise), part 6:
 `ℑa = -ℜ(ia)` and `ℜa = ℑ(ia)`. -/
 theorem cstar_involution_basic_6 (a : 𝒜) :
     (ℑ a : 𝒜) = -(ℜ (Complex.I • a) : 𝒜) ∧
-      (ℜ a : 𝒜) = (ℑ (Complex.I • a) : 𝒜) :=
-  by
-    exact ⟨by simp, by simp⟩
+      (ℜ a : 𝒜) = (ℑ (Complex.I • a) : 𝒜) := by
+  -- the solution: apply part 2 to `i·a = i(ℜa + i·ℑa) = -ℑa + i·ℜa`
+  have h : Complex.I • a = -(ℑ a : 𝒜) + Complex.I • (ℜ a : 𝒜) := by
+    conv_lhs => rw [cstar_involution_basic_1 a]
+    rw [smul_add, smul_smul, show Complex.I * Complex.I = -1 by simp]
+    module
+  obtain ⟨h1, h2⟩ := cstar_involution_basic_2 (Complex.I • a) (-(ℑ a : 𝒜)) (ℜ a : 𝒜)
+    ((ℑ a).property.neg) (ℜ a).property h
+  exact ⟨by rw [← h1, neg_neg], h2⟩
 
 /-- **7III** (`cstar-involution-basic`, cstar.tex:1007, Exercise), part 7:
 `a* a` is self-adjoint, and
@@ -2146,17 +2612,38 @@ variable {𝒜 : Type*} [CStarAlgebra 𝒜]
 /-- **11II** (`geometric`, cstar.tex:1404, Lemma), part 1: for `‖a‖ < 1`
 the geometric series `∑ aⁿ` converges absolutely. -/
 theorem geometric_1 (a : 𝒜) (ha : ‖a‖ < 1) :
-    Summable fun n : ℕ => ‖a ^ n‖ :=
-  by
-    exact summable_norm_geometric_of_norm_lt_one ha
+    Summable fun n : ℕ => ‖a ^ n‖ := by
+  -- the Lemma's own comparison: `∑ ‖a‖ⁿ = (1-‖a‖)⁻¹ < ∞`, and `‖aⁿ‖ ≤ ‖a‖ⁿ`
+  have hgeo : Summable fun n : ℕ => ‖a‖ ^ n :=
+    summable_geometric_of_lt_one (norm_nonneg a) ha
+  refine hgeo.of_nonneg_of_le (fun n => norm_nonneg _) fun n => ?_
+  rcases Nat.eq_zero_or_pos n with rfl | hn
+  · have h := CStarRing.norm_star_mul_self (x := (1 : 𝒜))
+    rw [star_one, one_mul] at h
+    simpa using by nlinarith [norm_nonneg (1 : 𝒜)]
+  · exact norm_pow_le' a hn
 
 /-- **11II** (`geometric`, cstar.tex:1404, Lemma), part 2: for `‖a‖ < 1`
 the element `a^⊥ = 1 - a` is invertible with inverse `∑ₙ aⁿ`. -/
 theorem geometric_2 (a : 𝒜) (ha : ‖a‖ < 1) :
     IsUnit (1 - a) ∧ (1 - a) * ∑' n : ℕ, a ^ n = 1 ∧
-      (∑' n : ℕ, a ^ n) * (1 - a) = 1 :=
-  by
-    exact ⟨⟨Units.oneSub a ha, rfl⟩, mul_neg_geom_series a ha, geom_series_mul_neg a ha⟩
+      (∑' n : ℕ, a ^ n) * (1 - a) = 1 := by
+  -- the Lemma's own partial-sum limit: `aᴺ → 0`, `∑ aⁿ` converges since `∑ ‖a‖ⁿ` does,
+  -- and one takes the norm limit on both sides of `(1-a)(1+a+⋯+aᴺ) = 1-aᴺ`
+  have hsummable : Summable fun n : ℕ => a ^ n := (geometric_1 a ha).of_norm
+  have hazero : Filter.Tendsto (fun N : ℕ => a ^ N) Filter.atTop (nhds 0) :=
+    hsummable.tendsto_atTop_zero
+  have htend : Filter.Tendsto (fun N : ℕ => ∑ n ∈ Finset.range N, a ^ n)
+      Filter.atTop (nhds (∑' n : ℕ, a ^ n)) := hsummable.hasSum.tendsto_sum_nat
+  have hone : Filter.Tendsto (fun N : ℕ => 1 - a ^ N) Filter.atTop (nhds (1 : 𝒜)) := by
+    simpa using (tendsto_const_nhds (x := (1 : 𝒜)) (f := Filter.atTop (α := ℕ))).sub hazero
+  have hL : (1 - a) * ∑' n : ℕ, a ^ n = 1 :=
+    tendsto_nhds_unique (htend.const_mul (1 - a))
+      (Filter.Tendsto.congr (fun N => (mul_neg_geom_sum a N).symm) hone)
+  have hR : (∑' n : ℕ, a ^ n) * (1 - a) = 1 :=
+    tendsto_nhds_unique (htend.mul_const (1 - a))
+      (Filter.Tendsto.congr (fun N => (geom_sum_mul_neg a N).symm) hone)
+  exact ⟨⟨⟨1 - a, ∑' n : ℕ, a ^ n, hL, hR⟩, rfl⟩, hL, hR⟩
 
 /-- **11VI** (`spectrum-bounded`, cstar.tex:1451, Exercise), part 1:
 `a - λ` is invertible for every `λ ∈ ℂ` with `‖a‖ < |λ|`.
@@ -2264,15 +2751,146 @@ theorem geometric_convergence (a : 𝒜) (ha : IsSelfAdjoint a) :
     · intro h
       exact summable_geometric_of_norm_lt_one h
 
+/-- Auxiliary (**11XI**, the first half of the proof of **11X**): inversion is
+continuous at `1` — if `‖1 - a‖ ≤ ½` then `a` is invertible and
+`‖1 - a⁻¹‖ ≤ 2‖1 - a‖`. -/
+private theorem cstar_inv_continuous_at_one (a : 𝒜) (ha : ‖1 - a‖ ≤ 1 / 2) :
+    IsUnit a ∧ ‖1 - Ring.inverse a‖ ≤ 2 * ‖1 - a‖ := by
+  set c : 𝒜 := 1 - a with hc
+  have hac : a = 1 - c := by rw [hc]; abel
+  have hlt : ‖c‖ < 1 := lt_of_le_of_lt ha (by norm_num)
+  obtain ⟨-, hL, hR⟩ := geometric_2 c hlt
+  have hnormsum : Summable fun n : ℕ => ‖c ^ n‖ := geometric_1 c hlt
+  have hsum : Summable fun n : ℕ => c ^ n := hnormsum.of_norm
+  -- `a = 1 - c` is invertible with `a⁻¹ = ∑ₙ cⁿ` by **11II**
+  set u : 𝒜ˣ := ⟨1 - c, ∑' n : ℕ, c ^ n, hL, hR⟩ with hu
+  have hUnit : IsUnit a := by rw [hac]; exact ⟨u, rfl⟩
+  have hinv : Ring.inverse a = ∑' n : ℕ, c ^ n := by
+    rw [hac, show (1 : 𝒜) - c = (u : 𝒜) from rfl, Ring.inverse_unit]
+    rfl
+  refine ⟨hUnit, ?_⟩
+  -- `1 - a⁻¹ = -∑_{n≥1} cⁿ`, whose norm is at most `‖c‖(1-‖c‖)⁻¹ ≤ 2‖c‖`
+  have hsplit : (∑' n : ℕ, c ^ n) = 1 + ∑' n : ℕ, c ^ (n + 1) := by
+    simpa using hsum.tsum_eq_zero_add
+  have heq : (1 : 𝒜) - Ring.inverse a = -∑' n : ℕ, c ^ (n + 1) := by
+    rw [hinv, hsplit]
+    abel
+  have hs1 : Summable fun n : ℕ => c ^ (n + 1) := hsum.comp_injective (add_left_injective 1)
+  have hs1n : Summable fun n : ℕ => ‖c ^ (n + 1)‖ :=
+    hnormsum.comp_injective (add_left_injective 1)
+  have hgeo : Summable fun n : ℕ => ‖c‖ ^ (n + 1) := by
+    have := (summable_geometric_of_lt_one (norm_nonneg c) hlt)
+    exact this.comp_injective (add_left_injective 1)
+  have hbound : ‖∑' n : ℕ, c ^ (n + 1)‖ ≤ ∑' n : ℕ, ‖c‖ ^ (n + 1) := by
+    refine le_trans (norm_tsum_le_tsum_norm hs1n) ?_
+    exact hs1n.tsum_le_tsum (fun n => norm_pow_le' c (Nat.succ_pos n)) hgeo
+  have hgeoval : (∑' n : ℕ, ‖c‖ ^ (n + 1)) = ‖c‖ * (1 - ‖c‖)⁻¹ := by
+    have h := tsum_geometric_of_lt_one (norm_nonneg c) hlt
+    calc (∑' n : ℕ, ‖c‖ ^ (n + 1)) = ∑' n : ℕ, ‖c‖ * ‖c‖ ^ n := by
+          refine tsum_congr fun n => ?_
+          rw [pow_succ, mul_comm]
+      _ = ‖c‖ * ∑' n : ℕ, ‖c‖ ^ n := tsum_mul_left
+      _ = ‖c‖ * (1 - ‖c‖)⁻¹ := by rw [h]
+  have hhalf : (1 - ‖c‖)⁻¹ ≤ 2 := by
+    rw [inv_le_comm₀ (by linarith) (by norm_num)]
+    linarith
+  rw [heq, norm_neg]
+  calc ‖∑' n : ℕ, c ^ (n + 1)‖ ≤ ∑' n : ℕ, ‖c‖ ^ (n + 1) := hbound
+    _ = ‖c‖ * (1 - ‖c‖)⁻¹ := hgeoval
+    _ ≤ ‖c‖ * 2 := mul_le_mul_of_nonneg_left hhalf (norm_nonneg c)
+    _ = 2 * ‖1 - a‖ := by rw [hc]; ring
+
+/-- Auxiliary (**11XII**, the second half of the proof of **11X**): if `a` is
+invertible and `‖a - b‖ ≤ ½‖a⁻¹‖⁻¹` then `b` is invertible and
+`‖a⁻¹ - b⁻¹‖ ≤ 2‖a - b‖‖a⁻¹‖²`. -/
+private theorem cstar_inv_continuous_estimate (a b : 𝒜) (ha : IsUnit a)
+    (hab : ‖a - b‖ ≤ 1 / 2 * ‖Ring.inverse a‖⁻¹) :
+    IsUnit b ∧ ‖Ring.inverse a - Ring.inverse b‖
+      ≤ 2 * ‖a - b‖ * ‖Ring.inverse a‖ ^ 2 := by
+  set A : 𝒜 := Ring.inverse a with hA
+  have hAa : A * a = 1 := Ring.inverse_mul_cancel a ha
+  have haA : a * A = 1 := Ring.mul_inverse_cancel a ha
+  have hAunit : IsUnit A := ⟨⟨A, a, hAa, haA⟩, rfl⟩
+  -- `1 - A b = A (a - b)`, of norm at most `‖A‖ ‖a-b‖ ≤ ½`
+  have hd : (1 : 𝒜) - A * b = A * (a - b) := by rw [mul_sub, hAa]
+  have hdnorm : ‖(1 : 𝒜) - A * b‖ ≤ 1 / 2 := by
+    rw [hd]
+    refine le_trans (norm_mul_le _ _) ?_
+    rcases eq_or_lt_of_le (norm_nonneg A) with hA0 | hA0
+    · rw [← hA0, zero_mul]
+      norm_num
+    · calc ‖A‖ * ‖a - b‖ ≤ ‖A‖ * (1 / 2 * ‖A‖⁻¹) :=
+            mul_le_mul_of_nonneg_left hab (norm_nonneg A)
+        _ = 1 / 2 := by field_simp
+  obtain ⟨hABunit, hABest⟩ := cstar_inv_continuous_at_one (A * b) hdnorm
+  set W : 𝒜 := Ring.inverse (A * b) with hW
+  have hWl : W * (A * b) = 1 := Ring.inverse_mul_cancel _ hABunit
+  have hWr : (A * b) * W = 1 := Ring.mul_inverse_cancel _ hABunit
+  -- `b` is invertible, with `b⁻¹ = W A`
+  have hbW : b * (W * A) = 1 := by
+    have h1 : a * (A * b * W) = a := by rw [hWr, mul_one]
+    have h2 : b * W = a := by
+      rw [← mul_assoc, ← mul_assoc, haA, one_mul] at h1
+      exact h1
+    rw [← mul_assoc, h2, haA]
+  have hWb : (W * A) * b = 1 := by rw [mul_assoc]; exact hWl
+  have hbUnit : IsUnit b := ⟨⟨b, W * A, hbW, hWb⟩, rfl⟩
+  have hbinv : Ring.inverse b = W * A := by
+    have : Ring.inverse ((⟨b, W * A, hbW, hWb⟩ : 𝒜ˣ) : 𝒜) = _ := Ring.inverse_unit _
+    simpa using this
+  refine ⟨hbUnit, ?_⟩
+  -- `a⁻¹ - b⁻¹ = (1 - (A b)⁻¹) A`
+  have hsplit : A - Ring.inverse b = (1 - W) * A := by
+    rw [hbinv, sub_mul, one_mul]
+  rw [hsplit]
+  calc ‖(1 - W) * A‖ ≤ ‖1 - W‖ * ‖A‖ := norm_mul_le _ _
+    _ ≤ (2 * ‖1 - A * b‖) * ‖A‖ := mul_le_mul_of_nonneg_right hABest (norm_nonneg A)
+    _ ≤ (2 * (‖A‖ * ‖a - b‖)) * ‖A‖ := by
+        refine mul_le_mul_of_nonneg_right ?_ (norm_nonneg A)
+        refine mul_le_mul_of_nonneg_left ?_ (by norm_num)
+        rw [hd]
+        exact norm_mul_le _ _
+    _ = 2 * ‖a - b‖ * ‖A‖ ^ 2 := by ring
+
 /-- **11X** (`cstar-inv-continuous`, cstar.tex:1508, Lemma): the assignment
 `a ↦ a⁻¹` is continuous on the set of invertible elements. -/
 theorem cstar_inv_continuous :
-    ContinuousOn (Ring.inverse : 𝒜 → 𝒜) {a : 𝒜 | IsUnit a} :=
-  by
-    intro a ha
-    have h := NormedRing.inverse_continuousAt (R := 𝒜) ha.unit
-    rw [ha.unit_spec] at h
-    exact h.continuousWithinAt
+    ContinuousOn (Ring.inverse : 𝒜 → 𝒜) {a : 𝒜 | IsUnit a} := by
+  -- the Lemma's two-step estimate: continuity at `1`, then everywhere
+  rcases subsingleton_or_nontrivial 𝒜 with hs | hs
+  · have he : (Ring.inverse : 𝒜 → 𝒜) = fun _ => 0 := by
+      funext x
+      exact Subsingleton.elim _ _
+    rw [he]
+    exact continuousOn_const
+  intro a ha
+  rw [Metric.continuousWithinAt_iff]
+  intro ε hε
+  set K : ℝ := ‖Ring.inverse a‖ with hK
+  have hKpos : 0 < K := by
+    rw [hK, norm_pos_iff]
+    intro h0
+    have h := Ring.mul_inverse_cancel a ha
+    rw [h0, mul_zero] at h
+    exact zero_ne_one h
+  refine ⟨min (1 / 2 * K⁻¹) (ε / (2 * K ^ 2 + 1)), ?_, ?_⟩
+  · exact lt_min (by positivity) (by positivity)
+  · intro b _ hdist
+    rw [dist_eq_norm] at hdist
+    have h1 : ‖a - b‖ ≤ 1 / 2 * K⁻¹ := by
+      rw [← norm_neg, neg_sub]
+      exact le_of_lt (lt_of_lt_of_le hdist (min_le_left _ _))
+    obtain ⟨-, hest⟩ := cstar_inv_continuous_estimate a b ha h1
+    rw [dist_eq_norm']
+    have h2 : ‖a - b‖ < ε / (2 * K ^ 2 + 1) := by
+      rw [← norm_neg, neg_sub]
+      exact lt_of_lt_of_le hdist (min_le_right _ _)
+    have h3 : 2 * ‖a - b‖ * K ^ 2 < ε := by
+      have hden : (0 : ℝ) < 2 * K ^ 2 + 1 := by positivity
+      have h4 := (lt_div_iff₀ hden).mp h2
+      nlinarith [norm_nonneg (a - b), sq_nonneg K]
+    exact lt_of_le_of_lt hest h3
+
 
 /-- **11XIII** (cstar.tex:1548, Lemma): `a - i` is invertible for
 self-adjoint `a`.
@@ -2784,12 +3402,16 @@ invertible — Mathlib's `spectrum ℂ a`. -/
 
 /-- **11XX** (cstar.tex:1633, Exercise), part 1: the spectrum of a
 continuous function `f`, as an element of the C*-algebra `C(X)`, is its
-image.  (Mathlib: `ContinuousMap.spectrum_eq_range`.) -/
+image.  (Mathlib has this as `ContinuousMap.spectrum_eq_range`; the proof
+below is the solution's own chain, through **9III**.) -/
 theorem spectrum_continuousMap {X : Type*} [TopologicalSpace X]
     [CompactSpace X] [T2Space X] (f : C(X, ℂ)) :
-    spectrum ℂ f = Set.range f :=
-  by
-    exact ContinuousMap.spectrum_eq_range f
+    spectrum ℂ f = Set.range f := by
+  -- the solution's chain, through **9III** `cx_mem_range_iff_not_isUnit`
+  ext z
+  rw [spectrum.mem_iff, ← neg_sub f (algebraMap ℂ C(X, ℂ) z), IsUnit.neg_iff,
+    ← cx_mem_range_iff_not_isUnit]
+  exact ⟨fun ⟨x, hx⟩ => ⟨x, hx⟩, fun ⟨x, hx⟩ => ⟨x, hx⟩⟩
 
 /-- **11XX** (cstar.tex:1633, Exercise), part 2: the spectrum of a square
 matrix `A ∈ Mₙ` is its set of eigenvalues. -/
@@ -2917,16 +3539,34 @@ theorem spectrum_basic_5 (a : 𝒜) (z : ℂ) :
 /-- **11XXI** (`spectrum-basic`, cstar.tex:1649, Exercise), part 6:
 `spec(a⁻¹) = { λ⁻¹ : λ ∈ spec(a) }` for invertible `a`. -/
 theorem spectrum_basic_6 (a : 𝒜ˣ) :
-    spectrum ℂ ((a⁻¹ : 𝒜ˣ) : 𝒜) = (fun z => z⁻¹) '' spectrum ℂ (a : 𝒜) :=
-  by
-    rw [← spectrum.map_inv a]
-    ext w
-    simp only [Set.mem_inv, Set.mem_image]
-    constructor
-    · intro hw
-      exact ⟨w⁻¹, hw, inv_inv w⟩
-    · rintro ⟨v, hv, rfl⟩
-      simpa using hv
+    spectrum ℂ ((a⁻¹ : 𝒜ˣ) : 𝒜) = (fun z => z⁻¹) '' spectrum ℂ (a : 𝒜) := by
+  -- the solution's factorisation `λ - a = λ a (a⁻¹ - λ⁻¹)`, here with `λ = w⁻¹`
+  have key : ∀ w : ℂ, w ≠ 0 →
+      (w ∈ spectrum ℂ ((a⁻¹ : 𝒜ˣ) : 𝒜) ↔ w⁻¹ ∈ spectrum ℂ (a : 𝒜)) := by
+    intro w hw
+    have hcomm : algebraMap ℂ 𝒜 w⁻¹ * (a : 𝒜) * algebraMap ℂ 𝒜 w = (a : 𝒜) := by
+      rw [Algebra.commutes w⁻¹ ((a : 𝒜)), mul_assoc, ← map_mul, inv_mul_cancel₀ hw,
+        map_one, mul_one]
+    have hfac : algebraMap ℂ 𝒜 w⁻¹ * (a : 𝒜) * (((a⁻¹ : 𝒜ˣ) : 𝒜) - algebraMap ℂ 𝒜 w)
+        = algebraMap ℂ 𝒜 w⁻¹ - (a : 𝒜) := by
+      rw [mul_sub, hcomm, mul_assoc, Units.mul_inv, mul_one]
+    have hwu : IsUnit (algebraMap ℂ 𝒜 w⁻¹) :=
+      (Ne.isUnit (inv_ne_zero hw)).map (algebraMap ℂ 𝒜)
+    obtain ⟨u, hu⟩ := hwu.mul a.isUnit
+    rw [spectrum.mem_iff, spectrum.mem_iff, ← hfac, ← hu, Units.isUnit_units_mul,
+      ← IsUnit.neg_iff, neg_sub]
+  ext w
+  constructor
+  · intro hw
+    have hw0 : w ≠ 0 := by
+      rintro rfl
+      exact spectrum.not_isUnit_of_zero_mem (R := ℂ) hw (a⁻¹ : 𝒜ˣ).isUnit
+    exact ⟨w⁻¹, (key w hw0).mp hw, inv_inv w⟩
+  · rintro ⟨v, hv, rfl⟩
+    have hv0 : v ≠ 0 := by
+      rintro rfl
+      exact spectrum.not_isUnit_of_zero_mem (R := ℂ) hv a.isUnit
+    exact (key v⁻¹ (inv_ne_zero hv0)).mpr (by rwa [inv_inv])
 
 /-- **11XXIII** (`spectral-permanence`, cstar.tex:1695, Theorem (Spectral
 Permanence)): for a closed ∗-subalgebra `𝒮` of a C*-algebra `ℬ` and
