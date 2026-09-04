@@ -19,16 +19,48 @@ TAG = re.compile(r'/--\s*\*\*(\d+[a-z]?[IVXL]+[a-z]?)(?:\.\d+)?\*\*')
 DECL = re.compile(r'^\s*(?:@\[[^\]]*\]\s*)?(?:private\s+|protected\s+|noncomputable\s+|nonrec\s+|local\s+|scoped\s+)*(?:theorem|lemma|def|abbrev|instance|structure|class)\s+([A-Za-z_][\w\'.₀-₉]*)')
 def thesis_of(path):
     return 'A' if '/A/' in path else 'B'
+def parse_tagged(path):
+    """-> {(parsec,point): (label, tag, body)} for top-level points, in order."""
+    txt = open(path, encoding='utf-8').read().split('\n')
+    out = {}; parsec = None; stack = []
+    for line in txt:
+        m = re.match(r'\\begin\{parsec\}\{(\d+)\}', line)
+        if m: parsec = int(m.group(1)); continue
+        m = re.match(r'\\begin\{point\}\{(\d+)\}(?:\[([^\]]*)\])?(?:\{([^}]*)\})?', line)
+        if m:
+            stack.append([int(m.group(1)), m.group(2), m.group(3) or '', []]); continue
+        if line.startswith('\\end{point}'):
+            if not stack: continue
+            q, lab, tag, body = stack.pop()
+            if not stack: out[(parsec, q)] = (lab, tag, '\n'.join(body))
+            else: stack[-1][3].append(line)
+            continue
+        for fr in stack: fr[3].append(line)
+    return out
 def load():
     points = {}
     for th, fs in fc.FILES.items():
         for f in fs:
-            for k, v in fc.parse(os.path.join(SRC, f)).items():
-                points[(th,) + k] = v      # (label, body, nchildren)
+            for k, v in parse_tagged(os.path.join(SRC, f)).items():
+                points[(th,) + k] = v      # (label, tag, body)
     label_to_key = {}
-    for k, (lab, body, n) in points.items():
+    for k, (lab, tag, body) in points.items():
         if lab: label_to_key[(k[0], lab)] = k[1:]
     return points, label_to_key
+def proof_extent(points, key):
+    """The printed proof of `key`: its own body plus the following Proof-tagged
+    (or untagged) points; returns (max point key in the extent, text)."""
+    th, p, q = key
+    keys = sorted(k[1:] for k in points if k[0] == th)
+    i = keys.index((p, q)) if (p, q) in keys else None
+    text = points[key][2]; last = (p, q)
+    if i is None: return last, text
+    for k2 in keys[i+1:]:
+        lab, tag, body = points[(th,) + k2]
+        if k2[0] != p or (tag and 'Proof' not in tag and 'proof' not in tag and tag not in ('',)):
+            break
+        text += '\n' + body; last = k2
+    return last, text
 def declarations():
     """-> list of (path, name, disp, key, proof_text) for DISP-tagged declarations."""
     out = []
@@ -62,9 +94,10 @@ def main():
     for path, name, disp, key, body in decls:
         th, p, q = key
         pt = points.get(key)
-        allowed = set()
+        allowed = set(); last = (p, q)
         if pt:
-            for lab in re.findall(r'\\sref\{([^}]*)\}', pt[1]):
+            last, text0 = proof_extent(points, key)
+            for lab in re.findall(r'\\sref\{([^}]*)\}', text0):
                 k2 = l2k.get((th, lab))
                 if k2 and k2 > (p, q): allowed.add(k2)
         # strip comments
@@ -72,9 +105,13 @@ def main():
         idents = set(re.findall(r"[A-Za-z_][\w'₀-₉]*", text))
         later = set()
         for ident in idents:
-            for k2 in by_name.get(ident, []):
-                if k2[0] == th and k2[1:] > (p, q) and k2[1:] not in allowed and k2 != key:
-                    later.add((ident, k2[1:]))
+            if len(ident) < 8 or ('_' not in ident and not re.search(r'[a-z][A-Z]', ident)):
+                continue            # short or generic names collide with Mathlib
+            keys2 = by_name.get(ident, [])
+            if len(set(keys2)) != 1: continue   # declared under several points: ambiguous
+            k2 = keys2[0]
+            if k2[0] == th and k2[1:] > last and k2[1:] not in allowed and k2 != key:
+                later.add((ident, k2[1:]))
         if later:
             hits[os.path.relpath(path, ROOT)] += 1
             cites = ', '.join(sorted(f"{i}({pp}.{qq})" for i, (pp, qq) in later))[:200]

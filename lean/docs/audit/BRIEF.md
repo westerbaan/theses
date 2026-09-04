@@ -26,3 +26,6 @@ Prefer many small faithful conversions over one heroic one. Stop and report when
 
 ## Report back (terse)
 Per row: DISP, lean_name, old→new proof class, lines added, compile exit code. Then anything you changed outside the assignment and why. The orchestrator commits.
+
+## Addendum, 2026-09-04: the §2.2 ruling on forward references
+The author ruled `docs/DECISIONS.md` §2.2 (a): a proof of a statement at point P may use only what the thesis has at or before P, **except where the printed proof of P itself cites a later point**.  `python3 scripts/forward_check.py` lists the proofs that cite a later point the printed proof does not.  In a pass over those: re-derive from the printed proof; if it does cite the later point (an `\sref`, or the proof is printed after that point), the citation is allowed — say so in the row and leave the proof; otherwise rewrite the step with what the thesis has at P (a `mathlib` row's own argument, or the earlier point the print uses), and regrade.  A `mathlib` row (a step closed by a Mathlib lemma without transcribing the author) is under the same ruling: transcribe the author's argument where the thesis prints one.
