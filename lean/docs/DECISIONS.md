@@ -48,7 +48,7 @@ in §4 rather than in front of you.
 | 1.2 | 206II.2/.4 / 211IV | must the ⋄-self-adjoint square root be pure? | `vn_is_andthen_eff` | (a) yes, it is meant to be |
 | 1.3 | 158III–158V | printed proof is false — replace it how? | 3 × `kaplansky_hilbmod_A*` | (a) delete, use the linking algebra |
 | 1.4 | 139XI | case (ii) takes the complement in the wrong space | `ess_uniq_pur` | (a) complements in `𝒦'` |
-| 1.5 | 179III.2 | strengthen our statement, or drop the point? | `effectModule_unitInterval_representation` | (a) strengthen, else (b) drop |
+| 1.5 | 179III.2 | strengthen our statement, or drop the point? — ruled (a) 2026-09-04 | `effectModule_unitInterval_representation` | (a) strengthen, else (b) drop |
 | 1.6 | 106III.3, 116III.4 | two errata to accept | 2 red rows | accept |
 | 2.1 | — | may we match the printed statement without asking? | 54 audit rows | (a) standing authorisation |
 | 2.2 | — | does "no forward references" apply outside `A/CStar`? | 520 audit rows | (b) forward only; label the rest |
@@ -371,9 +371,9 @@ all three hypotheses; the proof is `sorry`, so nothing false is derived).  We
 will restate it with whichever form of (ii) you choose and then attempt the
 proof — which is real work, not a free close.
 
-### 1.5 — 179III.2 `gudder1998representation`: strengthen our statement, or drop the point?
+### 1.5 — 179III.2 `gudder1998representation`: strengthen our statement, or drop the point? — **ruled (a), 2026-09-04**
 
-*(`QUESTIONS.md` B14.  Blocks `effectModule_unitInterval_representation` in
+*(`QUESTIONS.md` B14, now closed, deleted 2026-09-04.  Blocks `effectModule_unitInterval_representation` in
 `Theses/B/Eff/EffectAlgebras.lean`.  Audit row
 `bdils-pure-beff-states-effectalgebras.csv:228`, `left-ruling`.)*
 
@@ -420,9 +420,11 @@ three of the four other "cited only, never proved" statements have since been
 proved independently (178III.2/.4, 192V.4, `extensive_effectus`), so (b) is not
 a pattern we are otherwise following.
 
-**What we do.**  Under (a): add an `OrderUnit` predicate (none exists in the
-file), restate, and attack the proof — a genuine formalization of
-Gudder–Pulmannová, which we have not costed.  Under (b): delete the declaration;
+**What we do.**  Ruled (a) on 2026-09-04: the statement is restated with the
+two `SMul` monotonicity hypotheses and an order-unit condition, and the proof
+of Gudder–Pulmannová is attempted in the same pass (see the row and
+`PROVING-LOG.md`).  Under (a) as originally written: add an `OrderUnit`
+predicate, restate, and attack the proof.  Under (b): delete the declaration;
 the tree loses a red row and the `docs/why-open.csv` and audit rows are closed.
 
 ### 1.6 — Two errata acceptances, each of which frees a `sorry`

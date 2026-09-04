@@ -72,6 +72,8 @@ DELETED = {
     "A7": "2026-08-19 (5f19f62)",
     # 51IX Linfty_vn: the ℂ-homogeneity clause restored under the D1 ruling
     "A9": "2026-09-02 (3ae948d)",
+    # 179III.2: ruled (a) by the author, restated to the cited theorem
+    "B14": "2026-09-04",
 }
 
 

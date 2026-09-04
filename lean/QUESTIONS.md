@@ -30,6 +30,7 @@ pointer to a key that is in neither):
 | **D6** | 2026-08-18 | `abc3af3` — "D6 ruled: delete the false net form of 164II.2b" |
 | **A7** | 2026-08-19 | `5f19f62` — "26II.5 and 104III: p ∧ q is defined, and 2a and 3 are proved" |
 | **A9** | 2026-09-02 | `3ae948d` — 51IX's ℂ-homogeneity clause restored under the D1 ruling |
+| **B14** | 2026-09-04 | ruled (a) by Bas: 179III.2 restated to the cited theorem (scalar monotonicity, order unit) and its proof attempted |
 
 Note that `ffd073b`'s subject names A5 while its diff removes A6 and B11; read
 the diff, not the subject.  Keep this table in step when a question is deleted.
@@ -38,7 +39,7 @@ Deleted earlier and not in the table: **B2**, **B4**, **B5**, **B6**, **B7**,
 **B9**, **D2**, **D3** (2026-08-16), **A4** (2026-08-21) and **A3**
 (2026-08-26).  A3 asked whether it is right to leave a cited-only result
 unproved; four of its six bullets are now proved independently of the citation,
-the fifth is **B14** below, the sixth pointed at an errata row that was
+the fifth was **B14** (ruled (a) on 2026-09-04, now deleted), the sixth pointed at an errata row that was
 withdrawn when `eff.tex` changed, and its two *informational* remarks (the
 third axiom of `extensive_effectus`, and what "adapt the proof of
 `emod-effectus`" comes to for 180V) are `OPEN (informational)` rows in
@@ -258,45 +259,6 @@ an `EffectusPartialStructure`: the coproducts and the finPAC axioms are
 `Prop`s, `homPCM` is unique by `effectusPartialStructure_homPCM_unique`,
 `orth` is pinned by `orth_unique`, and `one X` is the `≼`-greatest predicate.)
 See `docs/DECISIONS.md` §2.7.
-
-### B14. 179III.2 `effectModule_unitInterval_representation` — **our** statement is weaker than the cited Gudder–Pulmannová theorem, and weaker than its own sibling
-**What the source claims** (`eff.tex:737`, Examples 179III.2): "If `V` is an
-**ordered real vector space with order unit** `u`, then `[0,u]` is an effect
-module over `[0,1]`.  In fact, every effect module over `[0,1]` is of this
-form \[gudder1998representation\]."
-
-**What we state** (`EffectAlgebras.lean`): for every effect module `E`
-over `[0,1]` there are `V` with `[AddCommGroup V] [Module ℝ V]
-[PartialOrder V] [IsOrderedAddMonoid V]`, a `u : V` with `0 ≤ u`, and a
-bijection `f : E → Set.Icc 0 u` preserving `⋁` and `•`.
-
-**The gap, in two parts.**
-
-1. *No scalar compatibility.*  `IsOrderedAddMonoid V` says only that `+` is
-   monotone; an **ordered real vector space** also has its positive cone
-   closed under nonnegative scalars.  This is not pedantry: the *converse*
-   half of the very same Examples point, `orderIntervalEffectModule`, could
-   not be proved until `[PosSMulMono ℝ V] [SMulPosMono ℝ V]` were added to it,
-   and it carries them today.  So the two halves of one Examples point use two
-   different meanings of "ordered real vector space", and only one is the
-   source's.
-2. *`0 ≤ u` is not "order unit".*  The source requires `u` to be an order
-   unit — every `v : V` satisfies `v ≤ n • u` for some `n : ℕ` — which is what
-   makes `[0,u]` generate `V` and is the whole content of a *representation*
-   theorem.  We ask only that `u` be positive.
-
-**Consequence**: as written, 179III.2 could be discharged without proving
-Gudder–Pulmannová, because the `V` it is allowed to produce need not be an
-ordered vector space in the source's sense and `u` need not be an order unit.
-A closed `sorry` here would be worth nothing, which is why it must not be
-attacked before the ruling.
-
-**Ruling wanted**: strengthen the statement (add the two `SMul` monotonicity
-hypotheses to the produced `V`, and replace `0 ≤ u` by an order-unit
-condition — no `OrderUnit` predicate exists in the file yet, so this is a real
-addition), or drop 179III.2 as out of scope.  Statements are not changed
-without a ruling.  `effectModule_unitInterval_representation`
-(`Theses/B/Eff/EffectAlgebras.lean`) waits on it; see `docs/DECISIONS.md` §1.5.
 
 ### B15. 206II.4 / 211IV — is the ⋄-self-adjoint square root of a ⋄-positive map required to be **pure**?  (eff.tex vs proc.tex 103I)
 `eff.tex` parsec 2060 point 40 (`diamond-basics`), and parsec 2110 point 40
