@@ -5057,7 +5057,7 @@ theorem su_isCornerMap_of_isComprehension {W X : WStarCPSU.{u}ᵒᵖ}
     (Theses.A.Proc.isCornerMap_of_iso θ.unop.toNCPMap (inv θ).unop.toNCPMap
       hgf hfg hθu)
 
-/-- **199V** (`compr-examples`, eff.tex:3933, Examples), first sentence as
+/-- **199V** (eff.tex:3933, unlabelled Examples), first sentence as
 printed: *"In `\\op\\vN` comprehensions are exactly the same thing as
 corners"* — the **biconditional**, which neither of the two implications
 above states on its own.

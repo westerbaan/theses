@@ -31318,3 +31318,14 @@ sentence), 7III.6 (a sign in asols).  112 rows.
 Commits `746f405`–`f59d92b` (13) were orchestrated by Claude Opus 4.8: the
 harness switched the session's model mid-run (apparently a usage fallback)
 and back to Fable at `1b0f867`.  The trailers record it faithfully.
+
+### 4. Where the tree stands (closed 2026-09-05)
+
+**Eight `sorry`s** (was nine).  All 55 oleans rebuilt after the day's edits;
+`AxiomCheck`: 8 are themselves `sorry`, 0 depend on one.  Map: 2,249
+statements, 2,241 proved.  Dumps regenerated; every exact check clean
+(`positive_2x2matrix_2` came back to life under 4XV.1's transcription and
+is so recorded).  One grading call to note: seven `mathlib`→`faithful`
+regrades in `acstar-matrices-representation.csv` rest on the reading that a
+one-line Mathlib call *is* the author's argument when that argument is
+definitional; recorded in the rows.
