@@ -201,6 +201,10 @@ purity — `ad_{B₁} + ad_{B₂}` with independent self-adjoint `B₁, B₂` is
 eff-⋄-self-adjoint and impure.  proc.tex's notion is strictly stronger.  So
 reading (1) genuinely *changes* ⋄-self-adjointness (it excludes such witnesses),
 though not ⋄-positivity, whose pure-square roots are automatically pure.
+On *sharp* maps (210I) the two notions do coincide: a ⋄-self-adjoint sharp
+endomap is an involutive *-automorphism of a central corner, `a ↦ ϑ(za)`,
+hence pure (`docs/B15-sharp-dsa.md`; the swap on `ℂ ⊕ ℂ` shows the outer
+case is real, so `ad_v` with `v = v*` is only the inner one).
 That coincidence is now known to be a theorem (`docs/B15-pure-sqrt.md`), so the
 `sorry` is a documented cross-thesis definitional gap, not a defect and not our
 mis-transcription.  The remaining choice is only whether to (1) align the
