@@ -609,12 +609,12 @@ the same point, which is the 123I shape.
 
 | point | declaration | file:line | lines | live siblings |
 |---|---|---|---|---|
-| 118II | `cceil_tensor` | `A/Proc/Tensor.lean:10008` | 134 | 1/2 |
+| 118II | `cceil_tensor` | `A/Proc/Tensor.lean:10177` | 134 | 1/2 |
 | 81IX | `div_usc_ball` | `A/VN/Division.lean:2975` | 114 | 4/5 |
 | 106I | `uniqueness_sequential_product_exists` | `A/Proc/Measurement.lean:9278` | 79 | 1/3 |
 | 4XIII | `positive_2x2matrix_2` | `A/CStar/Basic.lean:284` | 67 | 1/2 |
 | 82I | `polar_decomposition_2` | `A/VN/Division.lean:3446` | 55 | 3/4 |
-| 156II | `paschke_injective` | `B/Dils/Paschke.lean:3531` | 48 | 2/3 |
+| 156II | `paschke_injective` | `B/Dils/Paschke.lean:3638` | 48 | 2/3 |
 | 160IV | `hilbmod_projthm_3` | `B/Dils/SelfDual.lean:1499` | 45 | 2/3 |
 | 96III | `ncp_uwlim_2` | `A/Proc/Measurement.lean:1797` | 39 | 2/3 |
 | 23II | `sqrt_lemma_monotone` | `A/CStar/Positive.lean:7289` | 35 | 3/6 |
@@ -1020,8 +1020,8 @@ deleted:
 |---|---|
 | `mem_vnComm_top` | `TensorTransport.lean:735`, `mem_vnComm_top.mp hb` |
 | `le_vnComm_comm` | `Commutation.lean:189`, `le_vnComm_comm.mpr …` (and 2 more) |
-| `summable_diagTerm` | `Tensor.lean:7433`, `summable_diagTerm.hasSum` |
-| `continuous_diagChi` | `Tensor.lean:7453`, `continuous_diagChi.comp hcont` |
+| `summable_diagTerm` | `Tensor.lean:7593`, `summable_diagTerm.hasSum` |
+| `continuous_diagChi` | `Tensor.lean:7613`, `continuous_diagChi.comp hcont` |
 | `Corner.isClosed_cornerSet` | `Measurement.lean:597`, `isClosed_cornerSet.isComplete` |
 | `IsCorner.isStarProjection` | `CornerTensor.lean:106`, `h.isStarProjection.isIdempotentElem` — **suffix and prefix at once** |
 | `isUnitaryCLM_one` | `CommutationAmplify.lean:374`, `isUnitaryCLM_one.opTensor …` |
@@ -1342,7 +1342,7 @@ the filters, all unrowed by `lean_name`):
   corner — a sanity anchor for the definitions", i.e. class 2, a non-vacuity
   check), `isPureMap_of_isFilter` (`Pure.lean:2388` names it beside
   `isPureMap_of_isCorner`, and it is the filter half of **170I**'s "filters and
-  corners are pure"), `vn_effObj_iso` (`VNExamples.lean:6878`, "what the eight
+  corners are pure"), `vn_effObj_iso` (`VNExamples.lean:7311`, "what the eight
   examples downstream actually use is … the *uniqueness* statement
   `vn_effObj_iso`, which is proved" — and again at `:2127`), and
   `modularPair_data` (`StandardSubspace.lean:650`).
@@ -1439,7 +1439,7 @@ limb.
 | limb | point | closed by | consumer |
 |---|---|---|---|
 | `hilb_tensor_basic_2` | 109IV.2 | `49a49f0` | 110III's proof, `A/Proc/Tensor.lean:679` |
-| `triple_tensor` | 119II | `49a49f0` | 119IV `isTensorProduct_assoc`, `Tensor.lean:10937` |
+| `triple_tensor` | 119II | `49a49f0` | 119IV `isTensorProduct_assoc`, `Tensor.lean:11277` |
 | `perp_sharp_is_orth` | 213III | `49a49f0` | `B/Eff/Comparisons.lean:600` |
 | `ultranormcontstruct_smul` | 148III.3 | `027dc77` | `ext_tensor_dense` (164II.1), `B/Dils/SelfDual.lean:8694` |
 | `dagger_of_iso_adjoint` | 216IX.1 | `0f036ad` | `B/Eff/Dagger.lean:528` |

@@ -15,9 +15,11 @@ Design:
   mixin, the definition adds no instance of an algebraic class, so the
   products, `ULift`s and one-point spaces below carry exactly Mathlib's
   own algebraic and order structure.
-* Archimedeanness is deliberately *not* part of the definition: 190IV.1
-  states that the states of a single order unit space are separating
-  precisely when it is archimedean, so it is a property, not an axiom.
+* Archimedeanness is deliberately *not* part of the definition: 190IV.1's
+  parenthetical makes it a property of a single space, not an axiom.  It is
+  `OUSArchimedean`, in the literature's form (`ousArchimedean_iff_nsmul`),
+  with the Minkowski gauge `ouGauge` of the unit and the Hahn–Banach
+  separation `ou_exists_state` beside it.
 * Positivity of the unit is an axiom for order unit *groups* and a
   *theorem* for order unit *spaces* (`ou_unit_nonneg`): in the real case
   `-u ≤ n • u` gives `0 ≤ (n+1) • u`, and one may divide by `n+1`.  In a
@@ -53,12 +55,21 @@ Design:
   positive unital maps `(x,n) ↦ x₁` and `(x,n) ↦ x₂` into `ℤ` agree.
   Separating predicates would need the effects `[0,1]` to generate the
   group, which "ordered abelian group with order unit" does not give.
+* ⚠ **190IV.1's parenthetical is false as printed** in one direction: the
+  states of a single order unit space are separating *if* it is archimedean
+  (`ous_separatingStatesAt_of_archimedean`) but not *only if*.  What they
+  amount to is *almost* archimedeanness — no non-zero element between
+  `-ε · 1` and `ε · 1` for all `ε > 0`, i.e. the order-unit seminorm being a
+  norm — which is `ous_separatingStatesAt_iff_almostArchimedean`.  The two
+  part at `ousAlm`, `ℝ²` with cone `{0} ∪ {(a,b) : 0 < a, 0 ≤ b}` and unit
+  `(1,1)`: it has no non-zero infinitesimal, yet `(0,-1) ≤ ε · (1,1)` for
+  every `ε > 0` without being `≤ 0`.  `ous_separating_states_not_archimedean`
+  is the refutation.  Archimedeanness *is* equivalent to the states
+  determining the *order* (`ous_statesDetermineOrder_iff_archimedean`,
+  Kadison), which is presumably what the parenthetical means to say.
 * Not separately formalized: the remaining items of 189aII (extensive
   categories with a final object, and the examples `Set`, `CRngᵒᵖ`, `CH`
-  of 189aII.3); and the parenthetical of 190IV.1 (eff.tex:2151), that the
-  states on a single order unit space are separating iff it is
-  archimedean — only the two halves the point itself asserts about the
-  category are carried.
+  of 189aII.3).
 -/
 import Theses.B.Eff.StatesPredicates
 
@@ -170,6 +181,293 @@ theorem ou_eq_sub_of_nonneg (x : X) :
   abel
 
 end OUSBasic
+
+/-! ### Archimedeanness, and the gauge of the order unit (190IV.1) -/
+
+/-- **190IV.1** (eff.tex:2151, Examples, item 1, the parenthetical): an order
+unit space is **archimedean** if `x ≤ ε · 1` for every `ε > 0` forces
+`x ≤ 0`.
+
+This is the definition of the literature the theses cite for order unit
+spaces (Alfsen's Definition 1.12, named at cstar.tex:2789 in 30VI); the
+equivalent form with natural multiples is `ousArchimedean_iff_nsmul`.  It is
+deliberately *not* an axiom of `OrderUnitSpace` — 190IV.1's parenthetical
+makes it a property of a single space. -/
+def OUSArchimedean (X : Type u) [AddCommGroup X] [Module ℝ X] [PartialOrder X]
+    [OrderUnitSpace X] : Prop :=
+  ∀ x : X, (∀ ε : ℝ, 0 < ε → x ≤ ε • ouUnit X) → x ≤ 0
+
+/-- An order unit space is **almost archimedean** if the only element caught
+between `-ε · 1` and `ε · 1` for every `ε > 0` is `0`; equivalently, the
+order unit seminorm is a norm.
+
+This is strictly weaker than `OUSArchimedean` (`ousAlm` below is a
+two-dimensional counterexample), and it is what separating states actually
+amount to: see `ous_separatingStatesAt_iff_almostArchimedean`, and the
+ERRATA row on 190IV.1. -/
+def OUSAlmostArchimedean (X : Type u) [AddCommGroup X] [Module ℝ X]
+    [PartialOrder X] [OrderUnitSpace X] : Prop :=
+  ∀ x : X, (∀ ε : ℝ, 0 < ε → x ≤ ε • ouUnit X ∧ -x ≤ ε • ouUnit X) → x = 0
+
+/-- The set of scalars `r` with `y ≤ r · 1`; the gauge below is its
+infimum. -/
+def ouGaugeSet (X : Type u) [AddCommGroup X] [Module ℝ X] [PartialOrder X]
+    [OrderUnitSpace X] (y : X) : Set ℝ :=
+  {r : ℝ | y ≤ r • ouUnit X}
+
+/-- The **Minkowski gauge of the order unit**, `p(y) = inf {r : y ≤ r · 1}`.
+It is the sublinear functional that drives the Hahn–Banach separation of
+`ou_exists_state`; the order-unit axiom makes `ouGaugeSet` non-empty and (as
+long as the unit is not `0`) bounded below. -/
+def ouGauge (X : Type u) [AddCommGroup X] [Module ℝ X] [PartialOrder X]
+    [OrderUnitSpace X] (y : X) : ℝ :=
+  sInf (ouGaugeSet X y)
+
+section OUArch
+
+variable {X : Type u} [AddCommGroup X] [Module ℝ X] [PartialOrder X]
+  [OrderUnitSpace X]
+
+/-- Archimedeanness in the form the literature often gives it: `n · x ≤ 1`
+for every natural `n` forces `x ≤ 0`.  The two are interchanged by dividing
+resp. multiplying by `n`. -/
+theorem ousArchimedean_iff_nsmul :
+    OUSArchimedean X ↔ ∀ x : X, (∀ n : ℕ, (n : ℝ) • x ≤ ouUnit X) → x ≤ 0 := by
+  constructor
+  · intro h x hx
+    refine h x fun ε hε => ?_
+    obtain ⟨n, hn⟩ := exists_nat_gt ε⁻¹
+    have hnpos : (0 : ℝ) < (n : ℝ) := lt_of_le_of_lt (le_of_lt (inv_pos.mpr hε)) hn
+    have h1 : (n : ℝ) • x ≤ ouUnit X := hx n
+    have h2 : (n : ℝ)⁻¹ • ((n : ℝ) • x) ≤ (n : ℝ)⁻¹ • ouUnit X :=
+      ou_smul_le_smul (le_of_lt (inv_pos.mpr hnpos)) h1
+    rw [smul_smul, inv_mul_cancel₀ (ne_of_gt hnpos), one_smul] at h2
+    refine h2.trans (ou_smul_unit_mono ?_)
+    have h3 : 1 < ε * (n : ℝ) := by
+      have h4 := mul_lt_mul_of_pos_left hn hε
+      rwa [mul_inv_cancel₀ (ne_of_gt hε)] at h4
+    rw [inv_eq_one_div, div_le_iff₀ hnpos]
+    linarith
+  · intro h x hx
+    refine h x fun n => ?_
+    rcases Nat.eq_zero_or_pos n with hn | hn
+    · rw [hn]
+      simpa using ou_unit_nonneg (X := X)
+    · have hnpos : (0 : ℝ) < (n : ℝ) := by exact_mod_cast hn
+      have h1 : x ≤ (n : ℝ)⁻¹ • ouUnit X := hx _ (inv_pos.mpr hnpos)
+      have h2 := ou_smul_le_smul (le_of_lt hnpos) h1
+      rwa [smul_smul, mul_inv_cancel₀ (ne_of_gt hnpos), one_smul] at h2
+
+theorem ou_mem_gaugeSet {y : X} {r : ℝ} (h : y ≤ r • ouUnit X) :
+    r ∈ ouGaugeSet X y := h
+
+/-- The order-unit axiom: some natural multiple of the unit dominates `y`. -/
+theorem ou_gaugeSet_nonempty (y : X) : (ouGaugeSet X y).Nonempty := by
+  obtain ⟨n, hn⟩ := ou_exists_le_smul_unit y
+  exact ⟨(n : ℝ), hn⟩
+
+/-- `ouGaugeSet` is upward closed, the unit being positive. -/
+theorem ou_gaugeSet_up {y : X} {r s : ℝ} (hr : r ∈ ouGaugeSet X y) (h : r ≤ s) :
+    s ∈ ouGaugeSet X y :=
+  le_trans hr (ou_smul_unit_mono h)
+
+/-- If the order unit is `0` the space is trivial: `x ≤ 0` and `-x ≤ 0`. -/
+theorem ou_eq_zero_of_unit_eq_zero (hu : ouUnit X = 0) (x : X) : x = 0 := by
+  obtain ⟨n, hn⟩ := ou_exists_le_smul_unit x
+  obtain ⟨m, hm⟩ := ou_exists_le_smul_unit (-x)
+  rw [hu, smul_zero] at hn hm
+  exact le_antisymm hn (neg_nonpos.mp hm)
+
+/-- A space with a non-zero element has a non-zero order unit. -/
+theorem ou_unit_ne_zero_of_ne {x : X} (hx : x ≠ 0) : ouUnit X ≠ 0 :=
+  fun hu => hx (ou_eq_zero_of_unit_eq_zero hu x)
+
+/-- A multiple of the order unit is positive only if the scalar is: divide by
+`r`, which would otherwise make `-1` a positive multiple of a positive
+unit. -/
+theorem ou_nonneg_of_smul_unit_nonneg (hu : ouUnit X ≠ 0) {r : ℝ}
+    (h : (0 : X) ≤ r • ouUnit X) : 0 ≤ r := by
+  by_contra hc
+  have hr : r < 0 := not_le.mp hc
+  have hc' : (0 : ℝ) ≤ -r⁻¹ := by
+    have : r⁻¹ < 0 := inv_neg''.mpr hr
+    linarith
+  have h1 : (0 : X) ≤ (-r⁻¹) • (r • ouUnit X) := ou_smul_nonneg hc' h
+  rw [smul_smul] at h1
+  have h2 : -r⁻¹ * r = -1 := by
+    rw [neg_mul, inv_mul_cancel₀ (ne_of_lt hr)]
+  rw [h2] at h1
+  have h3 : ouUnit X ≤ 0 := by simpa using h1
+  exact hu (le_antisymm h3 ou_unit_nonneg)
+
+/-- `ouGaugeSet X y` is bounded below by `-m` for any `m` with `-y ≤ m · 1`,
+so the gauge is a real number. -/
+theorem ou_gaugeSet_bddBelow (hu : ouUnit X ≠ 0) (y : X) :
+    BddBelow (ouGaugeSet X y) := by
+  obtain ⟨m, hm⟩ := ou_exists_le_smul_unit (-y)
+  refine ⟨-(m : ℝ), fun r hr => ?_⟩
+  have h1 : -((m : ℝ) • ouUnit X) ≤ y := neg_le.mp hm
+  have h2 : -((m : ℝ) • ouUnit X) ≤ r • ouUnit X := le_trans h1 hr
+  have h3 : (0 : X) ≤ (m : ℝ) • ouUnit X + r • ouUnit X := by
+    have := add_le_add_right h2 ((m : ℝ) • ouUnit X)
+    simpa using this
+  rw [← add_smul] at h3
+  have h4 : (0 : ℝ) ≤ (m : ℝ) + r := ou_nonneg_of_smul_unit_nonneg hu h3
+  linarith
+
+theorem ou_gauge_le (hu : ouUnit X ≠ 0) {y : X} {r : ℝ}
+    (h : y ≤ r • ouUnit X) : ouGauge X y ≤ r :=
+  csInf_le (ou_gaugeSet_bddBelow hu y) h
+
+theorem ou_le_gauge {y : X} {c : ℝ} (h : ∀ r ∈ ouGaugeSet X y, c ≤ r) :
+    c ≤ ouGauge X y :=
+  le_csInf (ou_gaugeSet_nonempty y) h
+
+theorem ou_gauge_zero (hu : ouUnit X ≠ 0) : ouGauge X (0 : X) = 0 := by
+  refine le_antisymm (ou_gauge_le hu (by rw [zero_smul])) (ou_le_gauge ?_)
+  intro r hr
+  have h : (0 : X) ≤ r • ouUnit X := hr
+  exact ou_nonneg_of_smul_unit_nonneg hu h
+
+/-- The gauge is subadditive: `y ≤ r · 1` and `z ≤ s · 1` give
+`y + z ≤ (r+s) · 1`. -/
+theorem ou_gauge_add_le (hu : ouUnit X ≠ 0) (y z : X) :
+    ouGauge X (y + z) ≤ ouGauge X y + ouGauge X z := by
+  refine le_of_forall_pos_le_add fun ε hε => ?_
+  obtain ⟨r, hr, hrlt⟩ :=
+    Real.lt_sInf_add_pos (ou_gaugeSet_nonempty y) (half_pos hε)
+  obtain ⟨s, hs, hslt⟩ :=
+    Real.lt_sInf_add_pos (ou_gaugeSet_nonempty z) (half_pos hε)
+  have hmem : y + z ≤ (r + s) • ouUnit X := by
+    rw [add_smul]
+    exact add_le_add hr hs
+  have h1 : ouGauge X (y + z) ≤ r + s := ou_gauge_le hu hmem
+  have h2 : r + s < ouGauge X y + ouGauge X z + ε := by
+    simp only [ouGauge] at *
+    linarith
+  linarith
+
+theorem ou_gauge_smul_le (hu : ouUnit X ≠ 0) {c : ℝ} (hc : 0 < c) (y : X) :
+    ouGauge X (c • y) ≤ c * ouGauge X y := by
+  refine le_of_forall_pos_le_add fun ε hε => ?_
+  have hεc : 0 < ε / c := div_pos hε hc
+  obtain ⟨r, hr, hrlt⟩ := Real.lt_sInf_add_pos (ou_gaugeSet_nonempty y) hεc
+  have hmem : c • y ≤ (c * r) • ouUnit X := by
+    have h1 : c • y ≤ c • (r • ouUnit X) := ou_smul_le_smul (le_of_lt hc) hr
+    rwa [smul_smul] at h1
+  have h1 : ouGauge X (c • y) ≤ c * r := ou_gauge_le hu hmem
+  have h2 : c * r ≤ c * ouGauge X y + ε := by
+    simp only [ouGauge] at *
+    have h3 := mul_le_mul_of_nonneg_left (le_of_lt hrlt) (le_of_lt hc)
+    calc c * r ≤ c * (sInf (ouGaugeSet X y) + ε / c) := h3
+      _ = c * sInf (ouGaugeSet X y) + ε := by field_simp
+  linarith
+
+/-- The gauge is positively homogeneous. -/
+theorem ou_gauge_smul (hu : ouUnit X ≠ 0) {c : ℝ} (hc : 0 < c) (y : X) :
+    ouGauge X (c • y) = c * ouGauge X y := by
+  refine le_antisymm (ou_gauge_smul_le hu hc y) ?_
+  have h1 : ouGauge X y ≤ c⁻¹ * ouGauge X (c • y) := by
+    have h2 := ou_gauge_smul_le hu (inv_pos.mpr hc) (c • y)
+    rwa [smul_smul, inv_mul_cancel₀ (ne_of_gt hc), one_smul] at h2
+  have h3 := mul_le_mul_of_nonneg_left h1 (le_of_lt hc)
+  rwa [← mul_assoc, mul_inv_cancel₀ (ne_of_gt hc), one_mul] at h3
+
+/-- `p(1) ≤ 1`, since `1 ≤ 1 · 1`. -/
+theorem ou_gauge_unit_le (hu : ouUnit X ≠ 0) : ouGauge X (ouUnit X) ≤ 1 :=
+  ou_gauge_le hu (by rw [one_smul])
+
+/-- `p(-1) ≤ -1`, since `-1 ≤ (-1) · 1`.  Together with `ou_gauge_unit_le`
+this is what pins a functional below the gauge to be unital. -/
+theorem ou_gauge_neg_unit_le (hu : ouUnit X ≠ 0) :
+    ouGauge X (-ouUnit X) ≤ -1 :=
+  ou_gauge_le hu (by rw [neg_one_smul])
+
+/-- `p(-y) ≤ 0` for `y ≥ 0`: this is what makes a functional below the gauge
+positive. -/
+theorem ou_gauge_neg_nonpos (hu : ouUnit X ≠ 0) {y : X} (hy : 0 ≤ y) :
+    ouGauge X (-y) ≤ 0 :=
+  ou_gauge_le hu (by rw [zero_smul]; exact neg_nonpos.mpr hy)
+
+/-- An `ε` that `y` does not reach bounds the gauge from below, the gauge set
+being upward closed. -/
+theorem ou_gauge_pos_of_not_le {y : X} {ε : ℝ} (hε : 0 < ε)
+    (h : ¬ y ≤ ε • ouUnit X) : 0 < ouGauge X y := by
+  refine lt_of_lt_of_le hε (ou_le_gauge ?_)
+  intro r hr
+  by_contra hc
+  exact h (ou_gaugeSet_up hr (le_of_lt (not_le.mp hc)))
+
+/-- **The Hahn–Banach separation for order unit spaces** (the substance of
+190IV.1's parenthetical): if the gauge of `d` is positive then some state —
+a positive unital linear functional — gives `d` a positive value.
+
+Mathlib's `exists_extension_of_le_sublinear` extends a partial linear map
+dominated by a sublinear functional; the sublinear functional is the gauge
+`p(y) = inf {r : y ≤ r · 1}` of the order unit, and the partial map is
+`t · d ↦ t · p(d)` on the line `ℝ · d`, which is dominated because
+`p(d) + p(-d) ≥ p(0) = 0`.  The extension `g` is then automatically
+positive (`g(-y) ≤ p(-y) ≤ 0` for `y ≥ 0`) and unital (`g(1) ≤ p(1) ≤ 1` and
+`-g(1) ≤ p(-1) ≤ -1`). -/
+theorem ou_exists_state (hu : ouUnit X ≠ 0) (d : X) (hd : 0 < ouGauge X d) :
+    ∃ f : X →ₗ[ℝ] ℝ, (∀ x : X, 0 ≤ x → 0 ≤ f x) ∧ f (ouUnit X) = 1 ∧ 0 < f d := by
+  have hdne : d ≠ 0 := by
+    intro h
+    rw [h, ou_gauge_zero hu] at hd
+    exact lt_irrefl _ hd
+  have hN_hom : ∀ c : ℝ, 0 < c → ∀ x : X, ouGauge X (c • x) = c * ouGauge X x :=
+    fun c hc x => ou_gauge_smul hu hc x
+  have hN_add : ∀ x y : X, ouGauge X (x + y) ≤ ouGauge X x + ouGauge X y :=
+    ou_gauge_add_le hu
+  have hFle : ∀ z : ((LinearPMap.mkSpanSingleton d (ouGauge X d) hdne : X →ₗ.[ℝ] ℝ)).domain,
+      ((LinearPMap.mkSpanSingleton d (ouGauge X d) hdne : X →ₗ.[ℝ] ℝ)) z ≤ ouGauge X (z : X) := by
+    rintro ⟨z, hz⟩
+    obtain ⟨c, rfl⟩ := Submodule.mem_span_singleton.mp hz
+    have hval : ((LinearPMap.mkSpanSingleton d (ouGauge X d) hdne : X →ₗ.[ℝ] ℝ)) ⟨c • d, hz⟩
+        = c • ouGauge X d := LinearPMap.mkSpanSingleton'_apply _ _ _ c hz
+    rw [hval, smul_eq_mul]
+    show c * ouGauge X d ≤ ouGauge X (c • d)
+    rcases lt_trichotomy c 0 with hc | hc | hc
+    · have hs : 0 < -c := by linarith
+      have h1 : ouGauge X (c • d) = (-c) * ouGauge X (-d) := by
+        rw [← ou_gauge_smul hu hs (-d)]
+        congr 1
+        rw [smul_neg, neg_smul, neg_neg]
+      have h2 : (0 : ℝ) ≤ ouGauge X d + ouGauge X (-d) := by
+        have h3 := ou_gauge_add_le hu d (-d)
+        rw [add_neg_cancel, ou_gauge_zero hu] at h3
+        linarith
+      rw [h1]
+      nlinarith
+    · rw [hc, zero_smul, zero_mul, ou_gauge_zero hu]
+    · rw [ou_gauge_smul hu hc]
+  obtain ⟨g, hgF, hgN⟩ :=
+    exists_extension_of_le_sublinear ((LinearPMap.mkSpanSingleton d (ouGauge X d) hdne : X →ₗ.[ℝ] ℝ))
+      (ouGauge X) hN_hom hN_add hFle
+  have hpos : ∀ x : X, 0 ≤ x → 0 ≤ g x := by
+    intro x hx
+    have h1 : g (-x) ≤ ouGauge X (-x) := hgN (-x)
+    have h2 : ouGauge X (-x) ≤ 0 := ou_gauge_neg_nonpos hu hx
+    have h3 : g (-x) = -g x := map_neg g x
+    linarith
+  have hunit : g (ouUnit X) = 1 := by
+    have h1 : g (ouUnit X) ≤ 1 :=
+      le_trans (hgN (ouUnit X)) (ou_gauge_unit_le hu)
+    have h2 : g (-ouUnit X) ≤ -1 :=
+      le_trans (hgN (-ouUnit X)) (ou_gauge_neg_unit_le hu)
+    have h3 : g (-ouUnit X) = -g (ouUnit X) := map_neg g _
+    have h4 : (1 : ℝ) ≤ g (ouUnit X) := by rw [h3] at h2; linarith
+    exact le_antisymm h1 h4
+  have hd' : g d = ouGauge X d := by
+    have hmem : d ∈ ((LinearPMap.mkSpanSingleton d (ouGauge X d) hdne : X →ₗ.[ℝ] ℝ)).domain :=
+      Submodule.mem_span_singleton_self d
+    have h1 := hgF ⟨d, hmem⟩
+    have h2 : ((LinearPMap.mkSpanSingleton d (ouGauge X d) hdne : X →ₗ.[ℝ] ℝ)) ⟨d, hmem⟩
+        = ouGauge X d := LinearPMap.mkSpanSingleton'_apply_self _ _ _ hmem
+    exact h1.trans h2
+  exact ⟨g, hpos, hunit, by rw [hd']; exact hd⟩
+
+end OUArch
 
 /-! ### The basic examples of order unit spaces -/
 
@@ -3169,6 +3467,565 @@ theorem ous_real_effectus : IsRealEffectus (Par OUS.{u}ᵒᵖ) := by
     ⟨⟨⟨ousScalEquivI.{u}.symm, hψperp, hψovee⟩, hψone⟩, hψmul⟩,
     fun k => ousScalEquivI.{u}.symm_apply_apply k,
     fun r => ousScalEquivI.{u}.apply_symm_apply r⟩
+
+/-! ## The parenthetical of 190IV.1: separating states and archimedeanness
+
+eff.tex:2151 says, of a *single* order unit space, that its states are
+separating if and only if it is archimedean.  Half of that holds and is
+`ous_separatingStatesAt_of_archimedean`; the other half is **false**, and
+`ous_separating_states_not_archimedean` refutes it with `ousAlm` below.  The
+sharp statement is `ous_separatingStatesAt_iff_almostArchimedean`: the states
+of `X` are separating exactly when `X` is *almost* archimedean.  See the
+ERRATA row on 190IV.1. -/
+
+/-- The **per-object form of `SeparatingStates`** (190II.7, eff.tex:2129):
+the states of a single object are jointly epic.  `SeparatingStates` is the
+conjunction of these over all objects (`separatingStates_iff_forall`), and it
+is this per-object form that 190IV.1's parenthetical speaks of. -/
+def SeparatingStatesAt {C : Type u} [Category.{v} C] [HasFiniteCoproducts C]
+    [∀ X Y : C, PCM (X ⟶ Y)] [FinPAC C] [EffectusPartialForm C] (X : C) : Prop :=
+  ∀ ⦃Y : C⦄ (f g : X ⟶ Y), (∀ ω : Stat X, ω.1 ≫ f = ω.1 ≫ g) → f = g
+
+/-- An effectus has separating states exactly when every one of its objects
+has. -/
+theorem separatingStates_iff_forall (C : Type u) [Category.{v} C]
+    [HasFiniteCoproducts C] [∀ X Y : C, PCM (X ⟶ Y)] [FinPAC C]
+    [EffectusPartialForm C] :
+    SeparatingStates C ↔ ∀ X : C, SeparatingStatesAt X :=
+  ⟨fun h _ _ f g hfg => h f g hfg, fun h _ _ f g hfg => h _ f g hfg⟩
+
+/-- A **state of the order unit space `X`** in the sense of the literature: a
+positive unital linear functional.  By `ous_stat_state` these are exactly the
+states of `op X` in `Par OUSᵒᵖ`. -/
+abbrev OUSState (X : OUS.{u}) : Type u :=
+  {f : X.carrier →ₗ[ℝ] ℝ // (∀ x, 0 ≤ x → 0 ≤ f x) ∧ f X.unit = 1}
+
+/-- The states of `X` **separate its points**.  This is what joint epicity of
+`Stat (op X)` comes to, by `ous_separatingStatesAt_iff_points`. -/
+def OUSSeparatingPoints (X : OUS.{u}) : Prop :=
+  ∀ x y : X.carrier, (∀ ψ : OUSState X, ψ.1 x = ψ.1 y) → x = y
+
+/-- `ousTopO ⟶ ℝᵤ` is injective on points, being half of an isomorphism. -/
+theorem ousTopTo_injective {a b : ousTopO.{u}.carrier}
+    (h : (ousTopTo ousScal.{u}).toLinearMap a
+      = (ousTopTo ousScal.{u}).toLinearMap b) : a = b := by
+  have h1 := ous_congr (ousTop_inv₂.{u}) a
+  have h2 := ous_congr (ousTop_inv₂.{u}) b
+  rw [ous_comp_apply, ous_id_apply] at h1 h2
+  rw [← h1, ← h2, h]
+
+/-- A state of `Par.of (op X)` is `ŵ` for its underlying point `w`
+(`parStatEquiv`, i.e. 186VIII.1 read as a bijection). -/
+theorem ous_stat_hat (X : OUS.{u}) (ω : Stat (Par.of (op X))) :
+    ω.1 = Par.hat (parStatEquiv (op X) ω) :=
+  (congrArg Subtype.val ((parStatEquiv (op X)).symm_apply_apply ω)).symm
+
+/-- The functional attached to a state by `ous_stat_state`, unfolded. -/
+theorem ous_stat_state_val (X : OUS.{u}) (ω : Stat (Par.of (op X)))
+    (x : X.carrier) :
+    (ous_stat_state X ω).1 x
+      = ((ousTopTo ousScal.{u}).toLinearMap
+          ((parStatEquiv (op X) ω).unop.toLinearMap x)).down := rfl
+
+/-- **The state calculus of `OUSᵒᵖ`**: a state identifies two partial maps
+out of `X` exactly when its functional identifies their two underlying
+positive unital maps.  A state is `ŵ`, and `ŵ ⊙ f = w ∘ f` (`par_hat_comp`),
+which in `OUS` is postcomposition with `w`. -/
+theorem ous_stat_comp_iff (X : OUS.{u}) {Y : Par OUS.{u}ᵒᵖ}
+    (f g : Par.of (op X) ⟶ Y) (ω : Stat (Par.of (op X))) :
+    ω.1 ≫ f = ω.1 ≫ g
+      ↔ ∀ z : (Y.base ⨿ (⊤_ OUS.{u}ᵒᵖ)).unop.carrier,
+          (ous_stat_state X ω).1 ((pval f).unop.toLinearMap z)
+            = (ous_stat_state X ω).1 ((pval g).unop.toLinearMap z) := by
+  constructor
+  · intro h z
+    have h1 : pval (ω.1 ≫ f) = pval (ω.1 ≫ g) := congrArg pval h
+    rw [ous_stat_hat X ω, par_hat_comp, par_hat_comp] at h1
+    have h2 := ousop_congr h1 z
+    rw [ousop_comp_apply, ousop_comp_apply] at h2
+    rw [ous_stat_state_val, ous_stat_state_val, h2]
+  · intro h
+    refine pval_inj ?_
+    rw [ous_stat_hat X ω, par_hat_comp, par_hat_comp]
+    refine ousop_hom_ext fun z => ?_
+    rw [ousop_comp_apply, ousop_comp_apply]
+    refine ousTopTo_injective (ULift.down_injective ?_)
+    rw [← ous_stat_state_val, ← ous_stat_state_val]
+    exact h z
+
+/-- If the states of `X` separate its points then they are jointly epic:
+two partial maps out of `X` are two positive unital maps *into* `X`, and
+those are determined pointwise. -/
+theorem ous_separatingStatesAt_of_points (X : OUS.{u})
+    (h : OUSSeparatingPoints X) : SeparatingStatesAt (Par.of (op X)) := by
+  intro Y f g hfg
+  refine pval_inj ?_
+  refine ousop_hom_ext fun z => ?_
+  refine h _ _ fun ψ => ?_
+  have h2 := (ous_stat_comp_iff X f g ((ous_stat_state X).symm ψ)).mp
+    (hfg ((ous_stat_state X).symm ψ)) z
+  rwa [(ous_stat_state X).apply_symm_apply ψ] at h2
+
+/-! ### Separating points, archimedeanness and almost archimedeanness -/
+
+/-- Archimedean spaces are almost archimedean. -/
+theorem ous_almostArchimedean_of_archimedean {X : Type u} [AddCommGroup X]
+    [Module ℝ X] [PartialOrder X] [OrderUnitSpace X] (h : OUSArchimedean X) :
+    OUSAlmostArchimedean X := by
+  intro x hx
+  have h1 : x ≤ 0 := h x fun ε hε => (hx ε hε).1
+  have h2 : -x ≤ 0 := h (-x) fun ε hε => (hx ε hε).2
+  exact le_antisymm h1 (neg_nonpos.mp h2)
+
+/-- **The states of an almost archimedean order unit space separate its
+points.**  If `x - y ≠ 0` then, `X` being almost archimedean, `x - y` (or its
+negative) fails to be below some `ε · 1`, so its gauge is positive, and
+`ou_exists_state` — the Hahn–Banach separation through the gauge — produces a
+state that does not kill it. -/
+theorem ous_separatingPoints_of_almostArchimedean (X : OUS.{u})
+    (hA : OUSAlmostArchimedean X.carrier) : OUSSeparatingPoints X := by
+  intro x y hxy
+  by_contra hne
+  have hd : x - y ≠ 0 := sub_ne_zero.mpr hne
+  have hu : ouUnit X.carrier ≠ 0 := ou_unit_ne_zero_of_ne hd
+  have key : ∀ d : X.carrier, (∀ ψ : OUSState X, ψ.1 d = 0) →
+      ∀ ε : ℝ, 0 < ε → d ≤ ε • ouUnit X.carrier := by
+    intro d hd0 ε hε
+    by_contra hc
+    obtain ⟨f, hpos, hunit, hfd⟩ :=
+      ou_exists_state hu d (ou_gauge_pos_of_not_le hε hc)
+    have hz : (⟨f, hpos, hunit⟩ : OUSState X).1 d = 0 := hd0 _
+    exact absurd hz (ne_of_gt hfd)
+  have hz1 : ∀ ψ : OUSState X, ψ.1 (x - y) = 0 := by
+    intro ψ
+    rw [map_sub, hxy ψ, sub_self]
+  have hz2 : ∀ ψ : OUSState X, ψ.1 (-(x - y)) = 0 := by
+    intro ψ
+    rw [map_neg, hz1 ψ, neg_zero]
+  exact hd (hA (x - y) fun ε hε => ⟨key _ hz1 ε hε, key _ hz2 ε hε⟩)
+
+/-- Conversely, states separating the points forces almost archimedeanness:
+a state of an `x` with `-ε · 1 ≤ x ≤ ε · 1` for all `ε > 0` has
+`|ψ(x)| ≤ ε` for all `ε`, so `ψ(x) = 0 = ψ(0)`. -/
+theorem ous_almostArchimedean_of_separatingPoints (X : OUS.{u})
+    (h : OUSSeparatingPoints X) : OUSAlmostArchimedean X.carrier := by
+  intro x hx
+  refine h x 0 fun ψ => ?_
+  rw [map_zero]
+  have hle : ∀ ε : ℝ, 0 < ε → ψ.1 x ≤ ε := by
+    intro ε hε
+    have h1 := ψ.2.1 (ε • ouUnit X.carrier - x) (sub_nonneg.mpr (hx ε hε).1)
+    rw [map_sub, map_smul, ψ.2.2, smul_eq_mul, mul_one] at h1
+    linarith
+  have hge : ∀ ε : ℝ, 0 < ε → -ψ.1 x ≤ ε := by
+    intro ε hε
+    have h1 := ψ.2.1 (ε • ouUnit X.carrier - -x) (sub_nonneg.mpr (hx ε hε).2)
+    rw [map_sub, map_smul, map_neg, ψ.2.2, smul_eq_mul, mul_one] at h1
+    linarith
+  have k1 : ψ.1 x ≤ 0 :=
+    le_of_forall_pos_le_add fun ε hε => by simpa using hle ε hε
+  have k2 : -ψ.1 x ≤ 0 :=
+    le_of_forall_pos_le_add fun ε hε => by simpa using hge ε hε
+  linarith
+
+/-- **190IV.1** (eff.tex:2151, Examples, item 1, the parenthetical), the half
+that holds: **the states of an archimedean order unit space are
+separating.** -/
+theorem ous_separatingStatesAt_of_archimedean (X : OUS.{u})
+    (h : OUSArchimedean X.carrier) : SeparatingStatesAt (Par.of (op X)) :=
+  ous_separatingStatesAt_of_points X
+    (ous_separatingPoints_of_almostArchimedean X
+      (ous_almostArchimedean_of_archimedean h))
+
+/-- The states of `X` **determine its order**: an element on which every
+state is non-negative is non-negative. -/
+def OUSStatesDetermineOrder (X : OUS.{u}) : Prop :=
+  ∀ x : X.carrier, (∀ ψ : OUSState X, 0 ≤ ψ.1 x) → 0 ≤ x
+
+/-- **Archimedeanness is what the states determining the order comes to**
+(Kadison).  This is the reading under which 190IV.1's parenthetical is
+*true*: the printed equivalence holds for the states determining the order,
+not for the states being separating in the sense of 190II.7, which is
+`ous_separatingStatesAt_iff_almostArchimedean`. -/
+theorem ous_statesDetermineOrder_iff_archimedean (X : OUS.{u}) :
+    OUSStatesDetermineOrder X ↔ OUSArchimedean X.carrier := by
+  constructor
+  · intro h x hx
+    have h1 : (0 : X.carrier) ≤ -x := by
+      refine h (-x) fun ψ => ?_
+      have hle : ∀ ε : ℝ, 0 < ε → ψ.1 x ≤ ε := by
+        intro ε hε
+        have h2 := ψ.2.1 (ε • ouUnit X.carrier - x) (sub_nonneg.mpr (hx ε hε))
+        rw [map_sub, map_smul, ψ.2.2, smul_eq_mul, mul_one] at h2
+        linarith
+      have h3 : ψ.1 x ≤ 0 :=
+        le_of_forall_pos_le_add fun ε hε => by simpa using hle ε hε
+      rw [map_neg]
+      linarith
+    exact neg_nonneg.mp h1
+  · intro h x hx
+    by_cases hu : ouUnit X.carrier = 0
+    · rw [ou_eq_zero_of_unit_eq_zero hu x]
+    · have h1 : ∀ ε : ℝ, 0 < ε → -x ≤ ε • ouUnit X.carrier := by
+        intro ε hε
+        by_contra hc
+        obtain ⟨f, hpos, hunit, hfd⟩ :=
+          ou_exists_state hu (-x) (ou_gauge_pos_of_not_le hε hc)
+        have h2 : (0 : ℝ) ≤ (⟨f, hpos, hunit⟩ : OUSState X).1 x := hx _
+        have h3 : f (-x) = -f x := map_neg f x
+        have h4 : (0 : ℝ) ≤ f x := h2
+        linarith
+      exact neg_nonpos.mp (h (-x) h1)
+
+/-! ### The states are jointly epic only if they separate points -/
+
+/-- A positive unital map out of `ℝ²`, in terms of its effect `φ(1,0)`:
+`φ(a,b) = a·φ(1,0) + b·(1 - φ(1,0))`. -/
+theorem ous_hom_apply_effect (X : OUS.{u})
+    (φ : ousScal.{u}.prod ousScal.{u} ⟶ X) (w : ULift.{u} ℝ × ULift.{u} ℝ) :
+    φ.toLinearMap w
+      = w.1.down • φ.toLinearMap ((1 : ULift.{u} ℝ), (0 : ULift.{u} ℝ))
+        + w.2.down • (X.unit
+            - φ.toLinearMap ((1 : ULift.{u} ℝ), (0 : ULift.{u} ℝ))) := by
+  have hdec : w = w.1.down • ((1 : ULift.{u} ℝ), (0 : ULift.{u} ℝ))
+      + w.2.down • ((0 : ULift.{u} ℝ), (1 : ULift.{u} ℝ)) := by
+    refine Prod.ext ?_ ?_ <;> apply ULift.down_injective <;> simp
+  conv_lhs => rw [hdec]
+  rw [map_add, map_smul, map_smul, ous_hom_compl]
+
+/-- The underlying map of a predicate, in terms of its effect: transport
+along the comparison isomorphism `⊤ + ⊤ ≅ ℝ²` and apply
+`ous_hom_apply_effect`. -/
+theorem ous_pred_apply (X : OUS.{u}) (p : Pred (Par.of (op X)))
+    (z : ((⊤_ OUS.{u}ᵒᵖ) ⨿ (⊤_ OUS.{u}ᵒᵖ)).unop.carrier) :
+    (pval p).unop.toLinearMap z
+      = ((ouGamma ousTopCofan.{u}).inv.unop.toLinearMap z).1.down
+            • ((ous_pred_effect X p).1 : X.carrier)
+        + ((ouGamma ousTopCofan.{u}).inv.unop.toLinearMap z).2.down
+            • (X.unit - ((ous_pred_effect X p).1 : X.carrier)) := by
+  have hz : (ouGamma ousTopCofan.{u}).hom.unop.toLinearMap
+      ((ouGamma ousTopCofan.{u}).inv.unop.toLinearMap z) = z := by
+    have h := ousop_congr (Iso.hom_inv_id (ouGamma ousTopCofan.{u})) z
+    rw [ousop_comp_apply] at h
+    exact h
+  have hq : (pval p ≫ (ouGamma ousTopCofan.{u}).hom).unop.toLinearMap
+        ((ouGamma ousTopCofan.{u}).inv.unop.toLinearMap z)
+      = (pval p).unop.toLinearMap ((ouGamma ousTopCofan.{u}).hom.unop.toLinearMap
+          ((ouGamma ousTopCofan.{u}).inv.unop.toLinearMap z)) :=
+    ousop_comp_apply (pval p) (ouGamma ousTopCofan.{u}).hom _
+  have hpq : (ouPredEquiv ousTopCofan.{u} (op X) p)
+      = pval p ≫ (ouGamma ousTopCofan.{u}).hom := rfl
+  have h1 : (pval p).unop.toLinearMap z
+      = (ouPredEquiv ousTopCofan.{u} (op X) p).unop.toLinearMap
+          ((ouGamma ousTopCofan.{u}).inv.unop.toLinearMap z) := by
+    rw [hpq, hq, hz]
+  rw [h1, ous_hom_apply_effect, ← ous_pred_effect_val]
+
+/-- **If the states of `X` are jointly epic then they separate its points.**
+Given `x ≠ y` that no state separates, shrink `d = x - y` by a positive `c`
+until `c · d` lies between `-½ · 1` and `½ · 1` (the order-unit axiom, then
+divide); then `½ · 1 + c · d` and `½ · 1` are two distinct effects, hence two
+distinct predicates, on which every state agrees, contradicting joint
+epicity. -/
+theorem ous_separatingPoints_of_separatingStatesAt (X : OUS.{u})
+    (h : SeparatingStatesAt (Par.of (op X))) : OUSSeparatingPoints X := by
+  intro x y hxy
+  by_contra hne
+  have hd : x - y ≠ 0 := sub_ne_zero.mpr hne
+  obtain ⟨n, hn⟩ := ou_exists_le_smul_unit (x - y)
+  obtain ⟨m, hm⟩ := ou_exists_le_smul_unit (-(x - y))
+  have hn0 : (0 : ℝ) ≤ (n : ℝ) := Nat.cast_nonneg n
+  have hm0 : (0 : ℝ) ≤ (m : ℝ) := Nat.cast_nonneg m
+  set N : ℝ := (n : ℝ) + (m : ℝ) + 1 with hN
+  have hNpos : 0 < N := by rw [hN]; linarith
+  set c : ℝ := (2 * N)⁻¹ with hc
+  have hcpos : 0 < c := by
+    rw [hc]
+    exact inv_pos.mpr (by linarith)
+  have hshrink : ∀ (z : X.carrier) (k : ℝ), k ≤ N → z ≤ k • ouUnit X.carrier →
+      c • z ≤ (2 : ℝ)⁻¹ • ouUnit X.carrier := by
+    intro z k hkN hk
+    have h1 : c • z ≤ c • (k • ouUnit X.carrier) :=
+      ou_smul_le_smul (le_of_lt hcpos) hk
+    rw [smul_smul] at h1
+    refine h1.trans (ou_smul_unit_mono ?_)
+    have h2 : c * k ≤ c * N := mul_le_mul_of_nonneg_left hkN (le_of_lt hcpos)
+    have h3 : c * N = (2 : ℝ)⁻¹ := by
+      rw [hc]
+      field_simp
+    linarith
+  have hd1 : c • (x - y) ≤ (2 : ℝ)⁻¹ • ouUnit X.carrier :=
+    hshrink _ (n : ℝ) (by rw [hN]; linarith) hn
+  have hd2 : c • (-(x - y)) ≤ (2 : ℝ)⁻¹ • ouUnit X.carrier :=
+    hshrink _ (m : ℝ) (by rw [hN]; linarith) hm
+  set e : X.carrier := (2 : ℝ)⁻¹ • ouUnit X.carrier + c • (x - y) with he
+  have he0 : (0 : X.carrier) ≤ e := by
+    have h1 : -(c • (x - y)) ≤ (2 : ℝ)⁻¹ • ouUnit X.carrier := by
+      rwa [smul_neg] at hd2
+    have h3 := add_le_add_left (neg_le.mp h1) ((2 : ℝ)⁻¹ • ouUnit X.carrier)
+    rw [neg_add_cancel] at h3
+    rw [he, add_comm]
+    exact h3
+  have hhalf : (2 : ℝ)⁻¹ • ouUnit X.carrier + (2 : ℝ)⁻¹ • ouUnit X.carrier
+      = ouUnit X.carrier := by
+    rw [← add_smul]
+    norm_num
+  have he1 : e ≤ ouUnit X.carrier := by
+    have h3 := add_le_add_left hd1 ((2 : ℝ)⁻¹ • ouUnit X.carrier)
+    rw [hhalf] at h3
+    rw [he, add_comm]
+    exact h3
+  have hf0 : (0 : X.carrier) ≤ (2 : ℝ)⁻¹ • ouUnit X.carrier :=
+    ou_smul_unit_nonneg (by norm_num)
+  have hf1 : (2 : ℝ)⁻¹ • ouUnit X.carrier ≤ ouUnit X.carrier := by
+    have h1 : (2 : ℝ)⁻¹ • ouUnit X.carrier ≤ (1 : ℝ) • ouUnit X.carrier :=
+      ou_smul_unit_mono (by norm_num)
+    rwa [one_smul] at h1
+  have hcd : c • (x - y) ≠ 0 := by
+    intro hz
+    refine hd ?_
+    have h1 : c⁻¹ • (c • (x - y)) = x - y := by
+      rw [smul_smul, inv_mul_cancel₀ (ne_of_gt hcpos), one_smul]
+    rw [← h1, hz, smul_zero]
+  have hene : e ≠ (2 : ℝ)⁻¹ • ouUnit X.carrier := by
+    intro hEq
+    refine hcd ?_
+    have h5 : (2 : ℝ)⁻¹ • ouUnit X.carrier + c • (x - y)
+        = (2 : ℝ)⁻¹ • ouUnit X.carrier + 0 := by
+      rw [add_zero]
+      exact hEq
+    exact add_left_cancel h5
+  set p₁ : Pred (Par.of (op X)) := (ous_pred_effect X).symm ⟨e, he0, he1⟩ with hp₁
+  set p₂ : Pred (Par.of (op X)) :=
+    (ous_pred_effect X).symm ⟨(2 : ℝ)⁻¹ • ouUnit X.carrier, hf0, hf1⟩ with hp₂
+  have hE₁ : ((ous_pred_effect X p₁).1 : X.carrier) = e :=
+    congrArg Subtype.val ((ous_pred_effect X).apply_symm_apply ⟨e, he0, he1⟩)
+  have hE₂ : ((ous_pred_effect X p₂).1 : X.carrier)
+      = (2 : ℝ)⁻¹ • ouUnit X.carrier :=
+    congrArg Subtype.val ((ous_pred_effect X).apply_symm_apply
+      ⟨(2 : ℝ)⁻¹ • ouUnit X.carrier, hf0, hf1⟩)
+  have hpne : p₁ ≠ p₂ := by
+    intro hEq
+    refine hene ?_
+    rw [← hE₁, ← hE₂, hEq]
+  refine hpne (h p₁ p₂ fun ω => ?_)
+  refine (ous_stat_comp_iff X p₁ p₂ ω).mpr fun z => ?_
+  have hψd : (ous_stat_state X ω).1 (x - y) = 0 := by
+    rw [map_sub, hxy (ous_stat_state X ω), sub_self]
+  have hz2 : (ous_stat_state X ω).1 (c • (x - y)) = 0 := by
+    rw [map_smul, hψd, smul_zero]
+  have hee : (ous_stat_state X ω).1 e
+      = (ous_stat_state X ω).1 ((2 : ℝ)⁻¹ • ouUnit X.carrier) := by
+    rw [he, map_add, hz2, add_zero]
+  have hψ : ∀ (a b : ℝ) (v w : X.carrier),
+      (ous_stat_state X ω).1 v = (ous_stat_state X ω).1 w →
+      (ous_stat_state X ω).1 (a • v + b • (X.unit - v))
+        = (ous_stat_state X ω).1 (a • w + b • (X.unit - w)) := by
+    intro a b v w hvw
+    rw [map_add, map_add, map_smul, map_smul, map_smul, map_smul, map_sub,
+      map_sub, hvw]
+  rw [ous_pred_apply, ous_pred_apply, hE₁, hE₂]
+  exact hψ _ _ e ((2 : ℝ)⁻¹ • ouUnit X.carrier) hee
+
+/-- **190IV.1's parenthetical, in the form in which it is true**: the states
+of a single order unit space are separating exactly when the space is
+*almost* archimedean.  (As printed the condition is archimedeanness, which is
+strictly stronger — see `ous_separating_states_not_archimedean`.) -/
+theorem ous_separatingStatesAt_iff_almostArchimedean (X : OUS.{u}) :
+    SeparatingStatesAt (Par.of (op X)) ↔ OUSAlmostArchimedean X.carrier :=
+  ⟨fun h => ous_almostArchimedean_of_separatingPoints X
+      (ous_separatingPoints_of_separatingStatesAt X h),
+    fun h => ous_separatingStatesAt_of_points X
+      (ous_separatingPoints_of_almostArchimedean X h)⟩
+
+/-- Joint epicity of the states of `X` is exactly separation of its
+points. -/
+theorem ous_separatingStatesAt_iff_points (X : OUS.{u}) :
+    SeparatingStatesAt (Par.of (op X)) ↔ OUSSeparatingPoints X :=
+  ⟨ous_separatingPoints_of_separatingStatesAt X,
+    ous_separatingStatesAt_of_points X⟩
+
+/-! ### `ousAlm`: almost archimedean, not archimedean -/
+
+/-- `ℝ²` with positive cone `{0} ∪ {(a,b) : 0 < a, 0 ≤ b}` and order unit
+`(1,1)`: the counterexample to 190IV.1's parenthetical.  A plain `def`, not
+an `abbrev`, so that instance search does not reach `ULift`'s own
+(coordinatewise) order. -/
+def ousAlm : Type u := ULift.{u} (ℝ × ℝ)
+
+instance : AddCommGroup ousAlm.{u} :=
+  inferInstanceAs (AddCommGroup (ULift.{u} (ℝ × ℝ)))
+
+instance : Module ℝ ousAlm.{u} :=
+  inferInstanceAs (Module ℝ (ULift.{u} (ℝ × ℝ)))
+
+/-- A point of `ousAlm`. -/
+def ousAlmPt (a b : ℝ) : ousAlm.{u} := ULift.up (a, b)
+
+/-- The underlying pair of a point of `ousAlm`. -/
+def ousAlmDown (x : ousAlm.{u}) : ℝ × ℝ := ULift.down x
+
+@[simp] theorem ousAlmDown_pt (a b : ℝ) :
+    ousAlmDown (ousAlmPt.{u} a b) = (a, b) := rfl
+
+theorem ousAlmDown_injective {x y : ousAlm.{u}} (h : ousAlmDown x = ousAlmDown y) :
+    x = y := ULift.down_injective h
+
+/-- The order of `ousAlm`: `x ≤ y` iff they are equal or `x` is strictly
+below `y` in the first coordinate and below in the second. -/
+instance ousAlmPartialOrder : PartialOrder ousAlm.{u} where
+  le x y := ousAlmDown x = ousAlmDown y ∨
+    ((ousAlmDown x).1 < (ousAlmDown y).1 ∧ (ousAlmDown x).2 ≤ (ousAlmDown y).2)
+  le_refl _ := Or.inl rfl
+  le_trans x y z hxy hyz := by
+    rcases hxy with h1 | ⟨h1, h1'⟩
+    · rcases hyz with h2 | ⟨h2, h2'⟩
+      · exact Or.inl (h1.trans h2)
+      · exact Or.inr ⟨by rw [h1]; exact h2, by rw [h1]; exact h2'⟩
+    · rcases hyz with h2 | ⟨h2, h2'⟩
+      · exact Or.inr ⟨by rw [← h2]; exact h1, by rw [← h2]; exact h1'⟩
+      · exact Or.inr ⟨lt_trans h1 h2, le_trans h1' h2'⟩
+  le_antisymm x y hxy hyx := by
+    rcases hxy with h1 | ⟨h1, _⟩
+    · exact ousAlmDown_injective h1
+    · rcases hyx with h2 | ⟨h2, _⟩
+      · exact (ousAlmDown_injective h2).symm
+      · exact absurd (lt_trans h1 h2) (lt_irrefl _)
+
+/-- The order of `ousAlm`, unfolded. -/
+theorem ousAlm_le_iff (x y : ousAlm.{u}) :
+    x ≤ y ↔ ousAlmDown x = ousAlmDown y ∨
+      ((ousAlmDown x).1 < (ousAlmDown y).1 ∧ (ousAlmDown x).2 ≤ (ousAlmDown y).2) :=
+  Iff.rfl
+
+/-- `ousAlm` is an order unit space with unit `(1,1)`: `(a,b) ≤ n · (1,1)`
+for any `n` above both coordinates. -/
+instance ousAlmOrderUnitSpace : OrderUnitSpace ousAlm.{u} where
+  add_le_add_left x y h z := by
+    rcases h with h1 | ⟨h1, h1'⟩
+    · refine Or.inl ?_
+      show ousAlmDown x + ousAlmDown z = ousAlmDown y + ousAlmDown z
+      rw [h1]
+    · have e1 : (ousAlmDown x).1 < (ousAlmDown y).1 := h1
+      have e2 : (ousAlmDown x).2 ≤ (ousAlmDown y).2 := h1'
+      refine Or.inr ⟨?_, ?_⟩
+      · show (ousAlmDown x).1 + (ousAlmDown z).1 < (ousAlmDown y).1 + (ousAlmDown z).1
+        linarith
+      · show (ousAlmDown x).2 + (ousAlmDown z).2 ≤ (ousAlmDown y).2 + (ousAlmDown z).2
+        linarith
+  smul_nonneg {r} {x} hr hx := by
+    rcases eq_or_lt_of_le hr with hr0 | hr0
+    · refine Or.inl ?_
+      show (0 : ℝ × ℝ) = r • ousAlmDown x
+      rw [← hr0, zero_smul]
+    · rcases hx with h1 | ⟨h1, h1'⟩
+      · refine Or.inl ?_
+        have h2 : (0 : ℝ × ℝ) = ousAlmDown x := h1
+        show (0 : ℝ × ℝ) = r • ousAlmDown x
+        rw [← h2, smul_zero]
+      · have e1 : (0 : ℝ) < (ousAlmDown x).1 := h1
+        have e2 : (0 : ℝ) ≤ (ousAlmDown x).2 := h1'
+        refine Or.inr ⟨?_, ?_⟩
+        · show (0 : ℝ) < r * (ousAlmDown x).1
+          exact mul_pos hr0 e1
+        · show (0 : ℝ) ≤ r * (ousAlmDown x).2
+          exact mul_nonneg (le_of_lt hr0) e2
+  unit := ousAlmPt 1 1
+  exists_le_smul_unit x := by
+    refine ⟨⌈max (ousAlmDown x).1 (ousAlmDown x).2⌉₊ + 1, Or.inr ⟨?_, ?_⟩⟩
+    · show (ousAlmDown x).1
+        < ((⌈max (ousAlmDown x).1 (ousAlmDown x).2⌉₊ + 1 : ℕ) : ℝ) * 1
+      have h := Nat.le_ceil (max (ousAlmDown x).1 (ousAlmDown x).2)
+      have h2 := le_max_left (ousAlmDown x).1 (ousAlmDown x).2
+      push_cast
+      linarith
+    · show (ousAlmDown x).2
+        ≤ ((⌈max (ousAlmDown x).1 (ousAlmDown x).2⌉₊ + 1 : ℕ) : ℝ) * 1
+      have h := Nat.le_ceil (max (ousAlmDown x).1 (ousAlmDown x).2)
+      have h2 := le_max_right (ousAlmDown x).1 (ousAlmDown x).2
+      push_cast
+      linarith
+
+/-- The order unit of `ousAlm` is `(1,1)`. -/
+theorem ousAlm_unit : ouUnit ousAlm.{u} = ousAlmPt 1 1 := rfl
+
+/-- `ousAlm`, as an object of `OUS`. -/
+abbrev ousAlmObj : OUS.{u} := OUS.of ousAlm.{u}
+
+/-- Both coordinates of an element below `ε · (1,1)` are at most `ε`. -/
+theorem ousAlm_coords_le {x : ousAlm.{u}} {ε : ℝ}
+    (h : x ≤ ε • ouUnit ousAlm.{u}) :
+    (ousAlmDown x).1 ≤ ε ∧ (ousAlmDown x).2 ≤ ε := by
+  rcases h with h | ⟨h, h'⟩
+  · have e1 : (ousAlmDown x).1 = ε * 1 := congrArg Prod.fst h
+    have e2 : (ousAlmDown x).2 = ε * 1 := congrArg Prod.snd h
+    constructor
+    · linarith
+    · linarith
+  · have e1 : (ousAlmDown x).1 < ε * 1 := h
+    have e2 : (ousAlmDown x).2 ≤ ε * 1 := h'
+    exact ⟨by linarith, by linarith⟩
+
+/-- `ousAlm` **is** almost archimedean: both coordinates of an infinitesimal
+element are squeezed to `0`. -/
+theorem ousAlm_almostArchimedean : OUSAlmostArchimedean ousAlm.{u} := by
+  intro x hx
+  have hle : ∀ ε : ℝ, 0 < ε → (ousAlmDown x).1 ≤ ε ∧ (ousAlmDown x).2 ≤ ε :=
+    fun ε hε => ousAlm_coords_le (hx ε hε).1
+  have hge : ∀ ε : ℝ, 0 < ε → -(ousAlmDown x).1 ≤ ε ∧ -(ousAlmDown x).2 ≤ ε := by
+    intro ε hε
+    have h := ousAlm_coords_le (hx ε hε).2
+    have e1 : (ousAlmDown (-x)).1 = -(ousAlmDown x).1 := rfl
+    have e2 : (ousAlmDown (-x)).2 = -(ousAlmDown x).2 := rfl
+    rw [e1, e2] at h
+    exact h
+  have k1 : (ousAlmDown x).1 ≤ 0 :=
+    le_of_forall_pos_le_add fun ε hε => by simpa using (hle ε hε).1
+  have k2 : (ousAlmDown x).2 ≤ 0 :=
+    le_of_forall_pos_le_add fun ε hε => by simpa using (hle ε hε).2
+  have k3 : -(ousAlmDown x).1 ≤ 0 :=
+    le_of_forall_pos_le_add fun ε hε => by simpa using (hge ε hε).1
+  have k4 : -(ousAlmDown x).2 ≤ 0 :=
+    le_of_forall_pos_le_add fun ε hε => by simpa using (hge ε hε).2
+  refine ousAlmDown_injective (Prod.ext ?_ ?_)
+  · show (ousAlmDown x).1 = 0
+    linarith
+  · show (ousAlmDown x).2 = 0
+    linarith
+
+/-- `ousAlm` is **not archimedean**: `(0,-1) ≤ ε · (1,1)` for every `ε > 0`
+— the first coordinate `0` is strictly below `ε` — yet `(0,-1) ≰ 0`, the
+first coordinates being equal and the second not below. -/
+theorem ousAlm_not_archimedean : ¬ OUSArchimedean ousAlm.{u} := by
+  intro h
+  have h1 : (ousAlmPt.{u} 0 (-1)) ≤ 0 := by
+    refine h _ fun ε hε => ?_
+    refine Or.inr ⟨?_, ?_⟩
+    · show (0 : ℝ) < ε * 1
+      linarith
+    · show (-1 : ℝ) ≤ ε * 1
+      linarith
+  rcases h1 with h2 | ⟨h2, _⟩
+  · have h3 : (-1 : ℝ) = 0 := congrArg Prod.snd h2
+    norm_num at h3
+  · have h3 : (0 : ℝ) < 0 := h2
+    exact lt_irrefl _ h3
+
+/-- **190IV.1's parenthetical is false as printed**: the states of `ousAlm`
+*are* separating, and `ousAlm` is *not* archimedean.  What separating states
+amount to is almost archimedeanness
+(`ous_separatingStatesAt_iff_almostArchimedean`); the two part exactly here,
+`ousAlm` having no non-zero infinitesimal but a positive cone that is not its
+own archimedean closure — `(0,1)` is a limit of positives without being
+positive.  See the ERRATA row on 190IV.1. -/
+theorem ous_separating_states_not_archimedean :
+    ∃ X : OUS.{u}, SeparatingStatesAt (Par.of (op X)) ∧
+      ¬ OUSArchimedean X.carrier :=
+  ⟨ousAlmObj.{u},
+    ous_separatingStatesAt_of_points ousAlmObj.{u}
+      (ous_separatingPoints_of_almostArchimedean ousAlmObj.{u}
+        ousAlm_almostArchimedean.{u}),
+    ousAlm_not_archimedean.{u}⟩
 
 end OUSExample
 
