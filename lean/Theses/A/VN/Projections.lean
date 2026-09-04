@@ -768,37 +768,46 @@ private theorem exists_ceil_effect {b : A} (hb : b ∈ effects A) :
   have hsqsq : CFC.sqrt p * CFC.sqrt p = p := CFC.sqrt_mul_sqrt_self p hp0
   -- **56I**.40: `p² = p`; `p² ≤ p` because `p ≤ 1`
   have hpp_le : p * p ≤ p := mul_self_le_self hpeff
+  -- and `p ≤ p²` by the printed computation
+  --   `p² = ⋁_m √p·b^{1/2^m}·√p`                          (**44VIII** `ad_normal`)
+  --      `= ⋁_m b^{1/2^{m+1}}·p·b^{1/2^{m+1}}`            (**56I**.30 and `sqrt`)
+  --      `= ⋁_m ⋁_n b^{1/2^{m+1}}·b^{1/2^n}·b^{1/2^{m+1}}` (**44VIII** again),
+  -- read off at `n = m = k+1`.
+  have hsqsa : star (CFC.sqrt p) = CFC.sqrt p :=
+    (IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg p)).star_eq
+  -- the second line, term by term (**56I**.30 and `sqrt`, cstar.tex **23VII**)
+  have hmid : ∀ m : ℕ, CFC.sqrt p * sqrtIter b m * CFC.sqrt p
+      = sqrtIter b (m + 1) * p * sqrtIter b (m + 1) := by
+    intro m
+    calc CFC.sqrt p * sqrtIter b m * CFC.sqrt p
+        = CFC.sqrt p * (sqrtIter b (m + 1) * sqrtIter b (m + 1)) * CFC.sqrt p := by
+          rw [sqrtIter_mul_self hb m]
+      _ = (CFC.sqrt p * sqrtIter b (m + 1)) * (sqrtIter b (m + 1) * CFC.sqrt p) := by
+          noncomm_ring
+      _ = (sqrtIter b (m + 1) * CFC.sqrt p) * (CFC.sqrt p * sqrtIter b (m + 1)) := by
+          rw [hsqp (m + 1)]
+      _ = sqrtIter b (m + 1) * (CFC.sqrt p * CFC.sqrt p) * sqrtIter b (m + 1) := by
+          noncomm_ring
+      _ = sqrtIter b (m + 1) * p * sqrtIter b (m + 1) := by rw [hsqsq]
+  -- first line: `p² ≡ √p·p·√p = ⋁_m √p·b^{1/2^m}·√p` (**44VIII**)
+  have hAD1 : IsLUB ((fun d : selfAdjoint A =>
+      CFC.sqrt p * (d : A) * CFC.sqrt p) '' D) (p * p) := by
+    have h := ad_normal (CFC.sqrt p) D h3
+    rwa [hsqsa, ← hs, ← hp, conj_sqrt_self hp0] at h
+  -- third line: `b^{1/2^{m+1}}·p·b^{1/2^{m+1}} = ⋁_n b^{1/2^{m+1}}·b^{1/2^n}·b^{1/2^{m+1}}`
+  have hAD2 : ∀ m : ℕ, IsLUB ((fun d : selfAdjoint A =>
+      sqrtIter b (m + 1) * (d : A) * sqrtIter b (m + 1)) '' D)
+      (sqrtIter b (m + 1) * p * sqrtIter b (m + 1)) := by
+    intro m
+    have hEsa : star (sqrtIter b (m + 1)) = sqrtIter b (m + 1) :=
+      (IsSelfAdjoint.of_nonneg (sqrtIter_mem_effects hb (m + 1)).1).star_eq
+    have h := ad_normal (sqrtIter b (m + 1)) D h3
+    rwa [hEsa, ← hs, ← hp] at h
   have hle_pp : p ≤ p * p := by
     refine hlub.2 ?_
     rintro _ ⟨k, rfl⟩
-    -- `p² = √p·p·√p ≥ √p·b^{1/2^{k+1}}·√p = b^{1/2^{k+2}}·p·b^{1/2^{k+2}}`
-    -- `      ≥ b^{1/2^{k+2}}·b^{1/2^{k+1}}·b^{1/2^{k+2}} = b^{1/2^k}`
-    have hsqsa : star (CFC.sqrt p) = CFC.sqrt p :=
-      (IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg p)).star_eq
-    have hEsa : star (sqrtIter b (k + 1 + 1)) = sqrtIter b (k + 1 + 1) :=
-      (IsSelfAdjoint.of_nonneg (sqrtIter_mem_effects hb (k + 1 + 1)).1).star_eq
-    have step1 : CFC.sqrt p * sqrtIter b (k + 1) * CFC.sqrt p ≤ p * p := by
-      have hmono := star_left_conjugate_le_conjugate (hben (k + 1)) (CFC.sqrt p)
-      rw [hsqsa] at hmono
-      exact hmono.trans (le_of_eq (conj_sqrt_self hp0))
-    have step2 : CFC.sqrt p * sqrtIter b (k + 1) * CFC.sqrt p
-        = sqrtIter b (k + 1 + 1) * p * sqrtIter b (k + 1 + 1) := by
-      calc CFC.sqrt p * sqrtIter b (k + 1) * CFC.sqrt p
-          = CFC.sqrt p * (sqrtIter b (k + 1 + 1) * sqrtIter b (k + 1 + 1))
-              * CFC.sqrt p := by rw [sqrtIter_mul_self hb (k + 1)]
-        _ = (CFC.sqrt p * sqrtIter b (k + 1 + 1))
-              * (sqrtIter b (k + 1 + 1) * CFC.sqrt p) := by noncomm_ring
-        _ = (sqrtIter b (k + 1 + 1) * CFC.sqrt p)
-              * (CFC.sqrt p * sqrtIter b (k + 1 + 1)) := by rw [hsqp (k + 1 + 1)]
-        _ = sqrtIter b (k + 1 + 1) * (CFC.sqrt p * CFC.sqrt p)
-              * sqrtIter b (k + 1 + 1) := by noncomm_ring
-        _ = sqrtIter b (k + 1 + 1) * p * sqrtIter b (k + 1 + 1) := by rw [hsqsq]
-    have step3 : sqrtIter b (k + 1 + 1) * sqrtIter b (k + 1) * sqrtIter b (k + 1 + 1)
-        ≤ sqrtIter b (k + 1 + 1) * p * sqrtIter b (k + 1 + 1) := by
-      have hmono :=
-        star_left_conjugate_le_conjugate (hben (k + 1)) (sqrtIter b (k + 1 + 1))
-      rwa [hEsa] at hmono
-    have step4 : sqrtIter b (k + 1 + 1) * sqrtIter b (k + 1) * sqrtIter b (k + 1 + 1)
+    -- `n = m = k+1`: the term `b^{1/2^{k+2}}·b^{1/2^{k+1}}·b^{1/2^{k+2}}` is `b^{1/2^k}`
+    have hterm : sqrtIter b (k + 1 + 1) * sqrtIter b (k + 1) * sqrtIter b (k + 1 + 1)
         = sqrtIter b k := by
       calc sqrtIter b (k + 1 + 1) * sqrtIter b (k + 1) * sqrtIter b (k + 1 + 1)
           = sqrtIter b (k + 1)
@@ -809,10 +818,11 @@ private theorem exists_ceil_effect {b : A} (hb : b ∈ effects A) :
         _ = sqrtIter b k := sqrtIter_mul_self hb k
     calc sqrtIter b k
         = sqrtIter b (k + 1 + 1) * sqrtIter b (k + 1) * sqrtIter b (k + 1 + 1) :=
-          step4.symm
-      _ ≤ sqrtIter b (k + 1 + 1) * p * sqrtIter b (k + 1 + 1) := step3
-      _ = CFC.sqrt p * sqrtIter b (k + 1) * CFC.sqrt p := step2.symm
-      _ ≤ p * p := step1
+          hterm.symm
+      _ ≤ sqrtIter b (k + 1 + 1) * p * sqrtIter b (k + 1 + 1) :=
+          (hAD2 (k + 1)).1 ⟨E (k + 1), ⟨k + 1, rfl⟩, rfl⟩
+      _ = CFC.sqrt p * sqrtIter b (k + 1) * CFC.sqrt p := (hmid (k + 1)).symm
+      _ ≤ p * p := hAD1.1 ⟨E (k + 1), ⟨k + 1, rfl⟩, rfl⟩
   refine ⟨p, ⟨le_antisymm hpp_le hle_pp, s.2⟩, hlub, ?_, hcomm⟩
   -- **56I**.50: `p` is the *least* projection above `b`
   intro q hq hbq
@@ -6882,19 +6892,33 @@ theorem weakly_closed_ideal (D : TwoSidedIdeal A)
   have hEbdd : BddAbove {y : selfAdjoint A | (y : A) ∈ D ∧ (y : A) ∈ effects A} := by
     refine ⟨⟨1, IsSelfAdjoint.one A⟩, fun y hy => ?_⟩
     exact hy.2.2
+  -- directedness with the printed upper bound `⌈y⌉ ∪ ⌈z⌉ ≡ ⌈½y + ½z⌉`
+  -- (**56XIII** `ceil-floor-basic`), which lies in `𝒟` by the repair above
   have hEdir : DirectedOn (· ≤ ·)
       {y : selfAdjoint A | (y : A) ∈ D ∧ (y : A) ∈ effects A} := by
     rintro y ⟨hy1, hy2⟩ z ⟨hz1, hz2⟩
-    have hsum : (0 : A) ≤ (y : A) + z := add_nonneg hy2.1 hz2.1
-    have hsumD : ((y : A) + z) ∈ D := D.add_mem hy1 hz1
-    have hcm : ceil ((y : A) + z) ∈ D := ceil_mem_ideal D hD hsum hsumD
-    have hcp : IsStarProjection (ceil ((y : A) + z)) := (ceil_spec hsum).1
-    refine ⟨⟨ceil ((y : A) + z), hcp.isSelfAdjoint⟩,
-      ⟨hcm, hcp.nonneg, hcp.le_one⟩, Subtype.coe_le_coe.mp ?_, Subtype.coe_le_coe.mp ?_⟩
-    · exact (vna_ceil _ hy2).1.2.trans
-        (ceil_mono hy2.1 (le_add_of_nonneg_right hz2.1))
-    · exact (vna_ceil _ hz2).1.2.trans
-        (ceil_mono hz2.1 (le_add_of_nonneg_left hy2.1))
+    have hw0 : (0 : A) ≤ ((2⁻¹ : ℝ) : ℂ) • (y : A) + (((1 - 2⁻¹ : ℝ)) : ℂ) • (z : A) := by
+      rw [Complex.coe_smul, Complex.coe_smul]
+      exact add_nonneg (smul_nonneg (by norm_num) hy2.1) (smul_nonneg (by norm_num) hz2.1)
+    have hwD : ((2⁻¹ : ℝ) : ℂ) • (y : A) + (((1 - 2⁻¹ : ℝ)) : ℂ) • (z : A) ∈ D := by
+      refine D.add_mem ?_ ?_
+      · have he : ((2⁻¹ : ℝ) : ℂ) • (y : A) = ((((2⁻¹ : ℝ) : ℂ)) • (1 : A)) * (y : A) := by
+          rw [smul_mul_assoc, one_mul]
+        rw [he]; exact D.mul_mem_left _ _ hy1
+      · have he : (((1 - 2⁻¹ : ℝ)) : ℂ) • (z : A)
+            = (((((1 - 2⁻¹ : ℝ)) : ℂ)) • (1 : A)) * (z : A) := by
+          rw [smul_mul_assoc, one_mul]
+        rw [he]; exact D.mul_mem_left _ _ hz1
+    have hcm := ceil_mem_ideal D hD hw0 hwD
+    have hcp : IsStarProjection
+        (ceil (((2⁻¹ : ℝ) : ℂ) • (y : A) + (((1 - 2⁻¹ : ℝ)) : ℂ) • (z : A))) :=
+      (ceil_spec hw0).1
+    have hleast :=
+      (ceil_floor_basic_2 (y : A) (z : A) hy2 hz2 2⁻¹ (by norm_num) (by norm_num)).2
+    refine ⟨⟨_, hcp.isSelfAdjoint⟩, ⟨hcm, hcp.nonneg, hcp.le_one⟩,
+      Subtype.coe_le_coe.mp ?_, Subtype.coe_le_coe.mp ?_⟩
+    · exact (vna_ceil _ hy2).1.2.trans hleast.1.2.1
+    · exact (vna_ceil _ hz2).1.2.trans hleast.1.2.2
   obtain ⟨s, hs⟩ := VonNeumannAlgebra.isLUB_of_bddAbove_directed
     {y : selfAdjoint A | (y : A) ∈ D ∧ (y : A) ∈ effects A} hEne hEdir hEbdd
   have hcD : (s : A) ∈ D := hD _ s (fun y hy => hy.1) hEne hEdir hs
@@ -7646,65 +7670,127 @@ private theorem projSup_cceil_eq_one (hΩ : CentreSeparatingCentralProj A Ω) :
   have hz := hΩ (1 - u) huproj.one_sub (isCentral_one_sub hucen) hz0
   exact (sub_eq_zero.mp hz).symm
 
+omit [VonNeumannAlgebra A] in
+/-- **29IX** (`injective-miu-iso-on-image`, cstar.tex:4707) in the form the
+proof of **30X** uses it at cstar.tex:5024 — "`ϱ_Ω` restricts to an
+miu-isomorphism from `𝒜` to `ϱ_Ω(𝒜)`, so in order to prove that `a ≥ 0` it
+suffices to show that `ϱ_Ω(a) ≥ 0`": an injective miu-map *reflects*
+positivity.  `A/CStar/Representation.lean` proves exactly this, but
+privately, so it is re-supplied here. -/
+private theorem nonneg_of_injective_miu {C : Type*} [CStarAlgebra C]
+    [PartialOrder C] [StarOrderedRing C] (ρ : A →⋆ₐ[ℂ] C)
+    (hρ : Function.Injective ρ) (x : A) (h : 0 ≤ ρ x) : 0 ≤ x := by
+  have hisa : IsSelfAdjoint (ρ x) := IsSelfAdjoint.of_nonneg h
+  have hsa : IsSelfAdjoint x := hρ (by rw [map_star, hisa.star_eq])
+  obtain ⟨S, -, hSclosed, e, he⟩ := injective_miu_iso_on_image_isomorphism ρ hρ
+  have : IsClosed (S : Set C) := hSclosed
+  have hspec : spectrum ℂ (ρ x) = spectrum ℂ x := by
+    rw [← he x]
+    exact (StarSubalgebra.spectrum_eq S (a := e x)).symm.trans
+      (AlgEquiv.spectrum_eq e.toAlgEquiv x)
+  have h3 := ((cstar_positive_tfae (ρ x) hisa).out 3 2).mp h
+  rw [hspec] at h3
+  exact ((cstar_positive_tfae x hsa).out 2 3).mp h3
+
+omit [VonNeumannAlgebra A] in
+/-- `0 ≤ T` in `𝔅(ℋ)` gives `0 ≤ ⟪y, T y⟫` for every `y` — **25III**'s easy
+half, without the normalisation `‖y‖ = 1` that `OrderSeparating` carries. -/
+private theorem inner_nonneg_of_nonneg {H : Type*} [NormedAddCommGroup H]
+    [InnerProductSpace ℂ H] [CompleteSpace H] {T : H →L[ℂ] H} (hT : 0 ≤ T) (y : H) :
+    (0 : ℂ) ≤ ⟪y, T y⟫ := by
+  obtain ⟨S, hS⟩ := CStarAlgebra.nonneg_iff_eq_star_mul_self.mp hT
+  have h1 : T y = ContinuousLinearMap.adjoint S (S y) := by
+    rw [hS, ContinuousLinearMap.star_eq_adjoint]; rfl
+  rw [h1, ContinuousLinearMap.adjoint_inner_right, inner_self_eq_norm_sq_to_K]
+  positivity
+
+omit [VonNeumannAlgebra A] in
+/-- The step of **30X**'s proof at cstar.tex:5030–5044: `ϱ_ω(a)` is positive
+as soon as `ω(b* a b) ≥ 0` for every `b`.
+
+"Since the vector states on `ℋ_ω` are order separating by **30XIII**, it
+suffices to show that `⟨x, ϱ_ω(a)x⟩ ≥ 0` for given `x ∈ ℋ_ω`.  Since
+`{η_ω(b) : b ∈ 𝒜}` is dense in `ℋ_ω`, we only need to prove that
+`0 ≤ ⟨η_ω(b), ϱ_ω(a) η_ω(b)⟩ ≡ ω(b* a b)` for given `b ∈ 𝒜`, but this is
+true by assumption."  (Again a private lemma of
+`A/CStar/Representation.lean`, re-supplied here in the `gnsVec` form.) -/
+private theorem gnsStarAlgHom_nonneg (ω : NPFunctional A) (a : A)
+    (h : ∀ b : A, (0 : ℂ) ≤ ω (star b * a * b)) :
+    0 ≤ ω.toPositiveLinearMap.gnsStarAlgHom a := by
+  set T : ω.toPositiveLinearMap.GNS →L[ℂ] ω.toPositiveLinearMap.GNS :=
+    ω.toPositiveLinearMap.gnsStarAlgHom a with hT
+  -- `{x : 0 ≤ ⟪x, T x⟫}` is closed …
+  have hclosed : IsClosed {x : ω.toPositiveLinearMap.GNS | (0 : ℂ) ≤ ⟪x, T x⟫} := by
+    have hcont : Continuous fun x : ω.toPositiveLinearMap.GNS => (⟪x, T x⟫ : ℂ) :=
+      continuous_inner.comp (continuous_id.prodMk T.continuous)
+    exact isClosed_le continuous_const hcont
+  -- … and contains every `η_ω(b)`, where `⟪η_ω(b), T η_ω(b)⟫ = ω(b* a b)`
+  have hsub : ∀ b : A,
+      gnsVec ω b ∈ {x : ω.toPositiveLinearMap.GNS | (0 : ℂ) ≤ ⟪x, T x⟫} := by
+    intro b
+    show (0 : ℂ) ≤ ⟪gnsVec ω b, T (gnsVec ω b)⟫
+    rw [hT, gnsRep_gnsVec, gnsVec_inner, ← mul_assoc]
+    exact h b
+  have hall : ∀ x : ω.toPositiveLinearMap.GNS, (0 : ℂ) ≤ ⟪x, T x⟫ := fun x =>
+    hclosed.closure_subset_iff.mpr (Set.range_subset_iff.mpr hsub)
+      ((gnsVec_denseRange ω) x)
+  -- **30XIII**: the vector states of `𝔅(ℋ_ω)` are order separating
+  exact (hilb_vector_states_order_separating
+    (H := ω.toPositiveLinearMap.GNS) T).mpr fun x =>
+      hall (x : ω.toPositiveLinearMap.GNS)
+
+omit [VonNeumannAlgebra A] in
+/-- `ϱ_Ω(a)` is positive as soon as every `ϱ_ω(a)` is: by **25III** it is
+enough that `⟪x, ϱ_Ω(a)x⟫ = ∑_ω ⟪x(ω), ϱ_ω(a)x(ω)⟫ ≥ 0`, and every summand
+is. -/
+private theorem gnsRepFam_nonneg {ι : Type u} (F : ι → NPFunctional A) (a : A)
+    (h : ∀ i, 0 ≤ (F i).toPositiveLinearMap.gnsStarAlgHom a) :
+    0 ≤ gnsRepFam F a := by
+  refine (hilb_vector_states_order_separating (H := gnsHilbFam F) _).mpr ?_
+  intro x
+  show (0 : ℂ) ≤ ⟪(x : gnsHilbFam F), gnsRepFam F a (x : gnsHilbFam F)⟫
+  rw [lp.inner_eq_tsum]
+  refine tsum_nonneg fun i => ?_
+  rw [gnsRepFam_apply_coe]
+  exact inner_nonneg_of_nonneg (h i) _
+
 /-- **30X** (`proto-gelfand-naimark`, cstar.tex:4977, Proposition), the
 implication (1) ⇒ (2) at the thesis's own `ϱ_Ω`, which is what the printed
 **69X** proof cites when it says "we've seen in `proto-gelfand-naimark` that
-(1) ⟺ (3)": if `ϱ_Ω` is injective, then `Ω` is centre separating.
+(1) ⟺ (2)": if `ϱ_Ω` is injective, then `Ω` is centre separating.
 
 It is supplied here rather than imported because our rendering of 30X
 (`proto_gelfand_naimark_2`) states clause (1) *existentially* — "there is a
 Hilbert space and an injective ∗-homomorphism" — and so says nothing about
-`ϱ_Ω` itself.  The argument is the GNS computation of cstar.tex 30X in the
-short form that lands directly on centre separation, without the detour
-through order separation: for `0 ≤ a` with `ω(b* a b) = 0` for all `ω ∈ Ω`
-and `b ∈ 𝒜`, put `r = √a`; then `‖ϱ_Ω(r)ϱ_Ω(b)η_ω(1)‖² = ω(b* r² b) = 0`
-by `gns_zero_iff_sa`, so `ϱ_Ω(r)` kills the dense set of `gnsCycVec_dense`
-and is `0`; injectivity gives `r = 0` and hence `a = r² = 0`. -/
+`ϱ_Ω` itself.  The route is 30X's own: (1) ⇒ (3) is cstar.tex:5018 — by
+**29IX** it suffices that `ϱ_Ω(a) ≥ 0` (`nonneg_of_injective_miu`), which
+holds because each `ϱ_ω(a) ≥ 0` (`gnsStarAlgHom_nonneg`, by **30XIII** and
+the density of `{η_ω(b)}` in `ℋ_ω`) — so `Ω' = {ω(b*(·)b)}` is order
+separating; and (3) ⇒ (2) is cstar.tex:5000, "it is clear": apply order
+separation to `-a`. -/
 private theorem centreSeparatingConj_of_injective
     (hinj : Function.Injective ⇑(gnsRepFam (famOfSet Ω))) :
     CentreSeparatingConj A Ω := by
-  -- a continuous map killing every `ϱ_Ω(b)η_ω(1)` is zero
-  have hdense_zero : ∀ T : gnsHilbFam (famOfSet Ω) →L[ℂ] gnsHilbFam (famOfSet Ω),
-      (∀ (ν : Ω) (b : A),
-        T (gnsRepFam (famOfSet Ω) b (gnsCycVec Ω ν)) = 0) → T = 0 := by
-    intro T hT
-    have hsub : (Set.range fun q : Ω × A =>
-        gnsRepFam (famOfSet Ω) q.2 (gnsCycVec Ω q.1))
-          ⊆ (T : gnsHilbFam (famOfSet Ω) →ₗ[ℂ] gnsHilbFam (famOfSet Ω)).ker := by
-      rintro _ ⟨q, rfl⟩
-      exact hT q.1 q.2
-    have hspan : (Submodule.span ℂ (Set.range fun q : Ω × A =>
-        gnsRepFam (famOfSet Ω) q.2 (gnsCycVec Ω q.1)) :
-          Set (gnsHilbFam (famOfSet Ω)))
-        ⊆ (((T : gnsHilbFam (famOfSet Ω) →ₗ[ℂ] gnsHilbFam (famOfSet Ω)).ker) :
-          Set (gnsHilbFam (famOfSet Ω))) := by
-      simpa using (Submodule.span_le.mpr hsub)
-    have hclosed : IsClosed
-        (((T : gnsHilbFam (famOfSet Ω) →ₗ[ℂ] gnsHilbFam (famOfSet Ω)).ker) :
-          Set (gnsHilbFam (famOfSet Ω))) := T.isClosed_ker
-    have huniv : (Set.univ : Set (gnsHilbFam (famOfSet Ω)))
-        ⊆ (((T : gnsHilbFam (famOfSet Ω) →ₗ[ℂ] gnsHilbFam (famOfSet Ω)).ker) :
-          Set (gnsHilbFam (famOfSet Ω))) := by
-      rw [← (gnsCycVec_dense Ω).closure_eq]
-      exact hclosed.closure_subset_iff.mpr hspan
-    exact ContinuousLinearMap.ext fun y => huniv (Set.mem_univ y)
+  -- **30X**.130: `Ω' = {ω(b*(·)b) : ω ∈ Ω, b ∈ 𝒜}` is order separating
+  have horder : ∀ a : A,
+      (∀ ω ∈ Ω, ∀ b : A, (0 : ℂ) ≤ ω (star b * a * b)) → 0 ≤ a := by
+    intro a H
+    have hcoord : ∀ ν : Ω, 0 ≤ (famOfSet Ω ν).toPositiveLinearMap.gnsStarAlgHom a :=
+      fun ν => gnsStarAlgHom_nonneg _ a fun b => H (ν : NPFunctional A) ν.2 b
+    exact nonneg_of_injective_miu _ hinj a (gnsRepFam_nonneg _ a hcoord)
+  -- **30X**.110: "it is clear that (3) entails (2)"
   rw [centreSeparatingConj_iff]
   intro a ha
   refine ⟨fun h ω hω b => by rw [h]; simp, fun H => ?_⟩
-  set r : A := CFC.sqrt a with hrdef
-  have hrr : r * r = a := CFC.sqrt_mul_sqrt_self a ha
-  have hrsa : star r = r := (IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg a)).star_eq
-  have hkill : ∀ (ν : Ω) (b : A),
-      gnsRepFam (famOfSet Ω) r (gnsRepFam (famOfSet Ω) b (gnsCycVec Ω ν)) = 0 := by
-    intro ν b
-    refine (gns_zero_iff_sa (ν : NPFunctional A) (gnsRepFam (famOfSet Ω))
-      (gnsCycVec Ω ν) (gnsCycVec_implements Ω ν) hrsa b).mpr ?_
-    rw [hrr]
-    exact H (ν : NPFunctional A) ν.2 b
-  have hr0 : gnsRepFam (famOfSet Ω) r = 0 := hdense_zero _ hkill
-  have hreq : r = 0 := hinj (by rw [hr0, map_zero])
-  rw [← hrr, hreq]
-  simp
+  have h1 : (0 : A) ≤ -a := by
+    refine horder (-a) fun ω hω b => ?_
+    have he : star b * (-a) * b = -(star b * a * b) := by noncomm_ring
+    rw [he]
+    show (0 : ℂ) ≤ ω.toPositiveLinearMap (-(star b * a * b))
+    rw [map_neg]
+    show (0 : ℂ) ≤ -(ω (star b * a * b) : ℂ)
+    rw [H ω hω b, neg_zero]
+  exact le_antisymm (neg_nonneg.mp h1) ha
 
 end GNSOmega
 
@@ -7715,7 +7801,8 @@ This is the printed route of **69X**: (2) ⇒ (3) is `projSup_cceil_eq_one`
 (the printed `gns-ceil` step), (3) is turned into the injectivity of `ϱ_Ω`
 by `gnsRepFam_injective_iff` (**69VII** at `ϱ_Ω`, then **63II**.4), and
 (3) ⇒ (1) is the **30X** implication the printed proof cites, supplied
-locally as `centreSeparatingConj_of_injective`. -/
+locally as `centreSeparatingConj_of_injective` — on **30X**'s own printed
+route, through the order separation of `Ω' = {ω(b*(·)b)}`. -/
 theorem CentreSeparatingCentralProj.conj {Ω : Set (NPFunctional A)}
     (hΩ : CentreSeparatingCentralProj A Ω) : CentreSeparatingConj A Ω :=
   centreSeparatingConj_of_injective Ω
@@ -7753,8 +7840,9 @@ The route is the printed one: (1) ⇒ (2) is trivial (`b* z b ≤ ‖b* b‖·z`
 a central projection `z`), (2) ⇒ (3) is the printed `gns-ceil` step
 (`projSup_cceil_eq_one`: `⌈ϱ_Ω⌉^⊥ ≤ ⌈⌈ω⌉⌉^⊥ ≤ ⌈ω⌉^⊥`, so `ω(⌈ϱ_Ω⌉^⊥) = 0`),
 and (3) ⇒ (1) is the **30X** implication the thesis cites, supplied locally
-by `centreSeparatingConj_of_injective` because our rendering of 30X states
-its clause (1) existentially and so never names `ϱ_Ω`. -/
+by `centreSeparatingConj_of_injective` — on 30X's own printed route through
+order separation — because our rendering of 30X states its clause (1)
+existentially and so never names `ϱ_Ω`. -/
 theorem vn_center_separating (Ω : Set (NPFunctional A)) :
     List.TFAE
       [CentreSeparatingConj A Ω,

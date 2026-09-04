@@ -611,13 +611,13 @@ the same point, which is the 123I shape.
 |---|---|---|---|---|
 | 118II | `cceil_tensor` | `A/Proc/Tensor.lean:10008` | 134 | 1/2 |
 | 81IX | `div_usc_ball` | `A/VN/Division.lean:2975` | 114 | 4/5 |
-| 106I | `uniqueness_sequential_product_exists` | `A/Proc/Measurement.lean:8928` | 79 | 1/3 |
+| 106I | `uniqueness_sequential_product_exists` | `A/Proc/Measurement.lean:9278` | 79 | 1/3 |
 | 4XIII | `positive_2x2matrix_2` | `A/CStar/Basic.lean:284` | 67 | 1/2 |
 | 82I | `polar_decomposition_2` | `A/VN/Division.lean:3446` | 55 | 3/4 |
 | 156II | `paschke_injective` | `B/Dils/Paschke.lean:3531` | 48 | 2/3 |
 | 160IV | `hilbmod_projthm_3` | `B/Dils/SelfDual.lean:1535` | 45 | 2/3 |
 | 96III | `ncp_uwlim_2` | `A/Proc/Measurement.lean:1797` | 39 | 2/3 |
-| 23II | `sqrt_lemma_monotone` | `A/CStar/Positive.lean:6856` | 35 | 3/6 |
+| 23II | `sqrt_lemma_monotone` | `A/CStar/Positive.lean:7003` | 35 | 3/6 |
 | 154III | `existence_paschke_2` | `B/Dils/Paschke.lean:1373` | 32 | 13/14 |
 
 `existence_paschke_2` was read and is **not** a fingerprint: it is 154III part
@@ -830,7 +830,7 @@ the pool, but the earlier reading stands.
 **Two more dead declarations are class 3 by their own doc comment but carry a
 DISP tag, so they stay:**
 
-* `atomicTypeI_tensorBsurjectivity` (**125eIII**), `A/Proc/QuantumLambda.lean:7836`.
+* `atomicTypeI_tensorBsurjectivity` (**125eIII**), `A/Proc/QuantumLambda.lean:7945`.
   Superseded by its own general form, exactly as the brief for that sweep
   reported — and since 2026-09-03 it *is* that general form: the file was
   reordered so that 125VIIb and 125eIII precede parsecs 1254–1255, and both
