@@ -167,8 +167,13 @@ depend on 13IV; **in Lean it does not need to** —
 **14IV** `goursat` (`cstar.tex:2177`) — **PROVED (session 73), ~340 lines,
 axiom-clean.**  The bisection (segment reparametrisation, splitting, sign
 reversal, the four sub-triangles, the quarter-of-the-integral choice, the nested
-limit) is transcribed from the thesis in full; only the final estimate is
-replaced, by Mathlib's Morera-on-a-disc.  Two devices made it cheap and are
+limit) is transcribed from the thesis in full; only the final estimate was
+replaced, by Mathlib's Morera-on-a-disc.  **Superseded 2026-09-04:** the final
+estimate is now the thesis's own 14VII too (affine approximation at the limit
+point, `‖∫_{Tₙ}f‖ ≤ ε·length(Tₙ)²`, whose `4ⁿ` cancels the bisection's), so
+`DifferentiableOn.isExactOn_ball` is no longer used anywhere in the tree and
+the paragraph above about Mathlib supplying "the entire *endgame*" now records
+only what was true of the session-73 proof.  Two devices made it cheap and are
 worth reusing: the limit point comes from the *first vertices* forming a Cauchy
 sequence (`cauchySeq_of_le_geometric_two` /
 `dist_le_of_le_geometric_two_of_tendsto`, which also supply the quantitative

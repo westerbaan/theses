@@ -1246,9 +1246,12 @@ continuous; `E` is midpoint-closed (point 60, cstar.tex:4510) by the
 spectral-radius computation `‖b^{-γ/2} a^γ b^{-γ/2}‖ =
 ρ(b^{-β/2} a^{β/2} · a^{α/2} b^{-α/2}) ≤ 1` for `γ = (α+β)/2`; and `0, 1 ∈ E`,
 so midpoints give the dyadic rationals of `[0,1]` and closedness the rest.
-Three local steps take a shorter road than the printed one, which is why
-**28III** is graded *mild*: the two continuity facts (`rpow_eq_exp_smul_log`,
-`sqrt_monotone`) and the spectral-radius step (`norm_le_norm_conjugate`). -/
+Each of the three delicate steps is the printed one: point 41 is the uniform
+continuity of `(·)^α` on the compact spectrum read against the sup-norm of the
+calculus (`tendsto_rpow_add_inv`), point 50 factors `α ↦ b^α` through
+`C(spec b)` (`continuous_rpow_exponent`), and point 60 moves the conjugating
+factor across by `ρ(cd) = ρ(dc)`, **19Ia** `prod_spec` (`spectralRadius_mul_comm`
+and `norm_le_norm_conjugate`). -/
 
 section Pedersen
 
@@ -1261,30 +1264,51 @@ private def monoExp : Set ℝ :=
   {α : ℝ | ∀ a b : 𝒜, IsStrictlyPositive a → a ≤ b → a ^ α ≤ b ^ α}
 
 omit [Nontrivial 𝒜] in
-/-- `b^α = exp(α log b)` for a positive invertible `b` — our road to the norm
-continuity of `α ↦ b^α`. -/
-private lemma rpow_eq_exp_smul_log {b : 𝒜} (hb : IsStrictlyPositive b) (α : ℝ) :
-    b ^ α = NormedSpace.exp (α • CFC.log b) := by
-  have hspec : ∀ x ∈ spectrum ℝ b, 0 < x := fun x hx => hb.spectrum_pos hx
-  have hlogcont : ContinuousOn Real.log (spectrum ℝ b) :=
-    Real.continuousOn_log.mono fun x hx => (hspec x hx).ne'
-  have hlog : α • CFC.log b = cfc (fun x : ℝ => α * Real.log x) b := by
-    rw [CFC.log, ← cfc_smul α Real.log b hlogcont]
-    simp [smul_eq_mul]
-  rw [CFC.rpow_eq_cfc_real hb.nonneg, hlog, ← CFC.real_exp_eq_normedSpace_exp,
-    ← cfc_comp' Real.exp (fun x : ℝ => α * Real.log x) b (by fun_prop)]
-  refine cfc_congr fun x hx => ?_
-  rw [Real.rpow_def_of_pos (hspec x hx), mul_comm]
-
-omit [Nontrivial 𝒜] in
-/-- **28IV** point 50's ingredient: `α ↦ b^α` is norm continuous.  The thesis
-factors it through `C(spec b)`; we read it off the exponential. -/
+/-- **28IV** point 50's ingredient (cstar.tex:4495): `α ↦ b^α` is norm
+continuous, "being the composition of the map `α ↦ b^α : [0,1] → C(spec b)`,
+which is norm continuous, and the functional calculus `f ↦ f(b) :
+C(spec b) → 𝒜`, which being an miu-map is norm continuous as well".  The
+second factor is `continuousAt_cfc_fun`, which is that composition (its proof
+is `cfcHom_continuous`); the first is the uniform convergence proved here:
+`(α, t) ↦ t^α` is continuous on the compact `[α₀-1, α₀+1] × spec b`, every
+`t ∈ spec b` being strictly positive, hence uniformly continuous on it. -/
 private lemma continuous_rpow_exponent {b : 𝒜} (hb : IsStrictlyPositive b) :
     Continuous fun α : ℝ => b ^ α := by
-  have hexp : Continuous (NormedSpace.exp : 𝒜 → 𝒜) :=
-    continuous_iff_continuousAt.2 fun x => (NormedSpace.exp_analytic (𝕂 := ℝ) x).continuousAt
-  simp only [rpow_eq_exp_smul_log hb]
-  exact hexp.comp (continuous_id.smul continuous_const)
+  have hb0 : (0 : 𝒜) ≤ b := hb.nonneg
+  have hcontOn : ∀ α : ℝ, ContinuousOn (fun t : ℝ => t ^ α) (spectrum ℝ b) := fun α =>
+    ContinuousOn.rpow_const continuousOn_id fun t ht => Or.inl (hb.spectrum_pos ht).ne'
+  simp only [CFC.rpow_eq_cfc_real hb0]
+  refine continuous_iff_continuousAt.2 fun α₀ => ?_
+  refine continuousAt_cfc_fun ?_ (.of_forall hcontOn)
+  -- `α ↦ (·)^α` is norm continuous into `C(spec b)`: uniform convergence on
+  -- `spec b`, from uniform continuity on a compact box around `(α₀, spec b)`.
+  rw [Metric.tendstoUniformlyOn_iff]
+  intro ε hε
+  have hKc : IsCompact (spectrum ℝ b) :=
+    ContinuousFunctionalCalculus.isCompact_spectrum (R := ℝ) b
+  have hS : IsCompact (Set.Icc (α₀ - 1) (α₀ + 1) ×ˢ spectrum ℝ b) := isCompact_Icc.prod hKc
+  have hcont : ContinuousOn (fun p : ℝ × ℝ => p.2 ^ p.1)
+      (Set.Icc (α₀ - 1) (α₀ + 1) ×ˢ spectrum ℝ b) := by
+    intro p hp
+    have ht : p.2 ≠ 0 := (hb.spectrum_pos hp.2).ne'
+    exact (continuousAt_snd.rpow continuousAt_fst (Or.inl ht)).continuousWithinAt
+  obtain ⟨δ, hδ0, hδ⟩ := Metric.uniformContinuousOn_iff.1
+    (hS.uniformContinuousOn_of_continuous hcont) ε hε
+  filter_upwards [Metric.ball_mem_nhds α₀ (lt_min hδ0 one_pos)] with α hα t ht
+  have hα' : |α - α₀| < min δ 1 := by
+    rw [Metric.mem_ball, Real.dist_eq] at hα; exact hα
+  have h1 : ((α₀, t) : ℝ × ℝ) ∈ Set.Icc (α₀ - 1) (α₀ + 1) ×ˢ spectrum ℝ b :=
+    ⟨Set.mem_Icc.2 ⟨by linarith, by linarith⟩, ht⟩
+  have h2 : ((α, t) : ℝ × ℝ) ∈ Set.Icc (α₀ - 1) (α₀ + 1) ×ˢ spectrum ℝ b := by
+    refine ⟨Set.mem_Icc.2 ⟨?_, ?_⟩, ht⟩
+    · have := (abs_lt.1 hα').1; have := min_le_right δ (1 : ℝ); linarith
+    · have := (abs_lt.1 hα').2; have := min_le_right δ (1 : ℝ); linarith
+  have hd : dist ((α₀, t) : ℝ × ℝ) ((α, t) : ℝ × ℝ) < δ := by
+    have hpd : dist ((α₀, t) : ℝ × ℝ) ((α, t) : ℝ × ℝ) = dist α₀ α := by
+      simp [Prod.dist_eq]
+    rw [hpd, Real.dist_eq, abs_sub_comm]
+    exact lt_of_lt_of_le hα' (min_le_left _ _)
+  exact hδ _ h1 _ h2 hd
 
 omit [Nontrivial 𝒜] in
 /-- **28IV** point 50 (cstar.tex:4495): `E` is closed. -/
@@ -1324,25 +1348,43 @@ private lemma rpow_le_rpow_iff_norm_le_one {a b : 𝒜} (ha : IsStrictlyPositive
       (IsStrictlyPositive.rpow b α hb), CFC.sqrt_rpow ha.isUnit hα,
       CFC.rpow_rpow b α (-(1 / 2)) hα hb, show α * -(1 / 2 : ℝ) = -(α / 2) by ring]
 
+omit [PartialOrder 𝒜] [StarOrderedRing 𝒜] [Nontrivial 𝒜] in
+/-- **28IV** point 60's spectral-radius step (cstar.tex:4532): "recall
+from `prod-spec` that `spec(cd) \ {0} = spec(dc) \ {0}`, and so
+`ρ(cd) = ρ(dc)` for all `c, d`".  The two spectra agree away from `0`, and `0`
+contributes nothing to a supremum of norms, so the suprema agree. -/
+private lemma spectralRadius_mul_comm (c d : 𝒜) :
+    spectralRadius ℂ (c * d) = spectralRadius ℂ (d * c) := by
+  have key : ∀ x y : 𝒜, spectralRadius ℂ (x * y) ≤ spectralRadius ℂ (y * x) := by
+    intro x y
+    refine iSup₂_le fun k hk => ?_
+    rcases eq_or_ne k 0 with rfl | hk0
+    · simp
+    · have hmem : k ∈ spectrum ℂ (y * x) := by
+        have h := prod_spec x y
+        have hk' : k ∈ spectrum ℂ (x * y) \ {0} := ⟨hk, by simpa using hk0⟩
+        exact (h ▸ hk').1
+      exact le_iSup₂ (f := fun k (_ : k ∈ spectrum ℂ (y * x)) => (‖k‖₊ : ℝ≥0∞)) k hmem
+  exact le_antisymm (key c d) (key d c)
+
 omit [PartialOrder 𝒜] [StarOrderedRing 𝒜] in
-/-- Conjugating a self-adjoint element by a unit does not decrease its norm:
-`‖c‖ = ρ(c) = ρ(v c w) ≤ ‖v c w‖`, `ρ` the spectral radius.  *Mild*: **28IV**
-point 60 (cstar.tex:4532) moves the factor around by `ρ(cd) = ρ(dc)`, **19Ia**
-`prod_spec`; we use that conjugation by a unit preserves the spectrum. -/
+/-- Moving a conjugating factor to the other side does not decrease the norm of
+a self-adjoint element: `‖c‖ = ρ(c) = ρ(c w v) = ρ(v c w) ≤ ‖v c w‖`, with `ρ`
+the spectral radius, `‖c‖ = ρ(c)` for self-adjoint `c` by **19V**
+`norm-spectrum`, and `ρ(cd) = ρ(dc)` by **19Ia** `prod_spec`.  This is the
+step **28IV** point 60 (cstar.tex:4532) takes with `w v = 1` the pair
+`b^{-(α-β)/4} b^{(α-β)/4}`. -/
 private lemma norm_le_norm_conjugate {c v w : 𝒜} (hc : IsSelfAdjoint c)
-    (hvw : v * w = 1) (hwv : w * v = 1) : ‖c‖ ≤ ‖v * c * w‖ := by
-  let u : 𝒜ˣ := ⟨v, w, hvw, hwv⟩
-  have hspec : spectrum ℝ (v * c * w) = spectrum ℝ c := by
-    have h : v * c * w = (u : 𝒜) * c * (↑u⁻¹ : 𝒜) := rfl
-    rw [h, spectrum.units_conjugate]
-  have h1 : spectralRadius ℝ c ≤ (‖v * c * w‖₊ : ℝ≥0∞) := by
-    have h0 : spectralRadius ℝ c = spectralRadius ℝ (v * c * w) := by
-      simp only [spectralRadius, hspec]
-    rw [h0]
-    exact spectrum.spectralRadius_le_nnnorm (𝕜 := ℝ) _
-  calc ‖c‖ = (spectralRadius ℝ c).toReal := hc.toReal_spectralRadius_eq_norm.symm
-    _ ≤ ((‖v * c * w‖₊ : ℝ≥0∞)).toReal := ENNReal.toReal_mono (by simp) h1
-    _ = ‖v * c * w‖ := by simp
+    (hwv : w * v = 1) : ‖c‖ ≤ ‖v * c * w‖ := by
+  have h1 : spectralRadius ℂ c = spectralRadius ℂ (v * c * w) := by
+    calc spectralRadius ℂ c
+        = spectralRadius ℂ ((c * w) * v) := by rw [mul_assoc, hwv, mul_one]
+      _ = spectralRadius ℂ (v * (c * w)) := spectralRadius_mul_comm _ _
+      _ = spectralRadius ℂ (v * c * w) := by rw [mul_assoc]
+  have h2 : (‖c‖₊ : ℝ≥0∞) ≤ (‖v * c * w‖₊ : ℝ≥0∞) := by
+    rw [← hc.spectralRadius_eq_nnnorm, h1]
+    exact spectrum.spectralRadius_le_nnnorm (𝕜 := ℂ) _
+  exact_mod_cast h2
 
 /-- **28IV** point 60 (cstar.tex:4510): `E` is closed under midpoints.  With
 `γ = (α+β)/2`, the printed computation `‖a^{γ/2} b^{-γ/2}‖² =
@@ -1379,7 +1421,6 @@ private lemma monoExp_midpoint {α β : ℝ} (hα : α ∈ monoExp 𝒜) (hβ : 
       b ^ (-((α + β) / 2 / 2))) := by
     rw [← hkey]
     exact IsSelfAdjoint.star_mul_self _
-  have hvw : b ^ ((α - β) / 4) * b ^ (-((α - β) / 4)) = 1 := CFC.rpow_mul_rpow_neg _ hb
   have hwv : b ^ (-((α - β) / 4)) * b ^ ((α - β) / 4) = 1 := CFC.rpow_neg_mul_rpow _ hb
   have e1 : b ^ ((α - β) / 4) * b ^ (-((α + β) / 2 / 2)) = b ^ (-(β / 2)) := by
     rw [← CFC.rpow_add hb.isUnit]; congr 1; ring
@@ -1407,7 +1448,7 @@ private lemma monoExp_midpoint {α β : ℝ} (hα : α ∈ monoExp 𝒜) (hβ : 
   have hnorm : ‖a ^ ((α + β) / 2 / 2) * b ^ (-((α + β) / 2 / 2))‖ *
       ‖a ^ ((α + β) / 2 / 2) * b ^ (-((α + β) / 2 / 2))‖ ≤ 1 := by
     rw [← CStarRing.norm_star_mul_self, hkey]
-    refine (norm_le_norm_conjugate hcsa hvw hwv).trans ?_
+    refine (norm_le_norm_conjugate hcsa hwv).trans ?_
     rw [hconj]
     refine (norm_mul_le _ _).trans ?_
     calc ‖b ^ (-(β / 2)) * a ^ (β / 2)‖ * ‖a ^ (α / 2) * b ^ (-(α / 2))‖
@@ -1477,19 +1518,86 @@ private lemma Icc_subset_monoExp : Set.Icc (0 : ℝ) 1 ⊆ monoExp 𝒜 := by
     calc ⌊x * (2 : ℝ) ^ n⌋₊ ≤ ⌊((2 ^ n : ℕ) : ℝ)⌋₊ := Nat.floor_mono hcast
       _ = 2 ^ n := Nat.floor_natCast _
 
+/-- **28IV** point 41 (`fc-uniformly-continuous`, cstar.tex:4455):
+`(c + 1/n)^α → c^α` in norm, the convergence that reduces **28III** to
+invertible elements.  The thesis proves it for an arbitrary uniformly
+continuous `f` by taking the norm through the Gelfand representation of a
+commutative subalgebra containing both elements: `‖f(x) - f(y)‖ =
+sup_φ |f(φ(x)) - f(φ(y))| ≤ ε` once `|φ(x) - φ(y)| ≤ ‖x - y‖ ≤ δ`.  Here
+`c + 1/n = (· + 1/n)(c)` is a function of `c` itself, so that supremum is over
+`spec c` and the two functions are `t ↦ (t + 1/n)^α` and `t ↦ t^α`, uniformly
+close on the compact `[0, ‖c‖ + 1]` because `(·)^α` is uniformly continuous
+there; `tendsto_cfc_fun` is the sup-norm estimate that turns that into norm
+convergence. -/
+private lemma tendsto_rpow_add_inv {c : 𝒜} (hc : 0 ≤ c) {α : ℝ} (hα : 0 ≤ α) :
+    Tendsto (fun n : ℕ => (c + algebraMap ℝ 𝒜 ((n : ℝ) + 1)⁻¹) ^ α) atTop (𝓝 (c ^ α)) := by
+  have hsa : IsSelfAdjoint c := IsSelfAdjoint.of_nonneg hc
+  have hcont : Continuous fun t : ℝ => t ^ α :=
+    continuous_iff_continuousAt.2 fun t => Real.continuousAt_rpow_const t α (Or.inr hα)
+  -- `(c + λ)^α` is a function of `c`: the thesis's commutative subalgebra.
+  have hstep : ∀ lam : ℝ, 0 ≤ lam →
+      (c + algebraMap ℝ 𝒜 lam) ^ α = cfc (fun t : ℝ => (t + lam) ^ α) c := by
+    intro lam hlam
+    have hnn : (0 : 𝒜) ≤ c + algebraMap ℝ 𝒜 lam := add_nonneg hc (algebraMap_nonneg 𝒜 hlam)
+    have hadd : c + algebraMap ℝ 𝒜 lam = cfc (fun t : ℝ => t + lam) c := by
+      rw [cfc_add c (fun t : ℝ => t) (fun _ : ℝ => lam) (by fun_prop) (by fun_prop),
+        cfc_id' ℝ c, cfc_const lam c]
+    calc (c + algebraMap ℝ 𝒜 lam) ^ α
+        = cfc (fun t : ℝ => t ^ α) (cfc (fun t : ℝ => t + lam) c) := by
+          rw [CFC.rpow_eq_cfc_real hnn, hadd]
+      _ = cfc ((fun t : ℝ => t ^ α) ∘ (fun t : ℝ => t + lam)) c :=
+          (cfc_comp _ _ c hsa hcont.continuousOn (by fun_prop)).symm
+      _ = cfc (fun t : ℝ => (t + lam) ^ α) c := rfl
+  have hfun : ∀ n : ℕ, (c + algebraMap ℝ 𝒜 ((n : ℝ) + 1)⁻¹) ^ α =
+      cfc (fun t : ℝ => (t + ((n : ℝ) + 1)⁻¹) ^ α) c := fun n => hstep _ (by positivity)
+  simp only [hfun, CFC.rpow_eq_cfc_real hc]
+  refine tendsto_cfc_fun ?_ (.of_forall fun n => by fun_prop)
+  -- Uniform continuity of `(·)^α` on `[0, ‖c‖ + 1]`, which contains `spec c`
+  -- and every `t + 1/n` for `t` in it.
+  rw [Metric.tendstoUniformlyOn_iff]
+  intro ε hε
+  obtain ⟨δ, hδ0, hδ⟩ := Metric.uniformContinuousOn_iff.1
+    ((isCompact_Icc (a := (0 : ℝ)) (b := ‖c‖ + 1)).uniformContinuousOn_of_continuous
+      hcont.continuousOn) ε hε
+  obtain ⟨N, hN⟩ := exists_nat_one_div_lt hδ0
+  filter_upwards [Filter.eventually_ge_atTop N] with n hn t ht
+  have ht0 : 0 ≤ t := spectrum_nonneg_of_nonneg hc ht
+  have htM : t ≤ ‖c‖ := by
+    have h := spectrum.norm_le_norm_of_mem ht
+    rw [Real.norm_eq_abs] at h
+    exact (le_abs_self t).trans h
+  have hlam0 : (0 : ℝ) < ((n : ℝ) + 1)⁻¹ := by positivity
+  have hlamδ : ((n : ℝ) + 1)⁻¹ < δ := by
+    have hle : ((N : ℝ) + 1) ≤ ((n : ℝ) + 1) := by
+      have hNn : (N : ℝ) ≤ (n : ℝ) := Nat.cast_le.2 hn
+      linarith
+    have h1 : 1 / ((n : ℝ) + 1) ≤ 1 / ((N : ℝ) + 1) :=
+      one_div_le_one_div_of_le (by positivity) hle
+    rw [inv_eq_one_div]
+    linarith
+  have hlam1 : ((n : ℝ) + 1)⁻¹ ≤ 1 := by
+    rw [inv_le_one_iff₀]
+    right
+    linarith [Nat.cast_nonneg (α := ℝ) n]
+  have hd : dist t (t + ((n : ℝ) + 1)⁻¹) < δ := by
+    rw [Real.dist_eq]
+    have hsub : t - (t + ((n : ℝ) + 1)⁻¹) = -((n : ℝ) + 1)⁻¹ := by ring
+    rw [hsub, abs_neg, abs_of_pos hlam0]
+    exact hlamδ
+  exact hδ t ⟨ht0, by linarith⟩ (t + ((n : ℝ) + 1)⁻¹) ⟨by linarith, by linarith⟩ hd
+
 end Pedersen
 
 /-- **28III** (`sqrt-monotone`, cstar.tex:4420, Theorem): `0 ≤ a ≤ b`
 implies `a^α ≤ b^α` for `α ∈ (0, 1]`; in particular the square root is
 monotone on the positive elements.
 
-*Class 2 — mild.*  The Theorem's own proof **28IV**, after Pedersen, is the
-section above; what is left here is its first movement, the reduction to
+*Class 1 — faithful.*  The Theorem's own proof **28IV**, after Pedersen, is
+the section above; what is left here is its first movement, the reduction to
 invertible elements: `a + 1/n ≤ b + 1/n` are positive and invertible, so
-`(a + 1/n)^α ≤ (b + 1/n)^α`, and `(a + 1/n)^α → a^α` in norm.  That
-convergence, point 41 (`fc-uniformly-continuous`, cstar.tex:4455), is the
-third *mild* step: we take it from `Filter.Tendsto.cfc` and closedness of
-the positive cone, not from uniform continuity through Gelfand. -/
+`(a + 1/n)^α ≤ (b + 1/n)^α` by `Icc_subset_monoExp`, and both sides converge
+in norm by `tendsto_rpow_add_inv`, point 41 (`fc-uniformly-continuous`,
+cstar.tex:4455). -/
 theorem sqrt_monotone (a b : 𝒜) (ha : 0 ≤ a) (hab : a ≤ b) (α : ℝ)
     (h0 : 0 < α) (h1 : α ≤ 1) :
     CFC.rpow a α ≤ CFC.rpow b α := by
@@ -1497,50 +1605,15 @@ theorem sqrt_monotone (a b : 𝒜) (ha : 0 ≤ a) (hab : a ≤ b) (α : ℝ)
   · exact le_of_eq (Subsingleton.elim _ _)
   have hE : α ∈ monoExp 𝒜 := Icc_subset_monoExp ⟨h0.le, h1⟩
   have hb : 0 ≤ b := ha.trans hab
-  have hcont : Continuous fun t : ℝ => t ^ α :=
-    continuous_iff_continuousAt.2 fun t => Real.continuousAt_rpow_const t α (Or.inr h0.le)
-  have hspec : ∀ c : 𝒜, ‖c‖ ≤ max ‖a‖ ‖b‖ + 1 →
-      spectrum ℝ c ⊆ Set.Icc (-(max ‖a‖ ‖b‖ + 1)) (max ‖a‖ ‖b‖ + 1) := by
-    intro c hc k hk
-    have h := spectrum.norm_le_norm_of_mem hk
-    rw [Real.norm_eq_abs] at h
-    exact Set.mem_Icc.2 (abs_le.1 (h.trans hc))
   have hepos : ∀ n : ℕ, IsStrictlyPositive (algebraMap ℝ 𝒜 ((n : ℝ) + 1)⁻¹) := by
     intro n
     exact ⟨algebraMap_nonneg 𝒜 (by positivity),
       (isUnit_iff_ne_zero.2 (by positivity)).map (algebraMap ℝ 𝒜)⟩
-  have henorm : ∀ n : ℕ, ‖algebraMap ℝ 𝒜 ((n : ℝ) + 1)⁻¹‖ ≤ 1 := by
-    intro n
-    rw [norm_algebraMap', Real.norm_eq_abs, abs_of_nonneg (by positivity)]
-    rw [inv_le_one_iff₀]
-    right
-    linarith [Nat.cast_nonneg (α := ℝ) n]
-  have hte : Tendsto (fun n : ℕ => algebraMap ℝ 𝒜 ((n : ℝ) + 1)⁻¹) atTop (𝓝 (0 : 𝒜)) := by
-    have h0' : Tendsto (fun n : ℕ => ((n : ℝ) + 1)⁻¹) atTop (𝓝 0) := by
-      simpa [one_div] using tendsto_one_div_add_atTop_nhds_zero_nat (𝕜 := ℝ)
-    simpa [Function.comp_def] using ((continuous_algebraMap ℝ 𝒜).tendsto (0 : ℝ)).comp h0'
-  have hcfc : ∀ c : 𝒜, 0 ≤ c → cfc (fun t : ℝ => t ^ α) c = c ^ α :=
-    fun c hc => (CFC.rpow_eq_cfc_real hc).symm
-  have key : ∀ c : 𝒜, 0 ≤ c → ‖c‖ ≤ max ‖a‖ ‖b‖ →
-      Tendsto (fun n : ℕ => (c + algebraMap ℝ 𝒜 ((n : ℝ) + 1)⁻¹) ^ α) atTop (𝓝 (c ^ α)) := by
-    intro c hc hcM
-    have hnn : ∀ n : ℕ, (0 : 𝒜) ≤ c + algebraMap ℝ 𝒜 ((n : ℝ) + 1)⁻¹ :=
-      fun n => (IsStrictlyPositive.nonneg_add hc (hepos n)).nonneg
-    have hcc : Tendsto (fun n : ℕ => c + algebraMap ℝ 𝒜 ((n : ℝ) + 1)⁻¹) atTop (𝓝 c) := by
-      simpa using tendsto_const_nhds.add hte
-    have h := hcc.cfc isCompact_Icc (fun t : ℝ => t ^ α)
-      (Filter.Eventually.of_forall fun n => hspec _ (by
-        refine (norm_add_le _ _).trans ?_
-        have := henorm n
-        linarith))
-      (Filter.Eventually.of_forall fun n => IsSelfAdjoint.of_nonneg (hnn n))
-      (hspec c (by linarith)) (IsSelfAdjoint.of_nonneg hc) hcont.continuousOn
-    rw [hcfc c hc] at h
-    exact h.congr fun n => hcfc _ (hnn n)
   have hmono : ∀ n : ℕ, (a + algebraMap ℝ 𝒜 ((n : ℝ) + 1)⁻¹) ^ α ≤
       (b + algebraMap ℝ 𝒜 ((n : ℝ) + 1)⁻¹) ^ α := fun n =>
     hE _ _ (IsStrictlyPositive.nonneg_add ha (hepos n)) (add_le_add hab le_rfl)
-  exact le_of_tendsto_of_tendsto' (key a ha (le_max_left _ _)) (key b hb (le_max_right _ _)) hmono
+  exact le_of_tendsto_of_tendsto' (tendsto_rpow_add_inv ha h0.le)
+    (tendsto_rpow_add_inv hb h0.le) hmono
 
 end Ordered2
 

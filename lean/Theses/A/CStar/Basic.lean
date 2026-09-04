@@ -1150,6 +1150,50 @@ theorem cstar_involution_basic_7 (a : 𝒜) :
             mul_smul_comm, smul_smul, Complex.I_mul_I, neg_smul, one_smul, smul_sub, sq, sq]
           abel
 
+/-- The computation of the solution to **7III**.8 (asols.tex,
+`parsec-70.30`(8)), instantiated at the solution's own witnesses: for
+linearly independent `x`, `y` with `⟪x,y⟫ ≠ 0`, the operators
+`b := |x⟩⟨x|` and `c := |y⟩⟨y|` do not commute, "because then
+`|⟪x,y⟫|² x = bcx = cbx = ⟪y,x⟫‖x‖² y`, contradicting the linear
+independence of `x` and `y`".  Here `x = e₀` and `y = e₀ + e₁` in `ℂ²`,
+so `b = !![1,0;0,0]`, `c = !![1,1;1,1]`, and the two scalars
+`|⟪x,y⟫|²` and `⟪y,x⟫‖x‖²` are both `1`.
+
+Used both by **7III**.8 `cstar_involution_basic_8` and — through point 10,
+`cstar_involution_basic_10`, exactly as the solution to **9X**.3 does — by
+`cstar_positive_3`. -/
+private theorem ketbra_e0_e0e1_not_commute :
+    (!![1, 0; 0, 0] : Matrix (Fin 2) (Fin 2) ℂ) * !![1, 1; 1, 1]
+      ≠ !![1, 1; 1, 1] * !![1, 0; 0, 0] :=
+  by
+    set x : Fin 2 → ℂ := ![1, 0] with hx
+    set y : Fin 2 → ℂ := ![1, 1] with hy
+    -- `x` and `y` are linearly independent
+    have hind : LinearIndependent ℂ ![x, y] := by
+      rw [LinearIndependent.pair_iff]
+      intro s t hst
+      have h1 := congrFun hst 1
+      have h0 := congrFun hst 0
+      simp [hx, hy] at h0 h1
+      refine ⟨?_, h1⟩
+      simp [h1] at h0
+      simpa using h0
+    intro hcomm
+    -- `bcx = |⟪x,y⟫|² x` and `cbx = ⟪y,x⟫ ‖x‖² y`, both scalars being `1`
+    have hbc : Matrix.mulVec ((!![1, 0; 0, 0] : Matrix (Fin 2) (Fin 2) ℂ) * !![1, 1; 1, 1]) x
+        = (1 : ℂ) • x := by
+      ext i
+      fin_cases i <;>
+        simp [hx, Matrix.mulVec, Matrix.mul_apply, dotProduct, Fin.sum_univ_succ]
+    have hcb : Matrix.mulVec ((!![1, 1; 1, 1] : Matrix (Fin 2) (Fin 2) ℂ) * !![1, 0; 0, 0]) x
+        = (1 : ℂ) • y := by
+      ext i
+      fin_cases i <;>
+        simp [hx, hy, Matrix.mulVec, Matrix.mul_apply, dotProduct, Fin.sum_univ_succ]
+    -- so `1 • x = 1 • y`, contradicting the linear independence of `x` and `y`
+    have hkey : (1 : ℂ) • x = (1 : ℂ) • y := by rw [← hbc, ← hcb, hcomm]
+    exact one_ne_zero ((LinearIndependent.pair_iff.mp hind) 1 (-1) (by rw [hkey]; module)).1
+
 /-- **7III** (`cstar-involution-basic`, cstar.tex:1007, Exercise), part 8:
 real and imaginary part need not commute: an example in the 2×2 matrices. -/
 theorem cstar_involution_basic_8 :
@@ -1163,8 +1207,8 @@ theorem cstar_involution_basic_8 :
     -- `b = |x⟩⟨x|` and `c = |y⟩⟨y|` for linearly independent `x, y` with
     -- `⟪x,y⟫ ≠ 0`; here `x = e₀` and `y = e₀ + e₁`, for which
     -- `|x⟩⟨x| = !![1,0;0,0]` and `|y⟩⟨y| = !![1,1;1,1]` — the same pair as in
-    -- **9X**.3 `cstar_positive_3`.  `bc` and `cb` differ already at the entry
-    -- `(0,1)`, where they are `1` and `0`.
+    -- **9X**.3 `cstar_positive_3`.  That they do not commute is the solution's
+    -- own linear-independence argument, in `ketbra_e0_e0e1_not_commute` above.
     have hb : IsSelfAdjoint (!![1, 0; 0, 0] : Matrix (Fin 2) (Fin 2) ℂ) := by
       show star _ = _
       ext i j; fin_cases i <;> fin_cases j <;> simp
@@ -1177,9 +1221,7 @@ theorem cstar_involution_basic_8 :
       hb.imaginaryPart, hc.imaginaryPart]
     simp only [neg_zero, add_zero, zero_add]
     rw [hb.coe_realPart, hc.coe_realPart]
-    intro hcomm
-    have h := congrFun (congrFun hcomm 0) 1
-    simp [Matrix.mul_apply, Fin.sum_univ_succ] at h
+    exact ketbra_e0_e0e1_not_commute
 
 /-- **7III** (`cstar-involution-basic`, cstar.tex:1007, Exercise), part 9:
 `a* a + a a* = 2((ℜa)² + (ℑa)²)`. -/
@@ -1734,13 +1776,19 @@ theorem cstar_positive_3 :
     have hQsa : star (!![1, 1; 1, 1] : Matrix (Fin 2) (Fin 2) ℂ) = !![1, 1; 1, 1] := by
       ext i j
       fin_cases i <;> fin_cases j <;> simp
+    have hP : IsSelfAdjoint
+        (Matrix.toEuclideanCLM (𝕜 := ℂ) (!![1, 0; 0, 0] : Matrix (Fin 2) (Fin 2) ℂ)) := by
+      show star _ = _
+      rw [← map_star, hPsa]
+    have hQ : IsSelfAdjoint
+        (Matrix.toEuclideanCLM (𝕜 := ℂ) (!![1, 1; 1, 1] : Matrix (Fin 2) (Fin 2) ℂ)) := by
+      show star _ = _
+      rw [← map_star, hQsa]
     refine ⟨Matrix.toEuclideanCLM (𝕜 := ℂ) (!![1, 0; 0, 0] : Matrix (Fin 2) (Fin 2) ℂ),
       Matrix.toEuclideanCLM (𝕜 := ℂ) (!![1, 1; 1, 1] : Matrix (Fin 2) (Fin 2) ℂ),
       ?_, ?_, ?_⟩
     · -- `x = e₀`, `‖x‖² = 1`
-      refine key _ 1 zero_le_one ?_ ?_
-      · show star _ = _
-        rw [← map_star, hPsa]
+      refine key _ 1 zero_le_one hP ?_
       · have hsq : (!![1, 0; 0, 0] : Matrix (Fin 2) (Fin 2) ℂ) * !![1, 0; 0, 0]
             = ((1 : ℂ)) • (!![1, 0; 0, 0] : Matrix (Fin 2) (Fin 2) ℂ) := by
           ext i j
@@ -1749,9 +1797,7 @@ theorem cstar_positive_3 :
         rw [← map_mul, hsq, map_smul]
         norm_num
     · -- `y = e₀ + e₁`, `‖y‖² = 2`
-      refine key _ 2 (by norm_num) ?_ ?_
-      · show star _ = _
-        rw [← map_star, hQsa]
+      refine key _ 2 (by norm_num) hQ ?_
       · have hsq : (!![1, 1; 1, 1] : Matrix (Fin 2) (Fin 2) ℂ) * !![1, 1; 1, 1]
             = ((2 : ℂ)) • (!![1, 1; 1, 1] : Matrix (Fin 2) (Fin 2) ℂ) := by
           ext i j
@@ -1760,17 +1806,20 @@ theorem cstar_positive_3 :
           all_goals ring
         rw [← map_mul, hsq, map_smul]
         norm_num
-    · intro hle
-      have hsa := hle.isSelfAdjoint
-      rw [← map_mul] at hsa
-      have h := hsa.star_eq
-      rw [← map_star] at h
-      have hstar : star ((!![1, 0; 0, 0] : Matrix (Fin 2) (Fin 2) ℂ) * !![1, 1; 1, 1])
-          = (!![1, 0; 0, 0] : Matrix (Fin 2) (Fin 2) ℂ) * !![1, 1; 1, 1] :=
-        (Matrix.toEuclideanCLM (𝕜 := ℂ) (n := Fin 2)).injective h
-      have h01 := congrFun (congrFun hstar 0) 1
-      simp [Matrix.mul_apply, Fin.sum_univ_succ, Matrix.star_eq_conjTranspose,
-        Matrix.conjTranspose_apply] at h01
+    · -- The solution's closing step: the product "isn't even self-adjoint, as we
+      -- saw in the solution to `parsec-70.30`(10)" — that is, by point 10
+      -- (`cstar_involution_basic_10`) it would have to commute, and by point 8
+      -- the two do not, on the linear independence of `x` and `y`.
+      intro hle
+      have hcomm := (cstar_involution_basic_10 _ _ hP hQ).mp hle.isSelfAdjoint
+      have hcomm' : Matrix.toEuclideanCLM (𝕜 := ℂ)
+            ((!![1, 0; 0, 0] : Matrix (Fin 2) (Fin 2) ℂ) * !![1, 1; 1, 1])
+          = Matrix.toEuclideanCLM (𝕜 := ℂ)
+            ((!![1, 1; 1, 1] : Matrix (Fin 2) (Fin 2) ℂ) * !![1, 0; 0, 0]) := by
+        rw [map_mul, map_mul]
+        exact hcomm
+      exact ketbra_e0_e0e1_not_commute
+        ((Matrix.toEuclideanCLM (𝕜 := ℂ) (n := Fin 2)).injective hcomm')
 
 /-- **9X** (`cstar-positive`, cstar.tex:1209, Exercise), part 4: the *order
 (semi)norm* `‖a‖ₒ = inf { λ ≥ 0 : -λ ≤ a ≤ λ }` on the self-adjoint

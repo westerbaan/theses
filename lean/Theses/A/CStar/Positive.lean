@@ -16,13 +16,11 @@ arXiv:1804.02203), chapter 1: C*-algebras — cstar.tex, lines 1714–3886.
 **All statements of this file are proved**, parsecs 130–260 included.
 `cauchy_formula` runs on the thesis's own argument (15II–15IV): 15III's
 `δ`-estimate on the difference quotient, and the partition of the region between
-the `N`-gon and a small closed curve around `z₀` "in the obvious manner" into
-triangles, each of which carries a *holomorphic* integrand and dies by **14IV**
-`goursat`.  One local choice is ours: that small curve is a homothetic copy of
-the `N`-gon, `vₙ = z₀ + s(wₙ − z₀)`, not the thesis's triangle `T` — see the note
-above `polygon_shrink`.  `polygon_winding` remains a route divergence (it proves
-the polygon case outright instead of promoting **14VIII**.4 to it); see the note
-above it.
+the `N`-gon and the thesis's *triangle* `T` around `z₀` "in the obvious manner"
+into triangles, each of which carries a *holomorphic* integrand and dies by
+**14IV** `goursat` — see `polygon_triangle`.  `polygon_winding` remains a route
+divergence (it proves the polygon case outright instead of promoting
+**14VIII**.4 to it); see the note above it.
 
 Parsecs 120-150 are load-bearing: **16II** `norm_spectrum` is proved the
 thesis's way, from **15VII** `rigid_expansion`, which in turn is proved from
@@ -621,14 +619,16 @@ noncomputable def windingNumber (w₀ w₁ w₂ z : ℂ) : ℝ :=
 The thesis's proof (cstar.tex:2183–2299, after Moore 1900) bisects the triangle
 into four, keeps a quarter carrying at least a quarter of the integral, and in the
 limit uses differentiability at the point common to all of them, together with
-`∫_T (α + βz) dz = 0`, to make the estimate.  **The bisection is transcribed here
-in full**; the *endgame* diverges.  Instead of the thesis's final estimate we use
-Mathlib's Morera theorem for a disc (`DifferentiableOn.isExactOn_ball`, stated for
-any complete complex normed space, so it applies to `𝒜`): the nested triangles
-eventually sit inside a disc contained in `dom(f)`, and there `f` has a primitive,
-which kills the integral outright.  Both routes are elementary; ours is shorter
-and, unlike a rectangle-to-triangle transfer, does not need Mathlib's rectangle
-theorem to be moved across a region it does not cover. -/
+`∫_T (α + βz) dz = 0`, to make the estimate.  **Both halves are transcribed
+here**: the bisection (**14VI**, cstar.tex:2206) by the machinery below, and the
+*endgame* (**14VII**, cstar.tex:2250) inside `goursat` itself — the affine
+approximation `f(z) = f(z₀) + f'(z₀)(z − z₀) − r(z)(z − z₀)` at the point `z₀`
+common to all the `Tₙ`, whose affine part integrates to `0` over each `Tₙ`
+because it has a primitive (`triIntegral_affine`), leaving
+`‖∫_{Tₙ} f‖ ≤ ε·length(Tₙ)²` and so `‖∫_T f‖ ≤ 4ⁿ·ε·length(Tₙ)² = ε·length(T)²`
+for every `ε > 0`.  Mathlib's Morera theorem for a disc
+(`DifferentiableOn.isExactOn_ball`), which would kill `∫_{Tₙ} f` outright, is
+not used. -/
 
 
 /-- Reparametrisation: the integral along the sub-segment of `[w,w']` cut out by the
@@ -786,15 +786,65 @@ private theorem triIntegral_of_primitive (f F : ℂ → 𝒜) {V : Set ℂ} (hV 
     segIntegral_of_primitive f F hV hFf hfc h2 h0]
   abel
 
-/-- **Goursat inside a disc**: the case of the theorem that Mathlib's Morera theorem
-(`DifferentiableOn.isExactOn_ball`) settles outright. -/
-private theorem triIntegral_eq_zero_of_ball (f : ℂ → 𝒜) (c : ℂ) (r : ℝ)
-    (hf : DifferentiableOn ℂ f (Metric.ball c r))
-    {w₀ w₁ w₂ : ℂ} (h0 : w₀ ∈ Metric.ball c r) (h1 : w₁ ∈ Metric.ball c r)
-    (h2 : w₂ ∈ Metric.ball c r) :
-    triIntegral f w₀ w₁ w₂ = 0 := by
-  obtain ⟨F, hF⟩ := hf.isExactOn_ball
-  exact triIntegral_of_primitive f F (convex_ball c r) hF hf.continuousOn h0 h1 h2
+/-- `‖∫_w^{w'} g‖ ≤ |w' − w| · sup‖g‖`. -/
+private theorem norm_segIntegral_le (g : ℂ → 𝒜) (p p' : ℂ) (M : ℝ)
+    (hM : ∀ t ∈ Set.Icc (0:ℝ) 1, ‖g (p + (t:ℂ) * (p' - p))‖ ≤ M) :
+    ‖segIntegral g p p'‖ ≤ ‖p' - p‖ * M := by
+  rw [segIntegral_endpoints, norm_smul]
+  exact mul_le_mul_of_nonneg_left (integral_norm_le _ M hM) (norm_nonneg _)
+
+/-- The segment integral is additive in the integrand. -/
+private theorem segIntegral_add (g h : ℂ → 𝒜) (w w' : ℂ)
+    (hg : ContinuousOn g (segment ℝ w w')) (hh : ContinuousOn h (segment ℝ w w')) :
+    segIntegral (fun u => g u + h u) w w' = segIntegral g w w' + segIntegral h w w' := by
+  have ig : IntervalIntegrable (fun t : ℝ => g (w + (t:ℂ) * (w' - w)))
+      MeasureTheory.volume 0 1 := by
+    refine ContinuousOn.intervalIntegrable ?_
+    rw [Set.uIcc_of_le zero_le_one]
+    exact segIntegrand_continuousOn g w w' hg
+  have ih : IntervalIntegrable (fun t : ℝ => h (w + (t:ℂ) * (w' - w)))
+      MeasureTheory.volume 0 1 := by
+    refine ContinuousOn.intervalIntegrable ?_
+    rw [Set.uIcc_of_le zero_le_one]
+    exact segIntegrand_continuousOn h w w' hh
+  simp only [segIntegral_endpoints]
+  rw [intervalIntegral.integral_add ig ih, smul_add]
+
+/-- The triangle integral is additive in the integrand. -/
+private theorem triIntegral_add (g h : ℂ → 𝒜) (w₀ w₁ w₂ : ℂ)
+    (hg : ContinuousOn g (convexHull ℝ ({w₀, w₁, w₂} : Set ℂ)))
+    (hh : ContinuousOn h (convexHull ℝ ({w₀, w₁, w₂} : Set ℂ))) :
+    triIntegral (fun u => g u + h u) w₀ w₁ w₂
+      = triIntegral g w₀ w₁ w₂ + triIntegral h w₀ w₁ w₂ := by
+  have hmem : ∀ u : ℂ, u ∈ ({w₀, w₁, w₂} : Set ℂ) → u ∈ convexHull ℝ ({w₀, w₁, w₂} : Set ℂ) :=
+    fun u hu => subset_convexHull ℝ _ hu
+  have hstep : ∀ u v : ℂ, u ∈ ({w₀, w₁, w₂} : Set ℂ) → v ∈ ({w₀, w₁, w₂} : Set ℂ) →
+      segIntegral (fun x => g x + h x) u v = segIntegral g u v + segIntegral h u v := by
+    intro u v hu hv
+    have hsub := (convex_convexHull ℝ ({w₀, w₁, w₂} : Set ℂ)).segment_subset
+      (hmem u hu) (hmem v hv)
+    exact segIntegral_add g h u v (hg.mono hsub) (hh.mono hsub)
+  simp only [triIntegral]
+  rw [hstep _ _ (by simp) (by simp), hstep _ _ (by simp) (by simp),
+    hstep _ _ (by simp) (by simp)]
+  abel
+
+/-- **14VII** (cstar.tex:2250): "the integrated function is affine", so it has the
+primitive `w ↦ w·a + (w²/2 − c·w)·b` and its triangle integral vanishes. -/
+private theorem triIntegral_affine (a b : 𝒜) (c : ℂ) (w₀ w₁ w₂ : ℂ) :
+    triIntegral (fun w => a + (w - c) • b) w₀ w₁ w₂ = 0 := by
+  refine triIntegral_of_primitive _ (fun w : ℂ => w • a + ((w ^ 2 / 2 - c * w) : ℂ) • b)
+    convex_univ ?_ (Continuous.continuousOn (by fun_prop))
+    (Set.mem_univ _) (Set.mem_univ _) (Set.mem_univ _)
+  intro w _
+  have h1 : HasDerivAt (fun u : ℂ => u • a) a w := by
+    simpa using (hasDerivAt_id w).smul_const a
+  have hp : HasDerivAt (fun u : ℂ => u ^ 2 / 2) w w := by
+    simpa using (hasDerivAt_pow 2 w).div_const 2
+  have hq : HasDerivAt (fun u : ℂ => c * u) c w := by
+    simpa using (hasDerivAt_id w).const_mul c
+  have hd : HasDerivAt (fun u : ℂ => u ^ 2 / 2 - c * u) (w - c) w := hp.sub hq
+  exact h1.add (hd.smul_const b)
 
 /-- The longest side of a triangle. -/
 private noncomputable def triSideMax (u₀ u₁ u₂ : ℂ) : ℝ :=
@@ -970,39 +1020,139 @@ theorem goursat {U : Set ℂ} (hU : IsOpen U) (f : ℂ → 𝒜)
   have hzK : z ∈ K :=
     ((Set.toFinite _).isClosed_convexHull ℝ).mem_of_tendsto hz
       (Filter.Eventually.of_forall fun n => hsub n (hmem n))
-  obtain ⟨δ, hδ, hball⟩ := Metric.isOpen_iff.mp hU z (hT hzK)
-  -- for `n` large the `n`-th triangle sits inside that ball
-  obtain ⟨n, hn⟩ := exists_pow_lt_of_lt_one (show 0 < δ / (3 * S₀ + 1) by positivity)
-    (show (1:ℝ)/2 < 1 by norm_num)
-  have hpow : (0:ℝ) < 2 ^ n := by positivity
-  have hc0 : (0:ℝ) < 3 * S₀ + 1 := by linarith
-  have hn' : (3 * S₀ + 1) / 2 ^ n < δ := by
-    rw [div_pow, one_pow, lt_div_iff₀ hc0] at hn
-    have h3 := mul_lt_mul_of_pos_right hn hpow
-    rw [div_lt_iff₀ hpow]
-    calc 3 * S₀ + 1 = 1 / 2 ^ n * (3 * S₀ + 1) * 2 ^ n := by field_simp
-      _ < δ * 2 ^ n := h3
-  have hin : convexHull ℝ ({(T n).1, (T n).2.1, (T n).2.2} : Set ℂ) ⊆ Metric.ball z δ := by
-    intro x hx
-    have h2 := hull_subset_closedBall (T n).1 (T n).2.1 (T n).2.2 hx
-    rw [Metric.mem_closedBall] at h2
-    have h3 := hside n
-    have h4 : dist (T n).1 z ≤ (2 * S₀) / 2 ^ n := hdistz n
-    have h5 : dist x z ≤ dist x (T n).1 + dist (T n).1 z := dist_triangle _ _ _
-    have h6 : S₀ / 2 ^ n + (2 * S₀) / 2 ^ n ≤ (3 * S₀ + 1) / 2 ^ n := by
-      have hinv : (0:ℝ) < 1 / 2 ^ n := by positivity
-      have e1 : S₀ / 2 ^ n = S₀ * (1 / 2 ^ n) := by ring
-      have e2 : (2 * S₀) / 2 ^ n = (2 * S₀) * (1 / 2 ^ n) := by ring
-      have e3 : (3 * S₀ + 1) / 2 ^ n = (3 * S₀ + 1) * (1 / 2 ^ n) := by ring
-      rw [e1, e2, e3]
-      nlinarith [hinv]
-    exact Metric.mem_ball.mpr (by linarith)
-  have hzero : triIntegral f (T n).1 (T n).2.1 (T n).2.2 = 0 :=
-    triIntegral_eq_zero_of_ball f z δ (hf.mono hball) (hin (hmem n))
-      (hin (subset_convexHull ℝ _ (by simp))) (hin (subset_convexHull ℝ _ (by simp)))
-  have hfin := hnorm n
-  rw [hzero, norm_zero, mul_zero] at hfin
-  exact norm_le_zero_iff.mp hfin
+  have hzU : z ∈ U := hT hzK
+  -- **14VII**: `f(w) = f(z) + f'(z)(w − z) − r(w)(w − z)` — the affine part and
+  -- the remainder `ρ(w) = −r(w)(w − z)`
+  obtain ⟨f', hf'⟩ : ∃ f' : 𝒜, HasDerivAt f f' z :=
+    ⟨_, (hf.differentiableAt (hU.mem_nhds hzU)).hasDerivAt⟩
+  set ρ : ℂ → 𝒜 := fun w => f w - f z - (w - z) • f' with hρ
+  have haffcont : Continuous (fun w : ℂ => f z + (w - z) • f') := by fun_prop
+  have hρcont : ContinuousOn ρ K := by
+    simp only [hρ]
+    exact ((hf.continuousOn.mono hT).sub continuousOn_const).sub
+      (Continuous.continuousOn (by fun_prop))
+  have hfun : (fun w => (f z + (w - z) • f') + ρ w) = f := by
+    funext w; simp only [hρ]; abel
+  -- the thesis's estimate: `‖∫_T f‖ ≤ ε·length(T)²` for every `ε > 0`
+  have main : ∀ ε : ℝ, 0 < ε → ‖triIntegral f w₀ w₁ w₂‖ ≤ 9 * S₀ ^ 2 * ε := by
+    intro ε hε
+    -- `‖r(w)‖ ≤ ε` on a ball of radius `δ` around `z`
+    obtain ⟨δ, hδ, hδball⟩ :=
+      Metric.eventually_nhds_iff.mp ((hasDerivAt_iff_isLittleO.mp hf').def hε)
+    -- for `n` large the `n`-th triangle sits inside that ball
+    obtain ⟨n, hn⟩ := exists_pow_lt_of_lt_one (show 0 < δ / (3 * S₀ + 1) by positivity)
+      (show (1:ℝ)/2 < 1 by norm_num)
+    have hpow : (0:ℝ) < 2 ^ n := by positivity
+    have hc0 : (0:ℝ) < 3 * S₀ + 1 := by linarith
+    have hn' : (3 * S₀ + 1) / 2 ^ n < δ := by
+      rw [div_pow, one_pow, lt_div_iff₀ hc0] at hn
+      have h3 := mul_lt_mul_of_pos_right hn hpow
+      rw [div_lt_iff₀ hpow]
+      calc 3 * S₀ + 1 = 1 / 2 ^ n * (3 * S₀ + 1) * 2 ^ n := by field_simp
+        _ < δ * 2 ^ n := h3
+    have hlt3 : 3 * S₀ / 2 ^ n < δ := by
+      refine lt_of_le_of_lt ?_ hn'
+      rw [div_le_div_iff_of_pos_right hpow]
+      linarith
+    have hin : ∀ x ∈ convexHull ℝ ({(T n).1, (T n).2.1, (T n).2.2} : Set ℂ),
+        dist x z ≤ 3 * S₀ / 2 ^ n := by
+      intro x hx
+      have h2 := hull_subset_closedBall (T n).1 (T n).2.1 (T n).2.2 hx
+      rw [Metric.mem_closedBall] at h2
+      have h3 := hside n
+      have h4 : dist (T n).1 z ≤ (2 * S₀) / 2 ^ n := hdistz n
+      have h5 : dist x z ≤ dist x (T n).1 + dist (T n).1 z := dist_triangle _ _ _
+      have h6 : S₀ / 2 ^ n + (2 * S₀) / 2 ^ n = 3 * S₀ / 2 ^ n := by ring
+      linarith
+    have hE0 : (0:ℝ) ≤ 3 * S₀ / 2 ^ n := div_nonneg (by linarith) hpow.le
+    -- `‖ρ(w)‖ = ‖r(w)(w − z)‖ ≤ ε·length(Tₙ)` on the `n`-th triangle
+    have hρbound : ∀ x ∈ convexHull ℝ ({(T n).1, (T n).2.1, (T n).2.2} : Set ℂ),
+        ‖ρ x‖ ≤ ε * (3 * S₀ / 2 ^ n) := by
+      intro x hx
+      have hd := hin x hx
+      have hb := hδball (lt_of_le_of_lt hd hlt3)
+      have hnx : ‖x - z‖ = dist x z := (dist_eq_norm x z).symm
+      calc ‖ρ x‖ ≤ ε * ‖x - z‖ := hb
+        _ ≤ ε * (3 * S₀ / 2 ^ n) := by
+            rw [hnx]; exact mul_le_mul_of_nonneg_left hd hε.le
+    have hTn : convexHull ℝ ({(T n).1, (T n).2.1, (T n).2.2} : Set ℂ) ⊆ K := hsub n
+    have e0 : (T n).1 ∈ convexHull ℝ ({(T n).1, (T n).2.1, (T n).2.2} : Set ℂ) :=
+      subset_convexHull ℝ _ (by simp)
+    have e1 : (T n).2.1 ∈ convexHull ℝ ({(T n).1, (T n).2.1, (T n).2.2} : Set ℂ) :=
+      subset_convexHull ℝ _ (by simp)
+    have e2 : (T n).2.2 ∈ convexHull ℝ ({(T n).1, (T n).2.1, (T n).2.2} : Set ℂ) :=
+      subset_convexHull ℝ _ (by simp)
+    -- each side of the `n`-th triangle carries at most `length(Tₙ)·ε·length(Tₙ)`
+    have hbnd : ∀ p p' : ℂ,
+        p ∈ convexHull ℝ ({(T n).1, (T n).2.1, (T n).2.2} : Set ℂ) →
+        p' ∈ convexHull ℝ ({(T n).1, (T n).2.1, (T n).2.2} : Set ℂ) →
+        ‖p' - p‖ ≤ S₀ / 2 ^ n →
+        ‖segIntegral ρ p p'‖ ≤ (S₀ / 2 ^ n) * (ε * (3 * S₀ / 2 ^ n)) := by
+      intro p p' hp hp' hlen
+      have hM : ∀ t ∈ Set.Icc (0:ℝ) 1,
+          ‖ρ (p + (t:ℂ) * (p' - p))‖ ≤ ε * (3 * S₀ / 2 ^ n) := by
+        intro t ht
+        refine hρbound _ ((convex_convexHull ℝ _).segment_subset hp hp' ?_)
+        rw [segment_eq_image' ℝ]
+        exact ⟨t, ht, by simp [Complex.real_smul]⟩
+      calc ‖segIntegral ρ p p'‖ ≤ ‖p' - p‖ * (ε * (3 * S₀ / 2 ^ n)) :=
+            norm_segIntegral_le ρ p p' _ hM
+        _ ≤ (S₀ / 2 ^ n) * (ε * (3 * S₀ / 2 ^ n)) :=
+            mul_le_mul_of_nonneg_right hlen (mul_nonneg hε.le hE0)
+    have hsm := hside n
+    have hs1 : ‖(T n).2.1 - (T n).1‖ ≤ S₀ / 2 ^ n := by
+      rw [← dist_eq_norm, dist_comm]
+      exact le_trans (le_max_left _ _) hsm
+    have hs2 : ‖(T n).2.2 - (T n).2.1‖ ≤ S₀ / 2 ^ n := by
+      rw [← dist_eq_norm, dist_comm]
+      exact le_trans (le_trans (le_max_left _ _) (le_max_right _ _)) hsm
+    have hs3 : ‖(T n).1 - (T n).2.2‖ ≤ S₀ / 2 ^ n := by
+      rw [← dist_eq_norm, dist_comm]
+      exact le_trans (le_trans (le_max_right _ _) (le_max_right _ _)) hsm
+    have hρtri : ‖triIntegral ρ (T n).1 (T n).2.1 (T n).2.2‖
+        ≤ 3 * ((S₀ / 2 ^ n) * (ε * (3 * S₀ / 2 ^ n))) := by
+      have b1 := hbnd _ _ e0 e1 hs1
+      have b2 := hbnd _ _ e1 e2 hs2
+      have b3 := hbnd _ _ e2 e0 hs3
+      have t1 := norm_add_le (segIntegral ρ (T n).1 (T n).2.1 + segIntegral ρ (T n).2.1 (T n).2.2)
+        (segIntegral ρ (T n).2.2 (T n).1)
+      have t2 := norm_add_le (segIntegral ρ (T n).1 (T n).2.1)
+        (segIntegral ρ (T n).2.1 (T n).2.2)
+      rw [triIntegral]
+      linarith
+    -- `∫_{Tₙ} f = ∫_{Tₙ} (affine) + ∫_{Tₙ} ρ`, and the affine part vanishes
+    have hsplit : triIntegral f (T n).1 (T n).2.1 (T n).2.2
+        = triIntegral (fun w => f z + (w - z) • f') (T n).1 (T n).2.1 (T n).2.2
+          + triIntegral ρ (T n).1 (T n).2.1 (T n).2.2 := by
+      conv_lhs => rw [← hfun]
+      exact triIntegral_add _ _ _ _ _ haffcont.continuousOn (hρcont.mono hTn)
+    have haff0 : triIntegral (fun w => f z + (w - z) • f') (T n).1 (T n).2.1 (T n).2.2 = 0 :=
+      triIntegral_affine (f z) f' z _ _ _
+    -- `‖∫_T f‖ ≤ 4ⁿ‖∫_{Tₙ} f‖ ≤ ε·4ⁿ·length(Tₙ)² = ε·length(T)²`
+    have hfin := hnorm n
+    rw [hsplit, haff0, zero_add] at hfin
+    have h4n : (0:ℝ) < 4 ^ n := by positivity
+    have h4 : (4:ℝ) ^ n = (2 ^ n) ^ 2 := by
+      rw [← pow_mul, mul_comm n 2, pow_mul]
+      norm_num
+    have hcancel : (4:ℝ) ^ n * (3 * ((S₀ / 2 ^ n) * (ε * (3 * S₀ / 2 ^ n)))) = 9 * S₀ ^ 2 * ε := by
+      rw [h4]
+      field_simp
+      ring
+    calc ‖triIntegral f w₀ w₁ w₂‖
+        ≤ 4 ^ n * ‖triIntegral ρ (T n).1 (T n).2.1 (T n).2.2‖ := hfin
+      _ ≤ 4 ^ n * (3 * ((S₀ / 2 ^ n) * (ε * (3 * S₀ / 2 ^ n)))) :=
+          mul_le_mul_of_nonneg_left hρtri h4n.le
+      _ = 9 * S₀ ^ 2 * ε := hcancel
+  -- `ε > 0` was arbitrary
+  refine norm_le_zero_iff.mp (le_of_forall_pos_le_add fun ε hε => ?_)
+  have hc : (0:ℝ) < 9 * S₀ ^ 2 + 1 := by positivity
+  have h := main (ε / (9 * S₀ ^ 2 + 1)) (div_pos hε hc)
+  have h1 : 9 * S₀ ^ 2 * (ε / (9 * S₀ ^ 2 + 1))
+      ≤ (9 * S₀ ^ 2 + 1) * (ε / (9 * S₀ ^ 2 + 1)) :=
+    mul_le_mul_of_nonneg_right (by linarith) (div_pos hε hc).le
+  have h2 : (9 * S₀ ^ 2 + 1) * (ε / (9 * S₀ ^ 2 + 1)) = ε := by field_simp
+  linarith
 
 
 /-- **14VIII** (`invint`, cstar.tex:2303, Exercise), part 1: for a non-zero
@@ -1753,7 +1903,7 @@ a different route, which proves the polygon case outright and needs only
 * at the centre every `ζₙ` is `e^{2πi/N}`, so `S(c) = N·(2π/N) = 2π`.
 
 The divergence stops at this lemma: `cauchy_formula` below does follow the
-printed 15III–15IV (see `polygon_shrink`), and it cites this lemma exactly
+printed 15III–15IV (see `polygon_triangle`), and it cites this lemma exactly
 where 15II cites `invint`(5).  Two consequences worth recording: the tree uses
 neither **14VIII**.4 `invint_4` nor the thesis's **14VIII**.5 here (both have
 zero consumers; `polygon_fan` and `polygon_integral_eq_zero` were deleted on 2026-09-04), and
@@ -2356,22 +2506,6 @@ private theorem edge_taylor (f : ℂ → 𝒜) (W W' : ℂ)
   rw [heq, segIntegral_endpoints]
   exact hmain.const_smul (W' - W)
 
-/-- A separating linear functional for two ℝ-independent vectors. -/
-private theorem sep_functional (a b : ℂ) (hD : 0 < ((starRingEnd ℂ) a * b).im) :
-    ∃ q : ℂ, (q * a).re = 1 ∧ (q * b).re = 1 := by
-  simp only [Complex.mul_im, Complex.conj_re, Complex.conj_im] at hD
-  have hne : a.re * b.im - a.im * b.re ≠ 0 := by intro hz; rw [sub_eq_zero] at hz; linarith
-  refine ⟨⟨(b.im - a.im) / (a.re * b.im - a.im * b.re),
-    (b.re - a.re) / (a.re * b.im - a.im * b.re)⟩, ?_, ?_⟩
-  · simp only [Complex.mul_re, div_mul_eq_mul_div, div_sub_div_same]
-    rw [show (b.im - a.im) * a.re - (b.re - a.re) * a.im
-      = a.re * b.im - a.im * b.re from by ring]
-    exact div_self hne
-  · simp only [Complex.mul_re, div_mul_eq_mul_div, div_sub_div_same]
-    rw [show (b.im - a.im) * b.re - (b.re - a.re) * b.im
-      = a.re * b.im - a.im * b.re from by ring]
-    exact div_self hne
-
 /-- A point cut off from three others by a linear functional is off their hull. -/
 private theorem notMem_hull_of_sep {z₀ p₁ p₂ p₃ q : ℂ} {t : ℝ} (ht : 0 < t)
     (h₁ : t ≤ (q * (p₁ - z₀)).re) (h₂ : t ≤ (q * (p₂ - z₀)).re)
@@ -2398,106 +2532,468 @@ private theorem notMem_hull_of_sep {z₀ p₁ p₂ p₃ q : ℂ} {t : ℝ} (ht :
   simp only [Set.mem_ofPred_eq] at this
   linarith
 
-/-- `‖∫_w^{w'} g‖ ≤ |w' − w| · sup‖g‖`. -/
-private theorem norm_segIntegral_le (g : ℂ → 𝒜) (p p' : ℂ) (M : ℝ)
-    (hM : ∀ t ∈ Set.Icc (0:ℝ) 1, ‖g (p + (t:ℂ) * (p' - p))‖ ≤ M) :
-    ‖segIntegral g p p'‖ ≤ ‖p' - p‖ * M := by
-  rw [segIntegral_endpoints, norm_smul]
-  exact mul_le_mul_of_nonneg_left (integral_norm_le _ M hM) (norm_nonneg _)
+private theorem cisR_zero : cisR 0 = 1 := by
+  rw [cisR]
+  simp
 
-/-- **15IV**'s partition (cstar.tex:2450): the region between the `N`-gon and a
-small closed curve around `z₀`, cut "in the obvious manner into triangles" that
-carry a holomorphic integrand and so die by **14IV** `goursat`; what is left
-after the interior edges cancel and the spokes telescope is the `N`-gon integral
-minus the small one.
+private theorem cisR_norm (θ : ℝ) : ‖cisR θ‖ = 1 := by
+  rw [cisR, Complex.norm_exp]
+  simp
 
-⚠ **The one local divergence in `cauchy_formula`.**  The thesis's small curve is
-a *triangle* `T` with `z₀ ∈ in(T)`, `wn_T(z₀) = −1` and `length(T) ≤ ε`; ours is
-the homothetic copy `vₙ = z₀ + s(wₙ − z₀)` of the `N`-gon itself.  That is what
-makes the partition uniform: both filling triangles of the `n`-th slab are cut
-off from `z₀` by a *single* linear functional, the sum of the coordinates in the
-basis `(wₙ − z₀, wₙ₊₁ − z₀)` of `ℂ` over `ℝ` — a basis because
-`Im(conj(wₙ − z₀)·(wₙ₊₁ − z₀)) > 0` (`polygon_im_pos`) — on which the four
-vertices score `1, 1, s, s` and `z₀` scores `0`.  With a triangle one needs
-instead a pairing of the `N` vertices with the three of `T` and a separating line
-for each of the `2N` filling triangles.  Nothing else of 15IV changes: the curve
-is still inside the `N`-gon, still shrinks to `z₀`, and its length still tends
-to `0`. -/
-private theorem polygon_shrink {U : Set ℂ} (hU : IsOpen U) (g : ℂ → 𝒜) (z₀ : ℂ)
-    (hg : DifferentiableOn ℂ g (U \ {z₀})) (N : ℕ) (w : ℕ → ℂ)
+private theorem cisR_two_pi : cisR (2 * Real.pi) = 1 := by
+  rw [cisR]
+  push_cast
+  exact Complex.exp_two_pi_mul_I
+
+/-- Pure algebra: `x * E * cisR θ` multiplied by the conjugate of
+`y * E * cisR θ'` is `x y · cisR(θ' − θ)` when `E` has modulus one. -/
+private theorem conj_dir_mul {E : ℂ} (hE : (starRingEnd ℂ) E * E = 1) (x y θ θ' : ℝ) :
+    (starRingEnd ℂ) ((x : ℂ) * E * cisR θ) * ((y : ℂ) * E * cisR θ')
+      = ((x * y : ℝ) : ℂ) * cisR (θ' - θ) := by
+  have h1 : (starRingEnd ℂ) ((x : ℂ) * E * cisR θ)
+      = (x : ℂ) * ((starRingEnd ℂ) E) * cisR (-θ) := by
+    rw [map_mul, map_mul, Complex.conj_ofReal, cisR_conj]
+  rw [h1, show (x : ℂ) * ((starRingEnd ℂ) E) * cisR (-θ) * ((y : ℂ) * E * cisR θ')
+      = (x : ℂ) * (y : ℂ) * (((starRingEnd ℂ) E) * E) * (cisR (-θ) * cisR θ') from by ring,
+    hE, mul_one, ← cisR_add, show -θ + θ' = θ' - θ from by ring]
+  push_cast
+  ring
+
+private theorem dot_dir {E : ℂ} (hE : (starRingEnd ℂ) E * E = 1) (x y θ θ' : ℝ) :
+    ((starRingEnd ℂ) ((x : ℂ) * E * cisR θ) * ((y : ℂ) * E * cisR θ')).re
+      = x * y * Real.cos (θ' - θ) := by
+  rw [conj_dir_mul hE, Complex.re_ofReal_mul, cisR_re]
+
+/-- A complex number with positive imaginary part has argument in `(0, π)`. -/
+private theorem arg_mem_Ioo_of_im_pos {z : ℂ} (h : 0 < z.im) :
+    Complex.arg z ∈ Set.Ioo 0 Real.pi := by
+  have hz : z ≠ 0 := by
+    intro h0
+    rw [h0] at h
+    simp at h
+  have hs : 0 < Real.sin (Complex.arg z) := by
+    rw [Complex.sin_arg]
+    exact div_pos h (norm_pos_iff.mpr hz)
+  obtain ⟨h1, h2⟩ := Complex.arg_mem_Ioc z
+  refine ⟨?_, ?_⟩
+  · by_contra hcon
+    rw [not_lt] at hcon
+    have hnn : (0 : ℝ) ≤ -Complex.arg z := by linarith
+    have hle' : -Complex.arg z ≤ Real.pi := by linarith
+    have := Real.sin_nonneg_of_nonneg_of_le_pi hnn hle'
+    rw [Real.sin_neg] at this
+    linarith
+  · rcases lt_or_eq_of_le h2 with h | h
+    · exact h
+    · rw [h, Real.sin_pi] at hs
+      linarith
+
+/-- Algebraic step of the lift: modulus and angle multiply. -/
+private theorem dir_lift_step {A B : ℝ} {E c d x y : ℂ} (hA : (A : ℂ) ≠ 0)
+    (hx : x = (A : ℂ) * E * c) (hy : y = x * ((B / A : ℝ) : ℂ) * d) :
+    y = (B : ℂ) * E * (c * d) := by
+  rw [hy, hx]
+  push_cast
+  field_simp
+
+/-- **The directions `wₙ − z₀` lifted**: modulus, a fixed unit `E`, and the running
+sum of the angles `∠(wₙ, z₀, wₙ₊₁)`. -/
+private theorem dir_lift (z₀ : ℂ) (w : ℕ → ℂ) (hne : ∀ n, w n - z₀ ≠ 0) (n : ℕ) :
+    w n - z₀ = ((‖w n - z₀‖ : ℝ) : ℂ) * ((w 0 - z₀) / ((‖w 0 - z₀‖ : ℝ) : ℂ))
+      * cisR (∑ i ∈ Finset.range n, Complex.arg ((w (i + 1) - z₀) / (w i - z₀))) := by
+  induction n with
+  | zero =>
+      have h0 : ((‖w 0 - z₀‖ : ℝ) : ℂ) ≠ 0 := by
+        simpa using (norm_ne_zero_iff.mpr (hne 0))
+      rw [Finset.range_zero, Finset.sum_empty, cisR_zero, mul_one]
+      field_simp
+  | succ n ih =>
+      have han : ((‖w n - z₀‖ : ℝ) : ℂ) ≠ 0 := by
+        simpa using (norm_ne_zero_iff.mpr (hne n))
+      have hwn : w n - z₀ ≠ 0 := hne n
+      have hb : w (n + 1) - z₀ = (w n - z₀)
+          * (((‖w (n + 1) - z₀‖ / ‖w n - z₀‖ : ℝ)) : ℂ)
+          * cisR (Complex.arg ((w (n + 1) - z₀) / (w n - z₀))) := by
+        have h := Complex.norm_mul_exp_arg_mul_I ((w (n + 1) - z₀) / (w n - z₀))
+        rw [norm_div] at h
+        rw [cisR, mul_assoc, h]
+        field_simp
+      rw [Finset.sum_range_succ, cisR_add]
+      exact dir_lift_step han ih hb
+
+/-- **The filling triangles of 15IV.**  Three points of the polygon whose
+directions from `z₀` lie in an arc shorter than `π` are cut off from `z₀` by one
+linear functional, so `goursat` kills the triangle they span. -/
+private theorem tri_zero_arc {U : Set ℂ} (hU : IsOpen U) (g : ℂ → 𝒜) (z₀ : ℂ)
+    (hg : DifferentiableOn ℂ g (U \ {z₀})) {K : Set ℂ} (hKc : Convex ℝ K) (hKU : K ⊆ U)
+    {E : ℂ} (hE : (starRingEnd ℂ) E * E = 1) {lo hi : ℝ} (hlh : hi - lo < Real.pi)
+    {p₁ p₂ p₃ : ℂ} {r₁ r₂ r₃ θ₁ θ₂ θ₃ : ℝ}
+    (hm₁ : p₁ ∈ K) (hm₂ : p₂ ∈ K) (hm₃ : p₃ ∈ K)
+    (hr₁ : 0 < r₁) (hr₂ : 0 < r₂) (hr₃ : 0 < r₃)
+    (he₁ : p₁ - z₀ = (r₁ : ℂ) * E * cisR θ₁)
+    (he₂ : p₂ - z₀ = (r₂ : ℂ) * E * cisR θ₂)
+    (he₃ : p₃ - z₀ = (r₃ : ℂ) * E * cisR θ₃)
+    (ht₁ : θ₁ ∈ Set.Icc lo hi) (ht₂ : θ₂ ∈ Set.Icc lo hi) (ht₃ : θ₃ ∈ Set.Icc lo hi) :
+    triIntegral g p₁ p₂ p₃ = 0 := by
+  have hpi := Real.pi_pos
+  set μ : ℝ := (lo + hi) / 2 with hμ
+  set q : ℂ := (starRingEnd ℂ) (((1 : ℝ) : ℂ) * E * cisR μ) with hq
+  have hscore : ∀ (p : ℂ) (r θ : ℝ), 0 < r → p - z₀ = (r : ℂ) * E * cisR θ →
+      θ ∈ Set.Icc lo hi → 0 < (q * (p - z₀)).re := by
+    intro p r θ hr he hθ
+    rw [he, hq, dot_dir hE, one_mul]
+    refine mul_pos hr (Real.cos_pos_of_mem_Ioo ⟨?_, ?_⟩) <;>
+      [skip; skip] <;>
+      · obtain ⟨h1, h2⟩ := hθ
+        rw [hμ]
+        linarith
+  refine goursat (hU.sdiff isClosed_singleton) g hg _ _ _ ?_
+  have hsub : ({p₁, p₂, p₃} : Set ℂ) ⊆ K := by
+    intro x hx
+    simp only [Set.mem_insert_iff, Set.mem_singleton_iff] at hx
+    rcases hx with rfl | rfl | rfl
+    exacts [hm₁, hm₂, hm₃]
+  refine Set.subset_sdiff.mpr ⟨subset_trans (convexHull_min hsub hKc) hKU,
+    Set.disjoint_singleton_right.mpr ?_⟩
+  have s₁ := hscore p₁ r₁ θ₁ hr₁ he₁ ht₁
+  have s₂ := hscore p₂ r₂ θ₂ hr₂ he₂ ht₂
+  have s₃ := hscore p₃ r₃ θ₃ hr₃ he₃ ht₃
+  exact notMem_hull_of_sep
+    (t := min (min (q * (p₁ - z₀)).re (q * (p₂ - z₀)).re) (q * (p₃ - z₀)).re)
+    (lt_min (lt_min s₁ s₂) s₃)
+    (le_trans (min_le_left _ _) (min_le_left _ _))
+    (le_trans (min_le_left _ _) (min_le_right _ _)) (min_le_right _ _)
+
+private theorem segIntegral_self (g : ℂ → 𝒜) (x : ℂ) : segIntegral g x x = 0 := by
+  rw [segIntegral_endpoints, sub_self, zero_smul]
+
+/-- **15IV** (cstar.tex:2445): *"Let `T` be a triangle that is entirely inside
+the `N`-gon … `length(T) ≤ ε` and `‖z₀ − z‖ ≤ δ` for all `z ∈ ∂T`.  By
+partitioning the area between `T` and the `N`-gon in the obvious manner into
+triangles `T₁, …, T_M` (for which `∫_{T_m} f = 0` by `goursat`) we see that
+`∑ₙ ∫_{wₙ}^{wₙ₊₁} f = ∫_T f`."*  Here `T` is produced with all three vertices at
+distance `t` from `z₀`, so `length(T) ≤ 6t` and `∂T ⊆ closedBall z₀ t`.
+
+The partition, which the thesis does not print, is this.  Lift the directions of
+the vertices, `wₙ − z₀ = ‖wₙ − z₀‖·E·cisR(φₙ)`, with `φ₀ = 0`, `φₙ₊₁ − φₙ ∈ (0,π)`
+(`polygon_im_pos`) and `φ_N = 2π` (`polygon_winding`).  Cut the circle of
+directions at `0`, `φ₁` and one angle `ψ₂ ∈ (π, φ₁ + π)`, put a vertex of `T` on
+each of the three rays, and give the `n`-th edge of the `N`-gon the corner `cₙ`
+of its own arc.  The region between is then cut into the `N` triangles
+`(wₙ, wₙ₊₁, cₙ)` and the three `(cₙ, wₙ₊₁, cₙ₊₁)` at which `c` jumps; each of
+them spans an arc of directions shorter than `π`, so a single linear functional
+cuts `z₀` off it (`tri_zero_arc`) and **14IV** `goursat` kills it.  The interior
+edges cancel and the spokes `∫_{wₙ}^{cₙ}` telescope.
+
+Two remarks on the printed step.  The three cut angles cannot in general be
+taken at vertices of the `N`-gon — for a square and `z₀` its centre, any three of
+the four vertex directions leave `z₀` on the boundary of `T` — which is why `ψ₂`
+is chosen off the vertex rays.  And the printed `wn_T(z₀) = −1` is a slip: with
+the inner curve traversed clockwise the partition gives `∑ₙ ∫ = −∫_T`, not the
+`+∫_T` the display asserts, and **14VIII**.5 (cstar.tex:2378, whose hint is this
+same partition) needs `+1` as well.  `T` is built here with `wn_T(z₀) = +1`. -/
+private theorem polygon_triangle {U : Set ℂ} (hU : IsOpen U) (g : ℂ → 𝒜) (z₀ : ℂ)
+    (hg : DifferentiableOn ℂ g (U \ {z₀})) (N : ℕ) (hN : 3 ≤ N) (w : ℕ → ℂ)
     (hUw : convexHull ℝ (Set.range w) ⊆ U) (hwN : w N = w 0)
-    (hz₀ : z₀ ∈ convexHull ℝ (Set.range w))
+    (hne : ∀ n, w n - z₀ ≠ 0)
     (him : ∀ n, 0 < ((starRingEnd ℂ) (w n - z₀) * (w (n + 1) - z₀)).im)
-    (s : ℝ) (hs : 0 < s) (hs1 : s ≤ 1) :
-    ∑ n ∈ Finset.range N, segIntegral g (w n) (w (n + 1))
-      = ∑ n ∈ Finset.range N,
-          segIntegral g (z₀ + (s:ℂ) * (w n - z₀)) (z₀ + (s:ℂ) * (w (n + 1) - z₀)) := by
-  set v : ℕ → ℂ := fun n => z₀ + (s:ℂ) * (w n - z₀) with hv
-  set h : ℕ → 𝒜 := fun n => segIntegral g (w n) (v n) with hh
-  have hP : Convex ℝ (convexHull ℝ (Set.range w)) := convex_convexHull ℝ _
-  have hwmem : ∀ m, w m ∈ convexHull ℝ (Set.range w) := fun m => subset_convexHull ℝ _ ⟨m, rfl⟩
-  have hvmem : ∀ m, v m ∈ convexHull ℝ (Set.range w) := by
-    intro m
-    have hc := hP hz₀ (hwmem m) (by linarith : (0:ℝ) ≤ 1 - s) hs.le (by ring)
-    have he : (1 - s) • z₀ + s • w m = v m := by
-      simp only [hv, Complex.real_smul]
-      push_cast
+    (hwind : ∑ n ∈ Finset.range N, Complex.arg ((w (n + 1) - z₀) / (w n - z₀))
+      = 2 * Real.pi)
+    (t : ℝ) (ht : 0 < t)
+    (hball : Metric.closedBall z₀ t ⊆ convexHull ℝ (Set.range w)) :
+    ∃ p₀ p₁ p₂ : ℂ, ‖p₀ - z₀‖ = t ∧ ‖p₁ - z₀‖ = t ∧ ‖p₂ - z₀‖ = t ∧
+      ∑ n ∈ Finset.range N, segIntegral g (w n) (w (n + 1))
+        = triIntegral g p₀ p₁ p₂ := by
+  have hpi := Real.pi_pos
+  classical
+  set K : Set ℂ := convexHull ℝ (Set.range w) with hKdef
+  have hKc : Convex ℝ K := convex_convexHull ℝ _
+  have hwmem : ∀ n, w n ∈ K := fun n => subset_convexHull ℝ _ ⟨n, rfl⟩
+  -- the unit `E` and the lifted angles
+  set E : ℂ := (w 0 - z₀) / ((‖w 0 - z₀‖ : ℝ) : ℂ) with hEdef
+  have hEnorm : ‖E‖ = 1 := by
+    rw [hEdef, norm_div, Complex.norm_real, Real.norm_of_nonneg (norm_nonneg _),
+      div_self (norm_ne_zero_iff.mpr (hne 0))]
+  have hE : (starRingEnd ℂ) E * E = 1 := by
+    rw [← Complex.normSq_eq_conj_mul_self, Complex.normSq_eq_norm_sq, hEnorm]
+    norm_num
+  set α : ℕ → ℝ := fun n => Complex.arg ((w (n + 1) - z₀) / (w n - z₀)) with hαdef
+  set φ : ℕ → ℝ := fun n => ∑ i ∈ Finset.range n, α i with hφdef
+  have hlift : ∀ n, w n - z₀ = ((‖w n - z₀‖ : ℝ) : ℂ) * E * cisR (φ n) := by
+    intro n
+    simpa [hφdef, hαdef, hEdef] using dir_lift z₀ w hne n
+  have hαmem : ∀ n, α n ∈ Set.Ioo 0 Real.pi := by
+    intro n
+    refine arg_mem_Ioo_of_im_pos ?_
+    rw [div_im_eq]
+    exact div_pos (him n) (Complex.normSq_pos.mpr (hne n))
+  have hφsucc : ∀ n, φ (n + 1) = φ n + α n := by
+    intro n
+    simp [hφdef, Finset.sum_range_succ]
+  have hφmono : StrictMono φ := by
+    refine strictMono_nat_of_lt_succ (fun n => ?_)
+    rw [hφsucc n]
+    linarith [(hαmem n).1]
+  have hφ0 : φ 0 = 0 := by simp [hφdef]
+  have hφN : φ N = 2 * Real.pi := by simpa [hφdef, hαdef] using hwind
+  have hrpos : ∀ n, 0 < ‖w n - z₀‖ := fun n => norm_pos_iff.mpr (hne n)
+  -- the three cut angles: `0`, `φ 1`, and one strictly between `π` and `φ 1 + π`
+  have hφ1pos : 0 < φ 1 := by rw [hφsucc 0, hφ0]; linarith [(hαmem 0).1]
+  have hφ1pi : φ 1 < Real.pi := by rw [hφsucc 0, hφ0]; linarith [(hαmem 0).2]
+  have hφ2lt : φ 2 < φ 1 + Real.pi := by rw [hφsucc 1]; linarith [(hαmem 1).2]
+  have hφ12 : φ 1 < φ 2 := hφmono (by omega)
+  have hφ2N : φ 2 < 2 * Real.pi := by rw [← hφN]; exact hφmono (by omega)
+  set ψ₂ : ℝ := (max Real.pi (φ 2) + min (φ 1 + Real.pi) (2 * Real.pi)) / 2 with hψ₂def
+  have ha1 : Real.pi ≤ max Real.pi (φ 2) := le_max_left _ _
+  have ha2 : φ 2 ≤ max Real.pi (φ 2) := le_max_right _ _
+  have ha3 : max Real.pi (φ 2) < φ 1 + Real.pi := max_lt (by linarith) hφ2lt
+  have ha4 : max Real.pi (φ 2) < 2 * Real.pi := max_lt (by linarith) hφ2N
+  have hb1 : min (φ 1 + Real.pi) (2 * Real.pi) ≤ φ 1 + Real.pi := min_le_left _ _
+  have hb2 : min (φ 1 + Real.pi) (2 * Real.pi) ≤ 2 * Real.pi := min_le_right _ _
+  have hb3 : Real.pi < min (φ 1 + Real.pi) (2 * Real.pi) := lt_min (by linarith) (by linarith)
+  have hb4 : φ 2 < min (φ 1 + Real.pi) (2 * Real.pi) := lt_min hφ2lt hφ2N
+  have hψ2a : Real.pi < ψ₂ := by rw [hψ₂def]; linarith
+  have hψ2b : φ 2 < ψ₂ := by rw [hψ₂def]; linarith
+  have hψ2c : ψ₂ < φ 1 + Real.pi := by rw [hψ₂def]; linarith
+  have hψ2d : ψ₂ < 2 * Real.pi := by rw [hψ₂def]; linarith
+  have hψ2e : φ 1 < ψ₂ := lt_trans hφ1pi hψ2a
+  -- the index at which the second cut falls
+  obtain ⟨n₂, hn₂ge, hn₂le, hn₂ltN, hn₂gt⟩ :
+      ∃ m : ℕ, 2 ≤ m ∧ φ m ≤ ψ₂ ∧ m < N ∧ ψ₂ < φ (m + 1) := by
+    set G : ℕ := Nat.findGreatest (fun m => φ m ≤ ψ₂) N with hG
+    have h2 : 2 ≤ G := Nat.le_findGreatest (by omega) (le_of_lt hψ2b)
+    have hspec : φ G ≤ ψ₂ := by
+      have h := Nat.findGreatest_spec (P := fun m => φ m ≤ ψ₂) (m := 2) (n := N)
+        (by omega) (le_of_lt hψ2b)
+      simp only [hG]
+      exact h
+    have hGN : G ≤ N := Nat.findGreatest_le N
+    have hlt : G < N := by
+      rcases lt_or_eq_of_le hGN with h | h
+      · exact h
+      · exfalso
+        rw [h, hφN] at hspec
+        linarith
+    have hgt : ψ₂ < φ (G + 1) := by
+      have h := Nat.findGreatest_is_greatest (P := fun m => φ m ≤ ψ₂) (n := N) (k := G + 1)
+        (by rw [← hG]; omega) (by omega)
+      simp only [not_le] at h
+      exact h
+    exact ⟨G, h2, hspec, hlt, hgt⟩
+  -- the corners of `T`, and the corner assigned to each edge
+  set p₀ : ℂ := z₀ + (t : ℂ) * E * cisR 0 with hp₀
+  set p₁ : ℂ := z₀ + (t : ℂ) * E * cisR (φ 1) with hp₁
+  set p₂ : ℂ := z₀ + (t : ℂ) * E * cisR ψ₂ with hp₂
+  have hnormcorner : ∀ θ : ℝ, ‖(z₀ + (t : ℂ) * E * cisR θ) - z₀‖ = t := by
+    intro θ
+    rw [show (z₀ + (t : ℂ) * E * cisR θ) - z₀ = (t : ℂ) * E * cisR θ from by ring,
+      norm_mul, norm_mul, Complex.norm_real, Real.norm_of_nonneg ht.le, hEnorm, cisR_norm,
+      mul_one, mul_one]
+  set C : ℕ → ℂ := fun n => if n = 0 then p₀ else if n < n₂ then p₁ else
+    if n < N then p₂ else p₀ with hCdef
+  set Θ : ℕ → ℝ := fun n => if n = 0 then 0 else if n < n₂ then φ 1 else
+    if n < N then ψ₂ else 2 * Real.pi with hΘdef
+  have hCa : C 0 = p₀ := by simp [hCdef]
+  have hCb : ∀ n : ℕ, n ≠ 0 → n < n₂ → C n = p₁ := by
+    intro n h1 h2; simp [hCdef, h1, h2]
+  have hCc : ∀ n : ℕ, n ≠ 0 → ¬ n < n₂ → n < N → C n = p₂ := by
+    intro n h1 h2 h3; simp [hCdef, h1, h2, h3]
+  have hCd : ∀ n : ℕ, n ≠ 0 → ¬ n < n₂ → ¬ n < N → C n = p₀ := by
+    intro n h1 h2 h3; simp [hCdef, h1, h2, h3]
+  have hΘa : Θ 0 = 0 := by simp [hΘdef]
+  have hΘb : ∀ n : ℕ, n ≠ 0 → n < n₂ → Θ n = φ 1 := by
+    intro n h1 h2; simp [hΘdef, h1, h2]
+  have hΘc : ∀ n : ℕ, n ≠ 0 → ¬ n < n₂ → n < N → Θ n = ψ₂ := by
+    intro n h1 h2 h3; simp [hΘdef, h1, h2, h3]
+  have hΘd : ∀ n : ℕ, n ≠ 0 → ¬ n < n₂ → ¬ n < N → Θ n = 2 * Real.pi := by
+    intro n h1 h2 h3; simp [hΘdef, h1, h2, h3]
+  have hCeq : ∀ n, n ≤ N → C n - z₀ = (t : ℂ) * E * cisR (Θ n) := by
+    intro n hn
+    by_cases h0 : n = 0
+    · subst h0
+      rw [hCa, hΘa, hp₀]
       ring
-    exact he ▸ hc
-  -- each of the two filling triangles of the `n`-th slab dies by Goursat
-  have hkey : ∀ n, triIntegral g (w n) (w (n + 1)) (v (n + 1)) = 0
-      ∧ triIntegral g (w n) (v (n + 1)) (v n) = 0 := by
-    intro n
-    obtain ⟨q, hq1, hq2⟩ := sep_functional (w n - z₀) (w (n + 1) - z₀) (him n)
-    have hqv : ∀ m : ℕ, (q * (v m - z₀)).re = s * (q * (w m - z₀)).re := by
-      intro m
-      have he : v m - z₀ = (s:ℂ) * (w m - z₀) := by simp [hv]
-      rw [he, ← mul_assoc, mul_comm q (s:ℂ), mul_assoc, Complex.re_ofReal_mul]
-    have hgour : ∀ p₁ p₂ p₃ : ℂ, p₁ ∈ convexHull ℝ (Set.range w) →
-        p₂ ∈ convexHull ℝ (Set.range w) → p₃ ∈ convexHull ℝ (Set.range w) →
-        z₀ ∉ convexHull ℝ ({p₁, p₂, p₃} : Set ℂ) → triIntegral g p₁ p₂ p₃ = 0 := by
-      intro p₁ p₂ p₃ hp₁ hp₂ hp₃ hz
-      refine goursat (hU.sdiff isClosed_singleton) g hg _ _ _ ?_
-      refine Set.subset_sdiff.mpr ⟨?_, Set.disjoint_singleton_right.mpr hz⟩
-      refine subset_trans (convexHull_min ?_ hP) hUw
-      intro x hx
-      simp only [Set.mem_insert_iff, Set.mem_singleton_iff] at hx
-      rcases hx with rfl | rfl | rfl
-      exacts [hp₁, hp₂, hp₃]
-    constructor
-    · refine hgour _ _ _ (hwmem n) (hwmem (n + 1)) (hvmem (n + 1)) ?_
-      exact notMem_hull_of_sep hs (by rw [hq1]; exact hs1) (by rw [hq2]; exact hs1)
-        (by rw [hqv (n + 1), hq2, mul_one])
-    · refine hgour _ _ _ (hwmem n) (hvmem (n + 1)) (hvmem n) ?_
-      exact notMem_hull_of_sep hs (by rw [hq1]; exact hs1)
-        (by rw [hqv (n + 1), hq2, mul_one]) (by rw [hqv n, hq1, mul_one])
-  -- the interior edges cancel, and the spokes telescope
-  have hstep : ∀ n, segIntegral g (w n) (w (n + 1))
-      = segIntegral g (v n) (v (n + 1)) + (h n - h (n + 1)) := by
-    intro n
-    obtain ⟨t1, t2⟩ := hkey n
-    have hsum0 : triIntegral g (w n) (w (n + 1)) (v (n + 1))
-        + triIntegral g (w n) (v (n + 1)) (v n) = 0 := by rw [t1, t2, add_zero]
-    rw [triIntegral, triIntegral, segIntegral_symm g (w n) (v (n + 1)),
-      segIntegral_symm g (v n) (v (n + 1)), segIntegral_symm g (w n) (v n)] at hsum0
-    refine eq_of_sub_eq_zero ?_
-    rw [← hsum0, hh]
-    abel
-  have hvN : v N = v 0 := by simp only [hv, hwN]
-  have hhN : h N = h 0 := by simp only [hh, hwN, hvN]
-  rw [Finset.sum_congr rfl (fun n _ => hstep n), Finset.sum_add_distrib,
-    Finset.sum_range_sub' h N, hhN, sub_self, add_zero]
+    by_cases h2 : n < n₂
+    · rw [hCb n h0 h2, hΘb n h0 h2, hp₁]
+      ring
+    by_cases h3 : n < N
+    · rw [hCc n h0 h2 h3, hΘc n h0 h2 h3, hp₂]
+      ring
+    · rw [hCd n h0 h2 h3, hΘd n h0 h2 h3, hp₀, cisR_two_pi, cisR_zero]
+      ring
+  have hCnorm : ∀ n, n ≤ N → ‖C n - z₀‖ = t := by
+    intro n hn
+    rw [hCeq n hn, norm_mul, norm_mul, Complex.norm_real, Real.norm_of_nonneg ht.le,
+      hEnorm, cisR_norm, mul_one, mul_one]
+  have hCmem : ∀ n, n ≤ N → C n ∈ K := by
+    intro n hn
+    refine hball ?_
+    simp only [Metric.mem_closedBall, dist_eq_norm, hCnorm n hn, le_refl]
+  -- the corner angle of an edge never exceeds the edge's far angle
+  have hΘle : ∀ n, n < N → Θ n ≤ φ (n + 1) := by
+    intro n hn
+    by_cases h0 : n = 0
+    · subst h0
+      rw [hΘa, ← hφ0]
+      exact le_of_lt (hφmono (by omega))
+    by_cases h2 : n < n₂
+    · rw [hΘb n h0 h2]
+      exact le_of_lt (hφmono (by omega))
+    · rw [hΘc n h0 h2 hn]
+      exact le_of_lt (lt_of_lt_of_le hn₂gt (hφmono.le_iff_le.mpr (by omega)))
+  -- the arc spanned by an edge together with its corner is shorter than `π`
+  have harc : ∀ n, n < N → φ (n + 1) - min (Θ n) (φ n) < Real.pi := by
+    intro n hn
+    by_cases h0 : n = 0
+    · subst h0
+      rw [hΘa, ← hφ0, min_self]
+      linarith [hφsucc 0, (hαmem 0).2, hφ0]
+    by_cases h2 : n < n₂
+    · rw [hΘb n h0 h2, min_eq_left (hφmono.le_iff_le.mpr (by omega : 1 ≤ n))]
+      have h3 : φ (n + 1) ≤ φ n₂ := hφmono.le_iff_le.mpr (by omega)
+      linarith
+    · rw [hΘc n h0 h2 hn]
+      rcases eq_or_lt_of_le (Nat.le_of_not_lt h2) with heq | hlt
+      · rw [heq] at hn₂le hn₂gt
+        rw [min_eq_right hn₂le]
+        linarith [hφsucc n, (hαmem n).2]
+      · have hge : ψ₂ ≤ φ n := le_of_lt (lt_of_lt_of_le hn₂gt (hφmono.le_iff_le.mpr hlt))
+        rw [min_eq_left hge]
+        have h4 : φ (n + 1) ≤ φ N := hφmono.le_iff_le.mpr (by omega)
+        rw [hφN] at h4
+        linarith
+  -- each filling triangle of the annulus dies by `goursat`
+  have hedge : ∀ n, n < N → triIntegral g (w n) (w (n + 1)) (C n) = 0 := by
+    intro n hn
+    refine tri_zero_arc hU g z₀ hg hKc hUw hE (lo := min (Θ n) (φ n)) (hi := φ (n + 1))
+      (harc n hn) (hwmem n) (hwmem (n + 1)) (hCmem n (by omega))
+      (hrpos n) (hrpos (n + 1)) ht (hlift n) (hlift (n + 1)) (hCeq n (by omega))
+      ⟨min_le_right _ _, le_of_lt (hφmono (by omega))⟩
+      ⟨le_trans (min_le_right _ _) (le_of_lt (hφmono (by omega))), le_rfl⟩
+      ⟨min_le_left _ _, hΘle n hn⟩
+  -- the spokes: consecutive corners are joined across the shared vertex
+  have hjump : ∀ n, n < N →
+      segIntegral g (C n) (w (n + 1)) + segIntegral g (w (n + 1)) (C (n + 1))
+        = segIntegral g (C n) (C (n + 1)) := by
+    intro n hn
+    have hsame : C n = C (n + 1) →
+        segIntegral g (C n) (w (n + 1)) + segIntegral g (w (n + 1)) (C (n + 1))
+          = segIntegral g (C n) (C (n + 1)) := by
+      intro h
+      rw [← h, segIntegral_symm g (C n) (w (n + 1)), add_neg_cancel, segIntegral_self]
+    have hcut : triIntegral g (C n) (w (n + 1)) (C (n + 1)) = 0 →
+        segIntegral g (C n) (w (n + 1)) + segIntegral g (w (n + 1)) (C (n + 1))
+          = segIntegral g (C n) (C (n + 1)) := by
+      intro h
+      rw [triIntegral, segIntegral_symm g (C n) (C (n + 1))] at h
+      linear_combination (norm := abel) h
+    by_cases h0 : n = 0
+    · -- the jump `p₀ → p₁` across `w 1`
+      subst h0
+      refine hcut (tri_zero_arc hU g z₀ hg hKc hUw hE (lo := 0) (hi := φ 1)
+        (by linarith) (hCmem 0 (by omega)) (hwmem 1) (hCmem 1 (by omega))
+        ht (hrpos 1) ht (hCeq 0 (by omega)) (hlift 1) (hCeq 1 (by omega)) ?_ ?_ ?_)
+      · rw [hΘa]
+        exact ⟨le_rfl, le_of_lt hφ1pos⟩
+      · exact ⟨le_of_lt hφ1pos, le_rfl⟩
+      · rw [hΘb 1 (by omega) (by omega)]
+        exact ⟨le_of_lt hφ1pos, le_rfl⟩
+    by_cases hj : n + 1 = n₂
+    · -- the jump `p₁ → p₂` across `w n₂`
+      refine hcut (tri_zero_arc hU g z₀ hg hKc hUw hE (lo := φ 1) (hi := ψ₂)
+        (by linarith) (hCmem n (by omega)) (hwmem (n + 1)) (hCmem (n + 1) (by omega))
+        ht (hrpos (n + 1)) ht (hCeq n (by omega)) (hlift (n + 1)) (hCeq (n + 1) (by omega))
+        ?_ ?_ ?_)
+      · rw [hΘb n h0 (by omega)]
+        exact ⟨le_rfl, le_of_lt hψ2e⟩
+      · rw [hj]
+        exact ⟨le_of_lt (lt_of_lt_of_le hφ12 (hφmono.le_iff_le.mpr hn₂ge)), hn₂le⟩
+      · rw [hΘc (n + 1) (by omega) (by omega) (by omega)]
+        exact ⟨le_of_lt hψ2e, le_rfl⟩
+    by_cases hw : n + 1 = N
+    · -- the jump `p₂ → p₀` across `w N = w 0`
+      refine hcut (tri_zero_arc hU g z₀ hg hKc hUw hE (lo := ψ₂) (hi := 2 * Real.pi)
+        (by linarith) (hCmem n (by omega)) (hwmem (n + 1)) (hCmem (n + 1) (by omega))
+        ht (hrpos (n + 1)) ht (hCeq n (by omega)) (hlift (n + 1)) (hCeq (n + 1) (by omega))
+        ?_ ?_ ?_)
+      · rw [hΘc n h0 (by omega) hn]
+        exact ⟨le_rfl, le_of_lt hψ2d⟩
+      · rw [hw, hφN]
+        exact ⟨le_of_lt hψ2d, le_rfl⟩
+      · rw [hΘd (n + 1) (by omega) (by omega) (by omega)]
+        exact ⟨le_of_lt hψ2d, le_rfl⟩
+    · refine hsame ?_
+      by_cases h2 : n < n₂
+      · rw [hCb n h0 h2, hCb (n + 1) (by omega) (by omega)]
+      · rw [hCc n h0 h2 hn, hCc (n + 1) (by omega) (by omega) (by omega)]
+  -- the interior edges cancel and the spokes telescope
+  have hstep : ∀ n, n < N → segIntegral g (w n) (w (n + 1))
+      = segIntegral g (w n) (C n) + segIntegral g (C n) (w (n + 1)) := by
+    intro n hn
+    have h := hedge n hn
+    rw [triIntegral, segIntegral_symm g (w n) (C n),
+      segIntegral_symm g (C n) (w (n + 1))] at h
+    linear_combination (norm := abel) h
+  have hmain : ∑ n ∈ Finset.range N, segIntegral g (w n) (w (n + 1))
+      = ∑ n ∈ Finset.range N, segIntegral g (C n) (C (n + 1)) := by
+    have hterm : ∀ n ∈ Finset.range N, segIntegral g (w n) (w (n + 1))
+        = segIntegral g (C n) (C (n + 1))
+          + ((fun m => segIntegral g (w m) (C m)) n
+            - (fun m => segIntegral g (w m) (C m)) (n + 1)) := by
+      intro n hn
+      rw [Finset.mem_range] at hn
+      simp only
+      rw [hstep n hn]
+      linear_combination (norm := abel) (hjump n hn)
+    have hCN : C N = C 0 := by
+      rw [hCd N (by omega) (by omega) (by omega), hCa]
+    rw [Finset.sum_congr rfl hterm, Finset.sum_add_distrib,
+      Finset.sum_range_sub' (fun m => segIntegral g (w m) (C m)) N, hwN, hCN, sub_self, add_zero]
+  -- what is left is the triangle
+  refine ⟨p₀, p₁, p₂, ?_, ?_, ?_, ?_⟩
+  · rw [hp₀]; exact hnormcorner 0
+  · rw [hp₁]; exact hnormcorner (φ 1)
+  · rw [hp₂]; exact hnormcorner ψ₂
+  rw [hmain]
+  have hsplit : ∑ n ∈ Finset.range N, segIntegral g (C n) (C (n + 1))
+      = ∑ n ∈ Finset.Ico 0 n₂, segIntegral g (C n) (C (n + 1))
+        + ∑ n ∈ Finset.Ico n₂ N, segIntegral g (C n) (C (n + 1)) := by
+    rw [Finset.range_eq_Ico, ← Finset.sum_Ico_consecutive _ (Nat.zero_le n₂)
+      (le_of_lt hn₂ltN)]
+  have hfirst : ∑ n ∈ Finset.Ico 0 n₂, segIntegral g (C n) (C (n + 1))
+      = segIntegral g p₀ p₁ + segIntegral g p₁ p₂ := by
+    rw [Finset.sum_eq_sum_Ico_succ_bot (by omega : 0 < n₂),
+      show n₂ = (n₂ - 1) + 1 from by omega, Finset.sum_Ico_succ_top (by omega : 1 ≤ n₂ - 1)]
+    have hz : ∑ n ∈ Finset.Ico 1 (n₂ - 1), segIntegral g (C n) (C (n + 1)) = 0 := by
+      refine Finset.sum_eq_zero (fun n hn => ?_)
+      rw [Finset.mem_Ico] at hn
+      rw [hCb n (by omega) (by omega), hCb (n + 1) (by omega) (by omega), segIntegral_self]
+    rw [hz, hCa, hCb 1 (by omega) (by omega), hCb (n₂ - 1) (by omega) (by omega),
+      show n₂ - 1 + 1 = n₂ from by omega, hCc n₂ (by omega) (by omega) hn₂ltN, zero_add]
+  have hsecond : ∑ n ∈ Finset.Ico n₂ N, segIntegral g (C n) (C (n + 1))
+      = segIntegral g p₂ p₀ := by
+    rw [show N = (N - 1) + 1 from by omega, Finset.sum_Ico_succ_top (by omega : n₂ ≤ N - 1)]
+    have hz : ∑ n ∈ Finset.Ico n₂ (N - 1), segIntegral g (C n) (C (n + 1)) = 0 := by
+      refine Finset.sum_eq_zero (fun n hn => ?_)
+      rw [Finset.mem_Ico] at hn
+      rw [hCc n (by omega) (by omega) (by omega),
+        hCc (n + 1) (by omega) (by omega) (by omega), segIntegral_self]
+    rw [hz, hCc (N - 1) (by omega) (by omega) (by omega),
+      show N - 1 + 1 = N from by omega, hCd N (by omega) (by omega) (by omega), zero_add]
+  rw [hsplit, hfirst, hsecond, triIntegral]
+
 
 /-- **15III**–**15IV**: the difference quotient is bounded near `z₀`, and the
-polygon integral of it equals the integral over an arbitrarily small homothetic
-copy of the polygon, whose length tends to `0`. -/
+polygon integral of it is the integral along an arbitrarily small triangle
+around `z₀`, whose length tends to `0`. -/
 private theorem polygon_slope_integral_zero {U : Set ℂ} (hU : IsOpen U) (f : ℂ → 𝒜)
     (hf : DifferentiableOn ℂ f U) (N : ℕ) (hN : 3 ≤ N) (w : ℕ → ℂ)
     (hUw : convexHull ℝ (Set.range w) ⊆ U) (hwN : w N = w 0) (z₀ : ℂ) (hz₀U : z₀ ∈ U)
-    (hz₀ : z₀ ∈ convexHull ℝ (Set.range w))
+    (hz₀ : z₀ ∈ interior (convexHull ℝ (Set.range w)))
+    (hne : ∀ n, w n - z₀ ≠ 0)
     (him : ∀ n, 0 < ((starRingEnd ℂ) (w n - z₀) * (w (n + 1) - z₀)).im)
-    (R L : ℝ) (hR : 0 < R) (hwR : ∀ m, ‖w m - z₀‖ ≤ R) (hL : 0 < L)
-    (hlen : ∀ m, ‖w (m + 1) - w m‖ ≤ L) :
+    (hwind : ∑ n ∈ Finset.range N, Complex.arg ((w (n + 1) - z₀) / (w n - z₀))
+      = 2 * Real.pi) :
     ∑ n ∈ Finset.range N, segIntegral (slope f z₀) (w n) (w (n + 1)) = 0 := by
   -- **15III**: `‖(f z − f z₀)/(z − z₀)‖ ≤ ‖f'(z₀)‖ + 37` on a ball around `z₀`
   have hfz₀ : DifferentiableAt ℂ f z₀ := hf.differentiableAt (hU.mem_nhds hz₀U)
@@ -2507,10 +3003,10 @@ private theorem polygon_slope_integral_zero {U : Set ℂ} (hU : IsOpen U) (f : �
   have hM0 : 0 < M := by have := norm_nonneg (deriv f z₀); rw [hMdef]; linarith
   have hbound : ∀ z : ℂ, ‖z - z₀‖ < δ → ‖slope f z₀ z‖ ≤ M := by
     intro z hz
-    rcases eq_or_ne z z₀ with rfl | hne
+    rcases eq_or_ne z z₀ with rfl | hz'
     · rw [slope_def_module, sub_self, sub_self, smul_zero, norm_zero]
       exact hM0.le
-    · have h1 := hδ (Set.mem_compl_singleton_iff.mpr hne) (by rwa [dist_eq_norm])
+    · have h1 := hδ (Set.mem_compl_singleton_iff.mpr hz') (by rwa [dist_eq_norm])
       rw [dist_eq_norm] at h1
       have h2 := norm_sub_norm_le (slope f z₀ z) (deriv f z₀)
       rw [hMdef]; linarith
@@ -2525,68 +3021,61 @@ private theorem polygon_slope_integral_zero {U : Set ℂ} (hU : IsOpen U) (f : �
       simp only [Set.mem_sdiff, Set.mem_singleton_iff] at hz
       exact sub_ne_zero.mpr hz.2
     exact h1.smul ((hf.mono Set.sdiff_subset).sub_const _)
+  obtain ⟨r₀, hr₀, hr₀ball⟩ := Metric.isOpen_iff.mp isOpen_interior z₀ hz₀
   set X : 𝒜 := ∑ n ∈ Finset.range N, segIntegral (slope f z₀) (w n) (w (n + 1)) with hXdef
-  set C : ℝ := N * (L * M) with hCdef
-  have hNR : (0:ℝ) < N := by exact_mod_cast (by omega : 0 < N)
-  have hC0 : 0 < C := by rw [hCdef]; positivity
-  -- **15IV**: the length-times-sup bound on the small polygon
-  have hmain : ∀ s : ℝ, 0 < s → s ≤ 1 → s * R < δ → ‖X‖ ≤ C * s := by
-    intro s hs hs1 hsR
-    rw [hXdef, polygon_shrink hU (slope f z₀) z₀ hgdiff N w hUw hwN hz₀ him s hs hs1]
-    refine le_trans (norm_sum_le _ _) ?_
-    have hterm : ∀ n ∈ Finset.range N,
-        ‖segIntegral (slope f z₀) (z₀ + (s:ℂ) * (w n - z₀))
-          (z₀ + (s:ℂ) * (w (n + 1) - z₀))‖ ≤ L * M * s := by
-      intro n _
-      have hnorm : ‖(z₀ + (s:ℂ) * (w (n + 1) - z₀)) - (z₀ + (s:ℂ) * (w n - z₀))‖ ≤ s * L := by
-        rw [show (z₀ + (s:ℂ) * (w (n + 1) - z₀)) - (z₀ + (s:ℂ) * (w n - z₀))
-            = (s:ℂ) * (w (n + 1) - w n) from by ring,
-          norm_mul, Complex.norm_real, Real.norm_of_nonneg hs.le]
-        exact mul_le_mul_of_nonneg_left (hlen n) hs.le
-      have hpt : ∀ t ∈ Set.Icc (0:ℝ) 1,
-          ‖slope f z₀ ((z₀ + (s:ℂ) * (w n - z₀)) + (t:ℂ) *
-            ((z₀ + (s:ℂ) * (w (n + 1) - z₀)) - (z₀ + (s:ℂ) * (w n - z₀))))‖ ≤ M := by
-        intro t ht
-        refine hbound _ ?_
-        rw [show (z₀ + (s:ℂ) * (w n - z₀)) + (t:ℂ) *
-              ((z₀ + (s:ℂ) * (w (n + 1) - z₀)) - (z₀ + (s:ℂ) * (w n - z₀))) - z₀
-            = (s:ℂ) * ((1 - (t:ℂ)) * (w n - z₀) + (t:ℂ) * (w (n + 1) - z₀)) from by ring,
-          norm_mul, Complex.norm_real, Real.norm_of_nonneg hs.le]
-        have h1 : ‖(1 - (t:ℂ)) * (w n - z₀) + (t:ℂ) * (w (n + 1) - z₀)‖ ≤ R := by
-          refine le_trans (norm_add_le _ _) ?_
-          rw [norm_mul, norm_mul,
-            show (1 - (t:ℂ)) = ((1 - t : ℝ) : ℂ) from by push_cast; ring,
-            Complex.norm_real, Complex.norm_real, Real.norm_of_nonneg (by linarith [ht.2]),
-            Real.norm_of_nonneg ht.1]
-          nlinarith [hwR n, hwR (n + 1), norm_nonneg (w n - z₀), norm_nonneg (w (n + 1) - z₀),
-            ht.1, ht.2]
-        calc s * ‖(1 - (t:ℂ)) * (w n - z₀) + (t:ℂ) * (w (n + 1) - z₀)‖
-            ≤ s * R := mul_le_mul_of_nonneg_left h1 hs.le
-          _ < δ := hsR
+  -- **15IV**: length times sup on the small triangle
+  have hmain : ∀ t : ℝ, 0 < t → t < δ → t < r₀ → ‖X‖ ≤ 6 * M * t := by
+    intro t ht htδ htr
+    have hballsub : Metric.closedBall z₀ t ⊆ convexHull ℝ (Set.range w) := by
+      refine subset_trans ?_ (subset_trans hr₀ball interior_subset)
+      intro x hx
+      simp only [Metric.mem_closedBall] at hx
+      simp only [Metric.mem_ball]
+      linarith
+    obtain ⟨p₀, p₁, p₂, h0, h1, h2, heq⟩ :=
+      polygon_triangle hU (slope f z₀) z₀ hgdiff N hN w hUw hwN hne him hwind t ht hballsub
+    have hside : ∀ p p' : ℂ, ‖p - z₀‖ = t → ‖p' - z₀‖ = t →
+        ‖segIntegral (slope f z₀) p p'‖ ≤ 2 * t * M := by
+      intro p p' hp hp'
+      have hpt : ∀ τ ∈ Set.Icc (0:ℝ) 1, ‖slope f z₀ (p + (τ:ℂ) * (p' - p))‖ ≤ M := by
+        intro τ hτ
+        refine hbound _ (lt_of_le_of_lt ?_ htδ)
+        rw [show p + (τ:ℂ) * (p' - p) - z₀
+            = ((1 - τ : ℝ) : ℂ) * (p - z₀) + (τ:ℂ) * (p' - z₀) from by push_cast; ring]
+        refine le_trans (norm_add_le _ _) ?_
+        rw [norm_mul, norm_mul, Complex.norm_real, Complex.norm_real,
+          Real.norm_of_nonneg (by linarith [hτ.2]), Real.norm_of_nonneg hτ.1, hp, hp']
+        have hid : (1 - τ) * t + τ * t = t := by ring
+        linarith
+      have hlen : ‖p' - p‖ ≤ 2 * t := by
+        calc ‖p' - p‖ = ‖(p' - z₀) - (p - z₀)‖ := by congr 1; ring
+          _ ≤ ‖p' - z₀‖ + ‖p - z₀‖ := norm_sub_le _ _
+          _ = 2 * t := by rw [hp, hp']; ring
       exact le_trans (norm_segIntegral_le _ _ _ M hpt)
-        (by nlinarith [norm_nonneg ((z₀ + (s:ℂ) * (w (n + 1) - z₀))
-          - (z₀ + (s:ℂ) * (w n - z₀)))])
-    calc ∑ n ∈ Finset.range N, ‖segIntegral (slope f z₀) (z₀ + (s:ℂ) * (w n - z₀))
-            (z₀ + (s:ℂ) * (w (n + 1) - z₀))‖
-        ≤ ∑ _n ∈ Finset.range N, L * M * s := Finset.sum_le_sum hterm
-      _ = N * (L * M * s) := by rw [Finset.sum_const, Finset.card_range, nsmul_eq_mul]
-      _ = C * s := by rw [hCdef]; ring
+        (mul_le_mul_of_nonneg_right hlen hM0.le)
+    have hb1 := hside p₀ p₁ h0 h1
+    have hb2 := hside p₁ p₂ h1 h2
+    have hb3 := hside p₂ p₀ h2 h0
+    rw [hXdef, heq, triIntegral]
+    have h4 := norm_add_le (segIntegral (slope f z₀) p₀ p₁ + segIntegral (slope f z₀) p₁ p₂)
+      (segIntegral (slope f z₀) p₂ p₀)
+    have h5 := norm_add_le (segIntegral (slope f z₀) p₀ p₁) (segIntegral (slope f z₀) p₁ p₂)
+    linarith
   -- and `ε → 0`
-  by_contra hne
-  have hXpos : 0 < ‖X‖ := norm_pos_iff.mpr hne
-  set s : ℝ := min 1 (min (δ / (2 * R)) (‖X‖ / (2 * C))) with hsdef
-  have hs0 : 0 < s := lt_min one_pos (lt_min (by positivity) (by positivity))
-  have hs1 : s ≤ 1 := min_le_left _ _
-  have hsd : s ≤ δ / (2 * R) := le_trans (min_le_right _ _) (min_le_left _ _)
-  have hsX : s ≤ ‖X‖ / (2 * C) := le_trans (min_le_right _ _) (min_le_right _ _)
-  have hsR : s * R < δ := by
-    calc s * R ≤ δ / (2 * R) * R := mul_le_mul_of_nonneg_right hsd hR.le
-      _ = δ / 2 := by field_simp
-      _ < δ := by linarith
-  have h1 := hmain s hs0 hs1 hsR
-  have h2 : C * s ≤ ‖X‖ / 2 := by
-    calc C * s ≤ C * (‖X‖ / (2 * C)) := mul_le_mul_of_nonneg_left hsX hC0.le
-      _ = ‖X‖ / 2 := by field_simp
+  by_contra hXne
+  have hXpos : 0 < ‖X‖ := norm_pos_iff.mpr hXne
+  set t : ℝ := min (min (δ / 2) (r₀ / 2)) (‖X‖ / (12 * M)) with htdef
+  have ht0 : 0 < t := lt_min (lt_min (by linarith) (by linarith)) (by positivity)
+  have htδ : t < δ :=
+    lt_of_le_of_lt (le_trans (min_le_left _ _) (min_le_left _ _)) (by linarith)
+  have htr : t < r₀ :=
+    lt_of_le_of_lt (le_trans (min_le_left _ _) (min_le_right _ _)) (by linarith)
+  have htX : t ≤ ‖X‖ / (12 * M) := min_le_right _ _
+  have h1 := hmain t ht0 htδ htr
+  have h2 : 6 * M * t ≤ ‖X‖ / 2 := by
+    have h3 : 6 * M * t ≤ 6 * M * (‖X‖ / (12 * M)) := by nlinarith
+    have h4 : 6 * M * (‖X‖ / (12 * M)) = ‖X‖ / 2 := by field_simp; ring
+    linarith
   linarith
 
 /-- **15I** (`cauchy-formula`, cstar.tex:2411, Theorem (Cauchy's Integral
@@ -2606,43 +3095,27 @@ theorem cauchy_formula {U : Set ℂ} (hU : IsOpen U) (f : ℂ → 𝒜)
   by
     -- The thesis's own route: 15II reduces to `∑ₙ ∫ (f z − f z₀)/(z − z₀) = 0`,
     -- which is 15III's `δ`-estimate on the difference quotient together with
-    -- 15IV's partition of the region between the `N`-gon and a small closed
-    -- curve around `z₀`.  Only the shape of that curve is ours: a homothetic
-    -- copy of the `N`-gon rather than the thesis's triangle `T`, which makes
-    -- the partition uniform (see the note above `polygon_shrink`).
+    -- 15IV's partition of the region between the `N`-gon and the thesis's
+    -- triangle `T` around `z₀` (see `polygon_triangle`).
     have hw' : ∀ n, w n = c + (r : ℂ) * cisR (2 * Real.pi * n / N) :=
       polygon_vertex hN c r w hw
     have hwN : w N = w 0 := polygon_closed hN c r w hw'
     have hnotmem := polygon_notMem_edge hN c r hr w hw' z₀ hz₀
     have hz₀U : z₀ ∈ U := hUw (interior_subset hz₀)
-    -- (1) the geometry: `z₀` sees each edge under a positive angle, the
-    -- vertices lie within `r + ‖c − z₀‖` of `z₀`, and the edges are short
+    -- (1) the geometry: `z₀` is off every edge, and sees each of them under a
+    -- positive angle, the `N` of which wind once around `z₀`
     have him : ∀ n, 0 < ((starRingEnd ℂ) (w n - z₀) * (w (n + 1) - z₀)).im := fun n =>
       polygon_im_pos hN c r hr w hw' n z₀
         (polygon_halfplane_strict hN c r hr w hw' n z₀ hz₀)
-    have hcis : ∀ θ : ℝ, ‖cisR θ‖ = 1 := by
-      intro θ
-      rw [cisR, Complex.norm_exp]
-      simp
-    have hwc : ∀ m : ℕ, ‖w m - c‖ = r := by
-      intro m
-      rw [show w m - c = (r : ℂ) * cisR (2 * Real.pi * m / N) from by rw [hw' m]; ring,
-        norm_mul, Complex.norm_real, Real.norm_of_nonneg hr.le, hcis, mul_one]
-    have hwR : ∀ m : ℕ, ‖w m - z₀‖ ≤ r + ‖c - z₀‖ := by
-      intro m
-      calc ‖w m - z₀‖ = ‖(w m - c) + (c - z₀)‖ := by congr 1; ring
-        _ ≤ ‖w m - c‖ + ‖c - z₀‖ := norm_add_le _ _
-        _ = r + ‖c - z₀‖ := by rw [hwc m]
-    have hlen : ∀ m : ℕ, ‖w (m + 1) - w m‖ ≤ 2 * r := by
-      intro m
-      calc ‖w (m + 1) - w m‖ = ‖(w (m + 1) - c) - (w m - c)‖ := by congr 1; ring
-        _ ≤ ‖w (m + 1) - c‖ + ‖w m - c‖ := norm_sub_le _ _
-        _ = 2 * r := by rw [hwc, hwc]; ring
+    have hnezero : ∀ n, w n - z₀ ≠ 0 := by
+      intro n h
+      rw [sub_eq_zero] at h
+      exact hnotmem n (by rw [← h]; exact left_mem_segment ℝ (w n) (w (n + 1)))
     -- (2) **15III**–**15IV**: the polygon integral of the difference quotient
     -- `slope f z₀ z = (f z − f z₀)/(z − z₀)` vanishes
     have hzero : ∑ n ∈ Finset.range N, segIntegral (slope f z₀) (w n) (w (n + 1)) = 0 :=
-      polygon_slope_integral_zero hU f hf N hN w hUw hwN z₀ hz₀U (interior_subset hz₀) him
-        (r + ‖c - z₀‖) (2 * r) (by linarith [norm_nonneg (c - z₀)]) hwR (by linarith) hlen
+      polygon_slope_integral_zero hU f hf N hN w hUw hwN z₀ hz₀U hz₀ hnezero him
+        (polygon_winding hN c r hr w hw' z₀ hz₀)
     -- (3) split the integrand `slope f z₀ z = (z-z₀)⁻¹ • f z - (z-z₀)⁻¹ • f z₀`
     have hsplit : ∀ n : ℕ, segIntegral (slope f z₀) (w n) (w (n + 1))
         = segIntegral (fun z => (z - z₀)⁻¹ • f z) (w n) (w (n + 1))
@@ -3370,70 +3843,188 @@ private theorem sqrtApproxSeq_norm_le (a : 𝒜) (ha : ‖a‖ ≤ 1) (n : ℕ) 
     rw [hc]
     linarith
 
-private theorem sqrtApproxSeq_dist (a : 𝒜) (ha : ‖a‖ ≤ 1) (n : ℕ) :
-    ‖sqrtApproxSeq a (n + 1) - sqrtApproxSeq a n‖
-      ≤ sqrtApproxReal (n + 1) - sqrtApproxReal n := by
+/-! #### The thesis's polynomials `q₀ = 0`, `q_{n+1} = ½(x + qₙ²)`
+
+The convergence of the iteration is the thesis's own argument (cstar.tex:3516-3563):
+`bₙ ≡ qₙ(a)`, the coefficients of `q_{n+1} - qₙ` are positive by induction on the
+printed factorisation `q_{n+2} - q_{n+1} = ½(q_{n+1} + qₙ)(q_{n+1} - qₙ)`, and the
+triangle inequality then gives `‖bₙ - b_N‖ ≡ ‖(qₙ - q_N)(a)‖ ≤ qₙ(1) - q_N(1)`
+for `n ≥ N` and `‖a‖ ≤ 1`, so that the ascending bounded sequence `qₙ(1)`
+(`sqrtApproxReal`) carries the Cauchy property across. -/
+
+/-- The thesis's `q₀ = 0`, `q_{n+1} = ½(x + qₙ²)` (cstar.tex:3519). -/
+private noncomputable def sqrtPoly : ℕ → Polynomial ℂ
+  | 0 => 0
+  | n + 1 => Polynomial.C (1 / 2) * (Polynomial.X + sqrtPoly n ^ 2)
+
+private theorem sqrtPoly_zero : sqrtPoly 0 = (0 : Polynomial ℂ) := rfl
+
+private theorem sqrtPoly_succ (n : ℕ) :
+    sqrtPoly (n + 1) = Polynomial.C (1 / 2) * (Polynomial.X + sqrtPoly n ^ 2) := rfl
+
+/-- The thesis's "all coefficients of `q` are positive", read in `ℂ` with the
+`ComplexOrder`, where `0 ≤ z` says exactly that `z` is a nonnegative real. -/
+private def NonnegCoeff (p : Polynomial ℂ) : Prop := ∀ k, 0 ≤ p.coeff k
+
+private theorem c_half_nonneg : (0 : ℂ) ≤ 1 / 2 := by norm_num [Complex.le_def]
+
+private theorem nonnegCoeff_zero : NonnegCoeff (0 : Polynomial ℂ) := by
+  intro k; rw [Polynomial.coeff_zero]
+
+private theorem nonnegCoeff_X : NonnegCoeff (Polynomial.X : Polynomial ℂ) := by
+  intro k
+  rw [Polynomial.coeff_X]
+  split_ifs with h
+  · exact zero_le_one
+  · exact le_rfl
+
+private theorem nonnegCoeff_C {c : ℂ} (hc : 0 ≤ c) : NonnegCoeff (Polynomial.C c) := by
+  intro k
+  rw [Polynomial.coeff_C]
+  split_ifs with h
+  · exact hc
+  · exact le_rfl
+
+private theorem nonnegCoeff_add {p q : Polynomial ℂ} (hp : NonnegCoeff p)
+    (hq : NonnegCoeff q) : NonnegCoeff (p + q) := by
+  intro k; rw [Polynomial.coeff_add]; exact add_nonneg (hp k) (hq k)
+
+private theorem nonnegCoeff_mul {p q : Polynomial ℂ} (hp : NonnegCoeff p)
+    (hq : NonnegCoeff q) : NonnegCoeff (p * q) := by
+  intro k
+  rw [Polynomial.coeff_mul]
+  exact Finset.sum_nonneg fun x _ => mul_nonneg (hp _) (hq _)
+
+private theorem nonnegCoeff_sq {p : Polynomial ℂ} (hp : NonnegCoeff p) :
+    NonnegCoeff (p ^ 2) := by rw [sq]; exact nonnegCoeff_mul hp hp
+
+/-- The thesis's "all coefficients of `qₙ` are positive" (cstar.tex:3523). -/
+private theorem nonnegCoeff_sqrtPoly (n : ℕ) : NonnegCoeff (sqrtPoly n) := by
+  induction n with
+  | zero => rw [sqrtPoly_zero]; exact nonnegCoeff_zero
+  | succ n ih =>
+    rw [sqrtPoly_succ]
+    exact nonnegCoeff_mul (nonnegCoeff_C c_half_nonneg)
+      (nonnegCoeff_add nonnegCoeff_X (nonnegCoeff_sq ih))
+
+/-- The thesis's induction (cstar.tex:3528-3542): the coefficients of
+`q_{n+1} - qₙ` are positive, because `q₁ - q₀ = ½x` and
+`q_{n+2} - q_{n+1} = ½(q_{n+1}² - qₙ²) = ½(q_{n+1} + qₙ)(q_{n+1} - qₙ)`. -/
+private theorem nonnegCoeff_sqrtPoly_diff (n : ℕ) :
+    NonnegCoeff (sqrtPoly (n + 1) - sqrtPoly n) := by
   induction n with
   | zero =>
-    rw [sqrtApproxSeq_zero, sqrtApproxSeq_succ, sqrtApproxSeq_zero,
-      sqrtApproxReal_zero, sqrtApproxReal_succ, sqrtApproxReal_zero]
-    have hc : ‖(2 : ℂ)⁻¹‖ = 1 / 2 := by norm_num
-    rw [sub_zero, sub_zero, norm_smul, hc]
-    have hz : ((0 : 𝒜) ^ 2) = 0 := by norm_num
-    have hz' : ((0 : ℝ) ^ 2) = 0 := by norm_num
-    rw [hz, add_zero, hz']
-    linarith
+    rw [sqrtPoly_succ, sqrtPoly_zero, sub_zero]
+    exact nonnegCoeff_mul (nonnegCoeff_C c_half_nonneg)
+      (nonnegCoeff_add nonnegCoeff_X (nonnegCoeff_sq nonnegCoeff_zero))
   | succ n ih =>
-    have key : sqrtApproxSeq a (n + 2) - sqrtApproxSeq a (n + 1)
-        = (2 : ℂ)⁻¹ • (sqrtApproxSeq a (n + 1) *
-            (sqrtApproxSeq a (n + 1) - sqrtApproxSeq a n)
-          + (sqrtApproxSeq a (n + 1) - sqrtApproxSeq a n) * sqrtApproxSeq a n) := by
-      rw [sqrtApproxSeq_succ a (n + 1), sqrtApproxSeq_succ a n, ← smul_sub]
-      congr 1
-      noncomm_ring
-    have hd0 : (0 : ℝ) ≤ sqrtApproxReal (n + 1) - sqrtApproxReal n :=
-      sub_nonneg.mpr (sqrtApproxReal_mono (Nat.le_succ n))
-    have hn1 := sqrtApproxSeq_norm_le a ha (n + 1)
-    have hn0 := sqrtApproxSeq_norm_le a ha n
-    have hr0 := sqrtApproxReal_nonneg n
-    have hr1 := sqrtApproxReal_nonneg (n + 1)
-    have hbound : ‖sqrtApproxSeq a (n + 1) *
-          (sqrtApproxSeq a (n + 1) - sqrtApproxSeq a n)
-        + (sqrtApproxSeq a (n + 1) - sqrtApproxSeq a n) * sqrtApproxSeq a n‖
-        ≤ (sqrtApproxReal (n + 1) + sqrtApproxReal n) *
-            (sqrtApproxReal (n + 1) - sqrtApproxReal n) := by
-      refine le_trans (norm_add_le _ _) ?_
-      have h1 := norm_mul_le (sqrtApproxSeq a (n + 1))
-        (sqrtApproxSeq a (n + 1) - sqrtApproxSeq a n)
-      have h2 := norm_mul_le (sqrtApproxSeq a (n + 1) - sqrtApproxSeq a n)
-        (sqrtApproxSeq a n)
-      have hd := ih
-      have hdn : (0 : ℝ) ≤ ‖sqrtApproxSeq a (n + 1) - sqrtApproxSeq a n‖ :=
-        norm_nonneg _
-      nlinarith [norm_nonneg (sqrtApproxSeq a (n + 1)), norm_nonneg (sqrtApproxSeq a n)]
-    have hc : ‖(2 : ℂ)⁻¹‖ = 1 / 2 := by norm_num
-    have hr2 : sqrtApproxReal (n + 2) = (1 + sqrtApproxReal (n + 1) ^ 2) / 2 :=
-      sqrtApproxReal_succ (n + 1)
-    have hr1' : sqrtApproxReal (n + 1) = (1 + sqrtApproxReal n ^ 2) / 2 :=
-      sqrtApproxReal_succ n
-    have hkey2 : (sqrtApproxReal (n + 1) + sqrtApproxReal n) *
-        (sqrtApproxReal (n + 1) - sqrtApproxReal n)
-        = 2 * (sqrtApproxReal (n + 2) - sqrtApproxReal (n + 1)) := by
-      rw [hr2, hr1']; ring
-    rw [key, norm_smul, hc]
-    linarith
+    have hfac : sqrtPoly (n + 2) - sqrtPoly (n + 1)
+        = (Polynomial.C (1 / 2) * (sqrtPoly (n + 1) + sqrtPoly n))
+            * (sqrtPoly (n + 1) - sqrtPoly n) := by
+      rw [sqrtPoly_succ (n + 1), sqrtPoly_succ n]; ring
+    rw [hfac]
+    exact nonnegCoeff_mul
+      (nonnegCoeff_mul (nonnegCoeff_C c_half_nonneg)
+        (nonnegCoeff_add (nonnegCoeff_sqrtPoly (n + 1)) (nonnegCoeff_sqrtPoly n))) ih
+
+/-- "Since the coefficients of `qₙ - q_N` are positive" (cstar.tex:3548). -/
+private theorem nonnegCoeff_sqrtPoly_sub {N n : ℕ} (h : N ≤ n) :
+    NonnegCoeff (sqrtPoly n - sqrtPoly N) := by
+  induction n with
+  | zero =>
+    have hz : N = 0 := Nat.le_zero.mp h
+    subst hz; rw [sub_self]; exact nonnegCoeff_zero
+  | succ n ih =>
+    rcases Nat.lt_or_ge N (n + 1) with hlt | hge
+    · have hNn : N ≤ n := Nat.lt_succ_iff.mp hlt
+      have he : sqrtPoly (n + 1) - sqrtPoly N
+          = (sqrtPoly (n + 1) - sqrtPoly n) + (sqrtPoly n - sqrtPoly N) := by ring
+      rw [he]
+      exact nonnegCoeff_add (nonnegCoeff_sqrtPoly_diff n) (ih hNn)
+    · have hz : N = n + 1 := le_antisymm h hge
+      subst hz; rw [sub_self]; exact nonnegCoeff_zero
+
+/-- `qₙ(1)` is the real iteration `sqrtApproxReal` (cstar.tex:3553). -/
+private theorem sqrtPoly_eval_one (n : ℕ) :
+    (sqrtPoly n).eval 1 = ((sqrtApproxReal n : ℝ) : ℂ) := by
+  induction n with
+  | zero => rw [sqrtPoly_zero, sqrtApproxReal_zero]; simp
+  | succ n ih =>
+    rw [sqrtPoly_succ, sqrtApproxReal_succ]
+    simp only [Polynomial.eval_mul, Polynomial.eval_add, Polynomial.eval_C,
+      Polynomial.eval_X, Polynomial.eval_pow, ih]
+    push_cast
+    ring
+
+/-- The thesis's `bₙ ≡ qₙ(a)` (cstar.tex:3517). -/
+private theorem aeval_sqrtPoly (a : 𝒜) (n : ℕ) :
+    Polynomial.aeval a (sqrtPoly n) = sqrtApproxSeq a n := by
+  induction n with
+  | zero => rw [sqrtPoly_zero, sqrtApproxSeq]; simp
+  | succ n ih =>
+    rw [sqrtPoly_succ, sqrtApproxSeq]
+    simp only [map_mul, map_add, map_pow, Polynomial.aeval_C, Polynomial.aeval_X, ih]
+    rw [← Algebra.smul_def]
+    norm_num
+
+/-- "The triangle inequality gives us `‖(qₙ - q_N)(a)‖ ≤ qₙ(1) - q_N(1)`"
+(cstar.tex:3550), in the form it is used: for `p` with positive coefficients and
+`‖a‖ ≤ 1`, `‖p(a)‖ ≤ p(1)`. -/
+private theorem norm_aeval_le_eval_one {p : Polynomial ℂ} (hp : NonnegCoeff p)
+    {a : 𝒜} (ha : ‖a‖ ≤ 1) : ‖Polynomial.aeval a p‖ ≤ (p.eval 1).re := by
+  have hpow : ∀ i : ℕ, ‖a ^ i‖ ≤ 1 := by
+    intro i
+    induction i with
+    | zero => simpa using norm_one_le' (𝒜 := 𝒜)
+    | succ i ih =>
+      rw [pow_succ]
+      refine le_trans (norm_mul_le _ _) ?_
+      nlinarith [norm_nonneg (a ^ i), norm_nonneg a]
+  have hre : ∀ i : ℕ, 0 ≤ (p.coeff i).re := fun i =>
+    by simpa using (Complex.le_def.mp (hp i)).1
+  have hnorm : ∀ i : ℕ, ‖p.coeff i‖ = (p.coeff i).re := by
+    intro i
+    have h2 : (0 : ℂ).im = (p.coeff i).im := (Complex.le_def.mp (hp i)).2
+    have hz : p.coeff i = ((p.coeff i).re : ℂ) :=
+      Complex.ext (by simp) (by simpa using h2.symm)
+    rw [hz, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (hre i), Complex.ofReal_re]
+  have hsum : (p.eval 1).re = ∑ i ∈ Finset.range (p.natDegree + 1), (p.coeff i).re := by
+    rw [Polynomial.eval_eq_sum_range]
+    simp
+  rw [Polynomial.aeval_eq_sum_range, hsum]
+  refine le_trans (norm_sum_le _ _) (Finset.sum_le_sum fun i _ => ?_)
+  rw [norm_smul, hnorm i]
+  nlinarith [hpow i, hre i, norm_nonneg (a ^ i)]
+
+/-- The printed estimate of cstar.tex:3550: `‖bₙ - b_N‖ ≤ qₙ(1) - q_N(1)`. -/
+private theorem sqrtApproxSeq_norm_sub_le (a : 𝒜) (ha : ‖a‖ ≤ 1) {N n : ℕ} (h : N ≤ n) :
+    ‖sqrtApproxSeq a n - sqrtApproxSeq a N‖ ≤ sqrtApproxReal n - sqrtApproxReal N := by
+  have he : Polynomial.aeval a (sqrtPoly n - sqrtPoly N)
+      = sqrtApproxSeq a n - sqrtApproxSeq a N := by
+    rw [map_sub, aeval_sqrtPoly, aeval_sqrtPoly]
+  have hb := norm_aeval_le_eval_one (nonnegCoeff_sqrtPoly_sub h) (a := a) ha
+  rw [he] at hb
+  refine hb.trans (le_of_eq ?_)
+  rw [Polynomial.eval_sub, sqrtPoly_eval_one, sqrtPoly_eval_one]
+  simp
 
 private theorem sqrtApproxSeq_cauchy (a : 𝒜) (ha : ‖a‖ ≤ 1) :
     CauchySeq (sqrtApproxSeq a) := by
-  refine cauchySeq_of_summable_dist ?_
-  have hsum : Summable fun n => sqrtApproxReal (n + 1) - sqrtApproxReal n := by
-    refine summable_of_sum_range_le (c := 1)
-      (fun n => sub_nonneg.mpr (sqrtApproxReal_mono (Nat.le_succ n))) fun n => ?_
-    rw [Finset.sum_range_sub sqrtApproxReal, sqrtApproxReal_zero, sub_zero]
-    exact sqrtApproxReal_le_one n
-  refine Summable.of_nonneg_of_le (fun n => dist_nonneg) (fun n => ?_) hsum
-  rw [dist_eq_norm, norm_sub_rev]
-  exact sqrtApproxSeq_dist a ha n
+  -- "it suffices to show that the ascending sequence `q₀(1) ≤ q₁(1) ≤ ⋯`
+  -- of real numbers converges, i.e. is bounded" (cstar.tex:3553-3563)
+  have hbdd : BddAbove (Set.range sqrtApproxReal) :=
+    ⟨1, by rintro x ⟨n, rfl⟩; exact sqrtApproxReal_le_one n⟩
+  have hcr : CauchySeq sqrtApproxReal :=
+    (tendsto_atTop_ciSup sqrtApproxReal_mono hbdd).cauchySeq
+  refine Metric.cauchySeq_iff'.mpr fun ε hε => ?_
+  obtain ⟨N, hN⟩ := Metric.cauchySeq_iff'.mp hcr ε hε
+  refine ⟨N, fun n hn => ?_⟩
+  have h1 : dist (sqrtApproxSeq a n) (sqrtApproxSeq a N)
+      ≤ sqrtApproxReal n - sqrtApproxReal N := by
+    rw [dist_eq_norm]; exact sqrtApproxSeq_norm_sub_le a ha hn
+  have h2 : sqrtApproxReal n - sqrtApproxReal N ≤ dist (sqrtApproxReal n) (sqrtApproxReal N) := by
+    rw [Real.dist_eq]; exact le_abs_self _
+  exact lt_of_le_of_lt (h1.trans h2) (hN n hn)
 
 end SqrtIterationCore
 
@@ -3693,9 +4284,13 @@ private theorem thesisPos_pow {a : 𝒜} (ha : ThesisPos a) : ∀ n : ℕ, Thesi
 /-! #### The square root (**23II**/**23VII**, parsec 230) for `ThesisPos`
 
 The iteration of **23II** is run here against the thesis's own notion of
-positivity.  Only the *existence* half is needed, and only its order-free
-estimates (above) are used; the order-theoretic `ineq-square-root` clause of
-**23II** is not needed at all for what follows. -/
+positivity, and in the thesis's own order: first the existence half, from the
+order-free estimates above (**23III**, cstar.tex:3516); then
+`square-commuting-monotone` (cstar.tex:3589), which the thesis derives from
+existence alone; and only then the order-theoretic `ineq-square-root` clause
+(cstar.tex:3611), which uses `square-commuting-monotone` and is what **24II**.2
+below needs.  Uniqueness (cstar.tex:3630) is not needed here and is not
+proved. -/
 
 private theorem isSelfAdjoint_star_mul_self' (a : 𝒜) : IsSelfAdjoint (star a * a) := by
   rw [IsSelfAdjoint, star_mul, star_star]
@@ -3708,9 +4303,11 @@ private theorem norm_le_of_thesisPos_sub {y : 𝒜} (hy : ThesisPos y) {t : ℝ}
 /-- The existence half of **23II** for `ThesisPos`: for thesis-positive `a`
 with `‖a‖ ≤ 1` the iteration `b₀ = 0`, `b_{n+1} = ½(a + bₙ²)` converges to a
 thesis-positive `b` with `‖b‖ ≤ 1` and `(1-b)² = 1-a`, commuting with
-everything that commutes with `a`. -/
+everything that commutes with `a`.  The limit is named in the conclusion, so
+that the `ineq-square-root` clause below can be run on the same `b`. -/
 private theorem thesisSqrt_iteration {a : 𝒜} (hp : ThesisPos a) (hn : ‖a‖ ≤ 1) :
-    ∃ b : 𝒜, ThesisPos b ∧ ‖b‖ ≤ 1 ∧ (1 - b) ^ 2 = 1 - a ∧
+    ∃ b : 𝒜, Tendsto (sqrtApproxSeq a) atTop (𝓝 b) ∧
+      ThesisPos b ∧ ‖b‖ ≤ 1 ∧ (1 - b) ^ 2 = 1 - a ∧
       ∀ c : 𝒜, c * a = a * c → c * b = b * c := by
   obtain ⟨b, hb⟩ := cauchySeq_tendsto_of_complete (sqrtApproxSeq_cauchy a hn)
   have hhalf : ((2 : ℂ))⁻¹ = (((1 / 2 : ℝ)) : ℂ) := by norm_num
@@ -3721,7 +4318,8 @@ private theorem thesisSqrt_iteration {a : 𝒜} (hp : ThesisPos a) (hn : ‖a‖
     | succ n ih =>
       rw [sqrtApproxSeq_succ, hhalf]
       exact thesisPos_ofReal_smul (by norm_num) (thesisPos_add hp (thesisPos_sq ih.1))
-  refine ⟨b, isClosed_thesisPos.mem_of_tendsto hb (Filter.Eventually.of_forall hpn), ?_, ?_, ?_⟩
+  refine ⟨b, hb, isClosed_thesisPos.mem_of_tendsto hb (Filter.Eventually.of_forall hpn),
+    ?_, ?_, ?_⟩
   · have hlim : Tendsto (fun n => ‖sqrtApproxSeq a n‖) atTop (𝓝 ‖b‖) := hb.norm
     refine le_of_tendsto hlim (Filter.Eventually.of_forall fun n => ?_)
     exact le_trans (sqrtApproxSeq_norm_le a hn n) (sqrtApproxReal_le_one n)
@@ -3771,7 +4369,7 @@ private theorem thesisSqrt_exists {x : 𝒜} (hx : ThesisPos x) :
       refine norm_le_of_thesisPos_sub hay zero_le_one ?_
       rw [hone]
       simpa using hy
-    obtain ⟨b, hb, hbn, hb2, hbc⟩ := thesisSqrt_iteration hay han
+    obtain ⟨b, -, hb, hbn, hb2, hbc⟩ := thesisSqrt_iteration hay han
     have hm0 : ThesisPos (1 - b) := by
       have := thesisPos_sub_of_norm_le hb.1 hbn
       rwa [hone] at this
@@ -3813,14 +4411,197 @@ private theorem thesisPos_mul_of_commute {x y : 𝒜} (hx : ThesisPos x) (hy : T
   rw [hprod]
   exact thesisPos_sq hsa
 
-/-! #### **19III** and **24IV** for `ThesisPos` -/
+/-- The `ineq-square-root` clause of **23II** (cstar.tex:3611) for `ThesisPos`,
+stated on the iteration itself: if `c` is self-adjoint, commutes with `a` and
+`c² ≤ 1 - a`, then `c ≤ 1 - b`, that is, `b ≤ 1 - c`.
 
-/-- Auxiliary: `x + x = y + y` implies `x = y` (the algebra is a `ℂ`-vector
-space).  Used to divide the thesis's identities by two. -/
-private theorem eq_of_add_self_eq {x y : 𝒜} (hxy : x + x = y + y) : x = y := by
-  have h2 : ((2 : ℂ))⁻¹ • ((2 : ℂ) • x) = ((2 : ℂ))⁻¹ • ((2 : ℂ) • y) := by
-    rw [two_smul, two_smul, hxy]
-  rwa [smul_smul, smul_smul, show ((2 : ℂ))⁻¹ * 2 = 1 by norm_num, one_smul, one_smul] at h2
+The thesis's own argument.  From `0 ≤ c² ≤ 1 - a` we get `‖c‖² ≤ ‖1 - a‖ ≤ 1`,
+so `-1 ≤ c ≤ 1` and `b₀ ≡ 0 ≤ 1 - c`; and if `bₙ ≤ 1 - c`, then
+`b_{n+1} = ½(a + bₙ²) ≤ ½((1 - c²) + (1 - c)²) = 1 - c`, where `bₙ² ≤ (1 - c)²`
+by `square-commuting-monotone` (cstar.tex:3589), which for commuting positives
+`c ≤ d` reads `d² - c² = d(d - c) + c(d - c) ≥ 0` and is available here as
+`thesisPos_mul_of_commute`.  The limit stays below `1 - c` because the thesis's
+positive cone is closed (**17VI**.2, `isClosed_thesisPos`). -/
+private theorem thesisSqrt_iteration_le {a b : 𝒜} (hp : ThesisPos a) (hn : ‖a‖ ≤ 1)
+    (hbt : Tendsto (sqrtApproxSeq a) atTop (𝓝 b)) {c : 𝒜} (hc : IsSelfAdjoint c)
+    (hca : c * a = a * c) (hcle : ThesisPos (1 - a - c ^ 2)) : ThesisPos (1 - b - c) := by
+  have hone : algebraMap ℂ 𝒜 (((1 : ℝ)) : ℂ) = 1 := by norm_num
+  -- `0 ≤ a ≤ 1`, so `‖1 - a‖ ≤ 1`
+  have h1a : ThesisPos (1 - a) := by
+    have := thesisPos_sub_of_norm_le hp.1 hn
+    rwa [hone] at this
+  have h1an : ‖1 - a‖ ≤ 1 := by
+    refine norm_le_of_thesisPos_sub h1a zero_le_one ?_
+    rw [hone]
+    simpa using hp
+  -- `0 ≤ c² ≤ 1 - a`, so `‖c‖² = ‖c²‖ ≤ ‖1 - a‖ ≤ 1`, so `-1 ≤ c ≤ 1`
+  have hc2n : ‖c ^ 2‖ ≤ ‖1 - a‖ := by
+    refine norm_le_of_thesisPos_sub (thesisPos_sq hc) (norm_nonneg _) ?_
+    have he : algebraMap ℂ 𝒜 ((‖1 - a‖ : ℝ) : ℂ) - c ^ 2
+        = (algebraMap ℂ 𝒜 ((‖1 - a‖ : ℝ) : ℂ) - (1 - a)) + (1 - a - c ^ 2) := by abel
+    rw [he]
+    exact thesisPos_add (thesisPos_sub_of_norm_le h1a.1 le_rfl) hcle
+  have hcn : ‖c‖ ≤ 1 := by
+    have hsq : ‖c‖ * ‖c‖ = ‖c ^ 2‖ := by
+      rw [← CStarRing.norm_star_mul_self, hc.star_eq, sq]
+    nlinarith [norm_nonneg c]
+  have h1c : ThesisPos (1 - c) := by
+    have := thesisPos_sub_of_norm_le hc hcn
+    rwa [hone] at this
+  -- every iterate is thesis-positive
+  have hpn : ∀ n, ThesisPos (sqrtApproxSeq a n) := by
+    intro n
+    induction n with
+    | zero => rw [sqrtApproxSeq_zero]; exact thesisPos_zero
+    | succ n ih =>
+      rw [sqrtApproxSeq_succ, show ((2 : ℂ))⁻¹ = (((1 / 2 : ℝ)) : ℂ) by norm_num]
+      exact thesisPos_ofReal_smul (by norm_num) (thesisPos_add hp (thesisPos_sq ih.1))
+  -- the induction `bₙ ≤ 1 - c`
+  have hstep : ∀ n, ThesisPos (1 - c - sqrtApproxSeq a n) := by
+    intro n
+    induction n with
+    | zero => rw [sqrtApproxSeq_zero, sub_zero]; exact h1c
+    | succ n ih =>
+      have hce : c * sqrtApproxSeq a n = sqrtApproxSeq a n * c := sqrtApproxSeq_commute a c hca n
+      set e : 𝒜 := sqrtApproxSeq a n with hedef
+      set w : 𝒜 := sqrtApproxSeq a (n + 1) with hwdef
+      have hww : w + w = a + e ^ 2 := by
+        rw [hwdef, sqrtApproxSeq_succ, ← hedef, ← two_smul ℂ, smul_smul]
+        norm_num
+      have hce1 : (1 - c) * e = e * (1 - c) := by
+        rw [sub_mul, mul_sub, one_mul, mul_one, hce]
+      have hcomm1 : (1 - c) * (1 - c - e) = (1 - c - e) * (1 - c) := by
+        have hx : (1 - c) * (1 - c - e) = (1 - c) * (1 - c) - (1 - c) * e := by noncomm_ring
+        have hy : (1 - c - e) * (1 - c) = (1 - c) * (1 - c) - e * (1 - c) := by noncomm_ring
+        rw [hx, hy, hce1]
+      have hcomm2 : e * (1 - c - e) = (1 - c - e) * e := by
+        have hx : e * (1 - c - e) = e * (1 - c) - e * e := by noncomm_ring
+        have hy : (1 - c - e) * e = (1 - c) * e - e * e := by noncomm_ring
+        rw [hx, hy, hce1]
+      have hprod1 : ThesisPos ((1 - c) * (1 - c - e)) := thesisPos_mul_of_commute h1c ih hcomm1
+      have hprod2 : ThesisPos (e * (1 - c - e)) := thesisPos_mul_of_commute (hpn n) ih hcomm2
+      -- `1 - c - b_{n+1} = ½((1 - a - c²) + ((1-c)² - bₙ²))`
+      have hT : (1 - a - c ^ 2) + ((1 - c) * (1 - c - e) + e * (1 - c - e))
+          = (1 - c - w) + (1 - c - w) := by
+        have hexp : (1 - c) * (1 - c - e) + e * (1 - c - e)
+            = (1 - c) ^ 2 - e ^ 2 + (e * (1 - c) - (1 - c) * e) := by noncomm_ring
+        rw [hexp, ← hce1, sub_self, add_zero]
+        have hl : (1 - a - c ^ 2) + ((1 - c) ^ 2 - e ^ 2)
+            = ((1 : 𝒜) - c) + ((1 : 𝒜) - c) - (a + e ^ 2) := by noncomm_ring
+        rw [hl, ← hww]
+        abel
+      have hpos : ThesisPos ((1 - c - w) + (1 - c - w)) := by
+        rw [← hT]
+        exact thesisPos_add hcle (thesisPos_add hprod1 hprod2)
+      have hhalf := thesisPos_ofReal_smul (𝒜 := 𝒜) (r := 1 / 2) (by norm_num) hpos
+      have hcalc : (((1 / 2 : ℝ)) : ℂ) • ((1 - c - w) + (1 - c - w)) = 1 - c - w := by
+        rw [← two_smul ℂ, smul_smul]
+        norm_num
+      rwa [hcalc] at hhalf
+  -- and the cone is closed
+  have hlim : Tendsto (fun n => 1 - c - sqrtApproxSeq a n) atTop (𝓝 (1 - c - b)) :=
+    tendsto_const_nhds.sub hbt
+  have hb := isClosed_thesisPos.mem_of_tendsto hlim (Filter.Eventually.of_forall hstep)
+  have hrw : (1 : 𝒜) - c - b = 1 - b - c := by abel
+  rwa [hrw] at hb
+
+/-- **23VII** (`sqrt`, cstar.tex:3653) for `ThesisPos`, in the form the
+solution of **24II** cites (`parsec-230.70`): a thesis-positive `x` has a
+thesis-positive square root commuting with everything that commutes with `x`,
+and a self-adjoint `c` that commutes with `x` and has `c² ≤ x` satisfies
+`c ≤ √x`.  The first three clauses are `thesisSqrt_exists`; the fourth is the
+`ineq-square-root` clause of **23II** carried through the same normalisation
+(`x` rescaled to `y = x/‖x‖` and `√x = √‖x‖ (1 - b)`), with `c` rescaled to
+`c/√‖x‖`.  It is stated separately from `thesisSqrt_exists` because its proof
+uses `thesisPos_mul_of_commute`, which the thesis (cstar.tex:3589) — and this
+file — proves from the *existence* half alone. -/
+private theorem thesisSqrt_exists_le {x : 𝒜} (hx : ThesisPos x) :
+    ∃ m : 𝒜, ThesisPos m ∧ m ^ 2 = x ∧ (∀ c : 𝒜, c * x = x * c → c * m = m * c) ∧
+      ∀ c : 𝒜, IsSelfAdjoint c → c * x = x * c → ThesisPos (x - c ^ 2) → ThesisPos (m - c) := by
+  rcases eq_or_lt_of_le (norm_nonneg x) with h0 | h0
+  · have hx0 : x = 0 := norm_eq_zero.mp h0.symm
+    refine ⟨0, thesisPos_zero, by simp [hx0], by simp, ?_⟩
+    intro c hc _ hcc
+    -- `c² ≤ 0 ≤ c²` forces `c = 0`
+    rw [hx0, zero_sub] at hcc
+    have hcz : c ^ 2 = 0 := thesisPos_antisymm (thesisPos_sq hc) hcc
+    have hnn : ‖c‖ * ‖c‖ = 0 := by
+      rw [← CStarRing.norm_star_mul_self, hc.star_eq, ← sq, hcz, norm_zero]
+    have hz : ‖c‖ = 0 := by nlinarith [norm_nonneg c]
+    rw [norm_eq_zero.mp hz, sub_zero]
+    exact thesisPos_zero
+  · have hs0 : (0 : ℝ) < ‖x‖ := h0
+    set s : ℝ := ‖x‖ with hs
+    have hsi : (0 : ℝ) ≤ s⁻¹ := le_of_lt (inv_pos.mpr hs0)
+    have hy : ThesisPos (((s⁻¹ : ℝ) : ℂ) • x) := thesisPos_ofReal_smul hsi hx
+    set y : 𝒜 := ((s⁻¹ : ℝ) : ℂ) • x with hydef
+    have hyn : ‖y‖ = 1 := by
+      rw [hydef, norm_smul, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg hsi, ← hs,
+        inv_mul_cancel₀ (ne_of_gt hs0)]
+    have hone : algebraMap ℂ 𝒜 (((1 : ℝ)) : ℂ) = 1 := by norm_num
+    have hay : ThesisPos (1 - y) := by
+      have := thesisPos_sub_of_norm_le hy.1 (t := 1) (le_of_eq hyn)
+      rwa [hone] at this
+    have han : ‖1 - y‖ ≤ 1 := by
+      refine norm_le_of_thesisPos_sub hay zero_le_one ?_
+      rw [hone]
+      simpa using hy
+    obtain ⟨b, hbt, hb, hbn, hb2, hbc⟩ := thesisSqrt_iteration hay han
+    have hm0 : ThesisPos (1 - b) := by
+      have := thesisPos_sub_of_norm_le hb.1 hbn
+      rwa [hone] at this
+    have hm0sq : (1 - b) ^ 2 = y := by rw [hb2]; abel
+    have hrpos : (0 : ℝ) < Real.sqrt s := Real.sqrt_pos.mpr hs0
+    refine ⟨((Real.sqrt s : ℝ) : ℂ) • (1 - b),
+      thesisPos_ofReal_smul (Real.sqrt_nonneg s) hm0, ?_, ?_, ?_⟩
+    · have hsmulsq : ∀ (r : ℂ) (z : 𝒜), (r • z) ^ 2 = (r * r) • z ^ 2 := by
+        intro r z; rw [sq, sq, smul_mul_assoc, mul_smul_comm, smul_smul]
+      rw [hsmulsq, hm0sq, hydef, smul_smul]
+      have hcc : ((Real.sqrt s : ℝ) : ℂ) * ((Real.sqrt s : ℝ) : ℂ) * ((s⁻¹ : ℝ) : ℂ) = 1 := by
+        have : Real.sqrt s * Real.sqrt s * s⁻¹ = 1 := by
+          rw [Real.mul_self_sqrt (le_of_lt hs0), mul_inv_cancel₀ (ne_of_gt hs0)]
+        exact_mod_cast congrArg (fun r : ℝ => (r : ℂ)) this
+      rw [hcc, one_smul]
+    · intro c hc
+      have hcy : c * y = y * c := by
+        rw [hydef, mul_smul_comm, smul_mul_assoc, hc]
+      have hca : c * (1 - y) = (1 - y) * c := by
+        rw [mul_sub, sub_mul, mul_one, one_mul, hcy]
+      have hcb := hbc c hca
+      rw [mul_smul_comm, smul_mul_assoc, mul_sub, sub_mul, mul_one, one_mul, hcb]
+    · -- the `ineq-square-root` clause, rescaled
+      intro c hc hcx hcc
+      have hccancel : ((Real.sqrt s : ℝ) : ℂ) * (((Real.sqrt s)⁻¹ : ℝ) : ℂ) = 1 := by
+        have : Real.sqrt s * (Real.sqrt s)⁻¹ = 1 := mul_inv_cancel₀ (ne_of_gt hrpos)
+        exact_mod_cast congrArg (fun r : ℝ => (r : ℂ)) this
+      have hcsq : (((Real.sqrt s)⁻¹ : ℝ) : ℂ) * (((Real.sqrt s)⁻¹ : ℝ) : ℂ)
+          = ((s⁻¹ : ℝ) : ℂ) := by
+        have : (Real.sqrt s)⁻¹ * (Real.sqrt s)⁻¹ = s⁻¹ := by
+          rw [← mul_inv, Real.mul_self_sqrt (le_of_lt hs0)]
+        exact_mod_cast congrArg (fun r : ℝ => (r : ℂ)) this
+      set c' : 𝒜 := (((Real.sqrt s)⁻¹ : ℝ) : ℂ) • c with hc'def
+      have hc'sa : IsSelfAdjoint c' := by
+        rw [hc'def, IsSelfAdjoint, star_smul, hc.star_eq, Complex.star_def, Complex.conj_ofReal]
+      have hcy : c * y = y * c := by
+        rw [hydef, mul_smul_comm, smul_mul_assoc, hcx]
+      have hc'a : c' * (1 - y) = (1 - y) * c' := by
+        rw [hc'def, mul_smul_comm, smul_mul_assoc, mul_sub, sub_mul, mul_one, one_mul, hcy]
+      have hc'2 : c' ^ 2 = ((s⁻¹ : ℝ) : ℂ) • c ^ 2 := by
+        rw [hc'def, sq, sq, smul_mul_assoc, mul_smul_comm, smul_smul, hcsq]
+      have hkey : ThesisPos (1 - (1 - y) - c' ^ 2) := by
+        have he : (1 : 𝒜) - (1 - y) - c' ^ 2 = ((s⁻¹ : ℝ) : ℂ) • (x - c ^ 2) := by
+          rw [hc'2, hydef, smul_sub]
+          abel
+        rw [he]
+        exact thesisPos_ofReal_smul hsi hcc
+      have hle := thesisSqrt_iteration_le hay han hbt hc'sa hc'a hkey
+      have hmc : ((Real.sqrt s : ℝ) : ℂ) • (1 - b - c')
+          = ((Real.sqrt s : ℝ) : ℂ) • (1 - b) - c := by
+        rw [hc'def, smul_sub, smul_smul, hccancel, one_smul]
+      rw [← hmc]
+      exact thesisPos_ofReal_smul (Real.sqrt_nonneg s) hle
+
+/-! #### **19III** and **24IV** for `ThesisPos` -/
 
 /-- **19III** (`astara-non-negative`, cstar.tex:2853, Lemma) for the thesis's
 notion of positivity, transcribing the thesis's argument at parsec 190:
@@ -3894,20 +4675,23 @@ private theorem thesisPos_astara_non_negative {b : 𝒜} (h : ThesisPos (-(star 
 /-- **24IV** (`astara-positive`, cstar.tex:3761, Lemma) for the thesis's
 notion of positivity, transcribing the thesis's argument: `a*a` is positive.
 
-The thesis takes `b := a ((a*a)_-)^{1/2}`; here the negative part is reached
-directly as `u := |h| - h` (with `h := a*a` and `|h|` the square root of `h²`
-from **23VII**), and `b := a u` already does the job, `u` being positive
-because `u³ = 2|h|u²` is a product of commuting positives (**23VII**.1, here
-`thesisPos_mul_of_commute`) and **11XV**.3 reads positivity back off that odd
-power (`thesisPos_of_pow_odd`). -/
+The thesis's own witness is used: with `h := a*a` and `|h|` the square root of
+`h²` from **23VII**, the negative part is `h₋ = ½(|h| − h)` and `b := a (h₋)^{1/2}`,
+for which `b*b = (h₋) h = -(h₋)²`, so `b = 0` by **19III**, whence `(h₋)² = 0`,
+`h₋ = 0` by the C*-identity, and `h = |h| ≥ 0`.
+
+That `h₋` is positive is the thesis's **24II**.2 (`cstar-pos-neg-part`,
+cstar.tex:3715), and it is got here by the thesis's own route (asols.tex:2340):
+`h` is self-adjoint, commutes with `h²`, and `h² ≤ h²`, so `h ≤ √(h²) ≡ |h|` by
+the `ineq-square-root` clause of **23II** (here `thesisSqrt_exists_le`), which
+is exactly the positivity of `|h| − h ≡ 2h₋`. -/
 private theorem thesisPos_star_mul_self (a : 𝒜) : ThesisPos (star a * a) := by
   set h : 𝒜 := star a * a with hdef
   have hsa : IsSelfAdjoint h := isSelfAdjoint_star_mul_self' a
   -- `m := |h|`, a thesis-positive square root of `h²`, commuting with `h`
-  obtain ⟨m, hm, hm2, hmc⟩ := thesisSqrt_exists (thesisPos_sq hsa)
+  obtain ⟨m, hm, hm2, hmc, hmle⟩ := thesisSqrt_exists_le (thesisPos_sq hsa)
   have hmh : h * m = m * h := hmc h (by noncomm_ring)
   set u : 𝒜 := m - h with hu
-  have husa : IsSelfAdjoint u := hm.1.sub hsa
   have hhu : h * u = u * h := by rw [hu, mul_sub, sub_mul, hmh]
   -- the thesis's `h h₋ = -(h₋)²`, in the form `2 h u = -u²`
   have hkey : h * u + h * u = -(u ^ 2) := by
@@ -3915,73 +4699,53 @@ private theorem thesisPos_star_mul_self (a : 𝒜) : ThesisPos (star a * a) := b
     rw [hm2, ← hmh] at hexp
     rw [hexp, hu]
     noncomm_ring
-  -- `u² = 2 m u = 2 u m`, whence `m` and `u` commute
-  have hmsum : m = u + h := by rw [hu]; abel
-  have h1 : m * u + m * u = u ^ 2 := by
-    have hmu' : m * u = u * u + h * u := by rw [hmsum]; noncomm_ring
-    rw [hmu']
-    have hre : u * u + h * u + (u * u + h * u) = u * u + u * u + (h * u + h * u) := by abel
-    rw [hre, hkey, sq]
-    abel
-  have h2 : u * m + u * m = u ^ 2 := by
-    have hmu' : u * m = u * u + u * h := by rw [hmsum]; noncomm_ring
-    rw [hmu', ← hhu]
-    have hre : u * u + h * u + (u * u + h * u) = u * u + u * u + (h * u + h * u) := by abel
-    rw [hre, hkey, sq]
-    abel
-  have hmu : m * u = u * m := eq_of_add_self_eq (by rw [h1, h2])
-  -- `u ≥ 0`, because `u³ = 2 m u²` is a product of commuting positives
-  have hu3 : ThesisPos (u ^ 3) := by
-    have hcube : u ^ 3 = m * u ^ 2 + m * u ^ 2 := by
-      have he : u ^ 3 = (m * u + m * u) * u := by rw [h1]; exact pow_succ u 2
-      rw [he, sq]
-      noncomm_ring
-    have hmc2 : m * u ^ 2 = u ^ 2 * m := by
-      rw [sq, ← mul_assoc, hmu, mul_assoc, hmu, mul_assoc]
-    have hpos : ThesisPos (m * u ^ 2) :=
-      thesisPos_mul_of_commute hm (thesisPos_sq husa) hmc2
-    rw [hcube]
-    exact thesisPos_add hpos hpos
-  have hup : ThesisPos u := thesisPos_of_pow_odd husa (by decide) hu3
-  -- the thesis's `b := a (h₋)^{1/2}`; here `b := a u` already works
-  have hbb : star (a * u) * (a * u) = h * u ^ 2 := by
-    have hb1 : star (a * u) * (a * u) = u * h * u := by
-      rw [star_mul, husa.star_eq, hdef]; noncomm_ring
-    rw [hb1, ← hhu, mul_assoc, ← sq]
-  have hbneg : ThesisPos (-(star (a * u) * (a * u))) := by
-    have hsum2 : (-(star (a * u) * (a * u))) + (-(star (a * u) * (a * u))) = u ^ 3 := by
-      rw [hbb, ← neg_add]
-      have hfac : h * u ^ 2 + h * u ^ 2 = (h * u + h * u) * u := by
-        rw [sq]; noncomm_ring
-      rw [hfac, hkey]
-      noncomm_ring
-    have hhalf := thesisPos_ofReal_smul (𝒜 := 𝒜) (r := 1 / 2) (by norm_num) (hsum2 ▸ hu3)
-    have hcalc : (((1 / 2 : ℝ)) : ℂ) •
-        ((-(star (a * u) * (a * u))) + (-(star (a * u) * (a * u))))
-        = -(star (a * u) * (a * u)) := by
-      rw [← two_smul ℂ, smul_smul]
-      norm_num
-    rwa [hcalc] at hhalf
-  have hb0 : a * u = 0 := thesisPos_astara_non_negative hbneg
-  have hzero2 : h * u ^ 2 = 0 := by rw [← hbb, hb0]; simp
-  have hu3z : u ^ 3 = 0 := by
-    have hfac : h * u ^ 2 + h * u ^ 2 = -(u ^ 3) := by
-      have he : h * u ^ 2 + h * u ^ 2 = (h * u + h * u) * u := by rw [sq]; noncomm_ring
-      rw [he, hkey, neg_mul, ← pow_succ]
-    have hz : -(u ^ 3) = 0 := by rw [← hfac, hzero2, add_zero]
-    exact neg_eq_zero.mp hz
+  -- `u ≡ |h| - h ≥ 0` is the thesis's **24II**.2: `h` is self-adjoint, commutes
+  -- with `h²`, and `h² ≤ h²`, so `h ≤ √(h²) ≡ |h|` by the `ineq-square-root`
+  -- clause of **23II**
+  have hup : ThesisPos u := by
+    have hle := hmle h hsa (by noncomm_ring) (by rw [sub_self]; exact thesisPos_zero)
+    rw [hu]
+    exact hle
+  -- the thesis's negative part `h₋ = ½(|h| − h)` and its square root
+  set p : 𝒜 := ((1 / 2 : ℝ) : ℂ) • u with hpdef
+  have hpp : ThesisPos p := thesisPos_ofReal_smul (by norm_num) hup
+  have hpsa : IsSelfAdjoint p := hpp.1
+  have hph : h * p = p * h := by rw [hpdef, mul_smul_comm, smul_mul_assoc, hhu]
+  obtain ⟨s, hs, hs2, hsc⟩ := thesisSqrt_exists hpp
+  have hsh : h * s = s * h := hsc h hph
+  -- the thesis's `b := a (h₋)^{1/2}`, with `b*b = (h₋) a*a = -(h₋)²`
+  have hbb : star (a * s) * (a * s) = -(p ^ 2) := by
+    have hb1 : star (a * s) * (a * s) = s * h * s := by
+      rw [star_mul, hs.1.star_eq, hdef]; noncomm_ring
+    have hb2 : s * h * s = h * p := by
+      rw [← hsh, mul_assoc, ← sq, hs2]
+    have hb3 : h * p = -(p ^ 2) := by
+      have hsq : p ^ 2 = (((1 / 2 : ℝ) : ℂ) * ((1 / 2 : ℝ) : ℂ)) • u ^ 2 := by
+        rw [hpdef, sq, sq, smul_mul_assoc, mul_smul_comm, smul_smul]
+      have hu2 : u ^ 2 = -(h * u + h * u) := by rw [hkey, neg_neg]
+      have hc : ((1 / 2 : ℝ) : ℂ)
+          = ((1 / 2 : ℝ) : ℂ) * ((1 / 2 : ℝ) : ℂ) + ((1 / 2 : ℝ) : ℂ) * ((1 / 2 : ℝ) : ℂ) := by
+        push_cast; norm_num
+      rw [hsq, hu2, hpdef, mul_smul_comm, smul_neg, neg_neg, smul_add, ← add_smul, ← hc]
+    rw [hb1, hb2, hb3]
+  have hbneg : ThesisPos (-(star (a * s) * (a * s))) := by
+    rw [hbb, neg_neg]; exact thesisPos_sq hpsa
+  have hb0 : a * s = 0 := thesisPos_astara_non_negative hbneg
+  -- hence `(h₋)² = 0`, and `h₋ = 0` by the C*-identity, so `h = |h| ≥ 0`
+  have hp2 : p ^ 2 = 0 := by
+    have h0 : star (a * s) * (a * s) = 0 := by rw [hb0]; simp
+    rw [hbb] at h0
+    exact neg_eq_zero.mp h0
+  have hp0 : p = 0 := by
+    have hn : ‖p‖ * ‖p‖ = 0 := by
+      rw [← CStarRing.norm_star_mul_self, hpsa.star_eq, ← sq, hp2, norm_zero]
+    have hz : ‖p‖ = 0 := by nlinarith [norm_nonneg p]
+    exact norm_eq_zero.mp hz
   have hu0 : u = 0 := by
-    have hn2 : ‖u ^ 2‖ = ‖u‖ ^ 2 := by
-      rw [sq, sq, ← CStarRing.norm_star_mul_self, husa.star_eq]
-    have hs2 : IsSelfAdjoint (u ^ 2) := husa.pow 2
-    have hn4 : ‖u ^ 4‖ = ‖u ^ 2‖ ^ 2 := by
-      rw [show u ^ 4 = u ^ 2 * u ^ 2 by rw [show (4 : ℕ) = 2 + 2 from rfl, pow_add],
-        sq (‖u ^ 2‖), ← CStarRing.norm_star_mul_self, hs2.star_eq]
-    have hu4 : u ^ 4 = 0 := by rw [pow_succ, hu3z, zero_mul]
-    rw [hu4, norm_zero, hn2] at hn4
-    have hq : ‖u‖ ^ 2 = 0 := by nlinarith [sq_nonneg (‖u‖ ^ 2)]
-    have hn0 : ‖u‖ = 0 := by nlinarith [norm_nonneg u]
-    exact norm_eq_zero.mp hn0
+    rw [hpdef] at hp0
+    rcases smul_eq_zero.mp hp0 with hz | hz
+    · exact absurd hz (by norm_num)
+    · exact hz
   have hmeq : m = h := sub_eq_zero.mp (by rw [← hu]; exact hu0)
   rw [← hmeq]
   exact hm
@@ -4349,23 +5113,23 @@ theorem weak_russo_dye_1 (f : 𝒜 →ₗ[ℂ] ℬ) (hf : IsPositiveMap f) (a : 
     (ha : IsSelfAdjoint a) : ‖f a‖ ≤ ‖f 1‖ * ‖a‖ :=
   by
     have hfsa : IsSelfAdjoint (f a) := by
-      -- `a = (‖a‖ + a) - ‖a‖` with both terms positive (**17VI**.3a); the
-      -- positive/negative parts are only available at parsec 240.  This is
-      -- **10V**'s argument inline.  20II.1's use of "`f a` is self-adjoint"
-      -- is not a gap: **10V** proves it ten parsecs earlier (author's ruling,
-      -- 2026-08-22).  Citing **10IV** `cstar_p_implies_i` instead would be one
-      -- line, but it is CFC-reachable through the parsec-90 order bridge, and
-      -- 20II.1 is deliberately kept off that bridge; the inline copy of 10V
-      -- goes through `ThesisPos` and stays off it.
-      have hp1 : (0 : 𝒜) ≤ algebraMap ℂ 𝒜 ((‖a‖ : ℝ) : ℂ) + a :=
-        (thesisPos_add_of_norm_le ha le_rfl).nonneg
+      -- **10V**'s argument verbatim (cstar.tex:1345): `‖a‖` and `‖a‖ - a` are
+      -- positive, hence so are their images, hence self-adjoint, and therefore
+      -- so is `f a = f(‖a‖) - f(‖a‖ - a)`.  20II.1's use of "`f a` is
+      -- self-adjoint" is not a gap: **10V** proves it ten parsecs earlier
+      -- (author's ruling, 2026-08-22).  Citing **10IV** `cstar_p_implies_i`
+      -- instead would be one line, but it is CFC-reachable through the
+      -- parsec-90 order bridge, and 20II.1 is deliberately kept off that
+      -- bridge; this copy of 10V goes through `ThesisPos` and stays off it.
       have hp0 : (0 : 𝒜) ≤ algebraMap ℂ 𝒜 ((‖a‖ : ℝ) : ℂ) :=
         (thesisPos_algebraMap (norm_nonneg a)).nonneg
-      have he : f a = f (algebraMap ℂ 𝒜 ((‖a‖ : ℝ) : ℂ) + a)
-          - f (algebraMap ℂ 𝒜 ((‖a‖ : ℝ) : ℂ)) := by
-        rw [map_add]; abel
+      have hp1 : (0 : 𝒜) ≤ algebraMap ℂ 𝒜 ((‖a‖ : ℝ) : ℂ) - a :=
+        (thesisPos_sub_of_norm_le ha le_rfl).nonneg
+      have he : f a = f (algebraMap ℂ 𝒜 ((‖a‖ : ℝ) : ℂ))
+          - f (algebraMap ℂ 𝒜 ((‖a‖ : ℝ) : ℂ) - a) := by
+        rw [map_sub]; abel
       rw [he]
-      exact (IsSelfAdjoint.of_nonneg (hf _ hp1)).sub (IsSelfAdjoint.of_nonneg (hf _ hp0))
+      exact (IsSelfAdjoint.of_nonneg (hf _ hp0)).sub (IsSelfAdjoint.of_nonneg (hf _ hp1))
     have hmono : ∀ x y : 𝒜, x ≤ y → f x ≤ f y := by
       intro x y h
       have h2 := hf _ (sub_nonneg.mpr h)
@@ -4499,18 +5263,6 @@ private theorem norm_map_le_two_mul (f : 𝒜 →ₗ[ℂ] ℬ) (hf : IsPositiveM
   have h := weak_russo_dye_2 f hf a
   rw [hu] at h
   nlinarith [norm_nonneg a, norm_nonneg (1 : ℬ), norm_one_le' (𝒜 := ℬ)]
-
-/-- A pu-map is contractive on self-adjoint elements: `-‖a‖ ≤ a ≤ ‖a‖` is
-carried to `-‖a‖ ≤ f a ≤ ‖a‖`. -/
-private theorem norm_map_le_of_isSelfAdjoint (f : 𝒜 →ₗ[ℂ] ℬ) (hf : IsPositiveMap f)
-    (hu : f 1 = 1) (a : 𝒜) (ha : IsSelfAdjoint a) : ‖f a‖ ≤ ‖a‖ := by
-  obtain ⟨hl, hr⟩ := (positive_basic_2_3a a ha ‖a‖ (norm_nonneg a)).mpr le_rfl
-  refine (positive_basic_2_3a (f a) (isSelfAdjoint_map_of_pos f hf ha) ‖a‖
-    (norm_nonneg a)).mp ⟨?_, ?_⟩
-  · have h := map_mono_of_pos f hf hl
-    rwa [map_neg, map_algebraMap_of_unital f hu] at h
-  · have h := map_mono_of_pos f hf hr
-    rwa [map_algebraMap_of_unital f hu] at h
 
 /-- **20VI** (`cstar-isometry`, cstar.tex:2949, Lemma): for a pu-map
 `f : 𝒜 → ℬ` the following are equivalent: (1) `f` is *bipositive*
@@ -5170,6 +5922,14 @@ theorem separating_self_adjoint (ω : ∀ i, 𝒜 →ₗ[ℂ] ℬf i) (hΩ : Sep
         rw [map_sub, hstar i a, (hall i).star_eq, sub_self]
       exact sub_eq_zero.mp hd
 
+section OrderSeparatingNorm
+
+-- **21VII**'s proof is the thesis's own one-liner: it applies **20VI** to a
+-- single pu-map into the product `⊕_ω ℬ_ω`, so the `[∀ i, Nontrivial _]`
+-- binder of Mathlib's unital ring structure on `lp _ ∞` has to be discharged
+-- while the type is elaborated, exactly as in `NontrivialSummands` above.
+attribute [local instance] nontrivial_of_nontrivialIndex
+
 /-- **21VII** (`order-separating-norm`, cstar.tex:3247, Proposition): for a
 collection `Ω` of pu-maps on `𝒜` the following are equivalent:
 (1) `Ω` is order separating; (2) `‖a‖ = sup_ω ‖ω(a)‖` for self-adjoint `a`;
@@ -5180,87 +5940,91 @@ theorem order_separating_norm (ω : ∀ i, 𝒜 →ₗ[ℂ] ℬf i)
       OrderSeparating ω,
       ∀ a : 𝒜, IsSelfAdjoint a → ‖a‖ = ⨆ i, ‖ω i a‖,
       ∀ a : 𝒜, 0 ≤ a → ‖a‖ = ⨆ i, ‖ω i a‖] := by
-  -- The thesis (cstar.tex:3247) applies **20VI** to the single pu-map
-  -- `⟨ω⟩ : 𝒜 → ⊕_ω ℬ_ω` into the C*-product, where positivity is pointwise
-  -- and the norm is the supremum.  The ℓ^∞-product of an arbitrary family is
-  -- not available *here*: Mathlib's `lp 𝒜 ∞` carries no `CStarAlgebra` or
-  -- order instance on its own, and the ones the tree builds (together with
-  -- `vonNeumannAlgebra_lp_infty`) live in `A/VN/Basic`, which imports this
-  -- file.  So we run **20VI**'s *argument* on the family directly; the
-  -- three steps are the same.  Note no index is needed: for
-  -- empty `ι` all three conditions force `𝒜` to be trivial, and the proof
-  -- below covers that case without a split (`⨆ over ∅ = 0` in `ℝ`).
-  have hbdd : ∀ a : 𝒜, IsSelfAdjoint a → BddAbove (Set.range fun i => ‖ω i a‖) :=
-    fun a ha => ⟨‖a‖, by
-      rintro x ⟨i, rfl⟩
-      exact norm_map_le_of_isSelfAdjoint (ω i) (hpos i) (hu i) a ha⟩
-  have hsupnn : ∀ a : 𝒜, 0 ≤ ⨆ i, ‖ω i a‖ :=
-    fun a => Real.iSup_nonneg fun i => norm_nonneg _
-  tfae_have 2 → 3 := fun h a ha => h a (IsSelfAdjoint.of_nonneg ha)
-  tfae_have 1 → 2 := by
-    intro h1 a ha
-    refine le_antisymm ?_ (Real.iSup_le
-      (fun i => norm_map_le_of_isSelfAdjoint (ω i) (hpos i) (hu i) a ha)
-      (norm_nonneg a))
-    set s : ℝ := ⨆ i, ‖ω i a‖ with hs
-    have hi : ∀ i, -(algebraMap ℂ (ℬf i) (s : ℂ)) ≤ ω i a ∧
-        ω i a ≤ algebraMap ℂ (ℬf i) (s : ℂ) := fun i =>
-      (positive_basic_2_3a (ω i a) (isSelfAdjoint_map_of_pos (ω i) (hpos i) ha) s
-        (hsupnn a)).mpr (le_ciSup (hbdd a ha) i)
-    refine (positive_basic_2_3a a ha s (hsupnn a)).mp ⟨?_, ?_⟩
-    · refine neg_le_iff_add_nonneg.mpr ((h1 _).mpr fun i => ?_)
-      rw [map_add, map_algebraMap_of_unital (ω i) (hu i)]
-      exact neg_le_iff_add_nonneg.mp (hi i).1
-    · refine sub_nonneg.mp ((h1 _).mpr fun i => ?_)
-      rw [map_sub, map_algebraMap_of_unital (ω i) (hu i)]
-      exact sub_nonneg.mpr (hi i).2
-  tfae_have 3 → 1 := by
-    intro h3
-    have hsacase : ∀ a : 𝒜, IsSelfAdjoint a → (0 ≤ a ↔ ∀ i, 0 ≤ ω i a) := by
-      intro a ha
-      have hb : (0 : 𝒜) ≤ algebraMap ℂ 𝒜 ((‖a‖ : ℝ) : ℂ) - a :=
-        sub_nonneg.mpr ((positive_basic_2_3a a ha ‖a‖ (norm_nonneg a)).mpr le_rfl).2
-      set b : 𝒜 := algebraMap ℂ 𝒜 ((‖a‖ : ℝ) : ℂ) - a with hbdef
-      have hbsa : IsSelfAdjoint b := (isSelfAdjoint_algebraMap_ofReal ‖a‖).sub ha
-      have hωb : ∀ i, ω i b = algebraMap ℂ (ℬf i) ((‖a‖ : ℝ) : ℂ) - ω i a := by
-        intro i; rw [hbdef, map_sub, map_algebraMap_of_unital (ω i) (hu i)]
-      have heq := h3 b hb
-      rw [← nonneg_iff_norm_algebraMap_sub_le a ha ‖a‖ (norm_nonneg a)
-        (by linarith [norm_nonneg a])]
-      have hright : (∀ i, 0 ≤ ω i a) ↔ ∀ i, ‖ω i b‖ ≤ ‖a‖ := by
-        refine forall_congr' fun i => ?_
-        rw [hωb i]
-        exact (nonneg_iff_norm_algebraMap_sub_le (ω i a)
-          (isSelfAdjoint_map_of_pos (ω i) (hpos i) ha) ‖a‖ (norm_nonneg a)
-          (norm_map_le_two_mul (ω i) (hpos i) (hu i) a)).symm
-      rw [hright, heq]
-      exact ⟨fun h i => le_trans (le_ciSup (hbdd b hbsa) i) h,
-        fun h => Real.iSup_le h (norm_nonneg a)⟩
+  -- The thesis's proof (cstar.tex:3262) in full: apply **20VI**
+  -- `cstar_isometry` to the pu-map `⟨ω⟩ : 𝒜 → ⊕_ω ℬ_ω` of **20aI**
+  -- `cstar_product_2_pu`, where positivity is pointwise
+  -- (**20aI** `cstar_product_2_positive`) and the norm is the supremum
+  -- (`lp.norm_eq_ciSup`).  Two bookkeeping points.  (a) The sum runs over the
+  -- *nontrivial* summands — the printed `⊕_ω ℬ_ω` up to
+  -- `lpInftyNontrivialEquiv` — because that is where Mathlib's binder is
+  -- discharged; a trivial summand has `ω i a = 0` and so changes neither side
+  -- of any of the three clauses (`htriv`, `hsup`).  (b) The C*-order on the
+  -- product, which this file registers nowhere, is taken here to be Mathlib's
+  -- `CStarAlgebra.spectralOrder`; `cstar_product_2_positive` assumes only
+  -- *some* `StarOrderedRing` order, and this is one.
+  -- Note no index is needed: for empty `ι` all three conditions force `𝒜` to
+  -- be trivial, and the proof below covers that case without a split
+  -- (`⨆ over ∅ = 0` in `ℝ`).
+  have hb2 : ∀ (i : ι) (a : 𝒜), ‖ω i a‖ ≤ 2 * ‖a‖ := fun i a =>
+    norm_map_le_two_mul (ω i) (hpos i) (hu i) a
+  have htriv : ∀ i : ι, ¬ Nontrivial (ℬf i) → ∀ a : 𝒜, ω i a = 0 := by
+    intro i h a
+    have := not_nontrivial_iff_subsingleton.mp h
+    exact Subsingleton.elim _ _
+  let _ : PartialOrder (lp (fun j : {i // Nontrivial (ℬf i)} => ℬf j) ∞) :=
+    CStarAlgebra.spectralOrder _
+  let _ : StarOrderedRing (lp (fun j : {i // Nontrivial (ℬf i)} => ℬf j) ∞) :=
+    CStarAlgebra.spectralOrderedRing _
+  -- the pu-map `⟨ω⟩`
+  obtain ⟨F, hFapp⟩ :
+      ∃ F : 𝒜 →ₗ[ℂ] lp (fun j : {i // Nontrivial (ℬf i)} => ℬf j) ∞,
+        ∀ (a : 𝒜) (j : {i // Nontrivial (ℬf i)}),
+          (F a : ∀ j : {i // Nontrivial (ℬf i)}, ℬf j) j = ω j a :=
+    ⟨{ toFun := fun a =>
+         ⟨fun j => ω j a, memℓp_infty ⟨2 * ‖a‖, by rintro _ ⟨j, rfl⟩; exact hb2 j a⟩⟩
+       map_add' := fun x y => by ext j; exact map_add (ω j) x y
+       map_smul' := fun r x => by ext j; exact map_smul (ω j) r x },
+     fun _ _ => rfl⟩
+  have hFpos : ∀ a : 𝒜, 0 ≤ F a ↔ ∀ i, 0 ≤ ω i a := by
     intro a
-    refine ⟨fun ha i => hpos i a ha, fun hall => ?_⟩
-    have hsaω : ∀ i, IsSelfAdjoint (ω i a) := fun i => IsSelfAdjoint.of_nonneg (hall i)
-    have hd : ∀ i, ω i (Complex.I • (star a - a)) = 0 := by
-      intro i
-      rw [map_smul, map_sub, cstar_p_implies_i (ω i) (hpos i), (hsaω i).star_eq,
-        sub_self, smul_zero]
-    have hcsa : IsSelfAdjoint (Complex.I • (star a - a)) := by
-      show star (Complex.I • (star a - a)) = _
-      rw [star_smul, star_sub, star_star, Complex.star_def, Complex.conj_I]
-      module
-    have h1 : (0 : 𝒜) ≤ Complex.I • (star a - a) :=
-      (hsacase _ hcsa).mpr fun i => by rw [hd i]
-    have h2 : (0 : 𝒜) ≤ -(Complex.I • (star a - a)) :=
-      (hsacase _ hcsa.neg).mpr fun i => by rw [map_neg, hd i, neg_zero]
-    have hc : Complex.I • (star a - a) = (0 : 𝒜) :=
-      positive_basic_2_1 _ h1 (neg_nonneg.mp h2)
-    have hsa : IsSelfAdjoint a := by
-      show star a = a
-      refine sub_eq_zero.mp ?_
-      rcases smul_eq_zero.mp hc with h | h
-      · exact absurd h Complex.I_ne_zero
-      · exact h
-    exact (hsacase a hsa).mpr hall
+    rw [cstar_product_2_positive (F a)]
+    refine ⟨fun h i => ?_, fun h j => by rw [hFapp]; exact h j⟩
+    by_cases hi : Nontrivial (ℬf i)
+    · have := h ⟨i, hi⟩
+      rwa [hFapp] at this
+    · rw [htriv i hi a]
+  have hFu : F 1 = 1 := by
+    refine lp.ext (funext fun j => ?_)
+    rw [hFapp]
+    simpa using hu j
+  have hFposmap : IsPositiveMap F := fun a ha => (hFpos a).mpr fun i => hpos i a ha
+  have hFnorm : ∀ a : 𝒜, ‖F a‖ = ⨆ j : {i // Nontrivial (ℬf i)}, ‖ω j a‖ := by
+    intro a
+    rw [lp.norm_eq_ciSup]
+    exact iSup_congr fun j => by rw [hFapp]
+  -- the trivial summands drop out of the supremum
+  have hsup : ∀ a : 𝒜,
+      (⨆ j : {i // Nontrivial (ℬf i)}, ‖ω j a‖) = ⨆ i, ‖ω i a‖ := by
+    intro a
+    have hbι : BddAbove (Set.range fun i => ‖ω i a‖) :=
+      ⟨2 * ‖a‖, by rintro _ ⟨i, rfl⟩; exact hb2 i a⟩
+    have hbJ : BddAbove (Set.range fun j : {i // Nontrivial (ℬf i)} => ‖ω j a‖) :=
+      ⟨2 * ‖a‖, by rintro _ ⟨j, rfl⟩; exact hb2 j a⟩
+    refine le_antisymm (Real.iSup_le (fun j => le_ciSup hbι (j : ι))
+      (Real.iSup_nonneg fun i => norm_nonneg _))
+      (Real.iSup_le (fun i => ?_) (Real.iSup_nonneg fun j => norm_nonneg _))
+    by_cases hi : Nontrivial (ℬf i)
+    · exact le_ciSup hbJ ⟨i, hi⟩
+    · rw [htriv i hi a, norm_zero]
+      exact Real.iSup_nonneg fun j => norm_nonneg _
+  -- **20VI** for `⟨ω⟩`, and the three clauses translated back
+  have key := cstar_isometry F hFposmap hFu
+  have e1 : OrderSeparating ω ↔ ∀ a : 𝒜, 0 ≤ F a ↔ 0 ≤ a :=
+    forall_congr' fun a => by rw [hFpos a]; exact ⟨Iff.symm, Iff.symm⟩
+  have e2 : (∀ a : 𝒜, IsSelfAdjoint a → ‖a‖ = ⨆ i, ‖ω i a‖) ↔
+      ∀ a : 𝒜, IsSelfAdjoint a → ‖F a‖ = ‖a‖ :=
+    forall_congr' fun a => imp_congr_right fun _ => by
+      rw [hFnorm a, hsup a]; exact eq_comm
+  have e3 : (∀ a : 𝒜, 0 ≤ a → ‖a‖ = ⨆ i, ‖ω i a‖) ↔
+      ∀ a : 𝒜, 0 ≤ a → ‖F a‖ = ‖a‖ :=
+    forall_congr' fun a => imp_congr_right fun _ => by
+      rw [hFnorm a, hsup a]; exact eq_comm
+  tfae_have 1 → 2 := fun h => e2.mpr ((key.out 0 1).mp (e1.mp h))
+  tfae_have 2 → 3 := fun h => e3.mpr ((key.out 1 2).mp (e2.mp h))
+  tfae_have 3 → 1 := fun h => e1.mpr ((key.out 2 0).mp (e3.mp h))
   tfae_finish
+
+end OrderSeparatingNorm
 
 /-! **21IX** (`warning-norm-states`, cstar.tex:3271, Warning): the formula
 `‖a‖ = sup_ω ‖ω(a)‖` may fail for non-self-adjoint `a` — not converted. -/
@@ -5346,7 +6110,7 @@ cstar.tex:3140; the term is introduced there and used from parsec 220 on). -/
 def IsState (ω : 𝒜 →ₗ[ℂ] ℂ) : Prop :=
   IsPositiveMap ω ∧ ω 1 = 1
 
--- copy of the file-private `eq_of_add_self_eq`
+-- halving in a `ℂ`-vector space: `x + x = y + y` implies `x = y`
 private theorem eq_of_add_self_eq' {x y : 𝒜} (hxy : x + x = y + y) : x = y := by
   have h : (2 : ℂ)⁻¹ • (x + x) = (2 : ℂ)⁻¹ • (y + y) := by rw [hxy]
   rwa [← two_smul ℂ x, ← two_smul ℂ y, smul_smul, smul_smul,
@@ -6975,9 +7739,9 @@ theorem sqrt_4 :
     ∃ a b : EuclideanSpace ℂ (Fin 2) →L[ℂ] EuclideanSpace ℂ (Fin 2),
       0 ≤ a ∧ 0 ≤ b ∧ a ≤ b ∧ ¬(a ^ 2 ≤ b ^ 2) :=
   by
-    -- The thesis's hint with the entries cleared of denominators:
-    -- `a = [[1,0],[0,0]]` and `b = a + [[1,1],[1,1]] = [[2,1],[1,1]]`.
-    -- Then `b² - a² = [[4,3],[3,2]]`, which has determinant `-1`.
+    -- The thesis's hint verbatim: `a = [[1,0],[0,0]]` and
+    -- `b = a + ½[[1,1],[1,1]] = [[3/2,1/2],[1/2,1/2]]`.
+    -- Then `b² - a² = [[3/2,1],[1,1/2]]`, which has determinant `-¼`.
     have hpos : ∀ M : Matrix (Fin 2) (Fin 2) ℂ,
         (0 : EuclideanSpace ℂ (Fin 2) →L[ℂ] EuclideanSpace ℂ (Fin 2)) ≤
           Matrix.toEuclideanCLM (𝕜 := ℂ) (star M * M) := by
@@ -6990,18 +7754,20 @@ theorem sqrt_4 :
       fin_cases i <;> fin_cases j <;>
         simp [Matrix.mul_apply, Fin.sum_univ_succ, Matrix.star_eq_conjTranspose,
           Matrix.conjTranspose_apply]
-    have hD : (!![2, 1; 1, 1] : Matrix (Fin 2) (Fin 2) ℂ) - !![1, 0; 0, 0]
-        = star (!![1, 1; 0, 0] : Matrix (Fin 2) (Fin 2) ℂ) * !![1, 1; 0, 0] := by
+    have hD : (!![3/2, 1/2; 1/2, 1/2] : Matrix (Fin 2) (Fin 2) ℂ) - !![1, 0; 0, 0]
+        = star (!![(1 + Complex.I)/2, (1 + Complex.I)/2; 0, 0] : Matrix (Fin 2) (Fin 2) ℂ)
+            * !![(1 + Complex.I)/2, (1 + Complex.I)/2; 0, 0] := by
       ext i j
       fin_cases i <;> fin_cases j <;>
         simp [Matrix.mul_apply, Fin.sum_univ_succ, Matrix.star_eq_conjTranspose,
-          Matrix.conjTranspose_apply] <;> norm_num
+          Matrix.conjTranspose_apply, Complex.ext_iff, Complex.div_re, Complex.div_im,
+          Complex.normSq_apply] <;> norm_num
     have ha : (0 : EuclideanSpace ℂ (Fin 2) →L[ℂ] EuclideanSpace ℂ (Fin 2)) ≤
         Matrix.toEuclideanCLM (𝕜 := ℂ) (!![1, 0; 0, 0] : Matrix (Fin 2) (Fin 2) ℂ) := by
       rw [hA]; exact hpos _
     have hab :
         Matrix.toEuclideanCLM (𝕜 := ℂ) (!![1, 0; 0, 0] : Matrix (Fin 2) (Fin 2) ℂ) ≤
-          Matrix.toEuclideanCLM (𝕜 := ℂ) (!![2, 1; 1, 1] : Matrix (Fin 2) (Fin 2) ℂ) := by
+          Matrix.toEuclideanCLM (𝕜 := ℂ) (!![3/2, 1/2; 1/2, 1/2] : Matrix (Fin 2) (Fin 2) ℂ) := by
       rw [← sub_nonneg, ← map_sub, hD]
       exact hpos _
     refine ⟨_, _, ha, ha.trans hab, hab, ?_⟩
@@ -7009,16 +7775,15 @@ theorem sqrt_4 :
     have hsq : ∀ M : Matrix (Fin 2) (Fin 2) ℂ,
         Matrix.toEuclideanCLM (𝕜 := ℂ) M ^ 2 = Matrix.toEuclideanCLM (𝕜 := ℂ) (M * M) := by
       intro M; rw [sq, ← map_mul]
-    have hC : (!![2, 1; 1, 1] : Matrix (Fin 2) (Fin 2) ℂ) * !![2, 1; 1, 1]
-        - (!![1, 0; 0, 0] : Matrix (Fin 2) (Fin 2) ℂ) * !![1, 0; 0, 0] = !![4, 3; 3, 2] := by
+    have hC : (!![3/2, 1/2; 1/2, 1/2] : Matrix (Fin 2) (Fin 2) ℂ) * !![3/2, 1/2; 1/2, 1/2]
+        - (!![1, 0; 0, 0] : Matrix (Fin 2) (Fin 2) ℂ) * !![1, 0; 0, 0] = !![3/2, 1; 1, 1/2] := by
       ext i j
-      fin_cases i <;> fin_cases j <;>
-        simp [Matrix.mul_apply, Fin.sum_univ_succ] <;> norm_num
+      fin_cases i <;> fin_cases j <;> norm_num [Matrix.mul_apply, Fin.sum_univ_succ]
     rw [hsq, hsq, ← sub_nonneg, ← map_sub, hC] at hle
     have hq := ((ContinuousLinearMap.isPositive_iff _).mp
       ((ContinuousLinearMap.nonneg_iff_isPositive _).mp hle)).2
-      (WithLp.toLp 2 ![3, -4] : EuclideanSpace ℂ (Fin 2))
-    -- but `⟪(b²-a²) x, x⟫ = -4` at `x = (3, -4)`
+      (WithLp.toLp 2 ![1, -2] : EuclideanSpace ℂ (Fin 2))
+    -- but `⟪(b²-a²) x, x⟫ = -½` at `x = (1, -2)`
     simp only [PiLp.inner_apply, Fin.sum_univ_succ] at hq
     norm_num [Complex.le_def] at hq
 
