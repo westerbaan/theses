@@ -670,7 +670,7 @@ docstring already says why: `ncp_uwlim_1` "asks for" a von Neumann structure on
 the domain "and never uses it".  Rowed, so outside §7's pool by definition;
 recorded, not deleted.
 
-**`positive_2x2matrix_2` (4XIII) — a closed pair, same shape.**  Part 1's only  *Revived 2026-09-04: the §2.2 transcription of 4XV.1 (`inner_product_basic_1`) follows the exercise's own hint and applies it; `limb_check` now counts one code use.*
+**`positive_2x2matrix_2` (4XIII) — a closed pair, same shape.**  Part 1's only  *Revived 2026-09-04: the §2.2 transcription of 4XV.1 (`inner_product_basic_1`) follows the exercise's own hint and applies it; it now has 1 code use (`inner_product_basic_1`) and is consumed.*
 consumer is part 2, and part 2 has none.  Both halves of the Lemma, 76 lines,
 reached from nothing.  Rowed; recorded.
 
