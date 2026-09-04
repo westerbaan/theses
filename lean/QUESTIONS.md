@@ -272,7 +272,13 @@ neither thesis gives one.
    the wording of 206II;
 2. *206II.4 is as printed*, and 211IV needs an extra step, namely: in
    `vNᵒᵖ`, a ⋄-self-adjoint `g` whose square `gg` is pure has a **pure**
-   ⋄-self-adjoint square root with the same square.  Is there a proof?
+   ⋄-self-adjoint square root with the same square.  **This is a theorem**
+   (`docs/B15-pure-sqrt.md`, 2026-09-04): such a `g` is *itself* pure, so
+   `h = g`, by Kadison's order-isomorphism theorem on the corner `g`
+   preserves — valid in all types, where the Kraus argument stalls.  So both
+   readings are mathematically sound.  A *formal* Lean proof of (2) needs
+   Kadison's theorem, which Mathlib lacks; reading (1) closes the `sorry` with
+   no new mathematics.  The choice is now purely which the author intends.
 
 **What the tree implements is reading (2)**, verbatim: in
 `Theses/B/Eff/DiamondAmp.lean`, `DiamondSelfAdjoint f := diaPull f = diaPush f`

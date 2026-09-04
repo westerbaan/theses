@@ -141,6 +141,8 @@ unaffected.  Under (b): add "unital" to 170IV's second half and prove it there.
 
 ### 1.2 — 206II.2/.4: must the ⋄-self-adjoint square root of a ⋄-positive map be **pure**?
 
+*Update 2026-09-04 (`docs/B15-pure-sqrt.md`): the mathematics is settled — reading (2)'s missing step is a **theorem** (a ⋄-self-adjoint `g` with `gg` pure is itself pure), so both readings hold and 211II.1's uniqueness is safe.  What remains is the author's choice of which to formalize: (1) adds `IsPure` and closes the `sorry` with `h = g` and no new mathematics; (2) is faithful to the printed 206II.4 but its Lean proof needs Kadison's order-isomorphism theorem, absent from Mathlib.*
+
 *(`QUESTIONS.md` B15.  Blocks `vn_is_andthen_eff` in
 `Theses/B/Eff/VNExamples.lean` — **211IV** `vn-is-andthen-eff`.)*
 
