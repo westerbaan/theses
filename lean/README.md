@@ -81,9 +81,12 @@ exact arithmetic.
 
 ## Rules of the tree
 
-* A statement is never changed without an author ruling.  The one exception is
-  our own mis-transcription of the printed text, which is repaired and logged in
-  `PROVING-LOG.md`.
+* A statement is never changed without an author ruling.  Two exceptions,
+  both logged in `PROVING-LOG.md`: our own mis-transcription of the printed
+  text, and — by the ruling of 2026-09-04 on `docs/DECISIONS.md` §2.1 — a
+  change that brings a statement *closer to the printed one*, made only inside
+  a dedicated statement-alignment pass (`docs/audit/STATEMENT-BRIEF.md`), never
+  as a side effect of another job.
 * A `sorry` is never added.  A statement that turns out false as printed keeps
   its `sorry` as documentation, gets a machine-checked counterexample beside it
   where one is possible, and a row in `ERRATA.md`.

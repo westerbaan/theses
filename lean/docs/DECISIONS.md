@@ -50,7 +50,7 @@ in §4 rather than in front of you.
 | 1.4 | 139XI | case (ii) takes the complement in the wrong space | `ess_uniq_pur` | (a) complements in `𝒦'` |
 | 1.5 | 179III.2 | strengthen our statement, or drop the point? — ruled (a) 2026-09-04 | `effectModule_unitInterval_representation` | (a) strengthen, else (b) drop |
 | 1.6 | 106III.3, 116III.4 | two errata to accept | 2 red rows | accept |
-| 2.1 | — | may we match the printed statement without asking? | 54 audit rows | (a) standing authorisation |
+| 2.1 | — | may we match the printed statement without asking? — ruled (a) 2026-09-04, only in a dedicated statement-alignment pass | 54 audit rows | (a) standing authorisation |
 | 2.2 | — | does "no forward references" apply outside `A/CStar`? | 520 audit rows | (b) forward only; label the rest |
 | 2.3 | 191II | what does "equivalent to a subcategory" mean? | 1 audit row | (c) weaken to faithful |
 | 2.4 | 30X | may clause (1) name `ϱ_Ω`? | 1 audit row | (a) yes |
@@ -459,7 +459,7 @@ No `sorry` turns on any of these.  What turns on them is whether ~250 statement
 divergences recorded by the audit get repaired or get recorded as deliberate.
 Hardest to reverse first.
 
-### 2.1 — The standing question: may our statement be brought up to the printed one without asking?
+### 2.1 — The standing question: may our statement be brought up to the printed one without asking? — **ruled (a), 2026-09-04, only in a dedicated pass**
 
 This is not in `QUESTIONS.md`; it is the reason four of the six items below
 exist.  The house rule is that **we never change a Lean statement without a
@@ -497,10 +497,7 @@ bookkeeping does.  Under (a) the four items below are answered at a stroke,
 along with most of the remaining 54, and the queue in front of you stays what it should
 be: places where the *thesis* is unclear or wrong.
 
-**What we do.**  Under (a) we work those 54 rows down as ordinary repairs and
-report the count; the ones that turn out **not** to be free (because the
-strengthened statement needs new mathematics) come back to you individually.
-Under (b) or (c) we answer 2.4–2.7 as asked and file the rest one at a time.
+**What we do.**  Ruled (a) on 2026-09-04 with one condition, in the author's words: "only when explicitly performing this task. We don't want an agent to 'cheat' in an unrelated task."  So a statement is brought up to the print only inside a pass whose assignment is exactly that (`docs/audit/STATEMENT-BRIEF.md`); in every other job statements stay byte-identical.  The first such pass runs the same day over the `weaker`/`differs` rows whose verdict is ours.
 
 ### 2.2 — Does the "no forward references" rule apply outside `A/CStar`?
 
