@@ -55,10 +55,11 @@ def proof_extent(points, key):
     i = keys.index((p, q)) if (p, q) in keys else None
     text = points[key][2]; last = (p, q)
     if i is None: return last, text
+    STATEMENT = re.compile(r'Lemma|Proposition|Theorem|Corollary|Exercise|Definition|Example|Remark|Beware|Notation|Convention', re.I)
     for k2 in keys[i+1:]:
         lab, tag, body = points[(th,) + k2]
-        if k2[0] != p or (tag and 'Proof' not in tag and 'proof' not in tag and tag not in ('',)):
-            break
+        if k2[0] != p or STATEMENT.search(tag or ''):
+            break                      # the next statement of the parsec ends the printed proof
         text += '\n' + body; last = k2
     return last, text
 def declarations():
@@ -76,6 +77,8 @@ def declarations():
                 while j < len(lines) and not DECL.match(lines[j]): j += 1
                 if j < len(lines) and key:
                     name = DECL.match(lines[j]).group(1)
+                    if re.match(r'^\s*(?:@\[[^\]]*\]\s*)?private\b', lines[j]):
+                        i = j + 1; continue          # a private helper's DISP is provenance, not a claim
                     # body: until the next blank-line-separated top-level declaration or doc comment
                     k = j + 1; body = []
                     while k < len(lines) and not lines[k].startswith('/--') and not lines[k].startswith('/-!') and not DECL.match(lines[k]) and not lines[k].startswith('end ') and not lines[k].startswith('section'):
