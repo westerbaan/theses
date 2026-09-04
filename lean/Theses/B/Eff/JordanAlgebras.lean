@@ -82,13 +82,19 @@ Design:
   algebras, so the concrete presentation `ousPres` of `OUSᵒᵖ` restricts,
   and the three axioms of 180I are pulled back along the fully faithful
   inclusion `EJAᵒᵖ ⥤ OUSᵒᵖ`; no order-unit theory is redone.
-* Of 190V, the two correspondences are carried: the predicates of `EJAᵒᵖ`
-  are the effects `0 ≤ a ≤ 1` (`eja_pred_effect`, with truth, zero and the
-  orthosupplement pinned) and the states are the positive unit-preserving
-  functionals (`eja_stat_state`).  Not formalized: the ⋄-effectus clause of
-  206III for `EJAᵒᵖ` (see the comment at the end of the file), the two
-  separation claims and the scalars of 190V, and the &- and †-structures of
-  eff.tex 209I and 213I.
+* 190V is carried in full.  The two correspondences: the predicates of
+  `EJAᵒᵖ` are the effects `0 ≤ a ≤ 1` (`eja_pred_effect`, with truth, zero
+  and the orthosupplement pinned) and the states are the positive
+  unit-preserving functionals (`eja_stat_state`).  The three remaining
+  clauses: `EJAᵒᵖ` has separating predicates (`eja_separating_predicates`),
+  it has separating states (`eja_separating_states`), and it is a real
+  effectus (`eja_real_effectus`, its scalars being `[0,1]` by
+  `ejaScalEquivI`).  Separating states is where `EJAᵒᵖ` parts from `OUSᵒᵖ`,
+  which does *not* have them (`ous_no_separating_states`): the Jordan input
+  is `eja_exists_state_ne_zero`, the spectral theorem's corollary that the
+  positive unital functionals separate the points.  Not formalized: the
+  ⋄-effectus clause of 206III for `EJAᵒᵖ` (see the comment at the end of the
+  file), and the &- and †-structures of eff.tex 209I and 213I.
 -/
 import Theses.B.Eff.OrderUnit
 import Mathlib.Algebra.Jordan.Basic
@@ -99,6 +105,7 @@ import Mathlib.Analysis.Polynomial.Factorization
 set_option warn.classDefReducibility false
 
 open CategoryTheory CategoryTheory.Limits
+open scoped unitInterval
 
 namespace Theses.B.Eff
 
@@ -2151,7 +2158,24 @@ theorem effectus_eja : Nonempty (EffectusTotalStructure EJAObj.{u}ᵒᵖ) :=
 and closed under binary products, so the concrete presentation of `OUSᵒᵖ`
 restricts and the identification of predicates with effects and of states with
 positive unital functionals is the one of `OrderUnit.lean`, transported along
-the hom-bijection `InducedCategory.homMk`. -/
+the hom-bijection `InducedCategory.homMk`.
+
+The same restriction carries the rest of 190V.  The presentation `X + 1 ≅ X × ℝ`
+(`ejaPlusCofan`, `ejaEps`) gives separating predicates by the order-unit
+argument of `ous_separating_predicates`; the three-point presentation
+`⊤ + ⊤ + ⊤ ≅ ℝ³` (`ejaDelta`) computes `⊥` and `⋁` on predicates
+(`eja_perp_iff`, `eja_ovee_eq`) and identifies the scalars with `[0,1]`
+(`ejaScalEquivI`, hence `eja_real_effectus`); and there the transport stops,
+because `OUSᵒᵖ` does *not* have separating states (`ous_no_separating_states`)
+while `EJAᵒᵖ` does.  That clause is the one place where Jordan theory enters:
+`eja_exists_state_ne_zero`, the corollary of the spectral theorem that the
+positive unital functionals of a Euclidean Jordan algebra separate its points.
+
+Since the hom-sets of `EJA` *are* those of `OUS`, the element-level
+computations of the last two blocks are done on maps re-typed into `OUS`
+(`ejaDlO`, `ejaScalMapO`, `ejaBmapO`, `ejaMkO`, `ejaMixOfO`), which is only a
+retyping — `EJA` is full — and lets `ousHom_apply`, `ous_comp_apply`,
+`ous_sum_pt`, `ous_sum_le_unit` and `ousMixMap` be reused verbatim. -/
 
 section EJAExample
 
@@ -2380,6 +2404,920 @@ def eja_stat_state (X : EJAObj.{u}) :
       left_inv := fun _ => rfl
       right_inv := fun _ => rfl }).trans
     ((ejaHomTopEquiv X).trans (ejaHomStateEquiv X))
+
+/-! ## `EJAᵒᵖ` has separating predicates -/
+
+/-- The first coprojection `X ⟶ X + 1` of `EJAᵒᵖ`, concretely. -/
+def ejaKap₁ (X : EJAObj.{u}ᵒᵖ) : X ⟶ op (ejaProd X.unop ejaScal.{u}) :=
+  Quiver.Hom.op (ejaFst X.unop ejaScal.{u})
+
+/-- The second coprojection `1 ⟶ X + 1` of `EJAᵒᵖ`, concretely. -/
+def ejaKap₂ (X : EJAObj.{u}ᵒᵖ) :
+    (⊤_ EJAObj.{u}ᵒᵖ) ⟶ op (ejaProd X.unop ejaScal.{u}) :=
+  Quiver.Hom.op (ejaSnd X.unop ejaScal.{u} ≫ ejaUnitTop.{u})
+
+/-- `X + 1` in `EJAᵒᵖ` is `X × ℝ`. -/
+def ejaPlusCofan (X : EJAObj.{u}ᵒᵖ) :
+    IsColimit (BinaryCofan.mk (ejaKap₁ X) (ejaKap₂ X)) :=
+  BinaryCofan.IsColimit.mk _
+    (fun {_} u v => Quiver.Hom.op
+      (ejaPair u.unop (v.unop ≫ ejaTopTo ejaScal.{u})))
+    (fun {_} _ _ => Quiver.Hom.unop_inj (ejaPair_fst _ _))
+    (fun {_} u v => by
+      refine Quiver.Hom.unop_inj ?_
+      show ejaPair u.unop (v.unop ≫ ejaTopTo ejaScal.{u})
+          ≫ (ejaSnd X.unop ejaScal.{u} ≫ ejaUnitTop.{u}) = v.unop
+      rw [← Category.assoc, ejaPair_snd, Category.assoc, ejaTop_inv₂,
+        Category.comp_id])
+    (fun {W} u v m h₁ h₂ => by
+      obtain ⟨m, rfl⟩ :
+          ∃ m' : (op (ejaProd X.unop ejaScal.{u}) : EJAObj.{u}ᵒᵖ) ⟶ W, m' = m :=
+        ⟨m, rfl⟩
+      refine Quiver.Hom.unop_inj ?_
+      have k₁ : m.unop ≫ ejaFst X.unop ejaScal.{u} = u.unop :=
+        congrArg Quiver.Hom.unop h₁
+      have k₂ : m.unop ≫ (ejaSnd X.unop ejaScal.{u} ≫ ejaUnitTop.{u}) = v.unop :=
+        congrArg Quiver.Hom.unop h₂
+      have e₂ : m.unop ≫ ejaSnd X.unop ejaScal.{u}
+          = v.unop ≫ ejaTopTo ejaScal.{u} := by
+        rw [← k₂, Category.assoc, Category.assoc, ejaTop_inv₁, Category.comp_id]
+      rw [← k₁, ← e₂, ejaPair_eta]
+      rfl)
+
+/-- The comparison isomorphism `X + 1 ≅ X × ℝ` of `EJAᵒᵖ`. -/
+def ejaEps (X : EJAObj.{u}ᵒᵖ) :
+    (X ⨿ (⊤_ EJAObj.{u}ᵒᵖ)) ≅ op (ejaProd X.unop ejaScal.{u}) :=
+  IsColimit.coconePointUniqueUpToIso (coprodIsCoprod X (⊤_ EJAObj.{u}ᵒᵖ))
+    (ejaPlusCofan X)
+
+/-- The first coprojection under the comparison isomorphism `X + 1 ≅ X × ℝ`. -/
+theorem ejaEps_inl (X : EJAObj.{u}ᵒᵖ) :
+    (coprod.inl : X ⟶ X ⨿ (⊤_ EJAObj.{u}ᵒᵖ)) ≫ (ejaEps X).hom = ejaKap₁ X :=
+  IsColimit.comp_coconePointUniqueUpToIso_hom
+    (coprodIsCoprod X (⊤_ EJAObj.{u}ᵒᵖ)) (ejaPlusCofan X)
+    (Discrete.mk WalkingPair.left)
+
+/-- The second coprojection under the comparison isomorphism `X + 1 ≅ X × ℝ`. -/
+theorem ejaEps_inr (X : EJAObj.{u}ᵒᵖ) :
+    (coprod.inr : (⊤_ EJAObj.{u}ᵒᵖ) ⟶ X ⨿ (⊤_ EJAObj.{u}ᵒᵖ)) ≫ (ejaEps X).hom
+      = ejaKap₂ X :=
+  IsColimit.comp_coconePointUniqueUpToIso_hom
+    (coprodIsCoprod X (⊤_ EJAObj.{u}ᵒᵖ)) (ejaPlusCofan X)
+    (Discrete.mk WalkingPair.right)
+
+/-- **190V** (eff.tex:2191, Examples): `EJAᵒᵖ` has **separating
+predicates**. -/
+theorem eja_separating_predicates : SeparatingPredicates (Par EJAObj.{u}ᵒᵖ) := by
+  intro Y X f g h
+  refine pval_inj ?_
+  refine (cancel_mono (ejaEps X.base).hom).mp ?_
+  refine ejaop_hom_ext fun w => ?_
+  have key : ∀ (x : X.base.unop.obj.carrier)
+      (hx : 0 ≤ x ∧ x ≤ X.base.unop.obj.unit) (a b : ULift.{u} ℝ),
+      (pval f ≫ (ejaEps X.base).hom).unop.hom.toLinearMap
+          (a.down • x + b.down • (X.base.unop.obj.unit - x), b)
+        = (pval g ≫ (ejaEps X.base).hom).unop.hom.toLinearMap
+          (a.down • x + b.down • (X.base.unop.obj.unit - x), b) := by
+    intro x hx a b
+    set q : X.base ⟶ ejaS.{u} :=
+      Quiver.Hom.op ((ejaHomEffectEquiv X.base.unop).symm ⟨x, hx⟩) with hqdef
+    set p : Pred X := (ouPredEquiv ejaTopCofan.{u} X.base).symm q with hpdef
+    have hq : ouPredEquiv ejaTopCofan.{u} X.base p = q :=
+      (ouPredEquiv ejaTopCofan.{u} X.base).apply_symm_apply q
+    set Ψ : (op (ejaProd X.base.unop ejaScal.{u}) : EJAObj.{u}ᵒᵖ) ⟶ ejaS.{u} :=
+      Quiver.Hom.op (ejaPair q.unop (ejaSnd ejaScal.{u} ejaScal.{u})) with hΨdef
+    have hk₁ : ejaKap₁ X.base ≫ Ψ = q := Quiver.Hom.unop_inj (ejaPair_fst _ _)
+    have hk₂ : ejaKap₂ X.base ≫ Ψ = ejaI₂.{u} := by
+      refine Quiver.Hom.unop_inj ?_
+      show ejaPair q.unop (ejaSnd ejaScal.{u} ejaScal.{u})
+          ≫ (ejaSnd X.base.unop ejaScal.{u} ≫ ejaUnitTop.{u})
+        = ejaSnd ejaScal.{u} ejaScal.{u} ≫ ejaUnitTop.{u}
+      rw [← Category.assoc, ejaPair_snd]
+    have hdesc : coprod.desc (pval p)
+          (coprod.inr : (⊤_ EJAObj.{u}ᵒᵖ) ⟶ (⊤_ EJAObj.{u}ᵒᵖ) ⨿ (⊤_ EJAObj.{u}ᵒᵖ))
+          ≫ (ouGamma ejaTopCofan.{u}).hom
+        = (ejaEps X.base).hom ≫ Ψ := by
+      refine coprod.hom_ext ?_ ?_
+      · rw [← Category.assoc, coprod.inl_desc, ← Category.assoc, ejaEps_inl, hk₁]
+        exact hq
+      · rw [← Category.assoc, coprod.inr_desc, ouGamma_inr, ← Category.assoc,
+          ejaEps_inr, hk₂]
+    have hp' : pval f ≫ coprod.desc (pval p)
+          (coprod.inr : (⊤_ EJAObj.{u}ᵒᵖ) ⟶ (⊤_ EJAObj.{u}ᵒᵖ) ⨿ (⊤_ EJAObj.{u}ᵒᵖ))
+        = pval g ≫ coprod.desc (pval p) coprod.inr := congrArg pval (h p)
+    have hfg : (pval f ≫ (ejaEps X.base).hom) ≫ Ψ
+        = (pval g ≫ (ejaEps X.base).hom) ≫ Ψ := by
+      rw [Category.assoc, Category.assoc, ← hdesc, ← Category.assoc,
+        ← Category.assoc, hp']
+      rfl
+    have happ := ejaop_congr hfg ((a : ULift.{u} ℝ), (b : ULift.{u} ℝ))
+    exact ((ejaop_comp_apply (pval f ≫ (ejaEps X.base).hom) Ψ
+        ((a : ULift.{u} ℝ), (b : ULift.{u} ℝ))).symm.trans happ).trans
+      (ejaop_comp_apply (pval g ≫ (ejaEps X.base).hom) Ψ
+        ((a : ULift.{u} ℝ), (b : ULift.{u} ℝ)))
+  have stepA : ∀ (x : X.base.unop.obj.carrier),
+      0 ≤ x ∧ x ≤ X.base.unop.obj.unit → ∀ a : ℝ,
+      (pval f ≫ (ejaEps X.base).hom).unop.hom.toLinearMap
+          ((a • x : X.base.unop.obj.carrier), (0 : ULift.{u} ℝ))
+        = (pval g ≫ (ejaEps X.base).hom).unop.hom.toLinearMap
+          ((a • x : X.base.unop.obj.carrier), (0 : ULift.{u} ℝ)) := by
+    intro x hx a
+    have h0 := key x hx (ULift.up a) (0 : ULift.{u} ℝ)
+    have hz : (0 : ULift.{u} ℝ).down • (X.base.unop.obj.unit - x) = 0 :=
+      zero_smul _ _
+    rw [hz, add_zero] at h0
+    exact h0
+  have stepB : ∀ z : X.base.unop.obj.carrier, 0 ≤ z →
+      (pval f ≫ (ejaEps X.base).hom).unop.hom.toLinearMap (z, (0 : ULift.{u} ℝ))
+        = (pval g ≫ (ejaEps X.base).hom).unop.hom.toLinearMap
+            (z, (0 : ULift.{u} ℝ)) := by
+    intro z hz
+    obtain ⟨n, hn⟩ := ou_exists_le_smul_unit z
+    have hm : (0 : ℝ) < (n : ℝ) + 1 := by positivity
+    have hmne : ((n : ℝ) + 1) ≠ 0 := ne_of_gt hm
+    have hinv : (0 : ℝ) ≤ ((n : ℝ) + 1)⁻¹ := le_of_lt (inv_pos.mpr hm)
+    have hle : z ≤ ((n : ℝ) + 1) • X.base.unop.obj.unit :=
+      hn.trans (ou_smul_unit_mono (by linarith))
+    have hx0 : (0 : X.base.unop.obj.carrier) ≤ ((n : ℝ) + 1)⁻¹ • z :=
+      ou_smul_nonneg hinv hz
+    have hx1 : ((n : ℝ) + 1)⁻¹ • z ≤ X.base.unop.obj.unit := by
+      have h1 := ou_smul_le_smul hinv hle
+      rwa [smul_smul, inv_mul_cancel₀ hmne, one_smul] at h1
+    have hback : ((n : ℝ) + 1) • (((n : ℝ) + 1)⁻¹ • z) = z := by
+      rw [smul_smul, mul_inv_cancel₀ hmne, one_smul]
+    have := stepA (((n : ℝ) + 1)⁻¹ • z) ⟨hx0, hx1⟩ ((n : ℝ) + 1)
+    rwa [hback] at this
+  have stepC : ∀ z : X.base.unop.obj.carrier,
+      (pval f ≫ (ejaEps X.base).hom).unop.hom.toLinearMap (z, (0 : ULift.{u} ℝ))
+        = (pval g ≫ (ejaEps X.base).hom).unop.hom.toLinearMap
+            (z, (0 : ULift.{u} ℝ)) := by
+    intro z
+    obtain ⟨a, b, ha, hb, hz⟩ := ou_eq_sub_of_nonneg z
+    have hff := congrArg (pval f ≫ (ejaEps X.base).hom).unop.hom.toLinearMap
+      (show (a, (0 : ULift.{u} ℝ)) - (b, (0 : ULift.{u} ℝ))
+          = (z, (0 : ULift.{u} ℝ)) from
+        Prod.ext hz.symm (sub_zero (0 : ULift.{u} ℝ)))
+    have hgg := congrArg (pval g ≫ (ejaEps X.base).hom).unop.hom.toLinearMap
+      (show (a, (0 : ULift.{u} ℝ)) - (b, (0 : ULift.{u} ℝ))
+          = (z, (0 : ULift.{u} ℝ)) from
+        Prod.ext hz.symm (sub_zero (0 : ULift.{u} ℝ)))
+    have hf2 := (pval f ≫ (ejaEps X.base).hom).unop.hom.toLinearMap.map_sub
+      (a, (0 : ULift.{u} ℝ)) (b, (0 : ULift.{u} ℝ))
+    have hg2 := (pval g ≫ (ejaEps X.base).hom).unop.hom.toLinearMap.map_sub
+      (a, (0 : ULift.{u} ℝ)) (b, (0 : ULift.{u} ℝ))
+    calc (pval f ≫ (ejaEps X.base).hom).unop.hom.toLinearMap
+            (z, (0 : ULift.{u} ℝ))
+        = (pval f ≫ (ejaEps X.base).hom).unop.hom.toLinearMap
+              (a, (0 : ULift.{u} ℝ))
+            - (pval f ≫ (ejaEps X.base).hom).unop.hom.toLinearMap
+              (b, (0 : ULift.{u} ℝ)) := hff.symm.trans hf2
+      _ = (pval g ≫ (ejaEps X.base).hom).unop.hom.toLinearMap
+              (a, (0 : ULift.{u} ℝ))
+            - (pval g ≫ (ejaEps X.base).hom).unop.hom.toLinearMap
+              (b, (0 : ULift.{u} ℝ)) := by rw [stepB a ha, stepB b hb]
+      _ = (pval g ≫ (ejaEps X.base).hom).unop.hom.toLinearMap
+            (z, (0 : ULift.{u} ℝ)) := (hgg.symm.trans hg2).symm
+  obtain ⟨z, c⟩ := w
+  have hgen : ∀ (Z : EJAObj.{u}ᵒᵖ)
+      (F : Z ⟶ (op (ejaProd X.base.unop ejaScal.{u}) : EJAObj.{u}ᵒᵖ)),
+      F.unop.hom.toLinearMap (z, c)
+        = F.unop.hom.toLinearMap
+            ((z - c.down • X.base.unop.obj.unit : X.base.unop.obj.carrier),
+              (0 : ULift.{u} ℝ))
+          + c.down • Z.unop.obj.unit := by
+    intro Z F
+    have hdec := congrArg F.unop.hom.toLinearMap
+      (show ((z - c.down • X.base.unop.obj.unit : X.base.unop.obj.carrier),
+            (0 : ULift.{u} ℝ))
+            + c.down • (X.base.unop.obj.unit, (1 : ULift.{u} ℝ)) = (z, c) from
+        Prod.ext
+          (by
+            show (z - c.down • X.base.unop.obj.unit)
+              + c.down • X.base.unop.obj.unit = z
+            abel)
+          (by
+            apply ULift.down_injective
+            show (0 : ℝ) + c.down * 1 = c.down
+            rw [mul_one, zero_add]))
+    have hadd := F.unop.hom.toLinearMap.map_add
+      ((z - c.down • X.base.unop.obj.unit : X.base.unop.obj.carrier),
+        (0 : ULift.{u} ℝ))
+      (c.down • (X.base.unop.obj.unit, (1 : ULift.{u} ℝ)))
+    have hsm := F.unop.hom.toLinearMap.map_smul c.down
+      (X.base.unop.obj.unit, (1 : ULift.{u} ℝ))
+    have hu : F.unop.hom.toLinearMap
+        (X.base.unop.obj.unit, (1 : ULift.{u} ℝ)) = Z.unop.obj.unit :=
+      F.unop.hom.map_unit'
+    exact hdec.symm.trans (hadd.trans
+      (congrArg (fun t => F.unop.hom.toLinearMap
+          ((z - c.down • X.base.unop.obj.unit : X.base.unop.obj.carrier),
+            (0 : ULift.{u} ℝ)) + t)
+        (hsm.trans (congrArg (fun t => c.down • t) hu))))
+  rw [hgen Y.base (pval f ≫ (ejaEps X.base).hom),
+    hgen Y.base (pval g ≫ (ejaEps X.base).hom), stepC]
+
+/-! ## `EJAᵒᵖ` has separating states -/
+
+/-- Composition in `EJA` is composition of the underlying functions. -/
+theorem eja_comp_apply {X Y Z : EJAObj.{u}} (f : X ⟶ Y) (g : Y ⟶ Z)
+    (x : X.obj.carrier) :
+    (f ≫ g).hom.toLinearMap x = g.hom.toLinearMap (f.hom.toLinearMap x) := rfl
+
+/-- **190V** (eff.tex:2191, Examples): `EJAᵒᵖ` has **separating states**. -/
+theorem eja_separating_states : SeparatingStates (Par EJAObj.{u}ᵒᵖ) := by
+  intro X Y f g h
+  refine pval_inj ?_
+  refine ejaop_hom_ext fun w => ?_
+  obtain ⟨mX, oX, eX, hX⟩ := X.base.unop.property
+  let _ := mX
+  let _ := oX
+  let _ := eX
+  by_contra hne
+  have hd : (pval f).unop.hom.toLinearMap w - (pval g).unop.hom.toLinearMap w ≠ 0 :=
+    sub_ne_zero.mpr hne
+  obtain ⟨φ, hpos, hone, hne0⟩ := eja_exists_state_ne_zero hd
+  have hunit : φ X.base.unop.obj.unit = 1 := by rw [← hX]; exact hone
+  set s : X.base.unop ⟶ ejaScal.{u} :=
+    (ejaHomStateEquiv X.base.unop).symm ⟨φ, hpos, hunit⟩ with hs
+  set k : (⊤_ EJAObj.{u}ᵒᵖ) ⟶ X.base :=
+    Quiver.Hom.op (s ≫ ejaUnitTop.{u}) with hk
+  have hcomp : ∀ (m : Par.of X.base ⟶ Y),
+      pval ((Par.hat k : Par.of (⊤_ EJAObj.{u}ᵒᵖ) ⟶ Par.of X.base) ≫ m)
+        = k ≫ pval m := by
+    intro m
+    rw [pval_comp]
+    show (k ≫ coprod.inl) ≫ coprod.desc (pval m) coprod.inr = k ≫ pval m
+    rw [Category.assoc, coprod.inl_desc]
+  have hstate : IsTotal (Par.hat k : Par.of (⊤_ EJAObj.{u}ᵒᵖ) ⟶ Par.of X.base) :=
+    (par_isTotal_iff_hat _).mpr ⟨k, rfl⟩
+  have hh : k ≫ pval f = k ≫ pval g := by
+    have h0 : pval ((Par.hat k : Par.of (⊤_ EJAObj.{u}ᵒᵖ) ⟶ Par.of X.base) ≫ f)
+        = pval ((Par.hat k : Par.of (⊤_ EJAObj.{u}ᵒᵖ) ⟶ Par.of X.base) ≫ g) :=
+      congrArg pval
+        (h ⟨(Par.hat k : Par.of (⊤_ EJAObj.{u}ᵒᵖ) ⟶ Par.of X.base), hstate⟩)
+    rw [hcomp f, hcomp g] at h0
+    exact h0
+  have happ := ejaop_congr hh w
+  rw [ejaop_comp_apply, ejaop_comp_apply] at happ
+  have hks : k.unop ≫ ejaTopTo ejaScal.{u} = s := by
+    show (s ≫ ejaUnitTop.{u}) ≫ ejaTopTo ejaScal.{u} = s
+    rw [Category.assoc, ejaTop_inv₁, Category.comp_id]
+  have hφ : ∀ z : X.base.unop.obj.carrier,
+      ((ejaTopTo ejaScal.{u}).hom.toLinearMap (k.unop.hom.toLinearMap z)).down
+        = φ z := by
+    intro z
+    have e : (k.unop ≫ ejaTopTo ejaScal.{u}).hom.toLinearMap z
+        = s.hom.toLinearMap z := by rw [hks]
+    exact congrArg ULift.down e
+  have hval : φ ((pval f).unop.hom.toLinearMap w)
+      = φ ((pval g).unop.hom.toLinearMap w) := by
+    rw [← hφ, ← hφ, happ]
+  exact hne0 (by rw [map_sub, hval, sub_self])
+
+/-! ## The three-point presentation of `⊤ + ⊤ + ⊤` for `EJAᵒᵖ` -/
+
+/-- `ℝ³`: the apex of the three-point presentation of `⊤ + ⊤ + ⊤`. -/
+abbrev ejaR : EJAObj.{u}ᵒᵖ :=
+  op (ejaProd (ejaProd ejaScal.{u} ejaScal.{u}) ejaScal.{u})
+
+/-- `⊤ + ⊤ + ⊤ ≅ ℝ³`. -/
+def ejaDelta :
+    ((((⊤_ EJAObj.{u}ᵒᵖ) ⨿ (⊤_ EJAObj.{u}ᵒᵖ)) ⨿ (⊤_ EJAObj.{u}ᵒᵖ))) ≅ ejaR.{u} :=
+  (coprod.mapIso (ouGamma ejaTopCofan.{u}) (Iso.refl (⊤_ EJAObj.{u}ᵒᵖ))).trans
+    (ejaEps ejaS.{u})
+
+/-- The first coprojection under the comparison isomorphism `⊤+⊤+⊤ ≅ ℝ³`. -/
+theorem ejaDelta_inl :
+    (coprod.inl : ((⊤_ EJAObj.{u}ᵒᵖ) ⨿ (⊤_ EJAObj.{u}ᵒᵖ)) ⟶ _) ≫ ejaDelta.{u}.hom
+      = (ouGamma ejaTopCofan.{u}).hom ≫ ejaKap₁ ejaS.{u} := by
+  show coprod.inl ≫ (coprod.map (ouGamma ejaTopCofan.{u}).hom
+      (Iso.refl (⊤_ EJAObj.{u}ᵒᵖ)).hom ≫ (ejaEps ejaS.{u}).hom) = _
+  rw [← Category.assoc, coprod.inl_map, Category.assoc, ejaEps_inl]
+
+/-- The last coprojection under the comparison isomorphism `⊤+⊤+⊤ ≅ ℝ³`. -/
+theorem ejaDelta_inr :
+    (coprod.inr : (⊤_ EJAObj.{u}ᵒᵖ) ⟶ _) ≫ ejaDelta.{u}.hom = ejaKap₂ ejaS.{u} := by
+  show coprod.inr ≫ (coprod.map (ouGamma ejaTopCofan.{u}).hom
+      (Iso.refl (⊤_ EJAObj.{u}ᵒᵖ)).hom ≫ (ejaEps ejaS.{u}).hom) = _
+  rw [← Category.assoc, coprod.inr_map, Iso.refl_hom, Category.id_comp]
+  exact ejaEps_inr ejaS.{u}
+
+/-- `(a,b) ↦ ((a,b),b)`: the cotuple `[κ₁,κ₂,κ₂]` of 180I, on `ℝ³`. -/
+def ejaDl : ejaR.{u} ⟶ ejaS.{u} :=
+  Quiver.Hom.op (ejaPair (𝟙 (ejaProd ejaScal.{u} ejaScal.{u}))
+    (ejaSnd ejaScal.{u} ejaScal.{u}))
+
+/-- `(a,b) ↦ ((b,a),b)`: the cotuple `[κ₂,κ₁,κ₂]` of 180I, on `ℝ³`. -/
+def ejaDr : ejaR.{u} ⟶ ejaS.{u} :=
+  Quiver.Hom.op (ejaPair (ejaPair (ejaSnd ejaScal.{u} ejaScal.{u})
+    (ejaFst ejaScal.{u} ejaScal.{u})) (ejaSnd ejaScal.{u} ejaScal.{u}))
+
+/-- `(a,b) ↦ ((a,a),b)`: the cotuple `[κ₁,κ₁,κ₂]`, which computes `⋁`. -/
+def ejaDv : ejaR.{u} ⟶ ejaS.{u} :=
+  Quiver.Hom.op (ejaPair (ejaPair (ejaFst ejaScal.{u} ejaScal.{u})
+    (ejaFst ejaScal.{u} ejaScal.{u})) (ejaSnd ejaScal.{u} ejaScal.{u}))
+
+/-- The second coprojection composed with a map fixing the last coordinate. -/
+theorem eja_kap₂_D (D : (ejaProd ejaScal.{u} ejaScal.{u})
+      ⟶ ejaProd (ejaProd ejaScal.{u} ejaScal.{u}) ejaScal.{u})
+    (hD : D ≫ ejaSnd (ejaProd ejaScal.{u} ejaScal.{u}) ejaScal.{u}
+      = ejaSnd ejaScal.{u} ejaScal.{u}) :
+    ejaKap₂ ejaS.{u} ≫ Quiver.Hom.op D = ejaI₂.{u} := by
+  refine Quiver.Hom.unop_inj ?_
+  show D ≫ (ejaSnd (ejaProd ejaScal.{u} ejaScal.{u}) ejaScal.{u} ≫ ejaUnitTop.{u})
+    = ejaSnd ejaScal.{u} ejaScal.{u} ≫ ejaUnitTop.{u}
+  rw [← Category.assoc, hD]
+
+/-- The cotuple `[κ₁,κ₂,κ₂]` of 180I, transported to `ℝ³ ⟶ ℝ²`. -/
+theorem eja_Dl_eq :
+    (coprod.desc (𝟙 ((⊤_ EJAObj.{u}ᵒᵖ) ⨿ (⊤_ EJAObj.{u}ᵒᵖ)))
+        (coprod.inr : (⊤_ EJAObj.{u}ᵒᵖ) ⟶ _))
+        ≫ (ouGamma ejaTopCofan.{u}).hom
+      = ejaDelta.{u}.hom ≫ ejaDl.{u} := by
+  refine coprod.hom_ext ?_ ?_
+  · rw [← Category.assoc, coprod.inl_desc, Category.id_comp, ← Category.assoc,
+      ejaDelta_inl, Category.assoc]
+    have h : ejaKap₁ ejaS.{u} ≫ ejaDl.{u} = 𝟙 ejaS.{u} :=
+      Quiver.Hom.unop_inj (ejaPair_fst _ _)
+    rw [h, Category.comp_id]
+  · rw [← Category.assoc, coprod.inr_desc, ouGamma_inr, ← Category.assoc,
+      ejaDelta_inr]
+    exact (eja_kap₂_D _ (ejaPair_snd _ _)).symm
+
+/-- The cotuple `[κ₂,κ₁,κ₂]` of 180I, transported to `ℝ³ ⟶ ℝ²`. -/
+theorem eja_Dr_eq :
+    (coprod.desc (parSwapTop : (⊤_ EJAObj.{u}ᵒᵖ) ⨿ (⊤_ EJAObj.{u}ᵒᵖ) ⟶ _)
+        (coprod.inr : (⊤_ EJAObj.{u}ᵒᵖ) ⟶ _))
+        ≫ (ouGamma ejaTopCofan.{u}).hom
+      = ejaDelta.{u}.hom ≫ ejaDr.{u} := by
+  refine coprod.hom_ext ?_ ?_
+  · rw [← Category.assoc, coprod.inl_desc,
+      ouSwapTop_ouGamma ejaTopCofan.{u} ejaSwap.{u} ejaI₁_swap.{u} ejaI₂_swap.{u},
+      ← Category.assoc, ejaDelta_inl, Category.assoc]
+    have h : ejaKap₁ ejaS.{u} ≫ ejaDr.{u} = ejaSwap.{u} :=
+      Quiver.Hom.unop_inj (ejaPair_fst _ _)
+    rw [h]
+  · rw [← Category.assoc, coprod.inr_desc, ouGamma_inr, ← Category.assoc,
+      ejaDelta_inr]
+    exact (eja_kap₂_D _ (ejaPair_snd _ _)).symm
+
+/-- The codiagonal `∇ : ⊤ + ⊤ ⇸ ⊤` of `Par`, transported to `ℝ²`. -/
+def ejaV : ejaS.{u} ⟶ ejaS.{u} :=
+  Quiver.Hom.op (ejaPair (ejaFst ejaScal.{u} ejaScal.{u})
+    (ejaFst ejaScal.{u} ejaScal.{u}))
+
+/-- The codiagonal sends the first point of `⊤ + ⊤` to the first point. -/
+theorem ejaI₁_V : ejaI₁.{u} ≫ ejaV.{u} = ejaI₁.{u} := by
+  refine Quiver.Hom.unop_inj ?_
+  show ejaPair (ejaFst ejaScal.{u} ejaScal.{u}) (ejaFst ejaScal.{u} ejaScal.{u})
+      ≫ (ejaFst ejaScal.{u} ejaScal.{u} ≫ ejaUnitTop.{u})
+    = ejaFst ejaScal.{u} ejaScal.{u} ≫ ejaUnitTop.{u}
+  rw [← Category.assoc, ejaPair_fst]
+
+/-- The codiagonal sends the second point of `⊤ + ⊤` to the first point. -/
+theorem ejaI₂_V : ejaI₂.{u} ≫ ejaV.{u} = ejaI₁.{u} := by
+  refine Quiver.Hom.unop_inj ?_
+  show ejaPair (ejaFst ejaScal.{u} ejaScal.{u}) (ejaFst ejaScal.{u} ejaScal.{u})
+      ≫ (ejaSnd ejaScal.{u} ejaScal.{u} ≫ ejaUnitTop.{u})
+    = ejaFst ejaScal.{u} ejaScal.{u} ≫ ejaUnitTop.{u}
+  rw [← Category.assoc, ejaPair_snd]
+
+/-- The codiagonal `∇` of `Par`, transported along `⊤ + ⊤ ≅ ℝ²`. -/
+theorem eja_nabla_gamma :
+    pval (parNabla (⊤_ EJAObj.{u}ᵒᵖ)) ≫ (ouGamma ejaTopCofan.{u}).hom
+      = (ouGamma ejaTopCofan.{u}).hom ≫ ejaV.{u} := by
+  have hn : pval (parNabla (⊤_ EJAObj.{u}ᵒᵖ))
+      = coprod.desc (𝟙 (⊤_ EJAObj.{u}ᵒᵖ)) (𝟙 (⊤_ EJAObj.{u}ᵒᵖ))
+        ≫ (coprod.inl : (⊤_ EJAObj.{u}ᵒᵖ) ⟶ _) := rfl
+  have hnl : (coprod.inl : (⊤_ EJAObj.{u}ᵒᵖ) ⟶ _)
+      ≫ pval (parNabla (⊤_ EJAObj.{u}ᵒᵖ)) = coprod.inl := by
+    rw [hn, ← Category.assoc, coprod.inl_desc, Category.id_comp]
+  have hnr : (coprod.inr : (⊤_ EJAObj.{u}ᵒᵖ) ⟶ _)
+      ≫ pval (parNabla (⊤_ EJAObj.{u}ᵒᵖ)) = coprod.inl := by
+    rw [hn, ← Category.assoc, coprod.inr_desc, Category.id_comp]
+  refine coprod.hom_ext ?_ ?_
+  · simp only [← Category.assoc]
+    rw [hnl, ouGamma_inl, ejaI₁_V]
+  · simp only [← Category.assoc]
+    rw [hnr, ouGamma_inl, ouGamma_inr, ejaI₂_V]
+
+/-- The cotuple `[κ₁,κ₁,κ₂]` computing `⋁`, transported to `ℝ³ ⟶ ℝ²`. -/
+theorem eja_Dv_eq :
+    (coprod.desc (pval (parNabla (⊤_ EJAObj.{u}ᵒᵖ)))
+        (coprod.inr : (⊤_ EJAObj.{u}ᵒᵖ) ⟶ _))
+        ≫ (ouGamma ejaTopCofan.{u}).hom
+      = ejaDelta.{u}.hom ≫ ejaDv.{u} := by
+  refine coprod.hom_ext ?_ ?_
+  · rw [← Category.assoc, coprod.inl_desc, eja_nabla_gamma, ← Category.assoc,
+      ejaDelta_inl, Category.assoc]
+    have h : ejaKap₁ ejaS.{u} ≫ ejaDv.{u} = ejaV.{u} :=
+      Quiver.Hom.unop_inj (ejaPair_fst _ _)
+    rw [h]
+  · rw [← Category.assoc, coprod.inr_desc, ouGamma_inr, ← Category.assoc,
+      ejaDelta_inr]
+    exact (eja_kap₂_D _ (ejaPair_snd _ _)).symm
+
+/-- The `ParBound` conditions of 187III, transported to `ℝ³`. -/
+theorem eja_bound_iff {X : EJAObj.{u}ᵒᵖ} (p q : Pred (Par.of X))
+    (b : Par.of X ⟶ Par.of ((⊤_ EJAObj.{u}ᵒᵖ) ⨿ (⊤_ EJAObj.{u}ᵒᵖ))) :
+    ParBound p q b ↔
+      ((pval b ≫ ejaDelta.{u}.hom) ≫ ejaDl.{u}
+          = pval p ≫ (ouGamma ejaTopCofan.{u}).hom ∧
+        (pval b ≫ ejaDelta.{u}.hom) ≫ ejaDr.{u}
+          = pval q ≫ (ouGamma ejaTopCofan.{u}).hom) := by
+  have e₁ : pval (b ≫ Par.pproj₁ (⊤_ EJAObj.{u}ᵒᵖ) (⊤_ EJAObj.{u}ᵒᵖ))
+      = pval b ≫ coprod.desc (𝟙 ((⊤_ EJAObj.{u}ᵒᵖ) ⨿ (⊤_ EJAObj.{u}ᵒᵖ)))
+          (coprod.inr : (⊤_ EJAObj.{u}ᵒᵖ) ⟶ _) := by
+    rw [pval_comp]
+    congr 1
+    refine coprod.hom_ext ?_ ?_
+    · rw [coprod.inl_desc, coprod.inl_desc]
+      show (coprod.desc coprod.inl
+        (Par.zero (⊤_ EJAObj.{u}ᵒᵖ) (⊤_ EJAObj.{u}ᵒᵖ)) :
+        (⊤_ EJAObj.{u}ᵒᵖ) ⨿ (⊤_ EJAObj.{u}ᵒᵖ) ⟶ _) = _
+      refine coprod.hom_ext ?_ ?_
+      · rw [coprod.inl_desc, Category.comp_id]
+      · rw [coprod.inr_desc, Category.comp_id]
+        show terminal.from (⊤_ EJAObj.{u}ᵒᵖ) ≫ coprod.inr = _
+        rw [par_terminal_self, Category.id_comp]
+    · rw [coprod.inr_desc, coprod.inr_desc]
+  have e₂ : pval (b ≫ Par.pproj₂ (⊤_ EJAObj.{u}ᵒᵖ) (⊤_ EJAObj.{u}ᵒᵖ))
+      = pval b ≫ coprod.desc
+          (parSwapTop : (⊤_ EJAObj.{u}ᵒᵖ) ⨿ (⊤_ EJAObj.{u}ᵒᵖ) ⟶ _)
+          (coprod.inr : (⊤_ EJAObj.{u}ᵒᵖ) ⟶ _) := by
+    rw [pval_comp]
+    congr 1
+    refine coprod.hom_ext ?_ ?_
+    · rw [coprod.inl_desc, coprod.inl_desc]
+      show (coprod.desc (Par.zero (⊤_ EJAObj.{u}ᵒᵖ) (⊤_ EJAObj.{u}ᵒᵖ))
+        coprod.inl : (⊤_ EJAObj.{u}ᵒᵖ) ⨿ (⊤_ EJAObj.{u}ᵒᵖ) ⟶ _) = _
+      rw [parSwapTop_eq]
+      refine coprod.hom_ext ?_ ?_
+      · rw [coprod.inl_desc, coprod.inl_desc]
+        show terminal.from (⊤_ EJAObj.{u}ᵒᵖ) ≫ coprod.inr = _
+        rw [par_terminal_self, Category.id_comp]
+      · rw [coprod.inr_desc, coprod.inr_desc]
+    · rw [coprod.inr_desc, coprod.inr_desc]
+  constructor
+  · rintro ⟨hb₁, hb₂⟩
+    have hb₁' : b ≫ Par.pproj₁ (⊤_ EJAObj.{u}ᵒᵖ) (⊤_ EJAObj.{u}ᵒᵖ) = p := hb₁
+    have hb₂' : b ≫ Par.pproj₂ (⊤_ EJAObj.{u}ᵒᵖ) (⊤_ EJAObj.{u}ᵒᵖ) = q := hb₂
+    refine ⟨?_, ?_⟩
+    · rw [Category.assoc, ← eja_Dl_eq, ← Category.assoc, ← e₁, hb₁']
+    · rw [Category.assoc, ← eja_Dr_eq, ← Category.assoc, ← e₂, hb₂']
+  · rintro ⟨hb₁, hb₂⟩
+    refine ⟨?_, ?_⟩
+    · show b ≫ Par.pproj₁ (⊤_ EJAObj.{u}ᵒᵖ) (⊤_ EJAObj.{u}ᵒᵖ) = p
+      refine pval_inj ?_
+      refine (cancel_mono (ouGamma ejaTopCofan.{u}).hom).mp ?_
+      rw [e₁, Category.assoc, eja_Dl_eq, ← Category.assoc]
+      exact hb₁
+    · show b ≫ Par.pproj₂ (⊤_ EJAObj.{u}ᵒᵖ) (⊤_ EJAObj.{u}ᵒᵖ) = q
+      refine pval_inj ?_
+      refine (cancel_mono (ouGamma ejaTopCofan.{u}).hom).mp ?_
+      rw [e₂, Category.assoc, eja_Dr_eq, ← Category.assoc]
+      exact hb₂
+
+/-- **⊥ for predicates of `EJAᵒᵖ`**, concretely. -/
+theorem eja_perp_iff {X : EJAObj.{u}ᵒᵖ} (p q : Pred (Par.of X)) :
+    Perp p q ↔ ∃ β : X ⟶ ejaR.{u},
+      β ≫ ejaDl.{u} = pval p ≫ (ouGamma ejaTopCofan.{u}).hom ∧
+      β ≫ ejaDr.{u} = pval q ≫ (ouGamma ejaTopCofan.{u}).hom := by
+  constructor
+  · rintro ⟨b, hb⟩
+    exact ⟨pval b ≫ ejaDelta.{u}.hom, (eja_bound_iff p q b).mp hb⟩
+  · rintro ⟨β, hβ₁, hβ₂⟩
+    obtain ⟨b, hbv⟩ : ∃ b : Par.of X ⟶ Par.of ((⊤_ EJAObj.{u}ᵒᵖ) ⨿ (⊤_ EJAObj.{u}ᵒᵖ)),
+        pval b = β ≫ ejaDelta.{u}.inv := ⟨(β ≫ ejaDelta.{u}.inv : X ⟶ _), rfl⟩
+    refine ⟨b, (eja_bound_iff p q b).mpr ?_⟩
+    rw [hbv]
+    simp only [Category.assoc, Iso.inv_hom_id_assoc]
+    exact ⟨hβ₁, hβ₂⟩
+
+/-- **⋁ for predicates of `EJAᵒᵖ`**, concretely. -/
+theorem eja_ovee_eq {X : EJAObj.{u}ᵒᵖ} {p q : Pred (Par.of X)} (h : Perp p q)
+    {β : X ⟶ ejaR.{u}}
+    (hβ₁ : β ≫ ejaDl.{u} = pval p ≫ (ouGamma ejaTopCofan.{u}).hom)
+    (hβ₂ : β ≫ ejaDr.{u} = pval q ≫ (ouGamma ejaTopCofan.{u}).hom) :
+    pval (ovee p q h) ≫ (ouGamma ejaTopCofan.{u}).hom = β ≫ ejaDv.{u} := by
+  obtain ⟨b, hbv⟩ : ∃ b : Par.of X ⟶ Par.of ((⊤_ EJAObj.{u}ᵒᵖ) ⨿ (⊤_ EJAObj.{u}ᵒᵖ)),
+      pval b = β ≫ ejaDelta.{u}.inv := ⟨(β ≫ ejaDelta.{u}.inv : X ⟶ _), rfl⟩
+  have hb : ParBound p q b := by
+    refine (eja_bound_iff p q b).mpr ?_
+    rw [hbv]
+    simp only [Category.assoc, Iso.inv_hom_id_assoc]
+    exact ⟨hβ₁, hβ₂⟩
+  have hov : ovee p q h = b ≫ parNabla (⊤_ EJAObj.{u}ᵒᵖ) := parOvee_eq h hb
+  rw [hov]
+  have hpv2 : pval (b ≫ parNabla (⊤_ EJAObj.{u}ᵒᵖ))
+      = pval b ≫ coprod.desc (pval (parNabla (⊤_ EJAObj.{u}ᵒᵖ)))
+            (coprod.inr : (⊤_ EJAObj.{u}ᵒᵖ) ⟶ _) := pval_comp _ _
+  rw [hpv2, hbv, Category.assoc, eja_Dv_eq]
+  simp only [Category.assoc, Iso.inv_hom_id_assoc]
+
+/-! ## The scalars of `EJAᵒᵖ` are `[0,1]`
+
+`EJA` is a *full* subcategory of `OUS`, so a map of `EJA` between two of the
+objects below *is* the corresponding map of `OUS`.  The element computations
+are therefore done on the `OUS` side, where `ℝ²` and `ℝ³` are literally
+`ousScal.prod ousScal` and its product with `ousScal`, and the lemmas of
+`OrderUnit.lean` (`ousHom_apply`, `ous_comp_apply`, `ous_sum_pt`,
+`ous_sum_le_unit`, `ousMixMap`) apply verbatim. -/
+
+/-- The scalars of `EJAᵒᵖ` are the positive unital maps `ℝ² ⟶ ℝ`. -/
+def ejaScalMapEquiv :
+    Scal (Par EJAObj.{u}ᵒᵖ) ≃ (ejaProd ejaScal.{u} ejaScal.{u} ⟶ ejaScal.{u}) :=
+  ((ouPredEquiv ejaTopCofan.{u} (⊤_ EJAObj.{u}ᵒᵖ)).trans
+    { toFun := fun f => f.unop
+      invFun := fun g => Quiver.Hom.op g
+      left_inv := fun _ => rfl
+      right_inv := fun _ => rfl }).trans
+    (ejaHomTopEquiv (ejaProd ejaScal.{u} ejaScal.{u}))
+
+/-- **190V** (eff.tex:2191, Examples): the scalars of `EJAᵒᵖ` are `[0,1]`, as
+a bijection. -/
+def ejaScalEquivI : Scal (Par EJAObj.{u}ᵒᵖ) ≃ I :=
+  (ejaScalMapEquiv.{u}.trans (ejaHomEffectEquiv ejaScal.{u})).trans
+    { toFun := fun y => ⟨y.1.down, y.2.1, y.2.2⟩
+      invFun := fun r => ⟨ULift.up r.1, r.2.1, r.2.2⟩
+      left_inv := fun _ => rfl
+      right_inv := fun _ => rfl }
+
+/-- The real number attached to a scalar. -/
+def ejaScalV (k : Scal (Par EJAObj.{u}ᵒᵖ)) : ℝ := (ejaScalEquivI.{u} k : ℝ)
+
+/-- `[κ₁,κ₂,κ₂]`, re-typed as a map of `OUS`. -/
+def ejaDlO : (ousScal.{u}.prod ousScal.{u})
+    ⟶ ((ousScal.{u}.prod ousScal.{u}).prod ousScal.{u}) := (ejaDl.{u}).unop.hom
+
+/-- `[κ₂,κ₁,κ₂]`, re-typed as a map of `OUS`. -/
+def ejaDrO : (ousScal.{u}.prod ousScal.{u})
+    ⟶ ((ousScal.{u}.prod ousScal.{u}).prod ousScal.{u}) := (ejaDr.{u}).unop.hom
+
+/-- `[κ₁,κ₁,κ₂]`, re-typed as a map of `OUS`. -/
+def ejaDvO : (ousScal.{u}.prod ousScal.{u})
+    ⟶ ((ousScal.{u}.prod ousScal.{u}).prod ousScal.{u}) := (ejaDv.{u}).unop.hom
+
+/-- A scalar, re-typed as a positive unital map `ℝ² ⟶ ℝ` of `OUS`. -/
+def ejaScalMapO (k : Scal (Par EJAObj.{u}ᵒᵖ)) :
+    (ousScal.{u}.prod ousScal.{u}) ⟶ ousScal.{u} := (ejaScalMapEquiv.{u} k).hom
+
+/-- The real number attached to a scalar is the image of `(1,0)`. -/
+theorem ejaScalV_def (k : Scal (Par EJAObj.{u}ᵒᵖ)) :
+    ejaScalV k = ((ejaScalMapO.{u} k).toLinearMap
+      ((1 : ULift.{u} ℝ), (0 : ULift.{u} ℝ))).down := rfl
+
+/-- A scalar is determined by its real number. -/
+theorem ejaScalV_injective {k l : Scal (Par EJAObj.{u}ᵒᵖ)}
+    (h : ejaScalV k = ejaScalV l) : k = l :=
+  ejaScalEquivI.{u}.injective (Subtype.ext h)
+
+/-- A scalar acts on `ℝ²` by `(s,t) ↦ λs + (1-λ)t`. -/
+theorem ejaScalMap_down (k : Scal (Par EJAObj.{u}ᵒᵖ))
+    (ab : ULift.{u} ℝ × ULift.{u} ℝ) :
+    ((ejaScalMapO.{u} k).toLinearMap ab).down
+      = ab.1.down * ejaScalV k + ab.2.down * (1 - ejaScalV k) := by
+  rw [ousHom_apply ousScal.{u} (ejaScalMapO.{u} k) ab]
+  rfl
+
+/-- The scalar `1` is the first projection `ℝ² ⟶ ℝ`. -/
+theorem ejaScalMapEquiv_one :
+    ejaScalMapEquiv.{u} (1 : Scal (Par EJAObj.{u}ᵒᵖ))
+      = ejaFst ejaScal.{u} ejaScal.{u} := by
+  show (ouPredEquiv ejaTopCofan.{u} (⊤_ EJAObj.{u}ᵒᵖ)
+      (truth (Par.of (⊤_ EJAObj.{u}ᵒᵖ)))).unop ≫ ejaTopTo ejaScal.{u} = _
+  rw [ouPredEquiv_truth, par_terminal_self, Category.id_comp]
+  show (ejaFst ejaScal.{u} ejaScal.{u} ≫ ejaUnitTop.{u}) ≫ ejaTopTo ejaScal.{u} = _
+  rw [Category.assoc, ejaTop_inv₁, Category.comp_id]
+
+/-- The scalar `0` is the second projection `ℝ² ⟶ ℝ`. -/
+theorem ejaScalMapEquiv_zero :
+    ejaScalMapEquiv.{u} (0 : Scal (Par EJAObj.{u}ᵒᵖ))
+      = ejaSnd ejaScal.{u} ejaScal.{u} := by
+  show (ouPredEquiv ejaTopCofan.{u} (⊤_ EJAObj.{u}ᵒᵖ)
+      (0 : Pred (Par.of (⊤_ EJAObj.{u}ᵒᵖ)))).unop ≫ ejaTopTo ejaScal.{u} = _
+  rw [ouPredEquiv_zero, par_terminal_self, Category.id_comp]
+  show (ejaSnd ejaScal.{u} ejaScal.{u} ≫ ejaUnitTop.{u}) ≫ ejaTopTo ejaScal.{u} = _
+  rw [Category.assoc, ejaTop_inv₁, Category.comp_id]
+
+/-- The scalar `1` has value `1`. -/
+theorem ejaScalV_one : ejaScalV (1 : Scal (Par EJAObj.{u}ᵒᵖ)) = 1 := by
+  have h : ejaScalMapO.{u} (1 : Scal (Par EJAObj.{u}ᵒᵖ))
+      = ousFst ousScal.{u} ousScal.{u} :=
+    congrArg (fun m => m.hom) ejaScalMapEquiv_one.{u}
+  rw [ejaScalV_def, h]
+  rfl
+
+/-- The scalar `0` has value `0`. -/
+theorem ejaScalV_zero : ejaScalV (0 : Scal (Par EJAObj.{u}ᵒᵖ)) = 0 := by
+  have h : ejaScalMapO.{u} (0 : Scal (Par EJAObj.{u}ᵒᵖ))
+      = ousSnd ousScal.{u} ousScal.{u} :=
+    congrArg (fun m => m.hom) ejaScalMapEquiv_zero.{u}
+  rw [ejaScalV_def, h]
+  rfl
+
+/-- The value of a scalar is non-negative. -/
+theorem ejaScalV_nonneg (k : Scal (Par EJAObj.{u}ᵒᵖ)) : 0 ≤ ejaScalV k :=
+  (ejaScalEquivI.{u} k).2.1
+
+/-- The value of a scalar is at most `1`. -/
+theorem ejaScalV_le_one (k : Scal (Par EJAObj.{u}ᵒᵖ)) : ejaScalV k ≤ 1 :=
+  (ejaScalEquivI.{u} k).2.2
+
+/-- Maps into the final object of `EJAᵒᵖ` are determined after `ejaTopTo`. -/
+theorem eja_hom_to_top_ext {Z : EJAObj.{u}} {a b : Z ⟶ ejaTopO.{u}}
+    (hab : a ≫ ejaTopTo ejaScal.{u} = b ≫ ejaTopTo ejaScal.{u}) : a = b := by
+  calc a = a ≫ (ejaTopTo ejaScal.{u} ≫ ejaUnitTop.{u}) := by
+        rw [ejaTop_inv₂, Category.comp_id]
+    _ = (a ≫ ejaTopTo ejaScal.{u}) ≫ ejaUnitTop.{u} := by rw [Category.assoc]
+    _ = (b ≫ ejaTopTo ejaScal.{u}) ≫ ejaUnitTop.{u} := by rw [hab]
+    _ = b ≫ (ejaTopTo ejaScal.{u} ≫ ejaUnitTop.{u}) := by rw [Category.assoc]
+    _ = b := by rw [ejaTop_inv₂, Category.comp_id]
+
+/-- A witness `β : ⊤ ⟶ ℝ³`, read as a positive unital map `ℝ³ ⟶ ℝ`. -/
+def ejaBmap (β : (⊤_ EJAObj.{u}ᵒᵖ) ⟶ ejaR.{u}) :
+    (ejaProd (ejaProd ejaScal.{u} ejaScal.{u}) ejaScal.{u}) ⟶ ejaScal.{u} :=
+  β.unop ≫ ejaTopTo ejaScal.{u}
+
+/-- `ejaBmap β`, re-typed as a map of `OUS`. -/
+def ejaBmapO (β : (⊤_ EJAObj.{u}ᵒᵖ) ⟶ ejaR.{u}) :
+    ((ousScal.{u}.prod ousScal.{u}).prod ousScal.{u}) ⟶ ousScal.{u} :=
+  (ejaBmap β).hom
+
+/-- A witness for `⊥`, read on `ℝ³`, computes the scalar it bounds. -/
+theorem eja_beta_comp {β : (⊤_ EJAObj.{u}ᵒᵖ) ⟶ ejaR.{u}} {D : ejaR.{u} ⟶ ejaS.{u}}
+    {k : Scal (Par EJAObj.{u}ᵒᵖ)}
+    (h : β ≫ D = pval k ≫ (ouGamma ejaTopCofan.{u}).hom) :
+    D.unop ≫ ejaBmap β = ejaScalMapEquiv.{u} k := by
+  have h1 : (β ≫ D).unop = (pval k ≫ (ouGamma ejaTopCofan.{u}).hom).unop :=
+    congrArg Quiver.Hom.unop h
+  show D.unop ≫ (β.unop ≫ ejaTopTo ejaScal.{u}) = _
+  rw [← Category.assoc]
+  show (β ≫ D).unop ≫ ejaTopTo ejaScal.{u} = _
+  rw [h1]
+  rfl
+
+/-- Converse of `eja_beta_comp`. -/
+theorem eja_beta_comp' {β : (⊤_ EJAObj.{u}ᵒᵖ) ⟶ ejaR.{u}} {D : ejaR.{u} ⟶ ejaS.{u}}
+    {k : Scal (Par EJAObj.{u}ᵒᵖ)}
+    (h : D.unop ≫ ejaBmap β = ejaScalMapEquiv.{u} k) :
+    β ≫ D = pval k ≫ (ouGamma ejaTopCofan.{u}).hom := by
+  refine Quiver.Hom.unop_inj ?_
+  refine eja_hom_to_top_ext ?_
+  show (D.unop ≫ β.unop) ≫ ejaTopTo ejaScal.{u} = _
+  rw [Category.assoc]
+  exact h
+
+/-- `[κ₁,κ₂,κ₂]` sends `(1,0)` to `((1,0),0)`. -/
+theorem ejaDlO_one_zero :
+    (ejaDlO.{u}).toLinearMap ((1 : ULift.{u} ℝ), (0 : ULift.{u} ℝ))
+      = (((1 : ULift.{u} ℝ), (0 : ULift.{u} ℝ)), (0 : ULift.{u} ℝ)) := rfl
+
+/-- `[κ₂,κ₁,κ₂]` sends `(1,0)` to `((0,1),0)`. -/
+theorem ejaDrO_one_zero :
+    (ejaDrO.{u}).toLinearMap ((1 : ULift.{u} ℝ), (0 : ULift.{u} ℝ))
+      = (((0 : ULift.{u} ℝ), (1 : ULift.{u} ℝ)), (0 : ULift.{u} ℝ)) := rfl
+
+/-- `[κ₁,κ₁,κ₂]` sends `(1,0)` to `((1,1),0)`. -/
+theorem ejaDvO_one_zero :
+    (ejaDvO.{u}).toLinearMap ((1 : ULift.{u} ℝ), (0 : ULift.{u} ℝ))
+      = (((1 : ULift.{u} ℝ), (1 : ULift.{u} ℝ)), (0 : ULift.{u} ℝ)) := rfl
+
+/-- Half of **190V**: orthogonal scalars have `λ + μ ≤ 1`. -/
+theorem ejaScalV_perp {k l : Scal (Par EJAObj.{u}ᵒᵖ)} (h : Perp k l) :
+    ejaScalV k + ejaScalV l ≤ 1 := by
+  obtain ⟨β, hβ₁, hβ₂⟩ := (eja_perp_iff k l).mp h
+  have hb₁ : ejaDlO.{u} ≫ ejaBmapO β = ejaScalMapO.{u} k :=
+    congrArg (fun m => m.hom) (eja_beta_comp hβ₁)
+  have hb₂ : ejaDrO.{u} ≫ ejaBmapO β = ejaScalMapO.{u} l :=
+    congrArg (fun m => m.hom) (eja_beta_comp hβ₂)
+  have e₁ : ((ejaBmapO β).toLinearMap
+      (((1 : ULift.{u} ℝ), (0 : ULift.{u} ℝ)), (0 : ULift.{u} ℝ))).down
+      = ejaScalV k := by
+    rw [← ejaDlO_one_zero, ← ous_comp_apply, hb₁, ejaScalV_def]
+  have e₂ : ((ejaBmapO β).toLinearMap
+      (((0 : ULift.{u} ℝ), (1 : ULift.{u} ℝ)), (0 : ULift.{u} ℝ))).down
+      = ejaScalV l := by
+    rw [← ejaDrO_one_zero, ← ous_comp_apply, hb₂, ejaScalV_def]
+  have hsum : (ejaBmapO β).toLinearMap
+      (((1 : ULift.{u} ℝ), (1 : ULift.{u} ℝ)), (0 : ULift.{u} ℝ))
+      = (ejaBmapO β).toLinearMap
+          (((1 : ULift.{u} ℝ), (0 : ULift.{u} ℝ)), (0 : ULift.{u} ℝ))
+        + (ejaBmapO β).toLinearMap
+          (((0 : ULift.{u} ℝ), (1 : ULift.{u} ℝ)), (0 : ULift.{u} ℝ)) := by
+    rw [← map_add, ous_sum_pt]
+  have hmono := (ejaBmapO β).mono ous_sum_le_unit.{u}
+  rw [(ejaBmapO β).map_unit', hsum] at hmono
+  have hd : ejaScalV k + ejaScalV l ≤ (1 : ℝ) := by
+    have := hmono
+    rw [← e₁, ← e₂]
+    exact this
+  exact hd
+
+/-- The mixing map attached to two scalars with `λ + μ ≤ 1`, as a map of
+`OUS`. -/
+def ejaMixOfO (k l : Scal (Par EJAObj.{u}ᵒᵖ)) (h : ejaScalV k + ejaScalV l ≤ 1) :
+    ((ousScal.{u}.prod ousScal.{u}).prod ousScal.{u}) ⟶ ousScal.{u} :=
+  ousMixMap (ejaScalV k) (ejaScalV l) (1 - ejaScalV k - ejaScalV l)
+    (ejaScalV_nonneg k) (ejaScalV_nonneg l)
+    (by have := ejaScalV_nonneg.{u} k; linarith) (by ring)
+
+/-- The defining equation of `ejaMixOfO`. -/
+theorem ejaMixOfO_down (k l : Scal (Par EJAObj.{u}ᵒᵖ))
+    (h : ejaScalV k + ejaScalV l ≤ 1)
+    (p : (ULift.{u} ℝ × ULift.{u} ℝ) × ULift.{u} ℝ) :
+    ((ejaMixOfO k l h).toLinearMap p).down
+      = ejaScalV k * p.1.1.down + ejaScalV l * p.1.2.down
+        + (1 - ejaScalV k - ejaScalV l) * p.2.down := rfl
+
+/-- Reading a positive unital map `ℝ³ ⟶ ℝ` as a point of `ℝ³` and back. -/
+theorem ejaBmapO_op (M : ((ousScal.{u}.prod ousScal.{u}).prod ousScal.{u})
+      ⟶ ousScal.{u}) :
+    ejaBmapO (Quiver.Hom.op
+        ((InducedCategory.homMk M :
+            ejaProd (ejaProd ejaScal.{u} ejaScal.{u}) ejaScal.{u} ⟶ ejaScal.{u})
+          ≫ ejaUnitTop.{u})) = M := by
+  show (((InducedCategory.homMk M :
+      ejaProd (ejaProd ejaScal.{u} ejaScal.{u}) ejaScal.{u} ⟶ ejaScal.{u})
+        ≫ ejaUnitTop.{u}) ≫ ejaTopTo ejaScal.{u}).hom = M
+  rw [Category.assoc, ejaTop_inv₁, Category.comp_id]
+  rfl
+
+/-- Half of **190V**: scalars with `λ + μ ≤ 1` are orthogonal. -/
+theorem ejaScalV_perp' {k l : Scal (Par EJAObj.{u}ᵒᵖ)}
+    (h : ejaScalV k + ejaScalV l ≤ 1) : Perp k l := by
+  refine (eja_perp_iff k l).mpr
+    ⟨Quiver.Hom.op ((InducedCategory.homMk (ejaMixOfO k l h) :
+        ejaProd (ejaProd ejaScal.{u} ejaScal.{u}) ejaScal.{u} ⟶ ejaScal.{u})
+      ≫ ejaUnitTop.{u}), ?_, ?_⟩
+  · refine eja_beta_comp' (InducedCategory.hom_ext ?_)
+    show ejaDlO.{u} ≫ ejaBmapO (Quiver.Hom.op
+        ((InducedCategory.homMk (ejaMixOfO k l h) :
+            ejaProd (ejaProd ejaScal.{u} ejaScal.{u}) ejaScal.{u} ⟶ ejaScal.{u})
+          ≫ ejaUnitTop.{u})) = ejaScalMapO.{u} k
+    rw [ejaBmapO_op]
+    refine ous_hom_ext fun ab => ?_
+    apply ULift.down_injective
+    rw [ous_comp_apply, ejaMixOfO_down, ejaScalMap_down]
+    show ejaScalV k * ab.1.down + ejaScalV l * ab.2.down
+        + (1 - ejaScalV k - ejaScalV l) * ab.2.down
+      = ab.1.down * ejaScalV k + ab.2.down * (1 - ejaScalV k)
+    ring
+  · refine eja_beta_comp' (InducedCategory.hom_ext ?_)
+    show ejaDrO.{u} ≫ ejaBmapO (Quiver.Hom.op
+        ((InducedCategory.homMk (ejaMixOfO k l h) :
+            ejaProd (ejaProd ejaScal.{u} ejaScal.{u}) ejaScal.{u} ⟶ ejaScal.{u})
+          ≫ ejaUnitTop.{u})) = ejaScalMapO.{u} l
+    rw [ejaBmapO_op]
+    refine ous_hom_ext fun ab => ?_
+    apply ULift.down_injective
+    rw [ous_comp_apply, ejaMixOfO_down, ejaScalMap_down]
+    show ejaScalV k * ab.2.down + ejaScalV l * ab.1.down
+        + (1 - ejaScalV k - ejaScalV l) * ab.2.down
+      = ab.1.down * ejaScalV l + ab.2.down * (1 - ejaScalV l)
+    ring
+
+/-- **190V**: `⋁` of scalars is addition in `[0,1]`. -/
+theorem ejaScalV_ovee {k l : Scal (Par EJAObj.{u}ᵒᵖ)} (h : Perp k l) :
+    ejaScalV (ovee k l h) = ejaScalV k + ejaScalV l := by
+  obtain ⟨β, hβ₁, hβ₂⟩ := (eja_perp_iff k l).mp h
+  have hb₁ : ejaDlO.{u} ≫ ejaBmapO β = ejaScalMapO.{u} k :=
+    congrArg (fun m => m.hom) (eja_beta_comp hβ₁)
+  have hb₂ : ejaDrO.{u} ≫ ejaBmapO β = ejaScalMapO.{u} l :=
+    congrArg (fun m => m.hom) (eja_beta_comp hβ₂)
+  have hbv : ejaDvO.{u} ≫ ejaBmapO β = ejaScalMapO.{u} (ovee k l h) :=
+    congrArg (fun m => m.hom) (eja_beta_comp (eja_ovee_eq h hβ₁ hβ₂).symm)
+  have e₁ : ((ejaBmapO β).toLinearMap
+      (((1 : ULift.{u} ℝ), (0 : ULift.{u} ℝ)), (0 : ULift.{u} ℝ))).down
+      = ejaScalV k := by
+    rw [← ejaDlO_one_zero, ← ous_comp_apply, hb₁, ejaScalV_def]
+  have e₂ : ((ejaBmapO β).toLinearMap
+      (((0 : ULift.{u} ℝ), (1 : ULift.{u} ℝ)), (0 : ULift.{u} ℝ))).down
+      = ejaScalV l := by
+    rw [← ejaDrO_one_zero, ← ous_comp_apply, hb₂, ejaScalV_def]
+  have ev : ((ejaBmapO β).toLinearMap
+      (((1 : ULift.{u} ℝ), (1 : ULift.{u} ℝ)), (0 : ULift.{u} ℝ))).down
+      = ejaScalV (ovee k l h) := by
+    rw [← ejaDvO_one_zero, ← ous_comp_apply, hbv, ejaScalV_def]
+  rw [← ev, ← e₁, ← e₂, ← ous_sum_pt, map_add]
+  rfl
+
+/-- The round trip `ejaTopO ⟶ ℝᵤ ⟶ ejaTopO`. -/
+theorem eja_top_round {Z : EJAObj.{u}} (a : Z ⟶ ejaTopO.{u}) :
+    (a ≫ ejaTopTo ejaScal.{u}) ≫ ejaUnitTop.{u} = a := by
+  rw [Category.assoc, ejaTop_inv₂, Category.comp_id]
+
+/-- The scalar `k` read as an endomorphism of `ℝ²`. -/
+def ejaMk (k : Scal (Par EJAObj.{u}ᵒᵖ)) : ejaS.{u} ⟶ ejaS.{u} :=
+  Quiver.Hom.op (ejaPair (ejaScalMapEquiv.{u} k) (ejaSnd ejaScal.{u} ejaScal.{u}))
+
+/-- `ejaMk k`, re-typed as a map of `OUS`. -/
+def ejaMkO (k : Scal (Par EJAObj.{u}ᵒᵖ)) :
+    (ousScal.{u}.prod ousScal.{u}) ⟶ (ousScal.{u}.prod ousScal.{u}) :=
+  (ejaMk k).unop.hom
+
+/-- `ejaMk k` sends the first point of `⊤ + ⊤` to `k`. -/
+theorem ejaI₁_Mk (k : Scal (Par EJAObj.{u}ᵒᵖ)) :
+    ejaI₁.{u} ≫ ejaMk k = pval k ≫ (ouGamma ejaTopCofan.{u}).hom := by
+  refine Quiver.Hom.unop_inj ?_
+  show ejaPair (ejaScalMapEquiv.{u} k) (ejaSnd ejaScal.{u} ejaScal.{u})
+      ≫ (ejaFst ejaScal.{u} ejaScal.{u} ≫ ejaUnitTop.{u})
+    = (pval k ≫ (ouGamma ejaTopCofan.{u}).hom).unop
+  rw [← Category.assoc, ejaPair_fst]
+  exact eja_top_round ((pval k ≫ (ouGamma ejaTopCofan.{u}).hom).unop)
+
+/-- `ejaMk k` fixes the second point of `⊤ + ⊤`. -/
+theorem ejaI₂_Mk (k : Scal (Par EJAObj.{u}ᵒᵖ)) :
+    ejaI₂.{u} ≫ ejaMk k = ejaI₂.{u} := by
+  refine Quiver.Hom.unop_inj ?_
+  show ejaPair (ejaScalMapEquiv.{u} k) (ejaSnd ejaScal.{u} ejaScal.{u})
+      ≫ (ejaSnd ejaScal.{u} ejaScal.{u} ≫ ejaUnitTop.{u})
+    = ejaSnd ejaScal.{u} ejaScal.{u} ≫ ejaUnitTop.{u}
+  rw [← Category.assoc, ejaPair_snd]
+
+/-- Postcomposition with the scalar `k`, transported to `ℝ²`. -/
+theorem eja_desc_Mk (k : Scal (Par EJAObj.{u}ᵒᵖ)) :
+    coprod.desc (pval k) (coprod.inr : (⊤_ EJAObj.{u}ᵒᵖ) ⟶ _)
+        ≫ (ouGamma ejaTopCofan.{u}).hom
+      = (ouGamma ejaTopCofan.{u}).hom ≫ ejaMk k := by
+  refine coprod.hom_ext ?_ ?_
+  · simp only [← Category.assoc]
+    rw [coprod.inl_desc, ouGamma_inl, ejaI₁_Mk]
+  · simp only [← Category.assoc]
+    rw [coprod.inr_desc, ouGamma_inr, ouGamma_inr, ejaI₂_Mk]
+
+/-- **190V**: composition of scalars is multiplication in `[0,1]`. -/
+theorem ejaScalV_mul (k l : Scal (Par EJAObj.{u}ᵒᵖ)) :
+    ejaScalV (k * l) = ejaScalV k * ejaScalV l := by
+  have hkl : (k * l : Scal (Par EJAObj.{u}ᵒᵖ)) = l ≫ k := rfl
+  have hpv : pval (l ≫ k) ≫ (ouGamma ejaTopCofan.{u}).hom
+      = (pval l ≫ (ouGamma ejaTopCofan.{u}).hom) ≫ ejaMk k := by
+    rw [pval_comp, Category.assoc, eja_desc_Mk, ← Category.assoc]
+  have hmap : ejaScalMapEquiv.{u} (l ≫ k)
+      = (ejaMk k).unop ≫ ejaScalMapEquiv.{u} l := by
+    show (pval (l ≫ k) ≫ (ouGamma ejaTopCofan.{u}).hom).unop
+        ≫ ejaTopTo ejaScal.{u}
+      = (ejaMk k).unop ≫ ((pval l ≫ (ouGamma ejaTopCofan.{u}).hom).unop
+        ≫ ejaTopTo ejaScal.{u})
+    rw [hpv, ← Category.assoc]
+    rfl
+  have hmapO : ejaScalMapO.{u} (l ≫ k) = ejaMkO.{u} k ≫ ejaScalMapO.{u} l :=
+    congrArg (fun m => m.hom) hmap
+  rw [hkl, ejaScalV_def, hmapO, ous_comp_apply]
+  have hpt : (ejaMkO.{u} k).toLinearMap ((1 : ULift.{u} ℝ), (0 : ULift.{u} ℝ))
+      = ((ejaScalMapO.{u} k).toLinearMap
+          ((1 : ULift.{u} ℝ), (0 : ULift.{u} ℝ)), (0 : ULift.{u} ℝ)) := rfl
+  rw [hpt, ejaScalMap_down]
+  show ejaScalV k * ejaScalV l + 0 * (1 - ejaScalV l) = ejaScalV k * ejaScalV l
+  ring
+
+/-! ### `Par EJAᵒᵖ` is a real effectus -/
+
+/-- **190V** (eff.tex:2191, Examples): `EJAᵒᵖ` is a **real effectus** — its
+effect monoid of scalars is `[0,1]`. -/
+theorem eja_real_effectus : IsRealEffectus (Par EJAObj.{u}ᵒᵖ) := by
+  have hφperp : ∀ {a b : Scal (Par EJAObj.{u}ᵒᵖ)}, Perp a b →
+      Perp (ejaScalEquivI.{u} a) (ejaScalEquivI.{u} b) := fun hab => ejaScalV_perp hab
+  have hφovee : ∀ {a b : Scal (Par EJAObj.{u}ᵒᵖ)} (hab : Perp a b),
+      ejaScalEquivI.{u} (ovee a b hab)
+        = ovee (ejaScalEquivI.{u} a) (ejaScalEquivI.{u} b) (hφperp hab) := by
+    intro a b hab
+    exact Subtype.ext (ejaScalV_ovee hab)
+  have hφone : ejaScalEquivI.{u} 1 = 1 := Subtype.ext ejaScalV_one
+  have hφmul : ∀ a b : Scal (Par EJAObj.{u}ᵒᵖ),
+      ejaScalEquivI.{u} (a * b) = ejaScalEquivI.{u} a * ejaScalEquivI.{u} b :=
+    fun a b => Subtype.ext (ejaScalV_mul a b)
+  have hV : ∀ r : I, ejaScalV (ejaScalEquivI.{u}.symm r) = (r : ℝ) :=
+    fun r => congrArg Subtype.val (ejaScalEquivI.{u}.apply_symm_apply r)
+  have hψperp : ∀ {x y : I}, Perp x y →
+      Perp (ejaScalEquivI.{u}.symm x) (ejaScalEquivI.{u}.symm y) := by
+    intro x y hxy
+    refine ejaScalV_perp' ?_
+    rw [hV, hV]
+    exact hxy
+  have hψovee : ∀ {x y : I} (hxy : Perp x y),
+      ejaScalEquivI.{u}.symm (ovee x y hxy)
+        = ovee (ejaScalEquivI.{u}.symm x) (ejaScalEquivI.{u}.symm y)
+            (hψperp hxy) := by
+    intro x y hxy
+    refine ejaScalV_injective ?_
+    rw [ejaScalV_ovee (hψperp hxy), hV, hV, hV]
+    rfl
+  have hψone : ejaScalEquivI.{u}.symm 1 = 1 := by
+    refine ejaScalV_injective ?_
+    rw [hV, ejaScalV_one]
+    rfl
+  have hψmul : ∀ x y : I,
+      ejaScalEquivI.{u}.symm (x * y)
+        = ejaScalEquivI.{u}.symm x * ejaScalEquivI.{u}.symm y := by
+    intro x y
+    refine ejaScalV_injective ?_
+    rw [ejaScalV_mul, hV, hV, hV]
+    rfl
+  exact ⟨⟨⟨⟨ejaScalEquivI.{u}, hφperp, hφovee⟩, hφone⟩, hφmul⟩,
+    ⟨⟨⟨ejaScalEquivI.{u}.symm, hψperp, hψovee⟩, hψone⟩, hψmul⟩,
+    fun k => ejaScalEquivI.{u}.symm_apply_apply k,
+    fun r => ejaScalEquivI.{u}.apply_symm_apply r⟩
 
 end EJAExample
 
