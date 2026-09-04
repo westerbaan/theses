@@ -486,6 +486,24 @@ theorem standard_form_of_eq {f : X ⟶ Y} (hf : IsPure f) {c : Pred X}
   haveI : IsIso g := standard_form_map_pure hf g hg
   exact ⟨asIso g, hg⟩
 
+/-- Helper: the isomorphism of `standard_form_of_eq` is **unique**, which is
+the uniqueness clause of 212III `standard_form_map` read for isomorphisms —
+an isomorphism is total (`iso_isTotal`) and faithful
+(`faithfulMap_of_isIso`), so 212III's unique total faithful `g` is the only
+candidate, and an isomorphism is determined by its `hom`. -/
+theorem standard_form_of_eq_unique {f : X ⟶ Y} {c : Pred X}
+    {i : Pred Y} (hcs : IsSharp c) (his : IsSharp i)
+    (hc : ceilPred (f ≫ truth Y) = c) (hi : imPred f = i)
+    {β β' : comprObj c ≅ comprObj i}
+    (hβ : f = asrt (f ≫ truth Y) ≫ zetaMap c hcs ≫ β.hom ≫ comprMap i)
+    (hβ' : f = asrt (f ≫ truth Y) ≫ zetaMap c hcs ≫ β'.hom ≫ comprMap i) :
+    β = β' := by
+  subst hc; subst hi
+  obtain ⟨g, -, hu⟩ := standard_form_map f
+  refine Iso.ext ?_
+  rw [hu β.hom ⟨⟨iso_isTotal _, faithfulMap_of_isIso C _⟩, hβ⟩,
+    hu β'.hom ⟨⟨iso_isTotal _, faithfulMap_of_isIso C _⟩, hβ'⟩]
+
 /-- **216XIII** (`pqqp-from-dagger`, eff.tex:5578, Ax. 2): in an &-effectus
 `asrt_q ∘ asrt_p = π_{⌈q&p⌉} ∘ α ∘ ζ_{⌈p&q⌉} ∘ asrt_{p&q}` for some
 isomorphism `α`; indeed `1 ∘ asrt_q ∘ asrt_p = p & q` and
@@ -2095,31 +2113,41 @@ theorem dagger_setting_truth_chi [DaggerPrimeEffectus C] (t p : Pred Y) :
     eabasics_orth_orth, asrt_comp_ceil]
 
 /-- **219II** (`dagger-setting`, eff.tex:5993, eq. `dagger-iso-chi`): in the
-Setting 219II there is a (unique) isomorphism `χ` with
+Setting 219II there is a **unique** isomorphism `χ` with
 `ζ_{⌈p⌉} ∘ asrt_p ∘ π_t = π_{⌈t ∘ asrt_p ∘ π_{⌈p⌉}⌉} ∘ χ ∘ ζ_{⌈p ∘ π_t⌉} ∘
 asrt_{p ∘ π_t}`.  (The truth of `ζ_{⌈p⌉} ∘ asrt_p ∘ π_t` is `p ∘ π_t` by
-`asrt-absorp-rule`, its image is `⌈t ∘ asrt_p ∘ π_{⌈p⌉}⌉` by 218II.) -/
+`asrt-absorp-rule`, its image is `⌈t ∘ asrt_p ∘ π_{⌈p⌉}⌉` by 218II.)  The
+uniqueness is the display's own — it is inherited from `standard-form-map`
+(212III), here through `standard_form_of_eq_unique`. -/
 theorem dagger_iso_chi [DaggerPrimeEffectus C] {t : Pred Y} (ht : IsSharp t)
     (p : Pred Y) :
-    ∃ χ : comprObj (ceilPred (comprMap t ≫ p)) ≅
+    ∃! χ : comprObj (ceilPred (comprMap t ≫ p)) ≅
         comprObj (ceilPred (comprMap (ceilPred p) ≫ asrt p ≫ t)),
       comprMap t ≫ asrt p ≫ zetaMap (ceilPred p) (isSharp_ceil p) =
         asrt (comprMap t ≫ p) ≫
           zetaMap (ceilPred (comprMap t ≫ p)) (isSharp_ceil _) ≫ χ.hom ≫
           comprMap (ceilPred (comprMap (ceilPred p) ≫ asrt p ≫ t)) := by
+  have htr := dagger_setting_truth_chi t p
   obtain ⟨χ, hχ⟩ := standard_form_of_eq (isPure_compr_asrt_zeta (isSharp_ceil p) p)
     (isSharp_ceil (comprMap t ≫ p)) (isSharp_ceil _)
-    (by rw [dagger_setting_truth_chi]) (dagger_setting_im_chi ht p)
-  rw [dagger_setting_truth_chi] at hχ
-  exact ⟨χ, hχ⟩
+    (by rw [htr]) (dagger_setting_im_chi ht p)
+  rw [htr] at hχ
+  refine ⟨χ, hχ, fun χ' hχ' => ?_⟩
+  refine standard_form_of_eq_unique
+    (isSharp_ceil (comprMap t ≫ p)) (isSharp_ceil _)
+    (by rw [htr]) (dagger_setting_im_chi ht p) ?_ ?_
+  · rw [htr]; exact hχ'
+  · rw [htr]; exact hχ
 
 /-- **219II** (`dagger-setting`, eff.tex:6017, eq. `dagger-iso-omega`): in the
-Setting 219II there is a (unique) isomorphism `ω` with
+Setting 219II there is a **unique** isomorphism `ω` with
 `asrt_{p ∘ k} ∘ asrt_q = π_{⌈p ∘ k⌉} ∘ ω ∘ ζ_{⌈p ∘ g⌉} ∘ asrt_{p ∘ g}`.
-(Its truth is `p ∘ g`; its image is `⌈p ∘ k⌉` because `p ∘ k ≤ ⌈q⌉`.) -/
+(Its truth is `p ∘ g`; its image is `⌈p ∘ k⌉` because `p ∘ k ≤ ⌈q⌉`.)  The
+uniqueness is the display's own — it is inherited from `standard-form-map`
+(212III), here through `standard_form_of_eq_unique`. -/
 theorem dagger_iso_omega [DaggerPrimeEffectus C] {g : X ⟶ Y} {q : Pred X} {k : X ⟶ Y}
     (hgk : g = asrt q ≫ k) (hk : k ≫ truth Y = ceilPred q) (p : Pred Y) :
-    ∃ ω : comprObj (ceilPred (g ≫ p)) ≅ comprObj (ceilPred (k ≫ p)),
+    ∃! ω : comprObj (ceilPred (g ≫ p)) ≅ comprObj (ceilPred (k ≫ p)),
       asrt q ≫ asrt (k ≫ p) =
         asrt (g ≫ p) ≫ zetaMap (ceilPred (g ≫ p)) (isSharp_ceil _) ≫ ω.hom ≫
           comprMap (ceilPred (k ≫ p)) := by
@@ -2147,7 +2175,11 @@ theorem dagger_iso_omega [DaggerPrimeEffectus C] {g : X ⟶ Y} {q : Pred X} {k :
   obtain ⟨ω, hω⟩ := standard_form_of_eq hpure (isSharp_ceil _) (isSharp_ceil _)
     (by rw [htruth]) him
   rw [htruth] at hω
-  exact ⟨ω, hω⟩
+  refine ⟨ω, hω, fun ω' hω' => ?_⟩
+  refine standard_form_of_eq_unique (isSharp_ceil _) (isSharp_ceil _)
+    (by rw [htruth]) him ?_ ?_
+  · rw [htruth]; exact hω'
+  · rw [htruth]; exact hω
 
 /-- **219II** (`dagger-setting`, eff.tex:6035, eq. `dagger-iso-beta`): in the
 Setting 219II there is an isomorphism `β` with
@@ -2701,8 +2733,8 @@ theorem dagger_is_functor [DaggerPrimeEffectus C] {g : X ⟶ Y} {f : Y ⟶ Z}
       comprMap (ceilPred (g ≫ truth Y)) ≫ asrt (g ≫ truth Y) :=
     pureDagger_eq hg ⟨ψ, hψ, rfl⟩
   -- the four isomorphisms of 219II
-  obtain ⟨χ, hχ⟩ := dagger_iso_chi (isSharp_imPred C g) (f ≫ truth Z)
-  obtain ⟨ω, hω⟩ := dagger_iso_omega hgk hktruth (f ≫ truth Z)
+  obtain ⟨χ, hχ, -⟩ := dagger_iso_chi (isSharp_imPred C g) (f ≫ truth Z)
+  obtain ⟨ω, hω, -⟩ := dagger_iso_omega hgk hktruth (f ≫ truth Z)
   obtain ⟨β, hβ⟩ := dagger_iso_beta ψ hk (f ≫ truth Z)
   obtain ⟨α, hα⟩ := dagger_iso_alpha (isSharp_imPred C f) φ (imPred g) hd
   -- 219V and the daggered versions 219VII, 219IX, 219X, 219XIII, 219XV

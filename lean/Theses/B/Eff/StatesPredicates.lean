@@ -1561,16 +1561,33 @@ an effectus in partial form with scalars `M = Scal C`.)
 The morphism action is pinned: asserting only
 `(F.obj X).unop.carrier = Pred X` would constrain nothing about `F.map`.
 
-⚠ Weaker than the Theorem in one respect: the source concludes "`C` is
-**equivalent to the subcategory** `Pred C` of `EMod_M^op`", and that does not
-follow from faithfulness alone.  Faithfulness does *not* imply equivalence
-with a subcategory: the discrete two-object category maps faithfully to the
-terminal category, whose only subcategories are `∅` and `1`, and it is
-equivalent to neither.  What the image subcategory needs in addition is that
-`Pred` be full onto its image, which 191VII does not prove.  So the missing
-clause is not a transcription slip but a gap in the printed argument, needing
-an author ruling on how "subcategory" is to be read: `QUESTIONS.md` **B16**,
-which is open. -/
+**This is the Theorem, not a weakening of it** (settled 2026-09-04,
+`docs/191II-subcategory.md`, closing `docs/DECISIONS.md` §2.3).  191II's
+second sentence — "`C` is equivalent to a subcategory of `EMod_M^op`", the
+indefinite article and no `full` — is *true as printed*, and in the stronger
+"isomorphic to" form: retag `Pred X` as the isomorphic effect module with
+carrier `|Pred X| × {X}`, which is injective on objects because effect
+algebras are non-empty, and a faithful functor that is injective on objects
+corestricts to an isomorphism onto a (non-full) subcategory.  So for this
+codomain "admits a faithful functor" and "is equivalent to a subcategory"
+are interderivable, and the faithful pinned functor above carries the whole
+sentence.
+
+Two earlier readings of this docstring were wrong and are recorded so they
+are not repeated.  (a) *Full onto its image* is not what is missing, and is
+not available: `Pred : SET → EA^op` is **not** full — an `EA`-map
+`P(ℕ) → 2` is an ultrafilter on `ℕ`, and only the principal ones are in the
+image.  (b) The obstruction is injectivity on objects, and that is a
+labelling matter, which is why the retagging is purely formal; the discrete
+two-object/terminal example does not bear on it, the terminal category
+having no two distinct objects to tag.
+
+What *is* defective is a sentence of **191VII**, not of 191II: it names
+*the* subcategory `Pred C`, the literal image, which need not be a
+subcategory at all — in `vN_cpu^op` with arrows taken as bare functions,
+`Pred A = Pred A^op`, and composites across that identification are not in
+the image (the symmetrised transpose `(id + T)/2` on `M₂` is not completely
+positive).  Filed as **191VII** in `ERRATA.md`. -/
 theorem emod_effectus_representation {C : Type u} [Category.{v} C]
     [HasFiniteCoproducts C] [∀ X Y : C, PCM (X ⟶ Y)] [FinPAC C]
     [EffectusPartialForm C] (hsep : SeparatingPredicates C) :

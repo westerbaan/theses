@@ -2388,7 +2388,7 @@ end VNPartial
 
 /-- The partial-form effectus structure `vN_cpsuᵒᵖ` carries, bundled: the
 concrete finite coproducts, PCM-enrichment, finPAC axioms and effects data
-built above.  (`effectus_vn_partial` is its `Nonempty` form; the bundled
+built above.  (`effectus_vn_partial` is its existential form; the bundled
 version is what `vn_effObj_iso` compares an arbitrary structure with.) -/
 noncomputable def vnPartialStructure : EffectusPartialStructure WStarCPSU.{u}ᵒᵖ :=
   { hasFiniteCoproducts := suHasFiniteCoproducts
@@ -2399,18 +2399,22 @@ noncomputable def vnPartialStructure : EffectusPartialStructure WStarCPSU.{u}ᵒ
 /-- **180V** (`effectus-vn`, eff.tex:827): `(W*_ncpsu)ᵒᵖ` is an effectus in
 **partial form**.
 
-⚠ **What this statement does and does not say** (audit row 180V).  The
+The **effect object is pinned to `ℂᵤ`**, matching `cho_thm_1`
+(`Effectus.lean`, which asserts `s.effectus.I = Par.of (⊤_ C)`): the
+statement is `∃ s, s.effectus.I = suI`, which is what `suEffectusPartialForm`
+builds anyway.  This was `docs/DECISIONS.md` §2.7 (and QUESTIONS **B13**, now
+closed, deleted 2026-09-04), **ruled option (a) by the author on 2026-09-04**:
+pin the effect object.  Before that ruling the
+statement was the weaker `Nonempty (EffectusPartialStructure WStarCPSU.{u}ᵒᵖ)`,
+which says only that *some* structure exists.  What the eight examples
+downstream actually use is neither, but the *uniqueness* statement
+`vn_effObj_iso`.
+
+⚠ **What this statement still does not say** (audit row 180V).  The
 sentence of 180V being rendered is *"the partial maps \[of `vNᵒᵖ`\]
 correspond to ncp-maps `f` with `f(1) ≤ 1`"*, i.e. `Par(vNᵒᵖ) ≃ W*_ncpsuᵒᵖ`.
-Two clauses of it are **not** in the statement below:
+One clause of it is **not** in the statement below:
 
-* **the effect object is `ℂ`.**  Supplied by the proof
-  (`suEffectusPartialForm` builds `I = ℂᵤ`), but not asserted:
-  `Nonempty (EffectusPartialStructure …)` says only that *some* structure
-  exists.  Strengthening it to `∃ s, s.effectus.I = suI` costs one line and
-  is **QUESTIONS B13**, which asks for a ruling; it is therefore left alone
-  here.  What the eight examples downstream actually use is not this but the
-  *uniqueness* statement `vn_effObj_iso`, which is proved.
 * **the comparison with `Par(vNᵒᵖ)` itself.**  Nothing here relates
   `W*_ncpsuᵒᵖ` to the category of partial maps of the *total*-form effectus
   `effectus_vn`.  This is the blocker for four
@@ -2423,8 +2427,8 @@ Two clauses of it are **not** in the statement below:
   and its compatibility with Kleisli composition could even be stated. -/
 
 theorem effectus_vn_partial :
-    Nonempty (EffectusPartialStructure WStarCPSU.{u}ᵒᵖ) :=
-  ⟨vnPartialStructure⟩
+    ∃ s : EffectusPartialStructure WStarCPSU.{u}ᵒᵖ, s.effectus.I = suI :=
+  ⟨vnPartialStructure, rfl⟩
 
 /-! ## Uniqueness of the effect object of `vN_cpsuᵒᵖ`
 
@@ -4204,7 +4208,14 @@ is unital.
 (QUESTIONS **D7**), and then the mediating map of a *subunital* `f` is
 `λ⁻¹·f'`, which need not be subunital; such a corner is therefore not a
 comprehension.  Every corner used below is unital, being the right leg of a
-Paschke dilation of a unital map. -/
+Paschke dilation of a unital map.
+
+It is also **not a strengthening of 199V**.  199V's "comprehensions are
+exactly the same thing as corners" cites `\sref{corner}` = proc.tex 95I,
+which states in terms: *"When we write 'corner' we shall always mean a
+'unital corner' unless explicitly stated otherwise"* (proc.tex:280).  So the
+`hu` hypothesis below is the printed notion of corner, and the Example's
+"exactly the same thing" is `su_isComprehension_iff_isCornerMap`. -/
 
 /-- **197IV at `vNᵒᵖ`**, the converse reading of `su_hasQuotients`: a map
 `ξ : X ⟶ Q` whose ncpsu-map is a **filter** for the effect named by `pᗮ` is
@@ -4906,7 +4917,9 @@ theorem su_isQuotient_of_isFilter {X Q : WStarCPSU.{u}ᵒᵖ}
 
 /-- **199V at `vNᵒᵖ`** against `A/Proc`: a map whose ncpsu-map is a
 **unital corner** of the effect named by `q` (proc.tex 95I) is a
-comprehension for `q`. -/
+comprehension for `q`.  Unitality is 95I's own convention, not an extra
+hypothesis (proc.tex:280); the Example's biconditional is
+`su_isComprehension_iff_isCornerMap` below. -/
 theorem su_isComprehension_of_isCornerOf {W X : WStarCPSU.{u}ᵒᵖ}
     (q : X ⟶ effObj (WStarCPSU.{u}ᵒᵖ)) (π : W ⟶ X)
     (hu : π.unop.toNCPMap (1 : X.unop.base.carrier) = (1 : W.unop.base.carrier))
@@ -5043,6 +5056,29 @@ theorem su_isCornerMap_of_isComprehension {W X : WStarCPSU.{u}ᵒᵖ}
     θ.unop.toNCPMap hcorner₀'
     (Theses.A.Proc.isCornerMap_of_iso θ.unop.toNCPMap (inv θ).unop.toNCPMap
       hgf hfg hθu)
+
+/-- **199V** (`compr-examples`, eff.tex:3933, Examples), first sentence as
+printed: *"In `\\op\\vN` comprehensions are exactly the same thing as
+corners"* — the **biconditional**, which neither of the two implications
+above states on its own.
+
+"Corner" is proc.tex 95I's, and 95I fixes the convention (proc.tex:280) that
+a corner is always a *unital* corner unless stated otherwise; `IsCornerMap`
+is that notion (unital, and a corner of *some* effect).  So the two halves
+compose without any hypothesis beyond the print: forward is
+`su_isCornerMap_of_isComprehension`, backward is
+`su_isComprehension_of_isCornerOf` fed the unitality `IsCornerMap` carries,
+with the effect `p` of the corner named by a predicate through
+`su_pred_exists`. -/
+theorem su_isComprehension_iff_isCornerMap {W X : WStarCPSU.{u}ᵒᵖ} (π : W ⟶ X) :
+    (∃ q : X ⟶ effObj (WStarCPSU.{u}ᵒᵖ), IsComprehension q π) ↔
+      Theses.A.Proc.IsCornerMap π.unop.toNCPMap := by
+  constructor
+  · rintro ⟨q, hq⟩
+    exact su_isCornerMap_of_isComprehension hq
+  · rintro ⟨hu, p, hp, hcorner⟩
+    obtain ⟨q, hq⟩ := su_pred_exists (X := X) (a := p) hp.1 hp.2
+    exact ⟨q, su_isComprehension_of_isCornerOf q π hu (by rw [hq]; exact hcorner)⟩
 
 /-- **201II at `vNᵒᵖ`**: a pure map of `vN_cpsuᵒᵖ` has a pure ncpsu-map
 (proc.tex 100I).  201II is the Definition of purity in an effectus; this
@@ -8940,7 +8976,7 @@ theorem cvn_corner_mul {A : Type*} [Ring A] (hcomm : ∀ x y : A, x * y = y * x)
 of the ambient `vN_cpsuᵒᵖ` on `cin X` is `cpred s` for a sharp predicate
 `s` of `CvNᵒᵖ` on `X`.
 
-This is the second half of `cvnsu_orth_sharp` (VNExamples.lean:8863), read
+This is the second half of `cvnsu_orth_sharp` (VNExamples.lean:8899), read
 for an arbitrary sharp `t` instead of `sᗮ`: sharpness is an existential
 over objects *of the subcategory*, so it does not restrict for free.  The
 standard corner of `su_exists_corner t` is commutative, hence an object of

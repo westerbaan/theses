@@ -2755,7 +2755,10 @@ orthonormal family `(eᵢ)` is an **(orthonormal) basis** when (a) every
 
 **149II** (Notation) and **149IIa** (Remark) — not converted.  **149IIb**
 (Beware, dils.tex:2182): of its two comparisons with the literature, the
-`B(ℓ²)` counterexample of the first is `onbasis_beware_ketbraNat` below. -/
+first is converted in full — `onbasis_beware_ketbraNat` below is its
+`B(ℓ²)` family's failure to be a basis in the *norm* sense of the
+literature, and `onbasis_beware_ketbraNat_isONBasis` is that the same family
+*is* a basis in the sense of this Definition. -/
 def IsONBasis (e : ι → X) : Prop :=
   OrthonormalFam 𝒷 e ∧
     (∀ x : X,
@@ -2791,11 +2794,13 @@ This is what the Beware needs: some authors (`landi2012orthogonal`,
 `x = ∑_{e ∈ E} e⟨e,x⟩` converges *in norm*; in **149I** the same sum converges
 in the *ultranorm* uniformity, and there `∑_{n ≤ N} |n⟩⟨n| ↑ 1` does converge
 to `1` — so the two notions of basis are independent, as the Beware says.
-Only the negative half is formalised here; that this family *is* a basis in
-the sense of 149I is not (it needs the ultranorm convergence of the partial
-sums, for which **43II**.2 `vn_counterexamples_2_sup`, `⋁_N ∑_{n≤N}|n⟩⟨n| = 1`,
-is the ingredient), and neither is the converse half of the Beware, the
-standard module `H_{B(ℓ²)}` of `landi2012orthogonal` §3.
+This is the negative half; the positive half, that this family *is* a basis
+in the sense of 149I, is `onbasis_beware_ketbraNat_isONBasis` below (it
+needs the ultranorm convergence of the partial sums, for which **43II**.2
+`vn_counterexamples_2_sup`, `⋁_N ∑_{n≤N}|n⟩⟨n| = 1`, is the ingredient).
+What is still not formalised is the *converse* half of the Beware, the
+standard module `H_{B(ℓ²)}` of `landi2012orthogonal` §3, which is a basis in
+their sense but not in ours.
 
 The proof is algebraic: `q = 1 - ∑_{n ∈ s} |n⟩⟨n|` is a projection
 (`|n⟩⟨n||m⟩⟨m| = δ_{nm}|n⟩⟨n|`, **43II**.1) and is non-zero — else
@@ -4585,6 +4590,175 @@ theorem selfDual_of_isONBasis [VonNeumannAlgebra 𝒷] {e : ι → X}
     have h := uwTendsto_of_unTendsto_mulInner _ _ hun
     simpa only [← hkey1] using h
   exact uwTendsto_unique' hnet2 hnet1
+
+section BewareBasis
+
+local notation "ℓ²" => lp (fun _ : ℕ => ℂ) 2
+
+/-- **149IIb** (dils.tex:2182, Beware), the **positive** half of its first
+clause: the projections `pₙ = |n⟩⟨n|` of **43II**, in `B(ℓ²)` viewed as a
+Hilbert module over itself, **are** an orthonormal basis in the sense of
+**149I**.  Together with `onbasis_beware_ketbraNat` — the same family is not
+a basis in the *norm* sense of `landi2012orthogonal`,
+`manuilov2000hilbertc`, the expansion of `1` staying at distance `1` from
+every partial sum — this is the Beware's first clause in full: *"there is a
+basis in our sense that is not a basis in their sense"*.
+
+Clause (a).  With the file's mirrored inner product `⟨a,b⟩ = b a*` the
+partial sum `∑_{n ∈ s} ⟨pₙ,x⟩ · pₙ` is `x P_s` for the projection
+`P_s = ∑_{n ∈ s} pₙ`, and
+`⟨x P_s − x, x P_s − x⟩ = x(P_s − 1)²x* = x(1 − P_s)x*`, so the ultranorm
+seminorm of the error at `ω` is `ω_x(1 − P_s)^½`, where
+`ω_x = ω(x · x*)` is again an np-functional (`conjNP` at `x*`).  For
+`s ⊇ {0,…,N−1}` we have `P_s ≥ P_{<N}` and hence
+`ω_x(1 − P_s) ≤ ω_x(1 − P_{<N})`, and `⋁_N P_{<N} = 1` (**43II**.2
+`vn_counterexamples_2_sup`) together with the normality of `ω_x` makes
+`ω_x(P_{<N})` converge to `ω_x(1)`; the net is squeezed.  This is exactly
+the point the Beware makes against the norm reading: the *same* partial
+sums converge here, because the ultranorm uniformity is coarser.
+
+Clause (b) is free, and holds of every orthonormal family here: `B(ℓ²)` is
+self dual over itself (`selfDual_self`), hence ultranorm complete
+(`bddUnComplete_of_selfDual`), and `exists_unTendsto_of_l2Summable` gives
+clause (b) in any such module. -/
+theorem onbasis_beware_ketbraNat_isONBasis :
+    IsONBasis (ℓ² →L[ℂ] ℓ²) (fun n : ℕ => ketbraNat n n) := by
+  classical
+  have horth : OrthonormalFam (ℓ² →L[ℂ] ℓ²) (fun n : ℕ => ketbraNat n n) :=
+    onbasis_beware_ketbraNat.1
+  have hstar : ∀ n : ℕ, star (ketbraNat n n) = ketbraNat n n :=
+    fun n => (vn_counterexamples_1 0 0 n n).1
+  have hmul : ∀ n : ℕ, ketbraNat n n * ketbraNat n n = ketbraNat n n := fun n => by
+    simpa using (vn_counterexamples_1 n n n n).2
+  have hmul0 : ∀ m n : ℕ, m ≠ n → ketbraNat m m * ketbraNat n n = 0 := fun m n h => by
+    simpa [h] using (vn_counterexamples_1 n n m m).2
+  have hnn : ∀ n : ℕ, (0 : ℓ² →L[ℂ] ℓ²) ≤ ketbraNat n n :=
+    nsn_ketbraNat_diag_nonneg
+  -- the partial sums `P_s = ∑_{n ∈ s} pₙ` are projections, monotone in `s`
+  have hPsa : ∀ s : Finset ℕ,
+      star (∑ n ∈ s, ketbraNat n n) = ∑ n ∈ s, ketbraNat n n := by
+    intro s
+    rw [star_sum]
+    exact Finset.sum_congr rfl fun n _ => hstar n
+  have hPidem : ∀ s : Finset ℕ,
+      (∑ n ∈ s, ketbraNat n n) * (∑ n ∈ s, ketbraNat n n)
+        = ∑ n ∈ s, ketbraNat n n := by
+    intro s
+    rw [Finset.sum_mul]
+    refine Finset.sum_congr rfl fun m hm => ?_
+    rw [Finset.mul_sum,
+      Finset.sum_eq_single m (fun n _ hnm => hmul0 m n (Ne.symm hnm))
+        (fun h => absurd hm h), hmul m]
+  have hPnn : ∀ s : Finset ℕ, (0 : ℓ² →L[ℂ] ℓ²) ≤ ∑ n ∈ s, ketbraNat n n :=
+    fun s => Finset.sum_nonneg fun n _ => hnn n
+  have hPmono : ∀ {s t : Finset ℕ}, s ⊆ t →
+      (∑ n ∈ s, ketbraNat n n) ≤ ∑ n ∈ t, ketbraNat n n := by
+    intro s t hst
+    exact Finset.sum_le_sum_of_subset_of_nonneg hst fun n _ _ => hnn n
+  refine ⟨horth, ?_, ?_⟩
+  · -- **clause (a)**
+    intro x ω
+    set ν : NPFunctional (ℓ² →L[ℂ] ℓ²) := conjNP (star x) ω with hνdef
+    have hνapp : ∀ a : ℓ² →L[ℂ] ℓ², ν a = ω (x * a * star x) := by
+      intro a
+      rw [hνdef, conjNP_apply, star_star]
+    -- the error term, computed
+    have hgoal : ∀ s : Finset ℕ,
+        Real.sqrt (ν (1 - ∑ n ∈ s, ketbraNat n n)).re
+          = unSeminorm ω (inner (ℓ² →L[ℂ] ℓ²))
+              ((∑ n ∈ s, (inner (ℓ² →L[ℂ] ℓ²) (ketbraNat n n) x : ℓ² →L[ℂ] ℓ²) •
+                ketbraNat n n) - x) := by
+      intro s
+      have hv : (∑ n ∈ s, (inner (ℓ² →L[ℂ] ℓ²) (ketbraNat n n) x : ℓ² →L[ℂ] ℓ²) •
+            ketbraNat n n) = x * ∑ n ∈ s, ketbraNat n n := by
+        rw [Finset.mul_sum]
+        refine Finset.sum_congr rfl fun n _ => ?_
+        rw [WithCStarModule.inner_def, hstar n, smul_eq_mul, mul_assoc, hmul n]
+      have halg : (x * (∑ n ∈ s, ketbraNat n n) - x) *
+            star (x * (∑ n ∈ s, ketbraNat n n) - x)
+          = x * (1 - ∑ n ∈ s, ketbraNat n n) * star x := by
+        rw [star_sub, star_mul, hPsa s]
+        have hexp : (x * (∑ n ∈ s, ketbraNat n n) - x) *
+              ((∑ n ∈ s, ketbraNat n n) * star x - star x)
+            = x * ((∑ n ∈ s, ketbraNat n n) * (∑ n ∈ s, ketbraNat n n)) * star x
+              - x * (∑ n ∈ s, ketbraNat n n) * star x
+              - x * (∑ n ∈ s, ketbraNat n n) * star x + x * star x := by
+          noncomm_ring
+        rw [hexp, hPidem s]
+        noncomm_ring
+      rw [unSeminorm, hv]
+      congr 2
+      rw [hνapp]
+      show ω (x * (1 - ∑ n ∈ s, ketbraNat n n) * star x)
+        = ω ((x * (∑ n ∈ s, ketbraNat n n) - x) *
+            star (x * (∑ n ∈ s, ketbraNat n n) - x))
+      rw [halg]
+    -- `⋁_N P_{<N} = 1`, transported to `sa(B(ℓ²))`
+    have hsa : ∀ N : ℕ,
+        star (∑ n ∈ Finset.range N, ketbraNat n n)
+          = ∑ n ∈ Finset.range N, ketbraNat n n := fun N => hPsa _
+    set D : Set (selfAdjoint (ℓ² →L[ℂ] ℓ²)) :=
+      Set.range (fun N : ℕ =>
+        (⟨∑ n ∈ Finset.range N, ketbraNat n n, hsa N⟩ :
+          selfAdjoint (ℓ² →L[ℂ] ℓ²))) with hDdef
+    have hDcoe : Subtype.val '' D =
+        {T : ℓ² →L[ℂ] ℓ² | ∃ N : ℕ, T = ∑ n ∈ Finset.range N, ketbraNat n n} := by
+      ext T
+      constructor
+      · rintro ⟨d, ⟨N, rfl⟩, rfl⟩
+        exact ⟨N, rfl⟩
+      · rintro ⟨N, rfl⟩
+        exact ⟨_, ⟨N, rfl⟩, rfl⟩
+    have hDne : D.Nonempty := ⟨_, ⟨0, rfl⟩⟩
+    have hDdir : DirectedOn (· ≤ ·) D := by
+      rintro _ ⟨N, rfl⟩ _ ⟨M, rfl⟩
+      refine ⟨⟨∑ n ∈ Finset.range (max N M), ketbraNat n n, hsa _⟩,
+        ⟨max N M, rfl⟩, ?_, ?_⟩
+      · exact hPmono (fun a ha => Finset.mem_range.mpr
+          (lt_of_lt_of_le (Finset.mem_range.mp ha) (le_max_left N M)))
+      · exact hPmono (fun a ha => Finset.mem_range.mpr
+          (lt_of_lt_of_le (Finset.mem_range.mp ha) (le_max_right N M)))
+    have hDlub : IsLUB D (1 : selfAdjoint (ℓ² →L[ℂ] ℓ²)) := by
+      refine isLUB_sa_of_isLUB ?_
+      rw [hDcoe]
+      simpa using vn_counterexamples_2_sup
+    have hlubν := ν.preservesDirSups' D 1 hDne hDdir hDlub
+    have hreal : ∀ w ∈ ((fun d : selfAdjoint (ℓ² →L[ℂ] ℓ²) =>
+        ν (d : ℓ² →L[ℂ] ℓ²)) '' D), w.im = 0 := by
+      rintro _ ⟨d, ⟨N, rfl⟩, rfl⟩
+      exact np_im_zero ν (hPnn _)
+    have hre := isLUB_re_of_isLUB hreal hlubν
+    simp only [selfAdjoint.val_one] at hre
+    -- normality: `ω_x(1 − P_{<N})` gets arbitrarily small
+    have hex : ∀ ε : ℝ, 0 < ε → ∃ N : ℕ,
+        (ν (1 - ∑ n ∈ Finset.range N, ketbraNat n n)).re < ε := by
+      intro ε hε
+      by_contra hcon
+      push_neg at hcon
+      have hub : (ν 1).re - ε ∈ upperBounds (Complex.re ''
+          ((fun d : selfAdjoint (ℓ² →L[ℂ] ℓ²) => ν (d : ℓ² →L[ℂ] ℓ²)) '' D)) := by
+        rintro _ ⟨_, ⟨d, ⟨N, rfl⟩, rfl⟩, rfl⟩
+        have h := hcon N
+        rw [np_sub, Complex.sub_re] at h
+        linarith
+      have hle : (ν 1).re ≤ (ν 1).re - ε := hre.2 hub
+      linarith
+    -- and the net is squeezed
+    have hmain : Tendsto (fun s : Finset ℕ =>
+        Real.sqrt (ν (1 - ∑ n ∈ s, ketbraNat n n)).re) atTop (𝓝 0) := by
+      refine Metric.tendsto_nhds.mpr fun ε hε => ?_
+      obtain ⟨N, hN⟩ := hex (ε ^ 2) (by positivity)
+      refine Filter.eventually_atTop.mpr ⟨Finset.range N, fun s hs => ?_⟩
+      rw [Real.dist_eq, sub_zero, abs_of_nonneg (Real.sqrt_nonneg _)]
+      refine (Real.sqrt_lt' hε).mpr (lt_of_le_of_lt ?_ hN)
+      exact np_re_mono ν (sub_le_sub_left (hPmono hs) 1)
+    exact Filter.Tendsto.congr hgoal hmain
+  · -- **clause (b)**
+    intro b hb
+    exact exists_unTendsto_of_l2Summable
+      (bddUnComplete_of_selfDual (selfDual_self (ℓ² →L[ℂ] ℓ²))) horth b hb
+
+end BewareBasis
 
 /-- **149V** (`dils-selfdual`, dils.tex:2244, Theorem): for a pre-Hilbert
 𝒷-module `X` over a von Neumann algebra `𝒷` the following are equivalent:

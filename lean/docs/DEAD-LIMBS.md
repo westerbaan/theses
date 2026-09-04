@@ -612,7 +612,7 @@ the same point, which is the 123I shape.
 | 118II | `cceil_tensor` | `A/Proc/Tensor.lean:10177` | 134 | 1/2 |
 | 81IX | `div_usc_ball` | `A/VN/Division.lean:2975` | 114 | 4/5 |
 | 106I | `uniqueness_sequential_product_exists` | `A/Proc/Measurement.lean:9182` | 79 | 1/3 |
-| 4XIII | `positive_2x2matrix_2` | `A/CStar/Basic.lean:319` | 67 | 1/2 |
+| 4XIII | `positive_2x2matrix_2` | `A/CStar/Basic.lean:403` | 67 | 1/2 |
 | 82I | `polar_decomposition_2` | `A/VN/Division.lean:3446` | 55 | 3/4 |
 | 156II | `paschke_injective` | `B/Dils/Paschke.lean:3638` | 48 | 2/3 |
 | 160IV | `hilbmod_projthm_3` | `B/Dils/SelfDual.lean:1499` | 45 | 2/3 |
