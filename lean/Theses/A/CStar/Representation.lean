@@ -12,10 +12,12 @@ arXiv:1804.02203), chapter 1: C*-algebras — cstar.tex, lines 3887–4958.
     … by Bounded Operators      (parsec 300: states, the GNS construction,
                                  the Gelfand–Naimark theorem)
 
-All statements of parsecs 270–300 are proved, **28II**.4
-`functional_calculus_4` included; its *statement* is nevertheless still
-awaiting an author decision, because our rendering is weaker than the
-exercise — see QUESTIONS A10 and the note on the declaration itself.  See
+All statements of parsecs 270–300 are proved.  Two of them were brought up to
+their printed form on 2026-09-04 under the `docs/DECISIONS.md` §2.1 ruling,
+which closes §2.5 and §2.4 with them: **28II**.4 `functional_calculus_4` now
+identifies the unique element with `f(a)`, and **30X** `proto_gelfand_naimark_2`
+now names `ϱ_Ω` (`dsumRep`) in clause (1), so the equivalence has a converse
+and the closing miu-isomorphism claim is `proto_gelfand_naimark_3`.  See
 CONVENTIONS.md for the numbering (**27XV** = parsec 270, point 150) and naming
 conventions.
 -/
@@ -1144,29 +1146,32 @@ theorem functional_calculus_3 (a : 𝒜) (ha : 0 ≤ a) (α β : ℝ) (hα : 0 <
 end Ordered
 
 /-- **28II** (`functional-calculus`, cstar.tex:4325, Exercise), part 4:
-`f(a)` is the unique element `b` of `C*(a)` with `φ(b) = f(φ(a))` for all
-`φ ∈ spec(C*(a))`.
-
-⚠ **This is the weaker form of 28II.4, and is proved as such.**  The exercise
-asserts two things: that the character condition determines at most one element
-of `C*(a)`, and that the element it determines *is* `f(a)` — i.e. `Φ(f)` of
-part 3, Mathlib's `cfc f a`.  The statement below is the first clause together
-with bare existence; the name `f(a)` does not occur in it, so it does not
-characterise the functional calculus.  Strengthening it is a statement change
-and needs a ruling: **QUESTIONS A10**, which carries the (compiled) 14-line
-proof of the missing clause `φ (cfc f a) = f (φ a)`.
+`f(a)` is the unique element of `C*(a)` with `φ(f(a)) = f(φ(a))` for all
+`φ ∈ spec(C*(a))` — i.e. an element `b` of `C*(a)` satisfies the character
+condition exactly when it *is* `f(a) = Φ(f)`, Mathlib's `cfc f a`.  Both of
+the exercise's assertions are here: uniqueness (two elements satisfying the
+condition are both `f(a)`) and the identification of the element with `f(a)`,
+which is the half one computes with.
 
 Proof, following the thesis: part 3's `j : ρ ↦ ρ(a)` maps `spec(C*(a))` into
 `spec(a)` continuously, so `f ∘ j ∈ C(spec(C*(a)))`; and `C*(a)` is commutative
 (`IsStarNormal a`), so Gelfand's representation theorem **27XXVII** makes
 `γ = gelfandStarTransform` a bijection onto `C(spec(C*(a)))`.  The element
-sought is exactly `γ⁻¹(f ∘ j)`, and it is unique because `γ` is injective. -/
+sought is exactly `γ⁻¹(f ∘ j)` — and that *is* `f(a)`, because Mathlib builds
+`cfc f a` by the very same formula (`cfcHom_eq_of_isStarNormal`, whose
+`continuousFunctionalCalculus a` is `γ⁻¹ ∘ (· ∘ j)`).
+
+*Statement change, 2026-09-04, under the `docs/DECISIONS.md` §2.1 ruling,
+which thereby closes §2.5 (the former QUESTIONS A10).*  This read
+`∃! b : C*(a), ∀ φ, φ b = f (φ a)` — uniqueness together with *bare*
+existence.  The name `f(a)` did not occur in it, so it did not characterise
+the functional calculus; the exercise's second assertion was missing. -/
 theorem functional_calculus_4 (a : 𝒜) [IsStarNormal a] (f : ℂ → ℂ)
     (hf : ContinuousOn f (spectrum ℂ a)) :
-    ∃! b : StarAlgebra.elemental ℂ a,
-      ∀ φ : characterSpace ℂ (StarAlgebra.elemental ℂ a),
-        φ b = f (φ (⟨a, StarAlgebra.elemental.self_mem ℂ a⟩ :
-          StarAlgebra.elemental ℂ a)) := by
+    ∀ b : StarAlgebra.elemental ℂ a,
+      (∀ φ : characterSpace ℂ (StarAlgebra.elemental ℂ a),
+          φ b = f (φ (⟨a, StarAlgebra.elemental.self_mem ℂ a⟩ :
+            StarAlgebra.elemental ℂ a))) ↔ (b : 𝒜) = cfc f a := by
   -- `j : ρ ↦ ρ(a)` maps `spec(C*(a))` into `spec(a)` and is continuous
   -- (part 3 of the exercise; Mathlib's `characterSpaceToSpectrum`).
   have hmem : ∀ φ : characterSpace ℂ (StarAlgebra.elemental ℂ a),
@@ -1178,24 +1183,29 @@ theorem functional_calculus_4 (a : 𝒜) [IsStarNormal a] (f : ℂ → ℂ)
         StarAlgebra.elemental ℂ a)) :=
     hf.comp_continuous
       (StarAlgebra.elemental.continuous_characterSpaceToSpectrum a).subtype_val hmem
-  -- `f ∘ j ∈ C(spec(C*(a)))`; the claim is that it has a unique `γ`-preimage.
-  set g : C(characterSpace ℂ (StarAlgebra.elemental ℂ a), ℂ) := ⟨_, hcont⟩
-  have key : ∀ b : StarAlgebra.elemental ℂ a,
-      (∀ φ : characterSpace ℂ (StarAlgebra.elemental ℂ a),
-          φ b = f (φ (⟨a, StarAlgebra.elemental.self_mem ℂ a⟩ :
-            StarAlgebra.elemental ℂ a))) ↔
-        gelfandStarTransform (StarAlgebra.elemental ℂ a) b = g := by
-    intro b
-    constructor
-    · intro h; ext φ; exact h φ
-    · intro h φ; exact DFunLike.congr_fun h φ
-  -- Gelfand's representation theorem (27XXVII) for the commutative C*-algebra
-  -- `C*(a)`: `γ` is bijective, so `f ∘ j` has exactly one preimage.
-  refine ⟨(gelfandStarTransform (StarAlgebra.elemental ℂ a)).symm g, ?_, ?_⟩
-  · exact (key _).2 ((gelfandStarTransform (StarAlgebra.elemental ℂ a)).apply_symm_apply g)
-  · intro b hb
-    rw [← (gelfandStarTransform (StarAlgebra.elemental ℂ a)).symm_apply_apply b,
-      (key b).1 hb]
+  -- `f ∘ j ∈ C(spec(C*(a)))`; the claim is that its `γ`-preimage is `f(a)`.
+  set g : C(characterSpace ℂ (StarAlgebra.elemental ℂ a), ℂ) := ⟨_, hcont⟩ with hg
+  have hcfc : ((gelfandStarTransform (StarAlgebra.elemental ℂ a)).symm g : 𝒜)
+      = cfc f a := by
+    have h1 : continuousFunctionalCalculus a
+          ⟨(spectrum ℂ a).domRestrict f, hf.domRestrict⟩
+        = (gelfandStarTransform (StarAlgebra.elemental ℂ a)).symm g := by
+      show (gelfandStarTransform (StarAlgebra.elemental ℂ a)).symm _ = _
+      congr 1
+    rw [← h1, cfc_apply f a, cfcHom_eq_of_isStarNormal a]
+    rfl
+  intro b
+  constructor
+  · intro h
+    have hb : gelfandStarTransform (StarAlgebra.elemental ℂ a) b = g := by
+      ext φ; exact h φ
+    rw [← hcfc, ← hb, StarAlgEquiv.symm_apply_apply]
+  · intro h φ
+    have hb : b = (gelfandStarTransform (StarAlgebra.elemental ℂ a)).symm g :=
+      Subtype.ext (by rw [h, hcfc])
+    rw [hb]
+    exact DFunLike.congr_fun
+      ((gelfandStarTransform (StarAlgebra.elemental ℂ a)).apply_symm_apply g) φ
 
 /-- **28II** (`functional-calculus`, cstar.tex:4325, Exercise), part 5
 (Spectral mapping theorem): `spec(f(a)) = f(spec(a))` for normal `a` and
@@ -2553,18 +2563,35 @@ private theorem dsumRep_gns_injective {ι : Type v} (f : ι → (𝒜 →ₚ[ℂ
   exact sub_eq_zero.mp (key (x - y) (by rw [map_sub, hxy, sub_self]))
 
 /-- **30X** (`proto-gelfand-naimark`, cstar.tex:4977, Proposition),
-(2) ⇒ (1) and final claim: if `Ω` is centre separating then `ϱ_Ω` is
-injective, so `𝒜` is miu-isomorphic to a C*-algebra of bounded operators on
-the Hilbert space `ℋ_Ω` (by **29IX**).  Stated existentially. -/
-theorem proto_gelfand_naimark_2 {ι : Type v} (ω : ι → (𝒜 →ₗ[ℂ] ℂ))
-    (hpos : ∀ i, IsPositiveMap (ω i))
-    (hc : CentreSeparating (fun i => ω i)) :
-    ∃ (H : Type (max u v)) (_ : NormedAddCommGroup H)
-      (_ : InnerProductSpace ℂ H) (_ : CompleteSpace H)
-      (ρ : 𝒜 →⋆ₐ[ℂ] (H →L[ℂ] H)), Function.Injective ρ :=
-  -- `ℋ_Ω = ⊕_{ω∈Ω} ℋ_ω` and `ϱ_Ω` (**30IX**), from the block above
-  ⟨lp (fun i => (toPLM (ω i) (hpos i)).GNS) 2, inferInstance, inferInstance,
-    inferInstance, _, dsumRep_gns_injective (fun i => toPLM (ω i) (hpos i)) hc⟩
+(1) ⇒ (3): if `ϱ_Ω` is injective then `Ω'` is order separating.  This is the
+Proposition's own argument at cstar.tex:5018, which uses nothing about `Ω`
+beyond the injectivity of `ϱ_Ω`: by **29IX** it suffices that `ϱ_Ω(a) ≥ 0`
+(`nonneg_of_injective_miu`), and each `ϱ_ω(a) ≥ 0` by `gnsStarAlgHom_nonneg`
+(**30XIII** and the density of `{η_ω(b)}` in `ℋ_ω`).  In particular the
+self-adjointness of `a` is not established by hand: it comes free with the
+positivity of `ϱ_Ω(a)`. -/
+private theorem orderSeparating_of_dsumRep_injective {ι : Type v}
+    (ω : ι → (𝒜 →ₗ[ℂ] ℂ)) (hpos : ∀ i, IsPositiveMap (ω i))
+    (hinj : Function.Injective
+      (dsumRep (fun i => (toPLM (ω i) (hpos i)).gnsStarAlgHom))) :
+    OrderSeparating (fun p : ι × 𝒜 => (ω p.1).comp (conjMap 𝒜 p.2)) := by
+  have hconj : ∀ (i : ι) (b x : 𝒜),
+      ((ω i).comp (conjMap 𝒜 b)) x = ω i (star b * x * b) := by
+    intro i b x
+    show ω i (star b * (x * b)) = ω i (star b * x * b)
+    rw [mul_assoc]
+  intro a
+  refine ⟨fun ha p => ?_, fun H => ?_⟩
+  · simp only [hconj]
+    exact hpos p.1 _ (star_left_conjugate_nonneg ha p.2)
+  · have Hb : ∀ (i : ι) (b : 𝒜), (0 : ℂ) ≤ ω i (star b * a * b) := by
+      intro i b
+      simpa only [hconj] using H (i, b)
+    -- every `ϱ_ω(a)` is positive (cstar.tex:5030)
+    have hcoord : ∀ i, 0 ≤ (toPLM (ω i) (hpos i)).gnsStarAlgHom a :=
+      fun i => gnsStarAlgHom_nonneg _ a fun b => Hb i b
+    -- hence so is `ϱ_Ω(a)`; and `ϱ_Ω` is injective, so it reflects positivity
+    exact nonneg_of_injective_miu _ hinj a (dsumRep_nonneg _ a hcoord)
 
 /-- **30X** (`proto-gelfand-naimark`, cstar.tex:4977, Proposition),
 equivalence (2) ↔ (3): a collection `Ω` of p-maps on `𝒜` is centre
@@ -2573,11 +2600,8 @@ separating iff `Ω' = { ω(b* (·) b) : ω ∈ Ω, b ∈ 𝒜 }` is order separa
 *Class 1 — faithful.*  Both directions are the Proposition's own proof.
 "It is clear that (3) entails (2)" is the second bullet.  For (2) ⇒ (3) the
 thesis goes through (1): `ϱ_Ω` is injective by cstar.tex:5002
-(`dsumRep_gns_injective`), and then cstar.tex:5018 — by **29IX** it suffices
-that `ϱ_Ω(a) ≥ 0` (`nonneg_of_injective_miu`), which holds because each
-`ϱ_ω(a) ≥ 0` (`gnsStarAlgHom_nonneg`, by **30XIII** and the density of
-`{η_ω(b)}` in `ℋ_ω`).  In particular the self-adjointness of `a` is not
-established by hand: it comes free with the positivity of `ϱ_Ω(a)`. -/
+(`dsumRep_gns_injective`), and then cstar.tex:5018, which is the preceding
+`orderSeparating_of_dsumRep_injective`. -/
 theorem proto_gelfand_naimark_1 {ι : Type v} (ω : ι → (𝒜 →ₗ[ℂ] ℂ))
     (hpos : ∀ i, IsPositiveMap (ω i)) :
     CentreSeparating (fun i => ω i) ↔
@@ -2588,20 +2612,9 @@ theorem proto_gelfand_naimark_1 {ι : Type v} (ω : ι → (𝒜 →ₗ[ℂ] ℂ
     show ω i (star b * (x * b)) = ω i (star b * x * b)
     rw [mul_assoc]
   constructor
-  · intro hc a
-    refine ⟨fun ha p => ?_, fun H => ?_⟩
-    · simp only [hconj]
-      exact hpos p.1 _ (star_left_conjugate_nonneg ha p.2)
-    · have Hb : ∀ (i : ι) (b : 𝒜), (0 : ℂ) ≤ ω i (star b * a * b) := by
-        intro i b
-        simpa only [hconj] using H (i, b)
-      -- every `ϱ_ω(a)` is positive (cstar.tex:5030)
-      have hcoord : ∀ i, 0 ≤ (toPLM (ω i) (hpos i)).gnsStarAlgHom a :=
-        fun i => gnsStarAlgHom_nonneg _ a fun b => Hb i b
-      -- hence so is `ϱ_Ω(a)`; and `ϱ_Ω` is injective, so it reflects positivity
-      exact nonneg_of_injective_miu _
-        (dsumRep_gns_injective (fun i => toPLM (ω i) (hpos i)) hc) a
-        (dsumRep_nonneg _ a hcoord)
+  · intro hc
+    exact orderSeparating_of_dsumRep_injective ω hpos
+      (dsumRep_gns_injective (fun i => toPLM (ω i) (hpos i)) hc)
   · intro ho a ha
     refine ⟨fun h i b => by rw [h]; simp, fun H => ?_⟩
     have h1 : (0 : 𝒜) ≤ -a := by
@@ -2610,6 +2623,56 @@ theorem proto_gelfand_naimark_1 {ι : Type v} (ω : ι → (𝒜 →ₗ[ℂ] ℂ
       rw [show star p.2 * (-a) * p.2 = -(star p.2 * a * p.2) by noncomm_ring, map_neg,
         H p.1 p.2, neg_zero]
     exact le_antisymm (neg_nonneg.mp h1) ha
+
+/-- **30X** (`proto-gelfand-naimark`, cstar.tex:4977, Proposition),
+equivalence (1) ↔ (2): `ϱ_Ω : 𝒜 → B(ℋ_Ω)` — the concrete `dsumRep` of
+**30IX**, the diagonal operator on `ℋ_Ω = ⊕_{ω∈Ω} ℋ_ω` — is injective iff
+`Ω` is centre separating.  Together with `proto_gelfand_naimark_1` this is
+the Proposition's three-way equivalence, and `proto_gelfand_naimark_3` is its
+closing claim.
+
+*Class 1 — faithful.*  (2) ⇒ (1) is cstar.tex:5002, `dsumRep_gns_injective`;
+(1) ⇒ (2) is the thesis's (1) ⇒ (3) (`orderSeparating_of_dsumRep_injective`,
+cstar.tex:5018) followed by "(3) entails (2)", which is the second bullet of
+the printed proof and the `mpr` of `proto_gelfand_naimark_1`.
+
+*Statement change, 2026-09-04, under the `docs/DECISIONS.md` §2.1 ruling,
+which thereby closes §2.4 (the former QUESTIONS A8).*  This read
+`CentreSeparating Ω → ∃ H (ρ : 𝒜 →⋆ₐ[ℂ] B H), Function.Injective ρ`, which
+names neither `Ω` nor `ϱ_Ω`: in that form clause (1) does not depend on `Ω`,
+so the converse (1) ⇒ (2) was unstatable, and (2) ⇒ (1) collapsed into
+**30XIV** (every C*-algebra with a centre separating family of p-maps has an
+injective representation *is* Gelfand–Naimark).  The existential is where it
+belongs, in `gelfand_naimark` below, which is unchanged. -/
+theorem proto_gelfand_naimark_2 {ι : Type v} (ω : ι → (𝒜 →ₗ[ℂ] ℂ))
+    (hpos : ∀ i, IsPositiveMap (ω i)) :
+    Function.Injective (dsumRep (fun i => (toPLM (ω i) (hpos i)).gnsStarAlgHom)) ↔
+      CentreSeparating (fun i => ω i) :=
+  ⟨fun hinj => (proto_gelfand_naimark_1 ω hpos).mpr
+      (orderSeparating_of_dsumRep_injective ω hpos hinj),
+    fun hc => dsumRep_gns_injective (fun i => toPLM (ω i) (hpos i)) hc⟩
+
+/-- **30X** (`proto-gelfand-naimark`, cstar.tex:4977, Proposition), the
+closing claim: in that case `ϱ_Ω(𝒜)` is a C*-subalgebra of `B(ℋ_Ω)` and
+`ϱ_Ω` restricts to an miu-isomorphism from `𝒜` onto `ϱ_Ω(𝒜)`.
+
+*Class 1 — faithful.*  This is **29IX** applied to `ϱ_Ω`, which is what the
+Proposition's own proof does (cstar.tex:5020): `injective_miu_iso_on_image_isomorphism`
+on the injectivity `proto_gelfand_naimark_2` supplies. -/
+theorem proto_gelfand_naimark_3 {ι : Type v} (ω : ι → (𝒜 →ₗ[ℂ] ℂ))
+    (hpos : ∀ i, IsPositiveMap (ω i))
+    (hc : CentreSeparating (fun i => ω i)) :
+    ∃ S : StarSubalgebra ℂ
+        (lp (fun i => (toPLM (ω i) (hpos i)).GNS) 2 →L[ℂ]
+          lp (fun i => (toPLM (ω i) (hpos i)).GNS) 2),
+      (S : Set (lp (fun i => (toPLM (ω i) (hpos i)).GNS) 2 →L[ℂ]
+          lp (fun i => (toPLM (ω i) (hpos i)).GNS) 2))
+          = Set.range (dsumRep fun i => (toPLM (ω i) (hpos i)).gnsStarAlgHom) ∧
+        IsClosed (S : Set (lp (fun i => (toPLM (ω i) (hpos i)).GNS) 2 →L[ℂ]
+          lp (fun i => (toPLM (ω i) (hpos i)).GNS) 2)) ∧
+          ∃ e : 𝒜 ≃⋆ₐ[ℂ] S, ∀ a : 𝒜,
+            Subtype.val (e a) = dsumRep (fun i => (toPLM (ω i) (hpos i)).gnsStarAlgHom) a :=
+  injective_miu_iso_on_image_isomorphism _ ((proto_gelfand_naimark_2 ω hpos).mpr hc)
 
 end GNS
 
@@ -2641,6 +2704,9 @@ theorem gelfand_naimark (𝒜 : Type u) [CStarAlgebra 𝒜] :
       show (0 : ℂ) ≤ (ω : 𝒜 →ₗ[ℂ] ℂ) a
       simp only [LinearMap.comp_apply, he] at h
       exact h
-  exact proto_gelfand_naimark_2 _ hpos hc
+  -- `ℋ_Ω = ⊕_{ω∈Ω} ℋ_ω` and `ϱ_Ω` (**30IX**)
+  exact ⟨lp (fun i : {ω : 𝒜 →ₗ[ℂ] ℂ // IsState ω} =>
+      (toPLM (i : 𝒜 →ₗ[ℂ] ℂ) (hpos i)).GNS) 2, inferInstance, inferInstance,
+    inferInstance, _, (proto_gelfand_naimark_2 _ hpos).mpr hc⟩
 
 end Theses.A.CStar

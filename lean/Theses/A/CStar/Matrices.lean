@@ -94,10 +94,40 @@ theorem moduleAdjointable_linear (T : X → Y) (hT : ModuleAdjointable 𝒜 T) :
   · simp [hS']
   · simp [hS']
 
-/-! **32II** (cstar.tex:5145, Example): `𝒜^N` with
-`⟨x, y⟩ = ∑ₙ xₙ* yₙ` is a Hilbert 𝒜-module — Mathlib:
-`WithCStarModule 𝒜 (Fin N → 𝒜)` (notation `C⋆ᵐᵒᵈ(𝒜, Fin N → 𝒜)`) with its
-`CStarModule` instance. -/
+/-! **32II** (cstar.tex:5145, Example): `𝒜^N` is a Hilbert 𝒜-module —
+Mathlib: `WithCStarModule 𝒜 (Fin N → 𝒜)` (notation `C⋆ᵐᵒᵈ(𝒜, Fin N → 𝒜)`)
+with its `CStarModule` instance.  It is the same synonym **32I** is rendered
+on above and the witness **33I** and **36III** `selfDual_pi` use;
+completeness — the *Hilbert* as opposed to pre-Hilbert half — is the
+`CompleteSpace` instance the synonym carries when `𝒜` is complete.
+
+⚠ **The Example's displayed formula is not the one this type carries.**  The
+Example displays `⟨x, y⟩ = ∑ₙ (xₙ)* yₙ`.  Mathlib builds the inner product on
+a Pi type coordinatewise out of the one a C*-algebra carries over itself,
+`⟪x, y⟫ = y (x)*` (`Mathlib/Analysis/CStarAlgebra/Module/Constructions.lean`),
+so ours is `⟪x, y⟫ = ∑ₙ yₙ (xₙ)*` — the two factors in the other order.  That
+is stated and machine-checked as `chilb_pi_self_inner` just below.  The two
+are each other read in the **opposite algebra**: Mathlib's `CStarModule` is a
+left module with `⟪x, a•y⟫ = a⟪x,y⟫` where the thesis has a right module with
+`⟨x, y·b⟩ = ⟨x,y⟩b`, so both satisfy every clause of **32I**, and they agree
+exactly when `𝒜` is commutative (which is why 32IV, over `C[0,1]`, is
+unaffected).  Nothing downstream is wrong — every `𝒜^N` computation in this
+file and in `A/CStar/TowardsVN.lean` is consistent with *ours*, `selfDual_pi`
+included — but a reader who takes the Example literally will read them
+backwards.  Which convention `𝒜^N` and `𝓑^a(X)` are read in is
+`docs/DECISIONS.md` §3.3, which lists 32II, **33I** `matrixBaxEquiv` and
+141III `rightMulEquiv` as the three statements carrying the mirror. -/
+
+/-- **32II** (cstar.tex:5145, Example), the inner product of `𝒜^N` as this
+tree has it: `⟪x, y⟫ = ∑ₙ yₙ (xₙ)*`, which is the Example's `∑ₙ (xₙ)* yₙ`
+read in the opposite algebra (see the block above).  Stated because the
+displayed formula is the one thing about `C⋆ᵐᵒᵈ(𝒜, Fin N → 𝒜)` that a reader
+can get wrong, and it should not be left to a comment. -/
+theorem chilb_pi_self_inner {N : ℕ} (x y : C⋆ᵐᵒᵈ(𝒜, Fin N → 𝒜)) :
+    inner 𝒜 x y = ∑ n, y n * star (x n) := by
+  rw [WithCStarModule.pi_inner]
+  exact Finset.sum_congr rfl fun n _ => WithCStarModule.inner_def _ _
+
 
 /-- **32III** (cstar.tex:5151, Exercise), part 1: if `T` is adjoint to `S`
 then `S` is adjoint to `T` (so `T** = T`). -/
@@ -2334,8 +2364,23 @@ theorem ad_cp_2_module (S : Y →L[ℂ] X) (S' : X →L[ℂ] Y)
 
 end AdCPModule
 
-/-- **34V** (`ad-cp`, cstar.tex:5575, Exercise), part 3: the vector
-functional `T ↦ ⟨x, Tx⟩ : B(H) → ℂ` is completely positive. -/
+/-- **34V** (`ad-cp`, cstar.tex:5575, Exercise), part 3, in the Hilbert-space
+case `𝒜 = ℂ`: the vector functional `T ↦ ⟨x, Tx⟩ : B(H) → ℂ` is completely
+positive.  The computation is solution parsec-340.50(3).
+
+⚠ The Exercise states part 3 for an element `x` of a **Hilbert 𝒜-module** `X`,
+as `T ↦ ⟨x, Tx⟩ : 𝓑^a(X) → 𝒜`, and *that* statement is nowhere in the tree.
+What blocks it is not the type `𝓑^a(X)` — it is `Bax 𝒜 X` here, and 34V.2 is
+stated for modules, as `ad_cp_2_module` above — but the cp condition itself.
+Under Mathlib's `CStarModule` convention (a left module, `⟪x, a•y⟫ = a⟪x,y⟫`,
+where the thesis has a right one) the ℂ-linear map `T ↦ ⟪x, Tx⟫` makes
+`∑ᵢⱼ bⱼ ⟪Tᵢx, Tⱼx⟫ bᵢ*` positive — the **transpose** of what
+`IsCompletelyPositiveMap` asks, `0 ≤ ∑ᵢⱼ (bᵢ)* f((Tᵢ)* Tⱼ) bⱼ` — and over a
+noncommutative `𝒜` the transpose of a positive matrix need not be positive.
+Stating the module case therefore needs either a mirrored companion to
+`IsCompletelyPositiveMap` or a codomain `𝒜ᵐᵒᵖ`: a new definition or a new
+convention, which is the author's call and is `docs/DECISIONS.md` §3.3.  For
+`𝒜 = ℂ` the two conditions coincide, which is why this case is sound. -/
 theorem ad_cp_3 {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
     [CompleteSpace H] (x : H) :
     IsCompletelyPositiveMap (vectorFunctional x) := by

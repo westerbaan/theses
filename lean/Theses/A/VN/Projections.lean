@@ -6150,6 +6150,90 @@ theorem central_projections_sums_2_iso
 
 end FamilyCorner
 
+/-! ### 67IV.2 without the Mathlib binder
+
+The binder `[∀ i, Nontrivial ((c i).sub)]` of `section FamilyCorner` — i.e.
+`cᵢ ≠ 0` for every `i` — is **not** 67IV.2's: vn.tex:3426-3430 asks only that
+the `cᵢ` be central projections with `∑ᵢcᵢ = 1`, and such a family may
+perfectly well contain `0`.  It is Mathlib's binder for the unital ring on
+`lp _ ∞`, the same one listed on the 42V row of `avn-basic.csv`.
+
+Restated over `J = {i // Nontrivial ((c i).sub)}` the binder is *discharged*
+rather than assumed (`fun j => j.2`), and nothing of the point is lost: the
+summands dropped are exactly the `cᵢ = 0`, whose corners are the zero algebra,
+so `⊕_{j∈J} cⱼA` is the printed `⊕ᵢ cᵢA` up to the isometric star-isomorphism
+`lpInftyNontrivialEquiv` (`A/CStar/Positive.lean`) — and the hypothesis
+survives the restriction, `⋁ᵢcᵢ = 1` giving `⋁_{j∈J}cⱼ = 1` because the
+discarded `cᵢ` are `0`.
+
+As in `A/VN/Basic.lean`'s `section DirectSumNontrivial`, the discharge is a
+`local instance` and not a `haveI` inside the proof: the *statement* below
+mentions the unital structures on `lp _ ∞` that Mathlib gates on the binder,
+so the instance has to be available while the type is elaborated. -/
+
+private theorem nontrivialCorner_of_index {ι : Type*} {c : ι → CentralProj A}
+    (j : {i // Nontrivial ((c i).sub)}) : Nontrivial ((c j).sub) := j.2
+
+section FamilyCornerNontrivial
+
+attribute [local instance] nontrivialCorner_of_index
+
+/-- **67IV** (`central-projections-sums`, vn.tex:3407, Exercise), part 2
+**without the Mathlib binder**: given central projections `(cᵢ)ᵢ` with
+`∑ᵢcᵢ = 1` — pairwise orthogonal with `⋁ᵢcᵢ = 1`, equivalent by **56XVIII** —
+the map `a ↦ (cᵢa)ᵢ` is an nmiu-**isomorphism** `A → ⊕ᵢ cᵢA`, the direct sum
+being taken over the non-zero `cᵢ`, which is the whole of it up to
+`lpInftyNontrivialEquiv`.  Multiplicativity, involutivity, unitality and
+ℂ-linearity come with `NMIUMap`, bijectivity is the explicit conjunct, and the
+formula `(Φ a) i = cᵢ a` is the third.
+
+*Statement change, 2026-09-04, under the `docs/DECISIONS.md` §2.1 ruling.*
+The sibling `central_projections_sums_2_iso` states the same thing under the
+extra hypothesis `[∀ i, Nontrivial ((c i).sub)]`, which the Exercise does not
+have; this is that statement with the hypothesis discharged, and it is proved
+from it by restricting the family to `J`.  Exercise, no printed proof. -/
+theorem central_projections_sums_2_iso' {ι : Type*} (c : ι → CentralProj A)
+    (horth : Pairwise fun i j => (c i).val * (c j).val = 0)
+    (hsum : projSup (Set.range fun i => (c i).val) = 1) :
+    ∃ Φ : NMIUMap A (lp (fun j : {i // Nontrivial ((c i).sub)} => (c j).sub) ∞),
+      Function.Bijective ⇑Φ ∧
+        ∀ (a : A) (j : {i // Nontrivial ((c i).sub)}),
+          (((Φ a : lp (fun j : {i // Nontrivial ((c i).sub)} => (c j).sub) ∞) :
+              ∀ j : {i // Nontrivial ((c i).sub)}, (c j).sub) j : A)
+            = (c j).val * a := by
+  -- a corner `cᵢA` is trivial exactly when `cᵢ = 0`
+  have hzero : ∀ i, ¬ Nontrivial ((c i).sub) → (c i).val = 0 := by
+    intro i h
+    have hs : Subsingleton ((c i).sub) := not_nontrivial_iff_subsingleton.mp h
+    have h1 : (1 : (c i).sub) = 0 := Subsingleton.elim _ _
+    have := congrArg (fun x : (c i).sub => (x : A)) h1
+    simpa using this
+  have hprojJ : ∀ p ∈ Set.range (fun j : {i // Nontrivial ((c i).sub)} => (c j).val),
+      IsStarProjection p := by
+    rintro _ ⟨j, rfl⟩; exact (c j).isProj
+  have hproj : ∀ p ∈ Set.range (fun i => (c i).val), IsStarProjection p := by
+    rintro _ ⟨i, rfl⟩; exact (c i).isProj
+  -- `⋁ᵢcᵢ = 1` survives the restriction: what is dropped is `0`
+  have hsum' : projSup (Set.range fun j : {i // Nontrivial ((c i).sub)} => (c j).val)
+      = 1 := by
+    refine projSup_eq hprojJ (IsStarProjection.one A) ?_ ?_
+    · rintro _ ⟨j, rfl⟩; exact (c j).isProj.le_one
+    · intro q hq hub
+      rw [← hsum]
+      refine (projSup_spec hproj).2.2 q hq ?_
+      rintro _ ⟨i, rfl⟩
+      show (c i).val ≤ q
+      by_cases hi : Nontrivial ((c i).sub)
+      · exact hub _ ⟨⟨i, hi⟩, rfl⟩
+      · rw [hzero i hi]; exact hq.nonneg
+  have horth' : Pairwise fun j k : {i // Nontrivial ((c i).sub)} =>
+      (c j).val * (c k).val = 0 :=
+    fun j k hjk => horth (Subtype.coe_injective.ne hjk)
+  exact central_projections_sums_2_iso (fun j : {i // Nontrivial ((c i).sub)} => c j)
+    horth' hsum'
+
+end FamilyCornerNontrivial
+
 /-! ## Parsec 680: central support -/
 
 /-- **68I** (`cceil-fundamental`, vn.tex:3437, Proposition), the content: for
@@ -7759,10 +7843,16 @@ implication (1) ⇒ (2) at the thesis's own `ϱ_Ω`, which is what the printed
 **69X** proof cites when it says "we've seen in `proto-gelfand-naimark` that
 (1) ⟺ (2)": if `ϱ_Ω` is injective, then `Ω` is centre separating.
 
-It is supplied here rather than imported because our rendering of 30X
-(`proto_gelfand_naimark_2`) states clause (1) *existentially* — "there is a
-Hilbert space and an injective ∗-homomorphism" — and so says nothing about
-`ϱ_Ω` itself.  The route is 30X's own: (1) ⇒ (3) is cstar.tex:5018 — by
+It is supplied here rather than imported, but no longer for the reason this
+comment used to give.  That reason — "our rendering of 30X states clause (1)
+existentially and so says nothing about `ϱ_Ω` itself" — expired on 2026-09-04,
+when `proto_gelfand_naimark_2` was restated under the `docs/DECISIONS.md` §2.1
+ruling as the equivalence `Function.Injective (dsumRep …) ↔ CentreSeparating Ω`.
+What is left is that the two `ϱ_Ω` are *different declarations*: 30X's is
+`dsumRep` on a family of positive linear maps indexed by a type, this file's is
+`gnsRepFam (famOfSet Ω)` on a **set** of np-functionals, and nothing identifies
+them, so the implication is re-derived here rather than transported.  The route
+is 30X's own: (1) ⇒ (3) is cstar.tex:5018 — by
 **29IX** it suffices that `ϱ_Ω(a) ≥ 0` (`nonneg_of_injective_miu`), which
 holds because each `ϱ_ω(a) ≥ 0` (`gnsStarAlgHom_nonneg`, by **30XIII** and
 the density of `{η_ω(b)}` in `ℋ_ω`) — so `Ω' = {ω(b*(·)b)}` is order
