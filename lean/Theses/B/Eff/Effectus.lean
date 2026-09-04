@@ -2208,34 +2208,54 @@ theorem par_orth_unique {X : Par C} {p q : X ⟶ Par.of (⊤_ C)} (h : ParPerp p
   rw [← hb₂, hc, par_hat_comp, pval_pproj₂, par_terminal_self, Category.id_comp,
     pval_parOrth, parSwapTop_eq, hp]
 
-/-- **187VI**, zero–one axiom.  (Derived from the uniqueness of the
-orthosupplement together with **186VIII.2**, rather than from the pullback
-square of the thesis' diagram.) -/
+/-- The instance of the **right pullback square of the effectus axioms**
+that **187VI**'s zero–one argument draws (eff.tex:1866): the square with
+vertex `1`, left leg `κ₁ ∘ κ₁ : 1 ⟶ (1+1)+1`, top edge the identity and
+bottom edge `[id, κ₂]`.
+
+It *is* an instance, at `X = 1` and `Y = 1+1`, once the coproduct is
+rebracketed: the associator `(1+1)+1 ≅ 1+(1+1)` carries `κ₁` to `κ₁ ∘ κ₁`
+and `! + !` to `[id, κ₂]`, since `! : 1 ⟶ 1` is the identity. -/
+private theorem isPullback_kappa_kappa :
+    IsPullback (terminal.from (⊤_ C))
+      ((coprod.inl ≫ coprod.inl : (⊤_ C) ⟶ ((⊤_ C) ⨿ (⊤_ C)) ⨿ ⊤_ C))
+      (coprod.inl : (⊤_ C) ⟶ (⊤_ C) ⨿ ⊤_ C)
+      (coprod.desc (𝟙 ((⊤_ C) ⨿ (⊤_ C))) coprod.inr) := by
+  refine (EffectusTotalForm.isPullback_kappa (⊤_ C) ((⊤_ C) ⨿ (⊤_ C))).of_iso
+    (Iso.refl _) (Iso.refl _) (coprod.associator (⊤_ C) (⊤_ C) (⊤_ C)).symm
+    (Iso.refl _) ?_ ?_ ?_ ?_
+  · simp
+  · simp [coprod.inl_desc]
+  · simp
+  · refine coprod.hom_ext ?_ (coprod.hom_ext ?_ ?_) <;>
+      simp [par_terminal_self, coprod.inl_desc, coprod.inr_desc]
+
+/-- **187VI**, zero–one axiom, on the thesis's own route: from a bound `b`
+for `1 ⊥ p` the equation `▷₁ ⊙ b = 1` reads in `C` as
+`b ≫ [id, κ₂] = κ₁ ∘ !`, so `isPullback_kappa_kappa` — the instance of the
+right pullback square drawn at eff.tex:1866 — gives `b = κ₁ ∘ κ₁ ∘ !`, and
+then `p = ▷₂ ⊙ b = [[κ₂,κ₁],κ₂] ∘ κ₁ ∘ κ₁ ∘ ! = κ₂ ∘ ! = 0`. -/
 theorem par_eq_zero_of_perp_one {X : Par C} {p : X ⟶ Par.of (⊤_ C)}
     (h : ParPerp p (Par.one X.base)) : p = Par.zero X.base (⊤_ C) := by
-  have h' : ParPerp (Par.one X.base) p := parPerp_comm h
-  have hso : ParPerp (parOvee (Par.one X.base) p h')
-      (parOrth (parOvee (Par.one X.base) p h')) :=
-    par_perp_orth _
-  have hpt : ParPerp p (parOrth (parOvee (Par.one X.base) p h')) :=
-    PCM.perp_of_ovee_perp (c := parOrth (parOvee (Par.one X.base) p h')) h' hso
-  have ht1 : ParPerp (Par.one X.base)
-      (parOvee p (parOrth (parOvee (Par.one X.base) p h')) hpt) :=
-    PCM.perp_ovee_of_ovee_perp (c := parOrth (parOvee (Par.one X.base) p h')) h' hso
-  have hassoc := PCM.ovee_assoc (c := parOrth (parOvee (Par.one X.base) p h')) h' hso
-  have hone : parOvee (Par.one X.base)
-      (parOvee p (parOrth (parOvee (Par.one X.base) p h')) hpt) ht1 = Par.one X.base :=
-    hassoc.symm.trans (par_ovee_orth (parOvee (Par.one X.base) p h'))
-  have ht0 : parOvee p (parOrth (parOvee (Par.one X.base) p h')) hpt
-      = parOrth (Par.one X.base) := par_orth_unique ht1 hone
-  have horth_one : parOrth (Par.one X.base) = Par.zero X.base (⊤_ C) := by
-    refine pval_inj ?_
-    rw [pval_parOrth, parSwapTop_eq, pval_one, pval_zero, Category.assoc, coprod.inl_desc]
-  obtain ⟨d, hd₁, hd₂⟩ := id hpt
-  have hd : d ≫ Par.one ((⊤_ C) ⨿ (⊤_ C)) = Par.zero X.base (⊤_ C) := by
-    rw [← par_nabla_top, ← parOvee_eq hpt ⟨hd₁, hd₂⟩, ht0, horth_one]
-  have hd0 : d = Par.zero X.base ((⊤_ C) ⨿ ⊤_ C) := pardp_2 d hd
-  rw [← hd₁, hd0, par_zero_comp]
+  obtain ⟨b, hb₁, hb₂⟩ := id (parPerp_comm h)
+  -- `▷₁ ⊙ b = 1`, read in `C`
+  have hd : pval b ≫ coprod.desc (𝟙 ((⊤_ C) ⨿ (⊤_ C))) coprod.inr
+      = terminal.from X.base ≫ coprod.inl := by
+    have h1 := congrArg pval hb₁
+    rw [pval_comp, pval_pproj₁, par_terminal_self, Category.id_comp,
+      coprod.desc_inl_inr, pval_one] at h1
+    exact h1
+  -- `b = κ₁ ∘ κ₁ ∘ !`
+  have hsq := isPullback_kappa_kappa (C := C)
+  have hlift := hsq.lift_snd (terminal.from X.base) (pval b) hd.symm
+  have hbval : pval b = terminal.from X.base ≫ coprod.inl ≫ coprod.inl := by
+    rw [← hlift, terminalIsTerminal.hom_ext
+      (hsq.lift (terminal.from X.base) (pval b) hd.symm) (terminal.from X.base)]
+  -- `p = ▷₂ ⊙ b = 0`
+  refine pval_inj ?_
+  rw [← hb₂, pval_comp, pval_pproj₂, par_terminal_self, Category.id_comp,
+    hbval, pval_zero]
+  simp only [Category.assoc, coprod.inl_desc]
 
 
 /-! ### 187VII: the last two axioms -/
