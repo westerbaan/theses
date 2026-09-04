@@ -1342,7 +1342,7 @@ the filters, all unrowed by `lean_name`):
   corner — a sanity anchor for the definitions", i.e. class 2, a non-vacuity
   check), `isPureMap_of_isFilter` (`Pure.lean:2388` names it beside
   `isPureMap_of_isCorner`, and it is the filter half of **170I**'s "filters and
-  corners are pure"), `vn_effObj_iso` (`VNExamples.lean:7311`, "what the eight
+  corners are pure"), `vn_effObj_iso` (`VNExamples.lean:7838`, "what the eight
   examples downstream actually use is … the *uniqueness* statement
   `vn_effObj_iso`, which is proved" — and again at `:2127`), and
   `modularPair_data` (`StandardSubspace.lean:650`).

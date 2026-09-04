@@ -4609,6 +4609,47 @@ private theorem su_sqrt_mul_ceil {A : Type u} [CStarAlgebra A] [PartialOrder A]
   rwa [star_mul, hcp.isSelfAdjoint.star_eq,
     (IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg a)).star_eq] at h2
 
+omit [EffectusPartialForm (WStarCPSU.{u}ᵒᵖ)] in
+/-- Transport of a **filter** along an equality of the two projections, the
+companion of `su_corner_transport` above and needed for the same reason: the
+`Fact` instances that carry the algebra structure of `pAp` are `Prop`s, so
+`subst` crosses them. -/
+private theorem su_filter_transport {A : Type u} [CStarAlgebra A]
+    [PartialOrder A] [StarOrderedRing A] (z z' : A) (hzz : z = z')
+    [Fact (IsStarProjection z)] [Fact (IsStarProjection z')] (e w : A)
+    (c : Theses.NCPMap (Theses.B.Dils.cornerSet A z) A)
+    (hval : ∀ y : Theses.B.Dils.cornerSet A z, (c y : A) = w * y.1 * w)
+    (hf : Theses.B.Dils.IsFilterFor c e) :
+    ∃ c' : Theses.NCPMap (Theses.B.Dils.cornerSet A z') A,
+      (∀ y : Theses.B.Dils.cornerSet A z', (c' y : A) = w * y.1 * w) ∧
+      Theses.B.Dils.IsFilterFor c' e := by
+  subst hzz
+  exact ⟨c, hval, hf⟩
+
+omit [EffectusPartialForm (WStarCPSU.{u}ᵒᵖ)] in
+/-- **169X at a ceiling**: the *inclusion* `⌈a⌉𝒜⌈a⌉ → 𝒜` is the standard
+filter for the projection `⌈a⌉`, because `√⌈a⌉ = ⌈a⌉` and `⌈a⌉y⌈a⌉ = y` on
+the corner.  (As with `su_stand_corner_ceil`, **169X** produces a filter on
+`cornerSet A ⌈⌈a⌉⌉` and `⌈⌈a⌉⌉ = ⌈a⌉`, whence the transport.) -/
+private theorem su_incl_of_ceil {A : Type u} [CStarAlgebra A] [PartialOrder A]
+    [StarOrderedRing A] [Theses.VonNeumannAlgebra A] {a : A} (ha : 0 ≤ a) :
+    ∃ c : Theses.NCPMap
+        (Theses.B.Dils.cornerSet A (Theses.A.VN.ceil a)) A,
+      (∀ y : Theses.B.Dils.cornerSet A (Theses.A.VN.ceil a), (c y : A) = y.1) ∧
+      Theses.B.Dils.IsFilterFor c (Theses.A.VN.ceil a) := by
+  have hcp : IsStarProjection (Theses.A.VN.ceil a) := (Theses.A.VN.ceil_spec ha).1
+  have hcc : Theses.A.VN.ceil (Theses.A.VN.ceil a) = Theses.A.VN.ceil a :=
+    Theses.A.VN.ceil_of_isStarProjection hcp
+  obtain ⟨c, hval, hfil⟩ :=
+    Theses.B.Dils.dils_stand_filter (Theses.A.VN.ceil a) hcp.nonneg
+  have hsq : CFC.sqrt (Theses.A.VN.ceil a) = Theses.A.VN.ceil a :=
+    CFC.sqrt_unique hcp.isIdempotentElem.eq hcp.nonneg
+  obtain ⟨c', hval', hfil'⟩ := su_filter_transport _ _ hcc _ _ c hval hfil
+  refine ⟨c', fun y => ?_, hfil'⟩
+  rw [hval' y, hsq]
+  exact y.2
+
+
 section DiaVN2
 
 variable [DiamondEffectus (WStarCPSU.{u}ᵒᵖ)]
@@ -5924,6 +5965,315 @@ theorem su_daggerEffectus : Nonempty (DaggerEffectus (WStarCPSU.{u}ᵒᵖ)) := b
   letI := su_daggerPrimeEffectus.{u}
   exact dagger_thm_sufficiency
 
+/-! ### The dagger of `vNᵒᵖ`, concretely (215II, 215VIa)
+
+**215II** (eff.tex:5301) and **215VIa** (eff.tex:5344, Remarks): the dagger
+of `vNᵒᵖ` — which `su_daggerEffectus` above produces only as a `Nonempty`,
+the corollary asserting existence — *is fixed* by two rules:
+
+1. `ϑ† = ϑ⁻¹` for an (nmiu-)isomorphism `ϑ`, because `ϑ` is ⋄-adjoint to
+   `ϑ⁻¹` and pure maps are rigid; and
+2. the standard filter `c : 𝒜 → ⌈b⌉𝒜⌈b⌉` of an effect `b`, `c(a) = √b a √b`
+   read as an ncp-map `⌈b⌉𝒜⌈b⌉ → 𝒜`, has as dagger
+   `c† : ⌈b⌉𝒜⌈b⌉ → 𝒜` — the map `a ↦ √b a √b` read in the *other*
+   direction, i.e. the corner-type ncp-map `𝒜 → ⌈b⌉𝒜⌈b⌉`.  "This follows
+   from `asrt_p† = asrt_p` and `dagger-of-zeta`", and that is exactly the
+   proof below.
+
+"Fixed by" is rendered by quantifying over an arbitrary
+`d : DaggerEffectus (WStarCPSU.{u}ᵒᵖ)`: every dagger on `vNᵒᵖ` obeys the
+rules, so they determine it on the pure maps (212III puts every pure map in
+the form `π ∘ ϑ ∘ ζ ∘ asrt`).
+
+The abstract halves are 216IX `dagger_of_iso` and 216VII `dagger_of_zeta`,
+but the latter fixes the dagger of the **chosen** `ζ_s` only, and
+`comprObj`/`comprMap`/`zetaMap` are choices from an existential, of which
+nothing concrete is known at `vNᵒᵖ`.  `su_dagger_of_quotient` removes the
+choice — the dagger of *any* quotient `ζ` for `sᵖ` is the map `κ` with
+`ζ ≫ κ = asrt_s` — and that is what makes a computation rule possible.
+`su_dagger_of_filter` is then 215VIa.2 in effectus form, through 212I's
+factorisation of the standard filter as `ζ_{⌈p⌉} ∘ asrt_p`, and
+`su_dagger_standard_filter` is the concrete statement at `vNᵒᵖ`.  The
+second half of 215II, that `EJAᵒᵖ` is a †-effectus, is a bare citation to
+other work and is out of scope; 215VIa's closing formula for a general pure
+map `φ` and the `ad_T ↦ ad_{T*}` remark of the nested point 2150.72 are not
+rendered — see the `215VIa` rows of `docs/audit/beff-vnexamples.csv`. -/
+
+/-- A **pure and faithful map is a quotient** — for `(1 ∘ f)ᵖ`.  Writing
+`f = π ∘ ξ` (201II), `im f ≼ im π` by 202V, so `im π = 1`; `π` is then a
+comprehension for its own image `1` (202-level `isComprehension_imPred`),
+hence an isomorphism, and `ξ ≫ π` is a quotient by 197V.1.  eff.tex uses
+this silently; it is what identifies the concrete filters below as
+quotients without a universal property having to be verified. -/
+theorem su_isQuotient_of_pure_faithful {X Y : WStarCPSU.{u}ᵒᵖ} {f : X ⟶ Y}
+    (hf : IsPure f) (hfaith : FaithfulMap f) :
+    IsQuotient (orth (f ≫ truth Y)) f := by
+  obtain ⟨W, ξ, π, p, q, hξ, hπ, rfl⟩ := hf
+  -- the image of `ξ ≫ π` is `1`, images being unique
+  have him : imPred (ξ ≫ π) = (1 : Pred Y) :=
+    eabasics_le_antisymm ((isImage_imPred (ξ ≫ π)).2 1 hfaith.1)
+      (hfaith.2 (imPred (ξ ≫ π)) (isImage_imPred (ξ ≫ π)).1)
+  -- hence `im π = 1`, and `π` is a comprehension for `1`
+  have himπ : imPred π = (1 : Pred Y) := by
+    refine eabasics_le_antisymm (pred_le_truth _) ?_
+    have h := (im_ineq π ξ).1
+    rwa [him] at h
+  have hπ1 : IsComprehension (1 : Pred Y) π := by
+    have h := isComprehension_imPred hπ
+    rwa [himπ] at h
+  -- a comprehension for `1` is an isomorphism, `𝟙` being one (199VII.2, .3)
+  obtain ⟨θ, hiso, hθ, -⟩ := compr_basics_2 hπ1 (compr_basics_3 (𝟙 Y))
+  have := hiso
+  have hπθ : π = θ := by rw [← hθ, Category.comp_id]
+  have : IsIso π := by rw [hπθ]; infer_instance
+  have hpq : IsQuotient p (ξ ≫ π) := quotient_basics_1 hξ π
+  have htot : IsTotal π := compr_total hπ1
+  have hval : (ξ ≫ π) ≫ truth Y = orth p := by
+    rw [Category.assoc, htot]
+    exact quotient_basics_5 hξ
+  rw [hval, eabasics_orth_orth]
+  exact hpq
+
+/-- **215VIa.1** (eff.tex:5346, Remarks) at `vNᵒᵖ`: **the dagger of an
+isomorphism is its inverse**.  This is 216IX `dagger_of_iso` read at
+`vNᵒᵖ`, with the isomorphism presented by a two-sided inverse `g` rather
+than by an `Iso` of `Pure (vNᵒᵖ)`; by 210III (`su_sharp_total_of_nmiu`,
+`su_exists_nmiu_of_sharp_total`) the `f` of the statement are exactly the
+nmiu-isomorphisms, which is how the thesis says it. -/
+theorem su_dagger_of_iso (d : DaggerEffectus (WStarCPSU.{u}ᵒᵖ))
+    {X Y : WStarCPSU.{u}ᵒᵖ} (f : X ⟶ Y) (g : Y ⟶ X) (hfg : f ≫ g = 𝟙 X)
+    (hgf : g ≫ f = 𝟙 Y) (hfp : IsPure f) :
+    (d.daggerCat.dag (X := PureCat.of X) (Y := PureCat.of Y) ⟨f, hfp⟩).1 = g := by
+  have : IsIso g := ⟨f, hgf, hfg⟩
+  have hgp : IsPure g := isPure_of_isQuotient (quotient_basics_3 g)
+  exact congrArg Subtype.val (dagger_of_iso d
+    { hom := ⟨f, hfp⟩, inv := ⟨g, hgp⟩,
+      hom_inv_id := Subtype.ext hfg, inv_hom_id := Subtype.ext hgf })
+
+/-- **216VII** (`dagger-of-zeta`, eff.tex:5520) **without the choice**: the
+dagger of *any* quotient `ζ` for `sᵖ` (`s` sharp) is the unique `κ` with
+`ζ ≫ κ = asrt_s` — i.e. the comprehension for `s` corresponding to `ζ` by
+211VII.
+
+`dagger_of_zeta` fixes `ζ_s† = π_s` for the *chosen* pair only.  Any other
+quotient for `sᵖ` is `ζ_s ≫ θ` for a unique isomorphism `θ` (197V.2), whose
+dagger is `θ⁻¹` (216IX), so `ζ† = θ⁻¹ ∘ π_s`; and `κ = θ⁻¹ ∘ π_s` too,
+since `ζ ≫ (θ⁻¹ ≫ π_s) = ζ_s ≫ π_s = asrt_s = ζ ≫ κ` and quotients are
+epic (197V.6).  Nothing here is special to `vNᵒᵖ`; it is stated here
+because this is where the computation rules of 215VIa live. -/
+theorem su_dagger_of_quotient (d : DaggerEffectus (WStarCPSU.{u}ᵒᵖ))
+    {X Q : WStarCPSU.{u}ᵒᵖ} {s : Pred X} (hs : IsSharp s)
+    {ζ : X ⟶ Q} (hζ : IsQuotient (orth s) ζ) (hζp : IsPure ζ)
+    {κ : Q ⟶ X} (hκ : ζ ≫ κ = asrt s) :
+    (d.daggerCat.dag (X := PureCat.of X) (Y := PureCat.of Q) ⟨ζ, hζp⟩).1 = κ := by
+  obtain ⟨θ, hiso, hθ, -⟩ := quotient_basics_2 hζ (zetaMap_spec s hs).1
+  have := hiso
+  have hepi : Epi ζ := quotient_basics_6 hζ
+  have hκv : κ = inv θ ≫ comprMap s := by
+    refine (cancel_epi ζ).mp ?_
+    rw [hκ, ← hθ, Category.assoc, ← Category.assoc θ (inv θ), IsIso.hom_inv_id,
+      Category.id_comp]
+    exact ((zetaMap_spec s hs).2.2).symm
+  have hζ0p : IsPure (zetaMap s hs) := isPure_of_isQuotient (zetaMap_spec s hs).1
+  have hθp : IsPure θ := isPure_of_isQuotient (quotient_basics_3 θ)
+  -- the three maps are handed to the dagger as abstract maps of `Pure vNᵒᵖ`
+  -- (the idiom of `dagger_of_zeta` itself: `⟨_, _⟩` under `dag` does not
+  -- unify with a composite otherwise)
+  have main : ∀ (Zm : (PureCat.of X : PureCat (WStarCPSU.{u}ᵒᵖ)) ⟶ PureCat.of Q)
+      (Zs : (PureCat.of X : PureCat (WStarCPSU.{u}ᵒᵖ)) ⟶ PureCat.of (comprObj s))
+      (Th : (PureCat.of (comprObj s) : PureCat (WStarCPSU.{u}ᵒᵖ)) ⟶ PureCat.of Q),
+      Zm.1 = ζ → Zs.1 = zetaMap s hs → Th.1 = θ →
+      (d.daggerCat.dag Zm).1 = κ := by
+    intro Zm Zs Th hZm hZs hTh
+    have hZmc : Zm = Zs ≫ Th := by
+      refine Subtype.ext ?_
+      show Zm.1 = Zs.1 ≫ Th.1
+      rw [hZm, hZs, hTh, hθ]
+    have hdTh : (d.daggerCat.dag Th).1 = inv θ := by
+      have hTh' : Th = ⟨θ, hθp⟩ := Subtype.ext hTh
+      rw [hTh']
+      exact su_dagger_of_iso d θ (inv θ) (IsIso.hom_inv_id θ) (IsIso.inv_hom_id θ)
+        hθp
+    have hdZs : (d.daggerCat.dag Zs).1 = comprMap s := by
+      have hZs' : Zs = ⟨zetaMap s hs, hζ0p⟩ := Subtype.ext hZs
+      rw [hZs']
+      exact congrArg Subtype.val (dagger_of_zeta d hs)
+    rw [hZmc, d.daggerCat.dag_comp]
+    show (d.daggerCat.dag Th).1 ≫ (d.daggerCat.dag Zs).1 = κ
+    rw [hdTh, hdZs, hκv]
+  exact main ⟨ζ, hζp⟩ ⟨zetaMap s hs, hζ0p⟩ ⟨θ, hθp⟩ rfl rfl rfl
+
+/-- **215VIa.2** (eff.tex:5352, Remarks) in effectus form: the dagger of the
+standard filter of a predicate `p` is `κ ≫ asrt_p`, where `κ` is the
+comprehension for `⌈p⌉` matching the quotient `ζ`.
+
+The standard filter is `asrt_p ≫ ζ` — 212I `zeta_asrt_quot`, the thesis's
+own factorisation — so `(asrt_p ≫ ζ)† = ζ† ∘ asrt_p† = κ ∘ asrt_p`, using
+`asrt_p† = asrt_p` (215I.1) and `su_dagger_of_quotient`.  That is exactly
+the derivation 215VIa.2 gives: "this follows from `asrt_p† = asrt_p` and
+`dagger-of-zeta`". -/
+theorem su_dagger_of_filter (d : DaggerEffectus (WStarCPSU.{u}ᵒᵖ))
+    {X Q : WStarCPSU.{u}ᵒᵖ} (p : Pred X)
+    {ζ : X ⟶ Q} (hζ : IsQuotient (orth (ceilPred p)) ζ) (hζp : IsPure ζ)
+    {κ : Q ⟶ X} (hκ : ζ ≫ κ = asrt (ceilPred p)) (hfp : IsPure (asrt p ≫ ζ)) :
+    (d.daggerCat.dag (X := PureCat.of X) (Y := PureCat.of Q)
+      ⟨asrt p ≫ ζ, hfp⟩).1 = κ ≫ asrt p := by
+  have main : ∀ (Fm : (PureCat.of X : PureCat (WStarCPSU.{u}ᵒᵖ)) ⟶ PureCat.of Q)
+      (Am : (PureCat.of X : PureCat (WStarCPSU.{u}ᵒᵖ)) ⟶ PureCat.of X)
+      (Zm : (PureCat.of X : PureCat (WStarCPSU.{u}ᵒᵖ)) ⟶ PureCat.of Q),
+      Fm.1 = asrt p ≫ ζ → Am.1 = asrt p → Zm.1 = ζ →
+      (d.daggerCat.dag Fm).1 = κ ≫ asrt p := by
+    intro Fm Am Zm hFm hAm hZm
+    have hFc : Fm = Am ≫ Zm := by
+      refine Subtype.ext ?_
+      show Fm.1 = Am.1 ≫ Zm.1
+      rw [hFm, hAm, hZm]
+    have hdAm : d.daggerCat.dag Am = Am := by
+      have hAm' : Am = ⟨asrt p, (asrt_spec p).1.1⟩ := Subtype.ext hAm
+      rw [hAm']
+      exact d.dag_asrt p
+    have hdZm : (d.daggerCat.dag Zm).1 = κ := by
+      have hZm' : Zm = ⟨ζ, hζp⟩ := Subtype.ext hZm
+      rw [hZm']
+      exact su_dagger_of_quotient d (isSharp_ceil p) hζ hζp hκ
+    rw [hFc, d.daggerCat.dag_comp, hdAm]
+    show (d.daggerCat.dag Zm).1 ≫ Am.1 = κ ≫ asrt p
+    rw [hdZm, hAm]
+  exact main ⟨asrt p ≫ ζ, hfp⟩ ⟨asrt p, (asrt_spec p).1.1⟩ ⟨ζ, hζp⟩ rfl rfl rfl
+
+/-- **215VIa.2** (eff.tex:5352, Remarks) **at `vNᵒᵖ`, concretely**: for
+every predicate `p` on `𝒜`, naming the effect `b`, the standard filter
+`c : 𝒜 → ⌈b⌉𝒜⌈b⌉` — the map of `vN_cpsuᵒᵖ` whose ncp-map is
+`y ↦ √b y √b : ⌈b⌉𝒜⌈b⌉ → 𝒜`, a quotient for `pᵖ` (197IV) — has as dagger
+the corner-type map `c† : ⌈b⌉𝒜⌈b⌉ → 𝒜` whose ncp-map is
+`a ↦ √b a √b : 𝒜 → ⌈b⌉𝒜⌈b⌉`, the *same formula in the other direction*.
+`i` is the inclusion `⌈b⌉𝒜⌈b⌉ → 𝒜` of the corner, which is what makes both
+formulas literal; it is injective, so it pins `c†` down.
+
+The corner is produced here rather than quantified over because the
+comprehension objects of `vNᵒᵖ` are choices from an existential: `ζ` is the
+standard filter of `⌈b⌉` (the *inclusion*, `su_incl_of_ceil`), `κ` the
+standard corner at `⌈b⌉` (`su_stand_corner_ceil`), and
+`su_dagger_of_filter` applies to that pair. -/
+theorem su_dagger_standard_filter (d : DaggerEffectus (WStarCPSU.{u}ᵒᵖ))
+    {X : WStarCPSU.{u}ᵒᵖ} (p : X ⟶ effObj (WStarCPSU.{u}ᵒᵖ)) :
+    ∃ (Q : WStarCPSU.{u}ᵒᵖ) (c : X ⟶ Q)
+      (i : Q.unop.base.carrier → X.unop.base.carrier) (hc : IsPure c),
+      Function.Injective i ∧ IsQuotient (orth p) c ∧
+      (∀ y : Q.unop.base.carrier, c.unop.toNCPMap y
+        = CFC.sqrt (suPredVal p) * i y * CFC.sqrt (suPredVal p)) ∧
+      (∀ x : X.unop.base.carrier,
+        i ((d.daggerCat.dag (X := PureCat.of X) (Y := PureCat.of Q)
+            ⟨c, hc⟩).1.unop.toNCPMap x)
+          = CFC.sqrt (suPredVal p) * x * CFC.sqrt (suPredVal p)) := by
+  have hb0 : (0 : X.unop.base.carrier) ≤ suPredVal p := suPredVal_nonneg p
+  have hb1 : suPredVal p ≤ 1 := suPredVal_le_one p
+  have hcp : IsStarProjection (Theses.A.VN.ceil (suPredVal p)) :=
+    (Theses.A.VN.ceil_spec hb0).1
+  have hsq : CFC.sqrt (Theses.A.VN.ceil (suPredVal p))
+      = Theses.A.VN.ceil (suPredVal p) :=
+    CFC.sqrt_unique hcp.isIdempotentElem.eq hcp.nonneg
+  obtain ⟨hs1, hs2⟩ := su_sqrt_mul_ceil (A := X.unop.base.carrier) hb0
+  let _cvn : Theses.VonNeumannAlgebra (Theses.B.Dils.cornerSet X.unop.base.carrier
+      (Theses.A.VN.ceil (suPredVal p))) :=
+    Theses.B.Dils.cornerSet_vonNeumannAlgebra _ _
+  obtain ⟨cinc, hincval, hincfil⟩ := su_incl_of_ceil (A := X.unop.base.carrier) hb0
+  obtain ⟨hcor, hcorval, hcorfor⟩ :=
+    su_stand_corner_ceil (A := X.unop.base.carrier) hb0
+  have hcoru : hcor (1 : X.unop.base.carrier) = 1 := by
+    refine Theses.B.Dils.cornerSet.val_injective ?_
+    rw [hcorval, mul_one, hcp.isIdempotentElem.eq, Theses.B.Dils.cornerSet.val_one]
+  obtain ⟨ζ, hζv⟩ : ∃ ζ : X ⟶ Opposite.op (WStarCPSU.of (WStar.of
+        (Theses.B.Dils.cornerSet X.unop.base.carrier
+          (Theses.A.VN.ceil (suPredVal p))))),
+      ζ.unop.toNCPMap = cinc :=
+    ⟨Quiver.Hom.op ⟨cinc, by
+      show cinc 1 ≤ 1
+      rw [hincval, Theses.B.Dils.cornerSet.val_one]
+      exact hcp.le_one⟩, rfl⟩
+  obtain ⟨κ, hκv⟩ : ∃ κ : Opposite.op (WStarCPSU.of (WStar.of
+        (Theses.B.Dils.cornerSet X.unop.base.carrier
+          (Theses.A.VN.ceil (suPredVal p))))) ⟶ X,
+      κ.unop.toNCPMap = hcor :=
+    ⟨Quiver.Hom.op ⟨hcor, le_of_eq hcoru⟩, rfl⟩
+  -- the inclusion is the quotient for `⌈p⌉ᵖ`
+  have hval2 : suPredVal (EffectusPartialForm.orth (orth (ceilPred p)))
+      = Theses.A.VN.ceil (suPredVal p) := by
+    rw [show suPredVal (EffectusPartialForm.orth (orth (ceilPred p)))
+        = 1 - suPredVal (orth (ceilPred p)) from suPredVal_orth _,
+      show suPredVal (orth (ceilPred p)) = 1 - suPredVal (ceilPred p) from
+        suPredVal_orth _, su_ceilPred_val, sub_sub_cancel]
+  have hζq : IsQuotient (orth (ceilPred p)) ζ := by
+    refine su_isQuotient_of_isFilterFor (orth (ceilPred p)) ζ ?_
+    rw [hval2, hζv]
+    exact hincfil
+  have hζp : IsPure ζ := isPure_of_isQuotient hζq
+  -- the standard corner is the comprehension for `⌈p⌉`
+  have hκc : IsComprehension (ceilPred p) κ := by
+    refine su_isComprehension_of_isCornerFor (ceilPred p) κ ?_ ?_
+    · rw [hκv]; exact hcoru
+    · rw [hκv, su_ceilPred_val]; exact hcorfor
+  have hζκ : ζ ≫ κ = asrt (ceilPred p) := by
+    refine suop_hom_ext fun x => ?_
+    have e1 : ζ.unop.toNCPMap (κ.unop.toNCPMap x) = cinc (hcor x) :=
+      Eq.trans (congrArg (fun m => m (κ.unop.toNCPMap x)) hζv)
+        (congrArg (fun y => cinc y) (congrArg (fun m => m x) hκv))
+    have e2 : cinc (hcor x) = Theses.A.VN.ceil (suPredVal p) * x
+        * Theses.A.VN.ceil (suPredVal p) :=
+      Eq.trans (hincval (hcor x)) (hcorval x)
+    have e3 : (asrt (ceilPred p)).unop.toNCPMap x
+        = Theses.A.VN.ceil (suPredVal p) * x * Theses.A.VN.ceil (suPredVal p) := by
+      rw [su_asrt_apply, su_ceilPred_val, hsq]
+    exact Eq.trans (suop_comp_apply ζ κ x) (Eq.trans e1 (Eq.trans e2 e3.symm))
+  have hfp : IsPure (asrt p ≫ ζ) := upm_closed_pure (asrt_spec p).1.1 hζp
+  have hdag := su_dagger_of_filter d p hζq hζp hζκ hfp
+  -- `asrt_p ≫ ζ` is the standard filter of `b`, a quotient for `pᵖ` (212I)
+  obtain ⟨c₀, hc₀val, hc₀fil⟩ :=
+    Theses.B.Dils.dils_stand_filter (B := X.unop.base.carrier) (suPredVal p) hb0
+  have hcc : (asrt p ≫ ζ).unop.toNCPMap = c₀ := by
+    refine DFunLike.ext _ _ fun y => ?_
+    have e1 : (asrt p ≫ ζ).unop.toNCPMap y
+        = (asrt p).unop.toNCPMap (ζ.unop.toNCPMap y) := suop_comp_apply (asrt p) ζ y
+    have e2 : ζ.unop.toNCPMap y = y.1 :=
+      Eq.trans (congrArg (fun m => m y) hζv) (hincval y)
+    rw [e1, e2, su_asrt_apply]
+    exact (hc₀val y).symm
+  have hquot : IsQuotient (orth p) (asrt p ≫ ζ) := by
+    refine su_isQuotient_of_isFilterFor (orth p) (asrt p ≫ ζ) ?_
+    have hval3 : suPredVal (EffectusPartialForm.orth (orth p)) = suPredVal p := by
+      rw [show suPredVal (EffectusPartialForm.orth (orth p))
+          = 1 - suPredVal (orth p) from suPredVal_orth _,
+        show suPredVal (orth p) = 1 - suPredVal p from suPredVal_orth _,
+        sub_sub_cancel]
+    rw [hval3, hcc]
+    exact hc₀fil
+  refine ⟨_, asrt p ≫ ζ, fun y => y.1, hfp,
+    Theses.B.Dils.cornerSet.val_injective, hquot, fun y => ?_, fun x => ?_⟩
+  · have e1 : (asrt p ≫ ζ).unop.toNCPMap y
+        = (asrt p).unop.toNCPMap (ζ.unop.toNCPMap y) := suop_comp_apply (asrt p) ζ y
+    have e2 : ζ.unop.toNCPMap y = y.1 :=
+      Eq.trans (congrArg (fun m => m y) hζv) (hincval y)
+    rw [e1, e2, su_asrt_apply]
+  · rw [hdag]
+    have e2 : ((κ ≫ asrt p).unop.toNCPMap x).1
+        = Theses.A.VN.ceil (suPredVal p) * ((asrt p).unop.toNCPMap x)
+          * Theses.A.VN.ceil (suPredVal p) := by
+      have e1 : (κ ≫ asrt p).unop.toNCPMap x
+          = κ.unop.toNCPMap ((asrt p).unop.toNCPMap x) := suop_comp_apply κ (asrt p) x
+      rw [e1]
+      exact Eq.trans (congrArg (fun m => (m ((asrt p).unop.toNCPMap x)).1) hκv)
+        (hcorval _)
+    show ((κ ≫ asrt p).unop.toNCPMap x).1
+      = CFC.sqrt (suPredVal p) * x * CFC.sqrt (suPredVal p)
+    rw [e2, su_asrt_apply]
+    calc Theses.A.VN.ceil (suPredVal p)
+          * (CFC.sqrt (suPredVal p) * x * CFC.sqrt (suPredVal p))
+          * Theses.A.VN.ceil (suPredVal p)
+        = (Theses.A.VN.ceil (suPredVal p) * CFC.sqrt (suPredVal p)) * x
+          * (CFC.sqrt (suPredVal p) * Theses.A.VN.ceil (suPredVal p)) := by
+          noncomm_ring
+      _ = CFC.sqrt (suPredVal p) * x * CFC.sqrt (suPredVal p) := by rw [hs1, hs2]
+
 end AndThen223
 
 /-! ### `Pure (vNᵒᵖ)` has no coequalizers (224VII)
@@ -6716,6 +7066,183 @@ theorem su_pure_state_classification {X : WStarCPSU.{u}ᵒᵖ} (f : suI.{u} ⟶ 
           (f.unop.toNCPMap a).down = (⟪y, (Φ a).1 y⟫ : ℂ) :=
   su_pure_state_iso f.unop.toNCPMap
     (Theses.B.Dils.isPureMap_of_procIsPure (su_procPure_of_isPure hf))
+
+/-! ##### The dagger of the standard filter of `|z⟩⟨z|` (215VIa.2, 215VII)
+
+The second stage of the printed solution (bsols.tex:3400) writes the
+mediating map as `h = φ ∘ p† ∘ c_{|z⟩⟨z|}` after noting that
+"`T ↦ ⟪z, T z⟫` is the dagger of the standard filter `c_{|z⟩⟨z|}`".  That is
+215VIa.2 at the rank-one projection `|z⟩⟨z|` of `B(ℋ)`, whose corner is the
+scalars: the filter is `w ↦ w·|z⟩⟨z| : ℂ → B(ℋ)` and its dagger is the
+vector state `T ↦ ⟪z, T z⟫ : B(ℋ) → ℂ`.  It is also the smallest instance
+of the nested remark 2150.72, "`φ = ad_T` has `φ† = ad_{T*}`": here
+`c = ad_{V*}` and `c† = ad_V` for `V : ℂ → ℋ`, `1 ↦ z`.
+
+Rather than identifying `⌈|z⟩⟨z|⌉B(ℋ)⌈|z⟩⟨z|⌉` with `ℂ`, the pair is fed to
+`su_dagger_of_quotient` directly: `c` is pure (it is `ad_{V*}` after the
+scalar embedding, which is a filter, `su_isFilter_suScalarEmbed`) and
+faithful (`|z⟩⟨z| ≠ 0`), hence a quotient for `|z⟩⟨z|ᵖ`
+(`su_isQuotient_of_pure_faithful`), and `c ≫ c† = asrt_{|z⟩⟨z|}` is the
+computation `|z⟩⟨z| T |z⟩⟨z| = ⟪z, T z⟫·|z⟩⟨z|`. -/
+
+section KetBra
+
+variable {H : Type u} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
+  [CompleteSpace H]
+
+/-- `|z⟩⟨z| z = z` for a unit vector `z`. -/
+theorem su_rk1_apply_self {z : H} (hz : ‖z‖ = 1) : rk1 z z = z := by
+  have hzz : (⟪z, z⟫ : ℂ) = 1 := by
+    rw [inner_self_eq_norm_sq_to_K, hz]
+    norm_num
+  rw [rk1_apply, hzz, one_smul]
+
+/-- `|z⟩⟨z| ≠ 0` for a unit vector `z`. -/
+theorem su_rk1_ne_zero {z : H} (hz : ‖z‖ = 1) : rk1 z ≠ 0 := by
+  intro h0
+  have hz0 : z ≠ 0 := by
+    intro h
+    rw [h, norm_zero] at hz
+    exact zero_ne_one hz
+  refine hz0 ?_
+  have h1 : rk1 z z = z := su_rk1_apply_self hz
+  rw [h0] at h1
+  exact h1.symm
+
+/-- `|z⟩⟨z| T |z⟩⟨z| = ⟪z, T z⟫·|z⟩⟨z|`. -/
+theorem su_rk1_conj (z : H) (T : H →L[ℂ] H) :
+    rk1 z * T * rk1 z = (⟪z, T z⟫ : ℂ) • rk1 z := by
+  refine ContinuousLinearMap.ext fun x => ?_
+  show rk1 z (T (rk1 z x)) = ((⟪z, T z⟫ : ℂ) • rk1 z) x
+  calc rk1 z (T (rk1 z x)) = rk1 z (T ((⟪z, x⟫ : ℂ) • z)) := by rw [rk1_apply z x]
+    _ = rk1 z ((⟪z, x⟫ : ℂ) • T z) := by rw [map_smul]
+    _ = (⟪z, (⟪z, x⟫ : ℂ) • T z⟫ : ℂ) • z := rk1_apply z _
+    _ = ((⟪z, x⟫ : ℂ) * ⟪z, T z⟫) • z := by rw [inner_smul_right]
+    _ = (⟪z, T z⟫ : ℂ) • ((⟪z, x⟫ : ℂ) • z) := by rw [smul_smul, mul_comm]
+    _ = ((⟪z, T z⟫ : ℂ) • rk1 z) x := by rw [← rk1_apply z x]; rfl
+
+/-- The standard filter `c : ℂ → B(ℋ)`, `w ↦ w·|z⟩⟨z|`, of a rank-one
+projection and the vector state `c† : B(ℋ) → ℂ`, `T ↦ ⟪z, T z⟫`, are maps
+`B(ℋ) ⟶ ℂ` and `ℂ ⟶ B(ℋ)` of `vN_cpsuᵒᵖ`. -/
+theorem su_exists_rk1_filter {z : H} (hz : ‖z‖ = 1) :
+    ∃ (c : suBH H ⟶ suI.{u}) (cd : suI.{u} ⟶ suBH H),
+      (∀ w : ULift.{u} ℂ, c.unop.toNCPMap w = w.down • rk1 z) ∧
+      (∀ T : H →L[ℂ] H, cd.unop.toNCPMap T = ULift.up (⟪z, T z⟫ : ℂ)) := by
+  have hproj : IsStarProjection (rk1 z) := rk1_isStarProjection hz
+  have hzz : (⟪z, z⟫ : ℂ) = 1 := by
+    rw [inner_self_eq_norm_sq_to_K, hz]
+    norm_num
+  refine ⟨Quiver.Hom.op ⟨Theses.B.Dils.ncpOfNonneg hproj.nonneg, ?_⟩,
+    Quiver.Hom.op ⟨npNCP (Theses.A.VN.vectorNP z), ?_⟩, fun _ => rfl, fun _ => rfl⟩
+  · show (1 : ULift.{u} ℂ).down • rk1 z ≤ 1
+    rw [show (1 : ULift.{u} ℂ).down = (1 : ℂ) from rfl, one_smul]
+    exact hproj.le_one
+  · show npNCP (Theses.A.VN.vectorNP z) 1 ≤ 1
+    refine le_of_eq ?_
+    rw [npNCP_apply]
+    show ULift.up (⟪z, (1 : H →L[ℂ] H) z⟫ : ℂ) = 1
+    rw [show ((1 : H →L[ℂ] H) z) = z from rfl, hzz]
+    rfl
+
+/-- **201III at a rank-one projection**: the standard filter
+`c : ℂ → B(ℋ)`, `w ↦ w·|z⟩⟨z|`, is **pure** — it is `ad_{V*}` for
+`V* : ℋ → ℂ`, `x ↦ ⟪z, x⟫`, after the scalar embedding `ℂ ≅ B(H₁)`, and
+both are pure (`su_pure_bh_ad`, `su_isFilter_suScalarEmbed`). -/
+theorem su_isPure_rk1_filter {z : H} (hz : ‖z‖ = 1) {c : suBH H ⟶ suI.{u}}
+    (hcval : ∀ w : ULift.{u} ℂ, c.unop.toNCPMap w = w.down • rk1 z) : IsPure c := by
+  set W : H →L[ℂ] suH1.{u} := (innerSL ℂ z).smulRight suE1.{u} with hWdef
+  have hW : ∀ x : H, W x = (⟪z, x⟫ : ℂ) • suE1.{u} := fun _ => rfl
+  have hWW : (ContinuousLinearMap.adjoint W) ∘L W = rk1 z := by
+    refine ContinuousLinearMap.ext fun x => ?_
+    refine ext_inner_left ℂ fun y => ?_
+    show (⟪y, (ContinuousLinearMap.adjoint W) (W x)⟫ : ℂ) = ⟪y, rk1 z x⟫
+    rw [ContinuousLinearMap.adjoint_inner_right, hW y, hW x, inner_smul_left,
+      inner_smul_right, su_inner_e1_self, rk1_apply, inner_smul_right,
+      inner_conj_symm]
+    ring
+  have hW1 : ‖W‖ ≤ 1 := by
+    refine (su_conjOperator_subunital_iff W).mp ?_
+    rw [su_conjOperator_one, hWW]
+    exact (rk1_isStarProjection hz).le_one
+  obtain ⟨E, hE⟩ : ∃ E : suBH suH1.{u} ⟶ suI.{u},
+      E.unop.toNCPMap = suScalarEmbed.{u} :=
+    ⟨Quiver.Hom.op ⟨suScalarEmbed.{u}, le_of_eq suScalarEmbed_one⟩, rfl⟩
+  have hEp : IsPure E := by
+    refine su_isPure_of_procPure ?_
+    rw [hE]
+    exact su_procIsPure_of_isPureMap
+      (Theses.B.Dils.isPureMap_of_isFilter _ su_isFilter_suScalarEmbed)
+  have hcE : c = suAdHom W hW1 ≫ E := by
+    refine suop_hom_ext fun w => ?_
+    have e1 : (suAdHom W hW1 ≫ E).unop.toNCPMap w
+        = conjOperator W (suScalarEmbed.{u} w) :=
+      Eq.trans (suop_comp_apply (suAdHom W hW1) E w)
+        (congrArg (fun t => conjOperator W t) (congrArg (fun m => m w) hE))
+    have e2 : conjOperator W (suScalarEmbed.{u} w) = w.down • rk1 z := by
+      have e3 : suScalarEmbed.{u} w = w.down • (1 : suH1.{u} →L[ℂ] suH1.{u}) := rfl
+      rw [e3, map_smul,
+        show conjOperator W (1 : suH1.{u} →L[ℂ] suH1.{u})
+          = (ContinuousLinearMap.adjoint W) ∘L W from su_conjOperator_one W, hWW]
+    exact Eq.trans (hcval w) (Eq.trans e1 e2).symm
+  rw [hcE]
+  exact upm_closed_pure (su_pure_bh_ad W hW1) hEp
+
+/-- **215VIa.2 at a rank-one projection** (bsols.tex:3400, the computation
+rule the second stage of 224VI's solution names): the dagger of the standard
+filter `c : ℂ → B(ℋ)`, `w ↦ w·|z⟩⟨z|`, of the rank-one projection `|z⟩⟨z|`
+is the **vector state** `c† : B(ℋ) → ℂ`, `T ↦ ⟪z, T z⟫`.
+
+`c` is pure (`su_isPure_rk1_filter`) and faithful, hence a quotient for
+`(1 ∘ c)ᵖ = |z⟩⟨z|ᵖ` (`su_isQuotient_of_pure_faithful`), and
+`c ≫ c† = asrt_{|z⟩⟨z|}` because `|z⟩⟨z| T |z⟩⟨z| = ⟪z, T z⟫·|z⟩⟨z|`; so
+`su_dagger_of_quotient` applies.  Compare `su_dagger_standard_filter`: this
+is the same rule with the corner `|z⟩⟨z|B(ℋ)|z⟩⟨z|` presented as `ℂ`. -/
+theorem su_dagger_rk1_filter (d : DaggerEffectus (WStarCPSU.{u}ᵒᵖ))
+    {z : H} (hz : ‖z‖ = 1) {c : suBH H ⟶ suI.{u}} (hc : IsPure c)
+    (hcval : ∀ w : ULift.{u} ℂ, c.unop.toNCPMap w = w.down • rk1 z)
+    {cd : suI.{u} ⟶ suBH H}
+    (hcdval : ∀ T : H →L[ℂ] H, cd.unop.toNCPMap T = ULift.up (⟪z, T z⟫ : ℂ)) :
+    (d.daggerCat.dag (X := PureCat.of (suBH H)) (Y := PureCat.of suI.{u})
+      ⟨c, hc⟩).1 = cd := by
+  have hproj : IsStarProjection (rk1 z) := rk1_isStarProjection hz
+  have hcv : ∀ w, c.unop.toNCPMap w = w.down • rk1 z := fun w => hcval w
+  have hfaith : FaithfulMap c := by
+    refine (su_faithfulMap_iff c).mpr fun a ha => ?_
+    rw [hcv] at ha
+    refine ULift.ext _ _ ?_
+    exact (smul_eq_zero.mp ha).resolve_right (su_rk1_ne_zero hz)
+  have hval : suPredVal (c ≫ truth suI.{u}) = rk1 z := by
+    rw [suPredVal_comp, suPredVal_truth, hcv]
+    show (1 : ULift.{u} ℂ).down • rk1 z = rk1 z
+    rw [show (1 : ULift.{u} ℂ).down = (1 : ℂ) from rfl, one_smul]
+  have hs : IsSharp (c ≫ truth suI.{u}) := by
+    refine (su_isSharp_iff _).mpr ?_
+    rw [hval]
+    exact hproj
+  have hκ : c ≫ cd = asrt (c ≫ truth suI.{u}) := by
+    refine suop_hom_ext fun T => ?_
+    have e1 := suop_comp_apply c cd T
+    have e2 := hcv (cd.unop.toNCPMap T)
+    have e3 := congrArg (fun t : ULift.{u} ℂ => t.down • rk1 z) (hcdval T)
+    have e4 := su_rk1_conj z T
+    have hp2 : suPredVal (c ≫ truth suI.{u}) * suPredVal (c ≫ truth suI.{u})
+        = suPredVal (c ≫ truth suI.{u}) := by
+      rw [hval]
+      exact hproj.isIdempotentElem.eq
+    have hp0 : 0 ≤ suPredVal (c ≫ truth suI.{u}) := by
+      rw [hval]
+      exact hproj.nonneg
+    have hsqrt : CFC.sqrt (suPredVal (c ≫ truth suI.{u}))
+        = suPredVal (c ≫ truth suI.{u}) := CFC.sqrt_unique hp2 hp0
+    have e5 : (asrt (c ≫ truth suI.{u})).unop.toNCPMap T
+        = suPredVal (c ≫ truth suI.{u}) * T
+          * suPredVal (c ≫ truth suI.{u}) := by
+      rw [su_asrt_apply, hsqrt]
+    rw [hval] at e5
+    exact e1.trans (e2.trans (e3.trans (e4.symm.trans e5.symm)))
+  exact su_dagger_of_quotient d hs (su_isQuotient_of_pure_faithful hc hfaith) hc hκ
+
+end KetBra
 
 end PureStateClassification
 

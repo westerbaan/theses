@@ -23,17 +23,26 @@ Design:
 * 214II (`Hilb` is a †-category with the adjoint as †) is `HilbObj` and
   its `DaggerCat` instance below; Mathlib has no category of Hilbert
   spaces, so the objects are bundled here.
-* Not separately formalized: the examples 215II/215VIa–VII
-  (the concrete description of the dagger on `vN`), the Setting 219II with
+* The concrete description of the dagger on `vN` (215II, 215VIa) is
+  formalized, but in `VNExamples.lean`, where `vNᵒᵖ` lives: `su_dagger_of_iso`
+  is rule 1 (`ϑ† = ϑ⁻¹`), `su_dagger_standard_filter` rule 2 (the dagger of
+  the standard filter of `b` is `a ↦ √b a √b` into `⌈b⌉𝒜⌈b⌉`), and
+  `su_dagger_rk1_filter` the rank-one instance `T ↦ ⟪z, T z⟫`.  What is
+  *not* formalized of those points: the `EJAᵒᵖ` half of 215II (a citation to
+  other work), 215VIa's closing formula for a general pure map `φ` and the
+  nested remarks 2150.72 (`ad_T† = ad_{T*}`; the Hilbert–Schmidt adjoint in
+  finite dimension).
+* Not separately formalized: the Setting 219II with
   its internal lemmas 219III, 219V, 219VII, 219IX, 219X and 219XIII
   (proof infrastructure for 219XVI, represented here by the standalone
   219XI, 219XIV and 219XVI — 219XIV *is* formalized, as
   `pureDagger_compr_asrt_zeta`, in a form that avoids the Setting), the
-  quantum-gate discussion 222I–222IV, the
-  commutant computation 223III (`Inv ϱ = [0,1]_{ϱ(𝒜)□}`, which needs the
-  commutant apparatus of thesis A), and 221IIIa (`CvNᵒᵖ` has no dilations;
+  quantum-gate discussion 222I–222IV, and 221IIIa (`CvNᵒᵖ` has no dilations;
   `CvNᵒᵖ` is `CWStarNCPU` in `VNExamples.lean`, but its dilation structure
-  is not formalized).
+  is not formalized).  The commutant computation 223III
+  (`Inv ϱ = [0,1]_{ϱ(𝒜)□}`) *is* formalized, as `su_invSet_iff` in
+  `VNExamples.lean`, which is where thesis A's commutant apparatus is
+  available.
 -/
 import Theses.B.Eff.DiamondAmp
 
