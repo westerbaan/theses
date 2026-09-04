@@ -87,9 +87,22 @@ def declarations():
                     i = k; continue
             i += 1
     return out
+def recorded_allowances():
+    """lean_names whose audit row records that the forward reference is the
+    thesis's own (an `\\sref`, a sub-point of the printed proof, a definition,
+    or a filing artifact): the status field says so ('forward', 'allowed', 'sub-point', 'later point', 'filing artifact', 'provenance')."""
+    out = set()
+    for f in glob.glob(os.path.join(ROOT, 'docs', 'audit', '*.csv')):
+        for line in open(f, encoding='utf-8'):
+            q = line.rstrip('\n').split('|')
+            if len(q) >= 7 and re.search(r'forward|allowed|sub-point|later point|filing artifact|provenance', q[6], re.I):
+                for name in q[1].split(','):
+                    out.add(name.strip().split('.')[-1])
+    return out
 def main():
     points, l2k = load()
     decls = declarations()
+    allowed_rows = recorded_allowances()
     by_name = {}
     for path, name, disp, key, body in decls:
         by_name.setdefault(name.split('.')[-1], []).append(key)
@@ -117,6 +130,8 @@ def main():
             k2 = keys2[0]
             if k2[0] == th and k2[1:] > last and k2[1:] not in allowed and k2 != key:
                 later.add((ident, k2[1:]))
+        if later and name.split('.')[-1] in allowed_rows:
+            later = set()             # the row records the allowance; not re-listed
         if later:
             hits[os.path.relpath(path, ROOT)] += 1
             cites = ', '.join(sorted(f"{i}({pp}.{qq})" for i, (pp, qq) in later))[:200]
@@ -124,5 +139,5 @@ def main():
     for l in lines_out: print(l)
     print()
     for f, n in sorted(hits.items()): print(f"{n:4d}  {f}")
-    print(f"{len(lines_out)} DISP-tagged proofs cite a later point the printed proof does not")
+    print(f"{len(lines_out)} DISP-tagged proofs cite a later point the printed proof does not (rows that record an allowance are not listed)")
 if __name__ == '__main__': main()
