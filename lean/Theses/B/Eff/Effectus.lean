@@ -1262,21 +1262,64 @@ section Pullbacks
 variable {D : Type u} [Category.{v} D]
 
 /-- **183II** (`exc-jointly-monic-pullback`, eff.tex:1336, Exercise): the
-legs of a pullback square are jointly monic. -/
+legs of a pullback square are jointly monic.
+
+The solution's own argument (bsols.tex:1697): if `m₁ ∘ h₁ = m₁ ∘ h₂` and
+`m₂ ∘ h₁ = m₂ ∘ h₂`, then `(f ∘ m₁) ∘ h₁ = (g ∘ m₂) ∘ h₂`, so by the
+universal property there is a *unique* `h` with `m₁ ∘ h = m₁ ∘ h₁` and
+`m₂ ∘ h = m₂ ∘ h₂`; both `h₁` and `h₂` are such an `h`. -/
 theorem exc_jointly_monic_pullback {P A B X : D}
     {m₁ : P ⟶ B} {m₂ : P ⟶ A} {f : B ⟶ X} {g : A ⟶ X}
-    (h : IsPullback m₁ m₂ f g) : JointlyMonic m₁ m₂ :=
-  fun _ _ _ h₀ h₁ => h.hom_ext h₀ h₁
+    (h : IsPullback m₁ m₂ f g) : JointlyMonic m₁ m₂ := by
+  intro Q h₁ h₂ e₁ e₂
+  -- `(f ∘ m₁) ∘ h₁ = g ∘ m₂ ∘ h₁ = (g ∘ m₂) ∘ h₂`
+  have hw : (h₁ ≫ m₁) ≫ f = (h₂ ≫ m₂) ≫ g := by
+    rw [Category.assoc, h.w, ← Category.assoc, ← e₂, Category.assoc]
+  -- the universal property: the mediating map is unique
+  have key : ∀ c : Q ⟶ P, c ≫ m₁ = h₁ ≫ m₁ → c ≫ m₂ = h₂ ≫ m₂ →
+      c = h.isLimit.lift (PullbackCone.mk (h₁ ≫ m₁) (h₂ ≫ m₂) hw) := by
+    intro c hc₁ hc₂
+    refine h.isLimit.uniq (PullbackCone.mk (h₁ ≫ m₁) (h₂ ≫ m₂) hw) c ?_
+    rintro (_ | j)
+    · show c ≫ m₁ ≫ f = (h₁ ≫ m₁) ≫ f
+      rw [← Category.assoc, hc₁]
+    · cases j
+      · exact hc₁
+      · exact hc₂
+  -- both `h₁` and `h₂` are such a mediating map, so `h₁ = h = h₂`
+  exact (key h₁ rfl e₂).trans (key h₂ e₁.symm rfl).symm
 
 /-- **183III.1** (`pullback-lemma`, eff.tex:1347, Exercise): *pullback
 lemma*, pasting: if the left and right inner squares are pullbacks, then so
-is the outer rectangle. -/
+is the outer rectangle.
+
+The solution's own argument (bsols.tex:1709): given `α : S ⟶ E` and
+`β : S ⟶ X` with `g' ∘ f' ∘ β = m ∘ α`, the right square gives `γ` with
+`g ∘ γ = α` and `l ∘ γ = f' ∘ β`, and then the left square gives `δ` with
+`f ∘ δ = γ` and `k ∘ δ = β`; uniqueness of `δ` follows from the joint
+monicity of `g, l` and of `f, k` given by 183II. -/
 theorem pullback_lemma_1 {A B E X Y Z : D}
     {f : A ⟶ B} {g : B ⟶ E} {k : A ⟶ X} {l : B ⟶ Y} {m : E ⟶ Z}
     {f' : X ⟶ Y} {g' : Y ⟶ Z}
     (h₁ : IsPullback f k l f') (h₂ : IsPullback g l m g') :
-    IsPullback (f ≫ g) k m (f' ≫ g') :=
-  h₁.paste_horiz h₂
+    IsPullback (f ≫ g) k m (f' ≫ g') := by
+  refine IsPullback.mk' ?_ ?_ ?_
+  · rw [Category.assoc, h₂.w, ← Category.assoc, h₁.w, Category.assoc]
+  · -- uniqueness of the mediating map: `g` and `l` are jointly monic by 183II
+    -- on the right square, `f` and `k` by 183II on the left square
+    intro T δ δ' hδ hδ'
+    refine exc_jointly_monic_pullback h₁ δ δ' ?_ hδ'
+    refine exc_jointly_monic_pullback h₂ _ _ ?_ ?_
+    · rw [Category.assoc, Category.assoc]; exact hδ
+    · rw [Category.assoc, h₁.w, ← Category.assoc, hδ', Category.assoc, ← h₁.w,
+        ← Category.assoc]
+  · -- existence: lift `α` and `f' ∘ β` through the right square to get `γ`,
+    -- then `γ` and `β` through the left square to get `δ`
+    intro T α β hαβ
+    have hγ : α ≫ m = (β ≫ f') ≫ g' := by rw [hαβ, Category.assoc]
+    refine ⟨h₁.lift (h₂.lift α (β ≫ f') hγ) β ?_, ?_, h₁.lift_snd _ _ _⟩
+    · exact h₂.lift_snd α (β ≫ f') hγ
+    · rw [← Category.assoc, h₁.lift_fst, h₂.lift_fst]
 
 /-- **183III.2** (`pullback-lemma`, eff.tex:1347, Exercise): if the outer
 rectangle is a pullback and `g`, `l` are jointly monic, then the left inner

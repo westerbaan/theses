@@ -2258,6 +2258,73 @@ theorem Kern.isKerPull_pull {A B : C} (f : A ⟶ B) (k : Kern B) :
   ⟨_, _, effectus_cokernels _ (isQuotient_quotMap _),
     effectus_kernels _ (isComprehension_comprMap _)⟩
 
+omit [EffectusPartialForm C] [DaggerPrimeEffectus C] in
+/-- Two maps that factor through each other have the same cokernels: the
+maps they annihilate on the right are the same. -/
+theorem isCokernel_of_factor {W W' Y Q : C} {g : W ⟶ Y} {g' : W' ⟶ Y} {c : Y ⟶ Q}
+    (u : W' ⟶ W) (hu : u ≫ g = g') (v : W ⟶ W') (hv : v ≫ g' = g)
+    (h : IsCokernel g c) : IsCokernel g' c := by
+  refine ⟨by rw [← hu, Category.assoc, h.1, FinPAC.comp_zero], fun Z d hd => ?_⟩
+  exact h.2 d (by rw [← hv, Category.assoc, hd, FinPAC.comp_zero])
+
+omit [EffectusPartialForm C] [DaggerPrimeEffectus C] in
+/-- Postcomposing a map with an isomorphism does not change its kernels. -/
+theorem isKernel_of_comp_iso {W X Y Y' : C} {c : X ⟶ Y} {θ : Y ⟶ Y'} {k : W ⟶ X}
+    (θ' : Y' ⟶ Y) (hθ : θ ≫ θ' = 𝟙 Y) (h : IsKernel (c ≫ θ) k) : IsKernel c k := by
+  refine ⟨?_, fun Z g hg => h.2 g ?_⟩
+  · have h0 : (k ≫ c) ≫ θ = 0 := by rw [Category.assoc]; exact h.1
+    have h1 : ((k ≫ c) ≫ θ) ≫ θ' = 0 := by rw [h0, FinPAC.zero_comp]
+    rwa [Category.assoc, hθ, Category.comp_id] at h1
+  · rw [← Category.assoc, hg, FinPAC.zero_comp]
+
+omit [DaggerPrimeEffectus C] in
+/-- **227II.3**: `f_*` is well defined on `Nsb A`, and independent of the
+choice of cokernel and kernel — the argument available at eff.tex:7587,
+which is in a pointed semiexact category and has no images to appeal to.
+
+If `k ≈ k'` then `k ∘ f` and `k' ∘ f` factor through each other, so they
+annihilate the same maps and hence have the same cokernels; two cokernels
+of `k' ∘ f` differ by an isomorphism, which does not change their kernels;
+and two kernels of one map factor through each other. -/
+theorem Kern.equiv_of_isKerPush {A B : C} {f : A ⟶ B} {k k' : Kern A} {n n' : Kern B}
+    (h : k ≈ k') (hn : IsKerPush f k n) (hn' : IsKerPush f k' n') : n ≈ n' := by
+  obtain ⟨Q, c, hc, hk⟩ := hn
+  obtain ⟨Q', c', hc', hk'⟩ := hn'
+  obtain ⟨u, hu⟩ := h.1
+  obtain ⟨v, hv⟩ := h.2
+  -- `c` is a cokernel of `k' ∘ f` as well
+  have hc2 : IsCokernel (k'.map ≫ f) c :=
+    isCokernel_of_factor v (by rw [← Category.assoc, hv]) u
+      (by rw [← Category.assoc, hu]) hc
+  -- so `c` and `c'` differ by an isomorphism, and `n'` is a kernel of `c` too
+  obtain ⟨θ, hθ, hcθ⟩ := isCokernel_unique hc2 hc'
+  have := hθ
+  have hk'' : IsKernel c n'.map :=
+    isKernel_of_comp_iso (inv θ) (IsIso.hom_inv_id θ) (by rw [hcθ]; exact hk')
+  obtain ⟨α, -, hα⟩ := isKernel_unique hk hk''
+  obtain ⟨β, -, hβ⟩ := isKernel_unique hk'' hk
+  exact ⟨⟨α, hα⟩, ⟨β, hβ⟩⟩
+
+omit [DaggerPrimeEffectus C] in
+/-- **227II.3**: `f^*` is well defined on `Nsb B`, and independent of the
+choice of cokernel and kernel; the argument of `Kern.equiv_of_isKerPush`,
+now with the isomorphism of cokernels transported along `f ∘ (-)`. -/
+theorem Kern.equiv_of_isKerPull {A B : C} {f : A ⟶ B} {k k' : Kern B} {n n' : Kern A}
+    (h : k ≈ k') (hn : IsKerPull f k n) (hn' : IsKerPull f k' n') : n ≈ n' := by
+  obtain ⟨Q, c, hc, hk⟩ := hn
+  obtain ⟨Q', c', hc', hk'⟩ := hn'
+  obtain ⟨u, hu⟩ := h.1
+  obtain ⟨v, hv⟩ := h.2
+  have hc2 : IsCokernel k'.map c := isCokernel_of_factor v hv u hu hc
+  obtain ⟨θ, hθ, hcθ⟩ := isCokernel_unique hc2 hc'
+  have := hθ
+  have hk'' : IsKernel (f ≫ c) n'.map :=
+    isKernel_of_comp_iso (inv θ) (IsIso.hom_inv_id θ)
+      (by rw [Category.assoc, hcθ]; exact hk')
+  obtain ⟨α, -, hα⟩ := isKernel_unique hk hk''
+  obtain ⟨β, -, hβ⟩ := isKernel_unique hk'' hk
+  exact ⟨⟨α, hα⟩, ⟨β, hβ⟩⟩
+
 /-- **227III.3** (eff.tex:7617, Example), first half, on representatives:
 `IM f_*(k) = f_⋄(IM k)` for *any* choice of cokernel and kernel.
 
@@ -2324,29 +2391,27 @@ theorem Kern.IM_of_isKerPull {A B : C} {f : A ⟶ B} {k : Kern B} {k' : Kern A}
     imPred_comprMap_orth]
 
 /-- **227II.3** (eff.tex:7587, Definition): `f_* : Nsb A → Nsb B`, well
-defined because `≈`-equivalent kernels have the same image
-(`Kern.IM_eq_of_equiv`) and `IM f_*(k)` depends only on `IM k`
-(227III.3). -/
+defined by `Kern.equiv_of_isKerPush`: `≈`-equivalent kernels `k ≈ k'` give
+`k ∘ f` and `k' ∘ f` the same cokernels, hence `≈`-equivalent kernels of
+those. -/
 noncomputable def kerPush {A B : C} (f : A ⟶ B) (x : Nsb A) : Nsb B :=
-  Quotient.liftOn x (fun k => Nsb.mk (Kern.push f k)) (by
-    intro k k' h
-    refine Nsb.eq_of_IM_eq _ _ ?_
-    rw [Nsb.IM_mk, Nsb.IM_mk, Kern.IM_of_isKerPush (Kern.isKerPush_push f k),
-      Kern.IM_of_isKerPush (Kern.isKerPush_push f k'), Kern.IM_eq_of_equiv h])
+  Quotient.liftOn x (fun k => Nsb.mk (Kern.push f k)) (fun k k' h =>
+    Quotient.sound
+      (Kern.equiv_of_isKerPush h (Kern.isKerPush_push f k) (Kern.isKerPush_push f k')))
 
 /-- **227II.3** (eff.tex:7587, Definition): `f^* : Nsb B → Nsb A`, well
-defined for the same reason. -/
+defined for the same reason (`Kern.equiv_of_isKerPull`). -/
 noncomputable def kerPull {A B : C} (f : A ⟶ B) (x : Nsb B) : Nsb A :=
-  Quotient.liftOn x (fun k => Nsb.mk (Kern.pull f k)) (by
-    intro k k' h
-    refine Nsb.eq_of_IM_eq _ _ ?_
-    rw [Nsb.IM_mk, Nsb.IM_mk, Kern.IM_of_isKerPull (Kern.isKerPull_pull f k),
-      Kern.IM_of_isKerPull (Kern.isKerPull_pull f k'), Kern.IM_eq_of_equiv h])
+  Quotient.liftOn x (fun k => Nsb.mk (Kern.pull f k)) (fun k k' h =>
+    Quotient.sound
+      (Kern.equiv_of_isKerPull h (Kern.isKerPull_pull f k) (Kern.isKerPull_pull f k')))
 
+omit [DaggerPrimeEffectus C] in
 /-- `f_*` on a class is `Kern.push` on a representative. -/
 @[simp] theorem kerPush_mk {A B : C} (f : A ⟶ B) (k : Kern A) :
     kerPush f (Nsb.mk k) = Nsb.mk (Kern.push f k) := rfl
 
+omit [DaggerPrimeEffectus C] in
 /-- `f^*` on a class is `Kern.pull` on a representative. -/
 @[simp] theorem kerPull_mk {A B : C} (f : A ⟶ B) (k : Kern B) :
     kerPull f (Nsb.mk k) = Nsb.mk (Kern.pull f k) := rfl
@@ -2367,6 +2432,7 @@ noncomputable def kerPull {A B : C} (f : A ⟶ B) (x : Nsb B) : Nsb A :=
   intro k
   exact Kern.IM_of_isKerPull (Kern.isKerPull_pull f k)
 
+omit [DaggerPrimeEffectus C] in
 /-- **227II.3** (eff.tex:7587, Definition): **for any `f : A ⟶ B` there are
 maps `f_* : Nsb A ⇄ Nsb B : f^*` with `f_*(k) = ker cok (f ∘ k)` and
 `f^*(k) = ker ((cok k) ∘ f)`.**
@@ -2374,8 +2440,8 @@ maps `f_* : Nsb A ⇄ Nsb B : f^*` with `f_*(k) = ker cok (f ∘ k)` and
 The four clauses say that `kerPush`/`kerPull` realize the thesis's recipe and
 that the recipe does not depend on the choice of cokernel and kernel: *any*
 `k'` that is a kernel of *any* cokernel of `f ∘ k` has `f_*(⟦k⟧) = ⟦k'⟧`, and
-likewise for `f^*`.  Both independence clauses are 227III.3 plus injectivity
-of `IM`. -/
+likewise for `f^*`.  Both independence clauses are `Kern.equiv_of_isKerPush`
+and `Kern.equiv_of_isKerPull` at `k ≈ k`. -/
 theorem nsb_transfer_maps {A B : C} (f : A ⟶ B) :
     (∀ k : Kern A, IsKerPush f k (Kern.push f k)) ∧
     (∀ k : Kern B, IsKerPull f k (Kern.pull f k)) ∧
@@ -2385,13 +2451,13 @@ theorem nsb_transfer_maps {A B : C} (f : A ⟶ B) :
       kerPull f (Nsb.mk k) = Nsb.mk k') := by
   refine ⟨Kern.isKerPush_push f, Kern.isKerPull_pull f, ?_, ?_⟩
   · intro k k' h
-    refine Nsb.eq_of_IM_eq _ _ ?_
-    rw [kerPush_mk, Nsb.IM_mk, Nsb.IM_mk,
-      Kern.IM_of_isKerPush (Kern.isKerPush_push f k), Kern.IM_of_isKerPush h]
+    rw [kerPush_mk]
+    exact Quotient.sound (Kern.equiv_of_isKerPush (Setoid.refl k)
+      (Kern.isKerPush_push f k) h)
   · intro k k' h
-    refine Nsb.eq_of_IM_eq _ _ ?_
-    rw [kerPull_mk, Nsb.IM_mk, Nsb.IM_mk,
-      Kern.IM_of_isKerPull (Kern.isKerPull_pull f k), Kern.IM_of_isKerPull h]
+    rw [kerPull_mk]
+    exact Quotient.sound (Kern.equiv_of_isKerPull (Setoid.refl k)
+      (Kern.isKerPull_pull f k) h)
 
 /-! ### Modularity (227II.4, 227III.4) -/
 
