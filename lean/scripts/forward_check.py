@@ -105,7 +105,9 @@ def main():
                 if k2 and k2 > (p, q): allowed.add(k2)
         # strip comments
         text = re.sub(r'--[^\n]*', '', body); text = re.sub(r'/-.*?-/', '', text, flags=re.S)
-        idents = set(re.findall(r"[A-Za-z_][\w'₀-₉]*", text))
+        # names that are Mathlib fields/lemmas, not thesis declarations, collide by short spelling
+        MATHLIB_FP = {'map_comp','map_id','map_eta','map_smul','map_add','map_mul','map_one','comp_id','id_comp'}
+        idents = set(re.findall(r"[A-Za-z_][\w'₀-₉]*", text)) - MATHLIB_FP
         later = set()
         for ident in idents:
             if len(ident) < 8 or ('_' not in ident and not re.search(r'[a-z][A-Z]', ident)):
