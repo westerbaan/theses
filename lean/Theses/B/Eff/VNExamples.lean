@@ -6631,17 +6631,19 @@ theorem su_exc_purec_equal : ¬ HasCoequalizers (PureCat (WStarCPSU.{u}ᵒᵖ)) 
 `bsols.tex`:3358 classifies the non-zero pure maps `𝒜 → ℂ` by a GNS
 representation (using `paschke-pure` and the factoriality of `⌈⌈p⌉⌉𝒜` for a
 minimal projection `p`), identifies `𝒜` with `M₂`, and then contradicts the
-universal property with the two coordinate maps of `ℂ²`.  The route below is
-shorter and needs none of that machinery:
+universal property with the two coordinate maps of `ℂ²`.  **That is the
+route taken**: the opening task is `su_pure_state_classification`, the rest
+is `su_224VI_printed`, and `su_exc_purec_no_biproduct` is the latter.
 
-Write `π₁, π₂ : 𝒜 → ℂ` for the two coprojections of a hypothetical
-coproduct, `a₀ = ĝ₀(1)` for the value of the mediating map of `(id, id)`
-and `a₁ = ĝ₁(1)` for that of `(id, 0)`, so that `π₁(a₀) = π₂(a₀) = 1`,
-`π₁(a₁) = 1` and `π₂(a₁) = 0`.  Then both `π_i` are **states** fixing `a₀`,
-so `π_i(√a₀ a₁ √a₀) = π_i(a₁)` by `su_state_sqrtConj`; while
-`√a₀ a₁ √a₀` lies in the range of `ĝ₀` by `su_pure_range`, on which `π₁`
-and `π₂` agree — both being inverse to `ĝ₀`.  Hence `1 = π₁(a₁) = π₂(a₁)
-= 0`. -/
+A shorter argument, which needs none of that machinery, is kept alongside
+as `su_exc_purec_no_biproduct_short`: write `π₁, π₂ : 𝒜 → ℂ` for the two
+coprojections of a hypothetical coproduct, `a₀ = ĝ₀(1)` for the value of
+the mediating map of `(id, id)` and `a₁ = ĝ₁(1)` for that of `(id, 0)`, so
+that `π₁(a₀) = π₂(a₀) = 1`, `π₁(a₁) = 1` and `π₂(a₁) = 0`.  Then both `π_i`
+are **states** fixing `a₀`, so `π_i(√a₀ a₁ √a₀) = π_i(a₁)` by
+`su_state_sqrtConj`; while `√a₀ a₁ √a₀` lies in the range of `ĝ₀` by
+`su_pure_range`, on which `π₁` and `π₂` agree — both being inverse to
+`ĝ₀`.  Hence `1 = π₁(a₁) = π₂(a₁) = 0`. -/
 
 /-! #### The printed route's first task: the pure maps `𝒜 → ℂ`
 
@@ -6682,8 +6684,8 @@ replacement is named at `su_pure_state_iso`.
    first summand (`su_pure_state_iso`), with `𝒞 = ⌈ϱ⌉^⊥𝒜` the corner of
    **67IV**.
 
-What the printed solution still needs after this — its stages (2)-(5) — is
-recorded in `docs/audit/beff-vnexamples.csv`. -/
+What the printed solution does after this — its stages (2)-(5) — is the
+section below, ending in `su_224VI_printed`. -/
 
 section PureStateClassification
 
@@ -7246,9 +7248,1081 @@ end KetBra
 
 end PureStateClassification
 
-/-! #### The short route actually taken
+/-! #### The printed route of 224VI, stages (2)-(5)
 
-The proof of `su_exc_purec_no_biproduct` below uses none of the above. -/
+The rest of the printed solution (bsols.tex:3388-3477), on the print's own
+route.  Assume `ℂ` and `ℂ` have a coproduct `𝒜` in `Pure (vNᵒᵖ)`, with
+coprojections `π₁, π₂` and mediating map `h` for `id, id`.
+
+* **(1)** `h†` is a pure *state* of `𝒜` (unital, because
+  `h† ∘ π₁† = (π₁ ∘ h)† = id`), so `su_pure_state_classification` gives a
+  Hilbert space `ℋ`, a von Neumann algebra `𝒞`, an nmiu-isomorphism
+  `φ : B(ℋ) ⊕ 𝒞 → 𝒜` and a **unit** vector `z ∈ ℋ` with
+  `h†(φ(T,c)) = ⟪z, Tz⟫`.  The whole diagram is transported along `φ`
+  (`su_224VI_printed`), so that from here on the coproduct object *is*
+  `B(ℋ) ⊕ 𝒞`.
+* **(2)** *(bsols.tex:3399-3403)* `h† = c†_{|z⟩⟨z|} ∘ ▷₁` — both sides send
+  `(T,c)` to `⟪z, Tz⟫`, by **215VIa.2** at the rank-one projection
+  (`su_dagger_rk1_filter`) — and daggering gives `h = p† ∘ c_{|z⟩⟨z|}`,
+  the print's formula, where `p† = suPq` is `T ↦ (T,0)`
+  (`su_dagger_suPq`).  In particular `h(1) = (|z⟩⟨z|, 0)`.
+* **(3)** *(bsols.tex:3404-3411)* each `π_i` is a vector state on the first
+  summand, `π_i(T,c) = ⟪x_i, T x_i⟫` with `x_i` a unit vector
+  (`su_224VI_vector_state`): the print's `⌈π_i ∘ φ⌉` is the minimal
+  projection of `su_pure_state_minimal`, which lies in one summand
+  (`su_minimalProjection_prod`) — not the second, by (2) — and is rank one
+  there (`su_minimalProjection_rk1`).
+* **(4)** *(bsols.tex:3412-3419)* `𝒞 = 0`.  The print applies the
+  uniqueness of `h` to `φ ∘ (id ⊕ ϑ) ∘ φ⁻¹ ∘ h`; that composite is however
+  *equal* to `h` for trivial reasons — by (2) the `𝒞`-component of
+  `φ⁻¹ ∘ h` is already `0` — so the printed argument as it stands proves
+  nothing.  The repair keeps the print's idea and applies the same
+  uniqueness one step earlier, to `id` and `id ⊕ 0 = ▷₁ ∘ p†` themselves:
+  both coprojections equalise them by (3), so `id = id ⊕ 0`, i.e. `𝒞 = 0`.
+* **(5)** *(bsols.tex:3420-3430)* no non-zero vector is orthogonal to both
+  `x₁` and `x₂` — this is the print's `dim ℋ ≤ 2`, in the form the rest of
+  the argument uses — for `π_i ∘ φ ∘ p† ∘ c_{|z₀⟩⟨z₀|} = 0` for such a
+  `z₀`, while `φ ∘ p† ∘ c_{|z₀⟩⟨z₀|} ≠ 0`, contradicting uniqueness
+  against `0`.
+* **(6)** *(bsols.tex:3437-3477)* the mediating map `f` for the two
+  coprojections of `ℂ ⊕ ℂ`.  Its two values `P = f(1,0)`, `Q = f(0,1)`
+  satisfy `Px₁ = x₁`, `Px₂ = 0`, `Qx₁ = 0`, `Qx₂ = x₂`, whence `x₁ ⊥ x₂`
+  (which also disposes of the print's separate `dim ℋ = 1` case) and, with
+  (5), `P + Q = 1`; so `f` is **total**.  A total pure map is an
+  isomorphism after a comprehension (`total_pure_iso_compr`) and hence has
+  **surjective** ncpsu-map (`su_compr_surjective`) — where the print
+  instead identifies `⌈h(1)⌉M₂⌈h(1)⌉` and splits into cases.  Surjectivity
+  is absurd: `|x₁+x₂⟩⟨x₁+x₂|` is not of the form `λP + μQ`, as pairing
+  `(λP + μQ)x₁ = λx₁` with `x₂` gives `0 = 1`. -/
+
+section PrintedRoute224VI
+
+set_option linter.unusedSectionVars false
+
+omit [EffectusPartialForm (WStarCPSU.{u}ᵒᵖ)] [AndThenEffectus (WStarCPSU.{u}ᵒᵖ)] in
+/-- **221IIIa** (`exc-cvn-no-dilations`, eff.tex:6812, Exercise; solution
+bsols.tex:3337): **the step the printed solution asserts without
+argument.**
+
+The print says: *"If `CvNᵒᵖ` were to have dilations, then any ncpu-map
+would be the composition of a corner and an nmiu-map."*  It thereby takes
+for granted that the `h`-leg of an abstract dilation is a **corner**, while
+the definition of a dilation (**221II** `IsDilation`,
+`Theses/B/Eff/Dagger.lean:3101`) only says that `h` is **pure** — a
+comprehension after a quotient (**201II**).  Here is the missing argument,
+proved for an arbitrary ⋄-effectus:
+
+a **total pure map is an isomorphism followed by a comprehension** (which
+is exactly what "is a corner" means, by **199VII.2** `compr_basics_2`).
+Indeed, write `f = ξ ≫ π` with `ξ` a quotient for `p` and `π` a
+comprehension for `q`.  Then
+`1 = f ∘ 1 = ξ ∘ (π ∘ 1) ≼ ξ ∘ 1 ≼ 1`, so `ξ` is total; and a total
+quotient is an isomorphism (`isIso_of_isQuotient_isTotal`, i.e. **197V.5**
+`ξ ∘ 1 = pᗮ` forces `p = 0`, and **197V.2/3** then compare `ξ` with the
+identity). -/
+theorem total_pure_iso_compr {C : Type u} [Category.{v} C]
+    [HasFiniteCoproducts C] [∀ X Y : C, PCM (X ⟶ Y)] [FinPAC C]
+    [EffectusPartialForm C] [DiamondEffectus C] {X Y : C} {f : X ⟶ Y}
+    (hp : IsPure f) (ht : IsTotal f) :
+    ∃ (Q : C) (θ : X ⟶ Q) (π : Q ⟶ Y) (q : Pred Y),
+      IsIso θ ∧ IsComprehension q π ∧ f = θ ≫ π := by
+  obtain ⟨Q, ξ, π, p, q, hξ, hπ, hf⟩ := hp
+  have hξtot : IsTotal ξ := by
+    show ξ ≫ truth Q = truth X
+    refine eabasics_le_antisymm (pred_le_truth (ξ ≫ truth Q)) ?_
+    have h1 : truth X = ξ ≫ (π ≫ truth Y) := by
+      rw [← Category.assoc, ← hf]
+      exact ht.symm
+    rw [h1]
+    exact comp_le_comp ξ (pred_le_truth (π ≫ truth Y))
+  have : IsIso ξ := isIso_of_isQuotient_isTotal hξ hξtot
+  exact ⟨Q, ξ, π, q, inferInstance, hπ, hf⟩
+
+omit [EffectusPartialForm (WStarCPSU.{u}ᵒᵖ)] [AndThenEffectus (WStarCPSU.{u}ᵒᵖ)] in
+/-- `0 ≤ T` and `⟪x, T x⟫ = 0` force `T x = 0`: `⟪√T x, √T x⟫ = ⟪x, T x⟫`. -/
+theorem su_op_apply_eq_zero {H : Type u} [NormedAddCommGroup H]
+    [InnerProductSpace ℂ H] [CompleteSpace H] {T : H →L[ℂ] H} (hT : 0 ≤ T)
+    {x : H} (h : (⟪x, T x⟫ : ℂ) = 0) : T x = 0 := by
+  have hS0 : 0 ≤ CFC.sqrt T := CFC.sqrt_nonneg T
+  have hSS : CFC.sqrt T * CFC.sqrt T = T := CFC.sqrt_mul_sqrt_self T hT
+  have hsym := ContinuousLinearMap.isSelfAdjoint_iff_isSymmetric.mp
+    (IsSelfAdjoint.of_nonneg hS0)
+  have happ : ∀ y : H, CFC.sqrt T (CFC.sqrt T y) = T y := by
+    intro y
+    have h2 : (CFC.sqrt T * CFC.sqrt T) y = T y := by rw [hSS]
+    exact h2
+  have h1 : (⟪CFC.sqrt T x, CFC.sqrt T x⟫ : ℂ) = 0 := by
+    have h3 : (⟪CFC.sqrt T x, CFC.sqrt T x⟫ : ℂ)
+        = ⟪x, CFC.sqrt T (CFC.sqrt T x)⟫ := hsym x (CFC.sqrt T x)
+    rw [h3, happ x, h]
+  have hSx : CFC.sqrt T x = 0 := inner_self_eq_zero.mp h1
+  rw [← happ x, hSx, map_zero]
+
+omit [EffectusPartialForm (WStarCPSU.{u}ᵒᵖ)] [AndThenEffectus (WStarCPSU.{u}ᵒᵖ)] in
+/-- The von Neumann algebra `𝒞` as an object of `vNᵒᵖ`. -/
+noncomputable abbrev suOb (C : Type u) [CStarAlgebra C] [PartialOrder C]
+    [StarOrderedRing C] [Theses.VonNeumannAlgebra C] : WStarCPSU.{u}ᵒᵖ :=
+  Opposite.op (WStarCPSU.of (WStar.of C))
+
+
+
+/-! ### Package 3 -/
+
+omit [EffectusPartialForm (WStarCPSU.{u}ᵒᵖ)] [AndThenEffectus (WStarCPSU.{u}ᵒᵖ)] in
+/-- **224VI, stage (3)** (`exc-purec-no-biproduct`, eff.tex:7189; solution
+bsols.tex:3388, the step "`⌈π₁ ∘ φ⌉ = (p₁,0)` for some minimal projection
+`p₁`"): a minimal projection of a product `𝒜 ⊕ ℬ` lives entirely in one
+summand, and is minimal there.
+
+Both `(p₁,0)` and `(0,p₂)` are projections below `p`, so minimality makes
+each of them `0` or `p`; `p ≠ 0` rules out both being `0`.  If the surviving
+one is, say, `(p₁,0) = p`, then a projection `q ≤ p₁` gives the projection
+`(q,0) ≤ p`, which is `0` or `p`, i.e. `q = 0` or `q = p₁`. -/
+theorem su_minimalProjection_prod {A B : Type u} [CStarAlgebra A] [PartialOrder A]
+    [StarOrderedRing A] [CStarAlgebra B] [PartialOrder B] [StarOrderedRing B]
+    {p : A × B} (hp : Theses.A.VN.IsMinimalProjection p) :
+    (p.2 = 0 ∧ Theses.A.VN.IsMinimalProjection p.1) ∨
+      (p.1 = 0 ∧ Theses.A.VN.IsMinimalProjection p.2) := by
+  -- the two components of `p` are projections
+  have h1 : IsStarProjection p.1 := by
+    refine ⟨?_, ?_⟩
+    · show p.1 * p.1 = p.1
+      exact congrArg Prod.fst hp.1.isIdempotentElem.eq
+    · show star p.1 = p.1
+      exact congrArg Prod.fst hp.1.isSelfAdjoint.star_eq
+  have h2 : IsStarProjection p.2 := by
+    refine ⟨?_, ?_⟩
+    · show p.2 * p.2 = p.2
+      exact congrArg Prod.snd hp.1.isIdempotentElem.eq
+    · show star p.2 = p.2
+      exact congrArg Prod.snd hp.1.isSelfAdjoint.star_eq
+  have hzA : IsStarProjection (0 : A) := by
+    refine ⟨?_, ?_⟩
+    · show (0 : A) * 0 = 0
+      simp
+    · show star (0 : A) = 0
+      simp
+  have hzB : IsStarProjection (0 : B) := by
+    refine ⟨?_, ?_⟩
+    · show (0 : B) * 0 = 0
+      simp
+    · show star (0 : B) = 0
+      simp
+  have hmk : ∀ (a : A) (b : B), IsStarProjection a → IsStarProjection b →
+      IsStarProjection ((a, b) : A × B) := by
+    intro a b ha hb
+    refine ⟨?_, ?_⟩
+    · show ((a, b) : A × B) * (a, b) = (a, b)
+      exact Prod.ext ha.isIdempotentElem.eq hb.isIdempotentElem.eq
+    · show star ((a, b) : A × B) = (a, b)
+      exact Prod.ext ha.isSelfAdjoint.star_eq hb.isSelfAdjoint.star_eq
+  -- `(p₁, 0) ≤ p`
+  have hle1 : ((p.1, (0 : B)) : A × B) ≤ p :=
+    Prod.le_def.mpr ⟨le_refl _, h2.nonneg⟩
+  rcases hp.2.2 _ (hmk p.1 0 h1 hzB) hle1 with hd | hd
+  · -- `p.1 = 0`: the second component carries everything
+    have hp1 : p.1 = 0 := congrArg Prod.fst hd
+    refine Or.inr ⟨hp1, h2, ?_, ?_⟩
+    · intro hp2
+      exact hp.2.1 (Prod.ext hp1 hp2)
+    · intro q hq hq2
+      have hle : (((0 : A), q) : A × B) ≤ p :=
+        Prod.le_def.mpr ⟨le_of_eq hp1.symm, hq2⟩
+      rcases hp.2.2 _ (hmk 0 q hzA hq) hle with h | h
+      · exact Or.inl (congrArg Prod.snd h)
+      · exact Or.inr (congrArg Prod.snd h)
+  · -- `p.2 = 0`: the first component carries everything
+    have hp2 : p.2 = 0 := (congrArg Prod.snd hd).symm
+    refine Or.inl ⟨hp2, h1, ?_, ?_⟩
+    · intro hp1
+      exact hp.2.1 (Prod.ext hp1 hp2)
+    · intro q hq hq1
+      have hle : ((q, (0 : B)) : A × B) ≤ p :=
+        Prod.le_def.mpr ⟨hq1, h2.nonneg⟩
+      rcases hp.2.2 _ (hmk q 0 hq hzB) hle with h | h
+      · exact Or.inl (congrArg Prod.fst h)
+      · exact Or.inr (congrArg Prod.fst h)
+
+/-! ### Package 4 -/
+
+omit [EffectusPartialForm (WStarCPSU.{u}ᵒᵖ)] [AndThenEffectus (WStarCPSU.{u}ᵒᵖ)] in
+/-- **224VI, stage (3)** (`exc-purec-no-biproduct`, eff.tex:7189; solution
+bsols.tex:3388, the step "`π₁(φ(T,c)) = ⟪x, T x⟫` for some `x ∈ ℋ`"): every
+minimal projection of `B(ℋ)` is a rank-one projection `|x⟩⟨x|`.
+
+Pick `v` with `p v ≠ 0` and normalise: `x := ‖pv‖⁻¹ · pv` is a unit vector
+with `p x = x` (as `p` is idempotent).  Then `p · |x⟩⟨x| = |x⟩⟨x|`
+pointwise, so `|x⟩⟨x| ≤ p` (`IsStarProjection.le_iff_mul_eq_right`); and
+`|x⟩⟨x| ≠ 0`, so minimality forces `|x⟩⟨x| = p`. -/
+theorem su_minimalProjection_rk1 {H : Type u} [NormedAddCommGroup H]
+    [InnerProductSpace ℂ H] [CompleteSpace H] {p : H →L[ℂ] H}
+    (hp : Theses.A.VN.IsMinimalProjection p) : ∃ x : H, ‖x‖ = 1 ∧ p = rk1 x := by
+  -- a vector not killed by `p`
+  obtain ⟨v, hv⟩ : ∃ v : H, p v ≠ 0 := by
+    by_contra hcon
+    refine hp.2.1 (ContinuousLinearMap.ext fun w => ?_)
+    have hw : p w = 0 := not_not.mp fun h => hcon ⟨w, h⟩
+    rw [hw]
+    rfl
+  have hvn : ‖p v‖ ≠ 0 := norm_ne_zero_iff.mpr hv
+  obtain ⟨x, hxdef⟩ : ∃ x : H, x = (‖p v‖⁻¹ : ℝ) • p v := ⟨_, rfl⟩
+  -- `x` is a unit vector fixed by `p`
+  have hx1 : ‖x‖ = 1 := by
+    rw [hxdef, norm_smul, Real.norm_eq_abs,
+      abs_of_nonneg (inv_nonneg.mpr (norm_nonneg (p v))),
+      inv_mul_cancel₀ hvn]
+  have hpp : p (p v) = p v := by
+    have h := hp.1.isIdempotentElem.eq
+    calc p (p v) = (p * p) v := rfl
+      _ = p v := by rw [h]
+  have hsm : ((‖p v‖⁻¹ : ℝ) • p v) = (((‖p v‖⁻¹ : ℝ) : ℂ)) • p v :=
+    (Complex.coe_smul _ _).symm
+  have hpx : p x = x := by
+    rw [hxdef, hsm, map_smul, hpp]
+  -- `|x⟩⟨x|` is a non-zero projection below `p`
+  have hxx : rk1 x x = x := by
+    have h : (⟪x, x⟫ : ℂ) = 1 := by
+      rw [inner_self_eq_norm_sq_to_K, hx1]
+      norm_num
+    rw [rk1_apply, h, one_smul]
+  have hne : rk1 x ≠ 0 := by
+    intro h0
+    rw [h0] at hxx
+    have hz0 : (0 : H →L[ℂ] H) x = 0 := rfl
+    have hx0 : x = 0 := hxx.symm.trans hz0
+    rw [hx0, norm_zero] at hx1
+    exact zero_ne_one hx1
+  have hproj : IsStarProjection (rk1 x) := rk1_isStarProjection hx1
+  have hmul : p * rk1 x = rk1 x := by
+    refine ContinuousLinearMap.ext fun y => ?_
+    show p (rk1 x y) = rk1 x y
+    rw [rk1_apply, map_smul, hpx]
+  have hle : rk1 x ≤ p :=
+    (IsStarProjection.le_iff_mul_eq_right hproj hp.1).mpr hmul
+  rcases hp.2.2 _ hproj hle with h | h
+  · exact absurd h hne
+  · exact ⟨x, hx1, h.symm⟩
+
+/-! ### Package 2 -/
+
+
+/-- **224VI, stage (4)** (`exc-purec-no-biproduct`, eff.tex:7189; solution
+bsols.tex:3388): the map `p† : X ⟶ X + Y` of `vN_cpsuᵒᵖ` given by the
+algebra map `a ↦ (a,0)` — the dagger of the regular coprojection
+`p = κ₁` of the solution.  (`suPinl X Y` is `κ₁` itself, the algebra
+projection `(a,b) ↦ a`.) -/
+noncomputable def suPq (X Y : WStarCPSU.{u}ᵒᵖ) : suP X Y ⟶ X :=
+  Quiver.Hom.op
+    (wPairSU (𝟙 X.unop) (wZeroSU X.unop.base.carrier Y.unop.base.carrier))
+
+@[simp] theorem suPq_apply (X Y : WStarCPSU.{u}ᵒᵖ) (a : X.unop.base.carrier) :
+    (suPq X Y).unop.toNCPMap a = (a, 0) :=
+  Prod.ext (su_id_apply a) rfl
+
+/-- **224VI, stage (4)**: `a ↦ (a,0)` is a **filter** (proc.tex 96I) for the
+effect `(1,0)`.  Given an ncp map `f : Z → X ⊕ Y` with `f(1) ≤ (1,0)`, its
+second component `f₂` satisfies `0 ≤ f₂(1) ≤ 0`, hence is zero
+(`su_ncp_eq_zero_of_one`); so `f(z) = ((f z).1, 0)` and the first component
+of `f` is the (visibly unique) mediating map. -/
+theorem su_isFilter_suPq (X Y : WStarCPSU.{u}ᵒᵖ) :
+    Theses.A.Proc.IsFilter (suPq X Y).unop.toNCPMap := by
+  constructor
+  intro Z hZ1 hZ2 hZ3 hZ4 f hf1
+  rw [suPq_apply] at hf1
+  obtain ⟨f₁, hf₁⟩ := Theses.A.Proc.exists_ncpComp
+    (wFstSU X.unop.base.carrier Y.unop.base.carrier).toNCPMap f
+  obtain ⟨f₂, hf₂⟩ := Theses.A.Proc.exists_ncpComp
+    (wSndSU X.unop.base.carrier Y.unop.base.carrier).toNCPMap f
+  have hf₁' : ∀ z : Z, f₁ z = (f z).1 := fun z => hf₁ z
+  have hf₂' : ∀ z : Z, f₂ z = (f z).2 := fun z => hf₂ z
+  -- the second component of `f` is zero
+  have hle2 : f₂ 1 ≤ 0 := by
+    rw [hf₂' 1]
+    exact (Prod.le_def.mp hf1).2
+  have hpos2 : (0 : Y.unop.base.carrier) ≤ f₂ 1 := by
+    have h := OrderHomClass.mono f₂.toCompletelyPositiveMap (zero_le_one' Z)
+    rwa [map_zero] at h
+  have hz2 : ∀ z : Z, (f z).2 = 0 := by
+    intro z
+    rw [← hf₂' z]
+    exact ncp_eq_zero_of_one f₂ (le_antisymm hle2 hpos2) z
+  refine ⟨f₁, fun b => ?_, fun g hg => ?_⟩
+  · rw [suPq_apply]
+    exact Prod.ext (hf₁' b).symm (hz2 b)
+  · refine DFunLike.ext _ _ fun b => ?_
+    have h := hg b
+    rw [suPq_apply] at h
+    exact (congrArg Prod.fst h).symm.trans (hf₁' b).symm
+
+/-- **224VI, stage (4)**: `a ↦ (a,0)` is a **quotient** for `(1,0)ᵖ`, by
+197IV at `vNᵒᵖ` (`su_isQuotient_of_isFilter`): it is a filter taking the
+value `(1,0) = (1,0)ᵖᵖ` at `1`. -/
+theorem su_isQuotient_suPq (X Y : WStarCPSU.{u}ᵒᵖ) :
+    IsQuotient (EffectusPartialForm.orth (suPq X Y ≫ truth X)) (suPq X Y) := by
+  refine su_isQuotient_of_isFilter _ _ (su_isFilter_suPq X Y) ?_
+  have hoo : EffectusPartialForm.orth
+      (EffectusPartialForm.orth (suPq X Y ≫ truth X)) = suPq X Y ≫ truth X :=
+    eabasics_orth_orth _
+  rw [hoo, suPredVal_comp, suPredVal_truth]
+
+/-- **224VI, stage (4)**: `a ↦ (a,0)` is **pure**, being a quotient
+(`isPure_of_isQuotient`). -/
+theorem su_isPure_suPq (X Y : WStarCPSU.{u}ᵒᵖ) : IsPure (suPq X Y) :=
+  isPure_of_isQuotient (su_isQuotient_suPq X Y)
+
+/-- **224VI, stage (4)** (bsols.tex:3388, "the regular coprojection
+`(T,c) ↦ T`, which is corner with `p†(T) = (T,0)`"): the dagger of the
+quotient `a ↦ (a,0)` is the coprojection `κ₁ : (a,b) ↦ a`.
+
+By 216VII without the choice (`su_dagger_of_quotient`) it suffices that
+`s := (1,0)` is sharp — it is a projection, `su_isSharp_iff` — and that
+`suPq ≫ κ₁ = asrt_s`; both sides send `(a,b)` to `(a,0)`, the right-hand
+side because `√(1,0) = (1,0)` (a projection is its own square root). -/
+theorem su_dagger_suPq (d : DaggerEffectus (WStarCPSU.{u}ᵒᵖ))
+    (X Y : WStarCPSU.{u}ᵒᵖ) :
+    (d.daggerCat.dag (X := PureCat.of (suP X Y)) (Y := PureCat.of X)
+      ⟨suPq X Y, su_isPure_suPq X Y⟩).1 = suPinl X Y := by
+  have hval : suPredVal (suPq X Y ≫ truth X)
+      = ((1 : X.unop.base.carrier), (0 : Y.unop.base.carrier)) := by
+    rw [suPredVal_comp, suPredVal_truth, suPq_apply]
+  have hp10 : IsStarProjection
+      ((1, 0) : X.unop.base.carrier × Y.unop.base.carrier) := by
+    refine ⟨?_, ?_⟩
+    · show ((1, 0) : X.unop.base.carrier × Y.unop.base.carrier) * (1, 0) = (1, 0)
+      refine Prod.ext ?_ ?_
+      · show (1 : X.unop.base.carrier) * 1 = 1
+        rw [one_mul]
+      · show (0 : Y.unop.base.carrier) * 0 = 0
+        rw [mul_zero]
+    · show star ((1, 0) : X.unop.base.carrier × Y.unop.base.carrier) = (1, 0)
+      refine Prod.ext ?_ ?_
+      · show star (1 : X.unop.base.carrier) = 1
+        simp
+      · show star (0 : Y.unop.base.carrier) = 0
+        simp
+  have hproj : IsStarProjection (suPredVal (suPq X Y ≫ truth X)) := by
+    rw [hval]
+    exact hp10
+  have hs : IsSharp (suPq X Y ≫ truth X) := (su_isSharp_iff _).mpr hproj
+  have hsqrt : CFC.sqrt (suPredVal (suPq X Y ≫ truth X))
+      = suPredVal (suPq X Y ≫ truth X) :=
+    CFC.sqrt_unique hproj.isIdempotentElem.eq hproj.nonneg
+  have hκ : suPq X Y ≫ suPinl X Y = asrt (suPq X Y ≫ truth X) := by
+    refine suop_hom_ext fun x => ?_
+    have e1 : (suPq X Y ≫ suPinl X Y).unop.toNCPMap x = (x.1, 0) := by
+      rw [suop_comp_apply]
+      show (suPq X Y).unop.toNCPMap x.1 = (x.1, 0)
+      exact suPq_apply X Y x.1
+    have e2 : (asrt (suPq X Y ≫ truth X)).unop.toNCPMap x = (x.1, 0) := by
+      rw [su_asrt_apply, hsqrt, hval]
+      refine Prod.ext ?_ ?_
+      · show (1 : X.unop.base.carrier) * x.1 * 1 = x.1
+        rw [one_mul, mul_one]
+      · show (0 : Y.unop.base.carrier) * x.2 * 0 = 0
+        rw [zero_mul, zero_mul]
+    exact e1.trans e2.symm
+  exact su_dagger_of_quotient d hs (su_isQuotient_suPq X Y)
+    (su_isPure_suPq X Y) hκ
+
+/-- **224VI, stage (4)**: the coprojection `κ₁ : X ⟶ X + Y` of `vN_cpsuᵒᵖ`
+is **pure** — it is the dagger of the pure map `suPq` (`su_dagger_suPq`),
+and daggers are morphisms of `Pure (vNᵒᵖ)`.  (`vNᵒᵖ` has a dagger,
+`su_daggerEffectus`; `IsPure` is a `Prop`, so the choice is harmless.) -/
+theorem su_isPure_suPinl (X Y : WStarCPSU.{u}ᵒᵖ) : IsPure (suPinl X Y) := by
+  obtain ⟨d⟩ := su_daggerEffectus.{u}
+  rw [← su_dagger_suPq d X Y]
+  exact (d.daggerCat.dag (X := PureCat.of (suP X Y)) (Y := PureCat.of X)
+    ⟨suPq X Y, su_isPure_suPq X Y⟩).2
+
+
+
+/-! ### 224VI, the printed route -/
+
+section Printed
+
+variable {K C : Type u} [NormedAddCommGroup K] [InnerProductSpace ℂ K]
+  [CompleteSpace K] [CStarAlgebra C] [PartialOrder C] [StarOrderedRing C]
+  [Theses.VonNeumannAlgebra C]
+
+/-- **bsols.tex:3402-3411**: a pure state of `B(ℋ) ⊕ 𝒞` which does not kill
+`(|z⟩⟨z|, 0)` is the vector state of a unit vector `x ∈ ℋ` on the first
+summand. -/
+theorem su_224VI_vector_state
+    (hmin_prod : ∀ p : (K →L[ℂ] K) × C, Theses.A.VN.IsMinimalProjection p →
+      (p.2 = 0 ∧ Theses.A.VN.IsMinimalProjection p.1) ∨
+        (p.1 = 0 ∧ Theses.A.VN.IsMinimalProjection p.2))
+    (hmin_rk1 : ∀ p : K →L[ℂ] K, Theses.A.VN.IsMinimalProjection p →
+      ∃ x : K, ‖x‖ = 1 ∧ p = rk1 x)
+    (i : (PureCat.of suI.{u} : PureCat (WStarCPSU.{u}ᵒᵖ)) ⟶
+      PureCat.of (suP (suBH K) (suOb C)))
+    {z : K} (hz : ‖z‖ = 1)
+    (hone : i.1.unop.toNCPMap ((rk1 z, 0) : (K →L[ℂ] K) × C)
+      = (1 : ULift.{u} ℂ)) :
+    ∃ x : K, ‖x‖ = 1 ∧ ∀ a : (K →L[ℂ] K) × C,
+      i.1.unop.toNCPMap a = ULift.up (⟪x, a.1 x⟫ : ℂ) := by
+  have hproj : IsStarProjection (rk1 z) := rk1_isStarProjection hz
+  have hpure : Theses.B.Dils.IsPureMap i.1.unop.toNCPMap :=
+    Theses.B.Dils.isPureMap_of_procIsPure (su_procPure_of_isPure i.2)
+  have hle : ((rk1 z, 0) : (K →L[ℂ] K) × C) ≤ (1 : (K →L[ℂ] K) × C) :=
+    Prod.le_def.mpr ⟨hproj.le_one, zero_le_one⟩
+  have hf1 : i.1.unop.toNCPMap (1 : (K →L[ℂ] K) × C) = (1 : ULift.{u} ℂ) := by
+    refine le_antisymm i.1.unop.subunital' ?_
+    have h : i.1.unop.toNCPMap ((rk1 z, 0) : (K →L[ℂ] K) × C)
+        ≤ i.1.unop.toNCPMap (1 : (K →L[ℂ] K) × C) := ncpsu_mono i.1.unop hle
+    rwa [hone] at h
+  have hf1d : (i.1.unop.toNCPMap (1 : (K →L[ℂ] K) × C)).down = (1 : ℂ) := by
+    rw [hf1]
+    rfl
+  have hf1ne : i.1.unop.toNCPMap (1 : (K →L[ℂ] K) × C) ≠ 0 := by
+    intro h0
+    have h1 : (1 : ℂ) = 0 := by
+      rw [← hf1d, h0]
+      rfl
+    exact one_ne_zero h1
+  obtain ⟨p₀, hp₀, hpf₀⟩ := su_pure_state_minimal i.1.unop.toNCPMap hpure hf1ne
+  obtain ⟨p, hpeq⟩ : ∃ p : (K →L[ℂ] K) × C, p = p₀ := ⟨p₀, rfl⟩
+  have hp : Theses.A.VN.IsMinimalProjection p := by rw [hpeq]; exact hp₀
+  have hpf : ∀ a : (K →L[ℂ] K) × C,
+      (i.1.unop.toNCPMap a).down • p
+        = (i.1.unop.toNCPMap (1 : (K →L[ℂ] K) × C)).down • (p * a * p) := by
+    intro a
+    rw [hpeq]
+    exact hpf₀ a
+  rcases hmin_prod p hp with ⟨hp2, hp1⟩ | ⟨hp1, hp2⟩
+  · obtain ⟨x, hx1, hxp⟩ := hmin_rk1 p.1 hp1
+    refine ⟨x, hx1, fun a => ?_⟩
+    have h := hpf a
+    rw [hf1d, one_smul] at h
+    have h1 : (i.1.unop.toNCPMap a).down • p.1 = p.1 * a.1 * p.1 :=
+      congrArg Prod.fst h
+    rw [hxp, su_rk1_conj] at h1
+    have hne : rk1 x ≠ 0 := su_rk1_ne_zero hx1
+    refine ULift.ext _ _ ?_
+    have h2 : ((i.1.unop.toNCPMap a).down - (⟪x, a.1 x⟫ : ℂ)) • rk1 x = 0 := by
+      rw [sub_smul, h1, sub_self]
+    exact sub_eq_zero.mp ((smul_eq_zero.mp h2).resolve_right hne)
+  · exfalso
+    refine hp.ne_zero ?_
+    have h := hpf ((rk1 z, 0) : (K →L[ℂ] K) × C)
+    rw [hone, hf1d, one_smul,
+      show ((1 : ULift.{u} ℂ).down : ℂ) = 1 from rfl, one_smul] at h
+    refine Prod.ext hp1 ?_
+    · have h3 : p.2 = p.2 * 0 * p.2 := congrArg Prod.snd h
+      rw [mul_zero, zero_mul] at h3
+      exact h3
+
+/-- **Stages (2)-(5) of the printed solution of 224VI** (bsols.tex:3388-3477),
+run at the transported coproduct: the coproduct object is the direct sum
+`B(K) ⊕ 𝒞` of the classification, `i₁ i₂` are its two coprojections, `m` is
+the mediating map for `id, id`, and `m†` is the vector state at `z`.  There
+is no such diagram. -/
+theorem su_224VI_false
+    (d : DaggerEffectus (WStarCPSU.{u}ᵒᵖ))
+    (hmin_prod : ∀ p : (K →L[ℂ] K) × C, Theses.A.VN.IsMinimalProjection p →
+      (p.2 = 0 ∧ Theses.A.VN.IsMinimalProjection p.1) ∨
+        (p.1 = 0 ∧ Theses.A.VN.IsMinimalProjection p.2))
+    (hmin_rk1 : ∀ p : K →L[ℂ] K, Theses.A.VN.IsMinimalProjection p →
+      ∃ x : K, ‖x‖ = 1 ∧ p = rk1 x)
+    (Qm : (PureCat.of (suP (suBH K) (suOb C)) : PureCat (WStarCPSU.{u}ᵒᵖ)) ⟶
+      PureCat.of (suBH K))
+    (hQm : ∀ T : K →L[ℂ] K,
+      Qm.1.unop.toNCPMap T = ((T, 0) : (K →L[ℂ] K) × C))
+    (Inl : (PureCat.of (suBH K) : PureCat (WStarCPSU.{u}ᵒᵖ)) ⟶
+      PureCat.of (suP (suBH K) (suOb C)))
+    (hInl : ∀ a : (K →L[ℂ] K) × C, Inl.1.unop.toNCPMap a = a.1)
+    (hdagQ : d.daggerCat.dag Qm = Inl)
+    (pl pr : (PureCat.of suI.{u} : PureCat (WStarCPSU.{u}ᵒᵖ)) ⟶
+      PureCat.of (suP suI.{u} suI.{u}))
+    (hpl : ∀ a : ULift.{u} ℂ × ULift.{u} ℂ, pl.1.unop.toNCPMap a = a.1)
+    (hpr : ∀ a : ULift.{u} ℂ × ULift.{u} ℂ, pr.1.unop.toNCPMap a = a.2)
+    (i₁ i₂ : (PureCat.of suI.{u} : PureCat (WStarCPSU.{u}ᵒᵖ)) ⟶
+      PureCat.of (suP (suBH K) (suOb C)))
+    (m : (PureCat.of (suP (suBH K) (suOb C)) : PureCat (WStarCPSU.{u}ᵒᵖ)) ⟶
+      PureCat.of suI.{u})
+    (hm1 : i₁ ≫ m = 𝟙 _) (hm2 : i₂ ≫ m = 𝟙 _)
+    (hext : ∀ (W : PureCat (WStarCPSU.{u}ᵒᵖ))
+      (u v : (PureCat.of (suP (suBH K) (suOb C)) : PureCat (WStarCPSU.{u}ᵒᵖ)) ⟶ W),
+      i₁ ≫ u = i₁ ≫ v → i₂ ≫ u = i₂ ≫ v → u = v)
+    (hmed : ∀ (W : PureCat (WStarCPSU.{u}ᵒᵖ))
+      (a b : (PureCat.of suI.{u} : PureCat (WStarCPSU.{u}ᵒᵖ)) ⟶ W),
+      ∃ w : (PureCat.of (suP (suBH K) (suOb C)) : PureCat (WStarCPSU.{u}ᵒᵖ)) ⟶ W,
+        i₁ ≫ w = a ∧ i₂ ≫ w = b)
+    {z : K} (hz : ‖z‖ = 1)
+    (hdagm : ∀ a : (K →L[ℂ] K) × C,
+      (d.daggerCat.dag m).1.unop.toNCPMap a = ULift.up (⟪z, a.1 z⟫ : ℂ)) :
+    False := by
+  -- **(2)** `m = Q ∘ c_{|z⟩⟨z|}`, by daggering `m† = c† ∘ ▷₁`
+  obtain ⟨c, cd, hc, hcd⟩ := su_exists_rk1_filter (H := K) hz
+  have hcp : IsPure c := su_isPure_rk1_filter hz hc
+  have hdagc : (d.daggerCat.dag (⟨c, hcp⟩ :
+      (PureCat.of (suBH K) : PureCat (WStarCPSU.{u}ᵒᵖ)) ⟶ PureCat.of suI.{u})).1
+      = cd := su_dagger_rk1_filter d hz hcp hc hcd
+  have key : d.daggerCat.dag m
+      = d.daggerCat.dag (⟨c, hcp⟩ :
+        (PureCat.of (suBH K) : PureCat (WStarCPSU.{u}ᵒᵖ)) ⟶ PureCat.of suI.{u})
+        ≫ Inl := by
+    refine Subtype.ext (suop_hom_ext fun a => ?_)
+    have hrhs : (d.daggerCat.dag (⟨c, hcp⟩ :
+        (PureCat.of (suBH K) : PureCat (WStarCPSU.{u}ᵒᵖ)) ⟶ PureCat.of suI.{u})
+        ≫ Inl).1.unop.toNCPMap a
+        = (d.daggerCat.dag (⟨c, hcp⟩ :
+          (PureCat.of (suBH K) : PureCat (WStarCPSU.{u}ᵒᵖ)) ⟶
+            PureCat.of suI.{u})).1.unop.toNCPMap (Inl.1.unop.toNCPMap a) :=
+      suop_comp_apply (d.daggerCat.dag (⟨c, hcp⟩ :
+        (PureCat.of (suBH K) : PureCat (WStarCPSU.{u}ᵒᵖ)) ⟶
+          PureCat.of suI.{u})).1 Inl.1 a
+    rw [hrhs, hdagc, hInl (a : (K →L[ℂ] K) × C),
+      hcd ((a : (K →L[ℂ] K) × C).1), hdagm (a : (K →L[ℂ] K) × C)]
+  have hm : m = Qm ≫ ⟨c, hcp⟩ := by
+    have h := congrArg d.daggerCat.dag key
+    rw [d.daggerCat.dag_dag, d.daggerCat.dag_comp, d.daggerCat.dag_dag, ← hdagQ,
+      d.daggerCat.dag_dag] at h
+    exact h
+  have hc1 : c.unop.toNCPMap (1 : ULift.{u} ℂ) = rk1 z := by
+    rw [hc]
+    show (1 : ℂ) • rk1 z = rk1 z
+    rw [one_smul]
+  have hmval : m.1.unop.toNCPMap (1 : ULift.{u} ℂ)
+      = ((rk1 z, 0) : (K →L[ℂ] K) × C) := by
+    have h1 : m.1.unop.toNCPMap (1 : ULift.{u} ℂ)
+        = Qm.1.unop.toNCPMap (c.unop.toNCPMap (1 : ULift.{u} ℂ)) := by
+      have h2 : (Qm ≫ (⟨c, hcp⟩ : (PureCat.of (suBH K) :
+          PureCat (WStarCPSU.{u}ᵒᵖ)) ⟶ PureCat.of suI.{u})).1.unop.toNCPMap
+            (1 : ULift.{u} ℂ)
+          = Qm.1.unop.toNCPMap (c.unop.toNCPMap (1 : ULift.{u} ℂ)) :=
+        suop_comp_apply Qm.1 c (1 : ULift.{u} ℂ)
+      rw [hm]
+      exact h2
+    rw [h1, hc1, hQm]
+  -- both coprojections take the value `1` at `(|z⟩⟨z|, 0)`
+  have hone : ∀ (i : (PureCat.of suI.{u} : PureCat (WStarCPSU.{u}ᵒᵖ)) ⟶
+      PureCat.of (suP (suBH K) (suOb C))), i ≫ m = 𝟙 _ →
+      i.1.unop.toNCPMap ((rk1 z, 0) : (K →L[ℂ] K) × C) = (1 : ULift.{u} ℂ) := by
+    intro i hi
+    have hval : i.1 ≫ m.1 = 𝟙 (suI.{u}) := congrArg Subtype.val hi
+    have h : (i.1 ≫ m.1).unop.toNCPMap (1 : ULift.{u} ℂ)
+        = (𝟙 suI.{u}).unop.toNCPMap (1 : ULift.{u} ℂ) :=
+      congrArg (fun t : suI.{u} ⟶ suI.{u} => t.unop.toNCPMap (1 : ULift.{u} ℂ))
+        hval
+    rw [suop_comp_apply i.1 m.1 (1 : ULift.{u} ℂ), hmval,
+      suop_id_apply (X := suI.{u}) (1 : ULift.{u} ℂ)] at h
+    exact h
+  obtain ⟨x₁, hx₁n, hx₁⟩ :=
+    su_224VI_vector_state hmin_prod hmin_rk1 i₁ hz (hone i₁ hm1)
+  obtain ⟨x₂, hx₂n, hx₂⟩ :=
+    su_224VI_vector_state hmin_prod hmin_rk1 i₂ hz (hone i₂ hm2)
+  have hx₁self : (⟪x₁, x₁⟫ : ℂ) = 1 := by
+    rw [inner_self_eq_norm_sq_to_K, hx₁n]
+    norm_num
+  have hx₂self : (⟪x₂, x₂⟫ : ℂ) = 1 := by
+    rw [inner_self_eq_norm_sq_to_K, hx₂n]
+    norm_num
+  -- **(3)** `𝒞 = 0`
+  have hstep : ∀ (i : (PureCat.of suI.{u} : PureCat (WStarCPSU.{u}ᵒᵖ)) ⟶
+      PureCat.of (suP (suBH K) (suOb C))) (y : K),
+      (∀ a : (K →L[ℂ] K) × C, i.1.unop.toNCPMap a = ULift.up (⟪y, a.1 y⟫ : ℂ)) →
+      i ≫ (Qm ≫ Inl) = i := by
+    intro i y hy
+    refine Subtype.ext (suop_hom_ext fun a => ?_)
+    have h1 : (i ≫ Qm ≫ Inl).1.unop.toNCPMap a
+        = i.1.unop.toNCPMap ((Qm ≫ Inl).1.unop.toNCPMap a) :=
+      suop_comp_apply i.1 (Qm ≫ Inl).1 a
+    have h2 : (Qm ≫ Inl).1.unop.toNCPMap a
+        = Qm.1.unop.toNCPMap (Inl.1.unop.toNCPMap a) :=
+      suop_comp_apply Qm.1 Inl.1 a
+    rw [h1, h2, hInl (a : (K →L[ℂ] K) × C), hQm ((a : (K →L[ℂ] K) × C).1),
+      hy (((a : (K →L[ℂ] K) × C).1, 0) : (K →L[ℂ] K) × C),
+      hy (a : (K →L[ℂ] K) × C)]
+  have hQI : Qm ≫ Inl = 𝟙 (PureCat.of (suP (suBH K) (suOb C))) := by
+    refine hext _ _ _ ?_ ?_
+    · rw [Category.comp_id]
+      exact hstep i₁ x₁ hx₁
+    · rw [Category.comp_id]
+      exact hstep i₂ x₂ hx₂
+  have hCzero : ∀ w : C, w = 0 := by
+    intro w
+    have hval : Qm.1 ≫ Inl.1 = 𝟙 (suP (suBH K) (suOb C)) := congrArg Subtype.val hQI
+    have h : (Qm.1 ≫ Inl.1).unop.toNCPMap ((0, w) : (K →L[ℂ] K) × C)
+        = (𝟙 (suP (suBH K) (suOb C))).unop.toNCPMap ((0, w) : (K →L[ℂ] K) × C) :=
+      congrArg (fun t : suP (suBH K) (suOb C) ⟶ suP (suBH K) (suOb C) =>
+        t.unop.toNCPMap ((0, w) : (K →L[ℂ] K) × C)) hval
+    rw [suop_comp_apply Qm.1 Inl.1 ((0, w) : (K →L[ℂ] K) × C),
+      hInl ((0, w) : (K →L[ℂ] K) × C), hQm (0 : K →L[ℂ] K),
+      suop_id_apply (X := suP (suBH K) (suOb C))
+        ((0, w) : (K →L[ℂ] K) × C)] at h
+    exact (congrArg Prod.snd h).symm
+  -- **(4)** nothing is orthogonal to both `x₁` and `x₂` ("`dim ℋ ≤ 2`")
+  have hspan : ∀ v : K, (⟪x₁, v⟫ : ℂ) = 0 → (⟪x₂, v⟫ : ℂ) = 0 → v = 0 := by
+    intro v h1 h2
+    by_contra hv
+    have hvn : ‖v‖ ≠ 0 := norm_ne_zero_iff.mpr hv
+    have hz₀ : ‖((‖v‖ : ℂ))⁻¹ • v‖ = 1 := by
+      rw [norm_smul]
+      simp [hvn]
+    obtain ⟨c₀, cd₀, hc₀, -⟩ := su_exists_rk1_filter (H := K) hz₀
+    have hc₀p : IsPure c₀ := su_isPure_rk1_filter hz₀ hc₀
+    have hxz : ∀ y : K, (⟪y, v⟫ : ℂ) = 0 → (⟪y, ((‖v‖ : ℂ))⁻¹ • v⟫ : ℂ) = 0 := by
+      intro y hy
+      rw [inner_smul_right, hy, mul_zero]
+    have hzero : ∀ (i : (PureCat.of suI.{u} : PureCat (WStarCPSU.{u}ᵒᵖ)) ⟶
+        PureCat.of (suP (suBH K) (suOb C))) (y : K),
+        (∀ a : (K →L[ℂ] K) × C,
+          i.1.unop.toNCPMap a = ULift.up (⟪y, a.1 y⟫ : ℂ)) →
+        (⟪y, ((‖v‖ : ℂ))⁻¹ • v⟫ : ℂ) = 0 →
+        i ≫ (Qm ≫ (⟨c₀, hc₀p⟩ : (PureCat.of (suBH K) :
+            PureCat (WStarCPSU.{u}ᵒᵖ)) ⟶ PureCat.of suI.{u}))
+          = i ≫ (⟨(0 : suP (suBH K) (suOb C) ⟶ suI.{u}), isPure_zero⟩ :
+            (PureCat.of (suP (suBH K) (suOb C)) : PureCat (WStarCPSU.{u}ᵒᵖ)) ⟶
+              PureCat.of suI.{u}) := by
+      intro i y hy hyz
+      refine Subtype.ext (suop_hom_ext fun w => ?_)
+      have e1 : (i ≫ Qm ≫ (⟨c₀, hc₀p⟩ : (PureCat.of (suBH K) :
+          PureCat (WStarCPSU.{u}ᵒᵖ)) ⟶ PureCat.of suI.{u})).1.unop.toNCPMap w
+          = i.1.unop.toNCPMap ((Qm ≫ (⟨c₀, hc₀p⟩ : (PureCat.of (suBH K) :
+            PureCat (WStarCPSU.{u}ᵒᵖ)) ⟶
+              PureCat.of suI.{u})).1.unop.toNCPMap w) :=
+        suop_comp_apply i.1 (Qm ≫ (⟨c₀, hc₀p⟩ : (PureCat.of (suBH K) :
+          PureCat (WStarCPSU.{u}ᵒᵖ)) ⟶ PureCat.of suI.{u})).1 w
+      have e2 : (Qm ≫ (⟨c₀, hc₀p⟩ : (PureCat.of (suBH K) :
+          PureCat (WStarCPSU.{u}ᵒᵖ)) ⟶ PureCat.of suI.{u})).1.unop.toNCPMap w
+          = Qm.1.unop.toNCPMap (c₀.unop.toNCPMap w) :=
+        suop_comp_apply Qm.1 c₀ w
+      have e3 : (i ≫ (⟨(0 : suP (suBH K) (suOb C) ⟶ suI.{u}), isPure_zero⟩ :
+          (PureCat.of (suP (suBH K) (suOb C)) : PureCat (WStarCPSU.{u}ᵒᵖ)) ⟶
+            PureCat.of suI.{u})).1.unop.toNCPMap w
+          = i.1.unop.toNCPMap
+            ((0 : suP (suBH K) (suOb C) ⟶ suI.{u}).unop.toNCPMap w) :=
+        suop_comp_apply i.1 (0 : suP (suBH K) (suOb C) ⟶ suI.{u}) w
+      have hz2 : (⟪y, ((w.down • rk1 (((‖v‖ : ℂ))⁻¹ • v) : K →L[ℂ] K)) y⟫ : ℂ)
+          = 0 := by
+        rw [smul_apply, rk1_apply, inner_smul_right,
+          inner_smul_right, hyz, mul_zero, mul_zero]
+      rw [e1, e2, e3, hc₀ w, hQm (w.down • rk1 (((‖v‖ : ℂ))⁻¹ • v)),
+        hy ((w.down • rk1 (((‖v‖ : ℂ))⁻¹ • v), 0) : (K →L[ℂ] K) × C),
+        show ((0 : suP (suBH K) (suOb C) ⟶ suI.{u}).unop.toNCPMap w)
+          = (0 : (K →L[ℂ] K) × C) from rfl,
+        hy (0 : (K →L[ℂ] K) × C)]
+      have hz3 : (⟪y, ((0 : (K →L[ℂ] K) × C).1) y⟫ : ℂ) = 0 := by
+        show (⟪y, (0 : K →L[ℂ] K) y⟫ : ℂ) = 0
+        rw [show ((0 : K →L[ℂ] K) y) = 0 from rfl, inner_zero_right]
+      rw [hz3]
+      exact congrArg ULift.up hz2
+    have hNz : Qm ≫ (⟨c₀, hc₀p⟩ :
+        (PureCat.of (suBH K) : PureCat (WStarCPSU.{u}ᵒᵖ)) ⟶ PureCat.of suI.{u})
+        = ⟨(0 : suP (suBH K) (suOb C) ⟶ suI.{u}), isPure_zero⟩ :=
+      hext _ _ _ (hzero i₁ x₁ hx₁ (hxz x₁ h1)) (hzero i₂ x₂ hx₂ (hxz x₂ h2))
+    have hval : (Qm ≫ (⟨c₀, hc₀p⟩ : (PureCat.of (suBH K) :
+        PureCat (WStarCPSU.{u}ᵒᵖ)) ⟶ PureCat.of suI.{u})).1.unop.toNCPMap
+          (1 : ULift.{u} ℂ)
+        = (0 : suP (suBH K) (suOb C) ⟶ suI.{u}).unop.toNCPMap
+          (1 : ULift.{u} ℂ) :=
+      congrArg (fun t : (PureCat.of (suP (suBH K) (suOb C)) :
+        PureCat (WStarCPSU.{u}ᵒᵖ)) ⟶ PureCat.of suI.{u} =>
+        t.1.unop.toNCPMap (1 : ULift.{u} ℂ)) hNz
+    have e4 : (Qm ≫ (⟨c₀, hc₀p⟩ : (PureCat.of (suBH K) :
+        PureCat (WStarCPSU.{u}ᵒᵖ)) ⟶ PureCat.of suI.{u})).1.unop.toNCPMap
+          (1 : ULift.{u} ℂ)
+        = Qm.1.unop.toNCPMap (c₀.unop.toNCPMap (1 : ULift.{u} ℂ)) :=
+      suop_comp_apply Qm.1 c₀ (1 : ULift.{u} ℂ)
+    have hc₀1 : c₀.unop.toNCPMap (1 : ULift.{u} ℂ) = rk1 (((‖v‖ : ℂ))⁻¹ • v) := by
+      rw [hc₀]
+      show (1 : ℂ) • rk1 (((‖v‖ : ℂ))⁻¹ • v) = _
+      rw [one_smul]
+    rw [e4, hc₀1, hQm (rk1 (((‖v‖ : ℂ))⁻¹ • v)),
+      show ((0 : suP (suBH K) (suOb C) ⟶ suI.{u}).unop.toNCPMap
+        (1 : ULift.{u} ℂ)) = (0 : (K →L[ℂ] K) × C) from rfl] at hval
+    exact su_rk1_ne_zero hz₀ (congrArg Prod.fst hval)
+  -- **(5)** the mediating map for the two coprojections of `ℂ ⊕ ℂ`
+  obtain ⟨F, hF1, hF2⟩ := hmed (PureCat.of (suP suI.{u} suI.{u})) pl pr
+  have hFadd : ∀ x y : ULift.{u} ℂ × ULift.{u} ℂ,
+      F.1.unop.toNCPMap (x + y)
+        = F.1.unop.toNCPMap x + F.1.unop.toNCPMap y :=
+    fun x y => ncp_add_apply F.1.unop.toNCPMap x y
+  have hFsmul : ∀ (r : ℂ) (x : ULift.{u} ℂ × ULift.{u} ℂ),
+      F.1.unop.toNCPMap (r • x) = r • F.1.unop.toNCPMap x :=
+    fun r x => ncp_smul_apply F.1.unop.toNCPMap r x
+  have hFzero : F.1.unop.toNCPMap (0 : ULift.{u} ℂ × ULift.{u} ℂ)
+      = (0 : (K →L[ℂ] K) × C) := ncp_zero_apply F.1.unop.toNCPMap
+  have hv1 : ∀ (b : ULift.{u} ℂ × ULift.{u} ℂ) (t : (K →L[ℂ] K) × C),
+      F.1.unop.toNCPMap b = t → (⟪x₁, t.1 x₁⟫ : ℂ) = b.1.down := by
+    intro b t hbt
+    have hval : i₁.1 ≫ F.1 = pl.1 := congrArg Subtype.val hF1
+    have h : (i₁.1 ≫ F.1).unop.toNCPMap b = pl.1.unop.toNCPMap b :=
+      congrArg (fun s : suI.{u} ⟶ suP suI.{u} suI.{u} => s.unop.toNCPMap b) hval
+    rw [suop_comp_apply i₁.1 F.1 b, hbt, hx₁ t, hpl b] at h
+    exact congrArg ULift.down h
+  have hv2 : ∀ (b : ULift.{u} ℂ × ULift.{u} ℂ) (t : (K →L[ℂ] K) × C),
+      F.1.unop.toNCPMap b = t → (⟪x₂, t.1 x₂⟫ : ℂ) = b.2.down := by
+    intro b t hbt
+    have hval : i₂.1 ≫ F.1 = pr.1 := congrArg Subtype.val hF2
+    have h : (i₂.1 ≫ F.1).unop.toNCPMap b = pr.1.unop.toNCPMap b :=
+      congrArg (fun s : suI.{u} ⟶ suP suI.{u} suI.{u} => s.unop.toNCPMap b) hval
+    rw [suop_comp_apply i₂.1 F.1 b, hbt, hx₂ t, hpr b] at h
+    exact congrArg ULift.down h
+  have hnn : ∀ b : ULift.{u} ℂ × ULift.{u} ℂ,
+      (0 : ULift.{u} ℂ × ULift.{u} ℂ) ≤ b →
+      (0 : (K →L[ℂ] K) × C) ≤ F.1.unop.toNCPMap b := by
+    intro b hb
+    have h : F.1.unop.toNCPMap (0 : ULift.{u} ℂ × ULift.{u} ℂ)
+        ≤ F.1.unop.toNCPMap b := ncpsu_mono F.1.unop hb
+    rwa [hFzero] at h
+  have hsub : ∀ b : ULift.{u} ℂ × ULift.{u} ℂ,
+      b ≤ (1 : ULift.{u} ℂ × ULift.{u} ℂ) →
+      F.1.unop.toNCPMap b ≤ (1 : (K →L[ℂ] K) × C) :=
+    fun b hb => (ncpsu_mono F.1.unop hb).trans F.1.unop.subunital'
+  have he1 : (0 : ULift.{u} ℂ × ULift.{u} ℂ)
+      ≤ ((1, 0) : ULift.{u} ℂ × ULift.{u} ℂ) :=
+    Prod.le_def.mpr ⟨zero_le_one, le_refl 0⟩
+  have he2 : (0 : ULift.{u} ℂ × ULift.{u} ℂ)
+      ≤ ((0, 1) : ULift.{u} ℂ × ULift.{u} ℂ) :=
+    Prod.le_def.mpr ⟨le_refl 0, zero_le_one⟩
+  have he1' : ((1, 0) : ULift.{u} ℂ × ULift.{u} ℂ) ≤ 1 :=
+    Prod.le_def.mpr ⟨le_refl 1, zero_le_one⟩
+  have he2' : ((0, 1) : ULift.{u} ℂ × ULift.{u} ℂ) ≤ 1 :=
+    Prod.le_def.mpr ⟨zero_le_one, le_refl 1⟩
+  obtain ⟨tP, htP⟩ : ∃ t : (K →L[ℂ] K) × C,
+      F.1.unop.toNCPMap ((1, 0) : ULift.{u} ℂ × ULift.{u} ℂ) = t := ⟨_, rfl⟩
+  obtain ⟨tQ, htQ⟩ : ∃ t : (K →L[ℂ] K) × C,
+      F.1.unop.toNCPMap ((0, 1) : ULift.{u} ℂ × ULift.{u} ℂ) = t := ⟨_, rfl⟩
+  obtain ⟨P, hPdef⟩ : ∃ P : K →L[ℂ] K, P = tP.1 := ⟨_, rfl⟩
+  obtain ⟨Q, hQdef⟩ : ∃ Q : K →L[ℂ] K, Q = tQ.1 := ⟨_, rfl⟩
+  have htP0 : (0 : (K →L[ℂ] K) × C) ≤ tP := by
+    rw [← htP]
+    exact hnn _ he1
+  have htQ0 : (0 : (K →L[ℂ] K) × C) ≤ tQ := by
+    rw [← htQ]
+    exact hnn _ he2
+  have htP1 : tP ≤ (1 : (K →L[ℂ] K) × C) := by
+    rw [← htP]
+    exact hsub _ he1'
+  have htQ1 : tQ ≤ (1 : (K →L[ℂ] K) × C) := by
+    rw [← htQ]
+    exact hsub _ he2'
+  have hP0 : (0 : K →L[ℂ] K) ≤ P := by
+    rw [hPdef]
+    exact (Prod.le_def.mp htP0).1
+  have hQ0 : (0 : K →L[ℂ] K) ≤ Q := by
+    rw [hQdef]
+    exact (Prod.le_def.mp htQ0).1
+  have hP1 : P ≤ (1 : K →L[ℂ] K) := by
+    rw [hPdef]
+    exact (Prod.le_def.mp htP1).1
+  have hQ1 : Q ≤ (1 : K →L[ℂ] K) := by
+    rw [hQdef]
+    exact (Prod.le_def.mp htQ1).1
+  have hPv1 : (⟪x₁, P x₁⟫ : ℂ) = 1 := by
+    rw [hPdef]
+    exact hv1 ((1, 0) : ULift.{u} ℂ × ULift.{u} ℂ) tP htP
+  have hPv2 : (⟪x₂, P x₂⟫ : ℂ) = 0 := by
+    rw [hPdef]
+    exact hv2 ((1, 0) : ULift.{u} ℂ × ULift.{u} ℂ) tP htP
+  have hQv1 : (⟪x₁, Q x₁⟫ : ℂ) = 0 := by
+    rw [hQdef]
+    exact hv1 ((0, 1) : ULift.{u} ℂ × ULift.{u} ℂ) tQ htQ
+  have hQv2 : (⟪x₂, Q x₂⟫ : ℂ) = 1 := by
+    rw [hQdef]
+    exact hv2 ((0, 1) : ULift.{u} ℂ × ULift.{u} ℂ) tQ htQ
+  have hPx₂ : P x₂ = 0 := su_op_apply_eq_zero hP0 hPv2
+  have hQx₁ : Q x₁ = 0 := su_op_apply_eq_zero hQ0 hQv1
+  have hPx₁ : P x₁ = x₁ := by
+    have h0 : (0 : K →L[ℂ] K) ≤ 1 - P := sub_nonneg.mpr hP1
+    have h1 : (⟪x₁, ((1 : K →L[ℂ] K) - P) x₁⟫ : ℂ) = 0 := by
+      have h2 : ((1 : K →L[ℂ] K) - P) x₁ = x₁ - P x₁ := rfl
+      rw [h2, inner_sub_right, hPv1, hx₁self, sub_self]
+    have h3 : ((1 : K →L[ℂ] K) - P) x₁ = 0 := su_op_apply_eq_zero h0 h1
+    have h4 : x₁ - P x₁ = 0 := h3
+    exact (sub_eq_zero.mp h4).symm
+  have hQx₂ : Q x₂ = x₂ := by
+    have h0 : (0 : K →L[ℂ] K) ≤ 1 - Q := sub_nonneg.mpr hQ1
+    have h1 : (⟪x₂, ((1 : K →L[ℂ] K) - Q) x₂⟫ : ℂ) = 0 := by
+      have h2 : ((1 : K →L[ℂ] K) - Q) x₂ = x₂ - Q x₂ := rfl
+      rw [h2, inner_sub_right, hQv2, hx₂self, sub_self]
+    have h3 : ((1 : K →L[ℂ] K) - Q) x₂ = 0 := su_op_apply_eq_zero h0 h1
+    have h4 : x₂ - Q x₂ = 0 := h3
+    exact (sub_eq_zero.mp h4).symm
+  have horth : (⟪x₂, x₁⟫ : ℂ) = 0 := by
+    have hsa := ContinuousLinearMap.isSelfAdjoint_iff_isSymmetric.mp
+      (IsSelfAdjoint.of_nonneg hP0)
+    have h : (⟪P x₂, x₁⟫ : ℂ) = ⟪x₂, P x₁⟫ := hsa x₂ x₁
+    rw [hPx₂, hPx₁, inner_zero_left] at h
+    exact h.symm
+  have horth' : (⟪x₁, x₂⟫ : ℂ) = 0 := by
+    rw [← inner_conj_symm, horth, map_zero]
+  have hPQ : P + Q = (1 : K →L[ℂ] K) := by
+    refine ContinuousLinearMap.ext fun w => ?_
+    have hw : w = (⟪x₁, w⟫ : ℂ) • x₁ + (⟪x₂, w⟫ : ℂ) • x₂ := by
+      have hh : w - ((⟪x₁, w⟫ : ℂ) • x₁ + (⟪x₂, w⟫ : ℂ) • x₂) = 0 := by
+        refine hspan _ ?_ ?_
+        · rw [inner_sub_right, inner_add_right, inner_smul_right, inner_smul_right,
+            hx₁self, horth', mul_one, mul_zero, add_zero, sub_self]
+        · rw [inner_sub_right, inner_add_right, inner_smul_right, inner_smul_right,
+            hx₂self, horth, mul_one, mul_zero, zero_add, sub_self]
+      exact sub_eq_zero.mp hh
+    have hgoal : (P + Q) w = (⟪x₁, w⟫ : ℂ) • x₁ + (⟪x₂, w⟫ : ℂ) • x₂ := by
+      conv_lhs => rw [hw]
+      show P ((⟪x₁, w⟫ : ℂ) • x₁ + (⟪x₂, w⟫ : ℂ) • x₂)
+        + Q ((⟪x₁, w⟫ : ℂ) • x₁ + (⟪x₂, w⟫ : ℂ) • x₂) = _
+      rw [map_add, map_add, map_smul, map_smul, map_smul, map_smul, hPx₁, hPx₂,
+        hQx₁, hQx₂, smul_zero, smul_zero, add_zero, zero_add]
+    rw [hgoal]
+    show _ = w
+    exact hw.symm
+  have hFtot : IsTotal F.1 := by
+    refine (su_isTotal_iff F.1).mpr ?_
+    have h1 : (1 : ULift.{u} ℂ × ULift.{u} ℂ)
+        = ((1, 0) : ULift.{u} ℂ × ULift.{u} ℂ)
+          + ((0, 1) : ULift.{u} ℂ × ULift.{u} ℂ) := by
+      refine Prod.ext ?_ ?_
+      · show (1 : ULift.{u} ℂ) = 1 + 0
+        rw [add_zero]
+      · show (1 : ULift.{u} ℂ) = 0 + 1
+        rw [zero_add]
+    have h2 : F.1.unop.toNCPMap (1 : ULift.{u} ℂ × ULift.{u} ℂ)
+        = (1 : (K →L[ℂ] K) × C) := by
+      rw [h1, hFadd, htP, htQ]
+      refine Prod.ext ?_ ?_
+      · show tP.1 + tQ.1 = (1 : K →L[ℂ] K)
+        rw [← hPdef, ← hQdef]
+        exact hPQ
+      · exact (hCzero _).trans (hCzero _).symm
+    exact h2
+  -- a total pure map is an iso after a comprehension, hence **surjective**
+  obtain ⟨W, ξ, π, q, hξiso, hπ, hFeq⟩ := total_pure_iso_compr F.2 hFtot
+  have := hξiso
+  have hπsurj := su_compr_surjective hπ
+  have hξsurj : Function.Surjective ⇑ξ.unop.toNCPMap := by
+    intro y
+    refine ⟨(inv ξ).unop.toNCPMap y, ?_⟩
+    have h : (ξ ≫ inv ξ).unop.toNCPMap y
+        = (𝟙 (suP (suBH K) (suOb C))).unop.toNCPMap y :=
+      congrArg (fun mm : suP (suBH K) (suOb C) ⟶ suP (suBH K) (suOb C) =>
+        mm.unop.toNCPMap y) (IsIso.hom_inv_id ξ)
+    rw [suop_comp_apply ξ (inv ξ) y,
+      suop_id_apply (X := suP (suBH K) (suOb C)) y] at h
+    exact h
+  have hFsurj : ∀ t : (K →L[ℂ] K) × C, ∃ b : ULift.{u} ℂ × ULift.{u} ℂ,
+      F.1.unop.toNCPMap b = t := by
+    intro t
+    obtain ⟨s, hs⟩ := hξsurj t
+    obtain ⟨b, hb⟩ := hπsurj s
+    refine ⟨b, ?_⟩
+    have h : F.1.unop.toNCPMap b = ξ.unop.toNCPMap (π.unop.toNCPMap b) := by
+      rw [hFeq]
+      exact suop_comp_apply ξ π b
+    rw [h, hb, hs]
+  -- the contradiction: `|x₁+x₂⟩⟨x₁+x₂|` is not a combination of `P` and `Q`
+  obtain ⟨b, hb⟩ := hFsurj ((rk1 (x₁ + x₂), 0) : (K →L[ℂ] K) × C)
+  have hb2 : b = b.1.down • ((1, 0) : ULift.{u} ℂ × ULift.{u} ℂ)
+      + b.2.down • ((0, 1) : ULift.{u} ℂ × ULift.{u} ℂ) := by
+    refine Prod.ext (ULift.ext _ _ ?_) (ULift.ext _ _ ?_)
+    · show b.1.down = b.1.down * 1 + b.2.down * 0
+      ring
+    · show b.2.down = b.1.down * 0 + b.2.down * 1
+      ring
+  have hR : F.1.unop.toNCPMap b = b.1.down • tP + b.2.down • tQ := by
+    conv_lhs => rw [hb2]
+    rw [hFadd, hFsmul, hFsmul, htP, htQ]
+    rfl
+  have hRb : b.1.down • P + b.2.down • Q = rk1 (x₁ + x₂) := by
+    rw [hPdef, hQdef]
+    exact congrArg Prod.fst (hR.symm.trans hb)
+  have happ := congrArg (fun T : K →L[ℂ] K => T x₁) hRb
+  simp only [add_apply, smul_apply, hPx₁,
+    hQx₁, smul_zero, add_zero, rk1_apply] at happ
+  have hinner : (⟪x₁ + x₂, x₁⟫ : ℂ) = 1 := by
+    rw [inner_add_left, hx₁self, horth, add_zero]
+  rw [hinner, one_smul] at happ
+  have hfin := congrArg (fun vv : K => (⟪x₂, vv⟫ : ℂ)) happ
+  simp only [inner_smul_right, inner_add_right, horth, hx₂self, mul_zero,
+    zero_add] at hfin
+  exact zero_ne_one hfin
+
+
+/-- **224VI at `vNᵒᵖ` on the printed route** (`exc-purec-no-biproduct`,
+eff.tex:7189, Exercise\*; solution bsols.tex:3356-3477): `Pure (vNᵒᵖ)` does
+**not** have binary coproducts.
+
+This is the printed solution, stage by stage.  Assume `ℂ` and `ℂ` have a
+coproduct `𝒜` in `Pure (vNᵒᵖ)`, with coprojections `π₁, π₂` and mediating
+map `h` for `id, id`.  Stage (1), the classification of the pure states,
+is `su_pure_state_classification`, applied to `h†`: it produces `ℋ`, `𝒞`,
+an nmiu-isomorphism `φ : B(ℋ) ⊕ 𝒞 → 𝒜` and `z ∈ ℋ` with
+`h†(φ(T,c)) = ⟪z, Tz⟫`; `h†` is unital, because `h† ∘ π₁† = (π₁ ∘ h)† = id`,
+so `z` is a unit vector.  Transporting the whole diagram along `φ` — which
+is legitimate, `φ` being an isomorphism of `Pure (vNᵒᵖ)` — puts us in
+`su_224VI_false`, which runs stages (2)-(5). -/
+theorem su_224VI_printed :
+    ¬ HasBinaryCoproducts (PureCat (WStarCPSU.{u}ᵒᵖ)) := by
+  obtain ⟨d⟩ := su_daggerEffectus.{u}
+  intro hbc
+  have := hbc
+  -- the coproduct diagram and its mediating map for `id, id`
+  have hml : (coprod.inl : (PureCat.of suI.{u} : PureCat (WStarCPSU.{u}ᵒᵖ)) ⟶
+      (PureCat.of suI.{u} ⨿ PureCat.of suI.{u})) ≫
+      coprod.desc (𝟙 (PureCat.of suI.{u})) (𝟙 (PureCat.of suI.{u}))
+      = 𝟙 (PureCat.of suI.{u}) := coprod.inl_desc _ _
+  have hmr : (coprod.inr : (PureCat.of suI.{u} : PureCat (WStarCPSU.{u}ᵒᵖ)) ⟶
+      (PureCat.of suI.{u} ⨿ PureCat.of suI.{u})) ≫
+      coprod.desc (𝟙 (PureCat.of suI.{u})) (𝟙 (PureCat.of suI.{u}))
+      = 𝟙 (PureCat.of suI.{u}) := coprod.inr_desc _ _
+  set A : PureCat (WStarCPSU.{u}ᵒᵖ) :=
+    PureCat.of suI.{u} ⨿ PureCat.of suI.{u} with hAdef
+  set m₀ : A ⟶ PureCat.of suI.{u} :=
+    coprod.desc (𝟙 (PureCat.of suI.{u})) (𝟙 (PureCat.of suI.{u})) with hm₀def
+  set dm : (PureCat.of suI.{u} : PureCat (WStarCPSU.{u}ᵒᵖ)) ⟶ A :=
+    d.daggerCat.dag m₀ with hdmdef
+  -- `h†` is unital: `h† ∘ π₁† = (π₁ ∘ h)† = id`
+  have hdmid : dm ≫ d.daggerCat.dag
+      (coprod.inl : (PureCat.of suI.{u} : PureCat (WStarCPSU.{u}ᵒᵖ)) ⟶ A)
+      = 𝟙 (PureCat.of suI.{u}) := by
+    rw [hdmdef, ← d.daggerCat.dag_comp, hml, d.daggerCat.dag_id]
+  have hdm1 : dm.1.unop.toNCPMap (1 : A.base.unop.base.carrier)
+      = (1 : ULift.{u} ℂ) := by
+    have hval : dm.1 ≫ (d.daggerCat.dag
+        (coprod.inl : (PureCat.of suI.{u} : PureCat (WStarCPSU.{u}ᵒᵖ)) ⟶ A)).1
+        = 𝟙 (suI.{u}) := congrArg Subtype.val hdmid
+    have h2 := congrArg
+      (fun t : suI.{u} ⟶ suI.{u} => t.unop.toNCPMap (1 : ULift.{u} ℂ)) hval
+    rw [suop_comp_apply dm.1 (d.daggerCat.dag
+        (coprod.inl : (PureCat.of suI.{u} : PureCat (WStarCPSU.{u}ᵒᵖ)) ⟶ A)).1
+        (1 : ULift.{u} ℂ),
+      suop_id_apply (X := suI.{u}) (1 : ULift.{u} ℂ)] at h2
+    refine le_antisymm dm.1.unop.subunital' ?_
+    have hle := ncpsu_mono dm.1.unop ((d.daggerCat.dag
+      (coprod.inl : (PureCat.of suI.{u} : PureCat (WStarCPSU.{u}ᵒᵖ)) ⟶
+        A)).1.unop.subunital')
+    exact le_of_eq_of_le h2.symm hle
+  -- stage (1): the classification of the pure state `h†`
+  obtain ⟨K, iN, iI, iCo, C, iCS, iPO, iSO, iVN, Φ, y, hΦbij, hΦval⟩ :=
+    su_pure_state_classification dm.1 dm.2
+  have hΦ1 : Φ (1 : A.base.unop.base.carrier) = 1 := map_one Φ.toStarAlgHom
+  have hyy : (⟪y, y⟫ : ℂ) = 1 := by
+    have h := hΦval (1 : A.base.unop.base.carrier)
+    rw [hdm1, hΦ1] at h
+    have h2 : (⟪y, ((1 : (K →L[ℂ] K) × C).1) y⟫ : ℂ) = ⟪y, y⟫ := by
+      show (⟪y, (1 : K →L[ℂ] K) y⟫ : ℂ) = _
+      rw [show ((1 : K →L[ℂ] K) y) = y from rfl]
+    rw [h2] at h
+    exact h.symm
+  have hyn : ‖y‖ = 1 := by
+    have h2 : ((‖y‖ : ℂ)) ^ 2 = 1 := by
+      rw [← hyy, inner_self_eq_norm_sq_to_K]
+      rfl
+    have h3 : (‖y‖ : ℝ) ^ 2 = 1 := by exact_mod_cast h2
+    nlinarith [norm_nonneg y]
+  -- the isomorphism `φ⁻¹ : 𝒜 → B(ℋ) ⊕ 𝒞` as an isomorphism of `Pure (vNᵒᵖ)`
+  obtain ⟨gΦ, hgΦ⟩ := su_exists_ncpsu_of_nmiu Φ
+  obtain ⟨gI, hgI1, hgI2⟩ := Theses.B.Dils.exists_ncp_inv Φ hΦbij
+  have hgI1' : gI (1 : (K →L[ℂ] K) × C) = 1 := by
+    have h := hgI1 (1 : A.base.unop.base.carrier)
+    rw [hΦ1] at h
+    exact h
+  obtain ⟨Ψ, hΨ⟩ : ∃ Ψ : A.base ⟶ suP (suBH K) (suOb C),
+      ∀ a : (K →L[ℂ] K) × C, Ψ.unop.toNCPMap a = gI a :=
+    ⟨Quiver.Hom.op ⟨gI, le_of_eq hgI1'⟩, fun _ => rfl⟩
+  obtain ⟨Ψ', hΨ'⟩ : ∃ Ψ' : suP (suBH K) (suOb C) ⟶ A.base,
+      ∀ a : A.base.unop.base.carrier, Ψ'.unop.toNCPMap a = Φ a :=
+    ⟨Quiver.Hom.op gΦ, fun a => hgΦ a⟩
+  have hΨΨ' : Ψ ≫ Ψ' = 𝟙 A.base := by
+    refine suop_hom_ext fun a => ?_
+    rw [suop_comp_apply Ψ Ψ' a, hΨ' a, hΨ (Φ a), hgI1 a, suop_id_apply a]
+  have hΨ'Ψ : Ψ' ≫ Ψ = 𝟙 (suP (suBH K) (suOb C)) := by
+    refine suop_hom_ext fun a => ?_
+    rw [suop_comp_apply Ψ' Ψ a, hΨ a, hΨ' (gI a), hgI2 a, suop_id_apply a]
+  have hisoΨ : IsIso Ψ := ⟨Ψ', hΨΨ', hΨ'Ψ⟩
+  have hisoΨ' : IsIso Ψ' := ⟨Ψ, hΨ'Ψ, hΨΨ'⟩
+  have hpΨ : IsPure Ψ := by
+    have h := isPure_comp_iso (isPure_id A.base) Ψ
+    rwa [Category.id_comp] at h
+  have hpΨ' : IsPure Ψ' := by
+    have h := isPure_comp_iso (isPure_id (suP (suBH K) (suOb C))) Ψ'
+    rwa [Category.id_comp] at h
+  obtain ⟨α, hαhom, hαinv⟩ :
+      ∃ α : A ≅ PureCat.of (suP (suBH K) (suOb C)),
+        α.hom.1 = Ψ ∧ α.inv.1 = Ψ' :=
+    ⟨{ hom := ⟨Ψ, hpΨ⟩, inv := ⟨Ψ', hpΨ'⟩,
+       hom_inv_id := Subtype.ext hΨΨ', inv_hom_id := Subtype.ext hΨ'Ψ },
+      rfl, rfl⟩
+  -- the transported diagram
+  have hdagm : ∀ a : (K →L[ℂ] K) × C,
+      (d.daggerCat.dag (α.inv ≫ m₀)).1.unop.toNCPMap a
+        = ULift.up (⟪y, a.1 y⟫ : ℂ) := by
+    intro a
+    have hinv : d.daggerCat.dag α.inv = α.hom := dagger_of_iso d α.symm
+    have hd : d.daggerCat.dag (α.inv ≫ m₀) = dm ≫ α.hom := by
+      rw [d.daggerCat.dag_comp, hinv, hdmdef]
+    rw [hd]
+    have h1 : (dm ≫ α.hom).1.unop.toNCPMap a
+        = dm.1.unop.toNCPMap (α.hom.1.unop.toNCPMap a) :=
+      suop_comp_apply dm.1 α.hom.1 a
+    rw [h1, hαhom, hΨ a]
+    refine ULift.ext _ _ ?_
+    have h2 := hΦval (gI a)
+    rw [hgI2 a] at h2
+    exact h2
+  -- the swap of `ℂ ⊕ ℂ`, to make the second coprojection pure
+  obtain ⟨sw, hsw⟩ : ∃ sw : suP suI.{u} suI.{u} ⟶ suP suI.{u} suI.{u},
+      ∀ a : ULift.{u} ℂ × ULift.{u} ℂ, sw.unop.toNCPMap a = (a.2, a.1) :=
+    ⟨Quiver.Hom.op (wPairSU (wSndSU (ULift.{u} ℂ) (ULift.{u} ℂ))
+      (wFstSU (ULift.{u} ℂ) (ULift.{u} ℂ))), fun _ => rfl⟩
+  have hswsw : sw ≫ sw = 𝟙 (suP suI.{u} suI.{u}) := by
+    refine suop_hom_ext fun a => ?_
+    rw [suop_comp_apply sw sw a, hsw a, hsw ((a.2, a.1) : ULift.{u} ℂ × ULift.{u} ℂ),
+      suop_id_apply a]
+    rfl
+  have hisosw : IsIso sw := ⟨sw, hswsw, hswsw⟩
+  have hpsw : IsPure sw := by
+    have h := isPure_comp_iso (isPure_id (suP suI.{u} suI.{u})) sw
+    rwa [Category.id_comp] at h
+  -- everything is in place: apply the five stages
+  refine su_224VI_false (K := K) (C := C) d
+    (fun p hp => su_minimalProjection_prod hp)
+    (fun p hp => su_minimalProjection_rk1 hp)
+    ⟨suPq (suBH K) (suOb C), su_isPure_suPq _ _⟩
+    (fun T => suPq_apply (suBH K) (suOb C) T)
+    ⟨suPinl (suBH K) (suOb C), su_isPure_suPinl _ _⟩ (fun a => rfl)
+    (Subtype.ext (su_dagger_suPq d (suBH K) (suOb C)))
+    ⟨suPinl suI.{u} suI.{u}, su_isPure_suPinl _ _⟩
+    ⟨suPinl suI.{u} suI.{u} ≫ sw, upm_closed_pure (su_isPure_suPinl _ _) hpsw⟩
+    (fun a => rfl) (fun a => ?_)
+    (coprod.inl ≫ α.hom) (coprod.inr ≫ α.hom) (α.inv ≫ m₀) ?_ ?_ ?_ ?_ hyn hdagm
+  · -- the second coprojection of `ℂ ⊕ ℂ`, through the swap
+    have h1 : (suPinl suI.{u} suI.{u} ≫ sw).unop.toNCPMap a
+        = (suPinl suI.{u} suI.{u}).unop.toNCPMap (sw.unop.toNCPMap a) :=
+      suop_comp_apply (suPinl suI.{u} suI.{u}) sw a
+    rw [h1, hsw a]
+    rfl
+  · -- `π₁ ∘ h = id`
+    rw [Category.assoc, ← Category.assoc α.hom, α.hom_inv_id, Category.id_comp]
+    exact hml
+  · -- `π₂ ∘ h = id`
+    rw [Category.assoc, ← Category.assoc α.hom, α.hom_inv_id, Category.id_comp]
+    exact hmr
+  · -- uniqueness of mediating maps
+    intro W u v h1 h2
+    refine (cancel_epi α.hom).mp ?_
+    refine coprod.hom_ext ?_ ?_
+    · rw [← Category.assoc, ← Category.assoc]
+      exact h1
+    · rw [← Category.assoc, ← Category.assoc]
+      exact h2
+  · -- existence of mediating maps
+    intro W a b
+    refine ⟨α.inv ≫ coprod.desc a b, ?_, ?_⟩
+    · rw [Category.assoc, ← Category.assoc α.hom, α.hom_inv_id, Category.id_comp,
+        coprod.inl_desc]
+    · rw [Category.assoc, ← Category.assoc α.hom, α.hom_inv_id, Category.id_comp,
+        coprod.inr_desc]
+
+
+end Printed
+
+end PrintedRoute224VI
+
+/-! #### The short route, kept alongside
+
+`su_exc_purec_no_biproduct_short` below uses none of the above: no
+classification, no dagger, no minimal projection. -/
 
 /-- A substate `f : ℂ ⟶ X` of `vN_cpsuᵒᵖ`, i.e. an ncpsu-map
 `X.unop → ℂ`, as a linear functional. -/
@@ -7268,10 +8342,13 @@ private theorem suFun_pos {X : WStarCPSU.{u}ᵒᵖ} (f : suI.{u} ⟶ X) :
   rw [ncp_zero_apply] at h
   exact h
 
-/-- **224VI at `vNᵒᵖ`** (`exc-purec-no-biproduct`, eff.tex:7189, Exercise\*;
-solution bsols.tex:3358): `Pure (vNᵒᵖ)` does **not** have binary
-coproducts — already `ℂ` and `ℂ` have none. -/
-theorem su_exc_purec_no_biproduct :
+/-- **The short route**, kept for the record: `Pure (vNᵒᵖ)` has no binary
+coproducts, by an argument that uses none of the printed solution.  Both
+coprojections are *states* fixing `a₀ = ĝ₀(1)`, so they agree on
+`√a₀ a₁ √a₀`, which lies in the range of the mediating map `ĝ₀`; that gives
+`1 = π₁(a₁) = π₂(a₁) = 0`.  `su_exc_purec_no_biproduct` below is the same
+statement on the print's own route. -/
+theorem su_exc_purec_no_biproduct_short :
     ¬ HasBinaryCoproducts (PureCat (WStarCPSU.{u}ᵒᵖ)) := by
   intro hbc
   haveI := hbc
@@ -7358,6 +8435,15 @@ theorem su_exc_purec_no_biproduct :
   have e1 : (1 : ℂ) = w.down := by rw [← h1, ← hstate i₁ k10, hval i₁ k10]
   have e2 : (0 : ℂ) = w.down := by rw [← h2, ← hstate i₂ k20, hval i₂ k20]
   exact one_ne_zero (e1.trans e2.symm)
+
+/-- **224VI at `vNᵒᵖ`** (`exc-purec-no-biproduct`, eff.tex:7189, Exercise\*;
+solution bsols.tex:3358): `Pure (vNᵒᵖ)` does **not** have binary
+coproducts — already `ℂ` and `ℂ` have none.
+
+This is the printed solution, all six stages: see `su_224VI_printed`, of
+which this is a restatement, and the section note above it. -/
+theorem su_exc_purec_no_biproduct :
+    ¬ HasBinaryCoproducts (PureCat (WStarCPSU.{u}ᵒᵖ)) := su_224VI_printed
 
 end PureCoequalizer
 
@@ -7809,6 +8895,310 @@ noncomputable def cvnPartialStructure :
     finPAC := cvnsuFinPAC
     effectus := cvnsuEffectusPartialForm }
 
+section CvNNoDilations
+
+set_option linter.unusedSectionVars false
+
+attribute [local instance] su_diamondEffectus su_diamondEffectus_cvn
+
+/-! ### 221IIIa: `CvNᵒᵖ` has no dilations
+
+**221IIIa** (`exc-cvn-no-dilations`, eff.tex:6812, Exercise; printed
+solution bsols.tex:3337–3355).  The print runs in three steps:
+
+1. the standard corner `h_a : 𝒜 → ⌈a⌉𝒜⌈a⌉`, `b ↦ ⌈a⌉b⌈a⌉`, of a
+   *commutative* `𝒜` is multiplicative, because
+   `⌈a⌉bc⌈a⌉ = ⌈a⌉b⌈a⌉·⌈a⌉c⌈a⌉` by commutativity and idempotence
+   (`cvn_corner_mul` and `cvnsu_mul_of_isComprehension` below);
+2. every corner is a standard corner up to an isomorphism, so *every*
+   corner between commutative von Neumann algebras is nmiu
+   (`compr_basics_2`, used inside `cvnsu_mul_of_isComprehension`);
+3. if `CvNᵒᵖ` had dilations, every ncpu-map would be a corner after an
+   nmiu-map, hence multiplicative — absurd, the average map is not
+   (`cvnsu_no_dilations`).
+
+Step 3 has a **gap** in the print, which `total_pure_iso_compr` below
+supplies; see the doc comment there. -/
+
+/-- **221IIIa**, step 1 of the print (bsols.tex:3341), as pure algebra: in a
+*commutative* ring the standard corner `b ↦ e·b·e` at an idempotent `e` is
+multiplicative, `e(xy)e = (exe)(eye)`.  This is the print's computation
+`⌈a⌉bc⌈a⌉ = ⌈a⌉b⌈a⌉·⌈a⌉c⌈a⌉`. -/
+theorem cvn_corner_mul {A : Type*} [Ring A] (hcomm : ∀ x y : A, x * y = y * x)
+    {e : A} (he : e * e = e) (x y : A) :
+    e * (x * y) * e = (e * x * e) * (e * y * e) := by
+  have hpx : ∀ z : A, e * z * e = e * z := by
+    intro z
+    rw [mul_assoc, hcomm z e, ← mul_assoc, he]
+  rw [hpx, hpx, hpx]
+  have e1 : (e * x) * (e * y) = e * ((x * e) * y) := by noncomm_ring
+  rw [e1, hcomm x e]
+  have e2 : e * ((e * x) * y) = (e * e) * (x * y) := by noncomm_ring
+  rw [e2, he]
+
+/-- **221IIIa**, sharpness transports *into* `CvNᵒᵖ`: a sharp predicate `t`
+of the ambient `vN_cpsuᵒᵖ` on `cin X` is `cpred s` for a sharp predicate
+`s` of `CvNᵒᵖ` on `X`.
+
+This is the second half of `cvnsu_orth_sharp` (VNExamples.lean:7770), read
+for an arbitrary sharp `t` instead of `sᗮ`: sharpness is an existential
+over objects *of the subcategory*, so it does not restrict for free.  The
+standard corner of `su_exists_corner t` is commutative, hence an object of
+`CvNᵒᵖ`, and is an image of `t` by **203XII** `img_of_compr` (`im π_t = t`
+for sharp `t`); the image transports back along the hom-bijection. -/
+theorem cvnsu_isSharp_of_cpred {X : CWStarCPSU.{u}ᵒᵖ}
+    {t : cin X ⟶ effObj (WStarCPSU.{u}ᵒᵖ)} (ht : IsSharp t) :
+    ∃ s : X ⟶ effObj (CWStarCPSU.{u}ᵒᵖ), IsSharp s ∧ cpred s = t := by
+  obtain ⟨W, π, hπ, -, -, hW⟩ := su_exists_corner t
+  have him : IsImage π t := by
+    refine ⟨hπ.1, ?_⟩
+    intro r hr
+    have hkey : imPred (comprMap t) = t := (img_of_compr t).2 t ht
+    obtain ⟨α, hα, -⟩ := hπ.2 (comprMap t) (isComprehension_comprMap t).1
+    have h2 : comprMap t ≫ r = comprMap t ≫ truth (cin X) := by
+      rw [← hα, Category.assoc, hr, ← Category.assoc]
+    have h3 := (isImage_imPred (comprMap t)).2 r h2
+    rwa [hkey] at h3
+  refine ⟨cmk (X := X) (Y := effObj (CWStarCPSU.{u}ᵒᵖ)) t, ?_, rfl⟩
+  refine ⟨Opposite.op ⟨W.unop, hW (cvn_mul_comm X.unop)⟩, cmk π,
+    cpred_injective him.1, ?_⟩
+  intro r hr
+  exact (cpred_le_iff _ _).mpr (him.2 (cpred r) (congrArg cpred hr))
+
+/-- **221IIIa**: a sharp map of `CvNᵒᵖ` (**210I** `SharpMap`,
+`Theses/B/Eff/DiamondAmp.lean:1102`) is a sharp map of the ambient
+`vN_cpsuᵒᵖ`.  Again this does not hold for free — `SharpMap (cmap f)`
+quantifies over *more* predicates than `SharpMap f` — but by
+`cvnsu_isSharp_of_cpred` every ambient sharp predicate comes from a sharp
+predicate of the subcategory, and `cvnsu_isSharp_cpred`
+(VNExamples.lean:7756) pushes the result forward again. -/
+theorem cvnsu_sharpMap_cmap {X Y : CWStarCPSU.{u}ᵒᵖ} {f : X ⟶ Y}
+    (hf : SharpMap f) : SharpMap (cmap f) := by
+  intro t ht
+  obtain ⟨s, hs, rfl⟩ := cvnsu_isSharp_of_cpred ht
+  exact cvnsu_isSharp_cpred (hf s hs)
+
+/-- **221IIIa**: totality transports along the hom-bijection, because the
+truth predicate of `CvNᵒᵖ` *is* the truth predicate of `vN_cpsuᵒᵖ`
+(`cvnsuEffectusPartialForm` sets `one X = cmk (suOne (cin X))`). -/
+theorem cvnsu_isTotal_cmap {X Y : CWStarCPSU.{u}ᵒᵖ} {f : X ⟶ Y}
+    (h : IsTotal f) : IsTotal (cmap f) :=
+  congrArg cmap h
+
+/-- The converse of `cvnsu_isTotal_cmap`, by injectivity of `cmap`. -/
+theorem cvnsu_isTotal_of_cmap {X Y : CWStarCPSU.{u}ᵒᵖ} {f : X ⟶ Y}
+    (h : IsTotal (cmap f)) : IsTotal f :=
+  cmap_injective h
+
+/-- **221IIIa**: a **sharp total** map of `CvNᵒᵖ` has multiplicative
+ncpsu-map.  By `cvnsu_sharpMap_cmap` and `cvnsu_isTotal_cmap` the map is
+sharp and total in the ambient `vN_cpsuᵒᵖ`, where **210III**
+`su_exists_nmiu_of_sharp_total` (VNExamples.lean:4152) identifies the sharp
+total maps with the **nmiu**-maps. -/
+theorem cvnsu_mul_of_sharp_total {X Y : CWStarCPSU.{u}ᵒᵖ} {f : X ⟶ Y}
+    (hs : SharpMap f) (ht : IsTotal f) (a b : Y.unop.obj.base.carrier) :
+    (cmap f).unop.toNCPMap (a * b)
+      = (cmap f).unop.toNCPMap a * (cmap f).unop.toNCPMap b := by
+  obtain ⟨ρ, hρ⟩ := su_exists_nmiu_of_sharp_total (cmap f)
+    (cvnsu_sharpMap_cmap hs) (cvnsu_isTotal_cmap ht)
+  rw [← hρ (a * b), ← hρ a, ← hρ b]
+  exact map_mul ρ.toStarAlgHom a b
+
+/-- **221IIIa**: an **isomorphism** of `CvNᵒᵖ` has multiplicative
+ncpsu-map.  Isomorphisms are sharp (**221IV.2** `sharpMap_of_isIso`) and
+total (`iso_isTotal`), so this is `cvnsu_mul_of_sharp_total`. -/
+theorem cvnsu_mul_of_isIso {X Y : CWStarCPSU.{u}ᵒᵖ} (θ : X ⟶ Y) [IsIso θ]
+    (a b : Y.unop.obj.base.carrier) :
+    (cmap θ).unop.toNCPMap (a * b)
+      = (cmap θ).unop.toNCPMap a * (cmap θ).unop.toNCPMap b :=
+  cvnsu_mul_of_sharp_total (sharpMap_of_isIso θ) (iso_isTotal θ) a b
+
+/-- **221IIIa**, steps 1–2 of the print (bsols.tex:3339–3348): a
+**comprehension** — i.e. a corner — of `CvNᵒᵖ` has multiplicative
+ncpsu-map.
+
+Route.  `Theses.B.Dils.standard_corner_dils` (**169IV**) provides the
+standard corner `h : 𝒜 → ⌊p⌋𝒜⌊p⌋`, `b ↦ ⌊p⌋b⌊p⌋`, of the effect named by
+`p`; it is *unital* into the corner algebra, hence a comprehension for `p`
+in `vN_cpsuᵒᵖ` by `su_isComprehension_of_isCornerFor`, and the corner
+algebra is commutative because its multiplication is that of `𝒜`, so this
+is a comprehension of `CvNᵒᵖ` as well (the universal property restricts to
+the subcategory, exactly as in `cvnsuHasComprehension`,
+VNExamples.lean:7738).  It is multiplicative by `cvn_corner_mul` — that is
+step 1 of the print.  Step 2 is **199VII.2** `compr_basics_2`: any two
+comprehensions for `p` differ by a unique isomorphism `θ`, and `θ` is
+multiplicative by `cvnsu_mul_of_isIso`. -/
+theorem cvnsu_mul_of_isComprehension {W X : CWStarCPSU.{u}ᵒᵖ}
+    {p : X ⟶ effObj (CWStarCPSU.{u}ᵒᵖ)} {π : W ⟶ X}
+    (hπ : IsComprehension p π) (a b : X.unop.obj.base.carrier) :
+    (cmap π).unop.toNCPMap (a * b)
+      = (cmap π).unop.toNCPMap a * (cmap π).unop.toNCPMap b := by
+  have hcomm : ∀ x y : X.unop.obj.base.carrier, x * y = y * x :=
+    cvn_mul_comm X.unop
+  let : Theses.VonNeumannAlgebra (Theses.B.Dils.cornerSet
+      X.unop.obj.base.carrier (Theses.A.VN.floor (suPredVal (cpred p)))) :=
+    Theses.B.Dils.cornerSet_vonNeumannAlgebra _ _
+  obtain ⟨h, hval, hcor⟩ := Theses.B.Dils.standard_corner_dils
+    (A := X.unop.obj.base.carrier) (suPredVal (cpred p))
+    ⟨suPredVal_nonneg (cpred p), suPredVal_le_one (cpred p)⟩
+  have hproj : IsStarProjection (Theses.A.VN.floor (suPredVal (cpred p))) :=
+    Theses.B.Dils.cornerSet.proj (Theses.A.VN.floor (suPredVal (cpred p)))
+  -- the standard corner is unital into `⌊p⌋𝒜⌊p⌋`, whose unit is `⌊p⌋`
+  have hunital : h (1 : X.unop.obj.base.carrier) = 1 := by
+    refine Theses.B.Dils.cornerSet.val_injective ?_
+    rw [hval, Theses.B.Dils.cornerSet.val_one, mul_one]
+    exact hproj.isIdempotentElem.eq
+  -- the standard corner, as a morphism of `vN_cpsuᵒᵖ`; a `let`, so that its
+  -- ncpsu-map is *definitionally* `h`
+  let π₁ : Opposite.op (WStarCPSU.of (WStar.of
+      (Theses.B.Dils.cornerSet X.unop.obj.base.carrier
+        (Theses.A.VN.floor (suPredVal (cpred p)))))) ⟶ cin X :=
+    Quiver.Hom.op ⟨h, le_of_eq hunital⟩
+  have hπ₁ : π₁.unop.toNCPMap = h := rfl
+  -- the corner of a commutative algebra is commutative
+  have hWcomm : ∀ x y : Theses.B.Dils.cornerSet X.unop.obj.base.carrier
+      (Theses.A.VN.floor (suPredVal (cpred p))), x * y = y * x := by
+    intro x y
+    refine Theses.B.Dils.cornerSet.val_injective ?_
+    rw [Theses.B.Dils.cornerSet.val_mul, Theses.B.Dils.cornerSet.val_mul]
+    exact hcomm x.1 y.1
+  have hcompr₁ : IsComprehension (cpred p) π₁ :=
+    su_isComprehension_of_isCornerFor (cpred p) π₁
+      (by rw [hπ₁]; exact hunital) (by rw [hπ₁]; exact hcor)
+  let W₁ : CWStarCPSU.{u}ᵒᵖ := Opposite.op ⟨WStarCPSU.of (WStar.of
+    (Theses.B.Dils.cornerSet X.unop.obj.base.carrier
+      (Theses.A.VN.floor (suPredVal (cpred p))))), hWcomm⟩
+  have hcompr₂ : IsComprehension p (cmk (X := W₁) (Y := X) π₁) := by
+    refine ⟨cpred_injective hcompr₁.1, ?_⟩
+    intro Z g hg
+    obtain ⟨g', hg', huniq⟩ := hcompr₁.2 (cmap g) (congrArg cpred hg)
+    exact ⟨cmk g', cmap_injective hg',
+      fun k hk => cmap_injective (huniq (cmap k) (congrArg cmap hk))⟩
+  obtain ⟨θ, hθiso, hθ, -⟩ := compr_basics_2 hπ hcompr₂
+  have := hθiso
+  have hcmapπ : cmap π = cmap θ ≫ π₁ := congrArg cmap hθ.symm
+  have hcomp : ∀ x : X.unop.obj.base.carrier,
+      (cmap π).unop.toNCPMap x = (cmap θ).unop.toNCPMap (h x) := fun x => by
+    rw [hcmapπ]
+    exact suop_comp_apply (cmap θ) π₁ x
+  -- step 1 of the print: the standard corner of a *commutative* algebra is
+  -- multiplicative
+  have hmulh : ∀ x y : X.unop.obj.base.carrier, h (x * y) = h x * h y := by
+    intro x y
+    refine Theses.B.Dils.cornerSet.val_injective ?_
+    rw [Theses.B.Dils.cornerSet.val_mul, hval, hval, hval]
+    exact cvn_corner_mul hcomm hproj.isIdempotentElem.eq x y
+  have key : (cmap θ).unop.toNCPMap (h (a * b))
+      = (cmap θ).unop.toNCPMap (h a) * (cmap θ).unop.toNCPMap (h b) :=
+    Eq.trans (congrArg (fun z => (cmap θ).unop.toNCPMap z) (hmulh a b))
+      (cvnsu_mul_of_isIso θ (h a) (h b))
+  rw [hcomp a, hcomp b, hcomp (a * b)]
+  exact key
+
+/-- **221IIIa**: a **total pure** map of `CvNᵒᵖ` has multiplicative
+ncpsu-map.  This is the print's "any ncpu-map would be the composition of a
+corner and an nmiu-map, and such corners are nmiu", with the missing step
+supplied by `total_pure_iso_compr`: a total pure map is an isomorphism
+after a comprehension, and both are multiplicative by
+`cvnsu_mul_of_isIso` and `cvnsu_mul_of_isComprehension`. -/
+theorem cvnsu_mul_of_total_pure {X Y : CWStarCPSU.{u}ᵒᵖ} {f : X ⟶ Y}
+    (hp : IsPure f) (ht : IsTotal f) (a b : Y.unop.obj.base.carrier) :
+    (cmap f).unop.toNCPMap (a * b)
+      = (cmap f).unop.toNCPMap a * (cmap f).unop.toNCPMap b := by
+  obtain ⟨Q, θ, π, q, hiso, hπ, rfl⟩ := total_pure_iso_compr hp ht
+  have := hiso
+  have hcomp : ∀ x : Y.unop.obj.base.carrier,
+      (cmap (θ ≫ π)).unop.toNCPMap x
+        = (cmap θ).unop.toNCPMap ((cmap π).unop.toNCPMap x) := fun x =>
+    suop_comp_apply (cmap θ) (cmap π) x
+  simp only [hcomp]
+  rw [cvnsu_mul_of_isComprehension hπ]
+  exact cvnsu_mul_of_isIso θ _ _
+
+/-- **221IIIa** (`exc-cvn-no-dilations`, eff.tex:6812, Exercise; solution
+bsols.tex:3337): **`CvNᵒᵖ` does not have dilations** (**221II**
+`HasDilations`).
+
+The print: if `CvNᵒᵖ` had dilations, then every ncpu-map `f = ϱ ∘ h` would
+be a corner `h` after an nmiu-map `ϱ`; corners of commutative von Neumann
+algebras are multiplicative (steps 1–2, `cvnsu_mul_of_isComprehension`),
+hence so would `f` be — absurd.  The witness taken here is the **average**
+map `avgNCP : ℂᵤ × ℂᵤ → ℂᵤ` (98X, VNExamples.lean:933), a *unital* ncp-map
+which is not multiplicative: it sends `x = (1,0)` and `y = (0,1)` to `½`
+each while `x·y = 0`.
+
+The step the print leaves out is the identification of the pure leg `h`
+with a corner, supplied by `total_pure_iso_compr`; `h` is total here
+because `f = h ≫ ϱ` is and `ϱ` is. -/
+theorem cvnsu_no_dilations : ¬ HasDilations (CWStarCPSU.{u}ᵒᵖ) := by
+  intro hdil
+  -- the average map as a morphism `ℂᵤ ⟶ ℂᵤ × ℂᵤ` of `CvNᵒᵖ`
+  obtain ⟨f, hf⟩ : ∃ f : cvnsuI.{u} ⟶ cvnsuP cvnsuI.{u} cvnsuI.{u},
+      (cmap f).unop.toNCPMap = avgNCP.{u} :=
+    ⟨cmk (Quiver.Hom.op ⟨avgNCP.{u}, le_of_eq avgNCP_unital⟩), rfl⟩
+  have hftot : IsTotal f :=
+    cvnsu_isTotal_of_cmap ((su_isTotal_iff (cmap f)).mpr (by
+      rw [hf]; exact avgNCP_unital))
+  obtain ⟨P, ϱ, hleg, hsϱ, htϱ, hpure, hfac, -⟩ := hdil.dil f
+  have hhtot : IsTotal hleg := by
+    have h1 : hleg ≫ ϱ ≫ truth (cvnsuP cvnsuI.{u} cvnsuI.{u}) = truth cvnsuI.{u} := by
+      rw [← Category.assoc, hfac]
+      exact hftot
+    rwa [show ϱ ≫ truth (cvnsuP cvnsuI.{u} cvnsuI.{u}) = truth P from htϱ] at h1
+  -- both legs are multiplicative, hence so is the average map
+  have hmulf : ∀ a b : (cvnsuP cvnsuI.{u} cvnsuI.{u}).unop.obj.base.carrier,
+      (cmap f).unop.toNCPMap (a * b)
+        = (cmap f).unop.toNCPMap a * (cmap f).unop.toNCPMap b := by
+    intro a b
+    have e1 : ∀ z : (cvnsuP cvnsuI.{u} cvnsuI.{u}).unop.obj.base.carrier,
+        (cmap f).unop.toNCPMap z
+          = (cmap hleg).unop.toNCPMap ((cmap ϱ).unop.toNCPMap z) := by
+      intro z
+      conv_lhs => rw [← hfac]
+      exact suop_comp_apply (cmap hleg) (cmap ϱ) z
+    simp only [e1]
+    rw [cvnsu_mul_of_sharp_total hsϱ htϱ,
+      cvnsu_mul_of_total_pure hpure hhtot]
+  have hmulavg : ∀ x y : ULift.{u} ℂ × ULift.{u} ℂ,
+      avgNCP.{u} (x * y) = avgNCP.{u} x * avgNCP.{u} y := by
+    intro x y
+    have h := hmulf x y
+    rw [hf] at h
+    exact h
+  -- but `avgNCP` is not multiplicative
+  have hz : ((ULift.up (1 : ℂ), (0 : ULift.{u} ℂ)) : ULift.{u} ℂ × ULift.{u} ℂ)
+      * ((0 : ULift.{u} ℂ), ULift.up (1 : ℂ)) = 0 := by
+    refine Prod.ext ?_ ?_
+    · show ULift.up (1 : ℂ) * (0 : ULift.{u} ℂ) = 0
+      rw [mul_zero]
+    · show (0 : ULift.{u} ℂ) * ULift.up (1 : ℂ) = 0
+      rw [zero_mul]
+  have hL : avgNCP.{u} (0 : ULift.{u} ℂ × ULift.{u} ℂ) = 0 := by
+    rw [avgNCP_apply]
+    apply ULift.ext
+    show (2⁻¹ : ℂ) * ((0 : ℂ) + 0) = 0
+    norm_num
+  have hR1 : avgNCP.{u} ((ULift.up (1 : ℂ), (0 : ULift.{u} ℂ)))
+      = ULift.up (2⁻¹ : ℂ) := by
+    rw [avgNCP_apply]
+    apply ULift.ext
+    show (2⁻¹ : ℂ) * ((1 : ℂ) + 0) = 2⁻¹
+    norm_num
+  have hR2 : avgNCP.{u} (((0 : ULift.{u} ℂ), ULift.up (1 : ℂ)))
+      = ULift.up (2⁻¹ : ℂ) := by
+    rw [avgNCP_apply]
+    apply ULift.ext
+    show (2⁻¹ : ℂ) * ((0 : ℂ) + 1) = 2⁻¹
+    norm_num
+  have hcon := hmulavg (ULift.up (1 : ℂ), (0 : ULift.{u} ℂ))
+    ((0 : ULift.{u} ℂ), ULift.up (1 : ℂ))
+  rw [hz, hL, hR1, hR2] at hcon
+  have hd : (0 : ℂ) = 2⁻¹ * 2⁻¹ := congrArg ULift.down hcon
+  norm_num at hd
+
+
+end CvNNoDilations
+
 end CvNPartial
 
 /-- **180V at `CvNᵒᵖ`** (`effectus-vn`, eff.tex:827) and **189aI**, second
@@ -7987,8 +9377,8 @@ theorem vn_is_dagger_category (s : EffectusPartialStructure WStarCPSU.{u}ᵒᵖ)
   exact fun hA => @su_daggerEffectus E hA
 
 /-- **221III** (eff.tex:6805, Example): the effectus `vNᵒᵖ` has dilations
-(Paschke dilations; the full subcategory `CvNᵒᵖ` does not, 221IIIa — not
-formalized here). -/
+(Paschke dilations; the full subcategory `CvNᵒᵖ` does not — that is 221IIIa,
+`cvnsu_no_dilations`). -/
 theorem vn_has_dilations (s : EffectusPartialStructure WStarCPSU.{u}ᵒᵖ) :
     letI := s.hasFiniteCoproducts
     letI := s.homPCM
