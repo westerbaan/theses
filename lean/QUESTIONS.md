@@ -298,13 +298,16 @@ neither thesis gives one.
    the wording of 206II;
 2. *206II.4 is as printed*, and 211IV needs an extra step, namely: in
    `vNᵒᵖ`, a ⋄-self-adjoint `g` whose square `gg` is pure has a **pure**
-   ⋄-self-adjoint square root with the same square.  **This is a theorem**
-   (`docs/B15-pure-sqrt.md`, 2026-09-04): such a `g` is *itself* pure, so
-   `h = g`, by Kadison's order-isomorphism theorem on the corner `g`
-   preserves — valid in all types, where the Kraus argument stalls.  So both
-   readings are mathematically sound.  A *formal* Lean proof of (2) needs
-   Kadison's theorem, which Mathlib lacks; reading (1) closes the `sorry` with
-   no new mathematics.  The choice is now purely which the author intends.
+   ⋄-self-adjoint square root with the same square.  **Status (corrected
+   2026-09-05, `docs/B15-elementary.md`):** proved in finite dimensions, and
+   in general under one sub-claim **(S)** — that `g` maps the support corner
+   of `g(1)` *onto* itself (equivalently `g(1)` invertible there).  Under (S)
+   the proof is elementary: proc's own 99IX (an ncpu-bijection with ncpu
+   inverse is nmiu) makes `g` pure, and 105V finishes.  The earlier Kadison
+   route (`docs/B15-pure-sqrt.md`) has the *same* hole at its Step 2 (a filter
+   `√q(·)√q` is onto its corner only for invertible `q`), so it proved
+   nothing more.  Without (S) the question is open; no counterexample is
+   known.  Reading (1) closes the `sorry` with no new mathematics.
 
 **What the tree implements is reading (2)**, verbatim: in
 `Theses/B/Eff/DiamondAmp.lean`, `DiamondSelfAdjoint f := diaPull f = diaPush f`

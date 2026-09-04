@@ -31329,3 +31329,13 @@ is so recorded).  One grading call to note: seven `mathlib`→`faithful`
 regrades in `acstar-matrices-representation.csv` rest on the reading that a
 one-line Mathlib call *is* the author's argument when that argument is
 definitional; recorded in the rows.
+
+### 5. Correction (2026-09-05)
+
+The Session 109 entry above says B15 reading (2)'s step "is a theorem" by
+Kadison.  It is not established: the Kadison proof's Step 2 assumes a filter
+is onto its corner, which needs the support element invertible
+(`docs/B15-elementary.md`).  What stands: finite dimensions, and the general
+case under sub-claim (S), by an elementary route through 99IX and 105V that
+needs no Kadison.  The records in `QUESTIONS.md` B15 and `DECISIONS.md` §1.2
+are corrected; the author was told.
