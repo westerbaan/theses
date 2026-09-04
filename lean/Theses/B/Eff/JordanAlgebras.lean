@@ -92,11 +92,29 @@ Design:
   `ejaScalEquivI`).  Separating states is where `EJAᵒᵖ` parts from `OUSᵒᵖ`,
   which does *not* have them (`ous_no_separating_states`): the Jordan input
   is `eja_exists_state_ne_zero`, the spectral theorem's corollary that the
-  positive unital functionals separate the points.  Not formalized: the
-  ⋄-effectus clause of 206III for `EJAᵒᵖ` (see the comment at the end of the
-  file), and the &- and †-structures of eff.tex 209I and 213I.
+  positive unital functionals separate the points.
+* The last block is 206III's `EJAᵒᵖ` clause, which lives in the **partial**
+  form and so on a different category: `EJAPsu`, Euclidean Jordan algebras
+  with positive *subunital* maps, the Jordan counterpart of `vN_cpsu`.  The
+  partial-form effectus structure is `ejapsuPartialStructure` (product
+  algebra, one-point algebra, `f ⊥ g ⟺ f 1 + g 1 ≤ 1`, effect object `ℝᵤ`,
+  predicates = effects by `ejapsu_pred_val`); on top of it three of the four
+  ⋄-obligations are carried — comprehension by the compression `U q = P₁ q`
+  onto the corner of the floor idempotent (`ejapsuHasComprehension`), images
+  by the support idempotent of the trace-form Riesz vector
+  (`ejapsuHasImages`), and `orth_sharp` by the identification of the sharp
+  predicates with the idempotents (`ejapsu_isSharp_iff`,
+  `ejapsu_orth_sharp`).  The Jordan theory this needs, above the spectral
+  theorem, is the Peirce calculus of an idempotent: the corner `V₁(p)` is
+  again a Euclidean Jordan algebra (`EJACorner`), the cone is self-dual
+  (`eja_nonneg_of_forall_idem`), and the compression is positive
+  (`eja_pone_nonneg`).  Not formalized: **quotients**, hence
+  `DiamondEffectus EJAPsuᵒᵖ` itself — the filter at `√(pᗮ)` needs `U b` to be
+  positive for a general `b ≥ 0`, which is the comment at the end of the
+  file; and the &- and †-structures of eff.tex 209I and 213I.
 -/
 import Theses.B.Eff.OrderUnit
+import Theses.B.Eff.DiamondAmp
 import Mathlib.Algebra.Jordan.Basic
 import Mathlib.LinearAlgebra.Lagrange
 import Mathlib.LinearAlgebra.Trace
@@ -3322,51 +3340,1669 @@ theorem eja_real_effectus : IsRealEffectus (Par EJAObj.{u}ᵒᵖ) := by
 end EJAExample
 
 
-/-! ## The ⋄-effectus clause of 206III, and what it would take
+/-! ## The Peirce calculus of an idempotent, and the self-duality of the cone
 
-206III (eff.tex:4460, Examples) says that `vNᵒᵖ`, `CvNᵒᵖ`, `EJAᵒᵖ` and
-`Set` are all ⋄-effectuses.  The `EJAᵒᵖ` clause is *not* carried here, and
-the reason is not the effectus axioms — it is that a ⋄-effectus lives in
-the **partial** form, which needs a different category and a theory of
-Jordan compressions that neither this tree nor Mathlib has.  Precisely:
+The Jordan theory the ⋄-effectus obligations of 206III need, above the
+spectral theorem `eja_spectral`.  Three blocks:
 
-* `DiamondEffectus` (`DiamondAmp.lean`) presupposes, as instances,
-  `HasFiniteCoproducts`, a `PCM` on every hom-set, `FinPAC` and
-  `EffectusPartialForm`.  For von Neumann algebras those live on the
-  *subunital* category `WStarCPSU` (`WStarCat.lean`), not on the unital
-  one; the corresponding `EJA_psu` — Euclidean Jordan algebras with
-  positive **subunital** maps — does not exist here, and the vN precedent
-  (`VNExamples.lean`, `section VNPartial`) puts that infrastructure at
-  about 500 lines, plus about 180 for the bridge that identifies the
-  predicates on an object with its effects `0 ≤ a ≤ 1`.
-* On top of that come the four obligations of a ⋄-effectus, about 230
-  lines for `vNᵒᵖ`, and each needs a piece of Jordan theory that is
-  missing: comprehension needs the *compression* `U_p` onto the Peirce-1
-  subalgebra of an idempotent `p` together with the fact that this corner
-  is again a Euclidean Jordan algebra (the vN analogue is the standard
-  corner `b ↦ ⌊a⌋ b ⌊a⌋`, `Dils/Pure.lean`); quotients need the filter
-  `b ↦ U_{√(1 - a)} b`, hence *square roots*, hence a continuous
-  functional calculus; images need the range (support) projection of a
-  positive map and the ceiling `⌈a⌉` of an effect; and `orth_sharp` needs
-  that the sharp predicates are exactly the idempotents, so that `1 - p`
-  is sharp when `p` is.
-* All four rest on the **spectral theorem for a single element** of a
-  formally real Jordan algebra — `x` generates an associative,
-  finite-dimensional real algebra, hence a copy of `ℝᵏ`.  That prerequisite
-  is *no longer* missing: it is `eja_spectral` above, together with
-  power-associativity (`eja_pow_mul_pow`), the trace form (`ejaB`) and the
-  Peirce relation `2 L p ³ - 3 L p ² + L p = 0` for an idempotent
-  (`eja_idem_cubic`, `ejaPone`, `ejaPhalf`).  What is still missing for the
-  four obligations is the *quadratic representation* `U_a = 2 L a ² - L a²`
-  and the fundamental formula `U_(U_a b) = U_a U_b U_a`, from which the
-  compression onto the Peirce-1 subalgebra of an idempotent, the square
-  root of an effect and the range projection of a positive map are built;
-  Mathlib has none of that, and this file builds only the pieces of Peirce
-  theory that the spectral theorem itself needs.
+* **Peirce.**  For an idempotent `p` the multiplication operators `L p` and
+  `L y` commute whenever `p * y = y` or `p * y = 0`
+  (`eja_commute_of_peirce_one`, `eja_commute_of_peirce_zero`), both from the
+  linearised Jordan identity `eja_lin` at `(p, p, y)`; so the Peirce
+  `1`-space `V₁(p) = {y | p * y = y}` is a *subalgebra*, and it is again a
+  Euclidean Jordan algebra with unit `p` (`EJACorner`).  `ejaPone p` is the
+  projection onto it and `ejaPone (1 - p)` the projection onto `V₀(p)`; the
+  three Peirce projections sum to the identity (`eja_peirce_sum`).
+* **Self-duality.**  A sum of squares pairs non-negatively with an idempotent
+  (`eja_isSumSq_ejaB_idem_nonneg`, already in the file), and *conversely* an
+  element pairing non-negatively with every idempotent is a sum of squares
+  (`eja_nonneg_of_forall_idem`): read off the spectral decomposition, since
+  `B x (e l) = l · τ (e l)` and `τ` of a non-zero idempotent is positive.
+* **The compression `U p = ejaPone p` is positive** (`eja_pone_nonneg`).
+  This is the one place where the corner is needed as an algebra in its own
+  right: `ejaPone p x` lies in `V₁(p)`, so it has a spectral decomposition
+  *there*, and each of its coefficients is `B x (g) / τ g ≥ 0` for a
+  spectral idempotent `g` of `V₁(p)` — because `ejaPone p` is self-adjoint
+  for the trace form and fixes `g`.  No quadratic representation `U a` for a
+  general `a`, and no fundamental formula, is used or available; see the
+  comment at the end of the file. -/
 
-Nothing in the total-form part of this file depends on any of that: an
-effectus in *total* form needs only the order unit space structure, which
-is what `toOrderUnitSpace` supplies. -/
+namespace EuclideanJordanAlgebra
+
+section Peirce
+
+variable {V : Type u} [AddCommGroup V] [Module ℝ V] [Mul V] [One V]
+  [PartialOrder V] [EuclideanJordanAlgebra V]
+
+/-- **`L p` commutes with `L y` when `y` is in the Peirce `1`-space of the
+idempotent `p`**: the linearised Jordan identity at `(p, p, y)` reads
+`2 [L p, L (p * y)] + [L y, L p] = 0`. -/
+theorem eja_commute_of_peirce_one {p y : V} (hp : p * p = p) (h : p * y = y) (w : V) :
+    p * (y * w) = y * (p * w) := by
+  have h1 := eja_lin p p y w
+  rw [eja_mul_comm y p, h, hp] at h1
+  linear_combination (norm := module) h1
+
+/-- **`L p` commutes with `L y` when `y` is in the Peirce `0`-space.** -/
+theorem eja_commute_of_peirce_zero {p y : V} (hp : p * p = p) (h : p * y = 0) (w : V) :
+    p * (y * w) = y * (p * w) := by
+  have h1 := eja_lin p p y w
+  rw [eja_mul_comm y p, h, hp] at h1
+  simp only [eja_zero_mul, eja_mul_zero] at h1
+  linear_combination (norm := module) -h1
+
+/-- The orthocomplement of an idempotent is an idempotent. -/
+theorem eja_one_sub_idem {p : V} (hp : p * p = p) : (1 - p) * (1 - p) = 1 - p := by
+  rw [eja_sub_mul, eja_mul_sub, eja_mul_sub, eja_one_mul, eja_mul_one, eja_one_mul, hp]
+  abel
+
+
+/-! ### Order arithmetic
+
+The order of a Euclidean Jordan algebra is that of the cone of sums of
+squares, and the class is a mixin over a bare `PartialOrder`, so Mathlib's
+`AddLeftMono` lemmas are not available; these are the three facts about `+`
+and `≤` that the category below needs. -/
+
+theorem eja_sub_nonneg {a b : V} : (0 : V) ≤ b - a ↔ a ≤ b := by
+  rw [eja_nonneg_iff, eja_le_iff]
+
+theorem eja_add_le_add {a b c d : V} (h1 : a ≤ b) (h2 : c ≤ d) : a + c ≤ b + d := by
+  rw [eja_le_iff] at h1 h2 ⊢
+  have he : b + d - (a + c) = (b - a) + (d - c) := by abel
+  rw [he]
+  exact h1.add h2
+
+theorem eja_add_le_add_right {a b : V} (h : a ≤ b) (c : V) : a + c ≤ b + c :=
+  eja_add_le_add h (le_refl c)
+
+theorem eja_le_add_of_nonneg_left {a b : V} (h : 0 ≤ a) : b ≤ a + b := by
+  have h2 := eja_add_le_add h (le_refl b)
+  rwa [zero_add] at h2
+
+/-- `L p ∘ P₁ p = P₁ p`: the range of the Peirce `1`-projection is inside the
+Peirce `1`-space.  (The Peirce relation `eja_idem_cubic`.) -/
+theorem eja_mul_pone (p : V) (hp : p * p = p) (y : V) :
+    p * ejaPone p y = ejaPone p y := by
+  have h := eja_idem_cubic p hp y
+  simp only [ejaPone_apply, eja_mul_sub, eja_mul_smul]
+  linear_combination (norm := module) h
+
+/-- **The Peirce `1`-space is the fixed space of `P₁ p`.** -/
+theorem eja_pone_eq_self_iff (p : V) (hp : p * p = p) (y : V) :
+    ejaPone p y = y ↔ p * y = y := by
+  constructor
+  · intro h
+    have h2 := eja_mul_pone p hp y
+    rw [h] at h2
+    exact h2
+  · intro h
+    rw [ejaPone_apply, h, h]
+    module
+
+/-- `P₁ p` fixes `p`, and `P₁ p 1 = p`. -/
+theorem eja_pone_one (p : V) (hp : p * p = p) : ejaPone p 1 = p := by
+  rw [ejaPone_apply, eja_mul_one, hp]
+  module
+
+/-- **The three Peirce projections sum to the identity** (`P₀ p = P₁ (1 - p)`).
+This is an identity of linear maps, needing no idempotency. -/
+theorem eja_peirce_sum (p y : V) :
+    ejaPone p y + ejaPhalf p y + ejaPone (1 - p) y = y := by
+  simp only [ejaPone_apply, ejaPhalf_apply, eja_sub_mul, eja_mul_sub, eja_one_mul]
+  module
+
+/-- `L p ∘ P½ p = ½ P½ p`: the range of the Peirce `½`-projection is inside the
+Peirce `½`-space. -/
+theorem eja_mul_phalf (p : V) (hp : p * p = p) (y : V) :
+    p * ejaPhalf p y = (2 : ℝ)⁻¹ • ejaPhalf p y := by
+  have h := eja_idem_cubic p hp y
+  simp only [ejaPhalf_apply, eja_mul_sub, eja_mul_smul, smul_sub, smul_smul]
+  linear_combination (norm := module) (-2 : ℝ) • h
+
+/-- An idempotent is positive. -/
+theorem eja_idem_nonneg {p : V} (hp : p * p = p) : 0 ≤ p := by
+  rw [eja_nonneg_iff, ← hp]
+  exact IsSumSq.mul_self p
+
+/-- An idempotent is an effect. -/
+theorem eja_idem_le_one {p : V} (hp : p * p = p) : p ≤ 1 := by
+  have h := eja_idem_nonneg (eja_one_sub_idem hp)
+  rw [eja_nonneg_iff] at h
+  rw [eja_le_iff]
+  exact h
+
+/-- **A positive combination bounded below for every real coefficient is
+degenerate**: if `0 ≤ t · c + d` for every real `t` then `c = 0`.  Proved by
+testing against a state, where the inequality becomes one of real numbers.
+(This is what makes a positive map kill the Peirce `½`-part.) -/
+theorem eja_eq_zero_of_forall_smul_add {c d : V} (h : ∀ t : ℝ, 0 ≤ t • c + d) :
+    c = 0 := by
+  by_contra hc
+  obtain ⟨ω, hpos, _, hne⟩ := eja_exists_state_ne_zero hc
+  have hreal : ∀ t : ℝ, 0 ≤ t * ω c + ω d := by
+    intro t
+    have h2 := hpos _ (h t)
+    rwa [map_add, map_smul, smul_eq_mul] at h2
+  have h3 := hreal (-(ω d + 1) / ω c)
+  rw [div_mul_cancel₀ _ hne] at h3
+  linarith
+
+/-! ### The corner `V₁(p)` of an idempotent -/
+
+/-- An idempotent of a Euclidean Jordan algebra, bundled with its equation so
+that its Peirce `1`-space can carry instances. -/
+structure EJAIdem (V : Type u) [AddCommGroup V] [Module ℝ V] [Mul V] [One V]
+    [PartialOrder V] [EuclideanJordanAlgebra V] : Type u where
+  /-- the element -/
+  elt : V
+  /-- ... which is idempotent -/
+  idem : elt * elt = elt
+
+/-- The Peirce `1`-space `V₁(p) = {y | p * y = y}` of an idempotent, as a
+submodule. -/
+def ejaCornerSub (p : EJAIdem V) : Submodule ℝ V where
+  carrier := {y : V | p.elt * y = y}
+  add_mem' := by
+    intro a b ha hb
+    show p.elt * (a + b) = a + b
+    rw [eja_mul_add, ha, hb]
+  zero_mem' := eja_mul_zero p.elt
+  smul_mem' := by
+    intro r a ha
+    show p.elt * (r • a) = r • a
+    rw [eja_mul_smul, ha]
+
+theorem ejaCornerSub_mem {p : EJAIdem V} {y : V} : y ∈ ejaCornerSub p ↔ p.elt * y = y :=
+  Iff.rfl
+
+/-- **The corner `V₁(p)`** of an idempotent `p`: its Peirce `1`-space, which
+is a subalgebra with unit `p` and again a Euclidean Jordan algebra. -/
+def EJACorner (p : EJAIdem V) : Type u := ejaCornerSub p
+
+namespace EJACorner
+
+instance (p : EJAIdem V) : AddCommGroup (EJACorner p) :=
+  inferInstanceAs (AddCommGroup (ejaCornerSub p))
+
+instance (p : EJAIdem V) : Module ℝ (EJACorner p) :=
+  inferInstanceAs (Module ℝ (ejaCornerSub p))
+
+instance (p : EJAIdem V) : FiniteDimensional ℝ (EJACorner p) :=
+  inferInstanceAs (FiniteDimensional ℝ (ejaCornerSub p))
+
+/-- A corner element, read in the submodule it is defined as. -/
+def toSub {p : EJAIdem V} (y : EJACorner p) : ejaCornerSub p := y
+
+/-- A submodule element, read as a corner element. -/
+def ofSub {p : EJAIdem V} (y : ejaCornerSub p) : EJACorner p := y
+
+/-- The underlying element of `V`. -/
+def val {p : EJAIdem V} (y : EJACorner p) : V := (y.toSub : V)
+
+/-- Build a corner element from an element of the Peirce `1`-space. -/
+def mk' {p : EJAIdem V} (y : V) (h : p.elt * y = y) : EJACorner p := ofSub ⟨y, h⟩
+
+@[simp] theorem val_mk' {p : EJAIdem V} (y : V) (h : p.elt * y = y) :
+    val (mk' y h) = y := rfl
+
+theorem val_prop {p : EJAIdem V} (y : EJACorner p) : p.elt * val y = val y :=
+  y.toSub.2
+
+theorem val_injective {p : EJAIdem V} : Function.Injective (val (p := p)) :=
+  fun _ _ h => Subtype.ext h
+
+@[simp] theorem val_add {p : EJAIdem V} (y z : EJACorner p) :
+    val (y + z) = val y + val z := rfl
+
+@[simp] theorem val_zero {p : EJAIdem V} : val (0 : EJACorner p) = 0 := rfl
+
+@[simp] theorem val_smul {p : EJAIdem V} (r : ℝ) (y : EJACorner p) :
+    val (r • y) = r • val y := rfl
+
+@[simp] theorem val_sub {p : EJAIdem V} (y z : EJACorner p) :
+    val (y - z) = val y - val z := rfl
+
+/-- The inclusion of the corner into `V`, as a linear map. -/
+def valLin (p : EJAIdem V) : EJACorner p →ₗ[ℝ] V where
+  toFun := val
+  map_add' := val_add
+  map_smul' := val_smul
+
+@[simp] theorem valLin_apply {p : EJAIdem V} (y : EJACorner p) :
+    valLin p y = val y := rfl
+
+instance (p : EJAIdem V) : Mul (EJACorner p) where
+  mul y z := mk' (val y * val z) (by
+    rw [eja_commute_of_peirce_one p.idem (val_prop y), val_prop z])
+
+@[simp] theorem val_mul {p : EJAIdem V} (y z : EJACorner p) :
+    val (y * z) = val y * val z := rfl
+
+instance (p : EJAIdem V) : One (EJACorner p) where
+  one := mk' p.elt p.idem
+
+@[simp] theorem val_one {p : EJAIdem V} : val (1 : EJACorner p) = p.elt := rfl
+
+/-- A sum of squares of the corner is a sum of squares of `V`. -/
+theorem isSumSq_val {p : EJAIdem V} {z : EJACorner p} (h : IsSumSq z) :
+    IsSumSq (val z) := by
+  induction h with
+  | zero => rw [val_zero]; exact IsSumSq.zero
+  | @sq_add a s _ ih =>
+    rw [val_add, val_mul]
+    exact IsSumSq.sq_add _ ih
+
+theorem mul_zero_self {p : EJAIdem V} :
+    (0 : EJACorner p) * (0 : EJACorner p) = 0 :=
+  val_injective (by rw [val_mul, val_zero, eja_zero_mul])
+
+theorem formallyReal' {p : EJAIdem V} {a s : EJACorner p} (hs : IsSumSq s)
+    (h : a * a + s = 0) : a = 0 := by
+  refine val_injective ?_
+  rw [val_zero]
+  refine EuclideanJordanAlgebra.formallyReal (isSumSq_val hs) ?_
+  have h2 := congrArg val h
+  rwa [val_add, val_mul, val_zero] at h2
+
+instance (p : EJAIdem V) : PartialOrder (EJACorner p) :=
+  sumSqPartialOrder (EJACorner p) mul_zero_self formallyReal'
+
+instance (p : EJAIdem V) : EuclideanJordanAlgebra (EJACorner p) where
+  mul_comm a b := val_injective (by rw [val_mul, val_mul, eja_mul_comm])
+  mul_add a b c := val_injective (by
+    rw [val_mul, val_add, val_add, val_mul, val_mul, eja_mul_add])
+  smul_mul r a b := val_injective (by
+    rw [val_mul, val_smul, val_smul, val_mul, eja_smul_mul])
+  one_mul a := val_injective (by rw [val_mul, val_one, val_prop])
+  lmul_comm_rmul_rmul a b := val_injective (by
+    simp only [val_mul]
+    exact EuclideanJordanAlgebra.lmul_comm_rmul_rmul _ _)
+  finiteDimensional := inferInstance
+  formallyReal := formallyReal'
+  le_iff _ _ := Iff.rfl
+
+theorem le_iff' {p : EJAIdem V} (y z : EJACorner p) :
+    y ≤ z ↔ IsSumSq (z - y) := Iff.rfl
+
+end EJACorner
+
+/-- The order of the corner is pushed forward to the order of `V`. -/
+theorem eja_corner_val_le {p : EJAIdem V} {y z : EJACorner p} (h : y ≤ z) :
+    EJACorner.val y ≤ EJACorner.val z := by
+  rw [eja_le_iff]
+  have h2 := EJACorner.isSumSq_val ((EJACorner.le_iff' y z).mp h)
+  rwa [EJACorner.val_sub] at h2
+
+theorem eja_corner_val_nonneg {p : EJAIdem V} {y : EJACorner p} (h : 0 ≤ y) :
+    0 ≤ EJACorner.val y := by
+  have h2 := eja_corner_val_le h
+  rwa [EJACorner.val_zero] at h2
+
+/-- The compression `U p = P₁ p`, as a linear map into the corner `V₁(p)`. -/
+def ejaPoneCorner (p : EJAIdem V) : V →ₗ[ℝ] EJACorner p where
+  toFun x := EJACorner.mk' (ejaPone p.elt x) (eja_mul_pone p.elt p.idem x)
+  map_add' x y := EJACorner.val_injective (by
+    rw [EJACorner.val_add, EJACorner.val_mk', EJACorner.val_mk', EJACorner.val_mk',
+      map_add])
+  map_smul' r x := EJACorner.val_injective (by
+    rw [EJACorner.val_smul, EJACorner.val_mk', EJACorner.val_mk', map_smul]
+    rfl)
+
+@[simp] theorem ejaPoneCorner_val (p : EJAIdem V) (x : V) :
+    EJACorner.val (ejaPoneCorner p x) = ejaPone p.elt x := rfl
+
+
+/-! ### Self-duality of the cone, and positivity of the compression -/
+
+/-- The coefficient of a spectral decomposition, read off by the trace form. -/
+theorem eja_ortho_B_coeff {s : Finset ℝ} {e : ℝ → V}
+    (hidem : ∀ l ∈ s, e l * e l = e l)
+    (horth : ∀ l ∈ s, ∀ k ∈ s, l ≠ k → e l * e k = 0) (c : ℝ → ℝ) {l : ℝ}
+    (hl : l ∈ s) :
+    ejaB (∑ k ∈ s, c k • e k) (e l) = c l * ejaTrL (e l) := by
+  classical
+  have hmul : (∑ k ∈ s, c k • e k) * e l = c l • e l := by
+    rw [eja_sum_mul, Finset.sum_eq_single l]
+    · rw [eja_smul_mul, hidem l hl]
+    · intro k hk hkl
+      rw [eja_smul_mul, horth k hk l hl hkl, smul_zero]
+    · intro h'; exact absurd hl h'
+  rw [ejaB, hmul, map_smul, smul_eq_mul]
+
+/-- **The cone is self-dual**: an element pairing non-negatively with every
+idempotent is positive.  (The converse is `eja_isSumSq_ejaB_idem_nonneg`.) -/
+theorem eja_nonneg_of_forall_idem {x : V}
+    (h : ∀ g : V, g * g = g → 0 ≤ ejaB x g) : 0 ≤ x := by
+  obtain ⟨s, e, hidem, horth, hne0, hsum, hdec⟩ := eja_spectral x
+  rw [eja_nonneg_iff, hdec, eja_ortho_isSumSq_iff hidem horth hne0]
+  intro l hl
+  have hB : ejaB (∑ k ∈ s, (fun t : ℝ => t) k • e k) (e l) = l * ejaTrL (e l) :=
+    eja_ortho_B_coeff hidem horth (fun t => t) hl
+  have h0 : 0 ≤ ejaB x (e l) := h (e l) (hidem l hl)
+  rw [hdec] at h0
+  rw [hB] at h0
+  have hpos : 0 < ejaTrL (e l) := eja_tr_idem_pos (e l) (hidem l hl) (hne0 l hl)
+  nlinarith
+
+/-- The trace form is non-degenerate. -/
+theorem eja_eq_zero_of_ejaB_self {z : V} (h : ejaB z z = 0) : z = 0 := by
+  by_contra hz
+  have := ejaB_self_pos hz
+  linarith
+
+/-- **Positivity of the compression, in the corner**: for `x ≥ 0` the element
+`ejaPone p x` of `V₁(p)` is positive *in `V₁(p)`*.  Its spectral coefficients
+there are `B x g / τ g` for spectral idempotents `g` of `V₁(p)`, which
+`ejaPone p` fixes and for which the trace form is self-adjoint. -/
+theorem eja_pone_nonneg_corner (p : EJAIdem V) {x : V} (hx : 0 ≤ x) :
+    (0 : EJACorner p) ≤ EJACorner.mk' (ejaPone p.elt x) (eja_mul_pone p.elt p.idem x) := by
+  classical
+  set y : EJACorner p := EJACorner.mk' (ejaPone p.elt x) (eja_mul_pone p.elt p.idem x) with hy
+  obtain ⟨s, e, hidem, horth, hne0, hsum, hdec⟩ := eja_spectral y
+  have hE : ∀ l ∈ s, EJACorner.val (e l) * EJACorner.val (e l)
+      = EJACorner.val (e l) := by
+    intro l hl
+    have := congrArg EJACorner.val (hidem l hl)
+    rwa [EJACorner.val_mul] at this
+  have hEorth : ∀ l ∈ s, ∀ k ∈ s, l ≠ k →
+      EJACorner.val (e l) * EJACorner.val (e k) = 0 := by
+    intro l hl k hk hlk
+    have := congrArg EJACorner.val (horth l hl k hk hlk)
+    rwa [EJACorner.val_mul, EJACorner.val_zero] at this
+  have hEne : ∀ l ∈ s, EJACorner.val (e l) ≠ 0 := by
+    intro l hl hcon
+    exact hne0 l hl (EJACorner.val_injective (by rw [hcon, EJACorner.val_zero]))
+  have hval : ejaPone p.elt x = ∑ l ∈ s, l • EJACorner.val (e l) := by
+    have := congrArg EJACorner.val hdec
+    rw [hy] at this
+    rw [show ejaPone p.elt x = EJACorner.val y from rfl, this]
+    exact map_sum (EJACorner.valLin p) (fun l => l • e l) s
+  have hcoeff : ∀ l ∈ s, 0 ≤ l := by
+    intro l hl
+    have hB : ejaB (∑ k ∈ s, (fun t : ℝ => t) k • EJACorner.val (e k))
+        (EJACorner.val (e l)) = l * ejaTrL (EJACorner.val (e l)) :=
+      eja_ortho_B_coeff hE hEorth (fun t => t) hl
+    have hfix : ejaPone p.elt (EJACorner.val (e l)) = EJACorner.val (e l) :=
+      (eja_pone_eq_self_iff p.elt p.idem _).mpr (EJACorner.val_prop (e l))
+    have hadj : ejaB (ejaPone p.elt x) (EJACorner.val (e l))
+        = ejaB x (EJACorner.val (e l)) := by
+      have h5 := ejaB_pone_self_adj p.elt x (EJACorner.val (e l))
+      rw [hfix] at h5
+      exact h5.symm
+    have h0 : 0 ≤ ejaB x (EJACorner.val (e l)) :=
+      eja_isSumSq_ejaB_idem_nonneg ((eja_nonneg_iff x).mp hx) _ (hE l hl)
+    rw [← hadj, hval, hB] at h0
+    have hpos : 0 < ejaTrL (EJACorner.val (e l)) :=
+      eja_tr_idem_pos _ (hE l hl) (hEne l hl)
+    nlinarith
+  show IsSumSq (y - 0)
+  rw [sub_zero, hdec]
+  exact (eja_ortho_isSumSq_iff hidem horth hne0 (fun t => t)).mpr hcoeff
+
+/-- **The compression `U p = P₁ p` of an idempotent is positive.** -/
+theorem eja_pone_nonneg {p : V} (hp : p * p = p) {x : V} (hx : 0 ≤ x) :
+    0 ≤ ejaPone p x := by
+  have h := eja_pone_nonneg_corner ⟨p, hp⟩ hx
+  exact eja_corner_val_nonneg h
+
+/-- An element of the corner that is positive in `V` is positive in the
+corner: the two orders agree on `V₁(p)`. -/
+theorem eja_corner_nonneg_iff (p : EJAIdem V) (y : EJACorner p) :
+    0 ≤ y ↔ 0 ≤ EJACorner.val y := by
+  refine ⟨eja_corner_val_nonneg, fun h => ?_⟩
+  have h1 := eja_pone_nonneg_corner p h
+  have h2 : ejaPone p.elt (EJACorner.val y) = EJACorner.val y :=
+    (eja_pone_eq_self_iff p.elt p.idem _).mpr (EJACorner.val_prop y)
+  have h3 : EJACorner.mk' (ejaPone p.elt (EJACorner.val y))
+      (eja_mul_pone p.elt p.idem (EJACorner.val y)) = y :=
+    EJACorner.val_injective h2
+  rwa [h3] at h1
+
+/-! ### Orthogonality, the Riesz vector, and the floor and support idempotents -/
+
+/-- The trace form is additive in a finite sum on the right. -/
+theorem ejaB_sum_right {ι : Type*} (s : Finset ι) (a : V) (f : ι → V) :
+    ejaB a (∑ i ∈ s, f i) = ∑ i ∈ s, ejaB a (f i) := by
+  classical
+  induction s using Finset.induction with
+  | empty => simp [ejaB, eja_mul_zero]
+  | insert i s hi ih =>
+    rw [Finset.sum_insert hi, ejaB_add_right, ih, Finset.sum_insert hi]
+
+theorem ejaB_sum_left {ι : Type*} (s : Finset ι) (f : ι → V) (a : V) :
+    ejaB (∑ i ∈ s, f i) a = ∑ i ∈ s, ejaB (f i) a := by
+  rw [ejaB_symm, ejaB_sum_right]
+  exact Finset.sum_congr rfl fun i _ => ejaB_symm a (f i)
+
+/-- **Two idempotents that are trace-form orthogonal are orthogonal.**  The
+form `(u, v) ↦ B u (f * v)` is symmetric (associativity of `B`) and positive
+semi-definite (`ejaB_idem_apply_nonneg`), and it kills `g`; so by
+Cauchy–Schwarz it kills `g` against everything, and `f * g` pairs to zero with
+everything. -/
+theorem eja_idem_mul_eq_zero_of_ejaB {f g : V} (hf : f * f = f) (hg : g * g = g)
+    (h : ejaB f g = 0) : f * g = 0 := by
+  have hsym : ∀ u v : V, ejaB u (f * v) = ejaB v (f * u) := by
+    intro u v
+    rw [← ejaB_assoc]
+    exact ejaB_symm _ _
+  have hQ0 : ejaB g (f * g) = 0 := by
+    have h2 := ejaB_assoc g f g
+    rw [hg, eja_mul_comm g f] at h2
+    rw [ejaB_symm g (f * g), h2]
+    exact h
+  have hpsd : ∀ u : V, 0 ≤ ejaB u (f * u) := fun u => ejaB_idem_apply_nonneg f hf u
+  have hkey : ∀ v : V, ejaB g (f * v) = 0 := by
+    intro v
+    have hexp : ∀ t : ℝ, ejaB (g + t • v) (f * (g + t • v))
+        = 2 * t * ejaB g (f * v) + t ^ 2 * (ejaB v (f * v)) := by
+      intro t
+      have e1 : f * (g + t • v) = f * g + t • (f * v) := by
+        rw [eja_mul_add, eja_mul_smul]
+      rw [e1, ejaB_add_left, ejaB_add_right, ejaB_add_right, ejaB_smul_right,
+        ejaB_smul_left, ejaB_smul_left, ejaB_smul_right, hQ0, hsym v g]
+      ring
+    have hall : ∀ t : ℝ, 0 ≤ 2 * t * ejaB g (f * v) + t ^ 2 * (ejaB v (f * v)) := by
+      intro t
+      rw [← hexp t]
+      exact hpsd _
+    set A := ejaB g (f * v) with hA
+    set C := ejaB v (f * v) with hC
+    have hC0 : 0 ≤ C := hpsd v
+    rcases eq_or_lt_of_le hC0 with hCz | hCp
+    · have h1 := hall 1
+      have h2 := hall (-1)
+      rw [← hCz] at h1 h2
+      linarith
+    · have h3 := hall (-A / C)
+      have he : 2 * (-A / C) * A + (-A / C) ^ 2 * C = -(A ^ 2 / C) := by
+        field_simp
+        ring
+      rw [he] at h3
+      have h4 : 0 ≤ A ^ 2 / C := div_nonneg (sq_nonneg A) hC0
+      have h5 : A ^ 2 / C = 0 := le_antisymm (by linarith) h4
+      have h6 : A ^ 2 = 0 := by
+        rcases div_eq_zero_iff.mp h5 with h' | h'
+        · exact h'
+        · exact absurd h' (ne_of_gt hCp)
+      exact pow_eq_zero_iff (n := 2) (by norm_num) |>.mp h6
+  have hz : ejaB (f * g) (f * g) = 0 := by
+    rw [ejaB_assoc f g (f * g)]
+    exact hkey (f * g)
+  exact eja_eq_zero_of_ejaB_self hz
+
+/-- **An idempotent trace-form orthogonal to a positive element is orthogonal
+to it**: apply the previous lemma to each spectral idempotent. -/
+theorem eja_idem_mul_nonneg_eq_zero {g y : V} (hg : g * g = g) (hy : 0 ≤ y)
+    (h : ejaB g y = 0) : g * y = 0 := by
+  classical
+  obtain ⟨s, e, hidem, horth, hne0, hsum, hdec⟩ := eja_spectral y
+  have hc : ∀ l ∈ s, 0 ≤ l := by
+    refine (eja_ortho_isSumSq_iff hidem horth hne0 (fun t => t)).mp ?_
+    rw [← hdec]
+    exact (eja_nonneg_iff y).mp hy
+  have hnn : ∀ l ∈ s, 0 ≤ ejaB g (e l) := by
+    intro l hl
+    rw [ejaB_symm]
+    refine eja_isSumSq_ejaB_idem_nonneg ?_ g hg
+    rw [← hidem l hl]
+    exact IsSumSq.mul_self _
+  have hsum0 : ∑ l ∈ s, l * ejaB g (e l) = 0 := by
+    rw [← h, hdec, ejaB_sum_right]
+    refine Finset.sum_congr rfl fun l _ => ?_
+    rw [ejaB_smul_right]
+  have hterm : ∀ l ∈ s, l * ejaB g (e l) = 0 := by
+    refine (Finset.sum_eq_zero_iff_of_nonneg ?_).mp hsum0
+    exact fun l hl => mul_nonneg (hc l hl) (hnn l hl)
+  rw [hdec, eja_mul_sum]
+  refine Finset.sum_eq_zero fun l hl => ?_
+  rw [eja_mul_smul]
+  rcases eq_or_ne l 0 with rfl | hl0
+  · rw [zero_smul]
+  · have hB : ejaB g (e l) = 0 := by
+      rcases mul_eq_zero.mp (hterm l hl) with h' | h'
+      · exact absurd h' hl0
+      · exact h'
+    rw [eja_idem_mul_eq_zero_of_ejaB hg (hidem l hl) hB, smul_zero]
+
+/-- The trace form as a bilinear map. -/
+def ejaBl (V : Type u) [AddCommGroup V] [Module ℝ V] [Mul V] [One V]
+    [PartialOrder V] [EuclideanJordanAlgebra V] : V →ₗ[ℝ] V →ₗ[ℝ] ℝ where
+  toFun a :=
+    { toFun := fun b => ejaB a b
+      map_add' := ejaB_add_right a
+      map_smul' := fun r b => by simpa using ejaB_smul_right r a b }
+  map_add' a b := LinearMap.ext fun c => ejaB_add_left a b c
+  map_smul' r a := LinearMap.ext fun c => by simpa using ejaB_smul_left r a c
+
+/-- **Riesz representation for the trace form**: every linear functional is
+`B w ·`.  The form is positive definite, hence non-degenerate, so `ejaBl` is
+injective, hence — the space being finite-dimensional and its dual of the same
+dimension — surjective. -/
+theorem eja_exists_riesz (φ : V →ₗ[ℝ] ℝ) : ∃ w : V, ∀ y : V, φ y = ejaB w y := by
+  have hinj : Function.Injective (ejaBl V) := by
+    rw [injective_iff_map_eq_zero]
+    intro a ha
+    refine eja_eq_zero_of_ejaB_self ?_
+    exact congrArg (fun f : V →ₗ[ℝ] ℝ => f a) ha
+  have hdim : Module.finrank ℝ V = Module.finrank ℝ (V →ₗ[ℝ] ℝ) :=
+    (Subspace.dual_finrank_eq (K := ℝ) (V := V)).symm
+  have hsurj : Function.Surjective (ejaBl V) :=
+    (LinearMap.injective_iff_surjective_of_finrank_eq_finrank hdim).mp hinj
+  obtain ⟨w, hw⟩ := hsurj φ
+  exact ⟨w, fun y => congrArg (fun f : V →ₗ[ℝ] ℝ => f y) hw.symm⟩
+
+/-- **The support (ceiling) idempotent of a positive element**: the sum of its
+spectral idempotents with non-zero coefficient.  It is trace-form orthogonal to
+exactly the positive elements `w` is. -/
+theorem eja_exists_supp {w : V} (hw : 0 ≤ w) :
+    ∃ s : V, s * s = s ∧ 0 ≤ s ∧ s ≤ 1 ∧
+      ∀ y : V, 0 ≤ y → (ejaB w y = 0 ↔ ejaB s y = 0) := by
+  classical
+  obtain ⟨t, e, hidem, horth, hne0, hsum, hdec⟩ := eja_spectral w
+  have hc : ∀ l ∈ t, 0 ≤ l := by
+    refine (eja_ortho_isSumSq_iff hidem horth hne0 (fun r => r)).mp ?_
+    rw [← hdec]
+    exact (eja_nonneg_iff w).mp hw
+  set c : ℝ → ℝ := fun l => if l = 0 then 0 else 1 with hcdef
+  refine ⟨∑ l ∈ t, c l • e l, ?_, ?_, ?_, ?_⟩
+  · rw [eja_ortho_mul hidem horth]
+    refine Finset.sum_congr rfl fun l _ => ?_
+    rw [hcdef]
+    by_cases h0 : l = 0 <;> simp [h0]
+  · rw [eja_nonneg_iff, eja_ortho_isSumSq_iff hidem horth hne0]
+    intro l _
+    rw [hcdef]
+    by_cases h0 : l = 0 <;> simp [h0]
+  · have hone : (1 : V) - ∑ l ∈ t, c l • e l = ∑ l ∈ t, (1 - c l) • e l := by
+      conv_lhs => rw [← hsum]
+      rw [← Finset.sum_sub_distrib]
+      exact Finset.sum_congr rfl fun l _ => by rw [sub_smul, one_smul]
+    rw [eja_le_iff, hone, eja_ortho_isSumSq_iff hidem horth hne0]
+    intro l _
+    rw [hcdef]
+    by_cases h0 : l = 0 <;> simp [h0]
+  · intro y hy
+    have hBnn : ∀ l ∈ t, 0 ≤ ejaB (e l) y := by
+      intro l hl
+      rw [ejaB_symm]
+      exact eja_isSumSq_ejaB_idem_nonneg ((eja_nonneg_iff y).mp hy) (e l) (hidem l hl)
+    have hw' : ejaB w y = ∑ l ∈ t, l * ejaB (e l) y := by
+      rw [hdec, ejaB_sum_left]
+      exact Finset.sum_congr rfl fun l _ => ejaB_smul_left l (e l) y
+    have hs' : ejaB (∑ l ∈ t, c l • e l) y = ∑ l ∈ t, c l * ejaB (e l) y := by
+      rw [ejaB_sum_left]
+      exact Finset.sum_congr rfl fun l _ => ejaB_smul_left (c l) (e l) y
+    rw [hw', hs']
+    constructor
+    · intro h
+      have hz : ∀ l ∈ t, l * ejaB (e l) y = 0 :=
+        (Finset.sum_eq_zero_iff_of_nonneg
+          (fun l hl => mul_nonneg (hc l hl) (hBnn l hl))).mp h
+      refine Finset.sum_eq_zero fun l hl => ?_
+      rcases eq_or_ne l 0 with rfl | hl0
+      · rw [hcdef]; simp
+      · rcases mul_eq_zero.mp (hz l hl) with h' | h'
+        · exact absurd h' hl0
+        · rw [h', mul_zero]
+    · intro h
+      have hz : ∀ l ∈ t, c l * ejaB (e l) y = 0 := by
+        refine (Finset.sum_eq_zero_iff_of_nonneg ?_).mp h
+        intro l hl
+        refine mul_nonneg ?_ (hBnn l hl)
+        rw [hcdef]
+        by_cases h0 : l = 0 <;> simp [h0]
+      refine Finset.sum_eq_zero fun l hl => ?_
+      rcases eq_or_ne l 0 with rfl | hl0
+      · rw [zero_mul]
+      · have hcl : c l = 1 := by rw [hcdef]; simp [hl0]
+        rcases mul_eq_zero.mp (hz l hl) with h' | h'
+        · rw [hcl] at h'; exact absurd h' one_ne_zero
+        · rw [h', mul_zero]
+
+/-- **The floor idempotent of an effect** `a`: the sum of the spectral
+idempotents of `a` with coefficient `1`.  It is the largest idempotent below
+`a`, but all that is needed below is `q * a = q` together with the fact that
+`1 - q` is dominated by a positive multiple of `1 - a` — which is what makes a
+positive map killing `1 - a` kill `1 - q`. -/
+theorem eja_exists_floor {a : V} (h0 : 0 ≤ a) (h1 : a ≤ 1) :
+    ∃ q : V, q * q = q ∧ q * a = q ∧ ∃ μ : ℝ, 0 < μ ∧ μ • ((1 : V) - q) ≤ 1 - a := by
+  classical
+  obtain ⟨t, e, hidem, horth, hne0, hsum, hdec⟩ := eja_spectral a
+  have hc : ∀ l ∈ t, 0 ≤ l ∧ l ≤ 1 := by
+    refine (eja_ortho_unit_interval_iff hidem horth hne0 hsum (fun r => r)).mp ?_
+    rw [← hdec]
+    exact ⟨h0, h1⟩
+  set c : ℝ → ℝ := fun l => if l = 1 then 1 else 0 with hcdef
+  set f : ℝ → ℝ := fun l => if l = 1 then 1 else 1 - l with hfdef
+  have hfpos : ∀ l ∈ t, 0 < f l := by
+    intro l hl
+    rw [hfdef]
+    by_cases hl1 : l = 1
+    · simp [hl1]
+    · simp only [hl1, ite_false]
+      have := (hc l hl).2
+      rcases lt_or_eq_of_le this with h' | h'
+      · linarith
+      · exact absurd h' hl1
+  have hfle : ∀ l ∈ t, f l ≤ 1 := by
+    intro l hl
+    rw [hfdef]
+    by_cases hl1 : l = 1
+    · simp [hl1]
+    · simp only [hl1, ite_false]
+      linarith [(hc l hl).1]
+  refine ⟨∑ l ∈ t, c l • e l, ?_, ?_, ∏ l ∈ t, f l, ?_, ?_⟩
+  · rw [eja_ortho_mul hidem horth]
+    refine Finset.sum_congr rfl fun l _ => ?_
+    rw [hcdef]
+    by_cases hl1 : l = 1 <;> simp [hl1]
+  · conv_lhs => rw [hdec]
+    rw [eja_ortho_mul hidem horth]
+    refine Finset.sum_congr rfl fun l _ => ?_
+    rw [hcdef]
+    by_cases hl1 : l = 1 <;> simp [hl1]
+  · exact Finset.prod_pos hfpos
+  · have hone : (1 : V) - ∑ l ∈ t, c l • e l = ∑ l ∈ t, (1 - c l) • e l := by
+      conv_lhs => rw [← hsum]
+      rw [← Finset.sum_sub_distrib]
+      exact Finset.sum_congr rfl fun l _ => by rw [sub_smul, one_smul]
+    have hone' : (1 : V) - a = ∑ l ∈ t, (1 - l) • e l := by
+      conv_lhs => rw [← hsum, hdec, ← Finset.sum_sub_distrib]
+      exact Finset.sum_congr rfl fun l _ => by rw [sub_smul, one_smul]
+    have hsmul : (∏ l ∈ t, f l) • ((1 : V) - ∑ l ∈ t, c l • e l)
+        = ∑ l ∈ t, ((∏ k ∈ t, f k) * (1 - c l)) • e l := by
+      rw [hone, Finset.smul_sum]
+      exact Finset.sum_congr rfl fun l _ => by rw [smul_smul]
+    have hdiff : (∑ l ∈ t, (1 - l) • e l)
+          - (∑ l ∈ t, ((∏ k ∈ t, f k) * (1 - c l)) • e l)
+        = ∑ l ∈ t, ((1 - l) - (∏ k ∈ t, f k) * (1 - c l)) • e l := by
+      rw [← Finset.sum_sub_distrib]
+      exact Finset.sum_congr rfl fun l _ => by module
+    rw [hsmul, hone', eja_le_iff, hdiff,
+      eja_ortho_isSumSq_iff hidem horth hne0]
+    intro l hl
+    have hple : (∏ k ∈ t, f k) ≤ f l := by
+      have hrest : ∏ k ∈ t.erase l, f k ≤ 1 :=
+        Finset.prod_le_one (fun k hk => (hfpos k (Finset.mem_of_mem_erase hk)).le)
+          (fun k hk => hfle k (Finset.mem_of_mem_erase hk))
+      have hsplit : ∏ k ∈ t, f k = f l * ∏ k ∈ t.erase l, f k :=
+        (Finset.mul_prod_erase t f hl).symm
+      rw [hsplit]
+      nlinarith [(hfpos l hl).le, Finset.prod_pos (fun k hk =>
+        hfpos k (Finset.mem_of_mem_erase hk)) (s := t.erase l)]
+    rw [hcdef, hfdef] at *
+    by_cases hl1 : l = 1
+    · simp [hl1]
+    · simp only [hl1, ite_false] at hple ⊢
+      linarith
+  
+/-- An effect orthogonal to an idempotent `s` lies below `sᗮ`: it is fixed by
+the compression onto `V₁(1 - s)`, which is positive and sends `1` to `1 - s`. -/
+theorem eja_le_one_sub_of_mul_eq_zero {s e : V} (hs : s * s = s) (he1 : e ≤ 1)
+    (h : s * e = 0) : e ≤ 1 - s := by
+  have hq : (1 - s) * (1 - s) = 1 - s := eja_one_sub_idem hs
+  have hfix : (1 - s) * e = e := by rw [eja_sub_mul, eja_one_mul, h, sub_zero]
+  have hpe : ejaPone (1 - s) e = e := (eja_pone_eq_self_iff _ hq e).mpr hfix
+  have hp1 : ejaPone (1 - s) 1 = 1 - s := eja_pone_one _ hq
+  have h1e : (0 : V) ≤ 1 - e := by
+    rw [eja_nonneg_iff]
+    rw [eja_le_iff] at he1
+    exact he1
+  have hnn : 0 ≤ ejaPone (1 - s) ((1 : V) - e) := eja_pone_nonneg hq h1e
+  rw [map_sub, hpe, hp1] at hnn
+  rw [eja_le_iff]
+  rw [eja_nonneg_iff] at hnn
+  exact hnn
+
+/-- Every element of a corner is dominated by a multiple of the corner's unit:
+the order-unit axiom of `EJACorner`, pushed forward to `V`. -/
+theorem eja_exists_nsmul_corner (p : EJAIdem V) {z : V} (hz : p.elt * z = z) :
+    ∃ n : ℕ, z ≤ (n : ℝ) • p.elt := by
+  obtain ⟨n, hn⟩ := eja_exists_isSumSq_nsmul_one_sub (EJACorner.mk' z hz)
+  refine ⟨n, ?_⟩
+  rw [eja_le_iff]
+  have h2 := EJACorner.isSumSq_val hn
+  rwa [EJACorner.val_sub, EJACorner.val_smul, EJACorner.val_one,
+    EJACorner.val_mk'] at h2
+
+end Peirce
+
+end EuclideanJordanAlgebra
+
+/-! ## The category `EJA_psu` of positive subunital maps (180VII at `EJAᵒᵖ`)
+
+`DiamondEffectus` lives in the **partial** form, which for von Neumann
+algebras is carried not by the unital category `vN` but by the subunital one
+`vN_cpsu` (`WStarCat.lean`, `VNExamples.lean`'s `section VNPartial`).  This
+section is its Jordan counterpart: `EJAPsu` is the category of Euclidean
+Jordan algebras with positive **subunital** linear maps, so that `EJAPsuᵒᵖ`
+is the `EJAᵒᵖ` of 206III in partial form.
+
+The objects are bundled Euclidean Jordan algebras rather than the objects of
+the full subcategory `EJAObj` of `OUS` used for the *total* form above — for
+exactly the reason `WStarCPSU` bundles `WStar` afresh instead of reusing
+`WStarNCPU`: the two categories share their objects and differ in their
+morphisms.  The dictionary is `EJAObj.of`, which puts every object of
+`EJAPsu` in `EJAObj`, and `IsEJA`, which says that every object of `EJAObj`
+carries such a structure; and `ejapsu_pred_val` below matches this section's
+predicates with the effects `0 ≤ a ≤ 1` that `eja_pred_effect` gives for the
+unital category, so the two readings of `Pred` agree.
+
+Everything in this section is the `vN_cpsu` development transposed: the
+product algebra is the binary coproduct, the one-point algebra the initial
+object, `f ⊥ g` is `f 1 + g 1 ≤ 1` with `f ⋁ g = f + g`, the effect object is
+`ℝᵤ` and `pᗮ = 1 - p`. -/
+
+/-- A bundled Euclidean Jordan algebra: the object type of `EJA_psu`. -/
+structure EJAPsu : Type (u + 1) where
+  /-- the underlying type -/
+  carrier : Type u
+  [addCommGroup : AddCommGroup carrier]
+  [module : Module ℝ carrier]
+  [mul : Mul carrier]
+  [one : One carrier]
+  [partialOrder : PartialOrder carrier]
+  [eja : EuclideanJordanAlgebra carrier]
+
+attribute [instance] EJAPsu.addCommGroup EJAPsu.module EJAPsu.mul EJAPsu.one
+  EJAPsu.partialOrder EJAPsu.eja
+
+instance : CoeSort EJAPsu.{u} (Type u) := ⟨EJAPsu.carrier⟩
+
+/-- Bundle a Euclidean Jordan algebra as an object of `EJA_psu`. -/
+abbrev EJAPsu.of (V : Type u) [AddCommGroup V] [Module ℝ V] [Mul V] [One V]
+    [PartialOrder V] [EuclideanJordanAlgebra V] : EJAPsu.{u} := ⟨V⟩
+
+/-- Every object of `EJA_psu` is an object of `EJA`: the two categories have
+the same objects and differ only in their morphisms. -/
+def EJAPsu.toEJAObj (A : EJAPsu.{u}) : EJAObj.{u} := EJAObj.of A.carrier
+
+/-- A **positive subunital linear map** between Euclidean Jordan algebras:
+the morphisms of `EJA_psu` (and, read backwards, of `EJAᵒᵖ` in partial
+form). -/
+structure EJAPSUMap (A B : EJAPsu.{u}) : Type u where
+  /-- the underlying real-linear map -/
+  toLinearMap : A.carrier →ₗ[ℝ] B.carrier
+  /-- ... which is positive -/
+  map_nonneg' : ∀ x : A.carrier, 0 ≤ x → 0 ≤ toLinearMap x
+  /-- ... and subunital -/
+  map_subunital' : toLinearMap 1 ≤ 1
+
+theorem EJAPSUMap.ext' {A B : EJAPsu.{u}} {f g : EJAPSUMap A B}
+    (h : ∀ x, f.toLinearMap x = g.toLinearMap x) : f = g := by
+  obtain ⟨f, hf₁, hf₂⟩ := f
+  obtain ⟨g, hg₁, hg₂⟩ := g
+  have hfg : f = g := LinearMap.ext h
+  subst hfg
+  rfl
+
+/-- A positive linear map between Euclidean Jordan algebras is monotone. -/
+theorem EJAPSUMap.mono {A B : EJAPsu.{u}} (f : EJAPSUMap A B) {x y : A.carrier}
+    (h : x ≤ y) : f.toLinearMap x ≤ f.toLinearMap y := by
+  rw [eja_le_iff] at h
+  have h1 : (0 : A.carrier) ≤ y - x := (eja_nonneg_iff _).mpr h
+  have h2 := f.map_nonneg' (y - x) h1
+  rw [map_sub] at h2
+  rw [eja_le_iff]
+  exact (eja_nonneg_iff _).mp h2
+
+/-- The identity morphism of `EJA_psu`. -/
+def EJAPSUMap.id (A : EJAPsu.{u}) : EJAPSUMap A A where
+  toLinearMap := LinearMap.id
+  map_nonneg' _ h := h
+  map_subunital' := le_refl _
+
+/-- Composition in `EJA_psu` (diagrammatic order). -/
+def EJAPSUMap.comp {A B C : EJAPsu.{u}} (f : EJAPSUMap A B) (g : EJAPSUMap B C) :
+    EJAPSUMap A C where
+  toLinearMap := g.toLinearMap.comp f.toLinearMap
+  map_nonneg' x h := g.map_nonneg' _ (f.map_nonneg' x h)
+  map_subunital' := le_trans (g.mono f.map_subunital') g.map_subunital'
+
+/-- **The category `EJA_psu`** of Euclidean Jordan algebras with positive
+subunital linear maps.  The category laws hold definitionally. -/
+instance : Category.{u} EJAPsu.{u} where
+  Hom A B := EJAPSUMap A B
+  id A := EJAPSUMap.id A
+  comp f g := EJAPSUMap.comp f g
+  id_comp _ := EJAPSUMap.ext' fun _ => rfl
+  comp_id _ := EJAPSUMap.ext' fun _ => rfl
+  assoc _ _ _ := EJAPSUMap.ext' fun _ => rfl
+
+theorem ejapsu_hom_ext {A B : EJAPsu.{u}} {f g : A ⟶ B}
+    (h : ∀ x, f.toLinearMap x = g.toLinearMap x) : f = g := EJAPSUMap.ext' h
+
+theorem ejapsu_comp_apply {A B C : EJAPsu.{u}} (f : A ⟶ B) (g : B ⟶ C)
+    (x : A.carrier) : (f ≫ g).toLinearMap x = g.toLinearMap (f.toLinearMap x) := rfl
+
+theorem ejapsuop_hom_ext {X Y : EJAPsu.{u}ᵒᵖ} {f g : X ⟶ Y}
+    (h : ∀ x, f.unop.toLinearMap x = g.unop.toLinearMap x) : f = g :=
+  Quiver.Hom.unop_inj (ejapsu_hom_ext h)
+
+theorem ejapsuop_comp_apply {X Y Z : EJAPsu.{u}ᵒᵖ} (f : X ⟶ Y) (g : Y ⟶ Z)
+    (x : Z.unop.carrier) :
+    (f ≫ g).unop.toLinearMap x = f.unop.toLinearMap (g.unop.toLinearMap x) := rfl
+
+theorem ejapsuop_congr {X Y : EJAPsu.{u}ᵒᵖ} {f g : X ⟶ Y} (h : f = g)
+    (x : Y.unop.carrier) : f.unop.toLinearMap x = g.unop.toLinearMap x := by rw [h]
+
+/-! ### Finite coproducts of `EJA_psuᵒᵖ` -/
+
+/-- The one-point algebra, the final object of `EJA_psu`. -/
+abbrev ejapsuTriv : EJAPsu.{u} := EJAPsu.of PUnit.{u + 1}
+
+/-- The one-point algebra is final in `EJA_psu`, hence initial in
+`EJA_psuᵒᵖ`. -/
+def ejapsuTrivIsTerminal : IsTerminal (ejapsuTriv.{u}) :=
+  IsTerminal.ofUniqueHom
+    (fun _A =>
+      { toLinearMap := 0
+        map_nonneg' := fun _ _ => le_of_eq (Subsingleton.elim _ _)
+        map_subunital' := le_of_eq (Subsingleton.elim _ _) })
+    (fun _ _ => ejapsu_hom_ext fun _ => Subsingleton.elim (α := PUnit.{u + 1}) _ _)
+
+/-- The concrete binary coproduct `X + Y` of `EJA_psuᵒᵖ`: the product
+algebra. -/
+abbrev ejapsuP (X Y : EJAPsu.{u}ᵒᵖ) : EJAPsu.{u}ᵒᵖ :=
+  Opposite.op (EJAPsu.of (X.unop.carrier × Y.unop.carrier))
+
+/-- The first coprojection `κ₁ : X ⟶ X + Y` (the first projection of
+`EJA_psu`). -/
+def ejapsuPinl (X Y : EJAPsu.{u}ᵒᵖ) : X ⟶ ejapsuP X Y :=
+  Quiver.Hom.op
+    { toLinearMap := LinearMap.fst ℝ X.unop.carrier Y.unop.carrier
+      map_nonneg' := fun _ h => ((eja_nonneg_iff _).mpr (isSumSq_fst
+        ((eja_nonneg_iff _).mp h)))
+      map_subunital' := le_refl _ }
+
+/-- The second coprojection `κ₂ : Y ⟶ X + Y`. -/
+def ejapsuPinr (X Y : EJAPsu.{u}ᵒᵖ) : Y ⟶ ejapsuP X Y :=
+  Quiver.Hom.op
+    { toLinearMap := LinearMap.snd ℝ X.unop.carrier Y.unop.carrier
+      map_nonneg' := fun _ h => ((eja_nonneg_iff _).mpr (isSumSq_snd
+        ((eja_nonneg_iff _).mp h)))
+      map_subunital' := le_refl _ }
+
+/-- The cotupling `[f, g] : X + Y ⟶ Z` (the pairing of `EJA_psu`). -/
+def ejapsuPdesc {X Y Z : EJAPsu.{u}ᵒᵖ} (f : X ⟶ Z) (g : Y ⟶ Z) :
+    ejapsuP X Y ⟶ Z :=
+  Quiver.Hom.op
+    { toLinearMap := LinearMap.prod f.unop.toLinearMap g.unop.toLinearMap
+      map_nonneg' := fun _ h => Prod.le_def.mpr
+        ⟨f.unop.map_nonneg' _ h, g.unop.map_nonneg' _ h⟩
+      map_subunital' := Prod.le_def.mpr
+        ⟨f.unop.map_subunital', g.unop.map_subunital'⟩ }
+
+theorem ejapsuPinl_desc {X Y Z : EJAPsu.{u}ᵒᵖ} (f : X ⟶ Z) (g : Y ⟶ Z) :
+    ejapsuPinl X Y ≫ ejapsuPdesc f g = f :=
+  ejapsuop_hom_ext fun _ => rfl
+
+theorem ejapsuPinr_desc {X Y Z : EJAPsu.{u}ᵒᵖ} (f : X ⟶ Z) (g : Y ⟶ Z) :
+    ejapsuPinr X Y ≫ ejapsuPdesc f g = g :=
+  ejapsuop_hom_ext fun _ => rfl
+
+/-- The product algebra is the binary coproduct of `EJA_psuᵒᵖ`. -/
+def ejapsuHP (X Y : EJAPsu.{u}ᵒᵖ) :
+    IsColimit (BinaryCofan.mk (ejapsuPinl X Y) (ejapsuPinr X Y)) :=
+  BinaryCofan.IsColimit.mk _
+    (fun {_} u v => ejapsuPdesc u v)
+    (fun {_} u v => ejapsuPinl_desc u v)
+    (fun {_} u v => ejapsuPinr_desc u v)
+    (fun {_} u v m h₁ h₂ => ejapsuop_hom_ext fun a => by
+      refine Prod.ext ?_ ?_
+      · exact (ejapsuop_comp_apply _ m a).symm.trans (ejapsuop_congr h₁ a)
+      · exact (ejapsuop_comp_apply _ m a).symm.trans (ejapsuop_congr h₂ a))
+
+/-- Finite coproducts of `EJA_psuᵒᵖ`. -/
+theorem ejapsuHasFiniteCoproducts : HasFiniteCoproducts (EJAPsu.{u}ᵒᵖ) :=
+  letI : HasInitial (EJAPsu.{u}ᵒᵖ) :=
+    (IsTerminal.op (EJAPsu.{u}) ejapsuTrivIsTerminal).hasInitial
+  letI : ∀ X Y : EJAPsu.{u}ᵒᵖ, HasColimit (pair X Y) := fun X Y =>
+    HasColimit.mk ⟨_, ejapsuHP X Y⟩
+  letI : HasBinaryCoproducts (EJAPsu.{u}ᵒᵖ) :=
+    hasBinaryCoproducts_of_hasColimit_pair _
+  hasFiniteCoproducts_of_has_binary_and_initial
+
+/-! ### The PCM enrichment -/
+
+theorem ejapsu_one_nonneg {A B : EJAPsu.{u}} (f : EJAPSUMap A B) :
+    0 ≤ f.toLinearMap 1 := by
+  have h := f.mono (show (0 : A.carrier) ≤ 1 from
+    (eja_nonneg_iff _).mpr eja_isSumSq_one)
+  rwa [map_zero] at h
+
+/-- **The PCM enrichment of `EJA_psuᵒᵖ`** (180VII.1): `f ⊥ g` iff
+`f 1 + g 1 ≤ 1`, and then `f ⋁ g = f + g`. -/
+def ejapsuPCM (X Y : EJAPsu.{u}ᵒᵖ) : PCM (X ⟶ Y) where
+  zero := Quiver.Hom.op
+    { toLinearMap := 0
+      map_nonneg' := fun _ _ => le_refl 0
+      map_subunital' := (eja_nonneg_iff _).mpr eja_isSumSq_one }
+  Perp f g := f.unop.toLinearMap 1 + g.unop.toLinearMap 1 ≤ 1
+  ovee f g h := Quiver.Hom.op
+    { toLinearMap := f.unop.toLinearMap + g.unop.toLinearMap
+      map_nonneg' := fun x hx => by
+        have h2 := eja_add_le_add (f.unop.map_nonneg' x hx) (g.unop.map_nonneg' x hx)
+        rwa [add_zero] at h2
+      map_subunital' := h }
+  perp_comm h := by rw [add_comm]; exact h
+  ovee_comm h := ejapsuop_hom_ext fun a => add_comm _ _
+  perp_of_ovee_perp := fun {a b c} hab h => by
+    have h0 : 0 ≤ a.unop.toLinearMap 1 := ejapsu_one_nonneg _
+    have h3 : b.unop.toLinearMap 1 + c.unop.toLinearMap 1
+        ≤ (a.unop.toLinearMap 1 + b.unop.toLinearMap 1) + c.unop.toLinearMap 1 :=
+      eja_add_le_add_right (eja_le_add_of_nonneg_left h0) _
+    exact le_trans h3 h
+  perp_ovee_of_ovee_perp := fun {a b c} hab h => by
+    show a.unop.toLinearMap 1 + (b.unop.toLinearMap 1 + c.unop.toLinearMap 1) ≤ 1
+    rw [← add_assoc]
+    exact h
+  ovee_assoc := fun {a b c} hab h => ejapsuop_hom_ext fun x => add_assoc _ _ _
+  zero_perp a := by
+    show (0 : _) + a.unop.toLinearMap 1 ≤ 1
+    rw [zero_add]
+    exact a.unop.map_subunital'
+  zero_ovee a := ejapsuop_hom_ext fun x => zero_add _
+
+/-! ### The finPAC axioms -/
+
+attribute [local instance] ejapsuHasFiniteCoproducts ejapsuPCM
+
+/-- The comparison isomorphism between the ambient coproduct `X ⨿ Y` and the
+product algebra. -/
+def ejapsuCoprodIso (X Y : EJAPsu.{u}ᵒᵖ) : (X ⨿ Y) ≅ ejapsuP X Y :=
+  (coprodIsCoprod X Y).coconePointUniqueUpToIso (ejapsuHP X Y)
+
+theorem ejapsuInl_coprodIso (X Y : EJAPsu.{u}ᵒᵖ) :
+    (coprod.inl : X ⟶ X ⨿ Y) ≫ (ejapsuCoprodIso X Y).hom = ejapsuPinl X Y :=
+  (coprodIsCoprod X Y).comp_coconePointUniqueUpToIso_hom (ejapsuHP X Y)
+    ⟨WalkingPair.left⟩
+
+theorem ejapsuInr_coprodIso (X Y : EJAPsu.{u}ᵒᵖ) :
+    (coprod.inr : Y ⟶ X ⨿ Y) ≫ (ejapsuCoprodIso X Y).hom = ejapsuPinr X Y :=
+  (coprodIsCoprod X Y).comp_coconePointUniqueUpToIso_hom (ejapsuHP X Y)
+    ⟨WalkingPair.right⟩
+
+/-- **`EJA_psuᵒᵖ` is a finPAC** (180VII.1): composition is bilinear for the
+pointwise sum, the compatible-sum axiom holds because `▷₁ 1 + ▷₂ 1 = 1` in
+`A ⊕ A`, and untying because the coprojections are subunital. -/
+theorem ejapsuFinPAC : FinPAC (EJAPsu.{u}ᵒᵖ) where
+  comp_ovee := fun {X Y Z f g} h k => by
+    have hperp : (f ≫ k).unop.toLinearMap 1 + (g ≫ k).unop.toLinearMap 1 ≤ 1 := by
+      rw [ejapsuop_comp_apply, ejapsuop_comp_apply]
+      exact le_trans (eja_add_le_add (f.unop.mono k.unop.map_subunital')
+        (g.unop.mono k.unop.map_subunital')) h
+    exact ⟨hperp, ejapsuop_hom_ext fun z => rfl⟩
+  ovee_comp := fun {W X Y f g} h k => by
+    have hperp : (k ≫ f).unop.toLinearMap 1 + (k ≫ g).unop.toLinearMap 1 ≤ 1 := by
+      rw [ejapsuop_comp_apply, ejapsuop_comp_apply, ← map_add]
+      exact le_trans (k.unop.mono h) k.unop.map_subunital'
+    refine ⟨hperp, ejapsuop_hom_ext fun y => ?_⟩
+    show k.unop.toLinearMap (f.unop.toLinearMap y + g.unop.toLinearMap y)
+      = k.unop.toLinearMap (f.unop.toLinearMap y)
+        + k.unop.toLinearMap (g.unop.toLinearMap y)
+    exact map_add _ _ _
+  comp_zero := fun {X Y Z} f => ejapsuop_hom_ext fun z => by
+    show f.unop.toLinearMap 0 = 0
+    exact map_zero _
+  zero_comp := fun {X Y Z} f => ejapsuop_hom_ext fun z => rfl
+  compatible_sum := fun {X Y} b => by
+    have hp₁ : pproj₁ Y Y = (ejapsuCoprodIso Y Y).hom ≫ ejapsuPdesc (𝟙 Y) 0 := by
+      refine coprod.hom_ext ?_ ?_
+      · rw [show (pproj₁ Y Y) = coprod.desc (𝟙 Y) 0 from rfl, coprod.inl_desc,
+          ← Category.assoc, ejapsuInl_coprodIso, ejapsuPinl_desc]
+      · rw [show (pproj₁ Y Y) = coprod.desc (𝟙 Y) 0 from rfl, coprod.inr_desc,
+          ← Category.assoc, ejapsuInr_coprodIso, ejapsuPinr_desc]
+    have hp₂ : pproj₂ Y Y = (ejapsuCoprodIso Y Y).hom ≫ ejapsuPdesc 0 (𝟙 Y) := by
+      refine coprod.hom_ext ?_ ?_
+      · rw [show (pproj₂ Y Y) = coprod.desc 0 (𝟙 Y) from rfl, coprod.inl_desc,
+          ← Category.assoc, ejapsuInl_coprodIso, ejapsuPinl_desc]
+      · rw [show (pproj₂ Y Y) = coprod.desc 0 (𝟙 Y) from rfl, coprod.inr_desc,
+          ← Category.assoc, ejapsuInr_coprodIso, ejapsuPinr_desc]
+    have e₁ : (pproj₁ Y Y).unop.toLinearMap 1
+        = (ejapsuCoprodIso Y Y).hom.unop.toLinearMap
+            ((1 : Y.unop.carrier), (0 : Y.unop.carrier)) := by
+      rw [hp₁, ejapsuop_comp_apply]
+      exact congrArg _ (Prod.ext rfl rfl)
+    have e₂ : (pproj₂ Y Y).unop.toLinearMap 1
+        = (ejapsuCoprodIso Y Y).hom.unop.toLinearMap
+            ((0 : Y.unop.carrier), (1 : Y.unop.carrier)) := by
+      rw [hp₂, ejapsuop_comp_apply]
+      exact congrArg _ (Prod.ext rfl rfl)
+    show (b ≫ pproj₁ Y Y).unop.toLinearMap 1
+      + (b ≫ pproj₂ Y Y).unop.toLinearMap 1 ≤ 1
+    rw [ejapsuop_comp_apply, ejapsuop_comp_apply, e₁, e₂, ← map_add, ← map_add]
+    have hsum : ((1 : Y.unop.carrier), (0 : Y.unop.carrier))
+        + ((0 : Y.unop.carrier), (1 : Y.unop.carrier))
+        = (1 : Y.unop.carrier × Y.unop.carrier) :=
+      Prod.ext (add_zero 1) (zero_add 1)
+    rw [hsum]
+    exact le_trans (b.unop.mono (ejapsuCoprodIso Y Y).hom.unop.map_subunital')
+      b.unop.map_subunital'
+  untying := fun {X Y f g} h => by
+    show (f ≫ (coprod.inl : Y ⟶ Y ⨿ Y)).unop.toLinearMap 1
+      + (g ≫ (coprod.inr : Y ⟶ Y ⨿ Y)).unop.toLinearMap 1 ≤ 1
+    rw [ejapsuop_comp_apply, ejapsuop_comp_apply]
+    exact le_trans (eja_add_le_add
+      (f.unop.mono (coprod.inl : Y ⟶ Y ⨿ Y).unop.map_subunital')
+      (g.unop.mono (coprod.inr : Y ⟶ Y ⨿ Y).unop.map_subunital')) h
+
+attribute [local instance] ejapsuFinPAC
+
+/-! ### The effects: `I = ℝᵤ`, `Pred A = [0,1]_A` -/
+
+/-- The scalars `ℝᵤ`, the effect object of `EJA_psuᵒᵖ`. -/
+abbrev ejapsuI : EJAPsu.{u}ᵒᵖ := Opposite.op (EJAPsu.of (ULift.{u} ℝ))
+
+theorem ejapsu_ulift_nonneg_iff (r : ULift.{u} ℝ) : 0 ≤ r ↔ 0 ≤ r.down := by
+  rw [eja_nonneg_iff, isSumSq_ulift_iff, ← eja_nonneg_iff]
+
+/-- The psu map `ℝᵤ ⟶ A`, `r ↦ r · a`, for an effect `a`. -/
+def ejapsuEffect {A : EJAPsu.{u}} {a : A.carrier} (h0 : 0 ≤ a) (h1 : a ≤ 1) :
+    EJAPSUMap (EJAPsu.of (ULift.{u} ℝ)) A where
+  toLinearMap :=
+    { toFun := fun r => r.down • a
+      map_add' := fun x y => by
+        show (x.down + y.down) • a = x.down • a + y.down • a
+        exact add_smul _ _ _
+      map_smul' := fun r x => by
+        show (r * x.down) • a = r • (x.down • a)
+        exact mul_smul _ _ _ }
+  map_nonneg' := fun r hr => by
+    show 0 ≤ r.down • a
+    refine (eja_nonneg_iff _).mpr (eja_isSumSq_smul ?_ ((eja_nonneg_iff _).mp h0))
+    exact (ejapsu_ulift_nonneg_iff r).mp hr
+  map_subunital' := by
+    show (1 : ULift.{u} ℝ).down • a ≤ 1
+    rw [show (1 : ULift.{u} ℝ).down = (1 : ℝ) from rfl, one_smul]
+    exact h1
+
+@[simp] theorem ejapsuEffect_apply {A : EJAPsu.{u}} {a : A.carrier} (h0 : 0 ≤ a)
+    (h1 : a ≤ 1) (r : ULift.{u} ℝ) : (ejapsuEffect h0 h1).toLinearMap r = r.down • a :=
+  rfl
+
+/-- A psu map out of the scalars is `r ↦ r · f 1`. -/
+theorem ejapsu_scal_apply {A : EJAPsu.{u}}
+    (f : EJAPSUMap (EJAPsu.of (ULift.{u} ℝ)) A) (r : ULift.{u} ℝ) :
+    f.toLinearMap r = r.down • f.toLinearMap 1 := by
+  have hr : (r.down • (1 : ULift.{u} ℝ)) = r := ULift.down_injective (by simp)
+  conv_lhs => rw [← hr]
+  exact map_smul f.toLinearMap r.down 1
+
+theorem ejapsu_scal_ext {A : EJAPsu.{u}}
+    {f g : EJAPSUMap (EJAPsu.of (ULift.{u} ℝ)) A}
+    (h : f.toLinearMap 1 = g.toLinearMap 1) : f = g :=
+  EJAPSUMap.ext' fun r => by rw [ejapsu_scal_apply f r, ejapsu_scal_apply g r, h]
+
+/-- A positive linear map killing `1` is zero (every element is dominated by a
+multiple of `1`). -/
+theorem ejapsu_eq_zero_of_one {A B : EJAPsu.{u}} (f : EJAPSUMap A B)
+    (h1 : f.toLinearMap 1 = 0) (x : A.carrier) : f.toLinearMap x = 0 := by
+  have hnn : ∀ c : A.carrier, 0 ≤ c → f.toLinearMap c = 0 := by
+    intro c hc
+    obtain ⟨n, hn⟩ := eja_exists_isSumSq_nsmul_one_sub c
+    have hle : c ≤ (n : ℝ) • (1 : A.carrier) := (eja_le_iff _ _).mpr hn
+    have hmono := f.mono hle
+    have hz : f.toLinearMap ((n : ℝ) • (1 : A.carrier)) = 0 := by
+      rw [map_smul, h1, smul_zero]
+    rw [hz] at hmono
+    have hpos := f.map_nonneg' c hc
+    exact le_antisymm hmono hpos
+  obtain ⟨u, v, hu, hv, hx⟩ : ∃ u v : A.carrier, 0 ≤ u ∧ 0 ≤ v ∧ x = u - v := by
+    obtain ⟨n, hn⟩ := eja_exists_isSumSq_nsmul_one_sub x
+    refine ⟨(n : ℝ) • (1 : A.carrier), (n : ℝ) • (1 : A.carrier) - x, ?_, ?_, by abel⟩
+    · exact (eja_nonneg_iff _).mpr (eja_isSumSq_smul_one (Nat.cast_nonneg n))
+    · exact (eja_nonneg_iff _).mpr hn
+  rw [hx, map_sub, hnn u hu, hnn v hv, sub_zero]
+
+/-- The truth predicate `1 : X ⟶ ℝᵤ` of `EJA_psuᵒᵖ`, i.e. the unit map
+`r ↦ r · 1`. -/
+def ejapsuOne (X : EJAPsu.{u}ᵒᵖ) : X ⟶ ejapsuI.{u} :=
+  Quiver.Hom.op (ejapsuEffect (A := X.unop)
+    ((eja_nonneg_iff _).mpr eja_isSumSq_one) (le_refl 1))
+
+theorem ejapsuOne_apply (X : EJAPsu.{u}ᵒᵖ) :
+    (ejapsuOne X).unop.toLinearMap 1 = (1 : X.unop.carrier) := by
+  show (1 : ULift.{u} ℝ).down • (1 : X.unop.carrier) = 1
+  rw [show (1 : ULift.{u} ℝ).down = (1 : ℝ) from rfl, one_smul]
+
+/-- **The effect structure of `EJA_psuᵒᵖ`** (180VII.2): the effect object is
+the algebra of scalars `ℝᵤ`, so that `Pred A = EJA_psu(ℝ, A) ≅ [0,1]_A`; the
+truth predicate is the unit map and `pᗮ` is `1 - p`. -/
+def ejapsuEffectusPartialForm : EffectusPartialForm (EJAPsu.{u}ᵒᵖ) where
+  «I» := ejapsuI
+  one X := ejapsuOne X
+  orth {X} p := Quiver.Hom.op
+    (ejapsuEffect (A := X.unop)
+      (show (0 : X.unop.carrier) ≤ 1 - p.unop.toLinearMap 1 by
+        rw [eja_sub_nonneg]
+        exact p.unop.map_subunital')
+      (show (1 : X.unop.carrier) - p.unop.toLinearMap 1 ≤ 1 by
+        rw [eja_le_iff]
+        have h := ejapsu_one_nonneg p.unop
+        rw [eja_nonneg_iff] at h
+        have he : (1 : X.unop.carrier) - (1 - p.unop.toLinearMap 1)
+            = p.unop.toLinearMap 1 := by abel
+        rw [he]
+        exact h))
+  perp_orth := fun {X} p => by
+    show p.unop.toLinearMap 1
+      + (1 : ULift.{u} ℝ).down • ((1 : X.unop.carrier) - p.unop.toLinearMap 1) ≤ 1
+    rw [show (1 : ULift.{u} ℝ).down = (1 : ℝ) from rfl, one_smul]
+    refine le_of_eq ?_
+    abel
+  ovee_orth := fun {X} p => by
+    refine ejapsuop_hom_ext fun r => ?_
+    show p.unop.toLinearMap r
+      + r.down • ((1 : X.unop.carrier) - p.unop.toLinearMap 1)
+      = r.down • (1 : X.unop.carrier)
+    rw [ejapsu_scal_apply p.unop r, smul_sub]
+    abel
+  orth_unique := fun {X p q} h heq => by
+    refine Quiver.Hom.unop_inj (ejapsu_scal_ext ?_)
+    have hval : p.unop.toLinearMap 1 + q.unop.toLinearMap 1 = (1 : X.unop.carrier) := by
+      have h1 := congrArg (fun k : X ⟶ ejapsuI => k.unop.toLinearMap 1) heq
+      exact h1.trans (ejapsuOne_apply X)
+    show q.unop.toLinearMap 1
+      = (1 : ULift.{u} ℝ).down • ((1 : X.unop.carrier) - p.unop.toLinearMap 1)
+    rw [show (1 : ULift.{u} ℝ).down = (1 : ℝ) from rfl, one_smul, ← hval]
+    abel
+  eq_zero_of_perp_one := fun {X p} h => by
+    refine Quiver.Hom.unop_inj (ejapsu_scal_ext ?_)
+    have h1 : p.unop.toLinearMap 1 + (1 : X.unop.carrier) ≤ 1 := by
+      refine le_trans (le_of_eq ?_) h
+      exact congrArg (fun t => p.unop.toLinearMap 1 + t) (ejapsuOne_apply X).symm
+    have h2 : p.unop.toLinearMap 1 ≤ 0 := by
+      rw [eja_le_iff] at h1 ⊢
+      have he : (1 : X.unop.carrier) - (p.unop.toLinearMap 1 + 1)
+          = 0 - p.unop.toLinearMap 1 := by abel
+      rwa [he] at h1
+    have h4 : p.unop.toLinearMap 1 = 0 :=
+      le_antisymm h2 (ejapsu_one_nonneg p.unop)
+    exact h4.trans rfl
+  perp_of_one_perp := fun {X Y f g} h => by
+    have hf : (f ≫ ejapsuOne Y).unop.toLinearMap 1 = f.unop.toLinearMap 1 := by
+      rw [ejapsuop_comp_apply]
+      exact congrArg f.unop.toLinearMap (ejapsuOne_apply Y)
+    have hg : (g ≫ ejapsuOne Y).unop.toLinearMap 1 = g.unop.toLinearMap 1 := by
+      rw [ejapsuop_comp_apply]
+      exact congrArg g.unop.toLinearMap (ejapsuOne_apply Y)
+    show f.unop.toLinearMap 1 + g.unop.toLinearMap 1 ≤ 1
+    rw [← hf, ← hg]
+    exact h
+  eq_zero_of_one_zero := fun {X Y f} h => by
+    refine Quiver.Hom.unop_inj (ejapsu_hom_ext fun y => ?_)
+    have h1 := congrArg (fun k : X ⟶ ejapsuI => k.unop.toLinearMap 1) h
+    rw [ejapsuop_comp_apply] at h1
+    have h2 : f.unop.toLinearMap 1 = 0 := by
+      refine Eq.trans ?_ h1
+      exact congrArg f.unop.toLinearMap (ejapsuOne_apply Y).symm
+    exact ejapsu_eq_zero_of_one f.unop h2 y
+
+attribute [local instance] ejapsuEffectusPartialForm
+
+/-- **180V at `EJAᵒᵖ`, in partial form**: the partial-form effectus structure
+of `EJAᵒᵖ`, bundled — the concrete finite coproducts, the PCM-enrichment, the
+finPAC axioms and the effects of 180VII. -/
+def ejapsuPartialStructure : EffectusPartialStructure (EJAPsu.{u}ᵒᵖ) :=
+  { hasFiniteCoproducts := ejapsuHasFiniteCoproducts
+    homPCM := ejapsuPCM
+    finPAC := ejapsuFinPAC
+    effectus := ejapsuEffectusPartialForm }
+
+/-- The **compression** `U q = P₁ q` of an idempotent `q` of `A`, as a morphism
+of `EJA_psu` onto the corner `V₁(q)`: positive by `eja_pone_nonneg_corner` and
+even unital, `P₁ q 1 = q`. -/
+def ejapsuCompr (A : EJAPsu.{u}) (q : EJAIdem A.carrier) :
+    EJAPSUMap A (EJAPsu.of (EJACorner q)) where
+  toLinearMap := ejaPoneCorner q
+  map_nonneg' x hx := eja_pone_nonneg_corner q hx
+  map_subunital' :=
+    le_of_eq (EJACorner.val_injective (by
+      rw [EJACorner.val_one]
+      exact eja_pone_one q.elt q.idem))
+
+/-! ### The predicates of `EJA_psuᵒᵖ` are the effects `0 ≤ a ≤ 1` -/
+
+/-- The effect underlying a predicate of `EJA_psuᵒᵖ`: a predicate is a psu map
+`ℝᵤ ⟶ A`, i.e. `r ↦ r · a` for an effect `a`, and this is `a`. -/
+def ejapsuVal {X : EJAPsu.{u}ᵒᵖ} (p : X ⟶ effObj (EJAPsu.{u}ᵒᵖ)) : X.unop.carrier :=
+  p.unop.toLinearMap (1 : ULift.{u} ℝ)
+
+theorem ejapsuVal_nonneg {X : EJAPsu.{u}ᵒᵖ} (p : X ⟶ effObj (EJAPsu.{u}ᵒᵖ)) :
+    0 ≤ ejapsuVal p := ejapsu_one_nonneg p.unop
+
+theorem ejapsuVal_le_one {X : EJAPsu.{u}ᵒᵖ} (p : X ⟶ effObj (EJAPsu.{u}ᵒᵖ)) :
+    ejapsuVal p ≤ 1 := p.unop.map_subunital'
+
+theorem ejapsuVal_injective {X : EJAPsu.{u}ᵒᵖ}
+    {p q : X ⟶ effObj (EJAPsu.{u}ᵒᵖ)} (h : ejapsuVal p = ejapsuVal q) : p = q :=
+  Quiver.Hom.unop_inj (ejapsu_scal_ext h)
+
+/-- The predicate with a given effect as its value. -/
+def ejapsuPredOf (X : EJAPsu.{u}ᵒᵖ) {a : X.unop.carrier} (h0 : 0 ≤ a) (h1 : a ≤ 1) :
+    X ⟶ effObj (EJAPsu.{u}ᵒᵖ) :=
+  Quiver.Hom.op (ejapsuEffect h0 h1)
+
+@[simp] theorem ejapsuVal_predOf (X : EJAPsu.{u}ᵒᵖ) {a : X.unop.carrier}
+    (h0 : 0 ≤ a) (h1 : a ≤ 1) : ejapsuVal (ejapsuPredOf X h0 h1) = a := by
+  show (1 : ULift.{u} ℝ).down • a = a
+  rw [show (1 : ULift.{u} ℝ).down = (1 : ℝ) from rfl, one_smul]
+
+@[simp] theorem ejapsuVal_truth (X : EJAPsu.{u}ᵒᵖ) :
+    ejapsuVal (truth X) = (1 : X.unop.carrier) := ejapsuOne_apply X
+
+@[simp] theorem ejapsuVal_zero (X : EJAPsu.{u}ᵒᵖ) :
+    ejapsuVal (0 : X ⟶ effObj (EJAPsu.{u}ᵒᵖ)) = (0 : X.unop.carrier) := rfl
+
+theorem ejapsuVal_ovee {X : EJAPsu.{u}ᵒᵖ} (p q : X ⟶ effObj (EJAPsu.{u}ᵒᵖ))
+    (h : Perp p q) : ejapsuVal (ovee p q h) = ejapsuVal p + ejapsuVal q := rfl
+
+@[simp] theorem ejapsuVal_orth {X : EJAPsu.{u}ᵒᵖ} (p : X ⟶ effObj (EJAPsu.{u}ᵒᵖ)) :
+    ejapsuVal (EffectAlgebra.orth p) = 1 - ejapsuVal p := by
+  show (1 : ULift.{u} ℝ).down • ((1 : X.unop.carrier) - ejapsuVal p) = _
+  rw [show (1 : ULift.{u} ℝ).down = (1 : ℝ) from rfl, one_smul]
+
+@[simp] theorem ejapsuVal_comp {X Y : EJAPsu.{u}ᵒᵖ} (f : X ⟶ Y)
+    (q : Y ⟶ effObj (EJAPsu.{u}ᵒᵖ)) :
+    ejapsuVal (f ≫ q) = f.unop.toLinearMap (ejapsuVal q) := rfl
+
+/-- **The algebraic order of `Pred A` is the order of the effects.** -/
+theorem ejapsuVal_le_iff {X : EJAPsu.{u}ᵒᵖ} (p q : X ⟶ effObj (EJAPsu.{u}ᵒᵖ)) :
+    p ≼ q ↔ ejapsuVal p ≤ ejapsuVal q := by
+  constructor
+  · rintro ⟨c, hc, rfl⟩
+    rw [ejapsuVal_ovee]
+    exact eja_le_add_of_nonneg_left (ejapsuVal_nonneg c) |>.trans_eq (add_comm _ _)
+  · intro h
+    have h0 : (0 : X.unop.carrier) ≤ ejapsuVal q - ejapsuVal p := eja_sub_nonneg.mpr h
+    have h1 : ejapsuVal q - ejapsuVal p ≤ 1 := by
+      refine le_trans ?_ (ejapsuVal_le_one q)
+      rw [eja_le_iff]
+      have he : ejapsuVal q - (ejapsuVal q - ejapsuVal p) = ejapsuVal p := by abel
+      rw [he]
+      exact (eja_nonneg_iff _).mp (ejapsuVal_nonneg p)
+    refine ⟨ejapsuPredOf X h0 h1, ?_, ?_⟩
+    · show ejapsuVal p + ejapsuVal (ejapsuPredOf X h0 h1) ≤ 1
+      rw [ejapsuVal_predOf]
+      refine le_of_eq ?_ |>.trans (ejapsuVal_le_one q)
+      abel
+    · refine ejapsuVal_injective ?_
+      rw [ejapsuVal_ovee, ejapsuVal_predOf]
+      abel
+
+/-! ### `EJAᵒᵖ` has images: the image is the support projection
+
+For `f : X ⟶ Y` with underlying positive subunital `φ : Y → X`, the functional
+`ω y = τ (φ y)` is positive and kills exactly the positive `y` that `φ` kills
+(`τ z = B z 1`, and `B z 1 = 0` with `z ≥ 0` forces `z = 0`).  Represent `ω` by
+the trace form, `ω = B w ·` (`eja_exists_riesz`); then `w ≥ 0` by self-duality,
+and the support idempotent `s = ⌈w⌉` of `eja_exists_supp` is the image. -/
+
+/-- The support idempotent of a map of `EJA_psuᵒᵖ`: the value of its image. -/
+theorem ejapsu_exists_image {X Y : EJAPsu.{u}ᵒᵖ} (f : X ⟶ Y) :
+    ∃ (s : Y.unop.carrier) (hs : s * s = s),
+      IsImage f (ejapsuPredOf Y (eja_idem_nonneg hs) (eja_idem_le_one hs)) := by
+  set φ := f.unop.toLinearMap with hφ
+  set ω : Y.unop.carrier →ₗ[ℝ] ℝ := (ejaTrL (V := X.unop.carrier)).comp φ with hω
+  obtain ⟨w, hw⟩ := eja_exists_riesz ω
+  have hωval : ∀ y : Y.unop.carrier, ejaB w y = ejaB (φ y) 1 := by
+    intro y
+    rw [← hw]
+    show ejaTrL (φ y) = ejaB (φ y) 1
+    rw [ejaB, eja_mul_one]
+  have hwnn : (0 : Y.unop.carrier) ≤ w := by
+    refine eja_nonneg_of_forall_idem fun g hg => ?_
+    rw [hωval]
+    refine eja_isSumSq_ejaB_idem_nonneg ?_ 1 (eja_one_mul 1)
+    exact (eja_nonneg_iff _).mp (f.unop.map_nonneg' g (eja_idem_nonneg hg))
+  have hkill : ∀ y : Y.unop.carrier, 0 ≤ y → (ejaB w y = 0 ↔ φ y = 0) := by
+    intro y hy
+    constructor
+    · intro h
+      rw [hωval] at h
+      have h2 := eja_idem_mul_nonneg_eq_zero (g := (1 : X.unop.carrier))
+        (eja_one_mul 1) (f.unop.map_nonneg' y hy) (by rw [ejaB_symm]; exact h)
+      rwa [eja_one_mul] at h2
+    · intro h
+      rw [hωval, h]
+      show ejaTrL ((0 : X.unop.carrier) * 1) = 0
+      rw [eja_zero_mul, map_zero]
+  obtain ⟨s, hs, hs0, hs1, hsupp⟩ := eja_exists_supp hwnn
+  refine ⟨s, hs, ?_, ?_⟩
+  · refine ejapsuVal_injective ?_
+    rw [ejapsuVal_comp, ejapsuVal_comp, ejapsuVal_predOf, ejapsuVal_truth]
+    have h1s : (0 : Y.unop.carrier) ≤ 1 - s := eja_sub_nonneg.mpr (eja_idem_le_one hs)
+    have hzero : ejaB s (1 - s) = 0 := by
+      rw [ejaB, eja_mul_sub, eja_mul_one, hs, sub_self, map_zero]
+    have := (hkill (1 - s) h1s).mp ((hsupp (1 - s) h1s).mpr hzero)
+    rw [map_sub] at this
+    have h2 : φ 1 - φ s = 0 := this
+    have h3 : φ s = φ 1 := by
+      have := sub_eq_zero.mp h2
+      exact this.symm
+    exact h3
+  · intro q hq
+    rw [ejapsuVal_le_iff, ejapsuVal_predOf]
+    have hqe : φ (ejapsuVal q) = φ 1 := by
+      have := congrArg ejapsuVal hq
+      rwa [ejapsuVal_comp, ejapsuVal_comp, ejapsuVal_truth] at this
+    have he0 : (0 : Y.unop.carrier) ≤ 1 - ejapsuVal q :=
+      eja_sub_nonneg.mpr (ejapsuVal_le_one q)
+    have hφe : φ (1 - ejapsuVal q) = 0 := by
+      rw [map_sub, hqe, sub_self]
+    have hBs : ejaB s (1 - ejapsuVal q) = 0 :=
+      (hsupp _ he0).mp ((hkill _ he0).mpr hφe)
+    have hmul : s * (1 - ejapsuVal q) = 0 :=
+      eja_idem_mul_nonneg_eq_zero hs he0 hBs
+    have hle : (1 : Y.unop.carrier) - ejapsuVal q ≤ 1 - s := by
+      refine eja_le_one_sub_of_mul_eq_zero hs ?_ hmul
+      rw [eja_le_iff]
+      have he : (1 : Y.unop.carrier) - (1 - ejapsuVal q) = ejapsuVal q := by abel
+      rw [he]
+      exact (eja_nonneg_iff _).mp (ejapsuVal_nonneg q)
+    rw [eja_le_iff] at hle ⊢
+    have he : (1 : Y.unop.carrier) - s - (1 - ejapsuVal q) = ejapsuVal q - s := by abel
+    rwa [he] at hle
+
+/-- **202IV at `EJAᵒᵖ`**: `EJAᵒᵖ` has images. -/
+theorem ejapsuHasImages : HasImages (EJAPsu.{u}ᵒᵖ) where
+  im {_ Y} f := by
+    obtain ⟨s, hs, him⟩ := ejapsu_exists_image f
+    exact ⟨_, him⟩
+
+/-! ### The sharp predicates of `EJAᵒᵖ` are the idempotents -/
+
+/-- Images are unique. -/
+theorem ejapsu_image_unique {X Y : EJAPsu.{u}ᵒᵖ} {f : X ⟶ Y}
+    {p q : Y ⟶ effObj (EJAPsu.{u}ᵒᵖ)} (hp : IsImage f p) (hq : IsImage f q) :
+    p = q := by
+  refine ejapsuVal_injective (le_antisymm ?_ ?_)
+  · exact (ejapsuVal_le_iff p q).mp (hp.2 q hq.1)
+  · exact (ejapsuVal_le_iff q p).mp (hq.2 p hp.1)
+
+/-- **210III at `EJAᵒᵖ`**: a predicate of `EJAᵒᵖ` is **sharp** exactly when its
+effect is an **idempotent**.  One direction is the uniqueness of images and the
+support-projection computation above; for the other, the compression
+`U p = P₁ p` onto the corner `V₁(p)` has image `p`. -/
+theorem ejapsu_isSharp_iff {X : EJAPsu.{u}ᵒᵖ} (p : X ⟶ effObj (EJAPsu.{u}ᵒᵖ)) :
+    IsSharp p ↔ ejapsuVal p * ejapsuVal p = ejapsuVal p := by
+  constructor
+  · rintro ⟨Y, f, hf⟩
+    obtain ⟨s, hs, him⟩ := ejapsu_exists_image f
+    have := ejapsu_image_unique hf him
+    rw [this, ejapsuVal_predOf]
+    exact hs
+  · intro hp
+    set a := ejapsuVal p with ha
+    set q : EJAIdem X.unop.carrier := ⟨a, hp⟩ with hqdef
+    refine ⟨Opposite.op (EJAPsu.of (EJACorner q)),
+      Quiver.Hom.op (ejapsuCompr X.unop q), ?_, ?_⟩
+    · refine ejapsuVal_injective ?_
+      rw [ejapsuVal_comp, ejapsuVal_comp, ejapsuVal_truth]
+      refine EJACorner.val_injective ?_
+      show ejaPone q.elt a = ejaPone q.elt 1
+      rw [eja_pone_one q.elt q.idem, ejaPone_apply]
+      show (2 : ℝ) • (a * (a * a)) - a * a = a
+      rw [hp, hp]
+      module
+    · intro r hr
+      rw [ejapsuVal_le_iff]
+      have hre : ejaPone a (ejapsuVal r) = ejaPone a 1 := by
+        have h2 := congrArg ejapsuVal hr
+        rw [ejapsuVal_comp, ejapsuVal_comp, ejapsuVal_truth] at h2
+        exact congrArg EJACorner.val h2
+      have hz : ejaPone a ((1 : X.unop.carrier) - ejapsuVal r) = 0 := by
+        rw [map_sub, hre, sub_self]
+      have hpaa : ejaPone a a = a := (eja_pone_eq_self_iff a hp a).mpr hp
+      have hB : ejaB a ((1 : X.unop.carrier) - ejapsuVal r) = 0 := by
+        have h3 := ejaB_pone_self_adj a a ((1 : X.unop.carrier) - ejapsuVal r)
+        rw [hz, hpaa] at h3
+        rw [← h3, ejaB, eja_mul_zero, map_zero]
+      have he0 : (0 : X.unop.carrier) ≤ 1 - ejapsuVal r :=
+        eja_sub_nonneg.mpr (ejapsuVal_le_one r)
+      have hmul : a * ((1 : X.unop.carrier) - ejapsuVal r) = 0 :=
+        eja_idem_mul_nonneg_eq_zero hp he0 hB
+      have hle : (1 : X.unop.carrier) - ejapsuVal r ≤ 1 - a := by
+        refine eja_le_one_sub_of_mul_eq_zero hp ?_ hmul
+        rw [eja_le_iff]
+        have he : (1 : X.unop.carrier) - (1 - ejapsuVal r) = ejapsuVal r := by abel
+        rw [he]
+        exact (eja_nonneg_iff _).mp (ejapsuVal_nonneg r)
+      rw [eja_le_iff] at hle ⊢
+      have he : (1 : X.unop.carrier) - a - (1 - ejapsuVal r) = ejapsuVal r - a := by
+        abel
+      rwa [he] at hle
+
+/-- **206II at `EJAᵒᵖ`**: the orthocomplement of a sharp predicate is sharp —
+`1 - p` is idempotent when `p` is. -/
+theorem ejapsu_orth_sharp {X : EJAPsu.{u}ᵒᵖ} {s : X ⟶ effObj (EJAPsu.{u}ᵒᵖ)}
+    (hs : IsSharp s) : IsSharp (EffectAlgebra.orth s) := by
+  rw [ejapsu_isSharp_iff] at hs ⊢
+  rw [ejapsuVal_orth]
+  exact eja_one_sub_idem hs
+
+/-! ### `EJAᵒᵖ` has comprehension: the compression onto the floor of an effect
+
+A comprehension for the effect `a` is the compression `U q = P₁ q` onto the
+corner `V₁(q)` of `q = ⌊a⌋`, exactly as in `vNᵒᵖ` a comprehension is the
+standard corner `⌊a⌋𝒜⌊a⌋`.  The universal property is that a positive
+subunital `τ` with `τ a = τ 1` factors through it, and that is proved by the
+Peirce decomposition: `τ` kills `1 - q` (because `μ (1 - q) ≤ 1 - a`), hence
+kills the Peirce `0`-part of every element (which is dominated by a multiple of
+`1 - q`), and it kills the Peirce `½`-part `z` because
+`0 ≤ (t (1-q) + z)² = t² (1-q) + t z + z²` for every real `t`. -/
+
+/-- **199V at `EJAᵒᵖ`**: `EJAᵒᵖ` has comprehension. -/
+theorem ejapsuHasComprehension : HasComprehension (EJAPsu.{u}ᵒᵖ) where
+  compr {X} p := by
+    obtain ⟨q, hq, hqa, μ, hμ, hμle⟩ :=
+      eja_exists_floor (ejapsuVal_nonneg p) (ejapsuVal_le_one p)
+    set a := ejapsuVal p with ha
+    set Q : EJAIdem X.unop.carrier := ⟨q, hq⟩ with hQ
+    refine ⟨Opposite.op (EJAPsu.of (EJACorner Q)),
+      Quiver.Hom.op (ejapsuCompr X.unop Q), ?_, ?_⟩
+    · refine ejapsuVal_injective ?_
+      rw [ejapsuVal_comp, ejapsuVal_comp, ejapsuVal_truth]
+      refine EJACorner.val_injective ?_
+      show ejaPone q a = ejaPone q 1
+      rw [eja_pone_one q hq, ejaPone_apply, hqa, hq]
+      module
+    · intro Z g hg
+      set τ := g.unop.toLinearMap with hτ
+      have hga : τ a = τ 1 := by
+        have h2 := congrArg ejapsuVal hg
+        rwa [ejapsuVal_comp, ejapsuVal_comp, ejapsuVal_truth] at h2
+      have hmono : ∀ {x y : X.unop.carrier}, x ≤ y → τ x ≤ τ y :=
+        fun h => g.unop.mono h
+      have hnn : ∀ {x : X.unop.carrier}, 0 ≤ x → 0 ≤ τ x :=
+        fun {x} h => g.unop.map_nonneg' x h
+      have h1a : τ ((1 : X.unop.carrier) - a) = 0 := by
+        rw [map_sub, hga, sub_self]
+      have h1q : τ ((1 : X.unop.carrier) - q) = 0 := by
+        have hle := hmono hμle
+        rw [map_smul, h1a] at hle
+        have hge : 0 ≤ τ ((1 : X.unop.carrier) - q) :=
+          hnn (eja_sub_nonneg.mpr (eja_idem_le_one hq))
+        have hz : μ • τ ((1 : X.unop.carrier) - q) = 0 :=
+          le_antisymm hle (by
+            have := (eja_nonneg_iff _).mp hge
+            rw [eja_nonneg_iff]
+            exact eja_isSumSq_smul hμ.le this)
+        rcases smul_eq_zero.mp hz with h' | h'
+        · exact absurd h' (ne_of_gt hμ)
+        · exact h'
+      have hzero : ∀ z : X.unop.carrier, q * z = 0 → τ z = 0 := by
+        intro z hz
+        have hz1 : (1 - q) * z = z := by
+          rw [eja_sub_mul, eja_one_mul, hz, sub_zero]
+        obtain ⟨n, hn⟩ := eja_exists_nsmul_corner ⟨1 - q, eja_one_sub_idem hq⟩
+          (z := z) hz1
+        obtain ⟨m, hm⟩ := eja_exists_nsmul_corner ⟨1 - q, eja_one_sub_idem hq⟩
+          (z := -z) (by rw [show (1 - q) * (-z) = -((1-q) * z) by
+            rw [← neg_one_smul ℝ z, eja_mul_smul, neg_one_smul], hz1])
+        have hup := hmono hn
+        have hdown := hmono hm
+        rw [map_smul, h1q, smul_zero] at hup
+        rw [map_neg, map_smul, h1q, smul_zero] at hdown
+        have h0 : (0 : Z.unop.carrier) ≤ τ z := by
+          rw [eja_le_iff] at hdown
+          rw [eja_nonneg_iff]
+          have he : (0 : Z.unop.carrier) - -τ z = τ z := by abel
+          rwa [he] at hdown
+        exact le_antisymm hup h0
+      have hhalf : ∀ x : X.unop.carrier, τ (ejaPhalf q x) = 0 := by
+        intro x
+        set z := ejaPhalf q x with hzdef
+        have hqz : q * z = (2 : ℝ)⁻¹ • z := eja_mul_phalf q hq x
+        have hsq : ∀ t : ℝ,
+            (t • ((1 : X.unop.carrier) - q) + z) * (t • ((1 : X.unop.carrier) - q) + z)
+              = (t * t) • ((1 : X.unop.carrier) - q) + t • z + z * z := by
+          intro t
+          have hmix : ((1 : X.unop.carrier) - q) * z = (2 : ℝ)⁻¹ • z := by
+            rw [eja_sub_mul, eja_one_mul, hqz]
+            module
+          have hmix' : z * ((1 : X.unop.carrier) - q) = (2 : ℝ)⁻¹ • z := by
+            rw [eja_mul_comm]
+            exact hmix
+          rw [eja_add_mul_add]
+          simp only [eja_smul_mul, eja_mul_smul, smul_smul]
+          rw [eja_one_sub_idem hq, hmix, hmix']
+          module
+        have hpos : ∀ t : ℝ, 0 ≤ t • τ z + τ (z * z) := by
+          intro t
+          have h2 : (0 : X.unop.carrier)
+              ≤ (t • ((1 : X.unop.carrier) - q) + z) * (t • ((1 : X.unop.carrier) - q) + z) :=
+            (eja_nonneg_iff _).mpr (IsSumSq.mul_self _)
+          have h3 := hnn h2
+          rw [hsq t, map_add, map_add, map_smul, map_smul, h1q, smul_zero,
+            zero_add] at h3
+          exact h3
+        exact eja_eq_zero_of_forall_smul_add hpos
+      have hfac : ∀ x : X.unop.carrier, τ x = τ (ejaPone q x) := by
+        intro x
+        have hsum := eja_peirce_sum q x
+        have h0 : τ (ejaPone (1 - q) x) = 0 := by
+          refine hzero _ ?_
+          have hmem : (1 - q) * ejaPone (1 - q) x = ejaPone (1 - q) x :=
+            eja_mul_pone (1 - q) (eja_one_sub_idem hq) x
+          have : q * ejaPone (1 - q) x
+              = ejaPone (1 - q) x - (1 - q) * ejaPone (1 - q) x := by
+            rw [eja_sub_mul, eja_one_mul]
+            abel
+          rw [this, hmem, sub_self]
+        conv_lhs => rw [← hsum]
+        rw [map_add, map_add, hhalf x, h0, add_zero, add_zero]
+      refine ⟨Quiver.Hom.op
+        { toLinearMap := (g.unop.toLinearMap).comp (EJACorner.valLin Q)
+          map_nonneg' := fun y hy => hnn (eja_corner_val_nonneg hy)
+          map_subunital' := by
+            show τ q ≤ 1
+            exact le_trans (hmono (eja_idem_le_one hq)) g.unop.map_subunital' },
+        ?_, ?_⟩
+      · refine ejapsuop_hom_ext fun x => ?_
+        rw [ejapsuop_comp_apply]
+        exact (hfac x).symm
+      · intro k hk
+        refine ejapsuop_hom_ext fun y => ?_
+        have hky := ejapsuop_congr hk (EJACorner.val y)
+        rw [ejapsuop_comp_apply] at hky
+        have hy : ejaPoneCorner Q (EJACorner.val y) = y :=
+          EJACorner.val_injective ((eja_pone_eq_self_iff q hq _).mpr
+            (EJACorner.val_prop y))
+        show k.unop.toLinearMap y = τ (EJACorner.val y)
+        conv_lhs => rw [← hy]
+        exact hky
+
+/-- **190V at `EJAᵒᵖ` in partial form**: the predicates of `EJAᵒᵖ` are its
+effects `0 ≤ a ≤ 1` — the same set `eja_pred_effect` gives for the total form,
+so the two readings of `Pred` agree and this really is the example of 206III. -/
+def ejapsu_pred_val (A : EJAPsu.{u}) :
+    (Opposite.op A ⟶ effObj (EJAPsu.{u}ᵒᵖ)) ≃ {x : A.carrier // 0 ≤ x ∧ x ≤ 1} where
+  toFun p := ⟨ejapsuVal p, ejapsuVal_nonneg p, ejapsuVal_le_one p⟩
+  invFun x := ejapsuPredOf (Opposite.op A) x.2.1 x.2.2
+  left_inv _p := ejapsuVal_injective (ejapsuVal_predOf _ _ _)
+  right_inv x := Subtype.ext (ejapsuVal_predOf _ x.2.1 x.2.2)
+
+/-! ## The ⋄-effectus clause of 206III for `EJAᵒᵖ`: three obligations of four,
+and the one that is left
+
+206III (eff.tex:4460, Examples) says that `vNᵒᵖ`, `CvNᵒᵖ`, `EJAᵒᵖ` and `Set`
+are all ⋄-effectuses.  A ⋄-effectus lives in the **partial** form, so the
+`EJAᵒᵖ` clause is a statement about `EJAPsuᵒᵖ`, the opposite of the category of
+Euclidean Jordan algebras with positive *subunital* maps built above — exactly
+as the `vNᵒᵖ` clause is a statement about `WStarCPSU.{u}ᵒᵖ` and not about the
+unital `vN`.  Of the five things `DiamondEffectus` needs, four are now here:
+
+* the **partial form itself**, `ejapsuPartialStructure`: finite coproducts (the
+  product algebra and the one-point algebra), the hom-PCM `f ⊥ g ⟺ f 1 + g 1 ≤ 1`
+  with `f ⋁ g = f + g`, the six finPAC axioms and the effects of 180VII with
+  effect object `ℝᵤ`.  Its predicates are the effects `0 ≤ a ≤ 1`
+  (`ejapsu_pred_val`), as in the total form;
+* **comprehension**, `ejapsuHasComprehension`: the comprehension for an effect
+  `a` is the compression `U q = P₁ q` onto the corner `V₁(q)` of the floor
+  idempotent `q = ⌊a⌋` (`eja_exists_floor`), the Jordan analogue of the standard
+  corner `⌊a⌋𝒜⌊a⌋` of `vNᵒᵖ`;
+* **images**, `ejapsuHasImages`: the image of `f` is the support idempotent
+  `⌈w⌉` of the trace-form Riesz vector `w` of the positive functional
+  `y ↦ τ (f y)` (`eja_exists_riesz`, `eja_exists_supp`);
+* **sharpness**, `ejapsu_isSharp_iff`: the sharp predicates are exactly the
+  idempotents, whence `ejapsu_orth_sharp`, the `orth_sharp` axiom.
+
+**Quotients are not here**, and with them `DiamondEffectus EJAPsu.{u}ᵒᵖ`.  The
+missing mathematics is one statement, and it is not the one the earlier costing
+named.  In detail.
+
+*What the quotient is.*  A quotient for the predicate `p` is a **filter** at
+`a = pᗮ`: the map `U_b` for `b = √a` (which the spectral theorem
+`eja_spectral` supplies), corestricted to the corner `V₁(⌈a⌉)`.  Everything
+around it is already available here: `⌈a⌉` is `eja_exists_supp`, the corner is
+`EJACorner`, and the order-interval fact that `0 ≤ x ≤ λ a` forces `x` into
+`V₁(⌈a⌉)` is `eja_idem_mul_nonneg_eq_zero` together with
+`eja_le_one_sub_of_mul_eq_zero`.
+
+*What is missing.*  `U_b x = 2 b (b x) - b² x` must map the cone into the cone
+for `b ≥ 0` — both to make the filter a morphism at all, and to make the
+factorisation `U_{b⁻¹} ∘ χ` of the universal property one.  This file proves
+that `U_p` is positive for an **idempotent** `p` (`eja_pone_nonneg`, via a
+spectral decomposition *inside* the corner `V₁(p)`, whose coefficients are
+`B x g / τ g ≥ 0` because `P₁ p` is trace-form self-adjoint and fixes the
+spectral idempotents `g` of the corner).  That argument does not extend to a
+general `b ≥ 0`: it needs `U_b g ≥ 0` for the corner's idempotents `g`, which
+is the statement itself.
+
+*The precise residue.*  For `b ≥ 0` invertible in `V₁(⌈b⌉)`, with spectral
+decomposition `b = Σ λᵢ eᵢ`, one has `b = ∏ᵢ (1 + (λᵢ - 1) eᵢ)` in the
+associative algebra generated by the frame `{eᵢ}`, and there `U` is
+multiplicative, `U_b U_c = U_{b c}` — so the whole of `U`-positivity reduces to
+the **two-valued** case
+
+>  `t² P₁ q + t P½ q + P₀ q` preserves the cone, for an idempotent `q` and
+>  `t > 0`,
+
+equivalently, by self-duality and `eja_pone_nonneg`, to the Cauchy–Schwarz
+inequality `B (P½ g) (P½ h) ² ≤ 4 · B (P₁ g) (P₁ h) · B (P₀ g) (P₀ h)` for
+idempotents `g, h`.  The classical proofs of that go through data this tree has
+not got: either the **fundamental formula** `U_{U_a b} = U_a U_b U_a` (whose
+usual proof is Macdonald's theorem, or several pages of operator identities),
+or the topological argument that the open cone is a connected component of the
+invertible elements — which needs a norm, the continuity of the spectrum and
+the invertibility of `U_a x`, none of which is in this file and none of which is
+in Mathlib for Jordan algebras.  Mathlib has `IsCommJordan` and its
+linearisation and nothing above them.
+
+Costed from here: the multiplicativity reduction (the joint Peirce
+decomposition of a frame: the `L eᵢ` commute, each satisfies the Peirce cubic,
+and they sum to the identity) is about 250 lines; the two-valued case is the
+open problem; the quotient itself, once `U` is positive, is about 250 more —
+the filter, its corestriction to `V₁(⌈a⌉)`, and the universal property, whose
+ingredients (`eja_exists_supp`, `EJACorner`, `eja_idem_mul_nonneg_eq_zero`) are
+all above.
+
+Nothing in the total-form part of this file depends on any of that: an effectus
+in *total* form needs only the order unit space structure, which is what
+`toOrderUnitSpace` supplies. -/
 
 end
 
