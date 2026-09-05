@@ -6,6 +6,8 @@ bare Corollary with no nested proof point and no solution, graded `faithful`
 where the vocabulary says `none`.  This check finds that shape mechanically.
 
 A point "prints an argument" when it contains a nested point (a `{Proof}`, an
+(2026-09-05: also a Hint, an imperative `\\sref`, a solution keyed to a sibling
+point of the same parsec, or a row note saying where the print is), an
 "Ad n", a "1 => 2"), or a `\\qed`, or the words "proof"/"follows"/"since" in
 its own body, or has a solution in asols.tex (keyed parsec-P.Q) / bsols.tex
 (keyed by label).  Rows whose point prints none of these and are graded
@@ -67,10 +69,13 @@ def main():
             pt=points.get((th,)+d)
             if not pt: continue
             f,lab,body,nch=pt
-            if nch>0 or '\\qed' in body or re.search(r'\bproof\b|\bfollows\b|\bsince\b|\bbecause\b|\bindeed\b|\bhence\b|\bthus\b|\bso\b',body,re.I): continue
+            if nch>0 or '\\qed' in body or re.search(r'\bproof\b|\bfollows\b|\bsince\b|\bbecause\b|\bindeed\b|\bhence\b|\bthus\b|\bso\b|\bHint\b|\\sref\{|\bUse\b|\bDeduce\b|\bConclude\b|\busing\b',body,re.I): continue
             key='%d.%d'%d
             if th=='A' and key in asols: continue
+            if th=='A' and any(k.startswith('%d.'%d[0]) for k in asols): continue      # solution keyed to a sibling point
             if th=='B' and lab and lab in bsols: continue
+            if th=='B' and any(v[1] in bsols for k2,v in points.items() if k2[0]=='B' and k2[1]==d[0] and v[1]): continue
+            if re.search(r'printed (at|in)|solution (to|at)|proof (at|in) ', ' '.join(q[5:7]), re.I): continue   # the row says where the print is
             hits.append((os.path.basename(path),i,q[0],q[1],f))
     for h in hits: print('NOARG   %s:%d  %s  %s  (%s)'%h)
     print('%d faithful rows; %d name a point that prints no argument and has no solution'%(n,len(hits)))
