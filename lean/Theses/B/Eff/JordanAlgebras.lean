@@ -3343,7 +3343,7 @@ end EJAExample
 /-! ## The Peirce calculus of an idempotent, and the self-duality of the cone
 
 The Jordan theory the ⋄-effectus obligations of 206III need, above the
-spectral theorem `eja_spectral`.  Three blocks:
+spectral theorem `eja_spectral`.  Four blocks:
 
 * **Peirce.**  For an idempotent `p` the multiplication operators `L p` and
   `L y` commute whenever `p * y = y` or `p * y = 0`
@@ -3363,9 +3363,13 @@ spectral theorem `eja_spectral`.  Three blocks:
   right: `ejaPone p x` lies in `V₁(p)`, so it has a spectral decomposition
   *there*, and each of its coefficients is `B x (g) / τ g ≥ 0` for a
   spectral idempotent `g` of `V₁(p)` — because `ejaPone p` is self-adjoint
-  for the trace form and fixes `g`.  No quadratic representation `U a` for a
-  general `a`, and no fundamental formula, is used or available; see the
-  comment at the end of the file. -/
+  for the trace form and fixes `g`.
+* **The quadratic representation `U a = 2 L a ² - L (a²)` is positive**
+  (`ejaU`, `eja_U_nonneg`), for every `a` and not only for `a ≥ 0`.  This is
+  the last block of the section; its argument is described where it starts.
+  It uses no fundamental formula `U (U a b) = U a U b U a` and no Macdonald
+  theorem: only the Peirce arithmetic of this section, the spectral theorem,
+  and the corner. -/
 
 namespace EuclideanJordanAlgebra
 
@@ -4065,6 +4069,831 @@ theorem eja_exists_nsmul_corner (p : EJAIdem V) {z : V} (hz : p.elt * z = z) :
   have h2 := EJACorner.isSumSq_val hn
   rwa [EJACorner.val_sub, EJACorner.val_smul, EJACorner.val_one,
     EJACorner.val_mk'] at h2
+
+/-! ### The quadratic representation `U a`, and its positivity
+
+`U a = 2 L a ² - L (a²)` (`ejaU`) is what the *quotients* of 206III's `EJAᵒᵖ`
+clause need, and what the compression `ejaPone` of an idempotent does not
+give: `U p = ejaPone p` only when `p` is idempotent (`ejaU_idem`).  That
+`U a` maps the cone into the cone (`eja_U_nonneg`) is proved here without
+Macdonald's theorem, the fundamental formula, or any topology of the cone.
+Four blocks.
+
+* **The pivot** (`eja_U_two_valued_primitive`).  Do not test `U a x` against
+  idempotents; *compute* it, at a **primitive** idempotent `g` — one whose
+  Peirce `1`-space is the line `ℝ g` (`EJAPrimitive`).  For an idempotent `q`
+  with Peirce components `c = P₁ g`, `z = P½ g`, `d = P₀ g` of `g`, the
+  element `U g q = ejaPone g q` lies in `V₁(g) = ℝ g`, so it is `σ • g` with
+  `σ = B q g / B g g ∈ [0,1]` (`eja_primitive_pone`).  Expanding
+  `U g q = 2 g (g q) - g q` in the Peirce components and matching against
+  `σ (c + z + d)`, together with the three components of `g² = g`, gives five
+  relations (`eja_primitive_peirce_rel`):
+  `c² = σ c`, `d² = (1-σ) d`, `z² = (1-σ) c + σ d`, `2 (c z) = σ z`,
+  `2 (d z) = (1-σ) z`.  Hence for **all** reals `l, m` the element
+  `F = U (l q + m (1-q)) g = l² c + l m z + m² d` satisfies `F F = ν F` with
+  `ν = l² σ + m² (1-σ) ≥ 0`, so `F` is a non-negative multiple of an
+  idempotent, hence positive (`eja_nonneg_of_mul_self_smul`).
+* **From primitive to all of the cone.**  A non-primitive non-zero idempotent
+  splits (`eja_idem_split`): its Peirce `1`-space contains an element off
+  `ℝ e`, whose spectral decomposition *inside the corner* `EJACorner e` has at
+  least two terms.  Recursing on `dim V₁` (`ejaV1`, `eja_V1_lt`), a linear map
+  positive on primitive idempotents is positive on every idempotent, and then
+  by the spectral theorem on the whole cone (`eja_nonneg_of_primitive`).  So
+  the two-valued `U` preserves the cone (`eja_U_two_valued_nonneg`).
+* **The splitting identity** (`eja_U_split`).  For an idempotent `c` with
+  `c a = 0`, `U (l c + a) = U (l c + (1-c)) ∘ U (c + a)`.  Both sides are
+  linear, and they agree on each Peirce space of `c`: on `V₁` both are `l²`,
+  on `V₀` both are `U a`, and on `V½` both are `2 l L a`, because `U a`
+  *vanishes* on `V½(c)` — `2 a (a y) = a² y` there, one instance
+  `eja_lin a a y c` of the linearised Jordan identity (`eja_U_half_zero`).
+* **The induction** (`eja_U_nonneg_family`).  Write `a = ∑ l • e l` by
+  `eja_spectral`, with `∑ e l = 1`.  Splitting off one spectral value `l₀ ≠ 1`
+  replaces it by `1`, so the number of spectral values `≠ 1` drops by one; the
+  base case is `a = 1`, `U 1 = id`.  The first factor is two-valued, the
+  second has one fewer non-unit value.  Nothing in the argument needs `0 ≤ a`,
+  so `eja_U_nonneg'` holds for *every* `a`.
+
+The Cauchy–Schwarz inequality `B (P½ g) (P½ h) ² ≤ 4 B (P₁ g) (P₁ h) B (P₀ g) (P₀ h)`
+for idempotents `g, h` is now a corollary (`eja_peirce_cauchy_schwarz`), not
+the gap: the natural intermediate statement is `U a g` for `g` *primitive*, not
+that inequality. -/
+
+/-! ### Peirce products -/
+
+theorem eja_peirce_one_mul_zero {p u v : V} (hp : p * p = p) (hu : p * u = u)
+    (hv : p * v = 0) : u * v = 0 := by
+  have h1 : p * (u * v) = u * (p * v) := eja_commute_of_peirce_one hp hu v
+  rw [hv, eja_mul_zero] at h1
+  have h2 : p * (v * u) = v * (p * u) := eja_commute_of_peirce_zero hp hv u
+  rw [hu] at h2
+  rw [eja_mul_comm v u] at h2
+  rw [h1] at h2
+  exact h2.symm
+
+theorem eja_peirce_one_mul_one {p u v : V} (hp : p * p = p) (hu : p * u = u)
+    (hv : p * v = v) : p * (u * v) = u * v := by
+  rw [eja_commute_of_peirce_one hp hu v, hv]
+
+theorem eja_peirce_zero_mul_zero {p u v : V} (hp : p * p = p) (hu : p * u = 0)
+    (hv : p * v = 0) : p * (u * v) = 0 := by
+  rw [eja_commute_of_peirce_zero hp hu v, hv, eja_mul_zero]
+
+theorem eja_peirce_one_mul_half {p u y : V} (hp : p * p = p) (hu : p * u = u)
+    (hy : p * y = (2 : ℝ)⁻¹ • y) : p * (u * y) = (2 : ℝ)⁻¹ • (u * y) := by
+  rw [eja_commute_of_peirce_one hp hu y, hy, eja_mul_smul]
+
+theorem eja_peirce_zero_mul_half {p u y : V} (hp : p * p = p) (hu : p * u = 0)
+    (hy : p * y = (2 : ℝ)⁻¹ • y) : p * (u * y) = (2 : ℝ)⁻¹ • (u * y) := by
+  rw [eja_commute_of_peirce_zero hp hu y, hy, eja_mul_smul]
+
+/-- The square of a Peirce `½`-element has no Peirce `½`-part: one instance of
+the linearised Jordan identity, at `(p, z, z; p)`. -/
+theorem eja_peirce_half_sq_fix {p z : V} (hp : p * p = p)
+    (hz : p * z = (2 : ℝ)⁻¹ • z) : p * (p * (z * z)) = p * (z * z) := by
+  have h := eja_lin p z z p
+  have e1 : z * z * p = p * (z * z) := eja_mul_comm _ _
+  have e2 : z * p = (2 : ℝ)⁻¹ • z := by rw [eja_mul_comm]; exact hz
+  simp only [e1, e2, hz, hp, eja_smul_mul, eja_mul_smul, smul_smul] at h
+  linear_combination (norm := module) h
+
+theorem eja_peirce_half_sq {p z : V} (hp : p * p = p)
+    (hz : p * z = (2 : ℝ)⁻¹ • z) : ejaPhalf p (z * z) = 0 := by
+  have h := eja_peirce_half_sq_fix hp hz
+  rw [ejaPhalf_apply, h]
+  module
+
+/-! ### The quadratic representation -/
+
+/-- The **quadratic representation** `U a = 2 L a ² - L (a * a)`. -/
+def ejaU (a : V) : V →ₗ[ℝ] V := (2 : ℝ) • (ejaLm a * ejaLm a) - ejaLm (a * a)
+
+theorem ejaU_apply (a y : V) : ejaU a y = (2 : ℝ) • (a * (a * y)) - (a * a) * y := rfl
+
+theorem ejaU_idem {p : V} (hp : p * p = p) : ejaU p = ejaPone p := by
+  rw [ejaU, ejaPone, hp]
+
+theorem ejaU_one : ejaU (1 : V) = LinearMap.id := by
+  ext y
+  simp only [ejaU_apply, eja_one_mul, LinearMap.id_apply]
+  module
+
+theorem ejaU_apply_one (a : V) : ejaU a 1 = a * a := by
+  rw [ejaU_apply, eja_mul_one, eja_mul_one]
+  module
+
+/-- `U a` is self-adjoint for the trace form. -/
+theorem ejaB_U_self_adj (a x y : V) : ejaB x (ejaU a y) = ejaB (ejaU a x) y := by
+  rw [ejaU_apply, ejaU_apply, ejaB_sub_right, ejaB_smul_right, ejaB_sub_left,
+    ejaB_smul_left, ← ejaB_assoc a x (a * y), ← ejaB_assoc a (a * x) y,
+    ← ejaB_assoc (a * a) x y]
+
+/-- Multiplication by a combination of `p` and `1`. -/
+theorem eja_smul_add_smul_one_mul (r s : ℝ) (p w : V) :
+    (r • p + s • (1 : V)) * w = r • (p * w) + s • w := by
+  rw [eja_add_mul, eja_smul_mul, eja_smul_mul, eja_one_mul]
+
+omit [Mul V] [PartialOrder V] [EuclideanJordanAlgebra V] in
+theorem eja_two_valued_eq (l m : ℝ) (q : V) :
+    l • q + m • (1 - q) = (l - m) • q + m • (1 : V) := by
+  rw [smul_sub]; module
+
+/-- **The two-valued quadratic representation**:
+`U (l q + m (1-q)) = l² P₁ + l m P½ + m² P₀`. -/
+theorem ejaU_two_valued {q : V} (hq : q * q = q) (l m : ℝ) (y : V) :
+    ejaU (l • q + m • (1 - q)) y
+      = (l * l) • ejaPone q y + (l * m) • ejaPhalf q y
+        + (m * m) • ejaPone (1 - q) y := by
+  have ha : l • q + m • (1 - q) = (l - m) • q + m • (1 : V) := eja_two_valued_eq l m q
+  have hsq : ((l - m) • q + m • (1 : V)) * ((l - m) • q + m • (1 : V))
+      = ((l - m) * (l - m) + 2 * (m * (l - m))) • q + (m * m) • (1 : V) := by
+    simp only [eja_smul_add_smul_one_mul, eja_mul_add, eja_mul_smul, eja_mul_one, hq]
+    module
+  have h0 : ejaPone (1 - q) y = y - ejaPone q y - ejaPhalf q y := by
+    have := eja_peirce_sum q y
+    linear_combination (norm := module) this
+  rw [ha, ejaU_apply, hsq, eja_smul_add_smul_one_mul, eja_smul_add_smul_one_mul,
+    eja_smul_add_smul_one_mul, h0, ejaPone_apply, ejaPhalf_apply]
+  simp only [eja_mul_add, eja_mul_smul]
+  module
+
+
+/-! ### Peirce components -/
+
+/-- `q` kills the Peirce `0`-part. -/
+theorem eja_mul_pzero {q : V} (hq : q * q = q) (y : V) : q * ejaPone (1 - q) y = 0 := by
+  have h := eja_mul_pone (1 - q) (eja_one_sub_idem hq) y
+  rw [eja_sub_mul, eja_one_mul] at h
+  linear_combination (norm := module) -h
+
+/-- **The Peirce decomposition is direct**: a sum of a `1`-, a `½`- and a
+`0`-element that vanishes has all three summands zero. -/
+theorem eja_peirce_ext {q u v w : V} (hq : q * q = q)
+    (h1 : q * u = u) (hh : q * v = (2 : ℝ)⁻¹ • v) (h0 : q * w = 0)
+    (h : u + v + w = 0) : u = 0 ∧ v = 0 ∧ w = 0 := by
+  have e1 : ejaPone q u = u := (eja_pone_eq_self_iff q hq u).mpr h1
+  have e2 : ejaPone q v = 0 := by
+    simp only [ejaPone_apply, hh, eja_mul_smul, smul_smul]; module
+  have e3 : ejaPone q w = 0 := by
+    simp only [ejaPone_apply, h0, eja_mul_zero]; module
+  have f1 : ejaPhalf q u = 0 := by
+    simp only [ejaPhalf_apply, h1]; module
+  have f2 : ejaPhalf q v = v := by
+    simp only [ejaPhalf_apply, hh, eja_mul_smul, smul_smul]; module
+  have f3 : ejaPhalf q w = 0 := by
+    simp only [ejaPhalf_apply, h0, eja_mul_zero]; module
+  have hu : u = 0 := by
+    have hc := congrArg (ejaPone q) h
+    rw [map_add, map_add, e1, e2, e3, map_zero] at hc
+    linear_combination (norm := module) hc
+  have hv : v = 0 := by
+    have hc := congrArg (ejaPhalf q) h
+    rw [map_add, map_add, f1, f2, f3, map_zero] at hc
+    linear_combination (norm := module) hc
+  refine ⟨hu, hv, ?_⟩
+  rw [hu, hv] at h
+  linear_combination (norm := module) h
+
+/-! ### Primitive idempotents and the pivot identity -/
+
+/-- An idempotent is **primitive** when its Peirce `1`-space is the line it
+spans. -/
+structure EJAPrimitive (g : V) : Prop where
+  /-- it is an idempotent -/
+  idem : g * g = g
+  /-- it is not zero -/
+  ne_zero : g ≠ 0
+  /-- its Peirce `1`-space is `ℝ g` -/
+  line : ∀ y : V, g * y = y → ∃ r : ℝ, y = r • g
+
+/-- For a primitive `g`, `U g q = P₁ g q` is a multiple of `g`, and the
+coefficient is `B q g / B g g` because `P₁ g` is trace-form self-adjoint and
+fixes `g`. -/
+theorem eja_primitive_pone {g : V} (hg : EJAPrimitive g) (q : V) :
+    ejaPone g q = (ejaB q g / ejaB g g) • g := by
+  obtain ⟨r, hr⟩ := hg.line (ejaPone g q) (eja_mul_pone g hg.idem q)
+  have hgg : ejaPone g g = g := (eja_pone_eq_self_iff g hg.idem g).mpr hg.idem
+  have hadj : ejaB (ejaPone g q) g = ejaB q g := by
+    rw [← ejaB_pone_self_adj, hgg]
+  rw [hr, ejaB_smul_left] at hadj
+  have hpos : 0 < ejaB g g := ejaB_self_pos hg.ne_zero
+  rw [hr, (eq_div_iff (ne_of_gt hpos)).mpr hadj]
+
+/-- `0 ≤ B q g` for idempotents `q, g`. -/
+theorem eja_ejaB_idem_nonneg {q g : V} (hq : q * q = q) (hg : g * g = g) :
+    0 ≤ ejaB q g := by
+  have hs : IsSumSq g := by rw [← hg]; exact IsSumSq.mul_self g
+  have := eja_isSumSq_ejaB_idem_nonneg hs q hq
+  rwa [ejaB_symm] at this
+
+/-- `B q g ≤ B g g` for idempotents `q, g`. -/
+theorem eja_ejaB_idem_le {q g : V} (hq : q * q = q) (hg : g * g = g) :
+    ejaB q g ≤ ejaB g g := by
+  have h := eja_ejaB_idem_nonneg (eja_one_sub_idem hq) hg
+  rw [ejaB_sub_left] at h
+  have h1 : ejaB (1 : V) g = ejaB g g := by
+    rw [ejaB, ejaB, eja_one_mul, hg]
+  linarith [h, h1]
+
+/-- **The five Peirce relations of the pivot.**  For an idempotent `q` and a
+primitive idempotent `g` with Peirce components `c, z, d` and
+`σ = B q g / B g g`. -/
+theorem eja_primitive_peirce_rel {q g c z d : V} (hq : q * q = q)
+    (hg : EJAPrimitive g) (hc : q * c = c) (hz : q * z = (2 : ℝ)⁻¹ • z)
+    (hd : q * d = 0) (hsum : c + z + d = g) (sg : ℝ)
+    (hsg : ejaPone g q = sg • g) :
+    c * c = sg • c ∧ d * d = (1 - sg) • d ∧ z * z = (1 - sg) • c + sg • d
+      ∧ (2 : ℝ) • (c * z) = sg • z ∧ (2 : ℝ) • (d * z) = (1 - sg) • z := by
+  have hcd : c * d = 0 := eja_peirce_one_mul_zero hq hc hd
+  have hdc : d * c = 0 := by rw [eja_mul_comm]; exact hcd
+  have hzc : z * c = c * z := eja_mul_comm z c
+  have hzd : z * d = d * z := eja_mul_comm z d
+  have hcc : q * (c * c) = c * c := eja_peirce_one_mul_one hq hc hc
+  have hdd : q * (d * d) = 0 := eja_peirce_zero_mul_zero hq hd hd
+  have hcz : q * (c * z) = (2 : ℝ)⁻¹ • (c * z) := eja_peirce_one_mul_half hq hc hz
+  have hdz : q * (d * z) = (2 : ℝ)⁻¹ • (d * z) := eja_peirce_zero_mul_half hq hd hz
+  set w1 : V := ejaPone q (z * z) with hw1def
+  set w0 : V := ejaPone (1 - q) (z * z) with hw0def
+  have hw1 : q * w1 = w1 := eja_mul_pone q hq (z * z)
+  have hw0 : q * w0 = 0 := eja_mul_pzero hq (z * z)
+  have hw : w1 + w0 = z * z := by
+    have h := eja_peirce_sum q (z * z)
+    rw [eja_peirce_half_sq hq hz] at h
+    rw [hw1def, hw0def]
+    linear_combination (norm := module) h
+  -- the product `g * q`
+  have hgq : g * q = c + (2 : ℝ)⁻¹ • z := by
+    rw [eja_mul_comm, ← hsum]
+    simp only [eja_mul_add, hc, hz, hd]
+    module
+  have hggq : g * (g * q)
+      = c * c + (2 : ℝ)⁻¹ • (c * z) + (c * z) + (2 : ℝ)⁻¹ • (z * z)
+        + (2 : ℝ)⁻¹ • (d * z) := by
+    rw [hgq]
+    nth_rewrite 1 [← hsum]
+    simp only [eja_add_mul, eja_mul_add, eja_mul_smul, hdc, hzc]
+    module
+  -- Equation (I): `P₁ g q = σ • g`
+  have hI : (2 : ℝ) • (c * c) + (3 : ℝ) • (c * z) + (z * z) + (d * z)
+      - c - (2 : ℝ)⁻¹ • z = sg • (c + z + d) := by
+    have h := hsg
+    rw [ejaPone_apply, hggq, hgq, ← hsum] at h
+    linear_combination (norm := module) h
+  -- Equation (II): `g * g = g`
+  have hII : c * c + (2 : ℝ) • (c * z) + (z * z) + (2 : ℝ) • (d * z) + d * d
+      = c + z + d := by
+    have h : (c + z + d) * (c + z + d) = c + z + d := by rw [hsum]; exact hg.idem
+    simp only [eja_add_mul, eja_mul_add, hcd, hdc, hzc, hzd] at h
+    linear_combination (norm := module) h
+  -- split (I) into Peirce components
+  obtain ⟨i1, i2, i3⟩ :=
+    eja_peirce_ext (q := q) (u := (2 : ℝ) • (c * c) + w1 - c - sg • c)
+      (v := (3 : ℝ) • (c * z) + (d * z) - (2 : ℝ)⁻¹ • z - sg • z)
+      (w := w0 - sg • d) hq
+      (by simp only [eja_mul_sub, eja_mul_add, eja_mul_smul, hcc, hw1, hc])
+      (by simp only [eja_mul_sub, eja_mul_add, eja_mul_smul, hcz, hdz, hz]; module)
+      (by simp only [eja_mul_sub, eja_mul_smul, hw0, hd]; module)
+      (by linear_combination (norm := module) hI + hw)
+  -- split (II) into Peirce components
+  obtain ⟨j1, j2, j3⟩ :=
+    eja_peirce_ext (q := q) (u := c * c + w1 - c)
+      (v := (2 : ℝ) • (c * z) + (2 : ℝ) • (d * z) - z)
+      (w := d * d + w0 - d) hq
+      (by simp only [eja_mul_sub, eja_mul_add, hcc, hw1, hc])
+      (by simp only [eja_mul_sub, eja_mul_add, eja_mul_smul, hcz, hdz, hz]; module)
+      (by simp only [eja_mul_sub, eja_mul_add, hdd, hw0, hd]; module)
+      (by linear_combination (norm := module) hII + hw)
+  refine ⟨?_, ?_, ?_, ?_, ?_⟩
+  · linear_combination (norm := module) i1 - j1
+  · linear_combination (norm := module) j3 - i3
+  · linear_combination (norm := module) j1 + j1 + i3 - i1 - hw
+  · linear_combination (norm := module) i2 - (2 : ℝ)⁻¹ • j2
+  · linear_combination (norm := module) j2 + (2 : ℝ)⁻¹ • j2 - i2
+
+
+
+/-- **A non-negative multiple of an idempotent is positive**: if `f * f = ν • f`
+with `0 ≤ ν` then `0 ≤ f`.  For `ν > 0` the element `ν⁻¹ • f` is an idempotent;
+for `ν = 0` the trace form kills `f`. -/
+theorem eja_nonneg_of_mul_self_smul {f : V} {ν : ℝ} (hν : 0 ≤ ν)
+    (h : f * f = ν • f) : 0 ≤ f := by
+  rcases eq_or_lt_of_le hν with h0 | h0
+  · have hff : f * f = 0 := by rw [h, ← h0, zero_smul]
+    have hB : ejaB f f = 0 := by rw [ejaB, hff, map_zero]
+    exact le_of_eq (eja_eq_zero_of_ejaB_self hB).symm
+  · have hne : ν ≠ 0 := ne_of_gt h0
+    have hidem : (ν⁻¹ • f) * (ν⁻¹ • f) = ν⁻¹ • f := by
+      rw [eja_smul_mul, eja_mul_smul, h, smul_smul, smul_smul]
+      congr 1
+      field_simp
+    have h1 : f = ν • (ν⁻¹ • f) := by
+      rw [smul_smul, mul_inv_cancel₀ hne, one_smul]
+    rw [h1, eja_nonneg_iff]
+    exact eja_isSumSq_smul hν ((eja_nonneg_iff _).mp (eja_idem_nonneg hidem))
+
+/-- **The pivot**: the two-valued quadratic representation of an idempotent `q`
+sends a primitive idempotent `g` into the cone.  `U g` of the three Peirce
+components of `g` is a non-negative multiple of an idempotent. -/
+theorem eja_U_two_valued_primitive {q : V} (hq : q * q = q) {g : V}
+    (hg : EJAPrimitive g) (l m : ℝ) : 0 ≤ ejaU (l • q + m • (1 - q)) g := by
+  have hbpos : 0 < ejaB g g := ejaB_self_pos hg.ne_zero
+  set sg : ℝ := ejaB q g / ejaB g g with hsgdef
+  have hsg0 : 0 ≤ sg := div_nonneg (eja_ejaB_idem_nonneg hq hg.idem) hbpos.le
+  have hsg1 : sg ≤ 1 := (div_le_one hbpos).mpr (eja_ejaB_idem_le hq hg.idem)
+  set c : V := ejaPone q g with hcdef
+  set z : V := ejaPhalf q g with hzdef
+  set d : V := ejaPone (1 - q) g with hddef
+  have hc : q * c = c := eja_mul_pone q hq g
+  have hz : q * z = (2 : ℝ)⁻¹ • z := eja_mul_phalf q hq g
+  have hd : q * d = 0 := eja_mul_pzero hq g
+  have hsum : c + z + d = g := eja_peirce_sum q g
+  obtain ⟨r1, r2, r3, r4, r5⟩ :=
+    eja_primitive_peirce_rel hq hg hc hz hd hsum sg (eja_primitive_pone hg q)
+  have hcd : c * d = 0 := eja_peirce_one_mul_zero hq hc hd
+  have r4' : c * z = (sg / 2) • z := by
+    linear_combination (norm := module) (2 : ℝ)⁻¹ • r4
+  have r5' : d * z = ((1 - sg) / 2) • z := by
+    linear_combination (norm := module) (2 : ℝ)⁻¹ • r5
+  have hzc : z * c = c * z := eja_mul_comm z c
+  have hdc : d * c = c * d := eja_mul_comm d c
+  have hzd : z * d = d * z := eja_mul_comm z d
+  have hUF : ejaU (l • q + m • (1 - q)) g
+      = (l * l) • c + (l * m) • z + (m * m) • d := ejaU_two_valued hq l m g
+  have hFF : ((l * l) • c + (l * m) • z + (m * m) • d)
+        * ((l * l) • c + (l * m) • z + (m * m) • d)
+      = (l * l * sg + m * m * (1 - sg)) • ((l * l) • c + (l * m) • z + (m * m) • d) := by
+    simp only [eja_add_mul, eja_mul_add, eja_smul_mul, eja_mul_smul, smul_smul,
+      hzc, hdc, hzd, hcd, r1, r2, r3, r4', r5']
+    module
+  rw [hUF]
+  refine eja_nonneg_of_mul_self_smul ?_ hFF
+  have h1 : 0 ≤ l * l * sg := mul_nonneg (mul_self_nonneg l) hsg0
+  have h2 : 0 ≤ m * m * (1 - sg) := mul_nonneg (mul_self_nonneg m) (by linarith)
+  linarith
+
+
+
+/-! ### Every idempotent is a sum of primitive idempotents -/
+
+/-- The Peirce `1`-space of an element, as a submodule (no idempotency needed). -/
+def ejaV1 (p : V) : Submodule ℝ V := LinearMap.ker (ejaLm p - LinearMap.id)
+
+theorem eja_mem_V1 {p y : V} : y ∈ ejaV1 p ↔ p * y = y := by
+  rw [ejaV1, LinearMap.mem_ker, LinearMap.sub_apply, ejaLm_apply, LinearMap.id_apply,
+    sub_eq_zero]
+
+/-- Two orthogonal idempotents summing to `e` cut the Peirce `1`-space of `e`
+down strictly. -/
+theorem eja_V1_lt {e p r : V} (he : e * e = e) (hp : p * p = p) (hpr : p * r = 0)
+    (hsum : e = p + r) (hpe : p ≠ e) : ejaV1 p < ejaV1 e := by
+  refine SetLike.lt_iff_le_and_exists.mpr ⟨?_, e, eja_mem_V1.mpr he, ?_⟩
+  · intro y hy
+    rw [eja_mem_V1] at hy ⊢
+    have h1 : y * r = 0 := eja_peirce_one_mul_zero hp hy hpr
+    have h2 : r * y = 0 := by rw [eja_mul_comm]; exact h1
+    rw [hsum, eja_add_mul, hy, h2, add_zero]
+  · intro hcon
+    rw [eja_mem_V1] at hcon
+    apply hpe
+    rw [← hcon, hsum, eja_mul_add, hp, hpr, add_zero]
+
+/-- **Splitting a non-primitive idempotent.**  If `e ≠ 0` is an idempotent that
+is not primitive, its Peirce `1`-space contains an element off the line `ℝ e`,
+whose spectral decomposition *inside the corner* `V₁(e)` has at least two
+terms; any one of them is an idempotent `p` with `0 ≠ p ≠ e` below `e`. -/
+theorem eja_idem_split {e : V} (he : e * e = e) (hne : e ≠ 0)
+    (hnp : ¬ EJAPrimitive e) :
+    ∃ p r : V, p * p = p ∧ r * r = r ∧ p ≠ e ∧ r ≠ e ∧ e = p + r
+      ∧ p * r = 0 ∧ r * p = 0 := by
+  classical
+  have hline : ∃ y : V, e * y = y ∧ ∀ t : ℝ, y ≠ t • e := by
+    by_contra hcon
+    refine hnp ⟨he, hne, fun y hy => ?_⟩
+    by_contra hcon2
+    exact hcon ⟨y, hy, fun t ht => hcon2 ⟨t, ht⟩⟩
+  obtain ⟨y, hy, hyne⟩ := hline
+  obtain ⟨s, f, hidem, horth, hne0, hsum1, hdec⟩ :=
+    eja_spectral (EJACorner.mk' (p := ⟨e, he⟩) y hy)
+  have hp0 : ∃ p : V, p * p = p ∧ p ≠ 0 ∧ p ≠ e ∧ e * p = p := by
+    by_cases hex : ∃ l ∈ s, ∃ k ∈ s, l ≠ k
+    · obtain ⟨l₀, hl₀, k, hk, hlk⟩ := hex
+      refine ⟨EJACorner.val (f l₀), ?_, ?_, ?_, EJACorner.val_prop (f l₀)⟩
+      · have h := congrArg EJACorner.val (hidem l₀ hl₀)
+        rwa [EJACorner.val_mul] at h
+      · intro hcon
+        exact hne0 l₀ hl₀ (EJACorner.val_injective (by rw [hcon, EJACorner.val_zero]))
+      · intro hcon
+        have h1 : f l₀ = 1 :=
+          EJACorner.val_injective (by rw [hcon, EJACorner.val_one])
+        have h2 := horth k hk l₀ hl₀ hlk.symm
+        rw [h1, eja_mul_one] at h2
+        exact hne0 k hk h2
+    · exfalso
+      have hall : ∀ l ∈ s, ∀ k ∈ s, l = k := by
+        intro l hl k hk
+        by_contra hlk
+        exact hex ⟨l, hl, k, hk, hlk⟩
+      rcases Finset.eq_empty_or_nonempty s with rfl | ⟨l₀, hl₀⟩
+      · rw [Finset.sum_empty] at hsum1
+        apply hne
+        have h := congrArg EJACorner.val hsum1
+        rw [EJACorner.val_zero, EJACorner.val_one] at h
+        exact h.symm
+      · have hs : s = {l₀} :=
+          Finset.eq_singleton_iff_unique_mem.mpr ⟨hl₀, fun k hk => hall k hk l₀ hl₀⟩
+        rw [hs, Finset.sum_singleton] at hsum1 hdec
+        rw [hsum1] at hdec
+        refine hyne l₀ ?_
+        have h := congrArg EJACorner.val hdec
+        rw [EJACorner.val_smul, EJACorner.val_one, EJACorner.val_mk'] at h
+        exact h
+  obtain ⟨p, hpi, hpne0, hpne, hep⟩ := hp0
+  have hpe : p * e = p := by rw [eja_mul_comm]; exact hep
+  refine ⟨p, e - p, hpi, ?_, hpne, ?_, by abel, ?_, ?_⟩
+  · rw [eja_sub_mul, eja_mul_sub, eja_mul_sub, he, hpe, hep, hpi]
+    abel
+  · intro hcon
+    apply hpne0
+    have : e - p = e := hcon
+    linear_combination (norm := module) -this
+  · rw [eja_mul_sub, hpe, hpi, sub_self]
+  · rw [eja_sub_mul, hep, hpi, sub_self]
+
+/-- **A linear map non-negative on primitive idempotents is non-negative on all
+idempotents**: induct on the dimension of the Peirce `1`-space, splitting a
+non-primitive idempotent by `eja_idem_split`. -/
+theorem eja_nonneg_of_primitive_idem_aux (F : V →ₗ[ℝ] V)
+    (hF : ∀ p : V, EJAPrimitive p → 0 ≤ F p) :
+    ∀ n : ℕ, ∀ e : V, e * e = e → Module.finrank ℝ (ejaV1 e) ≤ n → 0 ≤ F e := by
+  intro n
+  induction n with
+  | zero =>
+    intro e he hle
+    have hbot : ejaV1 e = ⊥ := Submodule.finrank_eq_zero.mp (Nat.le_zero.mp hle)
+    have hmem : e ∈ ejaV1 e := eja_mem_V1.mpr he
+    rw [hbot, Submodule.mem_bot] at hmem
+    rw [hmem, map_zero]
+  | succ n ih =>
+    intro e he hle
+    by_cases hne : e = 0
+    · rw [hne, map_zero]
+    by_cases hprim : EJAPrimitive e
+    · exact hF e hprim
+    obtain ⟨p, r, hpi, hri, hpne, hrne, hsum, hpr, hrp⟩ := eja_idem_split he hne hprim
+    have h1 : Module.finrank ℝ (ejaV1 p) ≤ n := by
+      have := Submodule.finrank_lt_finrank_of_lt (eja_V1_lt he hpi hpr hsum hpne)
+      omega
+    have h2 : Module.finrank ℝ (ejaV1 r) ≤ n := by
+      have := Submodule.finrank_lt_finrank_of_lt
+        (eja_V1_lt he hri hrp (by rw [hsum]; abel) hrne)
+      omega
+    have hFp : 0 ≤ F p := ih p hpi h1
+    have hFr : 0 ≤ F r := ih r hri h2
+    have := eja_add_le_add hFp hFr
+    rw [add_zero, ← map_add, ← hsum] at this
+    exact this
+
+theorem eja_nonneg_of_primitive_idem {F : V →ₗ[ℝ] V}
+    (hF : ∀ p : V, EJAPrimitive p → 0 ≤ F p) {e : V} (he : e * e = e) : 0 ≤ F e :=
+  eja_nonneg_of_primitive_idem_aux F hF _ e he le_rfl
+
+/-- A finite sum of positive elements is positive. -/
+theorem eja_sum_nonneg {ι : Type*} {s : Finset ι} {f : ι → V}
+    (h : ∀ i ∈ s, 0 ≤ f i) : 0 ≤ ∑ i ∈ s, f i := by
+  classical
+  induction s using Finset.induction_on with
+  | empty => simp
+  | insert a t ha ih =>
+    rw [Finset.sum_insert ha]
+    have h1 : 0 ≤ f a := h a (Finset.mem_insert_self a t)
+    have h2 : 0 ≤ ∑ i ∈ t, f i := ih (fun i hi => h i (Finset.mem_insert_of_mem hi))
+    have := eja_add_le_add h1 h2
+    rwa [add_zero] at this
+
+/-- **A linear map non-negative on primitive idempotents is positive.** -/
+theorem eja_nonneg_of_primitive {F : V →ₗ[ℝ] V}
+    (hF : ∀ p : V, EJAPrimitive p → 0 ≤ F p) {x : V} (hx : 0 ≤ x) : 0 ≤ F x := by
+  obtain ⟨s, e, hidem, horth, hne0, hsum, hdec⟩ := eja_spectral x
+  have hc : ∀ l ∈ s, 0 ≤ l := by
+    refine (eja_ortho_isSumSq_iff hidem horth hne0 (fun l => l)).mp ?_
+    rw [← hdec]
+    exact (eja_nonneg_iff x).mp hx
+  rw [hdec, map_sum]
+  refine eja_sum_nonneg ?_
+  intro l hl
+  rw [map_smul]
+  rw [eja_nonneg_iff]
+  exact eja_isSumSq_smul (hc l hl)
+    ((eja_nonneg_iff _).mp (eja_nonneg_of_primitive_idem hF (hidem l hl)))
+
+/-- **The two-valued quadratic representation preserves the cone.** -/
+theorem eja_U_two_valued_nonneg {q : V} (hq : q * q = q) (l m : ℝ) {x : V}
+    (hx : 0 ≤ x) : 0 ≤ ejaU (l • q + m • (1 - q)) x :=
+  eja_nonneg_of_primitive (fun _ hp => eja_U_two_valued_primitive hq hp l m) hx
+
+
+
+/-! ### The three Peirce projections on a Peirce eigenvector -/
+
+theorem eja_pone_of_one {q y : V} (hq : q * q = q) (h : q * y = y) :
+    ejaPone q y = y := (eja_pone_eq_self_iff q hq y).mpr h
+
+theorem eja_phalf_of_one {q y : V} (h : q * y = y) : ejaPhalf q y = 0 := by
+  simp only [ejaPhalf_apply, h]; module
+
+theorem eja_pzero_of_one {q y : V} (h : q * y = y) : ejaPone (1 - q) y = 0 := by
+  have h1 : (1 - q) * y = 0 := by rw [eja_sub_mul, eja_one_mul, h, sub_self]
+  simp only [ejaPone_apply, h1, eja_mul_zero]; module
+
+theorem eja_pone_of_half {q y : V} (h : q * y = (2 : ℝ)⁻¹ • y) :
+    ejaPone q y = 0 := by
+  simp only [ejaPone_apply, h, eja_mul_smul, smul_smul]; module
+
+theorem eja_phalf_of_half {q y : V} (h : q * y = (2 : ℝ)⁻¹ • y) :
+    ejaPhalf q y = y := by
+  simp only [ejaPhalf_apply, h, eja_mul_smul, smul_smul]; module
+
+theorem eja_pzero_of_half {q y : V} (h : q * y = (2 : ℝ)⁻¹ • y) :
+    ejaPone (1 - q) y = 0 := by
+  have h1 : (1 - q) * y = (2 : ℝ)⁻¹ • y := by
+    rw [eja_sub_mul, eja_one_mul, h]; module
+  simp only [ejaPone_apply, h1, eja_mul_smul, smul_smul]; module
+
+theorem eja_pone_of_zero {q y : V} (h : q * y = 0) : ejaPone q y = 0 := by
+  simp only [ejaPone_apply, h, eja_mul_zero]; module
+
+theorem eja_phalf_of_zero {q y : V} (h : q * y = 0) : ejaPhalf q y = 0 := by
+  simp only [ejaPhalf_apply, h, eja_mul_zero]; module
+
+theorem eja_pzero_of_zero {q y : V} (h : q * y = 0) : ejaPone (1 - q) y = y := by
+  have h1 : (1 - q) * y = y := by rw [eja_sub_mul, eja_one_mul, h, sub_zero]
+  simp only [ejaPone_apply, h1]; module
+
+/-! ### The two-valued `U` on the three Peirce spaces -/
+
+theorem ejaU_two_valued_one {q : V} (hq : q * q = q) (l m : ℝ) {y : V}
+    (h : q * y = y) : ejaU (l • q + m • (1 - q)) y = (l * l) • y := by
+  rw [ejaU_two_valued hq l m y, eja_pone_of_one hq h, eja_phalf_of_one h,
+    eja_pzero_of_one h]
+  module
+
+theorem ejaU_two_valued_half {q : V} (hq : q * q = q) (l m : ℝ) {y : V}
+    (h : q * y = (2 : ℝ)⁻¹ • y) : ejaU (l • q + m • (1 - q)) y = (l * m) • y := by
+  rw [ejaU_two_valued hq l m y, eja_pone_of_half h, eja_phalf_of_half h,
+    eja_pzero_of_half h]
+  module
+
+theorem ejaU_two_valued_zero {q : V} (hq : q * q = q) (l m : ℝ) {y : V}
+    (h : q * y = 0) : ejaU (l • q + m • (1 - q)) y = (m * m) • y := by
+  rw [ejaU_two_valued hq l m y, eja_pone_of_zero h, eja_phalf_of_zero h,
+    eja_pzero_of_zero h]
+  module
+
+/-! ### Splitting off a spectral value -/
+
+/-- **`U a` kills the Peirce `½`-space of `c` when `c * a = 0`**: the instance
+`eja_lin a a y c` of the linearised Jordan identity, where two of the six terms
+vanish because `a * c = 0` and one because `a * a * c = 0`. -/
+theorem eja_U_half_zero {c a y : V} (hc : c * c = c) (ha : c * a = 0)
+    (hy : c * y = (2 : ℝ)⁻¹ • y) : (2 : ℝ) • (a * (a * y)) = (a * a) * y := by
+  have hac : a * c = 0 := by rw [eja_mul_comm]; exact ha
+  have haa : a * a * c = 0 := by
+    rw [eja_mul_comm]; exact eja_peirce_zero_mul_zero hc ha ha
+  have hay : a * y * c = (2 : ℝ)⁻¹ • (a * y) := by
+    rw [eja_mul_comm]; exact eja_peirce_zero_mul_half hc ha hy
+  have hya : y * a = a * y := eja_mul_comm y a
+  have hyc : y * c = (2 : ℝ)⁻¹ • y := by rw [eja_mul_comm]; exact hy
+  have h := eja_lin a a y c
+  simp only [hac, haa, hay, hya, hyc, eja_mul_zero, eja_mul_smul,
+    ] at h
+  linear_combination (norm := module) (2 : ℝ) • h
+
+/-- The Peirce `0`-space is closed under `U a` when `c * a = 0`. -/
+theorem eja_U_mul_zero {c a y : V} (hc : c * c = c) (ha : c * a = 0)
+    (hy : c * y = 0) : c * ejaU a y = 0 := by
+  have h1 : c * (a * (a * y)) = 0 := by
+    rw [eja_commute_of_peirce_zero hc ha (a * y),
+      eja_commute_of_peirce_zero hc ha y, hy, eja_mul_zero, eja_mul_zero]
+  have haa : c * (a * a) = 0 := eja_peirce_zero_mul_zero hc ha ha
+  have h2 : c * ((a * a) * y) = 0 := by
+    rw [eja_commute_of_peirce_zero hc haa y, hy, eja_mul_zero]
+  rw [ejaU_apply, eja_mul_sub, eja_mul_smul, h1, h2]
+  module
+
+/-- `(t • c + a)` squared, for `c` idempotent orthogonal to `a`. -/
+theorem eja_split_sq {c a : V} (hc : c * c = c) (ha : c * a = 0) (t : ℝ) :
+    (t • c + a) * (t • c + a) = (t * t) • c + a * a := by
+  have hac : a * c = 0 := by rw [eja_mul_comm]; exact ha
+  simp only [eja_add_mul, eja_mul_add, eja_smul_mul, eja_mul_smul, hc, ha,
+    hac, smul_zero]
+  module
+
+/-- The splitting identity on the Peirce `1`-space of `c`. -/
+theorem eja_U_split_one {c a : V} (hc : c * c = c) (ha : c * a = 0) (l : ℝ)
+    {y : V} (hy : c * y = y) :
+    ejaU (l • c + a) y = ejaU (l • c + (1 : ℝ) • (1 - c)) (ejaU (c + a) y) := by
+  have hay : a * y = 0 := by
+    rw [eja_mul_comm]; exact eja_peirce_one_mul_zero hc hy ha
+  have haa : c * (a * a) = 0 := eja_peirce_zero_mul_zero hc ha ha
+  have haay : a * a * y = 0 := by
+    rw [eja_mul_comm]; exact eja_peirce_one_mul_zero hc hy haa
+  have key : ∀ t : ℝ, ejaU (t • c + a) y = (t * t) • y := by
+    intro t
+    rw [ejaU_apply, eja_split_sq hc ha t]
+    simp only [eja_add_mul, eja_smul_mul, eja_mul_smul, smul_smul, hy,
+      hay, haay, add_zero]
+    module
+  have hR : ejaU (c + a) y = y := by
+    have h2 := key 1
+    simp only [one_smul, one_mul] at h2
+    exact h2
+  rw [key l, hR, ejaU_two_valued_one hc l 1 hy]
+
+/-- The splitting identity on the Peirce `0`-space of `c`. -/
+theorem eja_U_split_zero {c a : V} (hc : c * c = c) (ha : c * a = 0) (l : ℝ)
+    {y : V} (hy : c * y = 0) :
+    ejaU (l • c + a) y = ejaU (l • c + (1 : ℝ) • (1 - c)) (ejaU (c + a) y) := by
+  have hcay : c * (a * y) = 0 := by
+    rw [eja_commute_of_peirce_zero hc ha y, hy, eja_mul_zero]
+  have key : ∀ t : ℝ, ejaU (t • c + a) y = ejaU a y := by
+    intro t
+    rw [ejaU_apply, ejaU_apply, eja_split_sq hc ha t]
+    simp only [eja_add_mul, eja_smul_mul, hy,
+      hcay, smul_zero, zero_add]
+  rw [key l]
+  have hR : ejaU (c + a) y = ejaU a y := by
+    have h2 := key 1
+    simp only [one_smul] at h2
+    exact h2
+  rw [hR, ejaU_two_valued_zero hc l 1 (eja_U_mul_zero hc ha hy)]
+  module
+
+/-- The splitting identity on the Peirce `½`-space of `c`: this is where
+`eja_U_half_zero` is used, twice. -/
+theorem eja_U_split_half {c a : V} (hc : c * c = c) (ha : c * a = 0) (l : ℝ)
+    {y : V} (hy : c * y = (2 : ℝ)⁻¹ • y) :
+    ejaU (l • c + a) y = ejaU (l • c + (1 : ℝ) • (1 - c)) (ejaU (c + a) y) := by
+  have hcay : c * (a * y) = (2 : ℝ)⁻¹ • (a * y) := eja_peirce_zero_mul_half hc ha hy
+  have hkey := eja_U_half_zero hc ha hy
+  have key : ∀ t : ℝ, ejaU (t • c + a) y = (2 * t) • (a * y) := by
+    intro t
+    rw [ejaU_apply, eja_split_sq hc ha t]
+    simp only [eja_add_mul, eja_mul_add, eja_smul_mul, eja_mul_smul, smul_smul, hy,
+      hcay]
+    linear_combination (norm := module) hkey
+  rw [key l]
+  have hR : ejaU (c + a) y = (2 : ℝ) • (a * y) := by
+    have h2 := key 1
+    simp only [one_smul, mul_one] at h2
+    exact h2
+  rw [hR, map_smul, ejaU_two_valued_half hc l 1 hcay]
+  module
+
+/-- **The splitting identity** `U (l c + a) = U (l c + (1-c)) ∘ U (c + a)` for
+an idempotent `c` orthogonal to `a`: both sides are linear, and they agree on
+each of the three Peirce spaces of `c`. -/
+theorem eja_U_split {c a : V} (hc : c * c = c) (ha : c * a = 0) (l : ℝ) (y : V) :
+    ejaU (l • c + a) y = ejaU (l • c + (1 : ℝ) • (1 - c)) (ejaU (c + a) y) := by
+  have hsum := eja_peirce_sum c y
+  have hA := eja_U_split_one hc ha l (eja_mul_pone c hc y)
+  have hB := eja_U_split_half hc ha l (eja_mul_phalf c hc y)
+  have hC := eja_U_split_zero hc ha l (eja_mul_pzero hc y)
+  rw [← hsum]
+  simp only [map_add]
+  rw [hA, hB, hC]
+
+/-! ### `U a` preserves the cone -/
+
+/-- The case in which every spectral value is `1`, i.e. `a = 1`. -/
+theorem eja_U_nonneg_family_one {s : Finset ℝ} {e : ℝ → V} {g : ℝ → ℝ}
+    (hone : ∑ l ∈ s, e l = 1) (hall : ∀ l ∈ s, g l = 1) {x : V} (hx : 0 ≤ x) :
+    0 ≤ ejaU (∑ l ∈ s, g l • e l) x := by
+  have hsum : (∑ l ∈ s, g l • e l) = 1 := by
+    rw [← hone]
+    exact Finset.sum_congr rfl fun l hl => by rw [hall l hl, one_smul]
+  rw [hsum, ejaU_one, LinearMap.id_apply]
+  exact hx
+
+/-- **`U a` preserves the cone**, by induction on the number of spectral values
+of `a` different from `1`. -/
+theorem eja_U_nonneg_family : ∀ n : ℕ, ∀ (s : Finset ℝ) (e : ℝ → V) (g : ℝ → ℝ),
+    (∀ l ∈ s, e l * e l = e l) →
+    (∀ l ∈ s, ∀ k ∈ s, l ≠ k → e l * e k = 0) →
+    (∑ l ∈ s, e l = 1) →
+    (s.filter fun l => g l ≠ 1).card ≤ n →
+    ∀ x : V, 0 ≤ x → 0 ≤ ejaU (∑ l ∈ s, g l • e l) x := by
+  intro n
+  induction n with
+  | zero =>
+    intro s e g _ _ hone hcard x hx
+    refine eja_U_nonneg_family_one hone (fun l hl => ?_) hx
+    by_contra hcon
+    have hmem : l ∈ s.filter fun l => g l ≠ 1 := Finset.mem_filter.mpr ⟨hl, hcon⟩
+    have := Finset.card_pos.mpr ⟨l, hmem⟩
+    omega
+  | succ n ih =>
+    intro s e g hidem horth hone hcard x hx
+    rcases Finset.eq_empty_or_nonempty (s.filter fun l => g l ≠ 1) with hemp | ⟨l₀, hl₀f⟩
+    · refine eja_U_nonneg_family_one hone (fun l hl => ?_) hx
+      by_contra hcon
+      have hmem : l ∈ s.filter fun l => g l ≠ 1 := Finset.mem_filter.mpr ⟨hl, hcon⟩
+      rw [hemp] at hmem
+      exact absurd hmem (Finset.notMem_empty l)
+    have hl₀ : l₀ ∈ s := (Finset.mem_filter.mp hl₀f).1
+    set c : V := e l₀ with hcdef
+    set a : V := ∑ k ∈ s.erase l₀, g k • e k with hadef
+    have hc : c * c = c := hidem l₀ hl₀
+    have ha : c * a = 0 := by
+      rw [hadef, eja_mul_sum]
+      refine Finset.sum_eq_zero ?_
+      intro k hk
+      have hk' : k ∈ s := Finset.mem_of_mem_erase hk
+      have hne : l₀ ≠ k := fun h => (Finset.ne_of_mem_erase hk) h.symm
+      rw [eja_mul_smul, hcdef, horth l₀ hl₀ k hk' hne, smul_zero]
+    have hdec : (∑ l ∈ s, g l • e l) = g l₀ • c + a :=
+      (Finset.add_sum_erase s (fun l => g l • e l) hl₀).symm
+    have hg'sum : (∑ l ∈ s, (Function.update g l₀ 1) l • e l) = c + a := by
+      rw [← Finset.add_sum_erase s (fun l => (Function.update g l₀ 1) l • e l) hl₀]
+      congr 1
+      · rw [Function.update_self, one_smul]
+      · exact Finset.sum_congr rfl fun k hk => by
+          rw [Function.update_of_ne (Finset.ne_of_mem_erase hk)]
+    have hcard' : (s.filter fun l => (Function.update g l₀ 1) l ≠ 1).card ≤ n := by
+      have hsub : (s.filter fun l => (Function.update g l₀ 1) l ≠ 1)
+          = (s.filter fun l => g l ≠ 1).erase l₀ := by
+        ext k
+        simp only [Finset.mem_filter, Finset.mem_erase]
+        constructor
+        · rintro ⟨hks, hgk⟩
+          by_cases hkl : k = l₀
+          · rw [hkl, Function.update_self] at hgk; exact absurd rfl hgk
+          · rw [Function.update_of_ne hkl] at hgk; exact ⟨hkl, hks, hgk⟩
+        · rintro ⟨hkl, hks, hgk⟩
+          rw [Function.update_of_ne hkl]; exact ⟨hks, hgk⟩
+      have hpos : 0 < (s.filter fun l => g l ≠ 1).card := Finset.card_pos.mpr ⟨l₀, hl₀f⟩
+      rw [hsub, Finset.card_erase_of_mem hl₀f]
+      omega
+    have hIH := ih s e (Function.update g l₀ 1) hidem horth hone hcard' x hx
+    rw [hg'sum] at hIH
+    rw [hdec, eja_U_split hc ha (g l₀) x]
+    exact eja_U_two_valued_nonneg hc (g l₀) 1 hIH
+
+/-- **The quadratic representation of any element preserves the cone.** -/
+theorem eja_U_nonneg' (a : V) {x : V} (hx : 0 ≤ x) : 0 ≤ ejaU a x := by
+  classical
+  obtain ⟨s, e, hidem, horth, _, hone, hdec⟩ := eja_spectral a
+  rw [hdec]
+  exact eja_U_nonneg_family _ s e (fun l => l) hidem horth hone le_rfl x hx
+
+/-- **`U a` is order-positive for `a ≥ 0`**: for `0 ≤ a` and `0 ≤ x`,
+`0 ≤ U a x`. -/
+theorem eja_U_nonneg {a x : V} (ha : 0 ≤ a) (hx : 0 ≤ x) : 0 ≤ ejaU a x := by
+  obtain ⟨b, rfl⟩ := (eja_nonneg_iff_exists_sq a).mp ha
+  exact eja_U_nonneg' _ hx
+
+/-- `U a` is monotone. -/
+theorem eja_U_mono (a : V) {x y : V} (h : x ≤ y) : ejaU a x ≤ ejaU a y := by
+  rw [← eja_sub_nonneg] at h ⊢
+  rw [← map_sub]
+  exact eja_U_nonneg' a h
+
+/-- **The Peirce Cauchy–Schwarz inequality**, a corollary: for idempotents `q`,
+`g` and `h`,
+`B (P½ g) (P½ h) ² ≤ 4 · B (P₁ g) (P₁ h) · B (P₀ g) (P₀ h)`.
+The quadratic `t ↦ B (U (q + t (1-q)) g) h` is non-negative for every real `t`,
+so its discriminant is non-positive. -/
+theorem eja_peirce_cauchy_schwarz {q g h : V} (hq : q * q = q) (hg : g * g = g)
+    (hh : h * h = h) :
+    ejaB (ejaPhalf q g) (ejaPhalf q h) ^ 2
+      ≤ 4 * ejaB (ejaPone q g) (ejaPone q h)
+          * ejaB (ejaPone (1 - q) g) (ejaPone (1 - q) h) := by
+  have hq' : (1 - q) * (1 - q) = 1 - q := eja_one_sub_idem hq
+  have e1 : ejaB (ejaPone q g) (ejaPone q h) = ejaB (ejaPone q g) h := by
+    rw [ejaB_pone_self_adj q (ejaPone q g) h, ejaPone_idem_apply q hq g]
+  have e2 : ejaB (ejaPhalf q g) (ejaPhalf q h) = ejaB (ejaPhalf q g) h := by
+    rw [ejaB_phalf_self_adj q (ejaPhalf q g) h, ejaPhalf_idem_apply q hq g]
+  have e3 : ejaB (ejaPone (1 - q) g) (ejaPone (1 - q) h)
+      = ejaB (ejaPone (1 - q) g) h := by
+    rw [ejaB_pone_self_adj (1 - q) (ejaPone (1 - q) g) h,
+      ejaPone_idem_apply (1 - q) hq' g]
+  have hquad : ∀ t : ℝ, 0 ≤ ejaB (ejaPone (1 - q) g) h * (t * t)
+      + ejaB (ejaPhalf q g) h * t + ejaB (ejaPone q g) h := by
+    intro t
+    have hU : 0 ≤ ejaU ((1 : ℝ) • q + t • (1 - q)) g :=
+      eja_U_two_valued_nonneg hq 1 t (eja_idem_nonneg hg)
+    have hB : 0 ≤ ejaB (ejaU ((1 : ℝ) • q + t • (1 - q)) g) h :=
+      eja_isSumSq_ejaB_idem_nonneg ((eja_nonneg_iff _).mp hU) h hh
+    rw [ejaU_two_valued hq 1 t g, ejaB_add_left, ejaB_add_left, ejaB_smul_left,
+      ejaB_smul_left, ejaB_smul_left] at hB
+    have hr : ejaB (ejaPone (1 - q) g) h * (t * t) + ejaB (ejaPhalf q g) h * t
+        + ejaB (ejaPone q g) h
+        = 1 * 1 * ejaB (ejaPone q g) h + 1 * t * ejaB (ejaPhalf q g) h
+          + t * t * ejaB (ejaPone (1 - q) g) h := by ring
+    rw [hr]
+    exact hB
+  have hd := discrim_le_zero hquad
+  rw [discrim] at hd
+  rw [e1, e2, e3]
+  nlinarith [hd]
 
 end Peirce
 
@@ -4962,43 +5791,38 @@ around it is already available here: `⌈a⌉` is `eja_exists_supp`, the corner 
 `V₁(⌈a⌉)` is `eja_idem_mul_nonneg_eq_zero` together with
 `eja_le_one_sub_of_mul_eq_zero`.
 
-*What is missing.*  `U_b x = 2 b (b x) - b² x` must map the cone into the cone
-for `b ≥ 0` — both to make the filter a morphism at all, and to make the
-factorisation `U_{b⁻¹} ∘ χ` of the universal property one.  This file proves
-that `U_p` is positive for an **idempotent** `p` (`eja_pone_nonneg`, via a
-spectral decomposition *inside* the corner `V₁(p)`, whose coefficients are
-`B x g / τ g ≥ 0` because `P₁ p` is trace-form self-adjoint and fixes the
-spectral idempotents `g` of the corner).  That argument does not extend to a
-general `b ≥ 0`: it needs `U_b g ≥ 0` for the corner's idempotents `g`, which
-is the statement itself.
+*What was missing, and is now here.*  `U_b x = 2 b (b x) - b² x` must map the
+cone into the cone for `b ≥ 0` — both to make the filter a morphism at all, and
+to make the factorisation `U_{b⁻¹} ∘ χ` of the universal property one.  That is
+proved above as `eja_U_nonneg` (in fact `eja_U_nonneg'`, for *every* `b`), with
+`ejaU` the quadratic representation; see the block comment where that section
+starts for the argument.  It costs about 800 lines and it needs neither the
+**fundamental formula** `U_{U_a b} = U_a U_b U_a` (whose usual proof is
+Macdonald's theorem, or several pages of operator identities) nor the
+topological argument that the open cone is a connected component of the
+invertible elements — no norm, no continuity of the spectrum, no invertibility
+of `U_a x`.  Mathlib is still only `IsCommJordan` and its linearisation; the
+whole of the Jordan theory used is in this file.
 
-*The precise residue.*  For `b ≥ 0` invertible in `V₁(⌈b⌉)`, with spectral
-decomposition `b = Σ λᵢ eᵢ`, one has `b = ∏ᵢ (1 + (λᵢ - 1) eᵢ)` in the
-associative algebra generated by the frame `{eᵢ}`, and there `U` is
-multiplicative, `U_b U_c = U_{b c}` — so the whole of `U`-positivity reduces to
-the **two-valued** case
+*Where the earlier costing of this residue went wrong.*  It reduced
+`U`-positivity to the **two-valued** case `t² P₁ q + t P½ q + P₀ q` (correctly:
+that is `eja_U_split` plus the induction `eja_U_nonneg_family`, though by a
+Peirce computation rather than by multiplicativity of `U` on the associative
+algebra of a frame, which is never needed), and then reduced *that*, by
+self-duality, to the Cauchy–Schwarz inequality
+`B (P½ g) (P½ h) ² ≤ 4 · B (P₁ g) (P₁ h) · B (P₀ g) (P₀ h)` for idempotents
+`g, h`, calling that inequality the whole gap.  The last step is the wrong
+reading: pairing `U_a g` with an idempotent `h` is symmetric in `g` and `h`, and
+that symmetry is exactly what has to be broken.  Break it by taking `g`
+**primitive** and *computing* `U_a g`, which is then a non-negative multiple of
+an idempotent; the Cauchy–Schwarz inequality drops out afterwards as
+`eja_peirce_cauchy_schwarz`.
 
->  `t² P₁ q + t P½ q + P₀ q` preserves the cone, for an idempotent `q` and
->  `t > 0`,
-
-equivalently, by self-duality and `eja_pone_nonneg`, to the Cauchy–Schwarz
-inequality `B (P½ g) (P½ h) ² ≤ 4 · B (P₁ g) (P₁ h) · B (P₀ g) (P₀ h)` for
-idempotents `g, h`.  The classical proofs of that go through data this tree has
-not got: either the **fundamental formula** `U_{U_a b} = U_a U_b U_a` (whose
-usual proof is Macdonald's theorem, or several pages of operator identities),
-or the topological argument that the open cone is a connected component of the
-invertible elements — which needs a norm, the continuity of the spectrum and
-the invertibility of `U_a x`, none of which is in this file and none of which is
-in Mathlib for Jordan algebras.  Mathlib has `IsCommJordan` and its
-linearisation and nothing above them.
-
-Costed from here: the multiplicativity reduction (the joint Peirce
-decomposition of a frame: the `L eᵢ` commute, each satisfies the Peirce cubic,
-and they sum to the identity) is about 250 lines; the two-valued case is the
-open problem; the quotient itself, once `U` is positive, is about 250 more —
-the filter, its corestriction to `V₁(⌈a⌉)`, and the universal property, whose
-ingredients (`eja_exists_supp`, `EJACorner`, `eja_idem_mul_nonneg_eq_zero`) are
-all above.
+*What is still missing.*  The quotient itself: the filter, its corestriction to
+`V₁(⌈a⌉)`, and the universal property, whose ingredients (`eja_exists_supp`,
+`EJACorner`, `eja_idem_mul_nonneg_eq_zero`, `eja_le_one_sub_of_mul_eq_zero`, and
+now `ejaU` with `eja_U_nonneg`, `eja_U_mono` and `ejaU_apply_one`) are all
+above.  About 250 lines, after which `DiamondEffectus EJAPsuᵒᵖ` can be stated.
 
 Nothing in the total-form part of this file depends on any of that: an effectus
 in *total* form needs only the order unit space structure, which is what
