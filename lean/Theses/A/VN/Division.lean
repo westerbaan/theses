@@ -3759,186 +3759,15 @@ presents it as a full matrix algebra (840.60).  `fd_pi_matrix` runs the
 splitting as an induction on the dimension and assembles the four steps into
 the statement of `fdcstar`.
 
-Everything in this section is `private` except the three declarations about
-suprema in a finite-dimensional C*-algebra, which are about no point of
-either thesis and belong upstream -- see the note on
-`vonNeumannAlgebra_of_finiteDimensional`. -/
-
-section FDVNASups
-
-variable [FiniteDimensional ℂ A]
-
-/-- **84II** (`fdcstar`, vn.tex:5784), the proof's step 840.30 together with
-the first half of 840.40 (`suprema-in-fdvna`, vn.tex:5860): a **non-empty
-bounded directed set of self-adjoint elements of a finite-dimensional
-C*-algebra has a supremum, and that supremum lies in the norm closure of the
-set** -- "in this finite-dimensional setting `⋁D` is apparently the norm
-limit of `(d)_{d∈D}`".
-
-The print gets the norm limit out of the norm compactness of the unit ball,
-which it proves by showing every linear functional on `𝒜` bounded (the states
-separate, so `dim 𝒜* = dim 𝒜`, so `‖·‖` is equivalent to the coordinate norm
-of a basis).  Here that step is Mathlib's: a finite-dimensional normed space
-over `ℂ` is a `ProperSpace`, which *is* the equivalence-of-norms theorem, so
-a norm-bounded closed set is compact.  The print's "we may assume `‖d‖ ≤ 1`"
-is not available as stated -- a set directed upwards and bounded above need
-not be norm bounded -- so the argument is run on the cofinal tail
-`D' = {d ∈ D : d₀ ≤ d}` of a fixed `d₀ ∈ D`, which has the same upper bounds
-as `D` and is norm bounded by `‖d₀‖ + ‖u − d₀‖`.  Instead of extracting a
-convergent cofinal subnet, the limit is produced as a point of
-`⋂_{d ∈ D'} (closure D' ∩ [d, ∞))`, a downward directed family of non-empty
-compact sets; that it is the supremum is the print's own two lines, read off
-the closedness of `[d, ∞)` and of `(−∞, b]`. -/
-theorem exists_isLUB_mem_closure (D : Set (selfAdjoint A)) (hne : D.Nonempty)
-    (hdir : DirectedOn (· ≤ ·) D) (hbdd : BddAbove D) :
-    ∃ s : selfAdjoint A, IsLUB D s ∧
-      (s : A) ∈ closure ((fun d : selfAdjoint A => (d : A)) '' D) := by
-  classical
-  obtain ⟨d₀, hd₀⟩ := hne
-  obtain ⟨u, hu⟩ := hbdd
-  set D' : Set (selfAdjoint A) := {d | d ∈ D ∧ d₀ ≤ d} with hD'
-  have hd₀' : d₀ ∈ D' := ⟨hd₀, le_rfl⟩
-  have hD'sub : D' ⊆ D := fun d hd => hd.1
-  have hcof : ∀ d ∈ D, ∃ d' ∈ D', d ≤ d' := by
-    intro d hd
-    obtain ⟨e, he, hde, hd₀e⟩ := hdir d hd d₀ hd₀
-    exact ⟨e, ⟨he, hd₀e⟩, hde⟩
-  have hdir' : DirectedOn (· ≤ ·) D' := by
-    rintro x ⟨hx, hx0⟩ y ⟨hy, hy0⟩
-    obtain ⟨z, hz, hxz, hyz⟩ := hdir x hx y hy
-    exact ⟨z, ⟨hz, hx0.trans hxz⟩, hxz, hyz⟩
-  -- `D'` and `D` have the same upper bounds
-  have hub : ∀ v : selfAdjoint A, v ∈ upperBounds D' → v ∈ upperBounds D := by
-    intro v hv d hd
-    obtain ⟨d', hd', hle⟩ := hcof d hd
-    exact hle.trans (hv hd')
-  -- `D'` is norm bounded
-  set S : Set A := (fun d : selfAdjoint A => (d : A)) '' D' with hS
-  have hSbdd : Bornology.IsBounded S := by
-    rw [Metric.isBounded_iff_subset_closedBall 0]
-    refine ⟨‖(d₀ : A)‖ + ‖(u : A) - (d₀ : A)‖, ?_⟩
-    rintro _ ⟨d, ⟨hdD, hd0⟩, rfl⟩
-    rw [Metric.mem_closedBall, dist_zero_right]
-    have h1 : (0 : A) ≤ (d : A) - (d₀ : A) := sub_nonneg.mpr hd0
-    have h2 : (d : A) - (d₀ : A) ≤ (u : A) - (d₀ : A) := by
-      have := hu hdD
-      exact sub_le_sub_right this _
-    have h3 := CStarAlgebra.norm_le_norm_of_nonneg_of_le h1 h2
-    calc ‖(d : A)‖ = ‖((d : A) - (d₀ : A)) + (d₀ : A)‖ := by rw [sub_add_cancel]
-      _ ≤ ‖(d : A) - (d₀ : A)‖ + ‖(d₀ : A)‖ := norm_add_le _ _
-      _ ≤ ‖(u : A) - (d₀ : A)‖ + ‖(d₀ : A)‖ := by linarith
-      _ = ‖(d₀ : A)‖ + ‖(u : A) - (d₀ : A)‖ := by ring
-  have hK : IsCompact (closure S) := hSbdd.isCompact_closure
-  -- the tails
-  set t : D' → Set A := fun d => closure S ∩ {x : A | ((d : selfAdjoint A) : A) ≤ x} with ht
-  have htcl : ∀ d : D', IsClosed (t d) :=
-    fun d => isClosed_closure.inter (isClosed_le continuous_const continuous_id)
-  have htc : ∀ d : D', IsCompact (t d) := fun d => hK.of_isClosed_subset (htcl d) Set.inter_subset_left
-  have htn : ∀ d : D', (t d).Nonempty := by
-    rintro ⟨d, hd⟩
-    exact ⟨(d : A), subset_closure ⟨d, hd, rfl⟩, le_rfl⟩
-  have htd : Directed (· ⊇ ·) t := by
-    rintro ⟨x, hx⟩ ⟨y, hy⟩
-    obtain ⟨z, hz, hxz, hyz⟩ := hdir' x hx y hy
-    refine ⟨⟨z, hz⟩, ?_, ?_⟩
-    · exact Set.inter_subset_inter_right _ fun w hw => le_trans hxz hw
-    · exact Set.inter_subset_inter_right _ fun w hw => le_trans hyz hw
-  have hne' : Nonempty D' := ⟨⟨d₀, hd₀'⟩⟩
-  obtain ⟨a, ha⟩ := IsCompact.nonempty_iInter_of_directed_nonempty_isCompact_isClosed t htd htn htc htcl
-  rw [Set.mem_iInter] at ha
-  have haK : a ∈ closure S := (ha ⟨d₀, hd₀'⟩).1
-  -- `a` is self-adjoint
-  have hasa : IsSelfAdjoint a := by
-    have hcl : IsClosed {x : A | IsSelfAdjoint x} :=
-      isClosed_eq (continuous_star) continuous_id
-    refine hcl.closure_subset (closure_mono ?_ haK)
-    rintro _ ⟨d, hd, rfl⟩
-    exact d.2
-  refine ⟨⟨a, hasa⟩, ⟨?_, ?_⟩, ?_⟩
-  · refine hub ⟨a, hasa⟩ ?_
-    rintro d hd
-    exact (ha ⟨d, hd⟩).2
-  · intro b hb
-    have hcl : IsClosed {x : A | x ≤ (b : A)} := isClosed_le continuous_id continuous_const
-    have : a ∈ {x : A | x ≤ (b : A)} := by
-      refine hcl.closure_subset (closure_mono ?_ haK)
-      rintro _ ⟨d, hd, rfl⟩
-      exact hb (hD'sub hd)
-    exact this
-  · exact closure_mono (Set.image_mono hD'sub) haK
-
-/-- **84II** (`fdcstar`, vn.tex:5784), the proof's step 840.40
-(`suprema-in-fdvna`, vn.tex:5860), second half: **every positive functional
-on a finite-dimensional C*-algebra is normal**.  This is the print's "since
-`⋁D` is apparently the norm limit of `(d)_{d∈D}`, any positive functional `f`
-will map `⋁D` to the limit of `(f(d))_{d∈D}`": `f` is continuous because it
-is linear on a finite-dimensional space, and `⋁D ∈ closure D` by
-`exists_isLUB_mem_closure`, so `f(⋁D)` lies in the closure of `f''D` and
-hence below every upper bound of it. -/
-theorem preservesDirSups_of_finiteDimensional (f : A →ₚ[ℂ] ℂ) :
-    PreservesDirSups ⇑f := by
-  intro D s hne hdir hlub
-  constructor
-  · rintro _ ⟨d, hd, rfl⟩
-    exact f.monotone' (hlub.1 hd)
-  · intro t ht
-    obtain ⟨s', hs', hmem⟩ := exists_isLUB_mem_closure D hne hdir ⟨s, hlub.1⟩
-    obtain rfl : s = s' := hlub.unique hs'
-    have hcont : Continuous (⇑f : A → ℂ) :=
-      (f.toLinearMap).continuous_of_finiteDimensional
-    have h1 : (⇑f) ((s : A)) ∈ closure ((⇑f) '' ((fun d : selfAdjoint A => (d : A)) '' D)) :=
-      image_closure_subset_closure_image hcont ⟨(s : A), hmem, rfl⟩
-    have h2 : IsClosed {z : ℂ | z ≤ t} := isClosed_le continuous_id continuous_const
-    refine h2.closure_subset (closure_mono ?_ h1)
-    rintro _ ⟨_, ⟨d, hd, rfl⟩, rfl⟩
-    exact ht ⟨d, hd, rfl⟩
-
-/-- **84II** (`fdcstar`, vn.tex:5784), the proof's step 840.40
-(`suprema-in-fdvna`, vn.tex:5860): **a finite-dimensional C*-algebra is a von
-Neumann algebra**.  Suprema of bounded directed sets are
-`exists_isLUB_mem_closure`; np-faithfulness is the print's "every positive
-functional is normal, and the positive functionals form a separating
-collection" -- `preservesDirSups_of_finiteDimensional` turns the state of
-**22VIII**.1 `states_order_separating_1` with `|ω(a)| = ‖a‖` into an
-np-functional.
-
-*This declaration does not belong in this file.*  It is about an arbitrary
-finite-dimensional C*-algebra and is a fact about the Kadison definition of
-`Theses/Common.lean`, so its home is upstream, next to the rest of the von
-Neumann machinery.  Since 2026-09-05 it is there:
-`A/VN/Projections.lean`'s `namespace FDVNA` carries public copies of this
-declaration and of the two above it.  They cannot be used from here yet --
-`scripts/lean1.sh` writes no oleans, so a declaration added upstream in that
-session is invisible from this file -- so these three stay until the phase-2
-refresh deletes them and switches the one call site
-(`FDVNA.vonNeumannAlgebra_of_finiteDimensional`), exactly as the B15
-auxiliaries of `B/Eff/VNExamples.lean` were. -/
-theorem vonNeumannAlgebra_of_finiteDimensional : VonNeumannAlgebra A where
-  isLUB_of_bddAbove_directed := by
-    intro D hne hdir hbdd
-    obtain ⟨s, hs, -⟩ := exists_isLUB_mem_closure D hne hdir hbdd
-    exact ⟨s, hs⟩
-  np_faithful := by
-    intro a ha hall
-    rcases subsingleton_or_nontrivial A with h | h
-    · exact Subsingleton.elim _ _
-    · obtain ⟨ω, hω, hnorm⟩ := states_order_separating_1 a (IsSelfAdjoint.of_nonneg ha)
-      have hmono : Monotone ⇑ω := by
-        intro x y hxy
-        have := hω.1 (y - x) (sub_nonneg.mpr hxy)
-        rw [map_sub] at this
-        exact sub_nonneg.mp this
-      set ν : Theses.NPFunctional A :=
-        { toPositiveLinearMap := { toLinearMap := ω, monotone' := hmono }
-          preservesDirSups' := preservesDirSups_of_finiteDimensional _ } with hν
-      have h0 : ν a = 0 := hall ν
-      have h1 : ω a = 0 := h0
-      rw [h1] at hnorm
-      simpa using hnorm.symm
+Only the last two steps are formalized here, and everything in this section
+is `private`.  840.30 and 840.40 are about an arbitrary finite-dimensional
+C*-algebra and about the Kadison definition of `Theses/Common.lean` rather
+than about parsec 840, so they live upstream, in `A/VN/Projections.lean`'s
+`namespace FDVNA`: `FDVNA.exists_isLUB_mem_closure`,
+`FDVNA.preservesDirSups_of_finiteDimensional` and
+`FDVNA.vonNeumannAlgebra_of_finiteDimensional`. -/
 
 /-! ### 840.50/840.60: minimal projections exist in finite dimension -/
-
-end FDVNASups
 
 /-- The corner `e𝒜e` of a projection, as a `ℂ`-submodule of `𝒜`.  Auxiliary
 for **84II**, not a transcription: it carries the dimension count behind the
@@ -4646,7 +4475,7 @@ private theorem fd_pi_matrix : ∀ (n : ℕ) (A : Type u) [CStarAlgebra A] [Part
       intro A _ _ _ _ hrank
       rcases subsingleton_or_nontrivial A with hsub | hnt
       · exact ih A (by rw [Module.finrank_zero_iff.mpr hsub]; omega)
-      · have : VonNeumannAlgebra A := vonNeumannAlgebra_of_finiteDimensional
+      · have : VonNeumannAlgebra A := FDVNA.vonNeumannAlgebra_of_finiteDimensional
         by_cases hz : ∃ z : A, IsStarProjection z ∧ IsCentral A z ∧ z ≠ 0 ∧ z ≠ 1
         · obtain ⟨z, hzp, hzc, hz0, hz1⟩ := hz
           let c : CentralProj A := ⟨z, hzp, hzc⟩
@@ -4712,9 +4541,9 @@ THE THESIS'S OWN PROOF (vn.tex:5798-6027), step for step; the steps are the
 section "840.30-840.60" above.  The unit ball of `𝒜` is norm compact, so
 every bounded directed set of self-adjoint elements has a supremum and that
 supremum is the norm limit of the set (840.30, first half of 840.40,
-`exists_isLUB_mem_closure`); hence every positive functional is normal, and
-since the positive functionals separate, `𝒜` is a von Neumann algebra (840.40
-`suprema-in-fdvna`, `vonNeumannAlgebra_of_finiteDimensional`).  Pairwise
+`FDVNA.exists_isLUB_mem_closure`); hence every positive functional is normal,
+and since the positive functionals separate, `𝒜` is a von Neumann algebra (840.40
+`suprema-in-fdvna`, `FDVNA.vonNeumannAlgebra_of_finiteDimensional`).  Pairwise
 orthogonal non-zero projections are linearly independent, so `1` is a finite
 sum of minimal central projections and `𝒜` splits along them (840.50,
 `exists_isMinimalProjection_le` and `centralSplit`).  In a factor a minimal

@@ -9236,9 +9236,8 @@ collection" -- `preservesDirSups_of_finiteDimensional` turns the state of
 **22VIII**.1 `states_order_separating_1` with `|ω(a)| = ‖a‖` into an
 np-functional.
 
-This is the upstream home of the step; `A/VN/Division.lean` carries a copy
-under the unqualified name until the phase-2 refresh described in the section
-header above. -/
+This is the home of the step; `A/VN/Division.lean` used to carry a copy
+under the unqualified name until 2026-09-05, when it was retired. -/
 theorem vonNeumannAlgebra_of_finiteDimensional : VonNeumannAlgebra A where
   isLUB_of_bddAbove_directed := by
     intro D hne hdir hbdd
