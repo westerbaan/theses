@@ -5180,9 +5180,10 @@ effectus-purity to the purity of `B/Dils`.  The first sentence of 201III
 effectus-purity as far as `Theses.A.Proc.IsPure`; the remaining leg is
 `Theses.B.Dils.isPureMap_of_procIsPure` and its converse
 `su_procIsPure_of_isPureMap` below.  The merge of the two purity predicates
-is `B/Dils`' `section ProcPure`; the `[VonNeumannAlgebra C]` residue it
-leaves is not needed here once the factorisation is merely *assumed to
-exist*. -/
+is `B/Dils`' `section ProcPure`, and since 2026-09-05 that section removes
+the `[VonNeumannAlgebra C]` residue itself, in
+`Theses.B.Dils.procIsPure_of_isPureMap`; `su_procIsPure_of_isPureMap` is now
+one line citing it. -/
 
 omit [EffectusPartialForm (WStarCPSU.{u}ᵒᵖ)] [DiamondEffectus (WStarCPSU.{u}ᵒᵖ)] in
 /-- **168IV ⟹ 170I at von Neumann objects, with no hypothesis on the
@@ -5190,50 +5191,27 @@ intermediate algebra**: a `Theses.B.Dils.IsPureMap` between von Neumann
 algebras is pure in the inductive sense of **170I**,
 `Theses.A.Proc.IsPure`.
 
-`Theses.B.Dils.procIsPure_of_factorisation` proves this of a *given*
-factorisation `φ = c ∘ h`, and needs `[VonNeumannAlgebra C]` on the algebra
-in the middle — 170I's `comp` constructor demands it and `IsPureMap`, whose
-intermediate algebra is a bare C\*-algebra, does not supply it.  The
-hypothesis is dispensable once the factorisation is only *assumed to exist*:
-a filter `c` for `b` and the standard filter `c_b : ⌈b⌉B⌈b⌉ → B` of **169X**
-mediate each other, and filters are injective (**169XII**
-`dils_filters_injective`), so the two mediating maps `w`, `w'` are mutually
-inverse; `w' ∘ h` is then again a corner for the same effect
-(`isCornerFor_of_ncpIso`), and `φ = c_b ∘ (w' ∘ h)` is a factorisation whose
-middle is `⌈b⌉B⌈b⌉` — a von Neumann algebra.
+170I.11 (dils.tex:6197) is a Remark whose whole proof is the
+cross-reference *"see pure-fundamental"*, and this declaration is the same
+shape: one line citing `Theses.B.Dils.procIsPure_of_isPureMap`, which since
+2026-09-05 carries the argument where it belongs, beside
+`procIsPure_of_factorisation`.  That argument is: the `[VonNeumannAlgebra C]`
+which `procIsPure_of_factorisation` needs on the algebra in the middle —
+170I's `comp` constructor demands it and `IsPureMap`, whose intermediate
+algebra is a bare C\*-algebra, does not supply it — is dispensable once the
+factorisation is only *assumed to exist*, because a filter `c` for `b` and
+the standard filter `c_b : ⌈b⌉B⌈b⌉ → B` of **169X** mediate each other.
 
 With `Theses.B.Dils.isPureMap_of_procIsPure` this makes the two chapters'
-notions of purity **equivalent** at von Neumann objects.  The statement is a
-`B/Dils` one and belongs beside `procIsPure_of_factorisation`; it is here
-because this file is the leaf in which 201III lives. -/
+notions of purity **equivalent** at von Neumann objects.  The statement is
+kept here, at the leaf in which 201III lives, because that is where it is
+used. -/
 theorem su_procIsPure_of_isPureMap {A B : Type u} [CStarAlgebra A]
     [PartialOrder A] [StarOrderedRing A] [CStarAlgebra B] [PartialOrder B]
     [StarOrderedRing B] [Theses.VonNeumannAlgebra A] [Theses.VonNeumannAlgebra B]
     {φ : Theses.NCPMap A B} (hφ : Theses.B.Dils.IsPureMap φ) :
-    Theses.A.Proc.IsPure φ := by
-  obtain ⟨C, _, _, _, h, c, hcorner, hfilter, hfac⟩ := hφ
-  obtain ⟨b, hb⟩ := hfilter
-  obtain ⟨a, hCF⟩ := hcorner
-  obtain ⟨cst, -, hcst⟩ := Theses.B.Dils.dils_stand_filter b hb.1
-  letI _vn := Theses.B.Dils.cornerSet_vonNeumannAlgebra B (Theses.A.VN.ceil b)
-  obtain ⟨w, hw, -⟩ :=
-    hb.2.2 _ inferInstance inferInstance inferInstance cst hcst.2.1
-  obtain ⟨w', hw', -⟩ :=
-    hcst.2.2 C inferInstance inferInstance inferInstance c hb.2.1
-  have hcinj : Function.Injective ⇑c :=
-    Theses.B.Dils.dils_filters_injective c ⟨b, hb⟩
-  have hcstinj : Function.Injective ⇑cst :=
-    Theses.B.Dils.dils_filters_injective cst ⟨b, hcst⟩
-  have hww' : ∀ x : C, w.toNCPMap (w'.toNCPMap x) = x := fun x =>
-    hcinj (by rw [hw (w'.toNCPMap x), hw' x])
-  have hw'w : ∀ y, w'.toNCPMap (w.toNCPMap y) = y := fun y =>
-    hcstinj (by rw [hw' (w.toNCPMap y), hw y])
-  obtain ⟨π, hπ⟩ := Theses.A.Proc.exists_ncpComp w'.toNCPMap h
-  have hcorner' : Theses.B.Dils.IsCornerFor π a :=
-    Theses.B.Dils.isCornerFor_of_ncpIso hCF w.toNCPMap w'.toNCPMap
-      (fun x => by rw [hπ, hww']) hw'w
-  exact Theses.B.Dils.procIsPure_of_factorisation ⟨a, hcorner'⟩ ⟨b, hcst⟩
-    fun x => by rw [hπ, hw', hfac]
+    Theses.A.Proc.IsPure φ :=
+  Theses.B.Dils.procIsPure_of_isPureMap hφ
 
 section BofH
 
