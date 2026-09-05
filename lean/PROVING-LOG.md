@@ -31415,3 +31415,16 @@ zero warnings.  The quotient and the ⋄-effectus assembly are the next round.
 Also this session: the twenty `left-forced`/`left-by-choice` routes revisited
 (four repaired, three `none`, three recorded grounds corrected), 161II
 aligned to the print's setting, the B15 auxiliaries moved upstream.
+
+### Session 110, closing — 206III complete
+
+`EJAᵒᵖ` is a ⋄-effectus in Lean (`diamond_effectus_eja`, `JordanAlgebras.lean`,
++383 lines, zero warnings).  The quotient at an effect `p` is the filter
+`U_{√(pᗮ)}` corestricted to the support corner; its universal property needs
+`U_b` inverted *inside* the corner, which is a composition law for one
+spectral family, `U(∑ g_l e_l) ∘ U(∑ g'_l e_l) = U(∑ g_l g'_l e_l)` — the
+`U`-positivity induction run a second time, no fundamental formula.  Row 55
+of `beff-vnexamples.csv` goes `weaker → ok`: every category 206III names is
+now a ⋄-effectus in the tree.  With this, nothing on the "ours" list of
+2026-09-04 remains: the seven sorries and the completion rebuilds are the
+author's.
