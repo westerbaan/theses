@@ -98,20 +98,23 @@ Design:
   with positive *subunital* maps, the Jordan counterpart of `vN_cpsu`.  The
   partial-form effectus structure is `ejapsuPartialStructure` (product
   algebra, one-point algebra, `f ⊥ g ⟺ f 1 + g 1 ≤ 1`, effect object `ℝᵤ`,
-  predicates = effects by `ejapsu_pred_val`); on top of it three of the four
-  ⋄-obligations are carried — comprehension by the compression `U q = P₁ q`
-  onto the corner of the floor idempotent (`ejapsuHasComprehension`), images
-  by the support idempotent of the trace-form Riesz vector
-  (`ejapsuHasImages`), and `orth_sharp` by the identification of the sharp
-  predicates with the idempotents (`ejapsu_isSharp_iff`,
-  `ejapsu_orth_sharp`).  The Jordan theory this needs, above the spectral
-  theorem, is the Peirce calculus of an idempotent: the corner `V₁(p)` is
-  again a Euclidean Jordan algebra (`EJACorner`), the cone is self-dual
-  (`eja_nonneg_of_forall_idem`), and the compression is positive
-  (`eja_pone_nonneg`).  Not formalized: **quotients**, hence
-  `DiamondEffectus EJAPsuᵒᵖ` itself — the filter at `√(pᗮ)` needs `U b` to be
-  positive for a general `b ≥ 0`, which is the comment at the end of the
-  file; and the &- and †-structures of eff.tex 209I and 213I.
+  predicates = effects by `ejapsu_pred_val`); on top of it all four
+  ⋄-obligations are carried — quotients by the filter `U (√(pᗮ))` onto the
+  corner of the support idempotent (`ejapsuHasQuotients`), comprehension by
+  the compression `U q = P₁ q` onto the corner of the floor idempotent
+  (`ejapsuHasComprehension`), images by the support idempotent of the
+  trace-form Riesz vector (`ejapsuHasImages`), and `orth_sharp` by the
+  identification of the sharp predicates with the idempotents
+  (`ejapsu_isSharp_iff`, `ejapsu_orth_sharp`) — so that `EJAᵒᵖ` is a
+  ⋄-effectus, `diamond_effectus_eja`.  The Jordan theory this needs, above
+  the spectral theorem, is the Peirce calculus of an idempotent: the corner
+  `V₁(p)` is again a Euclidean Jordan algebra (`EJACorner`), the cone is
+  self-dual (`eja_nonneg_of_forall_idem`), the compression is positive
+  (`eja_pone_nonneg`), the quadratic representation `U a` preserves the cone
+  for every `a` (`eja_U_nonneg`), and the `U` of one spectral family compose
+  by multiplying the coefficients (`eja_U_family_comp`), which is what
+  inverts the filter inside its corner (`eja_exists_filter`).  Not
+  formalized: the &- and †-structures of eff.tex 209I and 213I.
 -/
 import Theses.B.Eff.OrderUnit
 import Theses.B.Eff.DiamondAmp
@@ -3366,10 +3369,15 @@ spectral theorem `eja_spectral`.  Four blocks:
   for the trace form and fixes `g`.
 * **The quadratic representation `U a = 2 L a ² - L (a²)` is positive**
   (`ejaU`, `eja_U_nonneg`), for every `a` and not only for `a ≥ 0`.  This is
-  the last block of the section; its argument is described where it starts.
+  the fourth block of the section; its argument is described where it starts.
   It uses no fundamental formula `U (U a b) = U a U b U a` and no Macdonald
   theorem: only the Peirce arithmetic of this section, the spectral theorem,
-  and the corner. -/
+  and the corner.
+* **The `U` of one spectral family compose** (`eja_U_family_comp`), by
+  multiplying the coefficients, which is the same induction once more.  At
+  `√l` and `(√l)⁻¹` this inverts `U b` inside the corner `V₁(⌈b b⌉)`, and that
+  is the data of the *filter* 206III's quotients are (`eja_exists_filter`,
+  the last block). -/
 
 namespace EuclideanJordanAlgebra
 
@@ -4895,6 +4903,271 @@ theorem eja_peirce_cauchy_schwarz {q g h : V} (hq : q * q = q) (hg : g * g = g)
   rw [e1, e2, e3]
   nlinarith [hd]
 
+/-! ### The inverse of `U b` in a corner: the data of a filter
+
+The last ingredient of the **quotients** of 206III's `EJAᵒᵖ` clause.  A
+quotient for the predicate `p` is the filter at `a = pᗮ`: the map `U b` for
+`b = √a`, corestricted to the corner `V₁(⌈a⌉)`.  Its universal property needs
+`U b` to be *invertible there*, with a positive inverse — and that inverse is
+`U b'` for the element `b'` inverse to `b` in the corner.
+
+Neither the fundamental formula `U (U a b) = U a U b U a` nor any inverse of a
+general element is needed for this, only the composition law for the quadratic
+representations of **one spectral family** (`eja_U_family_comp`):
+`U (∑ g l e l) ∘ U (∑ g' l e l) = U (∑ g l g' l e l)` for pairwise orthogonal
+idempotents `e l` summing to `1`.  Its proof is the induction of
+`eja_U_nonneg_family` again — split the value at `l₀` off both factors, apply
+the induction hypothesis, and put the two split-off two-valued factors back
+together, which is `eja_U_split'` (the splitting identity with a general second
+coefficient) on top of `ejaU_two_valued_comp` (two-valued `U`s at the same
+idempotent compose by multiplying the coefficients, being diagonal in the
+Peirce decomposition).
+
+At `g l = √l` and `g' l = (√l)⁻¹` off the kernel this gives everything
+`eja_exists_filter` records: `b b = a`, and `U b ∘ U b' = U b' ∘ U b = P₁ s`
+for the support idempotent `s = ∑_{l ≠ 0} e l`, which is the identity on the
+corner `V₁(s)`.  `eja_exists_nonneg_sqrt` is the `b` of that statement read on
+its own. -/
+
+/-- Two-valued quadratic representations at the same idempotent compose by
+multiplying the coefficients: both are diagonal in the Peirce decomposition. -/
+theorem ejaU_two_valued_comp {q : V} (hq : q * q = q) (l m l' m' : ℝ) (y : V) :
+    ejaU (l • q + m • (1 - q)) (ejaU (l' • q + m' • (1 - q)) y)
+      = ejaU ((l * l') • q + (m * m') • (1 - q)) y := by
+  have key : ∀ u v w : V, q * u = u → q * v = (2 : ℝ)⁻¹ • v → q * w = 0 →
+      ejaU (l • q + m • (1 - q)) (ejaU (l' • q + m' • (1 - q)) (u + v + w))
+        = ejaU ((l * l') • q + (m * m') • (1 - q)) (u + v + w) := by
+    intro u v w h1 hh h0
+    simp only [map_add]
+    rw [ejaU_two_valued_one hq l' m' h1, ejaU_two_valued_half hq l' m' hh,
+      ejaU_two_valued_zero hq l' m' h0, map_smul, map_smul, map_smul,
+      ejaU_two_valued_one hq l m h1, ejaU_two_valued_half hq l m hh,
+      ejaU_two_valued_zero hq l m h0,
+      ejaU_two_valued_one hq (l * l') (m * m') h1,
+      ejaU_two_valued_half hq (l * l') (m * m') hh,
+      ejaU_two_valued_zero hq (l * l') (m * m') h0]
+    module
+  have h := key (ejaPone q y) (ejaPhalf q y) (ejaPone (1 - q) y)
+    (eja_mul_pone q hq y) (eja_mul_phalf q hq y) (eja_mul_pzero hq y)
+  rwa [eja_peirce_sum q y] at h
+
+/-- **The splitting identity with a general second coefficient**:
+`U (l m c + a) = U (l c + (1-c)) ∘ U (m c + a)` for an idempotent `c`
+orthogonal to `a`. -/
+theorem eja_U_split' {c a : V} (hc : c * c = c) (ha : c * a = 0) (l m : ℝ) (y : V) :
+    ejaU ((l * m) • c + a) y
+      = ejaU (l • c + (1 : ℝ) • (1 - c)) (ejaU (m • c + a) y) := by
+  rw [eja_U_split hc ha (l * m) y, eja_U_split hc ha m y,
+    ejaU_two_valued_comp hc l 1 m 1 (ejaU (c + a) y), one_mul]
+
+/-- **The composition law for the quadratic representations of a spectral
+family**: for pairwise orthogonal idempotents `e l` summing to `1`,
+`U (∑ g l e l) ∘ U (∑ g' l e l) = U (∑ g l g' l e l)`.  The induction is on
+the number of spectral values of `g` different from `1`, and the step is the
+splitting identity `eja_U_split'`. -/
+theorem eja_U_family_comp : ∀ n : ℕ, ∀ (s : Finset ℝ) (e : ℝ → V) (g g' : ℝ → ℝ),
+    (∀ l ∈ s, e l * e l = e l) →
+    (∀ l ∈ s, ∀ k ∈ s, l ≠ k → e l * e k = 0) →
+    (∑ l ∈ s, e l = 1) →
+    (s.filter fun l => g l ≠ 1).card ≤ n →
+    ∀ y : V, ejaU (∑ l ∈ s, g l • e l) (ejaU (∑ l ∈ s, g' l • e l) y)
+      = ejaU (∑ l ∈ s, (g l * g' l) • e l) y := by
+  classical
+  intro n
+  induction n with
+  | zero =>
+    intro s e g g' _ _ hone hcard y
+    have hall : ∀ l ∈ s, g l = 1 := by
+      intro l hl
+      by_contra hcon
+      have hmem : l ∈ s.filter fun l => g l ≠ 1 := Finset.mem_filter.mpr ⟨hl, hcon⟩
+      have := Finset.card_pos.mpr ⟨l, hmem⟩
+      omega
+    have h1 : (∑ l ∈ s, g l • e l) = 1 := by
+      rw [← hone]
+      exact Finset.sum_congr rfl fun l hl => by rw [hall l hl, one_smul]
+    have h2 : (∑ l ∈ s, (g l * g' l) • e l) = ∑ l ∈ s, g' l • e l :=
+      Finset.sum_congr rfl fun l hl => by rw [hall l hl, one_mul]
+    rw [h1, h2, ejaU_one, LinearMap.id_apply]
+  | succ n ih =>
+    intro s e g g' hidem horth hone hcard y
+    rcases Finset.eq_empty_or_nonempty (s.filter fun l => g l ≠ 1) with hemp | ⟨l₀, hl₀f⟩
+    · have hall : ∀ l ∈ s, g l = 1 := by
+        intro l hl
+        by_contra hcon
+        have hmem : l ∈ s.filter fun l => g l ≠ 1 := Finset.mem_filter.mpr ⟨hl, hcon⟩
+        rw [hemp] at hmem
+        exact absurd hmem (Finset.notMem_empty l)
+      have h1 : (∑ l ∈ s, g l • e l) = 1 := by
+        rw [← hone]
+        exact Finset.sum_congr rfl fun l hl => by rw [hall l hl, one_smul]
+      have h2 : (∑ l ∈ s, (g l * g' l) • e l) = ∑ l ∈ s, g' l • e l :=
+        Finset.sum_congr rfl fun l hl => by rw [hall l hl, one_mul]
+      rw [h1, h2, ejaU_one, LinearMap.id_apply]
+    have hl₀ : l₀ ∈ s := (Finset.mem_filter.mp hl₀f).1
+    set c : V := e l₀ with hcdef
+    have hc : c * c = c := hidem l₀ hl₀
+    have horth' : ∀ (h : ℝ → ℝ), c * (∑ k ∈ s.erase l₀, h k • e k) = 0 := by
+      intro h
+      rw [eja_mul_sum]
+      refine Finset.sum_eq_zero fun k hk => ?_
+      have hk' : k ∈ s := Finset.mem_of_mem_erase hk
+      have hne : l₀ ≠ k := fun h' => (Finset.ne_of_mem_erase hk) h'.symm
+      rw [eja_mul_smul, hcdef, horth l₀ hl₀ k hk' hne, smul_zero]
+    -- the top map splits off its `l₀`-value
+    have hdecg : (∑ l ∈ s, g l • e l) = g l₀ • c + ∑ k ∈ s.erase l₀, g k • e k :=
+      (Finset.add_sum_erase s (fun l => g l • e l) hl₀).symm
+    have hg₁sum : (∑ l ∈ s, (Function.update g l₀ 1) l • e l)
+        = c + ∑ k ∈ s.erase l₀, g k • e k := by
+      rw [← Finset.add_sum_erase s (fun l => (Function.update g l₀ 1) l • e l) hl₀]
+      congr 1
+      · rw [Function.update_self, one_smul]
+      · exact Finset.sum_congr rfl fun k hk => by
+          rw [Function.update_of_ne (Finset.ne_of_mem_erase hk)]
+    have hcard' : (s.filter fun l => (Function.update g l₀ 1) l ≠ 1).card ≤ n := by
+      have hsub : (s.filter fun l => (Function.update g l₀ 1) l ≠ 1)
+          = (s.filter fun l => g l ≠ 1).erase l₀ := by
+        ext k
+        simp only [Finset.mem_filter, Finset.mem_erase]
+        constructor
+        · rintro ⟨hks, hgk⟩
+          by_cases hkl : k = l₀
+          · rw [hkl, Function.update_self] at hgk; exact absurd rfl hgk
+          · rw [Function.update_of_ne hkl] at hgk; exact ⟨hkl, hks, hgk⟩
+        · rintro ⟨hkl, hks, hgk⟩
+          rw [Function.update_of_ne hkl]; exact ⟨hks, hgk⟩
+      have hpos : 0 < (s.filter fun l => g l ≠ 1).card := Finset.card_pos.mpr ⟨l₀, hl₀f⟩
+      rw [hsub, Finset.card_erase_of_mem hl₀f]
+      omega
+    -- the product families, split off at `l₀`
+    have hdecgg' : (∑ l ∈ s, (g l * g' l) • e l)
+        = (g l₀ * g' l₀) • c + ∑ k ∈ s.erase l₀, (g k * g' k) • e k :=
+      (Finset.add_sum_erase s (fun l => (g l * g' l) • e l) hl₀).symm
+    have hdecg₁g' : (∑ l ∈ s, ((Function.update g l₀ 1) l * g' l) • e l)
+        = g' l₀ • c + ∑ k ∈ s.erase l₀, (g k * g' k) • e k := by
+      rw [← Finset.add_sum_erase s
+        (fun l => ((Function.update g l₀ 1) l * g' l) • e l) hl₀]
+      congr 1
+      · rw [Function.update_self, one_mul]
+      · exact Finset.sum_congr rfl fun k hk => by
+          rw [Function.update_of_ne (Finset.ne_of_mem_erase hk)]
+    have hIH := ih s e (Function.update g l₀ 1) g' hidem horth hone hcard' y
+    rw [hg₁sum, hdecg₁g'] at hIH
+    rw [hdecg, hdecgg', eja_U_split hc (horth' g) (g l₀) _, hIH,
+      eja_U_split' hc (horth' (fun k => g k * g' k)) (g l₀) (g' l₀) y]
+
+/-- The composition law `U (∑ g e) ∘ U (∑ g' e) = U (∑ g g' e)` of
+`eja_U_family_comp`, with the induction bound discharged. -/
+theorem eja_U_family_comp' {s : Finset ℝ} {e : ℝ → V} (g g' : ℝ → ℝ)
+    (hidem : ∀ l ∈ s, e l * e l = e l)
+    (horth : ∀ l ∈ s, ∀ k ∈ s, l ≠ k → e l * e k = 0)
+    (hone : ∑ l ∈ s, e l = 1) (y : V) :
+    ejaU (∑ l ∈ s, g l • e l) (ejaU (∑ l ∈ s, g' l • e l) y)
+      = ejaU (∑ l ∈ s, (g l * g' l) • e l) y := by
+  classical
+  exact eja_U_family_comp _ s e g g' hidem horth hone le_rfl y
+
+/-! ### The square root, and the filter data at a positive element -/
+
+/-- **The data of the filter at a positive element `d`**: the support
+idempotent `s` of `d`, a positive square root `b` of `d`, and the element `b'`
+inverse to `b` in the corner `V₁(s)`.  `U b` and `U b'` are mutually inverse
+there, both composites being the compression `P₁ s`, and `U b'` lands in the
+corner.  Everything is read off the spectral decomposition
+`d = ∑ l e l` through the composition law `eja_U_family_comp'`: `b = ∑ √l e l`,
+`b' = ∑ (√l)⁻¹ e l` over the non-zero spectral values, and `s = ∑ e l` over
+the same. -/
+theorem eja_exists_filter {d : V} (hd : 0 ≤ d) :
+    ∃ s b b' : V, s * s = s ∧ 0 ≤ b ∧ b * b = d ∧ s * d = d ∧
+      (∀ x : V, ejaU b (ejaU b' x) = ejaPone s x) ∧
+      (∀ x : V, ejaU b' (ejaU b x) = ejaPone s x) ∧
+      (∀ x : V, s * ejaU b' x = ejaU b' x) := by
+  classical
+  obtain ⟨t, e, hidem, horth, hne0, hsum, hdec⟩ := eja_spectral d
+  have hc : ∀ l ∈ t, 0 ≤ l := by
+    refine (eja_ortho_isSumSq_iff hidem horth hne0 (fun r => r)).mp ?_
+    rw [← hdec]
+    exact (eja_nonneg_iff d).mp hd
+  set g : ℝ → ℝ := fun l => Real.sqrt l with hgdef
+  set g' : ℝ → ℝ := fun l => if l = 0 then 0 else (Real.sqrt l)⁻¹ with hg'def
+  set h : ℝ → ℝ := fun l => if l = 0 then 0 else 1 with hhdef
+  have hgnn : ∀ l : ℝ, 0 ≤ g l := fun l => Real.sqrt_nonneg l
+  have hgg : ∀ l ∈ t, g l * g l = l := fun l hl => Real.mul_self_sqrt (hc l hl)
+  have hsqrt_ne : ∀ l ∈ t, l ≠ 0 → Real.sqrt l ≠ 0 := by
+    intro l hl hl0
+    exact ne_of_gt (Real.sqrt_pos.mpr (lt_of_le_of_ne (hc l hl) (Ne.symm hl0)))
+  have hgg' : ∀ l ∈ t, g l * g' l = h l := by
+    intro l hl
+    rw [hgdef, hg'def, hhdef]
+    by_cases hl0 : l = 0
+    · simp [hl0]
+    · simp only [hl0, ite_false]
+      exact mul_inv_cancel₀ (hsqrt_ne l hl hl0)
+  have hg'g : ∀ l ∈ t, g' l * g l = h l := by
+    intro l hl; rw [mul_comm]; exact hgg' l hl
+  have hhh : ∀ l : ℝ, h l * h l = h l := by
+    intro l; rw [hhdef]; by_cases hl0 : l = 0 <;> simp [hl0]
+  have hhg' : ∀ l : ℝ, h l * g' l = g' l := by
+    intro l; rw [hhdef, hg'def]; by_cases hl0 : l = 0 <;> simp [hl0]
+  have hhl : ∀ l : ℝ, h l * l = l := by
+    intro l; rw [hhdef]; by_cases hl0 : l = 0 <;> simp [hl0]
+  have hs : (∑ l ∈ t, h l • e l) * (∑ l ∈ t, h l • e l) = ∑ l ∈ t, h l • e l := by
+    rw [eja_ortho_mul hidem horth]
+    exact Finset.sum_congr rfl fun l _ => by rw [hhh l]
+  have hcomp : ∀ (u v : ℝ → ℝ), (∀ l ∈ t, u l * v l = h l) →
+      ∀ x : V, ejaU (∑ l ∈ t, u l • e l) (ejaU (∑ l ∈ t, v l • e l) x)
+        = ejaPone (∑ l ∈ t, h l • e l) x := by
+    intro u v huv x
+    rw [eja_U_family_comp' u v hidem horth hsum x]
+    have heq : (∑ l ∈ t, (u l * v l) • e l) = ∑ l ∈ t, h l • e l :=
+      Finset.sum_congr rfl fun l hl => by rw [huv l hl]
+    rw [heq, ejaU_idem hs]
+  refine ⟨∑ l ∈ t, h l • e l, ∑ l ∈ t, g l • e l, ∑ l ∈ t, g' l • e l, hs, ?_, ?_, ?_,
+    hcomp g g' hgg', hcomp g' g hg'g, ?_⟩
+  · rw [eja_nonneg_iff, eja_ortho_isSumSq_iff hidem horth hne0]
+    exact fun l _ => hgnn l
+  · rw [eja_ortho_mul hidem horth]
+    conv_rhs => rw [hdec]
+    exact Finset.sum_congr rfl fun l hl => by rw [hgg l hl]
+  · conv_lhs => rw [hdec]
+    rw [eja_ortho_mul hidem horth]
+    conv_rhs => rw [hdec]
+    exact Finset.sum_congr rfl fun l _ => by rw [hhl l]
+  · intro x
+    have hx : ejaU (∑ l ∈ t, h l • e l) (ejaU (∑ l ∈ t, g' l • e l) x)
+        = ejaU (∑ l ∈ t, g' l • e l) x := by
+      rw [eja_U_family_comp' h g' hidem horth hsum x]
+      exact congrArg (fun w => ejaU w x)
+        (Finset.sum_congr rfl fun l _ => by rw [hhg' l])
+    rw [ejaU_idem hs] at hx
+    exact (eja_pone_eq_self_iff _ hs _).mp hx
+
+/-- **A positive element has a positive square root** `b` with `b * b = z`:
+`b = ∑ √l e l` on the spectral decomposition of `z`. -/
+theorem eja_exists_nonneg_sqrt {z : V} (hz : 0 ≤ z) : ∃ b : V, 0 ≤ b ∧ b * b = z := by
+  obtain ⟨_, b, _, _, hb0, hbb, _⟩ := eja_exists_filter hz
+  exact ⟨b, hb0, hbb⟩
+
+/-- **An element of the cone dominated by a multiple of `d` lies in the corner
+of the support of `d`**: the trace form of `1 - s` against it is squeezed
+between `0` and a multiple of `B (1 - s) d = 0`. -/
+theorem eja_corner_of_le_smul {s z d : V} (hs : s * s = s) (hsd : s * d = d)
+    (hz : 0 ≤ z) {r : ℝ} (hzd : z ≤ r • d) : s * z = z := by
+  have hq : (1 - s) * (1 - s) = 1 - s := eja_one_sub_idem hs
+  have hBd : ejaB (1 - s) d = 0 := by
+    rw [ejaB, eja_sub_mul, eja_one_mul, hsd, sub_self, map_zero]
+  have hBz : 0 ≤ ejaB (1 - s) z := by
+    rw [ejaB_symm]
+    exact eja_isSumSq_ejaB_idem_nonneg ((eja_nonneg_iff z).mp hz) _ hq
+  have hBle : 0 ≤ ejaB (1 - s) (r • d - z) := by
+    rw [ejaB_symm]
+    exact eja_isSumSq_ejaB_idem_nonneg ((eja_nonneg_iff _).mp (eja_sub_nonneg.mpr hzd)) _ hq
+  rw [ejaB_sub_right, ejaB_smul_right, hBd, mul_zero, zero_sub, neg_nonneg] at hBle
+  have hB0 : ejaB (1 - s) z = 0 := le_antisymm hBle hBz
+  have hzero : (1 - s) * z = 0 := eja_idem_mul_nonneg_eq_zero hq hz hB0
+  rw [eja_sub_mul, eja_one_mul, sub_eq_zero] at hzero
+  exact hzero.symm
+
 end Peirce
 
 end EuclideanJordanAlgebra
@@ -5754,21 +6027,141 @@ def ejapsu_pred_val (A : EJAPsu.{u}) :
   left_inv _p := ejapsuVal_injective (ejapsuVal_predOf _ _ _)
   right_inv x := Subtype.ext (ejapsuVal_predOf _ x.2.1 x.2.2)
 
-/-! ## The ⋄-effectus clause of 206III for `EJAᵒᵖ`: three obligations of four,
-and the one that is left
+/-! ### `EJAᵒᵖ` has quotients: the filter at `√(pᗮ)`
+
+A quotient for the predicate `p` is the **filter** at `a = pᗮ`: the map
+`U b : V₁(⌈a⌉) → 𝒜` for `b = √a`, the Jordan counterpart of the standard
+filter `c_{aᗮ} : ⌈aᗮ⌉𝒜⌈aᗮ⌉ → 𝒜`, `b ↦ √(aᗮ) b √(aᗮ)` of `vNᵒᵖ`.  All of its
+data comes from `eja_exists_filter`: `b`, the support idempotent `s = ⌈a⌉` and
+the element `b'` inverse to `b` in the corner `V₁(s)`, with
+`U b ∘ U b' = U b' ∘ U b = P₁ s`.
+
+`1 ∘ ξ ≼ pᗮ` because `U b s ≤ U b 1 = b b = a` (`eja_U_mono`,
+`ejaU_apply_one`).  For the universal property, a positive subunital `φ` with
+`φ 1 ≤ a` has its whole range in the corner — `0 ≤ φ x ≤ n φ 1 ≤ n a` for a
+positive `x`, and an element of the cone dominated by a multiple of `a` is
+fixed by `s` (`eja_corner_of_le_smul`) — so `ψ = U b' ∘ φ`, which lands in the
+corner, satisfies `U b ∘ ψ = P₁ s ∘ φ = φ`; it is positive because `U b'` is
+(`eja_U_nonneg'`) and subunital because `U b' a = U b' (U b 1) = P₁ s 1 = s`.
+Uniqueness is `U b' ∘ U b = P₁ s` again, which is the identity on the
+corner. -/
+
+/-- **197IV at `EJAᵒᵖ`** (eff.tex:3683, Examples): `EJA_psuᵒᵖ` **has
+quotients**, and a quotient for the effect `a` is the filter `U (√(aᗮ))`
+corestricted to the corner `V₁(⌈aᗮ⌉)`. -/
+theorem ejapsuHasQuotients : HasQuotients (EJAPsu.{u}ᵒᵖ) where
+  quot {X} p := by
+    classical
+    set a : X.unop.carrier := ejapsuVal (EffectAlgebra.orth p) with hadef
+    have ha0 : (0 : X.unop.carrier) ≤ a := ejapsuVal_nonneg _
+    have ha1 : a ≤ 1 := ejapsuVal_le_one _
+    obtain ⟨s, b, b', hs, hb0, hbb, hsa, hbb', hb'b, hb'mem⟩ := eja_exists_filter ha0
+    set S : EJAIdem X.unop.carrier := ⟨s, hs⟩ with hSdef
+    have hSelt : S.elt = s := rfl
+    have hU1 : ejaU b 1 = a := by rw [ejaU_apply_one, hbb]
+    have hUs : ejaU b s ≤ a := by
+      have h := eja_U_mono b (eja_idem_le_one hs)
+      rwa [hU1] at h
+    refine ⟨Opposite.op (EJAPsu.of (EJACorner S)), Quiver.Hom.op
+      { toLinearMap := (ejaU b).comp (EJACorner.valLin S)
+        map_nonneg' := fun y hy => eja_U_nonneg' b (eja_corner_val_nonneg hy)
+        map_subunital' := le_trans hUs ha1 }, ?_, ?_⟩
+    · refine (ejapsuVal_le_iff _ _).mpr ?_
+      rw [ejapsuVal_comp, ejapsuVal_truth]
+      exact hUs
+    · intro Y f hf
+      have hf1 : f.unop.toLinearMap (1 : Y.unop.carrier) ≤ a := by
+        have h1 := (ejapsuVal_le_iff (f ≫ truth Y) (EffectAlgebra.orth p)).mp hf
+        rwa [ejapsuVal_comp, ejapsuVal_truth] at h1
+      have hrangenn : ∀ x : Y.unop.carrier, 0 ≤ x →
+          s * f.unop.toLinearMap x = f.unop.toLinearMap x := by
+        intro x hx
+        obtain ⟨n, hn⟩ := eja_exists_isSumSq_nsmul_one_sub x
+        have hle : x ≤ (n : ℝ) • (1 : Y.unop.carrier) := (eja_le_iff _ _).mpr hn
+        have h2 : f.unop.toLinearMap x ≤ (n : ℝ) • a := by
+          refine le_trans (f.unop.mono hle) ?_
+          rw [map_smul, eja_le_iff]
+          have hsub : (n : ℝ) • a - (n : ℝ) • f.unop.toLinearMap 1
+              = (n : ℝ) • (a - f.unop.toLinearMap 1) := by module
+          rw [hsub]
+          exact eja_isSumSq_smul (Nat.cast_nonneg n)
+            ((eja_nonneg_iff _).mp (eja_sub_nonneg.mpr hf1))
+        exact eja_corner_of_le_smul hs hsa (f.unop.map_nonneg' x hx) h2
+      have hrange : ∀ x : Y.unop.carrier,
+          s * f.unop.toLinearMap x = f.unop.toLinearMap x := by
+        intro x
+        obtain ⟨u, v, hu, hv, hx⟩ :
+            ∃ u v : Y.unop.carrier, 0 ≤ u ∧ 0 ≤ v ∧ x = u - v := by
+          obtain ⟨n, hn⟩ := eja_exists_isSumSq_nsmul_one_sub x
+          refine ⟨(n : ℝ) • (1 : Y.unop.carrier),
+            (n : ℝ) • (1 : Y.unop.carrier) - x, ?_, ?_, by abel⟩
+          · exact (eja_nonneg_iff _).mpr (eja_isSumSq_smul_one (Nat.cast_nonneg n))
+          · exact (eja_nonneg_iff _).mpr hn
+        rw [hx, map_sub, eja_mul_sub, hrangenn u hu, hrangenn v hv]
+      set ψ : Y.unop.carrier →ₗ[ℝ] EJACorner S :=
+        { toFun := fun x => EJACorner.mk' (ejaU b' (f.unop.toLinearMap x)) (hb'mem _)
+          map_add' := fun x y => EJACorner.val_injective (by
+            rw [EJACorner.val_add, EJACorner.val_mk', EJACorner.val_mk',
+              EJACorner.val_mk', map_add, map_add])
+          map_smul' := fun r x => EJACorner.val_injective (by
+            rw [EJACorner.val_smul, EJACorner.val_mk', EJACorner.val_mk',
+              map_smul, map_smul]
+            rfl) } with hψdef
+      have hψval : ∀ x : Y.unop.carrier,
+          EJACorner.val (ψ x) = ejaU b' (f.unop.toLinearMap x) := fun _ => rfl
+      have hUb'a : ejaU b' a = s := by
+        have h := hb'b 1
+        rwa [hU1, eja_pone_one s hs] at h
+      have hpos : ∀ x : Y.unop.carrier, 0 ≤ x → 0 ≤ ψ x := by
+        intro x hx
+        refine (eja_corner_nonneg_iff S _).mpr ?_
+        rw [hψval]
+        exact eja_U_nonneg' b' (f.unop.map_nonneg' x hx)
+      have hsub : ψ 1 ≤ 1 := by
+        rw [← eja_sub_nonneg]
+        refine (eja_corner_nonneg_iff S _).mpr ?_
+        rw [EJACorner.val_sub, EJACorner.val_one, hSelt, hψval, eja_sub_nonneg,
+          ← hUb'a]
+        exact eja_U_mono b' hf1
+      refine ⟨Quiver.Hom.op
+        { toLinearMap := ψ
+          map_nonneg' := hpos
+          map_subunital' := hsub }, ?_, ?_⟩
+      · refine ejapsuop_hom_ext fun x => ?_
+        rw [ejapsuop_comp_apply]
+        show ejaU b (EJACorner.val (ψ x)) = f.unop.toLinearMap x
+        rw [hψval, hbb', eja_pone_of_one hs (hrange x)]
+      · intro k hk
+        refine ejapsuop_hom_ext fun x => ?_
+        refine EJACorner.val_injective ?_
+        have hkx : ejaU b (EJACorner.val (k.unop.toLinearMap x))
+            = f.unop.toLinearMap x := by
+          have h := ejapsuop_congr hk x
+          rwa [ejapsuop_comp_apply] at h
+        have hkmem : s * EJACorner.val (k.unop.toLinearMap x)
+            = EJACorner.val (k.unop.toLinearMap x) :=
+          EJACorner.val_prop (k.unop.toLinearMap x)
+        have h5 := congrArg (ejaU b') hkx
+        rw [hb'b, eja_pone_of_one hs hkmem] at h5
+        exact h5.trans (hψval x).symm
+
+/-! ## The ⋄-effectus clause of 206III for `EJAᵒᵖ`
 
 206III (eff.tex:4460, Examples) says that `vNᵒᵖ`, `CvNᵒᵖ`, `EJAᵒᵖ` and `Set`
 are all ⋄-effectuses.  A ⋄-effectus lives in the **partial** form, so the
 `EJAᵒᵖ` clause is a statement about `EJAPsuᵒᵖ`, the opposite of the category of
 Euclidean Jordan algebras with positive *subunital* maps built above — exactly
 as the `vNᵒᵖ` clause is a statement about `WStarCPSU.{u}ᵒᵖ` and not about the
-unital `vN`.  Of the five things `DiamondEffectus` needs, four are now here:
+unital `vN`.  The five things `DiamondEffectus` needs are all here:
 
 * the **partial form itself**, `ejapsuPartialStructure`: finite coproducts (the
   product algebra and the one-point algebra), the hom-PCM `f ⊥ g ⟺ f 1 + g 1 ≤ 1`
   with `f ⋁ g = f + g`, the six finPAC axioms and the effects of 180VII with
   effect object `ℝᵤ`.  Its predicates are the effects `0 ≤ a ≤ 1`
   (`ejapsu_pred_val`), as in the total form;
+* **quotients**, `ejapsuHasQuotients`: the quotient for an effect `a` is the
+  filter `U (√(aᗮ))` onto the corner `V₁(⌈aᗮ⌉)`, the Jordan analogue of the
+  standard filter `b ↦ √(aᗮ) b √(aᗮ)` of `vNᵒᵖ`;
 * **comprehension**, `ejapsuHasComprehension`: the comprehension for an effect
   `a` is the compression `U q = P₁ q` onto the corner `V₁(q)` of the floor
   idempotent `q = ⌊a⌋` (`eja_exists_floor`), the Jordan analogue of the standard
@@ -5779,56 +6172,46 @@ unital `vN`.  Of the five things `DiamondEffectus` needs, four are now here:
 * **sharpness**, `ejapsu_isSharp_iff`: the sharp predicates are exactly the
   idempotents, whence `ejapsu_orth_sharp`, the `orth_sharp` axiom.
 
-**Quotients are not here**, and with them `DiamondEffectus EJAPsu.{u}ᵒᵖ`.  The
-missing mathematics is one statement, and it is not the one the earlier costing
-named.  In detail.
+The Jordan theory under the quotient — the positivity of the quadratic
+representation `U a` for *every* `a`, and the composition law for the `U` of a
+single spectral family that inverts `U b` in a corner — is the last two blocks
+of `section Peirce`, and it needs neither the **fundamental formula**
+`U_{U_a b} = U_a U_b U_a` (whose usual proof is Macdonald's theorem, or
+several pages of operator identities) nor the topological argument that the
+open cone is a connected component of the invertible elements: no norm, no
+continuity of the spectrum, no invertibility of a general element.  Mathlib is
+still only `IsCommJordan` and its linearisation; the whole of the Jordan theory
+used is in this file.
 
-*What the quotient is.*  A quotient for the predicate `p` is a **filter** at
-`a = pᗮ`: the map `U_b` for `b = √a` (which the spectral theorem
-`eja_spectral` supplies), corestricted to the corner `V₁(⌈a⌉)`.  Everything
-around it is already available here: `⌈a⌉` is `eja_exists_supp`, the corner is
-`EJACorner`, and the order-interval fact that `0 ≤ x ≤ λ a` forces `x` into
-`V₁(⌈a⌉)` is `eja_idem_mul_nonneg_eq_zero` together with
-`eja_le_one_sub_of_mul_eq_zero`.
+206III prints no proof — it refers to the joint paper with van de Wetering —
+so there is no printed argument to match; the mathematics is ours.
 
-*What was missing, and is now here.*  `U_b x = 2 b (b x) - b² x` must map the
-cone into the cone for `b ≥ 0` — both to make the filter a morphism at all, and
-to make the factorisation `U_{b⁻¹} ∘ χ` of the universal property one.  That is
-proved above as `eja_U_nonneg` (in fact `eja_U_nonneg'`, for *every* `b`), with
-`ejaU` the quadratic representation; see the block comment where that section
-starts for the argument.  It costs about 800 lines and it needs neither the
-**fundamental formula** `U_{U_a b} = U_a U_b U_a` (whose usual proof is
-Macdonald's theorem, or several pages of operator identities) nor the
-topological argument that the open cone is a connected component of the
-invertible elements — no norm, no continuity of the spectrum, no invertibility
-of `U_a x`.  Mathlib is still only `IsCommJordan` and its linearisation; the
-whole of the Jordan theory used is in this file.
-
-*Where the earlier costing of this residue went wrong.*  It reduced
-`U`-positivity to the **two-valued** case `t² P₁ q + t P½ q + P₀ q` (correctly:
-that is `eja_U_split` plus the induction `eja_U_nonneg_family`, though by a
-Peirce computation rather than by multiplicativity of `U` on the associative
-algebra of a frame, which is never needed), and then reduced *that*, by
-self-duality, to the Cauchy–Schwarz inequality
-`B (P½ g) (P½ h) ² ≤ 4 · B (P₁ g) (P₁ h) · B (P₀ g) (P₀ h)` for idempotents
-`g, h`, calling that inequality the whole gap.  The last step is the wrong
-reading: pairing `U_a g` with an idempotent `h` is symmetric in `g` and `h`, and
-that symmetry is exactly what has to be broken.  Break it by taking `g`
-**primitive** and *computing* `U_a g`, which is then a non-negative multiple of
-an idempotent; the Cauchy–Schwarz inequality drops out afterwards as
-`eja_peirce_cauchy_schwarz`.
-
-*What is still missing.*  The quotient itself: the filter, its corestriction to
-`V₁(⌈a⌉)`, and the universal property, whose ingredients (`eja_exists_supp`,
-`EJACorner`, `eja_idem_mul_nonneg_eq_zero`, `eja_le_one_sub_of_mul_eq_zero`, and
-now `ejaU` with `eja_U_nonneg`, `eja_U_mono` and `ejaU_apply_one`) are all
-above.  About 250 lines, after which `DiamondEffectus EJAPsuᵒᵖ` can be stated.
-
-Nothing in the total-form part of this file depends on any of that: an effectus
+Nothing in the total-form part of this file depends on any of it: an effectus
 in *total* form needs only the order unit space structure, which is what
 `toOrderUnitSpace` supplies. -/
+
+/-- The four obligations of 206III at `EJAPsuᵒᵖ`, bundled; `diamond_effectus_eja`
+below is the same statement with the partial-form structure spelled out. -/
+theorem ejapsu_diamondEffectus : DiamondEffectus (EJAPsu.{u}ᵒᵖ) :=
+  { ejapsuHasQuotients, ejapsuHasComprehension, ejapsuHasImages with
+    orth_sharp := fun hs => ejapsu_orth_sharp hs }
+
+/-- **206III** (eff.tex:4460, Examples), the `EJAᵒᵖ` clause: `EJAᵒᵖ` is a
+⋄-effectus.  Read in the partial form `EJAPsuᵒᵖ` the point asks for, at the
+concrete partial-form structure `ejapsuPartialStructure` of the section above:
+quotients (`ejapsuHasQuotients`), comprehension (`ejapsuHasComprehension`),
+images (`ejapsuHasImages`) and the sharpness of orthocomplements
+(`ejapsu_orth_sharp`).  The `vNᵒᵖ` and `CvNᵒᵖ` clauses of the same Examples are
+`diamond_effectus_vn` and `diamond_effectus_cvn` in `VNExamples.lean`, the
+`Set` clause is `diamond_effectus_set` in `ExtensiveExamples.lean`. -/
+theorem diamond_effectus_eja :
+    letI := ejapsuHasFiniteCoproducts
+    letI := ejapsuPCM
+    letI := ejapsuFinPAC
+    letI := ejapsuEffectusPartialForm
+    DiamondEffectus (EJAPsu.{u}ᵒᵖ) :=
+  ejapsu_diamondEffectus
 
 end
 
 end Theses.B.Eff
-
