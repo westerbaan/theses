@@ -13,7 +13,7 @@ lines 1267–2621.
   parsec 1470:  basics of uniform spaces
   parsec 1480:  ultranorm continuity of the module operations
   parsec 1490:  orthonormal bases; self-dual ⇔ (bounded) ultranorm complete
-                ⇔ basis
+                ⇔ basis; the standard module H_𝒷 of 149IIb
 
 Conventions.  Mathlib's `CStarModule 𝒷 X` plays the role of the thesis's
 pre-Hilbert 𝒷-modules (`[CompleteSpace X]` for Hilbert 𝒷-modules); note
@@ -2772,10 +2772,24 @@ orthonormal family `(eᵢ)` is an **(orthonormal) basis** when (a) every
 
 **149II** (Notation) and **149IIa** (Remark) — not converted.  **149IIb**
 (Beware, dils.tex:2182): of its two comparisons with the literature, the
-first is converted in full — `onbasis_beware_ketbraNat` below is its
-`B(ℓ²)` family's failure to be a basis in the *norm* sense of the
-literature, and `onbasis_beware_ketbraNat_isONBasis` is that the same family
-*is* a basis in the sense of this Definition. -/
+**first is converted in full**, in both directions.  *"There is a basis in
+our sense that is not a basis in their sense"*:
+`onbasis_beware_ketbraNat` below is its `B(ℓ²)` family's failure to be a
+basis in the *norm* sense of `landi2012orthogonal`, `manuilov2000hilbertc`,
+and `onbasis_beware_ketbraNat_isONBasis` is that the same family *is* a
+basis in the sense of this Definition.  *"And vice versa"*: the standard
+module `H_𝒷` of `landi2012orthogonal` §3 is `StdMod` at the end of this
+file, `StdMod.delta_normBasis` is that its standard family `(δᵢ)` is a
+basis in *their* sense, and `onbasis_beware_stdmod_not_isONBasis` is that
+at `𝒷 = B(ℓ²)` it has no basis in the sense of this Definition — because it
+is not self dual (`onbasis_beware_stdmod_not_selfDual`), the Beware's own
+route through `dils-selfdual`.
+
+The **second** comparison of 149IIb (`blecher2004operator` lemma 8.5.23,
+`w*`-convergent expansions in a self-dual module over a von Neumann
+algebra) is **not** converted: it presupposes the Banach-space predual of a
+self-dual Hilbert module (`blecher2004operator` lemma 8.5.4), which neither
+this development nor Mathlib has. -/
 def IsONBasis (e : ι → X) : Prop :=
   OrthonormalFam 𝒷 e ∧
     (∀ x : X,
@@ -2815,9 +2829,10 @@ This is the negative half; the positive half, that this family *is* a basis
 in the sense of 149I, is `onbasis_beware_ketbraNat_isONBasis` below (it
 needs the ultranorm convergence of the partial sums, for which **43II**.2
 `vn_counterexamples_2_sup`, `⋁_N ∑_{n≤N}|n⟩⟨n| = 1`, is the ingredient).
-What is still not formalised is the *converse* half of the Beware, the
-standard module `H_{B(ℓ²)}` of `landi2012orthogonal` §3, which is a basis in
-their sense but not in ours.
+The Beware's *"and vice versa"* — the standard module `H_{B(ℓ²)}` of
+`landi2012orthogonal` §3, which has a basis in their sense but none in ours
+— is `StdMod.delta_normBasis` with `onbasis_beware_stdmod_not_isONBasis`,
+at the end of this file.
 
 The proof is algebraic: `q = 1 - ∑_{n ∈ s} |n⟩⟨n|` is a projection
 (`|n⟩⟨n||m⟩⟨m| = δ_{nm}|n⟩⟨n|`, **43II**.1) and is non-zero — else
@@ -4618,8 +4633,10 @@ Hilbert module over itself, **are** an orthonormal basis in the sense of
 **149I**.  Together with `onbasis_beware_ketbraNat` — the same family is not
 a basis in the *norm* sense of `landi2012orthogonal`,
 `manuilov2000hilbertc`, the expansion of `1` staying at distance `1` from
-every partial sum — this is the Beware's first clause in full: *"there is a
-basis in our sense that is not a basis in their sense"*.
+every partial sum — this is the Beware's *"there is a basis in our sense
+that is not a basis in their sense"*.  Its *"and vice versa"* is
+`StdMod.delta_normBasis` with `onbasis_beware_stdmod_not_isONBasis` at the
+end of this file, which together complete the Beware's first clause.
 
 Clause (a).  With the file's mirrored inner product `⟨a,b⟩ = b a*` the
 partial sum `∑_{n ∈ s} ⟨pₙ,x⟩ · pₙ` is `x P_s` for the projection
@@ -4801,4 +4818,711 @@ theorem dils_selfdual [VonNeumannAlgebra 𝒷] :
 
 end Bases
 
+/-! ## **149IIb**, clause 1, the *"vice versa"*: the standard module `H_𝒷`
+
+The Beware (dils.tex:2182) compares **149I**'s notion of an orthonormal
+basis with the *norm*-convergent one of `landi2012orthogonal`,
+`manuilov2000hilbertc`, and says the two notions are independent.  One
+direction is `onbasis_beware_ketbraNat` with
+`onbasis_beware_ketbraNat_isONBasis` above: `{|0⟩⟨0|, |1⟩⟨1|, …}` in `B(ℓ²)`
+is a basis in the sense of **149I** but not in theirs.  What follows is the
+Beware's *"and vice versa"*: the **standard Hilbert module** `H_𝒷` of
+`landi2012orthogonal` §3 — the tuples `(bᵢ) ∈ ι → 𝒷` for which `∑ᵢ bᵢbᵢ*`
+converges **in norm** (mirrored; theirs is `∑ᵢ bᵢ*bᵢ`) — carries the
+standard family `(δᵢ)`, which *is* a basis in **their** sense
+(`StdMod.delta_normBasis`), while at `𝒷 = B(ℓ²)`, `ι = ℕ` it has **no**
+basis in ours (`onbasis_beware_stdmod_not_isONBasis`), because it is not
+self dual (`onbasis_beware_stdmod_not_selfDual`) — which is the route the
+Beware itself names, `cf. dils-selfdual` (**149V**).
+
+`H_𝒷` is built here from scratch rather than as a subobject of the
+`ℓ²((pᵢ))` of **161II** (`SelfDual.lean`, which is downstream): its inner
+product is an honest norm-convergent sum, so none of 161II's ultraweak
+machinery is needed — only the finite-index Cauchy–Schwarz read off from
+Mathlib's `C⋆ᵐᵒᵈ(𝒷, Π i, 𝒷)`, and no von Neumann hypothesis on `𝒷`. -/
+
+section StandardModule
+
+set_option linter.unusedSectionVars false
+
+variable {𝒷 : Type u} {ι : Type w}
+  [CStarAlgebra 𝒷] [PartialOrder 𝒷] [StarOrderedRing 𝒷]
+
+/-- `(x+y)(x+y)* ≤ 2xx* + 2yy*`, from `0 ≤ (x−y)(x−y)*`. -/
+private theorem add_mul_star_le (x y : 𝒷) :
+    (x + y) * star (x + y)
+      ≤ (x * star x + x * star x) + (y * star y + y * star y) := by
+  have h : (0 : 𝒷) ≤ (x - y) * star (x - y) := mul_star_self_nonneg _
+  have he : ((x * star x + x * star x) + (y * star y + y * star y))
+        - (x + y) * star (x + y) = (x - y) * star (x - y) := by
+    rw [star_add, star_sub]; noncomm_ring
+  exact sub_nonneg.mp (by rw [he]; exact h)
+
+variable (𝒷 ι) in
+/-- The **standard Hilbert module** `H_𝒷` of `landi2012orthogonal` §3, as a
+ℂ-submodule of `ι → 𝒷`: the tuples `(bᵢ)` for which `∑ᵢ bᵢbᵢ*` converges in
+**norm** (mirrored; the thesis's `∑ᵢ bᵢ*bᵢ`). -/
+def StdModSub : Submodule ℂ (ι → 𝒷) where
+  carrier := {b | Summable fun i => b i * star (b i)}
+  zero_mem' := by simp
+  add_mem' := by
+    classical
+    rintro b c hb hc
+    simp only [Set.mem_ofPred_eq] at hb hc ⊢
+    rw [summable_iff_vanishing_norm]
+    intro ε hε
+    obtain ⟨s₁, hs₁⟩ := summable_iff_vanishing_norm.mp hb (ε / 4) (by positivity)
+    obtain ⟨s₂, hs₂⟩ := summable_iff_vanishing_norm.mp hc (ε / 4) (by positivity)
+    refine ⟨s₁ ∪ s₂, fun t ht => ?_⟩
+    have h1 := hs₁ t (ht.mono_right Finset.subset_union_left)
+    have h2 := hs₂ t (ht.mono_right Finset.subset_union_right)
+    have hnn : (0 : 𝒷) ≤ ∑ i ∈ t, (b i + c i) * star (b i + c i) :=
+      Finset.sum_nonneg fun i _ => mul_star_self_nonneg _
+    have hle : (∑ i ∈ t, (b i + c i) * star (b i + c i))
+        ≤ ((∑ i ∈ t, b i * star (b i)) + ∑ i ∈ t, b i * star (b i))
+          + ((∑ i ∈ t, c i * star (c i)) + ∑ i ∈ t, c i * star (c i)) := by
+      have := Finset.sum_le_sum (s := t) (f := fun i => (b i + c i) * star (b i + c i))
+        (g := fun i => (b i * star (b i) + b i * star (b i))
+          + (c i * star (c i) + c i * star (c i)))
+        (fun i _ => add_mul_star_le (b i) (c i))
+      refine this.trans (le_of_eq ?_)
+      simp only [Finset.sum_add_distrib]
+    refine lt_of_le_of_lt (CStarAlgebra.norm_le_norm_of_nonneg_of_le hnn hle) ?_
+    calc ‖((∑ i ∈ t, b i * star (b i)) + ∑ i ∈ t, b i * star (b i))
+            + ((∑ i ∈ t, c i * star (c i)) + ∑ i ∈ t, c i * star (c i))‖
+        ≤ ‖(∑ i ∈ t, b i * star (b i)) + ∑ i ∈ t, b i * star (b i)‖
+            + ‖(∑ i ∈ t, c i * star (c i)) + ∑ i ∈ t, c i * star (c i)‖ :=
+          norm_add_le _ _
+      _ ≤ (‖∑ i ∈ t, b i * star (b i)‖ + ‖∑ i ∈ t, b i * star (b i)‖)
+            + (‖∑ i ∈ t, c i * star (c i)‖ + ‖∑ i ∈ t, c i * star (c i)‖) := by
+          gcongr <;> exact norm_add_le _ _
+      _ < ε := by linarith
+  smul_mem' := by
+    rintro z b hb
+    simp only [Set.mem_ofPred_eq] at hb ⊢
+    have hfun : (fun i => (z • b i) * star (z • b i))
+        = fun i => (z * starRingEnd ℂ z) • (b i * star (b i)) := by
+      funext i
+      rw [star_smul, smul_mul_assoc, mul_smul_comm, smul_smul]
+      rfl
+    rw [show (z • b) = fun i => z • b i from rfl, hfun]
+    exact hb.const_smul _
+
+variable (𝒷 ι) in
+/-- The **standard Hilbert module** `H_𝒷` as a type. -/
+def StdMod : Type (max u w) := ↥(StdModSub 𝒷 ι)
+
+namespace StdMod
+
+/-- The underlying tuple. -/
+def val (x : StdMod 𝒷 ι) : ι → 𝒷 := Subtype.val x
+
+theorem val_injective : Function.Injective (val (𝒷 := 𝒷) (ι := ι)) :=
+  Subtype.val_injective
+
+theorem summable_val (x : StdMod 𝒷 ι) : Summable fun i => val x i * star (val x i) :=
+  Subtype.property x
+
+noncomputable instance : AddCommGroup (StdMod 𝒷 ι) :=
+  inferInstanceAs (AddCommGroup ↥(StdModSub 𝒷 ι))
+noncomputable instance : Module ℂ (StdMod 𝒷 ι) :=
+  inferInstanceAs (Module ℂ ↥(StdModSub 𝒷 ι))
+
+@[simp] theorem val_add (x y : StdMod 𝒷 ι) : val (x + y) = fun i => val x i + val y i := rfl
+@[simp] theorem val_zero : val (0 : StdMod 𝒷 ι) = fun _ => 0 := rfl
+@[simp] theorem val_neg (x : StdMod 𝒷 ι) : val (-x) = fun i => -val x i := rfl
+@[simp] theorem val_sub (x y : StdMod 𝒷 ι) : val (x - y) = fun i => val x i - val y i := rfl
+@[simp] theorem val_smul (c : ℂ) (x : StdMod 𝒷 ι) : val (c • x) = fun i => c • val x i := rfl
+
+/-- The (mirrored) right action of `𝒷`, coordinatewise. -/
+noncomputable instance : Module 𝒷 (StdMod 𝒷 ι) where
+  smul b x := ⟨fun i => b * val x i, by
+    have h := ((summable_val x).mul_left b).mul_right (star b)
+    refine h.congr fun i => ?_
+    rw [star_mul, ← mul_assoc, ← mul_assoc]⟩
+  one_smul x := val_injective (funext fun i => one_mul _)
+  mul_smul a b x := val_injective (funext fun i => mul_assoc _ _ _)
+  smul_zero a := val_injective (funext fun i => mul_zero _)
+  smul_add a x y := val_injective (funext fun i => mul_add _ _ _)
+  add_smul a b x := val_injective (funext fun i => add_mul _ _ _)
+  zero_smul x := val_injective (funext fun i => zero_mul _)
+
+@[simp] theorem val_op_smul (b : 𝒷) (x : StdMod 𝒷 ι) :
+    val (b • x) = fun i => b * val x i := rfl
+
+/-! ### the 𝒷-valued inner product -/
+
+/-- Cauchy–Schwarz for a *finite* partial sum, read off from Mathlib's
+C*-module structure on the finite product `𝒷^t`. -/
+private theorem stdmod_norm_sum_mul_star_le (b c : ι → 𝒷) (t : Finset ι) :
+    ‖∑ i ∈ t, c i * star (b i)‖
+      ≤ Real.sqrt ‖∑ i ∈ t, b i * star (b i)‖
+          * Real.sqrt ‖∑ i ∈ t, c i * star (c i)‖ := by
+  classical
+  set Bt : C⋆ᵐᵒᵈ(𝒷, ∀ _ : {i // i ∈ t}, 𝒷) :=
+    (WithCStarModule.equiv 𝒷 _).symm (fun i => b i.1) with hBt
+  set Ct : C⋆ᵐᵒᵈ(𝒷, ∀ _ : {i // i ∈ t}, 𝒷) :=
+    (WithCStarModule.equiv 𝒷 _).symm (fun i => c i.1) with hCt
+  have hB : ∀ i : {i // i ∈ t}, Bt i = b i.1 := fun i => rfl
+  have hC : ∀ i : {i // i ∈ t}, Ct i = c i.1 := fun i => rfl
+  have hinner : (inner 𝒷 Bt Ct : 𝒷) = ∑ i ∈ t, c i * star (b i) := by
+    rw [WithCStarModule.pi_inner]
+    simp only [hB, hC, WithCStarModule.inner_def]
+    exact Finset.sum_coe_sort t fun i => c i * star (b i)
+  have hnB : ‖Bt‖ = Real.sqrt ‖∑ i ∈ t, b i * star (b i)‖ := by
+    rw [WithCStarModule.pi_norm]
+    congr 1
+    congr 1
+    simp only [hB, WithCStarModule.inner_def]
+    exact Finset.sum_coe_sort t fun i => b i * star (b i)
+  have hnC : ‖Ct‖ = Real.sqrt ‖∑ i ∈ t, c i * star (c i)‖ := by
+    rw [WithCStarModule.pi_norm]
+    congr 1
+    congr 1
+    simp only [hC, WithCStarModule.inner_def]
+    exact Finset.sum_coe_sort t fun i => c i * star (c i)
+  have h := CStarModule.norm_inner_le (A := 𝒷) C⋆ᵐᵒᵈ(𝒷, ∀ _ : {i // i ∈ t}, 𝒷)
+    (x := Bt) (y := Ct)
+  rwa [hinner, hnB, hnC] at h
+
+/-- The defining sum of the inner product converges in norm. -/
+theorem summable_inner (x y : StdMod 𝒷 ι) :
+    Summable fun i => val y i * star (val x i) := by
+  rw [summable_iff_vanishing_norm]
+  intro ε hε
+  classical
+  obtain ⟨s₁, hs₁⟩ := summable_iff_vanishing_norm.mp (summable_val x) (ε / 2) (by positivity)
+  obtain ⟨s₂, hs₂⟩ := summable_iff_vanishing_norm.mp (summable_val y) (ε / 2) (by positivity)
+  refine ⟨s₁ ∪ s₂, fun t ht => ?_⟩
+  have h1 := hs₁ t (ht.mono_right Finset.subset_union_left)
+  have h2 := hs₂ t (ht.mono_right Finset.subset_union_right)
+  refine lt_of_le_of_lt (stdmod_norm_sum_mul_star_le (val x) (val y) t) ?_
+  have e1 : Real.sqrt ‖∑ i ∈ t, val x i * star (val x i)‖ ≤ Real.sqrt (ε / 2) :=
+    Real.sqrt_le_sqrt h1.le
+  have e2 : Real.sqrt ‖∑ i ∈ t, val y i * star (val y i)‖ ≤ Real.sqrt (ε / 2) :=
+    Real.sqrt_le_sqrt h2.le
+  calc Real.sqrt ‖∑ i ∈ t, val x i * star (val x i)‖
+          * Real.sqrt ‖∑ i ∈ t, val y i * star (val y i)‖
+      ≤ Real.sqrt (ε / 2) * Real.sqrt (ε / 2) := by gcongr
+    _ = ε / 2 := Real.mul_self_sqrt (by positivity)
+    _ < ε := by linarith
+
+/-- The inner product `⟨x,y⟩ = ∑ᵢ xᵢ*yᵢ` (mirrored: `∑ᵢ yᵢxᵢ*`), converging
+in **norm**. -/
+noncomputable def inner' (x y : StdMod 𝒷 ι) : 𝒷 := ∑' i, val y i * star (val x i)
+
+theorem hasSum_inner' (x y : StdMod 𝒷 ι) :
+    HasSum (fun i => val y i * star (val x i)) (inner' x y) :=
+  (summable_inner x y).hasSum
+
+theorem inner'_add_right (x y z : StdMod 𝒷 ι) :
+    inner' x (y + z) = inner' x y + inner' x z :=
+  (hasSum_inner' x (y + z)).unique <| by
+    simpa only [val_add, add_mul] using (hasSum_inner' x y).add (hasSum_inner' x z)
+
+theorem inner'_op_smul_right (b : 𝒷) (x y : StdMod 𝒷 ι) :
+    inner' x (b • y) = b * inner' x y :=
+  (hasSum_inner' x (b • y)).unique <| by
+    simpa only [val_op_smul, mul_assoc] using (hasSum_inner' x y).mul_left b
+
+theorem inner'_smul_right_complex (c : ℂ) (x y : StdMod 𝒷 ι) :
+    inner' x (c • y) = c • inner' x y :=
+  (hasSum_inner' x (c • y)).unique <| by
+    simpa only [val_smul, smul_mul_assoc] using (hasSum_inner' x y).const_smul c
+
+theorem star_inner' (x y : StdMod 𝒷 ι) : star (inner' x y) = inner' y x := by
+  rw [inner', tsum_star]
+  simp only [star_mul, star_star]
+  rfl
+
+theorem inner'_self_nonneg (x : StdMod 𝒷 ι) : 0 ≤ inner' x x :=
+  tsum_nonneg fun _ => mul_star_self_nonneg _
+
+/-- The inner product is **definite**: if `∑ᵢ xᵢxᵢ* = 0` then each term,
+being between `0` and the sum, is `0`, hence each `xᵢ = 0`. -/
+theorem inner'_definite (x : StdMod 𝒷 ι) (h : inner' x x = 0) : x = 0 := by
+  refine val_injective (funext fun i => ?_)
+  have hle : val x i * star (val x i) ≤ inner' x x :=
+    (summable_val x).le_tsum i fun j _ => mul_star_self_nonneg _
+  rw [h] at hle
+  have hii : val x i * star (val x i) = 0 :=
+    le_antisymm hle (mul_star_self_nonneg _)
+  have hn : ‖val x i‖ * ‖val x i‖ = 0 := by
+    rw [← CStarRing.norm_self_mul_star (x := val x i), hii, norm_zero]
+  have : ‖val x i‖ = 0 := by nlinarith [norm_nonneg (val x i)]
+  simpa using norm_eq_zero.mp this
+
+variable (𝒷 ι) in
+/-- The `BInner` bundling of the inner product of `H_𝒷`. -/
+noncomputable def binner : BInner 𝒷 (StdMod 𝒷 ι) where
+  inner := inner'
+  inner_add_right := inner'_add_right
+  inner_op_smul_right := fun b x y => inner'_op_smul_right b x y
+  inner_smul_right_complex := fun c x y => inner'_smul_right_complex c x y
+  star_inner := star_inner'
+  inner_self_nonneg := inner'_self_nonneg
+
+@[simp] theorem binner_inner : (binner 𝒷 ι).inner = inner' (𝒷 := 𝒷) (ι := ι) := rfl
+
+theorem inner'_zero_zero : inner' (0 : StdMod 𝒷 ι) 0 = 0 := by
+  simp [inner']
+
+/-! ### the norm, and `H_𝒷` as a pre-Hilbert 𝒷-module -/
+
+noncomputable instance : NormedAddCommGroup (StdMod 𝒷 ι) :=
+  AddGroupNorm.toNormedAddCommGroup
+    { toFun := (binner 𝒷 ι).norm
+      map_zero' := by
+        show Real.sqrt ‖inner' (0 : StdMod 𝒷 ι) 0‖ = 0
+        rw [inner'_zero_zero]
+        simp
+      add_le' := fun x y => (module_seminorm_2 (binner 𝒷 ι) x y 1 1).1
+      neg' := fun x => by
+        have h := (module_seminorm_2 (binner 𝒷 ι) x x (-1) 1).2.1
+        rw [show ((-1 : ℂ) • x) = -x by simp] at h
+        simpa using h
+      eq_zero_of_map_eq_zero' := fun x hx => by
+        have hx' : Real.sqrt ‖inner' x x‖ = 0 := hx
+        have h0 : ‖inner' x x‖ = 0 := by
+          nlinarith [Real.sq_sqrt (norm_nonneg (inner' x x)),
+            norm_nonneg (inner' x x)]
+        exact inner'_definite x (norm_eq_zero.mp h0) }
+
+theorem norm_def (x : StdMod 𝒷 ι) : ‖x‖ = Real.sqrt ‖inner' x x‖ := rfl
+
+noncomputable instance : NormedSpace ℂ (StdMod 𝒷 ι) where
+  norm_smul_le c x := le_of_eq (module_seminorm_2 (binner 𝒷 ι) x x c 1).2.1
+
+noncomputable instance : CStarModule 𝒷 (StdMod 𝒷 ι) where
+  inner := inner'
+  inner_add_right := inner'_add_right _ _ _
+  inner_self_nonneg := inner'_self_nonneg _
+  inner_self := fun {x} => ⟨inner'_definite x, by
+    rintro rfl
+    exact inner'_zero_zero⟩
+  inner_op_smul_right := inner'_op_smul_right _ _ _
+  inner_smul_right_complex := inner'_smul_right_complex _ _ _
+  star_inner := star_inner'
+  norm_eq_sqrt_norm_inner_self := fun x => rfl
+
+@[simp] theorem inner_eq (x y : StdMod 𝒷 ι) : (inner 𝒷 x y : 𝒷) = inner' x y := rfl
+
+/-! ### the standard basis `(δᵢ)` and its norm-convergent expansion -/
+
+theorem val_sum (s : Finset ι) (f : ι → StdMod 𝒷 ι) (j : ι) :
+    val (∑ i ∈ s, f i) j = ∑ i ∈ s, val (f i) j := by
+  classical
+  induction s using Finset.induction with
+  | empty => simp
+  | insert a s ha ih =>
+      rw [Finset.sum_insert ha, Finset.sum_insert ha]
+      show val (f a) j + val (∑ i ∈ s, f i) j = _
+      rw [ih]
+
+variable [DecidableEq ι]
+
+/-- `δᵢ`: the tuple with `1` in the coordinate `i` and `0` elsewhere — the
+standard basis of `H_𝒷`. -/
+def delta (i : ι) : StdMod 𝒷 ι :=
+  ⟨fun j => if j = i then 1 else 0, by
+    refine summable_of_ne_finset_zero (s := {i}) fun j hj => ?_
+    simp only [Finset.mem_singleton] at hj
+    simp [hj]⟩
+
+@[simp] theorem val_delta (i : ι) :
+    val (delta i : StdMod 𝒷 ι) = fun j => if j = i then 1 else 0 := rfl
+
+theorem inner'_delta_left (x : StdMod 𝒷 ι) (i : ι) :
+    inner' (delta i) x = val x i := by
+  rw [inner']
+  have : (fun j => val x j * star (val (delta i : StdMod 𝒷 ι) j))
+      = fun j => if j = i then val x j else 0 := by
+    funext j; by_cases h : j = i <;> simp [h]
+  rw [this]
+  exact tsum_ite_eq i _
+
+theorem inner'_delta (i j : ι) :
+    inner' (delta i : StdMod 𝒷 ι) (delta j) = if i = j then 1 else 0 := by
+  rw [inner'_delta_left, val_delta]
+
+/-- The **restriction** of `x` to a finite set of coordinates. -/
+def restrict (x : StdMod 𝒷 ι) (s : Finset ι) : StdMod 𝒷 ι :=
+  ⟨fun i => if i ∈ s then val x i else 0, by
+    refine summable_of_ne_finset_zero (s := s) fun j hj => ?_
+    simp [hj]⟩
+
+@[simp] theorem val_restrict (x : StdMod 𝒷 ι) (s : Finset ι) :
+    val (restrict x s) = fun i => if i ∈ s then val x i else 0 := rfl
+
+/-- The partial sums of the expansion of `x` in `(δᵢ)` are its
+restrictions. -/
+theorem sum_smul_delta (x : StdMod 𝒷 ι) (s : Finset ι) :
+    (∑ i ∈ s, (inner 𝒷 (delta i) x : 𝒷) • delta i) = restrict x s := by
+  refine val_injective (funext fun j => ?_)
+  rw [val_sum, val_restrict]
+  have hterm : ∀ i : ι,
+      val ((inner 𝒷 (delta i : StdMod 𝒷 ι) x : 𝒷) • delta i) j
+        = if i = j then val x i else 0 := by
+    intro i
+    rw [val_op_smul, inner_eq, inner'_delta_left, val_delta]
+    by_cases h : j = i
+    · subst h; simp
+    · simp [h, Ne.symm h]
+  simp only [hterm, Finset.sum_ite_eq' s j (fun i => val x i)]
+
+/-- The **tail identity**: `⟨x|_s − x, x|_s − x⟩ = ⟨x,x⟩ − ∑_{i∈s} xᵢxᵢ*`. -/
+theorem inner'_restrict_sub (x : StdMod 𝒷 ι) (s : Finset ι) :
+    inner' (restrict x s - x) (restrict x s - x)
+      = inner' x x - ∑ i ∈ s, val x i * star (val x i) := by
+  refine (hasSum_inner' (restrict x s - x) (restrict x s - x)).unique ?_
+  have hfun : (fun i => val (restrict x s - x) i * star (val (restrict x s - x) i))
+      = fun i => if i ∈ s then 0 else val x i * star (val x i) := by
+    funext i
+    by_cases h : i ∈ s <;> simp [h]
+  rw [hfun]
+  have hsum2' : HasSum (fun i => if i ∈ s then val x i * star (val x i) else 0)
+      (∑ i ∈ s, val x i * star (val x i)) := by
+    have h : HasSum (fun i => if i ∈ s then val x i * star (val x i) else 0)
+        (∑ i ∈ s, if i ∈ s then val x i * star (val x i) else 0) :=
+      hasSum_sum_of_ne_finset_zero fun i hi => by simp [hi]
+    have heq : (∑ i ∈ s, if i ∈ s then val x i * star (val x i) else 0)
+        = ∑ i ∈ s, val x i * star (val x i) :=
+      Finset.sum_congr rfl fun i hi => by simp [hi]
+    exact heq ▸ h
+  have hfinal := (hasSum_inner' x x).sub hsum2'
+  have hEq : (fun i => val x i * star (val x i)
+        - (if i ∈ s then val x i * star (val x i) else 0))
+      = fun i => if i ∈ s then 0 else val x i * star (val x i) := by
+    funext i; by_cases h : i ∈ s <;> simp [h]
+  exact hEq ▸ hfinal
+
+/-- **149IIb**, clause 1, *"vice versa"*, the **positive** half: in the
+standard module `H_𝒷` the expansion `x = ∑ᵢ δᵢ⟨δᵢ,x⟩` converges in
+**norm**. -/
+theorem tendsto_restrict (x : StdMod 𝒷 ι) :
+    Tendsto (fun s : Finset ι => restrict x s) atTop (𝓝 x) := by
+  rw [tendsto_iff_norm_sub_tendsto_zero]
+  have hnorm : ∀ s : Finset ι, ‖restrict x s - x‖
+      = Real.sqrt ‖inner' x x - ∑ i ∈ s, val x i * star (val x i)‖ := by
+    intro s
+    rw [norm_def, inner'_restrict_sub]
+  simp only [hnorm]
+  have h0 : Tendsto (fun s : Finset ι => ∑ i ∈ s, val x i * star (val x i))
+      atTop (𝓝 (inner' x x)) := hasSum_inner' x x
+  have h1 : Tendsto
+      (fun s : Finset ι => inner' x x - ∑ i ∈ s, val x i * star (val x i))
+      atTop (𝓝 0) := by
+    have h := (tendsto_const_nhds (x := inner' x x) (f := (atTop : Filter (Finset ι)))).sub h0
+    rwa [sub_self] at h
+  have h2 := (continuous_norm.tendsto (0 : 𝒷)).comp h1
+  simp only [Function.comp_def, norm_zero] at h2
+  have h3 := (Real.continuous_sqrt.tendsto (0 : ℝ)).comp h2
+  simpa [Function.comp_def] using h3
+
+variable (𝒷 ι) in
+/-- **149IIb** (dils.tex:2182, Beware), clause 1, the *"vice versa"*: the
+standard Hilbert module `H_𝒷` **has** a basis in the sense of
+`landi2012orthogonal`, `manuilov2000hilbertc` — the standard family `(δᵢ)`
+is orthonormal (**149I**.2) and every `x` is the **norm** limit of its
+partial expansions `∑_{i∈s} δᵢ⟨δᵢ,x⟩` (mirrored: `∑_{i∈s} ⟨δᵢ,x⟩ • δᵢ`). -/
+theorem delta_normBasis [Nontrivial 𝒷] :
+    OrthonormalFam 𝒷 (delta : ι → StdMod 𝒷 ι) ∧
+      ∀ x : StdMod 𝒷 ι,
+        Tendsto (fun s : Finset ι => ∑ i ∈ s, (inner 𝒷 (delta i) x : 𝒷) • delta i)
+          atTop (𝓝 x) := by
+  refine ⟨⟨fun i j hij => ?_, fun i => ⟨?_, ?_⟩⟩, fun x => ?_⟩
+  · rw [inner_eq, inner'_delta]
+    simp [hij]
+  · rw [inner_eq, inner'_delta]
+    simp [IsStarProjection.one]
+  · rw [inner_eq, inner'_delta]
+    simp
+  · simp only [sum_smul_delta]
+    exact tendsto_restrict x
+
+theorem inner'_neg_neg (z : StdMod 𝒷 ι) : inner' (-z) (-z) = inner' z z := by
+  simp [inner']
+
+theorem inner'_delta_right (x : StdMod 𝒷 ι) (i : ι) :
+    inner' x (delta i) = star (val x i) := by
+  rw [← star_inner' (delta i) x, inner'_delta_left]
+
+end StdMod
+
+/-! ### `H_{B(ℓ²)}` has no orthonormal basis in the sense of 149I -/
+
+section BewareStandardModule
+
+set_option linter.unusedSectionVars false
+
+local notation "ℓ²" => lp (fun _ : ℕ => ℂ) 2
+
+
+private theorem norm_ketbraNat_diag (n : ℕ) : ‖ketbraNat n n‖ = 1 := by
+  rw [ketbraNat, ketbra_norm, norm_single_one, mul_one]
+
+private theorem ketbraNat_diag_star (n : ℕ) : star (ketbraNat n n) = ketbraNat n n :=
+  (vn_counterexamples_1 0 0 n n).1
+
+private theorem ketbraNat_diag_mul (n : ℕ) :
+    ketbraNat n n * ketbraNat n n = ketbraNat n n := by
+  simpa using (vn_counterexamples_1 n n n n).2
+
+private theorem ketbraNat_diag_mul_of_ne {m n : ℕ} (h : m ≠ n) :
+    ketbraNat m m * ketbraNat n n = 0 := by
+  simpa [h] using (vn_counterexamples_1 n n m m).2
+
+/-- `P_S = ∑_{n ∈ S} |n⟩⟨n|` is a projection, so `P_S ≤ 1`. -/
+private theorem sumP_isStarProjection (S : Finset ℕ) :
+    IsStarProjection (∑ n ∈ S, ketbraNat n n) := by
+  constructor
+  · show (∑ n ∈ S, ketbraNat n n) * (∑ n ∈ S, ketbraNat n n) = _
+    rw [Finset.sum_mul]
+    refine Finset.sum_congr rfl fun m hm => ?_
+    rw [Finset.mul_sum,
+      Finset.sum_eq_single m (fun n _ hnm => ketbraNat_diag_mul_of_ne (Ne.symm hnm))
+        (fun h => absurd hm h), ketbraNat_diag_mul m]
+  · show star (∑ n ∈ S, ketbraNat n n) = _
+    rw [star_sum]
+    exact Finset.sum_congr rfl fun n _ => ketbraNat_diag_star n
+
+private theorem sumP_le_one (S : Finset ℕ) :
+    (∑ n ∈ S, ketbraNat n n) ≤ (1 : ℓ² →L[ℂ] ℓ²) :=
+  (sumP_isStarProjection S).le_one
+
+/-- `a = 0` as soon as `‖a‖_ω = 0` for every np-functional. -/
+private theorem eq_zero_of_omegaNorm_eq_zero {𝒷 : Type u} [CStarAlgebra 𝒷]
+    [PartialOrder 𝒷] [StarOrderedRing 𝒷] [Theses.VonNeumannAlgebra 𝒷] {a : 𝒷}
+    (h : ∀ ω : NPFunctional 𝒷, omegaNorm 𝒷 ω a = 0) : a = 0 := by
+  have hzero : star a * a = 0 := by
+    refine np_separating _ fun ω => ?_
+    have h1 : Real.sqrt (ω (star a * a)).re = 0 := h ω
+    have h2 : (ω (star a * a)).re = 0 := by
+      have hnn : 0 ≤ (ω (star a * a)).re := np_re_nonneg ω (star_mul_self_nonneg a)
+      nlinarith [Real.sq_sqrt hnn, h1]
+    have h3 : (ω (star a * a)).im = 0 := np_im_zero ω (star_mul_self_nonneg a)
+    exact Complex.ext (by simpa using h2) (by simpa using h3)
+  have hn : ‖a‖ * ‖a‖ = 0 := by
+    rw [← CStarRing.norm_star_mul_self (x := a), hzero, norm_zero]
+  have : ‖a‖ = 0 := by nlinarith [norm_nonneg a]
+  exact norm_eq_zero.mp this
+
+/-- The ultranorm smallness of `1 − P_{<N}`, read off from the ultranorm
+convergence of the expansion of `1` in `onbasis_beware_ketbraNat_isONBasis`
+(**43II**.2 `vn_counterexamples_2_sup` is the ingredient there). -/
+private theorem exists_sqrt_np_one_sub_range_le
+    (ω : NPFunctional (ℓ² →L[ℂ] ℓ²)) {ε : ℝ} (hε : 0 < ε) :
+    ∃ N : ℕ, Real.sqrt
+      (ω ((1 : ℓ² →L[ℂ] ℓ²) - ∑ n ∈ Finset.range N, ketbraNat n n)).re ≤ ε := by
+  classical
+  have h := (onbasis_beware_ketbraNat_isONBasis.2.1 (1 : ℓ² →L[ℂ] ℓ²)) ω
+  -- the partial sums are `P_s`, and `‖P_s − 1‖_ω² = ω(1 − P_s)`
+  have hkey : ∀ s : Finset ℕ,
+      unSeminorm ω (inner (ℓ² →L[ℂ] ℓ²))
+          ((∑ n ∈ s, (inner (ℓ² →L[ℂ] ℓ²) (ketbraNat n n) 1 : ℓ² →L[ℂ] ℓ²) •
+            ketbraNat n n) - 1)
+        = Real.sqrt (ω ((1 : ℓ² →L[ℂ] ℓ²) - ∑ n ∈ s, ketbraNat n n)).re := by
+    intro s
+    have hpart : (∑ n ∈ s, (inner (ℓ² →L[ℂ] ℓ²) (ketbraNat n n) 1 : ℓ² →L[ℂ] ℓ²) •
+        ketbraNat n n) = ∑ n ∈ s, ketbraNat n n := by
+      refine Finset.sum_congr rfl fun n _ => ?_
+      rw [WithCStarModule.inner_def, one_mul, ketbraNat_diag_star n, smul_eq_mul, ketbraNat_diag_mul n]
+    have hself : star ((∑ n ∈ s, ketbraNat n n) - (1 : ℓ² →L[ℂ] ℓ²))
+        = (∑ n ∈ s, ketbraNat n n) - 1 := by
+      rw [star_sub, star_one, (sumP_isStarProjection s).isSelfAdjoint.star_eq]
+    have hsq : ((∑ n ∈ s, ketbraNat n n) - (1 : ℓ² →L[ℂ] ℓ²)) *
+          ((∑ n ∈ s, ketbraNat n n) - 1)
+        = 1 - ∑ n ∈ s, ketbraNat n n := by
+      have hidem := (sumP_isStarProjection s).isIdempotentElem
+      have : (∑ n ∈ s, ketbraNat n n) * (∑ n ∈ s, ketbraNat n n)
+          = ∑ n ∈ s, ketbraNat n n := hidem
+      rw [sub_mul, mul_sub, mul_sub, one_mul, mul_one, this]
+      abel
+    rw [hpart, unSeminorm, WithCStarModule.inner_def, hself, hsq]
+  rw [Metric.tendsto_nhds] at h
+  have := h ε hε
+  rw [Filter.eventually_atTop] at this
+  obtain ⟨s₀, hs₀⟩ := this
+  refine ⟨(s₀.sup id) + 1, ?_⟩
+  have hsub : s₀ ⊆ Finset.range ((s₀.sup id) + 1) := fun n hn => by
+    simp only [Finset.mem_range]
+    exact Nat.lt_succ_of_le (Finset.le_sup (f := id) hn)
+  have h2 := hs₀ (Finset.range ((s₀.sup id) + 1)) hsub
+  rw [hkey, Real.dist_eq, sub_zero,
+    abs_of_nonneg (Real.sqrt_nonneg _)] at h2
+  exact h2.le
+
+open StdMod in
+/-- The truncations `x_N = (|0⟩⟨0|, …, |N−1⟩⟨N−1|, 0, 0, …)`, which lie in
+`H_{B(ℓ²)}` because they are finitely supported. -/
+private noncomputable def bewareTrunc (N : ℕ) : StdMod (ℓ² →L[ℂ] ℓ²) ℕ :=
+  ⟨fun n => if n < N then ketbraNat n n else 0, by
+    refine summable_of_ne_finset_zero (s := Finset.range N) fun j hj => ?_
+    simp only [Finset.mem_range, not_lt] at hj
+    simp [Nat.not_lt.mpr hj]⟩
+
+private theorem val_bewareTrunc (N : ℕ) :
+    StdMod.val (bewareTrunc N) = fun n => if n < N then ketbraNat n n else 0 := rfl
+
+private theorem val_bewareTrunc_sub {N M : ℕ} (h : N ≤ M) (n : ℕ) :
+    StdMod.val (bewareTrunc M - bewareTrunc N) n
+      = if n ∈ Finset.Ico N M then ketbraNat n n else 0 := by
+  simp only [StdMod.val_sub, val_bewareTrunc, Finset.mem_Ico]
+  by_cases h1 : n < N
+  · have h2 : n < M := lt_of_lt_of_le h1 h
+    simp [h1, h2, Nat.not_le.mpr h1]
+  · by_cases h2 : n < M
+    · simp [h1, h2, Nat.not_lt.mp h1]
+    · simp [h1, h2]
+
+private theorem inner'_bewareTrunc_sub {N M : ℕ} (h : N ≤ M) :
+    StdMod.inner' (bewareTrunc M - bewareTrunc N) (bewareTrunc M - bewareTrunc N)
+      = ∑ n ∈ Finset.Ico N M, ketbraNat n n := by
+  refine (StdMod.hasSum_inner' _ _).unique ?_
+  have hfun : (fun n => StdMod.val (bewareTrunc M - bewareTrunc N) n *
+        star (StdMod.val (bewareTrunc M - bewareTrunc N) n))
+      = fun n => if n ∈ Finset.Ico N M then ketbraNat n n else 0 := by
+    funext n
+    rw [val_bewareTrunc_sub h n]
+    by_cases hn : n ∈ Finset.Ico N M
+    · simp [hn, ketbraNat_diag_star n, ketbraNat_diag_mul n]
+    · simp [hn]
+  rw [hfun]
+  have hs : HasSum (fun n => if n ∈ Finset.Ico N M then ketbraNat n n else 0)
+      (∑ n ∈ Finset.Ico N M, if n ∈ Finset.Ico N M then ketbraNat n n else 0) :=
+    hasSum_sum_of_ne_finset_zero fun n hn => by simp [hn]
+  have heq : (∑ n ∈ Finset.Ico N M, if n ∈ Finset.Ico N M then ketbraNat n n else 0)
+      = ∑ n ∈ Finset.Ico N M, ketbraNat n n :=
+    Finset.sum_congr rfl fun n hn => by simp [hn]
+  exact heq ▸ hs
+
+private theorem sum_Ico_le_one_sub {N₀ N M : ℕ} (h0 : N₀ ≤ N) :
+    (∑ n ∈ Finset.Ico N M, ketbraNat n n)
+      ≤ 1 - ∑ n ∈ Finset.range N₀, ketbraNat n n := by
+  classical
+  have hdisj : Disjoint (Finset.range N₀) (Finset.Ico N M) := by
+    rw [Finset.disjoint_left]
+    intro a ha hb
+    simp only [Finset.mem_range] at ha
+    simp only [Finset.mem_Ico] at hb
+    omega
+  have hun : (∑ n ∈ Finset.range N₀, ketbraNat n n)
+      + (∑ n ∈ Finset.Ico N M, ketbraNat n n)
+      = ∑ n ∈ (Finset.range N₀ ∪ Finset.Ico N M), ketbraNat n n :=
+    (Finset.sum_union hdisj).symm
+  have hle := sumP_le_one (Finset.range N₀ ∪ Finset.Ico N M)
+  rw [← hun] at hle
+  exact le_sub_iff_add_le'.mpr hle
+
+/-- The truncations are **ultranorm Cauchy**: `⟨x_M − x_N, x_M − x_N⟩` is
+`∑_{N ≤ n < M} |n⟩⟨n| ≤ 1 − P_{<N₀}`, whose `ω`-value is small by
+`exists_sqrt_np_one_sub_range_le`. -/
+private theorem bewareTrunc_unCauchy :
+    UnCauchy (inner (ℓ² →L[ℂ] ℓ²) :
+        StdMod (ℓ² →L[ℂ] ℓ²) ℕ → StdMod (ℓ² →L[ℂ] ℓ²) ℕ → (ℓ² →L[ℂ] ℓ²))
+      (map bewareTrunc atTop) := by
+  intro ω ε hε
+  obtain ⟨N₀, hN₀⟩ := exists_sqrt_np_one_sub_range_le ω hε
+  refine ⟨bewareTrunc '' {N : ℕ | N₀ ≤ N},
+    Filter.image_mem_map (Filter.mem_atTop N₀), ?_⟩
+  have hmain : ∀ N M : ℕ, N₀ ≤ N → N ≤ M →
+      unSeminorm ω (inner (ℓ² →L[ℂ] ℓ²)) (bewareTrunc M - bewareTrunc N) ≤ ε := by
+    intro N M h0 h
+    rw [unSeminorm, StdMod.inner_eq, inner'_bewareTrunc_sub h]
+    exact le_trans (Real.sqrt_le_sqrt (np_re_mono ω (sum_Ico_le_one_sub h0))) hN₀
+  rintro _ ⟨M, hM, rfl⟩ _ ⟨N, hN, rfl⟩
+  rcases le_total N M with hle | hle
+  · exact hmain N M hN hle
+  · have hsym : unSeminorm ω (inner (ℓ² →L[ℂ] ℓ²))
+          (bewareTrunc M - bewareTrunc N)
+        = unSeminorm ω (inner (ℓ² →L[ℂ] ℓ²)) (bewareTrunc N - bewareTrunc M) := by
+      rw [unSeminorm, unSeminorm, StdMod.inner_eq, StdMod.inner_eq,
+        show bewareTrunc M - bewareTrunc N = -(bewareTrunc N - bewareTrunc M) by abel,
+        StdMod.inner'_neg_neg]
+    rw [hsym]
+    exact hmain M N hM hle
+
+/-- …but they have **no** ultranorm limit in `H_{B(ℓ²)}`: a limit would have
+coordinates `|n⟩⟨n|`, and `∑ₙ |n⟩⟨n|` does not converge in norm. -/
+private theorem bewareTrunc_not_unTendsto (x₀ : StdMod (ℓ² →L[ℂ] ℓ²) ℕ) :
+    ¬ UnTendsto (inner (ℓ² →L[ℂ] ℓ²)) id (map bewareTrunc atTop) x₀ := by
+  intro h
+  have hcoord : ∀ n : ℕ, StdMod.val x₀ n = ketbraNat n n := by
+    intro n
+    have hz : star (ketbraNat n n - StdMod.val x₀ n) = 0 := by
+      refine eq_zero_of_omegaNorm_eq_zero fun ω => ?_
+      have hlim : Tendsto (fun N : ℕ =>
+          unSeminorm ω (inner (ℓ² →L[ℂ] ℓ²)) (bewareTrunc N - x₀)) atTop (𝓝 0) := by
+        have h1 := h ω
+        rw [tendsto_map'_iff] at h1
+        simpa [Function.comp_def] using h1
+      have hbound : ∀ᶠ N : ℕ in atTop,
+          omegaNorm (ℓ² →L[ℂ] ℓ²) ω (star (ketbraNat n n - StdMod.val x₀ n))
+            ≤ ‖(StdMod.delta n : StdMod (ℓ² →L[ℂ] ℓ²) ℕ)‖ *
+                unSeminorm ω (inner (ℓ² →L[ℂ] ℓ²)) (bewareTrunc N - x₀) := by
+        filter_upwards [eventually_gt_atTop n] with N hN
+        have hval : StdMod.inner' (bewareTrunc N - x₀) (StdMod.delta n)
+            = star (ketbraNat n n - StdMod.val x₀ n) := by
+          rw [StdMod.inner'_delta_right]
+          congr 1
+          rw [StdMod.val_sub, val_bewareTrunc]
+          simp [hN]
+        have hb := omegaNorm_inner_le ω (bewareTrunc N - x₀)
+          (StdMod.delta n : StdMod (ℓ² →L[ℂ] ℓ²) ℕ)
+        rwa [StdMod.inner_eq, hval] at hb
+      have hprod : Tendsto (fun N : ℕ =>
+          ‖(StdMod.delta n : StdMod (ℓ² →L[ℂ] ℓ²) ℕ)‖ *
+            unSeminorm ω (inner (ℓ² →L[ℂ] ℓ²)) (bewareTrunc N - x₀)) atTop (𝓝 0) := by
+        simpa using hlim.const_mul ‖(StdMod.delta n : StdMod (ℓ² →L[ℂ] ℓ²) ℕ)‖
+      exact le_antisymm (ge_of_tendsto hprod hbound) (omegaNorm_nonneg _ _)
+    exact (sub_eq_zero.mp (star_eq_zero.mp hz)).symm
+  have hsum : Summable fun n : ℕ => ketbraNat n n :=
+    (StdMod.summable_val x₀).congr fun n => by
+      rw [hcoord n, ketbraNat_diag_star n, ketbraNat_diag_mul n]
+  have hn := (continuous_norm.tendsto (0 : ℓ² →L[ℂ] ℓ²)).comp hsum.tendsto_atTop_zero
+  simp only [Function.comp_def, norm_zero, norm_ketbraNat_diag] at hn
+  have : (1 : ℝ) = 0 := tendsto_nhds_unique tendsto_const_nhds hn
+  norm_num at this
+
+/-- **149IIb** (dils.tex:2182, Beware), clause 1, the *"vice versa"*, the
+**negative** half: `H_{B(ℓ²)}` is **not** ultranorm complete.
+
+The witness is the net of truncations `x_N = (|0⟩⟨0|, …, |N−1⟩⟨N−1|, 0, …)`.
+It is ultranorm Cauchy (`bewareTrunc_unCauchy`): with the file's mirrored
+inner product `⟨x,y⟩ = ∑ᵢ yᵢxᵢ*`, `⟨x_M − x_N, x_M − x_N⟩` is the projection
+`∑_{N ≤ n < M} |n⟩⟨n| ≤ 1 − P_{<N₀}` for `N₀ ≤ N ≤ M`, whose `ω`-value is
+made small by the ultranorm convergence of the expansion of `1` that
+`onbasis_beware_ketbraNat_isONBasis` already carries (there **43II**.2
+`vn_counterexamples_2_sup`, `⋁_N P_{<N} = 1`, is what does the work).  But
+it has no limit (`bewareTrunc_not_unTendsto`): the coordinate functionals
+`⟨·, δₙ⟩` are ultranorm continuous into `(𝒷, ‖·‖_ω)` (**142III**, as
+`omegaNorm_inner_le`), so a limit `x₀` would have `(x₀)ₙ = |n⟩⟨n|` for every
+`n`, and then `∑ₙ |n⟩⟨n|` would converge in norm — which it does not, its
+terms all having norm `1`.  That is exactly the failure of norm convergence
+that `onbasis_beware_ketbraNat` records on the other side of the Beware. -/
+theorem onbasis_beware_stdmod_not_unComplete :
+    ¬ UnComplete (inner (ℓ² →L[ℂ] ℓ²) :
+        StdMod (ℓ² →L[ℂ] ℓ²) ℕ → StdMod (ℓ² →L[ℂ] ℓ²) ℕ → (ℓ² →L[ℂ] ℓ²)) := by
+  intro h
+  obtain ⟨x₀, hx₀⟩ := h (map bewareTrunc atTop) inferInstance bewareTrunc_unCauchy
+  exact bewareTrunc_not_unTendsto x₀ hx₀
+
+/-- **149IIb**, clause 1, *"vice versa"*: `H_{B(ℓ²)}` has **no** orthonormal
+basis in the sense of **149I** — for no family whatsoever, over any index
+type. -/
+theorem onbasis_beware_stdmod_not_isONBasis {ι' : Type*}
+    (e : ι' → StdMod (ℓ² →L[ℂ] ℓ²) ℕ) : ¬ IsONBasis (ℓ² →L[ℂ] ℓ²) e :=
+  fun he => onbasis_beware_stdmod_not_unComplete (unComplete_of_isONBasis he)
+
+/-- **149IIb**, clause 1, *"vice versa"*: `H_{B(ℓ²)}` is **not self dual** —
+the reason the Beware itself gives, `cf. dils-selfdual`. -/
+theorem onbasis_beware_stdmod_not_selfDual :
+    ¬ SelfDual (ℓ² →L[ℂ] ℓ²) (StdMod (ℓ² →L[ℂ] ℓ²) ℕ) :=
+  fun h => onbasis_beware_stdmod_not_unComplete ((dils_selfdual.out 0 1).mp h)
+
+end BewareStandardModule
+
+end StandardModule
+
 end Theses.B.Dils
+
