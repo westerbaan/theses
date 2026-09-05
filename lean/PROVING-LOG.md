@@ -31387,3 +31387,15 @@ one-token substitutions in Positive.lean and Representation.lean onto 16II
 `grep spectralRadius_eq_nnnorm\|mem_spectrum_eq_re` over `A/CStar` now
 shows comments only.  Second sample of `ok` rows (thesis A, 123 rows): nine
 proof-grade defects, no statement grade wrong; rows and siblings fixed.
+
+### Session 110, audit hygiene
+
+Second 200-row sample of `ok` rows: A 113/9/1, B 72/5/0 — ~7% again, all
+but one on the proof grade (224VI's is a benign `stronger`).  The recurring
+cause — whether an Exercise's printed hint is a printed argument — is now a
+written convention in `STATEMENT-AUDIT.md`.  A cross-file sweep of the 46
+points graded both `none` and `faithful` corrected 15 of 294 rows: private
+wrappers filed under points that print nothing had inherited `faithful` from
+the result their content came from.  `faithful_check` still lists 45 leads
+(rows `faithful` on points with no argument and no solution); those are the
+next pass.
