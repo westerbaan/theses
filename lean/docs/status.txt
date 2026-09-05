@@ -685,6 +685,7 @@ Theses.A.CStar.Positive|Theses.A.CStar.meet_nonneg|green
 Theses.A.CStar.Matrices|Theses.A.CStar.mem_bax_iff|green
 Theses.A.CStar.TowardsVN|Theses.A.CStar.mem_c00_iff|green
 Theses.A.CStar.Positive|Theses.A.CStar.mem_cstarEqualiser|green
+Theses.A.CStar.Basic|Theses.A.CStar.mem_spectrum_eq_re_of_isSelfAdjoint|green
 Theses.A.CStar.Matrices|Theses.A.CStar.mnf_bounded|green
 Theses.A.CStar.Matrices|Theses.A.CStar.mnf_inherits|green
 Theses.A.CStar.Matrices|Theses.A.CStar.mnf_linear|green
@@ -2727,9 +2728,11 @@ Theses.B.Dils.SelfDual|Theses.B.Dils.pairFam_false|green
 Theses.B.Dils.SelfDual|Theses.B.Dils.pairFam_true|green
 Theses.B.Dils.SelfDual|Theses.B.Dils.paschkeDilation_transport|green
 Theses.B.Dils.Paschke|Theses.B.Dils.paschkeModuleOf_phiT_reflects_nonneg|green
+Theses.B.Dils.Paschke|Theses.B.Dils.paschkeModuleOf_phiT_surjective|green
 Theses.B.Dils.Paschke|Theses.B.Dils.paschkeModuleOf_tprod|green
 Theses.B.Dils.Paschke|Theses.B.Dils.paschkeModule_ba_ext|green
 Theses.B.Dils.Paschke|Theses.B.Dils.paschkeModule_h_ρ|green
+Theses.B.Dils.Paschke|Theses.B.Dils.paschkeModule_inner_sum_tprod|green
 Theses.B.Dils.Paschke|Theses.B.Dils.paschkeModule_inner_tprod_commutant|green
 Theses.B.Dils.Paschke|Theses.B.Dils.paschkeModule_inner_tprod_separating|green
 Theses.B.Dils.Paschke|Theses.B.Dils.paschkeModule_norm_sq_sum_tprod|green
@@ -2785,6 +2788,7 @@ Theses.B.Dils.Paschke|Theses.B.Dils.prmul_tmul|green
 Theses.B.Dils.Pure|Theses.B.Dils.procIsCornerOf_of_isCornerFor|green
 Theses.B.Dils.Pure|Theses.B.Dils.procIsFilter_of_isFilterFor|green
 Theses.B.Dils.Pure|Theses.B.Dils.procIsPure_of_factorisation|green
+Theses.B.Dils.Pure|Theses.B.Dils.procIsPure_of_isPureMap|green
 Theses.B.Dils.Stinespring|Theses.B.Dils.prop_complete_into_hilbert_space|green
 Theses.B.Dils.Paschke|Theses.B.Dils.ptensBInner_add_left|green
 Theses.B.Dils.Paschke|Theses.B.Dils.ptensBInner_prmul|green
@@ -4593,7 +4597,6 @@ Theses.A.CStar.Basic|Theses.A.CStar.isUnit_add_one_iff_pow_add_one|green
 Theses.A.CStar.Basic|Theses.A.CStar.isUnit_aeval_prod|green
 Theses.A.CStar.Basic|Theses.A.CStar.ketbra_e0_e0e1_not_commute|green
 Theses.A.CStar.Basic|Theses.A.CStar.lp_two_norm_lt|green
-Theses.A.CStar.Basic|Theses.A.CStar.mem_spectrum_eq_re_of_isSelfAdjoint|green
 Theses.A.CStar.Basic|Theses.A.CStar.norm_add_sq_add_norm_sub_sq|green
 Theses.A.CStar.Basic|Theses.A.CStar.norm_add_sq_of_inner_eq_zero|green
 Theses.A.CStar.Basic|Theses.A.CStar.norm_le_of_isAdjointTo|green
@@ -4658,6 +4661,7 @@ Theses.A.CStar.Matrices|Theses.A.CStar.sum_star_mul_sum|green
 Theses.A.CStar.Matrices|Theses.A.CStar.tensor_nonneg|green
 Theses.A.CStar.Matrices|Theses.A.CStar.transposeM2_apply|green
 Theses.A.CStar.Matrices|Theses.A.CStar.transposeM2_pos|green
+Theses.A.CStar.Positive|Theses.A.CStar.abs_eq_sqrt_sq|green
 Theses.A.CStar.Positive|Theses.A.CStar.aeval_sqrtPoly|green
 Theses.A.CStar.Positive|Theses.A.CStar.arg_div_of_re_pos|green
 Theses.A.CStar.Positive|Theses.A.CStar.arg_eq_arctan|green
@@ -4704,6 +4708,7 @@ Theses.A.CStar.Positive|Theses.A.CStar.fpsOfCoeffs_norm|green
 Theses.A.CStar.Positive|Theses.A.CStar.half_smul_le|green
 Theses.A.CStar.Positive|Theses.A.CStar.half_smul_nonneg|green
 Theses.A.CStar.Positive|Theses.A.CStar.half_sq_diff|green
+Theses.A.CStar.Positive|Theses.A.CStar.half_two_nsmul|green
 Theses.A.CStar.Positive|Theses.A.CStar.hull_subset_closedBall|green
 Theses.A.CStar.Positive|Theses.A.CStar.inv_seg_collinear|green
 Theses.A.CStar.Positive|Theses.A.CStar.inv_seg_horiz|green
@@ -4738,6 +4743,7 @@ Theses.A.CStar.Positive|Theses.A.CStar.mem_orderIdealGen_iff|green
 Theses.A.CStar.Positive|Theses.A.CStar.mem_orderIdealGen_iff_of_isSelfAdjoint|green
 Theses.A.CStar.Positive|Theses.A.CStar.mem_qSandwiched_of_mem|green
 Theses.A.CStar.Positive|Theses.A.CStar.mid_mem_hull|green
+Theses.A.CStar.Positive|Theses.A.CStar.miu_continuous|green
 Theses.A.CStar.Positive|Theses.A.CStar.mul_nonneg_of_commute|green
 Theses.A.CStar.Positive|Theses.A.CStar.nonnegCoeff_C|green
 Theses.A.CStar.Positive|Theses.A.CStar.nonnegCoeff_X|green
@@ -4778,6 +4784,7 @@ Theses.A.CStar.Positive|Theses.A.CStar.polygon_triangle|green
 Theses.A.CStar.Positive|Theses.A.CStar.polygon_vertex|green
 Theses.A.CStar.Positive|Theses.A.CStar.polygon_winding|green
 Theses.A.CStar.Positive|Theses.A.CStar.posPart_eq_half|green
+Theses.A.CStar.Positive|Theses.A.CStar.prod_spec_aux|green
 Theses.A.CStar.Positive|Theses.A.CStar.prod_telescope|green
 Theses.A.CStar.Positive|Theses.A.CStar.qIdeal_isOrderIdeal|green
 Theses.A.CStar.Positive|Theses.A.CStar.qSandwiched_add|green
@@ -6046,6 +6053,7 @@ Theses.B.Dils.Paschke|Theses.B.Dils.ncSmulCLM_apply|green
 Theses.B.Dils.Paschke|Theses.B.Dils.ncUniformSMul|green
 Theses.B.Dils.Paschke|Theses.B.Dils.nc_inner_apply|green
 Theses.B.Dils.Paschke|Theses.B.Dils.nc_inner_coe_coe|green
+Theses.B.Dils.Paschke|Theses.B.Dils.phiT_surjective_aux|green
 Theses.B.Dils.Paschke|Theses.B.Dils.pmap_conj_eq_zero_iff_cceilMap_le|green
 Theses.B.Dils.Paschke|Theses.B.Dils.pmap_eq_zero_iff_le_carrier_ortho|green
 Theses.B.Dils.Pure|Theses.B.Dils.cornerB_phiCompatible|green
@@ -6616,11 +6624,20 @@ Theses.B.Eff.VNExamples|Theses.B.Eff.suFun_apply|green
 Theses.B.Eff.VNExamples|Theses.B.Eff.suFun_pos|green
 Theses.B.Eff.VNExamples|Theses.B.Eff.suH1_eq_smul|green
 Theses.B.Eff.VNExamples|Theses.B.Eff.suH1_op_eq_smul|green
+Theses.B.Eff.VNExamples|Theses.B.Eff.suKet_orth|green
+Theses.B.Eff.VNExamples|Theses.B.Eff.suKet_self|green
+Theses.B.Eff.VNExamples|Theses.B.Eff.suKet_sub_ne|green
+Theses.B.Eff.VNExamples|Theses.B.Eff.suNrm_sq|green
 Theses.B.Eff.VNExamples|Theses.B.Eff.suScalarEmbed_apply|green
 Theses.B.Eff.VNExamples|Theses.B.Eff.suScalarEmbed_one|green
 Theses.B.Eff.VNExamples|Theses.B.Eff.suScalarEmbed_suScalarNCP|green
 Theses.B.Eff.VNExamples|Theses.B.Eff.suScalarNCP_apply|green
 Theses.B.Eff.VNExamples|Theses.B.Eff.suScalarNCP_suScalarEmbed|green
+Theses.B.Eff.VNExamples|Theses.B.Eff.suUA_norm|green
+Theses.B.Eff.VNExamples|Theses.B.Eff.suUA_one|green
+Theses.B.Eff.VNExamples|Theses.B.Eff.suUA_orth|green
+Theses.B.Eff.VNExamples|Theses.B.Eff.suUA_self|green
+Theses.B.Eff.VNExamples|Theses.B.Eff.suUA_two|green
 Theses.B.Eff.VNExamples|Theses.B.Eff.su_ad_nest|green
 Theses.B.Eff.VNExamples|Theses.B.Eff.su_ad_sq|green
 Theses.B.Eff.VNExamples|Theses.B.Eff.su_ad_triple_zero|green
@@ -6642,6 +6659,8 @@ Theses.B.Eff.VNExamples|Theses.B.Eff.su_isFilter_suScalarEmbed|green
 Theses.B.Eff.VNExamples|Theses.B.Eff.su_isImage_carrier|green
 Theses.B.Eff.VNExamples|Theses.B.Eff.su_pred_le_truth'|green
 Theses.B.Eff.VNExamples|Theses.B.Eff.su_pred_ovee|green
+Theses.B.Eff.VNExamples|Theses.B.Eff.su_sigma_apply|green
+Theses.B.Eff.VNExamples|Theses.B.Eff.su_sigma_is_swap|green
 Theses.B.Eff.VNExamples|Theses.B.Eff.su_sqrtConj_self|green
 Theses.B.Eff.VNExamples|Theses.B.Eff.su_sqrt_mul_ceil|green
 Theses.B.Eff.VNExamples|Theses.B.Eff.su_stand_corner_ceil|green
