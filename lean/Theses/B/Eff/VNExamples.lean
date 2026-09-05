@@ -10243,9 +10243,13 @@ theorem vn_is_andthen_eff (s : EffectusPartialStructure WStarCPSU.{u}ᵒᵖ) :
 
 The A-dependent statements of `Dagger.lean`. -/
 
-/-- **215VI** (`vn-is-dagger-category`, eff.tex:5338, Corollary): the
-&-effectus `vNᵒᵖ` is a †-effectus. -/
-theorem vn_is_dagger_category (s : EffectusPartialStructure WStarCPSU.{u}ᵒᵖ) :
+/-- The Corollary's hypothesis, made explicit: *given* an &-effectus
+structure on `vNᵒᵖ`, that category is a †-effectus.  This is the shape
+`vn_is_dagger_category` had while **211IV** `vn_is_andthen_eff` carried a
+`sorry`; it is now only the step of the Corollary's own proof that comes
+before the citation of `vn-is-andthen-eff`, and the &-structure the
+Corollary actually names is supplied in `vn_is_dagger_category` below. -/
+private theorem vn_is_dagger_category_of (s : EffectusPartialStructure WStarCPSU.{u}ᵒᵖ) :
     letI := s.hasFiniteCoproducts
     letI := s.homPCM
     letI := s.finPAC
@@ -10259,6 +10263,41 @@ theorem vn_is_dagger_category (s : EffectusPartialStructure WStarCPSU.{u}ᵒᵖ)
   obtain ⟨hfc, pcm, hfin, E⟩ := s
   subst hpcm
   exact fun hA => @su_daggerEffectus E hA
+
+/-- **215VI** (`vn-is-dagger-category`, eff.tex:5338, Corollary): the
+category `vNᵒᵖ` of von Neumann algebras with ncpu-maps in the opposite
+direction, *which is an &-effectus by* **211IV** `vn-is-andthen-eff`, **is
+also a †-effectus**.  This is also the first half of **215II**
+(eff.tex:5301, Examples), which forward-references this Corollary; its
+second half, that `EJAᵒᵖ` is a †-effectus too, is a bare citation to
+[eja] and is not formalized (`JordanAlgebras.lean` builds `EJAᵒᵖ` and
+proves **189aIII**, but no dagger for it).
+
+The &-effectus structure is the Corollary's own: `vn_is_andthen_eff s`,
+not an arbitrary `AndThenEffectus` instance.  **Statement change,
+2026-09-05** (§2.1 alignment pass): the conclusion used to be
+`∀ hA : AndThenEffectus WStarCPSU.{u}ᵒᵖ, letI := hA;
+Nonempty (DaggerEffectus WStarCPSU.{u}ᵒᵖ)` — assuming the &-structure
+rather than supplying it, which was forced only by the `sorry` 211IV then
+carried.  That `sorry` is gone (`b15_pure_of_pure_sq`, above), so the
+Corollary is stated flatly, as printed; the conditional form survives as
+the `private` `vn_is_dagger_category_of` just above.
+
+Route: the Corollary's.  Verify **215III**'s axioms 1–3 at `vNᵒᵖ`
+(`su_daggerPrimeEffectus`, from `su_sqrt_existsUnique`, `su_asrt_sq` and
+`su_quot_sharp`) and apply **220II** `dagger_thm_sufficiency`
+(`su_daggerEffectus`).  The dagger this produces is only a `Nonempty`,
+which is what the Corollary asserts; the two rules of **215VIa** that pin
+it down concretely are `su_dagger_of_iso` and `su_dagger_standard_filter`,
+proved of an arbitrary `DaggerEffectus` structure on `vNᵒᵖ`. -/
+theorem vn_is_dagger_category (s : EffectusPartialStructure WStarCPSU.{u}ᵒᵖ) :
+    letI := s.hasFiniteCoproducts
+    letI := s.homPCM
+    letI := s.finPAC
+    letI := s.effectus
+    letI := vn_is_andthen_eff s
+    Nonempty (DaggerEffectus WStarCPSU.{u}ᵒᵖ) :=
+  vn_is_dagger_category_of s (vn_is_andthen_eff s)
 
 /-- **221III** (eff.tex:6805, Example): the effectus `vNᵒᵖ` has dilations
 (Paschke dilations; the full subcategory `CvNᵒᵖ` does not — that is 221IIIa,

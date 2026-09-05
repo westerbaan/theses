@@ -62,6 +62,7 @@
 > and the "†-effectus development of parsecs 215–220" that `exc_purec_*` were
 > said to wait on is **not parked** — `Dagger.lean` has 0 `sorry`s and
 > `dagger_thm_sufficiency` (220II) is proved.  Only `vn_is_andthen_eff`
+*(Superseded 2026-09-05: `vn_is_dagger_category` is now unconditional — `vNᵒᵖ` is a †-effectus as 215VI prints, with the &-structure supplied by `vn_is_andthen_eff`, proved that day; the conditional form survives as `vn_is_dagger_category_of`.)*
 > itself is blocked outside `B/Eff`.
 
 > **Session 85.**  **The uniqueness-of-`I` lemma exists**, axiom-clean, in
