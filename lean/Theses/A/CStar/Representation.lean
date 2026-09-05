@@ -978,22 +978,492 @@ theorem gelfand_representation_range :
   exact (AddMonoidHomClass.isometry_of_norm (gelfandTransform ℂ 𝒜)
     gelfand_representation_isometry).isClosedEmbedding.isClosed_range
 
+/-! ### The printed route to **27XX** (Stone–Weierstraß), cstar.tex:4180–4250
+
+The thesis proves **27XX** by the *lattice* argument **27XXI**–**27XXIV**, not
+by polynomial approximation of `t ↦ |t|` (which is what Mathlib's
+`ContinuousMap.starSubalgebra_topologicalClosure_eq_top_of_separatesPoints`
+runs on).  It can, because its `𝒮` is a **C*-subalgebra**: the modulus is
+`|f| = √(f* f)` and the square root is the one of **23VII** (`sqrt`,
+cstar.tex:3653, parsec 230, hence available at parsec 270), which stays inside
+a *closed* ⋆-subalgebra because it is the norm limit of the **23II** iteration
+`b₀ = 0`, `bₙ₊₁ = ½(a + bₙ²)`, all of whose terms are polynomials in `a`
+without constant term.  That is `sqrt_mem_of_isClosed` below.
+
+Nothing here reaches forward to parsec 280: `CFC.sqrt` occurs only as the name
+under which the tree already states **23VII**.0, and every step that computes
+with it goes through the *uniqueness* of positive square roots
+(`sqrt_existsUnique`, **23VII**.0), never through `cfc` or **28II**.4.  In
+particular `sqrt_apply` — that the square root in `C(X, ℂ)` is the pointwise
+one — is proved by exhibiting the pointwise root and appealing to that
+uniqueness.
+
+The printed argument itself is run on the self-adjoint part of `C(X, ℂ)`,
+which is `C(X, ℝ)`; that is where the `⊔`, `⊓` and `≤` of the printed proof
+live, and `C(X, ℝ)` carries them as instances.  `realSub S` is the subalgebra
+of real-valued elements of `S`, i.e. the print's "replacing `f` by `Re f` or
+`Im f`" (**27XXII**) made into a definition. -/
+
+section StoneWeierstrassAux
+
+/-- Every term of the **23II** iteration `b₀ = 0`, `bₙ₊₁ = ½(a + bₙ²)` of
+cstar.tex:3485, which the tree carries as `sqrtApproxSeq`, is a polynomial in
+`a` with zero constant term, hence lies in every ⋆-subalgebra containing
+`a`. -/
+private theorem sqrtApproxSeq_mem {𝒜 : Type*} [CStarAlgebra 𝒜]
+    (S : StarSubalgebra ℂ 𝒜) {a : 𝒜} (ha : a ∈ S) :
+    ∀ n : ℕ, sqrtApproxSeq a n ∈ S := by
+  intro n
+  induction n with
+  | zero => exact (show (0 : 𝒜) ∈ S from zero_mem S)
+  | succ n ih =>
+      exact (show (2 : ℂ)⁻¹ • (a + sqrtApproxSeq a n ^ 2) ∈ S from
+        S.smul_mem (S.add_mem ha (S.pow_mem ih 2)) _)
+
+/-- `(r • x)² = r² • x²`. -/
+private theorem smul_sq' {𝒜 : Type*} [CStarAlgebra 𝒜] (r : ℂ) (x : 𝒜) :
+    (r • x) ^ 2 = (r * r) • x ^ 2 := by
+  rw [sq, sq, smul_mul_assoc, mul_smul_comm, smul_smul]
+
+/-- A self-adjoint element of norm at most one is below `1` — **17VI**.3a
+`positive_basic_2_3a`, restated because `Positive.lean`'s helper of this name
+is `private`. -/
+private theorem le_one_of_norm_le_one' {𝒜 : Type*} [CStarAlgebra 𝒜] [PartialOrder 𝒜]
+    [StarOrderedRing 𝒜] {x : 𝒜} (hsa : IsSelfAdjoint x) (h : ‖x‖ ≤ 1) : x ≤ 1 := by
+  have h2 := (positive_basic_2_3a x hsa 1 zero_le_one).mpr h
+  simpa using h2.2
+
+/-- **The missing lemma of the printed proof**: the square root of a positive
+element of a *closed* ⋆-subalgebra lies in that subalgebra.  By **23II** the
+square root of `a` is `√‖a‖ · (1 - b)` with `b = lim bₙ` the limit of the
+iteration applied to `1 - ‖a‖⁻¹a`; every `bₙ` lies in the subalgebra, and the
+subalgebra is closed.  That this element *is* `√a` is the uniqueness of
+positive square roots, **23VII**.0. -/
+private theorem sqrt_mem_of_isClosed {𝒜 : Type*} [CStarAlgebra 𝒜] [PartialOrder 𝒜]
+    [StarOrderedRing 𝒜] (S : StarSubalgebra ℂ 𝒜) (hS : IsClosed (S : Set 𝒜))
+    {a : 𝒜} (ha : 0 ≤ a) (haS : a ∈ S) : CFC.sqrt a ∈ S := by
+  rcases eq_or_lt_of_le (norm_nonneg a) with hs | hs
+  · have h0 : a = 0 := norm_eq_zero.mp hs.symm
+    subst h0
+    have hz : (0 : 𝒜) = CFC.sqrt 0 :=
+      (sqrt_existsUnique (0 : 𝒜) le_rfl).unique ⟨le_rfl, by simp, by simp⟩
+        (sqrt_spec (0 : 𝒜) le_rfl)
+    rw [← hz]
+    exact zero_mem S
+  · have hr0 : (0 : ℝ) ≤ ‖a‖⁻¹ := by positivity
+    set y : 𝒜 := ((‖a‖⁻¹ : ℝ) : ℂ) • a with hy
+    have hy0 : 0 ≤ y := ofReal_smul_nonneg ha hr0
+    have hyn : ‖y‖ ≤ 1 := by
+      rw [hy, norm_smul, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg hr0,
+        inv_mul_cancel₀ (ne_of_gt hs)]
+    have hy1 : y ≤ 1 := le_one_of_norm_le_one' (IsSelfAdjoint.of_nonneg hy0) hyn
+    have hyS : y ∈ S := S.smul_mem haS _
+    have hc0 : (0 : 𝒜) ≤ 1 - y := sub_nonneg.mpr hy1
+    have hc1 : (1 : 𝒜) - y ≤ 1 := sub_le_self 1 hy0
+    have hcS : (1 : 𝒜) - y ∈ S := S.sub_mem (one_mem S) hyS
+    obtain ⟨b, hb, -⟩ := sqrt_lemma_existsUnique (1 - y) hc0 hc1
+    have hlim : Tendsto (sqrtApproxSeq (1 - y)) atTop (𝓝 b) :=
+      sqrt_lemma_tendsto (1 - y) hc0 hc1 b hb
+    have hbS : b ∈ S :=
+      hS.mem_of_tendsto hlim (Eventually.of_forall (sqrtApproxSeq_mem S hcS))
+    obtain ⟨hb0, hb1, hbc, hbsq⟩ := hb
+    have hd0 : (0 : 𝒜) ≤ 1 - b := sub_nonneg.mpr hb1
+    have hd2 : (1 - b) ^ 2 = y := by rw [hbsq]; abel
+    have hdS : (1 : 𝒜) - b ∈ S := S.sub_mem (one_mem S) hbS
+    have hac : a * (1 - y) = (1 - y) * a := by
+      rw [hy, mul_sub, sub_mul, mul_one, one_mul, mul_smul_comm, smul_mul_assoc]
+    have hab : a * b = b * a :=
+      (sqrt_lemma_commute (1 - y) hc0 hc1 b ⟨hb0, hb1, hbc, hbsq⟩ a hac).1
+    set e : 𝒜 := ((Real.sqrt ‖a‖ : ℝ) : ℂ) • (1 - b) with he
+    have he0 : 0 ≤ e := ofReal_smul_nonneg hd0 (Real.sqrt_nonneg _)
+    have he2 : e ^ 2 = a := by
+      rw [he, smul_sq', hd2, hy, ← Complex.ofReal_mul, Real.mul_self_sqrt hs.le,
+        smul_smul, ← Complex.ofReal_mul, mul_inv_cancel₀ (ne_of_gt hs),
+        Complex.ofReal_one, one_smul]
+    have hea : a * e = e * a := by
+      rw [he, mul_smul_comm, smul_mul_assoc, mul_sub, sub_mul, mul_one, one_mul, hab]
+    have hcfc : e = CFC.sqrt a :=
+      (sqrt_existsUnique a ha).unique ⟨he0, he2, hea⟩ (sqrt_spec a ha)
+    rw [← hcfc, he]
+    exact S.smul_mem hdS _
+
+section NonCompact
+
+variable {X : Type*} [TopologicalSpace X]
+
+/-- The inclusion `C(X, ℝ) → C(X, ℂ)`. -/
+private noncomputable def ofRealCM : C(X, ℝ) →ₐ[ℝ] C(X, ℂ) :=
+  (RCLike.ofRealAm (K := ℂ)).compLeftContinuous ℝ RCLike.continuous_ofReal
+
+private theorem ofRealCM_apply (u : C(X, ℝ)) (x : X) : ofRealCM u x = ((u x : ℝ) : ℂ) := rfl
+
+/-- The real-valued part of a ⋆-subalgebra of `C(X, ℂ)`: an `ℝ`-subalgebra of
+`C(X, ℝ)`. -/
+private noncomputable def realSub (S : StarSubalgebra ℂ C(X, ℂ)) : Subalgebra ℝ C(X, ℝ) :=
+  (S.restrictScalars ℝ).comap ofRealCM
+
+private theorem mem_realSub {S : StarSubalgebra ℂ C(X, ℂ)} {u : C(X, ℝ)} :
+    u ∈ realSub S ↔ ofRealCM u ∈ S := Iff.rfl
+
+/-- A unital subalgebra of `C(X, ℝ)` contains the constants — the print's
+`g(y)` and `ε` as elements of `𝒮`. -/
+private theorem const_mem (A : Subalgebra ℝ C(X, ℝ)) (t : ℝ) :
+    ContinuousMap.const X t ∈ A := by
+  have h := A.algebraMap_mem t
+  convert h using 1
+  ext x
+  simp
+
+/-- **27XXII** (`stone-weierstrass-1`, cstar.tex:4192): for `x ≠ y` and
+`t ≥ 0` there is `u ∈ 𝒮` with `0 ≤ u ≤ t`, `u(x) = 0` and `u(y) = t`.  The
+print's five successive replacements: `f - f(x)` kills the value at `x`, `Re`
+or `Im` makes it self-adjoint (here: we are already in `C(X, ℝ)`), `f₊` or
+`f₋` makes it positive, a scalar makes `u(y) = t`, and `u ⊓ t` caps it. -/
+private theorem sw_two_point (A : Subalgebra ℝ C(X, ℝ))
+    (hinf : ∀ u ∈ A, ∀ v ∈ A, u ⊓ v ∈ A) (hsup : ∀ u ∈ A, ∀ v ∈ A, u ⊔ v ∈ A)
+    (hsep : ∀ x y : X, x ≠ y → ∃ u ∈ A, u x ≠ u y)
+    {x y : X} (hxy : x ≠ y) {t : ℝ} (ht : 0 ≤ t) :
+    ∃ u ∈ A, (∀ z, 0 ≤ u z) ∧ (∀ z, u z ≤ t) ∧ u x = 0 ∧ u y = t := by
+  obtain ⟨f, hfA, hfne⟩ := hsep x y hxy
+  set f₁ : C(X, ℝ) := f - ContinuousMap.const X (f x) with hf₁
+  have hf₁A : f₁ ∈ A := A.sub_mem hfA (const_mem A _)
+  have hf₁x : f₁ x = 0 := by simp [hf₁]
+  have hf₁y : f₁ y ≠ 0 := by
+    simp only [hf₁, ContinuousMap.sub_apply, ContinuousMap.const_apply]
+    exact sub_ne_zero.mpr (Ne.symm hfne)
+  obtain ⟨v, hvA, hv0, hvx, hvy⟩ :
+      ∃ v ∈ A, (∀ z, 0 ≤ v z) ∧ v x = 0 ∧ 0 < v y := by
+    rcases lt_or_gt_of_ne hf₁y with hneg | hpos
+    · refine ⟨(-f₁) ⊔ 0, hsup _ (A.neg_mem hf₁A) _ (zero_mem A), fun z => ?_, ?_, ?_⟩
+      · simp only [ContinuousMap.sup_apply, ContinuousMap.neg_apply, ContinuousMap.zero_apply]
+        exact le_max_right _ _
+      · simp [hf₁x]
+      · rw [ContinuousMap.sup_apply, ContinuousMap.neg_apply, ContinuousMap.zero_apply,
+          lt_max_iff]
+        exact Or.inl (by linarith)
+    · refine ⟨f₁ ⊔ 0, hsup _ hf₁A _ (zero_mem A), fun z => ?_, ?_, ?_⟩
+      · simp only [ContinuousMap.sup_apply, ContinuousMap.zero_apply]
+        exact le_max_right _ _
+      · simp [hf₁x]
+      · rw [ContinuousMap.sup_apply, ContinuousMap.zero_apply, lt_max_iff]
+        exact Or.inl hpos
+  set w : C(X, ℝ) := (t / v y) • v with hw
+  have hwA : w ∈ A := A.smul_mem hvA _
+  have hwx : w x = 0 := by simp [hw, hvx]
+  have hwy : w y = t := by
+    simp only [hw, ContinuousMap.smul_apply, smul_eq_mul]
+    field_simp
+  have hw0 : ∀ z, 0 ≤ w z := by
+    intro z
+    have h1 : 0 ≤ t / v y := div_nonneg ht hvy.le
+    simpa [hw] using mul_nonneg h1 (hv0 z)
+  refine ⟨w ⊓ ContinuousMap.const X t, hinf _ hwA _ (const_mem A t), fun z => ?_,
+    fun z => ?_, ?_, ?_⟩
+  · simp only [ContinuousMap.inf_apply, ContinuousMap.const_apply]
+    exact le_min (hw0 z) ht
+  · simp only [ContinuousMap.inf_apply, ContinuousMap.const_apply]
+    exact min_le_right _ _
+  · simp only [ContinuousMap.inf_apply, ContinuousMap.const_apply, hwx]
+    exact min_eq_left ht
+  · simp only [ContinuousMap.inf_apply, ContinuousMap.const_apply, hwy]
+    exact min_self t
+
+end NonCompact
+
+variable {X : Type*} [TopologicalSpace X] [CompactSpace X]
+
+/-- The square root of a positive `f ∈ C(X, ℂ)` is the pointwise one.  Proved
+from the uniqueness of positive square roots (**23VII**.0) alone: the
+pointwise root is positive, squares to `f` and commutes with it.  (The cheap
+route — restrict the evaluation character and use **28II**.4 — is barred by
+the `docs/DECISIONS.md` §2.2 ruling, parsec 280 being later than 270.) -/
+private theorem sqrt_apply {f : C(X, ℂ)} (hf : 0 ≤ f) (x : X) :
+    CFC.sqrt f x = ((Real.sqrt (f x).re : ℝ) : ℂ) := by
+  have hptwise : ∀ z : X, 0 ≤ (f z).re ∧ (f z).im = 0 := by
+    intro z
+    have h := ContinuousMap.le_def.mp hf z
+    rw [Complex.le_def] at h
+    exact ⟨by simpa using h.1, by simp [← h.2]⟩
+  set s : C(X, ℂ) := ⟨fun z => ((Real.sqrt (f z).re : ℝ) : ℂ), by fun_prop⟩ with hs
+  have hs0 : 0 ≤ s := by
+    rw [ContinuousMap.le_def]
+    intro z
+    rw [Complex.le_def]
+    exact ⟨by simp [hs], by simp [hs]⟩
+  have hs2 : s ^ 2 = f := by
+    ext z
+    have h := hptwise z
+    have hre : ((((f z).re : ℝ)) : ℂ) = f z := by
+      apply Complex.ext <;> simp [h.2]
+    calc (s ^ 2) z = (s z) * (s z) := by rw [sq]; rfl
+      _ = (((Real.sqrt (f z).re * Real.sqrt (f z).re : ℝ)) : ℂ) := by
+            simp [hs, Complex.ofReal_mul]
+      _ = f z := by rw [Real.mul_self_sqrt h.1, hre]
+  have heq : CFC.sqrt f = s :=
+    (sqrt_existsUnique f hf).unique (sqrt_spec f hf) ⟨hs0, hs2, mul_comm _ _⟩
+  rw [heq]
+  rfl
+
+/-- `realSub S` is closed when `S` is: it is the preimage of `S` under the
+continuous inclusion `C(X, ℝ) → C(X, ℂ)`. -/
+private theorem realSub_isClosed {S : StarSubalgebra ℂ C(X, ℂ)}
+    (hS : IsClosed (S : Set C(X, ℂ))) :
+    IsClosed ((realSub S : Subalgebra ℝ C(X, ℝ)) : Set C(X, ℝ)) := by
+  have hcont : Continuous (fun u : C(X, ℝ) => ofRealCM u) := by
+    have hfun : (fun u : C(X, ℝ) => ofRealCM u)
+        = fun u => (RCLike.ofRealCLM (K := ℂ)).compLeftContinuous ℝ X u := by
+      funext u; ext x; rfl
+    rw [hfun]
+    exact ((RCLike.ofRealCLM (K := ℂ)).compLeftContinuous ℝ X).continuous
+  have hset : ((realSub S : Subalgebra ℝ C(X, ℝ)) : Set C(X, ℝ))
+      = (fun u : C(X, ℝ) => ofRealCM u) ⁻¹' (S : Set C(X, ℂ)) := Set.ext fun _ => Iff.rfl
+  rw [hset]
+  exact hS.preimage hcont
+
+/-- The lattice step of the printed proof: `|u| = √(u* u)` lies in `realSub S`
+whenever `u` does.  This is where `sqrt_mem_of_isClosed` and `sqrt_apply`
+meet. -/
+private theorem realSub_abs_mem {S : StarSubalgebra ℂ C(X, ℂ)}
+    (hS : IsClosed (S : Set C(X, ℂ))) {u : C(X, ℝ)} (hu : u ∈ realSub S) :
+    |u| ∈ realSub S := by
+  rw [mem_realSub] at hu ⊢
+  have hpos : (0 : C(X, ℂ)) ≤ star (ofRealCM u) * ofRealCM u := star_mul_self_nonneg _
+  have hstar : star (ofRealCM u) ∈ S := star_mem hu
+  have hmem : CFC.sqrt (star (ofRealCM u) * ofRealCM u) ∈ S :=
+    sqrt_mem_of_isClosed S hS hpos (S.mul_mem hstar hu)
+  have heq : ofRealCM |u| = CFC.sqrt (star (ofRealCM u) * ofRealCM u) := by
+    ext x
+    rw [sqrt_apply hpos]
+    simp [ofRealCM_apply, ContinuousMap.abs_apply, Real.sqrt_mul_self_eq_abs]
+  rw [heq]
+  exact hmem
+
+/-- **27XXIII** (cstar.tex:4207): for `g > 0`, `ε > 0` and `y ∈ X` there is
+`u ∈ 𝒮` with `0 ≤ u ≤ g + ε` and `u(y) = g(y)`.  The print covers `X \ V`,
+where `V = {z : g(y) < g(z) + ε}`, by the sets `{z : f_x(z) < ε}` and takes
+the infimum over a finite subcover; here the constant `g(y)` is thrown in as
+the patch indexed by the points of `V`, so that one infimum over a finite
+subcover of `X` does both jobs (on `V` the print's bound `f ≤ g(y)` is exactly
+that constant).  N.B. the print writes `U_x := {z : f_x(z) ≤ ε}` and calls it
+open, and writes `X \ U` for `X \ V`; both are slips. -/
+private theorem sw_dominate (A : Subalgebra ℝ C(X, ℝ))
+    (hinf : ∀ u ∈ A, ∀ v ∈ A, u ⊓ v ∈ A) (hsup : ∀ u ∈ A, ∀ v ∈ A, u ⊔ v ∈ A)
+    (hsep : ∀ x y : X, x ≠ y → ∃ u ∈ A, u x ≠ u y)
+    {g : C(X, ℝ)} (hg : ∀ z, 0 < g z) {ε : ℝ} (hε : 0 < ε) (y : X) :
+    ∃ u ∈ A, (∀ z, 0 ≤ u z) ∧ (∀ z, u z ≤ g z + ε) ∧ u y = g y := by
+  have hne : Nonempty X := ⟨y⟩
+  set V : Set X := {z | g y < g z + ε} with hV
+  have hVopen : IsOpen V := isOpen_lt continuous_const (g.continuous.add continuous_const)
+  have hyV : y ∈ V := by show g y < g y + ε; linarith
+  have key : ∀ x : X, ∃ w ∈ A, (∀ z, 0 ≤ w z) ∧ w y = g y ∧
+      ∃ U : Set X, IsOpen U ∧ x ∈ U ∧ ∀ z ∈ U, w z ≤ g z + ε := by
+    intro x
+    by_cases hxV : x ∈ V
+    · exact ⟨ContinuousMap.const X (g y), const_mem A _, fun _ => (hg y).le, rfl,
+        V, hVopen, hxV, fun _ hz => le_of_lt hz⟩
+    · have hxy : x ≠ y := fun h => hxV (h ▸ hyV)
+      obtain ⟨u, huA, hu0, hule, hux, huy⟩ :=
+        sw_two_point A hinf hsup hsep hxy (hg y).le
+      refine ⟨u, huA, hu0, huy, {z | u z < ε},
+        isOpen_lt u.continuous continuous_const, ?_, fun z hz => ?_⟩
+      · show u x < ε
+        rw [hux]; exact hε
+      · have hz' : u z < ε := hz
+        have := hg z
+        linarith
+  choose w hwA hw0 hwy U hUopen hxU hUle using key
+  obtain ⟨ts, hts⟩ := CompactSpace.elim_nhds_subcover U (fun x => (hUopen x).mem_nhds (hxU x))
+  have htsne : ts.Nonempty := Set.nonempty_of_union_eq_top_of_nonempty _ _ hne hts
+  refine ⟨ts.inf' htsne w, Finset.inf'_mem (A : Set C(X, ℝ)) hinf ts htsne w
+    (fun i _ => hwA i), fun z => ?_, fun z => ?_, ?_⟩
+  · rw [ContinuousMap.inf'_apply]
+    exact Finset.le_inf' htsne (fun i => w i z) (fun i _ => hw0 i z)
+  · obtain ⟨x, hx, hzx⟩ := Set.exists_set_mem_of_union_eq_top _ _ hts z
+    rw [ContinuousMap.inf'_apply]
+    exact le_trans (Finset.inf'_le (fun i => w i z) hx) (hUle x z hzx)
+  · rw [ContinuousMap.inf'_apply]
+    refine le_antisymm ?_ (Finset.le_inf' htsne (fun i => w i y) (fun i _ => (hwy i).ge))
+    obtain ⟨i, hi⟩ := htsne
+    exact le_of_le_of_eq (Finset.inf'_le (fun i => w i y) hi) (hwy i)
+
+/-- **27XXIV** (cstar.tex:4235): the supremum over a finite subcover of the
+`27XXIII` functions is within `ε` of `g`.  N.B. the print takes `U_y` to be a
+neighbourhood of `y` on which `g(y) - ε ≤ f_y`, which gives `f ≥ g(y) - ε` and
+not the `f ≥ g(z) - ε` wanted; `U_y := {z : g(z) - ε < f_y(z)}`, open because
+`g` and `f_y` are continuous and a neighbourhood of `y` because `f_y(y) =
+g(y)`, is what the argument needs. -/
+private theorem sw_approx (A : Subalgebra ℝ C(X, ℝ))
+    (hinf : ∀ u ∈ A, ∀ v ∈ A, u ⊓ v ∈ A) (hsup : ∀ u ∈ A, ∀ v ∈ A, u ⊔ v ∈ A)
+    (hsep : ∀ x y : X, x ≠ y → ∃ u ∈ A, u x ≠ u y) [Nonempty X]
+    {g : C(X, ℝ)} (hg : ∀ z, 0 < g z) {ε : ℝ} (hε : 0 < ε) :
+    ∃ u ∈ A, ∀ z, |u z - g z| ≤ ε := by
+  have key : ∀ y : X, ∃ w ∈ A, (∀ z, w z ≤ g z + ε) ∧
+      ∃ U : Set X, IsOpen U ∧ y ∈ U ∧ ∀ z ∈ U, g z - ε < w z := by
+    intro y
+    obtain ⟨w, hwA, _, hwle, hwy⟩ := sw_dominate A hinf hsup hsep hg hε y
+    refine ⟨w, hwA, hwle, {z | g z - ε < w z},
+      isOpen_lt (g.continuous.sub continuous_const) w.continuous, ?_, fun _ hz => hz⟩
+    show g y - ε < w y
+    rw [hwy]; linarith
+  choose w hwA hwle U hUopen hyU hUlt using key
+  obtain ⟨ys, hys⟩ := CompactSpace.elim_nhds_subcover U (fun y => (hUopen y).mem_nhds (hyU y))
+  have hysne : ys.Nonempty := Set.nonempty_of_union_eq_top_of_nonempty _ _ ‹Nonempty X› hys
+  refine ⟨ys.sup' hysne w, Finset.sup'_mem (A : Set C(X, ℝ)) hsup ys hysne w
+    (fun i _ => hwA i), fun z => ?_⟩
+  rw [abs_le]
+  constructor
+  · obtain ⟨y, hy, hzy⟩ := Set.exists_set_mem_of_union_eq_top _ _ hys z
+    have h1 : g z - ε < w y z := hUlt y z hzy
+    have h2 : w y z ≤ (ys.sup' hysne w) z := by
+      rw [ContinuousMap.sup'_apply]; exact Finset.le_sup' (fun i => w i z) hy
+    linarith
+  · have h3 : (ys.sup' hysne w) z ≤ g z + ε := by
+      rw [ContinuousMap.sup'_apply]
+      exact Finset.sup'_le hysne (fun i => w i z) (fun i _ => hwle i z)
+    linarith
+
+/-- **27XXI** (cstar.tex:4180), the reduction, in `C(X, ℝ)`: a *closed*
+subalgebra that is a sublattice and separates points is everything.  It is
+enough to get within `ε` of each strictly positive `g`, because the subalgebra
+is closed; and every `u` is a difference of two strictly positive functions,
+which is the print's "it suffices to show `g ∈ 𝒮` for positive `g`" together
+with its "we may assume `g(x) > 0`, replacing `g` by `1 + g`". -/
+private theorem sw_real (A : Subalgebra ℝ C(X, ℝ)) (hcl : IsClosed (A : Set C(X, ℝ)))
+    (hinf : ∀ u ∈ A, ∀ v ∈ A, u ⊓ v ∈ A) (hsup : ∀ u ∈ A, ∀ v ∈ A, u ⊔ v ∈ A)
+    (hsep : ∀ x y : X, x ≠ y → ∃ u ∈ A, u x ≠ u y) : A = ⊤ := by
+  rcases isEmpty_or_nonempty X with hX | hX
+  · refine Algebra.eq_top_iff.mpr fun u => ?_
+    have hu : u = 0 := by ext x; exact (hX.false x).elim
+    rw [hu]; exact zero_mem A
+  · have hpos : ∀ g : C(X, ℝ), (∀ z, 0 < g z) → g ∈ A := by
+      intro g hg
+      rw [← SetLike.mem_coe, ← hcl.closure_eq, Metric.mem_closure_iff]
+      intro ε hε
+      obtain ⟨u, huA, hu⟩ := sw_approx A hinf hsup hsep hg (half_pos hε)
+      refine ⟨u, huA, ?_⟩
+      have hd : dist g u ≤ ε / 2 := by
+        rw [ContinuousMap.dist_le (by positivity)]
+        intro z
+        rw [Real.dist_eq, abs_sub_comm]
+        exact hu z
+      linarith
+    refine Algebra.eq_top_iff.mpr fun u => ?_
+    have hp : ∀ z, 0 < ((u ⊔ 0) + 1 : C(X, ℝ)) z := by
+      intro z
+      simp only [ContinuousMap.add_apply, ContinuousMap.sup_apply, ContinuousMap.zero_apply,
+        ContinuousMap.one_apply]
+      have := le_max_right (u z) 0
+      linarith
+    have hq : ∀ z, 0 < (((-u) ⊔ 0) + 1 : C(X, ℝ)) z := by
+      intro z
+      simp only [ContinuousMap.add_apply, ContinuousMap.sup_apply, ContinuousMap.zero_apply,
+        ContinuousMap.neg_apply, ContinuousMap.one_apply]
+      have := le_max_right (-(u z)) 0
+      linarith
+    have hdecomp : u = ((u ⊔ 0) + 1) - (((-u) ⊔ 0) + 1) := by
+      ext z
+      simp only [ContinuousMap.sub_apply, ContinuousMap.add_apply, ContinuousMap.sup_apply,
+        ContinuousMap.zero_apply, ContinuousMap.neg_apply, ContinuousMap.one_apply]
+      rcases le_total 0 (u z) with h | h
+      · rw [max_eq_left h, max_eq_right (by linarith : -(u z) ≤ (0:ℝ))]; ring
+      · rw [max_eq_right h, max_eq_left (by linarith : (0:ℝ) ≤ -(u z))]; ring
+    rw [hdecomp]
+    exact A.sub_mem (hpos _ hp) (hpos _ hq)
+
+end StoneWeierstrassAux
+
 /-- **27XX** (`stone-weierstrass`, cstar.tex:4170, Theorem
 (Stone–Weierstraß)): a C*-subalgebra `𝒮` of `C(X)`, `X` compact Hausdorff,
-which separates the points of `X` is all of `C(X)`.  (Mathlib:
-`ContinuousMap.starSubalgebra_topologicalClosure_eq_top_of_separatesPoints`.) -/
+which separates the points of `X` is all of `C(X)`.
+
+*Class 1 — faithful.*  The printed proof **27XXI**–**27XXIV**, transcribed in
+the section above: `𝒮` is closed under `|·|` because `|f| = √(f* f)` and the
+square root of **23VII** stays inside a closed ⋆-subalgebra
+(`sqrt_mem_of_isClosed`), hence under `⊔` and `⊓` on its real-valued part
+(`realSub`); then **27XXII**'s two-point interpolation, **27XXIII**'s finite
+infimum over a cover of the complement of `V`, and **27XXIV**'s finite
+supremum over a cover of `X`.
+
+Mathlib's `starSubalgebra_topologicalClosure_eq_top_of_separatesPoints` is
+deliberately not used: its lattice step approximates `t ↦ |t|` by Bernstein
+polynomials, where the thesis uses the square root of parsec 230. -/
 theorem stone_weierstrass {X : Type*} [TopologicalSpace X] [CompactSpace X]
     [T2Space X] (S : StarSubalgebra ℂ C(X, ℂ)) (hS : IsClosed (S : Set C(X, ℂ)))
     (hsep : ∀ x y : X, x ≠ y → ∃ f ∈ S, f x ≠ f y) :
     S = ⊤ := by
-  have hsep' : S.SeparatesPoints := by
-    rintro x y hxy
-    obtain ⟨f, hf, hne⟩ := hsep x y hxy
-    exact ⟨(f : X → ℂ), ⟨f, hf, rfl⟩, hne⟩
-  have h := ContinuousMap.starSubalgebra_topologicalClosure_eq_top_of_separatesPoints S hsep'
-  refine top_le_iff.mp ?_
-  calc (⊤ : StarSubalgebra ℂ C(X, ℂ)) = S.topologicalClosure := h.symm
-    _ ≤ S := StarSubalgebra.topologicalClosure_minimal le_rfl hS
+  have hmem : ∀ u : C(X, ℝ), u ∈ realSub S ↔ ofRealCM u ∈ S := fun _ => Iff.rfl
+  have hAcl : IsClosed ((realSub S : Subalgebra ℝ C(X, ℝ)) : Set C(X, ℝ)) := realSub_isClosed hS
+  have hAabs : ∀ u ∈ realSub S, |u| ∈ realSub S := fun _ hu => realSub_abs_mem hS hu
+  have hAinf : ∀ u ∈ realSub S, ∀ v ∈ realSub S, u ⊓ v ∈ realSub S := by
+    intro u hu v hv
+    rw [inf_eq_half_smul_add_sub_abs_sub' ℝ]
+    exact Subalgebra.smul_mem _ (Subalgebra.sub_mem _ (Subalgebra.add_mem _ hu hv)
+      (hAabs _ (Subalgebra.sub_mem _ hv hu))) _
+  have hAsup : ∀ u ∈ realSub S, ∀ v ∈ realSub S, u ⊔ v ∈ realSub S := by
+    intro u hu v hv
+    rw [sup_eq_half_smul_add_add_abs_sub' ℝ]
+    exact Subalgebra.smul_mem _ (Subalgebra.add_mem _ (Subalgebra.add_mem _ hu hv)
+      (hAabs _ (Subalgebra.sub_mem _ hv hu))) _
+  have hre : ∀ f : C(X, ℂ), f ∈ S → (⟨fun z => (f z).re, Complex.continuous_re.comp f.continuous⟩
+      : C(X, ℝ)) ∈ realSub S := by
+    intro f hf
+    rw [hmem]
+    have heq : ofRealCM (⟨fun z => (f z).re, Complex.continuous_re.comp f.continuous⟩ : C(X, ℝ))
+        = (2 : ℂ)⁻¹ • (f + star f) := by
+      ext z
+      rw [ofRealCM_apply]
+      simp only [ContinuousMap.smul_apply, ContinuousMap.add_apply, ContinuousMap.star_apply,
+        smul_eq_mul, ContinuousMap.coe_mk]
+      rw [Complex.star_def, Complex.add_conj]
+      field_simp
+      push_cast
+      ring
+    rw [heq]
+    have hstarf : star f ∈ S := star_mem hf
+    exact S.smul_mem (S.add_mem hf hstarf) _
+  have him : ∀ f : C(X, ℂ), f ∈ S → (⟨fun z => (f z).im, Complex.continuous_im.comp f.continuous⟩
+      : C(X, ℝ)) ∈ realSub S := by
+    intro f hf
+    rw [hmem]
+    have heq : ofRealCM (⟨fun z => (f z).im, Complex.continuous_im.comp f.continuous⟩ : C(X, ℝ))
+        = ((2 : ℂ) * Complex.I)⁻¹ • (f - star f) := by
+      ext z
+      rw [ofRealCM_apply]
+      simp only [ContinuousMap.smul_apply, ContinuousMap.sub_apply, ContinuousMap.star_apply,
+        smul_eq_mul, ContinuousMap.coe_mk]
+      rw [Complex.star_def, Complex.sub_conj]
+      field_simp
+      push_cast
+      ring
+    rw [heq]
+    have hstarf : star f ∈ S := star_mem hf
+    exact S.smul_mem (S.sub_mem hf hstarf) _
+  have hAsep : ∀ x y : X, x ≠ y → ∃ u ∈ realSub S, u x ≠ u y := by
+    intro x y hxy
+    obtain ⟨f, hfS, hfne⟩ := hsep x y hxy
+    by_cases hr : (f x).re = (f y).re
+    · exact ⟨⟨fun z => (f z).im, Complex.continuous_im.comp f.continuous⟩, him f hfS,
+        fun h => hfne (Complex.ext hr h)⟩
+    · exact ⟨⟨fun z => (f z).re, Complex.continuous_re.comp f.continuous⟩, hre f hfS, hr⟩
+  have hAtop : realSub S = ⊤ := sw_real _ hAcl hAinf hAsup hAsep
+  have hall : ∀ u : C(X, ℝ), ofRealCM u ∈ S := by
+    intro u
+    have hu : u ∈ realSub S := by rw [hAtop]; exact Algebra.mem_top
+    exact (hmem u).mp hu
+  refine StarSubalgebra.eq_top_iff.mpr fun f => ?_
+  have h1 := hall (⟨fun z => (f z).re, Complex.continuous_re.comp f.continuous⟩ : C(X, ℝ))
+  have h2 := hall (⟨fun z => (f z).im, Complex.continuous_im.comp f.continuous⟩ : C(X, ℝ))
+  have hf : f = ofRealCM (⟨fun z => (f z).re, Complex.continuous_re.comp f.continuous⟩
+      : C(X, ℝ)) + Complex.I •
+      ofRealCM (⟨fun z => (f z).im, Complex.continuous_im.comp f.continuous⟩ : C(X, ℝ)) := by
+    ext z
+    simp only [ContinuousMap.add_apply, ContinuousMap.smul_apply, smul_eq_mul]
+    rw [ofRealCM_apply, ofRealCM_apply]
+    simp only [ContinuousMap.coe_mk]
+    rw [mul_comm]
+    exact (Complex.re_add_im (f z)).symm
+  rw [hf]
+  exact S.add_mem h1 (S.smul_mem h2 _)
 
 /-- **27XXV** (`spectrum-calg-compact-hausdorff`, cstar.tex:4253, Lemma): the
 spectrum `spec(𝒜)` of a commutative C*-algebra is a compact Hausdorff space.
