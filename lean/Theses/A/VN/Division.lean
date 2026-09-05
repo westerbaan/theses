@@ -3745,16 +3745,956 @@ end Pseudoinverse
 
 **84I** (vn.tex:5780): introduction — nothing to formalize. -/
 
-/-! ### Ingredients for 84II
+/-! ### 840.30-840.60: the thesis's own proof of 84II
 
-The proof below **diverges from the thesis's**: instead of
-showing that a finite-dimensional C*-algebra is a von Neumann algebra and
-building a system of matrix units by hand (vn.tex:5798–6027), it takes the
-*algebra* decomposition from Mathlib's Wedderburn–Artin theorem
-(`IsSemisimpleRing.exists_algEquiv_pi_matrix_of_isAlgClosed`) and upgrades it
-to a **∗**-isomorphism.  The upgrade needs Skolem–Noether for matrix algebras,
-which Mathlib does not have; it is proved here as
-`matrix_exists_intertwiner`. -/
+The four steps of vn.tex:5798-6027, in order.  The unit ball of a
+finite-dimensional C*-algebra is norm compact, so a bounded directed set of
+self-adjoint elements has a supremum and that supremum is the norm limit of
+the set (840.30 and the first half of 840.40); every positive functional is
+then normal, and the algebra is a von Neumann algebra (840.40
+`suprema-in-fdvna`); orthogonal families of non-zero projections are finite,
+so `1` splits along minimal central projections (840.50); and a factor
+carries a system of matrix units built out of **83V** `cceil_sum`, which
+presents it as a full matrix algebra (840.60).  `fd_pi_matrix` runs the
+splitting as an induction on the dimension and assembles the four steps into
+the statement of `fdcstar`.
+
+Everything in this section is `private` except the three declarations about
+suprema in a finite-dimensional C*-algebra, which are about no point of
+either thesis and belong upstream -- see the note on
+`vonNeumannAlgebra_of_finiteDimensional`. -/
+
+section FDVNASups
+
+variable [FiniteDimensional ℂ A]
+
+/-- **84II** (`fdcstar`, vn.tex:5784), the proof's step 840.30 together with
+the first half of 840.40 (`suprema-in-fdvna`, vn.tex:5860): a **non-empty
+bounded directed set of self-adjoint elements of a finite-dimensional
+C*-algebra has a supremum, and that supremum lies in the norm closure of the
+set** -- "in this finite-dimensional setting `⋁D` is apparently the norm
+limit of `(d)_{d∈D}`".
+
+The print gets the norm limit out of the norm compactness of the unit ball,
+which it proves by showing every linear functional on `𝒜` bounded (the states
+separate, so `dim 𝒜* = dim 𝒜`, so `‖·‖` is equivalent to the coordinate norm
+of a basis).  Here that step is Mathlib's: a finite-dimensional normed space
+over `ℂ` is a `ProperSpace`, which *is* the equivalence-of-norms theorem, so
+a norm-bounded closed set is compact.  The print's "we may assume `‖d‖ ≤ 1`"
+is not available as stated -- a set directed upwards and bounded above need
+not be norm bounded -- so the argument is run on the cofinal tail
+`D' = {d ∈ D : d₀ ≤ d}` of a fixed `d₀ ∈ D`, which has the same upper bounds
+as `D` and is norm bounded by `‖d₀‖ + ‖u − d₀‖`.  Instead of extracting a
+convergent cofinal subnet, the limit is produced as a point of
+`⋂_{d ∈ D'} (closure D' ∩ [d, ∞))`, a downward directed family of non-empty
+compact sets; that it is the supremum is the print's own two lines, read off
+the closedness of `[d, ∞)` and of `(−∞, b]`. -/
+theorem exists_isLUB_mem_closure (D : Set (selfAdjoint A)) (hne : D.Nonempty)
+    (hdir : DirectedOn (· ≤ ·) D) (hbdd : BddAbove D) :
+    ∃ s : selfAdjoint A, IsLUB D s ∧
+      (s : A) ∈ closure ((fun d : selfAdjoint A => (d : A)) '' D) := by
+  classical
+  obtain ⟨d₀, hd₀⟩ := hne
+  obtain ⟨u, hu⟩ := hbdd
+  set D' : Set (selfAdjoint A) := {d | d ∈ D ∧ d₀ ≤ d} with hD'
+  have hd₀' : d₀ ∈ D' := ⟨hd₀, le_rfl⟩
+  have hD'sub : D' ⊆ D := fun d hd => hd.1
+  have hcof : ∀ d ∈ D, ∃ d' ∈ D', d ≤ d' := by
+    intro d hd
+    obtain ⟨e, he, hde, hd₀e⟩ := hdir d hd d₀ hd₀
+    exact ⟨e, ⟨he, hd₀e⟩, hde⟩
+  have hdir' : DirectedOn (· ≤ ·) D' := by
+    rintro x ⟨hx, hx0⟩ y ⟨hy, hy0⟩
+    obtain ⟨z, hz, hxz, hyz⟩ := hdir x hx y hy
+    exact ⟨z, ⟨hz, hx0.trans hxz⟩, hxz, hyz⟩
+  -- `D'` and `D` have the same upper bounds
+  have hub : ∀ v : selfAdjoint A, v ∈ upperBounds D' → v ∈ upperBounds D := by
+    intro v hv d hd
+    obtain ⟨d', hd', hle⟩ := hcof d hd
+    exact hle.trans (hv hd')
+  -- `D'` is norm bounded
+  set S : Set A := (fun d : selfAdjoint A => (d : A)) '' D' with hS
+  have hSbdd : Bornology.IsBounded S := by
+    rw [Metric.isBounded_iff_subset_closedBall 0]
+    refine ⟨‖(d₀ : A)‖ + ‖(u : A) - (d₀ : A)‖, ?_⟩
+    rintro _ ⟨d, ⟨hdD, hd0⟩, rfl⟩
+    rw [Metric.mem_closedBall, dist_zero_right]
+    have h1 : (0 : A) ≤ (d : A) - (d₀ : A) := sub_nonneg.mpr hd0
+    have h2 : (d : A) - (d₀ : A) ≤ (u : A) - (d₀ : A) := by
+      have := hu hdD
+      exact sub_le_sub_right this _
+    have h3 := CStarAlgebra.norm_le_norm_of_nonneg_of_le h1 h2
+    calc ‖(d : A)‖ = ‖((d : A) - (d₀ : A)) + (d₀ : A)‖ := by rw [sub_add_cancel]
+      _ ≤ ‖(d : A) - (d₀ : A)‖ + ‖(d₀ : A)‖ := norm_add_le _ _
+      _ ≤ ‖(u : A) - (d₀ : A)‖ + ‖(d₀ : A)‖ := by linarith
+      _ = ‖(d₀ : A)‖ + ‖(u : A) - (d₀ : A)‖ := by ring
+  have hK : IsCompact (closure S) := hSbdd.isCompact_closure
+  -- the tails
+  set t : D' → Set A := fun d => closure S ∩ {x : A | ((d : selfAdjoint A) : A) ≤ x} with ht
+  have htcl : ∀ d : D', IsClosed (t d) :=
+    fun d => isClosed_closure.inter (isClosed_le continuous_const continuous_id)
+  have htc : ∀ d : D', IsCompact (t d) := fun d => hK.of_isClosed_subset (htcl d) Set.inter_subset_left
+  have htn : ∀ d : D', (t d).Nonempty := by
+    rintro ⟨d, hd⟩
+    exact ⟨(d : A), subset_closure ⟨d, hd, rfl⟩, le_rfl⟩
+  have htd : Directed (· ⊇ ·) t := by
+    rintro ⟨x, hx⟩ ⟨y, hy⟩
+    obtain ⟨z, hz, hxz, hyz⟩ := hdir' x hx y hy
+    refine ⟨⟨z, hz⟩, ?_, ?_⟩
+    · exact Set.inter_subset_inter_right _ fun w hw => le_trans hxz hw
+    · exact Set.inter_subset_inter_right _ fun w hw => le_trans hyz hw
+  have hne' : Nonempty D' := ⟨⟨d₀, hd₀'⟩⟩
+  obtain ⟨a, ha⟩ := IsCompact.nonempty_iInter_of_directed_nonempty_isCompact_isClosed t htd htn htc htcl
+  rw [Set.mem_iInter] at ha
+  have haK : a ∈ closure S := (ha ⟨d₀, hd₀'⟩).1
+  -- `a` is self-adjoint
+  have hasa : IsSelfAdjoint a := by
+    have hcl : IsClosed {x : A | IsSelfAdjoint x} :=
+      isClosed_eq (continuous_star) continuous_id
+    refine hcl.closure_subset (closure_mono ?_ haK)
+    rintro _ ⟨d, hd, rfl⟩
+    exact d.2
+  refine ⟨⟨a, hasa⟩, ⟨?_, ?_⟩, ?_⟩
+  · refine hub ⟨a, hasa⟩ ?_
+    rintro d hd
+    exact (ha ⟨d, hd⟩).2
+  · intro b hb
+    have hcl : IsClosed {x : A | x ≤ (b : A)} := isClosed_le continuous_id continuous_const
+    have : a ∈ {x : A | x ≤ (b : A)} := by
+      refine hcl.closure_subset (closure_mono ?_ haK)
+      rintro _ ⟨d, hd, rfl⟩
+      exact hb (hD'sub hd)
+    exact this
+  · exact closure_mono (Set.image_mono hD'sub) haK
+
+/-- **84II** (`fdcstar`, vn.tex:5784), the proof's step 840.40
+(`suprema-in-fdvna`, vn.tex:5860), second half: **every positive functional
+on a finite-dimensional C*-algebra is normal**.  This is the print's "since
+`⋁D` is apparently the norm limit of `(d)_{d∈D}`, any positive functional `f`
+will map `⋁D` to the limit of `(f(d))_{d∈D}`": `f` is continuous because it
+is linear on a finite-dimensional space, and `⋁D ∈ closure D` by
+`exists_isLUB_mem_closure`, so `f(⋁D)` lies in the closure of `f''D` and
+hence below every upper bound of it. -/
+theorem preservesDirSups_of_finiteDimensional (f : A →ₚ[ℂ] ℂ) :
+    PreservesDirSups ⇑f := by
+  intro D s hne hdir hlub
+  constructor
+  · rintro _ ⟨d, hd, rfl⟩
+    exact f.monotone' (hlub.1 hd)
+  · intro t ht
+    obtain ⟨s', hs', hmem⟩ := exists_isLUB_mem_closure D hne hdir ⟨s, hlub.1⟩
+    obtain rfl : s = s' := hlub.unique hs'
+    have hcont : Continuous (⇑f : A → ℂ) :=
+      (f.toLinearMap).continuous_of_finiteDimensional
+    have h1 : (⇑f) ((s : A)) ∈ closure ((⇑f) '' ((fun d : selfAdjoint A => (d : A)) '' D)) :=
+      image_closure_subset_closure_image hcont ⟨(s : A), hmem, rfl⟩
+    have h2 : IsClosed {z : ℂ | z ≤ t} := isClosed_le continuous_id continuous_const
+    refine h2.closure_subset (closure_mono ?_ h1)
+    rintro _ ⟨_, ⟨d, hd, rfl⟩, rfl⟩
+    exact ht ⟨d, hd, rfl⟩
+
+/-- **84II** (`fdcstar`, vn.tex:5784), the proof's step 840.40
+(`suprema-in-fdvna`, vn.tex:5860): **a finite-dimensional C*-algebra is a von
+Neumann algebra**.  Suprema of bounded directed sets are
+`exists_isLUB_mem_closure`; np-faithfulness is the print's "every positive
+functional is normal, and the positive functionals form a separating
+collection" -- `preservesDirSups_of_finiteDimensional` turns the state of
+**22VIII**.1 `states_order_separating_1` with `|ω(a)| = ‖a‖` into an
+np-functional.
+
+*This declaration does not belong in this file.*  It is about an arbitrary
+finite-dimensional C*-algebra and is a fact about the Kadison definition of
+`Theses/Common.lean`, so its home is upstream -- `A/VN/Projections.lean` at
+the latest, next to the rest of the von Neumann machinery.  It is stated here
+only because `scripts/lean1.sh` writes no oleans, so a declaration added
+upstream in this session is invisible from this file; it should be moved as
+soon as a full build is run, exactly as the B15 auxiliaries of
+`B/Eff/VNExamples.lean` were. -/
+theorem vonNeumannAlgebra_of_finiteDimensional : VonNeumannAlgebra A where
+  isLUB_of_bddAbove_directed := by
+    intro D hne hdir hbdd
+    obtain ⟨s, hs, -⟩ := exists_isLUB_mem_closure D hne hdir hbdd
+    exact ⟨s, hs⟩
+  np_faithful := by
+    intro a ha hall
+    rcases subsingleton_or_nontrivial A with h | h
+    · exact Subsingleton.elim _ _
+    · obtain ⟨ω, hω, hnorm⟩ := states_order_separating_1 a (IsSelfAdjoint.of_nonneg ha)
+      have hmono : Monotone ⇑ω := by
+        intro x y hxy
+        have := hω.1 (y - x) (sub_nonneg.mpr hxy)
+        rw [map_sub] at this
+        exact sub_nonneg.mp this
+      set ν : Theses.NPFunctional A :=
+        { toPositiveLinearMap := { toLinearMap := ω, monotone' := hmono }
+          preservesDirSups' := preservesDirSups_of_finiteDimensional _ } with hν
+      have h0 : ν a = 0 := hall ν
+      have h1 : ω a = 0 := h0
+      rw [h1] at hnorm
+      simpa using hnorm.symm
+
+/-! ### 840.50/840.60: minimal projections exist in finite dimension -/
+
+end FDVNASups
+
+/-- The corner `e𝒜e` of a projection, as a `ℂ`-submodule of `𝒜`.  Auxiliary
+for **84II**, not a transcription: it carries the dimension count behind the
+print's "any descending sequence of non-zero projections must eventually
+become constant". -/
+private def cornerSubmodule (e : A) : Submodule ℂ A where
+  carrier := {x : A | e * x * e = x}
+  add_mem' := by
+    intro x y hx hy
+    show e * (x + y) * e = x + y
+    rw [mul_add, add_mul, (hx : e * x * e = x), (hy : e * y * e = y)]
+  zero_mem' := by show e * (0 : A) * e = 0; simp
+  smul_mem' := by
+    intro c x hx
+    show e * (c • x) * e = c • x
+    rw [mul_smul_comm, smul_mul_assoc, (hx : e * x * e = x)]
+
+omit [PartialOrder A] [StarOrderedRing A] in
+private theorem mem_cornerSubmodule {e x : A} :
+    x ∈ cornerSubmodule e ↔ e * x * e = x := Iff.rfl
+
+section FDVNAMinimal
+
+variable [FiniteDimensional ℂ A]
+
+/-- Auxiliary for `exists_isMinimalProjection_le`: the induction on the
+dimension of the corner. -/
+private theorem exists_isMinimalProjection_le_aux :
+    ∀ (n : ℕ) (e : A), IsStarProjection e → e ≠ 0 →
+      Module.finrank ℂ (cornerSubmodule e) ≤ n →
+      ∃ p : A, IsMinimalProjection p ∧ p ≤ e := by
+  intro n
+  induction n with
+  | zero =>
+      intro e he he0 hrank
+      exfalso
+      have h1 : cornerSubmodule (A := A) e = ⊥ :=
+        Submodule.finrank_eq_zero.mp (Nat.le_zero.mp hrank)
+      have h2 : e ∈ cornerSubmodule (A := A) e := by
+        show e * e * e = e
+        rw [he.isIdempotentElem.eq, he.isIdempotentElem.eq]
+      rw [h1] at h2
+      exact he0 (Submodule.mem_bot ℂ |>.mp h2)
+  | succ n ih =>
+      intro e he he0 hrank
+      by_cases hmin : IsMinimalProjection e
+      · exact ⟨e, hmin, le_rfl⟩
+      · rw [IsMinimalProjection, not_and, not_and] at hmin
+        obtain ⟨q, hq, hqe, hq0, hqne⟩ : ∃ q : A, IsStarProjection q ∧ q ≤ e ∧ q ≠ 0 ∧ q ≠ e := by
+          have := hmin he he0
+          push Not at this
+          obtain ⟨q, hq, hqe, h1, h2⟩ := this
+          exact ⟨q, hq, hqe, h1, h2⟩
+        have heq : e * q = q := (IsStarProjection.le_iff_mul_eq_right hq he).mp hqe
+        have hqe' : q * e = q := (IsStarProjection.le_iff_mul_eq_left hq he).mp hqe
+        have hsub : cornerSubmodule (A := A) q < cornerSubmodule (A := A) e := by
+          refine lt_of_le_of_ne (fun x hx => ?_) ?_
+          · show e * x * e = x
+            have hx' : q * x * q = x := hx
+            calc e * x * e = e * (q * x * q) * e := by rw [hx']
+              _ = (e * q) * x * (q * e) := by noncomm_ring
+              _ = q * x * q := by rw [heq, hqe']
+              _ = x := hx'
+          · intro hcon
+            have h2 : e ∈ cornerSubmodule (A := A) e := by
+              show e * e * e = e
+              rw [he.isIdempotentElem.eq, he.isIdempotentElem.eq]
+            rw [← hcon] at h2
+            have h3 : q * e * q = e := h2
+            rw [hqe', hq.isIdempotentElem.eq] at h3
+            exact hqne h3
+        have hlt : Module.finrank ℂ (cornerSubmodule (A := A) q) < Module.finrank ℂ (cornerSubmodule (A := A) e) :=
+          Submodule.finrank_lt_finrank_of_lt hsub
+        obtain ⟨p, hp, hpq⟩ := ih q hq hq0 (by omega)
+        exact ⟨p, hp, hpq.trans hqe⟩
+
+/-- **84II** (`fdcstar`, vn.tex:5784), the proof's step 840.50 (vn.tex:5891):
+**below every non-zero projection of a finite-dimensional C*-algebra there is
+a minimal projection**.  The print argues that pairwise orthogonal non-zero
+projections are linearly independent, so every orthogonal set of projections
+in `𝒜` is finite and "any descending sequence of non-zero projections must
+eventually become constant"; the same content is run here as an induction on
+the dimension of the corner `e𝒜e`, which drops strictly when `e` is replaced
+by a proper subprojection `q`, since `q𝒜q ⊆ e𝒜e` and `e ∉ q𝒜q`. -/
+private theorem exists_isMinimalProjection_le {e : A} (he : IsStarProjection e)
+    (he0 : e ≠ 0) :
+    ∃ p : A, IsMinimalProjection p ∧ p ≤ e :=
+  exists_isMinimalProjection_le_aux _ e he he0 le_rfl
+
+end FDVNAMinimal
+
+section FDVNAFactor
+
+variable [VonNeumannAlgebra A] [FiniteDimensional ℂ A]
+
+omit [PartialOrder A] [StarOrderedRing A] [VonNeumannAlgebra A]
+  [FiniteDimensional ℂ A] in
+/-- **84II** (`fdcstar`, vn.tex:5784), the proof's step 840.50 (vn.tex:5891):
+**pairwise orthogonal non-zero projections are linearly independent** --
+multiply `∑ᵢ cᵢpᵢ = 0` by `pⱼ`. -/
+private theorem linearIndependent_of_orthogonal_projections {ι : Type*} (p : ι → A)
+    (hp : ∀ i, IsStarProjection (p i)) (hne : ∀ i, p i ≠ 0)
+    (horth : Pairwise fun i j => p i * p j = 0) : LinearIndependent ℂ p := by
+  rw [linearIndependent_iff']
+  intro s g hsum j hj
+  have h1 : p j * (∑ i ∈ s, g i • p i) = 0 := by rw [hsum, mul_zero]
+  rw [Finset.mul_sum] at h1
+  have h2 : ∑ i ∈ s, p j * (g i • p i) = g j • p j := by
+    refine Finset.sum_eq_single_of_mem j hj (fun i _ hij => ?_) |>.trans ?_
+    · rw [mul_smul_comm, horth (Ne.symm hij), smul_zero]
+    · rw [mul_smul_comm, (hp j).isIdempotentElem.eq]
+  rw [h2] at h1
+  rcases smul_eq_zero.mp h1 with h | h
+  · exact h
+  · exact absurd h (hne j)
+
+omit [PartialOrder A] [StarOrderedRing A] [VonNeumannAlgebra A] in
+/-- 840.50, the consequence the print draws from it: in a finite-dimensional
+C*-algebra every orthogonal family of non-zero projections is finite. -/
+private theorem finite_of_orthogonal_projections {ι : Type*} (p : ι → A)
+    (hp : ∀ i, IsStarProjection (p i)) (hne : ∀ i, p i ≠ 0)
+    (horth : Pairwise fun i j => p i * p j = 0) : Finite ι :=
+  (linearIndependent_of_orthogonal_projections p hp hne horth).finite
+
+/-- **84II** (`fdcstar`, vn.tex:5784), the proof's step 840.60 (vn.tex:5916),
+first half: **a finite-dimensional factor carries a full system of matrix
+units**.  This is the print, step for step: take a minimal projection `e`
+(`exists_isMinimalProjection_le`); `e ≠ 0` and there are no non-trivial
+central projections, so `⌈⌈e⌉⌉ = 1`; **83V** `cceil_sum` writes
+`1 = ⌈⌈e⌉⌉ = ∑ₖ eₖ` with non-zero pairwise orthogonal `eₖ ⊴ e`, a family
+finite by 840.50 and non-empty because `1 ≠ 0`; the partial isometries `uₖ`
+of `eₖ ⊴ e` have `uₖ*uₖ = eₖ` and `uₖuₖ* ≤ e`, and `uₖuₖ*` is a non-zero
+projection, so `uₖuₖ* = e` by minimality; and `u_{kl} = uₖ*u_l` then multiply
+as matrix units, because `uⱼuₖ*` is `e` when `j = k` and `0` otherwise.  Each
+`eₖ = u_{kk}` is minimal as well, `q ↦ uₖ q uₖ*` carrying a projection below
+`eₖ` to one below `e`; the print uses this silently when it reduces to the
+corner of "the minimal projection `e` we started with", which is in fact the
+corner of `e₁`. -/
+private theorem exists_matrix_units (hnt : Nontrivial A)
+    (hfac : ∀ z : A, IsStarProjection z → IsCentral A z → z = 0 ∨ z = 1) :
+    ∃ (K : ℕ) (w : Fin (K + 1) → Fin (K + 1) → A),
+      (∀ i j l, w i j * w j l = w i l) ∧
+      (∀ i j k l, j ≠ k → w i j * w k l = 0) ∧
+      (∀ i j, star (w i j) = w j i) ∧
+      (∑ i, w i i = 1) ∧
+      (∀ i, IsMinimalProjection (w i i)) := by
+  classical
+  obtain ⟨e, hemin, -⟩ := exists_isMinimalProjection_le (IsStarProjection.one A) one_ne_zero
+  -- `⌈⌈e⌉⌉ = 1`, since `e ≠ 0` and the only central projections are `0`, `1`
+  have hcc : cceil e = 1 := by
+    obtain ⟨⟨hcp, hcc', hce⟩, -⟩ := cceil_isLeast e
+    rcases hfac _ hcp hcc' with h | h
+    · exact absurd (by rw [h, zero_mul] at hce; exact hce.symm) hemin.2.1
+    · exact h
+  obtain ⟨ι, e', hspec, horth, hsum⟩ := cceil_sum e hemin.1
+  have hfin : Finite ι := finite_of_orthogonal_projections e'
+    (fun i => (hspec i).1) (fun i => (hspec i).2.1) horth
+  have hfintype : Fintype ι := Fintype.ofFinite ι
+  have hιne : Nonempty ι := by
+    by_contra hcon
+    rw [not_nonempty_iff] at hcon
+    have h0 : projSup (Set.range e' : Set A) = 0 := by
+      rw [Set.range_eq_empty e']
+      exact projSup_eq (by simp) (IsStarProjection.zero A) (by simp) fun q hq _ => hq.nonneg
+    rw [← hsum, hcc] at h0
+    exact one_ne_zero h0
+  obtain ⟨K, ⟨τ⟩⟩ : ∃ K : ℕ, Nonempty (ι ≃ Fin (K + 1)) :=
+    ⟨Fintype.card ι - 1,
+      ⟨(Fintype.equivFin ι).trans (finCongr (by have := Fintype.card_pos (α := ι); omega))⟩⟩
+  obtain ⟨f, hf⟩ : ∃ f : Fin (K + 1) → A, ∀ i, f i = e' (τ.symm i) := ⟨_, fun _ => rfl⟩
+  have hfproj : ∀ i, IsStarProjection (f i) := fun i => by rw [hf]; exact (hspec _).1
+  have hfne : ∀ i, f i ≠ 0 := fun i => by rw [hf]; exact (hspec _).2.1
+  have hforth : Pairwise fun i j => f i * f j = 0 := by
+    intro i j hij
+    rw [hf, hf]
+    exact horth fun h => hij (τ.symm.injective h)
+  have hrange : Set.range f = Set.range e' := by
+    ext x
+    constructor
+    · rintro ⟨i, rfl⟩; exact ⟨τ.symm i, (hf i).symm⟩
+    · rintro ⟨i, rfl⟩; exact ⟨τ i, by rw [hf]; simp⟩
+  have hsum1 : ∑ i, f i = 1 := by
+    have hle := orthogonal_tuple_of_projections_2' f hfproj hforth
+    have hps : projSup (Set.range f) = ∑ i, f i := by
+      refine projSup_eq ?_ hle.1.1 ?_ ?_
+      · rintro _ ⟨i, rfl⟩; exact hfproj i
+      · rintro _ ⟨i, rfl⟩; exact hle.1.2 i
+      · intro q hq hub
+        exact hle.2 ⟨hq, fun i => hub _ ⟨i, rfl⟩⟩
+    rw [hrange, ← hsum, hcc] at hps
+    exact hps.symm
+  -- the partial isometries `uₖ`, with `uₖ uₖ* = e` because `e` is minimal
+  have hex : ∀ i, ∃ u : A, IsPartialIsometry A u ∧ star u * u = f i ∧ u * star u = e := by
+    intro i
+    obtain ⟨u, hpi, h1, h2⟩ := (hspec (τ.symm i)).2.2
+    refine ⟨u, hpi, by rw [hf]; exact h1, ?_⟩
+    have hproj : IsStarProjection (u * star u) := ((partial_isometry_equivalents u).out 0 3).mp hpi
+    have hne0 : u * star u ≠ 0 := by
+      intro h
+      have h3 : u * star u * u = u := ((partial_isometry_equivalents u).out 0 2).mp hpi
+      rw [h, zero_mul] at h3
+      refine hfne i ?_
+      rw [hf, ← h1, ← h3, star_zero, zero_mul]
+    rcases hemin.eq_zero_or_eq hproj h2 with h | h
+    · exact absurd h hne0
+    · exact h
+  choose u hupi hu1 hu2 using hex
+  have heu : ∀ i, e * u i = u i := by
+    intro i
+    rw [← hu2 i]
+    exact ((partial_isometry_equivalents (u i)).out 0 2).mp (hupi i)
+  have hue : ∀ i, star (u i) * e = star (u i) := by
+    intro i
+    have h := congrArg star (heu i)
+    rwa [star_mul, hemin.1.isSelfAdjoint.star_eq] at h
+  have huf : ∀ i, u i * f i = u i := by
+    intro i
+    rw [← hu1 i, ← mul_assoc, hu2 i]
+    exact heu i
+  have hfu : ∀ i, f i * star (u i) = star (u i) := by
+    intro i
+    have h := congrArg star (huf i)
+    rwa [star_mul, (hfproj i).isSelfAdjoint.star_eq] at h
+  have horthu : ∀ i j, i ≠ j → u i * star (u j) = 0 := by
+    intro i j hij
+    calc u i * star (u j) = (u i * f i) * (f j * star (u j)) := by rw [huf, hfu]
+      _ = u i * (f i * f j) * star (u j) := by noncomm_ring
+      _ = 0 := by rw [hforth hij, mul_zero, zero_mul]
+  -- minimality of each `eₖ`, transported along `uₖ`
+  have hfmin : ∀ i, IsMinimalProjection (f i) := by
+    intro i
+    refine ⟨hfproj i, hfne i, fun q hq hqle => ?_⟩
+    have hfq : f i * q = q := (IsStarProjection.le_iff_mul_eq_right hq (hfproj i)).mp hqle
+    have hqf : q * f i = q := (IsStarProjection.le_iff_mul_eq_left hq (hfproj i)).mp hqle
+    have hq'proj : IsStarProjection (u i * q * star (u i)) := by
+      refine ⟨?_, ?_⟩
+      · show (u i * q * star (u i)) * (u i * q * star (u i)) = u i * q * star (u i)
+        calc (u i * q * star (u i)) * (u i * q * star (u i))
+            = u i * q * (star (u i) * u i) * q * star (u i) := by noncomm_ring
+          _ = u i * ((q * f i) * q) * star (u i) := by rw [hu1 i]; noncomm_ring
+          _ = u i * (q * q) * star (u i) := by rw [hqf]
+          _ = u i * q * star (u i) := by rw [hq.isIdempotentElem.eq]
+      · show star (u i * q * star (u i)) = u i * q * star (u i)
+        rw [star_mul, star_mul, star_star, hq.isSelfAdjoint.star_eq, mul_assoc]
+    have hq'e : u i * q * star (u i) ≤ e := by
+      have h1 : u i * q * star (u i) ≤ u i * f i * star (u i) :=
+        star_right_conjugate_le_conjugate hqle (u i)
+      have h2 : u i * f i * star (u i) = e := by
+        rw [← hu1 i]
+        calc u i * (star (u i) * u i) * star (u i)
+            = (u i * star (u i)) * (u i * star (u i)) := by noncomm_ring
+          _ = e * e := by rw [hu2 i]
+          _ = e := hemin.1.isIdempotentElem.eq
+      rw [← h2]; exact h1
+    have hback : star (u i) * (u i * q * star (u i)) * u i = q := by
+      calc star (u i) * (u i * q * star (u i)) * u i
+          = (star (u i) * u i) * q * (star (u i) * u i) := by noncomm_ring
+        _ = f i * q * f i := by rw [hu1 i]
+        _ = q := by rw [hfq, hqf]
+    rcases hemin.eq_zero_or_eq hq'proj hq'e with h | h
+    · left
+      rw [← hback, h, mul_zero, zero_mul]
+    · right
+      rw [← hback, h]
+      rw [hue i]
+      exact hu1 i
+  refine ⟨K, fun i j => star (u i) * u j, ?_, ?_, ?_, ?_, ?_⟩
+  · intro i j l
+    calc star (u i) * u j * (star (u j) * u l)
+        = star (u i) * (u j * star (u j)) * u l := by noncomm_ring
+      _ = star (u i) * e * u l := by rw [hu2]
+      _ = star (u i) * u l := by rw [hue]
+  · intro i j k l h
+    calc star (u i) * u j * (star (u k) * u l)
+        = star (u i) * (u j * star (u k)) * u l := by noncomm_ring
+      _ = 0 := by rw [horthu j k h, mul_zero, zero_mul]
+  · intro i j
+    rw [star_mul, star_star]
+  · show ∑ i, star (u i) * u i = 1
+    rw [← hsum1]
+    exact Finset.sum_congr rfl fun i _ => hu1 i
+  · intro i
+    show IsMinimalProjection (star (u i) * u i)
+    rw [hu1 i]
+    exact hfmin i
+
+omit [FiniteDimensional ℂ A] in
+/-- Auxiliary for **84II**, not a transcription: `p𝒜p = ℂp` for a minimal
+projection `p`, in the complex form.  The real form is the tree's
+`IsMinimalProjection.corner_eq_smul`; this is it applied to the two
+self-adjoint parts of `x`. -/
+private theorem corner_eq_smul_complex {p x : A} (hp : IsMinimalProjection p)
+    (hxp : p * x * p = x) : ∃ c : ℂ, x = c • p := by
+  have hxs : p * star x * p = star x := by
+    have h := congrArg star hxp
+    rwa [star_mul, star_mul, hp.1.isSelfAdjoint.star_eq, ← mul_assoc] at h
+  set h : A := ((2 : ℂ)⁻¹) • (x + star x) with hh
+  set k : A := (Complex.I / 2) • (star x - x) with hk
+  have hhsa : IsSelfAdjoint h := by
+    change star (((2 : ℂ)⁻¹) • (x + star x)) = _
+    rw [star_smul, star_add, star_star]
+    simp [hh, add_comm]
+  have hksa : IsSelfAdjoint k := by
+    change star ((Complex.I / 2) • (star x - x)) = _
+    rw [star_smul, star_sub, star_star]
+    rw [show star (Complex.I / 2) = -(Complex.I / 2) by
+      simp [Complex.ext_iff]; norm_num]
+    rw [hk]
+    change (-(Complex.I / 2)) • (x - star x) = (Complex.I / 2) • (star x - x)
+    rw [neg_smul, ← smul_neg]
+    congr 1
+    abel
+  have hhc : p * h * p = h := by
+    rw [hh, mul_smul_comm, smul_mul_assoc, mul_add, add_mul, hxp, hxs]
+  have hkc : p * k * p = k := by
+    rw [hk, mul_smul_comm, smul_mul_assoc, mul_sub, sub_mul, hxp, hxs]
+  obtain ⟨r, hr⟩ := hp.corner_eq_smul hhsa hhc
+  obtain ⟨t, ht⟩ := hp.corner_eq_smul hksa hkc
+  refine ⟨(r : ℂ) + Complex.I * (t : ℂ), ?_⟩
+  have hdec : h + Complex.I • k = x := by
+    rw [hh, hk, smul_smul, show Complex.I * (Complex.I / 2) = -(2 : ℂ)⁻¹ by
+      rw [div_eq_mul_inv, ← mul_assoc, Complex.I_mul_I]; ring]
+    rw [neg_smul, ← smul_neg, ← smul_add]
+    rw [show (x + star x) + -(star x - x) = (2 : ℂ) • x by rw [two_smul]; abel]
+    rw [smul_smul, inv_mul_cancel₀ (two_ne_zero), one_smul]
+  rw [← hdec, hr, ht, smul_smul, add_smul]
+
+omit [FiniteDimensional ℂ A] in
+/-- **84II** (`fdcstar`, vn.tex:5784), the proof's step 840.60 (vn.tex:5916),
+second half: **a full system of matrix units whose diagonal units are minimal
+projections summing to `1` presents the algebra as a full matrix algebra**.
+The map is the print's `ϱ : A ↦ ∑_{kl} A_{kl} u_{kl}`, and the print's
+computation that it is linear, unital, involution preserving and
+multiplicative is carried out here as written.
+
+Two departures from the print, both in its last two paragraphs.
+
+*Injectivity.*  The print shows `ϱ` normal, forms its central carrier
+`⌈ϱ⌉`, and reads `⌈ϱ⌉ = 1` off the fact that `M_K` is a factor.  Here
+`u_{ii} ϱ(A) u_{jj} = A_{ij} u_{ij}` is computed directly from the matrix
+units, and `u_{ij} ≠ 0` because `u_{ji}u_{ij} = u_{jj} ≠ 0`, so `ϱ(A) = 0`
+forces `A = 0`.  The print's route is not available: the tree's `cceilMap`
+is the carrier of a positive map into the *same* algebra and carries no
+"carrier `1` implies injective".
+
+*Surjectivity.*  The print's reduction is transcribed --
+`a = ∑_{k,l} u_{k1}(u_{1k} a u_{l1})u_{1l}`, so it is enough that
+`u_{1k} a u_{l1}`, which lies in the corner of the minimal projection
+`e₁ = u_{11}`, is in the range.  For that last step the print argues that
+`⌈‖a‖e − a⌉ ≤ e` is `0` or `e` and rules out `e` by a norm computation.
+**That computation does not close**: from `(‖a‖e−a)^{1/2ⁿ} → e` it infers
+`‖‖a‖e−a‖^{1/2ⁿ} → 1` and hence `‖‖a‖e−a‖ = 1`, but `t^{1/2ⁿ} → 1` holds for
+*every* `t ∈ (0,1]`, so nothing contradicts `‖‖a‖e−a‖ ≤ 2/3`.  The step is
+closed instead by the tree's `IsMinimalProjection.corner_eq_smul`
+(`corner_eq_smul_complex` for the complex form), which proves the same thing
+-- the corner of a minimal projection is `ℂe` -- through the spectral
+scale. -/
+private theorem matrixUnits_starAlgEquiv {n : ℕ} (w : Fin (n + 1) → Fin (n + 1) → A)
+    (hmul : ∀ i j l, w i j * w j l = w i l)
+    (hmul0 : ∀ i j k l, j ≠ k → w i j * w k l = 0)
+    (hstar : ∀ i j, star (w i j) = w j i)
+    (hone : ∑ i, w i i = 1)
+    (hmin : ∀ i, IsMinimalProjection (w i i)) :
+    Nonempty (Matrix (Fin (n + 1)) (Fin (n + 1)) ℂ ≃⋆ₐ[ℂ] A) := by
+  classical
+  set ρ : Matrix (Fin (n + 1)) (Fin (n + 1)) ℂ → A :=
+    fun M => ∑ i, ∑ j, M i j • w i j with hρ
+  have hadd : ∀ M P, ρ (M + P) = ρ M + ρ P := by
+    intro M P
+    show ∑ i, ∑ j, (M + P) i j • w i j = (∑ i, ∑ j, M i j • w i j) + ∑ i, ∑ j, P i j • w i j
+    rw [← Finset.sum_add_distrib]
+    refine Finset.sum_congr rfl fun i _ => ?_
+    rw [← Finset.sum_add_distrib]
+    exact Finset.sum_congr rfl fun j _ => by rw [Matrix.add_apply, add_smul]
+  have hsmul : ∀ (c : ℂ) M, ρ (c • M) = c • ρ M := by
+    intro c M
+    show ∑ i, ∑ j, (c • M) i j • w i j = c • ∑ i, ∑ j, M i j • w i j
+    rw [Finset.smul_sum]
+    refine Finset.sum_congr rfl fun i _ => ?_
+    rw [Finset.smul_sum]
+    exact Finset.sum_congr rfl fun j _ => by rw [Matrix.smul_apply, smul_smul, smul_eq_mul]
+  have hone' : ρ 1 = 1 := by
+    show ∑ i, ∑ j, (1 : Matrix (Fin (n + 1)) (Fin (n + 1)) ℂ) i j • w i j = 1
+    rw [← hone]
+    refine Finset.sum_congr rfl fun i _ => ?_
+    calc ∑ j, (1 : Matrix (Fin (n + 1)) (Fin (n + 1)) ℂ) i j • w i j
+        = ∑ j, (if i = j then (1 : ℂ) else 0) • w i j := by
+          exact Finset.sum_congr rfl fun j _ => by rw [Matrix.one_apply]
+      _ = w i i := by simp
+  have hmulρ : ∀ M P, ρ (M * P) = ρ M * ρ P := by
+    intro M P
+    have key : ∀ i : Fin (n + 1),
+        (∑ j, M i j • w i j) * (∑ k, ∑ l, P k l • w k l) = ∑ l, (M * P) i l • w i l := by
+      intro i
+      have step : ∀ j : Fin (n + 1),
+          (M i j • w i j) * (∑ k, ∑ l, P k l • w k l) = ∑ l, (M i j * P j l) • w i l := by
+        intro j
+        calc (M i j • w i j) * (∑ k, ∑ l, P k l • w k l)
+            = ∑ k, (M i j • w i j) * (∑ l, P k l • w k l) := by rw [Finset.mul_sum]
+          _ = (M i j • w i j) * (∑ l, P j l • w j l) :=
+              Finset.sum_eq_single_of_mem j (Finset.mem_univ j) (fun k _ hkj => by
+                rw [Finset.mul_sum]
+                exact Finset.sum_eq_zero fun l _ => by
+                  rw [smul_mul_smul_comm, hmul0 i j k l (Ne.symm hkj), smul_zero])
+          _ = ∑ l, (M i j * P j l) • w i l := by
+              rw [Finset.mul_sum]
+              exact Finset.sum_congr rfl fun l _ => by
+                rw [smul_mul_smul_comm, hmul i j l]
+      rw [Finset.sum_mul, Finset.sum_congr rfl (fun j _ => step j), Finset.sum_comm]
+      exact Finset.sum_congr rfl fun l _ => by rw [Matrix.mul_apply, Finset.sum_smul]
+    show ∑ i, ∑ l, (M * P) i l • w i l = (∑ i, ∑ j, M i j • w i j) * (∑ k, ∑ l, P k l • w k l)
+    rw [Finset.sum_mul]
+    exact Finset.sum_congr rfl fun i _ => (key i).symm
+  have hstarρ : ∀ M : Matrix (Fin (n + 1)) (Fin (n + 1)) ℂ, ρ (star M) = star (ρ M) := by
+    intro M
+    show ∑ i, ∑ j, (star M) i j • w i j = star (∑ i, ∑ j, M i j • w i j)
+    rw [star_sum]
+    have h1 : ∀ i : Fin (n + 1), star (∑ j, M i j • w i j)
+        = ∑ j, (starRingEnd ℂ) (M i j) • w j i := by
+      intro i
+      rw [star_sum]
+      exact Finset.sum_congr rfl fun j _ => by rw [star_smul, hstar i j]; rfl
+    rw [Finset.sum_congr rfl (fun i _ => h1 i), Finset.sum_comm]
+    exact Finset.sum_congr rfl fun i _ =>
+      Finset.sum_congr rfl fun j _ => by rw [Matrix.star_apply]; rfl
+  -- injectivity: `w i i ϱ(M) w j j = M i j w i j` and every `w i j` is non-zero
+  have hleft : ∀ (M : Matrix (Fin (n + 1)) (Fin (n + 1)) ℂ) (i : Fin (n + 1)),
+      w i i * ρ M = ∑ l, M i l • w i l := by
+    intro M i
+    show w i i * (∑ k, ∑ l, M k l • w k l) = ∑ l, M i l • w i l
+    calc w i i * (∑ k, ∑ l, M k l • w k l) = ∑ k, w i i * (∑ l, M k l • w k l) := by
+          rw [Finset.mul_sum]
+      _ = w i i * (∑ l, M i l • w i l) :=
+          Finset.sum_eq_single_of_mem i (Finset.mem_univ i) (fun k _ hki => by
+            rw [Finset.mul_sum]
+            exact Finset.sum_eq_zero fun l _ => by
+              rw [mul_smul_comm, hmul0 i i k l (Ne.symm hki), smul_zero])
+      _ = ∑ l, M i l • w i l := by
+          rw [Finset.mul_sum]
+          exact Finset.sum_congr rfl fun l _ => by
+            rw [mul_smul_comm, hmul i i l]
+  have hright : ∀ (M : Matrix (Fin (n + 1)) (Fin (n + 1)) ℂ) (i j : Fin (n + 1)),
+      (∑ l, M i l • w i l) * w j j = M i j • w i j := by
+    intro M i j
+    calc (∑ l, M i l • w i l) * w j j = ∑ l, (M i l • w i l) * w j j := by rw [Finset.sum_mul]
+      _ = (M i j • w i j) * w j j :=
+          Finset.sum_eq_single_of_mem j (Finset.mem_univ j) (fun l _ hlj => by
+            rw [smul_mul_assoc, hmul0 i l j j hlj, smul_zero])
+      _ = M i j • w i j := by rw [smul_mul_assoc, hmul i j j]
+  have hwne : ∀ i j : Fin (n + 1), w i j ≠ 0 := by
+    intro i j hij
+    refine (hmin j).2.1 ?_
+    calc w j j = w j i * w i j := (hmul j i j).symm
+      _ = 0 := by rw [hij, mul_zero]
+  have hinj : Function.Injective ρ := by
+    intro M P hMP
+    have hz : ρ (M - P) = 0 := by
+      have h1 : ρ ((M - P) + P) = ρ (M - P) + ρ P := hadd _ _
+      rw [sub_add_cancel, hMP] at h1
+      have h2 : (0 : A) + ρ P = ρ (M - P) + ρ P := by rw [zero_add]; exact h1
+      exact (add_right_cancel h2).symm
+    ext i j
+    have h0 : w i i * ρ (M - P) * w j j = 0 := by rw [hz, mul_zero, zero_mul]
+    rw [hleft, hright] at h0
+    rcases smul_eq_zero.mp h0 with h | h
+    · have : (M - P) i j = 0 := h
+      rw [Matrix.sub_apply, sub_eq_zero] at this
+      exact this
+    · exact absurd h (hwne i j)
+  -- surjectivity: `w i i a w j j` is a multiple of `w i j`, because
+  -- `w 0 i a w j 0` lies in the corner of the minimal projection `w 0 0`
+  have hsurj : Function.Surjective ρ := by
+    intro a
+    have hcor : ∀ i j : Fin (n + 1), ∃ c : ℂ, w i i * a * w j j = c • w i j := by
+      intro i j
+      have hy : w 0 0 * (w 0 i * a * w j 0) * w 0 0 = w 0 i * a * w j 0 := by
+        calc w 0 0 * (w 0 i * a * w j 0) * w 0 0
+            = (w 0 0 * w 0 i) * a * (w j 0 * w 0 0) := by noncomm_ring
+          _ = w 0 i * a * w j 0 := by
+              rw [hmul 0 0 i, hmul j 0 0]
+      obtain ⟨c, hc⟩ := corner_eq_smul_complex (hmin 0) hy
+      refine ⟨c, ?_⟩
+      calc w i i * a * w j j = (w i 0 * w 0 i) * a * (w j 0 * w 0 j) := by
+            rw [hmul i 0 i, hmul j 0 j]
+        _ = w i 0 * (w 0 i * a * w j 0) * w 0 j := by noncomm_ring
+        _ = w i 0 * (c • w 0 0) * w 0 j := by rw [hc]
+        _ = c • (w i 0 * w 0 0 * w 0 j) := by
+            rw [mul_smul_comm, smul_mul_assoc]
+        _ = c • w i j := by rw [hmul i 0 0, hmul i 0 j]
+    choose c hc using hcor
+    refine ⟨Matrix.of c, ?_⟩
+    show ∑ i, ∑ j, c i j • w i j = a
+    have hstep : ∀ i : Fin (n + 1), ∑ j, c i j • w i j = w i i * a := by
+      intro i
+      calc ∑ j, c i j • w i j = ∑ j, w i i * a * w j j :=
+            Finset.sum_congr rfl fun j _ => (hc i j).symm
+        _ = w i i * a * ∑ j, w j j := (Finset.mul_sum _ _ _).symm
+        _ = w i i * a := by rw [hone, mul_one]
+    calc ∑ i, ∑ j, c i j • w i j = ∑ i, w i i * a :=
+          Finset.sum_congr rfl fun i _ => hstep i
+      _ = (∑ i, w i i) * a := (Finset.sum_mul _ _ _).symm
+      _ = a := by rw [hone, one_mul]
+  refine ⟨StarAlgEquiv.ofAlgEquiv (AlgEquiv.ofBijective
+    { toFun := ρ
+      map_one' := hone'
+      map_mul' := hmulρ
+      map_zero' := by
+        have := hsmul 0 1
+        rwa [zero_smul, zero_smul] at this
+      map_add' := hadd
+      commutes' := fun r => by
+        show ρ (algebraMap ℂ (Matrix (Fin (n + 1)) (Fin (n + 1)) ℂ) r) = algebraMap ℂ A r
+        rw [Algebra.algebraMap_eq_smul_one, hsmul, hone', Algebra.algebraMap_eq_smul_one] }
+    ⟨hinj, hsurj⟩) ?_⟩
+  intro M
+  exact hstarρ M
+
+end FDVNAFactor
+
+/-- Auxiliary for **84II**, not a transcription: `S × U ≃ T × V` from
+`S ≃ T` and `U ≃ V`. -/
+private def starProdCongr {S T U V : Type*} [Add S] [Mul S] [SMul ℂ S] [Star S]
+    [Add T] [Mul T] [SMul ℂ T] [Star T] [Add U] [Mul U] [SMul ℂ U] [Star U]
+    [Add V] [Mul V] [SMul ℂ V] [Star V]
+    (f : S ≃⋆ₐ[ℂ] T) (g : U ≃⋆ₐ[ℂ] V) : (S × U) ≃⋆ₐ[ℂ] (T × V) where
+  toFun x := (f x.1, g x.2)
+  invFun y := (f.symm y.1, g.symm y.2)
+  left_inv x := Prod.ext (f.symm_apply_apply x.1) (g.symm_apply_apply x.2)
+  right_inv y := Prod.ext (f.apply_symm_apply y.1) (g.apply_symm_apply y.2)
+  map_mul' x y := Prod.ext (f.map_mul' x.1 y.1) (g.map_mul' x.2 y.2)
+  map_add' x y := Prod.ext (f.map_add' x.1 y.1) (g.map_add' x.2 y.2)
+  map_star' x := Prod.ext (f.map_star' x.1) (g.map_star' x.2)
+  map_smul' r x := Prod.ext (f.map_smul' r x.1) (g.map_smul' r x.2)
+
+/-- Auxiliary for **84II**, not a transcription: reindexing a finite product
+of matrix algebras along an equivalence of index types. -/
+private def piMatrixCongrLeft {ι κ : Type} (e : ι ≃ κ) (N : ι → ℕ) :
+    (∀ i : ι, Matrix (Fin (N i)) (Fin (N i)) ℂ) ≃⋆ₐ[ℂ]
+      (∀ k : κ, Matrix (Fin (N (e.symm k))) (Fin (N (e.symm k))) ℂ) :=
+  { Equiv.piCongrLeft' (fun i => Matrix (Fin (N i)) (Fin (N i)) ℂ) e with
+    map_mul' := fun _ _ => rfl
+    map_add' := fun _ _ => rfl
+    map_star' := fun _ => rfl
+    map_smul' := fun _ _ => rfl }
+
+/-- Auxiliary for **84II**, not a transcription: a product of matrix algebras
+indexed by a sum type splits into the two halves. -/
+private def sumPiMatrix {ι κ : Type} (N₁ : ι → ℕ) (N₂ : κ → ℕ) :
+    (∀ x : ι ⊕ κ, Matrix (Fin (Sum.elim N₁ N₂ x)) (Fin (Sum.elim N₁ N₂ x)) ℂ) ≃⋆ₐ[ℂ]
+      ((∀ i : ι, Matrix (Fin (N₁ i)) (Fin (N₁ i)) ℂ) ×
+        (∀ k : κ, Matrix (Fin (N₂ k)) (Fin (N₂ k)) ℂ)) :=
+  { Equiv.sumPiEquivProdPi
+      (fun x => Matrix (Fin (Sum.elim N₁ N₂ x)) (Fin (Sum.elim N₁ N₂ x)) ℂ) with
+    map_mul' := fun _ _ => rfl
+    map_add' := fun _ _ => rfl
+    map_star' := fun _ => rfl
+    map_smul' := fun _ _ => rfl }
+
+section FDVNAProduct
+
+variable [VonNeumannAlgebra A]
+
+/-- **84II** (`fdcstar`, vn.tex:5784), the proof's step 840.50 (vn.tex:5891)
+in the two-summand form the induction below uses: for a central projection
+`z`, `a ↦ (za, z^⊥a)` is a star-algebra isomorphism `𝒜 ≅ z𝒜 × z^⊥𝒜`.
+
+The print splits `𝒜` in one go, along the finitely many minimal central
+projections of `1 = ∑ₘ zₘ`, citing **67IV** (`central-projections-sums`) --
+in the tree `central_projections_sums_2_iso'`, whose direct sum is Mathlib's
+`lp _ ∞` over the non-zero corners.  Peeling one central projection at a time
+gives the same decomposition (the peeling terminates because each corner has
+strictly smaller dimension, which is what the print's finiteness of
+orthogonal families of projections supplies) and lands directly on the finite
+product `fdcstar` states, with no `lp`-to-`Fin` reindexing in between; and
+the two-fold case is 67IV.2's own statement for a two-element family, short
+here because the corners are ordinary subtypes of `𝒜`. -/
+private def centralSplit (c : CentralProj A) : A ≃⋆ₐ[ℂ] (c.sub × c.compl.sub) where
+  toFun a := (⟨c.val * a, by
+      show c.val * (c.val * a) = c.val * a
+      rw [← mul_assoc, c.mul_self]⟩,
+    ⟨c.compl.val * a, by
+      show c.compl.val * (c.compl.val * a) = c.compl.val * a
+      rw [← mul_assoc, c.compl.mul_self]⟩)
+  invFun x := (x.1 : A) + (x.2 : A)
+  left_inv a := by
+    show c.val * a + (1 - c.val) * a = a
+    rw [sub_mul, one_mul]
+    abel
+  right_inv x := by
+    have h1 : c.val * (x.2 : A) = 0 := by
+      have h := (x.2).2
+      show c.val * (x.2 : A) = 0
+      calc c.val * (x.2 : A) = c.val * (c.compl.val * (x.2 : A)) := by
+            rw [(h : c.compl.val * (x.2 : A) = (x.2 : A))]
+        _ = (c.val * (1 - c.val)) * (x.2 : A) := by rw [CentralProj.compl_val, mul_assoc]
+        _ = 0 := by rw [mul_sub, mul_one, c.mul_self, sub_self, zero_mul]
+    have h2 : c.compl.val * (x.1 : A) = 0 := by
+      have h := (x.1).2
+      calc c.compl.val * (x.1 : A) = c.compl.val * (c.val * (x.1 : A)) := by
+            rw [(h : c.val * (x.1 : A) = (x.1 : A))]
+        _ = ((1 - c.val) * c.val) * (x.1 : A) := by rw [CentralProj.compl_val, mul_assoc]
+        _ = 0 := by rw [sub_mul, one_mul, c.mul_self, sub_self, zero_mul]
+    refine Prod.ext (Subtype.ext ?_) (Subtype.ext ?_)
+    · show c.val * ((x.1 : A) + (x.2 : A)) = (x.1 : A)
+      rw [mul_add, h1, add_zero]
+      exact (x.1).2
+    · show c.compl.val * ((x.1 : A) + (x.2 : A)) = (x.2 : A)
+      rw [mul_add, h2, zero_add]
+      exact (x.2).2
+  map_mul' a b := by
+    refine Prod.ext (Subtype.ext ?_) (Subtype.ext ?_)
+    · show c.val * (a * b) = (c.val * a) * (c.val * b)
+      calc c.val * (a * b) = (c.val * c.val) * (a * b) := by rw [c.mul_self]
+        _ = c.val * (a * c.val) * b := by rw [← c.isCentral a]; noncomm_ring
+        _ = (c.val * a) * (c.val * b) := by noncomm_ring
+    · show c.compl.val * (a * b) = (c.compl.val * a) * (c.compl.val * b)
+      calc c.compl.val * (a * b) = (c.compl.val * c.compl.val) * (a * b) := by
+            rw [c.compl.mul_self]
+        _ = c.compl.val * (a * c.compl.val) * b := by rw [← c.compl.isCentral a]; noncomm_ring
+        _ = (c.compl.val * a) * (c.compl.val * b) := by noncomm_ring
+  map_add' a b := by
+    refine Prod.ext (Subtype.ext ?_) (Subtype.ext ?_)
+    · show c.val * (a + b) = c.val * a + c.val * b
+      rw [mul_add]
+    · show c.compl.val * (a + b) = c.compl.val * a + c.compl.val * b
+      rw [mul_add]
+  map_star' a := by
+    refine Prod.ext (Subtype.ext ?_) (Subtype.ext ?_)
+    · show c.val * star a = star (c.val * a)
+      rw [star_mul, c.star_val, c.isCentral (star a)]
+    · show c.compl.val * star a = star (c.compl.val * a)
+      rw [star_mul, c.compl.star_val, c.compl.isCentral (star a)]
+  map_smul' r a := by
+    refine Prod.ext (Subtype.ext ?_) (Subtype.ext ?_)
+    · show c.val * (r • a) = r • (c.val * a)
+      rw [mul_smul_comm]
+    · show c.compl.val * (r • a) = r • (c.compl.val * a)
+      rw [mul_smul_comm]
+
+/-- Auxiliary for **84II**, not a transcription: the inclusion of a corner as
+a linear map, which carries the dimension count `centralSplit` needs. -/
+private def subInclusion (c : CentralProj A) : c.sub →ₗ[ℂ] A where
+  toFun x := (x : A)
+  map_add' _ _ := rfl
+  map_smul' _ _ := rfl
+
+private instance finiteDimensional_sub (c : CentralProj A) [FiniteDimensional ℂ A] :
+    FiniteDimensional ℂ c.sub :=
+  FiniteDimensional.of_injective (subInclusion c) (fun _ _ h => Subtype.ext h)
+
+private theorem finrank_sub_lt (c : CentralProj A) [FiniteDimensional ℂ A] (h : c.val ≠ 1) :
+    Module.finrank ℂ c.sub < Module.finrank ℂ A := by
+  have hinj : Function.Injective (subInclusion c) := fun _ _ h => Subtype.ext h
+  have he : Module.finrank ℂ c.sub = Module.finrank ℂ (LinearMap.range (subInclusion c)) :=
+    (LinearEquiv.ofInjective _ hinj).finrank_eq
+  have hne : LinearMap.range (subInclusion c) ≠ ⊤ := by
+    intro hcon
+    have hmem : (1 : A) ∈ LinearMap.range (subInclusion c) := hcon ▸ Submodule.mem_top
+    obtain ⟨x, hx⟩ := hmem
+    refine h ?_
+    have hx2 : c.val * (x : A) = (x : A) := x.2
+    rw [show ((x : A)) = (1 : A) from hx] at hx2
+    rw [mul_one] at hx2
+    exact hx2
+  rw [he]
+  calc Module.finrank ℂ (LinearMap.range (subInclusion c))
+      < Module.finrank ℂ (⊤ : Submodule ℂ A) :=
+        Submodule.finrank_lt_finrank_of_lt (lt_top_iff_ne_top.mpr hne)
+    _ = Module.finrank ℂ A := finrank_top ℂ A
+
+end FDVNAProduct
+
+
+
+/-! ### 840.50 + 840.60: the induction on the dimension -/
+
+section FDVNAMain
+
+/-- **84II** (`fdcstar`, vn.tex:5784), the assembly of 840.50 and 840.60:
+**every finite-dimensional C*-algebra is a finite product of full matrix
+algebras**, by induction on `dim 𝒜`.  The trivial algebra is the empty
+product; an algebra with no non-trivial central projection is a factor, and
+`exists_matrix_units` with `matrixUnits_starAlgEquiv` make it a single matrix
+algebra; otherwise `centralSplit` cuts it into two corners of strictly
+smaller dimension, whose products are concatenated along
+`Fin M₁ ⊕ Fin M₂ ≃ Fin (M₁ + M₂)`. -/
+private theorem fd_pi_matrix : ∀ (n : ℕ) (A : Type u) [CStarAlgebra A] [PartialOrder A]
+    [StarOrderedRing A] [FiniteDimensional ℂ A], Module.finrank ℂ A ≤ n →
+    ∃ (M : ℕ) (N : Fin M → ℕ),
+      Nonempty (A ≃⋆ₐ[ℂ] ∀ m : Fin M, Matrix (Fin (N m)) (Fin (N m)) ℂ) := by
+  intro n
+  induction n with
+  | zero =>
+      intro A _ _ _ _ hrank
+      have hsub : Subsingleton A := Module.finrank_zero_iff.mp (Nat.le_zero.mp hrank)
+      exact ⟨0, fun _ => 0, ⟨{ toFun := fun _ m => m.elim0
+                               invFun := fun _ => 0
+                               left_inv := fun a => Subsingleton.elim _ _
+                               right_inv := fun f => funext fun m => m.elim0
+                               map_mul' := fun _ _ => funext fun m => m.elim0
+                               map_add' := fun _ _ => funext fun m => m.elim0
+                               map_star' := fun _ => funext fun m => m.elim0
+                               map_smul' := fun _ _ => funext fun m => m.elim0 }⟩⟩
+  | succ n ih =>
+      intro A _ _ _ _ hrank
+      rcases subsingleton_or_nontrivial A with hsub | hnt
+      · exact ih A (by rw [Module.finrank_zero_iff.mpr hsub]; omega)
+      · have : VonNeumannAlgebra A := vonNeumannAlgebra_of_finiteDimensional
+        by_cases hz : ∃ z : A, IsStarProjection z ∧ IsCentral A z ∧ z ≠ 0 ∧ z ≠ 1
+        · obtain ⟨z, hzp, hzc, hz0, hz1⟩ := hz
+          let c : CentralProj A := ⟨z, hzp, hzc⟩
+          have hcv : c.val ≠ 1 := hz1
+          have hcc : c.compl.val ≠ 1 := by
+            show (1 : A) - z ≠ 1
+            intro h
+            exact hz0 (sub_eq_self.mp h)
+          obtain ⟨M₁, N₁, ⟨e1⟩⟩ := ih c.sub
+            (by have := finrank_sub_lt c hcv; omega)
+          obtain ⟨M₂, N₂, ⟨e2⟩⟩ := ih c.compl.sub
+            (by have := finrank_sub_lt c.compl hcc; omega)
+          exact ⟨M₁ + M₂, fun k => Sum.elim N₁ N₂ (finSumFinEquiv.symm k),
+            ⟨(centralSplit c).trans ((starProdCongr e1 e2).trans
+              ((sumPiMatrix N₁ N₂).symm.trans
+                (piMatrixCongrLeft finSumFinEquiv (Sum.elim N₁ N₂))))⟩⟩
+        · push Not at hz
+          have hfac : ∀ y : A, IsStarProjection y → IsCentral A y → y = 0 ∨ y = 1 := by
+            intro y hp hc
+            by_cases h : y = 0
+            · exact Or.inl h
+            · exact Or.inr (hz y hp hc h)
+          obtain ⟨K, w, hmulw, hmul0w, hstarw, honew, hminw⟩ := exists_matrix_units hnt hfac
+          obtain ⟨φ⟩ := matrixUnits_starAlgEquiv w hmulw hmul0w hstarw honew hminw
+          exact ⟨1, fun _ => K + 1,
+            ⟨{ toFun := fun a _ => φ.symm a
+               invFun := fun f => φ (f 0)
+               left_inv := fun a => by simp
+               right_inv := fun f => funext fun m => by
+                 rw [Subsingleton.elim m 0]; simp
+               map_mul' := fun a b => funext fun _ => map_mul φ.symm a b
+               map_add' := fun a b => funext fun _ => map_add φ.symm a b
+               map_star' := fun a => funext fun _ => map_star φ.symm a
+               map_smul' := fun r a => funext fun _ => map_smul φ.symm r a }⟩⟩
+
+end FDVNAMain
+
+/-! ### The abandoned Wedderburn–Artin route
+
+Until 2026-09-05 `fdcstar` was proved **not** by the thesis's argument but by
+taking the *algebra* decomposition from Mathlib's Wedderburn–Artin theorem
+(`IsSemisimpleRing.exists_algEquiv_pi_matrix_of_isAlgClosed`) and upgrading it
+to a **∗**-isomorphism through a conjugate-linear anti-automorphism; the
+upgrade needed Skolem–Noether for matrix algebras, which Mathlib does not
+have and which is proved here as `matrix_exists_intertwiner`.  That route
+transcribed none of vn.tex:5798–6027, and in particular left 840.40
+`suprema-in-fdvna` -- that a finite-dimensional C*-algebra is a von Neumann
+algebra -- unformalized anywhere in the tree.  `fdcstar` now runs the printed
+proof instead (the section above), and none of the declarations of this
+section is used by it; they are left in place because the audit rows of
+`docs/audit/avn-division-normalfunctionals.csv` name them. -/
 
 section FDCStar
 
@@ -4253,155 +5193,43 @@ private abbrev MatProd (M : ℕ) (N : Fin M → ℕ) :=
 
 /-- **84II** (`fdcstar`, vn.tex:5784, Theorem): every finite-dimensional
 C*-algebra is (miu-isomorphic to) a finite direct sum of full matrix
-algebras `⊕ₘ M_{Nₘ}`. -/
+algebras `⊕ₘ M_{Nₘ}`.
+
+THE THESIS'S OWN PROOF (vn.tex:5798-6027), step for step; the steps are the
+section "840.30-840.60" above.  The unit ball of `𝒜` is norm compact, so
+every bounded directed set of self-adjoint elements has a supremum and that
+supremum is the norm limit of the set (840.30, first half of 840.40,
+`exists_isLUB_mem_closure`); hence every positive functional is normal, and
+since the positive functionals separate, `𝒜` is a von Neumann algebra (840.40
+`suprema-in-fdvna`, `vonNeumannAlgebra_of_finiteDimensional`).  Pairwise
+orthogonal non-zero projections are linearly independent, so `1` is a finite
+sum of minimal central projections and `𝒜` splits along them (840.50,
+`exists_isMinimalProjection_le` and `centralSplit`).  In a factor a minimal
+projection `e` has `⌈⌈e⌉⌉ = 1`, **83V** `cceil_sum` writes `1 = ∑ₖ eₖ` with
+`eₖ ⊴ e`, the partial isometries `uₖ` give matrix units `u_{kl} = uₖ*u_l`,
+and `ϱ : A ↦ ∑_{kl} A_{kl}u_{kl}` is an miu-isomorphism `M_K → 𝒜` (840.60,
+`exists_matrix_units` and `matrixUnits_starAlgEquiv`).  `fd_pi_matrix`
+assembles the two, the print's single split along all the `zₘ` at once being
+run as a peeling of one central projection at a time.
+
+Three renderings, all recorded where they happen.  840.30's compactness is
+Mathlib's `ProperSpace` for a finite-dimensional normed space rather than the
+print's own proof that every linear functional on `𝒜` is bounded; the
+injectivity of `ϱ` is read off the matrix units rather than off the central
+carrier `⌈ϱ⌉`, which the tree has no notion of for a map between different
+algebras; and the last step of 840.60's surjectivity is the tree's
+`IsMinimalProjection.corner_eq_smul` rather than the print's norm argument
+about `⌈‖a‖e − a⌉`, whose inference `t^{1/2ⁿ} → 1 ⟹ t = 1` does not hold.
+
+The `𝒜` of this statement carries no order instances, so the spectral order
+(`CStarAlgebra.spectralOrder`) is installed locally, which is what the von
+Neumann structure of 840.40 is stated against. -/
 theorem fdcstar (A : Type u) [CStarAlgebra A] [FiniteDimensional ℂ A] :
     ∃ (M : ℕ) (N : Fin M → ℕ),
       Nonempty (A ≃⋆ₐ[ℂ] ∀ m : Fin M, Matrix (Fin (N m)) (Fin (N m)) ℂ) := by
-  classical
-  have : IsArtinianRing A := IsArtinianRing.of_finite ℂ A
-  have : IsSemisimpleRing A :=
-    IsArtinianRing.isSemisimpleRing_iff_jacobson.mpr (cstar_jacobson_eq_bot A)
-  obtain ⟨M, N, hN, ⟨φ⟩⟩ := IsSemisimpleRing.exists_algEquiv_pi_matrix_of_isAlgClosed ℂ A
-  refine ⟨M, N, ?_⟩
-  set J : (MatProd M N) →
-      (MatProd M N) := fun y => φ (star (φ.symm y)) with hJ
-  have hJsymm : ∀ y, φ.symm (J y) = star (φ.symm y) := by
-    intro y; rw [hJ]; simp
-  have hJadd : ∀ x y, J (x + y) = J x + J y := by
-    intro x y; rw [hJ]; simp
-  have hJsmul : ∀ (c : ℂ) x, J (c • x) = (starRingEnd ℂ) c • J x := by
-    intro c x; rw [hJ]; simp
-  have hJmul : ∀ x y, J (x * y) = J y * J x := by
-    intro x y; rw [hJ]; simp [star_mul]
-  have hJone : J 1 = 1 := by rw [hJ]; simp
-  have hJinvol : ∀ x, J (J x) = x := by
-    intro x; rw [hJ]; simp
-  have hJdef : ∀ y, J y * y = 0 → y = 0 := by
-    intro y hy
-    have h1 : star (φ.symm y) * φ.symm y = 0 := by
-      rw [← hJsymm, ← map_mul, hy, map_zero]
-    have := (CStarRing.star_mul_self_eq_zero_iff _).mp h1
-    simpa using congrArg φ this
-  -- `J` fixes each block unit
-  have hJe : ∀ m : Fin M, J (Pi.single m 1) = Pi.single m 1 := by
-    intro m
-    have hsa : star (φ.symm (Pi.single m 1 : MatProd M N))
-        = φ.symm (Pi.single m 1 : MatProd M N) := by
-      refine central_idempotent_isSelfAdjoint _ ?_ ?_
-      · rw [← map_mul]
-        congr 1
-        funext m'
-        rcases eq_or_ne m m' with rfl | h
-        · simp [Pi.mul_apply]
-        · simp [Pi.mul_apply, Pi.single_eq_of_ne (Ne.symm h)]
-      · intro a
-        have e0 : (Pi.single m 1 : MatProd M N) * φ a = φ a * Pi.single m 1 := by
-          funext m'
-          rcases eq_or_ne m m' with rfl | h
-          · simp [Pi.mul_apply]
-          · simp [Pi.mul_apply, Pi.single_eq_of_ne (Ne.symm h)]
-        calc φ.symm (Pi.single m 1 : MatProd M N) * a
-            = φ.symm ((Pi.single m 1 : MatProd M N) * φ a) := by simp
-          _ = φ.symm (φ a * (Pi.single m 1 : MatProd M N)) := by rw [e0]
-          _ = a * φ.symm (Pi.single m 1 : MatProd M N) := by simp
-    rw [hJ]
-    show φ (star (φ.symm (Pi.single m 1 : MatProd M N))) = Pi.single m 1
-    rw [hsa]
-    simp
-  -- block components of `J`
-  set Jm : ∀ m : Fin M, Matrix (Fin (N m)) (Fin (N m)) ℂ → Matrix (Fin (N m)) (Fin (N m)) ℂ :=
-    fun m x => (J (Pi.single m x)) m with hJm
-  have hJzero : J 0 = 0 := by rw [hJ]; simp
-  have hsingle_mul : ∀ (m : Fin M) (y : MatProd M N),
-      (Pi.single m 1 : MatProd M N) * y = Pi.single m (y m) := by
-    intro m y
-    funext m'
-    rcases eq_or_ne m m' with rfl | h
-    · simp [Pi.mul_apply]
-    · simp [Pi.mul_apply, Pi.single_eq_of_ne (Ne.symm h)]
-  have hmul_single : ∀ (m : Fin M) (y : MatProd M N),
-      y * (Pi.single m 1 : MatProd M N) = Pi.single m (y m) := by
-    intro m y
-    funext m'
-    rcases eq_or_ne m m' with rfl | h
-    · simp [Pi.mul_apply]
-    · simp [Pi.mul_apply, Pi.single_eq_of_ne (Ne.symm h)]
-  have hsingle_mul_single : ∀ (m : Fin M) (x y : Matrix (Fin (N m)) (Fin (N m)) ℂ),
-      (Pi.single m x : MatProd M N) * Pi.single m y = Pi.single m (x * y) := by
-    intro m x y
-    funext m'
-    rcases eq_or_ne m m' with rfl | h
-    · simp [Pi.mul_apply]
-    · simp [Pi.mul_apply, Pi.single_eq_of_ne (Ne.symm h)]
-  have hJblock : ∀ (m : Fin M) (y : MatProd M N), (J y) m = Jm m (y m) := by
-    intro m y
-    have e1 : J (Pi.single m (y m)) = (Pi.single m 1 : MatProd M N) * J y := by
-      rw [← hmul_single m y, hJmul, hJe]
-    show (J y) m = (J (Pi.single m (y m))) m
-    rw [e1, hsingle_mul]
-    simp
-  have hJmzero : ∀ m : Fin M, Jm m 0 = 0 := by
-    intro m
-    show (J (Pi.single m (0 : Matrix (Fin (N m)) (Fin (N m)) ℂ))) m = 0
-    rw [Pi.single_zero, hJzero]
-    rfl
-  have hJsingle : ∀ (m : Fin M) (x : Matrix (Fin (N m)) (Fin (N m)) ℂ),
-      J (Pi.single m x) = Pi.single m (Jm m x) := by
-    intro m x
-    funext m'
-    rw [hJblock m' (Pi.single m x)]
-    rcases eq_or_ne m m' with rfl | h
-    · simp
-    · rw [Pi.single_eq_of_ne (Ne.symm h), Pi.single_eq_of_ne (Ne.symm h), hJmzero]
-  have hθ : ∀ m : Fin M, ∃ θ : Matrix (Fin (N m)) (Fin (N m)) ℂ ≃ₐ[ℂ]
-      Matrix (Fin (N m)) (Fin (N m)) ℂ, ∀ x, θ (Jm m x) = star (θ x) := by
-    intro m
-    have : Nonempty (Fin (N m)) := ⟨⟨0, Nat.pos_of_ne_zero (hN m).1⟩⟩
-    refine matrix_exists_algEquiv_conj (Jm m) ?_ ?_ ?_ ?_ ?_ ?_
-    · intro x y
-      show (J (Pi.single m (x + y))) m = (J (Pi.single m x)) m + (J (Pi.single m y)) m
-      rw [Pi.single_add, hJadd]
-      rfl
-    · intro c x
-      show (J (Pi.single m (c • x))) m = (starRingEnd ℂ) c • (J (Pi.single m x)) m
-      rw [Pi.single_smul, hJsmul]
-      rfl
-    · intro x y
-      show (J (Pi.single m (x * y))) m = (J (Pi.single m y)) m * (J (Pi.single m x)) m
-      rw [← hsingle_mul_single, hJmul]
-      rfl
-    · show (J (Pi.single m 1)) m = 1
-      rw [hJe]
-      simp
-    · intro x
-      have e2 := hJinvol (Pi.single m x)
-      rw [hJsingle, hJsingle] at e2
-      have e3 := congrFun e2 m
-      simpa using e3
-    · intro x hx
-      have e1 : J (Pi.single m x) * (Pi.single m x : MatProd M N) = 0 := by
-        rw [hJsingle, hsingle_mul_single, hx, Pi.single_zero]
-      have e2 := hJdef _ e1
-      have e3 := congrFun e2 m
-      simpa using e3
-  choose θ hθ using hθ
-  refine ⟨?_⟩
-  refine StarAlgEquiv.ofAlgEquiv (φ.trans
-    { toFun := fun y m => θ m (y m)
-      invFun := fun y m => (θ m).symm (y m)
-      left_inv := fun y => funext fun m => (θ m).symm_apply_apply (y m)
-      right_inv := fun y => funext fun m => (θ m).apply_symm_apply (y m)
-      map_mul' := fun x y => funext fun m => map_mul (θ m) _ _
-      map_add' := fun x y => funext fun m => map_add (θ m) _ _
-      commutes' := fun c => funext fun m => by
-        simp only [Pi.algebraMap_apply]
-        exact (θ m).commutes c }) ?_
-  intro a
-  have e1 : φ (star a) = J (φ a) := by rw [hJ]; simp
-  show (fun m => θ m ((φ (star a)) m)) = star (fun m => θ m ((φ a) m))
-  funext m
-  rw [e1, hJblock, hθ m]
-  rfl
+  let _ : PartialOrder A := CStarAlgebra.spectralOrder A
+  have _ : StarOrderedRing A := CStarAlgebra.spectralOrderedRing A
+  exact fd_pi_matrix _ A le_rfl
 
 end FDCStar
 

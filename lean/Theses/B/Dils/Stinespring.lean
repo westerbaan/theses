@@ -107,13 +107,13 @@ end GNSStinespring
 /-! ## Parsec 1360: completion into a Hilbert space
 
 **136I** (dils.tex:218): introduction — nothing to formalize.
-**136III**–**136VII** (dils.tex:250–397) are the proof of **136II**; they are
+**136III**–**136VII** (dils.tex:252–397) are the proof of **136II**; they are
 transcribed in the section below, whose private declarations carry the point
 numbers. -/
 
 section CompleteIntoHilbert
 
-/-! ### **136III** (dils.tex:250): fast Cauchy sequences -/
+/-! ### **136III** (dils.tex:252): fast Cauchy sequences -/
 
 /-- A sequence is *fast* (dils.tex:262) when `‖v m - v k‖ ≤ 2⁻ⁿ` for all
 `m, k ≥ n`. -/
@@ -232,7 +232,7 @@ private theorem mkH_add {v w : ℕ → X} (hv : CauchySeq v) (hw : CauchySeq w) 
 private theorem mkH_sub {v w : ℕ → X} (hv : CauchySeq v) (hw : CauchySeq w) :
     mkH v hv - mkH w hw = mkH (fun n => v n - w n) (cauchySeq_sub hv hw) := rfl
 
-/-! ### **136VII** (dils.tex:355): the inner product `⟨v,w⟩ = limₙ [vₙ, wₙ]` -/
+/-! ### **136VII** (dils.tex:359): the inner product `⟨v,w⟩ = limₙ [vₙ, wₙ]` -/
 
 /-- dils.tex:362: `|[vₙ,wₙ] − [vₘ,wₘ]| ≤ ‖vₙ‖‖wₙ−wₘ‖ + ‖vₙ−vₘ‖‖wₘ‖` by
 Cauchy–Schwarz (cstar.tex **30VI**, here `norm_inner_le_norm`), and the norms

@@ -850,7 +850,7 @@ variable {I : Type*} (𝒜 : I → Type u) [∀ i, CStarAlgebra (𝒜 i)]
   [∀ i, Nontrivial (𝒜 i)]
 
 -- The unital `CStarAlgebra (lp 𝒜 ∞)` instance is not declared here: it is
--- `lpInftyCStarAlgebra` (`A/CStar/Positive.lean:5535`), which this file imports
+-- `lpInftyCStarAlgebra` (`A/CStar/Positive.lean:6736`), which this file imports
 -- through `A/CStar/Representation`, and which is stated more generally (`Type*`
 -- with `𝒜` implicit).  Mathlib itself registers only the non-unital and the
 -- commutative cases.
