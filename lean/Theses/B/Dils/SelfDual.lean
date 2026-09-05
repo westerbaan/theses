@@ -2039,11 +2039,20 @@ bounded by `(AB)^½`.  This is the thesis's Cauchy–Schwarz (**142V**.1)
 applied to the finite tuples `(bᵢ)_{i∈t}`, `(cᵢ)_{i∈t}`.
 
 (The solution derives norm-boundedness from `|f(∑_{i∈S} aᵢ*bᵢ)| ≤ (AB)^½`
-for every normal state `f`.  That inference costs a factor: the supremum of
-`|f(x)|` over the states is the numerical radius, which for a non-normal `x`
-can be half the norm — `x = |0⟩⟨1|` in `M₂` has `sup_f |f(x)| = ½‖x‖`.  The
-bound `(AB)^½` itself is correct, and Cauchy–Schwarz for the ℬ-valued inner
-product gives it directly, which is what is done here.) -/
+for every normal state `f` — the estimate itself is transcribed below, as
+`np_norm_sum_mul_star_le`.  What keeps that route out of *this* proof is
+the generality of the statement: it carries no `[VonNeumannAlgebra ℬ]`,
+and the passage from bounds at the np-functionals to a bound on the norm is
+a von Neumann fact twice over.  It needs order separation (**44XI**,
+`np_orderSeparating`); and it reaches the printed constant rather than twice
+it only through the polar decomposition **82I** — the supremum of `|f(x)|`
+over the states is the numerical radius, which for a non-normal `x` can be
+half the norm (`x = |0⟩⟨1|` in `M₂` has `sup_f |f(x)| = ½‖x‖`), so the
+estimate has to be applied not to `x = ∑_{i∈t} cᵢbᵢ*` but to
+`[x]*x = √(x*x)`, the tuple `([x]*cᵢ)` obeying the same hypothesis because
+`‖[x]‖ ≤ 1`.  The bound `(AB)^½` is correct over any C*-algebra, and
+Cauchy–Schwarz for the ℬ-valued inner product gives it directly, which is
+what is done here.) -/
 private theorem norm_sum_mul_star_le {ι : Type v} (b c : ι → ℬ) {A B : ℝ}
     (hA : ∀ t : Finset ι, ‖∑ i ∈ t, b i * star (b i)‖ ≤ A)
     (hB : ∀ t : Finset ι, ‖∑ i ∈ t, c i * star (c i)‖ ≤ B)

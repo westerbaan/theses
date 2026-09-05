@@ -6323,22 +6323,27 @@ end AndThen223
 projections `p_𝒮`, `p_𝒜` onto the symmetric and the antisymmetric subspace.
 Only two properties of that configuration are used: `σ` is a self-adjoint
 unitary, so `σ = 2p_𝒮 − 1`, and both `p_𝒮` and `p_𝒜 = 1 − p_𝒮` are non-zero.
-The argument below is the author's, run with an arbitrary such `p` in
-`B(ℋ)` — the smallest instance being `ℋ = ℂ²` with `p` a rank-one
-projection, which is what `su_exc_purec_equal` uses.  Three divergences from
-the printed solution:
+The argument below is the author's, written out for an arbitrary such `p`
+in a von Neumann algebra (`su_no_coequalizer_of_proj`) and then run at the
+printed configuration itself: `su_exc_purec_equal` instantiates it at
+`M₄ = B(ℂ²⊗ℂ²)` with `p_𝒮 = 1 − |u⟩⟨u|` for `u = (|01⟩ − |10⟩)/√2`, whose
+`σ = 2p_𝒮 − 1` is the swap (`su_sigma_is_swap`).  Two steps of the solution
+are reached by a different route:
 
-* the final contradiction uses `ad_{p}` and `ad_{1−p}` — which are pure,
-  land in the two corners and are fixed by `ad_σ` — in place of
-  `ad_{e†_𝒮} : M₃ → M₄` and `ad_{e†_𝒜} : ℂ → M₄`, so no three-dimensional
-  subspace has to be built;
 * the passage from `p ξ(c) = ξ(c) p` to `⌈ξ(1)⌉p⌈ξ(1)⌉` central, which the
-  solution makes with the pseudoinverse of `√ξ(1)`, is replaced by the
-  rank-one computation of `proj_mul_selfAdjoint` above, which reaches the
-  same conclusion (`p√a ∈ {0, √a}`) directly;
+  solution makes with the pseudoinverse of `√ξ(1)`, is replaced by
+  `proj_mul_selfAdjoint` above — the same conclusion (`p√a ∈ {0, √a}`), for
+  any projection of any `B(ℋ)`, got by testing the hypothesis against the
+  rank-one effects;
 * the range of the filter half of the pure map `e` is reached through the
   *effectus* universal property of the quotient (`su_pure_range`) rather
-  than through the isomorphism `ϑ : 𝒞 → ⌈ξ(1)⌉M₄⌈ξ(1)⌉`. -/
+  than through the isomorphism `ϑ : 𝒞 → ⌈ξ(1)⌉M₄⌈ξ(1)⌉`.
+
+The final contradiction is the solution's, with `ad_{p_𝒮}` and `ad_{p_𝒜}`
+taken as maps `M₄ → M₄` where the solution takes them on the corners
+themselves (`ad_{e†_𝒮} : M₃ → M₄` and `ad_{e†_𝒜} : ℂ → M₄`): both are pure
+and fixed by `ad_σ`, hence factor through the putative coequalizer, which
+forces `p_𝒮 ≤ e(1)` and `p_𝒜 ≤ e(1)`. -/
 
 omit [EffectusPartialForm (WStarCPSU.{u}ᵒᵖ)] in
 /-- `ad_w : b ↦ w* b w` as a morphism `X ⟶ X` of `vN_cpsuᵒᵖ`, for any `w`
@@ -6628,42 +6633,156 @@ theorem su_no_coequalizer_of_proj {X : WStarCPSU.{u}ᵒᵖ} {p : X.unop.base.car
       su_proj_eq_zero hr (hrleq.trans h2) (by rw [sub_mul, one_mul, hpp, sub_self])
     exact hp1 (sub_eq_zero.mp hz).symm
 
-/-- The two-dimensional Hilbert space `ℂ²`, in `Type u`. -/
-private abbrev Hu : Type u := EuclideanSpace ℂ (ULift.{u} (Fin 2))
+/-! #### The printed configuration: `M₄`, the swap, and `p_𝒮`
 
-/-- `B(ℂ²)` as an object of `vN_cpsuᵒᵖ`. -/
-private noncomputable abbrev bhObj : WStarCPSU.{u}ᵒᵖ :=
-  Opposite.op (WStarCPSU.of (WStar.of (Hu.{u} →L[ℂ] Hu.{u})))
+`bsols.tex`:3480 runs the argument at `M₄ = B(ℂ²⊗ℂ²)`, with the swap
+`σ|ij⟩ = |ji⟩` and the projections `p_𝒮`, `p_𝒜` onto the symmetric and the
+antisymmetric subspace.  In the basis `|00⟩, |01⟩, |10⟩, |11⟩` of
+`ℂ²⊗ℂ² = ℂ⁴` the antisymmetric subspace is the line through
+`u = (|01⟩ − |10⟩)/√2`, so `p_𝒜 = |u⟩⟨u|` and `p_𝒮 = 1 − |u⟩⟨u|`; that the
+`σ = 2p_𝒮 − 1` which `su_no_coequalizer_of_proj` then forms is the swap is
+`su_sigma_is_swap` below. -/
+
+/-- `ℂ²⊗ℂ² = ℂ⁴`, in `Type u`, in the basis `|00⟩, |01⟩, |10⟩, |11⟩`. -/
+private abbrev Hu4 : Type u := EuclideanSpace ℂ (ULift.{u} (Fin 4))
+
+/-- `M₄ = B(ℂ²⊗ℂ²)` as an object of `vN_cpsuᵒᵖ`. -/
+private noncomputable abbrev bh4Obj : WStarCPSU.{u}ᵒᵖ :=
+  Opposite.op (WStarCPSU.of (WStar.of (Hu4.{u} →L[ℂ] Hu4.{u})))
+
+/-- The basis vectors `|00⟩, |01⟩, |10⟩, |11⟩`, numbered `0, 1, 2, 3`. -/
+private noncomputable def suKet (i : Fin 4) : Hu4.{u} :=
+  EuclideanSpace.single (ULift.up i) (1 : ℂ)
+
+omit [EffectusPartialForm (WStarCPSU.{u}ᵒᵖ)] [AndThenEffectus (WStarCPSU.{u}ᵒᵖ)] in
+private theorem suKet_self (i : Fin 4) : (⟪suKet.{u} i, suKet.{u} i⟫ : ℂ) = 1 := by
+  simp [suKet]
+
+omit [EffectusPartialForm (WStarCPSU.{u}ᵒᵖ)] [AndThenEffectus (WStarCPSU.{u}ᵒᵖ)] in
+private theorem suKet_orth {i j : Fin 4} (h : i ≠ j) :
+    (⟪suKet.{u} i, suKet.{u} j⟫ : ℂ) = 0 := by
+  have h' : (ULift.up.{u} j) ≠ ULift.up.{u} i := fun hh => h (congrArg ULift.down hh).symm
+  simp [suKet, EuclideanSpace.inner_single_left, h']
+
+/-- `‖ |01⟩ − |10⟩ ‖ = √2`, as a complex scalar. -/
+private noncomputable def suNrm : ℂ := ((‖suKet.{u} 1 - suKet.{u} 2‖ : ℝ) : ℂ)
+
+/-- The antisymmetric unit vector `u = (|01⟩ − |10⟩)/√2`. -/
+private noncomputable def suUA : Hu4.{u} := (suNrm.{u})⁻¹ • (suKet.{u} 1 - suKet.{u} 2)
+
+/-- `p_𝒮 = 1 − |u⟩⟨u|`, the projection onto the symmetric subspace. -/
+private noncomputable def suPSym : Hu4.{u} →L[ℂ] Hu4.{u} := 1 - rk1 suUA.{u}
+
+omit [EffectusPartialForm (WStarCPSU.{u}ᵒᵖ)] [AndThenEffectus (WStarCPSU.{u}ᵒᵖ)] in
+private theorem suKet_sub_ne : suKet.{u} 1 - suKet.{u} 2 ≠ 0 := by
+  intro h
+  have h1 : (⟪suKet.{u} 1, suKet.{u} 1 - suKet.{u} 2⟫ : ℂ) = 1 := by
+    rw [inner_sub_right, suKet_self, suKet_orth (by decide : (1 : Fin 4) ≠ 2), sub_zero]
+  rw [h, inner_zero_right] at h1
+  exact zero_ne_one h1
+
+omit [EffectusPartialForm (WStarCPSU.{u}ᵒᵖ)] [AndThenEffectus (WStarCPSU.{u}ᵒᵖ)] in
+private theorem suUA_norm : ‖suUA.{u}‖ = 1 := norm_smul_inv_norm (𝕜 := ℂ) suKet_sub_ne
+
+omit [EffectusPartialForm (WStarCPSU.{u}ᵒᵖ)] [AndThenEffectus (WStarCPSU.{u}ᵒᵖ)] in
+private theorem suUA_self : (⟪suUA.{u}, suUA.{u}⟫ : ℂ) = 1 := by
+  rw [inner_self_eq_norm_sq_to_K, suUA_norm]
+  norm_num
+
+omit [EffectusPartialForm (WStarCPSU.{u}ᵒᵖ)] [AndThenEffectus (WStarCPSU.{u}ᵒᵖ)] in
+private theorem suNrm_sq : suNrm.{u} * suNrm.{u} = 2 := by
+  have h : (⟪suKet.{u} 1 - suKet.{u} 2, suKet.{u} 1 - suKet.{u} 2⟫ : ℂ) = 2 := by
+    rw [inner_sub_left, inner_sub_right, inner_sub_right, suKet_self, suKet_self,
+      suKet_orth (by decide : (1 : Fin 4) ≠ 2), suKet_orth (by decide : (2 : Fin 4) ≠ 1)]
+    ring
+  rw [inner_self_eq_norm_sq_to_K] at h
+  rw [suNrm, ← pow_two]
+  exact h
+
+omit [EffectusPartialForm (WStarCPSU.{u}ᵒᵖ)] [AndThenEffectus (WStarCPSU.{u}ᵒᵖ)] in
+private theorem suUA_one : (⟪suUA.{u}, suKet.{u} 1⟫ : ℂ) = (suNrm.{u})⁻¹ := by
+  rw [suUA, inner_smul_left, inner_sub_left, suKet_self,
+    suKet_orth (by decide : (2 : Fin 4) ≠ 1), sub_zero, mul_one, suNrm]
+  simp
+
+omit [EffectusPartialForm (WStarCPSU.{u}ᵒᵖ)] [AndThenEffectus (WStarCPSU.{u}ᵒᵖ)] in
+private theorem suUA_two : (⟪suUA.{u}, suKet.{u} 2⟫ : ℂ) = -(suNrm.{u})⁻¹ := by
+  rw [suUA, inner_smul_left, inner_sub_left, suKet_self,
+    suKet_orth (by decide : (1 : Fin 4) ≠ 2), zero_sub, mul_neg, mul_one, suNrm]
+  simp
+
+omit [EffectusPartialForm (WStarCPSU.{u}ᵒᵖ)] [AndThenEffectus (WStarCPSU.{u}ᵒᵖ)] in
+private theorem suUA_orth {i : Fin 4} (h1 : i ≠ 1) (h2 : i ≠ 2) :
+    (⟪suUA.{u}, suKet.{u} i⟫ : ℂ) = 0 := by
+  rw [suUA, inner_smul_left, inner_sub_left, suKet_orth (Ne.symm h1),
+    suKet_orth (Ne.symm h2), sub_zero, mul_zero]
+
+omit [EffectusPartialForm (WStarCPSU.{u}ᵒᵖ)] [AndThenEffectus (WStarCPSU.{u}ᵒᵖ)] in
+private theorem su_sigma_apply (x : Hu4.{u}) :
+    (suPSym.{u} + suPSym.{u} - 1) x = x - ((2 : ℂ) * ⟪suUA.{u}, x⟫) • suUA.{u} := by
+  simp only [suPSym, add_apply, sub_apply, one_apply_eq_self, rk1_apply]
+  module
+
+omit [EffectusPartialForm (WStarCPSU.{u}ᵒᵖ)] [AndThenEffectus (WStarCPSU.{u}ᵒᵖ)] in
+/-- **The configuration is the printed one**: the symmetry `σ = 2p_𝒮 − 1`
+that `su_no_coequalizer_of_proj` forms out of `p_𝒮 = 1 − |u⟩⟨u|` is the
+swap `σ|ij⟩ = |ji⟩` of bsols.tex:3480. -/
+private theorem su_sigma_is_swap :
+    (suPSym.{u} + suPSym.{u} - 1) (suKet.{u} 0) = suKet.{u} 0 ∧
+    (suPSym.{u} + suPSym.{u} - 1) (suKet.{u} 1) = suKet.{u} 2 ∧
+    (suPSym.{u} + suPSym.{u} - 1) (suKet.{u} 2) = suKet.{u} 1 ∧
+    (suPSym.{u} + suPSym.{u} - 1) (suKet.{u} 3) = suKet.{u} 3 := by
+  have hc : (suNrm.{u})⁻¹ * (suNrm.{u})⁻¹ = 2⁻¹ := by rw [← mul_inv, suNrm_sq]
+  have hs : (2 : ℂ) * (suNrm.{u})⁻¹ * (suNrm.{u})⁻¹ = 1 := by
+    rw [mul_assoc, hc]; norm_num
+  have hs2 : (2 : ℂ) * (-(suNrm.{u})⁻¹) * (suNrm.{u})⁻¹ = -1 := by
+    rw [show (2 : ℂ) * (-(suNrm.{u})⁻¹) * (suNrm.{u})⁻¹
+      = -((2 : ℂ) * (suNrm.{u})⁻¹ * (suNrm.{u})⁻¹) by ring, hs]
+  refine ⟨?_, ?_, ?_, ?_⟩
+  · rw [su_sigma_apply, suUA_orth (by decide) (by decide)]
+    simp
+  · rw [su_sigma_apply, suUA_one, suUA, smul_smul, hs, one_smul]
+    abel
+  · rw [su_sigma_apply, suUA_two, suUA, smul_smul, hs2, neg_one_smul]
+    abel
+  · rw [su_sigma_apply, suUA_orth (by decide) (by decide)]
+    simp
 
 /-- **224VII at `vNᵒᵖ`** (`exc-purec-equal`, eff.tex:7218, Exercise\*;
 solution bsols.tex:3480): `Pure (vNᵒᵖ)` does **not** have all coequalizers —
-already `id` and `ad_σ` on `B(ℂ²)`, for the symmetry `σ = 2p − 1` of a
-rank-one projection `p`, have none. -/
+already `id` and `ad_σ` on `M₄ = B(ℂ²⊗ℂ²)`, for the swap `σ|ij⟩ = |ji⟩` of
+the printed solution, have none.  `σ` enters as `2p_𝒮 − 1` for the
+projection `p_𝒮 = 1 − |u⟩⟨u|` onto the symmetric subspace
+(`su_sigma_is_swap`), and the factoriality input `hcore` of
+`su_no_coequalizer_of_proj` is `proj_mul_selfAdjoint`. -/
 theorem su_exc_purec_equal : ¬ HasCoequalizers (PureCat (WStarCPSU.{u}ᵒᵖ)) := by
-  set ξ₀ : Hu.{u} := EuclideanSpace.single (ULift.up 0) (1 : ℂ) with hξ₀
-  set ξ₁ : Hu.{u} := EuclideanSpace.single (ULift.up 1) (1 : ℂ) with hξ₁
-  have hn₀ : ‖ξ₀‖ = 1 := by simp [hξ₀]
-  have hn₁ : ‖ξ₁‖ = 1 := by simp [hξ₁]
-  have hproj : IsStarProjection (rk1 ξ₀) := rk1_isStarProjection hn₀
-  have h₀ne : ξ₀ ≠ 0 := by
-    intro h; rw [h] at hn₀; simp at hn₀
-  have h₁ne : ξ₁ ≠ 0 := by
-    intro h; rw [h] at hn₁; simp at hn₁
-  refine su_no_coequalizer_of_proj (X := bhObj.{u}) (p := rk1 ξ₀) hproj ?_ ?_ ?_
-  · intro h
-    have h1 : rk1 ξ₀ ξ₀ = ξ₀ := by
-      rw [rk1_apply, inner_self_eq_norm_sq_to_K, hn₀]
-      simp
+  have hproj : IsStarProjection suPSym.{u} := (rk1_isStarProjection suUA_norm).one_sub
+  have hket0 : suKet.{u} 0 ≠ 0 := by
+    intro h
+    have h1 := suKet_self.{u} 0
+    rw [h, inner_zero_right] at h1
+    exact zero_ne_one h1
+  have huA : suUA.{u} ≠ 0 := by
+    intro h
+    have h1 := suUA_self.{u}
+    rw [h, inner_zero_right] at h1
+    exact zero_ne_one h1
+  refine su_no_coequalizer_of_proj (X := bh4Obj.{u}) (p := suPSym.{u}) hproj ?_ ?_ ?_
+  · -- `p_𝒮 ≠ 0`: it fixes `|00⟩`
+    intro h
+    have h1 : suPSym.{u} (suKet.{u} 0) = suKet.{u} 0 := by
+      simp only [suPSym, sub_apply, one_apply_eq_self, rk1_apply,
+        suUA_orth (by decide : (0 : Fin 4) ≠ 1) (by decide : (0 : Fin 4) ≠ 2),
+        zero_smul, sub_zero]
     rw [h] at h1
-    exact h₀ne h1.symm
-  · intro h
-    have h1 : rk1 ξ₀ ξ₁ = 0 := by
-      rw [rk1_apply]
-      have hz : (⟪ξ₀, ξ₁⟫ : ℂ) = 0 := by
-        simp [hξ₀, hξ₁, EuclideanSpace.inner_single_left]
-      rw [hz, zero_smul]
+    exact hket0 h1.symm
+  · -- `p_𝒮 ≠ 1`: it kills `u`
+    intro h
+    have h1 : suPSym.{u} suUA.{u} = 0 := by
+      simp only [suPSym, sub_apply, one_apply_eq_self, rk1_apply, suUA_self,
+        one_smul, sub_self]
     rw [h] at h1
-    exact h₁ne h1
+    exact huA h1
   · intro s hs0 hcomm
     exact proj_mul_selfAdjoint (IsSelfAdjoint.of_nonneg hs0) hproj hcomm
 
@@ -8981,7 +9100,7 @@ theorem cvn_corner_mul {A : Type*} [Ring A] (hcomm : ∀ x y : A, x * y = y * x)
 of the ambient `vN_cpsuᵒᵖ` on `cin X` is `cpred s` for a sharp predicate
 `s` of `CvNᵒᵖ` on `X`.
 
-This is the second half of `cvnsu_orth_sharp` (VNExamples.lean:8899), read
+This is the second half of `cvnsu_orth_sharp` (VNExamples.lean:9023), read
 for an arbitrary sharp `t` instead of `sᗮ`: sharpness is an existential
 over objects *of the subcategory*, so it does not restrict for free.  The
 standard corner of `su_exists_corner t` is commutative, hence an object of

@@ -54,8 +54,7 @@ them in `section ProcPure` at parsec 1700
   the middle.  `procIsPure_of_factorisation` has to take that binder as a
   hypothesis, but only because it is handed a *given* factorisation: for the
   bare implication `IsPureMap φ → IsPure φ` the middle algebra can be
-  replaced by a von Neumann one, which is `su_procIsPure_of_isPureMap` in
-  `Theses/B/Eff/VNExamples.lean`.
+  replaced by a von Neumann one, which is `procIsPure_of_isPureMap`.
 
 So proc.tex **100III** `Theses.A.Proc.pure_fundamental` bridges
 `Theses.A.Proc.IsPure` to `IsPureMap`, in the direction 170I ⟹ 168IV, at von
@@ -2376,15 +2375,15 @@ the two developments:
 * `procIsPure_of_factorisation`: the converse for a *given* factorisation,
   which needs the intermediate algebra `C` to be a von Neumann algebra —
   170I's `comp` constructor demands that, and `IsPureMap` does not.  For the
-  bare implication the hypothesis falls away (`su_procIsPure_of_isPureMap`,
-  `Theses/B/Eff/VNExamples.lean`).
+  bare implication the hypothesis falls away
+  (`procIsPure_of_isPureMap`).
 
 Both base cases of 170I are available here directly —
 `isPureMap_of_isCorner` and `isPureMap_of_isFilter` below — and so is the
-closure under *composition*, as `isPureMap_ncpComp`, though only with von
-Neumann algebras throughout.  **171VII** `paschke_pure`
-composes two corners by hand (`isCornerFor_comp`), because it is stated
-without that binder on the middle algebra. -/
+closure under *composition*, as `isPureMap_ncpComp`, with von Neumann
+algebras at the three *objects* but none asked of the intermediate algebra
+of an `IsPureMap`.  **171VII** `paschke_pure` uses it for the thesis's "a
+composition of pure maps, hence pure". -/
 def IsPureMap (φ : NCPMap A B) : Prop :=
   ∃ (C : Type u) (_ : CStarAlgebra C) (_ : PartialOrder C)
     (_ : StarOrderedRing C) (h : NCPMap A C) (c : NCPMap C B),
@@ -2458,7 +2457,7 @@ them apart, and **two of the four turn out not to obstruct at all**.
   `procIsPure_of_factorisation` therefore carries `[VonNeumannAlgebra C]` as
   a hypothesis.  It is dispensable when the factorisation is only assumed to
   exist: the middle algebra can then be traded for the corner of a standard
-  filter (`su_procIsPure_of_isPureMap`, `Theses/B/Eff/VNExamples.lean`).
+  filter (`procIsPure_of_isPureMap`).
 
 So the forward direction — everything 170I calls pure is an `IsPureMap` — is
 a theorem outright (`isPureMap_of_procIsPure`), and so is the converse, with
@@ -2600,7 +2599,7 @@ statement.  The converse for a given factorisation
 (`procIsPure_of_factorisation`) needs in addition that the intermediate
 algebra be a von Neumann algebra, which `IsPureMap` does not require; the
 bare implication needs no such hypothesis
-(`su_procIsPure_of_isPureMap`, `Theses/B/Eff/VNExamples.lean`). -/
+(`procIsPure_of_isPureMap`). -/
 theorem isPureMap_of_procIsPure [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     {φ : NCPMap A B} (hφ : Theses.A.Proc.IsPure φ) : IsPureMap φ := by
   obtain ⟨Z, _, _, _, _, π, c, hπ, hc, hfac⟩ :=
@@ -2622,9 +2621,8 @@ constructor demands it of the algebra in the middle, and `IsPureMap` asks
 only for a C\*-algebra there.  It is dispensable once the factorisation is
 merely *assumed to exist* — the middle algebra can be replaced by the corner
 `⌈b⌉B⌈b⌉` of the standard filter, which is von Neumann — so
-`IsPureMap φ → IsPure φ` does hold at von Neumann objects, and is proved as
-`su_procIsPure_of_isPureMap` in `Theses/B/Eff/VNExamples.lean` (stated
-there because that file is the leaf where the effectus side of it lives). -/
+`IsPureMap φ → IsPure φ` does hold at von Neumann objects, and is proved
+just below as `procIsPure_of_isPureMap`. -/
 theorem procIsPure_of_factorisation [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     {C : Type u} [CStarAlgebra C] [PartialOrder C] [StarOrderedRing C]
     [VonNeumannAlgebra C] {φ : NCPMap A B} {h : NCPMap A C} {c : NCPMap C B}
@@ -2660,11 +2658,51 @@ theorem procIsPure_of_factorisation [VonNeumannAlgebra A] [VonNeumannAlgebra B]
   rw [hφeq]
   exact Theses.A.Proc.IsPure.comp hcpure hhpure
 
+/-- 168IV ⟹ 170I at von Neumann objects, **with no hypothesis on the
+intermediate algebra**: an `IsPureMap` between von Neumann algebras is pure
+in the inductive sense of **170I**.
+
+`procIsPure_of_factorisation` proves this of a *given* factorisation and
+needs `[VonNeumannAlgebra C]` on the algebra in the middle, which
+`IsPureMap` does not supply.  The hypothesis is dispensable once the
+factorisation is only *assumed to exist*: a filter `c` for `b` and the
+standard filter `c_b : ⌈b⌉ℬ⌈b⌉ → ℬ` of **169X** mediate each other, and
+filters are injective (**169XII** `dils_filters_injective`), so the two
+mediating maps `w`, `w'` are mutually inverse; `w' ∘ h` is then again a
+corner for the same effect (`isCornerFor_of_ncpIso`), and
+`φ = c_b ∘ (w' ∘ h)` is a factorisation whose middle is `⌈b⌉ℬ⌈b⌉` — a von
+Neumann algebra.  (`Theses.B.Eff.su_procIsPure_of_isPureMap` states the same
+thing downstream, where 201III needs it.) -/
+theorem procIsPure_of_isPureMap [VonNeumannAlgebra A] [VonNeumannAlgebra B]
+    {φ : NCPMap A B} (hφ : IsPureMap φ) : Theses.A.Proc.IsPure φ := by
+  obtain ⟨C, _, _, _, h, c, hcorner, hfilter, hfac⟩ := hφ
+  obtain ⟨b, hb⟩ := hfilter
+  obtain ⟨a, hCF⟩ := hcorner
+  obtain ⟨cst, -, hcst⟩ := dils_stand_filter b hb.1
+  let _vn := cornerSet_vonNeumannAlgebra B (ceil b)
+  obtain ⟨w, hw, -⟩ :=
+    hb.2.2 _ inferInstance inferInstance inferInstance cst hcst.2.1
+  obtain ⟨w', hw', -⟩ :=
+    hcst.2.2 C inferInstance inferInstance inferInstance c hb.2.1
+  have hcinj : Function.Injective ⇑c := dils_filters_injective c ⟨b, hb⟩
+  have hcstinj : Function.Injective ⇑cst := dils_filters_injective cst ⟨b, hcst⟩
+  have hww' : ∀ x : C, w.toNCPMap (w'.toNCPMap x) = x := fun x =>
+    hcinj (by rw [hw (w'.toNCPMap x), hw' x])
+  have hw'w : ∀ y, w'.toNCPMap (w.toNCPMap y) = y := fun y =>
+    hcstinj (by rw [hw' (w.toNCPMap y), hw y])
+  obtain ⟨π, hπ⟩ := exists_ncpComp w'.toNCPMap h
+  have hcorner' : IsCornerFor π a :=
+    isCornerFor_of_ncpIso hCF w.toNCPMap w'.toNCPMap
+      (fun x => by rw [hπ, hww']) hw'w
+  exact procIsPure_of_factorisation ⟨a, hcorner'⟩ ⟨b, hcst⟩
+    fun x => by rw [hπ, hw', hfac]
+
 /-- **Pure maps compose** — the closure 170I asserts and `IsPureMap`'s
 normal form does not, obtained by going out through 170I and back.  This is
-what **171VII** `paschke_pure` has to do by hand with `isCornerFor_comp`;
-that proof is left alone, since it is stated without the von Neumann binder
-on the middle algebra that this needs. -/
+the thesis's "the composition of pure maps, hence pure itself" in the
+backward half of **171VII** `paschke_pure`, which reaches it through
+`procIsPure_of_isPureMap` above (the middle algebra of `IsPureMap` is only a
+C\*-algebra, but it need not stay so). -/
 theorem isPureMap_ncpComp {D : Type u} [CStarAlgebra D] [PartialOrder D]
     [StarOrderedRing D] [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     [VonNeumannAlgebra D] {φ : NCPMap A B} {ψ : NCPMap B D}
@@ -5184,18 +5222,18 @@ theorem paschke_corner [VonNeumannAlgebra A] (p : A)
     show M.h (M.ρ c.1) = h' c
     rw [paschkeModule_h_ρ, hh', hincl]
 
-/-- Auxiliary for **171VII** ⇐: **corners compose**.  If `h₁` is a corner
-for `a₁` and *unital*, `h₂` a corner for `a₂`, and `e ≤ a₁` an effect with
-`h₁(e) = a₂`, then `h₂ ∘ h₁` is a corner for `e`.
+/-- **Corners compose**, in the special case where the first is unital.  If
+`h₁` is a corner for `a₁` and *unital*, `h₂` a corner for `a₂`, and `e ≤ a₁`
+an effect with `h₁(e) = a₂`, then `h₂ ∘ h₁` is a corner for `e`.
 
-(The thesis takes this for granted — dils.tex **170I** *defines* pure maps
-as arbitrary composites of filters and corners, and appeals to proc.tex
-100III `pure-fundamental` to bring them to the normal form "filter after
-corner" used by `IsPureMap`.  100III is proved and reachable as
-`Theses.A.Proc.pure_fundamental`, but for *its* corner/filter/pure
-predicates, which are not these (file header); in the case needed for 171VII
-the first corner is a surjective nmiu-map, so the elementary argument below
-suffices and no normal-form theorem is needed.) -/
+Elementary, and independent of any normal-form theorem: the thesis takes
+composition of pure maps for granted (dils.tex **170I** *defines* pure maps
+as arbitrary composites), and 100III `Theses.A.Proc.pure_fundamental` is
+what brings a composite to the "filter after corner" normal form
+`IsPureMap` uses.  **171VII** `paschke_pure` ⇐ used to be run through this
+lemma; it now takes the printed route instead — `isPureMap_ncpComp` on top
+of `procIsPure_of_isPureMap` — so nothing in the file calls this any more,
+and it is kept only as the direct argument for the corner half. -/
 private theorem isCornerFor_comp {P Q R : Type u} [CStarAlgebra P]
     [PartialOrder P] [StarOrderedRing P] [CStarAlgebra Q] [PartialOrder Q]
     [StarOrderedRing Q] [CStarAlgebra R] [PartialOrder R] [StarOrderedRing R]
@@ -5234,11 +5272,12 @@ surjective.
 `surjective_nmiu_1` — this is the thesis's "`ker ϱ = z𝒜` by
 `weakly-closed-ideal`, so `ϱ` is a corner by the isomorphism theorem",
 already available in the tree in that form.  `h` is pure by **170II**.2
-`dils_examples_pure_2`, say `h = c ∘ k` with `k` a corner, and then
-`φ = c ∘ (k ∘ ϱ)` with `k ∘ ϱ` a corner by `isCornerFor_comp`.  (Where the
-thesis says "a composition of pure maps is pure", `IsPureMap` demands the
-normal form *filter after corner*, so what is actually needed is that
-*corners* compose; see `isCornerFor_comp`.)
+`dils_examples_pure_2`, and `φ = h ∘ ϱ` is then "a composition of pure maps,
+hence pure itself" (`isPureMap_ncpComp`), as printed.  The one thing that
+needs saying is that `IsPureMap` puts a bare C\*-algebra in the middle where
+170I's composition wants a von Neumann one; `procIsPure_of_isPureMap`
+removes that, by the standard filter of **169X** and injectivity of filters
+(**169XII**).
 
 **⇒** `φ = c ∘ h` for a filter `c` and an abstract corner `h`, which
 `pext_corner_iso` (**169IV**) identifies with the standard corner `h_p`,
@@ -5285,51 +5324,20 @@ theorem paschke_pure [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     obtain ⟨x, hx⟩ := hρ0surj w
     exact ⟨x, by rw [← hϑρ x, hx, hw]⟩
   · intro hsurj
-    -- `ϱ`, as an ncp-map, is a corner of a central projection (**170IV**.1)
+    have : VonNeumannAlgebra D.P := D.vn
+    -- `ϱ`, as an ncp-map, is a corner of a central projection (**170IV**.1),
+    -- hence pure
     obtain ⟨ϱc, hϱc⟩ := pcorner_exists_ncpOfNmiu D.ρ
     obtain ⟨z, -, -, hzcorner⟩ := surjective_nmiu_1 D.ρ hsurj ϱc hϱc
     have hϱ1 : (ϱc 1 : D.P) = 1 := by rw [hϱc]; exact map_one D.ρ.toStarAlgHom
-    -- `h` is pure (**170II**.2): `h = c ∘ k` with `k` a corner, `c` a filter
-    obtain ⟨C, iC, iP, iS, k, c, hkcorner, hcfilter, hkc⟩ :=
-      dils_examples_pure_2 φ D hD
-    letI := iC; letI := iP; letI := iS
-    obtain ⟨a₂, ha₂⟩ := hkcorner
-    -- an effect `e ≤ ⌊z⌋ ≤ z` of `A` with `ϱ(e) = a₂`
-    obtain ⟨hp₀, v₀, u₀, hval₀, hv₀, hv₀u₀, hu₀v₀⟩ := pext_corner_iso ϱc z hzcorner
-    have hzfloor : floor z ∈ effects A := ⟨(floor_spec hzcorner.1).1.nonneg,
-      (floor_spec hzcorner.1).1.le_one⟩
-    have hp₀1 : (hp₀ (1 : A) : cornerSet A (floor z)) = 1 := by
-      refine Subtype.ext ?_
-      rw [hval₀, mul_one]
-      exact (floor_spec hzcorner.1).1.isIdempotentElem.eq
-    have hv₀1 : (v₀ (1 : cornerSet A (floor z)) : D.P) = 1 := by
-      rw [← hp₀1, hv₀ 1, hϱ1]
-    have hu₀1 : (u₀ (1 : D.P) : cornerSet A (floor z)) = 1 := by
-      rw [← hv₀1, hu₀v₀]
-    set e : A := (u₀ a₂).1 with hedef
-    have hu₀mono : ∀ x y : D.P, x ≤ y → u₀ x ≤ u₀ y :=
-      fun _ _ hxy => (ncpPos u₀).monotone hxy
-    have he0 : (0 : A) ≤ e := by
-      have h0 : (0 : cornerSet A (floor z)) = u₀ 0 :=
-        (map_zero u₀.toCompletelyPositiveMap).symm
-      have h1 : (0 : cornerSet A (floor z)) ≤ u₀ a₂ := by
-        rw [h0]; exact hu₀mono _ _ ha₂.1.1
-      exact h1
-    have hefl : e ≤ floor z := by
-      have h1 : u₀ a₂ ≤ (1 : cornerSet A (floor z)) := by
-        rw [← hu₀1]; exact hu₀mono _ _ ha₂.1.2
-      exact h1
-    have hez : e ≤ z := hefl.trans (floor_le hzcorner.1)
-    have he : e ∈ effects A := ⟨he0, hez.trans hzcorner.1.2⟩
-    have hϱe : (ϱc e : D.P) = a₂ := by
-      have h1 : hp₀ e = u₀ a₂ := Subtype.ext (by rw [hval₀]; exact (u₀ a₂).2)
-      rw [← hv₀ e, h1, hv₀u₀]
-    -- assemble
-    obtain ⟨kϱ, hkϱ⟩ := exists_ncpComp k ϱc
-    refine ⟨C, iC, iP, iS, kϱ, c,
-      ⟨e, isCornerFor_comp ϱc z hzcorner hϱ1 k a₂ ha₂ e he hez hϱe kϱ hkϱ⟩,
-      hcfilter, fun x => ?_⟩
-    rw [hkϱ, hϱc, ← hkc, hD.1 x]
+    have hϱpure : Theses.A.Proc.IsPure ϱc :=
+      Theses.A.Proc.IsPure.corner
+        ⟨hϱ1, z, hzcorner.1, procIsCornerOf_of_isCornerFor hzcorner⟩
+    -- `h` is pure (**170II**.2)
+    have hhpure : Theses.A.Proc.IsPure D.h :=
+      procIsPure_of_isPureMap (dils_examples_pure_2 φ D hD)
+    -- `φ = h ∘ ϱ` is a composition of pure maps, hence pure
+    exact isPureMap_ncpComp hϱpure hhpure φ fun a => by rw [hϱc, hD.1 a]
 
 end PaschkePure
 
