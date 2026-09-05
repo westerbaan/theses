@@ -1926,7 +1926,6 @@ Theses.A.VN.Basic|Theses.A.VN.exists_faithful_normal_rep_vectors|CStarAlgebra,Th
 Theses.A.VN.Projections|Theses.A.VN.exists_floor|CStarAlgebra,Theses.VonNeumannAlgebra
 Theses.A.VN.BaX|Theses.A.VN.exists_isLUB_bax|CStarAlgebra,Theses.VonNeumannAlgebra,CStarModule,NormedAddCommGroup,CompleteSpace
 Theses.A.VN.Basic|Theses.A.VN.exists_isLUB_matForm|CStarAlgebra,Theses.VonNeumannAlgebra
-Theses.A.VN.Division|Theses.A.VN.exists_isLUB_mem_closure|CStarAlgebra
 Theses.A.VN.BaX|Theses.A.VN.exists_isLUB_vecForm|CStarAlgebra,Theses.VonNeumannAlgebra,CStarModule,NormedAddCommGroup,CompleteSpace
 Theses.A.VN.Basic|Theses.A.VN.exists_isMeagre_continuousAt_of_measurable|
 Theses.A.VN.NormalFunctionals|Theses.A.VN.exists_nat_index|CStarAlgebra,Theses.VonNeumannAlgebra,NormedAddCommGroup,InnerProductSpace,CompleteSpace
@@ -2241,7 +2240,6 @@ Theses.A.VN.NormalFunctionals|Theses.A.VN.predual_complete|CStarAlgebra,Theses.V
 Theses.A.VN.Basic|Theses.A.VN.preservesDirSups_of_continuousOn_effects|CStarAlgebra,Theses.VonNeumannAlgebra
 Theses.A.VN.NormalFunctionals|Theses.A.VN.preservesDirSups_of_continuousOn_effects_functional|CStarAlgebra,Theses.VonNeumannAlgebra
 Theses.A.VN.Basic|Theses.A.VN.preservesDirSups_of_continuous_ultrastrong|CStarAlgebra,Theses.VonNeumannAlgebra
-Theses.A.VN.Division|Theses.A.VN.preservesDirSups_of_finiteDimensional|CStarAlgebra
 Theses.A.VN.Basic|Theses.A.VN.preservesDirSups_pmap_comp|CStarAlgebra
 Theses.A.VN.Projections|Theses.A.VN.projInf_eq|CStarAlgebra,Theses.VonNeumannAlgebra
 Theses.A.VN.Completeness|Theses.A.VN.projInf_image_compl|CStarAlgebra,Theses.VonNeumannAlgebra
@@ -2447,7 +2445,6 @@ Theses.A.VN.Basic|Theses.A.VN.vna_supremum_uwlimit|CStarAlgebra,Theses.VonNeuman
 Theses.A.VN.Completeness|Theses.A.VN.vnsac|CStarAlgebra,Theses.VonNeumannAlgebra
 Theses.A.VN.Basic|Theses.A.VN.vonNeumannAlgebra_lp_infty|CStarAlgebra,Theses.VonNeumannAlgebra
 Theses.A.VN.Basic|Theses.A.VN.vonNeumannAlgebra_lp_infty'|CStarAlgebra,Theses.VonNeumannAlgebra
-Theses.A.VN.Division|Theses.A.VN.vonNeumannAlgebra_of_finiteDimensional|CStarAlgebra,Theses.VonNeumannAlgebra
 Theses.A.VN.Basic|Theses.A.VN.vonNeumannAlgebra_of_starAlgEquiv|CStarAlgebra,Theses.VonNeumannAlgebra
 Theses.A.VN.Projections|Theses.A.VN.weakly_closed_ideal|CStarAlgebra,Theses.VonNeumannAlgebra
 Theses.A.VN.NormalFunctionals|Theses.A.VN.wstar_eq_of_isVNSubalgebra|NormedAddCommGroup,InnerProductSpace,CompleteSpace
@@ -7060,6 +7057,9 @@ Theses.A.VN.Basic|Theses.A.VN.ContRep.rho_apply|
 Theses.A.VN.Basic|Theses.A.VN.ContRep.rho_denseRange|
 Theses.A.VN.Basic|Theses.A.VN.ContRep.rho_injective|
 Theses.A.VN.Basic|Theses.A.VN.ContRep.rho_surjective|
+Theses.A.VN.Projections|Theses.A.VN.FDVNA.exists_isLUB_mem_closure|CStarAlgebra
+Theses.A.VN.Projections|Theses.A.VN.FDVNA.preservesDirSups_of_finiteDimensional|CStarAlgebra
+Theses.A.VN.Projections|Theses.A.VN.FDVNA.vonNeumannAlgebra_of_finiteDimensional|CStarAlgebra,Theses.VonNeumannAlgebra
 Theses.A.VN.Division|Theses.A.VN.IsApproxPseudoinverse.commute_of_nonneg|CStarAlgebra,Theses.VonNeumannAlgebra
 Theses.A.VN.Division|Theses.A.VN.IsApproxPseudoinverse.isSelfAdjoint_of_nonneg|CStarAlgebra,Theses.VonNeumannAlgebra
 Theses.A.VN.Division|Theses.A.VN.IsApproxPseudoinverse.mul_eq_rangeProj|CStarAlgebra,Theses.VonNeumannAlgebra

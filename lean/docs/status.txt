@@ -1926,7 +1926,6 @@ Theses.A.VN.Basic|Theses.A.VN.exists_faithful_normal_rep_vectors|green
 Theses.A.VN.Projections|Theses.A.VN.exists_floor|green
 Theses.A.VN.BaX|Theses.A.VN.exists_isLUB_bax|green
 Theses.A.VN.Basic|Theses.A.VN.exists_isLUB_matForm|green
-Theses.A.VN.Division|Theses.A.VN.exists_isLUB_mem_closure|green
 Theses.A.VN.BaX|Theses.A.VN.exists_isLUB_vecForm|green
 Theses.A.VN.Basic|Theses.A.VN.exists_isMeagre_continuousAt_of_measurable|green
 Theses.A.VN.NormalFunctionals|Theses.A.VN.exists_nat_index|green
@@ -2241,7 +2240,6 @@ Theses.A.VN.NormalFunctionals|Theses.A.VN.predual_complete|green
 Theses.A.VN.Basic|Theses.A.VN.preservesDirSups_of_continuousOn_effects|green
 Theses.A.VN.NormalFunctionals|Theses.A.VN.preservesDirSups_of_continuousOn_effects_functional|green
 Theses.A.VN.Basic|Theses.A.VN.preservesDirSups_of_continuous_ultrastrong|green
-Theses.A.VN.Division|Theses.A.VN.preservesDirSups_of_finiteDimensional|green
 Theses.A.VN.Basic|Theses.A.VN.preservesDirSups_pmap_comp|green
 Theses.A.VN.Projections|Theses.A.VN.projInf_eq|green
 Theses.A.VN.Completeness|Theses.A.VN.projInf_image_compl|green
@@ -2447,7 +2445,6 @@ Theses.A.VN.Basic|Theses.A.VN.vna_supremum_uwlimit|green
 Theses.A.VN.Completeness|Theses.A.VN.vnsac|green
 Theses.A.VN.Basic|Theses.A.VN.vonNeumannAlgebra_lp_infty|green
 Theses.A.VN.Basic|Theses.A.VN.vonNeumannAlgebra_lp_infty'|green
-Theses.A.VN.Division|Theses.A.VN.vonNeumannAlgebra_of_finiteDimensional|green
 Theses.A.VN.Basic|Theses.A.VN.vonNeumannAlgebra_of_starAlgEquiv|green
 Theses.A.VN.Projections|Theses.A.VN.weakly_closed_ideal|green
 Theses.A.VN.NormalFunctionals|Theses.A.VN.wstar_eq_of_isVNSubalgebra|green
@@ -7060,6 +7057,9 @@ Theses.A.VN.Basic|Theses.A.VN.ContRep.rho_apply|green
 Theses.A.VN.Basic|Theses.A.VN.ContRep.rho_denseRange|green
 Theses.A.VN.Basic|Theses.A.VN.ContRep.rho_injective|green
 Theses.A.VN.Basic|Theses.A.VN.ContRep.rho_surjective|green
+Theses.A.VN.Projections|Theses.A.VN.FDVNA.exists_isLUB_mem_closure|green
+Theses.A.VN.Projections|Theses.A.VN.FDVNA.preservesDirSups_of_finiteDimensional|green
+Theses.A.VN.Projections|Theses.A.VN.FDVNA.vonNeumannAlgebra_of_finiteDimensional|green
 Theses.A.VN.Division|Theses.A.VN.IsApproxPseudoinverse.commute_of_nonneg|green
 Theses.A.VN.Division|Theses.A.VN.IsApproxPseudoinverse.isSelfAdjoint_of_nonneg|green
 Theses.A.VN.Division|Theses.A.VN.IsApproxPseudoinverse.mul_eq_rangeProj|green
