@@ -5778,10 +5778,8 @@ Theses.A.VN.Completeness|Theses.A.VN.us_star|CStarAlgebra,Theses.VonNeumannAlgeb
 Theses.A.VN.Completeness|Theses.A.VN.uwTendsto_add'|CStarAlgebra
 Theses.A.VN.Completeness|Theses.A.VN.uwTendsto_star'|CStarAlgebra
 Theses.A.VN.Division|Theses.A.VN.card_isSharpEqualiser|
-Theses.A.VN.Division|Theses.A.VN.central_idempotent_isSelfAdjoint|CStarAlgebra
 Theses.A.VN.Division|Theses.A.VN.corner_eq_smul_complex|CStarAlgebra,Theses.VonNeumannAlgebra
 Theses.A.VN.Division|Theses.A.VN.corner_two_sided|CStarAlgebra
-Theses.A.VN.Division|Theses.A.VN.cstar_jacobson_eq_bot|CStarAlgebra
 Theses.A.VN.Division|Theses.A.VN.effectPUMap_apply|CStarAlgebra
 Theses.A.VN.Division|Theses.A.VN.effectPUMap_isPositiveMap|CStarAlgebra
 Theses.A.VN.Division|Theses.A.VN.effectPUMap_isUnitalMap|CStarAlgebra
@@ -5799,9 +5797,6 @@ Theses.A.VN.Division|Theses.A.VN.hereditarilyAtomic_lpSum|CStarAlgebra
 Theses.A.VN.Division|Theses.A.VN.isStarProjection_absorb|CStarAlgebra
 Theses.A.VN.Division|Theses.A.VN.linearIndependent_of_orthogonal_projections|CStarAlgebra
 Theses.A.VN.Division|Theses.A.VN.matrixUnits_starAlgEquiv|CStarAlgebra,Theses.VonNeumannAlgebra
-Theses.A.VN.Division|Theses.A.VN.matrix_exists_algEquiv_conj|
-Theses.A.VN.Division|Theses.A.VN.matrix_exists_intertwiner|
-Theses.A.VN.Division|Theses.A.VN.matrix_single_mul_single|
 Theses.A.VN.Division|Theses.A.VN.mem_cornerSubmodule|CStarAlgebra
 Theses.A.VN.Division|Theses.A.VN.nonneg_smul_nonneg|CStarAlgebra
 Theses.A.VN.Division|Theses.A.VN.octahedron_vertex|

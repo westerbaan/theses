@@ -515,6 +515,17 @@ usable anywhere in `A/VN` and downstream.)
 `matrix_exists_intertwiner` (**Skolem–Noether for `Matrix n n ℂ`**),
 `matrix_exists_algEquiv_conj`, `central_idempotent_isSelfAdjoint`.
 
+> **Superseded 2026-09-05, twice over.**  84II was rebuilt on the thesis's own
+> proof (vn.tex:5798–6027), so the Wedderburn–Artin route those four
+> by-products served is gone; they were unconsumed after the rebuild and were
+> deleted the same day, with `matrix_single_mul_single` and `MatProd`, 489
+> lines in all (`docs/DEAD-LIMBS.md` §16).  So the paragraph above, and the
+> quoted survey note at the head of this file that says Skolem–Noether "is
+> proved here as the private `matrix_exists_intertwiner`", describe a section
+> the tree no longer has.  Skolem–Noether for matrix algebras is still absent
+> from Mathlib and is now absent from the tree as well; the recipe in that
+> note is the record of how to rebuild it if anything ever wants it.
+
 Session 79 added, private, at the end of the file: `starAlgHom_norm_corner`
 (a ∗-hom whose kernel is `c^⊥ℬ` for a central projection `c` is contractive,
 and isometric on `cℬ` — **promote this if anything else wants it**),

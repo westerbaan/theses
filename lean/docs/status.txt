@@ -5778,10 +5778,8 @@ Theses.A.VN.Completeness|Theses.A.VN.us_star|green
 Theses.A.VN.Completeness|Theses.A.VN.uwTendsto_add'|green
 Theses.A.VN.Completeness|Theses.A.VN.uwTendsto_star'|green
 Theses.A.VN.Division|Theses.A.VN.card_isSharpEqualiser|green
-Theses.A.VN.Division|Theses.A.VN.central_idempotent_isSelfAdjoint|green
 Theses.A.VN.Division|Theses.A.VN.corner_eq_smul_complex|green
 Theses.A.VN.Division|Theses.A.VN.corner_two_sided|green
-Theses.A.VN.Division|Theses.A.VN.cstar_jacobson_eq_bot|green
 Theses.A.VN.Division|Theses.A.VN.effectPUMap_apply|green
 Theses.A.VN.Division|Theses.A.VN.effectPUMap_isPositiveMap|green
 Theses.A.VN.Division|Theses.A.VN.effectPUMap_isUnitalMap|green
@@ -5799,9 +5797,6 @@ Theses.A.VN.Division|Theses.A.VN.hereditarilyAtomic_lpSum|green
 Theses.A.VN.Division|Theses.A.VN.isStarProjection_absorb|green
 Theses.A.VN.Division|Theses.A.VN.linearIndependent_of_orthogonal_projections|green
 Theses.A.VN.Division|Theses.A.VN.matrixUnits_starAlgEquiv|green
-Theses.A.VN.Division|Theses.A.VN.matrix_exists_algEquiv_conj|green
-Theses.A.VN.Division|Theses.A.VN.matrix_exists_intertwiner|green
-Theses.A.VN.Division|Theses.A.VN.matrix_single_mul_single|green
 Theses.A.VN.Division|Theses.A.VN.mem_cornerSubmodule|green
 Theses.A.VN.Division|Theses.A.VN.nonneg_smul_nonneg|green
 Theses.A.VN.Division|Theses.A.VN.octahedron_vertex|green

@@ -2472,3 +2472,67 @@ and for the same reason: a private helper with no consumer but the route that
 has just been replaced is part of that route, not a limb of its own.
 `docs/status.txt` lost its one stale line (`tupleBInner_inner`) by hand;
 `tupleBInner` is a `def` and was never listed.
+
+---
+
+## 16. The 2026-09-05 tidy-up: the Wedderburn–Artin route, deleted
+
+The 84II rebuild of 2026-09-05 put `fdcstar` on the thesis's own proof
+(vn.tex:5798–6027) and left the whole of the abandoned Wedderburn–Artin route
+standing in `A/VN/Division.lean`, rowed and unconsumed; the five rows added
+that day said so themselves ("no longer consumed by fdcstar … a dead-limb
+candidate for the next sweep").  This is that sweep.  The block is **deleted,
+not recorded**, because it is the disposal §15 describes for a route that has
+been replaced rather than a limb of its own: every member of it was built for
+the Wedderburn–Artin upgrade and nothing else, and the upgrade is gone.
+
+Confirmed dead by direct count against the working tree, 2026-09-05 — for each
+name a grep over all of `Theses/`, code and prose, returned only its own
+declaration and, where noted, uses inside the block — and deleted the same day
+from `A/VN/Division.lean`, **489 lines**:
+
+* `matrix_exists_algEquiv_conj` (`Division.lean:4850`, private, 334 lines with
+  its doc) — zero consumers; the top of the block.  Given a conjugate-linear
+  involutive definite anti-automorphism `J` of `Matrix n n ℂ`, it produces the
+  algebra automorphism turning `J` into the conjugate transpose, which is what
+  carried the ∗-structure across Mathlib's
+  `IsSemisimpleRing.exists_algEquiv_pi_matrix_of_isAlgClosed`.
+* `matrix_exists_intertwiner` (`Division.lean:4746`, private, 103 lines) —
+  **Skolem–Noether for matrix algebras**, absent from Mathlib and from both
+  theses.  Its only use in the tree was inside `matrix_exists_algEquiv_conj`
+  (`Division.lean:4881`), so it dies with it; it was also named in prose by the
+  section header above it, which is rewritten.
+* `matrix_single_mul_single` (`Division.lean:4733`, private, 11 lines) — the
+  product rule for matrix units, used six times and all six inside
+  `matrix_exists_intertwiner`.  Unrowed: a private helper of the route.
+* `cstar_jacobson_eq_bot` (`Division.lean:4707`, private, 28 lines with its
+  doc) — zero consumers.  A C\*-algebra has trivial Jacobson radical; it was
+  the semisimplicity input Wedderburn–Artin needed and the printed proof never
+  forms a radical at all.
+* `central_idempotent_isSelfAdjoint` (`Division.lean:5182`, private, 8 lines) —
+  zero consumers.  The printed route gets self-adjointness of its central
+  projections from **67IV** instead.
+* `MatProd` (`Division.lean:5191`, private abbrev, 5 lines) — zero consumers,
+  and it never had one: `fdcstar` writes its target out.
+
+Five of the six were rowed (`avn-division-normalfunctionals.csv`, rows 103–107,
+all `84II`, all `ok|none`, all with the same "no longer consumed by fdcstar"
+status); the rows are retired with the declarations, as the audit has retired
+every other row whose declaration was deleted, and the surviving 84II `fdcstar`
+row records the retirement by name so the history is not lost.  No statement
+changed, no `sorry` was added or removed (seven, all deliberate), and
+`Division.lean` compiles at exit 0 with the warning multiset it had before.
+
+**Not a limb, and deliberately created: three declarations upstream with no
+consumer yet.**  The same tidy-up copied `exists_isLUB_mem_closure`,
+`preservesDirSups_of_finiteDimensional` and
+`vonNeumannAlgebra_of_finiteDimensional` — 84II's step 840.30/840.40, which is
+a fact about the Kadison definition of `Theses/Common.lean` and about no point
+of parsec 840 — out of `A/VN/Division.lean` and into
+`A/VN/Projections.lean`'s new `namespace FDVNA`, where the Division copies'
+own doc block had been asking for them to go.  The three copies have no
+consumer, and will have none until phase 2 deletes the Division originals and
+points 84II's induction at them; `scripts/lean1.sh` writes no olean, so the
+switch cannot be made in the session that adds them.  This is the B15 pattern
+of 2026-09-05 (`9873c34` then `5f5f922`), and it is recorded here so that a
+sweep run between the two phases does not read the three as limbs.
