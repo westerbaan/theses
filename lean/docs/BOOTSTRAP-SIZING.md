@@ -22,7 +22,7 @@ block is complete and `#print axioms`-clean:
 | 150 | 1880–3468 | 1589 | winding number of the *N*-gon, Cauchy, Taylor, rigid expansion |
 | | **total** | **3430** | |
 
-16II `norm_spectrum` (`Positive.lean:3475`) is already proved on the printed
+16II `norm_spectrum` (`Positive.lean:3535`) is already proved on the printed
 route off that block, and 11XV.1 `spectrum_self_adjoint_real_1`
 (`Basic.lean:2966`) is already proved on the thesis's own 11XIII chain.  **Both
 targets exist.**  What is left is not mathematics: it is ten call sites that

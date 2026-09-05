@@ -850,7 +850,7 @@ variable {I : Type*} (𝒜 : I → Type u) [∀ i, CStarAlgebra (𝒜 i)]
   [∀ i, Nontrivial (𝒜 i)]
 
 -- The unital `CStarAlgebra (lp 𝒜 ∞)` instance is not declared here: it is
--- `lpInftyCStarAlgebra` (`A/CStar/Positive.lean:5429`), which this file imports
+-- `lpInftyCStarAlgebra` (`A/CStar/Positive.lean:5535`), which this file imports
 -- through `A/CStar/Representation`, and which is stated more generally (`Type*`
 -- with `𝒜` implicit).  Mathlib itself registers only the non-unital and the
 -- commutative cases.
@@ -9493,9 +9493,15 @@ The route is the one `starAlgHom_le_iff` (**48VI**.2) takes for an injective
 injectivity:
 
 * `linftyPresentation_le_iff` — `q f ≤ q g` iff `f ≤ g` almost everywhere.
-  Forward by the square root of the difference; backward by the thesis's own
-  cube trick, `n q(f) n = -q(n)³` for `n` the negative part, which forces
-  `q(n)³ = 0` and hence `q n = 0` (`eq_zero_of_pow_three_eq_zero`).
+  Forward by the square root of the difference; backward by the cube trick
+  `starAlgHom_le_iff_general` runs, `n q(f) n = -q(n)³` for `n` the negative
+  part, which forces `q(n)³ = 0` and hence `q n = 0`
+  (`eq_zero_of_pow_three_eq_zero`).  That trick is *not* the thesis's: 48VI
+  hands the order reflection to cstar **29IX**, whose printed solution takes
+  the isometry-and-closed-range route to an miu-isomorphism onto the image
+  and then only asserts that such an isomorphism reflects the order — a route
+  unavailable here, since `q` is not assumed ℂ-homogeneous, unital or
+  continuous.
 * `linftyPresentation_isLUB` — `q` carries a supremum for the a.e. order to a
   supremum in `𝒞`, which is normality.  Note that *no directedness is
   needed*: `q` is an order isomorphism modulo a.e. equality, so it preserves
@@ -9614,8 +9620,8 @@ private theorem pres_nonneg {q : (X → ℂ) → 𝒞}
   rw [hq]
   exact star_mul_self_nonneg _
 
-/-- A presentation *reflects* positivity.  The thesis's cube trick, in the
-form `starAlgHom_le_iff` uses it: with `n` the negative part of `f`,
+/-- A presentation *reflects* positivity.  The cube trick, in the form
+`starAlgHom_le_iff_general` uses it: with `n` the negative part of `f`,
 `n f n = -n³` almost everywhere, so `q(n)³ ≤ 0` while `0 ≤ q(n)³`, whence
 `q n = 0` and `n` vanishes almost everywhere. -/
 private theorem pres_ae_nonneg {q : (X → ℂ) → 𝒞}

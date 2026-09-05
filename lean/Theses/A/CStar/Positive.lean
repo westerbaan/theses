@@ -153,15 +153,75 @@ private theorem fpsOfCoeffs_hasFPowerSeriesOnBall (a : ℕ → 𝒜) (f : ℂ �
     simpa [fpsOfCoeffs_coeff] using key y hy
 
 /-- **13II** (`hadamard`, cstar.tex:1807, Theorem), part 1: the series
-`∑ₙ aₙ zⁿ` converges absolutely for `|z| < R`. -/
+`∑ₙ aₙ zⁿ` converges absolutely for `|z| < R`.
+
+*Class 1 — faithful*: the thesis's own `ε`-and-geometric-tail argument
+(cstar.tex:1832), run on the `limsup` that defines `radiusOfConvergence`
+rather than through Mathlib's power-series radius theory.  For `z ≠ 0`,
+`R⁻¹|z| < 1` gives an `ε > 0` with `(R⁻¹+ε)|z| < 1`; since
+`limsupₙ ‖aₙ‖^{1/n} < R⁻¹+ε` there is an `N` with `‖aₙ‖^{1/n} ≤ R⁻¹+ε` for
+`n ≥ N`, so `‖aₙ‖|z|ⁿ ≤ ((R⁻¹+ε)|z|)ⁿ` there and the geometric series
+dominates the tail. -/
 theorem hadamard_1 (a : ℕ → 𝒜) (z : ℂ)
     (hz : (‖z‖₊ : ℝ≥0∞) < radiusOfConvergence a) :
     Summable fun n : ℕ => ‖a n‖ * ‖z‖ ^ n :=
   by
-    -- the thesis's `ε`-and-geometric-tail argument is Mathlib's
-    -- `FormalMultilinearSeries.summable_norm_mul_pow`
-    rw [radiusOfConvergence_eq] at hz
-    simpa [fpsOfCoeffs_coeff] using (fpsOfCoeffs a).summable_norm_mul_pow (r := ‖z‖₊) hz
+    set L : ℝ≥0∞ := Filter.atTop.limsup fun n : ℕ => (‖a n‖₊ : ℝ≥0∞) ^ (1 / (n : ℝ)) with hL
+    rw [radiusOfConvergence, ← hL] at hz
+    -- `|z| < R` forces `R⁻¹ ≡ L < ∞`
+    have hLtop : L ≠ ∞ := by
+      rintro h
+      rw [h, ENNReal.inv_top] at hz
+      exact ENNReal.not_lt_zero hz
+    rcases eq_or_lt_of_le (norm_nonneg z) with hz0 | hzpos
+    · -- `z = 0`: only the constant term of the series survives
+      refine summable_of_ne_finset_zero (s := {0}) ?_
+      intro n hn
+      have hn0 : n ≠ 0 := by simpa using hn
+      rw [← hz0, zero_pow hn0, mul_zero]
+    · -- `|z| > 0`.  Since `R⁻¹|z| < 1` there is `ε > 0` with `(R⁻¹+ε)|z| < 1`.
+      have hLz : L.toReal * ‖z‖ < 1 := by
+        rcases eq_or_ne L 0 with hL0 | hL0
+        · rw [hL0]; simp
+        · have hinv : L⁻¹ ≠ ∞ := ENNReal.inv_ne_top.mpr hL0
+          have h := (ENNReal.toReal_lt_toReal (by simp) hinv).mpr hz
+          rw [ENNReal.toReal_inv] at h
+          simp only [ENNReal.coe_toReal, coe_nnnorm] at h
+          have hLr : 0 < L.toReal := ENNReal.toReal_pos hL0 hLtop
+          rw [lt_inv_comm₀ hzpos hLr] at h
+          rw [← lt_div_iff₀ hzpos, one_div]
+          exact h
+      set ε : ℝ := (1 / ‖z‖ - L.toReal) / 2 with hε
+      have hLlt : L.toReal < 1 / ‖z‖ := by
+        rw [lt_div_iff₀ hzpos]; exact hLz
+      have hεpos : 0 < ε := by rw [hε]; linarith
+      set c : ℝ := L.toReal + ε with hc
+      have hcpos : 0 < c := by
+        have := ENNReal.toReal_nonneg (a := L); rw [hc]; linarith
+      have hcz : c * ‖z‖ < 1 := by
+        have hlt : c < 1 / ‖z‖ := by rw [hc, hε]; linarith
+        rw [← lt_div_iff₀ hzpos]; exact hlt
+      -- `limsupₙ ‖aₙ‖^{1/n} < R⁻¹ + ε`, so `‖aₙ‖^{1/n} ≤ R⁻¹ + ε` from some `N` on
+      have hLc : L < ENNReal.ofReal c :=
+        (ENNReal.lt_ofReal_iff_toReal_lt hLtop).mpr (by rw [hc]; linarith)
+      have hev : ∀ᶠ n : ℕ in atTop, (‖a n‖₊ : ℝ≥0∞) ^ (1 / (n : ℝ)) < ENNReal.ofReal c :=
+        eventually_lt_of_limsup_lt (by rw [← hL]; exact hLc)
+      -- hence `‖aₙ‖|z|ⁿ ≤ ((R⁻¹+ε)|z|)ⁿ` there, and the geometric series dominates
+      refine (summable_geometric_of_lt_one (by positivity) hcz).of_norm_bounded_eventually_nat ?_
+      filter_upwards [hev, eventually_gt_atTop 0] with n hn hn0
+      have hnpos : (0 : ℝ) < (n : ℝ) := by exact_mod_cast hn0
+      have hpow : (‖a n‖₊ : ℝ≥0∞) < ENNReal.ofReal (c ^ n) := by
+        have h1 : ((‖a n‖₊ : ℝ≥0∞) ^ (1 / (n : ℝ))) ^ ((n : ℝ))
+            < (ENNReal.ofReal c) ^ ((n : ℝ)) := ENNReal.rpow_lt_rpow hn hnpos
+        rwa [← ENNReal.rpow_mul, one_div, inv_mul_cancel₀ (ne_of_gt hnpos),
+          ENNReal.rpow_one, ENNReal.rpow_natCast, ← ENNReal.ofReal_pow hcpos.le] at h1
+      have hreal : ‖a n‖ < c ^ n := by
+        have h := (ENNReal.lt_ofReal_iff_toReal_lt (by simp)).mp hpow
+        simpa using h
+      calc ‖‖a n‖ * ‖z‖ ^ n‖ = ‖a n‖ * ‖z‖ ^ n := by
+            rw [Real.norm_eq_abs, abs_of_nonneg (by positivity)]
+        _ ≤ c ^ n * ‖z‖ ^ n := mul_le_mul_of_nonneg_right hreal.le (by positivity)
+        _ = (c * ‖z‖) ^ n := by rw [mul_pow]
 
 /-- **13II** (`hadamard`, cstar.tex:1807, Theorem), part 2: if `∑ₙ aₙ zⁿ`
 converges then `|z| ≤ R`.
@@ -5096,11 +5156,57 @@ end Order
 **18I** (cstar.tex:2823): moved to `cstar-product-2` (20aI below) — nothing to
 formalize.  **19I** (cstar.tex:2827): introduction — nothing to formalize. -/
 
+/-- The Lemma's explicit inverse: for `λ ≠ 0`, if `λ - xy` is invertible then
+so is `λ - yx`, with inverse `λ⁻¹(1 + y(λ-xy)⁻¹x)` — the formula of
+cstar.tex:2841 as corrected by **erratum parsec-190.20** (the printed text
+omits the `⁻¹` on `(λ-ab)`).  The verification is the thesis's own: from
+`x(λ-yx) = (λ-xy)x` one gets `(1 + y(λ-xy)⁻¹x)(λ-yx) = λ` and
+`(λ-yx)(1 + y(λ-xy)⁻¹x) = λ`. -/
+private theorem prod_spec_aux (x y : 𝒜) (l : ℂ) (hl : l ≠ 0)
+    (hu : IsUnit (algebraMap ℂ 𝒜 l - x * y)) :
+    IsUnit (algebraMap ℂ 𝒜 l - y * x) := by
+  set L : 𝒜 := algebraMap ℂ 𝒜 l with hLdef
+  have hLs : L = l • (1 : 𝒜) := Algebra.algebraMap_eq_smul_one l
+  obtain ⟨u, hu⟩ := hu
+  set v : 𝒜 := ((u⁻¹ : 𝒜ˣ) : 𝒜) with hvdef
+  have hvA : v * (L - x * y) = 1 := by rw [hvdef, ← hu]; exact u.inv_mul
+  have hAv : (L - x * y) * v = 1 := by rw [hvdef, ← hu]; exact u.mul_inv
+  have hlinv : l⁻¹ • L = 1 := by
+    rw [hLdef, Algebra.smul_def, ← map_mul, inv_mul_cancel₀ hl, map_one]
+  have h1 : (1 + y * v * x) * (L - y * x) = L := by
+    have e : y * v * x * L = y * (v * L) * x := by
+      rw [hLs]; simp only [smul_mul_assoc, mul_smul_comm, mul_one, mul_assoc]
+    calc (1 + y * v * x) * (L - y * x)
+        = (L - y * x) + (y * v * x * L - y * v * x * (y * x)) := by noncomm_ring
+      _ = (L - y * x) + (y * (v * L) * x - y * v * x * (y * x)) := by rw [e]
+      _ = (L - y * x) + y * (v * (L - x * y)) * x := by noncomm_ring
+      _ = L := by rw [hvA]; noncomm_ring
+  have h2 : (L - y * x) * (1 + y * v * x) = L := by
+    have e : L * (y * v * x) = y * (L * v) * x := by
+      rw [hLs]; simp only [smul_mul_assoc, mul_smul_comm, one_mul, mul_assoc]
+    calc (L - y * x) * (1 + y * v * x)
+        = (L - y * x) + (L * (y * v * x) - y * x * (y * v * x)) := by noncomm_ring
+      _ = (L - y * x) + (y * (L * v) * x - y * x * (y * v * x)) := by rw [e]
+      _ = (L - y * x) + y * ((L - x * y) * v) * x := by noncomm_ring
+      _ = L := by rw [hAv]; noncomm_ring
+  refine ⟨⟨L - y * x, l⁻¹ • (1 + y * v * x), ?_, ?_⟩, rfl⟩
+  · rw [mul_smul_comm, h2, hlinv]
+  · rw [smul_mul_assoc, h1, hlinv]
+
 /-- **19Ia** (`prod-spec`, cstar.tex:2834, Lemma): for elements `a`, `b` of a
-C*-algebra, `spec(ab) \ {0} = spec(ba) \ {0}`. -/
+C*-algebra, `spec(ab) \ {0} = spec(ba) \ {0}`.
+
+*Class 1 — faithful*: the thesis's own proof, which for `λ ≠ 0` exhibits
+`λ⁻¹(1 + b(λ-ab)⁻¹a)` as the inverse of `λ - ba` — see `prod_spec_aux`. -/
 theorem prod_spec (a b : 𝒜) :
-    spectrum ℂ (a * b) \ {0} = spectrum ℂ (b * a) \ {0} :=
-  spectrum.nonzero_mul_comm a b
+    spectrum ℂ (a * b) \ {0} = spectrum ℂ (b * a) \ {0} := by
+  ext l
+  simp only [Set.mem_sdiff, Set.mem_singleton_iff, spectrum.mem_iff]
+  constructor
+  · rintro ⟨h1, h2⟩
+    exact ⟨fun hu => h1 (prod_spec_aux b a l h2 hu), h2⟩
+  · rintro ⟨h1, h2⟩
+    exact ⟨fun hu => h1 (prod_spec_aux a b l h2 hu), h2⟩
 
 /-- **19III** (`astara-non-negative`, cstar.tex:2853, Lemma):
 `a* a ≤ 0` implies `a = 0`. -/
@@ -5713,6 +5819,21 @@ theorem cstar_product_2_pu' {ι : Type*} {𝒜 : ι → Type*}
 
 end NontrivialSummands
 
+/-- A miu-map is continuous: it is bounded by `1` by **20V**
+`norm_mi_map_contractive`, which is the fact cstar.tex:3065 tells the reader to
+use.  **20V** is stated for C*-algebras carrying the thesis's order; its
+conclusion `‖ρ a‖ ≤ ‖a‖` mentions no order, so it applies to any pair of
+C*-algebras through Mathlib's spectral order (the same device as
+`Representation.lean`'s `gelfand_*`). -/
+private theorem miu_continuous {𝒜 ℬ : Type*} [CStarAlgebra 𝒜] [CStarAlgebra ℬ]
+    (φ : 𝒜 →⋆ₐ[ℂ] ℬ) : Continuous φ := by
+  let _ : PartialOrder 𝒜 := CStarAlgebra.spectralOrder 𝒜
+  have _ : StarOrderedRing 𝒜 := CStarAlgebra.spectralOrderedRing 𝒜
+  let _ : PartialOrder ℬ := CStarAlgebra.spectralOrder ℬ
+  have _ : StarOrderedRing ℬ := CStarAlgebra.spectralOrderedRing ℬ
+  exact AddMonoidHomClass.continuous_of_bound φ 1
+    (fun a => by simpa using norm_mi_map_contractive φ a)
+
 /-- **20aII** (`cstar-equaliser-1`, cstar.tex:3059, Exercise): for miu-maps
 `f, g : 𝒜 → ℬ` the set `ℰ = {a : f(a) = g(a)}` is a (closed) C*-subalgebra
 of `𝒜`.  This is the Exercise's *first* clause only; that the inclusion is a
@@ -5727,12 +5848,13 @@ theorem cstar_equaliser_1 {𝒜 ℬ : Type*} [CStarAlgebra 𝒜] [CStarAlgebra �
     ∃ S : StarSubalgebra ℂ 𝒜,
       (S : Set 𝒜) = {a : 𝒜 | f a = g a} ∧ IsClosed (S : Set 𝒜) :=
   by
-    have hc : ∀ φ : 𝒜 →⋆ₐ[ℂ] ℬ, Continuous φ := fun φ =>
-      AddMonoidHomClass.continuous_of_bound φ 1
-        (fun a => by simpa using NonUnitalStarAlgHom.norm_apply_le φ a)
+    -- the Exercise's own reason for closedness: `f` and `g` are bounded by
+    -- **20V** `norm_mi_map_contractive`, hence continuous, and `ℰ` is the
+    -- equaliser of two continuous maps
     have hset : (StarAlgHom.equalizer f g : Set 𝒜) = {a : 𝒜 | f a = g a} := by
       ext a; exact StarAlgHom.mem_equalizer f g a
-    exact ⟨StarAlgHom.equalizer f g, hset, hset ▸ isClosed_eq (hc f) (hc g)⟩
+    exact ⟨StarAlgHom.equalizer f g, hset,
+      hset ▸ isClosed_eq (miu_continuous f) (miu_continuous g)⟩
 
 section Equaliser
 
@@ -5756,14 +5878,11 @@ continuous, so `ℰ` is an equaliser of continuous maps. -/
 instance isClosed_cstarEqualiser (f g : 𝒜 →⋆ₐ[ℂ] ℬ) :
     IsClosed ((cstarEqualiser f g : StarSubalgebra ℂ 𝒜) : Set 𝒜) :=
   by
-    have hc : ∀ φ : 𝒜 →⋆ₐ[ℂ] ℬ, Continuous φ := fun φ =>
-      AddMonoidHomClass.continuous_of_bound φ 1
-        (fun a => by simpa using NonUnitalStarAlgHom.norm_apply_le φ a)
     have hset : ((cstarEqualiser f g : StarSubalgebra ℂ 𝒜) : Set 𝒜)
         = {a : 𝒜 | f a = g a} := by
       ext a; exact StarAlgHom.mem_equalizer f g a
     rw [hset]
-    exact isClosed_eq (hc f) (hc g)
+    exact isClosed_eq (miu_continuous f) (miu_continuous g)
 
 /-- **20aII** (`cstar-equaliser-1`, cstar.tex:3059, Exercise), second
 clause: the inclusion `e : ℰ → 𝒜` is a positive miu-map.  It is an miu-map
@@ -7832,21 +7951,47 @@ part* `a₋ := ½(|a| - a)`.  In Mathlib: `CFC.abs a` (`= CFC.sqrt (star a * a)`
 which equals `CFC.sqrt (a ^ 2)` for self-adjoint `a`), `a⁺` (`CFC.posPart`)
 and `a⁻` (`CFC.negPart`). -/
 
+/-- **24I**'s `|a| := √(a²)` for self-adjoint `a`, read off Mathlib's
+`CFC.abs a = √(a* a)`.  This is the bridge that lets **23VII** `sqrt_commute`
+and `sqrt_spec` be applied to `CFC.abs`. -/
+private theorem abs_eq_sqrt_sq (a : 𝒜) (ha : IsSelfAdjoint a) :
+    CFC.abs a = CFC.sqrt (a ^ 2) := by
+  show CFC.sqrt (star a * a) = CFC.sqrt (a ^ 2)
+  rw [ha.star_eq, ← sq]
+
+omit [PartialOrder 𝒜] [StarOrderedRing 𝒜] in
+/-- The halving `x = ½ (2 • x)`, which is how the thesis's `a₊ = ½(|a| + a)`
+and `a₋ = ½(|a| - a)` (**24I**) are read off Mathlib's `2 • a⁺ = |a| + a` and
+`2 • a⁻ = |a| - a`. -/
+private theorem half_two_nsmul (x : 𝒜) : ((2:ℝ)⁻¹) • ((2:ℕ) • x) = x := by
+  rw [← Nat.cast_smul_eq_nsmul ℝ, smul_smul]
+  norm_num
+
 /-- **24II** (`cstar-pos-neg-part`, cstar.tex:3715, Exercise), part 1:
-`-|a| ≤ a ≤ |a|` and `‖|a|‖ = ‖a‖` for self-adjoint `a`. -/
+`-|a| ≤ a ≤ |a|` and `‖|a|‖ = ‖a‖` for self-adjoint `a`.
+
+*Class 1 — faithful*: the solution's own route (asols parsec-240.20(1)).
+`a` commutes with `a²` and `a² ≤ a²`, so `a ≤ √(a²) ≡ |a|` by **23VII**'s
+inequality (`sqrt_commute`); likewise `-a` commutes with `a²` and
+`(-a)² ≤ a²`, so `-a ≤ |a|`.  Then `‖|a|‖² = ‖a²‖ = ‖a‖²`. -/
 theorem cstar_pos_neg_part_1 (a : 𝒜) (ha : IsSelfAdjoint a) :
     -CFC.abs a ≤ a ∧ a ≤ CFC.abs a ∧ ‖CFC.abs a‖ = ‖a‖ :=
   by
-    have h1 : -CFC.abs a ≤ a := by
-      have h := CFC.abs_add_self a ha
-      have h2 : (0 : 𝒜) ≤ 2 • a⁺ := nsmul_nonneg (CFC.posPart_nonneg a) 2
-      rw [← h, add_comm] at h2
-      exact neg_le_iff_add_nonneg.mpr h2
+    have hsq : (0:𝒜) ≤ a ^ 2 := by
+      have h := star_mul_self_nonneg a
+      rwa [ha.star_eq, ← sq] at h
+    have habs : CFC.abs a = CFC.sqrt (a ^ 2) := abs_eq_sqrt_sq a ha
+    have hcomm : a * a ^ 2 = a ^ 2 * a := (pow_mul_comm' a 2).symm
     have h2 : a ≤ CFC.abs a := by
-      have h := CFC.abs_sub_self a ha
-      have h3 : (0 : 𝒜) ≤ 2 • a⁻ := nsmul_nonneg (CFC.negPart_nonneg a) 2
-      rw [← h, sub_nonneg] at h3
-      exact h3
+      rw [habs]
+      exact (sqrt_commute (a ^ 2) hsq a hcomm).2 ha le_rfl
+    have hcomm' : (-a) * a ^ 2 = a ^ 2 * (-a) := by
+      rw [neg_mul, mul_neg, hcomm]
+    have h1 : -CFC.abs a ≤ a := by
+      have h : -a ≤ CFC.abs a := by
+        rw [habs]
+        exact (sqrt_commute (a ^ 2) hsq (-a) hcomm').2 ha.neg (by rw [neg_sq])
+      exact neg_le.mp h
     refine ⟨h1, h2, ?_⟩
     have hsa : IsSelfAdjoint (CFC.abs a) := .of_nonneg (CFC.abs_nonneg a)
     have h4 := cstar_involution_basic_13 (CFC.abs a) hsa
@@ -7856,12 +8001,64 @@ theorem cstar_pos_neg_part_1 (a : 𝒜) (ha : IsSelfAdjoint a) :
     exact h5.symm
 
 /-- **24II** (`cstar-pos-neg-part`, cstar.tex:3715, Exercise), part 2:
-`a₊, a₋ ≥ 0`, `a = a₊ - a₋` and `a₊ a₋ = a₋ a₊ = 0`. -/
+`a₊, a₋ ≥ 0`, `a = a₊ - a₋` and `a₊ a₋ = a₋ a₊ = 0`.
+
+*Class 1 — faithful*: the solution's own computation (asols parsec-240.20(2)).
+`a₊ ≡ ½(|a| + a)` is positive because `-|a| ≤ a` by part 1, and `a₋ ≡ ½(|a|-a)`
+because `a ≤ |a|`; `a = a₊ - a₋` is `2a = (|a|+a) - (|a|-a)`; and
+`4a₊a₋ = (|a| + a)(|a| - a) = |a|² - a² = 0`, which uses `|a|² = a²` and — as
+the solution does silently — that `|a| = √(a²)` commutes with `a`, both from
+**23VII**.  Finally `a₋a₊ = (a₊a₋)* = 0` "upon applying `(·)*`". -/
 theorem cstar_pos_neg_part_2 (a : 𝒜) (ha : IsSelfAdjoint a) :
     0 ≤ a⁺ ∧ 0 ≤ a⁻ ∧ a = a⁺ - a⁻ ∧ a⁺ * a⁻ = 0 ∧ a⁻ * a⁺ = 0 :=
   by
-    exact ⟨CFC.posPart_nonneg a, CFC.negPart_nonneg a, (CFC.posPart_sub_negPart a ha).symm,
-      CFC.posPart_mul_negPart a, CFC.negPart_mul_posPart a⟩
+    obtain ⟨hna, hap, -⟩ := cstar_pos_neg_part_1 a ha
+    have hplus : (2:ℕ) • a⁺ = CFC.abs a + a := (CFC.abs_add_self a ha).symm
+    have hminus : (2:ℕ) • a⁻ = CFC.abs a - a := (CFC.abs_sub_self a ha).symm
+    have hp0 : (0:𝒜) ≤ a⁺ := by
+      have h : (0:𝒜) ≤ (2:ℕ) • a⁺ := by
+        rw [hplus, ← sub_neg_eq_add, sub_nonneg]; exact neg_le.mp hna
+      have h2 := smul_nonneg (a := (2:ℝ)⁻¹) (by norm_num) h
+      rwa [half_two_nsmul] at h2
+    have hm0 : (0:𝒜) ≤ a⁻ := by
+      have h : (0:𝒜) ≤ (2:ℕ) • a⁻ := by
+        rw [hminus, sub_nonneg]; exact hap
+      have h2 := smul_nonneg (a := (2:ℝ)⁻¹) (by norm_num) h
+      rwa [half_two_nsmul] at h2
+    have hdiff : a = a⁺ - a⁻ := by
+      have h : (2:ℕ) • a = (2:ℕ) • (a⁺ - a⁻) := by
+        rw [smul_sub, hplus, hminus]; abel
+      calc a = ((2:ℝ)⁻¹) • ((2:ℕ) • a) := (half_two_nsmul a).symm
+        _ = ((2:ℝ)⁻¹) • ((2:ℕ) • (a⁺ - a⁻)) := by rw [h]
+        _ = a⁺ - a⁻ := half_two_nsmul _
+    have habs : CFC.abs a = CFC.sqrt (a ^ 2) := abs_eq_sqrt_sq a ha
+    have hsq : (0:𝒜) ≤ a ^ 2 := by
+      have h := star_mul_self_nonneg a
+      rwa [ha.star_eq, ← sq] at h
+    have hcomm : a * CFC.abs a = CFC.abs a * a := by
+      rw [habs]
+      exact (sqrt_commute (a ^ 2) hsq a ((pow_mul_comm' a 2).symm)).1
+    have habs2 : CFC.abs a * CFC.abs a = a ^ 2 := by
+      rw [habs, ← sq]
+      exact (sqrt_spec (a ^ 2) hsq).2.1
+    have hprod : (4:ℕ) • (a⁺ * a⁻) = 0 := by
+      have h : (4:ℕ) • (a⁺ * a⁻) = ((2:ℕ) • a⁺) * ((2:ℕ) • a⁻) := by
+        rw [smul_mul_assoc, mul_smul_comm, smul_smul]; norm_num
+      rw [h, hplus, hminus]
+      calc (CFC.abs a + a) * (CFC.abs a - a)
+          = CFC.abs a * CFC.abs a - a * a + (a * CFC.abs a - CFC.abs a * a) := by
+            noncomm_ring
+        _ = 0 := by rw [hcomm, habs2, ← sq]; abel
+    have hpm : a⁺ * a⁻ = 0 := by
+      have h4 : ((4:ℝ)⁻¹) • ((4:ℕ) • (a⁺ * a⁻)) = a⁺ * a⁻ := by
+        rw [← Nat.cast_smul_eq_nsmul ℝ, smul_smul]; norm_num
+      rw [← h4, hprod, smul_zero]
+    have hmp : a⁻ * a⁺ = 0 := by
+      have hps : IsSelfAdjoint a⁺ := .of_nonneg hp0
+      have hms : IsSelfAdjoint a⁻ := .of_nonneg hm0
+      have h := congrArg star hpm
+      rwa [star_mul, hps.star_eq, hms.star_eq, star_zero] at h
+    exact ⟨hp0, hm0, hdiff, hpm, hmp⟩
 
 /-- A `2 × 2` complex matrix as an operator on `ℂ²`. -/
 private noncomputable abbrev toCLM2 (M : Matrix (Fin 2) (Fin 2) ℂ) :

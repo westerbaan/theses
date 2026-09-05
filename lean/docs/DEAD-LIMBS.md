@@ -617,7 +617,7 @@ the same point, which is the 123I shape.
 | 156II | `paschke_injective` | `B/Dils/Paschke.lean:3638` | 48 | 2/3 |
 | 160IV | `hilbmod_projthm_3` | `B/Dils/SelfDual.lean:1499` | 45 | 2/3 |
 | 96III | `ncp_uwlim_2` | `A/Proc/Measurement.lean:1797` | 39 | 2/3 |
-| 23II | `sqrt_lemma_monotone` | `A/CStar/Positive.lean:7654` | 35 | 3/6 |
+| 23II | `sqrt_lemma_monotone` | `A/CStar/Positive.lean:7773` | 35 | 3/6 |
 | 154III | `existence_paschke_2` | `B/Dils/Paschke.lean:1373` | 32 | 13/14 |
 
 `existence_paschke_2` was read and is **not** a fingerprint: it is 154III part
