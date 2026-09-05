@@ -6246,7 +6246,7 @@ Theses.B.Dils.SelfDual|Theses.B.Dils.mvn_proj_sub|CStarAlgebra,Theses.VonNeumann
 Theses.B.Dils.SelfDual|Theses.B.Dils.ncpPreservesDirSups|CStarAlgebra,Theses.VonNeumannAlgebra
 Theses.B.Dils.SelfDual|Theses.B.Dils.nonneg_of_unDense|CStarAlgebra,Theses.VonNeumannAlgebra
 Theses.B.Dils.SelfDual|Theses.B.Dils.norm_le_of_le_ofReal_smul_one|CStarAlgebra
-Theses.B.Dils.SelfDual|Theses.B.Dils.norm_sum_mul_star_le|CStarAlgebra
+Theses.B.Dils.SelfDual|Theses.B.Dils.norm_sum_mul_star_le|CStarAlgebra,Theses.VonNeumannAlgebra
 Theses.B.Dils.SelfDual|Theses.B.Dils.normalish_step|CStarAlgebra,Theses.VonNeumannAlgebra,CStarModule,NormedAddCommGroup,CompleteSpace
 Theses.B.Dils.SelfDual|Theses.B.Dils.npTendsto_zero_of_unSeminorm|CStarAlgebra
 Theses.B.Dils.SelfDual|Theses.B.Dils.np_norm_sum_mul_star_le|CStarAlgebra
@@ -6322,7 +6322,6 @@ Theses.B.Dils.SelfDual|Theses.B.Dils.tendsto_iterated|
 Theses.B.Dils.SelfDual|Theses.B.Dils.tensor_bound_tSpan|CStarAlgebra,CStarModule,NormedAddCommGroup
 Theses.B.Dils.SelfDual|Theses.B.Dils.tensor_gram_bound|CStarAlgebra,CStarModule,NormedAddCommGroup,CompleteSpace
 Theses.B.Dils.SelfDual|Theses.B.Dils.tensor_gram_le|CStarAlgebra,Theses.VonNeumannAlgebra,CStarModule,NormedAddCommGroup
-Theses.B.Dils.SelfDual|Theses.B.Dils.tupleBInner_inner|CStarAlgebra
 Theses.B.Dils.SelfDual|Theses.B.Dils.unClosure_add|CStarAlgebra,CStarModule,NormedAddCommGroup
 Theses.B.Dils.SelfDual|Theses.B.Dils.unClosure_mono|CStarAlgebra,CStarModule,NormedAddCommGroup
 Theses.B.Dils.SelfDual|Theses.B.Dils.unClosure_neg|CStarAlgebra,CStarModule,NormedAddCommGroup

@@ -2010,75 +2010,13 @@ The author's solution (bsols.tex:1015–1065) proves the convergence of
 `∑ᵢ bᵢ*cᵢ` (mirrored: `∑ᵢ cᵢbᵢ*`) like this: the net of partial sums is
 norm-bounded and ultraweakly Cauchy — both by Cauchy–Schwarz — and so
 converges by bounded ultraweak completeness (**77I**.2, `vn_complete_2`).
-The two estimates are instances of the thesis's own Cauchy–Schwarz: for the
-norm bound, **142V**.1 for the ℬ-valued inner product `[x,y] = ∑ᵢ yᵢxᵢ*` of
-a *finite* tuple (bsols.tex:1023–1035); for the ω-estimate, Kadison's
-inequality `|ω(u*v)| ≤ ‖u‖_ω‖v‖_ω` (cstar.tex **30IV**,
-`norm_apply_star_mul_le`) termwise followed by the classical Cauchy–Schwarz
-(bsols.tex:1026–1033 and 1048–1055). -/
-
-/-- The ℬ-valued inner product `[x,y] = ∑ᵢ yᵢxᵢ*` on a *finite* tuple: the
-ℓ²-inner product of **161II** restricted to finitely many coordinates, where
-no convergence question arises.  It is what makes the solution's two
-Cauchy–Schwarz estimates instances of **142III**/**142V**. -/
-private noncomputable def tupleBInner (κ : Type v) [Fintype κ] :
-    BInner ℬ (κ → ℬ) where
-  inner x y := ∑ i, y i * star (x i)
-  inner_add_right x y z := by simp [add_mul, Finset.sum_add_distrib]
-  inner_op_smul_right b x y := by simp [Finset.mul_sum, mul_assoc]
-  inner_smul_right_complex c x y := by simp [Finset.smul_sum]
-  star_inner x y := by simp [star_sum, star_mul]
-  inner_self_nonneg x := Finset.sum_nonneg fun i _ => mul_star_self_nonneg _
-
-private theorem tupleBInner_inner (κ : Type v) [Fintype κ] (x y : κ → ℬ) :
-    (tupleBInner (ℬ := ℬ) κ).inner x y = ∑ i, y i * star (x i) := rfl
-
-/-- **161II**, the solution's first estimate (bsols.tex:1023–1035): with
-`∑ᵢ bᵢbᵢ* ≤ A` and `∑ᵢ cᵢcᵢ* ≤ B`, the partial sums of `∑ᵢ cᵢbᵢ*` are
-bounded by `(AB)^½`.  This is the thesis's Cauchy–Schwarz (**142V**.1)
-applied to the finite tuples `(bᵢ)_{i∈t}`, `(cᵢ)_{i∈t}`.
-
-(The solution derives norm-boundedness from `|f(∑_{i∈S} aᵢ*bᵢ)| ≤ (AB)^½`
-for every normal state `f` — the estimate itself is transcribed below, as
-`np_norm_sum_mul_star_le`.  What keeps that route out of *this* proof is
-the generality of the statement: it carries no `[VonNeumannAlgebra ℬ]`,
-and the passage from bounds at the np-functionals to a bound on the norm is
-a von Neumann fact twice over.  It needs order separation (**44XI**,
-`np_orderSeparating`); and it reaches the printed constant rather than twice
-it only through the polar decomposition **82I** — the supremum of `|f(x)|`
-over the states is the numerical radius, which for a non-normal `x` can be
-half the norm (`x = |0⟩⟨1|` in `M₂` has `sup_f |f(x)| = ½‖x‖`), so the
-estimate has to be applied not to `x = ∑_{i∈t} cᵢbᵢ*` but to
-`[x]*x = √(x*x)`, the tuple `([x]*cᵢ)` obeying the same hypothesis because
-`‖[x]‖ ≤ 1`.  The bound `(AB)^½` is correct over any C*-algebra, and
-Cauchy–Schwarz for the ℬ-valued inner product gives it directly, which is
-what is done here.) -/
-private theorem norm_sum_mul_star_le {ι : Type v} (b c : ι → ℬ) {A B : ℝ}
-    (hA : ∀ t : Finset ι, ‖∑ i ∈ t, b i * star (b i)‖ ≤ A)
-    (hB : ∀ t : Finset ι, ‖∑ i ∈ t, c i * star (c i)‖ ≤ B)
-    (t : Finset ι) :
-    ‖∑ i ∈ t, c i * star (b i)‖ ≤ Real.sqrt A * Real.sqrt B := by
-  classical
-  have h := module_seminorm_1 (tupleBInner (ℬ := ℬ) {x // x ∈ t})
-    (fun i : {x // x ∈ t} => b i) (fun i : {x // x ∈ t} => c i)
-  rw [tupleBInner_inner] at h
-  have e0 : (∑ i : {x // x ∈ t}, c i * star (b i)) = ∑ i ∈ t, c i * star (b i) :=
-    Finset.sum_coe_sort t fun i => c i * star (b i)
-  have eb : (∑ i : {x // x ∈ t}, b i * star (b i))
-      = ∑ i ∈ t, b i * star (b i) :=
-    Finset.sum_coe_sort t fun i => b i * star (b i)
-  have ec : (∑ i : {x // x ∈ t}, c i * star (c i))
-      = ∑ i ∈ t, c i * star (c i) :=
-    Finset.sum_coe_sort t fun i => c i * star (c i)
-  have e1 : (tupleBInner (ℬ := ℬ) {x // x ∈ t}).norm (fun i : {x // x ∈ t} => b i)
-      = Real.sqrt ‖∑ i ∈ t, b i * star (b i)‖ := by
-    rw [BInner.norm, tupleBInner_inner, eb]
-  have e2 : (tupleBInner (ℬ := ℬ) {x // x ∈ t}).norm (fun i : {x // x ∈ t} => c i)
-      = Real.sqrt ‖∑ i ∈ t, c i * star (c i)‖ := by
-    rw [BInner.norm, tupleBInner_inner, ec]
-  rw [e0, e1, e2] at h
-  exact h.trans (mul_le_mul (Real.sqrt_le_sqrt (hA t)) (Real.sqrt_le_sqrt (hB t))
-    (Real.sqrt_nonneg _) (Real.sqrt_nonneg _))
+The two estimates are instances of the thesis's own Cauchy–Schwarz, both of
+them taken at the np-functionals: Kadison's inequality `|ω(u*v)| ≤
+‖u‖_ω‖v‖_ω` (cstar.tex **30IV**, `norm_apply_star_mul_le`) termwise,
+followed by the classical Cauchy–Schwarz (bsols.tex:1026–1033 and
+1048–1055).  For the norm bound (bsols.tex:1023–1035) that estimate is read
+off at the norm through order separation (**44XI**, `np_orderSeparating`)
+and the polar decomposition (**82I**). -/
 
 /-- `ω(x) ≤ ‖x‖ ω(1)` for `x ≥ 0`, i.e. `x ≤ ‖x‖·1` under an np-functional:
 what turns the ℓ²-bound `∑ᵢ dᵢdᵢ* ≤ M` into the bound `∑ᵢ ω(dᵢdᵢ*) ≤ Mω(1)`
@@ -2124,6 +2062,184 @@ private theorem np_norm_sum_mul_star_le (ω : NPFunctional ℬ) {ι : Type v}
     _ ≤ _ := Real.sum_sqrt_mul_sqrt_le u
           (fun i => np_re_nonneg' ω (mul_star_self_nonneg _))
           (fun i => np_re_nonneg' ω (mul_star_self_nonneg _))
+
+/-- **161II**, the solution's first estimate (bsols.tex:1023–1035): with
+`∑ᵢ bᵢbᵢ* ≤ A` and `∑ᵢ cᵢcᵢ* ≤ B`, the partial sums of `∑ᵢ cᵢbᵢ*` are
+bounded by `(AB)^½`.
+
+This is the solution's own argument: it bounds `|f(∑_{i∈S} aᵢ*bᵢ)|` by
+`(AB)^½` for every normal state `f` — that is `np_norm_sum_mul_star_le`
+above, fed with `∑ᵢ ω(dᵢdᵢ*) ≤ Mω(1)` (`np_re_le_norm_mul`) — and reads the
+norm bound off that.  Passing from bounds at the np-functionals to a bound
+on the norm is a von Neumann fact twice over, which is why this is stated
+over a von Neumann algebra, as **161II** itself is: it needs order
+separation (**44XI**, `np_orderSeparating`), and it reaches the printed
+constant rather than twice it only through the polar decomposition
+(**82I**, `polar_decomposition`).  The supremum of `|f(x)|` over the states
+is the numerical radius, which for a non-normal `x` can be half the norm
+(`x = |0⟩⟨1|` in `M₂` has `sup_f |f(x)| = ½‖x‖`), so the estimate is applied
+not to `x = ∑_{i∈t} cᵢbᵢ*` but to `[x]*x = √(x*x)`, which is positive and
+has the same norm, the replacement tuple `([x]*cᵢ)` obeying the same
+hypothesis because `‖[x]‖ ≤ 1`.
+
+(The bound `(AB)^½` is in fact correct over any C*-algebra: Cauchy–Schwarz
+for the ℬ-valued inner product `[x,y] = ∑ᵢ yᵢxᵢ*` of the finite tuple
+(**142V**.1, `module_seminorm_1`) gives it directly, through a private
+`tupleBInner`, and that was this proof until 2026-09-05.  It was dropped
+with its helper under the §2.1 statement-alignment ruling: **161II** is
+printed over von Neumann algebras, the only consumer `hilbmod_el2_inner` is
+over one, and no declaration in the tree wants the C*-general form.) -/
+private theorem norm_sum_mul_star_le [VonNeumannAlgebra ℬ] {ι : Type v}
+    (b c : ι → ℬ) {A B : ℝ}
+    (hA : ∀ t : Finset ι, ‖∑ i ∈ t, b i * star (b i)‖ ≤ A)
+    (hB : ∀ t : Finset ι, ‖∑ i ∈ t, c i * star (c i)‖ ≤ B)
+    (t : Finset ι) :
+    ‖∑ i ∈ t, c i * star (b i)‖ ≤ Real.sqrt A * Real.sqrt B := by
+  classical
+  have hA0 : (0 : ℝ) ≤ A := le_trans (norm_nonneg _) (hA ∅)
+  have hB0 : (0 : ℝ) ≤ B := le_trans (norm_nonneg _) (hB ∅)
+  set x : ℬ := ∑ i ∈ t, c i * star (b i) with hxdef
+  obtain ⟨hspos, hssa, hss, -, -, hse⟩ := sqrt_star_self_spec x
+  obtain ⟨-, hus, -⟩ := Theses.A.VN.polar_decomposition x
+  obtain ⟨-, hstaru, -⟩ := polar_decomposition_1 x
+  have heproj : IsStarProjection (suppProj x) := (ceill_basic_1 x).1.1
+  set u : ℬ := Theses.A.VN.polar x with hudef
+  set s : ℬ := CFC.sqrt (star x * x) with hsdef
+  -- `‖[x]‖ ≤ 1`, because `[x]*[x] = ⌈x⌋` is a projection
+  have hu1 : ‖u‖ ≤ 1 := by
+    have h : ‖u‖ * ‖u‖ = ‖suppProj x‖ := by
+      rw [← CStarRing.norm_star_mul_self, hstaru]
+    have h2 : ‖suppProj x‖ ≤ 1 := IsStarProjection.norm_le _ heproj
+    nlinarith [norm_nonneg u]
+  -- `[x]*x = √(x*x)`, the positive element the estimate is applied to
+  have hux : star u * x = s := by
+    have hes : suppProj x * s = s := by
+      have h := congrArg star hse
+      rw [star_mul, hssa, heproj.isSelfAdjoint.star_eq] at h
+      exact h
+    calc star u * x = star u * (u * s) := by rw [← hus]
+      _ = (star u * u) * s := by noncomm_ring
+      _ = suppProj x * s := by rw [hstaru]
+      _ = s := hes
+  -- the replacement tuple `([x]*cᵢ)`, which obeys the same hypothesis
+  obtain ⟨c', hc'⟩ : ∃ c' : ι → ℬ, c' = fun i => star u * c i := ⟨_, rfl⟩
+  have hc'sum : ∑ i ∈ t, c' i * star (c' i)
+      = star u * (∑ i ∈ t, c i * star (c i)) * u := by
+    rw [Finset.mul_sum, Finset.sum_mul]
+    refine Finset.sum_congr rfl fun i _ => ?_
+    simp only [hc', star_mul, star_star]
+    noncomm_ring
+  have hSB : ‖∑ i ∈ t, c' i * star (c' i)‖ ≤ B := by
+    rw [hc'sum]
+    have h1 : ‖star u * (∑ i ∈ t, c i * star (c i)) * u‖
+        ≤ ‖star u‖ * ‖∑ i ∈ t, c i * star (c i)‖ * ‖u‖ :=
+      le_trans (norm_mul_le _ _)
+        (mul_le_mul_of_nonneg_right (norm_mul_le _ _) (norm_nonneg _))
+    rw [norm_star] at h1
+    refine h1.trans ?_
+    calc ‖u‖ * ‖∑ i ∈ t, c i * star (c i)‖ * ‖u‖
+        ≤ 1 * B * 1 :=
+          mul_le_mul (mul_le_mul hu1 (hB t) (norm_nonneg _) zero_le_one)
+            hu1 (norm_nonneg _) (by simpa using hB0)
+      _ = B := by ring
+  have hxs : s = ∑ i ∈ t, c' i * star (b i) := by
+    rw [← hux, hxdef, Finset.mul_sum]
+    exact Finset.sum_congr rfl fun i _ => by simp only [hc']; noncomm_ring
+  -- the solution's estimate at every np-functional
+  have hbound : ∀ ω : NPFunctional ℬ,
+      (ω s).re ≤ (Real.sqrt A * Real.sqrt B) * (ω 1).re := by
+    intro ω
+    have hω1 : 0 ≤ (ω 1).re := np_re_nonneg' ω zero_le_one
+    have hcc : ∑ i ∈ t, (ω (c' i * star (c' i))).re ≤ B * (ω 1).re := by
+      have hmap : ∑ i ∈ t, (ω (c' i * star (c' i))).re
+          = (ω (∑ i ∈ t, c' i * star (c' i))).re := by
+        have hms : ω (∑ i ∈ t, c' i * star (c' i))
+            = ∑ i ∈ t, ω (c' i * star (c' i)) :=
+          map_sum ω.toPositiveLinearMap _ t
+        rw [hms, Complex.re_sum]
+      rw [hmap]
+      refine le_trans (np_re_le_norm_mul ω
+        (Finset.sum_nonneg fun i _ => mul_star_self_nonneg _)) ?_
+      exact mul_le_mul_of_nonneg_right hSB hω1
+    have hbb : ∑ i ∈ t, (ω (b i * star (b i))).re ≤ A * (ω 1).re := by
+      have hmap : ∑ i ∈ t, (ω (b i * star (b i))).re
+          = (ω (∑ i ∈ t, b i * star (b i))).re := by
+        have hms : ω (∑ i ∈ t, b i * star (b i))
+            = ∑ i ∈ t, ω (b i * star (b i)) :=
+          map_sum ω.toPositiveLinearMap _ t
+        rw [hms, Complex.re_sum]
+      rw [hmap]
+      refine le_trans (np_re_le_norm_mul ω
+        (Finset.sum_nonneg fun i _ => mul_star_self_nonneg _)) ?_
+      exact mul_le_mul_of_nonneg_right (hA t) hω1
+    have h1 := np_norm_sum_mul_star_le ω b c' t
+    rw [← hxs] at h1
+    have h2 : (ω s).re ≤ ‖ω s‖ := by
+      simpa using RCLike.re_le_norm (K := ℂ) (ω s)
+    have h3 : Real.sqrt (∑ i ∈ t, (ω (c' i * star (c' i))).re)
+        * Real.sqrt (∑ i ∈ t, (ω (b i * star (b i))).re)
+        ≤ Real.sqrt (B * (ω 1).re) * Real.sqrt (A * (ω 1).re) :=
+      mul_le_mul (Real.sqrt_le_sqrt hcc) (Real.sqrt_le_sqrt hbb)
+        (Real.sqrt_nonneg _) (Real.sqrt_nonneg _)
+    have hsq : Real.sqrt ((ω 1).re) * Real.sqrt ((ω 1).re) = (ω 1).re :=
+      Real.mul_self_sqrt hω1
+    have h4 : Real.sqrt (B * (ω 1).re) * Real.sqrt (A * (ω 1).re)
+        = (Real.sqrt A * Real.sqrt B) * (ω 1).re := by
+      rw [Real.sqrt_mul hB0, Real.sqrt_mul hA0]
+      calc Real.sqrt B * Real.sqrt ((ω 1).re)
+            * (Real.sqrt A * Real.sqrt ((ω 1).re))
+          = Real.sqrt A * Real.sqrt B
+              * (Real.sqrt ((ω 1).re) * Real.sqrt ((ω 1).re)) := by ring
+        _ = Real.sqrt A * Real.sqrt B * (ω 1).re := by rw [hsq]
+    linarith
+  -- order separation turns that into `√(x*x) ≤ (AB)^½·1`
+  have hsle : s ≤ (Real.sqrt A * Real.sqrt B : ℝ) • (1 : ℬ) := by
+    refine np_orderSeparating s _ (IsSelfAdjoint.of_nonneg hspos) ?_ ?_
+    · exact (IsSelfAdjoint.all (Real.sqrt A * Real.sqrt B : ℝ)).smul
+        (IsSelfAdjoint.one ℬ)
+    · intro ω
+      have hsm : ((Real.sqrt A * Real.sqrt B : ℝ) • (1 : ℬ))
+          = (((Real.sqrt A * Real.sqrt B : ℝ) : ℂ)) • (1 : ℬ) :=
+        RCLike.real_smul_eq_coe_smul (K := ℂ) _ _
+      have hmap : ω ((((Real.sqrt A * Real.sqrt B : ℝ)) : ℂ) • (1 : ℬ))
+          = (((Real.sqrt A * Real.sqrt B : ℝ)) : ℂ) * ω 1 :=
+        map_smul ω.toPositiveLinearMap _ _
+      have h3 : ω ((Real.sqrt A * Real.sqrt B : ℝ) • (1 : ℬ))
+          = ((Real.sqrt A * Real.sqrt B : ℝ) : ℂ) * ω 1 := by rw [hsm, hmap]
+      rw [h3]
+      have hsnn : (0 : ℂ) ≤ ω s := by
+        have h := np_mono ω hspos
+        have h0 : ω (0 : ℬ) = 0 := map_zero ω.toPositiveLinearMap
+        rwa [h0] at h
+      have h1nn : (0 : ℂ) ≤ ω 1 := by
+        have h := np_mono ω (zero_le_one : (0 : ℬ) ≤ 1)
+        have h0 : ω (0 : ℬ) = 0 := map_zero ω.toPositiveLinearMap
+        rwa [h0] at h
+      have him : (ω s).im = 0 := ((Complex.le_def.mp hsnn).2).symm
+      have him1 : (ω 1).im = 0 := ((Complex.le_def.mp h1nn).2).symm
+      refine Complex.le_def.mpr ⟨?_, ?_⟩
+      · simpa [Complex.mul_re, him1] using hbound ω
+      · simp [Complex.mul_im, him1, him]
+  have hnorms : ‖s‖ ≤ Real.sqrt A * Real.sqrt B := by
+    have h1 := CStarAlgebra.norm_le_norm_of_nonneg_of_le hspos hsle
+    have h2 : ‖(Real.sqrt A * Real.sqrt B : ℝ) • (1 : ℬ)‖
+        = (Real.sqrt A * Real.sqrt B) * ‖(1 : ℬ)‖ := by
+      rw [norm_smul, Real.norm_eq_abs, abs_of_nonneg (by positivity)]
+    have h3 : ‖(1 : ℬ)‖ ≤ 1 := by
+      have h : ‖(1 : ℬ)‖ * ‖(1 : ℬ)‖ = ‖(1 : ℬ)‖ := by
+        have := CStarRing.norm_star_mul_self (x := (1 : ℬ))
+        simpa using this.symm
+      nlinarith [norm_nonneg (1 : ℬ)]
+    nlinarith [norm_nonneg s, mul_nonneg (Real.sqrt_nonneg A) (Real.sqrt_nonneg B)]
+  -- and `‖x‖ = ‖√(x*x)‖`
+  have hxn : ‖x‖ * ‖x‖ = ‖s‖ * ‖s‖ := by
+    rw [← CStarRing.norm_star_mul_self, ← CStarRing.norm_star_mul_self, hssa, hss]
+  have heq : ‖x‖ = ‖s‖ := by
+    rw [← Real.sqrt_mul_self (norm_nonneg x), hxn,
+      Real.sqrt_mul_self (norm_nonneg s)]
+  rw [heq]
+  exact hnorms
+
 
 /-- **161II** (`hilbmod-el2`, dils.tex:4610, Exercise), part 1: for
 ℓ²-summable tuples `(bᵢ)`, `(cᵢ)` over a von Neumann algebra the inner

@@ -359,13 +359,13 @@ Zero consumers.
 The argument it contains — the orthogonal projection `P` onto `D^⊥⊥` fixes the
 image, so `P` and `id` both factor `η` through itself, so the uniqueness half
 of the universal property gives `P = id` — is written out a **second** time
-inside `ext_tensor_dense` (**164II**.1, `SelfDual.lean:8694`), whose own doc
+inside `ext_tensor_dense` (**164II**.1, `SelfDual.lean:8840`), whose own doc
 comment says so in as many words:
 
 > "its place is taken by the projection argument of **163II**
 > (`selfdual_compl_defining_dense`)"
 
-and a **third** time inside `paschke_tprod_dense` (`SelfDual.lean:11239`), whose
+and a **third** time inside `paschke_tprod_dense` (`SelfDual.lean:11364`), whose
 doc says "This is the Paschke-module analogue of `selfdual_compl_defining_dense`
 (**163II**) and of `ext_tensor_dense` (**164II**.1), and it is the easiest of
 the three". A fourth site, the `section TensorDense` header at `:6245`, says
@@ -581,7 +581,7 @@ time under a different name.
 > estimate behind it, `|ω((⋁D−d)a)| ≤ ω(⋁D−d)^½ ω(a*(⋁D−d)a)^½`, whose second
 > factor is *eventually* bounded because `a*(⋁D−d)a` decreases."
 
-**166II** `ultranorm_continuity_ext_tensor` (`B/Dils/SelfDual.lean:10756`):
+**166II** `ultranorm_continuity_ext_tensor` (`B/Dils/SelfDual.lean:10881`):
 
 > "**166III** is the proof; transcribed below, with its appeal to **44III**
 > `vanishing_effects` replaced by the order estimate `Ω(⟨d,d⟩ ⊗ ⟨yα,yα⟩) ≤ M² ·
@@ -1340,7 +1340,7 @@ the filters, all unrowed by `lean_name`):
   injective ∗-homomorphism **onto the corner `e B(ℋ) e`**", and that is the
   only statement of it), `cornerAlg_one` (its section prose: "### The trivial
   corner — a sanity anchor for the definitions", i.e. class 2, a non-vacuity
-  check), `isPureMap_of_isFilter` (`Pure.lean:2388` names it beside
+  check), `isPureMap_of_isFilter` (`Pure.lean:2429` names it beside
   `isPureMap_of_isCorner`, and it is the filter half of **170I**'s "filters and
   corners are pure"), `vn_effObj_iso` (`VNExamples.lean:9388`, "what the eight
   examples downstream actually use is … the *uniqueness* statement
@@ -1441,9 +1441,9 @@ limb.
 | `hilb_tensor_basic_2` | 109IV.2 | `49a49f0` | 110III's proof, `A/Proc/Tensor.lean:679` |
 | `triple_tensor` | 119II | `49a49f0` | 119IV `isTensorProduct_assoc`, `Tensor.lean:11277` |
 | `perp_sharp_is_orth` | 213III | `49a49f0` | `B/Eff/Comparisons.lean:600` |
-| `ultranormcontstruct_smul` | 148III.3 | `027dc77` | `ext_tensor_dense` (164II.1), `B/Dils/SelfDual.lean:8694` |
+| `ultranormcontstruct_smul` | 148III.3 | `027dc77` | `ext_tensor_dense` (164II.1), `B/Dils/SelfDual.lean:8840` |
 | `dagger_of_iso_adjoint` | 216IX.1 | `0f036ad` | `B/Eff/Dagger.lean:528` |
-| `paschke_pure` | 171VII | `7aa3dc0` | `pure_iff_stinespring_surjective`, `B/Dils/Pure.lean:5388` |
+| `paschke_pure` | 171VII | `7aa3dc0` | `pure_iff_stinespring_surjective`, `B/Dils/Pure.lean:5432` |
 
 Three of these overturn a claim recorded in this file or in the brief for this
 sweep, and each overturning is the point of the check:
@@ -2438,3 +2438,37 @@ the check reads zero.  The lesson is not about that declaration: a document
 this size grows stale claims faster than a sweep can reread it, and the only
 claims worth stating in the sweep's structured form are the ones a script can
 keep honest.
+
+---
+
+## 15. The 2026-09-05 statement-alignment pass (§2.1)
+
+One limb, orphaned by a repair rather than found by a sweep.  Nothing was
+deleted; both entries below are recorded in the structured form
+`scripts/limb_check.py` reads, so the claims stay honest.
+
+* `isCornerFor_comp` (`Pure.lean:5259`, private, 171VII) — **confirmed dead
+  by direct count, 2026-09-05**, zero consumers: a grep over `Theses/` returns
+  exactly one line, its own declaration, and no prose mention either.  It is
+  the hand-rolled composition of two corners (first corner unital) that
+  `paschke_pure` needed as an elementary substitute for proc.tex **100III**.
+  The 171VII repair of 2026-09-05 removed the need: the backward half now runs
+  the print — ϱ surjective is a corner hence pure (**170IV**.1), `h` is pure
+  (**170II**.2), and φ is the composition of pure maps by `isPureMap_ncpComp`
+  — through the new `procIsPure_of_isPureMap` (`Pure.lean:2698`).  The 171VII
+  audit row that carried it (`bdils-pure-beff-states-effectalgebras.csv`
+  row 59) says so in its own status, and row 60's status flagged it stale on
+  the day of the repair.  **Kept, not deleted**, and deliberately: it is a
+  rowed declaration, and this pass's assignment was statements, not deletions.
+  A fixing round can take it — 27 lines, one row to retire with it.
+
+**Not a limb, for the record.** `tupleBInner` and `tupleBInner_inner`
+(`SelfDual.lean`, private, 161II) were **deleted** the same day, not recorded
+here, because they went with the route they served: `norm_sum_mul_star_le` was
+brought to **161II**'s printed setting (a `[VonNeumannAlgebra]` binder) and put
+on the printed proof, which does not use the ℬ-valued Cauchy–Schwarz of the
+finite tuple.  Same disposal as the five polarization helpers of 2026-08-26,
+and for the same reason: a private helper with no consumer but the route that
+has just been replaced is part of that route, not a limb of its own.
+`docs/status.txt` lost its one stale line (`tupleBInner_inner`) by hand;
+`tupleBInner` is a `def` and was never listed.

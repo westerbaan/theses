@@ -1924,11 +1924,33 @@ and both `z ↦ z·x` and `z ↦ z·y` factor it through `c`; so they agree, and
 and `w = w⁺ − w⁻` together with `c(w*) = (c w)*` to all of `A`.
 
 **No `[VonNeumannAlgebra]` binders**, where the exercise says "between von
-Neumann algebras" — deliberately: the argument above never uses them, and
-`pure_ncp_extreme` applies this lemma to the filter half of an `IsPureMap`,
-whose intermediate algebra is only a C\*-algebra.  Adding the exercise's
-binders would therefore break that call site.  (Restoring them for
-**169XI**.2 costs nothing and *is* done: see `dils_filter_basics_2a`.) -/
+Neumann algebras" — deliberately, and *both* binders are blocked, each by
+its own call sites (re-derived 2026-09-05):
+
+* the **domain** binder by the sites that apply this lemma to the filter
+  half of an `IsPureMap`, whose intermediate algebra `C` is only a
+  C\*-algebra — `procIsPure_of_isPureMap` and `pure_ncp_extreme` below, and
+  three more in `B/Eff/VNExamples.lean`;
+* the **codomain** binder by `dils_filter_basics_1_subunital` and
+  `procIsFilter_of_isFilterFor` below, which apply it to filters into a
+  bare `C`.
+
+(Restoring them where nothing is applied to a bare algebra costs nothing and
+*is* done: see `dils_filter_basics_2a`.)
+
+⚠️ **The binders are not the whole divergence, and not the half that
+matters.**  The hypothesis `IsFilter` is our *widened* predicate:
+`IsFilterFor` quantifies its test object over C\*-algebras where 169VIII's
+ncp-maps go between von Neumann algebras, so a filter in the printed sense
+need not satisfy it, and **this statement does not imply the printed
+point**.  Narrowing `IsFilterFor` would weaken the ten declarations that
+*prove* the predicate, so it is not ours to do: it is the open author
+question `docs/DECISIONS.md` §3.8.  (The one prerequisite §3.8 records for
+its option (a) is gone: `instVonNeumannAlgebraULiftComplex` in
+`SelfDual.lean` is upstream of this file, so `CU` can be tested against a
+narrowed predicate.)  Nothing false is proved: the statement is true as it
+stands, and is strictly stronger than the printed one in the binders and
+strictly weaker in the hypothesis. -/
 theorem dils_filters_injective (c : NCPMap A B) (hc : IsFilter c) :
     Function.Injective ⇑c := by
   obtain ⟨b, -, hc1, huniv⟩ := hc

@@ -6330,7 +6330,6 @@ Theses.B.Dils.SelfDual|Theses.B.Dils.tendsto_iterated|green
 Theses.B.Dils.SelfDual|Theses.B.Dils.tensor_bound_tSpan|green
 Theses.B.Dils.SelfDual|Theses.B.Dils.tensor_gram_bound|green
 Theses.B.Dils.SelfDual|Theses.B.Dils.tensor_gram_le|green
-Theses.B.Dils.SelfDual|Theses.B.Dils.tupleBInner_inner|green
 Theses.B.Dils.SelfDual|Theses.B.Dils.unClosure_add|green
 Theses.B.Dils.SelfDual|Theses.B.Dils.unClosure_mono|green
 Theses.B.Dils.SelfDual|Theses.B.Dils.unClosure_neg|green
