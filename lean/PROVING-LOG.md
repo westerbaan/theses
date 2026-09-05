@@ -31448,3 +31448,16 @@ wrong in 600 sampled rows across the three draws; ERRATA 175V.4.  The rows
 moved to `none` on 2026-08-26 under "a hint is not an argument" re-derived
 under the reversed convention (5 regraded, 13 correctly `none`).
 Seven sorries throughout.
+
+### Session 111, closing — the last "ours" rows
+
+The three `weaker` rows with a verdict of ours went through a §2.1 alignment
+pass: 191II's headline is stated (`emod_scalars`, `emod_separating_predicates`,
++1,069 lines; the recorded "needs a hoist" was wrong), 191VIII's three
+clauses on `Rngᵒᵖ` (+701; no triple-product equivalence needed), and 149IIb's
+"vice versa" as the standard module `H_𝒷` whose literature basis is no basis
+in the thesis's sense (+734; clause 2 needs a module predual the tree and
+Mathlib lack, re-costed past the bound).  190V's placeholder row was stale;
+170I is the print's citation through `procIsPure_of_isPureMap`; 33I opens
+with `left-benign`.  Every `weaker`/`differs` row now carries `left-thesis`,
+`left-ruling`, `left-benign`, or a re-costing past the bound.  Seven sorries.
