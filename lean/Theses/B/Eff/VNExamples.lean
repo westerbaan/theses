@@ -9491,7 +9491,7 @@ there, with `g = c_p ∘ γ ∘ π_e` and `p = g(1)`):
 
 * **Step A** (`b15_stepA`): for a projection `s` of the corner, 2-positivity
   of `γ` gives `γ(s)² ≤ γ(s)` (Kadison–Schwarz, `b15_ks`), and 2-positivity
-  of `g` at the pair `(√p, γ(s)√p)` gives the Schur inequality `b15_schur`,
+  of `g` at the pair `(√p, γ(s)√p)` gives the Schur inequality `ncp_schur_complement`,
   whose regularised form at the spectral projections of `q = g(g(1))`
   increases to `g(g(s)) ≤ g(Ψ)` with `Ψ = √p γ(s)² √p` (`b15_schur_limit`).
   Against `g(g(s)) = g(Ψ) + g(√p (γ(s) − γ(s)²) √p)` and faithfulness of `g`
@@ -9505,13 +9505,15 @@ there, with `g = c_p ∘ γ ∘ π_e` and `p = g(1)`):
   pure by **100III** again.
 
 Everything in this section is `private` and about an arbitrary von Neumann
-algebra; none of it is a point of either thesis.  Two groups of it belong
-upstream and should move there once they can be seen from here: the vector
-form of 2-positivity and its Schur complement (`b15_twoPos`, `b15_schur`)
-into `A/CStar/Matrices.lean` next to **34II** `n_pos`, and the `ε ↓ 0`
-monotone limit `⋁ₙ 1_{(1/(n+1),∞)}(q) = ⌈q⌉` with its conjugated form
-(`b15_isLUB_spectralProj`, `b15_conj_ceil_limit`) into
-`A/Proc/Measurement.lean` next to the spectral projections they are about. -/
+algebra; none of it is a point of either thesis.  Two groups of it have been
+moved upstream, where the doc comments and the audit rows for them now live:
+the vector form of 2-positivity and its Schur complement are
+`Theses.A.CStar.ncp_twoPos_vec` and `Theses.A.CStar.ncp_schur_complement`
+in `A/CStar/Matrices.lean`, next to **34II** `n_pos`; the `ε ↓ 0` monotone
+limit `⋁ₙ 1_{(1/(n+1),∞)}(q) = ⌈q⌉` and its conjugated form are
+`Theses.A.Proc.isLUB_spectralProj_ceil` and
+`Theses.A.Proc.ad_conj_ceil_limit` in `A/Proc/Measurement.lean`, next to the
+spectral projections of **104VII** they are about. -/
 
 section B15SquareRoot
 
@@ -9566,133 +9568,11 @@ private theorem b15_eq_zero_of_ncpCarrier (f : NCPMap A B) {x : A} (hx : 0 ≤ x
   exact (ceil_basic_3 x hx).mpr hc0
 
 omit [VonNeumannAlgebra A] [VonNeumannAlgebra B] in
-/-- The vector form of 2-positivity of an ncp-map (**34II**.2 at `N = 2`). -/
-private theorem b15_twoPos (f : NCPMap A B) (a : Fin 2 → A) (b : Fin 2 → B) :
-    0 ≤ ∑ i, ∑ j, star (b i) * f (star (a i) * a j) * b j := by
-  have h1 : ∀ M : CStarMatrix (Fin 2) (Fin 2) A, 0 ≤ M →
-      0 ≤ M.map ⇑(f.toCompletelyPositiveMap.toLinearMap) :=
-    fun M hM => f.toCompletelyPositiveMap.map_cstarMatrix_nonneg' 2 M hM
-  have h2 := ((Theses.A.CStar.n_pos (f.toCompletelyPositiveMap.toLinearMap) 2).out 0 1).mp h1
-  exact h2 a b
-
-/-- The spectral projections `1_{(1/(n+1),∞)}(q)` increase to `⌈q⌉`. -/
-private theorem b15_isLUB_spectralProj (q : A) (hq : 0 ≤ q) :
-    IsLUB (Set.range fun n : ℕ => spectralProj q ((n : ℝ) + 1)⁻¹) (ceil q) := by
-  have hmono : ∀ m n : ℕ, m ≤ n →
-      spectralProj q ((m : ℝ) + 1)⁻¹ ≤ spectralProj q ((n : ℝ) + 1)⁻¹ := by
-    intro m n hmn
-    refine spectralProj_mono hq ?_
-    have hm : (0 : ℝ) < (m : ℝ) + 1 := by positivity
-    have hle : ((m : ℝ) + 1) ≤ ((n : ℝ) + 1) := by
-      have : (m : ℝ) ≤ (n : ℝ) := by exact_mod_cast hmn
-      linarith
-    exact inv_anti₀ hm hle
-  set D : Set A := Set.range fun n : ℕ => spectralProj q ((n : ℝ) + 1)⁻¹ with hDdef
-  have hproj : ∀ x ∈ D, IsStarProjection x := by
-    rintro _ ⟨n, rfl⟩; exact spectralProj_isStarProjection _ _
-  have hne : D.Nonempty := ⟨_, ⟨0, rfl⟩⟩
-  have hdir : DirectedOn (· ≤ ·) D := by
-    rintro _ ⟨m, rfl⟩ _ ⟨n, rfl⟩
-    exact ⟨_, ⟨max m n, rfl⟩, hmono m _ (le_max_left m n), hmono n _ (le_max_right m n)⟩
-  have hlub := isLUB_projSup_of_directed D hproj hne hdir
-  have heq : projSup D = ceil q := by
-    refine projSup_eq hproj (ceil_spec hq).1 ?_ ?_
-    · rintro _ ⟨n, rfl⟩
-      refine Theses.A.VN.ceil_mono (specPos_nonneg q _) ?_
-      have ht : (0 : ℝ) ≤ ((n : ℝ) + 1)⁻¹ := by positivity
-      rw [specPos]
-      conv_rhs => rw [show (q : A) = cfc (fun r : ℝ => r) q from
-        (by rw [show (fun r : ℝ => r) = (id : ℝ → ℝ) from rfl]; exact (cfc_id ℝ q).symm)]
-      refine cfc_mono fun r hr => ?_
-      have h0 : (0 : ℝ) ≤ r := spectrum_nonneg_of_nonneg hq hr
-      exact max_le (by linarith) h0
-    · intro r hr hub
-      have hz : ∀ n : ℕ, ((1 : A) - r) * spectralProj q ((n : ℝ) + 1)⁻¹ = 0 := by
-        intro n
-        have hPn := spectralProj_isStarProjection q ((n : ℝ) + 1)⁻¹
-        have h1 : spectralProj q ((n : ℝ) + 1)⁻¹ * r = spectralProj q ((n : ℝ) + 1)⁻¹ :=
-          (hPn.le_iff_mul_eq_left hr).mp (hub _ ⟨n, rfl⟩)
-        have h2 : r * spectralProj q ((n : ℝ) + 1)⁻¹ = spectralProj q ((n : ℝ) + 1)⁻¹ := by
-          have h3 := congrArg star h1
-          rwa [star_mul, hPn.isSelfAdjoint.star_eq, hr.isSelfAdjoint.star_eq] at h3
-        rw [sub_mul, one_mul, h2, sub_self]
-      have hq0 := mul_eq_zero_of_mul_spectralProj_eq_zero hq hz
-      have h3 : r * q = q := by
-        rw [sub_mul, one_mul, sub_eq_zero] at hq0
-        exact hq0.symm
-      have hrq : q * r = q := by
-        have h4 := congrArg star h3
-        rw [star_mul, hr.isSelfAdjoint.star_eq,
-          (IsSelfAdjoint.of_nonneg hq).star_eq] at h4
-        exact h4
-      exact (ceil_le_iff hq hr).mpr hrq
-  rwa [heq] at hlub
-
-/-- The `ε ↓ 0` limit: if `c* E c ≤ C` for every spectral projection
-`E = 1_{(1/(n+1),∞)}(q)` of a positive `q`, then `c* ⌈q⌉ c ≤ C`. -/
-private theorem b15_conj_ceil_limit {q c C : A} (hq : 0 ≤ q)
-    (h : ∀ n : ℕ, star c * spectralProj q ((n : ℝ) + 1)⁻¹ * c ≤ C) :
-    star c * ceil q * c ≤ C := by
-  have hsa : ∀ n : ℕ, IsSelfAdjoint (spectralProj q ((n : ℝ) + 1)⁻¹) :=
-    fun n => (spectralProj_isStarProjection _ _).isSelfAdjoint
-  have hcsa : IsSelfAdjoint (ceil q) := (isStarProjection_ceil q).isSelfAdjoint
-  set D : Set (selfAdjoint A) :=
-    Set.range (fun n : ℕ => (⟨spectralProj q ((n : ℝ) + 1)⁻¹, hsa n⟩ : selfAdjoint A))
-    with hDdef
-  have hval : Subtype.val '' D = Set.range fun n : ℕ => spectralProj q ((n : ℝ) + 1)⁻¹ := by
-    ext x
-    constructor
-    · rintro ⟨_, ⟨n, rfl⟩, rfl⟩; exact ⟨n, rfl⟩
-    · rintro ⟨n, rfl⟩; exact ⟨⟨_, hsa n⟩, ⟨n, rfl⟩, rfl⟩
-  have hlubA : IsLUB (Set.range fun n : ℕ => spectralProj q ((n : ℝ) + 1)⁻¹) (ceil q) :=
-    b15_isLUB_spectralProj q hq
-  have hlubD : IsLUB D (⟨ceil q, hcsa⟩ : selfAdjoint A) := by
-    refine isLUB_of_isLUB_val ?_
-    rw [hval]
-    exact hlubA
-  have hne : D.Nonempty := ⟨_, ⟨0, rfl⟩⟩
-  have hdir : DirectedOn (· ≤ ·) D := by
-    rintro _ ⟨m, rfl⟩ _ ⟨n, rfl⟩
-    have hmono : ∀ i j : ℕ, i ≤ j →
-        spectralProj q ((i : ℝ) + 1)⁻¹ ≤ spectralProj q ((j : ℝ) + 1)⁻¹ := by
-      intro i j hij
-      refine spectralProj_mono hq ?_
-      have hm : (0 : ℝ) < (i : ℝ) + 1 := by positivity
-      have hle : ((i : ℝ) + 1) ≤ ((j : ℝ) + 1) := by
-        have : (i : ℝ) ≤ (j : ℝ) := by exact_mod_cast hij
-        linarith
-      exact inv_anti₀ hm hle
-    exact ⟨_, ⟨max m n, rfl⟩, hmono m _ (le_max_left m n), hmono n _ (le_max_right m n)⟩
-  have h3 : D.Nonempty ∧ DirectedOn (· ≤ ·) D ∧ BddAbove D := ⟨hne, hdir, ⟨_, hlubD.1⟩⟩
-  have hds : dirSup D h3 = (⟨ceil q, hcsa⟩ : selfAdjoint A) :=
-    (isLUB_dirSup D h3).unique hlubD
-  have hAD := ad_normal c D h3
-  rw [hds] at hAD
-  refine hAD.2 ?_
-  rintro _ ⟨_, ⟨n, rfl⟩, rfl⟩
-  exact h n
-
-omit [VonNeumannAlgebra A] [VonNeumannAlgebra B] in
-/-- The Schur complement inequality carried by 2-positivity. -/
-private theorem b15_schur (f : NCPMap A B) (a0 a1 : A) (x : B) :
-    star x * f (star a0 * a1) + f (star a1 * a0) * x - star x * f (star a0 * a0) * x
-      ≤ f (star a1 * a1) := by
-  have h := b15_twoPos f ![a0, a1] ![-x, 1]
-  have hsum : ∑ i, ∑ j, star (![-x, 1] i) * f (star (![a0, a1] i) * ![a0, a1] j) * ![-x, 1] j
-      = f (star a1 * a1) - (star x * f (star a0 * a1) + f (star a1 * a0) * x
-          - star x * f (star a0 * a0) * x) := by
-    rw [Fin.sum_univ_two, Fin.sum_univ_two, Fin.sum_univ_two]
-    simp only [Matrix.cons_val_zero, Matrix.cons_val_one, star_neg, star_one]
-    noncomm_ring
-  rw [hsum] at h
-  exact sub_nonneg.mp h
-
-omit [VonNeumannAlgebra A] [VonNeumannAlgebra B] in
 /-- Kadison--Schwarz at a projection for a *unital* ncp-map: `f(s)² ≤ f(s)`. -/
 private theorem b15_ks (f : NCPMap A B) (hu : (f 1 : B) = 1) (s : A) (hs : IsStarProjection s) :
     (f s : B) * f s ≤ f s := by
   have hfs : star (f s : B) = f s := by rw [← ncp_star f s, hs.isSelfAdjoint.star_eq]
-  have h := b15_schur f 1 s (f s)
+  have h := Theses.A.CStar.ncp_schur_complement f 1 s (f s)
   simp only [star_one, one_mul, mul_one, hs.isSelfAdjoint.star_eq,
     hs.isIdempotentElem.eq, hu, hfs] at h
   exact le_trans (le_of_eq (by noncomm_ring)) h
@@ -9886,7 +9766,7 @@ private theorem b15_schur_limit {q Psi T : A} (hq0 : 0 ≤ q) (hT : IsStarProjec
     rw [hid] at hS'
     refine le_trans ?_ hS'
     exact star_left_conjugate_le_conjugate hEle (T * sq)
-  have hlim := b15_conj_ceil_limit hq0 hstep
+  have hlim := ad_conj_ceil_limit hq0 hstep
   rw [hstarc] at hlim
   calc sq * T * ceil q * T * sq = sq * T * ceil q * (T * sq) := by noncomm_ring
     _ ≤ Psi := hlim
@@ -9961,7 +9841,7 @@ private theorem b15_stepA (g : NCPMap A A) (e : A) [Fact (IsStarProjection e)]
       rw [star_mul, hspstar, hGstar, ← hgS]
     have hA3 : star (G * sp) * (G * sp) = sp * (G * G) * sp := by
       rw [star_mul, hspstar, hGstar]; noncomm_ring
-    have h := b15_schur g sp (G * sp) x
+    have h := Theses.A.CStar.ncp_schur_complement g sp (G * sp) x
     rwa [hA0, hA1, hA2, hA3] at h
   -- the `ε ↓ 0` limit
   have hlim := b15_schur_limit hq0 hTproj (by rw [← hfS]; exact hSchur)
