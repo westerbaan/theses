@@ -31399,3 +31399,19 @@ wrappers filed under points that print nothing had inherited `faithful` from
 the result their content came from.  `faithful_check` still lists 45 leads
 (rows `faithful` on points with no argument and no solution); those are the
 next pass.
+
+### Session 110, later still — `U_a` is positive
+
+The 206III obligation for `EJAᵒᵖ` reduced, the row said, to a 2×2 Peirce
+Cauchy–Schwarz whose known proofs need Macdonald or the cone topology.  A
+mathematics pass found the pivot instead (`docs/EJA-U-positive.md`): for a
+primitive idempotent `g`, `U_{lq+m(1−q)} g` is a nonnegative multiple of an
+idempotent, by five Peirce relations; primitives generate the cone; and
+`U_{lc+a} = U_{lc+(1−c)} ∘ U_{c+a}` when `c∘a = 0` gives the general case by
+induction over the spectral values.  Adversarially reviewed (four repairs,
+none structural), then formalised: `ejaU`, `eja_U_nonneg'` (no hypothesis on
+`a` needed), `eja_U_mono`, and the Cauchy–Schwarz as a corollary — 906 lines,
+zero warnings.  The quotient and the ⋄-effectus assembly are the next round.
+Also this session: the twenty `left-forced`/`left-by-choice` routes revisited
+(four repaired, three `none`, three recorded grounds corrected), 161II
+aligned to the print's setting, the B15 auxiliaries moved upstream.
