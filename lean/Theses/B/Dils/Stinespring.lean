@@ -107,7 +107,7 @@ end GNSStinespring
 /-! ## Parsec 1360: completion into a Hilbert space
 
 **136I** (dils.tex:218): introduction — nothing to formalize.
-**136III**–**136VII** (dils.tex:252–397) are the proof of **136II**; they are
+**136III**–**136VII** (dils.tex:252–394) are the proof of **136II**; they are
 transcribed in the section below, whose private declarations carry the point
 numbers. -/
 
