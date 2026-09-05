@@ -27,8 +27,11 @@ is proved there.  The import is cheap and safe — `Measurement.lean` imports
 only `Theses.A.VN.NormalFunctionals`, which `B/Dils` already supplies, so it
 adds one file and a few seconds; and it is made **here only**, so the other
 eight files of `Theses/B/Eff/` still import `Theses.Common` alone.
-(`Measurement.lean` carries `sorry`s of its own, but the three results used
-from it — `sharp_multiplicative`, `gardner`, `pure_fundamental` — are
+(`Measurement.lean` carries one `sorry` of its own,
+`sequential_product_counterexample_3`; nothing used from it here touches
+that.  Since 2026-09-05 this file uses a good deal of `Measurement.lean` —
+`square_f`, `pure_fundamental`, `gardner`, `iso`, `sharp_multiplicative`, the
+spectral projections of 104VII — and every declaration here that does so is
 `#print axioms`-clean.)
 
 It also carries **195V.5**'s `L^∞` half (eff.tex:3275): the effect monoid on
@@ -40,11 +43,13 @@ this file.
 
 `vn_is_andthen_eff` (211IV) is proved in eff.tex:4859 from **105V**
 `positive-map-uniqueness` and **100III** `pure-fundamental`, both in
-`Theses/A/Proc/Measurement.lean` and both proved and axiom-clean there.  So
-211IV is not blocked by anything in `A/Proc`; what it waits on is
-**QUESTIONS B15**, a definitional mismatch between the two theses over
-whether the ⋄-self-adjoint square root of a ⋄-positive map is required to be
-pure.  See the doc comment on `vn_is_andthen_eff` itself.
+`Theses/A/Proc/Measurement.lean` and both proved and axiom-clean there.  What
+it used to wait on was **QUESTIONS B15**, a definitional mismatch between the
+two theses over whether the ⋄-self-adjoint square root of a ⋄-positive map is
+required to be pure; since 2026-09-05 it waits on nothing — in `vNᵒᵖ` the two
+classes provably agree (`docs/B15-S.md`, formalized in the section
+`B15SquareRoot` below).  B15 stays open as a question about the wording of
+206II.4 only.  See the doc comment on `vn_is_andthen_eff` itself.
 -/
 import Theses.B.Eff.Comparisons
 import Theses.B.Dils.Pure
@@ -9347,6 +9352,831 @@ theorem diamond_effectus_cvn :
     DiamondEffectus CWStarCPSU.{u}ᵒᵖ :=
   su_diamondEffectus_cvn
 
+/-! ## The ⋄-self-adjoint square root can be taken pure (**QUESTIONS B15**)
+
+The hypothesis `H` of `su_andThenEffectus_of_pure_sqrt` — that a
+⋄-self-adjoint `g` whose square is pure has a *pure* ⋄-self-adjoint square
+root with the same square — is discharged below with the witness `h := g`,
+by the Theorem of `docs/B15-S.md`:
+
+> an ncp-endomap `g` of a von Neumann algebra with `⌈g⌉ = ⌈g(1)⌉` whose
+> square `g ∘ g` is pure is itself pure.
+
+Its carrier hypothesis is **103III**.1 *without* that Exercise's purity
+clause — only `g^⋄ = g_⋄` is used in its proof — which
+eff-⋄-self-adjointness supplies through
+`su_contraposed_of_diamondSelfAdjoint`.  The proof is that document's two
+steps, run inside the corner `e𝒜e` for `e = ⌈g⌉` through the bracket
+`γ = [g]` of **98IX** `square_f` (an ncpu, faithful endomap of the corner
+there, with `g = c_p ∘ γ ∘ π_e` and `p = g(1)`):
+
+* **Step A** (`b15_stepA`): for a projection `s` of the corner, 2-positivity
+  of `γ` gives `γ(s)² ≤ γ(s)` (Kadison–Schwarz, `b15_ks`), and 2-positivity
+  of `g` at the pair `(√p, γ(s)√p)` gives the Schur inequality `b15_schur`,
+  whose regularised form at the spectral projections of `q = g(g(1))`
+  increases to `g(g(s)) ≤ g(Ψ)` with `Ψ = √p γ(s)² √p` (`b15_schur_limit`).
+  Against `g(g(s)) = g(Ψ) + g(√p (γ(s) − γ(s)²) √p)` and faithfulness of `g`
+  on the corner this forces `γ(s) = γ(s)²`; **99II** `gardner` then makes
+  `γ` nmiu.
+* **Step B** (`b15_stepB`): `γ` nmiu gives `g ∘ g = ad_a ∘ γ²` with
+  `a = √γ(p)·√p`, whose two carriers `⌈a*a⌉ = ⌈q⌉` and `⌈aa*⌉ = ⌈γ(p)⌉` are
+  both `e`; so the polar phase `[a]` is a *unitary* of the corner and
+  `γ² = [a](·)[a]* ∘ [g∘g]`.  Purity of `g ∘ g` makes `[g∘g]` an
+  isomorphism (**100III**), hence so is `γ²`, hence so is `γ`, and `g` is
+  pure by **100III** again.
+
+Everything in this section is `private` and about an arbitrary von Neumann
+algebra; none of it is a point of either thesis.  Two groups of it belong
+upstream and should move there once they can be seen from here: the vector
+form of 2-positivity and its Schur complement (`b15_twoPos`, `b15_schur`)
+into `A/CStar/Matrices.lean` next to **34II** `n_pos`, and the `ε ↓ 0`
+monotone limit `⋁ₙ 1_{(1/(n+1),∞)}(q) = ⌈q⌉` with its conjugated form
+(`b15_isLUB_spectralProj`, `b15_conj_ceil_limit`) into
+`A/Proc/Measurement.lean` next to the spectral projections they are about. -/
+
+section B15SquareRoot
+
+open scoped ComplexOrder CStarAlgebra
+open Theses.A.VN Theses.A.Proc
+
+noncomputable section
+
+variable {A : Type u} [CStarAlgebra A] [PartialOrder A] [StarOrderedRing A]
+  [Theses.VonNeumannAlgebra A]
+variable {B : Type u} [CStarAlgebra B] [PartialOrder B] [StarOrderedRing B]
+  [Theses.VonNeumannAlgebra B]
+
+/-- Corners of equal projections are canonically isomorphic (as ncp-maps). -/
+private theorem b15_exists_cornerTransport (e e' : A) [Fact (IsStarProjection e)]
+    [Fact (IsStarProjection e')] (h : e = e') :
+    ∃ τ : NCPMap (Corner A e) (Corner A e'), ∀ x : Corner A e, (τ x).val = x.val := by
+  refine ⟨ncpComp (cornerProjMap e').toNCPMap (cornerIncl e).toNCPMap, fun x => ?_⟩
+  rw [ncpComp_apply, cornerProjMap_apply, cornerIncl_apply, ← h]
+  exact x.property
+
+/-- A positive element below the carrier that is killed by the map is zero. -/
+private theorem b15_eq_zero_of_ncpCarrier (f : NCPMap A B) {x : A} (hx : 0 ≤ x)
+    (hxe : ceil x ≤ ncpCarrier f) (h : (f x : B) = 0) : x = 0 := by
+  have hFF : ∀ a : A, (PositiveLinearMap.ofClass f.toCompletelyPositiveMap a : B) = f a :=
+    fun _ => rfl
+  have hceil := ncp_ceil (PositiveLinearMap.ofClass f.toCompletelyPositiveMap)
+    f.preservesDirSups' x hx
+  simp only [hFF] at hceil
+  rw [h, ceil_zero] at hceil
+  have hfs : (f (ceil x) : B) = 0 :=
+    (ceil_basic_3 _ (ncpMap_nonneg f (isStarProjection_ceil x).nonneg)).mpr hceil.symm
+  have hcspec : IsStarProjection (ncpCarrier f) ∧ (f (1 - ncpCarrier f) : B) = 0 ∧
+      ∀ q : A, IsStarProjection q → f (1 - q) = 0 → ncpCarrier f ≤ q :=
+    (exists_ncpCarrier f).choose_spec.1
+  have hsp := isStarProjection_ceil x
+  have hle : ncpCarrier f ≤ 1 - ceil x := by
+    refine hcspec.2.2 (1 - ceil x) hsp.one_sub ?_
+    have h4 : (1 : A) - (1 - ceil x) = ceil x := by abel
+    rw [h4]; exact hfs
+  have hc0 : ceil x = 0 := by
+    have hconj := star_left_conjugate_le_conjugate (hxe.trans hle) (ceil x)
+    rw [hsp.isSelfAdjoint.star_eq] at hconj
+    have hL : ceil x * ceil x * ceil x = ceil x := by
+      rw [hsp.isIdempotentElem.eq, hsp.isIdempotentElem.eq]
+    have hR : ceil x * (1 - ceil x) * ceil x = 0 := by
+      have h5 : ceil x * (1 - ceil x) * ceil x
+          = ceil x * ceil x - ceil x * ceil x * ceil x := by noncomm_ring
+      rw [h5, hL, hsp.isIdempotentElem.eq, sub_self]
+    rw [hL, hR] at hconj
+    exact le_antisymm hconj hsp.nonneg
+  exact (ceil_basic_3 x hx).mpr hc0
+
+omit [VonNeumannAlgebra A] [VonNeumannAlgebra B] in
+/-- The vector form of 2-positivity of an ncp-map (**34II**.2 at `N = 2`). -/
+private theorem b15_twoPos (f : NCPMap A B) (a : Fin 2 → A) (b : Fin 2 → B) :
+    0 ≤ ∑ i, ∑ j, star (b i) * f (star (a i) * a j) * b j := by
+  have h1 : ∀ M : CStarMatrix (Fin 2) (Fin 2) A, 0 ≤ M →
+      0 ≤ M.map ⇑(f.toCompletelyPositiveMap.toLinearMap) :=
+    fun M hM => f.toCompletelyPositiveMap.map_cstarMatrix_nonneg' 2 M hM
+  have h2 := ((Theses.A.CStar.n_pos (f.toCompletelyPositiveMap.toLinearMap) 2).out 0 1).mp h1
+  exact h2 a b
+
+/-- The spectral projections `1_{(1/(n+1),∞)}(q)` increase to `⌈q⌉`. -/
+private theorem b15_isLUB_spectralProj (q : A) (hq : 0 ≤ q) :
+    IsLUB (Set.range fun n : ℕ => spectralProj q ((n : ℝ) + 1)⁻¹) (ceil q) := by
+  have hmono : ∀ m n : ℕ, m ≤ n →
+      spectralProj q ((m : ℝ) + 1)⁻¹ ≤ spectralProj q ((n : ℝ) + 1)⁻¹ := by
+    intro m n hmn
+    refine spectralProj_mono hq ?_
+    have hm : (0 : ℝ) < (m : ℝ) + 1 := by positivity
+    have hle : ((m : ℝ) + 1) ≤ ((n : ℝ) + 1) := by
+      have : (m : ℝ) ≤ (n : ℝ) := by exact_mod_cast hmn
+      linarith
+    exact inv_anti₀ hm hle
+  set D : Set A := Set.range fun n : ℕ => spectralProj q ((n : ℝ) + 1)⁻¹ with hDdef
+  have hproj : ∀ x ∈ D, IsStarProjection x := by
+    rintro _ ⟨n, rfl⟩; exact spectralProj_isStarProjection _ _
+  have hne : D.Nonempty := ⟨_, ⟨0, rfl⟩⟩
+  have hdir : DirectedOn (· ≤ ·) D := by
+    rintro _ ⟨m, rfl⟩ _ ⟨n, rfl⟩
+    exact ⟨_, ⟨max m n, rfl⟩, hmono m _ (le_max_left m n), hmono n _ (le_max_right m n)⟩
+  have hlub := isLUB_projSup_of_directed D hproj hne hdir
+  have heq : projSup D = ceil q := by
+    refine projSup_eq hproj (ceil_spec hq).1 ?_ ?_
+    · rintro _ ⟨n, rfl⟩
+      refine Theses.A.VN.ceil_mono (specPos_nonneg q _) ?_
+      have ht : (0 : ℝ) ≤ ((n : ℝ) + 1)⁻¹ := by positivity
+      rw [specPos]
+      conv_rhs => rw [show (q : A) = cfc (fun r : ℝ => r) q from
+        (by rw [show (fun r : ℝ => r) = (id : ℝ → ℝ) from rfl]; exact (cfc_id ℝ q).symm)]
+      refine cfc_mono fun r hr => ?_
+      have h0 : (0 : ℝ) ≤ r := spectrum_nonneg_of_nonneg hq hr
+      exact max_le (by linarith) h0
+    · intro r hr hub
+      have hz : ∀ n : ℕ, ((1 : A) - r) * spectralProj q ((n : ℝ) + 1)⁻¹ = 0 := by
+        intro n
+        have hPn := spectralProj_isStarProjection q ((n : ℝ) + 1)⁻¹
+        have h1 : spectralProj q ((n : ℝ) + 1)⁻¹ * r = spectralProj q ((n : ℝ) + 1)⁻¹ :=
+          (hPn.le_iff_mul_eq_left hr).mp (hub _ ⟨n, rfl⟩)
+        have h2 : r * spectralProj q ((n : ℝ) + 1)⁻¹ = spectralProj q ((n : ℝ) + 1)⁻¹ := by
+          have h3 := congrArg star h1
+          rwa [star_mul, hPn.isSelfAdjoint.star_eq, hr.isSelfAdjoint.star_eq] at h3
+        rw [sub_mul, one_mul, h2, sub_self]
+      have hq0 := mul_eq_zero_of_mul_spectralProj_eq_zero hq hz
+      have h3 : r * q = q := by
+        rw [sub_mul, one_mul, sub_eq_zero] at hq0
+        exact hq0.symm
+      have hrq : q * r = q := by
+        have h4 := congrArg star h3
+        rw [star_mul, hr.isSelfAdjoint.star_eq,
+          (IsSelfAdjoint.of_nonneg hq).star_eq] at h4
+        exact h4
+      exact (ceil_le_iff hq hr).mpr hrq
+  rwa [heq] at hlub
+
+/-- The `ε ↓ 0` limit: if `c* E c ≤ C` for every spectral projection
+`E = 1_{(1/(n+1),∞)}(q)` of a positive `q`, then `c* ⌈q⌉ c ≤ C`. -/
+private theorem b15_conj_ceil_limit {q c C : A} (hq : 0 ≤ q)
+    (h : ∀ n : ℕ, star c * spectralProj q ((n : ℝ) + 1)⁻¹ * c ≤ C) :
+    star c * ceil q * c ≤ C := by
+  have hsa : ∀ n : ℕ, IsSelfAdjoint (spectralProj q ((n : ℝ) + 1)⁻¹) :=
+    fun n => (spectralProj_isStarProjection _ _).isSelfAdjoint
+  have hcsa : IsSelfAdjoint (ceil q) := (isStarProjection_ceil q).isSelfAdjoint
+  set D : Set (selfAdjoint A) :=
+    Set.range (fun n : ℕ => (⟨spectralProj q ((n : ℝ) + 1)⁻¹, hsa n⟩ : selfAdjoint A))
+    with hDdef
+  have hval : Subtype.val '' D = Set.range fun n : ℕ => spectralProj q ((n : ℝ) + 1)⁻¹ := by
+    ext x
+    constructor
+    · rintro ⟨_, ⟨n, rfl⟩, rfl⟩; exact ⟨n, rfl⟩
+    · rintro ⟨n, rfl⟩; exact ⟨⟨_, hsa n⟩, ⟨n, rfl⟩, rfl⟩
+  have hlubA : IsLUB (Set.range fun n : ℕ => spectralProj q ((n : ℝ) + 1)⁻¹) (ceil q) :=
+    b15_isLUB_spectralProj q hq
+  have hlubD : IsLUB D (⟨ceil q, hcsa⟩ : selfAdjoint A) := by
+    refine isLUB_of_isLUB_val ?_
+    rw [hval]
+    exact hlubA
+  have hne : D.Nonempty := ⟨_, ⟨0, rfl⟩⟩
+  have hdir : DirectedOn (· ≤ ·) D := by
+    rintro _ ⟨m, rfl⟩ _ ⟨n, rfl⟩
+    have hmono : ∀ i j : ℕ, i ≤ j →
+        spectralProj q ((i : ℝ) + 1)⁻¹ ≤ spectralProj q ((j : ℝ) + 1)⁻¹ := by
+      intro i j hij
+      refine spectralProj_mono hq ?_
+      have hm : (0 : ℝ) < (i : ℝ) + 1 := by positivity
+      have hle : ((i : ℝ) + 1) ≤ ((j : ℝ) + 1) := by
+        have : (i : ℝ) ≤ (j : ℝ) := by exact_mod_cast hij
+        linarith
+      exact inv_anti₀ hm hle
+    exact ⟨_, ⟨max m n, rfl⟩, hmono m _ (le_max_left m n), hmono n _ (le_max_right m n)⟩
+  have h3 : D.Nonempty ∧ DirectedOn (· ≤ ·) D ∧ BddAbove D := ⟨hne, hdir, ⟨_, hlubD.1⟩⟩
+  have hds : dirSup D h3 = (⟨ceil q, hcsa⟩ : selfAdjoint A) :=
+    (isLUB_dirSup D h3).unique hlubD
+  have hAD := ad_normal c D h3
+  rw [hds] at hAD
+  refine hAD.2 ?_
+  rintro _ ⟨_, ⟨n, rfl⟩, rfl⟩
+  exact h n
+
+omit [VonNeumannAlgebra A] [VonNeumannAlgebra B] in
+/-- The Schur complement inequality carried by 2-positivity. -/
+private theorem b15_schur (f : NCPMap A B) (a0 a1 : A) (x : B) :
+    star x * f (star a0 * a1) + f (star a1 * a0) * x - star x * f (star a0 * a0) * x
+      ≤ f (star a1 * a1) := by
+  have h := b15_twoPos f ![a0, a1] ![-x, 1]
+  have hsum : ∑ i, ∑ j, star (![-x, 1] i) * f (star (![a0, a1] i) * ![a0, a1] j) * ![-x, 1] j
+      = f (star a1 * a1) - (star x * f (star a0 * a1) + f (star a1 * a0) * x
+          - star x * f (star a0 * a0) * x) := by
+    rw [Fin.sum_univ_two, Fin.sum_univ_two, Fin.sum_univ_two]
+    simp only [Matrix.cons_val_zero, Matrix.cons_val_one, star_neg, star_one]
+    noncomm_ring
+  rw [hsum] at h
+  exact sub_nonneg.mp h
+
+omit [VonNeumannAlgebra A] [VonNeumannAlgebra B] in
+/-- Kadison--Schwarz at a projection for a *unital* ncp-map: `f(s)² ≤ f(s)`. -/
+private theorem b15_ks (f : NCPMap A B) (hu : (f 1 : B) = 1) (s : A) (hs : IsStarProjection s) :
+    (f s : B) * f s ≤ f s := by
+  have hfs : star (f s : B) = f s := by rw [← ncp_star f s, hs.isSelfAdjoint.star_eq]
+  have h := b15_schur f 1 s (f s)
+  simp only [star_one, one_mul, mul_one, hs.isSelfAdjoint.star_eq,
+    hs.isIdempotentElem.eq, hu, hfs] at h
+  exact le_trans (le_of_eq (by noncomm_ring)) h
+
+/-- The bracket `[f]` of **98IX** `square_f`, transported to an endomap of the
+corner `e𝒜e` for a map whose carrier and the carrier of whose unit value are
+both `e`: an ncp-map `e𝒜e → e𝒜e` with the factorisation `f = c_{f(1)} ∘ [f]`,
+its unitality, and the fact (**100III** `pure_fundamental`) that `f` is pure
+exactly when it is an isomorphism. -/
+private theorem b15_exists_bracketEndo (f : NCPMap A A) (e : A) [Fact (IsStarProjection e)]
+    (h1 : ncpCarrier f = e) (h2 : ceil (f 1) = e) :
+    ∃ b : NCPMap (Corner A e) (Corner A e),
+      (∀ x : Corner A e, (f x.val : A)
+          = CFC.sqrt (f 1) * (b x).val * CFC.sqrt (f 1)) ∧
+        b 1 = 1 ∧
+        (Theses.A.Proc.IsPure f ↔ ∃ b' : NCPMap (Corner A e) (Corner A e),
+          (∀ x, b' (b x) = x) ∧ ∀ y, b (b' y) = y) := by
+  obtain ⟨itr, hitr⟩ := b15_exists_cornerTransport e (ncpCarrier f) h1.symm
+  obtain ⟨itr', hitr'⟩ := b15_exists_cornerTransport (ncpCarrier f) e h1
+  obtain ⟨ktr, hktr⟩ := b15_exists_cornerTransport (ceil (f 1)) e h2
+  obtain ⟨ktr', hktr'⟩ := b15_exists_cornerTransport e (ceil (f 1)) h2.symm
+  have hii' : ∀ x : Corner A (ncpCarrier f), itr (itr' x) = x :=
+    fun x => Corner.val_injective (by rw [hitr, hitr'])
+  have hi'i : ∀ x : Corner A e, itr' (itr x) = x :=
+    fun x => Corner.val_injective (by rw [hitr', hitr])
+  have hkk' : ∀ y : Corner A e, ktr (ktr' y) = y :=
+    fun y => Corner.val_injective (by rw [hktr, hktr'])
+  obtain ⟨b, hb⟩ : ∃ b : NCPMap (Corner A e) (Corner A e),
+      ∀ x : Corner A e, (b x).val = (sqBracket f (itr x)).val :=
+    ⟨ncpComp ktr (ncpComp (sqBracket f) itr), fun x => by
+      rw [ncpComp_apply, ncpComp_apply, hktr]⟩
+  refine ⟨b, ?_, ?_, ?_⟩
+  · intro x
+    have hprojx : (cornerProjMap (ncpCarrier f)).toNCPMap x.val = itr x :=
+      Corner.val_injective (by rw [cornerProjMap_apply, hitr, h1]; exact x.property)
+    have h := (square_f f).1 x.val
+    rw [hprojx, stdFilter_apply] at h
+    rw [h, hb]
+  · refine Corner.val_injective ?_
+    have hi1 : itr (1 : Corner A e) = 1 :=
+      Corner.val_injective (by rw [hitr]; simp only [Corner.val_one]; exact h1.symm)
+    rw [hb, hi1, (square_f f).2.2.1]
+    simp only [Corner.val_one]
+    exact h2
+  · constructor
+    · intro hpure
+      obtain ⟨-, hinv, hinv1, hinv2⟩ := ((pure_fundamental f).out 0 2).mp hpure
+      refine ⟨ncpComp itr' (ncpComp hinv ktr'), fun x => ?_, fun y => ?_⟩
+      · rw [ncpComp_apply, ncpComp_apply]
+        have hx : ktr' (b x) = sqBracket f (itr x) :=
+          Corner.val_injective (by rw [hktr', hb])
+        rw [hx, hinv1, hi'i]
+      · rw [ncpComp_apply, ncpComp_apply]
+        refine Corner.val_injective ?_
+        rw [hb, hii', hinv2, hktr']
+    · rintro ⟨b', hb'1, hb'2⟩
+      have hcond : sqBracket f 1 = 1 ∧
+          ∃ h : NCPMap (Corner A (ceil (f 1))) (Corner A (ncpCarrier f)),
+            (∀ x, h (sqBracket f x) = x) ∧ ∀ y, sqBracket f (h y) = y := by
+        refine ⟨(square_f f).2.2.1, ncpComp itr (ncpComp b' ktr), fun x => ?_, fun y => ?_⟩
+        · rw [ncpComp_apply, ncpComp_apply]
+          have hbx : ktr (sqBracket f x) = b (itr' x) :=
+            Corner.val_injective (by rw [hktr, hb, hii'])
+          rw [hbx, hb'1, hii']
+        · rw [ncpComp_apply, ncpComp_apply]
+          refine Corner.val_injective ?_
+          rw [← hb, hb'2, hktr]
+      exact ((pure_fundamental f).out 2 0).mp hcond
+
+/-- The regularised Schur bound, taken to the limit.  If the Schur inequality
+`x*F + Fx − x*qx ≤ Ψ` holds for every `x`, and `F = √q T √q` for a projection
+`T`, then `√q T ⌈q⌉ T √q ≤ Ψ`. -/
+private theorem b15_schur_limit {q Psi T : A} (hq0 : 0 ≤ q) (hT : IsStarProjection T)
+    (hS : ∀ x : A, star x * (CFC.sqrt q * T * CFC.sqrt q)
+      + (CFC.sqrt q * T * CFC.sqrt q) * x - star x * q * x ≤ Psi) :
+    CFC.sqrt q * T * ceil q * T * CFC.sqrt q ≤ Psi := by
+  set sq : A := CFC.sqrt q with hsqdef
+  have hsq0 : (0 : A) ≤ sq := CFC.sqrt_nonneg q
+  have hsqs : star sq = sq := (IsSelfAdjoint.of_nonneg hsq0).star_eq
+  have hsqsq : sq * sq = q := CFC.sqrt_mul_sqrt_self q hq0
+  have hqsq : q * sq = sq * q := by
+    calc q * sq = sq * sq * sq := by rw [hsqsq]
+      _ = sq * (sq * sq) := by noncomm_ring
+      _ = sq * q := by rw [hsqsq]
+  have hTs : star T = T := hT.isSelfAdjoint.star_eq
+  have hstarc : star (T * sq) = sq * T := by rw [star_mul, hsqs, hTs]
+  have hstep : ∀ n : ℕ,
+      star (T * sq) * spectralProj q ((n : ℝ) + 1)⁻¹ * (T * sq) ≤ Psi := by
+    intro n
+    have hd : (0 : ℝ) < ((n : ℝ) + 1)⁻¹ := by positivity
+    set d : ℝ := ((n : ℝ) + 1)⁻¹ with hddef
+    set si : A := specInv q d with hsidef
+    set E : A := spectralProj q d with hEdef
+    have hEproj : IsStarProjection E := spectralProj_isStarProjection q d
+    have hsi0 : (0 : A) ≤ si := specInv_nonneg q hd
+    have hsisq : si * sq = sq * si := (specInv_comm q d sq hqsq).symm
+    have hsiq : si * q = q * si := (specInv_comm q d q rfl).symm
+    have hsis : star si = si := (IsSelfAdjoint.of_nonneg hsi0).star_eq
+    have hcont : Continuous (fun r : ℝ => (max r d)⁻¹) :=
+      Continuous.inv₀ (by fun_prop) fun r => ne_of_gt (lt_of_lt_of_le hd (le_max_right r d))
+    -- `m = 1/max(q,d) · q` is a positive contraction which is `1` on `E`
+    have hm0 : (0 : A) ≤ si * q := by
+      rw [hsiq]; exact Theses.A.CStar.sqrt_1 q si hq0 hsi0 hsiq.symm
+    have hmsa : IsSelfAdjoint (si * q) := IsSelfAdjoint.of_nonneg hm0
+    have h1 : si * q = cfc (fun r : ℝ => (max r d)⁻¹ * r) q := by
+      rw [cfc_mul (fun r : ℝ => (max r d)⁻¹) (fun r : ℝ => r) q hcont.continuousOn
+        (by fun_prop), hsidef, specInv,
+        show (fun r : ℝ => r) = (id : ℝ → ℝ) from rfl, cfc_id ℝ q]
+    have hmle : si * q ≤ (1 : A) := by
+      refine (CStarAlgebra.norm_le_one_iff_of_nonneg _ hm0).mp ?_
+      rw [h1]
+      refine norm_cfc_le zero_le_one fun r hr => ?_
+      have hr0 : (0 : ℝ) ≤ r := spectrum_nonneg_of_nonneg hq0 hr
+      have hmx : (0 : ℝ) < max r d := lt_of_lt_of_le hd (le_max_right r d)
+      have hle : (max r d)⁻¹ * r ≤ (max r d)⁻¹ * max r d :=
+        mul_le_mul_of_nonneg_left (le_max_left r d) (le_of_lt (inv_pos.mpr hmx))
+      rw [inv_mul_cancel₀ (ne_of_gt hmx)] at hle
+      rw [Real.norm_eq_abs,
+        abs_of_nonneg (mul_nonneg (le_of_lt (inv_pos.mpr hmx)) hr0)]
+      exact hle
+    have hmm : (si * q) * (si * q) ≤ si * q := by
+      have hone : IsSelfAdjoint (1 : A) := star_one A
+      have h := Theses.A.CStar.sqrt_2 (si * q) hm0 (si * q) 1 hmsa hone rfl
+        (by rw [one_mul, mul_one]) hmle
+      rwa [mul_one] at h
+    have hmE : (si * q) * E = E := specInv_mul_mul_spectralProj hq0 hd
+    have hEm : E * (si * q) = E := by
+      have h := congrArg star hmE
+      rwa [star_mul, hmsa.star_eq, hEproj.isSelfAdjoint.star_eq] at h
+    -- `E ≤ u := 2m − m²`
+    have huE : (si * q + si * q - (si * q) * (si * q)) * E = E := by
+      have hexp : (si * q + si * q - (si * q) * (si * q)) * E
+          = (si * q) * E + (si * q) * E - (si * q) * ((si * q) * E) := by noncomm_ring
+      simp only [hexp, hmE]
+      noncomm_ring
+    have hEu : E * (si * q + si * q - (si * q) * (si * q)) = E := by
+      have hexp : E * (si * q + si * q - (si * q) * (si * q))
+          = E * (si * q) + E * (si * q) - (E * (si * q)) * (si * q) := by noncomm_ring
+      simp only [hexp, hEm]
+      noncomm_ring
+    have hu0 : (0 : A) ≤ si * q + si * q - (si * q) * (si * q) := by
+      have h := add_nonneg hm0 (sub_nonneg.mpr hmm)
+      have hrw : si * q + (si * q - (si * q) * (si * q))
+          = si * q + si * q - (si * q) * (si * q) := by noncomm_ring
+      rwa [hrw] at h
+    have hucomm : (si * q + si * q - (si * q) * (si * q)) * (1 - E)
+        = (1 - E) * (si * q + si * q - (si * q) * (si * q)) := by
+      have hl : (si * q + si * q - (si * q) * (si * q)) * (1 - E)
+          = (si * q + si * q - (si * q) * (si * q))
+            - (si * q + si * q - (si * q) * (si * q)) * E := by noncomm_ring
+      have hr : (1 - E) * (si * q + si * q - (si * q) * (si * q))
+          = (si * q + si * q - (si * q) * (si * q))
+            - E * (si * q + si * q - (si * q) * (si * q)) := by noncomm_ring
+      rw [hl, hr, huE, hEu]
+    have hEle : E ≤ si * q + si * q - (si * q) * (si * q) := by
+      have hnn : (0 : A) ≤ (si * q + si * q - (si * q) * (si * q)) * (1 - E) :=
+        Theses.A.CStar.sqrt_1 _ _ hu0 (sub_nonneg.mpr hEproj.le_one) hucomm
+      have hrw : (si * q + si * q - (si * q) * (si * q)) * (1 - E)
+          = (si * q + si * q - (si * q) * (si * q)) - E := by
+        have hl : (si * q + si * q - (si * q) * (si * q)) * (1 - E)
+            = (si * q + si * q - (si * q) * (si * q))
+              - (si * q + si * q - (si * q) * (si * q)) * E := by noncomm_ring
+        rw [hl, huE]
+      rw [hrw] at hnn
+      exact sub_nonneg.mp hnn
+    -- the Schur inequality at `x = (si·√q)·T·√q`
+    have hA : (si * sq) * sq = si * q := by rw [mul_assoc, hsqsq]
+    have hB : sq * (si * sq) = si * q := by
+      rw [← mul_assoc, ← hsisq, mul_assoc, hsqsq]
+    have hC : (si * sq) * q * (si * sq) = (si * q) * (si * q) := by
+      calc (si * sq) * q * (si * sq) = (si * sq) * (sq * sq) * (si * sq) := by rw [hsqsq]
+        _ = ((si * sq) * sq) * (sq * (si * sq)) := by noncomm_ring
+        _ = (si * q) * (si * q) := by rw [hA, hB]
+    have hstarx : star ((si * sq) * T * sq) = sq * T * (si * sq) := by
+      rw [star_mul, star_mul, hsqs, hTs, star_mul, hsis, hsqs, ← hsisq]
+      noncomm_ring
+    have hS' := hS ((si * sq) * T * sq)
+    have hid : star ((si * sq) * T * sq) * (sq * T * sq)
+        + (sq * T * sq) * ((si * sq) * T * sq)
+        - star ((si * sq) * T * sq) * q * ((si * sq) * T * sq)
+        = star (T * sq) * (si * q + si * q - (si * q) * (si * q)) * (T * sq) := by
+      rw [hstarx, hstarc]
+      calc (sq * T * (si * sq)) * (sq * T * sq) + (sq * T * sq) * ((si * sq) * T * sq)
+            - (sq * T * (si * sq)) * q * ((si * sq) * T * sq)
+          = sq * T * ((si * sq) * sq) * T * sq + sq * T * (sq * (si * sq)) * T * sq
+            - sq * T * ((si * sq) * q * (si * sq)) * T * sq := by noncomm_ring
+        _ = sq * T * (si * q) * T * sq + sq * T * (si * q) * T * sq
+            - sq * T * ((si * q) * (si * q)) * T * sq := by rw [hA, hB, hC]
+        _ = (sq * T) * (si * q + si * q - (si * q) * (si * q)) * (T * sq) := by
+            noncomm_ring
+    rw [hid] at hS'
+    refine le_trans ?_ hS'
+    exact star_left_conjugate_le_conjugate hEle (T * sq)
+  have hlim := b15_conj_ceil_limit hq0 hstep
+  rw [hstarc] at hlim
+  calc sq * T * ceil q * T * sq = sq * T * ceil q * (T * sq) := by noncomm_ring
+    _ ≤ Psi := hlim
+
+/-- **Step A** of `B15-S.md`: the bracket `γ = [g]` sends projections to
+projections. -/
+private theorem b15_stepA (g : NCPMap A A) (e : A) [Fact (IsStarProjection e)]
+    (gam th : NCPMap (Corner A e) (Corner A e))
+    (hgv : ∀ x : Corner A e, (g x.val : A)
+      = CFC.sqrt (g 1) * (gam x).val * CFC.sqrt (g 1))
+    (hgamu : gam 1 = 1)
+    (hfv : ∀ x : Corner A e, (g (g x.val) : A)
+      = CFC.sqrt (g (g 1)) * (th x).val * CFC.sqrt (g (g 1)))
+    (hthproj : ∀ x : Corner A e, IsStarProjection x → IsStarProjection (th x))
+    (hgfaith : ∀ y : A, 0 ≤ y → ceil y ≤ e → (g y : A) = 0 → y = 0)
+    (h2 : ceil (g 1) = e) (hf1 : ceil (g (g 1)) = e)
+    (s : Corner A e) (hs : IsStarProjection s) : IsStarProjection (gam s) := by
+  have heproj : IsStarProjection e := Fact.out
+  have hee : e * e = e := heproj.isIdempotentElem.eq
+  have hp0 : (0 : A) ≤ g 1 := ncpMap_nonneg g zero_le_one
+  have hq0 : (0 : A) ≤ g (g 1) := ncpMap_nonneg g hp0
+  have hsp0 : (0 : A) ≤ CFC.sqrt (g 1) := CFC.sqrt_nonneg (g 1)
+  have hspstar : star (CFC.sqrt (g 1)) = CFC.sqrt (g 1) :=
+    (IsSelfAdjoint.of_nonneg hsp0).star_eq
+  have hspsp : CFC.sqrt (g 1) * CFC.sqrt (g 1) = g 1 := CFC.sqrt_mul_sqrt_self (g 1) hp0
+  have hGs : star (gam s) = gam s := by rw [← ncp_star gam s, hs.isSelfAdjoint.star_eq]
+  have hGstar : star ((gam s).val) = (gam s).val := by
+    have h := congrArg Corner.val hGs
+    rwa [Corner.val_star] at h
+  have hKS : gam s * gam s ≤ gam s := b15_ks gam hgamu s hs
+  have hDnn : (0 : A) ≤ (gam s - gam s * gam s).val := sub_nonneg.mpr hKS
+  rw [Corner.val_sub, Corner.val_mul] at hDnn
+  have hGmem : e * (gam s).val * e = (gam s).val := (gam s).property
+  set sp : A := CFC.sqrt (g 1) with hspdef
+  set G : A := (gam s).val with hGdef
+  -- `√p` lies in the corner
+  have hcsp : ceil sp = e := by
+    have h := ceil_basic_5 sp hsp0
+    rw [sq, hspsp] at h
+    rw [← h, h2]
+  have hesp : e * sp = sp := ((ceil_basic_1 sp e hsp0 heproj).out 2 0).mp (le_of_eq hcsp)
+  have hspe : sp * e = sp := ((ceil_basic_1 sp e hsp0 heproj).out 2 1).mp (le_of_eq hcsp)
+  have heG : e * G = G := by
+    calc e * G = e * (e * G * e) := by rw [hGmem]
+      _ = (e * e) * G * e := by noncomm_ring
+      _ = G := by rw [hee, hGmem]
+  have hGe : G * e = G := by
+    calc G * e = (e * G * e) * e := by rw [hGmem]
+      _ = e * G * (e * e) := by noncomm_ring
+      _ = G := by rw [hee, hGmem]
+  have hgS : (g s.val : A) = sp * G * sp := hgv s
+  have hfS : (g (g s.val) : A)
+      = CFC.sqrt (g (g 1)) * (th s).val * CFC.sqrt (g (g 1)) := hfv s
+  have hTproj : IsStarProjection ((th s).val) :=
+    (Corner.isStarProjection_iff (th s)).mp (hthproj s hs)
+  have hTmem : e * (th s).val * e = (th s).val := (th s).property
+  have hTe : (th s).val * e = (th s).val := by
+    calc (th s).val * e = (e * (th s).val * e) * e := by rw [hTmem]
+      _ = e * (th s).val * (e * e) := by noncomm_ring
+      _ = (th s).val := by rw [hee, hTmem]
+  have heT : e * (th s).val = (th s).val := by
+    calc e * (th s).val = e * (e * (th s).val * e) := by rw [hTmem]
+      _ = (e * e) * (th s).val * e := by noncomm_ring
+      _ = (th s).val := by rw [hee, hTmem]
+  -- the Schur inequality for `g` at `(√p, γ(s)√p)`
+  have hSchur : ∀ x : A, star x * (g (g s.val)) + (g (g s.val)) * x
+      - star x * (g (g 1)) * x ≤ g (sp * (G * G) * sp) := by
+    intro x
+    have hA0 : star sp * sp = g 1 := by rw [hspstar, hspsp]
+    have hA1 : star sp * (G * sp) = g s.val := by rw [hspstar, ← mul_assoc, ← hgS]
+    have hA2 : star (G * sp) * sp = g s.val := by
+      rw [star_mul, hspstar, hGstar, ← hgS]
+    have hA3 : star (G * sp) * (G * sp) = sp * (G * G) * sp := by
+      rw [star_mul, hspstar, hGstar]; noncomm_ring
+    have h := b15_schur g sp (G * sp) x
+    rwa [hA0, hA1, hA2, hA3] at h
+  -- the `ε ↓ 0` limit
+  have hlim := b15_schur_limit hq0 hTproj (by rw [← hfS]; exact hSchur)
+  rw [hf1] at hlim
+  have hlim' : (g (g s.val) : A) ≤ g (sp * (G * G) * sp) := by
+    refine le_trans (le_of_eq ?_) hlim
+    rw [hfS]
+    calc CFC.sqrt (g (g 1)) * (th s).val * CFC.sqrt (g (g 1))
+        = CFC.sqrt (g (g 1)) * ((th s).val * (th s).val) * CFC.sqrt (g (g 1)) := by
+          rw [hTproj.isIdempotentElem.eq]
+      _ = CFC.sqrt (g (g 1)) * ((th s).val * e * (th s).val) * CFC.sqrt (g (g 1)) := by
+          rw [hTe]
+      _ = CFC.sqrt (g (g 1)) * (th s).val * e * (th s).val * CFC.sqrt (g (g 1)) := by
+          noncomm_ring
+  -- squeeze
+  have hsplit : (g s.val : A) = sp * (G * G) * sp + sp * (G - G * G) * sp := by
+    rw [hgS]; noncomm_ring
+  have hadd : (g (g s.val) : A)
+      = g (sp * (G * G) * sp) + g (sp * (G - G * G) * sp) := by
+    rw [hsplit]; exact map_add g.toCompletelyPositiveMap _ _
+  have hDpos : (0 : A) ≤ sp * (G - G * G) * sp := by
+    have h := star_left_conjugate_nonneg hDnn sp
+    rwa [hspstar] at h
+  have hzeroD : (g (sp * (G - G * G) * sp) : A) = 0 := by
+    refine le_antisymm ?_ (ncpMap_nonneg g hDpos)
+    rw [hadd] at hlim'
+    have h2' : (g (sp * (G * G) * sp) : A) + g (sp * (G - G * G) * sp)
+        ≤ g (sp * (G * G) * sp) + 0 := by rw [add_zero]; exact hlim'
+    exact le_of_add_le_add_left h2'
+  -- faithfulness kills `√p D √p`
+  have hmemD : e * (G - G * G) * e = G - G * G := by
+    calc e * (G - G * G) * e = e * G * e - (e * G) * (G * e) := by noncomm_ring
+      _ = G - G * G := by rw [hGmem, heG, hGe]
+  have hDzero : sp * (G - G * G) * sp = 0 := by
+    refine hgfaith _ hDpos ?_ hzeroD
+    refine (ceil_le_iff hDpos heproj).mpr ?_
+    rw [mul_assoc, hspe]
+  -- hence `D = 0`
+  have hsD0 : (0 : A) ≤ CFC.sqrt (G - G * G) := CFC.sqrt_nonneg _
+  have hsDs : star (CFC.sqrt (G - G * G)) = CFC.sqrt (G - G * G) :=
+    (IsSelfAdjoint.of_nonneg hsD0).star_eq
+  have hsDsD : CFC.sqrt (G - G * G) * CFC.sqrt (G - G * G) = G - G * G :=
+    CFC.sqrt_mul_sqrt_self _ hDnn
+  have hz : star (CFC.sqrt (G - G * G) * sp) * (CFC.sqrt (G - G * G) * sp) = 0 := by
+    rw [star_mul, hspstar, hsDs]
+    calc sp * CFC.sqrt (G - G * G) * (CFC.sqrt (G - G * G) * sp)
+        = sp * (CFC.sqrt (G - G * G) * CFC.sqrt (G - G * G)) * sp := by noncomm_ring
+      _ = sp * (G - G * G) * sp := by rw [hsDsD]
+      _ = 0 := hDzero
+  have h0 : CFC.sqrt (G - G * G) * sp = 0 :=
+    (CStarRing.star_mul_self_eq_zero_iff _).mp hz
+  have h1 : CFC.sqrt (G - G * G) * (g 1) = 0 := by
+    rw [← hspsp, ← mul_assoc, h0, zero_mul]
+  have h2'' : CFC.sqrt (G - G * G) * e = 0 := by
+    rw [← h2]; exact mul_ceil_eq_zero hp0 h1
+  have hsDmem : e * CFC.sqrt (G - G * G) * e = CFC.sqrt (G - G * G) :=
+    Corner.sqrt_mem (G - G * G) hDnn hmemD
+  have hsDzero : CFC.sqrt (G - G * G) = 0 := by
+    rw [← hsDmem, mul_assoc, h2'', mul_zero]
+  have hD0 : G - G * G = 0 := by rw [← hsDsD, hsDzero, mul_zero]
+  refine (Corner.isStarProjection_iff (gam s)).mpr ⟨?_, hGstar⟩
+  show G * G = G
+  have := sub_eq_zero.mp hD0
+  exact this.symm
+
+/-- **Step B** of `B15-S.md`: once `γ = [g]` is nmiu, `f = ad_a ∘ γ²` with `a`
+of full carrier on both sides, so `γ²` — and hence `γ` — is an isomorphism. -/
+private theorem b15_stepB (g : NCPMap A A) (e : A) [Fact (IsStarProjection e)]
+    (gam th thi : NCPMap (Corner A e) (Corner A e))
+    (hgv : ∀ x : Corner A e, (g x.val : A)
+      = CFC.sqrt (g 1) * (gam x).val * CFC.sqrt (g 1))
+    (hgamu : gam 1 = 1)
+    (hgammul : ∀ x y : Corner A e, gam (x * y) = gam x * gam y)
+    (hgamceil : ∀ x : Corner A e, 0 ≤ x → ceil (gam x) = gam (ceil x))
+    (hfv : ∀ x : Corner A e, (g (g x.val) : A)
+      = CFC.sqrt (g (g 1)) * (th x).val * CFC.sqrt (g (g 1)))
+    (hthi1 : ∀ x, thi (th x) = x) (hthi2 : ∀ y, th (thi y) = y)
+    (h2 : ceil (g 1) = e) (hf1 : ceil (g (g 1)) = e) :
+    ∃ δ : NCPMap (Corner A e) (Corner A e),
+      (∀ x, δ (gam x) = x) ∧ ∀ y, gam (δ y) = y := by
+  have heproj : IsStarProjection e := Fact.out
+  have hee : e * e = e := heproj.isIdempotentElem.eq
+  have hes : star e = e := heproj.isSelfAdjoint.star_eq
+  have hp0 : (0 : A) ≤ g 1 := ncpMap_nonneg g zero_le_one
+  have hq0 : (0 : A) ≤ g (g 1) := ncpMap_nonneg g hp0
+  have hsp0 : (0 : A) ≤ CFC.sqrt (g 1) := CFC.sqrt_nonneg (g 1)
+  have hspstar : star (CFC.sqrt (g 1)) = CFC.sqrt (g 1) :=
+    (IsSelfAdjoint.of_nonneg hsp0).star_eq
+  have hspsp : CFC.sqrt (g 1) * CFC.sqrt (g 1) = g 1 := CFC.sqrt_mul_sqrt_self (g 1) hp0
+  have hep : e * (g 1) = g 1 := ((ceil_basic_1 (g 1) e hp0 heproj).out 2 0).mp (le_of_eq h2)
+  have hpe : (g 1) * e = g 1 := ((ceil_basic_1 (g 1) e hp0 heproj).out 2 1).mp (le_of_eq h2)
+  have hPmem : e * (g 1) * e = g 1 := by rw [hep, hpe]
+  -- `p` as an element of the corner, and `ρ = γ(p)`
+  set P : Corner A e := ⟨g 1, hPmem⟩ with hPdef
+  have hPval : P.val = g 1 := rfl
+  have hP0 : (0 : Corner A e) ≤ P := hp0
+  have hsqrtP : (CFC.sqrt P).val = CFC.sqrt (g 1) := by
+    rw [Corner.val_sqrt P hP0, hPval]
+  have hR0 : (0 : Corner A e) ≤ gam P := ncpMap_nonneg gam hP0
+  have hgamsqrtP : gam (CFC.sqrt P) = CFC.sqrt (gam P) := by
+    refine (CFC.sqrt_unique ?_ (ncpMap_nonneg gam (CFC.sqrt_nonneg P))).symm
+    rw [← hgammul, CFC.sqrt_mul_sqrt_self P hP0]
+  have hrhoval : (gam (CFC.sqrt P)).val = CFC.sqrt ((gam P).val) := by
+    rw [hgamsqrtP, Corner.val_sqrt (gam P) hR0]
+  have hrho0 : (0 : A) ≤ (gam P).val := hR0
+  have hceilP : ceil P = 1 := by
+    refine Corner.val_injective ?_
+    rw [Corner.val_ceil P hP0, hPval, Corner.val_one, h2]
+  have hceilrho : ceil ((gam P).val) = e := by
+    have h := hgamceil P hP0
+    rw [hceilP, hgamu] at h
+    have h' := congrArg Corner.val h
+    rwa [Corner.val_ceil (gam P) hR0, Corner.val_one] at h'
+  -- `a = √ρ √p`
+  set a : A := CFC.sqrt ((gam P).val) * CFC.sqrt (g 1) with hadef
+  have hsr0 : (0 : A) ≤ CFC.sqrt ((gam P).val) := CFC.sqrt_nonneg _
+  have hsrstar : star (CFC.sqrt ((gam P).val)) = CFC.sqrt ((gam P).val) :=
+    (IsSelfAdjoint.of_nonneg hsr0).star_eq
+  have hsrsr : CFC.sqrt ((gam P).val) * CFC.sqrt ((gam P).val) = (gam P).val :=
+    CFC.sqrt_mul_sqrt_self _ hrho0
+  have hastar : star a = CFC.sqrt (g 1) * CFC.sqrt ((gam P).val) := by
+    rw [hadef, star_mul, hspstar, hsrstar]
+  have haa : star a * a = g (g 1) := by
+    rw [hastar, hadef]
+    calc CFC.sqrt (g 1) * CFC.sqrt ((gam P).val)
+          * (CFC.sqrt ((gam P).val) * CFC.sqrt (g 1))
+        = CFC.sqrt (g 1)
+            * (CFC.sqrt ((gam P).val) * CFC.sqrt ((gam P).val)) * CFC.sqrt (g 1) := by
+          noncomm_ring
+      _ = CFC.sqrt (g 1) * (gam P).val * CFC.sqrt (g 1) := by rw [hsrsr]
+      _ = g (g 1) := by rw [← hgv P, hPval]
+  have hsupp : suppProj a = e := by rw [suppProj, haa, hf1]
+  have hcsr : ceil (CFC.sqrt ((gam P).val)) = e := by
+    have h := ceil_basic_5 (CFC.sqrt ((gam P).val)) hsr0
+    rw [sq, hsrsr] at h
+    rw [← h, hceilrho]
+  have hsre : CFC.sqrt ((gam P).val) * e = CFC.sqrt ((gam P).val) :=
+    ((ceil_basic_1 _ e hsr0 heproj).out 2 1).mp (le_of_eq hcsr)
+  have hrange : rangeProj a = e := by
+    have hrw : a * star a
+        = star (CFC.sqrt ((gam P).val)) * (g 1) * CFC.sqrt ((gam P).val) := by
+      rw [hastar, hadef, hsrstar]
+      calc CFC.sqrt ((gam P).val) * CFC.sqrt (g 1)
+            * (CFC.sqrt (g 1) * CFC.sqrt ((gam P).val))
+          = CFC.sqrt ((gam P).val) * (CFC.sqrt (g 1) * CFC.sqrt (g 1))
+              * CFC.sqrt ((gam P).val) := by noncomm_ring
+        _ = _ := by rw [hspsp]
+    rw [rangeProj, hrw, ceil_fundamental_1 _ (g 1) hp0, h2, hsrstar, hsre, hsrsr,
+      hceilrho]
+  -- the polar phase `u = [a]` is a unitary of the corner
+  obtain ⟨-, hpol1, hpol2⟩ := polar_decomposition a
+  obtain ⟨-, hpolss, hpolrr⟩ := polar_decomposition_1 a
+  set u : A := polar a with hudef
+  rw [hsupp] at hpolss hpol2
+  rw [hrange] at hpolrr
+  rw [haa] at hpol1
+  have hue : u * e = u := hpol2
+  have heu : e * u = u := by
+    calc e * u = (u * star u) * u := by rw [hpolrr]
+      _ = u * (star u * u) := by noncomm_ring
+      _ = u * e := by rw [hpolss]
+      _ = u := hue
+  have hesu : e * star u = star u := by
+    have h := congrArg star hue
+    rwa [star_mul, hes] at h
+  have hsue : star u * e = star u := by
+    have h := congrArg star heu
+    rwa [star_mul, hes] at h
+  -- `f = ad_a ∘ γ²`
+  have hsq0 : (0 : A) ≤ CFC.sqrt (g (g 1)) := CFC.sqrt_nonneg _
+  have hsqstar : star (CFC.sqrt (g (g 1))) = CFC.sqrt (g (g 1)) :=
+    (IsSelfAdjoint.of_nonneg hsq0).star_eq
+  have hfa : ∀ x : Corner A e, (g (g x.val) : A) = star a * (gam (gam x)).val * a := by
+    intro x
+    have hmem : (CFC.sqrt P * gam x * CFC.sqrt P).val
+        = CFC.sqrt (g 1) * (gam x).val * CFC.sqrt (g 1) := by
+      rw [Corner.val_mul, Corner.val_mul, hsqrtP]
+    have h1 : (g x.val : A) = (CFC.sqrt P * gam x * CFC.sqrt P).val := by
+      rw [hmem, hgv x]
+    rw [h1, hgv (CFC.sqrt P * gam x * CFC.sqrt P), hgammul, hgammul, Corner.val_mul,
+      Corner.val_mul, hrhoval, hastar, hadef]
+    noncomm_ring
+  -- `ϑ = ad_{[a]} ∘ γ²`
+  have hthval : ∀ x : Corner A e,
+      (th x).val = star u * (gam (gam x)).val * u := by
+    intro x
+    refine ad_injective (CFC.sqrt (g (g 1))) e
+      (hf1.symm.trans (ceil_eq_rangeProj_sqrt hq0)) (th x).property ?_ ?_
+    · have hc1 : e * (star u * (gam (gam x)).val * u) * e
+          = (e * star u) * (gam (gam x)).val * (u * e) := by noncomm_ring
+      rw [hc1, hesu, hue]
+    · rw [hsqstar]
+      have hl : CFC.sqrt (g (g 1)) * (th x).val * CFC.sqrt (g (g 1)) = g (g x.val) :=
+        (hfv x).symm
+      rw [hl, hfa x, hpol1, star_mul, hsqstar]
+      noncomm_ring
+  -- the conjugations by `[a]` and its adjoint
+  have hble : star (star u) * e * star u ≤ e := by
+    rw [star_star]
+    exact le_of_eq (by rw [hue, hpolrr])
+  have hbrle : star u * e * u ≤ e := le_of_eq (by rw [hsue, hpolss])
+  obtain ⟨bta, hbta0⟩ := exists_adNCP (star u) e e hble
+  obtain ⟨btb, hbtb⟩ := exists_adNCP u e e hbrle
+  have hbta : ∀ z : Corner A e, (bta z).val = u * z.val * star u := by
+    intro z
+    rw [hbta0, star_star]
+  have hbab : ∀ z : Corner A e, bta (btb z) = z := by
+    intro z
+    refine Corner.val_injective ?_
+    rw [hbta, hbtb]
+    calc u * (star u * z.val * u) * star u
+        = (u * star u) * z.val * (u * star u) := by noncomm_ring
+      _ = z.val := by rw [hpolrr]; exact z.property
+  have hbba : ∀ z : Corner A e, btb (bta z) = z := by
+    intro z
+    refine Corner.val_injective ?_
+    rw [hbtb, hbta]
+    calc star u * (u * z.val * star u) * u
+        = (star u * u) * z.val * (star u * u) := by noncomm_ring
+      _ = z.val := by rw [hpolss]; exact z.property
+  -- `γ² = β ∘ ϑ`
+  have hgam2 : ∀ x : Corner A e, gam (gam x) = bta (th x) := by
+    intro x
+    refine Corner.val_injective ?_
+    rw [hbta, hthval x]
+    calc (gam (gam x)).val
+        = e * (gam (gam x)).val * e := (gam (gam x)).property.symm
+      _ = (u * star u) * (gam (gam x)).val * (u * star u) := by rw [hpolrr]
+      _ = u * (star u * (gam (gam x)).val * u) * star u := by noncomm_ring
+  -- the inverse
+  obtain ⟨k, hk⟩ : ∃ k : NCPMap (Corner A e) (Corner A e),
+      ∀ z, k z = thi (btb z) := ⟨ncpComp thi btb, fun z => ncpComp_apply _ _ _⟩
+  have hk1 : ∀ z, gam (gam (k z)) = z := by
+    intro z
+    rw [hgam2, hk, hthi2, hbab]
+  have hk2 : ∀ x, k (gam (gam x)) = x := by
+    intro x
+    rw [hgam2, hk, hbba, hthi1]
+  have hinj : Function.Injective ⇑gam := by
+    intro x y hxy
+    have h : gam (gam x) = gam (gam y) := by rw [hxy]
+    have h2 := congrArg k h
+    rwa [hk2, hk2] at h2
+  refine ⟨ncpComp gam k, fun x => ?_, fun y => ?_⟩
+  · rw [ncpComp_apply]
+    refine hinj ?_
+    exact hk1 (gam x)
+  · rw [ncpComp_apply]
+    exact hk1 y
+
+/-- **B15-S.md**, the Theorem: an ncp-endomap `g` of a von Neumann algebra
+with `⌈g⌉ = ⌈g(1)⌉` whose square `g ∘ g` is pure is itself pure. -/
+private theorem b15_pure_of_pure_sq_aux (g : NCPMap A A) (e : A) [Fact (IsStarProjection e)]
+    (h1 : ncpCarrier g = e) (h2 : ceil (g 1) = e)
+    (hfpure : Theses.A.Proc.IsPure (ncpComp g g)) : Theses.A.Proc.IsPure g := by
+  have heproj : IsStarProjection e := Fact.out
+  have hp0 : (0 : A) ≤ g 1 := ncpMap_nonneg g zero_le_one
+  have hcspec : IsStarProjection (ncpCarrier g) ∧ (g (1 - ncpCarrier g) : A) = 0 ∧
+      ∀ q : A, IsStarProjection q → g (1 - q) = 0 → ncpCarrier g ≤ q :=
+    (exists_ncpCarrier g).choose_spec.1
+  have hcz : (g (1 - e) : A) = 0 := by rw [← h1]; exact hcspec.2.1
+  have hge : (g e : A) = g 1 := by
+    have hs : (g (1 - e) : A) = g 1 - g e := map_sub g.toCompletelyPositiveMap 1 e
+    rw [hcz] at hs
+    exact (sub_eq_zero.mp hs.symm).symm
+  have hgfaith : ∀ y : A, 0 ≤ y → ceil y ≤ e → (g y : A) = 0 → y = 0 :=
+    fun y hy hye hgy => b15_eq_zero_of_ncpCarrier g hy (by rw [h1]; exact hye) hgy
+  have hFF : ∀ a : A, (PositiveLinearMap.ofClass g.toCompletelyPositiveMap a : A) = g a :=
+    fun _ => rfl
+  have hf1 : ceil (g (g 1)) = e := by
+    have h := ncp_ceil (PositiveLinearMap.ofClass g.toCompletelyPositiveMap)
+      g.preservesDirSups' (g 1) hp0
+    simp only [hFF] at h
+    rw [h, h2, hge, h2]
+  have hcarf : ncpCarrier (ncpComp g g) = e := by
+    have hcspecf : IsStarProjection (ncpCarrier (ncpComp g g)) ∧
+        (ncpComp g g (1 - ncpCarrier (ncpComp g g)) : A) = 0 ∧
+        ∀ q : A, IsStarProjection q → ncpComp g g (1 - q) = 0 →
+          ncpCarrier (ncpComp g g) ≤ q :=
+      (exists_ncpCarrier (ncpComp g g)).choose_spec.1
+    refine le_antisymm (hcspecf.2.2 e heproj ?_) ?_
+    · rw [ncpComp_apply, hcz]
+      exact map_zero g.toCompletelyPositiveMap
+    · have hz := hcspecf.2.1
+      rw [ncpComp_apply] at hz
+      have hnn : (0 : A) ≤ 1 - ncpCarrier (ncpComp g g) := sub_nonneg.mpr hcspecf.1.le_one
+      have hyc : ceil (g (1 - ncpCarrier (ncpComp g g))) ≤ e := by
+        rw [← h2]; exact ceil_le_ceil_one g _ hnn
+      have hgz := hgfaith _ (ncpMap_nonneg g hnn) hyc hz
+      have hcg := hcspec.2.2 (ncpCarrier (ncpComp g g)) hcspecf.1 hgz
+      rwa [h1] at hcg
+  have hf1' : ceil (ncpComp g g 1) = e := by rwa [ncpComp_apply]
+  obtain ⟨gam, hgv, hgamu, hgiff⟩ := b15_exists_bracketEndo g e h1 h2
+  obtain ⟨th, hfv0, hthu, hthiff⟩ := b15_exists_bracketEndo (ncpComp g g) e hcarf hf1'
+  obtain ⟨thi, hthi1, hthi2⟩ := hthiff.mp hfpure
+  have hfv : ∀ x : Corner A e, (g (g x.val) : A)
+      = CFC.sqrt (g (g 1)) * (th x).val * CFC.sqrt (g (g 1)) := by
+    intro x
+    have h := hfv0 x
+    rwa [ncpComp_apply, ncpComp_apply] at h
+  -- `[f]` is an nmiu-isomorphism (**99IX**)
+  have hthi1u : thi 1 = 1 := by
+    have h := hthi1 1
+    rwa [hthu] at h
+  have hthiso := Theses.A.Proc.iso (⟨th, le_of_eq hthu⟩ : NCPSUMap (Corner A e) (Corner A e))
+    (⟨thi, le_of_eq hthi1u⟩ : NCPSUMap (Corner A e) (Corner A e)) hthi1 hthi2
+  have hthproj : ∀ x : Corner A e, IsStarProjection x → IsStarProjection (th x) := by
+    intro x hx
+    refine ⟨?_, ?_⟩
+    · show th x * th x = th x
+      rw [← hthiso.2.1, hx.isIdempotentElem.eq]
+    · show star (th x) = th x
+      rw [← hthiso.2.2 x, hx.isSelfAdjoint.star_eq]
+  -- Step A, then Gardner (**99II**)
+  have hgamproj : ∀ x : Corner A e, IsStarProjection x → IsStarProjection (gam x) :=
+    fun x hx => b15_stepA g e gam th hgv hgamu hfv hthproj hgfaith h2 hf1 x hx
+  have hgammul : ∀ x y : Corner A e, gam (x * y) = gam x * gam y :=
+    ((gardner gam hgamu).out 3 0).mp hgamproj
+  have hgamceil : ∀ x : Corner A e, 0 ≤ x → ceil (gam x) = gam (ceil x) :=
+    ((gardner gam hgamu).out 3 4).mp hgamproj
+  -- Step B
+  obtain ⟨dl, hdl1, hdl2⟩ :=
+    b15_stepB g e gam th thi hgv hgamu hgammul hgamceil hfv hthi1 hthi2 h2 hf1
+  exact hgiff.mpr ⟨dl, hdl1, hdl2⟩
+
+/-- **B15-S.md**, the Theorem, at the canonical corner. -/
+private theorem b15_pure_of_pure_sq (g : NCPMap A A) (hcar : ncpCarrier g = ceil (g 1))
+    (hfpure : Theses.A.Proc.IsPure (ncpComp g g)) : Theses.A.Proc.IsPure g :=
+  b15_pure_of_pure_sq_aux g (ceil (g 1)) hcar rfl hfpure
+
+end
+
+end B15SquareRoot
+
 /-- **211IV** (`vn-is-andthen-eff`, eff.tex:4859, Examples): `vNᵒᵖ` is an
 &-effectus, with `asrt_a(b) = √a b √a` (as are `CvNᵒᵖ` and `EJAᵒᵖ`, not
 formalized here; these are the only known examples).
@@ -9365,15 +10195,15 @@ axioms of **211II** are proved for `vNᵒᵖ`:
   `su_contraposed_of_diamondSelfAdjoint` (eff-⋄-self-adjointness ⟹
   proc-contraposition, 101VI).
 
-What is *not* proved is the hypothesis `H` below: **eff.tex 206II.4 does
-not require the ⋄-self-adjoint square root `g` of a ⋄-positive map to be
-pure, where proc.tex 103I does**, so 105V is a statement about a strictly
-smaller class of maps than 211II.1 quantifies over.  `H` says the two
-classes agree in `vNᵒᵖ`.  It is believed true (it holds for `M₂` by a
-hand computation, and it *must* hold if 211IV does, since for self-adjoint
-non-positive `b` the map `ad_b` is pure and contraposed to itself with
-`ad_b(1) = b²` but `ad_b ≠ ad_{|b|}`), but neither thesis proves it.
-Recorded as **QUESTIONS B15**. -/
+The hypothesis `H` of `su_andThenEffectus_of_pure_sqrt` is supplied here.
+**eff.tex 206II.4 does not require the ⋄-self-adjoint square root `g` of a
+⋄-positive map to be pure, where proc.tex 103I does**, so 105V is a
+statement about a strictly smaller class of maps than 211II.1 quantifies
+over; `H` says the two classes agree in `vNᵒᵖ`, and they do, with the
+witness `h := g`: a ⋄-self-adjoint `g` whose square is pure is *itself*
+pure.  Neither thesis proves that; it is the Theorem of `docs/B15-S.md`,
+formalized in the section above as `b15_pure_of_pure_sq` (recorded as
+**QUESTIONS B15**). -/
 theorem vn_is_andthen_eff (s : EffectusPartialStructure WStarCPSU.{u}ᵒᵖ) :
     letI := s.hasFiniteCoproducts
     letI := s.homPCM
@@ -9385,11 +10215,29 @@ theorem vn_is_andthen_eff (s : EffectusPartialStructure WStarCPSU.{u}ᵒᵖ) :
     effectusPartialStructure_homPCM_unique s vnPartialStructure
   obtain ⟨hfc, pcm, hfin, E⟩ := s
   subst hpcm
+  let inst_epf := E
+  let inst_diam := @su_diamondEffectus E
   refine @su_andThenEffectus_of_pure_sqrt E (@su_diamondEffectus E) ?_
-  -- **the one missing step**: a ⋄-self-adjoint `g` whose square is pure has
-  -- a *pure* ⋄-self-adjoint square root with the same square (QUESTIONS B15)
+  -- a ⋄-self-adjoint `g` whose square is pure *is itself pure*
+  -- (`docs/B15-S.md`, `b15_pure_of_pure_sq`), so `h := g` will do
   intro X g hgsa hpure
-  sorry
+  refine ⟨g, su_isPure_of_procPure (b15_pure_of_pure_sq g.unop.toNCPMap ?_ ?_),
+    hgsa, rfl⟩
+  · -- `⌈g⌉ = ⌈g(1)⌉`: **103III**.1 without its purity clause
+    have hcon := su_contraposed_of_diamondSelfAdjoint hgsa
+    have hd : Theses.A.Proc.diamondUp g.unop.toNCPMap 1
+        = Theses.A.Proc.diamondDown g.unop.toNCPMap 1 :=
+      (Theses.A.Proc.contraposed_iff_diamond _ _).mpr hcon 1
+        (IsStarProjection.one (R := X.unop.base.carrier))
+    rw [← Theses.A.Proc.diamondDown_one g.unop.toNCPMap, ← hd]
+    rfl
+  · have h := su_procPure_of_isPure hpure
+    have heq : (g ≫ g).unop.toNCPMap
+        = Theses.A.Proc.ncpComp g.unop.toNCPMap g.unop.toNCPMap := by
+      refine DFunLike.ext _ _ fun y => ?_
+      rw [Theses.A.Proc.ncpComp_apply]
+      exact suop_comp_apply g g y
+    rwa [heq] at h
 
 /-! ## `vNᵒᵖ` is a †-effectus, and has dilations (parsecs 215, 221, 223)
 

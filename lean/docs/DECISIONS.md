@@ -10,8 +10,12 @@ Nothing else is needed; we will make the source edits and the Lean edits and
 record the ruling.  Where an item is really an erratum acceptance we say so, and
 "accept" is a complete answer.
 
-**Where things stand.**  **8 declarations are unproved**, and **nothing else
-in the tree depends on a `sorry`**.  All eight are waiting on §1 below.
+**Where things stand.**  **7 declarations are unproved**, and **nothing else
+in the tree depends on a `sorry`**.  All seven are waiting on §1 below.
+(211IV `vn_is_andthen_eff` was ruled by *mathematics* rather than by you and
+**proved** on 2026-09-05, §1.2: reading (b)'s missing step turned out to be a
+theorem of `vN`, so the `sorry` closed with `h := g` and no statement change.
+It was eight until then.)
 (179III.2 Gudder–Pulmannová was ruled (a) and **proved** on 2026-09-04, §1.5.)  (It
 was ten until 2026-08-29, when `kaplansky_hilbmod_A₂` turned out to be
 **true** — the witness reports `ω₀(A₂) = 0`, which had been read as the
@@ -46,7 +50,7 @@ in §4 rather than in front of you.
 | # | point | question | holds up | we recommend |
 |---|---|---|---|---|
 | 1.1 | 169II / 170IV | corner: ncp or ncpsu universal property? | `surjective_nmiu_2` | (a) read it in `W*_cpsu` |
-| 1.2 | 206II.2/.4 / 211IV | must the ⋄-self-adjoint square root be pure? | `vn_is_andthen_eff` | (a) yes, it is meant to be |
+| 1.2 | 206II.2/.4 / 211IV | must the ⋄-self-adjoint square root be pure? — no `sorry` left either way, **proved** 2026-09-05 | 0 declarations | (a) yes, it is meant to be |
 | 1.3 | 158III–158V | printed proof is false — replace it how? | 3 × `kaplansky_hilbmod_A*` | (a) delete, use the linking algebra |
 | 1.4 | 139XI | case (ii) takes the complement in the wrong space | `ess_uniq_pur` | (a) complements in `𝒦'` |
 | 1.5 | 179III.2 | strengthen or drop? — ruled (a) and **proved** 2026-09-04 | 0 audit rows | (a) done | `effectModule_unitInterval_representation` | (a) strengthen, else (b) drop |
@@ -141,10 +145,11 @@ unaffected.  Under (b): add "unital" to 170IV's second half and prove it there.
 
 ### 1.2 — 206II.2/.4: must the ⋄-self-adjoint square root of a ⋄-positive map be **pure**?
 
-*Update 2026-09-04: **purity itself is defined a priori differently** across the two theses (proc.tex 100I vs eff.tex's comprehension-based purity, as `dils-pure-discussion`/201IV flags), and the tree bridges them with `su_procPure_of_isPure` rather than conflating them — so `vn_is_andthen_eff` is a faithful transcription of eff.tex and its `sorry` is a documented cross-thesis definitional gap, not a defect.  The two definitions of ⋄-self-adjoint themselves do **not** coincide a posteriori (`docs/B15-dsa-match.md`: `diaPull = diaPush` is exactly contraposed-to-itself and admits impure witnesses such as `ad_{B₁}+ad_{B₂}`), so (1) changes that notion, not merely picks the intended one.  The mathematics behind the gap is now settled outright: reading (2)'s step is a **theorem of `vN`**, elementary (Schur complement + 2-positivity + 99II), certified after adversarial review (`docs/B15-S.md`, `docs/B15-S-review.md`, 2026-09-05); two earlier proofs are superseded.  The `sorry` closes with `h := g` and no statement change, ~700–1,000 Lean lines, in progress.  What remains is the author's choice of which to formalize: (1) adds `IsPure` and closes the `sorry` with `h = g` and no new mathematics; (2) is faithful to the printed 206II.4 but its Lean proof needs Kadison's order-isomorphism theorem, absent from Mathlib.*
+*Update 2026-09-04: **purity itself is defined a priori differently** across the two theses (proc.tex 100I vs eff.tex's comprehension-based purity, as `dils-pure-discussion`/201IV flags), and the tree bridges them with `su_procPure_of_isPure` rather than conflating them — so `vn_is_andthen_eff` is a faithful transcription of eff.tex and its `sorry` is a documented cross-thesis definitional gap, not a defect.  The two definitions of ⋄-self-adjoint themselves do **not** coincide a posteriori (`docs/B15-dsa-match.md`: `diaPull = diaPush` is exactly contraposed-to-itself and admits impure witnesses such as `ad_{B₁}+ad_{B₂}`), so (1) changes that notion, not merely picks the intended one.  The mathematics behind the gap is now settled outright: reading (2)'s step is a **theorem of `vN`**, elementary (Schur complement + 2-positivity + 99II), certified after adversarial review (`docs/B15-S.md`, `docs/B15-S-review.md`, 2026-09-05); two earlier proofs are superseded.  **Formalized 2026-09-05** (`b15_pure_of_pure_sq`, a private section of `Theses/B/Eff/VNExamples.lean`, ~840 lines, no new imports, no statement change): the `sorry` is gone, with `h := g`, so reading (2) costs nothing after all and the Kadison route it used to need — absent from Mathlib — is not used.  What remains is only the author's choice of wording: (1) adds `IsPure` to eff.tex's ⋄-self-adjointness and makes 206II.4's "pure" on `f` redundant; (2) leaves 206II.4 as printed, which the tree now proves adequate at `vNᵒᵖ`.*
 
-*(`QUESTIONS.md` B15.  Blocks `vn_is_andthen_eff` in
-`Theses/B/Eff/VNExamples.lean` — **211IV** `vn-is-andthen-eff`.)*
+*(`QUESTIONS.md` B15.  Blocked `vn_is_andthen_eff` in
+`Theses/B/Eff/VNExamples.lean` — **211IV** `vn-is-andthen-eff` — until
+2026-09-05; it blocks nothing now.)*
 
 **What is being asked.**  The two theses define ⋄-positivity differently.
 
@@ -190,22 +195,25 @@ exactly as eff.tex:4862 says); axiom 1's existence half is `su_exists_asrt`; its
 uniqueness half is `su_asrt_unique_of_pure_sqrt`, which is 105V reached through
 two dictionary lemmas.  `vn_is_andthen_eff` is
 `su_andThenEffectus_of_pure_sqrt` (axiom-clean) applied to exactly one
-hypothesis, and that hypothesis is the file's only `sorry`:
+hypothesis, which was the file's only `sorry` and is now proved
+(`b15_pure_of_pure_sq`, 2026-09-05):
 
     ∀ {X} (g : X ⟶ X), DiamondSelfAdjoint g → IsPure (g ≫ g) →
       ∃ h, IsPure h ∧ DiamondSelfAdjoint h ∧ g ≫ g = h ≫ h
 
-**Recommendation: (a)**, unless you know the missing step is true.  Under (a)
-the two theses agree, 211IV's citation of 105V becomes verbatim correct, and the
-`sorry` closes with no further mathematics.  Under (b) 211IV keeps a genuine
-gap that neither thesis addresses, and the tree keeps a `sorry` that is open
-research.  Nothing else in the tree turns on this: `Effectus.lean`'s partial-form
+**Recommendation: (a)** — but the question no longer costs anything either
+way: the missing step *is* true, and since 2026-09-05 it is proved in the tree.
+Under (a) the two theses agree and 211IV's citation of 105V becomes verbatim
+correct.  Under (b) the citation still leaves the step, but the step is a
+theorem of `vN` (`docs/B15-S.md`) and 211IV has no gap left.  Nothing else in
+the tree turns on this: `Effectus.lean`'s partial-form
 machinery was checked field by field against 180VII and is faithful either way.
 
-**What we do.**  Under (a): add an `IsPure` conjunct to `DiamondSelfAdjoint`,
-delete the now-redundant one from `DiamondPositive`, discharge the hypothesis,
-and the red row goes green the same day.  Under (b): the `sorry` stays, and we
-record it as open mathematics rather than as a pending decision.
+**What we do.**  Under (b) — the reading the tree implements — nothing:
+the hypothesis is proved and the row is already green.  Under (a): add an
+`IsPure` conjunct to `DiamondSelfAdjoint`, delete the now-redundant one from
+`DiamondPositive`, and the ~840 lines that prove the hypothesis become
+unnecessary (they would stay as a theorem of `vN` in their own right, or go).
 
 ### 1.3 — 158III–158V `kaplansky-hilbmod`: the printed proof is false; how should it be replaced?
 

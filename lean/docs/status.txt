@@ -4420,7 +4420,7 @@ Theses.B.Eff.VNExamples|Theses.B.Eff.vn_hom_ext|green
 Theses.B.Eff.VNExamples|Theses.B.Eff.vn_id_apply|green
 Theses.B.Eff.VNExamples|Theses.B.Eff.vn_isPushout1|green
 Theses.B.Eff.VNExamples|Theses.B.Eff.vn_isPushout2|green
-Theses.B.Eff.VNExamples|Theses.B.Eff.vn_is_andthen_eff|red
+Theses.B.Eff.VNExamples|Theses.B.Eff.vn_is_andthen_eff|green
 Theses.B.Eff.VNExamples|Theses.B.Eff.vn_is_dagger_category|green
 Theses.B.Eff.VNExamples|Theses.B.Eff.vn_jointlyMonic_aux|green
 Theses.B.Eff.VNExamples|Theses.B.Eff.vnop_comp_apply|green

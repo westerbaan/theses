@@ -306,9 +306,11 @@ neither thesis gives one.
    self-contraposition supplies the support condition and then gives
    `f = g∘g = √q(·)√q`.  Two earlier proofs (Kadison; and one needing a
    sub-claim (S), which is false) are superseded.  So reading (2) — 206II.4 and
-   211IV as printed — is sound, and the `sorry` closes with `h := g` and **no
-   statement change**; the Lean cost is ~700–1,000 lines, in progress.
-   Reading (1) would close it for free but *changes* ⋄-self-adjointness
+   211IV as printed — is sound, and the `sorry` **is closed**, with `h := g`
+   and **no statement change**: formalized 2026-09-05 as `b15_pure_of_pure_sq`
+   in `Theses/B/Eff/VNExamples.lean` (a private section of about 840 lines,
+   no new imports), so `vn_is_andthen_eff` is `sorry`-free.
+   Reading (1) would have closed it for free but *changes* ⋄-self-adjointness
    (`docs/B15-dsa-match.md`).
 
 **What the tree implements is reading (2)**, verbatim: in
@@ -326,10 +328,12 @@ through the two dictionary lemmas `su_procPure_of_isPure` (effectus purity ⟹
 100I purity) and `su_contraposed_of_diamondSelfAdjoint` (effectus
 ⋄-self-adjointness ⟹ 101VI contraposition).  `vn_is_andthen_eff` is
 `su_andThenEffectus_of_pure_sqrt` applied to the one hypothesis above, and
-that hypothesis is the file's only `sorry`.  Under ruling (1) both definitions
-gain an `IsPure` conjunct and the `sorry` closes with no further mathematics;
-under (2) it is exactly the missing step.  Nothing else in the tree depends on
-which way this goes — `Effectus.lean`'s partial-form machinery was checked
+that hypothesis is now **proved** (`b15_pure_of_pure_sq`), so the file carries
+no `sorry` and **nothing waits on this question any more**.  Under ruling (1)
+both definitions gain an `IsPure` conjunct and the hypothesis is redundant;
+under (2) — what the tree implements — it is the theorem just cited.  What is
+still wanted is only the ruling on the wording of 206II.4.  Nothing else in
+the tree depends on which way this goes — `Effectus.lean`'s partial-form machinery was checked
 field by field against 180VII and is faithful either way.  See
 `docs/DECISIONS.md` §1.2.
 
