@@ -7708,6 +7708,118 @@ theorem spectralProj_mono {a : A} (ha : 0 ≤ a) {s t : ℝ} (hst : s ≤ t) :
   rw [specPos, specPos]
   exact cfc_mono fun r _ => max_le_max (by linarith) le_rfl
 
+/-- **104VII** (`positive-quotients-centrally-similar`, proc.tex:1562,
+Proposition), the supremum of the increasing projections its proof needs:
+the spectral projections `1_{(1/(n+1),∞)}(q)` of a positive `q` increase to
+`⌈q⌉`, i.e. `⋁ₙ 1_{(1/(n+1),∞)}(q) = ⌈q⌉`.
+
+The printed proof asks for "projections `e₁ ≤ e₂ ≤ ⋯` with `⋃ₙ eₙ = ⌈p⌉`"
+and offers one example (partial sums of ceilings of an approximate
+pseudoinverse) without proving the property;
+`positive_quotients_centrally_similar` takes the spectral projections
+instead, and this is that property for them.  So the thesis prints no
+argument for this step. -/
+theorem isLUB_spectralProj_ceil (q : A) (hq : 0 ≤ q) :
+    IsLUB (Set.range fun n : ℕ => spectralProj q ((n : ℝ) + 1)⁻¹) (ceil q) := by
+  have hmono : ∀ m n : ℕ, m ≤ n →
+      spectralProj q ((m : ℝ) + 1)⁻¹ ≤ spectralProj q ((n : ℝ) + 1)⁻¹ := by
+    intro m n hmn
+    refine spectralProj_mono hq ?_
+    have hm : (0 : ℝ) < (m : ℝ) + 1 := by positivity
+    have hle : ((m : ℝ) + 1) ≤ ((n : ℝ) + 1) := by
+      have : (m : ℝ) ≤ (n : ℝ) := by exact_mod_cast hmn
+      linarith
+    exact inv_anti₀ hm hle
+  set D : Set A := Set.range fun n : ℕ => spectralProj q ((n : ℝ) + 1)⁻¹
+  have hproj : ∀ x ∈ D, IsStarProjection x := by
+    rintro _ ⟨n, rfl⟩; exact spectralProj_isStarProjection _ _
+  have hne : D.Nonempty := ⟨_, ⟨0, rfl⟩⟩
+  have hdir : DirectedOn (· ≤ ·) D := by
+    rintro _ ⟨m, rfl⟩ _ ⟨n, rfl⟩
+    exact ⟨_, ⟨max m n, rfl⟩, hmono m _ (le_max_left m n), hmono n _ (le_max_right m n)⟩
+  have hlub := isLUB_projSup_of_directed D hproj hne hdir
+  have heq : projSup D = ceil q := by
+    refine projSup_eq hproj (ceil_spec hq).1 ?_ ?_
+    · rintro _ ⟨n, rfl⟩
+      refine Theses.A.VN.ceil_mono (specPos_nonneg q _) ?_
+      have ht : (0 : ℝ) ≤ ((n : ℝ) + 1)⁻¹ := by positivity
+      rw [specPos]
+      conv_rhs => rw [show (q : A) = cfc (fun r : ℝ => r) q from
+        (by rw [show (fun r : ℝ => r) = (id : ℝ → ℝ) from rfl]; exact (cfc_id ℝ q).symm)]
+      refine cfc_mono fun r hr => ?_
+      have h0 : (0 : ℝ) ≤ r := spectrum_nonneg_of_nonneg hq hr
+      exact max_le (by linarith) h0
+    · intro r hr hub
+      have hz : ∀ n : ℕ, ((1 : A) - r) * spectralProj q ((n : ℝ) + 1)⁻¹ = 0 := by
+        intro n
+        have hPn := spectralProj_isStarProjection q ((n : ℝ) + 1)⁻¹
+        have h1 : spectralProj q ((n : ℝ) + 1)⁻¹ * r = spectralProj q ((n : ℝ) + 1)⁻¹ :=
+          (hPn.le_iff_mul_eq_left hr).mp (hub _ ⟨n, rfl⟩)
+        have h2 : r * spectralProj q ((n : ℝ) + 1)⁻¹ = spectralProj q ((n : ℝ) + 1)⁻¹ := by
+          have h3 := congrArg star h1
+          rwa [star_mul, hPn.isSelfAdjoint.star_eq, hr.isSelfAdjoint.star_eq] at h3
+        rw [sub_mul, one_mul, h2, sub_self]
+      have hq0 := mul_eq_zero_of_mul_spectralProj_eq_zero hq hz
+      have h3 : r * q = q := by
+        rw [sub_mul, one_mul, sub_eq_zero] at hq0
+        exact hq0.symm
+      have hrq : q * r = q := by
+        have h4 := congrArg star h3
+        rw [star_mul, hr.isSelfAdjoint.star_eq,
+          (IsSelfAdjoint.of_nonneg hq).star_eq] at h4
+        exact h4
+      exact (ceil_le_iff hq hr).mpr hrq
+  rwa [heq] at hlub
+
+/-- **104VII** (`positive-quotients-centrally-similar`, proc.tex:1562,
+Proposition), the `ε ↓ 0` limit of `isLUB_spectralProj_ceil` conjugated by
+an element: if `c* 1_{(1/(n+1),∞)}(q) c ≤ C` for every `n`, then
+`c* ⌈q⌉ c ≤ C`.
+
+By `isLUB_spectralProj_ceil` and **44VIII** `ad_normal`
+(`⋁_{d ∈ D} c* d c = c* (⋁D) c` for a bounded directed `D`), the conjugates
+of the spectral projections have supremum `c* ⌈q⌉ c`, and `C` is an upper
+bound of them.  Auxiliary; the thesis prints no such step. -/
+theorem ad_conj_ceil_limit {q c C : A} (hq : 0 ≤ q)
+    (h : ∀ n : ℕ, star c * spectralProj q ((n : ℝ) + 1)⁻¹ * c ≤ C) :
+    star c * ceil q * c ≤ C := by
+  have hsa : ∀ n : ℕ, IsSelfAdjoint (spectralProj q ((n : ℝ) + 1)⁻¹) :=
+    fun n => (spectralProj_isStarProjection _ _).isSelfAdjoint
+  have hcsa : IsSelfAdjoint (ceil q) := (isStarProjection_ceil q).isSelfAdjoint
+  set D : Set (selfAdjoint A) :=
+    Set.range (fun n : ℕ => (⟨spectralProj q ((n : ℝ) + 1)⁻¹, hsa n⟩ : selfAdjoint A))
+  have hval : Subtype.val '' D = Set.range fun n : ℕ => spectralProj q ((n : ℝ) + 1)⁻¹ := by
+    ext x
+    constructor
+    · rintro ⟨_, ⟨n, rfl⟩, rfl⟩; exact ⟨n, rfl⟩
+    · rintro ⟨n, rfl⟩; exact ⟨⟨_, hsa n⟩, ⟨n, rfl⟩, rfl⟩
+  have hlubA : IsLUB (Set.range fun n : ℕ => spectralProj q ((n : ℝ) + 1)⁻¹) (ceil q) :=
+    isLUB_spectralProj_ceil q hq
+  have hlubD : IsLUB D (⟨ceil q, hcsa⟩ : selfAdjoint A) := by
+    refine isLUB_of_isLUB_val ?_
+    rw [hval]
+    exact hlubA
+  have hne : D.Nonempty := ⟨_, ⟨0, rfl⟩⟩
+  have hdir : DirectedOn (· ≤ ·) D := by
+    rintro _ ⟨m, rfl⟩ _ ⟨n, rfl⟩
+    have hmono : ∀ i j : ℕ, i ≤ j →
+        spectralProj q ((i : ℝ) + 1)⁻¹ ≤ spectralProj q ((j : ℝ) + 1)⁻¹ := by
+      intro i j hij
+      refine spectralProj_mono hq ?_
+      have hm : (0 : ℝ) < (i : ℝ) + 1 := by positivity
+      have hle : ((i : ℝ) + 1) ≤ ((j : ℝ) + 1) := by
+        have : (i : ℝ) ≤ (j : ℝ) := by exact_mod_cast hij
+        linarith
+      exact inv_anti₀ hm hle
+    exact ⟨_, ⟨max m n, rfl⟩, hmono m _ (le_max_left m n), hmono n _ (le_max_right m n)⟩
+  have h3 : D.Nonempty ∧ DirectedOn (· ≤ ·) D ∧ BddAbove D := ⟨hne, hdir, ⟨_, hlubD.1⟩⟩
+  have hds : dirSup D h3 = (⟨ceil q, hcsa⟩ : selfAdjoint A) :=
+    (isLUB_dirSup D h3).unique hlubD
+  have hAD := ad_normal c D h3
+  rw [hds] at hAD
+  refine hAD.2 ?_
+  rintro _ ⟨_, ⟨n, rfl⟩, rfl⟩
+  exact h n
 /-! #### Steps 1–2 of the proof of 104VII -/
 
 /-- **104VII**, step 1 (proc.tex:1562): `⌈pep⌉ = e` for a projection `e`

@@ -2144,6 +2144,45 @@ theorem n_pos (f : 𝒜 →ₗ[ℂ] ℬ) (N : ℕ) :
     exact Finset.sum_nonneg fun m _ => h2 (fun i => C m i) b
   tfae_finish
 
+/-- **34II** (`n-pos`, cstar.tex:5519, Lemma), clause 2 at `N = 2`, read for
+an ncp-map: `∑_{i,j} bᵢ* f(aᵢ* aⱼ) bⱼ ≥ 0` for all `a ∈ 𝒜²` and `b ∈ ℬ²`.
+
+This is the *vector form* of 2-positivity, the form the Schur complement
+inequality `ncp_schur_complement` below is read off from.  An `NCPMap`
+carries Mathlib's `CompletelyPositiveMap`, whose defining condition is
+clause 1 of **34II** at every `N`; so this is nothing but `n_pos` at
+`N = 2`, and the thesis prints no separate argument for the specialisation. -/
+theorem ncp_twoPos_vec (f : NCPMap 𝒜 ℬ) (a : Fin 2 → 𝒜) (b : Fin 2 → ℬ) :
+    0 ≤ ∑ i, ∑ j, star (b i) * f (star (a i) * a j) * b j := by
+  have h1 : ∀ M : CStarMatrix (Fin 2) (Fin 2) 𝒜, 0 ≤ M →
+      0 ≤ M.map ⇑(f.toCompletelyPositiveMap.toLinearMap) :=
+    fun M hM => f.toCompletelyPositiveMap.map_cstarMatrix_nonneg' 2 M hM
+  have h2 := ((n_pos (f.toCompletelyPositiveMap.toLinearMap) 2).out 0 1).mp h1
+  exact h2 a b
+
+/-- The **Schur complement inequality** carried by 2-positivity, i.e. by
+clause 2 of **34II** (`n-pos`, cstar.tex:5519, Lemma) at `N = 2`: for an
+ncp-map `f : 𝒜 → ℬ`, elements `a₀, a₁ ∈ 𝒜` and `x ∈ ℬ`,
+
+  `x* f(a₀* a₁) + f(a₁* a₀) x − x* f(a₀* a₀) x ≤ f(a₁* a₁)`.
+
+It is `ncp_twoPos_vec` at `a = (a₀, a₁)` and `b = (−x, 1)`, the double sum
+expanded.  Taking `a₀ = 1`, `a₁ = s` a projection and `x = f(s)` gives
+Kadison–Schwarz `f(s)² ≤ f(s)` for a unital `f`.  The thesis states no such
+corollary; this is auxiliary. -/
+theorem ncp_schur_complement (f : NCPMap 𝒜 ℬ) (a0 a1 : 𝒜) (x : ℬ) :
+    star x * f (star a0 * a1) + f (star a1 * a0) * x - star x * f (star a0 * a0) * x
+      ≤ f (star a1 * a1) := by
+  have h := ncp_twoPos_vec f ![a0, a1] ![-x, 1]
+  have hsum : ∑ i, ∑ j, star (![-x, 1] i) * f (star (![a0, a1] i) * ![a0, a1] j) * ![-x, 1] j
+      = f (star a1 * a1) - (star x * f (star a0 * a1) + f (star a1 * a0) * x
+          - star x * f (star a0 * a0) * x) := by
+    rw [Fin.sum_univ_two, Fin.sum_univ_two, Fin.sum_univ_two]
+    simp only [Matrix.cons_val_zero, Matrix.cons_val_one, star_neg, star_one]
+    noncomm_ring
+  rw [hsum] at h
+  exact sub_nonneg.mp h
+
 /-- **34IV** (`cp`, cstar.tex:5560, Exercise), part 1: a linear map `f`
 between C*-algebras is completely positive iff `M_N f` is positive for every
 `N` iff `(f(aᵢ* aⱼ))ᵢⱼ ≥ 0` for every `N` and `a ∈ 𝒜^N`.  (Mathlib's
