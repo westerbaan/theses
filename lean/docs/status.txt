@@ -6645,6 +6645,7 @@ Theses.B.Eff.VNExamples|Theses.B.Eff.su_pred_ovee|green
 Theses.B.Eff.VNExamples|Theses.B.Eff.su_sqrtConj_self|green
 Theses.B.Eff.VNExamples|Theses.B.Eff.su_sqrt_mul_ceil|green
 Theses.B.Eff.VNExamples|Theses.B.Eff.su_stand_corner_ceil|green
+Theses.B.Eff.VNExamples|Theses.B.Eff.vn_is_dagger_category_of|green
 Theses.B.Eff.WStarCat|Theses.B.Eff.cp_isSelfAdjoint|green
 Theses.B.Eff.WStarCat|Theses.B.Eff.cp_map_nonneg|green
 Theses.B.Eff.WStarCat|Theses.B.Eff.cp_mono|green
