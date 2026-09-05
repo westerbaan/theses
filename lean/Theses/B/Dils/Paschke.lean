@@ -55,7 +55,7 @@ for `X = ℬ` one has `𝒷ᵃ(ℬ) = {R_t} ≅ ℬᵐᵒᵖ` with `h(R_t) = t`,
 `h : 𝒷ᵃ(ℬ) → ℬ` is `unop`, which is the transpose on `M₂` and hence
 positive but *not* completely positive, while `h : 𝒷ᵃ(ℬ)ᵐᵒᵖ → ℬ` is a
 ∗-isomorphism.  With these fields `h (ρ a) = φ a` holds on the nose
-(`paschkeModule_h_ρ`), so `IsPaschkeDilationOf` (`Stinespring.lean:3367`),
+(`paschkeModule_h_ρ`), so `IsPaschkeDilationOf` (`Stinespring.lean:3819`),
 which asks for `h (ρ a) = φ a` with no `star`, is correct as it stands
 (ruling of the author, Bas, 2026-08-15: "the definition of Paschke dilation
 should not include the star").

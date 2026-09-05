@@ -2923,12 +2923,531 @@ theorem omega_norm_basic_2_counterexamples :
     rw [h1, h2]
     norm_num
 
+/-! ### 30V: the completion of an inner product space, built by hand -/
+
+namespace InnerCompletion
+
+noncomputable section
+
+variable {V : Type*} [SeminormedAddCommGroup V] [InnerProductSpace ℂ V]
+
+/-- `‖x‖ = √⟪x,x⟫` in any (semi)normed inner product space. -/
+theorem norm_eq_sqrt_re_inner' {E : Type*} [SeminormedAddCommGroup E]
+    [InnerProductSpace ℂ E] (x : E) : ‖x‖ = Real.sqrt (RCLike.re (⟪x, x⟫ : ℂ)) := by
+  rw [← InnerProductSpace.norm_sq_eq_re_inner (𝕜 := ℂ) x, Real.sqrt_sq (norm_nonneg x)]
+
+theorem re_inner_self_nonneg' {E : Type*} [SeminormedAddCommGroup E]
+    [InnerProductSpace ℂ E] (x : E) : 0 ≤ RCLike.re (⟪x, x⟫ : ℂ) := by
+  rw [← InnerProductSpace.norm_sq_eq_re_inner (𝕜 := ℂ) x]
+  positivity
+
+omit [InnerProductSpace ℂ V] in
+/-- A Cauchy sequence on `V` is bounded. -/
+theorem cau_bdd {a : ℕ → V} (ha : CauchySeq a) : ∃ C : ℝ, 0 ≤ C ∧ ∀ n, ‖a n‖ ≤ C := by
+  obtain ⟨R, hR0, hR⟩ := cauchySeq_bdd ha
+  refine ⟨‖a 0‖ + R, by positivity, fun n => ?_⟩
+  have h := hR n 0
+  rw [dist_eq_norm] at h
+  have h2 : ‖a n‖ ≤ ‖a n - a 0‖ + ‖a 0‖ := by
+    simpa using norm_add_le (a n - a 0) (a 0)
+  linarith
+
+/-- The Cauchy sequences on `V`, as a submodule of `ℕ → V`. -/
+def cauSeqs (V : Type*) [SeminormedAddCommGroup V] [InnerProductSpace ℂ V] :
+    Submodule ℂ (ℕ → V) where
+  carrier := {a | CauchySeq a}
+  add_mem' {a b} ha hb := ha.add hb
+  zero_mem' := cauchySeq_const 0
+  smul_mem' c a ha := by
+    simp only [Set.mem_ofPred_eq] at ha ⊢
+    rw [Metric.cauchySeq_iff] at ha ⊢
+    intro ε hε
+    obtain ⟨N, hN⟩ := ha (ε / (‖c‖ + 1)) (by positivity)
+    refine ⟨N, fun m hm n hn => ?_⟩
+    have h := hN m hm n hn
+    rw [dist_eq_norm] at h ⊢
+    have hsm : (c • a) m - (c • a) n = c • (a m - a n) := by
+      simp [Pi.smul_apply, smul_sub]
+    rw [hsm, norm_smul]
+    have h1 : ‖c‖ * ‖a m - a n‖ ≤ (‖c‖ + 1) * ‖a m - a n‖ := by
+      nlinarith [norm_nonneg (a m - a n)]
+    have h2 : (‖c‖ + 1) * ‖a m - a n‖ < (‖c‖ + 1) * (ε / (‖c‖ + 1)) :=
+      mul_lt_mul_of_pos_left h (by positivity)
+    rw [mul_div_cancel₀ _ (by positivity : (‖c‖ + 1) ≠ 0)] at h2
+    linarith
+
+/-- The null sequences among the Cauchy sequences: `lim ‖aₙ‖ = 0`.  Two Cauchy
+sequences are identified in the completion exactly when their difference is
+null, which is the thesis's `lim ‖aₙ − bₙ‖ = 0`. -/
+def nullSeqs (V : Type*) [SeminormedAddCommGroup V] [InnerProductSpace ℂ V] :
+    Submodule ℂ ↥(cauSeqs V) where
+  carrier := {a | Tendsto (fun n => ‖(a : ℕ → V) n‖) atTop (𝓝 0)}
+  add_mem' {a b} ha hb := by
+    simp only [Set.mem_ofPred_eq] at ha hb ⊢
+    exact squeeze_zero (fun n => norm_nonneg _)
+      (fun n => norm_add_le ((a : ℕ → V) n) ((b : ℕ → V) n)) (by simpa using ha.add hb)
+  zero_mem' := by simp
+  smul_mem' c a ha := by
+    simp only [Set.mem_ofPred_eq] at ha ⊢
+    have h := ha.const_mul ‖c‖
+    rw [mul_zero] at h
+    exact h.congr (fun n => by simp [norm_smul])
+
+/-- The completion of `V`: Cauchy sequences on `V` modulo `lim ‖aₙ − bₙ‖ = 0`. -/
+def Cpl (V : Type*) [SeminormedAddCommGroup V] [InnerProductSpace ℂ V] : Type _ :=
+  ↥(cauSeqs V) ⧸ nullSeqs V
+
+instance : AddCommGroup (Cpl V) :=
+  inferInstanceAs (AddCommGroup (↥(cauSeqs V) ⧸ nullSeqs V))
+
+instance : Module ℂ (Cpl V) :=
+  inferInstanceAs (Module ℂ (↥(cauSeqs V) ⧸ nullSeqs V))
+
+/-- The class of a Cauchy sequence in the completion. -/
+def mkC (a : ↥(cauSeqs V)) : Cpl V := Submodule.Quotient.mk a
+
+theorem mkC_surjective : Function.Surjective (mkC (V := V)) :=
+  fun x => Submodule.Quotient.mk_surjective _ x
+
+theorem mkC_add (a b : ↥(cauSeqs V)) : mkC (a + b) = mkC a + mkC b := rfl
+
+theorem mkC_sub (a b : ↥(cauSeqs V)) : mkC (a - b) = mkC a - mkC b := rfl
+
+theorem mkC_smul (c : ℂ) (a : ↥(cauSeqs V)) : mkC (c • a) = c • mkC a := rfl
+
+theorem mkC_eq_zero {a : ↥(cauSeqs V)} :
+    (mkC a : Cpl V) = 0 ↔ Tendsto (fun n => ‖a.1 n‖) atTop (𝓝 0) :=
+  Submodule.Quotient.mk_eq_zero _
+
+theorem mkC_eq_mkC {a b : ↥(cauSeqs V)} :
+    (mkC a : Cpl V) = mkC b ↔ Tendsto (fun n => ‖a.1 n - b.1 n‖) atTop (𝓝 0) :=
+  Submodule.Quotient.eq _
+
+/-! #### The inner product on the completion -/
+
+/-- Solution parsec-300.50, item 2, for the inner product: if `a` and `b` are
+Cauchy then so is `⟪aₙ,bₙ⟫`, by Cauchy–Schwarz and the boundedness of a Cauchy
+sequence. -/
+theorem inner_cauchySeq {a b : ℕ → V} (ha : CauchySeq a) (hb : CauchySeq b) :
+    CauchySeq (fun n => (⟪a n, b n⟫ : ℂ)) := by
+  obtain ⟨Ca, hCa0, hCa⟩ := cau_bdd ha
+  obtain ⟨Cb, hCb0, hCb⟩ := cau_bdd hb
+  rw [Metric.cauchySeq_iff] at ha hb ⊢
+  intro ε hε
+  obtain ⟨N₁, hN₁⟩ := ha (ε / (4 * (Cb + 1))) (by positivity)
+  obtain ⟨N₂, hN₂⟩ := hb (ε / (4 * (Ca + 1))) (by positivity)
+  refine ⟨max N₁ N₂, fun m hm n hn => ?_⟩
+  have h1 := hN₁ m (le_of_max_le_left hm) n (le_of_max_le_left hn)
+  have h2 := hN₂ m (le_of_max_le_right hm) n (le_of_max_le_right hn)
+  rw [dist_eq_norm] at h1 h2 ⊢
+  have hsplit : (⟪a m, b m⟫ : ℂ) - ⟪a n, b n⟫
+      = ⟪a m - a n, b m⟫ + ⟪a n, b m - b n⟫ := by
+    rw [inner_sub_left, inner_sub_right]; ring
+  rw [hsplit]
+  have e1 : ‖(⟪a m - a n, b m⟫ : ℂ)‖ ≤ ‖a m - a n‖ * ‖b m‖ := norm_inner_le_norm _ _
+  have e2 : ‖(⟪a n, b m - b n⟫ : ℂ)‖ ≤ ‖a n‖ * ‖b m - b n‖ := norm_inner_le_norm _ _
+  have t1 : ‖a m - a n‖ * ‖b m‖ ≤ ε / 4 := by
+    have hb' : ‖b m‖ ≤ Cb + 1 := (hCb m).trans (by linarith)
+    have hmul := mul_le_mul h1.le hb' (norm_nonneg _) (by positivity)
+    calc ‖a m - a n‖ * ‖b m‖ ≤ (ε / (4 * (Cb + 1))) * (Cb + 1) := hmul
+      _ = ε / 4 := by field_simp
+  have t2 : ‖a n‖ * ‖b m - b n‖ ≤ ε / 4 := by
+    have ha' : ‖a n‖ ≤ Ca + 1 := (hCa n).trans (by linarith)
+    have hmul := mul_le_mul ha' h2.le (norm_nonneg _) (by positivity)
+    calc ‖a n‖ * ‖b m - b n‖ ≤ (Ca + 1) * (ε / (4 * (Ca + 1))) := hmul
+      _ = ε / 4 := by field_simp
+  have htri := norm_add_le (⟪a m - a n, b m⟫ : ℂ) (⟪a n, b m - b n⟫ : ℂ)
+  linarith
+
+/-- The inner product of two Cauchy sequences: `lim ⟪aₙ,bₙ⟫`. -/
+def ipCau (a b : ↥(cauSeqs V)) : ℂ := limUnder atTop (fun n => (⟪a.1 n, b.1 n⟫ : ℂ))
+
+theorem ipCau_tendsto (a b : ↥(cauSeqs V)) :
+    Tendsto (fun n => (⟪a.1 n, b.1 n⟫ : ℂ)) atTop (𝓝 (ipCau a b)) :=
+  (inner_cauchySeq a.2 b.2).tendsto_limUnder
+
+/-- Solution parsec-300.50, item 3, for the inner product: `lim ⟪aₙ,bₙ⟫` does
+not change when `a` and `b` are replaced by equivalent Cauchy sequences. -/
+theorem ipCau_congr {a a' b b' : ↥(cauSeqs V)}
+    (ha : Tendsto (fun n => ‖a.1 n - a'.1 n‖) atTop (𝓝 0))
+    (hb : Tendsto (fun n => ‖b.1 n - b'.1 n‖) atTop (𝓝 0)) :
+    ipCau a b = ipCau a' b' := by
+  obtain ⟨Cb, hCb0, hCb⟩ := cau_bdd b.2
+  obtain ⟨Ca, hCa0, hCa⟩ := cau_bdd a'.2
+  have hdiff : Tendsto (fun n => (⟪a.1 n, b.1 n⟫ : ℂ) - ⟪a'.1 n, b'.1 n⟫) atTop (𝓝 0) := by
+    refine squeeze_zero_norm
+      (a := fun n => ‖a.1 n - a'.1 n‖ * Cb + Ca * ‖b.1 n - b'.1 n‖) (fun n => ?_) ?_
+    · have hsplit : (⟪a.1 n, b.1 n⟫ : ℂ) - ⟪a'.1 n, b'.1 n⟫
+          = ⟪a.1 n - a'.1 n, b.1 n⟫ + ⟪a'.1 n, b.1 n - b'.1 n⟫ := by
+        rw [inner_sub_left, inner_sub_right]; ring
+      rw [hsplit]
+      have e1 : ‖(⟪a.1 n - a'.1 n, b.1 n⟫ : ℂ)‖ ≤ ‖a.1 n - a'.1 n‖ * ‖b.1 n‖ :=
+        norm_inner_le_norm _ _
+      have e2 : ‖(⟪a'.1 n, b.1 n - b'.1 n⟫ : ℂ)‖ ≤ ‖a'.1 n‖ * ‖b.1 n - b'.1 n‖ :=
+        norm_inner_le_norm _ _
+      have f1 : ‖a.1 n - a'.1 n‖ * ‖b.1 n‖ ≤ ‖a.1 n - a'.1 n‖ * Cb :=
+        mul_le_mul_of_nonneg_left (hCb n) (norm_nonneg _)
+      have f2 : ‖a'.1 n‖ * ‖b.1 n - b'.1 n‖ ≤ Ca * ‖b.1 n - b'.1 n‖ :=
+        mul_le_mul_of_nonneg_right (hCa n) (norm_nonneg _)
+      have htri := norm_add_le (⟪a.1 n - a'.1 n, b.1 n⟫ : ℂ) (⟪a'.1 n, b.1 n - b'.1 n⟫ : ℂ)
+      linarith
+    · have hsum := (ha.mul_const Cb).add (hb.const_mul Ca)
+      simpa using hsum
+  have hlim : Tendsto (fun n => (⟪a'.1 n, b'.1 n⟫ : ℂ)) atTop (𝓝 (ipCau a b)) := by
+    have h := (ipCau_tendsto a b).sub hdiff
+    rw [sub_zero] at h
+    exact h.congr (fun n => by ring)
+  exact tendsto_nhds_unique hlim (ipCau_tendsto a' b')
+
+/-- The inner product on the completion. -/
+def ipQuot (x y : Cpl V) : ℂ :=
+  Quotient.liftOn₂' x y ipCau (by
+    intro a b a' b' ha hb
+    exact ipCau_congr ((Submodule.quotientRel_def _).1 ha) ((Submodule.quotientRel_def _).1 hb))
+
+theorem ipQuot_mk (a b : ↥(cauSeqs V)) : ipQuot (mkC a : Cpl V) (mkC b) = ipCau a b := rfl
+
+theorem ipQuot_conj (x y : Cpl V) : (starRingEnd ℂ) (ipQuot y x) = ipQuot x y := by
+  obtain ⟨a, rfl⟩ := mkC_surjective x
+  obtain ⟨b, rfl⟩ := mkC_surjective y
+  rw [ipQuot_mk, ipQuot_mk, starRingEnd_apply]
+  refine tendsto_nhds_unique ?_ (ipCau_tendsto a b)
+  exact ((ipCau_tendsto b a).star).congr
+    (fun n => by rw [← starRingEnd_apply, inner_conj_symm])
+
+theorem ipQuot_nonneg (x : Cpl V) : 0 ≤ RCLike.re (ipQuot x x) := by
+  obtain ⟨a, rfl⟩ := mkC_surjective x
+  rw [ipQuot_mk]
+  exact ge_of_tendsto' (((RCLike.continuous_re (K := ℂ)).tendsto _).comp (ipCau_tendsto a a))
+    (fun n => re_inner_self_nonneg' (a.1 n))
+
+theorem ipQuot_add_left (x y z : Cpl V) :
+    ipQuot (x + y) z = ipQuot x z + ipQuot y z := by
+  obtain ⟨a, rfl⟩ := mkC_surjective x
+  obtain ⟨b, rfl⟩ := mkC_surjective y
+  obtain ⟨c, rfl⟩ := mkC_surjective z
+  rw [← mkC_add, ipQuot_mk, ipQuot_mk, ipQuot_mk]
+  refine tendsto_nhds_unique (ipCau_tendsto (a + b) c) ?_
+  exact ((ipCau_tendsto a c).add (ipCau_tendsto b c)).congr
+    (fun n => (inner_add_left (𝕜 := ℂ) (a.1 n) (b.1 n) (c.1 n)).symm)
+
+theorem ipQuot_smul_left (x y : Cpl V) (r : ℂ) :
+    ipQuot (r • x) y = (starRingEnd ℂ) r * ipQuot x y := by
+  obtain ⟨a, rfl⟩ := mkC_surjective x
+  obtain ⟨b, rfl⟩ := mkC_surjective y
+  rw [← mkC_smul, ipQuot_mk, ipQuot_mk]
+  refine tendsto_nhds_unique (ipCau_tendsto (r • a) b) ?_
+  exact ((ipCau_tendsto a b).const_mul ((starRingEnd ℂ) r)).congr
+    (fun n => (inner_smul_left (𝕜 := ℂ) (a.1 n) (b.1 n) r).symm)
+
+theorem ipQuot_definite (x : Cpl V) (hx : ipQuot x x = 0) : x = 0 := by
+  obtain ⟨a, rfl⟩ := mkC_surjective x
+  rw [ipQuot_mk] at hx
+  rw [mkC_eq_zero]
+  have h1 : Tendsto (fun n => RCLike.re (⟪a.1 n, a.1 n⟫ : ℂ)) atTop
+      (𝓝 (RCLike.re (ipCau a a))) :=
+    ((RCLike.continuous_re (K := ℂ)).tendsto _).comp (ipCau_tendsto a a)
+  rw [hx, map_zero] at h1
+  have h2 := h1.sqrt
+  rw [Real.sqrt_zero] at h2
+  exact h2.congr (fun n => (norm_eq_sqrt_re_inner' (a.1 n)).symm)
+
+/-- The inner-product core of the completion.  Positive *definiteness* is the
+point of the quotient: `lim ⟪aₙ,aₙ⟫ = 0` says exactly that `a` is null. -/
+instance complCore : InnerProductSpace.Core ℂ (Cpl V) where
+  inner := ipQuot
+  conj_inner_symm := ipQuot_conj
+  re_inner_nonneg := ipQuot_nonneg
+  add_left := ipQuot_add_left
+  smul_left := ipQuot_smul_left
+  definite := ipQuot_definite
+
+instance : NormedAddCommGroup (Cpl V) :=
+  InnerProductSpace.Core.toNormedAddCommGroup (𝕜 := ℂ)
+
+instance : InnerProductSpace ℂ (Cpl V) := InnerProductSpace.ofCore _
+
+theorem inner_mkC (a b : ↥(cauSeqs V)) :
+    (⟪(mkC a : Cpl V), mkC b⟫ : ℂ) = ipCau a b := rfl
+
+/-- The norm on the completion is the thesis's `lim ‖aₙ‖`. -/
+theorem norm_mkC_tendsto (a : ↥(cauSeqs V)) :
+    Tendsto (fun n => ‖a.1 n‖) atTop (𝓝 ‖(mkC a : Cpl V)‖) := by
+  rw [norm_eq_sqrt_re_inner' (mkC a : Cpl V), inner_mkC]
+  exact ((((RCLike.continuous_re (K := ℂ)).tendsto _).comp (ipCau_tendsto a a)).sqrt).congr
+    (fun n => (norm_eq_sqrt_re_inner' (a.1 n)).symm)
+
+/-- Solution parsec-300.50, item 3: the distance on the completion is the
+thesis's `d((aₙ)ₙ, (bₙ)ₙ) = lim ‖aₙ − bₙ‖`. -/
+theorem dist_mkC_tendsto (a b : ↥(cauSeqs V)) :
+    Tendsto (fun n => ‖a.1 n - b.1 n‖) atTop (𝓝 (dist (mkC a : Cpl V) (mkC b))) := by
+  rw [dist_eq_norm, ← mkC_sub]
+  exact norm_mkC_tendsto (a - b)
+
+/-! #### The embedding `η` -/
+
+/-- The constant sequence `a, a, a, …`. -/
+def constSeq (v : V) : ↥(cauSeqs V) := ⟨fun _ => v, cauchySeq_const v⟩
+
+/-- **30V**'s embedding `η : V → ℋ`, sending `a` to the constant sequence. -/
+def etaMap (V : Type*) [SeminormedAddCommGroup V] [InnerProductSpace ℂ V] :
+    V →ₗ[ℂ] Cpl V where
+  toFun v := mkC (constSeq v)
+  map_add' _v _w := rfl
+  map_smul' _c _v := rfl
+
+theorem etaMap_apply (v : V) : etaMap V v = mkC (constSeq v) := rfl
+
+/-- `⟪η a, η b⟫ = [a,b]`. -/
+theorem inner_etaMap (a b : V) : (⟪etaMap V a, etaMap V b⟫ : ℂ) = ⟪a, b⟫ := by
+  rw [etaMap_apply, etaMap_apply, inner_mkC]
+  exact tendsto_nhds_unique (ipCau_tendsto (constSeq a) (constSeq b)) tendsto_const_nhds
+
+/-- Solution parsec-300.50, item 6: `η` is an isometry. -/
+theorem norm_etaMap (v : V) : ‖etaMap V v‖ = ‖v‖ := by
+  rw [norm_eq_sqrt_re_inner' (etaMap V v), inner_etaMap, ← norm_eq_sqrt_re_inner']
+
+/-- Solution parsec-300.50, item 5: `η(a₁), η(a₂), …` converges to `(aₙ)ₙ`, so
+`η(V)` is dense in the completion. -/
+theorem denseRange_etaMap : DenseRange (etaMap V) := by
+  intro x
+  rw [Metric.mem_closure_iff]
+  intro ε hε
+  obtain ⟨a, rfl⟩ := mkC_surjective x
+  obtain ⟨N, hN⟩ := Metric.cauchySeq_iff.1 a.2 (ε / 2) (by positivity)
+  refine ⟨etaMap V (a.1 N), Set.mem_range_self _, ?_⟩
+  have hle : dist (mkC a : Cpl V) (etaMap V (a.1 N)) ≤ ε / 2 := by
+    refine le_of_tendsto (dist_mkC_tendsto a (constSeq (a.1 N))) ?_
+    filter_upwards [eventually_ge_atTop N] with n hn
+    have h := hN n hn N le_rfl
+    rw [dist_eq_norm] at h
+    exact h.le
+  linarith
+
+/-! #### Completeness: the printed diagonal-subsequence argument -/
+
+omit [InnerProductSpace ℂ V] in
+/-- Solution parsec-300.50, item 4, second WLOG: every Cauchy sequence has an
+equivalent subsequence with `‖bₘ − b_M‖ ≤ 2^{-M}` for `m ≥ M`. -/
+theorem exists_rapid {a : ℕ → V} (ha : CauchySeq a) :
+    ∃ b : ℕ → V, CauchySeq b ∧ (∀ M m, M ≤ m → ‖b m - b M‖ ≤ (1 / 2 : ℝ) ^ M) ∧
+      Tendsto (fun n => ‖a n - b n‖) atTop (𝓝 0) := by
+  rw [Metric.cauchySeq_iff] at ha
+  choose N hN using fun k : ℕ => ha ((1 / 2 : ℝ) ^ k) (by positivity)
+  obtain ⟨M, hMs, hMN⟩ : ∃ M : ℕ → ℕ, (∀ j, M j + 1 ≤ M (j + 1)) ∧ (∀ k, N k ≤ M k) := by
+    refine ⟨fun k => Nat.rec (motive := fun _ => ℕ) (N 0)
+      (fun j ih => max (N (j + 1)) (ih + 1)) k, fun j => le_max_right _ _, fun k => ?_⟩
+    cases k with
+    | zero => exact le_rfl
+    | succ j => exact le_max_left _ _
+  have hMmono : Monotone M :=
+    monotone_nat_of_le_succ (fun j => le_trans (Nat.le_succ _) (hMs j))
+  have hMk : ∀ k, k ≤ M k := by
+    intro k
+    induction k with
+    | zero => exact Nat.zero_le _
+    | succ j ih => exact le_trans (Nat.succ_le_succ ih) (hMs j)
+  have hrap : ∀ K m, K ≤ m → ‖a (M m) - a (M K)‖ ≤ (1 / 2 : ℝ) ^ K := by
+    intro K m hKm
+    have h := hN K (M m) (le_trans (hMN K) (hMmono hKm)) (M K) (hMN K)
+    rw [dist_eq_norm] at h
+    exact h.le
+  refine ⟨fun k => a (M k), ?_, hrap, ?_⟩
+  · rw [Metric.cauchySeq_iff]
+    intro ε hε
+    obtain ⟨K, hK⟩ := exists_pow_lt_of_lt_one (by positivity : (0:ℝ) < ε / 2)
+      (by norm_num : (1/2 : ℝ) < 1)
+    refine ⟨K, fun m hm n hn => ?_⟩
+    rw [dist_eq_norm]
+    have h1 := hrap K m hm
+    have h2 := hrap K n hn
+    have hsub := norm_sub_le (a (M m) - a (M K)) (a (M n) - a (M K))
+    have heq : a (M m) - a (M K) - (a (M n) - a (M K)) = a (M m) - a (M n) := by abel
+    rw [heq] at hsub
+    linarith
+  · rw [Metric.tendsto_atTop]
+    intro ε hε
+    obtain ⟨K, hK⟩ := exists_pow_lt_of_lt_one (by positivity : (0:ℝ) < ε)
+      (by norm_num : (1/2 : ℝ) < 1)
+    refine ⟨M K, fun n hn => ?_⟩
+    have hKn : K ≤ n := le_trans (hMk K) hn
+    have h := hN K n (le_trans (hMN K) hn) (M n) (le_trans (hMN K) (hMmono hKn))
+    rw [dist_eq_norm] at h
+    rw [Real.dist_eq, sub_zero, abs_of_nonneg (norm_nonneg _)]
+    exact lt_trans h hK
+
+/-- Solution parsec-300.50, item 4: the completion is complete, by the printed
+diagonal-subsequence argument. -/
+instance complete_compl : CompleteSpace (Cpl V) := by
+  refine Metric.complete_of_convergent_controlled_sequences (fun n => (1 / 2 : ℝ) ^ n)
+    (fun n => by positivity) ?_
+  intro u hu
+  -- the printed second WLOG: rapidly-Cauchy representatives
+  have hrep : ∀ n, ∃ b : ↥(cauSeqs V), mkC b = u n ∧
+      ∀ K m, K ≤ m → ‖b.1 m - b.1 K‖ ≤ (1 / 2 : ℝ) ^ K := by
+    intro n
+    obtain ⟨a, ha⟩ := mkC_surjective (u n)
+    obtain ⟨b, hbc, hbr, hab⟩ := exists_rapid a.2
+    refine ⟨⟨b, hbc⟩, ?_, hbr⟩
+    rw [← ha, mkC_eq_mkC]
+    exact hab.congr (fun n => norm_sub_rev _ _)
+  choose b hb hbr using hrep
+  -- the printed estimate: ‖a_{ns} − a_{mt}‖ ≤ 3·2^{-N} for n,m,s,t ≥ N
+  have key : ∀ N n m s t : ℕ, N ≤ n → N ≤ m → N ≤ s → N ≤ t →
+      ‖(b n).1 s - (b m).1 t‖ ≤ 3 * (1 / 2 : ℝ) ^ N := by
+    intro N n m s t hn hm hs ht
+    have hlim := dist_mkC_tendsto (b n) (b m)
+    rw [hb n, hb m] at hlim
+    have hlt : dist (u n) (u m) < (1 / 2 : ℝ) ^ N := hu N n m hn hm
+    have hev : ∀ᶠ k in atTop, ‖(b n).1 k - (b m).1 k‖ < (1 / 2 : ℝ) ^ N :=
+      hlim.eventually_lt_const hlt
+    obtain ⟨k, ⟨hk1, hk2⟩, hk3⟩ :=
+      ((hev.and (eventually_ge_atTop s)).and (eventually_ge_atTop t)).exists
+    have e1 : ‖(b n).1 s - (b n).1 k‖ ≤ (1 / 2 : ℝ) ^ N := by
+      have h := hbr n s k hk2
+      rw [← norm_neg, neg_sub] at h
+      exact h.trans (pow_le_pow_of_le_one (by norm_num) (by norm_num) hs)
+    have e2 : ‖(b m).1 k - (b m).1 t‖ ≤ (1 / 2 : ℝ) ^ N := by
+      have h := hbr m t k hk3
+      exact h.trans (pow_le_pow_of_le_one (by norm_num) (by norm_num) ht)
+    have htri : ‖(b n).1 s - (b m).1 t‖
+        ≤ ‖(b n).1 s - (b n).1 k‖ + ‖(b n).1 k - (b m).1 k‖ + ‖(b m).1 k - (b m).1 t‖ := by
+      have hd4 := dist_triangle4 ((b n).1 s) ((b n).1 k) ((b m).1 k) ((b m).1 t)
+      simpa only [dist_eq_norm] using hd4
+    linarith
+  -- the printed diagonal sequence
+  have hdiag : CauchySeq (fun n => (b n).1 n) := by
+    rw [Metric.cauchySeq_iff]
+    intro ε hε
+    obtain ⟨N, hN⟩ := exists_pow_lt_of_lt_one (by positivity : (0:ℝ) < ε / 3)
+      (by norm_num : (1/2 : ℝ) < 1)
+    refine ⟨N, fun m hm n hn => ?_⟩
+    rw [dist_eq_norm]
+    have hk := key N m n m n hm hn hm hn
+    linarith
+  refine ⟨mkC ⟨fun n => (b n).1 n, hdiag⟩, ?_⟩
+  rw [Metric.tendsto_atTop]
+  intro ε hε
+  obtain ⟨N, hN⟩ := exists_pow_lt_of_lt_one (by positivity : (0:ℝ) < ε / 3)
+    (by norm_num : (1/2 : ℝ) < 1)
+  refine ⟨N, fun m hm => ?_⟩
+  have hlim := dist_mkC_tendsto (b m) (⟨fun n => (b n).1 n, hdiag⟩ : ↥(cauSeqs V))
+  rw [hb m] at hlim
+  have hle : dist (u m) (mkC ⟨fun n => (b n).1 n, hdiag⟩) ≤ 3 * (1 / 2 : ℝ) ^ N := by
+    refine le_of_tendsto hlim ?_
+    filter_upwards [eventually_ge_atTop N] with k hk
+    exact key N m k k k hm hk hk hk
+  linarith
+
+end
+
+end InnerCompletion
+
+/-! ### 30V: the extension clause -/
+
+section DenseExtension
+
+/-- Solution parsec-300.50, item 6, the general fact the exercise's extension
+clause rests on: a uniformly continuous map `f` on a dense isometric copy of
+`D` inside a metric space `W`, with values in a complete space `Y`, extends
+uniquely to a uniformly continuous map on `W`.  The extension is the printed
+`g(x) = limₙ f(dₙ)` for any `d` with `ι(dₙ) → x`, and its uniform continuity is
+the printed three-term estimate. -/
+theorem dense_uniform_extension {W : Type*} [PseudoMetricSpace W]
+    {D : Type*} [PseudoMetricSpace D] (ι : D → W)
+    (hiso : ∀ x y : D, dist (ι x) (ι y) = dist x y) (hdense : DenseRange ι)
+    {Y : Type*} [UniformSpace Y] [T0Space Y] [CompleteSpace Y]
+    (f : D → Y) (hf : UniformContinuous f) :
+    ∃! g : W → Y, UniformContinuous g ∧ ∀ d : D, g (ι d) = f d := by
+  -- for each `x` an approximating sequence in `D`
+  have hseq : ∀ x : W, ∃ d : ℕ → D, Tendsto (fun n => ι (d n)) atTop (𝓝 x) := by
+    intro x
+    have hex : ∀ k : ℕ, ∃ y : D, dist x (ι y) < 1 / (k + 1) := by
+      intro k
+      obtain ⟨_, ⟨y, rfl⟩, hy⟩ :=
+        Metric.mem_closure_iff.1 (hdense x) (1 / (k + 1)) (by positivity)
+      exact ⟨y, hy⟩
+    choose d hd using hex
+    refine ⟨d, Metric.tendsto_atTop.2 fun ε hε => ?_⟩
+    obtain ⟨K, hK⟩ := exists_nat_one_div_lt hε
+    refine ⟨K, fun n hn => ?_⟩
+    have h := hd n
+    rw [dist_comm] at h
+    refine lt_of_lt_of_le h (le_trans ?_ hK.le)
+    apply one_div_le_one_div_of_le (by positivity)
+    exact_mod_cast Nat.add_le_add_right hn 1
+  choose d hd using hseq
+  -- `f(dₙ)` is Cauchy, hence converges in the complete space `Y`
+  have hconv : ∀ x : W, ∃ y : Y, Tendsto (fun n => f (d x n)) atTop (𝓝 y) := by
+    intro x
+    refine cauchySeq_tendsto_of_complete (hf.comp_cauchySeq ?_)
+    have h1 : CauchySeq (fun n => ι (d x n)) := (hd x).cauchySeq
+    rw [Metric.cauchySeq_iff] at h1 ⊢
+    intro ε hε
+    obtain ⟨N, hN⟩ := h1 ε hε
+    exact ⟨N, fun m hm n hn => by rw [← hiso]; exact hN m hm n hn⟩
+  choose g hg using hconv
+  -- `g` extends `f`
+  have hgext : ∀ a : D, g (ι a) = f a := by
+    intro a
+    refine tendsto_nhds_unique (hg (ι a)) ?_
+    have hda : Tendsto (fun n => d (ι a) n) atTop (𝓝 a) := by
+      rw [Metric.tendsto_atTop]
+      intro ε hε
+      obtain ⟨N, hN⟩ := Metric.tendsto_atTop.1 (hd (ι a)) ε hε
+      exact ⟨N, fun n hn => by rw [← hiso]; exact hN n hn⟩
+    exact (hf.continuous.tendsto a).comp hda
+  -- `g` is uniformly continuous, by the printed three-term estimate
+  have hgu : UniformContinuous g := by
+    rw [Metric.uniformity_basis_dist.uniformContinuous_iff (uniformity Y).basis_sets]
+    intro S hS
+    obtain ⟨T, hT, hTsymm, hTsub⟩ := comp_comp_symm_mem_uniformity_sets hS
+    obtain ⟨δ, hδ, hδf⟩ :=
+      (Metric.uniformity_basis_dist.uniformContinuous_iff (uniformity Y).basis_sets).1 hf T hT
+    refine ⟨δ / 3, by positivity, fun x y hxy => ?_⟩
+    have e1 : ∀ᶠ n in atTop, (g x, f (d x n)) ∈ T :=
+      (hg x).eventually (UniformSpace.ball_mem_nhds _ hT)
+    have e2 : ∀ᶠ n in atTop, (g y, f (d y n)) ∈ T :=
+      (hg y).eventually (UniformSpace.ball_mem_nhds _ hT)
+    have e3 : ∀ᶠ n in atTop, dist (ι (d x n)) x < δ / 3 := by
+      have h := (hd x).eventually (Metric.ball_mem_nhds x (by positivity : (0:ℝ) < δ / 3))
+      simpa [Metric.mem_ball] using h
+    have e4 : ∀ᶠ n in atTop, dist (ι (d y n)) y < δ / 3 := by
+      have h := (hd y).eventually (Metric.ball_mem_nhds y (by positivity : (0:ℝ) < δ / 3))
+      simpa [Metric.mem_ball] using h
+    obtain ⟨k, ⟨hk1, hk2⟩, hk3, hk4⟩ := ((e1.and e2).and (e3.and e4)).exists
+    have hmem : dist x y < δ / 3 := hxy
+    have hdd : dist (d x k) (d y k) < δ := by
+      rw [← hiso]
+      have htri := dist_triangle4 (ι (d x k)) x y (ι (d y k))
+      have hy' : dist y (ι (d y k)) < δ / 3 := by rw [dist_comm]; exact hk4
+      linarith
+    have hmid : (f (d x k), f (d y k)) ∈ T := hδf _ _ hdd
+    have hlast : (f (d y k), g y) ∈ T := SetRel.symm T hk2
+    exact hTsub (SetRel.prodMk_mem_comp (SetRel.prodMk_mem_comp hk1 hmid) hlast)
+  refine ⟨g, ⟨hgu, hgext⟩, ?_⟩
+  rintro g' ⟨hg'u, hg'ext⟩
+  refine hdense.equalizer hg'u.continuous hgu.continuous ?_
+  funext a
+  simp only [Function.comp_apply, hg'ext, hgext]
+
+end DenseExtension
+
+section InnerProductCompletionClauses
+
+open InnerCompletion
+
 /-- **30V** (`inner-product-completion`, cstar.tex:4840, Exercise), the
 headline: every complex inner product space `V` can be completed to a Hilbert
-space `H` in which it embeds densely (Mathlib: `UniformSpace.Completion` with
-its `InnerProductSpace` instance; the intermediate steps — the metric on
-Cauchy sequences, its completeness, and the extension of the operations — are
-Mathlib's completion API).
+space `H` in which it embeds densely.
+
+The Hilbert space is the exercise's own, built above from solution
+parsec-300.50: `InnerCompletion.Cpl V`, the Cauchy sequences on `V` modulo
+`lim ‖aₙ − bₙ‖ = 0`, with `η = InnerCompletion.etaMap` sending `a` to the
+constant sequence `a, a, a, …`.  Its distance is the printed
+`d((aₙ)ₙ,(bₙ)ₙ) = lim ‖aₙ − bₙ‖`, its completeness is the printed
+diagonal-subsequence argument, and `η` is a dense isometry.  Mathlib's
+`UniformSpace.Completion` is not used.
 
 The exercise's two *extension* clauses, which are what it is used for, are
 `inner_product_completion_extension` and `inner_product_completion_extendL`
@@ -2940,8 +3459,8 @@ theorem inner_product_completion (V : Type v) [NormedAddCommGroup V]
     [InnerProductSpace ℂ V] :
     ∃ (H : Type v) (_ : NormedAddCommGroup H) (_ : InnerProductSpace ℂ H)
       (_ : CompleteSpace H) (e : V →ₗᵢ[ℂ] H), DenseRange e :=
-  ⟨UniformSpace.Completion V, inferInstance, inferInstance, inferInstance,
-    UniformSpace.Completion.toComplₗᵢ, UniformSpace.Completion.denseRange_coe⟩
+  ⟨Cpl V, inferInstance, inferInstance, inferInstance,
+    ⟨etaMap V, norm_etaMap⟩, denseRange_etaMap⟩
 
 section DegenerateInner
 
@@ -2959,12 +3478,10 @@ completion `ℋ` is still a Hilbert space, `η : V → ℋ` is still linear with
 `⟪η a, η b⟫ = [a,b]` and dense image — and `η` collapses exactly the
 seminorm-zero differences.
 
-Divergence (2), a different route to the same object: the thesis builds `ℋ`
-by hand as the Cauchy sequences on `V` modulo `lim ‖aₙ−bₙ‖ = 0`, whereas this
-is Mathlib's completion of the separation quotient of `V`.  The exercise's
-collapse of `η` is carried by that quotient: `η a = η b` iff `a` and `b` are
-inseparable (the completion map is injective on a T0 space) iff
-`d(a,b) = ‖a−b‖ = 0`, which is the exercise's own criterion.
+Nothing has to be added for the degenerate case: `InnerCompletion.Cpl V` is
+built above for a *seminormed* `V`, and the collapse of `η` is the printed
+one — `η a = η b` says that the constant sequence `a−b, a−b, …` is null,
+i.e. that `‖a−b‖ = 0` (solution parsec-300.50, item 1).
 
 For a definite inner product this is `inner_product_completion` above (where
 `η` is then an isometric *embedding*); the two extension clauses are
@@ -2979,73 +3496,119 @@ theorem inner_product_completion_degenerate (V : Type v) [AddCommGroup V] [Modul
   let _ : SeminormedAddCommGroup V :=
     InnerProductSpace.Core.toSeminormedAddCommGroup (𝕜 := ℂ) (F := V) (c := c)
   let _ : InnerProductSpace ℂ V := InnerProductSpace.ofCore c
-  refine ⟨UniformSpace.Completion (SeparationQuotient V), inferInstance, inferInstance,
-    inferInstance,
-    ((UniformSpace.Completion.toComplL : SeparationQuotient V →L[ℂ]
-        UniformSpace.Completion (SeparationQuotient V)).comp
-      (SeparationQuotient.mkCLM ℂ V)).toLinearMap, fun a b => ?_, ?_, fun a b => ?_⟩
-  · change (⟪((SeparationQuotient.mk a : SeparationQuotient V) :
-        UniformSpace.Completion (SeparationQuotient V)),
-      ((SeparationQuotient.mk b : SeparationQuotient V) :
-        UniformSpace.Completion (SeparationQuotient V))⟫ : ℂ) = _
-    rw [UniformSpace.Completion.inner_coe, SeparationQuotient.inner_mk_mk]
-  · exact UniformSpace.Completion.denseRange_coe.comp
-      SeparationQuotient.surjective_mk.denseRange
-      (UniformSpace.Completion.continuous_coe _)
-  · -- `η a = η b` iff `mk a = mk b` (the completion map is injective on the
-    -- T0 separation quotient) iff `d(a,b) = 0` iff `‖a−b‖ = 0`.
-    have h1 : (((SeparationQuotient.mk a : SeparationQuotient V) :
-        UniformSpace.Completion (SeparationQuotient V)) =
-      ((SeparationQuotient.mk b : SeparationQuotient V) :
-        UniformSpace.Completion (SeparationQuotient V))) ↔
-        (SeparationQuotient.mk a : SeparationQuotient V) = SeparationQuotient.mk b :=
-      UniformSpace.Completion.coe_inj
-    have h2 : (SeparationQuotient.mk a : SeparationQuotient V) = SeparationQuotient.mk b
-        ↔ dist a b = 0 := by
-      rw [SeparationQuotient.mk_eq_mk, Metric.inseparable_iff]
-    have h3 : dist a b = innerNorm (a - b) := by
-      rw [dist_eq_norm]
-      rfl
-    rw [← h3, ← h2, ← h1]
-    exact Iff.rfl
+  refine ⟨Cpl V, inferInstance, inferInstance, inferInstance, etaMap V,
+    fun a b => inner_etaMap a b, denseRange_etaMap, fun a b => ?_⟩
+  -- `η a = η b` iff the constant sequence `a−b` is null iff `‖a−b‖ = 0`
+  have hnorm : ∀ x : V, ‖x‖ = innerNorm x := fun x => rfl
+  rw [etaMap_apply, etaMap_apply, ← sub_eq_zero, ← mkC_sub]
+  have hsub : constSeq a - constSeq b = constSeq (a - b) := rfl
+  rw [hsub, mkC_eq_zero, ← hnorm]
+  constructor
+  · intro h
+    exact (tendsto_nhds_unique h tendsto_const_nhds).symm
+  · intro h
+    rw [show (fun _ : ℕ => ‖(constSeq (a - b) : ↥(cauSeqs V)).1 _‖) = fun _ : ℕ => ‖a - b‖ from rfl,
+      h]
+    exact tendsto_const_nhds
 
 end DegenerateInner
 
 /-- **30V** (`inner-product-completion`, cstar.tex:4840, Exercise), the
 uniform-extension clause: every uniformly continuous map `f : V → X` into a
 complete space extends *uniquely* to a uniformly continuous map on the
-completion `H` of `V` (where "`g` extends `f`" means `f = g ∘ η`). -/
+completion `H` of `V` (where "`g` extends `f`" means `f = g ∘ η`).
+
+The statement names Mathlib's `UniformSpace.Completion V` as the carrier of
+`H`, but nothing of its extension API is used: the extension is the printed
+`g(x) = limₙ f(dₙ)` of solution parsec-300.50, item 6, proved for a dense
+isometric copy of `V` in any metric space as `dense_uniform_extension`
+above. -/
 theorem inner_product_completion_extension (V : Type v) [NormedAddCommGroup V]
     [InnerProductSpace ℂ V] {X : Type*} [UniformSpace X] [T0Space X]
     [CompleteSpace X] (f : V → X) (hf : UniformContinuous f) :
     ∃! g : UniformSpace.Completion V → X,
-      UniformContinuous g ∧ ∀ v : V, g (v : UniformSpace.Completion V) = f v := by
-  refine ⟨UniformSpace.Completion.extension f,
-    ⟨UniformSpace.Completion.uniformContinuous_extension,
-      fun v => UniformSpace.Completion.extension_coe hf v⟩, ?_⟩
-  rintro g ⟨hgc, hg⟩
-  exact (UniformSpace.Completion.extension_unique hf hgc fun v => (hg v).symm).symm
+      UniformContinuous g ∧ ∀ v : V, g (v : UniformSpace.Completion V) = f v :=
+  dense_uniform_extension (fun v : V => (v : UniformSpace.Completion V))
+    (fun x y => UniformSpace.Completion.dist_eq x y)
+    UniformSpace.Completion.denseRange_coe f hf
 
 /-- **30V** (`inner-product-completion`, cstar.tex:4840, Exercise), the final
 clause: every bounded linear map `f : V → K` into a Hilbert space `K` extends
 *uniquely* to a bounded linear map on the completion `H` of `V`.
 
-This is the clause **30VI** uses to build `ϱ_ω(a)` from `b ↦ ab`. -/
+This is the clause **30VI** uses to build `ϱ_ω(a)` from `b ↦ ab`.  It is the
+printed argument of solution parsec-300.50, last item: the uniformly
+continuous extension `g` comes from `dense_uniform_extension`, and it is
+linear and bounded because those equations and that inequality hold on the
+dense image of `V` and both sides are continuous.  Mathlib's
+`ContinuousLinearMap.extend` is not used. -/
 theorem inner_product_completion_extendL (V : Type v) [NormedAddCommGroup V]
     [InnerProductSpace ℂ V] {K : Type*} [NormedAddCommGroup K]
     [InnerProductSpace ℂ K] [CompleteSpace K] (f : V →L[ℂ] K) :
     ∃! g : UniformSpace.Completion V →L[ℂ] K,
       ∀ v : V, g (v : UniformSpace.Completion V) = f v := by
-  have hd : DenseRange (UniformSpace.Completion.toComplL (𝕜 := ℂ) (E := V)) :=
+  have hdc : DenseRange (fun v : V => (v : UniformSpace.Completion V)) :=
     UniformSpace.Completion.denseRange_coe
-  have hi : IsUniformInducing (UniformSpace.Completion.toComplL (𝕜 := ℂ) (E := V)) :=
-    UniformSpace.Completion.isUniformInducing_coe V
-  refine ⟨ContinuousLinearMap.extend f UniformSpace.Completion.toComplL,
-    fun v => ContinuousLinearMap.extend_eq f hd hi v, ?_⟩
-  intro g hg
-  refine (ContinuousLinearMap.extend_unique f hd hi g ?_).symm
-  ext v
-  exact hg v
+  obtain ⟨g₀, ⟨hg₀u, hg₀e⟩, -⟩ := dense_uniform_extension
+    (fun v : V => (v : UniformSpace.Completion V))
+    (fun x y => UniformSpace.Completion.dist_eq x y)
+    UniformSpace.Completion.denseRange_coe (⇑f) f.lipschitz.uniformContinuous
+  -- the printed argument: the equations and inequalities holding on `η(V)`
+  -- hold on the completion, since both sides are continuous and `η(V)` is dense
+  have hadd1 : ∀ (v : V) (y : UniformSpace.Completion V),
+      g₀ ((v : UniformSpace.Completion V) + y)
+        = g₀ (v : UniformSpace.Completion V) + g₀ y := by
+    intro v
+    refine congrFun (hdc.equalizer
+      (g := fun y => g₀ ((v : UniformSpace.Completion V) + y))
+      (h := fun y => g₀ (v : UniformSpace.Completion V) + g₀ y)
+      (hg₀u.continuous.comp (continuous_const.add continuous_id))
+      (continuous_const.add hg₀u.continuous) ?_)
+    funext w
+    simp only [Function.comp_apply]
+    rw [← UniformSpace.Completion.coe_add, hg₀e, hg₀e, hg₀e, map_add]
+  have hadd : ∀ x y : UniformSpace.Completion V, g₀ (x + y) = g₀ x + g₀ y := by
+    intro x y
+    refine congrFun (hdc.equalizer
+      (g := fun x => g₀ (x + y)) (h := fun x => g₀ x + g₀ y)
+      (hg₀u.continuous.comp (continuous_id.add continuous_const))
+      (hg₀u.continuous.add continuous_const) ?_) x
+    funext v
+    simp only [Function.comp_apply]
+    exact hadd1 v y
+  have hsmul : ∀ (r : ℂ) (x : UniformSpace.Completion V), g₀ (r • x) = r • g₀ x := by
+    intro r
+    refine congrFun (hdc.equalizer
+      (g := fun x => g₀ (r • x)) (h := fun x => r • g₀ x)
+      (hg₀u.continuous.comp (continuous_const_smul r))
+      ((continuous_const_smul r).comp hg₀u.continuous) ?_)
+    funext v
+    simp only [Function.comp_apply]
+    rw [← UniformSpace.Completion.coe_smul, hg₀e, hg₀e, map_smul]
+  have hbd : ∀ x : UniformSpace.Completion V, ‖g₀ x‖ ≤ ‖f‖ * ‖x‖ := by
+    have hcl : IsClosed {x : UniformSpace.Completion V | ‖g₀ x‖ ≤ ‖f‖ * ‖x‖} :=
+      isClosed_le (continuous_norm.comp hg₀u.continuous) (continuous_const.mul continuous_norm)
+    have hsub : Set.range (fun v : V => (v : UniformSpace.Completion V))
+        ⊆ {x : UniformSpace.Completion V | ‖g₀ x‖ ≤ ‖f‖ * ‖x‖} := by
+      rintro _ ⟨v, rfl⟩
+      simp only [Set.mem_ofPred_eq, hg₀e v, UniformSpace.Completion.norm_coe]
+      exact f.le_opNorm v
+    have h := hcl.closure_subset_iff.2 hsub
+    rw [hdc.closure_range] at h
+    exact fun x => h (Set.mem_univ x)
+  let gL : UniformSpace.Completion V →ₗ[ℂ] K :=
+    { toFun := g₀, map_add' := hadd, map_smul' := fun r x => hsmul r x }
+  refine ⟨gL.mkContinuous ‖f‖ hbd, fun v => hg₀e v, ?_⟩
+  intro g' hg'
+  have heq : (g' : UniformSpace.Completion V → K) = g₀ := by
+    refine hdc.equalizer g'.continuous hg₀u.continuous ?_
+    funext v
+    simp only [Function.comp_apply]
+    rw [hg' v, hg₀e v]
+  ext x
+  exact congrFun heq x
+
+end InnerProductCompletionClauses
 
 /-! **30VI** (`gns`, cstar.tex:4886, Definition (Gelfand–Naimark–Segal
 construction)): for a p-map `ω : 𝒜 → ℂ`, the Hilbert space `ℋ_ω` is the
