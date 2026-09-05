@@ -20,6 +20,7 @@ What each one guards, and how strict it is:
                         in.  A **measurement**, not a defect list: nothing in a
                         bare reference says what it points at.
 * `forward_check`    -- proofs citing a later point than the printed proof does
+* `faithful_check`   -- `faithful` rows on points that print no argument
 * `limb_check`       -- `docs/DEAD-LIMBS.md`'s dead-claims re-counted against
                         the tree.  Exact for the claims it can parse, which is
                         bullet heads and first table cells only.
@@ -66,6 +67,9 @@ CHECKS = [
     # the §2.2 ruling: a proof at point P may cite a later point only where the
     # printed proof does; a lead is cleared by recording the allowance in its row.
     ("forward_check",     ["forward_check.py"],          True),
+    # a `faithful` row whose point prints no argument (and no hint, solution
+    # or sibling-keyed solution) and whose note does not say where the print is
+    ("faithful_check",    ["faithful_check.py"],         True),
     ("vn_setting_check",  ["vn_setting_check.py"],       True),
     ("xref_check",        ["xref_check.py"],             True),
     ("lean_line_check",   ["lean_line_check.py"],        True),

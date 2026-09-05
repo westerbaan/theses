@@ -14,7 +14,7 @@ its own body, or has a solution in asols.tex (keyed parsec-P.Q) / bsols.tex
 `faithful` are reported; the grade may still be right (an exercise's printed
 instruction can be the argument), so this is a lead list, not a defect list.
 """
-import glob, os, re, sys, collections
+import sys, glob, os, re, sys, collections
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SRC = os.path.dirname(ROOT)
 ROMAN = {'I':1,'V':5,'X':10,'L':50}
@@ -79,4 +79,5 @@ def main():
             hits.append((os.path.basename(path),i,q[0],q[1],f))
     for h in hits: print('NOARG   %s:%d  %s  %s  (%s)'%h)
     print('%d faithful rows; %d name a point that prints no argument and has no solution'%(n,len(hits)))
+    sys.exit(1 if hits else 0)
 if __name__=='__main__': main()
