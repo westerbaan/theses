@@ -2531,7 +2531,7 @@ a fact about the Kadison definition of `Theses/Common.lean` and about no point
 of parsec 840 — out of `A/VN/Division.lean` and into
 `A/VN/Projections.lean`'s new `namespace FDVNA`, where the Division copies'
 own doc block had been asking for them to go.  The three copies have no
-consumer, and will have none until 2026-09-05; phase 2 done that day, Division uses them.sh` writes no olean, so the
+consumer until 2026-09-05, when phase 2 switched `Division.lean` to them (`lean1.sh` writes no olean, so the
 switch cannot be made in the session that adds them.  This is the B15 pattern
 of 2026-09-05 (`9873c34` then `5f5f922`), and it is recorded here so that a
 sweep run between the two phases does not read the three as limbs.
