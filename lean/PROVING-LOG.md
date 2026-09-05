@@ -31428,3 +31428,23 @@ of `beff-vnexamples.csv` goes `weaker → ok`: every category 206III names is
 now a ⋄-effectus in the tree.  With this, nothing on the "ours" list of
 2026-09-04 remains: the seven sorries and the completion rebuilds are the
 author's.
+
+## Session 111 — 2026-09-05, the rebuilds
+
+The author said "continue"; the §2.2 (a) rebuilds nobody had asked for
+individually went out.  All landed, each on the printed construction:
+**136II** (the Hilbert-space completion from Cauchy sequences, +441),
+**30V** (the inner-product completion, +563; the solution's item 8 applies
+its extension clause to operations that are not uniformly continuous —
+ERRATA 30V), **30VI–30VIII** (the GNS representation as the unique bounded
+extension of left multiplication, unblocked by 30V, +225), **84II**
+(finite-dimensional C*-algebras are matrix algebras, 840.30–840.60, +983,
+with the von Neumann instance for a finite-dimensional C*-algebra; 840.60's
+norm computation contradicts nothing — ERRATA 84II), **14II** (the step
+functions `S_𝒜`, their closure, the integral and its printed properties,
++1,176; the Bochner forms keep their statements, the printed ones are
+siblings).  Third 200-row sample: A 120/10/0, B 60/8/2, one statement grade
+wrong in 600 sampled rows across the three draws; ERRATA 175V.4.  The rows
+moved to `none` on 2026-08-26 under "a hint is not an argument" re-derived
+under the reversed convention (5 regraded, 13 correctly `none`).
+Seven sorries throughout.
