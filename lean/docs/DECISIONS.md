@@ -542,7 +542,7 @@ own dependency order (11XIII from 11XV.1, which the thesis proves from 11XIII).
 
 **Ruled (a) on 2026-09-04**, in the author's words: "we go with (a), but with the caveat that we can use out-of-order proofs insofar the thesis does that itself."  So the rule is global and retroactive: `mathlib` rows are rewritten along the author's routes chapter by chapter, and a proof at parsec `P` may cite a later point only where the printed proof of that point does so.  `scripts/forward_check.py` finds the order-inverting proofs against the printed `\sref`s; the `mathlib` rows are worked file by file under `docs/audit/BRIEF.md`.
 
-**Recommendation: (b).**  Under (a) the largest single item is not even in the
+**Recommendation: (b).**  *(Stale since session 74, found 2026-09-05: parsecs 120–150 are closed and axiom-clean; the residual is ten call sites, `docs/BOOTSTRAP-SIZING.md`.)*  Under (a) the largest single item is not even in the
 list above: closing parsecs **120–150** (Banach-space-valued contour integration
 — Goursat, Cauchy, Taylor, winding numbers, bridged to Mathlib) would remove the
 last two imports and make `A/CStar` self-supporting from the ground up.  That is
