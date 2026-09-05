@@ -859,3 +859,5 @@ The row is the record; the repair is a separate commit.  Rows are triaged:
   `PROVING-LOG.md` (`ERRATA.md`'s scope note excludes it);
 * a **proof** that diverges without needing to → re-proved, or the divergence
   recorded in `PROVING-LOG.md` with its class.
+
+*Convention, 2026-09-05 (from the two sampled re-audits):* an Exercise's printed **hint** counts as a printed argument — `faithful` when the Lean follows it, `route` when it does not; a point that prints neither proof nor hint, and has no solution, is `none` whatever the Lean does.  The same clause rendered on both sides of the tree gets the same grade.
