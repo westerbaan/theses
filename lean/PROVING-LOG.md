@@ -31348,3 +31348,30 @@ and `g∘g` pure is pure; with self-contraposition `f = √q(·)√q`.  Sub-clai
 (S) of the second proof was false (`g = c_p`), and was routed around.  Reading
 (2) is therefore a theorem of `vN`; the `sorry` in `vn_is_andthen_eff` is
 pure proof work (no statement change) and is launched.
+
+## Session 110 — 2026-09-05
+
+* **211IV proved.**  `vn_is_andthen_eff`'s hypothesis — every ⋄-positive map
+  (effectus sense) has a pure ⋄-self-adjoint square root — is discharged with
+  `h := g` by the theorem of `docs/B15-S.md`: an ncp `g` with `⌈g⌉ = ⌈g(1)⌉`
+  and `g∘g` pure is pure.  +886 lines in `VNExamples.lean` (`section
+  B15SquareRoot`): 34II's 2-positivity and its Schur complement, Kadison–
+  Schwarz at a projection in one line, the `ε ↓ 0` spectral regularisation,
+  98IX's bracket transported to an endomap, 100III's iff.  Axiom-clean.
+  **Seven sorries.**  No statement changed: reading (2) — 206II.4 and 211IV as
+  printed — is sound, and B15 stays open only as a wording question.
+  `b15_twoPos`/`b15_schur` belong in `Matrices.lean`,
+  `b15_isLUB_spectralProj`/`b15_conj_ceil_limit` in `Measurement.lean`; local
+  for now because `lean1.sh` writes no oleans.
+* **27XX Stone–Weierstrass** on the printed lattice route (+470): the
+  parsec-230 square root of a positive element of a closed C*-subalgebra stays
+  in it (the 23II iteration is polynomial).  ERRATA 27XXIV.
+* **28II.3/5/6/7/7b, 27XXV** transcribed once 28II.4's `cfc` identification
+  (§2.1, yesterday) removed their blocker.  30V, 30VII, 136II re-costed as
+  ~1,000-line rebuilds of Mathlib's completion; the 150II cut-through for 136II
+  does not exist (`dils_completion` *is* `UniformSpace.Completion`).
+* `forward_check` honours allowances recorded in rows, reports 0, and is a
+  standing check in `check_all`.
+* Stale now: 215II/215VI's `vn_is_dagger_category` is conditional on
+  `AndThenEffectus` only because 211IV carried a `sorry`; supplying it is a
+  statement change for a §2.1 alignment pass.
