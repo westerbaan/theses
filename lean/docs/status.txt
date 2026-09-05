@@ -698,6 +698,8 @@ Theses.A.CStar.Matrices|Theses.A.CStar.moduleAdjointable_linear|green
 Theses.A.CStar.Matrices|Theses.A.CStar.module_maps_cstar_identity|green
 Theses.A.CStar.Representation|Theses.A.CStar.multiplicative_state_on_cx|green
 Theses.A.CStar.Matrices|Theses.A.CStar.n_pos|green
+Theses.A.CStar.Matrices|Theses.A.CStar.ncp_schur_complement|green
+Theses.A.CStar.Matrices|Theses.A.CStar.ncp_twoPos_vec|green
 Theses.A.CStar.TowardsVN|Theses.A.CStar.norm_c00T_xN|green
 Theses.A.CStar.Basic|Theses.A.CStar.norm_le_iff_neg_algebraMap_le|green
 Theses.A.CStar.Positive|Theses.A.CStar.norm_lpInftyNontrivialEquiv|green
@@ -890,6 +892,7 @@ Theses.A.Proc.Measurement|Theses.A.Proc.adPure_sqBracket|green
 Theses.A.Proc.Measurement|Theses.A.Proc.adPure_sqBracket_iso|green
 Theses.A.Proc.Measurement|Theses.A.Proc.adSelf_apply|green
 Theses.A.Proc.Measurement|Theses.A.Proc.ad_bipositive|green
+Theses.A.Proc.Measurement|Theses.A.Proc.ad_conj_ceil_limit|green
 Theses.A.Proc.Measurement|Theses.A.Proc.ad_injective|green
 Theses.A.Proc.Measurement|Theses.A.Proc.ad_ncp_1|green
 Theses.A.Proc.Measurement|Theses.A.Proc.ad_rigid|green
@@ -1296,6 +1299,7 @@ Theses.A.Proc.Measurement|Theses.A.Proc.isLUB_of_isLUB_val|green
 Theses.A.Proc.Commutation|Theses.A.Proc.isLUB_range_finsetSum|green
 Theses.A.Proc.Commutation|Theses.A.Proc.isLUB_range_opTensor_left|green
 Theses.A.Proc.Commutation|Theses.A.Proc.isLUB_range_opTensor_right|green
+Theses.A.Proc.Measurement|Theses.A.Proc.isLUB_spectralProj_ceil|green
 Theses.A.Proc.Measurement|Theses.A.Proc.isLUB_val_of_isLUB|green
 Theses.A.Proc.Measurement|Theses.A.Proc.isPure_adSelf|green
 Theses.A.Proc.Measurement|Theses.A.Proc.isPure_id|green
@@ -6586,19 +6590,15 @@ Theses.B.Eff.StatesPredicates|Theses.B.Eff.rng_po1|green
 Theses.B.Eff.StatesPredicates|Theses.B.Eff.rng_po2|green
 Theses.B.Eff.StatesPredicates|Theses.B.Eff.rng_stat_empty|green
 Theses.B.Eff.StatesPredicates|Theses.B.Eff.rng_truth_ne_zero|green
-Theses.B.Eff.VNExamples|Theses.B.Eff.b15_conj_ceil_limit|green
 Theses.B.Eff.VNExamples|Theses.B.Eff.b15_eq_zero_of_ncpCarrier|green
 Theses.B.Eff.VNExamples|Theses.B.Eff.b15_exists_bracketEndo|green
 Theses.B.Eff.VNExamples|Theses.B.Eff.b15_exists_cornerTransport|green
-Theses.B.Eff.VNExamples|Theses.B.Eff.b15_isLUB_spectralProj|green
 Theses.B.Eff.VNExamples|Theses.B.Eff.b15_ks|green
 Theses.B.Eff.VNExamples|Theses.B.Eff.b15_pure_of_pure_sq|green
 Theses.B.Eff.VNExamples|Theses.B.Eff.b15_pure_of_pure_sq_aux|green
-Theses.B.Eff.VNExamples|Theses.B.Eff.b15_schur|green
 Theses.B.Eff.VNExamples|Theses.B.Eff.b15_schur_limit|green
 Theses.B.Eff.VNExamples|Theses.B.Eff.b15_stepA|green
 Theses.B.Eff.VNExamples|Theses.B.Eff.b15_stepB|green
-Theses.B.Eff.VNExamples|Theses.B.Eff.b15_twoPos|green
 Theses.B.Eff.VNExamples|Theses.B.Eff.cu_sa|green
 Theses.B.Eff.VNExamples|Theses.B.Eff.cu_sa'|green
 Theses.B.Eff.VNExamples|Theses.B.Eff.directedOn_saDown|green
