@@ -3431,6 +3431,79 @@ theorem dense_uniform_extension {W : Type*} [PseudoMetricSpace W]
   funext a
   simp only [Function.comp_apply, hg'ext, hgext]
 
+/-- Solution parsec-300.50, last item, in the form both the exercise's own
+extension clause and **30VI**'s `ϱ_ω` need it: a bounded linear map `f` on a
+dense isometric copy `ι(D)` of `D` inside `W`, with values in a Banach space
+`K`, extends *uniquely* to a bounded linear map on `W`.
+
+The printed argument: the uniformly continuous extension `g` is the one
+`dense_uniform_extension` supplies, and the equations `g(x+y) = g x + g y`,
+`g(r·x) = r·g x` and the inequality `‖g x‖ ≤ ‖f‖‖x‖` hold on the dense set
+`ι(D)` — because `f` is linear and bounded — with both sides continuous, so
+they hold on all of `W`.  Uniqueness is again density.
+
+`D` is only *semi*normed, which is what **30VI** needs: `[·,·]_ω` is in
+general degenerate, so `𝒜` under `‖·‖_ω` is a seminormed space. -/
+theorem dense_linear_extension {D : Type*} [SeminormedAddCommGroup D] [NormedSpace ℂ D]
+    {W : Type*} [SeminormedAddCommGroup W] [NormedSpace ℂ W] (ι : D →ₗᵢ[ℂ] W)
+    (hdense : DenseRange ι)
+    {K : Type*} [NormedAddCommGroup K] [NormedSpace ℂ K] [CompleteSpace K]
+    (f : D →L[ℂ] K) :
+    ∃! g : W →L[ℂ] K, ∀ v : D, g (ι v) = f v := by
+  have hiso : ∀ x y : D, dist (ι x) (ι y) = dist x y := by
+    intro x y
+    rw [dist_eq_norm, dist_eq_norm, ← map_sub, ι.norm_map]
+  obtain ⟨g₀, ⟨hg₀u, hg₀e⟩, -⟩ :=
+    dense_uniform_extension (fun v : D => ι v) hiso hdense (⇑f) f.lipschitz.uniformContinuous
+  have hadd1 : ∀ (v : D) (y : W), g₀ (ι v + y) = g₀ (ι v) + g₀ y := by
+    intro v
+    refine congrFun (hdense.equalizer
+      (g := fun y => g₀ (ι v + y)) (h := fun y => g₀ (ι v) + g₀ y)
+      (hg₀u.continuous.comp (continuous_const.add continuous_id))
+      (continuous_const.add hg₀u.continuous) ?_)
+    funext w
+    simp only [Function.comp_apply]
+    rw [← map_add ι, hg₀e, hg₀e, hg₀e, map_add]
+  have hadd : ∀ x y : W, g₀ (x + y) = g₀ x + g₀ y := by
+    intro x y
+    refine congrFun (hdense.equalizer
+      (g := fun x => g₀ (x + y)) (h := fun x => g₀ x + g₀ y)
+      (hg₀u.continuous.comp (continuous_id.add continuous_const))
+      (hg₀u.continuous.add continuous_const) ?_) x
+    funext v
+    simp only [Function.comp_apply]
+    exact hadd1 v y
+  have hsmul : ∀ (r : ℂ) (x : W), g₀ (r • x) = r • g₀ x := by
+    intro r
+    refine congrFun (hdense.equalizer
+      (g := fun x => g₀ (r • x)) (h := fun x => r • g₀ x)
+      (hg₀u.continuous.comp (continuous_const_smul r))
+      ((continuous_const_smul r).comp hg₀u.continuous) ?_)
+    funext v
+    simp only [Function.comp_apply]
+    rw [← map_smul ι, hg₀e, hg₀e, map_smul]
+  have hbd : ∀ x : W, ‖g₀ x‖ ≤ ‖f‖ * ‖x‖ := by
+    have hcl : IsClosed {x : W | ‖g₀ x‖ ≤ ‖f‖ * ‖x‖} :=
+      isClosed_le (continuous_norm.comp hg₀u.continuous) (continuous_const.mul continuous_norm)
+    have hsub : Set.range (fun v : D => ι v) ⊆ {x : W | ‖g₀ x‖ ≤ ‖f‖ * ‖x‖} := by
+      rintro _ ⟨v, rfl⟩
+      simp only [Set.mem_ofPred_eq, hg₀e v, ι.norm_map]
+      exact f.le_opNorm v
+    have h := hcl.closure_subset_iff.2 hsub
+    rw [hdense.closure_range] at h
+    exact fun x => h (Set.mem_univ x)
+  let gL : W →ₗ[ℂ] K :=
+    { toFun := g₀, map_add' := hadd, map_smul' := fun r x => hsmul r x }
+  refine ⟨gL.mkContinuous ‖f‖ hbd, fun v => hg₀e v, ?_⟩
+  intro g' hg'
+  have heq : (g' : W → K) = g₀ := by
+    refine hdense.equalizer g'.continuous hg₀u.continuous ?_
+    funext v
+    simp only [Function.comp_apply]
+    rw [hg' v, hg₀e v]
+  ext x
+  exact congrFun heq x
+
 end DenseExtension
 
 section InnerProductCompletionClauses
@@ -3541,90 +3614,242 @@ printed argument of solution parsec-300.50, last item: the uniformly
 continuous extension `g` comes from `dense_uniform_extension`, and it is
 linear and bounded because those equations and that inequality hold on the
 dense image of `V` and both sides are continuous.  Mathlib's
-`ContinuousLinearMap.extend` is not used. -/
+`ContinuousLinearMap.extend` is not used.  That argument is carried by
+`dense_linear_extension` above, which runs it for an arbitrary dense isometric
+copy — as **30VI** needs, since `𝒜` under `‖·‖_ω` is only seminormed. -/
 theorem inner_product_completion_extendL (V : Type v) [NormedAddCommGroup V]
     [InnerProductSpace ℂ V] {K : Type*} [NormedAddCommGroup K]
     [InnerProductSpace ℂ K] [CompleteSpace K] (f : V →L[ℂ] K) :
     ∃! g : UniformSpace.Completion V →L[ℂ] K,
-      ∀ v : V, g (v : UniformSpace.Completion V) = f v := by
-  have hdc : DenseRange (fun v : V => (v : UniformSpace.Completion V)) :=
-    UniformSpace.Completion.denseRange_coe
-  obtain ⟨g₀, ⟨hg₀u, hg₀e⟩, -⟩ := dense_uniform_extension
-    (fun v : V => (v : UniformSpace.Completion V))
-    (fun x y => UniformSpace.Completion.dist_eq x y)
-    UniformSpace.Completion.denseRange_coe (⇑f) f.lipschitz.uniformContinuous
-  -- the printed argument: the equations and inequalities holding on `η(V)`
-  -- hold on the completion, since both sides are continuous and `η(V)` is dense
-  have hadd1 : ∀ (v : V) (y : UniformSpace.Completion V),
-      g₀ ((v : UniformSpace.Completion V) + y)
-        = g₀ (v : UniformSpace.Completion V) + g₀ y := by
-    intro v
-    refine congrFun (hdc.equalizer
-      (g := fun y => g₀ ((v : UniformSpace.Completion V) + y))
-      (h := fun y => g₀ (v : UniformSpace.Completion V) + g₀ y)
-      (hg₀u.continuous.comp (continuous_const.add continuous_id))
-      (continuous_const.add hg₀u.continuous) ?_)
-    funext w
-    simp only [Function.comp_apply]
-    rw [← UniformSpace.Completion.coe_add, hg₀e, hg₀e, hg₀e, map_add]
-  have hadd : ∀ x y : UniformSpace.Completion V, g₀ (x + y) = g₀ x + g₀ y := by
-    intro x y
-    refine congrFun (hdc.equalizer
-      (g := fun x => g₀ (x + y)) (h := fun x => g₀ x + g₀ y)
-      (hg₀u.continuous.comp (continuous_id.add continuous_const))
-      (hg₀u.continuous.add continuous_const) ?_) x
-    funext v
-    simp only [Function.comp_apply]
-    exact hadd1 v y
-  have hsmul : ∀ (r : ℂ) (x : UniformSpace.Completion V), g₀ (r • x) = r • g₀ x := by
-    intro r
-    refine congrFun (hdc.equalizer
-      (g := fun x => g₀ (r • x)) (h := fun x => r • g₀ x)
-      (hg₀u.continuous.comp (continuous_const_smul r))
-      ((continuous_const_smul r).comp hg₀u.continuous) ?_)
-    funext v
-    simp only [Function.comp_apply]
-    rw [← UniformSpace.Completion.coe_smul, hg₀e, hg₀e, map_smul]
-  have hbd : ∀ x : UniformSpace.Completion V, ‖g₀ x‖ ≤ ‖f‖ * ‖x‖ := by
-    have hcl : IsClosed {x : UniformSpace.Completion V | ‖g₀ x‖ ≤ ‖f‖ * ‖x‖} :=
-      isClosed_le (continuous_norm.comp hg₀u.continuous) (continuous_const.mul continuous_norm)
-    have hsub : Set.range (fun v : V => (v : UniformSpace.Completion V))
-        ⊆ {x : UniformSpace.Completion V | ‖g₀ x‖ ≤ ‖f‖ * ‖x‖} := by
-      rintro _ ⟨v, rfl⟩
-      simp only [Set.mem_ofPred_eq, hg₀e v, UniformSpace.Completion.norm_coe]
-      exact f.le_opNorm v
-    have h := hcl.closure_subset_iff.2 hsub
-    rw [hdc.closure_range] at h
-    exact fun x => h (Set.mem_univ x)
-  let gL : UniformSpace.Completion V →ₗ[ℂ] K :=
-    { toFun := g₀, map_add' := hadd, map_smul' := fun r x => hsmul r x }
-  refine ⟨gL.mkContinuous ‖f‖ hbd, fun v => hg₀e v, ?_⟩
-  intro g' hg'
-  have heq : (g' : UniformSpace.Completion V → K) = g₀ := by
-    refine hdc.equalizer g'.continuous hg₀u.continuous ?_
-    funext v
-    simp only [Function.comp_apply]
-    rw [hg' v, hg₀e v]
-  ext x
-  exact congrFun heq x
+      ∀ v : V, g (v : UniformSpace.Completion V) = f v :=
+  dense_linear_extension UniformSpace.Completion.toComplₗᵢ
+    UniformSpace.Completion.denseRange_coe f
 
 end InnerProductCompletionClauses
 
-/-! **30VI** (`gns`, cstar.tex:4886, Definition (Gelfand–Naimark–Segal
+/-! ### **30VI**–**30VIII**: the GNS representation `ϱ_ω`
+
+**30VI** (`gns`, cstar.tex:4886, Definition (Gelfand–Naimark–Segal
 construction)): for a p-map `ω : 𝒜 → ℂ`, the Hilbert space `ℋ_ω` is the
-completion of `𝒜` under `[·,·]_ω`, with embedding `η_ω : 𝒜 → ℋ_ω`, and
-`ϱ_ω(a) : ℋ_ω → ℋ_ω` is the continuous extension of `b ↦ ab`.  In Mathlib
-(`Mathlib/Analysis/CStarAlgebra/GelfandNaimarkSegal.lean`), for
-`ω : 𝒜 →ₚ[ℂ] ℂ`: `ω.PreGNS` (= `𝒜` with the `[·,·]_ω` inner product),
-`ω.GNS` (its completion), and `ω.gnsStarAlgHom : 𝒜 →⋆ₐ[ℂ] B(ω.GNS)`. -/
+completion of `𝒜` under `[·,·]_ω` (**30II**), with embedding
+`η_ω : 𝒜 → ℋ_ω`, and `ϱ_ω(a) : ℋ_ω → ℋ_ω` is the *unique* bounded linear map
+with `ϱ_ω(a) η_ω(b) = η_ω(ab)`, obtained from the extension clause of **30V**
+because `b ↦ ab` is bounded for `‖·‖_ω` by **30IV**.2 (`omega-norm-basic`).
+
+The carrier is Mathlib's (`Mathlib/Analysis/CStarAlgebra/GelfandNaimarkSegal.lean`):
+for `ω : 𝒜 →ₚ[ℂ] ℂ`, `ω.PreGNS` is `𝒜` with the `[·,·]_ω` inner product —
+seminormed, since `[·,·]_ω` is in general degenerate — and `ℋ_ω = ω.GNS` its
+completion, with `η_ω(b)` the coercion of `ω.toPreGNS b`.  Everything on top
+of that carrier is the thesis's: `gnsRho` is `ϱ_ω`, built by
+`dense_linear_extension` (**30V**) exactly as **30VI** builds it, and
+`gnsRhoHom` is **30VII** with **30VIII**'s four-part proof transcribed.
+`gnsStarAlgHom_eq_gnsRho` then identifies Mathlib's `ω.gnsStarAlgHom` with it,
+by the uniqueness half of the same clause of **30V**. -/
+
+section GNSRepresentation
+
+open PositiveLinearMap
+
+omit [StarOrderedRing 𝒜] in
+/-- A p-map bundled as Mathlib's `𝒜 →ₚ[ℂ] ℂ` is positive in the sense of
+**10II**.5, which is the form **30IV** is stated in. -/
+private theorem gnsPos (ω : 𝒜 →ₚ[ℂ] ℂ) : IsPositiveMap ω.toLinearMap :=
+  fun _ ha => ω.map_nonneg ha
+
+/-- `ω.PreGNS` carries exactly the seminorm `‖·‖_ω` of **30IV**. -/
+private theorem norm_preGNS (ω : 𝒜 →ₚ[ℂ] ℂ) (x : ω.PreGNS) :
+    ‖x‖ = omegaSeminorm ω.toLinearMap (ω.ofPreGNS x) := by
+  simp [PositiveLinearMap.preGNS_norm_def, omegaSeminorm]
+
+/-- `‖η_ω(x)‖ = ‖x‖_ω`: `η_ω` is the isometry of **30V**. -/
+private theorem norm_gnsEta (ω : 𝒜 →ₚ[ℂ] ℂ) (x : 𝒜) :
+    ‖((ω.toPreGNS x : ω.PreGNS) : ω.GNS)‖ = omegaSeminorm ω.toLinearMap x := by
+  rw [UniformSpace.Completion.norm_coe]
+  simp [PositiveLinearMap.preGNS_norm_def, omegaSeminorm]
+
+/-- `{η_ω(b) : b ∈ 𝒜}` is dense in `ℋ_ω` — the fact **30VIII** uses four
+times. -/
+private theorem denseRange_gnsEta (ω : 𝒜 →ₚ[ℂ] ℂ) :
+    DenseRange (fun b : 𝒜 => ((ω.toPreGNS b : ω.PreGNS) : ω.GNS)) := by
+  have hsurj : Function.Surjective (fun b : 𝒜 => (ω.toPreGNS b : ω.PreGNS)) :=
+    ω.toPreGNS.surjective
+  simpa [DenseRange, Set.range_comp'] using
+    (UniformSpace.Completion.denseRange_coe (α := ω.PreGNS))
+
+/-- **30VI**'s `b ↦ ab`, `𝒜 → ℋ_ω`, bounded by `‖a‖`: that is **30IV**.2,
+`‖ab‖_ω ≤ ‖a‖‖b‖_ω`, which is the reason the Definition gives. -/
+private noncomputable def gnsLeftMul (ω : 𝒜 →ₚ[ℂ] ℂ) (a : 𝒜) : ω.PreGNS →L[ℂ] ω.GNS :=
+  LinearMap.mkContinuous
+    (((UniformSpace.Completion.toComplₗᵢ (𝕜 := ℂ) (E := ω.PreGNS)).toLinearMap.comp
+        ω.toPreGNS.toLinearMap).comp
+      ((LinearMap.mulLeft ℂ a).comp ω.ofPreGNS.toLinearMap))
+    ‖a‖ (by
+      intro x
+      show ‖((ω.toPreGNS (a * ω.ofPreGNS x) : ω.PreGNS) : ω.GNS)‖ ≤ ‖a‖ * ‖x‖
+      rw [norm_gnsEta, norm_preGNS]
+      exact omega_norm_basic_2 ω.toLinearMap (gnsPos ω) a (ω.ofPreGNS x))
+
+private theorem gnsLeftMul_apply (ω : 𝒜 →ₚ[ℂ] ℂ) (a : 𝒜) (x : ω.PreGNS) :
+    gnsLeftMul ω a x = ((ω.toPreGNS (a * ω.ofPreGNS x) : ω.PreGNS) : ω.GNS) := rfl
+
+/-- The extension clause of **30V** applied to `b ↦ ab`, which is how **30VI**
+defines `ϱ_ω(a)`. -/
+private theorem gnsExtSpec (ω : 𝒜 →ₚ[ℂ] ℂ) (a : 𝒜) :
+    ∃! g : ω.GNS →L[ℂ] ω.GNS, ∀ v : ω.PreGNS,
+      g ((UniformSpace.Completion.toComplₗᵢ (𝕜 := ℂ) (E := ω.PreGNS)) v) = gnsLeftMul ω a v :=
+  dense_linear_extension _ UniformSpace.Completion.denseRange_coe (gnsLeftMul ω a)
+
+/-- **30VI** (`gns`, cstar.tex:4886): `ϱ_ω(a)`, the unique bounded linear map
+`ℋ_ω → ℋ_ω` extending `b ↦ ab`.  Built as the Definition builds it: the map
+`b ↦ ab` is bounded for `‖·‖_ω` by **30IV**.2, so the extension clause of
+**30V** (`dense_linear_extension`) supplies it. -/
+noncomputable def gnsRho (ω : 𝒜 →ₚ[ℂ] ℂ) (a : 𝒜) : ω.GNS →L[ℂ] ω.GNS :=
+  (gnsExtSpec ω a).choose
+
+/-- The defining property of **30VI**'s `ϱ_ω(a)`: `ϱ_ω(a) η_ω(b) = η_ω(ab)`. -/
+theorem gnsRho_apply_eta (ω : 𝒜 →ₚ[ℂ] ℂ) (a b : 𝒜) :
+    gnsRho ω a ((ω.toPreGNS b : ω.PreGNS) : ω.GNS)
+      = ((ω.toPreGNS (a * b) : ω.PreGNS) : ω.GNS) := by
+  have h := (gnsExtSpec ω a).choose_spec.1 (ω.toPreGNS b)
+  simpa [gnsRho, gnsLeftMul_apply] using h
+
+/-- The other half of **30VI**'s "*the unique* bounded linear map with
+`ϱ_ω(a) η_ω(b) = η_ω(ab)`". -/
+theorem gnsRho_unique (ω : 𝒜 →ₚ[ℂ] ℂ) (a : 𝒜) (g : ω.GNS →L[ℂ] ω.GNS)
+    (hg : ∀ b : 𝒜, g ((ω.toPreGNS b : ω.PreGNS) : ω.GNS)
+      = ((ω.toPreGNS (a * b) : ω.PreGNS) : ω.GNS)) :
+    g = gnsRho ω a := by
+  refine (gnsExtSpec ω a).choose_spec.2 g ?_
+  intro v
+  have := hg (ω.ofPreGNS v)
+  simpa [gnsLeftMul_apply] using this
+
+/-- Two bounded operators on `ℋ_ω` agreeing on every `η_ω(b)` are equal —
+"and `{η_ω(b) : b ∈ 𝒜}` is dense in `ℋ_ω`", the step **30VIII** takes after
+each of its computations. -/
+private theorem gns_ext {ω : 𝒜 →ₚ[ℂ] ℂ} {S T : ω.GNS →L[ℂ] ω.GNS}
+    (h : ∀ b : 𝒜, S ((ω.toPreGNS b : ω.PreGNS) : ω.GNS)
+      = T ((ω.toPreGNS b : ω.PreGNS) : ω.GNS)) : S = T := by
+  have := (denseRange_gnsEta ω).equalizer S.continuous T.continuous (funext h)
+  ext x
+  exact congrFun this x
+
+private theorem gnsEta_add (ω : 𝒜 →ₚ[ℂ] ℂ) (x y : 𝒜) :
+    ((ω.toPreGNS (x + y) : ω.PreGNS) : ω.GNS)
+      = ((ω.toPreGNS x : ω.PreGNS) : ω.GNS) + ((ω.toPreGNS y : ω.PreGNS) : ω.GNS) := by
+  rw [map_add, UniformSpace.Completion.coe_add]
+
+private theorem gnsEta_smul (ω : 𝒜 →ₚ[ℂ] ℂ) (r : ℂ) (x : 𝒜) :
+    ((ω.toPreGNS (r • x) : ω.PreGNS) : ω.GNS)
+      = r • ((ω.toPreGNS x : ω.PreGNS) : ω.GNS) := by
+  rw [map_smul, UniformSpace.Completion.coe_smul]
+
+/-- **30VIII**, first paragraph: "`ϱ_ω(a₁+a₂) η_ω(b) = η_ω((a₁+a₂)b) =
+η_ω(a₁b) + η_ω(a₂b) = (ϱ_ω(a₁)+ϱ_ω(a₂)) η_ω(b)` for all `b ∈ 𝒜`, and
+`{η_ω(b) : b ∈ 𝒜}` is dense in `ℋ_ω`". -/
+theorem gnsRho_add (ω : 𝒜 →ₚ[ℂ] ℂ) (a₁ a₂ : 𝒜) :
+    gnsRho ω (a₁ + a₂) = gnsRho ω a₁ + gnsRho ω a₂ :=
+  gns_ext fun b => by
+    rw [gnsRho_apply_eta, add_mul, gnsEta_add, _root_.add_apply,
+      gnsRho_apply_eta, gnsRho_apply_eta]
+
+/-- **30VIII**, first paragraph, "since similarly `ϱ_ω(λa) = λ ϱ_ω(a)`". -/
+theorem gnsRho_smul (ω : 𝒜 →ₚ[ℂ] ℂ) (r : ℂ) (a : 𝒜) :
+    gnsRho ω (r • a) = r • gnsRho ω a :=
+  gns_ext fun b => by
+    rw [gnsRho_apply_eta, smul_mul_assoc, gnsEta_smul, smul_apply, gnsRho_apply_eta]
+
+/-- **30VIII**, second paragraph: "since `ϱ_ω(1) η_ω(b) = η_ω(b)` for all
+`b ∈ 𝒜`, we have `ϱ_ω(1) x = x` for all `x ∈ ℋ_ω`". -/
+theorem gnsRho_one (ω : 𝒜 →ₚ[ℂ] ℂ) : gnsRho ω 1 = 1 :=
+  gns_ext fun b => by rw [gnsRho_apply_eta, one_mul, one_apply_eq_self]
+
+/-- **30VIII**, third paragraph: "`(ϱ_ω(a₁) ϱ_ω(a₂)) η_ω(b) = η_ω(a₁a₂b) =
+ϱ_ω(a₁a₂) η_ω(b)` for all `a₁,a₂,b ∈ 𝒜`". -/
+theorem gnsRho_mul (ω : 𝒜 →ₚ[ℂ] ℂ) (a₁ a₂ : 𝒜) :
+    gnsRho ω (a₁ * a₂) = gnsRho ω a₁ * gnsRho ω a₂ :=
+  gns_ext fun b => by
+    rw [gnsRho_apply_eta, mul_apply_eq_comp, gnsRho_apply_eta, gnsRho_apply_eta, mul_assoc]
+
+/-- **30VIII**, last paragraph: to see that `ϱ_ω` preserves the involution it
+suffices to prove that `ϱ_ω(a*)` is the adjoint of `ϱ_ω(a)`, and
+`⟨ϱ_ω(a*) η_ω(b), η_ω(c)⟩ ≡ [a*b,c]_ω = ω(b*ac) = [b,ac]_ω ≡
+⟨η_ω(b), ϱ_ω(a) η_ω(c)⟩` for all `b,c ∈ 𝒜`, whence — `{η_ω(b)}` being dense —
+`⟨ϱ_ω(a*)x, y⟩ = ⟨x, ϱ_ω(a)y⟩` for all `x,y ∈ ℋ_ω`.  The density step is taken
+once in each argument. -/
+theorem gnsRho_star (ω : 𝒜 →ₚ[ℂ] ℂ) (a : 𝒜) :
+    gnsRho ω (star a) = star (gnsRho ω a) := by
+  rw [ContinuousLinearMap.star_eq_adjoint]
+  refine (ContinuousLinearMap.eq_adjoint_iff _ _).mpr ?_
+  have base : ∀ b c : 𝒜,
+      (⟪gnsRho ω (star a) ((ω.toPreGNS b : ω.PreGNS) : ω.GNS),
+        ((ω.toPreGNS c : ω.PreGNS) : ω.GNS)⟫ : ℂ)
+      = ⟪((ω.toPreGNS b : ω.PreGNS) : ω.GNS),
+        gnsRho ω a ((ω.toPreGNS c : ω.PreGNS) : ω.GNS)⟫ := by
+    intro b c
+    rw [gnsRho_apply_eta, gnsRho_apply_eta, UniformSpace.Completion.inner_coe,
+      UniformSpace.Completion.inner_coe, PositiveLinearMap.preGNS_inner_def,
+      PositiveLinearMap.preGNS_inner_def, ofPreGNS_toPreGNS, ofPreGNS_toPreGNS,
+      ofPreGNS_toPreGNS, ofPreGNS_toPreGNS, star_mul, star_star, mul_assoc]
+  have step1 : ∀ (b : 𝒜) (y : ω.GNS),
+      (⟪gnsRho ω (star a) ((ω.toPreGNS b : ω.PreGNS) : ω.GNS), y⟫ : ℂ)
+      = ⟪((ω.toPreGNS b : ω.PreGNS) : ω.GNS), gnsRho ω a y⟫ := by
+    intro b
+    refine congrFun ((denseRange_gnsEta ω).equalizer
+      (g := fun y => (⟪gnsRho ω (star a) ((ω.toPreGNS b : ω.PreGNS) : ω.GNS), y⟫ : ℂ))
+      (h := fun y => (⟪((ω.toPreGNS b : ω.PreGNS) : ω.GNS), gnsRho ω a y⟫ : ℂ))
+      (continuous_inner.comp (continuous_const.prodMk continuous_id))
+      (continuous_inner.comp (continuous_const.prodMk (gnsRho ω a).continuous)) ?_)
+    funext c
+    exact base b c
+  intro x y
+  refine congrFun ((denseRange_gnsEta ω).equalizer
+    (g := fun x => (⟪gnsRho ω (star a) x, y⟫ : ℂ))
+    (h := fun x => (⟪x, gnsRho ω a y⟫ : ℂ))
+    (continuous_inner.comp ((gnsRho ω (star a)).continuous.prodMk continuous_const))
+    (continuous_inner.comp (continuous_id.prodMk continuous_const)) ?_) x
+  funext b
+  exact step1 b y
 
 /-- **30VII** (cstar.tex:4919, Proposition): `ϱ_ω : 𝒜 → B(ℋ_ω)` is an
-miu-map — Mathlib's `ω.gnsStarAlgHom` is bundled as one; the defining
-property `ϱ_ω(a) η_ω(b) = η_ω(ab)` is recorded here. -/
+miu-map.  The four clauses are **30VIII**'s, `gnsRho_add`/`gnsRho_smul`
+(linear), `gnsRho_one` (unital), `gnsRho_mul` (multiplicative) and
+`gnsRho_star` (involution preserving). -/
+noncomputable def gnsRhoHom (ω : 𝒜 →ₚ[ℂ] ℂ) : 𝒜 →⋆ₐ[ℂ] (ω.GNS →L[ℂ] ω.GNS) where
+  toFun := gnsRho ω
+  map_one' := gnsRho_one ω
+  map_mul' := gnsRho_mul ω
+  map_zero' := by simpa using gnsRho_smul ω 0 0
+  map_add' := gnsRho_add ω
+  commutes' := fun r => by
+    rw [Algebra.algebraMap_eq_smul_one, Algebra.algebraMap_eq_smul_one, gnsRho_smul, gnsRho_one]
+  map_star' := gnsRho_star ω
+
+@[simp] theorem gnsRhoHom_apply (ω : 𝒜 →ₚ[ℂ] ℂ) (a : 𝒜) : gnsRhoHom ω a = gnsRho ω a := rfl
+
+/-- Mathlib's `ω.gnsStarAlgHom` is the thesis's `ϱ_ω`.  Mathlib builds it by
+extending the same `b ↦ ab` over the same completion, so this is the
+uniqueness half of **30V**'s extension clause (`gnsRho_unique`) applied to it:
+the two bounded linear maps agree on `η_ω(𝒜)`. -/
+theorem gnsStarAlgHom_eq_gnsRho (ω : 𝒜 →ₚ[ℂ] ℂ) (a : 𝒜) :
+    ω.gnsStarAlgHom a = gnsRho ω a :=
+  gnsRho_unique ω a _ fun b => by simp [PositiveLinearMap.gnsStarAlgHom]
+
+end GNSRepresentation
+
+/-- **30VII** (cstar.tex:4919, Proposition): `ϱ_ω : 𝒜 → B(ℋ_ω)` is an
+miu-map.  The Proposition itself is `gnsRhoHom` above, whose **30VIII** proof
+is transcribed there; what is recorded here is the defining property
+`ϱ_ω(a) η_ω(b) = η_ω(ab)` of **30VI**, for the `ϱ_ω` Mathlib bundles.
+
+*Class 1 — faithful.*  The proof is the thesis's own `ϱ_ω`: `gnsRho ω a` is
+the extension of `b ↦ ab` given by **30V**, `gnsRho_apply_eta` is **30VI**'s
+defining identity for it, and `gnsStarAlgHom_eq_gnsRho` identifies Mathlib's
+`ω.gnsStarAlgHom a` with it by the uniqueness half of the same clause. -/
 theorem gns_starAlgHom_apply (ω : 𝒜 →ₚ[ℂ] ℂ) (a b : 𝒜) :
     ω.gnsStarAlgHom a ((ω.toPreGNS b : ω.PreGNS) : ω.GNS) =
       ((ω.toPreGNS (a * b) : ω.PreGNS) : ω.GNS) := by
-  simp [PositiveLinearMap.gnsStarAlgHom]
+  rw [gnsStarAlgHom_eq_gnsRho, gnsRho_apply_eta]
 
 /-! **30IX** (`gelfand-naimark-representation`, cstar.tex:4966, Definition):
 given a collection `Ω` of p-maps on `𝒜`, the representation
