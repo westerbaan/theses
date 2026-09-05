@@ -612,32 +612,1233 @@ theorem powerseries_uniqueness_coeffients (a : ℕ → 𝒜) (r : ℝ) (hr : 0 <
 /-! ## Parsec 140: integration and Goursat's theorem
 
 **14II** (cstar.tex:2001, Exercise): the *construction* of the integral
-`∫ f ∈ 𝒜` of a continuous `f : [0,1] → 𝒜` — part 1 (the linear
-`∫ : S_𝒜 → 𝒜` with `∫ a·1_I = |I|a`), part 2's disjoint-interval normal form
-`‖f‖ = supₙ‖aₙ‖`, `∑ₙ|Iₙ| ≤ 1`, and part 3 (density of `S_𝒜` in
-`C([0,1],𝒜)`) — is in Mathlib the Bochner integral
-`∫ t in (0:ℝ)..1, f t` of the `MeasureTheory` library, and the 𝒜-valued step
-functions `S_𝒜` are not built here.  What parts 1–3 are *for*, and what the
-rest of the chapter uses, is the bound `‖∫ f‖ ≤ ‖f‖` that part 2 asks one to
-deduce; that bound is `integral_norm_le` below, and part 4 is
-`integral_scalar_smul`. -/
+`∫ f ∈ 𝒜` of a continuous `f : [0,1] → 𝒜` is carried out below on the thesis's
+own terms: the 𝒜-valued step functions `S_𝒜` (`stepSpace`) inside the bounded
+functions `B_𝒜` (`BddFn`); the linear `∫ : S_𝒜 → 𝒜` with `∫ a·1_I = |I|a`
+(part 1, `existsUnique_stepIntegral`); the disjoint-interval normal form with
+`‖f‖ = supₙ‖aₙ‖` and `∑ₙ|Iₙ| ≤ 1`, and the bound `‖∫f‖ ≤ ‖f‖` deduced from it
+(part 2, `exists_disjoint_repr`, `norm_sum_bddIndicator`, `sum_length_le_one`,
+`norm_stepIntegral_le`); the extension to the closure `S̄_𝒜`
+(`thesisIntegral`, `thesisIntegral_norm_le`); the density of `S_𝒜` in
+`C([0,1],𝒜)` (part 3, `contToBdd_mem_stepClosure`); and `∫ a f = a ∫ f`
+(part 4, `thesisIntegral_scalar_smul`, `contIntegral_scalar_smul`).  The
+construction uses only the Banach-space structure of 𝒜, so it is stated for a
+complex Banach space `E` — which lets part 4, where `f` is ℂ-valued and `af`
+is 𝒜-valued, use it twice.
 
-/-- **14II** (cstar.tex:2001, Exercise), part 4: `∫ a f = a ∫ f` for
-continuous `f : [0,1] → ℂ` and `a ∈ 𝒜`. -/
+The rest of the chapter, however, integrates with Mathlib's Bochner integral
+`∫ t in (0:ℝ)..1, f t`: **14III**'s `segIntegral` and everything downstream of
+it are stated with that integral, and the two declarations
+`integral_scalar_smul` and `integral_norm_le` below are its versions of parts 4
+and 2 — `integral_norm_le` in the more general form the Bochner estimate
+supplies (any bound `M` on `‖f t‖`, for an arbitrary `f`).  Identifying
+`thesisIntegral` with the Bochner integral on `C([0,1],𝒜)` is not done here:
+the two developments stand side by side, and only the Bochner one is used
+downstream. -/
+
+section StepFunctions
+
+variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℂ E] [CompleteSpace E]
+
+/-- **14II** (cstar.tex:2001, Exercise): an *interval* `I` in `[0,1]` — a pair
+of endpoints `0 ≤ lo ≤ hi ≤ 1` together with the two inclusion flags, so that
+`I.toSet` runs over the four printed shapes `[s,t]`, `[s,t)`, `(s,t]`, `(s,t)`,
+and `I.length` is the printed `|I| = t - s`. -/
+structure Ivl where
+  lo : ℝ
+  hi : ℝ
+  loMem : Bool
+  hiMem : Bool
+  lo_nonneg : 0 ≤ lo
+  lo_le_hi : lo ≤ hi
+  hi_le_one : hi ≤ 1
+
+namespace Ivl
+
+/-- The set of points of the interval. -/
+def toSet (I : Ivl) : Set ℝ :=
+  {x | (if I.loMem then I.lo ≤ x else I.lo < x) ∧ (if I.hiMem then x ≤ I.hi else x < I.hi)}
+
+/-- `|I|`, the length of the interval. -/
+def length (I : Ivl) : ℝ := I.hi - I.lo
+
+/-- Lengths are nonnegative. -/
+theorem length_nonneg (I : Ivl) : 0 ≤ I.length := sub_nonneg.2 I.lo_le_hi
+
+/-- An interval lies between its endpoints. -/
+theorem subset_Icc (I : Ivl) : I.toSet ⊆ Set.Icc I.lo I.hi := by
+  rintro x ⟨h1, h2⟩
+  constructor
+  · split_ifs at h1 <;> linarith
+  · split_ifs at h2 <;> linarith
+
+/-- An interval contains the open interval between its endpoints. -/
+theorem Ioo_subset (I : Ivl) : Set.Ioo I.lo I.hi ⊆ I.toSet := by
+  rintro x ⟨h1, h2⟩
+  exact ⟨by split_ifs <;> linarith, by split_ifs <;> linarith⟩
+
+/-- A point strictly between the endpoints lies in the interval. -/
+theorem mem_of_lt (I : Ivl) {x : ℝ} (h1 : I.lo < x) (h2 : x < I.hi) : x ∈ I.toSet :=
+  I.Ioo_subset ⟨h1, h2⟩
+
+/-- Every interval is contained in `[0,1]`. -/
+theorem subset_unitInterval (I : Ivl) : I.toSet ⊆ Set.Icc (0:ℝ) 1 := fun _ hx =>
+  ⟨le_trans I.lo_nonneg (I.subset_Icc hx).1, le_trans (I.subset_Icc hx).2 I.hi_le_one⟩
+
+end Ivl
+
+/-- **14II** (cstar.tex:2001, Exercise): `B_𝒜`, the space of bounded functions
+`[0,1] → E` with the supremum norm `‖f‖ = sup_{t ∈ [0,1]} ‖f t‖`.  As in **3V**
+this is Mathlib's `lp … ∞`, here over the index set `[0,1]`. -/
+abbrev BddFn (E : Type*) [NormedAddCommGroup E] : Type _ :=
+  lp (fun _ : ↥(Set.Icc (0:ℝ) 1) => E) ∞
+
+/-- `a·1_I ∈ B_E`, the indicator of the interval `I` with value `a`. -/
+noncomputable def Ivl.bddIndicator (I : Ivl) (a : E) : BddFn E :=
+  ⟨fun x => I.toSet.indicator (fun _ => a) (x : ℝ), by
+    refine memℓp_infty ⟨‖a‖, ?_⟩
+    rintro _ ⟨x, rfl⟩
+    exact norm_indicator_le_norm_self _ _⟩
+
+omit [NormedSpace ℂ E] [CompleteSpace E] in
+/-- The values of `a·1_I`. -/
+@[simp] theorem Ivl.bddIndicator_apply (I : Ivl) (a : E) (x : ↥(Set.Icc (0:ℝ) 1)) :
+    (I.bddIndicator a) x = I.toSet.indicator (fun _ => a) (x : ℝ) := rfl
+
+/-- `a ↦ a·1_I`, linearly. -/
+noncomputable def Ivl.bddIndicatorL (I : Ivl) : E →ₗ[ℂ] BddFn E where
+  toFun a := I.bddIndicator a
+  map_add' a b := by
+    refine Subtype.ext (funext fun x => ?_)
+    show I.toSet.indicator (fun _ => a + b) (x:ℝ)
+        = I.toSet.indicator (fun _ => a) (x:ℝ) + I.toSet.indicator (fun _ => b) (x:ℝ)
+    by_cases h : (x:ℝ) ∈ I.toSet
+    · simp [Set.indicator_of_mem h]
+    · simp [Set.indicator_of_notMem h]
+  map_smul' c a := by
+    refine Subtype.ext (funext fun x => ?_)
+    show I.toSet.indicator (fun _ => c • a) (x:ℝ) = c • I.toSet.indicator (fun _ => a) (x:ℝ)
+    by_cases h : (x:ℝ) ∈ I.toSet
+    · simp [Set.indicator_of_mem h]
+    · simp [Set.indicator_of_notMem h]
+
+/-- The map `(aₙ)ₙ ↦ ∑ₙ aₙ·1_{Iₙ}` from finitely supported families of
+coefficients indexed by intervals to `B_E`; its range is the space `S_E` of
+step functions. -/
+noncomputable def stepMap : (Ivl →₀ E) →ₗ[ℂ] BddFn E := Finsupp.lsum ℂ Ivl.bddIndicatorL
+
+omit [CompleteSpace E] in
+/-- The values of `∑ₙ aₙ·1_{Iₙ}`. -/
+theorem stepMap_apply (c : Ivl →₀ E) (x : ↥(Set.Icc (0:ℝ) 1)) :
+    stepMap c x = ∑ I ∈ c.support, I.toSet.indicator (fun _ => c I) (x : ℝ) := by
+  rw [stepMap, Finsupp.lsum_apply, Finsupp.sum]
+  rw [congrFun (lp.coeFn_sum (fun I => Ivl.bddIndicatorL I (c I)) c.support) x]
+  exact Finset.sum_apply _ _ _
+
+omit [CompleteSpace E] in
+/-- A one-term family gives back `a·1_I`. -/
+theorem stepMap_single (I : Ivl) (a : E) : stepMap (Finsupp.single I a) = I.bddIndicator a := by
+  rw [stepMap, Finsupp.lsum_apply]
+  exact Finsupp.sum_single_index (map_zero _)
+
+/-- `a ↦ |I|·a`, linearly. -/
+noncomputable def Ivl.lengthSmulL (I : Ivl) : E →ₗ[ℂ] E where
+  toFun a := I.length • a
+  map_add' a b := smul_add _ _ _
+  map_smul' c a := by dsimp; rw [smul_comm]
+
+/-- `(aₙ)ₙ ↦ ∑ₙ |Iₙ|·aₙ`, the value the integral must take on `∑ₙ aₙ·1_{Iₙ}`. -/
+noncomputable def stepLength : (Ivl →₀ E) →ₗ[ℂ] E := Finsupp.lsum ℂ Ivl.lengthSmulL
+
+omit [CompleteSpace E] in
+/-- `∑ₙ |Iₙ|·aₙ`, unfolded. -/
+theorem stepLength_apply (c : Ivl →₀ E) :
+    stepLength c = ∑ I ∈ c.support, I.length • c I := by
+  rw [stepLength, Finsupp.lsum_apply, Finsupp.sum]; rfl
+
+/-! ### Well-definedness: `∑ₙ aₙ·1_{Iₙ} = 0` forces `∑ₙ |Iₙ|·aₙ = 0` -/
+
+open scoped Classical in
+/-- The number of grid points `k/K`, `k < K`, that lie in `I`. -/
+private noncomputable def gridCount (I : Ivl) (K : ℕ) : ℕ :=
+  ((Finset.range K).filter (fun k : ℕ => ((k:ℝ)/K) ∈ I.toSet)).card
+
+/-- Truncated subtraction only increases a cast difference. -/
+private theorem natCast_sub_le' (m n : ℕ) : (m:ℝ) - n ≤ ((m - n : ℕ) : ℝ) := by
+  rcases le_total n m with h | h
+  · rw [Nat.cast_sub h]
+  · rw [Nat.sub_eq_zero_of_le h]
+    have : (m:ℝ) ≤ n := by exact_mod_cast h
+    simpa using this
+
+open scoped Classical in
+/-- The grid count of `I` differs from `K·|I|` by at most `2`. -/
+private theorem gridCount_bound (I : Ivl) {K : ℕ} (hK : 0 < K) :
+    |(gridCount I K : ℝ) - K * I.length| ≤ 2 := by
+  have hKR : (0:ℝ) < K := by exact_mod_cast hK
+  simp only [gridCount]
+  set A := (K:ℝ) * I.lo with hAdef
+  set B := (K:ℝ) * I.hi with hBdef
+  have hA : 0 ≤ A := mul_nonneg hKR.le I.lo_nonneg
+  have hAB : A ≤ B := by
+    simpa [hAdef, hBdef] using mul_le_mul_of_nonneg_left I.lo_le_hi hKR.le
+  set S : Finset ℕ := (Finset.range K).filter (fun k : ℕ => ((k:ℝ)/K) ∈ I.toSet) with hS
+  have hupper : S ⊆ Finset.Icc ⌈A⌉₊ ⌊B⌋₊ := by
+    intro k hk
+    rw [hS, Finset.mem_filter] at hk
+    have hmem := I.subset_Icc hk.2
+    have h1 : I.lo ≤ (k:ℝ)/K := hmem.1
+    have h2 : (k:ℝ)/K ≤ I.hi := hmem.2
+    have hA' : A ≤ (k:ℝ) := by
+      rw [hAdef, ← le_div_iff₀' hKR]; exact h1
+    have hB' : (k:ℝ) ≤ B := by
+      rw [hBdef, ← div_le_iff₀' hKR]; exact h2
+    exact Finset.mem_Icc.2 ⟨Nat.ceil_le.2 hA', Nat.le_floor hB'⟩
+  have hlower : Finset.Ico (⌊A⌋₊ + 1) ⌈B⌉₊ ⊆ S := by
+    intro k hk
+    rw [Finset.mem_Ico] at hk
+    have h1 : A < (k:ℝ) := lt_of_lt_of_le (Nat.lt_floor_add_one A) (by exact_mod_cast hk.1)
+    have h2 : (k:ℝ) < B := Nat.lt_ceil.1 hk.2
+    have hlt : (k:ℝ) < K := by
+      have : B ≤ (K:ℝ) := by
+        rw [hBdef]; nlinarith [I.hi_le_one, hKR.le]
+      linarith
+    have hkK : k < K := by exact_mod_cast hlt
+    rw [hS, Finset.mem_filter]
+    refine ⟨Finset.mem_range.2 hkK, I.mem_of_lt ?_ ?_⟩
+    · rw [lt_div_iff₀ hKR]; rw [hAdef] at h1; linarith [h1]
+    · rw [div_lt_iff₀ hKR]; rw [hBdef] at h2; linarith [h2]
+  have hcard1 : (S.card : ℝ) ≤ B - A + 1 := by
+    have h := Finset.card_le_card hupper
+    rw [Nat.card_Icc] at h
+    have hc : (S.card : ℝ) ≤ ((⌊B⌋₊ + 1 - ⌈A⌉₊ : ℕ) : ℝ) := by exact_mod_cast h
+    by_cases hle : ⌈A⌉₊ ≤ ⌊B⌋₊ + 1
+    · rw [Nat.cast_sub hle] at hc
+      have h1 : (⌊B⌋₊ : ℝ) ≤ B := Nat.floor_le (le_trans hA hAB)
+      have h2 : A ≤ (⌈A⌉₊ : ℝ) := Nat.le_ceil A
+      push_cast at hc
+      linarith
+    · rw [Nat.sub_eq_zero_of_le (Nat.le_of_not_le hle)] at hc
+      simp only [Nat.cast_zero] at hc
+      linarith
+  have hcard2 : B - A - 1 ≤ (S.card : ℝ) := by
+    have h := Finset.card_le_card hlower
+    rw [Nat.card_Ico] at h
+    have hc : ((⌈B⌉₊ - (⌊A⌋₊ + 1) : ℕ) : ℝ) ≤ (S.card : ℝ) := by exact_mod_cast h
+    have h0 : ((⌈B⌉₊ : ℕ) : ℝ) - ((⌊A⌋₊ + 1 : ℕ) : ℝ) ≤ ((⌈B⌉₊ - (⌊A⌋₊ + 1) : ℕ) : ℝ) :=
+      natCast_sub_le' _ _
+    have h1 : B ≤ (⌈B⌉₊ : ℝ) := Nat.le_ceil B
+    have h2 : (⌊A⌋₊ : ℝ) ≤ A := Nat.floor_le hA
+    push_cast at h0
+    linarith
+  have hlen : (K:ℝ) * I.length = B - A := by rw [Ivl.length, hAdef, hBdef]; ring
+  rw [hlen, abs_le]
+  constructor <;> linarith
+
+/-- `#{k < K : k/K ∈ I}/K → |I|`: the length is the limit of the grid counts. -/
+private theorem tendsto_gridCount (I : Ivl) :
+    Tendsto (fun K : ℕ => (gridCount I K : ℝ) / K) atTop (𝓝 I.length) := by
+  have hbound : ∀ᶠ K : ℕ in atTop, ‖(gridCount I K : ℝ) / K - I.length‖ ≤ 2 / K := by
+    filter_upwards [eventually_gt_atTop 0] with K hK
+    have hKR : (0:ℝ) < K := by exact_mod_cast hK
+    have h := gridCount_bound I hK
+    have hrw : (gridCount I K : ℝ)/K - I.length = ((gridCount I K : ℝ) - K * I.length)/K := by
+      field_simp
+    rw [Real.norm_eq_abs, hrw, abs_div, abs_of_pos hKR]
+    have hnn : (0:ℝ) ≤ 2 - |(gridCount I K : ℝ) - K * I.length| := by linarith
+    have hd := div_nonneg hnn hKR.le
+    have hring : (2 - |(gridCount I K : ℝ) - K * I.length|)/(K:ℝ)
+        = 2/(K:ℝ) - |(gridCount I K : ℝ) - K * I.length|/(K:ℝ) := by ring
+    rw [hring] at hd
+    linarith
+  have h2 : Tendsto (fun K : ℕ => (2:ℝ) / K) atTop (𝓝 0) :=
+    tendsto_const_div_atTop_nhds_zero_nat 2
+  have := squeeze_zero_norm' hbound h2
+  simpa using this.add_const I.length
+
+omit [CompleteSpace E] in
+/-- **14II** (cstar.tex:2001, Exercise), part 1, the hint's difficulty: if
+`∑ₙ aₙ·1_{Iₙ}` vanishes identically then `∑ₙ |Iₙ|·aₙ = 0`.
+
+*The solution's own route* (`parsec-140.20`(1), asols.tex:1619) is to split the
+`Iₙ` into a common refinement and read off each coefficient at a point of the
+piece carrying it.  Transcribed here in its uniform-grid form: at the `K` points
+`k/K` the hypothesis gives `∑ₙ 1_{Iₙ}(k/K)·aₙ = 0`, so `∑ₙ (#{k}/K)·aₙ = 0`,
+and `#{k < K : k/K ∈ I}/K → |I|` — the refinement's bookkeeping done by
+counting rather than by sorting the endpoints. -/
+theorem stepLength_eq_zero_of_stepMap_eq_zero (c : Ivl →₀ E) (h : stepMap c = 0) :
+    stepLength c = 0 := by
+  classical
+  have hz : ∀ x : ↥(Set.Icc (0:ℝ) 1),
+      ∑ I ∈ c.support, I.toSet.indicator (fun _ => c I) (x : ℝ) = 0 := by
+    intro x
+    rw [← stepMap_apply c x, h]
+    rfl
+  have step1 : ∀ K : ℕ, ∑ k ∈ Finset.range K,
+      (∑ I ∈ c.support, I.toSet.indicator (fun _ => c I) ((k:ℝ)/K)) = 0 := by
+    intro K
+    refine Finset.sum_eq_zero fun k hk => ?_
+    have hkK : k < K := Finset.mem_range.1 hk
+    have hKR : (0:ℝ) < K := by
+      have : 0 < K := lt_of_le_of_lt (Nat.zero_le k) hkK
+      exact_mod_cast this
+    have hmem : ((k:ℝ)/K) ∈ Set.Icc (0:ℝ) 1 := by
+      constructor
+      · positivity
+      · rw [div_le_one hKR]; exact_mod_cast hkK.le
+    exact hz ⟨_, hmem⟩
+  have step2 : ∀ K : ℕ, ∑ I ∈ c.support, (gridCount I K : ℝ) • c I = 0 := by
+    intro K
+    rw [← step1 K, Finset.sum_comm]
+    refine Finset.sum_congr rfl fun I _ => ?_
+    symm
+    have hfil : ∑ k ∈ Finset.range K, I.toSet.indicator (fun _ => c I) ((k:ℝ)/K)
+        = ∑ _k ∈ (Finset.range K).filter (fun k : ℕ => ((k:ℝ)/K) ∈ I.toSet), c I := by
+      rw [Finset.sum_filter]
+      refine Finset.sum_congr rfl fun k _ => ?_
+      by_cases h' : ((k:ℝ)/K) ∈ I.toSet
+      · rw [Set.indicator_of_mem h']; simp [h']
+      · rw [Set.indicator_of_notMem h']; simp [h']
+    rw [hfil, Finset.sum_const]
+    simp only [gridCount]
+    exact (Nat.cast_smul_eq_nsmul ℝ _ _).symm
+  have step3 : ∀ K : ℕ, 0 < K → ∑ I ∈ c.support, ((gridCount I K : ℝ)/K) • c I = 0 := by
+    intro K hK
+    have hKR : (0:ℝ) ≠ K := by
+      have : (0:ℝ) < K := by exact_mod_cast hK
+      exact ne_of_lt this
+    have : ∑ I ∈ c.support, ((gridCount I K : ℝ)/K) • c I
+        = ((K:ℝ))⁻¹ • ∑ I ∈ c.support, (gridCount I K : ℝ) • c I := by
+      rw [Finset.smul_sum]
+      refine Finset.sum_congr rfl fun I _ => ?_
+      rw [smul_smul, div_eq_inv_mul]
+    rw [this, step2 K, smul_zero]
+  have hlim : Tendsto (fun K : ℕ => ∑ I ∈ c.support, ((gridCount I K : ℝ)/K) • c I) atTop
+      (𝓝 (∑ I ∈ c.support, I.length • c I)) := by
+    refine tendsto_finsetSum _ fun I _ => ?_
+    exact (tendsto_gridCount I).smul_const (c I)
+  have hlim0 : Tendsto (fun K : ℕ => ∑ I ∈ c.support, ((gridCount I K : ℝ)/K) • c I) atTop
+      (𝓝 0) := by
+    refine Tendsto.congr' ?_ tendsto_const_nhds
+    filter_upwards [eventually_gt_atTop 0] with K hK
+    exact (step3 K hK).symm
+  rw [stepLength_apply]
+  exact tendsto_nhds_unique hlim hlim0
+
+/-! ### The integral on `S_E` -/
+
+/-- **14II** (cstar.tex:2001, Exercise): `S_𝒜`, the space of `E`-valued step
+functions on `[0,1]` — the `f ≡ ∑ₙ aₙ·1_{Iₙ}` for finitely many intervals
+`Iₙ` in `[0,1]` and `aₙ ∈ E`, a subspace of `B_𝒜`. -/
+@[reducible] noncomputable def stepSpace (E : Type*) [NormedAddCommGroup E] [NormedSpace ℂ E]
+    [CompleteSpace E] : Submodule ℂ (BddFn E) := LinearMap.range stepMap
+
+/-- `a·1_I` is a step function. -/
+theorem bddIndicator_mem_stepSpace (I : Ivl) (a : E) : I.bddIndicator a ∈ stepSpace E :=
+  ⟨Finsupp.single I a, stepMap_single I a⟩
+
+/-- `a·1_I` as an element of `S_E`. -/
+noncomputable def stepGen (I : Ivl) (a : E) : stepSpace E :=
+  ⟨I.bddIndicator a, bddIndicator_mem_stepSpace I a⟩
+
+omit [CompleteSpace E] in
+/-- `∑ₙ |Iₙ|·aₙ` for a one-term family. -/
+theorem stepLength_single (I : Ivl) (a : E) : stepLength (Finsupp.single I a) = I.length • a := by
+  rw [stepLength, Finsupp.lsum_apply]
+  exact Finsupp.sum_single_index (map_zero _)
+
+omit [CompleteSpace E] in
+/-- The well-definedness of `∫`, as an inclusion of kernels. -/
+theorem stepMap_ker_le :
+    LinearMap.ker (stepMap (E := E)) ≤ LinearMap.ker (stepLength (E := E)) :=
+  fun c hc => stepLength_eq_zero_of_stepMap_eq_zero c hc
+
+/-- **14II** (cstar.tex:2001, Exercise), part 1: the integral `∫ : S_𝒜 → 𝒜` of
+a step function, the unique linear map with `∫ a·1_I = |I|·a`
+(`existsUnique_stepIntegral`).  It is obtained by descending
+`(aₙ)ₙ ↦ ∑ₙ |Iₙ|·aₙ` along `(aₙ)ₙ ↦ ∑ₙ aₙ·1_{Iₙ}`, which is legitimate by
+`stepLength_eq_zero_of_stepMap_eq_zero`. -/
+noncomputable def stepIntegral : stepSpace E →ₗ[ℂ] E :=
+  (Submodule.liftQ _ stepLength stepMap_ker_le).comp
+    (stepMap (E := E)).quotKerEquivRange.symm.toLinearMap
+
+/-- `∫ (∑ₙ aₙ·1_{Iₙ}) = ∑ₙ |Iₙ|·aₙ`. -/
+theorem stepIntegral_stepMap (c : Ivl →₀ E) (h : stepMap c ∈ stepSpace E) :
+    stepIntegral (⟨stepMap c, h⟩ : stepSpace E) = stepLength c := by
+  have hq : (stepMap (E := E)).quotKerEquivRange.symm ⟨stepMap c, h⟩
+      = Submodule.Quotient.mk c := by
+    apply (LinearEquiv.symm_apply_eq _).2
+    rfl
+  show (Submodule.liftQ _ stepLength stepMap_ker_le)
+      ((stepMap (E := E)).quotKerEquivRange.symm ⟨stepMap c, h⟩) = stepLength c
+  rw [hq]
+  rfl
+
+/-- `∫` computed from any representation of a step function. -/
+theorem stepIntegral_eq (v : stepSpace E) (c : Ivl →₀ E) (hv : (v : BddFn E) = stepMap c) :
+    stepIntegral v = stepLength c := by
+  have hv' : v = ⟨stepMap c, hv ▸ v.2⟩ := Subtype.ext hv
+  rw [hv', stepIntegral_stepMap]
+
+/-- `∫ a·1_I = |I|·a`, the defining property. -/
+@[simp] theorem stepIntegral_stepGen (I : Ivl) (a : E) :
+    stepIntegral (stepGen I a) = I.length • a := by
+  have hmem : stepMap (Finsupp.single I a) ∈ stepSpace E := LinearMap.mem_range_self _ _
+  have h1 : stepGen I a = (⟨stepMap (Finsupp.single I a), hmem⟩ : stepSpace E) :=
+    Subtype.ext (stepMap_single I a).symm
+  rw [h1, stepIntegral_stepMap, stepLength_single]
+
+/-- A step function is the sum of its terms `aₙ·1_{Iₙ}` inside `S_𝒜`. -/
+theorem stepSpace_eq_sum (c : Ivl →₀ E) (h : stepMap c ∈ stepSpace E) :
+    (⟨stepMap c, h⟩ : stepSpace E) = ∑ I ∈ c.support, stepGen I (c I) := by
+  refine Subtype.ext ?_
+  show stepMap c = ((∑ I ∈ c.support, stepGen I (c I) : stepSpace E) : BddFn E)
+  rw [Submodule.coe_sum]
+  show (Finsupp.lsum ℂ Ivl.bddIndicatorL) c
+      = ∑ I ∈ c.support, ((stepGen I (c I) : stepSpace E) : BddFn E)
+  rw [Finsupp.lsum_apply, Finsupp.sum]
+  rfl
+
+/-- **14II** (cstar.tex:2001, Exercise), part 1: there is exactly one linear
+map `∫ : S_E → E` with `∫ a·1_I = |I|·a` for every interval `I` in `[0,1]` and
+every `a ∈ E`.
+
+*The solution's own route* (`parsec-140.20`(1), asols.tex:1619): existence is
+`stepIntegral`, got by descending `(aₙ)ₙ ↦ ∑ₙ |Iₙ|·aₙ` along
+`(aₙ)ₙ ↦ ∑ₙ aₙ·1_{Iₙ}`, which is legitimate by
+`stepLength_eq_zero_of_stepMap_eq_zero` — the hint's difficulty; uniqueness is
+immediate, the `a·1_I` spanning `S_E`. -/
+theorem existsUnique_stepIntegral :
+    ∃! J : stepSpace E →ₗ[ℂ] E, ∀ (I : Ivl) (a : E), J (stepGen I a) = I.length • a := by
+  refine ⟨stepIntegral, fun I a => stepIntegral_stepGen I a, fun J hJ => ?_⟩
+  refine LinearMap.ext fun v => ?_
+  obtain ⟨c, hc⟩ := v.2
+  have hv : v = (⟨stepMap c, LinearMap.mem_range_self _ _⟩ : stepSpace E) := Subtype.ext hc.symm
+  rw [hv, stepSpace_eq_sum, map_sum, map_sum]
+  exact Finset.sum_congr rfl fun I _ => by rw [hJ, stepIntegral_stepGen]
+
+/-! ### The grid of a finite set of endpoints -/
+
+/-- `t` clamped into `[0,1]`. -/
+private def clamp01 (t : ℝ) : ℝ := min 1 (max 0 t)
+
+/-- The clamp is nonnegative. -/
+private theorem clamp01_nonneg (t : ℝ) : 0 ≤ clamp01 t := le_min zero_le_one (le_max_left _ _)
+
+/-- The clamp is at most `1`. -/
+private theorem clamp01_le_one (t : ℝ) : clamp01 t ≤ 1 := min_le_left _ _
+
+/-- The clamp fixes the points of `[0,1]`. -/
+private theorem clamp01_eq {t : ℝ} (h0 : 0 ≤ t) (h1 : t ≤ 1) : clamp01 t = t := by
+  rw [clamp01, max_eq_right h0, min_eq_right h1]
+
+/-- The one-point interval `[t,t]` (with `t` clamped into `[0,1]`). -/
+def Ivl.pt (t : ℝ) : Ivl :=
+  ⟨clamp01 t, clamp01 t, true, true, clamp01_nonneg t, le_rfl, clamp01_le_one t⟩
+
+/-- The open interval `(s,t)` (with `s`, `t` clamped into `[0,1]`). -/
+def Ivl.gap (s t : ℝ) : Ivl :=
+  ⟨clamp01 s, max (clamp01 s) (clamp01 t), false, false, clamp01_nonneg s, le_max_left _ _,
+    max_le (clamp01_le_one s) (clamp01_le_one t)⟩
+
+/-- `[t,t] = {t}`. -/
+theorem Ivl.toSet_pt {t : ℝ} (h0 : 0 ≤ t) (h1 : t ≤ 1) : (Ivl.pt t).toSet = {t} := by
+  have h : clamp01 t = t := clamp01_eq h0 h1
+  ext x
+  show (clamp01 t ≤ x ∧ x ≤ clamp01 t) ↔ x = t
+  rw [h]
+  exact ⟨fun ha => le_antisymm ha.2 ha.1, fun ha => ha ▸ ⟨le_rfl, le_rfl⟩⟩
+
+/-- The open piece `(s,t)`. -/
+theorem Ivl.toSet_gap {s t : ℝ} (hs0 : 0 ≤ s) (hst : s ≤ t) (ht1 : t ≤ 1) :
+    (Ivl.gap s t).toSet = Set.Ioo s t := by
+  have hs : clamp01 s = s := clamp01_eq hs0 (le_trans hst ht1)
+  have ht : clamp01 t = t := clamp01_eq (le_trans hs0 hst) ht1
+  ext x
+  show (clamp01 s < x ∧ x < max (clamp01 s) (clamp01 t)) ↔ (s < x ∧ x < t)
+  rw [hs, ht, max_eq_right hst]
+
+/-- A degenerate open piece has equal endpoints. -/
+theorem Ivl.gap_self (t : ℝ) : (Ivl.gap t t).lo = (Ivl.gap t t).hi := by
+  show clamp01 t = max (clamp01 t) (clamp01 t)
+  rw [max_self]
+
+/-- The midpoint of `I`, as a point of `[0,1]`. -/
+noncomputable def Ivl.mid (I : Ivl) : ↥(Set.Icc (0:ℝ) 1) :=
+  ⟨(I.lo + I.hi)/2, ⟨by linarith [I.lo_nonneg, I.lo_le_hi], by linarith [I.hi_le_one, I.lo_le_hi]⟩⟩
+
+/-- The midpoint of `[t,t]` is `t`. -/
+theorem Ivl.mid_pt {t : ℝ} (h0 : 0 ≤ t) (h1 : t ≤ 1) : ((Ivl.pt t).mid : ℝ) = t := by
+  show ((clamp01 t) + (clamp01 t))/2 = t
+  rw [clamp01_eq h0 h1]; ring
+
+/-- The midpoint of `(s,t)`. -/
+theorem Ivl.mid_gap {s t : ℝ} (hs0 : 0 ≤ s) (hst : s ≤ t) (ht1 : t ≤ 1) :
+    ((Ivl.gap s t).mid : ℝ) = (s + t)/2 := by
+  have hs : clamp01 s = s := clamp01_eq hs0 (le_trans hst ht1)
+  have ht : clamp01 t = t := clamp01_eq (le_trans hs0 hst) ht1
+  show ((clamp01 s) + max (clamp01 s) (clamp01 t))/2 = (s + t)/2
+  rw [hs, ht, max_eq_right hst]
+
+open scoped Classical in
+/-- The least element of `G` above `t` (and `t` itself if there is none). -/
+private noncomputable def nextIn (G : Finset ℝ) (t : ℝ) : ℝ :=
+  if h : (G.filter (fun u : ℝ => t < u)).Nonempty then (G.filter (fun u : ℝ => t < u)).min' h
+  else t
+
+open scoped Classical in
+/-- `nextIn G t` is the least element of `G` above `t`. -/
+private theorem nextIn_spec (G : Finset ℝ) {t : ℝ} (h : ∃ u ∈ G, t < u) :
+    nextIn G t ∈ G ∧ t < nextIn G t ∧ ∀ u ∈ G, u ≤ t ∨ nextIn G t ≤ u := by
+  obtain ⟨u, huG, hu⟩ := h
+  have hne : (G.filter (fun u : ℝ => t < u)).Nonempty := ⟨u, Finset.mem_filter.2 ⟨huG, hu⟩⟩
+  rw [nextIn, dite_eq_left hne]
+  have hmem := Finset.min'_mem (G.filter (fun u : ℝ => t < u)) hne
+  rw [Finset.mem_filter] at hmem
+  refine ⟨hmem.1, hmem.2, fun v hv => ?_⟩
+  by_cases hvt : v ≤ t
+  · exact Or.inl hvt
+  · exact Or.inr (Finset.min'_le _ _ (Finset.mem_filter.2 ⟨hv, not_le.mp hvt⟩))
+
+open scoped Classical in
+/-- `nextIn G t = t` when `G` has nothing above `t`. -/
+private theorem nextIn_of_not (G : Finset ℝ) {t : ℝ} (h : ¬ ∃ u ∈ G, t < u) :
+    nextIn G t = t := by
+  rw [nextIn, dite_eq_right]
+  rintro ⟨u, hu⟩
+  rw [Finset.mem_filter] at hu
+  exact h ⟨u, hu.1, hu.2⟩
+
+open scoped Classical in
+/-- The pieces the grid `G` cuts `[0,1]` into: the points of `G` and the open
+intervals between consecutive points of `G`. -/
+private noncomputable def gridPieces (G : Finset ℝ) : Finset Ivl :=
+  G.image Ivl.pt ∪ (G.image (fun t => Ivl.gap t (nextIn G t))).filter (fun I => I.lo < I.hi)
+
+open scoped Classical in
+/-- Each piece is a point of `G` or an open interval between consecutive points of `G`. -/
+private theorem gridPieces_desc (G : Finset ℝ) (hG : ∀ t ∈ G, 0 ≤ t ∧ t ≤ 1) {I : Ivl}
+    (hI : I ∈ gridPieces G) :
+    (∃ t ∈ G, I = Ivl.pt t ∧ I.toSet = {t}) ∨
+    (∃ t ∈ G, ∃ s ∈ G, t < s ∧ (∀ u ∈ G, u ≤ t ∨ s ≤ u) ∧ I = Ivl.gap t s ∧
+      I.toSet = Set.Ioo t s) := by
+  rw [gridPieces, Finset.mem_union] at hI
+  rcases hI with h | h
+  · obtain ⟨t, htG, rfl⟩ := Finset.mem_image.1 h
+    exact Or.inl ⟨t, htG, rfl, Ivl.toSet_pt (hG t htG).1 (hG t htG).2⟩
+  · rw [Finset.mem_filter] at h
+    obtain ⟨t, htG, rfl⟩ := Finset.mem_image.1 h.1
+    have hex : ∃ u ∈ G, t < u := by
+      by_contra hcon
+      rw [nextIn_of_not G hcon] at h
+      exact absurd (Ivl.gap_self t) (ne_of_lt h.2)
+    obtain ⟨hsG, hts, hmin⟩ := nextIn_spec G hex
+    have ht := hG t htG
+    have hs := hG _ hsG
+    exact Or.inr ⟨t, htG, nextIn G t, hsG, hts, hmin, rfl,
+      Ivl.toSet_gap ht.1 hts.le hs.2⟩
+
+open scoped Classical in
+/-- The points of `G` are pieces. -/
+private theorem mem_gridPieces_pt (G : Finset ℝ) {t : ℝ} (ht : t ∈ G) :
+    Ivl.pt t ∈ gridPieces G := by
+  rw [gridPieces, Finset.mem_union]
+  exact Or.inl (Finset.mem_image.2 ⟨t, ht, rfl⟩)
+
+open scoped Classical in
+/-- The open intervals between consecutive points of `G` are pieces. -/
+private theorem mem_gridPieces_gap (G : Finset ℝ) (hG : ∀ t ∈ G, 0 ≤ t ∧ t ≤ 1) {t : ℝ}
+    (ht : t ∈ G) (hex : ∃ u ∈ G, t < u) : Ivl.gap t (nextIn G t) ∈ gridPieces G := by
+  obtain ⟨hsG, hts, _⟩ := nextIn_spec G hex
+  rw [gridPieces, Finset.mem_union]
+  refine Or.inr (Finset.mem_filter.2 ⟨Finset.mem_image.2 ⟨t, ht, rfl⟩, ?_⟩)
+  have ht' := hG t ht
+  have hs' := hG _ hsG
+  show clamp01 t < max (clamp01 t) (clamp01 (nextIn G t))
+  rw [clamp01_eq ht'.1 ht'.2, clamp01_eq hs'.1 hs'.2, max_eq_right hts.le]
+  exact hts
+
+/-- The pieces are nonempty. -/
+private theorem gridPieces_nonempty (G : Finset ℝ) (hG : ∀ t ∈ G, 0 ≤ t ∧ t ≤ 1) {I : Ivl}
+    (hI : I ∈ gridPieces G) : I.toSet.Nonempty := by
+  rcases gridPieces_desc G hG hI with ⟨t, _, _, hset⟩ | ⟨t, _, s, _, hts, _, _, hset⟩
+  · exact ⟨t, by rw [hset]; rfl⟩
+  · exact ⟨(t + s)/2, by rw [hset]; constructor <;> linarith⟩
+
+/-- Two pieces that meet are equal. -/
+private theorem gridPieces_eq_of_mem (G : Finset ℝ) (hG : ∀ t ∈ G, 0 ≤ t ∧ t ≤ 1) {I J : Ivl}
+    (hI : I ∈ gridPieces G) (hJ : J ∈ gridPieces G) {x : ℝ} (hxI : x ∈ I.toSet)
+    (hxJ : x ∈ J.toSet) : I = J := by
+  rcases gridPieces_desc G hG hI with ⟨t, htG, hIeq, hIset⟩ | ⟨t, htG, s, hsG, hts, hmin, hIeq, hIset⟩ <;>
+    rcases gridPieces_desc G hG hJ with ⟨t', ht'G, hJeq, hJset⟩ | ⟨t', ht'G, s', hs'G, ht's', hmin', hJeq, hJset⟩
+  · rw [hIset] at hxI; rw [hJset] at hxJ
+    rw [hIeq, hJeq, (show t = t' by rw [← hxI, ← hxJ] : t = t')]
+  · rw [hIset] at hxI; rw [hJset] at hxJ
+    rw [Set.mem_singleton_iff] at hxI
+    subst hxI
+    rcases hmin' x htG with h | h
+    · exact absurd hxJ.1 (not_lt.2 h)
+    · exact absurd hxJ.2 (not_lt.2 h)
+  · rw [hIset] at hxI; rw [hJset] at hxJ
+    rw [Set.mem_singleton_iff] at hxJ
+    subst hxJ
+    rcases hmin x ht'G with h | h
+    · exact absurd hxI.1 (not_lt.2 h)
+    · exact absurd hxI.2 (not_lt.2 h)
+  · rw [hIset] at hxI; rw [hJset] at hxJ
+    obtain ⟨hxt, hxs⟩ := hxI
+    obtain ⟨hxt', hxs'⟩ := hxJ
+    have htt' : t = t' := by
+      rcases hmin' t htG with h | h
+      · rcases hmin t' ht'G with h' | h'
+        · linarith
+        · linarith
+      · linarith
+    have hss' : s = s' := by
+      rcases hmin' s hsG with h | h
+      · linarith
+      · rcases hmin s' hs'G with h' | h'
+        · linarith
+        · linarith
+    rw [hIeq, hJeq, htt', hss']
+
+/-- The pieces cover `[0,1]`. -/
+private theorem gridPieces_cover (G : Finset ℝ) (hG : ∀ t ∈ G, 0 ≤ t ∧ t ≤ 1)
+    (h0 : (0:ℝ) ∈ G) (h1 : (1:ℝ) ∈ G) {x : ℝ} (hx : x ∈ Set.Icc (0:ℝ) 1) :
+    ∃ I ∈ gridPieces G, x ∈ I.toSet := by
+  classical
+  by_cases hxG : x ∈ G
+  · exact ⟨Ivl.pt x, mem_gridPieces_pt G hxG, by rw [Ivl.toSet_pt hx.1 hx.2]; rfl⟩
+  · have hne : (G.filter (fun u : ℝ => u ≤ x)).Nonempty :=
+      ⟨0, Finset.mem_filter.2 ⟨h0, hx.1⟩⟩
+    set t := (G.filter (fun u : ℝ => u ≤ x)).max' hne with hteq
+    have htmem := Finset.max'_mem (G.filter (fun u : ℝ => u ≤ x)) hne
+    rw [Finset.mem_filter] at htmem
+    have htG : t ∈ G := htmem.1
+    have htx : t < x := lt_of_le_of_ne htmem.2 (fun h => hxG (h ▸ htG))
+    have hx1 : x < 1 := lt_of_le_of_ne hx.2 (fun h => hxG (h ▸ h1))
+    have hex : ∃ u ∈ G, t < u := ⟨1, h1, lt_trans htx hx1⟩
+    obtain ⟨hsG, hts, hmin⟩ := nextIn_spec G hex
+    have hxs : x < nextIn G t := by
+      by_contra hcon
+      have hcon' : nextIn G t ≤ x := not_lt.1 hcon
+      have : nextIn G t ≤ t :=
+        Finset.le_max' (G.filter (fun u : ℝ => u ≤ x)) _ (Finset.mem_filter.2 ⟨hsG, hcon'⟩)
+      exact absurd hts (not_lt.2 this)
+    refine ⟨Ivl.gap t (nextIn G t), mem_gridPieces_gap G hG htG hex, ?_⟩
+    rw [Ivl.toSet_gap (hG t htG).1 hts.le (hG _ hsG).2]
+    exact ⟨htx, hxs⟩
+
+/-- An interval whose endpoints lie in `G` contains a piece as soon as it meets it. -/
+private theorem gridPieces_subset_of_mem (G : Finset ℝ) (hG : ∀ t ∈ G, 0 ≤ t ∧ t ≤ 1) {I : Ivl}
+    (hI : I ∈ gridPieces G) {J : Ivl} (hlo : J.lo ∈ G) (hhi : J.hi ∈ G) {x y : ℝ}
+    (hx : x ∈ I.toSet) (hy : y ∈ I.toSet) (hxJ : x ∈ J.toSet) : y ∈ J.toSet := by
+  rcases gridPieces_desc G hG hI with ⟨t, _, _, hset⟩ | ⟨t, _, s, _, hts, hmin, _, hset⟩
+  · rw [hset, Set.mem_singleton_iff] at hx hy
+    rw [hy, ← hx]
+    exact hxJ
+  · rw [hset] at hx hy
+    have hJx := J.subset_Icc hxJ
+    have hlot : J.lo ≤ t := by
+      rcases hmin J.lo hlo with h | h
+      · exact h
+      · exact absurd hx.2 (not_lt.2 (le_trans h hJx.1))
+    have hhis : s ≤ J.hi := by
+      rcases hmin J.hi hhi with h | h
+      · exact absurd hx.1 (not_lt.2 (le_trans hJx.2 h))
+      · exact h
+    refine ⟨?_, ?_⟩
+    · split_ifs <;> linarith [hy.1]
+    · split_ifs <;> linarith [hy.2]
+
+/-! ### Part 2: the disjoint normal form, the sup norm, and `‖∫ f‖ ≤ ‖f‖` -/
+
+omit [NormedSpace ℂ E] [CompleteSpace E] in
+/-- The values of a finite sum `∑ₙ aₙ·1_{Iₙ}`. -/
+theorem sum_bddIndicator_apply (s : Finset Ivl) (a : Ivl → E) (x : ↥(Set.Icc (0:ℝ) 1)) :
+    (∑ I ∈ s, I.bddIndicator (a I)) x = ∑ I ∈ s, I.toSet.indicator (fun _ => a I) (x : ℝ) := by
+  rw [congrFun (lp.coeFn_sum (fun I => I.bddIndicator (a I)) s) x]
+  exact Finset.sum_apply _ _ _
+
+/-- **14II** (cstar.tex:2001, Exercise), part 2, first clause: every step
+function may be written as `∑ₙ aₙ·1_{Iₙ}` with the `Iₙ` *disjoint and
+nonempty*.
+
+*The solution's own route* (`parsec-140.20`(2), asols.tex:1619, which refers
+back to part 1): split the intervals at all the endpoints occurring, so that
+any two pieces are equal or disjoint, and discard the empty ones.  Here the
+common refinement is taken explicitly: the grid `G` of all endpoints (plus
+`0`, `1`) cuts `[0,1]` into the points of `G` and the open intervals between
+consecutive points of `G`, and a step function is constant on each piece. -/
+theorem exists_disjoint_repr (f : BddFn E) (hf : f ∈ stepSpace E) :
+    ∃ (s : Finset Ivl) (a : Ivl → E),
+      f = ∑ I ∈ s, I.bddIndicator (a I) ∧ (∀ I ∈ s, I.toSet.Nonempty) ∧
+        (s : Set Ivl).Pairwise fun I J => Disjoint I.toSet J.toSet := by
+  classical
+  obtain ⟨c, rfl⟩ := hf
+  set G : Finset ℝ :=
+    insert (0:ℝ) (insert (1:ℝ) (c.support.image Ivl.lo ∪ c.support.image Ivl.hi)) with hGdef
+  have h0G : (0:ℝ) ∈ G := Finset.mem_insert_self _ _
+  have h1G : (1:ℝ) ∈ G := Finset.mem_insert_of_mem (Finset.mem_insert_self _ _)
+  have hloG : ∀ J ∈ c.support, J.lo ∈ G := fun J hJ =>
+    Finset.mem_insert_of_mem (Finset.mem_insert_of_mem
+      (Finset.mem_union_left _ (Finset.mem_image_of_mem _ hJ)))
+  have hhiG : ∀ J ∈ c.support, J.hi ∈ G := fun J hJ =>
+    Finset.mem_insert_of_mem (Finset.mem_insert_of_mem
+      (Finset.mem_union_right _ (Finset.mem_image_of_mem _ hJ)))
+  have hG : ∀ t ∈ G, 0 ≤ t ∧ t ≤ 1 := by
+    intro t ht
+    simp only [hGdef, Finset.mem_insert, Finset.mem_union, Finset.mem_image] at ht
+    rcases ht with rfl | rfl | ⟨J, _, rfl⟩ | ⟨J, _, rfl⟩
+    · exact ⟨le_rfl, zero_le_one⟩
+    · exact ⟨zero_le_one, le_rfl⟩
+    · exact ⟨J.lo_nonneg, le_trans J.lo_le_hi J.hi_le_one⟩
+    · exact ⟨le_trans J.lo_nonneg J.lo_le_hi, J.hi_le_one⟩
+  have hconst : ∀ I ∈ gridPieces G, ∀ x y : ↥(Set.Icc (0:ℝ) 1),
+      (x:ℝ) ∈ I.toSet → (y:ℝ) ∈ I.toSet → stepMap c x = stepMap c y := by
+    intro I hI x y hx hy
+    rw [stepMap_apply, stepMap_apply]
+    refine Finset.sum_congr rfl fun J hJ => ?_
+    by_cases hxJ : (x:ℝ) ∈ J.toSet
+    · have hyJ := gridPieces_subset_of_mem G hG hI (hloG J hJ) (hhiG J hJ) hx hy hxJ
+      rw [Set.indicator_of_mem hxJ, Set.indicator_of_mem hyJ]
+    · have hyJ : (y:ℝ) ∉ J.toSet := fun h =>
+        hxJ (gridPieces_subset_of_mem G hG hI (hloG J hJ) (hhiG J hJ) hy hx h)
+      rw [Set.indicator_of_notMem hxJ, Set.indicator_of_notMem hyJ]
+  have hmid : ∀ I ∈ gridPieces G, ((I.mid : ↥(Set.Icc (0:ℝ) 1)) : ℝ) ∈ I.toSet := by
+    intro I hI
+    rcases gridPieces_desc G hG hI with ⟨t, htG, hIeq, hIset⟩ |
+      ⟨t, htG, s, hsG, hts, _, hIeq, hIset⟩
+    · rw [hIset, hIeq, Ivl.mid_pt (hG t htG).1 (hG t htG).2]
+      rfl
+    · rw [hIset, hIeq, Ivl.mid_gap (hG t htG).1 hts.le (hG s hsG).2]
+      constructor <;> linarith
+  refine ⟨gridPieces G, fun I => stepMap c I.mid, ?_, ?_, ?_⟩
+  · refine Subtype.ext (funext fun x => ?_)
+    show stepMap c x = (∑ I ∈ gridPieces G, I.bddIndicator (stepMap c (Ivl.mid I))) x
+    rw [sum_bddIndicator_apply]
+    obtain ⟨I₀, hI₀, hxI₀⟩ := gridPieces_cover G hG h0G h1G x.2
+    rw [Finset.sum_eq_single_of_mem I₀ hI₀ ?_]
+    · rw [Set.indicator_of_mem hxI₀]
+      exact hconst I₀ hI₀ x I₀.mid hxI₀ (hmid I₀ hI₀)
+    · intro J hJ hne
+      refine Set.indicator_of_notMem (fun hxJ => hne ?_) _
+      exact gridPieces_eq_of_mem G hG hJ hI₀ hxJ hxI₀
+  · exact fun I hI => gridPieces_nonempty G hG hI
+  · intro I hI J hJ hne
+    refine Set.disjoint_left.2 fun x hxI hxJ => hne ?_
+    exact gridPieces_eq_of_mem G hG (Finset.mem_coe.1 hI) (Finset.mem_coe.1 hJ) hxI hxJ
+
+omit [NormedSpace ℂ E] [CompleteSpace E] in
+/-- In a disjoint representation each coefficient is bounded by the sup norm. -/
+theorem norm_coeff_le (s : Finset Ivl) (a : Ivl → E) (hne : ∀ I ∈ s, I.toSet.Nonempty)
+    (hdisj : (s : Set Ivl).Pairwise fun I J => Disjoint I.toSet J.toSet) {I : Ivl} (hI : I ∈ s) :
+    ‖a I‖ ≤ ‖∑ J ∈ s, J.bddIndicator (a J)‖ := by
+  classical
+  obtain ⟨x, hx⟩ := hne I hI
+  have hx01 : x ∈ Set.Icc (0:ℝ) 1 := I.subset_unitInterval hx
+  have hval : (∑ J ∈ s, J.bddIndicator (a J)) ⟨x, hx01⟩ = a I := by
+    rw [sum_bddIndicator_apply]
+    rw [Finset.sum_eq_single_of_mem I hI ?_]
+    · exact Set.indicator_of_mem hx _
+    · intro J hJ hJne
+      exact Set.indicator_of_notMem
+        (fun hxJ => Set.disjoint_left.1
+          (hdisj (Finset.mem_coe.2 hJ) (Finset.mem_coe.2 hI) hJne) hxJ hx) _
+  have := lp.norm_apply_le_norm (E := fun _ : ↥(Set.Icc (0:ℝ) 1) => E) (p := ∞)
+    (by simp) (∑ J ∈ s, J.bddIndicator (a J)) ⟨x, hx01⟩
+  rwa [hval] at this
+
+omit [NormedSpace ℂ E] [CompleteSpace E] in
+/-- **14II** (cstar.tex:2001, Exercise), part 2, second clause: for a
+representation by disjoint nonempty intervals, `‖f‖ = supₙ ‖aₙ‖` in the
+supremum norm.
+
+*The solution's own route* (`parsec-140.20`(2), asols.tex:1619): each value of
+`f` is `0` or some `aₙ`, giving `≤`; each `Iₙ` is nonempty, giving `≥`. -/
+theorem norm_sum_bddIndicator (s : Finset Ivl) (a : Ivl → E) (hne : ∀ I ∈ s, I.toSet.Nonempty)
+    (hdisj : (s : Set Ivl).Pairwise fun I J => Disjoint I.toSet J.toSet) :
+    ‖∑ I ∈ s, I.bddIndicator (a I)‖ = ⨆ I : ↥s, ‖a I‖ := by
+  classical
+  have hbdd : BddAbove (Set.range fun I : ↥s => ‖a I‖) := Set.Finite.bddAbove (Set.finite_range _)
+  have hnonneg : 0 ≤ ⨆ I : ↥s, ‖a I‖ := Real.iSup_nonneg fun _ => norm_nonneg _
+  refine le_antisymm ?_ ?_
+  · refine lp.norm_le_of_forall_le hnonneg fun x => ?_
+    rw [sum_bddIndicator_apply]
+    by_cases hx : ∃ I ∈ s, (x:ℝ) ∈ I.toSet
+    · obtain ⟨I₀, hI₀, hxI₀⟩ := hx
+      rw [Finset.sum_eq_single_of_mem I₀ hI₀ ?_]
+      · rw [Set.indicator_of_mem hxI₀]
+        exact le_ciSup hbdd (⟨I₀, hI₀⟩ : ↥s)
+      · intro J hJ hJne
+        exact Set.indicator_of_notMem
+          (fun hxJ => Set.disjoint_left.1
+            (hdisj (Finset.mem_coe.2 hJ) (Finset.mem_coe.2 hI₀) hJne) hxJ hxI₀) _
+    · have hzero : ∀ I ∈ s, I.toSet.indicator (fun _ => a I) (x:ℝ) = 0 := fun I hI =>
+        Set.indicator_of_notMem (fun hxI => hx ⟨I, hI, hxI⟩) _
+      rw [Finset.sum_eq_zero hzero, norm_zero]
+      exact hnonneg
+  · exact Real.iSup_le (fun I => norm_coeff_le s a hne hdisj I.2) (norm_nonneg _)
+
+/-- The four printed shapes of an interval. -/
+theorem Ivl.toSet_eq (I : Ivl) :
+    I.toSet = if I.loMem then (if I.hiMem then Set.Icc I.lo I.hi else Set.Ico I.lo I.hi)
+      else (if I.hiMem then Set.Ioc I.lo I.hi else Set.Ioo I.lo I.hi) := by
+  rw [Ivl.toSet]
+  split_ifs <;> rfl
+
+/-- **14II** (cstar.tex:2001, Exercise), part 2, third clause: disjoint
+intervals in `[0,1]` have total length `∑ₙ |Iₙ| ≤ 1`.  The thesis calls this
+"rather obvious" and prints no argument; here it is Lebesgue measure's
+additivity on the disjoint `Iₙ ⊆ [0,1]`. -/
+theorem sum_length_le_one (s : Finset Ivl)
+    (hdisj : (s : Set Ivl).Pairwise fun I J => Disjoint I.toSet J.toSet) :
+    ∑ I ∈ s, I.length ≤ 1 := by
+  classical
+  have hmeas : ∀ I : Ivl, MeasurableSet I.toSet := by
+    intro I
+    rw [Ivl.toSet_eq]
+    split_ifs
+    · exact measurableSet_Icc
+    · exact measurableSet_Ico
+    · exact measurableSet_Ioc
+    · exact measurableSet_Ioo
+  have hvol : ∀ I : Ivl, MeasureTheory.volume I.toSet = ENNReal.ofReal I.length := by
+    intro I
+    rw [Ivl.toSet_eq, Ivl.length]
+    split_ifs
+    · exact Real.volume_Icc
+    · exact Real.volume_Ico
+    · exact Real.volume_Ioc
+    · exact Real.volume_Ioo
+  have hunion : MeasureTheory.volume (⋃ I ∈ s, I.toSet) = ∑ I ∈ s, MeasureTheory.volume I.toSet :=
+    MeasureTheory.measure_biUnion_finset hdisj (fun I _ => hmeas I)
+  have hsub : (⋃ I ∈ s, I.toSet) ⊆ Set.Icc (0:ℝ) 1 := by
+    intro x hx
+    simp only [Set.mem_iUnion] at hx
+    obtain ⟨I, _, hxI⟩ := hx
+    exact I.subset_unitInterval hxI
+  have hle : ∑ I ∈ s, MeasureTheory.volume I.toSet ≤ 1 := by
+    rw [← hunion]
+    calc MeasureTheory.volume (⋃ I ∈ s, I.toSet)
+        ≤ MeasureTheory.volume (Set.Icc (0:ℝ) 1) := MeasureTheory.measure_mono hsub
+      _ = 1 := by rw [Real.volume_Icc]; norm_num
+  simp_rw [hvol] at hle
+  rw [← ENNReal.ofReal_sum_of_nonneg (fun I _ => I.length_nonneg)] at hle
+  exact ENNReal.ofReal_le_one.1 hle
+
+/-- **14II** (cstar.tex:2001, Exercise), part 2, closing clause, on `S_𝒜`:
+`‖∫ f‖ ≤ ‖f‖` for a step function `f`.
+
+*The solution's own route* (`parsec-140.20`(2), asols.tex:1619): in the disjoint
+normal form, `‖∫ f‖ ≡ ‖∑ₙ |Iₙ|·aₙ‖ ≤ ∑ₙ ‖aₙ‖·|Iₙ| ≤ ‖f‖ ∑ₙ |Iₙ| ≤ ‖f‖`. -/
+theorem norm_stepIntegral_le (f : stepSpace E) : ‖stepIntegral f‖ ≤ ‖(f : BddFn E)‖ := by
+  obtain ⟨s, a, hrepr, hne, hdisj⟩ := exists_disjoint_repr (f : BddFn E) f.2
+  have hf : f = ∑ I ∈ s, stepGen I (a I) := by
+    refine Subtype.ext ?_
+    rw [Submodule.coe_sum]
+    exact hrepr
+  have hint : stepIntegral f = ∑ I ∈ s, I.length • a I := by
+    rw [hf, map_sum]
+    exact Finset.sum_congr rfl fun I _ => stepIntegral_stepGen I (a I)
+  have hnorm : ∀ I ∈ s, ‖a I‖ ≤ ‖(f : BddFn E)‖ := by
+    intro I hI
+    rw [hrepr]
+    exact norm_coeff_le s a hne hdisj hI
+  calc ‖stepIntegral f‖ = ‖∑ I ∈ s, I.length • a I‖ := by rw [hint]
+    _ ≤ ∑ I ∈ s, ‖I.length • a I‖ := norm_sum_le _ _
+    _ = ∑ I ∈ s, I.length * ‖a I‖ := by
+        refine Finset.sum_congr rfl fun I _ => ?_
+        rw [norm_smul, Real.norm_eq_abs, abs_of_nonneg I.length_nonneg]
+    _ ≤ ∑ I ∈ s, I.length * ‖(f : BddFn E)‖ :=
+        Finset.sum_le_sum fun I hI => mul_le_mul_of_nonneg_left (hnorm I hI) I.length_nonneg
+    _ = (∑ I ∈ s, I.length) * ‖(f : BddFn E)‖ := by rw [← Finset.sum_mul]
+    _ ≤ 1 * ‖(f : BddFn E)‖ :=
+        mul_le_mul_of_nonneg_right (sum_length_le_one s hdisj) (norm_nonneg _)
+    _ = ‖(f : BddFn E)‖ := one_mul _
+
+/-! ### Part 2, last clause: the extension to the closure `S̄_E` -/
+
+/-- `∫ : S_E → E` as a bounded operator (of norm at most `1`). -/
+noncomputable def stepIntegralL : stepSpace E →L[ℂ] E :=
+  (stepIntegral (E := E)).mkContinuous 1
+    (fun f => by rw [one_mul]; exact norm_stepIntegral_le f)
+
+/-- The bounded `∫` is the linear `∫`. -/
+@[simp] theorem stepIntegralL_apply (f : stepSpace E) : stepIntegralL f = stepIntegral f := rfl
+
+/-- **14II** (cstar.tex:2001, Exercise), part 2: `S̄_𝒜`, the closure of the
+step functions `S_𝒜` in `B_𝒜`. -/
+@[reducible] noncomputable def stepClosure (E : Type*) [NormedAddCommGroup E] [NormedSpace ℂ E]
+    [CompleteSpace E] : Submodule ℂ (BddFn E) := (stepSpace E).topologicalClosure
+
+/-- `S_𝒜 ⊆ S̄_𝒜`. -/
+theorem stepSpace_le_stepClosure : stepSpace E ≤ stepClosure E :=
+  (stepSpace E).le_topologicalClosure
+
+/-- The inclusion `S_E ↪ S̄_E`. -/
+noncomputable def stepInclusion : stepSpace E →L[ℂ] stepClosure E where
+  toFun x := ⟨(x : BddFn E), stepSpace_le_stepClosure x.2⟩
+  map_add' _ _ := rfl
+  map_smul' _ _ := rfl
+  cont := by fun_prop
+
+/-- `S_𝒜` is dense in `S̄_𝒜`. -/
+theorem denseRange_stepInclusion : DenseRange (stepInclusion (E := E)) := by
+  have h : ((stepSpace E : Submodule ℂ (BddFn E)) : Set (BddFn E))
+      ⊆ ((stepClosure E : Submodule ℂ (BddFn E)) : Set (BddFn E)) :=
+    SetLike.coe_subset_coe.2 stepSpace_le_stepClosure
+  have hd : DenseRange (Set.inclusion h) := by
+    refine (_root_.denseRange_inclusion_iff h).2 ?_
+    rw [stepClosure, Submodule.topologicalClosure_coe]
+  exact hd
+
+/-- The inclusion `S_𝒜 ↪ S̄_𝒜` is isometric. -/
+theorem isUniformInducing_stepInclusion : IsUniformInducing (stepInclusion (E := E)) :=
+  Isometry.isUniformInducing (fun _ _ => rfl)
+
+/-- **14II** (cstar.tex:2001, Exercise), part 2, last clause: the integral
+`∫ : S̄_𝒜 → 𝒜`, the bounded linear extension of `∫ : S_𝒜 → 𝒜` to the closure.
+
+*The solution's own route* (`parsec-140.20`(2), asols.tex:1619): `∫ fₙ` is
+Cauchy whenever `fₙ` is, by `‖∫ (fₙ - fₘ)‖ ≤ ‖fₙ - fₘ‖`, the limit does not
+depend on the approximating sequence, and the resulting map is linear and
+bounded — the bounded-extension argument, packaged here as
+`ContinuousLinearMap.extend`.  Its defining property is
+`thesisIntegral_tendsto`, its uniqueness `thesisIntegral_unique`, and its
+bound `thesisIntegral_norm_le`. -/
+noncomputable def thesisIntegral : stepClosure E →L[ℂ] E :=
+  stepIntegralL.extend stepInclusion
+
+/-- The extension agrees with `∫` on the step functions. -/
+@[simp] theorem thesisIntegral_stepInclusion (f : stepSpace E) :
+    thesisIntegral (stepInclusion f) = stepIntegral f := by
+  rw [thesisIntegral]
+  exact ContinuousLinearMap.extend_eq _ denseRange_stepInclusion isUniformInducing_stepInclusion f
+
+set_option maxHeartbeats 800000 in
+/-- **14II** (cstar.tex:2001, Exercise), part 2, last clause: `∫ : S̄_𝒜 → 𝒜` is
+the *only* bounded linear extension of `∫ : S_𝒜 → 𝒜` ("rather obvious", as the
+solution says: two continuous maps agreeing on a dense subspace are equal). -/
+theorem thesisIntegral_unique (J : stepClosure E →L[ℂ] E)
+    (hJ : ∀ f : stepSpace E, J (stepInclusion f) = stepIntegral f) : J = thesisIntegral := by
+  have hcomp : J.comp stepInclusion = stepIntegralL (E := E) :=
+    ContinuousLinearMap.ext fun f => hJ f
+  have h := ContinuousLinearMap.extend_unique (stepIntegralL (E := E)) denseRange_stepInclusion
+    isUniformInducing_stepInclusion J hcomp
+  rw [thesisIntegral]
+  exact h.symm
+
+/-- The printed defining property of the extension: `∫ g = limₙ ∫ fₙ` for any
+sequence of step functions converging uniformly to `g`. -/
+theorem thesisIntegral_tendsto (g : stepClosure E) (fs : ℕ → stepSpace E)
+    (hfs : Tendsto (fun n => ((fs n : BddFn E))) atTop (𝓝 (g : BddFn E))) :
+    Tendsto (fun n => stepIntegral (fs n)) atTop (𝓝 (thesisIntegral g)) := by
+  have h1 : Tendsto (fun n => stepInclusion (fs n)) atTop (𝓝 g) := by
+    rw [tendsto_subtype_rng]
+    exact hfs
+  have h2 := (thesisIntegral (E := E)).continuous.tendsto g
+  exact Filter.Tendsto.congr (fun n => thesisIntegral_stepInclusion (fs n)) (h2.comp h1)
+
+/-- A member of `S̄_E` is the uniform limit of a sequence of step functions. -/
+theorem exists_seq_of_mem_stepClosure {g : BddFn E} (hg : g ∈ stepClosure E) :
+    ∃ fs : ℕ → BddFn E, (∀ n, fs n ∈ stepSpace E) ∧ Tendsto fs atTop (𝓝 g) := by
+  rw [stepClosure, ← SetLike.mem_coe, Submodule.topologicalClosure_coe] at hg
+  obtain ⟨fs, h1, h2⟩ := mem_closure_iff_seq_limit.1 hg
+  exact ⟨fs, h1, h2⟩
+
+/-- **14II** (cstar.tex:2001, Exercise), part 2, closing clause, on `S̄_𝒜`:
+`‖∫ f‖ ≤ ‖f‖` for the supremum norm — *the* clause the rest of the chapter
+uses, here on the thesis's own integral.
+
+*The solution's own route* (`parsec-140.20`(2), asols.tex:1619): `‖∫ fₙ‖ ≤ ‖fₙ‖`
+for the approximating step functions, and both sides converge. -/
+theorem thesisIntegral_norm_le (g : stepClosure E) :
+    ‖thesisIntegral g‖ ≤ ‖(g : BddFn E)‖ := by
+  obtain ⟨fs, hfs, hlim⟩ := exists_seq_of_mem_stepClosure g.2
+  have h1 : Tendsto (fun n => stepIntegral (⟨fs n, hfs n⟩ : stepSpace E)) atTop
+      (𝓝 (thesisIntegral g)) := thesisIntegral_tendsto g (fun n => ⟨fs n, hfs n⟩) hlim
+  exact le_of_tendsto_of_tendsto' h1.norm hlim.norm
+    (fun n => norm_stepIntegral_le (⟨fs n, hfs n⟩ : stepSpace E))
+
+/-! ### Part 3: continuous functions are uniform limits of step functions -/
+
+/-- A continuous `f : [0,1] → E` as an element of `B_E`. -/
+noncomputable def contToBdd (f : C(↥(Set.Icc (0:ℝ) 1), E)) : BddFn E :=
+  ⟨fun x => f x, memℓp_infty (by
+    have hc : IsCompact (Set.range fun x => ‖f x‖) := isCompact_range (by fun_prop)
+    exact hc.bddAbove)⟩
+
+omit [NormedSpace ℂ E] [CompleteSpace E] in
+/-- The values of a continuous function read in `B_𝒜`. -/
+@[simp] theorem contToBdd_apply (f : C(↥(Set.Icc (0:ℝ) 1), E)) (x : ↥(Set.Icc (0:ℝ) 1)) :
+    contToBdd f x = f x := rfl
+
+/-- **14II** (cstar.tex:2001, Exercise), part 3: every continuous
+`f : [0,1] → 𝒜` is a supremum-norm limit of step functions, i.e. lies in
+`S̄_𝒜`.
+
+*The solution's own route* (`parsec-140.20`(3), asols.tex:1619): for `ε > 0`
+pick for each `x` a `δₓ` with `‖f x - f y‖ ≤ ε` on `Iₓ = (x-δₓ,x+δₓ)`, take a
+finite subcover of the compact `[0,1]`, and thin it to disjoint intervals
+`Jₙ ⊆ I_{xₙ}` covering `[0,1]`; then `‖f - ∑ₙ f(xₙ)·1_{Jₙ}‖ ≤ ε`.  Transcribed
+with the cover-and-thin step in its uniform form: the compactness of `[0,1]`
+gives *one* `δ` (Heine–Cantor), and the disjoint `Jₙ` are then the pieces of
+the uniform grid of mesh `< δ`. -/
+theorem contToBdd_mem_stepClosure (f : C(↥(Set.Icc (0:ℝ) 1), E)) :
+    contToBdd f ∈ stepClosure E := by
+  classical
+  rw [stepClosure, ← SetLike.mem_coe, Submodule.topologicalClosure_coe]
+  refine Metric.mem_closure_iff.2 fun ε hε => ?_
+  have huc : UniformContinuous (f : ↥(Set.Icc (0:ℝ) 1) → E) :=
+    CompactSpace.uniformContinuous_of_continuous f.continuous
+  rw [Metric.uniformContinuous_iff] at huc
+  obtain ⟨δ, hδ, hδ'⟩ := huc (ε/2) (half_pos hε)
+  obtain ⟨n, hn⟩ := exists_nat_one_div_lt hδ
+  set N : ℕ := n + 1 with hNdef
+  have hNpos : 0 < N := Nat.succ_pos n
+  have hNR : (0:ℝ) < N := by exact_mod_cast hNpos
+  have hNlt : 1/(N:ℝ) < δ := by rw [hNdef]; push_cast; exact hn
+  set G : Finset ℝ := (Finset.range (N+1)).image (fun k : ℕ => (k:ℝ)/N) with hGdef
+  have hG : ∀ t ∈ G, 0 ≤ t ∧ t ≤ 1 := by
+    intro t ht
+    rw [hGdef, Finset.mem_image] at ht
+    obtain ⟨k, hk, rfl⟩ := ht
+    rw [Finset.mem_range] at hk
+    refine ⟨by positivity, ?_⟩
+    rw [div_le_one hNR]
+    exact_mod_cast Nat.lt_succ_iff.1 hk
+  have h0G : (0:ℝ) ∈ G := by
+    rw [hGdef]
+    exact Finset.mem_image.2 ⟨0, Finset.mem_range.2 (Nat.succ_pos _), by simp⟩
+  have h1G : (1:ℝ) ∈ G := by
+    rw [hGdef]
+    refine Finset.mem_image.2 ⟨N, Finset.mem_range.2 (Nat.lt_succ_self _), ?_⟩
+    field_simp
+  have hnext : ∀ t ∈ G, t < 1 → t + 1/(N:ℝ) ∈ G := by
+    intro t ht htlt
+    rw [hGdef, Finset.mem_image] at ht ⊢
+    obtain ⟨k, hk, rfl⟩ := ht
+    rw [Finset.mem_range] at hk
+    have hkN : k < N := by
+      rw [div_lt_one hNR] at htlt
+      exact_mod_cast htlt
+    exact ⟨k+1, Finset.mem_range.2 (by omega), by push_cast; ring⟩
+  have hdiam : ∀ I ∈ gridPieces G, ∀ x y : ℝ, x ∈ I.toSet → y ∈ I.toSet →
+      |x - y| ≤ 1/(N:ℝ) := by
+    intro I hI x y hx hy
+    rcases gridPieces_desc G hG hI with ⟨t, _, _, hset⟩ | ⟨t, htG, s, hsG, hts, hmin, _, hset⟩
+    · rw [hset, Set.mem_singleton_iff] at hx hy
+      rw [hx, hy, sub_self, abs_zero]
+      positivity
+    · rw [hset] at hx hy
+      have ht1 : t < 1 := lt_of_lt_of_le hts (hG s hsG).2
+      have hu := hnext t htG ht1
+      have hst : s ≤ t + 1/(N:ℝ) := by
+        rcases hmin _ hu with h | h
+        · exfalso
+          have : (0:ℝ) < 1/(N:ℝ) := by positivity
+          linarith
+        · exact h
+      rw [abs_le]
+      constructor <;> [linarith [hx.1, hx.2, hy.1, hy.2]; linarith [hx.1, hx.2, hy.1, hy.2]]
+  have hgS : (∑ I ∈ gridPieces G, I.bddIndicator (f I.mid)) ∈ stepSpace E :=
+    Submodule.sum_mem _ (fun I _ => bddIndicator_mem_stepSpace I _)
+  refine ⟨∑ I ∈ gridPieces G, I.bddIndicator (f I.mid), hgS, ?_⟩
+  rw [dist_eq_norm]
+  refine lt_of_le_of_lt (lp.norm_le_of_forall_le (le_of_lt (half_pos hε)) fun x => ?_)
+    (half_lt_self hε)
+  obtain ⟨I₀, hI₀, hxI₀⟩ := gridPieces_cover G hG h0G h1G x.2
+  have hmid : ((I₀.mid : ↥(Set.Icc (0:ℝ) 1)) : ℝ) ∈ I₀.toSet := by
+    rcases gridPieces_desc G hG hI₀ with ⟨t, htG, hIeq, hIset⟩ |
+      ⟨t, htG, s, hsG, hts, _, hIeq, hIset⟩
+    · rw [hIset, hIeq, Ivl.mid_pt (hG t htG).1 (hG t htG).2]
+      rfl
+    · rw [hIset, hIeq, Ivl.mid_gap (hG t htG).1 hts.le (hG s hsG).2]
+      constructor <;> linarith
+  have hval : (∑ I ∈ gridPieces G, I.bddIndicator (f I.mid)) x = f I₀.mid := by
+    rw [sum_bddIndicator_apply, Finset.sum_eq_single_of_mem I₀ hI₀ ?_]
+    · exact Set.indicator_of_mem hxI₀ _
+    · intro J hJ hne
+      exact Set.indicator_of_notMem
+        (fun hxJ => hne (gridPieces_eq_of_mem G hG hJ hI₀ hxJ hxI₀)) _
+  have hsub : (contToBdd f - ∑ I ∈ gridPieces G, I.bddIndicator (f I.mid)) x
+      = f x - f I₀.mid := by
+    show (contToBdd f) x - (∑ I ∈ gridPieces G, I.bddIndicator (f I.mid)) x = f x - f I₀.mid
+    rw [hval]
+    rfl
+  rw [hsub]
+  have hdx : dist x I₀.mid < δ := by
+    rw [Subtype.dist_eq, Real.dist_eq]
+    exact lt_of_le_of_lt (hdiam I₀ hI₀ _ _ hxI₀ hmid) hNlt
+  have := hδ' hdx
+  rw [dist_eq_norm] at this
+  exact this.le
+
+/-- `∫ f` for a continuous `f : [0,1] → E`. -/
+noncomputable def contIntegral (f : C(↥(Set.Icc (0:ℝ) 1), E)) : E :=
+  thesisIntegral ⟨contToBdd f, contToBdd_mem_stepClosure f⟩
+
+/-! ### Part 4: `∫ a f = a ∫ f` -/
+
+/-- `u ↦ u(·)·a`, from bounded scalar functions to bounded `E`-valued ones. -/
+noncomputable def bddSmulRight (a : E) (u : BddFn ℂ) : BddFn E :=
+  ⟨fun x => u x • a, memℓp_infty ⟨‖u‖ * ‖a‖, by
+    rintro _ ⟨x, rfl⟩
+    show ‖u x • a‖ ≤ ‖u‖ * ‖a‖
+    rw [norm_smul]
+    exact mul_le_mul_of_nonneg_right
+      (lp.norm_apply_le_norm (by simp) u x) (norm_nonneg a)⟩⟩
+
+omit [CompleteSpace E] in
+/-- The values of `u(·)·a`. -/
+@[simp] theorem bddSmulRight_apply (a : E) (u : BddFn ℂ) (x : ↥(Set.Icc (0:ℝ) 1)) :
+    bddSmulRight a u x = u x • a := rfl
+
+/-- `u ↦ u(·)·a` as a bounded operator. -/
+noncomputable def bddSmulRightL (a : E) : BddFn ℂ →L[ℂ] BddFn E :=
+  LinearMap.mkContinuous
+    { toFun := fun u => bddSmulRight a u
+      map_add' := fun u v => by
+        refine Subtype.ext (funext fun x => ?_)
+        show (u x + v x) • a = u x • a + v x • a
+        rw [add_smul]
+      map_smul' := fun c u => by
+        refine Subtype.ext (funext fun x => ?_)
+        show (c * u x) • a = c • (u x • a)
+        rw [mul_smul] }
+    ‖a‖ (fun u => by
+      refine lp.norm_le_of_forall_le (by positivity) fun x => ?_
+      show ‖u x • a‖ ≤ ‖a‖ * ‖u‖
+      rw [norm_smul, mul_comm ‖a‖ ‖u‖]
+      exact mul_le_mul_of_nonneg_right (lp.norm_apply_le_norm (by simp) u x) (norm_nonneg a))
+
+omit [CompleteSpace E] in
+/-- The bounded `u ↦ u(·)·a` is the plain one. -/
+@[simp] theorem bddSmulRightL_apply (a : E) (u : BddFn ℂ) :
+    bddSmulRightL a u = bddSmulRight a u := rfl
+
+omit [CompleteSpace E] in
+/-- `(∑ₙ zₙ·1_{Iₙ})·a = ∑ₙ (zₙ·a)·1_{Iₙ}`. -/
+theorem bddSmulRight_stepMap (a : E) (c : Ivl →₀ ℂ) :
+    bddSmulRight a (stepMap c) = stepMap (c.mapRange (fun z => z • a) (by simp)) := by
+  classical
+  refine Subtype.ext (funext fun x => ?_)
+  show (stepMap c x) • a = stepMap (c.mapRange (fun z => z • a) (by simp)) x
+  rw [stepMap_apply, stepMap_apply, Finset.sum_smul]
+  rw [Finset.sum_subset (Finsupp.support_mapRange (f := fun z : ℂ => z • a))]
+  · refine Finset.sum_congr rfl fun J _ => ?_
+    by_cases hxJ : (x:ℝ) ∈ J.toSet
+    · rw [Set.indicator_of_mem hxJ, Set.indicator_of_mem hxJ, Finsupp.mapRange_apply]
+    · rw [Set.indicator_of_notMem hxJ, Set.indicator_of_notMem hxJ, zero_smul]
+  · intro J _ hJ
+    rw [Finsupp.notMem_support_iff] at hJ
+    rw [hJ, Set.indicator_apply_eq_zero]
+    exact fun _ => rfl
+
+/-- `u·a` is a step function when `u` is. -/
+theorem bddSmulRight_mem_stepSpace (a : E) {u : BddFn ℂ} (hu : u ∈ stepSpace ℂ) :
+    bddSmulRight a u ∈ stepSpace E := by
+  obtain ⟨c, rfl⟩ := hu
+  rw [bddSmulRight_stepMap]
+  exact LinearMap.mem_range_self _ _
+
+/-- **14II** part 4 for step functions: `∫ (u·a) = (∫ u)·a`. -/
+theorem stepIntegral_bddSmulRight (a : E) {u : BddFn ℂ} (hu : u ∈ stepSpace ℂ)
+    (hu' : bddSmulRight a u ∈ stepSpace E) :
+    stepIntegral (⟨bddSmulRight a u, hu'⟩ : stepSpace E)
+      = (stepIntegral (⟨u, hu⟩ : stepSpace ℂ)) • a := by
+  classical
+  obtain ⟨c, hc⟩ := hu
+  subst hc
+  rw [stepIntegral_eq _ (c.mapRange (fun z => z • a) (by simp)) (bddSmulRight_stepMap a c),
+    stepIntegral_eq _ c rfl, stepLength_apply, stepLength_apply, Finset.sum_smul]
+  rw [Finset.sum_subset (Finsupp.support_mapRange (f := fun z : ℂ => z • a))]
+  · refine Finset.sum_congr rfl fun J _ => ?_
+    rw [Finsupp.mapRange_apply, smul_assoc]
+  · intro J _ hJ
+    rw [Finsupp.notMem_support_iff] at hJ
+    simp [hJ]
+
+/-- `u·a ∈ S̄_𝒜` when `u ∈ S̄_ℂ`. -/
+theorem bddSmulRight_mem_stepClosure (a : E) {g : BddFn ℂ} (hg : g ∈ stepClosure ℂ) :
+    bddSmulRight a g ∈ stepClosure E := by
+  rw [stepClosure, ← SetLike.mem_coe, Submodule.topologicalClosure_coe] at hg ⊢
+  obtain ⟨fs, hfs, hlim⟩ := mem_closure_iff_seq_limit.1 hg
+  have hten : Tendsto (fun n => bddSmulRight a (fs n)) atTop (𝓝 (bddSmulRight a g)) :=
+    ((bddSmulRightL a).continuous.tendsto g).comp hlim
+  exact mem_closure_of_tendsto hten
+    (Filter.Eventually.of_forall fun n => bddSmulRight_mem_stepSpace a (hfs n))
+
+/-- **14II** (cstar.tex:2001, Exercise), part 4: `∫ a f = a ∫ f` for `a ∈ 𝒜`
+and any `f ∈ S̄_ℂ` — in particular (`contIntegral_scalar_smul`) for every
+continuous `f : [0,1] → ℂ`.
+
+*The solution's own route* (`parsec-140.20`(4), asols.tex:1619): such an `f` is
+a limit of linear combinations of indicator functions, so one may assume
+`f = 1_I`, where `∫ a·1_I = |I|·a = a ∫ 1_I`. -/
+theorem thesisIntegral_scalar_smul (a : E) {g : BddFn ℂ} (hg : g ∈ stepClosure ℂ) :
+    thesisIntegral (⟨bddSmulRight a g, bddSmulRight_mem_stepClosure a hg⟩ : stepClosure E)
+      = (thesisIntegral (⟨g, hg⟩ : stepClosure ℂ)) • a := by
+  classical
+  obtain ⟨fs, hfs, hlim⟩ := exists_seq_of_mem_stepClosure hg
+  have hstep : ∀ n, stepIntegral (⟨bddSmulRight a (fs n),
+      bddSmulRight_mem_stepSpace a (hfs n)⟩ : stepSpace E)
+      = (stepIntegral (⟨fs n, hfs n⟩ : stepSpace ℂ)) • a :=
+    fun n => stepIntegral_bddSmulRight a (hfs n) _
+  have h1 : Tendsto (fun n => stepIntegral (⟨fs n, hfs n⟩ : stepSpace ℂ)) atTop
+      (𝓝 (thesisIntegral (⟨g, hg⟩ : stepClosure ℂ))) :=
+    thesisIntegral_tendsto _ (fun n => ⟨fs n, hfs n⟩) hlim
+  have h2 : Tendsto (fun n => stepIntegral (⟨bddSmulRight a (fs n),
+      bddSmulRight_mem_stepSpace a (hfs n)⟩ : stepSpace E)) atTop
+      (𝓝 (thesisIntegral (⟨bddSmulRight a g, bddSmulRight_mem_stepClosure a hg⟩ : stepClosure E))) := by
+    refine thesisIntegral_tendsto _ (fun n => ⟨bddSmulRight a (fs n),
+      bddSmulRight_mem_stepSpace a (hfs n)⟩) ?_
+    exact ((bddSmulRightL a).continuous.tendsto g).comp hlim
+  have h3 : Tendsto (fun n => (stepIntegral (⟨fs n, hfs n⟩ : stepSpace ℂ)) • a) atTop
+      (𝓝 ((thesisIntegral (⟨g, hg⟩ : stepClosure ℂ)) • a)) := h1.smul_const a
+  refine tendsto_nhds_unique h2 ?_
+  simpa only [hstep] using h3
+
+/-- **14II** (cstar.tex:2001, Exercise), part 4, as printed: `∫ a f = a ∫ f`
+for a *continuous* `f : [0,1] → ℂ` and `a ∈ E`. -/
+theorem contIntegral_scalar_smul (f : C(↥(Set.Icc (0:ℝ) 1), ℂ)) (a : E) :
+    contIntegral (⟨fun x => f x • a, f.continuous.smul continuous_const⟩ :
+        C(↥(Set.Icc (0:ℝ) 1), E)) = (contIntegral f) • a := by
+  have h1 : (⟨contToBdd (⟨fun x => f x • a, f.continuous.smul continuous_const⟩ :
+        C(↥(Set.Icc (0:ℝ) 1), E)), contToBdd_mem_stepClosure _⟩ : stepClosure E)
+      = ⟨bddSmulRight a (contToBdd f),
+          bddSmulRight_mem_stepClosure a (contToBdd_mem_stepClosure f)⟩ := Subtype.ext rfl
+  rw [contIntegral, h1, thesisIntegral_scalar_smul, contIntegral]
+
+end StepFunctions
+
+
+/-- **14II** (cstar.tex:2001, Exercise), part 4, for Mathlib's Bochner
+integral: `∫ a f = a ∫ f` for continuous `f : [0,1] → ℂ` and `a ∈ 𝒜`.  This is
+the form the rest of the chapter uses; the printed statement, on the thesis's
+own integral, is `thesisIntegral_scalar_smul` / `contIntegral_scalar_smul`
+above.
+
+*Class 5 — Mathlib*: `intervalIntegral.integral_smul_const`; the printed
+argument (reduce to `f = 1_I` by density) is transcribed on the thesis's
+integral at `thesisIntegral_scalar_smul`. -/
 theorem integral_scalar_smul (f : ℝ → ℂ) (hf : ContinuousOn f (Set.Icc 0 1))
     (a : 𝒜) :
     ∫ t in (0:ℝ)..1, f t • a = (∫ t in (0:ℝ)..1, f t) • a :=
   intervalIntegral.integral_smul_const f a
 
-/-- **14II** (cstar.tex:2001, Exercise), part 2, closing clause: `‖∫ f‖ ≤ ‖f‖`
-for the supremum norm on `[0,1]` — the bound the Exercise asks one to deduce
-from the disjoint-interval normal form (`‖∫f‖ ≤ ∑ₙ‖aₙ‖|Iₙ| ≤ ‖f‖∑ₙ|Iₙ| ≤ ‖f‖`),
-and the clause the rest of the chapter actually uses.  The sup norm of `f` is
-taken here as any bound `M` on `‖f t‖` over `[0,1]`, which is what the
-Bochner integral's own estimate supplies.
+/-- **14II** (cstar.tex:2001, Exercise), part 2, closing clause, for Mathlib's
+Bochner integral: `‖∫ f‖ ≤ M` whenever `‖f t‖ ≤ M` on `[0,1]` — the clause the
+rest of the chapter actually uses.  It is *not* the printed statement: the
+print bounds the thesis's integral on `S̄_𝒜` by the supremum norm, which is
+`thesisIntegral_norm_le` above, whereas this bounds the Bochner integral of an
+arbitrary `f` by any bound `M` on its values, `f` being neither continuous nor
+a member of `S̄_𝒜`.
 
-*Class 5 — Mathlib*: the deduction from the normal form is not transcribed,
-because `S_𝒜` is not built here; see the section note. -/
+*Class 5 — Mathlib*: `intervalIntegral.norm_integral_le_of_norm_le_const`.  The
+printed deduction from the disjoint normal form is transcribed above, at
+`norm_stepIntegral_le` and `thesisIntegral_norm_le`. -/
 theorem integral_norm_le (f : ℝ → 𝒜) (M : ℝ)
     (hM : ∀ t ∈ Set.Icc (0:ℝ) 1, ‖f t‖ ≤ M) :
     ‖∫ t in (0:ℝ)..1, f t‖ ≤ M :=
