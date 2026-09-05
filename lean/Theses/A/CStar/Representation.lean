@@ -897,7 +897,7 @@ theorem spectrum_miu (a : 𝒜) (ha : IsSelfAdjoint a) :
   letI : PartialOrder 𝒜 := CStarAlgebra.spectralOrder 𝒜
   haveI : StarOrderedRing 𝒜 := CStarAlgebra.spectralOrderedRing 𝒜
   refine Set.ext fun z => ⟨fun hz => ?_, ?_⟩
-  · have hre : z = (z.re : ℂ) := ha.mem_spectrum_eq_re hz
+  · have hre : z = (z.re : ℂ) := mem_spectrum_eq_re_of_isSelfAdjoint ha hz
     have hsa : IsSelfAdjoint (algebraMap ℂ 𝒜 z - a) := by
       refine IsSelfAdjoint.sub (IsSelfAdjoint.algebraMap 𝒜 ?_) ha
       show star z = z
@@ -2126,7 +2126,7 @@ private lemma norm_le_norm_conjugate {c v w : 𝒜} (hc : IsSelfAdjoint c)
       _ = spectralRadius ℂ (v * (c * w)) := spectralRadius_mul_comm _ _
       _ = spectralRadius ℂ (v * c * w) := by rw [mul_assoc]
   have h2 : (‖c‖₊ : ℝ≥0∞) ≤ (‖v * c * w‖₊ : ℝ≥0∞) := by
-    rw [← hc.spectralRadius_eq_nnnorm, h1]
+    rw [← norm_spectrum c hc, h1]
     exact spectrum.spectralRadius_le_nnnorm (𝕜 := ℂ) _
   exact_mod_cast h2
 

@@ -3624,7 +3624,7 @@ theorem spectrum_nonempty [Nontrivial 𝒜] (a : 𝒜) (ha : IsSelfAdjoint a) :
   -- spectral radius, `⨆ z ∈ spec a, ‖z‖₊`, here an empty supremum)
   have hr : spectralRadius ℂ a = 0 := by simp [spectralRadius, hempty]
   have ha0 : a = 0 := by
-    have h := ha.spectralRadius_eq_nnnorm
+    have h := norm_spectrum a ha
     rw [hr] at h
     have hz : ‖a‖₊ = 0 := by exact_mod_cast h.symm
     rwa [nnnorm_eq_zero] at hz
@@ -3664,7 +3664,7 @@ theorem spectrum_eq_singleton_iff (a : 𝒜) (ha : IsSelfAdjoint a) (lam : ℝ) 
       have hr : spectralRadius ℂ (a - algebraMap ℂ 𝒜 (lam : ℂ)) ≤ 0 := by
         refine iSup₂_le fun z hz => ?_
         simp [hspec z hz]
-      rw [hb.spectralRadius_eq_nnnorm, nonpos_iff_eq_zero, ENNReal.coe_eq_zero,
+      rw [norm_spectrum _ hb, nonpos_iff_eq_zero, ENNReal.coe_eq_zero,
         nnnorm_eq_zero, sub_eq_zero] at hr
       exact hr
     · rintro rfl z hz
@@ -3730,7 +3730,7 @@ private theorem norm_le_iff_spectrum_norm_le (b : 𝒜) (hb : IsSelfAdjoint b)
     · intro h z hz
       have h1 : ((‖z‖₊ : ℝ≥0∞)) ≤ spectralRadius ℂ b :=
         le_iSup₂ (f := fun k (_ : k ∈ spectrum ℂ b) => (‖k‖₊ : ℝ≥0∞)) z hz
-      rw [hb.spectralRadius_eq_nnnorm, ENNReal.coe_le_coe] at h1
+      rw [norm_spectrum b hb, ENNReal.coe_le_coe] at h1
       exact le_trans (by exact_mod_cast h1) h
     · intro h
       set T : NNReal := ⟨t, ht⟩ with hT
@@ -3739,7 +3739,7 @@ private theorem norm_le_iff_spectrum_norm_le (b : 𝒜) (hb : IsSelfAdjoint b)
         refine ENNReal.coe_le_coe.mpr ?_
         rw [hT]
         exact h z hz
-      rw [hb.spectralRadius_eq_nnnorm, ENNReal.coe_le_coe] at h1
+      rw [norm_spectrum b hb, ENNReal.coe_le_coe] at h1
       exact h1
 
 /-- Auxiliary: a real scalar is a self-adjoint element of a C*-algebra
@@ -3764,7 +3764,7 @@ theorem pos_spectrum (a : 𝒜) (ha : IsSelfAdjoint a) (t : ℝ) (ht : 0 ≤ t) 
         rw [← spectrum.sub_singleton_eq]
         exact ⟨z, hz, (t : ℂ), rfl, rfl⟩
       have hnorm := h _ hz'
-      have hre : z = (z.re : ℂ) := ha.mem_spectrum_eq_re hz
+      have hre : z = (z.re : ℂ) := mem_spectrum_eq_re_of_isSelfAdjoint ha hz
       have habs : |z.re - t| ≤ t := by
         rw [← Real.norm_eq_abs, ← Complex.norm_real, Complex.ofReal_sub, ← hre]
         exact hnorm
@@ -4228,7 +4228,7 @@ private theorem norm_le_of_thesisPos_pair {a : 𝒜} (ha : IsSelfAdjoint a) {t :
     (ht : 0 ≤ t) (h1 : ThesisPos (algebraMap ℂ 𝒜 (t : ℂ) - a))
     (h2 : ThesisPos (algebraMap ℂ 𝒜 (t : ℂ) + a)) : ‖a‖ ≤ t := by
   refine (norm_le_iff_spectrum_norm_le a ha t ht).mpr fun z hz => ?_
-  obtain ⟨x, rfl⟩ : ∃ x : ℝ, z = (x : ℂ) := ⟨z.re, ha.mem_spectrum_eq_re hz⟩
+  obtain ⟨x, rfl⟩ : ∃ x : ℝ, z = (x : ℂ) := ⟨z.re, mem_spectrum_eq_re_of_isSelfAdjoint ha hz⟩
   have hm1 : (t : ℂ) - (x : ℂ) ∈ spectrum ℂ (algebraMap ℂ 𝒜 (t : ℂ) - a) := by
     rw [← spectrum.singleton_sub_eq]
     exact ⟨(t : ℂ), rfl, (x : ℂ), hz, rfl⟩
@@ -6583,9 +6583,9 @@ private theorem norm_or_neg_norm_mem_spectrum' [Nontrivial 𝒜] (a : 𝒜)
   by
     obtain ⟨z, hz, hzr⟩ :=
       spectrum.exists_nnnorm_eq_spectralRadius_of_nonempty (spectrum_nonempty a ha)
-    rw [ha.spectralRadius_eq_nnnorm, ENNReal.coe_inj] at hzr
+    rw [norm_spectrum a ha, ENNReal.coe_inj] at hzr
     have hz' : ‖z‖ = ‖a‖ := congrArg NNReal.toReal hzr
-    have hre : z = (z.re : ℂ) := ha.mem_spectrum_eq_re hz
+    have hre : z = (z.re : ℂ) := mem_spectrum_eq_re_of_isSelfAdjoint ha hz
     have habs : |z.re| = ‖a‖ := by
       rw [← hz']
       conv_rhs => rw [hre]

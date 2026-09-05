@@ -518,8 +518,8 @@ audit's 520 proof-divergence rows.)*
 **What is being asked.**  You decided that the formalization should validate the
 thesis's own bootstrapping — *a proof of a statement at parsec `P` may use only
 what the thesis has at or before `P`* — and that has been implemented for
-`A/CStar`, which now bootstraps from parsec 110 upward with exactly two imported
-facts at the base (`IsSelfAdjoint.spectralRadius_eq_nnnorm` for 16III and
+`A/CStar`, which now bootstraps from parsec 110 upward with, until 2026-09-05, exactly two imported
+facts at the base — both removed that day (`docs/BOOTSTRAP-SIZING.md`, ten call sites) — (`IsSelfAdjoint.spectralRadius_eq_nnnorm` for 16III and
 `IsSelfAdjoint.mem_spectrum_eq_re` for 11XV.1, both below the CFC in Mathlib's
 import graph).  The question is whether the same rule now applies
 **retroactively** to `A/VN`, `A/Proc`, `B/Dils` and `B/Eff`.

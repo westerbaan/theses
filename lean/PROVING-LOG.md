@@ -31375,3 +31375,15 @@ pure proof work (no statement change) and is launched.
 * Stale now: 215II/215VI's `vn_is_dagger_category` is conditional on
   `AndThenEffectus` only because 211IV carried a `sorry`; supplying it is a
   statement change for a §2.1 alignment pass.
+
+### Session 110, later — the bootstrapping claim made true
+
+`docs/BOOTSTRAP-SIZING.md` found DECISIONS §2.2's premise stale: parsecs
+120–150 have been closed since session 74.  The two imported base facts
+survived at ten call sites only because the thesis-route wrapper for
+11XV.1 was `private`.  Made public (round 1, Basic.lean), then ten
+one-token substitutions in Positive.lean and Representation.lean onto 16II
+`norm_spectrum` and `mem_spectrum_eq_re_of_isSelfAdjoint` (rounds 2–3).
+`grep spectralRadius_eq_nnnorm\|mem_spectrum_eq_re` over `A/CStar` now
+shows comments only.  Second sample of `ok` rows (thesis A, 123 rows): nine
+proof-grade defects, no statement grade wrong; rows and siblings fixed.
