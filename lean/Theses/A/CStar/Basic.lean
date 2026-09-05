@@ -3001,8 +3001,9 @@ and that is how it is obtained here — so that everything in this file that
 uses reality of the spectrum runs on the thesis's own chain
 **11XIII** → **11XV**.1, and not on Mathlib's independent
 `IsSelfAdjoint.mem_spectrum_eq_re` (which goes through `exp` and the
-unitaries). -/
-private theorem mem_spectrum_eq_re_of_isSelfAdjoint {a : 𝒜} (ha : IsSelfAdjoint a)
+unitaries).  Public since 2026-09-05 so that `Positive.lean` and
+`Representation.lean` run on the same chain (`docs/BOOTSTRAP-SIZING.md`). -/
+theorem mem_spectrum_eq_re_of_isSelfAdjoint {a : 𝒜} (ha : IsSelfAdjoint a)
     {z : ℂ} (hz : z ∈ spectrum ℂ a) : z = (z.re : ℂ) := by
   by_contra hcon
   have him : z.im ≠ 0 := fun h0 => hcon (Complex.ext rfl (by simp [h0]))
