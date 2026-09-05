@@ -107,14 +107,470 @@ end GNSStinespring
 /-! ## Parsec 1360: completion into a Hilbert space
 
 **136I** (dils.tex:218): introduction — nothing to formalize.
-**136III**–**136VII** are the proof of **136II** — not converted. -/
+**136III**–**136VII** (dils.tex:250–397) are the proof of **136II**; they are
+transcribed in the section below, whose private declarations carry the point
+numbers. -/
+
+section CompleteIntoHilbert
+
+/-! ### **136III** (dils.tex:250): fast Cauchy sequences -/
+
+/-- A sequence is *fast* (dils.tex:262) when `‖v m - v k‖ ≤ 2⁻ⁿ` for all
+`m, k ≥ n`. -/
+private def IsFast {W : Type*} [SeminormedAddCommGroup W] (v : ℕ → W) : Prop :=
+  ∀ n m k : ℕ, n ≤ m → n ≤ k → ‖v m - v k‖ ≤ (1 / 2 : ℝ) ^ n
+
+private theorem IsFast.cauchySeq {W : Type*} [SeminormedAddCommGroup W] {v : ℕ → W}
+    (h : IsFast v) : CauchySeq v := by
+  rw [Metric.cauchySeq_iff]
+  intro ε hε
+  obtain ⟨n, hn⟩ := exists_pow_lt_of_lt_one hε (by norm_num : (1 / 2 : ℝ) < 1)
+  refine ⟨n, fun m hm k hk => ?_⟩
+  rw [dist_eq_norm]
+  exact lt_of_le_of_lt (h n m k hm hk) hn
+
+private theorem cauchySeq_sub {W : Type*} [SeminormedAddCommGroup W] {v w : ℕ → W}
+    (hv : CauchySeq v) (hw : CauchySeq w) : CauchySeq (fun n => v n - w n) := by
+  have h : CauchySeq (v - w) := by simpa only [sub_eq_add_neg] using hv.add hw.neg
+  exact h
+
+/-- The norms of a Cauchy sequence are bounded, used in **136VII**. -/
+private theorem exists_norm_bound {W : Type*} [SeminormedAddCommGroup W] {v : ℕ → W}
+    (hv : CauchySeq v) : ∃ B : ℝ, 0 ≤ B ∧ ∀ n, ‖v n‖ ≤ B := by
+  obtain ⟨R, hR0, hR⟩ := cauchySeq_bdd hv
+  refine ⟨‖v 0‖ + R, by linarith [norm_nonneg (v 0)], fun n => ?_⟩
+  have h1 : ‖v n‖ - ‖v 0‖ ≤ ‖v n - v 0‖ := norm_sub_norm_le _ _
+  have h2 := hR n 0
+  rw [dist_eq_norm] at h2
+  linarith
+
+/-- A Cauchy sequence has a fast subsequence (dils.tex:266): the thesis's
+"clearly", here the explicit subsequence `i ↦ (sup_{j ≤ i} N j) + i`, where
+`N j` witnesses the Cauchy property at `2⁻ʲ`. -/
+private theorem exists_fast_subseq {W : Type*} [SeminormedAddCommGroup W] {u : ℕ → W}
+    (hu : CauchySeq u) :
+    ∃ φ : ℕ → ℕ, (∀ n, n ≤ φ n) ∧ StrictMono φ ∧ IsFast (u ∘ φ) := by
+  rw [Metric.cauchySeq_iff] at hu
+  have h : ∀ i : ℕ, ∃ N : ℕ, ∀ m ≥ N, ∀ k ≥ N, ‖u m - u k‖ ≤ (1 / 2 : ℝ) ^ i := by
+    intro i
+    obtain ⟨N, hN⟩ := hu ((1 / 2 : ℝ) ^ i) (by positivity)
+    refine ⟨N, fun m hm k hk => le_of_lt ?_⟩
+    rw [← dist_eq_norm]
+    exact hN m hm k hk
+  choose N hN using h
+  have hmono : ∀ a b : ℕ, a ≤ b → (Finset.range (a + 1)).sup N ≤ (Finset.range (b + 1)).sup N :=
+    fun a b hab => Finset.sup_mono (by
+      intro x hx
+      simp only [Finset.mem_range] at hx ⊢
+      omega)
+  refine ⟨fun i => (Finset.range (i + 1)).sup N + i, fun n => Nat.le_add_left n _, ?_, ?_⟩
+  · intro a b hab
+    have := hmono a b hab.le
+    simp only
+    omega
+  · intro n m k hm hk
+    have hbig : ∀ j, n ≤ j → N n ≤ (Finset.range (j + 1)).sup N + j := by
+      intro j hj
+      have : N n ≤ (Finset.range (j + 1)).sup N :=
+        Finset.le_sup (f := N) (Finset.mem_range.mpr (by omega))
+      omega
+    exact hN n _ (hbig m hm) _ (hbig k hk)
+
+variable (X : Type*) [SeminormedAddCommGroup X] [InnerProductSpace ℂ X]
+
+/-! ### **136IV** (dils.tex:274): `ℋ` and its metric -/
+
+/-- The Cauchy sequences on `X`, a submodule of `ℕ → X`. -/
+private def cauSub : Submodule ℂ (ℕ → X) where
+  carrier := {v | CauchySeq v}
+  add_mem' hv hw := hv.add hw
+  zero_mem' := cauchySeq_const 0
+  smul_mem' c _ hv := ((lipschitzWith_smul (β := X) c).uniformContinuous).comp_cauchySeq hv
+
+/-- The sequences equivalent to the zero sequence (dils.tex:255: for every
+`ε > 0` there is an `n₀` with `‖vₙ‖ ≤ ε` for all `n ≥ n₀`). -/
+private def nullSub : Submodule ℂ (cauSub X) where
+  carrier := {v | Tendsto (fun n => (v : ℕ → X) n) atTop (𝓝 0)}
+  add_mem' hv hw := by simpa using hv.add hw
+  zero_mem' := by simpa using tendsto_const_nhds
+  smul_mem' c _ hv := by simpa using hv.const_smul c
+
+/-- `ℋ`.  A plain `def`, not an abbreviation: the module quotient carries the
+quotient topology of `ℕ → X`, which is *not* the topology of the metric `d`
+below, and only one of the two may be an instance. -/
+private def Hcompl : Type _ := (cauSub X) ⧸ (nullSub X)
+
+private instance : AddCommGroup (Hcompl X) :=
+  inferInstanceAs (AddCommGroup ((cauSub X) ⧸ (nullSub X)))
+
+private instance : Module ℂ (Hcompl X) :=
+  inferInstanceAs (Module ℂ ((cauSub X) ⧸ (nullSub X)))
+
+variable {X}
+
+private theorem cauchySeq_of_mem {v : ℕ → X} (hv : v ∈ cauSub X) : CauchySeq v := hv
+
+/-- The class of a Cauchy sequence: the thesis's "denote an element of `ℋ`
+simply by a single representative" (dils.tex:277). -/
+private def mkH (v : ℕ → X) (hv : CauchySeq v) : Hcompl X :=
+  Submodule.Quotient.mk (⟨v, hv⟩ : cauSub X)
+
+private theorem Hcompl.ind {motive : Hcompl X → Prop}
+    (h : ∀ (v : ℕ → X) (hv : CauchySeq v), motive (mkH v hv)) (p : Hcompl X) : motive p :=
+  Quotient.inductionOn' p (fun a => h a.1 a.2)
+
+private theorem mkH_eq_iff {v w : ℕ → X} (hv : CauchySeq v) (hw : CauchySeq w) :
+    mkH v hv = mkH w hw ↔ Tendsto (fun n => ‖v n - w n‖) atTop (𝓝 0) := by
+  show (Submodule.Quotient.mk (⟨v, hv⟩ : cauSub X) :
+      (cauSub X) ⧸ (nullSub X)) = Submodule.Quotient.mk ⟨w, hw⟩ ↔ _
+  rw [Submodule.Quotient.eq, ← tendsto_zero_iff_norm_tendsto_zero]
+  exact Iff.rfl
+
+private theorem mkH_add {v w : ℕ → X} (hv : CauchySeq v) (hw : CauchySeq w) :
+    mkH v hv + mkH w hw = mkH (fun n => v n + w n) (hv.add hw) := rfl
+
+private theorem mkH_sub {v w : ℕ → X} (hv : CauchySeq v) (hw : CauchySeq w) :
+    mkH v hv - mkH w hw = mkH (fun n => v n - w n) (cauchySeq_sub hv hw) := rfl
+
+/-! ### **136VII** (dils.tex:355): the inner product `⟨v,w⟩ = limₙ [vₙ, wₙ]` -/
+
+/-- dils.tex:362: `|[vₙ,wₙ] − [vₘ,wₘ]| ≤ ‖vₙ‖‖wₙ−wₘ‖ + ‖vₙ−vₘ‖‖wₘ‖` by
+Cauchy–Schwarz (cstar.tex **30VI**, here `norm_inner_le_norm`), and the norms
+of a Cauchy sequence are bounded, so `([vₙ,wₙ])ₙ` is Cauchy in `ℂ`. -/
+private theorem cauchySeq_inner {v w : ℕ → X} (hv : CauchySeq v) (hw : CauchySeq w) :
+    CauchySeq (fun n => (⟪v n, w n⟫ : ℂ)) := by
+  obtain ⟨Bv, hBv0, hbv⟩ := exists_norm_bound hv
+  obtain ⟨Bw, hBw0, hbw⟩ := exists_norm_bound hw
+  rw [Metric.cauchySeq_iff]
+  intro ε hε
+  rw [Metric.cauchySeq_iff] at hv hw
+  have hδv : (0 : ℝ) < ε / 2 / (2 * (Bw + 1)) :=
+    div_pos (by linarith) (by linarith)
+  have hδw : (0 : ℝ) < ε / 2 / (2 * (Bv + 1)) :=
+    div_pos (by linarith) (by linarith)
+  obtain ⟨N₁, hN₁⟩ := hv _ hδv
+  obtain ⟨N₂, hN₂⟩ := hw _ hδw
+  refine ⟨max N₁ N₂, fun m hm n hn => ?_⟩
+  have hv' : ‖v m - v n‖ < ε / 2 / (2 * (Bw + 1)) := by
+    rw [← dist_eq_norm]
+    exact hN₁ m (le_trans (le_max_left _ _) hm) n (le_trans (le_max_left _ _) hn)
+  have hw' : ‖w m - w n‖ < ε / 2 / (2 * (Bv + 1)) := by
+    rw [← dist_eq_norm]
+    exact hN₂ m (le_trans (le_max_right _ _) hm) n (le_trans (le_max_right _ _) hn)
+  have hsplit : (⟪v m, w m⟫ : ℂ) - ⟪v n, w n⟫ = ⟪v m, w m - w n⟫ + ⟪v m - v n, w n⟫ := by
+    rw [inner_sub_right, inner_sub_left]
+    ring
+  have e1 : Bv * (ε / 2 / (2 * (Bv + 1))) ≤ ε / 4 := by
+    have hle : Bv * (ε / 2 / (2 * (Bv + 1))) ≤ (Bv + 1) * (ε / 2 / (2 * (Bv + 1))) := by
+      have h0 : (0 : ℝ) ≤ ε / 2 / (2 * (Bv + 1)) := le_of_lt hδw
+      nlinarith
+    have heq : (Bv + 1) * (ε / 2 / (2 * (Bv + 1))) = ε / 4 := by
+      have : Bv + 1 ≠ 0 := by linarith
+      field_simp
+      ring
+    linarith
+  have e2 : (ε / 2 / (2 * (Bw + 1))) * Bw ≤ ε / 4 := by
+    have hle : (ε / 2 / (2 * (Bw + 1))) * Bw ≤ (ε / 2 / (2 * (Bw + 1))) * (Bw + 1) := by
+      have h0 : (0 : ℝ) ≤ ε / 2 / (2 * (Bw + 1)) := le_of_lt hδv
+      nlinarith
+    have heq : (ε / 2 / (2 * (Bw + 1))) * (Bw + 1) = ε / 4 := by
+      have : Bw + 1 ≠ 0 := by linarith
+      field_simp
+      ring
+    linarith
+  calc dist (⟪v m, w m⟫ : ℂ) (⟪v n, w n⟫ : ℂ)
+      = ‖(⟪v m, w m⟫ : ℂ) - ⟪v n, w n⟫‖ := dist_eq_norm _ _
+    _ = ‖(⟪v m, w m - w n⟫ : ℂ) + ⟪v m - v n, w n⟫‖ := by rw [hsplit]
+    _ ≤ ‖(⟪v m, w m - w n⟫ : ℂ)‖ + ‖(⟪v m - v n, w n⟫ : ℂ)‖ := norm_add_le _ _
+    _ ≤ ‖v m‖ * ‖w m - w n‖ + ‖v m - v n‖ * ‖w n‖ :=
+        add_le_add (norm_inner_le_norm _ _) (norm_inner_le_norm _ _)
+    _ ≤ Bv * (ε / 2 / (2 * (Bv + 1))) + (ε / 2 / (2 * (Bw + 1))) * Bw :=
+        add_le_add (mul_le_mul (hbv m) hw'.le (norm_nonneg _) hBv0)
+          (mul_le_mul hv'.le (hbw n) (norm_nonneg _) (le_of_lt hδv))
+    _ ≤ ε / 4 + ε / 4 := add_le_add e1 e2
+    _ < ε := by linarith
+
+private noncomputable def innerAux (v w : ℕ → X) : ℂ :=
+  limUnder atTop (fun n => (⟪v n, w n⟫ : ℂ))
+
+private theorem tendsto_innerAux {v w : ℕ → X} (hv : CauchySeq v) (hw : CauchySeq w) :
+    Tendsto (fun n => (⟪v n, w n⟫ : ℂ)) atTop (𝓝 (innerAux v w)) :=
+  (cauchySeq_inner hv hw).tendsto_limUnder
+
+/-- Independence of representatives (dils.tex:371), by the same estimate. -/
+private theorem innerAux_congr {v v' w w' : ℕ → X} (hv : CauchySeq v) (hv' : CauchySeq v')
+    (hw : CauchySeq w) (hw' : CauchySeq w')
+    (hvv : Tendsto (fun n => ‖v n - v' n‖) atTop (𝓝 0))
+    (hww : Tendsto (fun n => ‖w n - w' n‖) atTop (𝓝 0)) :
+    innerAux v w = innerAux v' w' := by
+  obtain ⟨Bv, hBv0, hbv⟩ := exists_norm_bound hv
+  obtain ⟨Bw, hBw0, hbw⟩ := exists_norm_bound hw'
+  have hzero : Tendsto (fun n => (⟪v n, w n⟫ : ℂ) - ⟪v' n, w' n⟫) atTop (𝓝 0) := by
+    refine squeeze_zero_norm (fun n => ?_)
+      (by simpa using (hvv.const_mul Bw).add (hww.const_mul Bv))
+    have hsplit : (⟪v n, w n⟫ : ℂ) - ⟪v' n, w' n⟫
+        = ⟪v n, w n - w' n⟫ + ⟪v n - v' n, w' n⟫ := by
+      rw [inner_sub_right, inner_sub_left]; ring
+    calc ‖(⟪v n, w n⟫ : ℂ) - ⟪v' n, w' n⟫‖
+        = ‖(⟪v n, w n - w' n⟫ : ℂ) + ⟪v n - v' n, w' n⟫‖ := by rw [hsplit]
+      _ ≤ ‖(⟪v n, w n - w' n⟫ : ℂ)‖ + ‖(⟪v n - v' n, w' n⟫ : ℂ)‖ := norm_add_le _ _
+      _ ≤ ‖v n‖ * ‖w n - w' n‖ + ‖v n - v' n‖ * ‖w' n‖ :=
+          add_le_add (norm_inner_le_norm _ _) (norm_inner_le_norm _ _)
+      _ ≤ Bv * ‖w n - w' n‖ + ‖v n - v' n‖ * Bw :=
+          add_le_add (mul_le_mul_of_nonneg_right (hbv n) (norm_nonneg _))
+            (mul_le_mul_of_nonneg_left (hbw n) (norm_nonneg _))
+      _ = Bw * ‖v n - v' n‖ + Bv * ‖w n - w' n‖ := by ring
+  exact eq_of_sub_eq_zero
+    (tendsto_nhds_unique ((tendsto_innerAux hv hw).sub (tendsto_innerAux hv' hw')) hzero)
+
+variable (X)
+
+private noncomputable def innerH : Hcompl X → Hcompl X → ℂ := fun p q =>
+  Quotient.liftOn₂' p q (fun v w => innerAux (v : ℕ → X) (w : ℕ → X)) (by
+    rintro ⟨v, hv⟩ ⟨w, hw⟩ ⟨v', hv'⟩ ⟨w', hw'⟩ h₁ h₂
+    have e₁ : Tendsto (fun n => ‖v n - v' n‖) atTop (𝓝 0) := by
+      rw [← tendsto_zero_iff_norm_tendsto_zero]
+      exact (Submodule.quotientRel_def _).mp h₁
+    have e₂ : Tendsto (fun n => ‖w n - w' n‖) atTop (𝓝 0) := by
+      rw [← tendsto_zero_iff_norm_tendsto_zero]
+      exact (Submodule.quotientRel_def _).mp h₂
+    exact innerAux_congr (cauchySeq_of_mem hv) (cauchySeq_of_mem hv') (cauchySeq_of_mem hw)
+      (cauchySeq_of_mem hw') e₁ e₂)
+
+/-- dils.tex:378: with the vector space structure this is an inner product on
+`ℋ`, definite because a class whose sequence has vanishing norm is `0`. -/
+@[instance_reducible]
+private noncomputable def coreH : InnerProductSpace.Core ℂ (Hcompl X) where
+  inner := innerH X
+  conj_inner_symm := by
+    rintro p q
+    induction p using Hcompl.ind with | h v hv => ?_
+    induction q using Hcompl.ind with | h w hw => ?_
+    show (starRingEnd ℂ) (innerAux w v) = innerAux v w
+    refine tendsto_nhds_unique (f := fun n => (starRingEnd ℂ) (⟪w n, v n⟫ : ℂ))
+      ((Complex.continuous_conj.tendsto _).comp (tendsto_innerAux hw hv)) ?_
+    simpa only [inner_conj_symm] using tendsto_innerAux hv hw
+  re_inner_nonneg := by
+    rintro p
+    induction p using Hcompl.ind with | h v hv => ?_
+    show 0 ≤ RCLike.re (innerAux v v)
+    have hre : Tendsto (fun n => RCLike.re (⟪v n, v n⟫ : ℂ)) atTop
+        (𝓝 (RCLike.re (innerAux v v))) :=
+      (RCLike.continuous_re.tendsto _).comp (tendsto_innerAux hv hv)
+    refine ge_of_tendsto hre ?_
+    filter_upwards with n
+    exact inner_self_nonneg
+  add_left := by
+    rintro p q r
+    induction p using Hcompl.ind with | h v hv => ?_
+    induction q using Hcompl.ind with | h w hw => ?_
+    induction r using Hcompl.ind with | h u hu => ?_
+    show innerAux (fun n => v n + w n) u = innerAux v u + innerAux w u
+    refine tendsto_nhds_unique (tendsto_innerAux (hv.add hw) hu) ?_
+    simpa only [inner_add_left] using (tendsto_innerAux hv hu).add (tendsto_innerAux hw hu)
+  smul_left := by
+    rintro p q c
+    induction p using Hcompl.ind with | h v hv => ?_
+    induction q using Hcompl.ind with | h w hw => ?_
+    show innerAux (fun n => c • v n) w = (starRingEnd ℂ) c * innerAux v w
+    refine tendsto_nhds_unique
+      (tendsto_innerAux (((lipschitzWith_smul (β := X) c).uniformContinuous).comp_cauchySeq hv)
+        hw) ?_
+    simpa only [inner_smul_left] using (tendsto_innerAux hv hw).const_mul ((starRingEnd ℂ) c)
+  definite := by
+    rintro p hp
+    induction p using Hcompl.ind with | h v hv => ?_
+    have hp' : innerAux v v = 0 := hp
+    have hlim : Tendsto (fun n => (⟪v n, v n⟫ : ℂ)) atTop (𝓝 0) := by
+      have := tendsto_innerAux hv hv
+      rwa [hp'] at this
+    have hre : Tendsto (fun n => RCLike.re (⟪v n, v n⟫ : ℂ)) atTop
+        (𝓝 (RCLike.re (0 : ℂ))) := (RCLike.continuous_re.tendsto _).comp hlim
+    rw [map_zero] at hre
+    have hn : Tendsto (fun n => ‖v n‖ ^ 2) atTop (𝓝 0) :=
+      hre.congr (fun n => inner_self_eq_norm_sq (𝕜 := ℂ) (v n))
+    have hn0 : Tendsto (fun n => ‖v n‖) atTop (𝓝 0) := by
+      have h := (Real.continuous_sqrt.tendsto (0 : ℝ)).comp hn
+      rw [Real.sqrt_zero] at h
+      exact h.congr (fun n => Real.sqrt_sq (norm_nonneg (v n)))
+    show mkH v hv = mkH (fun _ => (0 : X)) (cauchySeq_const 0)
+    rw [mkH_eq_iff]
+    simpa using hn0
+
+attribute [local instance] coreH
+
+/-- dils.tex:388: the metric induced by the inner product is the thesis's
+`d(v,w) = limₙ ‖vₙ − wₙ‖`, which is `tendsto_norm_sub_mkH` below. -/
+@[instance_reducible]
+private noncomputable def normedH : NormedAddCommGroup (Hcompl X) :=
+  InnerProductSpace.Core.toNormedAddCommGroup (𝕜 := ℂ) (F := Hcompl X)
+
+attribute [local instance] normedH
+
+@[instance_reducible]
+private noncomputable def ipsH : InnerProductSpace ℂ (Hcompl X) :=
+  InnerProductSpace.ofCore _
+
+attribute [local instance] ipsH
+
+variable {X}
+
+private theorem inner_mkH {v w : ℕ → X} (hv : CauchySeq v) (hw : CauchySeq w) :
+    (⟪mkH v hv, mkH w hw⟫ : ℂ) = innerAux v w := rfl
+
+/-- `‖⟦v⟧‖ = limₙ ‖vₙ‖`; with `tendsto_norm_sub_mkH`, the metric of `ℋ` is the
+thesis's `d` (dils.tex:279, dils.tex:388). -/
+private theorem tendsto_norm_mkH {v : ℕ → X} (hv : CauchySeq v) :
+    Tendsto (fun n => ‖v n‖) atTop (𝓝 ‖mkH v hv‖) := by
+  have h : Tendsto (fun n => Real.sqrt (RCLike.re (⟪v n, v n⟫ : ℂ))) atTop
+      (𝓝 (Real.sqrt (RCLike.re (innerAux v v)))) :=
+    (Real.continuous_sqrt.tendsto _).comp
+      ((RCLike.continuous_re.tendsto _).comp (tendsto_innerAux hv hv))
+  rw [norm_eq_sqrt_re_inner (𝕜 := ℂ), inner_mkH hv hv]
+  exact h.congr (fun n => (norm_eq_sqrt_re_inner (𝕜 := ℂ) (v n)).symm)
+
+private theorem tendsto_norm_sub_mkH {v w : ℕ → X} (hv : CauchySeq v) (hw : CauchySeq w) :
+    Tendsto (fun n => ‖v n - w n‖) atTop (𝓝 ‖mkH v hv - mkH w hw‖) := by
+  rw [mkH_sub hv hw]
+  exact tendsto_norm_mkH (cauchySeq_sub hv hw)
+
+variable (X)
+
+/-! ### **136V** (dils.tex:320) and **136IV** (dils.tex:288) -/
+
+/-- `η` sends `v` to the class of the constant sequence `(v)ₙ`
+(dils.tex:322). -/
+private def etaH : X →ₗ[ℂ] Hcompl X where
+  toFun x := mkH (fun _ => x) (cauchySeq_const x)
+  map_add' _ _ := rfl
+  map_smul' _ _ := rfl
+
+variable {X}
+
+private theorem inner_etaH (x y : X) : (⟪etaH X x, etaH X y⟫ : ℂ) = ⟪x, y⟫ := by
+  show innerAux (fun _ => x) (fun _ => y) = ⟪x, y⟫
+  exact tendsto_nhds_unique (tendsto_innerAux (cauchySeq_const x) (cauchySeq_const y))
+    tendsto_const_nhds
+
+variable (X)
+
+/-- "By construction of `η` and `ℋ`, the image of `η` is dense"
+(dils.tex:324): `⟦v⟧` is within `ε` of `η (v N)` once `N` is past the Cauchy
+bound for `ε`. -/
+private theorem denseRange_etaH : DenseRange (etaH X) := by
+  rw [Metric.denseRange_iff]
+  intro p r hr
+  induction p using Hcompl.ind with | h v hv => ?_
+  have hv' := hv
+  rw [Metric.cauchySeq_iff] at hv'
+  obtain ⟨N, hN⟩ := hv' (r / 2) (by linarith)
+  refine ⟨v N, ?_⟩
+  show dist (mkH v hv) (etaH X (v N)) < r
+  rw [dist_eq_norm]
+  have hlim := tendsto_norm_sub_mkH hv (cauchySeq_const (v N))
+  have hle : ‖mkH v hv - mkH (fun _ => v N) (cauchySeq_const (v N))‖ ≤ r / 2 := by
+    refine le_of_tendsto hlim ?_
+    filter_upwards [eventually_ge_atTop N] with n hn
+    exact le_of_lt (by rw [← dist_eq_norm]; exact hN n hn N le_rfl)
+  calc ‖mkH v hv - etaH X (v N)‖ ≤ r / 2 := hle
+    _ < r := by linarith
+
+/-- The thesis's footnote at dils.tex:271 — "any Cauchy sequence is equivalent
+to a fast one anyway" — which is where the carrier below differs from the
+printed one, and the only place fastness is used. -/
+private theorem exists_fast_rep (p : Hcompl X) :
+    ∃ (v : ℕ → X) (hf : IsFast v), mkH v hf.cauchySeq = p := by
+  induction p using Hcompl.ind with | h v hv => ?_
+  obtain ⟨φ, hφle, _, hfast⟩ := exists_fast_subseq hv
+  refine ⟨v ∘ φ, hfast, ?_⟩
+  show mkH (v ∘ φ) hfast.cauchySeq = mkH v hv
+  rw [mkH_eq_iff]
+  have hv' := hv
+  rw [Metric.cauchySeq_iff] at hv'
+  rw [Metric.tendsto_atTop]
+  intro ε hε
+  obtain ⟨N, hN⟩ := hv' ε hε
+  refine ⟨N, fun n hn => ?_⟩
+  rw [Real.dist_eq, sub_zero, abs_of_nonneg (norm_nonneg _), ← dist_eq_norm]
+  exact hN _ (le_trans hn (hφle n)) _ hn
+
+/-- **136IV** (dils.tex:288): `ℋ` is complete, by the diagonal argument.  A
+Cauchy sequence of classes is replaced by a fast subsequence `g`, each `g i` by
+a fast representative `v i`, and then for `n, m, i, j ≥ N`
+`‖v n i − v m j‖ ≤ ‖v n i − v n k‖ + ‖v n k − v m k‖ + ‖v m k − v m j‖ ≤ 4·2⁻ᴺ`
+for a `k ≥ N` chosen with `‖v n k − v m k‖ ≤ 2·2⁻ᴺ`, which exists because that
+sequence tends to `‖g n − g m‖ ≤ 2⁻ᴺ`.  That single estimate (`key`) makes the
+diagonal `(v n n)ₙ` Cauchy and makes `g n` converge to its class. -/
+private theorem completeSpace_Hcompl : CompleteSpace (Hcompl X) := by
+  refine Metric.complete_of_cauchySeq_tendsto (fun h hh => ?_)
+  obtain ⟨φ, _, hφmono, hfastg⟩ := exists_fast_subseq hh
+  choose v hvfast hvmk using fun i => exists_fast_rep X ((h ∘ φ) i)
+  have hnorm : ∀ n m, Tendsto (fun k => ‖v n k - v m k‖) atTop
+      (𝓝 ‖(h ∘ φ) n - (h ∘ φ) m‖) := by
+    intro n m
+    have := tendsto_norm_sub_mkH (hvfast n).cauchySeq (hvfast m).cauchySeq
+    rwa [hvmk n, hvmk m] at this
+  have key : ∀ N n m i j : ℕ, N ≤ n → N ≤ m → N ≤ i → N ≤ j →
+      ‖v n i - v m j‖ ≤ 4 * (1 / 2 : ℝ) ^ N := by
+    intro N n m i j hn hm hi hj
+    have hpos : (0 : ℝ) < (1 / 2 : ℝ) ^ N := by positivity
+    have hgle : ‖(h ∘ φ) n - (h ∘ φ) m‖ ≤ (1 / 2 : ℝ) ^ N := hfastg N n m hn hm
+    have hlt : ‖(h ∘ φ) n - (h ∘ φ) m‖ < 2 * (1 / 2 : ℝ) ^ N := by linarith
+    obtain ⟨k, hk1, hk2⟩ :=
+      (((hnorm n m).eventually_lt_const hlt).and (eventually_ge_atTop N)).exists
+    have t1 : ‖v n i - v n k‖ ≤ (1 / 2 : ℝ) ^ N := hvfast n N i k hi hk2
+    have t3 : ‖v m k - v m j‖ ≤ (1 / 2 : ℝ) ^ N := hvfast m N k j hk2 hj
+    have tri : ‖v n i - v m j‖ ≤ ‖v n i - v n k‖ + ‖v n k - v m k‖ + ‖v m k - v m j‖ := by
+      simpa only [dist_eq_norm] using dist_triangle4 (v n i) (v n k) (v m k) (v m j)
+    linarith
+  have hwcau : CauchySeq (fun n => v n n) := by
+    rw [Metric.cauchySeq_iff]
+    intro ε hε
+    obtain ⟨N, hN⟩ :=
+      exists_pow_lt_of_lt_one (show (0 : ℝ) < ε / 4 by linarith) (by norm_num : (1 / 2 : ℝ) < 1)
+    refine ⟨N, fun m hm n hn => ?_⟩
+    rw [dist_eq_norm]
+    have := key N m n m n hm hn hm hn
+    linarith
+  refine ⟨mkH (fun n => v n n) hwcau, ?_⟩
+  have hgt : Tendsto (h ∘ φ) atTop (𝓝 (mkH (fun n => v n n) hwcau)) := by
+    rw [tendsto_iff_norm_sub_tendsto_zero]
+    have hg : Tendsto (fun n : ℕ => 4 * (1 / 2 : ℝ) ^ n) atTop (𝓝 0) := by
+      simpa using (tendsto_pow_atTop_nhds_zero_of_lt_one
+        (by norm_num : (0 : ℝ) ≤ 1 / 2) (by norm_num : (1 / 2 : ℝ) < 1)).const_mul (4 : ℝ)
+    refine squeeze_zero (fun n => norm_nonneg _) (fun n => ?_) hg
+    have hlim := tendsto_norm_sub_mkH (hvfast n).cauchySeq hwcau
+    rw [hvmk n] at hlim
+    refine le_of_tendsto hlim ?_
+    filter_upwards [eventually_ge_atTop n] with k hk
+    exact key n n k k k le_rfl hk hk hk
+  exact tendsto_nhds_of_cauchySeq_of_subseq hh hφmono.tendsto_atTop hgt
 
 /-- **136II** (`prop-complete-into-hilbert-space`, dils.tex:238,
 Proposition): let `V` be a complex vector space with a (not necessarily
 definite) inner product, here a positive conjugate-symmetric sesquilinear
 form `B`.  There is a Hilbert space `ℋ` and a bounded (automatic here)
 linear map `η : V → ℋ` with `B v w = ⟪η v, η w⟫` and dense image.
-(Cf. `inner_product_completion`, cstar.tex 30V, which assumes definiteness.) -/
+(Cf. `inner_product_completion`, cstar.tex 30V, which assumes definiteness.)
+
+The construction is the author's own, dils.tex:250–397: `ℋ` is the Cauchy
+sequences on `V` modulo the equivalence `lim ‖vₙ − wₙ‖ = 0` (`Hcompl`), the
+inner product is `⟨v,w⟩ = limₙ [vₙ, wₙ]` (**136VII**, well defined by the
+Cauchy–Schwarz estimate of dils.tex:362), `η` sends `v` to the class of the
+constant sequence (**136V**), and completeness is the diagonal argument of
+**136IV**.  Nothing here goes through Mathlib's `UniformSpace.Completion`.
+
+Two departures from the printed text, both flagged where they occur.  (i) The
+thesis's carrier is the *fast* Cauchy sequences, which its own footnote at
+dils.tex:271 says is only to shorten the text; ours is all Cauchy sequences,
+and that footnote is `exists_fast_rep`, used exactly where the thesis uses
+fastness — in the diagonal argument.  (ii) The vector space structure of
+**136VI** is the module quotient's rather than an extension along the
+universal property of **136V**; the operations are the ones the thesis writes
+down there, `z(vₙ)ₙ = (zvₙ)ₙ` and `v + w = (vₙ + wₙ)ₙ`.  **136V**'s universal
+property is not needed for this statement; the one place the thesis cites it,
+**137III**'s extension of a bounded operator, is `LinearMap.extendOfNorm`
+below. -/
 theorem prop_complete_into_hilbert_space (V : Type v) [AddCommGroup V]
     [Module ℂ V] (B : V →ₗ⋆[ℂ] V →ₗ[ℂ] ℂ)
     (hsymm : ∀ v w : V, B w v = starRingEnd ℂ (B v w))
@@ -122,11 +578,6 @@ theorem prop_complete_into_hilbert_space (V : Type v) [AddCommGroup V]
     ∃ (ℋ : Type v) (_ : NormedAddCommGroup ℋ) (_ : InnerProductSpace ℂ ℋ)
       (_ : CompleteSpace ℋ) (η : V →ₗ[ℂ] ℋ),
       (∀ v w : V, (⟪η v, η w⟫ : ℂ) = B v w) ∧ DenseRange η := by
-  -- The author's proof (dils.tex:250) builds `ℋ` by hand from fast Cauchy
-  -- sequences, i.e. re-develops the metric completion; we instead use
-  -- Mathlib's: `B` makes `V` a *semi*-inner-product space, its separation
-  -- quotient is an inner product space, and its completion is a Hilbert
-  -- space.  (Divergence (2): the same construction, taken off the shelf.)
   let core : PreInnerProductSpace.Core ℂ V :=
     { inner := fun x y => B x y
       conj_inner_symm := fun x y => (hsymm y x).symm
@@ -136,20 +587,10 @@ theorem prop_complete_into_hilbert_space (V : Type v) [AddCommGroup V]
   let _ : SeminormedAddCommGroup V :=
     InnerProductSpace.Core.toSeminormedAddCommGroup (𝕜 := ℂ) (F := V) (c := core)
   let _ : InnerProductSpace ℂ V := InnerProductSpace.ofCore core
-  refine ⟨UniformSpace.Completion (SeparationQuotient V), inferInstance, inferInstance,
-    inferInstance,
-    ((UniformSpace.Completion.toComplL : SeparationQuotient V →L[ℂ]
-        UniformSpace.Completion (SeparationQuotient V)).comp
-      (SeparationQuotient.mkCLM ℂ V)).toLinearMap, fun v w => ?_, ?_⟩
-  · change (⟪((SeparationQuotient.mk v : SeparationQuotient V) :
-        UniformSpace.Completion (SeparationQuotient V)),
-      ((SeparationQuotient.mk w : SeparationQuotient V) :
-        UniformSpace.Completion (SeparationQuotient V))⟫ : ℂ) = B v w
-    rw [UniformSpace.Completion.inner_coe, SeparationQuotient.inner_mk_mk]
-    rfl
-  · exact UniformSpace.Completion.denseRange_coe.comp
-      SeparationQuotient.surjective_mk.denseRange
-      (UniformSpace.Completion.continuous_coe _)
+  exact ⟨Hcompl V, normedH V, ipsH V, completeSpace_Hcompl V, etaH V,
+    fun v w => inner_etaH v w, denseRange_etaH V⟩
+
+end CompleteIntoHilbert
 
 /-! ## Parsec 1370: proof of Stinespring's theorem
 
