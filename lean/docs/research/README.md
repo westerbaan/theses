@@ -25,3 +25,10 @@ Second round, further out (2026-09-12, later):
 * `new-base.md` — Kadison's two axioms are exactly quotients/comprehension and images: `vNᵒᵖ = ⋄-effectus + state-separation`; `A ↦ A**` a coreflection; no eff.tex axiom sees the field, a local qubit axiom does; `JBWᵒᵖ` on one Jordan division lemma.
 * `new-metric.md` — `p ↦ asrt_p` is exactly ½-Hölder in cb-norm, Lipschitz iff commutative; approximate comprehension at `√η`; ε-sharpness stable, ⋄-based ε-purity not; Kaplansky as an intrinsic density notion; a `⊗`-free simulation distance.
 * `new-monoidal.md` — monoidal effectuses and the tensor question 222IV; free effectuses; partial traces: the phase group Φ(s) of a sharp predicate (U(1) in vNᵒᵖ, trivial in Kl(𝒟), O(n−1) for spin factors) answers 222IV's CNOT question; the spatial tensor is not internal (Effros–Lance); Kl(𝒟_M)_fin is the initial effectus with scalars Mᵒᵖ; Par(vNᵒᵖ) is ⊕-traced only.
+
+Wild hunts (2026-09-12, later still; each conjecture attacked before being reported):
+
+* `hunt-ktheory.md` — `K₀` of an effectus (sharp predicates modulo symmetry exchange) matches `K₀` of the algebra; a Möbius/Lefschetz number of the lattice of `f^⋄`-invariant sharp predicates separates real from complex quantum theory; quotient/comprehension as a kernel–cokernel pair with the Peirce-½ dimension as the additivity defect.
+* `hunt-topos.md` — Bohrification, internal `Kl(𝒟)`, Ozawa transfer and "Markov effectuses are `Kl(𝒟)`-like" all killed; survivors: images over a base space iff basically disconnected, and a counital copy map forces Boolean sharp predicates.
+* `hunt-physics.md` — Tsirelson is a Jordan theorem (Cauchy–Schwarz on `ω(x∘y)`), so `&`-effectuses exclude PR boxes; the Albert algebra is Bell-local, unclonable, uncomposable, clockless; Landauer as seeded killed, replaced by a pinching identity; modular time killed by `M_n(ℝ)`.
+* `hunt-transfer.md` — the commutative transfer principle dies at `p & q = q & p`, the Jordan one at Glennie's `G₈`; every effect algebra of size ≤ 4 occurs; the † axiom forces real-closed, never Archimedean, scalars.
