@@ -18,3 +18,10 @@ Going out on a limb:
 * `new-semantics-logic.md` — `vNᵒᵖ` is `DCPO⊥`-enriched but the quantum lambda model's function type does not see the order; effect-level `wp`/`wlp`; an affine MELL model; subset and co-subset types.
 * `new-analysis-reconstruction.md` — `[0,1]_E` is a sequential effect algebra for every EJA; centraliser and factor type as `&`-notions; reconstruction through Alfsen–Shultz; a corrected clause (E) for 106III.3.
 * `new-wildcard.md` — pure maps as projective-geometry morphisms in both directions; Paschke objects as transport plans; confusability systems; Frigerio irreducibility as a ⋄-notion.
+
+Second round, further out (2026-09-12, later):
+
+* `new-morita.md` — the Paschke module as the initial pointed correspondence over `φ`; composition of dilations only colax (Bhat–Skeide); effectus Morita equivalence recovers Rieffel's in `vNᵒᵖ`, sees only the centre in `EJAᵒᵖ`, which is not Morita-closed.
+* `new-base.md` — Kadison's two axioms are exactly quotients/comprehension and images: `vNᵒᵖ = ⋄-effectus + state-separation`; `A ↦ A**` a coreflection; no eff.tex axiom sees the field, a local qubit axiom does; `JBWᵒᵖ` on one Jordan division lemma.
+* `new-metric.md` — `p ↦ asrt_p` is exactly ½-Hölder in cb-norm, Lipschitz iff commutative; approximate comprehension at `√η`; ε-sharpness stable, ⋄-based ε-purity not; Kaplansky as an intrinsic density notion; a `⊗`-free simulation distance.
+* `new-monoidal.md` — monoidal effectuses and the tensor question 222IV; free effectuses; partial traces (pending).
