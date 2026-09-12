@@ -31461,3 +31461,22 @@ Mathlib lack, re-costed past the bound).  190V's placeholder row was stale;
 170I is the print's citation through `procIsPure_of_isPureMap`; 33I opens
 with `left-benign`.  Every `weaker`/`differs` row now carries `left-thesis`,
 `left-ruling`, `left-benign`, or a re-costing past the bound.  Seven sorries.
+
+## Session 112 — 2026-09-12
+
+* The last five `route` rows that were ours are on the printed routes
+  (27XVII on 27XV, 46III through 45I.1, 66IV.3 with the hint's `p = 1`
+  case first; 9X re-verified `left-unavailable`).  No `route` or `mild` row
+  now lacks a verified `left-` reason that is the thesis's, the encoding's,
+  or forced.  Map: 2,330 statements, 2,323 proved, 7 sorry.
+* Twelve exploratory research notes under `docs/research/` (index in its
+  README), written by Fable agents at the author's request: four from the
+  week's threads (support order, modules as corners, purity, `EJAᵒᵖ` dagger)
+  and eight going further out (categorical probability, semantics and logic,
+  reconstruction and modular theory, wildcard connections, Morita theory,
+  monoidal effectuses, metric effectus theory, the base of the theory).
+  All unaudited.
+* Corrections recorded in passing: the ⋄-order criterion for asserts needs
+  an *affiliated* central `c` (`support-order.md`); duplicators exist for
+  `ℓ^∞(X)` only, not all commutative algebras (127III); ERRATA 106III.3's
+  clause (E) is refined in `new-analysis-reconstruction.md` (unreviewed).
