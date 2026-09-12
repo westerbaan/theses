@@ -660,6 +660,35 @@ theorem ultraweak_complex : ultraweak ℂ = (inferInstance : TopologicalSpace �
       continuous_id.mul continuous_const
     exact hcont.congr fun z => (hval z).symm
 
+/-- The ultrastrong topology of the von Neumann algebra `ℂ` is its usual one
+as well: it is finer than the ultraweak one, which is the usual one by
+`ultraweak_complex`, and conversely each generating ball
+`{z | ‖z − b‖_ω < ε}` is usual-open, `‖z‖_ω² = ω(z*z) = |z|² ω(1)` being a
+continuous function of `z`.  (Needed to specialise `us_cont_normal`,
+**45I**.1, to functionals.) -/
+theorem ultrastrong_complex : ultrastrong ℂ = (inferInstance : TopologicalSpace ℂ) := by
+  refine le_antisymm (le_trans ultrastrong_le_ultraweak (le_of_eq ultraweak_complex)) ?_
+  rw [ultrastrong]
+  refine _root_.le_generateFrom ?_
+  rintro U ⟨ω, b, ε, hε, rfl⟩
+  have hval : ∀ z : ℂ, (ω z : ℂ) = z * ω 1 := by
+    intro z
+    have h : (ω.toPositiveLinearMap (z • (1 : ℂ)) : ℂ)
+        = z • (ω.toPositiveLinearMap (1 : ℂ) : ℂ) :=
+      map_smul ω.toPositiveLinearMap z (1 : ℂ)
+    rw [smul_eq_mul, mul_one, smul_eq_mul] at h
+    exact h
+  have hcont : Continuous fun a : ℂ => omegaNorm ℂ ω (a - b) := by
+    have he : (fun a : ℂ => omegaNorm ℂ ω (a - b))
+        = fun a : ℂ => Real.sqrt ((star (a - b) * (a - b) * (ω 1 : ℂ)).re) := by
+      funext a
+      rw [omegaNorm, hval]
+    rw [he]
+    exact Real.continuous_sqrt.comp (Complex.continuous_re.comp
+      (((continuous_star.comp (continuous_id.sub continuous_const)).mul
+        (continuous_id.sub continuous_const)).mul continuous_const))
+  exact isOpen_lt hcont continuous_const
+
 /-- **42V** (`von-neumann-examples`, vn.tex:262, Examples), part 1: `ℂ` is a
 von Neumann algebra.  (`{0}` — any subsingleton C*-algebra — is one too,
 trivially.) -/
@@ -3896,42 +3925,24 @@ theorem usconv [VonNeumannAlgebra A] {ι : Type*} (x : ι → A) (l : Filter ι)
     simpa [Function.comp_def, Real.sqrt_sq (omegaNorm_nonneg ω _)] using this
 
 /-- **46III**, (3) ⇒ (1): an ultrastrongly continuous positive functional is
-normal.  (This is **45I**.1 for `B = ℂ`, without the restriction to the
-effects: the net `(d)_{d∈D}` converges ultrastrongly to `⋁D` by **44XIV**
-`vna_supremum_uslimit`, so `ω(d) → ω(⋁D)`, and `ω(d) ≤ z` for every upper
-bound `z` of the image.) -/
+normal.
+
+*Class 1 — faithful.*  This implication is **45I**.1 (`us_cont_normal`,
+vn.tex:829) at `B = ℂ`, which is the point the exercise's hint leaves to the
+previous parsec: of the two results **46III** names (vn.tex:952, "combine
+`p-uwcont` and `cp-uscont`"), **44XV** `p_uwcont` gives (1) ⇔ (2) and
+**45II** `cp_uscont` gives (2) ⇒ (3), while (3) ⇒ (1) — an ultrastrongly
+continuous positive map is normal — is **45I**.1, whose own printed hint is
+that `(d)_{d∈D}` converges ultrastrongly to `⋁D` (**44XIV**
+`vna_supremum_uslimit`).  Ultrastrong continuity into `ℂ` is continuity into
+`ultrastrong ℂ` by `ultrastrong_complex`.  (Previously the **44XIV**
+argument was run again here, inline.) -/
 theorem preservesDirSups_of_continuous_ultrastrong [VonNeumannAlgebra A]
     (ω : A →ₚ[ℂ] ℂ) (h : @Continuous A ℂ (ultrastrong A) _ ⇑ω) :
     PreservesDirSups ⇑ω := by
-  intro D s hne hdir hlub
-  refine ⟨?_, ?_⟩
-  · rintro _ ⟨d, hd, rfl⟩
-    exact ω.monotone (Subtype.coe_le_coe.mpr (hlub.1 hd))
-  intro z hz
-  have hbdd : D.Nonempty ∧ DirectedOn (· ≤ ·) D ∧ BddAbove D := ⟨hne, hdir, ⟨s, hlub.1⟩⟩
-  have hsup : dirSup D hbdd = s := (isLUB_dirSup D hbdd).unique hlub
-  have hnonempty : Nonempty D := ⟨⟨hne.choose, hne.choose_spec⟩⟩
-  have hdo : IsDirectedOrder D := directedOn_iff_isDirectedOrder.mp hdir
-  -- the net converges ultrastrongly to `⋁D`
-  have hnet : USTendsto (fun d : D => ((d : selfAdjoint A) : A)) atTop (s : A) := by
-    have := vna_supremum_uslimit D hbdd
-    rwa [hsup] at this
-  have htend : Tendsto (fun d : D => (ω ((d : selfAdjoint A) : A) : ℂ)) atTop (𝓝 (ω (s : A))) :=
-    ((@Continuous.tendsto A ℂ (ultrastrong A) _ ⇑ω h ((s : selfAdjoint A) : A)).comp hnet)
-  have hle : ∀ d : D, (ω ((d : selfAdjoint A) : A) : ℂ) ≤ z := fun d =>
-    hz ⟨(d : selfAdjoint A), d.2, rfl⟩
-  -- compare real and imaginary parts separately
-  have hre : (ω (s : A)).re ≤ z.re := by
-    refine le_of_tendsto ((Complex.continuous_re.tendsto _).comp htend) ?_
-    exact Eventually.of_forall fun d => (Complex.le_def.mp (hle d)).1
-  have him : (ω (s : A)).im = z.im := by
-    have h1 : Tendsto (fun d : D => (ω ((d : selfAdjoint A) : A) : ℂ).im) atTop
-        (𝓝 (ω (s : A)).im) := (Complex.continuous_im.tendsto _).comp htend
-    have h2 : Tendsto (fun d : D => (ω ((d : selfAdjoint A) : A) : ℂ).im) atTop (𝓝 z.im) := by
-      refine Tendsto.congr' (Eventually.of_forall fun d => ?_) tendsto_const_nhds
-      exact ((Complex.le_def.mp (hle d)).2).symm
-    exact tendsto_nhds_unique h1 h2
-  exact Complex.le_def.mpr ⟨hre, him⟩
+  refine us_cont_normal ω ?_
+  rw [ultrastrong_complex]
+  exact @Continuous.continuousOn A ℂ (ultrastrong A) _ _ _ h
 
 /-- **46III** (`npuws`, vn.tex:940, Exercise): for a positive functional `ω`
 on a von Neumann algebra, the following are equivalent: (1) `ω` is normal;

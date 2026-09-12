@@ -403,7 +403,7 @@ this section's premise was wrong**
 > it**.  It belongs in §6 (genuinely terminal), not here.
 >
 > Two further corrections.  The row's staleness is smaller than claimed below:
-> `nmiu_image` calls 69IVa `nmiu_factors` **once** (`Projections.lean:7152`);
+> `nmiu_image` calls 69IVa `nmiu_factors` **once** (`Projections.lean:7191`);
 > the "three times" counted the whole file, two of them inside
 > `nmiu_factors_maps`.  And the universe obstacle binds **wider** than
 > recorded: `isVNSubalgebra_range` and the three auxiliaries its proof calls

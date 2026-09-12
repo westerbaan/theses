@@ -1586,19 +1586,53 @@ theorem gelfand : Function.Bijective (gelfandTransform ℂ 𝒜) := by
     exact StarSubalgebra.mem_top
   rwa [hScarrier] at hg
 
+/-- **27XV** `inv_mult_state` with the self-adjointness hypothesis dropped,
+for an element `b` of a *commutative* C*-algebra: `b` is not invertible iff
+`φ(b) = 0` for some character `φ`.
+
+`b` is invertible iff `b*b` is (in a commutative algebra `c` inverts `b*b`
+exactly when `cb*` inverts `b`), and `b*b` is self-adjoint, so **27XV**
+produces a character with `φ(b*b) = 0`, i.e. with `φ(b)*φ(b) = 0` — the
+characters being miu-maps — and hence with `φ(b) = 0`.  The converse is
+**27XV**'s own easy direction, `φ(b) ∈ spec(b)`. -/
+private theorem inv_mult_state_comm {𝒮 : Type*} [CommCStarAlgebra 𝒮] (b : 𝒮) :
+    ¬IsUnit b ↔ ∃ φ : characterSpace ℂ 𝒮, φ b = 0 := by
+  let _ : PartialOrder 𝒮 := CStarAlgebra.spectralOrder 𝒮
+  have _ : StarOrderedRing 𝒮 := CStarAlgebra.spectralOrderedRing 𝒮
+  constructor
+  · intro hb
+    have hns : ¬IsUnit (star b * b) := fun hu => hb (isUnit_of_mul_isUnit_right hu)
+    obtain ⟨φ, hφ⟩ := (inv_mult_state _ (IsSelfAdjoint.star_mul_self b)).mp hns
+    refine ⟨φ, ?_⟩
+    rw [map_mul, map_star] at hφ
+    rcases mul_eq_zero.mp hφ with h | h
+    · exact star_eq_zero.mp h
+    · exact h
+  · rintro ⟨φ, hφ⟩
+    rw [← spectrum.zero_mem_iff (R := ℂ), ← hφ]
+    exact WeakDual.CharacterSpace.apply_mem_spectrum φ b
+
 /-- **27XVII** `spectrum_miu` in the form the solution to **28II** uses it
 (asols.tex, `parsec-280.20`, points 5 and 6 cite `parsec-270.170` for
 elements that need not be self-adjoint): in a *commutative* C*-algebra
 `spec(b) = { φ(b) : φ ∈ spec(𝒮) }` for every `b`.  This is the printed
-statement of **27XVII** with the self-adjointness dropped, which Gelfand's
-representation theorem **27XXVII** — available at parsec 280 — supplies:
-`γ` is an isomorphism, so `spec(b) = spec(γ(b))`, and the spectrum of a
-continuous function on a compact space is its range. -/
+statement of **27XVII** with the self-adjointness dropped.
+
+*Class 1 — faithful.*  The solution to **27XVII** (asols.tex,
+`parsec-270.170`) verbatim, on `inv_mult_state_comm`, which is **27XV**:
+`λ ∈ spec(b)` iff `λ − b` is not invertible (the definition of the spectrum,
+**11XIX**) iff `φ(λ − b) = 0` for some `φ ∈ spec(𝒮)` (**27XV**) iff
+`λ = φ(b)` for some `φ`.  This is the route the sibling `spectrum_miu`
+takes; Gelfand's theorem **27XXVII** is not used. -/
 private theorem spectrum_eq_range_char {𝒮 : Type*} [CommCStarAlgebra 𝒮] (b : 𝒮) :
     spectrum ℂ b = Set.range fun φ : characterSpace ℂ 𝒮 => φ b := by
-  have h := AlgEquiv.spectrum_eq (AlgEquiv.ofBijective (gelfandTransform ℂ 𝒮) gelfand) b
-  rw [← h, ContinuousMap.spectrum_eq_range]
-  rfl
+  refine Set.ext fun z => ⟨fun hz => ?_, ?_⟩
+  · obtain ⟨φ, hφ⟩ := (inv_mult_state_comm _).mp (spectrum.mem_iff.mp hz)
+    refine ⟨φ, ?_⟩
+    rw [map_sub, AlgHomClass.commutes] at hφ
+    exact (sub_eq_zero.mp hφ).symm
+  · rintro ⟨φ, rfl⟩
+    exact WeakDual.CharacterSpace.apply_mem_spectrum φ b
 
 end GelfandRepresentation
 
@@ -1820,7 +1854,11 @@ private theorem cfc_mem_elemental (a : 𝒜) [IsStarNormal a] (f : ℂ → ℂ)
 element of the commutative C*-algebra `C*(a)`: `spec(b) = { φ(b) : φ ∈
 spec(C*(a)) }`, the spectrum taken in `𝒜` — the same set, by spectral
 permanence for the closed ⋆-subalgebra `C*(a)`, which the exercise's
-identification of `spec(a)` with the spectrum of `a` in `C*(a)` presupposes. -/
+identification of `spec(a)` with the spectrum of `a` in `C*(a)` presupposes.
+
+*Class 1 — faithful.*  `spectrum_eq_range_char` in `C*(a)`, which is the
+solution to **27XVII** on **27XV** `inv_mult_state`; the only step beyond it
+is that permanence. -/
 private theorem spectrum_eq_range_elemental (a : 𝒜) [IsStarNormal a]
     (b : StarAlgebra.elemental ℂ a) :
     spectrum ℂ (b : 𝒜)

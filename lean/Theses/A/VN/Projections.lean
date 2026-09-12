@@ -4856,23 +4856,65 @@ theorem ultracyclic_basic_2 (p q : A) (hp : IsStarProjection p)
       _ ≤ r * 1 * r := IsSelfAdjoint.conjugate_le_conjugate hp.le_one hr.isSelfAdjoint
       _ = r := by rw [mul_one, hr.isIdempotentElem.eq]
 
+/-- The step both halves of **66IV**.3 turn on: if the carrier of an
+np-functional `ω` lies below a projection `r`, then `ω(r^⊥) = 0`, since
+`r^⊥ ≤ ⌈ω⌉^⊥` and `ω(⌈ω⌉^⊥) = 0` by the defining property of the carrier
+(**63I**). -/
+private theorem npFunctional_one_sub_eq_zero_of_carrier_le (ω : NPFunctional A)
+    {r : A} (hr : IsStarProjection r) (hle : npCarrier ω ≤ r) :
+    (ω (1 - r) : ℂ) = 0 := by
+  have h1 : (ω (1 - r) : ℂ) ≤ ω (1 - npCarrier ω) :=
+    npFunctional_mono _ (sub_le_sub_left hle 1)
+  have hc : ω (1 - npCarrier ω) = 0 :=
+    (carrier_spec ω.toPositiveLinearMap ω.preservesDirSups').2.1
+  rw [hc] at h1
+  exact le_antisymm h1 (npFunctional_nonneg _ hr.one_sub.nonneg)
+
+/-- **66IV** (`ultracyclic-basic`, vn.tex:3334, Exercise), part 3, the case
+the thesis's hint asks for first: `1 = ⋁ {⌈ω⌉ : ω an np-functional}`, the
+join taken in the poset of projections.
+
+*Class 1 — faithful.*  The hint at vn.tex:3351 is "(Hint: first consider
+`p = 1`.)", and this is that case: `1` is trivially an upper bound of the
+carriers, and a projection `r` above every `⌈ω⌉` has `ω(r^⊥) = 0` for every
+np-functional `ω`, so `r^⊥ = 0` by faithfulness of the np-functionals
+(**42I**.2).  `ultracyclic_basic_3` below is this argument at the
+compressions `τ(p(·)p)`, which is what the hint's reduction to `p = 1`
+amounts to in the corner `p𝒜p`. -/
+theorem ultracyclic_basic_3_one :
+    (1 : A) = projSup {q : A | Ultracyclic A q} := by
+  have hPproj : ∀ q ∈ {q : A | Ultracyclic A q}, IsStarProjection q := by
+    rintro q ⟨ω, rfl⟩
+    exact (carrier_spec ω.toPositiveLinearMap ω.preservesDirSups').1
+  refine (projSup_eq hPproj (IsStarProjection.one A)
+    (fun q hq => (hPproj q hq).le_one) ?_).symm
+  intro r hr hub
+  have hzero : (1 : A) - r = 0 :=
+    VonNeumannAlgebra.np_faithful _ hr.one_sub.nonneg fun τ =>
+      npFunctional_one_sub_eq_zero_of_carrier_le τ hr (hub _ ⟨τ, rfl⟩)
+  rw [sub_eq_zero] at hzero
+  exact le_of_eq hzero
+
 /-- **66IV** (`ultracyclic-basic`, vn.tex:3334, Exercise), part 3, the "in
 fact" equation: `p = ⋁_ω ⌈ω⌉` over the np-functionals `ω` with `ω(p^⊥) = 0`,
 with the supremum read as the join in the poset of projections.  That this
 join is a *directed* supremum — the point's first claim — is
 `ultracyclic_basic_3_directed` below.
 
-*Class 2 — different route.*  The thesis's hint is "first consider `p = 1`";
-we do not need the reduction.  That `p` is an upper bound is the defining
-leastness of `⌈ω⌉`.  For leastness, let `r` be a projection above every such
-`⌈ω⌉`.  For an arbitrary np-functional `τ`, the compression
-`ω = τ(p(·)p) = conjNP p τ` satisfies `ω(p^⊥) = 0`, so `⌈ω⌉ ≤ r` and hence
-`ω(r^⊥) = 0`, i.e. `τ(p r^⊥ p) = 0`.  As `τ` was arbitrary and `p r^⊥ p ≥ 0`,
-faithfulness of the np-functionals (**42I**.2) gives `p r^⊥ p = 0`, whence
-`r^⊥ p = 0` by the C\*-identity and `p = r p r ≤ r`.
-
-The `p = 1` case of the thesis's hint is the special case `p = 1`, where the
-compression is the identity. -/
+*Class 1 — faithful.*  The thesis's hint is "first consider `p = 1`"
+(vn.tex:3351).  That case is `ultracyclic_basic_3_one` above, proved first;
+the general case is the same argument in the corner `p𝒜p`, whose
+np-functionals are the compressions `τ(p(·)p) = conjNP p τ` of the
+np-functionals of `𝒜`.  Explicitly: `p` is an upper bound by the defining
+leastness of `⌈ω⌉`; and for `r` a projection above every such `⌈ω⌉` and `τ`
+arbitrary, `ω = conjNP p τ` kills `p^⊥`, so `⌈ω⌉ ≤ r` and hence — by the
+same step `npFunctional_one_sub_eq_zero_of_carrier_le` that carries the
+`p = 1` case — `ω(r^⊥) = 0`, i.e. `τ(p r^⊥ p) = 0`.  As `τ` was arbitrary
+and `p r^⊥ p ≥ 0`, faithfulness of the np-functionals (**42I**.2) gives
+`p r^⊥ p = 0`, whence `r^⊥ p = 0` by the C\*-identity and `p = r p r ≤ r`.
+(The corner is not built as a type here — the tree handles corners as sets,
+cf. `A/VN/Division.lean` — so the reduction is run at the compressed
+functionals rather than by citing `ultracyclic_basic_3_one` inside `p𝒜p`.) -/
 theorem ultracyclic_basic_3 (p : A) (hp : IsStarProjection p) :
     p = projSup {q : A | ∃ ω : NPFunctional A, ω (1 - p) = 0 ∧
       q = npCarrier ω} := by
@@ -4893,16 +4935,8 @@ theorem ultracyclic_basic_3 (p : A) (hp : IsStarProjection p) :
           show p * (1 - p) * p = 0 from by
             rw [mul_sub, mul_one, hp.isIdempotentElem.eq, sub_self, zero_mul]]
         exact npFunctional_zero _
-      have hle : npCarrier (conjNP p τ) ≤ r := hub _ ⟨conjNP p τ, hω0, rfl⟩
-      have h1 : (conjNP p τ (1 - r) : ℂ) ≤ conjNP p τ (1 - npCarrier (conjNP p τ)) :=
-        npFunctional_mono _ (sub_le_sub_left hle 1)
-      have hc : conjNP p τ (1 - npCarrier (conjNP p τ)) = 0 :=
-        (carrier_spec (conjNP p τ).toPositiveLinearMap
-          (conjNP p τ).preservesDirSups').2.1
-      rw [hc] at h1
-      have h2 : (0 : ℂ) ≤ conjNP p τ (1 - r) :=
-        npFunctional_nonneg _ hr.one_sub.nonneg
-      have h3 : conjNP p τ (1 - r) = 0 := le_antisymm h1 h2
+      have h3 := npFunctional_one_sub_eq_zero_of_carrier_le (conjNP p τ) hr
+        (hub _ ⟨conjNP p τ, hω0, rfl⟩)
       rwa [conjNP_apply, hp.isSelfAdjoint.star_eq] at h3
     have hzero : (1 - r) * p = 0 := by
       refine (CStarRing.star_mul_self_eq_zero_iff _).mp ?_
