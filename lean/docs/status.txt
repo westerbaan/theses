@@ -2350,8 +2350,10 @@ Theses.A.VN.Projections|Theses.A.VN.ultracyclic_basic_1|green
 Theses.A.VN.Projections|Theses.A.VN.ultracyclic_basic_2|green
 Theses.A.VN.Projections|Theses.A.VN.ultracyclic_basic_3|green
 Theses.A.VN.Projections|Theses.A.VN.ultracyclic_basic_3_directed|green
+Theses.A.VN.Projections|Theses.A.VN.ultracyclic_basic_3_one|green
 Theses.A.VN.Projections|Theses.A.VN.ultracyclic_basic_4|green
 Theses.A.VN.Basic|Theses.A.VN.ultrastrong_ball_mem_nhds|green
+Theses.A.VN.Basic|Theses.A.VN.ultrastrong_complex|green
 Theses.A.VN.Basic|Theses.A.VN.ultrastrong_continuous_apply|green
 Theses.A.VN.Basic|Theses.A.VN.ultrastrong_le_ultraweak|green
 Theses.A.VN.Basic|Theses.A.VN.ultraweak_complex|green
@@ -4986,6 +4988,7 @@ Theses.A.CStar.Representation|Theses.A.CStar.ideal3_mem_sup|green
 Theses.A.CStar.Representation|Theses.A.CStar.ideal3u_isOrderIdeal|green
 Theses.A.CStar.Representation|Theses.A.CStar.ideal3v_isOrderIdeal|green
 Theses.A.CStar.Representation|Theses.A.CStar.inner_nonneg_of_nonneg|green
+Theses.A.CStar.Representation|Theses.A.CStar.inv_mult_state_comm|green
 Theses.A.CStar.Representation|Theses.A.CStar.isClosed_monoExp|green
 Theses.A.CStar.Representation|Theses.A.CStar.isSelfAdjoint_of_mem_interval'|green
 Theses.A.CStar.Representation|Theses.A.CStar.isSelfAdjoint_rsmul|green
@@ -5882,6 +5885,7 @@ Theses.A.VN.Projections|Theses.A.VN.nonneg_of_injective_miu|green
 Theses.A.VN.Projections|Theses.A.VN.nontrivialCorner_of_index|green
 Theses.A.VN.Projections|Theses.A.VN.not_continuousOn_aux|green
 Theses.A.VN.Projections|Theses.A.VN.npFunctional_cauchy_schwarz|green
+Theses.A.VN.Projections|Theses.A.VN.npFunctional_one_sub_eq_zero_of_carrier_le|green
 Theses.A.VN.Projections|Theses.A.VN.npFunctional_smul_real|green
 Theses.A.VN.Projections|Theses.A.VN.npFunctional_sqrt_eq_zero|green
 Theses.A.VN.Projections|Theses.A.VN.ofReal_tendsto|green

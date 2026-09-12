@@ -2350,8 +2350,10 @@ Theses.A.VN.Projections|Theses.A.VN.ultracyclic_basic_1|CStarAlgebra,Theses.VonN
 Theses.A.VN.Projections|Theses.A.VN.ultracyclic_basic_2|CStarAlgebra,Theses.VonNeumannAlgebra
 Theses.A.VN.Projections|Theses.A.VN.ultracyclic_basic_3|CStarAlgebra,Theses.VonNeumannAlgebra
 Theses.A.VN.Projections|Theses.A.VN.ultracyclic_basic_3_directed|CStarAlgebra,Theses.VonNeumannAlgebra
+Theses.A.VN.Projections|Theses.A.VN.ultracyclic_basic_3_one|CStarAlgebra,Theses.VonNeumannAlgebra
 Theses.A.VN.Projections|Theses.A.VN.ultracyclic_basic_4|CStarAlgebra,Theses.VonNeumannAlgebra
 Theses.A.VN.Basic|Theses.A.VN.ultrastrong_ball_mem_nhds|CStarAlgebra
+Theses.A.VN.Basic|Theses.A.VN.ultrastrong_complex|
 Theses.A.VN.Basic|Theses.A.VN.ultrastrong_continuous_apply|NormedAddCommGroup,InnerProductSpace,CompleteSpace
 Theses.A.VN.Basic|Theses.A.VN.ultrastrong_le_ultraweak|CStarAlgebra
 Theses.A.VN.Basic|Theses.A.VN.ultraweak_complex|
@@ -4986,6 +4988,7 @@ Theses.A.CStar.Representation|Theses.A.CStar.ideal3_mem_sup|
 Theses.A.CStar.Representation|Theses.A.CStar.ideal3u_isOrderIdeal|
 Theses.A.CStar.Representation|Theses.A.CStar.ideal3v_isOrderIdeal|
 Theses.A.CStar.Representation|Theses.A.CStar.inner_nonneg_of_nonneg|NormedAddCommGroup,InnerProductSpace,CompleteSpace
+Theses.A.CStar.Representation|Theses.A.CStar.inv_mult_state_comm|
 Theses.A.CStar.Representation|Theses.A.CStar.isClosed_monoExp|CStarAlgebra
 Theses.A.CStar.Representation|Theses.A.CStar.isSelfAdjoint_of_mem_interval'|
 Theses.A.CStar.Representation|Theses.A.CStar.isSelfAdjoint_rsmul|
@@ -5882,6 +5885,7 @@ Theses.A.VN.Projections|Theses.A.VN.nonneg_of_injective_miu|CStarAlgebra
 Theses.A.VN.Projections|Theses.A.VN.nontrivialCorner_of_index|CStarAlgebra,Theses.VonNeumannAlgebra
 Theses.A.VN.Projections|Theses.A.VN.not_continuousOn_aux|CStarAlgebra,Theses.VonNeumannAlgebra
 Theses.A.VN.Projections|Theses.A.VN.npFunctional_cauchy_schwarz|CStarAlgebra,Theses.VonNeumannAlgebra
+Theses.A.VN.Projections|Theses.A.VN.npFunctional_one_sub_eq_zero_of_carrier_le|CStarAlgebra,Theses.VonNeumannAlgebra
 Theses.A.VN.Projections|Theses.A.VN.npFunctional_smul_real|CStarAlgebra,Theses.VonNeumannAlgebra
 Theses.A.VN.Projections|Theses.A.VN.npFunctional_sqrt_eq_zero|CStarAlgebra,Theses.VonNeumannAlgebra
 Theses.A.VN.Projections|Theses.A.VN.ofReal_tendsto|
