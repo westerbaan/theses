@@ -41,6 +41,7 @@ import Theses.B.Dils.Paschke
 import Theses.B.Dils.Kaplansky
 import Theses.B.Dils.SelfDual
 import Theses.B.Dils.Pure
+import Theses.B.Dils.PaschkeNotTensor
 import Theses.B.Eff.EffectAlgebras
 import Theses.B.Eff.Effectus
 import Theses.B.Eff.WStarCat
