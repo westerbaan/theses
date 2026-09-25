@@ -286,3 +286,78 @@ Hints for `Boolean.lean` (OAP 44–50): OAP 45's `p·q = p ∧ q` is
 their extremal properties (`ceil_le`, `le_floor`); derive the route from the
 print's own proof, not from this note.  OAP 50 uses OAP 24 (Basic), OAP 26 (Basic) and OAP 43 (`isLUB_mul_left/right`,
 `oap43_1`).
+
+### `Boolean.lean` done (2026-09-26)
+
+OAP 44–50 all formalised, 850 lines, `scripts/lean1.sh` exit 0, no `sorry`,
+no warnings; 12 rows in `docs/audit/papers-oap.csv`.  Nothing false as
+printed.  One proof gap filed in `../papers/ERRATA.md` (OAP 46: the supremum
+in `M` of the idempotents `q_n` is never shown to be idempotent; repaired with
+the floor of OAP 35, `idem_of_isLUB`).  `Papers.lean` imports it.  **The lead
+must build `Papers.OAP.Boolean` before `Embedding.lean` can import it.**
+
+Infrastructure for §7 and later (namespace `Papers.OAP`):
+
+* Boolean (OAP 44): `IsBooleanElem a` (`∀ b ≤ a, b*b = b`), `IsBooleanEM M`
+  (`IsBooleanElem 1`), `isBooleanEM_iff` (every element idempotent).
+* Idempotents, no completeness needed: `idem_mul`, `isGLB_idem` (`p·q` is
+  the meet in `M`), `isLUB_idem` (`(p^⊥q^⊥)^⊥` is the join in `M`),
+  `orth_orth_mul_orth` (`(p^⊥q^⊥)^⊥ = p ⋎ p^⊥q`, any `p`, `q`),
+  `perp_idem_iff` (`p ⊥ q ⟺ pq = 0` for idempotent `q`), `oplus_idem_eq`
+  (orthogonal idempotents: `p ⋎ q = p ∨ q`), `mul_orth_mul_idem`.
+  With ω-completeness: `idem_of_isLUB` (sup of idempotents is idempotent).
+* `P(M)` (OAP 45): `idemBooleanAlgebra M : BooleanAlgebra (idempotents M)`,
+  a **scoped** instance (order = subtype order of `M`'s, so `idem_le_iff` is
+  `Iff.rfl`; `⊓` is `*`, `ᶜ` is `orth`, all by `rfl`: `oap45_inf/sup/compl`).
+  As an effect monoid `P(M)` is `booleanEffectMonoid (idempotents M)` —
+  always written `@… (booleanEffectMonoid _)`, never as an instance.
+  `idemIncl M` (inclusion, an EM morphism), `booleanIso hM : M → P(M)` for
+  Boolean `M`, `oap45_isIso`, `oap45_iff` (Boolean ⟺ `EMIsIso` to some
+  Boolean algebra's EM).
+* ω-completeness (OAP 46–47): `oap46` (countable `A ⊆ P(M)` has a sup in
+  `P(M)` which is also the sup in `M`), `oap46_omegaComplete`
+  (`@OmegaComplete (idempotents M) (booleanEffectAlgebra _)`, the OAP 15
+  form), `oap47` (the three together for Boolean `M`).  For OAP 54 "`M₂` an
+  ω-complete Boolean algebra" these are the forms available.
+* Halves and convexity (OAP 48–49): `IsHalvable a` (`∃ b, Perp b b ∧ b ⋎ b
+  = a`), `HalvableEA E`; `ConvexAction E` (structure: `act : I → E → E` and
+  the four axioms; the `λ+μ` axiom is stated for every `ν : I` with
+  `(ν:ℝ) = λ + μ`), `IsConvex E := Nonempty (ConvexAction E)`;
+  `ConvexAction.toEffectModule` / `.ofEffectModule`, `oap49_iff` (convex ⟺
+  the tree's `EffectModule I E` over `unitInterval.effectMonoid`) — use this
+  for §8's Gudder–Pulmannová (tree 179III.2).
+* OAP 50: `IsHalf a := Perp a a ∧ a ⋎ a = 1`; `IsHalf.convexAction h`, with
+  `act l x = dyCl a l * x` (`convexAction_act`, `rfl`); `dyEl a n m` (`= m·aⁿ`,
+  the dyadic element), `dyCl a r` (`\overline{r}`: sup of the `dyEl` with value
+  `< r`, and `0`); `dyCl_dyEl`, `dyCl_one`, `dyCl_add`, `dyCl_mul`
+  (`\overline{λ}·\overline{μ} = \overline{λμ}`), `dyEl_shift/pair/mul/le`.
+  So `λ(a·b) = (λa)·b` holds by `emul_assoc`; `a·(λb) = λ(a·b)` does **not**
+  follow from anything here (that is OAP 63's business: `dyCl` need not be
+  visibly central).
+* General tools: `nsum x m` (total `m`-fold sum) with `IsNSum.eq_nsum`,
+  `IsNSum.split` (`(m+k)x` exists ⇒ `mx ⊥ kx`, sum), `IsNSum.comp`
+  (`k·x = y`, `m·y = s` ⇒ `(km)·x = s`), `IsNSum.emul_left`;
+  `isLUB_image2_oplus` (sup of pairwise sums of two sets), `isLUB_image2_mul`
+  (`(⋁S)(⋁T) = ⋁ st`, OAP 43 twice), `isLUB_of_cofinal`, and an
+  Archimedean principle `le_of_osub_le` (`eₖ ≤ x`, `⋀eₖ = 0`, `x ⊖ eₖ ≤ u`
+  ⇒ `x ≤ u`, via the meet of OAP 37); real-side `dyadic_approx`,
+  `exists_inv_two_pow_lt`, `dy_nat_le`, `dy_val_pair`, `dy_val_mul`.
+
+Notes for `Embedding.lean` (OAP 51–57), from reading §7 against what exists
+(re-derive the routes from the print, not from this note):
+
+* Corners: Basic's `cornerEffectMonoid p hp` lives on `leftCorner p` with the
+  *subtype* order problem of Basic's pitfalls (use `corner_le_iff`).  OAP 54
+  needs `OmegaComplete` of a corner `pM` (for OAP 50 on `M₁`, OAP 47 on `M₂`)
+  — not yet proved anywhere; sups of increasing sequences below `p` are the
+  sups in `M` (they stay `≤ p`), so it is short, but mind the instance path
+  (`letI` the corner EM first; see Basic's pitfall on `refine ⟨?_⟩`).  Also
+  `HalvableEA` of the corner from `IsHalvable p` in `M` (the half `b ≤ p` is
+  in the corner) and `IsBooleanEM` of the corner from `IsBooleanElem p`.
+* OAP 53 needs an effect monoid on an arbitrary product `∀ e : E, Me`; only
+  the binary `prodEffectMonoid` exists.  Build it with
+  `EffectMonoid.ofBiadditive` as `prodEffectMonoid` does.
+* OAP 52 (Zorn over orthogonal families of non-zero idempotents) will want
+  `perp_idem_iff` / `oplus_idem_eq` and OAP 25 (`a·a^⊥ ⊥ a·a^⊥`) and OAP 51.
+* Pitfall met here: a `letI` whose goal is a `Prop` trips the style linter
+  (`haveILetI`); use `let _ := …` inside proofs.

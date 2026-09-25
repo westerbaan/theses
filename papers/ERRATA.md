@@ -32,6 +32,14 @@ One section per paper (tag as in `lean/Papers/README.md`); one entry per point, 
   `b·s ⋁ ⌈b⌉^⊥·s ≤ u' ⋁ ⌈b⌉^⊥·⋁S` for all `s` gives
   `b·⋁S ⋁ ⌈b⌉^⊥·⋁S ≤ u' ⋁ ⌈b⌉^⊥·⋁S`, whence `b·⋁S ≤ u' ≤ u`.  Statement
   unaffected.  Lean: `Papers.OAP.oap43_1` (via `isLUB_mul_right`).
+* **OAP 46** (`prop:completelattice`, first.tex:1620, Proposition), proof —
+  gap.  The supremum `q` of the increasing idempotents `q_n` is taken in `M`
+  (by ω-completeness of `M`), but to be the supremum of `A` *in `P(M)`* it
+  must itself be idempotent, which the proof does not show.  Repair: each
+  idempotent `q_n ≤ q` lies below the floor `⌊q⌋` (Proposition 35: the
+  greatest idempotent below `q`), so `q ≤ ⌊q⌋ ≤ q` and `q = ⌊q⌋` is
+  idempotent.  Statement unaffected.  Lean: `Papers.OAP.oap46` (via
+  `idem_of_isLUB`).
 
 ## EJA — *Pure Maps between Euclidean Jordan Algebras* (arXiv:1805.11496, `1805.11496/main.tex`)
 
