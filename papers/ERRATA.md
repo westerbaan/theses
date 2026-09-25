@@ -40,6 +40,23 @@ One section per paper (tag as in `lean/Papers/README.md`); one entry per point, 
   greatest idempotent below `q`), so `q ≤ ⌊q⌋ ≤ q` and `q = ⌊q⌋` is
   idempotent.  Statement unaffected.  Lean: `Papers.OAP.oap46` (via
   `idem_of_isLUB`).
+* **OAP 60** (`lem:completenessousemod`, first.tex:2213, Lemma), proof — slip
+  and gap.  With `-n·1 ≤ a, b ≤ n·1` the set `{(1/n)(s - a) ; s ∈ S'}` lies in
+  `[0,2]_V`, not in `[0,1]_V` ("clearly … ⊆ [0,1]_V"); use `1/(2n)`.  Second,
+  the supremum it has is a supremum *in `[0,1]_V`*, while "so does `S'`, as
+  `v ↦ nv + a` is an order isomorphism" needs one *in `V`*: an upper bound of
+  `S'` need not lie in the image interval.  Repair: for an upper bound `w`
+  choose `N' ≥ n` with `w ∈ [-N'·1, N'·1]`; the supremum relative to that
+  interval is below `n·1` and above `a`, so it lies in `[-n·1, n·1]`, hence is
+  above the supremum relative to `[-n·1, n·1]`, and it is below `w`.  Statement
+  unaffected.  Lean: `Papers.OAP.oap60_directed`, `Papers.OAP.oap60_omega`
+  (via `exists_isLUB_of_symIcc`).
+* **OAP 66** (`thm:convexextremallydisconnected`, first.tex:2489, Theorem),
+  proof — inequalities reversed.  The print has "`f ∗ (g ∨ h) ≤ (f∗g) ∨ (f∗h)`
+  and `f ∗ (g ∧ h) ≥ (f∗g) ∧ (f∗h)`"; what monotonicity of `∗` gives, and
+  what the next step `d(f∗g, f∗h) ≤ f ∗ d(g,h)` needs, is the reverse:
+  `(f∗g) ∨ (f∗h) ≤ f ∗ (g ∨ h)` and `f ∗ (g ∧ h) ≤ (f∗g) ∧ (f∗h)`.  Statement
+  unaffected.  Lean: `Papers.OAP.IsUnitRep.dist_mul`.
 
 ## EJA — *Pure Maps between Euclidean Jordan Algebras* (arXiv:1805.11496, `1805.11496/main.tex`)
 
@@ -136,6 +153,24 @@ the statement `g = Q_{√g(1)}` stands.  (39's proof also uses that the
   are summable idempotents … `a^⊥ = p^⊥ ⊻ (p ⊻ a)^⊥`" should read "`p` and
   `(p ⊻ a)^⊥` … `a^⊥ = p ⊻ (p ⊻ a)^⊥`" (`p^⊥ ⊥ (p ⊻ a)^⊥` fails already for
   `p = 0`, `a ≠ 1`).  Lean: `Papers.SEA.sea17_5`, `Papers.SEA.sea17_7`.
+* **SEA 38** (`ex:effect-monoids`, second.tex:970, Example) — "this makes
+  `R` into an ordered vector space" needs the positive cone of `V` to be
+  *generating* (`V = V₊ - V₊`): otherwise `f ≤ g ≤ f` only says `f = g` on
+  `V₊`.  For `V = ℝ` ordered discretely (cone `{0}`), `0 ≤ id ≤ 0` but
+  `0 ≠ id`, and "`[0,id]_R`" is not an effect algebra.  SEA 39's cone is
+  generating, so the example is unaffected.  Lean:
+  `Papers.SEA.sea38_not_antisymm_as_printed` (refutation),
+  `Papers.SEA.LinEnd.partialOrder` (with `Fact (Generating V)`).
+* **SEA 40** (second.tex:996, Remark), and the paragraph after it
+  (second.tex:1004) — "having no non-zero infinitesimals is equivalent to the
+  order unit semi-norm being a norm" is **false**, and so is "`W` … where its
+  order-unit semi-norm is in fact a norm": in SEA 39's `M` there are no
+  non-zero infinitesimals, yet `X = (1 -1; -½ 3/2) - (½ 0; 0 ½) ∈ W` is
+  non-zero with `-λ id ≤ X ≤ λ id` for all `λ > 0` (any `X` with column sums
+  `0` is).  `‖A‖ = |τ(A)|` is right, as a seminorm.  The seminorm is a norm
+  iff no non-zero `a ∈ V` (of any sign) has `-λ1 ≤ a ≤ λ1` for all `λ > 0`;
+  absence of infinitesimals only excludes positive such `a`.  Lean:
+  `Papers.SEA.sea40_equiv_false_as_printed`, `Papers.SEA.sea40_ouNorm`.
 
 ## FDS — *The universal property of infinite direct sums in C\*- and W\*-categories* (arXiv:1907.04714, `1907.04714/direct_sums.tex`)
 

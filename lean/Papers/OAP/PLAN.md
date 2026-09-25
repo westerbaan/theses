@@ -361,3 +361,73 @@ Notes for `Embedding.lean` (OAP 51–57), from reading §7 against what exists
   `perp_idem_iff` / `oplus_idem_eq` and OAP 25 (`a·a^⊥ ⊥ a·a^⊥`) and OAP 51.
 * Pitfall met here: a `letI` whose goal is a `Prop` trips the style linter
   (`haveILetI`); use `let _ := …` inside proofs.
+
+### `OUS.lean` done (2026-09-26)
+
+OAP 58–67 all formalised (OAP 64 is `Yosida.lean`; 65 and 67 are cited
+remarks, rows only), 1,222 lines, `scripts/lean1.sh` exit 0, no `sorry`, no
+warnings; 20 rows in `docs/audit/papers-oap.csv`.  Imports `Papers.OAP.Basic`,
+`Papers.OAP.Yosida`, `Theses.B.Eff.OrderUnit`, `Theses.B.Eff.EffectAlgebras`,
+`Mathlib.Topology.UrysohnsLemma` — **not** `FloorCeiling`.  Nothing false as
+printed; two proof slips filed in `../papers/ERRATA.md` (OAP 60: `1/n` should
+be `1/(2n)`, and a supremum relative to `[0,1]_V` is not yet one in `V`;
+OAP 66: the two `∗`-vs-`∨/∧` inequalities are reversed).  OAP 66 is stated
+with **compact** `X` (the print omits it) and **waits on OAP 37**: the
+hypothesis `oap37 : ∀ a b : M, ∃ c, IsLUB {a, b} c`, discharged in a file
+that imports `FloorCeiling` by `fun a b => ⟨emSup a b, isLUB_emSup a b⟩`.
+
+What §9 will use (namespace `Papers.OAP`):
+
+* **`oap66 [EffectMonoid M] [EffectModule I M] [OmegaComplete M] (oap37)`** :
+  `∃ X (_ : TopologicalSpace X) (_ : CompactSpace X) (_ : T2Space X)
+  (f : EffectMonoidHom M (Set.Icc (0 : C(X, ℝ)) 1)), EMIsIso f ∧ (f respects
+  `[0,1]`-scalars) ∧ BasicallyDisconnected X ∧ (DirectedComplete M →
+  ExtremallyDisconnected X)`, with `X : Type u` in `M`'s universe.  The
+  effect monoid on `Set.Icc (0 : C(X, ℝ)) 1` is Basic's
+  `unitIntervalEffectMonoid`, used through
+  `attribute [local instance] unitIntervalEffectMonoid` (a section-local
+  instance; do the same in `Main.lean`, or write the `@`-form).
+  "Convex" is the tree's `EffectModule I M` (OAP 49's `Boolean.lean` notion
+  should be checked against it before OAP 68 plugs OAP 54's `M₁` in).
+* `oap63 [OmegaComplete M] l a b : l • (a * b) = (l • a) * b ∧ l • (a * b) =
+  a * (l • b)` (bilinearity).
+* OUS side: `ousEA V` / `ousEMod V` (`[0,1]_V`), `OUSOmegaComplete`,
+  `OUSDirectedComplete`, `OUSBoundedOmegaComplete`,
+  `OUSBoundedDirectedComplete`, `oap60_omega/directed`, `oap61`
+  (bounded ω-complete ⇒ `OUSArchimedean`), `wright_normComplete`
+  (⇒ `OUSNormComplete`), the relative-supremum toolkit `IsLUBIn`, `symIcc`,
+  `affIso`, `exists_isLUB_of_symIcc`.
+* Gudder–Pulmannová: instance `gpOrderUnitSpace` on `GP.Vec E` (unit
+  `GP.gunit`), `gmap_le_gmap_iff`, `gmap_perp_iff`, `gpEquiv`, `oap62`,
+  `gp_omegaComplete`, `gp_directedComplete`, `gp_archimedean`, `gp_sup`,
+  and `vecLattice` (an `abbrev`, so the lattice's `≤` is definitionally the
+  given order — needed for Yosida's `[Lattice V] [OrderUnitSpace V]`).
+* Representations: `IsUnitRep u e` (order iso of `M` onto `[0,u]`
+  preserving `⊥`, `⋁`, `1`, scalars), `IsUnitRep.comp`, `.toHom`,
+  `.toHom_isIso`, `.mul_apply` (the transported product is pointwise);
+  topology: `RelSup`, `isOpen_closure_of_relSup`,
+  `basicallyDisconnected_of_relSup`, `extremallyDisconnected_of_relSup`.
+
+Hints for `Main.lean` (OAP 68–73) — re-derive routes from the print:
+
+* OAP 68/69 are OAP 54/57 with OAP 66 applied to the convex factor `M₁`;
+  compose `EMEmbedding`/`EMIsIso` with `oap66`'s `f` and Basic's
+  `prodEffectMonoid`.  OAP 66 needs `OmegaComplete M₁` for the *factor*
+  (not only for `M`), and `oap37` for `M₁`.
+* OAP 70 (commutativity): `oap7_CX` gives commutativity of
+  `[0,1]_{C(X)}`; Boolean algebras are commutative (`oap6_commutative`);
+  the print's "join" for `B`'s multiplication is the meet (PLAN flag).
+* OAP 71 (no zero divisors ⇒ `{0}`, `{0,1}` or `[0,1]`): the convex case goes
+  through `oap66`; a point `X` with two points gives zero divisors via
+  Urysohn (`exists_continuous_zero_one_of_isClosed`, already imported here).
+
+Pitfalls met here:
+
+* This Mathlib's `add_le_add_left h c : a + c ≤ b + c` and
+  `add_le_add_right h c : c + a ≤ c + b` (swapped from older Mathlib); the
+  tree's `ou_add_le_add_right` is unambiguous.
+* `IsLUB` takes `[LE α]`: with an explicit instance write
+  `@IsLUB _ (@eaPartialOrder _ inst).toLE S s`.
+* Structure projections of `EffectMonoidHom` into `Set.Icc (0 : C(X,ℝ)) 1`
+  (`f.toFun`) fail to elaborate in a *statement* unless the effect monoid on
+  the interval is an instance (hence the local instance above).

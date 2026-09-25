@@ -10,6 +10,7 @@ import Papers.EJA.Fundamental
 import Papers.OAP.FloorCeiling
 import Papers.FDS.DirectSums
 import Papers.OAP.Boolean
+import Papers.OAP.OUS
 
 /-
 Formalisations of three papers following the theses, by Abraham (Bram)
