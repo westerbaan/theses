@@ -126,7 +126,7 @@ def dirty():
     but this working tree, and possibly for a half-written file.  They are reported
     and skipped; the next run picks them up once the work is committed.
     """
-    r = subprocess.run(["git", "status", "--porcelain", "--", "Theses", "Papers", "Theses.lean", "Papers.lean"],
+    r = subprocess.run(["git", "status", "--porcelain", "--untracked-files=all", "--", "Theses", "Papers", "Theses.lean", "Papers.lean"],
                        cwd=LEAN, capture_output=True, text=True)
     out = set()
     for line in r.stdout.splitlines():
