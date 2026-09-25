@@ -1,0 +1,10 @@
+src
+*.cls
+*.sty
+00README.XXX
+eptcsdata.tex
+main.bib
+*.bbl
+*.toc
+*.tikz
+*.tikz*
