@@ -16,7 +16,7 @@
 %     git show "${C}:lean/Theses/B/Dils/${f}.lean" | sed -n "${l}p" |
 %     grep -qw -- "$n" || echo "stale: $f:$l $n"; done
 % prints nothing.  If either fails, update \leancommit and the line numbers.
-\newcommand{\leancommit}{636024ab4baa8c508b3b212330ffa37aef77b46c}
+\newcommand{\leancommit}{ceed8acee03562fa064e57dfc41926e258eb020e}
 \newcommand{\lean}[3]{\leavevmode\marginpar{\footnotesize\href{https://github.com/westerbaan/theses/blob/\leancommit/lean/Theses/B/Dils/#1.lean\#L#2}{Lean}}}
 
 \theoremstyle{plain}
@@ -69,7 +69,7 @@ consecutively numbered volumes~\cite{bram} and~\cite{bas}.
 \section{Wittrock dilations}
 
 \begin{definition}[Wittrock dilation]\label{def:wittrock}
-\lean{Wittrock}{160}{IsWittrockDilationOf}%
+\lean{Wittrock}{164}{IsWittrockDilationOf}%
 Let~$\varphi\colon \mathscr{X} \to \mathscr{A}$
     be an ncp-map
     between von Neumann algebras.
@@ -121,7 +121,7 @@ The following analogue of the Paschke correspondence~(157\,IV)
     is the key to Theorem~\ref{thm:main}.
 
 \begin{lemma}\label{lem:correspondence}
-\lean{WittrockSplit}{647}{splitsOffCommutant_of_wittrock}%
+\lean{WittrockSplit}{306}{wittrock_correspondence}%
 Let~$h \colon \mathscr{X} \otimes \mathscr{E} \to \mathscr{A}$
     be a Wittrock dilation of an ncp-map~$\varphi \colon \mathscr{X} \to \mathscr{A}$.
 Then~$e \mapsto h(\,\cdot \otimes e)$
@@ -168,7 +168,7 @@ Type~I factors always have it (Lemma~\ref{lem:typeI});
     (Proposition~\ref{prop:BK}).
 
 \begin{definition}
-\lean{WittrockSplit}{448}{SplitsOffCommutant}%
+\lean{WittrockSplit}{538}{SplitsOffCommutant}%
 A von Neumann subalgebra~$\mathscr{R}$
     of a von Neumann algebra~$\mathscr{P}$
     \textbf{splits off its commutant} in~$\mathscr{P}$
@@ -200,7 +200,7 @@ The split property of the pair~$(\mathscr{R}, \mathscr{R}^\square)$
 \end{remark}
 
 \begin{lemma}\label{lem:typeI}
-\lean{WittrockSplit}{901}{exists_typeI_factor_iso}%
+\lean{WittrockSplit}{859}{exists_typeI_factor_iso}%
 Let~$\mathscr{P}$ be a von Neumann algebra,
     and let~$\mathscr{R} \subseteq \mathscr{P}$ be a von Neumann subalgebra
     that is nmiu-isomorphic to~$\mathscr{B}(\mathscr{H})$
@@ -209,7 +209,7 @@ Let~$\mathscr{P}$ be a von Neumann algebra,
 Then~$a \otimes t \mapsto at$ extends to an nmiu-isomorphism
     $\mathscr{R} \otimes \mathscr{R}^\square \cong \mathscr{P}$;
     in particular, $\mathscr{R}$ splits off its commutant in~$\mathscr{P}$.%
-\lean{WittrockSplit}{937}{splitsOffCommutant_of_typeI_factor}
+\lean{WittrockSplit}{895}{splitsOffCommutant_of_typeI_factor}
 \end{lemma}
 \begin{proof}
 If~$\mathscr{P} = \{0\}$ there is nothing to prove,
@@ -259,7 +259,7 @@ By~111\,VII and~114\,II,
 \end{proof}
 
 \begin{proposition}\label{prop:structure}
-\lean{WittrockSplit}{2024}{splitsOffCommutant_iff_centre_corners}%
+\lean{WittrockSplit}{2042}{splitsOffCommutant_iff_centre_corners}%
 A von Neumann subalgebra~$\mathscr{R}$
     of a von Neumann algebra~$\mathscr{P}$
     splits off its commutant in~$\mathscr{P}$
@@ -267,7 +267,7 @@ A von Neumann subalgebra~$\mathscr{R}$
     its centre is nmiu-isomorphic to~$\ell^\infty(I)$ for some set~$I$,
     and~$c\mathscr{R}$ splits off its commutant in~$c\mathscr{P}c$
     for every minimal central projection~$c$ of~$\mathscr{R}$.
-\lean{WittrockSplit}{1715}{splitsOffCommutant_of_atomicTypeI}%
+\lean{WittrockSplit}{1752}{splitsOffCommutant_of_atomicTypeI}%
 In particular,
     every von Neumann subalgebra of~$\mathscr{P}$
     that is a direct sum of type~I factors
@@ -317,7 +317,7 @@ The last claim follows from Lemma~\ref{lem:typeI}.
 \end{proof}
 
 \begin{proposition}\label{prop:BK}
-\lean{WittrockBK}{1064}{splitsOffCommutant_bh_iff}%
+\lean{WittrockBK}{1053}{splitsOffCommutant_bh_iff}%
 A von Neumann subalgebra~$\mathscr{R}$ of~$\mathscr{B}(\mathscr{K})$
     splits off its commutant in~$\mathscr{B}(\mathscr{K})$
     if and only if~$\mathscr{R}$ is a direct sum of type~I factors.
@@ -354,7 +354,7 @@ Finally, we rephrase splitting off for the image of an nmiu-map
     which is the form in which it enters Theorem~\ref{thm:main}.
 
 \begin{lemma}\label{lem:reduction}
-\lean{WittrockSplit}{495}{splitsOffCommutant_range_iff}%
+\lean{WittrockSplit}{575}{splitsOffCommutant_range_iff}%
 Let~$\varrho \colon \mathscr{X} \to \mathscr{P}$ be an nmiu-map.
 Then~$\varrho(\mathscr{X})$ splits off its commutant in~$\mathscr{P}$
     if and only if~$x \otimes t \mapsto \varrho(x)\, t$
@@ -385,14 +385,14 @@ Then~$m \circ (j \otimes \mathrm{id})$
 \section{When Wittrock dilations exist}
 
 \begin{theorem}\label{thm:main}
-\lean{WittrockSplit}{872}{wittrock_iff_splitsOffCommutant}%
+\lean{WittrockSplit}{831}{wittrock_iff_splitsOffCommutant}%
 Let~$\varrho \colon \mathscr{X} \to \mathscr{P}$
     and~$h \colon \mathscr{P} \to \mathscr{A}$
     form a Paschke dilation of an ncp-map~$\varphi \colon \mathscr{X} \to \mathscr{A}$
     (see~140\,II; one exists by~154\,III).
 Then~$\varphi$ has a Wittrock dilation
     if and only if~$\varrho(\mathscr{X})$ splits off its commutant in~$\mathscr{P}$.
-\lean{WittrockSplit}{859}{isWittrockDilationOf_of_splitsOffCommutant}%
+\lean{WittrockSplit}{818}{isWittrockDilationOf_of_splitsOffCommutant}%
 In that case,
     $x \otimes t \mapsto h(\varrho(x)\, t)$
     extends to a Wittrock dilation
@@ -471,7 +471,7 @@ Now~$\sigma \circ (\mathrm{id} \otimes \tau^{-1})$
 \end{proof}
 
 \begin{corollary}\label{cor:BH}
-\lean{Wittrock}{1424}{isWittrockDilationOf_paschke}%
+\lean{Wittrock}{1128}{isWittrockDilationOf_bh_paschke}%
 Let~$\varrho \colon \mathscr{B}(\mathscr{H}) \to \mathscr{P}$
     and~$h \colon \mathscr{P} \to \mathscr{A}$
     form a Paschke dilation of an ncp-map
@@ -484,7 +484,7 @@ Then~$x \otimes t \mapsto \varrho(x)\, t$
 \end{equation*}
     and~$h$, composed with this isomorphism,
     is a Wittrock dilation of~$\varphi$.
-\lean{Wittrock}{259}{isWittrockDilationOf_stdFilter}%
+\lean{Wittrock}{264}{isWittrockDilationOf_stdFilter}%
 For example,
     for positive~$p \in \mathscr{A}$,
     the ncp-map~$\lambda \mapsto \lambda p \colon \mathbb{C} \to \mathscr{A}$
@@ -524,7 +524,7 @@ The unit map~$u \colon \mathbb{C} \to \lceil p \rceil \mathscr{A} \lceil p \rcei
 \end{proof}
 
 \begin{corollary}\label{cor:typeI}
-\lean{WittrockSplit}{1729}{exists_wittrockDilation_of_atomicTypeI}%
+\lean{WittrockSplit}{1766}{exists_wittrockDilation_of_atomicTypeI}%
 Every ncp-map~$\varphi \colon \mathscr{X} \to \mathscr{A}$
     on a direct sum~$\mathscr{X}$ of type~I factors
     has a Wittrock dilation.
@@ -541,14 +541,14 @@ Apply Proposition~\ref{prop:structure} and Theorem~\ref{thm:main}.
 \end{proof}
 
 \begin{corollary}\label{cor:centre}
-\lean{WittrockSplit}{1025}{centre_linf_of_wittrock}%
+\lean{WittrockSplit}{983}{centre_linf_of_wittrock}%
 Let~$\varrho \colon \mathscr{X} \to \mathscr{P}$
     and~$h \colon \mathscr{P} \to \mathscr{A}$
     form a Paschke dilation of an ncp-map~$\varphi \colon \mathscr{X} \to \mathscr{A}$.
 If~$\varphi$ has a Wittrock dilation,
     then the centre of~$\varrho(\mathscr{X})$
     is nmiu-isomorphic to~$\ell^\infty(I)$ for some set~$I$.
-\lean{WittrockSplit}{1344}{not_wittrock_of_linfty}%
+\lean{WittrockSplit}{1345}{not_wittrock_of_centre_no_minProj}%
 In particular,
     if the centre of~$\mathscr{X}$ has no minimal projections
     (as for~$\mathscr{X} = L^\infty[0,1]$),
@@ -569,7 +569,7 @@ So if the centre of~$\mathscr{X}$ has no minimal projections,
 \end{proof}
 
 \begin{corollary}\label{cor:stinespring}
-\lean{WittrockBK}{1082}{wittrock_iff_atomicTypeI_stinespring}%
+\lean{WittrockBK}{1071}{wittrock_iff_atomicTypeI_stinespring}%
 Let~$\varphi \colon \mathscr{X} \to \mathscr{B}(\mathscr{H})$
     be an ncp-map
     with minimal normal Stinespring dilation~$(\mathscr{K}, \varrho, V)$
@@ -577,7 +577,7 @@ Let~$\varphi \colon \mathscr{X} \to \mathscr{B}(\mathscr{H})$
 Then~$\varphi$ has a Wittrock dilation
     if and only if~$\varrho(\mathscr{X})$
     is a direct sum of type~I factors.
-\lean{WittrockBK}{1107}{not_wittrock_of_factor_not_typeI}%
+\lean{WittrockBK}{1096}{not_wittrock_of_factor_not_typeI}%
 In particular,
     for a factor~$\mathscr{X}$ that is not of type~I,
     no non-zero ncp-map~$\mathscr{X} \to \mathscr{B}(\mathscr{H})$
