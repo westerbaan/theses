@@ -1,0 +1,629 @@
+\documentclass{article}
+\usepackage{amsmath,amssymb,amsthm,mathrsfs,xypic}
+\usepackage{xcolor}
+\usepackage[colorlinks,linkcolor=black,citecolor=black,urlcolor=gray]{hyperref}
+
+% Lean links.  \lean{File}{Line}{name} puts a small link in the margin to
+% the declaration `name' at line Line of lean/Theses/B/Dils/File.lean in
+% https://github.com/westerbaan/theses, as of the commit \leancommit.
+% Pinned links go stale once those files change.  So before sending this
+% note out, check (in bash, from the repository root) that
+%   git log -1 --format=%H -- lean/Theses/B/Dils/Wittrock*.lean
+% prints \leancommit, and that
+%   C=$(sed -n 's/^\\newcommand{\\leancommit}{\(.*\)}$/\1/p' wittrock-dil.tex)
+%   grep -v '^ *%' wittrock-dil.tex | grep -o '\\lean{[^}]*}{[^}]*}{[^}]*}' |
+%   tr '{}' '  ' | while read -r _ f l n; do
+%     git show "${C}:lean/Theses/B/Dils/${f}.lean" | sed -n "${l}p" |
+%     grep -qw -- "$n" || echo "stale: $f:$l $n"; done
+% prints nothing.  If either fails, update \leancommit and the line numbers.
+\newcommand{\leancommit}{636024ab4baa8c508b3b212330ffa37aef77b46c}
+\newcommand{\lean}[3]{\leavevmode\marginpar{\footnotesize\href{https://github.com/westerbaan/theses/blob/\leancommit/lean/Theses/B/Dils/#1.lean\#L#2}{Lean}}}
+
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{proposition}[theorem]{Proposition}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{remark}[theorem]{Remark}
+
+\begin{document}
+
+\noindent
+Nico Wittrock proposed the following variation
+    on the Paschke dilation (140\,II)
+    of an ncp-map~$\varphi \colon \mathscr{X} \to \mathscr{A}$:
+    the dilating algebra must be of the form~$\mathscr{X} \otimes \mathscr{E}$,
+    with~$x \mapsto x \otimes 1$ in the role of the nmiu-map,
+    and only maps of the form~$\mathrm{id} \otimes \tau$
+    may mediate.
+We'll see that~$\varphi$ has such a Wittrock dilation
+    precisely when,
+    for a Paschke dilation of~$\varphi$
+    given by~$\varrho \colon \mathscr{X} \to \mathscr{P}$
+    and~$h \colon \mathscr{P} \to \mathscr{A}$,
+    the map~$a \otimes t \mapsto at$ extends to an nmiu-map
+    $\varrho(\mathscr{X}) \otimes \varrho(\mathscr{X})^\square \to \mathscr{P}$,
+    where~$\varrho(\mathscr{X})^\square$
+    is the commutant of~$\varrho(\mathscr{X})$ in~$\mathscr{P}$,
+    and that~$\varrho(\mathscr{X})^\square$ can then serve as~$\mathscr{E}$
+    (Theorem~\ref{thm:main}).
+For~$\mathscr{X} = \mathscr{B}(\mathscr{H})$
+    the Paschke dilation is a Wittrock dilation;
+    for~$\lambda \mapsto \lambda p \colon \mathbb{C} \to \mathscr{A}$,
+    for example,
+    both are the standard filter for~$p$ (Corollary~\ref{cor:BH}).
+Moreover,
+    every ncp-map on a direct sum of type~I factors
+    has a Wittrock dilation (Corollary~\ref{cor:typeI}).
+On the other hand,
+    no non-zero ncp-map has one
+    if it is defined on~$L^\infty[0,1]$ (Corollary~\ref{cor:centre}),
+    or if it goes from a factor not of type~I
+    to some~$\mathscr{B}(\mathscr{H})$ (Corollary~\ref{cor:stinespring}).
+
+References such as~157\,IV and~140\,II are to the two
+consecutively numbered volumes~\cite{bram} and~\cite{bas}.
+
+\section{Wittrock dilations}
+
+\begin{definition}[Wittrock dilation]\label{def:wittrock}
+\lean{Wittrock}{160}{IsWittrockDilationOf}%
+Let~$\varphi\colon \mathscr{X} \to \mathscr{A}$
+    be an ncp-map
+    between von Neumann algebras.
+A \textbf{Wittrock dilation} of~$\varphi$
+    is an ncp-map $h\colon \mathscr{X}\otimes \mathscr{E}\to\mathscr{A}$,
+    for some von Neumann algebra~$\mathscr{E}$,
+    such that~$\varphi(x) = h(x\otimes 1)$
+    for all~$x\in \mathscr{X}$,
+    and the following universal property holds.
+\begin{quote}
+    For every von Neumann algebra $\mathscr{E}'$
+    and ncp-map $h'\colon \mathscr{X}\otimes \mathscr{E}'\to\mathscr{A}$
+    with $\varphi(x)=h'(x\otimes 1)$ for all $x\in\mathscr{X}$
+    there is a unique ncp-map $\tau\colon \mathscr{E}'\to\mathscr{E}$
+    that makes the following diagram commute.
+\begin{equation*}
+\xymatrix@C=2em@R=2.5em{
+\mathscr{X}
+\ar[rr]^{\varphi}
+\ar[rd]_{(\,\cdot\,) \otimes 1}
+\ar@/_2em/[rdd]_{(\,\cdot\,) \otimes 1}
+& & \mathscr{A}
+\\ &
+\mathscr{X} \otimes \mathscr{E}
+\ar[ru]_{h}
+& \\ &
+\mathscr{X} \otimes \mathscr{E}'
+\ar@/_2em/[ruu]_{h'}
+\ar@{..>}[u]_-{\mathrm{id}_{\mathscr{X}} \otimes \tau}
+}
+\end{equation*}
+\end{quote}
+\end{definition}
+
+\begin{remark}\label{rem:unital}
+Since~$(\mathrm{id}_{\mathscr{X}} \otimes \tau)(x \otimes 1) = x \otimes \tau(1)$,
+    the left-hand triangle says precisely that~$\tau$ is unital,
+    provided~$\mathscr{X} \neq \{0\}$.
+(If~$\mathscr{X} = \{0\}$,
+    then~$\mathscr{X} \otimes \mathscr{E}' = \{0\}$,
+    so every ncp-map~$\tau \colon \mathscr{E}' \to \mathscr{E}$
+    makes the diagram commute;
+    for~$\mathscr{E}' = \mathbb{C}$ uniqueness then forces~$\mathscr{E} = \{0\}$,
+    so~$\tau$ is unital anyway.)
+\end{remark}
+
+\noindent
+The following analogue of the Paschke correspondence~(157\,IV)
+    is the key to Theorem~\ref{thm:main}.
+
+\begin{lemma}\label{lem:correspondence}
+\lean{WittrockSplit}{647}{splitsOffCommutant_of_wittrock}%
+Let~$h \colon \mathscr{X} \otimes \mathscr{E} \to \mathscr{A}$
+    be a Wittrock dilation of an ncp-map~$\varphi \colon \mathscr{X} \to \mathscr{A}$.
+Then~$e \mapsto h(\,\cdot \otimes e)$
+    is a bijection from~$[0,1]_{\mathscr{E}}$
+    onto the set~$[0,\varphi]_{\mathrm{ncp}}$
+    of ncp-maps~$\psi \colon \mathscr{X} \to \mathscr{A}$
+    for which~$\varphi - \psi$ is ncp (see~157\,II).
+\end{lemma}
+\begin{proof}
+For an effect~$e$ of~$\mathscr{E}$,
+    the ncp-maps~$h(\,\cdot \otimes e)$ and~$h(\,\cdot \otimes (1-e))$
+    sum to~$\varphi$,
+    so~$h(\,\cdot \otimes e) \in [0,\varphi]_{\mathrm{ncp}}$.
+Now let~$\psi \in [0,\varphi]_{\mathrm{ncp}}$ be given,
+    and consider the ncp-map
+\begin{equation*}
+    h' \colon\ \mathscr{X} \otimes \mathbb{C}^2
+    \,\cong\, \mathscr{X} \oplus \mathscr{X} \longrightarrow \mathscr{A},
+    \qquad
+    (x,y) \longmapsto \psi(x) + (\varphi-\psi)(y).
+\end{equation*}
+By Remark~\ref{rem:unital}, a map mediating for~$h'$ is unital,
+    and so of the form~$(\lambda,\lambda') \mapsto \lambda e + \lambda'(1-e)$
+    for an effect~$e$ of~$\mathscr{E}$;
+    and such a map mediates for~$h'$ precisely when~$h(\,\cdot \otimes e) = \psi$.
+So the existence and uniqueness of the mediating map for~$h'$
+    say exactly that there is a unique effect~$e$
+    with~$h(\,\cdot \otimes e) = \psi$.
+\end{proof}
+
+\section{Splitting off the commutant}
+\label{sec:split}
+
+\noindent
+Theorem~\ref{thm:main} will reduce the existence of a Wittrock dilation
+    to a property of the image~$\varrho(\mathscr{X})$ of a Paschke dilation,
+    which we study here on its own.
+Type~I factors always have it (Lemma~\ref{lem:typeI});
+    in general it forces the centre to be atomic,
+    and then reduces to the factor summands
+    (Proposition~\ref{prop:structure});
+    and within~$\mathscr{B}(\mathscr{K})$
+    only the direct sums of type~I factors have it
+    (Proposition~\ref{prop:BK}).
+
+\begin{definition}
+\lean{WittrockSplit}{448}{SplitsOffCommutant}%
+A von Neumann subalgebra~$\mathscr{R}$
+    of a von Neumann algebra~$\mathscr{P}$
+    \textbf{splits off its commutant} in~$\mathscr{P}$
+    if the map~$a \otimes t \mapsto a t$
+    extends to an nmiu-map
+    $\mathscr{R} \otimes \mathscr{R}^\square \to \mathscr{P}$,
+    where~$\mathscr{R}^\square$ is the commutant of~$\mathscr{R}$
+    in~$\mathscr{P}$.
+\end{definition}
+
+\begin{remark}\label{rem:quasi-split}
+For a factor~$\mathscr{R}$,
+    such an nmiu-map is injective:
+    the centre of~$\mathscr{R} \otimes \mathscr{R}^\square$
+    consists of the~$1 \otimes z$ with~$z$ central in~$\mathscr{R}^\square$
+    (see e.g.~\cite[Ch.~IV]{takesaki}),
+    and~$1 \otimes z \mapsto z$.
+So a factor~$\mathscr{R}$ splits off its commutant
+    iff~$a \otimes t \mapsto at$
+    extends to an nmiu-isomorphism of~$\mathscr{R} \otimes \mathscr{R}^\square$
+    onto the von Neumann algebra generated
+    by~$\mathscr{R}$ and~$\mathscr{R}^\square$.
+With~$\mathscr{P}$ acting on a Hilbert space,
+    this says that the inclusion~$\mathscr{R} \subseteq (\mathscr{R}^\square)'$
+    is quasi-split~\cite[Def.~1.4 and~(1.2)]{dl} (cf.~\cite{dal}).
+The split property of the pair~$(\mathscr{R}, \mathscr{R}^\square)$
+    \cite[\S4]{summers}
+    asks moreover for this isomorphism to be spatial.
+\end{remark}
+
+\begin{lemma}\label{lem:typeI}
+\lean{WittrockSplit}{901}{exists_typeI_factor_iso}%
+Let~$\mathscr{P}$ be a von Neumann algebra,
+    and let~$\mathscr{R} \subseteq \mathscr{P}$ be a von Neumann subalgebra
+    that is nmiu-isomorphic to~$\mathscr{B}(\mathscr{H})$
+    for some Hilbert space~$\mathscr{H}$
+    (that is, a type~I factor).
+Then~$a \otimes t \mapsto at$ extends to an nmiu-isomorphism
+    $\mathscr{R} \otimes \mathscr{R}^\square \cong \mathscr{P}$;
+    in particular, $\mathscr{R}$ splits off its commutant in~$\mathscr{P}$.%
+\lean{WittrockSplit}{937}{splitsOffCommutant_of_typeI_factor}
+\end{lemma}
+\begin{proof}
+If~$\mathscr{P} = \{0\}$ there is nothing to prove,
+    so assume otherwise.
+By~48\,VIII we may assume
+    that~$\mathscr{P}$ is a von Neumann algebra of operators
+    on a Hilbert space~$\mathscr{L}$.
+Then~$\mathscr{B}(\mathscr{H}) \cong \mathscr{R} \subseteq \mathscr{B}(\mathscr{L})$
+    is a non-zero nmiu-map,
+    so by~138\,II
+    it is of the form~$x \mapsto U^*(x \otimes 1)U$
+    for a Hilbert space~$\mathscr{K}$
+    and a unitary~$U \colon \mathscr{L} \to \mathscr{H} \otimes \mathscr{K}$.
+Replacing~$\mathscr{P}$ by~$U \mathscr{P} U^*$,
+    we may assume that~$\mathscr{P} \subseteq \mathscr{B}(\mathscr{H} \otimes \mathscr{K})$
+    and~$\mathscr{R} = \mathscr{B}(\mathscr{H}) \otimes 1$.
+As the commutant of~$\mathscr{B}(\mathscr{H}) \otimes 1$
+    in~$\mathscr{B}(\mathscr{H} \otimes \mathscr{K})$
+    is~$1 \otimes \mathscr{B}(\mathscr{K})$,
+    we have~$\mathscr{R}^\square = 1 \otimes \mathscr{N}$
+    for a von Neumann algebra~$\mathscr{N}$ of operators on~$\mathscr{K}$.
+
+We claim that~$\mathscr{P}$ is generated
+    by~$\mathscr{B}(\mathscr{H}) \otimes 1$ and~$1 \otimes \mathscr{N}$.
+Let~$(e_{ij})_{i,j}$ be the matrix units of~$\mathscr{B}(\mathscr{H})$
+    for an orthonormal basis of~$\mathscr{H}$,
+    and let~$z \in \mathscr{P}$ be given.
+For all~$i$ and~$j$,
+    the ultraweakly convergent sum
+\begin{equation*}
+    z_{ij} \ := \ \sum_k \, (e_{ki} \otimes 1)\, z\, (e_{jk} \otimes 1)
+\end{equation*}
+    lies in~$\mathscr{P}$
+    and commutes with every~$e_{ab} \otimes 1$
+    (both~$(e_{ab} \otimes 1)\, z_{ij}$ and~$z_{ij}\, (e_{ab} \otimes 1)$
+    equal~$(e_{ai} \otimes 1)\, z\, (e_{jb} \otimes 1)$),
+    so~$z_{ij} \in 1 \otimes \mathscr{N}$.
+Since~$(e_{ij} \otimes 1)\, z_{ij} = (e_{ii} \otimes 1)\, z\, (e_{jj} \otimes 1)$,
+    we get~$z = \sum_i \sum_j (e_{ij} \otimes 1)\, z_{ij}$,
+    proving the claim.
+By~111\,VII and~114\,II,
+    $x \otimes n \mapsto x \otimes n$ thus extends to an nmiu-isomorphism
+    $\mathscr{B}(\mathscr{H}) \otimes \mathscr{N} \cong \mathscr{P}$,
+    which is the isomorphism we're after
+    once~$\mathscr{N}$ is identified with~$\mathscr{R}^\square$
+    via~$n \mapsto 1 \otimes n$.
+\end{proof}
+
+\begin{proposition}\label{prop:structure}
+\lean{WittrockSplit}{2024}{splitsOffCommutant_iff_centre_corners}%
+A von Neumann subalgebra~$\mathscr{R}$
+    of a von Neumann algebra~$\mathscr{P}$
+    splits off its commutant in~$\mathscr{P}$
+    if and only if
+    its centre is nmiu-isomorphic to~$\ell^\infty(I)$ for some set~$I$,
+    and~$c\mathscr{R}$ splits off its commutant in~$c\mathscr{P}c$
+    for every minimal central projection~$c$ of~$\mathscr{R}$.
+\lean{WittrockSplit}{1715}{splitsOffCommutant_of_atomicTypeI}%
+In particular,
+    every von Neumann subalgebra of~$\mathscr{P}$
+    that is a direct sum of type~I factors
+    splits off its commutant in~$\mathscr{P}$.
+\end{proposition}
+\begin{proof}
+Note that a central projection~$c$ of~$\mathscr{R}$
+    is central in~$\mathscr{R}^\square$ as well,
+    and that~$c\mathscr{R}^\square$
+    is the commutant of~$c\mathscr{R}$ in~$c\mathscr{P}c$.
+
+Suppose~$\mathscr{R}$ splits off its commutant,
+    and let~$\mu \colon \mathscr{R} \otimes \mathscr{R}^\square \to \mathscr{P}$
+    be the nmiu-map extending~$a \otimes t \mapsto at$.
+The centre~$\mathscr{Z}$ of~$\mathscr{R}$
+    lies both in~$\mathscr{R}$ and in~$\mathscr{R}^\square$,
+    so restricting~$\mu$ to~$\mathscr{Z} \otimes \mathscr{Z}$
+    gives an nmiu-map~$\mathscr{Z} \otimes \mathscr{Z} \to \mathscr{P}$
+    with~$a \otimes b \mapsto ab$,
+    whose range lies in the ultraweakly closed~$\mathscr{Z}$.
+Hence~$\mathscr{Z}$ is duplicable by~128\,XI,
+    and so nmiu-isomorphic to some~$\ell^\infty(I)$ by~127\,III.
+For a minimal central projection~$c$ of~$\mathscr{R}$,
+    restricting~$\mu$ to~$c\mathscr{R} \otimes c\mathscr{R}^\square$
+    gives an nmiu-map into~$c\mathscr{P}c$
+    extending~$a \otimes t \mapsto at$,
+    so~$c\mathscr{R}$ splits off its commutant in~$c\mathscr{P}c$.
+
+Conversely,
+    let~$(c_i)_i$ be the minimal central projections of~$\mathscr{R}$,
+    so that~$\sum_i c_i = 1$,
+    $\mathscr{R} = \bigoplus_i c_i \mathscr{R}$
+    and~$\mathscr{R}^\square = \bigoplus_i c_i \mathscr{R}^\square$.
+Under~$\mathscr{R} \otimes \mathscr{R}^\square
+    \cong \bigoplus_{i,j} c_i \mathscr{R} \otimes c_j \mathscr{R}^\square$
+    (see~117\,III),
+    the map~$a \otimes t \mapsto at$
+    vanishes on the summands with~$i \neq j$,
+    and on the summand with~$i = j$
+    it extends to an nmiu-map~$\mu_i \colon
+        c_i \mathscr{R} \otimes c_i \mathscr{R}^\square \to c_i \mathscr{P} c_i$,
+    as~$c_i \mathscr{R}$ splits off its commutant in~$c_i \mathscr{P} c_i$.
+So it extends to the normal map~$(z_{ij})_{i,j} \mapsto \sum_i \mu_i(z_{ii})$,
+    which is nmiu,
+    as the~$c_i$ are orthogonal with~$\sum_i c_i = 1$.
+The last claim follows from Lemma~\ref{lem:typeI}.
+\end{proof}
+
+\begin{proposition}\label{prop:BK}
+\lean{WittrockBK}{1064}{splitsOffCommutant_bh_iff}%
+A von Neumann subalgebra~$\mathscr{R}$ of~$\mathscr{B}(\mathscr{K})$
+    splits off its commutant in~$\mathscr{B}(\mathscr{K})$
+    if and only if~$\mathscr{R}$ is a direct sum of type~I factors.
+\end{proposition}
+\begin{proof}
+That direct sums of type~I factors split off their commutant
+    is part of Proposition~\ref{prop:structure}.
+For the converse,
+    suppose that~$\mathscr{R}$ splits off its commutant.
+By Proposition~\ref{prop:structure},
+    $\mathscr{R}$ is the direct sum of the factors~$c\mathscr{R}$,
+    where~$c$ ranges over the minimal central projections of~$\mathscr{R}$,
+    and each~$c\mathscr{R}$ splits off its commutant
+    in~$c\,\mathscr{B}(\mathscr{K})\,c = \mathscr{B}(c\mathscr{K})$.
+So we may assume that~$\mathscr{R}$ is a factor.
+Then~$\mathscr{R}^\square$ is the commutant~$\mathscr{R}'$,
+    and the nmiu-map~$\mathscr{R} \otimes \mathscr{R}' \to \mathscr{B}(\mathscr{K})$
+    extending~$a \otimes t \mapsto at$
+    is injective by Remark~\ref{rem:quasi-split}.
+Its range is a von Neumann subalgebra
+    containing~$\mathscr{R}$ and~$\mathscr{R}'$,
+    and so it is all of~$\mathscr{B}(\mathscr{K})$
+    by the double commutant theorem,
+    as~$\mathscr{R}' \cap \mathscr{R}'' = \mathbb{C}$.
+Hence~$\mathscr{R} \otimes \mathscr{R}' \cong \mathscr{B}(\mathscr{K})$
+    is a type~I factor,
+    and hence so is its tensor factor~$\mathscr{R}$.
+(For this standard fact, see e.g.~\cite[Ch.~V]{takesaki}.)
+\end{proof}
+
+\noindent
+Finally, we rephrase splitting off for the image of an nmiu-map
+    in terms of its domain,
+    which is the form in which it enters Theorem~\ref{thm:main}.
+
+\begin{lemma}\label{lem:reduction}
+\lean{WittrockSplit}{495}{splitsOffCommutant_range_iff}%
+Let~$\varrho \colon \mathscr{X} \to \mathscr{P}$ be an nmiu-map.
+Then~$\varrho(\mathscr{X})$ splits off its commutant in~$\mathscr{P}$
+    if and only if~$x \otimes t \mapsto \varrho(x)\, t$
+    extends to an nmiu-map
+    $\mathscr{X} \otimes \varrho(\mathscr{X})^\square \to \mathscr{P}$.
+\end{lemma}
+\begin{proof}
+If~$\varrho(\mathscr{X})$ splits off its commutant,
+    compose the extension of~$a \otimes t \mapsto at$
+    with~$\varrho \otimes \mathrm{id} \colon
+        \mathscr{X} \otimes \varrho(\mathscr{X})^\square
+        \to \varrho(\mathscr{X}) \otimes \varrho(\mathscr{X})^\square$.
+Conversely,
+    let~$m$ be an nmiu-map extending~$x \otimes t \mapsto \varrho(x)\, t$.
+The kernel of~$\varrho$ is~$(1-c)\mathscr{X}$
+    for a central projection~$c$ of~$\mathscr{X}$,
+    so~$\varrho$ restricts to an nmiu-isomorphism
+    $c\mathscr{X} \cong \varrho(\mathscr{X})$;
+    let~$j \colon \varrho(\mathscr{X}) \to \mathscr{X}$
+    be its inverse
+    followed by the inclusion~$c\mathscr{X} \subseteq \mathscr{X}$.
+Then~$m \circ (j \otimes \mathrm{id})$
+    is a normal $*$-homomorphism
+    that extends~$a \otimes t \mapsto a t$,
+    and it is unital, as~$m(c \otimes 1) = \varrho(c) = 1$.
+\end{proof}
+
+\section{When Wittrock dilations exist}
+
+\begin{theorem}\label{thm:main}
+\lean{WittrockSplit}{872}{wittrock_iff_splitsOffCommutant}%
+Let~$\varrho \colon \mathscr{X} \to \mathscr{P}$
+    and~$h \colon \mathscr{P} \to \mathscr{A}$
+    form a Paschke dilation of an ncp-map~$\varphi \colon \mathscr{X} \to \mathscr{A}$
+    (see~140\,II; one exists by~154\,III).
+Then~$\varphi$ has a Wittrock dilation
+    if and only if~$\varrho(\mathscr{X})$ splits off its commutant in~$\mathscr{P}$.
+\lean{WittrockSplit}{859}{isWittrockDilationOf_of_splitsOffCommutant}%
+In that case,
+    $x \otimes t \mapsto h(\varrho(x)\, t)$
+    extends to a Wittrock dilation
+    $\mathscr{X} \otimes \varrho(\mathscr{X})^\square \to \mathscr{A}$
+    of~$\varphi$.
+\end{theorem}
+\begin{proof}
+\emph{If~$\varrho(\mathscr{X})$ splits off its commutant.}
+Let~$m \colon \mathscr{X} \otimes \varrho(\mathscr{X})^\square \to \mathscr{P}$
+    be the nmiu-map extending~$x \otimes t \mapsto \varrho(x)\, t$
+    (Lemma~\ref{lem:reduction}).
+Then~$h \circ m$ is ncp,
+    and~$h(m(x \otimes 1)) = h(\varrho(x)) = \varphi(x)$;
+    it remains to check the universal property.
+Let~$\mathscr{E}'$ and~$h'$ be as in Definition~\ref{def:wittrock}.
+By~140\,II there is a unique ncp-map~$\sigma \colon
+    \mathscr{X} \otimes \mathscr{E}' \to \mathscr{P}$
+    with~$\sigma(x \otimes 1) = \varrho(x)$ and~$h \circ \sigma = h'$.
+By~139\,III,
+    $\sigma((x \otimes 1)\, z\, (y \otimes 1))
+        = \varrho(x)\, \sigma(z)\, \varrho(y)$;
+    in particular,
+    as~$(x \otimes 1)(1 \otimes e) = (1 \otimes e)(x \otimes 1)$,
+    the element~$\tau(e) := \sigma(1 \otimes e)$
+    lies in~$\varrho(\mathscr{X})^\square$,
+    and~$\sigma(x \otimes e) = \varrho(x)\, \tau(e) = m(x \otimes \tau(e))$.
+So~$\tau \colon \mathscr{E}' \to \varrho(\mathscr{X})^\square$ is an ncpu-map
+    with~$\sigma = m \circ (\mathrm{id} \otimes \tau)$,
+    as both sides are normal and agree on elementary tensors;
+    hence~$h \circ m \circ (\mathrm{id} \otimes \tau) = h'$,
+    and~$\tau$ makes the diagram commute.
+If~$\tilde{\tau}$ does too,
+    then~$\tilde{\tau}$ is unital (Remark~\ref{rem:unital}),
+    so~$m \circ (\mathrm{id} \otimes \tilde{\tau})$
+    has the two properties that determine~$\sigma$;
+    evaluating at~$1 \otimes e$ gives~$\tilde{\tau} = \tau$.
+
+\emph{If~$\varphi$ has a Wittrock dilation.}
+Let~$h_W \colon \mathscr{X} \otimes \mathscr{E} \to \mathscr{A}$
+    be one,
+    and let~$\sigma \colon \mathscr{X} \otimes \mathscr{E} \to \mathscr{P}$
+    be the ncp-map from~140\,II
+    with~$\sigma(x \otimes 1) = \varrho(x)$ and~$h \circ \sigma = h_W$.
+We'll show that~$\sigma$ is of the form~$x \otimes e \mapsto \varrho(x)\, \tau(e)$
+    for an nmiu-isomorphism~$\tau \colon \mathscr{E} \to \varrho(\mathscr{X})^\square$.
+As before,
+    $\tau(e) := \sigma(1 \otimes e)$ defines an ncpu-map
+    $\tau \colon \mathscr{E} \to \varrho(\mathscr{X})^\square$
+    with~$\sigma(x \otimes e) = \varrho(x)\, \tau(e)$,
+    so that~$h_W(\,\cdot \otimes e) = h(\tau(e)\, \varrho(\,\cdot\,))$.
+Since~$e \mapsto h_W(\,\cdot \otimes e)$
+    is a bijection~$[0,1]_{\mathscr{E}} \to [0,\varphi]_{\mathrm{ncp}}$
+    by Lemma~\ref{lem:correspondence},
+    and~$t \mapsto h(t\, \varrho(\,\cdot\,))$
+    is a bijection~$[0,1]_{\varrho(\mathscr{X})^\square} \to [0,\varphi]_{\mathrm{ncp}}$
+    by~157\,IV,
+    $\tau$ maps~$[0,1]_{\mathscr{E}}$
+    bijectively onto~$[0,1]_{\varrho(\mathscr{X})^\square}$.
+
+Being linear, $\tau$ thus maps the extreme points of~$[0,1]_{\mathscr{E}}$,
+    which are its projections,
+    onto those of~$[0,1]_{\varrho(\mathscr{X})^\square}$,
+    and so~$\tau$ is multiplicative by~99\,II.
+Moreover, $\tau$ is surjective, as effects span~$\varrho(\mathscr{X})^\square$.
+For injectivity it suffices to consider
+    a self-adjoint~$a \in \mathscr{E}$ with~$\tau(a) = 0$:
+    then~$\tau(\varepsilon a_+) = \tau(\varepsilon a_-)$
+    for~$\varepsilon > 0$ so small that~$\varepsilon a_\pm$ are effects,
+    so~$a_+ = a_-$, and thus~$a = 0$.
+Hence~$\tau$ is an nmiu-isomorphism by~48\,VI.
+Now~$\sigma \circ (\mathrm{id} \otimes \tau^{-1})$
+    is a normal map extending~$x \otimes t \mapsto \varrho(x)\, t$,
+    and hence an nmiu-map by~114\,I,
+    as~$(x,t) \mapsto \varrho(x)\, t$ is miu-bilinear;
+    so~$\varrho(\mathscr{X})$ splits off its commutant by Lemma~\ref{lem:reduction}.
+\end{proof}
+
+\begin{corollary}\label{cor:BH}
+\lean{Wittrock}{1424}{isWittrockDilationOf_paschke}%
+Let~$\varrho \colon \mathscr{B}(\mathscr{H}) \to \mathscr{P}$
+    and~$h \colon \mathscr{P} \to \mathscr{A}$
+    form a Paschke dilation of an ncp-map
+    $\varphi \colon \mathscr{B}(\mathscr{H}) \to \mathscr{A}$.
+Then~$x \otimes t \mapsto \varrho(x)\, t$
+    extends to an nmiu-isomorphism
+\begin{equation*}
+    \mathscr{B}(\mathscr{H}) \otimes \varrho(\mathscr{B}(\mathscr{H}))^\square
+    \ \cong\ \mathscr{P},
+\end{equation*}
+    and~$h$, composed with this isomorphism,
+    is a Wittrock dilation of~$\varphi$.
+\lean{Wittrock}{259}{isWittrockDilationOf_stdFilter}%
+For example,
+    for positive~$p \in \mathscr{A}$,
+    the ncp-map~$\lambda \mapsto \lambda p \colon \mathbb{C} \to \mathscr{A}$
+    has as Wittrock dilation the standard filter for~$p$ (see~98\,I),
+\begin{equation*}
+    c_p \colon
+    \lceil p \rceil \mathscr{A} \lceil p \rceil
+    \longrightarrow \mathscr{A},
+    \qquad
+    c_p(x) \ = \ \sqrt{p}\, x\, \sqrt{p},
+\end{equation*}
+    where~$\lceil p \rceil$ is the ceiling of~$p$,
+    and~$\mathbb{C} \otimes \lceil p \rceil \mathscr{A} \lceil p \rceil$
+    is identified with~$\lceil p \rceil \mathscr{A} \lceil p \rceil$.
+\end{corollary}
+\begin{proof}
+We may assume~$\mathscr{P} \neq \{0\}$.
+Then~$\varrho$ is injective, as~$\mathscr{B}(\mathscr{H})$ is a factor,
+    so~$\varrho(\mathscr{B}(\mathscr{H}))$ is a type~I factor,
+    and the first claim follows from Lemma~\ref{lem:typeI}.
+The second claim then follows from Theorem~\ref{thm:main}.
+
+For~$\mathscr{H} = \mathbb{C}$
+    the commutant of~$\varrho(\mathbb{C})$ is~$\mathscr{P}$ itself,
+    and the isomorphism above is the identification
+    of~$\mathbb{C} \otimes \mathscr{P}$ with~$\mathscr{P}$,
+    so the Paschke dilation of~$\lambda \mapsto \lambda p$
+    is its Wittrock dilation.
+The unit map~$u \colon \mathbb{C} \to \lceil p \rceil \mathscr{A} \lceil p \rceil$
+    is nmiu,
+    so~$(\lceil p \rceil \mathscr{A} \lceil p \rceil, u, \mathrm{id})$
+    is a Paschke dilation of~$u$ by item~1 of~140\,X;
+    as~$c_p$ is a filter (169\,X),
+    $(\lceil p \rceil \mathscr{A} \lceil p \rceil, u, c_p)$
+    is a Paschke dilation of~$c_p \circ u$ by item~1 of~169\,XI,
+    and~$c_p(u(\lambda)) = \lambda p$.
+\end{proof}
+
+\begin{corollary}\label{cor:typeI}
+\lean{WittrockSplit}{1729}{exists_wittrockDilation_of_atomicTypeI}%
+Every ncp-map~$\varphi \colon \mathscr{X} \to \mathscr{A}$
+    on a direct sum~$\mathscr{X}$ of type~I factors
+    has a Wittrock dilation.
+\end{corollary}
+\begin{proof}
+Let~$\varrho \colon \mathscr{X} \to \mathscr{P}$
+    and~$h \colon \mathscr{P} \to \mathscr{A}$
+    form a Paschke dilation of~$\varphi$.
+As in the proof of Lemma~\ref{lem:reduction},
+    $\varrho(\mathscr{X}) \cong c\mathscr{X}$
+    for a central projection~$c$ of~$\mathscr{X}$,
+    so~$\varrho(\mathscr{X})$ is a direct sum of type~I factors as well.
+Apply Proposition~\ref{prop:structure} and Theorem~\ref{thm:main}.
+\end{proof}
+
+\begin{corollary}\label{cor:centre}
+\lean{WittrockSplit}{1025}{centre_linf_of_wittrock}%
+Let~$\varrho \colon \mathscr{X} \to \mathscr{P}$
+    and~$h \colon \mathscr{P} \to \mathscr{A}$
+    form a Paschke dilation of an ncp-map~$\varphi \colon \mathscr{X} \to \mathscr{A}$.
+If~$\varphi$ has a Wittrock dilation,
+    then the centre of~$\varrho(\mathscr{X})$
+    is nmiu-isomorphic to~$\ell^\infty(I)$ for some set~$I$.
+\lean{WittrockSplit}{1344}{not_wittrock_of_linfty}%
+In particular,
+    if the centre of~$\mathscr{X}$ has no minimal projections
+    (as for~$\mathscr{X} = L^\infty[0,1]$),
+    then no non-zero ncp-map~$\mathscr{X} \to \mathscr{A}$
+    has a Wittrock dilation.
+\end{corollary}
+\begin{proof}
+By Theorem~\ref{thm:main}, $\varrho(\mathscr{X})$ splits off its commutant in~$\mathscr{P}$,
+    so the first claim follows from Proposition~\ref{prop:structure}.
+If~$\varphi \neq 0$,
+    then~$\varrho(\mathscr{X}) \cong c\mathscr{X}$
+    for a non-zero central projection~$c$ of~$\mathscr{X}$
+    (as in the proof of Lemma~\ref{lem:reduction}),
+    and the centre of~$c\mathscr{X}$ is~$c$ times that of~$\mathscr{X}$.
+So if the centre of~$\mathscr{X}$ has no minimal projections,
+    then neither has the non-zero centre of~$\varrho(\mathscr{X})$,
+    which is therefore not of the form~$\ell^\infty(I)$.
+\end{proof}
+
+\begin{corollary}\label{cor:stinespring}
+\lean{WittrockBK}{1082}{wittrock_iff_atomicTypeI_stinespring}%
+Let~$\varphi \colon \mathscr{X} \to \mathscr{B}(\mathscr{H})$
+    be an ncp-map
+    with minimal normal Stinespring dilation~$(\mathscr{K}, \varrho, V)$
+    (see~139\,I).
+Then~$\varphi$ has a Wittrock dilation
+    if and only if~$\varrho(\mathscr{X})$
+    is a direct sum of type~I factors.
+\lean{WittrockBK}{1107}{not_wittrock_of_factor_not_typeI}%
+In particular,
+    for a factor~$\mathscr{X}$ that is not of type~I,
+    no non-zero ncp-map~$\mathscr{X} \to \mathscr{B}(\mathscr{H})$
+    has a Wittrock dilation.
+\end{corollary}
+\begin{proof}
+By~140\,III,
+    $\varrho \colon \mathscr{X} \to \mathscr{B}(\mathscr{K})$
+    and~$\mathrm{ad}_V \colon \mathscr{B}(\mathscr{K}) \to \mathscr{B}(\mathscr{H})$
+    form a Paschke dilation of~$\varphi$,
+    so the first claim follows from Theorem~\ref{thm:main}
+    and Proposition~\ref{prop:BK}.
+If~$\mathscr{X}$ is a factor and~$\varphi \neq 0$,
+    then~$\varrho$ is injective,
+    so~$\varrho(\mathscr{X}) \cong \mathscr{X}$.
+\end{proof}
+
+\begin{thebibliography}{Wes19b}
+\raggedright
+\bibitem[DL83]{dal}
+C.~D'Antoni and R.~Longo.
+\newblock Interpolation by type~{I} factors and the flip automorphism.
+\newblock \emph{J.\ Funct.\ Anal.}, 51(3):361--371, 1983.
+\bibitem[DL84]{dl}
+S.~Doplicher and R.~Longo.
+\newblock Standard and split inclusions of von {N}eumann algebras.
+\newblock \emph{Invent.\ Math.}, 75(3):493--536, 1984.
+\bibitem[Sum09]{summers}
+S.\,J.~Summers.
+\newblock Subsystems and independence in relativistic microscopic physics.
+\newblock \emph{Stud.\ Hist.\ Philos.\ Mod.\ Phys.}, 40(2):133--141, 2009.
+\newblock arXiv:0812.1517.
+\bibitem[Tak79]{takesaki}
+M.~Takesaki.
+\newblock \emph{Theory of Operator Algebras~I}.
+\newblock Springer, 1979.
+\bibitem[Wes19a]{bram}
+A.\,A.~Westerbaan.
+\newblock \emph{The Category of Von Neumann Algebras}.
+\newblock PhD thesis, Radboud University, 2019.
+\newblock arXiv:1804.02203.
+\bibitem[Wes19b]{bas}
+B.\,E.~Westerbaan.
+\newblock \emph{Dagger and Dilation in the Category of Von Neumann Algebras}.
+\newblock PhD thesis, Radboud University, 2019.
+\newblock arXiv:1803.01911.
+\end{thebibliography}
+
+\end{document}
