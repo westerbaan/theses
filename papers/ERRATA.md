@@ -21,6 +21,17 @@ One section per paper (tag as in `lean/Papers/README.md`); one entry per point, 
 * **OAP 22** (`lem:forcing`, first.tex:727, Lemma), proof, first line — typo:
   "Since `a ≤ a'` and `b ≤ b'`" should read "Since `a ≤ b` and `a' ≤ b'`".
   Statement unaffected (`Papers.OAP.oap22_forcing`).
+* **OAP 43** (`thm:multisnormal`, first.tex:1525, Theorem), proof — gap.
+  The theorem claims that `⋁_{s∈S} b·s` *exists*; the printed chain
+  `(b ⋁ ⌈b⌉^⊥)·⋁S = ⋁_s (b ⋁ ⌈b⌉^⊥)·s ≤ ⋁_s b·s ⋁ ⋁_{s'} ⌈b⌉^⊥·s' ≤ …`
+  already uses `⋁_s b·s` (and `⋁_{s'} ⌈b⌉^⊥·s'`) as existing, so the forcing
+  argument only shows the two agree *once both exist*.  (The proof also
+  reuses the name `b'` for `b ⋁ ⌈b⌉^⊥`, clashing with the `b'` of the
+  statement.)  Repair: for an upper bound `u` of `b·S` put
+  `u' = u ∧ b·⋁S` (Theorem 37); then `u' ≤ ⌈b⌉`, so `u' ⊥ ⌈b⌉^⊥·⋁S`, and
+  `b·s ⋁ ⌈b⌉^⊥·s ≤ u' ⋁ ⌈b⌉^⊥·⋁S` for all `s` gives
+  `b·⋁S ⋁ ⌈b⌉^⊥·⋁S ≤ u' ⋁ ⌈b⌉^⊥·⋁S`, whence `b·⋁S ≤ u' ≤ u`.  Statement
+  unaffected.  Lean: `Papers.OAP.oap43_1` (via `isLUB_mul_right`).
 
 ## EJA — *Pure Maps between Euclidean Jordan Algebras* (arXiv:1805.11496, `1805.11496/main.tex`)
 

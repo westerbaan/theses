@@ -222,3 +222,67 @@ Pitfalls met:
 Flags for the later files (from the plan above): OAP 66 omits "compact";
 OAP 70's proof says "join" for the meet of `B`; OAP 55's "straightforward to
 check" is unverified; OAP 64 (Yosida) is not in Mathlib and is the long pole.
+
+### `FloorCeiling.lean` done (2026-09-26)
+
+OAP 27–43 all formalised, 1,285 lines, `scripts/lean1.sh` exit 0, no
+`sorry`, no warnings; 31 rows in `docs/audit/papers-oap.csv`.  Nothing false
+as printed.  One proof gap filed in `../papers/ERRATA.md` (OAP 43: the printed
+chain uses `⋁_s b·s` before its existence is shown; repaired with the meet of
+OAP 37).  OAP 42: only the first claim (ω-complete EM ⇒ effect divisoid, the
+tree's `EffectDivisoid`) is formalised; the converse is cited.
+`FloorCeiling.lean` imports `Theses.B.Eff.StatesPredicates` (for
+`EffectDivisoid`; a 14 MB olean).  **The lead must build
+`Papers.OAP.FloorCeiling` before `Boolean.lean` can import it.**
+
+Infrastructure for §6 and later (namespace `Papers.OAP`):
+
+* Sums: `HasOSum` (OAP 27, any index type), `psum x N`, `SeqSummable x`,
+  `HasSeqSum x s`, `seqSum x`, `oap27_nat` (the two agree on `ℕ`),
+  `exists_hasSeqSum`, `psum_le_psum` (termwise domination), `HasSeqSum.mono`,
+  `HasSeqSum.oplus`, `isLUB_oplus_of_monotone` (sups of increasing sequences
+  add), `psum_mul_left/right`, `isNSum_of_le_psum`,
+  `eq_zero_of_le_seqSummable` (a common lower bound of a summable sequence is
+  `0`: OAP 26.1).
+* Ceilings/floors (`[OmegaComplete M]`): `ceil`, `floor`, `ceil_idem`,
+  `le_ceil`, `ceil_le` (least idempotent above), `ceil_mono`, `ceil_of_idem`,
+  `floor_idem`, `floor_le`, `le_floor`, `floor_of_idem`,
+  `ceil_eq_orth_floor`, `oap35_3` (duality), `oap34` (`ab = 0 ⇒ a⌈b⌉ = 0`),
+  `pow_orth_comm`, `mul_orth_pow_comm`, `eq_one_of_le_of_orth_le`.
+* Lattice: `emInf`, `emSup = (a^⊥ ∧ b^⊥)^⊥`, `isGLB_emInf`, `isLUB_emSup`,
+  `emInf_le_left/right`, `le_emInf`, `le_emSup_left/right`, `emSup_le`;
+  `emLattice M` is a `Lattice M` **def** (built on `eaPartialOrder`, so its
+  `≤` is the scoped one) — not an instance.
+* Intervals: `oap38_sup/inf` (sup/inf in `Set.Icc a b` with the subtype order
+  ⇔ in `M`), `oap39_1/2` (`a ⋎ ·` preserves and reflects sup/inf).
+* Division: `odiv a b` (= `a/b`), `oap41_1..6`, `odiv_mono`, `odiv_le_ceil`,
+  `le_odiv_mul`, `mulRightIso b`, `mulLeftIso b : Set.Iic (ceil b) ≃o
+  Set.Iic b`, the mirror division `ldiv b a` (= `b\a`) with `mul_ldiv`,
+  `ldiv_mul`, `ldiv_self`.
+* Normality (OAP 43): `isLUB_mul_right/left`, `isGLB_mul_right/left`
+  (non-empty `S`), `oap43_1/2` for `b·S·b'`.
+* **Opposite effect monoid** `EMOp M` (type synonym; `EffectMonoid` and
+  `OmegaComplete` instances, reversed product).  Its order, sums and
+  complements are `M`'s by definition, so the mirror image of a lemma is
+  `foo (M := EMOp M) …` used at type `M` (works by `exact`, defeq); for
+  `ceil` use `ceil_op` (propositional).  This is how every left/right pair in
+  §5 is obtained; §6–7 can do the same.
+
+Pitfalls met:
+
+* On a type synonym give **only** the `EffectMonoid` instance (build the
+  effect algebra inside with `letI`): a separate `EffectAlgebra (EMOp M)`
+  instance makes `OmegaComplete (EMOp M)` unfindable, because the two
+  instance paths agree only after unfolding `EffectMonoid.ofBiadditive`
+  (not reducible).
+* `obtain ⟨y, hy, -⟩ := y'` on a subtype element silently clears every
+  hypothesis mentioning `y'`; name the component instead of `-`.
+* `rw [← e]` with `e : … = a` rewrites *every* `a`, including the arguments
+  of `infSeq a b`; use `show` + `exact` or `le_of_le_of_eq`.
+
+Hints for `Boolean.lean` (OAP 44–50): OAP 45's `p·q = p ∧ q` is
+`isGLB_emInf` plus `emul_eq_of_le`; complements in `P(M)` are `orth`
+(`idem_orth`).  OAP 46 (`P(M)` ω-complete) will want `ceil`/`floor` and
+their extremal properties (`ceil_le`, `le_floor`); derive the route from the
+print's own proof, not from this note.  OAP 50 uses OAP 24 (Basic), OAP 26 (Basic) and OAP 43 (`isLUB_mul_left/right`,
+`oap43_1`).
