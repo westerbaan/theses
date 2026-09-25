@@ -46,11 +46,13 @@ def modules():
     Without it `AxiomCheck` appears to depend on nothing in the tree and sorts
     first in any rebuild, ahead of the very modules it exists to check.
     """
-    out = {str(p.relative_to(LEAN).with_suffix("")).replace("/", "."): p
-           for p in sorted((LEAN / "Theses").rglob("*.lean"))}
-    root = LEAN / "Theses.lean"
-    if root.exists():
-        out["Theses"] = root
+    out = {}
+    for lib in ("Theses", "Papers"):
+        out.update({str(p.relative_to(LEAN).with_suffix("")).replace("/", "."): p
+                    for p in sorted((LEAN / lib).rglob("*.lean"))})
+        root = LEAN / f"{lib}.lean"
+        if root.exists():
+            out[lib] = root
     return out
 
 
@@ -124,7 +126,7 @@ def dirty():
     but this working tree, and possibly for a half-written file.  They are reported
     and skipped; the next run picks them up once the work is committed.
     """
-    r = subprocess.run(["git", "status", "--porcelain", "--", "Theses"],
+    r = subprocess.run(["git", "status", "--porcelain", "--", "Theses", "Papers", "Theses.lean", "Papers.lean"],
                        cwd=LEAN, capture_output=True, text=True)
     out = set()
     for line in r.stdout.splitlines():

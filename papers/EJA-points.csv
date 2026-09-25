@@ -1,0 +1,55 @@
+tag|num|kind|label|loc|start
+EJA|1|Definition||main.tex:194|A \emph{Jordan algebra} $(E,*,1)$ is a real unital commutative (possibly non-associative) algebra satisfying the \emph{Jordan identity}: $(a
+EJA|2|Note||main.tex:205|In the original (and frequently used) definition, one additionally requires a Euclidean Jordan algebra to be finite dimensional.
+EJA|3|Example||main.tex:212|Let $F$ be the field of real numbers, the field of complex numbers, or the division algebra of the quaternions. Let $A\in M_n(F)$ be an $n\t
+EJA|4|Example||main.tex:227|For any real Hilbert space $H$ (possibly infinite-dimensional), the set~$E:=H\oplus \R$ is a Euclidean Jordan Algebra
+EJA|5|Definition||main.tex:244|Let $E$ be an EJA. We call $a\in E$ \emph{positive} (and write $a\geq 0$) when there exists a~$b\in E$ such that~$a=b*b$. We write $a\geq c$
+EJA|6|Definition||main.tex:262|A positive unital linear map~$\omega\colon E\rightarrow \R$ is called a \emph{state} on~$E$. An \emph{effect} is a positive
+EJA|7|Theorem|theor:chu|main.tex:291|Let $(E,*,1)$ be an EJA. Sums of positive elements are again positive, so that the set of positive elements forms a \emph{cone}. Furthermore
+EJA|8|Definition||main.tex:308|For each $a\in E$ let $L_a: E\rightarrow E$ be the left-multiplication operator of $a$, that is: $L(a)b:= a*b$. The seemingly oddly named bu
+EJA|9|Proposition|prop:quadraticrep|main.tex:323|For any EJA~$E$ and~$a,b,c \in E$, the following hold. \item $Q_1 = \id$. \item $Q_a1 = a^2$.
+EJA|10|Definition||main.tex:356|We call an element $p$ of an EJA an \emph{idempotent} iff $p^2:=p*p=p$. An idempotent is automatically positive and below the identity. We c
+EJA|11|Proposition|prop:EJAidempotent|main.tex:365|Let $p$ be an idempotent. Then $Q_p$ is idempotent, and furthermore for $0\leq a \leq 1$ we have
+EJA|12|Proposition||main.tex:402|Let $a$ be an element of an EJA. Then there exists a number~$n$, real numbers~$\lambda_1, \ldots, \lambda_n$ and orthogonal atomic
+EJA|13|Proposition|prop:EJAceilfloor|main.tex:418|For an effect~$a \in E$ of an EJA~$E$ (i.e.~$0 \leq a \leq 1$), we can find~$\lambda_i>0$ and orthogonal atomic idempotents~$p_i$ with~$a=\s
+EJA|14|Definition||main.tex:451|Let $q\in E$ be an effect. A \emph{corner} for $q$ is a positive subunital linear map $\pi\colon E\rightarrow \{E\lvert q\}$ such that $\pi(
+EJA|15|Note||main.tex:458|The name of `corner' is inspired by the appearance of these maps when considering matrix algebras, in which case they can be arranged to pro
+EJA|16|Definition||main.tex:469|Let $q\in E$ be an effect. A \emph{filter} for $q$ is a positive subunital linear map $\xi\colon E_q\rightarrow E$ such that $\xi(1)\leq q$ 
+EJA|17|Note||main.tex:476|The name `filter' comes from the function of these maps in quantum theory as describing the act of updating the action of effects based on p
+EJA|18|Definition|def:purity|main.tex:484|We call a positive subunital linear map between EJAs~$f\colon E\rightarrow F$ \emph{pure} when there exists some corner~$\pi$ and some filte
+EJA|19|Proposition|prop:peircedecomp|main.tex:490|\cite[Proposition 1.43]{alfsen2012geometry} (Peirce-decomposition) Let~$E$ be an EJA with an idempotent~$p \in E$. Then $E_1(p):=Q_p(E):=\{Q
+EJA|20|Definition||main.tex:496|Let $E$ be an EJA with an effect~$q \in E$. Then~$\{E\lvert q\} := E_1(\floor{q}) = \{E\lvert \floor{q}\}$ and $E_q := E_1(\floor{q^\perp}^\
+EJA|21|Lemma||main.tex:505|Let~$\omega\colon E\rightarrow \R$ be any positive linear map such that $\omega(p)=\omega(1)$ for some idempotent $p$. Then~$\omega(Q_pa)=\o
+EJA|22|Corollary|cor:factorimage|main.tex:521|Let~$g\colon E\rightarrow W$ be a positive linear map between EJAs such that $g(p)=g(1)$ for some idempotent $p$. Then $g(Q_pa)= g(a)$ for a
+EJA|23|Lemma|lem:EJAfloor1|main.tex:529|Let $g\colon E\rightarrow F$ be any positive linear map between EJAs such that $g(q)=g(1)$ for some effect $q$. Then~$g(\floor{q})=g(1)$.
+EJA|24|Proposition|eja:quot|main.tex:538|Let $q$ be an effect of an EJA~$E$. Define $\pi_q\colon E\rightarrow \{E\lvert q\} = E_1(\floor{q})$ to be $\pi_q = r\circ Q_{\floor{q}}$ wh
+EJA|25|Proposition|eja:filter|main.tex:565|Let $q$ be an effect of an EJA~$E$. Define~$\xi_q\colon E_q \rightarrow E$ to be the map $\xi_q := Q_{\sqrt{q}} \circ \iota$ where $\iota$ i
+EJA|26|Definition||main.tex:639|Let $\Phi\colon E\rightarrow E$ be a positive linear map on an EJA $E$. We denote its adjoint with respect to the inner product by $\Phi^*$,
+EJA|27|Theorem|theor:polardecomp|main.tex:647|Polar Decomposition: Let $p$ and $q$ be positive elements of a Euclidean Jordan algebra $E$. There exists a partial isometry $\Phi: E\righta
+EJA|28|Definition||main.tex:660|Let $f:E\rightarrow F$ be a positive linear map between EJAs. The \emph{image} of $f$ (if it exists) is the smallest effect $q$ such that $f
+EJA|29|Proposition|eja:im|main.tex:668|Any positive linear map $f\colon E\rightarrow F$ between Euclidean Jordan algebras has an image. This image is always an idempotent.
+EJA|30|Proposition||main.tex:704|Let $\xi_q: E_1(\ceil{q})\rightarrow E$, $\xi_q = Q_{\sqrt{q}}\colon \iota$ be the standard filter of an effect $q$ and $\pi_p\colon E\right
+EJA|31|Corollary|cor:purepure|main.tex:718|The composition of pure maps is pure. \end{corollary}
+EJA|32|Definition||main.tex:730|Let $f: E\rightarrow F$ be a positive subunital map and write $\Idem(E)$ for the set of idempotents of~$E$. Define the maps $f^\diamond\colo
+EJA|33|Proposition|prop:diamond-adjointness|main.tex:746|Any self-adjoint operator~$f:E\rightarrow E$ on an EJA~$E$ is~$\diamond$-self-adjoint. In particular $Q_a$ is $\diamond$-self-adjoint for an
+EJA|34|Theorem|super-duper-theorem|main.tex:775|Let $g: E\rightarrow E$ be a pure $\diamond$-positive map and write $p:= g(1)$, then $g = Q_{\sqrt{p}}$. \end{theorem}
+EJA|35|Lemma|ordersharpprop|main.tex:782|An effect $p$ is called \emph{order-sharp} when $q=0$ whenever both $q\leq p$ and $q\leq p^\perp$. An effect $p$ is order-sharp if and only 
+EJA|36|Proposition||main.tex:788|A unital order isomorphism between EJAs is a Jordan isomorphism: that is, it preserves the Jordan multiplication. \end{proposition}
+EJA|37|Corollary||main.tex:803|Let $\Theta:E\rightarrow F$ be any unital order-isomorphism between Euclidean Jordan Algebras. Then, for any~$a,b\in E$, we have~$\Theta(Q_a
+EJA|38|Lemma||main.tex:815|Let $f:E\rightarrow E$ be a faithful pure $\diamond$-self-adjoint map between EJAs. Then $f=Q_{\sqrt{f(1)}}\circ \Theta$ for some unital Jor
+EJA|39|Proposition||main.tex:891|Let $g\colon E\rightarrow E$ be a faithful pure $\diamond$-positive map and let $p:=g(1)$, then $g = Q_{\sqrt{p}}$. \end{proposition}
+EJA|40|Theorem||main.tex:916|$\EJA_{psu}^{\opp}$ is a $\dagger$-effectus (as defined in \cite[\S215]{basthesis}). \end{theorem}
+EJA|41|Proposition||main.tex:990|For every EJA~$E$ there is a constant~$r>0$ such that, for all~$a,b\in E$,
+EJA|42|Notation||main.tex:1065|Let~$E$ be a Jordan algebra. \item
+EJA|43|Proposition|jaeqs|main.tex:1083|Given a Jordan algebra~$E$, and $a,b,c\in E$, we have
+EJA|44|Corollary|cor:assocalg|main.tex:1174|Let $a\in E$ be an element of an EJA. Let $C(a)$ denote the closure of the algebra generated by $a$, then $C(a)$ is a commutative associativ
+EJA|45|Proposition|prop:associsdisc|main.tex:1189|An associative EJA is isomorphic as an algebra to $\R^n$ with pointwise multiplication for some $n\in \N$. \end{proposition}
+EJA|46|Corollary|cor:spectral|main.tex:1226|Let $a$ be an element of an EJA. Then there exist real numbers $\lambda_i$ and orthogonal idempotents $p_i$ such that $a = \sum_{i=1}^n \lam
+EJA|47|Proposition|prop:selfduality|main.tex:1233|An element $a\in E$ is positive (i.e.\ a square) if and only if $\inn{a,b}\geq 0$ for all positive $b$. \end{proposition}
+EJA|48|Corollary|cor:ejaous|main.tex:1239|Let $E$ be an EJA. The set of positive elements is closed under addition. More specifically $E$ is an Archimedean order unit space. \end{cor
+EJA|49|Proposition|prop:equivalenttopology|main.tex:1246|Let $E$ be an EJA. The topologies induced by the Hilbert norm and by the order unit norm are equivalent. \end{proposition}
+EJA|50|Proposition|prop:EJAisJB|main.tex:1259|Let $E$ be an EJA. Then $E$ is a JB-algebra. \end{proposition}
+EJA|51|Proposition|prop:dircomplete|main.tex:1266|Let $E$ be an EJA. Then $E$ is bounded directed complete and furthermore every state is normal. \end{proposition}
+EJA|52|Proposition|prop:atomicsum|main.tex:1276|Let $p$ be an idempotent of an EJA. Then there exist orthogonal atomic idempotents $p_i$ such that $p = \sum_i p_i$. \end{proposition}
+EJA|53|Proposition||main.tex:1285|Let $E$ be an EJA. Then $E$ is a type I JBW-algebra of finite rank. \end{proposition}
+EJA|54|Corollary|appendixjnw|main.tex:1292|Let $E$ be an EJA. Then there exists a finite-dimensional EJA $E_{\text{fin}}$ and an EJA $E_{\text{inf}}$ that is a direct sum of infinite-

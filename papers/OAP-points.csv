@@ -1,0 +1,76 @@
+tag|num|kind|label|loc|start
+OAP|1|Definition||first.tex:347|An \Define{effect algebra} (EA) $(E, \ovee, 0, (\ )^\perp)$ is a set~$E$ with distinguished element~$0 \in E$,
+OAP|2|Example|ex:orthomodularlattice|first.tex:390|Let $(B,0,1,\wedge, \vee, (\ )^\perp)$ be an orthomodular lattice. Then $B$ is an effect algebra with the partial addition defined by $x\per
+OAP|3|Example|ex:cstaralgebra|first.tex:397|Let~$G$ be an ordered abelian group (such as the self-adjoint part of a C$^*$-algebra). Then any interval $[0,u]_G \equiv
+OAP|4|Remark||first.tex:425|An effect algebra is a \Define{bounded poset}: a partially ordered set with a minimal and maximal element. In~\cite{mayet1995classes} it is 
+OAP|5|Definition|def:effectmonoid|first.tex:447|An \Define{effect monoid} (EM) is an effect algebra $(M,\ovee, 0, ^\perp, \,\cdot\,)$ with an additional (total) binary operation $\,\cdot\,
+OAP|6|Example|ex:booleanalgebra|first.tex:474|Any Boolean algebra $(B,0,1,\wedge,\vee,(\ )^\perp)$, being an orthomodular lattice, is an effect algebra by Example~\ref{ex:orthomodularlat
+OAP|7|Example|ex:CX|first.tex:486|The unit interval $[0,1]_R$ of any (partially) ordered unital ring~$R$ (in which the sum $a+b$ and product $a\cdot b$
+OAP|8|Definition||first.tex:506|Let $M$ and $N$ be effect monoids. A \Define{morphism} from $M$ to $N$ is a morphism of effect algebras with the added condition that~$f(a\c
+OAP|9|Example|ex:stone-embedding|first.tex:516|It is well-known that any Boolean algebra $B$ is isomorphic to the set of clopens of its \Define{Stone space} $X_B$. This yields an effect m
+OAP|10|Remark||first.tex:523|A physical or logical theory which has probabilities of the form $[0,1]_{C(X)}$ can be seen as a theory with a natural notion of space, wher
+OAP|11|Example||first.tex:527|Given two effect algebras/monoids~$E_1$ and $E_2$ we define their \Define{direct sum} $E_1\oplus E_2$ as the Cartesian product with pointwis
+OAP|12|Example|cornersexample|first.tex:534|Let~$M$ be an effect monoid and let~$p \in M$ be some idempotent. The subset~$pM \equiv \{p \cdot a; \ a\in M\}$ is called the \Define{left 
+OAP|13|Definition||first.tex:545|Let $E$ be an effect algebra. A \Define{directed set} $S\subseteq E$ is a non-empty set such that for all $a,b\in S$ there exists a $c\in S$
+OAP|14|Remark||first.tex:554|A \textbf{d}irected \textbf{c}omplete \textbf{p}artially \textbf{o}rdered set is often referred to by the shorthand \Define{dcpo}. These str
+OAP|15|Example||first.tex:558|Let~$B$ be a $\omega$-complete Boolean algebra. Then~$B$ is a $\omega$-complete effect monoid. If~$B$ is complete as a Boolean algebra, then
+OAP|16|Example||first.tex:565|Let $X$ be an \Define{extremally disconnected} compact Hausdorff space, i.e.~where the closure of every open set is open. Then $[0,1]_{C(X)}
+OAP|-|Theorem||first.tex:579|Let $M$ be an $\omega$-complete effect monoid. Then $M$ embeds into $M_1\oplus M_2$, where $M_1$ is an $\omega$-complete Boolean algebra,
+OAP|-|Theorem||first.tex:588|Let $M$ be a directed-complete effect monoid. Then $M \cong M_1 \oplus M_2$ where $M_1$ is a complete Boolean algebra and $M_2=[0,1]_{C(X)}$
+OAP|17|Lemma|lem:ssperpcommute|first.tex:667|For any~$a \in M$ in an effect monoid~$M$, we have~$a\cdot a^\perp = a^\perp \cdot a$. \end{lemma}
+OAP|18|Lemma|lem:idempotentiff|first.tex:678|An element $p\in M$ is an idempotent if and only if $p\cdot p^\perp = 0$. \end{lemma}
+OAP|19|Lemma|lem:preserveunderidempotent|first.tex:686|For~$a, p \in M$ with~$p^2=p$, we have p \cdot a \ =\ a \quad \iff \quad
+OAP|20|Lemma|lem:idempotentscommute|first.tex:707|Let $M$ be an effect monoid with idempotent~$p \in M$. Then~$p\cdot a = a \cdot p$ for any~$a \in M$. \end{lemma}
+OAP|21|Corollary|cor:corneriso|first.tex:718|Let~$M$ be an effect monoid with idempotent~${p \in M}$. The map~$e \mapsto (p \cdot e, p^\perp \cdot e)$ is an isomorphism~$M \cong pM \opl
+OAP|22|Lemma|lem:forcing|first.tex:727|Let~$a\leq b$ be elements of an effect algebra~$E$. If~$ b\ovee b'\leq a\ovee a'$ for some~$a'\leq b'$ from~$E$,
+OAP|23|Lemma|lem:summableunderidempotent|first.tex:744|Let~$p$ be an idempotent from an effect monoid~$M$, and let~$a,b\leq p$ be elements below~$p$. If~$a\ovee b$ exists,
+OAP|24|Lemma|lem:additionisnormal|first.tex:778|Let~$x$ be an element and $S$ a non-empty subset of an effect algebra~$E$. If $S\subseteq [0,x^\perp]_E$, then
+OAP|25|Lemma|lem:selfsummable|first.tex:864|For any~$a \in M$ in some effect monoid~$M$, the element~$a \cdot a^\perp$ is summable with itself. \end{lemma}
+OAP|26|Lemma|lem:archemedeanomegadirectedcomplete|first.tex:876|Let $a$ be an element of an $\omega$-complete effect monoid $M$. \item If $na$ exists for all $n$ then $a=0$.
+OAP|27|Definition||first.tex:964|Let~$(x_i)_{i \in I}$ be a (potentially infinite) family of elements from an effect algebra~$E$. We say that the sum~$\bigovee_{i \in I} x_i
+OAP|28|Lemma|lem:proto-ceilfloor|first.tex:977|Given~$a \in M$ for an effect monoid~$M$, we have
+OAP|29|Corollary||first.tex:1008|The sum~$\bigovee_{n=0}^\infty a^\perp \cdot a^n$ exists for any element~$a$ from an~$\omega$-complete effect monoid~$M$.
+OAP|30|Definition||first.tex:1013|Given an element~$a$ of an $\omega$-complete effect monoid~$M$
+OAP|31|Lemma|lem:infaperpan|first.tex:1049|Given an element~$a$ of an $\omega$-complete effect monoid~$M$,
+OAP|32|Lemma|lem:flooraa|first.tex:1071|We have~$\floor{a}=\floor{a}\cdot a = a \cdot \floor{a}$ for any element~$a$ of an $\omega$-complete
+OAP|33|Lemma|lem:zerodivsum|first.tex:1109|Given elements $a, b_1, b_2,\dotsc$ of a $\omega$-complete effect monoid~$M$
+OAP|34|Proposition|prop:ceilprod|first.tex:1133|Given elements $a$ and~$b$ of an $\omega$-complete effect monoid~$M$, $$
+OAP|35|Proposition|prop:ceilfloor|first.tex:1169|Let~$a$ be an element of an $\omega$-complete effect monoid~$M$.
+OAP|36|Lemma|lem:sumofceil|first.tex:1218|$\ceil{a\ovee b}=\ceil{a}\vee \ceil{b}$ for all summable elements $a$ and~$b$ of an $\omega$-complete effect monoid~$M$
+OAP|37|Theorem|thm:latticeemon|first.tex:1238|Any pair of elements $a$ and $b$ from an $\omega$-complete effect monoid~$M$ has an infimum, $a\wedge b$, given by
+OAP|38|Corollary|cor:intervalsuprema|first.tex:1337|Let~$a\leq b$ be elements of an $\omega$-complete effect monoid~$M$,
+OAP|39|Corollary|cor:sumomegaem|first.tex:1371|Given an element~$a$ and a non-empty subset~$S$
+OAP|40|Definition||first.tex:1397|Given elements~$a\leq b$ of an $\omega$-complete effect monoid, set
+OAP|41|Lemma|lem:div|first.tex:1409|Let $b$ be an element of an $\omega$-complete effect monoid~$M$.
+OAP|42|Remark||first.tex:1511|From the previous lemma it follows that any~$\omega$-complete effect monoid is a so called \emph{effect divisoid} \cite[§195]{basthesis}.
+OAP|43|Theorem|thm:multisnormal|first.tex:1525|Let $b$ and~$b'$ be elements of an $\omega$-complete
+OAP|44|Definition||first.tex:1583|We say that an element~$a$ of an effect monoid~$M$ is \Define{Boolean} when each~$b\leq a$ is idempotent. We say an effect monoid is Boolean
+OAP|45|Proposition|prop:booleanalgebra|first.tex:1590|The set of idempotents~$P(M)$ of an effect monoid~$M$ is a Boolean algebra. Thus an effect monoid is Boolean iff it is a Boolean algebra.
+OAP|46|Proposition|prop:completelattice|first.tex:1620|If~$M$ is $\omega$-complete, then the Boolean algebra of projections~$P(M)$ is $\omega$-complete. \end{proposition}
+OAP|47|Proposition|prop:sharpeffectmonoidisbooleanalgebra|first.tex:1645|Let $M$ be an $\omega$-complete Boolean effect monoid. Then $M$ is an $\omega$-complete Boolean algebra. \end{proposition}
+OAP|48|Definition||first.tex:1656|We say that an element~$a$ of an effect algebra~$E$ is \Define{halvable} when~$a=b\ovee b$ for some~$b\in E$. We say an effect algebra
+OAP|49|Definition|def:convexeffectalgebra|first.tex:1664|Let $E$ be an effect algebra. We say $E$ is \Define{convex} if there exists an action $\cdot: [0,1]\times E\rightarrow E$, where $[0,1]$ is 
+OAP|50|Proposition|prop:dircompleteisconvex|first.tex:1867|Let $M$ be a halvable $\omega$-complete effect monoid. Then $M$ is convex. \end{proposition}
+OAP|51|Lemma|lem:ceilhalveable|first.tex:1922|Let $M$ be an $\omega$-complete effect monoid, and let $a$ be a halvable element. Then the ceiling~$\ceil{a}$
+OAP|52|Proposition|prop:maxcollectionbooleanhalveable|first.tex:1944|Each $\omega$-complete effect monoid~$M$ has a subset~$E \subseteq M$
+OAP|53|Proposition||first.tex:2001|Given a maximal orthogonal collection of non-zero idempotents~$E$ of an $\omega$-complete effect monoid~$M$, the map
+OAP|54|Theorem|thm:omegacompleteembed|first.tex:2036|Let $M$ be an $\omega$-complete effect monoid. Then there exist $\omega$-complete effect monoids $M_1$ and $M_2$ where $M_1$ is convex, and 
+OAP|55|Example||first.tex:2056|Let $X_1$ and $X_2$ be uncountably infinite sets, and let $A$ be the set of all pairs of functions $$A \equiv \{(f_1:X_1\rightarrow [0,1], f
+OAP|56|Lemma|lem:maximalsummableelement|first.tex:2077|Let $M$ be a directed-complete effect monoid. Then there is a maximal element that is summable with itself. That is:
+OAP|57|Theorem|thm:directedcompleteisconvex|first.tex:2148|Let $M$ be a directed-complete effect monoid. Then there exists a convex directed-complete effect monoid $M_1$, and a complete Boolean algeb
+OAP|58|Definition||first.tex:2188|An \Define{order unit space} (OUS) is an ordered vector space together with distinguished element~$1 \in V$,
+OAP|59|Definition||first.tex:2201|Given an OUS~$V$, its \Define{unit interval}~$ [0,1]_V \equiv \{v\in V~;~ 0\leq v\leq 1\}$ is a convex effect algebra
+OAP|60|Lemma|lem:completenessousemod|first.tex:2213|Let $V$ be an order unit space. It is directed complete if and only if it is \Define{bounded directed complete}; that is if every
+OAP|61|Lemma|boundeddircomplisarchous|first.tex:2235|A bounded $\omega$-complete OUS is Archimedean. \end{lemma}
+OAP|62|Theorem|prop:convextotalisation|first.tex:2249|Let $M$ be a convex effect algebra. Then there exists an order unit space $V$ such that $M\cong [0,1]_V$~\cite{gudder1998representation}. \e
+OAP|63|Proposition|prop:multiplicationisbilinear|first.tex:2334|Let $M$ be an $\omega$-complete convex effect monoid. Then the multiplication is ``bilinear'': $\lambda(a\cdot b) = (\lambda a)\cdot b = a\c
+OAP|64|Theorem|prop:yosida|first.tex:2465|Let~$V$ be a norm-complete lattice-ordered Archimedean OUS. Denote by $\Phi$ the \Define{Yosida spectrum} of~$V$: the compact Hausdorff spac
+OAP|65|Remark||first.tex:2474|In fact the category of compact Hausdorff spaces with continuous maps between them is dually equivalent to the category of lattice-ordered n
+OAP|66|Theorem|thm:convexextremallydisconnected|first.tex:2489|Let $M$ be a convex $\omega$-complete effect monoid. Then $M \cong [0,1]_{C(X)}$ for some basically disconnected Hausdorff space~$X$.
+OAP|67|Remark||first.tex:2551|% The previous theorem can also be proven using Kadison's representation Theorem~\cite{kadison1951representation}, which states that any nor
+OAP|68|Theorem|thm:omega-complete-classification|first.tex:2567|Let $M$ be an $\omega$-complete effect monoid. Then there exists a basically disconnected compact Hausdorff space $X$, and an $\omega$-compl
+OAP|69|Theorem|mainthmdirectedcomplete|first.tex:2582|Let $M$ be a directed-complete effect monoid. Then there exists an extremally-disconnected compact Hausdorff space $X$, and an complete Bool
+OAP|70|Corollary||first.tex:2592|Let $M$ be an $\omega$-complete effect monoid. Then $M$ is commutative. \end{corollary}
+OAP|71|Theorem|thm:no-zero-divisors|first.tex:2599|Let $M$ be an $\omega$-complete effect monoid with no non-trivial zero divisors. Then either $M=\{0\}$, $M=\{0,1\}$ or $M\cong [0,1]$.
+OAP|72|Remark||first.tex:2645|In~\cite{kentathesis} it is shown that any $\omega$-effectus satisfying a natural property called \emph{normalisation} (basically, that any 
+OAP|73|Remark||first.tex:2654|As noted in Example~\ref{ex:CX}, the unit interval of any partially ordered ring where the sum and product of positive elements is again pos

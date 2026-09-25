@@ -1,0 +1,74 @@
+tag|num|kind|label|loc|start
+SEA|1|Definition||second.tex:219|An \Define{effect algebra} (EA)~\cite{foulis1994effect} is a set~$E$ with distinguished element~$0 \in E$,
+SEA|2|Remark||second.tex:247|We pronounce $a\perp b$ as `$a$ is summable with $b$'. In the literature this is more often referred to as orthogonality, but we avoid this 
+SEA|3|Example|ex:orthomodularlattice|second.tex:258|Let~$B$ be a Boolean algebra (or more generally, an orthomodular poset~\cite{holland1975current,maeda,loomis}.) Then $B$ is an effect algebr
+SEA|4|Example|ex:cstaralgebra|second.tex:270|Let~$G$ be an ordered abelian group (such as an ordered vector space, for example a C$^*$-algebra,) and let $u\in G$ be any positive element
+SEA|5|Remark||second.tex:293|In GPTs, the set of effects of a system is often modelled by the unit interval of an ordered vector space. Hence, the above example demonstr
+SEA|6|Example|eaprod|second.tex:297|If~$E$ and~$F$ are effect algebras, then its Cartesian product~$E \oplus F$ with component-wise operations
+SEA|7|Proposition||second.tex:309|In any effect algebra we have (see e.g.~\cite{dvurecenskij2013new} or \cite[\S175V]{basthesis})
+SEA|8|Definition|def:convex|second.tex:322|A \Define{convex action} on an effect algebra~$E$ is a map $\cdot: [0,1]\times E\rightarrow E$,
+SEA|9|Example||second.tex:345|Let $V$ be an ordered real vector space (such as the space of self-adjoint elements of a C$^*$-algebra). Then any interval $[0,u]_V$ where $
+SEA|10|Remark||second.tex:350|Convex effect algebras have been well-studied, see e.g.~\cite{jacobs2011probabilities,gudder2018convex,wetering2018characterisation,wetering
+SEA|11|Definition||second.tex:360|Let $E$ be a partially ordered set (such as an effect algebra). A subset~$S$ of~$E$ is called \Define{directed} when it is non-empty,
+SEA|12|Example||second.tex:369|Any complete Boolean algebra is a directed-complete effect algebra. \end{example}
+SEA|13|Example||second.tex:374|Let~$\mathscr{A}$ be a unital C$^*$-algebra. Then $[0,1]_{\mathscr{A}}$ is a directed-complete effect algebra if and only if~$\mathscr{A}$
+SEA|14|Remark|remark:infima|second.tex:389|Because the complement acts as an order anti-isomorphism, a directed-complete effect algebra also has infima for all \Define{filtered}, i.e.
+SEA|15|Definition|defn:sea|second.tex:411|A \Define{sequential effect algebra} (SEA)~\cite{gudder2002sequential}~$E$
+SEA|16|Example|ex:canonical-sea|second.tex:475|If $\mathscr{A}$ is a C$^*$-algebra, then the EA~$[0,1]_{\mathscr{A}}$ is a SEA with the sequential product defined by~$a \mult b := \sqrt{a
+SEA|17|Proposition|prop:SEAbasicproperties|second.tex:490|Let $E$ be a SEA with $a,b,c,p \in E$ with~$p$ idempotent.
+SEA|18|Lemma|lem:summableunderidempotent|second.tex:601|Let $E$ be a SEA with $p,a,b \in E$ and $p$ idempotent. If~$a,b\leq p$ and~$a\ovee b$ exists, then~$a\ovee b\leq p$.
+SEA|19|Lemma|lem:selfsummable|second.tex:614|In a SEA, $a \mult a^\perp$ is summable with itself for any element~$a$. \end{lemma}
+SEA|20|Lemma|lem:addition-normal|second.tex:630|Let $E$ be a directed-complete effect algebra, and let $S\subseteq E$ be some directed non-empty subset. Let $a\in E$ be such that $a\perp s
+SEA|21|Lemma|lem:archemedeanomegadirectedcomplete|second.tex:645|The only element~$a$ of a directed-complete effect algebra~$E$
+SEA|22|Lemma|lem:nonilpotents|second.tex:659|Let $E$ be a normal SEA and suppose $a\in E$ satisfies~$a^2 = 0$. Then~$a = 0$.
+SEA|23|Proposition||second.tex:679|Assume~$E$ is a SEA with idempotent~$p \in E$. Write~$p \mult E := \{ p\mult a; \ a \in E\}$ for the \Define{left corner} by~$p$.
+SEA|24|Proposition|prop:central-splits|second.tex:714|Let $p$ be a central idempotent in a SEA $E$. Then $E\cong p\mult E \oplus p^\perp \mult E$. \end{proposition}
+SEA|25|Definition||second.tex:737|We call an idempotent $p\in E$ \Define{Boolean} when $p\mult E$ is Boolean, i.e.~when all $a\leq p$ in $E$ are idempotent. \end{definition}
+SEA|26|Definition||second.tex:743|Let $S\subseteq E$ be a subset of elements of a SEA $E$. The \Define{commutant of $S$} is defined as $S^\prime := \{a\in E;\
+SEA|27|Remark||second.tex:752|Let $\mathscr{H}$ be some Hilbert space, and let $E=[0,1]_{B(\mathscr{H})}$. For any $a\in E$, the bicommutant~$\{a\}''$
+SEA|28|Proposition|prop:doublecommutant|second.tex:768|Let $S\subseteq E$ be a set of mutually commuting elements in a normal SEA $E$, then $S^{\prime\prime}$ is a commutative normal SEA. \end{pr
+SEA|29|Definition|def:effectmonoid|second.tex:815|An \Define{effect monoid} (EM) is an effect algebra $(M,\ovee, 0, (\ )^\perp, \,\cdot\,)$ with an additional (total) binary operation $\cdot
+SEA|30|Example|ex:booleanalgebra|second.tex:844|Any Boolean algebra $(B,0,1,\wedge,\vee,(\ )^\perp)$ is an effect algebra by Example~\ref{ex:orthomodularlattice}, and, moreover, a Boolean 
+SEA|31|Example|ex:CX|second.tex:852|The unit interval $[0,1]_R$ of any (partially) ordered unital ring~$R$ (in which the sum $a+b$ and product $a\cdot b$
+SEA|32|Example|prop:commutativemonoidissequential|second.tex:878|A commutative SEA is a commutative effect monoid and vice versa. Moreover, a normal commutative SEA is a directed-complete commutative effec
+SEA|33|Remark||second.tex:883|In Ref.~\cite{habil2008tensor}, ``distributive'' sequential effect algebras were introduced. These are the same thing as effect monoids sati
+SEA|34|Example|cornersexample|second.tex:887|Let~$M$ be an effect monoid and let~$p \in M$ be some idempotent. The subset~$pM := \{p \cdot e; \ e\in M\}$ is called the \Define{left corn
+SEA|35|Theorem|thm:first|second.tex:907|{\cite{first}} In every directed-complete effect monoid~$M$ there is an idempotent~$p$ such that~$p M$ is a convex effect algebra
+SEA|36|Corollary|seaspectral|second.tex:917|Let~$E$ be a normal SEA and let~$a \in E$. Then there is a extremally-disconnected compact Hausdorff space~$X$ and complete Boolean algebra~
+SEA|37|Corollary||second.tex:933|Any element~$a$ of a normal SEA~$E$ has a unique square root. \end{corollary}
+SEA|38|Example|ex:effect-monoids|second.tex:970|Let $V$ be an ordered vector space. Let $R$ be the space of linear functions $f:V\rightarrow V$. For $f,g\in R$ we set $f\leq g$ when $f(v)\
+SEA|39|Example|ex:assoc-SEA|second.tex:977|Consider~$V := \R^2$ with the positive cone defined by $(a,b) > 0$ iff $a+b > 0$. Let~$R$ and $M$ be defined as in Example~\ref{ex:effect-mo
+SEA|40|Remark||second.tex:996|An effect algebra that does not contain infinitesimal elements is often called \emph{Archimedean}. For a convex effect algebra $E\cong [0,1]
+SEA|41|Lemma|lem:amultbidempotent|second.tex:1016|Let~$a$ and~$b$ be elements of a SEA such that~$a\mult b$ is idempotent. Then~$a\mult b \leq b$.
+SEA|42|Corollary|cor:booleans-central|second.tex:1048|A Boolean idempotent of a SEA is central. \end{corollary}
+SEA|43|Proposition||second.tex:1093|Let $p$ and~$q$ be idempotents of a SEA~$E$. Then $p\mult q$ is an idempotent if and only if $p$ and $q$ commute. Moreover, in that case $p\
+SEA|44|Proposition|prop:SEAsharpisBoolean|second.tex:1121|Let $E$ be a Boolean SEA. Then $E$ is a Boolean algebra. Furthermore, for all $a,b \in E$, $a\mult
+SEA|45|Definition|def:almostconvex|second.tex:1146|An \Define{a-convex action} (\emph{almost-convex action}) on an effect algebra~$E$ is a map $\cdot: [0,1]\times E\rightarrow E$, where $[0,1
+SEA|46|Remark||second.tex:1166|Recall from Definition~\ref{def:convex} that a convex action on an effect algebra is an a-convex action that in addition satisfies the requi
+SEA|47|Definition|def:horizontal-sum|second.tex:1179|Let $I$ be some indexing set, and let~$E_\alpha$ be an effect algebra for each $\alpha\in I$. The \Define{horizontal sum} \cite{foulis1994ef
+SEA|48|Example|ex:horizontal-interval|second.tex:1195|Let $H$ be the horizontal sum of the unit interval with itself. I.e.\ $H$ is the disjoint union of the unit interval with itself, that we wi
+SEA|49|Definition|def:floor|second.tex:1228|Let $E$ be a normal SEA. For $a\in E$ we define its \Define{floor} to be $\floor{a} := \bigwedge_n a^n$. \end{definition}
+SEA|50|Lemma||second.tex:1232|Let $E$ be a normal SEA. For $a\in E$, we have $\floor{a} \leq a$. Furthermore, $\floor{a}$ is the largest idempotent below $a$. \end{lemma}
+SEA|51|Lemma|lem:uniquedivision|second.tex:1255|Given an element~$a$ of a normal SEA~$E$ with~$\floor{a}=0$ and~$n\in \N_{>0}$, there is a unique~$a'\in E$ with~$a=na'$.
+SEA|52|Proposition|prop:add-into-nsea|second.tex:1297|Let~$\varphi\colon [0,1]\to E$ be an additive map into a normal SEA~$E$.
+SEA|53|Definition|prophalvecentral|second.tex:1428|Let $E$ be an effect algebra. We call an element $h\in E$ a \Define{half} when $h\ovee h = 1$. \end{definition}
+SEA|54|Proposition|prophalvecentral|second.tex:1431|Let~$E$ be a normal SEA. A half is central iff it is unique. \end{proposition}
+SEA|55|Proposition|prop:a-convex-from-phi|second.tex:1465|Let~$E$ be a normal SEA. Any unital, additive map $\varphi\colon [0,1]\to E$
+SEA|56|Example|ex-aconvex-not-determined-by-scalars|second.tex:1531|Let $H=HS([0,1],[0,1])$ be the horizontal sum of $[0,1]$ with itself from Example~\ref{ex:horizontal-interval}, equipped with the a-convex a
+SEA|57|Theorem|thm-a-convex-thm|second.tex:1539|For a normal SEA~$E$ the following are equivalent. \item
+SEA|58|Theorem|thm:a-convexthm|second.tex:1768|Let~$E$ be a normal SEA. Let $S\subseteq E$ be the set of idempotents $p$ for which~$p \mult E$ can be equipped with an a-convex action.
+SEA|59|Theorem|thm:SEAsplitupinconvexandsharp|second.tex:1856|Let $E$ be a normal SEA. Then $E\cong E_1\oplus E_2$, where $E_1$ is a-convex and $E_2$ is a complete Boolean algebra. \end{theorem}
+SEA|60|Corollary|cor:finite-Boolean|second.tex:1869|Let $E$ be a SEA with a finite number of elements. Then $E$ is a Boolean algebra. \end{corollary}
+SEA|61|Definition||second.tex:1887|We say that a a-convex SEA~$E$ is \Define{purely a-convex} when $Z(E)$ is Boolean, and
+SEA|62|Proposition|prop:a-convexsplitinconvexandsharp|second.tex:1895|In a normal a-convex SEA~$E$ there is a central idempotent~$p$ such that $p\mult E$ is convex
+SEA|63|Corollary|cor-aconvex|second.tex:1914|For a normal a-convex SEA~$E$ the following are equivalent.
+SEA|64|Theorem|thm:maintheorem|second.tex:1950|Let~$E$ be a normal SEA. There is a complete Boolean algebra~$B$, convex normal SEA~$E_c$
+SEA|65|Proposition||second.tex:1974|Let $E$ be an a-convex normal SEA. Then $E$ can be written as the (possibly non-disjoint) union of convex normal sub-SEAs. \end{proposition}
+SEA|66|Definition||second.tex:1987|We say a sequential effect algebra has \Define{commuting halves} when $a\commu b$ and $b=c\ovee c$ implies that $a\commu c$. \end{definition
+SEA|67|Proposition|prop:a-convexcommutewithhalves|second.tex:1991|A normal a-convex SEA~$E$ is convex iff it has commuting halves. \end{proposition}
+SEA|68|Theorem|thm:commuting-halves|second.tex:2015|Let~$E$ be a normal sequential effect algebra with commuting halves. Then $E= B\oplus E_c$ where $B$ is a complete Boolean algebra and $E_c$
+SEA|69|Proposition|prop:assoc-is-commutative|second.tex:2055|Let $E$ be an associative SEA, and let $p\in E$ be idempotent. Then $p$ is central. \end{proposition}
+SEA|70|Proposition|prop-assoc-comm-halves|second.tex:2075|An associative normal SEA $E$ with commuting halves is commutative. \end{proposition}
+SEA|71|Lemma|lem:multfloor|second.tex:2095|Let $E$ be a normal SEA with $a,b\in E$. Then~$a\mult b=a$ implies $a\mult \floor{b}=a$.
+SEA|72|Lemma||second.tex:2114|Let $E$ be a normal SEA. If the only idempotents in $E$ are $0$ and $1$, then $a\mult b = 0$ implies $a=0$ or $b=0$. \end{lemma}
+SEA|73|Proposition|prop:assoc-a-convex|second.tex:2129|Let $E$ be a normal a-convex factor with an associative sequential product. Then there is some index set $I$ such that $E$ is isomorphic to 
