@@ -61,6 +61,19 @@ lose their proof but are not refuted (the example satisfies 39:
 `f² = Q_{(ab,ab)}`); under 38′ they follow with `Q_q Q_{Θq} = Q_{q·Θq}`.
 Review: `lean/docs/research/review-eja38.md`.
 
+*Update 2026-09-26.* The repair 38′ survived a second break-it review and is
+proved in Lean: under the hypotheses of 38, `f = Q_q ∘ Θ` with `q = √f(1)`,
+`Θ` a unital Jordan isomorphism with `Θ ∘ Θ = id`, and `q`, `Θ(q)` diagonal in
+one Jordan frame (so they operator-commute).  The printed `Θ = Θ⁻¹` is true
+but its printed proof uses the false `Θ(q) = q` (via `Θ Q_q = Q_q Θ`); the new
+proof compares `Q_{Θq} Θ²` with `Q_q` on idempotents.  **EJA 39**'s printed
+proof concludes `g = Q_{q²}`, which is wrong in the example (`g = f∘f =
+Q_{(ab,ab)}`); the correct computation is `g = Q_q Q_{Θq} Θ² = Q_{q·Θq}`, and
+the statement `g = Q_{√g(1)}` stands.  (39's proof also uses that the
+⋄-self-adjoint root `f` of `g` is pure, which Def 32 does not require.)  Lean:
+`Papers.EJA.eja38_false_as_printed` (refutation), `Papers.EJA.eja38'`
+(repaired claim), `Papers.EJA.eja39` (39, root assumed pure).
+
 ## REC — *A computer scientist's reconstruction of quantum theory* (arXiv:2109.10707, `2109.10707/short.tex`)
 
 * **REC 7** (`ex:orthomodularlattice`, short.tex:374, Example) — **false as
@@ -115,3 +128,14 @@ Review: `lean/docs/research/review-eja38.md`.
   are summable idempotents … `a^⊥ = p^⊥ ⊻ (p ⊻ a)^⊥`" should read "`p` and
   `(p ⊻ a)^⊥` … `a^⊥ = p ⊻ (p ⊻ a)^⊥`" (`p^⊥ ⊥ (p ⊻ a)^⊥` fails already for
   `p = 0`, `a ≠ 1`).  Lean: `Papers.SEA.sea17_5`, `Papers.SEA.sea17_7`.
+
+## FDS — *The universal property of infinite direct sums in C\*- and W\*-categories* (arXiv:1907.04714, `1907.04714/direct_sums.tex`)
+
+* **FDS 4.5** (direct_sums.tex:504, Remark) — **ill-typed / false as
+  printed.**  For a family `(Aᵢ)ᵢ` the terms `fᵢ fⱼ*` of `∑ᵢⱼ Kᵢⱼ fᵢ fⱼ*`
+  (`fⱼ* : B → Aⱼ`, `fᵢ : Aᵢ → B`) compose only when `Aᵢ = Aⱼ`; and for a
+  positive semidefinite `K` with some `Kⱼⱼ = 0` (e.g. `K = 0`) the "norm"
+  `‖∑ᵢⱼ Kᵢⱼ fᵢfⱼ*‖^½` is only a seminorm, so the space is not a Banach space.
+  Repair: a constant family `Aᵢ = A` (as in the remark's own example
+  `Aᵢ = ℂ`) and `Kⱼⱼ ≠ 0` for all `j`; then completeness does go "the same way
+  as Lemma 4.1".  Lean: `Papers.FDS.KSum.kernel_complete`.
