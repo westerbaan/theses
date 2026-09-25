@@ -147,3 +147,15 @@ the statement `g = Q_{√g(1)}` stands.  (39's proof also uses that the
   Repair: a constant family `Aᵢ = A` (as in the remark's own example
   `Aᵢ = ℂ`) and `Kⱼⱼ ≠ 0` for all `j`; then completeness does go "the same way
   as Lemma 4.1".  Lean: `Papers.FDS.KSum.kernel_complete`.
+
+### REC 120 — proof under-specified; statement true; local repair (independent review, 2026-09-26)
+
+The proof takes `ω' := asrt_p ∘ ω` and applies Lemma 119, which is stated for
+states, to this substate; with `C(X)`-valued scalars it also cannot be
+normalised and uses strict inequalities in `C(X)`.  The gap is present for
+`[0,1]` scalars too, so it affects Theorem 103 as much as 102.  Repair: take a
+*total* state `ω := π_q ∘ σ` for any state `σ` of the comprehension `{A|q}`
+(it exists by separation by states, `q ≠ 0`); then `asrt_q ∘ ω = ω`, Lemma 119
+applies as printed, and evaluating at any point `t ∈ X` puts every strict
+inequality in `ℝ`.  Theorems 102 and 103 stand as printed (up to the cosmetic
+fixes listed for 102/103).  Review: `lean/docs/research/review-rec120.md`.
