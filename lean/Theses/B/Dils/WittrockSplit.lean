@@ -1,7 +1,8 @@
 /-
-Thesis B companion: the note `wittrock-dil.tex`, Definition 4 to
-Corollary 13 — splitting off the commutant, and the characterisation of
-Wittrock dilations through Paschke dilations (Theorem 10).
+Thesis B companion: the note `wittrock-dil.tex`, Lemma 3 and Definition 4 to
+Corollary 13 — the Wittrock correspondence, splitting off the commutant, and
+the characterisation of Wittrock dilations through Paschke dilations
+(Theorem 10).
 
 Like `Wittrock.lean` this file has no thesis counterpart and carries no
 DISP code; the item-by-item map from the note to the Lean names, and the
@@ -26,6 +27,16 @@ theorem wncp_sub' {B C : Type*} [CStarAlgebra B] [PartialOrder B] [StarOrderedRi
     [CStarAlgebra C] [PartialOrder C] [StarOrderedRing C] (f : NCPMap B C) (x y : B) :
     f (x - y) = f x - f y :=
   map_sub f.toCompletelyPositiveMap x y
+
+theorem vtmul_add_right' {X E : Type u} [CStarAlgebra X] [PartialOrder X] [StarOrderedRing X]
+    [VonNeumannAlgebra X] [CStarAlgebra E] [PartialOrder E] [StarOrderedRing E]
+    [VonNeumannAlgebra E] (x : X) (a b : E) : x ⊗ᵥ (a + b) = x ⊗ᵥ a + x ⊗ᵥ b :=
+  map_add ((vnTensor X E).map x) a b
+
+theorem vtmul_sub_right' {X E : Type u} [CStarAlgebra X] [PartialOrder X] [StarOrderedRing X]
+    [VonNeumannAlgebra X] [CStarAlgebra E] [PartialOrder E] [StarOrderedRing E]
+    [VonNeumannAlgebra E] (x : X) (a b : E) : x ⊗ᵥ (a - b) = x ⊗ᵥ a - x ⊗ᵥ b :=
+  map_sub ((vnTensor X E).map x) a b
 
 section NMIUOfTensor
 
@@ -140,11 +151,6 @@ def c2F : ULift.{u} Bool := ⟨false⟩
 
 theorem c2T_ne_c2F : c2T.{u} ≠ c2F.{u} := fun h => Bool.noConfusion (congrArg ULift.down h)
 
-theorem c2_cases (b : ULift.{u} Bool) : b = c2T ∨ b = c2F := by
-  rcases b with ⟨_ | _⟩
-  · exact Or.inr rfl
-  · exact Or.inl rfl
-
 /-- The coordinate `v(b)` of `v ∈ ℂ²`. -/
 abbrev c2ev (v : C2.{u}) (b : ULift.{u} Bool) : ℂ := (v : ∀ _ : ULift.{u} Bool, ℂ) b
 
@@ -156,15 +162,6 @@ theorem c2ind_apply (b b' : ULift.{u} Bool) :
   by_cases h : b' = b
   · subst h; simp only [ite_true]; exact lpKappa_apply_self _ _
   · simp only [h, ite_false]; exact lpKappa_apply_ne _ _ h
-
-theorem c2_one_eq : (1 : C2.{u}) = c2ind c2T + c2ind c2F := by
-  refine lp.ext (funext fun b => ?_)
-  rw [lp.infty_coeFn_one, lp.coeFn_add, Pi.add_apply, Pi.one_apply]
-  change (1 : ℂ) = c2ev (c2ind c2T) b + c2ev (c2ind c2F) b
-  rw [c2ind_apply, c2ind_apply]
-  rcases c2_cases b with rfl | rfl
-  · simp [c2T_ne_c2F]
-  · simp [c2T_ne_c2F.symm]
 
 theorem c2ind_nonneg (b : ULift.{u} Bool) : 0 ≤ c2ind b := by
   rw [lp_infty_nonneg_iff]
@@ -205,10 +202,6 @@ def bitLin (a b : E) : C2.{u} →ₗ[ℂ] E where
   map_smul' c v := by
     change (c * c2ev v c2T) • a + (c * c2ev v c2F) • b = _
     rw [RingHom.id_apply, smul_add, mul_smul, mul_smul]
-
-omit [PartialOrder E] [StarOrderedRing E] [VonNeumannAlgebra E] in
-theorem bitLin_apply (a b : E) (v : C2.{u}) :
-    bitLin a b v = c2ev v c2T • a + c2ev v c2F • b := rfl
 
 omit [VonNeumannAlgebra E] in
 theorem bitLin_pos {a b : E} (ha : 0 ≤ a) (hb : 0 ≤ b) :
@@ -286,6 +279,103 @@ theorem c2Pair_apply (ψ₁ ψ₂ : NCPMap X A) (x : X) (v : C2.{u}) :
     nmiuNCP_apply, nmiuNCP_apply, c2Slice_apply, c2Slice_apply, wncp_smul, wncp_smul]
 
 end Slices
+
+/-! ## Lemma 3: the Wittrock correspondence -/
+
+section Correspondence
+
+variable {X E A : Type u}
+  [CStarAlgebra X] [PartialOrder X] [StarOrderedRing X] [VonNeumannAlgebra X]
+  [CStarAlgebra E] [PartialOrder E] [StarOrderedRing E] [VonNeumannAlgebra E]
+  [CStarAlgebra A] [PartialOrder A] [StarOrderedRing A] [VonNeumannAlgebra A]
+
+/-- The note's **Lemma 3** (the Wittrock correspondence, the analogue of
+**157IV**): for a Wittrock dilation `h : 𝒳 ⊗ ℰ → 𝒜` of `φ`, the map
+`e ↦ h(· ⊗ e)` is a bijection from the effects `[0,1]_ℰ` onto the set
+`[0,φ]_ncp` of **157II** (`ncpInterval`): the maps `ψ` for which `ψ` and
+`φ − ψ` are ncp.
+
+The note's proof: `h(· ⊗ e)` and `h(· ⊗ (1 − e))` are ncp and sum to `φ`.
+For `ψ ∈ [0,φ]_ncp`, a mediator for `x ⊗ v ↦ v(0)ψ(x) + v(1)(φ − ψ)(x)`
+(`c2Pair`, on `𝒳 ⊗ ℂ²`) is unital by Remark 2, so it is
+`v ↦ v(0)e + v(1)(1 − e)` (`bitNCP`) for an effect `e` with `h(· ⊗ e) = ψ`.
+For injectivity, two effects `e₁`, `e₂` with `h(· ⊗ e₁) = h(· ⊗ e₂)` give two
+mediators for that map (written here as `h ∘ (id ⊗ κ_{e₁})` with
+`κ_e = bitNCP e (1 − e)`), so `e₁ = e₂` by uniqueness.  `φ` is a bare
+function; it is ncp anyway, being `h(· ⊗ 1)`. -/
+theorem wittrock_correspondence (φ : X → A) (h : NCPMap (VNT X E) A)
+    (hW : IsWittrockDilationOf φ E h) :
+    Set.BijOn (fun e x => h (x ⊗ᵥ e)) (effects E) (ncpInterval φ) := by
+  have hκ1 : ∀ {e : E} (he : e ∈ effects E), bitNCP he.1 (sub_nonneg.mpr he.2) 1 = 1 :=
+    fun he => by rw [bitNCP_one, add_sub_cancel]
+  refine ⟨fun e he => ?_, fun e₁ he₁ e₂ he₂ h12 => ?_, fun ψ hψ => ?_⟩
+  · -- `h(· ⊗ e)` and `h(· ⊗ (1 − e))` are ncp and sum to `φ`
+    have hncp : ∀ b : E, 0 ≤ b → ∃ δ : NCPMap X A, ∀ x, δ x = h (x ⊗ᵥ b) := by
+      intro b hb
+      obtain ⟨f, hf⟩ := (tensor_simple_facts_5 (A := E) (B := X) b hb).1
+      exact ⟨ncpComp h (ncpComp (nmiuNCP (braiding E X)) f), fun x => by
+        rw [ncpComp_apply, ncpComp_apply, nmiuNCP_apply, hf, braiding_apply]⟩
+    obtain ⟨δ₁, hδ₁⟩ := hncp e he.1
+    obtain ⟨δ₂, hδ₂⟩ := hncp (1 - e) (sub_nonneg.mpr he.2)
+    refine ⟨⟨δ₁, fun x => ?_⟩, ⟨δ₂, fun x => ?_⟩⟩
+    · change h (x ⊗ᵥ e) = 0 + δ₁ x
+      rw [zero_add, hδ₁]
+    · change φ x = h (x ⊗ᵥ e) + δ₂ x
+      rw [hδ₂, ← wncp_add, ← vtmul_add_right', add_sub_cancel, hW.1]
+  · -- injective: `κ_{e₁}` and `κ_{e₂}` both mediate for `h' = h ∘ (id ⊗ κ_{e₁})`
+    set h' := ncpComp h (tmap (ncpId X) (bitNCP he₁.1 (sub_nonneg.mpr he₁.2)))
+    have hh' : ∀ x, h' (x ⊗ᵥ (1 : C2.{u})) = φ x := by
+      intro x
+      rw [ncpComp_apply, tmap_apply, ncpId_apply, hκ1 he₁, hW.1]
+    have hmed : ∀ {e : E} (he : e ∈ effects E), (∀ x, h (x ⊗ᵥ e) = h (x ⊗ᵥ e₁)) →
+        IsWittrockMediator h h' (bitNCP he.1 (sub_nonneg.mpr he.2)) := by
+      intro e he hee
+      refine (isWittrockMediator_iff_tmap _ _ _).mpr ⟨fun x => ?_, fun z => ?_⟩
+      · rw [tmap_apply, ncpId_apply, hκ1 he]
+      · have key : ncpComp h (tmap (ncpId X) (bitNCP he.1 (sub_nonneg.mpr he.2))) = h' := by
+          refine ncp_ext_vnt _ _ fun x v => ?_
+          rw [ncpComp_apply, ncpComp_apply, tmap_apply, tmap_apply, ncpId_apply,
+            bitNCP_apply, bitNCP_apply, vtmul_add_right', vtmul_add_right',
+            EqL.vtmul_smul_right, EqL.vtmul_smul_right, EqL.vtmul_smul_right,
+            EqL.vtmul_smul_right, vtmul_sub_right', vtmul_sub_right', wncp_add, wncp_add,
+            wncp_smul, wncp_smul, wncp_smul, wncp_smul, wncp_sub', wncp_sub', hee]
+        rw [← key, ncpComp_apply]
+    have hu := (hW.2 C2.{u} h' hh').unique (hmed he₁ fun _ => rfl)
+      (hmed he₂ fun x => (congrFun h12 x).symm)
+    have := congrArg (fun κ : NCPMap C2.{u} E => κ (c2ind c2T)) hu
+    simpa only [bitNCP_ind] using this
+  · -- surjective: test against `x ⊗ v ↦ v(0)ψ(x) + v(1)(φ − ψ)(x)`
+    obtain ⟨⟨δ₁, hδ₁⟩, ⟨δ₂, hδ₂⟩⟩ := hψ
+    have hψδ : ∀ x, ψ x = δ₁ x := fun x => by rw [hδ₁ x, zero_add]
+    by_cases hXn : Nontrivial X
+    swap
+    · -- `𝒳 = {0}`: both sides vanish
+      rw [not_nontrivial_iff_subsingleton] at hXn
+      refine ⟨0, ⟨le_rfl, zero_le_one⟩, funext fun x => ?_⟩
+      change h ((vnTensor X E).map x 0) = ψ x
+      rw [map_zero, wncp_zero, hψδ, Subsingleton.elim x 0, wncp_zero]
+    set h' := c2Pair δ₁ δ₂
+    have hh' : ∀ x, h' (x ⊗ᵥ (1 : C2.{u})) = φ x := by
+      intro x
+      rw [c2Pair_apply, show c2ev (1 : C2.{u}) c2T = 1 from rfl,
+        show c2ev (1 : C2.{u}) c2F = 1 from rfl, one_smul, one_smul, hδ₂, hψδ]
+    obtain ⟨τ, hτ, -⟩ := hW.2 C2.{u} h' hh'
+    obtain ⟨hτ1, hτh⟩ := (isWittrockMediator_iff_tmap _ _ _).mp hτ
+    -- Remark 2: `τ` is unital
+    have hτu : τ 1 = 1 := by
+      refine one_vtmul_injective (X := X) ?_
+      have := hτ1 1
+      rwa [tmap_apply, ncpId_apply] at this
+    refine ⟨τ (c2ind c2T), ⟨ncpMap_nonneg τ (c2ind_nonneg _), ?_⟩, funext fun x => ?_⟩
+    · have := OrderHomClass.mono τ.toCompletelyPositiveMap (c2ind_le_one c2T)
+      rwa [show τ.toCompletelyPositiveMap 1 = τ 1 from rfl, hτu] at this
+    · have := hτh (x ⊗ᵥ c2ind c2T)
+      rw [tmap_apply, ncpId_apply, c2Pair_apply, c2ind_apply, c2ind_apply] at this
+      simp only [ite_true, c2T_ne_c2F.symm, ite_false, one_smul, zero_smul, add_zero] at this
+      rw [hψδ]
+      exact this
+
+end Correspondence
 
 section Misc
 
@@ -449,16 +539,6 @@ def SplitsOffCommutant (R : StarSubalgebra ℂ P) (hR : IsVNSubalgebra P R) : Pr
   ∃ Ψ : NMIUMap (VNT (SubVN R hR) (CommVN R)) P,
     ∀ a t, Ψ (a ⊗ᵥ t) = a.val * t.val
 
-/-- The extension in `SplitsOffCommutant` is unique: nmiu-maps out of a tensor
-product agreeing on elementary tensors are equal. -/
-theorem splitsOffCommutant_unique {R : StarSubalgebra ℂ P} {hR : IsVNSubalgebra P R}
-    (Ψ Ψ' : NMIUMap (VNT (SubVN R hR) (CommVN R)) P)
-    (hΨ : ∀ a t, Ψ (a ⊗ᵥ t) = a.val * t.val) (hΨ' : ∀ a t, Ψ' (a ⊗ᵥ t) = a.val * t.val) :
-    Ψ = Ψ' := by
-  have h := ncp_ext_vnt (nmiuNCP Ψ) (nmiuNCP Ψ') fun a t => by
-    rw [nmiuNCP_apply, nmiuNCP_apply, hΨ, hΨ']
-  exact DFunLike.coe_injective (congrArg (fun f : NCPMap _ P => ⇑f) h)
-
 end Split
 
 /-! ## Lemma 9: reduction from `𝒳` to `ϱ(𝒳)` -/
@@ -494,7 +574,7 @@ theorem exists_range_section (ρ : NMIUMap X P) :
 extends to an nmiu-map `𝒳 ⊗ ϱ(𝒳)^□ → 𝒫`. -/
 theorem splitsOffCommutant_range_iff (ρ : NMIUMap X P) :
     SplitsOffCommutant (rangeSub ρ) (nmiu_image ρ) ↔
-      ∃ Ψ : NMIUMap (VNT X (PaschkeE ρ)) P, ∀ x t, Ψ (x ⊗ᵥ t) = ρ x * t.val := by
+      ∃ Ψ : NMIUMap (VNT X (RangeComm ρ)) P, ∀ x t, Ψ (x ⊗ᵥ t) = ρ x * t.val := by
   constructor
   · rintro ⟨Ψ, hΨ⟩
     set ρ' := nmiuCorestrict ρ (rangeSub ρ) (nmiu_image ρ) fun x => ⟨x, rfl⟩
@@ -503,7 +583,7 @@ theorem splitsOffCommutant_range_iff (ρ : NMIUMap X P) :
     rfl
   · rintro ⟨m, hm⟩
     obtain ⟨j, hj⟩ := exists_range_section ρ
-    set f := ncpComp (nmiuNCP m) (tmap j (ncpId (PaschkeE ρ)))
+    set f := ncpComp (nmiuNCP m) (tmap j (ncpId (RangeComm ρ)))
     have hf : ∀ a t, f (a ⊗ᵥ t) = a.val * t.val := by
       intro a t
       rw [ncpComp_apply, tmap_apply, nmiuNCP_apply, ncpId_apply, hm, hj]
@@ -514,7 +594,7 @@ theorem splitsOffCommutant_range_iff (ρ : NMIUMap X P) :
     have h1 : f 1 = 1 := by
       rw [← hone, hf]
       exact one_mul _
-    have hmul : ∀ (a a' : SubVN (rangeSub ρ) (nmiu_image ρ)) (t t' : PaschkeE ρ),
+    have hmul : ∀ (a a' : SubVN (rangeSub ρ) (nmiu_image ρ)) (t t' : RangeComm ρ),
         f ((a * a') ⊗ᵥ (t * t')) = f (a ⊗ᵥ t) * f (a' ⊗ᵥ t') := by
       intro a a' t t'
       rw [hf, hf, hf]
@@ -534,74 +614,6 @@ variable {X : Type u} [CStarAlgebra X] [PartialOrder X] [StarOrderedRing X]
   [VonNeumannAlgebra X]
   {P : Type u} [CStarAlgebra P] [PartialOrder P] [StarOrderedRing P] [VonNeumannAlgebra P]
   {A : Type u} [CStarAlgebra A] [PartialOrder A] [StarOrderedRing A] [VonNeumannAlgebra A]
-
-omit [VonNeumannAlgebra X] in
-theorem vtmul_add_right' {E : Type u} [CStarAlgebra E] [PartialOrder E] [StarOrderedRing E]
-    [VonNeumannAlgebra X] [VonNeumannAlgebra E] (x : X) (a b : E) :
-    x ⊗ᵥ (a + b) = x ⊗ᵥ a + x ⊗ᵥ b :=
-  map_add ((vnTensor X E).map x) a b
-
-omit [VonNeumannAlgebra X] in
-theorem vtmul_smul_right' {E : Type u} [CStarAlgebra E] [PartialOrder E] [StarOrderedRing E]
-    [VonNeumannAlgebra X] [VonNeumannAlgebra E] (x : X) (c : ℂ) (a : E) :
-    x ⊗ᵥ (c • a) = c • (x ⊗ᵥ a) :=
-  map_smul ((vnTensor X E).map x) c a
-
-omit [VonNeumannAlgebra X] in
-theorem vtmul_sub_right' {E : Type u} [CStarAlgebra E] [PartialOrder E] [StarOrderedRing E]
-    [VonNeumannAlgebra X] [VonNeumannAlgebra E] (x : X) (a b : E) :
-    x ⊗ᵥ (a - b) = x ⊗ᵥ a - x ⊗ᵥ b :=
-  map_sub ((vnTensor X E).map x) a b
-
-omit [VonNeumannAlgebra A] in
-/-- The first half of the note's proof of Theorem 10, as a lemma: for a
-Paschke dilation `(𝒫, ϱ, h)` of `φ` and an ncp-map `h' : 𝒳 ⊗ ℰ' → 𝒜` with
-`h'(x ⊗ 1) = φ(x)`, the mediating map `σ : 𝒳 ⊗ ℰ' → 𝒫` of **140II** has
-the form `σ(x ⊗ e) = ϱ(x) τ(e)` for an ncpu-map `τ : ℰ' → ϱ(𝒳)^□`, by the
-bimodularity **139III**. -/
-theorem exists_paschke_mediator (φ : NCPMap X A) (ρ : NMIUMap X P) (hP : NCPMap P A)
-    (hD : IsPaschkeDilationOf (⟨P, inferInstance, ρ, hP⟩ : PaschkeTriple X A) ⇑φ)
-    {E' : Type u} [CStarAlgebra E'] [PartialOrder E'] [StarOrderedRing E'] [VonNeumannAlgebra E']
-    (h' : NCPMap (VNT X E') A) (hh' : ∀ x, h' (x ⊗ᵥ (1 : E')) = φ x) :
-    ∃ (σ : NCPMap (VNT X E') P) (τ : NCPMap E' (PaschkeE ρ)),
-      (∀ x, σ (x ⊗ᵥ (1 : E')) = ρ x) ∧ (∀ z, hP (σ z) = h' z) ∧
-      (∀ x e, σ (x ⊗ᵥ e) = ρ x * (τ e).val) ∧ τ 1 = 1 := by
-  obtain ⟨-, hUP⟩ := hD
-  have hρ1 : ρ 1 = 1 := map_one ρ.toStarAlgHom
-  set ι₁ := vtmulOneNMIU X E'
-  have hι₁1 : ι₁ 1 = 1 := map_one ι₁.toStarAlgHom
-  obtain ⟨σ, ⟨hσρ, hσh⟩, -⟩ :=
-    hUP (⟨VNT X E', inferInstance, ι₁, h'⟩ : PaschkeTriple X A) fun a => hh' a
-  have hσρ' : ∀ a, σ (a ⊗ᵥ (1 : E')) = ρ a := fun a => hσρ a
-  have hbim : ∀ (a₁ a₂ : X) (c : VNT X E'), σ (ι₁ a₁ * c * ι₁ a₂) = ρ a₁ * σ c * ρ a₂ :=
-    fun a₁ a₂ c => dils_univlemma ρ ι₁ σ hσρ a₁ a₂ c
-  obtain ⟨ι₂, hι₂⟩ := (tensor_simple_facts_5 (A := X) (B := E') 1 zero_le_one).2
-  have hmul : ∀ (x x' : X) (e e' : E'), (x ⊗ᵥ e) * (x' ⊗ᵥ e') = (x * x') ⊗ᵥ (e * e') :=
-    fun x x' e e' => ((vnTensor X E').isTensorProduct.miu.2.1 x x' e e').symm
-  have hleft : ∀ (x : X) (e : E'), σ (x ⊗ᵥ e) = ρ x * σ ((1 : X) ⊗ᵥ e) := by
-    intro x e
-    have h := hbim x 1 (ι₂ e)
-    rwa [hι₁1, mul_one, hρ1, mul_one, hι₂, vtmulOneNMIU_apply, hmul, mul_one, one_mul]
-      at h
-  have hright : ∀ (x : X) (e : E'), σ (x ⊗ᵥ e) = σ ((1 : X) ⊗ᵥ e) * ρ x := by
-    intro x e
-    have h := hbim 1 x (ι₂ e)
-    rwa [hι₁1, one_mul, hρ1, one_mul, hι₂, vtmulOneNMIU_apply, hmul, mul_one, one_mul]
-      at h
-  have hmem : ∀ e, ncpComp σ (nmiuNCP ι₂) e ∈ paschkeComm ρ := by
-    intro e
-    rw [mem_paschkeComm]
-    intro x
-    rw [ncpComp_apply, nmiuNCP_apply, hι₂, ← hleft, hright]
-  set τ : NCPMap E' (PaschkeE ρ) :=
-    ncpCorestrict (ncpComp σ (nmiuNCP ι₂)) (paschkeComm ρ) (isVNSubalgebra_paschkeComm ρ)
-      hmem
-  have hτ : ∀ e, (τ e).val = σ ((1 : X) ⊗ᵥ e) := fun e => by
-    rw [ncpCorestrict_val, ncpComp_apply, nmiuNCP_apply, hι₂]
-  refine ⟨σ, τ, hσρ', fun c => hσh c, fun x e => by rw [hτ]; exact hleft x e, ?_⟩
-  refine Theses.A.Proc.VNSub.val_injective ?_
-  rw [hτ, hσρ']
-  exact hρ1
 
 /-- The zero map into the zero algebra, as an nmiu-map. -/
 def nmiuToSubsingleton {A' B' : Type*} [CStarAlgebra A'] [PartialOrder A'] [StarOrderedRing A']
@@ -636,14 +648,14 @@ theorem inv_smul_mem_effects {B : Type*} [CStarAlgebra B] [PartialOrder B] [Star
 /-- The note's **Theorem 10**, `⇒`: if `φ` has a Wittrock dilation, then
 `ϱ(𝒳)` splits off its commutant in `𝒫`.
 
-The note's route is followed: `e ↦ h_W(· ⊗ e)` is injective on `[0,1]_ℰ`
-and hits every `φ_t` (tested against `𝒳 ⊗ ℂ²`; the note's Lemma 3), so
-with **157IV** the map `τ : ℰ → ϱ(𝒳)^□` is a bijection of effects.  That
-`τ` maps projections to projections is shown directly, not through extreme
-points: `τ(p) − τ(p)²` is `τ(g)` for an effect `g` below both `p` and
-`p^⊥`.  **99II** (`gardner`) makes `τ` multiplicative; it is then an
-nmiu-isomorphism, and
-`σ ∘ (id ⊗ τ⁻¹)` is the nmiu-extension of `x ⊗ t ↦ ϱ(x)t` (Lemma 9). -/
+The note's route is followed: with `σ(x ⊗ e) = ϱ(x) τ(e)`
+(`exists_paschke_mediator`), `h_W(· ⊗ e) = φ_{τ(e)}`, so by Lemma 3
+(`wittrock_correspondence`) and **157IV** the map `τ : ℰ → ϱ(𝒳)^□` is a
+bijection of effects.  That `τ` maps projections to projections is shown
+directly, not through extreme points: `τ(p) − τ(p)²` is `τ(g)` for an effect
+`g` below both `p` and `p^⊥`.  **99II** (`gardner`) makes `τ`
+multiplicative; it is then an nmiu-isomorphism, and `σ ∘ (id ⊗ τ⁻¹)` is the
+nmiu-extension of `x ⊗ t ↦ ϱ(x)t` (Lemma 9). -/
 theorem splitsOffCommutant_of_wittrock (φ : NCPMap X A) (ρ : NMIUMap X P) (hP : NCPMap P A)
     (hD : IsPaschkeDilationOf (⟨P, inferInstance, ρ, hP⟩ : PaschkeTriple X A) ⇑φ)
     {E : Type u} [CStarAlgebra E] [PartialOrder E] [StarOrderedRing E] [VonNeumannAlgebra E]
@@ -656,17 +668,11 @@ theorem splitsOffCommutant_of_wittrock (φ : NCPMap X A) (ρ : NMIUMap X P) (hP 
   · rw [not_nontrivial_iff_subsingleton] at hPn
     exact ⟨nmiuToSubsingleton, fun _ _ => Subsingleton.elim _ _⟩
   have hρ1 : ρ 1 = 1 := map_one ρ.toStarAlgHom
-  have hXn : Nontrivial X := by
-    refine ⟨⟨1, 0, fun h => ?_⟩⟩
-    have h' := congrArg ρ h
-    rw [hρ1, show ρ 0 = 0 from map_zero ρ.toStarAlgHom] at h'
-    exact one_ne_zero h'
   set D : PaschkeTriple X A := ⟨P, inferInstance, ρ, hP⟩ with hDdef
-  have hDφ : ∀ x, hP (ρ x) = φ x := hD.1
   obtain ⟨σ, τ, hσ1, hσh, hστ, hτ1⟩ := exists_paschke_mediator φ ρ hP hD hW hWD.1
-  have hcomm : ∀ (t : PaschkeE ρ) (x : X), ρ x * t.val = t.val * ρ x :=
-    fun t x => mem_paschkeComm.mp t.property x
-  have hcommS : ∀ t : PaschkeE ρ, t.val ∈ commutant D.P (Set.range ⇑D.ρ) := by
+  have hcomm : ∀ (t : RangeComm ρ) (x : X), ρ x * t.val = t.val * ρ x :=
+    fun t x => mem_rangeComm.mp t.property x
+  have hcommS : ∀ t : RangeComm ρ, t.val ∈ commutant D.P (Set.range ⇑D.ρ) := by
     rintro t _ ⟨x, rfl⟩
     exact hcomm t x
   -- `h_W(· ⊗ e) = φ_{τ(e)}`
@@ -676,75 +682,28 @@ theorem splitsOffCommutant_of_wittrock (φ : NCPMap X A) (ρ : NMIUMap X P) (hP 
   have hτmono : ∀ {e e' : E}, e ≤ e' → τ e ≤ τ e' := fun h =>
     OrderHomClass.mono τ.toCompletelyPositiveMap h
   have hτ0 : ∀ {e : E}, 0 ≤ e → 0 ≤ τ e := fun h => ncpMap_nonneg τ h
-  -- (1) `e ↦ h_W(· ⊗ e)` is injective on effects: test against `𝒳 ⊗ ℂ²`
+  have hcorr := wittrock_correspondence (⇑φ) hW hWD
+  -- (1) `e ↦ h_W(· ⊗ e)` is injective on effects (Lemma 3)
   have hinjW : ∀ e₁ e₂ : E, e₁ ∈ effects E → e₂ ∈ effects E →
-      (∀ x, hW (x ⊗ᵥ e₁) = hW (x ⊗ᵥ e₂)) → e₁ = e₂ := by
-    intro e₁ e₂ he₁ he₂ h12
-    set κ₁ := bitNCP he₁.1 (sub_nonneg.mpr he₁.2)
-    set κ₂ := bitNCP he₂.1 (sub_nonneg.mpr he₂.2)
-    set h' := ncpComp hW (tmap (ncpId X) κ₁)
-    have hκ1 : ∀ {e : E} (he : e ∈ effects E),
-        bitNCP he.1 (sub_nonneg.mpr he.2) 1 = 1 := fun he => by
-      rw [bitNCP_one, add_sub_cancel]
-    have hh' : ∀ x, h' (x ⊗ᵥ (1 : C2.{u})) = φ x := by
-      intro x
-      rw [ncpComp_apply, tmap_apply, ncpId_apply, hκ1 he₁, hWD.1]
-    have hmed : ∀ {e : E} (he : e ∈ effects E), (∀ x, hW (x ⊗ᵥ e) = hW (x ⊗ᵥ e₁)) →
-        IsWittrockMediator hW h' (bitNCP he.1 (sub_nonneg.mpr he.2)) := by
-      intro e he hee
-      refine (isWittrockMediator_iff_tmap _ _ _).mpr ⟨fun x => ?_, fun z => ?_⟩
-      · rw [tmap_apply, ncpId_apply, hκ1 he]
-      · have key : ncpComp hW (tmap (ncpId X) (bitNCP he.1 (sub_nonneg.mpr he.2))) = h' := by
-          refine ncp_ext_vnt _ _ fun x v => ?_
-          rw [ncpComp_apply, ncpComp_apply, tmap_apply, tmap_apply, ncpId_apply,
-            bitNCP_apply, bitNCP_apply, vtmul_add_right', vtmul_add_right',
-            vtmul_smul_right', vtmul_smul_right', vtmul_smul_right', vtmul_smul_right',
-            vtmul_sub_right', vtmul_sub_right', wncp_add, wncp_add, wncp_smul, wncp_smul,
-            wncp_smul, wncp_smul, wncp_sub', wncp_sub', hee]
-        rw [← key, ncpComp_apply]
-    have hu := (hWD.2 C2.{u} h' hh').unique (hmed he₁ fun _ => rfl) (hmed he₂ fun x => (h12 x).symm)
-    have := congrArg (fun κ : NCPMap C2.{u} E => κ (c2ind c2T)) hu
-    simpa only [bitNCP_ind] using this
-  -- (2) every effect of `ϱ(𝒳)^□` is `τ(e)` for an effect `e`
-  have hsurj : ∀ t : PaschkeE ρ, t ∈ effects (PaschkeE ρ) →
+      (∀ x, hW (x ⊗ᵥ e₁) = hW (x ⊗ᵥ e₂)) → e₁ = e₂ :=
+    fun _ _ he₁ he₂ h12 => hcorr.injOn he₁ he₂ (funext h12)
+  -- (2) every effect `t` of `ϱ(𝒳)^□` is `τ(e)` for an effect `e`: by Lemma 3,
+  -- `φ_t ∈ [0,φ]_ncp` (**157IV**.1) is `h_W(· ⊗ e)` for an effect `e`
+  have hsurj : ∀ t : RangeComm ρ, t ∈ effects (RangeComm ρ) →
       ∃ e : E, e ∈ effects E ∧ τ e = t := by
     intro t ht
     have ht0 : (0 : P) ≤ t.val := ht.1
     have ht1 : t.val ≤ 1 := ht.2
-    obtain ⟨ψ₁, hψ₁⟩ := exists_phiT_ncp D t.val ht0 fun a => (hcomm t a).symm
-    obtain ⟨ψ₂, hψ₂⟩ := exists_phiT_ncp D (1 - t.val) (sub_nonneg.mpr ht1)
-      fun a => by rw [sub_mul, mul_sub, one_mul, mul_one, hcomm t a]
-    set h' := c2Pair ψ₁ ψ₂
-    have hh' : ∀ x, h' (x ⊗ᵥ (1 : C2.{u})) = φ x := by
-      intro x
-      rw [c2Pair_apply, show c2ev (1 : C2.{u}) c2T = 1 from rfl,
-        show c2ev (1 : C2.{u}) c2F = 1 from rfl, one_smul, one_smul, hψ₁, hψ₂,
-        ← wncp_add, ← add_mul, add_sub_cancel, one_mul]
-      exact hDφ x
-    obtain ⟨τ', hτ', -⟩ := hWD.2 C2.{u} h' hh'
-    obtain ⟨hτ'1, hτ'h⟩ := (isWittrockMediator_iff_tmap _ _ _).mp hτ'
-    have hτ'u : τ' 1 = 1 := by
-      refine one_vtmul_injective (X := X) ?_
-      have := hτ'1 1
-      rwa [tmap_apply, ncpId_apply] at this
-    set e := τ' (c2ind c2T)
-    have he : e ∈ effects E := by
-      refine ⟨ncpMap_nonneg τ' (c2ind_nonneg _), ?_⟩
-      have := OrderHomClass.mono τ'.toCompletelyPositiveMap (c2ind_le_one c2T)
-      rwa [show τ'.toCompletelyPositiveMap 1 = τ' 1 from rfl, hτ'u] at this
-    have hWe : ∀ x, hW (x ⊗ᵥ e) = hP (t.val * ρ x) := by
-      intro x
-      have := hτ'h (x ⊗ᵥ c2ind c2T)
-      rw [tmap_apply, ncpId_apply, c2Pair_apply, c2ind_apply, c2ind_apply] at this
-      simp only [ite_true, c2T_ne_c2F.symm, ite_false, one_smul, zero_smul, add_zero] at this
-      rw [this, hψ₁]
+    obtain ⟨e, he, hWe⟩ :=
+      hcorr.surjOn (paschke_correspondence_mem φ D hD t.val (hcommS t) ht0 ht1)
+    have hWe : ∀ x, hW (x ⊗ᵥ e) = hP (t.val * ρ x) := fun x => congrFun hWe x
     refine ⟨e, he, Theses.A.Proc.VNSub.val_injective ?_⟩
     -- `φ_{τ(e)} = φ_t`, so `τ(e) = t` by **157IV**.2
     have hphi : phiT D (τ e).val = phiT D t.val := by
       funext x
       change hP ((τ e).val * ρ x) = hP (t.val * ρ x)
       rw [← hWτ, hWe]
-    have hτe : (τ e) ∈ effects (PaschkeE ρ) :=
+    have hτe : (τ e) ∈ effects (RangeComm ρ) :=
       ⟨hτ0 he.1, by have := hτmono he.2; rwa [hτ1] at this⟩
     have hle := phiT_ncpLe D t.val t.val (fun a => (hcomm t a).symm)
       (fun a => (hcomm t a).symm) le_rfl
@@ -790,7 +749,7 @@ theorem splitsOffCommutant_of_wittrock (φ : NCPMap X A) (ρ : NMIUMap X P) (hP 
       rwa [(IsSelfAdjoint.of_nonneg hu0).star_eq] at this
     have hd1 : u - u * u ≤ u := sub_le_self _ hsq
     have hd2 : u - u * u ≤ 1 - u := by
-      have hns : (0 : PaschkeE ρ) ≤ (1 - u) * (1 - u) := by
+      have hns : (0 : RangeComm ρ) ≤ (1 - u) * (1 - u) := by
         have := star_mul_self_nonneg (1 - u)
         rwa [star_sub, star_one, (IsSelfAdjoint.of_nonneg hu0).star_eq] at this
       have hexp : (1 - u) * (1 - u) = (1 - u) - (u - u * u) := by noncomm_ring
@@ -817,7 +776,7 @@ theorem splitsOffCommutant_of_wittrock (φ : NCPMap X A) (ρ : NMIUMap X P) (hP 
       have := hinjP _ _ (star_mul_self_nonneg _) le_rfl hss
       exact sub_eq_zero.mp ((CStarRing.star_mul_self_eq_zero_iff _).mp this)
     · intro t
-      refine wit_nonneg_induction (fun t : PaschkeE ρ => ∃ e, τN e = t) ?_ ?_ ?_ t
+      refine wit_nonneg_induction (fun t : RangeComm ρ => ∃ e, τN e = t) ?_ ?_ ?_ t
       · intro t ht
         rcases eq_or_lt_of_le (norm_nonneg t) with h0 | h0
         · refine ⟨0, ?_⟩
@@ -838,13 +797,13 @@ theorem splitsOffCommutant_of_wittrock (φ : NCPMap X A) (ρ : NMIUMap X P) (hP 
   have hm : ∀ x t, m (x ⊗ᵥ t) = ρ x * t.val := by
     intro x t
     rw [ncpComp_apply, tmap_apply, ncpId_apply, nmiuNCP_apply, hστ]
-    exact congrArg (fun s : PaschkeE ρ => ρ x * s.val) (nmiuSymm_apply_apply' τN hbij t)
+    exact congrArg (fun s : RangeComm ρ => ρ x * s.val) (nmiuSymm_apply_apply' τN hbij t)
   have hm1 : m 1 = 1 := by
-    rw [← (vnTensor X (PaschkeE ρ)).isTensorProduct.miu.1]
-    change m ((1 : X) ⊗ᵥ (1 : PaschkeE ρ)) = 1
+    rw [← (vnTensor X (RangeComm ρ)).isTensorProduct.miu.1]
+    change m ((1 : X) ⊗ᵥ (1 : RangeComm ρ)) = 1
     rw [hm, hρ1]
     exact one_mul _
-  have hmmul : ∀ (x x' : X) (t t' : PaschkeE ρ),
+  have hmmul : ∀ (x x' : X) (t t' : RangeComm ρ),
       m ((x * x') ⊗ᵥ (t * t')) = m (x ⊗ᵥ t) * m (x' ⊗ᵥ t') := by
     intro x x' t t'
     rw [hm, hm, hm, show ρ (x * x') = ρ x * ρ x' from map_mul ρ.toStarAlgHom x x']
@@ -860,8 +819,8 @@ theorem isWittrockDilationOf_of_splitsOffCommutant (φ : NCPMap X A) (ρ : NMIUM
     (hP : NCPMap P A)
     (hD : IsPaschkeDilationOf (⟨P, inferInstance, ρ, hP⟩ : PaschkeTriple X A) ⇑φ)
     (hs : SplitsOffCommutant (rangeSub ρ) (nmiu_image ρ)) :
-    ∃ Ψ : NMIUMap (VNT X (PaschkeE ρ)) P, (∀ x t, Ψ (x ⊗ᵥ t) = ρ x * t.val) ∧
-      IsWittrockDilationOf ⇑φ (PaschkeE ρ) (ncpComp hP (nmiuNCP Ψ)) := by
+    ∃ Ψ : NMIUMap (VNT X (RangeComm ρ)) P, (∀ x t, Ψ (x ⊗ᵥ t) = ρ x * t.val) ∧
+      IsWittrockDilationOf ⇑φ (RangeComm ρ) (ncpComp hP (nmiuNCP Ψ)) := by
   obtain ⟨Ψ, hΨ⟩ := (splitsOffCommutant_range_iff ρ).mp hs
   exact ⟨Ψ, hΨ, isWittrockDilationOf_paschke_of_mul φ ρ hP hD Ψ hΨ⟩
 
@@ -894,10 +853,9 @@ variable {P : Type u} [CStarAlgebra P] [PartialOrder P] [StarOrderedRing P]
 type I factor — here: `ℛ ≅ 𝓑(ℋ)` for a Hilbert space `ℋ` — then
 `a ⊗ t ↦ at` extends to an nmiu-isomorphism `ℛ ⊗ ℛ^□ ≅ 𝒫`.
 
-This is `exists_paschke_split` (the old 𝓑(ℋ)-proposition, whose proof is
-the note's, with the matrix-unit step replaced by the amplification
-theorem) for `ϱ : 𝓑(ℋ) ≅ ℛ ⊆ 𝒫`, transported along `𝓑(ℋ) ≅ ℛ` and the
-identification `ϱ(𝓑(ℋ))^□ = ℛ^□`. -/
+This is `exists_bh_split` (whose proof is the note's, with the matrix-unit
+step replaced by the amplification theorem) for `ϱ : 𝓑(ℋ) ≅ ℛ ⊆ 𝒫`,
+transported along `𝓑(ℋ) ≅ ℛ` and the identification `ϱ(𝓑(ℋ))^□ = ℛ^□`. -/
 theorem exists_typeI_factor_iso (R : StarSubalgebra ℂ P) (hR : IsVNSubalgebra P R)
     {H : Type u} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
     (e : (H →L[ℂ] H) ≃⋆ₐ[ℂ] SubVN R hR) :
@@ -918,9 +876,9 @@ theorem exists_typeI_factor_iso (R : StarSubalgebra ℂ P) (hR : IsVNSubalgebra 
   have hcomm : ∀ y, y ∈ relComm (rangeSub ρ) ↔ y ∈ relComm R := by
     intro y
     simp only [mem_relComm, hrng]
-  obtain ⟨Ψ₀, hΨ₀b, hΨ₀⟩ := exists_paschke_split ρ
-  set ι : NMIUMap (CommVN R) (PaschkeE ρ) :=
-    nmiuCorestrict Theses.A.Proc.VNSub.valNMIU (paschkeComm ρ) (isVNSubalgebra_paschkeComm ρ)
+  obtain ⟨Ψ₀, hΨ₀b, hΨ₀⟩ := exists_bh_split ρ
+  set ι : NMIUMap (CommVN R) (RangeComm ρ) :=
+    nmiuCorestrict Theses.A.Proc.VNSub.valNMIU (rangeComm ρ) (isVNSubalgebra_rangeComm ρ)
       (fun t => (hcomm _).mpr t.property)
   have hι : Function.Bijective ι :=
     nmiuCorestrict_bijective _ _ _ _ Theses.A.Proc.VNSub.valNMIU_injective
@@ -1011,7 +969,7 @@ end Centre
 
 /-! ## Corollary 13 -/
 
-section Cor12
+section Cor13
 
 variable {X : Type u} [CStarAlgebra X] [PartialOrder X] [StarOrderedRing X]
   [VonNeumannAlgebra X]
@@ -1030,9 +988,12 @@ theorem centre_linf_of_wittrock (φ : NCPMap X A) (ρ : NMIUMap X P) (hP : NCPMa
       Function.Bijective f :=
   centre_linf_of_splitsOffCommutant ((wittrock_iff_splitsOffCommutant φ ρ hP hD).mp hW)
 
-end Cor12
+end Cor13
 
-/-! ### Minimal projections: `ℓ^∞(I)` has them, atomless `L^∞` has none -/
+/-! ### Minimal projections: `ℓ^∞(I)` has them, atomless `L^∞` has none
+
+Also the minimal central projections of Proposition 7 (`IsMinCentralProj`),
+which state the hypothesis of Corollary 13, "in particular". -/
 
 section MinProj
 
@@ -1047,6 +1008,34 @@ theorem complex_idem {z : ℂ} (hz : z * z = z) : z = 0 ∨ z = 1 := by
 `0` or `p`. -/
 def IsMinProj {B : Type*} [Ring B] [StarRing B] (p : B) : Prop :=
   IsStarProjection p ∧ p ≠ 0 ∧ ∀ r : B, IsStarProjection r → r * p = r → r = 0 ∨ r = p
+
+section MinCentral
+
+variable {P : Type u} [CStarAlgebra P] [PartialOrder P] [StarOrderedRing P]
+  [VonNeumannAlgebra P]
+
+/-- A **minimal central projection** of `ℛ`: a non-zero projection of the
+centre of `ℛ` with no non-zero central projection strictly below it — that
+is, a minimal projection of the centre (`isMinCentralProj_of_isMinProj`).
+For `ℛ = ⊤` these are the minimal central projections of `𝒫` itself. -/
+def IsMinCentralProj (R : StarSubalgebra ℂ P) (c : P) : Prop :=
+  c ∈ centreSub R ∧ IsStarProjection c ∧ c ≠ 0 ∧
+    ∀ r ∈ centreSub R, IsStarProjection r → r * c = r → r = 0 ∨ r = c
+
+/-- A minimal projection of the centre, as an element of `𝒫`. -/
+theorem isMinCentralProj_of_isMinProj {R : StarSubalgebra ℂ P} {hR : IsVNSubalgebra P R}
+    {p : CentreVN R hR} (hp : IsMinProj p) : IsMinCentralProj R p.val := by
+  obtain ⟨⟨hpi, hps⟩, hp0, hpmin⟩ := hp
+  refine ⟨p.property, ⟨congrArg Theses.A.Proc.VNSub.val hpi.eq,
+    congrArg Theses.A.Proc.VNSub.val hps⟩, fun h => hp0 (Theses.A.Proc.VNSub.val_injective h),
+    fun r hr hri hrp => ?_⟩
+  rcases hpmin ⟨r, hr⟩ ⟨Theses.A.Proc.VNSub.val_injective hri.isIdempotentElem.eq,
+      Theses.A.Proc.VNSub.val_injective hri.isSelfAdjoint.star_eq⟩
+      (Theses.A.Proc.VNSub.val_injective hrp) with h | h
+  · exact Or.inl (congrArg Theses.A.Proc.VNSub.val h)
+  · exact Or.inr (congrArg Theses.A.Proc.VNSub.val h)
+
+end MinCentral
 
 /-- `ℓ^∞(I)` has a minimal projection as soon as `I` is nonempty: `δ_i`. -/
 theorem linf_isMinProj {I : Type u} (i : I) : IsMinProj (lpKappa i (1 : ℂ) : linf I) := by
@@ -1163,8 +1152,8 @@ theorem bm_mul' {f g : Ω → ℂ} (hf : IsBoundedMeasurable Ω f) (hg : IsBound
   rw [Pi.mul_apply, norm_mul]
   exact mul_le_mul (hC x) (hD x) (norm_nonneg _) ((norm_nonneg _).trans (hC x))
 
-/-- The **L^∞ half of Corollary 13**, in the form used: `L^∞` of a measure
-space without atoms has no minimal projection.  A projection is `q(1_S)`
+/-- The example of Corollary 13, "in particular": `L^∞` of a measure space
+without atoms has no minimal projection.  A projection is `q(1_S)`
 for a measurable `S`, and minimality of `q(1_S)` makes `S` an atom. -/
 theorem linfty_no_minProj (hc : ContinuousSpace μ) {X : Type*} [CStarAlgebra X]
     [PartialOrder X] [StarOrderedRing X] (q : (Ω → ℂ) → X) (hq : IsLinftyOf μ X q)
@@ -1216,10 +1205,8 @@ theorem linfty_no_minProj (hc : ContinuousSpace μ) {X : Type*} [CStarAlgebra X]
   · refine pos_iff_ne_zero.mpr fun h0 => hne ?_
     rw [← he₀S]
     exact (hq.kernel _ (bm_indicator' hSm)).mpr
-      ((Set.indicator_ae_eq_zero).mpr (by
-        first
-        | exact MeasureTheory.measure_mono_null Set.inter_subset_right h0
-        | exact MeasureTheory.measure_mono_null Set.inter_subset_left h0))
+      ((Set.indicator_ae_eq_zero).mpr
+        (MeasureTheory.measure_mono_null Set.inter_subset_left h0))
   · set e := q (S'.indicator 1)
     have he : IsStarProjection e := by
       refine ⟨?_, ?_⟩
@@ -1250,26 +1237,28 @@ theorem linfty_no_minProj (hc : ContinuousSpace μ) {X : Type*} [CStarAlgebra X]
 
 end MinProj
 
-section Cor12Linfty
+section Cor13Centre
 
 variable {X : Type u} [CStarAlgebra X] [PartialOrder X] [StarOrderedRing X]
   [VonNeumannAlgebra X]
   {P : Type u} [CStarAlgebra P] [PartialOrder P] [StarOrderedRing P] [VonNeumannAlgebra P]
   {A : Type u} [CStarAlgebra A] [PartialOrder A] [StarOrderedRing A] [VonNeumannAlgebra A]
 
-/-- The note's **Corollary 13**, second claim, for a given Paschke
-dilation: a non-zero ncp-map out of `L^∞` of a measure space without atoms
-has no Wittrock dilation.  `L^∞(Ω)` is given, as in thesis A, by a
-presentation `q : (Ω → ℂ) → 𝒳` (`IsLinftyOf`).
+/-- The note's **Corollary 13**, "in particular", for a given Paschke
+dilation: if the centre of `𝒳` has no minimal projections — that is, `𝒳`
+has no minimal central projection (`IsMinCentralProj ⊤`) — then no
+non-zero ncp-map `φ : 𝒳 → 𝒜` has a Wittrock dilation.
 
-The note's argument: `ϱ(𝒳) ≅ c𝒳` is commutative, so it is its own centre,
-which would be `≅ ℓ^∞(I)` with `I ≠ ∅`; a minimal projection of `ℓ^∞(I)`
-pulls back to one of `c𝒳 ⊆ 𝒳`, and `L^∞` of an atomless space has none
-(`linfty_no_minProj`). -/
-theorem not_wittrock_of_linfty_paschke (φ : NCPMap X A) (ρ : NMIUMap X P) (hP : NCPMap P A)
+The note's argument: `ϱ(𝒳) ≅ c𝒳` for a central projection `c` of `𝒳`
+(**69IVa**, `nmiu_factors_maps`), and the centre of `ϱ(𝒳)`, being
+`≅ ℓ^∞(I)` with `I ≠ ∅` (the first claim), has a minimal projection
+`p = ϱ(y₀)`, `y₀ ∈ c𝒳`.  Then `y₀` is a central projection of `𝒳`, and it is
+minimal among them: a central projection below `y₀` lies in `c𝒳`, and its
+image under `ϱ` is a central projection of `ϱ(𝒳)` below `p`. -/
+theorem not_wittrock_of_centre_no_minProj_paschke (φ : NCPMap X A) (ρ : NMIUMap X P)
+    (hP : NCPMap P A)
     (hD : IsPaschkeDilationOf (⟨P, inferInstance, ρ, hP⟩ : PaschkeTriple X A) ⇑φ)
-    {Ω : Type u} [MeasurableSpace Ω] (μ : MeasureTheory.Measure Ω) (hc : ContinuousSpace μ)
-    (q : (Ω → ℂ) → X) (hq : IsLinftyOf μ X q) (hφ : ∃ x, φ x ≠ 0) :
+    (hZ : ∀ c : X, ¬ IsMinCentralProj (⊤ : StarSubalgebra ℂ X) c) (hφ : ∃ x, φ x ≠ 0) :
     ¬ ∃ (E : Type u) (_ : CStarAlgebra E) (_ : PartialOrder E) (_ : StarOrderedRing E)
       (_ : VonNeumannAlgebra E) (h : NCPMap (VNT X E) A), IsWittrockDilationOf ⇑φ E h := by
   intro hW
@@ -1284,18 +1273,13 @@ theorem not_wittrock_of_linfty_paschke (φ : NCPMap X A) (ρ : NMIUMap X P) (hP 
   have hZn : Nontrivial (CentreVN (rangeSub ρ) (nmiu_image ρ)) :=
     ⟨⟨1, 0, fun h => one_ne_zero (congrArg Theses.A.Proc.VNSub.val h)⟩⟩
   obtain ⟨p, ⟨hpi, hps⟩, hp0, hpmin⟩ := exists_isMinProj_of_linf f hf
+  -- `ϱ = H ∘ G` with `G : 𝒳 → c𝒳` the compression and `H : c𝒳 → 𝒫` injective
   obtain ⟨c, G, H, -, -, hH, -, hHi, hfa⟩ :=
     nmiu_factors_maps ρ (nmiuP ρ) ρ.preservesDirSups' (fun _ => rfl)
   have hHm : ∀ a b, H (a * b) = H a * H b := fun a b => map_mul H.toStarAlgHom a b
   have hHs : ∀ a, H (star a) = star (H a) := fun a => map_star H.toStarAlgHom a
   have hH0 : H 0 = 0 := map_zero H.toStarAlgHom
   have hρm : ∀ a b, ρ (a * b) = ρ a * ρ b := fun a b => map_mul ρ.toStarAlgHom a b
-  -- `𝒳 = L^∞(Ω)` is commutative
-  have hXc : ∀ a b : X, a * b = b * a := by
-    intro a b
-    obtain ⟨g₁, hg₁, rfl⟩ := hq.surj a
-    obtain ⟨g₂, hg₂, rfl⟩ := hq.surj b
-    rw [← hq.mul _ _ hg₁ hg₂, ← hq.mul _ _ hg₂ hg₁, mul_comm]
   obtain ⟨x₀, hx₀⟩ := p.property.1
   set y₀ := G x₀
   have hy₀ : H y₀ = p.val := by rw [← hfa]; exact hx₀
@@ -1303,24 +1287,41 @@ theorem not_wittrock_of_linfty_paschke (φ : NCPMap X A) (ρ : NMIUMap X P) (hP 
     rw [hHm, hy₀]; exact congrArg Theses.A.Proc.VNSub.val hpi.eq)
   have hy₀s : star y₀ = y₀ := hHi (by
     rw [hHs, hy₀]; exact congrArg Theses.A.Proc.VNSub.val hps)
-  refine linfty_no_minProj μ hc q hq (y₀ : X) ⟨⟨congrArg Subtype.val hy₀i,
-    congrArg Subtype.val hy₀s⟩, fun h => hp0 ?_, fun e he hee => ?_⟩
+  -- `y₀` is central in `𝒳`: `y₀ b` and `b y₀` lie in `c𝒳`, with images
+  -- `p ϱ(b) = ϱ(b) p` under the injective `H`
+  have hy₀c : ∀ b : X, b * (y₀ : X) = y₀ * b := by
+    intro b
+    have hcy : c.val * (y₀ : X) = y₀ := y₀.property
+    have h₁ : c.val * (b * y₀) = b * y₀ := by rw [← mul_assoc, c.isCentral b, mul_assoc, hcy]
+    have h₂ : c.val * (y₀ * b) = y₀ * b := by rw [← mul_assoc, hcy]
+    have hpb : ρ b * p.val = p.val * ρ b := mem_relComm.mp p.property.2 _ ⟨b, rfl⟩
+    have := hHi (a₁ := ⟨b * y₀, h₁⟩) (a₂ := ⟨y₀ * b, h₂⟩) (by
+      rw [hH, hH]
+      change ρ (b * y₀) = ρ (y₀ * b)
+      rw [hρm, hρm, ← hH, hy₀, hpb])
+    exact congrArg Subtype.val this
+  refine hZ y₀ ⟨⟨trivial, mem_relComm.mpr fun b _ => hy₀c b⟩,
+    ⟨congrArg Subtype.val hy₀i, congrArg Subtype.val hy₀s⟩, fun h => hp0 ?_,
+    fun e he hep hee => ?_⟩
   · refine Theses.A.Proc.VNSub.val_injective ?_
     rw [← hy₀, show y₀ = 0 from Subtype.ext h, hH0]
     rfl
-  · have hce : c.val * e = e := by
+  · -- a central projection `e ≤ y₀` of `𝒳` lies in `c𝒳`
+    have hec : ∀ b : X, b * e = e * b := fun b => mem_relComm.mp he.2 b trivial
+    have hce : c.val * e = e := by
       calc c.val * e = c.val * (e * y₀) := by rw [hee]
         _ = e * (c.val * y₀) := by rw [← mul_assoc, c.isCentral e, mul_assoc]
         _ = e := by rw [show c.val * (y₀ : X) = y₀ from y₀.property, hee]
     set y : c.sub := ⟨e, hce⟩
-    have hyi : y * y = y := Subtype.ext he.isIdempotentElem.eq
-    have hys : star y = y := Subtype.ext he.isSelfAdjoint.star_eq
+    have hyi : y * y = y := Subtype.ext hep.isIdempotentElem.eq
+    have hys : star y = y := Subtype.ext hep.isSelfAdjoint.star_eq
     have hyy : y * y₀ = y := Subtype.ext hee
+    -- and `ϱ(e) = H(y)` is a central projection of `ϱ(𝒳)` below `p`
     have hmem : H y ∈ centreSub (rangeSub ρ) := by
       refine ⟨⟨e, (hH y).symm⟩, mem_relComm.mpr ?_⟩
       rintro _ ⟨x, rfl⟩
       change ρ x * H y = H y * ρ x
-      rw [hH, ← hρm, ← hρm, hXc]
+      rw [hH, ← hρm, ← hρm, hec]
     set r : CentreVN (rangeSub ρ) (nmiu_image ρ) := ⟨H y, hmem⟩
     have hr : IsStarProjection r :=
       ⟨Theses.A.Proc.VNSub.val_injective (by
@@ -1337,10 +1338,46 @@ theorem not_wittrock_of_linfty_paschke (φ : NCPMap X A) (ρ : NMIUMap X P) (hP 
       have : H y = H y₀ := by rw [hy₀]; exact congrArg Theses.A.Proc.VNSub.val h
       exact congrArg Subtype.val (hHi this)
 
-/-- The note's **Corollary 13**, second claim: no non-zero ncp-map
-`L^∞(Ω) → 𝒜` on a measure space without atoms has a Wittrock dilation.
-(σ-finiteness, which the note assumes, is not needed once `L^∞(Ω)` is
-given as a von Neumann algebra `𝒳` with a presentation `q`.) -/
+/-- The note's **Corollary 13**, "in particular": if the centre of `𝒳` has
+no minimal projections (`𝒳` has no minimal central projection), then no
+non-zero ncp-map `φ : 𝒳 → 𝒜` has a Wittrock dilation — for the Paschke
+dilation of **154III**. -/
+theorem not_wittrock_of_centre_no_minProj (φ : NCPMap X A)
+    (hZ : ∀ c : X, ¬ IsMinCentralProj (⊤ : StarSubalgebra ℂ X) c) (hφ : ∃ x, φ x ≠ 0) :
+    ¬ ∃ (E : Type u) (_ : CStarAlgebra E) (_ : PartialOrder E) (_ : StarOrderedRing E)
+      (_ : VonNeumannAlgebra E) (h : NCPMap (VNT X E) A), IsWittrockDilationOf ⇑φ E h := by
+  obtain ⟨M⟩ := existence_paschke φ
+  let _ : VonNeumannAlgebra (Ba A M.X)ᵐᵒᵖ :=
+    @vonNeumannAlgebra_mulOpposite (Ba A M.X) _ _ _ (ba_vonNeumannAlgebra M.selfDual)
+  exact not_wittrock_of_centre_no_minProj_paschke φ M.ρ M.h (existence_paschke_5 φ M) hZ hφ
+
+/-- The note's example for **Corollary 13**, "in particular", for a given
+Paschke dilation: a non-zero ncp-map out of `L^∞` of a measure space without
+atoms has no Wittrock dilation.  `L^∞(Ω)` is given, as in thesis A, by a
+presentation `q : (Ω → ℂ) → 𝒳` (`IsLinftyOf`).  It is commutative, so its
+centre is all of it, and it has no minimal projection
+(`linfty_no_minProj`). -/
+theorem not_wittrock_of_linfty_paschke (φ : NCPMap X A) (ρ : NMIUMap X P) (hP : NCPMap P A)
+    (hD : IsPaschkeDilationOf (⟨P, inferInstance, ρ, hP⟩ : PaschkeTriple X A) ⇑φ)
+    {Ω : Type u} [MeasurableSpace Ω] (μ : MeasureTheory.Measure Ω) (hc : ContinuousSpace μ)
+    (q : (Ω → ℂ) → X) (hq : IsLinftyOf μ X q) (hφ : ∃ x, φ x ≠ 0) :
+    ¬ ∃ (E : Type u) (_ : CStarAlgebra E) (_ : PartialOrder E) (_ : StarOrderedRing E)
+      (_ : VonNeumannAlgebra E) (h : NCPMap (VNT X E) A), IsWittrockDilationOf ⇑φ E h := by
+  refine not_wittrock_of_centre_no_minProj_paschke φ ρ hP hD (fun e he => ?_) hφ
+  obtain ⟨-, hep, he0, hemin⟩ := he
+  -- `𝒳 = L^∞(Ω)` is commutative
+  have hXc : ∀ a b : X, a * b = b * a := by
+    intro a b
+    obtain ⟨g₁, hg₁, rfl⟩ := hq.surj a
+    obtain ⟨g₂, hg₂, rfl⟩ := hq.surj b
+    rw [← hq.mul _ _ hg₁ hg₂, ← hq.mul _ _ hg₂ hg₁, mul_comm]
+  exact linfty_no_minProj μ hc q hq e ⟨hep, he0, fun r hr hre =>
+    hemin r ⟨trivial, mem_relComm.mpr fun a _ => hXc a r⟩ hr hre⟩
+
+/-- The note's example for **Corollary 13**, "in particular": no non-zero
+ncp-map `L^∞(Ω) → 𝒜` on a measure space without atoms has a Wittrock
+dilation.  No σ-finiteness is needed once `L^∞(Ω)` is given as a von
+Neumann algebra `𝒳` with a presentation `q`. -/
 theorem not_wittrock_of_linfty (φ : NCPMap X A)
     {Ω : Type u} [MeasurableSpace Ω] (μ : MeasureTheory.Measure Ω) (hc : ContinuousSpace μ)
     (q : (Ω → ℂ) → X) (hq : IsLinftyOf μ X q) (hφ : ∃ x, φ x ≠ 0) :
@@ -1351,13 +1388,13 @@ theorem not_wittrock_of_linfty (φ : NCPMap X A)
     @vonNeumannAlgebra_mulOpposite (Ba A M.X) _ _ _ (ba_vonNeumannAlgebra M.selfDual)
   exact not_wittrock_of_linfty_paschke φ M.ρ M.h (existence_paschke_5 φ M) μ hc q hq hφ
 
-end Cor12Linfty
+end Cor13Centre
 
 /-! ## Ultraweak sums of ncp-maps
 
-The construction behind `exists_wsum` of `Wittrock.lean`, for an arbitrary
-family: if the finite partial sums of a family of ncp-maps are bounded at
-`1`, the family has an ultraweak sum, which is again ncp (**96III**). -/
+If the finite partial sums of a family of ncp-maps are bounded at `1`, the
+family has an ultraweak sum, which is again ncp (**96III**).  This adds up
+the blocks below, and the direct sums of `WittrockSum.lean`. -/
 
 section UWSum
 
@@ -1523,23 +1560,23 @@ commutant: the ultraweak sum of the blocks is the nmiu-extension of Lemma 9. -/
 theorem splitsOffCommutant_range_of_blocks {I : Type u} {Xs : I → Type u}
     [∀ i, CStarAlgebra (Xs i)] [∀ i, Nontrivial (Xs i)] [∀ i, PartialOrder (Xs i)]
     [∀ i, StarOrderedRing (Xs i)] [∀ i, VonNeumannAlgebra (Xs i)]
-    (ρ : NMIUMap (lp Xs ∞) P) (ms : ∀ i, NCPMap (VNT (Xs i) (PaschkeE ρ)) P)
+    (ρ : NMIUMap (lp Xs ∞) P) (ms : ∀ i, NCPMap (VNT (Xs i) (RangeComm ρ)) P)
     (hms : ∀ i x t, ms i (x ⊗ᵥ t) = ρ (lpKappa i x) * t.val) :
     SplitsOffCommutant (rangeSub ρ) (nmiu_image ρ) := by
   classical
   rw [splitsOffCommutant_range_iff]
   have hρm : ∀ a b, ρ (a * b) = ρ a * ρ b := fun a b => map_mul ρ.toStarAlgHom a b
   have hρ1 : ρ 1 = 1 := map_one ρ.toStarAlgHom
-  have hcomm : ∀ (t : PaschkeE ρ) (x : lp Xs ∞), ρ x * t.val = t.val * ρ x :=
-    fun t x => mem_paschkeComm.mp t.property x
-  set g : I → NCPMap (VNT (lp Xs ∞) (PaschkeE ρ)) P := fun i =>
-    ncpComp (ms i) (tmap (nmiuNCP (lpProjNMIU i)) (ncpId (PaschkeE ρ)))
+  have hcomm : ∀ (t : RangeComm ρ) (x : lp Xs ∞), ρ x * t.val = t.val * ρ x :=
+    fun t x => mem_rangeComm.mp t.property x
+  set g : I → NCPMap (VNT (lp Xs ∞) (RangeComm ρ)) P := fun i =>
+    ncpComp (ms i) (tmap (nmiuNCP (lpProjNMIU i)) (ncpId (RangeComm ρ)))
   have hg : ∀ i x t, g i (x ⊗ᵥ t) = ρ (lpKappa i ((x : ∀ j, Xs j) i)) * t.val := by
     intro i x t
     simp only [g]
     rw [ncpComp_apply, tmap_apply, nmiuNCP_apply, ncpId_apply, lpProjNMIU_apply, hms]
-  have hone : ((1 : lp Xs ∞) ⊗ᵥ (1 : PaschkeE ρ)) = 1 :=
-    (vnTensor (lp Xs ∞) (PaschkeE ρ)).isTensorProduct.miu.1
+  have hone : ((1 : lp Xs ∞) ⊗ᵥ (1 : RangeComm ρ)) = 1 :=
+    (vnTensor (lp Xs ∞) (RangeComm ρ)).isTensorProduct.miu.1
   have hsumρ : ∀ (F : Finset I) (x : lp Xs ∞),
       ∑ i ∈ F, ρ (lpKappa (𝒜 := Xs) i ((x : ∀ j, Xs j) i))
         = ρ (∑ i ∈ F, lpKappa (𝒜 := Xs) i ((x : ∀ j, Xs j) i)) :=
@@ -1571,7 +1608,7 @@ theorem splitsOffCommutant_range_of_blocks {I : Type u} {Xs : I → Type u}
     simp only [Function.comp_apply, hg]
     rw [← Finset.sum_mul, hsumρ]
   have hL1 : L 1 = 1 := by rw [← hone, hLel, hρ1]; exact one_mul _
-  have hLmul : ∀ (x x' : lp Xs ∞) (t t' : PaschkeE ρ),
+  have hLmul : ∀ (x x' : lp Xs ∞) (t t' : RangeComm ρ),
       L ((x * x') ⊗ᵥ (t * t')) = L (x ⊗ᵥ t) * L (x' ⊗ᵥ t') := by
     intro x x' t t'
     rw [hLel, hLel, hLel, hρm]
@@ -1582,14 +1619,14 @@ theorem splitsOffCommutant_range_of_blocks {I : Type u} {Xs : I → Type u}
 /-- A block `θ : 𝓑(ℋ) → ϱ(𝒳) ⊆ 𝒫` (a normal ∗-homomorphism, not
 necessarily unital) gives an ncp-map `𝓑(ℋ) ⊗ ϱ(𝒳)^□ → 𝒫`,
 `x ⊗ t ↦ θ(x)t`: in the corner `q𝒫q`, `q = θ(1)`, Lemma 6
-(`exists_paschke_split`) applies to the unital `θ : 𝓑(ℋ) → q𝒫q`, and
+(`exists_bh_split`) applies to the unital `θ : 𝓑(ℋ) → q𝒫q`, and
 `t ↦ qtq` maps `ϱ(𝒳)^□` into the commutant of `θ(𝓑(ℋ))` in `q𝒫q`. -/
 theorem exists_bh_piece {X : Type u} [CStarAlgebra X] [PartialOrder X] [StarOrderedRing X]
     [VonNeumannAlgebra X] (ρ : NMIUMap X P)
     {H : Type u} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
     (θ : NCPMap (H →L[ℂ] H) P) (hθm : ∀ a b, θ (a * b) = θ a * θ b)
     (hθs : ∀ a, θ (star a) = star (θ a)) (hθρ : ∀ a, θ a ∈ rangeSub ρ) :
-    ∃ m : NCPMap (VNT (H →L[ℂ] H) (PaschkeE ρ)) P, ∀ x t, m (x ⊗ᵥ t) = θ x * t.val := by
+    ∃ m : NCPMap (VNT (H →L[ℂ] H) (RangeComm ρ)) P, ∀ x t, m (x ⊗ᵥ t) = θ x * t.val := by
   set q := θ 1 with hqdef
   have hq : IsStarProjection q :=
     ⟨by rw [IsIdempotentElem, hqdef, ← hθm, one_mul],
@@ -1597,11 +1634,11 @@ theorem exists_bh_piece {X : Type u} [CStarAlgebra X] [PartialOrder X] [StarOrde
   have : Fact (IsStarProjection q) := ⟨hq⟩
   have hqx : ∀ x, q * θ x = θ x := fun x => by rw [hqdef, ← hθm, one_mul]
   have hxq : ∀ x, θ x * q = θ x := fun x => by rw [hqdef, ← hθm, mul_one]
-  have hcommρ : ∀ (t : PaschkeE ρ) (a : H →L[ℂ] H), θ a * t.val = t.val * θ a := by
+  have hcommρ : ∀ (t : RangeComm ρ) (a : H →L[ℂ] H), θ a * t.val = t.val * θ a := by
     intro t a
     obtain ⟨y, hy⟩ := hθρ a
     rw [← hy]
-    exact mem_paschkeComm.mp t.property y
+    exact mem_rangeComm.mp t.property y
   -- `θ` as a unital nmiu-map into the corner `q𝒫q`
   have hmemq : ∀ x, q * θ x * q = θ x := fun x => by rw [hqx, hxq]
   let θ' : NMIUMap (H →L[ℂ] H) (Corner P q) :=
@@ -1625,19 +1662,19 @@ theorem exists_bh_piece {X : Type u} [CStarAlgebra X] [PartialOrder X] [StarOrde
         · intro u hu
           exact hfn.2 (by rintro _ ⟨d, hd, rfl⟩; exact hu ⟨d, hd, rfl⟩) }
   have hθ' : ∀ x, (θ' x).val = θ x := fun x => rfl
-  obtain ⟨Ψ, -, hΨ⟩ := exists_paschke_split θ'
+  obtain ⟨Ψ, -, hΨ⟩ := exists_bh_split θ'
   -- `t ↦ qtq : ϱ(𝒳)^□ → θ'(𝓑(ℋ))^□`
   obtain ⟨fq, hfq⟩ := exists_adToCorner q q hq.isIdempotentElem.eq
-  set base := ncpComp fq (nmiuNCP (Theses.A.Proc.VNSub.valNMIU (A := P) (S := paschkeComm ρ)
-    (hS := isVNSubalgebra_paschkeComm ρ)))
-  have hbase : ∀ t : PaschkeE ρ, (base t).val = q * t.val * q := by
+  set base := ncpComp fq (nmiuNCP (Theses.A.Proc.VNSub.valNMIU (A := P) (S := rangeComm ρ)
+    (hS := isVNSubalgebra_rangeComm ρ)))
+  have hbase : ∀ t : RangeComm ρ, (base t).val = q * t.val * q := by
     intro t
     rw [ncpComp_apply, hfq, nmiuNCP_apply, Theses.A.Proc.VNSub.valNMIU_apply,
       hq.isSelfAdjoint.star_eq]
-  have hqt : ∀ t : PaschkeE ρ, q * t.val = t.val * q := fun t => hcommρ t 1
-  have hmem : ∀ t, base t ∈ paschkeComm θ' := by
+  have hqt : ∀ t : RangeComm ρ, q * t.val = t.val * q := fun t => hcommρ t 1
+  have hmem : ∀ t, base t ∈ rangeComm θ' := by
     intro t
-    rw [mem_paschkeComm]
+    rw [mem_rangeComm]
     intro x
     refine Corner.val_injective ?_
     change θ x * (base t).val = (base t).val * θ x
@@ -1646,7 +1683,7 @@ theorem exists_bh_piece {X : Type u} [CStarAlgebra X] [PartialOrder X] [StarOrde
     have e2 : q * t.val * q * θ x = t.val * θ x := by
       rw [mul_assoc, hqx, mul_assoc, ← hcommρ, ← mul_assoc, hqx, hcommρ]
     rw [hbase, e1, e2]
-  set τ := ncpCorestrict base (paschkeComm θ') (isVNSubalgebra_paschkeComm θ') hmem
+  set τ := ncpCorestrict base (rangeComm θ') (isVNSubalgebra_rangeComm θ') hmem
   refine ⟨ncpComp (cornerIncl q).toNCPMap (ncpComp (nmiuNCP Ψ) (tmap (ncpId _) τ)),
     fun x t => ?_⟩
   rw [ncpComp_apply, ncpComp_apply, tmap_apply, ncpId_apply, nmiuNCP_apply, cornerIncl_apply,
@@ -1661,7 +1698,7 @@ theorem splitsOffCommutant_range_lp_bh {I : Type u} {Hs : I → Type u}
     [∀ i, CompleteSpace (Hs i)] [∀ i, Nontrivial (Hs i →L[ℂ] Hs i)]
     (ρ : NMIUMap (lp (fun i => Hs i →L[ℂ] Hs i) ∞) P) :
     SplitsOffCommutant (rangeSub ρ) (nmiu_image ρ) := by
-  have hpiece : ∀ i, ∃ m : NCPMap (VNT (Hs i →L[ℂ] Hs i) (PaschkeE ρ)) P,
+  have hpiece : ∀ i, ∃ m : NCPMap (VNT (Hs i →L[ℂ] Hs i) (RangeComm ρ)) P,
       ∀ x t, m (x ⊗ᵥ t) = ρ (lpKappa (𝒜 := fun i => Hs i →L[ℂ] Hs i) i x) * t.val := by
     intro i
     set θ := ncpComp (nmiuNCP ρ) (lpKappaNCP (𝒜 := fun i => Hs i →L[ℂ] Hs i) i)
@@ -1741,7 +1778,7 @@ end AtomicTypeI
 
 /-! ## Proposition 7 -/
 
-section Prop6
+section Prop7
 
 variable {P : Type u} [CStarAlgebra P] [PartialOrder P] [StarOrderedRing P]
   [VonNeumannAlgebra P]
@@ -1785,25 +1822,6 @@ theorem isVNSubalgebra_cornerSub {R : StarSubalgebra ℂ P} (hR : IsVNSubalgebra
     · rintro _ ⟨x, hx, rfl⟩ _ ⟨z, hz, rfl⟩
       obtain ⟨v, hv, hxv, hzv⟩ := hdir x hx z hz
       exact ⟨Corner.saMap v, ⟨v, hv, rfl⟩, hxv, hzv⟩⟩
-
-/-- A **minimal central projection** of `ℛ`: a non-zero projection of the
-centre of `ℛ` with no non-zero central projection strictly below it. -/
-def IsMinCentralProj (R : StarSubalgebra ℂ P) (c : P) : Prop :=
-  c ∈ centreSub R ∧ IsStarProjection c ∧ c ≠ 0 ∧
-    ∀ r ∈ centreSub R, IsStarProjection r → r * c = r → r = 0 ∨ r = c
-
-/-- A minimal projection of the centre, as an element of `𝒫`. -/
-theorem isMinCentralProj_of_isMinProj {R : StarSubalgebra ℂ P} {hR : IsVNSubalgebra P R}
-    {p : CentreVN R hR} (hp : IsMinProj p) : IsMinCentralProj R p.val := by
-  obtain ⟨⟨hpi, hps⟩, hp0, hpmin⟩ := hp
-  refine ⟨p.property, ⟨congrArg Theses.A.Proc.VNSub.val hpi.eq,
-    congrArg Theses.A.Proc.VNSub.val hps⟩, fun h => hp0 (Theses.A.Proc.VNSub.val_injective h),
-    fun r hr hri hrp => ?_⟩
-  rcases hpmin ⟨r, hr⟩ ⟨Theses.A.Proc.VNSub.val_injective hri.isIdempotentElem.eq,
-      Theses.A.Proc.VNSub.val_injective hri.isSelfAdjoint.star_eq⟩
-      (Theses.A.Proc.VNSub.val_injective hrp) with h | h
-  · exact Or.inl (congrArg Theses.A.Proc.VNSub.val h)
-  · exact Or.inr (congrArg Theses.A.Proc.VNSub.val h)
 
 variable {R : StarSubalgebra ℂ P} {hR : IsVNSubalgebra P R}
 
@@ -2030,6 +2048,6 @@ theorem splitsOffCommutant_iff_centre_corners :
       fun c _ hc => splitsOffCommutant_corner hs c hc.1⟩,
     fun ⟨hZ, hC⟩ => splitsOffCommutant_of_centre_corners hZ hC⟩
 
-end Prop6
+end Prop7
 
 end Theses.B.Dils

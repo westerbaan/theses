@@ -558,7 +558,7 @@ theorem exists_bh_of_vnt_bh [Nontrivial A] [Nontrivial B] {K : Type u}
         rw [ncpComp_apply, ncpComp_apply, adSelf_apply, adSelf_apply, h1q.star_eq, nmiuNCP_apply,
           vtmulOneNMIU_apply, sliceRight_apply, vtmul_mul_vtmul', vtmul_mul_vtmul',
           vtmul_mul_vtmul', vtmul_mul_vtmul', hcorner_q]
-        simp only [one_mul, mul_one, hqp.isIdempotentElem.eq, hsmul, vtmul_smul_right']
+        simp only [one_mul, mul_one, hqp.isIdempotentElem.eq, hsmul, EqL.vtmul_smul_right]
     have h' := congrArg (fun f : NCPMap (VNT A B) (VNT A B) => f w) h
     simp only [ncpComp_apply, adSelf_apply, h1q.star_eq, nmiuNCP_apply, vtmulOneNMIU_apply,
       vtmul_mul_vtmul', one_mul, mul_one, hqp.isIdempotentElem.eq] at h'
@@ -617,9 +617,6 @@ end Takesaki
 section FactorCase
 
 variable {K : Type u} [NormedAddCommGroup K] [InnerProductSpace ℂ K] [CompleteSpace K]
-
-/-- The commutant within `𝓑(𝒦)` is the ordinary commutant. -/
-theorem relComm_eq_vnComm (S : StarSubalgebra ℂ (K →L[ℂ] K)) : relComm S = vnComm S := rfl
 
 /-- The factor case of the note's **Proposition 8**, `⇒`: a factor
 `ℛ ⊆ 𝓑(𝒦)` that splits off its commutant is a type I factor.  The
@@ -721,11 +718,11 @@ theorem splitsOffCommutant_transport (Θ : P ≃⋆ₐ[ℂ] P') {R : StarSubalge
   set ρ := transportMap Θ R hR
   set Θn := nmiuOfBijective Θ.toStarAlgHom Θ.bijective
   set Θi := nmiuOfBijective Θ.symm.toStarAlgHom Θ.symm.bijective
-  have hmem : ∀ t : PaschkeE ρ, Θi (Theses.A.Proc.VNSub.valNMIU t) ∈ relComm R := by
+  have hmem : ∀ t : RangeComm ρ, Θi (Theses.A.Proc.VNSub.valNMIU t) ∈ relComm R := by
     intro t
     rw [mem_relComm]
     intro a ha
-    have hc := mem_paschkeComm.mp t.property ⟨a, ha⟩
+    have hc := mem_rangeComm.mp t.property ⟨a, ha⟩
     rw [transportMap_apply] at hc
     apply Θ.injective
     change Θ (a * Θ.symm t.val) = Θ (Θ.symm t.val * a)
@@ -860,9 +857,6 @@ def cornerCompress (c : P) [Fact (IsStarProjection c)] (hc : c ∈ centreSub R) 
       change c * star x.val = star (c * x.val)
       rw [star_mul, hcp.isSelfAdjoint.star_eq, hcc _ (star_mem x.property)])) }
 
-theorem cornerCompress_val (c : P) [Fact (IsStarProjection c)] (hc : c ∈ centreSub R)
-    (x : SubVN R hR) : (cornerCompress (hR := hR) c hc x).val.val = c * x.val := rfl
-
 end CornerCompress
 
 
@@ -889,14 +883,9 @@ def lpOfFamily {A : Type*} [CStarAlgebra A] {ι : Type*} {B : ι → Type*}
   map_star' x := lp.ext (funext fun i => by
     rw [lp.coeFn_star, Pi.star_apply]; exact map_star (φ i) x)
 
-theorem lpOfFamily_apply {A : Type*} [CStarAlgebra A] {ι : Type*} {B : ι → Type*}
-    [∀ i, CStarAlgebra (B i)] [∀ i, Nontrivial (B i)] (φ : ∀ i, A →⋆ₐ[ℂ] B i)
-    (hφ : ∀ x i, ‖φ i x‖ ≤ ‖x‖) (x : A) (i : ι) :
-    ((lpOfFamily φ hφ x : lp B ∞) : ∀ i, B i) i = φ i x := rfl
-
 end LpFamily
 
-section Prop7
+section Prop8
 
 variable {K : Type u} [NormedAddCommGroup K] [InnerProductSpace ℂ K] [CompleteSpace K]
 
@@ -1065,11 +1054,11 @@ theorem splitsOffCommutant_bh_iff {R : StarSubalgebra ℂ (K →L[ℂ] K)}
     {hR : IsVNSubalgebra _ R} : SplitsOffCommutant R hR ↔ AtomicTypeI (SubVN R hR) :=
   ⟨atomicTypeI_of_splitsOffCommutant_bh, splitsOffCommutant_of_atomicTypeI R hR⟩
 
-end Prop7
+end Prop8
 
 /-! ## Corollary 14 -/
 
-section Cor13
+section Cor14
 
 variable {X : Type u} [CStarAlgebra X] [PartialOrder X] [StarOrderedRing X]
   [VonNeumannAlgebra X]
@@ -1130,6 +1119,6 @@ theorem not_wittrock_of_factor_not_typeI (φ : NCPMap X (H →L[ℂ] H)) (hφ : 
   obtain ⟨H', i1, i2, i3, ⟨e'⟩⟩ := exists_bh_of_factor_splits _ _ hfac hs
   exact hnI ⟨H', i1, i2, i3, ⟨e.trans e'⟩⟩
 
-end Cor13
+end Cor14
 
 end Theses.B.Dils

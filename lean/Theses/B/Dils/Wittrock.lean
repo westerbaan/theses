@@ -6,8 +6,11 @@ Neumann Algebras*, arXiv:1803.01911), chapter 2: Dilations — a companion.
 `wittrock-dil.tex` (repository root), not a thesis point, and carries no
 DISP code and no audit row.  Thesis points it uses are cited by number, as
 elsewhere in the tree.  The formalization of the note is spread over three
-files: this one, `WittrockSplit.lean` (Definition 4 to Corollary 13) and
-`WittrockBK.lean` (Proposition 8 and Corollary 14).
+files: this one, `WittrockSplit.lean` (Lemma 3, and Definition 4 to
+Corollary 13) and `WittrockBK.lean` (Proposition 8 and Corollary 14).
+`WittrockSum.lean` adds a result that is not in the note: Wittrock dilations
+are closed under direct sums of the domain (`isWittrockDilationOf_wsum`,
+`exists_wittrockDilation_of_sum`).
 
 # Wittrock dilations
 
@@ -24,16 +27,15 @@ in the algebra `𝒫` of a Paschke dilation `(𝒫, ϱ, h)` (**140II**).
   `IsWittrockMediator` (the note's clause verbatim by
   `isWittrockMediator_iff_tmap`).  Here.
 * **Remark 2** (mediators are unital): not stated on its own; it is
-  `one_vtmul_injective` where used, the case `𝒳 = {0}` (then `𝒫 = {0}`)
-  being dispatched separately.
-* **Lemma 3** (the Wittrock correspondence): not stated on its own; it is
-  steps (1) and (2) inside `splitsOffCommutant_of_wittrock`
-  (`WittrockSplit`), there already combined with **157IV**.
+  `one_vtmul_injective` where used, the case `𝒳 = {0}` being dispatched
+  separately.
+* **Lemma 3** (the Wittrock correspondence): `wittrock_correspondence`
+  (`WittrockSplit`), with `[0,φ]_ncp` the `ncpInterval` of **157II**.
 * **Definition 4**: `SplitsOffCommutant` (`WittrockSplit`), with the
   commutant in `𝒫`, `relComm` (here), and `SubVN`, `CommVN`.
 * **Remark 5**: not formalized (a comparison with the literature).
 * **Lemma 6**: `exists_typeI_factor_iso`, `splitsOffCommutant_of_typeI_factor`
-  (`WittrockSplit`), transported from `exists_paschke_split` (here).
+  (`WittrockSplit`), transported from `exists_bh_split` (here).
 * **Proposition 7**: `splitsOffCommutant_iff_centre_corners`
   (`WittrockSplit`).  `⇒`: `centre_linf_of_splitsOffCommutant` (via
   `duplicable_centre_of_splitsOffCommutant`, **128XI**, **127III**) and
@@ -46,23 +48,23 @@ in the algebra `𝒫` of a Paschke dilation `(𝒫, ϱ, h)` (**140II**).
 * **Theorem 10**: `wittrock_iff_splitsOffCommutant` (`WittrockSplit`); `⇒` is
   `splitsOffCommutant_of_wittrock`; `⇐` with the last sentence is
   `isWittrockDilationOf_of_splitsOffCommutant`, whose universal-property
-  half is `isWittrockDilationOf_paschke_of_mul` (here).
-* **Corollary 11**: `isWittrockDilationOf_paschke`, and with **154III**
+  half is `isWittrockDilationOf_paschke_of_mul` (here).  The form
+  `σ(x ⊗ e) = ϱ(x) τ(e)` of the mediator of **140II**, which both
+  directions use, is `exists_paschke_mediator` (here).
+* **Corollary 11**: `isWittrockDilationOf_bh_paschke`, and with **154III**
   `exists_wittrockDilation_of_bh`; the ℂ case is
   `isWittrockDilationOf_stdFilter` (`stdFilter_wittrock` after
   `ℂ ⊗ ℰ ≅ ℰ`).  Here.
 * **Corollary 12**: `exists_wittrockDilation_of_atomicTypeI`
   (`WittrockSplit`).
 * **Corollary 13**: `centre_linf_of_wittrock`; the "in particular" is
-  `not_wittrock_of_linfty` (`not_wittrock_of_linfty_paschke` for a given
-  Paschke dilation), for `𝒳 = L^∞(Ω)` only.  `WittrockSplit`.
+  `not_wittrock_of_centre_no_minProj`
+  (`not_wittrock_of_centre_no_minProj_paschke` for a given Paschke
+  dilation), and its example `𝒳 = L^∞[0,1]` is `not_wittrock_of_linfty`
+  (`not_wittrock_of_linfty_paschke`).  `WittrockSplit`.
 * **Corollary 14**: `wittrock_iff_atomicTypeI_stinespring`
   (`exists_wittrock_of_atomicTypeI_stinespring` is its `⇐` alone) and the
   "in particular" `not_wittrock_of_factor_not_typeI`.  `WittrockBK`.
-
-**Not in the current note** (kept, still valid): the direct-sum theorem
-`isWittrockDilationOf_wsum` / `exists_wittrockDilation_of_sum` of an earlier
-version — Wittrock dilations of the `φ ∘ κᵢ` assemble to one of `φ`.
 
 ## Choices and deviations from the note
 
@@ -70,7 +72,8 @@ version — Wittrock dilations of the `φ ∘ κᵢ` assemble to one of `φ`.
   algebra lives in the universe of its own `𝒫`; likewise the universal
   property here quantifies over `ℰ'` in the universe of `ℰ`.  Theorem 10 and
   everything built on it therefore put `𝒳`, `𝒫`, `𝒜` and the sought `ℰ` in
-  one universe.
+  one universe.  Lemma 3 puts `𝒳`, `ℰ` and `𝒜` in one universe, as its
+  proof tests against `𝒳 ⊗ ℂ²` with the tree's `tmap`.
 * **`id ⊗ τ`.** The tree's `tmap` (**115II**) needs its four algebras in
   one universe, but in the ℂ case `𝒳 = ℂ : Type 0` while `ℰ` lives
   in the universe of `𝒜`.  So the definition asks for *some* ncp-map
@@ -86,37 +89,38 @@ version — Wittrock dilations of the `φ ∘ κᵢ` assemble to one of `φ`.
   unitor `λ` of **119IVb**, so the dilating map is `c_p ∘ λ`; the proof is
   direct (**96V**, **98II**) rather than through **140X**, **169XI** and
   Theorem 10.
+* **Lemma 3.** `ℂ²` is `ℓ^∞({0,1})`, and `𝒳 ⊗ ℂ² ≅ 𝒳 ⊕ 𝒳` is replaced by
+  the two coordinate slices `𝒳 ⊗ ℂ² → 𝒳`.  For injectivity the test map is
+  written as `h ∘ (id ⊗ κ)` for `κ(v) = v(0)e₁ + v(1)(1 − e₁)`, which is the
+  note's test map for `ψ = h(· ⊗ e₁)`.  `φ` is a bare function; it is ncp
+  anyway, being `h(· ⊗ 1)`.
 * **Lemma 6.** The note shows with matrix units that `𝒫` is generated by
-  `𝓑(ℋ) ⊗ 1` and `1 ⊗ ℰ₀`.  Here that step is
+  `𝓑(ℋ) ⊗ 1` and `1 ⊗ 𝒩`, where `ℛ^□ = 1 ⊗ 𝒩`.  Here that step is
   `eq_concreteTensor_of_one_opTensor_mem`, proved from the amplification
-  theorem of `A/Proc/Tensor.lean` instead.
-* **Theorem 10, `⇒`.** `ℂ²` is `ℓ^∞({0,1})`, and `𝒳 ⊗ ℂ² ≅ 𝒳 ⊕ 𝒳` is
-  replaced by the two coordinate slices `𝒳 ⊗ ℂ² → 𝒳`.  That `τ` maps
-  projections to projections is shown directly (`τ(p) − τ(p)²` is `τ(g)`
-  for an effect `g` below `p` and `1 − p`) rather than through extreme
-  points of the effect sets; **99II** (`gardner`) then makes it
-  multiplicative, as in the note.
+  theorem of `A/Proc/Tensor.lean` instead, in the orientation `𝒦 ⊗ ℋ`; its
+  `N` is the note's `𝒫` and its `E₀` the note's `𝒩`.
+* **Theorem 10, `⇒`.** That `τ` maps projections to projections is shown
+  directly (`τ(p) − τ(p)²` is `τ(g)` for an effect `g` below `p` and
+  `1 − p`) rather than through extreme points of the effect sets; **99II**
+  (`gardner`) then makes it multiplicative, as in the note.
 * **Proposition 7, "in particular", and Corollary 12** are proved by the
   note's block argument run on the domain `⊕ⱼ 𝓑(𝒦ⱼ)`
   (`splitsOffCommutant_range_of_blocks`), which makes the passage through
   `ϱ(𝒳) ≅ c𝒳` unnecessary.  Proposition 7, `⇒`, second half, holds for every
   central projection, not only the minimal ones.
-* **Corollary 13, "in particular".** The note states it for every `𝒳`
-  whose centre has no minimal projections; only `𝒳 = L^∞(Ω)` with `Ω`
-  without atoms is formalized.  `L^∞(Ω)` is thesis A's presentation
-  `IsLinftyOf` (`Duplicators.lean`), "without atoms" is `ContinuousSpace`
-  (**129II**), and no σ-finiteness is assumed.
+* **Corollary 13, "in particular".** "The centre of `𝒳` has no minimal
+  projections" is `∀ c, ¬ IsMinCentralProj ⊤ c`: `𝒳` has no minimal
+  central projection (a minimal central projection of `𝒳` being the same
+  as a minimal projection of its centre).  The example `L^∞[0,1]` is taken
+  as `L^∞(Ω)` for any measure space `Ω` without atoms: thesis A's
+  presentation `IsLinftyOf` (`Duplicators.lean`), with "without atoms"
+  `ContinuousSpace` (**129II**) and no σ-finiteness assumed.
 * **Proposition 8, `⇒`**, cites two facts from Takesaki; both are proved,
   in `WittrockBK.lean`.  "A tensor product of factors is a factor" is
   `isFactor_vnt`, from the tree's commutation theorem and **121II**; "a
   tensor factor of a type I factor is of type I" is `exists_bh_of_vnt_bh`,
   with slice maps: if `𝒜 ⊗ ℬ ≅ 𝓑(𝒦)`, then `ℬ` has a minimal projection
   `q`, and `𝒜 ≅ 𝒜 ⊗ q` is a corner of `𝓑(𝒦)`.
-* **Old direct sums** are `lp 𝒳ᵢ ∞`, with the index type and all algebras
-  in one universe.  Mathlib's unital C*-structure on `lp` needs every
-  summand non-zero, the same binder the tree's **47IV** carries, so the `𝒳ᵢ`
-  and `ℰᵢ` are assumed `Nontrivial`.  For the `ℰᵢ` this excludes exactly the
-  summands with `φ ∘ κᵢ = 0`, whose Wittrock dilation is `{0}`.
 -/
 import Theses.A.Proc.CommutationAmplify
 import Theses.B.Dils.Paschke
@@ -181,10 +185,6 @@ theorem wncp_add (f : NCPMap B C) (x y : B) : f (x + y) = f x + f y :=
 
 theorem wncp_zero (f : NCPMap B C) : f (0 : B) = 0 :=
   map_zero f.toCompletelyPositiveMap
-
-theorem wncp_sum {ι : Type*} (f : NCPMap B C) (s : Finset ι) (x : ι → B) :
-    f (∑ i ∈ s, x i) = ∑ i ∈ s, f (x i) :=
-  map_sum f.toCompletelyPositiveMap x s
 
 end NCPLinear
 
@@ -252,6 +252,11 @@ theorem stdFilter_wittrock (p : A) (hp : 0 ≤ p) :
   refine ⟨τ, ⟨stdFilter_injective hp (by rw [← hτ 1, h1, stdFilter_one hp]),
     fun e => (hτ e).symm⟩, fun τ' hτ' => hτu τ' fun e => (hτ'.2 e).symm⟩
 
+/-- The left unitor `λ : ℂ ⊗ ℰ → ℰ` of **119IVb** is bijective. -/
+theorem leftUnitor_bijective (E : Type w) [CStarAlgebra E] [PartialOrder E]
+    [StarOrderedRing E] [VonNeumannAlgebra E] : Function.Bijective (leftUnitor E) :=
+  (exists_unitors (A := E)).2.2.1.choose_spec.2.1
+
 /-- The note's **Corollary 11**, last claim (the ℂ case): for positive `p`,
 the standard filter
 `c_p : ⌈p⌉𝒜⌈p⌉ → 𝒜` of **98I**, read on `ℂ ⊗ ⌈p⌉𝒜⌈p⌉` through the left
@@ -260,13 +265,11 @@ theorem isWittrockDilationOf_stdFilter (p : A) (hp : 0 ≤ p) :
     IsWittrockDilationOf (fun z : ℂ => z • p) (Corner A (ceil p))
       (ncpComp (stdFilter p) (nmiuNCP (leftUnitor (Corner A (ceil p))))) := by
   set E := Corner A (ceil p)
-  have hbE : Function.Bijective (leftUnitor E) :=
-    (exists_unitors (A := E)).2.2.1.choose_spec.2.1
+  have hbE := leftUnitor_bijective E
   refine ⟨fun z => ?_, fun E' _ _ _ _ h' hh' => ?_⟩
   · rw [ncpComp_apply, nmiuNCP_apply, leftUnitor_apply, wncp_smul, stdFilter_one hp]
   simp only at hh'
-  have hbE' : Function.Bijective (leftUnitor E') :=
-    (exists_unitors (A := E')).2.2.1.choose_spec.2.1
+  have hbE' := leftUnitor_bijective E'
   have hinv : ∀ {F : Type w} [CStarAlgebra F] [PartialOrder F] [StarOrderedRing F]
       [VonNeumannAlgebra F] (hb : Function.Bijective (leftUnitor F)) (z : ℂ) (b : F),
       nmiuSymm (leftUnitor F) hb (z • b) = z ⊗ᵥ b := by
@@ -297,7 +300,11 @@ theorem isWittrockDilationOf_stdFilter (p : A) (hp : 0 ≤ p) :
 
 end Scalar
 
-/-! ## Direct sums in the domain -/
+/-! ## Tools
+
+Positive decompositions, monotone nets, ncp-maps as cp and ultraweakly
+continuous maps, `1 ⊗ (·)`, and direct sums `⊕ᵢ 𝒜ᵢ`: Mathlib's `lp 𝒜ᵢ ∞`,
+with coprojections `κᵢ = lpKappa i` and projections `πᵢ = lpProjNMIU i`. -/
 
 /-- Every element of a C*-algebra is a `ℂ`-combination of positive ones. -/
 theorem wit_nonneg_induction {B : Type*} [CStarAlgebra B] [PartialOrder B]
@@ -519,342 +526,13 @@ theorem one_vtmul_injective {X E : Type u}
   rw [h, norm_zero, CStarRing.norm_one, one_mul] at hn
   exact sub_eq_zero.mp (norm_eq_zero.mp hn.symm)
 
-private theorem wit_vtmul_sum_left {X E : Type*}
-    [CStarAlgebra X] [PartialOrder X] [StarOrderedRing X] [VonNeumannAlgebra X]
-    [CStarAlgebra E] [PartialOrder E] [StarOrderedRing E] [VonNeumannAlgebra E]
-    {ι : Type*} (s : Finset ι) (x : ι → X) (e : E) :
-    (∑ i ∈ s, x i) ⊗ᵥ e = ∑ i ∈ s, x i ⊗ᵥ e :=
-  LinearMap.map_sum₂ _ _ _ _
+/-! ## Commutants within `𝒫`, and Theorem 10, `⇐`
 
-section DirectSum
-
-variable {I : Type u} {Xs : I → Type u} {Es : I → Type u}
-  [∀ i, CStarAlgebra (Xs i)] [∀ i, Nontrivial (Xs i)] [∀ i, PartialOrder (Xs i)]
-  [∀ i, StarOrderedRing (Xs i)] [∀ i, VonNeumannAlgebra (Xs i)]
-  [∀ i, CStarAlgebra (Es i)] [∀ i, Nontrivial (Es i)] [∀ i, PartialOrder (Es i)]
-  [∀ i, StarOrderedRing (Es i)] [∀ i, VonNeumannAlgebra (Es i)]
-  {A : Type u} [CStarAlgebra A] [PartialOrder A] [StarOrderedRing A] [VonNeumannAlgebra A]
-
-/-- The diagonal block `πᵢ ⊗ πᵢ : (⊕ⱼ 𝒳ⱼ) ⊗ (⊕ⱼ ℰⱼ) → 𝒳ᵢ ⊗ ℰᵢ` (**115II**). -/
-def diagBlock (i : I) : NCPMap (VNT (lp Xs ∞) (lp Es ∞)) (VNT (Xs i) (Es i)) :=
-  tmap (nmiuNCP (lpProjNMIU i)) (nmiuNCP (lpProjNMIU i))
-
-theorem diagBlock_apply (i : I) (x : lp Xs ∞) (e : lp Es ∞) :
-    diagBlock i (x ⊗ᵥ e) = (x : ∀ j, Xs j) i ⊗ᵥ (e : ∀ j, Es j) i := by
-  rw [diagBlock, tmap_apply]; rfl
-
-theorem diagBlock_one (i : I) : diagBlock (Xs := Xs) (Es := Es) i 1 = 1 :=
-  (tensor_functorial _ _).2.2.1
-    (by rw [nmiuNCP_apply]; exact map_one (lpProjNMIU i).toStarAlgHom)
-    (by rw [nmiuNCP_apply]; exact map_one (lpProjNMIU i).toStarAlgHom)
-
-/-- The finite partial sums `∑_{i∈F} hᵢ ∘ (πᵢ ⊗ πᵢ)` of `h` (see
-`isWittrockDilationOf_wsum`). -/
-def wsumPart (hs : ∀ i, NCPMap (VNT (Xs i) (Es i)) A) (F : Finset I) :
-    VNT (lp Xs ∞) (lp Es ∞) →ₚ[ℂ] A where
-  toFun b := ∑ i ∈ F, hs i (diagBlock i b)
-  map_add' b b' := by simp only [wncp_add, Finset.sum_add_distrib]
-  map_smul' c b := by simp only [wncp_smul, Finset.smul_sum, RingHom.id_apply]
-  monotone' b b' hb := Finset.sum_le_sum fun i _ =>
-    OrderHomClass.mono (hs i).toCompletelyPositiveMap
-      (OrderHomClass.mono (diagBlock i).toCompletelyPositiveMap hb)
-
-omit [VonNeumannAlgebra A] in
-theorem wsumPart_apply (hs : ∀ i, NCPMap (VNT (Xs i) (Es i)) A) (F : Finset I)
-    (b : VNT (lp Xs ∞) (lp Es ∞)) :
-    wsumPart hs F b = ∑ i ∈ F, hs i (diagBlock i b) := rfl
-
-omit [VonNeumannAlgebra A] in
-theorem wsumPart_cp (hs : ∀ i, NCPMap (VNT (Xs i) (Es i)) A) (F : Finset I) :
-    Theses.A.CStar.IsCompletelyPositiveMap (wsumPart hs F).toLinearMap := by
-  intro n a c
-  have he : ∑ p, ∑ q, star (c p) * (wsumPart hs F).toLinearMap (star (a p) * a q) * c q
-      = ∑ i ∈ F, ∑ p, ∑ q, star (c p) *
-          (ncpComp (hs i) (diagBlock i)).toCompletelyPositiveMap.toLinearMap
-            (star (a p) * a q) * c q := by
-    have h1 : ∀ x, (wsumPart hs F).toLinearMap x = ∑ i ∈ F,
-        (ncpComp (hs i) (diagBlock i)).toCompletelyPositiveMap.toLinearMap x := by
-      intro x
-      refine Finset.sum_congr rfl fun i _ => ?_
-      exact (ncpComp_apply (hs i) (diagBlock i) x).symm
-    simp only [h1, Finset.mul_sum, Finset.sum_mul]
-    exact (Finset.sum_congr rfl fun p _ => Finset.sum_comm).trans Finset.sum_comm
-  rw [he]
-  exact Finset.sum_nonneg fun i _ => wit_ncp_cp (ncpComp (hs i) (diagBlock i)) n a c
-
-theorem wsumPart_normal (hs : ∀ i, NCPMap (VNT (Xs i) (Es i)) A) (F : Finset I) :
-    PreservesDirSups ⇑(wsumPart hs F) := by
-  refine ((p_uwcont (wsumPart hs F)).out 0 2).mp ?_
-  let _ : TopologicalSpace (VNT (lp Xs ∞) (lp Es ∞)) := ultraweak _
-  refine continuous_ultraweak_of_forall _ fun ω => ?_
-  have h : (fun b => (ω (wsumPart hs F b) : ℂ))
-      = fun b => ∑ i ∈ F, (ω (hs i (diagBlock i b)) : ℂ) := by
-    funext b
-    exact map_sum ω.toPositiveLinearMap _ F
-  rw [h]
-  refine continuous_finsetSum F fun i _ => ?_
-  exact @Continuous.comp _ _ _ (ultraweak _) (ultraweak A) _ _ _
-    (continuous_ultraweak_npFunctional ω)
-    (@Continuous.comp _ _ _ (ultraweak _) (ultraweak _) (ultraweak A) _ _
-      (wit_ncp_continuous (hs i)) (wit_ncp_continuous (diagBlock i)))
-
-/-- `h = ∑ᵢ hᵢ ∘ (πᵢ ⊗ πᵢ)` converges ultraweakly and
-is an ncp-map (by **96III**). -/
-theorem exists_wsum (φ : NCPMap (lp Xs ∞) A) (hs : ∀ i, NCPMap (VNT (Xs i) (Es i)) A)
-    (hφ : ∀ i (x : Xs i), hs i (x ⊗ᵥ (1 : Es i)) = φ (lpKappa i x)) :
-    ∃ h : NCPMap (VNT (lp Xs ∞) (lp Es ∞)) A,
-      ∀ b, UWTendsto (fun F => wsumPart hs F b) atTop (h b) := by
-  classical
-  let _ : TopologicalSpace A := ultraweak A
-  have : T2Space A := vn_positive_basic_1.1
-  have : IsTopologicalAddGroup A := ultraweak_isTopologicalAddGroup
-  have : ContinuousSMul ℂ A := ultraweak_continuousSMul_complex
-  set T := VNT (lp Xs ∞) (lp Es ∞)
-  set S := wsumPart hs with hSdef
-  -- `S_F(1) = φ(∑_{i∈F} κᵢ(1)) ≤ φ(1)`
-  have hS1 : ∀ F, S F 1 ≤ φ 1 := by
-    intro F
-    have he : S F 1 = φ (∑ i ∈ F, lpKappa i (1 : Xs i)) := by
-      rw [hSdef, wsumPart_apply, wncp_sum]
-      refine Finset.sum_congr rfl fun i _ => ?_
-      rw [diagBlock_one, ← (vnTensor (Xs i) (Es i)).isTensorProduct.miu.1]
-      exact hφ i 1
-    have hle : ∑ i ∈ F, lpKappa i (1 : Xs i) ≤ 1 := by
-      rw [lp_infty_le_iff]
-      intro k
-      have h := lpKappa_sum_apply (1 : lp Xs ∞) F k
-      simp only [lp.infty_coeFn_one, Pi.one_apply] at h
-      rw [h]
-      split_ifs
-      · exact le_rfl
-      · exact zero_le_one
-    rw [he]
-    exact OrderHomClass.mono φ.toCompletelyPositiveMap hle
-  -- for positive `b` the partial sums increase and are bounded by `‖b‖ φ(1)`
-  have hpos : ∀ b : T, 0 ≤ b →
-      ∃ s, IsLUB (Set.range fun F => S F b) s ∧ UWTendsto (fun F => S F b) atTop s := by
-    intro b hb
-    have hmono : Monotone fun F => S F b := by
-      intro F G hFG
-      change S F b ≤ S G b
-      rw [hSdef, wsumPart_apply, wsumPart_apply, ← Finset.sum_sdiff hFG]
-      exact le_add_of_nonneg_left (Finset.sum_nonneg fun i _ =>
-        ncpMap_nonneg (hs i) (ncpMap_nonneg (diagBlock i) hb))
-    have hbd : ∀ F, S F b ≤ ‖b‖ • φ 1 := by
-      intro F
-      have h1 : S F b ≤ S F (algebraMap ℝ T ‖b‖) :=
-        (S F).monotone' (IsSelfAdjoint.of_nonneg hb).le_algebraMap_norm_self
-      have h2 : S F (algebraMap ℝ T ‖b‖) = ‖b‖ • S F 1 := by
-        rw [Algebra.algebraMap_eq_smul_one, ← Complex.coe_smul, map_smul, Complex.coe_smul]
-      rw [h2] at h1
-      refine h1.trans (sub_nonneg.mp ?_)
-      rw [← smul_sub]
-      exact smul_nonneg (norm_nonneg b) (sub_nonneg.mpr (hS1 F))
-    have hnn : ∀ F, 0 ≤ S F b := fun F => by
-      have := OrderHomClass.mono (S F) hb
-      rwa [map_zero] at this
-    exact wit_uwTendsto_of_monotone _ hmono (fun F => IsSelfAdjoint.of_nonneg (hnn F)) hbd
-  -- hence for all `b`
-  have hconv : ∀ b : T, ∃ s, UWTendsto (fun F => S F b) atTop s := by
-    refine wit_nonneg_induction _ (fun b hb => (hpos b hb).imp fun s hs => hs.2) ?_ ?_
-    · rintro b b' ⟨s, hs⟩ ⟨s', hs'⟩
-      exact ⟨s + s', (hs.add hs').congr fun F => (map_add (S F) b b').symm⟩
-    · rintro c b ⟨s, hs⟩
-      exact ⟨c • s, (hs.const_smul c).congr fun F => (map_smul (S F) c b).symm⟩
-  choose L hL using hconv
-  have hLadd : ∀ b b', L (b + b') = L b + L b' := fun b b' =>
-    uwTendsto_unique (hL (b + b'))
-      ((hL b).add (hL b') |>.congr fun F => (map_add (S F) b b').symm)
-  have hLsmul : ∀ (c : ℂ) b, L (c • b) = c • L b := fun c b =>
-    uwTendsto_unique (hL (c • b))
-      ((hL b).const_smul c |>.congr fun F => (map_smul (S F) c b).symm)
-  set Ll : T →ₗ[ℂ] A := { toFun := L, map_add' := hLadd, map_smul' := hLsmul }
-  have hLl : ∀ b, UWTendsto (fun F => S F b) atTop (Ll b) := hL
-  -- the tails: `0 ≤ L(b) - S_F(b)` for positive `b`
-  have htail : ∀ F (b : T), 0 ≤ b → S F b ≤ L b := by
-    intro F b hb
-    obtain ⟨s, hs, hlim⟩ := hpos b hb
-    rw [uwTendsto_unique (hL b) hlim]
-    exact hs.1 ⟨F, rfl⟩
-  have hunif : ∀ ω : NPFunctional A, ∀ ε > (0 : ℝ),
-      ∀ᶠ F in atTop, ∀ p ∈ effects T, ‖ω (S F p) - ω (Ll p)‖ ≤ ε := by
-    intro ω ε hε
-    have h1 : Tendsto (fun F => ‖ω (Ll 1) - ω (S F 1)‖) atTop (𝓝 0) := by
-      change Tendsto (fun F => ‖ω (L 1) - ω (S F 1)‖) atTop (𝓝 0)
-      have := ((uwTendsto_iff _ _ _).mp (hL 1) ω)
-      have h2 := (tendsto_const_nhds (x := ω (L 1))).sub this
-      rw [sub_self] at h2
-      simpa using h2.norm
-    filter_upwards [(tendsto_order.1 h1).2 ε hε] with F hF p hp
-    have hp0 : 0 ≤ Ll p - S F p := sub_nonneg.mpr (htail F p hp.1)
-    have hp1 : Ll p - S F p ≤ Ll 1 - S F 1 := by
-      have := htail F (1 - p) (sub_nonneg.mpr hp.2)
-      change S F (1 - p) ≤ Ll (1 - p) at this
-      rw [map_sub, map_sub] at this
-      rw [← sub_nonneg] at this ⊢
-      convert this using 1
-      change Ll 1 - S F 1 - (Ll p - S F p) = Ll 1 - Ll p - (S F 1 - S F p)
-      abel
-    have hω0 := npFunctional_nonneg ω hp0
-    have hω1 := npFunctional_mono ω hp1
-    rw [npFunctional_sub] at hω0 hω1
-    rw [npFunctional_sub] at hω1
-    rw [← norm_neg, neg_sub]
-    exact (wit_norm_le_of_le hω0 hω1).trans hF.le
-  have hcp := ncp_uwlim_1 atTop S Ll hLl (fun F => wsumPart_cp hs F)
-  have hn := ncp_uwlim_2 atTop S Ll hLl (fun F => wsumPart_normal hs F) hunif
-  refine ⟨⟨⟨Ll, ?_⟩, hn⟩, hL⟩
-  have h : ∀ (N : ℕ) (M : CStarMatrix (Fin N) (Fin N) T), 0 ≤ M → 0 ≤ M.map ⇑Ll :=
-    (Theses.A.CStar.cp_iff Ll).out 0 1 |>.mp hcp
-  exact h
-
-/-- The ncp-map `h = ∑ᵢ hᵢ ∘ (πᵢ ⊗ πᵢ)`, by choice. -/
-def wsum (φ : NCPMap (lp Xs ∞) A) (hs : ∀ i, NCPMap (VNT (Xs i) (Es i)) A)
-    (hφ : ∀ i (x : Xs i), hs i (x ⊗ᵥ (1 : Es i)) = φ (lpKappa i x)) :
-    NCPMap (VNT (lp Xs ∞) (lp Es ∞)) A :=
-  (exists_wsum φ hs hφ).choose
-
-theorem wsum_spec (φ : NCPMap (lp Xs ∞) A) (hs : ∀ i, NCPMap (VNT (Xs i) (Es i)) A)
-    (hφ : ∀ i (x : Xs i), hs i (x ⊗ᵥ (1 : Es i)) = φ (lpKappa i x))
-    (b : VNT (lp Xs ∞) (lp Es ∞)) :
-    UWTendsto (fun F => ∑ i ∈ F, hs i (diagBlock i b)) atTop (wsum φ hs hφ b) :=
-  (exists_wsum φ hs hφ).choose_spec b
-
-/-- `h(κᵢ(x) ⊗ e) = hᵢ(x ⊗ πᵢ(e))`: only the `i`-th term survives. -/
-theorem wsum_kappa (φ : NCPMap (lp Xs ∞) A) (hs : ∀ i, NCPMap (VNT (Xs i) (Es i)) A)
-    (hφ : ∀ i (x : Xs i), hs i (x ⊗ᵥ (1 : Es i)) = φ (lpKappa i x))
-    (i : I) (x : Xs i) (e : lp Es ∞) :
-    wsum φ hs hφ (lpKappa i x ⊗ᵥ e) = hs i (x ⊗ᵥ (e : ∀ j, Es j) i) := by
-  classical
-  let _ : TopologicalSpace A := ultraweak A
-  refine uwTendsto_unique (wsum_spec φ hs hφ _) ?_
-  refine tendsto_const_nhds.congr' ?_
-  filter_upwards [eventually_ge_atTop {i}] with F hF
-  have hi : i ∈ F := hF (Finset.mem_singleton_self i)
-  rw [Finset.sum_eq_single_of_mem i hi]
-  · rw [diagBlock_apply, lpKappa_apply_self]
-  · intro j _ hji
-    rw [diagBlock_apply, lpKappa_apply_ne _ _ hji]
-    change hs j ((vnTensor (Xs j) (Es j)).map 0 _) = 0
-    rw [LinearMap.map_zero₂, wncp_zero]
-
-/-- `h(x ⊗ 1) = φ(x)`: `h` dilates `φ`. -/
-theorem wsum_one (φ : NCPMap (lp Xs ∞) A) (hs : ∀ i, NCPMap (VNT (Xs i) (Es i)) A)
-    (hφ : ∀ i (x : Xs i), hs i (x ⊗ᵥ (1 : Es i)) = φ (lpKappa i x)) (x : lp Xs ∞) :
-    wsum φ hs hφ (x ⊗ᵥ (1 : lp Es ∞)) = φ x := by
-  let _ : TopologicalSpace A := ultraweak A
-  let _ : TopologicalSpace (lp Xs ∞) := ultraweak _
-  refine uwTendsto_unique (wsum_spec φ hs hφ _) ?_
-  have h := ((wit_ncp_continuous φ).tendsto x).comp (uwTendsto_lpRestrict x)
-  refine h.congr fun F => ?_
-  simp only [Function.comp_apply, wncp_sum]
-  refine Finset.sum_congr rfl fun i _ => ?_
-  rw [diagBlock_apply, lp.infty_coeFn_one, Pi.one_apply, hφ]
-
-/-- **Not in the current note** (the direct-sum proposition of an earlier
-version; its special case for type I factors is now Corollary 12,
-`exists_wittrockDilation_of_atomicTypeI`): if each `hᵢ : 𝒳ᵢ ⊗ ℰᵢ → 𝒜` is a
-Wittrock dilation of `φ ∘ κᵢ`, then `h = ∑ᵢ hᵢ ∘ (πᵢ ⊗ πᵢ)` is a Wittrock
-dilation of `φ : ⊕ᵢ 𝒳ᵢ → 𝒜`.  The mediating map is `τ = (τᵢ)ᵢ` of
-**47IV**.  Uniqueness is argued without first showing that a competitor
-`τ̃` is unital: `πᵢ ⊗ πᵢ` is applied to its triangle directly. -/
-theorem isWittrockDilationOf_wsum (φ : NCPMap (lp Xs ∞) A)
-    (hs : ∀ i, NCPMap (VNT (Xs i) (Es i)) A)
-    (hW : ∀ i, IsWittrockDilationOf (fun x : Xs i => φ (lpKappa i x)) (Es i) (hs i)) :
-    IsWittrockDilationOf φ (lp Es ∞) (wsum φ hs fun i => (hW i).1) := by
-  classical
-  set hφ : ∀ i (x : Xs i), hs i (x ⊗ᵥ (1 : Es i)) = φ (lpKappa i x) := fun i => (hW i).1
-  set h := wsum φ hs hφ
-  refine ⟨wsum_one φ hs hφ, fun E' _ _ _ _ h' hh' => ?_⟩
-  -- `h'ᵢ = h' ∘ (κᵢ ⊗ id)`
-  set h'i : ∀ i, NCPMap (VNT (Xs i) E') A := fun i =>
-    ncpComp h' (tmap (lpKappaNCP i) (ncpId E'))
-  have h'i_apply : ∀ i (x : Xs i) (e : E'), h'i i (x ⊗ᵥ e) = h' (lpKappa i x ⊗ᵥ e) :=
-    fun i x e => by rw [ncpComp_apply, tmap_apply, lpKappaNCP_apply, ncpId_apply]
-  have hh'i : ∀ i (x : Xs i), h'i i (x ⊗ᵥ (1 : E')) = φ (lpKappa i x) :=
-    fun i x => by rw [h'i_apply, hh']
-  choose τs hτs hτu using fun i => (hW i).2 E' (h'i i) (hh'i i)
-  have hτs' := fun i => (isWittrockMediator_iff_tmap _ _ _).mp (hτs i)
-  have hτ1 : ∀ i, τs i 1 = 1 := fun i => by
-    refine one_vtmul_injective (X := Xs i) ?_
-    have := (hτs' i).1 1
-    rwa [tmap_apply, ncpId_apply] at this
-  -- `τ = (τᵢ)ᵢ : ℰ' → ⊕ᵢ ℰᵢ` (**47IV**)
-  obtain ⟨τsu, hτsu, -⟩ := vn_products_ncpsu Es
-    (fun i => (⟨τs i, (hτ1 i).le⟩ : NCPSUMap E' (Es i)))
-  set τ := τsu.toNCPMap
-  have hτc : ∀ i e, ((τ e : lp Es ∞) : ∀ j, Es j) i = τs i e := hτsu
-  have hτ_1 : τ 1 = 1 := by
-    refine lp.ext (funext fun i => ?_)
-    rw [hτc, hτ1, lp.infty_coeFn_one, Pi.one_apply]
-  -- continuity of `x ↦ h'(x ⊗ e)`, for the normality step
-  have hcont : ∀ e : E', @Continuous (lp Xs ∞) A (ultraweak _) (ultraweak A)
-      fun x => h' (x ⊗ᵥ e) := fun e =>
-    @Continuous.comp _ _ _ (ultraweak _) (ultraweak _) (ultraweak A) _ _
-      (wit_ncp_continuous h') (continuous_ultraweak_vtmul_left e)
-  refine ⟨τ, (isWittrockMediator_iff_tmap _ _ _).mpr ⟨fun x => ?_, fun z => ?_⟩, ?_⟩
-  · rw [tmap_apply, ncpId_apply, hτ_1]
-  · -- `h ∘ (id ⊗ τ) = h'` on elementary tensors, then by density
-    have key : ncpComp h (tmap (ncpId (lp Xs ∞)) τ) = h' := by
-      refine ncp_ext_vnt _ _ fun x e => ?_
-      rw [ncpComp_apply, tmap_apply, ncpId_apply]
-      let _ : TopologicalSpace A := ultraweak A
-      let _ : TopologicalSpace (lp Xs ∞) := ultraweak _
-      refine uwTendsto_unique (wsum_spec φ hs hφ _) ?_
-      refine ((hcont e).tendsto x |>.comp (uwTendsto_lpRestrict x)).congr fun F => ?_
-      simp only [Function.comp_apply]
-      rw [wit_vtmul_sum_left, wncp_sum]
-      refine Finset.sum_congr rfl fun i _ => ?_
-      rw [diagBlock_apply, hτc, ← h'i_apply]
-      have := (hτs' i).2 ((x : ∀ j, Xs j) i ⊗ᵥ e)
-      rw [tmap_apply, ncpId_apply] at this
-      exact this.symm
-    rw [← key, ncpComp_apply]
-  · -- uniqueness
-    intro τ' hτ'
-    obtain ⟨σ', hσ'e, hσ'1, hσ'h⟩ := hτ'
-    have hcomp : ∀ i, ncpComp (nmiuNCP (lpProjNMIU i)) τ' = τs i := by
-      intro i
-      refine hτu i _ ((isWittrockMediator_iff_tmap _ _ _).mpr ⟨fun x => ?_, fun z => ?_⟩)
-      · rw [tmap_apply, ncpId_apply, ncpComp_apply, nmiuNCP_apply, lpProjNMIU_apply]
-        have := congrArg (diagBlock i) ((hσ'e (lpKappa i x) 1).symm.trans (hσ'1 _))
-        rwa [diagBlock_apply, diagBlock_apply, lpKappa_apply_self, lp.infty_coeFn_one,
-          Pi.one_apply] at this
-      · have key : ncpComp (hs i) (tmap (ncpId (Xs i))
-            (ncpComp (nmiuNCP (lpProjNMIU i)) τ')) = h'i i := by
-          refine ncp_ext_vnt _ _ fun x e => ?_
-          rw [ncpComp_apply, tmap_apply, ncpId_apply, ncpComp_apply, nmiuNCP_apply,
-            lpProjNMIU_apply, h'i_apply, ← hσ'h, hσ'e, wsum_kappa]
-        rw [← key, ncpComp_apply]
-    refine DFunLike.ext _ _ fun e => lp.ext (funext fun i => ?_)
-    rw [hτc, ← hcomp i, ncpComp_apply, nmiuNCP_apply, lpProjNMIU_apply]
-
-end DirectSum
-
-/-- **Not in the current note** (see `isWittrockDilationOf_wsum`): `φ : ⊕ᵢ 𝒳ᵢ → 𝒜` has a
-Wittrock dilation provided every `φ ∘ κᵢ` has one.  (The non-zero `ℰᵢ` are
-forced by `lp`, see the file header.) -/
-theorem exists_wittrockDilation_of_sum {I : Type u} {Xs : I → Type u}
-    [∀ i, CStarAlgebra (Xs i)] [∀ i, Nontrivial (Xs i)] [∀ i, PartialOrder (Xs i)]
-    [∀ i, StarOrderedRing (Xs i)] [∀ i, VonNeumannAlgebra (Xs i)]
-    {A : Type u} [CStarAlgebra A] [PartialOrder A] [StarOrderedRing A] [VonNeumannAlgebra A]
-    (φ : NCPMap (lp Xs ∞) A)
-    (hW : ∀ i, ∃ (E : Type u) (_ : CStarAlgebra E) (_ : Nontrivial E) (_ : PartialOrder E)
-      (_ : StarOrderedRing E) (_ : VonNeumannAlgebra E) (h : NCPMap (VNT (Xs i) E) A),
-      IsWittrockDilationOf (fun x => φ (lpKappa i x)) E h) :
-    ∃ (E : Type u) (_ : CStarAlgebra E) (_ : PartialOrder E) (_ : StarOrderedRing E)
-      (_ : VonNeumannAlgebra E) (h : NCPMap (VNT (lp Xs ∞) E) A),
-      IsWittrockDilationOf ⇑φ E h := by
-  choose Es i1 i2 i3 i4 i5 hs hW using hW
-  exact ⟨lp Es ∞, inferInstance, inferInstance, inferInstance, inferInstance, _,
-    isWittrockDilationOf_wsum φ hs hW⟩
-
-/-! ## Paschke dilations of maps out of `𝓑(ℋ)`
-
-The universal-property half (the first paragraph of the proof of the note's
-Theorem 10) runs for any domain `𝒳`
-(`isWittrockDilationOf_paschke_of_mul`); only the splitting
-`𝒫 ≅ 𝓑(ℋ) ⊗ ϱ(𝓑(ℋ))^□` (`exists_paschke_split`) uses `𝒳 = 𝓑(ℋ)`. -/
+`relComm` is the commutant `ℛ^□` within `𝒫` of the note's Definition 4, and
+`RangeComm ϱ` is `ϱ(𝒳)^□` for an nmiu-map `ϱ : 𝒳 → 𝒫`, bundled as a von
+Neumann algebra.  For a Paschke dilation `(𝒫, ϱ, h)` of `φ`,
+`isWittrockDilationOf_paschke_of_mul` is the first paragraph of the proof of
+the note's Theorem 10, for any domain `𝒳`. -/
 
 section Corestrict
 
@@ -916,29 +594,31 @@ theorem mem_relComm {R : StarSubalgebra ℂ P} {e : P} :
     (commutant_basic_3' (R : Set P) fun _ h => star_mem h).1.choose_spec.2]
   exact Iff.rfl
 
-/-- The relative commutant `ϱ(𝒳)^□ = {e ∈ 𝒫 : e ϱ(x) = ϱ(x) e for all x}`, a
-von Neumann subalgebra of `𝒫` (**65III**): `relComm` of the range of `ϱ`. -/
-abbrev paschkeComm (ρ : NMIUMap X P) : StarSubalgebra ℂ P :=
+/-- The commutant `ϱ(𝒳)^□ = {e ∈ 𝒫 : e ϱ(x) = ϱ(x) e for all x}` of the
+range of an nmiu-map `ϱ` within `𝒫`, a von Neumann subalgebra of `𝒫`
+(**65III**): `relComm` of the range of `ϱ`. -/
+abbrev rangeComm (ρ : NMIUMap X P) : StarSubalgebra ℂ P :=
   relComm ρ.toStarAlgHom.range
 
 omit [VonNeumannAlgebra X] in
-theorem isVNSubalgebra_paschkeComm (ρ : NMIUMap X P) :
-    IsVNSubalgebra P (paschkeComm ρ) :=
+theorem isVNSubalgebra_rangeComm (ρ : NMIUMap X P) :
+    IsVNSubalgebra P (rangeComm ρ) :=
   isVNSubalgebra_relComm _
 
 omit [VonNeumannAlgebra X] in
-theorem mem_paschkeComm {ρ : NMIUMap X P} {e : P} :
-    e ∈ paschkeComm ρ ↔ ∀ x, ρ x * e = e * ρ x := by
-  rw [paschkeComm, mem_relComm]
+theorem mem_rangeComm {ρ : NMIUMap X P} {e : P} :
+    e ∈ rangeComm ρ ↔ ∀ x, ρ x * e = e * ρ x := by
+  rw [rangeComm, mem_relComm]
   constructor
   · intro he x
     exact he (ρ x) ⟨x, rfl⟩
   · rintro he _ ⟨x, rfl⟩
     exact he x
 
-/-- `ℰ = ϱ(𝒳)^□`, bundled as a von Neumann algebra. -/
-abbrev PaschkeE (ρ : NMIUMap X P) : Type u :=
-  Theses.A.Proc.VNSub P (paschkeComm ρ) (isVNSubalgebra_paschkeComm ρ)
+/-- `ϱ(𝒳)^□`, the commutant of the range of `ϱ` within `𝒫`, bundled as a von
+Neumann algebra: the `ℰ` of the note's Theorem 10. -/
+abbrev RangeComm (ρ : NMIUMap X P) : Type u :=
+  Theses.A.Proc.VNSub P (rangeComm ρ) (isVNSubalgebra_rangeComm ρ)
 
 variable (X) in
 /-- `x ↦ x ⊗ 1 : 𝒳 → 𝒳 ⊗ ℰ` as an nmiu-map (the mirror of **116III**.5). -/
@@ -976,31 +656,26 @@ def vtmulOneNMIU (E : Type u) [CStarAlgebra E] [PartialOrder E] [StarOrderedRing
     [StarOrderedRing E] [VonNeumannAlgebra E] (x : X) :
     vtmulOneNMIU X E x = x ⊗ᵥ (1 : E) := rfl
 
-/-- The note's **Theorem 10**, first paragraph of the proof (the `⇐`
-direction, in the form of Lemma 9): for an arbitrary domain `𝒳`, if
-`x ⊗ e ↦ ϱ(x) e` extends to an nmiu-map
-`Ψ : 𝒳 ⊗ ϱ(𝒳)^□ → 𝒫`, then `h ∘ Ψ` is a Wittrock dilation of `φ`.
-Neither injectivity nor surjectivity of `Ψ` is used. -/
-theorem isWittrockDilationOf_paschke_of_mul {A : Type u} [CStarAlgebra A]
-    [PartialOrder A] [StarOrderedRing A] [VonNeumannAlgebra A]
-    (φ : NCPMap X A) (ρ : NMIUMap X P) (hP : NCPMap P A)
+/-- The first paragraph of the note's proof of Theorem 10, up to the
+universal property: for a Paschke dilation `(𝒫, ϱ, h)` of `φ` and an
+ncp-map `h' : 𝒳 ⊗ ℰ' → 𝒜` with `h'(x ⊗ 1) = φ(x)`, the mediating map
+`σ : 𝒳 ⊗ ℰ' → 𝒫` of **140II** has the form `σ(x ⊗ e) = ϱ(x) τ(e)` for an
+ncpu-map `τ : ℰ' → ϱ(𝒳)^□`, by the bimodularity **139III**. -/
+theorem exists_paschke_mediator {A : Type u} [CStarAlgebra A] [PartialOrder A]
+    [StarOrderedRing A] (φ : NCPMap X A) (ρ : NMIUMap X P) (hP : NCPMap P A)
     (hD : IsPaschkeDilationOf (⟨P, inferInstance, ρ, hP⟩ : PaschkeTriple X A) ⇑φ)
-    (Ψ : NMIUMap (VNT X (PaschkeE ρ)) P) (hΨ : ∀ x e, Ψ (x ⊗ᵥ e) = ρ x * e.val) :
-    IsWittrockDilationOf ⇑φ (PaschkeE ρ) (ncpComp hP (nmiuNCP Ψ)) := by
-  obtain ⟨hφ, hUP⟩ := hD
+    {E' : Type u} [CStarAlgebra E'] [PartialOrder E'] [StarOrderedRing E'] [VonNeumannAlgebra E']
+    (h' : NCPMap (VNT X E') A) (hh' : ∀ x, h' (x ⊗ᵥ (1 : E')) = φ x) :
+    ∃ (σ : NCPMap (VNT X E') P) (τ : NCPMap E' (RangeComm ρ)),
+      (∀ x, σ (x ⊗ᵥ (1 : E')) = ρ x) ∧ (∀ z, hP (σ z) = h' z) ∧
+      (∀ x e, σ (x ⊗ᵥ e) = ρ x * (τ e).val) ∧ τ 1 = 1 := by
+  obtain ⟨-, hUP⟩ := hD
   have hρ1 : ρ 1 = 1 := map_one ρ.toStarAlgHom
-  refine ⟨fun x => ?_, fun E' _ _ _ _ h' hh' => ?_⟩
-  · rw [ncpComp_apply, nmiuNCP_apply, hΨ]
-    change hP (ρ x * 1) = φ x
-    rw [mul_one]
-    exact hφ x
   set ι₁ := vtmulOneNMIU X E'
   have hι₁1 : ι₁ 1 = 1 := map_one ι₁.toStarAlgHom
-  obtain ⟨σ, ⟨hσρ, hσh⟩, hσu⟩ :=
+  obtain ⟨σ, ⟨hσρ, hσh⟩, -⟩ :=
     hUP (⟨VNT X E', inferInstance, ι₁, h'⟩ : PaschkeTriple X A) fun a => hh' a
   have hσρ' : ∀ a, σ (a ⊗ᵥ (1 : E')) = ρ a := fun a => hσρ a
-  have hσh' : ∀ c, hP (σ c) = h' c := fun c => hσh c
-  -- **139III**: `σ` is `ϱ`-bimodular
   have hbim : ∀ (a₁ a₂ : X) (c : VNT X E'), σ (ι₁ a₁ * c * ι₁ a₂) = ρ a₁ * σ c * ρ a₂ :=
     fun a₁ a₂ c => dils_univlemma ρ ι₁ σ hσρ a₁ a₂ c
   obtain ⟨ι₂, hι₂⟩ := (tensor_simple_facts_5 (A := X) (B := E') 1 zero_le_one).2
@@ -1016,32 +691,53 @@ theorem isWittrockDilationOf_paschke_of_mul {A : Type u} [CStarAlgebra A]
     have h := hbim 1 x (ι₂ e)
     rwa [hι₁1, one_mul, hρ1, one_mul, hι₂, vtmulOneNMIU_apply, hmul, mul_one, one_mul]
       at h
-  have hmem : ∀ e, ncpComp σ (nmiuNCP ι₂) e ∈ paschkeComm ρ := by
+  have hmem : ∀ e, ncpComp σ (nmiuNCP ι₂) e ∈ rangeComm ρ := by
     intro e
-    rw [mem_paschkeComm]
+    rw [mem_rangeComm]
     intro x
     rw [ncpComp_apply, nmiuNCP_apply, hι₂, ← hleft, hright]
-  set τ : NCPMap E' (PaschkeE ρ) :=
-    ncpCorestrict (ncpComp σ (nmiuNCP ι₂)) (paschkeComm ρ) (isVNSubalgebra_paschkeComm ρ)
+  set τ : NCPMap E' (RangeComm ρ) :=
+    ncpCorestrict (ncpComp σ (nmiuNCP ι₂)) (rangeComm ρ) (isVNSubalgebra_rangeComm ρ)
       hmem
   have hτ : ∀ e, (τ e).val = σ ((1 : X) ⊗ᵥ e) := fun e => by
     rw [ncpCorestrict_val, ncpComp_apply, nmiuNCP_apply, hι₂]
+  refine ⟨σ, τ, hσρ', fun c => hσh c, fun x e => by rw [hτ]; exact hleft x e, ?_⟩
+  refine Theses.A.Proc.VNSub.val_injective ?_
+  rw [hτ, hσρ']
+  exact hρ1
+
+/-- The note's **Theorem 10**, first paragraph of the proof (the `⇐`
+direction, in the form of Lemma 9): for an arbitrary domain `𝒳`, if
+`x ⊗ e ↦ ϱ(x) e` extends to an nmiu-map
+`Ψ : 𝒳 ⊗ ϱ(𝒳)^□ → 𝒫`, then `h ∘ Ψ` is a Wittrock dilation of `φ`.  The
+mediator for `h'` is the `τ` of `exists_paschke_mediator`; it is unique
+because the mediator `σ` of **140II** is.  Neither injectivity nor
+surjectivity of `Ψ` is used. -/
+theorem isWittrockDilationOf_paschke_of_mul {A : Type u} [CStarAlgebra A]
+    [PartialOrder A] [StarOrderedRing A] [VonNeumannAlgebra A]
+    (φ : NCPMap X A) (ρ : NMIUMap X P) (hP : NCPMap P A)
+    (hD : IsPaschkeDilationOf (⟨P, inferInstance, ρ, hP⟩ : PaschkeTriple X A) ⇑φ)
+    (Ψ : NMIUMap (VNT X (RangeComm ρ)) P) (hΨ : ∀ x e, Ψ (x ⊗ᵥ e) = ρ x * e.val) :
+    IsWittrockDilationOf ⇑φ (RangeComm ρ) (ncpComp hP (nmiuNCP Ψ)) := by
+  have hρ1 : ρ 1 = 1 := map_one ρ.toStarAlgHom
+  refine ⟨fun x => ?_, fun E' _ _ _ _ h' hh' => ?_⟩
+  · rw [ncpComp_apply, nmiuNCP_apply, hΨ]
+    change hP (ρ x * 1) = φ x
+    rw [mul_one]
+    exact hD.1 x
+  obtain ⟨σ, τ, hσρ, hσh, hστ, hτ1⟩ := exists_paschke_mediator φ ρ hP hD h' hh'
   -- `Ψ ∘ (id ⊗ τ) = σ`
   have hkey : ncpComp (nmiuNCP Ψ) (tmap (ncpId X) τ) = σ := by
     refine ncp_ext_vnt _ _ fun x e => ?_
-    rw [ncpComp_apply, tmap_apply, ncpId_apply, nmiuNCP_apply, hΨ, hτ]
-    exact (hleft x e).symm
-  have hτ1 : τ 1 = 1 := by
-    refine Theses.A.Proc.VNSub.val_injective ?_
-    rw [hτ, hσρ']
-    exact hρ1
+    rw [ncpComp_apply, tmap_apply, ncpId_apply, nmiuNCP_apply, hΨ, hστ]
   refine ⟨τ, (isWittrockMediator_iff_tmap _ _ _).mpr ⟨fun x => ?_, fun z => ?_⟩, ?_⟩
   · rw [tmap_apply, ncpId_apply, hτ1]
   · rw [ncpComp_apply, ← ncpComp_apply (nmiuNCP Ψ), hkey]
-    exact hσh' z
+    exact hσh z
   · rintro τ' ⟨σ'', he, h1, hh⟩
     have hσ₂ : ncpComp (nmiuNCP Ψ) σ'' = σ := by
-      refine hσu _ ⟨fun a => ?_, fun c => ?_⟩
+      refine (hD.2 (⟨VNT X E', inferInstance, vtmulOneNMIU X E', h'⟩ : PaschkeTriple X A)
+        fun a => hh' a).unique ⟨fun a => ?_, fun c => ?_⟩ ⟨hσρ, hσh⟩
       · change ncpComp (nmiuNCP Ψ) σ'' (a ⊗ᵥ (1 : E')) = ρ a
         rw [ncpComp_apply, nmiuNCP_apply, h1, hΨ]
         change ρ a * 1 = ρ a
@@ -1049,11 +745,17 @@ theorem isWittrockDilationOf_paschke_of_mul {A : Type u} [CStarAlgebra A]
       · change hP (ncpComp (nmiuNCP Ψ) σ'' c) = h' c
         rw [← hh c, ncpComp_apply, nmiuNCP_apply, ncpComp_apply, nmiuNCP_apply]
     refine DFunLike.ext _ _ fun e => Theses.A.Proc.VNSub.val_injective ?_
-    rw [hτ, ← hσ₂, ncpComp_apply, he, nmiuNCP_apply, hΨ, hρ1, one_mul]
+    have h1e := hστ 1 e
+    rw [← hσ₂, ncpComp_apply, nmiuNCP_apply, he, hΨ, hρ1, one_mul, one_mul] at h1e
+    exact h1e
 
 end PaschkeWittrock
 
-/-! ### Splitting `𝒫` as `𝓑(ℋ) ⊗ ϱ(𝓑(ℋ))^□` -/
+/-! ## Lemma 6 for `𝓑(ℋ)`, and Corollary 11
+
+For every nmiu-map `ϱ : 𝓑(ℋ) → 𝒫`, `x ⊗ e ↦ ϱ(x) e` extends to an
+nmiu-isomorphism `𝓑(ℋ) ⊗ ϱ(𝓑(ℋ))^□ ≅ 𝒫` (`exists_bh_split`); with Theorem
+10, `⇐`, this gives Corollary 11. -/
 
 section Splitting
 
@@ -1178,13 +880,13 @@ def opTensorOneHom : (K →L[ℂ] K) →⋆ₐ[ℂ] (HT K K₂ →L[ℂ] HT K K�
     opTensorOneHom K K₂ a = opTensor a 1 := rfl
 
 /-- The claim in the proof of the note's Lemma 6 that `𝒫` is generated by
-`𝓑(ℋ) ⊗ 1` and `1 ⊗ ℰ₀`, in
-the orientation `𝒦 ⊗ ℋ`: a von Neumann algebra `𝒩 ⊆ 𝓑(𝒦 ⊗ ℋ)` containing
-`1 ⊗ 𝓑(ℋ)` is `ℰ₀ ⊗̄ 𝓑(ℋ)` for the von Neumann algebra
-`ℰ₀ = {a : a ⊗ 1 ∈ 𝒩}`.  Proved from the amplification theorem instead of
-the note's matrix units: `𝒩^□ ⊆ (1 ⊗ 𝓑(ℋ))^□ = 𝓑(𝒦) ⊗ 1`, so
-`𝒩^□ = 𝒞 ⊗ 1` for a von Neumann algebra `𝒞`, and
-`𝒩 = (𝒞 ⊗ 1)^□ = 𝒞^□ ⊗̄ 𝓑(ℋ)` with `𝒞^□ ⊆ ℰ₀`. -/
+`𝓑(ℋ) ⊗ 1` and `1 ⊗ 𝒩`, where `ℛ^□ = 1 ⊗ 𝒩`, in the orientation `𝒦 ⊗ ℋ`:
+a von Neumann algebra `N ⊆ 𝓑(𝒦 ⊗ ℋ)` containing `1 ⊗ 𝓑(ℋ)` is
+`E₀ ⊗̄ 𝓑(ℋ)` for the von Neumann algebra `E₀ = {a : a ⊗ 1 ∈ N}`.  In the
+note's letters, `N` is `𝒫` and `E₀` is `𝒩`.  Proved from the amplification
+theorem instead of the note's matrix units: `N^□ ⊆ (1 ⊗ 𝓑(ℋ))^□ = 𝓑(𝒦) ⊗ 1`,
+so `N^□ = C ⊗ 1` for a von Neumann algebra `C`, and
+`N = (C ⊗ 1)^□ = C^□ ⊗̄ 𝓑(ℋ)` with `C^□ ⊆ E₀`. -/
 theorem eq_concreteTensor_of_one_opTensor_mem {K H : Type u}
     [NormedAddCommGroup K] [InnerProductSpace ℂ K] [CompleteSpace K]
     [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
@@ -1192,7 +894,7 @@ theorem eq_concreteTensor_of_one_opTensor_mem {K H : Type u}
     (h1N : ∀ b : H →L[ℂ] H, opTensor (1 : K →L[ℂ] K) b ∈ N) :
     IsVNSubalgebra _ (N.comap (opTensorOneHom K H)) ∧
       N = concreteTensor K H (N.comap (opTensorOneHom K H)) ⊤ := by
-  -- `ℰ₀ = {a : a ⊗ 1 ∈ 𝒩}` and `𝒞 = {c : c ⊗ 1 ∈ 𝒩^□}` are von Neumann algebras
+  -- `E₀ = {a : a ⊗ 1 ∈ N}` and `C = {c : c ⊗ 1 ∈ N^□}` are von Neumann algebras
   have hvn : ∀ M : StarSubalgebra ℂ (HT K H →L[ℂ] HT K H), IsVNSubalgebra _ M →
       IsVNSubalgebra _ (M.comap (opTensorOneHom K H)) := by
     intro M hM
@@ -1241,22 +943,24 @@ section Split
 variable {H : Type u} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
   {P : Type u} [CStarAlgebra P] [PartialOrder P] [StarOrderedRing P] [VonNeumannAlgebra P]
 
-/-- The note's **Corollary 11**, first claim — Lemma 6 for the type I factor
-`ϱ(𝓑(ℋ))`; `exists_typeI_factor_iso` (in `WittrockSplit.lean`) transports it
-to an arbitrary type I factor subalgebra: for an nmiu-map
+/-- Lemma 6 for the type I factor `ϱ(𝓑(ℋ))`: for an nmiu-map
 `ϱ : 𝓑(ℋ) → 𝒫`, `x ⊗ e ↦ ϱ(x) e` extends to an nmiu-isomorphism
-`𝓑(ℋ) ⊗ ϱ(𝓑(ℋ))^□ ≅ 𝒫`.  (It uses only `ϱ`, not a Paschke dilation.)
+`𝓑(ℋ) ⊗ ϱ(𝓑(ℋ))^□ ≅ 𝒫`.  This is the first claim of the note's
+Corollary 11, whose `ϱ` belongs to a Paschke dilation; only `ϱ` is used.
+`exists_typeI_factor_iso` (in `WittrockSplit.lean`) transports it to Lemma 6
+as stated, for any type I factor subalgebra.
 
 The route is the note's: represent `𝒫` on some `𝒦` (**48VIII**), write
 `ϱ(x) = U^*(x ⊗ 1)U` (**138II**), conjugate so that `ϱ(x) = 1 ⊗ x`, read
-`𝒫 = ℰ₀ ⊗̄ 𝓑(ℋ)` off `eq_concreteTensor_of_one_opTensor_mem`, and finish
+`𝒫 = 𝒩 ⊗̄ 𝓑(ℋ)` off `eq_concreteTensor_of_one_opTensor_mem` (whose `E₀` is
+the note's `𝒩`), and finish
 with **111VII** and **114II**.  Two detours are bookkeeping: **138II** is
 stated with the Hilbert tensor product of `Stinespring.lean`, which
 `exists_hilbTensor_bridge` identifies with that of `A/Proc/Tensor.lean`;
 and the flip unitary puts `𝓑(ℋ)` second, the factor the amplification
 theorem leaves whole. -/
-theorem exists_paschke_split (ρ : NMIUMap (H →L[ℂ] H) P) :
-    ∃ Ψ : NMIUMap (VNT (H →L[ℂ] H) (PaschkeE ρ)) P,
+theorem exists_bh_split (ρ : NMIUMap (H →L[ℂ] H) P) :
+    ∃ Ψ : NMIUMap (VNT (H →L[ℂ] H) (RangeComm ρ)) P,
       Function.Bijective Ψ ∧ ∀ x e, Ψ (x ⊗ᵥ e) = ρ x * e.val := by
   classical
   have hρ1 : ρ 1 = 1 := map_one ρ.toStarAlgHom
@@ -1264,13 +968,13 @@ theorem exists_paschke_split (ρ : NMIUMap (H →L[ℂ] H) P) :
   swap
   · -- `𝒫 = {0}`: everything in sight is zero
     rw [not_nontrivial_iff_subsingleton] at hPn
-    have hE : Subsingleton (PaschkeE ρ) :=
+    have hE : Subsingleton (RangeComm ρ) :=
       ⟨fun a b => Theses.A.Proc.VNSub.val_injective (Subsingleton.elim _ _)⟩
-    have hT : Subsingleton (VNT (H →L[ℂ] H) (PaschkeE ρ)) := by
+    have hT : Subsingleton (VNT (H →L[ℂ] H) (RangeComm ρ)) := by
       refine subsingleton_of_zero_eq_one ?_
-      rw [← (vnTensor (H →L[ℂ] H) (PaschkeE ρ)).isTensorProduct.miu.1,
-        Subsingleton.elim (1 : PaschkeE ρ) 0, map_zero]
-    let z : VNT (H →L[ℂ] H) (PaschkeE ρ) →⋆ₐ[ℂ] P :=
+      rw [← (vnTensor (H →L[ℂ] H) (RangeComm ρ)).isTensorProduct.miu.1,
+        Subsingleton.elim (1 : RangeComm ρ) 0, map_zero]
+    let z : VNT (H →L[ℂ] H) (RangeComm ρ) →⋆ₐ[ℂ] P :=
       { toFun := fun _ => 0, map_one' := Subsingleton.elim _ _,
         map_mul' := fun _ _ => Subsingleton.elim _ _, map_zero' := rfl,
         map_add' := fun _ _ => Subsingleton.elim _ _,
@@ -1333,13 +1037,13 @@ theorem exists_paschke_split (ρ : NMIUMap (H →L[ℂ] H) P) :
   have hjN : ∀ p, j p ∈ N := fun p => ⟨p, rfl⟩
   have h1N : ∀ b : H →L[ℂ] H, opTensor (1 : K' →L[ℂ] K') b ∈ N :=
     fun b => hjρ b ▸ hjN (ρ b)
-  -- `𝒩 = ℰ₀ ⊗̄ 𝓑(ℋ)` with `ℰ₀ = {a : a ⊗ 1 ∈ 𝒩}`
+  -- `N = E₀ ⊗̄ 𝓑(ℋ)` with `E₀ = {a : a ⊗ 1 ∈ N}`, the note's `𝒩`
   let E₀ := N.comap (opTensorOneHom K' H)
   obtain ⟨hE₀, hNT⟩ := eq_concreteTensor_of_one_opTensor_mem N hN h1N
-  -- **111VII**: `(a, b) ↦ a ⊗ b` is a tensor product of `ℰ₀` and `𝓑(ℋ)`
+  -- **111VII**: `(a, b) ↦ a ⊗ b` is a tensor product of `E₀` and `𝓑(ℋ)`
   obtain ⟨γ₀, hγ₀v, hγ₀⟩ := special_tensor E₀ (⊤ : StarSubalgebra ℂ (H →L[ℂ] H)) hE₀
     isVNSubalgebra_top
-  -- the three nmiu-isomorphisms that move it onto `𝓑(ℋ)`, `ℰ` and `𝒫`
+  -- the three nmiu-isomorphisms that move it onto `𝓑(ℋ)`, `ϱ(𝓑(ℋ))^□` and `𝒫`
   let jc := nmiuCorestrict j N hN hjN
   have hjc : Function.Bijective jc :=
     nmiuCorestrict_bijective j N hN hjN hjinj fun s ⟨p, hp⟩ => ⟨p, hp⟩
@@ -1366,30 +1070,30 @@ theorem exists_paschke_split (ρ : NMIUMap (H →L[ℂ] H) P) :
     fun _ => StarSubalgebra.mem_top
   have hβ : Function.Bijective β :=
     nmiuCorestrict_bijective _ ⊤ _ _ nmiuId_bijective.1 fun s _ => ⟨s, rfl⟩
-  -- `ψ : ℰ₀ → ℰ`, `a ↦ j⁻¹(a ⊗ 1)`
+  -- `ψ : E₀ → ϱ(𝓑(ℋ))^□`, `a ↦ j⁻¹(a ⊗ 1)`
   have hmemψ : ∀ a : Theses.A.Proc.VNSub (K' →L[ℂ] K') E₀ hE₀,
-      jinv ⟨opTensor a.val 1, a.property⟩ ∈ paschkeComm ρ := by
+      jinv ⟨opTensor a.val 1, a.property⟩ ∈ rangeComm ρ := by
     intro a
-    rw [mem_paschkeComm]
+    rw [mem_rangeComm]
     intro x
     apply hjinj
     rw [hjmul, hjmul, hjρ, hjinv, ← opTensor_mul, ← opTensor_mul, one_mul, mul_one, one_mul,
       mul_one]
   let ψhom := saCorestrict (jinv.toStarAlgHom.comp (saCorestrict
       ((opTensorOneHom K' H).comp Theses.A.Proc.VNSub.valStarAlgHom) N hN
-      fun a => a.property)) (paschkeComm ρ) (isVNSubalgebra_paschkeComm ρ) hmemψ
+      fun a => a.property)) (rangeComm ρ) (isVNSubalgebra_rangeComm ρ) hmemψ
   have hψj : ∀ a, j (ψhom a).val = opTensor a.val 1 := fun a => hjinv _
   have hψ : Function.Bijective ψhom := by
     constructor
     · intro a b hab
-      have h := congrArg (fun e : PaschkeE ρ => j e.val) hab
+      have h := congrArg (fun e : RangeComm ρ => j e.val) hab
       simp only [hψj] at h
       exact Theses.A.Proc.VNSub.val_injective (opTensor_one_right_inj hy₀ h)
     · intro e
       have hcomm : ∀ b : H →L[ℂ] H,
           j e.val * opTensor (1 : K' →L[ℂ] K') b = opTensor 1 b * j e.val := by
         intro b
-        rw [← hjρ, ← hjmul, ← hjmul, (mem_paschkeComm.mp e.property b).symm]
+        rw [← hjρ, ← hjmul, ← hjmul, (mem_rangeComm.mp e.property b).symm]
       obtain ⟨a, ha⟩ := eq_opTensor_one_of_comm (j e.val) hcomm
       have haE : a ∈ E₀ := by
         change opTensor a 1 ∈ N
@@ -1399,7 +1103,7 @@ theorem exists_paschke_split (ρ : NMIUMap (H →L[ℂ] H) P) :
       rw [hψj, ha]
   let ψ := nmiuOfBijective ψhom hψ
   let φE := nmiuSymm ψ hψ
-  have hjE : ∀ e : PaschkeE ρ, j e.val = opTensor (φE e).val 1 := by
+  have hjE : ∀ e : RangeComm ρ, j e.val = opTensor (φE e).val 1 := by
     intro e
     have h := nmiuSymm_apply_apply' ψ hψ e
     conv_lhs => rw [← h]
@@ -1408,8 +1112,8 @@ theorem exists_paschke_split (ρ : NMIUMap (H →L[ℂ] H) P) :
   have hγ₁ := isTensorProduct_comp φE (nmiuSymm_bijective ψ hψ) β hβ hγ₀
   have hγ₂ := isTensorProduct_comp_target hγ₁ Θ hΘ
   have hγ₃ := isTensorProduct_flip hγ₂
-  obtain ⟨Ψ, hΨe, hΨb, -⟩ := tensor_uniqueness (vnTensor (H →L[ℂ] H) (PaschkeE ρ)).map _
-    (vnTensor (H →L[ℂ] H) (PaschkeE ρ)).isTensorProduct hγ₃
+  obtain ⟨Ψ, hΨe, hΨb, -⟩ := tensor_uniqueness (vnTensor (H →L[ℂ] H) (RangeComm ρ)).map _
+    (vnTensor (H →L[ℂ] H) (RangeComm ρ)).isTensorProduct hγ₃
   refine ⟨Ψ, hΨb, fun x e => ?_⟩
   rw [show Ψ (x ⊗ᵥ e) = _ from hΨe x e]
   apply hjinj
@@ -1419,24 +1123,24 @@ theorem exists_paschke_split (ρ : NMIUMap (H →L[ℂ] H) P) :
 
 /-- The note's **Corollary 11**: for a Paschke dilation `(𝒫, ϱ, h)` of an
 ncp-map `φ : 𝓑(ℋ) → 𝒜` (**140II**), `x ⊗ e ↦ ϱ(x) e` extends to an
-nmiu-isomorphism `Ψ : 𝓑(ℋ) ⊗ ϱ(𝓑(ℋ))^□ ≅ 𝒫`, and `h ∘ Ψ` is a Wittrock
-dilation of `φ`. -/
-theorem isWittrockDilationOf_paschke {A : Type u} [CStarAlgebra A] [PartialOrder A]
+nmiu-isomorphism `Ψ : 𝓑(ℋ) ⊗ ϱ(𝓑(ℋ))^□ ≅ 𝒫` (`exists_bh_split`), and
+`h ∘ Ψ` is a Wittrock dilation of `φ` (`isWittrockDilationOf_paschke_of_mul`). -/
+theorem isWittrockDilationOf_bh_paschke {A : Type u} [CStarAlgebra A] [PartialOrder A]
     [StarOrderedRing A] [VonNeumannAlgebra A]
     (φ : NCPMap (H →L[ℂ] H) A) (ρ : NMIUMap (H →L[ℂ] H) P) (hP : NCPMap P A)
     (hD : IsPaschkeDilationOf
       (⟨P, inferInstance, ρ, hP⟩ : PaschkeTriple (H →L[ℂ] H) A) ⇑φ) :
-    ∃ Ψ : NMIUMap (VNT (H →L[ℂ] H) (PaschkeE ρ)) P,
+    ∃ Ψ : NMIUMap (VNT (H →L[ℂ] H) (RangeComm ρ)) P,
       Function.Bijective Ψ ∧ (∀ x e, Ψ (x ⊗ᵥ e) = ρ x * e.val) ∧
-      IsWittrockDilationOf ⇑φ (PaschkeE ρ) (ncpComp hP (nmiuNCP Ψ)) := by
-  obtain ⟨Ψ, hΨb, hΨ⟩ := exists_paschke_split ρ
+      IsWittrockDilationOf ⇑φ (RangeComm ρ) (ncpComp hP (nmiuNCP Ψ)) := by
+  obtain ⟨Ψ, hΨb, hΨ⟩ := exists_bh_split ρ
   exact ⟨Ψ, hΨb, hΨ, isWittrockDilationOf_paschke_of_mul φ ρ hP hD Ψ hΨ⟩
 
 end Split
 
 /-- Corollary 11 with **154III**: every ncp-map `φ : 𝓑(ℋ) → 𝒜` has a
 Wittrock dilation: combine
-`isWittrockDilationOf_paschke` with the Paschke dilation of **154III**. -/
+`isWittrockDilationOf_bh_paschke` with the Paschke dilation of **154III**. -/
 theorem exists_wittrockDilation_of_bh {H : Type u} [NormedAddCommGroup H]
     [InnerProductSpace ℂ H] [CompleteSpace H] {A : Type u} [CStarAlgebra A]
     [PartialOrder A] [StarOrderedRing A] [VonNeumannAlgebra A]
@@ -1447,7 +1151,7 @@ theorem exists_wittrockDilation_of_bh {H : Type u} [NormedAddCommGroup H]
   obtain ⟨M⟩ := existence_paschke φ
   let _ : VonNeumannAlgebra (Ba A M.X)ᵐᵒᵖ :=
     @vonNeumannAlgebra_mulOpposite (Ba A M.X) _ _ _ (ba_vonNeumannAlgebra M.selfDual)
-  obtain ⟨Ψ, -, -, hW⟩ := isWittrockDilationOf_paschke φ M.ρ M.h (existence_paschke_5 φ M)
+  obtain ⟨Ψ, -, -, hW⟩ := isWittrockDilationOf_bh_paschke φ M.ρ M.h (existence_paschke_5 φ M)
   exact ⟨_, inferInstance, inferInstance, inferInstance, inferInstance, _, hW⟩
 
 end Splitting
