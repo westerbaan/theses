@@ -35,6 +35,21 @@ One section per paper (tag as in `lean/Papers/README.md`); one entry per point, 
   `Papers.EJA.quadraticrep_4_false` (refutation),
   `Papers.EJA.eja_Q_eq_zero_iff_mul_eq_zero` (repaired claim).
 
+### EJA 38 (Lemma, main.tex ~855–870) — false as printed (confirmed by independent review, 2026-09-26)
+
+The conclusion `Θ(√f(1)) = √f(1)` fails.  Counterexample: `E = ℝ ⊕ ℝ`,
+`q = (a, b)` with `0 < a ≠ b ≤ 1`, `Θ` the swap, `f = Q_q ∘ Θ`, i.e.
+`f(x, y) = (a²y, b²x)`: `f` is pure, faithful and ⋄-self-adjoint
+(`f^⋄ = f_⋄ =` swap), `√f(1) = (a, b)` is invertible so `Θ` must be the swap,
+and `Θ(√f(1)) = (b, a) ≠ (a, b)`.  The broken step is the "uniqueness of
+decompositions" (main.tex ~865–868): it matches eigenvalue *sets* and then
+identifies the spectral projections of `q²` and `Θ(q²)` index by index.
+Candidate repair (38′, sketched, *not yet reviewed*): conclude that
+`Θ(√f(1))` operator-commutes with `√f(1)`, and `Θ² = id`.  Points 34, 39, 40
+lose their proof but are not refuted (the example satisfies 39:
+`f² = Q_{(ab,ab)}`); under 38′ they follow with `Q_q Q_{Θq} = Q_{q·Θq}`.
+Review: `lean/docs/research/review-eja38.md`.
+
 ## REC — *A computer scientist's reconstruction of quantum theory* (arXiv:2109.10707, `2109.10707/short.tex`)
 
 * **REC 7** (`ex:orthomodularlattice`, short.tex:374, Example) — **false as
@@ -65,18 +80,3 @@ One section per paper (tag as in `lean/Papers/README.md`); one entry per point, 
   required to be a "binary operation"; a JB-algebra (Hanche-Olsen–Størmer 3.1.6,
   which the point cites) is a Jordan *algebra*, so the product must be bilinear.
   Lean: `Papers.REC.JBAlgebra` adds `add_mul`, `smul_mul`.
-
-### EJA 38 (Lemma, main.tex ~855–870) — false as printed (confirmed by independent review, 2026-09-26)
-
-The conclusion `Θ(√f(1)) = √f(1)` fails.  Counterexample: `E = ℝ ⊕ ℝ`,
-`q = (a, b)` with `0 < a ≠ b ≤ 1`, `Θ` the swap, `f = Q_q ∘ Θ`, i.e.
-`f(x, y) = (a²y, b²x)`: `f` is pure, faithful and ⋄-self-adjoint
-(`f^⋄ = f_⋄ =` swap), `√f(1) = (a, b)` is invertible so `Θ` must be the swap,
-and `Θ(√f(1)) = (b, a) ≠ (a, b)`.  The broken step is the "uniqueness of
-decompositions" (main.tex ~865–868): it matches eigenvalue *sets* and then
-identifies the spectral projections of `q²` and `Θ(q²)` index by index.
-Candidate repair (38′, sketched, *not yet reviewed*): conclude that
-`Θ(√f(1))` operator-commutes with `√f(1)`, and `Θ² = id`.  Points 34, 39, 40
-lose their proof but are not refuted (the example satisfies 39:
-`f² = Q_{(ab,ab)}`); under 38′ they follow with `Q_q Q_{Θq} = Q_{q·Θq}`.
-Review: `lean/docs/research/review-eja38.md`.
