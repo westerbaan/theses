@@ -13,12 +13,14 @@ order unit spaces, Euclidean Jordan algebras, von Neumann algebras).
 | `OAP` | —, *A characterisation of ordered abstract probabilities*, LICS 2020, arXiv:1912.10040 | `../papers/1912.10040/first.tex` | `Papers/OAP/` |
 | `SEA` | —, *The three types of normal sequential effect algebras*, Quantum 2020, arXiv:2004.12749 | `../papers/2004.12749/second.tex` | `Papers/SEA/` |
 | `SIG` | K. Cho, B. Westerbaan, J. van de Wetering, *Dichotomy between deterministic and probabilistic models in countably additive effectus theory*, QPL 2020, arXiv:2003.10245 | `../papers/2003.10245/main.tex` | `Papers/SIG/` |
+| `FDS` | T. Fritz, B. Westerbaan, *The universal property of infinite direct sums in C\*- and W\*-categories*, Appl. Categ. Structures 2019, arXiv:1907.04714 | `../papers/1907.04714/direct_sums.tex` | `Papers/FDS/` |
 | `REC` | B. Westerbaan, J. van de Wetering, *A computer scientist's reconstruction of quantum theory*, arXiv:2109.10707 (2021) | `../papers/2109.10707/short.tex` | `Papers/REC/` |
 
 ## Citing a point
 
-Each paper numbers all theorem-like environments with one global counter, so
-"Theorem 12" is the 12th numbered environment.  `../papers/index.py` computes
+EJA, OAP, SEA, SIG and REC number all theorem-like environments with one global
+counter, so "Theorem 12" is the 12th numbered environment; FDS numbers within
+sections ("Theorem 5.2", cited as `**FDS 5.2**`).  `../papers/index.py` computes
 the numbering; `../papers/<TAG>-points.csv` lists every point with its kind,
 label and `file:line`.  A declaration's doc comment opens with the tag and
 number in bold, then the label and line, then the kind:

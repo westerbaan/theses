@@ -17,18 +17,24 @@ PAPERS = {
             'The three types of normal sequential effect algebras (2020)'),
     'SIG': ('2003.10245/main.tex',
             'Dichotomy between deterministic and probabilistic models in countably additive effectus theory (2020)'),
+    'FDS': ('1907.04714/direct_sums.tex',
+            'The universal property of infinite direct sums in C*- and W*-categories (2019)'),
     'REC': ('2109.10707/short.tex',
             "A computer scientist's reconstruction of quantum theory (2021)"),
 }
-ENV = re.compile(r'\\begin\{(theorem\*?|proposition|lemma|corollary|definition|example|remark|notation|note)\}(?:\[([^\]]*)\])?')
+ENV = re.compile(r'\\begin\{(theorem\*?|proposition|lemma|corollary|definition|example|remark|notation|note|thm|lem|prop|cor|conj|defn|df|rem|ex|qstn|lemdefn|prob)\}(?:\[([^\]]*)\])?')
+SECTIONED = {'FDS'}
+SEC = re.compile(r'^\\section\*?\{')
 LAB = re.compile(r'\\label\{([^}]*)\}')
 here = os.path.dirname(os.path.abspath(__file__))
 for tag, (path, title) in PAPERS.items():
     lines = open(os.path.join(here, path), encoding='utf-8').read().split('\n')
-    n = 0; rows = []
+    n = 0; rows = []; sec = 0
     for i, l in enumerate(lines):
         if l.lstrip().startswith('%'):
             continue
+        if tag in SECTIONED and SEC.match(l.lstrip()) and not l.lstrip().startswith('\\section*'):
+            sec += 1; n = 0
         m = ENV.search(l)
         if not m:
             continue
@@ -36,7 +42,7 @@ for tag, (path, title) in PAPERS.items():
         if kind.endswith('*'):
             num = '-'
         else:
-            n += 1; num = str(n)
+            n += 1; num = f"{sec}.{n}" if tag in SECTIONED else str(n)
         lab = ''
         for j in range(i, min(i + 4, len(lines))):
             ml = LAB.search(lines[j])
@@ -48,4 +54,4 @@ for tag, (path, title) in PAPERS.items():
         rows.append(f"{tag}|{num}|{kind.rstrip('*').capitalize()}|{lab}|{os.path.basename(path)}:{i+1}|{body}")
     with open(os.path.join(here, f'{tag}-points.csv'), 'w') as o:
         o.write('tag|num|kind|label|loc|start\n' + '\n'.join(rows) + '\n')
-    print(tag, n, 'numbered points', '—', title)
+    print(tag, sum(1 for r in rows if r.split('|')[1] != '-'), 'numbered points', '—', title)

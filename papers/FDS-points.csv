@@ -1,0 +1,20 @@
+tag|num|kind|label|loc|start
+FDS|1.1|Thm|directsum_equiv_trad|direct_sums.tex:152|{borceux}}] Let $\cat{C}$ be an additive category and $A_1,A_2\in\cat{C}$ two objects. Then the following pieces of structure are equivalent
+FDS|2.1|Defn||direct_sums.tex:226|Let~$\cat{C}$ be a category together with an endofunctor~$*\,\colon \cat{C} \to \cat{C}^\op$, whose action on arrows we denote by~$a\mapsto 
+FDS|2.2|Defn||direct_sums.tex:255|A complex $*$-category $(\cat{C},*)$ is called a \item \emph{normed $*$-category} if each homset~$\cat{C}(A,B)$ is a normed space such that
+FDS|2.3|Ex||direct_sums.tex:296|The category of Hilbert spaces with bounded linear maps between them is a W$^*$-category in the obvious way, meaning that $*$ takes each bou
+FDS|2.4|Ex|rep_ex|direct_sums.tex:301|If $A$ is a C$^*$-algebra, then the category of non-degenerate representations $\pi : A \to \B{\H}$ on Hilbert spaces $\H$ is a
+FDS|2.5|Ex|nrep_ex|direct_sums.tex:315|If $N$ is a W$^*$-algebra, then the category of normal unital representations on Hilbert spaces is a W$^*$-category, with intertwiners as mo
+FDS|3.1|Lem||direct_sums.tex:327|Let $A,B\in\cat{C}$. Then for any~$a\colon A \to B$ with~$\/a\/ \leq 1$ and projections~$s \colon A \to A$, $t\colon B\to B$,
+FDS|3.2|Lem||direct_sums.tex:354|Let~$a \colon A \leftrightarrows B \colon b$ be any two morphisms such that~$\/a \/ \leq 1$, $\/ b\/ \leq 1$ and~$ab=1$. Then~$b$ is an isom
+FDS|3.3|Cor|unitaries|direct_sums.tex:374|Let $u : A \to B$ be an invertible morphism with $\/ u \/ \leq 1$ and $\/ u^{-1} \/ \leq 1$. Then $u$ is unitary. \end{cor}
+FDS|3.4|Defn|def_univ|direct_sums.tex:381|A functor $F : \cat{C} \to \Ban$ is \emph{representable} if there is an object $A \in \cat{C}$ together with a natural isomorphism $\cat{C}(
+FDS|3.5|Cor|unique_up_to_unitary|direct_sums.tex:388|For any representable functor $\cat{C} \to \Ban$, the representing object is unique up to unique \emph{unitary} isomorphism \end{cor}
+FDS|4.1|Lem|lem_complete|direct_sums.tex:432|Let $\cat{C}$ be a C$^*$-category, $(A_i)_{i\in I}\in\cat{C}$ a family of objects and $B\in\cat{C}$. Then $\bigoplus_i \cat{C}(A_i,B)$ is co
+FDS|4.2|Defn|directsumdef|direct_sums.tex:476|Let $\cat{C}$ be a C$^*$-category. An \emph{$I$-indexed direct sum} of the family of objects $(A_i)_{i\in I}$ is an object $\bigoplus_i A_i$
+FDS|4.3|Rem||direct_sums.tex:496|For finite $I$, our direct sums are also dagger limits in the sense of~\cite{daglims}. For infinite $I$, this is no longer the case, since i
+FDS|4.4|Rem||direct_sums.tex:500|One may wonder whether our direct sums can be obtained as \emph{weighted limits} or \emph{weighted colimits}, which are generally regarded a
+FDS|4.5|Rem||direct_sums.tex:504|We could also consider \emph{direct sums with kernel} in the following sense. Let $K = (K_{ij}) \in \C^{I\times I}$ be a positive semidefini
+FDS|5.1|Thm|directsum_equiv|direct_sums.tex:520|Let $\cat{C}$ be a W$^*$-category and $(A_i)_{i\in I}$ a family of objects in $\cat{C}$. Then the following pieces of structure are equivale
+FDS|5.2|Cor||direct_sums.tex:635|Every normal $*$-functor between W$^*$-categories preserves direct sums. \end{cor}
+FDS|5.3|Prop|concrete_directsum|direct_sums.tex:641|Let $N$ be a W$^*$-algebra. In the W$^*$-category $\NRep{N}$, any $\ell^2$-direct sum \beq
