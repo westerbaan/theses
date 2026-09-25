@@ -1,0 +1,68 @@
+
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{stackrel}
+% \usepackage{enumitem} % Was causing weird conflicts with multicols
+\usepackage{enumerate}
+\usepackage{multicol}
+\usepackage{amsfonts}
+\usepackage{amsthm}
+\usepackage{graphicx}
+\usepackage{stmaryrd}
+\usepackage{mathtools}
+\usepackage{hyperref}
+\usepackage{xspace}
+\usepackage[all]{xy}
+
+% \renewcommand{\theenumi}{\alph{enumi})}
+
+\usepackage{quiver}
+
+\DeclarePairedDelimiter{\ceil}{\lceil}{\rceil}
+\DeclarePairedDelimiter{\floor}{\lfloor}{\rfloor}
+\DeclarePairedDelimiter{\inn}{\langle}{\rangle}
+\DeclarePairedDelimiter{\norm}{\lVert}{\rVert}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\cl}{\overline}
+\newcommand\Define[1]{\textbf{#1}}
+\DeclareMathOperator{\supp}{supp}
+\DeclareMathOperator\Split{Split}
+\newcommand{\sa}{\text{sa}}
+\newcommand{\opp}{\text{op}}
+\newcommand{\im}{\text{im}\,}
+\newcommand{\st}{\text{St}}
+\newcommand{\eff}{\text{Eff}}
+\newcommand{\asrt}{\text{asrt}}
+\newcommand{\sse}{\subseteq}
+\newcommand{\ie}{i.e.\xspace}
+\newcommand{\id}{\text{id}}
+\newcommand\after{\mathop{\circ}}
+
+\usepackage{scalerel}
+\newcommand\ssquare{\scaleobj{0.6}{\square}}
+
+\theoremstyle{definition}
+\newtheorem{theorem}{Theorem}
+\newtheorem*{theorem*}{Theorem}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{example}[theorem]{Example}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{notation}[theorem]{Notation}
+
+\newcommand{\mult}{\mathrel{\&}}
+\newcommand{\commu}{\mathrel{\lvert}}
+
+\newcommand{\bigovee}{\mathop{\vphantom{\sum}\mathchoice%
+        {\vcenter{\hbox{\huge $\ovee$}}}%
+        {\vcenter{\hbox{\Large $\ovee$}}}%
+        {\ovee}{\ovee}}\displaylimits}
+
+\newcommand{\TODO}[1]{\emph{[ \textbf{TODO:} #1 ]}}

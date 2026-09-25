@@ -1,0 +1,137 @@
+tag|num|kind|label|loc|start
+REC|1|Definition||short.tex:207|A category~$\catC$ is an \Define{effectus in total form} iff
+REC|2|Example|ex:effectus|short.tex:245|We just give a few examples. For a more comprehensive list, see~\cite{cho2015introduction}.
+REC|3|Remark||short.tex:268|In this last example we used the opposite category of C$^*$-algebras. This is because C$^*$-algebras are spaces of observables (and hence pr
+REC|4|Definition|def:pcm|short.tex:280|A \Define{partial commutative monoid} (\Define{PCM})
+REC|5|Definition||short.tex:315|A category $\catC$ with zero morphisms $0\colon A\to B$ (such as when it is enriched over PCMs) has for each coproduct $\coprod_{j\in J} A_j
+REC|6|Definition|def:EA|short.tex:347|An \Define{effect algebra}~\cite{foulis1994effect} is a PCM $(E,\ovee, 0)$ with a `top' element $1\in E$ such that for each $x\in E$,
+REC|7|Example|ex:orthomodularlattice|short.tex:374|Let $(B,0,1,\wedge, \vee, (\ )^\perp)$ be an orthomodular lattice. Then $B$ is an effect algebra with the partial addition defined by $x\per
+REC|8|Example||short.tex:382|For a unital C$^*$-algebra $\mathfrak{A}$, the set of effects $[0,1]_{\mathfrak{A}}$ is an effect algebra. This is the motivating example. \
+REC|9|Definition|def:effectus|short.tex:387|An \Define{effectus in partial form} is a finPAC $\catC$ with a distinguished \Define{unit} object $I\in\catC$
+REC|10|Remark||short.tex:416|Let $\catC$ be an effectus in total form. Then $\text{Par}(\catC)$ is an effectus in partial form. Conversely, for an effectus in partial fo
+REC|11|Example||short.tex:425|Adapting Example~\ref{ex:effectus} to the partial case we see that the category of sets and partial functions is an effectus in partial form
+REC|12|Definition||short.tex:441|For any object~$A$ in an effectus we write~$\Pred(A)$ for the effect algebra of predicates on~$A$. For a morphism $f\colon A\rightarrow B$ w
+REC|13|Definition||short.tex:449|We say an effectus $\catC$ is \Define{separated by predicates} if for a pair of morphisms $f,g\colon A\rightarrow B$ we have $f=g$ when~$p\c
+REC|14|Definition||short.tex:456|Let $\catC$ be an effectus. We say it is \Define{separated by states} when for all pairs of morphisms $f,g\colon A\rightarrow B$ we have $f=
+REC|15|Definition|def:effectmonoid|short.tex:469|An \Define{effect monoid}\footnote{The category of effect algebras has an algebraic tensor product that makes the category symmetric
+REC|16|Example|ex:booleanalgebra|short.tex:509|Any Boolean algebra $(B,0,1,\wedge,\vee,(\ )^\perp)$, being an orthomodular lattice, is an effect algebra by Example~\ref{ex:orthomodularlat
+REC|17|Example||short.tex:521|In any effectus, the set of scalars is an effect monoid with~$s \cdot t := s \circ t$. \end{example}
+REC|18|Example|ex:CX|short.tex:526|% The unit interval $[0,1]_R$ of any (partially) % ordered unital ring~$R$ % (in which the sum $a+b$ and product\footnote{There are many int
+REC|19|Remark||short.tex:553|A physical or logical theory which has probabilities of the form $[0,1]_{C(X)}$ can be seen as a theory with a natural notion of space, wher
+REC|20|Example||short.tex:558|Given two effect algebras/monoids~$E_1$ and $E_2$ we define their \Define{direct sum} $E_1\oplus E_2$ as the Cartesian product with pointwis
+REC|21|Example|cornersexample|short.tex:566|Let~$M$ be an effect monoid and let~$p \in M$ be some idempotent. Define $pM := \{p \cdot a; \ a\in M\}$. This is an effect monoid with~$(p\
+REC|22|Definition|def:comprehension|short.tex:587|Let $p\colon A\rightarrow I$ be a predicate in an effectus. A \Define{comprehension} for $p$ consists of an object $A_p$ and a map $\pi_p\co
+REC|23|Definition|def:filter|short.tex:603|Let $p\colon A\rightarrow I$ be a predicate in an effectus. A \Define{filter}\footnote{% A filter for~$p$ is exactly the same thing as what 
+REC|24|Example|ex:quotient-comprehension|short.tex:625|In~\cite{cho2015quotient} many examples of categories with filters and comprehension are given. Here we will restrict ourselves
+REC|25|Remark|rem:kernels|short.tex:643|It can be shown that an effectus has comprehensions iff it has \emph{kernels}~\cite[\S 200]{basthesis}. An effectus has \emph{cokernels} iff
+REC|26|Remark|chainofadjs|short.tex:654|Let $\catC$ be an effectus. Let $\Pred_{\ssquare}(\catC)$ denote its \Define{Grothendieck category} which has as objects pairs $(A\in\catC, 
+REC|27|Proposition||short.tex:679|Let $\catC$ be an effectus which has filters and comprehensions. \item Every filter is epic, every comprehension is monic.
+REC|28|Definition|def:monoidal-effectus|short.tex:693|We say an effectus is \Define{monoidal} when it has a symmetric monoidal structure $(\otimes, I)$ such that \item the tensor unit $I$ is als
+REC|29|Lemma|lem:monoidal-effectus-facts|short.tex:704|Let $\catC$ be a monoidal effectus, and let $s,t\colon I\rightarrow I$ be scalars. Then the following holds. \item Scalar multiplication res
+REC|30|Definition||short.tex:719|We say an effectus~$\catC$ is \Define{directed complete} when all the the predicate spaces $\Pred(A)$ are directed complete.\footnote{% An e
+REC|31|Example||short.tex:734|The category of sets is a normal effectus, as the predicate spaces are all complete Boolean algebras. The category of finite-dimensional C$^
+REC|32|Example||short.tex:751|Any complete Boolean algebra is a directed-complete effect monoid. \end{example}
+REC|33|Example||short.tex:755|Let $X$ be an \Define{extremally-disconnected} compact Hausdorff space, i.e.~where the closure of every open set is open. Then $C(X, [0,1])$
+REC|34|Theorem|thm:effect-monoids|short.tex:761|Let $M$ be a directed-complete effect monoid. Then there exists a complete Boolean algebra $B$ and an extremally-disconnected compact Hausdo
+REC|35|Corollary|corscalars|short.tex:768|If~$\catC$ is a directed-complete effectus, then there is an extremally-disconnected compact Hausdorff spaces~$X$ and a complete Boolean alg
+REC|36|Theorem||short.tex:776|Let $M$ be an irreducible directed-complete effect monoid. Then $M$ is isomorphic (as an effect monoid) to $\{0\}$, $\{0,1\}$ or $[0,1]$. \e
+REC|37|Definition|def:orthoalgebra|short.tex:787|Let $E$ be an effect algebra. It is an \Define{orthoalgebra} when~$0$ is the only self-summable element; i.e.~when for every~$a$ with~$a \pe
+REC|38|Proposition||short.tex:797|Let $\catC$ be an effectus separated by states and where $\Pred(I)\cong \{0,1\}$. Then every predicate space is an orthoalgebra. \end{propos
+REC|39|Definition|def:convex|short.tex:801|An effect algebra is \Define{convex}~\cite{gudder1999convex} %\footnote{% %Categorically speaking, when it has an action of the effect monoi
+REC|40|Example||short.tex:823|Let $V$ be an ordered real vector space (such as the space of self-adjoint elements of a C$^*$-algebra). Then any interval $[0,u]_V$ where $
+REC|41|Definition||short.tex:837|An \Define{order unit space} (OUS) $(V,\leq,1)$ is an ordered vector space $(V,\leq)$ with a designated \Define{order unit} $1$ such that th
+REC|42|Proposition|prop:convex-OUS-equiv|short.tex:844|{sigma}}] The equivalence between ordered vector spaces and convex effect algebras restricts to an equivalence $\textbf{DCOUS} \cong \textbf
+REC|43|Proposition||short.tex:848|Let $\catC$ be an effectus with $\Pred(I)\cong [0,1]$. Then all predicate spaces are convex effect algebras with the convex action given by 
+REC|44|Definition|def:JB-algebra|short.tex:861|{hanche1984jordan}}] A \Define{JB-algebra} $(A,*,1,\leq)$ is a Banach order unit space equipped with a binary operation $*\colon A\times A\r
+REC|45|Example||short.tex:872|Let $\mathfrak{A}$ be a unital C$^*$-algebra. Let $\mathfrak{A}_{\sa}$ denote the space of self-adjoint elements and write $a*b := \frac12(a
+REC|46|Example||short.tex:876|A finite-dimensional JB-algebra $A$ is a \Define{Euclidean Jordan algebra} (EJA): a Jordan algebra equipped with an inner product $\inn{\cdo
+REC|47|Definition|def:order-separating|short.tex:897|Let $A$ be an order unit space (such as a JB-algebra). A \Define{state} of $A$ is a positive unital linear map $\omega\colon A\rightarrow \R
+REC|48|Definition|def:JBW-algebra|short.tex:901|A JB-algebra $A$ is a \Define{JBW-algebra} when it is directed complete and has a separating set of normal states. We denote by \textbf{JBW}
+REC|49|Example||short.tex:908|Let $\mathfrak{A}$ be a \Define{von Neumann algebra}, i.e.~a C$^*$-algebra that is directed complete and has a separating set of normal stat
+REC|50|Definition||short.tex:913|A JBW-algebra $A$ is a \Define{JW-algebra} when it is Jordan-isomorphic to an ultraweakly closed subset of the
+REC|51|Definition||short.tex:923|Let $A$ be a JB-algebra. We call $A$ \Define{purely exceptional} when any Jordan homomorphism $\phi\colon A\rightarrow \mathfrak{A}_{\sa}$ i
+REC|52|Theorem|thm:JBW-decomposition|short.tex:928|{hanche1984jordan}}] Let $A$ be a JBW-algebra. Then there is a unique decomposition $A=A_{\text{sp}} \oplus A_{\text{ex}}$ where~$A_{\text{s
+REC|53|Definition||short.tex:934|Let $X$ be a Stonean space (i.e.~an extremally disconnected compact Hausdorff space). We call $X$ \Define{hyperstonean} when $C(X,\R):=\{f:X
+REC|54|Example||short.tex:941|Let $X$ be a hyperstonean space and let $E = M_3(\mathbb{O})_{\sa}$ denote the exceptional Albert algebra of $3\times 3$ self-adjoint matric
+REC|55|Theorem|thm:purely-exceptional-char|short.tex:948|Let $A$ be a purely exceptional JBW-algebra. Then there exists a hyperstonean space $X$, such that~$A\cong C(X,M_3(\mathbb{O}))$. \end{theor
+REC|56|Definition|defn:sea|short.tex:977|A \Define{sequential effect algebra} (SEA)~\cite{gudder2002sequential}~$E$
+REC|57|Lemma|lem:normal-SEA-properties|short.tex:1021|Let $E$ be a normal SEA and let $a,b\in E$ be arbitrary. Then the following are true % \item There is a unique effect $\sqrt{a}$ such that $
+REC|58|Remark||short.tex:1030|In~\cite{second} it is also shown that normal SEAs satisfy a spectral theorem, and that in particular every effect can be written as a supre
+REC|59|Definition|def:SEA-compressible|short.tex:1046|We say the sequential product of a convex SEA $E$ is \Define{compressible} when for all idempotent effects $p\in E$ the following implicatio
+REC|60|Definition|def:SEA-quadratic|short.tex:1059|We say the sequential product of a SEA $E$ is \Define{quadratic} when for any two idempotents $p,q\in E$ we have $q\mult(p\mult q) = (q\mult
+REC|61|Theorem|thm:normalSEAisJB|short.tex:1064|{wetering2018sequential}}] Let $E$ be a convex normal SEA and suppose its sequential product is compressible and quadratic. Then $E$ is orde
+REC|62|Definition||short.tex:1079|Let $f\colon A\rightarrow B$ be a morphism in an effectus. The \Define{image} of $f$, when it exists, is the smallest predicate $p\colon B\r
+REC|63|Lemma|lem:imageofcomposedmaps|short.tex:1090|Let $f$ and $g$ be composable maps and suppose $\im{f\circ g}$ and $\im{f}$ exist. Then $\im{(f\circ g)} \leq \im{f}$. Furthermore, if $g$ i
+REC|64|Definition|def:effectus-sharp|short.tex:1100|Let $p\colon A\rightarrow I$ be a predicate. We call $p$ \Define{sharp} when there is some morphism $f\colon B\rightarrow A$ such that $\im{
+REC|65|Definition|def:floorceiling|short.tex:1106|The \Define{floor} of $p$ is defined as $\floor{p}:= \im{\pi}$, where~$\pi$ is any comprehension for~$p$.% \footnote{%
+REC|66|Proposition|prop:floorceiling|short.tex:1124|In an effectus with images and compressions, the following are true for any predicates $q\leq p$ and composable map $f$. {2}
+REC|67|Definition|def:diamond-effect-theory|short.tex:1175|{basthesis}}] An effectus is a \Define{$\diamond$-effectus} (pronounced `diamond-effectus') when it has images, filters, comprehensions and 
+REC|68|Definition||short.tex:1180|Let $A$ and $B$ be objects in a $\diamond$-effectus. For any $f\colon A\rightarrow B$ we define \[f^\diamond\colon \text{SPred}(B)\rightarro
+REC|69|Proposition|prop:galois-properties|short.tex:1194|Let $f\colon A\rightarrow B$ and $g\colon B\rightarrow C$ be maps in a $\diamond$-effectus and let $p\in \text{SEff}(B)$ and $q\in \text{SEf
+REC|70|Definition||short.tex:1234|We say maps $f\colon A\rightarrow B$ and $g\colon B\rightarrow A$ in a $\diamond$-effectus are \Define{$\diamond$-adjoint} when $f^\diamond 
+REC|71|Lemma||short.tex:1238|$\diamond$-adjointness is a symmetric relation: $f^\diamond = g_\diamond$ iff $g^\diamond = f_\diamond$. \end{lemma}
+REC|72|Remark||short.tex:1250|In general, a map does not have a unique~$\diamond$-adjoint. A trivial reason is that~$f^\diamond = (\frac{1}{2}f)^\diamond$. Interestingly,
+REC|73|Example||short.tex:1260|For a von Neumann algebra $\mathfrak{A}$ and an element $a\in\mathfrak{A}$, the conjugation endomaps $b\mapsto a^*ba$ and $b\mapsto aba^*$ o
+REC|74|Definition|def:compatible-quotients-comprehensions|short.tex:1270|Let $\catC$ be an effectus with filters and comprehensions. We say the filters and comprehensions are \Define{compatible} when for every com
+REC|75|Definition|def:sharp-assert|short.tex:1277|Let $\catC$ be an effectus with compatible filters and comprehensions, and let $p\colon A\rightarrow I$ be a sharp predicate. We define the 
+REC|76|Example||short.tex:1285|Let $B(\mathcal{H})$ be an object in the opposite category of C$^*$-algebras. A sharp predicate then corresponds to a projector $P:\mathcal{
+REC|77|Lemma|lem:assert-image|short.tex:1291|Let $\catC$ be an effectus with images and compatible filters and comprehensions. Let $p\in\Pred(A)$ be a sharp predicate and let $f\colon B
+REC|78|Definition|def:pure|short.tex:1352|{basthesis}}] Let $f\colon A\rightarrow B$ be a map in an effectus. We say it is \Define{pure} when $f=\pi\circ\xi$ for some filter $\xi$ an
+REC|79|Example||short.tex:1356|In the category of von Neumann algebras with normal completely positive contractive linear maps in the opposite direction, a map~$f\colon B(
+REC|80|Lemma||short.tex:1369|Let $\catC$ be an effectus with filters. Then the following are true. \item A composition of filters is again a filter.
+REC|81|Remark|rem:reconstruction-finite|short.tex:1399|In Ref.~\cite{wetering2018reconstruction} a reconstruction of finite-dimensional quantum theory is given that can be stated using our langua
+REC|82|Lemma|lem:ortho-sharp|short.tex:1419|Let $p$ be a sharp predicate in a $\diamond$-effectus. Then $p$ is also \Define{ortho-sharp}, namely $p\wedge p^\perp = \falsity$. \end{lemm
+REC|83|Lemma||short.tex:1434|Let $p,q\in \text{SPred}(A)$ be two sharp predicates in a $\diamond$-effectus. Then the following holds. \item The supremum $p\vee q$ in $\P
+REC|84|Proposition|prop:spred-is-oml|short.tex:1455|Let $A$ be an object in a $\diamond$-effectus. Then SPred$(A)$ is a sub-effect-algebra of $\Pred(A)$. Furthermore, SPred$(A)$ is an orthomod
+REC|85|Definition||short.tex:1465|We define \textbf{OMLatGal} to be the category where the objects are orthomodular lattices and the morphisms are Galois connections $(f: A\r
+REC|86|Proposition||short.tex:1469|Let $\catC$ be a $\diamond$-effectus. The assignment $A\mapsto \text{SPred}(A)$ and $f\mapsto (f_\diamond,f^{\ssquare})$ gives a functor $\c
+REC|87|Proposition|prop:effectus-product|short.tex:1486|Let $\catC$ be an effectus with a non-trivial idempotent scalar~$s$, i.e.~$s \notin \{0,1\}$ and~$s^2=s$. Then $\Pred(\catC)$ embeds non-tri
+REC|88|Definition||short.tex:1509|Let $\catC$ be any category. We say a morphism $t\colon A\rightarrow A$ in $\catC$ is \Define{idempotent} when $t\circ t = t$. We define the
+REC|89|Proposition||short.tex:1516|Let $\catC$ be an effectus in partial form. Then $\Split(\catC)$ is also an effectus in partial form. Furthermore:
+REC|90|Proposition|prop:monoidal-splits|short.tex:1547|Let $\catC$ be a monoidal effectus with a non-trivial idempotent scalar~$s$. Then $\Split(\catC)\cong \catC_s\times \catC_{s^\perp}$ for som
+REC|91|Proposition|prop:monoidal-splits2|short.tex:1628|Let $\catC$ be a monoidal effectus which has images and compatible filters and comprehensions and let $s$ be a non-trivial idempotent scalar
+REC|92|Proposition|prop:predsep-splits|short.tex:1643|Let $\catC$ be an effectus which is separated by states or predicates and which has images and compatible filters and comprehensions and let
+REC|93|Proposition|prop:dc-ortho-convex|short.tex:1666|Let $\catC$ be a directed-complete effectus that is separated by states and let $A\in\catC$. Then $\Pred(A) \cong E_1\oplus E_2$ where $E_1$
+REC|94|Proposition|prop:effectus-ortho-OUS|short.tex:1705|Let $\catC$ be a directed-complete effectus that is separated by states. $\Pred$ gives a functor $\Pred \colon \catC\rightarrow \textbf{OA}^
+REC|95|Proposition|prop:splits-directed-complete|short.tex:1720|Let $\catC$ be a directed-complete effectus that is separated by states and which has images and compatible filters and comprehensions. Then
+REC|96|Lemma|lem:ortho-SEA-boolean|short.tex:1772|Let $E$ be an orthoalgebra that is also a sequential effect algebra. Then $E$ is a Boolean algebra with~$a\mult b = a\wedge b$. \end{lemma}
+REC|97|Proposition|prop:boolean-and-convex|short.tex:1786|Let $\catC$ be a directed-complete effectus with separating states, and let $A\in \catC$. If $\Pred(A)$ is a normal SEA, then $\Pred(A)\cong
+REC|98|Definition|def:finite-tomography|short.tex:1811|We say an effectus has \Define{finite tomography} when for each object $A$ there is a finite set of predicates $p_1,\ldots, p_k$ such that f
+REC|99|Proposition||short.tex:1816|Let $\catC$ be a directed-complete effectus which has finite tomography. Then there exists a finite set $A$ and $n\in \N$ such that $\Pred(I
+REC|100|Definition|def:sequential-effectus|short.tex:1846|A \Define{sequential} effectus is a normal effectus separated by states satisfying the following.
+REC|101|Remark||short.tex:1862|Points 1--4 are variations on the properties outlined in Remark~\ref{rem:reconstruction-finite}. Point 5 is a new assumption. We remark that
+REC|102|Theorem|thm:JB-embedding|short.tex:1868|Let $\catC$ be a sequential effectus. Then $\catC$ is equivalent to a product of effectuses $\catC\cong \catC_1\times \catC_2$ where the pre
+REC|103|Theorem|thm:JBW-CBA|short.tex:1873|Let $\catC$ be a sequential effectus with irreducible scalars. Then all predicate spaces are either complete Boolean algebras or they are al
+REC|104|Remark||short.tex:1877|In the first theorem we talk about directed-complete JB-algebras, while in the second we talk about JBW-algebras, i.e.~those directed-comple
+REC|105|Proposition|prop:idempotent-is-sharp|short.tex:1894|Let $p\in \Pred(A)$ be any predicate. Then the image of $\asrt_p$ exists and is equal to $\ceil{p}$, where $\ceil{p}$ is both as in Lemma~\r
+REC|106|Proposition|prop:sequential-has-images|short.tex:1916|All morphisms have images. \end{proposition}
+REC|107|Corollary||short.tex:1924|A sequential effectus is a $\diamond$-effectus. \end{corollary}
+REC|108|Lemma||short.tex:1932|For all predicates $p\in \Pred(A)$ we have $\asrt_p^2 = \asrt_{p^2}$. \end{lemma}
+REC|109|Lemma|lem:compatible-filter-compression|short.tex:1955|%[{\cite[211VII]{basthesis}}] Comprehensions and filters are compatible (cf.~Definition~\ref{def:compatible-quotients-comprehensions}), i.e.
+REC|110|Proposition|prop:dagger-of-compression|short.tex:1982|%[{\cite[216VII]{basthesis}}] Let $p$ be a sharp predicate. Then $\pi_p^\dagger = \xi^p$, where $\pi_p$ and $\xi^p$ form a pair of a compreh
+REC|111|Corollary|cor:dagger-of-iso|short.tex:2013|Let $\Theta$ be an isomorphism. Then $\Theta^\dagger = \Theta^{-1}$. \end{corollary}
+REC|112|Proposition|prop:compressive|short.tex:2022|The sequential product is compressible (cf.~Definition~\ref{def:SEA-compressible}). \end{proposition}
+REC|113|Lemma|lem:pure-decomposition|short.tex:2041|%[{\cite[212III]{basthesis}}] Every pure map $f$ factors as $f=\pi_{\im{f}}\circ \Theta\circ \xi^{\ceil{\truth\circ f}}\circ \asrt_{\truth\c
+REC|114|Proposition||short.tex:2091|Let $p$ and $q$ be arbitrary predicates on the same object. Then $$\asrt_{p\& q}^2 \ =\ \asrt_p \circ \asrt_q^2 \circ \asrt_p.$$ \end{propos
+REC|115|Corollary|cor:assert-is-quadratic|short.tex:2130|Let $p$ and $q$ be sharp predicates. Then $(p\& q)^2 = p\&(q\& p)$. \end{corollary}
+REC|116|Remark||short.tex:2138|An interesting question to ask is whether the dagger structure we impose on the pure maps is structure or a property, i.e.~whether it is uni
+REC|117|Definition||short.tex:2152|Let $W$ be an order unit space, and let~$\delta \colon W\rightarrow W$ be a bounded linear map. We call $\delta$ an \Define{order derivation
+REC|118|Proposition|prop:order-derivation-condition|short.tex:2157|{alfsen2012state}}] Let $W$ be a Banach order unit space, and let~$\delta\colon W\rightarrow W$ be a bounded linear map. Then $\delta$ is an
+REC|119|Lemma|lem:state-order-lemma|short.tex:2164|Let $p\in\Pred(A)$ be sharp and $a\in\Pred(A)$ arbitrary. Let $\omega\colon I\rightarrow A$ be any state on $A$. Then $a\circ\omega = 0 \imp
+REC|120|Proposition|prop:assert-is-derivation|short.tex:2174|Let $p\in\Pred(A)$ be a sharp predicate. Then $D_p:=\asrt_p-\asrt_{p^\perp}$ is an order derivation on $V_A$. \end{proposition}
+REC|121|Proposition|prop:is-JB-algebra|short.tex:2225|The space $V_A$ is a JB-algebra. \end{proposition}
+REC|122|Definition||short.tex:2270|A \Define{monoidal sequential effectus} is a sequential effectus that is monoidal and such that \item The tensor product of two pure maps is
+REC|123|Proposition|prop:JBW-tensor-preserves-assert|short.tex:2288|Let $a\in \Pred(A)$ and $b\in \Pred(B)$. Then $\asrt_{a\otimes b} = \asrt_a\otimes \asrt_b$. In particular $\asrt_{a\otimes \truth} = \asrt_
+REC|124|Corollary|cor:tensor-idempotents|short.tex:2299|Let $p\in \Pred(A)$ and $q\in \Pred(B)$ be sharp predicates. Then $p\otimes q$ is sharp. \end{corollary}
+REC|125|Proposition||short.tex:2307|Let $a\in V_A$ be arbitrary and $\truth\in V_B$, then $T_{a\otimes \truth} = T_a\otimes \id$. Similarly, for $\truth\in V_A$ and $b\in V_B$ 
+REC|126|Corollary||short.tex:2325|For all $a\in V_A$ and $b\in V_B$, $a\otimes \truth$ and $\truth\otimes b$ operator commute. \end{corollary}
+REC|127|Proposition|prop:tensor-is-Jordan-hom|short.tex:2329|The maps $a\mapsto a\otimes \truth$ and $b\mapsto \truth\otimes b$ are normal injective Jordan homomorphisms. \end{proposition}
+REC|128|Proposition|prop:tensor-quadratic|short.tex:2346|Let $a\in V_A$ and $b\in V_B$ be arbitrary. Then $Q_{a\otimes b} = Q_a\otimes Q_b$. \end{proposition}
+REC|129|Theorem||short.tex:2362|{hanche1984jordan}}] Let $V$ be a JBW-algebra. Then there exists an (up to isomorphism) unique von Neumann algebra $W^*(V)$ and a normal Jor
+REC|130|Corollary|cor:JW-injective|short.tex:2366|A JBW-algebra $V$ is a JW-algebra if and only if $\psi\colon V\rightarrow W^*(V)$ is injective. \end{corollary}
+REC|131|Definition||short.tex:2373|Let $V$ be a JBW-algebra. We call $s\in V$ a \Define{symmetry} when $s^2 = 1$. Two idempotents $p,q \in V$ are \Define{exchangeable by a sym
+REC|132|Lemma|lem:exchangeable-by-4-is-JW|short.tex:2377|{alfsen2012geometry}}] Let $V$ be a JBW-algebra where the identity is the sum of at least 4 idempotents that are mutually exchangeable by a 
+REC|133|Lemma|lem:symmetry-exceptional|short.tex:2381|Let $V\neq \{0\}$ be a purely exceptional JBW-algebra. Then the identity of $V$ is the sum of 3 orthogonal non-zero idempotents exchangeable
+REC|134|Lemma|lem:tensor-symmetry|short.tex:2388|Let $p_1,q_1\in V_A$ be idempotents exchangeable by a symmetry $s_1\in V_A$, and let $p_2,q_2\in V_B$ be idempotents exchangeable by a symme
+REC|135|Proposition||short.tex:2395|$V_A$ is a JW-algebra. \end{proposition}
+REC|136|Theorem|thm:JW-algebra|short.tex:2409|Let $\catC$ be a monoidal sequential effectus with irreducible scalars not equal to $\{0,1\}$. Then there is a functor $F\colon \catC\righta

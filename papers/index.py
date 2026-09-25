@@ -15,6 +15,8 @@ PAPERS = {
             'A characterisation of ordered abstract probabilities (2019)'),
     'SEA': ('2004.12749/second.tex',
             'The three types of normal sequential effect algebras (2020)'),
+    'REC': ('2109.10707/short.tex',
+            "A computer scientist's reconstruction of quantum theory (2021)"),
 }
 ENV = re.compile(r'\\begin\{(theorem\*?|proposition|lemma|corollary|definition|example|remark|notation|note)\}(?:\[([^\]]*)\])?')
 LAB = re.compile(r'\\label\{([^}]*)\}')
