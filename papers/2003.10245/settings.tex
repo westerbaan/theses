@@ -1,0 +1,230 @@
+\usepackage{babel}
+\usepackage{amsmath,amssymb}
+\usepackage{xspace}
+\usepackage{amsthm}
+\usepackage{physics}
+\usepackage{mathtools}
+\usepackage{latexsym}
+\usepackage{stmaryrd}
+\usepackage{microtype}
+\usepackage{picins}
+
+\usepackage{xparse}
+\usepackage{environ} % for \Collect@Body
+\usepackage[noadjust]{cite}
+
+% `bigovee` symbol from mathabx fonts
+\DeclareFontFamily{U}{mathux}{\hyphenchar\font45}
+\DeclareFontShape{U}{mathux}{m}{n}{
+      <5> <6> <7> <8> <9> <10>
+      <10.95> <12> <14.4> <17.28> <20.74> <24.88>
+      mathux10
+      }{}
+\DeclareSymbolFont{mathux}{U}{mathux}{m}{n}
+\DeclareFontSubstitution{U}{mathux}{m}{n}
+\DeclareMathSymbol{\bigovee}{1}{mathux}{"8F}
+
+% Get `\coprod` symbol from Computer Modern
+\DeclareSymbolFont{cmlargesymbols}{OMX}{cmex}{m}{n}
+\DeclareMathSymbol{\cmcoprod}{\mathop}{cmlargesymbols}{"60}
+\let\coprod\cmcoprod
+
+
+\usepackage{xcolor}
+\usepackage{tikz}
+\usepackage{tikz-cd}
+\usetikzlibrary{arrows, matrix}
+\usepackage[textsize=footnotesize]{todonotes}
+
+
+%\usepackage[inline]{showlabels}
+
+\usepackage{enumitem}
+\newlist{myenum}{enumerate}{2}
+\setlist[myenum,1]{label=\textup{(\roman*)},ref=(\roman*)}
+\setlist[myenum,2]{label=\textup{(\alph*)},ref=(\alph*)}
+
+% fix eptcs.bst
+\newcommand{\urlalt}[2]{\href{#1}{\urlstyle{rm}\nolinkurl{#2}}}
+
+\newcounter{main}
+\newtheorem{theorem}[main]{Theorem}
+\newtheorem{proposition}[main]{Proposition}
+\newtheorem{lemma}[main]{Lemma}
+\newtheorem{corollary}[main]{Corollary}
+
+\theoremstyle{definition}
+\newtheorem{definition}[main]{Definition}
+\newtheorem{notation}[main]{Notation}
+\newtheorem{note}[main]{Note}
+\newtheorem{example}[main]{Example}
+\newtheorem{remark}[main]{Remark}
+
+\DeclarePairedDelimiter{\ceil}{\lceil}{\rceil}
+\DeclarePairedDelimiter{\floor}{\lfloor}{\rfloor}
+\DeclarePairedDelimiter{\inn}{\langle}{\rangle}
+
+\newcommand{\sse}{\subseteq}
+\newcommand{\cl}[1]{\overline{#1}}
+\DeclareMathOperator{\im}{im}
+\newcommand{\asrt}{\mathrm{asrt}}
+\newcommand{\id}{\mathrm{id}}
+\newcommand{\opp}{\mathrm{op}}
+\newcommand{\sa}{\mathrm{sa}}
+\newcommand{\pred}{\mathrm{Pred}}
+\newcommand\C{\mathbb{C}}
+\newcommand\R{\mathbb{R}}
+\newcommand\N{\mathbb{N}}
+\newcommand\after{\mathbin{\circ}}
+\DeclareMathOperator{\Idem}{Idem}
+% \newcommand\TODO[1]{\textcolor{red}{\textbf{[}\emph{#1}\textbf{]}}}
+\let\TODO\todo
+\newcommand\Define[1]{\textbf{#1}}
+\DeclarePairedDelimiter{\weight}{\lvert}{\rvert}
+% commands added by Kenta
+% % % % % % % % % % % % %
+
+% hyphen in math mode
+\DeclareMathSymbol{\mhyphen}{\mathalpha}{operators}{"2D}
+
+\newcommand{\cat}[1]{\mathbf{#1}}
+\newcommand{\catC}{\cat{C}}
+\newcommand{\catD}{\cat{D}}
+
+\newcommand{\calF}{\mathcal{F}}
+
+\newcommand{\Rpos}{\mathbb{R}_{\ge 0}}
+\newcommand{\Rpp}{\mathbb{R}_{> 0}}
+
+\DeclareMathOperator{\absco}{absco}
+\DeclareMathOperator{\co}{co}
+\DeclareMathOperator{\Dom}{Dom}
+
+% categories
+\newcommand{\Set}{\mathbf{Set}}
+\newcommand{\Pfn}{\mathbf{Pfn}}
+\newcommand{\EA}{\mathbf{EA}}
+\newcommand{\OA}{\mathbf{OA}}
+\newcommand{\BA}{\mathbf{BA}}
+\newcommand{\sOA}{\boldsymbol{\sigma}\mathbf{OA}}
+\newcommand{\sBBNS}{\boldsymbol{\sigma}\mathbf{BBNS}}
+\newcommand{\sBOUS}{\boldsymbol{\sigma}\mathbf{BOUS}}
+%\newcommand{\Mod}{\mathbf{Mod}}
+\newcommand{\CConv}{\mathbf{CConv}}
+\newcommand{\Vect}{\mathbf{Vect}}
+\newcommand{\OVSu}{\mathbf{OVSu}}
+\newcommand{\OVSsu}{\mathbf{OVS}_\leq}
+\newcommand{\OVSt}{\mathbf{OVSt}}
+\newcommand{\SepConv}{\mathbf{SepConv}}
+\newcommand{\pBNS}{\mathbf{pBNS}}
+\newcommand{\OUS}{\mathbf{OUS}}
+\newcommand{\BOUS}{\mathbf{BOUS}}
+\newcommand{\SuperConv}{\mathbf{Conv}_{\infty}}
+\newcommand{\CSuperConv}{\mathbf{CConv}_{\infty}}
+%\newcommand{\sBpBNS}{\boldsymbol{\sigma}\mathbf{BpBNS}}
+
+\newcommand{\Cstar}{\mathbf{Cstar}}
+\newcommand{\Wstar}{\mathbf{Wstar}}
+
+\newcommand{\pSet}{\mathbf{Set}_{*}}
+
+\newcommand{\sEA}{\boldsymbol{\sigma}\mathbf{EA}}
+\newcommand{\omegaBA}{\boldsymbol{\omega}\mathbf{BA}}
+
+% M-EMod
+% \newcommand{\MyNewModLikeCat}[2]{%
+%   \NewDocumentCommand{#1}{o}{\IfValueT{##1}{##1\mhyphen}#2}}
+% EMod_M
+\newcommand{\MyNewModLikeCat}[2]{%
+  \NewDocumentCommand{#1}{o}{#2\IfValueT{##1}{_{##1}}}}
+\MyNewModLikeCat{\WMod}{\mathbf{WMod}}
+\MyNewModLikeCat{\CWMod}{\mathbf{CWMod}}
+\MyNewModLikeCat{\sWMod}{\boldsymbol{\sigma}\mathbf{WMod}}
+\MyNewModLikeCat{\sCWMod}{\boldsymbol{\sigma}\mathbf{CWMod}}
+\MyNewModLikeCat{\sEMod}{\boldsymbol{\sigma}\mathbf{EMod}}
+\MyNewModLikeCat{\EMod}{\mathbf{EMod}}
+\MyNewModLikeCat{\AEMod}{\mathbf{AEMod}}
+\MyNewModLikeCat{\Conv}{\mathbf{Conv}}
+
+
+\newcommand{\Kl}{\mathcal{K}\mspace{-2mu}\ell}
+\newcommand{\EM}{\mathcal{E}\mspace{-3mu}\mathcal{M}}
+
+
+% functors
+\newcommand{\Dst}{\mathcal{D}}
+\newcommand{\Pow}{\mathcal{P}}
+\newcommand{\iDst}{\Dst^{\infty}}
+
+\newcommand{\truth}{\mathbf{1}}
+\newcommand{\falsity}{\mathbf{0}}
+\newcommand{\mpunct}[1]{\,\text{#1}}
+
+\newcommand{\Tot}{\mathrm{Tot}}
+\newcommand{\St}{\mathrm{St}}
+\newcommand{\sSt}{\St_{\le}}
+\newcommand{\Pred}{\mathrm{Pred}}
+\newcommand{\Base}{B}
+\newcommand{\sBase}{\Base_{\le}}
+\newcommand{\pproj}{\mathord{\vartriangleright}}
+\newcommand{\copow}{\cdot}
+
+\newcommand{\Tz}{\mathcal{T}} % Totalization
+\newcommand{\Mlt}{\mathcal{M}}
+
+\newcommand{\smul}{\cdot}
+
+\DeclarePairedDelimiter{\paren}{(}{)}
+\DeclarePairedDelimiter{\tup}{\langle}{\rangle}
+\DeclarePairedDelimiter{\cotup}{[}{]}
+\DeclarePairedDelimiter{\ptup}{\langle\!\langle}{\rangle\!\rangle}
+
+\newcommand{\Comment}[1]{%
+  \marginpar{\raggedright\hbadness=10000
+    \def\baselinestretch{0.8}\footnotesize
+    #1\par}}
+
+% \set command
+% eg. \set[\Big]{x\in X | f(x) = y}
+\makeatletter
+\newcommand{\my@set@mid}{\mathrel{}\mathclose{}\delimsize\vert\mathopen{}\mathrel{}}
+% see https://tex.stackexchange.com/questions/25398/mathrel-conflict-with-left-right-middle
+\DeclarePairedDelimiterX{\set}[1]{\lbrace}{\rbrace}{%
+  \my@repl@vert@i{\my@set@mid}{#1}}
+% Note: \DeclarePairedDelimiterX creates group
+\NewDocumentCommand{\my@repl@vert@i}{m >{\SplitArgument{1}{|}}m}{\my@repl@vert@i@{#1}#2}
+\NewDocumentCommand{\my@repl@vert@i@}{m m m}{\IfNoValueTF{#3}{#2}{#2#1#3}}
+\makeatother
+
+% align with \textstyle
+% https://tex.stackexchange.com/questions/274449/is-there-an-environment-that-imitates-align-but-displays-textstyle-math
+\newenvironment{talign}
+ {\let\displaystyle\textstyle\align}
+ {\endalign}
+\newenvironment{talign*}
+ {\let\displaystyle\textstyle\csname align*\endcsname}
+ {\endalign}
+% for amsthm
+\makeatletter
+\let\talign\align@qed
+\expandafter\let\csname talign*@qed\endcsname\align@qed
+\makeatother
+
+% Auxproof
+\newcommand{\auxprooffont}{\color{black!60}}
+\newenvironment{Auxproof}{}{}
+
+\newcommand{\showauxproof}{%
+  \renewenvironment{Auxproof}
+  {\par
+    \auxprooffont\noindent\textbf{AUX-PROOF}\dotfill\par
+    \noindent\ignorespaces}
+  {\par\noindent\textbf{AUX-QED}\dotfill\par
+    \noindent\ignorespacesafterend}%
+}
+\makeatletter
+\newcommand{\hideauxproof}{%
+  \renewenvironment{Auxproof}{\@bsphack\Collect@Body\@gobble}{\@Esphack}%
+}
+\hideauxproof
+\makeatother

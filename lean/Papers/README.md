@@ -1,7 +1,7 @@
 # Formalisations of the follow-up papers
 
 Selected by the author on 2026-09-26: the post-thesis papers of Bram and Bas
-Westerbaan with John van de Wetering, and the reconstruction paper.
+Westerbaan with John van de Wetering, and the reconstruction paper; SIG added because REC depends on it.
 
 A separate effort from the theses tree (`Theses/`), in the same Lake project so
 that it can import the theses' foundations (effect algebras and monoids,
@@ -12,6 +12,7 @@ order unit spaces, Euclidean Jordan algebras, von Neumann algebras).
 | `EJA` | A. Westerbaan, B. Westerbaan, J. van de Wetering, *Pure Maps between Euclidean Jordan Algebras*, QPL 2018, arXiv:1805.11496 | `../papers/1805.11496/main.tex` | `Papers/EJA/` |
 | `OAP` | —, *A characterisation of ordered abstract probabilities*, LICS 2020, arXiv:1912.10040 | `../papers/1912.10040/first.tex` | `Papers/OAP/` |
 | `SEA` | —, *The three types of normal sequential effect algebras*, Quantum 2020, arXiv:2004.12749 | `../papers/2004.12749/second.tex` | `Papers/SEA/` |
+| `SIG` | K. Cho, B. Westerbaan, J. van de Wetering, *Dichotomy between deterministic and probabilistic models in countably additive effectus theory*, QPL 2020, arXiv:2003.10245 | `../papers/2003.10245/main.tex` | `Papers/SIG/` |
 | `REC` | B. Westerbaan, J. van de Wetering, *A computer scientist's reconstruction of quantum theory*, arXiv:2109.10707 (2021) | `../papers/2109.10707/short.tex` | `Papers/REC/` |
 
 ## Citing a point
