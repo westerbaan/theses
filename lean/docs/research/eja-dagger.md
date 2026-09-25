@@ -1,5 +1,8 @@
 # `EJAᵒᵖ` as an `&`-effectus and a `†`-effectus — research note (2026-09-12)
 
+> **Correction (2026-09-26).** §1 step 1 repeats EJA Lemma 38's broken step ("Θ(q) = q"); EJA 38 is false as printed (`papers/ERRATA.md`, `docs/research/review-eja38.md`).  The conclusion `g = U_{√p}` survives under the repaired Lemma 38′ with `p = (q·Θq)²`, but the argument given below does not establish it.
+
+
 Sources: eff.tex 211II (`&`-effectus, line 4792), 211IV (line 4859), 215I/215III
 (`dagger-theorem`, 5282/5310), 215VI.61–72 (the vN dagger, 5344), 215VII (5398:
 axiom 2 "is essentially the fundamental formula"), 216V/216VII, 217II
