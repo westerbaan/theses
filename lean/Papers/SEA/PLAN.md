@@ -19,8 +19,7 @@ Thm 43, Prop 47, Lemma 56, Thms 57/69, Thm 71.
 | file | section | points |
 |---|---|---|
 | `Basic.lean` | §2 preamble, §2.1 SEAs, §2.2 effect monoids (incl. §2.2.1) | 1–37 |
-| `Example.lean` | §2.3 an interesting SEA | 38–40 |
-| `Boolean.lean` | §3 Boolean SEAs | 41–44 |
+| `Boolean.lean` | §2.3 an interesting SEA, §3 Boolean SEAs | 38–44 (no `Example.lean`: §2.3 went here) |
 | `AlmostConvex.lean` | §4 almost-convex SEAs | 45–60 |
 | `PureAConvex.lean` | §5 pure a-convexity | 61–68 |
 | `Assoc.lean` | §6 associative sequential products | 69–73 |
@@ -92,9 +91,9 @@ C corollary.  Cost: 0 = no declaration / wrapper, 1 = short, 2 = moderate,
 | 35 | T | structure theorem for dc EMs (**OAP 57 + 69**) | Basic | — | H |
 | 36 | C | spectral theorem: `{a}'' ≅ [0,1]_{C(X)} ⊕ B` | Basic | 28, 32, 35, OAP 47 | 2 given H |
 | 37 | C | unique square roots in a normal SEA | Basic | 36 | 2 given H |
-| 38 | E | `[0,id]` in `End(V)` is a convex EM | Example | 31 | 2 |
-| 39 | E | the 2×2 example is a non-commutative SEA | Example | 38 | 2 (**check the cone**) |
-| 40 | R | Archimedean remarks; order-unit norm = `|τ|` | Example | 39 | 2 (partly unnumbered claims) |
+| 38 | E | `[0,id]` in `End(V)` is a convex EM | Boolean | 31 | 2 |
+| 39 | E | the 2×2 example is a non-commutative SEA | Boolean | 38 | 2 (**check the cone**) |
+| 40 | R | Archimedean remarks; order-unit norm = `|τ|` | Boolean | 39 | 2 (partly unnumbered claims) |
 | 41 | L | `a⊙b` idempotent ⇒ `a⊙b ≤ b`; both idempotent ⇒ commute | Boolean | 17 | 1 |
 | 42 | C | Boolean idempotent is central | Boolean | 41 | 1 |
 | 43 | P | `p⊙q` idempotent ⇔ `p|q`, then `p⊙q = p∧q` | Boolean | 41 | 1 |
@@ -139,6 +138,22 @@ C corollary.  Cost: 0 = no declaration / wrapper, 1 = short, 2 = moderate,
   SEA 13's second claim (C(X), Gillman–Jerison), SEA 16's monotone-complete
   and JB(W) cases.  ERRATA filed: SEA 3, 13, 17.
 
+* `Boolean.lean` (2026-09-26): points 38–44 all done; compiles exit 0, no
+  warnings, no `sorry`, axiom-clean; 1,097 lines.  Imports `Papers.SEA.Basic`
+  and `Papers.OAP.FloorCeiling`.  **Hypotheses discharged**: `oap47_holds :
+  OAP47` (via SEA 44: a Boolean EM is commutative by OAP 20, hence a Boolean
+  SEA) and `oap43_holds : OAP43` (from `Papers.OAP.oap43_1`); restated without
+  them: `sea30_converse`, `sea32_dc_to_normal'`, `sea36_spectral'`,
+  `sea37_sqrt'` (the last two still take `SEA35`, the only remaining OAP
+  hypothesis).  Later files should use the primed versions / `oap47_holds`.
+  ERRATA filed: SEA 38 (R is ordered only for a generating cone), SEA 40
+  (infinitesimal-free ⇎ order-unit seminorm is a norm; W's seminorm is not a
+  norm).  Reusable API: `boolBA`/`boolCBA` (Boolean algebra of a Boolean SEA
+  on its own carrier), `sea43_iff`/`sea43_inf`, `sea42_central`,
+  `NoInfinitesimals`, the example `M39` with `tau`, `m39_le_iff`,
+  `sea39_not_directedComplete` (a SEA that is not directed complete — a
+  ready foil for §4–6).
+
 ## Flags (to check when the point is reached; ERRATA only if a reader would stumble)
 
 * **3** (found in phase 1): the parenthetical "orthomodular poset" is false
@@ -158,10 +173,20 @@ C corollary.  Cost: 0 = no declaration / wrapper, 1 = short, 2 = moderate,
   non-empty (same defect as thesis B 175II.2); Mathlib's `IsOrderedRing` has it.
 * **39**: the cone "`(a,b) > 0` iff `a + b > 0`" is not closed and not
   generating in the usual sense; the membership criterion for `M` must be
-  re-derived before transcribing.
+  re-derived before transcribing.  *Resolved (Boolean.lean)*: the cone
+  `{0} ∪ {a + b > 0}` is a proper cone and *is* generating (`V39.generating`);
+  the printed criterion is right (`sea39_mem_iff`).  The flag on 38 was the
+  real one: a generating cone is needed for `R` to be ordered (ERRATA SEA 38).
+* **40** (found in phase 2): the remark's "no non-zero infinitesimals ⟺ the
+  order-unit seminorm is a norm" is false, witnessed by 39 itself; so is the
+  text's "`W` … its order-unit semi-norm is in fact a norm" (ERRATA SEA 40).
 * **44**: the proof cites OAP 47, which is about *ω-complete* Boolean effect
   monoids, for an arbitrary Boolean SEA; the non-normal case needs the
-  completeness-free argument (Boolean EM ⇒ Boolean algebra).
+  completeness-free argument (Boolean EM ⇒ Boolean algebra).  *Resolved
+  (Boolean.lean)*: confirmed — the matching citation is OAP 45; proved
+  directly (`boolBA`, distributivity by computation), and completeness for
+  normal (indeed directed-complete) Boolean SEAs by directed finite joins.
+  Citation slip only, statement true: recorded in the audit row, not filed.
 * **71**: the proof writes `a ⊙ b^4 = 0`, `a ⊙ b^{2^n} = 0`, `a ⊙ bⁿ = 0`
   where it means `= a` throughout, and "since `bⁿ ≤ b^{2^n}`" is reversed
   (powers decrease; the argument needs `b^{2^n} ≤ bⁿ`, then
