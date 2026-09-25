@@ -80,3 +80,27 @@ Review: `lean/docs/research/review-eja38.md`.
   required to be a "binary operation"; a JB-algebra (Hanche-Olsen–Størmer 3.1.6,
   which the point cites) is a Jordan *algebra*, so the product must be bilinear.
   Lean: `Papers.REC.JBAlgebra` adds `add_mul`, `smul_mul`.
+
+## SEA — *The three types of normal sequential effect algebras* (arXiv:2004.12749, `2004.12749/second.tex`)
+
+* **SEA 3** (`ex:orthomodularlattice`, second.tex:258, Example), the
+  parenthetical "(or more generally, an orthomodular poset)" — **false as
+  printed**, the same slip as OAP 2 (the example is copied from there): with
+  `x ⊥ y ⟺ x ∧ y = 0` and `x ⋁ y = x ∨ y`, in `MO2` both `a ⋁ a^⊥ = 1` and
+  `a ⋁ b = 1` with `b ≠ a^⊥`, so complements are not unique.  Repair:
+  `x ⊥ y ⟺ x ≤ y^⊥`; the two agree in a Boolean algebra, the only case used
+  later.  Lean: `Papers.SEA.sea3_orthomodular_false_as_printed` (refutation),
+  `Papers.SEA.sea3_orthomodular_repaired`.
+* **SEA 13** (second.tex:374, Example) — the gloss of "bounded-directed
+  complete" reads "every bounded set of self-adjoint elements has a least
+  upper bound", dropping *directed*: that is lattice completeness, which fails
+  for `B(H)` (Kadison's anti-lattice theorem), contradicting "and include all
+  von Neumann algebras" in the next sentence.  Repair: "every bounded
+  *directed* set".  Lean: `Papers.SEA.sea13_directedComplete_iff`.
+* **SEA 17** (`prop:SEAbasicproperties`, second.tex:490, Proposition), proof —
+  three slips, statement unaffected: in the cycle for item 5, "`a ∘ p = a ⇒
+  p ∘ a = 0`" should read "`⇒ p ∘ a = a`"; in item 7, `⇒`, the computation
+  ends "`= p ∘ a`" for "`= p ⊻ a`"; in item 7, `⇐`, "`p^⊥` and `(p ⊻ a)^⊥`
+  are summable idempotents … `a^⊥ = p^⊥ ⊻ (p ⊻ a)^⊥`" should read "`p` and
+  `(p ⊻ a)^⊥` … `a^⊥ = p ⊻ (p ⊻ a)^⊥`" (`p^⊥ ⊥ (p ⊻ a)^⊥` fails already for
+  `p = 0`, `a ≠ 1`).  Lean: `Papers.SEA.sea17_5`, `Papers.SEA.sea17_7`.
