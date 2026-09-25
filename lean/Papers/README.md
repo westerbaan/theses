@@ -40,3 +40,8 @@ same schema as the theses' audit) and, where the print is wrong, in
 one.  Reuse the theses' definitions (`Theses.B.Eff.EffectAlgebra`,
 `EffectMonoid`, `OrderUnitSpace`, `JordanAlgebras`) rather than redefining;
 where a paper's definition differs from the theses', record it.
+
+Audit vocabulary: as the theses' (`docs/STATEMENT-AUDIT.md`), with one addition for
+the proof column: `tree` — the point is discharged by an existing theorem of the
+theses tree, which the row names; whether that proof follows the paper is judged
+on the tree's own row.  A proof of ours for a point the paper only cites is `none`.

@@ -6,6 +6,7 @@ import Papers.REC.Algebras
 import Papers.EJA.Appendix
 import Papers.SEA.Basic
 import Papers.OAP.Yosida
+import Papers.EJA.Fundamental
 
 /-
 Formalisations of three papers following the theses, by Abraham (Bram)
