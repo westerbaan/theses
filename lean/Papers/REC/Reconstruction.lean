@@ -2347,7 +2347,14 @@ norm dense.  Then `W` is a JB-algebra (REC 44) whose product satisfies
 proved without it: `jb_of_chainDense` (`Papers/REC/JordanFromChains.lean`) proves this
 conclusion with norm density replaced by `ChainDense` (and without directed
 completeness), and `va_chainDense` (`Papers/REC/SpectralChains.lean`) proves
-`ChainDense` for REC's `V_A`.  Kept as a documented open `Prop`; nothing uses it. -/
+`ChainDense` for REC's `V_A`.  Nothing uses it.
+
+**Status of the `Prop` itself** (research notes, each with a break-it review):
+true for finite-dimensional `W` (`docs/research/as943-fable.md`: a Cartan
+decomposition of the cone's automorphism Lie algebra and Koecher–Vinberg); in
+infinite dimension open, but equivalent to boundedness of the product operators on
+the span plus a commutator condition on generators (`as943-infinite.md`,
+`as943-almostjordan.md`, via Hentzel–Peresi's almost Jordan rings). -/
 def AlfsenShultzJordanFromDerivations : Prop :=
   ∀ (W : Type u) [AddCommGroup W] [Module ℝ W] [PartialOrder W] [OrderUnitSpace W],
     IsOUS W → IsBanachOUS W → IsDirectedCompleteOUS W →
