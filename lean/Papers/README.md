@@ -20,12 +20,12 @@ order unit spaces, Euclidean Jordan algebras, von Neumann algebras).
 
 | tag | points | Lean lines | state |
 |---|---|---|---|
-| `OAP` | 73 / 73 | 7,500 | complete; Yosida's representation theorem (OAP 64) proved rather than cited |
-| `SEA` | 73 / 73 | 8,700 | complete; main theorem SEA 64 (every normal SEA is B ⊕ E_c ⊕ E_ac) |
+| `OAP` | 73 / 73 | 7,600 | complete; Yosida's representation theorem (OAP 64) proved rather than cited |
+| `SEA` | 73 / 73 | 9,200 | complete; main theorem SEA 64 (every normal SEA is B ⊕ E_c ⊕ E_ac) |
 | `EJA` | 54 / 54 | 9,100 | complete up to one named external input (EJA 54: the Hanche-Olsen–Størmer classification); headline EJA 40 unconditional; the fundamental formula and the Albert algebra proved |
-| `FDS` | 19 / 19 | 4,300 | complete; the predual definition of W*-categories implies the used one under a common-embedding hypothesis |
-| `SIG` | 73 / 73 | 15,300 | complete; SIG 46's B(H) clause uses Kochen–Specker as a named hypothesis |
-| `REC` | 83 / 136 | 7,700 | §2–4 done; §5 (the reconstruction, Theorems 102–103) in progress; §6 (monoidal) to do |
+| `FDS` | 19 / 19 | 4,500 | complete; the predual definition of W*-categories implies the used one under a common-embedding hypothesis |
+| `SIG` | 73 / 73 | 17,700 | complete; SIG 46's B(H) clause uses Kochen–Specker as a named hypothesis |
+| `REC` | 136 / 136 | 14,400 | complete; Theorems 102, 103 and 136 under named hypotheses (Alfsen–Shultz, Hanche-Olsen–Størmer, Shultz; the A–S 9.43/9.48 one is REC's own transplant, truth open); REC 104 refuted (sequential effectuses have irreducible scalars); REC 128 only for two-level elements |
 
 No `sorry` anywhere; every headline theorem checked axiom-clean.  Defects found in
 the papers are in `../papers/ERRATA.md` (false-as-printed statements are refuted
