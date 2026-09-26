@@ -2382,7 +2382,7 @@ algebra `M_3(𝕆)^sa`.  Every axiom of EJA 1 is verified for it (with `𝕆` th
 Cayley–Dickson octonions `Oct`) except the Jordan identity of its product,
 which the print asserts without proof and which is taken here as the explicit
 hypothesis `hJ` (its classical proofs — via the alternative laws and the
-cubic Hamilton–Cayley identity of `M_3(𝕆)^sa` — are not formalised). -/
+cubic Hamilton–Cayley identity of `M_3(𝕆)^sa` — are formalised in `Albert.lean`, which discharges the hypothesis: `albert_isEJA`). -/
 theorem exceptional_of_jordan
     (hJ : ∀ A B : HermMat 3 Oct, (A * B) * (A * A) = A * (B * (A * A))) :
     PaperEJA (HermMat 3 Oct) :=
