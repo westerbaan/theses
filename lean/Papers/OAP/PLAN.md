@@ -500,3 +500,74 @@ Pitfalls met:
   ambient `oplus_eq` (see `val_oplus`).
 * This Mathlib deprecates `push_neg` (use `push Not`), `Set.mem_setOf_eq`
   (`Set.mem_ofPred_eq`), `if_true`/`if_false` (`ite_true`/`ite_false`).
+
+### `Main.lean` done (2026-09-26)
+
+OAP 68–73 all formalised (72, 73 are remarks, rows only), 525 lines,
+`scripts/lean1.sh` exit 0, no `sorry`, no warnings; 6 rows in
+`docs/audit/papers-oap.csv` (`scripts/papers_check.py` clean).  Imports
+`Papers.OAP.Embedding` and `Papers.OAP.OUS`; `Papers.lean` imports it.
+Nothing false as printed.  One proof slip filed in `../papers/ERRATA.md`
+(OAP 70: "join" for the meet of `B`).  **The whole of OAP is now formalised.**
+
+The main theorems (namespace `Papers.OAP`, `M : Type u`, `[EffectMonoid M]`;
+`cxbEM X B := @prodEffectMonoid _ _ (unitIntervalEffectMonoid C(X, ℝ))
+(booleanEffectMonoid B)` is `[0,1]_{C(X)} ⊕ B`):
+
+* `oap68 [OmegaComplete M] : ∃ (X : Type u) (_ : TopologicalSpace X)
+  (_ : CompactSpace X) (_ : T2Space X) (B : Type u) (_ : BooleanAlgebra B),
+  BasicallyDisconnected X ∧ (∀ A : Set B, A.Countable → ∃ s, IsLUB A s) ∧
+  Nonempty (@EMEmbedding M (Set.Icc (0 : C(X, ℝ)) 1 × B) _ (cxbEM X B))`.
+* `oap69 [DirectedComplete M] : ∃ X … (B : Type u) (_ : CompleteBooleanAlgebra B),
+  ExtremallyDisconnected X ∧ ∃ f : @EffectMonoidHom M (Set.Icc (0 : C(X, ℝ)) 1 × B)
+  _ (cxbEM X B), @EMIsIso M _ _ (cxbEM X B) f`.
+* `oap69_corner [DirectedComplete M] : ∃ (p : M) (hp : p * p = p),
+  @IsConvex (leftCorner p) (cornerEffectMonoid p hp).toEffectAlgebra ∧
+  (∀ a : M, a ≤ orth p → a * a = a) ∧ ∃ X … , ExtremallyDisconnected X ∧
+  ∃ f : @EffectMonoidHom (leftCorner p) (Set.Icc (0 : C(X, ℝ)) 1)
+  (cornerEffectMonoid p hp) (unitIntervalEffectMonoid _), EMIsIso f`.
+* `oap70 [OmegaComplete M] : EffectMonoid.Commutative M`.
+* `oap71 [OmegaComplete M] (hM : ∀ a b : M, a * b = 0 → a = 0 ∨ b = 0) :
+  (∀ a : M, a = 0) ∨ ((0 : M) ≠ 1 ∧ ∀ a : M, a = 0 ∨ a = 1) ∨
+  ∃ f : EffectMonoidHom M I, EMIsIso f` (the print's wording), and
+  `oap71_iso` (same hypotheses, universe `v` free): `(∃ f : EffectMonoidHom M
+  PUnit.{v+1}, EMIsIso f) ∨ (∃ f : EffectMonoidHom M Bool, EMIsIso f) ∨
+  ∃ f : EffectMonoidHom M I, EMIsIso f` (the tree's `PUnit`, `Bool`, `I`
+  effect monoids).
+
+How the hypotheses carried elsewhere map onto these (not yet discharged;
+each needs the translation lemmas listed):
+
+* **SIG `EffectMonoidEmbeddingTheorem`** (SIG 41, `Papers/SIG/Classification.lean`)
+  ← `oap68`.  Translate: SIG's `OmegaComplete` (sequences, `IsSupOf`, `≼`) ⇒
+  OAP's `OmegaComplete`; OAP's countable-sup clause ⇒ SIG's
+  `BooleanOmegaComplete` (the range of a sequence is countable); OAP's
+  `BasicallyDisconnected` (`closure {x | f x ≠ 0}`) = the tree's (`closure
+  (Function.support f)`, definitionally the same set); SIG's
+  `cxbEffectMonoid` uses the tree's `continuousUnitIntervalEffectMonoid X`,
+  OAP's `cxbEM` uses Basic's `unitIntervalEffectMonoid C(X, ℝ)` — check
+  defeq, else compose with the identity map as an `EMIsIso`
+  (`EMEmbedding.compIso`); `IsEMEmbedding f` is `EMEmbedding.reflect`
+  (OAP's `≤` is `≼`).
+* **SIG `NoZeroDivisorsTheorem`** (SIG 43) ← `oap71_iso` with `v := 0`:
+  `∃ f, EMIsIso f` unfolds to SIG's `EMIso` (`⟨f, g, h₁, h₂⟩`); SIG's
+  `EMNoZeroDivisors` is `hM` verbatim; only `OmegaComplete` needs translating.
+* **SEA `SEA35`** (`Papers/SEA/Basic.lean`, OAP 57 + 69) ← `oap69_corner`.
+  Translate: SEA's `DirectedComplete` (`EDirected`, `EIsSup`) ⇒ OAP's;
+  `leftCorner p = Set.Iic p` (`leftCorner_eq_Iic`) vs SEA's `Downset p`
+  (`{a // a ≼ p}`) with `cornerEM hp`; SEA's `IsConvex` (own `ConvexAction`)
+  vs OAP's; SEA's `CXI X` carries `intervalEffectMonoid`, OAP's interval
+  `unitIntervalEffectMonoid`.  SEA's `dcem_structure` (SEA 35 + OAP 47) is
+  `oap69` directly.
+
+New infrastructure here: `emComp` (composition of `EffectMonoidHom`s, any
+universes), `emProdMap` (product of two), `emHom_monotone`, `EMIsIso.comp`,
+`EMIsIso.prodMap`, `EMIsIso.reflect`, `EMEmbedding.compIso`,
+`EMEmbedding.injective`, `completeBooleanAlgebraOfIsLUB` (a Boolean algebra
+with all suprema as a Mathlib `CompleteBooleanAlgebra`, same
+`toBooleanAlgebra` by `rfl`), `cxb_commutative`, `evalHom`/`constHom`/
+`evalHom_isIso` (`[0,1]_{C(pt)} ≅ [0,1]`), `idem_eq_zero_or_one`.
+
+Pitfall met: dot notation `f.comp` on a tree `EffectMonoidHom` resolves to
+the tree's `EAHom.comp` through `extends`; a `Papers.OAP.EffectMonoidHom.foo`
+is never found by dot notation — hence the `em…` names.

@@ -57,6 +57,10 @@ One section per paper (tag as in `lean/Papers/README.md`); one entry per point, 
   what the next step `d(f∗g, f∗h) ≤ f ∗ d(g,h)` needs, is the reverse:
   `(f∗g) ∨ (f∗h) ≤ f ∗ (g ∨ h)` and `f ∗ (g ∧ h) ≤ (f∗g) ∧ (f∗h)`.  Statement
   unaffected.  Lean: `Papers.OAP.IsUnitRep.dist_mul`.
+* **OAP 70** (first.tex:2592, Corollary), proof — slip: "The multiplication
+  in `B` is given by the join"; the multiplication of a Boolean algebra as an
+  effect monoid is the *meet* (Example 6).  The argument only needs it to be
+  commutative, so the corollary is unaffected.  Lean: `Papers.OAP.oap70`.
 
 ## EJA — *Pure Maps between Euclidean Jordan Algebras* (arXiv:1805.11496, `1805.11496/main.tex`)
 
@@ -171,6 +175,32 @@ formula).  Lean: `Papers.EJA.eja40` (with the hypothesis
   required to be a "binary operation"; a JB-algebra (Hanche-Olsen–Størmer 3.1.6,
   which the point cites) is a Jordan *algebra*, so the product must be bilinear.
   Lean: `Papers.REC.JBAlgebra` adds `add_mul`, `smul_mul`.
+* **REC 89** (short.tex:1516, Proposition), second bullet — **false as
+  printed**: separation by states does not pass to `Split(C)`.  If `C` has an
+  idempotent scalar `s ∉ {0, 1}`, the object `(I, s)` of `Split(C)` has no states
+  (a state `ω` would satisfy `ω = s ∘ ω` and `1 = s ∘ ω`, whence `s = 1`) but two
+  distinct endomorphisms `id = s` and `0`.  `Kl(𝒟_M)` on finite sets with
+  `M = 𝒫(ℕ)` is separated by states and has such scalars.  The printed "works
+  analogously" fails because the analogue of `p ∘ s` is `t ∘ ω`, a substate.
+  Nothing later uses this bullet (REC 90 needs no separation).  Lean:
+  `Papers.REC.rec89_states_not_preserved`, `Papers.REC.rec89_states_false_as_printed`.
+* **REC 92** (`prop:predsep-splits`, short.tex:1643, Proposition) — gap in the
+  proof: it takes `asrt_{s∘1}`, which needs `s ∘ 1` sharp, without saying why.
+  Under state separation it is: `⌊s∘1⌋` agrees with `s ∘ 1` on every state,
+  because `ω ∘ s` factors through the comprehension of `s ∘ 1`.  From predicate
+  separation alone we have no argument (not refuted).  Lean:
+  `Papers.REC.rec92_states` (as printed), `Papers.REC.rec92_predicates` (with
+  sharpness of `s∘1`, `s^⊥∘1` as hypothesis), `Papers.REC.isSharp_of_states`.
+* **REC 99** (short.tex:1816, Proposition) — **false as printed** (independent
+  review 2026-09-26; refuted in Lean).  `Kl(𝒟_M)` on finite sets with
+  `M = 𝒫(ℕ)` is directed complete (`Pred(Y) = M^Y`) and has finite tomography
+  (the point predicates `δ_y`: `(δ_y ∘ f)(x) = f(x)(y)`), but
+  `Pred(I) = 𝒫(ℕ) ≇ 𝒫(A) ⊕ [0,1]^n` for finite `A` — not even as ordered sets.
+  The proof's error: at the object `I` finite tomography is witnessed by
+  `p = id_I` alone, so "the `p_i` separate `Pred(I)`" constrains nothing; in
+  fact every complete Boolean algebra occurs as the scalars of a
+  directed-complete effectus with finite tomography.  Lean:
+  `Papers.REC.rec99_false_as_printed`, `Papers.REC.rec99_any_boolean_scalars`.
 
 ## SEA — *The three types of normal sequential effect algebras* (arXiv:2004.12749, `2004.12749/second.tex`)
 
