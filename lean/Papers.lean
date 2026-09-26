@@ -14,6 +14,7 @@ import Papers.EJA.Fundamental
 import Papers.OAP.FloorCeiling
 import Papers.FDS.DirectSums
 import Papers.EJA.Pure
+import Papers.EJA.PureRoot
 import Papers.SIG.EffectModules
 import Papers.OAP.Boolean
 import Papers.SEA.Boolean

@@ -254,5 +254,6 @@ abstract effectus language (existence/uniqueness of `asrt` from 33 + 34, and
 `quot_after_compr_pure` from 30, translated through `ejapsuVal`), then the three
 axioms of 215III (`DaggerPrimeEffectus`: unique square roots of predicates, FF,
 quotients of sharp predicates sharp) and the tree's `dagger_theorem`; est.
-800–1,200 lines, a separate file importing `Pure`.  Whether EJA 34/39 hold
-without the root being pure (Def 32 literally) is not settled.
+800–1,200 lines, a separate file importing `Pure`.  EJA 34/39 hold without
+the root being pure (Def 32 literally): `PureRoot.lean` (`diaSA_root_isPure`,
+`eja34'`, `eja39'`; `docs/research/eja-b15.md`).

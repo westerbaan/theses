@@ -118,6 +118,25 @@ without asking `f` to be pure; the proofs of 34 and 39 use that `f` is pure
 (to decompose it as filter ∘ corner).  With that hypothesis both hold (39's
 printed proof also needs the repair of EJA 38 above).  Lean:
 `Papers.EJA.super_duper_theorem`, `Papers.EJA.eja39` (root assumed pure).
+**Statements true as printed** (2026-09-26): a ⋄-self-adjoint `f` with `f ∘ f`
+pure is itself pure (the pure square reflects order and is injective on
+`E₁(⌈f(1)⌉)`, so `f` is there a positive bijection with positive inverse; finite
+dimension replaces the tree's B15 Schur/Gardner step;
+`docs/research/eja-b15.md`).  Lean: `Papers.EJA.diaSA_root_isPure`,
+`Papers.EJA.eja34'`, `Papers.EJA.eja39'` (root not assumed pure).
+
+### EJA 40 (main.tex:916, Theorem) — inherits the gap of EJA 34
+
+The proof gets the `&`-effectus axiom 211II.1 (a *unique* ⋄-positive `asrt_p`
+with `asrt_p(1) = p`) from EJA 34.  But 211II.1 quantifies over ⋄-positive maps
+in the sense of eff.tex 206II.4 / Def 32, `g = f ∘ f` with `f` ⋄-self-adjoint
+and **not** assumed pure, while 34 is proved only for pure `f` (above).  So the
+uniqueness of `asrt_p`, and with it the theorem, rests on 34 for non-pure
+roots, which is open (the same gap as thesis B's B15 for `vNᵒᵖ`).  Everything
+else in the proof is correct: existence of `asrt_p = Q_{√p}`, purity of `π∘ξ`
+(EJA 31), and the three conditions of 215III (the second is the fundamental
+formula).  Lean: `Papers.EJA.eja40` (with the hypothesis
+`Papers.EJA.Eja34Literal`), `Papers.EJA.eja40_of_pureRoot`.
 
 ## REC — *A computer scientist's reconstruction of quantum theory* (arXiv:2109.10707, `2109.10707/short.tex`)
 
