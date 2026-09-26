@@ -40,6 +40,8 @@ import Papers.SIG.Convex
 import Papers.SEA.PureAConvex
 import Papers.EJA.Albert
 import Papers.SIG.Examples
+import Papers.SEA.Closing
+import Papers.SIG.Closing
 import Papers.REC.Reconstruction
 
 /-
