@@ -31511,3 +31511,19 @@ Plumbing learnt: never pipe `lean1.sh` into `head` (it hung lean holding the
 lock); `refresh_oleans` must treat untracked files as dirty; a monitor that
 `pgrep -f`s a string in its own command line never fires; the SIG source hides
 `Auxproof` bodies, which the point indexer must skip.
+
+Later the same day: REC complete (136/136, 14,400 lines).  §5
+(`Reconstruction.lean`) proves Theorems 102 and 103 under three named
+hypotheses: Alfsen–Shultz (1.82); REC's own transplant of A–S 9.43/9.48 to
+spaces without spectral duality, which the literal theorem does not imply and
+whose truth is open (`docs/research/as948-reformulation.md`); and REC 119
+itself.  REC 104 is refuted: with comprehensions and state separation the only
+idempotent scalars are 0 and 1, so 102 is the case of 103.  §6
+(`Monoidal.lean`) proves Theorem 136 (F : C → JW_npcᵒᵖ) under Hanche-Olsen–
+Størmer 7.2.7, Shultz 1979 and A–S's four-exchangeable lemma. REC 133's Albert
+facts are computed from `Papers.EJA.Albert`.  REC 128 is done for two-level
+elements only.  Break-it reviews: `review-rec104.md` and `review-rec136.md`; the
+REC 127 zero-object refutation is kept in Lean but not filed.  All 39 non-ok
+rows of the other five papers were triaged (closed, superseded, left-thesis,
+left-benign, left-cost), and two independent sample re-audits (80 + 43 rows)
+found no mathematical defect, only grades and stale notes, all applied.
