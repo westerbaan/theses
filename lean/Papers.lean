@@ -19,6 +19,7 @@ import Papers.OAP.Boolean
 import Papers.SEA.Boolean
 import Papers.OAP.OUS
 import Papers.SIG.WeightModules
+import Papers.FDS.WStar
 
 /-
 Formalisations of three papers following the theses, by Abraham (Bram)

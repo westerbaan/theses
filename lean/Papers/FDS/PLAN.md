@@ -35,8 +35,9 @@ first this session).
   asserts (W\*-algebra = the theses' Kadison `VonNeumannAlgebra`; self-dual =
   `Theses.B.Dils.SelfDual`, mirrored as above: `C(A,B)` self-dual over
   `End B`, for all `A, B` — equivalent to the print's by `*`).  The predual
-  form is defined (`HomsHavePreduals`) for reference; the GLR equivalence is
-  cited by the print, not proved there, and not proved here.
+  form is defined (`HomsHavePreduals`); the GLR equivalence is cited by the
+  print, not proved there, and proved here only in part
+  (`Papers/FDS/WStar.lean`, see "W\*-categories from preduals" below).
 * **Sums `∑ fᵢ fᵢ* < ∞`** in a C\*-category: the print's reading "a fixed
   element upper bounds all finite partial sums" (`SqSummable`); the norm is
   `(sup_S ‖∑_{i∈S} fᵢfᵢ*‖)^{1/2}`.  The print's alternative reading
@@ -103,3 +104,48 @@ All in `Papers/FDS/DirectSums.lean`, no `sorry`.  17 of 19 points formalised
 unital C\*-algebras only; 2.5 omits `NRep(A**) ≅ Rep A`; 4.5 as corrected.
 The W\*-structure of the examples goes through the linking lemma
 (`WStarCategory.of_linking`), not in the print.
+
+## W\*-categories from preduals (`Papers/FDS/WStar.lean`, 2026-09-26)
+
+The direction the print needs of "equivalently [GLR, Prop. 2.15]": from
+`HomsHavePreduals` to `WStarCategory`.  937 lines, no `sorry`, compiled
+against the real import (`Papers.FDS.DirectSums` olean), exit 0.
+
+*What the definitions ask.*  The print (direct_sums.tex:273) asks only that
+every hom-set have a Banach predual; nothing ties the preduals to composition.
+`HomsHavePreduals` is exactly that (an isometric linear `E* ≅ C(A,B)`, `E`
+normed; completeness is not needed, the completion has the same dual).  GLR is
+not in the repository; the results below use no compatibility either.
+
+*Proved.*
+* `Sakai.ks_separate`: Krein–Šmulian in separation form (Banach–Dieudonné
+  construction, then `c₀`–`ℓ¹` duality on `ℓ^∞`).
+* `Sakai.vonNeumannAlgebra_of_predual`: a C\*-algebra with a Banach predual
+  is a von Neumann algebra in the theses' Kadison sense (Sakai's theorem, the
+  part Kadison's definition needs: monotone completeness + faithful normal
+  functionals).  No separate weak-\* continuity of multiplication is needed.
+* `Sakai.vonNeumannAlgebra_of_wStarAlgebra`: Mathlib `WStarAlgebra` ⇒
+  `Theses.VonNeumannAlgebra` — one direction of DECISIONS §3.7.
+* `vonNeumann_of_homsHavePreduals`: every `End A` is a von Neumann algebra.
+* `WStarCategory.of_homsHavePreduals_of_linking`: `HomsHavePreduals` ⇒
+  `WStarCategory` when any two objects embed isometrically into a common
+  object (true in Hilb, Rep, NRep and any C\*-category with orthogonal binary
+  direct sums); only the endomorphism preduals are used.
+
+*The gap: self-duality of `C(A,B)` in a general C\*-category.*  GLR's route
+forms the linking algebra `L = [[C(A,A), C(B,A)], [C(A,B), C(B,B)]]`, a
+C\*-algebra *outside* the category, and would need, none of it in Mathlib or
+the theses tree: (i) the C\*-norm on `L` (as operators on the Hilbert module
+`C(-,A) ⊕ C(-,B)`) and completeness; (ii) an isometric predual of `L` — the
+four preduals give one only for an equivalent norm, so either Dixmier–Ng
+(weak-\*-compact unit ball ⇒ isometric predual), which needs composition
+separately weak-\* continuous (GLR derive this; it is Sakai's hardest step), or
+a direct argument; then (iii) Sakai for `L` (proved here) and the corner
+argument of `selfDual_of_isometries` redone for a corner of an external
+algebra.  The alternative through the tree's **149V** (3 ⇒ 1: norm-bounded
+ultranorm-Cauchy nets converge ⇒ self dual, proved) needs instead (a) the
+predual of `C(A,B)` compatible with `y ↦ x† ≫ y` (separate weak-\*
+continuity; not in the print, derived by GLR) and (b) every normal functional
+on `End B` weak-\* continuous (the converse half of Sakai's theorem; not
+proved).  So the full equivalence is out of reach here; `WStarCategory` stays
+the working definition.

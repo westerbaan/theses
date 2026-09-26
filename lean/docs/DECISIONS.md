@@ -905,6 +905,8 @@ tidiness.  Answering "leave it" closes the item.
 
 ### 3.7 — Should Kadison's `VonNeumannAlgebra` be bridged to Mathlib's Sakai `WStarAlgebra`?
 
+*Update 2026-09-26: one direction now exists — `Papers.FDS.Sakai.vonNeumannAlgebra_of_wStarAlgebra` (`Papers/FDS/WStar.lean`, via a Krein–Šmulian separation theorem built there): Mathlib's `WStarAlgebra` implies the theses' `VonNeumannAlgebra`.  The converse (Kadison ⇒ a predual) is not formalised.*
+
 *(`HANDOFF.md`, closing note.  Not in `QUESTIONS.md`.)*  Mathlib's
 `VonNeumannAlgebra` is the *concrete* (double-commutant) definition and its
 `WStarAlgebra` is Sakai-style; neither matches the thesis's Kadison-style
