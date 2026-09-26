@@ -59,6 +59,7 @@ import Papers.REC.Rec136Hyps2
 import Papers.REC.JBPeirce
 import Papers.REC.JBCalculus
 import Papers.REC.Rec136Native
+import Papers.REC.JBMacdonald
 import Papers.FDS.Linking
 import Papers.FDS.Envelope
 import Papers.FDS.Bidual
