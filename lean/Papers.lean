@@ -58,6 +58,7 @@ import Papers.REC.Rec136Hyps
 import Papers.REC.Rec136Hyps2
 import Papers.FDS.Linking
 import Papers.FDS.Envelope
+import Papers.FDS.Bidual
 import Papers.SEA.JordanSEA
 
 /-

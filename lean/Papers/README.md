@@ -23,7 +23,7 @@ order unit spaces, Euclidean Jordan algebras, von Neumann algebras).
 | `OAP` | 73 / 73 | 7,600 | complete; Yosida's representation theorem (OAP 64) proved rather than cited |
 | `SEA` | 73 / 73 | 9,200 | complete; main theorem SEA 64 (every normal SEA is B ⊕ E_c ⊕ E_ac) |
 | `EJA` | 54 / 54 | 9,100 | complete up to one named external input (EJA 54: the Hanche-Olsen–Størmer classification); headline EJA 40 unconditional; the fundamental formula and the Albert algebra proved |
-| `FDS` | 19 / 19 | 4,500 | complete; the predual definition of W*-categories implies the used one under a common-embedding hypothesis |
+| `FDS` | 19 / 19 | 6,300 | complete; FDS 2.5's NRep(A**) ≅ Rep(A) with A** constructed; FDS 2.2's 'equivalently [GLR 2.15]' proved in the W*-category ⇒ predual direction, the converse under a common-embedding hypothesis |
 | `SIG` | 73 / 73 | 17,700 | complete; SIG 46's B(H) clause uses Kochen–Specker as a named hypothesis |
 | `REC` | 136 / 136 | 17,500 | complete; REC 121 (V_A is a JB-algebra) proved outright, repairing the print's appeal to A–S 9.48; A–S (1.82) and REC 119 proved; **Theorems 102 and 103 with no named hypotheses** (`rec102_hypfree`, `rec103_hypfree`); 136 assumes only two corollaries of verified literature results (of Hanche-Olsen–Størmer 7.2.7 and Shultz 1979 Thm 3.9; A–S Lemma 4.4 eliminated by a tensor-power dimension count, `Rec136Hyps.lean`); REC 104 refuted (sequential effectuses have irreducible scalars) |
 
