@@ -55,6 +55,7 @@ import Papers.REC.Rec128
 import Papers.REC.Resolvent
 import Papers.FDS.Linking
 import Papers.FDS.Envelope
+import Papers.SEA.JordanSEA
 
 /-
 Formalisations of six papers following the theses, by Abraham (Bram)
