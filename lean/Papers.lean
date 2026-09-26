@@ -28,6 +28,8 @@ import Papers.REC.Decompose
 import Papers.OAP.Main
 import Papers.REC.DecomposeFinite
 import Papers.REC.Scalars
+import Papers.SIG.Discharge
+import Papers.SEA.Discharge
 
 /-
 Formalisations of three papers following the theses, by Abraham (Bram)
