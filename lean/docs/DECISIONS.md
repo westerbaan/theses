@@ -907,6 +907,8 @@ tidiness.  Answering "leave it" closes the item.
 
 *Update 2026-09-26: one direction now exists — `Papers.FDS.Sakai.vonNeumannAlgebra_of_wStarAlgebra` (`Papers/FDS/WStar.lean`, via a Krein–Šmulian separation theorem built there): Mathlib's `WStarAlgebra` implies the theses' `VonNeumannAlgebra`.  The converse (Kadison ⇒ a predual) is not formalised.*
 
+*Update 2026-09-26, later: the converse now exists too — `Papers.FDS.Linking.wStarAlgebra_of_vonNeumannAlgebra` (`Papers/FDS/Linking.lean`, via `M ≅ (M_*)*` from 77III and 87VI).  So the two definitions are equivalent in Lean, both directions proved in the `Papers` library.  Whether to move the bridge into `Theses/` stays a scope question.*
+
 *(`HANDOFF.md`, closing note.  Not in `QUESTIONS.md`.)*  Mathlib's
 `VonNeumannAlgebra` is the *concrete* (double-commutant) definition and its
 `WStarAlgebra` is Sakai-style; neither matches the thesis's Kadison-style

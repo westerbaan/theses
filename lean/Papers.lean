@@ -53,6 +53,8 @@ import Papers.REC.Reconstruction2
 import Papers.REC.Monoidal
 import Papers.REC.Rec128
 import Papers.REC.Resolvent
+import Papers.FDS.Linking
+import Papers.FDS.Envelope
 
 /-
 Formalisations of six papers following the theses, by Abraham (Bram)
