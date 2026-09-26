@@ -16,6 +16,22 @@ order unit spaces, Euclidean Jordan algebras, von Neumann algebras).
 | `FDS` | T. Fritz, B. Westerbaan, *The universal property of infinite direct sums in C\*- and W\*-categories*, Appl. Categ. Structures 2019, arXiv:1907.04714 | `../papers/1907.04714/direct_sums.tex` | `Papers/FDS/` |
 | `REC` | B. Westerbaan, J. van de Wetering, *A computer scientist's reconstruction of quantum theory*, arXiv:2109.10707 (2021) | `../papers/2109.10707/short.tex` | `Papers/REC/` |
 
+## Status (2026-09-26, end of the first day)
+
+| tag | points | Lean lines | state |
+|---|---|---|---|
+| `OAP` | 73 / 73 | 7,500 | complete; Yosida's representation theorem (OAP 64) proved rather than cited |
+| `SEA` | 73 / 73 | 8,700 | complete; main theorem SEA 64 (every normal SEA is B ⊕ E_c ⊕ E_ac) |
+| `EJA` | 54 / 54 | 9,100 | complete up to one named external input (EJA 54: the Hanche-Olsen–Størmer classification); headline EJA 40 unconditional; the fundamental formula and the Albert algebra proved |
+| `FDS` | 19 / 19 | 4,300 | complete; the predual definition of W*-categories implies the used one under a common-embedding hypothesis |
+| `SIG` | 71 / 73 | 13,100 | examples SIG 15 (W*-algebras) and 46 in progress |
+| `REC` | 83 / 136 | 7,700 | §2–4 done; §5 (the reconstruction, Theorems 102–103) in progress; §6 (monoidal) to do |
+
+No `sorry` anywhere; every headline theorem checked axiom-clean.  Defects found in
+the papers are in `../papers/ERRATA.md` (false-as-printed statements are refuted
+in Lean with the corrected statement proved beside them); each paper's
+`PLAN.md` carries the per-point record and hand-over notes.
+
 ## Citing a point
 
 EJA, OAP, SEA, SIG and REC number all theorem-like environments with one global

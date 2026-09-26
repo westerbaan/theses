@@ -31480,3 +31480,34 @@ with `left-benign`.  Every `weaker`/`differs` row now carries `left-thesis`,
   an *affiliated* central `c` (`support-order.md`); duplicators exist for
   `ℓ^∞(X)` only, not all commutative algebras (127III); ERRATA 106III.3's
   clause (E) is refined in `new-analysis-reconstruction.md` (unreviewed).
+
+## Session 113 — 2026-09-26, the follow-up papers
+
+A separate effort alongside the theses tree: `Papers/`, a second Lean library
+in the same Lake project, formalising six papers by Bram and Bas Westerbaan
+with John van de Wetering, Kenta Cho and Tobias Fritz (OAP, SEA, EJA, SIG,
+FDS, REC; sources and point indexes in `../papers/`).  About 25 Opus 5.5
+agents over the day, one section per agent, committed and rebuilt as each
+landed.  Result at the close: OAP, SEA, FDS complete; EJA complete up to the
+Hanche-Olsen–Størmer classification; SIG 71/73; REC §2–4 (§5 running).
+About 51,000 Lean lines, no `sorry`.
+
+Mathematics worth recording: the Jordan fundamental formula (a triple-
+derivation argument, 454 lines against a 1,500–2,500 estimate); Yosida's
+representation theorem; the Jordan analogue of B15 (a ⋄-self-adjoint root of a
+pure map is pure — finite dimension replaces Schur/Gardner), making EJA 34/39
+true as printed and EJA 40 unconditional; the Albert algebra's Jordan identity
+by a degree-3 Hamilton–Cayley check on 9 coordinates; an associative EJA is ℝⁿ
+without Kadison; Sakai ⇒ Kadison (Mathlib's WStarAlgebra implies the theses'
+VonNeumannAlgebra, recorded at DECISIONS §3.7).
+
+Defects (`../papers/ERRATA.md`, 32 entries): false as printed and refuted in
+Lean — OAP 2 / SEA 3 / REC 7 (⊥ as x ∧ y = 0 in orthomodular lattices), OAP
+24.3, EJA 9.4, EJA 38 (repaired as 38′ and proved), EJA 3 for ℍ, SEA 38, SEA
+40, SEA 73, REC 89, REC 92 (under predicate separation), REC 99, FDS 4.5; the
+REC 120 proof gap repaired (Theorems 102/103 stand); many proof slips.
+
+Plumbing learnt: never pipe `lean1.sh` into `head` (it hung lean holding the
+lock); `refresh_oleans` must treat untracked files as dirty; a monitor that
+`pgrep -f`s a string in its own command line never fires; the SIG source hides
+`Auxproof` bodies, which the point indexer must skip.
