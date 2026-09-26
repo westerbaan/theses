@@ -266,8 +266,9 @@ fixes listed for 102/103).  Review: `lean/docs/research/review-rec120.md`.
   `e^{t[D_p,D_q]}1 = 1 + 4tx` for all `t`, and positivity forces `x = 0`.  The
   remaining parts of the proof, transplanted from 9.43 (continuity, the Jordan
   identity, `0 ≤ a² ≤ 1`), are sketched only.  The statement is not refuted.  In
-  Lean the whole step is carried as the named hypothesis
-  `AlfsenShultzJordanFromDerivations`.  Notes (each with a review):
+  Lean the symmetry is proved (`Papers.REC.jordan_symmetry`, with
+  `IsOrderDerivation.lie` for the commutator fact), and `rec102'`, `rec103'`,
+  `rec136'` need only the 9.43 part (`AlfsenShultzJordanTransplant`).  Notes (each with a review):
   `lean/docs/research/as948-reformulation.md`, `as948-discharge.md`,
   `as948-lemmaM.md`.
 

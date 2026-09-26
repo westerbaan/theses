@@ -31527,3 +31527,12 @@ REC 127 zero-object refutation is kept in Lean but not filed.  All 39 non-ok
 rows of the other five papers were triaged (closed, superseded, left-thesis,
 left-benign, left-cost), and two independent sample re-audits (80 + 43 rows)
 found no mathematical defect, only grades and stale notes, all applied.
+
+Then the A–S transplant: a Fable attempt (reviewed) proved REC 121's Jordan
+symmetry `[D_p,D_q]1 = 0` from REC 120 alone — `x = T_p q − T_q p` is killed by
+`D_p`, `D_q`, so `e^{t[D_p,D_q]}1 = 1 + 4tx`, and positivity forces `x = 0`.  In
+Lean (`JordanSymmetry.lean`, 656 lines): commutators of order derivations are
+order derivations (Trotter + group commutator in the Banach algebra of bounded
+operators, proved), the symmetry, and `rec102'`/`rec103'`/`rec136'` under the
+smaller `AlfsenShultzJordanTransplant` (only the 9.43 part).  ERRATA REC 121:
+9.48 cited outside its hypotheses, repairable as above.
