@@ -21,7 +21,7 @@ order unit spaces, Euclidean Jordan algebras, von Neumann algebras).
 | tag | points | Lean lines | state |
 |---|---|---|---|
 | `OAP` | 73 / 73 | 7,600 | complete; Yosida's representation theorem (OAP 64) proved rather than cited |
-| `SEA` | 73 / 73 | 9,200 | complete; main theorem SEA 64 (every normal SEA is B ⊕ E_c ⊕ E_ac) |
+| `SEA` | 73 / 73 | 11,500 | complete; main theorem SEA 64 (every normal SEA is B ⊕ E_c ⊕ E_ac); SEA 16's JB/JBW sentence for all finite-dimensional and all special (JC/JW) algebras, exceptional infinite-dimensional open |
 | `EJA` | 54 / 54 | 9,100 | complete up to one named external input (EJA 54: the Hanche-Olsen–Størmer classification); headline EJA 40 unconditional; the fundamental formula and the Albert algebra proved |
 | `FDS` | 19 / 19 | 6,300 | complete; FDS 2.5's NRep(A**) ≅ Rep(A) with A** constructed; FDS 2.2's 'equivalently [GLR 2.15]' proved in the W*-category ⇒ predual direction, the converse under a common-embedding hypothesis |
 | `SIG` | 73 / 73 | 17,700 | complete; SIG 46's B(H) clause uses Kochen–Specker as a named hypothesis |

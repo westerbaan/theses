@@ -61,6 +61,7 @@ import Papers.FDS.Envelope
 import Papers.FDS.Bidual
 import Papers.FDS.Predual
 import Papers.SEA.JordanSEA
+import Papers.SEA.JBSEA
 
 /-
 Formalisations of six papers following the theses, by Abraham (Bram)
