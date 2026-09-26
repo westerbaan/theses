@@ -24,7 +24,7 @@ order unit spaces, Euclidean Jordan algebras, von Neumann algebras).
 | `SEA` | 73 / 73 | 8,700 | complete; main theorem SEA 64 (every normal SEA is B ⊕ E_c ⊕ E_ac) |
 | `EJA` | 54 / 54 | 9,100 | complete up to one named external input (EJA 54: the Hanche-Olsen–Størmer classification); headline EJA 40 unconditional; the fundamental formula and the Albert algebra proved |
 | `FDS` | 19 / 19 | 4,300 | complete; the predual definition of W*-categories implies the used one under a common-embedding hypothesis |
-| `SIG` | 71 / 73 | 13,100 | examples SIG 15 (W*-algebras) and 46 in progress |
+| `SIG` | 73 / 73 | 15,300 | complete; SIG 46's B(H) clause uses Kochen–Specker as a named hypothesis |
 | `REC` | 83 / 136 | 7,700 | §2–4 done; §5 (the reconstruction, Theorems 102–103) in progress; §6 (monoidal) to do |
 
 No `sorry` anywhere; every headline theorem checked axiom-clean.  Defects found in
