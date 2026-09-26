@@ -47,6 +47,7 @@ import Papers.OAP.Closing2
 import Papers.SEA.Closing2
 import Papers.FDS.Closing2
 import Papers.REC.Monoidal
+import Papers.REC.Rec128
 
 /-
 Formalisations of six papers following the theses, by Abraham (Bram)

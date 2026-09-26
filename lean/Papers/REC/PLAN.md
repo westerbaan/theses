@@ -250,7 +250,7 @@ external literature).
 | 125 | P | `T_{a⊗1} = T_a ⊗ id` | 123, 58 | – | done: operator form for sharp `a` (`rec125_sharp`), product vectors for all `a` (`rec125`, `rec125_right`) |
 | 126 | C | `a⊗1`, `1⊗b` operator commute | 125 | – | done (`rec126`, all `a`, `b`) |
 | 127 | P | `a ↦ a⊗1` normal injective Jordan hom | 126 | – | **FALSE as printed** (`rec127_false_as_printed`: `B = 0`); corrected `rec127`/`rec127_right` (injective when `B` has a state), ERRATA |
-| 128 | P | `Q_{a⊗b} = Q_a ⊗ Q_b` | 123 | – | done for `a = αe+βe⊥`, `b = γf+δf⊥` on product vectors (`rec128`; what 134 needs); general case not done (weaker) |
+| 128 | P | `Q_{a⊗b} = Q_a ⊗ Q_b` | 123 | – | done for all `a`, `b` on product vectors (`rec128_general`, `Rec128.lean`: sharp case by REC 123, then polarised density over pairwise commuting idempotents; no new hypotheses); two-block `rec128` is the special case |
 | 129 | T | universal von Neumann algebra `W*(V)` | 48 | **H-O–S 7.1.9** | stated (`HancheOlsenStormerUniversalEnvelope`; unused by 135/136) |
 | 130 | C | JW ⟺ `ψ` injective | 129 | – | done (`rec130`, for any universal envelope) |
 | 131 | D | symmetry; exchangeable | 48 | – | done (`IsSymmetry`, `ExchangeableBySymmetry`) |
@@ -505,4 +505,6 @@ from Shultz's theorem alone.
   `linear_eq_zero_of_idem` (density), `states_separate_VA`, `tensV` with
   `stateLin_tensor`, `tensV_norm_le`.
 * Left open: REC 128 for arbitrary `a`, `b` (needs partition approximations and a
-  k-block version of `quad_four`).
+  k-block version of `quad_four`).  **Done 2026-09-26** in `Rec128.lean` (`rec128_general`), without either: a bounded
+  symmetric bilinear map vanishing on the diagonal at idempotents vanishes on pairs of
+  commuting idempotents, hence on the diagonal (`bil_diag_eq_zero`, via `spec_pair_approx`).

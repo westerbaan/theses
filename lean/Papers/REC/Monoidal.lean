@@ -30,8 +30,9 @@ JW-algebra.
 
 van de Wetering's thesis Thm 4.6.17 (`asrt_a = Q_{√a}`), which the paper uses for
 REC 123/128, is **not** needed: REC 123 follows from REC 100 axiom 5 and SEA square
-roots, and REC 128 is proved (for two-block combinations, which is what REC 134 uses)
-by evaluating `Q` only at sharp product elements.
+roots, and REC 128 is proved (here for two-block combinations, which is what REC 134
+uses; in general as `rec128_general` in `Papers.REC.Rec128`) by evaluating `Q` only at
+sharp product elements.
 
 ## Structure of the file
 
@@ -2109,7 +2110,8 @@ include h0
 /-- **REC 128** (`prop:tensor-quadratic`, short.tex:2346, Proposition), for `a`, `b`
 two-block combinations of sharp elements, on product vectors:
 `Q_{a⊗b}(c ⊗ d) = Q_a c ⊗ Q_b d` for `a = α e + β e⊥`, `b = γ f + δ f⊥` (`e`, `f`
-idempotent).  This covers the symmetries `2e − 1`, which is what REC 134 uses.  The proof
+idempotent).  This covers the symmetries `2e − 1`, which is what REC 134 uses; the
+general case is `rec128_general` (`Papers.REC.Rec128`, which recovers this one).  The proof
 follows the paper's polarisation argument, but only ever evaluates `Q` at *sharp product*
 elements (`e ⊗ f`, `e ⊗ 1`, `1 ⊗ f`, `1 ⊗ 1`), where `Q_t = asrt_t` and REC 123 applies —
 so no identification `asrt_a = Q_{√a}` for non-sharp `a` (van de Wetering's thesis,
