@@ -2309,10 +2309,14 @@ def AlfsenShultzResolventCriterion : Prop :=
       (∃ c : ℝ, 0 < c ∧ ∀ l : ℝ, 0 < l → l < c → ∀ y : W, ¬ 0 ≤ y → ¬ 0 ≤ y + l • δ y) →
       IsOrderDerivation W δ
 
-/-- **Alfsen–Shultz, *Geometry of state spaces of operator algebras*, Thm. 9.48
-(via 9.43)**, as a named black box, stated for a Banach order unit space (no
-spectral duality, no dual space assumed) with a norm-dense set of combinations
-of "projections": let `W` be a directed-complete Banach order unit space and
+/-- **REC's transplant of Alfsen–Shultz, *Geometry of state spaces of operator
+algebras*, Thm. 9.48 (via 9.43)**, as a named hypothesis.  This is *not* an
+instance of the literal theorem, which assumes spectral duality with a base norm
+space; REC 121 (short.tex:2235) asks to "copy the argument of Theorem 9.43" in
+this setting.  No derivation from the literal theorem is known and its truth in
+this generality is open (`docs/research/as948-reformulation.md`).  Stated for a
+Banach order unit space (no spectral duality, no dual space assumed) with a
+norm-dense set of combinations of "projections": let `W` be a directed-complete Banach order unit space and
 `(e_i)` an (injectively indexed) family in `[0,1]_W`, closed under `e ↦ 1 - e`,
 with positive maps `U_i` ("compressions": `U_i 1 = e_i`, `U_i² = U_i`,
 `U_i U_{i'} = 0`, and on `W⁺`, `U_i w = 0 ⟺ U_{i'} w = w`) such that every

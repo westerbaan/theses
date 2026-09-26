@@ -282,6 +282,21 @@ fixes listed for 102/103).  Review: `lean/docs/research/review-rec120.md`.
   `Papers.REC.rec104_false`, `Papers.REC.idem_scalar_trivial`,
   `Papers.REC.scal_irreducible_of_states`, `Papers.REC.rec102_trivial_factor`.
 
+### REC 127, REC 128 (§6) — a false injectivity claim; a garbled formula (2026-09-26, Lean)
+
+* **REC 127** (`prop:tensor-is-Jordan-hom`, short.tex:2329, Proposition) — **false
+  as printed**: `a ↦ a ⊗ 1` need not be injective.  For `B` the initial object `0`
+  (which every effectus has) `1_0 = 0`, so `a ⊗ 1_0 = 0`, while `V_I ≠ 0`.  The
+  proof picks "any state `ω'` on the second system", and `0` has none.  Repair:
+  injective when `B` has a state (the only case REC 135 uses, `B = A_p` with
+  `p ≠ 0`).  Lean: `Papers.REC.rec127_false_as_printed`, `Papers.REC.rec127`.
+
+* **Triple product** (running text before REC 128, short.tex:2342) — the printed
+  `Q_{a,b} c = (a*b)*c + (c*b)*a − (a*c)*b` has `b` and `c` exchanged.  As printed,
+  `Q_{a,a} = T_{a²} ≠ Q_a` and `Q_{a,b} ≠ Q_{b,a}`, and in a JW-algebra it gives
+  `½(abc + cba)`, not the stated `½(acb + bca)`.  Correct:
+  `Q_{a,b} c = (a*c)*b + (b*c)*a − (a*b)*c`.  Lean: `Papers.REC.jQ2`.
+
 ## SEA — *The three types of normal sequential effect algebras* (arXiv:2004.12749, `2004.12749/second.tex`)
 
 * **SEA 3** (`ex:orthomodularlattice`, second.tex:258, Example), the

@@ -154,10 +154,10 @@ external literature).
 | 49 | E | vN algebra sa part is JBW | 48 | tree `VonNeumannAlgebra` | deferred |
 | 50 | D | JW-algebra | 48 | tree vN (ultraweak topology?) | done as injective normal Jordan hom (deviation, flag 16) |
 | 51 | D | purely exceptional | 44 | – | done |
-| 52 | T | JBW = JW ⊕ purely exceptional | 50, 51 | **Hanche-Olsen–Størmer 7.2.7** | deferred to Monoidal.lean (black box phrased at its use in 135) |
+| 52 | T | JBW = JW ⊕ purely exceptional | 50, 51 | **Hanche-Olsen–Størmer 7.2.7** | stated in Monoidal.lean (`HancheOlsenStormerDecomposition`, the form 135 uses) |
 | 53 | D | hyperstonean | 47 | – | done |
 | 54 | E | `C(X, M₃(𝕆)_sa)` purely exceptional | 51, 53 | Shultz; **no octonions in Mathlib** | n/f |
-| 55 | T | purely exceptional ≅ `C(X, M₃(𝕆)_sa)` | 54 | **Shultz 1979** | deferred to Monoidal.lean (black box, see §1) |
+| 55 | T | purely exceptional ≅ `C(X, M₃(𝕆)_sa)` | 54 | **Shultz 1979** | stated in Monoidal.lean (`ShultzExceptionalStructure`, with the Albert algebra of `Papers/EJA/Albert.lean`) |
 | 56 | D | SEA, normal SEA | 6 | tree 225IV `SequentialEffectAlgebra` has a *weaker* axiom (e) | done (own class + `SEA.toTree`) |
 | 57 | L | normal SEA: `⌈a⌉`, `⌊a⌋`, `b&a=a ⇒ b≥⌈a⌉` | 56 | **SEA** | stated (Prop, from SEA) |
 | 58 | R | spectral theorem for normal SEAs | 56 | **SEA** | deferred (SEA spectral theorem; used from REC 119 on) |
@@ -244,21 +244,21 @@ external literature).
 
 | # | k | content | deps | external | status |
 |---|---|---|---|---|---|
-| 122 | D | monoidal sequential effectus | 28, 100 | – | deferred |
-| 123 | P | `asrt_{a⊗b} = asrt_a ⊗ asrt_b` | 122 | vdW thesis 4.6.17 | deferred |
-| 124 | C | `p⊗q` sharp | 123 | – | deferred |
-| 125 | P | `T_{a⊗1} = T_a ⊗ id` | 123, 58 | SEA spectral | deferred |
-| 126 | C | `a⊗1`, `1⊗b` operator commute | 125 | – | deferred |
-| 127 | P | `a ↦ a⊗1` normal injective Jordan hom | 126 | – | deferred |
-| 128 | P | `Q_{a⊗b} = Q_a ⊗ Q_b` | 123 | – | deferred |
-| 129 | T | universal von Neumann algebra `W*(V)` | 48 | **H-O–S 7.1.9** | deferred (black box) |
-| 130 | C | JW ⟺ `ψ` injective | 129 | – | deferred |
-| 131 | D | symmetry; exchangeable | 48 | – | deferred |
-| 132 | L | ≥4 exchangeable idempotents ⇒ JW | 131 | **A–S Geometry 4.4** | deferred (black box) |
-| 133 | L | purely exceptional ⇒ 3 exchangeable idempotents | 55 | **Shultz + H-O–S 2.8.3** | deferred (black box, §1) |
-| 134 | L | tensor of exchangeable pairs | 124, 128 | – | deferred |
-| 135 | P | `V_A` is JW | 52, 127, 130, 132–134 | – | deferred |
-| 136 | T | **main**: functor `C → JW_npcᵒᵖ` | 103, 135 | – | deferred |
+| 122 | D | monoidal sequential effectus | 28, 100 | – | done (`MonoidalSequentialEffectus`, mixin class) |
+| 123 | P | `asrt_{a⊗b} = asrt_a ⊗ asrt_b` | 122 | SEA 37 (discharged) | done (`rec123`; vdW 4.6.17 not needed) |
+| 124 | C | `p⊗q` sharp | 123 | – | done (`rec124`) |
+| 125 | P | `T_{a⊗1} = T_a ⊗ id` | 123, 58 | – | done: operator form for sharp `a` (`rec125_sharp`), product vectors for all `a` (`rec125`, `rec125_right`) |
+| 126 | C | `a⊗1`, `1⊗b` operator commute | 125 | – | done (`rec126`, all `a`, `b`) |
+| 127 | P | `a ↦ a⊗1` normal injective Jordan hom | 126 | – | **FALSE as printed** (`rec127_false_as_printed`: `B = 0`); corrected `rec127`/`rec127_right` (injective when `B` has a state), ERRATA |
+| 128 | P | `Q_{a⊗b} = Q_a ⊗ Q_b` | 123 | – | done for `a = αe+βe⊥`, `b = γf+δf⊥` on product vectors (`rec128`; what 134 needs); general case not done (weaker) |
+| 129 | T | universal von Neumann algebra `W*(V)` | 48 | **H-O–S 7.1.9** | stated (`HancheOlsenStormerUniversalEnvelope`; unused by 135/136) |
+| 130 | C | JW ⟺ `ψ` injective | 129 | – | done (`rec130`, for any universal envelope) |
+| 131 | D | symmetry; exchangeable | 48 | – | done (`IsSymmetry`, `ExchangeableBySymmetry`) |
+| 132 | L | ≥4 exchangeable idempotents ⇒ JW | 131 | **A–S Geometry 4.4** | stated (`AlfsenShultzFourExchangeable`) |
+| 133 | L | purely exceptional ⇒ 3 exchangeable idempotents | 55 | **Shultz** (REC 55) | done (`rec133`) from `ShultzExceptionalStructure`; H-O–S 2.8.3 computed in the Albert algebra (`AlbertFacts`) |
+| 134 | L | tensor of exchangeable pairs | 124, 128 | – | done (`rec134`) |
+| 135 | P | `V_A` is JW | 52, 127, 130, 132–134 | REC 52, 55, 132 | done (`rec135`; corner Jordan hom `corner_jordan` repairs the `V_{A_p} ≅ V₂` step) |
+| 136 | T | **main**: functor `C → JW_npcᵒᵖ` | 103, 135 | – | done (`rec136`, modulo six named hypotheses; axiom-clean) |
 
 ## 4. Flags: false or under-specified as printed
 
@@ -334,6 +334,11 @@ external literature).
     needed.  Not filed (a careful reader repairs both).
 20. **REC 87** (flag 6): formalised as `Pred(A) ≅ s·Pred(A) ⊕ s^⊥·Pred(A)` (natural in
     `A`), faithfulness of `Pred(C) → C₁ × C₂`, non-triviality at `I` (`rec87`).
+
+21. **REC 127 is false as printed** (refuted in Lean, `rec127_false_as_printed`):
+    `a ↦ a ⊗ 1_B` is not injective for `B = 0`; injective when `B` has a state
+    (`rec127`).  The triple-product formula before REC 128 has `b`, `c` exchanged.
+    Both filed in ERRATA.
 
 Items 1, 2 and 17 are the only ones that change what is true; 3, 4, 18, 19 are gaps
 in proofs; the rest are typos/notation a careful reader repairs, or deviations of
@@ -475,3 +480,29 @@ import `Papers.REC.Reconstruction` once its olean exists.
   The REC 92 row and `rec92_states` could note that the states case has no
   instances (`idem_scalar_trivial`); that is not changed here, because only this
   file was touched.
+
+
+## §6 done (Monoidal.lean, 2026-09-26)
+
+`Papers/REC/Monoidal.lean` (~2,850 lines, no `sorry`) proves REC 122–136; `rec136`
+and `rec135` are axiom-clean (propext, Classical.choice, Quot.sound).  Named
+hypotheses of `rec136`: §5's three plus `HancheOlsenStormerDecomposition` (REC 52),
+`ShultzExceptionalStructure` (REC 55), `AlfsenShultzFourExchangeable` (REC 132).
+Not needed after all: van de Wetering's thesis 4.6.17 (REC 123 follows from REC 100
+axiom 5 and SEA square roots; REC 128 is proved by evaluating `Q` only at sharp
+products) and REC 129 (`W*(V)`; REC 135 uses REC 50's injective Jordan hom directly).
+The Albert algebra *is* constructed (`Papers/EJA/Albert.lean`), so REC 133 is proved
+from Shultz's theorem alone.
+
+* **REC 127 is false as printed** (flag 21): `a ↦ a ⊗ 1_B` is not injective for
+  `B = 0`; true when `B` has a state (ERRATA).
+* The triple-product formula before REC 128 exchanges `b` and `c` (ERRATA).
+* Gaps repaired: REC 127's normality (via `a ⊗ 1 = Pred(ρ)(a)`); REC 135's
+  `V_{A_p} ≅ V₂` is only an order isomorphism in the print — `corner_jordan` shows
+  `Pred(π_p)` is a Jordan homomorphism; REC 128's reliance on `asrt_a = Q_{√a}`.
+* Bridges proved on the way (reusable): `jsq_gmap` (`y * y = y & y` in `V_A`),
+  `jidem_gmap` (Jordan idempotents are sharp), `jQ_idem` (`Q_e = asrt_e`),
+  `linear_eq_zero_of_idem` (density), `states_separate_VA`, `tensV` with
+  `stateLin_tensor`, `tensV_norm_le`.
+* Left open: REC 128 for arbitrary `a`, `b` (needs partition approximations and a
+  k-block version of `quad_four`).
