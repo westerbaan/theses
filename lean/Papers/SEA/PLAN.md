@@ -154,6 +154,18 @@ C corollary.  Cost: 0 = no declaration / wrapper, 1 = short, 2 = moderate,
   `sea39_not_directedComplete` (a SEA that is not directed complete — a
   ready foil for §4–6).
 
+* `AlmostConvex.lean` (2026-09-26): §4, points 45–60 all done, one declaration
+  (or more) per point; compiles exit 0, no `sorry`, axiom-clean; 3,242 lines
+  (one file: the examples 47/48/56 use the theory 52–57, and a second file
+  could not import the first this session).  Imports `Papers.SEA.Boolean`.
+  **Hypotheses**: only `h35 : SEA35` (OAP 57+69), in SEA 51, 52.4, 55, 57–60
+  (via Basic's `dcem_structure`); OAP 47 is `oap47_holds`, SEA 42 is
+  `sea42_central`, SEA 44 is `sea44_complete`.  `SEA35` is discharged by
+  `sea35` in `Discharge.lean`, which had no olean: once it does, restate
+  51–60 without `h35` (as `Discharge.lean` does for 36/37).  48 and 56 need no
+  hypothesis (48's uniqueness of actions uses `additive_eq_of_div` with
+  division in `H`).  No ERRATA filed (see the §4 flags below).
+
 ## Flags (to check when the point is reached; ERRATA only if a reader would stumble)
 
 * **3** (found in phase 1): the parenthetical "orthomodular poset" is false
@@ -191,3 +203,62 @@ C corollary.  Cost: 0 = no declaration / wrapper, 1 = short, 2 = moderate,
   where it means `= a` throughout, and "since `bⁿ ≤ b^{2^n}`" is reversed
   (powers decrease; the argument needs `b^{2^n} ≤ bⁿ`, then
   `a = a ⊙ b^{2^n} ≤ a ⊙ bⁿ ≤ a`).  The conclusion is right.
+
+* **§4** (found in phase 3, recorded in the audit rows, not filed — none
+  makes a reader stumble): 47's quotient is not an effect algebra for an empty
+  index set or a trivial summand (degenerate; `HSum` uses canonical
+  representatives); 48's `λ_A ⊙ μ_B = (λμ)_A` and 56's case distinction are
+  ill-defined at `1` (`1_L = 1_R`, `1 = (1,1)`), read as `1 ⊙ x = x`; 55's
+  "by point 52.3" is 52.3 for `μ ↦ a ⊙ φ(μ)`; 57's `λ ·' a = a ⊙ (λ · a)` is a
+  typo for `a ⊙ (λ · 1)`, and 2 ⇒ 1 leaves `λ·a ⊥ λ·b` implicit
+  (`λ·a ≼ a`); 58 says "maximal" and proves "greatest", and its
+  "`{a}'' ⊆ p ⊙ E`" is the bicommutant in the corner.
+
+## Handover for §5–6 (from §4, `AlmostConvex.lean`)
+
+API (namespace `Papers.SEA`):
+* a-convex actions: `AConvexAction` (`@[ext]`, field `act`), `IsAConvex`,
+  `AConvexAction.additive` (`λ ↦ λ·a` is `IsAdditive`), `.half_sum`
+  (`½·a` is a half of `a`), `.act_le` (`λ·a ≼ a`), `.injective_of_ne`,
+  `AConvexAction.ofConvex`/`.toConvex`, `restrictConvex` (a convex action on a
+  closed sub-effect algebra); `mkI`, `halfI`.
+* additive maps `[0,1] → E`: `IsAdditive` (+ `.mono`, `.replicate`
+  (`k·φ(x) = φ(kx)`), `.seq`, `.comp_mul`, `.map_zero`, `.ominus_eq`),
+  `sea52_1_normal`…`sea52_4_unique`, and the hypothesis-free
+  `additive_eq_of_div` (two additive maps agreeing at `λ > 0` agree if `φ(λ)`
+  has unique `n`-th parts); `fracSet`/`fracSet_isLUB` (density of `mλ/n`).
+* floors: `seqPow`, `floor`, `floor_isInf`, `sea50_floor`, `le_floor`,
+  `floor_eq_zero_iff`; S6 for filtered infima `seq_inf`, `comm_inf` (for 71).
+* halves: `IsHalf`, `halves_eq_of_commutes` (for 66/67), `isSumOf_seq_half`,
+  `sea54_half_central_iff`, `isSumOf_two_iff`.
+* `half_scalars h35 hh`: for a half `h`, a unital additive `φ` with
+  `φ(½) = h` and values in `{h}''` (the scalars of `{h}''`; used for 57, 58 —
+  and the natural tool for 62, 65).  `actOfPhi` (SEA 55).
+* SEA 57: `sea57_convex_tfae` (List.TFAE, indices as printed) and its
+  implications `sea57_1_4`, `sea57_4_3`, `sea57_3_5`, `sea57_5_2`,
+  `sea57_2_4`, `sea57_2_1`, `sea57_2_6`, `sea57_6_3`, `sea57_1_7`,
+  `sea57_7_3`, `sea57_moreover`, `act_eq_seq_of_unique`; the centre as a
+  sub-normal-SEA `centerSub E` (`mem_centerSub`) — for 61 ("`Z(E)` Boolean").
+* SEA 58–60: `sea58_maximal` (greatest `p₀`, central, `p₀⊥` Boolean),
+  `sea59_split`, `boolSEA` + `boolean_normal_iso` (a normal Boolean SEA is
+  SEA-isomorphic to a complete Boolean algebra), `finiteNormalSEA`.
+* horizontal sums (for 73): `HSum E` (`zero`/`one`/`mid`, `HSum.mk`,
+  `mk_cases`, `mk_injective`, `mk_ovee`, `mk_perp_iff`, `mk_le_mk_iff`,
+  `mid_le_iff`, `mk_isSup`, `directed_cases`, `side_directed`,
+  `HSum.directedComplete`); sequential products from `HSMaps`
+  (`HSum.hsSEA`, `HSum.hsNormalSEA` given `HSMaps.IsNormal`; lemmas
+  `seqH_mk_left`, `seqH_mk_mk`, `comm_mid_iff`, `proj_mk`); the horizontal
+  sum of `[0,1]`'s over **any** index type is `HSum (fun _ : ι => I)` with
+  `unitMaps ι` and the instance `unitHSumNormalSEA ι` (product
+  `λ_α ⊙ μ_β = (λμ)_α`) — SEA 73's target.  `[0,1]` itself: `unitNormalSEA`
+  (instance), `unitInterval_le_iff`; products: `prodNormalSEA`,
+  `prod_le_iff`, `prod_isSup`.
+* examples: `HH` (SEA 48, with `actH`, `sea48_actions`, `hh_div_unique`) and
+  `E56` (SEA 56, `act56`) — ready foils (a normal associative non-commutative
+  SEA with non-commuting halves; an a-convex action not of the form
+  `a ⊙ (λ·1)`).
+
+Notes: 62 ("a-convex = convex ⊕ purely a-convex", OAP 69) will want the
+`SEA35` hypothesis the same way as 57 (or `sea35` once `Discharge.lean` has an
+olean).  69–72 need only Basic and `floor`.  70's "commuting halves" ⇒
+convex is `sea57` via `halves_eq_of_commutes`.
