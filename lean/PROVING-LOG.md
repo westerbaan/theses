@@ -31599,3 +31599,10 @@ SEA 16 in full (`JBContPeirce.lean`): every JB-algebra is a convex SEA,
 unconditionally — the continuous Peirce criterion via a fundamental-formula cross
 term, a ramp partition with second-order vanishing, quantitative
 Kleinecke–Shirokov and a Gelfand–Hille lemma (Phragmén–Lindelöf + Liouville).
+
+Last two hypotheses: Kochen–Specker (`SIG/KochenSpecker.lean`: Conway–Kochen 31
+rays, uncolourability by decide, transfer to any complex H of dimension > 2 via
+orthonormal families from a Hilbert basis) and the EJA factor classification
+(`EJA/Classification.lean`: infinite-dimensional Hurwitz by Cayley–Dickson
+doubling, Peirce specialisation, rank two ⇒ spin factor).  SIG 46 and EJA 54
+unconditional; no named hypothesis remains on any main result of the six papers.
