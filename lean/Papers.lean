@@ -23,6 +23,7 @@ import Papers.SIG.WeightModules
 import Papers.FDS.WStar
 import Papers.OAP.Embedding
 import Papers.EJA.Dagger
+import Papers.EJA.Final
 
 /-
 Formalisations of three papers following the theses, by Abraham (Bram)
