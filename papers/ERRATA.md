@@ -253,20 +253,23 @@ applies as printed, and evaluating at any point `t ∈ X` puts every strict
 inequality in `ℝ`.  Theorems 102 and 103 stand as printed (up to the cosmetic
 fixes listed for 102/103).  Review: `lean/docs/research/review-rec120.md`.
 
-### REC 121 — the key step is cited outside its hypotheses (independent review, 2026-09-26)
+### REC 121 — the key step is cited outside its hypotheses; repairable (independent reviews, 2026-09-26)
 
 * **REC 121** (short.tex:2233–2235) — the proof gets `[D_p, D_q]1 = 0`, i.e. the
-  symmetry `p * q = q * p` of the Jordan product, by citing Alfsen–Shultz,
-  *Geometry of State Spaces*, Thm 9.48.  That theorem assumes `V_A = V*` in
-  spectral duality with a base norm space, which the paper does not establish
-  for `V_A`; the section itself notes that Alfsen–Shultz results about real
-  states must be reworked for the effectus's internal states.  The components of
-  the symmetry in the Peirce-1 and Peirce-0 spaces of `p` and `q` do follow from
-  REC 119, via comprehensions as in the REC 120 repair; the Peirce-½ component we
-  could not derive.  The statement is not refuted.  In Lean it is carried as the
-  named hypothesis `AlfsenShultzJordanFromDerivations`, on which Theorems 102,
-  103 and 136 depend.  Notes: `lean/docs/research/as948-reformulation.md`,
-  `lean/docs/research/as948-discharge.md` (both with reviews).
+  symmetry `p * q = q * p` of the Jordan product, by "some algebra" attributed to
+  Alfsen–Shultz, *Geometry of State Spaces*, Thm 9.48.  That theorem assumes
+  `V_A = V*` in spectral duality with a base norm space, which the paper does not
+  establish for `V_A`.  The step is repairable from the paper's own ingredients:
+  Prop. 120 and the commutator fact the paper cites (the commutator of order
+  derivations is an order derivation) give `[D_p, D_q]1 = 0` by a short argument.
+  `x := T_p q − T_q p` is killed by `D_p` and `D_q`, so
+  `e^{t[D_p,D_q]}1 = 1 + 4tx` for all `t`, and positivity forces `x = 0`.  The
+  remaining parts of the proof, transplanted from 9.43 (continuity, the Jordan
+  identity, `0 ≤ a² ≤ 1`), are sketched only.  The statement is not refuted.  In
+  Lean the whole step is carried as the named hypothesis
+  `AlfsenShultzJordanFromDerivations`.  Notes (each with a review):
+  `lean/docs/research/as948-reformulation.md`, `as948-discharge.md`,
+  `as948-lemmaM.md`.
 
 ### REC 104 — false as printed; sequential effectuses have irreducible scalars (2026-09-26, refuted in Lean)
 
