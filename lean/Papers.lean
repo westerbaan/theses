@@ -33,6 +33,7 @@ import Papers.SEA.Discharge
 import Papers.SEA.AlmostConvex
 import Papers.SIG.Pfn
 import Papers.SIG.Finite
+import Papers.EJA.Appendix2
 import Papers.REC.Tidy
 import Papers.REC.Rec92Counter
 

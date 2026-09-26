@@ -257,3 +257,7 @@ quotients of sharp predicates sharp) and the tree's `dagger_theorem`; est.
 800–1,200 lines, a separate file importing `Pure`.  EJA 34/39 hold without
 the root being pure (Def 32 literally): `PureRoot.lean` (`diaSA_root_isPure`,
 `eja34'`, `eja39'`; `docs/research/eja-b15.md`).
+
+## Status update 2026-09-26 (Appendix2.lean)
+
+Done: Example 3 (ℝ, ℂ, ℍ unconditionally; ℍ₃(𝕆) given the Jordan identity, octonions built as the Cayley–Dickson double of ℍ), appendix points 42–54, and EJA 7 items 2, 3, 5 for possibly infinite-dimensional EJAs.  EJA 45 does NOT need Kadison: an associative EJA is ℝⁿ from EJA 41 alone (`associsdisc`).  EJA 54 is conditional on the Hanche-Olsen–Størmer classification of JB-factors (`HOSClassification`).  EJA 3 refuted for ℍ (the printed inner product tr(AB) is not real; ERRATA).  EJA is complete apart from these two named external inputs.
