@@ -1,4 +1,4 @@
-import Papers.REC.Reconstruction
+import Papers.REC.Reconstruction2
 import Papers.EJA.Albert
 import Papers.SEA.Discharge
 import Theses.A.VN.Basic
@@ -17,8 +17,9 @@ JW-algebra.
 
 ## Named hypotheses (external results, stated as `Prop`s)
 
-* §5's three, carried from REC 102/103: `AlfsenShultzJordanFromDerivations` (REC 121),
-  `AlfsenShultzResolventCriterion` (REC 120), `WeteringStateOrderLemma` (REC 119);
+* §5's two, carried from REC 102/103: `AlfsenShultzResolventCriterion` (REC 120),
+  `WeteringStateOrderLemma` (REC 119).  (REC 121 no longer takes
+  `AlfsenShultzJordanFromDerivations`: `rec121` is proved from `jb_of_chainDense`.)
 * `HancheOlsenStormerDecomposition` — REC 52 (H-O–S 7.2.7), JBW = JW ⊕ purely exceptional;
 * `ShultzExceptionalStructure` — REC 55 (Shultz 1979), purely exceptional
   `≅ C(X, M₃(𝕆)_sa)`, with `M₃(𝕆)_sa` the Albert algebra of `Papers/EJA/Albert.lean`;
@@ -69,114 +70,8 @@ namespace Papers.REC
 
 universe u v w
 
-/-! ## Order unit spaces: the norm (REC 41) -/
-
-/-- Multiplication by a non-negative real is monotone in an order unit space. -/
-instance ous_posSMulMono {V : Type u} [AddCommGroup V] [Module ℝ V] [PartialOrder V]
-    [OrderUnitSpace V] : PosSMulMono ℝ V :=
-  ⟨fun _ hr _ _ h => ou_smul_le_smul hr h⟩
-
-section OUSTools
-
-variable {V : Type u} [AddCommGroup V] [Module ℝ V] [PartialOrder V] [OrderUnitSpace V]
-
-/-- If `c ≤ (x + δ)(y + δ)` for all `δ > 0` then `c ≤ x y` (`x, y ≥ 0`). -/
-theorem le_mul_of_forall_pos {c x y : ℝ} (hx : 0 ≤ x) (hy : 0 ≤ y)
-    (h : ∀ δ : ℝ, 0 < δ → c ≤ (x + δ) * (y + δ)) : c ≤ x * y := by
-  refine le_of_forall_pos_le_add fun ε hε => ?_
-  set δ := min 1 (ε / (x + y + 1)) with hδ
-  have hδ0 : 0 < δ := lt_min one_pos (div_pos hε (by linarith))
-  have hδ1 : δ ≤ 1 := min_le_left _ _
-  have hδ2 : δ * (x + y + 1) ≤ ε := by
-    have := min_le_right 1 (ε / (x + y + 1))
-    rw [← hδ] at this
-    calc δ * (x + y + 1) ≤ ε / (x + y + 1) * (x + y + 1) :=
-          mul_le_mul_of_nonneg_right this (by linarith)
-      _ = ε := div_mul_cancel₀ _ (by linarith)
-  have := h δ hδ0
-  nlinarith
-
-/-- The triangle inequality for the order-unit norm. -/
-theorem ousNorm_add_le (x y : V) : ousNorm V (x + y) ≤ ousNorm V x + ousNorm V y := by
-  refine le_of_forall_pos_le_add fun ε hε => ?_
-  obtain ⟨a1, a2⟩ := ousNorm_bounds (v := x) (ε := ousNorm V x + ε / 2) (by linarith)
-  obtain ⟨b1, b2⟩ := ousNorm_bounds (v := y) (ε := ousNorm V y + ε / 2) (by linarith)
-  have hx0 := ousNorm_nonneg_rc x
-  have hy0 := ousNorm_nonneg_rc y
-  have e : (ousNorm V x + ε / 2) • ouUnit V + (ousNorm V y + ε / 2) • ouUnit V =
-      (ousNorm V x + ousNorm V y + ε) • ouUnit V := by rw [← add_smul]; ring_nf
-  refine ousNorm_le_rc (by linarith) ?_ ?_
-  · rw [← e, neg_add]; exact add_le_add a1 b1
-  · rw [← e]; exact add_le_add a2 b2
-
-/-- `‖r v‖ ≤ r ‖v‖` for `r ≥ 0`. -/
-theorem ousNorm_smul_le_of_nonneg {r : ℝ} (hr : 0 ≤ r) (x : V) :
-    ousNorm V (r • x) ≤ r * ousNorm V x := by
-  refine le_of_forall_pos_le_add fun ε hε => ?_
-  have hx0 := ousNorm_nonneg_rc x
-  set m := ousNorm V x + ε / (r + 1) with hm
-  have hm0 : 0 ≤ m := by positivity
-  obtain ⟨a1, a2⟩ := ousNorm_bounds (v := x) (ε := m)
-    (by rw [hm]; have : 0 < ε / (r + 1) := by positivity
-        linarith)
-  have hbound : r * m ≤ r * ousNorm V x + ε := by
-    rw [hm, mul_add]
-    have : r * (ε / (r + 1)) ≤ ε := by
-      rw [mul_div_assoc']
-      rw [div_le_iff₀ (by positivity)]; nlinarith
-    linarith
-  refine le_trans (ousNorm_le_rc (mul_nonneg hr hm0) ?_ ?_) hbound
-  · rw [← _root_.smul_smul, ← smul_neg]; exact smul_le_smul_of_nonneg_left a1 hr
-  · rw [← _root_.smul_smul]; exact smul_le_smul_of_nonneg_left a2 hr
-
-/-- `‖r v‖ ≤ |r| ‖v‖`. -/
-theorem ousNorm_smul_le (r : ℝ) (x : V) : ousNorm V (r • x) ≤ |r| * ousNorm V x := by
-  rcases le_total 0 r with hr | hr
-  · rw [abs_of_nonneg hr]; exact ousNorm_smul_le_of_nonneg hr x
-  · rw [abs_of_nonpos hr, ← ousNorm_neg (r • x), ← neg_smul]
-    exact ousNorm_smul_le_of_nonneg (neg_nonneg.2 hr) x
-
-theorem ousNorm_sub_comm (x y : V) : ousNorm V (x - y) = ousNorm V (y - x) := by
-  rw [← ousNorm_neg, neg_sub]
-
-theorem ousNorm_zero' : ousNorm V (0 : V) = 0 :=
-  le_antisymm (ousNorm_le_rc le_rfl (by simp) (by simp)) (ousNorm_nonneg_rc _)
-
-variable [IsOUS V]
-
-/-- In an order unit space (REC 41, closed cone) `-‖v‖·1 ≤ v ≤ ‖v‖·1`. -/
-theorem ousNorm_bounds_le (v : V) :
-    -(ousNorm V v • ouUnit V) ≤ v ∧ v ≤ ousNorm V v • ouUnit V := by
-  have key : ∀ w : V, (∀ ε : ℝ, 0 < ε → 0 ≤ w + ε • ouUnit V) → 0 ≤ w := by
-    intro w hw
-    refine IsOUS.cone_closed w fun ε hε => ⟨w + (ε / 2) • ouUnit V, hw _ (by positivity), ?_⟩
-    rw [sub_add_cancel_left, ousNorm_neg]
-    refine lt_of_le_of_lt (ousNorm_le_rc (by positivity) ?_ le_rfl) (by linarith)
-    exact neg_le_self (smul_nonneg (by positivity) ou_unit_nonneg)
-  constructor
-  · rw [← sub_nonneg, sub_neg_eq_add]
-    refine key _ fun ε hε => ?_
-    obtain ⟨h1, -⟩ := ousNorm_bounds (v := v) (ε := ousNorm V v + ε) (by linarith)
-    have : 0 ≤ v + (ousNorm V v + ε) • ouUnit V := by
-      rw [← sub_neg_eq_add]; exact sub_nonneg.2 h1
-    have e : v + (ousNorm V v + ε) • ouUnit V = v + ousNorm V v • ouUnit V + ε • ouUnit V := by
-      rw [add_smul]; abel
-    rwa [e] at this
-  · rw [← sub_nonneg]
-    refine key _ fun ε hε => ?_
-    obtain ⟨-, h2⟩ := ousNorm_bounds (v := v) (ε := ousNorm V v + ε) (by linarith)
-    have := sub_nonneg.2 h2
-    rw [add_smul] at this
-    have e : ousNorm V v • ouUnit V + ε • ouUnit V - v = ousNorm V v • ouUnit V - v + ε • ouUnit V := by
-      abel
-    rwa [e] at this
-
-/-- A vector of arbitrarily small norm is zero. -/
-theorem eq_zero_of_ousNorm_small {v : V} (h : ∀ ε : ℝ, 0 < ε → ousNorm V v ≤ ε) : v = 0 :=
-  IsOUS.norm_eq_zero v (le_antisymm (le_of_forall_pos_le_add fun ε hε => by
-    simpa using h ε hε) (ousNorm_nonneg_rc v))
-
-end OUSTools
+-- The norm tools of REC 41 (`ousNorm_add_le`, `ousNorm_smul_le`, `ousNorm_bounds_le`, …)
+-- are in `Papers/REC/Reconstruction.lean`.
 
 /-! ## JB-algebras (REC 44): products, squares, the quadratic map -/
 
@@ -1376,19 +1271,19 @@ open scoped Papers.SEA
 
 variable {C : Type u} [Category.{v} C] [Limits.HasFiniteCoproducts C]
   [∀ X Y : C, PCM (X ⟶ Y)] [FinPAC C] [EffectusPartialForm C] [SequentialEffectus C]
-  (σs : ScalarSplit C) (hAS : AlfsenShultzJordanFromDerivations.{v})
+  (σs : ScalarSplit C)
   (hRC : AlfsenShultzResolventCriterion.{v}) (h119 : WeteringStateOrderLemma C)
 
 /-- The Jordan product `x * y` of `V_A` (REC 121's `jbMul`). -/
 noncomputable def jm (A : C) (x y : VA σs A) : VA σs A :=
-  @HMul.hMul _ _ _ (@instHMul _ (jbMul σs hAS hRC h119 A)) x y
+  @HMul.hMul _ _ _ (@instHMul _ (jbMul σs hRC h119 A)) x y
 
 /-- The quadratic map `Q_a` of `V_A`. -/
 noncomputable def jQA (A : C) (a b : VA σs A) : VA σs A :=
-  @jQ (VA σs A) _ _ (jbMul σs hAS hRC h119 A) a b
+  @jQ (VA σs A) _ _ (jbMul σs hRC h119 A) a b
 
-theorem jm_jb (A : C) : @JBAlgebra (VA σs A) _ _ _ _ (jbMul σs hAS hRC h119 A) :=
-  jbMul_spec σs hAS hRC h119 A
+theorem jm_jb (A : C) : @JBAlgebra (VA σs A) _ _ _ _ (jbMul σs hRC h119 A) :=
+  jbMul_spec σs hRC h119 A
 
 /-- `Uop p = Pred(asrt_p)` on `V_A`. -/
 theorem Uop_eq_stateLin {A : C} (p : CPt σs A) : Uop σs p = stateLin σs (asrtS p.1) :=
@@ -1399,73 +1294,73 @@ theorem Uop_eq_stateLin {A : C} (p : CPt σs A) : Uop σs p = stateLin σs (asrt
 
 /-- REC 121's formula `e * w = ½ (w + e & w − e⊥ & w)` for idempotent `e`. -/
 theorem jm_form (A : C) (q : CPt σs A) (hq : Papers.SEA.IsIdempotent q) (w : VA σs A) :
-    jm σs hAS hRC h119 A (GP.gmap q) w =
+    jm σs hRC h119 A (GP.gmap q) w =
       (2⁻¹ : ℝ) • (w + (ULin (cpt_hsm σs A) q w - ULin (cpt_hsm σs A) (orth q) w)) := by
-  have := (rec121 σs hAS hRC h119 A).choose_spec.2 q
+  have := (rec121 σs hRC h119 A).choose_spec.2 q
     (isSharp_of_isIdempotent ((cpt_idem_iff σs q).1 hq)) w
   exact this
 
 theorem jm_add_left (A : C) (x x' y : VA σs A) :
-    jm σs hAS hRC h119 A (x + x') y = jm σs hAS hRC h119 A x y + jm σs hAS hRC h119 A x' y :=
-  (jm_jb σs hAS hRC h119 A).add_mul x x' y
+    jm σs hRC h119 A (x + x') y = jm σs hRC h119 A x y + jm σs hRC h119 A x' y :=
+  (jm_jb σs hRC h119 A).add_mul x x' y
 
 theorem jm_smul_left (A : C) (r : ℝ) (x y : VA σs A) :
-    jm σs hAS hRC h119 A (r • x) y = r • jm σs hAS hRC h119 A x y :=
-  (jm_jb σs hAS hRC h119 A).smul_mul r x y
+    jm σs hRC h119 A (r • x) y = r • jm σs hRC h119 A x y :=
+  (jm_jb σs hRC h119 A).smul_mul r x y
 
 theorem jm_comm (A : C) (x y : VA σs A) :
-    jm σs hAS hRC h119 A x y = jm σs hAS hRC h119 A y x :=
-  (jm_jb σs hAS hRC h119 A).mul_comm x y
+    jm σs hRC h119 A x y = jm σs hRC h119 A y x :=
+  (jm_jb σs hRC h119 A).mul_comm x y
 
 theorem jm_add_right (A : C) (x y y' : VA σs A) :
-    jm σs hAS hRC h119 A x (y + y') = jm σs hAS hRC h119 A x y + jm σs hAS hRC h119 A x y' := by
-  rw [jm_comm, jm_add_left, jm_comm, jm_comm σs hAS hRC h119 A y']
+    jm σs hRC h119 A x (y + y') = jm σs hRC h119 A x y + jm σs hRC h119 A x y' := by
+  rw [jm_comm, jm_add_left, jm_comm, jm_comm σs hRC h119 A y']
 
 theorem jm_smul_right (A : C) (r : ℝ) (x y : VA σs A) :
-    jm σs hAS hRC h119 A x (r • y) = r • jm σs hAS hRC h119 A x y := by
+    jm σs hRC h119 A x (r • y) = r • jm σs hRC h119 A x y := by
   rw [jm_comm, jm_smul_left, jm_comm]
 
 theorem jm_sub_left (A : C) (x x' y : VA σs A) :
-    jm σs hAS hRC h119 A (x - x') y = jm σs hAS hRC h119 A x y - jm σs hAS hRC h119 A x' y := by
+    jm σs hRC h119 A (x - x') y = jm σs hRC h119 A x y - jm σs hRC h119 A x' y := by
   rw [sub_eq_add_neg, jm_add_left, ← neg_one_smul ℝ x', jm_smul_left]; simp [sub_eq_add_neg]
 
 theorem jm_sub_right (A : C) (x y y' : VA σs A) :
-    jm σs hAS hRC h119 A x (y - y') = jm σs hAS hRC h119 A x y - jm σs hAS hRC h119 A x y' := by
-  rw [jm_comm, jm_sub_left, jm_comm, jm_comm σs hAS hRC h119 A y']
+    jm σs hRC h119 A x (y - y') = jm σs hRC h119 A x y - jm σs hRC h119 A x y' := by
+  rw [jm_comm, jm_sub_left, jm_comm, jm_comm σs hRC h119 A y']
 
-theorem jm_unit (A : C) (x : VA σs A) : jm σs hAS hRC h119 A (ouUnit (VA σs A)) x = x :=
-  (jm_jb σs hAS hRC h119 A).one_mul x
+theorem jm_unit (A : C) (x : VA σs A) : jm σs hRC h119 A (ouUnit (VA σs A)) x = x :=
+  (jm_jb σs hRC h119 A).one_mul x
 
 theorem jm_norm_le (A : C) (x y : VA σs A) :
-    ousNorm (VA σs A) (jm σs hAS hRC h119 A x y) ≤ ousNorm (VA σs A) x * ousNorm (VA σs A) y :=
-  @jb_norm_mul_le _ _ _ _ _ (jbMul σs hAS hRC h119 A) (jm_jb σs hAS hRC h119 A) x y
+    ousNorm (VA σs A) (jm σs hRC h119 A x y) ≤ ousNorm (VA σs A) x * ousNorm (VA σs A) y :=
+  @jb_norm_mul_le _ _ _ _ _ (jbMul σs hRC h119 A) (jm_jb σs hRC h119 A) x y
 
 /-- The Jordan product as a linear map in its second argument. -/
 noncomputable def jmT (A : C) (x : VA σs A) : VA σs A →ₗ[ℝ] VA σs A where
-  toFun := jm σs hAS hRC h119 A x
-  map_add' := jm_add_right σs hAS hRC h119 A x
-  map_smul' r y := jm_smul_right σs hAS hRC h119 A r x y
+  toFun := jm σs hRC h119 A x
+  map_add' := jm_add_right σs hRC h119 A x
+  map_smul' r y := jm_smul_right σs hRC h119 A r x y
 
 /-- The Jordan product as a linear map in its first argument. -/
 noncomputable def jmL (A : C) (y : VA σs A) : VA σs A →ₗ[ℝ] VA σs A where
-  toFun x := jm σs hAS hRC h119 A x y
-  map_add' x x' := jm_add_left σs hAS hRC h119 A x x' y
-  map_smul' r x := jm_smul_left σs hAS hRC h119 A r x y
+  toFun x := jm σs hRC h119 A x y
+  map_add' x x' := jm_add_left σs hRC h119 A x x' y
+  map_smul' r x := jm_smul_left σs hRC h119 A r x y
 
 theorem jm_sq_gmap (A : C) (y : CPt σs A) :
-    jm σs hAS hRC h119 A (GP.gmap y) (GP.gmap y) = GP.gmap (y ⊙ y) :=
-  @jsq_gmap (CPt σs A) _ _ _ (cpt_hsm σs A) (jbMul σs hAS hRC h119 A) (jm_jb σs hAS hRC h119 A)
-    (jm_form σs hAS hRC h119 A) y
+    jm σs hRC h119 A (GP.gmap y) (GP.gmap y) = GP.gmap (y ⊙ y) :=
+  @jsq_gmap (CPt σs A) _ _ _ (cpt_hsm σs A) (jbMul σs hRC h119 A) (jm_jb σs hRC h119 A)
+    (jm_form σs hRC h119 A) y
 
-theorem jm_idem_gmap (A : C) {x : VA σs A} (hx : jm σs hAS hRC h119 A x x = x) :
+theorem jm_idem_gmap (A : C) {x : VA σs A} (hx : jm σs hRC h119 A x x = x) :
     ∃ y : CPt σs A, Papers.SEA.IsIdempotent y ∧ x = GP.gmap y :=
-  @jidem_gmap (CPt σs A) _ _ _ (cpt_hsm σs A) (jbMul σs hAS hRC h119 A) (jm_jb σs hAS hRC h119 A)
-    (jm_form σs hAS hRC h119 A) x hx
+  @jidem_gmap (CPt σs A) _ _ _ (cpt_hsm σs A) (jbMul σs hRC h119 A) (jm_jb σs hRC h119 A)
+    (jm_form σs hRC h119 A) x hx
 
 theorem jQA_idem (A : C) {e : CPt σs A} (he : Papers.SEA.IsIdempotent e) (w : VA σs A) :
-    jQA σs hAS hRC h119 A (GP.gmap e) w = Uop σs e w :=
-  @jQ_idem (CPt σs A) _ _ _ (cpt_hsm σs A) (jbMul σs hAS hRC h119 A) (jm_jb σs hAS hRC h119 A)
-    (jm_form σs hAS hRC h119 A) e he w
+    jQA σs hRC h119 A (GP.gmap e) w = Uop σs e w :=
+  @jQ_idem (CPt σs A) _ _ _ (cpt_hsm σs A) (jbMul σs hRC h119 A) (jm_jb σs hRC h119 A)
+    (jm_form σs hRC h119 A) e he w
 
 theorem ousNorm_unit_le' (A : C) : ousNorm (VA σs A) (ouUnit (VA σs A)) ≤ 1 :=
   ousNorm_le_rc zero_le_one (by rw [one_smul]; exact neg_le_self ou_unit_nonneg)
@@ -1539,10 +1434,10 @@ theorem gmap_one_eq (A : C) : GP.gmap (1 : CPt σs A) = ouUnit (VA σs A) := rfl
 /-- The key computation: `(e ⊗ 1) * (c ⊗ d) = (e * c) ⊗ d` for an idempotent `e`. -/
 theorem jm_tens_idem_left {A B : C} {e : CPt σs A} (he : Papers.SEA.IsIdempotent e)
     (c : VA σs A) (d : VA σs B) :
-    jm σs hAS hRC h119 (A ⊗ B) (tensV σs (GP.gmap e) (ouUnit (VA σs B))) (tensV σs c d) =
-      tensV σs (jm σs hAS hRC h119 A (GP.gmap e) c) d := by
-  rw [← gmap_one_eq σs h0, tensV_gmap, jm_form σs hAS hRC h119 _ _
-    (cptTens_idem σs h0 he Papers.SEA.isIdempotent_one), jm_form σs hAS hRC h119 _ _ he,
+    jm σs hRC h119 (A ⊗ B) (tensV σs (GP.gmap e) (ouUnit (VA σs B))) (tensV σs c d) =
+      tensV σs (jm σs hRC h119 A (GP.gmap e) c) d := by
+  rw [← gmap_one_eq σs h0, tensV_gmap, jm_form σs hRC h119 _ _
+    (cptTens_idem σs h0 he Papers.SEA.isIdempotent_one), jm_form σs hRC h119 _ _ he,
     orth_cptTens_one σs h0]
   show (2⁻¹ : ℝ) • (tensV σs c d + (Uop σs (cptTens σs e 1) (tensV σs c d) -
       Uop σs (cptTens σs (orth e) 1) (tensV σs c d))) =
@@ -1552,10 +1447,10 @@ theorem jm_tens_idem_left {A B : C} {e : CPt σs A} (he : Papers.SEA.IsIdempoten
 
 theorem jm_tens_idem_right {A B : C} {f : CPt σs B} (hf : Papers.SEA.IsIdempotent f)
     (c : VA σs A) (d : VA σs B) :
-    jm σs hAS hRC h119 (A ⊗ B) (tensV σs (ouUnit (VA σs A)) (GP.gmap f)) (tensV σs c d) =
-      tensV σs c (jm σs hAS hRC h119 B (GP.gmap f) d) := by
-  rw [← gmap_one_eq σs h0, tensV_gmap, jm_form σs hAS hRC h119 _ _
-    (cptTens_idem σs h0 Papers.SEA.isIdempotent_one hf), jm_form σs hAS hRC h119 _ _ hf,
+    jm σs hRC h119 (A ⊗ B) (tensV σs (ouUnit (VA σs A)) (GP.gmap f)) (tensV σs c d) =
+      tensV σs c (jm σs hRC h119 B (GP.gmap f) d) := by
+  rw [← gmap_one_eq σs h0, tensV_gmap, jm_form σs hRC h119 _ _
+    (cptTens_idem σs h0 Papers.SEA.isIdempotent_one hf), jm_form σs hRC h119 _ _ hf,
     orth_cptTens_one' σs h0]
   show (2⁻¹ : ℝ) • (tensV σs c d + (Uop σs (cptTens σs 1 f) (tensV σs c d) -
       Uop σs (cptTens σs 1 (orth f)) (tensV σs c d))) =
@@ -1568,10 +1463,10 @@ theorem jm_tens_idem_right {A B : C} {f : CPt σs B} (hf : Papers.SEA.IsIdempote
 right-hand side is the paper's `T_p ⊗ id`), and symmetrically for `1 ⊗ q`. -/
 theorem rec125_sharp {A B : C} {p : CPt σs A} (hp : Papers.SEA.IsIdempotent p)
     (v : VA σs (A ⊗ B)) :
-    jm σs hAS hRC h119 (A ⊗ B) (tensV σs (GP.gmap p) (ouUnit (VA σs B))) v =
+    jm σs hRC h119 (A ⊗ B) (tensV σs (GP.gmap p) (ouUnit (VA σs B))) v =
       (2⁻¹ : ℝ) • (v + (stateLin σs (asrtS p.1 ⊗ₘ 𝟙 B) v -
         stateLin σs (asrtS (orth p).1 ⊗ₘ 𝟙 B) v)) := by
-  rw [← gmap_one_eq σs h0, tensV_gmap, jm_form σs hAS hRC h119 _ _
+  rw [← gmap_one_eq σs h0, tensV_gmap, jm_form σs hRC h119 _ _
     (cptTens_idem σs h0 hp Papers.SEA.isIdempotent_one), orth_cptTens_one σs h0]
   show (2⁻¹ : ℝ) • (v + (Uop σs (cptTens σs p 1) v - Uop σs (cptTens σs (orth p) 1) v)) = _
   rw [Uop_cptTens σs h0, Uop_cptTens σs h0, cpt_one_val σs h0,
@@ -1584,71 +1479,71 @@ paper's proof extends by norm continuity, which on product vectors is this state
 Proof as printed: the sharp case, then the density of combinations of sharp elements
 (REC 58) and the continuity of `a ↦ T_{a⊗1}`. -/
 theorem rec125 {A B : C} (a c : VA σs A) (d : VA σs B) :
-    jm σs hAS hRC h119 (A ⊗ B) (tensV σs a (ouUnit (VA σs B))) (tensV σs c d) =
-      tensV σs (jm σs hAS hRC h119 A a c) d := by
+    jm σs hRC h119 (A ⊗ B) (tensV σs a (ouUnit (VA σs B))) (tensV σs c d) =
+      tensV σs (jm σs hRC h119 A a c) d := by
   let h : VA σs A →ₗ[ℝ] VA σs (A ⊗ B) :=
-    (jmL σs hAS hRC h119 (A ⊗ B) (tensV σs c d)) ∘ₗ (vtens σs (ouUnit (VA σs B))) -
-      (vtens σs d) ∘ₗ (jmL σs hAS hRC h119 A c)
+    (jmL σs hRC h119 (A ⊗ B) (tensV σs c d)) ∘ₗ (vtens σs (ouUnit (VA σs B))) -
+      (vtens σs d) ∘ₗ (jmL σs hRC h119 A c)
   have hK : ∀ x, ousNorm _ (h x) ≤ (ousNorm _ (tensV σs c d) + ousNorm _ c * ousNorm _ d) *
       ousNorm (VA σs A) x := by
     intro x
-    show ousNorm _ (jm σs hAS hRC h119 (A ⊗ B) (tensV σs x (ouUnit (VA σs B))) (tensV σs c d) -
-      tensV σs (jm σs hAS hRC h119 A x c) d) ≤ _
+    show ousNorm _ (jm σs hRC h119 (A ⊗ B) (tensV σs x (ouUnit (VA σs B))) (tensV σs c d) -
+      tensV σs (jm σs hRC h119 A x c) d) ≤ _
     rw [sub_eq_add_neg]
     refine (ousNorm_add_le _ _).trans ?_
     rw [ousNorm_neg]
-    have h1 := jm_norm_le σs hAS hRC h119 (A ⊗ B) (tensV σs x (ouUnit (VA σs B))) (tensV σs c d)
+    have h1 := jm_norm_le σs hRC h119 (A ⊗ B) (tensV σs x (ouUnit (VA σs B))) (tensV σs c d)
     have h2 := tensV_norm_le σs x (ouUnit (VA σs B))
-    have h3 := tensV_norm_le σs (jm σs hAS hRC h119 A x c) d
-    have h4 := jm_norm_le σs hAS hRC h119 A x c
+    have h3 := tensV_norm_le σs (jm σs hRC h119 A x c) d
+    have h4 := jm_norm_le σs hRC h119 A x c
     have hu := ousNorm_unit_le' σs B
     have n1 := ousNorm_nonneg_rc x
     have n2 := ousNorm_nonneg_rc c
     have n3 := ousNorm_nonneg_rc d
     have n4 := ousNorm_nonneg_rc (tensV σs c d)
     have n5 := ousNorm_nonneg_rc (tensV σs x (ouUnit (VA σs B)))
-    have n6 := ousNorm_nonneg_rc (jm σs hAS hRC h119 A x c)
+    have n6 := ousNorm_nonneg_rc (jm σs hRC h119 A x c)
     have n7 := ousNorm_nonneg_rc (ouUnit (VA σs B))
     have : ousNorm _ (tensV σs x (ouUnit (VA σs B))) ≤ ousNorm (VA σs A) x := by nlinarith
     nlinarith [mul_le_mul_of_nonneg_right this n4, mul_le_mul_of_nonneg_right h4 n3]
   have := va_eq_zero_of_idem σs h _ hK (fun e he => by
-    show jm σs hAS hRC h119 (A ⊗ B) (tensV σs (GP.gmap e) (ouUnit (VA σs B))) (tensV σs c d) -
-      tensV σs (jm σs hAS hRC h119 A (GP.gmap e) c) d = 0
-    rw [jm_tens_idem_left σs hAS hRC h119 h0 he, sub_self]) a
+    show jm σs hRC h119 (A ⊗ B) (tensV σs (GP.gmap e) (ouUnit (VA σs B))) (tensV σs c d) -
+      tensV σs (jm σs hRC h119 A (GP.gmap e) c) d = 0
+    rw [jm_tens_idem_left σs hRC h119 h0 he, sub_self]) a
   exact sub_eq_zero.1 this
 
 theorem rec125_right {A B : C} (b : VA σs B) (c : VA σs A) (d : VA σs B) :
-    jm σs hAS hRC h119 (A ⊗ B) (tensV σs (ouUnit (VA σs A)) b) (tensV σs c d) =
-      tensV σs c (jm σs hAS hRC h119 B b d) := by
+    jm σs hRC h119 (A ⊗ B) (tensV σs (ouUnit (VA σs A)) b) (tensV σs c d) =
+      tensV σs c (jm σs hRC h119 B b d) := by
   let h : VA σs B →ₗ[ℝ] VA σs (A ⊗ B) :=
-    (jmL σs hAS hRC h119 (A ⊗ B) (tensV σs c d)) ∘ₗ
+    (jmL σs hRC h119 (A ⊗ B) (tensV σs c d)) ∘ₗ
         ((vtens σs (A := A) (B := B)).flip (ouUnit (VA σs A))) -
-      (vtens σs (A := A) (B := B)).flip c ∘ₗ (jmL σs hAS hRC h119 B d)
+      (vtens σs (A := A) (B := B)).flip c ∘ₗ (jmL σs hRC h119 B d)
   have hK : ∀ x, ousNorm _ (h x) ≤ (ousNorm _ (tensV σs c d) + ousNorm _ c * ousNorm _ d) *
       ousNorm (VA σs B) x := by
     intro x
-    show ousNorm _ (jm σs hAS hRC h119 (A ⊗ B) (tensV σs (ouUnit (VA σs A)) x) (tensV σs c d) -
-      tensV σs c (jm σs hAS hRC h119 B x d)) ≤ _
+    show ousNorm _ (jm σs hRC h119 (A ⊗ B) (tensV σs (ouUnit (VA σs A)) x) (tensV σs c d) -
+      tensV σs c (jm σs hRC h119 B x d)) ≤ _
     rw [sub_eq_add_neg]
     refine (ousNorm_add_le _ _).trans ?_
     rw [ousNorm_neg]
-    have h1 := jm_norm_le σs hAS hRC h119 (A ⊗ B) (tensV σs (ouUnit (VA σs A)) x) (tensV σs c d)
+    have h1 := jm_norm_le σs hRC h119 (A ⊗ B) (tensV σs (ouUnit (VA σs A)) x) (tensV σs c d)
     have h2 := tensV_norm_le σs (ouUnit (VA σs A)) x
-    have h3 := tensV_norm_le σs c (jm σs hAS hRC h119 B x d)
-    have h4 := jm_norm_le σs hAS hRC h119 B x d
+    have h3 := tensV_norm_le σs c (jm σs hRC h119 B x d)
+    have h4 := jm_norm_le σs hRC h119 B x d
     have hu := ousNorm_unit_le' σs A
     have n1 := ousNorm_nonneg_rc x
     have n2 := ousNorm_nonneg_rc c
     have n3 := ousNorm_nonneg_rc d
     have n4 := ousNorm_nonneg_rc (tensV σs c d)
-    have n6 := ousNorm_nonneg_rc (jm σs hAS hRC h119 B x d)
+    have n6 := ousNorm_nonneg_rc (jm σs hRC h119 B x d)
     have n7 := ousNorm_nonneg_rc (ouUnit (VA σs A))
     have : ousNorm _ (tensV σs (ouUnit (VA σs A)) x) ≤ ousNorm (VA σs B) x := by nlinarith
     nlinarith [mul_le_mul_of_nonneg_right this n4, mul_le_mul_of_nonneg_left h4 n2]
   have := va_eq_zero_of_idem σs h _ hK (fun f hf => by
-    show jm σs hAS hRC h119 (A ⊗ B) (tensV σs (ouUnit (VA σs A)) (GP.gmap f)) (tensV σs c d) -
-      tensV σs c (jm σs hAS hRC h119 B (GP.gmap f) d) = 0
-    rw [jm_tens_idem_right σs hAS hRC h119 h0 hf, sub_self]) b
+    show jm σs hRC h119 (A ⊗ B) (tensV σs (ouUnit (VA σs A)) (GP.gmap f)) (tensV σs c d) -
+      tensV σs c (jm σs hRC h119 B (GP.gmap f) d) = 0
+    rw [jm_tens_idem_right σs hRC h119 h0 hf, sub_self]) b
   exact sub_eq_zero.1 this
 
 end Tensor
@@ -1712,7 +1607,7 @@ open scoped Papers.SEA
 
 variable {C : Type u} [Category.{v} C] [Limits.HasFiniteCoproducts C]
   [∀ X Y : C, PCM (X ⟶ Y)] [FinPAC C] [EffectusPartialForm C] [SequentialEffectus C]
-  (σs : ScalarSplit C) (hAS : AlfsenShultzJordanFromDerivations.{v})
+  (σs : ScalarSplit C)
   (hRC : AlfsenShultzResolventCriterion.{v}) (h119 : WeteringStateOrderLemma C)
   [MonoidalCategory C] [SymmetricCategory C] [MonoidalEffectus C]
   [MonoidalSequentialEffectus C] (h0 : σs.s = 0)
@@ -1721,10 +1616,10 @@ include h0
 
 theorem rec125_sharp_right {A B : C} {q : CPt σs B} (hq : Papers.SEA.IsIdempotent q)
     (v : VA σs (A ⊗ B)) :
-    jm σs hAS hRC h119 (A ⊗ B) (tensV σs (ouUnit (VA σs A)) (GP.gmap q)) v =
+    jm σs hRC h119 (A ⊗ B) (tensV σs (ouUnit (VA σs A)) (GP.gmap q)) v =
       (2⁻¹ : ℝ) • (v + (stateLin σs (𝟙 A ⊗ₘ asrtS q.1) v -
         stateLin σs (𝟙 A ⊗ₘ asrtS (orth q).1) v)) := by
-  rw [← gmap_one_eq σs h0, tensV_gmap, jm_form σs hAS hRC h119 _ _
+  rw [← gmap_one_eq σs h0, tensV_gmap, jm_form σs hRC h119 _ _
     (cptTens_idem σs h0 Papers.SEA.isIdempotent_one hq), orth_cptTens_one' σs h0]
   show (2⁻¹ : ℝ) • (v + (Uop σs (cptTens σs 1 q) v - Uop σs (cptTens σs 1 (orth q)) v)) = _
   rw [Uop_cptTens σs h0, Uop_cptTens σs h0, cpt_one_val σs h0,
@@ -1757,11 +1652,11 @@ theorem one_tens_norm_le {A B : C} (b : VA σs B) :
 /-- `T_{e⊗1}` and `T_{1⊗f}` commute for idempotents `e`, `f`. -/
 theorem rec126_idem {A B : C} {e : CPt σs A} {f : CPt σs B} (he : Papers.SEA.IsIdempotent e)
     (hf : Papers.SEA.IsIdempotent f) (v : VA σs (A ⊗ B)) :
-    jm σs hAS hRC h119 (A ⊗ B) (tensV σs (GP.gmap e) (ouUnit (VA σs B)))
-        (jm σs hAS hRC h119 (A ⊗ B) (tensV σs (ouUnit (VA σs A)) (GP.gmap f)) v) =
-      jm σs hAS hRC h119 (A ⊗ B) (tensV σs (ouUnit (VA σs A)) (GP.gmap f))
-        (jm σs hAS hRC h119 (A ⊗ B) (tensV σs (GP.gmap e) (ouUnit (VA σs B))) v) := by
-  simp only [rec125_sharp σs hAS hRC h119 h0 he, rec125_sharp_right σs hAS hRC h119 h0 hf,
+    jm σs hRC h119 (A ⊗ B) (tensV σs (GP.gmap e) (ouUnit (VA σs B)))
+        (jm σs hRC h119 (A ⊗ B) (tensV σs (ouUnit (VA σs A)) (GP.gmap f)) v) =
+      jm σs hRC h119 (A ⊗ B) (tensV σs (ouUnit (VA σs A)) (GP.gmap f))
+        (jm σs hRC h119 (A ⊗ B) (tensV σs (GP.gmap e) (ouUnit (VA σs B))) v) := by
+  simp only [rec125_sharp σs hRC h119 h0 he, rec125_sharp_right σs hRC h119 h0 hf,
     map_add, map_sub, map_smul, stateLin_tens_comm σs (asrtS e.1),
     stateLin_tens_comm σs (asrtS (orth e).1)]
   module
@@ -1772,11 +1667,11 @@ derives it from REC 125's `T_{a⊗1} = T_a ⊗ id`; we prove it directly for sha
 where `T_{p⊗1}`, `T_{1⊗q}` are combinations of `Pred(asrt ⊗ id)` and `Pred(id ⊗ asrt)`,
 which commute by bifunctoriality, and extend by density, REC 58.) -/
 theorem rec126 {A B : C} (a : VA σs A) (b : VA σs B) (v : VA σs (A ⊗ B)) :
-    jm σs hAS hRC h119 (A ⊗ B) (tensV σs a (ouUnit (VA σs B)))
-        (jm σs hAS hRC h119 (A ⊗ B) (tensV σs (ouUnit (VA σs A)) b) v) =
-      jm σs hAS hRC h119 (A ⊗ B) (tensV σs (ouUnit (VA σs A)) b)
-        (jm σs hAS hRC h119 (A ⊗ B) (tensV σs a (ouUnit (VA σs B))) v) := by
-  set J := jm σs hAS hRC h119 (A ⊗ B) with hJ
+    jm σs hRC h119 (A ⊗ B) (tensV σs a (ouUnit (VA σs B)))
+        (jm σs hRC h119 (A ⊗ B) (tensV σs (ouUnit (VA σs A)) b) v) =
+      jm σs hRC h119 (A ⊗ B) (tensV σs (ouUnit (VA σs A)) b)
+        (jm σs hRC h119 (A ⊗ B) (tensV σs a (ouUnit (VA σs B))) v) := by
+  set J := jm σs hRC h119 (A ⊗ B) with hJ
   -- step 1: `b` idempotent, `a` arbitrary
   have step1 : ∀ (f : CPt σs B), Papers.SEA.IsIdempotent f → ∀ (a : VA σs A) (w : VA σs (A ⊗ B)),
       J (tensV σs a (ouUnit (VA σs B))) (J (tensV σs (ouUnit (VA σs A)) (GP.gmap f)) w) =
@@ -1784,8 +1679,8 @@ theorem rec126 {A B : C} (a : VA σs A) (b : VA σs B) (v : VA σs (A ⊗ B)) :
     intro f hf a w
     set y := tensV σs (ouUnit (VA σs A)) (GP.gmap f)
     let h : VA σs A →ₗ[ℝ] VA σs (A ⊗ B) :=
-      (jmL σs hAS hRC h119 (A ⊗ B) (J y w)) ∘ₗ (vtens σs (ouUnit (VA σs B))) -
-        (jmT σs hAS hRC h119 (A ⊗ B) y) ∘ₗ (jmL σs hAS hRC h119 (A ⊗ B) w) ∘ₗ
+      (jmL σs hRC h119 (A ⊗ B) (J y w)) ∘ₗ (vtens σs (ouUnit (VA σs B))) -
+        (jmT σs hRC h119 (A ⊗ B) y) ∘ₗ (jmL σs hRC h119 (A ⊗ B) w) ∘ₗ
           (vtens σs (ouUnit (VA σs B)))
     have hK : ∀ x, ousNorm _ (h x) ≤ (ousNorm _ (J y w) + ousNorm _ y * ousNorm _ w) *
         ousNorm (VA σs A) x := by
@@ -1795,9 +1690,9 @@ theorem rec126 {A B : C} (a : VA σs A) (b : VA σs B) (v : VA σs (A ⊗ B)) :
       rw [sub_eq_add_neg]
       refine (ousNorm_add_le _ _).trans ?_
       rw [ousNorm_neg]
-      have h1 := jm_norm_le σs hAS hRC h119 (A ⊗ B) (tensV σs x (ouUnit (VA σs B))) (J y w)
-      have h2 := jm_norm_le σs hAS hRC h119 (A ⊗ B) y (J (tensV σs x (ouUnit (VA σs B))) w)
-      have h3 := jm_norm_le σs hAS hRC h119 (A ⊗ B) (tensV σs x (ouUnit (VA σs B))) w
+      have h1 := jm_norm_le σs hRC h119 (A ⊗ B) (tensV σs x (ouUnit (VA σs B))) (J y w)
+      have h2 := jm_norm_le σs hRC h119 (A ⊗ B) y (J (tensV σs x (ouUnit (VA σs B))) w)
+      have h3 := jm_norm_le σs hRC h119 (A ⊗ B) (tensV σs x (ouUnit (VA σs B))) w
       have h4 := tens_one_norm_le σs (B := B) x
       have n1 := ousNorm_nonneg_rc x
       have n2 := ousNorm_nonneg_rc y
@@ -1817,14 +1712,14 @@ theorem rec126 {A B : C} (a : VA σs A) (b : VA σs B) (v : VA σs (A ⊗ B)) :
     have := va_eq_zero_of_idem σs h _ hK (fun e he => by
       show J (tensV σs (GP.gmap e) (ouUnit (VA σs B))) (J y w) -
         J y (J (tensV σs (GP.gmap e) (ouUnit (VA σs B))) w) = 0
-      rw [sub_eq_zero]; exact rec126_idem σs hAS hRC h119 h0 he hf w) a
+      rw [sub_eq_zero]; exact rec126_idem σs hRC h119 h0 he hf w) a
     exact sub_eq_zero.1 this
   -- step 2: `b` arbitrary
   set x := tensV σs a (ouUnit (VA σs B))
   let h : VA σs B →ₗ[ℝ] VA σs (A ⊗ B) :=
-    (jmT σs hAS hRC h119 (A ⊗ B) x) ∘ₗ (jmL σs hAS hRC h119 (A ⊗ B) v) ∘ₗ
+    (jmT σs hRC h119 (A ⊗ B) x) ∘ₗ (jmL σs hRC h119 (A ⊗ B) v) ∘ₗ
         ((vtens σs (A := A) (B := B)).flip (ouUnit (VA σs A))) -
-      (jmL σs hAS hRC h119 (A ⊗ B) (J x v)) ∘ₗ
+      (jmL σs hRC h119 (A ⊗ B) (J x v)) ∘ₗ
         ((vtens σs (A := A) (B := B)).flip (ouUnit (VA σs A)))
   have hK : ∀ z, ousNorm _ (h z) ≤ (ousNorm _ x * ousNorm _ v + ousNorm _ (J x v)) *
       ousNorm (VA σs B) z := by
@@ -1834,9 +1729,9 @@ theorem rec126 {A B : C} (a : VA σs A) (b : VA σs B) (v : VA σs (A ⊗ B)) :
     rw [sub_eq_add_neg]
     refine (ousNorm_add_le _ _).trans ?_
     rw [ousNorm_neg]
-    have h1 := jm_norm_le σs hAS hRC h119 (A ⊗ B) x (J (tensV σs (ouUnit (VA σs A)) z) v)
-    have h2 := jm_norm_le σs hAS hRC h119 (A ⊗ B) (tensV σs (ouUnit (VA σs A)) z) v
-    have h3 := jm_norm_le σs hAS hRC h119 (A ⊗ B) (tensV σs (ouUnit (VA σs A)) z) (J x v)
+    have h1 := jm_norm_le σs hRC h119 (A ⊗ B) x (J (tensV σs (ouUnit (VA σs A)) z) v)
+    have h2 := jm_norm_le σs hRC h119 (A ⊗ B) (tensV σs (ouUnit (VA σs A)) z) v
+    have h3 := jm_norm_le σs hRC h119 (A ⊗ B) (tensV σs (ouUnit (VA σs A)) z) (J x v)
     have h4 := one_tens_norm_le σs (A := A) z
     have n1 := ousNorm_nonneg_rc z
     have n2 := ousNorm_nonneg_rc x
@@ -1868,7 +1763,7 @@ open scoped Papers.SEA
 
 variable {C : Type u} [Category.{v} C] [Limits.HasFiniteCoproducts C]
   [∀ X Y : C, PCM (X ⟶ Y)] [FinPAC C] [EffectusPartialForm C] [SequentialEffectus C]
-  (σs : ScalarSplit C) (hAS : AlfsenShultzJordanFromDerivations.{v})
+  (σs : ScalarSplit C)
   (hRC : AlfsenShultzResolventCriterion.{v}) (h119 : WeteringStateOrderLemma C)
   [MonoidalCategory C] [SymmetricCategory C] [MonoidalEffectus C]
   [MonoidalSequentialEffectus C]
@@ -1944,13 +1839,13 @@ Our normality argument differs (the paper's does not show that suprema in the im
 suprema in `V_{A⊗B}`): `a ↦ a ⊗ 1` is `Pred(ρ)` for the map `ρ : A ⊗ B → A ⊗ I ≅ A`,
 and `Pred` of a map is normal (REC 30, `stateLin_normal`). -/
 theorem rec127 (A B : C) :
-    (∀ a a' : VA σs A, jm σs hAS hRC h119 (A ⊗ B) (tensV σs a (ouUnit (VA σs B)))
-        (tensV σs a' (ouUnit (VA σs B))) = tensV σs (jm σs hAS hRC h119 A a a') (ouUnit (VA σs B))) ∧
+    (∀ a a' : VA σs A, jm σs hRC h119 (A ⊗ B) (tensV σs a (ouUnit (VA σs B)))
+        (tensV σs a' (ouUnit (VA σs B))) = tensV σs (jm σs hRC h119 A a a') (ouUnit (VA σs B))) ∧
     tensV σs (ouUnit (VA σs A)) (ouUnit (VA σs B)) = ouUnit (VA σs (A ⊗ B)) ∧
     (∀ a : VA σs A, 0 ≤ a → 0 ≤ tensV σs a (ouUnit (VA σs B))) ∧
     IsNormalMap (fun a : VA σs A => tensV σs a (ouUnit (VA σs B))) ∧
     (Nonempty (Stat B) → Function.Injective (fun a : VA σs A => tensV σs a (ouUnit (VA σs B)))) := by
-  refine ⟨fun a a' => rec125 σs hAS hRC h119 h0 a a' _, tensV_unit σs,
+  refine ⟨fun a a' => rec125 σs hRC h119 h0 a a' _, tensV_unit σs,
     fun a ha => tensV_nonneg σs ha ou_unit_nonneg, ?_, ?_⟩
   · have : (fun a : VA σs A => tensV σs a (ouUnit (VA σs B))) = stateLin σs (rhoMap A B) := by
       funext a; exact LinearMap.congr_fun (vtens_one_eq σs h0 A B) a
@@ -1966,12 +1861,12 @@ theorem rec127 (A B : C) :
 /-- **REC 127**, the second map: `b ↦ 1 ⊗ b` (the paper: "the other one follows
 analogously"). -/
 theorem rec127_right (A B : C) :
-    (∀ b b' : VA σs B, jm σs hAS hRC h119 (A ⊗ B) (tensV σs (ouUnit (VA σs A)) b)
-        (tensV σs (ouUnit (VA σs A)) b') = tensV σs (ouUnit (VA σs A)) (jm σs hAS hRC h119 B b b')) ∧
+    (∀ b b' : VA σs B, jm σs hRC h119 (A ⊗ B) (tensV σs (ouUnit (VA σs A)) b)
+        (tensV σs (ouUnit (VA σs A)) b') = tensV σs (ouUnit (VA σs A)) (jm σs hRC h119 B b b')) ∧
     (∀ b : VA σs B, 0 ≤ b → 0 ≤ tensV σs (ouUnit (VA σs A)) b) ∧
     IsNormalMap (fun b : VA σs B => tensV σs (ouUnit (VA σs A)) b) ∧
     (Nonempty (Stat A) → Function.Injective (fun b : VA σs B => tensV σs (ouUnit (VA σs A)) b)) := by
-  refine ⟨fun b b' => rec125_right σs hAS hRC h119 h0 b _ b', fun b hb => tensV_nonneg σs ou_unit_nonneg hb,
+  refine ⟨fun b b' => rec125_right σs hRC h119 h0 b _ b', fun b hb => tensV_nonneg σs ou_unit_nonneg hb,
     ?_, ?_⟩
   · have : (fun b : VA σs B => tensV σs (ouUnit (VA σs A)) b) = stateLin σs (lamMap A B) := by
       funext b; exact LinearMap.congr_fun (one_vtens_eq σs h0 A B) b
@@ -2050,15 +1945,15 @@ open scoped Papers.SEA
 
 variable {C : Type u} [Category.{v} C] [Limits.HasFiniteCoproducts C]
   [∀ X Y : C, PCM (X ⟶ Y)] [FinPAC C] [EffectusPartialForm C] [SequentialEffectus C]
-  (σs : ScalarSplit C) (hAS : AlfsenShultzJordanFromDerivations.{v})
+  (σs : ScalarSplit C)
   (hRC : AlfsenShultzResolventCriterion.{v}) (h119 : WeteringStateOrderLemma C)
 
 /-- The triple product `Q_{a,c} v = a(cv) + c(av) − (ac)v` of `V_X`, as a bilinear map in
 `(a, c)` for fixed `v`. -/
 noncomputable def jQ2L (X : C) (v : VA σs X) : VA σs X →ₗ[ℝ] VA σs X →ₗ[ℝ] VA σs X :=
-  LinearMap.mk₂ ℝ (fun a c => jm σs hAS hRC h119 X a (jm σs hAS hRC h119 X c v) +
-      jm σs hAS hRC h119 X c (jm σs hAS hRC h119 X a v) -
-      jm σs hAS hRC h119 X (jm σs hAS hRC h119 X a c) v)
+  LinearMap.mk₂ ℝ (fun a c => jm σs hRC h119 X a (jm σs hRC h119 X c v) +
+      jm σs hRC h119 X c (jm σs hRC h119 X a v) -
+      jm σs hRC h119 X (jm σs hRC h119 X a c) v)
     (fun a a' c => by
       simp only [jm_add_left, jm_add_right]; abel)
     (fun r a c => by
@@ -2069,38 +1964,38 @@ noncomputable def jQ2L (X : C) (v : VA σs X) : VA σs X →ₗ[ℝ] VA σs X �
       simp only [jm_smul_left, jm_smul_right, smul_add, smul_sub])
 
 theorem jQ2L_symm (X : C) (v : VA σs X) (a c : VA σs X) :
-    jQ2L σs hAS hRC h119 X v a c = jQ2L σs hAS hRC h119 X v c a := by
+    jQ2L σs hRC h119 X v a c = jQ2L σs hRC h119 X v c a := by
   simp only [jQ2L, LinearMap.mk₂_apply]
-  rw [jm_comm σs hAS hRC h119 X a c]; abel
+  rw [jm_comm σs hRC h119 X a c]; abel
 
 theorem jQA_eq_jQ2L (X : C) (a v : VA σs X) :
-    jQA σs hAS hRC h119 X a v = jQ2L σs hAS hRC h119 X v a a := by
+    jQA σs hRC h119 X a v = jQ2L σs hRC h119 X v a a := by
   simp only [jQ2L, LinearMap.mk₂_apply, jQA, jQ]
   rw [two_smul]; rfl
 
-theorem jQA_unit (X : C) (v : VA σs X) : jQA σs hAS hRC h119 X (ouUnit (VA σs X)) v = v := by
+theorem jQA_unit (X : C) (v : VA σs X) : jQA σs hRC h119 X (ouUnit (VA σs X)) v = v := by
   simp only [jQA, jQ]
-  show (2 : ℝ) • jm σs hAS hRC h119 X (ouUnit _) (jm σs hAS hRC h119 X (ouUnit _) v) -
-    jm σs hAS hRC h119 X (jm σs hAS hRC h119 X (ouUnit _) (ouUnit _)) v = v
+  show (2 : ℝ) • jm σs hRC h119 X (ouUnit _) (jm σs hRC h119 X (ouUnit _) v) -
+    jm σs hRC h119 X (jm σs hRC h119 X (ouUnit _) (ouUnit _)) v = v
   simp only [jm_unit, two_smul, add_sub_cancel_right]
 
 theorem jQA_apply_unit (X : C) (a : VA σs X) :
-    jQA σs hAS hRC h119 X a (ouUnit (VA σs X)) = jm σs hAS hRC h119 X a a := by
+    jQA σs hRC h119 X a (ouUnit (VA σs X)) = jm σs hRC h119 X a a := by
   simp only [jQA, jQ]
-  show (2 : ℝ) • jm σs hAS hRC h119 X a (jm σs hAS hRC h119 X a (ouUnit _)) -
-    jm σs hAS hRC h119 X (jm σs hAS hRC h119 X a a) (ouUnit _) = jm σs hAS hRC h119 X a a
-  rw [jm_comm σs hAS hRC h119 X a (ouUnit _), jm_unit, jm_comm σs hAS hRC h119 X _ (ouUnit _),
+  show (2 : ℝ) • jm σs hRC h119 X a (jm σs hRC h119 X a (ouUnit _)) -
+    jm σs hRC h119 X (jm σs hRC h119 X a a) (ouUnit _) = jm σs hRC h119 X a a
+  rw [jm_comm σs hRC h119 X a (ouUnit _), jm_unit, jm_comm σs hRC h119 X _ (ouUnit _),
     jm_unit, two_smul, add_sub_cancel_right]
 
 /-- `Q` of a two-block combination `α e + β e⊥` of an idempotent `e`. -/
 theorem jQA_two {X : C} {e : CPt σs X} (he : Papers.SEA.IsIdempotent e) (α β : ℝ)
     (c : VA σs X) :
-    jQA σs hAS hRC h119 X (α • GP.gmap e + β • GP.gmap (orth e)) c =
+    jQA σs hRC h119 X (α • GP.gmap e + β • GP.gmap (orth e)) c =
       (α * α) • Uop σs e c + (β * β) • Uop σs (orth e) c +
         (α * β) • (c - Uop σs e c - Uop σs (orth e) c) := by
-  rw [jQA_eq_jQ2L, quad_two _ (jQ2L_symm σs hAS hRC h119 X c), ← jQA_eq_jQ2L, ← jQA_eq_jQ2L,
-    ← jQA_eq_jQ2L, gmap_add_orth', jQA_unit, jQA_idem σs hAS hRC h119 X he,
-    jQA_idem σs hAS hRC h119 X he.compl]
+  rw [jQA_eq_jQ2L, quad_two _ (jQ2L_symm σs hRC h119 X c), ← jQA_eq_jQ2L, ← jQA_eq_jQ2L,
+    ← jQA_eq_jQ2L, gmap_add_orth', jQA_unit, jQA_idem σs hRC h119 X he,
+    jQA_idem σs hRC h119 X he.compl]
 
 variable [MonoidalCategory C] [SymmetricCategory C] [MonoidalEffectus C]
   [MonoidalSequentialEffectus C] (h0 : σs.s = 0)
@@ -2120,11 +2015,11 @@ Thm 4.6.17, which the paper cites) is needed: the unknown cross terms
 `Q_{1⊗1} = id`. -/
 theorem rec128 {A B : C} {e : CPt σs A} {f : CPt σs B} (he : Papers.SEA.IsIdempotent e)
     (hf : Papers.SEA.IsIdempotent f) (α β γ δ : ℝ) (c : VA σs A) (d : VA σs B) :
-    jQA σs hAS hRC h119 (A ⊗ B)
+    jQA σs hRC h119 (A ⊗ B)
         (tensV σs (α • GP.gmap e + β • GP.gmap (orth e)) (γ • GP.gmap f + δ • GP.gmap (orth f)))
         (tensV σs c d) =
-      tensV σs (jQA σs hAS hRC h119 A (α • GP.gmap e + β • GP.gmap (orth e)) c)
-        (jQA σs hAS hRC h119 B (γ • GP.gmap f + δ • GP.gmap (orth f)) d) := by
+      tensV σs (jQA σs hRC h119 A (α • GP.gmap e + β • GP.gmap (orth e)) c)
+        (jQA σs hRC h119 B (γ • GP.gmap f + δ • GP.gmap (orth f)) d) := by
   set v := tensV σs c d
   set X := tensV σs (GP.gmap e) (GP.gmap f) with hX
   set Y := tensV σs (GP.gmap e) (GP.gmap (orth f)) with hY
@@ -2136,10 +2031,10 @@ theorem rec128 {A B : C} {e : CPt σs A} {f : CPt σs B} (he : Papers.SEA.IsIdem
     rw [hX, hY, hZ, hW]; module
   -- the values of `Q` at sharp products
   have hq : ∀ (x : CPt σs A) (y : CPt σs B), Papers.SEA.IsIdempotent x → Papers.SEA.IsIdempotent y →
-      jQ2L σs hAS hRC h119 (A ⊗ B) v (GP.gmap (cptTens σs x y)) (GP.gmap (cptTens σs x y)) =
+      jQ2L σs hRC h119 (A ⊗ B) v (GP.gmap (cptTens σs x y)) (GP.gmap (cptTens σs x y)) =
         tensV σs (Uop σs x c) (Uop σs y d) := by
     intro x y hx hy
-    rw [← jQA_eq_jQ2L, jQA_idem σs hAS hRC h119 _ (cptTens_idem σs h0 hx hy),
+    rw [← jQA_eq_jQ2L, jQA_idem σs hRC h119 _ (cptTens_idem σs h0 hx hy),
       Uop_cptTens_apply σs h0]
   have g1 : GP.gmap (orth e) + GP.gmap e = GP.gmap (1 : CPt σs A) := by
     rw [add_comm]; exact gmap_add_orth' σs e
@@ -2156,14 +2051,14 @@ theorem rec128 {A B : C} {e : CPt σs A} {f : CPt σs B} (he : Papers.SEA.IsIdem
   have hall : X + Y + Z + W = GP.gmap (cptTens σs (1 : CPt σs A) (1 : CPt σs B)) := by
     rw [add_assoc (X + Y), hXY, hZW, ← tensV_gmap, ← tensV_gmap, ← tensV_add_left, g1',
       tensV_gmap]
-  rw [jQA_eq_jQ2L, hab, quad_four _ (jQ2L_symm σs hAS hRC h119 _ v), hall, hXY, hZW, hXZ, hYW,
+  rw [jQA_eq_jQ2L, hab, quad_four _ (jQ2L_symm σs hRC h119 _ v), hall, hXY, hZW, hXZ, hYW,
     hX, hY, hZ, hW, tensV_gmap, tensV_gmap, tensV_gmap, tensV_gmap]
   rw [hq e f he hf, hq e (orth f) he hf.compl, hq (orth e) f he.compl hf,
     hq (orth e) (orth f) he.compl hf.compl, hq e 1 he Papers.SEA.isIdempotent_one,
     hq (orth e) 1 he.compl Papers.SEA.isIdempotent_one, hq 1 f Papers.SEA.isIdempotent_one hf,
     hq 1 (orth f) Papers.SEA.isIdempotent_one hf.compl,
     hq 1 1 Papers.SEA.isIdempotent_one Papers.SEA.isIdempotent_one,
-    jQA_two σs hAS hRC h119 he, jQA_two σs hAS hRC h119 hf, Uop_one σs h0, Uop_one σs h0]
+    jQA_two σs hRC h119 he, jQA_two σs hRC h119 hf, Uop_one σs h0, Uop_one σs h0]
   simp only [tensV_add_left, tensV_add_right, tensV_smul_left, tensV_smul_right, tensV_sub_left,
     tensV_sub_right]
   module
@@ -2171,14 +2066,14 @@ theorem rec128 {A B : C} {e : CPt σs A} {f : CPt σs B} (he : Papers.SEA.IsIdem
 omit [MonoidalCategory C] [SymmetricCategory C] [MonoidalEffectus C]
   [MonoidalSequentialEffectus C] h0 in
 /-- A symmetry of `V_X` is `e − e⊥` for an idempotent `e`, namely `e = ½(1 + s)`. -/
-theorem symmetry_repr (X : C) {s : VA σs X} (hs : jm σs hAS hRC h119 X s s = ouUnit (VA σs X)) :
+theorem symmetry_repr (X : C) {s : VA σs X} (hs : jm σs hRC h119 X s s = ouUnit (VA σs X)) :
     ∃ y : CPt σs X, Papers.SEA.IsIdempotent y ∧ s = (1 : ℝ) • GP.gmap y + (-1 : ℝ) • GP.gmap (orth y) := by
   set e := (2⁻¹ : ℝ) • (ouUnit (VA σs X) + s) with he
-  have hee : jm σs hAS hRC h119 X e e = e := by
+  have hee : jm σs hRC h119 X e e = e := by
     rw [he, jm_smul_left, jm_smul_right, jm_add_left, jm_add_right, jm_add_right, jm_unit, jm_unit,
-      jm_comm σs hAS hRC h119 X s (ouUnit _), jm_unit, hs, _root_.smul_smul]
+      jm_comm σs hRC h119 X s (ouUnit _), jm_unit, hs, _root_.smul_smul]
     module
-  obtain ⟨y, hy, hye⟩ := jm_idem_gmap σs hAS hRC h119 X hee
+  obtain ⟨y, hy, hye⟩ := jm_idem_gmap σs hRC h119 X hee
   refine ⟨y, hy, ?_⟩
   have h1 : GP.gmap (orth y) = ouUnit (VA σs X) - GP.gmap y := by
     rw [← gmap_add_orth' σs y]; abel
@@ -2187,14 +2082,14 @@ theorem symmetry_repr (X : C) {s : VA σs X} (hs : jm σs hAS hRC h119 X s s = o
 
 omit h0 in
 theorem jm_idem_tens {A B : C} {p : VA σs A} {p' : VA σs B}
-    (hp : jm σs hAS hRC h119 A p p = p) (hp' : jm σs hAS hRC h119 B p' p' = p') (h0 : σs.s = 0) :
+    (hp : jm σs hRC h119 A p p = p) (hp' : jm σs hRC h119 B p' p' = p') (h0 : σs.s = 0) :
     ∃ z : CPt σs (A ⊗ B), Papers.SEA.IsIdempotent z ∧ tensV σs p p' = GP.gmap z := by
-  obtain ⟨x, hx, rfl⟩ := jm_idem_gmap σs hAS hRC h119 A hp
-  obtain ⟨y, hy, rfl⟩ := jm_idem_gmap σs hAS hRC h119 B hp'
+  obtain ⟨x, hx, rfl⟩ := jm_idem_gmap σs hRC h119 A hp
+  obtain ⟨y, hy, rfl⟩ := jm_idem_gmap σs hRC h119 B hp'
   exact ⟨cptTens σs x y, cptTens_idem σs h0 hx hy, tensV_gmap σs x y⟩
 
 theorem jm_gmap_idem {X : C} {z : CPt σs X} (hz : Papers.SEA.IsIdempotent z) :
-    jm σs hAS hRC h119 X (GP.gmap z) (GP.gmap z) = GP.gmap z := by
+    jm σs hRC h119 X (GP.gmap z) (GP.gmap z) = GP.gmap z := by
   rw [jm_sq_gmap]; congr 1
 
 /-- **REC 134** (`lem:tensor-symmetry`, short.tex:2388, Lemma): if `p₁, q₁ ∈ V_A` are
@@ -2204,24 +2099,24 @@ for the idempotents and REC 128 for `(s₁ ⊗ s₂)² = Q_{s₁⊗s₂} 1 = 1` 
 `Q_{s₁⊗s₂}(p₁ ⊗ p₂) = Q_{s₁} p₁ ⊗ Q_{s₂} p₂`; REC 128 is used in its two-block form
 (`s = e − e⊥`, `symmetry_repr`). -/
 theorem rec134 {A B : C} {p₁ q₁ s₁ : VA σs A} {p₂ q₂ s₂ : VA σs B}
-    (hp₁ : jm σs hAS hRC h119 A p₁ p₁ = p₁) (hq₁ : jm σs hAS hRC h119 A q₁ q₁ = q₁)
-    (hs₁ : jm σs hAS hRC h119 A s₁ s₁ = ouUnit (VA σs A)) (e₁ : jQA σs hAS hRC h119 A s₁ p₁ = q₁)
-    (hp₂ : jm σs hAS hRC h119 B p₂ p₂ = p₂) (hq₂ : jm σs hAS hRC h119 B q₂ q₂ = q₂)
-    (hs₂ : jm σs hAS hRC h119 B s₂ s₂ = ouUnit (VA σs B)) (e₂ : jQA σs hAS hRC h119 B s₂ p₂ = q₂) :
-    jm σs hAS hRC h119 (A ⊗ B) (tensV σs p₁ p₂) (tensV σs p₁ p₂) = tensV σs p₁ p₂ ∧
-    jm σs hAS hRC h119 (A ⊗ B) (tensV σs q₁ q₂) (tensV σs q₁ q₂) = tensV σs q₁ q₂ ∧
-    jm σs hAS hRC h119 (A ⊗ B) (tensV σs s₁ s₂) (tensV σs s₁ s₂) = ouUnit (VA σs (A ⊗ B)) ∧
-    jQA σs hAS hRC h119 (A ⊗ B) (tensV σs s₁ s₂) (tensV σs p₁ p₂) = tensV σs q₁ q₂ := by
-  obtain ⟨y₁, hy₁, rfl⟩ := symmetry_repr σs hAS hRC h119 A hs₁
-  obtain ⟨y₂, hy₂, rfl⟩ := symmetry_repr σs hAS hRC h119 B hs₂
+    (hp₁ : jm σs hRC h119 A p₁ p₁ = p₁) (hq₁ : jm σs hRC h119 A q₁ q₁ = q₁)
+    (hs₁ : jm σs hRC h119 A s₁ s₁ = ouUnit (VA σs A)) (e₁ : jQA σs hRC h119 A s₁ p₁ = q₁)
+    (hp₂ : jm σs hRC h119 B p₂ p₂ = p₂) (hq₂ : jm σs hRC h119 B q₂ q₂ = q₂)
+    (hs₂ : jm σs hRC h119 B s₂ s₂ = ouUnit (VA σs B)) (e₂ : jQA σs hRC h119 B s₂ p₂ = q₂) :
+    jm σs hRC h119 (A ⊗ B) (tensV σs p₁ p₂) (tensV σs p₁ p₂) = tensV σs p₁ p₂ ∧
+    jm σs hRC h119 (A ⊗ B) (tensV σs q₁ q₂) (tensV σs q₁ q₂) = tensV σs q₁ q₂ ∧
+    jm σs hRC h119 (A ⊗ B) (tensV σs s₁ s₂) (tensV σs s₁ s₂) = ouUnit (VA σs (A ⊗ B)) ∧
+    jQA σs hRC h119 (A ⊗ B) (tensV σs s₁ s₂) (tensV σs p₁ p₂) = tensV σs q₁ q₂ := by
+  obtain ⟨y₁, hy₁, rfl⟩ := symmetry_repr σs hRC h119 A hs₁
+  obtain ⟨y₂, hy₂, rfl⟩ := symmetry_repr σs hRC h119 B hs₂
   refine ⟨?_, ?_, ?_, ?_⟩
-  · obtain ⟨z, hz, e⟩ := jm_idem_tens σs hAS hRC h119 hp₁ hp₂ h0
-    rw [e]; exact jm_gmap_idem σs hAS hRC h119 h0 hz
-  · obtain ⟨z, hz, e⟩ := jm_idem_tens σs hAS hRC h119 hq₁ hq₂ h0
-    rw [e]; exact jm_gmap_idem σs hAS hRC h119 h0 hz
-  · rw [← jQA_apply_unit, ← tensV_unit σs, rec128 σs hAS hRC h119 h0 hy₁ hy₂, jQA_apply_unit,
+  · obtain ⟨z, hz, e⟩ := jm_idem_tens σs hRC h119 hp₁ hp₂ h0
+    rw [e]; exact jm_gmap_idem σs hRC h119 h0 hz
+  · obtain ⟨z, hz, e⟩ := jm_idem_tens σs hRC h119 hq₁ hq₂ h0
+    rw [e]; exact jm_gmap_idem σs hRC h119 h0 hz
+  · rw [← jQA_apply_unit, ← tensV_unit σs, rec128 σs hRC h119 h0 hy₁ hy₂, jQA_apply_unit,
       jQA_apply_unit, hs₁, hs₂, tensV_unit]
-  · rw [rec128 σs hAS hRC h119 h0 hy₁ hy₂, e₁, e₂]
+  · rw [rec128 σs hRC h119 h0 hy₁ hy₂, e₁, e₂]
 
 end Rec128
 
@@ -2284,7 +2179,7 @@ theorem orth_corner (e : Pred A) : orth (comprMap c ≫ e) = comprMap c ≫ orth
   rw [← e', EffectAlgebra.ovee_orth]
   exact compr_total hπ
 
-variable (σs : ScalarSplit C) (hAS : AlfsenShultzJordanFromDerivations.{v})
+variable (σs : ScalarSplit C)
   (hRC : AlfsenShultzResolventCriterion.{v}) (h119 : WeteringStateOrderLemma C) (h0 : σs.s = 0)
 
 include h0
@@ -2303,8 +2198,8 @@ include hcs in
 /-- The corner map `J = Pred(π_c) : V_A → V_{A_c}` is a Jordan homomorphism when `c` is
 sharp and central (commutes with every predicate). -/
 theorem corner_jordan (hcomm : ∀ w : Pred A, SEA.seq w c = SEA.seq c w) (x w : VA σs A) :
-    stateLin σs (comprMap c) (jm σs hAS hRC h119 A x w) =
-      jm σs hAS hRC h119 (comprObj c) (stateLin σs (comprMap c) x) (stateLin σs (comprMap c) w) := by
+    stateLin σs (comprMap c) (jm σs hRC h119 A x w) =
+      jm σs hRC h119 (comprObj c) (stateLin σs (comprMap c) x) (stateLin σs (comprMap c) w) := by
   have hπ := isComprehension_comprMap c
   set J := stateLin σs (comprMap c)
   have hJ1 : J (ouUnit (VA σs A)) = ouUnit (VA σs (comprObj c)) := by
@@ -2317,7 +2212,7 @@ theorem corner_jordan (hcomm : ∀ w : Pred A, SEA.seq w c = SEA.seq c w) (x w :
     contraction_of_pos (fun _ hv => stateLin_nonneg σs _ hv) (le_of_eq hJ1)
   -- the idempotent case
   have hid : ∀ e : CPt σs A, Papers.SEA.IsIdempotent e →
-      J (jm σs hAS hRC h119 A (GP.gmap e) w) = jm σs hAS hRC h119 _ (J (GP.gmap e)) (J w) := by
+      J (jm σs hRC h119 A (GP.gmap e) w) = jm σs hRC h119 _ (J (GP.gmap e)) (J w) := by
     intro e he
     set e' : CPt σs (comprObj c) := cptMk σs (comprMap c ≫ e.1) (cpt_all σs h0 _)
     have hJe : J (GP.gmap e) = GP.gmap e' := stateLin_gmap σs _ e
@@ -2341,7 +2236,7 @@ theorem corner_jordan (hcomm : ∀ w : Pred A, SEA.seq w c = SEA.seq c w) (x w :
       rw [← stateLin_comp, ← stateLin_comp]
       exact stateLin_congr σs h0 fun w' => by
         rw [Category.assoc, asrt_corner_apply hcs hf, Category.assoc, seq_eq]
-    rw [jm_form σs hAS hRC h119 A e he, hJe, jm_form σs hAS hRC h119 _ e' he', horth]
+    rw [jm_form σs hRC h119 A e he, hJe, jm_form σs hRC h119 _ e' he', horth]
     simp only [map_smul, map_add, map_sub]
     have k1 := LinearMap.congr_fun (hU e (hce e)) w
     have k2 := LinearMap.congr_fun (hU (orth e) (hce (orth e))) w
@@ -2349,16 +2244,16 @@ theorem corner_jordan (hcomm : ∀ w : Pred A, SEA.seq w c = SEA.seq c w) (x w :
     show (2⁻¹ : ℝ) • (J w + (J (Uop σs e w) - J (Uop σs (orth e) w))) = _
     rw [← k1, ← k2]; rfl
   let h : VA σs A →ₗ[ℝ] VA σs (comprObj c) :=
-    J ∘ₗ jmL σs hAS hRC h119 A w - jmL σs hAS hRC h119 _ (J w) ∘ₗ J
+    J ∘ₗ jmL σs hRC h119 A w - jmL σs hRC h119 _ (J w) ∘ₗ J
   have hK : ∀ z, ousNorm _ (h z) ≤ (2 * ousNorm (VA σs A) w) * ousNorm (VA σs A) z := by
     intro z
-    show ousNorm _ (J (jm σs hAS hRC h119 A z w) - jm σs hAS hRC h119 _ (J z) (J w)) ≤ _
+    show ousNorm _ (J (jm σs hRC h119 A z w) - jm σs hRC h119 _ (J z) (J w)) ≤ _
     rw [sub_eq_add_neg]
     refine (ousNorm_add_le _ _).trans ?_
     rw [ousNorm_neg]
-    have h1 := hJn (jm σs hAS hRC h119 A z w)
-    have h2 := jm_norm_le σs hAS hRC h119 A z w
-    have h3 := jm_norm_le σs hAS hRC h119 _ (J z) (J w)
+    have h1 := hJn (jm σs hRC h119 A z w)
+    have h2 := jm_norm_le σs hRC h119 A z w
+    have h3 := jm_norm_le σs hRC h119 _ (J z) (J w)
     have h4 := hJn z
     have h5 := hJn w
     have n1 := ousNorm_nonneg_rc z
@@ -2367,7 +2262,7 @@ theorem corner_jordan (hcomm : ∀ w : Pred A, SEA.seq w c = SEA.seq c w) (x w :
     have n4 := ousNorm_nonneg_rc (J w)
     nlinarith [mul_le_mul h4 h5 n4 n1]
   have := va_eq_zero_of_idem σs h _ hK (fun e he => by
-    show J (jm σs hAS hRC h119 A (GP.gmap e) w) - jm σs hAS hRC h119 _ (J (GP.gmap e)) (J w) = 0
+    show J (jm σs hRC h119 A (GP.gmap e) w) - jm σs hRC h119 _ (J (GP.gmap e)) (J w) = 0
     rw [hid e he, sub_self]) x
   exact sub_eq_zero.1 this
 
@@ -2381,8 +2276,8 @@ theorem corner_asrt {A : C} {c : Pred A} (hcs : IsSharp c) (x : VA σs A) :
 
 omit h0 in
 theorem jm_idem_Uop {A : C} {c₀ : CPt σs A} (hc : Papers.SEA.IsIdempotent c₀) (z : VA σs A) :
-    jm σs hAS hRC h119 A (GP.gmap c₀) (Uop σs c₀ z) = Uop σs c₀ z := by
-  rw [jm_form σs hAS hRC h119 A c₀ hc]
+    jm σs hRC h119 A (GP.gmap c₀) (Uop σs c₀ z) = Uop σs c₀ z := by
+  rw [jm_form σs hRC h119 A c₀ hc]
   show (2⁻¹ : ℝ) • (Uop σs c₀ z + (Uop σs c₀ (Uop σs c₀ z) - Uop σs (orth c₀) (Uop σs c₀ z))) = _
   rw [show Uop σs c₀ (Uop σs c₀ z) = Uop σs c₀ z from ulin_idem (cpt_hsm σs A) hc z,
     show Uop σs (orth c₀) (Uop σs c₀ z) = 0 from ulin_orth_zero' (cpt_hsm σs A) hc z]
@@ -2392,8 +2287,8 @@ omit h0 in
 /-- An operator-central idempotent (`c(xy) = x(cy)`) of `V_A` commutes, in the sequential
 product, with every effect: `c & w + c⊥ & w = w`. -/
 theorem central_of_jordan {A : C} {c₀ : CPt σs A} (hc : Papers.SEA.IsIdempotent c₀)
-    (hcen : ∀ x y : VA σs A, jm σs hAS hRC h119 A (GP.gmap c₀) (jm σs hAS hRC h119 A x y) =
-      jm σs hAS hRC h119 A x (jm σs hAS hRC h119 A (GP.gmap c₀) y)) (w : CPt σs A) :
+    (hcen : ∀ x y : VA σs A, jm σs hRC h119 A (GP.gmap c₀) (jm σs hRC h119 A x y) =
+      jm σs hRC h119 A x (jm σs hRC h119 A (GP.gmap c₀) y)) (w : CPt σs A) :
     Papers.SEA.Commutes c₀ w := by
   set U := ULin (cpt_hsm σs A)
   set x : VA σs A := GP.gmap w
@@ -2402,13 +2297,13 @@ theorem central_of_jordan {A : C} {c₀ : CPt σs A} (hc : Papers.SEA.IsIdempote
     rw [hy, map_sub, map_sub, ulin_idem _ hc, ulin_orth_zero _ hc]; abel
   have hUy' : U (orth c₀) y = 0 := by
     rw [hy, map_sub, map_sub, ulin_orth_zero' _ hc, ulin_idem _ hc.compl]; abel
-  have hTy : jm σs hAS hRC h119 A (GP.gmap c₀) y = (2⁻¹ : ℝ) • y := by
-    rw [jm_form σs hAS hRC h119 A c₀ hc, hUy, hUy', sub_zero, add_zero]
-  have hcc : jm σs hAS hRC h119 A (GP.gmap c₀) (GP.gmap c₀) = GP.gmap c₀ := by
-    rw [jm_form σs hAS hRC h119 A c₀ hc, ULin_gmap, ULin_gmap, hc, hc.orth_seq, GP.gmap_zero]
+  have hTy : jm σs hRC h119 A (GP.gmap c₀) y = (2⁻¹ : ℝ) • y := by
+    rw [jm_form σs hRC h119 A c₀ hc, hUy, hUy', sub_zero, add_zero]
+  have hcc : jm σs hRC h119 A (GP.gmap c₀) (GP.gmap c₀) = GP.gmap c₀ := by
+    rw [jm_form σs hRC h119 A c₀ hc, ULin_gmap, ULin_gmap, hc, hc.orth_seq, GP.gmap_zero]
     module
   have key := hcen y (GP.gmap c₀)
-  rw [hcc, jm_comm σs hAS hRC h119 A y, hTy, jm_smul_right, hTy, _root_.smul_smul] at key
+  rw [hcc, jm_comm σs hRC h119 A y, hTy, jm_smul_right, hTy, _root_.smul_smul] at key
   have hy0 : y = 0 := by
     have : ((2⁻¹ : ℝ) * 2⁻¹ - 2⁻¹) • y = 0 := by rw [sub_smul, key, sub_self]
     rcases smul_eq_zero.1 this with h | h
@@ -2444,15 +2339,15 @@ include hcs in
 theorem corner_purelyExceptional {c₀ : CPt σs A} (hc₀ : c₀.1 = c) (hc : Papers.SEA.IsIdempotent c₀)
     (hcomm : ∀ w : Pred A, SEA.seq w c = SEA.seq c w)
     (hvan : ∀ (𝔅 : Type v) [CStarAlgebra 𝔅] (ψ : VA σs A →ₗ[ℝ] 𝔅),
-      (letI := jbMul σs hAS hRC h119 A; IsJordanHomInto (VA σs A) 𝔅 ψ) →
-        ∀ x, jm σs hAS hRC h119 A (GP.gmap c₀) x = x → ψ x = 0) :
-    letI := jbMul σs hAS hRC h119 (comprObj c); IsPurelyExceptional.{v, v} (VA σs (comprObj c)) := by
+      (letI := jbMul σs hRC h119 A; IsJordanHomInto (VA σs A) 𝔅 ψ) →
+        ∀ x, jm σs hRC h119 A (GP.gmap c₀) x = x → ψ x = 0) :
+    letI := jbMul σs hRC h119 (comprObj c); IsPurelyExceptional.{v, v} (VA σs (comprObj c)) := by
   intro 𝔅 _ φ hφ
   set J := stateLin σs (comprMap c)
-  have hψ : (letI := jbMul σs hAS hRC h119 A; IsJordanHomInto (VA σs A) 𝔅 (φ ∘ₗ J)) := by
+  have hψ : (letI := jbMul σs hRC h119 A; IsJordanHomInto (VA σs A) 𝔅 (φ ∘ₗ J)) := by
     refine ⟨fun a => hφ.1 (J a), fun a b => ?_⟩
-    show φ (J (jm σs hAS hRC h119 A a b)) = _
-    rw [corner_jordan hcs σs hAS hRC h119 h0 hcomm]
+    show φ (J (jm σs hRC h119 A a b)) = _
+    rw [corner_jordan hcs σs hRC h119 h0 hcomm]
     exact hφ.2 (J a) (J b)
   ext y
   rw [LinearMap.zero_apply]
@@ -2460,7 +2355,7 @@ theorem corner_purelyExceptional {c₀ : CPt σs A} (hc₀ : c₀.1 = c) (hc : P
   have hy : y = J (Uop σs c₀ z) := by
     rw [Uop_eq_stateLin, hc₀, corner_asrt σs h0 hcs, corner_section σs h0 hcs]
   rw [hy]
-  exact hvan 𝔅 (φ ∘ₗ J) hψ _ (jm_idem_Uop σs hAS hRC h119 hc z)
+  exact hvan 𝔅 (φ ∘ₗ J) hψ _ (jm_idem_Uop σs hRC h119 hc z)
 
 end Corner
 
@@ -2473,7 +2368,6 @@ open scoped Papers.SEA
 
 variable {C : Type u} [Category.{v} C] [Limits.HasFiniteCoproducts C]
   [∀ X Y : C, PCM (X ⟶ Y)] [FinPAC C] [EffectusPartialForm C] [SequentialEffectus C]
-  (hAS : AlfsenShultzJordanFromDerivations.{v})
   (hRC : AlfsenShultzResolventCriterion.{v}) (h119 : WeteringStateOrderLemma C)
   (φ₀ : EffectMonoidHom (Scal C) I) (ψ₀ : EffectMonoidHom I (Scal C))
   (h1 : ∀ k, ψ₀.toFun (φ₀.toFun k) = k) (h2 : ∀ r, φ₀.toFun (ψ₀.toFun r) = r)
@@ -2481,9 +2375,9 @@ variable {C : Type u} [Category.{v} C] [Limits.HasFiniteCoproducts C]
 include h1 h2 in
 /-- With scalars `[0,1]`, `V_X` is a JBW-algebra (REC 103). -/
 theorem jbw_real (X : C) :
-    @JBWAlgebra (VA (realSplit ψ₀) X) _ _ _ _ (jbMul (realSplit ψ₀) hAS hRC h119 X) :=
-  @JBWAlgebra.mk (VA (realSplit ψ₀) X) _ _ _ _ (jbMul (realSplit ψ₀) hAS hRC h119 X)
-    (jbMul_spec (realSplit ψ₀) hAS hRC h119 X) (VA_dc (realSplit ψ₀) X)
+    @JBWAlgebra (VA (realSplit ψ₀) X) _ _ _ _ (jbMul (realSplit ψ₀) hRC h119 X) :=
+  @JBWAlgebra.mk (VA (realSplit ψ₀) X) _ _ _ _ (jbMul (realSplit ψ₀) hRC h119 X)
+    (jbMul_spec (realSplit ψ₀) hRC h119 X) (VA_dc (realSplit ψ₀) X)
     (separating_normal_states φ₀ ψ₀ h1 h2 X)
 
 omit h1 h2 in
@@ -2556,9 +2450,9 @@ theorem tens_ne_zero [MonoidalCategory C] [SymmetricCategory C] [MonoidalEffectu
 
 omit h1 h2 in
 theorem Uop_zero_of_jm {σs : ScalarSplit C} {X : C} {a b : CPt σs X}
-    (ha : Papers.SEA.IsIdempotent a) (h : jm σs hAS hRC h119 X (GP.gmap a) (GP.gmap b) = 0) :
+    (ha : Papers.SEA.IsIdempotent a) (h : jm σs hRC h119 X (GP.gmap a) (GP.gmap b) = 0) :
     Uop σs a (GP.gmap b) = 0 := by
-  rw [jm_form σs hAS hRC h119 X a ha] at h
+  rw [jm_form σs hRC h119 X a ha] at h
   have e := congrArg (ULin (cpt_hsm σs X) a) h
   rw [map_zero, map_smul, map_add, map_sub, ulin_idem _ ha, ulin_orth_zero _ ha, sub_zero,
     ← two_smul ℝ, _root_.smul_smul, show (2⁻¹ : ℝ) * 2 = 1 by norm_num, one_smul] at e
@@ -2567,14 +2461,14 @@ theorem Uop_zero_of_jm {σs : ScalarSplit C} {X : C} {a b : CPt σs X}
 omit h1 h2 in
 theorem jm_zero_of_Uop {σs : ScalarSplit C} {X : C} {a b : CPt σs X}
     (ha : Papers.SEA.IsIdempotent a) (h : Uop σs a (GP.gmap b) = 0) :
-    jm σs hAS hRC h119 X (GP.gmap a) (GP.gmap b) = 0 := by
+    jm σs hRC h119 X (GP.gmap a) (GP.gmap b) = 0 := by
   have hab : a ⊙ b = 0 := by
     rw [Uop_gmap] at h; exact GP.gmap_injective (h.trans GP.gmap_zero.symm)
   have hle : b ≼ orth a := by
     have := ((Papers.SEA.sea17_5 ha.compl b).2.2.2).2
     rw [Papers.SEA.orth_orth] at this; exact this hab
   have h2 : orth a ⊙ b = b := ((Papers.SEA.sea17_5 ha.compl b).1).1 hle
-  rw [jm_form σs hAS hRC h119 X a ha]
+  rw [jm_form σs hRC h119 X a ha]
   show (2⁻¹ : ℝ) • (GP.gmap b + (Uop σs a (GP.gmap b) - Uop σs (orth a) (GP.gmap b))) = 0
   rw [h, Uop_gmap, h2]; simp
 
@@ -2596,52 +2490,52 @@ absurd.  (The paper goes through `W*(V)` (REC 129, 130) for the last step; the i
 Jordan homomorphism that REC 50 provides suffices, so REC 129 is not needed.) -/
 theorem rec135 (hHOS : HancheOlsenStormerDecomposition.{v}) (hSh : ShultzExceptionalStructure.{v})
     (hAS4 : AlfsenShultzFourExchangeable.{v}) (A : C) :
-    letI := jbMul (realSplit ψ₀) hAS hRC h119 A; IsJWAlgebra (VA (realSplit ψ₀) A) := by
+    letI := jbMul (realSplit ψ₀) hRC h119 A; IsJWAlgebra (VA (realSplit ψ₀) A) := by
   set σs := realSplit ψ₀ with hσs
   have h0 : σs.s = 0 := rfl
-  letI iA := jbMul σs hAS hRC h119 A
-  haveI := jm_jb σs hAS hRC h119 A
+  letI iA := jbMul σs hRC h119 A
+  haveI := jm_jb σs hRC h119 A
   obtain ⟨c, hcc, hcen, ⟨𝔄, i1, i2, i3, i4, φ, hφJ, hφn, hker⟩, hvan⟩ :=
-    hHOS (VA σs A) (jbw_real hAS hRC h119 φ₀ ψ₀ h1 h2 A)
+    hHOS (VA σs A) (jbw_real hRC h119 φ₀ ψ₀ h1 h2 A)
   by_cases hc0 : c = 0
   · refine ⟨𝔄, i1, i2, i3, i4, φ, hφJ, fun x y hxy => ?_, hφn⟩
     have e1 : φ (x - y) = 0 := by rw [map_sub, hxy, sub_self]
     have e2 := (hker (x - y)).1 e1
     rw [hc0, jb_zero_mul] at e2
     exact sub_eq_zero.1 e2.symm
-  obtain ⟨c₀, hc₀, rfl⟩ := jm_idem_gmap σs hAS hRC h119 A hcc
+  obtain ⟨c₀, hc₀, rfl⟩ := jm_idem_gmap σs hRC h119 A hcc
   have hcs : IsSharp c₀.1 := isSharp_of_isIdempotent ((cpt_idem_iff σs c₀).1 hc₀)
   have hcomm : ∀ w : Pred A, SEA.seq w c₀.1 = SEA.seq c₀.1 w := by
     intro w
-    have := central_of_jordan σs hAS hRC h119 hc₀ hcen (cptMk σs w (cpt_all σs h0 w))
+    have := central_of_jordan σs hRC h119 hc₀ hcen (cptMk σs w (cpt_all σs h0 w))
     have e : SEA.seq c₀.1 w = SEA.seq w c₀.1 := congrArg Subtype.val this
     exact e.symm
   have hc0' : c₀.1 ≠ 0 := fun h => hc0 (by
     rw [show c₀ = 0 from Subtype.ext h, GP.gmap_zero])
   set W := comprObj c₀.1
   obtain ⟨ω⟩ := exists_state_compr hcs hc0'
-  have hpe := corner_purelyExceptional hcs σs hAS hRC h119 h0 rfl hc₀ hcomm
+  have hpe := corner_purelyExceptional hcs σs hRC h119 h0 rfl hc₀ hcomm
     (fun 𝔅 _ ψ hψ x hx => hvan 𝔅 ψ hψ x hx)
   have hWne : ouUnit (VA σs W) ≠ 0 := unit_ne_zero_real φ₀ ψ₀ ⟨ω⟩
-  letI iW := jbMul σs hAS hRC h119 W
+  letI iW := jbMul σs hRC h119 W
   obtain ⟨q, hq1, hq2, hq3, hq4⟩ :=
-    rec133 hSh (VA σs W) (jbw_real hAS hRC h119 φ₀ ψ₀ h1 h2 W) hpe ⟨_, hWne⟩
-  choose x hx hqx using fun i => jm_idem_gmap σs hAS hRC h119 W (hq1 i).1
+    rec133 hSh (VA σs W) (jbw_real hRC h119 φ₀ ψ₀ h1 h2 W) hpe ⟨_, hWne⟩
+  choose x hx hqx using fun i => jm_idem_gmap σs hRC h119 W (hq1 i).1
   choose sy hsy hsyq using hq4
   let e9 : Fin (3 * 3) ≃ Fin 3 × Fin 3 := finProdFinEquiv.symm
   let P : Fin (3 * 3) → VA σs (W ⊗ W) := fun k => tensV σs (q (e9 k).1) (q (e9 k).2)
-  letI iWW := jbMul σs hAS hRC h119 (W ⊗ W)
+  letI iWW := jbMul σs hRC h119 (W ⊗ W)
   have hJW : IsJWAlgebra (VA σs (W ⊗ W)) := by
-    refine hAS4 (VA σs (W ⊗ W)) (jbw_real hAS hRC h119 φ₀ ψ₀ h1 h2 (W ⊗ W)) (3 * 3) (by norm_num) P
+    refine hAS4 (VA σs (W ⊗ W)) (jbw_real hRC h119 φ₀ ψ₀ h1 h2 (W ⊗ W)) (3 * 3) (by norm_num) P
       (fun k => ⟨?_, ?_⟩) (fun i j hij => ?_) ?_ (fun i j => ?_)
-    · obtain ⟨z, hz, e⟩ := jm_idem_tens σs hAS hRC h119 (hq1 (e9 k).1).1 (hq1 (e9 k).2).1 h0
-      show jm σs hAS hRC h119 (W ⊗ W) (P k) (P k) = P k
-      simp only [P]; rw [e]; exact jm_gmap_idem σs hAS hRC h119 h0 hz
+    · obtain ⟨z, hz, e⟩ := jm_idem_tens σs hRC h119 (hq1 (e9 k).1).1 (hq1 (e9 k).2).1 h0
+      show jm σs hRC h119 (W ⊗ W) (P k) (P k) = P k
+      simp only [P]; rw [e]; exact jm_gmap_idem σs hRC h119 h0 hz
     · exact tens_ne_zero φ₀ ψ₀ h1 h2 (hq1 _).2 (hq1 _).2
-    · show jm σs hAS hRC h119 (W ⊗ W) (P i) (P j) = 0
+    · show jm σs hRC h119 (W ⊗ W) (P i) (P j) = 0
       simp only [P]
       rw [hqx (e9 i).1, hqx (e9 i).2, hqx (e9 j).1, hqx (e9 j).2, tensV_gmap, tensV_gmap]
-      refine jm_zero_of_Uop hAS hRC h119 (cptTens_idem σs h0 (hx _) (hx _)) ?_
+      refine jm_zero_of_Uop hRC h119 (cptTens_idem σs h0 (hx _) (hx _)) ?_
       rw [← tensV_gmap, Uop_cptTens_apply σs h0]
       have hne : (e9 i).1 ≠ (e9 j).1 ∨ (e9 i).2 ≠ (e9 j).2 := by
         by_contra hc
@@ -2650,10 +2544,10 @@ theorem rec135 (hHOS : HancheOlsenStormerDecomposition.{v}) (hSh : ShultzExcepti
       rcases hne with h | h
       · have := hq2 _ _ h
         rw [hqx, hqx] at this
-        rw [Uop_zero_of_jm hAS hRC h119 (hx _) this, tensV_zero_left]
+        rw [Uop_zero_of_jm hRC h119 (hx _) this, tensV_zero_left]
       · have := hq2 _ _ h
         rw [hqx, hqx] at this
-        rw [Uop_zero_of_jm hAS hRC h119 (hx _) this, tensV_zero_right]
+        rw [Uop_zero_of_jm hRC h119 (hx _) this, tensV_zero_right]
     · show ∑ k, P k = ouUnit (VA σs (W ⊗ W))
       rw [show (∑ k, P k) = ∑ ab : Fin 3 × Fin 3, tensV σs (q ab.1) (q ab.2) from
         Equiv.sum_comp e9 (fun ab => tensV σs (q ab.1) (q ab.2)), Fintype.sum_prod_type]
@@ -2662,15 +2556,15 @@ theorem rec135 (hHOS : HancheOlsenStormerDecomposition.{v}) (hSh : ShultzExcepti
       simp only [tensV_add_left, tensV_add_right]
       abel
     · refine ⟨tensV σs (sy (e9 i).1 (e9 j).1) (sy (e9 i).2 (e9 j).2), ?_, ?_⟩
-      · exact (rec134 σs hAS hRC h119 h0 (hq1 _).1 (hq1 _).1 (hsy _ _) (hsyq _ _)
+      · exact (rec134 σs hRC h119 h0 (hq1 _).1 (hq1 _).1 (hsy _ _) (hsyq _ _)
           (hq1 _).1 (hq1 _).1 (hsy _ _) (hsyq _ _)).2.2.1
-      · exact (rec134 σs hAS hRC h119 h0 (hq1 _).1 (hq1 _).1 (hsy _ _) (hsyq _ _)
+      · exact (rec134 σs hRC h119 h0 (hq1 _).1 (hq1 _).1 (hsy _ _) (hsyq _ _)
           (hq1 _).1 (hq1 _).1 (hsy _ _) (hsyq _ _)).2.2.2
   obtain ⟨𝔄', j1, j2, j3, j4, φ', hφ'J, hφ'i, -⟩ := hJW
   have hψ : IsJordanHomInto (VA σs W) 𝔄' (φ' ∘ₗ vtens σs (ouUnit (VA σs W))) := by
     refine ⟨fun a => hφ'J.1 _, fun a b => ?_⟩
-    show φ' (tensV σs (jm σs hAS hRC h119 W a b) (ouUnit _)) = _
-    rw [← (rec127 σs hAS hRC h119 h0 W W).1 a b]
+    show φ' (tensV σs (jm σs hRC h119 W a b) (ouUnit _)) = _
+    rw [← (rec127 σs hRC h119 h0 W W).1 a b]
     exact hφ'J.2 _ _
   have hz := LinearMap.congr_fun (hpe 𝔄' _ hψ) (ouUnit (VA σs W))
   simp only [LinearMap.comp_apply, LinearMap.zero_apply] at hz
@@ -2711,16 +2605,15 @@ open MonoidalCategory SequentialEffectus
 
 variable {C : Type u} [Category.{v} C] [Limits.HasFiniteCoproducts C]
   [∀ X Y : C, PCM (X ⟶ Y)] [FinPAC C] [EffectusPartialForm C] [SequentialEffectus C]
-  (hAS : AlfsenShultzJordanFromDerivations.{v})
   (hRC : AlfsenShultzResolventCriterion.{v}) (h119 : WeteringStateOrderLemma C)
 
 /-- The predicate functor `C → JW_npcᵒᵖ`, `A ↦ V_A`, `f ↦ Pred(f)`, given that every
 `V_A` is a JW-algebra. -/
 noncomputable def jwFunctor (σs : ScalarSplit C)
-    (hJBW : ∀ A : C, @JBWAlgebra (VA σs A) _ _ _ _ (jbMul σs hAS hRC h119 A))
-    (hJW : ∀ A : C, letI := jbMul σs hAS hRC h119 A; IsJWAlgebra (VA σs A)) :
+    (hJBW : ∀ A : C, @JBWAlgebra (VA σs A) _ _ _ _ (jbMul σs hRC h119 A))
+    (hJW : ∀ A : C, letI := jbMul σs hRC h119 A; IsJWAlgebra (VA σs A)) :
     C ⥤ JWnpcCat.{v}ᵒᵖ where
-  obj A := Opposite.op (@JWnpcCat.mk (VA σs A) _ _ _ _ (jbMul σs hAS hRC h119 A) (hJBW A) (hJW A))
+  obj A := Opposite.op (@JWnpcCat.mk (VA σs A) _ _ _ _ (jbMul σs hRC h119 A) (hJBW A) (hJW A))
   map f := Quiver.Hom.op ⟨stateLin σs f, stateLin_isNPC σs f⟩
   map_id A := by
     apply Quiver.Hom.unop_inj; apply Subtype.ext; exact stateLin_id σs A
@@ -2728,8 +2621,8 @@ noncomputable def jwFunctor (σs : ScalarSplit C)
     apply Quiver.Hom.unop_inj; apply Subtype.ext; exact stateLin_comp σs f g
 
 theorem jwFunctor_spec (σs : ScalarSplit C) (h0 : σs.s = 0)
-    (hJBW : ∀ A : C, @JBWAlgebra (VA σs A) _ _ _ _ (jbMul σs hAS hRC h119 A))
-    (hJW : ∀ A : C, letI := jbMul σs hAS hRC h119 A; IsJWAlgebra (VA σs A)) :
+    (hJBW : ∀ A : C, @JBWAlgebra (VA σs A) _ _ _ _ (jbMul σs hRC h119 A))
+    (hJW : ∀ A : C, letI := jbMul σs hRC h119 A; IsJWAlgebra (VA σs A)) :
     ∃ F : C ⥤ JWnpcCat.{v}ᵒᵖ,
       (∀ A : C, ∃ e : Pred A ≃ Set.Icc (0 : (F.obj A).unop.carrier) (ouUnit _),
         (∀ a b : Pred A, a ≼ b ↔ (e a : (F.obj A).unop.carrier) ≤ e b) ∧
@@ -2737,7 +2630,7 @@ theorem jwFunctor_spec (σs : ScalarSplit C) (h0 : σs.s = 0)
           (e (ovee a b h) : (F.obj A).unop.carrier) = e a + e b) ∧
         (e (truth A) : (F.obj A).unop.carrier) = ouUnit _) ∧
       (F.Faithful ↔ SeparatingPredicates C) := by
-  refine ⟨jwFunctor hAS hRC h119 σs hJBW hJW, fun A => ?_, ?_⟩
+  refine ⟨jwFunctor hRC h119 σs hJBW hJW, fun A => ?_, ?_⟩
   · let e₁ : Pred A ≃ CPt σs A :=
       ⟨fun p => cptMk σs p (cpt_all σs h0 p), fun q => q.1, fun _ => rfl, fun _ => rfl⟩
     refine ⟨e₁.trans (Papers.OAP.gpEquiv (CPt σs A)), fun a b => ?_, fun a b h => ?_, ?_⟩
@@ -2751,8 +2644,8 @@ theorem jwFunctor_spec (σs : ScalarSplit C) (h0 : σs.s = 0)
       congr 1; apply Subtype.ext
       show truth A = truth A ≫ orth σs.s
       rw [cpt_all σs h0]
-  · have key : ∀ {A B : C} (f g : A ⟶ B), (jwFunctor hAS hRC h119 σs hJBW hJW).map f =
-        (jwFunctor hAS hRC h119 σs hJBW hJW).map g ↔ ∀ b : Pred B, f ≫ b = g ≫ b := by
+  · have key : ∀ {A B : C} (f g : A ⟶ B), (jwFunctor hRC h119 σs hJBW hJW).map f =
+        (jwFunctor hRC h119 σs hJBW hJW).map g ↔ ∀ b : Pred B, f ≫ b = g ≫ b := by
       intro A B f g
       constructor
       · intro h b
@@ -2811,17 +2704,57 @@ theorem isJW_of_subsingleton (V : Type v) [AddCommGroup V] [Module ℝ V] [Parti
   rw [this, LinearMap.zero_apply]
   exact isLUB_singleton
 
+/-! ### `rec102'`, `rec103'`, `rec136'`
+
+These once stated REC 102/103/136 under `AlfsenShultzJordanTransplant` (the Jordan
+symmetry proved, `JordanSymmetry.lean`) in place of `AlfsenShultzJordanFromDerivations`.
+Both are now discharged (`rec121` is proved from `jb_of_chainDense` and
+`va_chainDense`), so the primed names are REC 102/103/136 themselves. -/
+
+include hRC h119 in
+/-- **REC 102** (`thm:JB-embedding`, short.tex:1869, Theorem): `rec102`, with no
+A–S 9.4x hypothesis. -/
+theorem rec102' :
+    ∃ σs : ScalarSplit C,
+      Nonempty (C ≌ (dcSplitting σs separatedByStates).ε.Part ×
+        (dcSplitting σs separatedByStates).ε'.Part) ∧
+      (∀ P : (dcSplitting σs separatedByStates).ε.Part, Nonempty (CBAOn (Pred P))) ∧
+      (∀ P : (dcSplitting σs separatedByStates).ε'.Part,
+        ∃ _ : Mul (VA σs P.obj.X), JBAlgebra (VA σs P.obj.X) ∧
+          IsDirectedCompleteOUS (VA σs P.obj.X) ∧
+          ∃ e : Pred P ≃ Set.Icc (0 : VA σs P.obj.X) (ouUnit (VA σs P.obj.X)),
+            (∀ a b : Pred P, a ≼ b ↔ (e a : VA σs P.obj.X) ≤ e b) ∧
+            (∀ (a b : Pred P) (h : Perp a b), (e (ovee a b h) : VA σs P.obj.X) = e a + e b) ∧
+            (e (truth P) : VA σs P.obj.X) = ouUnit (VA σs P.obj.X)) ∧
+      ((rec102_cbaFunctor σs).Faithful ∧ (rec102_jbFunctor σs hRC h119).Faithful ↔
+        SeparatingPredicates C) :=
+  rec102 hRC h119
+
+include hRC h119 in
+/-- **REC 103** (`thm:JBW-CBA`, short.tex:1874, Theorem): `rec103`, with no A–S 9.4x
+hypothesis. -/
+theorem rec103' (hirr : IsIrreducible (Scal C)) :
+    (∃ hB : ∀ A : C, CBAOn (Pred A), (cbaPredFunctor hB).Faithful ↔ SeparatingPredicates C) ∨
+    (∃ (σs : ScalarSplit C) (hJBW : ∀ A : C, @JBWAlgebra (VA σs A) _ _ _ _
+        (jbMul σs hRC h119 A)),
+      (∀ A : C, ∃ e : Pred A ≃ Set.Icc (0 : VA σs A) (ouUnit (VA σs A)),
+        (∀ a b : Pred A, a ≼ b ↔ (e a : VA σs A) ≤ e b) ∧
+        (∀ (a b : Pred A) (h : Perp a b), (e (ovee a b h) : VA σs A) = e a + e b) ∧
+        (e (truth A) : VA σs A) = ouUnit (VA σs A)) ∧
+      ((rec103_jbwFunctor hRC h119 σs hJBW).Faithful ↔ SeparatingPredicates C)) :=
+  rec103 hRC h119 hirr
+
 variable [MonoidalCategory C] [SymmetricCategory C] [MonoidalEffectus C]
   [MonoidalSequentialEffectus C]
 
-include hAS hRC h119 in
+include hRC h119 in
 /-- **REC 136** (`thm:JW-algebra`, short.tex:2409, Theorem): for a monoidal sequential
 effectus (REC 122) with irreducible scalars not equal to `{0,1}` there is a functor
 `F : C → JW_npcᵒᵖ` with `Pred(A) ≅ [0,1]_{F(A)}` (the print's `F(Pred(A))` is ill-typed,
 PLAN flag 5), and `F` is faithful iff `C` is separated by predicates.  The paper's proof:
 REC 103 gives the functor into `JBW_npcᵒᵖ` (`A ↦ V_A`), and REC 135 makes every `V_A` a
 JW-algebra.  The scalars are `{0}` or `[0,1]` (REC 36); `{0}` gives trivial `V_A`, which
-are JW trivially.  Named hypotheses: the three of REC 102/103 (`hAS`, `hRC`, `h119`), and
+are JW trivially.  Named hypotheses: the two of REC 102/103 (`hRC`, `h119`), and
 REC 52 (`hHOS`), REC 55 (`hSh`), REC 132 (`hAS4`). -/
 theorem rec136 (hHOS : HancheOlsenStormerDecomposition.{v}) (hSh : ShultzExceptionalStructure.{v})
     (hAS4 : AlfsenShultzFourExchangeable.{v}) (hirr : IsIrreducible (Scal C))
@@ -2835,17 +2768,32 @@ theorem rec136 (hHOS : HancheOlsenStormerDecomposition.{v}) (hSh : ShultzExcepti
       (F.Faithful ↔ SeparatingPredicates C) := by
   rcases seq_scal_cases hirr with h | h | ⟨φ₀, ψ₀, h1, h2⟩
   · set σs := trivSplit h
-    have hJBW : ∀ A : C, @JBWAlgebra (VA σs A) _ _ _ _ (jbMul σs hAS hRC h119 A) := fun A =>
+    have hJBW : ∀ A : C, @JBWAlgebra (VA σs A) _ _ _ _ (jbMul σs hRC h119 A) := fun A =>
       haveI := va_subsingleton h A
-      @JBWAlgebra.mk (VA σs A) _ _ _ _ (jbMul σs hAS hRC h119 A) (jbMul_spec σs hAS hRC h119 A)
+      @JBWAlgebra.mk (VA σs A) _ _ _ _ (jbMul σs hRC h119 A) (jbMul_spec σs hRC h119 A)
         (VA_dc σs A) (fun a b hab => (hab (Subsingleton.elim a b)).elim)
-    have hJW : ∀ A : C, letI := jbMul σs hAS hRC h119 A; IsJWAlgebra (VA σs A) := fun A =>
+    have hJW : ∀ A : C, letI := jbMul σs hRC h119 A; IsJWAlgebra (VA σs A) := fun A =>
       haveI := va_subsingleton h A
-      @isJW_of_subsingleton (VA σs A) _ _ _ _ (jbMul σs hAS hRC h119 A) _
-    exact jwFunctor_spec hAS hRC h119 σs rfl hJBW hJW
+      @isJW_of_subsingleton (VA σs A) _ _ _ _ (jbMul σs hRC h119 A) _
+    exact jwFunctor_spec hRC h119 σs rfl hJBW hJW
   · exact (h01 h).elim
-  · exact jwFunctor_spec hAS hRC h119 (realSplit ψ₀) rfl
-      (jbw_real hAS hRC h119 φ₀ ψ₀ h1 h2) (rec135 hAS hRC h119 φ₀ ψ₀ h1 h2 hHOS hSh hAS4)
+  · exact jwFunctor_spec hRC h119 (realSplit ψ₀) rfl
+      (jbw_real hRC h119 φ₀ ψ₀ h1 h2) (rec135 hRC h119 φ₀ ψ₀ h1 h2 hHOS hSh hAS4)
+
+include hRC h119 in
+/-- **REC 136** (`thm:JW-algebra`, short.tex:2409, Theorem): `rec136`, with no A–S 9.4x
+hypothesis. -/
+theorem rec136' (hHOS : HancheOlsenStormerDecomposition.{v})
+    (hSh : ShultzExceptionalStructure.{v}) (hAS4 : AlfsenShultzFourExchangeable.{v})
+    (hirr : IsIrreducible (Scal C)) (h01 : ¬ ScalarsAreTwo C) :
+    ∃ F : C ⥤ JWnpcCat.{v}ᵒᵖ,
+      (∀ A : C, ∃ e : Pred A ≃ Set.Icc (0 : (F.obj A).unop.carrier) (ouUnit _),
+        (∀ a b : Pred A, a ≼ b ↔ (e a : (F.obj A).unop.carrier) ≤ e b) ∧
+        (∀ (a b : Pred A) (h : Perp a b),
+          (e (ovee a b h) : (F.obj A).unop.carrier) = e a + e b) ∧
+        (e (truth A) : (F.obj A).unop.carrier) = ouUnit _) ∧
+      (F.Faithful ↔ SeparatingPredicates C) :=
+  rec136 hRC h119 hHOS hSh hAS4 hirr h01
 
 end Rec136
 

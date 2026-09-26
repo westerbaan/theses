@@ -25,7 +25,7 @@ order unit spaces, Euclidean Jordan algebras, von Neumann algebras).
 | `EJA` | 54 / 54 | 9,100 | complete up to one named external input (EJA 54: the Hanche-Olsen–Størmer classification); headline EJA 40 unconditional; the fundamental formula and the Albert algebra proved |
 | `FDS` | 19 / 19 | 4,500 | complete; the predual definition of W*-categories implies the used one under a common-embedding hypothesis |
 | `SIG` | 73 / 73 | 17,700 | complete; SIG 46's B(H) clause uses Kochen–Specker as a named hypothesis |
-| `REC` | 136 / 136 | 15,700 | complete; Theorems 102, 103 and 136 under named hypotheses (Alfsen–Shultz, Hanche-Olsen–Størmer, Shultz; the A–S 9.43 one is REC's own transplant, its 9.48 symmetry step proved in `JordanSymmetry.lean`); REC 104 refuted (sequential effectuses have irreducible scalars) |
+| `REC` | 136 / 136 | 16,700 | complete; REC 121 (V_A is a JB-algebra) proved outright, repairing the print's appeal to A–S 9.48; Theorems 102, 103 and 136 under named hypotheses for A–S (1.82), REC 119 itself, and (136) Hanche-Olsen–Størmer 7.2.7, Shultz 1979, A–S's four-exchangeable lemma; REC 104 refuted (sequential effectuses have irreducible scalars) |
 
 No `sorry` anywhere; every headline theorem checked axiom-clean.  Defects found in
 the papers are in `../papers/ERRATA.md` (false-as-printed statements are refuted

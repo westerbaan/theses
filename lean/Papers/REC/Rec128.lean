@@ -12,7 +12,7 @@ for arbitrary `a ∈ V_A` and `b ∈ V_B`, `Q_{a⊗b} = Q_a ⊗ Q_b`.
 in the same form (on product vectors: `Q_{a⊗b}(c ⊗ d) = Q_a c ⊗ Q_b d`; the operator
 `Q_a ⊗ Q_b` is not defined on `V_{A⊗B}`, which is not an algebraic tensor product), so it
 is a strict generalisation of `rec128` (`rec128_of_general`).  No named hypotheses beyond
-those `rec128` carries (§5's three).
+those `rec128` carries (§5's two, `hRC` and `h119`).
 
 ## Proof
 
@@ -404,7 +404,7 @@ open scoped Papers.SEA
 
 variable {C : Type u} [Category.{v} C] [Limits.HasFiniteCoproducts C]
   [∀ X Y : C, PCM (X ⟶ Y)] [FinPAC C] [EffectusPartialForm C] [SequentialEffectus C]
-  (σs : ScalarSplit C) (hAS : AlfsenShultzJordanFromDerivations.{v})
+  (σs : ScalarSplit C)
   (hRC : AlfsenShultzResolventCriterion.{v}) (h119 : WeteringStateOrderLemma C)
 
 /-- `bil_diag_eq_zero` on `V_X`. -/
@@ -418,18 +418,18 @@ theorem va_diag_eq_zero {X Y : C} (D : VA σs X →ₗ[ℝ] VA σs X →ₗ[ℝ]
 
 /-- `‖Q_{a,a'} w‖ ≤ 3 ‖a‖ ‖a'‖ ‖w‖`. -/
 theorem jQ2L_norm_le (X : C) (w a a' : VA σs X) :
-    ousNorm (VA σs X) (jQ2L σs hAS hRC h119 X w a a') ≤
+    ousNorm (VA σs X) (jQ2L σs hRC h119 X w a a') ≤
       3 * ousNorm (VA σs X) a * ousNorm (VA σs X) a' * ousNorm (VA σs X) w := by
   simp only [jQ2L, LinearMap.mk₂_apply]
   have na := ousNorm_nonneg_rc a
   have na' := ousNorm_nonneg_rc a'
   have nw := ousNorm_nonneg_rc w
-  have t1 := (jm_norm_le σs hAS hRC h119 X a (jm σs hAS hRC h119 X a' w)).trans
-    (mul_le_mul_of_nonneg_left (jm_norm_le σs hAS hRC h119 X a' w) na)
-  have t2 := (jm_norm_le σs hAS hRC h119 X a' (jm σs hAS hRC h119 X a w)).trans
-    (mul_le_mul_of_nonneg_left (jm_norm_le σs hAS hRC h119 X a w) na')
-  have t3 := (jm_norm_le σs hAS hRC h119 X (jm σs hAS hRC h119 X a a') w).trans
-    (mul_le_mul_of_nonneg_right (jm_norm_le σs hAS hRC h119 X a a') nw)
+  have t1 := (jm_norm_le σs hRC h119 X a (jm σs hRC h119 X a' w)).trans
+    (mul_le_mul_of_nonneg_left (jm_norm_le σs hRC h119 X a' w) na)
+  have t2 := (jm_norm_le σs hRC h119 X a' (jm σs hRC h119 X a w)).trans
+    (mul_le_mul_of_nonneg_left (jm_norm_le σs hRC h119 X a w) na')
+  have t3 := (jm_norm_le σs hRC h119 X (jm σs hRC h119 X a a') w).trans
+    (mul_le_mul_of_nonneg_right (jm_norm_le σs hRC h119 X a a') nw)
   rw [sub_eq_add_neg]
   refine (ousNorm_add_le _ _).trans ?_
   rw [ousNorm_neg]
@@ -451,28 +451,28 @@ include h0
 /-- REC 128 for sharp `e`, `f` (REC 123: `Q_{e⊗f} = asrt_{e⊗f} = asrt_e ⊗ asrt_f`). -/
 theorem rec128_sharp {A B : C} {e : CPt σs A} {f : CPt σs B} (he : Papers.SEA.IsIdempotent e)
     (hf : Papers.SEA.IsIdempotent f) (c : VA σs A) (d : VA σs B) :
-    jQA σs hAS hRC h119 (A ⊗ B) (tensV σs (GP.gmap e) (GP.gmap f)) (tensV σs c d) =
-      tensV σs (jQA σs hAS hRC h119 A (GP.gmap e) c) (jQA σs hAS hRC h119 B (GP.gmap f) d) := by
-  rw [tensV_gmap, jQA_idem σs hAS hRC h119 _ (cptTens_idem σs h0 he hf),
-    Uop_cptTens_apply σs h0, jQA_idem σs hAS hRC h119 _ he, jQA_idem σs hAS hRC h119 _ hf]
+    jQA σs hRC h119 (A ⊗ B) (tensV σs (GP.gmap e) (GP.gmap f)) (tensV σs c d) =
+      tensV σs (jQA σs hRC h119 A (GP.gmap e) c) (jQA σs hRC h119 B (GP.gmap f) d) := by
+  rw [tensV_gmap, jQA_idem σs hRC h119 _ (cptTens_idem σs h0 he hf),
+    Uop_cptTens_apply σs h0, jQA_idem σs hRC h119 _ he, jQA_idem σs hRC h119 _ hf]
 
 /-- REC 128 for sharp `e` and arbitrary `b`. -/
 theorem rec128_sharp_left {A B : C} {e : CPt σs A} (he : Papers.SEA.IsIdempotent e)
     (b : VA σs B) (c : VA σs A) (d : VA σs B) :
-    jQA σs hAS hRC h119 (A ⊗ B) (tensV σs (GP.gmap e) b) (tensV σs c d) =
-      tensV σs (jQA σs hAS hRC h119 A (GP.gmap e) c) (jQA σs hAS hRC h119 B b d) := by
+    jQA σs hRC h119 (A ⊗ B) (tensV σs (GP.gmap e) b) (tensV σs c d) =
+      tensV σs (jQA σs hRC h119 A (GP.gmap e) c) (jQA σs hRC h119 B b d) := by
   set v := tensV σs c d with hv
-  set qe := jQA σs hAS hRC h119 A (GP.gmap e) c with hqe
+  set qe := jQA σs hRC h119 A (GP.gmap e) c with hqe
   let L : VA σs B →ₗ[ℝ] VA σs (A ⊗ B) := (vtens σs (A := A) (B := B)).flip (GP.gmap e)
   let M : VA σs B →ₗ[ℝ] VA σs (A ⊗ B) := (vtens σs (A := A) (B := B)).flip qe
   let D : VA σs B →ₗ[ℝ] VA σs B →ₗ[ℝ] VA σs (A ⊗ B) :=
-    (jQ2L σs hAS hRC h119 (A ⊗ B) v).compl₁₂ L L - (jQ2L σs hAS hRC h119 B d).compr₂ M
-  have hD : ∀ x y, D x y = jQ2L σs hAS hRC h119 (A ⊗ B) v (tensV σs (GP.gmap e) x)
-      (tensV σs (GP.gmap e) y) - tensV σs qe (jQ2L σs hAS hRC h119 B d x y) := fun x y => rfl
+    (jQ2L σs hRC h119 (A ⊗ B) v).compl₁₂ L L - (jQ2L σs hRC h119 B d).compr₂ M
+  have hD : ∀ x y, D x y = jQ2L σs hRC h119 (A ⊗ B) v (tensV σs (GP.gmap e) x)
+      (tensV σs (GP.gmap e) y) - tensV σs qe (jQ2L σs hRC h119 B d x y) := fun x y => rfl
   have hsym : ∀ x y, D x y = D y x := by
     intro x y
-    rw [hD, hD, jQ2L_symm σs hAS hRC h119 (A ⊗ B) v (tensV σs (GP.gmap e) x),
-      jQ2L_symm σs hAS hRC h119 B d x]
+    rw [hD, hD, jQ2L_symm σs hRC h119 (A ⊗ B) v (tensV σs (GP.gmap e) x),
+      jQ2L_symm σs hRC h119 B d x]
   have ne := ousNorm_nonneg_rc (GP.gmap e : VA σs A)
   have nv := ousNorm_nonneg_rc v
   have nq := ousNorm_nonneg_rc qe
@@ -483,18 +483,18 @@ theorem rec128_sharp_left {A B : C} {e : CPt σs A} (he : Papers.SEA.IsIdempoten
     intro x y
     have nx := ousNorm_nonneg_rc x
     have ny := ousNorm_nonneg_rc y
-    have t1 := (jQ2L_norm_le σs hAS hRC h119 (A ⊗ B) v (tensV σs (GP.gmap e) x)
+    have t1 := (jQ2L_norm_le σs hRC h119 (A ⊗ B) v (tensV σs (GP.gmap e) x)
       (tensV σs (GP.gmap e) y)).trans (mul3_le (tensV_norm_le σs _ x) (tensV_norm_le σs _ y)
         (ousNorm_nonneg_rc _) (ousNorm_nonneg_rc _) nv)
-    have t2 := (tensV_norm_le σs qe (jQ2L σs hAS hRC h119 B d x y)).trans
-      (mul_le_mul_of_nonneg_left (jQ2L_norm_le σs hAS hRC h119 B d x y) nq)
+    have t2 := (tensV_norm_le σs qe (jQ2L σs hRC h119 B d x y)).trans
+      (mul_le_mul_of_nonneg_left (jQ2L_norm_le σs hRC h119 B d x y) nq)
     rw [hD, sub_eq_add_neg]
     refine (ousNorm_add_le _ _).trans ?_
     rw [ousNorm_neg]
     refine (add_le_add t1 t2).trans (le_of_eq ?_)
     ring
   have := va_diag_eq_zero σs D hsym (fun f hf => by
-    rw [hD, ← jQA_eq_jQ2L, ← jQA_eq_jQ2L, rec128_sharp σs hAS hRC h119 h0 he hf, sub_self]) _ hK b
+    rw [hD, ← jQA_eq_jQ2L, ← jQA_eq_jQ2L, rec128_sharp σs hRC h119 h0 he hf, sub_self]) _ hK b
   rw [hD, ← jQA_eq_jQ2L, ← jQA_eq_jQ2L] at this
   exact sub_eq_zero.1 this
 
@@ -506,20 +506,20 @@ generalisation: `rec128_of_general`.)  Proof: the sharp case (REC 123), then pol
 density in `b` and in `a` (`bil_diag_eq_zero`); the print's route via `a = a⁺ − a⁻` and
 `Q_a = asrt_{a²}` (van de Wetering's thesis 4.6.17) is not needed. -/
 theorem rec128_general {A B : C} (a c : VA σs A) (b d : VA σs B) :
-    jQA σs hAS hRC h119 (A ⊗ B) (tensV σs a b) (tensV σs c d) =
-      tensV σs (jQA σs hAS hRC h119 A a c) (jQA σs hAS hRC h119 B b d) := by
+    jQA σs hRC h119 (A ⊗ B) (tensV σs a b) (tensV σs c d) =
+      tensV σs (jQA σs hRC h119 A a c) (jQA σs hRC h119 B b d) := by
   set v := tensV σs c d with hv
-  set qb := jQA σs hAS hRC h119 B b d with hqb
+  set qb := jQA σs hRC h119 B b d with hqb
   let L : VA σs A →ₗ[ℝ] VA σs (A ⊗ B) := vtens σs (A := A) (B := B) b
   let M : VA σs A →ₗ[ℝ] VA σs (A ⊗ B) := vtens σs (A := A) (B := B) qb
   let D : VA σs A →ₗ[ℝ] VA σs A →ₗ[ℝ] VA σs (A ⊗ B) :=
-    (jQ2L σs hAS hRC h119 (A ⊗ B) v).compl₁₂ L L - (jQ2L σs hAS hRC h119 A c).compr₂ M
-  have hD : ∀ x y, D x y = jQ2L σs hAS hRC h119 (A ⊗ B) v (tensV σs x b)
-      (tensV σs y b) - tensV σs (jQ2L σs hAS hRC h119 A c x y) qb := fun x y => rfl
+    (jQ2L σs hRC h119 (A ⊗ B) v).compl₁₂ L L - (jQ2L σs hRC h119 A c).compr₂ M
+  have hD : ∀ x y, D x y = jQ2L σs hRC h119 (A ⊗ B) v (tensV σs x b)
+      (tensV σs y b) - tensV σs (jQ2L σs hRC h119 A c x y) qb := fun x y => rfl
   have hsym : ∀ x y, D x y = D y x := by
     intro x y
-    rw [hD, hD, jQ2L_symm σs hAS hRC h119 (A ⊗ B) v (tensV σs x b),
-      jQ2L_symm σs hAS hRC h119 A c x]
+    rw [hD, hD, jQ2L_symm σs hRC h119 (A ⊗ B) v (tensV σs x b),
+      jQ2L_symm σs hRC h119 A c x]
   have nb := ousNorm_nonneg_rc b
   have nv := ousNorm_nonneg_rc v
   have nq := ousNorm_nonneg_rc qb
@@ -530,18 +530,18 @@ theorem rec128_general {A B : C} (a c : VA σs A) (b d : VA σs B) :
     intro x y
     have nx := ousNorm_nonneg_rc x
     have ny := ousNorm_nonneg_rc y
-    have t1 := (jQ2L_norm_le σs hAS hRC h119 (A ⊗ B) v (tensV σs x b)
+    have t1 := (jQ2L_norm_le σs hRC h119 (A ⊗ B) v (tensV σs x b)
       (tensV σs y b)).trans (mul3_le (tensV_norm_le σs x b) (tensV_norm_le σs y b)
         (ousNorm_nonneg_rc _) (ousNorm_nonneg_rc _) nv)
-    have t2 := (tensV_norm_le σs (jQ2L σs hAS hRC h119 A c x y) qb).trans
-      (mul_le_mul_of_nonneg_right (jQ2L_norm_le σs hAS hRC h119 A c x y) nq)
+    have t2 := (tensV_norm_le σs (jQ2L σs hRC h119 A c x y) qb).trans
+      (mul_le_mul_of_nonneg_right (jQ2L_norm_le σs hRC h119 A c x y) nq)
     rw [hD, sub_eq_add_neg]
     refine (ousNorm_add_le _ _).trans ?_
     rw [ousNorm_neg]
     refine (add_le_add t1 t2).trans (le_of_eq ?_)
     ring
   have := va_diag_eq_zero σs D hsym (fun e he => by
-    rw [hD, ← jQA_eq_jQ2L, ← jQA_eq_jQ2L, rec128_sharp_left σs hAS hRC h119 h0 he, sub_self])
+    rw [hD, ← jQA_eq_jQ2L, ← jQA_eq_jQ2L, rec128_sharp_left σs hRC h119 h0 he, sub_self])
     _ hK a
   rw [hD, ← jQA_eq_jQ2L, ← jQA_eq_jQ2L] at this
   exact sub_eq_zero.1 this
@@ -550,12 +550,12 @@ theorem rec128_general {A B : C} (a c : VA σs A) (b d : VA σs B) :
 theorem rec128_of_general {A B : C} {e : CPt σs A} {f : CPt σs B}
     (_he : Papers.SEA.IsIdempotent e) (_hf : Papers.SEA.IsIdempotent f) (α β γ δ : ℝ)
     (c : VA σs A) (d : VA σs B) :
-    jQA σs hAS hRC h119 (A ⊗ B)
+    jQA σs hRC h119 (A ⊗ B)
         (tensV σs (α • GP.gmap e + β • GP.gmap (orth e)) (γ • GP.gmap f + δ • GP.gmap (orth f)))
         (tensV σs c d) =
-      tensV σs (jQA σs hAS hRC h119 A (α • GP.gmap e + β • GP.gmap (orth e)) c)
-        (jQA σs hAS hRC h119 B (γ • GP.gmap f + δ • GP.gmap (orth f)) d) :=
-  rec128_general σs hAS hRC h119 h0 _ _ _ _
+      tensV σs (jQA σs hRC h119 A (α • GP.gmap e + β • GP.gmap (orth e)) c)
+        (jQA σs hRC h119 B (γ • GP.gmap f + δ • GP.gmap (orth f)) d) :=
+  rec128_general σs hRC h119 h0 _ _ _ _
 
 end Rec128General
 

@@ -1,5 +1,4 @@
-import Papers.REC.Rec128
-import Papers.REC.Tidy
+import Papers.REC.Reconstruction
 
 /-!
 # REC 121: the Jordan symmetry `[D_p, D_q] 1 = 0`, proved
@@ -14,7 +13,9 @@ obtains it by citing 9.48 outside its hypotheses.  Here it is *proved* from the
 Prop's own hypotheses (research note `docs/research/as948-lemmaM.md`, with its
 Review), and the named hypothesis shrinks to `AlfsenShultzJordanTransplant`: the same
 statement with the symmetry as an extra hypothesis on the family (what remains of 9.43:
-the product on the span, continuity, the Jordan identity, `0 ≤ a² ≤ 1`).
+the product on the span, continuity, the Jordan identity, `0 ≤ a² ≤ 1`).  That
+remainder is now proved too (`jb_of_chainDense`, `JordanFromChains.lean`, from the
+chain density of `V_A`), so REC 121 (`Reconstruction2.lean`) takes neither Prop.
 
 ## Contents
 
@@ -32,8 +33,10 @@ the product on the span, continuity, the Jordan identity, `0 ≤ a² ≤ 1`).
    `y := (e_j + D_i e_j) − (e_i + D_j e_i)`, the corner lemmas give `D_i y = D_j y = 0`;
    so `δ := [D_i, D_j]` has `δ 1 = 2y`, `δ y = 0`, `e^{tδ} 1 = 1 + 2t y ≥ 0` for all
    `t`, and `y = 0` (Archimedean).
-4. `AlfsenShultzJordanTransplant`, `alfsenShultzJordanFromDerivations_of_transplant`,
-   and `rec102'`, `rec103'`, `rec136'`: REC 102/103/136 under the smaller hypothesis.
+4. `AlfsenShultzJordanTransplant`, `alfsenShultzJordanFromDerivations_of_transplant`:
+   the smaller named hypothesis, now unused (kept as a documented open `Prop`).
+   `rec102'`, `rec103'`, `rec136'` moved to `Monoidal.lean`; they are now REC 102/103/136
+   themselves, with no A–S 9.4x hypothesis.
 -/
 
 set_option linter.unusedSectionVars false
@@ -535,7 +538,7 @@ theorem jordan_symmetry (hB : IsBanachOUS W) {ι : Type*} (e : ι → W)
   have key : ∀ s : ℝ, 0 ≤ one + s • y i j := fun s => by
     have := hnonneg (s / 2)
     rwa [hδ1, ← two_smul ℝ (y i j), _root_.smul_smul, div_mul_cancel₀ s two_ne_zero] at this
-  have harch := archimedean_of_isOUS (V := W)
+  have harch := archimedean_of_isOUS_rc (V := W)
   have hle : y i j ≤ 0 := harch _ fun ε hε => by
     have := ou_smul_nonneg hε.le (key (-ε⁻¹))
     rw [smul_add, _root_.smul_smul, mul_neg, mul_inv_cancel₀ hε.ne', neg_one_smul,
@@ -559,7 +562,11 @@ proved in `jordan_symmetry`, so this Prop implies the old one
 (`alfsenShultzJordanFromDerivations_of_transplant`).  What it still asks is the rest of
 9.43: that `e_i * w := ½(w + D_i w)` extends to a Jordan product making `W` a
 JB-algebra (well-definedness on the span, continuity, the Jordan identity,
-`0 ≤ a² ≤ 1`).  Its truth in this generality is open. -/
+`0 ≤ a² ≤ 1`).  Its truth in this generality is open.
+
+**No longer needed**: REC 121 is proved from `jb_of_chainDense` (`JordanFromChains.lean`)
+and `va_chainDense` (`SpectralChains.lean`), with chain density in place of density of
+the span.  Kept as a documented open `Prop`; nothing uses it. -/
 def AlfsenShultzJordanTransplant : Prop :=
   ∀ (W : Type u) [AddCommGroup W] [Module ℝ W] [PartialOrder W] [OrderUnitSpace W],
     IsOUS W → IsBanachOUS W → IsDirectedCompleteOUS W →
@@ -584,73 +591,5 @@ theorem alfsenShultzJordanFromDerivations_of_transplant
   have := hOUS
   exact hT W hOUS hB hdc ι e U c hinj h01 hc hU hker hD
     (jordan_symmetry hB e U c hinj hc hU hD) hdense
-
-/-! ## REC 102, 103, 136 under the smaller hypothesis -/
-
-section Primed
-
-open CategoryTheory.Limits hiding HasImages
-open SequentialEffectus
-
-variable {C : Type u} [Category.{v} C] [HasFiniteCoproducts C]
-  [∀ X Y : C, PCM (X ⟶ Y)] [FinPAC C] [EffectusPartialForm C] [SequentialEffectus C]
-
-/-- **REC 102** (`thm:JB-embedding`, short.tex:1869, Theorem) as `rec102`, with the named
-hypothesis `AlfsenShultzJordanTransplant` (the symmetry now proved) in place of
-`AlfsenShultzJordanFromDerivations`. -/
-theorem rec102' (hT : AlfsenShultzJordanTransplant.{v})
-    (hRC : AlfsenShultzResolventCriterion.{v}) (h119 : WeteringStateOrderLemma C) :
-    ∃ σs : ScalarSplit C,
-      Nonempty (C ≌ (dcSplitting σs separatedByStates).ε.Part ×
-        (dcSplitting σs separatedByStates).ε'.Part) ∧
-      (∀ P : (dcSplitting σs separatedByStates).ε.Part, Nonempty (CBAOn (Pred P))) ∧
-      (∀ P : (dcSplitting σs separatedByStates).ε'.Part,
-        ∃ _ : Mul (VA σs P.obj.X), JBAlgebra (VA σs P.obj.X) ∧
-          IsDirectedCompleteOUS (VA σs P.obj.X) ∧
-          ∃ e : Pred P ≃ Set.Icc (0 : VA σs P.obj.X) (ouUnit (VA σs P.obj.X)),
-            (∀ a b : Pred P, a ≼ b ↔ (e a : VA σs P.obj.X) ≤ e b) ∧
-            (∀ (a b : Pred P) (h : Perp a b), (e (ovee a b h) : VA σs P.obj.X) = e a + e b) ∧
-            (e (truth P) : VA σs P.obj.X) = ouUnit (VA σs P.obj.X)) ∧
-      ((rec102_cbaFunctor σs).Faithful ∧
-          (rec102_jbFunctor σs (alfsenShultzJordanFromDerivations_of_transplant hT) hRC
-            h119).Faithful ↔
-        SeparatingPredicates C) :=
-  rec102 (alfsenShultzJordanFromDerivations_of_transplant hT) hRC h119
-
-/-- **REC 103** (`thm:JBW-CBA`, short.tex:1874, Theorem) as `rec103`, with
-`AlfsenShultzJordanTransplant` in place of `AlfsenShultzJordanFromDerivations`. -/
-theorem rec103' (hT : AlfsenShultzJordanTransplant.{v})
-    (hRC : AlfsenShultzResolventCriterion.{v}) (h119 : WeteringStateOrderLemma C)
-    (hirr : IsIrreducible (Scal C)) :
-    (∃ hB : ∀ A : C, CBAOn (Pred A), (cbaPredFunctor hB).Faithful ↔ SeparatingPredicates C) ∨
-    (∃ (σs : ScalarSplit C) (hJBW : ∀ A : C, @JBWAlgebra (VA σs A) _ _ _ _
-        (jbMul σs (alfsenShultzJordanFromDerivations_of_transplant hT) hRC h119 A)),
-      (∀ A : C, ∃ e : Pred A ≃ Set.Icc (0 : VA σs A) (ouUnit (VA σs A)),
-        (∀ a b : Pred A, a ≼ b ↔ (e a : VA σs A) ≤ e b) ∧
-        (∀ (a b : Pred A) (h : Perp a b), (e (ovee a b h) : VA σs A) = e a + e b) ∧
-        (e (truth A) : VA σs A) = ouUnit (VA σs A)) ∧
-      ((rec103_jbwFunctor (alfsenShultzJordanFromDerivations_of_transplant hT) hRC h119 σs
-          hJBW).Faithful ↔ SeparatingPredicates C)) :=
-  rec103 (alfsenShultzJordanFromDerivations_of_transplant hT) hRC h119 hirr
-
-open MonoidalCategory in
-/-- **REC 136** (`thm:JW-algebra`, short.tex:2409, Theorem) as `rec136`, with
-`AlfsenShultzJordanTransplant` in place of `AlfsenShultzJordanFromDerivations`. -/
-theorem rec136' [MonoidalCategory C] [SymmetricCategory C] [MonoidalEffectus C]
-    [MonoidalSequentialEffectus C] (hT : AlfsenShultzJordanTransplant.{v})
-    (hRC : AlfsenShultzResolventCriterion.{v}) (h119 : WeteringStateOrderLemma C)
-    (hHOS : HancheOlsenStormerDecomposition.{v}) (hSh : ShultzExceptionalStructure.{v})
-    (hAS4 : AlfsenShultzFourExchangeable.{v}) (hirr : IsIrreducible (Scal C))
-    (h01 : ¬ ScalarsAreTwo C) :
-    ∃ F : C ⥤ JWnpcCat.{v}ᵒᵖ,
-      (∀ A : C, ∃ e : Pred A ≃ Set.Icc (0 : (F.obj A).unop.carrier) (ouUnit _),
-        (∀ a b : Pred A, a ≼ b ↔ (e a : (F.obj A).unop.carrier) ≤ e b) ∧
-        (∀ (a b : Pred A) (h : Perp a b),
-          (e (ovee a b h) : (F.obj A).unop.carrier) = e a + e b) ∧
-        (e (truth A) : (F.obj A).unop.carrier) = ouUnit _) ∧
-      (F.Faithful ↔ SeparatingPredicates C) :=
-  rec136 (alfsenShultzJordanFromDerivations_of_transplant hT) hRC h119 hHOS hSh hAS4 hirr h01
-
-end Primed
 
 end Papers.REC

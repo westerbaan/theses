@@ -31536,3 +31536,12 @@ order derivations (Trotter + group commutator in the Banach algebra of bounded
 operators, proved), the symmetry, and `rec102'`/`rec103'`/`rec136'` under the
 smaller `AlfsenShultzJordanTransplant` (only the 9.43 part).  ERRATA REC 121:
 9.48 cited outside its hypotheses, repairable as above.
+
+Then REC 121 in full: the 9.43 part holds abstractly for a Banach OUS whose
+elements are limits of commuting nested chains of the family
+(`JordanFromChains.lean`, 907 lines; no directed completeness needed), and V_A
+has such chains (`SpectralChains.lean`, from a rewritten spectral list).
+Reconstruction.lean was split at REC 121 (`Reconstruction2.lean`), and the
+A–S 9.43/9.48 hypothesis dropped from rec121, jbMul, rec102/103/136 and
+everything downstream.  Remaining hypotheses: A–S (1.82), REC 119, and for 136
+H-O–S 7.2.7, Shultz, A–S four-exchangeable.

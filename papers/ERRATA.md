@@ -264,11 +264,13 @@ fixes listed for 102/103).  Review: `lean/docs/research/review-rec120.md`.
   derivations is an order derivation) give `[D_p, D_q]1 = 0` by a short argument.
   `x := T_p q − T_q p` is killed by `D_p` and `D_q`, so
   `e^{t[D_p,D_q]}1 = 1 + 4tx` for all `t`, and positivity forces `x = 0`.  The
-  remaining parts of the proof, transplanted from 9.43 (continuity, the Jordan
-  identity, `0 ≤ a² ≤ 1`), are sketched only.  The statement is not refuted.  In
-  Lean the symmetry is proved (`Papers.REC.jordan_symmetry`, with
-  `IsOrderDerivation.lie` for the commutator fact), and `rec102'`, `rec103'`,
-  `rec136'` need only the 9.43 part (`AlfsenShultzJordanTransplant`).  Notes (each with a review):
+  remaining parts, transplanted from 9.43 (continuity, the Jordan identity,
+  `0 ≤ a² ≤ 1`), go through once every element is a limit of commuting nested
+  chains, which the spectral theorem for `V_A` provides.  The statement is not refuted.  In
+  Lean the whole of REC 121 is proved: the symmetry (`Papers.REC.jordan_symmetry`,
+  with `IsOrderDerivation.lie` for the commutator fact) and the 9.43 part from
+  chain density (`Papers.REC.jb_of_chainDense`, `Papers.REC.va_chainDense`), so
+  Theorems 102, 103 and 136 carry no Alfsen–Shultz 9.43/9.48 hypothesis.  Notes (each with a review):
   `lean/docs/research/as948-reformulation.md`, `as948-discharge.md`,
   `as948-lemmaM.md`.
 

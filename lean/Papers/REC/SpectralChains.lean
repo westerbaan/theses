@@ -1,4 +1,4 @@
-import Papers.REC.Rec128
+import Papers.REC.Reconstruction
 
 /-!
 # REC 121: chain density of `V_A` with commuting chain members
@@ -18,8 +18,8 @@ complements (`Commutes.orth_r`, `Commutes.assoc`, `gp_linearMap_ext`).
 * `spectral_chain_core` — the chain form of `spectral_dense_core`.
 * `spectral_chain` — every `w ∈ GP.Vec E` is a norm limit of chains of pairwise
   commuting idempotents.
-* `va_chainDense` — `ChainDense` for exactly the family `(ι, e, U, c)` that `rec121`
-  feeds to `AlfsenShultzJordanFromDerivations`.
+* `va_chainDense` — `ChainDense` (defined in `Reconstruction.lean`) for exactly the
+  family `(ι, e, U, c)` that `rec121` feeds to `jb_of_chainDense`.
 -/
 
 set_option linter.unusedSectionVars false
@@ -28,27 +28,9 @@ open CategoryTheory
 open Theses.B.Eff
 open scoped unitInterval
 
-namespace Papers.REC.SpectralChainsDef
-
-universe u
-
-/-- Chain density with commuting chain members (G1 + G2 of the 9.43 transplant): every
-`w` is a norm limit of `l0·1 + Σ_k α_k e_{j_k}` with `α_k ≥ 0`, `e_{j_k}` decreasing in
-`k`, and `U_{j_k} U_{c j_{k'}} = U_{c j_{k'}} U_{j_k}` for all `k, k'`. -/
-def ChainDense (W : Type u) [AddCommGroup W] [Module ℝ W] [PartialOrder W]
-    [OrderUnitSpace W] (ι : Type u) (e : ι → W) (U : ι → W →ₗ[ℝ] W) (c : ι → ι) : Prop :=
-  ∀ w : W, ∀ ε : ℝ, 0 < ε → ∃ (n : ℕ) (l0 : ℝ) (α : Fin n → ℝ) (j : Fin n → ι),
-    (∀ k, 0 ≤ α k) ∧ (∀ k k' : Fin n, k ≤ k' → e (j k') ≤ e (j k)) ∧
-    (∀ k k' : Fin n, U (j k) ∘ₗ U (c (j k')) = U (c (j k')) ∘ₗ U (j k)) ∧
-    ousNorm W (w - (l0 • ouUnit W + ∑ k, α k • e (j k))) < ε
-
-end Papers.REC.SpectralChainsDef
-
 namespace Papers.REC
 
 universe u v
-
-open Papers.REC.SpectralChainsDef
 
 section SpecChain
 
@@ -283,7 +265,7 @@ open scoped Papers.SEA
 variable (σs : ScalarSplit C)
 
 /-- **G1 + G2 for REC's `V_A`**: chain density with commuting chain members, for exactly
-the family `rec121` feeds to `AlfsenShultzJordanFromDerivations` — `ι` the idempotents
+the family `rec121` feeds to `jb_of_chainDense` — `ι` the idempotents
 of the convex part, `e i = gmap i`, `U i = Uop i`, `c i = orth i`.  No hypotheses. -/
 theorem va_chainDense (A : C) :
     ChainDense (VA σs A) {q : CPt σs A // Papers.SEA.IsIdempotent q}

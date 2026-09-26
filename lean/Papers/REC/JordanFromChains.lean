@@ -44,15 +44,7 @@ namespace Papers.REC
 
 universe u
 
-/-- **Chain density** of a family `(e_i, U_i, c)` in an order unit space: every `w` is a
-norm limit of chain combinations `λ₀ 1 + Σ_k α_k e_{j_k}` with `α_k ≥ 0`, the `e_{j_k}`
-decreasing, and `U_{j_k}` commuting with `U_{c j_{k'}}` for all members of the chain. -/
-def ChainDense (W : Type u) [AddCommGroup W] [Module ℝ W] [PartialOrder W] [OrderUnitSpace W]
-    (ι : Type u) (e : ι → W) (U : ι → W →ₗ[ℝ] W) (c : ι → ι) : Prop :=
-  ∀ w : W, ∀ ε : ℝ, 0 < ε → ∃ (n : ℕ) (l0 : ℝ) (α : Fin n → ℝ) (j : Fin n → ι),
-    (∀ k, 0 ≤ α k) ∧ (∀ k k' : Fin n, k ≤ k' → e (j k') ≤ e (j k)) ∧
-    (∀ k k' : Fin n, U (j k) ∘ₗ U (c (j k')) = U (c (j k')) ∘ₗ U (j k)) ∧
-    ousNorm W (w - (l0 • ouUnit W + ∑ k, α k • e (j k))) < ε
+-- `ChainDense` is defined in `Papers/REC/Reconstruction.lean`.
 
 namespace JFC
 
