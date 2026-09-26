@@ -99,6 +99,26 @@ the statement `g = Q_{√g(1)}` stands.  (39's proof also uses that the
 `Papers.EJA.eja38_false_as_printed` (refutation), `Papers.EJA.eja38'`
 (repaired claim), `Papers.EJA.eja39` (39, root assumed pure).
 
+### EJA 27 (`theor:polardecomp`, main.tex:647, Theorem) — gap in the proof (2026-09-26)
+
+The last step claims that `ΦΦ*` being a projection with `(ΦΦ*)(1) = ⌈Q_q p⌉`
+"is sufficient to conclude that `ΦΦ* = Q_{⌈Q_q p⌉}`".  That inference is not
+valid in general: in `M₂(ℝ)^sa` the trace-orthogonal projection onto `ℝ·1`,
+`x ↦ ½ tr(x)·1`, is a positive projection fixing `1` but is not `Q_1 = id`.
+Repair (statement unaffected): by the fundamental formula
+`ΦΦ* = Q_q Q_p Q_{c²} Q_p Q_q = Q_{Φ(1)}` (`c = (Q_p q²)^{-1/2}`); `ΦΦ*` is
+idempotent because `Φ*Φ = Q_e` and `Φ Q_e = Φ`, so `Q_{Φ(1)²} = Q_{Φ(1)}`,
+whence `Φ(1)` is an idempotent, and `⌈Φ(1)⌉ = ⌈Q_q p⌉` by comparing zero
+patterns.  Lean: `Papers.EJA.polardecomp`.
+
+### EJA 34 (`super-duper-theorem`, main.tex:775, Theorem) — hidden hypothesis
+
+Def 32 calls `g` ⋄-positive when `g = f ∘ f` for some ⋄-self-adjoint `f`,
+without asking `f` to be pure; the proofs of 34 and 39 use that `f` is pure
+(to decompose it as filter ∘ corner).  With that hypothesis both hold (39's
+printed proof also needs the repair of EJA 38 above).  Lean:
+`Papers.EJA.super_duper_theorem`, `Papers.EJA.eja39` (root assumed pure).
+
 ## REC — *A computer scientist's reconstruction of quantum theory* (arXiv:2109.10707, `2109.10707/short.tex`)
 
 * **REC 7** (`ex:orthomodularlattice`, short.tex:374, Example) — **false as

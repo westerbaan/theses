@@ -111,8 +111,9 @@ restatement.  Cost = new Lean lines, rough.
   positive elements (Prop 11's proof), so the fix is "for positive `a,b`".
   Formalised both ways in `Prelim.lean` (`spin_Q_ne_mul_counterexample`,
   `eja_Q_eq_zero_iff_mul_eq_zero`).
-* **EJA 38 is false as printed** (not yet in Lean; needs a break-it review
-  before it is filed).  `E = ℝ ⊕ ℝ`, `q = (a,b)` with `0 < a ≠ b ≤ 1`,
+* **EJA 38 is false as printed** (confirmed by independent review,
+  `docs/research/review-eja38.md`; now in Lean: `eja38_false_as_printed`).
+  `E = ℝ ⊕ ℝ`, `q = (a,b)` with `0 < a ≠ b ≤ 1`,
   `Θ` = the swap, `f = Q_q ∘ Θ`, `f(x,y) = (a²y, b²x)`.  `f` is pure
   (`Θ` is a corner for `1`, `Q_q` the standard filter of `q²`, `⌈q²⌉ = 1`),
   faithful, and ⋄-self-adjoint: `f^⋄ = f_⋄ = swap` on `Idem(ℝ²) = {0,1}²`
@@ -121,13 +122,46 @@ restatement.  Cost = new Lean lines, rough.
   so the `Θ` of the conclusion is forced to be the swap, and
   `Θ(√f(1)) = (b,a) ≠ q`.  The broken step is "by uniqueness of such
   decompositions … the `p_j` and `r_j` agree" (main.tex ~line 865): equal
-  *sets* of eigenvalues do not give `μ_i = λ_i²` index-wise.  Prop 39 is not
-  refuted by this example (`g = f∘f = a²b²·id = Q_{√g(1)}`), and it holds in
-  `M_n(ℂ)^sa` by a direct argument (a ⋄-s.a. `f = Q_q∘Ad_u` forces
-  `(qu)* = λ qu`), but its printed proof goes through Lemma 38's false
-  conclusions `Θ(q) = q` and (via `Θ Q_q = Q_q Θ`) `Θ = Θ⁻¹`.  So 39, 34 and
-  40 are **unproven as printed**, not known false.  **R §1 repeats the
-  broken step** ("`Θ(q) = q` (an eigen-decomposition matching argument)").
+  *sets* of eigenvalues do not give `μ_i = λ_i²` index-wise.  **R §1 repeats
+  the broken step** ("`Θ(q) = q` (an eigen-decomposition matching argument)").
+
+  **Verdict on the repair 38′ (2026-09-26, this session): TRUE, proved in
+  Lean** (`Pure.lean`: `eja38'_core`, `eja38'`).  38′: under the hypotheses
+  of 38, `f = Q_q ∘ Θ` with `q = √f(1)`, `Θ` a unital Jordan isomorphism,
+  `Θ ∘ Θ = id`, and `Θ(q)` operator-commutes with `q` — indeed `q` and `Θ(q)`
+  are diagonal in one Jordan frame of primitive idempotents.  Adversarial
+  pass: tried `ℝ⊕ℝ⊕ℝ` (permutations: (Z) forces an involution), `M₂(ℝ)_sa`
+  (Ad_u: (Z) forces `qu` to be symmetric or antisymmetric), `M₃(ℝ)_sa`
+  (no invertible antisymmetric `qu`), and an
+  independent break-it reviewer (numeric random search on `M₂(ℝ)`, `M₃(ℝ)`,
+  `ℍ₂(ℂ)` with transpose-type automorphisms): no counterexample; every
+  numeric case with `Θ² ≠ id` or non-commuting `q, Θ(q)` violates the
+  ⋄-zero-pattern.  **The review's unreviewed step (H)** ("a positive `h` with
+  `⌈h(p)⌉ = p` for all idempotents `p` is multiplication by a positive central
+  element") is **true** in finite dimension (atoms are eigenvectors; on the
+  rank-2 corner `Q_{p∨p'}E` of two non-orthogonal atoms, a spin factor, the
+  eigenvalue is constant because `e, x, y` are linearly independent for atoms
+  `y ∉ {x, e−x}`; orthogonal atoms of one simple factor are linked by a third
+  atom — covering law), **but the Lean proof avoids it**: it only needs the
+  special case `h = Q_c` for a positive invertible `c` on the frame, where
+  "`Q_c² u ∈ ℝu` ⟹ `Q_c u ∈ ℝu`" follows from `Q_c` being a positive
+  semidefinite operator.  Proof, steps A–D:
+  A. On a primitive frame `q = Σ λᵢ qᵢ` (`λᵢ > 0`), with `rᵢ = Θ⁻¹(qᵢ)`:
+     `qᵢ * f(1 − rᵢ) = 0`, so by (Z) `(1 − rᵢ) * f(qᵢ) = 0`, `f(qᵢ) = μᵢ rᵢ`.
+  B. `q² = f(1) = Σ μᵢ rᵢ`, so `q = Σ √μᵢ rᵢ` (uniqueness of square roots),
+     `Q_q rᵢ = μᵢ rᵢ = Q_q Θ(qᵢ)`, `Q_q` injective ⟹ `Θ(qᵢ) = rᵢ`: `q`,
+     `Θ(q) = Σ λᵢ rᵢ` on one frame, hence operator-commuting.
+  C. `Q_{Θq} = Q_q Q_c` with `c = Σ (λᵢ/√μᵢ) rᵢ > 0`; (Z) with `t = Θ⁻¹ w`
+     and `Θ Q_q Θ = Q_{Θq} Θ²` gives `⟨Q_c Θ²(s), w⟩ = 0 ⟺ ⟨s, w⟩ = 0` for
+     idempotents `s, w` (cancelling `Q_q` via `Q_{q⁻¹}` and extending zero
+     patterns from idempotents to positive elements spectrally).
+  D. For primitive `u`, `v = Θ⁻²(u)`: `Q_c u = ν v`; orthogonal primitives go
+     to orthogonal ones, so `Q_c² u ∈ ℝu`, so `Q_c u ∈ ℝu`, so `u = v`.
+     Primitives span, so `Θ² = id`.
+  Consequences: **EJA 39 is true** (with the root pure, below):
+  `g = Q_q Θ Q_q Θ = Q_q Q_{Θq} Θ² = Q_{q·Θq}`, `√g(1) = q·Θq` (`eja39`); the
+  printed proof's `g = Q_{q²}` is wrong (in the example `g = Q_{(ab,ab)}`,
+  not `Q_{(a²,b²)}`).  34 and 40 are no longer blocked by 38.
 * **B15 recurs** (R §1): Def 32 does not require the ⋄-self-adjoint root of a
   ⋄-positive map to be pure; Prop 39's proof assumes it.
 * Def 14/16 name the codomain `{E|q}` / domain `E_q` before Def 20 defines
@@ -190,3 +224,35 @@ proper compile of each needs `Prelim`'s olean first.
 Open from §1: 3 (examples), 7.3/7.5, 9.5 (FF), 9.6, 9.7b, the text after 25
 (`ξ_q ∘ π_{⌈q⌉} = Q_{√q}`, needs `U_b V ⊆ V₁(⌈b⌉)`), 26–40, 42–54.
 Notes 15, 17 carry no formal content.
+
+## 6. Status after phase 2 (2026-09-26, `Pure.lean`)
+
+`Pure.lean` (2,345 lines, imports `FilterCorner` and `Fundamental`;
+`scripts/lean1.sh` exit 0; no `sorry`; axioms `propext, Classical.choice,
+Quot.sound`):
+
+* **§3.1:** EJA 26 (`IsFAdjoint`, `EJAForm.exists_adjoint`,
+  `IsPartialIsometry`), **27** (`polardecomp`, any associative inner product;
+  the print's last step is a gap, repaired by FF — ERRATA), 28, 29 (`eja_im`),
+  **30** (`eja30`, `eja30_isPure`; for any effect `b`, not only an idempotent),
+  **31** (`purepure`; corners and filters compose: `IsCorner.comp`,
+  `IsFilter.comp`, the thesis B 197IX facts, proved from the universal
+  properties).
+* **§4:** EJA 32 (`diaUp`, `diaDown`, `IsDiaAdjoint`, `IsDiaSA`, `IsDiaPos`;
+  `diaAdjoint_iff`, `diaAdjoint_symm`), 33 (three claims), 35, 36, 37,
+  **38 refuted** (`eja38_false_as_printed`) and **38′ proved** (`eja38'`,
+  `eja38'_frame`, core `eja38'_core`), **39** (`eja39`) and **34**
+  (`super_duper_theorem`), both with the ⋄-self-adjoint root assumed pure (the
+  printed proofs' hidden hypothesis; ERRATA).  Supports of positive elements
+  (`ejaSupp`) and zero-pattern calculus (`SameZP`) for Thm 27.
+* The fundamental formula is used from `Papers.EJA.Fundamental` (`ejaU_ejaU`)
+  in 27 and 34 (and hence 30, 31); no `hFF` hypotheses remain.
+
+Open in §2–§4: EJA 3 (examples), 7.3/7.5, 9.7b, the text after 25, and **40**
+(†-effectus): needs an `AndThenEffectus` instance for `EJAPsuᵒᵖ` in the tree's
+abstract effectus language (existence/uniqueness of `asrt` from 33 + 34, and
+`quot_after_compr_pure` from 30, translated through `ejapsuVal`), then the three
+axioms of 215III (`DaggerPrimeEffectus`: unique square roots of predicates, FF,
+quotients of sharp predicates sharp) and the tree's `dagger_theorem`; est.
+800–1,200 lines, a separate file importing `Pure`.  Whether EJA 34/39 hold
+without the root being pure (Def 32 literally) is not settled.
