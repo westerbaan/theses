@@ -405,3 +405,7 @@ What §5 (`Reconstruction.lean`, REC 100–121) can use from §4 — import
 ## Status update 2026-09-26 (Tidy.lean)
 
 Done in `Tidy.lean`: REC 36 discharged (`rec36_holds`, via OAP 71 and `noZeroDivisors_iff_irreducible`); REC 42 as a full equivalence of categories `DCOUSCat ≌ DCEACCat`; REC 41 Wright's lemma (`rec41_banach`); the DCOUS halves of REC 94, 95, 97; REC 89's monoidal bullet (`rec89_monoidal`).  Of the §2–§4 open list only REC 92's predicate-separated case remains, which a review finds false as printed (`docs/research/review-rec92.md`, under independent check).
+
+## REC 92 (2026-09-26)
+
+False as printed under separation by predicates, true under separation by states: refuted in `Rec92Counter.lean` (`rec92_false_as_printed`, the linked-points effectus `LinkedPts`; two independent reviews in `docs/research/review-rec92.md`).  The sharpness hypothesis of `rec92_predicates` is therefore necessary.  TODO after the §5 job: the `rec92_predicates` docstring in `Decompose.lean` still calls this a gap.

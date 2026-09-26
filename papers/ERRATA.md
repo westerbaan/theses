@@ -184,13 +184,26 @@ formula).  Lean: `Papers.EJA.eja40` (with the hypothesis
   analogously" fails because the analogue of `p ∘ s` is `t ∘ ω`, a substate.
   Nothing later uses this bullet (REC 90 needs no separation).  Lean:
   `Papers.REC.rec89_states_not_preserved`, `Papers.REC.rec89_states_false_as_printed`.
-* **REC 92** (`prop:predsep-splits`, short.tex:1643, Proposition) — gap in the
-  proof: it takes `asrt_{s∘1}`, which needs `s ∘ 1` sharp, without saying why.
-  Under state separation it is: `⌊s∘1⌋` agrees with `s ∘ 1` on every state,
-  because `ω ∘ s` factors through the comprehension of `s ∘ 1`.  From predicate
-  separation alone we have no argument (not refuted).  Lean:
-  `Papers.REC.rec92_states` (as printed), `Papers.REC.rec92_predicates` (with
-  sharpness of `s∘1`, `s^⊥∘1` as hypothesis), `Papers.REC.isSharp_of_states`.
+* **REC 92** (`prop:predsep-splits`, short.tex:1643, Proposition) — **false as
+  printed for separation by predicates**; true for separation by states.  The
+  proof takes `asrt_{s∘1}`, which needs `s ∘ 1` sharp, without saying why.  Under
+  state separation it is: `⌊s∘1⌋` agrees with `s ∘ 1` on every state, because
+  `ω ∘ s` factors through the comprehension of `s ∘ 1`.  Under predicate
+  separation it need not be.  Counterexample ("linked points", review
+  2026-09-26, second review CONFIRMED): the subcategory of `Pfn × Pfn` on triples
+  `(a, l, r)` of finite sets, `X₁ = a ⊔ l`, `X₂ = a ⊔ r`, with maps the pairs of
+  partial functions satisfying `f₁⁻¹(y) = f₂⁻¹(y) ⊆ a` for linked `y`.  It is
+  an effectus separated by predicates (`Pred(X) = 2^{X₁} × 2^{X₂}`), with images
+  and compatible filters and comprehensions, and scalars `{0,1}²`.  For
+  `s = (1,0)` and the object `A` with one linked point, `s·id_A = (id, 0)` is not
+  a map and `s ∘ 1_A` is not sharp.  The effectus is not equivalent, even as a
+  bare category, to a product of two non-trivial effectuses (`End(A) = {0, id}`
+  puts `A` in one factor, and `A` maps non-trivially to every non-zero object).
+  The correct statement assumes that `s ∘ 1_A` and `s^⊥ ∘ 1_A` are sharp for all
+  `A`; state separation or a monoidal structure (REC 91) implies this.  Lean:
+  `Papers.REC.rec92_false_as_printed`, `Papers.REC.rec92_counterexample`
+  (refutation), `Papers.REC.rec92_states` (as printed), `Papers.REC.rec92_predicates`
+  (with the sharpness hypothesis), `Papers.REC.isSharp_of_states`.
 * **REC 99** (short.tex:1816, Proposition) — **false as printed** (independent
   review 2026-09-26; refuted in Lean).  `Kl(𝒟_M)` on finite sets with
   `M = 𝒫(ℕ)` is directed complete (`Pred(Y) = M^Y`) and has finite tomography
@@ -286,3 +299,12 @@ fixes listed for 102/103).  Review: `lean/docs/research/review-rec120.md`.
   `WMod[Mᵒᵖ]` has scalars `M`).  Lean: `Papers.SIG.WMod.effectus_scalars :
   EMIso (Scal (WMod M)) (MOp M)`; for `EMod[M]ᵒᵖ` the scalars are `M` as
   printed (`Papers.SIG.EMod.effectus_scalars`).
+
+### EJA 3 (main.tex:212, Example) — inner product not real for `F = ℍ` (2026-09-26)
+
+The print puts `⟨A, B⟩ := tr(AB)` on `M_n(F)^sa` for `F ∈ {ℝ, ℂ, ℍ}`.  For
+`F = ℍ` this is not real-valued: in `M₂(ℍ)^sa` take `A` with off-diagonal
+entries `i, −i` and `B` with `j, −j`; then `tr(AB) = −2k`.  The real part
+`Re tr(AB)` is meant (for `ℝ` and `ℂ` the two agree on self-adjoint
+matrices).  Lean: `Papers.EJA.hermMat_inner` (inner product `re tr (AB)`),
+`Papers.EJA.matrix_examples`; refutation `Papers.EJA.example3_trace_not_real`.

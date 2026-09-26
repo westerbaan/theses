@@ -34,6 +34,7 @@ import Papers.SEA.AlmostConvex
 import Papers.SIG.Pfn
 import Papers.SIG.Finite
 import Papers.REC.Tidy
+import Papers.REC.Rec92Counter
 
 /-
 Formalisations of three papers following the theses, by Abraham (Bram)

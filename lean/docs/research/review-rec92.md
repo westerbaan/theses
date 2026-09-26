@@ -98,3 +98,38 @@ although its scalars are `{0,1}²`.
 The Lean refutation is finite and decidable, much like `BoolMat` (objects are triples
 of `Fintype`s). Get a break-it review first (finPAC axioms of `C`; whether an
 equivalence preserves the unit and the scalar action).
+
+## Second review (break-it, 2026-09-26)
+
+**Verdict: CONFIRMED.** Each weak spot re-derived from the definitions (REC's
+effectus = thesis B's effectus in partial form, `EffectusPartialForm`).
+
+* **finPAC.** Closure under composition: for linked `z`, `g⁻¹(z) = W ⊆ a_Y` in
+  both components, so `f₁⁻¹(W) = ⋃_{y∈W} f₁⁻¹(y) = f₂⁻¹(W) ⊆ a_X`. Injections,
+  cotuples (`[f,g]⁻¹(z) = f⁻¹(z) ⊔ g⁻¹(z)` in both components), the zero map and
+  the union of domain-disjoint maps all satisfy the link condition; every
+  equation (PCM laws, `comp_ovee`, `ovee_comp`, compatible sum, untying, joint
+  monicity of `▷₁,▷₂`) is an equation of `Pfn × Pfn` and restricts. No gap.
+* **Effect algebra on `Pred`.** `I = (∅,1,1)` has no linked points, so
+  `C(X, I) = 2^{X₁} × 2^{X₂}` with disjointness and union: Boolean. The last two
+  effectus axioms hold since `1∘f` records the domains. No gap.
+* **Predicate separation.** `f₁⁻¹{x} = (f ≫ (δ_x, ∅))₁`, so singleton predicates
+  recover both partial functions. Holds.
+* **Images, comprehension, filters, compatibility.** Rechecked the universal
+  properties; the only delicate one is the filter factorisation, where
+  `f₁⁻¹(y) = f₂⁻¹(y) ⊆ dom f₁ ∩ dom f₂ ⊆ P₁ ∩ P₂` puts linked preimages in the
+  linked part `a∩P₁∩P₂` of the filter object. `CompatibleFiltersComprehensions`
+  quantifies over *every* comprehension of a sharp `p`; any other one is the
+  chosen one composed with an iso, so this is harmless.
+* **Not sharp.** `(1,∅)` on `A = (1,∅,∅)` is the image of no map (a map into `A`
+  has `f₁⁻¹(a) = f₂⁻¹(a)`, so its image is `(∅,∅)` or `(1,1)`). Holds.
+* **What fails, read exactly.** "`C ≅ C_s × C_{s^⊥}` for some non-trivial
+  effectuses". The unit/scalar-action question is moot: `C` is not equivalent
+  *as a bare category* to `D₁ × D₂` with `D₁, D₂` non-trivial effectuses (any
+  structured reading implies this one). Proof: `End(A) = {0, id}` has two
+  elements, while `End(A₁,A₂) ⊇ {(1,0),(0,1),(0,0)}` if both `A_i ≠ 0`; so say
+  `id_{A₂} = 0`. For `Q := e⁻¹(0, I₂)`, every `(A₁,A₂) → (0,I₂)` is zero, so
+  `|C(A,Q)| ≤ 1`; but `|End Q| ≥ 2` gives `Q` a point, and `A` has a non-zero
+  map to any object with a point (send the linked point there). Contradiction.
+  This is the negation to formalise (`rec92_false_as_printed`); it is stronger
+  than the first review's unit-preserving version.
