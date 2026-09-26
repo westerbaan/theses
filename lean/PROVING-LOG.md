@@ -31585,3 +31585,12 @@ both proved from H-O–S + Shultz), besides the native Albert-map route.  SEA 16
 JBW sentence is unconditional: van de Wetering's commutation theorem for JBW
 by a Jordan Fuglede–Putnam argument ([L_x,L_y](x∘y) = ¼(U_x y² − U_y x²), an
 intertwining identity, a flow and a spectral gap), reviewed, no structure theory.
+
+REC Theorem 136 unconditional (`Rec136Unconditional.lean`, `rec136_nohyp`, statement
+exactly as `rec136_hypfree`, no named hypotheses).  Route: the normal half of
+H-O–S 7.2.7 proved (`JBWSummandA.lean`: the normal kernel is cV, (1−c)V JW); a
+Jordan copy of a purely exceptional V_W in a corner connected to a nonzero
+complement yields, via McCrimmon's Peirce specialisation and a Hilbert completion,
+a nonzero Jordan hom into B(H) (`JBCoord.lean`); that hom and the associative-case
+GNS are normal (reviewed note `special-kernel.md`), so normal pure exceptionality
+suffices.  All three main theorems of REC now hold with no named hypotheses.
