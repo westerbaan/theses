@@ -31575,3 +31575,13 @@ functional calculus.  The abstract A–S 9.43 hypothesis: true in finite dimensi
 (Koecher–Vinberg), in infinite dimension equivalent to boundedness + a generator
 commutator condition (almost Jordan rings, Hentzel–Peresi).  A final-round
 re-audit (30 rows) found only labels and stale notes.
+
+Jordan structure round.  New infrastructure for JB/JBW-algebras, all proved:
+functional calculus (H-O–S 3.2.4), U_a ≥ 0 and the fundamental formula (3.3.6,
+no Macdonald), Peirce decomposition and exchangeability (5.1), JBW projections
+and central covers.  REC 136 now has a route with JBW-intrinsic inputs only
+(`Rec136NoFour.lean`: exceptional summand + no four exchangeable idempotents,
+both proved from H-O–S + Shultz), besides the native Albert-map route.  SEA 16's
+JBW sentence is unconditional: van de Wetering's commutation theorem for JBW
+by a Jordan Fuglede–Putnam argument ([L_x,L_y](x∘y) = ¼(U_x y² − U_y x²), an
+intertwining identity, a flow and a spectral gap), reviewed, no structure theory.
