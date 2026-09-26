@@ -29,9 +29,18 @@ LAB = re.compile(r'\\label\{([^}]*)\}')
 here = os.path.dirname(os.path.abspath(__file__))
 for tag, (path, title) in PAPERS.items():
     lines = open(os.path.join(here, path), encoding='utf-8').read().split('\n')
-    n = 0; rows = []; sec = 0
+    n = 0; rows = []; sec = 0; hidden = 0
     for i, l in enumerate(lines):
         if l.lstrip().startswith('%'):
+            continue
+        # SIG hides \begin{Auxproof} bodies in the arXiv build (\hideauxproof
+        # gobbles them), so environments inside are not numbered in print.
+        if '\\begin{Auxproof}' in l: hidden += 1
+        if '\\end{Auxproof}' in l: hidden = max(0, hidden - 1); continue
+        if hidden:
+            if ENV.search(l):
+                m0 = ENV.search(l)
+                rows.append(f"{tag}|aux|{m0.group(1).rstrip('*').capitalize()}||{os.path.basename(path)}:{i+1}|(inside a hidden Auxproof; unnumbered in print)")
             continue
         if tag in SECTIONED and SEC.match(l.lstrip()) and not l.lstrip().startswith('\\section*'):
             sec += 1; n = 0
@@ -54,4 +63,4 @@ for tag, (path, title) in PAPERS.items():
         rows.append(f"{tag}|{num}|{kind.rstrip('*').capitalize()}|{lab}|{os.path.basename(path)}:{i+1}|{body}")
     with open(os.path.join(here, f'{tag}-points.csv'), 'w') as o:
         o.write('tag|num|kind|label|loc|start\n' + '\n'.join(rows) + '\n')
-    print(tag, sum(1 for r in rows if r.split('|')[1] != '-'), 'numbered points', '—', title)
+    print(tag, sum(1 for r in rows if r.split('|')[1] not in ('-', 'aux')), 'numbered points', '—', title)

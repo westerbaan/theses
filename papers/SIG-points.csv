@@ -49,29 +49,29 @@ SIG|47|Proposition|prop:equiv-pfn-wmod|main.tex:1313|We have an equivalence of c
 SIG|48|Theorem||main.tex:1354|Let $\catC$ be a substate-separated $\sigma$-effectus with $\catC(I,I)\cong\set{0,1}$. Then there is a faithful morphism of $\sigma$-effectu
 SIG|49|Proposition|prop:powerset-functor|main.tex:1386|The contravariant powerset functor is a faithful morphism of $\sigma$-effectuses $\Pow:\Pfn\rightarrow \omegaBA^\opp$, where $\Pow(f)(S)= \s
 SIG|50|Theorem||main.tex:1401|Let $\catC$ be a substate-separated $\sigma$-effectus with scalars $\{0,1\}$. Then there is a faithful morphism of $\sigma$-effectuses $G\co
-SIG|51|Example|ex:notBoolean|main.tex:1439|Let $E = \{\emptyset, \{1,2\}, \{3,4\}, \{1,3\}, \{2,4\}, \{1,2,3,4\}\}$ be an effect algebra (and hence a $\{0,1\}$-module) with the operat
-SIG|52|Definition||main.tex:1479|Let $A$ be an ordered vector space (with positive cone $A_+$). An \Define{order unit} of $A$
-SIG|53|Proposition|prop:OVSu-equiv-EMod|main.tex:1506|{JacobsMF2016}}] The functor $\OVSu\to\EMod[[0,1]]$ that sends $(A,u)$ to $[0,u]_A$ is an equivalence of categories.
-SIG|54|Definition||main.tex:1513|An \Define{order-unit space} is an ordered vector space $A$ with order unit $u$
-SIG|55|Definition||main.tex:1531|An ordered vector space $A$ is \Define{monotone $\sigma$-complete} if every ascending sequence $a_0\le a_1\le \dotsb$
-SIG|56|Proposition|prop:sBOUS-equiv-sEMod|main.tex:1551|There is an equivalence of categories $\sBOUS\simeq\sEMod[[0,1]]$. \end{proposition}
-SIG|57|Theorem|thm:convex-effectus-embedding|main.tex:1560|Let $\catC$ be a predicate-separated $\sigma$-effectus with scalars $\catC(I,I)\cong [0,1]$. Then there is a faithful morphism of $\sigma$-e
-SIG|58|Definition||main.tex:1569|An \Define{ordered vector space with trace}\footnote{% It is called a \emph{base ordered linear space} in \cite{Pumpluen2002}
-SIG|59|Proposition|prop:OVSt-equiv-CWMod|main.tex:1605|The functor $\sBase\colon \OVSt\to\CWMod[[0,1]]$ is an equivalence of categories.
-SIG|60|Proposition|prop:sBBNS-equiv-sCWMod|main.tex:1650|There is an equivalence of categories $\sBBNS\simeq\sCWMod[[0,1]]$. \end{proposition}
-SIG|61|Theorem|thm:convex-effectus-embedding-2|main.tex:1659|Let $\catC$ be a state-separated $\sigma$-effectus with scalars $[0,1]$ such that substates $\sSt(A)$ are cancellative. Then there is a fait
-SIG|62|Remark||main.tex:1667|Cancellativity of the substates follows when the effectus is predicate-separated, and hence any state- and predicate-separated $\sigma$-effe
-SIG|63|Lemma|lem:pam-equiv|main.tex:1868|Let $M$ be a PCM. Let $\bigovee$ be a
-SIG|64|Lemma|lem:charact-eff-sigma|main.tex:1939|An effectus $\catC$ is a $\sigma$-PAC, hence a $\sigma$-effectus,
-SIG|65|Lemma|lem:charact-sigma-effectus|main.tex:2024|Let $\catC$ be a category with a distinguished object $I$ and
-SIG|66|Proposition|prop:sEMod-sigma-effectus|main.tex:2093|Let $M$ be a $\sigma$-effect monoid. Then the opposite category $\sEMod[M]^{\opp}$ is a $\sigma$-effectus.
-SIG|67|Proposition|prop:pred-functor-sigma-effectus|main.tex:2303|Let $\catC$ be an effectus with scalars $M=\catC(I,I)$. Then the assignment $A\mapsto \Pred(A)$
-SIG|68|Proposition|prop:sWMod-sigma-effectus|main.tex:2328|Let $M$ be an $\sigma$-effect monoid. Then the category $\sWMod[M]$ is a $\sigma$-effectus.
-SIG|69|Lemma|lem:decomposition-bijection|main.tex:2738|Let $\catC$ be a $\sigma$-effectus, and $\coprod_{\lambda\in\Lambda} B_{\lambda}$
-SIG|70|Proposition|prop:sst-functor-sigma-effectus|main.tex:2806|Let $\catC$ be an $\sigma$-effectus with scalars $M=\catC(I,I)$. Then the assignment $A\mapsto \sSt(A)$
-SIG|71|Lemma|lem:emod-bigvee-commute|main.tex:3036|Let $E$ be an $\omega$-complete effect $[0,1]$-module. For each ascending sequence $(a_n)_{n\in\N}$
-SIG|72|Lemma|lem:monotone-sigma-complete-iff-omega-complete|main.tex:3072|An ordered vector space $A$ with order unit $u$ is monotone $\sigma$-complete
-SIG|73|Lemma|lem:monotone-sigma-complete-iff-omega-complete-morphism|main.tex:3123|Let $f\colon A\to B$ be a subunital positive linear map between monotone $\sigma$-complete
-SIG|74|Lemma|lem:monotone-sigma-complete-bous|main.tex:3162|{Wright1972}}] Every monotone $\sigma$-complete ordered vector space with order unit
-SIG|75|Lemma|lem:omega-complete-emod-is-sigma-emod|main.tex:3170|Every $\omega$-complete effect $[0,1]$-module is a $\sigma$-effect $[0,1]$-module.
-SIG|76|Lemma|lem:bbns-if-subbase-sigma-wmod|main.tex:3318|Let $V$ be an ordered vector space with trace $\tau$. Assume that the subbase $\sBase(V)$
+SIG|aux|Example||main.tex:1439|(inside a hidden Auxproof; unnumbered in print)
+SIG|51|Definition||main.tex:1479|Let $A$ be an ordered vector space (with positive cone $A_+$). An \Define{order unit} of $A$
+SIG|52|Proposition|prop:OVSu-equiv-EMod|main.tex:1506|{JacobsMF2016}}] The functor $\OVSu\to\EMod[[0,1]]$ that sends $(A,u)$ to $[0,u]_A$ is an equivalence of categories.
+SIG|53|Definition||main.tex:1513|An \Define{order-unit space} is an ordered vector space $A$ with order unit $u$
+SIG|54|Definition||main.tex:1531|An ordered vector space $A$ is \Define{monotone $\sigma$-complete} if every ascending sequence $a_0\le a_1\le \dotsb$
+SIG|55|Proposition|prop:sBOUS-equiv-sEMod|main.tex:1551|There is an equivalence of categories $\sBOUS\simeq\sEMod[[0,1]]$. \end{proposition}
+SIG|56|Theorem|thm:convex-effectus-embedding|main.tex:1560|Let $\catC$ be a predicate-separated $\sigma$-effectus with scalars $\catC(I,I)\cong [0,1]$. Then there is a faithful morphism of $\sigma$-e
+SIG|57|Definition||main.tex:1569|An \Define{ordered vector space with trace}\footnote{% It is called a \emph{base ordered linear space} in \cite{Pumpluen2002}
+SIG|58|Proposition|prop:OVSt-equiv-CWMod|main.tex:1605|The functor $\sBase\colon \OVSt\to\CWMod[[0,1]]$ is an equivalence of categories.
+SIG|59|Proposition|prop:sBBNS-equiv-sCWMod|main.tex:1650|There is an equivalence of categories $\sBBNS\simeq\sCWMod[[0,1]]$. \end{proposition}
+SIG|60|Theorem|thm:convex-effectus-embedding-2|main.tex:1659|Let $\catC$ be a state-separated $\sigma$-effectus with scalars $[0,1]$ such that substates $\sSt(A)$ are cancellative. Then there is a fait
+SIG|61|Remark||main.tex:1667|Cancellativity of the substates follows when the effectus is predicate-separated, and hence any state- and predicate-separated $\sigma$-effe
+SIG|aux|Lemma||main.tex:1868|(inside a hidden Auxproof; unnumbered in print)
+SIG|aux|Lemma||main.tex:1939|(inside a hidden Auxproof; unnumbered in print)
+SIG|62|Lemma|lem:charact-sigma-effectus|main.tex:2024|Let $\catC$ be a category with a distinguished object $I$ and
+SIG|63|Proposition|prop:sEMod-sigma-effectus|main.tex:2093|Let $M$ be a $\sigma$-effect monoid. Then the opposite category $\sEMod[M]^{\opp}$ is a $\sigma$-effectus.
+SIG|64|Proposition|prop:pred-functor-sigma-effectus|main.tex:2303|Let $\catC$ be an effectus with scalars $M=\catC(I,I)$. Then the assignment $A\mapsto \Pred(A)$
+SIG|65|Proposition|prop:sWMod-sigma-effectus|main.tex:2328|Let $M$ be an $\sigma$-effect monoid. Then the category $\sWMod[M]$ is a $\sigma$-effectus.
+SIG|66|Lemma|lem:decomposition-bijection|main.tex:2738|Let $\catC$ be a $\sigma$-effectus, and $\coprod_{\lambda\in\Lambda} B_{\lambda}$
+SIG|67|Proposition|prop:sst-functor-sigma-effectus|main.tex:2806|Let $\catC$ be an $\sigma$-effectus with scalars $M=\catC(I,I)$. Then the assignment $A\mapsto \sSt(A)$
+SIG|68|Lemma|lem:emod-bigvee-commute|main.tex:3036|Let $E$ be an $\omega$-complete effect $[0,1]$-module. For each ascending sequence $(a_n)_{n\in\N}$
+SIG|69|Lemma|lem:monotone-sigma-complete-iff-omega-complete|main.tex:3072|An ordered vector space $A$ with order unit $u$ is monotone $\sigma$-complete
+SIG|70|Lemma|lem:monotone-sigma-complete-iff-omega-complete-morphism|main.tex:3123|Let $f\colon A\to B$ be a subunital positive linear map between monotone $\sigma$-complete
+SIG|71|Lemma|lem:monotone-sigma-complete-bous|main.tex:3162|{Wright1972}}] Every monotone $\sigma$-complete ordered vector space with order unit
+SIG|72|Lemma|lem:omega-complete-emod-is-sigma-emod|main.tex:3170|Every $\omega$-complete effect $[0,1]$-module is a $\sigma$-effect $[0,1]$-module.
+SIG|73|Lemma|lem:bbns-if-subbase-sigma-wmod|main.tex:3318|Let $V$ be an ordered vector space with trace $\tau$. Assume that the subbase $\sBase(V)$
