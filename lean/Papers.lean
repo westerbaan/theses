@@ -40,9 +40,10 @@ import Papers.SIG.Convex
 import Papers.SEA.PureAConvex
 import Papers.EJA.Albert
 import Papers.SIG.Examples
+import Papers.REC.Reconstruction
 
 /-
-Formalisations of three papers following the theses, by Abraham (Bram)
-Westerbaan, Bas Westerbaan and John van de Wetering.  Sources and point
-indexes are in `../papers/`; conventions in `Papers/README.md`.
+Formalisations of six papers following the theses, by Abraham (Bram)
+Westerbaan, Bas Westerbaan, Kenta Cho, Tobias Fritz and John van de Wetering.
+Sources and point indexes are in `../papers/`; conventions in `Papers/README.md`.
 -/

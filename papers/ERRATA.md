@@ -253,6 +253,31 @@ applies as printed, and evaluating at any point `t ∈ X` puts every strict
 inequality in `ℝ`.  Theorems 102 and 103 stand as printed (up to the cosmetic
 fixes listed for 102/103).  Review: `lean/docs/research/review-rec120.md`.
 
+### REC 104 — false as printed; sequential effectuses have irreducible scalars (2026-09-26, refuted in Lean)
+
+* **REC 104** (short.tex:1877, Remark) — **false as printed**.  The remark says
+  that in Theorem 102 the scalars of a sequential effectus "can satisfy
+  `Pred(I) ≅ [0,1]_{C(X)}` where `X` is an arbitrary Stonean space".  They cannot
+  unless `X` has at most one point.  In any effectus with filters and
+  comprehensions that is separated by states, the only idempotent scalars are `0`
+  and `1`.  For an idempotent `s ≠ 1`, a state `σ` of the comprehension `{I|s}`
+  would give `π_s ∘ σ = 1` and hence `s = 1`.  So `{I|s}` has no states, and
+  separation makes `id_{I|s} = 0`, whence `π_s = 0` and `s = 0`.  A
+  non-trivial clopen of `X` gives a non-trivial idempotent of `[0,1]_{C(X)}`.
+  Hence every sequential effectus has irreducible scalars (`{0}`, `{0,1}` or
+  `[0,1]`, REC 36).  Consequences:
+  - the product in Theorem 102 always has a trivial factor, so 102 is the case of
+    Theorem 103 (whose irreducibility hypothesis is automatic);
+  - the JB-vs-JBW distinction the remark motivates does not come from the
+    scalars;
+  - REC 92's state-separated case has no instances: its hypotheses leave no
+    non-trivial idempotent scalar;
+  - the `C(X)`-valued concerns in the REC 120 entry above do not arise.
+
+  Theorems 102 and 103 remain true.  Lean:
+  `Papers.REC.rec104_false`, `Papers.REC.idem_scalar_trivial`,
+  `Papers.REC.scal_irreducible_of_states`, `Papers.REC.rec102_trivial_factor`.
+
 ## SEA — *The three types of normal sequential effect algebras* (arXiv:2004.12749, `2004.12749/second.tex`)
 
 * **SEA 3** (`ex:orthomodularlattice`, second.tex:258, Example), the

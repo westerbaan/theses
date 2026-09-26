@@ -217,28 +217,28 @@ external literature).
 
 | # | k | content | deps | external | status |
 |---|---|---|---|---|---|
-| 100 | D | sequential effectus | 14, 22, 23, 30, 56, 62, 70, 78 | – | deferred |
-| 101 | R | remark on axiom 5 (CPM-like reformulation) | 100 | – | deferred (the reformulation is a claim: formalise as an iff) |
-| 102 | T | **main**: `C ≃ C₁ × C₂`, CBA / dc JB | 95, 97, 106, 109, 121 | all of §1 except §6 items | deferred |
-| 103 | T | **main**: irreducible scalars ⇒ CBA or JBW | 36, 102 | OAP 71 | deferred |
-| 104 | R | JB vs JBW remark | – | – | n/f |
-| 105 | P | `im asrt_p = ⌈p⌉`; sharp ⟺ idempotent; `p` sharp ⟺ `p^⊥` sharp | 57, 66, 100 | SEA | deferred |
-| 106 | P | all maps have images | 57, 66, 105 | SEA (complete lattice of idempotents) | deferred |
-| 107 | C | sequential ⇒ ⋄-effectus | 105, 106 | – | deferred |
-| 108 | L | `asrt_p² = asrt_{p²}` | 100 | – | deferred |
-| 109 | L | filters and comprehensions compatible; `π_p∘ξ^p = asrt_p` | 57, 108 | SEA | deferred |
-| 110 | P | `π_p† = ξ^p` | 109 | – | deferred |
-| 111 | C | `Θ† = Θ⁻¹` | 110 | – | deferred |
-| 112 | P | sequential product compressible | 77, 109 | – | deferred |
-| 113 | L | pure `f = π_{im f}∘Θ∘ξ^{⌈1∘f⌉}∘asrt_{1∘f}` | 69, 109 | – | deferred |
-| 114 | P | `asrt_{p&q}² = asrt_p∘asrt_q²∘asrt_p` | 110, 111, 113 | – | deferred |
-| 115 | C | quadratic | 114 | – | deferred |
-| 116 | R | uniqueness of the dagger (unfinished in the source: `\TODO`) | – | – | n/f |
-| 117 | D | order derivation | 41 | Mathlib `NormedSpace.exp` | deferred |
-| 118 | P | A–S criterion | 117 | **Alfsen–Shultz, State spaces 1.108** | deferred (black box, unused) |
-| 119 | L | `ω(a)=0 ⇒ ω(p&a)=ω(p^⊥&a)` | 112, 115, 58 | **vdW 2018 Prop 46 (unprinted)** | deferred |
-| 120 | P | `D_p` is an order derivation | 119, 58 | **A–S (1.82)** | deferred; proof under-specified (see §4) |
-| 121 | P | `V_A` is a JB-algebra | 120 | **A–S Geometry 9.48/9.43** | deferred (black box) |
+| 100 | D | sequential effectus | 14, 22, 23, 30, 56, 62, 70, 78 | – | done (`SequentialEffectus`; axiom 4 relational) |
+| 101 | R | remark on axiom 5 (CPM-like reformulation) | 100 | – | done |
+| 102 | T | **main**: `C ≃ C₁ × C₂`, CBA / dc JB | 95, 97, 106, 109, 121 | all of §1 except §6 items | done (`rec102`, modulo 3 named hypotheses; one factor always trivial) |
+| 103 | T | **main**: irreducible scalars ⇒ CBA or JBW | 36, 102 | OAP 71 | done (`rec103`, modulo 3 named hypotheses; hypothesis automatic) |
+| 104 | R | JB vs JBW remark | – | – | **false as printed** (`rec104_false`, ERRATA) |
+| 105 | P | `im asrt_p = ⌈p⌉`; sharp ⟺ idempotent; `p` sharp ⟺ `p^⊥` sharp | 57, 66, 100 | SEA | done |
+| 106 | P | all maps have images | 57, 66, 105 | SEA (complete lattice of idempotents) | done |
+| 107 | C | sequential ⇒ ⋄-effectus | 105, 106 | – | done |
+| 108 | L | `asrt_p² = asrt_{p²}` | 100 | – | done |
+| 109 | L | filters and comprehensions compatible; `π_p∘ξ^p = asrt_p` | 57, 108 | SEA | done |
+| 110 | P | `π_p† = ξ^p` | 109 | – | done |
+| 111 | C | `Θ† = Θ⁻¹` | 110 | – | done |
+| 112 | P | sequential product compressible | 77, 109 | – | done (internal-state form) |
+| 113 | L | pure `f = π_{im f}∘Θ∘ξ^{⌈1∘f⌉}∘asrt_{1∘f}` | 69, 109 | – | done |
+| 114 | P | `asrt_{p&q}² = asrt_p∘asrt_q²∘asrt_p` | 110, 111, 113 | – | done |
+| 115 | C | quadratic | 114 | – | done |
+| 116 | R | uniqueness of the dagger (unfinished in the source: `\TODO`) | – | – | n/f (no claim) |
+| 117 | D | order derivation | 41 | Mathlib `NormedSpace.exp` | done |
+| 118 | P | A–S criterion | 117 | **Alfsen–Shultz, State spaces 1.108** | stated (black box, unused) |
+| 119 | L | `ω(a)=0 ⇒ ω(p&a)=ω(p^⊥&a)` | 112, 115, 58 | **vdW 2018 Prop 46 (unprinted)** | stated (named hypothesis `WeteringStateOrderLemma`) |
+| 120 | P | `D_p` is an order derivation | 119, 58 | **A–S (1.82)** | done by the repaired route (named hypothesis `AlfsenShultzResolventCriterion`) |
+| 121 | P | `V_A` is a JB-algebra | 120 | **A–S Geometry 9.48/9.43** | done (named hypothesis `AlfsenShultzJordanFromDerivations`) |
 
 ### §6 Monoidal (Monoidal.lean)
 
@@ -409,3 +409,69 @@ Done in `Tidy.lean`: REC 36 discharged (`rec36_holds`, via OAP 71 and `noZeroDiv
 ## REC 92 (2026-09-26)
 
 False as printed under separation by predicates, true under separation by states: refuted in `Rec92Counter.lean` (`rec92_false_as_printed`, the linked-points effectus `LinkedPts`; two independent reviews in `docs/research/review-rec92.md`).  The sharpness hypothesis of `rec92_predicates` is therefore necessary.  TODO after the §5 job: the `rec92_predicates` docstring in `Decompose.lean` still calls this a gap.
+
+## §5 done; handover to §6 (written at the end of the §5 session, 2026-09-26)
+
+`Papers/REC/Reconstruction.lean` (one file, ~3,800 lines; it could not import
+`Tidy.lean`, so some §2–§4 material is re-proved there under `_rc` names) proves
+REC 100–121, 102, 103, and refutes 104.  `Monoidal.lean` (REC 122–136) should
+import `Papers.REC.Reconstruction` once its olean exists.
+
+* **New fact: the scalars are irreducible.**  `idem_scalar_trivial`: in an effectus with
+  filters and comprehensions separated by states, idempotent scalars are `0` or `1`.
+  So every sequential effectus has scalars `{0}`, `{0,1}` or `[0,1]`
+  (`scal_irreducible_of_states`, `seq_scal_cases`).  Consequences:
+  - REC 104 is false (ERRATA);
+  - 102 always has a trivial factor (`rec102_trivial_factor`);
+  - 103's hypothesis is automatic;
+  - REC 92's state-separated case has no instances.
+
+  For §6 this means: **work with `[0,1]` scalars** (the CBA case is degenerate for
+  JW).  Use `rec103`'s third branch: `realSplit ψ₀` is the `ScalarSplit` with
+  `s = 0`, where `CPt σs A` is all of `Pred A` (`cpt_all`).
+* **Named hypotheses carried by 102/103** (and so by 136):
+  - `AlfsenShultzJordanFromDerivations.{v}` (REC 121);
+  - `AlfsenShultzResolventCriterion.{v}` (REC 120);
+  - `WeteringStateOrderLemma C` (REC 119).
+
+  §6 adds `HancheOlsenStormerUniversalEnvelope` (REC 129) and the black boxes of
+  REC 132 and 133.  State each as a `Prop` in the same style and take it as an
+  argument.
+* **What §6 can use.**
+  - `SequentialEffectus` (class; REC 122 should extend it with the monoidal
+    structure of REC 28 and "tensor of pure maps is pure").
+  - Assert maps: `asrtS p`, with `seq_eq` (`p & q = q ∘ asrtS p`).
+  - `VA σs A`: the order unit space `GP.Vec (CPt σs A)`, with
+    `VA_isOUS`/`VA_banach`/`VA_dc`.
+  - `Uop σs p`: `asrt_p` as a linear map on `V_A`.
+  - `Dop`.
+  - `jbMul σs hAS hRC h119 A`: the Jordan product of REC 121, with `jbMul_spec`.
+  - `stateLin σs f`: `Pred(f)` as a linear map `V_B → V_A`, with `stateLin_gmap`,
+    `stateLin_nonneg`, `stateLin_normal`, `stateLin_isNPC`, `stateLin_comp`.
+  - `gpLift`: linear extension of an additive, `[0,1]`-homogeneous map out of a
+    convex effect algebra; this is the tool for `a ⊗ 1` on `V_A` (REC 125–127).
+  - Spectral theorem: `spectral_rep`, `spectral_neg`, `spectral_dense`, i.e.
+    finite combinations of sharp elements are norm-dense.
+  - The categories: `CBACat`, `JBnpcCat`, `JBWnpcCat`.
+  - `rec103_jbwFunctor`.
+* **Lean pitfalls met here.**
+  - `σ` is a token: don't use it as an identifier.
+  - `Papers.REC.smul_smul` shadows Mathlib's, so write `_root_.smul_smul`.
+  - `IsIdempotent` is ambiguous between REC and `Papers.SEA`.
+  - `CPt` is a `def`: build elements with `cptMk`, not anonymous constructors.
+  - `gpLift_gmap`/`gpLift_nonneg`: give `E :=` and the `hadd`/`hsmul` proofs
+    explicitly, as named lemmas.
+  - Universe mismatch between `Scal C : Type v` and `I : Type`: `EAIso (Scal C) I`
+    does not typecheck; use `EffectMonoidHom` pairs (`seq_scal_cases`).
+  - For parts given by composite terms (`(dcSplitting …).ε.Part`), prove lemmas in
+    a generic section (`part_pred_eq`, `partPred_le_iff`) and apply with `exact`,
+    not `rw`.
+* **Deviations recorded in the audit.**
+  - REC 100 axiom 4 is relational (`DiamondAdjointRel`).
+  - The dagger is a total function whose laws are asked for pure maps only.
+  - REC 112 is stated for internal states.
+  - §5.4's "WLOG convex scalars" is replaced by the convex part `CPt` inside `C`.
+* **TODO carried over.** The `rec92_predicates` docstring (see "REC 92" above).
+  The REC 92 row and `rec92_states` could note that the states case has no
+  instances (`idem_scalar_trivial`); that is not changed here, because only this
+  file was touched.

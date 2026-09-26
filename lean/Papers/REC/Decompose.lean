@@ -1346,7 +1346,9 @@ maps `asrt_{s∘1}` in place of `s · id`: `C_s` has the maps `f` with
 `[π_{s∘1}, π_{s^⊥∘1}] ∘ ⟨ξ, ξ'⟩ = asrt_{s∘1} ⊻ asrt_{s^⊥∘1} = id` is checked on
 states, using `asrt_{s∘1} ∘ ω = ω ∘ s` (`asrtT_substate`, where `s` commutes with
 all scalars).  The paper takes `asrt_{s∘1}` without saying why `s∘1` is sharp;
-under state separation it is (`isSharp_of_states`). -/
+under state separation it is (`isSharp_of_states`).  This case is true but has
+no instances: with comprehensions and state separation the only idempotent
+scalars are `0` and `1` (`idem_scalar_trivial`, `Reconstruction.lean`, REC 104). -/
 theorem rec92_states (hsep : SeparatingStates C) {s : Scal C} (hs : s ≫ s = s) (h0 : s ≠ 0)
     (h1 : s ≠ 𝟙 _) :
     let σ := asrtSplitting hs (isSharp_of_states hs hsep) (isSharp_of_states (orth_idem hs) hsep)
@@ -1359,9 +1361,9 @@ effectus **separated by predicates**: the same conclusion, given that the
 predicates `s ∘ 1_A` and `s^⊥ ∘ 1_A` are sharp.  The printed proof takes
 `asrt_{s∘1}`, which needs `s ∘ 1` sharp, and does not justify it; in the
 monoidal case (REC 91, `smul_isSharp`) and under state separation
-(`isSharp_of_states`) it holds, but we have no argument from predicate
-separation alone, so the sharpness is an explicit hypothesis here (a gap in the
-proof, not a counterexample; see `PLAN.md` §4).  With it the paper's argument
+(`isSharp_of_states`) it holds, but not from predicate separation alone: without
+the sharpness hypothesis the proposition is false (`rec92_false_as_printed`,
+witness `LinkedPts` in `Rec92Counter.lean`).  With it the paper's argument
 goes through: `p ∘ asrt_{s∘1} = s ∘ p` (`asrtT_pred`) gives
 `p ∘ (asrt_{s∘1} ⊻ asrt_{s^⊥∘1}) = p`. -/
 theorem rec92_predicates (hsep : SeparatingPredicates C) {s : Scal C} (hs : s ≫ s = s)
