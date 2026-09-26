@@ -31559,3 +31559,19 @@ both ways); FDS 2.5's NRep(A**) ≅ Rep(A) under the print's extension property;
 SEA 16's Jordan sentence for all finite-dimensional JB-algebras (van de Wetering's
 commutation theorem, Jordan-natively).  The abstract A–S hypothesis stays open
 (`as943-abstract.md`: G2 follows, chain density does not).
+
+Four-hour round (same day, later): REC 136 without A–S Lemma 4.4 (an iterated
+tensor of exchangeable families outnumbers dim M₃(𝕆)_sa; `Rec136Hyps*.lean`), its
+two remaining literature inputs weakened to corollaries (an exceptional summand;
+an exchangeable family plus a uniformly bounded-rank ideal).  FDS 2.5 closed: A**
+built as W*(π_u(A)) with unique normal extensions (`Bidual.lean`).  FDS 2.2:
+Sakai's predual uniqueness proved (`Predual.lean`); the forward direction for
+pairwise unitarily isomorphic or reflexive hom-sets (`Predual2/3.lean`); the
+general case is predual uniqueness of a W*-TRO (JB*-triple theory).  SEA 16 for
+all special JB/JBW-algebras (`JBSEA.lean`: JC convex SEAs, JW normal, the
+commutation theorem by Kleinecke–Shirokov) and the JW ⊕ C(X, Albert) structure of
+every JBW-algebra (`JBWSEA.lean`); exceptional infinite-dimensional SEA needs a JB
+functional calculus.  The abstract A–S 9.43 hypothesis: true in finite dimension
+(Koecher–Vinberg), in infinite dimension equivalent to boundedness + a generator
+commutator condition (almost Jordan rings, Hentzel–Peresi).  A final-round
+re-audit (30 rows) found only labels and stale notes.
