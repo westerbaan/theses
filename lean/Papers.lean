@@ -60,6 +60,7 @@ import Papers.FDS.Linking
 import Papers.FDS.Envelope
 import Papers.FDS.Bidual
 import Papers.FDS.Predual
+import Papers.FDS.Predual2
 import Papers.SEA.JordanSEA
 import Papers.SEA.JBSEA
 
