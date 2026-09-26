@@ -50,6 +50,7 @@ import Papers.REC.Monoidal
 import Papers.REC.Rec128
 import Papers.REC.JordanSymmetry
 import Papers.REC.SpectralChains
+import Papers.REC.JordanFromChains
 
 /-
 Formalisations of six papers following the theses, by Abraham (Bram)
