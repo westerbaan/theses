@@ -74,8 +74,9 @@ def EMNoZeroDivisors (M : Type u) [EffectMonoid M] : Prop :=
 
 /-- **SIG 43** (`thm:no-zero-divisors`, main.tex:1186, Theorem, cited as
 [OAP, Theorem 71]): an ω-complete effect monoid without nontrivial zero
-divisors is `{0}`, `{0,1}` or `[0,1]`.  Not proved here: this `Prop` is the
-statement, taken as a hypothesis where it is used (waits on OAP 71). -/
+divisors is `{0}`, `{0,1}` or `[0,1]`.  This `Prop` is the statement, taken
+as a hypothesis where it is used; it is proved in `Papers.SIG.Discharge`
+(`noZeroDivisorsTheorem`, from OAP 71). -/
 def NoZeroDivisorsTheorem : Prop :=
   ∀ (M : Type u) [EffectMonoid M], OmegaComplete M → EMNoZeroDivisors M →
     EMIso M PUnit.{1} ∨ EMIso M Bool ∨ EMIso M unitInterval
