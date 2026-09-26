@@ -401,3 +401,7 @@ What §5 (`Reconstruction.lean`, REC 100–121) can use from §4 — import
   `rec97`; REC 103 adds irreducibility, where `s ∈ {0, 1}` and one factor of
   `rec95` is trivial.
 
+
+## Status update 2026-09-26 (Tidy.lean)
+
+Done in `Tidy.lean`: REC 36 discharged (`rec36_holds`, via OAP 71 and `noZeroDivisors_iff_irreducible`); REC 42 as a full equivalence of categories `DCOUSCat ≌ DCEACCat`; REC 41 Wright's lemma (`rec41_banach`); the DCOUS halves of REC 94, 95, 97; REC 89's monoidal bullet (`rec89_monoidal`).  Of the §2–§4 open list only REC 92's predicate-separated case remains, which a review finds false as printed (`docs/research/review-rec92.md`, under independent check).
