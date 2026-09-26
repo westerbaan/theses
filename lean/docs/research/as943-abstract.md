@@ -148,3 +148,63 @@ likely show `K` self-dual via an invariant trace form `τ(a∘b)` — not attemp
 4. §3 Vinberg cone: no spanning family (hand computation; not numerically searched).
 5. §4 equivalence of the Prop with (L).
 6. Not claimed: truth or falsity of the Prop.
+
+## Review (2026-09-26)
+
+Adversarial review; no Lean edits.  Scratch: `revabs-g2.py`, `revabs-vin.py`,
+`revabs-vin2.py`.
+
+1. **§1 (G2): STANDS.**  Checked line by line against the Prop / `Fam` hypotheses.
+   Translation: `p := j`, `q := c i`; `e_j + e_{ci} ≤ 1 ⇔ e_j ≤ e_i` ✓; `B = U_{c(c i)} =
+   U_i` needs `cc` (from injectivity, `Fam.cc`) ✓.  O-lemmas: `U_pU_{q'} = U_p` is `nD`,
+   `U_{q'}U_p = U_p` is `nC`, `U_{p'}U_p = 0` is `hU (c j)` + `cc` ✓.  Step 1: `w = U_{cj}v
+   ≥ 0`, `U_j(U_i w) = U_j w = 0` (nD), and the kernel condition is used in the direction
+   `U_j x = 0 ⇒ U_{cj} x = x` for `x = U_i w ≥ 0` ✓; extension to all `v` is exactly
+   `linext_nonneg` (OUS: every `v` is a difference of positives) ✓.  Step 2: `AB U_p =
+   U_{cj}U_iU_j = U_{cj}U_j = 0` ✓; `Φ e^{tD_p} w = e^{−t}ΦU_{p'}w + ΦR_p w` (the `e^t`
+   term dies), `t → +∞`, closed cone — the same limit as in `nD` ✓; `ΦR_p 1 = 0` then
+   `pos_eq_zero` ✓.  So `U_iU_{cj} = U_{cj}U_i` for `e_j ≤ e_i`.  The other clauses of
+   `ChainDense`'s commutation (k > k': `U_jU_{ci} = 0 = U_{ci}U_j` by nA/nB; k = k':
+   `hU`) are already free, so the whole clause is derivable ✓.  `[D_i,D_j] = 0` for nested
+   pairs also checks (the `U_{ci}`/`U_{cj}` pair is nC/nD applied to `e_{ci} ≤ e_{cj}`).
+   Numerics (Sym_4, genuine compressions) agree, ~1e−16; non-⊥ pair 0.43.  (Genuine
+   compressions commute anyway, so the numerics are only a sanity check; the abstract
+   argument is what carries it.)  No non-Jordan counterexample attempted: none can exist
+   since the proof is complete.
+2. **§2: STANDS.**  All hypotheses verified by hand: `e` injective (0,1,p,1−p,q,1−q
+   distinct), `U_0 = 0`, `U_1 = id` satisfy everything incl. the kernel clause
+   (`D_0 = −id`, `D_1 = id` are order derivations); `U_p − U_{p'} = 2L(p) − 1`
+   (Peirce), `e^{tD_p} = U_{e^{t/2}p + e^{−t/2}p'}` positive; kernel = Peirce.
+   `span{1,p,q} = W` (dim 3).  Rank-one distinct `p, q, p', q'` are pairwise incomparable,
+   so chains (repeats allowed) are ⊆ {1, x, 0}; with `l0` free, combinations lie in
+   `span{1,p} ∪ span{1,q}`, two closed planes ✓.  `0, 1` are allowed but **not needed**:
+   `{p,p',q,q'}` is also a counterexample (its span contains `1 = p + p'`).
+3. **§3 symmetric-cone rigidity: STANDS as a sketch, with one misattributed step.**
+   "Spectrum ⊆ {−1,0,1} forces `a = 2p − 1`" is false as stated (`a = 0`; or `J = ℝ²`,
+   `a = (1,0)`).  What forces it is `R u = 0` (y := g⁻¹u interior, so `L(a)` has no
+   0-eigencomponent on y ⇒ all `λ_j = ±1`); the note uses `R u = 0` one line later, so
+   the fix is a reordering.  Cartan step (hyperbolic ⇒ conjugate into `p = L(J)`) and
+   `g = k P(y^{−1/2})` are standard ✓.  Infinite-dim part: UNCLEAR (self-declared).
+   Polyhedral claim "identity component = scalars" holds only for **indecomposable**
+   cones (a direct sum of a ray and a square cone has 2-dim identity component and
+   nontrivial compressions); harmless if one reduces to summands, but say so.
+4. **§3 Vinberg: STANDS (numerically).**  `dim g(K) = 5` computed from supporting pairs
+   (`revabs-vin2.py`), so the claimed 5-dim algebra is all of `g(K)`.  Search over
+   `A` (diagonal ∈ {0,±½}, random first-row off-diagonals): every `D` with `D³ = D`,
+   `R I = 0`, positive eigenprojections has zero off-diagonals, `e` diagonal; moreover
+   e.g. `c(E11) = E22 + E33` fails the kernel clause.  No spanning family ✓.
+5. **§4 equivalence: BROKEN as stated, repairable.**  (ii) writes `T_{a²}` with
+   `a² = T_a a`, but `T_a a` need not lie in `span{e_i}` (`T_i e_j` for non-commuting
+   `i,j`), so `T_{a²}` is undefined on the span.  Repair: first extend `T` using (i),
+   then state (ii) as `T̄_{T̄_a a} T̄_a = T̄_a T̄_{T̄_a a}` for `a` in the span (or in `W`).
+   With that, ⇐ (continuity + rescaled approximation for `sq_mem`) and ⇒ (JB product
+   bounded, agrees with `T_i` via `e_i * w`) both go through; the equivalence is then
+   close to a restatement of the Prop and adds little.
+6. **Practical (drop `ChainDense`'s commutation clause): STANDS.**  `jb_of_chainDense`
+   has `hker`, `hD`, `hU`, `hinj` inside `Fam`, which is all §1 uses; `nA`–`nD` +
+   `expPos` + `pos_eq_zero` + `linext_nonneg` are in place, so 60–100 lines is realistic.
+   Payoff is only simplification (`va_chainDense` already proves the clause).
+
+**Verdict:** §1 STANDS, §2 STANDS, §3 STANDS (sketch; fix the `a = 2p−1` step and
+"indecomposable"), Vinberg STANDS, §4 BROKEN as stated (ill-typed (ii); repairable),
+practical claim STANDS.  Recommendation "open; G2 proved; G1 not implied" is sound.
