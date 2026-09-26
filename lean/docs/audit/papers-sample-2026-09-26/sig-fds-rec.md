@@ -1,0 +1,43 @@
+# Re-audit of the sampled SIG, FDS and REC rows (2026-09-26)
+
+Read-only re-grade of the 31 sampled rows from papers-sig.csv, papers-fds.csv and papers-rec.csv (docs/audit/PAPERS-SAMPLE-2026-09-26.md), each checked against the printed point and the named Lean. Result: 30 CONFIRMED, 1 UNSURE, 0 DEFECT.
+
+## SIG (source `../papers/2003.10245/main.tex`, printed numbering)
+
+- papers-sig.csv:5 SIG 4 pproj — CONFIRMED (Papers/SIG/Prelim.lean:554,569; print main.tex:314)
+- papers-sig.csv:17 SIG 18 sigmaPAM_extends_omegaComplete — CONFIRMED; both conclusions (ω-complete; SumsTo ↔ IsCSum for every countable family) present, mild grade right (Papers/SIG/SigmaEffectus.lean:871; print main.tex:631, proof 1817)
+- papers-sig.csv:18 SIG 19 pred_sigmaEffectAlgebra — UNSURE statement right, but the print gives no proof (bare \qed corollary), so by README the grade should arguably be `none`, not `faithful` (SIG 25's row grades the same situation `none`) (Papers/SIG/SigmaEffectus.lean:896; print main.tex:641)
+- papers-sig.csv:22 SIG 23 unitInterval_isSigmaEffectMonoid — CONFIRMED; omissions recorded (the note's "needs SIG 15" is out of date now that SIG 15 is done, but the omission is still recorded) (Papers/SIG/SigmaEffectus.lean:1094,1136; print main.tex:718)
+- papers-sig.csv:24 SIG 25 pred_isSigmaEffectModule — CONFIRMED; r·p = r∘p via the tree's predEffectModule, non-σ case = tree (Papers/SIG/EffectModules.lean:185; print main.tex:797)
+- papers-sig.csv:37 SIG 40 normalisation_tfae — CONFIRMED; all four clauses match (normalisation ω = ω̄∘(1∘ω), Scal mul r*t = r∘t), route grade right (Papers/SIG/Normalisation.lean:410, defs 45-72; print main.tex:1112, proof 2890)
+- papers-sig.csv:42 SIG 45 trivial_of_scalars_trivial — CONFIRMED (Papers/SIG/Classification.lean:167; print main.tex:1210)
+- papers-sig.csv:51 SIG 43 noZeroDivisorsTheorem — CONFIRMED; cited theorem, grade none right; Classification.lean:75 has a stale docstring ("Not proved here … waits on OAP 71") (Papers/SIG/Discharge.lean:93; print main.tex:1186)
+- papers-sig.csv:58 SIG 49 powersetMorphism, powerset, OmegaBA.sigmaEffectus — CONFIRMED; ωBA homs, 𝒫(f) = preimage, faithful instance, sums/unit/truth as recorded (fixed at universe 0, harmless) (Papers/SIG/Pfn.lean:1542,1718,1835; print main.tex:1377-1388)
+- papers-sig.csv:72 SIG 58 sBase_isEquivalence — CONFIRMED; OVSt/CWMod/sBase match the print's definitions, route grade right (Papers/SIG/Convex.lean:3327, defs 2870-3040; print main.tex:1605)
+- papers-sig.csv:76 SIG 73 SigmaExtension.sig73 — CONFIRMED; Banach pre-base-norm, plus the series converging to ⋁x_n in the base norm; the hypothesis is recorded (SigmaExtension); mild grade right (Papers/SIG/Convex.lean:3847, 3562; print main.tex:3318)
+
+## FDS (source `../papers/1907.04714/direct_sums.tex`)
+
+- papers-fds.csv:3 FDS 2.1 `StarCategory` — CONFIRMED. Conditions 1–3 all present (1 as `[Preadditive C] [Linear ℂ C]`; 2(a)–(c) as `adj_id`/`adj_comp`/`adj_adj`/`adj_add`/`adj_smul`; 3(a),(b) as `exists_eq_adj_comp`, `eq_zero_of_comp_adj`, diagrammatic order correctly transposed). Definition, `none` right. (Papers/FDS/DirectSums.lean:49; print direct_sums.tex:226)
+- papers-fds.csv:5 FDS 2.2 `CStarCategory` — CONFIRMED. Complete hom-sets + `‖f ≫ f†‖ = ‖f‖^2` (= ‖a*a‖ = ‖a‖²); "turns C(A,A) into a C*-algebra" is `endCStarAlgebra` (:209). (Papers/FDS/DirectSums.lean:90; print direct_sums.tex:255)
+- papers-fds.csv:19 FDS 3.4 `BanFunctor.Representation` — CONFIRMED. Natural family of componentwise `≃ₗᵢ[ℂ]` from C(A,-) to F; `BanFunctor` (:517) is a Ban-enriched functor (linear, contractive on homs). (Papers/FDS/DirectSums.lean:543, :550, :555; print direct_sums.tex:381)
+- papers-fds.csv:22 FDS 4.2 `IsDirectSum` — CONFIRMED. Represents `dsumFunctor` = ⊕ᵢ C(Aᵢ,-) of (4.1) with the print's C*-category reading of Σ fᵢfᵢ* < ∞ (bounded partial sums, `SqSummable` :668) and norm (sup of partial-sum norms, `sqNorm` :673); in a C*-category (Sec4 variables :634). Unstated dual claim recorded. (Papers/FDS/DirectSums.lean:1045; print direct_sums.tex:476)
+- papers-fds.csv:23 FDS 4.3 `—` — CONFIRMED (recorded not-converted; the remark's definite claim "finite direct sums are dagger limits" is nowhere in Lean, which the note says; `ok` for an unstated point follows this audit's convention for recorded not-formalised remarks, though STATEMENT-AUDIT rule 4 would read it as `weaker`). (Papers/FDS/DirectSums.lean:1049; print direct_sums.tex:496)
+- papers-fds.csv:27 FDS 5.1 `directsum_equiv` — CONFIRMED. (a),(b),(c) with every clause: (b) SqSummable κ, ∃! factorisation, norm clause for every factoring f; (c) κᵢ*κᵢ = 1, κᵢ*κⱼ = 0 (i≠j), IsLUB of partial sums = 1 (footnote-recorded). "W*-category" is `WStarCategory`, the print's "equivalently [GLR 2.15]" form, recorded as `differs` on its own row papers-fds.csv:6. Proof faithful: (a)⇔(b) Yoneda, (b)⇒(c) via πⱼ/3.2/projection, (c)⇒(b) ultranorm construction, all as printed. (Papers/FDS/DirectSums.lean:2149, :1753, :1872, :2021; print direct_sums.tex:520)
+- papers-fds.csv:33 FDS 5.3 `concrete_directsum` — CONFIRMED. ℓ²-sum with componentwise representation is a direct sum via 5.1(c), as printed; converse clause carried by sibling row papers-fds.csv:34 (`concrete_directsum_unique`, :3385); universe restriction recorded. (Papers/FDS/DirectSums.lean:3372; print direct_sums.tex:641)
+
+## REC (source `../papers/2109.10707/short.tex`)
+
+- papers-rec.csv:19 REC 10 `rec10_tot` — CONFIRMED. For an effectus in partial form D, `Tot D` carries an effectus-in-total-form structure; remark gives no proof (cites Cho), `none` right. (Papers/REC/Effectus.lean:358; print short.tex:416)
+- papers-rec.csv:25 REC 15 `EffectMonoid.ofBiadditive` — CONFIRMED. Hypotheses are exactly the printed unit, two-sided bi-additivity (with the ⊥ side-conditions), associativity; conclusion the tree's `EffectMonoid`; the tree⇒paper half is `rec15_axioms` (:444). (Papers/REC/Effectus.lean:452; print short.tex:469)
+- papers-rec.csv:30 REC 20 `prodEffectMonoid` — CONFIRMED. M × N with pointwise multiplication over the tree's pointwise product EA; "irreducible" clause on sibling row papers-rec.csv:31. (Papers/REC/Effectus.lean:533; print short.tex:558)
+- papers-rec.csv:40 REC 23 `HasFilters` — CONFIRMED. Every predicate has a filter; `IsFilter` (:915) = `1∘ξ ≤ p` and initial with unique factorisation, as printed. (Papers/REC/Effectus.lean:929; print short.tex:603)
+- papers-rec.csv:51 REC 29 `rec29_scalar_action` — CONFIRMED. s·t = s∘t (`t ≫ s`), s·(t·f) = (s·t)·f = (s∘t)·f, the third bullet's "in particular" chain; lemma printed without proof ("straightforwardly verifiable"), `none` right. (Papers/REC/Effectus.lean:1143; print short.tex:704)
+- papers-rec.csv:54 REC 30 `directedCompleteEA_iff_down` — CONFIRMED. Footnote's up-directed ⇔ down-directed completeness for effect algebras; `IsUpDirected` matches the footnote (no nonemptiness, as printed). (Papers/REC/Effectus.lean:1190; print short.tex:719)
+- papers-rec.csv:55 REC 30 `DirectedCompleteEffectus` — CONFIRMED. ∀ A, Pred(A) directed complete; "normal" clause is `NormalEffectus` (:1242). (Papers/REC/Effectus.lean:1235; print short.tex:719)
+- papers-rec.csv:57 REC 32 `rec32_completeBoolean` — CONFIRMED. Complete Boolean algebra with the REC 16 effect monoid is directed complete (sup = sSup, EA order = lattice order via `boolean_le_iff`). (Papers/REC/Effectus.lean:1261; print short.tex:751)
+- papers-rec.csv:83 REC 72 `IsRigid` — CONFIRMED (recorded). Definition matches: ∀ g, f^⋄ = g^⋄ (`diaPull`, same convention as REC 70) ∧ 1∘f = 1∘g ⇒ f = g. The remark's two claims (non-uniqueness via f^⋄ = (½f)^⋄; non-rigid maps exist) are not stated, as the note says; same `ok`-with-note convention as FDS 4.3. (Papers/REC/Effectus.lean:1538; print short.tex:1250)
+- papers-rec.csv:87 REC 75 `asrtSharp_idem` — CONFIRMED. asrt_p ∘ asrt_p = asrt_p for sharp p; proof is the printed one-liner (ξ^p∘π_p = id), `faithful` right. (Papers/REC/Effectus.lean:1608; print short.tex:1277)
+- papers-rec.csv:101 REC 37 `IsOrthoalgebra` — CONFIRMED. a ⊥ a ⇒ a = 0; category OA recorded as in Decomposition.lean. (Papers/REC/Algebras.lean:53; print short.tex:787)
+- papers-rec.csv:107 REC 40 `rec40_orderInterval` — CONFIRMED. Ordered real vector space (PosSMulMono/SMulPosMono are the standard ordered-vector-space axioms), 0 ≤ u only (no order-unit assumption, as printed), [0,u] a convex EA through the REC 39 bridge; representation clause on its own sibling (:163). (Papers/REC/Algebras.lean:150; print short.tex:823)
+- papers-rec.csv:116 REC 47 `OUSState` — CONFIRMED. Positive, unital, linear A → ℝ. (Papers/REC/Algebras.lean:275; print short.tex:897)
