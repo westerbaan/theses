@@ -31594,3 +31594,8 @@ complement yields, via McCrimmon's Peirce specialisation and a Hilbert completio
 a nonzero Jordan hom into B(H) (`JBCoord.lean`); that hom and the associative-case
 GNS are normal (reviewed note `special-kernel.md`), so normal pure exceptionality
 suffices.  All three main theorems of REC now hold with no named hypotheses.
+
+SEA 16 in full (`JBContPeirce.lean`): every JB-algebra is a convex SEA,
+unconditionally — the continuous Peirce criterion via a fundamental-formula cross
+term, a ramp partition with second-order vanishing, quantitative
+Kleinecke–Shirokov and a Gelfand–Hille lemma (Phragmén–Lindelöf + Liouville).

@@ -79,6 +79,7 @@ import Papers.SEA.JBCommThm
 import Papers.SEA.JBSeqComm
 import Papers.SEA.JBWCommFull
 import Papers.SEA.JBCommJB
+import Papers.SEA.JBContPeirce
 
 /-
 Formalisations of six papers following the theses, by Abraham (Bram)
