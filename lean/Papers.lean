@@ -54,6 +54,7 @@ import Papers.REC.Monoidal
 import Papers.REC.Rec128
 import Papers.REC.Resolvent
 import Papers.REC.Rec119
+import Papers.REC.Rec136Hyps
 import Papers.FDS.Linking
 import Papers.FDS.Envelope
 import Papers.SEA.JordanSEA
