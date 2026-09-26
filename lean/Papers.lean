@@ -43,6 +43,9 @@ import Papers.SIG.Examples
 import Papers.SEA.Closing
 import Papers.SIG.Closing
 import Papers.REC.Reconstruction
+import Papers.OAP.Closing2
+import Papers.SEA.Closing2
+import Papers.FDS.Closing2
 
 /-
 Formalisations of six papers following the theses, by Abraham (Bram)
