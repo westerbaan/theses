@@ -25,7 +25,7 @@ order unit spaces, Euclidean Jordan algebras, von Neumann algebras).
 | `EJA` | 54 / 54 | 9,100 | complete up to one named external input (EJA 54: the Hanche-Olsen–Størmer classification); headline EJA 40 unconditional; the fundamental formula and the Albert algebra proved |
 | `FDS` | 19 / 19 | 4,500 | complete; the predual definition of W*-categories implies the used one under a common-embedding hypothesis |
 | `SIG` | 73 / 73 | 17,700 | complete; SIG 46's B(H) clause uses Kochen–Specker as a named hypothesis |
-| `REC` | 136 / 136 | 16,700 | complete; REC 121 (V_A is a JB-algebra) proved outright, repairing the print's appeal to A–S 9.48; A–S (1.82) proved (`Resolvent.lean`); Theorems 102 and 103 assume only REC 119 (the paper's own lemma, printed with a citation only), 136 also Hanche-Olsen–Størmer 7.2.7, Shultz 1979, A–S's four-exchangeable lemma (`*_unconditional`); REC 104 refuted (sequential effectuses have irreducible scalars) |
+| `REC` | 136 / 136 | 17,500 | complete; REC 121 (V_A is a JB-algebra) proved outright, repairing the print's appeal to A–S 9.48; A–S (1.82) and REC 119 proved; **Theorems 102 and 103 with no named hypotheses** (`rec102_hypfree`, `rec103_hypfree`); 136 assumes only three verified literature results: Hanche-Olsen–Størmer 7.2.7, Shultz 1979 Thm 3.9, A–S *Geometry* Lemma 4.4; REC 104 refuted (sequential effectuses have irreducible scalars) |
 
 No `sorry` anywhere; every headline theorem checked axiom-clean.  Defects found in
 the papers are in `../papers/ERRATA.md` (false-as-printed statements are refuted

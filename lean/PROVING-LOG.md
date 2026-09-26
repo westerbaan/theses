@@ -31545,3 +31545,17 @@ Reconstruction.lean was split at REC 121 (`Reconstruction2.lean`), and the
 A–S 9.43/9.48 hypothesis dropped from rec121, jbMul, rec102/103/136 and
 everything downstream.  Remaining hypotheses: A–S (1.82), REC 119, and for 136
 H-O–S 7.2.7, Shultz, A–S four-exchangeable.
+
+Last round: the remaining REC hypotheses.  A–S (1.82) proved (`Resolvent.lean`:
+Neumann-series resolvents positive, ((1 − A/n)⁻¹)ⁿ → exp A, closed cone).  REC 119
+proved (`Rec119.lean`: van de Wetering's Prop. 46 redone with internal states —
+sharp case from compressibility and quadraticity, then the scalar split: Boolean
+case all predicates sharp, convex case by spectral level sets).  So
+`rec102_hypfree` and `rec103_hypfree` carry no named hypotheses, and
+`rec136_hypfree` only H-O–S 7.2.7, Shultz 1979 Thm 3.9 and A–S *Geometry* Lemma
+4.4, all three checked against the sources (`docs/research/rec-citations.md`).
+Also: FDS 2.2's converse and Kadison ⇒ Mathlib `WStarAlgebra` (DECISIONS 3.7 now
+both ways); FDS 2.5's NRep(A**) ≅ Rep(A) under the print's extension property;
+SEA 16's Jordan sentence for all finite-dimensional JB-algebras (van de Wetering's
+commutation theorem, Jordan-natively).  The abstract A–S hypothesis stays open
+(`as943-abstract.md`: G2 follows, chain density does not).

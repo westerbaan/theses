@@ -20,7 +20,7 @@ Design:
   axiom 6 is a normal REC-SEA structure on each `Pred(A)` with product
   `q ∘ asrt_p`.
 * **Cited results are named hypotheses**, never axioms:
-  - `WeteringStateOrderLemma C` — van de Wetering 2018, Prop. 46 (REC 119);
+  - `WeteringStateOrderLemma C` — van de Wetering 2019 (arXiv:1803.11139v3), Prop. 46 (REC 119; proved in `Rec119.lean`);
   - `AlfsenShultzResolventCriterion` — Alfsen–Shultz, *State spaces*, (1.82)
     (REC 120): a bounded operator whose resolvents `1 ± λD` are positive for
     small `λ` is an order derivation;
@@ -2550,11 +2550,11 @@ open SequentialEffectus
 variable (C) in
 /-- **REC 119** (`lem:state-order-lemma`, short.tex:2165, Lemma), *the statement*:
 for a sharp `p`, a predicate `a` and a state `ω` with `a ∘ ω = 0`,
-`(p & a) ∘ ω = (p⊥ & a) ∘ ω`.  The print's proof is a citation ("exactly as" van de
-Wetering 2018, *Sequential measurement characterises finite-dimensional quantum
-theory*, Prop. 46, which is about the states of a compressible quadratic SEA, not
-about an effectus's internal states); not reconstructed here, and recorded as the
-named hypothesis `WeteringStateOrderLemma` of REC 120–121 and 102–103. -/
+`(p & a) ∘ ω = (p⊥ & a) ∘ ω`.  The print's proof is a citation ("exactly as" van de Wetering, *Sequential product spaces are Jordan algebras* (J. Math. Phys. 60, 2019; arXiv:1803.11139v3),
+Prop. 46, which is about the σ-normal states of a σ-sequential product space with a
+comprehensive quadratic product, not about an effectus's internal states); recorded
+here as the named hypothesis `WeteringStateOrderLemma` of REC 120–121 and 102–103,
+and proved in `Papers.REC.Rec119` (`weteringStateOrderLemma_holds`). -/
 def WeteringStateOrderLemma : Prop :=
   ∀ {A : C} (p a : Pred A) (ω : Stat A), IsSharp p → ω.1 ≫ a = 0 →
     ω.1 ≫ SEA.seq p a = ω.1 ≫ SEA.seq (orth p) a

@@ -456,7 +456,7 @@ def IsQuadratic [SEA E] : Prop :=
 /-- **REC 61** (`thm:normalSEAisJB`, short.tex:1064, Theorem), *the statement*:
 a convex normal SEA whose sequential product is compressible and quadratic is
 order-isomorphic to the unit interval of a directed-complete JB-algebra.  This
-is van de Wetering, *Sequential measurement characterises quantum theory* (2018),
+is van de Wetering, *Sequential product spaces are Jordan algebras* (J. Math. Phys. 60, 2019; arXiv:1803.11139v3),
 Theorem 4 — outside the papers being formalised; recorded as a named `Prop`
 (a black box).  The paper does **not** use it in its proofs: §5 re-runs its
 argument with the effectus's own states (REC 117–121). -/

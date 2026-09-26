@@ -21,7 +21,7 @@ JW-algebra.
   `WeteringStateOrderLemma` (REC 119).  (REC 121 no longer takes
   `AlfsenShultzJordanFromDerivations`: `rec121` is proved from `jb_of_chainDense`.)
 * `HancheOlsenStormerDecomposition` — REC 52 (H-O–S 7.2.7), JBW = JW ⊕ purely exceptional;
-* `ShultzExceptionalStructure` — REC 55 (Shultz 1979), purely exceptional
+* `ShultzExceptionalStructure` — REC 55 (Shultz 1979, Thm 3.9), purely exceptional
   `≅ C(X, M₃(𝕆)_sa)`, with `M₃(𝕆)_sa` the Albert algebra of `Papers/EJA/Albert.lean`;
   REC 133 is then *proved*: the three exchangeable idempotents of `M₃(𝕆)_sa`
   (H-O–S 2.8.3) are computed (`AlbertFacts`);
@@ -303,7 +303,7 @@ def HancheOlsenStormerDecomposition : Prop :=
         ∀ x, c * x = x → ψ x = 0
 
 /-- **REC 55** (`thm:purely-exceptional-char`, short.tex:940, Theorem; Shultz 1979,
-Hanche-Olsen–Størmer Thm 7.2.7), as a named hypothesis: a purely exceptional
+Thm 3.9, J. Funct. Anal. 31, p. 374), as a named hypothesis: a purely exceptional
 JBW-algebra is Jordan-isomorphic to `C(X, M₃(𝕆)_sa)` for a hyperstonean `X` (REC 53),
 with the pointwise Jordan product.  `M₃(𝕆)_sa` is the Albert algebra
 `Papers.EJA.Albert.Alb` (constructed, with its Jordan identity proved, in
