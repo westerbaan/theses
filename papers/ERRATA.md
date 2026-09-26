@@ -271,3 +271,18 @@ normalised and uses strict inequalities in `C(X)`.  The gap is present for
 applies as printed, and evaluating at any point `t ∈ X` puts every strict
 inequality in `ℝ`.  Theorems 102 and 103 stand as printed (up to the cosmetic
 fixes listed for 102/103).  Review: `lean/docs/research/review-rec120.md`.
+
+## SIG — *Dichotomy between deterministic and probabilistic models in countably additive effectus theory* (arXiv:2003.10245, `2003.10245/main.tex`)
+
+* **SIG 33** (`prop:wmod-effectus`, main.tex:964, Proposition) — imprecise
+  ("with scalars `M`").  A scalar of `WMod[M]` is an action-preserving map
+  `M → M`, i.e. a right multiplication `t ↦ t·r` (`r = p(1)`), and the
+  composite `s ∘ r` is `t ↦ t·r·s`; so `p ↦ p(1)` is an isomorphism of effect
+  monoids onto the *opposite* monoid `Mᵒᵖ`, not onto `M`.  The printed claim
+  holds only when `M ≅ Mᵒᵖ` (e.g. `M` commutative, which by SIG 42 covers every
+  σ-effect monoid, so the σ-half is unaffected in substance).  The `Mᵒᵖ`
+  reading is the one Proposition 34 needs: `sSt : C → WMod[Mᵒᵖ]` preserves
+  scalars, and `(Mᵒᵖ)ᵒᵖ = M`.  Repair: "with scalars `Mᵒᵖ`" (equivalently,
+  `WMod[Mᵒᵖ]` has scalars `M`).  Lean: `Papers.SIG.WMod.effectus_scalars :
+  EMIso (Scal (WMod M)) (MOp M)`; for `EMod[M]ᵒᵖ` the scalars are `M` as
+  printed (`Papers.SIG.EMod.effectus_scalars`).

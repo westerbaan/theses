@@ -203,3 +203,7 @@ theory.  "tree" = `Theses/B/Eff/*`.
 * **SIG 40 (iii)⇒(i)** relies on Manes–Arbib's iteration theorem for the
   existence of `⋁ ω ∘ sⁿ`; direct argument available (above).
 * **SIG 46**: Kochen–Specker; out of reach, cited.
+
+## Status update 2026-09-26 (phase 2a)
+
+Done: SIG 14 (Pfn is a σ-effectus), 22 (Pfn scalars), 32, 47–50 in `Pfn.lean`; the finite halves of 28, 29, 33, 34 in `Finite.lean`.  SIG 33 (finite): the scalars of WMod[M] are Mᵒᵖ, not M (ERRATA); the σ-half stands since σ-effect monoids are commutative (SIG 42).  The convex side (`Convex.lean`) is in progress in a separate job.

@@ -31,6 +31,8 @@ import Papers.REC.Scalars
 import Papers.SIG.Discharge
 import Papers.SEA.Discharge
 import Papers.SEA.AlmostConvex
+import Papers.SIG.Pfn
+import Papers.SIG.Finite
 
 /-
 Formalisations of three papers following the theses, by Abraham (Bram)
