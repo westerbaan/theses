@@ -209,3 +209,5 @@ math STANDS; the erratum is NOT WARRANTED.**
 * The docstring wording "transplant … without spectral duality; truth open" is
   accurate.  The existing docstring (:2311) already says "no spectral duality",
   but still titles it "Alfsen–Shultz 9.48 (via 9.43)".  Retitle it.
+
+**Correction (2026-09-26, `rec-citations.md`):** as printed, *Geometry* Thm 9.43 (p. 346) is "a spectral K is a JBW normal state space iff T_e f = T_f e" (the symmetry (9.29)), not bilinearity of the product; Thm 9.48 (p. 352) is "K is the normal state space of a JBW-algebra iff K is spectral and elliptic", whose proof gets [P−P′, Q−Q′]1 = 0 and applies 9.43.

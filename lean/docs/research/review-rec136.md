@@ -147,3 +147,5 @@ standard as a typo-class erratum. Its wording at ERRATA.md:294–298 is correct.
 3. Add "(label unverified; content = the n ≥ 4 coordinatization lemma used in
    H-O–S 7.2.7)" to the REC 132 docstring or row if the A–S label cannot be checked.
 4. No grade changes.
+
+**Correction (2026-09-26, `rec-citations.md`):** A–S *Geometry* Lemma 4.4 (p. 105) verified as the source of REC 132. REC 55 is Shultz 1979, Thm 3.9; H-O–S 7.2.7 gives only the JW ⊕ exceptional decomposition (REC 52) and has no "second half".

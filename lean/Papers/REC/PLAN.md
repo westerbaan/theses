@@ -48,7 +48,7 @@ The paper's goal (§5, §6) is three theorems about a **sequential effectus**
 | 38 | `{0,1}` scalars + state separation ⇒ orthoalgebras | cited SIG; SIG only has a σ-version (SIG 48/50) | **in-house** (the Prop 93 argument, 5 lines) |
 | 43 | `[0,1]` scalars ⇒ convex predicate spaces | SIG 25/27 | **in-house** (tree `predEffectModule`) |
 | 42, 94, 95 | `DCOUS ≃ DCEA_c` | cited "cf. SIG Prop 55"; SIG proves only the σ-version (SIG 56) | in-house on top of the tree's cone/`Vec` construction (thesis B 179) + black box `WrightMonotoneCompleteBanach` (Wright 1972, Lemma 1.1: a dc OUS is Banach) |
-| 119 | `ω(a)=0 ⇒ ω(p&a) = ω(p^⊥&a)` | "exactly as" van de Wetering 2018 (*Sequential measurement characterises…*) Prop 46 — **not printed** | reconstruct in-house (preferred) or black box `WeteringStateOrderLemma` |
+| 119 | `ω(a)=0 ⇒ ω(p&a) = ω(p^⊥&a)` | "exactly as" van de Wetering 2019 (*Sequential product spaces are Jordan algebras*, J. Math. Phys. 60, arXiv:1803.11139v3) Prop 46 — **not printed** | reconstruct in-house (preferred) or black box `WeteringStateOrderLemma` |
 | 120 | `(1-λδ)^{-1} ≥ 0` iff `1-λδ` maps non-positives to non-positives | Alfsen–Shultz, *State spaces* (1.82) | black box `AlfsenShultzResolventPositivity` (likely provable) |
 | 121 | order derivations `D_p` ⇒ JB-algebra | Alfsen–Shultz, *Geometry*, Thm 9.48 (via 9.43) | **black box** `AlfsenShultzJordanFromDerivations` — the load-bearing external result of 102/103 |
 | 118 | order-derivation criterion | Alfsen–Shultz, *State spaces*, Prop 1.108 | stated as black box; *not* used by the proof (120 reworks A–S 1.106 instead) |

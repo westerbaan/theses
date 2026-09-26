@@ -206,3 +206,5 @@ meets the "a reader would stumble" bar is the author's call: the citation of 9.4
 outside its hypotheses and the missing argument remain real, but the gap is now
 a short fix, not an open problem.  Drop "the Peirce-½ component we could not
 derive" and the REC 119/comprehensions route in any case.
+
+**Citations verified (2026-09-26, `rec-citations.md`):** A–S *State spaces* Prop. 1.108 (p. 58) and Prop. 1.114 (p. 60, order derivations closed under Lie brackets) are the numbers used above; the "[unverified]" marks are resolved.
