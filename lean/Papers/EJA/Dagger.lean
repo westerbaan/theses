@@ -43,6 +43,15 @@ named hypothesis `Eja34Literal` of the final theorem — exactly as the tree's
 statement "a ⋄-self-adjoint root of a pure map may be replaced by a pure one"
 (`PureRootHyp`, the form of the tree's hypothesis), via EJA 34 with the root
 pure (`super_duper_theorem`).  Everything else is proved.
+
+**Both hypotheses are discharged** by `Papers/EJA/PureRoot.lean` (not yet
+importable here: its olean was not built when this file was written), whose
+`diaSA_root_isPure f g (hg : IsPure g) (hfg : g = f ≫ f) (hsa : IsDiaSA f)` :
+`IsPure f` says the root is automatically pure.  Mechanically:
+* `Eja34Literal`: `fun E g f hg hf hgf =>
+  super_duper_theorem g hg ⟨f, diaSA_root_isPure f g hg hgf hf, hf, hgf⟩`
+  (this is `eja34'` with `IsDiaPos` unfolded to the root `f`);
+* `PureRootHyp`: `fun E f hf hff => ⟨f, diaSA_root_isPure f (f ≫ f) hff rfl hf, hf, rfl⟩`.
 -/
 
 namespace Papers.EJA
@@ -399,15 +408,18 @@ theorem ejapsu_quot_after_compr_pure {X Y Z : EJAPsu.{u}ᵒᵖ} {p q : Pred Y}
 /-- **EJA 34 with Def 32 read literally**: a pure `g` that is `f ∘ f` for a
 ⋄-self-adjoint positive subunital `f` — **not** assumed pure — is
 `Q_{√g(1)}`.  This is what 211II.1's uniqueness needs; the paper proves 34
-only with `f` pure (`super_duper_theorem`; ERRATA EJA 34).  Open; carried as a
-hypothesis of `eja40`. -/
+only with `f` pure (`super_duper_theorem`; ERRATA EJA 34).  Carried as a
+hypothesis of `eja40`; proved in `PureRoot.lean` (`eja34'`, via
+`diaSA_root_isPure`: `fun E g f hg hf hgf => super_duper_theorem g hg
+⟨f, diaSA_root_isPure f g hg hgf hf, hf, hgf⟩`). -/
 def Eja34Literal : Prop :=
   ∀ (E : EJAPsu.{u}) (g f : E ⟶ E), Papers.EJA.IsPure g → IsDiaSA f.toLinearMap →
     g = f ≫ f → ∀ x, g.toLinearMap x = ejaU (ejaSqrt (g.toLinearMap 1)) x
 
 /-- The tree's form of the hypothesis (`su_andThenEffectus_of_pure_sqrt`'s `H`
 for `vNᵒᵖ`, B15): a ⋄-self-adjoint `f` whose square is pure has a *pure*
-⋄-self-adjoint square root with the same square. -/
+⋄-self-adjoint square root with the same square.  Discharged by
+`PureRoot.lean`'s `diaSA_root_isPure` (take `h = f`). -/
 def PureRootHyp : Prop :=
   ∀ (E : EJAPsu.{u}) (f : E ⟶ E), IsDiaSA f.toLinearMap → Papers.EJA.IsPure (f ≫ f) →
     ∃ h : E ⟶ E, Papers.EJA.IsPure h ∧ IsDiaSA h.toLinearMap ∧ f ≫ f = h ≫ h

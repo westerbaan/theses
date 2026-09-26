@@ -130,13 +130,16 @@ dimension replaces the tree's B15 Schur/Gardner step;
 The proof gets the `&`-effectus axiom 211II.1 (a *unique* ⋄-positive `asrt_p`
 with `asrt_p(1) = p`) from EJA 34.  But 211II.1 quantifies over ⋄-positive maps
 in the sense of eff.tex 206II.4 / Def 32, `g = f ∘ f` with `f` ⋄-self-adjoint
-and **not** assumed pure, while 34 is proved only for pure `f` (above).  So the
-uniqueness of `asrt_p`, and with it the theorem, rests on 34 for non-pure
-roots, which is open (the same gap as thesis B's B15 for `vNᵒᵖ`).  Everything
+and **not** assumed pure, while 34's printed proof covers only pure `f`
+(above).  So the uniqueness of `asrt_p`, and with it the theorem, rests on 34
+for non-pure roots (the analogue of thesis B's B15 for `vNᵒᵖ`).  The gap is
+closed: a ⋄-self-adjoint root of a pure map is itself pure
+(`Papers.EJA.diaSA_root_isPure`), so 34 holds as printed (`Papers.EJA.eja34'`)
+and the theorem stands.  Everything
 else in the proof is correct: existence of `asrt_p = Q_{√p}`, purity of `π∘ξ`
 (EJA 31), and the three conditions of 215III (the second is the fundamental
 formula).  Lean: `Papers.EJA.eja40` (with the hypothesis
-`Papers.EJA.Eja34Literal`), `Papers.EJA.eja40_of_pureRoot`.
+`Papers.EJA.Eja34Literal`, discharged by `eja34'`), `Papers.EJA.eja40_of_pureRoot`.
 
 ## REC — *A computer scientist's reconstruction of quantum theory* (arXiv:2109.10707, `2109.10707/short.tex`)
 
