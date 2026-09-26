@@ -274,7 +274,11 @@ fixes listed for 102/103).  Review: `lean/docs/research/review-rec120.md`.
     non-trivial idempotent scalar;
   - the `C(X)`-valued concerns in the REC 120 entry above do not arise.
 
-  Theorems 102 and 103 remain true.  Lean:
+  Theorems 102 and 103 remain true, modulo the named hypotheses they carry
+  (Alfsen–Shultz 9.48 in a reformulated form, Alfsen–Shultz (1.82), and REC 119
+  itself as `WeteringStateOrderLemma`).  Separation by *substates* would rescue
+  the remark, but the print defines states as total maps (short.tex:436).
+  Review: `lean/docs/research/review-rec104.md`.  Lean:
   `Papers.REC.rec104_false`, `Papers.REC.idem_scalar_trivial`,
   `Papers.REC.scal_irreducible_of_states`, `Papers.REC.rec102_trivial_factor`.
 
