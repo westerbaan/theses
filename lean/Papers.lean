@@ -52,6 +52,7 @@ import Papers.REC.JordanFromChains
 import Papers.REC.Reconstruction2
 import Papers.REC.Monoidal
 import Papers.REC.Rec128
+import Papers.REC.Resolvent
 
 /-
 Formalisations of six papers following the theses, by Abraham (Bram)
