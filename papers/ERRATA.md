@@ -222,6 +222,8 @@ formula).  Lean: `Papers.EJA.eja40` (with the hypothesis
   `Aᵢ = ℂ`) and `Kⱼⱼ ≠ 0` for all `j`; then completeness does go "the same way
   as Lemma 4.1".  Lean: `Papers.FDS.KSum.kernel_complete`.
 
+*Update 2026-09-26:* the gap is closed. `Papers.EJA.diaSA_root_isPure` (`PureRoot.lean`) proves that a ⋄-self-adjoint root of a pure map is pure, so EJA 34 holds as printed and EJA 40 follows without extra hypotheses; only the printed proofs of 34 and 39 are incomplete.
+
 ### REC 120 — proof under-specified; statement true; local repair (independent review, 2026-09-26)
 
 The proof takes `ω' := asrt_p ∘ ω` and applies Lemma 119, which is stated for
