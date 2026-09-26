@@ -39,6 +39,7 @@ import Papers.REC.Rec92Counter
 import Papers.SIG.Convex
 import Papers.SEA.PureAConvex
 import Papers.EJA.Albert
+import Papers.SIG.Examples
 
 /-
 Formalisations of three papers following the theses, by Abraham (Bram)
