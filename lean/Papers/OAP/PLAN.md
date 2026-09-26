@@ -431,3 +431,72 @@ Pitfalls met here:
 * Structure projections of `EffectMonoidHom` into `Set.Icc (0 : C(X,ℝ)) 1`
   (`f.toFun`) fail to elaborate in a *statement* unless the effect monoid on
   the interval is an instance (hence the local instance above).
+
+### `Embedding.lean` done (2026-09-26)
+
+OAP 51–57 all formalised, 1,070 lines, `scripts/lean1.sh` exit 0, no
+`sorry`, no warnings; 7 rows in `docs/audit/papers-oap.csv`
+(`scripts/papers_check.py` clean for OAP).  Nothing false as printed, no
+ERRATA.  **OAP 55 checked**: the print's "straightforward to check" holds —
+`M = S₀ ∪ S₁` is a sub-effect monoid of `[0,1]_{ℝ^{X₁⊔X₂}}` (two elements of
+`S₁` are never summable), ω-complete with pointwise suprema, has no maximal
+halvable idempotent, and is not `≅ M₁ ⊕ M₂` for halvable (in particular
+convex) `M₁` and Boolean `M₂` (`oap55`, `oap55_not_oap54_iso`).  A pair
+`(f₁, f₂)` is one function on `X₁ ⊕ X₂`.  `Papers.lean` imports it.  **The
+lead must build `Papers.OAP.Embedding` before `Main.lean` can import it.**
+
+Statement forms §9 consumes (namespace `Papers.OAP`):
+
+* `oap54 [OmegaComplete M] : ∃ (M₁ M₂ : Type u) (_ : EffectMonoid M₁)
+  (_ : EffectMonoid M₂), OmegaComplete M₁ ∧ OmegaComplete M₂ ∧ IsConvex M₁ ∧
+  (∃ hB : IsBooleanEM M₂, EMIsIso (booleanIso hB) ∧ ∀ A countable ⊆ P(M₂),
+  ∃ sup) ∧ Nonempty (EMEmbedding M (M₁ × M₂))`.
+* `oap57 [DirectedComplete M]`: the same with `DirectedComplete M₁`,
+  `DirectedComplete M₂`, every `A ⊆ P(M₂)` has a supremum, and
+  `∃ f : EffectMonoidHom M (M₁ × M₂), EMIsIso f`.
+* "Boolean algebra `B`" is `P(M₂)` = `idempotents M₂` with the scoped
+  `idemBooleanAlgebra` and effect monoid `booleanEffectMonoid _`, reached
+  from `M₂` by `booleanIso hB` (iso, inverse `idemIncl`).
+
+Notes for `Main.lean` (OAP 68–73), re-derive from the print:
+
+* OAP 68/69 = `oap54`/`oap57` + OAP 66 (`OUS.lean`'s `oap66`, which takes
+  the lattice property as a hypothesis `oap37` — discharge it with
+  FloorCeiling's `isLUB_emSup` — and its convex structure as a `SMul I M`
+  from an `EffectModule I M`: get that from `IsConvex M₁` by `oap49_iff`).
+  `oap66` gives `X : Type u`, so `[0,1]_{C(X)} × B` is a `prodEffectMonoid`
+  in one universe.  **Missing**: composing an `EMEmbedding` with isomorphisms
+  on the two factors (no `EffectMonoidHom.comp` or product-of-homs exists in
+  the tree or here; `EffectMonoidHom.pair` in this file pairs two homs out of
+  one `M`).  Reflection of the composite: homs are monotone
+  (`exc_eamorphism_monotone`), so apply the inverse isos.  OAP 69's "complete
+  Boolean algebra" as a Mathlib `CompleteBooleanAlgebra` instance must be built
+  from "every subset of `P(M₂)` has a supremum" — or state it as here.
+* OAP 70 (commutative): the embedding is injective (order-reflecting), and
+  both factors are commutative (`oap7_CX` for `[0,1]_{C(X)}`; a Boolean EM is
+  commutative since `p·q` is the meet, `isGLB_idem`) — the second factor can
+  be `M₂` itself, no need to pass to `B`.  The print says "join" for the
+  meet (flag already in the plan).
+* OAP 71: `oap51 ⟨_, oap25 s, rfl⟩` gives `IsHalvable (ceil (s s^⊥ ⋎ s s^⊥))`
+  directly; then `oap50` and `oap66`; "`M = {0}`, `{0,1}`, `[0,1]`" needs
+  statement design (cardinality / isomorphism to `unitInterval`'s EM).
+* Tools here: `piEffectAlgebra`/`piEffectMonoid` (+ `pi_le_iff`,
+  `pi_oplus`, `pi_omegaComplete`, `pi_halvable`, `pi_isBooleanEM`);
+  corner transport `corner_omegaComplete`, `corner_directedComplete`,
+  `corner_halvable`, `corner_isBooleanEM`; `IsSubEM`/`subEffectMonoid`
+  (+ `sub_le_iff`: the order of a sub-EM is the restricted order);
+  `IsHalvable.map` (homs preserve halves), `halvable_of_convex`,
+  `eq_zero_of_halvable_boolean`, `prod_halvable_idem`; `IsOrthIdemFamily`,
+  `exists_maximal_family` (Zorn), `isLUB_one_of_maximal` (`⋁E = 1`),
+  `le_of_mul_le_of_maximal`; `boolean_dc_isLUB`.
+
+Pitfalls met:
+
+* A statement mentioning `(cornerPiHom F hF).toFun` (or any hom into a
+  product whose effect monoid is a def) needs `letI := cornerPiEM F hF` *in
+  the statement*: the projection re-synthesises the codomain instance.
+* On a subtype whose sum is inherited as `x.1 ⋎ y.1`, `(x ⋎ y).1 = x.1 + y.1`
+  is not `rfl` (`oplus` is a classical `dite`): `rw [oplus_eq h]`, then the
+  ambient `oplus_eq` (see `val_oplus`).
+* This Mathlib deprecates `push_neg` (use `push Not`), `Set.mem_setOf_eq`
+  (`Set.mem_ofPred_eq`), `if_true`/`if_false` (`ite_true`/`ite_false`).
