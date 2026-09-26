@@ -1,130 +1,146 @@
 DISP|lean_name|module|stmt|proof|note|status
-REC 1|IsEffectusInTotalForm|Papers/REC/Effectus.lean|ok|none|Definition: alias of thesis B 180I EffectusTotalForm, whose three clauses are the three of the point; partial maps, states, predicates and Par(C) are the tree's PartialMap and Par.|thin
-REC 2|rec2_set|Papers/REC/Effectus.lean|ok|none|Example item 1: Set is an effectus in total form (extensive_effectus_set) and predicates on A are subsets (set_pred_subset, read in Par Set where predicates live). The states=elements clause is not restated.|thin
-REC 2|rec2_kleisli_distribution|Papers/REC/Effectus.lean|ok|none|Example item 2: Kl of the finite distribution monad = thesis B exc_dm_effectus_kleisli at M=[0,1]. Item 3 (C*-algebras with positive unital maps) NOT formalised: the tree has vNop with NCPU maps and OUSop, neither is this category.|thin; item 3 deferred
-REC 4|IsAdditive|Papers/REC/Effectus.lean|ok|none|Definition of additive map (f 0 = 0 and Kleene additivity). The PCM itself is thesis B 174II PCM (same axioms written out).|ok
-REC 4|IsBiadditive|Papers/REC/Effectus.lean|ok|none|Definition: both restrictions additive.|ok
-REC 4|EnrichedOverPCMs|Papers/REC/Effectus.lean|ok|none|Definition: composition biadditive.|ok
-REC 5|Compatible|Papers/REC/Effectus.lean|ok|none|Definition of compatible family, binary case (paper: any finite J; thesis B also binary).|ok
-REC 5|finPAC_iff|Papers/REC/Effectus.lean|ok|none|finPAC as printed (enriched + compatible sum + untying) iff thesis B FinPAC; proved both ways.|ok
-REC 6|rec6_partialOrder|Papers/REC/Effectus.lean|ok|none|EA order is a partial order with min 0, max 1 = 0^perp. Definition-point claims; tree 176 lemmas.|thin
-REC 6|rec6_orth_antiIso|Papers/REC/Effectus.lean|ok|none|orth is an involutive order anti-isomorphism (tree eabasics_*).|thin
-REC 6|rec6_perp_iff|Papers/REC/Effectus.lean|ok|none|x perp y iff x <= y^perp (tree eabasics_perp_iff_le_orth).|thin
-REC 6|rec6_additive_monotone|Papers/REC/Effectus.lean|ok|none|Additive maps are monotone; two-line proof.|ok
-REC 7|rec7_as_printed_false|Papers/REC/Effectus.lean|false-as-printed|none|The print makes an OML an EA with x perp y iff x meet y = 0; refuted in MO2 (a+a'=1 and a+b=1 with b != a'). The same slip is OAP 2 (ERRATA). MO2 built as a finite lattice, all axioms by decide.|false-as-printed: refuted; ERRATA REC 7
-REC 7|rec7_corrected|Papers/REC/Effectus.lean|ok|none|Corrected form: perp iff x <= y^c (thesis B 175II.4 orthomodularEffectAlgebra) plus the order clause (EA order = lattice order), proved via the orthomodular law.|ok
-REC 8|rec8_effects|Papers/REC/Effectus.lean|ok|none|[0,1]_A of a unital C*-algebra as thesis B 175II.2 orderIntervalEffectAlgebra on the ordered group A.|thin
-REC 9|IsEffectusInPartialForm|Papers/REC/Effectus.lean|ok|none|Alias of thesis B 180VII EffectusPartialForm (same axioms; total = IsTotal).|thin
-REC 10|rec10_par_tot|Papers/REC/Effectus.lean|ok|none|Remark: Par of a total-form effectus is a partial-form effectus with I = 1 (cho_thm_1). The 2-categorical equivalence is not formalised.|thin; 2-categorical part n/f
-REC 10|rec10_tot|Papers/REC/Effectus.lean|ok|none|Remark, converse: Tot of a partial-form effectus is total form (eff_partial_to_total).|thin
-REC 11|rec11_pfn|Papers/REC/Effectus.lean|ok|none|Example, first clause: Par(Set) is an effectus in partial form (instances) with scalars {0,1}. Kl(subdistributions), C*-algebras with contractive positive maps, EAop NOT formalised.|thin; rest deferred
-REC 12|rec12_pred_functor|Papers/REC/Effectus.lean|ok|none|Pred and Pred(f) are the tree's Pred/predMap; functor laws and additivity of Pred(f) proved (EA morphisms = additive maps as in REC 6; the category itself not built).|ok
-REC 13|rec13_separatedByPredicates_iff|Papers/REC/Effectus.lean|ok|none|Tree SeparatingPredicates is the printed definition.|thin
-REC 14|rec14_separatedByStates_iff|Papers/REC/Effectus.lean|ok|none|Tree SeparatingStates in the printed iff form.|thin
-REC 15|rec15_axioms|Papers/REC/Effectus.lean|ok|none|Tree EffectMonoid (four-fold distributive law) satisfies the printed axioms (unit, biadditivity both sides, associativity).|ok
-REC 15|EffectMonoid.ofBiadditive|Papers/REC/Effectus.lean|ok|none|Converse: the printed axioms give a tree EffectMonoid.|ok
-REC 15|IsIdempotent|Papers/REC/Effectus.lean|ok|none|Idempotent: p*p = p.|ok
-REC 16|rec16_boolean|Papers/REC/Effectus.lean|ok|none|Boolean algebra EA with perp iff meet = 0, sum = join, product = meet, commutative (tree booleanEffectMonoid).|thin
-REC 17|rec17_scalars|Papers/REC/Effectus.lean|ok|none|Scalars effect monoid with s.t = s o t (tree scalEffectMonoid; diagrammatic t >> s).|thin
-REC 18|rec18_continuous_commutative|Papers/REC/Effectus.lean|ok|none|C(X,[0,1]) effect monoid is tree continuousUnitIntervalEffectMonoid (real-valued); commutativity proved. Gelfand parenthetical not formalised.|ok
-REC 20|prodEffectMonoid|Papers/REC/Effectus.lean|ok|none|Direct sum of effect monoids = product with pointwise operations (EA part = tree prodEffectAlgebra).|ok
-REC 20|IsIrreducible|Papers/REC/Effectus.lean|ok|none|Irreducible: every EM-isomorphism M = E1 + E2 has a subsingleton summand ({0}). Only effect monoids (the point also says effect algebras; only EMs are used later).|ok
-REC 21|Corner|Papers/REC/Effectus.lean|ok|none|pM = {p.a} as printed.|ok
-REC 21|cornerEA|Papers/REC/Effectus.lean|ok|none|pM is an EA with (pa)^perp := p a^perp; in-house, using centrality of idempotents (idem_central, OAP 20 proved here in 10 lines).|ok
-REC 21|cornerEM|Papers/REC/Effectus.lean|ok|none|pM is an effect monoid.|ok
-REC 21|rec21_cornerIso|Papers/REC/Effectus.lean|ok|none|M = pM + p^perp M as effect monoids, a maps to (pa, p^perp a) (cited to OAP 21; proved here, middle-four interchange re-proved as pcm_middle_four').|ok
-REC 21|rec21_irreducible_iff|Papers/REC/Effectus.lean|ok|none|Irreducible iff no non-trivial idempotents.|ok
-REC 22|rec22_isComprehension_iff|Papers/REC/Effectus.lean|ok|none|Tree IsComprehension is the printed definition.|thin
-REC 23|IsFilter|Papers/REC/Effectus.lean|ok|none|Filter as printed (1 o xi <= p, initial).|ok
-REC 23|isFilter_iff_isQuotient|Papers/REC/Effectus.lean|ok|none|Footnote: filter for p = thesis B quotient for p^perp.|ok
-REC 23|HasFilters|Papers/REC/Effectus.lean|ok|none|Has filters.|ok
-REC 23|hasFilters_iff_hasQuotients|Papers/REC/Effectus.lean|ok|none|Has filters iff tree HasQuotients.|ok
-REC 25|rec25_kernels_cokernels|Papers/REC/Effectus.lean|weaker|none|Remark: only the directions the tree has (comprehensions give kernels 200III; filters+images give cokernels 205II). Converses and the sharp-filter refinement not formalised.|thin; converses n/f
-REC 26|rec26_adjunctions|Papers/REC/Effectus.lean|ok|none|Remark: 0 left adjoint to U left adjoint to 1, and filters/comprehensions as the outer adjoints (tree 198II, 198III, 199VI; PredSquare = Pred_box).|thin
-REC 27|rec27|Papers/REC/Effectus.lean|ok|none|Filters epic, comprehensions monic, 1 o xi = a, comprehensions total (tree 197V.6, 199VII.5, 197V.5, 202VIII). Paper cites Cho et al., prints no proof.|thin
-REC 28|MonoidalEffectus|Papers/REC/Effectus.lean|ok|none|Symmetric monoidal (Mathlib) with unit = effect object (as an equation), biadditive in the first variable as printed, truth_A (x) truth_B = truth; the last clause needs I (x) I = I, made the left unitor (the print elides it).|ok (unitor made explicit)
-REC 29|smulHom|Papers/REC/Effectus.lean|ok|none|s.f := lambda o (s (x) f) o lambda^-1 (running text before the Lemma).|ok
-REC 29|rec29_comp|Papers/REC/Effectus.lean|ok|none|Item 1. Paper says straightforwardly verifiable; ours: unitor naturality.|ok
-REC 29|rec29_ovee_left|Papers/REC/Effectus.lean|ok|none|Item 2, (s+t).f.|ok
-REC 29|rec29_ovee_right|Papers/REC/Effectus.lean|ok|none|Item 2, s.(f+g); needs no biadditivity of (x) in the second variable since s.f = (s.id) o f.|ok
-REC 29|rec29_pred|Papers/REC/Effectus.lean|ok|none|Item 3: s.p = s o p (uses lambda_I = rho_I).|ok
-REC 29|rec29_scalar_action|Papers/REC/Effectus.lean|ok|none|Item 3 in particular: s.t = s o t and s.(t.f) = (s.t).f = (s o t).f; the first equation uses Eckmann-Hilton (unit_endo_comm).|ok
-REC 30|IsUpDirected|Papers/REC/Effectus.lean|ok|none|Footnote: upwards directed.|ok
-REC 30|DirectedCompleteEA|Papers/REC/Effectus.lean|ok|none|Footnote: every upwards-directed subset has a supremum (EA order).|ok
-REC 30|directedCompleteEA_iff_down|Papers/REC/Effectus.lean|ok|none|Footnote: equivalent to downwards directed completeness via orth.|ok
-REC 30|DirectedCompleteEffectus|Papers/REC/Effectus.lean|ok|none|All Pred(A) directed complete.|ok
-REC 30|NormalEffectus|Papers/REC/Effectus.lean|ok|none|Directed complete and all maps preserve directed suprema of predicates.|ok
-REC 32|rec32_completeBoolean|Papers/REC/Effectus.lean|ok|none|Complete Boolean algebra is a dc effect monoid (EA order = lattice order, boolean_le_iff).|ok
-REC 34|EffectMonoidDCClassification|Papers/REC/Effectus.lean|ok|none|Statement only (Prop): dc effect monoid = B + C(X,[0,1]). Proof is OAP 69 (mainthmdirectedcomplete), not importable this session; enters later points as a hypothesis.|stated (OAP 69)
-REC 35|rec35_scalars|Papers/REC/Effectus.lean|ok|faithful|From REC 34 as in the paper (hypothesis h34).|ok (modulo REC 34)
-REC 36|IrreducibleDCClassification|Papers/REC/Effectus.lean|ok|none|Statement only (Prop): irreducible dc EM = {0},{0,1},[0,1]. OAP 71 / derivable from REC 34.|stated (OAP 71)
-REC 62|rec62_isImage_iff|Papers/REC/Effectus.lean|ok|none|Tree IsImage is the printed definition.|thin
-REC 63|rec63|Papers/REC/Effectus.lean|ok|faithful|Paper's proof, with IsImage hypotheses (images need not exist globally, as printed). The printed proof ends "hence im f <= im(f o g)": a slip for the reverse inequality (ERRATA REC 63).|ok; typo in print
-REC 64|rec64_isSharp_iff|Papers/REC/Effectus.lean|ok|none|Tree IsSharp/SPred are the printed definition.|thin
-REC 65|rec65_floor_wd|Papers/REC/Effectus.lean|ok|faithful|Floor well-defined for any comprehension (footnote argument via REC 63/tree im_ineq); ceiling by definition.|ok
-REC 66|rec66_a|Papers/REC/Effectus.lean|ok|tree|a) tree floor_basics_1, le_ceilPred. Print says "images and compressions" (= comprehensions).|thin
-REC 66|rec66_b|Papers/REC/Effectus.lean|ok|tree|b) tree floor_basics_3.|thin
-REC 66|rec66_c|Papers/REC/Effectus.lean|ok|tree|c) tree floor_basics_4, ceilPred_mono.|thin
-REC 66|rec66_d|Papers/REC/Effectus.lean|ok|tree|d) tree ceiling_within_ceiling (203XIII).|thin
-REC 66|rec66_e|Papers/REC/Effectus.lean|ok|tree|e) tree floor_basics_6.|thin
-REC 66|rec66_f|Papers/REC/Effectus.lean|ok|tree|f) tree img_of_compr.|thin
-REC 67|rec67_diamondEffectus_iff|Papers/REC/Effectus.lean|ok|none|Printed definition (images, filters, comprehensions, sharp iff orth sharp) iff tree DiamondEffectus.|ok
-REC 68|rec68|Papers/REC/Effectus.lean|ok|none|f^diamond, f_diamond, f^box = tree diaPull, diaPush, boxPull; independence of f_diamond from the comprehension proved.|ok
-REC 69|rec69_a|Papers/REC/Effectus.lean|ok|tree|a) tree 207II.|thin
-REC 69|rec69_b|Papers/REC/Effectus.lean|ok|tree|b) tree 207III. Print writes SEff for SPred.|thin
-REC 69|rec69_c|Papers/REC/Effectus.lean|ok|tree|c) tree 207III reformulated. The printed proof swaps p and q (ERRATA REC 69).|thin
-REC 69|rec69_d|Papers/REC/Effectus.lean|ok|tree|d) tree 207V.1.|thin
-REC 69|rec69_e|Papers/REC/Effectus.lean|ok|tree|e) tree 207V.5.|thin
-REC 69|rec69_f|Papers/REC/Effectus.lean|ok|tree|f) tree 207VI.|thin
-REC 69|rec69_g|Papers/REC/Effectus.lean|ok|tree|g) with composable types g : X -> Y, f : Y -> Z; the print types f : A -> B, g : B -> C and writes f o g (ERRATA REC 69).|thin
-REC 69|rec69_h|Papers/REC/Effectus.lean|ok|tree|h) tree 207VI.|thin
-REC 70|rec70_diamondAdjoint_iff|Papers/REC/Effectus.lean|ok|none|Tree DiamondAdjoint / DiamondSelfAdjoint are the printed definitions.|thin
-REC 71|rec71|Papers/REC/Effectus.lean|ok|faithful|Paper's proof (69 b twice, then q := f_diamond(p)^perp and g^diamond(p)^perp).|ok
-REC 72|IsRigid|Papers/REC/Effectus.lean|ok|none|Remark: only the definition of rigid; the claims about 1/2 f and vN are examples, not formalised.|ok; claims n/f
-REC 74|CompatibleFiltersComprehensions|Papers/REC/Effectus.lean|ok|none|Compatible: for each comprehension of a sharp p a filter xi with xi o pi = id.|ok
-REC 75|asrtSharp|Papers/REC/Effectus.lean|ok|none|asrt_p := pi_p o xi^p for the chosen compatible pair.|ok
-REC 75|asrtSharp_eq|Papers/REC/Effectus.lean|ok|faithful|Well-definedness paragraph: any compatible pair gives asrt_p (Theta2 = Theta1^-1).|ok
-REC 75|asrtSharp_idem|Papers/REC/Effectus.lean|ok|faithful|asrt o asrt = asrt.|ok
-REC 75|asrtSharp_truth_image|Papers/REC/Effectus.lean|ok|faithful|1 o asrt_p = im(asrt_p) = p (sentence after Example 76).|ok
-REC 77|rec77_a|Papers/REC/Effectus.lean|ok|faithful|Paper's proof, in the paper's setting (images + compatible filters/comprehensions); tree 211XV is the &-effectus version.|ok
-REC 77|rec77_b|Papers/REC/Effectus.lean|ok|faithful|Paper's proof.|ok
-REC 78|rec78_isPure_iff|Papers/REC/Effectus.lean|ok|none|Printed pure (filter then comprehension) iff tree IsPure (quotient then comprehension).|ok
-REC 80|rec80_filters|Papers/REC/Effectus.lean|ok|tree|Item 1: tree quotients_composition (197IX), same argument as printed.|thin
-REC 80|rec80_comprehensions|Papers/REC/Effectus.lean|ok|faithful|Item 2 in the printed generality (any comprehensions). The printed proof assumes p, q sharp (compatibility is only for sharp predicates); gap closed by replacing p with the sharp floor im pi_p, for which pi_p is still a comprehension (proof of REC 66 b). q need not be sharp. ERRATA REC 80.|ok; proof gap in print repaired
-REC 82|rec82|Papers/REC/Effectus.lean|ok|tree|p meet p^perp = 0 as an infimum; tree 208I image_sharp_is_order_sharp (thesis argument = paper's).|thin
-REC 83|rec83_sup|Papers/REC/Effectus.lean|ok|tree|First item: tree 204V lattice_compr.|thin
-REC 83|rec83_inf|Papers/REC/Effectus.lean|ok|tree|Proof formula p meet q = (pi_p)_diamond((pi_p)^box(q)); tree 208IX.|thin
-REC 83|rec83_ortholattice|Papers/REC/Effectus.lean|ok|tree|Second item: from tree 208III (orthomodular, stronger).|thin
-REC 84|rec84|Papers/REC/Effectus.lean|ok|tree|Tree 208III both halves.|thin
-REC 85|OMLatGal|Papers/REC/Effectus.lean|ok|none|Alias of tree OMLatGalCat.|thin
-REC 86|rec86|Papers/REC/Effectus.lean|ok|tree|Tree 208VII diamond_omlatgal_functor.|thin
-REC 37|IsOrthoalgebra|Papers/REC/Algebras.lean|ok|none|Orthoalgebra: only 0 self-summable. Category OA deferred to Decomposition.lean.|ok
-REC 37|orthomodular_isOrthoalgebra|Papers/REC/Algebras.lean|ok|none|Text after the definition: OMLs (hence Boolean algebras) are orthoalgebras.|ok
-REC 38|rec38|Papers/REC/Algebras.lean|ok|route|Cited from SIG (which has only a sigma/substate-separated version); proof here is the argument the paper prints for REC 93 (scalars {0,1} via tree ScalarsAreTwo, state separation).|ok
-REC 39|ConvexEA|Papers/REC/Algebras.lean|ok|none|Convex EA as printed (four axioms). Categories EA_c, DCEA_c deferred.|ok
-REC 39|ConvexEA.toEffectModule|Papers/REC/Algebras.lean|ok|none|Convex EA = thesis B effect module over [0,1] (179II), one direction.|ok
-REC 39|ConvexEA.ofEffectModule|Papers/REC/Algebras.lean|ok|none|Other direction.|ok
-REC 40|rec40_orderInterval|Papers/REC/Algebras.lean|ok|none|[0,u]_V convex: tree orderIntervalEffectModule through the bridge.|thin
-REC 40|rec40_representation|Papers/REC/Algebras.lean|ok|none|Gudder representation: tree effectModule_unitInterval_representation (179III.2). Jacobs equivalence of categories not formalised.|thin; equivalence n/f
-REC 41|ousNorm|Papers/REC/Algebras.lean|ok|none|Order-unit seminorm inf{l : -l1 <= v <= l1}.|ok
-REC 41|IsOUS|Papers/REC/Algebras.lean|ok|none|Tree OrderUnitSpace + seminorm is a norm + cone closed (sequential closure in the seminorm).|ok
-REC 41|IsBanachOUS|Papers/REC/Algebras.lean|ok|none|Cauchy sequences converge in the seminorm.|ok
-REC 41|IsDirectedCompleteOUS|Papers/REC/Algebras.lean|ok|none|Unit interval directed complete (LUB within [0,1]). Category DCOUS and the Wright lemma deferred.|ok
-REC 43|rec43|Papers/REC/Algebras.lean|ok|route|Real scalars (tree IsRealEffectus) give a convex action lambda.p := p >> psi(lambda) from tree predEffectModule (cited from SIG).|ok
-REC 43|rec43_smul|Papers/REC/Algebras.lean|ok|none|The action is composition with the scalar.|ok
-REC 44|JBAlgebra|Papers/REC/Algebras.lean|stronger|none|JB-algebra as printed PLUS bilinearity of the product (add_mul, smul_mul): the print asks only for a binary operation, but the cited H-O-S 3.1.6 is about Jordan algebras. ERRATA REC 44.|deviation (bilinearity added)
-REC 47|OUSState|Papers/REC/Algebras.lean|ok|none|State: positive unital linear functional.|ok
-REC 47|IsNormalMap|Papers/REC/Algebras.lean|ok|none|Normal: preserves suprema of (nonempty) directed sets.|ok
-REC 47|HasSeparatingNormalStates|Papers/REC/Algebras.lean|ok|none|Separating set of normal states.|ok
-REC 48|JBWAlgebra|Papers/REC/Algebras.lean|ok|none|JB + directed complete + separating normal states. Categories JBW_pc/npc deferred.|ok
-REC 50|IsJWAlgebra|Papers/REC/Algebras.lean|differs|none|Printed: Jordan-isomorphic to an ultraweakly closed subset of a vN algebra sa part. Ours: injective normal Jordan hom into the sa part of a Kadison vN algebra (Theses.VonNeumannAlgebra); equivalent for JBW-algebras by H-O-S 4.4-4.5 (not proved), and the form REC 130 uses; the tree has no ultraweak topology on abstract vN algebras.|deviation (equivalent form, unproved equivalence)
-REC 51|IsPurelyExceptional|Papers/REC/Algebras.lean|ok|none|Every Jordan hom into a C*-algebra (universe w) is zero.|ok
-REC 53|IsHyperstonean|Papers/REC/Algebras.lean|ok|none|Stonean and C(X,R) separated by normal states.|ok
-REC 56|SEA|Papers/REC/Algebras.lean|ok|none|SEA axioms a)-e) as printed; e) asks a perp b only for the sum clause, unlike thesis B 225IV.|ok
-REC 56|SEA.toTree|Papers/REC/Algebras.lean|ok|none|Paper SEA is a thesis-B SEA (225IV, tree SequentialEffectAlgebra).|ok
-REC 56|IsNormalSEA|Papers/REC/Algebras.lean|ok|none|Normal SEA: directed complete (REC 30 spelled out inline, see file header) and axiom f).|ok
-REC 57|NormalSEACeilFloor|Papers/REC/Algebras.lean|ok|none|Statement only (Prop), from SEA (floor SEA 49-50, SEA 71); hypothesis for section 5.|stated (SEA)
-REC 59|ConvexState|Papers/REC/Algebras.lean|ok|none|State of a convex SEA: additive, preserves scalars, unital.|ok
-REC 59|IsCompressible|Papers/REC/Algebras.lean|ok|none|Compressible as printed.|ok
-REC 60|IsQuadratic|Papers/REC/Algebras.lean|ok|none|Quadratic as printed.|ok
-REC 61|WeteringSequentialJB|Papers/REC/Algebras.lean|ok|none|Statement only (named black box): van de Wetering 2018 Thm 4. Not used by the paper's proofs.|stated (external black box)
+REC 1|IsEffectusInTotalForm|Papers/REC/Effectus.lean|ok|none|Definition: alias of thesis B 180I EffectusTotalForm, whose three clauses are the three of the point; partial maps, states, predicates and Par(C) are the tree's PartialMap and Par.|row added 2026-09-26, thin
+REC 2|rec2_set|Papers/REC/Effectus.lean|ok|none|Example item 1: Set is an effectus in total form (extensive_effectus_set) and predicates on A are subsets (set_pred_subset, read in Par Set where predicates live). The states=elements clause is not restated.|row added 2026-09-26, thin
+REC 2|rec2_kleisli_distribution|Papers/REC/Effectus.lean|ok|none|Example item 2: Kl of the finite distribution monad = thesis B exc_dm_effectus_kleisli at M=[0,1]. Item 3 (C*-algebras with positive unital maps) NOT formalised: the tree has vNop with NCPU maps and OUSop, neither is this category.|row added 2026-09-26, thin; item 3 deferred
+REC 4|IsAdditive|Papers/REC/Effectus.lean|ok|none|Definition of additive map (f 0 = 0 and Kleene additivity). The PCM itself is thesis B 174II PCM (same axioms written out).|row added 2026-09-26, ok
+REC 4|IsBiadditive|Papers/REC/Effectus.lean|ok|none|Definition: both restrictions additive.|row added 2026-09-26, ok
+REC 4|EnrichedOverPCMs|Papers/REC/Effectus.lean|ok|none|Definition: composition biadditive.|row added 2026-09-26, ok
+REC 5|Compatible|Papers/REC/Effectus.lean|ok|none|Definition of compatible family, binary case (paper: any finite J; thesis B also binary).|row added 2026-09-26, ok
+REC 5|finPAC_iff|Papers/REC/Effectus.lean|ok|none|finPAC as printed (enriched + compatible sum + untying) iff thesis B FinPAC; proved both ways.|row added 2026-09-26, ok
+REC 6|rec6_partialOrder|Papers/REC/Effectus.lean|ok|none|EA order is a partial order with min 0, max 1 = 0^perp. Definition-point claims; tree 176 lemmas.|row added 2026-09-26, thin
+REC 6|rec6_orth_antiIso|Papers/REC/Effectus.lean|ok|none|orth is an involutive order anti-isomorphism (tree eabasics_*).|row added 2026-09-26, thin
+REC 6|rec6_perp_iff|Papers/REC/Effectus.lean|ok|none|x perp y iff x <= y^perp (tree eabasics_perp_iff_le_orth).|row added 2026-09-26, thin
+REC 6|rec6_additive_monotone|Papers/REC/Effectus.lean|ok|none|Additive maps are monotone; two-line proof.|row added 2026-09-26, ok
+REC 7|rec7_as_printed_false|Papers/REC/Effectus.lean|differs|none|The print makes an OML an EA with x perp y iff x meet y = 0; refuted in MO2 (a+a'=1 and a+b=1 with b != a'). The same slip is OAP 2 (ERRATA). MO2 built as a finite lattice, all axioms by decide.|left-thesis, false as printed: refuted in Lean (MO2); corrected form rec7_corrected; ERRATA REC 7
+REC 7|rec7_corrected|Papers/REC/Effectus.lean|differs|none|Corrected form: perp iff x <= y^c (thesis B 175II.4 orthomodularEffectAlgebra) plus the order clause (EA order = lattice order), proved via the orthomodular law.|left-thesis, false as printed: refuted in Lean (MO2); corrected form rec7_corrected; ERRATA REC 7
+REC 8|rec8_effects|Papers/REC/Effectus.lean|ok|none|[0,1]_A of a unital C*-algebra as thesis B 175II.2 orderIntervalEffectAlgebra on the ordered group A.|row added 2026-09-26, thin
+REC 9|IsEffectusInPartialForm|Papers/REC/Effectus.lean|ok|none|Alias of thesis B 180VII EffectusPartialForm (same axioms; total = IsTotal).|row added 2026-09-26, thin
+REC 10|rec10_par_tot|Papers/REC/Effectus.lean|ok|none|Remark: Par of a total-form effectus is a partial-form effectus with I = 1 (cho_thm_1). The 2-categorical equivalence is not formalised.|row added 2026-09-26, thin; 2-categorical part n/f
+REC 10|rec10_tot|Papers/REC/Effectus.lean|ok|none|Remark, converse: Tot of a partial-form effectus is total form (eff_partial_to_total).|row added 2026-09-26, thin
+REC 11|rec11_pfn|Papers/REC/Effectus.lean|ok|none|Example, first clause: Par(Set) is an effectus in partial form (instances) with scalars {0,1}. Kl(subdistributions), C*-algebras with contractive positive maps, EAop NOT formalised.|row added 2026-09-26, thin; rest deferred
+REC 12|rec12_pred_functor|Papers/REC/Effectus.lean|ok|none|Pred and Pred(f) are the tree's Pred/predMap; functor laws and additivity of Pred(f) proved (EA morphisms = additive maps as in REC 6; the category itself not built).|row added 2026-09-26, ok
+REC 13|rec13_separatedByPredicates_iff|Papers/REC/Effectus.lean|ok|none|Tree SeparatingPredicates is the printed definition.|row added 2026-09-26, thin
+REC 14|rec14_separatedByStates_iff|Papers/REC/Effectus.lean|ok|none|Tree SeparatingStates in the printed iff form.|row added 2026-09-26, thin
+REC 15|rec15_axioms|Papers/REC/Effectus.lean|ok|none|Tree EffectMonoid (four-fold distributive law) satisfies the printed axioms (unit, biadditivity both sides, associativity).|row added 2026-09-26, ok
+REC 15|EffectMonoid.ofBiadditive|Papers/REC/Effectus.lean|ok|none|Converse: the printed axioms give a tree EffectMonoid.|row added 2026-09-26, ok
+REC 15|IsIdempotent|Papers/REC/Effectus.lean|ok|none|Idempotent: p*p = p.|row added 2026-09-26, ok
+REC 16|rec16_boolean|Papers/REC/Effectus.lean|ok|none|Boolean algebra EA with perp iff meet = 0, sum = join, product = meet, commutative (tree booleanEffectMonoid).|row added 2026-09-26, thin
+REC 17|rec17_scalars|Papers/REC/Effectus.lean|ok|none|Scalars effect monoid with s.t = s o t (tree scalEffectMonoid; diagrammatic t >> s).|row added 2026-09-26, thin
+REC 18|rec18_continuous_commutative|Papers/REC/Effectus.lean|ok|none|C(X,[0,1]) effect monoid is tree continuousUnitIntervalEffectMonoid (real-valued); commutativity proved. Gelfand parenthetical not formalised.|row added 2026-09-26, ok
+REC 20|prodEffectMonoid|Papers/REC/Effectus.lean|ok|none|Direct sum of effect monoids = product with pointwise operations (EA part = tree prodEffectAlgebra).|row added 2026-09-26, ok
+REC 20|IsIrreducible|Papers/REC/Effectus.lean|ok|none|Irreducible: every EM-isomorphism M = E1 + E2 has a subsingleton summand ({0}). Only effect monoids (the point also says effect algebras; only EMs are used later).|row added 2026-09-26, ok
+REC 21|Corner|Papers/REC/Effectus.lean|ok|none|pM = {p.a} as printed.|row added 2026-09-26, ok
+REC 21|cornerEA|Papers/REC/Effectus.lean|ok|none|pM is an EA with (pa)^perp := p a^perp; in-house, using centrality of idempotents (idem_central, OAP 20 proved here in 10 lines).|row added 2026-09-26, ok
+REC 21|cornerEM|Papers/REC/Effectus.lean|ok|none|pM is an effect monoid.|row added 2026-09-26, ok
+REC 21|rec21_cornerIso|Papers/REC/Effectus.lean|ok|none|M = pM + p^perp M as effect monoids, a maps to (pa, p^perp a) (cited to OAP 21; proved here, middle-four interchange re-proved as pcm_middle_four').|row added 2026-09-26, ok
+REC 21|rec21_irreducible_iff|Papers/REC/Effectus.lean|ok|none|Irreducible iff no non-trivial idempotents.|row added 2026-09-26, ok
+REC 22|rec22_isComprehension_iff|Papers/REC/Effectus.lean|ok|none|Tree IsComprehension is the printed definition.|row added 2026-09-26, thin
+REC 23|IsFilter|Papers/REC/Effectus.lean|ok|none|Filter as printed (1 o xi <= p, initial).|row added 2026-09-26, ok
+REC 23|isFilter_iff_isQuotient|Papers/REC/Effectus.lean|ok|none|Footnote: filter for p = thesis B quotient for p^perp.|row added 2026-09-26, ok
+REC 23|HasFilters|Papers/REC/Effectus.lean|ok|none|Has filters.|row added 2026-09-26, ok
+REC 23|hasFilters_iff_hasQuotients|Papers/REC/Effectus.lean|ok|none|Has filters iff tree HasQuotients.|row added 2026-09-26, ok
+REC 25|rec25_kernels_cokernels|Papers/REC/Effectus.lean|weaker|none|Remark: only the directions the tree has (comprehensions give kernels 200III; filters+images give cokernels 205II). Converses and the sharp-filter refinement not formalised.|row added 2026-09-26, thin; converses n/f
+REC 26|rec26_adjunctions|Papers/REC/Effectus.lean|ok|none|Remark: 0 left adjoint to U left adjoint to 1, and filters/comprehensions as the outer adjoints (tree 198II, 198III, 199VI; PredSquare = Pred_box).|row added 2026-09-26, thin
+REC 27|rec27|Papers/REC/Effectus.lean|ok|none|Filters epic, comprehensions monic, 1 o xi = a, comprehensions total (tree 197V.6, 199VII.5, 197V.5, 202VIII). Paper cites Cho et al., prints no proof.|row added 2026-09-26, thin
+REC 28|MonoidalEffectus|Papers/REC/Effectus.lean|ok|none|Symmetric monoidal (Mathlib) with unit = effect object (as an equation), biadditive in the first variable as printed, truth_A (x) truth_B = truth; the last clause needs I (x) I = I, made the left unitor (the print elides it).|row added 2026-09-26, ok (unitor made explicit)
+REC 29|smulHom|Papers/REC/Effectus.lean|ok|none|s.f := lambda o (s (x) f) o lambda^-1 (running text before the Lemma).|row added 2026-09-26, ok
+REC 29|rec29_comp|Papers/REC/Effectus.lean|ok|none|Item 1. Paper says straightforwardly verifiable; ours: unitor naturality.|row added 2026-09-26, ok
+REC 29|rec29_ovee_left|Papers/REC/Effectus.lean|ok|none|Item 2, (s+t).f.|row added 2026-09-26, ok
+REC 29|rec29_ovee_right|Papers/REC/Effectus.lean|ok|none|Item 2, s.(f+g); needs no biadditivity of (x) in the second variable since s.f = (s.id) o f.|row added 2026-09-26, ok
+REC 29|rec29_pred|Papers/REC/Effectus.lean|ok|none|Item 3: s.p = s o p (uses lambda_I = rho_I).|row added 2026-09-26, ok
+REC 29|rec29_scalar_action|Papers/REC/Effectus.lean|ok|none|Item 3 in particular: s.t = s o t and s.(t.f) = (s.t).f = (s o t).f; the first equation uses Eckmann-Hilton (unit_endo_comm).|row added 2026-09-26, ok
+REC 30|IsUpDirected|Papers/REC/Effectus.lean|ok|none|Footnote: upwards directed.|row added 2026-09-26, ok
+REC 30|DirectedCompleteEA|Papers/REC/Effectus.lean|ok|none|Footnote: every upwards-directed subset has a supremum (EA order).|row added 2026-09-26, ok
+REC 30|directedCompleteEA_iff_down|Papers/REC/Effectus.lean|ok|none|Footnote: equivalent to downwards directed completeness via orth.|row added 2026-09-26, ok
+REC 30|DirectedCompleteEffectus|Papers/REC/Effectus.lean|ok|none|All Pred(A) directed complete.|row added 2026-09-26, ok
+REC 30|NormalEffectus|Papers/REC/Effectus.lean|ok|none|Directed complete and all maps preserve directed suprema of predicates.|row added 2026-09-26, ok
+REC 32|rec32_completeBoolean|Papers/REC/Effectus.lean|ok|none|Complete Boolean algebra is a dc effect monoid (EA order = lattice order, boolean_le_iff).|row added 2026-09-26, ok
+REC 34|EffectMonoidDCClassification|Papers/REC/Effectus.lean|ok|none|Statement only (Prop): dc effect monoid = B + C(X,[0,1]). Proof is OAP 69 (mainthmdirectedcomplete), not importable this session; enters later points as a hypothesis.|row added 2026-09-26, stated (OAP 69)
+REC 35|rec35_scalars|Papers/REC/Effectus.lean|ok|faithful|From REC 34 as in the paper (hypothesis h34).|row added 2026-09-26, ok (modulo REC 34)
+REC 36|IrreducibleDCClassification|Papers/REC/Effectus.lean|ok|none|Statement only (Prop): irreducible dc EM = {0},{0,1},[0,1]. OAP 71 / derivable from REC 34.|row added 2026-09-26, stated (OAP 71)
+REC 62|rec62_isImage_iff|Papers/REC/Effectus.lean|ok|none|Tree IsImage is the printed definition.|row added 2026-09-26, thin
+REC 63|rec63|Papers/REC/Effectus.lean|ok|faithful|Paper's proof, with IsImage hypotheses (images need not exist globally, as printed). The printed proof ends "hence im f <= im(f o g)": a slip for the reverse inequality (ERRATA REC 63).|row added 2026-09-26, ok; typo in print
+REC 64|rec64_isSharp_iff|Papers/REC/Effectus.lean|ok|none|Tree IsSharp/SPred are the printed definition.|row added 2026-09-26, thin
+REC 65|rec65_floor_wd|Papers/REC/Effectus.lean|ok|faithful|Floor well-defined for any comprehension (footnote argument via REC 63/tree im_ineq); ceiling by definition.|row added 2026-09-26, ok
+REC 66|rec66_a|Papers/REC/Effectus.lean|ok|tree|a) tree floor_basics_1, le_ceilPred. Print says "images and compressions" (= comprehensions).|row added 2026-09-26, thin
+REC 66|rec66_b|Papers/REC/Effectus.lean|ok|tree|b) tree floor_basics_3.|row added 2026-09-26, thin
+REC 66|rec66_c|Papers/REC/Effectus.lean|ok|tree|c) tree floor_basics_4, ceilPred_mono.|row added 2026-09-26, thin
+REC 66|rec66_d|Papers/REC/Effectus.lean|ok|tree|d) tree ceiling_within_ceiling (203XIII).|row added 2026-09-26, thin
+REC 66|rec66_e|Papers/REC/Effectus.lean|ok|tree|e) tree floor_basics_6.|row added 2026-09-26, thin
+REC 66|rec66_f|Papers/REC/Effectus.lean|ok|tree|f) tree img_of_compr.|row added 2026-09-26, thin
+REC 67|rec67_diamondEffectus_iff|Papers/REC/Effectus.lean|ok|none|Printed definition (images, filters, comprehensions, sharp iff orth sharp) iff tree DiamondEffectus.|row added 2026-09-26, ok
+REC 68|rec68|Papers/REC/Effectus.lean|ok|none|f^diamond, f_diamond, f^box = tree diaPull, diaPush, boxPull; independence of f_diamond from the comprehension proved.|row added 2026-09-26, ok
+REC 69|rec69_a|Papers/REC/Effectus.lean|ok|tree|a) tree 207II.|row added 2026-09-26, thin
+REC 69|rec69_b|Papers/REC/Effectus.lean|ok|tree|b) tree 207III. Print writes SEff for SPred.|row added 2026-09-26, thin
+REC 69|rec69_c|Papers/REC/Effectus.lean|ok|tree|c) tree 207III reformulated. The printed proof swaps p and q (ERRATA REC 69).|row added 2026-09-26, thin
+REC 69|rec69_d|Papers/REC/Effectus.lean|ok|tree|d) tree 207V.1.|row added 2026-09-26, thin
+REC 69|rec69_e|Papers/REC/Effectus.lean|ok|tree|e) tree 207V.5.|row added 2026-09-26, thin
+REC 69|rec69_f|Papers/REC/Effectus.lean|ok|tree|f) tree 207VI.|row added 2026-09-26, thin
+REC 69|rec69_g|Papers/REC/Effectus.lean|ok|tree|g) with composable types g : X -> Y, f : Y -> Z; the print types f : A -> B, g : B -> C and writes f o g (ERRATA REC 69).|row added 2026-09-26, thin
+REC 69|rec69_h|Papers/REC/Effectus.lean|ok|tree|h) tree 207VI.|row added 2026-09-26, thin
+REC 70|rec70_diamondAdjoint_iff|Papers/REC/Effectus.lean|ok|none|Tree DiamondAdjoint / DiamondSelfAdjoint are the printed definitions.|row added 2026-09-26, thin
+REC 71|rec71|Papers/REC/Effectus.lean|ok|faithful|Paper's proof (69 b twice, then q := f_diamond(p)^perp and g^diamond(p)^perp).|row added 2026-09-26, ok
+REC 72|IsRigid|Papers/REC/Effectus.lean|ok|none|Remark: only the definition of rigid; the claims about 1/2 f and vN are examples, not formalised.|row added 2026-09-26, ok; claims n/f
+REC 74|CompatibleFiltersComprehensions|Papers/REC/Effectus.lean|ok|none|Compatible: for each comprehension of a sharp p a filter xi with xi o pi = id.|row added 2026-09-26, ok
+REC 75|asrtSharp|Papers/REC/Effectus.lean|ok|none|asrt_p := pi_p o xi^p for the chosen compatible pair.|row added 2026-09-26, ok
+REC 75|asrtSharp_eq|Papers/REC/Effectus.lean|ok|faithful|Well-definedness paragraph: any compatible pair gives asrt_p (Theta2 = Theta1^-1).|row added 2026-09-26, ok
+REC 75|asrtSharp_idem|Papers/REC/Effectus.lean|ok|faithful|asrt o asrt = asrt.|row added 2026-09-26, ok
+REC 75|asrtSharp_truth_image|Papers/REC/Effectus.lean|ok|faithful|1 o asrt_p = im(asrt_p) = p (sentence after Example 76).|row added 2026-09-26, ok
+REC 77|rec77_a|Papers/REC/Effectus.lean|ok|faithful|Paper's proof, in the paper's setting (images + compatible filters/comprehensions); tree 211XV is the &-effectus version.|row added 2026-09-26, ok
+REC 77|rec77_b|Papers/REC/Effectus.lean|ok|faithful|Paper's proof.|row added 2026-09-26, ok
+REC 78|rec78_isPure_iff|Papers/REC/Effectus.lean|ok|none|Printed pure (filter then comprehension) iff tree IsPure (quotient then comprehension).|row added 2026-09-26, ok
+REC 80|rec80_filters|Papers/REC/Effectus.lean|ok|tree|Item 1: tree quotients_composition (197IX), same argument as printed.|row added 2026-09-26, thin
+REC 80|rec80_comprehensions|Papers/REC/Effectus.lean|ok|faithful|Item 2 in the printed generality (any comprehensions). The printed proof assumes p, q sharp (compatibility is only for sharp predicates); gap closed by replacing p with the sharp floor im pi_p, for which pi_p is still a comprehension (proof of REC 66 b). q need not be sharp. ERRATA REC 80.|row added 2026-09-26, ok; proof gap in print repaired
+REC 82|rec82|Papers/REC/Effectus.lean|ok|tree|p meet p^perp = 0 as an infimum; tree 208I image_sharp_is_order_sharp (thesis argument = paper's).|row added 2026-09-26, thin
+REC 83|rec83_sup|Papers/REC/Effectus.lean|ok|tree|First item: tree 204V lattice_compr.|row added 2026-09-26, thin
+REC 83|rec83_inf|Papers/REC/Effectus.lean|ok|tree|Proof formula p meet q = (pi_p)_diamond((pi_p)^box(q)); tree 208IX.|row added 2026-09-26, thin
+REC 83|rec83_ortholattice|Papers/REC/Effectus.lean|ok|tree|Second item: from tree 208III (orthomodular, stronger).|row added 2026-09-26, thin
+REC 84|rec84|Papers/REC/Effectus.lean|ok|tree|Tree 208III both halves.|row added 2026-09-26, thin
+REC 85|OMLatGal|Papers/REC/Effectus.lean|ok|none|Alias of tree OMLatGalCat.|row added 2026-09-26, thin
+REC 86|rec86|Papers/REC/Effectus.lean|ok|tree|Tree 208VII diamond_omlatgal_functor.|row added 2026-09-26, thin
+REC 37|IsOrthoalgebra|Papers/REC/Algebras.lean|ok|none|Orthoalgebra: only 0 self-summable. Category OA deferred to Decomposition.lean.|row added 2026-09-26, ok
+REC 37|orthomodular_isOrthoalgebra|Papers/REC/Algebras.lean|ok|none|Text after the definition: OMLs (hence Boolean algebras) are orthoalgebras.|row added 2026-09-26, ok
+REC 38|rec38|Papers/REC/Algebras.lean|ok|route|Cited from SIG (which has only a sigma/substate-separated version); proof here is the argument the paper prints for REC 93 (scalars {0,1} via tree ScalarsAreTwo, state separation).|row added 2026-09-26, ok
+REC 39|ConvexEA|Papers/REC/Algebras.lean|ok|none|Convex EA as printed (four axioms). Categories EA_c, DCEA_c deferred.|row added 2026-09-26, ok
+REC 39|ConvexEA.toEffectModule|Papers/REC/Algebras.lean|ok|none|Convex EA = thesis B effect module over [0,1] (179II), one direction.|row added 2026-09-26, ok
+REC 39|ConvexEA.ofEffectModule|Papers/REC/Algebras.lean|ok|none|Other direction.|row added 2026-09-26, ok
+REC 40|rec40_orderInterval|Papers/REC/Algebras.lean|ok|none|[0,u]_V convex: tree orderIntervalEffectModule through the bridge.|row added 2026-09-26, thin
+REC 40|rec40_representation|Papers/REC/Algebras.lean|ok|none|Gudder representation: tree effectModule_unitInterval_representation (179III.2). Jacobs equivalence of categories not formalised.|row added 2026-09-26, thin; equivalence n/f
+REC 41|ousNorm|Papers/REC/Algebras.lean|ok|none|Order-unit seminorm inf{l : -l1 <= v <= l1}.|row added 2026-09-26, ok
+REC 41|IsOUS|Papers/REC/Algebras.lean|ok|none|Tree OrderUnitSpace + seminorm is a norm + cone closed (sequential closure in the seminorm).|row added 2026-09-26, ok
+REC 41|IsBanachOUS|Papers/REC/Algebras.lean|ok|none|Cauchy sequences converge in the seminorm.|row added 2026-09-26, ok
+REC 41|IsDirectedCompleteOUS|Papers/REC/Algebras.lean|ok|none|Unit interval directed complete (LUB within [0,1]). Category DCOUS and the Wright lemma deferred.|row added 2026-09-26, ok
+REC 43|rec43|Papers/REC/Algebras.lean|ok|route|Real scalars (tree IsRealEffectus) give a convex action lambda.p := p >> psi(lambda) from tree predEffectModule (cited from SIG).|row added 2026-09-26, ok
+REC 43|rec43_smul|Papers/REC/Algebras.lean|ok|none|The action is composition with the scalar.|row added 2026-09-26, ok
+REC 44|JBAlgebra|Papers/REC/Algebras.lean|stronger|none|JB-algebra as printed PLUS bilinearity of the product (add_mul, smul_mul): the print asks only for a binary operation, but the cited H-O-S 3.1.6 is about Jordan algebras. ERRATA REC 44.|row added 2026-09-26, deviation (bilinearity added)
+REC 47|OUSState|Papers/REC/Algebras.lean|ok|none|State: positive unital linear functional.|row added 2026-09-26, ok
+REC 47|IsNormalMap|Papers/REC/Algebras.lean|ok|none|Normal: preserves suprema of (nonempty) directed sets.|row added 2026-09-26, ok
+REC 47|HasSeparatingNormalStates|Papers/REC/Algebras.lean|ok|none|Separating set of normal states.|row added 2026-09-26, ok
+REC 48|JBWAlgebra|Papers/REC/Algebras.lean|ok|none|JB + directed complete + separating normal states. Categories JBW_pc/npc deferred.|row added 2026-09-26, ok
+REC 50|IsJWAlgebra|Papers/REC/Algebras.lean|differs|none|Printed: Jordan-isomorphic to an ultraweakly closed subset of a vN algebra sa part. Ours: injective normal Jordan hom into the sa part of a Kadison vN algebra (Theses.VonNeumannAlgebra); equivalent for JBW-algebras by H-O-S 4.4-4.5 (not proved), and the form REC 130 uses; the tree has no ultraweak topology on abstract vN algebras.|row added 2026-09-26, deviation (equivalent form, unproved equivalence)
+REC 51|IsPurelyExceptional|Papers/REC/Algebras.lean|ok|none|Every Jordan hom into a C*-algebra (universe w) is zero.|row added 2026-09-26, ok
+REC 53|IsHyperstonean|Papers/REC/Algebras.lean|ok|none|Stonean and C(X,R) separated by normal states.|row added 2026-09-26, ok
+REC 56|SEA|Papers/REC/Algebras.lean|ok|none|SEA axioms a)-e) as printed; e) asks a perp b only for the sum clause, unlike thesis B 225IV.|row added 2026-09-26, ok
+REC 56|SEA.toTree|Papers/REC/Algebras.lean|ok|none|Paper SEA is a thesis-B SEA (225IV, tree SequentialEffectAlgebra).|row added 2026-09-26, ok
+REC 56|IsNormalSEA|Papers/REC/Algebras.lean|ok|none|Normal SEA: directed complete (REC 30 spelled out inline, see file header) and axiom f).|row added 2026-09-26, ok
+REC 57|NormalSEACeilFloor|Papers/REC/Algebras.lean|ok|none|Statement only (Prop), from SEA (floor SEA 49-50, SEA 71); hypothesis for section 5.|row added 2026-09-26, stated (SEA)
+REC 59|ConvexState|Papers/REC/Algebras.lean|ok|none|State of a convex SEA: additive, preserves scalars, unital.|row added 2026-09-26, ok
+REC 59|IsCompressible|Papers/REC/Algebras.lean|ok|none|Compressible as printed.|row added 2026-09-26, ok
+REC 60|IsQuadratic|Papers/REC/Algebras.lean|ok|none|Quadratic as printed.|row added 2026-09-26, ok
+REC 61|WeteringSequentialJB|Papers/REC/Algebras.lean|ok|none|Statement only (named black box): van de Wetering 2018 Thm 4. Not used by the paper's proofs.|row added 2026-09-26, stated (external black box)
+REC 87|rec87, predSplitIso, predPartFunctor, PredPart|Papers/REC/Decompose.lean|differs|faithful|Under-specified as printed ("Pred(C) embeds non-trivially into a product of categories"); formalised as the content of the printed sketch: p ↦ (s∘p, s⊥∘p) is an effect algebra iso Pred(A) ≅ s·Pred(A) ⊕ s⊥·Pred(A) (predSplitIso), Pred(f) is determined by its restrictions to the two parts (the functor Pred(C) → C₁ × C₂, C_i = the part functors into EA, is faithful), and both parts are non-trivial at I (1 = s resp. s⊥ ≠ 0).|row added 2026-09-26, ok (rendering of an under-specified statement)
+REC 88|Split, splitEquivKaroubi, IsIdempotentHom, rec88_embedding|Papers/REC/Decompose.lean|ok|mathlib|Karoubi envelope = Mathlib Karoubi (its morphism condition t ≫ f ≫ s = f is the printed s∘f∘t = f). The effectus structure of REC 89 lives on Split C, the full subcategory of Karoubi C on all objects, isomorphic to Karoubi C (splitEquivKaroubi). C → Split(C) fully faithful = Mathlib toKaroubi.|row added 2026-09-26, ok
+REC 89|rec89_effectus, rec89_predicates, rec89_states_not_preserved, rec89_states_false_as_printed, KCat|Papers/REC/Decompose.lean|differs|faithful|Main clause (Split(C) an effectus in partial form: coproduct t+s, injections t;κ_i, truth 1∘t, falsity 0, orth p⊥∘t) via the generic KCat construction with explicit coproducts (ExplicitCoproducts.finPAC_of); first bullet (predicate separation) by the paper's proof. Second bullet (state separation) FALSE as printed: with an idempotent scalar s ∉ {0,1} the object (I,s) of Split(C) has no states but id ≠ 0; witness BoolMat 𝒫(ℕ), which is separated by states. Third bullet (monoidal) not formalised: REC 90 is proved without it.|left-thesis, second bullet false as printed (refuted in Lean); third bullet deferred (unused downstream); ERRATA REC 89
+REC 90|rec90, rec90_part_hom_iff, splitSplitting, equivalence|Papers/REC/Decompose.lean|ok|mild|Split(C) ≌ C_s × C_{s⊥} with both parts non-trivial. C_s = KCat of the objects (P, s·id_P) of Split(Split(C)): morphisms f = s·f (rec90_part_hom_iff), identity s·id, truth s·1, orth s·p⊥ — the printed C_s. Paper's proof (every idempotent splits in Split(C); F(A,B) = A_s + B_{s⊥}; α = [π_s, π_{s⊥}] with inverse ⟨ξ^s, ξ^{s⊥}⟩; β via π∘▷∘π), packaged once as CentralSplitting.equivalence for REC 90–92. Deviation: G(A) = ((A, s·id),(A, s⊥·id)) instead of (A_s, A_{s⊥}) (isomorphic objects), which avoids the paper's (A_s)_s ≅ A_s identification.|row added 2026-09-26, ok
+REC 91|rec91, rec91_part_hom_iff, monoidalSplitting, smul_isImage, smul_eq_asrt|Papers/REC/Decompose.lean|ok|faithful|C ≌ C_s × C_{s⊥} (C itself), non-trivial parts, C_s = maps with s·f = f. Paper's proof: s·1 = im(s·id) is sharp (smul_isImage), s⊥·asrt = 0 so asrt = s·asrt, and REC 77 gives s·id = asrt_{s·1} (smul_eq_asrt), which splits through the comprehension and compatible filter; then the splitting theorem.|row added 2026-09-26, ok
+REC 92|rec92_states, rec92_predicates, rec92_part_hom_iff, asrtSplitting, isSharp_of_states, asrtT_pred, asrtT_substate|Papers/REC/Decompose.lean|weaker|route|State-separated case exactly as printed; predicate-separated case with the added hypothesis that s∘1_A and s⊥∘1_A are sharp. The printed proof uses asrt_{s∘1} without saying why s∘1 is sharp: proved here under state separation (isSharp_of_states: ⌊s∘1⌋ agrees with s∘1 on every state since ω∘s factors through the comprehension), no argument found from predicate separation (a gap, not refuted). The rest is the paper's: p∘asrt = s∘p (asrtT_pred, REC 77 twice) and, for states, asrt∘ω = ω∘s (asrtT_substate, the "extra complication": s central, OAP 20). C_s morphisms = maps with im f ≤ s∘1 and 1∘f ≤ s∘1 (rec92_part_hom_iff).|row added 2026-09-26, ok for states; predicates case needs the sharpness hypothesis (gap; ERRATA REC 92)
+REC 93|rec93, ScalarSplit, scalarSplit_exists, predSplitIso|Papers/REC/Decompose.lean|ok|faithful|Pred(A) ≅ E₁ ⊕ E₂, E₁ orthoalgebra, E₂ convex, with one idempotent s for all A. REC 35 (OAP 69 = EffectMonoidDCClassification, hypothesis h34) gives s = φ⁻¹(1,0) and c_λ = φ⁻¹(0,λ) (scalarSplit_exists); orthoalgebra by the paper's state argument; convex action c_λ∘p (printed (λ·s₁)∘p: s₁ is undefined, meant s⊥).|row added 2026-09-26, ok (modulo OAP 69 as hypothesis h34)
+REC 94|rec94_functor, rec94, OACat, DCEACCat|Papers/REC/Decompose.lean|weaker|faithful|Pred as a functor C^op → OA × DCEA_c (A ↦ (s·Pred(A), s⊥·Pred(A)); OA with additive maps, DCEA_c with additive action-preserving maps; directed completeness of the parts: PredPart.directedComplete), recovering Pred(A) as the direct sum (rec94). The printed identification DCEA_c ≅ DCOUS is REC 42, not formalised (Wright's lemma; PLAN §1).|row added 2026-09-26, ok for the OA × DCEA_c part; DCOUS part = REC 42 (deferred)
+REC 95|rec95, rec95_oaFunctor, rec95_dcFunctor, dcSplitting, partPredIso|Papers/REC/Decompose.lean|weaker|faithful|C ≌ C₁ × C₂ (REC 92, states case, at the Boolean idempotent s of REC 93), Pred(C₁ objects) orthoalgebras, Pred(C₂ objects) dc convex (partPredIso: the predicates of (A, asrt) are s·Pred(A)), with the functors C₁^op → OA, C₂^op → DCEA_c. No non-triviality of s needed. DCOUS part = REC 42, not formalised.|row added 2026-09-26, ok for OA/DCEA_c; DCOUS part = REC 42 (deferred); modulo OAP 69 (h34)
+REC 96|rec96, rec96_idempotent, sea44_holds, SEABooleanIsBooleanAlgebra|Papers/REC/Decompose.lean|ok|faithful|Paper's proof: a & a⊥ is summable with itself (sea_seq_orth_perp_self), hence 0 in an orthoalgebra, so every element is idempotent; then SEA 44 (cited as "[second, Prop. 45]"), discharged by Papers.SEA.sea44_booleanAlgebra through the bridge REC-SEA → Papers.SEA.SEAlgebra (sea44_holds).|row added 2026-09-26, ok
+REC 97|rec97, partSEA, part_idem, part_orth_eq, boolean_complete_of_dc|Papers/REC/Decompose.lean|ok|route|Pred(A) ≅ A_b ⊕ A_c, A_b a complete Boolean algebra (order = ≼), A_c dc convex. Paper's proof plus two omitted steps: the downset A_b = [0, s∘1] is a SEA only once s∘1 is idempotent in the SEA of Pred(A) (part_idem, from REC 96's argument inside Pred(A)); completeness, not argued in the print, from directed completeness (boolean_complete_of_dc). Normality of the SEA is not used. "Unit interval of a dc OUS" = REC 42, not formalised.|row added 2026-09-26, ok (modulo OAP 69 as hypothesis h34)
+REC 98|FiniteTomography|Papers/REC/Decompose.lean|ok|none|Definition as printed (the finite family as Fin k → Pred A).|row added 2026-09-26, ok
+REC 99|rec99_false_as_printed, powerset_nat_not_orderIso, rec99_any_boolean_scalars, BoolMat, REC99Conclusion|Papers/REC/Decompose.lean|differs|none|FALSE as printed. BoolMat 𝒫(ℕ) (finite sets, 𝒫(ℕ)-valued row-disjoint matrices = Kl(D_M) on finite sets, M = 𝒫(ℕ); built from scratch as an effectus in partial form) is directed complete and has finite tomography (point predicates) but Pred(I) = 𝒫(ℕ) is not even order-isomorphic to 𝒫(A) × [0,1]^n with A finite (so no EA/EM isomorphism either). More: for every complete Boolean algebra M there is such an effectus with scalars M (rec99_any_boolean_scalars), so finite tomography constrains nothing. The proof's error: at the object I tomography is witnessed by id_I alone.|left-thesis, false as printed: refuted in Lean; ERRATA REC 99
+REC 99|rec99_corrected, rec99_corrected_converse, boolOrderIsoEMIso|Papers/REC/DecomposeFinite.lean|differs|route|Corrected statement: finite tomography replaced by 'Pred(I) has finitely many idempotents' (the paper's intent is not recoverable from finite tomography, which constrains nothing: rec99_any_boolean_scalars). Then Pred(I) ≅ 𝒫(A) ⊕ [0,1]^Y as effect monoids, A, Y finite, Y discrete ([0,1]^Y = C(Y,[0,1]), n = card Y), from REC 35 (OAP 69 as hypothesis h34): (b,0) and (0,1_U), U clopen, are idempotent, so B is finite (≅ 𝒫(atoms), Mathlib toSetOfIsAtom) and X has finitely many clopens, hence is finite (totally separated). The converse also holds (rec99_corrected_converse), so the hypothesis is exact.|row added 2026-09-26, corrected form (modulo OAP 69 as hypothesis h34)
+REC 34|rec34_holds, oapDirectedComplete_of|Papers/REC/Scalars.lean|ok|tree|EffectMonoidDCClassification (the statement recorded in Effectus.lean) proved from OAP 69 (Papers.OAP.oap69): summands swapped, OAP's unit-interval effect monoid on C(X) identified with the tree's continuousUnitIntervalEffectMonoid (same operations), OAP's DirectedComplete from REC's. Pass rec34_holds for the hypothesis h34 of REC 35, 93-97, 99 (corrected).|row added 2026-09-26, ok (discharged by OAP 69)
+REC 35|rec35_scalars_holds|Papers/REC/Scalars.lean|ok|tree|REC 35 without the hypothesis h34 (via rec34_holds).|row added 2026-09-26, ok

@@ -199,8 +199,11 @@ formula).  Lean: `Papers.EJA.eja40` (with the hypothesis
   The proof's error: at the object `I` finite tomography is witnessed by
   `p = id_I` alone, so "the `p_i` separate `Pred(I)`" constrains nothing; in
   fact every complete Boolean algebra occurs as the scalars of a
-  directed-complete effectus with finite tomography.  Lean:
-  `Papers.REC.rec99_false_as_printed`, `Papers.REC.rec99_any_boolean_scalars`.
+  directed-complete effectus with finite tomography.  What the proof aims at
+  holds exactly when `Pred(I)` has finitely many idempotents: then
+  `Pred(I) ≅ 𝒫(A) ⊕ [0,1]^n` (from REC 34), and conversely.  Lean:
+  `Papers.REC.rec99_false_as_printed`, `Papers.REC.rec99_any_boolean_scalars`,
+  `Papers.REC.rec99_corrected`, `Papers.REC.rec99_corrected_converse`.
 
 ## SEA — *The three types of normal sequential effect algebras* (arXiv:2004.12749, `2004.12749/second.tex`)
 

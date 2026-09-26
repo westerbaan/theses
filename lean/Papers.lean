@@ -24,7 +24,10 @@ import Papers.FDS.WStar
 import Papers.OAP.Embedding
 import Papers.EJA.Dagger
 import Papers.EJA.Final
+import Papers.REC.Decompose
 import Papers.OAP.Main
+import Papers.REC.DecomposeFinite
+import Papers.REC.Scalars
 
 /-
 Formalisations of three papers following the theses, by Abraham (Bram)

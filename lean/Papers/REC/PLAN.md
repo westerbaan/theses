@@ -39,10 +39,10 @@ The paper's goal (§5, §6) is three theorems about a **sequential effectus**
 
 | used for | result | where from | treatment in Lean |
 |---|---|---|---|
-| 35, 93, 95, 97, 102 | dc effect monoid `≅ B ⊕ C(X,[0,1])` (REC 34) | OAP 69 (`mainthmdirectedcomplete`) | Prop `EffectMonoidDCClassification`, hypothesis until OAP is importable, then discharged by OAP 69 |
+| 35, 93, 95, 97, 99c, 102 | dc effect monoid `≅ B ⊕ C(X,[0,1])` (REC 34) | OAP 69 (`mainthmdirectedcomplete`) | Prop `EffectMonoidDCClassification`; **discharged**: `rec34_holds` (`Scalars.lean`, from `Papers.OAP.oap69`) — pass it for `h34` |
 | 103 | irreducible dc effect monoid `∈ {0},{0,1},[0,1]` (REC 36) | OAP 71 (or REC 34 + "connected Stonean = point") | Prop, hypothesis until OAP importable |
 | 92 | idempotents of an effect monoid are central | OAP 20 | **in-house** (4 lines: `p·a·p^⊥ ≤ p·p^⊥ = 0`) |
-| 96 | orthoalgebra SEA with all elements idempotent is Boolean | SEA 44 (`prop:SEAsharpisBoolean`, cited as "Prop. 45") | from SEA |
+| 96 | orthoalgebra SEA with all elements idempotent is Boolean | SEA 44 (`prop:SEAsharpisBoolean`, cited as "Prop. 45") | **discharged**: `sea44_holds` (`Decompose.lean`, from `Papers.SEA.sea44_booleanAlgebra`) |
 | 105, 106, 109 | normal SEA: `⌈a⌉`, `⌊a⌋` exist; `b&a=a ⇒ b ≥ ⌈a⌉`; idempotents a complete lattice (REC 57) | SEA 49–50, 71, … | from SEA |
 | 119, 120, 125 | spectral theorem for convex normal SEAs, sharp elements norm-dense (REC 58) | SEA 36 (`seaspectral`) and §6 of SEA | from SEA |
 | 38 | `{0,1}` scalars + state separation ⇒ orthoalgebras | cited SIG; SIG only has a σ-version (SIG 48/50) | **in-house** (the Prop 93 argument, 5 lines) |
@@ -74,7 +74,9 @@ session that creates it.  Hence §3 lives with §2.1–2.2 (it needs REC 23, 28,
 |---|---|---|---|
 | `Papers/REC/Effectus.lean` | §2.1, §2.2, §3 | 1–36, 62–86 | ~2,400 |
 | `Papers/REC/Algebras.lean` | §2.3–§2.5 | 37–61 | ~1,500 |
-| `Papers/REC/Decomposition.lean` | §4 | 87–99 | ~3,000 (Karoubi envelope as effectus, three equivalences of categories) — may split `Decomposition/Split.lean` |
+| `Papers/REC/Decompose.lean` | §4 | 87–99 | 2,750 (done 2026-09-26): explicit coproducts, generic Karoubi effectus `KCat`, splitting theorem, 87–98, `BoolMat`, 99 refuted |
+| `Papers/REC/DecomposeFinite.lean` | §4.4 | 99 (corrected) | 260 (done 2026-09-26) |
+| `Papers/REC/Scalars.lean` | §2.2 | 34, 35 discharged | 90 (done 2026-09-26): `rec34_holds` from OAP 69 |
 | `Papers/REC/Reconstruction.lean` | §5 | 100–121 | ~2,500 |
 | `Papers/REC/Monoidal.lean` | §6 | 122–136 | ~1,800 |
 
@@ -129,7 +131,7 @@ external literature).
 | 31 | E | Set normal; fd C* normal; vN dc | 30 | tree `Par (Type u)` | deferred (needs order transport along `set_pred_subset`; C*/vN parts need concrete partial-form effectuses) |
 | 32 | E | complete Boolean algebra is a dc effect monoid | 16, 30 | – | done |
 | 33 | E | `C(X,[0,1])` dc for extremally disconnected `X` | 18, 30 | Stone–Nakano; OAP | deferred (classical, not proved in the paper) |
-| 34 | T | dc effect monoid `≅ B ⊕ C(X,[0,1])` | 20, 30 | **OAP 69** | stated (Prop) |
+| 34 | T | dc effect monoid `≅ B ⊕ C(X,[0,1])` | 20, 30 | **OAP 69** | done: `rec34_holds` (`Scalars.lean`, from OAP 69) |
 | 35 | C | scalars of a dc effectus | 34 | – | done from 34 |
 | 36 | T | irreducible dc effect monoid ∈ `{0}, {0,1}, [0,1]` | 34 | **OAP 71** | stated (Prop) |
 
@@ -193,23 +195,23 @@ external literature).
 | 85 | D | `OMLatGal` | – | tree `OMLatGalCat` | done (thin) |
 | 86 | P | functor `C → OMLatGal` | 69, 84 | tree 208VII | done (thin) |
 
-### §4 Decomposing into sharp and convex systems (Decomposition.lean)
+### §4 Decomposing into sharp and convex systems (Decompose.lean, DecomposeFinite.lean)
 
 | # | k | content | deps | external | status |
 |---|---|---|---|---|---|
-| 87 | P | non-trivial idempotent scalar ⇒ `Pred(C)` embeds into a product | 12, 15 | – | deferred; **under-specified** ("embeds non-trivially") — formalise as a faithful functor `Pred(C) → C₁ × C₂` with both factors non-trivial |
-| 88 | D | idempotent; Karoubi envelope `Split(C)` | – | Mathlib `Karoubi` | deferred (use Mathlib's `Karoubi`) |
-| 89 | P | `Split(C)` is an effectus; preserves separation, monoidality | 88, 9, 13, 14, 28 | – | deferred (big: finPAC + EA structure on `Karoubi C`) |
-| 90 | P | monoidal + non-trivial idempotent scalar ⇒ `Split(C) ≃ C_s × C_{s^⊥}` | 29, 89 | – | deferred |
-| 91 | P | ditto without splitting, given images + compatible filters/comprehensions | 77, 90 | – | deferred |
-| 92 | P | ditto from state/predicate separation | 77, 90 | OAP 20 (in-house) | deferred |
-| 93 | P | dc + state separation ⇒ `Pred(A) ≅ OA ⊕ convex` | 35, 37, 39 | OAP 69 | deferred |
-| 94 | P | `Pred : C → OAᵒᵖ × DCOUSᵒᵖ` | 42, 93 | – | deferred |
-| 95 | P | `C ≃ C₁ × C₂` with `Pred` into `OAᵒᵖ` resp. `DCOUSᵒᵖ` | 92, 93, 42 | – | deferred |
-| 96 | L | orthoalgebra SEA is Boolean with `a&b = a∧b` | 37, 56 | SEA 44 | deferred |
-| 97 | P | normal-SEA predicate space `≅` complete BA ⊕ convex | 93, 96 | – | deferred |
-| 98 | D | finite tomography | 12 | – | deferred |
-| 99 | P | dc + finite tomography ⇒ `Pred(I) ≅ 𝒫(A) ⊕ [0,1]^n` | 34, 98 | – | **suspected FALSE** (see §4) — deferred |
+| 87 | P | non-trivial idempotent scalar ⇒ `Pred(C)` embeds into a product | 12, 15 | – | done (`rec87`): under-specified, rendered as `Pred(A) ≅ s·Pred(A) ⊕ s^⊥·Pred(A)` + faithfulness + non-triviality |
+| 88 | D | idempotent; Karoubi envelope `Split(C)` | – | Mathlib `Karoubi` | done: `Split C` ≅ Mathlib `Karoubi C` (`splitEquivKaroubi`) |
+| 89 | P | `Split(C)` is an effectus; preserves separation, monoidality | 88, 9, 13, 14, 28 | – | effectus + predicate bullet done; **state bullet FALSE** (refuted in Lean); monoidal bullet deferred (unused: REC 90 proved without it) |
+| 90 | P | monoidal + non-trivial idempotent scalar ⇒ `Split(C) ≃ C_s × C_{s^⊥}` | 29, 89 | – | done (`rec90`, via `CentralSplitting.equivalence`) |
+| 91 | P | ditto without splitting, given images + compatible filters/comprehensions | 77, 90 | – | done (`rec91`) |
+| 92 | P | ditto from state/predicate separation | 77, 90 | OAP 20 (in-house) | done for states (`rec92_states`); predicates case with sharpness of `s∘1` as hypothesis (`rec92_predicates`; proof gap, flag 18) |
+| 93 | P | dc + state separation ⇒ `Pred(A) ≅ OA ⊕ convex` | 35, 37, 39 | OAP 69 | done (`rec93`, `h34` = `rec34_holds`) |
+| 94 | P | `Pred : C → OAᵒᵖ × DCOUSᵒᵖ` | 42, 93 | – | done into `OA × DCEA_c` (`rec94_functor`); `≅ DCOUS` = REC 42, deferred |
+| 95 | P | `C ≃ C₁ × C₂` with `Pred` into `OAᵒᵖ` resp. `DCOUSᵒᵖ` | 92, 93, 42 | – | done into `OA`, `DCEA_c` (`rec95`, `rec95_oaFunctor`, `rec95_dcFunctor`); DCOUS part = REC 42 |
+| 96 | L | orthoalgebra SEA is Boolean with `a&b = a∧b` | 37, 56 | SEA 44 | done (`rec96`; SEA 44 discharged) |
+| 97 | P | normal-SEA predicate space `≅` complete BA ⊕ convex | 93, 96 | – | done (`rec97`; two omitted steps supplied, flag 19; normality unused) |
+| 98 | D | finite tomography | 12 | – | done (`FiniteTomography`) |
+| 99 | P | dc + finite tomography ⇒ `Pred(I) ≅ 𝒫(A) ⊕ [0,1]^n` | 34, 98 | – | **FALSE**: refuted (`rec99_false_as_printed`, `BoolMat`); corrected with "finitely many idempotent scalars", an iff (`rec99_corrected`, `rec99_corrected_converse`) |
 
 ### §5 The reconstruction (Reconstruction.lean)
 
@@ -266,26 +268,28 @@ external literature).
    orthosupplement of `a` is not unique.  The cited source (and thesis B 175II.4,
    and SEA 3) use `x ⊥ y :⟺ x ≤ y^⊥`.  The Boolean case (REC 16) is unaffected.
    Refuted in Lean: `rec7_as_printed_false`.
-2. **REC 99 is false as printed** (paper argument; break-it review 2026-09-26: the
-   counterexample stands; not yet in Lean).  Counterexample: `Kl(D_M)` restricted to
-   finite sets, `M = 𝒫(ℕ)` (or any infinite complete Boolean algebra), in partial form.
-   Predicates on a finite `Y` are `M^Y` (a complete lattice, so directed complete);
-   the point predicates `δ_y` (`y ∈ Y`) give finite tomography, since `(δ_y ∘ f)(x) =
-   f(x)(y)`; but `Pred(I) = M` is not `𝒫(A) ⊕ [0,1]^n` with `A` finite — every
-   element of `M` is idempotent, so `n = 0`, and then `𝒫(A)` is finite (cardinality
-   does *not* decide it: both sides can have size continuum).  The proof's error: at
-   the object `I` finite tomography is witnessed by `p = 1 = id_I` alone, so "the
-   `p_i` separate `Pred(I)`" says nothing about the size of `B` or `X`.  Not filed in
-   `ERRATA.md` until it is refuted in Lean (with `Decomposition.lean`).
+2. **REC 99 is false as printed** — refuted in Lean (`rec99_false_as_printed`):
+   `BoolMat 𝒫(ℕ)` (`Kl(D_M)` on finite sets, `M = 𝒫(ℕ)`, built from scratch as an
+   effectus in partial form) is directed complete with finite tomography (point
+   predicates), but `Pred(I) = 𝒫(ℕ)` is not even order-isomorphic to
+   `𝒫(A) × [0,1]^n`, `A` finite.  In fact finite tomography constrains nothing:
+   every complete Boolean algebra is the scalars of such an effectus
+   (`rec99_any_boolean_scalars`).  The proof's error: at `I` tomography is
+   witnessed by `id_I` alone.  Corrected statement (`DecomposeFinite.lean`): the
+   conclusion holds iff `Pred(I)` has finitely many idempotents.  ERRATA REC 99.
 3. **REC 80, part 2**: stated for any comprehensions, proved only for comprehensions
    of *sharp* predicates (compatibility is only assumed for those).  Gap closes: a
    comprehension for `p` is a comprehension for `⌊p⌋` (proof of 66 b), which is sharp.
-4. **REC 120**, proof: "we may assume `im ω ≤ p`, otherwise take `ω' := asrt_p ∘ ω`" —
-   `ω'` is a *sub*state, and renormalising needs division by the scalar `p∘ω`, which
-   `C(X,[0,1])`-valued scalars (the general case of Theorem 102) do not have;
-   the strict inequalities `ω(…) < 0` are likewise ill-defined in `C(X)`.  Also
-   `λ < ½‖δ‖` vs `λ < ½‖δ‖^{-1}`, and `p` is reused for a second idempotent.  For
-   irreducible scalars (Theorem 103) the argument reads correctly.
+4. **REC 120**, proof (independent review `docs/research/review-rec120.md`, ERRATA
+   "REC 120"): Theorem 102 is **true**; REC 120's printed step is broken for *all*
+   scalars, not only `C(X,[0,1])`-valued ones — "take `ω' := asrt_p ∘ ω`" applies
+   Lemma 119 to a *sub*state.  Local repair, covering both 102 and 103: use the total
+   state `ω := π_q ∘ σ` for a state `σ` of `{A|q}`, then evaluate at a point of `X`.
+   (Also `λ < ½‖δ‖` vs `λ < ½‖δ‖^{-1}`, and `p` is reused for a second idempotent.)
+   Do **not** reorder to do 103 first.  Remaining risks for 102: Lemma 119 for
+   `C(X)`-valued states (citation-only in the paper), and the exact hypotheses of the
+   REC 121 Alfsen–Shultz black box — state it for Banach order unit spaces with a
+   norm-dense set of sharp combinations, with no spectral duality / dual space assumed.
 5. **REC 136**: `F(Pred(A)) ≅ [0,1]_{F(A)}` is ill-typed (`F` is a functor on `C`);
    meant `Pred(A) ≅ [0,1]_{F(A)}`.
 6. **REC 87**: "embeds non-trivially into a product of categories" is under-specified.
@@ -314,9 +318,27 @@ external literature).
     (Hanche-Olsen–Størmer §4.4–4.5, not proved here); the tree has no ultraweak
     topology on an abstract von Neumann algebra.
 
-Items 1 and 2 are the only ones that change what is true; 3–4 are gaps in proofs;
-5–16 are typos/notation a careful reader repairs, or deviations of the Lean.
-Filed in `../papers/ERRATA.md`: REC 7, 44, 63, 69, 80.
+17. **REC 89**, second bullet, **is false as printed** (refuted in Lean,
+    `rec89_states_not_preserved`, `rec89_states_false_as_printed`): with an
+    idempotent scalar `s ∉ {0,1}` the object `(I, s)` of `Split(C)` has no states but
+    `id ≠ 0`, so `Split(C)` is never separated by states.  The printed "analogously"
+    fails: the analogue of `p ∘ s` is the substate `t ∘ ω`.  Unused later.
+18. **REC 92**, proof: takes `asrt_{s∘1}` without showing `s ∘ 1` sharp.  Proved
+    under state separation (`isSharp_of_states`); from predicate separation alone no
+    argument (gap, not refuted) — `rec92_predicates` assumes it.  REC 91's
+    sharpness argument (image of `s · id`) needs the monoidal structure.
+19. **REC 97**, proof: "`A_b` is a principal downset, so a SEA" needs `s ∘ 1`
+    idempotent in the SEA of `Pred(A)` (true: REC 96's argument inside `Pred(A)`,
+    `part_idem`), and completeness of the Boolean algebra is not argued (true: `A_b`
+    is directed complete, `boolean_complete_of_dc`).  Normality of the SEA is not
+    needed.  Not filed (a careful reader repairs both).
+20. **REC 87** (flag 6): formalised as `Pred(A) ≅ s·Pred(A) ⊕ s^⊥·Pred(A)` (natural in
+    `A`), faithfulness of `Pred(C) → C₁ × C₂`, non-triviality at `I` (`rec87`).
+
+Items 1, 2 and 17 are the only ones that change what is true; 3, 4, 18, 19 are gaps
+in proofs; the rest are typos/notation a careful reader repairs, or deviations of
+the Lean.  Filed in `../papers/ERRATA.md`: REC 7, 44, 63, 69, 80, 89, 92, 99 (and
+120, by the review).
 
 ## 5. Cost estimate
 
@@ -324,11 +346,58 @@ Filed in `../papers/ERRATA.md`: REC 7, 44, 63, 69, 80.
 |---|---|---|
 | Effectus.lean | ~2,000 (this phase) | mostly thin restatements + monoidal lemma + REC 7, 21, 75–80 |
 | Algebras.lean | ~1,500 | definitions; 38, 43 short; 42 is the only real proof (~600) |
-| Decomposition.lean | ~3,000 | effectus structure on Mathlib's `Karoubi` (~1,200), three equivalences (~1,200) |
+| Decompose.lean (+ DecomposeFinite, Scalars) | 3,100 (done) | as planned, plus the counterexample `BoolMat` (~450) and the REC 34 bridge |
 | Reconstruction.lean | ~2,500 | 105–115 reuse tree &-/†-effectus patterns but in the paper's setting (~1,200); 117–121 functional analysis (~1,000) + black boxes; main theorems 102/103 (~300) |
 | Monoidal.lean | ~1,800 | JBW tensor calculus; five black boxes |
 
-Total ≈ 11,000 lines, roughly 6–9 agent sessions after this one; the critical
-path is Decomposition (Karoubi) → Reconstruction.  Main risk: REC 120's proof for
-non-irreducible scalars (flag 4) may need a new argument or a restriction of
-Theorem 102 to scalars where substates can be normalised.
+Total ≈ 11,000 lines; §2–§4 done (≈ 8,000 with this session's 3,100); the critical
+path is now Reconstruction (§5) → Monoidal (§6).  Main risks for 102 (flag 4): Lemma 119
+for `C(X)`-valued states, and the exact hypotheses of the REC 121 black box.
+
+## 6. Handover to §5 (written at the end of the §4 session, 2026-09-26)
+
+What §5 (`Reconstruction.lean`, REC 100–121) can use from §4 — import
+`Papers.REC.Decompose` and `Papers.REC.Scalars` once their oleans exist:
+
+* **REC 34/35 are theorems now**: `rec34_holds : EffectMonoidDCClassification`
+  (`Scalars.lean`, from `Papers.OAP.oap69`).  Pass it wherever a statement takes
+  `h34`.  REC 36 (`IrreducibleDCClassification`, used by 103) is still a Prop;
+  OAP 71 is in `Papers.OAP.Main` (`oap71_iso`) but stated for "no zero divisors",
+  so a bridge irreducible → no zero divisors is needed (or: REC 34 + a connected
+  extremally disconnected space is a point).
+* **SEA 44 is a theorem**: `sea44_holds` (REC-SEA → `Papers.SEA.SEAlgebra` bridge:
+  `SEA.toTree` plus `comm_seq`).  The same bridge gives access to the rest of
+  `Papers.SEA` (REC 57's floor/ceiling, SEA 49–50/71, the spectral theorem) for
+  REC 105–109, 119, 120 — check `Papers/SEA/*.lean` for built points before stating
+  them as Props.
+* **Splitting 102's `C ≃ C₁ × C₂`**: `rec95` gives `C ≌ (dcSplitting σs hsep).ε.Part ×
+  (dcSplitting σs hsep).ε'.Part` (REC 92 at the Boolean idempotent of REC 93).  The
+  parts are effectuses (`KCat` instances).  For 102 one needs the predicate spaces of
+  `C₁` to be complete Boolean algebras: `rec97` proves it for `s · Pred(A)` inside
+  `C`, and `partPredIso` identifies `Pred` of an object `(A, asrt)` of `C₁` with
+  `s · Pred(A)`; transporting the Boolean algebra (and the SEA of REC 100 axiom 6)
+  along `partPredIso` is *not* done yet.
+* **Assert maps of `s ∘ 1`**: `asrtT`, `asrtT_pred` (`p ∘ asrt = s ∘ p`),
+  `asrtT_substate` (`asrt ∘ ω = ω ∘ s`), `isSharp_of_states`, `asrtT_effObj`.
+* **Instance pitfall** (cost an hour): for a part given by a *composite* term
+  (`(dcSplitting σs hsep).ε.Part`), `Pred P` elaborates but instance search for
+  `EffectAlgebra (Pred P)` inside generic lemmas (e.g. `EAIso.isOrthoalgebra`) can
+  wander into `Karoubi C` and fail.  Work around by proving the needed consequence
+  in a section where the part's data are variables (`partPred_isOrthoalgebra`,
+  `partPred_directedComplete`, `partPredMap_id`) and applying it with explicit
+  arguments.  `KCat`'s `Hom` is `Karoubi.Hom` (not Karoubi's `⟶`) for the same
+  reason.
+* **Generic tools**: `ExplicitCoproducts.finPAC_of` (build `FinPAC` from an explicit
+  coproduct — reuse for any new concrete effectus); `KCat` (full subcategories of
+  the Karoubi envelope with effect object `(I, e)`); `CentralSplitting.equivalence`;
+  `EAIso` with transport of orthoalgebra / directed completeness / convexity.
+* **Still open in §2–§4**: REC 89's monoidal bullet (monoidal structure on
+  `Split C`; needs `MonoidalCategory` coherence on `KCat`, ~400 lines, not used by
+  REC 90–136 as far as the plan shows), REC 42 (`DCEA_c ≅ DCOUS`, needs Wright's
+  lemma) and hence the DCOUS halves of 94/95/97, REC 36 (see above), and the
+  predicate-separated case of REC 92 without the sharpness hypothesis.
+* **REC 100's "normal effectus separated by states"** is exactly the setting of
+  `rec93`–`rec97` (dc + state separation), so 102's first steps are `rec95` +
+  `rec97`; REC 103 adds irreducibility, where `s ∈ {0, 1}` and one factor of
+  `rec95` is trivial.
+
