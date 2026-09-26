@@ -308,3 +308,21 @@ entries `i, −i` and `B` with `j, −j`; then `tr(AB) = −2k`.  The real part
 `Re tr(AB)` is meant (for `ℝ` and `ℂ` the two agree on self-adjoint
 matrices).  Lean: `Papers.EJA.hermMat_inner` (inner product `re tr (AB)`),
 `Papers.EJA.matrix_examples`; refutation `Papers.EJA.example3_trace_not_real`.
+
+### SEA 71 (`lem:multfloor`, second.tex:2095, Lemma), proof — two slips (2026-09-26)
+
+After `a ∘ b² = a` the print writes "`a ∘ b⁴ = 0`", "`a ∘ b^{2ⁿ} = 0`" and
+"`a ∘ bⁿ = 0`" where it means `= a` throughout, and "since `bⁿ ≤ b^{2ⁿ}`" is
+reversed (powers decrease: `b^{2ⁿ} ≤ bⁿ`, whence `a = a ∘ b^{2ⁿ} ≤ a ∘ bⁿ ≤ a`).
+The statement is unaffected; induction on `n` (`a ∘ bⁿ⁺¹ = (a ∘ b) ∘ bⁿ`, as
+`a | b`) avoids the powers of 2.  Lean: `Papers.SEA.sea71_floor`.
+
+### SEA 73 (`prop:assoc-a-convex`, second.tex:2129, Proposition) — needs `E ≠ {0}`; one step of the proof (2026-09-26)
+
+False as printed for the one-element SEA `{0 = 1}`: it is a normal
+associative a-convex factor (`Z(E) = {0} = {0,1}`), but a horizontal sum of
+copies of `[0,1]` always has `0 ≠ 1`.  Repair: assume `0 ≠ 1`.  In the proof,
+for `S ⊆ {0,1}` one has `S'' = Z(E) = {0,1}`, not "`{0,1} = S'' = E`", so the
+claim `S'' ≅ [0,1]` holds only for `S ⊄ {0,1}` (which is all that is used).
+Lean: `Papers.SEA.sea73_false_as_printed` (refutation),
+`Papers.SEA.sea73_assoc_factor` (with `(1 : E) ≠ 0`).

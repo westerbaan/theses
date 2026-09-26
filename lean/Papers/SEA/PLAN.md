@@ -262,3 +262,7 @@ Notes: 62 ("a-convex = convex ⊕ purely a-convex", OAP 69) will want the
 `SEA35` hypothesis the same way as 57 (or `sea35` once `Discharge.lean` has an
 olean).  69–72 need only Basic and `floor`.  70's "commuting halves" ⇒
 convex is `sea57` via `halves_eq_of_commutes`.
+
+## Status update 2026-09-26 (PureAConvex.lean) — SEA complete
+
+All 73 points done.  §5–6 (61–73) are in `PureAConvex.lean` (not `Assoc.lean`, which does not exist), with the main theorem `sea64_main` (E ≅ B ⊕ E_c ⊕ E_ac) and unconditional restatements of the SEA35-dependent §4 results.  SEA 73 refuted as printed for the one-element SEA; corrected with 1 ≠ 0 (ERRATA, with the proof slip S'' = Z(E)).
