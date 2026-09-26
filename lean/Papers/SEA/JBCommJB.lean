@@ -1,7 +1,7 @@
 /-
 Papers/SEA/JBCommJB.lean
 
-**SEA 16, JB half** (`ex:canonical-sea`, second.tex:475; van de Wetering, arXiv 2004.12749):
+**SEA 16, JB half** (`ex:canonical-sea`, second.tex:475; van de Wetering, arXiv 1912.01903):
 "any JB-algebra is a convex SEA", i.e. `JBCommutation A` for every JB-algebra `A`, by redoing
 `JBWCommFull` with continuous functions only.
 

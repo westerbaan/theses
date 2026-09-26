@@ -2,7 +2,7 @@
 Papers/SEA/JBContPeirce.lean
 
 **`ContPeirce A` for every JB-algebra**, hence SEA 16's JB half unconditionally
-(`ex:canonical-sea`, second.tex:475; van de Wetering, arXiv 2004.12749): every JB-algebra's
+(`ex:canonical-sea`, second.tex:475; van de Wetering, arXiv 1912.01903): every JB-algebra's
 `[0,1]` is a convex SEA with `a ∘ b = U_{√a} b`.
 
 Plan (2026-09-26).  Hypothesis (G): `U_{k(h)} U_x f(h) = 0` for separated `k`, `f ≥ 0`.
