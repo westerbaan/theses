@@ -36,6 +36,7 @@ import Papers.SIG.Finite
 import Papers.EJA.Appendix2
 import Papers.REC.Tidy
 import Papers.REC.Rec92Counter
+import Papers.SIG.Convex
 
 /-
 Formalisations of three papers following the theses, by Abraham (Bram)

@@ -207,3 +207,7 @@ theory.  "tree" = `Theses/B/Eff/*`.
 ## Status update 2026-09-26 (phase 2a)
 
 Done: SIG 14 (Pfn is a σ-effectus), 22 (Pfn scalars), 32, 47–50 in `Pfn.lean`; the finite halves of 28, 29, 33, 34 in `Finite.lean`.  SIG 33 (finite): the scalars of WMod[M] are Mᵒᵖ, not M (ERRATA); the σ-half stands since σ-effect monoids are commutative (SIG 42).  The convex side (`Convex.lean`) is in progress in a separate job.
+
+## Status update 2026-09-26 (Convex.lean)
+
+Done: the convex block SIG 51–61 and 68–73 (printed numbering) in `Convex.lean`, no hypotheses remaining.  Only SIG 15 and 46 lack rows.  NOTE: the point table above still uses the pre-2026-09-26 index numbers for points after 50; the rows, doc comments and `../papers/SIG-points.csv` are the authority.  Duplicates to merge later: `EModS`/`WeightMod`/`CWMod` (Convex) vs `EMod`/`WMod` (Finite); `sigmaMorphismComp` vs `SigmaEffectusMorphism.comp`; `omegaComplete_iff_oap` vs `sig_omegaComplete_toOAP`.
