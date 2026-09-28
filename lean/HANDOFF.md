@@ -950,6 +950,32 @@ de-privatise them and accept the A/VN rebuild.
   was undefined.  Corrected to `c + r cos(2πn/N) + i r sin(2πn/N)`, which is
   what the proof uses and what `cauchy_formula` states.  Row deleted.
 
+### Resolved by the author (2026-09-28) — thesis-A rulings, incorporated
+
+* **7III.6** (the solution to `cstar-involution-basic`, `parsec-70.30`) —
+  accepted; fixed in place, no erratum (solution text was never printed).  The
+  one-line solution decomposed `ia = ℑa − iℜa`, which is `−ia`, so point 2
+  gave the negation of what the exercise asks; it now reads
+  `ia = −ℑa + iℜa`.  **Lean side**: nothing to change —
+  `cstar_involution_basic_6` already uses the corrected decomposition.  Row
+  deleted; **`cstar.tex` 6 → 5** (counting 15IV, which sits in the thesis-B
+  `dils.tex` table).
+
+* **14VIII.3** (the solution to `cstar-log-basics`, `parsec-140.80`) —
+  accepted, with a different repair than the row proposed; fixed in place, no
+  erratum.  Reading `π/2` for `2π` would have left the middle term false
+  (`arctan x + arctan(1/x)` is `−π/2` for `x < 0`, and
+  `arctan(Im w/Re w) = ∡(1,0,w)` needs `Re w > 0`).  The step now measures
+  from `ib` instead of from `1`: `arctan(Re w/b) = ∡(w,0,ib)`, the angle at `0`
+  of the right triangle `0, ib, w`; then `∡(w,0,ib) − ∡(w',0,ib) =
+  ∡(w,0,w')`.  Two new TikZ pictures, side by side, illustrate the two steps.  Checked numerically over all sign and
+  order cases of `b`, `Re w`, `Re w'`.  The author also rewrote the horizontal
+  case's opening, and fixed two slips in the solution to **point 2** that had
+  no row: `i·arctan(b/a)` → `i·arctan(a/b)`, and `+ log|a+ib|` →
+  `− log|a+ib|`, now agreeing with the exercise.  **Lean side**: nothing to
+  change — `Positive.lean` follows the solution's route through its own
+  `arg`/`arctan` lemmas.  Row deleted; **`cstar.tex` 5 → 4**.
+
 ### Still open
 
 **0. RESOLVED — the formalization validates the thesis's own bootstrapping.**

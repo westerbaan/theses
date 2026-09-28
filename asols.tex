@@ -2,6 +2,7 @@
 \input{common}
 \externaldocument{a}
 \externaldocument{b}
+\usetikzlibrary{angles}
 
 \newcommand{\TODO}[1]{\textcolor{darkred}{\textsc{\underline{todo}}}}
 
@@ -1817,9 +1818,9 @@ This yields the required identity since
                 \int_a^0
                 \frac{t}{t^2+b^2}\,dt 
                 \\
-                \ &=\  i\arctan(\,b/a\,)
+                \ &=\  i\arctan(\,a/b\,)
                 \ + \  \log\left|b\right|
-                \ + \ \log\left|a+ib\right|.
+                \ - \ \log\left|a+ib\right|.
             \end{alignat*}
 \item
 The problem is easily reduced to the case that~$z_0=0$.
@@ -1830,12 +1831,17 @@ we must show that
     \int_w^{w'} z^{-1}
     \,dz \ =\ i\measuredangle(w,0,w')\ +\ \log\frac{\left|w'\right|}{\left|w\right|}.
 \end{equation}
-            Suppose that~$\Imag{w}=\Imag{w'}=:b$
-            then the equation above
-            follows easily
-            from the expression for $
-                \int_{a+ib}^{ib} z^{-1} \,dz $ computed above,
-                because
+            Suppose for the moment that~$\Imag{w}=\Imag{w'}=:b$.
+            Then 
+            $$
+                \int_{\Real{w}+ib}^{ib}z^{-1}\,dz
+                \ =\  i\arctan(\,\Real{w}/b\,)
+                \ + \  \log\left|b\right|
+                \ - \ \log\left|w\right|,
+            $$
+            and we have a similar expression for~$w'$.
+            Taking the difference,
+            we get:
                 $$\int_w^{w'}
                 z^{-1}\,dz\ = \ 
                 \int_{\Real{w}+ib}^{ib} z^{-1}\,dz\ - \ 
@@ -1844,12 +1850,48 @@ we must show that
                 \ =\  i\measuredangle(w,0,w')
                 \ + \ \log\frac{\left|w'\right|}{\left|w\right|},$$
             using here that
-            $\arctan(\,\Real{w}/\Imag{w}\,)
-            = 2\pi - \arctan(\,\Imag{w}/\Real{w}\,)
-            = 2\pi - \measuredangle(1,0,w)$,
-            and so~$\arctan(\,\Real{w}/\Imag{w}\,)
-            -\arctan(\,\Real{w'}/\Imag{w'}\,) =
-            \measuredangle(w,0,w')$.
+            $\arctan(\,\Real{w}/b\,)
+            = \measuredangle(w,0,ib)$, so
+            $$\arctan(\,\Real{w}/b\,)
+            -\arctan(\,\Real{w'}/b\,) \ =\
+            \measuredangle(w,0,ib)-\measuredangle(w',0,ib) \ =\
+            \measuredangle(w,0,w'):$$
+            \begin{equation*}
+            \begin{tikzpicture}[baseline=(O)]
+            \coordinate (O) at (0,0);
+            \coordinate (B) at (0,2.7);
+            \coordinate (W) at (3.6,2.7);
+            \draw (O) -- (B) -- (W) -- cycle;
+            \pic[draw, angle radius=8mm] {angle = W--O--B};
+            \pic[draw, angle radius=2mm] {right angle = O--B--W};
+            \node[font=\small] at (0.9,1.5) {$\measuredangle(w,0,ib)$};
+            \draw[decorate, decoration={brace, amplitude=4pt, raise=2pt}]
+                (O) -- node[left=6pt] {$b$} (B);
+            \draw[decorate, decoration={brace, amplitude=4pt, raise=2pt}]
+                (B) -- node[above=6pt] {$\Real{w}$} (W);
+            \fill (O) circle (1pt) node[below] {$0$};
+            \fill (B) circle (1pt) node[above left] {$ib$};
+            \fill (W) circle (1pt) node[above right] {$w$};
+            \end{tikzpicture}
+            \qquad
+            \begin{tikzpicture}[baseline=(O)]
+            \coordinate (O) at (0,0);
+            \coordinate (B) at (0,2.7);
+            \coordinate (V) at (1,2.7);
+            \coordinate (W) at (3.6,2.7);
+            \draw (B) -- (O) -- (V) (O) -- (W) -- (B);
+            \pic[draw, angle radius=8mm] {angle = W--O--B};
+            \pic[draw, angle radius=14mm] {angle = V--O--B};
+            \pic[draw, angle radius=20mm] {angle = W--O--V};
+            \node[left, font=\small] at (0,0.8) {$\measuredangle(w,0,ib)$};
+            \node[left, font=\small] at (0,1.4) {$\measuredangle(w',0,ib)$};
+            \node[font=\small] at (1.81,2.25) {$\measuredangle(w,0,w')$};
+            \fill (O) circle (1pt) node[below] {$0$};
+            \fill (B) circle (1pt) node[above] {$ib$};
+            \fill (V) circle (1pt) node[above] {$w'$};
+            \fill (W) circle (1pt) node[above] {$w$};
+            \end{tikzpicture}
+            \end{equation*}
 
 Similarly, \eqref{eq:14VIII}
 follows easily from the first integral computed in point~2
