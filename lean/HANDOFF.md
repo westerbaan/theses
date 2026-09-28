@@ -968,13 +968,25 @@ de-privatise them and accept the A/VN rebuild.
   `arctan(Im w/Re w) = ∡(1,0,w)` needs `Re w > 0`).  The step now measures
   from `ib` instead of from `1`: `arctan(Re w/b) = ∡(w,0,ib)`, the angle at `0`
   of the right triangle `0, ib, w`; then `∡(w,0,ib) − ∡(w',0,ib) =
-  ∡(w,0,w')`.  Two new TikZ pictures, side by side, illustrate the two steps.  Checked numerically over all sign and
-  order cases of `b`, `Re w`, `Re w'`.  The author also rewrote the horizontal
-  case's opening, and fixed two slips in the solution to **point 2** that had
-  no row: `i·arctan(b/a)` → `i·arctan(a/b)`, and `+ log|a+ib|` →
-  `− log|a+ib|`, now agreeing with the exercise.  **Lean side**: nothing to
-  change — `Positive.lean` follows the solution's route through its own
-  `arg`/`arctan` lemmas.  Row deleted; **`cstar.tex` 5 → 4**.
+  ∡(w,0,w')`.  Two new TikZ pictures, side by side, illustrate the two
+  steps.  Checked numerically over all sign and order cases of `b`, `Re w`,
+  `Re w'`.  The author also rewrote the horizontal case's opening, and fixed
+  two slips in the solution to **point 2** that had no row: `i·arctan(b/a)` →
+  `i·arctan(a/b)`, and `+ log|a+ib|` → `− log|a+ib|`, now agreeing with the
+  exercise.  **Lean side**: nothing to change — `Positive.lean` follows the
+  solution's route through its own `arg`/`arctan` lemmas.  Row deleted;
+  **`cstar.tex` 5 → 4**.
+
+* **20aI** (`cstar-product-2`) — accepted; erratum `parsec-201.10`.  The
+  second paragraph named `cC*_pu` twice; the first is now `C*_pu`, so the
+  Exercise asks for the non-commutative pu product, which the solution
+  proves and **21VIII** (the proof of `order-separating-norm`) uses for
+  `⟨ω⟩_ω : 𝒜 → ⊕_ω ℬ_ω`.  No other citation depends on it.  Fixed without a
+  block: the family `(𝒜_i)_{j∈I}` → `(𝒜_i)_{i∈I}`, and the solution's closing
+  "full subcategories `cC*_miu` and `cC*_pu` of `C*_pu`" → "of `C*_miu` and
+  `C*_pu`, respectively".  **Lean side**: nothing to change —
+  `cstar_product_2_pu` already states the corrected reading.  Row deleted;
+  **`cstar.tex` 4 → 3**.
 
 ### Still open
 
