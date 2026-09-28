@@ -988,6 +988,16 @@ de-privatise them and accept the A/VN rebuild.
   `cstar_product_2_pu` already states the corrected reading.  Row deleted;
   **`cstar.tex` 4 → 3**.
 
+* **27XXIV** (the proof of `stone-weierstrass`) — accepted; erratum
+  `parsec-270.240`.  The patch `U_y` bounded `f_y` below by the constant
+  `g(y) − ε`, which does not give `g − ε ≤ f` (on `[0,1]` with `g = 1 + x`,
+  `ε = 0.1`, the constant `f₀ = 1` and `U₀ = X` meet every printed condition
+  and fail it at `1`).  Now: since `g(y) − ε < g(y) = f_y(y)`, by continuity
+  of `g` and `f_y` there is an open `U_y ∋ y` with `g(x) − ε ≤ f_y(x)` on it.
+  The strict inequality at `y` is what continuity needs.  **Lean side**:
+  nothing to change — `sw_approx` already uses
+  `U_y := {z : g(z) − ε < f_y(z)}`.  Row deleted; **`cstar.tex` 3 → 2**.
+
 ### Still open
 
 **0. RESOLVED — the formalization validates the thesis's own bootstrapping.**
