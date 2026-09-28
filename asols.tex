@@ -259,6 +259,13 @@ and
 should read
 ``$\|ab\|_\omega \leq\,\|a\|_\omega\,\|b\|$''.
 \end{erratum}
+\begin{erratum}{parsec-300.50}%
+``(being uniformly continuous) can be uniquely extended
+to uniformly continuous operations on~$\scrH$''
+should read
+``(being uniformly continuous in each argument separately)
+can be uniquely extended to such operations on~$\scrH$''.
+\end{erratum}
 \begin{erratum}{parsec-300.60}
 ``$\|ab\|_\omega \leq \|\omega\|\,\|a\|\,\|b\|_\omega$''
 should read
@@ -3586,7 +3593,7 @@ we have
 $\|a_{nn}-a_{mm}\|\leq 3\cdot 2^{-N}\leq \varepsilon$
 for all~$n,m\geq N$.
 
-Also~$\|a_{nn}-a_{nm}\|\leq \varepsilon$
+Also~$\|a_{nn}-a_{mn}\|\leq \varepsilon$
 for $n,m\geq N$,
 which implies that $d(\,(a_{nn})_n,\, a_m\,)\leq \varepsilon$
 for all~$m\geq N$,
@@ -3599,7 +3606,7 @@ Whence~$\scrH$ is complete.
 \emph{(denseness of~$\eta(V)$)}
 Given a Cauchy sequence~$a_1,a_2,\dotsc$ in~$V$
 (that is, an element of~$\scrH$),
-we claim that~$\eta(a_1)\,\eta(a_2),\,\dotsc$
+we claim that~$\eta(a_1),\,\eta(a_2),\,\dotsc$
 converges to~$(a_n)_n$ in~$\scrH$.
 Indeed, $d(\eta(a_m),(a_n)_n) = \lim_n\|a_m-a_n\|$
 converges to~$0$ as~$m\to \infty$,
@@ -3614,17 +3621,17 @@ $d(\eta(a),\eta(b))
 \item
 \label{S30Vextension}
 \emph{(extension property)}
-We must show that that any
-uniformly continuous map~$f\colon V\to Y$
+We must show that any
+uniformly continuous map $f\colon V\to Y$
 into a complete metric space~$Y$
 extends uniquely along~$\eta$ 
 to a uniformly continuous map~$g\colon \scrH\to Y$,
 but we'll prove the more general 
 fact that any uniformly continuous map~$f\colon D\to Y$
 to a complete metric space~$Y$
-defined on a via an isometry $\iota\colon D\to X$ dense subset~$D$
-of a complete metric space~$X$
-extends uniquely to a uniformly continuous map~$g\colon X\to Y$.
+extends uniquely along any isometry $\eta\colon D\to X$
+with dense image in a complete metric space~$X$
+to a uniformly continuous map~$g\colon X\to Y$.
 
 Uniqueness of~$g$ is clear,
 since for any~$x\in X$
@@ -3697,7 +3704,7 @@ d(\,\lim_n f(a_n),\,f(a_k)\,)
 \varepsilon
 \ +\ 
 d(\,f(b_\ell),\,\lim_n f(b_n)\,)\\
-\ &\textstyle\qquad\longrightarrow\ 0\ +\ \varepsilon \ +\ 0\quad\text{as $k,l\to\infty$.}
+\ &\textstyle\qquad\longrightarrow\ 0\ +\ \varepsilon \ +\ 0\quad\text{as $k,\ell\to\infty$.}
 \end{alignedat}
 \end{equation*}
 Whence there is a unique uniformly continuous
@@ -3713,8 +3720,9 @@ by definition of~$g$.
 
 \item
 \emph{($\mathscr{H}$ is a Hilbert space)}
-By the general fact proven in point~\ref{S30Vextension} 
-there are unique uniformly continuous maps
+By the general fact proven in point~\ref{S30Vextension},
+applied to one argument at a time,
+there are unique maps
 \begin{equation}
 \label{S30VHops}
 \begin{alignedat}{3}
@@ -3730,16 +3738,27 @@ there are unique uniformly continuous maps
 \left<\,\eta(a),\,\eta(b)\,\right>\ &=\ \left<a,b\right>
 \end{alignedat}
 \end{equation}
-for all~$a,b\in V$ and~$\lambda\in \C$,
-since
+that are uniformly continuous in each argument separately,
+because the maps
 $\eta\circ +\colon V\times V\to \scrH$,
 $\eta\circ \cdot \colon \C\times V\to \scrH$,
 and $\left<\,\cdot\,,\,\cdot\,\right>\colon V\times V\to \C$
-are uniformly continuous, 
-$\eta\times \eta\colon V\times V \to \scrH\times\scrH$, and
-$\C\times \eta\colon \C\times V\to \C\times \scrH$
-have dense image,
+are so too,
+$\eta$ has dense image,
 and $\C$ and~$\scrH$ are complete.
+(Addition is even uniformly continuous jointly,
+and so extends in one go.
+For the inner product,
+extend first in the second argument, then in the first,
+using that
+$|\left<x,y\right>-\left<x',y'\right>|
+\leq d(x,x')\,d(y,0)+d(x',0)\,d(y,y')$,
+which holds on~$V$ by Cauchy--Schwarz,
+and so, by continuity,
+first for~$y,y'\in\scrH$
+and then for~$x,x'\in\scrH$ too.
+This inequality also shows that~$\left<\,\cdot\,,\,\cdot\,\right>$
+is jointly continuous on~$\scrH$.)
 
 Any equation  $s(x_1,\dotsc,x_n)=t(x_1,\dotsc,x_n)$
 involving these (and other continuous) operations
@@ -3776,7 +3795,7 @@ so the only thing left to prove is that~$g$
 is linear and bounded.
 Since the equations and inequalities involved in~$g$ being linear
 and bounded hold on~$\eta(V)$
-(since~$f$ is linear and bounded,)
+(since~$f$ is linear and bounded),
 they hold on~$\scrH$ as well,
 and thus~$g$ is linear and bounded.
 \end{enumerate}

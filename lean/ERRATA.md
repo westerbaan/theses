@@ -25,7 +25,6 @@ time the sources are edited.
 
 | # | defect | fix | status |
 |---|---|---|---|
-| **30V** (`asols.tex`, solution parsec-300.50, item 8) | the solution obtains the addition, scalar multiplication and inner product on the completion ℋ from its own extension clause (item 6), on the ground that these are uniformly continuous on `V`; scalar multiplication `ℂ × V → V` and the inner product `V × V → ℂ` are uniformly continuous only on bounded sets, so item 6 does not apply to them as stated | define the operations on ℋ by the formulas item 6 would assign (`z·[aₙ] = [z aₙ]`, `[aₙ] + [bₙ] = [aₙ + bₙ]`, `⟪[aₙ],[bₙ]⟫ = limₙ ⟪aₙ,bₙ⟫`), the last limit existing by the item-2 estimate (Cauchy–Schwarz plus boundedness of a Cauchy sequence). The Lean `InnerCompletion` (Representation.lean) does exactly this | OPEN |
 
 ## Thesis A — `vn.tex`
 

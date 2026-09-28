@@ -998,6 +998,25 @@ de-privatise them and accept the A/VN rebuild.
   nothing to change — `sw_approx` already uses
   `U_y := {z : g(z) − ε < f_y(z)}`.  Row deleted; **`cstar.tex` 3 → 2**.
 
+* **30V** (`inner-product-completion`) — accepted, and wider than the row:
+  the *printed exercise* already asserted that scalar multiplication and the
+  inner product are uniformly continuous and extend to uniformly continuous
+  operations on `ℋ`, both false (they are so only on bounded sets).
+  Erratum `parsec-300.50`: they are "uniformly continuous in each argument
+  separately" and extend "to such operations on `ℋ`".  The solution's item 8
+  now extends one argument at a time, the inner product first in its second
+  argument and then in its first, via
+  `|⟨x,y⟩ − ⟨x',y'⟩| ≤ ‖x−x'‖‖y‖ + ‖x'‖‖y−y'‖`, which also gives joint
+  continuity, so the rest of item 8 stands; addition, being jointly
+  uniformly continuous, extends in one go.  Fixed without a block, after two
+  independent reviews: item 7's garbled statement of the extension fact (now
+  "extends uniquely along any isometry `η : D → X` with dense image"),
+  `a_{nm}` → `a_{mn}` in item 4, a missing comma in item 5, two typos, and
+  "reflexive" → "reflective subcategory" in the printed exercise.  **Lean side**: nothing to
+  change — `InnerCompletion` defines the operations directly and states no
+  uniform continuity of them.  Row deleted; **`cstar.tex` 2 → 1** (15IV,
+  misfiled in the `dils.tex` table).
+
 ### Still open
 
 **0. RESOLVED — the formalization validates the thesis's own bootstrapping.**
