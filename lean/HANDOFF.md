@@ -1037,6 +1037,20 @@ de-privatise them and accept the A/VN rebuild.
   display with `+`.  Row deleted (it sat in the `dils.tex` table);
   **`cstar.tex` 1 → 0**.
 
+* **49III** (the proof of `bah-vn`, the norm bound on `[y,z]`) — accepted,
+  with a repair the row did not propose; source fix, no erratum block (the
+  printed proof is sound given 73VIII, only out of order).  The limits are
+  now taken *ultrastrongly*: the proof cites **44XIV**
+  `vna-supremum-uslimit` instead of 44VI, says `⟨y,Tz⟩` "converges
+  ultrastrongly (and so also ultraweakly)" to `[y,z]` — the ultraweak limit
+  is what `[y,z]* = [z,y]` needs — and the bound passes to `[y,z]` by
+  **44XI**.3 (`\sref{vn-positive-basic}`).  No forward reference to
+  `ultraclosed`.  **Lean side**: done, commit 3d7c0b6 —
+  `exists_isLUB_vecForm` runs this route (`vna_supremum_uslimit`,
+  `norm_le_of_usTendsto`), axiom-clean; its per-term bound still comes from
+  the order, since the tree reads "bounded" as bounded above.  Row deleted;
+  **`vn.tex` 17 → 16**.
+
 ### Still open
 
 **0. RESOLVED — the formalization validates the thesis's own bootstrapping.**
