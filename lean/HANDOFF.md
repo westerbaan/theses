@@ -1026,6 +1026,17 @@ de-privatise them and accept the A/VN rebuild.
   change — `vn_counterexamples_5` already uses `ketbraNat n 0`.  Row deleted;
   **`vn.tex` 18 → 17**.
 
+* **15IV** (the proof of `cauchy-formula`) — accepted; erratum
+  `parsec-150.40`.  With `T` clockwise (`wn_T(z₀) = −1`, as printed) the
+  partition gives `∑ₙ ∫ = −∫_T`, not the display's `+∫_T`; it now reads
+  `wn_T(z₀) = 1`, matching **14VIII**.5's hint.  The proof survived anyway,
+  since `∫_T` is only used under a norm.  The author's guess at the slip's
+  origin: `T` clockwise is the orientation that makes it, with the polygon,
+  the boundary of the region between them.  **Lean side**: nothing to change —
+  `polygon_triangle` already builds `T` counter-clockwise and proves the
+  display with `+`.  Row deleted (it sat in the `dils.tex` table);
+  **`cstar.tex` 1 → 0**.
+
 ### Still open
 
 **0. RESOLVED — the formalization validates the thesis's own bootstrapping.**
