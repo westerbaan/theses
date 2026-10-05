@@ -42,14 +42,18 @@ np-functionals `ξ ∘ ⟨x, (·) x⟩` the thesis's faithfulness argument uses.
 
 1. for each `x`, `{⟨x, T x⟩ : T ∈ 𝒟}` is a bounded directed set of
    self-adjoint elements of `𝒜`, so it has a supremum (**42I**), and the net
-   converges ultraweakly to it (**44VI** `vna_supremum_uwlimit`);
+   converges ultrastrongly to it (**44XIV** `vna_supremum_uslimit`);
 2. polarisation (`inner_apply_polarization`, the module-form shape of
-   **44II**) turns those four limits into a limit of `⟨y, T z⟩`, giving a form
-   `[y, z]`;
-3. the form is bounded — the thesis reads its bound off **32X**
-   `chilb_form_bounded`; ours reads it off the order instead, from
-   `T₀ ≼ ⋁𝒟 ≼ S₀`, which avoids needing the unit ball to be *ultraweakly*
-   closed (the thesis has that only at **73VIII**, later than this point);
+   **44II**) turns those four limits into an ultrastrong limit of
+   `⟨y, T z⟩`, giving a form `[y, z]`; its algebraic properties are read off
+   the ultraweak limit (**43I**.2), since `[y, z]* = [z, y]` needs the
+   involution, which is not ultrastrongly continuous (43II.4);
+3. the form is bounded: every `⟨y, T z⟩` is bounded, and the bound passes to
+   the ultrastrong limit because the closed ball is ultrastrongly closed
+   (**44XI**.3, via `norm_le_of_usTendsto`).  The thesis bounds `⟨y, T z⟩` by
+   `sup_{T'∈𝒟} ‖T'‖ ‖y‖ ‖z‖` (**32X**); here `𝒟` is only bounded *above*, so
+   that sup may be infinite, and the bound is read off the order on the tail
+   `T₀ ≼ T ≼ S₀` instead;
 4. `X` is self-dual, so **36V** `chilb_form_representation` represents the
    form as `[y, z] = ⟨y, S z⟩`;
 5. `S` is the supremum, because the vector functionals are order separating
@@ -63,15 +67,17 @@ then `T = 0` by polarisation.
 
 Parsec 490 otherwise lives in `A/VN/Basic`, whose variable context is a single
 von Neumann algebra; this section needs a Hilbert `𝒜`-module `X` with
-`[NormedSpace ℂ X]` and `[CompleteSpace X]` alongside it.  The import is
-`A/VN/Completeness` rather than `A/VN/Basic` only to reuse `uwTendsto_unique`,
-`UWTendsto.add` and `UWTendsto.smul`, which live there; the *mathematical*
-dependencies of everything below are **42I**, **42III**, **44II**, **44VI**,
-**44XI** and cstar's **32X**, **32XV**, **36I**, **36V** — nothing later than
-the point itself.  49IV (`M_N(𝒜)` is a von Neumann algebra) does not use this
+`[NormedSpace ℂ X]` and `[CompleteSpace X]` alongside it.  The imports are
+`A/VN/Completeness` and `A/VN/Division` rather than `A/VN/Basic` only to reuse
+`uwTendsto_unique`, `UWTendsto.add` and `UWTendsto.smul` from the first and
+`norm_le_of_usTendsto` (**44XI**.3 at every radius) from the second; the
+*mathematical* dependencies of everything below are **42I**, **42III**,
+**43I**, **44II**, **44XI**, **44XIV** and cstar's **32XV**, **36I**, **36V** —
+nothing later than the point itself.  49IV (`M_N(𝒜)` is a von Neumann algebra) does not use this
 file: it is proved directly in `A/VN/Basic`, deliberately routing around 49II.
 -/
 import Theses.A.VN.Completeness
+import Theses.A.VN.Division
 
 namespace Theses.A.VN
 
@@ -155,9 +161,9 @@ self-adjoint `S` with `⟨x, S x⟩ = ⋁_{T ∈ 𝒟} ⟨x, T x⟩` for every `
 
 The supremum clause *is* the normality of `⟨x, (·) x⟩` asserted by 49II's
 second half, and `bah_vn_sup` reads off it that `S` is the least upper bound
-of `𝒟` for `≼`.  The proof is vn.tex:1189–1240; the module header says where
-it deviates (the bound on the form comes from the order rather than from
-ultraweak closedness of the ball). -/
+of `𝒟` for `≼`.  The proof is vn.tex:1189–1240 with ultrastrong limits, as
+corrected; the module header says where it deviates (the bound on each
+`⟨y, T z⟩` comes from the order rather than from `sup_{T'∈𝒟} ‖T'‖`). -/
 theorem exists_isLUB_vecForm [CompleteSpace X] (hX : SelfDual 𝒜 X)
     {𝒟 : Set (X →L[ℂ] X)} {S₀ : X →L[ℂ] X}
     (hne : 𝒟.Nonempty)
@@ -202,28 +208,33 @@ theorem exists_isLUB_vecForm [CompleteSpace X] (hX : SelfDual 𝒜 X)
   set q : X → selfAdjoint 𝒜 := fun x => dirSup (Set.range (F x)) (hQgood x) with hq
   have hlub : ∀ x : X, IsLUB (Set.range (F x)) (q x) :=
     fun x => isLUB_dirSup _ (hQgood x)
-  -- **44VI**: the net of vector functionals converges ultraweakly to its supremum
-  have hconv : ∀ w : X, UWTendsto (fun T : 𝒟 => inner 𝒜 w (T.1 w)) atTop ((q w : 𝒜)) := by
+  -- **44XIV**: the net of vector functionals converges ultrastrongly to its supremum
+  have hconv : ∀ w : X, USTendsto (fun T : 𝒟 => inner 𝒜 w (T.1 w)) atTop ((q w : 𝒜)) := by
     intro w
     have hg : Tendsto (fun T : 𝒟 => (⟨F w T, ⟨T, rfl⟩⟩ : Set.range (F w))) atTop atTop := by
       rw [tendsto_atTop]
       rintro ⟨-, T', rfl⟩
       filter_upwards [eventually_ge_atTop T'] with T hT
       exact Subtype.coe_le_coe.mpr (hFmono w hT)
-    exact (vna_supremum_uwlimit (Set.range (F w)) (hQgood w)).comp hg
+    exact (vna_supremum_uslimit (Set.range (F w)) (hQgood w)).comp hg
   -- the form `[y,z]`, obtained from the suprema by polarisation
   set B : X → X → 𝒜 := fun y z => (4 : ℂ)⁻¹ • ∑ k ∈ Finset.range 4,
       Complex.I ^ k • ((q (z + (Complex.I ^ k : ℂ) • y) : selfAdjoint 𝒜) : 𝒜) with hBdef
-  have hBconv : ∀ y z : X, UWTendsto (fun T : 𝒟 => inner 𝒜 y (T.1 z)) atTop (B y z) := by
+  have hBus : ∀ y z : X, USTendsto (fun T : 𝒟 => inner 𝒜 y (T.1 z)) atTop (B y z) := by
     intro y z
     have hrw : ∀ T : 𝒟, inner 𝒜 y (T.1 z) = (4 : ℂ)⁻¹ • ∑ k ∈ Finset.range 4,
         Complex.I ^ k • inner 𝒜 (z + (Complex.I ^ k : ℂ) • y)
           (T.1 (z + (Complex.I ^ k : ℂ) • y)) :=
       fun T => inner_apply_polarization T.1 z y
     simp only [hrw, hBdef]
-    exact UWTendsto.smul _ (uwTendsto_finsetSum fun k _ => UWTendsto.smul _ (hconv _))
+    exact usTendsto_smul _ (usTendsto_finsetSum fun k _ => usTendsto_smul _ (hconv _))
+  -- The form's algebraic properties are read off ultraweak limits (**43I**.2:
+  -- ultrastrong convergence implies ultraweak), because `hBstar` needs the
+  -- involution, which is ultraweakly but not ultrastrongly continuous (43II.4).
+  have hBconv : ∀ y z : X, UWTendsto (fun T : 𝒟 => inner 𝒜 y (T.1 z)) atTop (B y z) :=
+    fun y z => uwweaker_2 _ _ _ (hBus y z)
   have hBself : ∀ x : X, B x x = ((q x : selfAdjoint 𝒜) : 𝒜) := fun x =>
-    uwTendsto_unique (hBconv x x) (hconv x)
+    uwTendsto_unique (hBconv x x) (uwweaker_2 _ _ _ (hconv x))
   have hBstar : ∀ y z : X, star (B y z) = B z y := by
     intro y z
     have h2 : UWTendsto (fun T : 𝒟 => inner 𝒜 z (T.1 y)) atTop (star (B y z)) := by
@@ -248,43 +259,45 @@ theorem exists_isLUB_vecForm [CompleteSpace X] (hX : SelfDual 𝒜 X)
     refine uwTendsto_unique (hBconv y (a • z)) (Filter.Tendsto.congr (fun T => ?_) h)
     rw [mul_one, (moduleAdjointable_linear _ ⟨_, hsa T.1 T.2⟩).2.2 a z,
       CStarModule.inner_op_smul_right]
-  -- a uniform bound: `T₀ ≼ ⋁𝒟 ≼ S₀` bounds the suprema in norm
+  -- A uniform bound on every `⟨y, T z⟩` with `T` past `T₀`.  The thesis takes
+  -- `sup_{T'∈𝒟} ‖T'‖` here, but `𝒟` is only bounded *above*, so that sup may be
+  -- infinite; on the tail, `T₀ ≼ T ≼ S₀` bounds `⟨w, T w⟩` in norm instead.
   set M : ℝ := ‖S₀‖ + 2 * ‖T₀‖ with hM
   have hinner_norm : ∀ (T : X →L[ℂ] X) (w : X), ‖inner 𝒜 w (T w)‖ ≤ ‖T‖ * ‖w‖ ^ 2 := by
     intro T w
     calc ‖inner 𝒜 w (T w)‖ ≤ ‖w‖ * ‖T w‖ := CStarModule.norm_inner_le X
       _ ≤ ‖w‖ * (‖T‖ * ‖w‖) := by gcongr; exact T.le_opNorm w
       _ = ‖T‖ * ‖w‖ ^ 2 := by ring
-  have hqnorm : ∀ w : X, ‖((q w : selfAdjoint 𝒜) : 𝒜)‖ ≤ M * ‖w‖ ^ 2 := by
-    intro w
-    have hab : inner 𝒜 w (T₀ w) ≤ ((q w : selfAdjoint 𝒜) : 𝒜) :=
-      Subtype.coe_le_coe.mpr ((hlub w).1 ⟨⟨T₀, hT₀⟩, rfl⟩)
-    have hbc : ((q w : selfAdjoint 𝒜) : 𝒜) ≤ inner 𝒜 w (S₀ w) :=
-      Subtype.coe_le_coe.mpr ((hlub w).2 (hUB w))
+  have hTnorm : ∀ T : 𝒟, (⟨T₀, hT₀⟩ : 𝒟) ≤ T →
+      ∀ w : X, ‖inner 𝒜 w (T.1 w)‖ ≤ M * ‖w‖ ^ 2 := by
+    intro T hT w
+    have hab : inner 𝒜 w (T₀ w) ≤ inner 𝒜 w (T.1 w) := hT w
+    have hbc : inner 𝒜 w (T.1 w) ≤ inner 𝒜 w (S₀ w) := hub T.1 T.2 w
     have h2 := CStarAlgebra.norm_le_norm_of_nonneg_of_le (sub_nonneg.mpr hab)
       (sub_le_sub_right hbc (inner 𝒜 w (T₀ w)))
-    have h3 : ‖((q w : selfAdjoint 𝒜) : 𝒜)‖
-        ≤ ‖((q w : selfAdjoint 𝒜) : 𝒜) - inner 𝒜 w (T₀ w)‖ + ‖inner 𝒜 w (T₀ w)‖ := by
-      simpa using norm_add_le (((q w : selfAdjoint 𝒜) : 𝒜) - inner 𝒜 w (T₀ w))
-        (inner 𝒜 w (T₀ w))
-    calc ‖((q w : selfAdjoint 𝒜) : 𝒜)‖
-        ≤ ‖((q w : selfAdjoint 𝒜) : 𝒜) - inner 𝒜 w (T₀ w)‖ + ‖inner 𝒜 w (T₀ w)‖ := h3
+    have h3 : ‖inner 𝒜 w (T.1 w)‖
+        ≤ ‖inner 𝒜 w (T.1 w) - inner 𝒜 w (T₀ w)‖ + ‖inner 𝒜 w (T₀ w)‖ := by
+      simpa using norm_add_le (inner 𝒜 w (T.1 w) - inner 𝒜 w (T₀ w)) (inner 𝒜 w (T₀ w))
+    calc ‖inner 𝒜 w (T.1 w)‖
+        ≤ ‖inner 𝒜 w (T.1 w) - inner 𝒜 w (T₀ w)‖ + ‖inner 𝒜 w (T₀ w)‖ := h3
       _ ≤ ‖inner 𝒜 w (S₀ w) - inner 𝒜 w (T₀ w)‖ + ‖inner 𝒜 w (T₀ w)‖ := by gcongr
       _ ≤ (‖inner 𝒜 w (S₀ w)‖ + ‖inner 𝒜 w (T₀ w)‖) + ‖inner 𝒜 w (T₀ w)‖ := by
           gcongr; exact norm_sub_le _ _
       _ ≤ (‖S₀‖ * ‖w‖ ^ 2 + ‖T₀‖ * ‖w‖ ^ 2) + ‖T₀‖ * ‖w‖ ^ 2 := by
           gcongr <;> exact hinner_norm _ _
       _ = M * ‖w‖ ^ 2 := by rw [hM]; ring
-  have hBnorm : ∀ y z : X, ‖B y z‖ ≤ M * (‖y‖ + ‖z‖) ^ 2 := by
-    intro y z
+  have hTform : ∀ T : 𝒟, (⟨T₀, hT₀⟩ : 𝒟) ≤ T →
+      ∀ y z : X, ‖inner 𝒜 y (T.1 z)‖ ≤ M * (‖y‖ + ‖z‖) ^ 2 := by
+    intro T hT y z
     have hIk : ∀ k : ℕ, ‖(Complex.I ^ k : ℂ)‖ = 1 := by
       intro k; rw [norm_pow, Complex.norm_I, one_pow]
     have hterm : ∀ k ∈ Finset.range 4,
-        ‖Complex.I ^ k • ((q (z + (Complex.I ^ k : ℂ) • y) : selfAdjoint 𝒜) : 𝒜)‖
+        ‖Complex.I ^ k • inner 𝒜 (z + (Complex.I ^ k : ℂ) • y)
+            (T.1 (z + (Complex.I ^ k : ℂ) • y))‖
           ≤ M * (‖y‖ + ‖z‖) ^ 2 := by
       intro k _
       rw [norm_smul, hIk k, one_mul]
-      refine (hqnorm _).trans ?_
+      refine (hTnorm T hT _).trans ?_
       have hz : ‖z + (Complex.I ^ k : ℂ) • y‖ ≤ ‖y‖ + ‖z‖ := by
         refine (norm_add_le _ _).trans ?_
         rw [norm_smul, hIk k, one_mul]
@@ -292,19 +305,25 @@ theorem exists_isLUB_vecForm [CompleteSpace X] (hX : SelfDual 𝒜 X)
       have hMnn : (0 : ℝ) ≤ M := by
         have := norm_nonneg S₀; have := norm_nonneg T₀; rw [hM]; linarith
       gcongr
-    have h1 : ‖∑ k ∈ Finset.range 4,
-        Complex.I ^ k • ((q (z + (Complex.I ^ k : ℂ) • y) : selfAdjoint 𝒜) : 𝒜)‖
+    have h1 : ‖∑ k ∈ Finset.range 4, Complex.I ^ k • inner 𝒜 (z + (Complex.I ^ k : ℂ) • y)
+          (T.1 (z + (Complex.I ^ k : ℂ) • y))‖
         ≤ 4 * (M * (‖y‖ + ‖z‖) ^ 2) := by
       refine (norm_sum_le _ _).trans ?_
-      calc ∑ k ∈ Finset.range 4,
-              ‖Complex.I ^ k • ((q (z + (Complex.I ^ k : ℂ) • y) : selfAdjoint 𝒜) : 𝒜)‖
+      calc ∑ k ∈ Finset.range 4, ‖Complex.I ^ k • inner 𝒜 (z + (Complex.I ^ k : ℂ) • y)
+              (T.1 (z + (Complex.I ^ k : ℂ) • y))‖
           ≤ ∑ _k ∈ Finset.range 4, M * (‖y‖ + ‖z‖) ^ 2 := Finset.sum_le_sum hterm
         _ = 4 * (M * (‖y‖ + ‖z‖) ^ 2) := by simp [Finset.sum_const]
-    calc ‖B y z‖ = (4 : ℝ)⁻¹ * ‖∑ k ∈ Finset.range 4,
-            Complex.I ^ k • ((q (z + (Complex.I ^ k : ℂ) • y) : selfAdjoint 𝒜) : 𝒜)‖ := by
-          rw [hBdef, norm_smul]; norm_num
+    calc ‖inner 𝒜 y (T.1 z)‖ = (4 : ℝ)⁻¹ * ‖∑ k ∈ Finset.range 4,
+            Complex.I ^ k • inner 𝒜 (z + (Complex.I ^ k : ℂ) • y)
+              (T.1 (z + (Complex.I ^ k : ℂ) • y))‖ := by
+          rw [inner_apply_polarization T.1 z y, norm_smul]; norm_num
       _ ≤ (4 : ℝ)⁻¹ * (4 * (M * (‖y‖ + ‖z‖) ^ 2)) := by gcongr
       _ = M * (‖y‖ + ‖z‖) ^ 2 := by ring
+  -- **44XI**.3: the closed ball is ultrastrongly closed, so the bound passes to
+  -- the ultrastrong limit `[y,z]`
+  have hBnorm : ∀ y z : X, ‖B y z‖ ≤ M * (‖y‖ + ‖z‖) ^ 2 := fun y z =>
+    norm_le_of_usTendsto (hBus y z)
+      ((eventually_ge_atTop (⟨T₀, hT₀⟩ : 𝒟)).mono fun T hT => hTform T hT y z)
   have hBzero : ∀ y : X, B y 0 = 0 := by
     intro y
     simpa using hBsmul y 0 0
