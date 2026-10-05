@@ -1017,6 +1017,15 @@ de-privatise them and accept the A/VN rebuild.
   uniform continuity of them.  Row deleted; **`cstar.tex` 2 → 1** (15IV,
   misfiled in the `dils.tex` table).
 
+### Resolved by the author (2026-10-05) — thesis-A rulings, incorporated
+
+* **43II.5** (`vn-counterexamples`) — accepted; erratum `parsec-430.20`,
+  joining the block on point 3.  Point 5 asked to show `(|0⟩⟨n|)ₙ` has no
+  ultrastrongly convergent subnet, which point 4 has just shown converges
+  ultrastrongly to `0`; it now reads `(|n⟩⟨0|)ₙ`.  **Lean side**: nothing to
+  change — `vn_counterexamples_5` already uses `ketbraNat n 0`.  Row deleted;
+  **`vn.tex` 18 → 17**.
+
 ### Still open
 
 **0. RESOLVED — the formalization validates the thesis's own bootstrapping.**
