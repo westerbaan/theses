@@ -1051,6 +1051,15 @@ de-privatise them and accept the A/VN rebuild.
   the order, since the tree reads "bounded" as bounded above.  Row deleted;
   **`vn.tex` 17 → 16**.
 
+* **49III** (the proof of `bah-vn`, the polarisation display) — accepted;
+  erratum `parsec-490.30`.  The display put `iᵏ` on the second vector,
+  `¼ ∑ iᵏ ⟨y + iᵏz, T(y + iᵏz)⟩`, which is `⟨z,Ty⟩`, not `⟨y,Tz⟩`; it now
+  reads `¼ ∑ iᵏ ⟨iᵏy + z, T(iᵏy + z)⟩`, the form of every other polarisation
+  display in both theses (cstar.tex's WOT lemma, 42XII, 76III, 152X).  The
+  proof was unaffected.  **Lean side**: nothing to change —
+  `inner_apply_polarization` (`⟨z,Ty⟩ = ¼ ∑ iᵏ ⟨y + iᵏz, T(y + iᵏz)⟩`) is
+  an equivalent correct form.  Row deleted; **`vn.tex` 16 → 15**.
+
 ### Still open
 
 **0. RESOLVED — the formalization validates the thesis's own bootstrapping.**
